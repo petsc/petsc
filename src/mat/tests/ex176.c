@@ -27,6 +27,7 @@ int main(int argc,char **argv)
   MPI_Comm       comm;
   PetscMPIInt    rank,size;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   comm = PETSC_COMM_WORLD;
   PetscCallMPI(MPI_Comm_rank(comm,&rank));
@@ -37,6 +38,8 @@ int main(int argc,char **argv)
   PetscCall(MatUpdateMPIAIJWithArrays(A,2,2,PETSC_DETERMINE,PETSC_DETERMINE,i[rank],j[rank],anew[rank]));
   PetscCall(MatView(A,NULL));
   PetscCall(MatUpdateMPIAIJWithArrays(A,2,2,PETSC_DETERMINE,PETSC_DETERMINE,i[rank],j[rank],a[rank]));
+  PetscCall(MatView(A,NULL));
+  PetscCall(MatUpdateMPIAIJWithArray(A,anew[rank]));
   PetscCall(MatView(A,NULL));
   PetscCall(MatDestroy(&A));
   PetscCall(PetscFinalize());

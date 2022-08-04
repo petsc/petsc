@@ -19,6 +19,7 @@ int main(int argc,char **args)
   Vec            x,y,z;
   PetscBool      view=PETSC_FALSE,use_interface=PETSC_TRUE;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "This example requires real numbers. Your current scalar type is complex");

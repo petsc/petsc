@@ -81,9 +81,7 @@ PetscErrorCode  PetscDrawView(PetscDraw indraw,PetscViewer viewer)
       PetscCall(PetscObjectViewSAWs((PetscObject)indraw,viewer));
     }
 #endif
-  } else if (indraw->ops->view) {
-    PetscCall((*indraw->ops->view)(indraw,viewer));
-  }
+  } else if (indraw->ops->view) PetscCall((*indraw->ops->view)(indraw,viewer));
   PetscFunctionReturn(0);
 }
 

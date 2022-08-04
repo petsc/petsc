@@ -18,6 +18,7 @@ int main(int argc,char **argv)
   PetscBool              flg = PETSC_FALSE;
   ISLocalToGlobalMapping is;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",280,480,600,200,&viewer));
   PetscCall(PetscViewerDrawGetDraw(viewer,0,&draw));

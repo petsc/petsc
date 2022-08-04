@@ -14,10 +14,16 @@ coordinates with 1 fields
 Process 0:
   (   1) dim  1 offset   0 0.
   (   2) dim  1 offset   1 1.
-Label 'marker':
-[0]: 1 (1)
-[0]: 2 (1)
+Labels:
 Label 'celltype':
 [0]: 0 (1)
 [0]: 1 (0)
 [0]: 2 (0)
+Label 'Cell Sets':
+[0]: 0 (1)
+Label 'Face Sets':
+[0]: 1 (1)
+[0]: 2 (2)
+Label 'marker':
+[0]: 1 (1)
+[0]: 2 (1)

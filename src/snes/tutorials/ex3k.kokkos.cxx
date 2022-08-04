@@ -222,6 +222,7 @@ int main(int argc,char **argv)
   PetscReal      abstol,rtol,stol,norm;
   PetscBool      viewinitial = PETSC_FALSE;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&N,NULL));
   ctx.h = 1.0/(N-1);

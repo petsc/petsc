@@ -238,7 +238,7 @@ static PetscErrorCode TestIntegration(DM dm, PetscInt cbs, PetscInt its)
         PetscFEGeom     *geom = affineGeom ? affineGeom : geoms[f];
         /* PetscQuadrature quad = affineQuad ? affineQuad : quads[f]; */
 
-        key.label = NULL; key.value = 0; key.field = f;
+        key.label = NULL; key.value = 0; key.field = f; key.part = 0;
         PetscCall(PetscFEGeomGetChunk(geom, cS, cE, &chunkGeom));
         PetscCall(PetscLogEventBegin(event,0,0,0,0));
         PetscCall(PetscFEIntegrateResidual(ds, key, Ne, chunkGeom, u, NULL, NULL, NULL, 0.0, elemVec));
@@ -313,6 +313,7 @@ int main(int argc, char **argv)
   AppCtx         ctx;
   PetscMPIInt    size;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCheck(size <= 1,PETSC_COMM_WORLD, PETSC_ERR_SUP, "This is a uniprocessor example only.");

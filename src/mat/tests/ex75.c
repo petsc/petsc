@@ -14,6 +14,7 @@ int main(int argc,char **args)
   PetscMPIInt    size,rank;
   PetscBool      flg;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-mbs",&mbs,NULL));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-bs",&bs,NULL));

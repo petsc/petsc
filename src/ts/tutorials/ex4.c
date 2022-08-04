@@ -99,6 +99,7 @@ int main(int argc,char **argv)
      Initialize program and set problem parameters
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   appctx.comm = PETSC_COMM_WORLD;
 

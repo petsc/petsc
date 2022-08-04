@@ -91,6 +91,7 @@ int main(int argc,char **argv)
      Initialize program and set problem parameters
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   MPI_Comm_size(PETSC_COMM_WORLD,&size);
   PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
@@ -280,9 +281,7 @@ PetscErrorCode InitialConditions(Vec u,AppCtx *appctx)
   /*
      Print debugging information if desired
   */
-  if (appctx->debug) {
-     PetscCall(VecView(u,PETSC_VIEWER_STDOUT_SELF));
-  }
+  if (appctx->debug) PetscCall(VecView(u,PETSC_VIEWER_STDOUT_SELF));
 
   return 0;
 }

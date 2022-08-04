@@ -48,6 +48,7 @@ PETSC_EXTERN PetscErrorCode    DMFieldGetDegree(DMField,IS,PetscInt *,PetscInt *
 
 PETSC_EXTERN PetscErrorCode    DMFieldCreateDA(DM,PetscInt,const PetscScalar *,DMField *);
 PETSC_EXTERN PetscErrorCode    DMFieldCreateDS(DM,PetscInt,Vec,DMField *);
+PETSC_EXTERN PetscErrorCode    DMFieldCreateDSWithDG(DM,DM,PetscInt,Vec,Vec,DMField *);
 
 PETSC_EXTERN PetscErrorCode    DMFieldCreateShell(DM,PetscInt,DMFieldContinuity,void *,DMField *);
 PETSC_EXTERN PetscErrorCode    DMFieldShellSetDestroy(DMField,PetscErrorCode(*)(DMField));

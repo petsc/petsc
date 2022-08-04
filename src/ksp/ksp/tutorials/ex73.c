@@ -756,9 +756,7 @@ PetscErrorCode HierarchyCreate(PetscInt *_nd,PetscInt *_nref,MPI_Comm **_cl,DM *
 
     dmfine = dmlist[k];
     dmcoarse = dmlist[k-1];
-    if (dmfine) {
-      PetscCall(DMSetCoarseDM(dmfine,dmcoarse));
-    }
+    if (dmfine) PetscCall(DMSetCoarseDM(dmfine,dmcoarse));
   }
 
   /* do special setup on the fine DM coupling different decompositions */
@@ -767,9 +765,7 @@ PetscErrorCode HierarchyCreate(PetscInt *_nd,PetscInt *_nref,MPI_Comm **_cl,DM *
 
     dmfine = dmlist[d*levelrefs + 0];
     dmcoarse = dmlist[(d-1)*levelrefs + (levelrefs-1)];
-    if (dmfine) {
-      PetscCall(DMShellDASetUp_TelescopeDMScatter(dmfine,dmcoarse));
-    }
+    if (dmfine) PetscCall(DMShellDASetUp_TelescopeDMScatter(dmfine,dmcoarse));
   }
 
   PetscCall(PetscFree(number));
@@ -830,9 +826,7 @@ PetscErrorCode test_hierarchy(void)
     }
     for (k=1; k<nref; k++) {
       DM dm = dms[d*nref+k];
-      if (dm) {
-        PetscCall(DMSetApplicationContext(dm,NULL));
-      }
+      if (dm) PetscCall(DMSetApplicationContext(dm,NULL));
     }
   }
 
@@ -939,9 +933,7 @@ PetscErrorCode test_mg(void)
     }
     for (k=1; k<nref; k++) {
       DM dm = dms[d*nref+k];
-      if (dm) {
-        PetscCall(DMSetApplicationContext(dm,NULL));
-      }
+      if (dm) PetscCall(DMSetApplicationContext(dm,NULL));
     }
   }
 
@@ -970,6 +962,7 @@ int main(int argc,char **argv)
 {
   PetscInt       test_id = 0;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-tid",&test_id,NULL));
   switch (test_id) {

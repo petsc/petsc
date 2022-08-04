@@ -16,6 +16,7 @@ int main(int argc,char **args)
   PetscBool      flg,mats_view=PETSC_FALSE;
   MPI_Comm       subcomm;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL));

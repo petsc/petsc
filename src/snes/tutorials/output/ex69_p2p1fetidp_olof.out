@@ -7,9 +7,9 @@ box in 2 dimensions:
 Labels:
   depth: 3 strata with value/size (0 (29), 1 (60), 2 (32))
   celltype: 3 strata with value/size (0 (29), 1 (60), 3 (32))
-  marker: 2 strata with value/size (1 (8), 4 (17))
+  marker: 3 strata with value/size (1 (9), 3 (1), 4 (17))
   Face Sets: 2 strata with value/size (1 (7), 4 (14))
-  markerBottom: 1 strata with value/size (1 (8))
+  markerBottom: 1 strata with value/size (1 (9))
   markerRight: 0 strata with value/size ()
-  markerTop: 0 strata with value/size ()
+  markerTop: 1 strata with value/size (1 (1))
   markerLeft: 1 strata with value/size (1 (17))

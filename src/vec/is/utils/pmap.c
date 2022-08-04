@@ -229,7 +229,7 @@ $ PetscLayoutGetSize(PetscLayout,PetscInt *);
   If the local size, global size are already set and range exists then this does nothing.
 
 .seealso: `PetscLayoutSetLocalSize()`, `PetscLayoutSetSize()`, `PetscLayoutGetSize()`, `PetscLayoutGetLocalSize()`, `PetscLayout`, `PetscLayoutDestroy()`,
-          `PetscLayoutGetRange()`, `PetscLayoutGetRanges()`, `PetscLayoutSetBlockSize()`, `PetscLayoutGetBlockSize()`, `PetscLayoutCreate()`
+          `PetscLayoutGetRange()`, `PetscLayoutGetRanges()`, `PetscLayoutSetBlockSize()`, `PetscLayoutGetBlockSize()`, `PetscLayoutCreate()`, `PetscSplitOwnership()`
 @*/
 PetscErrorCode PetscLayoutSetUp(PetscLayout map)
 {
@@ -393,7 +393,7 @@ PetscErrorCode PetscLayoutSetLocalSize(PetscLayout map,PetscInt n)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
      PetscLayoutGetLocalSize - Gets the local size for a PetscLayout object.
 
     Not Collective
@@ -570,7 +570,7 @@ PetscErrorCode PetscLayoutGetRange(PetscLayout map,PetscInt *rstart,PetscInt *re
 .    map - pointer to the map
 
    Output Parameters:
-.    range - start of each processors range of indices (the final entry is one more then the
+.    range - start of each processors range of indices (the final entry is one more than the
              last index on the last process)
 
    Level: developer

@@ -15,6 +15,7 @@ int main(int argc,char **args)
   PetscReal      s1norm,s2norm,rnorm,tol = 10*PETSC_SMALL;
   PetscBool      flg;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-mat_block_size",&bs,NULL));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-mat_size",&m,NULL));

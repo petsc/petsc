@@ -49,6 +49,7 @@ int main(int argc, char **argv)
   const char        *infilename;
   PetscViewerFormat informat;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL,help));
   PetscCall(ProcessOptions(PETSC_COMM_WORLD, &user));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &gsize));

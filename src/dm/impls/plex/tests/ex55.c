@@ -92,6 +92,7 @@ int main(int argc, char **argv)
   AppCtx         user;
   PetscBool      flg;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL,help));
   PetscCall(ProcessOptions(PETSC_COMM_WORLD, &user));
   PetscCall(DMPlexCreateFromFile(PETSC_COMM_WORLD, user.filename, user.meshname, user.interpolate, &dm));

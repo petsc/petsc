@@ -119,9 +119,7 @@ static PetscErrorCode DMCreateMatrix_Composite_AIJ(DM dm,Mat *J)
     PetscCall(MatDestroy(&Atmp));
     next = next->next;
   }
-  if (com->FormCoupleLocations) {
-    PetscCall((*com->FormCoupleLocations)(dm,NULL,dnz,onz,__rstart,__nrows,__start,__end));
-  }
+  if (com->FormCoupleLocations) PetscCall((*com->FormCoupleLocations)(dm,NULL,dnz,onz,__rstart,__nrows,__start,__end));
   PetscCall(MatMPIAIJSetPreallocation(*J,0,dnz,0,onz));
   PetscCall(MatSeqAIJSetPreallocation(*J,0,dnz));
   MatPreallocateEnd(dnz,onz);
@@ -180,11 +178,8 @@ PetscErrorCode DMCreateMatrix_Composite(DM dm,Mat *J)
   PetscCall(DMSetFromOptions(dm));
   PetscCall(DMSetUp(dm));
   PetscCall(PetscStrcmp(dm->mattype,MATNEST,&usenest));
-  if (usenest) {
-    PetscCall(DMCreateMatrix_Composite_Nest(dm,J));
-  } else {
-    PetscCall(DMCreateMatrix_Composite_AIJ(dm,J));
-  }
+  if (usenest) PetscCall(DMCreateMatrix_Composite_Nest(dm,J));
+  else PetscCall(DMCreateMatrix_Composite_AIJ(dm,J));
 
   PetscCall(DMGetLocalToGlobalMapping(dm,&ltogmap));
   PetscCall(MatSetLocalToGlobalMapping(*J,ltogmap,ltogmap));

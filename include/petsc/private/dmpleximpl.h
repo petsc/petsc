@@ -62,6 +62,12 @@ PETSC_EXTERN PetscLogEvent DMPLEX_MetricNormalize;
 PETSC_EXTERN PetscLogEvent DMPLEX_MetricAverage;
 PETSC_EXTERN PetscLogEvent DMPLEX_MetricIntersection;
 
+PETSC_EXTERN PetscLogEvent DMPLEX_RebalBuildGraph;
+PETSC_EXTERN PetscLogEvent DMPLEX_RebalRewriteSF;
+PETSC_EXTERN PetscLogEvent DMPLEX_RebalGatherGraph;
+PETSC_EXTERN PetscLogEvent DMPLEX_RebalPartition;
+PETSC_EXTERN PetscLogEvent DMPLEX_RebalScatterPart;
+
 /* Utility struct to store the contents of a Fluent file in memory */
 typedef struct {
   int          index;    /* Type of section */
@@ -219,6 +225,7 @@ typedef struct {
   PetscBool            printSetValues;
   PetscInt             printFEM;
   PetscInt             printL2;
+  PetscInt             printLocate;
   PetscReal            printTol;
 } DM_Plex;
 
@@ -262,6 +269,7 @@ PETSC_INTERN PetscErrorCode VecView_Plex_Local_HDF5_Internal(Vec, PetscViewer);
 PETSC_INTERN PetscErrorCode VecLoad_Plex_HDF5_Internal(Vec, PetscViewer);
 PETSC_INTERN PetscErrorCode VecLoad_Plex_HDF5_Native_Internal(Vec, PetscViewer);
 #endif
+PETSC_EXTERN PetscErrorCode VecView_Plex_Local_CGNS(Vec, PetscViewer);
 
 PETSC_INTERN PetscErrorCode DMPlexVecGetClosureAtDepth_Internal(DM, PetscSection, Vec, PetscInt, PetscInt, PetscInt *, PetscScalar *[]);
 PETSC_INTERN PetscErrorCode DMPlexClosurePoints_Private(DM,PetscInt,const PetscInt[],IS*);
@@ -295,6 +303,9 @@ PETSC_INTERN PetscErrorCode VecViewPlex_ExodusII_Zonal_Internal(Vec, int, int, i
 PETSC_INTERN PetscErrorCode VecLoadPlex_ExodusII_Zonal_Internal(Vec, int, int, int);
 PETSC_INTERN PetscErrorCode EXOGetVarIndex_Internal(int, ex_entity_type, const char[], int*);
 #endif
+PETSC_INTERN PetscErrorCode DMView_PlexCGNS(DM, PetscViewer);
+PETSC_INTERN PetscErrorCode DMPlexCreateCGNSFromFile_Internal(MPI_Comm, const char *, PetscBool, DM *);
+PETSC_INTERN PetscErrorCode DMPlexCreateCGNS_Internal(MPI_Comm, PetscInt, PetscBool, DM *);
 PETSC_INTERN PetscErrorCode DMPlexVTKGetCellType_Internal(DM,PetscInt,PetscInt,PetscInt*);
 PETSC_INTERN PetscErrorCode DMPlexGetAdjacency_Internal(DM,PetscInt,PetscBool,PetscBool,PetscBool,PetscInt*,PetscInt*[]);
 PETSC_INTERN PetscErrorCode DMPlexGetRawFaces_Internal(DM,DMPolytopeType,const PetscInt[],PetscInt*,const DMPolytopeType*[],const PetscInt*[],const PetscInt*[]);

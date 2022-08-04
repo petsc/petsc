@@ -235,8 +235,6 @@ static PetscErrorCode xxt_generate(xxt_ADT xxt_handle)
   PetscInt       *col_sz, *col_indices, *stages;
   PetscScalar    **col_vals, *x;
   PetscInt       n_global;
-  PetscInt       xxt_zero_nnz  =0;
-  PetscInt       xxt_zero_nnz_0=0;
   PetscBLASInt   i1            = 1,dlen;
   PetscScalar    dm1           = -1.0;
 
@@ -343,7 +341,7 @@ static PetscErrorCode xxt_generate(xxt_ADT xxt_handle)
       off   = *iptr++;
       len   = *iptr++;
       PetscCall(PetscBLASIntCast(len,&dlen));
-      PetscStackCallBLAS("BLASdot",uu[k] = BLASdot_(&dlen,u+off,&i1,x_ptr,&i1));
+      PetscCallBLAS("BLASdot",uu[k] = BLASdot_(&dlen,u+off,&i1,x_ptr,&i1));
       x_ptr+=len;
     }
 
@@ -358,14 +356,14 @@ static PetscErrorCode xxt_generate(xxt_ADT xxt_handle)
       off  = *iptr++;
       len  = *iptr++;
       PetscCall(PetscBLASIntCast(len,&dlen));
-      PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&dlen,&uu[k],x_ptr,&i1,z+off,&i1));
+      PetscCallBLAS("BLASaxpy",BLASaxpy_(&dlen,&uu[k],x_ptr,&i1,z+off,&i1));
       x_ptr+=len;
     }
 
     /* compute v_l = v_l - z */
     PCTFS_rvec_zero(v+a_n,a_m-a_n);
     PetscCall(PetscBLASIntCast(n,&dlen));
-    PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&dlen,&dm1,z,&i1,v,&i1));
+    PetscCallBLAS("BLASaxpy",BLASaxpy_(&dlen,&dm1,z,&i1,v,&i1));
 
     /* compute u_l = A.v_l */
     if (a_n!=a_m) PCTFS_gs_gop_hc(PCTFS_gs_handle,v,"+\0",dim);
@@ -374,7 +372,7 @@ static PetscErrorCode xxt_generate(xxt_ADT xxt_handle)
 
     /* compute sqrt(alpha) = sqrt(v_l^T.u_l) - local portion */
     PetscCall(PetscBLASIntCast(n,&dlen));
-    PetscStackCallBLAS("BLASdot",alpha = BLASdot_(&dlen,u,&i1,v,&i1));
+    PetscCallBLAS("BLASdot",alpha = BLASdot_(&dlen,u,&i1,v,&i1));
     /* compute sqrt(alpha) = sqrt(v_l^T.u_l) - comm portion */
     PCTFS_grop_hc(&alpha, &alpha_w, 1, op, dim);
 
@@ -412,16 +410,6 @@ static PetscErrorCode xxt_generate(xxt_ADT xxt_handle)
       xxt_nnz += len;
       PCTFS_rvec_copy(x_ptr,v+off,len);
 
-      /* keep track of number of zeros */
-      if (dim) {
-        for (k=0; k<len; k++) {
-          if (x_ptr[k]==0.0) xxt_zero_nnz++;
-        }
-      } else {
-        for (k=0; k<len; k++) {
-          if (x_ptr[k]==0.0) xxt_zero_nnz_0++;
-        }
-      }
       col_indices[2*i] = off;
       col_sz[i] = col_indices[2*i+1] = len;
       col_vals[i] = x_ptr;
@@ -490,7 +478,7 @@ static PetscErrorCode do_xxt_solve(xxt_ADT xxt_handle,  PetscScalar *uc)
     off       =*iptr++;
     len       =*iptr++;
     PetscCall(PetscBLASIntCast(len,&dlen));
-    PetscStackCallBLAS("BLASdot",*uu_ptr++ = BLASdot_(&dlen,uc+off,&i1,x_ptr,&i1));
+    PetscCallBLAS("BLASdot",*uu_ptr++ = BLASdot_(&dlen,uc+off,&i1,x_ptr,&i1));
   }
 
   /* comunication of beta */
@@ -504,7 +492,7 @@ static PetscErrorCode do_xxt_solve(xxt_ADT xxt_handle,  PetscScalar *uc)
     off  =*iptr++;
     len  =*iptr++;
     PetscCall(PetscBLASIntCast(len,&dlen));
-    PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&dlen,uu_ptr++,x_ptr,&i1,uc+off,&i1));
+    PetscCallBLAS("BLASaxpy",BLASaxpy_(&dlen,uu_ptr++,x_ptr,&i1,uc+off,&i1));
   }
   PetscFunctionReturn(0);
 }

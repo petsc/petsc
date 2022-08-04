@@ -1,8 +1,8 @@
     L_2 Error: 0.0211388
-    Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
-    L_2 Error: 0.00367772
     Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
-  L_2 Error: 0.00351291
+    L_2 Error: 0.00389726
+    Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
+  L_2 Error: 0.00352715
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
-L_2 Error: 0.00349417
+L_2 Error: 0.00348571
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2

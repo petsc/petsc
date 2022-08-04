@@ -11,6 +11,7 @@ int main(int argc,char **argv)
   PetscBool      equal;
   const char     *eq[2];
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
   n    = m;

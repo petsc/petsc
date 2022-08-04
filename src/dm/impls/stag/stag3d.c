@@ -502,15 +502,15 @@ static PetscErrorCode DMStagSetUpBuildRankGrid_3d(DM dm)
 
   if (m != PETSC_DECIDE) {
     PetscCheck(m >= 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of processors in X direction: %" PetscInt_FMT,m);
-    else PetscCheck(m <= size,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many processors in X direction: %" PetscInt_FMT " %d",m,size);
+    PetscCheck(m <= size,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many processors in X direction: %" PetscInt_FMT " %d",m,size);
   }
   if (n != PETSC_DECIDE) {
     PetscCheck(n >= 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of processors in Y direction: %" PetscInt_FMT,n);
-    else PetscCheck(n <= size,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many processors in Y direction: %" PetscInt_FMT " %d",n,size);
+    PetscCheck(n <= size,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many processors in Y direction: %" PetscInt_FMT " %d",n,size);
   }
   if (p != PETSC_DECIDE) {
     PetscCheck(p >= 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of processors in Z direction: %" PetscInt_FMT,p);
-    else PetscCheck(p <= size,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many processors in Z direction: %" PetscInt_FMT " %d",p,size);
+    PetscCheck(p <= size,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many processors in Z direction: %" PetscInt_FMT " %d",p,size);
   }
   PetscCheck(m <= 0 || n <= 0 || p <= 0 || m*n*p == size,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"m %" PetscInt_FMT " * n %" PetscInt_FMT " * p %" PetscInt_FMT " != size %d",m,n,p,size);
 
@@ -3478,9 +3478,7 @@ PETSC_INTERN PetscErrorCode DMStagPopulateLocalToGlobalInjective_3d(DM dm)
   }
   PetscCall(ISDestroy(&isLocal));
   PetscCall(ISDestroy(&isGlobal));
-  if (globalOffsetsRecomputed) {
-    PetscCall(PetscFree(globalOffsetsRecomputed));
-  }
+  if (globalOffsetsRecomputed) PetscCall(PetscFree(globalOffsetsRecomputed));
   PetscFunctionReturn(0);
 }
 

@@ -15,6 +15,7 @@ int main(int argc,char **args)
   const PetscScalar *vals;
   PetscBool         TestMyorder=PETSC_FALSE;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");

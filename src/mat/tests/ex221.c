@@ -76,6 +76,7 @@ int main(int argc,char **args)
   PetscBool      testshift = PETSC_TRUE, testscale = PETSC_TRUE, testdup = PETSC_TRUE, testreset = PETSC_TRUE;
   PetscBool      testaxpy = PETSC_TRUE, testaxpyd = PETSC_TRUE, testaxpyerr = PETSC_FALSE;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
@@ -154,9 +155,7 @@ int main(int argc,char **args)
   PetscCall(MatCreateShell(PETSC_COMM_WORLD,m,n,M,N,user,&S));
   PetscCall(MatShellSetOperation(S,MATOP_MULT,(void (*)(void))MatMult_User));
   PetscCall(MatShellSetOperation(S,MATOP_MULT_TRANSPOSE,(void (*)(void))MatMultTranspose_User));
-  if (cong) {
-    PetscCall(MatShellSetOperation(S,MATOP_GET_DIAGONAL,(void (*)(void))MatGetDiagonal_User));
-  }
+  if (cong) PetscCall(MatShellSetOperation(S,MATOP_GET_DIAGONAL,(void (*)(void))MatGetDiagonal_User));
   PetscCall(MatShellSetOperation(S,MATOP_COPY,(void (*)(void))MatCopy_User));
   PetscCall(MatShellSetOperation(S,MATOP_DESTROY,(void (*)(void))MatDestroy_User));
   PetscCall(MatDuplicate(A,MAT_COPY_VALUES,&user->B));

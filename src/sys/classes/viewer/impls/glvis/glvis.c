@@ -283,13 +283,9 @@ PetscErrorCode PetscViewerGLVisGetDMWindow_Private(PetscViewer viewer,PetscViewe
         PetscCall(PetscViewerASCIIOpen(PETSC_COMM_SELF,filename,&socket->meshwindow));
       }
     }
-    if (socket->meshwindow) {
-      PetscCall(PetscViewerPushFormat(socket->meshwindow,PETSC_VIEWER_ASCII_GLVIS));
-    }
+    if (socket->meshwindow) PetscCall(PetscViewerPushFormat(socket->meshwindow,PETSC_VIEWER_ASCII_GLVIS));
   }
-  if (socket->meshwindow) {
-    PetscCall(PetscViewerGLVisAttachInfo_Private(viewer,socket->meshwindow));
-  }
+  if (socket->meshwindow) PetscCall(PetscViewerGLVisAttachInfo_Private(viewer,socket->meshwindow));
   *view = socket->meshwindow;
   PetscFunctionReturn(0);
 }
@@ -389,7 +385,7 @@ PetscErrorCode PetscViewerGLVisGetWindow_Private(PetscViewer viewer,PetscInt wid
   switch (status) {
     case PETSCVIEWERGLVIS_DISCONNECTED:
       PetscCheck(!socket->window[wid],PETSC_COMM_SELF,PETSC_ERR_USER,"This should not happen");
-      else if (socket->type == PETSC_VIEWER_GLVIS_DUMP) {
+      if (socket->type == PETSC_VIEWER_GLVIS_DUMP) {
         size_t    len;
         PetscBool isstdout;
 
@@ -422,9 +418,7 @@ PetscErrorCode PetscViewerGLVisGetWindow_Private(PetscViewer viewer,PetscInt wid
     default:
       SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Unhandled socket status %d",(int)status);
   }
-  if (*view) {
-    PetscCall(PetscViewerGLVisAttachInfo_Private(viewer,*view));
-  }
+  if (*view) PetscCall(PetscViewerGLVisAttachInfo_Private(viewer,*view));
   PetscFunctionReturn(0);
 }
 

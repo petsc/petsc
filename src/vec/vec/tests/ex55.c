@@ -9,6 +9,7 @@ int main(int argc,char **args)
   PetscViewer       viewer;
   char             *attrReadVal, attrWriteVal[20]={"Hello World!!"};
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
 
   /* PART 1:  Generate vector, then write it in the given data format */

@@ -39,9 +39,7 @@ static PetscErrorCode KSPSolve_GCR_cycle(KSP ksp)
   for (k=0; k<restart; k++) {
     v = ctx->VV[k];
     s = ctx->SS[k];
-    if (ctx->modifypc) {
-      PetscCall((*ctx->modifypc)(ksp,ksp->its,ksp->rnorm,ctx->modifypc_ctx));
-    }
+    if (ctx->modifypc) PetscCall((*ctx->modifypc)(ksp,ksp->its,ksp->rnorm,ctx->modifypc_ctx));
 
     PetscCall(KSP_PCApply(ksp, r, s)); /* s = B^{-1} r */
     PetscCall(KSP_MatMult(ksp,A, s, v));  /* v = A s */
@@ -161,9 +159,7 @@ static PetscErrorCode KSPReset_GCR(KSP ksp)
   PetscCall(VecDestroy(&ctx->R));
   PetscCall(VecDestroyVecs(ctx->restart,&ctx->VV));
   PetscCall(VecDestroyVecs(ctx->restart,&ctx->SS));
-  if (ctx->modifypc_destroy) {
-    PetscCall((*ctx->modifypc_destroy)(ctx->modifypc_ctx));
-  }
+  if (ctx->modifypc_destroy) PetscCall((*ctx->modifypc_destroy)(ctx->modifypc_ctx));
   PetscCall(PetscFree(ctx->val));
   PetscFunctionReturn(0);
 }

@@ -31,7 +31,7 @@ class Configure(config.base.Configure):
     return
 
   def checkSharedDynamicPicOptions(self):
-    # uf user specified 'with-shared' or 'with-dynamic' - flag an error
+    '''if user specified out-dated 'with-shared' or 'with-dynamic' - flag an error'''
     if 'with-shared' in self.framework.argDB:
       raise RuntimeError('Option "--with-shared" no longer exists. Use "--with-shared-libraries".')
     if 'with-dynamic' in self.framework.argDB or 'with-dynamic-loading' in self.framework.argDB:

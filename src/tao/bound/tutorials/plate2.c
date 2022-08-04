@@ -59,6 +59,7 @@ int main(int argc, char **argv)
   AppCtx                 user;                 /* user-defined work context */
 
   /* Initialize PETSc, TAO */
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv,(char *)0,help));
 
   /* Specify default dimension of the problem */
@@ -692,22 +693,14 @@ static PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
   /* Scale the boundary if desired */
 
   PetscCall(PetscOptionsGetReal(NULL,NULL,"-bottom",&scl,&flg));
-  if (flg) {
-    PetscCall(VecScale(Bottom, scl));
-  }
+  if (flg) PetscCall(VecScale(Bottom, scl));
   PetscCall(PetscOptionsGetReal(NULL,NULL,"-top",&scl,&flg));
-  if (flg) {
-    PetscCall(VecScale(Top, scl));
-  }
+  if (flg) PetscCall(VecScale(Top, scl));
   PetscCall(PetscOptionsGetReal(NULL,NULL,"-right",&scl,&flg));
-  if (flg) {
-    PetscCall(VecScale(Right, scl));
-  }
+  if (flg) PetscCall(VecScale(Right, scl));
 
   PetscCall(PetscOptionsGetReal(NULL,NULL,"-left",&scl,&flg));
-  if (flg) {
-    PetscCall(VecScale(Left, scl));
-  }
+  if (flg) PetscCall(VecScale(Left, scl));
   return 0;
 }
 

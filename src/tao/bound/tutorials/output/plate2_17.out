@@ -40,7 +40,7 @@ Tao Object: 1 MPI process
       dtol: 0
       iter: 0
       othr: 0
-  Mat Object: (tao_bqnk_) 1 MPI process
+  Mat Object: (tao_bnk_pc_lmvm_) 1 MPI process
     type: lmvmbfgs
     rows=64, cols=64
       Scale type: DIAGONAL
@@ -52,7 +52,7 @@ Tao Object: 1 MPI process
       Number of updates: 21
       Number of rejects: 0
       Number of resets: 0
-      Mat Object: (J0_) 1 MPI process
+      Mat Object: (tao_bnk_pc_lmvm_J0_) 1 MPI process
         type: lmvmdiagbroyden
         rows=64, cols=64
           Scale history: 1
@@ -80,7 +80,7 @@ Tao Object: 1 MPI process
     using UNPRECONDITIONED norm type for convergence test
   PC Object: (tao_bnk_) 1 MPI process
     type: lmvm
-    Mat Object: (tao_bqnk_) 1 MPI process
+    Mat Object: (tao_bnk_pc_lmvm_) 1 MPI process
       type: lmvmbfgs
       rows=64, cols=64
         Scale type: DIAGONAL
@@ -92,7 +92,7 @@ Tao Object: 1 MPI process
         Number of updates: 21
         Number of rejects: 0
         Number of resets: 0
-        Mat Object: (J0_) 1 MPI process
+        Mat Object: (tao_bnk_pc_lmvm_J0_) 1 MPI process
           type: lmvmdiagbroyden
           rows=64, cols=64
             Scale history: 1

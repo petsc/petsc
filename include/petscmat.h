@@ -332,6 +332,7 @@ PETSC_EXTERN PetscErrorCode MatCreateSeqAIJ(MPI_Comm,PetscInt,PetscInt,PetscInt,
 PETSC_EXTERN PetscErrorCode MatCreateAIJ(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[],Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateMPIAIJWithArrays(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],const PetscInt[],const PetscScalar[],Mat*);
 PETSC_EXTERN PetscErrorCode MatUpdateMPIAIJWithArrays(Mat,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],const PetscInt[],const PetscScalar[]);
+PETSC_EXTERN PetscErrorCode MatUpdateMPIAIJWithArray(Mat,const PetscScalar []);
 PETSC_EXTERN PetscErrorCode MatCreateMPIAIJWithSplitArrays(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt[],PetscInt[],PetscScalar[],PetscInt[],PetscInt[],PetscScalar[],Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateMPIAIJWithSeqAIJ(MPI_Comm,Mat,Mat,const PetscInt[],Mat*);
 
@@ -339,7 +340,7 @@ PETSC_EXTERN PetscErrorCode MatCreateSeqBAIJ(MPI_Comm,PetscInt,PetscInt,PetscInt
 PETSC_EXTERN PetscErrorCode MatCreateBAIJ(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[],Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateMPIBAIJWithArrays(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],const PetscInt[],const PetscScalar[],Mat*);
 
-PETSC_EXTERN PetscErrorCode MatSetPreallocationCOO(Mat,PetscCount,const PetscInt[],const PetscInt[]);
+PETSC_EXTERN PetscErrorCode MatSetPreallocationCOO(Mat,PetscCount,PetscInt[],PetscInt[]);
 PETSC_EXTERN PetscErrorCode MatSetPreallocationCOOLocal(Mat,PetscCount,PetscInt[],PetscInt[]);
 PETSC_EXTERN PetscErrorCode MatSetValuesCOO(Mat,const PetscScalar[],InsertMode);
 
@@ -500,7 +501,9 @@ typedef enum {MAT_OPTION_MIN = -3,
               MAT_STRUCTURE_ONLY = 22,
               MAT_SORTED_FULL = 23,
               MAT_FORM_EXPLICIT_TRANSPOSE = 24,
-              MAT_OPTION_MAX = 25} MatOption;
+              MAT_STRUCTURAL_SYMMETRY_ETERNAL = 25,
+              MAT_SPD_ETERNAL = 26,
+              MAT_OPTION_MAX = 27} MatOption;
 
 PETSC_EXTERN const char *const *MatOptions;
 PETSC_EXTERN PetscErrorCode MatSetOption(Mat,MatOption,PetscBool);
@@ -607,6 +610,8 @@ PETSC_EXTERN PetscErrorCode MatIsStructurallySymmetric(Mat,PetscBool *);
 PETSC_EXTERN PetscErrorCode MatIsHermitian(Mat,PetscReal,PetscBool *);
 PETSC_EXTERN PetscErrorCode MatIsSymmetricKnown(Mat,PetscBool *,PetscBool *);
 PETSC_EXTERN PetscErrorCode MatIsHermitianKnown(Mat,PetscBool *,PetscBool *);
+PETSC_EXTERN PetscErrorCode MatIsStructurallySymmetricKnown(Mat,PetscBool *,PetscBool*);
+PETSC_EXTERN PetscErrorCode MatIsSPDKnown(Mat,PetscBool*,PetscBool*);
 PETSC_EXTERN PetscErrorCode MatMissingDiagonal(Mat,PetscBool  *,PetscInt *);
 PETSC_EXTERN PetscErrorCode MatLoad(Mat, PetscViewer);
 
@@ -653,6 +658,8 @@ PETSC_EXTERN PetscErrorCode MatGetRowMaxAbs(Mat,Vec,PetscInt[]);
 PETSC_EXTERN PetscErrorCode MatGetRowMinAbs(Mat,Vec,PetscInt[]);
 PETSC_EXTERN PetscErrorCode MatGetRowSum(Mat,Vec);
 PETSC_EXTERN PetscErrorCode MatTranspose(Mat,MatReuse,Mat*);
+PETSC_EXTERN PetscErrorCode MatTransposeSymbolic(Mat,Mat*);
+PETSC_EXTERN PetscErrorCode MatTransposeSetPrecursor(Mat,Mat);
 PETSC_EXTERN PetscErrorCode MatHermitianTranspose(Mat,MatReuse,Mat*);
 PETSC_EXTERN PetscErrorCode MatPermute(Mat,IS,IS,Mat*);
 PETSC_EXTERN PetscErrorCode MatDiagonalScale(Mat,Vec,Vec);
@@ -718,6 +725,7 @@ PETSC_EXTERN PetscErrorCode MatMPIAIJGetLocalMat(Mat,MatReuse,Mat*);
 PETSC_EXTERN PetscErrorCode MatAIJGetLocalMat(Mat,Mat*);
 PETSC_EXTERN PetscErrorCode MatMPIAIJGetLocalMatCondensed(Mat,MatReuse,IS*,IS*,Mat*);
 PETSC_EXTERN PetscErrorCode MatMPIAIJGetLocalMatMerge(Mat,MatReuse,IS*,Mat*);
+PETSC_EXTERN PetscErrorCode MatMPIAIJGetNumberNonzeros(Mat,PetscCount*);
 PETSC_EXTERN PetscErrorCode MatGetBrowsOfAcols(Mat,Mat,MatReuse,IS*,IS*,Mat*);
 PETSC_EXTERN PetscErrorCode MatGetGhosts(Mat, PetscInt *,const PetscInt *[]);
 
@@ -1207,6 +1215,7 @@ PETSC_EXTERN PetscErrorCode MatMPIAIJSetPreallocationCSR(Mat,const PetscInt[],co
 PETSC_EXTERN PetscErrorCode MatMPIBAIJSetPreallocationCSR(Mat,PetscInt,const PetscInt[],const PetscInt[],const PetscScalar[]);
 PETSC_EXTERN PetscErrorCode MatMPIAdjSetPreallocation(Mat,PetscInt[],PetscInt[],PetscInt[]);
 PETSC_EXTERN PetscErrorCode MatMPIAdjToSeq(Mat,Mat*);
+PETSC_EXTERN PetscErrorCode MatMPIAdjToSeqRankZero(Mat,Mat*);
 PETSC_EXTERN PetscErrorCode MatMPIDenseSetPreallocation(Mat,PetscScalar[]);
 PETSC_EXTERN PetscErrorCode MatSeqDenseSetPreallocation(Mat,PetscScalar[]);
 PETSC_EXTERN PetscErrorCode MatMPIAIJGetSeqAIJ(Mat,Mat*,Mat*,const PetscInt*[]);
@@ -1533,6 +1542,7 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate(MPI_Comm,MatPartitioning*);
 PETSC_EXTERN PetscErrorCode MatPartitioningSetType(MatPartitioning,MatPartitioningType);
 PETSC_EXTERN PetscErrorCode MatPartitioningSetNParts(MatPartitioning,PetscInt);
 PETSC_EXTERN PetscErrorCode MatPartitioningSetAdjacency(MatPartitioning,Mat);
+PETSC_EXTERN PetscErrorCode MatPartitioningSetNumberVertexWeights(MatPartitioning,PetscInt);
 PETSC_EXTERN PetscErrorCode MatPartitioningSetVertexWeights(MatPartitioning,const PetscInt[]);
 PETSC_EXTERN PetscErrorCode MatPartitioningSetPartitionWeights(MatPartitioning,const PetscReal []);
 PETSC_EXTERN PetscErrorCode MatPartitioningSetUseEdgeWeights(MatPartitioning,PetscBool);
@@ -2153,4 +2163,8 @@ PETSC_INTERN PetscErrorCode MatHeaderMerge(Mat,Mat*);
 PETSC_EXTERN PetscErrorCode MatHeaderReplace(Mat,Mat*);
 
 PETSC_EXTERN PetscErrorCode MatSeqAIJGetCSRAndMemType(Mat,const PetscInt**,const PetscInt**,PetscScalar**,PetscMemType*);
+
+PETSC_EXTERN PetscErrorCode MatCreateGraph(Mat,PetscBool,PetscBool,Mat*);
+PETSC_EXTERN PetscErrorCode MatFilter(Mat,PetscReal,Mat*);
+
 #endif

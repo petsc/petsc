@@ -57,6 +57,7 @@ int main(int argc,char **argv)
   PetscReal      litspit;
   DM             da;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
 
   /* set problem parameters */

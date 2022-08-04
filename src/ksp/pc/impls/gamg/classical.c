@@ -865,7 +865,7 @@ PetscErrorCode PCGAMGOptProlongator_Classical_Jacobi(PC pc,Mat A,Mat *P)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCGAMGProlongator_Classical(PC pc, Mat A, Mat G, PetscCoarsenData *agg_lists,Mat *P)
+static PetscErrorCode PCGAMGProlongator_Classical(PC pc, Mat A, Mat G, PetscCoarsenData *agg_lists,Mat *P)
 {
   PetscErrorCode    (*f)(PC,Mat,Mat,PetscCoarsenData*,Mat*);
   PC_MG             *mg          = (PC_MG*)pc->data;
@@ -879,7 +879,7 @@ PetscErrorCode PCGAMGProlongator_Classical(PC pc, Mat A, Mat G, PetscCoarsenData
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCGAMGDestroy_Classical(PC pc)
+static PetscErrorCode PCGAMGDestroy_Classical(PC pc)
 {
   PC_MG          *mg          = (PC_MG*)pc->data;
   PC_GAMG        *pc_gamg     = (PC_GAMG*)mg->innerctx;
@@ -902,16 +902,14 @@ PetscErrorCode PCGAMGSetFromOptions_Classical(PetscOptionItems *PetscOptionsObje
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject,"GAMG-Classical options");
   PetscCall(PetscOptionsFList("-pc_gamg_classical_type","Type of Classical AMG prolongation","PCGAMGClassicalSetType",PCGAMGClassicalProlongatorList,cls->prolongtype, tname, sizeof(tname), &flg));
-  if (flg) {
-    PetscCall(PCGAMGClassicalSetType(pc,tname));
-  }
+  if (flg) PetscCall(PCGAMGClassicalSetType(pc,tname));
   PetscCall(PetscOptionsReal("-pc_gamg_classical_interp_threshold","Threshold for classical interpolator entries","",cls->interp_threshold,&cls->interp_threshold,NULL));
   PetscCall(PetscOptionsInt("-pc_gamg_classical_nsmooths","Threshold for classical interpolator entries","",cls->nsmooths,&cls->nsmooths,NULL));
   PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCGAMGSetData_Classical(PC pc, Mat A)
+static PetscErrorCode PCGAMGSetData_Classical(PC pc, Mat A)
 {
   PC_MG          *mg      = (PC_MG*)pc->data;
   PC_GAMG        *pc_gamg = (PC_GAMG*)mg->innerctx;

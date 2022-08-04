@@ -44,6 +44,7 @@ int main(int argc,char **argv)
   PetscBool      flg;
   char           type[256];
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(PetscOptionsGetString(NULL,NULL,"-snes_linesearch_type",type,sizeof(type),&flg));
   if (flg) {

@@ -13,6 +13,7 @@ int main(int argc,char **argv)
   PetscReal    nrm;
   PetscInt     size = 8,lda=10, i,j;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,0,help));
   /* Create matrix and three vectors: these are all normal */
   PetscCall(PetscMalloc1(lda*size,&b));

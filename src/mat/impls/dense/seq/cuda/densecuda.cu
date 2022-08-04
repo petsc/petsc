@@ -570,7 +570,7 @@ static PetscErrorCode MatSolve_SeqDenseCUDA_Internal_LU(Mat A, PetscScalar *x, P
   if (PetscDefined(USE_DEBUG)) {
     PetscCallCUDA(cudaMemcpy(&info, dA->d_fact_info, sizeof(PetscCuBLASInt), cudaMemcpyDeviceToHost));
     PetscCheck(info <= 0,PETSC_COMM_SELF,PETSC_ERR_MAT_CH_ZRPVT,"Bad factorization: zero pivot in row %d",info-1);
-    else PetscCheck(info >= 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong argument to cuSolver %d",-info);
+    PetscCheck(info >= 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong argument to cuSolver %d",-info);
   }
   PetscCall(PetscLogGpuFlops(nrhs*(2.0*m*m - m)));
   PetscFunctionReturn(0);
@@ -600,7 +600,7 @@ static PetscErrorCode MatSolve_SeqDenseCUDA_Internal_Cholesky(Mat A, PetscScalar
   if (PetscDefined(USE_DEBUG)) {
     PetscCallCUDA(cudaMemcpy(&info, dA->d_fact_info, sizeof(PetscCuBLASInt), cudaMemcpyDeviceToHost));
     PetscCheck(info <= 0,PETSC_COMM_SELF,PETSC_ERR_MAT_CH_ZRPVT,"Bad factorization: zero pivot in row %d",info-1);
-    else PetscCheck(info >= 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong argument to cuSolver %d",-info);
+    PetscCheck(info >= 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong argument to cuSolver %d",-info);
   }
   PetscCall(PetscLogGpuFlops(nrhs*(2.0*m*m - m)));
   PetscFunctionReturn(0);
@@ -772,7 +772,7 @@ static PetscErrorCode MatLUFactor_SeqDenseCUDA(Mat A,IS rperm,IS cperm,const Mat
 #if defined(PETSC_USE_DEBUG)
   PetscCallCUDA(cudaMemcpy(&info, dA->d_fact_info, sizeof(PetscCuBLASInt), cudaMemcpyDeviceToHost));
   PetscCheck(info <= 0,PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Bad factorization: zero pivot in row %d",info-1);
-  else PetscCheck(info >= 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong argument to cuSolver %d",-info);
+  PetscCheck(info >= 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong argument to cuSolver %d",-info);
 #endif
   A->factortype = MAT_FACTOR_LU;
   PetscCall(PetscLogGpuFlops(2.0*n*n*m/3.0));
@@ -803,7 +803,7 @@ static PetscErrorCode MatCholeskyFactor_SeqDenseCUDA(Mat A,IS perm,const MatFact
   PetscCall(PetscCUSOLVERDnGetHandle(&handle));
   PetscCall(PetscCuBLASIntCast(A->rmap->n,&n));
   PetscCall(PetscInfo(A,"Cholesky factor %d x %d on backend\n",n,n));
-  if (A->spd) {
+  if (A->spd == PETSC_BOOL3_TRUE) {
     PetscCall(MatDenseCUDAGetArray(A,&da));
     PetscCall(PetscCuBLASIntCast(a->lda,&lda));
     if (!dA->fact_lwork) {
@@ -821,7 +821,7 @@ static PetscErrorCode MatCholeskyFactor_SeqDenseCUDA(Mat A,IS perm,const MatFact
 #if defined(PETSC_USE_DEBUG)
     PetscCallCUDA(cudaMemcpy(&info, dA->d_fact_info, sizeof(PetscCuBLASInt), cudaMemcpyDeviceToHost));
     PetscCheck(info <= 0,PETSC_COMM_SELF,PETSC_ERR_MAT_CH_ZRPVT,"Bad factorization: zero pivot in row %d",info-1);
-    else PetscCheck(info >= 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong argument to cuSolver %d",-info);
+    PetscCheck(info >= 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong argument to cuSolver %d",-info);
 #endif
     A->factortype = MAT_FACTOR_CHOLESKY;
     PetscCall(PetscLogGpuFlops(1.0*n*n*n/3.0));
@@ -1436,15 +1436,23 @@ static PetscErrorCode MatDenseGetSubMatrix_SeqDenseCUDA(Mat A,PetscInt rbegin,Pe
 static PetscErrorCode MatDenseRestoreSubMatrix_SeqDenseCUDA(Mat A,Mat *v)
 {
   Mat_SeqDense *a = (Mat_SeqDense*)A->data;
+  PetscBool    copy = PETSC_FALSE, reset;
 
   PetscFunctionBegin;
   PetscCheck(a->matinuse,PETSC_COMM_SELF,PETSC_ERR_ORDER,"Need to call MatDenseGetSubMatrix() first");
   PetscCheck(a->cmat,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing internal column matrix");
   PetscCheck(*v == a->cmat,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not the matrix obtained from MatDenseGetSubMatrix()");
   a->matinuse = 0;
-  A->offloadmask = (a->cmat->offloadmask == PETSC_OFFLOAD_CPU) ? PETSC_OFFLOAD_CPU : PETSC_OFFLOAD_GPU;
+  reset = a->v ? PETSC_TRUE : PETSC_FALSE;
+  if (a->cmat->offloadmask == PETSC_OFFLOAD_CPU && !a->v) {
+    copy = PETSC_TRUE;
+    PetscCall(MatSeqDenseSetPreallocation(A,NULL));
+  }
   PetscCall(MatDenseCUDAResetArray(a->cmat));
-  if (a->unplacedarray) PetscCall(MatDenseResetArray(a->cmat));
+  if (reset) PetscCall(MatDenseResetArray(a->cmat));
+  if (copy) {
+    PetscCall(MatSeqDenseCUDACopyFromGPU(A));
+  } else A->offloadmask = (a->cmat->offloadmask == PETSC_OFFLOAD_CPU) ? PETSC_OFFLOAD_CPU : PETSC_OFFLOAD_GPU;
   a->cmat->offloadmask = PETSC_OFFLOAD_UNALLOCATED;
   *v = NULL;
   PetscFunctionReturn(0);

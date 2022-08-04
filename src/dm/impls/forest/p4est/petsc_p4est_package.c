@@ -36,10 +36,10 @@ static PetscErrorCode PetscP4estFinalize(void)
   PetscFunctionBegin;
   if (PetscBeganSc) {
     /* We do not want libsc to abort on a mismatched allocation and prevent further Petsc unwinding */
-    PetscStackCallP4est(sc_package_set_abort_alloc_mismatch,(sc_package_id,0));
-    PetscStackCallP4est(sc_package_set_abort_alloc_mismatch,(p4est_package_id,0));
-    PetscStackCallP4est(sc_package_set_abort_alloc_mismatch,(-1,0));
-    PetscStackCallP4est(sc_finalize,());
+    PetscCallP4est(sc_package_set_abort_alloc_mismatch,(sc_package_id,0));
+    PetscCallP4est(sc_package_set_abort_alloc_mismatch,(p4est_package_id,0));
+    PetscCallP4est(sc_package_set_abort_alloc_mismatch,(-1,0));
+    PetscCallP4est(sc_finalize,());
   }
   PetscCall(PetscHeaderDestroy(&P4estLoggingObject));
   PetscFunctionReturn(0);
@@ -77,13 +77,18 @@ PetscErrorCode PetscP4estInitialize(void)
   if (sc_package_id == -1) {
     int       log_threshold_shifted = psc_log_threshold + 1;
     PetscBool set;
+#if defined(PETSC_HAVE_MPIUNI)
+    sc_MPI_Comm comm_world = sc_MPI_COMM_WORLD;
+#else
+    MPI_Comm comm_world = PETSC_COMM_WORLD;
+#endif
 
     PetscBeganSc = PETSC_TRUE;
     PetscCall(PetscOptionsGetBool(NULL,NULL,"-petsc_sc_catch_signals",&psc_catch_signals,NULL));
     PetscCall(PetscOptionsGetBool(NULL,NULL,"-petsc_sc_print_backtrace",&psc_print_backtrace,NULL));
     PetscCall(PetscOptionsGetEnum(NULL,NULL,"-petsc_sc_log_threshold",SCLogTypes,(PetscEnum*)&log_threshold_shifted,&set));
     if (set) psc_log_threshold = log_threshold_shifted - 1;
-    sc_init(PETSC_COMM_WORLD,(int)psc_catch_signals,(int)psc_print_backtrace,PetscScLogHandler,psc_log_threshold);
+    sc_init(comm_world,(int)psc_catch_signals,(int)psc_print_backtrace,PetscScLogHandler,psc_log_threshold);
     PetscCheck(sc_package_id != -1,PETSC_COMM_WORLD,PETSC_ERR_LIB,"Could not initialize libsc package used by p4est");
     sc_set_abort_handler(PetscScAbort);
   }
@@ -93,7 +98,7 @@ PetscErrorCode PetscP4estInitialize(void)
 
     PetscCall(PetscOptionsGetEnum(NULL,NULL,"-petsc_p4est_log_threshold",SCLogTypes,(PetscEnum*)&log_threshold_shifted,&set));
     if (set) pp4est_log_threshold = log_threshold_shifted - 1;
-    PetscStackCallP4est(p4est_init,(PetscScLogHandler,pp4est_log_threshold));
+    PetscCallP4est(p4est_init,(PetscScLogHandler,pp4est_log_threshold));
     PetscCheck(p4est_package_id != -1,PETSC_COMM_WORLD,PETSC_ERR_LIB,"Could not initialize p4est");
   }
   PetscCall(DMForestRegisterType(DMP4EST));

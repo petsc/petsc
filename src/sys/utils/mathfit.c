@@ -48,8 +48,8 @@ PetscErrorCode PetscLinearRegression(PetscInt n, const PetscReal x[], const Pets
     PetscScalar  work[2];
 
     PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
-    PetscStackCallBLAS("LAPACKgetrf", LAPACKgetrf_(&two, &two, H, &two, ipiv, &info));
-    PetscStackCallBLAS("LAPACKgetri", LAPACKgetri_(&two, H, &two, ipiv, work, &two, &info));
+    PetscCallBLAS("LAPACKgetrf", LAPACKgetrf_(&two, &two, H, &two, ipiv, &info));
+    PetscCallBLAS("LAPACKgetri", LAPACKgetri_(&two, H, &two, ipiv, work, &two, &info));
     PetscCall(PetscFPTrapPop());
   }
     /* Y = H X^T */

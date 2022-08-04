@@ -479,7 +479,7 @@ static PetscErrorCode GLLStuffs(DomainData dd, GLLData *glldata)
       }
       pm1  = p-1;
       PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
-      PetscStackCallBLAS("LAPACKsteqr",LAPACKsteqr_("N",&pm1,&glldata->zGL[1],M,&x,&pm1,M,&lierr));
+      PetscCallBLAS("LAPACKsteqr",LAPACKsteqr_("N",&pm1,&glldata->zGL[1],M,&x,&pm1,M,&lierr));
       PetscCheck(!lierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in STERF Lapack routine %d",(int)lierr);
       PetscCall(PetscFPTrapPop());
       PetscCall(PetscFree(M));
@@ -738,8 +738,8 @@ static PetscErrorCode ComputeMatrix(DomainData dd, Mat *A)
   }
 
   /* giving hints to local and global matrices could be useful for the BDDC */
-  PetscCall(MatSetOption(local_mat,MAT_SYMMETRIC,PETSC_TRUE));
   PetscCall(MatSetOption(local_mat,MAT_SPD,PETSC_TRUE));
+  PetscCall(MatSetOption(local_mat,MAT_SPD_ETERNAL,PETSC_TRUE));
 #if DEBUG
   {
     Vec       lvec,rvec;
@@ -1000,6 +1000,7 @@ int main(int argc,char **args)
   PetscBool          testfetidp = PETSC_TRUE;
 
   /* Init PETSc */
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   /* Initialize DomainData */
   PetscCall(InitializeDomainData(&dd));

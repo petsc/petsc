@@ -30,6 +30,7 @@ int main(int argc, char **argv) {
   PetscInt               overlapSize = 2, globalIdx[2];
   PetscMPIInt            rank, size;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   comm = PETSC_COMM_WORLD;
   PetscCallMPI(MPI_Comm_rank(comm, &rank));

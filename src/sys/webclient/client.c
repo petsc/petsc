@@ -147,9 +147,7 @@ static PetscErrorCode PetscHTTPBuildRequest(const char type[],const char url[],c
   PetscCall(PetscFree(host));
   PetscCall(PetscStrcat(request,"\r\nUser-Agent:PETScClient\r\n"));
   PetscCall(PetscStrcat(request,header));
-  if (ctype) {
-    PetscCall(PetscStrcat(request,contenttype));
-  }
+  if (ctype) PetscCall(PetscStrcat(request,contenttype));
   PetscCall(PetscStrcat(request,contentlength));
   PetscCall(PetscStrcat(request,body));
   PetscCall(PetscStrlen(request,&request_len));

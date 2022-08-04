@@ -321,6 +321,7 @@ int main(int argc,char **argv)
   /* Shared vertices between subnetworks */
   PetscInt           power_svtx,water_svtx;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,"ex1options",help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));

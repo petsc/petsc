@@ -213,10 +213,8 @@ PetscErrorCode KSPFGMRESCycle(PetscInt *itcount,KSP ksp)
     if (hapend) {
       if (!ksp->reason) {
         PetscCheck(!ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"You reached the happy break down, but convergence was not indicated. Residual norm = %g",(double)res_norm);
-        else {
-          ksp->reason = KSP_DIVERGED_BREAKDOWN;
-          break;
-        }
+        ksp->reason = KSP_DIVERGED_BREAKDOWN;
+        break;
       }
     }
   }
@@ -582,9 +580,7 @@ PetscErrorCode KSPReset_FGMRES(KSP ksp)
     }
   }
   PetscCall(PetscFree(fgmres->prevecs_user_work));
-  if (fgmres->modifydestroy) {
-    PetscCall((*fgmres->modifydestroy)(fgmres->modifyctx));
-  }
+  if (fgmres->modifydestroy) PetscCall((*fgmres->modifydestroy)(fgmres->modifyctx));
   PetscCall(KSPReset_GMRES(ksp));
   PetscFunctionReturn(0);
 }

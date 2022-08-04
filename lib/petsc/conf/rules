@@ -25,7 +25,7 @@ chk_upgrade:
 chk_loc:
 	@if [ ${LOC}foo = foo ] ; then \
 	  printf ${PETSC_TEXT_HILIGHT}"*********************** ERROR **********************************************\n" ; \
-	  echo " Please specify LOC variable for eg: make allmanualpages LOC=/sandbox/petsc "; \
+	  echo " Please specify LOC variable for eg: make allmanpages LOC=/sandbox/petsc "; \
 	  printf "****************************************************************************"${PETSC_TEXT_NORMAL}"\n" ;  false; fi
 	@${MKDIR} ${LOC}/docs/manualpages
 
@@ -76,7 +76,7 @@ clean-legacy:
                ex[0-9]sycl.exe ex[0-9][0-9]sycl.exe ex[0-9][0-9][0-9]sycl.exe \
               PI* *.ln l.outa* mputil.mp_* core core.* *.tmp *.map gmon.out *.gcov.html \
               trashz \#*\# *.mex* *.stolen *.trace Log.* *.stolen \
-              output/*~ .mpirtmp mon.out *.aus *.mon.* __* p4pg ins10*.c \
+              output/*~ .mpirtmp mon.out *.aus *.mon.* p4pg ins10*.c \
                *.cp_ *.cp__ *.c*.c \
                *.dep *.proj ctoatmp PETScArena* *.L *.anl *.mod .mpi* *.d \
               *.class *.ouit *.ad.* g_* silly.cmp *.tmp.* *.ilk *.pdb *.inst.c *.rej *.gcda *.gcno
@@ -452,7 +452,7 @@ deleteshared:
 
 # ---------------------------------------------------------------------------------------
 #   Rules for the automatic generation of documentation, tutorials etc
-# See rule for allmanualpages and allhtml in ${PETSC_DIR}/makefile
+# See rule for allmanpages in ${PETSC_DIR}/makefile
 #
 
 chk_mansec:
@@ -473,7 +473,10 @@ manualpages: chk_manualpage_dir
         if [ "${MANSEC}" = "" ] ; then \
           for f in ${SOURCED}; do \
             LMANSEC=`grep SUBMANSEC $${f} | sed s'?[ ]*/\*[ ]*SUBMANSEC[ ]*=[ ]*\([a-zA-Z]*\)[ ]*\*/?\1?'g`; \
-            if [ "$${LMANSEC}" = "" ] ; then LMANSEC="MissingSUBMANSEC"; fi; \
+            if [ "$${LMANSEC}" = "" ] ; then \
+              LMANSEC="MissingSUBMANSEC"; \
+              echo "Missing MANSEC or SUBMANSEC definition in " `pwd` ; \
+            fi; \
             DOCTEXT_PATH=${PETSC_DIR}/doc/classic/doctext \
             ${DOCTEXT} -myst -mpath ${LOC}/docs/manualpages/$${LMANSEC} -heading PETSc -defn ${PETSC_DIR}/doc/classic/doctext/myst.def \
                 -indexdir ../$${LMANSEC} -index ${LOC}/docs/manualpages/manualpages.cit -locdir ${LOCDIR} -Wargdesc $${f} 2>&1 | tee -a ${PETSC_DIR}/${PETSC_ARCH}/manualpages.err;\

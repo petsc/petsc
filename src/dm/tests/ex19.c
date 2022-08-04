@@ -36,6 +36,7 @@ int main(int argc,char **argv)
   DM             da;
   Vec            global,local;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,0,"-dof",&dof,0));
   /* Create distributed array and get vectors */

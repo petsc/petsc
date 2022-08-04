@@ -37,9 +37,7 @@ static PetscErrorCode VecPlaceArray_MPI(Vec vin,const PetscScalar *a)
   PetscCheck(!v->unplacedarray,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"VecPlaceArray() was already called on this vector, without a call to VecResetArray()");
   v->unplacedarray = v->array;  /* save previous array so reset can bring it back */
   v->array         = (PetscScalar*)a;
-  if (v->localrep) {
-    PetscCall(VecPlaceArray(v->localrep,a));
-  }
+  if (v->localrep) PetscCall(VecPlaceArray(v->localrep,a));
   PetscFunctionReturn(0);
 }
 
@@ -65,9 +63,7 @@ PetscErrorCode VecDuplicate_MPI(Vec win,Vec *v)
     PetscCall(PetscLogObjectParent((PetscObject)*v,(PetscObject)vw->localrep));
 
     vw->localupdate = w->localupdate;
-    if (vw->localupdate) {
-      PetscCall(PetscObjectReference((PetscObject)vw->localupdate));
-    }
+    if (vw->localupdate) PetscCall(PetscObjectReference((PetscObject)vw->localupdate));
   }
 
   /* New vector should inherit stashing property of parent */
@@ -111,9 +107,7 @@ static PetscErrorCode VecResetArray_MPI(Vec vin)
   PetscFunctionBegin;
   v->array         = v->unplacedarray;
   v->unplacedarray = NULL;
-  if (v->localrep) {
-    PetscCall(VecResetArray(v->localrep));
-  }
+  if (v->localrep) PetscCall(VecResetArray(v->localrep));
   PetscFunctionReturn(0);
 }
 
@@ -816,8 +810,10 @@ PetscErrorCode  VecMPISetGhost(Vec vv,PetscInt nghost,const PetscInt ghosts[])
     PetscCall(ISLocalToGlobalMappingCreate(comm,1,n+nghost,indices,PETSC_OWN_POINTER,&ltog));
     PetscCall(VecSetLocalToGlobalMapping(vv,ltog));
     PetscCall(ISLocalToGlobalMappingDestroy(&ltog));
-  } else PetscCheck(vv->ops->create != VecCreate_MPI,PetscObjectComm((PetscObject)vv),PETSC_ERR_ARG_WRONGSTATE,"Must set local or global size before setting ghosting");
-  else PetscCheck(((PetscObject)vv)->type_name,PetscObjectComm((PetscObject)vv),PETSC_ERR_ARG_WRONGSTATE,"Must set type to VECMPI before ghosting");
+  } else {
+    PetscCheck(vv->ops->create != VecCreate_MPI,PetscObjectComm((PetscObject)vv),PETSC_ERR_ARG_WRONGSTATE,"Must set local or global size before setting ghosting");
+    PetscCheck(((PetscObject)vv)->type_name,PetscObjectComm((PetscObject)vv),PETSC_ERR_ARG_WRONGSTATE,"Must set type to VECMPI before ghosting");
+  }
   PetscFunctionReturn(0);
 }
 

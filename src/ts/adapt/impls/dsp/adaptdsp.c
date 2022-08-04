@@ -113,9 +113,7 @@ static PetscErrorCode TSAdaptChoose_DSP(TSAdapt adapt,TS ts,PetscReal h,PetscInt
     PetscCall(TSAdaptRollBack_DSP(adapt));
   }
   /* Reset history after restart */
-  if (ts->steprestart) {
-    PetscCall(TSAdaptRestart_DSP(adapt));
-  }
+  if (ts->steprestart) PetscCall(TSAdaptRestart_DSP(adapt));
 
   {
     PetscReal k = (PetscReal)order;

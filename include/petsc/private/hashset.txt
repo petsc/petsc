@@ -1,5 +1,5 @@
 
-This file is processed by make allcites to create manual pages
+This file is processed by make allmanpages in $PETSC_DIR/makefile to create manual pages
 for the types and macros created by PETSC_HASH_SET(). For example, PetscHSetIJ.
 
 /*S

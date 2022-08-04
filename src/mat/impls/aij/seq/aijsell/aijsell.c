@@ -117,9 +117,7 @@ PetscErrorCode MatDuplicate_SeqAIJSELL(Mat A, MatDuplicateOption op, Mat *M)
   PetscCall(PetscArraycpy(aijsell_dest,aijsell,1));
   /* We don't duplicate the shadow matrix -- that will be constructed as needed. */
   aijsell_dest->S = NULL;
-  if (aijsell->eager_shadow) {
-    PetscCall(MatSeqAIJSELL_build_shadow(A));
-  }
+  if (aijsell->eager_shadow) PetscCall(MatSeqAIJSELL_build_shadow(A));
   PetscFunctionReturn(0);
 }
 
@@ -146,9 +144,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJSELL(Mat A, MatAssemblyType mode)
 
   /* If the user has requested "eager" shadowing, create the SELL shadow matrix (if needed; the function checks).
    * (The default is to take a "lazy" approach, deferring this until something like MatMult() is called.) */
-  if (aijsell->eager_shadow) {
-    PetscCall(MatSeqAIJSELL_build_shadow(A));
-  }
+  if (aijsell->eager_shadow) PetscCall(MatSeqAIJSELL_build_shadow(A));
 
   PetscFunctionReturn(0);
 }

@@ -14,6 +14,7 @@ int main(int argc, char **argv)
   PetscBool      simplex = PETSC_TRUE;
   MPI_Comm       comm;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   comm = PETSC_COMM_WORLD;
   PetscOptionsBegin(comm,"","Options for subspace test","none");
@@ -107,9 +108,7 @@ int main(int argc, char **argv)
         err += PetscRealPart(PetscConj(diff) * diff);
       }
       err = PetscSqrtReal(err);
-      if (err > PETSC_SMALL) {
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Trace FE error %g",(double)err);
-      }
+      PetscCheck(err <= PETSC_SMALL,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Trace FE error %g",(double)err);
       PetscCall(VecRestoreArray(vecFull,&arrayFull));
       PetscCall(PetscTabulationDestroy(&Tfull));
       PetscCall(PetscTabulationDestroy(&Tsub));

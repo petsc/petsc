@@ -252,6 +252,7 @@ int main(int argc, char **argv)
   Vec            u, r;
   AppCtx         user;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL,help));
   PetscCall(ProcessOptions(PETSC_COMM_WORLD, &user));
   PetscCall(SNESCreate(PETSC_COMM_WORLD, &snes));

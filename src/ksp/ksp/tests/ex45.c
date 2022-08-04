@@ -16,7 +16,8 @@ int main(int argc, char **argv)
     Vec            *left, *right;
     MPI_Comm       c;
 
-    PetscCall(PetscInitialize(&argc, &argv, NULL, NULL));
+    PetscFunctionBeginUser;
+  PetscCall(PetscInitialize(&argc, &argv, NULL, NULL));
     c = PETSC_COMM_WORLD;
 
     PetscCall(MatCreate(c, &A));

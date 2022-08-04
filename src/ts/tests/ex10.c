@@ -343,6 +343,7 @@ int main(int argc,char **argv)
   TSDAESimple    tsdae;
   Vec            U,V,Usolution;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(TSDAESimpleCreate(PETSC_COMM_WORLD,&tsdae));
 

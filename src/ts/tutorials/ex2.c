@@ -81,6 +81,7 @@ int main(int argc,char **argv)
      Initialize program and set problem parameters
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(PetscViewerDrawSetBounds(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),1,bounds));
 
@@ -640,6 +641,6 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec global_in,Mat AA,Mat BB,void *c
     test:
       suffix: tut_3
       nsize: 4
-      args: ./ex2 -ts_max_steps 10 -ts_monitor -M 128
+      args: -ts_max_steps 10 -ts_monitor -M 128
 
 TEST*/

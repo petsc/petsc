@@ -76,9 +76,9 @@ PETSC_INTERN PetscErrorCode PetscFESetUp_Basic(PetscFE fem)
 
   PetscCall(PetscMalloc2(pdim,&pivots,pdim,&work));
   n = pdim;
-  PetscStackCallBLAS("LAPACKgetrf", LAPACKREALgetrf_(&n, &n, fem->invV, &n, pivots, &info));
+  PetscCallBLAS("LAPACKgetrf", LAPACKREALgetrf_(&n, &n, fem->invV, &n, pivots, &info));
   PetscCheck(!info,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error returned from LAPACKgetrf %" PetscInt_FMT,(PetscInt)info);
-  PetscStackCallBLAS("LAPACKgetri", LAPACKREALgetri_(&n, fem->invV, &n, pivots, work, &n, &info));
+  PetscCallBLAS("LAPACKgetri", LAPACKREALgetri_(&n, fem->invV, &n, pivots, work, &n, &info));
   PetscCheck(!info,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error returned from LAPACKgetri %" PetscInt_FMT,(PetscInt)info);
   PetscCall(PetscFree2(pivots,work));
   PetscFunctionReturn(0);
@@ -112,7 +112,7 @@ static PetscErrorCode TensorContract_Private(PetscInt m,PetscInt n,PetscInt p,Pe
     lda = p_;
     ldb = n_;
     ldc = p_;
-    PetscStackCallBLAS("BLASgemm",BLASREALgemm_("N","T",&p_,&n_,&k_,&one,A+i*k*p,&lda,B,&ldb,&zero,C+i*n*p,&ldc));
+    PetscCallBLAS("BLASgemm",BLASREALgemm_("N","T",&p_,&n_,&k_,&one,A+i*k*p,&lda,B,&ldb,&zero,C+i*n*p,&ldc));
   }
   PetscCall(PetscLogFlops(2.*m*n*p*k));
   PetscFunctionReturn(0);
@@ -1097,9 +1097,7 @@ PetscErrorCode PetscFEIntegrateHybridJacobian_Basic(PetscDS ds, PetscFEJacobianT
           PetscCall(PetscFEUpdateElementMat_Hybrid_Internal(feI, isCohesiveFieldI, feJ, isCohesiveFieldJ, 0, 0, q, T[fieldI], basisReal, basisDerReal, T[fieldJ], testReal, testDerReal, &fegeom, g0, g1, g2, g3, eOffset, totDim, offsetI, offsetJ, elemMat));
           PetscCall(PetscFEUpdateElementMat_Hybrid_Internal(feI, isCohesiveFieldI, feJ, isCohesiveFieldJ, 0, 1, q, T[fieldI], basisReal, basisDerReal, T[fieldJ], testReal, testDerReal, &fegeom, &g0[NcI*NcJ], &g1[NcI*NcJ*dim], &g2[NcI*NcJ*dim], &g3[NcI*NcJ*dim*dim], eOffset, totDim, offsetI, offsetJ, elemMat));
         }
-      } else {
-        PetscCall(PetscFEUpdateElementMat_Hybrid_Internal(feI, isCohesiveFieldI, feJ, isCohesiveFieldJ, 0, s, q, T[fieldI], basisReal, basisDerReal, T[fieldJ], testReal, testDerReal, &fegeom, g0, g1, g2, g3, eOffset, totDim, offsetI, offsetJ, elemMat));
-      }
+      } else PetscCall(PetscFEUpdateElementMat_Hybrid_Internal(feI, isCohesiveFieldI, feJ, isCohesiveFieldJ, 0, s, q, T[fieldI], basisReal, basisDerReal, T[fieldJ], testReal, testDerReal, &fegeom, g0, g1, g2, g3, eOffset, totDim, offsetI, offsetJ, elemMat));
     }
     if (debug > 1) {
       PetscInt fc, f, gc, g;

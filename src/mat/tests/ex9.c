@@ -15,6 +15,7 @@ int main(int argc,char **args)
   Vec            x,y;
   MPI_Comm       subcomm;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
@@ -73,9 +74,7 @@ int main(int argc,char **args)
   }
 
   PetscCall(PetscOptionsHasName(NULL,NULL,"-view_mat",&flg_mat));
-  if (flg_mat) {
-    PetscCall(MatView(C,PETSC_VIEWER_STDOUT_WORLD));
-  }
+  if (flg_mat) PetscCall(MatView(C,PETSC_VIEWER_STDOUT_WORLD));
 
   /* Test MatCreateRedundantMatrix() */
   nsubcomms = size;

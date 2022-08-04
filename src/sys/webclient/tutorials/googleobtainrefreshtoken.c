@@ -14,6 +14,7 @@ int main(int argc,char **argv)
 {
   char           access_token[512],refresh_token[512];
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,NULL));
   PetscCall(PetscGoogleDriveAuthorize(PETSC_COMM_WORLD,access_token,refresh_token,sizeof(access_token)));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Your Refresh token is %s\n",refresh_token));

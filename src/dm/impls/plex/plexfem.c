@@ -4203,9 +4203,7 @@ static PetscErrorCode DMConvertPlex_Internal(DM dm, DM *plex, PetscBool copy)
     if (!*plex) {
       PetscCall(DMConvert(dm,DMPLEX,plex));
       PetscCall(PetscObjectCompose((PetscObject) dm, "dm_plex", (PetscObject) *plex));
-      if (copy) {
-        PetscCall(DMCopyAuxiliaryVec(dm, *plex));
-      }
+      if (copy) PetscCall(DMCopyAuxiliaryVec(dm, *plex));
     } else {
       PetscCall(PetscObjectReference((PetscObject) *plex));
     }
@@ -5248,7 +5246,7 @@ PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, PetscFormKey key, IS cellIS
   PetscScalar    *elemMat, *elemMatP, *elemMatD, *u, *u_t, *a = NULL;
   const PetscInt *cells;
   PetscInt        Nf, fieldI, fieldJ;
-  PetscInt        totDim, totDimAux, cStart, cEnd, numCells, c;
+  PetscInt        totDim, totDimAux = 0, cStart, cEnd, numCells, c;
   PetscBool       hasJac = PETSC_FALSE, hasPrec = PETSC_FALSE, hasDyn, hasFV = PETSC_FALSE, transform;
 
   PetscFunctionBegin;
@@ -5817,7 +5815,7 @@ PetscErrorCode DMPlexComputeJacobian_Action_Internal(DM dm, PetscFormKey key, IS
     const PetscBLASInt M = totDim, one = 1;
     const PetscScalar  a = 1.0, b = 0.0;
 
-    PetscStackCallBLAS("BLASgemv", BLASgemv_("N", &M, &M, &a, &elemMat[cind*totDim*totDim], &M, &y[cind*totDim], &one, &b, z, &one));
+    PetscCallBLAS("BLASgemv", BLASgemv_("N", &M, &M, &a, &elemMat[cind*totDim*totDim], &M, &y[cind*totDim], &one, &b, z, &one));
     if (mesh->printFEM > 1) {
       PetscCall(DMPrintCellMatrix(c, name, totDim, totDim, &elemMat[cind*totDim*totDim]));
       PetscCall(DMPrintCellVector(c, "Y",  totDim, &y[cind*totDim]));

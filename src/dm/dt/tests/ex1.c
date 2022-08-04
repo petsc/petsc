@@ -144,6 +144,7 @@ int main(int argc,char **argv)
   PetscInt       minpoints, maxpoints;
   PetscBool      flg;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Discretization tools test options",NULL);
   {

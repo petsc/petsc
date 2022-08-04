@@ -1,0 +1,120 @@
+Mat Object: 1 MPI process
+  type: seqaij
+row 0: (0, 2.)  (1, -1.) 
+row 1: (0, -1.)  (1, 2.)  (2, -1.) 
+row 2: (1, -1.)  (2, 2.)  (3, -1.) 
+row 3: (2, -1.)  (3, 2.)  (4, -1.) 
+row 4: (3, -1.)  (4, 2.)  (5, -1.) 
+row 5: (4, -1.)  (5, 2.)  (6, -1.) 
+row 6: (5, -1.)  (6, 2.)  (7, -1.) 
+row 7: (6, -1.)  (7, 2.)  (8, -1.) 
+row 8: (7, -1.)  (8, 2.)  (9, -1.) 
+row 9: (8, -1.)  (9, 2.) 
+Mat Object: 1 MPI process
+  type: mpiaij
+row 0: (0, 2.)  (1, -1.) 
+row 1: (0, -1.)  (1, 2.)  (2, -1.) 
+row 2: (1, -1.)  (2, 2.)  (3, -1.) 
+row 3: (2, -1.)  (3, 2.)  (4, -1.) 
+row 4: (3, -1.)  (4, 2.)  (5, -1.) 
+row 5: (4, -1.)  (5, 2.)  (6, -1.) 
+row 6: (5, -1.)  (6, 2.)  (7, -1.) 
+row 7: (6, -1.)  (7, 2.)  (8, -1.) 
+row 8: (7, -1.)  (8, 2.)  (9, -1.) 
+row 9: (8, -1.)  (9, 2.) 
+  Residual norms for mpi_ solve.
+  0 KSP Residual norm 1.414213562373e+00 
+  1 KSP Residual norm 6.324555320337e-01 
+  2 KSP Residual norm 3.779644730092e-01 
+  3 KSP Residual norm 2.581988897472e-01 
+  4 KSP Residual norm 1.906925178491e-01 
+  5 KSP Residual norm 1.616509124176e-15 
+Linear mpi_ solve converged due to CONVERGED_RTOL iterations 5
+KSP Object: (mpi_) 1 MPI process
+  type: gmres
+    restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+    happy breakdown tolerance 1e-30
+  maximum iterations=10000, initial guess is zero
+  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+  left preconditioning
+  using PRECONDITIONED norm type for convergence test
+PC Object: (mpi_) 1 MPI process
+  type: none
+  linear system matrix = precond matrix:
+  Mat Object: (mpi_) 1 MPI process
+    type: mpiaij
+    rows=10, cols=10
+    total: nonzeros=28, allocated nonzeros=28
+    total number of mallocs used during MatSetValues calls=0
+      not using I-node (on process 0) routines
+KSP Object: 1 MPI process
+  type: preonly
+  maximum iterations=10000, initial guess is zero
+  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+  left preconditioning
+  using NONE norm type for convergence test
+PC Object: 1 MPI process
+  type: mpi
+  Size of MPI communicator used for MPI parallel KSP solve 1
+  Desired minimum number of nonzeros per rank for MPI parallel solve 10000
+  *** Use -mpi_ksp_view to see the MPI KSP parameters***
+  linear system matrix = precond matrix:
+  Mat Object: 1 MPI process
+    type: seqaij
+    rows=10, cols=10
+    total: nonzeros=28, allocated nonzeros=50
+    total number of mallocs used during MatSetValues calls=0
+      not using I-node routines
+Norm of error 2.41202e-15, Iterations 1
+Mat Object: 1 MPI process
+  type: seqaij
+row 0: (0, 4.)  (1, -1.) 
+row 1: (0, -1.)  (1, 4.)  (2, -1.) 
+row 2: (1, -1.)  (2, 4.)  (3, -1.) 
+row 3: (2, -1.)  (3, 4.)  (4, -1.) 
+row 4: (3, -1.)  (4, 4.)  (5, -1.) 
+row 5: (4, -1.)  (5, 4.)  (6, -1.) 
+row 6: (5, -1.)  (6, 4.)  (7, -1.) 
+row 7: (6, -1.)  (7, 4.)  (8, -1.) 
+row 8: (7, -1.)  (8, 4.)  (9, -1.) 
+row 9: (8, -1.)  (9, 4.) 
+Mat Object: (mpi_) 1 MPI process
+  type: mpiaij
+row 0: (0, 4.)  (1, -1.) 
+row 1: (0, -1.)  (1, 4.)  (2, -1.) 
+row 2: (1, -1.)  (2, 4.)  (3, -1.) 
+row 3: (2, -1.)  (3, 4.)  (4, -1.) 
+row 4: (3, -1.)  (4, 4.)  (5, -1.) 
+row 5: (4, -1.)  (5, 4.)  (6, -1.) 
+row 6: (5, -1.)  (6, 4.)  (7, -1.) 
+row 7: (6, -1.)  (7, 4.)  (8, -1.) 
+row 8: (7, -1.)  (8, 4.)  (9, -1.) 
+row 9: (8, -1.)  (9, 4.) 
+  Residual norms for mpi_ solve.
+  0 KSP Residual norm 1.414213562373e+00 
+  1 KSP Residual norm 3.429971702850e-01 
+  2 KSP Residual norm 9.090909090909e-02 
+  3 KSP Residual norm 2.433241277446e-02 
+  4 KSP Residual norm 6.519190181733e-03 
+  5 KSP Residual norm 2.565962614385e-16 
+Linear mpi_ solve converged due to CONVERGED_RTOL iterations 5
+KSP Object: (mpi_) 1 MPI process
+  type: gmres
+    restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+    happy breakdown tolerance 1e-30
+  maximum iterations=10000, initial guess is zero
+  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+  left preconditioning
+  using PRECONDITIONED norm type for convergence test
+PC Object: (mpi_) 1 MPI process
+  type: none
+  linear system matrix = precond matrix:
+  Mat Object: (mpi_) 1 MPI process
+    type: mpiaij
+    rows=10, cols=10
+    total: nonzeros=28, allocated nonzeros=28
+    total number of mallocs used during MatSetValues calls=0
+      not using I-node (on process 0) routines
+MPI linear solver server:
+  Parallel KSPs  1 Mats  2 Solves 2
+  Sequential KSPs  0 Solves 0

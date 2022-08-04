@@ -128,6 +128,7 @@ int main(int argc, char **argv)
   Mat            A,J;                  /* Jacobian matrix */
   PetscInt       problem = 1, N = 10;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL,help));
   comm = PETSC_COMM_WORLD;
   PetscCall(PetscOptionsGetInt(NULL,NULL, "-problem", &problem, NULL));

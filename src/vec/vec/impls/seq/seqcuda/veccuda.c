@@ -117,9 +117,7 @@ PetscErrorCode VecDestroy_SeqCUDA_Private(Vec v)
 #endif
   if (vs) {
     if (vs->array_allocated) {
-      if (v->pinned_memory) {
-        PetscCall(PetscMallocSetCUDAHost());
-      }
+      if (v->pinned_memory) PetscCall(PetscMallocSetCUDAHost());
       PetscCall(PetscFree(vs->array_allocated));
       if (v->pinned_memory) {
         PetscCall(PetscMallocResetCUDAHost());
@@ -169,13 +167,9 @@ PetscErrorCode VecReplaceArray_SeqCUDA(Vec vin,const PetscScalar *a)
     PetscCall(VecCUDACopyFromGPU(vin));
   }
   if (vs->array_allocated) {
-    if (vin->pinned_memory) {
-      PetscCall(PetscMallocSetCUDAHost());
-    }
+    if (vin->pinned_memory) PetscCall(PetscMallocSetCUDAHost());
     PetscCall(PetscFree(vs->array_allocated));
-    if (vin->pinned_memory) {
-      PetscCall(PetscMallocResetCUDAHost());
-    }
+    if (vin->pinned_memory) PetscCall(PetscMallocResetCUDAHost());
   }
   vin->pinned_memory = PETSC_FALSE;
   vs->array_allocated = vs->array = (PetscScalar*)a;

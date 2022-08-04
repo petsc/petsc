@@ -247,6 +247,7 @@ PETSC_EXTERN PetscErrorCode PCHYPRESetDiscreteGradient(PC,Mat);
 PETSC_EXTERN PetscErrorCode PCHYPRESetDiscreteCurl(PC,Mat);
 PETSC_EXTERN PetscErrorCode PCHYPRESetInterpolations(PC,PetscInt,Mat,Mat[],Mat,Mat[]);
 PETSC_EXTERN PetscErrorCode PCHYPRESetEdgeConstantVectors(PC,Vec,Vec,Vec);
+PETSC_EXTERN PetscErrorCode PCHYPREAMSSetInteriorNodes(PC,Vec);
 PETSC_EXTERN PetscErrorCode PCHYPRESetAlphaPoissonMatrix(PC,Mat);
 PETSC_EXTERN PetscErrorCode PCHYPRESetBetaPoissonMatrix(PC,Mat);
 
@@ -310,8 +311,9 @@ PETSC_EXTERN PetscErrorCode PCGAMGSetThresholdScale(PC,PetscReal);
 PETSC_EXTERN PetscErrorCode PCGAMGSetCoarseEqLim(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCGAMGSetNlevels(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCGAMGSetNSmooths(PC,PetscInt);
-PETSC_EXTERN PetscErrorCode PCGAMGSetSymGraph(PC,PetscBool);
+PETSC_EXTERN PetscErrorCode PCGAMGSetSymmetrizeGraph(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCGAMGSetSquareGraph(PC,PetscInt);
+PETSC_EXTERN PetscErrorCode PCGAMGSetAggressiveLevels(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCGAMGSetReuseInterpolation(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCGAMGFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode PCGAMGInitializePackage(void);

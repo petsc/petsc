@@ -8,4 +8,4 @@ box in 3 dimensions:
 Labels:
   celltype: 4 strata with value/size (1 (604), 3 (864), 6 (384), 0 (125))
   depth: 4 strata with value/size (0 (125), 1 (604), 2 (864), 3 (384))
-  marker: 1 strata with value/size (1 (452))
+  marker: 1 strata with value/size (1 (578))

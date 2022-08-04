@@ -541,6 +541,7 @@ static PetscErrorCode MatTranspose_Elemental(Mat A,MatReuse reuse,Mat *B)
   Mat_Elemental  *a = (Mat_Elemental*)A->data, *b;
 
   PetscFunctionBegin;
+  if (reuse == MAT_REUSE_MATRIX) PetscCall(MatTransposeCheckNonzeroState_Private(A,*B));
   PetscCall(PetscObjectGetComm((PetscObject)A,&comm));
   /* Only out-of-place supported */
   PetscCheck(reuse != MAT_INPLACE_MATRIX,comm,PETSC_ERR_SUP,"Only out-of-place supported");
@@ -1009,7 +1010,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqSBAIJ_Elemental(Mat A, MatType newtype
     for (j=0; j<ncols; j++) { /* lower triangular part */
       PetscScalar v;
       if (cols[j] == row) continue;
-      v    = A->hermitian ? PetscConj(vals[j]) : vals[j];
+      v    = A->hermitian == PETSC_BOOL3_TRUE ? PetscConj(vals[j]) : vals[j];
       PetscCall(MatSetValues(mat_elemental,1,&cols[j],1,&row,&v,ADD_VALUES));
     }
     PetscCall(MatRestoreRow(A,row,&ncols,&cols,&vals));
@@ -1051,7 +1052,7 @@ PETSC_INTERN PetscErrorCode MatConvert_MPISBAIJ_Elemental(Mat A, MatType newtype
     for (j=0; j<ncols; j++) { /* lower triangular part */
       PetscScalar v;
       if (cols[j] == row) continue;
-      v    = A->hermitian ? PetscConj(vals[j]) : vals[j];
+      v    = A->hermitian == PETSC_BOOL3_TRUE ? PetscConj(vals[j]) : vals[j];
       PetscCall(MatSetValues(mat_elemental,1,&cols[j],1,&row,&v,ADD_VALUES));
     }
     PetscCall(MatRestoreRow(A,row,&ncols,&cols,&vals));
@@ -1317,7 +1318,10 @@ static struct _MatOps MatOps_Values = {
        0,
 /*145*/0,
        0,
-       0
+       0,
+       0,
+       0,
+/*150*/0
 };
 
 /*MC
@@ -1325,15 +1329,21 @@ static struct _MatOps MatOps_Values = {
 
   Use ./configure --download-elemental to install PETSc to use Elemental
 
-  Use -pc_type lu -pc_factor_mat_solver_type elemental to use this direct solver
+  Option Database Keys:
 
    Options Database Keys:
 + -mat_type elemental - sets the matrix type to "elemental" during a call to MatSetFromOptions()
+. -pc_factor_mat_solver_type elemental - to use this direct solver with the option -pc_type lu
 - -mat_elemental_grid_height - sets Grid Height for 2D cyclic ordering of internal matrix
 
   Level: beginner
 
-.seealso: `MATDENSE`
+  Note:
+   Note unlike most matrix formats, this format does not store all the matrix entries for a contiguous
+   range of rows on an MPI rank. Use `MatGetOwnershipIS()` to determine what values are stored on
+   the given rank.
+
+.seealso: `MATDENSE`, `MATSCALAPACK`, `MatGetOwnershipIS()`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatCreate_Elemental(Mat A)

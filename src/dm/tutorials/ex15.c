@@ -225,6 +225,7 @@ int main(int argc,char **args)
 {
   PetscBool      usempiio = PETSC_FALSE;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCall(PetscOptionsGetBool(NULL,NULL,"-usempiio",&usempiio,NULL));
   if (!usempiio) {

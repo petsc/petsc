@@ -289,8 +289,7 @@ PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM dmp, DM dmc, Mat* inte
       /* Scale ccoords relative to pcoords */
       PetscCall(DMMoabPToRMapping(dim, connp.size(), &pcoords[0], &ccoords[offset], &natparam[offset], &values_phi[connp.size()*tc]));
     }
-  }
-  else {
+  } else {
     factor = std::pow(2.0 /*degree_P_for_refinement*/, (dmbc->hlevel - dmbp->hlevel) * dmbp->dim * 1.0);
   }
 
@@ -337,8 +336,7 @@ PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM dmp, DM dmc, Mat* inte
         /* TODO: Check if we should be using INSERT_VALUES instead */
         PetscCall(MatSetValues(*interpl, 1, &dofsc[tc], connp.size(), &dofsp[0], &values_phi[connp.size()*tc], ADD_VALUES));
       }
-    }
-    else {
+    } else {
       /* Compute the interpolation weights by determining distance of 1-ring
          neighbor vertices from current vertex
 
@@ -357,8 +355,7 @@ PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM dmp, DM dmc, Mat* inte
             values_phi[tp] += std::pow(pcoords[tp * 3 + k] - ccoords[k + tc * 3], dim);
           if (values_phi[tp] < 1e-12) {
             values_phi[tp] = 1e12;
-          }
-          else {
+          } else {
             //values_phi[tp] = std::pow(values_phi[tp], -1.0/dim);
             values_phi[tp] = std::pow(values_phi[tp], -1.0);
             normsum += values_phi[tp];
@@ -441,8 +438,7 @@ static PetscErrorCode DMMoab_UMR_Private(DM dm, MPI_Comm comm, PetscBool refine,
   /* set the new level based on refinement/coarsening */
   if (refine) {
     dd2->hlevel = dmb->hlevel + 1;
-  }
-  else {
+  } else {
     dd2->hlevel = dmb->hlevel - 1;
   }
 

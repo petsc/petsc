@@ -23,9 +23,7 @@ static PetscErrorCode MatMult_LRC_kernel(Mat N,Vec x,Vec y,PetscBool transpose)
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)N),&size));
   if (size == 1) {
     PetscCall(MatMultHermitianTranspose(V,x,Na->work1));
-    if (Na->c) {
-      PetscCall(VecPointwiseMult(Na->work1,Na->c,Na->work1));
-    }
+    if (Na->c) PetscCall(VecPointwiseMult(Na->work1,Na->c,Na->work1));
     if (Na->A) {
       if (transpose) {
         PetscCall(MatMultTranspose(Na->A,x,y));
@@ -246,7 +244,7 @@ PetscErrorCode MatCreateLRC(Mat A,Mat U,Vec c,Mat V,Mat *N)
   PetscCall(MatSetVecType(*N,U->defaultvectype));
   PetscCall(PetscObjectChangeTypeName((PetscObject)*N,MATLRC));
   /* Flag matrix as symmetric if A is symmetric and U == V */
-  PetscCall(MatSetOption(*N,MAT_SYMMETRIC,(PetscBool)((A ? A->symmetric : PETSC_TRUE) && U == V)));
+  PetscCall(MatSetOption(*N,MAT_SYMMETRIC,(PetscBool)((A ? A->symmetric == PETSC_BOOL3_TRUE : PETSC_TRUE) && U == V)));
 
   PetscCall(PetscNewLog(*N,&Na));
   (*N)->data = (void*)Na;

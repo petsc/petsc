@@ -197,6 +197,7 @@ int main(int argc, char **argv)
   DM             dm;
   AppCtx         options;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL,help));
   comm = PETSC_COMM_WORLD;
   PetscCall(ProcessOptions(comm, &options));

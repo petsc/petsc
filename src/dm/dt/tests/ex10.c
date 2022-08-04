@@ -141,7 +141,7 @@ static PetscErrorCode SetupProblem(DM dm,UserCtx *user)
   PetscCall(PetscWeakFormSetIndexBdResidual(wf, label, 1, 0, 0, 0, f0_bd_u_linear, 0, NULL));
 
   PetscCall(PetscDSSetExactSolution(ds,0,linear_u,NULL));
-  PetscCall(PetscDSSetExactSolution(ds,1,linear_divu,NULL));
+  PetscCall(PetscDSSetExactSolution(ds,1,linear_p,NULL));
   PetscFunctionReturn(0);
 }
 
@@ -211,6 +211,7 @@ int main(int argc,char **argv)
   PetscReal       errNorm;
   const PetscReal errTol = PETSC_SMALL;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* Set up a snes for the standard approach, one space with 2 components */

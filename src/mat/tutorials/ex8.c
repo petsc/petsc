@@ -90,6 +90,7 @@ int main(int argc,char **args)
   PetscScalar    v,none = -1.0;
   PetscMPIInt    rank,size;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));

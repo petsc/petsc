@@ -1241,9 +1241,7 @@ static PetscErrorCode initializeTS(DM dm, User user, TS *ts)
   PetscCall(TSCreate(PetscObjectComm((PetscObject)dm), ts));
   PetscCall(TSSetType(*ts, TSSSP));
   PetscCall(TSSetDM(*ts, dm));
-  if (user->vtkmon) {
-    PetscCall(TSMonitorSet(*ts,MonitorVTK,user,NULL));
-  }
+  if (user->vtkmon) PetscCall(TSMonitorSet(*ts,MonitorVTK,user,NULL));
   PetscCall(DMTSSetBoundaryLocal(dm, DMPlexTSComputeBoundary, user));
   PetscCall(DMTSSetRHSFunctionLocal(dm, DMPlexTSComputeRHSFunctionFVM, user));
   PetscCall(TSSetMaxTime(*ts,2.0));
@@ -1375,6 +1373,7 @@ int main(int argc, char **argv)
   char              physname[256]  = "advect";
   VecTagger         refineTag = NULL, coarsenTag = NULL;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char*) 0, help));
   comm = PETSC_COMM_WORLD;
 

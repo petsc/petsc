@@ -12,6 +12,7 @@ int main(int argc,char **argv)
   IS             is1,is2;
   VecScatter     ctx = 0;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));

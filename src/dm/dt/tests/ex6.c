@@ -9,6 +9,7 @@ int main(int argc,char **argv)
   PetscInt       n = 3,i;
   PetscReal      *la_nodes,*la_weights,*n_nodes,*n_weights;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
 

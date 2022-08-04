@@ -54,6 +54,7 @@ int main(int argc,char **argv)
   SNES           snes;
   UserCtx        user;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* Create a global vector that includes a single redundant array and two da arrays */

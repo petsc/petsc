@@ -24,9 +24,11 @@ int main(int argc,char **args)
   PetscMPIInt    size;
   PetscScalar    value[3];
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
+
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -38,7 +40,7 @@ int main(int argc,char **args)
      Create vectors.  Note that we form 1 vector from scratch and
      then duplicate as needed.
   */
-  PetscCall(VecCreate(PETSC_COMM_WORLD,&x));
+  PetscCall(VecCreate(PETSC_COMM_SELF,&x));
   PetscCall(PetscObjectSetName((PetscObject) x, "Solution"));
   PetscCall(VecSetSizes(x,PETSC_DECIDE,n));
   PetscCall(VecSetFromOptions(x));
@@ -53,7 +55,7 @@ int main(int argc,char **args)
      preallocation of matrix memory is crucial for attaining good
      performance. See the matrix chapter of the users manual for details.
   */
-  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatCreate(PETSC_COMM_SELF,&A));
   PetscCall(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,n,n));
   PetscCall(MatSetFromOptions(A));
   PetscCall(MatSetUp(A));
@@ -82,7 +84,7 @@ int main(int argc,char **args)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                 Create the linear solver and set various options
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  PetscCall(KSPCreate(PETSC_COMM_SELF,&ksp));
 
   /*
      Set operators. Here the matrix that defines the linear system
@@ -121,7 +123,7 @@ int main(int argc,char **args)
      View solver info; we could instead use the option -ksp_view to
      print this info to the screen at the conclusion of KSPSolve().
   */
-  PetscCall(KSPView(ksp,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(KSPView(ksp,PETSC_VIEWER_STDOUT_SELF));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                       Check the solution and clean up
@@ -129,7 +131,11 @@ int main(int argc,char **args)
   PetscCall(VecAXPY(x,-1.0,u));
   PetscCall(VecNorm(x,NORM_2,&norm));
   PetscCall(KSPGetIterationNumber(ksp,&its));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %" PetscInt_FMT "\n",(double)norm,its));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF,"Norm of error %g, Iterations %" PetscInt_FMT "\n",(double)norm,its));
+
+  /* check that KSP automatically handles the fact that the the new non-zero values in the matrix are propagated to the KSP solver */
+  PetscCall(MatShift(A,2.0));
+  PetscCall(KSPSolve(ksp,b,x));
 
   /*
      Free work space.  All PETSc objects should be destroyed when they
@@ -177,5 +183,26 @@ int main(int argc,char **args)
       requires: cuda
       args: -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always -mat_type aijcusparse -vec_type cuda
       output_file: output/ex1_1_aijcusparse.out
+
+   test:
+      requires: defined(PETSC_USE_SINGLE_LIBRARY)
+      suffix: mpi_linear_solver_server_1
+      nsize: 3
+      filter: sed 's?ATOL?RTOL?g'
+      args: -mpi_linear_solver_server -mpi_linear_solver_server_view -pc_type mpi -ksp_type preonly -mpi_ksp_monitor -mpi_ksp_converged_reason -mat_view -mpi_pc_type none -mpi_ksp_view -mpi_mat_view -pc_mpi_minimum_count_per_rank 5
+
+   test:
+      requires: defined(PETSC_USE_SINGLE_LIBRARY)
+      suffix: mpi_linear_solver_server_2
+      nsize: 3
+      filter: sed 's?ATOL?RTOL?g'
+      args: -mpi_linear_solver_server  -mpi_linear_solver_server_view -pc_type mpi -ksp_type preonly -mpi_ksp_monitor -mpi_ksp_converged_reason -mat_view -mpi_pc_type none -mpi_ksp_view
+
+   test:
+      requires: defined(PETSC_USE_SINGLE_LIBRARY)
+      suffix: mpi_linear_solver_server_3
+      nsize: 3
+      filter: sed 's?ATOL?RTOL?g'
+      args: -mpi_linear_solver_server  -mpi_linear_solver_server_view -pc_type mpi -ksp_type preonly -mpi_ksp_monitor -mpi_ksp_converged_reason -mat_view -mpi_pc_type none -mpi_ksp_view -mpi_mat_view -pc_mpi_always_use_server
 
 TEST*/

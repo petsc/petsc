@@ -27,6 +27,7 @@ int main(int argc,char **argv)
   PetscInt       dof=1,M=8;
   PetscBool      flg,trans=PETSC_FALSE;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-dof",&dof,NULL));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL));

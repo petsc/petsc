@@ -66,6 +66,7 @@ int main(int argc,char **args)
   PetscBool      flg;
   Vec            v;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   /*
      Determine files from which we read the two linear systems

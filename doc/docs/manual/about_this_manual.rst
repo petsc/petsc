@@ -38,13 +38,15 @@ of many application codes simpler than “rolling them” yourself.
    directly using PETSc. We recommend reviewing these packages
    functionality before starting to code directly with PETSc.
 
--  PETSc should *not* be used to attempt to provide a “parallel linear
-   solver” in an otherwise sequential code. Certainly all parts of a
+-  PETSc can be used to provide a “MPI parallel linear
+   solver” in an otherwise sequential, or OpenMP parallel code.
+   This approach cannot provide extremely large improvements in the application time
+   by utilizing large numbers of MPI processes but can still improve
+   the performance. Certainly all parts of a
    previously sequential code need not be parallelized but the matrix
-   generation portion must be parallelized to expect any kind of
-   reasonable performance. Do not expect to generate your matrix
-   sequentially and then “use PETSc” to solve the linear system in
-   parallel.
+   generation portion must be parallelized to expect true scalability
+   to large numbers of MPI processes. See `PCMPI` for details on how to
+   utilize the PETSc MPI linear solver server.
 
 Since PETSc is under continued development, small changes in usage and
 calling sequences of routines will occur. PETSc has been supported for twenty-five years; see

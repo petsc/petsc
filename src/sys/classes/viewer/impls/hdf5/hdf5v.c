@@ -78,7 +78,7 @@ static PetscErrorCode PetscViewerFileClose_HDF5(PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscCall(PetscFree(hdf5->filename));
-  if (hdf5->file_id) PetscStackCallHDF5(H5Fclose,(hdf5->file_id));
+  if (hdf5->file_id) PetscCallHDF5(H5Fclose,(hdf5->file_id));
   PetscFunctionReturn(0);
 }
 
@@ -87,7 +87,7 @@ static PetscErrorCode PetscViewerFlush_HDF5(PetscViewer viewer)
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*)viewer->data;
 
   PetscFunctionBegin;
-  if (hdf5->file_id) PetscStackCallHDF5(H5Fflush,(hdf5->file_id, H5F_SCOPE_LOCAL));
+  if (hdf5->file_id) PetscCallHDF5(H5Fflush,(hdf5->file_id, H5F_SCOPE_LOCAL));
   PetscFunctionReturn(0);
 }
 
@@ -96,7 +96,7 @@ static PetscErrorCode PetscViewerDestroy_HDF5(PetscViewer viewer)
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*) viewer->data;
 
   PetscFunctionBegin;
-  PetscStackCallHDF5(H5Pclose,(hdf5->dxpl_id));
+  PetscCallHDF5(H5Pclose,(hdf5->dxpl_id));
   PetscCall(PetscViewerFileClose_HDF5(viewer));
   while (hdf5->groups) {
     PetscViewerHDF5GroupList *tmp = hdf5->groups->next;
@@ -287,7 +287,7 @@ static PetscErrorCode  PetscViewerHDF5SetCollective_HDF5(PetscViewer viewer, Pet
 #if H5_VERSION_GE(1,10,3) && defined(H5_HAVE_PARALLEL)
   {
     PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*) viewer->data;
-    PetscStackCallHDF5(H5Pset_dxpl_mpio,(hdf5->dxpl_id, flg ? H5FD_MPIO_COLLECTIVE : H5FD_MPIO_INDEPENDENT));
+    PetscCallHDF5(H5Pset_dxpl_mpio,(hdf5->dxpl_id, flg ? H5FD_MPIO_COLLECTIVE : H5FD_MPIO_INDEPENDENT));
   }
 #else
   if (flg) PetscCall(PetscPrintf(PetscObjectComm((PetscObject)viewer), "Warning: PetscViewerHDF5SetCollective(viewer,PETSC_TRUE) is ignored for HDF5 versions prior to 1.10.3 or if built without MPI support\n"));
@@ -341,7 +341,7 @@ static PetscErrorCode  PetscViewerHDF5GetCollective_HDF5(PetscViewer viewer, Pet
 #if !defined(H5_HAVE_PARALLEL)
   *flg = PETSC_FALSE;
 #else
-  PetscStackCallHDF5(H5Pget_dxpl_mpio,(hdf5->dxpl_id, &mode));
+  PetscCallHDF5(H5Pget_dxpl_mpio,(hdf5->dxpl_id, &mode));
   *flg = (mode == H5FD_MPIO_COLLECTIVE) ? PETSC_TRUE : PETSC_FALSE;
 #endif
   PetscFunctionReturn(0);
@@ -383,13 +383,13 @@ static PetscErrorCode  PetscViewerFileSetName_HDF5(PetscViewer viewer, const cha
   hid_t             plist_id;
 
   PetscFunctionBegin;
-  if (hdf5->file_id) PetscStackCallHDF5(H5Fclose,(hdf5->file_id));
+  if (hdf5->file_id) PetscCallHDF5(H5Fclose,(hdf5->file_id));
   if (hdf5->filename) PetscCall(PetscFree(hdf5->filename));
   PetscCall(PetscStrallocpy(name, &hdf5->filename));
   /* Set up file access property list with parallel I/O access */
-  PetscStackCallHDF5Return(plist_id,H5Pcreate,(H5P_FILE_ACCESS));
+  PetscCallHDF5Return(plist_id,H5Pcreate,(H5P_FILE_ACCESS));
 #if defined(H5_HAVE_PARALLEL)
-  PetscStackCallHDF5(H5Pset_fapl_mpio,(plist_id, PetscObjectComm((PetscObject)viewer), MPI_INFO_NULL));
+  PetscCallHDF5(H5Pset_fapl_mpio,(plist_id, PetscObjectComm((PetscObject)viewer), MPI_INFO_NULL));
 #endif
   /* Create or open the file collectively */
   switch (hdf5->btype) {
@@ -405,19 +405,19 @@ static PetscErrorCode  PetscViewerFileSetName_HDF5(PetscViewer viewer, const cha
       }
       PetscCallMPI(MPI_Barrier(PetscObjectComm((PetscObject)viewer)));
     }
-    PetscStackCallHDF5Return(hdf5->file_id,H5Fopen,(name, H5F_ACC_RDONLY, plist_id));
+    PetscCallHDF5Return(hdf5->file_id,H5Fopen,(name, H5F_ACC_RDONLY, plist_id));
     break;
   case FILE_MODE_APPEND:
   case FILE_MODE_UPDATE:
   {
     PetscBool flg;
     PetscCall(PetscTestFile(hdf5->filename, 'r', &flg));
-    if (flg) PetscStackCallHDF5Return(hdf5->file_id,H5Fopen,(name, H5F_ACC_RDWR, plist_id));
-    else     PetscStackCallHDF5Return(hdf5->file_id,H5Fcreate,(name, H5F_ACC_EXCL, H5P_DEFAULT, plist_id));
+    if (flg) PetscCallHDF5Return(hdf5->file_id,H5Fopen,(name, H5F_ACC_RDWR, plist_id));
+    else     PetscCallHDF5Return(hdf5->file_id,H5Fcreate,(name, H5F_ACC_EXCL, H5P_DEFAULT, plist_id));
     break;
   }
   case FILE_MODE_WRITE:
-    PetscStackCallHDF5Return(hdf5->file_id,H5Fcreate,(name, H5F_ACC_TRUNC, H5P_DEFAULT, plist_id));
+    PetscCallHDF5Return(hdf5->file_id,H5Fcreate,(name, H5F_ACC_TRUNC, H5P_DEFAULT, plist_id));
     break;
   case FILE_MODE_UNDEFINED:
     SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ORDER, "Must call PetscViewerFileSetMode() before PetscViewerFileSetName()");
@@ -425,7 +425,7 @@ static PetscErrorCode  PetscViewerFileSetName_HDF5(PetscViewer viewer, const cha
     SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP, "Unsupported file mode %s",PetscFileModes[hdf5->btype]);
   }
   PetscCheck(hdf5->file_id >= 0,PETSC_COMM_SELF,PETSC_ERR_LIB, "H5Fcreate failed for %s", name);
-  PetscStackCallHDF5(H5Pclose,(plist_id));
+  PetscCallHDF5(H5Pclose,(plist_id));
   PetscFunctionReturn(0);
 }
 
@@ -556,7 +556,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_HDF5(PetscViewer v)
   hdf5->timestep         = -1;
   hdf5->groups           = NULL;
 
-  PetscStackCallHDF5Return(hdf5->dxpl_id,H5Pcreate,(H5P_DATASET_XFER));
+  PetscCallHDF5Return(hdf5->dxpl_id,H5Pcreate,(H5P_DATASET_XFER));
 
   PetscCall(PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileSetName_C",PetscViewerFileSetName_HDF5));
   PetscCall(PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileGetName_C",PetscViewerFileGetName_HDF5));
@@ -709,6 +709,60 @@ PetscErrorCode  PetscViewerHDF5PushGroup(PetscViewer viewer, const char name[])
   PetscFunctionReturn(0);
 }
 
+/*@C
+  PetscViewerHDF5PushGroupRelative - Set the current HDF5 group for output, appending the path in the argument
+
+  Not collective
+
+  Input Parameters:
++ viewer - the PetscViewer
+- name - The group name to append
+
+  Level: intermediate
+
+  Notes:
+  This is designed to mnemonically resemble the Unix cd command.
+  + If name begins with '/', it is interpreted as an absolute path fully replacing current group, otherwise it is taken as relative to the current group.
+  . NULL, empty string, or any sequence of all slashes (e.g. "///") is interpreted as the root group "/".
+  - "." means the current group is pushed again.
+
+  Example:
+  Suppose the current group is "/a".
+  + If name is NULL, empty string, or a sequence of all slashes (e.g. "///"), then the new group will be "/".
+  . If name is ".", then the new group will be "/a".
+  . If name is "b", then the new group will be "/a/b".
+  - If name is "/b", then the new group will be "/b".
+
+  Developer Notes:
+  The root group "/" is internally stored as NULL.
+
+.seealso: `PetscViewerHDF5PushGroup()`, `PetscViewerHDF5PopGroup()`, `PetscViewerHDF5GetGroup()`, `PetscViewerHDF5OpenGroup()`, `PetscViewerHDF5Open()`
+@*/
+PetscErrorCode PetscViewerHDF5PushGroupRelative(PetscViewer viewer, const char name[])
+{
+  PetscViewer_HDF5         *hdf5 = (PetscViewer_HDF5*) viewer->data;
+  PetscViewerHDF5GroupList *groupNode;
+  char                      groupname[PETSC_MAX_PATH_LEN];
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  if (name) PetscValidCharPointer(name,2);
+  if (name && name[0]) {
+     size_t i,len;
+     PetscCall(PetscStrlen(name, &len));
+     for (i=0; i<len; i++) if (name[i] != '/') break;
+     if (i == len) name = NULL;
+  } else name = NULL;
+  PetscCall(PetscNew(&groupNode));
+  PetscCall(PetscStrncpy(groupname, hdf5->groups->name, sizeof(groupname)));
+  if (name[0] != '/') PetscCall(PetscStrlcat(groupname, "/", sizeof(groupname)));
+  PetscCall(PetscStrlcat(groupname, name, sizeof(groupname)));
+  PetscCall(PetscStrallocpy(groupname, (char**) &groupNode->name));
+  groupNode->next = hdf5->groups;
+  hdf5->groups    = groupNode;
+  PetscFunctionReturn(0);
+}
+
 /*@
   PetscViewerHDF5PopGroup - Return the current HDF5 group for output to the previous value
 
@@ -800,10 +854,10 @@ PetscErrorCode PetscViewerHDF5OpenGroup(PetscViewer viewer, hid_t *fileId, hid_t
   PetscCall(PetscViewerHDF5Traverse_Internal(viewer, groupName, writable, &has, &type));
   if (!has) {
     PetscCheck(writable,PetscObjectComm((PetscObject)viewer), PETSC_ERR_FILE_UNEXPECTED, "Group %s does not exist and file %s is not open for writing", groupName, fileName);
-    else           SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_LIB, "HDF5 failed to create group %s although file %s is open for writing", groupName, fileName);
+    SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_LIB, "HDF5 failed to create group %s although file %s is open for writing", groupName, fileName);
   }
   PetscCheck(type == H5O_TYPE_GROUP,PetscObjectComm((PetscObject)viewer), PETSC_ERR_FILE_UNEXPECTED, "Path %s in file %s resolves to something which is not a group", groupName, fileName);
-  PetscStackCallHDF5Return(*groupId,H5Gopen2,(file_id, groupName ? groupName : "/", H5P_DEFAULT));
+  PetscCallHDF5Return(*groupId,H5Gopen2,(file_id, groupName ? groupName : "/", H5P_DEFAULT));
   *fileId  = file_id;
   PetscFunctionReturn(0);
 }
@@ -1094,21 +1148,21 @@ PetscErrorCode PetscViewerHDF5WriteAttribute(PetscViewer viewer, const char pare
   if (datatype == PETSC_STRING) {
     size_t len;
     PetscCall(PetscStrlen((const char *) value, &len));
-    PetscStackCallHDF5(H5Tset_size,(dtype, len+1));
+    PetscCallHDF5(H5Tset_size,(dtype, len+1));
   }
   PetscCall(PetscViewerHDF5GetFileId(viewer, &h5));
-  PetscStackCallHDF5Return(dataspace,H5Screate,(H5S_SCALAR));
-  PetscStackCallHDF5Return(obj,H5Oopen,(h5, parentAbsPath, H5P_DEFAULT));
+  PetscCallHDF5Return(dataspace,H5Screate,(H5S_SCALAR));
+  PetscCallHDF5Return(obj,H5Oopen,(h5, parentAbsPath, H5P_DEFAULT));
   if (has) {
-    PetscStackCallHDF5Return(attribute,H5Aopen_name,(obj, name));
+    PetscCallHDF5Return(attribute,H5Aopen_name,(obj, name));
   } else {
-    PetscStackCallHDF5Return(attribute,H5Acreate2,(obj, name, dtype, dataspace, H5P_DEFAULT, H5P_DEFAULT));
+    PetscCallHDF5Return(attribute,H5Acreate2,(obj, name, dtype, dataspace, H5P_DEFAULT, H5P_DEFAULT));
   }
-  PetscStackCallHDF5(H5Awrite,(attribute, dtype, value));
-  if (datatype == PETSC_STRING) PetscStackCallHDF5(H5Tclose,(dtype));
-  PetscStackCallHDF5(H5Aclose,(attribute));
-  PetscStackCallHDF5(H5Oclose,(obj));
-  PetscStackCallHDF5(H5Sclose,(dataspace));
+  PetscCallHDF5(H5Awrite,(attribute, dtype, value));
+  if (datatype == PETSC_STRING) PetscCallHDF5(H5Tclose,(dtype));
+  PetscCallHDF5(H5Aclose,(attribute));
+  PetscCallHDF5(H5Oclose,(obj));
+  PetscCallHDF5(H5Sclose,(dataspace));
   PetscCall(PetscFree(parentAbsPath));
   PetscFunctionReturn(0);
 }
@@ -1199,7 +1253,7 @@ PetscErrorCode PetscViewerHDF5ReadAttribute(PetscViewer viewer, const char paren
           PetscCall(PetscStrallocpy(*(char**)defaultValue, (char**)value));
         } else {
           size_t len;
-          PetscStackCallHDF5ReturnNoCheck(len,H5Tget_size,(dtype));
+          PetscCallHDF5ReturnNoCheck(len,H5Tget_size,(dtype));
           PetscCall(PetscMemcpy(value, defaultValue, len));
         }
       }
@@ -1208,22 +1262,22 @@ PetscErrorCode PetscViewerHDF5ReadAttribute(PetscViewer viewer, const char paren
     } else SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_FILE_UNEXPECTED, "Attribute %s/%s does not exist and default value not provided", parentAbsPath, name);
   }
   PetscCall(PetscViewerHDF5GetFileId(viewer, &h5));
-  PetscStackCallHDF5Return(obj,H5Oopen,(h5, parentAbsPath, H5P_DEFAULT));
-  PetscStackCallHDF5Return(attribute,H5Aopen_name,(obj, name));
+  PetscCallHDF5Return(obj,H5Oopen,(h5, parentAbsPath, H5P_DEFAULT));
+  PetscCallHDF5Return(attribute,H5Aopen_name,(obj, name));
   if (datatype == PETSC_STRING) {
     size_t len;
     hid_t  atype;
-    PetscStackCallHDF5Return(atype,H5Aget_type,(attribute));
-    PetscStackCallHDF5ReturnNoCheck(len,H5Tget_size,(atype));
+    PetscCallHDF5Return(atype,H5Aget_type,(attribute));
+    PetscCallHDF5ReturnNoCheck(len,H5Tget_size,(atype));
     PetscCall(PetscMalloc((len+1) * sizeof(char), value));
-    PetscStackCallHDF5(H5Tset_size,(dtype, len+1));
-    PetscStackCallHDF5(H5Aread,(attribute, dtype, *(char**)value));
+    PetscCallHDF5(H5Tset_size,(dtype, len+1));
+    PetscCallHDF5(H5Aread,(attribute, dtype, *(char**)value));
   } else {
-    PetscStackCallHDF5(H5Aread,(attribute, dtype, value));
+    PetscCallHDF5(H5Aread,(attribute, dtype, value));
   }
-  PetscStackCallHDF5(H5Aclose,(attribute));
+  PetscCallHDF5(H5Aclose,(attribute));
   /* H5Oclose can be used to close groups, datasets, or committed datatypes */
-  PetscStackCallHDF5(H5Oclose,(obj));
+  PetscCallHDF5(H5Oclose,(obj));
   PetscCall(PetscFree(parentAbsPath));
   PetscFunctionReturn(0);
 }
@@ -1268,11 +1322,11 @@ static inline PetscErrorCode PetscViewerHDF5Traverse_Inner_Internal(hid_t h5, co
   hid_t group;
 
   PetscFunctionBegin;
-  PetscStackCallHDF5Return(exists,H5Lexists,(h5, name, H5P_DEFAULT));
-  if (exists) PetscStackCallHDF5Return(exists,H5Oexists_by_name,(h5, name, H5P_DEFAULT));
+  PetscCallHDF5Return(exists,H5Lexists,(h5, name, H5P_DEFAULT));
+  if (exists) PetscCallHDF5Return(exists,H5Oexists_by_name,(h5, name, H5P_DEFAULT));
   if (!exists && createGroup) {
-    PetscStackCallHDF5Return(group,H5Gcreate2,(h5, name, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT));
-    PetscStackCallHDF5(H5Gclose,(group));
+    PetscCallHDF5Return(group,H5Gcreate2,(h5, name, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT));
+    PetscCallHDF5(H5Gclose,(group));
     exists = PETSC_TRUE;
   }
   *exists_ = (PetscBool) exists;
@@ -1331,7 +1385,7 @@ static PetscErrorCode PetscViewerHDF5Traverse_Internal(PetscViewer viewer, const
     H5O_info_t info;
 
     /* We could use H5Iget_type() here but that would require opening the object. This way we only need its name. */
-    PetscStackCallHDF5(H5Oget_info_by_name,(h5, name, &info, H5P_DEFAULT));
+    PetscCallHDF5(H5Oget_info_by_name,(h5, name, &info, H5P_DEFAULT));
     *otype = info.type;
   }
   if (has) *has = exists;
@@ -1522,7 +1576,7 @@ static PetscErrorCode PetscViewerHDF5HasAttribute_Internal(PetscViewer viewer, c
 
   PetscFunctionBegin;
   PetscCall(PetscViewerHDF5GetFileId(viewer, &h5));
-  PetscStackCallHDF5Return(hhas,H5Aexists_by_name,(h5, parent, name, H5P_DEFAULT));
+  PetscCallHDF5Return(hhas,H5Aexists_by_name,(h5, parent, name, H5P_DEFAULT));
   *has = hhas ? PETSC_TRUE : PETSC_FALSE;
   PetscFunctionReturn(0);
 }

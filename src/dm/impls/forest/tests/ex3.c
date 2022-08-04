@@ -14,6 +14,7 @@ int main (int argc, char **argv)
   PetscBool      adapt = PETSC_FALSE, userSection = PETSC_FALSE;
   PetscInt       vStart, vEnd, v, i;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-adapt", &adapt, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-user_section", &userSection, NULL));

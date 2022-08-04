@@ -554,34 +554,34 @@ PETSC_INTERN PetscErrorCode PetscInitializeSAWs(const char help[])
 
       PetscCall(PetscOptionsGetString(NULL,NULL,"-saws_log",sawslog,sizeof(sawslog),NULL));
       if (sawslog[0]) {
-        PetscStackCallSAWs(SAWs_Set_Use_Logfile,(sawslog));
+        PetscCallSAWs(SAWs_Set_Use_Logfile,(sawslog));
       } else {
-        PetscStackCallSAWs(SAWs_Set_Use_Logfile,(NULL));
+        PetscCallSAWs(SAWs_Set_Use_Logfile,(NULL));
       }
     }
     PetscCall(PetscOptionsGetString(NULL,NULL,"-saws_https",cert,sizeof(cert),&flg));
     if (flg) {
-      PetscStackCallSAWs(SAWs_Set_Use_HTTPS,(cert));
+      PetscCallSAWs(SAWs_Set_Use_HTTPS,(cert));
     }
     PetscCall(PetscOptionsGetBool(NULL,NULL,"-saws_port_auto_select",&selectport,NULL));
     if (selectport) {
-        PetscStackCallSAWs(SAWs_Get_Available_Port,(&port));
-        PetscStackCallSAWs(SAWs_Set_Port,(port));
+        PetscCallSAWs(SAWs_Get_Available_Port,(&port));
+        PetscCallSAWs(SAWs_Set_Port,(port));
     } else {
       PetscCall(PetscOptionsGetInt(NULL,NULL,"-saws_port",&port,&flg));
       if (flg) {
-        PetscStackCallSAWs(SAWs_Set_Port,(port));
+        PetscCallSAWs(SAWs_Set_Port,(port));
       }
     }
     PetscCall(PetscOptionsGetString(NULL,NULL,"-saws_root",root,sizeof(root),&flg));
     if (flg) {
-      PetscStackCallSAWs(SAWs_Set_Document_Root,(root));
+      PetscCallSAWs(SAWs_Set_Document_Root,(root));
       PetscCall(PetscStrcmp(root,".",&rootlocal));
     } else {
       PetscCall(PetscOptionsHasName(NULL,NULL,"-saws_options",&flg));
       if (flg) {
         PetscCall(PetscStrreplace(PETSC_COMM_WORLD,"${PETSC_DIR}/share/petsc/saws",root,sizeof(root)));
-        PetscStackCallSAWs(SAWs_Set_Document_Root,(root));
+        PetscCallSAWs(SAWs_Set_Document_Root,(root));
       }
     }
     PetscCall(PetscOptionsHasName(NULL,NULL,"-saws_local",&flg2));
@@ -591,7 +591,7 @@ PETSC_INTERN PetscErrorCode PetscInitializeSAWs(const char help[])
       PetscCall(PetscSNPrintf(jsdir,sizeof(jsdir),"%s/js",root));
       PetscCall(PetscTestDirectory(jsdir,'r',&flg));
       PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"-saws_local option requires js directory in root directory");
-      PetscStackCallSAWs(SAWs_Push_Local_Header,());
+      PetscCallSAWs(SAWs_Push_Local_Header,());
     }
     PetscCall(PetscGetProgramName(programname,sizeof(programname)));
     PetscCall(PetscStrlen(help,&applinelen));
@@ -618,7 +618,7 @@ PETSC_INTERN PetscErrorCode PetscInitializeSAWs(const char help[])
                           "<center><h2> <a href=\"https://petsc.org/\">PETSc</a> Application Web server powered by <a href=\"https://bitbucket.org/saws/saws\">SAWs</a> </h2></center>\n"
                           "<center>This is the default PETSc application dashboard, from it you can access any published PETSc objects or logging data</center><br><center>%s configured with %s</center><br>\n"
                           "%s",version,petscconfigureoptions,appline));
-    PetscStackCallSAWs(SAWs_Push_Body,("index.html",0,intro));
+    PetscCallSAWs(SAWs_Push_Body,("index.html",0,intro));
     PetscCall(PetscFree(intro));
     PetscCall(PetscFree(appline));
     if (selectport) {
@@ -626,17 +626,17 @@ PETSC_INTERN PetscErrorCode PetscInitializeSAWs(const char help[])
 
       /* another process may have grabbed the port so keep trying */
       while (SAWs_Initialize()) {
-        PetscStackCallSAWs(SAWs_Get_Available_Port,(&port));
-        PetscStackCallSAWs(SAWs_Set_Port,(port));
+        PetscCallSAWs(SAWs_Get_Available_Port,(&port));
+        PetscCallSAWs(SAWs_Set_Port,(port));
       }
 
       PetscCall(PetscOptionsGetBool(NULL,NULL,"-saws_port_auto_select_silent",&silent,NULL));
       if (!silent) {
-        PetscStackCallSAWs(SAWs_Get_FullURL,(sizeof(sawsurl),sawsurl));
+        PetscCallSAWs(SAWs_Get_FullURL,(sizeof(sawsurl),sawsurl));
         PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Point your browser to %s for SAWs\n",sawsurl));
       }
     } else {
-      PetscStackCallSAWs(SAWs_Initialize,());
+      PetscCallSAWs(SAWs_Initialize,());
     }
     PetscCall(PetscCitationsRegister("@TechReport{ saws,\n"
                                    "  Author = {Matt Otten and Jed Brown and Barry Smith},\n"
@@ -691,6 +691,8 @@ PETSC_INTERN PetscErrorCode PetscLogInitialize(void);
 PETSC_EXTERN PetscErrorCode PetscViennaCLInit();
 PetscBool PetscViennaCLSynchronize = PETSC_FALSE;
 #endif
+
+PetscBool PetscCIEnabled = PETSC_FALSE, PetscCIEnabledPortableErrorOutput = PETSC_FALSE;
 
 /*
   PetscInitialize_Common  - shared code between C and Fortran initialization
@@ -761,7 +763,7 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char* prog,const char* 
         }
       }
       if (!flg) {
-        PetscCall(PetscInfo(NULL,"PETSc warning --- MPICH library version \n%s does not match what PETSc was compiled with %s.\n",mpilibraryversion,MPICH_VESION));
+        PetscCall(PetscInfo(NULL,"PETSc warning --- MPICH library version \n%s does not match what PETSc was compiled with %s.\n",mpilibraryversion,MPICH_VERSION));
         flg = PETSC_TRUE;
       }
     }
@@ -1063,6 +1065,10 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char* prog,const char* 
 
   PetscCall(PetscOptionsHasName(NULL,NULL,"-python",&flg));
   if (flg) PetscCall(PetscPythonInitialize(NULL,NULL));
+
+  PetscCall(PetscOptionsHasName(NULL,NULL,"-mpi_linear_solver_server",&flg));
+  if (PetscDefined(USE_SINGLE_LIBRARY) && flg) PetscCall(PCMPIServerBegin());
+  else PetscCheck(!flg,PETSC_COMM_WORLD,PETSC_ERR_SUP,"PETSc configured using -with-single-library=0; -mpi_linear_solver_server not supported in that case");
   PetscFunctionReturn(0);
 }
 
@@ -1307,6 +1313,9 @@ PetscErrorCode  PetscFinalize(void)
   PetscCheck(PetscInitializeCalled,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"PetscInitialize() must be called before PetscFinalize()");
   PetscCall(PetscInfo(NULL,"PetscFinalize() called\n"));
 
+  PetscCall(PetscOptionsHasName(NULL,NULL,"-mpi_linear_solver_server",&flg));
+  if (PetscDefined(USE_SINGLE_LIBRARY) && flg) PetscCall(PCMPIServerEnd());
+
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 #if defined(PETSC_HAVE_ADIOS)
   PetscCall(adios_read_finalize_method(ADIOS_READ_METHOD_BP_AGGREGATE));
@@ -1380,9 +1389,7 @@ PetscErrorCode  PetscFinalize(void)
 #if defined(PETSC_HAVE_SAWS)
   flg = PETSC_FALSE;
   PetscCall(PetscOptionsGetBool(NULL,NULL,"-saw_options",&flg,NULL));
-  if (flg) {
-    PetscCall(PetscOptionsSAWsDestroy());
-  }
+  if (flg) PetscCall(PetscOptionsSAWsDestroy());
 #endif
 
 #if defined(PETSC_HAVE_X)
@@ -1469,9 +1476,7 @@ PetscErrorCode  PetscFinalize(void)
   if (!flg1) PetscCall(PetscPopSignalHandler());
   flg1 = PETSC_FALSE;
   PetscCall(PetscOptionsGetBool(NULL,NULL,"-mpidump",&flg1,NULL));
-  if (flg1) {
-    PetscCall(PetscMPIDump(stdout));
-  }
+  if (flg1) PetscCall(PetscMPIDump(stdout));
   flg1 = PETSC_FALSE;
   flg2 = PETSC_FALSE;
   /* preemptive call to avoid listing this option in options table as unused */
@@ -1520,7 +1525,7 @@ PetscErrorCode  PetscFinalize(void)
 #if defined(PETSC_HAVE_SAWS)
   if (!PetscGlobalRank) {
     PetscCall(PetscStackSAWsViewOff());
-    PetscStackCallSAWs(SAWs_Finalize,());
+    PetscCallSAWs(SAWs_Finalize,());
   }
 #endif
 

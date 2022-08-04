@@ -37,6 +37,7 @@ int main(int argc,char **argv)
   PetscBool      flg,reset,use_shell = PETSC_FALSE;
   VecType        vtype;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-k",&k,NULL));
@@ -144,9 +145,7 @@ int main(int argc,char **argv)
   PetscCall(MatDenseCUDAGetArray(B,&aa));
   PetscCheck(vv == aa-l*nloc,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong array");
   PetscCall(MatDenseCUDARestoreArray(B,&aa));
-  if (reset) {
-    PetscCall(MatDenseCUDAResetArray(B));
-  }
+  if (reset) PetscCall(MatDenseCUDAResetArray(B));
   PetscCall(VecCUDARestoreArray(v,&vv));
 
   if (test == 1) {

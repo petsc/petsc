@@ -12,6 +12,7 @@ int main(int argc,char **argv)
   IS             isrow,iscol,identity;
   PetscViewer    viewer;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* ------- Assemble matrix, --------- */

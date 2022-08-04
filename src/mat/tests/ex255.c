@@ -8,6 +8,7 @@ int main(int argc,char **args)
   PetscViewer    fd;
   PetscBool      flg,equal;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
 
   /* Load an AIJ matrix */

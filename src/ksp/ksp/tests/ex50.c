@@ -13,6 +13,7 @@ int main(int argc,char **args)
   PetscInt       i,j,k,l,n = 27,its,bs = 2,Ii,J;
   PetscScalar    v;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-bs",&bs,NULL));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));

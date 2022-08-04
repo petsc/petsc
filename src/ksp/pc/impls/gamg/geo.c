@@ -176,7 +176,7 @@ static PetscErrorCode triangulateAndFormProl(IS selected_2,PetscInt data_stride,
     in.pointlist[sid+1] = coords[data_stride + lid];
     if (lid>=nFineLoc) nPlotPts++;
   }
-  PetscCheck(sid == 2*nselected_2,PETSC_COMM_SELF,PETSC_ERR_PLIB,"sid %" PetscInt_FMT " != 2*nselected_2 %" PetscInt_FMT,sid,nselected_2);
+  PetscCheck(sid == 2*nselected_2,PETSC_COMM_SELF,PETSC_ERR_PLIB,"sid %d != 2*nselected_2 %" PetscInt_FMT,sid,nselected_2);
 
   in.numberofsegments      = 0;
   in.numberofedges         = 0;
@@ -271,7 +271,7 @@ static PetscErrorCode triangulateAndFormProl(IS selected_2,PetscInt data_stride,
         if (sel) fprintf(file, "%d %e %e\n",sid++,coords[jj],coords[data_stride + jj]);
       }
       fclose(file);
-      PetscCheck(sid == nPlotPts,PETSC_COMM_SELF,PETSC_ERR_PLIB,"sid %" PetscInt_FMT " != nPlotPts %" PetscInt_FMT,sid,nPlotPts);
+      PetscCheck(sid == nPlotPts,PETSC_COMM_SELF,PETSC_ERR_PLIB,"sid %d != nPlotPts %d",sid,nPlotPts);
       level++;
     }
   }
@@ -327,7 +327,7 @@ static PetscErrorCode triangulateAndFormProl(IS selected_2,PetscInt data_stride,
               for (tt=0; tt<3; tt++) alpha[tt] = (PetscScalar)fcoord[tt];
 
               /* SUBROUTINE DGESV(N, NRHS, A, LDA, IPIV, B, LDB, INFO) */
-              PetscStackCallBLAS("LAPACKgesv",LAPACKgesv_(&N, &NRHS, (PetscScalar*)AA, &LDA, IPIV, alpha, &LDB, &INFO));
+              PetscCallBLAS("LAPACKgesv",LAPACKgesv_(&N, &NRHS, (PetscScalar*)AA, &LDA, IPIV, alpha, &LDB, &INFO));
               {
                 PetscBool have=PETSC_TRUE;  PetscReal lowest=1.e10;
                 for (tt = 0, idx = 0; tt < 3; tt++) {
@@ -353,7 +353,7 @@ static PetscErrorCode triangulateAndFormProl(IS selected_2,PetscInt data_stride,
                 }
                 for (tt=0; tt<3; tt++) alpha[tt] = fcoord[tt];
                 /* SUBROUTINE DGESV(N, NRHS, A, LDA, IPIV, B, LDB, INFO) */
-                PetscStackCallBLAS("LAPACKgesv",LAPACKgesv_(&N, &NRHS, (PetscScalar*)AA, &LDA, IPIV, alpha, &LDB, &INFO));
+                PetscCallBLAS("LAPACKgesv",LAPACKgesv_(&N, &NRHS, (PetscScalar*)AA, &LDA, IPIV, alpha, &LDB, &INFO));
                 {
                   PetscBool have=PETSC_TRUE;  PetscReal worst=0.0, v;
                   for (tt=0; tt<3 && have; tt++) {
@@ -378,7 +378,7 @@ static PetscErrorCode triangulateAndFormProl(IS selected_2,PetscInt data_stride,
               }
               for (tt=0; tt<3; tt++) alpha[tt] = fcoord[tt];
               /* SUBROUTINE DGESV(N, NRHS, A, LDA, IPIV, B, LDB, INFO) */
-              PetscStackCallBLAS("LAPACKgesv",LAPACKgesv_(&N, &NRHS, (PetscScalar*)AA, &LDA, IPIV, alpha, &LDB, &INFO));
+              PetscCallBLAS("LAPACKgesv",LAPACKgesv_(&N, &NRHS, (PetscScalar*)AA, &LDA, IPIV, alpha, &LDB, &INFO));
             }
 
             /* put in row of P */
@@ -535,7 +535,7 @@ PetscErrorCode PCGAMGGraph_GEO(PC pc,Mat Amat,Mat *a_Gmat)
   PC_GAMG         *pc_gamg = (PC_GAMG*)mg->innerctx;
   const PetscReal vfilter  = pc_gamg->threshold[0];
   MPI_Comm        comm;
-  Mat             Gmat;
+  Mat             Gmat,F=NULL;
   PetscBool       set,flg,symm;
 
   PetscFunctionBegin;
@@ -544,9 +544,12 @@ PetscErrorCode PCGAMGGraph_GEO(PC pc,Mat Amat,Mat *a_Gmat)
   PetscCall(MatIsSymmetricKnown(Amat, &set, &flg));
   symm = (PetscBool)!(set && flg);
 
-  PetscCall(PCGAMGCreateGraph(Amat, &Gmat, symm));
-  PetscCall(PCGAMGFilterGraph(&Gmat, vfilter));
-
+  PetscCall(MatCreateGraph(Amat, symm, PETSC_TRUE, &Gmat));
+  PetscCall(MatFilter(Gmat, vfilter, &F));
+  if (F) {
+    PetscCall(MatDestroy(&Gmat));
+    Gmat = F;
+  }
   *a_Gmat = Gmat;
 
   PetscFunctionReturn(0);

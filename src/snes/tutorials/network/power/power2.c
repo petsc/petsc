@@ -428,6 +428,7 @@ int main(int argc,char ** argv)
   Mat              J;
   SNES             snes;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,"poweroptions",help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   {

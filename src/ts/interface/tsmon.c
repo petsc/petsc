@@ -79,9 +79,7 @@ PetscErrorCode  TSMonitorSetFromOptions(TS ts,const char name[],const char help[
     PetscViewerAndFormat *vf;
     PetscCall(PetscViewerAndFormatCreate(viewer,format,&vf));
     PetscCall(PetscObjectDereference((PetscObject)viewer));
-    if (monitorsetup) {
-      PetscCall((*monitorsetup)(ts,vf));
-    }
+    if (monitorsetup) PetscCall((*monitorsetup)(ts,vf));
     PetscCall(TSMonitorSet(ts,(PetscErrorCode (*)(TS,PetscInt,PetscReal,Vec,void*))monitor,vf,(PetscErrorCode (*)(void**))PetscViewerAndFormatDestroy));
   }
   PetscFunctionReturn(0);
@@ -461,9 +459,7 @@ PetscErrorCode  TSMonitorDrawSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,
     PetscCall(PetscDrawFlush(draw));
   }
 
-  if (ictx->showinitial) {
-    PetscCall(PetscViewerDrawSetHold(ictx->viewer,PETSC_FALSE));
-  }
+  if (ictx->showinitial) PetscCall(PetscViewerDrawSetHold(ictx->viewer,PETSC_FALSE));
   PetscFunctionReturn(0);
 }
 
@@ -816,9 +812,7 @@ PetscErrorCode  TSMonitorLGSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,vo
       PetscCall(VecGetLocalSize(u,&dim));
       PetscCall(PetscCalloc1(dim+1,&displaynames));
       PetscCall(PetscOptionsGetStringArray(((PetscObject)ts)->options,((PetscObject)ts)->prefix,"-ts_monitor_lg_solution_variables",displaynames,&dim,&flg));
-      if (flg) {
-        PetscCall(TSMonitorLGCtxSetDisplayVariables(ctx,(const char *const *)displaynames));
-      }
+      if (flg) PetscCall(TSMonitorLGCtxSetDisplayVariables(ctx,(const char *const *)displaynames));
       PetscCall(PetscStrArrayDestroy(&displaynames));
     }
     if (ctx->displaynames) {
@@ -1281,9 +1275,7 @@ PetscErrorCode TSMonitorError(TS ts,PetscInt step,PetscReal ptime,Vec u,PetscVie
       PetscCall(PetscViewerASCIIPrintf(vf->viewer,"2-norm of error %g\n",(double)nrm));
     }
     PetscCall(PetscObjectTypeCompare((PetscObject)vf->viewer,PETSCVIEWERDRAW,&flg));
-    if (flg) {
-      PetscCall(VecView(y,vf->viewer));
-    }
+    if (flg) PetscCall(VecView(y,vf->viewer));
     PetscCall(VecDestroy(&y));
   } else {
     PetscErrorCode (**exactFuncs)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);

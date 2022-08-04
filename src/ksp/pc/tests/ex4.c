@@ -12,6 +12,7 @@ int main(int argc,char **args)
   PetscInt       n = 5,i,col[3];
   PetscScalar    value[3];
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   /* Create vectors */
   PetscCall(VecCreateSeq(PETSC_COMM_SELF,n,&b));

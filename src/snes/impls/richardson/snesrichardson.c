@@ -148,9 +148,7 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
   if (snes->reason) PetscFunctionReturn(0);
 
   /* Call general purpose update function */
-  if (snes->ops->update) {
-    PetscCall((*snes->ops->update)(snes, snes->iter));
-  }
+  if (snes->ops->update) PetscCall((*snes->ops->update)(snes, snes->iter));
 
   /* set parameter for default relative tolerance convergence test */
   snes->ttol = fnorm*snes->rtol;
@@ -187,9 +185,7 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
     if (snes->reason) break;
 
     /* Call general purpose update function */
-    if (snes->ops->update) {
-      PetscCall((*snes->ops->update)(snes, snes->iter));
-    }
+    if (snes->ops->update) PetscCall((*snes->ops->update)(snes, snes->iter));
 
     if (snes->npc) {
       if (snes->functype == SNES_FUNCTION_PRECONDITIONED) {

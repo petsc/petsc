@@ -10,7 +10,7 @@
 
 /* -------------------------------------------------------------------------- */
 /*
-   maxIndSetAgg - parallel maximal independent set (MIS) with data locality info. MatAIJ specific!!!
+   MatCoarsenApply_MIS_private - parallel maximal independent set (MIS) with data locality info. MatAIJ specific!!!
 
    Input Parameter:
    . perm - serial permutation of rows of local to process in MIS
@@ -21,12 +21,12 @@
    . a_selected - IS of selected vertices, includes 'ghost' nodes at end with natural local indices
    . a_locals_llist - array of list of nodes rooted at selected nodes
 */
-PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscCoarsenData **a_locals_llist)
+PetscErrorCode MatCoarsenApply_MIS_private(IS perm,Mat Gmat,PetscBool strict_aggs,PetscCoarsenData **a_locals_llist)
 {
   Mat_SeqAIJ       *matA,*matB=NULL;
   Mat_MPIAIJ       *mpimat=NULL;
   MPI_Comm         comm;
-  PetscInt         num_fine_ghosts,kk,n,ix,j,*idx,*ii,iter,Iend,my0,nremoved,gid,lid,cpid,lidj,sgid,t1,t2,slid,nDone,nselected=0,state,statej;
+  PetscInt         num_fine_ghosts,kk,n,ix,j,*idx,*ii,Iend,my0,nremoved,gid,lid,cpid,lidj,sgid,t1,t2,slid,nDone,nselected=0,state,statej;
   PetscInt         *cpcol_gid,*cpcol_state,*lid_cprowID,*lid_gid,*cpcol_sel_gid,*icpcol_gid,*lid_state,*lid_parent_gid=NULL;
   PetscBool        *lid_removed;
   PetscBool        isMPI,isAIJ,isOK;
@@ -98,10 +98,9 @@ PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscCoarsenD
     }
   }
   /* MIS */
-  iter = nremoved = nDone = 0;
+  nremoved = nDone = 0;
   PetscCall(ISGetIndices(perm, &perm_ix));
   while (nDone < nloc || PETSC_TRUE) { /* asyncronous not implemented */
-    iter++;
     /* check all vertices */
     for (kk=0; kk<nloc; kk++) {
       lid   = perm_ix[kk];
@@ -247,9 +246,7 @@ PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscCoarsenD
   PetscCall(PetscFree(lid_cprowID));
   PetscCall(PetscFree(lid_gid));
   PetscCall(PetscFree(lid_removed));
-  if (strict_aggs) {
-    PetscCall(PetscFree(lid_parent_gid));
-  }
+  if (strict_aggs) PetscCall(PetscFree(lid_parent_gid));
   PetscCall(PetscFree(lid_state));
   PetscFunctionReturn(0);
 }
@@ -270,10 +267,10 @@ static PetscErrorCode MatCoarsenApply_MIS(MatCoarsen coarse)
     PetscCall(PetscObjectGetComm((PetscObject)mat,&comm));
     PetscCall(MatGetLocalSize(mat, &m, &n));
     PetscCall(ISCreateStride(comm, m, 0, 1, &perm));
-    PetscCall(maxIndSetAgg(perm, mat, coarse->strict_aggs, &coarse->agg_lists));
+    PetscCall(MatCoarsenApply_MIS_private(perm, mat, coarse->strict_aggs, &coarse->agg_lists));
     PetscCall(ISDestroy(&perm));
   } else {
-    PetscCall(maxIndSetAgg(coarse->perm, mat, coarse->strict_aggs,  &coarse->agg_lists));
+    PetscCall(MatCoarsenApply_MIS_private(coarse->perm, mat, coarse->strict_aggs,  &coarse->agg_lists));
   }
   PetscFunctionReturn(0);
 }
@@ -289,6 +286,20 @@ PetscErrorCode MatCoarsenView_MIS(MatCoarsen coarse,PetscViewer viewer)
   if (iascii) {
     PetscCall(PetscViewerASCIIPushSynchronized(viewer));
     PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"  [%d] MIS aggregator\n",rank));
+    if (!rank) {
+      PetscCDIntNd *pos,*pos2;
+      for (PetscInt kk=0; kk<coarse->agg_lists->size; kk++) {
+        PetscCall(PetscCDGetHeadPos(coarse->agg_lists,kk,&pos));
+        if ((pos2=pos)) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"selected %d: ",(int)kk));
+        while (pos) {
+          PetscInt gid1;
+          PetscCall(PetscCDIntNdGetID(pos, &gid1));
+          PetscCall(PetscCDGetNextPos(coarse->agg_lists,kk,&pos));
+          PetscCall(PetscViewerASCIISynchronizedPrintf(viewer," %d ",(int)gid1));
+        }
+        if (pos2) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"\n"));
+      }
+    }
     PetscCall(PetscViewerFlush(viewer));
     PetscCall(PetscViewerASCIIPopSynchronized(viewer));
   }
@@ -304,7 +315,6 @@ PetscErrorCode MatCoarsenView_MIS(MatCoarsen coarse,PetscViewer viewer)
 .  coarse - the coarsen context
 
    Options Database Keys:
-.  -mat_coarsen_MIS_xxx -
 
    Level: beginner
 
@@ -317,6 +327,5 @@ PETSC_EXTERN PetscErrorCode MatCoarsenCreate_MIS(MatCoarsen coarse)
   PetscFunctionBegin;
   coarse->ops->apply = MatCoarsenApply_MIS;
   coarse->ops->view  = MatCoarsenView_MIS;
-  /* coarse->ops->setfromoptions = MatCoarsenSetFromOptions_MIS; */
   PetscFunctionReturn(0);
 }

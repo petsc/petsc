@@ -63,7 +63,6 @@ typedef struct { /* used by MatTransposeMatMult() */
   Mat          At;           /* transpose of the first matrix */
   Mat          mA;           /* maij matrix of A */
   Vec          bt,ct;        /* vectors to hold locally transposed arrays of B and C */
-  PetscBool    updateAt;     /* flg to avoid recomputing At in MatProductNumeric_AtB_SeqAIJ_SeqAIJ() */
   /* used by PtAP */
   void           *data;
   PetscErrorCode (*destroy)(void*);
@@ -226,7 +225,7 @@ static inline PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA,MatScalar **a,PetscInt **j
   } \
 
 PETSC_INTERN PetscErrorCode MatSeqAIJSetPreallocation_SeqAIJ(Mat,PetscInt,const PetscInt*);
-PETSC_INTERN PetscErrorCode MatSetPreallocationCOO_SeqAIJ(Mat,PetscCount,const PetscInt[],const PetscInt[]);
+PETSC_INTERN PetscErrorCode MatSetPreallocationCOO_SeqAIJ(Mat,PetscCount,PetscInt[],PetscInt[]);
 PETSC_INTERN PetscErrorCode MatResetPreallocationCOO_SeqAIJ(Mat);
 
 PETSC_INTERN PetscErrorCode MatILUFactorSymbolic_SeqAIJ_inplace(Mat,Mat,IS,IS,const MatFactorInfo*);
@@ -257,10 +256,11 @@ PETSC_INTERN PetscErrorCode MatSOR_SeqAIJ_Inode(Mat,Vec,PetscReal,MatSORType,Pet
 PETSC_INTERN PetscErrorCode MatSetOption_SeqAIJ(Mat,MatOption,PetscBool);
 
 PETSC_INTERN PetscErrorCode MatGetSymbolicTranspose_SeqAIJ(Mat,PetscInt *[],PetscInt *[]);
-PETSC_INTERN PetscErrorCode MatGetSymbolicTransposeReduced_SeqAIJ(Mat,PetscInt,PetscInt,PetscInt *[],PetscInt *[]);
 PETSC_INTERN PetscErrorCode MatRestoreSymbolicTranspose_SeqAIJ(Mat,PetscInt *[],PetscInt *[]);
+PETSC_INTERN PetscErrorCode MatGetSymbolicTransposeReduced_SeqAIJ(Mat,PetscInt,PetscInt,PetscInt *[],PetscInt *[]);
 PETSC_INTERN PetscErrorCode MatTransposeSymbolic_SeqAIJ(Mat,Mat*);
 PETSC_INTERN PetscErrorCode MatTranspose_SeqAIJ(Mat,MatReuse,Mat*);
+
 PETSC_INTERN PetscErrorCode MatToSymmetricIJ_SeqAIJ(PetscInt,PetscInt*,PetscInt*,PetscBool,PetscInt,PetscInt,PetscInt**,PetscInt**);
 PETSC_INTERN PetscErrorCode MatLUFactorSymbolic_SeqAIJ_inplace(Mat,Mat,IS,IS,const MatFactorInfo*);
 PETSC_INTERN PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat,Mat,IS,IS,const MatFactorInfo*);

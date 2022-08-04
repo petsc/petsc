@@ -26,6 +26,7 @@ int main(int argc,char **args)
 #endif
   PetscScalar const *values;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   {
     PetscDeviceContext dctx; /* unused, only there to force initialization of device */

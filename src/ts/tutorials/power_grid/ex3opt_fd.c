@@ -57,6 +57,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   PetscFunctionBeginUser;
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));

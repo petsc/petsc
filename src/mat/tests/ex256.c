@@ -8,6 +8,7 @@ int main(int argc,char **argv)
   PetscScalar    *a,*b;
   PetscInt       n=4,lda=5,i;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-lda",&lda,NULL));

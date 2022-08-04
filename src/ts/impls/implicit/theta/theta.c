@@ -283,9 +283,7 @@ static PetscErrorCode TSAdjointStepBEuler_Private(TS ts)
   adjoint_time_step = -ts->time_step; /* always positive since time_step is negative */
 
   /* Build RHS for first-order adjoint lambda_{n+1}/h + r_u^T(n+1) */
-  if (quadts) {
-    PetscCall(TSComputeRHSJacobian(quadts,th->stage_time,ts->vec_sol,quadJ,NULL));
-  }
+  if (quadts) PetscCall(TSComputeRHSJacobian(quadts,th->stage_time,ts->vec_sol,quadJ,NULL));
 
   for (nadj=0; nadj<ts->numcost; nadj++) {
     PetscCall(VecCopy(ts->vecs_sensi[nadj],VecsSensiTemp[nadj]));
@@ -364,9 +362,7 @@ static PetscErrorCode TSAdjointStepBEuler_Private(TS ts)
   if (ts->vecs_sensip) {
     PetscCall(VecAXPBYPCZ(th->Xdot,-1./adjoint_time_step,1.0/adjoint_time_step,0,th->X0,ts->vec_sol));
     PetscCall(TSComputeIJacobianP(ts,th->stage_time,ts->vec_sol,th->Xdot,1./adjoint_time_step,ts->Jacp,PETSC_FALSE)); /* get -f_p */
-    if (quadts) {
-      PetscCall(TSComputeRHSJacobianP(quadts,th->stage_time,ts->vec_sol,quadJp));
-    }
+    if (quadts) PetscCall(TSComputeRHSJacobianP(quadts,th->stage_time,ts->vec_sol,quadJp));
     if (ts->vecs_sensi2p) {
       /* lambda_s^T F_PU w_1 */
       PetscCall(TSComputeIHessianProductFunctionPU(ts,th->stage_time,ts->vec_sol,VecsDeltaLam,ts->vec_sensip_col,ts->vecs_fpu));
@@ -521,9 +517,7 @@ static PetscErrorCode TSAdjointStep_Theta(TS ts)
     PetscCall(TSComputeSNESJacobian(ts,th->X0,J,Jpre));
     PetscCall(KSPSetOperators(ksp,J,Jpre));
     /* R_U at t_n */
-    if (quadts) {
-      PetscCall(TSComputeRHSJacobian(quadts,adjoint_ptime,th->X0,quadJ,NULL));
-    }
+    if (quadts) PetscCall(TSComputeRHSJacobian(quadts,adjoint_ptime,th->X0,quadJ,NULL));
     for (nadj=0; nadj<ts->numcost; nadj++) {
       PetscCall(MatMultTranspose(J,VecsDeltaLam[nadj],ts->vecs_sensi[nadj]));
       if (quadJ) {
@@ -565,9 +559,7 @@ static PetscErrorCode TSAdjointStep_Theta(TS ts)
       th->shift = 1.0/(adjoint_time_step*th->Theta);
       PetscCall(VecAXPBYPCZ(th->Xdot,-th->shift,th->shift,0,th->X0,ts->vec_sol));
       PetscCall(TSComputeIJacobianP(ts,th->stage_time,ts->vec_sol,th->Xdot,-1./(th->Theta*adjoint_time_step),ts->Jacp,PETSC_FALSE));
-      if (quadts) {
-        PetscCall(TSComputeRHSJacobianP(quadts,th->stage_time,ts->vec_sol,quadJp));
-      }
+      if (quadts) PetscCall(TSComputeRHSJacobianP(quadts,th->stage_time,ts->vec_sol,quadJp));
       for (nadj=0; nadj<ts->numcost; nadj++) {
         PetscCall(MatMultTranspose(ts->Jacp,VecsDeltaLam[nadj],VecsDeltaMu[nadj]));
         PetscCall(VecAXPY(ts->vecs_sensip[nadj],-adjoint_time_step*th->Theta,VecsDeltaMu[nadj]));
@@ -606,9 +598,7 @@ static PetscErrorCode TSAdjointStep_Theta(TS ts)
       /* U_s */
       PetscCall(VecZeroEntries(th->Xdot));
       PetscCall(TSComputeIJacobianP(ts,adjoint_ptime,th->X0,th->Xdot,1./((th->Theta-1.0)*adjoint_time_step),ts->Jacp,PETSC_FALSE));
-      if (quadts) {
-        PetscCall(TSComputeRHSJacobianP(quadts,adjoint_ptime,th->X0,quadJp));
-      }
+      if (quadts) PetscCall(TSComputeRHSJacobianP(quadts,adjoint_ptime,th->X0,quadJp));
       for (nadj=0; nadj<ts->numcost; nadj++) {
         PetscCall(MatMultTranspose(ts->Jacp,VecsDeltaLam[nadj],VecsDeltaMu[nadj]));
         PetscCall(VecAXPY(ts->vecs_sensip[nadj],-adjoint_time_step*(1.0-th->Theta),VecsDeltaMu[nadj]));
@@ -647,9 +637,7 @@ static PetscErrorCode TSAdjointStep_Theta(TS ts)
     th->shift = 0.0;
     PetscCall(TSComputeSNESJacobian(ts,th->X,J,Jpre)); /* get -f_y */
     PetscCall(KSPSetOperators(ksp,J,Jpre));
-    if (quadts) {
-      PetscCall(TSComputeRHSJacobian(quadts,th->stage_time,th->X,quadJ,NULL));
-    }
+    if (quadts) PetscCall(TSComputeRHSJacobian(quadts,th->stage_time,th->X,quadJ,NULL));
     for (nadj=0; nadj<ts->numcost; nadj++) {
       PetscCall(MatMultTranspose(J,VecsDeltaLam[nadj],VecsSensiTemp[nadj]));
       PetscCall(VecAXPY(ts->vecs_sensi[nadj],-adjoint_time_step,VecsSensiTemp[nadj]));
@@ -665,9 +653,7 @@ static PetscErrorCode TSAdjointStep_Theta(TS ts)
       th->shift = 1.0/(adjoint_time_step*th->Theta);
       PetscCall(VecAXPBYPCZ(th->Xdot,-th->shift,th->shift,0,th->X0,th->X));
       PetscCall(TSComputeIJacobianP(ts,th->stage_time,th->X,th->Xdot,th->shift,ts->Jacp,PETSC_FALSE));
-      if (quadts) {
-        PetscCall(TSComputeRHSJacobianP(quadts,th->stage_time,th->X,quadJp));
-      }
+      if (quadts) PetscCall(TSComputeRHSJacobianP(quadts,th->stage_time,th->X,quadJp));
       for (nadj=0; nadj<ts->numcost; nadj++) {
         PetscCall(MatMultTranspose(ts->Jacp,VecsDeltaLam[nadj],VecsDeltaMu[nadj]));
         PetscCall(VecAXPY(ts->vecs_sensip[nadj],-adjoint_time_step,VecsDeltaMu[nadj]));
@@ -735,9 +721,7 @@ static PetscErrorCode TSRollBack_Theta(TS ts)
     PetscCall(VecCopy(th->VecCostIntegral0,quadts->vec_sol));
   }
   th->status = TS_STEP_INCOMPLETE;
-  if (ts->mat_sensip) {
-    PetscCall(MatCopy(th->MatFwdSensip0,ts->mat_sensip,SAME_NONZERO_PATTERN));
-  }
+  if (ts->mat_sensip) PetscCall(MatCopy(th->MatFwdSensip0,ts->mat_sensip,SAME_NONZERO_PATTERN));
   if (quadts && quadts->mat_sensip) {
     PetscCall(MatCopy(th->MatIntegralSensip0,quadts->mat_sensip,SAME_NONZERO_PATTERN));
   }

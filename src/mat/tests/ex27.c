@@ -10,6 +10,7 @@ int main(int argc,char **args)
   PetscReal      nrm,tol=10*PETSC_SMALL;
   PetscRandom    rctx;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCall(PetscRandomCreate(PETSC_COMM_WORLD,&rctx));
 

@@ -475,7 +475,7 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
   Mat              Amat,nextDef=NULL,*mats;
   PetscInt         i,m,red,size;
   PetscMPIInt      commsize;
-  PetscBool        match,flgspd,transp=PETSC_FALSE;
+  PetscBool        match,flgspd,isset,transp=PETSC_FALSE;
   MatCompositeType ctype;
   MPI_Comm         comm;
   char             prefix[128]="";
@@ -587,23 +587,21 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
     if (!def->WtAW) {
       PetscCall(MatMatMult(def->WtA,def->W,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&def->WtAW));
       /* TODO create MatInheritOption(Mat,MatOption) */
-      PetscCall(MatGetOption(Amat,MAT_SPD,&flgspd));
-      PetscCall(MatSetOption(def->WtAW,MAT_SPD,flgspd));
+      PetscCall(MatIsSPDKnown(Amat,&isset,&flgspd));
+      if (isset) PetscCall(MatSetOption(def->WtAW,MAT_SPD,flgspd));
       if (PetscDefined(USE_DEBUG)) {
         /* Check columns of W are not in kernel of A */
         PetscReal *norms;
+
         PetscCall(PetscMalloc1(m,&norms));
         PetscCall(MatGetColumnNorms(def->WtAW,NORM_INFINITY,norms));
         for (i=0; i<m; i++) {
-          if (norms[i] < 100*PETSC_MACHINE_EPSILON) {
-            SETERRQ(comm,PETSC_ERR_SUP,"Column %" PetscInt_FMT " of W is in kernel of A.",i);
-          }
+          PetscCheck(norms[i] > 100*PETSC_MACHINE_EPSILON,PetscObjectComm((PetscObject)def->WtAW),PETSC_ERR_SUP,"Column %" PetscInt_FMT " of W is in kernel of A.",i);
         }
         PetscCall(PetscFree(norms));
       }
-    } else {
-      PetscCall(MatGetOption(def->WtAW,MAT_SPD,&flgspd));
-    }
+    } else PetscCall(MatIsSPDKnown(def->WtAW,&isset,&flgspd));
+
     /* TODO use MATINV ? */
     PetscCall(KSPCreate(comm,&def->WtAWinv));
     PetscCall(KSPSetOperators(def->WtAWinv,def->WtAW,def->WtAW));
@@ -614,7 +612,7 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
       /* set default KSPtype */
       if (!def->ksptype) {
         def->ksptype = KSPFGMRES;
-        if (flgspd) { /* SPD system */
+        if (isset && flgspd) { /* SPD system */
           def->ksptype = KSPFCG;
         }
       }
@@ -634,9 +632,7 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
       PetscCall(KSPSetType(def->WtAWinv,KSPPREONLY));
       PetscCall(PCSetType(pcinner,PCTELESCOPE));
       /* do not overwrite PCTELESCOPE */
-      if (def->prefix) {
-        PetscCall(KSPSetOptionsPrefix(def->WtAWinv,def->prefix));
-      }
+      if (def->prefix) PetscCall(KSPSetOptionsPrefix(def->WtAWinv,def->prefix));
       PetscCall(KSPAppendOptionsPrefix(def->WtAWinv,"deflation_tel_"));
       PetscCall(PCSetFromOptions(pcinner));
       PetscCall(PetscObjectTypeCompare((PetscObject)pcinner,PCTELESCOPE,&match));
@@ -658,15 +654,11 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
         PetscCall(PCSetType(pcinner,PCLU));
 #if defined(PETSC_HAVE_SUPERLU)
         PetscCall(MatGetFactorAvailable(def->WtAW,MATSOLVERSUPERLU,MAT_FACTOR_LU,&match));
-        if (match) {
-          PetscCall(PCFactorSetMatSolverType(pcinner,MATSOLVERSUPERLU));
-        }
+        if (match) PetscCall(PCFactorSetMatSolverType(pcinner,MATSOLVERSUPERLU));
 #endif
 #if defined(PETSC_HAVE_SUPERLU_DIST)
         PetscCall(MatGetFactorAvailable(def->WtAW,MATSOLVERSUPERLU_DIST,MAT_FACTOR_LU,&match));
-        if (match) {
-          PetscCall(PCFactorSetMatSolverType(pcinner,MATSOLVERSUPERLU_DIST));
-        }
+        if (match) PetscCall(PCFactorSetMatSolverType(pcinner,MATSOLVERSUPERLU_DIST));
 #endif
       }
     }
@@ -691,9 +683,7 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
     PetscCall(PCCreate(comm,&def->pc));
     PetscCall(PCSetOperators(def->pc,Amat,Amat));
     PetscCall(PCSetType(def->pc,PCNONE));
-    if (def->prefix) {
-      PetscCall(PCSetOptionsPrefix(def->pc,def->prefix));
-    }
+    if (def->prefix) PetscCall(PCSetOptionsPrefix(def->pc,def->prefix));
     PetscCall(PCAppendOptionsPrefix(def->pc,"deflation_"));
     PetscCall(PCAppendOptionsPrefix(def->pc,prefix));
     PetscCall(PCAppendOptionsPrefix(def->pc,"pc_"));

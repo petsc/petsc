@@ -93,6 +93,7 @@ PetscErrorCode DMPlexGetLocalOffsets(DM dm, DMLabel domain_label, PetscInt label
 
     PetscCall(PetscDSGetDiscretization(ds, ds_field, (PetscObject*)&fe));
     PetscCall(PetscFEGetHeightSubspace(fe, height, &fe));
+    PetscCheck(fe, PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "Height %" PetscInt_FMT " is invalid for DG coordinates", height);
     PetscCall(PetscFEGetDualSpace(fe, &dual_space));
     PetscCall(PetscDualSpaceGetDimension(dual_space, &num_dual_basis_vectors));
     PetscCall(PetscDualSpaceGetNumComponents(dual_space, num_comp));

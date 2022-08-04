@@ -175,9 +175,10 @@ PetscErrorCode MatSetValues_MPISELL(Mat mat,PetscInt m,const PetscInt im[],Petsc
         if (in[j] >= cstart && in[j] < cend) {
           col   = in[j] - cstart;
           MatSetValue_SeqSELL_Private(A,row,col,value,addv,im[i],in[j],cp1,vp1,lastcol1,low1,high1); /* set one value */
-        } else if (in[j] < 0) continue;
-        else PetscCheck(in[j] < mat->cmap->N,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %" PetscInt_FMT " max %" PetscInt_FMT,in[j],mat->cmap->N-1);
-        else {
+        } else if (in[j] < 0) {
+          continue;
+        } else {
+          PetscCheck(in[j] < mat->cmap->N,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %" PetscInt_FMT " max %" PetscInt_FMT,in[j],mat->cmap->N-1);
           if (mat->was_assembled) {
             if (!sell->colmap) {
               PetscCall(MatCreateColmap_MPISELL_Private(mat));
@@ -200,7 +201,9 @@ PetscErrorCode MatSetValues_MPISELL(Mat mat,PetscInt m,const PetscInt im[],Petsc
               nrow2  = b->rlen[row];
               low2   = 0;
               high2  = nrow2;
-            } else PetscCheck(col >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero at global row/column (%" PetscInt_FMT ", %" PetscInt_FMT ") into matrix", im[i], in[j]);
+            } else {
+              PetscCheck(col >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero at global row/column (%" PetscInt_FMT ", %" PetscInt_FMT ") into matrix", im[i], in[j]);
+            }
           } else col = in[j];
           MatSetValue_SeqSELL_Private(B,row,col,value,addv,im[i],in[j],cp2,vp2,lastcol2,low2,high2); /* set one value */
         }
@@ -308,7 +311,7 @@ PetscErrorCode MatAssemblyEnd_MPISELL(Mat mat,MatAssemblyType mode)
      no processor disassembled thus we can skip this stuff
   */
   if (!((Mat_SeqSELL*)sell->B->data)->nonew) {
-    PetscCall(MPIU_Allreduce(&mat->was_assembled,&other_disassembled,1,MPIU_BOOL,MPI_PROD,PetscObjectComm((PetscObject)mat)));
+    PetscCall(MPIU_Allreduce(&mat->was_assembled,&other_disassembled,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)mat)));
     PetscCheck(!mat->was_assembled || other_disassembled,PETSC_COMM_SELF,PETSC_ERR_SUP,"MatDisAssemble not implemented yet");
   }
   if (!mat->was_assembled && mode == MAT_FINAL_ASSEMBLY) {
@@ -743,14 +746,7 @@ PetscErrorCode MatSetOption_MPISELL(Mat A,MatOption op,PetscBool flg)
     a->donotstash = flg;
     break;
   case MAT_SPD:
-    A->spd_set = PETSC_TRUE;
-    A->spd     = flg;
-    if (flg) {
-      A->symmetric                  = PETSC_TRUE;
-      A->structurally_symmetric     = PETSC_TRUE;
-      A->symmetric_set              = PETSC_TRUE;
-      A->structurally_symmetric_set = PETSC_TRUE;
-    }
+  case MAT_SPD_ETERNAL:
     break;
   case MAT_SYMMETRIC:
     MatCheckPreallocated(A,1);
@@ -765,6 +761,10 @@ PetscErrorCode MatSetOption_MPISELL(Mat A,MatOption op,PetscBool flg)
     PetscCall(MatSetOption(a->A,op,flg));
     break;
   case MAT_SYMMETRY_ETERNAL:
+    MatCheckPreallocated(A,1);
+    PetscCall(MatSetOption(a->A,op,flg));
+    break;
+  case MAT_STRUCTURAL_SYMMETRY_ETERNAL:
     MatCheckPreallocated(A,1);
     PetscCall(MatSetOption(a->A,op,flg));
     break;
@@ -1111,7 +1111,10 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPISELL,
                                 /*144*/NULL,
                                        NULL,
                                        NULL,
-                                       NULL
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                                /*150*/NULL
 };
 
 /* ----------------------------------------------------------------------------------------*/

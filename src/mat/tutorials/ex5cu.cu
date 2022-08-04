@@ -50,6 +50,7 @@ int main(int argc,char **args)
   PetscBool                  testmpiseq = PETSC_FALSE;
   Vec                        x,y;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL, "-n", &N, NULL));
   PetscCall(PetscOptionsGetInt(NULL,NULL, "-num_threads", &num_threads, NULL));

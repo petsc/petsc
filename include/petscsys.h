@@ -1173,6 +1173,7 @@ PETSC_EXTERN PetscErrorCode PetscTokenFind(PetscToken,char *[]);
 PETSC_EXTERN PetscErrorCode PetscTokenDestroy(PetscToken*);
 
 PETSC_EXTERN PetscErrorCode PetscStrInList(const char[],const char[],char,PetscBool*);
+PETSC_EXTERN const char *PetscBasename(const char []);
 PETSC_EXTERN PetscErrorCode PetscEListFind(PetscInt,const char *const*,const char*,PetscInt*,PetscBool*);
 PETSC_EXTERN PetscErrorCode PetscEnumFind(const char *const*,const char*,PetscEnum*,PetscBool*);
 
@@ -1200,6 +1201,11 @@ PETSC_EXTERN const char *const PetscFileModes[];
     Defines PETSc error handling.
 */
 #include <petscerror.h>
+
+PETSC_EXTERN PetscBool PetscCIEnabled;                    /* code is running in the PETSc test harness CI */
+PETSC_EXTERN PetscBool PetscCIEnabledPortableErrorOutput; /* error output is stripped to ensure portability of error messages across systems */
+PETSC_EXTERN const char *PetscCIFilename(const char *);
+PETSC_EXTERN int PetscCILinenumber(int);
 
 #define PETSC_SMALLEST_CLASSID  1211211
 PETSC_EXTERN PetscClassId PETSC_LARGEST_CLASSID;
@@ -1616,7 +1622,7 @@ static inline PetscErrorCode PetscMemcpy(void *a,const void *b,size_t n)
 #if defined(PETSC_PREFER_DCOPY_FOR_MEMCPY)
       PetscBLASInt one = 1,blen;
       PetscCall(PetscBLASIntCast(len,&blen));
-      PetscStackCallBLAS("BLAScopy",BLAScopy_(&blen,(PetscScalar *)b,&one,(PetscScalar *)a,&one));
+      PetscCallBLAS("BLAScopy",BLAScopy_(&blen,(PetscScalar *)b,&one,(PetscScalar *)a,&one));
 #elif defined(PETSC_PREFER_FORTRAN_FORMEMCPY)
       fortrancopy_(&len,(PetscScalar*)b,(PetscScalar*)a);
 #else
@@ -2686,4 +2692,8 @@ PETSC_EXTERN PetscErrorCode  PetscHasExternalPackage(const char[],PetscBool*);
 #define PetscPragmaOMP(...)
 #endif
 
+/* this cannot go here because it may be in a different shared library */
+PETSC_EXTERN PetscErrorCode PCMPIServerBegin(void);
+PETSC_EXTERN PetscErrorCode PCMPIServerEnd(void);
+PETSC_EXTERN PetscErrorCode PCMPICommsDestroy(void);
 #endif

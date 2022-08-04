@@ -1251,6 +1251,7 @@ static PetscErrorCode MatTranspose_IS(Mat A,MatReuse reuse,Mat *B)
   Mat                    C,lC,lA;
 
   PetscFunctionBegin;
+  if (reuse == MAT_REUSE_MATRIX) PetscCall(MatTransposeCheckNonzeroState_Private(A,*B));
   if (reuse == MAT_INITIAL_MATRIX || reuse == MAT_INPLACE_MATRIX) {
     ISLocalToGlobalMapping rl2g,cl2g;
     PetscCall(MatCreate(PetscObjectComm((PetscObject)A),&C));
@@ -2062,9 +2063,7 @@ general_assembly:
   PetscCall(MatAssemblyBegin(MT,MAT_FINAL_ASSEMBLY));
   PetscCall(MatDestroy(&local_mat));
   PetscCall(MatAssemblyEnd(MT,MAT_FINAL_ASSEMBLY));
-  if (isseqdense) {
-    PetscCall(MatSetOption(MT,MAT_ROW_ORIENTED,PETSC_TRUE));
-  }
+  if (isseqdense) PetscCall(MatSetOption(MT,MAT_ROW_ORIENTED,PETSC_TRUE));
   if (reuse == MAT_INPLACE_MATRIX) {
     PetscCall(MatHeaderReplace(mat,&MT));
   } else if (reuse == MAT_INITIAL_MATRIX) {
@@ -2905,9 +2904,7 @@ static PetscErrorCode MatISSetLocalMatType_IS(Mat mat,MatType mtype)
   Mat_IS         *is = (Mat_IS*)mat->data;
 
   PetscFunctionBegin;
-  if (is->A) {
-    PetscCall(MatSetType(is->A,mtype));
-  }
+  if (is->A) PetscCall(MatSetType(is->A,mtype));
   PetscCall(PetscFree(is->lmattype));
   PetscCall(PetscStrallocpy(mtype,&is->lmattype));
   PetscFunctionReturn(0);
@@ -3138,12 +3135,8 @@ static PetscErrorCode MatSetFromOptions_IS(PetscOptionItems *PetscOptionsObject,
   PetscCall(PetscOptionsBool("-matis_fixempty","Fix local matrices in case of empty local rows/columns","MatISFixLocalEmpty",a->locempty,&a->locempty,NULL));
   PetscCall(PetscOptionsBool("-matis_storel2l","Store local-to-local matrices generated from PtAP operations","MatISStoreL2L",a->storel2l,&a->storel2l,NULL));
   PetscCall(PetscOptionsFList("-matis_localmat_type","Matrix type","MatISSetLocalMatType",MatList,a->lmattype,type,256,&flg));
-  if (flg) {
-    PetscCall(MatISSetLocalMatType(A,type));
-  }
-  if (a->A) {
-    PetscCall(MatSetFromOptions(a->A));
-  }
+  if (flg) PetscCall(MatISSetLocalMatType(A,type));
+  if (a->A) PetscCall(MatSetFromOptions(a->A));
   PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
@@ -3187,14 +3180,14 @@ PetscErrorCode MatCreateIS(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,Petsc
 
 static PetscErrorCode MatHasOperation_IS(Mat A, MatOperation op, PetscBool *has)
 {
-  Mat_IS              *a = (Mat_IS*)A->data;
-  static MatOperation tobefiltered[] = { MATOP_MULT_ADD, MATOP_MULT_TRANSPOSE_ADD, MATOP_GET_DIAGONAL_BLOCK, MATOP_INCREASE_OVERLAP };
+  Mat_IS       *a = (Mat_IS*)A->data;
+  MatOperation tobefiltered[] = { MATOP_MULT_ADD, MATOP_MULT_TRANSPOSE_ADD, MATOP_GET_DIAGONAL_BLOCK, MATOP_INCREASE_OVERLAP};
 
   PetscFunctionBegin;
   *has = PETSC_FALSE;
-  if (!((void**)A->ops)[op]) PetscFunctionReturn(0);
+  if (!((void**)A->ops)[op] || !a->A) PetscFunctionReturn(0);
   *has = PETSC_TRUE;
-  for (PetscInt i = 0; PETSC_STATIC_ARRAY_LENGTH(tobefiltered); i++) if (op == tobefiltered[i]) PetscFunctionReturn(0);
+  for (PetscInt i = 0; i < (PetscInt)PETSC_STATIC_ARRAY_LENGTH(tobefiltered); i++) if (op == tobefiltered[i]) PetscFunctionReturn(0);
   PetscCall(MatHasOperation(a->A,op,has));
   PetscFunctionReturn(0);
 }
@@ -3226,19 +3219,16 @@ static PetscErrorCode MatSetPreallocationCOOLocal_IS(Mat A,PetscCount ncoo,Petsc
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatSetPreallocationCOO_IS(Mat A,PetscCount ncoo,const PetscInt coo_i[],const PetscInt coo_j[])
+static PetscErrorCode MatSetPreallocationCOO_IS(Mat A,PetscCount ncoo,PetscInt coo_i[],PetscInt coo_j[])
 {
   Mat_IS         *a = (Mat_IS*)A->data;
-  PetscInt       *coo_il, *coo_jl, incoo;
 
   PetscFunctionBegin;
   PetscCheck(a->A,PetscObjectComm((PetscObject)A),PETSC_ERR_ORDER,"Need to provide l2g map first via MatSetLocalToGlobalMapping");
   PetscCheck(ncoo <= PETSC_MAX_INT,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"ncoo %" PetscCount_FMT " overflowed PetscInt; configure --with-64-bit-indices or request support",ncoo);
-  PetscCall(PetscMalloc2(ncoo,&coo_il,ncoo,&coo_jl));
-  PetscCall(ISGlobalToLocalMappingApply(a->rmapping,IS_GTOLM_MASK,ncoo,coo_i,&incoo,coo_il));
-  PetscCall(ISGlobalToLocalMappingApply(a->cmapping,IS_GTOLM_MASK,ncoo,coo_j,&incoo,coo_jl));
-  PetscCall(MatSetPreallocationCOO(a->A,ncoo,coo_il,coo_jl));
-  PetscCall(PetscFree2(coo_il,coo_jl));
+  PetscCall(ISGlobalToLocalMappingApply(a->rmapping,IS_GTOLM_MASK,ncoo,coo_i,NULL,coo_i));
+  PetscCall(ISGlobalToLocalMappingApply(a->cmapping,IS_GTOLM_MASK,ncoo,coo_j,NULL,coo_j));
+  PetscCall(MatSetPreallocationCOO(a->A,ncoo,coo_i,coo_j));
   PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatSetValuesCOO_C",MatSetValuesCOO_IS));
   A->preallocated = PETSC_TRUE;
   PetscFunctionReturn(0);

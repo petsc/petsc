@@ -2220,6 +2220,7 @@ int main(int argc, char **argv)
   PetscReal      t;
   PetscInt       dim, Nc[3];
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(ProcessOptions(PETSC_COMM_WORLD, &ctx));
   PetscCall(PetscBagCreate(PETSC_COMM_SELF, sizeof(Parameter), &ctx.bag));
@@ -2388,6 +2389,11 @@ int main(int argc, char **argv)
       suffix: 2d_mandel
       requires: double
       args: -ts_dt 0.0028666667 -ts_max_steps 2 -ts_monitor -dmts_check .0001
+
+    test:
+      # -dm_refine 3 -ts_max_steps 4 -convest_num_refine 3 gives L_2 convergence rate: [1.6, 0.93, 1.2]
+      suffix: 2d_mandel_sconv
+      args: -ts_dt 1e-5 -dt_initial 1e-5 -ts_max_steps 2 -ts_convergence_estimate -ts_convergence_temporal 0 -convest_num_refine 1
 
     test:
       # -dm_refine 5 -ts_max_steps 4 -convest_num_refine 3 gives L_2 convergence rate: [0.26, -0.0058, 0.26]

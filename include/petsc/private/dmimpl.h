@@ -209,6 +209,14 @@ PETSC_INTERN PetscErrorCode DMDestroyLabelLinkList_Internal(DM);
 
 #define MAXDMMONITORS 5
 
+typedef struct {
+  PetscInt dim;   /* The dimension of the embedding space */
+  DM       dm;    /* Layout for coordinates */
+  Vec      x;     /* Coordinate values in global vector */
+  Vec      xl;    /* Coordinate values in local  vector */
+  DMField  field; /* Coordinates as an abstract field */
+} DMCoordinates;
+
 struct _p_DM {
   PETSCHEADER(struct _DMOps);
   Vec                     localin[DM_MAX_WORK_VECTORS],localout[DM_MAX_WORK_VECTORS];
@@ -272,14 +280,10 @@ struct _p_DM {
   PetscErrorCode        (*transformDestroy)(DM, void *);
   PetscErrorCode        (*transformGetMatrix)(DM, const PetscReal[], PetscBool, const PetscScalar **, void *);
   /* Coordinates */
-  PetscInt                dimEmbed;             /* The dimension of the embedding space */
-  DM                      coordinateDM;         /* Layout for coordinates */
-  Vec                     coordinates;          /* Coordinate values in global vector */
-  Vec                     coordinatesLocal;     /* Coordinate values in local  vector */
-  PetscBool               periodic;             /* Is the DM periodic? */
-  DMField                 coordinateField;      /* Coordinates as an abstract field */
-  PetscReal              *L, *maxCell;          /* Size of periodic box and max cell size for determining periodicity */
-  DMBoundaryType         *bdtype;               /* Indicates type of topological boundary */
+  DMCoordinates           coordinates[2];       /* Coordinates, 0 is default, 1 is possible DG coordinate field for periodicity */
+  /* Periodicity */
+  PetscReal              *Lstart, *L, *maxCell; /* Size of periodic box and max cell size for determining periodicity */
+  PetscBool               sparseLocalize;       /* Localize coordinates only for cells near periodic boundary */
   /* Null spaces -- of course I should make this have a variable number of fields */
   NullSpaceFunc           nullspaceConstructors[10];
   NullSpaceFunc           nearnullspaceConstructors[10];

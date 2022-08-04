@@ -41,6 +41,7 @@ int main(int argc,char **args)
   PetscReal      *rowsx,*rowsy;
   PetscReal      *gllNode, *gllWgts;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Options for p-FEM","");
   PetscCall(PetscOptionsInt("-m","Number of elements in each direction","None",m,&m,NULL));

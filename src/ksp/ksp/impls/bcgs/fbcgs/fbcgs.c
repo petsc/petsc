@@ -93,7 +93,7 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
     PetscCall(VecDot(V,RP,&d1));
     if (d1 == 0.0) {
       PetscCheck(!ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve breakdown due to zero inner product");
-      else ksp->reason = KSP_DIVERGED_BREAKDOWN;
+      ksp->reason = KSP_DIVERGED_BREAKDOWN;
       PetscCall(PetscInfo(ksp,"Breakdown due to zero inner product\n"));
       break;
     }
@@ -109,7 +109,7 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
       PetscCall(VecDot(S,S,&d1));
       if (d1 != 0.0) {
         PetscCheck(!ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has failed due to singular preconditioned operator");
-        else ksp->reason = KSP_DIVERGED_BREAKDOWN;
+        ksp->reason = KSP_DIVERGED_BREAKDOWN;
         PetscCall(PetscInfo(ksp,"Failed due to singular preconditioned operator\n"));
         break;
       }
@@ -144,7 +144,7 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
     if (ksp->reason) break;
     if (rho == 0.0) {
      PetscCheck(!ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve breakdown due to zero rho inner product");
-      else ksp->reason = KSP_DIVERGED_BREAKDOWN;
+      ksp->reason = KSP_DIVERGED_BREAKDOWN;
       PetscCall(PetscInfo(ksp,"Breakdown due to zero rho inner product\n"));
       break;
     }

@@ -109,6 +109,7 @@ int main(int argc, char *argv[])
   VarMode        var = VAR_CONSERVATIVE;
   PetscScalar    sum;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"TS conservation example","");
   PetscCall(PetscOptionsEnum("-var","Variable formulation",NULL,VarModes,(PetscEnum)var,(PetscEnum*)&var,NULL));

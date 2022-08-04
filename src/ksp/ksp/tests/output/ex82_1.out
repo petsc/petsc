@@ -1,0 +1,19 @@
+Mat Object: 1 MPI process
+  type: seqaij
+row 0: (0, 1.)  (1, -1.) 
+row 1: (0, 1.)  (1, 1.) 
+  0 KSP Residual norm 7.226787238143e-01 
+  1 KSP Residual norm 5.110110262283e-01 
+  2 KSP Residual norm 1.134672414312e-16 
+% Number of Ritz pairs 2
+% Eigenvalue(s)  1. +1i  1. -1i
+% Eigenvector
+Vec Object: 1 MPI process
+  type: seq
+0.704517
+0.0604625
+% Imaginary part of Eigenvector
+Vec Object: 1 MPI process
+  type: seq
+0.0604625
+-0.704517

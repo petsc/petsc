@@ -1963,11 +1963,9 @@ PetscErrorCode KSPCheckSolve(KSP ksp,PC pc,Vec vec)
   PetscCall(PCGetFailedReason(subpc,&pcreason));
   if (pcreason || (ksp->reason < 0 && ksp->reason != KSP_DIVERGED_ITS)) {
     PetscCheck(!pc->erroriffailure,PETSC_COMM_SELF,PETSC_ERR_NOT_CONVERGED,"Detected not converged in KSP inner solve: KSP reason %s PC reason %s",KSPConvergedReasons[ksp->reason],PCFailedReasons[pcreason]);
-    else {
-      PetscCall(PetscInfo(ksp,"Detected not converged in KSP inner solve: KSP reason %s PC reason %s\n",KSPConvergedReasons[ksp->reason],PCFailedReasons[pcreason]));
-      pc->failedreason = PC_SUBPC_ERROR;
-      if (vec) PetscCall(VecSetInf(vec));
-    }
+    PetscCall(PetscInfo(ksp,"Detected not converged in KSP inner solve: KSP reason %s PC reason %s\n",KSPConvergedReasons[ksp->reason],PCFailedReasons[pcreason]));
+    pc->failedreason = PC_SUBPC_ERROR;
+    if (vec) PetscCall(VecSetInf(vec));
   }
   PetscFunctionReturn(0);
 }

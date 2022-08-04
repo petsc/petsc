@@ -9,6 +9,7 @@ int main(int argc, char **argv)
   PetscRandom    rctx;
   PetscScalar    *val_dot,*val_mdot,*tval_dot,*tval_mdot;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-k",&k,NULL));

@@ -97,8 +97,8 @@ typedef struct _p_PetscObject {
   PetscOps             bops[1];
   MPI_Comm             comm;
   PetscInt             type;
-  PetscLogDouble       flops,time,mem,memchildren;
-  PetscObjectId        id;
+  PetscLogDouble       flops,time,mem,memchildren; /* these are not set properly and should possibly be removed */
+  PetscObjectId        id;                         /* this is used to compare object for identity that may no longer exist since memory addresses get recycled for new objects */
   PetscInt             refct;
   PetscMPIInt          tag;
   PetscFunctionList    qlist;
@@ -107,8 +107,8 @@ typedef struct _p_PetscObject {
   char                 *description;
   char                 *mansec;
   char                 *type_name;     /*  this is the subclass, for example VECSEQ which equals "seq" */
-  PetscObject          parent;
-  PetscObjectId        parentid;
+  PetscObject          parent;         /* this is not set properly and should possibly be removed */
+  PetscObjectId        parentid;       /* this is not set properly and should possibly be removed */
   char*                name;
   char                 *prefix;
   PetscInt             tablevel;
@@ -243,7 +243,7 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
     PetscValidPointer_Internal(h,arg,PETSC_OBJECT,PetscObject);                                \
     if (((PetscObject)(h))->classid != ck) {                                                   \
       PetscCheck(((PetscObject)(h))->classid != PETSCFREEDHEADER,PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Object already free: Parameter # %d",arg); \
-      else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Wrong type of object: Parameter # %d",arg); \
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Wrong type of object: Parameter # %d",arg); \
     }                                                                                          \
   } while (0)
 
@@ -935,7 +935,7 @@ static inline PetscErrorCode PetscSpinlockDestroy(PetscSpinlock *omp_lock)
   return 0;
 }
 #else
-Thread safety requires either --with-openmp or --download-concurrencykit
+#error "Thread safety requires either --with-openmp or --download-concurrencykit"
 #endif
 
 #else

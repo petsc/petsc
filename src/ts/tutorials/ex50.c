@@ -96,6 +96,7 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscFunctionBegin;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /*initialize parameters */
@@ -350,7 +351,7 @@ PetscErrorCode MatMult_Laplacian(Mat A,Vec x,Vec y)
   PetscCall(DMDAGetCorners(appctx->da,&xs,NULL,NULL,&xn,NULL,NULL));
   PetscCall(PetscBLASIntCast(appctx->param.N,&n));
   for (j=xs; j<xs+xn; j += appctx->param.N-1) {
-    PetscStackCallBLAS("BLASgemv",BLASgemv_("N",&n,&n,&_DOne,&temp[0][0],&n,&xl[j],&_One,&_DOne,&yl[j],&_One));
+    PetscCallBLAS("BLASgemv",BLASgemv_("N",&n,&n,&_DOne,&temp[0][0],&n,&xl[j],&_One,&_DOne,&yl[j],&_One));
   }
   PetscCall(DMDAVecRestoreArrayRead(appctx->da,xlocal,(void*)&xl));
   PetscCall(DMDAVecRestoreArray(appctx->da,ylocal,&yl));
@@ -387,7 +388,7 @@ PetscErrorCode MatMult_Advection(Mat A,Vec x,Vec y)
   PetscCall(DMDAGetCorners(appctx->da,&xs,NULL,NULL,&xn,NULL,NULL));
   PetscCall(PetscBLASIntCast(appctx->param.N,&n));
   for (j=xs; j<xs+xn; j += appctx->param.N-1) {
-    PetscStackCallBLAS("BLASgemv",BLASgemv_("N",&n,&n,&_DOne,&temp[0][0],&n,&xl[j],&_One,&_DOne,&yl[j],&_One));
+    PetscCallBLAS("BLASgemv",BLASgemv_("N",&n,&n,&_DOne,&temp[0][0],&n,&xl[j],&_One,&_DOne,&yl[j],&_One));
   }
   PetscCall(DMDAVecRestoreArrayRead(appctx->da,xlocal,(void*)&xl));
   PetscCall(DMDAVecRestoreArray(appctx->da,ylocal,&yl));

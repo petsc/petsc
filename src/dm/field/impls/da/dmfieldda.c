@@ -261,9 +261,7 @@ static PetscErrorCode DMFieldEvaluateFE_DA(DMField field, IS cellIS, PetscQuadra
   PetscCall(PetscObjectTypeCompare((PetscObject)cellIS,ISSTRIDE,&isStride));
   if (isStride) {
     PetscCall(ISStrideGetInfo(cellIS,&sfirst,&stride));
-  } else {
-    PetscCall(ISGetIndices(cellIS,&cells));
-  }
+  } else PetscCall(ISGetIndices(cellIS,&cells));
   for (c = 0; c < nCells; c++) {
     PetscInt  cell = isStride ? (sfirst + c * stride) : cells[c];
     PetscInt  rem  = cell;
@@ -343,9 +341,7 @@ static PetscErrorCode DMFieldEvaluateFV_DA(DMField field, IS cellIS, PetscDataTy
   PetscCall(PetscObjectTypeCompare((PetscObject)cellIS,ISSTRIDE,&isStride));
   if (isStride) {
     PetscCall(ISStrideGetInfo(cellIS,&sfirst,&stride));
-  } else {
-    PetscCall(ISGetIndices(cellIS,&cells));
-  }
+  } else PetscCall(ISGetIndices(cellIS,&cells));
   for (c = 0; c < numCells; c++) {
     PetscInt  cell = isStride ? (sfirst + c * stride) : cells[c];
     PetscInt  rem  = cell;
@@ -428,8 +424,7 @@ static PetscErrorCode DMFieldInitialize_DA(DMField field)
   field->ops->view                    = DMFieldView_DA;
   dm = field->dm;
   PetscCall(DMGetDimension(dm,&dim));
-  if (dm->coordinates) coords = dm->coordinates;
-  else if (dm->coordinatesLocal) coords = dm->coordinatesLocal;
+  PetscCall(DMGetCoordinates(dm, &coords));
   if (coords) {
     PetscInt          n;
     const PetscScalar *array;

@@ -571,21 +571,21 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
 static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
 {
-  PetscDS         ds;
-  DMLabel         label;
-  PetscWeakForm   wf;
-  const DMBoundaryType *periodicity;
-  const PetscInt  id = 1;
-  PetscInt        bd, dim;
+  PetscDS          ds;
+  DMLabel          label;
+  PetscWeakForm    wf;
+  const PetscReal *L;
+  const PetscInt   id = 1;
+  PetscInt         bd, dim;
 
   PetscFunctionBeginUser;
   PetscCall(DMGetDS(dm, &ds));
   PetscCall(DMGetDimension(dm, &dim));
-  PetscCall(DMGetPeriodicity(dm, NULL, NULL, NULL, &periodicity));
+  PetscCall(DMGetPeriodicity(dm, NULL, NULL, &L));
   switch (user->variableCoefficient) {
   case COEFF_NONE:
-    if (periodicity && periodicity[0]) {
-      if (periodicity && periodicity[1]) {
+    if (L && L[0]) {
+      if (L && L[1]) {
         PetscCall(PetscDSSetResidual(ds, 0, f0_xytrig_u, f1_u));
         PetscCall(PetscDSSetJacobian(ds, 0, 0, NULL, NULL, NULL, g3_uu));
       } else {
@@ -642,8 +642,8 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
     case COEFF_CHECKERBOARD_0:
       user->exactFuncs[0]  = zero;break;
     default:
-      if (periodicity && periodicity[0]) {
-        if (periodicity && periodicity[1]) {
+      if (L && L[0]) {
+        if (L && L[1]) {
           user->exactFuncs[0] = xytrig_u_2d;
         } else {
           user->exactFuncs[0] = xtrig_u_2d;
@@ -814,6 +814,7 @@ int main(int argc, char **argv)
   JacActionCtx   userJ;       /* context for Jacobian MF action */
   PetscReal      error = 0.0; /* L_2 error in the solution */
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL,help));
   PetscCall(ProcessOptions(PETSC_COMM_WORLD, &user));
   PetscCall(SNESCreate(PETSC_COMM_WORLD, &snes));
@@ -954,9 +955,7 @@ int main(int argc, char **argv)
       if (user.checkksp) {
         KSP ksp;
 
-        if (nullSpace) {
-          PetscCall(MatNullSpaceRemove(nullSpace, u));
-        }
+        if (nullSpace) PetscCall(MatNullSpaceRemove(nullSpace, u));
         PetscCall(SNESComputeJacobian(snes, u, A, J));
         PetscCall(MatMult(A, u, b));
         PetscCall(SNESGetKSP(snes, &ksp));
@@ -1204,7 +1203,7 @@ int main(int argc, char **argv)
   test:
     suffix: 39
     requires: triangle !single
-    args: -run_type full -dm_refine_volume_limit_pre 0.015625 -petscspace_degree 2 -pc_type gamg -pc_gamg_esteig_ksp_type cg -pc_gamg_esteig_ksp_max_it 10 -ksp_rtol 1.0e-10 -ksp_monitor_short -ksp_converged_reason -snes_monitor_short -snes_converged_reason ::ascii_info_detail
+    args: -run_type full -dm_refine_volume_limit_pre 0.015625 -petscspace_degree 2 -pc_type gamg -pc_gamg_esteig_ksp_type cg -pc_gamg_esteig_ksp_max_it 10 -snes_rtol 1.0e-6 -ksp_rtol 1.0e-7 -ksp_monitor -ksp_converged_reason -snes_monitor_short -snes_converged_reason ::ascii_info_detail
   test:
     suffix: 40
     requires: triangle !single

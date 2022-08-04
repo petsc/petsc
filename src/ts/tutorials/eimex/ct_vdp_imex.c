@@ -50,6 +50,7 @@ int main(int argc, char **argv)
   struct _User      user;       /* user-defined work context */
   PetscViewer       viewer;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   /* Initialize user application context */
   PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"van der Pol options","");

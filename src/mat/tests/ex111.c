@@ -48,6 +48,7 @@ int main(int argc,char **argv)
   PetscBool      Test_3D=PETSC_FALSE,flg;
   const PetscInt *ia,*ja;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));

@@ -122,6 +122,7 @@ int main(int argc, char **argv)
   PetscInt       dim, dimC, isSimplex, isFE, numTests = 10;
   PetscReal      perturb = 0.1, tol = 10. * PETSC_SMALL;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   PetscCall(PetscRandomCreate(PETSC_COMM_SELF,&randCtx));
   PetscCall(PetscRandomSetInterval(randCtx,-1.,1.));

@@ -1,0 +1,11 @@
+[0]PETSC ERROR: --------------------- Error Message --------------------------------------------------------------
+[0]PETSC ERROR: No support for this operation for this object type
+[0]PETSC ERROR: Product of two integers 2 1610612736 overflow, either you have an invalidly large integer error in your code or you must ./configure PETSc with --with-64-bit-indices for the case you are running
+[0]PETSC ERROR: See https://petsc.org/release/faq/ for trouble shooting.
+[0]PETSC ERROR: #1 PetscIntMultError() at petscsys.h:0
+[0]PETSC ERROR: #2 DMSetFromOptions_DA() at dacreate.c:0
+[0]PETSC ERROR: #3 DMSetFromOptions() at dm.c:0
+[0]PETSC ERROR: #4 main() at ex19.c:0
+[0]PETSC ERROR: PETSc Option Table entries:
+[0]PETSC ERROR: -da_refine 100
+[0]PETSC ERROR: ----------------End of Error Message -------send entire error message to petsc-maint@mcs.anl.gov----------

@@ -68,13 +68,13 @@ PC Object: 8 MPI processes
           Cycles per PCApply=1
           Using externally compute Galerkin coarse grid matrices
           GAMG specific options
-            Threshold for dropping small values in graph on each level =       0.       0.      
+            Threshold for dropping small values in graph on each level =       -1.       -1.      
             Threshold scaling factor for each level not specified = 1.
             AGG specific options
               Symmetric graph false
               Number of levels to square graph 1
               Number smoothing steps 1
-            Complexity:    grid = 1.125    operator = 1.05143
+            Complexity:    grid = 1.04167    operator = 1.00571
       Coarse grid solver -- level 0 -------------------------------
         KSP Object: (pc_bddc_dirichlet_mg_coarse_) 1 MPI process
           type: preonly
@@ -103,26 +103,26 @@ PC Object: 8 MPI processes
                   Factored matrix follows:
                     Mat Object: (pc_bddc_dirichlet_mg_coarse_sub_) 1 MPI process
                       type: seqaij
-                      rows=18, cols=18, bs=6
+                      rows=6, cols=6, bs=6
                       package used to perform factorization: petsc
-                      total: nonzeros=324, allocated nonzeros=324
+                      total: nonzeros=36, allocated nonzeros=36
               linear system matrix = precond matrix:
               Mat Object: (pc_bddc_dirichlet_mg_coarse_sub_) 1 MPI process
                 type: seqaij
-                rows=18, cols=18, bs=6
-                total: nonzeros=324, allocated nonzeros=324
+                rows=6, cols=6, bs=6
+                total: nonzeros=36, allocated nonzeros=36
                 total number of mallocs used during MatSetValues calls=0
           linear system matrix = precond matrix:
           Mat Object: (pc_bddc_dirichlet_mg_coarse_sub_) 1 MPI process
             type: seqaij
-            rows=18, cols=18, bs=6
-            total: nonzeros=324, allocated nonzeros=324
+            rows=6, cols=6, bs=6
+            total: nonzeros=36, allocated nonzeros=36
             total number of mallocs used during MatSetValues calls=0
       Down solver (pre-smoother) on level 1 -------------------------------
         KSP Object: (pc_bddc_dirichlet_mg_levels_1_) 1 MPI process
           type: chebyshev
-            eigenvalue targets used: min 0.234692, max 2.58161
-            eigenvalues provided (min 0.312797, max 2.34692) with transform: [0. 0.1; 0. 1.1]
+            eigenvalue targets used: min 0.234693, max 2.58162
+            eigenvalues provided (min 0.273728, max 2.34693) with transform: [0. 0.1; 0. 1.1]
           maximum iterations=2, nonzero initial guess
           tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
           left preconditioning
@@ -158,7 +158,7 @@ PC Object: 8 MPI processes
           Cycles per PCApply=1
           Using externally compute Galerkin coarse grid matrices
           GAMG specific options
-            Threshold for dropping small values in graph on each level =       0.       0.      
+            Threshold for dropping small values in graph on each level =       -1.       -1.      
             Threshold scaling factor for each level not specified = 1.
             AGG specific options
               Symmetric graph false
@@ -211,8 +211,8 @@ PC Object: 8 MPI processes
       Down solver (pre-smoother) on level 1 -------------------------------
         KSP Object: (pc_bddc_neumann_mg_levels_1_) 1 MPI process
           type: chebyshev
-            eigenvalue targets used: min 0.263367, max 2.89704
-            eigenvalues provided (min 0.0547782, max 2.63367) with transform: [0. 0.1; 0. 1.1]
+            eigenvalue targets used: min 0.262061, max 2.88267
+            eigenvalues provided (min 0.100732, max 2.62061) with transform: [0. 0.1; 0. 1.1]
           maximum iterations=2, nonzero initial guess
           tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
           left preconditioning

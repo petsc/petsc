@@ -13,6 +13,7 @@ int main(int argc,char **args)
   PetscReal      norm;
   PC             pc;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
 

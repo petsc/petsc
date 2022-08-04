@@ -175,9 +175,7 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
     }
   }
 
-  if (pc->setfromoptionscalled) {
-    PetscCall(KSPSetFromOptions(red->ksp));
-  }
+  if (pc->setfromoptionscalled) PetscCall(KSPSetFromOptions(red->ksp));
   PetscCall(KSPSetUp(red->ksp));
   PetscFunctionReturn(0);
 }

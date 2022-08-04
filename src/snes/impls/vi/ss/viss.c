@@ -269,9 +269,7 @@ PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes)
   for (i=0; i<maxits; i++) {
 
     /* Call general purpose update function */
-    if (snes->ops->update) {
-      PetscCall((*snes->ops->update)(snes, snes->iter));
-    }
+    if (snes->ops->update) PetscCall((*snes->ops->update)(snes, snes->iter));
 
     /* Solve J Y = Phi, where J is the semismooth jacobian */
 
@@ -307,9 +305,7 @@ PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes)
       PetscCall((*snes->ops->precheck)(snes,X,Y,snes->precheck,&changed_y));
     }
 
-    if (PetscLogPrintInfo) {
-      PetscCall(SNESVICheckResidual_Private(snes,snes->jacobian,F,Y,G,W));
-    }
+    if (PetscLogPrintInfo) PetscCall(SNESVICheckResidual_Private(snes,snes->jacobian,F,Y,G,W));
     */
     /* Compute a (scaled) negative update in the line search routine:
          Y <- X - lambda*Y

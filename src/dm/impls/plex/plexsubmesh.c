@@ -716,9 +716,7 @@ static PetscErrorCode DMPlexCreateVTKLabel_Internal(DM dm, PetscBool createGhost
     if (leafLocal[l] >= cEnd) break;
     if (leafRemote[l].rank == rank) {
       PetscCall(DMLabelSetValue(vtkLabel, c, 1));
-    } else if (ghostLabel) {
-      PetscCall(DMLabelSetValue(ghostLabel, c, 2));
-    }
+    } else if (ghostLabel) PetscCall(DMLabelSetValue(ghostLabel, c, 2));
   }
   for (; c < cEnd; ++c) {
     PetscCall(DMLabelSetValue(vtkLabel, c, 1));
@@ -802,14 +800,12 @@ static PetscErrorCode DMPlexShiftTree_Internal(DM dm, PetscInt depthShift[], DM 
 
 static PetscErrorCode DMPlexConstructGhostCells_Internal(DM dm, DMLabel label, PetscInt *numGhostCells, DM gdm)
 {
-  PetscSF               sf;
-  IS                    valueIS;
-  const PetscInt       *values, *leaves;
-  PetscInt             *depthShift;
-  PetscInt              d, depth = 0, nleaves, loc, Ng, numFS, fs, fStart, fEnd, ghostCell, cEnd, c;
-  PetscBool             isper;
-  const PetscReal      *maxCell, *L;
-  const DMBoundaryType *bd;
+  PetscSF          sf;
+  IS               valueIS;
+  const PetscInt  *values, *leaves;
+  PetscInt        *depthShift;
+  PetscInt         d, depth = 0, nleaves, loc, Ng, numFS, fs, fStart, fEnd, ghostCell, cEnd, c;
+  const PetscReal *maxCell, *Lstart, *L;
 
   PetscFunctionBegin;
   PetscCall(DMGetPointSF(dm, &sf));
@@ -920,8 +916,8 @@ static PetscErrorCode DMPlexConstructGhostCells_Internal(DM dm, DMLabel label, P
     PetscCall(DMPlexSetCellType(gdm, c, DM_POLYTOPE_FV_GHOST));
   }
   /* Step 7: Periodicity */
-  PetscCall(DMGetPeriodicity(dm, &isper, &maxCell, &L, &bd));
-  PetscCall(DMSetPeriodicity(gdm, isper, maxCell,  L,  bd));
+  PetscCall(DMGetPeriodicity(dm, &maxCell, &Lstart, &L));
+  PetscCall(DMSetPeriodicity(gdm, maxCell,  Lstart,  L));
   if (numGhostCells) *numGhostCells = Ng;
   PetscFunctionReturn(0);
 }
@@ -3005,7 +3001,7 @@ static PetscErrorCode DMPlexInsertFace_Internal(DM dm, DM subdm, PetscInt numFac
   }
 #endif
   PetscCheck(numFaces <= 1,comm, PETSC_ERR_ARG_WRONG, "Vertex set had %" PetscInt_FMT " faces, not one", numFaces);
-  else if (numFaces == 1) {
+  if (numFaces == 1) {
     /* Add the other cell neighbor for this face */
     PetscCall(DMPlexSetCone(subdm, subcell, faces));
   } else {
@@ -3184,9 +3180,13 @@ static inline PetscInt DMPlexFilterPoint_Internal(PetscInt point, PetscInt first
 
 static PetscErrorCode DMPlexFilterLabels_Internal(DM dm, const PetscInt numSubPoints[], const PetscInt *subpoints[], const PetscInt firstSubPoint[], DM subdm)
 {
-  PetscInt       Nl, l, d;
+  DMLabel  depthLabel;
+  PetscInt Nl, l, d;
 
   PetscFunctionBegin;
+  // Reset depth label for fast lookup
+  PetscCall(DMPlexGetDepthLabel(dm, &depthLabel));
+  PetscCall(DMLabelMakeAllInvalid_Internal(depthLabel));
   PetscCall(DMGetNumLabels(dm, &Nl));
   for (l = 0; l < Nl; ++l) {
     DMLabel         label, newlabel;
@@ -3480,15 +3480,12 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
       }
       /* Must put in owned subpoints */
       for (p = pStart; p < pEnd; ++p) {
-        const PetscInt subpoint = DMPlexFilterPoint_Internal(p, 0, numSubpoints, subpoints);
-
-        if (subpoint < 0) {
-          newOwners[p-pStart].rank  = -3;
-          newOwners[p-pStart].index = -3;
-        } else {
-          newOwners[p-pStart].rank  = rank;
-          newOwners[p-pStart].index = subpoint;
-        }
+        newOwners[p-pStart].rank  = -3;
+        newOwners[p-pStart].index = -3;
+      }
+      for (p = 0; p < numSubpoints; ++p) {
+        newOwners[subpoints[p]-pStart].rank  = rank;
+        newOwners[subpoints[p]-pStart].index = p;
       }
       PetscCall(PetscSFReduceBegin(sfPoint, MPIU_2INT, newLocalPoints, newOwners, MPI_MAXLOC));
       PetscCall(PetscSFReduceEnd(sfPoint, MPIU_2INT, newLocalPoints, newOwners, MPI_MAXLOC));

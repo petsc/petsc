@@ -10,6 +10,7 @@ int main(int argc,char **argv)
   PetscBool      flg1,flg2,flga,match;
   char           str[16];
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   PetscCall(PetscOptionsCreate(&opt1));

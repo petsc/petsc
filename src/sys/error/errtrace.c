@@ -176,7 +176,7 @@ PetscErrorCode  PetscTraceBackErrorHandler(MPI_Comm comm,int line,const char *fu
 
   if (comm != PETSC_COMM_SELF) MPI_Comm_rank(comm,&rank);
 
-  if (rank == 0) {
+  if (rank == 0 && (!PetscCIEnabledPortableErrorOutput || PetscGlobalRank == 0)) {
     PetscBool  ismain;
     static int cnt = 1;
 
@@ -206,13 +206,15 @@ PetscErrorCode  PetscTraceBackErrorHandler(MPI_Comm comm,int line,const char *fu
       }
       if (mess) (*PetscErrorPrintf)("%s\n",mess);
       (*PetscErrorPrintf)("See https://petsc.org/release/faq/ for trouble shooting.\n");
-      (*PetscErrorPrintf)("%s\n",version);
-      if (PetscErrorPrintfInitializeCalled) (*PetscErrorPrintf)("%s on a %s named %s by %s %s\n",pname,arch,hostname,username,date);
-      (*PetscErrorPrintf)("Configure options %s\n",petscconfigureoptions);
+      if (!PetscCIEnabledPortableErrorOutput) {
+        (*PetscErrorPrintf)("%s\n",version);
+        if (PetscErrorPrintfInitializeCalled) (*PetscErrorPrintf)("%s on a %s named %s by %s %s\n",pname,arch,hostname,username,date);
+        (*PetscErrorPrintf)("Configure options %s\n",petscconfigureoptions);
+      }
     }
     /* print line of stack trace */
-    if (fun) (*PetscErrorPrintf)("#%d %s() at %s:%d\n",cnt++,fun,file,line);
-    else  (*PetscErrorPrintf)("#%d %s:%d\n",cnt++,file,line);
+    if (fun) (*PetscErrorPrintf)("#%d %s() at %s:%d\n",cnt++,fun,PetscCIFilename(file),PetscCILinenumber(line));
+    else if (file) (*PetscErrorPrintf)("#%d %s:%d\n",cnt++,PetscCIFilename(file),PetscCILinenumber(line));
     if (fun) {
       PetscStrncmp(fun,"main",4,&ismain);
       if (ismain) {

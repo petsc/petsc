@@ -17,6 +17,7 @@ int main(int argc,char **argv)
   PetscBool      mats_view=PETSC_FALSE;
   MatFactorInfo  finfo;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*) 0,help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
@@ -179,9 +180,7 @@ int main(int argc,char **argv)
   PetscCall(MatGetFactor(Aher,MATSOLVERELEMENTAL,MAT_FACTOR_CHOLESKY,&G));
   PetscCall(MatCholeskyFactorSymbolic(G,Aher,0,&finfo));
   PetscCall(MatCholeskyFactorNumeric(G,Aher,&finfo));
-  if (mats_view) {
-    PetscCall(MatView(G,PETSC_VIEWER_STDOUT_WORLD));
-  }
+  if (mats_view) PetscCall(MatView(G,PETSC_VIEWER_STDOUT_WORLD));
   PetscCall(MatSolve(G,b,x));
   PetscCall(MatMatSolve(G,B,X));
   PetscCall(MatDestroy(&G));
@@ -257,9 +256,7 @@ int main(int argc,char **argv)
   PetscCall(MatGetFactor(A,MATSOLVERELEMENTAL,MAT_FACTOR_LU,&F));
   PetscCall(MatLUFactorSymbolic(F,A,0,0,&finfo));
   PetscCall(MatLUFactorNumeric(F,A,&finfo));
-  if (mats_view) {
-    PetscCall(MatView(F,PETSC_VIEWER_STDOUT_WORLD));
-  }
+  if (mats_view) PetscCall(MatView(F,PETSC_VIEWER_STDOUT_WORLD));
   PetscCall(MatSolve(F,b,x));
   PetscCall(MatMatSolve(F,B,X));
   PetscCall(MatDestroy(&F));

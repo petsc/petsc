@@ -89,6 +89,11 @@ remove_from_toctrees = ['docs/manualpages/*']
 
 html_theme = 'pydata_sphinx_theme'
 
+html_logo_light = os.path.join('images', 'logos', 'PETSc_TAO_logos', 'PETSc-TAO', 'web', 'PETSc-TAO_RGB.svg')
+html_logo_dark = os.path.join('images', 'logos', 'PETSc_TAO_logos', 'PETSc-TAO', 'web', 'PETSc-TAO_RGB_white.svg')
+
+html_static_path = [html_logo_light, html_logo_dark]
+
 html_theme_options = {
     "icon_links": [
         {
@@ -99,6 +104,11 @@ html_theme_options = {
     ],
     "use_edit_page_button": True,
     "footer_items": ["copyright", "sphinx-version", "last-updated"],
+    "page_sidebar_items" : ["edit-this-page"],
+    "logo": {
+        "image_light": os.path.basename(html_logo_light),
+        "image_dark": os.path.basename(html_logo_dark)
+    }
 }
 
 try:
@@ -117,7 +127,7 @@ html_context = {
     "doc_path": "doc",
 }
 
-html_logo = os.path.join('images', 'logos', 'PETSc_TAO_logos', 'PETSc-TAO', 'web', 'PETSc-TAO_RGB.svg')
+html_logo = html_logo_light
 html_favicon = os.path.join('images', 'logos', 'PETSc_TAO_logos', 'PETSc', 'petsc_favicon.png')
 html_last_updated_fmt = r'%Y-%m-%dT%H:%M:%S%z (' + git_describe_version + ')'
 

@@ -24,6 +24,7 @@ int main(int argc,char **argv)
   PetscViewer       viewer=NULL;
   PetscViewerFormat format;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,"ex55options",help));
   PetscCall(PetscOptionsInsertString(NULL,"-option1 1 -option2 -option3 value3"));
   PetscCall(PetscOptionsGetViewer(PETSC_COMM_WORLD,NULL,NULL,"-options_monitor_viewer",&viewer,&format,NULL));
@@ -42,7 +43,7 @@ int main(int argc,char **argv)
 
    testset:
       localrunfiles: ex55options .petscrc petscrc
-      filter: egrep -v -e "(malloc|nox|display|saws_port|vecscatter|options_left|check_pointer_intensity|cuda_initialize|error_output_stdout|use_gpu_aware_mpi|checkstack|checkfunctionlist)"
+      filter: egrep -v -e "(options_left)"
       args: -options_left 0 -options_view -options_monitor_viewer ascii
       args: -skip_petscrc {{0 1}separate output} -options_monitor_cancel {{0 1}separate output}
       test:
@@ -57,7 +58,7 @@ int main(int argc,char **argv)
       # test effect of -skip_petscrc in ex55options file
       suffix: 4
       localrunfiles: ex55options .petscrc petscrc
-      filter: egrep -v -e "(malloc|nox|display|saws_port|vecscatter|options_left|check_pointer_intensity|cuda_initialize|error_output_stdout|use_gpu_aware_mpi|checkstack|checkfunctionlist)"
+      filter: egrep -v -e "(options_left)"
       args: -options_left 0 -options_view -options_monitor
    testset:
       # test -help / -help intro / -version from command line

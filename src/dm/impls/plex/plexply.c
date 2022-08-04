@@ -51,7 +51,7 @@ PetscErrorCode DMPlexCreatePLYFromFile(MPI_Comm comm, const char filename[], Pet
     PetscCall(PetscStrncmp(line, "binary_big_endian", PETSC_MAX_PATH_LEN, &isBinaryBig));
     PetscCall(PetscStrncmp(line, "binary_little_endian", PETSC_MAX_PATH_LEN, &isBinaryLittle));
     PetscCheck(!isAscii,PETSC_COMM_SELF, PETSC_ERR_SUP, "PLY ascii format not yet supported");
-    else if (isBinaryLittle) byteSwap = PETSC_TRUE;
+    if (isBinaryLittle) byteSwap = PETSC_TRUE;
     PetscCall(PetscViewerRead(viewer, line, 1, NULL, PETSC_STRING));
     PetscCall(PetscStrncmp(line, "1.0", PETSC_MAX_PATH_LEN, &match));
     PetscCheck(match,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid version of PLY file, %s", line);

@@ -357,6 +357,7 @@ int main(int argc,char **argv)
   IS                is1,is2;
   PetscReal         *coor, *kin, *pos, *mom;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   comm = PETSC_COMM_WORLD;
   PetscCall(ProcessOptions(comm, &user));
@@ -445,9 +446,7 @@ int main(int argc,char **argv)
       PetscCall(TSPreStep(ts));
     }
     PetscCall(TSStep(ts));
-    if (ts->steprollback) {
-      PetscCall(TSPostEvaluate(ts));
-    }
+    if (ts->steprollback) PetscCall(TSPostEvaluate(ts));
     if (!ts->steprollback) {
 
       TSPostStep(ts);

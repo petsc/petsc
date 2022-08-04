@@ -30,6 +30,7 @@ int main(int argc,char **argv)
   int       x = 0,y = 0,width = 256,height = 256;
   PetscDraw draw;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   PetscCall(PetscDrawCreate(PETSC_COMM_WORLD,NULL,"Title",x,y,width,height,&draw));
   PetscCall(PetscDrawSetFromOptions(draw));

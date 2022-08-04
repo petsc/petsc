@@ -42,6 +42,26 @@ PETSC_EXTERN const char* PetscCUFFTGetErrorName(cufftResult);
 #endif /* PETSC_PKG_CUDA_VERSION_GE(8,0,0) */
 #define CHKERRCUDA(...) PetscCallCUDA(__VA_ARGS__)
 
+#if PETSC_PKG_CUDA_VERSION_GE(8,0,0)
+#define PetscCallCUDAVoid(...) do {                                     \
+  const cudaError_t _p_cuda_err__ = __VA_ARGS__;                        \
+  PetscCheckAbort(_p_cuda_err__ == cudaSuccess,PETSC_COMM_SELF,PETSC_ERR_GPU,"cuda error %d (%s) : %s",(PetscErrorCode)_p_cuda_err__,cudaGetErrorName(_p_cuda_err__),cudaGetErrorString(_p_cuda_err__));  \
+} while (0)
+#else /* PETSC_PKG_CUDA_VERSION_GE(8,0,0) */
+#define PetscCallCUDAVoid(...) do {                                     \
+  const cudaError_t _p_cuda_err__ = __VA_ARGS__;                        \
+  PetscCheckAbort(_p_cuda_err__ == cudaSuccess,PETSC_COMM_SELF,PETSC_ERR_GPU,"cuda error %d",(PetscErrorCode)_p_cuda_err__); \
+} while (0)
+#endif /* PETSC_PKG_CUDA_VERSION_GE(8,0,0) */
+
+#define PetscCUDACheckLaunch                                            \
+do {                                                                    \
+ /* Check synchronous errors, i.e. pre-launch */                        \
+  PetscCallCUDA(cudaGetLastError());                                    \
+ /* Check asynchronous errors, i.e. kernel failed (ULF) */              \
+ PetscCallCUDA(cudaDeviceSynchronize());                                \
+ } while (0)
+
 #define PetscCallCUBLAS(...) do {                                       \
     const cublasStatus_t _p_cublas_stat__ = __VA_ARGS__;                \
     if (PetscUnlikely(_p_cublas_stat__ != CUBLAS_STATUS_SUCCESS)) {     \
@@ -54,10 +74,8 @@ PETSC_EXTERN const char* PetscCUFFTGetErrorName(cufftResult);
                 "Reports not initialized or alloc failed; "             \
                 "this indicates the GPU may have run out resources",    \
                 (PetscErrorCode)_p_cublas_stat__,name);                 \
-      } else {                                                          \
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_GPU,"cuBLAS error %d (%s)",   \
+      } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_GPU,"cuBLAS error %d (%s)",   \
                 (PetscErrorCode)_p_cublas_stat__,name);                 \
-      }                                                                 \
     }                                                                   \
   } while (0)
 #define CHKERRCUBLAS(...) PetscCallCUBLAS(__VA_ARGS__)
@@ -70,7 +88,7 @@ do {\
     const char *name  = cusparseGetErrorName(_p_cusparse_stat__);\
     const char *descr = cusparseGetErrorString(_p_cusparse_stat__);\
     PetscCheck((_p_cusparse_stat__ != CUSPARSE_STATUS_NOT_INITIALIZED) && (_p_cusparse_stat__ != CUSPARSE_STATUS_ALLOC_FAILED),PETSC_COMM_SELF,PETSC_ERR_GPU_RESOURCE,"cuSPARSE errorcode %d (%s) : %s. Reports not initialized or alloc failed; this indicates the GPU has run out resources",(int)_p_cusparse_stat__,name,descr); \
-    else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_GPU,"cuSPARSE errorcode %d (%s) : %s",(int)_p_cusparse_stat__,name,descr);\
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_GPU,"cuSPARSE errorcode %d (%s) : %s",(int)_p_cusparse_stat__,name,descr);\
   }\
 } while (0)
 #else  /* (CUSPARSE_VER_MAJOR > 10 || CUSPARSE_VER_MAJOR == 10 && CUSPARSE_VER_MINOR >= 2) */
@@ -93,10 +111,8 @@ do {\
                 "cuSolver error %d (%s). "                              \
                 "This indicates the GPU may have run out resources",    \
                 (PetscErrorCode)_p_cusolver_stat__,name);               \
-      } else {                                                          \
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_GPU,"cuSolver error %d (%s)", \
+      } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_GPU,"cuSolver error %d (%s)", \
                 (PetscErrorCode)_p_cusolver_stat__,name);               \
-      }                                                                 \
     }                                                                   \
   } while (0)
 #define CHKERRCUSOLVER(...) PetscCallCUSOLVER(__VA_ARGS__)
@@ -113,10 +129,8 @@ do {\
                 "Reports not initialized or alloc failed; "             \
                 "this indicates the GPU has run out resources",         \
                 (PetscErrorCode)_p_cufft_stat__,name);                  \
-      } else {                                                          \
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_GPU,"cuFFT error %d (%s)",    \
+      } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_GPU,"cuFFT error %d (%s)",    \
                 (PetscErrorCode)_p_cufft_stat__,name);                  \
-      }                                                                 \
     }                                                                   \
   } while (0)
 #define CHKERRCUFFT(...) PetscCallCUFFT(__VA_ARGS__)
@@ -132,10 +146,8 @@ do {\
                 "Reports not initialized or alloc failed; "             \
                 "this indicates the GPU has run out resources",         \
                 (PetscErrorCode)_p_curand_stat__);                      \
-      } else {                                                          \
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_GPU,                          \
+      } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_GPU,                          \
                 "cuRand error %d",(PetscErrorCode)_p_curand_stat__);    \
-      }                                                                 \
     }                                                                   \
   } while (0)
 #define CHKERRCURAND(...) PetscCallCURAND(__VA_ARGS__)
@@ -284,6 +296,9 @@ PETSC_EXTERN PetscErrorCode PetscDeviceContextSynchronize(PetscDeviceContext);
 PETSC_EXTERN PetscErrorCode PetscDeviceContextGetCurrentContext(PetscDeviceContext*);
 PETSC_EXTERN PetscErrorCode PetscDeviceContextSetCurrentContext(PetscDeviceContext);
 PETSC_EXTERN PetscErrorCode PetscDeviceContextSetFromOptions(MPI_Comm,const char[],PetscDeviceContext);
+#else
+#define PetscDeviceInitialize(...)  0
+#define PetscDeviceInitialized(...) PETSC_FALSE
 #endif /* PETSC_HAVE_CXX */
 
 #endif /* PETSCDEVICE_H */

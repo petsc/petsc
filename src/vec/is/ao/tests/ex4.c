@@ -10,6 +10,7 @@ int main(int argc,char **argv)
   PetscInt       *localvert=NULL, nlocal;
   PetscMPIInt    rank;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   PetscCall(PetscMalloc1(4,&localvert));

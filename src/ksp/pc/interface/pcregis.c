@@ -46,6 +46,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Mat(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_HYPRE(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_PFMG(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_SysPFMG(PC);
+PETSC_EXTERN PetscErrorCode PCCreate_SMG(PC);
 #endif
 #if !defined(PETSC_USE_COMPLEX)
 PETSC_EXTERN PetscErrorCode PCCreate_TFS(PC);
@@ -66,6 +67,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_HPDDM(PC);
 #if defined(PETSC_HAVE_H2OPUS)
 PETSC_EXTERN PetscErrorCode PCCreate_H2OPUS(PC);
 #endif
+PETSC_EXTERN PetscErrorCode PCCreate_MPI(PC);
 
 /*@C
    PCRegisterAll - Registers all of the preconditioners in the PC package.
@@ -131,6 +133,7 @@ PetscErrorCode  PCRegisterAll(void)
   PetscCall(PCRegister(PCHYPRE        ,PCCreate_HYPRE));
   PetscCall(PCRegister(PCPFMG         ,PCCreate_PFMG));
   PetscCall(PCRegister(PCSYSPFMG      ,PCCreate_SysPFMG));
+  PetscCall(PCRegister(PCSMG      ,PCCreate_SMG));
 #endif
 #if !defined(PETSC_USE_COMPLEX)
   PetscCall(PCRegister(PCTFS          ,PCCreate_TFS));
@@ -152,5 +155,6 @@ PetscErrorCode  PCRegisterAll(void)
 #if defined(PETSC_HAVE_H2OPUS)
   PetscCall(PCRegister(PCH2OPUS       ,PCCreate_H2OPUS));
 #endif
+  PetscCall(PCRegister(PCMPI         ,PCCreate_MPI));
   PetscFunctionReturn(0);
 }

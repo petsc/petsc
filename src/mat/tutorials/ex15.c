@@ -12,6 +12,7 @@ int main(int argc, char **args)
   PetscMPIInt     rank;
   MPI_Comm        comm;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, (char*) 0, help));
   comm = PETSC_COMM_WORLD;
   PetscCall(PetscOptionsGetInt(NULL,NULL, "-N", &N, NULL));
@@ -65,9 +66,7 @@ int main(int argc, char **args)
 
   PetscCall(MatPartitioningCreate(comm, &part));
   PetscCall(MatPartitioningSetAdjacency(part, A));
-  if (set_vweights) {
-    PetscCall(MatPartitioningSetVertexWeights(part,vweights));
-  }
+  if (set_vweights) PetscCall(MatPartitioningSetVertexWeights(part,vweights));
   if (use_edge_weights) {
     PetscCall(MatPartitioningSetUseEdgeWeights(part,use_edge_weights));
 

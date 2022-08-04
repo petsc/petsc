@@ -191,7 +191,7 @@ PetscErrorCode VecSwap_Seq(Vec xin,Vec yin)
     PetscCall(PetscBLASIntCast(xin->map->n,&bn));
     PetscCall(VecGetArray(xin,&xa));
     PetscCall(VecGetArray(yin,&ya));
-    PetscStackCallBLAS("BLASswap",BLASswap_(&bn,xa,&one,ya,&one));
+    PetscCallBLAS("BLASswap",BLASswap_(&bn,xa,&one,ya,&one));
     PetscCall(VecRestoreArray(xin,&xa));
     PetscCall(VecRestoreArray(yin,&ya));
   }
@@ -211,9 +211,9 @@ PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal *z)
   if (type == NORM_2 || type == NORM_FROBENIUS) {
     PetscCall(VecGetArrayRead(xin,&xx));
 #if defined(PETSC_USE_REAL___FP16)
-    PetscStackCallBLAS("BLASnrm2",*z = BLASnrm2_(&bn,xx,&one));
+    PetscCallBLAS("BLASnrm2",*z = BLASnrm2_(&bn,xx,&one));
 #else
-    PetscStackCallBLAS("BLASdot",*z   = PetscRealPart(BLASdot_(&bn,xx,&one,xx,&one)));
+    PetscCallBLAS("BLASdot",*z   = PetscRealPart(BLASdot_(&bn,xx,&one,xx,&one)));
     *z   = PetscSqrtReal(*z);
 #endif
     PetscCall(VecRestoreArrayRead(xin,&xx));
@@ -244,7 +244,7 @@ PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal *z)
     }
     *z = tmp;
 #else
-    PetscStackCallBLAS("BLASasum",*z   = BLASasum_(&bn,xx,&one));
+    PetscCallBLAS("BLASasum",*z   = BLASasum_(&bn,xx,&one));
 #endif
     PetscCall(VecRestoreArrayRead(xin,&xx));
     PetscCall(PetscLogFlops(PetscMax(n-1.0,0.0)));
@@ -333,9 +333,12 @@ PetscErrorCode VecView_Seq_ASCII(Vec xin,PetscViewer viewer)
       } else if (outputState == 1) {
         outputState = 4;
         doOutput = 1;
-      } else if (outputState == 2) doOutput = 0;
-      else PetscCheck(outputState != 3,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Tried to output CELL_DATA again after intervening POINT_DATA");
-      else if (outputState == 4) doOutput = 0;
+      } else if (outputState == 2) {
+        doOutput = 0;
+      } else {
+        PetscCheck(outputState != 3,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Tried to output CELL_DATA again after intervening POINT_DATA");
+        if (outputState == 4) doOutput = 0;
+      }
 
       if (doOutput) {
         PetscCall(PetscViewerASCIIPrintf(viewer, "CELL_DATA %" PetscInt_FMT "\n", n));
@@ -598,9 +601,7 @@ PETSC_EXTERN PetscErrorCode VecView_Seq(Vec xin,PetscViewer viewer)
   } else if (ismatlab) {
     PetscCall(VecView_Seq_Matlab(xin,viewer));
 #endif
-  } else if (isglvis) {
-    PetscCall(VecView_GLVis(xin,viewer));
-  }
+  } else if (isglvis) PetscCall(VecView_GLVis(xin,viewer));
   PetscFunctionReturn(0);
 }
 

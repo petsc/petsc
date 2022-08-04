@@ -826,6 +826,7 @@ Unable to run hostname to check the network')
     return
 
   def PetscArchMPICheck(self):
+    '''Check that previously configured for MPI include files are not in the PETSC_ARCH directory'''
     import os
     '''Makes sure incompatable mpi.h is not in the PETSC_ARCH/include directory'''
     build_mpi_h_dir = os.path.join(self.petscdir.dir,self.arch,'include')
@@ -851,8 +852,8 @@ Unable to run hostname to check the network')
 
 
   def configureLibrary(self):
-    import platform
     '''Calls the regular package configureLibrary and then does an additional test needed by MPI'''
+    import platform
     if 'with-'+self.package+'-shared' in self.argDB:
       self.argDB['with-'+self.package] = 1
     config.package.Package.configureLibrary(self)

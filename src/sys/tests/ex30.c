@@ -7,6 +7,7 @@ int main(int argc,char **argv)
 {
   int            event1,event2,event3;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(PetscLogEventRegister("Event2",0,&event2));
   PetscCall(PetscLogEventRegister("Event1",0,&event1));

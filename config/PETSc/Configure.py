@@ -130,7 +130,7 @@ class Configure(config.base.Configure):
                                             'sys/socket','sys/wait','netinet/in','netdb','direct','time','Ws2tcpip','sys/types',
                                             'WindowsX','float','ieeefp','stdint','pthread','inttypes','immintrin','zmmintrin'])
     functions = ['access','_access','clock','drand48','getcwd','_getcwd','getdomainname','gethostname',
-                 'getwd','memalign','popen','PXFGETARG','rand','getpagesize',
+                 'getwd','posix_memalign','popen','PXFGETARG','rand','getpagesize',
                  'readlink','realpath','usleep','sleep','_sleep',
                  'uname','snprintf','_snprintf','lseek','_lseek','time','fork','stricmp',
                  'strcasecmp','bzero','dlopen','dlsym','dlclose','dlerror',
@@ -714,6 +714,7 @@ char assert_aligned[(sizeof(struct mystruct)==16)*2-1];
     self.popLanguage()
 
   def configureRTLDDefault(self):
+    '''Check for dynamic library feature'''
     if self.checkCompile('#include <dlfcn.h>\n void *ptr =  RTLD_DEFAULT;'):
       self.addDefine('RTLD_DEFAULT','1')
     return
@@ -913,6 +914,7 @@ char assert_aligned[(sizeof(struct mystruct)==16)*2-1];
       return
 
   def configureGCOV(self):
+    '''Checking for configuring with gcov, from --with-gcov'''
     if self.framework.argDB['with-gcov']:
       self.addDefine('USE_GCOV','1')
     return

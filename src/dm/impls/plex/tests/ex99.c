@@ -97,6 +97,7 @@ int main(int argc, char **argv)
   PetscBool         set,flg;
   FILE              *fp;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   PetscCall(PetscStrncpy(geodir, "${PETSC_DIR}/share/petsc/datafiles/meshes", sizeof(geodir)));
@@ -113,12 +114,13 @@ int main(int argc, char **argv)
   if (fmt == 1) bin = PETSC_FALSE; /* Recent Gmsh releases cannot generate msh40+binary format*/
 
   { /* This test requires Gmsh >= 4.2.0 */
+    char space[PETSC_MAX_PATH_LEN];
     int inum = 0, major = 0, minor = 0, micro = 0;
     PetscCall(PetscSNPrintf(cmd, sizeof(cmd), "%s -info", gmsh));
     PetscCall(PetscPOpen(PETSC_COMM_SELF, NULL, cmd, "r", &fp));
-    if (fp) {inum = fscanf(fp, "Version : %d.%d.%d", &major, &minor, &micro);}
+    if (fp) {inum = fscanf(fp, "Version %s %d.%d.%d", space, &major, &minor, &micro);}
     PetscCall(PetscPClose(PETSC_COMM_SELF, fp));
-    if (inum != 3 || major < 4 || (major == 4 && minor < 2)) {
+    if (inum != 4 || major < 4 || (major == 4 && minor < 2)) {
       PetscCall(PetscPrintf(PETSC_COMM_SELF, "Gmsh>=4.2.0 not available\n")); goto finish;
     }
   }
@@ -140,8 +142,8 @@ int main(int argc, char **argv)
   PetscCall(DMPlexCreateFromFile(PETSC_COMM_SELF, out, "ex99_plex", PETSC_TRUE, &dm));
   PetscCall(PetscSNPrintf(tag, sizeof(tag), "mesh-%s", mshlist[msh]));
   PetscCall(PetscObjectSetName((PetscObject)dm, tag));
-  PetscCall(DMViewFromOptions(dm, NULL, "-dm_view"));
   PetscCall(DMSetFromOptions(dm));
+  PetscCall(DMViewFromOptions(dm, NULL, "-dm_view"));
   {
     PetscBool check;
     PetscReal integral = 0, tol = (PetscReal)1.0e-4;
@@ -173,7 +175,7 @@ finish:
     args: -dm_view ::ascii_info_detail
     args: -dm_plex_check_all
     args: -dm_plex_gmsh_highorder false
-    args: -dm_plex_gmsh_use_marker true
+    args: -dm_plex_boundary_label marker
     args: -dm_plex_gmsh_spacedim 3
 
   test:
@@ -185,7 +187,7 @@ finish:
     args: -dm_view ::ascii_info_detail
     args: -dm_plex_check_all
     args: -dm_plex_gmsh_highorder false
-    args: -dm_plex_gmsh_use_marker true
+    args: -dm_plex_boundary_label marker
 
   testset:
     suffix: B2 # 2D ball

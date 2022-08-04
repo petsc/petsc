@@ -22,6 +22,9 @@ PETSC_EXTERN PetscErrorCode MatSeqAIJRegisterAll(void);
 /* Gets the root type of the input matrix's type (e.g., MATAIJ for MATSEQAIJ) */
 PETSC_EXTERN PetscErrorCode MatGetRootType_Private(Mat, MatType*);
 
+/* Gets the MPI type corresponding to the input matrix's type (e.g., MATMPIAIJ for MATSEQAIJ) */
+PETSC_EXTERN PetscErrorCode MatGetMPIMatType_Private(Mat, MatType*);
+
 /*
   This file defines the parts of the matrix data structure that are
   shared by all matrix types.
@@ -211,6 +214,10 @@ struct _MatOps {
   PetscErrorCode (*destroysubmatrices)(PetscInt,Mat*[]);
   PetscErrorCode (*mattransposesolve)(Mat,Mat,Mat);
   PetscErrorCode (*getvalueslocal)(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],PetscScalar[]);
+  PetscErrorCode (*creategraph)(Mat,PetscBool,PetscBool,Mat*);
+  PetscErrorCode (*filter)(Mat,PetscReal,Mat*);
+  /*150*/
+  PetscErrorCode (*transposesymbolic)(Mat,Mat*);
 };
 /*
     If you add MatOps entries above also add them to the MATOP enum
@@ -263,6 +270,10 @@ PETSC_INTERN PetscErrorCode MatProductCreate_Private(Mat,Mat,Mat,Mat);
 /* this callback handles all the different triple products and
    does not rely on the function pointers; used by cuSPARSE and KOKKOS-KERNELS */
 PETSC_INTERN PetscErrorCode MatProductSymbolic_ABC_Basic(Mat);
+
+/* Filter and graph create are common to AIJ seq and mpi */
+PETSC_INTERN PetscErrorCode MatCreateGraph_Simple_AIJ(Mat,PetscBool,PetscBool,Mat*);
+PETSC_INTERN PetscErrorCode MatFilter_AIJ(Mat,PetscReal,Mat*);
 
 #if defined(PETSC_CLANG_STATIC_ANALYZER)
 template <typename Tm> void MatCheckPreallocated(Tm,int);
@@ -459,9 +470,8 @@ struct _p_Mat {
   PetscInt               congruentlayouts; /* are the rows and columns layouts congruent? */
   PetscBool              preallocated;
   MatStencilInfo         stencil;          /* information for structured grid */
-  PetscBool              symmetric,hermitian,structurally_symmetric,spd;
-  PetscBool              symmetric_set,hermitian_set,structurally_symmetric_set,spd_set; /* if true, then corresponding flag is correct*/
-  PetscBool              symmetric_eternal;
+  PetscBool3             symmetric,hermitian,structurally_symmetric,spd;
+  PetscBool              symmetry_eternal,structural_symmetry_eternal,spd_eternal;
   PetscBool              nooffprocentries,nooffproczerorows;
   PetscBool              assembly_subset;  /* set by MAT_SUBSET_OFF_PROC_ENTRIES */
   PetscBool              submat_singleis;  /* for efficient PCSetUp_ASM() */
@@ -538,6 +548,7 @@ struct _p_MatPartitioning {
   PetscInt    *vertex_weights;
   PetscReal   *part_weights;
   PetscInt    n;                                 /* number of partitions */
+  PetscInt    ncon;                              /* number of vertex weights per vertex */
   void        *data;
   PetscInt    setupcalled;
   PetscBool   use_edge_weights;  /* A flag indicates whether or not to use edge weights */
@@ -566,6 +577,9 @@ struct _p_MatCoarsen {
   IS               perm;
   PetscCoarsenData *agg_lists;
 };
+
+PETSC_EXTERN PetscErrorCode MatCoarsenMISKSetDistance(MatCoarsen,PetscInt);
+PETSC_EXTERN PetscErrorCode MatCoarsenMISKGetDistance(MatCoarsen,PetscInt*);
 
 /*
     MatFDColoring is used to compute Jacobian matrices efficiently
@@ -734,6 +748,17 @@ typedef struct { /* used by MatCreateSubMatrices_MPIAIJ_SingleIS_Local() and Mat
   PetscErrorCode (*destroy)(Mat);
 } Mat_SubSppt;
 
+PETSC_EXTERN PetscErrorCode MatTransposeCheckNonzeroState_Private(Mat,Mat);
+
+/*
+ Used by MatTranspose() and potentially other functions to track the matrix used in the generation of another matrix
+*/
+typedef struct {
+  PetscObjectId    id;
+  PetscObjectState state;
+  PetscObjectState nonzerostate;
+} MatParentState;
+
 PETSC_EXTERN PetscErrorCode MatFactorDumpMatrix(Mat);
 PETSC_INTERN PetscErrorCode MatShift_Basic(Mat,PetscScalar);
 PETSC_INTERN PetscErrorCode MatSetBlockSizes_Default(Mat,PetscInt,PetscInt);
@@ -812,15 +837,10 @@ static inline PetscErrorCode MatPivotCheck_none(Mat fact,Mat mat,const MatFactor
 static inline PetscErrorCode MatPivotCheck(Mat fact,Mat mat,const MatFactorInfo *info,FactorShiftCtx *sctx,PetscInt row)
 {
   PetscFunctionBegin;
-  if (info->shifttype == (PetscReal) MAT_SHIFT_NONZERO) {
-    PetscCall(MatPivotCheck_nz(mat,info,sctx,row));
-  } else if (info->shifttype == (PetscReal) MAT_SHIFT_POSITIVE_DEFINITE) {
-    PetscCall(MatPivotCheck_pd(mat,info,sctx,row));
-  } else if (info->shifttype == (PetscReal) MAT_SHIFT_INBLOCKS) {
-    PetscCall(MatPivotCheck_inblocks(mat,info,sctx,row));
-  } else {
-    PetscCall(MatPivotCheck_none(fact,mat,info,sctx,row));
-  }
+  if (info->shifttype == (PetscReal) MAT_SHIFT_NONZERO) PetscCall(MatPivotCheck_nz(mat,info,sctx,row));
+  else if (info->shifttype == (PetscReal) MAT_SHIFT_POSITIVE_DEFINITE) PetscCall(MatPivotCheck_pd(mat,info,sctx,row));
+  else if (info->shifttype == (PetscReal) MAT_SHIFT_INBLOCKS) PetscCall(MatPivotCheck_inblocks(mat,info,sctx,row));
+  else PetscCall(MatPivotCheck_none(fact,mat,info,sctx,row));
   PetscFunctionReturn(0);
 }
 

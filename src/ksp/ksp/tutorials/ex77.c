@@ -20,6 +20,7 @@ int main(int argc,char **args)
   PetscBool          breakdown = PETSC_FALSE,flg;
   KSPConvergedReason reason;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,NULL,help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));

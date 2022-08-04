@@ -401,7 +401,7 @@ static PetscErrorCode ISSetInfo_Internal(IS is, ISInfo info, ISInfoType type, IS
     break;
   default:
     PetscCheck(type != IS_LOCAL,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Unknown IS property");
-    else SETERRQ(PetscObjectComm((PetscObject)is), PETSC_ERR_ARG_OUTOFRANGE, "Unknown IS property");
+    SETERRQ(PetscObjectComm((PetscObject)is), PETSC_ERR_ARG_OUTOFRANGE, "Unknown IS property");
   }
   PetscFunctionReturn(0);
 }
@@ -906,9 +906,7 @@ PetscErrorCode  ISContiguousLocal(IS is,PetscInt gstart,PetscInt gend,PetscInt *
   PetscValidBoolPointer(contig,5);
   *start  = -1;
   *contig = PETSC_FALSE;
-  if (is->ops->contiguous) {
-    PetscCall((*is->ops->contiguous)(is,gstart,gend,start,contig));
-  }
+  if (is->ops->contiguous) PetscCall((*is->ops->contiguous)(is,gstart,gend,start,contig));
   PetscFunctionReturn(0);
 }
 
@@ -1335,9 +1333,7 @@ PetscErrorCode  ISRestoreIndices(IS is,const PetscInt *ptr[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(ptr,2);
-  if (is->ops->restoreindices) {
-    PetscCall((*is->ops->restoreindices)(is,ptr));
-  }
+  if (is->ops->restoreindices) PetscCall((*is->ops->restoreindices)(is,ptr));
   PetscFunctionReturn(0);
 }
 

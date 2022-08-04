@@ -153,20 +153,16 @@ PetscErrorCode DMForestTemplate(DM dm, MPI_Comm comm, DM *tdm)
   PetscCall(DMForestSetGradeFactor(*tdm,factor));
   PetscCall(DMForestGetBaseCoordinateMapping(dm,&map,&mapCtx));
   PetscCall(DMForestSetBaseCoordinateMapping(*tdm,map,mapCtx));
-  if (forest->ftemplate) {
-    PetscCall((*forest->ftemplate)(dm, *tdm));
-  }
+  if (forest->ftemplate) PetscCall((*forest->ftemplate)(dm, *tdm));
   PetscCall(DMForestSetAdaptivityForest(*tdm,dm));
   PetscCall(DMCopyDisc(dm,*tdm));
   PetscCall(DMGetApplicationContext(dm,&ctx));
   PetscCall(DMSetApplicationContext(*tdm,&ctx));
   {
-    PetscBool            isper;
-    const PetscReal      *maxCell, *L;
-    const DMBoundaryType *bd;
+    const PetscReal *maxCell, *L, *Lstart;
 
-    PetscCall(DMGetPeriodicity(dm,&isper,&maxCell,&L,&bd));
-    PetscCall(DMSetPeriodicity(*tdm,isper,maxCell,L,bd));
+    PetscCall(DMGetPeriodicity(dm,  &maxCell, &Lstart, &L));
+    PetscCall(DMSetPeriodicity(*tdm, maxCell,  Lstart,  L));
   }
   PetscCall(DMGetMatType(dm,&mtype));
   PetscCall(DMSetMatType(*tdm,mtype));
@@ -291,20 +287,16 @@ PetscErrorCode DMForestSetBaseDM(DM dm, DM base)
   PetscCall(DMDestroy(&forest->base));
   forest->base = base;
   if (base) {
-    PetscBool        isper;
-    const PetscReal *maxCell, *L;
-    const DMBoundaryType *bd;
+    const PetscReal *maxCell, *Lstart, *L;
 
     PetscValidHeaderSpecific(base, DM_CLASSID, 2);
     PetscCall(DMGetDimension(base,&dim));
     PetscCall(DMSetDimension(dm,dim));
     PetscCall(DMGetCoordinateDim(base,&dimEmbed));
     PetscCall(DMSetCoordinateDim(dm,dimEmbed));
-    PetscCall(DMGetPeriodicity(base,&isper,&maxCell,&L,&bd));
-    PetscCall(DMSetPeriodicity(dm,isper,maxCell,L,bd));
-  } else {
-    PetscCall(DMSetPeriodicity(dm,PETSC_FALSE,NULL,NULL,NULL));
-  }
+    PetscCall(DMGetPeriodicity(base,&maxCell,&Lstart,&L));
+    PetscCall(DMSetPeriodicity(dm,maxCell,Lstart,L));
+  } else PetscCall(DMSetPeriodicity(dm,NULL,NULL,NULL));
   PetscFunctionReturn(0);
 }
 
@@ -1486,15 +1478,11 @@ PETSC_EXTERN PetscErrorCode DMSetFromOptions_Forest(PetscOptionItems *PetscOptio
   } else {
     PetscCall(DMForestGetAdjacencyCodimension(dm,&adjCodim));
     PetscCall(PetscOptionsBoundedInt("-dm_forest_adjacency_codimension","set the codimension of points that define adjacency in the forest","DMForestSetAdjacencyCodimension",adjCodim,&adjCodim,&flg,1));
-    if (flg) {
-      PetscCall(DMForestSetAdjacencyCodimension(dm,adjCodim));
-    }
+    if (flg) PetscCall(DMForestSetAdjacencyCodimension(dm,adjCodim));
   }
   PetscCall(DMForestGetPartitionOverlap(dm,&overlap));
   PetscCall(PetscOptionsBoundedInt("-dm_forest_partition_overlap","set the degree of partition overlap","DMForestSetPartitionOverlap",overlap,&overlap,&flg,0));
-  if (flg) {
-    PetscCall(DMForestSetPartitionOverlap(dm,overlap));
-  }
+  if (flg) PetscCall(DMForestSetPartitionOverlap(dm,overlap));
 #if 0
   PetscCall(PetscOptionsBoundedInt("-dm_refine","equivalent to -dm_forest_set_minimum_refinement and -dm_forest_set_initial_refinement with the same value",NULL,minRefinement,&minRefinement,&flg,0));
   if (flg) {
@@ -1509,34 +1497,22 @@ PETSC_EXTERN PetscErrorCode DMSetFromOptions_Forest(PetscOptionItems *PetscOptio
 #endif
   PetscCall(DMForestGetMinimumRefinement(dm,&minRefinement));
   PetscCall(PetscOptionsBoundedInt("-dm_forest_minimum_refinement","set the minimum level of refinement in the forest","DMForestSetMinimumRefinement",minRefinement,&minRefinement,&flg,0));
-  if (flg) {
-    PetscCall(DMForestSetMinimumRefinement(dm,minRefinement));
-  }
+  if (flg) PetscCall(DMForestSetMinimumRefinement(dm,minRefinement));
   PetscCall(DMForestGetInitialRefinement(dm,&initRefinement));
   PetscCall(PetscOptionsBoundedInt("-dm_forest_initial_refinement","set the initial level of refinement in the forest","DMForestSetInitialRefinement",initRefinement,&initRefinement,&flg,0));
-  if (flg) {
-    PetscCall(DMForestSetInitialRefinement(dm,initRefinement));
-  }
+  if (flg) PetscCall(DMForestSetInitialRefinement(dm,initRefinement));
   PetscCall(DMForestGetMaximumRefinement(dm,&maxRefinement));
   PetscCall(PetscOptionsBoundedInt("-dm_forest_maximum_refinement","set the maximum level of refinement in the forest","DMForestSetMaximumRefinement",maxRefinement,&maxRefinement,&flg,0));
-  if (flg) {
-    PetscCall(DMForestSetMaximumRefinement(dm,maxRefinement));
-  }
+  if (flg) PetscCall(DMForestSetMaximumRefinement(dm,maxRefinement));
   PetscCall(DMForestGetAdaptivityStrategy(dm,&adaptStrategy));
   PetscCall(PetscOptionsString("-dm_forest_adaptivity_strategy","the forest's adaptivity-flag resolution strategy","DMForestSetAdaptivityStrategy",adaptStrategy,stringBuffer,sizeof(stringBuffer),&flg));
-  if (flg) {
-    PetscCall(DMForestSetAdaptivityStrategy(dm,(DMForestAdaptivityStrategy)stringBuffer));
-  }
+  if (flg) PetscCall(DMForestSetAdaptivityStrategy(dm,(DMForestAdaptivityStrategy)stringBuffer));
   PetscCall(DMForestGetGradeFactor(dm,&grade));
   PetscCall(PetscOptionsBoundedInt("-dm_forest_grade_factor","grade factor between neighboring cells","DMForestSetGradeFactor",grade,&grade,&flg,0));
-  if (flg) {
-    PetscCall(DMForestSetGradeFactor(dm,grade));
-  }
+  if (flg) PetscCall(DMForestSetGradeFactor(dm,grade));
   PetscCall(DMForestGetCellWeightFactor(dm,&weightsFactor));
   PetscCall(PetscOptionsReal("-dm_forest_cell_weight_factor","multiplying weight factor for cell refinement","DMForestSetCellWeightFactor",weightsFactor,&weightsFactor,&flg));
-  if (flg) {
-    PetscCall(DMForestSetCellWeightFactor(dm,weightsFactor));
-  }
+  if (flg) PetscCall(DMForestSetCellWeightFactor(dm,weightsFactor));
   PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
@@ -1566,9 +1542,7 @@ PetscErrorCode DMRefine_Forest(DM dm, MPI_Comm comm, DM *dmRefined)
   if (!refine) {
     PetscCall(DMLabelCreate(PETSC_COMM_SELF, "refine",&refine));
     PetscCall(DMLabelSetDefaultValue(refine,DM_ADAPT_REFINE));
-  } else {
-    PetscCall(PetscObjectReference((PetscObject) refine));
-  }
+  } else PetscCall(PetscObjectReference((PetscObject) refine));
   PetscCall(DMForestSetAdaptivityLabel(*dmRefined,refine));
   PetscCall(DMLabelDestroy(&refine));
   PetscFunctionReturn(0);
@@ -1599,9 +1573,7 @@ PetscErrorCode DMCoarsen_Forest(DM dm, MPI_Comm comm, DM *dmCoarsened)
   if (!coarsen) {
     PetscCall(DMLabelCreate(PETSC_COMM_SELF, "coarsen",&coarsen));
     PetscCall(DMLabelSetDefaultValue(coarsen,DM_ADAPT_COARSEN));
-  } else {
-    PetscCall(PetscObjectReference((PetscObject) coarsen));
-  }
+  } else PetscCall(PetscObjectReference((PetscObject) coarsen));
   PetscCall(DMForestSetAdaptivityLabel(*dmCoarsened,coarsen));
   PetscCall(DMLabelDestroy(&coarsen));
   PetscFunctionReturn(0);

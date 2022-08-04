@@ -65,9 +65,9 @@ PetscErrorCode SNESNGMRESFormCombinedSolution_Private(SNES snes,PetscInt ivec,Pe
     ngmres->rcond = -1.;
     PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
 #if defined(PETSC_USE_COMPLEX)
-    PetscStackCallBLAS("LAPACKgelss",LAPACKgelss_(&ngmres->m,&ngmres->n,&ngmres->nrhs,ngmres->h,&ngmres->lda,ngmres->beta,&ngmres->ldb,ngmres->s,&ngmres->rcond,&ngmres->rank,ngmres->work,&ngmres->lwork,ngmres->rwork,&ngmres->info));
+    PetscCallBLAS("LAPACKgelss",LAPACKgelss_(&ngmres->m,&ngmres->n,&ngmres->nrhs,ngmres->h,&ngmres->lda,ngmres->beta,&ngmres->ldb,ngmres->s,&ngmres->rcond,&ngmres->rank,ngmres->work,&ngmres->lwork,ngmres->rwork,&ngmres->info));
 #else
-    PetscStackCallBLAS("LAPACKgelss",LAPACKgelss_(&ngmres->m,&ngmres->n,&ngmres->nrhs,ngmres->h,&ngmres->lda,ngmres->beta,&ngmres->ldb,ngmres->s,&ngmres->rcond,&ngmres->rank,ngmres->work,&ngmres->lwork,&ngmres->info));
+    PetscCallBLAS("LAPACKgelss",LAPACKgelss_(&ngmres->m,&ngmres->n,&ngmres->nrhs,ngmres->h,&ngmres->lda,ngmres->beta,&ngmres->ldb,ngmres->s,&ngmres->rcond,&ngmres->rank,ngmres->work,&ngmres->lwork,&ngmres->info));
 #endif
     PetscCall(PetscFPTrapPop());
     PetscCheck(ngmres->info >= 0,PetscObjectComm((PetscObject)snes),PETSC_ERR_LIB,"Bad argument to GELSS");
@@ -108,23 +108,15 @@ PetscErrorCode SNESNGMRESNorms_Private(SNES snes,PetscInt l,Vec X,Vec F,Vec XM,V
   PetscInt       i;
 
   PetscFunctionBegin;
-  if (xMnorm) {
-    PetscCall(VecNormBegin(XM,NORM_2,xMnorm));
-  }
-  if (fMnorm) {
-    PetscCall(VecNormBegin(FM,NORM_2,fMnorm));
-  }
+  if (xMnorm) PetscCall(VecNormBegin(XM,NORM_2,xMnorm));
+  if (fMnorm) PetscCall(VecNormBegin(FM,NORM_2,fMnorm));
   if (yMnorm) {
     PetscCall(VecCopy(X,D));
     PetscCall(VecAXPY(D,-1.0,XM));
     PetscCall(VecNormBegin(D,NORM_2,yMnorm));
   }
-  if (xAnorm) {
-    PetscCall(VecNormBegin(XA,NORM_2,xAnorm));
-  }
-  if (fAnorm) {
-    PetscCall(VecNormBegin(FA,NORM_2,fAnorm));
-  }
+  if (xAnorm) PetscCall(VecNormBegin(XA,NORM_2,xAnorm));
+  if (fAnorm) PetscCall(VecNormBegin(FA,NORM_2,fAnorm));
   if (yAnorm) {
     PetscCall(VecCopy(X,D));
     PetscCall(VecAXPY(D,-1.0,XA));

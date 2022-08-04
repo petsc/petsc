@@ -168,6 +168,7 @@ int main(int argc,char **argv)
   AppCtx    appctx;
   PetscReal t = 0,shift,norm;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   appctx.D1    = 8.0e-5;

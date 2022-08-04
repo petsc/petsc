@@ -57,9 +57,7 @@ PetscErrorCode MatMult_NormalHermitian(Mat N,Vec x,Vec y)
   }
   PetscCall(MatMult(Na->A,in,Na->w));
   PetscCall(MatMultHermitianTranspose(Na->A,Na->w,y));
-  if (Na->left) {
-    PetscCall(VecPointwiseMult(y,Na->left,y));
-  }
+  if (Na->left) PetscCall(VecPointwiseMult(y,Na->left,y));
   PetscCall(VecScale(y,Na->scale));
   PetscFunctionReturn(0);
 }
@@ -106,9 +104,7 @@ PetscErrorCode MatMultHermitianTranspose_Normal(Mat N,Vec x,Vec y)
   }
   PetscCall(MatMult(Na->A,in,Na->w));
   PetscCall(MatMultHermitianTranspose(Na->A,Na->w,y));
-  if (Na->right) {
-    PetscCall(VecPointwiseMult(y,Na->right,y));
-  }
+  if (Na->right) PetscCall(VecPointwiseMult(y,Na->right,y));
   PetscCall(VecScale(y,Na->scale));
   PetscFunctionReturn(0);
 }

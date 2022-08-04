@@ -16,7 +16,7 @@ stages:
 variables:
   GIT_STRATEGY: fetch
   GIT_CLEAN_FLAGS: -ffdxq
-  PETSC_OPTIONS: -checkstack -checkfunctionlist
+  PETSC_OPTIONS:  -checkfunctionlist
   TIMEOUT: 450
 
 #
@@ -438,7 +438,7 @@ freebsd-cxx-pkgs-opt:
   tags:
     - os:fbsd
   variables:
-    PETSC_OPTIONS: -vecscatter_mpi1 false -options_left false -checkstack -checkfunctionlist
+    PETSC_OPTIONS: -vecscatter_mpi1 false -options_left false -checkfunctionlist
     TEST_ARCH: arch-ci-freebsd-cxx-pkgs-opt
 
 freebsd-pkgs-opt:
@@ -628,10 +628,9 @@ linux-pkgs-cxx-mlib:
     - .stage-3
     - .linux_test
   tags:
-    - gce-nfs
+    - gce-u22-stage3
   variables:
     TEST_ARCH: arch-ci-linux-pkgs-cxx-mlib
-    LOAD_MODULES: gcc/11.1.0-5ikoznk cmake/3.20.5-yjp2hz6
 
 linux-pkgs-valgrind:
   extends:
@@ -670,7 +669,7 @@ linux-cmplx-gcov:
   tags:
     - gce-nfs, linux-gcov
   variables:
-    PETSC_OPTIONS:  -vecscatter_mpi1 false -options_left false -checkstack -checkfunctionlist
+    PETSC_OPTIONS:  -vecscatter_mpi1 false -options_left false -checkfunctionlist
     TEST_ARCH: arch-ci-linux-cmplx-gcov
     LOAD_MODULES: gcc/8.3.0-fjpc5ys
     RUN_GCOV: 1
@@ -863,7 +862,6 @@ mswin-intel-cxx-cmplx:
   variables:
     TEST_ARCH: arch-ci-mswin-intel-cxx-cmplx
 
-#do not run checkstack on MSWIN-UNI
 mswin-uni:
   extends:
     - .stage-3
@@ -944,7 +942,7 @@ osx-cxx-pkgs-opt:
   tags:
     - os:macos, opt
   variables:
-    PETSC_OPTIONS: -vecscatter_mpi1 false -options_left false -checkstack -checkfunctionlist
+    PETSC_OPTIONS: -vecscatter_mpi1 false -options_left false -checkfunctionlist
     TEST_ARCH: arch-ci-osx-cxx-pkgs-opt
     MAKE_CXXFLAGS: -Werror -Wno-pass-failed
 
@@ -998,7 +996,7 @@ analyze-pipeline:
 # Base job for a documentation build
 #
 .docs:
-  stage: stage-2
+  stage: stage-3
   tags:
     - gce-stage2
   before_script:

@@ -184,6 +184,31 @@ We now introduce the various families of PETSc matrices. ``DMCreateMatrix()`` ma
 the preallocation process (introduced below) automatically so many users do not need to
 worry about the details of the preallocation process.
 
+.. _sec_matlayout:
+
+Matrix and Vector Layouts and Storage Locations
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The layout of PETSc matrices across MPI ranks is defined by two things
+
+- the layout of the two compatible vectors in the computation of the matrix-vector product  y = A \* x and
+- the memory where various parts of the matrix are stored across the MPI ranks.
+
+PETSc vectors always have a contiguous range of vector entries stored on each MPI rank. The first rank has entries from 0 to ``rend1`` - 1, the
+next rank has entries from ``rend1`` to ``rend2`` - 1, etc. Thus the ownership range on each rank is from ``rstart`` to ``rend``, these values can be
+obtained with ``VecGetOwnershipRange``\(``Vec`` x, ``PetscInt`` \* ``rstart``, ``PetscInt`` \* ``rend``). Each PETSc ``Vec`` has a ``PetscLayout`` object that contains this information.
+
+All PETSc matrices have two ``PetscLayout``\s, they define the vector layouts for y and x in the product, y = A \* x. Their ownership range information
+can be obtained with ``MatGetOwnershipRange()``, ``MatGetOwnershipRangeColumn()``,  ``MatGetOwnershipRanges()``, and  ``MatGetOwnershipRangesColumn()``.
+Note that ``MatCreateVecs()`` provides two vectors that have compatible layouts for the associated vector.
+
+For most PETSc matrices, excluding ``MATELEMENTAL`` and ``MATSCALAPACK``, the row ownership range obtained with  ``MatGetOwnershipRange()`` also defines
+where the matrix entries are stored; the matrix entries for rows ``rstart`` to ``rend - 1`` are stored on the corresponding MPI rank. For other matrices
+the rank where each matrix entry is stored is more complicated; information about the storage locations can be obtained with ``MatGetOwnershipIS()``.
+Note that for
+most PETSc matrices the values returned by ``MatGetOwnershipIS()`` are the same as those returned by  ``MatGetOwnershipRange()`` and
+``MatGetOwnershipRangeColumn()``.
+
 .. _sec_matsparse:
 
 Sparse Matrices
@@ -942,6 +967,38 @@ See also :any:`sec_nlmatrixfree` for details on one set of
 helpful utilities for using the matrix-free approach for nonlinear
 solvers.
 
+.. _sec_mattranspose:
+
+Transposes of Matrices
+~~~~~~~~~~~~~~~~~~~~~~
+
+PETSc provides several ways to work with transposes of matrix.
+
+.. code-block::
+
+   MatTranspose(Mat A,MatReuse MAT_INITIAL_MATRIX or MAT_INPLACE_MATRIX or MAT_REUSE_MATRIX,Mat *B)
+
+will either do an in-place or out-of-place matrix explicit formation of the matrix transpose. After it has been called
+with ``MAT_INPLACE_MATRIX`` it may be called again with ``MAT_REUSE_MATRIX`` and it will recompute the transpose if the A
+matrix has changed. Internally it keeps track of whether the nonzero pattern of A has not changed so
+will reuse the symbolic transpose when possible for efficiency.
+
+.. code-block::
+
+   MatTransposeSymbolic(Mat A,Mat *B)
+
+only does the symbolic transpose on the matrix. After it is called ``MatTranspose()`` may be called with
+``MAT_REUSE_MATRIX`` to compute the numerical transpose.
+
+Occasionally one may already have a B matrix with the needed sparsity pattern to store the transpose and wants to reuse that
+space instead of creating a new matrix by calling ``MatTranspose``\(A,``MAT_INITIAL_MATRIX``\,&B) but they cannot just call
+``MatTranspose``\(A,``MAT_REUSE_MATRIX``\,&B) so instead they can call ``MatTransposeSetPrecusor``\(A,B) and then call
+``MatTranspose``\(A,``MAT_REUSE_MATRIX``\,&B). This routine just provides to B the meta-data it needs to compute the numerical
+factorization efficiently.
+
+The routine ``MatCreateTranspose``\(A,&B) provides a surrogate matrix B that behaviors like the transpose of A without forming
+the transpose explicitly. For example, ``MatMult``\(B,x,y) will compute the matrix-vector product of A transpose times x.
+
 .. _sec_othermat:
 
 Other Matrix Operations
@@ -1090,6 +1147,34 @@ Once the user has finished using a row, he or she *must* call
    MatRestoreRow(Mat A,PetscInt row,PetscInt *ncols,PetscInt **cols,PetscScalar **vals);
 
 to free any space that was allocated during the call to ``MatGetRow()``.
+
+.. _sec_symbolic_numeric:
+
+Symbolic and Numeric Stages in Sparse Matrix Operations
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Many sparse matrix operations can be optimized by dividing the computation into two stages: a symbolic stage that
+creates any required data structures and does all the computations that do not require the matrices' numerical values followed by one or more uses of a
+numerical stage that use the symbolically computed information. Examples of such operations include ``MatTranspose()``, ``MatCreateSubMatrices()``,
+``MatCholeskyFactorSymbolic()``, and ``MatCholeskyFactorNumeric()``.
+PETSc uses two different API's to take advantage of these optimizations.
+
+The first approach explicitly divides the computation in the API. This approach is used, for example, with ``MatCholeskyFactorSymbolic()``, ``MatCholeskyFactorNumeric()``.
+The caller can take advantage of their knowledge of changes in the nonzero structure of the sparse matrices to call the appropriate routines as needed. In fact, they can
+use ``MatGetNonzeroState()`` to determine if a new symbolic computation is needed. The drawback of this approach is that the caller of these routines has to
+manage the creation of new matrices when the nonzero structure changes.
+
+The second approach, as exemplified by ``MatTranspose()``, does not expose the two stages explicit in the API, instead a flag, ``MatReuse`` is passed through the
+API to indicate if a symbolic data structure is already available or needs to be computed. Thus ``MatTranspose(A,MAT_INITIAL_MATRIX,&B)`` is called first, then
+``MatTranspose(A,MAT_REUSE_MATRIX,&B)`` can be called repeatedly with new numerical values in the A matrix. In theory, if the nonzero structure of A changes, the
+symbolic computations for B could be redone automatically inside the same B matrix when there is a change in the nonzero state of the A matrix. In practice, in PETSc, the
+``MAT_REUSE_MATRIX`` for most PETSc routines only works if the nonzero structure does not change and the code may crash otherwise. The advantage of this approach
+(when the nonzero structure changes are handled correctly) is that the calling code does not need to keep track of the nonzero state of the matrices; everything
+"just works". However, the caller must still know when it is the first call to the routine so the flag ``MAT_INITIAL_MATRIX`` is being used. If the underlying implementation language supported detecting a yet to be initialized variable at run time, the ``MatReuse`` flag would not be need.
+
+PETSc uses two approaches because the same programming problem was solved with two different ways during PETSc's early development.
+A better model would combine both approaches; an explicit
+separation of the stages and a unified operation that internally utilized the two stages appropriately and also handled changes to the nonzero structure. Code could be simplified in many places with this approach, in most places the use of the unified API would replace the use of the separate stages.
 
 .. _sec_partitioning:
 

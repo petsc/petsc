@@ -96,7 +96,7 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
     PetscCall(PetscMalloc1(5*Nbpt, &work));
     PetscCall(PetscArraycpy(Mcopy, M_trimmed, Nbpt * Nbpt));
 
-    PetscStackCallBLAS("LAPACKgesvd",LAPACKgesvd_("N","N",&n,&n,Mcopy,&n,S,NULL,&n,NULL,&n,work,&lwork,&lierr));
+    PetscCallBLAS("LAPACKgesvd",LAPACKgesvd_("N","N",&n,&n,Mcopy,&n,S,NULL,&n,NULL,&n,work,&lwork,&lierr));
     PetscReal cond = S[0] / S[Nbpt - 1];
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "dimension %" PetscInt_FMT ", degree %" PetscInt_FMT ", form %" PetscInt_FMT ": condition number %g\n", dim, deg, form, (double) cond));
     PetscCall(PetscFree(work));
@@ -131,16 +131,14 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
     PetscScalar mone = -1.;
     PetscScalar one = 1.;
 
-    PetscStackCallBLAS("BLASgemm",BLASgemm_("N","T",&m,&n,&k,&mone,M_moments,&m,M_moments,&m,&one,Mcopy,&m));
+    PetscCallBLAS("BLASgemm",BLASgemm_("N","T",&m,&n,&k,&mone,M_moments,&m,M_moments,&m,&one,Mcopy,&m));
   }
 
   frob_err = 0.;
   for (PetscInt i = 0; i < Nbpt * Nbpt; i++) frob_err += PetscRealPart(Mcopy[i]) * PetscRealPart(Mcopy[i]);
   frob_err = PetscSqrtReal(frob_err);
 
-  if (frob_err > PETSC_SMALL) {
-    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "dimension %" PetscInt_FMT ", degree %" PetscInt_FMT ", form %" PetscInt_FMT ": trimmed projection error %g", dim, deg, form, (double) frob_err);
-  }
+  PetscCheck(frob_err <= PETSC_SMALL,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "dimension %" PetscInt_FMT ", degree %" PetscInt_FMT ", form %" PetscInt_FMT ": trimmed projection error %g", dim, deg, form, (double) frob_err);
 
   // P trimmed is also supposed to contain the polynomials of one degree less: construction M_moment[0:sub,:] * M_trimmed^{-1} * M_moments[0:sub,:]^T should be the identity matrix
   PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, Nbpt, Nbpt, M_trimmed, &mat_trimmed));
@@ -152,9 +150,7 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
   PetscCall(MatTransposeMatMult(mat_moments_T, AinvB, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Mm1));
   PetscCall(MatShift(Mm1, -1.));
   PetscCall(MatNorm(Mm1, NORM_FROBENIUS, &frob_err));
-  if (frob_err > PETSC_SMALL) {
-    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "dimension %" PetscInt_FMT ", degree %" PetscInt_FMT ", form %" PetscInt_FMT ": trimmed reverse projection error %g", dim, deg, form, (double) frob_err);
-  }
+  PetscCheck(frob_err <= PETSC_SMALL,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "dimension %" PetscInt_FMT ", degree %" PetscInt_FMT ", form %" PetscInt_FMT ": trimmed reverse projection error %g", dim, deg, form, (double) frob_err);
   PetscCall(MatDestroy(&Mm1));
   PetscCall(MatDestroy(&AinvB));
   PetscCall(MatDestroy(&mat_moments_T));
@@ -289,7 +285,7 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
     PetscReal    alpha = 1.0;
     PetscReal    beta = 1.0;
 
-    PetscStackCallBLAS("BLASREALgemm",BLASREALgemm_("N","T",&m,&n,&k,&alpha,p_scalar,&lda,&M_moment_real[f * Nbpt],&ldb,&beta,&p_trimmed_copy[f * Nk * npoints],&ldc));
+    PetscCallBLAS("BLASREALgemm",BLASREALgemm_("N","T",&m,&n,&k,&alpha,p_scalar,&lda,&M_moment_real[f * Nbpt],&ldb,&beta,&p_trimmed_copy[f * Nk * npoints],&ldc));
   }
   frob_err = 0.;
   for (PetscInt i = 0; i < Nbpt * Nf * Nk * npoints; i++) {
@@ -297,9 +293,7 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
   }
   frob_err = PetscSqrtReal(frob_err);
 
-  if (frob_err > PETSC_SMALL) {
-    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "dimension %" PetscInt_FMT ", degree %" PetscInt_FMT ", form %" PetscInt_FMT ": jet error %g", dim, deg, form, (double) frob_err);
-  }
+  PetscCheck(frob_err < 10*PETSC_SMALL,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "dimension %" PetscInt_FMT ", degree %" PetscInt_FMT ", form %" PetscInt_FMT ": jet error %g", dim, deg, form, (double) frob_err);
 
   PetscCall(PetscFree(M_moment_real));
   PetscCall(PetscFree(p_trimmed_copy));
@@ -320,6 +314,7 @@ int main(int argc, char **argv)
   PetscInt       k       = 3;
   PetscBool      cond    = PETSC_FALSE;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscOptionsBegin(PETSC_COMM_WORLD,"","Options for PetscDTPTrimmedEvalJet() tests","none");
   PetscCall(PetscOptionsInt("-max_dim", "Maximum dimension of the simplex",__FILE__,max_dim,&max_dim,NULL));

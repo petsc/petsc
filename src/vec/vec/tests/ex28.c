@@ -26,6 +26,7 @@ int main(int argc,char **argv)
   Vec            x,y,vecs[40];
   PetscReal      tol = PETSC_SMALL;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* create vectors */

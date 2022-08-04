@@ -439,6 +439,9 @@ PetscErrorCode PetscGridHashSetGrid(PetscGridHash box, const PetscInt n[], const
 
   Level: developer
 
+  Note:
+  This only guarantees that a box contains a point, not that a cell does.
+
 .seealso: `PetscGridHashCreate()`
 */
 PetscErrorCode PetscGridHashGetEnclosingBox(PetscGridHash box, PetscInt numPoints, const PetscScalar points[], PetscInt dboxes[], PetscInt boxes[])
@@ -472,41 +475,47 @@ PetscErrorCode PetscGridHashGetEnclosingBox(PetscGridHash box, PetscInt numPoint
  Not collective
 
   Input Parameters:
-+ box       - The grid hash object
-. numPoints - The number of input points
-- points    - The input point coordinates
++ box         - The grid hash object
+. cellSection - The PetscSection mapping cells to boxes
+. numPoints   - The number of input points
+- points      - The input point coordinates
 
   Output Parameters:
-+ dboxes    - An array of numPoints*dim integers expressing the enclosing box as (i_0, i_1, ..., i_dim)
-. boxes     - An array of numPoints integers expressing the enclosing box as single number, or NULL
-- found     - Flag indicating if point was located within a box
++ dboxes - An array of numPoints*dim integers expressing the enclosing box as (i_0, i_1, ..., i_dim)
+. boxes  - An array of numPoints integers expressing the enclosing box as single number, or NULL
+- found  - Flag indicating if point was located within a box
 
   Level: developer
 
+  Note:
+  This does an additional check that a cell actually contains the point, and found is PETSC_FALSE if no cell does. Thus, this function requires that the cellSection is already constructed.
+
 .seealso: `PetscGridHashGetEnclosingBox()`
 */
-PetscErrorCode PetscGridHashGetEnclosingBoxQuery(PetscGridHash box, PetscInt numPoints, const PetscScalar points[], PetscInt dboxes[], PetscInt boxes[],PetscBool *found)
+PetscErrorCode PetscGridHashGetEnclosingBoxQuery(PetscGridHash box, PetscSection cellSection, PetscInt numPoints, const PetscScalar points[], PetscInt dboxes[], PetscInt boxes[],PetscBool *found)
 {
   const PetscReal *lower = box->lower;
   const PetscReal *upper = box->upper;
   const PetscReal *h     = box->h;
   const PetscInt  *n     = box->n;
   const PetscInt   dim   = box->dim;
-  PetscInt         d, p;
+  PetscInt         bStart, bEnd, d, p;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(cellSection,PETSC_SECTION_CLASSID,2);
   *found = PETSC_FALSE;
+  PetscCall(PetscSectionGetChart(box->cellSection, &bStart, &bEnd));
   for (p = 0; p < numPoints; ++p) {
     for (d = 0; d < dim; ++d) {
       PetscInt dbox = PetscFloorReal((PetscRealPart(points[p*dim+d]) - lower[d])/h[d]);
 
       if (dbox == n[d] && PetscAbsReal(PetscRealPart(points[p*dim+d]) - upper[d]) < 1.0e-9) dbox = n[d]-1;
-      if (dbox < 0 || dbox >= n[d]) {
-        PetscFunctionReturn(0);
-      }
+      if (dbox < 0 || dbox >= n[d]) PetscFunctionReturn(0);
       dboxes[p*dim+d] = dbox;
     }
     if (boxes) for (d = dim-2, boxes[p] = dboxes[p*dim+dim-1]; d >= 0; --d) boxes[p] = boxes[p]*n[d] + dboxes[p*dim+d];
+    // It is possible for a box to overlap no grid cells
+    if (boxes[p] < bStart || boxes[p] >= bEnd) PetscFunctionReturn(0);
   }
   *found = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -588,7 +597,7 @@ PetscErrorCode DMPlexClosestPoint_Internal(DM dm, PetscInt dim, const PetscScala
 */
 PetscErrorCode DMPlexComputeGridHash_Internal(DM dm, PetscGridHash *localBox)
 {
-  const PetscInt     debug = 0;
+  PetscInt           debug = ((DM_Plex *) dm->data)->printLocate;
   MPI_Comm           comm;
   PetscGridHash      lbox;
   Vec                coordinates;
@@ -617,6 +626,7 @@ PetscErrorCode DMPlexComputeGridHash_Internal(DM dm, PetscGridHash *localBox)
   if (flg) {for (i = c; i < dim; ++i) n[i] = n[c-1];}
   else     {for (i = 0; i < dim; ++i) n[i] = PetscMax(2, PetscFloorReal(PetscPowReal((PetscReal) (cEnd - cStart), 1.0/dim) * 0.8));}
   PetscCall(PetscGridHashSetGrid(lbox, n, NULL));
+  if (debug) PetscCall(PetscPrintf(PETSC_COMM_SELF, "GridHash:\n  (%g, %g, %g) -- (%g, %g, %g)\n  n %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT "\n  h %g %g %g\n", (double) lbox->lower[0], (double) lbox->lower[1], (double) lbox->lower[2], (double) lbox->upper[0], (double) lbox->upper[1], (double) lbox->upper[2], n[0], n[1], n[2], (double) lbox->h[0], (double) lbox->h[1], (double) lbox->h[2]));
 #if 0
   /* Could define a custom reduction to merge these */
   PetscCall(MPIU_Allreduce(lbox->lower, gbox->lower, 3, MPIU_REAL, MPI_MIN, comm));
@@ -767,7 +777,7 @@ PetscErrorCode DMPlexComputeGridHash_Internal(DM dm, PetscGridHash *localBox)
 
 PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, PetscSF cellSF)
 {
-  const PetscInt  debug = 0;
+  PetscInt        debug = ((DM_Plex *) dm->data)->printLocate;
   DM_Plex        *mesh = (DM_Plex *) dm->data;
   PetscBool       hash = mesh->useHashLocation, reuse = PETSC_FALSE;
   PetscInt        bs, numPoints, p, numFound, *found = NULL;
@@ -789,6 +799,7 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
   PetscCallMPI(MPI_Comm_compare(PetscObjectComm((PetscObject)cellSF),PETSC_COMM_SELF,&result));
   PetscCheck(result == MPI_IDENT || result == MPI_CONGRUENT,PetscObjectComm((PetscObject)cellSF),PETSC_ERR_SUP, "Trying parallel point location: only local point location supported");
   PetscCheck(bs == dim,PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Block size for point vector %" PetscInt_FMT " must be the mesh coordinate dimension %" PetscInt_FMT, bs, dim);
+  PetscCall(DMGetCoordinatesLocalSetUp(dm));
   PetscCall(DMPlexGetSimplexOrBoxCells(dm, 0, &cStart, &cEnd));
   PetscCall(VecGetLocalSize(v, &numPoints));
   PetscCall(VecGetArray(v, &a));
@@ -865,7 +876,7 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
 
       if (debug) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Checking point %" PetscInt_FMT " (%.2g, %.2g, %.2g)\n", p, (double)PetscRealPart(point[0]), (double)PetscRealPart(point[1]), (double)PetscRealPart(point[2])));
       /* allow for case that point is outside box - abort early */
-      PetscCall(PetscGridHashGetEnclosingBoxQuery(mesh->lbox, 1, point, dbin, &bin,&found_box));
+      PetscCall(PetscGridHashGetEnclosingBoxQuery(mesh->lbox, mesh->lbox->cellSection, 1, point, dbin, &bin,&found_box));
       if (found_box) {
         if (debug) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Found point in box %" PetscInt_FMT " (%" PetscInt_FMT ", %" PetscInt_FMT ", %" PetscInt_FMT ")\n", bin, dbin[0], dbin[1], dbin[2]));
         /* TODO Lay an interface over this so we can switch between Section (dense) and Label (sparse) */
@@ -1176,29 +1187,124 @@ static PetscErrorCode DMPlexComputePointGeometry_Internal(DM dm, PetscInt e, Pet
   PetscFunctionReturn(0);
 }
 
+/*@C
+  DMPlexGetCellCoordinates - Get coordinates for a cell, taking into account periodicity
+
+  Not collective
+
+  Input Parameters:
++ dm   - The DM
+- cell - The cell number
+
+  Output Parameters:
++ isDG   - Using cellwise coordinates
+. Nc     - The number of coordinates
+. array  - The coordinate array
+- coords - The cell coordinates
+
+  Level: developer
+
+.seealso: DMPlexRestoreCellCoordinates(), DMGetCoordinatesLocal(), DMGetCellCoordinatesLocal()
+@*/
+PetscErrorCode DMPlexGetCellCoordinates(DM dm, PetscInt cell, PetscBool *isDG, PetscInt *Nc, const PetscScalar *array[], PetscScalar *coords[])
+{
+  DM                 cdm;
+  Vec                coordinates;
+  PetscSection       cs;
+  const PetscScalar *ccoords;
+  PetscInt           pStart, pEnd;
+
+  PetscFunctionBeginHot;
+  *isDG   = PETSC_FALSE;
+  *Nc     = 0;
+  *array  = NULL;
+  *coords = NULL;
+  /* Check for cellwise coordinates */
+  PetscCall(DMGetCellCoordinateSection(dm, &cs));
+  if (!cs) goto cg;
+  /* Check that the cell exists in the cellwise section */
+  PetscCall(PetscSectionGetChart(cs, &pStart, &pEnd));
+  if (cell < pStart || cell >= pEnd) goto cg;
+  /* Check for cellwise coordinates for this cell */
+  PetscCall(PetscSectionGetDof(cs, cell, Nc));
+  if (!*Nc) goto cg;
+  /* Check for cellwise coordinates */
+  PetscCall(DMGetCellCoordinatesLocalNoncollective(dm, &coordinates));
+  if (!coordinates) goto cg;
+  /* Get cellwise coordinates */
+  PetscCall(DMGetCellCoordinateDM(dm, &cdm));
+  PetscCall(VecGetArrayRead(coordinates, array));
+  PetscCall(DMPlexPointLocalRead(cdm, cell, *array, &ccoords));
+  PetscCall(DMGetWorkArray(cdm, *Nc, MPIU_SCALAR, coords));
+  PetscCall(PetscArraycpy(*coords, ccoords, *Nc));
+  PetscCall(VecRestoreArrayRead(coordinates, array));
+  *isDG = PETSC_TRUE;
+  PetscFunctionReturn(0);
+cg:
+  /* Use continuous coordinates */
+  PetscCall(DMGetCoordinateDM(dm, &cdm));
+  PetscCall(DMGetCoordinateSection(dm, &cs));
+  PetscCall(DMGetCoordinatesLocalNoncollective(dm, &coordinates));
+  PetscCall(DMPlexVecGetClosure(cdm, cs, coordinates, cell, Nc, coords));
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  DMPlexRestoreCellCoordinates - Get coordinates for a cell, taking into account periodicity
+
+  Not collective
+
+  Input Parameters:
++ dm   - The DM
+- cell - The cell number
+
+  Output Parameters:
++ isDG   - Using cellwise coordinates
+. Nc     - The number of coordinates
+. array  - The coordinate array
+- coords - The cell coordinates
+
+  Level: developer
+
+.seealso: DMPlexGetCellCoordinates(), DMGetCoordinatesLocal(), DMGetCellCoordinatesLocal()
+@*/
+PetscErrorCode DMPlexRestoreCellCoordinates(DM dm, PetscInt cell, PetscBool *isDG, PetscInt *Nc, const PetscScalar *array[], PetscScalar *coords[])
+{
+  DM           cdm;
+  PetscSection cs;
+  Vec          coordinates;
+
+  PetscFunctionBeginHot;
+  if (*isDG) {
+    PetscCall(DMGetCellCoordinateDM(dm, &cdm));
+    PetscCall(DMRestoreWorkArray(cdm, *Nc, MPIU_SCALAR, coords));
+  } else {
+    PetscCall(DMGetCoordinateDM(dm, &cdm));
+    PetscCall(DMGetCoordinateSection(dm, &cs));
+    PetscCall(DMGetCoordinatesLocalNoncollective(dm, &coordinates));
+    PetscCall(DMPlexVecRestoreClosure(cdm, cs, coordinates, cell, Nc, (PetscScalar **) coords));
+  }
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode DMPlexComputeLineGeometry_Internal(DM dm, PetscInt e, PetscReal v0[], PetscReal J[], PetscReal invJ[], PetscReal *detJ)
 {
-  PetscSection   coordSection;
-  Vec            coordinates;
-  PetscScalar   *coords = NULL;
-  PetscInt       numCoords, d, pStart, pEnd, numSelfCoords = 0;
+  const PetscScalar *array;
+  PetscScalar       *coords = NULL;
+  PetscInt           numCoords, d;
+  PetscBool          isDG;
 
   PetscFunctionBegin;
-  PetscCall(DMGetCoordinatesLocal(dm, &coordinates));
-  PetscCall(DMGetCoordinateSection(dm, &coordSection));
-  PetscCall(PetscSectionGetChart(coordSection,&pStart,&pEnd));
-  if (e >= pStart && e < pEnd) PetscCall(PetscSectionGetDof(coordSection,e,&numSelfCoords));
-  PetscCall(DMPlexVecGetClosure(dm, coordSection, coordinates, e, &numCoords, &coords));
-  numCoords = numSelfCoords ? numSelfCoords : numCoords;
-  PetscCheck(!invJ || J,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "In order to compute invJ, J must not be NULL");
+  PetscCall(DMPlexGetCellCoordinates(dm, e, &isDG, &numCoords, &array, &coords));
+  PetscCheck(!invJ || J, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "In order to compute invJ, J must not be NULL");
   *detJ = 0.0;
   if (numCoords == 6) {
     const PetscInt dim = 3;
     PetscReal      R[9], J0;
 
-    if (v0)   {for (d = 0; d < dim; d++) v0[d] = PetscRealPart(coords[d]);}
+    if (v0) {for (d = 0; d < dim; d++) v0[d] = PetscRealPart(coords[d]);}
     PetscCall(DMPlexComputeProjection3Dto1D(coords, R));
-    if (J)    {
+    if (J) {
       J0   = 0.5*PetscRealPart(coords[1]);
       J[0] = R[0]*J0; J[1] = R[1]; J[2] = R[2];
       J[3] = R[3]*J0; J[4] = R[4]; J[5] = R[5];
@@ -1210,9 +1316,9 @@ static PetscErrorCode DMPlexComputeLineGeometry_Internal(DM dm, PetscInt e, Pets
     const PetscInt dim = 2;
     PetscReal      R[4], J0;
 
-    if (v0)   {for (d = 0; d < dim; d++) v0[d] = PetscRealPart(coords[d]);}
+    if (v0) {for (d = 0; d < dim; d++) v0[d] = PetscRealPart(coords[d]);}
     PetscCall(DMPlexComputeProjection2Dto1D(coords, R));
-    if (J)    {
+    if (J) {
       J0   = 0.5*PetscRealPart(coords[1]);
       J[0] = R[0]*J0; J[1] = R[1];
       J[2] = R[2]*J0; J[3] = R[3];
@@ -1222,53 +1328,49 @@ static PetscErrorCode DMPlexComputeLineGeometry_Internal(DM dm, PetscInt e, Pets
   } else if (numCoords == 2) {
     const PetscInt dim = 1;
 
-    if (v0)   {for (d = 0; d < dim; d++) v0[d] = PetscRealPart(coords[d]);}
-    if (J)    {
+    if (v0) {for (d = 0; d < dim; d++) v0[d] = PetscRealPart(coords[d]);}
+    if (J) {
       J[0]  = 0.5*(PetscRealPart(coords[1]) - PetscRealPart(coords[0]));
       *detJ = J[0];
       PetscCall(PetscLogFlops(2.0));
       if (invJ) {invJ[0] = 1.0/J[0]; PetscCall(PetscLogFlops(1.0));}
     }
-  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The number of coordinates for this segment is %" PetscInt_FMT " != 2", numCoords);
-  PetscCall(DMPlexVecRestoreClosure(dm, coordSection, coordinates, e, &numCoords, &coords));
+  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The number of coordinates for segment %" PetscInt_FMT " is %" PetscInt_FMT " != 2 or 4 or 6", e, numCoords);
+  PetscCall(DMPlexRestoreCellCoordinates(dm, e, &isDG, &numCoords, &array, &coords));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode DMPlexComputeTriangleGeometry_Internal(DM dm, PetscInt e, PetscReal v0[], PetscReal J[], PetscReal invJ[], PetscReal *detJ)
 {
-  PetscSection   coordSection;
-  Vec            coordinates;
-  PetscScalar   *coords = NULL;
-  PetscInt       numCoords, numSelfCoords = 0, d, f, g, pStart, pEnd;
+  const PetscScalar *array;
+  PetscScalar       *coords = NULL;
+  PetscInt           numCoords, d;
+  PetscBool          isDG;
 
   PetscFunctionBegin;
-  PetscCall(DMGetCoordinatesLocal(dm, &coordinates));
-  PetscCall(DMGetCoordinateSection(dm, &coordSection));
-  PetscCall(PetscSectionGetChart(coordSection,&pStart,&pEnd));
-  if (e >= pStart && e < pEnd) PetscCall(PetscSectionGetDof(coordSection,e,&numSelfCoords));
-  PetscCall(DMPlexVecGetClosure(dm, coordSection, coordinates, e, &numCoords, &coords));
-  numCoords = numSelfCoords ? numSelfCoords : numCoords;
+  PetscCall(DMPlexGetCellCoordinates(dm, e, &isDG, &numCoords, &array, &coords));
+  PetscCheck(!invJ || J, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "In order to compute invJ, J must not be NULL");
   *detJ = 0.0;
   if (numCoords == 9) {
     const PetscInt dim = 3;
     PetscReal      R[9], J0[9] = {1.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,1.0};
 
-    if (v0)   {for (d = 0; d < dim; d++) v0[d] = PetscRealPart(coords[d]);}
+    if (v0) {for (d = 0; d < dim; d++) v0[d] = PetscRealPart(coords[d]);}
     PetscCall(DMPlexComputeProjection3Dto2D(numCoords, coords, R));
-    if (J)    {
+    if (J) {
       const PetscInt pdim = 2;
 
       for (d = 0; d < pdim; d++) {
-        for (f = 0; f < pdim; f++) {
+        for (PetscInt f = 0; f < pdim; f++) {
           J0[d*dim+f] = 0.5*(PetscRealPart(coords[(f+1)*pdim+d]) - PetscRealPart(coords[0*pdim+d]));
         }
       }
       PetscCall(PetscLogFlops(8.0));
       DMPlex_Det3D_Internal(detJ, J0);
       for (d = 0; d < dim; d++) {
-        for (f = 0; f < dim; f++) {
+        for (PetscInt f = 0; f < dim; f++) {
           J[d*dim+f] = 0.0;
-          for (g = 0; g < dim; g++) {
+          for (PetscInt g = 0; g < dim; g++) {
             J[d*dim+f] += R[d*dim+g]*J0[g*dim+f];
           }
         }
@@ -1279,10 +1381,10 @@ static PetscErrorCode DMPlexComputeTriangleGeometry_Internal(DM dm, PetscInt e, 
   } else if (numCoords == 6) {
     const PetscInt dim = 2;
 
-    if (v0)   {for (d = 0; d < dim; d++) v0[d] = PetscRealPart(coords[d]);}
-    if (J)    {
+    if (v0) {for (d = 0; d < dim; d++) v0[d] = PetscRealPart(coords[d]);}
+    if (J) {
       for (d = 0; d < dim; d++) {
-        for (f = 0; f < dim; f++) {
+        for (PetscInt f = 0; f < dim; f++) {
           J[d*dim+f] = 0.5*(PetscRealPart(coords[(f+1)*dim+d]) - PetscRealPart(coords[0*dim+d]));
         }
       }
@@ -1291,24 +1393,20 @@ static PetscErrorCode DMPlexComputeTriangleGeometry_Internal(DM dm, PetscInt e, 
     }
     if (invJ) {DMPlex_Invert2D_Internal(invJ, J, *detJ);}
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The number of coordinates for this triangle is %" PetscInt_FMT " != 6 or 9", numCoords);
-  PetscCall(DMPlexVecRestoreClosure(dm, coordSection, coordinates, e, &numCoords, &coords));
+  PetscCall(DMPlexRestoreCellCoordinates(dm, e, &isDG, &numCoords, &array, &coords));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode DMPlexComputeRectangleGeometry_Internal(DM dm, PetscInt e, PetscBool isTensor, PetscInt Nq, const PetscReal points[], PetscReal v[], PetscReal J[], PetscReal invJ[], PetscReal *detJ)
 {
-  PetscSection   coordSection;
-  Vec            coordinates;
-  PetscScalar   *coords = NULL;
-  PetscInt       numCoords, numSelfCoords = 0, d, f, g, pStart, pEnd;
+  const PetscScalar *array;
+  PetscScalar       *coords = NULL;
+  PetscInt           numCoords, d;
+  PetscBool          isDG;
 
   PetscFunctionBegin;
-  PetscCall(DMGetCoordinatesLocal(dm, &coordinates));
-  PetscCall(DMGetCoordinateSection(dm, &coordSection));
-  PetscCall(PetscSectionGetChart(coordSection,&pStart,&pEnd));
-  if (e >= pStart && e < pEnd) PetscCall(PetscSectionGetDof(coordSection,e,&numSelfCoords));
-  PetscCall(DMPlexVecGetClosure(dm, coordSection, coordinates, e, &numCoords, &coords));
-  numCoords = numSelfCoords ? numSelfCoords : numCoords;
+  PetscCall(DMPlexGetCellCoordinates(dm, e, &isDG, &numCoords, &array, &coords));
+  PetscCheck(!invJ || J, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "In order to compute invJ, J must not be NULL");
   if (!Nq) {
     PetscInt vorder[4] = {0, 1, 2, 3};
 
@@ -1318,9 +1416,9 @@ static PetscErrorCode DMPlexComputeRectangleGeometry_Internal(DM dm, PetscInt e,
       const PetscInt dim = 3;
       PetscReal      R[9], J0[9] = {1.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,1.0};
 
-      if (v)   {for (d = 0; d < dim; d++) v[d] = PetscRealPart(coords[d]);}
+      if (v) {for (d = 0; d < dim; d++) v[d] = PetscRealPart(coords[d]);}
       PetscCall(DMPlexComputeProjection3Dto2D(numCoords, coords, R));
-      if (J)    {
+      if (J) {
         const PetscInt pdim = 2;
 
         for (d = 0; d < pdim; d++) {
@@ -1330,9 +1428,9 @@ static PetscErrorCode DMPlexComputeRectangleGeometry_Internal(DM dm, PetscInt e,
         PetscCall(PetscLogFlops(8.0));
         DMPlex_Det3D_Internal(detJ, J0);
         for (d = 0; d < dim; d++) {
-          for (f = 0; f < dim; f++) {
+          for (PetscInt f = 0; f < dim; f++) {
             J[d*dim+f] = 0.0;
-            for (g = 0; g < dim; g++) {
+            for (PetscInt g = 0; g < dim; g++) {
               J[d*dim+f] += R[d*dim+g]*J0[g*dim+f];
             }
           }
@@ -1343,8 +1441,8 @@ static PetscErrorCode DMPlexComputeRectangleGeometry_Internal(DM dm, PetscInt e,
     } else if (numCoords == 8) {
       const PetscInt dim = 2;
 
-      if (v)   {for (d = 0; d < dim; d++) v[d] = PetscRealPart(coords[d]);}
-      if (J)    {
+      if (v) {for (d = 0; d < dim; d++) v[d] = PetscRealPart(coords[d]);}
+      if (J) {
         for (d = 0; d < dim; d++) {
           J[d*dim+0] = 0.5*(PetscRealPart(coords[vorder[1]*dim+d]) - PetscRealPart(coords[vorder[0]*dim+d]));
           J[d*dim+1] = 0.5*(PetscRealPart(coords[vorder[3]*dim+d]) - PetscRealPart(coords[vorder[0]*dim+d]));
@@ -1448,25 +1546,24 @@ static PetscErrorCode DMPlexComputeRectangleGeometry_Internal(DM dm, PetscInt e,
       }
     }
   }
-  PetscCall(DMPlexVecRestoreClosure(dm, coordSection, coordinates, e, &numCoords, &coords));
+  PetscCall(DMPlexRestoreCellCoordinates(dm, e, &isDG, &numCoords, &array, &coords));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode DMPlexComputeTetrahedronGeometry_Internal(DM dm, PetscInt e, PetscReal v0[], PetscReal J[], PetscReal invJ[], PetscReal *detJ)
 {
-  PetscSection   coordSection;
-  Vec            coordinates;
-  PetscScalar   *coords = NULL;
-  const PetscInt dim = 3;
-  PetscInt       d;
+  const PetscScalar *array;
+  PetscScalar       *coords = NULL;
+  const PetscInt     dim    = 3;
+  PetscInt           numCoords, d;
+  PetscBool          isDG;
 
   PetscFunctionBegin;
-  PetscCall(DMGetCoordinatesLocal(dm, &coordinates));
-  PetscCall(DMGetCoordinateSection(dm, &coordSection));
-  PetscCall(DMPlexVecGetClosure(dm, coordSection, coordinates, e, NULL, &coords));
+  PetscCall(DMPlexGetCellCoordinates(dm, e, &isDG, &numCoords, &array, &coords));
+  PetscCheck(!invJ || J, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "In order to compute invJ, J must not be NULL");
   *detJ = 0.0;
-  if (v0)   {for (d = 0; d < dim; d++) v0[d] = PetscRealPart(coords[d]);}
-  if (J)    {
+  if (v0) {for (d = 0; d < dim; d++) v0[d] = PetscRealPart(coords[d]);}
+  if (J) {
     for (d = 0; d < dim; d++) {
       /* I orient with outward face normals */
       J[d*dim+0] = 0.5*(PetscRealPart(coords[2*dim+d]) - PetscRealPart(coords[0*dim+d]));
@@ -1477,26 +1574,25 @@ static PetscErrorCode DMPlexComputeTetrahedronGeometry_Internal(DM dm, PetscInt 
     DMPlex_Det3D_Internal(detJ, J);
   }
   if (invJ) {DMPlex_Invert3D_Internal(invJ, J, *detJ);}
-  PetscCall(DMPlexVecRestoreClosure(dm, coordSection, coordinates, e, NULL, &coords));
+  PetscCall(DMPlexRestoreCellCoordinates(dm, e, &isDG, &numCoords, &array, &coords));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode DMPlexComputeHexahedronGeometry_Internal(DM dm, PetscInt e, PetscInt Nq, const PetscReal points[], PetscReal v[], PetscReal J[], PetscReal invJ[], PetscReal *detJ)
 {
-  PetscSection   coordSection;
-  Vec            coordinates;
-  PetscScalar   *coords = NULL;
-  const PetscInt dim = 3;
-  PetscInt       d;
+  const PetscScalar *array;
+  PetscScalar       *coords = NULL;
+  const PetscInt     dim    = 3;
+  PetscInt           numCoords, d;
+  PetscBool          isDG;
 
   PetscFunctionBegin;
-  PetscCall(DMGetCoordinatesLocal(dm, &coordinates));
-  PetscCall(DMGetCoordinateSection(dm, &coordSection));
-  PetscCall(DMPlexVecGetClosure(dm, coordSection, coordinates, e, NULL, &coords));
+  PetscCall(DMPlexGetCellCoordinates(dm, e, &isDG, &numCoords, &array, &coords));
+  PetscCheck(!invJ || J, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "In order to compute invJ, J must not be NULL");
   if (!Nq) {
     *detJ = 0.0;
-    if (v)   {for (d = 0; d < dim; d++) v[d] = PetscRealPart(coords[d]);}
-    if (J)    {
+    if (v) {for (d = 0; d < dim; d++) v[d] = PetscRealPart(coords[d]);}
+    if (J) {
       for (d = 0; d < dim; d++) {
         J[d*dim+0] = 0.5*(PetscRealPart(coords[3*dim+d]) - PetscRealPart(coords[0*dim+d]));
         J[d*dim+1] = 0.5*(PetscRealPart(coords[1*dim+d]) - PetscRealPart(coords[0*dim+d]));
@@ -1582,27 +1678,26 @@ static PetscErrorCode DMPlexComputeHexahedronGeometry_Internal(DM dm, PetscInt e
       }
     }
   }
-  PetscCall(DMPlexVecRestoreClosure(dm, coordSection, coordinates, e, NULL, &coords));
+  PetscCall(DMPlexRestoreCellCoordinates(dm, e, &isDG, &numCoords, &array, &coords));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode DMPlexComputeTriangularPrismGeometry_Internal(DM dm, PetscInt e, PetscInt Nq, const PetscReal points[], PetscReal v[], PetscReal J[], PetscReal invJ[], PetscReal *detJ)
 {
-  PetscSection   coordSection;
-  Vec            coordinates;
-  PetscScalar   *coords = NULL;
-  const PetscInt dim = 3;
-  PetscInt       d;
+  const PetscScalar *array;
+  PetscScalar       *coords = NULL;
+  const PetscInt     dim    = 3;
+  PetscInt           numCoords, d;
+  PetscBool          isDG;
 
   PetscFunctionBegin;
-  PetscCall(DMGetCoordinatesLocal(dm, &coordinates));
-  PetscCall(DMGetCoordinateSection(dm, &coordSection));
-  PetscCall(DMPlexVecGetClosure(dm, coordSection, coordinates, e, NULL, &coords));
+  PetscCall(DMPlexGetCellCoordinates(dm, e, &isDG, &numCoords, &array, &coords));
+  PetscCheck(!invJ || J, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "In order to compute invJ, J must not be NULL");
   if (!Nq) {
     /* Assume that the map to the reference is affine */
     *detJ = 0.0;
-    if (v)   {for (d = 0; d < dim; d++) v[d] = PetscRealPart(coords[d]);}
-    if (J)    {
+    if (v) {for (d = 0; d < dim; d++) v[d] = PetscRealPart(coords[d]);}
+    if (J) {
       for (d = 0; d < dim; d++) {
         J[d*dim+0] = 0.5*(PetscRealPart(coords[2*dim+d]) - PetscRealPart(coords[0*dim+d]));
         J[d*dim+1] = 0.5*(PetscRealPart(coords[1*dim+d]) - PetscRealPart(coords[0*dim+d]));
@@ -1713,7 +1808,7 @@ static PetscErrorCode DMPlexComputeTriangularPrismGeometry_Internal(DM dm, Petsc
       }
     }
   }
-  PetscCall(DMPlexVecRestoreClosure(dm, coordSection, coordinates, e, NULL, &coords));
+  PetscCall(DMPlexRestoreCellCoordinates(dm, e, &isDG, &numCoords, &array, &coords));
   PetscFunctionReturn(0);
 }
 
@@ -1850,26 +1945,25 @@ static PetscErrorCode DMPlexComputeCellGeometryFEM_Implicit(DM dm, PetscInt cell
 PetscErrorCode DMPlexComputeCellGeometryAffineFEM(DM dm, PetscInt cell, PetscReal *v0, PetscReal *J, PetscReal *invJ, PetscReal *detJ)
 {
   PetscFunctionBegin;
-  PetscCall(DMPlexComputeCellGeometryFEM_Implicit(dm,cell,NULL,v0,J,invJ,detJ));
+  PetscCall(DMPlexComputeCellGeometryFEM_Implicit(dm, cell, NULL, v0, J, invJ, detJ));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode DMPlexComputeCellGeometryFEM_FE(DM dm, PetscFE fe, PetscInt point, PetscQuadrature quad, PetscReal v[], PetscReal J[], PetscReal invJ[], PetscReal *detJ)
 {
-  PetscQuadrature   feQuad;
-  PetscSection      coordSection;
-  Vec               coordinates;
-  PetscScalar      *coords = NULL;
-  const PetscReal  *quadPoints;
-  PetscTabulation T;
-  PetscInt          dim, cdim, pdim, qdim, Nq, numCoords, q;
+  const PetscScalar *array;
+  PetscScalar       *coords = NULL;
+  PetscInt           numCoords;
+  PetscBool          isDG;
+  PetscQuadrature    feQuad;
+  const PetscReal   *quadPoints;
+  PetscTabulation    T;
+  PetscInt           dim, cdim, pdim, qdim, Nq, q;
 
   PetscFunctionBegin;
-  PetscCall(DMGetCoordinatesLocal(dm, &coordinates));
-  PetscCall(DMGetCoordinateSection(dm, &coordSection));
-  PetscCall(DMPlexVecGetClosure(dm, coordSection, coordinates, point, &numCoords, &coords));
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(DMGetCoordinateDim(dm, &cdim));
+  PetscCall(DMPlexGetCellCoordinates(dm, point, &isDG, &numCoords, &array, &coords));
   if (!quad) { /* use the first point of the first functional of the dual space */
     PetscDualSpace dsp;
 
@@ -1954,7 +2048,7 @@ static PetscErrorCode DMPlexComputeCellGeometryFEM_FE(DM dm, PetscFE fe, PetscIn
     } else PetscCheck(!detJ && !invJ,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Need J to compute invJ or detJ");
   }
   if (feQuad != quad) PetscCall(PetscTabulationDestroy(&T));
-  PetscCall(DMPlexVecRestoreClosure(dm, coordSection, coordinates, point, &numCoords, &coords));
+  PetscCall(DMPlexRestoreCellCoordinates(dm, point, &isDG, &numCoords, &array, &coords));
   PetscFunctionReturn(0);
 }
 
@@ -2065,47 +2159,44 @@ static PetscErrorCode DMPlexComputeGeometryFVM_0D_Internal(DM dm, PetscInt dim, 
 
 static PetscErrorCode DMPlexComputeGeometryFVM_1D_Internal(DM dm, PetscInt dim, PetscInt cell, PetscReal *vol, PetscReal centroid[], PetscReal normal[])
 {
-  PetscSection   coordSection;
-  Vec            coordinates;
-  PetscScalar   *coords = NULL;
-  PetscScalar    tmp[2];
-  PetscInt       coordSize, d;
+  const PetscScalar *array;
+  PetscScalar       *coords = NULL;
+  PetscInt           coordSize, d;
+  PetscBool          isDG;
 
   PetscFunctionBegin;
-  PetscCall(DMGetCoordinatesLocal(dm, &coordinates));
-  PetscCall(DMGetCoordinateSection(dm, &coordSection));
-  PetscCall(DMPlexVecGetClosure(dm, coordSection, coordinates, cell, &coordSize, &coords));
-  PetscCall(DMLocalizeCoordinate_Internal(dm, dim, coords, &coords[dim], tmp));
+  PetscCall(DMPlexGetCellCoordinates(dm, cell, &isDG, &coordSize, &array, &coords));
   if (centroid) {
-    for (d = 0; d < dim; ++d) centroid[d] = 0.5*PetscRealPart(coords[d] + tmp[d]);
+    for (d = 0; d < dim; ++d) centroid[d] = 0.5*PetscRealPart(coords[d] + coords[dim+d]);
   }
   if (normal) {
     PetscReal norm;
 
-    PetscCheck(dim == 2,PETSC_COMM_SELF, PETSC_ERR_SUP, "We only support 2D edges right now");
-    normal[0]  = -PetscRealPart(coords[1] - tmp[1]);
-    normal[1]  =  PetscRealPart(coords[0] - tmp[0]);
-    norm       = DMPlex_NormD_Internal(dim, normal);
+    PetscCheck(dim == 2, PETSC_COMM_SELF, PETSC_ERR_SUP, "We only support 2D edges right now");
+    normal[0] = -PetscRealPart(coords[1] - coords[dim+1]);
+    normal[1] =  PetscRealPart(coords[0] - coords[dim+0]);
+    norm      = DMPlex_NormD_Internal(dim, normal);
     for (d = 0; d < dim; ++d) normal[d] /= norm;
   }
   if (vol) {
     *vol = 0.0;
-    for (d = 0; d < dim; ++d) *vol += PetscSqr(PetscRealPart(coords[d] - tmp[d]));
+    for (d = 0; d < dim; ++d) *vol += PetscSqr(PetscRealPart(coords[d] - coords[dim+d]));
     *vol = PetscSqrtReal(*vol);
   }
-  PetscCall(DMPlexVecRestoreClosure(dm, coordSection, coordinates, cell, &coordSize, &coords));
+  PetscCall(DMPlexRestoreCellCoordinates(dm, cell, &isDG, &coordSize, &array, &coords));
   PetscFunctionReturn(0);
 }
 
 /* Centroid_i = (\sum_n A_n Cn_i) / A */
 static PetscErrorCode DMPlexComputeGeometryFVM_2D_Internal(DM dm, PetscInt dim, PetscInt cell, PetscReal *vol, PetscReal centroid[], PetscReal normal[])
 {
-  DMPolytopeType ct;
-  PetscSection   coordSection;
-  Vec            coordinates;
-  PetscScalar   *coords = NULL;
-  PetscInt       fv[4] = {0, 1, 2, 3};
-  PetscInt       cdim, coordSize, numCorners, p, d;
+  DMPolytopeType     ct;
+  const PetscScalar *array;
+  PetscScalar       *coords = NULL;
+  PetscInt           coordSize;
+  PetscBool          isDG;
+  PetscInt           fv[4] = {0, 1, 2, 3};
+  PetscInt           cdim, numCorners, p, d;
 
   PetscFunctionBegin;
   /* Must check for hybrid cells because prisms have a different orientation scheme */
@@ -2114,11 +2205,9 @@ static PetscErrorCode DMPlexComputeGeometryFVM_2D_Internal(DM dm, PetscInt dim, 
     case DM_POLYTOPE_SEG_PRISM_TENSOR: fv[2] = 3; fv[3] = 2;break;
     default: break;
   }
-  PetscCall(DMGetCoordinatesLocal(dm, &coordinates));
-  PetscCall(DMPlexGetConeSize(dm, cell, &numCorners));
-  PetscCall(DMGetCoordinateSection(dm, &coordSection));
-  PetscCall(DMPlexVecGetClosure(dm, coordSection, coordinates, cell, &coordSize, &coords));
   PetscCall(DMGetCoordinateDim(dm, &cdim));
+  PetscCall(DMPlexGetConeSize(dm, cell, &numCorners));
+  PetscCall(DMPlexGetCellCoordinates(dm, cell, &isDG, &coordSize, &array, &coords));
   {
     PetscReal c[3] = {0., 0., 0.}, n[3] = {0., 0., 0.}, origin[3] = {0., 0., 0.}, norm;
 
@@ -2152,24 +2241,27 @@ static PetscErrorCode DMPlexComputeGeometryFVM_2D_Internal(DM dm, PetscInt dim, 
     if (centroid) for (d = 0; d < cdim; ++d) centroid[d] = c[d];
     if (normal) for (d = 0; d < cdim; ++d) normal[d] = n[d];
   }
-  PetscCall(DMPlexVecRestoreClosure(dm, coordSection, coordinates, cell, &coordSize, &coords));
+  PetscCall(DMPlexRestoreCellCoordinates(dm, cell, &isDG, &coordSize, &array, &coords));
   PetscFunctionReturn(0);
 }
 
 /* Centroid_i = (\sum_n V_n Cn_i) / V */
 static PetscErrorCode DMPlexComputeGeometryFVM_3D_Internal(DM dm, PetscInt dim, PetscInt cell, PetscReal *vol, PetscReal centroid[], PetscReal normal[])
 {
-  DMPolytopeType  ct;
-  PetscSection    coordSection;
-  Vec             coordinates;
-  PetscScalar    *coords = NULL;
-  PetscReal       vsum = 0.0, vtmp, coordsTmp[3*3], origin[3];
-  const PetscInt *faces, *facesO;
-  PetscBool       isHybrid = PETSC_FALSE;
-  PetscInt        numFaces, f, coordSize, p, d;
+  DMPolytopeType        ct;
+  const PetscScalar    *array;
+  PetscScalar          *coords = NULL;
+  PetscInt              coordSize;
+  PetscBool             isDG;
+  PetscReal             vsum = 0.0, vtmp, coordsTmp[3*3], origin[3];
+  const PetscInt        order[16] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
+  const PetscInt       *cone, *faceSizes, *faces;
+  const DMPolytopeType *faceTypes;
+  PetscBool             isHybrid = PETSC_FALSE;
+  PetscInt              numFaces, f, fOff = 0, p, d;
 
   PetscFunctionBegin;
-  PetscCheck(dim <= 3,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"No support for dim %" PetscInt_FMT " > 3",dim);
+  PetscCheck(dim <= 3, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No support for dim %" PetscInt_FMT " > 3", dim);
   /* Must check for hybrid cells because prisms have a different orientation scheme */
   PetscCall(DMPlexGetCellType(dm, cell, &ct));
   switch (ct) {
@@ -2181,32 +2273,28 @@ static PetscErrorCode DMPlexComputeGeometryFVM_3D_Internal(DM dm, PetscInt dim, 
     default: break;
   }
 
-  PetscCall(DMGetCoordinatesLocal(dm, &coordinates));
-  PetscCall(DMGetCoordinateSection(dm, &coordSection));
-
   if (centroid) for (d = 0; d < dim; ++d) centroid[d] = 0.0;
-  PetscCall(DMPlexGetConeSize(dm, cell, &numFaces));
-  PetscCall(DMPlexGetCone(dm, cell, &faces));
-  PetscCall(DMPlexGetConeOrientation(dm, cell, &facesO));
-  for (f = 0; f < numFaces; ++f) {
-    PetscBool      flip = isHybrid && f == 0 ? PETSC_TRUE : PETSC_FALSE; /* The first hybrid face is reversed */
-    DMPolytopeType ct;
+  PetscCall(DMPlexGetCone(dm, cell, &cone));
 
-    PetscCall(DMPlexVecGetClosure(dm, coordSection, coordinates, faces[f], &coordSize, &coords));
+  // Using the closure of faces for coordinates does not work in periodic geometries, so we index into the cell coordinates
+  PetscCall(DMPlexGetRawFaces_Internal(dm, ct, order, &numFaces, &faceTypes, &faceSizes, &faces));
+  PetscCall(DMPlexGetCellCoordinates(dm, cell, &isDG, &coordSize, &array, &coords));
+  for (f = 0; f < numFaces; ++f) {
+    PetscBool flip = isHybrid && f == 0 ? PETSC_TRUE : PETSC_FALSE; /* The first hybrid face is reversed */
+
     // If using zero as the origin vertex for each tetrahedron, an element far from the origin will have positive and
     // negative volumes that nearly cancel, thus incurring rounding error. Here we define origin[] as the first vertex
     // so that all tetrahedra have positive volume.
     if (f == 0) for (d = 0; d < dim; d++) origin[d] = PetscRealPart(coords[d]);
-    PetscCall(DMPlexGetCellType(dm, faces[f], &ct));
-    switch (ct) {
+    switch (faceTypes[f]) {
     case DM_POLYTOPE_TRIANGLE:
       for (d = 0; d < dim; ++d) {
-        coordsTmp[0*dim+d] = PetscRealPart(coords[0*dim+d]) - origin[d];
-        coordsTmp[1*dim+d] = PetscRealPart(coords[1*dim+d]) - origin[d];
-        coordsTmp[2*dim+d] = PetscRealPart(coords[2*dim+d]) - origin[d];
+        coordsTmp[0*dim+d] = PetscRealPart(coords[faces[fOff+0]*dim+d]) - origin[d];
+        coordsTmp[1*dim+d] = PetscRealPart(coords[faces[fOff+1]*dim+d]) - origin[d];
+        coordsTmp[2*dim+d] = PetscRealPart(coords[faces[fOff+2]*dim+d]) - origin[d];
       }
       Volume_Tetrahedron_Origin_Internal(&vtmp, coordsTmp);
-      if (facesO[f] < 0 || flip) vtmp = -vtmp;
+      if (flip) vtmp = -vtmp;
       vsum += vtmp;
       if (centroid) {           /* Centroid of OABC = (a+b+c)/4 */
         for (d = 0; d < dim; ++d) {
@@ -2224,12 +2312,12 @@ static PetscErrorCode DMPlexComputeGeometryFVM_3D_Internal(DM dm, PetscInt dim, 
       /* DO FOR PYRAMID */
       /* First tet */
       for (d = 0; d < dim; ++d) {
-        coordsTmp[0*dim+d] = PetscRealPart(coords[fv[0]*dim+d]) - origin[d];
-        coordsTmp[1*dim+d] = PetscRealPart(coords[fv[1]*dim+d]) - origin[d];
-        coordsTmp[2*dim+d] = PetscRealPart(coords[fv[3]*dim+d]) - origin[d];
+        coordsTmp[0*dim+d] = PetscRealPart(coords[faces[fOff+fv[0]]*dim+d]) - origin[d];
+        coordsTmp[1*dim+d] = PetscRealPart(coords[faces[fOff+fv[1]]*dim+d]) - origin[d];
+        coordsTmp[2*dim+d] = PetscRealPart(coords[faces[fOff+fv[3]]*dim+d]) - origin[d];
       }
       Volume_Tetrahedron_Origin_Internal(&vtmp, coordsTmp);
-      if (facesO[f] < 0 || flip) vtmp = -vtmp;
+      if (flip) vtmp = -vtmp;
       vsum += vtmp;
       if (centroid) {
         for (d = 0; d < dim; ++d) {
@@ -2238,12 +2326,12 @@ static PetscErrorCode DMPlexComputeGeometryFVM_3D_Internal(DM dm, PetscInt dim, 
       }
       /* Second tet */
       for (d = 0; d < dim; ++d) {
-        coordsTmp[0*dim+d] = PetscRealPart(coords[fv[1]*dim+d]) - origin[d];
-        coordsTmp[1*dim+d] = PetscRealPart(coords[fv[2]*dim+d]) - origin[d];
-        coordsTmp[2*dim+d] = PetscRealPart(coords[fv[3]*dim+d]) - origin[d];
+        coordsTmp[0*dim+d] = PetscRealPart(coords[faces[fOff+fv[1]]*dim+d]) - origin[d];
+        coordsTmp[1*dim+d] = PetscRealPart(coords[faces[fOff+fv[2]]*dim+d]) - origin[d];
+        coordsTmp[2*dim+d] = PetscRealPart(coords[faces[fOff+fv[3]]*dim+d]) - origin[d];
       }
       Volume_Tetrahedron_Origin_Internal(&vtmp, coordsTmp);
-      if (facesO[f] < 0 || flip) vtmp = -vtmp;
+      if (flip) vtmp = -vtmp;
       vsum += vtmp;
       if (centroid) {
         for (d = 0; d < dim; ++d) {
@@ -2253,14 +2341,15 @@ static PetscErrorCode DMPlexComputeGeometryFVM_3D_Internal(DM dm, PetscInt dim, 
       break;
     }
     default:
-      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot handle face %" PetscInt_FMT " of type %s", faces[f], DMPolytopeTypes[ct]);
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot handle face %" PetscInt_FMT " of type %s", cone[f], DMPolytopeTypes[ct]);
     }
-    PetscCall(DMPlexVecRestoreClosure(dm, coordSection, coordinates, faces[f], &coordSize, &coords));
+    fOff += faceSizes[f];
   }
+  PetscCall(DMPlexRestoreRawFaces_Internal(dm, ct, order, &numFaces, &faceTypes, &faceSizes, &faces));
+  PetscCall(DMPlexRestoreCellCoordinates(dm, cell, &isDG, &coordSize, &array, &coords));
   if (vol)     *vol = PetscAbsReal(vsum);
   if (normal)   for (d = 0; d < dim; ++d) normal[d]    = 0.0;
   if (centroid) for (d = 0; d < dim; ++d) centroid[d] = centroid[d] / (vsum*4) + origin[d];
-;
   PetscFunctionReturn(0);
 }
 
@@ -2910,7 +2999,7 @@ static PetscErrorCode DMPlexCoordinatesToReference_NewtonUpdate(PetscInt dimC, P
 
     for (l = 0; l < dimC; l++) {invJ[l] = resNeg[l];}
 
-    PetscStackCallBLAS("LAPACKgels",LAPACKgels_(&transpose,&m,&n,&one,J,&m,invJ,&n,work,&worksize, &info));
+    PetscCallBLAS("LAPACKgels",LAPACKgels_(&transpose,&m,&n,&one,J,&m,invJ,&n,work,&worksize, &info));
     PetscCheck(info == 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Bad argument to GELS");
 
     for (l = 0; l < dimR; l++) {guess[l] += PetscRealPart(invJ[l]);}
@@ -3428,9 +3517,9 @@ PetscErrorCode DMPlexRemapGeometry(DM dm, PetscReal time,
   PetscCall(VecCopy(lCoords, tmpCoords));
   /* We have to do the coordinate field manually right now since the coordinate DM will not have its own */
   PetscCall(DMGetCoordinateField(dm, &cf));
-  cdm->coordinateField = cf;
+  cdm->coordinates[0].field = cf;
   PetscCall(DMProjectFieldLocal(cdm, time, tmpCoords, &func, INSERT_VALUES, lCoords));
-  cdm->coordinateField = NULL;
+  cdm->coordinates[0].field = NULL;
   PetscCall(DMRestoreLocalVector(cdm, &tmpCoords));
   PetscCall(DMSetCoordinatesLocal(dm, lCoords));
   PetscFunctionReturn(0);

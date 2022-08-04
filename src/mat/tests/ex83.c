@@ -22,6 +22,7 @@ int main(int argc,char **args)
   IS              coarseparts,fineparts;
   MPI_Comm        comm,scomm;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   comm = PETSC_COMM_WORLD;
   PetscCallMPI(MPI_Comm_size(comm,&size));

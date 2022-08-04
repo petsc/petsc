@@ -120,6 +120,7 @@ int main(int argc, char **argv)
 {
   PetscInt       dim, order, tensor;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   for (tensor = 0; tensor < 2; tensor++) {
     for (dim = 1; dim <= 3; dim++) {

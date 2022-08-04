@@ -21,6 +21,7 @@ int main(int argc,char **args)
   PetscViewer    viewer;    /* Load refractive index */
   PetscScalar    v;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
 
   /* Generate vector */

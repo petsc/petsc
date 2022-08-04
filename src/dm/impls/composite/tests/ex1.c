@@ -8,6 +8,7 @@ int main(int argc,char **argv)
   DM             newdm, dm, dm1,dm2;
 
   PetscFunctionBeginUser;
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, 0, help));
   PetscCall(DMCompositeCreate(PETSC_COMM_WORLD, &dm));
   PetscCall(DMDACreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, 100, 1, 1, NULL, &dm1));

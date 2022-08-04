@@ -17,6 +17,7 @@ int main(int argc,char **argv)
   TS             ts;                 /* timestepping context */
   PetscViewer    viewer;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   PetscCall(PetscDLLibraryAppend(PETSC_COMM_WORLD,&PetscDLLibrariesLoaded,"advection-diffusion-reaction/ex1"));
   PetscCall(TSCreate(PETSC_COMM_WORLD,&ts));

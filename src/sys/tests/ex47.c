@@ -8,6 +8,7 @@ int main(int argc,char **argv)
   char      filename[PETSC_MAX_PATH_LEN];
   PetscBool flg;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
 
   PetscCall(PetscOptionsGetString(NULL,NULL,"-f",filename,sizeof(filename),&flg));
@@ -33,7 +34,7 @@ int main(int argc,char **argv)
 
    testset:
      args: -options_left false
-     filter:  egrep -v "(options_left|options_monitor|malloc_dump|malloc_test|saws_port_auto_select|display|check_pointer_intensity|error_output_stdout|nox|vecscatter_mpi1|use_gpu_aware_mpi|checkstack|checkfunctionlist)"
+     filter:  egrep -v "(options_left|options_monitor)"
      localrunfiles: petsc.yml
 
      test:

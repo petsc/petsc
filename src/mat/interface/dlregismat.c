@@ -28,6 +28,8 @@ const char       *MatOptions_Shifted[] = {"UNUSED_NONZERO_LOCATION_ERR",
                                   "STRUCTURE_ONLY",
                                   "SORTED_FULL",
                                   "FORM_EXPLICIT_TRANSPOSE",
+                                  "STRUCTURAL_SYMMETRY_ETERNAL",
+                                  "SPD_ETERNAL",
                                   "MatOption","MAT_",NULL};
 const char *const* MatOptions = MatOptions_Shifted+2;
 const char *const MatFactorShiftTypes[] = {"NONE","NONZERO","POSITIVE_DEFINITE","INBLOCKS","MatFactorShiftType","PC_FACTOR_",NULL};

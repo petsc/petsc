@@ -316,12 +316,14 @@ PETSC_EXTERN PetscErrorCode VecStrideNormAll(Vec,NormType,PetscReal[]);
 PETSC_EXTERN PetscErrorCode VecStrideMaxAll(Vec,PetscInt [],PetscReal []);
 PETSC_EXTERN PetscErrorCode VecStrideMinAll(Vec,PetscInt [],PetscReal []);
 PETSC_EXTERN PetscErrorCode VecStrideScaleAll(Vec,const PetscScalar[]);
+PETSC_EXTERN PetscErrorCode VecStrideSumAll(Vec,PetscScalar*);
 PETSC_EXTERN PetscErrorCode VecUniqueEntries(Vec,PetscInt*,PetscScalar**);
 
 PETSC_EXTERN PetscErrorCode VecStrideNorm(Vec,PetscInt,NormType,PetscReal*);
 PETSC_EXTERN PetscErrorCode VecStrideMax(Vec,PetscInt,PetscInt *,PetscReal *);
 PETSC_EXTERN PetscErrorCode VecStrideMin(Vec,PetscInt,PetscInt *,PetscReal *);
 PETSC_EXTERN PetscErrorCode VecStrideScale(Vec,PetscInt,PetscScalar);
+PETSC_EXTERN PetscErrorCode VecStrideSum(Vec,PetscInt,PetscScalar*);
 PETSC_EXTERN PetscErrorCode VecStrideSet(Vec,PetscInt,PetscScalar);
 
 PETSC_EXTERN PetscErrorCode VecStrideGather(Vec,PetscInt,Vec,InsertMode);
@@ -613,9 +615,8 @@ static inline PetscErrorCode VecRestoreArrayPair(Vec x,Vec y,PetscScalar **xv,Pe
 #if defined(PETSC_USE_DEBUG)
 PETSC_EXTERN PetscErrorCode VecLockReadPush(Vec);
 PETSC_EXTERN PetscErrorCode VecLockReadPop(Vec);
-/* We also have a non-public VecLockWriteSet_Private() in vecimpl.h */
+PETSC_EXTERN PetscErrorCode VecLockWriteSet(Vec,PetscBool);
 PETSC_EXTERN PetscErrorCode VecLockGet(Vec,PetscInt*);
-/* this API is not public, but is only in here because VecSetErrorIfLocked() is in here */
 PETSC_EXTERN PetscErrorCode VecLockGetLocation(Vec,const char*[],const char*[],int*);
 static inline PetscErrorCode VecSetErrorIfLocked(Vec x,PetscInt arg)
 {
@@ -642,6 +643,7 @@ PETSC_EXTERN PETSC_DEPRECATED_FUNCTION("Use VecLockReadPop() (since version 3.11
 #define VecLockReadPop(x)            0
 #define VecLockGet(x,s)              *(s) = 0
 #define VecSetErrorIfLocked(x,arg)   0
+#define VecLockWriteSet(x,flg)       0
 /* The three are deprecated */
 #define VecLockPush(x)               0
 #define VecLockPop(x)                0

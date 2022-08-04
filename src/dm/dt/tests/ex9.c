@@ -181,6 +181,7 @@ int main(int argc, char **argv)
 {
   PetscInt       dim, deg, k;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   dim = 3;
   deg = 4;

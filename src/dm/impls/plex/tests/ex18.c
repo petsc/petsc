@@ -816,9 +816,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     }
   }
   if (testHeavy) {
-    if (boundary) {
-      PetscCall(DMPlexCheckPointSFHeavy(*dm, boundary));
-    }
+    if (boundary) PetscCall(DMPlexCheckPointSFHeavy(*dm, boundary));
     /* Orient interface because it could be deliberately skipped above. It is idempotent. */
     PetscCall(DMPlexOrientInterface_Internal(*dm));
   }
@@ -1523,6 +1521,7 @@ int main(int argc, char **argv)
   DM             dm;
   AppCtx         user;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(PetscLogStageRegister("create",&stage[0]));
   PetscCall(PetscLogStageRegister("distribute",&stage[1]));

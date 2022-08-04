@@ -195,6 +195,7 @@ int main(int argc, char *argv[]) {
     }
   }
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,NULL));
   PetscCall(PetscOptionsSetValue(NULL,"-options_left","false"));
   KSP ksp;

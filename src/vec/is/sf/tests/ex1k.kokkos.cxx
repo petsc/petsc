@@ -116,6 +116,7 @@ int main(int argc,char **argv)
   PetscInt          skipSmall=-1,loopSmall=-1;
   MPI_Op            op = MPI_REPLACE;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
 #if defined(PETSC_HAVE_CUDA)
   PetscCall(PetscDeviceInitialize(PETSC_DEVICE_CUDA));

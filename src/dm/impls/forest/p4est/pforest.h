@@ -233,8 +233,8 @@ static PetscErrorCode DMFTopologyDestroy_pforest(DMFTopology_pforest **topo)
     *topo = NULL;
     PetscFunctionReturn(0);
   }
-  if ((*topo)->geom) PetscStackCallP4est(p4est_geometry_destroy,((*topo)->geom));
-  PetscStackCallP4est(p4est_connectivity_destroy,((*topo)->conn));
+  if ((*topo)->geom) PetscCallP4est(p4est_geometry_destroy,((*topo)->geom));
+  PetscCallP4est(p4est_connectivity_destroy,((*topo)->conn));
   PetscCall(PetscFree((*topo)->tree_face_to_uniq));
   PetscCall(PetscFree(*topo));
   *topo = NULL;
@@ -255,9 +255,9 @@ static PetscErrorCode DMFTopologyCreateBrick_pforest(DM dm,PetscInt N[], PetscIn
 
   (*topo)->refct = 1;
 #if !defined(P4_TO_P8)
-  PetscStackCallP4estReturn((*topo)->conn,p4est_connectivity_new_brick,((int) N[0], (int) N[1], (P[0] == DM_BOUNDARY_NONE) ? 0 : 1, (P[1] == DM_BOUNDARY_NONE) ? 0 : 1));
+  PetscCallP4estReturn((*topo)->conn,p4est_connectivity_new_brick,((int) N[0], (int) N[1], (P[0] == DM_BOUNDARY_NONE) ? 0 : 1, (P[1] == DM_BOUNDARY_NONE) ? 0 : 1));
 #else
-  PetscStackCallP4estReturn((*topo)->conn,p8est_connectivity_new_brick,((int) N[0], (int) N[1], (int) N[2], (P[0] == DM_BOUNDARY_NONE) ? 0 : 1, (P[1] == DM_BOUNDARY_NONE) ? 0 : 1, (P[2] == DM_BOUNDARY_NONE) ? 0 : 1));
+  PetscCallP4estReturn((*topo)->conn,p8est_connectivity_new_brick,((int) N[0], (int) N[1], (int) N[2], (P[0] == DM_BOUNDARY_NONE) ? 0 : 1, (P[1] == DM_BOUNDARY_NONE) ? 0 : 1, (P[2] == DM_BOUNDARY_NONE) ? 0 : 1));
 #endif
   numVerts = (*topo)->conn->num_vertices;
   vertices = (*topo)->conn->vertices;
@@ -290,7 +290,7 @@ static PetscErrorCode DMFTopologyCreate_pforest(DM dm, DMForestTopology topology
   if (isBrick) {
     PetscBool flgN, flgP, flgM, flgB, useMorton = PETSC_TRUE, periodic = PETSC_FALSE;
     PetscInt  N[3] = {2,2,2}, P[3] = {0,0,0}, nretN = P4EST_DIM, nretP = P4EST_DIM, nretB = 2 * P4EST_DIM, i;
-    PetscReal B[6] = {0.0,1.0,0.0,1.0,0.0,1.0};
+    PetscReal B[6] = {0.0,1.0,0.0,1.0,0.0,1.0}, Lstart[3] = {0., 0., 0.}, L[3] = {-1.0, -1.0, -1.0}, maxCell[3] = {-1.0, -1.0, -1.0};
 
     if (dm->setfromoptionscalled) {
       PetscCall(PetscOptionsGetIntArray(((PetscObject)dm)->options,prefix,"-dm_p4est_brick_size",N,&nretN,&flgN));
@@ -305,19 +305,21 @@ static PetscErrorCode DMFTopologyCreate_pforest(DM dm, DMForestTopology topology
       P[i]  = (P[i] ? DM_BOUNDARY_PERIODIC : DM_BOUNDARY_NONE);
       periodic = (PetscBool)(P[i] || periodic);
       if (!flgB) B[2 * i + 1] = N[i];
+      if (P[i]) {
+        Lstart[i] = B[2 * i + 0];
+        L[i] = B[2 * i + 1] - B[2 * i + 0];
+        maxCell[i] = 1.1 * (L[i] / N[i]);
+      }
     }
     PetscCall(DMFTopologyCreateBrick_pforest(dm,N,P,B,topo,useMorton));
-    /* the maxCell trick is not robust enough, localize on all cells if periodic */
-    PetscCall(DMSetPeriodicity(dm,periodic,NULL,NULL,NULL));
+    if (periodic) PetscCall(DMSetPeriodicity(dm, maxCell, Lstart, L));
   } else {
     PetscCall(PetscNewLog(dm,topo));
 
     (*topo)->refct = 1;
-    PetscStackCallP4estReturn((*topo)->conn,p4est_connectivity_new_byname,(name));
+    PetscCallP4estReturn((*topo)->conn,p4est_connectivity_new_byname,(name));
     (*topo)->geom = NULL;
-    if (isMoebius) {
-      PetscCall(DMSetCoordinateDim(dm,3));
-    }
+    if (isMoebius) PetscCall(DMSetCoordinateDim(dm,3));
 #if defined(P4_TO_P8)
     if (isShell) {
       PetscReal R2 = 1., R1 = .55;
@@ -326,7 +328,7 @@ static PetscErrorCode DMFTopologyCreate_pforest(DM dm, DMForestTopology topology
         PetscCall(PetscOptionsGetReal(((PetscObject)dm)->options,prefix,"-dm_p4est_shell_outer_radius",&R2,NULL));
         PetscCall(PetscOptionsGetReal(((PetscObject)dm)->options,prefix,"-dm_p4est_shell_inner_radius",&R1,NULL));
       }
-      PetscStackCallP4estReturn((*topo)->geom,p8est_geometry_new_shell,((*topo)->conn,R2,R1));
+      PetscCallP4estReturn((*topo)->geom,p8est_geometry_new_shell,((*topo)->conn,R2,R1));
     } else if (isSphere) {
       PetscReal R2 = 1., R1 = 0.191728, R0 = 0.039856;
 
@@ -335,7 +337,7 @@ static PetscErrorCode DMFTopologyCreate_pforest(DM dm, DMForestTopology topology
         PetscCall(PetscOptionsGetReal(((PetscObject)dm)->options,prefix,"-dm_p4est_sphere_inner_radius",&R1,NULL));
         PetscCall(PetscOptionsGetReal(((PetscObject)dm)->options,prefix,"-dm_p4est_sphere_core_radius",&R0,NULL));
       }
-      PetscStackCallP4estReturn((*topo)->geom,p8est_geometry_new_sphere,((*topo)->conn,R2,R1,R0));
+      PetscCallP4estReturn((*topo)->geom,p8est_geometry_new_sphere,((*topo)->conn,R2,R1,R0));
     }
 #endif
     PetscCall(PforestConnectivityEnumerateFacets((*topo)->conn,&(*topo)->tree_face_to_uniq));
@@ -376,11 +378,11 @@ static PetscErrorCode DMForestDestroy_pforest(DM dm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  if (pforest->lnodes) PetscStackCallP4est(p4est_lnodes_destroy,(pforest->lnodes));
+  if (pforest->lnodes) PetscCallP4est(p4est_lnodes_destroy,(pforest->lnodes));
   pforest->lnodes = NULL;
-  if (pforest->ghost) PetscStackCallP4est(p4est_ghost_destroy,(pforest->ghost));
+  if (pforest->ghost) PetscCallP4est(p4est_ghost_destroy,(pforest->ghost));
   pforest->ghost = NULL;
-  if (pforest->forest) PetscStackCallP4est(p4est_destroy,(pforest->forest));
+  if (pforest->forest) PetscCallP4est(p4est_destroy,(pforest->forest));
   pforest->forest = NULL;
   PetscCall(DMFTopologyDestroy_pforest(&pforest->topo));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm,PetscStringize(DMConvert_plex_pforest) "_C",NULL));
@@ -524,7 +526,7 @@ static PetscErrorCode DMPforestComputeLocalCellTransferSF_loop(p4est_t *p4estFro
     PetscInt         treeOffsetTo   = (PetscInt) treeTo->quadrants_offset;
     int              comp;
 
-    PetscStackCallP4estReturn(comp,p4est_quadrant_is_equal,(firstFrom,firstTo));
+    PetscCallP4estReturn(comp,p4est_quadrant_is_equal,(firstFrom,firstTo));
     PetscCheck(comp,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"non-matching partitions");
 
     for (currentFrom = 0, currentTo = 0; currentFrom < numFrom && currentTo < numTo;) {
@@ -543,7 +545,7 @@ static PetscErrorCode DMPforestComputeLocalCellTransferSF_loop(p4est_t *p4estFro
       } else {
         int fromIsAncestor;
 
-        PetscStackCallP4estReturn(fromIsAncestor,p4est_quadrant_is_ancestor,(quadFrom,quadTo));
+        PetscCallP4estReturn(fromIsAncestor,p4est_quadrant_is_ancestor,(quadFrom,quadTo));
         if (fromIsAncestor) {
           p4est_quadrant_t lastDesc;
 
@@ -554,8 +556,8 @@ static PetscErrorCode DMPforestComputeLocalCellTransferSF_loop(p4est_t *p4estFro
           }
           toFineLeaves++;
           currentTo++;
-          PetscStackCallP4est(p4est_quadrant_last_descendant,(quadFrom,&lastDesc,quadTo->level));
-          PetscStackCallP4estReturn(comp,p4est_quadrant_is_equal,(quadTo,&lastDesc));
+          PetscCallP4est(p4est_quadrant_last_descendant,(quadFrom,&lastDesc,quadTo->level));
+          PetscCallP4estReturn(comp,p4est_quadrant_is_equal,(quadTo,&lastDesc));
           if (comp) currentFrom++;
         } else {
           p4est_quadrant_t lastDesc;
@@ -567,8 +569,8 @@ static PetscErrorCode DMPforestComputeLocalCellTransferSF_loop(p4est_t *p4estFro
           }
           fromFineLeaves++;
           currentFrom++;
-          PetscStackCallP4est(p4est_quadrant_last_descendant,(quadTo,&lastDesc,quadFrom->level));
-          PetscStackCallP4estReturn(comp,p4est_quadrant_is_equal,(quadFrom,&lastDesc));
+          PetscCallP4est(p4est_quadrant_last_descendant,(quadTo,&lastDesc,quadFrom->level));
+          PetscCallP4estReturn(comp,p4est_quadrant_is_equal,(quadFrom,&lastDesc));
           if (comp) currentTo++;
         }
       }
@@ -632,9 +634,7 @@ static PetscErrorCode DMPforestComputeLocalCellTransferSF(MPI_Comm comm, p4est_t
   if (!ToOffset && (numLeavesTo == numRootsTo)) { /* compress */
     PetscCall(PetscFree(toLeaves));
     PetscCall(PetscSFSetGraph(fromCoarse,numRootsFrom,numLeavesTo,NULL,PETSC_OWN_POINTER,fromRoots,PETSC_OWN_POINTER));
-  } else { /* generic */
-    PetscCall(PetscSFSetGraph(fromCoarse,numRootsFrom,numLeavesTo,toLeaves,PETSC_OWN_POINTER,fromRoots,PETSC_OWN_POINTER));
-  }
+  } else PetscCall(PetscSFSetGraph(fromCoarse,numRootsFrom,numLeavesTo,toLeaves,PETSC_OWN_POINTER,fromRoots,PETSC_OWN_POINTER));
   *fromCoarseToFine = fromCoarse;
   if (toCoarseFromFine) {
     PetscCall(PetscSFSetGraph(toCoarse,numRootsTo,numLeavesFrom,fromLeaves,PETSC_OWN_POINTER,toRoots,PETSC_OWN_POINTER));
@@ -662,8 +662,8 @@ static PetscErrorCode DMPforestComputeOverlappingRanks(PetscMPIInt size, PetscMP
     while (1) {
       int startCompMy, myCompEnd;
 
-      PetscStackCallP4estReturn(startCompMy,p4est_quadrant_compare_piggy,(&globalFirstB[guess],myCoarseStart));
-      PetscStackCallP4estReturn(myCompEnd,p4est_quadrant_compare_piggy,(myCoarseStart,&globalFirstB[guess+1]));
+      PetscCallP4estReturn(startCompMy,p4est_quadrant_compare_piggy,(&globalFirstB[guess],myCoarseStart));
+      PetscCallP4estReturn(myCompEnd,p4est_quadrant_compare_piggy,(myCoarseStart,&globalFirstB[guess+1]));
       if (startCompMy <= 0 && myCompEnd < 0) {
         *startB = guess;
         break;
@@ -680,8 +680,8 @@ static PetscErrorCode DMPforestComputeOverlappingRanks(PetscMPIInt size, PetscMP
     while (1) {
       int startCompMy, myCompEnd;
 
-      PetscStackCallP4estReturn(startCompMy,p4est_quadrant_compare_piggy,(&globalFirstB[guess],myCoarseEnd));
-      PetscStackCallP4estReturn(myCompEnd,p4est_quadrant_compare_piggy,(myCoarseEnd,&globalFirstB[guess+1]));
+      PetscCallP4estReturn(startCompMy,p4est_quadrant_compare_piggy,(&globalFirstB[guess],myCoarseEnd));
+      PetscCallP4estReturn(myCompEnd,p4est_quadrant_compare_piggy,(myCoarseEnd,&globalFirstB[guess+1]));
       if (startCompMy < 0 && myCompEnd <= 0) { /* notice that the comparison operators are different from above */
         *endB = guess + 1;
         break;
@@ -787,7 +787,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
           PetscCall(DMGetCoordinateDim(dm,&geom_pforest->coordDim));
           geom_pforest->map    = map;
           geom_pforest->mapCtx = mapCtx;
-          PetscStackCallP4estReturn(geom_pforest->inner,p4est_geometry_new_connectivity,(conn));
+          PetscCallP4estReturn(geom_pforest->inner,p4est_geometry_new_connectivity,(conn));
           PetscCall(PetscNew(&geom));
           geom->name    = topoName;
           geom->user    = geom_pforest;
@@ -866,7 +866,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
     llt         = apforest->forest->last_local_tree;
     cLocalStart = apforest->cLocalStart;
     PetscCall(DMForestGetComputeAdaptivitySF(dm,&computeAdaptSF));
-    PetscStackCallP4estReturn(pforest->forest,p4est_copy,(apforest->forest, 0)); /* 0 indicates no data copying */
+    PetscCallP4estReturn(pforest->forest,p4est_copy,(apforest->forest, 0)); /* 0 indicates no data copying */
     PetscCall(DMForestGetAdaptivityLabel(dm,&adaptLabel));
     if (adaptLabel) {
       /* apply the refinement/coarsening by flags, plus minimum/maximum refinement */
@@ -877,9 +877,9 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
         PetscCall(DMForestGetMinimumRefinement(dm,&ctx.minLevel));
         PetscCall(DMPforestGetRefinementLevel(dm,&ctx.currLevel));
         pforest->forest->user_pointer = (void*) &ctx;
-        PetscStackCallP4est(p4est_coarsen,(pforest->forest,0,pforest_coarsen_currlevel,NULL));
+        PetscCallP4est(p4est_coarsen,(pforest->forest,0,pforest_coarsen_currlevel,NULL));
         pforest->forest->user_pointer = (void*) dm;
-        PetscStackCallP4est(p4est_balance,(pforest->forest,P4EST_CONNECT_FULL,NULL));
+        PetscCallP4est(p4est_balance,(pforest->forest,P4EST_CONNECT_FULL,NULL));
         /* we will have to change the offset after we compute the overlap */
         if (computeAdaptSF) {
           PetscCall(DMPforestComputeLocalCellTransferSF(PetscObjectComm((PetscObject)dm),pforest->forest,0,apforest->forest,apforest->cLocalStart,&coarseToPreFine,NULL));
@@ -887,9 +887,9 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
       } else if (!numValuesGlobal && defaultValue == DM_ADAPT_COARSEN) { /* uniform coarsen */
         PetscCall(DMForestGetMinimumRefinement(dm,&ctx.minLevel));
         pforest->forest->user_pointer = (void*) &ctx;
-        PetscStackCallP4est(p4est_coarsen,(pforest->forest,0,pforest_coarsen_uniform,NULL));
+        PetscCallP4est(p4est_coarsen,(pforest->forest,0,pforest_coarsen_uniform,NULL));
         pforest->forest->user_pointer = (void*) dm;
-        PetscStackCallP4est(p4est_balance,(pforest->forest,P4EST_CONNECT_FULL,NULL));
+        PetscCallP4est(p4est_balance,(pforest->forest,P4EST_CONNECT_FULL,NULL));
         /* we will have to change the offset after we compute the overlap */
         if (computeAdaptSF) {
           PetscCall(DMPforestComputeLocalCellTransferSF(PetscObjectComm((PetscObject)dm),pforest->forest,0,apforest->forest,apforest->cLocalStart,&coarseToPreFine,NULL));
@@ -897,9 +897,9 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
       } else if (!numValuesGlobal && defaultValue == DM_ADAPT_REFINE) { /* uniform refine */
         PetscCall(DMForestGetMaximumRefinement(dm,&ctx.maxLevel));
         pforest->forest->user_pointer = (void*) &ctx;
-        PetscStackCallP4est(p4est_refine,(pforest->forest,0,pforest_refine_uniform,NULL));
+        PetscCallP4est(p4est_refine,(pforest->forest,0,pforest_refine_uniform,NULL));
         pforest->forest->user_pointer = (void*) dm;
-        PetscStackCallP4est(p4est_balance,(pforest->forest,P4EST_CONNECT_FULL,NULL));
+        PetscCallP4est(p4est_balance,(pforest->forest,P4EST_CONNECT_FULL,NULL));
         /* we will have to change the offset after we compute the overlap */
         if (computeAdaptSF) {
           PetscCall(DMPforestComputeLocalCellTransferSF(PetscObjectComm((PetscObject)dm),apforest->forest,apforest->cLocalStart,pforest->forest,0,&preCoarseToFine,NULL));
@@ -942,14 +942,11 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
         PetscCall(PetscFree(cellFlags));
 
         pforest->forest->user_pointer = (void*) &ctx;
-        if (adaptAny) {
-          PetscStackCallP4est(p4est_coarsen,(pforest->forest,0,pforest_coarsen_flag_any,pforest_init_determine));
-        } else {
-          PetscStackCallP4est(p4est_coarsen,(pforest->forest,0,pforest_coarsen_flag_all,pforest_init_determine));
-        }
-        PetscStackCallP4est(p4est_refine,(pforest->forest,0,pforest_refine_flag,NULL));
+        if (adaptAny) PetscCallP4est(p4est_coarsen,(pforest->forest,0,pforest_coarsen_flag_any,pforest_init_determine));
+        else PetscCallP4est(p4est_coarsen,(pforest->forest,0,pforest_coarsen_flag_all,pforest_init_determine));
+        PetscCallP4est(p4est_refine,(pforest->forest,0,pforest_refine_flag,NULL));
         pforest->forest->user_pointer = (void*) dm;
-        PetscStackCallP4est(p4est_balance,(pforest->forest,P4EST_CONNECT_FULL,NULL));
+        PetscCallP4est(p4est_balance,(pforest->forest,P4EST_CONNECT_FULL,NULL));
         if (computeAdaptSF) {
           PetscCall(DMPforestComputeLocalCellTransferSF(PetscObjectComm((PetscObject)dm),apforest->forest,apforest->cLocalStart,pforest->forest,0,&preCoarseToFine,&coarseToPreFine));
         }
@@ -1008,10 +1005,15 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
     }
   } else { /* initial */
     PetscInt initLevel, minLevel;
+#if defined(PETSC_HAVE_MPIUNI)
+    sc_MPI_Comm comm = sc_MPI_COMM_WORLD;
+#else
+    MPI_Comm comm = PetscObjectComm((PetscObject)dm);
+#endif
 
     PetscCall(DMForestGetInitialRefinement(dm,&initLevel));
     PetscCall(DMForestGetMinimumRefinement(dm,&minLevel));
-    PetscStackCallP4estReturn(pforest->forest,p4est_new_ext,(PetscObjectComm((PetscObject)dm),pforest->topo->conn,
+    PetscCallP4estReturn(pforest->forest,p4est_new_ext,(comm,pforest->topo->conn,
                                                              0,           /* minimum number of quadrants per processor */
                                                              initLevel,   /* level of refinement */
                                                              1,           /* uniform refinement */
@@ -1073,8 +1075,8 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
         }
 
         pforest->forest->user_pointer = (void*) ctx;
-        PetscStackCallP4est(p4est_refine,(pforest->forest,1,ctx->refine_fn,NULL));
-        PetscStackCallP4est(p4est_balance,(pforest->forest,P4EST_CONNECT_FULL,NULL));
+        PetscCallP4est(p4est_refine,(pforest->forest,1,ctx->refine_fn,NULL));
+        PetscCallP4est(p4est_balance,(pforest->forest,P4EST_CONNECT_FULL,NULL));
         PetscCall(PetscFree(ctx));
         pforest->forest->user_pointer = (void*) dm;
       }
@@ -1118,10 +1120,10 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
       p4est_gloidx_t shipped      = 0;
 
       if (preCoarseToFine || coarseToPreFine) copyForest = PETSC_TRUE;
-      if (copyForest) PetscStackCallP4estReturn(forest_copy,p4est_copy,(pforest->forest,0));
+      if (copyForest) PetscCallP4estReturn(forest_copy,p4est_copy,(pforest->forest,0));
 
       if (!forest->cellWeights && forest->weightCapacity == 1. && forest->weightsFactor == 1.) {
-        PetscStackCallP4estReturn(shipped,p4est_partition_ext,(pforest->forest,(int)pforest->partition_for_coarsening,NULL));
+        PetscCallP4estReturn(shipped,p4est_partition_ext,(pforest->forest,(int)pforest->partition_for_coarsening,NULL));
       } else SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Non-uniform partition cases not implemented yet");
       if (shipped) ctx.anyChange = PETSC_TRUE;
       if (forest_copy) {
@@ -1184,7 +1186,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
           }
           PetscCall(PetscSFDestroy(&repartSF));
         }
-        PetscStackCallP4est(p4est_destroy,(forest_copy));
+        PetscCallP4est(p4est_destroy,(forest_copy));
       }
     }
     if (size > 1) {
@@ -1206,10 +1208,10 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
         PetscInt cEnd;
         PetscSF  preCellSF = NULL, cellSF = NULL;
 
-        PetscStackCallP4estReturn(pforest->ghost,p4est_ghost_new,(pforest->forest,P4EST_CONNECT_FULL));
-        PetscStackCallP4estReturn(pforest->lnodes,p4est_lnodes_new,(pforest->forest,pforest->ghost,-P4EST_DIM));
-        PetscStackCallP4est(p4est_ghost_support_lnodes,(pforest->forest,pforest->lnodes,pforest->ghost));
-        for (i = 1; i < overlap; i++) PetscStackCallP4est(p4est_ghost_expand_by_lnodes,(pforest->forest,pforest->lnodes,pforest->ghost));
+        PetscCallP4estReturn(pforest->ghost,p4est_ghost_new,(pforest->forest,P4EST_CONNECT_FULL));
+        PetscCallP4estReturn(pforest->lnodes,p4est_lnodes_new,(pforest->forest,pforest->ghost,-P4EST_DIM));
+        PetscCallP4est(p4est_ghost_support_lnodes,(pforest->forest,pforest->lnodes,pforest->ghost));
+        for (i = 1; i < overlap; i++) PetscCallP4est(p4est_ghost_expand_by_lnodes,(pforest->forest,pforest->lnodes,pforest->ghost));
 
         cLocalStart = pforest->cLocalStart = pforest->ghost->proc_offsets[rank];
         cEnd        = pforest->forest->local_num_quadrants + pforest->ghost->proc_offsets[size];
@@ -1408,17 +1410,17 @@ static PetscErrorCode DMView_VTK_pforest(PetscObject odm, PetscViewer viewer)
       filenameStrip[len-4]='\0';
       name                = filenameStrip;
     }
-    if (!pforest->topo->geom) PetscStackCallP4estReturn(geom,p4est_geometry_new_connectivity,(pforest->topo->conn));
+    if (!pforest->topo->geom) PetscCallP4estReturn(geom,p4est_geometry_new_connectivity,(pforest->topo->conn));
     {
       p4est_vtk_context_t *pvtk;
       int                 footerr;
 
-      PetscStackCallP4estReturn(pvtk,p4est_vtk_context_new,(pforest->forest,name));
-      PetscStackCallP4est(p4est_vtk_context_set_geom,(pvtk,geom));
-      PetscStackCallP4est(p4est_vtk_context_set_scale,(pvtk,(double)vtkScale));
-      PetscStackCallP4estReturn(pvtk,p4est_vtk_write_header,(pvtk));
+      PetscCallP4estReturn(pvtk,p4est_vtk_context_new,(pforest->forest,name));
+      PetscCallP4est(p4est_vtk_context_set_geom,(pvtk,geom));
+      PetscCallP4est(p4est_vtk_context_set_scale,(pvtk,(double)vtkScale));
+      PetscCallP4estReturn(pvtk,p4est_vtk_write_header,(pvtk));
       PetscCheck(pvtk,PetscObjectComm((PetscObject)odm),PETSC_ERR_LIB,P4EST_STRING "_vtk_write_header() failed");
-      PetscStackCallP4estReturn(pvtk,p4est_vtk_write_cell_dataf,(pvtk,
+      PetscCallP4estReturn(pvtk,p4est_vtk_write_cell_dataf,(pvtk,
                                                                  1, /* write tree */
                                                                  1, /* write level */
                                                                  1, /* write rank */
@@ -1427,10 +1429,10 @@ static PetscErrorCode DMView_VTK_pforest(PetscObject odm, PetscViewer viewer)
                                                                  0, /* no vector fields */
                                                                  pvtk));
       PetscCheck(pvtk,PetscObjectComm((PetscObject)odm),PETSC_ERR_LIB,P4EST_STRING "_vtk_write_cell_dataf() failed");
-      PetscStackCallP4estReturn(footerr,p4est_vtk_write_footer,(pvtk));
+      PetscCallP4estReturn(footerr,p4est_vtk_write_footer,(pvtk));
       PetscCheck(!footerr,PetscObjectComm((PetscObject)odm),PETSC_ERR_LIB,P4EST_STRING "_vtk_write_footer() failed");
     }
-    if (!pforest->topo->geom) PetscStackCallP4est(p4est_geometry_destroy,(geom));
+    if (!pforest->topo->geom) PetscCallP4est(p4est_geometry_destroy,(geom));
     PetscCall(PetscFree(filenameStrip));
     break;
   default: SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "No support for format '%s'", PetscViewerFormats[viewer->format]);
@@ -1600,9 +1602,9 @@ static PetscErrorCode DMPlexCreateConnectivity_pforest(DM dm, p4est_connectivity
   PetscCall(P4estTopidxCast(ettSize,&numEtt));
 
   /* This routine allocates space for the arrays, which we fill below */
-  PetscStackCallP4estReturn(conn,p8est_connectivity_new,(numVerts,numTrees,numEdges,numEtt,numCorns,numCtt));
+  PetscCallP4estReturn(conn,p8est_connectivity_new,(numVerts,numTrees,numEdges,numEtt,numCorns,numCtt));
 #else
-  PetscStackCallP4estReturn(conn,p4est_connectivity_new,(numVerts,numTrees,numCorns,numCtt));
+  PetscCallP4estReturn(conn,p4est_connectivity_new,(numVerts,numTrees,numCorns,numCtt));
 #endif
 
   /* 2: visit every face, determine neighboring cells(trees) */
@@ -1777,21 +1779,18 @@ static PetscErrorCode DMPlexCreateConnectivity_pforest(DM dm, p4est_connectivity
 
   /* 5: Compute the coordinates */
   {
-    PetscInt     coordDim;
-    Vec          coordVec;
-    PetscSection coordSec;
-    PetscBool    localized;
+    PetscInt coordDim;
 
     PetscCall(DMGetCoordinateDim(dm, &coordDim));
-    PetscCall(DMGetCoordinatesLocal(dm, &coordVec));
-    PetscCall(DMGetCoordinatesLocalizedLocal(dm, &localized));
-    PetscCall(DMGetCoordinateSection(dm, &coordSec));
+    PetscCall(DMGetCoordinatesLocalSetUp(dm));
     for (c = cStart; c < cEnd; c++) {
-      PetscInt    dof;
-      PetscScalar *cellCoords = NULL;
+      PetscInt           dof;
+      PetscBool          isDG;
+      PetscScalar       *cellCoords = NULL;
+      const PetscScalar *array;
 
-      PetscCall(DMPlexVecGetClosure(dm, coordSec, coordVec, c, &dof, &cellCoords));
-      PetscCheck(localized || dof == P4EST_CHILDREN * coordDim,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Need coordinates at the corners: (dof) %" PetscInt_FMT " != %d * %" PetscInt_FMT " (sdim)", dof, P4EST_CHILDREN, coordDim);
+      PetscCall(DMPlexGetCellCoordinates(dm, c, &isDG, &dof, &array, &cellCoords));
+      PetscCheck(dof == P4EST_CHILDREN * coordDim, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Need coordinates at the corners: (dof) %" PetscInt_FMT " != %d * %" PetscInt_FMT " (sdim)", dof, P4EST_CHILDREN, coordDim);
       for (v = 0; v < P4EST_CHILDREN; v++) {
         PetscInt i, lim = PetscMin(3, coordDim);
         PetscInt p4estVert = PetscVertToP4estVert[v];
@@ -1801,7 +1800,7 @@ static PetscErrorCode DMPlexCreateConnectivity_pforest(DM dm, p4est_connectivity
         for (i = 0; i < 3; i++)   conn->vertices[3 * (P4EST_CHILDREN * (c - cStart) + p4estVert) + i] = 0.;
         for (i = 0; i < lim; i++) conn->vertices[3 * (P4EST_CHILDREN * (c - cStart) + p4estVert) + i] = PetscRealPart(cellCoords[v * coordDim + i]);
       }
-      PetscCall(DMPlexVecRestoreClosure(dm, coordSec, coordVec, c, &dof, &cellCoords));
+      PetscCall(DMPlexRestoreCellCoordinates(dm, c, &isDG, &dof, &array, &cellCoords));
     }
   }
 
@@ -1909,7 +1908,7 @@ static PetscErrorCode P4estToPlex_Local(p4est_t *p4est, DM * plex)
     sc_array_t     *remotes           = sc_array_new(2 * sizeof(p4est_locidx_t));
     p4est_locidx_t first_local_quad;
 
-    PetscStackCallP4est(p4est_get_plex_data,(p4est,P4EST_CONNECT_FULL,0,&first_local_quad,points_per_dim,cone_sizes,cones,cone_orientations,coords,children,parents,childids,leaves,remotes));
+    PetscCallP4est(p4est_get_plex_data,(p4est,P4EST_CONNECT_FULL,0,&first_local_quad,points_per_dim,cone_sizes,cones,cone_orientations,coords,children,parents,childids,leaves,remotes));
 
     PetscCall(locidx_to_PetscInt(points_per_dim));
     PetscCall(locidx_to_PetscInt(cone_sizes));
@@ -2071,9 +2070,14 @@ static PetscErrorCode DMCreateReferenceTree_pforest(MPI_Comm comm, DM *dm)
   DM                   dmRoot, dmRefined;
   DM_Plex              *mesh;
   PetscMPIInt          rank;
+#if defined(PETSC_HAVE_MPIUNI)
+  sc_MPI_Comm          comm_self = sc_MPI_COMM_SELF;
+#else
+  MPI_Comm             comm_self = PETSC_COMM_SELF;
+#endif
 
   PetscFunctionBegin;
-  PetscStackCallP4estReturn(refcube,p4est_connectivity_new_byname,("unit"));
+  PetscCallP4estReturn(refcube,p4est_connectivity_new_byname,("unit"));
   { /* [-1,1]^d geometry */
     PetscInt i, j;
 
@@ -2084,8 +2088,8 @@ static PetscErrorCode DMCreateReferenceTree_pforest(MPI_Comm comm, DM *dm)
       }
     }
   }
-  PetscStackCallP4estReturn(root,p4est_new,(PETSC_COMM_SELF,refcube,0,NULL,NULL));
-  PetscStackCallP4estReturn(refined,p4est_new_ext,(PETSC_COMM_SELF,refcube,0,1,1,0,NULL,NULL));
+  PetscCallP4estReturn(root,p4est_new,(comm_self,refcube,0,NULL,NULL));
+  PetscCallP4estReturn(refined,p4est_new_ext,(comm_self,refcube,0,1,1,0,NULL,NULL));
   PetscCall(P4estToPlex_Local(root,&dmRoot));
   PetscCall(P4estToPlex_Local(refined,&dmRefined));
   {
@@ -2175,9 +2179,9 @@ static PetscErrorCode DMCreateReferenceTree_pforest(MPI_Comm comm, DM *dm)
   }
   PetscCall(DMDestroy(&dmRefined));
   PetscCall(DMDestroy(&dmRoot));
-  PetscStackCallP4est(p4est_destroy,(refined));
-  PetscStackCallP4est(p4est_destroy,(root));
-  PetscStackCallP4est(p4est_connectivity_destroy,(refcube));
+  PetscCallP4est(p4est_destroy,(refined));
+  PetscCallP4est(p4est_destroy,(root));
+  PetscCallP4est(p4est_connectivity_destroy,(refcube));
   PetscFunctionReturn(0);
 }
 
@@ -2261,7 +2265,7 @@ static PetscErrorCode DMPforestGetCellCoveringSF(MPI_Comm comm,p4est_t *p4estC, 
 
     /* locate myFineStart in (or before) a cell */
     if (treeStart->quadrants.elem_count) {
-      PetscStackCallP4estReturn(overlapIndex,sc_array_bsearch,(&(treeStart->quadrants),myFineStart,p4est_quadrant_disjoint));
+      PetscCallP4estReturn(overlapIndex,sc_array_bsearch,(&(treeStart->quadrants),myFineStart,p4est_quadrant_disjoint));
       if (overlapIndex < 0) {
         firstCell = 0;
       } else {
@@ -2271,7 +2275,7 @@ static PetscErrorCode DMPforestGetCellCoveringSF(MPI_Comm comm,p4est_t *p4estC, 
       firstCell = 0;
     }
     if (treeEnd && treeEnd->quadrants.elem_count) {
-      PetscStackCallP4estReturn(overlapIndex,sc_array_bsearch,(&(treeEnd->quadrants),myFineEnd,p4est_quadrant_disjoint));
+      PetscCallP4estReturn(overlapIndex,sc_array_bsearch,(&(treeEnd->quadrants),myFineEnd,p4est_quadrant_disjoint));
       if (overlapIndex < 0) { /* all of this local section is overlapped */
         lastCell = p4estC->local_num_quadrants;
       } else {
@@ -2279,8 +2283,8 @@ static PetscErrorCode DMPforestGetCellCoveringSF(MPI_Comm comm,p4est_t *p4estC, 
         p4est_quadrant_t first_desc;
         int              equal;
 
-        PetscStackCallP4est(p4est_quadrant_first_descendant,(container,&first_desc,P4EST_QMAXLEVEL));
-        PetscStackCallP4estReturn(equal,p4est_quadrant_is_equal,(myFineEnd,&first_desc));
+        PetscCallP4est(p4est_quadrant_first_descendant,(container,&first_desc,P4EST_QMAXLEVEL));
+        PetscCallP4estReturn(equal,p4est_quadrant_is_equal,(myFineEnd,&first_desc));
         if (equal) {
           lastCell = treeEnd->quadrants_offset + overlapIndex;
         } else {
@@ -2483,7 +2487,7 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
     for (p = 0; p < size; p++) {
       int equal;
 
-      PetscStackCallP4estReturn(equal,p4est_quadrant_is_equal_piggy,(&p4estC->global_first_position[p],&p4estF->global_first_position[p]));
+      PetscCallP4estReturn(equal,p4est_quadrant_is_equal_piggy,(&p4estC->global_first_position[p],&p4estF->global_first_position[p]));
       if (!equal) break;
     }
     if (p < size) { /* non-matching distribution: send the coarse to cover the fine */
@@ -2600,7 +2604,7 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
       sc_array_t       coarseQuadsArray;
 
       numCoarseQuads = treeQuadCounts[t - fltF];
-      PetscStackCallP4est(sc_array_init_data,(&coarseQuadsArray,coarseQuads,sizeof(p4est_quadrant_t),(size_t) numCoarseQuads));
+      PetscCallP4est(sc_array_init_data,(&coarseQuadsArray,coarseQuads,sizeof(p4est_quadrant_t),(size_t) numCoarseQuads));
       for (i = 0; i < numFineQuads; i++) {
         PetscInt         c     = i + offset;
         p4est_quadrant_t *quad = &fineQuads[i];
@@ -2609,7 +2613,7 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
 
         while (disjoint < 0 && coarseCount < numCoarseQuads) {
           quadCoarse = &coarseQuads[coarseCount];
-          PetscStackCallP4estReturn(disjoint,p4est_quadrant_disjoint,(quadCoarse,quad));
+          PetscCallP4estReturn(disjoint,p4est_quadrant_disjoint,(quadCoarse,quad));
           if (disjoint < 0) coarseCount++;
         }
         PetscCheck(disjoint == 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"did not find overlapping coarse quad");
@@ -2622,8 +2626,8 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
                 p4est_quadrant_t cornerQuad;
                 int              equal;
 
-                PetscStackCallP4est(p4est_quadrant_corner_descendant,(quad,&cornerQuad,j,quadCoarse->level));
-                PetscStackCallP4estReturn(equal,p4est_quadrant_is_equal,(&cornerQuad,quadCoarse));
+                PetscCallP4est(p4est_quadrant_corner_descendant,(quad,&cornerQuad,j,quadCoarse->level));
+                PetscCallP4estReturn(equal,p4est_quadrant_is_equal,(&cornerQuad,quadCoarse));
                 if (equal) {
                   PetscInt    petscJ = P4estVertToPetscVert[j];
                   PetscInt    p      = closurePointsF[numClosureIndices * c + (P4EST_INSUL - P4EST_CHILDREN) + petscJ].index;
@@ -2639,7 +2643,7 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
               disjoint = 1;
               if (coarseCount < numCoarseQuads) {
                 quadCoarse = &coarseQuads[coarseCount];
-                PetscStackCallP4estReturn(disjoint,p4est_quadrant_disjoint,(quadCoarse,quad));
+                PetscCallP4estReturn(disjoint,p4est_quadrant_disjoint,(quadCoarse,quad));
               }
             } while (!disjoint);
           }
@@ -2664,7 +2668,7 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
             int      cid;
 
             PetscCheck(levelDiff <= 1,PETSC_COMM_SELF,PETSC_ERR_USER,"Recursive child ids not implemented");
-            PetscStackCallP4estReturn(cid,p4est_quadrant_child_id,(quad));
+            PetscCallP4estReturn(cid,p4est_quadrant_child_id,(quad));
             PetscCall(DMPlexGetTransitiveClosure(plexF,c + cLocalStartF,PETSC_TRUE,NULL,&pointClosure));
             for (cl = 0; cl < P4EST_INSUL; cl++) {
               PetscInt p      = pointClosure[2 * cl];
@@ -3094,12 +3098,8 @@ static PetscErrorCode DMPforestGetTransferSF(DM dmA, DM dmB, const PetscInt dofP
       PetscFunctionReturn(0);
     }
   }
-  if (sfAtoB) {
-    PetscCall(DMPforestGetTransferSF_Internal(dmA,dmB,dofPerDim,sfAtoB,PETSC_TRUE,NULL));
-  }
-  if (sfBtoA) {
-    PetscCall(DMPforestGetTransferSF_Internal(dmB,dmA,dofPerDim,sfBtoA,(PetscBool) (sfAtoB == NULL),NULL));
-  }
+  if (sfAtoB) PetscCall(DMPforestGetTransferSF_Internal(dmA,dmB,dofPerDim,sfAtoB,PETSC_TRUE,NULL));
+  if (sfBtoA) PetscCall(DMPforestGetTransferSF_Internal(dmB,dmA,dofPerDim,sfBtoA,(PetscBool) (sfAtoB == NULL),NULL));
   PetscFunctionReturn(0);
 }
 
@@ -3147,8 +3147,8 @@ static PetscErrorCode DMPforestLabelsInitialize(DM dm, DM plex)
             p4est_quadrant_t neigh;
             int              isOutside;
 
-            PetscStackCallP4est(p4est_quadrant_face_neighbor,(quad,f,&neigh));
-            PetscStackCallP4estReturn(isOutside,p4est_quadrant_is_outside_face,(&neigh));
+            PetscCallP4est(p4est_quadrant_face_neighbor,(quad,f,&neigh));
+            PetscCallP4estReturn(isOutside,p4est_quadrant_is_outside_face,(&neigh));
             if (isOutside) {
               p4est_topidx_t nt;
               PetscInt       nf;
@@ -3333,8 +3333,8 @@ static PetscErrorCode DMPforestLabelsInitialize(DM dm, DM plex)
         int              isInside;
 
         l = PetscFaceToP4estFace[l - 1];
-        PetscStackCallP4est(p4est_quadrant_face_neighbor,(q,l,&nq));
-        PetscStackCallP4estReturn(isInside,p4est_quadrant_is_inside_root,(&nq));
+        PetscCallP4est(p4est_quadrant_face_neighbor,(q,l,&nq));
+        PetscCallP4estReturn(isInside,p4est_quadrant_is_inside_root,(&nq));
         if (isInside) {
           /* this facet is in the interior of a tree, so it inherits the label of the tree */
           if (baseLabel) {
@@ -3359,8 +3359,8 @@ static PetscErrorCode DMPforestLabelsInitialize(DM dm, DM plex)
         int              isInside;
 
         l = PetscEdgeToP4estEdge[l - (1 + P4EST_FACES)];
-        PetscStackCallP4est(p8est_quadrant_edge_neighbor,(q,l,&nq));
-        PetscStackCallP4estReturn(isInside,p4est_quadrant_is_inside_root,(&nq));
+        PetscCallP4est(p8est_quadrant_edge_neighbor,(q,l,&nq));
+        PetscCallP4estReturn(isInside,p4est_quadrant_is_inside_root,(&nq));
         if (isInside) {
           /* this edge is in the interior of a tree, so it inherits the label of the tree */
           if (baseLabel) {
@@ -3372,7 +3372,7 @@ static PetscErrorCode DMPforestLabelsInitialize(DM dm, DM plex)
         } else {
           int isOutsideFace;
 
-          PetscStackCallP4estReturn(isOutsideFace,p4est_quadrant_is_outside_face,(&nq));
+          PetscCallP4estReturn(isOutsideFace,p4est_quadrant_is_outside_face,(&nq));
           if (isOutsideFace) {
             PetscInt f;
 
@@ -3417,8 +3417,8 @@ static PetscErrorCode DMPforestLabelsInitialize(DM dm, DM plex)
 #else
         l = PetscVertToP4estVert[l - (1 + P4EST_FACES)];
 #endif
-        PetscStackCallP4est(p4est_quadrant_corner_neighbor,(q,l,&nq));
-        PetscStackCallP4estReturn(isInside,p4est_quadrant_is_inside_root,(&nq));
+        PetscCallP4est(p4est_quadrant_corner_neighbor,(q,l,&nq));
+        PetscCallP4estReturn(isInside,p4est_quadrant_is_inside_root,(&nq));
         if (isInside) {
           if (baseLabel) {
             PetscCall(DMLabelGetValue(baseLabel,t+cStartBase,&val));
@@ -3429,7 +3429,7 @@ static PetscErrorCode DMPforestLabelsInitialize(DM dm, DM plex)
         } else {
           int isOutside;
 
-          PetscStackCallP4estReturn(isOutside,p4est_quadrant_is_outside_face,(&nq));
+          PetscCallP4estReturn(isOutside,p4est_quadrant_is_outside_face,(&nq));
           if (isOutside) {
             PetscInt f = -1;
 
@@ -3458,7 +3458,7 @@ static PetscErrorCode DMPforestLabelsInitialize(DM dm, DM plex)
             continue;
           }
 #if defined(P4_TO_P8)
-          PetscStackCallP4estReturn(isOutside,p8est_quadrant_is_outside_edge,(&nq));
+          PetscCallP4estReturn(isOutside,p8est_quadrant_is_outside_edge,(&nq));
           if (isOutside) {
             /* outside edge */
             PetscInt e = -1;
@@ -3633,18 +3633,10 @@ static PetscErrorCode DMPforestLabelsFinalize(DM dm, DM plex)
       }
       for (p = pStart; p < pEnd; p++) values[p] = PETSC_MIN_INT;
 
-      if (transferForward) {
-        PetscCall(PetscSFBcastBegin(transferForward,MPIU_INT,adaptValues,values,MPI_REPLACE));
-      }
-      if (transferBackward) {
-        PetscCall(PetscSFReduceBegin(transferBackward,MPIU_INT,adaptValues,values,MPIU_MAX));
-      }
-      if (transferForward) {
-        PetscCall(PetscSFBcastEnd(transferForward,MPIU_INT,adaptValues,values,MPI_REPLACE));
-      }
-      if (transferBackward) {
-        PetscCall(PetscSFReduceEnd(transferBackward,MPIU_INT,adaptValues,values,MPIU_MAX));
-      }
+      if (transferForward) PetscCall(PetscSFBcastBegin(transferForward,MPIU_INT,adaptValues,values,MPI_REPLACE));
+      if (transferBackward) PetscCall(PetscSFReduceBegin(transferBackward,MPIU_INT,adaptValues,values,MPIU_MAX));
+      if (transferForward) PetscCall(PetscSFBcastEnd(transferForward,MPIU_INT,adaptValues,values,MPI_REPLACE));
+      if (transferBackward) PetscCall(PetscSFReduceEnd(transferBackward,MPIU_INT,adaptValues,values,MPIU_MAX));
       for (p = pStart; p < pEnd; p++) {
         PetscInt q = p, parent;
 
@@ -3916,38 +3908,146 @@ static PetscErrorCode DMPforestMapCoordinates(DM dm, DM plex)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PforestQuadrantIsInterior (p4est_quadrant_t *quad, PetscBool *is_interior)
+{
+  PetscFunctionBegin;
+  p4est_qcoord_t h = P4EST_QUADRANT_LEN (quad->level);
+  if ((quad->x > 0) && (quad->x + h < P4EST_ROOT_LEN)
+#ifdef P4_TO_P8
+      && (quad->z > 0) && (quad->z + h < P4EST_ROOT_LEN)
+#endif
+      && (quad->y > 0) && (quad->y + h < P4EST_ROOT_LEN)) {
+    *is_interior = PETSC_TRUE;
+  } else {
+    *is_interior = PETSC_FALSE;
+  }
+  PetscFunctionReturn(0);
+}
+
+/* We always use DG coordinates with p4est: if they do not match the vertex
+   coordinates, add space for them in the section */
+static PetscErrorCode PforestCheckLocalizeCell(DM plex, PetscInt cDim, Vec cVecOld, DM_Forest_pforest *pforest, PetscSection oldSection, PetscSection newSection, PetscInt cell, PetscInt coarsePoint, p4est_quadrant_t *quad)
+{
+  PetscBool is_interior;
+
+  PetscFunctionBegin;
+  PetscCall(PforestQuadrantIsInterior(quad, &is_interior));
+  if (is_interior) { // quads in the interior of a coarse cell can't touch periodic interfaces
+    PetscCall(PetscSectionSetDof(newSection, cell, 0));
+    PetscCall(PetscSectionSetFieldDof(newSection, cell, 0, 0));
+  } else {
+    PetscInt     cSize;
+    PetscScalar *values = NULL;
+    PetscBool    same_coords = PETSC_TRUE;
+
+    PetscCall(DMPlexVecGetClosure(plex, oldSection, cVecOld, cell, &cSize, &values));
+    PetscAssert(cSize == cDim * P4EST_CHILDREN, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Unexpected closure size");
+    for (int c = 0; c < P4EST_CHILDREN; c++) {
+      p4est_qcoord_t quad_coords[3];
+      p4est_qcoord_t h = P4EST_QUADRANT_LEN (quad->level);
+      double         corner_coords[3];
+      double         vert_coords[3];
+      PetscInt corner = PetscVertToP4estVert[c];
+
+      for (PetscInt d = 0; d < PetscMin(cDim, 3); d++) {
+        vert_coords[d] = PetscRealPart(values[c * cDim + d]);
+      }
+
+      quad_coords[0] = quad->x;
+      quad_coords[1] = quad->y;
+#ifdef P4_TO_P8
+      quad_coords[2] = quad->z;
+#endif
+      for (int d = 0; d < 3; d++) {
+        quad_coords[d] += (corner & (1 << d)) ? h : 0;
+      }
+#ifndef P4_TO_P8
+      PetscCallP4est(p4est_qcoord_to_vertex,(pforest->forest->connectivity, coarsePoint, quad_coords[0], quad_coords[1], corner_coords));
+#else
+      PetscCallP4est(p4est_qcoord_to_vertex,(pforest->forest->connectivity, coarsePoint, quad_coords[0], quad_coords[1], quad_coords[2], corner_coords));
+#endif
+      for (PetscInt d = 0; d < PetscMin(cDim, 3); d++) {
+        if (fabs (vert_coords[d] - corner_coords[d]) > PETSC_SMALL) {
+          same_coords = PETSC_FALSE;
+          break;
+        }
+      }
+    }
+    if (same_coords) {
+      PetscCall(PetscSectionSetDof(newSection, cell, 0));
+      PetscCall(PetscSectionSetFieldDof(newSection, cell, 0, 0));
+    } else {
+      PetscCall(PetscSectionSetDof(newSection, cell, cSize));
+      PetscCall(PetscSectionSetFieldDof(newSection, cell, 0, cSize));
+    }
+    PetscCall(DMPlexVecRestoreClosure(plex, oldSection, cVecOld, cell, &cSize, &values));
+  }
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PforestLocalizeCell(DM plex, PetscInt cDim, DM_Forest_pforest *pforest, PetscSection newSection, PetscInt cell, PetscInt coarsePoint, p4est_quadrant_t *quad, PetscScalar coords[])
+{
+  PetscInt  cdof, off;
+
+  PetscFunctionBegin;
+  PetscCall(PetscSectionGetDof(newSection, cell, &cdof));
+  if (!cdof) PetscFunctionReturn(0);
+
+  PetscCall(PetscSectionGetOffset(newSection, cell, &off));
+  for (PetscInt c = 0, pos = off; c < P4EST_CHILDREN; c++) {
+    p4est_qcoord_t quad_coords[3];
+    p4est_qcoord_t h = P4EST_QUADRANT_LEN (quad->level);
+    double         corner_coords[3];
+    PetscInt corner = PetscVertToP4estVert[c];
+
+    quad_coords[0] = quad->x;
+    quad_coords[1] = quad->y;
+#ifdef P4_TO_P8
+    quad_coords[2] = quad->z;
+#endif
+    for (int d = 0; d < 3; d++) {
+      quad_coords[d] += (corner & (1 << d)) ? h : 0;
+    }
+#ifndef P4_TO_P8
+    PetscCallP4est(p4est_qcoord_to_vertex,(pforest->forest->connectivity, coarsePoint, quad_coords[0], quad_coords[1], corner_coords));
+#else
+    PetscCallP4est(p4est_qcoord_to_vertex,(pforest->forest->connectivity, coarsePoint, quad_coords[0], quad_coords[1], quad_coords[2], corner_coords));
+#endif
+    for (PetscInt d = 0; d < PetscMin(cDim, 3); d++) {
+      coords[pos++] = corner_coords[d];
+    }
+    for (PetscInt d = PetscMin(cDim, 3); d < cDim; d++) {
+      coords[pos++] = 0.;
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode DMPforestLocalizeCoordinates(DM dm, DM plex)
 {
   DM_Forest         *forest;
   DM_Forest_pforest *pforest;
-  DM                base;
-  Vec               coordinates, cVec;
-  PetscSection      oldSection, baseSection = NULL, newSection;
-  const PetscScalar *coords;
+  DM                base, cdm, cdmCell;
+  Vec               cVec, cVecOld;
+  PetscSection      oldSection, newSection;
   PetscScalar       *coords2;
+  const PetscReal   *L;
   PetscInt          cLocalStart, cLocalEnd, coarsePoint;
-  PetscInt          cDim, newStart, newEnd, dof, cdof = -1;
-  PetscInt          v, vStart, vEnd, cp, cStart, cEnd, cEndInterior, *coarsePoints;
-  PetscInt          *localize, overlap;
+  PetscInt          cDim, newStart, newEnd;
+  PetscInt          v, vStart, vEnd, cp, cStart, cEnd, cEndInterior;
   p4est_topidx_t    flt, llt, t;
   p4est_tree_t      *trees;
-  PetscBool         isper, baseLocalized = PETSC_FALSE;
+  PetscBool         baseLocalized = PETSC_FALSE;
 
   PetscFunctionBegin;
-  PetscCall(DMGetPeriodicity(dm,&isper,NULL,NULL,NULL));
-  if (!isper) PetscFunctionReturn(0);
+  PetscCall(DMGetPeriodicity(dm,NULL,NULL,&L));
   /* we localize on all cells if we don't have a base DM or the base DM coordinates have not been localized */
   PetscCall(DMGetCoordinateDim(dm, &cDim));
-  cdof = P4EST_CHILDREN*cDim;
   PetscCall(DMForestGetBaseDM(dm,&base));
-  if (base) {
-    PetscCall(DMGetCoordinatesLocalized(base,&baseLocalized));
-  }
+  if (base) PetscCall(DMGetCoordinatesLocalized(base,&baseLocalized));
   if (!baseLocalized) base = NULL;
+  if (!baseLocalized && !L) PetscFunctionReturn(0);
   PetscCall(DMPlexGetChart(plex, &newStart, &newEnd));
-
-  PetscCall(DMForestGetPartitionOverlap(dm,&overlap));
-  PetscCall(PetscCalloc1(overlap ? newEnd - newStart : 0,&localize));
 
   PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject) dm), &newSection));
   PetscCall(PetscSectionSetNumFields(newSection, 1));
@@ -3955,14 +4055,8 @@ static PetscErrorCode DMPforestLocalizeCoordinates(DM dm, DM plex)
   PetscCall(PetscSectionSetChart(newSection, newStart, newEnd));
 
   PetscCall(DMGetCoordinateSection(plex, &oldSection));
-  if (base) PetscCall(DMGetCoordinateSection(base, &baseSection));
-  PetscCall(DMPlexGetDepthStratum(plex,0,&vStart,&vEnd));
-  for (v = vStart; v < vEnd; ++v) {
-    PetscCall(PetscSectionGetDof(oldSection, v, &dof));
-    PetscCall(PetscSectionSetDof(newSection, v, dof));
-    PetscCall(PetscSectionSetFieldDof(newSection, v, 0, dof));
-    if (overlap) localize[v] = dof;
-  }
+  PetscCall(DMPlexGetDepthStratum(plex, 0, &vStart, &vEnd));
+  PetscCall(DMGetCoordinatesLocal(plex, &cVecOld));
 
   forest      = (DM_Forest*) dm->data;
   pforest     = (DM_Forest_pforest*) forest->data;
@@ -3972,42 +4066,35 @@ static PetscErrorCode DMPforestLocalizeCoordinates(DM dm, DM plex)
   llt         = pforest->forest->last_local_tree;
   trees       = (p4est_tree_t*) pforest->forest->trees->array;
 
-  cp = 0;
-  PetscCall(DMPlexGetHeightStratum(plex,0,&cStart,&cEnd));
-  PetscCall(DMPlexGetGhostCellStratum(plex,&cEndInterior,NULL));
+  PetscCall(DMPlexGetHeightStratum(plex, 0, &cStart, &cEnd));
+  PetscCall(DMPlexGetGhostCellStratum(plex, &cEndInterior, NULL));
   cEnd = cEndInterior < 0 ? cEnd : cEndInterior;
-  PetscCall(PetscMalloc1(cEnd-cStart,&coarsePoints));
+  cp = 0;
   if (cLocalStart > 0) {
     p4est_quadrant_t *ghosts = (p4est_quadrant_t*) pforest->ghost->ghosts.array;
-    PetscInt         count;
+    PetscInt         cell;
 
-    for (count = 0; count < cLocalStart; count++) {
-      p4est_quadrant_t *quad = &ghosts[count];
+    for (cell = 0; cell < cLocalStart; ++cell, cp++) {
+      p4est_quadrant_t *quad = &ghosts[cell];
+
       coarsePoint = quad->p.which_tree;
-
-      if (baseSection) PetscCall(PetscSectionGetFieldDof(baseSection, coarsePoint, 0, &cdof));
-      PetscCall(PetscSectionSetDof(newSection, count, cdof));
-      PetscCall(PetscSectionSetFieldDof(newSection, count, 0, cdof));
-      coarsePoints[cp++] = cdof ? coarsePoint : -1;
-      if (overlap) localize[count] = cdof;
+      PetscCall(PforestCheckLocalizeCell(plex, cDim, cVecOld, pforest, oldSection, newSection, cell, coarsePoint, quad));
     }
   }
   for (t = flt; t <= llt; t++) {
     p4est_tree_t *tree    = &(trees[t]);
     PetscInt     offset   = cLocalStart + tree->quadrants_offset;
     PetscInt     numQuads = (PetscInt) tree->quadrants.elem_count;
+    p4est_quadrant_t *quads = (p4est_quadrant_t *) tree->quadrants.array;
     PetscInt     i;
 
     if (!numQuads) continue;
     coarsePoint = t;
-    if (baseSection) PetscCall(PetscSectionGetFieldDof(baseSection, coarsePoint, 0, &cdof));
-    for (i = 0; i < numQuads; i++) {
-      PetscInt newCell = i + offset;
+    for (i = 0; i < numQuads; i++, cp++) {
+      PetscInt cell = i + offset;
+      p4est_quadrant_t * quad = &quads[i];
 
-      PetscCall(PetscSectionSetDof(newSection, newCell, cdof));
-      PetscCall(PetscSectionSetFieldDof(newSection, newCell, 0, cdof));
-      coarsePoints[cp++] = cdof ? coarsePoint : -1;
-      if (overlap) localize[newCell] = cdof;
+      PetscCall(PforestCheckLocalizeCell(plex, cDim, cVecOld, pforest, oldSection, newSection, cell, coarsePoint, quad));
     }
   }
   if (cLocalEnd - cLocalStart < cEnd - cStart) {
@@ -4015,175 +4102,77 @@ static PetscErrorCode DMPforestLocalizeCoordinates(DM dm, DM plex)
     PetscInt         numGhosts = (PetscInt) pforest->ghost->ghosts.elem_count;
     PetscInt         count;
 
-    for (count = 0; count < numGhosts - cLocalStart; count++) {
+    for (count = 0; count < numGhosts - cLocalStart; count++, cp++) {
       p4est_quadrant_t *quad = &ghosts[count + cLocalStart];
       coarsePoint = quad->p.which_tree;
-      PetscInt newCell = count + cLocalEnd;
+      PetscInt cell = count + cLocalEnd;
 
-      if (baseSection) PetscCall(PetscSectionGetFieldDof(baseSection, coarsePoint, 0, &cdof));
-      PetscCall(PetscSectionSetDof(newSection, newCell, cdof));
-      PetscCall(PetscSectionSetFieldDof(newSection, newCell, 0, cdof));
-      coarsePoints[cp++] = cdof ? coarsePoint : -1;
-      if (overlap) localize[newCell] = cdof;
+      PetscCall(PforestCheckLocalizeCell(plex, cDim, cVecOld, pforest, oldSection, newSection, cell, coarsePoint, quad));
     }
   }
-  PetscCheck(cp == cEnd - cStart,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unexpected number of fine cells %" PetscInt_FMT " != %" PetscInt_FMT,cp,cEnd-cStart);
+  PetscAssert(cp == cEnd - cStart,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unexpected number of fine cells %" PetscInt_FMT " != %" PetscInt_FMT,cp,cEnd-cStart);
 
-  if (base) { /* we need to localize on all the cells in the star of the coarse cell vertices */
-    PetscInt *closure = NULL, closureSize;
-    PetscInt p, i, c, vStartBase, vEndBase, cStartBase, cEndBase;
-
-    PetscCall(DMPlexGetHeightStratum(base,0,&cStartBase,&cEndBase));
-    PetscCall(DMPlexGetDepthStratum(base,0,&vStartBase,&vEndBase));
-    for (p = cStart; p < cEnd; p++) {
-      coarsePoint = coarsePoints[p-cStart];
-      if (coarsePoint < 0) continue;
-      if (baseSection) PetscCall(PetscSectionGetFieldDof(baseSection, coarsePoint, 0, &cdof));
-      PetscCall(DMPlexGetTransitiveClosure(base,coarsePoint,PETSC_TRUE,&closureSize,&closure));
-      for (c = 0; c < closureSize; c++) {
-        PetscInt *star = NULL, starSize;
-        PetscInt j, v = closure[2 * c];
-
-        if (v < vStartBase || v > vEndBase) continue;
-        PetscCall(DMPlexGetTransitiveClosure(base,v,PETSC_FALSE,&starSize,&star));
-        for (j = 0; j < starSize; j++) {
-          PetscInt cell = star[2 * j];
-
-          if (cStartBase <= cell && cell < cEndBase) {
-            p4est_tree_t *tree;
-            PetscInt     offset,numQuads;
-
-            if (cell < flt || cell > llt) continue;
-            tree     = &(trees[cell]);
-            offset   = cLocalStart + tree->quadrants_offset;
-            numQuads = (PetscInt) tree->quadrants.elem_count;
-            for (i = 0; i < numQuads; i++) {
-              PetscInt newCell = i + offset;
-
-              PetscCall(PetscSectionSetDof(newSection, newCell, cdof));
-              PetscCall(PetscSectionSetFieldDof(newSection, newCell, 0, cdof));
-              if (overlap) localize[newCell] = cdof;
-            }
-          }
-        }
-        PetscCall(DMPlexRestoreTransitiveClosure(base,v,PETSC_FALSE,&starSize,&star));
-      }
-      PetscCall(DMPlexRestoreTransitiveClosure(base,coarsePoint,PETSC_TRUE,&closureSize,&closure));
-    }
-  }
-  PetscCall(PetscFree(coarsePoints));
-
-  /* final consensus with overlap */
-  if (overlap) {
-    PetscSF  sf;
-    PetscInt *localizeGlobal;
-
-    PetscCall(DMGetPointSF(plex,&sf));
-    PetscCall(PetscMalloc1(newEnd-newStart,&localizeGlobal));
-    for (v = newStart; v < newEnd; v++) localizeGlobal[v - newStart] = localize[v - newStart];
-    PetscCall(PetscSFBcastBegin(sf,MPIU_INT,localize,localizeGlobal,MPI_REPLACE));
-    PetscCall(PetscSFBcastEnd(sf,MPIU_INT,localize,localizeGlobal,MPI_REPLACE));
-    for (v = newStart; v < newEnd; v++) {
-      PetscCall(PetscSectionSetDof(newSection, v, localizeGlobal[v-newStart]));
-      PetscCall(PetscSectionSetFieldDof(newSection, v, 0, localizeGlobal[v-newStart]));
-    }
-    PetscCall(PetscFree(localizeGlobal));
-  }
-  PetscCall(PetscFree(localize));
   PetscCall(PetscSectionSetUp(newSection));
-  PetscCall(PetscObjectReference((PetscObject)oldSection));
-  PetscCall(DMSetCoordinateSection(plex, cDim, newSection));
+  PetscCall(DMGetCoordinateDM(plex, &cdm));
+  PetscCall(DMClone(cdm, &cdmCell));
+  PetscCall(DMSetCellCoordinateDM(plex, cdmCell));
+  PetscCall(DMDestroy(&cdmCell));
+  PetscCall(DMSetCellCoordinateSection(plex, cDim, newSection));
   PetscCall(PetscSectionGetStorageSize(newSection, &v));
   PetscCall(VecCreate(PETSC_COMM_SELF, &cVec));
-  PetscCall(PetscObjectSetName((PetscObject)cVec,"coordinates"));
+  PetscCall(PetscObjectSetName((PetscObject) cVec, "coordinates"));
   PetscCall(VecSetBlockSize(cVec, cDim));
   PetscCall(VecSetSizes(cVec, v, PETSC_DETERMINE));
   PetscCall(VecSetType(cVec, VECSTANDARD));
   PetscCall(VecSet(cVec, PETSC_MIN_REAL));
 
-  /* Copy over vertex coordinates */
-  PetscCall(DMGetCoordinatesLocal(plex, &coordinates));
-  PetscCheck(coordinates,PetscObjectComm((PetscObject)plex),PETSC_ERR_SUP,"Missing local coordinates vector");
-  PetscCall(VecGetArray(cVec, &coords2));
-  PetscCall(VecGetArrayRead(coordinates, &coords));
-  for (v = vStart; v < vEnd; ++v) {
-    PetscInt d, off,off2;
-
-    PetscCall(PetscSectionGetDof(oldSection, v, &dof));
-    PetscCall(PetscSectionGetOffset(oldSection, v, &off));
-    PetscCall(PetscSectionGetOffset(newSection, v, &off2));
-    for (d = 0; d < dof; ++d) coords2[off2+d] = coords[off+d];
-  }
-  PetscCall(VecRestoreArrayRead(coordinates, &coords));
-
   /* Localize coordinates on cells if needed */
+  PetscCall(VecGetArray(cVec, &coords2));
+  cp = 0;
+  if (cLocalStart > 0) {
+    p4est_quadrant_t *ghosts = (p4est_quadrant_t*) pforest->ghost->ghosts.array;
+    PetscInt         cell;
+
+    for (cell = 0; cell < cLocalStart; ++cell, cp++) {
+      p4est_quadrant_t *quad = &ghosts[cell];
+
+      coarsePoint = quad->p.which_tree;
+      PetscCall(PforestLocalizeCell(plex, cDim, pforest, newSection, cell, coarsePoint, quad, coords2));
+    }
+  }
   for (t = flt; t <= llt; t++) {
-    p4est_tree_t     *tree    = &(trees[t]);
-    const double     *v       = pforest->topo->conn->vertices;
-    p4est_quadrant_t *quads   = (p4est_quadrant_t*) tree->quadrants.array;
-    PetscInt         offset   = cLocalStart + tree->quadrants_offset;
-    PetscInt         numQuads = (PetscInt) tree->quadrants.elem_count;
-    p4est_topidx_t   vt[8]    = {0,0,0,0,0,0,0,0};
-    PetscInt         i,k;
+    p4est_tree_t *tree    = &(trees[t]);
+    PetscInt     offset   = cLocalStart + tree->quadrants_offset;
+    PetscInt     numQuads = (PetscInt) tree->quadrants.elem_count;
+    p4est_quadrant_t *quads = (p4est_quadrant_t *) tree->quadrants.array;
+    PetscInt     i;
 
     if (!numQuads) continue;
-    for (k = 0; k < P4EST_CHILDREN; ++k) {
-      vt[k] = pforest->topo->conn->tree_to_vertex[t * P4EST_CHILDREN + k];
+    coarsePoint = t;
+    for (i = 0; i < numQuads; i++, cp++) {
+      PetscInt cell = i + offset;
+      p4est_quadrant_t * quad = &quads[i];
+
+      PetscCall(PforestLocalizeCell(plex, cDim, pforest, newSection, cell, coarsePoint, quad, coords2));
     }
+  }
+  if (cLocalEnd - cLocalStart < cEnd - cStart) {
+    p4est_quadrant_t *ghosts   = (p4est_quadrant_t*) pforest->ghost->ghosts.array;
+    PetscInt         numGhosts = (PetscInt) pforest->ghost->ghosts.elem_count;
+    PetscInt         count;
 
-    for (i = 0; i < numQuads; i++) {
-      p4est_quadrant_t  *quad = &quads[i];
-      const PetscReal   intsize = 1.0 / P4EST_ROOT_LEN;
-      PetscReal         h2;
-      PetscScalar       xyz[3];
-#ifdef P4_TO_P8
-      PetscInt          zi;
-#endif
-      PetscInt          yi,xi;
-      PetscInt          off2;
-      PetscInt          newCell = i + offset;
+    for (count = 0; count < numGhosts - cLocalStart; count++, cp++) {
+      p4est_quadrant_t *quad = &ghosts[count + cLocalStart];
+      coarsePoint = quad->p.which_tree;
+      PetscInt cell = count + cLocalEnd;
 
-      PetscCall(PetscSectionGetFieldDof(newSection, newCell, 0, &cdof));
-      if (!cdof) continue;
-
-      h2   = .5 * intsize * P4EST_QUADRANT_LEN (quad->level);
-      k    = 0;
-      PetscCall(PetscSectionGetOffset(newSection, newCell, &off2));
-#ifdef P4_TO_P8
-      for (zi = 0; zi < 2; ++zi) {
-        const PetscReal eta_z = intsize * quad->z + h2 * (1. + (zi * 2 - 1));
-#else
-      {
-        const PetscReal eta_z = 0.0;
-#endif
-        for (yi = 0; yi < 2; ++yi) {
-          const PetscReal eta_y = intsize * quad->y + h2 * (1. + (yi * 2 - 1));
-          for (xi = 0; xi < 2; ++xi) {
-            const PetscReal eta_x = intsize * quad->x + h2 * (1. + (xi * 2 - 1));
-            PetscInt    j;
-
-            for (j = 0; j < 3; ++j) {
-              xyz[j] = ((1. - eta_z) * ((1. - eta_y) * ((1. - eta_x) * v[3 * vt[0] + j] +
-                                                              eta_x  * v[3 * vt[1] + j]) +
-                                              eta_y  * ((1. - eta_x) * v[3 * vt[2] + j] +
-                                                              eta_x  * v[3 * vt[3] + j]))
-                        +     eta_z  * ((1. - eta_y) * ((1. - eta_x) * v[3 * vt[4] + j] +
-                                                              eta_x  * v[3 * vt[5] + j]) +
-                                              eta_y  * ((1. - eta_x) * v[3 * vt[6] + j] +
-                                                              eta_x  * v[3 * vt[7] + j])));
-            }
-            for (j = 0; j < cDim; ++j) coords2[off2 + cDim*P4estVertToPetscVert[k] + j] = xyz[j];
-            ++k;
-          }
-        }
-      }
+      PetscCall(PforestLocalizeCell(plex, cDim, pforest, newSection, cell, coarsePoint, quad, coords2));
     }
   }
   PetscCall(VecRestoreArray(cVec, &coords2));
-  PetscCall(DMSetCoordinatesLocal(plex, cVec));
+  PetscCall(DMSetCellCoordinatesLocal(plex, cVec));
   PetscCall(VecDestroy(&cVec));
   PetscCall(PetscSectionDestroy(&newSection));
-  PetscCall(PetscSectionDestroy(&oldSection));
   PetscFunctionReturn(0);
 }
 
@@ -4274,7 +4263,7 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
     leaves            = sc_array_new(sizeof(p4est_locidx_t));
     remotes           = sc_array_new(2 * sizeof(p4est_locidx_t));
 
-    PetscStackCallP4est(p4est_get_plex_data_ext,(pforest->forest,&pforest->ghost,&pforest->lnodes,ctype,(int)((size > 1) ? overlap : 0),&first_local_quad,points_per_dim,cone_sizes,cones,cone_orientations,coords,children,parents,childids,leaves,remotes,1));
+    PetscCallP4est(p4est_get_plex_data_ext,(pforest->forest,&pforest->ghost,&pforest->lnodes,ctype,(int)((size > 1) ? overlap : 0),&first_local_quad,points_per_dim,cone_sizes,cones,cone_orientations,coords,children,parents,childids,leaves,remotes,1));
 
     pforest->cLocalStart = (PetscInt) first_local_quad;
     pforest->cLocalEnd   = pforest->cLocalStart + (PetscInt) pforest->forest->local_num_quadrants;
@@ -4335,12 +4324,10 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
     sc_array_destroy (remotes);
 
     {
-      PetscBool             isper;
-      const PetscReal      *maxCell, *L;
-      const DMBoundaryType *bd;
+      const PetscReal *maxCell, *Lstart, *L;
 
-      PetscCall(DMGetPeriodicity(dm,&isper,&maxCell,&L,&bd));
-      PetscCall(DMSetPeriodicity(newPlex,isper,maxCell,L,bd));
+      PetscCall(DMGetPeriodicity(dm,&maxCell,&Lstart,&L));
+      PetscCall(DMSetPeriodicity(newPlex,maxCell,Lstart,L));
       PetscCall(DMPforestLocalizeCoordinates(dm,newPlex));
     }
 
@@ -4401,24 +4388,33 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
     }
     PetscCall(DMViewFromOptions(newPlex,NULL,"-dm_p4est_plex_view"));
     {
+      DM           cdm;
       PetscSection coordsSec;
       Vec          coords;
       PetscInt     cDim;
 
-      PetscCall(DMGetCoordinateDim(newPlex,&cDim));
-      PetscCall(DMGetCoordinateSection(newPlex,&coordsSec));
-      PetscCall(DMSetCoordinateSection(dm,cDim,coordsSec));
-      PetscCall(DMGetCoordinatesLocal(newPlex,&coords));
-      PetscCall(DMSetCoordinatesLocal(dm,coords));
+      PetscCall(DMGetCoordinateDim(newPlex, &cDim));
+      PetscCall(DMGetCoordinateSection(newPlex, &coordsSec));
+      PetscCall(DMSetCoordinateSection(dm,cDim, coordsSec));
+      PetscCall(DMGetCoordinatesLocal(newPlex, &coords));
+      PetscCall(DMSetCoordinatesLocal(dm, coords));
+      PetscCall(DMGetCellCoordinateDM(newPlex, &cdm));
+      if (cdm) PetscCall(DMSetCellCoordinateDM(dm, cdm));
+      PetscCall(DMGetCellCoordinateSection(newPlex, &coordsSec));
+      if (coordsSec) PetscCall(DMSetCellCoordinateSection(dm, cDim, coordsSec));
+      PetscCall(DMGetCellCoordinatesLocal(newPlex, &coords));
+      if (coords) PetscCall(DMSetCellCoordinatesLocal(dm, coords));
     }
   }
   newPlex = pforest->plex;
   if (plex) {
-    DM coordDM;
-
     PetscCall(DMClone(newPlex,plex));
+#if 0
     PetscCall(DMGetCoordinateDM(newPlex,&coordDM));
     PetscCall(DMSetCoordinateDM(*plex,coordDM));
+    PetscCall(DMGetCellCoordinateDM(newPlex,&coordDM));
+    PetscCall(DMSetCellCoordinateDM(*plex,coordDM));
+#endif
     PetscCall(DMShareDiscretization(dm,*plex));
   }
   PetscFunctionReturn(0);
@@ -5143,7 +5139,7 @@ static PetscErrorCode DMForestCreateCellSF_pforest(DM dm, PetscSF *cellSF)
       mirror[q].index = (PetscInt) mir->p.piggy3.local_num + cLocalStart;
       mirrorPtrs[q]   = (void*) &(mirror[q]);
     }
-    PetscStackCallP4est(p4est_ghost_exchange_custom,(pforest->forest,pforest->ghost,sizeof(PetscSFNode),mirrorPtrs,remote));
+    PetscCallP4est(p4est_ghost_exchange_custom,(pforest->forest,pforest->ghost,sizeof(PetscSFNode),mirrorPtrs,remote));
     PetscCall(PetscFree2(mirror,mirrorPtrs));
     for (q = 0; q < nGhostPre; q++) mine[q] = q;
     for (; q < nLeaves; q++) mine[q] = (q - nGhostPre) + cLocalEnd;

@@ -11,6 +11,7 @@ int main(int argc, char *argv[])
   Mat            A;
   PetscBool      struct_only=PETSC_TRUE;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,NULL));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-dim",&dim,NULL));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-dof",&dof,NULL));

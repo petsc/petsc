@@ -32,6 +32,7 @@ int main(int argc, char *argv[])
   ISColoring     iscoloring;
   MatColoring    coloring;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 

@@ -69,6 +69,7 @@ int main(int argc,char **argv)
   DMDALocalInfo  info;
   PetscBool      patchis_offproc = PETSC_TRUE;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-dim",&dim,NULL));
 

@@ -114,6 +114,7 @@ class Configure(config.base.Configure):
     return
 
   def configureFortranFlush(self):
+    '''Determine if Fortran has a flush() command'''
     self.pushLanguage('FC')
     for baseName in ['flush','flush_']:
       if self.checkLink(body='      call '+baseName+'(6)'):
@@ -307,6 +308,7 @@ class Configure(config.base.Configure):
     return
 
   def checkFortran90AssumedType(self):
+    '''Check if Fortran compiler array pointer is a raw pointer in C''' 
     if config.setCompilers.Configure.isIBM(self.setCompilers.FC, self.log):
       self.addDefine('HAVE_F90_ASSUMED_TYPE_NOT_PTR', 1)
       self.logPrint('IBM F90 compiler detected so using HAVE_F90_ASSUMED_TYPE_NOT_PTR', 3, 'compilers')

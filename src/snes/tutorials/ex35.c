@@ -72,6 +72,7 @@ int main(int argc,char **argv)
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -95,9 +96,7 @@ int main(int argc,char **argv)
   PetscCall(DMSetUp(da));
   PetscCall(DMDASetUniformCoordinates(da, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0));
   PetscCall(SNESSetDM(snes,da));
-  if (use_ngs_as_npc) {
-    PetscCall(SNESShellSetContext(psnes,da));
-  }
+  if (use_ngs_as_npc) PetscCall(SNESShellSetContext(psnes,da));
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Extract global vectors from DMDA; then duplicate for remaining
      vectors that are the same types

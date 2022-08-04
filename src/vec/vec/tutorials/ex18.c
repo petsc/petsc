@@ -25,6 +25,7 @@ int main(int argc,char **argv)
   PetscScalar    dummy,result=0,h=1.0/numPoints,*xarray;
   Vec            x,xend;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));

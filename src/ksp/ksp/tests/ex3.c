@@ -36,6 +36,7 @@ int main(int argc,char **args)
   KSP            ksp;
   PetscBool      viewkspest = PETSC_FALSE;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
   PetscCall(PetscOptionsGetBool(NULL,NULL,"-ksp_est_view",&viewkspest,NULL));

@@ -37,6 +37,7 @@ int main(int argc,char **args)
   PetscLogStage stages[3];
 #endif
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-t",&ntimes,NULL));
@@ -226,9 +227,7 @@ int main(int argc,char **args)
        call KSPSetInitialGuessNonzero() in indicate use of an initial
        guess vector; otherwise, an initial guess of zero is used.
     */
-    if (t>0) {
-      PetscCall(KSPSetInitialGuessNonzero(ksp1,PETSC_TRUE));
-    }
+    if (t>0) PetscCall(KSPSetInitialGuessNonzero(ksp1,PETSC_TRUE));
 
     /*
        Solve the first linear system.  Here we explicitly call

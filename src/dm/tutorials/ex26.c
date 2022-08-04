@@ -13,6 +13,7 @@ int main(int argc, char **argv)
   PetscInt       tick, moment = 0,momentummax = 7;
   PetscReal      *zeros,*weights,scale,h,sigma = 1/sqrt(2), g = 0, mu = 0;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
 
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));

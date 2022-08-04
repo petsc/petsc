@@ -40,6 +40,7 @@ int main(int argc,char **args)
   PetscInt       rstart,rend,i,j;
   PetscViewer    view;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,NULL,help));
   /*
       Create a parallel SBAIJ matrix shared by all processors

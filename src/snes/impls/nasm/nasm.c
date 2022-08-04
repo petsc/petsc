@@ -673,9 +673,7 @@ PetscErrorCode SNESNASMSolveLocal_Private(SNES snes,Vec B,Vec Y,Vec X)
   }
   if (nasm->eventsubsolve) PetscCall(PetscLogEventEnd(nasm->eventsubsolve,snes,0,0,0));
   if (nasm->eventrestrictinterp) PetscCall(PetscLogEventBegin(nasm->eventrestrictinterp,snes,0,0,0));
-  if (nasm->weight_set) {
-    PetscCall(VecPointwiseMult(Y,Y,nasm->weight));
-  }
+  if (nasm->weight_set) PetscCall(VecPointwiseMult(Y,Y,nasm->weight));
   if (nasm->eventrestrictinterp) PetscCall(PetscLogEventEnd(nasm->eventrestrictinterp,snes,0,0,0));
   PetscCall(SNESNASMGetDamping(snes,&dmp));
   PetscCall(VecAXPY(X,dmp,Y));
@@ -782,9 +780,7 @@ static PetscErrorCode SNESSolve_NASM(SNES snes)
   }
 
   /* Call general purpose update function */
-  if (snes->ops->update) {
-    PetscCall((*snes->ops->update)(snes, snes->iter));
-  }
+  if (snes->ops->update) PetscCall((*snes->ops->update)(snes, snes->iter));
   /* copy the initial solution over for later */
   if (nasm->fjtype == 2) PetscCall(VecCopy(X,nasm->xinit));
 

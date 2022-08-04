@@ -49,9 +49,7 @@ PetscErrorCode TaoVecGetSubVec(Vec vfull, IS is, TaoSubsetType reduced_type, Pet
       PetscCall(VecGetOwnershipRange(vfull,&flow,&fhigh));
       PetscCall(ISGetLocalSize(is,&nreduced_local));
       PetscCall(PetscObjectGetComm((PetscObject)vfull,&comm));
-      if (*vreduced) {
-        PetscCall(VecDestroy(vreduced));
-      }
+      if (*vreduced) PetscCall(VecDestroy(vreduced));
       PetscCall(VecCreate(comm,vreduced));
       PetscCall(VecSetType(*vreduced,vtype));
 

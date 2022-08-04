@@ -15,6 +15,7 @@ int main(int argc,char **argv)
   PetscBool      setSizes,useInjective;
 
   /* Initialize PETSc and process command line arguments */
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   dim = 2;
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-dim",&dim,NULL));
@@ -69,9 +70,7 @@ int main(int argc,char **argv)
   PetscCall(DMSetUp(dm));
 
   /* Populate Additional Injective Local-to-Global Map */
-  if (useInjective) {
-    PetscCall(DMStagPopulateLocalToGlobalInjective(dm));
-  }
+  if (useInjective) PetscCall(DMStagPopulateLocalToGlobalInjective(dm));
 
   /* Test: Make sure L2G inverts G2L */
   PetscCall(Test1(dm));

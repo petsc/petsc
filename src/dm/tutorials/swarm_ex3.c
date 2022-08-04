@@ -251,6 +251,7 @@ PetscErrorCode ex3_1(void)
 int main(int argc,char **argv)
 {
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(ex3_1());
   PetscCall(PetscFinalize());

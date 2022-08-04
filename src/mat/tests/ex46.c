@@ -11,6 +11,7 @@ int main(int argc,char **args)
   ISLocalToGlobalMapping rmap,cmap;
   PetscInt               bs[4],l2gbs[4],rbs,cbs,l2grbs,l2gcbs,i;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
   PetscCall(MatSetSizes(A,12,12,PETSC_DECIDE,PETSC_DECIDE));

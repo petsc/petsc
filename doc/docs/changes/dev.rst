@@ -7,12 +7,16 @@ Changes you should make for main and version 3.18 so that it is portable to prev
 - Remove the error handling from uses of  ``PetscOptionsBegin()``, ``PetscOptionsEnd()``, ``PetscObjectOptionsBegin()``, ``PetscOptionsHead()``,  and ``PetscOptionsTail()``
 - Remove the error handling from uses of ``PetscDrawCollectiveBegin()`` and ``PetscDrawCollectiveEnd()``
 - Remove the error handling from uses of ``MatPreallocateInitialize()`` and ``MatPreallocateFinalize()``
+- Replace ``MatUpdateMPIAIJWithArrays()`` with ``MatUpdateMPIAIJWithArray()``
 
 Changes you can make for main and version 3.18 so that is not portable to previous versions of PETSc. This will remove all deprecation warnings when you build.
 In addition to the changes above
 
 - Change  ``PetscOptionsHead()`` and ``PetscOptionsTail()`` to  ``PetscOptionsHeadBegin()`` and ``PetscOptionsHeadEnd()``
 - Change ``MatPreallocateInitialize()`` and ``MatPreallocateFinalize()`` to ``MatPreallocateBegin()`` and ``MatPreallocateEnd()``
+- Change uses of `MatGetOption()` with `MAT_SYMMETRIC`, `MAT_STRUCTURALLY_SYMMETRIC`, `MAT_HERMITIAN`,  `MAT_SPD` to calls to `MatIsSymmetric()`, `MatIsSymmetricKnown()` etc.
+- Whenever you call `MatSetOption()` with one of the above options and it is intended to stay with the matrix through calls to `MatSetValues()` etc add a call
+  to `MatSetOption()` with `MAT_SYMMETRY_ETERNAL` etc
 
 ..
    STYLE GUIDELINES:
@@ -63,11 +67,19 @@ In addition to the changes above
 
 .. rubric:: Sys:
 
+-  Change -log_view to no longer print out the amount of memory associated with different types of objects. That data was often incorrect
 -  Change ``PetscCall()`` from Fortran so that ``call PetscFunction(args,ierr);CHKERRQ(ierr);`` can be replaced with ``PetscCall(PetscFunction(args,ierr))``
 -  Add ``PetscCallA()`` from Fortran so that ``call PetscFunction(args,ierr);CHKERRA(ierr);`` can be replaced with ``PetscCallA(PetscFunction(args,ierr))``
 -  Add ``PetscCallMPI()`` and ``PetscCallMPIA()`` that may be used to call MPI functions from Fortran
+-  Change the ``PetscCheck()`` and ``PetscAssert()`` macros to behave like function calls by wrapping in ``do { } while (0)``. Previously these macros expanded to ``if (...) SETERRQ(...)``, which meant they could be chained with subsequent conditionals.
+-  Change ``PetscStackCallStandard()`` to ``PetscCallExternal()``
+-  Change ``PetscStackCall()`` to ``PetscStackCallExternalVoid()``
+-  Change ``PetscStackCallXXX()`` to ``PetscCallXXX()``
+-  Add ``PetscCallBack()' for calling all PETSc callbacks (usually to user code) to replace the use of ``PetscStackPush()`` and ``PetscStackPop``
 
 .. rubric:: PetscViewer:
+
+- Add ``PetscViewerHDF5PushGroupRelative()``
 
 .. rubric:: PetscDraw:
 
@@ -88,6 +100,7 @@ In addition to the changes above
 .. rubric:: Vec:
 
 - Add ``VecSetPreallocationCOO()``, ``VecSetValuesCOO()`` and ``VecSetPreallocationCOOLocal()`` to support vector assembly with coordinates
+- Add ``VecStrideSum()`` and ``VecStrideSumAll()`` for summing subvectors of strided vectors
 
 .. rubric:: PetscSection:
 
@@ -102,8 +115,24 @@ In addition to the changes above
 - Add ``MatSetOptionsPrefixFactor()`` and ``MatAppendOptionsPrefixFactor()`` to allow controlling the options prefix used by factors created from this matrix
 - Change ``MatSetOptionsPrefix()`` to no longer affect the options prefix used by factors created from this matrix
 - Change matrix factor options called from within `KSP`/`PC` to always inherit the options prefix from the `KSP`/`PC`, not the options prefix in the originating matrix
+- Add ``MatIsStructurallySymmetricKnown()`` and ``MatIsSPDKnown()``
+- Change ``MatGetOption()`` to no longer produce results for ``MAT_STRUCTURALLY_SYMMETRIC``, ``MAT_SYMMETRIC``, ``MAT_SPD``, and ``MAT_HERMITIAN``
+- Add ``MatCreateGraph()`` to create a scalar matrix for use in graph algorithms
+- Add ``MatFilter()`` to remove values with an absolute value equal to or below a give threshold
+- Add an option -mat_factor_bind_factorization <host, device> to control where to do matrix factorization. Currently only supported with SEQAIJCUSPARSE matrices.
+- Add ``MatUpdateMPIAIJWithArray()`` and deprecate ``MatUpdateMPIAIJWithArrays()``
+- Change the coordinate array parameters in ``MatSetPreallocationCOO`` from const to non-const
+- Add enforcement of the previously unenforced rule that ``MAT_REUSE_MATRIX`` with ``MatTranspose()`` can only be used after a call to ``MatTranspose()`` with ``MAT_INITIAL_MATRIX``. Add ``MatTransposeSetPrecursor()`` to allow using ``MAT_REUSE_MATRIX`` with ``MatTranspose()`` without the initial call to ``MatTranspose()``.
+- Add ``MatTransposeSymbolic()``
+
+.. rubric:: MatCoarsen:
+
+- Add ``MISK`` coarsening type. Distance-k maximal independent set (MIS) C-F coarsening with a greedy, MIS based aggregation algorithm
 
 .. rubric:: PC:
+
+- Add PC type of mpi which can be used in conjunction with -mpi_linear_solver_server to use MPI parallelism to solve a system created on a single MPI rank
+- Add ``PCHYPREAMSSetInteriorNodes()`` to set interior nodes for HYPRE AMS
 
 .. rubric:: KSP:
 
@@ -128,6 +157,9 @@ In addition to the changes above
 .. rubric:: DM/DA:
 
 - Add ``DMDAMapMatStencilToGlobal()`` to map MatStencils to global indices
+- Add ``DMGetCellCoordinateDM()``, ``DMSetCellCoordinateDM()``, ``DMGetCellCoordinateSection()``, ``DMSetCellCoordinateSection()``, ``DMGetCellCoordinates()``, ``DMSetCellCoordinates()``, ``DMGetCellCoordinatesLocalSetup()``, ``DMGetCellCoordinatesLocal()``, ``DMGetCellCoordinatesLocalNoncollective()``, ``DMSetCellCoordinatesLocal()``
+- Add ``DMFieldCreateDSWithDG()`` to allow multiple representations of a given field
+- Add ``DMProjectFieldLabel()``
 
 .. rubric:: DMSwarm:
 
@@ -154,10 +186,17 @@ In addition to the changes above
     - add ``DMPlexReorderGetDefault()`` and ``DMPlexReorderSetDefault()`` to get and set this flag
 - Add ``DMPlexCreateOverlapLabelFromLabels()`` for more customized overlap
 - Add ``DMPlexSetOverlap()`` to promote an internal interface
+- Add ``DMGetCellCoordinateDM()``, ``DMSetCellCoordinateDM()``, ``DMGetCellCoordinateSection()``, ``DMSetCellCoordinateSection()``, ``DMGetCellCoordinates()``, ``DMSetCellCoordinates()``, ``DMGetCellCoordinatesLocalSetUp()``, ``DMGetCellCoordinatesLocal()``, ``DMGetCellCoordinatesLocalNoncollective()``, and ``DMSetCellCoordinatesLocal()`` to provide an independent discontinuous representation of coordinates
+- Change ``DMGetPeriodicity()`` and ``DMSetPeriodicity()`` to get rid of the flag and boundary type. Since we have an independent representation, we can tell if periodicity was imposed, and boundary types were never used, so they can be inferred from the given L. We also add Lstart to allow tori that do not start at 0.
+- Add ``DMPlexGetCellCoordinates()`` and ``DMPlexRestoreCellCoordinates()`` for clean interface for periodicity
 
 .. rubric:: FE/FV:
 
+- Add ``PetscFECreateFromSpaces()`` to build similar space from pieces
+
 .. rubric:: DMNetwork:
+
+- Add ``DMNetworkFinalizeComponents()`` to setup the internal data structures for components on a network. Previously this could only be done by calling DMSetUp. 
 
 .. rubric:: DMStag:
 

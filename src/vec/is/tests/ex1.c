@@ -10,6 +10,7 @@ int main(int argc,char **argv)
   IS                     isx;
   ISLocalToGlobalMapping ltog;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   PetscCall(ISCreateBlock(PETSC_COMM_SELF,bs,n,ix,PETSC_COPY_VALUES,&isx));

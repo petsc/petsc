@@ -171,9 +171,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
           PetscCallMPI(MPI_Recv(array,nnodes*cdim,MPIU_SCALAR,r,tag,comm,&status));
           PetscCallMPI(MPI_Get_count(&status,MPIU_SCALAR,&nn));
           PetscCheck(nn == nnodes*cdim,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Array size mismatch");
-        } else {
-          PetscCall(PetscArraycpy(array,coords,nnodes*cdim));
-        }
+        } else PetscCall(PetscArraycpy(array,coords,nnodes*cdim));
         /* Transpose coordinates to VTK (C-style) ordering */
         for (k=0; k<zm; k++) {
           for (j=0; j<ym; j++) {
@@ -219,9 +217,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
           PetscCallMPI(MPI_Recv(array,nnodes*bs,MPIU_SCALAR,r,tag,comm,&status));
           PetscCallMPI(MPI_Get_count(&status,MPIU_SCALAR,&nn));
           PetscCheck(nn == nnodes*bs,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Array size mismatch receiving from rank %" PetscInt_FMT,r);
-        } else {
-          PetscCall(PetscArraycpy(array,x,nnodes*bs));
-        }
+        } else PetscCall(PetscArraycpy(array,x,nnodes*bs));
 
         /* If any fields are named, add scalar fields. Otherwise, add a vector field */
         PetscCall(DMDAGetFieldsNamed(daCurr,&fieldsnamed));
@@ -238,12 +234,8 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
             }
             PetscCall(PetscViewerVTKFWrite(viewer,fp,array2,nnodes,MPIU_SCALAR));
           }
-        } else {
-          PetscCall(PetscViewerVTKFWrite(viewer,fp,array,bs*nnodes,MPIU_SCALAR));
-        }
-      } else if (r == rank) {
-        PetscCallMPI(MPI_Send((void*)x,nnodes*bs,MPIU_SCALAR,0,tag,comm));
-      }
+        } else PetscCall(PetscViewerVTKFWrite(viewer,fp,array,bs*nnodes,MPIU_SCALAR));
+      } else if (r == rank) PetscCallMPI(MPI_Send((void*)x,nnodes*bs,MPIU_SCALAR,0,tag,comm));
       PetscCall(VecRestoreArrayRead(X,&x));
     }
   }
@@ -464,9 +456,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da,PetscViewer viewer)
           PetscCallMPI(MPI_Recv(array,nnodes*bs,MPIU_SCALAR,r,tag,comm,&status));
           PetscCallMPI(MPI_Get_count(&status,MPIU_SCALAR,&nn));
           PetscCheck(nn == nnodes*bs,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Array size mismatch receiving from rank %" PetscInt_FMT,r);
-        } else {
-          PetscCall(PetscArraycpy(array,x,nnodes*bs));
-        }
+        } else PetscCall(PetscArraycpy(array,x,nnodes*bs));
         /* If any fields are named, add scalar fields. Otherwise, add a vector field */
         PetscCall(DMDAGetFieldsNamed(daCurr,&fieldsnamed));
         if (fieldsnamed) {

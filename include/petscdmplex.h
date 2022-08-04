@@ -361,6 +361,8 @@ PETSC_EXTERN PetscErrorCode DMPlexGetSubdomainSection(DM, PetscSection*);
 
 PETSC_EXTERN PetscErrorCode DMPlexComputeCellGeometryAffineFEM(DM, PetscInt, PetscReal *, PetscReal *, PetscReal *, PetscReal *);
 PETSC_EXTERN PetscErrorCode DMPlexComputeCellGeometryFEM(DM, PetscInt, PetscQuadrature, PetscReal *, PetscReal *, PetscReal *, PetscReal *);
+PETSC_EXTERN PetscErrorCode DMPlexGetCellCoordinates(DM, PetscInt, PetscBool *, PetscInt *, const PetscScalar *[], PetscScalar *[]);
+PETSC_EXTERN PetscErrorCode DMPlexRestoreCellCoordinates(DM, PetscInt, PetscBool *, PetscInt *, const PetscScalar *[], PetscScalar *[]);
 PETSC_EXTERN PetscErrorCode DMPlexCoordinatesToReference(DM, PetscInt, PetscInt, const PetscReal [], PetscReal[]);
 PETSC_EXTERN PetscErrorCode DMPlexReferenceToCoordinates(DM, PetscInt, PetscInt, const PetscReal [], PetscReal[]);
 PETSC_EXTERN PetscErrorCode DMPlexShearGeometry(DM, DMDirection, PetscReal[]);

@@ -73,8 +73,7 @@ PetscErrorCode DMMoabOutput(DM dm, const char* filename, const char* usrwriteopt
     PetscCall(DMMoab_GetWriteOptions_Private(0, 1, dmmoab->dim, dmmoab->write_mode,dmmoab->rw_dbglevel, dmmoab->extra_write_options, usrwriteopts, &writeopts));
 #endif
     PetscCall(PetscInfo(dm, "Writing file %s with options: %s\n", filename, writeopts));
-  }
-  else {
+  } else {
     writeopts = NULL;
   }
 

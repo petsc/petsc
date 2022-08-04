@@ -27,6 +27,15 @@ def _picTestIncludes(export=''):
                     'void bar(void){foo();}\n'])
 
 
+isUname_value          = False
+isLinux_value          = False
+isCygwin_value         = False
+isSolaris_value        = False
+isDarwin_value         = False
+isDarwinCatalina_value = False
+isFreeBSD_value        = False
+isARM_value            = -1
+
 class CaseInsensitiveDefaultDict(defaultdict):
   __slots__ = ()
 
@@ -538,6 +547,19 @@ class Configure(config.base.Configure):
       pass
 
   @staticmethod
+  def isWindows(compiler, log):
+    '''Returns true if the compiler is a Windows compiler'''
+    if compiler in ['icl', 'cl', 'bcc32', 'ifl', 'df']:
+      if log: log.write('Detected Windows OS\n')
+      return 1
+    if compiler in ['ifort','f90'] and Configure.isCygwin(log):
+      if log: log.write('Detected Windows OS\n')
+      return 1
+    if compiler in ['lib', 'tlib']:
+      if log: log.write('Detected Windows OS\n')
+      return 1
+
+  @staticmethod
   def isSolarisAR(ar, log):
     '''Returns true AR is solaris'''
     try:
@@ -560,81 +582,91 @@ class Configure(config.base.Configure):
       pass
 
   @staticmethod
+  def isUname(log):
+    global isLinux_value,isCygwin_value,isSolaris_value,isDarwin_value,isDarwinCatalina_value,isFreeBSD_value,isUname_value
+    isUname_value = True
+    (output, error, status) = config.base.Configure.executeShellCommand('uname -s', log = log)
+    if not status:
+      output = output.lower().strip()
+      if output.find('linux') >= 0:
+        if log: log.write('Detected Linux OS')
+        isLinux_value = True
+        return
+      if output.find('cygwin') >= 0:
+        if log: log.write('Detected Cygwin')
+        isCygwin_value = True
+        return
+      if output.find('sunos') >= 0:
+        if log: log.write('Detected Solaris')
+        isSolaris_value = True
+        return
+      if output.find('darwin') >= 0:
+        if log: log.write('Detected Darwin')
+        isDarwin_value = True
+        import platform
+        v = tuple([int(a) for a in platform.mac_ver()[0].split('.')])
+        if v >= (10,15,0):
+          if log: log.write('Detected Darwin/MacOSX Catalina OS\n')
+          isDarwinCatalina_value = True
+      if output.find('freebsd') >= 0:
+        if log: log.write('Detected FreeBSD')
+        isFreeBSD_value = True
+        return
+
+  @staticmethod
   def isLinux(log):
     '''Returns true if system is linux'''
-    (output, error, status) = config.base.Configure.executeShellCommand('uname -s', log = log)
-    if not status and output.lower().strip().find('linux') >= 0:
-      if log: log.write('Detected Linux OS')
-      return 1
+    global isUname_value,isLinux_value
+    if not isUname_value: config.setCompilers.Configure.isUname(log)
+    return isLinux_value
 
   @staticmethod
   def isCygwin(log):
-    '''Returns true if system is cygwin'''
-    (output, error, status) = config.base.Configure.executeShellCommand('uname -s', log = log)
-    if not status and output.lower().strip().find('cygwin') >= 0:
-      if log: log.write('Detected Cygwin\n')
-      return 1
+    '''Returns true if system is Cygwin'''
+    global isUname_value,sCygwin_value
+    if not isUname_value: config.setCompilers.Configure.isUname(log)
+    return isCygwin_value
 
   @staticmethod
   def isSolaris(log):
-    '''Returns true if system is solaris'''
-    (output, error, status) = config.base.Configure.executeShellCommand('uname -s', log = log)
-    if not status and output.lower().strip().find('sunos') >= 0:
-      if log: log.write('Detected Solaris OS\n')
-      return 1
+    '''Returns true if system is Solaris'''
+    global isUname_value,sSolaris_value
+    if not isUname_value: config.setCompilers.Configure.isUname(log)
+    return isSolaris_value
 
   @staticmethod
   def isDarwin(log):
-    '''Returns true if system is Darwin/MacOSX'''
-    (output, error, status) = config.base.Configure.executeShellCommand('uname -s', log = log)
-    if not status:
-      found = (output.lower().strip() == 'darwin')
-      if found:
-        if log: log.write('Detected Darwin/MacOSX OS\n\n')
-      return found
-
-  @staticmethod
-  def isARM(log):
-    '''Returns true if system is processor-type is ARM'''
-    (output, error, status) = config.base.Configure.executeShellCommand('uname -p', log = log)
-    if not status:
-      found = (output.lower().strip() == 'arm')
-      if found:
-        if log: log.write('Detected ARM processor\n\n')
-      return found
+    '''Returns true if system is Dwarwin'''
+    global isUname_value,sDarwin_value
+    if not isUname_value: config.setCompilers.Configure.isUname(log)
+    return isDarwin_value
 
   @staticmethod
   def isDarwinCatalina(log):
-    '''Returns true if system is Darwin/MacOSX Version Catalina or higher'''
-    import platform
-    if platform.system() != 'Darwin': return 0
-    v = tuple([int(a) for a in platform.mac_ver()[0].split('.')])
-    if v < (10,15,0): return 0
-    if log: log.write('Detected Darwin/MacOSX Catalina OS\n')
-    return 1
+    '''Returns true if system is Dwarwin Catalina'''
+    global isUname_value,isDarwinCatalina_value
+    if not isUname_value: config.setCompilers.Configure.isUname(log)
+    return isDarwinCatalina_value
 
   @staticmethod
   def isFreeBSD(log):
     '''Returns true if system is FreeBSD'''
-    (output, error, status) = config.base.Configure.executeShellCommand('uname -s', log = log)
-    if not status:
-      found = output.lower().strip() == 'freebsd'
-      if found:
-        if log: log.write('Detected FreeBSD OS\n')
-      return found
+    global isUname_value,isFreeBSD_value
+    if not isUname_value: config.setCompilers.Configure.isUname(log)
+    return isFreeBSD_value
 
   @staticmethod
-  def isWindows(compiler, log):
-    '''Returns true if the compiler is a Windows compiler'''
-    if compiler in ['icl', 'cl', 'bcc32', 'ifl', 'df']:
-      if log: log.write('Detected Windows OS\n')
-      return 1
-    if compiler in ['ifort','f90'] and Configure.isCygwin(log):
-      if log: log.write('Detected Windows OS\n')
-      return 1
-    if compiler in ['lib', 'tlib']:
-      if log: log.write('Detected Windows OS\n')
-      return 1
+  def isARM(log):
+    '''Returns true if system is processor-type is ARM'''
+    global isARM_value
+    if isARM_value == -1:
+       (output, error, status) = config.base.Configure.executeShellCommand('uname -p', log = log)
+       if not status and (output.lower().strip() == 'arm'):
+         if log: log.write('Detected ARM processor\n\n')
+         isARM_value = True
+       else:
+         isARM_value = False
+    return isARM_value
 
   @staticmethod
   def addLdPath(path):
@@ -707,8 +739,7 @@ class Configure(config.base.Configure):
     return
 
   def checkCxxDialect(self, language, isGNUish=False):
-    """
-    Determine the CXX dialect supported by the compiler (language) [and correspoding compiler
+    """Determine the CXX dialect supported by the compiler (language) [and correspoding compiler
     option - if any].
 
     isGNUish indicates if the compiler is gnu compliant (i.e. clang).
@@ -1266,6 +1297,15 @@ class Configure(config.base.Configure):
       yield 'win32fe bcc32'
     return
 
+  def showMPIWrapper(self,compiler):
+    if os.path.basename(compiler).startswith('mpi'):
+      self.logPrint(' MPI compiler wrapper '+compiler+' failed to compile')
+      try:
+        output = self.executeShellCommand(compiler + ' -show', log = self.log)[0]
+      except RuntimeError:
+        self.logPrint('-show option failed for MPI compiler wrapper '+compiler)
+    self.logPrint(' MPI compiler wrapper '+compiler+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.')
+
   def checkCCompiler(self):
     '''Locate a functional C compiler'''
     if 'with-cc' in self.argDB and self.argDB['with-cc'] == '0':
@@ -1279,8 +1319,7 @@ class Configure(config.base.Configure):
       except RuntimeError as e:
         self.mesg = str(e)
         self.logPrint('Error testing C compiler: '+str(e))
-        if os.path.basename(self.CC) == 'mpicc':
-          self.logPrint(' MPI installation '+str(self.CC)+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.')
+        self.showMPIWrapper(compiler)
         self.delMakeMacro('CC')
         del self.CC
     if not hasattr(self, 'CC'):
@@ -1629,8 +1668,7 @@ class Configure(config.base.Configure):
         except RuntimeError as e:
           self.mesg = str(e)
           self.logPrint('Error testing C++ compiler: '+str(e))
-          if os.path.basename(self.CXX) in ['mpicxx', 'mpiCC']:
-            self.logPrint('  MPI installation '+str(self.CXX)+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.')
+          self.showMPIWrapper(compiler)
           self.delMakeMacro('CXX')
           del self.CXX
       if hasattr(self, 'CXX'):
@@ -1769,8 +1807,7 @@ class Configure(config.base.Configure):
       except RuntimeError as e:
         self.mesg = str(e)
         self.logPrint('Error testing Fortran compiler: '+str(e))
-        if os.path.basename(self.FC) in ['mpif90']:
-          self.logPrint(' MPI installation '+str(self.FC)+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.')
+        self.showMPIWrapper(compiler)
         self.delMakeMacro('FC')
         del self.FC
     if hasattr(self, 'FC'):
@@ -1830,7 +1867,7 @@ class Configure(config.base.Configure):
                   'invalid option','invalid suboption','bad ',' option','petsc error',
                   'unbekannte option','linker input file unused because linking not done',
                   'warning: // comments are not allowed in this language',
-                  'no se reconoce la opci','non reconnue')
+                  'no se reconoce la opci','non reconnue','warning: unsupported linker arg:')
     outlo = output.lower()
     return any(sub.lower() in outlo for sub in substrings)
 
@@ -1982,7 +2019,7 @@ class Configure(config.base.Configure):
     return
 
   def checkLargeFileIO(self):
-    # check for large file support with 64bit offset
+    '''check for large file support with 64bit offset'''
     if not self.argDB['with-large-file-io']:
       return
     languages = ['C']
@@ -2086,7 +2123,12 @@ class Configure(config.base.Configure):
     arcUnix    = os.path.join(self.tmpDir, 'libconf1.a')
     arcWindows = os.path.join(self.tmpDir, 'libconf1.lib')
     def checkArchive(command, status, output, error):
-      if error in ["xiar: executing 'ar'\n"]: error = None
+      if error:
+        error = error.splitlines()
+        error = [s for s in error if not (s.find('unsupported GNU_PROPERTY_TYPE') >= 0 and s.find('warning:') >= 0)]
+        error = [s for s in error if s.find("xiar: executing 'ar'") < 0]
+        if error: '\n'.join(error)
+        else: error = ''
       if error or status:
         self.logError('archiver', status, output, error)
         if os.path.isfile(objName):
@@ -2576,6 +2618,7 @@ if (dlclose(handle)) {
     return
 
   def resetEnvCompilers(self):
+    '''Remove compilers from the shell environment so they do not interfer with testing'''
     ignoreEnvCompilers = ['CC','CXX','FC','F77','F90']
     ignoreEnv = ['CFLAGS','CXXFLAGS','FCFLAGS','FFLAGS','F90FLAGS','CPP','CPPFLAGS','CXXPP','CXXPPFLAGS','LDFLAGS','LIBS','MPI_DIR','RM','MAKEFLAGS','AR','RANLIB']
     for envVal in ignoreEnvCompilers + ignoreEnv:
@@ -2592,6 +2635,7 @@ if (dlclose(handle)) {
     return
 
   def checkEnvCompilers(self):
+    '''Set configure compilers from the environment, from -with-environment-variables'''
     if 'with-environment-variables' in self.framework.clArgDB:
       envVarChecklist = ['CC','CFLAGS','CXX','CXXFLAGS','FC','FCFLAGS','F77','FFLAGS','F90','F90FLAGS','CPP','CPPFLAGS','CXXPP','CXXPPFLAGS','LDFLAGS','LIBS','MPI_DIR','RM','MAKEFLAGS','AR']
       for ev in envVarChecklist:
@@ -2637,10 +2681,7 @@ if (dlclose(handle)) {
     self.executeTest(self.checkCPreprocessor)
 
     def compilerIsDisabledFromOptions(compiler):
-      """
-      Return True if compiler is disabled via configure options (and delete it from the argdb),
-      False otherwise
-      """
+      """Return True if compiler is disabled via configure options (and delete it from the argdb), False otherwise"""
       disabled = self.argDB.get('with-'+compiler.lower()) == '0'
       if disabled:
         COMPILER = compiler.upper()

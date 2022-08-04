@@ -118,16 +118,12 @@ ifneq ($(KOKKOS_USE_CUDA_COMPILER),)
   # Kokkos requires nvcc to be in PATH and the C++ compiler to be given in an environmental variable
   KOKC = PATH=`dirname $(CUDAC)`:$(PATH) NVCC_WRAPPER_DEFAULT_COMPILER="$(CUDA_CXX)" $(KOKKOS_BIN)/nvcc_wrapper --expt-extended-lambda
   PETSC_COMPILE.kokkos.cxx = $(call quiet,KOKC) -c $(CUDAC_FLAGS) ${PETSC_CCPPFLAGS} $(CUDACPPFLAGS) $(CUDA_CXXFLAGS) $(MPICXX_INCLUDES)
-  PETSC_LINK.kokkos.cxx = $(KOKC) $(CUDAC_FLAGS) $(MPICXX_INCLUDES) ${PETSC_CCPPFLAGS} $(CUDA_CXXFLAGS) $(CUDA_CXXLIBS) $(MPICXX_LIBS) $(LDFLAGS)
 else ifneq ($(KOKKOS_USE_HIP_COMPILER),)
   PETSC_COMPILE.kokkos.cxx = $(PETSC_COMPILE.hip.cpp)
-  PETSC_LINK.kokkos.cxx = $(HIPC) $(HIPFLAGS) $(CXXFLAGS) $(PETSC_CCPPFLAGS) $(CPPFLAGS) $(LDFLAGS) $(MPICXX_INCLUDES) $(MPICXX_LIBS)
 else ifneq ($(KOKKOS_USE_SYCL_COMPILER),)
   PETSC_COMPILE.kokkos.cxx = $(PETSC_COMPILE.sycl.cxx)
-  PETSC_LINK.kokkos.cxx = $(SYCLC) $(SYCLFLAGS) $(CXXFLAGS) $(PETSC_CCPPFLAGS) $(CPPFLAGS) $(LDFLAGS) $(MPICXX_INCLUDES) $(MPICXX_LIBS)
 else
   PETSC_COMPILE.kokkos.cxx = $(PETSC_COMPILE.cxx)
-  PETSC_LINK.kokkos.cxx = $(CXXLINKER) $(CXXFLAGS) $(PETSC_CCPPFLAGS) $(CPPFLAGS) $(LDFLAGS)
 endif
 
 ifneq ($(RAJA_USE_CUDA_COMPILER),)
@@ -256,7 +252,7 @@ $(testexe.hip.cpp) : $(TESTDIR)/% : $(TESTDIR)/%.o $$^ $(libpetscall)
 	-$(call macos-firewall-register,$@)
 
 $(testexe.kokkos.cxx) : $(TESTDIR)/% : $(TESTDIR)/%.o $$^ $(libpetscall)
-	$(call quiet,PETSC_LINK.kokkos.cxx) -o $@ $^ $(PETSC_TEST_LIB)
+	$(call quiet,CLINKER) $(EXEFLAGS) -o $@ $^ $(PETSC_TEST_LIB)
 	-$(call macos-firewall-register,$@)
 
 $(testexe.raja.cxx) : $(TESTDIR)/% : $(TESTDIR)/%.o $$^ $(libpetscall)

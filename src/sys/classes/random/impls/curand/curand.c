@@ -68,6 +68,8 @@ static struct _PetscRandomOps PetscRandomOps_Values = {
 /*MC
    PETSCCURAND - access to the CUDA random number generator
 
+  PETSc must be ./configure with the option --with-cuda to use this random number generator.
+
   Level: beginner
 
 .seealso: `PetscRandomCreate()`, `PetscRandomSetType()`

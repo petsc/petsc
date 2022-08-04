@@ -41,9 +41,7 @@ static PetscErrorCode TaoLineSearchDestroy_OWArmijo(TaoLineSearch ls)
 
   PetscFunctionBegin;
   PetscCall(PetscFree(armP->memory));
-  if (armP->x) {
-    PetscCall(PetscObjectDereference((PetscObject)armP->x));
-  }
+  if (armP->x) PetscCall(PetscObjectDereference((PetscObject)armP->x));
   PetscCall(VecDestroy(&armP->work));
   PetscCall(PetscFree(ls->data));
   PetscFunctionReturn(0);

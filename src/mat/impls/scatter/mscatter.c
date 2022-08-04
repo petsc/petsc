@@ -234,15 +234,18 @@ static struct _MatOps MatOps_Values = {NULL,
                                        NULL,
                                        NULL,
                                        NULL,
-                                /*139*/NULL,
+                               /*139*/ NULL,
                                        NULL,
                                        NULL,
                                        NULL,
                                        NULL,
-                                /*144*/NULL,
+                               /*144*/ NULL,
                                        NULL,
                                        NULL,
-                                       NULL
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                               /*150*/ NULL
 };
 
 /*MC

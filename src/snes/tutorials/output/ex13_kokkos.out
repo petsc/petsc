@@ -7,13 +7,13 @@ box in 3 dimensions:
   Number of 3-cells per rank: 18 18
 Labels:
   depth: 4 strata with value/size (0 (48), 1 (104), 2 (75), 3 (18))
-  marker: 1 strata with value/size (1 (113))
+  marker: 1 strata with value/size (1 (155))
   Face Sets: 5 strata with value/size (1 (6), 3 (6), 4 (6), 5 (9), 6 (9))
   celltype: 4 strata with value/size (0 (48), 1 (104), 4 (75), 7 (18))
-  0 SNES Function norm 2.877171977888e+00 
-    0 KSP Residual norm 2.877171977888e+00 
-    1 KSP Residual norm 3.872339407123e-01 
-    2 KSP Residual norm 5.881429465709e-02 
-    3 KSP Residual norm 1.432503170698e-03 
-    4 KSP Residual norm 1.248612192287e-16 
-  1 SNES Function norm 9.903675945970e-16 
+  0 SNES Function norm 2.877171977888e+00
+    0 KSP Residual norm 2.877171977888e+00
+    1 KSP Residual norm 3.872339407123e-01
+    2 KSP Residual norm 5.881429465709e-02
+    3 KSP Residual norm 1.432503170698e-03
+    4 KSP Residual norm 1.248612192287e-16
+  1 SNES Function norm 9.903675945970e-16

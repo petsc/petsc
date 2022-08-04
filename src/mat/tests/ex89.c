@@ -16,6 +16,7 @@ int main(int argc,char **argv)
   PetscInt       dof;
   MPI_Comm       comm;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   comm = PETSC_COMM_WORLD;
   PetscCallMPI(MPI_Comm_rank(comm,&rank));

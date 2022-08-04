@@ -70,6 +70,7 @@ int main(int argc, char **argv)
   PetscMPIInt     size, rank;
   PetscInt        testnum;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL, "-testnum", &testnum, NULL));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));

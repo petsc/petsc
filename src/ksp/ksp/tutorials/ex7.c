@@ -37,6 +37,7 @@ int main(int argc,char **args)
   PetscScalar    v,one = 1.0,none = -1.0;
   PetscBool      isbjacobi;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
@@ -291,8 +292,7 @@ int main(int argc,char **args)
         nsize: {{1 2}separate output}
         requires: cuda
         args: -mat_type aijcusparse
-        # triggers cusparse MatTransposeMat operation when squaring the graph
-        args: -pc_gamg_sym_graph 0 -pc_gamg_threshold -1 -pc_gamg_square_graph 1
+        args: -pc_gamg_threshold -1
       test:
         suffix: gamg_kokkos
         nsize: {{1 2}separate output}

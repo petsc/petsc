@@ -631,6 +631,7 @@ int main(int argc, char **argv)
   Vec            u;    /* Solutions */
   AppCtx         user; /* User-defined work context */
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL,help));
   PetscCall(ProcessOptions(PETSC_COMM_WORLD, &user));
   PetscCall(PetscBagCreate(PETSC_COMM_SELF, sizeof(Parameter), &user.bag));
@@ -937,7 +938,7 @@ int main(int argc, char **argv)
             -ksp_type cg -ksp_rtol 1.e-10 -ksp_max_it 100 -ksp_norm_type unpreconditioned \
             -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 \
               -pc_gamg_coarse_eq_limit 10 -pc_gamg_reuse_interpolation true \
-              -pc_gamg_square_graph 1 -pc_gamg_threshold 0.05 -pc_gamg_threshold_scale .0 \
+              -pc_gamg_threshold 0.05 -pc_gamg_threshold_scale .0 \
               -mg_levels_ksp_max_it 2 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.1 -mg_levels_pc_type jacobi \
               -matptap_via scalable
     test:

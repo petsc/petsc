@@ -1129,8 +1129,8 @@ code that uses GAMG with ``-help`` to get full listing of GAMG
 parameters with short parameter descriptions. The rate of coarsening is
 critical in AMG performance – too slow coarsening will result in an
 overly expensive solver per iteration and too fast coarsening will
-result in decrease in the convergence rate. ``-pc_gamg_threshold <0>``
-and ``-pc_gamg_square_graph <1>,`` are the primary parameters that
+result in decrease in the convergence rate. ``-pc_gamg_threshold <-1>``
+and ``-pc_gamg_aggressive_coarsening <N>`` are the primary parameters that
 control coarsening rates, which is very important for AMG performance. A
 greedy maximal independent set (MIS) algorithm is used in coarsening.
 Squaring the graph implements so called MIS-2, the root vertex in an
@@ -1142,7 +1142,7 @@ will keep zero edges, a positive number will drop small edges. Typical
 finite threshold values are in the range of :math:`0.01 - 0.05`. There
 are additional parameters for changing the weights on coarse grids.
 Note, the parallel algorithm requires symmetric weights/matrix. You must
-use ``-pc_gamg_sym_graph <true>`` to symmetrize the graph if your
+use ``-pc_gamg_symmetrize_graph <true>`` to symmetrize the graph if your
 problem is not symmetric.
 
 **Trouble shooting algebraic multigrid methods:** If *GAMG*, *ML*, or
@@ -1172,8 +1172,8 @@ operator, which can be set using ``PCHYPRESetDiscreteCurl()``.
 coarsening rates and methods; for GAMG use ``-pc_gamg_threshold <x>``
 or ``PCGAMGSetThreshold()`` to regulate coarsening rates, higher values decrease
 coarsening rate. Squaring the graph is the second mechanism for
-increasing coarsening rate. Use ``-pc_gamg_square_graph <N>``, or
-``PCGAMGSetSquareGraph(pc,N)``, to square the graph on the finest N
+increasing coarsening rate. Use ``-pc_gamg_aggressive_coarsening <N>``, or
+``PCGAMGSetAggressiveLevels(pc,N)``, to aggressive ly coarsen (MIS-2) the graph on the finest N
 levels. A high threshold (e.g., :math:`x=0.08`) will result in an
 expensive but potentially powerful preconditioner, and a low threshold
 (e.g., :math:`x=0.0`) will result in faster coarsening, fewer levels,
@@ -1192,7 +1192,7 @@ entries on the fine level). Grid complexity should be well under 2.0 and
 preferably around :math:`1.3` or lower. If convergence is poor and the
 Galerkin coarse grid construction is much smaller than the time for each
 solve then one can safely decrease the coarsening rate.
-``-pc_gamg_threshold`` :math:`0.0` is the simplest and most robust
+``-pc_gamg_threshold`` :math:`-1.0` is the simplest and most robust
 option, and is recommended if poor convergence rates are observed, at
 least until the source of the problem is discovered. In conclusion, if
 convergence is slow then decreasing the coarsening rate (increasing the
@@ -1223,8 +1223,8 @@ determined by running with ``-log_view`` and check that the time for the
 Galerkin coarse grid construction (``MatPtAP``) is not (much) more than
 the time spent in each solve (``KSPSolve``). If the ``MatPtAP`` time is
 too large then one can increase the coarsening rate by decreasing the
-threshold and squaring the coarsening graph
-(``-pc_gamg_square_graph <N>``, squares the graph on the finest N
+threshold and using aggressive coarsening 
+(``-pc_gamg_aggressive_coarsening <N>``, squares the graph on the finest N
 levels). Likewise if your ``MatPtAP`` time is small and your convergence
 rate is not ideal then you could decrease the coarsening rate.
 
@@ -2308,3 +2308,26 @@ or message.
 
 .. bibliography:: /petsc.bib
    :filter: docname in docnames
+
+Using a MPI parallel linear solver from a non-MPI program
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Using PETSc's MPI linear solver server it is possible to use multiple MPI processes to solve a
+a linear system when the application code, including the matrix generation, is run on a single
+MPI rank (with or without OpenMP). The application code must be built with MPI and must call
+``PetscIntialize()`` at the very beginning of the program and end with ``PetscFinalize()``. The
+application code may utilize OpenMP.
+The code may create multiple matrices and `KSP` objects and call `KSPSolve()`, similarly the
+code may utilize the `SNES` nonlinear solvers, the `TS` ODE integrators, and the `TAO` optimization algorithms
+which use `KSP`.
+
+Amdahl's law makes clear that parallelizing only a portion of a numerical code can only provide a limited improvement
+in the computation time; thus it is crucial to understand what phases of a computation must be parallelized (via MPI, OpenMP, or some other model)
+to ensure a useful increase in performance. One of the crucial phases is likely the generation of the matrix entries; the
+use of `MatSetPreallocationCOO()` and `MatSetValuesCOO()` in an OpenMP code allows parallelizing the generation of the matrix.
+
+The program must then be launched using the standard approaches for launching MPI programs with the
+option `-mpi_linear_solver_server` and options to utilize the `PCMPI` preconditioners; for example,
+`-ksp_type preonly` and `pc_type mpi`. Any standard solver options may be passed to the parallel solvers using the
+options prefix `-mpi_`; for example, `-mpi_ksp_type cg`. The option `-mpi_linear_solver_server_view` will print
+a summary of all the systems solved by the MPI linear solver server.

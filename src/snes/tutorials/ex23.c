@@ -77,6 +77,7 @@ static PetscErrorCode DivideDomain(DM dm, AppCtx *user)
   PetscCall(DMCreateLabel(dm, "bottom"));
   PetscCall(DMGetLabel(dm, "top", &top));
   PetscCall(DMGetLabel(dm, "bottom", &bottom));
+  PetscCall(DMGetCoordinatesLocalSetUp(dm));
   PetscCall(DMGetBoundingBox(dm, low, high));
   midy = 0.5*(high[1] - low[1]);
   PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
@@ -172,6 +173,7 @@ int main(int argc, char **argv)
   Vec            u;    /* Solutions */
   AppCtx         user; /* User-defined work context */
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL,help));
   /* Primal system */
   PetscCall(SNESCreate(PETSC_COMM_WORLD, &snes));

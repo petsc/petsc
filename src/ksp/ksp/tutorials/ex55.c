@@ -31,6 +31,7 @@ int main(int argc,char **args)
                              {6.666666666666667E-02, 0.0000E-00, -2.666666666666667E-01,  2.0000E-01, -3.333333333333333E-01,  0.0000E-00, 5.333333333333333E-01, -2.0000E-01 },
                              {0.0000E-00, -3.333333333333333E-01,  2.0000E-01, -2.666666666666667E-01, 0.0000E-00,  6.666666666666667E-02, -2.0000E-01,  5.333333333333333E-01 } };
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   comm = PETSC_COMM_WORLD;
   PetscCallMPI(MPI_Comm_rank(comm, &mype));
@@ -49,6 +50,7 @@ int main(int argc,char **args)
   PetscCall(MatSetSizes(Amat,m,m,M,M));
   PetscCall(MatSetType(Amat,MATAIJ));
   PetscCall(MatSetOption(Amat,MAT_SPD,PETSC_TRUE));
+  PetscCall(MatSetOption(Amat,MAT_SPD_ETERNAL,PETSC_TRUE));
   PetscCall(MatSetFromOptions(Amat));
   PetscCall(MatSetBlockSize(Amat,2));
   PetscCall(MatSeqAIJSetPreallocation(Amat,18,NULL));
@@ -263,24 +265,24 @@ int main(int argc,char **args)
    test:
       suffix: 1
       nsize: 4
-      args: -ne 29 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -use_coordinates -ksp_converged_reason -pc_gamg_esteig_ksp_max_it 5 -ksp_rtol 1.e-3 -ksp_monitor_short -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.2
+      args: -ne 29 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -use_coordinates -ksp_converged_reason -pc_gamg_esteig_ksp_max_it 5 -ksp_rtol 1.e-3 -ksp_monitor_short -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.2 -pc_gamg_aggressive_coarsening 0
       output_file: output/ex55_sa.out
 
    test:
       suffix: Classical
       nsize: 4
-      args: -ne 29 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type classical -mg_levels_ksp_max_it 5 -ksp_converged_reason
+      args: -ne 29 -alpha 1.e-3 -ksp_type gmres -pc_type gamg -pc_gamg_type classical -mg_levels_ksp_max_it 5 -ksp_converged_reason -ksp_rtol 1e-3 -mat_coarsen_misk_distance 2 -pc_gamg_threshold 0
       output_file: output/ex55_classical.out
 
    test:
       suffix: NC
       nsize: 4
-      args: -ne 29 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -ksp_converged_reason -pc_gamg_esteig_ksp_max_it 10 -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.2
+      args: -ne 29 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -ksp_converged_reason -pc_gamg_esteig_ksp_max_it 10 -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.2 -pc_gamg_aggressive_coarsening 0 -pc_gamg_threshold 0
 
    test:
       suffix: geo
       nsize: 4
-      args: -ne 29 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type geo -use_coordinates -ksp_monitor_short -ksp_type cg -ksp_norm_type unpreconditioned  -mg_levels_ksp_max_it 3
+      args: -ne 29 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type geo -use_coordinates -ksp_monitor_short -ksp_type cg -ksp_norm_type unpreconditioned  -mg_levels_ksp_max_it 3 -pc_gamg_threshold 0
       output_file: output/ex55_0.out
       requires: triangle
 

@@ -22,6 +22,7 @@ int main(int argc,char **argv)
     PetscCall() on the error code and just return it directly.
   */
   PetscCall(PetscOptionsSetValue(NULL,"-no_signal_handler","true"));
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
@@ -36,6 +37,6 @@ int main(int argc,char **argv)
       requires: defined(PETSC_USE_LOG)
       nsize: 2
       args: -options_view -get_total_flops
-      filter: egrep -v "(cuda_initialize|malloc|display|nox|Total flops|saws_port_auto_select|vecscatter_mpi1|options_left|error_output_stdout|check_pointer_intensity|use_gpu_aware_mpi|checkstack|checkfunctionlist)"
+      filter: egrep -v "(cuda_initialize|Total flops|options_left)"
 
 TEST*/

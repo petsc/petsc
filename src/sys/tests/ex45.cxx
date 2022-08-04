@@ -43,6 +43,7 @@ int main(int argc,char **argv)
                  runtime.  The user can use the "help" variable place
                  additional help messages in this printout.
   */
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   RCP<const Comm<int> > comm (new MpiComm<int> (PETSC_COMM_WORLD));
   // Get my process' rank, and the total number of processes.

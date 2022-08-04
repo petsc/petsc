@@ -469,6 +469,7 @@ int main(int argc, char **argv)
   AppCtx         user;                 /* user-defined work context */
   PetscInt       its;                  /* iterations for convergence */
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL,help));
   PetscCall(ProcessOptions(PETSC_COMM_WORLD, &user));
   PetscCall(SNESCreate(PETSC_COMM_WORLD, &snes));

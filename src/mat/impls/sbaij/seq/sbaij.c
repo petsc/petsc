@@ -251,7 +251,7 @@ PetscErrorCode MatSetOption_SeqSBAIJ(Mat A,MatOption op,PetscBool flg)
       PetscCheck(bs <= 1,PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for Hermitian with block size greater than 1");
       A->ops->multtranspose    = NULL;
       A->ops->multtransposeadd = NULL;
-      A->symmetric             = PETSC_FALSE;
+      A->symmetric             = PETSC_BOOL3_FALSE;
     }
 #endif
     break;
@@ -267,7 +267,9 @@ PetscErrorCode MatSetOption_SeqSBAIJ(Mat A,MatOption op,PetscBool flg)
     /* These options are handled directly by MatSetOption() */
   case MAT_STRUCTURALLY_SYMMETRIC:
   case MAT_SYMMETRY_ETERNAL:
+  case MAT_STRUCTURAL_SYMMETRY_ETERNAL:
   case MAT_STRUCTURE_ONLY:
+  case MAT_SPD_ETERNAL:
     /* These options are handled directly by MatSetOption() */
     break;
   case MAT_IGNORE_LOWER_TRIANGULAR:
@@ -329,6 +331,7 @@ PetscErrorCode MatRestoreRowUpperTriangular_SeqSBAIJ(Mat A)
 PetscErrorCode MatTranspose_SeqSBAIJ(Mat A,MatReuse reuse,Mat *B)
 {
   PetscFunctionBegin;
+  if (reuse == MAT_REUSE_MATRIX) PetscCall(MatTransposeCheckNonzeroState_Private(A,*B));
   if (reuse == MAT_INITIAL_MATRIX) {
     PetscCall(MatDuplicate(A,MAT_COPY_VALUES,B));
   } else if (reuse == MAT_REUSE_MATRIX) {
@@ -850,9 +853,7 @@ PetscErrorCode MatAssemblyEnd_SeqSBAIJ(Mat A,MatAssemblyType mode)
   a->nz = ai[mbs];
 
   /* diagonals may have moved, reset it */
-  if (a->diag) {
-    PetscCall(PetscArraycpy(a->diag,ai,mbs));
-  }
+  if (a->diag) PetscCall(PetscArraycpy(a->diag,ai,mbs));
   PetscCheck(!fshift || a->nounused != -1,PETSC_COMM_SELF,PETSC_ERR_PLIB, "Unused space detected in matrix: %" PetscInt_FMT " X %" PetscInt_FMT " block size %" PetscInt_FMT ", %" PetscInt_FMT " unneeded", m, A->cmap->n, A->rmap->bs, fshift*bs2);
 
   PetscCall(PetscInfo(A,"Matrix size: %" PetscInt_FMT " X %" PetscInt_FMT ", block size %" PetscInt_FMT "; storage space: %" PetscInt_FMT " unneeded, %" PetscInt_FMT " used\n",m,A->rmap->N,A->rmap->bs,fshift*bs2,a->nz*bs2));
@@ -1184,7 +1185,7 @@ PetscErrorCode MatAXPY_SeqSBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
     PetscScalar  alpha = a;
     PetscBLASInt bnz;
     PetscCall(PetscBLASIntCast(x->nz*bs2,&bnz));
-    PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&bnz,&alpha,x->a,&one,y->a,&one));
+    PetscCallBLAS("BLASaxpy",BLASaxpy_(&bnz,&alpha,x->a,&one,y->a,&one));
     PetscCall(PetscObjectStateIncrease((PetscObject)Y));
   } else if (str == SUBSET_NONZERO_PATTERN) { /* nonzeros of X is a subset of Y's */
     PetscCall(MatSetOption(X,MAT_GETROW_UPPERTRIANGULAR,PETSC_TRUE));
@@ -1508,10 +1509,13 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
                                        NULL,
                                        NULL,
                                        NULL,
-                                /*144*/MatCreateMPIMatConcatenateSeqMat_SeqSBAIJ,
+                               /*144*/ MatCreateMPIMatConcatenateSeqMat_SeqSBAIJ,
                                        NULL,
                                        NULL,
-                                       NULL
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                               /*150*/ NULL
 };
 
 PetscErrorCode  MatStoreValues_SeqSBAIJ(Mat mat)
@@ -1839,7 +1843,7 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqsbaij_petsc(Mat A,MatFactorType ftyp
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_COMPLEX)
-  PetscCheck(!A->hermitian || A->symmetric || (ftype != MAT_FACTOR_CHOLESKY && ftype != MAT_FACTOR_ICC),PETSC_COMM_SELF,PETSC_ERR_SUP,"Hermitian CHOLESKY or ICC Factor is not supported");
+  PetscCheck(A->hermitian != PETSC_BOOL3_TRUE || A->symmetric == PETSC_BOOL3_TRUE || (ftype != MAT_FACTOR_CHOLESKY && ftype != MAT_FACTOR_ICC),PETSC_COMM_SELF,PETSC_ERR_SUP,"Hermitian CHOLESKY or ICC Factor is not supported");
 #endif
 
   PetscCall(MatCreate(PetscObjectComm((PetscObject)A),B));
@@ -1987,17 +1991,14 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqSBAIJ(Mat B)
   PetscCall(PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqsbaij_scalapack_C",MatConvert_SBAIJ_ScaLAPACK));
 #endif
 
-  B->symmetric                  = PETSC_TRUE;
-  B->structurally_symmetric     = PETSC_TRUE;
-  B->symmetric_set              = PETSC_TRUE;
-  B->structurally_symmetric_set = PETSC_TRUE;
-  B->symmetric_eternal          = PETSC_TRUE;
+  B->symmetry_eternal            = PETSC_TRUE;
+  B->structural_symmetry_eternal = PETSC_TRUE;
+  B->symmetric                   = PETSC_BOOL3_TRUE;
+  B->structurally_symmetric      = PETSC_BOOL3_TRUE;
 #if defined(PETSC_USE_COMPLEX)
-  B->hermitian                  = PETSC_FALSE;
-  B->hermitian_set              = PETSC_FALSE;
+  B->hermitian                   = PETSC_BOOL3_FALSE;
 #else
-  B->hermitian                  = PETSC_TRUE;
-  B->hermitian_set              = PETSC_TRUE;
+  B->hermitian                   = PETSC_BOOL3_TRUE;
 #endif
 
   PetscCall(PetscObjectChangeTypeName((PetscObject)B,MATSEQSBAIJ));
@@ -2356,14 +2357,7 @@ PetscErrorCode  MatCreateSeqSBAIJWithArrays(MPI_Comm comm,PetscInt bs,PetscInt m
 
 PetscErrorCode MatCreateMPIMatConcatenateSeqMat_SeqSBAIJ(MPI_Comm comm,Mat inmat,PetscInt n,MatReuse scall,Mat *outmat)
 {
-  PetscMPIInt    size;
-
   PetscFunctionBegin;
-  PetscCallMPI(MPI_Comm_size(comm,&size));
-  if (size == 1 && scall == MAT_REUSE_MATRIX) {
-    PetscCall(MatCopy(inmat,*outmat,SAME_NONZERO_PATTERN));
-  } else {
-    PetscCall(MatCreateMPIMatConcatenateSeqMat_MPISBAIJ(comm,inmat,n,scall,outmat));
-  }
+  PetscCall(MatCreateMPIMatConcatenateSeqMat_MPISBAIJ(comm,inmat,n,scall,outmat));
   PetscFunctionReturn(0);
 }

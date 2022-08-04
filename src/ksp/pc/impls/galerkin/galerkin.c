@@ -290,9 +290,7 @@ static PetscErrorCode PCSetFromOptions_Galerkin(PetscOptionItems *PetscOptionsOb
   }
 
   PetscOptionsHeadBegin(PetscOptionsObject,"Galerkin options");
-  if (jac->ksp) {
-    PetscCall(KSPSetFromOptions(jac->ksp));
-  }
+  if (jac->ksp) PetscCall(KSPSetFromOptions(jac->ksp));
   PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }

@@ -354,9 +354,7 @@ static PetscErrorCode SNESSolve_MS(SNES snes)
   for (i = 0; i < snes->max_its; i++) {
 
     /* Call general purpose update function */
-    if (snes->ops->update) {
-      PetscCall((*snes->ops->update)(snes,snes->iter));
-    }
+    if (snes->ops->update) PetscCall((*snes->ops->update)(snes,snes->iter));
 
     if (i == 0 && snes->jacobian) {
       /* This method does not require a Jacobian, but it is usually preconditioned by PBJacobi */

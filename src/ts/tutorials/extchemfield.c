@@ -97,6 +97,7 @@ int main(int argc,char **argv)
   char              **snames,*names;
   Vec               lambda;     /* used with TSAdjoint for sensitivities */
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Chemistry solver options","");
   PetscCall(PetscOptionsString("-chem","CHEMKIN input file","",chemfile,chemfile,sizeof(chemfile),NULL));
@@ -330,9 +331,7 @@ static PetscErrorCode FormRHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
   } else {
     PetscCall(VecZeroEntries(F));
   }
-  if (user->diffusion) {
-    PetscCall(FormDiffusionFunction(ts,t,X,F,ptr));
-  }
+  if (user->diffusion) PetscCall(FormDiffusionFunction(ts,t,X,F,ptr));
   PetscFunctionReturn(0);
 }
 
@@ -368,9 +367,7 @@ static PetscErrorCode FormRHSJacobian(TS ts,PetscReal t,Vec X,Mat Amat,Mat Pmat,
   } else {
     PetscCall(MatZeroEntries(Pmat));
   }
-  if (user->diffusion) {
-    PetscCall(FormDiffusionJacobian(ts,t,X,Amat,Pmat,ptr));
-  }
+  if (user->diffusion) PetscCall(FormDiffusionJacobian(ts,t,X,Amat,Pmat,ptr));
   if (Amat != Pmat) {
     PetscCall(MatAssemblyBegin(Amat,MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(Amat,MAT_FINAL_ASSEMBLY));

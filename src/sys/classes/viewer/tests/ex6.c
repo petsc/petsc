@@ -129,6 +129,7 @@ int main(int argc,char **args)
 {
   PetscViewer    viewer;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,NULL,help));
 
   PetscCall(TestOpen(FILE_MODE_WRITE,&viewer));

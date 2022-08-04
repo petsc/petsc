@@ -124,9 +124,7 @@ PetscErrorCode  VecAssemblyBegin(Vec vec)
   PetscValidType(vec,1);
   PetscCall(VecStashViewFromOptions(vec,NULL,"-vec_view_stash"));
   PetscCall(PetscLogEventBegin(VEC_AssemblyBegin,vec,0,0,0));
-  if (vec->ops->assemblybegin) {
-    PetscCall((*vec->ops->assemblybegin)(vec));
-  }
+  if (vec->ops->assemblybegin) PetscCall((*vec->ops->assemblybegin)(vec));
   PetscCall(PetscLogEventEnd(VEC_AssemblyBegin,vec,0,0,0));
   PetscCall(PetscObjectStateIncrease((PetscObject)vec));
   PetscFunctionReturn(0);
@@ -160,9 +158,7 @@ PetscErrorCode  VecAssemblyEnd(Vec vec)
   PetscValidHeaderSpecific(vec,VEC_CLASSID,1);
   PetscCall(PetscLogEventBegin(VEC_AssemblyEnd,vec,0,0,0));
   PetscValidType(vec,1);
-  if (vec->ops->assemblyend) {
-    PetscCall((*vec->ops->assemblyend)(vec));
-  }
+  if (vec->ops->assemblyend) PetscCall((*vec->ops->assemblyend)(vec));
   PetscCall(PetscLogEventEnd(VEC_AssemblyEnd,vec,0,0,0));
   PetscCall(VecViewFromOptions(vec,NULL,"-vec_view"));
   PetscFunctionReturn(0);
@@ -944,9 +940,7 @@ PetscErrorCode  VecSetOption(Vec x,VecOption op,PetscBool flag)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidType(x,1);
-  if (x->ops->setoption) {
-    PetscCall((*x->ops->setoption)(x,op,flag));
-  }
+  if (x->ops->setoption) PetscCall((*x->ops->setoption)(x,op,flag));
   PetscFunctionReturn(0);
 }
 
@@ -1967,9 +1961,7 @@ PetscErrorCode VecBindToCPU(Vec v,PetscBool flg)
 #if defined(PETSC_HAVE_DEVICE)
   if (v->boundtocpu == flg) PetscFunctionReturn(0);
   v->boundtocpu = flg;
-  if (v->ops->bindtocpu) {
-    PetscCall((*v->ops->bindtocpu)(v,flg));
-  }
+  if (v->ops->bindtocpu) PetscCall((*v->ops->bindtocpu)(v,flg));
 #endif
   PetscFunctionReturn(0);
 }

@@ -12,6 +12,7 @@ int main(int argc,char **args)
   PetscReal      h2,sigma1=100.0;
   PetscInt       dim,Ii,J,n = 3,rstart,rend;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCall(PetscOptionsGetReal(NULL,NULL,"-sigma1",&sigma1,NULL));

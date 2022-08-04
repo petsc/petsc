@@ -101,7 +101,7 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_petsc(Mat A,MatFactorType ftype,
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_COMPLEX)
-  PetscCheck(!A->hermitian || A->symmetric || (ftype != MAT_FACTOR_CHOLESKY && ftype != MAT_FACTOR_ICC),PETSC_COMM_SELF,PETSC_ERR_SUP,"Hermitian CHOLESKY or ICC Factor is not supported");
+  PetscCheck(A->hermitian != PETSC_BOOL3_TRUE || A->symmetric == PETSC_BOOL3_TRUE || (ftype != MAT_FACTOR_CHOLESKY && ftype != MAT_FACTOR_ICC),PETSC_COMM_SELF,PETSC_ERR_SUP,"Hermitian CHOLESKY or ICC Factor is not supported");
 #endif
   PetscCall(MatCreate(PetscObjectComm((PetscObject)A),B));
   PetscCall(MatSetSizes(*B,n,n,n,n));
@@ -1566,7 +1566,6 @@ PetscErrorCode MatSolveTransposeAdd_SeqAIJ(Mat A,Vec bb,Vec zz,Vec xx)
      L(0,:), L(1,:), ...,L(n-1,:),  U(n-1,:),...,U(i,:),U(i-1,:),...,U(0,:)
 
    bi=fact->i is an array of size n+1, in which
-   bi+
      bi[i]:  points to 1st entry of L(i,:),i=0,...,n-1
      bi[n]:  points to L(n-1,n-1)+1
 
@@ -1615,7 +1614,6 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ_ilu0(Mat fact,Mat A,IS isrow,IS iscol
     bi[i+1] = bi[i] + nz;
     aj      = a->j + ai[i];
     for (j=0; j<nz; j++) {
-      /*   *bj = aj[j]; bj++; */
       bj[k++] = aj[j];
     }
   }
@@ -1626,11 +1624,9 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ_ilu0(Mat fact,Mat A,IS isrow,IS iscol
     nz = ai[i+1] - adiag[i] - 1;
     aj = a->j + adiag[i] + 1;
     for (j=0; j<nz; j++) {
-      /*      *bj = aj[j]; bj++; */
       bj[k++] = aj[j];
     }
     /* diag[i] */
-    /*    *bj = i; bj++; */
     bj[k++]  = i;
     bdiag[i] = bdiag[i+1] + nz + 1;
   }

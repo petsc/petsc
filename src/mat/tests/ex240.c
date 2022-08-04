@@ -19,6 +19,7 @@ int main(int argc,char **argv)
   ISLocalToGlobalMapping ltog;
   PetscBool              single,two;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,mx,my,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da));
@@ -73,13 +74,9 @@ int main(int argc,char **argv)
   PetscCall(MatView(B,0));
   PetscCall(MatFDColoringCreate(A,iscoloring,&fdcoloring));
   PetscCall(PetscOptionsHasName(NULL,NULL,"-single_block",&single));
-  if (single) {
-    PetscCall(MatFDColoringSetBlockSize(fdcoloring,PETSC_DEFAULT,nc));
-  }
+  if (single) PetscCall(MatFDColoringSetBlockSize(fdcoloring,PETSC_DEFAULT,nc));
   PetscCall(PetscOptionsHasName(NULL,NULL,"-two_block",&two));
-  if (two) {
-    PetscCall(MatFDColoringSetBlockSize(fdcoloring,PETSC_DEFAULT,2));
-  }
+  if (two) PetscCall(MatFDColoringSetBlockSize(fdcoloring,PETSC_DEFAULT,2));
   PetscCall(MatFDColoringSetFromOptions(fdcoloring));
   PetscCall(MatFDColoringSetUp(A,iscoloring,fdcoloring));
 

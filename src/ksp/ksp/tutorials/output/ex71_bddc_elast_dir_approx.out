@@ -75,7 +75,7 @@ PC Object: 8 MPI processes
               Symmetric graph false
               Number of levels to square graph 1
               Number smoothing steps 1
-            Complexity:    grid = 1.125    operator = 1.05143
+            Complexity:    grid = 1.04167    operator = 1.00571
       Coarse grid solver -- level 0 -------------------------------
         KSP Object: (pc_bddc_dirichlet_mg_coarse_) 1 MPI process
           type: preonly
@@ -104,24 +104,24 @@ PC Object: 8 MPI processes
                   Factored matrix follows:
                     Mat Object: (pc_bddc_dirichlet_mg_coarse_sub_) 1 MPI process
                       type: seqaij
-                      rows=18, cols=18, bs=6
+                      rows=6, cols=6, bs=6
                       package used to perform factorization: petsc
-                      total: nonzeros=324, allocated nonzeros=324
-                        using I-node routines: found 4 nodes, limit used is 5
+                      total: nonzeros=36, allocated nonzeros=36
+                        using I-node routines: found 2 nodes, limit used is 5
               linear system matrix = precond matrix:
               Mat Object: (pc_bddc_dirichlet_mg_coarse_sub_) 1 MPI process
                 type: seqaij
-                rows=18, cols=18, bs=6
-                total: nonzeros=324, allocated nonzeros=324
+                rows=6, cols=6, bs=6
+                total: nonzeros=36, allocated nonzeros=36
                 total number of mallocs used during MatSetValues calls=0
-                  using I-node routines: found 4 nodes, limit used is 5
+                  using I-node routines: found 2 nodes, limit used is 5
           linear system matrix = precond matrix:
           Mat Object: (pc_bddc_dirichlet_mg_coarse_sub_) 1 MPI process
             type: seqaij
-            rows=18, cols=18, bs=6
-            total: nonzeros=324, allocated nonzeros=324
+            rows=6, cols=6, bs=6
+            total: nonzeros=36, allocated nonzeros=36
             total number of mallocs used during MatSetValues calls=0
-              using I-node routines: found 4 nodes, limit used is 5
+              using I-node routines: found 2 nodes, limit used is 5
       Down solver (pre-smoother) on level 1 -------------------------------
         KSP Object: (pc_bddc_dirichlet_mg_levels_1_) 1 MPI process
           type: chebyshev

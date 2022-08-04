@@ -37,6 +37,7 @@ PetscErrorCode DMPlexInvertCell(DMPolytopeType cellType, PetscInt cone[])
   case DM_POLYTOPE_TRI_PRISM:          SWAPCONE(cone,1,2); break;
   case DM_POLYTOPE_TRI_PRISM_TENSOR:   break;
   case DM_POLYTOPE_QUAD_PRISM_TENSOR:  break;
+  case DM_POLYTOPE_PYRAMID:            SWAPCONE(cone,1,3); break;
   default: break;
   }
   PetscFunctionReturn(0);

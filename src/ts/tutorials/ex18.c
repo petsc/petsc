@@ -615,14 +615,6 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscFunctionBeginUser;
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetType(*dm, DMPLEX));
-#if 0
-  PetscBool       periodic = user->bd[0] == DM_BOUNDARY_PERIODIC || user->bd[0] == DM_BOUNDARY_TWIST || user->bd[1] == DM_BOUNDARY_PERIODIC || user->bd[1] == DM_BOUNDARY_TWIST ? PETSC_TRUE : PETSC_FALSE;
-  const PetscReal L[3]     = {1.0, 1.0, 1.0};
-  PetscReal       maxCell[3];
-  PetscInt        d;
-
-  if (periodic) {for (d = 0; d < 3; ++d) maxCell[d] = 1.1*(L[d]/cells[d]); PetscCall(DMSetPeriodicity(*dm, PETSC_TRUE, maxCell, L, user->bd));}
-#endif
   PetscCall(DMSetFromOptions(*dm));
   PetscCall(DMViewFromOptions(*dm, NULL, "-orig_dm_view"));
   PetscFunctionReturn(0);
@@ -1053,6 +1045,7 @@ int main(int argc, char **argv)
 
   ctxs[0] = &t;
   ctxs[1] = &t;
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char*) 0, help));
   comm = PETSC_COMM_WORLD;
   user.functionalRegistry = NULL;

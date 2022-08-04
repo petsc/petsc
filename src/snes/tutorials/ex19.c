@@ -94,9 +94,8 @@ int main(int argc,char **argv)
   DM             da;
   Vec            x;
 
-  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
-
   PetscFunctionBeginUser;
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   comm = PETSC_COMM_WORLD;
   PetscCall(SNESCreate(comm,&snes));
 
@@ -144,7 +143,7 @@ int main(int argc,char **argv)
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve the nonlinear system
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscCall(DMCreateGlobalVector(da,&x));
   PetscCall(FormInitialGuess(&user,da,x));
 
@@ -156,9 +155,7 @@ int main(int argc,char **argv)
   /*
      Visualize solution
   */
-  if (user.draw_contours) {
-    PetscCall(VecView(x,PETSC_VIEWER_DRAW_WORLD));
-  }
+  if (user.draw_contours) PetscCall(VecView(x,PETSC_VIEWER_DRAW_WORLD));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
@@ -1173,5 +1170,12 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
       nsize: 1
       requires: hypre !single !complex !defined(PETSC_HAVE_HYPRE_MIXEDINT) !defined(PETSC_HAVE_HYPRE_DEVICE)
       args: -da_refine 2 -ksp_monitor -snes_monitor -snes_view -pc_type hypre -pc_hypre_type euclid -pc_hypre_euclid_droptolerance .1
+
+   test:
+      suffix: failure_size
+      nsize: 1
+      requires: !defined(PETSC_USE_64BIT_INDICES) !defined(PETSCTEST_VALGRIND)
+      args: -da_refine 100 -petsc_ci_portable_error_output -error_output_stdout
+      filter: egrep -v "(options_left|memory block|leaked context|is not freed before MPI_Finalize)"
 
 TEST*/

@@ -92,6 +92,7 @@ int main(int argc, char **argv)
   PetscRandom    rand;
   PetscViewer    viewer;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   PetscOptionsBegin(PETSC_COMM_WORLD,"","Options for exterior algebra tests","none");
   PetscCall(PetscOptionsIntArray("-N", "Up to 5 vector space dimensions to test","ex7.c",n,&numTests,NULL));

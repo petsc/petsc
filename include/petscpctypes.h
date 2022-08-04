@@ -60,6 +60,7 @@ typedef const char* PCType;
 #define PCLSC             "lsc"
 #define PCPYTHON          "python"
 #define PCPFMG            "pfmg"
+#define PCSMG             "smg"
 #define PCSYSPFMG         "syspfmg"
 #define PCREDISTRIBUTE    "redistribute"
 #define PCSVD             "svd"
@@ -76,6 +77,7 @@ typedef const char* PCType;
 #define PCDEFLATION       "deflation"
 #define PCHPDDM           "hpddm"
 #define PCH2OPUS          "h2opus"
+#define PCMPI             "mpi"
 
 /*E
     PCSide - If the preconditioner is to be applied to the left, right

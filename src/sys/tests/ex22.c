@@ -11,6 +11,7 @@ int main(int argc,char **argv)
   float          ofloat[2],sfloat[2];
   short          oshort[2],sshort[2];
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   sint[0]    = oint[0]    = 5;

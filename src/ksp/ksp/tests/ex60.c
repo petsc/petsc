@@ -13,6 +13,7 @@ int main(int argc,char **args)
   PetscInt       M = 8, N = 8, m, n, rstart, rend, r;
   PetscBool      userSubdomains = PETSC_FALSE;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, NULL,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL, "-M", &M, NULL));
   PetscCall(PetscOptionsGetInt(NULL,NULL, "-N", &N, NULL));

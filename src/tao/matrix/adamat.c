@@ -1,4 +1,4 @@
-#include <petscmat.h>              /*I  "mat.h"  I*/
+#include <petsc/private/matimpl.h>              /*I  "petscmat.h"  I*/
 
 PETSC_INTERN PetscErrorCode MatCreateADA(Mat,Vec, Vec, Mat*);
 
@@ -21,9 +21,7 @@ static PetscErrorCode MatMult_ADA(Mat mat,Vec a,Vec y)
   PetscFunctionBegin;
   PetscCall(MatShellGetContext(mat,&ctx));
   PetscCall(MatMult(ctx->A,a,ctx->W));
-  if (ctx->D1) {
-    PetscCall(VecPointwiseMult(ctx->W,ctx->D1,ctx->W));
-  }
+  if (ctx->D1) PetscCall(VecPointwiseMult(ctx->W,ctx->D1,ctx->W));
   PetscCall(MatMultTranspose(ctx->A,ctx->W,y));
   if (ctx->D2) {
     PetscCall(VecPointwiseMult(ctx->W2, ctx->D2, a));
@@ -103,9 +101,7 @@ static PetscErrorCode MatDuplicate_ADA(Mat mat,MatDuplicateOption op,Mat *M)
   PetscCall(VecDuplicate(ctx->D2,&D2b));
   PetscCall(VecCopy(ctx->D2,D2b));
   PetscCall(MatCreateADA(A2,D1b,D2b,M));
-  if (ctx->D1) {
-    PetscCall(PetscObjectDereference((PetscObject)D1b));
-  }
+  if (ctx->D1) PetscCall(PetscObjectDereference((PetscObject)D1b));
   PetscCall(PetscObjectDereference((PetscObject)D2b));
   PetscCall(PetscObjectDereference((PetscObject)A2));
   PetscFunctionReturn(0);
@@ -119,12 +115,8 @@ static PetscErrorCode MatEqual_ADA(Mat A,Mat B,PetscBool *flg)
   PetscCall(MatShellGetContext(A,&ctx1));
   PetscCall(MatShellGetContext(B,&ctx2));
   PetscCall(VecEqual(ctx1->D2,ctx2->D2,flg));
-  if (*flg==PETSC_TRUE) {
-    PetscCall(VecEqual(ctx1->D1,ctx2->D1,flg));
-  }
-  if (*flg==PETSC_TRUE) {
-    PetscCall(MatEqual(ctx1->A,ctx2->A,flg));
-  }
+  if (*flg==PETSC_TRUE) PetscCall(VecEqual(ctx1->D1,ctx2->D1,flg));
+  if (*flg==PETSC_TRUE) PetscCall(MatEqual(ctx1->A,ctx2->A,flg));
   PetscFunctionReturn(0);
 }
 
@@ -135,9 +127,7 @@ static PetscErrorCode MatScale_ADA(Mat mat, PetscReal a)
   PetscFunctionBegin;
   PetscCall(MatShellGetContext(mat,&ctx));
   PetscCall(VecScale(ctx->D1,a));
-  if (ctx->D2) {
-    PetscCall(VecScale(ctx->D2,a));
-  }
+  if (ctx->D2) PetscCall(VecScale(ctx->D2,a));
   PetscFunctionReturn(0);
 }
 
@@ -146,6 +136,7 @@ static PetscErrorCode MatTranspose_ADA(Mat mat,MatReuse reuse,Mat *B)
   TaoMatADACtx   ctx;
 
   PetscFunctionBegin;
+  if (reuse == MAT_REUSE_MATRIX) PetscCall(MatTransposeCheckNonzeroState_Private(mat,*B));
   PetscCall(MatShellGetContext(mat,&ctx));
   if (reuse == MAT_INITIAL_MATRIX) {
     PetscCall(MatDuplicate(mat,MAT_COPY_VALUES,B));
@@ -194,9 +185,7 @@ static PetscErrorCode MatGetDiagonal_ADA(Mat mat,Vec v)
   PetscCall(MatShellGetContext(mat,&ctx));
   PetscCall(MatADAComputeDiagonal(mat));
   PetscCall(VecCopy(ctx->ADADiag,v));
-  if (ctx->D2) {
-    PetscCall(VecAXPY(v, one, ctx->D2));
-  }
+  if (ctx->D2) PetscCall(VecAXPY(v, one, ctx->D2));
   PetscFunctionReturn(0);
 }
 
@@ -240,12 +229,8 @@ static PetscErrorCode MatCreateSubMatrix_ADA(Mat mat,IS isrow,IS iscol,MatReuse 
   PetscCall(MatCreateADA(Atemp,D1,D2,newmat));
   PetscCall(MatShellGetContext(*newmat,&ctx));
   PetscCall(PetscObjectDereference((PetscObject)Atemp));
-  if (ctx->D1) {
-    PetscCall(PetscObjectDereference((PetscObject)D1));
-  }
-  if (ctx->D2) {
-    PetscCall(PetscObjectDereference((PetscObject)D2));
-  }
+  if (ctx->D1) PetscCall(PetscObjectDereference((PetscObject)D1));
+  if (ctx->D2) PetscCall(PetscObjectDereference((PetscObject)D2));
   PetscFunctionReturn(0);
 }
 

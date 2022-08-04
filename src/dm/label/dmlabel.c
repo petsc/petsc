@@ -158,6 +158,17 @@ static PetscErrorCode DMLabelMakeInvalid_Private(DMLabel label, PetscInt v)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode DMLabelMakeAllInvalid_Internal(DMLabel label)
+{
+  PetscInt v;
+
+  PetscFunctionBegin;
+  for (v = 0; v < label->numStrata; v++) {
+    PetscCall(DMLabelMakeInvalid_Private(label, v));
+  }
+  PetscFunctionReturn(0);
+}
+
 #if !defined(DMLABEL_LOOKUP_THRESHOLD)
 #define DMLABEL_LOOKUP_THRESHOLD 16
 #endif
@@ -433,9 +444,7 @@ PetscErrorCode DMLabelView(DMLabel label, PetscViewer viewer)
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   if (label) PetscCall(DMLabelMakeAllValid_Private(label));
   PetscCall(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
-    PetscCall(DMLabelView_Ascii(label, viewer));
-  }
+  if (iascii) PetscCall(DMLabelView_Ascii(label, viewer));
   PetscFunctionReturn(0);
 }
 
@@ -885,25 +894,30 @@ PetscErrorCode DMLabelHasPoint(DMLabel label, PetscInt point, PetscBool *contain
 @*/
 PetscErrorCode DMLabelStratumHasPoint(DMLabel label, PetscInt value, PetscInt point, PetscBool *contains)
 {
-  PetscInt       v;
-
   PetscFunctionBeginHot;
   PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 1);
   PetscValidBoolPointer(contains, 4);
-  *contains = PETSC_FALSE;
-  PetscCall(DMLabelLookupStratum(label, value, &v));
-  if (v < 0) PetscFunctionReturn(0);
+  if (value == label->defaultValue) {
+    PetscInt pointVal;
 
-  if (label->validIS[v]) {
-    PetscInt i;
-
-    PetscCall(ISLocate(label->points[v], point, &i));
-    if (i >= 0) *contains = PETSC_TRUE;
+    PetscCall(DMLabelGetValue(label, point, &pointVal));
+    *contains = (PetscBool) (pointVal == value);
   } else {
-    PetscBool has;
+    PetscInt v;
 
-    PetscCall(PetscHSetIHas(label->ht[v], point, &has));
-    if (has) *contains = PETSC_TRUE;
+    PetscCall(DMLabelLookupStratum(label, value, &v));
+    if (v >= 0) {
+      if (label->validIS[v]) {
+        PetscInt i;
+
+        PetscCall(ISLocate(label->points[v], point, &i));
+        *contains = (PetscBool) (i >= 0);
+      } else {
+        PetscCall(PetscHSetIHas(label->ht[v], point, contains));
+      }
+    } else { // value is not present
+      *contains = PETSC_FALSE;
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -967,6 +981,8 @@ PetscErrorCode DMLabelSetDefaultValue(DMLabel label, PetscInt defaultValue)
 
   Output Parameter:
 . value - The point value, or the default value (-1 by default)
+
+  Note: a label may assign multiple values to a point.  No guarantees are made about which value is returned in that case.  Use `DMLabelStratumHasPoint()` to check for inclusion in a specific value stratum.
 
   Level: intermediate
 
@@ -1989,7 +2005,7 @@ PetscErrorCode DMLabelPropagateEnd(DMLabel label, PetscSF pointSF)
   Input Parameters:
 + label     - The DMLabel to propagate across processes
 . sf        - The SF describing parallel layout of the label points
-. markPoint - An optional user callback that is called when a point is marked, or NULL
+. markPoint - An optional callback that is called when a point is marked, or NULL
 - ctx       - An optional user context for the callback, or NULL
 
   Calling sequence of markPoint:

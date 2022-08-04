@@ -52,6 +52,7 @@ int main(int argc, char *argv[])
 {
   PetscDeviceContext dctx;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
 
   PetscCall(PetscDeviceContextCreate(&dctx));

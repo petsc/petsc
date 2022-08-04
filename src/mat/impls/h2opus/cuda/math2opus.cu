@@ -878,9 +878,7 @@ static PetscErrorCode MatAssemblyEnd_H2OPUS(Mat A, MatAssemblyType assemblytype)
 #else
     a->dist_hmatrix = NULL;
 #endif
-  } else {
-    a->hmatrix = new HMatrix(A->rmap->n,A->symmetric);
-  }
+  } else a->hmatrix = new HMatrix(A->rmap->n,A->symmetric == PETSC_BOOL3_TRUE);
   PetscCall(MatH2OpusInferCoordinates_Private(A));
   PetscCheck(a->ptcloud,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing pointcloud");
   if (a->kernel) {
@@ -1016,12 +1014,10 @@ static PetscErrorCode MatZeroEntries_H2OPUS(Mat A)
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)A),&size));
   PetscCheck(size <= 1,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Not yet supported");
-  else {
-    a->hmatrix->clearData();
+  a->hmatrix->clearData();
 #if defined(PETSC_H2OPUS_USE_GPU)
-    if (a->hmatrix_gpu) a->hmatrix_gpu->clearData();
+  if (a->hmatrix_gpu) a->hmatrix_gpu->clearData();
 #endif
-  }
   PetscFunctionReturn(0);
 }
 

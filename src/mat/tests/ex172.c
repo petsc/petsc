@@ -11,6 +11,7 @@ int main(int argc,char **args)
   PetscBool      different=PETSC_FALSE,skip=PETSC_FALSE;
   PetscInt       m0,m1,n=128,i;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCall(PetscOptionsGetBool(NULL,NULL,"-different",&different,NULL));
   PetscCall(PetscOptionsGetBool(NULL,NULL,"-skip",&skip,NULL));

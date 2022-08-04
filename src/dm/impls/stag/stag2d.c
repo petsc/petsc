@@ -1109,11 +1109,11 @@ static PetscErrorCode DMStagSetUpBuildRankGrid_2d(DM dm)
   n = stag->nRanks[1];
   if (m != PETSC_DECIDE) {
     PetscCheck(m >= 1,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of ranks in X direction: %" PetscInt_FMT,m);
-    else PetscCheck(m <= size,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Too many ranks in X direction: %" PetscInt_FMT " %d",m,size);
+    PetscCheck(m <= size,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Too many ranks in X direction: %" PetscInt_FMT " %d",m,size);
   }
   if (n != PETSC_DECIDE) {
     PetscCheck(n >= 1,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of ranks in Y direction: %" PetscInt_FMT,n);
-    else PetscCheck(n <= size,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Too many ranks in Y direction: %" PetscInt_FMT " %d",n,size);
+    PetscCheck(n <= size,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Too many ranks in Y direction: %" PetscInt_FMT " %d",n,size);
   }
   if (m == PETSC_DECIDE || n == PETSC_DECIDE) {
     if (n != PETSC_DECIDE) {
@@ -1344,9 +1344,7 @@ PETSC_INTERN PetscErrorCode DMStagPopulateLocalToGlobalInjective_2d(DM dm)
   }
   PetscCall(ISDestroy(&isLocal));
   PetscCall(ISDestroy(&isGlobal));
-  if (globalOffsetsRecomputed) {
-    PetscCall(PetscFree(globalOffsetsRecomputed));
-  }
+  if (globalOffsetsRecomputed) PetscCall(PetscFree(globalOffsetsRecomputed));
   PetscFunctionReturn(0);
 }
 

@@ -9,6 +9,7 @@ int main(int argc,char **argv)
   PetscInt       li[2],gi[2] = {-1, -1};
   PetscReal      lr[2],gr[2] = {-1., -1.};
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));

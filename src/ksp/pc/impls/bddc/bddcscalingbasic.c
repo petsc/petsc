@@ -34,7 +34,7 @@ static PetscErrorCode PCBDDCMatTransposeMatSolve_SeqDense(Mat A,Mat B,Mat X)
   PetscCall(MatDenseRestoreArrayRead(B,&b));
 
   if (A->factortype == MAT_FACTOR_LU) {
-    PetscStackCallBLAS("LAPACKgetrs",LAPACKgetrs_("T",&m,&nrhs,mat->v,&mat->lda,mat->pivots,x,&m,&info));
+    PetscCallBLAS("LAPACKgetrs",LAPACKgetrs_("T",&m,&nrhs,mat->v,&mat->lda,mat->pivots,x,&m,&info));
     PetscCheck(!info,PETSC_COMM_SELF,PETSC_ERR_LIB,"GETRS - Bad solve");
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only LU factor supported");
 
@@ -346,9 +346,7 @@ PetscErrorCode PCBDDCScalingDestroy(PC pc)
   PC_BDDC*       pcbddc=(PC_BDDC*)pc->data;
 
   PetscFunctionBegin;
-  if (pcbddc->deluxe_ctx) {
-    PetscCall(PCBDDCScalingDestroy_Deluxe(pc));
-  }
+  if (pcbddc->deluxe_ctx) PetscCall(PCBDDCScalingDestroy_Deluxe(pc));
   PetscCall(VecDestroy(&pcbddc->work_scaling));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCBDDCScalingRestriction_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCBDDCScalingExtension_C",NULL));
@@ -405,9 +403,7 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe(PC pc)
 
   PetscFunctionBegin;
   /* reset data structures if the topology has changed */
-  if (pcbddc->recompute_topography) {
-    PetscCall(PCBDDCScalingReset_Deluxe_Solvers(deluxe_ctx));
-  }
+  if (pcbddc->recompute_topography) PetscCall(PCBDDCScalingReset_Deluxe_Solvers(deluxe_ctx));
 
   /* Compute data structures to solve sequential problems */
   PetscCall(PCBDDCScalingSetUp_Deluxe_Private(pc));

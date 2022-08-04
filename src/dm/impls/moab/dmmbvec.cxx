@@ -159,8 +159,7 @@ PetscErrorCode  DMMoabVecGetArray(DM dm, Vec vec, void* array)
     PetscCall(VecGhostUpdateEnd(vmoab->local, INSERT_VALUES, SCATTER_FORWARD));
 
     PetscCall(VecGetArray(xmoab->local, varray));
-  }
-  else {
+  } else {
 
     /* Get the MOAB private data */
     PetscCall(DMMoabGetVecTag(vec, &vtag));

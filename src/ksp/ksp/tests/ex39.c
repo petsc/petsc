@@ -25,6 +25,7 @@ int main(int argc,char **args)
   PetscInt       i,j,k,Ii,J,Istart,Iend;
   PetscScalar    v, co1, co2;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   n1 = 32;
   n2 = 32;

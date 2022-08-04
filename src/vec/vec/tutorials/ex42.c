@@ -9,6 +9,7 @@ int main(int argc,char **args)
   PetscViewer    fd;               /* viewer */
   PetscInt       i;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   fd = PETSC_VIEWER_SOCKET_WORLD;
 

@@ -415,11 +415,8 @@ PetscErrorCode setupStream(PetscInt deviceNum, PetscBool runDouble, PetscBool cp
   if (deviceProp.major == 2 && deviceProp.minor == 1) iNumThreadsPerBlock = 192; /* GF104 architecture / 48 CUDA Cores per MP */
   else iNumThreadsPerBlock = 128; /* GF100 architecture / 32 CUDA Cores per MP */
 
-  if (runDouble) {
-    PetscCall(runStreamDouble(iNumThreadsPerBlock, cpuTiming));
-  } else {
-    PetscCall(runStream(iNumThreadsPerBlock, cpuTiming));
-  }
+  if (runDouble) PetscCall(runStreamDouble(iNumThreadsPerBlock, cpuTiming));
+  else PetscCall(runStream(iNumThreadsPerBlock, cpuTiming));
   PetscFunctionReturn(0);
 }
 

@@ -474,6 +474,9 @@ static PetscErrorCode DMPlexTransformGetSubcellOrientation_Extrude(DMPlexTransfo
         default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell type %s is not produced by %s", DMPolytopeTypes[tct], DMPolytopeTypes[sct]);
       }
       break;
+      // We need to handle identity extrusions from volumes (TET, HEX, etc) when boundary faces are being extruded
+      case DM_POLYTOPE_TRIANGLE: break;
+      case DM_POLYTOPE_QUADRILATERAL: break;
       default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported cell type %s", DMPolytopeTypes[sct]);
     }
   } else {
@@ -488,6 +491,9 @@ static PetscErrorCode DMPlexTransformGetSubcellOrientation_Extrude(DMPlexTransfo
         default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell type %s is not produced by %s", DMPolytopeTypes[tct], DMPolytopeTypes[sct]);
       }
       break;
+      // We need to handle identity extrusions from volumes (TET, HEX, etc) when boundary faces are being extruded
+      case DM_POLYTOPE_TRIANGLE: break;
+      case DM_POLYTOPE_QUADRILATERAL: break;
       default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported cell type %s", DMPolytopeTypes[sct]);
     }
   }

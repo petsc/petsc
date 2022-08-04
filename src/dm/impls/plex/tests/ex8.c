@@ -222,9 +222,7 @@ static PetscErrorCode CheckCell(DM dm, PetscInt cell, PetscBool transform, Petsc
   PetscCall(DMPlexGetDepth(dm, &depth));
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(DMGetCoordinateDim(dm, &cdim));
-  if (v0Ex) {
-    PetscCall(CheckFEMGeometry(dm, cell, cdim, v0Ex, JEx, invJEx, detJEx));
-  }
+  if (v0Ex) PetscCall(CheckFEMGeometry(dm, cell, cdim, v0Ex, JEx, invJEx, detJEx));
   if (dim == depth && centroidEx) {
     PetscCall(CheckFVMGeometry(dm, cell, cdim, centroidEx, normalEx, volEx));
     PetscCall(CheckGaussLaw(dm, cell));
@@ -391,9 +389,7 @@ static PetscErrorCode CheckCell(DM dm, PetscInt cell, PetscBool transform, Petsc
       }
 
       PetscCall(ChangeCoordinates(dm, cdim, newCoords));
-      if (v0Ex) {
-        PetscCall(CheckFEMGeometry(dm, 0, cdim, v0ExT, JExT, invJExT, detJExT));
-      }
+      if (v0Ex) PetscCall(CheckFEMGeometry(dm, 0, cdim, v0ExT, JExT, invJExT, detJExT));
       if (dim == depth && centroidEx) {
         PetscCall(CheckFVMGeometry(dm, cell, cdim, centroidExT, normalExT, volExT));
         PetscCall(CheckGaussLaw(dm, cell));
@@ -633,6 +629,7 @@ int main(int argc, char **argv)
 {
   AppCtx         user;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL,help));
   PetscCall(ProcessOptions(PETSC_COMM_WORLD, &user));
   if (user.runType == RUN_REFERENCE) {

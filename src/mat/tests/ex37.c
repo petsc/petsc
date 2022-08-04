@@ -12,6 +12,7 @@ int main(int argc,char **args)
   MatType        type;
   PetscMPIInt    size;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));

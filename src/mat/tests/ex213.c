@@ -21,6 +21,7 @@ int main(int argc,char **args)
   PetscMPIInt    rank,size;
   Vec            v;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheck(size < 5,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Can only use at most 4 processors.");

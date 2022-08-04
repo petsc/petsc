@@ -24,9 +24,7 @@ static PetscErrorCode TaoSolve_ALMM(Tao tao)
       PetscCall(TaoALMMCombinePrimal_Private(tao, auglag->Px, auglag->Ps, auglag->P));
       PetscCall(VecZeroEntries(auglag->Yi));
     }
-    if (tao->eq_constrained) {
-      PetscCall(VecZeroEntries(auglag->Ye));
-    }
+    if (tao->eq_constrained) PetscCall(VecZeroEntries(auglag->Ye));
   }
 
   /* compute initial nonlinear Lagrangian and its derivatives */
@@ -564,9 +562,7 @@ static PetscErrorCode TaoALMMComputeOptimalityNorms_Private(Tao tao)
 
   PetscFunctionBegin;
   /* if bounded, project the gradient */
-  if (tao->bounded) {
-    PetscCall(VecBoundGradientProjection(auglag->LgradX, auglag->Px, tao->XL, tao->XU, auglag->LgradX));
-  }
+  if (tao->bounded) PetscCall(VecBoundGradientProjection(auglag->LgradX, auglag->Px, tao->XL, tao->XU, auglag->LgradX));
   if (auglag->type == TAO_ALMM_PHR) {
     PetscCall(VecNorm(auglag->LgradX, NORM_INFINITY, &auglag->gnorm));
     auglag->cenorm = 0.0;

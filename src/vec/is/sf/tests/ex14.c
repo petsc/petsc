@@ -23,6 +23,7 @@ int main(int argc,char **argv)
 #endif
 
   PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(PetscLogDefaultBegin());
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&nproc));

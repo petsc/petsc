@@ -82,6 +82,13 @@ PetscErrorCode  MatCreate(MPI_Comm comm,Mat *A)
   PetscCall(PetscLayoutCreate(comm,&B->cmap));
   PetscCall(PetscStrallocpy(VECSTANDARD,&B->defaultvectype));
 
+  B->symmetric                   = PETSC_BOOL3_UNKNOWN;
+  B->hermitian                   = PETSC_BOOL3_UNKNOWN;
+  B->structurally_symmetric      = PETSC_BOOL3_UNKNOWN;
+  B->spd                         = PETSC_BOOL3_UNKNOWN;
+  B->symmetry_eternal            = PETSC_FALSE;
+  B->structural_symmetry_eternal = PETSC_FALSE;
+
   B->congruentlayouts = PETSC_DECIDE;
   B->preallocated     = PETSC_FALSE;
 #if defined(PETSC_HAVE_DEVICE)
@@ -227,9 +234,7 @@ PetscErrorCode  MatSetFromOptions(Mat B)
   PetscCall(PetscOptionsBool("-mat_null_space_test","Checks if provided null space is correct in MatAssemblyEnd()","MatSetNullSpaceTest",B->checknullspaceonassembly,&B->checknullspaceonassembly,NULL));
   PetscCall(PetscOptionsBool("-mat_error_if_failure","Generate an error if an error occurs when factoring the matrix","MatSetErrorIfFailure",B->erroriffailure,&B->erroriffailure,NULL));
 
-  if (B->ops->setfromoptions) {
-    PetscCall((*B->ops->setfromoptions)(PetscOptionsObject,B));
-  }
+  if (B->ops->setfromoptions) PetscCall((*B->ops->setfromoptions)(PetscOptionsObject,B));
 
   flg  = PETSC_FALSE;
   PetscCall(PetscOptionsBool("-mat_new_nonzero_location_err","Generate an error if new nonzeros are created in the matrix structure (useful to test preallocation)","MatSetOption",flg,&flg,&set));
@@ -464,9 +469,7 @@ PetscErrorCode MatBindToCPU(Mat A,PetscBool flg)
 #if defined(PETSC_HAVE_DEVICE)
   if (A->boundtocpu == flg) PetscFunctionReturn(0);
   A->boundtocpu = flg;
-  if (A->ops->bindtocpu) {
-    PetscCall((*A->ops->bindtocpu)(A,flg));
-  }
+  if (A->ops->bindtocpu) PetscCall((*A->ops->bindtocpu)(A,flg));
 #endif
   PetscFunctionReturn(0);
 }
@@ -570,16 +573,18 @@ PetscErrorCode MatSetPreallocationCOO_Basic(Mat A,PetscCount ncoo,const PetscInt
    Level: beginner
 
    Notes:
+   The indices coo_i and coo_j may be modified within this function. The caller should not rely on them
+   having any specific value after this function returns. The arrays can be freed or reused immediately
+   after this function returns.
+
    Entries can be repeated, see MatSetValuesCOO(). Entries with negative row or column indices are allowed
    but will be ignored. The corresponding entries in MatSetValuesCOO() will be ignored too. Remote entries
    are allowed and will be properly added or inserted to the matrix, unless the matrix option MAT_IGNORE_OFF_PROC_ENTRIES
    is set, in which case remote entries are ignored, or MAT_NO_OFF_PROC_ENTRIES is set, in which case an error will be generated.
 
-   The arrays coo_i and coo_j may be freed immediately after calling this function.
-
 .seealso: `MatSetValuesCOO()`, `MatSeqAIJSetPreallocation()`, `MatMPIAIJSetPreallocation()`, `MatSeqBAIJSetPreallocation()`, `MatMPIBAIJSetPreallocation()`, `MatSeqSBAIJSetPreallocation()`, `MatMPISBAIJSetPreallocation()`, `MatSetPreallocationCOOLocal()`, `DMSetMatrixPreallocateSkip()`
 @*/
-PetscErrorCode MatSetPreallocationCOO(Mat A,PetscCount ncoo,const PetscInt coo_i[],const PetscInt coo_j[])
+PetscErrorCode MatSetPreallocationCOO(Mat A,PetscCount ncoo,PetscInt coo_i[],PetscInt coo_j[])
 {
   PetscErrorCode (*f)(Mat,PetscCount,const PetscInt[],const PetscInt[]) = NULL;
 

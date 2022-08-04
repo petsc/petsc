@@ -76,7 +76,7 @@ PetscErrorCode  MatCoarsenGetType(MatCoarsen coarsen,MatCoarsenType *type)
    Options Database Keys:
    To specify the coarsen through the options database, use one of
    the following
-$    -mat_coarsen_type mis
+$    -mat_coarsen_type mis|hem|misk
    To see the coarsen result
 $    -mat_coarsen_view
 
@@ -288,7 +288,7 @@ PetscErrorCode  MatCoarsenView(MatCoarsen agg,PetscViewer viewer)
    Options Database Command:
 $  -mat_coarsen_type  <type>
 $      Use -help for a list of available methods
-$      (for instance, mis)
+$      (for instance, misk)
 
    Level: advanced
 
@@ -397,15 +397,13 @@ PetscErrorCode MatCoarsenSetFromOptions(MatCoarsen coarser)
   PetscFunctionBegin;
   PetscObjectOptionsBegin((PetscObject)coarser);
   if (!((PetscObject)coarser)->type_name) {
-    def = MATCOARSENMIS;
+    def = MATCOARSENMISK;
   } else {
     def = ((PetscObject)coarser)->type_name;
   }
 
   PetscCall(PetscOptionsFList("-mat_coarsen_type","Type of aggregator","MatCoarsenSetType",MatCoarsenList,def,type,256,&flag));
-  if (flag) {
-    PetscCall(MatCoarsenSetType(coarser,type));
-  }
+  if (flag) PetscCall(MatCoarsenSetType(coarser,type));
   /*
    Set the type if it was never set.
    */
@@ -413,10 +411,8 @@ PetscErrorCode MatCoarsenSetFromOptions(MatCoarsen coarser)
     PetscCall(MatCoarsenSetType(coarser,def));
   }
 
-  if (coarser->ops->setfromoptions) {
-    PetscCall((*coarser->ops->setfromoptions)(PetscOptionsObject,coarser));
-  }
+  if (coarser->ops->setfromoptions) PetscCall((*coarser->ops->setfromoptions)(PetscOptionsObject,coarser));
   PetscOptionsEnd();
-  PetscCall(MatCoarsenViewFromOptions(coarser,NULL,"-mat_coarsen_view"));
+
   PetscFunctionReturn(0);
 }

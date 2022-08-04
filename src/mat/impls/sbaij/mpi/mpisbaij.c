@@ -97,7 +97,7 @@ PETSC_INTERN PetscErrorCode MatConvert_MPISBAIJ_Basic(Mat A, MatType newtype, Ma
     PetscCall(MatGetRow(A,r,&ncols,&row,&vals));
     PetscCall(MatSetValues(B,1,&r,ncols,row,vals,INSERT_VALUES));
 #if defined(PETSC_USE_COMPLEX)
-    if (A->hermitian) {
+    if (A->hermitian == PETSC_BOOL3_TRUE) {
       PetscInt i;
       for (i = 0; i < ncols; i++) {
         PetscCall(MatSetValue(B,row[i],r,PetscConj(vals[i]),INSERT_VALUES));
@@ -281,9 +281,11 @@ PetscErrorCode MatSetValues_MPISBAIJ(Mat mat,PetscInt m,const PetscInt im[],Pets
           else             value = v[i+j*m];
           MatSetValues_SeqSBAIJ_A_Private(row,col,value,addv,im[i],in[j]);
           /* PetscCall(MatSetValues_SeqBAIJ(baij->A,1,&row,1,&col,&value,addv)); */
-        } else if (in[j] < 0) continue;
-        else PetscCheck(in[j] < mat->cmap->N,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %" PetscInt_FMT " max %" PetscInt_FMT,in[j],mat->cmap->N-1);
-        else {  /* off-diag entry (B) */
+        } else if (in[j] < 0) {
+          continue;
+        } else {
+          PetscCheck(in[j] < mat->cmap->N,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %" PetscInt_FMT " max %" PetscInt_FMT,in[j],mat->cmap->N-1);
+          /* off-diag entry (B) */
           if (mat->was_assembled) {
             if (!baij->colmap) {
               PetscCall(MatCreateColmap_MPIBAIJ_Private(mat));
@@ -571,9 +573,10 @@ PetscErrorCode MatSetValuesBlocked_MPISBAIJ(Mat mat,PetscInt m,const PetscInt im
         if (in[j] >= cstart && in[j] < cend) {
           col  = in[j] - cstart;
           PetscCall(MatSetValuesBlocked_SeqSBAIJ_Inlined(baij->A,row,col,barray,addv,im[i],in[j]));
-        } else if (in[j] < 0) continue;
-        else PetscCheck(in[j] < baij->Nbs,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Block indexed column too large %" PetscInt_FMT " max %" PetscInt_FMT,in[j],baij->Nbs-1);
-        else {
+        } else if (in[j] < 0) {
+          continue;
+        } else {
+          PetscCheck(in[j] < baij->Nbs,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Block indexed column too large %" PetscInt_FMT " max %" PetscInt_FMT,in[j],baij->Nbs-1);
           if (mat->was_assembled) {
             if (!baij->colmap) {
               PetscCall(MatCreateColmap_MPIBAIJ_Private(mat));
@@ -823,7 +826,7 @@ PetscErrorCode MatAssemblyEnd_MPISBAIJ(Mat mat,MatAssemblyType mode)
      no processor disassembled thus we can skip this stuff
   */
   if (!((Mat_SeqBAIJ*)baij->B->data)->nonew) {
-    PetscCall(MPIU_Allreduce(&mat->was_assembled,&other_disassembled,1,MPIU_BOOL,MPI_PROD,PetscObjectComm((PetscObject)mat)));
+    PetscCall(MPIU_Allreduce(&mat->was_assembled,&other_disassembled,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)mat)));
     if (mat->was_assembled && !other_disassembled) {
       PetscCall(MatDisAssemble_MPISBAIJ(mat));
     }
@@ -982,9 +985,7 @@ PetscErrorCode MatView_MPISBAIJ(Mat mat,PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary));
   if (iascii || isdraw || issocket) {
     PetscCall(MatView_MPISBAIJ_ASCIIorDraworSocket(mat,viewer));
-  } else if (isbinary) {
-    PetscCall(MatView_MPISBAIJ_Binary(mat,viewer));
-  }
+  } else if (isbinary) PetscCall(MatView_MPISBAIJ_Binary(mat,viewer));
   PetscFunctionReturn(0);
 }
 
@@ -1507,7 +1508,7 @@ PetscErrorCode MatSetOption_MPISBAIJ(Mat A,MatOption op,PetscBool flg)
       A->ops->multadd          = MatMultAdd_MPISBAIJ_Hermitian;
       A->ops->multtranspose    = NULL;
       A->ops->multtransposeadd = NULL;
-      A->symmetric = PETSC_FALSE;
+      A->symmetric = PETSC_BOOL3_FALSE;
     }
 #endif
     break;
@@ -1529,8 +1530,11 @@ PetscErrorCode MatSetOption_MPISBAIJ(Mat A,MatOption op,PetscBool flg)
     PetscCall(MatSetOption(a->A,op,flg));
     break;
   case MAT_SYMMETRY_ETERNAL:
+  case MAT_STRUCTURAL_SYMMETRY_ETERNAL:
     PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_SUP,"Matrix must be symmetric");
     PetscCall(PetscInfo(A,"Option %s ignored\n",MatOptions[op]));
+    break;
+  case MAT_SPD_ETERNAL:
     break;
   case MAT_IGNORE_LOWER_TRIANGULAR:
     aA->ignore_ltriangular = flg;
@@ -1550,6 +1554,7 @@ PetscErrorCode MatSetOption_MPISBAIJ(Mat A,MatOption op,PetscBool flg)
 PetscErrorCode MatTranspose_MPISBAIJ(Mat A,MatReuse reuse,Mat *B)
 {
   PetscFunctionBegin;
+  if (reuse == MAT_REUSE_MATRIX) PetscCall(MatTransposeCheckNonzeroState_Private(A,*B));
   if (reuse == MAT_INITIAL_MATRIX) {
     PetscCall(MatDuplicate(A,MAT_COPY_VALUES,B));
   }  else if (reuse == MAT_REUSE_MATRIX) {
@@ -1664,11 +1669,11 @@ PetscErrorCode MatAXPY_MPISBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
     xa   = (Mat_SeqSBAIJ*)xx->A->data;
     ya   = (Mat_SeqSBAIJ*)yy->A->data;
     PetscCall(PetscBLASIntCast(xa->nz,&bnz));
-    PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&bnz,&alpha,xa->a,&one,ya->a,&one));
+    PetscCallBLAS("BLASaxpy",BLASaxpy_(&bnz,&alpha,xa->a,&one,ya->a,&one));
     xb   = (Mat_SeqBAIJ*)xx->B->data;
     yb   = (Mat_SeqBAIJ*)yy->B->data;
     PetscCall(PetscBLASIntCast(xb->nz,&bnz));
-    PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&bnz,&alpha,xb->a,&one,yb->a,&one));
+    PetscCallBLAS("BLASaxpy",BLASaxpy_(&bnz,&alpha,xb->a,&one,yb->a,&one));
     PetscCall(PetscObjectStateIncrease((PetscObject)Y));
   } else if (str == SUBSET_NONZERO_PATTERN) { /* nonzeros of X is a subset of Y's */
     PetscCall(MatSetOption(X,MAT_GETROW_UPPERTRIANGULAR,PETSC_TRUE));
@@ -1901,10 +1906,13 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPISBAIJ,
                                        NULL,
                                        NULL,
                                        NULL,
-                                /*144*/MatCreateMPIMatConcatenateSeqMat_MPISBAIJ,
+                               /*144*/ MatCreateMPIMatConcatenateSeqMat_MPISBAIJ,
                                        NULL,
                                        NULL,
-                                       NULL
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                               /*150*/ NULL
 };
 
 PetscErrorCode  MatMPISBAIJSetPreallocation_MPISBAIJ(Mat B,PetscInt bs,PetscInt d_nz,const PetscInt *d_nnz,PetscInt o_nz,const PetscInt *o_nnz)
@@ -2155,17 +2163,14 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPISBAIJ(Mat B)
   PetscCall(PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpisbaij_mpiaij_C",MatConvert_MPISBAIJ_Basic));
   PetscCall(PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpisbaij_mpibaij_C",MatConvert_MPISBAIJ_Basic));
 
-  B->symmetric                  = PETSC_TRUE;
-  B->structurally_symmetric     = PETSC_TRUE;
-  B->symmetric_set              = PETSC_TRUE;
-  B->structurally_symmetric_set = PETSC_TRUE;
-  B->symmetric_eternal          = PETSC_TRUE;
+  B->symmetric                   = PETSC_BOOL3_TRUE;
+  B->structurally_symmetric      = PETSC_BOOL3_TRUE;
+  B->symmetry_eternal            = PETSC_TRUE;
+  B->structural_symmetry_eternal = PETSC_TRUE ;
 #if defined(PETSC_USE_COMPLEX)
-  B->hermitian                  = PETSC_FALSE;
-  B->hermitian_set              = PETSC_FALSE;
+  B->hermitian                   = PETSC_BOOL3_FALSE;
 #else
-  B->hermitian                  = PETSC_TRUE;
-  B->hermitian_set              = PETSC_TRUE;
+  B->hermitian                   = PETSC_BOOL3_TRUE;
 #endif
 
   PetscCall(PetscObjectChangeTypeName((PetscObject)B,MATMPISBAIJ));

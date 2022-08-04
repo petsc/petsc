@@ -396,9 +396,7 @@ PetscErrorCode TSMonitorDMDARay(TS ts,PetscInt steps,PetscReal time,Vec u,void *
   PetscCall(TSGetSolution(ts,&solution));
   PetscCall(VecScatterBegin(rayctx->scatter,solution,rayctx->ray,INSERT_VALUES,SCATTER_FORWARD));
   PetscCall(VecScatterEnd(rayctx->scatter,solution,rayctx->ray,INSERT_VALUES,SCATTER_FORWARD));
-  if (rayctx->viewer) {
-    PetscCall(VecView(rayctx->ray,rayctx->viewer));
-  }
+  if (rayctx->viewer) PetscCall(VecView(rayctx->ray,rayctx->viewer));
   PetscFunctionReturn(0);
 }
 

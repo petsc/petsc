@@ -50,6 +50,7 @@ int main(int argc, char **argv)
   UserContext    ctxt;
   PetscReal      err,ftime;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   /* default value */
   ctxt.a       = 0.1;

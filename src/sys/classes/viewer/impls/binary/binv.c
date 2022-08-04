@@ -1256,7 +1256,7 @@ PetscErrorCode PetscViewerFileSetMode(PetscViewer viewer,PetscFileMode mode)
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidLogicalCollectiveEnum(viewer,mode,2);
   PetscCheck(mode != FILE_MODE_UNDEFINED,PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Cannot set FILE_MODE_UNDEFINED");
-  else PetscCheck(mode >= FILE_MODE_UNDEFINED && mode <= FILE_MODE_APPEND_UPDATE,PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_OUTOFRANGE,"Invalid file mode %d",(int)mode);
+  PetscCheck(mode >= FILE_MODE_UNDEFINED && mode <= FILE_MODE_APPEND_UPDATE,PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_OUTOFRANGE,"Invalid file mode %d",(int)mode);
   PetscTryMethod(viewer,"PetscViewerFileSetMode_C",(PetscViewer,PetscFileMode),(viewer,mode));
   PetscFunctionReturn(0);
 }

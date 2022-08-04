@@ -216,6 +216,7 @@ class Configure(config.base.Configure):
       self.log.write('User turned off visibility attributes')
 
   def checkMaxPathLen(self):
+    '''Sets PETSC_MAX_PATH_LEN depending on values available on the system'''
     import re
     HASHLINESPACE = ' *(?:\n#.*\n *)*'
     self.log.write('Determining PETSC_MAX_PATH_LEN\n')

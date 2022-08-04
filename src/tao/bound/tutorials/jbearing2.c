@@ -60,6 +60,7 @@ int main(int argc, char **argv)
   PetscReal          zero = 0.0;      /* lower bound on all variables */
 
   /* Initialize PETSC and TAO */
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv,(char *)0,help));
 
   /* Set the default values for the problem parameters */
@@ -101,9 +102,7 @@ int main(int argc, char **argv)
   PetscCall(VecGetLocalSize(x,&m));
   PetscCall(DMCreateMatrix(user.dm,&user.A));
 
-  if (testgetdiag) {
-    PetscCall(MatSetOperation(user.A,MATOP_GET_DIAGONAL,NULL));
-  }
+  if (testgetdiag) PetscCall(MatSetOperation(user.A,MATOP_GET_DIAGONAL,NULL));
 
   /* User defined function -- compute linear term of quadratic */
   PetscCall(ComputeB(&user));
@@ -134,9 +133,7 @@ int main(int argc, char **argv)
   PetscCall(TaoSetVariableBounds(tao,xl,xu));
 
   PetscCall(TaoGetKSP(tao,&ksp));
-  if (ksp) {
-    PetscCall(KSPSetType(ksp,KSPCG));
-  }
+  if (ksp) PetscCall(KSPSetType(ksp,KSPCG));
 
   PetscCall(PetscOptionsHasName(NULL,NULL,"-testmonitor",&flg));
   if (flg) {

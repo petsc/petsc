@@ -50,7 +50,7 @@ static PetscErrorCode TransferWrite(MPI_Comm comm, PetscViewer viewer,FILE *fp,P
 
 static PetscErrorCode DMPlexGetVTKConnectivity(DM dm, PetscBool localized, PieceInfo *piece,PetscVTKInt **oconn,PetscVTKInt **ooffsets,PetscVTKType **otypes)
 {
-  PetscSection   coordSection;
+  PetscSection   coordSection, cellCoordSection;
   PetscVTKInt    *conn,*offsets;
   PetscVTKType   *types;
   PetscInt       dim,vStart,vEnd,cStart,cEnd,pStart,pEnd,cellHeight,numLabelCells,hasLabel,c,v,countcell,countconn;
@@ -58,6 +58,7 @@ static PetscErrorCode DMPlexGetVTKConnectivity(DM dm, PetscBool localized, Piece
   PetscFunctionBegin;
   PetscCall(PetscMalloc3(piece->nconn,&conn,piece->ncells,&offsets,piece->ncells,&types));
   PetscCall(DMGetCoordinateSection(dm, &coordSection));
+  PetscCall(DMGetCellCoordinateSection(dm, &cellCoordSection));
   PetscCall(DMGetDimension(dm,&dim));
   PetscCall(DMPlexGetChart(dm,&pStart,&pEnd));
   PetscCall(DMPlexGetVTKCellHeight(dm, &cellHeight));
@@ -78,9 +79,7 @@ static PetscErrorCode DMPlexGetVTKConnectivity(DM dm, PetscBool localized, Piece
       if (value != 1) continue;
     }
     startoffset = countconn;
-    if (localized) {
-      PetscCall(PetscSectionGetDof(coordSection, c, &dof));
-    }
+    if (localized) PetscCall(PetscSectionGetDof(cellCoordSection, c, &dof));
     if (!dof) {
       PetscInt *closure = NULL;
       PetscInt  closureSize;
@@ -128,7 +127,7 @@ static PetscErrorCode DMPlexGetVTKConnectivity(DM dm, PetscBool localized, Piece
 PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
 {
   MPI_Comm                 comm;
-  PetscSection             coordSection;
+  PetscSection             coordSection, cellCoordSection;
   PetscViewer_VTK          *vtk = (PetscViewer_VTK*)viewer->data;
   PetscViewerVTKObjectLink link;
   FILE                     *fp;
@@ -163,6 +162,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
   PetscCall(DMGetStratumSize(dm, "vtk", 1, &numLabelCells));
   PetscCall(DMGetCoordinatesLocalized(dm, &localized));
   PetscCall(DMGetCoordinateSection(dm, &coordSection));
+  PetscCall(DMGetCellCoordinateSection(dm, &cellCoordSection));
 
   hasLabel        = numLabelCells > 0 ? PETSC_TRUE : PETSC_FALSE;
   piece.nvertices = 0;
@@ -177,9 +177,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
       PetscCall(DMGetLabelValue(dm, "vtk", c, &value));
       if (value != 1) continue;
     }
-    if (localized) {
-      PetscCall(PetscSectionGetDof(coordSection, c, &dof));
-    }
+    if (localized) PetscCall(PetscSectionGetDof(cellCoordSection, c, &dof));
     if (!dof) {
       PetscInt *closure = NULL;
       PetscInt closureSize;
@@ -418,13 +416,15 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
     if (r == rank) {
       PetscInt nsend;
       {                         /* Position */
-        const PetscScalar *x;
+        const PetscScalar *x, *cx = NULL;
         PetscVTUReal      *y = NULL;
-        Vec               coords;
+        Vec               coords, cellCoords;
         PetscBool         copy;
 
         PetscCall(DMGetCoordinatesLocal(dm,&coords));
         PetscCall(VecGetArrayRead(coords,&x));
+        PetscCall(DMGetCellCoordinatesLocal(dm,&cellCoords));
+        if (cellCoords) PetscCall(VecGetArrayRead(cellCoords,&cx));
 #if defined(PETSC_USE_COMPLEX)
         copy = PETSC_TRUE;
 #else
@@ -437,7 +437,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
             for (c=cStart,cnt=0; c<cEnd; c++) {
               PetscInt off, dof;
 
-              PetscCall(PetscSectionGetDof(coordSection, c, &dof));
+              PetscCall(PetscSectionGetDof(cellCoordSection, c, &dof));
               if (!dof) {
                 PetscInt *closure = NULL;
                 PetscInt closureSize;
@@ -460,17 +460,17 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
                 }
                 PetscCall(DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure));
               } else {
-                PetscCall(PetscSectionGetOffset(coordSection, c, &off));
+                PetscCall(PetscSectionGetOffset(cellCoordSection, c, &off));
                 if (dimEmbed != 3) {
                   for (i=0; i<dof/dimEmbed; i++) {
-                    y[cnt*3+0] = (PetscVTUReal) PetscRealPart(x[off + i*dimEmbed + 0]);
-                    y[cnt*3+1] = (PetscVTUReal) ((dimEmbed > 1) ? PetscRealPart(x[off + i*dimEmbed + 1]) : 0.0);
+                    y[cnt*3+0] = (PetscVTUReal) PetscRealPart(cx[off + i*dimEmbed + 0]);
+                    y[cnt*3+1] = (PetscVTUReal) ((dimEmbed > 1) ? PetscRealPart(cx[off + i*dimEmbed + 1]) : 0.0);
                     y[cnt*3+2] = (PetscVTUReal) 0.0;
                     cnt++;
                   }
                 } else {
                   for (i=0; i<dof; i ++) {
-                    y[cnt*3+i] = (PetscVTUReal) PetscRealPart(x[off + i]);
+                    y[cnt*3+i] = (PetscVTUReal) PetscRealPart(cx[off + i]);
                   }
                   cnt += dof/dimEmbed;
                 }
@@ -489,6 +489,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
         PetscCall(TransferWrite(comm,viewer,fp,r,0,copy ? (const void *) y : (const void *) x,buffer,nsend,MPIU_VTUREAL,tag));
         PetscCall(PetscFree(y));
         PetscCall(VecRestoreArrayRead(coords,&x));
+        if (cellCoords) PetscCall(VecRestoreArrayRead(cellCoords,&cx));
       }
       {                           /* Connectivity, offsets, types */
         PetscVTKInt  *connectivity = NULL, *offsets = NULL;

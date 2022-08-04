@@ -25,6 +25,7 @@ int main(int argc,char **args)
                             {-1.0, -2.0, 5.0+DIAG_S, -2.0},
                             {-2.0, -1.0, -2.0, 5.0+DIAG_S} };
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   comm = PETSC_COMM_WORLD;
   PetscCallMPI(MPI_Comm_rank(comm, &mype));
@@ -40,6 +41,7 @@ int main(int argc,char **args)
   PetscCall(MatSetSizes(Amat,PETSC_DECIDE,PETSC_DECIDE,M,M));
   PetscCall(MatSetType(Amat,MATAIJ));
   PetscCall(MatSetOption(Amat,MAT_SPD,PETSC_TRUE));
+  PetscCall(MatSetOption(Amat,MAT_SPD_ETERNAL,PETSC_TRUE));
   PetscCall(MatSetFromOptions(Amat));
   PetscCall(MatSeqAIJSetPreallocation(Amat,81,NULL));
   PetscCall(MatMPIAIJSetPreallocation(Amat,81,NULL,57,NULL));
@@ -216,17 +218,17 @@ int main(int argc,char **args)
 
    test:
       nsize: 4
-      args: -ne 19 -alpha 1.e-3 -ksp_type cg -pc_type gamg -mg_levels_ksp_max_it 2 -ksp_monitor -ksp_converged_reason -pc_gamg_esteig_ksp_max_it 5 -pc_gamg_esteig_ksp_type cg -mg_levels_ksp_chebyshev_esteig 0,0.25,0,1.1
+      args: -ne 19 -alpha 1.e-3 -ksp_type cg -pc_type gamg -mg_levels_ksp_max_it 2 -ksp_monitor -ksp_converged_reason -pc_gamg_esteig_ksp_max_it 5 -pc_gamg_esteig_ksp_type cg -mg_levels_ksp_chebyshev_esteig 0,0.25,0,1.1 -pc_gamg_aggressive_coarsening 0
 
    test:
       suffix: seqaijmkl
       nsize: 4
       requires: mkl_sparse
-      args: -ne 19 -alpha 1.e-3 -ksp_type cg -pc_type gamg -mg_levels_ksp_max_it 2 -ksp_monitor -ksp_converged_reason -pc_gamg_esteig_ksp_max_it 5 -pc_gamg_esteig_ksp_type cg -mg_levels_ksp_chebyshev_esteig 0,0.25,0,1.1 -mat_seqaij_type seqaijmkl
+      args: -ne 19 -alpha 1.e-3 -ksp_type cg -pc_type gamg -mg_levels_ksp_max_it 2 -ksp_monitor -ksp_converged_reason -pc_gamg_esteig_ksp_max_it 5 -pc_gamg_esteig_ksp_type cg -mg_levels_ksp_chebyshev_esteig 0,0.25,0,1.1 -mat_seqaij_type seqaijmkl -pc_gamg_aggressive_coarsening 0
 
    test:
       suffix: Classical
-      args: -ne 49 -alpha 1.e-3 -ksp_type cg -pc_type gamg -mg_levels_ksp_max_it 2 -pc_gamg_type classical -ksp_monitor -ksp_converged_reason -mg_levels_esteig_ksp_type cg -mg_levels_ksp_chebyshev_esteig 0,0.25,0,1.1
+      args: -ne 49 -alpha 1.e-3 -ksp_type cg -pc_type gamg -mg_levels_ksp_max_it 2 -pc_gamg_type classical -ksp_monitor -ksp_converged_reason -mg_levels_esteig_ksp_type cg -mg_levels_ksp_chebyshev_esteig 0,0.25,0,1.1 -mat_coarsen_type mis
       output_file: output/ex54_classical.out
 
    test:

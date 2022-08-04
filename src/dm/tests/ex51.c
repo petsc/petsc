@@ -19,6 +19,7 @@ int main(int argc,char **argv)
   VecScatter       tolocalall,fromlocalall;
   PetscInt         start,end;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",300,0,300,300,&viewer));
 

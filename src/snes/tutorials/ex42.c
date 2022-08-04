@@ -24,6 +24,7 @@ int main(int argc,char **argv)
   PetscScalar         *xx;
   SNESConvergedReason reason;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

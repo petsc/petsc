@@ -29,7 +29,7 @@ static PetscErrorCode MatWrapCholmod_SPQR_seqaij(Mat A,PetscBool values,cholmod_
     }
   }
   /* cholmod_sparse is compressed sparse column */
-  PetscCall(MatGetOption(A, MAT_SYMMETRIC, &flg));
+  PetscCall(MatIsSymmetric(A,0.0, &flg));
   if (flg) {
     PetscCall(PetscObjectReference((PetscObject)A));
     AT = A;

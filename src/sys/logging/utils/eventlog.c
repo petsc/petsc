@@ -750,14 +750,14 @@ PetscErrorCode PetscLogEventEndDefault(PetscLogEvent event,int t,PetscObject o1,
   eventLog->eventInfo[event].numReductions += petsc_allreduce_ct + petsc_gather_ct + petsc_scatter_ct;
   if (PetscLogMemory) {
     PetscLogDouble usage,musage;
-    PetscCall(PetscMemoryGetCurrentUsage(&usage));
-    eventLog->eventInfo[event].memIncrease += usage;
+    PetscCall(PetscMemoryGetCurrentUsage(&usage));  /* the comments below match the column labels printed in PetscLogView_Default() */
+    eventLog->eventInfo[event].memIncrease += usage;   /* RMI */
     PetscCall(PetscMallocGetCurrentUsage(&usage));
-    eventLog->eventInfo[event].mallocSpace += usage;
+    eventLog->eventInfo[event].mallocSpace += usage;   /* Malloc */
     PetscCall(PetscMallocPopMaximumUsage((int)event,&musage));
-    eventLog->eventInfo[event].mallocIncreaseEvent = PetscMax(musage-usage,eventLog->eventInfo[event].mallocIncreaseEvent);
+    eventLog->eventInfo[event].mallocIncreaseEvent = PetscMax(musage-usage,eventLog->eventInfo[event].mallocIncreaseEvent); /* EMalloc */
     PetscCall(PetscMallocGetMaximumUsage(&usage));
-    eventLog->eventInfo[event].mallocIncrease += usage;
+    eventLog->eventInfo[event].mallocIncrease += usage;  /* MMalloc */
   }
   #if defined(PETSC_HAVE_DEVICE)
   eventLog->eventInfo[event].CpuToGpuCount += petsc_ctog_ct;
@@ -944,9 +944,7 @@ PetscErrorCode PetscLogEventEndTrace(PetscLogEvent event,int t,PetscObject o1,Pe
   else PetscCheck(eventPerfLog->eventInfo[event].depth >= 0 && petsc_tracelevel >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Logging event had unbalanced begin/end pairs");
 
   /* Log performance info */
-  if (petsc_tracelevel) {
-    PetscCall(PetscStrncpy(petsc_tracespace,petsc_traceblanks,2*petsc_tracelevel));
-  }
+  if (petsc_tracelevel) PetscCall(PetscStrncpy(petsc_tracespace,petsc_traceblanks,2*petsc_tracelevel));
   petsc_tracespace[2*petsc_tracelevel] = 0;
   PetscTime(&cur_time);
   PetscCall(PetscFPrintf(PETSC_COMM_SELF,petsc_tracefile,"%s[%d] %g Event end: %s\n",petsc_tracespace,rank,cur_time-petsc_tracetime,eventRegLog->eventInfo[event].name));

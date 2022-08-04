@@ -2,7 +2,8 @@
 #include <petscdm.h>
 
 /*@C
-   SNESVISetComputeVariableBounds - Sets a function that is called to compute the variable bounds
+   SNESVISetComputeVariableBounds - Sets a function that is called to compute the variable bounds. This allows solving
+   (differential) variable inequalities. For example, restricting pressure to be non-negative.
 
    Input parameter:
 +  snes - the SNES context
@@ -10,7 +11,11 @@
 
    Level: advanced
 
-.seealso: `SNESVISetVariableBounds()`
+   Note:
+   Problems with bound constraints can be solved with the reduced space, `SNESVINEWTONRSLS`, and semi-smooth `SNESVINEWTONSSLS` solvers.
+
+.seealso: `SNESVISetVariableBounds()`, `SNESSetFunctionDomainError()`, `SNESSetJacobianDomainError()`, `SNESVINEWTONRSLS`, `SNESVINEWTONSSLS`,
+          'SNESSetType()`
 
 @*/
 PetscErrorCode SNESVISetComputeVariableBounds(SNES snes, PetscErrorCode (*compute)(SNES,Vec,Vec))
@@ -412,7 +417,8 @@ PetscErrorCode SNESDestroy_VI(SNES snes)
 }
 
 /*@
-   SNESVISetVariableBounds - Sets the lower and upper bounds for the solution vector. xl <= x <= xu.
+   SNESVISetVariableBounds - Sets the lower and upper bounds for the solution vector. xl <= x <= xu. This allows solving
+   (differential) variable inequalities. For example, restricting pressure to be non-negative.
 
    Input Parameters:
 +  snes - the SNES context.
@@ -423,8 +429,11 @@ PetscErrorCode SNESDestroy_VI(SNES snes)
    If this routine is not called then the lower and upper bounds are set to
    PETSC_NINFINITY and PETSC_INFINITY respectively during SNESSetUp().
 
+   Problems with bound constraints can be solved with the reduced space, `SNESVINEWTONRSLS`, and semi-smooth `SNESVINEWTONSSLS` solvers.
+
    Level: advanced
 
+.seealso: `SNESVISetComputeVariableBounds()`, `SNESSetFunctionDomainError()`, `SNESSetJacobianDomainError()`, SNESVINEWTONRSLS, SNESVINEWTONSSLS, 'SNESSetType()`
 @*/
 PetscErrorCode SNESVISetVariableBounds(SNES snes, Vec xl, Vec xu)
 {
@@ -482,14 +491,10 @@ PetscErrorCode SNESSetFromOptions_VI(PetscOptionItems *PetscOptionsObject,SNES s
   PetscOptionsHeadBegin(PetscOptionsObject,"SNES VI options");
   PetscCall(PetscOptionsReal("-snes_vi_zero_tolerance","Tolerance for considering x[] value to be on a bound","None",snes->vizerotolerance,&snes->vizerotolerance,NULL));
   PetscCall(PetscOptionsBool("-snes_vi_monitor","Monitor all non-active variables","SNESMonitorResidual",flg,&flg,NULL));
-  if (flg) {
-    PetscCall(SNESMonitorSet(snes,SNESMonitorVI,PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)snes)),NULL));
-  }
+  if (flg) PetscCall(SNESMonitorSet(snes,SNESMonitorVI,PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)snes)),NULL));
   flg = PETSC_FALSE;
   PetscCall(PetscOptionsBool("-snes_vi_monitor_residual","Monitor residual all non-active variables; using zero for active constraints","SNESMonitorVIResidual",flg,&flg,NULL));
-  if (flg) {
-    PetscCall(SNESMonitorSet(snes,SNESVIMonitorResidual,PETSC_VIEWER_DRAW_(PetscObjectComm((PetscObject)snes)),NULL));
-  }
+  if (flg) PetscCall(SNESMonitorSet(snes,SNESVIMonitorResidual,PETSC_VIEWER_DRAW_(PetscObjectComm((PetscObject)snes)),NULL));
   PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }

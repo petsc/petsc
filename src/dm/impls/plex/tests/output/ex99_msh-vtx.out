@@ -9,6 +9,7 @@ coordinates with 1 fields
   field 0 with 3 components
 Process 0:
   (   0) dim  3 offset   0 0. 0. 0.
-Label 'marker':
+Labels:
 Label 'celltype':
 [0]: 0 (0)
+Label 'marker':

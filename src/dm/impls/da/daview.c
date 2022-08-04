@@ -48,12 +48,14 @@ PetscErrorCode DMView_DA_Binary(DM da,PetscViewer viewer)
   DMBoundaryType   bx,by,bz;
   MPI_Comm         comm;
   PetscBool        coors = PETSC_FALSE;
+  Vec              coordinates;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)da,&comm));
 
   PetscCall(DMDAGetInfo(da,&dim,&m,&n,&p,&M,&N,&P,&dof,&swidth,&bx,&by,&bz,&stencil));
   PetscCallMPI(MPI_Comm_rank(comm,&rank));
+  PetscCall(DMGetCoordinates(da, &coordinates));
   if (rank == 0) {
     PetscCall(PetscViewerBinaryWrite(viewer,&dim,1,PETSC_INT));
     PetscCall(PetscViewerBinaryWrite(viewer,&m,1,PETSC_INT));
@@ -65,24 +67,24 @@ PetscErrorCode DMView_DA_Binary(DM da,PetscViewer viewer)
     PetscCall(PetscViewerBinaryWrite(viewer,&by,1,PETSC_ENUM));
     PetscCall(PetscViewerBinaryWrite(viewer,&bz,1,PETSC_ENUM));
     PetscCall(PetscViewerBinaryWrite(viewer,&stencil,1,PETSC_ENUM));
-    if (da->coordinates) coors = PETSC_TRUE;
+    if (coordinates) coors = PETSC_TRUE;
     PetscCall(PetscViewerBinaryWrite(viewer,&coors,1,PETSC_BOOL));
   }
 
   /* save the coordinates if they exist to disk (in the natural ordering) */
-  if (da->coordinates) {
-    PetscCall(VecView(da->coordinates,viewer));
-  }
+  if (coordinates) PetscCall(VecView(coordinates, viewer));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode DMView_DA_VTK(DM da, PetscViewer viewer)
 {
-  PetscInt       dim, dof, M = 0, N = 0, P = 0;
+  Vec      coordinates;
+  PetscInt dim, dof, M = 0, N = 0, P = 0;
 
   PetscFunctionBegin;
+  PetscCall(DMGetCoordinates(da, &coordinates));
   PetscCall(DMDAGetInfo(da, &dim, &M, &N, &P, NULL, NULL, NULL, &dof, NULL, NULL, NULL, NULL, NULL));
-  PetscCheck(da->coordinates,PetscObjectComm((PetscObject)da),PETSC_ERR_SUP, "VTK output requires DMDA coordinates.");
+  PetscCheck(coordinates, PetscObjectComm((PetscObject)da), PETSC_ERR_SUP, "VTK output requires DMDA coordinates.");
   /* Write Header */
   PetscCall(PetscViewerASCIIPrintf(viewer,"# vtk DataFile Version 2.0\n"));
   PetscCall(PetscViewerASCIIPrintf(viewer,"Structured Mesh Example\n"));
@@ -90,15 +92,15 @@ PetscErrorCode DMView_DA_VTK(DM da, PetscViewer viewer)
   PetscCall(PetscViewerASCIIPrintf(viewer,"DATASET STRUCTURED_GRID\n"));
   PetscCall(PetscViewerASCIIPrintf(viewer,"DIMENSIONS %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT "\n", M, N, P));
   PetscCall(PetscViewerASCIIPrintf(viewer,"POINTS %" PetscInt_FMT " double\n", M*N*P));
-  if (da->coordinates) {
+  if (coordinates) {
     DM  dac;
     Vec natural;
 
     PetscCall(DMGetCoordinateDM(da, &dac));
     PetscCall(DMDACreateNaturalVector(dac, &natural));
     PetscCall(PetscObjectSetOptionsPrefix((PetscObject) natural, "coor_"));
-    PetscCall(DMDAGlobalToNaturalBegin(dac, da->coordinates, INSERT_VALUES, natural));
-    PetscCall(DMDAGlobalToNaturalEnd(dac, da->coordinates, INSERT_VALUES, natural));
+    PetscCall(DMDAGlobalToNaturalBegin(dac, coordinates, INSERT_VALUES, natural));
+    PetscCall(DMDAGlobalToNaturalEnd(dac, coordinates, INSERT_VALUES, natural));
     PetscCall(PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK_COORDS_DEPRECATED));
     PetscCall(VecView(natural, viewer));
     PetscCall(PetscViewerPopFormat(viewer));

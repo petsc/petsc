@@ -8,6 +8,7 @@ int main(int argc,char **argv)
   PetscScalar    one = 1.0,two = 2.0;
   Vec            x,y;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* create vector */

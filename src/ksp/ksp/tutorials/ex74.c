@@ -94,6 +94,7 @@ int main(int argc, char **argv)
   PetscFunctionList IRKList = NULL;
   char              irktype[256] = IRKGAUSS;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(PetscFunctionListAdd(&IRKList,IRKGAUSS,RKCreate_Gauss));
 

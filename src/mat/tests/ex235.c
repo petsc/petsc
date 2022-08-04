@@ -64,6 +64,7 @@ int main(int argc,char **args)
   PetscInt       m = 3;
   PetscReal      Aijnorm,Aijdiagnorm,Bnorm,dnorm;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
 

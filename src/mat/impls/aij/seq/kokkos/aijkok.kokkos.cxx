@@ -7,7 +7,6 @@
 
 #include <Kokkos_Core.hpp>
 #include <KokkosBlas.hpp>
-#include <KokkosKernels_Sorting.hpp>
 #include <KokkosSparse_CrsMatrix.hpp>
 #include <KokkosSparse_spmv.hpp>
 #include <KokkosSparse_spiluk.hpp>
@@ -16,6 +15,16 @@
 #include <KokkosSparse_spadd.hpp>
 
 #include <../src/mat/impls/aij/seq/kokkos/aijkok.hpp>
+
+#if PETSC_PKG_KOKKOS_KERNELS_VERSION_GE(3,6,99)
+  #include <KokkosSparse_Utils.hpp>
+  using KokkosSparse::Impl::transpose_matrix;
+  using KokkosSparse::sort_crs_matrix;
+#else
+  #include <KokkosKernels_Sorting.hpp>
+  using KokkosKernels::Impl::transpose_matrix;
+  using KokkosKernels::sort_crs_matrix;
+#endif
 
 static PetscErrorCode MatSetOps_SeqAIJKokkos(Mat); /* Forward declaration */
 
@@ -225,8 +234,8 @@ static PetscErrorCode MatSeqAIJKokkosGenerateTranspose_Private(Mat A, KokkosCsrM
   if (!aijkok->csrmatT.nnz() || !aijkok->transpose_updated) { /* Generate At for the first time OR just update its values */
     /* FIXME: KK does not separate symbolic/numeric transpose. We could have a permutation array to help value-only update */
     PetscCallCXX(aijkok->a_dual.sync_device());
-    PetscCallCXX(aijkok->csrmatT = KokkosKernels::Impl::transpose_matrix(aijkok->csrmat));
-    PetscCallCXX(KokkosKernels::sort_crs_matrix(aijkok->csrmatT));
+    PetscCallCXX(aijkok->csrmatT = transpose_matrix(aijkok->csrmat));
+    PetscCallCXX(sort_crs_matrix(aijkok->csrmatT));
     aijkok->transpose_updated = PETSC_TRUE;
   }
   *csrmatT = &aijkok->csrmatT;
@@ -243,8 +252,8 @@ static PetscErrorCode MatSeqAIJKokkosGenerateHermitian_Private(Mat A, KokkosCsrM
   PetscCheck(aijkok,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Unexpected NULL (Mat_SeqAIJKokkos*)A->spptr");
   if (!aijkok->csrmatH.nnz() || !aijkok->hermitian_updated) { /* Generate Ah for the first time OR just update its values */
     PetscCallCXX(aijkok->a_dual.sync_device());
-    PetscCallCXX(aijkok->csrmatH = KokkosKernels::Impl::transpose_matrix(aijkok->csrmat));
-    PetscCallCXX(KokkosKernels::sort_crs_matrix(aijkok->csrmatH));
+    PetscCallCXX(aijkok->csrmatH = transpose_matrix(aijkok->csrmat));
+    PetscCallCXX(sort_crs_matrix(aijkok->csrmatH));
    #if defined(PETSC_USE_COMPLEX)
     const auto& a = aijkok->csrmatH.values;
     Kokkos::parallel_for(a.extent(0),KOKKOS_LAMBDA(MatRowMapType i) {a(i) = PetscConj(a(i));});
@@ -519,6 +528,7 @@ static PetscErrorCode MatTranspose_SeqAIJKokkos(Mat A,MatReuse reuse,Mat *B)
   Mat_SeqAIJKokkos  *atkok,*bkok;
 
   PetscFunctionBegin;
+  if (reuse == MAT_REUSE_MATRIX) PetscCall(MatTransposeCheckNonzeroState_Private(A,*B));
   PetscCall(MatSeqAIJKokkosGenerateTranspose_Private(A,&internT)); /* Generate a transpose internally */
   if (reuse == MAT_INITIAL_MATRIX || reuse == MAT_INPLACE_MATRIX) {
     /* Deep copy internT, as we want to isolate the internal transpose */
@@ -730,7 +740,7 @@ static PetscErrorCode MatProductNumeric_SeqAIJKokkos_SeqAIJKokkos(Mat C)
   }
   PetscCall(PetscLogGpuTimeBegin());
   PetscCallCXX(KokkosSparse::spgemm_numeric(pdata->kh,*csrmatA,transA,*csrmatB,transB,ckok->csrmat));
-  PetscCallCXX(KokkosKernels::sort_crs_matrix(ckok->csrmat)); /* without the sort, mat_tests-ex62_14_seqaijkokkos failed */
+  PetscCallCXX(sort_crs_matrix(ckok->csrmat)); /* without the sort, mat_tests-ex62_14_seqaijkokkos failed */
   PetscCall(PetscLogGpuTimeEnd());
   PetscCall(MatSeqAIJKokkosModifyDevice(C));
   /* shorter version of MatAssemblyEnd_SeqAIJ */
@@ -810,7 +820,7 @@ static PetscErrorCode MatProductSymbolic_SeqAIJKokkos_SeqAIJKokkos(Mat C)
     TODO: Remove the fake spgemm_numeric() after KK fixed this problem.
   */
   PetscCallCXX(KokkosSparse::spgemm_numeric(pdata->kh,*csrmatA,transA,*csrmatB,transB,csrmatC));
-  PetscCallCXX(KokkosKernels::sort_crs_matrix(csrmatC));
+  PetscCallCXX(sort_crs_matrix(csrmatC));
   PetscCall(PetscLogGpuTimeEnd());
 
   PetscCallCXX(ckok = new Mat_SeqAIJKokkos(csrmatC));
@@ -1070,7 +1080,7 @@ static PetscErrorCode MatAXPY_SeqAIJKokkos(Mat Y,PetscScalar alpha,Mat X,MatStru
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatSetPreallocationCOO_SeqAIJKokkos(Mat mat, PetscCount coo_n, const PetscInt coo_i[], const PetscInt coo_j[])
+static PetscErrorCode MatSetPreallocationCOO_SeqAIJKokkos(Mat mat, PetscCount coo_n, PetscInt coo_i[], PetscInt coo_j[])
 {
   Mat_SeqAIJKokkos *akok;
   Mat_SeqAIJ       *aseq;
@@ -1322,7 +1332,7 @@ static PetscErrorCode MatLUFactorNumeric_SeqAIJKOKKOSDEVICE(Mat B,Mat A,const Ma
 
   PetscFunctionBegin;
   PetscCheck(A->rmap->n == n,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"square matrices only supported %" PetscInt_FMT " %" PetscInt_FMT,A->rmap->n,n);
-  PetscCall(MatGetOption(A,MAT_STRUCTURALLY_SYMMETRIC,&row_identity));
+  PetscCall(MatIsStructurallySymmetric(A,&row_identity));
   PetscCheck(row_identity,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"structurally symmetric matrices only supported");
   PetscCall(ISGetIndices(isrow,&r_h));
   PetscCall(ISGetIndices(isicol,&ic_h));
@@ -1551,7 +1561,7 @@ static PetscErrorCode MatSeqAIJKokkosTransposeSolveCheck(Mat A)
     factors->jLt_d = MatColIdxKokkosView("factors->jLt_d",factors->jL_d.extent(0));
     factors->aLt_d = MatScalarKokkosView("factors->aLt_d",factors->aL_d.extent(0));
 
-    KokkosKernels::Impl::transpose_matrix<
+    transpose_matrix<
       ConstMatRowMapKokkosView,ConstMatColIdxKokkosView,ConstMatScalarKokkosView,
       MatRowMapKokkosView,MatColIdxKokkosView,MatScalarKokkosView,
       MatRowMapKokkosView,DefaultExecutionSpace>(
@@ -1561,7 +1571,7 @@ static PetscErrorCode MatSeqAIJKokkosTransposeSolveCheck(Mat A)
     /* TODO: KK transpose_matrix() does not sort column indices, however cusparse requires sorted indices.
       We have to sort the indices, until KK provides finer control options.
     */
-    KokkosKernels::sort_crs_matrix<DefaultExecutionSpace,
+    sort_crs_matrix<DefaultExecutionSpace,
       MatRowMapKokkosView,MatColIdxKokkosView,MatScalarKokkosView>(
         factors->iLt_d,factors->jLt_d,factors->aLt_d);
 
@@ -1573,7 +1583,7 @@ static PetscErrorCode MatSeqAIJKokkosTransposeSolveCheck(Mat A)
     factors->jUt_d = MatColIdxKokkosView("factors->jUt_d",factors->jU_d.extent(0));
     factors->aUt_d = MatScalarKokkosView("factors->aUt_d",factors->aU_d.extent(0));
 
-    KokkosKernels::Impl::transpose_matrix<
+    transpose_matrix<
       ConstMatRowMapKokkosView,ConstMatColIdxKokkosView,ConstMatScalarKokkosView,
       MatRowMapKokkosView,MatColIdxKokkosView,MatScalarKokkosView,
       MatRowMapKokkosView,DefaultExecutionSpace>(
@@ -1581,7 +1591,7 @@ static PetscErrorCode MatSeqAIJKokkosTransposeSolveCheck(Mat A)
         factors->iUt_d,factors->jUt_d,factors->aUt_d);
 
     /* Sort indices. See comments above */
-    KokkosKernels::sort_crs_matrix<DefaultExecutionSpace,
+    sort_crs_matrix<DefaultExecutionSpace,
       MatRowMapKokkosView,MatColIdxKokkosView,MatScalarKokkosView>(
         factors->iUt_d,factors->jUt_d,factors->aUt_d);
 

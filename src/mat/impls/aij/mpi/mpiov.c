@@ -1194,13 +1194,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_All(Mat A,MatCreateSubMatrixOption flag
   }  /* endof (flag == MAT_GET_VALUES) */
   PetscCall(PetscFree2(recvcounts,displs));
 
-  if (A->symmetric) {
-    PetscCall(MatSetOption(B,MAT_SYMMETRIC,PETSC_TRUE));
-  } else if (A->hermitian) {
-    PetscCall(MatSetOption(B,MAT_HERMITIAN,PETSC_TRUE));
-  } else if (A->structurally_symmetric) {
-    PetscCall(MatSetOption(B,MAT_STRUCTURALLY_SYMMETRIC,PETSC_TRUE));
-  }
+  PetscCall(MatPropagateSymmetryOptions(A,B));
   PetscFunctionReturn(0);
 }
 
@@ -2877,9 +2871,7 @@ PetscErrorCode MatSetSeqMats_MPIAIJ(Mat C,IS rowemb,IS dcolemb,IS ocolemb,MatStr
       PetscCall(ISGetLocalSize(rowemb,&m));
       PetscCheck(m == A->rmap->n,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Row IS of size %" PetscInt_FMT " is incompatible with diag matrix row size %" PetscInt_FMT,m,A->rmap->n);
     } else {
-      if (C->rmap->n != A->rmap->n) {
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Diag seq matrix is row-incompatible with the MPIAIJ matrix");
-      }
+      PetscCheck(C->rmap->n == A->rmap->n,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Diag seq matrix is row-incompatible with the MPIAIJ matrix");
     }
     if (dcolemb) {
       PetscCall(ISGetLocalSize(dcolemb,&n));
@@ -2895,9 +2887,7 @@ PetscErrorCode MatSetSeqMats_MPIAIJ(Mat C,IS rowemb,IS dcolemb,IS ocolemb,MatStr
       PetscCall(ISGetLocalSize(rowemb,&m));
       PetscCheck(m == B->rmap->n,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Row IS of size %" PetscInt_FMT " is incompatible with off-diag matrix row size %" PetscInt_FMT,m,A->rmap->n);
     } else {
-      if (C->rmap->n != B->rmap->n) {
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Off-diag seq matrix is row-incompatible with the MPIAIJ matrix");
-      }
+      PetscCheck(C->rmap->n == B->rmap->n,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Off-diag seq matrix is row-incompatible with the MPIAIJ matrix");
     }
     if (ocolemb) {
       PetscCall(ISGetLocalSize(ocolemb,&n));
@@ -2940,9 +2930,7 @@ PetscErrorCode MatSetSeqMats_MPIAIJ(Mat C,IS rowemb,IS dcolemb,IS ocolemb,MatStr
 #else
       PetscCall(PetscFree(aij->colmap));
       /* A bit of a HACK: ideally we should deal with case aij->B all in one code block below. */
-      if (aij->B) {
-        PetscCall(PetscLogObjectMemory((PetscObject)C,-aij->B->cmap->n*sizeof(PetscInt)));
-      }
+      if (aij->B) PetscCall(PetscLogObjectMemory((PetscObject)C,-aij->B->cmap->n*sizeof(PetscInt)));
 #endif
       ngcol = 0;
       if (aij->lvec) {

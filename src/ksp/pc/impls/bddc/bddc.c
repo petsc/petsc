@@ -1372,9 +1372,7 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
     PetscCall(VecScale(used_vec,-1.0));
     PetscCall(VecCopy(used_vec,pcbddc->temp_solution));
     pcbddc->temp_solution_used = PETSC_TRUE;
-    if (ksp) {
-      PetscCall(KSPSetInitialGuessNonzero(ksp,PETSC_FALSE));
-    }
+    if (ksp) PetscCall(KSPSetInitialGuessNonzero(ksp,PETSC_FALSE));
   }
   PetscCall(VecDestroy(&used_vec));
 
@@ -1392,14 +1390,10 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
     if (!pcbddc->benign_skip_correction) {
       PetscCall(PCApply_BDDC(pc,rhs,pcbddc->benign_vec));
       benign_correction_computed = PETSC_TRUE;
-      if (pcbddc->temp_solution_used) {
-        PetscCall(VecAXPY(pcbddc->temp_solution,1.0,pcbddc->benign_vec));
-      }
+      if (pcbddc->temp_solution_used) PetscCall(VecAXPY(pcbddc->temp_solution,1.0,pcbddc->benign_vec));
       PetscCall(VecScale(pcbddc->benign_vec,-1.0));
       /* store the original rhs if not done earlier */
-      if (save_rhs) {
-        PetscCall(VecSwap(rhs,pcbddc->original_rhs));
-      }
+      if (save_rhs) PetscCall(VecSwap(rhs,pcbddc->original_rhs));
       if (pcbddc->rhs_change) {
         PetscCall(MatMultAdd(pc->mat,pcbddc->benign_vec,rhs,rhs));
       } else {
@@ -1458,9 +1452,7 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
       PetscCall(VecScatterBegin(pcis->global_to_D,pcis->vec2_D,x,INSERT_VALUES,SCATTER_REVERSE));
       PetscCall(VecScatterEnd(pcis->global_to_D,pcis->vec2_D,x,INSERT_VALUES,SCATTER_REVERSE));
     }
-    if (ksp) {
-      PetscCall(KSPSetInitialGuessNonzero(ksp,PETSC_TRUE));
-    }
+    if (ksp) PetscCall(KSPSetInitialGuessNonzero(ksp,PETSC_TRUE));
     pcbddc->exact_dirichlet_trick_app = PETSC_TRUE;
   } else if (pcbddc->ChangeOfBasisMatrix && pcbddc->change_interior && benign_correction_computed && pcbddc->use_exact_dirichlet_trick) {
     PetscCall(VecLockReadPop(pcis->vec1_global));
@@ -1537,6 +1529,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   PetscBool       computesubschurs;
   PetscBool       computeconstraintsmatrix;
   PetscBool       new_nearnullspace_provided,ismatis,rl;
+  PetscBool       isset,issym,isspd;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)pc->pmat,MATIS,&ismatis));
@@ -1589,9 +1582,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   PetscCall(PetscLogEventBegin(PC_BDDC_Topology[pcbddc->current_level],pc,0,0,0));
   if (pcbddc->recompute_topography) {
     PetscCall(PCBDDCComputeLocalTopologyInfo(pc));
-    if (pcbddc->discretegradient) {
-      PetscCall(PCBDDCNedelecSupport(pc));
-    }
+    if (pcbddc->discretegradient) PetscCall(PCBDDCNedelecSupport(pc));
   }
   if (pcbddc->corner_selected) pcbddc->use_vertices = PETSC_TRUE;
 
@@ -1632,12 +1623,10 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   }
 
   /* propagate relevant information */
-  if (matis->A->symmetric_set) {
-    PetscCall(MatSetOption(pcbddc->local_mat,MAT_SYMMETRIC,matis->A->symmetric));
-  }
-  if (matis->A->spd_set) {
-    PetscCall(MatSetOption(pcbddc->local_mat,MAT_SPD,matis->A->spd));
-  }
+  PetscCall(MatIsSymmetricKnown(matis->A,&isset,&issym));
+  if (isset) PetscCall(MatSetOption(pcbddc->local_mat,MAT_SYMMETRIC,issym));
+  PetscCall(MatIsSPDKnown(matis->A,&isset,&isspd));
+  if (isset) PetscCall(MatSetOption(pcbddc->local_mat,MAT_SPD,isspd));
 
   /* Set up all the "iterative substructuring" common block without computing solvers */
   {
@@ -1691,15 +1680,11 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   /* finish setup solvers and do adaptive selection of constraints */
   sub_schurs = pcbddc->sub_schurs;
   if (sub_schurs && sub_schurs->schur_explicit) {
-    if (computesubschurs) {
-      PetscCall(PCBDDCSetUpSubSchurs(pc));
-    }
+    if (computesubschurs) PetscCall(PCBDDCSetUpSubSchurs(pc));
     PetscCall(PCBDDCSetUpLocalSolvers(pc,PETSC_TRUE,PETSC_FALSE));
   } else {
     PetscCall(PCBDDCSetUpLocalSolvers(pc,PETSC_TRUE,PETSC_FALSE));
-    if (computesubschurs) {
-      PetscCall(PCBDDCSetUpSubSchurs(pc));
-    }
+    if (computesubschurs) PetscCall(PCBDDCSetUpSubSchurs(pc));
   }
   if (pcbddc->adaptive_selection) {
     PetscCall(PCBDDCAdaptiveSelection(pc));
@@ -1782,6 +1767,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     PC_IS*    pcis = (PC_IS*)pc->data;
     Mat       B_BI,B_BB,Bt_BI,Bt_BB;
     PetscBool issym;
+
     PetscCall(MatIsSymmetric(lA,PETSC_SMALL,&issym));
     if (issym) {
       PetscCall(MatCreateSubMatrix(lA,lP,pcis->is_I_local,MAT_INITIAL_MATRIX,&B_BI));
@@ -1808,9 +1794,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   /* SetUp coarse and local Neumann solvers */
   PetscCall(PCBDDCSetUpSolvers(pc));
   /* SetUp Scaling operator */
-  if (pcbddc->use_deluxe_scaling) {
-    PetscCall(PCBDDCScalingSetUp(pc));
-  }
+  if (pcbddc->use_deluxe_scaling) PetscCall(PCBDDCScalingSetUp(pc));
 
   /* mark topography as done */
   pcbddc->recompute_topography = PETSC_FALSE;
@@ -1987,9 +1971,7 @@ PetscErrorCode PCApply_BDDC(PC pc,Vec r,Vec z)
     PetscCall(VecScatterEnd(pcis->global_to_D,pcis->vec4_D,z,INSERT_VALUES,SCATTER_REVERSE));
   }
   if (pcbddc->benign_have_null) { /* set p0 (computed in PCBDDCApplyInterface) */
-    if (pcbddc->benign_apply_coarse_only) {
-      PetscCall(PetscArrayzero(pcbddc->benign_p0,pcbddc->benign_n));
-    }
+    if (pcbddc->benign_apply_coarse_only) PetscCall(PetscArrayzero(pcbddc->benign_p0,pcbddc->benign_n));
     PetscCall(PCBDDCBenignGetOrSetP0(pc,z,PETSC_FALSE));
   }
 
@@ -2343,9 +2325,7 @@ static PetscErrorCode PCBDDCMatFETIDPGetRHS_BDDC(Mat fetidp_mat, Vec standard_rh
   }
   /* BDDC rhs */
   PetscCall(VecCopy(mat_ctx->temp_solution_B,pcis->vec1_B));
-  if (pcbddc->switch_static) {
-    PetscCall(VecCopy(mat_ctx->temp_solution_D,pcis->vec1_D));
-  }
+  if (pcbddc->switch_static) PetscCall(VecCopy(mat_ctx->temp_solution_D,pcis->vec1_D));
   /* apply BDDC */
   PetscCall(PetscArrayzero(pcbddc->benign_p0,pcbddc->benign_n));
   PetscCall(PCBDDCApplyInterfacePreconditioner(mat_ctx->pc,PETSC_FALSE));
@@ -2358,9 +2338,7 @@ static PetscErrorCode PCBDDCMatFETIDPGetRHS_BDDC(Mat fetidp_mat, Vec standard_rh
   /* Add contribution to interface pressures */
   if (mat_ctx->l2g_p) {
     PetscCall(MatMult(mat_ctx->B_BB,pcis->vec1_B,mat_ctx->vP));
-    if (pcbddc->switch_static) {
-      PetscCall(MatMultAdd(mat_ctx->B_BI,pcis->vec1_D,mat_ctx->vP,mat_ctx->vP));
-    }
+    if (pcbddc->switch_static) PetscCall(MatMultAdd(mat_ctx->B_BI,pcis->vec1_D,mat_ctx->vP,mat_ctx->vP));
     PetscCall(VecScatterBegin(mat_ctx->l2g_p,mat_ctx->vP,fetidp_flux_rhs,ADD_VALUES,SCATTER_FORWARD));
     PetscCall(VecScatterEnd(mat_ctx->l2g_p,mat_ctx->vP,fetidp_flux_rhs,ADD_VALUES,SCATTER_FORWARD));
   }
@@ -2454,9 +2432,7 @@ static PetscErrorCode PCBDDCMatFETIDPGetSolution_BDDC(Mat fetidp_mat, Vec fetidp
   PetscCall(VecScatterEnd(pcis->global_to_D,pcis->vec1_D,work,INSERT_VALUES,SCATTER_REVERSE));
   /* add p0 solution to final solution */
   PetscCall(PCBDDCBenignGetOrSetP0(mat_ctx->pc,work,PETSC_FALSE));
-  if (pcbddc->ChangeOfBasisMatrix) {
-    PetscCall(MatMult(pcbddc->ChangeOfBasisMatrix,work,standard_sol));
-  }
+  if (pcbddc->ChangeOfBasisMatrix) PetscCall(MatMult(pcbddc->ChangeOfBasisMatrix,work,standard_sol));
   PetscCall(PCPostSolve_BDDC(mat_ctx->pc,NULL,NULL,standard_sol));
   if (mat_ctx->g2g_p) {
     PetscCall(VecScatterBegin(mat_ctx->g2g_p,fetidp_flux_sol,standard_sol,INSERT_VALUES,SCATTER_REVERSE));
@@ -2609,12 +2585,10 @@ static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, PetscBool fully_re
   /* propagate MatOptions */
   {
     PC_BDDC   *pcbddc = (PC_BDDC*)fetidpmat_ctx->pc->data;
-    PetscBool issym;
+    PetscBool isset,issym;
 
-    PetscCall(MatGetOption(pc->mat,MAT_SYMMETRIC,&issym));
-    if (issym || pcbddc->symmetric_primal) {
-      PetscCall(MatSetOption(newmat,MAT_SYMMETRIC,PETSC_TRUE));
-    }
+    PetscCall(MatIsSymmetricKnown(pc->mat,&isset,&issym));
+    if ((isset && issym) || pcbddc->symmetric_primal) PetscCall(MatSetOption(newmat,MAT_SYMMETRIC,PETSC_TRUE));
   }
   PetscCall(MatSetOptionsPrefix(newmat,prefix));
   PetscCall(MatAppendOptionsPrefix(newmat,"fetidp_"));
@@ -2691,15 +2665,12 @@ static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, PetscBool fully_re
           PetscCall(KSPSetOperators(ksps[1],F,M));
         }
       } else {
-        PetscBool issym;
+        PetscBool issym,isset;
         Mat       S;
 
         PetscCall(PCFieldSplitSchurGetS(newpc,&S));
-
-        PetscCall(MatGetOption(newmat,MAT_SYMMETRIC,&issym));
-        if (issym) {
-          PetscCall(MatSetOption(S,MAT_SYMMETRIC,PETSC_TRUE));
-        }
+        PetscCall(MatIsSymmetricKnown(newmat,&isset,&issym));
+        if (isset) PetscCall(MatSetOption(S,MAT_SYMMETRIC,issym));
       }
       PetscCall(KSPGetPC(ksps[0],&lagpc));
       PetscCall(PCSetType(lagpc,PCSHELL));

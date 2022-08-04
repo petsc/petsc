@@ -6,6 +6,7 @@ static char help[] = "Tests PetscSequentialPhaseBegin() and PetscSequentialPhase
 int main(int argc,char **args)
 {
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,NULL,help));
   PetscCall(PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1));
   PetscCall(PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1));

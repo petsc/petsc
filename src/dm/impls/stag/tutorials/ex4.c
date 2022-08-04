@@ -65,6 +65,7 @@ int main(int argc,char **argv)
   DM             dm_stokes,dm_coefficients;
   PetscBool      dump_solution, build_auxiliary_operator, rediscretize, custom_pc_mat;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* Accept options for program behavior */
@@ -308,9 +309,7 @@ int main(int argc,char **argv)
   }
 
   /* Dump solution by converting to DMDAs and dumping */
-  if (dump_solution) {
-    PetscCall(DumpSolution(ctx,ctx->n_levels-1,x));
-  }
+  if (dump_solution) PetscCall(DumpSolution(ctx,ctx->n_levels-1,x));
 
   /* Destroy PETSc objects and finalize */
   PetscCall(MatDestroy(&A));
@@ -380,7 +379,7 @@ static PetscScalar GetRho_sinker_box3(Ctx ctx, PetscScalar x, PetscScalar y, Pet
   const PetscReal yy = PetscRealPart(y)/d - 0.5;
   const PetscReal zz = PetscRealPart(z)/d - 0.5;
   const PetscReal half_width =  0.15;
-  return (PetscAbsScalar(xx) > half_width || PetscAbsScalar(yy) > half_width || PetscAbsScalar(zz) > half_width) ? ctx->rho1 : ctx->rho2;
+  return (PetscAbsReal(xx) > half_width || PetscAbsReal(yy) > half_width || PetscAbsReal(zz) > half_width) ? ctx->rho1 : ctx->rho2;
 }
 
 static PetscScalar GetEta_sinker_box3(Ctx ctx, PetscScalar x, PetscScalar y, PetscScalar z) {
@@ -389,7 +388,7 @@ static PetscScalar GetEta_sinker_box3(Ctx ctx, PetscScalar x, PetscScalar y, Pet
   const PetscReal yy = PetscRealPart(y)/d - 0.5;
   const PetscReal zz = PetscRealPart(z)/d - 0.5;
   const PetscReal half_width = 0.15;
-  return (PetscAbsScalar(xx) > half_width || PetscAbsScalar(yy) > half_width || PetscAbsScalar(zz) > half_width) ? ctx->eta1 : ctx->eta2;
+  return (PetscAbsReal(xx) > half_width || PetscAbsReal(yy) > half_width || PetscAbsReal(zz) > half_width) ? ctx->eta1 : ctx->eta2;
 }
 
 static PetscScalar GetRho_sinker_sphere3(Ctx ctx, PetscScalar x, PetscScalar y, PetscScalar z) {
@@ -851,13 +850,9 @@ static PetscErrorCode CreateSystem2d(SystemParameters parameters, Mat *pA,Vec *p
   }
 
   PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  if (build_rhs) {
-    PetscCall(VecAssemblyBegin(rhs));
-  }
+  if (build_rhs) PetscCall(VecAssemblyBegin(rhs));
   PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
-  if (build_rhs) {
-    PetscCall(VecAssemblyEnd(rhs));
-  }
+  if (build_rhs) PetscCall(VecAssemblyEnd(rhs));
   PetscFunctionReturn(0);
 }
 
@@ -1328,13 +1323,9 @@ static PetscErrorCode CreateSystem3d(SystemParameters parameters,Mat *pA,Vec *pR
   }
 
   PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  if (build_rhs) {
-    PetscCall(VecAssemblyBegin(rhs));
-  }
+  if (build_rhs) PetscCall(VecAssemblyBegin(rhs));
   PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
-  if (build_rhs) {
-    PetscCall(VecAssemblyEnd(rhs));
-  }
+  if (build_rhs) PetscCall(VecAssemblyEnd(rhs));
   PetscFunctionReturn(0);
 }
 

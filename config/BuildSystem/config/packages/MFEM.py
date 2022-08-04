@@ -196,7 +196,7 @@ class Configure(config.package.Package):
                           '@(cd '+buildDir+' && \\\n\
            '+'${OMAKE} install) >> ${PETSC_ARCH}/lib/petsc/conf/mfem.log 2>&1 || \\\n\
              (echo "**************************ERROR*************************************" && \\\n\
-             echo "Error building MFEM. Check ${PETSC_ARCH}/lib/petsc/conf/mfem.log" && \\\n\
+             echo "Error installing MFEM. Check ${PETSC_ARCH}/lib/petsc/conf/mfem.log" && \\\n\
              echo "********************************************************************" && \\\n\
              exit 1)'])
 

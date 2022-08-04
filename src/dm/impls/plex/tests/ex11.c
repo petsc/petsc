@@ -301,6 +301,7 @@ static PetscErrorCode TestUniversalLabel(MPI_Comm comm)
 int main(int argc, char **argv)
 {
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   /*PetscCall(ProcessOptions(PETSC_COMM_WORLD, &user));*/
   PetscCall(TestInsertion());

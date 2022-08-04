@@ -1228,6 +1228,7 @@ int main(int argc, char **argv)
   PetscInt        r;
 
   /* Initialize program */
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* Check if running with only 1 proc */

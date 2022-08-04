@@ -25,6 +25,7 @@ int main(int argc, char **argv)
   PetscBool      saveCommunicationPattern = PETSC_FALSE;
   PetscMPIInt    size, rank, p;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-save_comm", &saveCommunicationPattern, NULL));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));

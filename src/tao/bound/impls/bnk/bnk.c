@@ -27,9 +27,7 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
   /* Project the current point onto the feasible set */
   PetscCall(TaoComputeVariableBounds(tao));
   PetscCall(TaoSetVariableBounds(bnk->bncg, tao->XL, tao->XU));
-  if (tao->bounded) {
-    PetscCall(TaoLineSearchSetVariableBounds(tao->linesearch,tao->XL,tao->XU));
-  }
+  if (tao->bounded) PetscCall(TaoLineSearchSetVariableBounds(tao->linesearch,tao->XL,tao->XU));
 
   /* Project the initial point onto the feasible region */
   PetscCall(TaoBoundSolution(tao->solution, tao->XL,tao->XU, 0.0, &nDiff, tao->solution));
@@ -85,9 +83,7 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
     PetscCall(MatLMVMAllocate(bnk->M, tao->solution, bnk->unprojected_gradient));
     PetscCall(MatIsSymmetricKnown(bnk->M, &sym_set, &is_symmetric));
     PetscCheck(sym_set && is_symmetric,PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "LMVM matrix in the LMVM preconditioner must be symmetric.");
-  } else if (is_jacobi) {
-    PetscCall(PCJacobiSetUseAbs(pc,PETSC_TRUE));
-  }
+  } else if (is_jacobi) PetscCall(PCJacobiSetUseAbs(pc,PETSC_TRUE));
 
   /* Prepare the min/max vectors for safeguarding diagonal scales */
   PetscCall(VecSet(bnk->Diag_min, bnk->dmin));
@@ -270,9 +266,7 @@ PetscErrorCode TaoBNKComputeHessian(Tao tao)
   /* Compute the Hessian */
   PetscCall(TaoComputeHessian(tao,tao->solution,tao->hessian,tao->hessian_pre));
   /* Add a correction to the BFGS preconditioner */
-  if (bnk->M) {
-    PetscCall(MatLMVMUpdate(bnk->M, tao->solution, bnk->unprojected_gradient));
-  }
+  if (bnk->M) PetscCall(MatLMVMUpdate(bnk->M, tao->solution, bnk->unprojected_gradient));
   /* Prepare the reduced sub-matrices for the inactive set */
   PetscCall(MatDestroy(&bnk->Hpre_inactive));
   PetscCall(MatDestroy(&bnk->H_inactive));
@@ -284,9 +278,7 @@ PetscErrorCode TaoBNKComputeHessian(Tao tao)
     } else {
       PetscCall(MatCreateSubMatrix(tao->hessian_pre, bnk->inactive_idx, bnk->inactive_idx, MAT_INITIAL_MATRIX, &bnk->Hpre_inactive));
     }
-    if (bnk->bfgs_pre) {
-      PetscCall(PCLMVMSetIS(bnk->bfgs_pre, bnk->inactive_idx));
-    }
+    if (bnk->bfgs_pre) PetscCall(PCLMVMSetIS(bnk->bfgs_pre, bnk->inactive_idx));
   } else {
     PetscCall(PetscObjectReference((PetscObject)tao->hessian));
     bnk->H_inactive = tao->hessian;
@@ -297,9 +289,7 @@ PetscErrorCode TaoBNKComputeHessian(Tao tao)
       PetscCall(PetscObjectReference((PetscObject)tao->hessian_pre));
       bnk->Hpre_inactive = tao->hessian_pre;
     }
-    if (bnk->bfgs_pre) {
-      PetscCall(PCLMVMClearIS(bnk->bfgs_pre));
-    }
+    if (bnk->bfgs_pre) PetscCall(PCLMVMClearIS(bnk->bfgs_pre));
   }
   PetscFunctionReturn(0);
 }

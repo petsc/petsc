@@ -38,6 +38,7 @@ int main(int argc,char **argv)
   PetscBool      verbose=PETSC_FALSE, flg;
   MPI_Comm       comm;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   comm = PETSC_COMM_WORLD;
   PetscCall(PetscArrayzero(is, sizeof(is)/sizeof(is[0])));

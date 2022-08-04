@@ -20,6 +20,7 @@ int main(int argc,char **argv)
   MPI_Comm       comm;
   PetscMPIInt    rank;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* create the large DMDA and set coordinates (which we will copy down to the small DA). */

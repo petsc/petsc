@@ -1827,6 +1827,7 @@ int main(int argc, char **argv)
   AppCtx          user; /* user-defined work context */
   PetscReal       t;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL,help));
   PetscCall(ProcessOptions(PETSC_COMM_WORLD, &user));
   PetscCall(PetscBagCreate(PETSC_COMM_WORLD, sizeof(Parameter), &user.bag));

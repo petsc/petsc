@@ -144,7 +144,7 @@ class Configure(config.package.GNUPackage):
     args.append('--without-superlu')
 
     if self.getDefaultIndexSize() == 64:
-      if cudabuild: # HYPRE 2.23 supports only mixedint configurations with CUDA
+      if cudabuild or hipbuild: # HYPRE 2.23 supports only mixedint configurations with CUDA/HIP
         args.append('--enable-bigint=no --enable-mixedint=yes')
       else:
         args.append('--enable-bigint')

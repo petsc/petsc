@@ -9,6 +9,7 @@ int main(int argc,char **args)
   char           inputfile[256],outputfile[256];
   PetscBool      flg;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCall(PetscOptionsGetString(NULL,NULL,"-inputfile",inputfile,sizeof(inputfile),&flg));
   PetscCall(PetscOptionsGetString(NULL,NULL,"-outputfile",outputfile,sizeof(outputfile),&flg));

@@ -11,6 +11,7 @@ int main(int argc,char *argv[])
   const PetscInt *lx,*ly,*lz;
   PetscMPIInt    rank;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,0,help));
   PetscCall(PetscOptionsGetInt(NULL,0,"-dim",&dim,0));
   switch (dim) {

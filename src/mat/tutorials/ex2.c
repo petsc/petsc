@@ -17,6 +17,7 @@ int main(int argc,char **argv)
   PetscInt       size=8,size1=6,size2=2, i,j;
   PetscRandom    rnd;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,0,help));
   PetscCall(PetscRandomCreate(PETSC_COMM_SELF,&rnd));
 

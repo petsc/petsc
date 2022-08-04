@@ -1149,6 +1149,7 @@ int main(int argc,char *argv[])
   PetscBool         view_final = PETSC_FALSE;
   PetscReal         ptime,maxtime;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,0,help));
   comm = PETSC_COMM_WORLD;
   PetscCall(PetscMemzero(&ctx,sizeof(ctx)));
@@ -1419,6 +1420,6 @@ int main(int argc,char *argv[])
     test:
       suffix: 5
       nsize: 4
-      args: args: -da_grid_x 40 -initial 1 -hratio 2 -limit mc -ts_dt 0.1 -ts_max_steps 24 -ts_max_time 7.0 -ts_type mprk -ts_mprk_type 2a22 -physics shallow -bc_type outflow -xmin 0 -xmax 50 -ts_use_splitrhsfunction 1
+      args: -da_grid_x 40 -initial 1 -hratio 2 -limit mc -ts_dt 0.1 -ts_max_steps 24 -ts_max_time 7.0 -ts_type mprk -ts_mprk_type 2a22 -physics shallow -bc_type outflow -xmin 0 -xmax 50 -ts_use_splitrhsfunction 1
       output_file: output/ex4_3.out
 TEST*/

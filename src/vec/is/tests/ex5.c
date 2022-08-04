@@ -111,6 +111,7 @@ int main(int argc, char **argv)
   PetscMPIInt     size, rank, mycolor;
   AppCtx          user;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(ProcessOptions(PETSC_COMM_WORLD, &user));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));

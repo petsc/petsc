@@ -824,7 +824,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
   il = 1;
   iu = 1;
 
-  PetscStackCallBLAS("LAPACKstebz",LAPACKstebz_("I", "E", &t_size, &vl, &vu, &il, &iu, &cg->eigen_tol,cg->diag, cg->offd + 1, &e_valus, &e_splts, e_valu,e_iblk, e_splt, e_rwrk, e_iwrk, &info));
+  PetscCallBLAS("LAPACKstebz",LAPACKstebz_("I", "E", &t_size, &vl, &vu, &il, &iu, &cg->eigen_tol,cg->diag, cg->offd + 1, &e_valus, &e_splts, e_valu,e_iblk, e_splt, e_rwrk, e_iwrk, &info));
 
   if ((0 != info) || (1 != e_valus)) {
     /*************************************************************************/
@@ -853,7 +853,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
       t_offd[i] = cg->offd[i];
     }
 
-    PetscStackCallBLAS("LAPACKpttrf",LAPACKpttrf_(&t_size, t_diag, t_offd + 1, &info));
+    PetscCallBLAS("LAPACKpttrf",LAPACKpttrf_(&t_size, t_diag, t_offd + 1, &info));
 
     if (0 == info) break;
 
@@ -871,7 +871,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
   t_soln[0] = -cg->norm_r[0];
   for (i = 1; i < t_size; ++i) t_soln[i] = 0.0;
 
-  PetscStackCallBLAS("LAPACKpttrs",LAPACKpttrs_(&t_size, &nrhs, t_diag, t_offd + 1, t_soln, &nldb, &info));
+  PetscCallBLAS("LAPACKpttrs",LAPACKpttrs_(&t_size, &nrhs, t_diag, t_offd + 1, t_soln, &nldb, &info));
 
   if (0 != info) {
     /*************************************************************************/
@@ -905,7 +905,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
       /* minimum eigenvalue and move along this direction to the boundary.   */
       /***********************************************************************/
 
-      PetscStackCallBLAS("LAPACKstein",LAPACKstein_(&t_size, cg->diag, cg->offd + 1, &e_valus, e_valu,e_iblk, e_splt, e_vect, &nldb,e_rwrk, e_iwrk, e_iwrk + t_size, &info));
+      PetscCallBLAS("LAPACKstein",LAPACKstein_(&t_size, cg->diag, cg->offd + 1, &e_valus, e_valu,e_iblk, e_splt, e_vect, &nldb,e_rwrk, e_iwrk, e_iwrk + t_size, &info));
 
       if (0 != info) {
         /*********************************************************************/
@@ -1006,7 +1006,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
 
       PetscCall(PetscArraycpy(e_rwrk, t_soln, t_size));
 
-      PetscStackCallBLAS("LAPACKpttrs",LAPACKpttrs_(&t_size, &nrhs, t_diag, t_offd + 1, e_rwrk, &nldb, &info));
+      PetscCallBLAS("LAPACKpttrs",LAPACKpttrs_(&t_size, &nrhs, t_diag, t_offd + 1, e_rwrk, &nldb, &info));
 
       if (0 != info) {
         /*********************************************************************/
@@ -1037,7 +1037,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
         t_offd[j] = cg->offd[j];
       }
 
-      PetscStackCallBLAS("LAPACKpttrf",LAPACKpttrf_(&t_size, t_diag, t_offd + 1, &info));
+      PetscCallBLAS("LAPACKpttrf",LAPACKpttrf_(&t_size, t_diag, t_offd + 1, &info));
 
       if (0 != info) {
         /*********************************************************************/
@@ -1057,7 +1057,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
       t_soln[0] = -cg->norm_r[0];
       for (j = 1; j < t_size; ++j) t_soln[j] = 0.0;
 
-      PetscStackCallBLAS("LAPACKpttrs",LAPACKpttrs_(&t_size, &nrhs, t_diag, t_offd + 1, t_soln, &nldb, &info));
+      PetscCallBLAS("LAPACKpttrs",LAPACKpttrs_(&t_size, &nrhs, t_diag, t_offd + 1, t_soln, &nldb, &info));
 
       if (0 != info) {
         /*********************************************************************/
@@ -1223,9 +1223,7 @@ static PetscErrorCode KSPCGDestroy_GLTR(KSP ksp)
   /***************************************************************************/
 
   PetscCall(PetscFree5(cg->diag,cg->offd,cg->alpha,cg->beta,cg->norm_r));
-  if (cg->alloced) {
-    PetscCall(PetscFree2(cg->rwork,cg->iwork));
-  }
+  if (cg->alloced) PetscCall(PetscFree2(cg->rwork,cg->iwork));
 
   /***************************************************************************/
   /* Clear composed functions                                                */

@@ -83,6 +83,7 @@ int main(int argc,char **argv)
   Unit           *todata,*fromdata;
   MPI_Datatype   dtype;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));

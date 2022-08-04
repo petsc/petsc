@@ -31,6 +31,7 @@ int main(int argc,char **args)
   DM             da, da1, coordsda;
   PetscBool      view_x = PETSC_FALSE, view_y = PETSC_FALSE, view_z = PETSC_FALSE;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_SUP, "This is a uniprocessor example only!");
@@ -126,9 +127,7 @@ int main(int argc,char **args)
     }
     PetscCall(VecRestoreArray(x, &a));
   }
-  if (view_x) {
-    PetscCall(VecView(x, PETSC_VIEWER_STDOUT_WORLD));
-  }
+  if (view_x) PetscCall(VecView(x, PETSC_VIEWER_STDOUT_WORLD));
   PetscCall(VecCopy(x,xx));
   /* Split xx */
   PetscCall(VecStrideGatherAll(xx,xxsplit, INSERT_VALUES)); /*YES! 'Gather' means 'split' (or maybe 'scatter'?)! */

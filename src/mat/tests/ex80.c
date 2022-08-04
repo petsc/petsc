@@ -13,12 +13,14 @@ static char help[] = "Partition tiny grid.\n\n";
 
 int main(int argc,char **args)
 {
-  Mat             A;
+  Mat             A,At;
   PetscMPIInt     rank,size;
-  PetscInt        *ia,*ja;
+  PetscInt        *ia,*ja,row;
   MatPartitioning part;
   IS              is,isn;
+  PetscBool       equal;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheck(size == 4,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Must run with 4 processors");
@@ -47,6 +49,20 @@ int main(int argc,char **args)
   PetscCall(MatCreateMPIAdj(PETSC_COMM_WORLD,4,16,ia,ja,NULL,&A));
   PetscCall(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
 
+  /* Create the same matrix but using MatSetValues() */
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&At));
+  PetscCall(MatSetSizes(At,4,4,16,16));
+  PetscCall(MatSetType(At,MATMPIADJ));
+  for (PetscInt i=0; i<4; i++) {
+    row = i + 4*rank;
+    PetscCall(MatSetValues(At,1,&row,ia[i+1]-ia[i],ja + ia[i],NULL,INSERT_VALUES));
+  }
+  PetscCall(MatAssemblyBegin(At,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(At,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatEqual(A,At,&equal));
+  PetscCheck(equal,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Matrices are not equal that should be equal");
+  PetscCall(MatDestroy(&At));
+
   /*
        Partition the graph of the matrix
   */
@@ -72,3 +88,9 @@ int main(int argc,char **args)
   PetscCall(PetscFinalize());
   return 0;
 }
+/*
+   test:
+     requires: parmetis
+     args: -mat_view
+     nsize: 4
+*/

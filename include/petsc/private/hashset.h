@@ -21,8 +21,8 @@
   Level: developer
 
   Developer Notes:
-    Each time this macro is used to create a new hash set type, the make rule for allmanpages should
-    be modified to cause the automatic generation of appropriate manual pages. The manual pages
+    Each time this macro is used to create a new hash set type, the make rule for allmanpages in $PETSC_DIR/makefile should
+    be updated to cause the automatic generation of appropriate manual pages for that type. The manual pages
     are generated from the templated version of the documentation in include/petsc/private/hashset.txt.
 
   References:

@@ -61,6 +61,7 @@ int main(int argc,char **argv)
   };
   n = nsamples = sizeof(Ns)/sizeof(Ns[0]);
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));  /* Up to vectors of local size 2^{n+6} */
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));  /* Run each VecAXPY() m times */

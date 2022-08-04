@@ -331,8 +331,8 @@ PetscErrorCode TSSetUp_Sundials(TS ts)
     flag = CVodeSetMinStep(mem,(realtype)cvode->mindt);
     if (flag) {
       PetscCheck(flag != CV_MEM_NULL,PetscObjectComm((PetscObject)ts),PETSC_ERR_LIB,"CVodeSetMinStep() failed, cvode_mem pointer is NULL");
-      else PetscCheck(flag != CV_ILL_INPUT,PetscObjectComm((PetscObject)ts),PETSC_ERR_LIB,"CVodeSetMinStep() failed, hmin is nonpositive or it exceeds the maximum allowable step size");
-      else SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_LIB,"CVodeSetMinStep() failed");
+      PetscCheck(flag != CV_ILL_INPUT,PetscObjectComm((PetscObject)ts),PETSC_ERR_LIB,"CVodeSetMinStep() failed, hmin is nonpositive or it exceeds the maximum allowable step size");
+      SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_LIB,"CVodeSetMinStep() failed");
     }
   }
   if (cvode->maxdt > 0) {
@@ -405,13 +405,9 @@ PetscErrorCode TSSetFromOptions_Sundials(PetscOptionItems *PetscOptionsObject,TS
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject,"SUNDIALS ODE solver options");
   PetscCall(PetscOptionsEList("-ts_sundials_type","Scheme","TSSundialsSetType",TSSundialsLmmTypes,3,TSSundialsLmmTypes[cvode->cvode_type],&indx,&flag));
-  if (flag) {
-    PetscCall(TSSundialsSetType(ts,(TSSundialsLmmType)indx));
-  }
+  if (flag) PetscCall(TSSundialsSetType(ts,(TSSundialsLmmType)indx));
   PetscCall(PetscOptionsEList("-ts_sundials_gramschmidt_type","Type of orthogonalization","TSSundialsSetGramSchmidtType",TSSundialsGramSchmidtTypes,3,TSSundialsGramSchmidtTypes[cvode->gtype],&indx,&flag));
-  if (flag) {
-    PetscCall(TSSundialsSetGramSchmidtType(ts,(TSSundialsGramSchmidtType)indx));
-  }
+  if (flag) PetscCall(TSSundialsSetGramSchmidtType(ts,(TSSundialsGramSchmidtType)indx));
   PetscCall(PetscOptionsReal("-ts_sundials_atol","Absolute tolerance for convergence","TSSundialsSetTolerance",cvode->abstol,&cvode->abstol,NULL));
   PetscCall(PetscOptionsReal("-ts_sundials_rtol","Relative tolerance for convergence","TSSundialsSetTolerance",cvode->reltol,&cvode->reltol,NULL));
   PetscCall(PetscOptionsReal("-ts_sundials_mindt","Minimum step size","TSSundialsSetMinTimeStep",cvode->mindt,&cvode->mindt,NULL));

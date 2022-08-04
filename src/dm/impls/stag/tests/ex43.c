@@ -80,6 +80,7 @@ int main(int argc,char **argv)
   PetscInt dof[4] = {4, 1, 1, 1};
   PetscInt N[3] = {2, 3, 2};
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* Create DM */

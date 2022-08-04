@@ -15,6 +15,7 @@ int main(int argc,char *argv[])
   Mat            A;
   Vec            x,b,lf;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,0,help));
   comm = PETSC_COMM_WORLD;
   PetscCallMPI(MPI_Comm_size(comm,&size));

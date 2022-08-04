@@ -13,6 +13,7 @@ int main(int argc,char **args)
   ISColoring     coloring;
   PetscMPIInt    size;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 

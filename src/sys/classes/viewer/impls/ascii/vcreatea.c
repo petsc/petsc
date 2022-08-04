@@ -253,9 +253,7 @@ PetscErrorCode  PetscViewerASCIIOpen(MPI_Comm comm,const char name[],PetscViewer
   }
   PetscCall(PetscViewerCreate(comm,lab));
   PetscCall(PetscViewerSetType(*lab,PETSCVIEWERASCII));
-  if (name) {
-    PetscCall(PetscViewerFileSetName(*lab,name));
-  }
+  if (name) PetscCall(PetscViewerFileSetName(*lab,name));
   /* save viewer into communicator if needed later */
   PetscCall(PetscNew(&nv));
   nv->viewer = *lab;

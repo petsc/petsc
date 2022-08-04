@@ -12,6 +12,7 @@ int main(int argc,char **argv)
   PetscInt              n_loc[4];
   DMStagStencilLocation loc[4][3];
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   dim = 2;
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-dim",&dim,NULL));
@@ -47,9 +48,7 @@ int main(int argc,char **argv)
 
   PetscCall(DMSetFromOptions(dm));
   PetscCall(DMSetUp(dm));
-  if (coords) {
-    PetscCall(DMStagSetUniformCoordinatesProduct(dm,-1.0,1.0,-2.0,2.0,-3.0,3.0));
-  }
+  if (coords) PetscCall(DMStagSetUniformCoordinatesProduct(dm,-1.0,1.0,-2.0,2.0,-3.0,3.0));
 
   PetscCall(DMCreateGlobalVector(dm,&x));
   PetscCall(VecSet(x,1.2345));

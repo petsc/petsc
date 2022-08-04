@@ -95,6 +95,7 @@ int main(int argc,char **argv)
   PetscInt     i;                     /* nonlinear solve iteration number */
   PetscBool    no_output = PETSC_FALSE;             /* flag indicating whether to surpress output */
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   comm = PETSC_COMM_WORLD;
   PetscCall(PetscOptionsGetBool(NULL,NULL,"-no_output",&no_output,NULL));

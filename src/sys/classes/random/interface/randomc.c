@@ -170,9 +170,7 @@ PetscErrorCode  PetscRandomSetFromOptions(PetscRandom rnd)
   PetscCall(PetscRandomSetTypeFromOptions_Private(PetscOptionsObject,rnd));
 
   /* Handle specific random generator's options */
-  if (rnd->ops->setfromoptions) {
-    PetscCall((*rnd->ops->setfromoptions)(PetscOptionsObject,rnd));
-  }
+  if (rnd->ops->setfromoptions) PetscCall((*rnd->ops->setfromoptions)(PetscOptionsObject,rnd));
   PetscCall(PetscOptionsInt("-random_seed","Seed to use to generate random numbers","PetscRandomSetSeed",0,&seed,&set));
   if (set) {
     PetscCall(PetscRandomSetSeed(rnd,(unsigned long int)seed));
@@ -283,7 +281,7 @@ PetscErrorCode  PetscRandomView(PetscRandom rnd,PetscViewer viewer)
 
       PetscCall(PetscObjectViewSAWs((PetscObject)rnd,viewer));
       PetscCall(PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/Low",name));
-      PetscStackCallSAWs(SAWs_Register,(dir,&rnd->low,1,SAWs_READ,SAWs_DOUBLE));
+      PetscCallSAWs(SAWs_Register,(dir,&rnd->low,1,SAWs_READ,SAWs_DOUBLE));
     }
 #endif
   }

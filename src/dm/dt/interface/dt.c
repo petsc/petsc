@@ -340,9 +340,9 @@ static PetscErrorCode PetscDTJacobianInverse_Internal(PetscInt m, PetscInt n, co
     PetscCall(PetscMalloc2(m, &pivots, m, &W));
 
     PetscCall(PetscArraycpy(Jinvs, Js, m * m));
-    PetscStackCallBLAS("LAPACKgetrf", LAPACKgetrf_(&bm, &bm, Jinvs, &bm, pivots, &info));
+    PetscCallBLAS("LAPACKgetrf", LAPACKgetrf_(&bm, &bm, Jinvs, &bm, pivots, &info));
     PetscCheck(!info,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error returned from LAPACKgetrf %" PetscInt_FMT,(PetscInt)info);
-    PetscStackCallBLAS("LAPACKgetri", LAPACKgetri_(&bm, Jinvs, &bm, pivots, W, &bm, &info));
+    PetscCallBLAS("LAPACKgetri", LAPACKgetri_(&bm, Jinvs, &bm, pivots, W, &bm, &info));
     PetscCheck(!info,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error returned from LAPACKgetri %" PetscInt_FMT,(PetscInt)info);
     PetscCall(PetscFree2(pivots, W));
   } else if (m < n) {
@@ -361,9 +361,9 @@ static PetscErrorCode PetscDTJacobianInverse_Internal(PetscInt m, PetscInt n, co
       }
     }
 
-    PetscStackCallBLAS("LAPACKgetrf", LAPACKgetrf_(&bm, &bm, JJT, &bm, pivots, &info));
+    PetscCallBLAS("LAPACKgetrf", LAPACKgetrf_(&bm, &bm, JJT, &bm, pivots, &info));
     PetscCheck(!info,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error returned from LAPACKgetrf %" PetscInt_FMT,(PetscInt)info);
-    PetscStackCallBLAS("LAPACKgetri", LAPACKgetri_(&bm, JJT, &bm, pivots, W, &bm, &info));
+    PetscCallBLAS("LAPACKgetri", LAPACKgetri_(&bm, JJT, &bm, pivots, W, &bm, &info));
     PetscCheck(!info,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error returned from LAPACKgetri %" PetscInt_FMT,(PetscInt)info);
     for (i = 0; i < n; i++) {
       for (j = 0; j < m; j++) {
@@ -391,9 +391,9 @@ static PetscErrorCode PetscDTJacobianInverse_Internal(PetscInt m, PetscInt n, co
       }
     }
 
-    PetscStackCallBLAS("LAPACKgetrf", LAPACKgetrf_(&bn, &bn, JTJ, &bn, pivots, &info));
+    PetscCallBLAS("LAPACKgetrf", LAPACKgetrf_(&bn, &bn, JTJ, &bn, pivots, &info));
     PetscCheck(!info,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error returned from LAPACKgetrf %" PetscInt_FMT,(PetscInt)info);
-    PetscStackCallBLAS("LAPACKgetri", LAPACKgetri_(&bn, JTJ, &bn, pivots, W, &bn, &info));
+    PetscCallBLAS("LAPACKgetri", LAPACKgetri_(&bn, JTJ, &bn, pivots, W, &bn, &info));
     PetscCheck(!info,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error returned from LAPACKgetri %" PetscInt_FMT,(PetscInt)info);
     for (i = 0; i < n; i++) {
       for (j = 0; j < m; j++) {
@@ -1387,13 +1387,13 @@ static PetscErrorCode PetscDTSymmetricTridiagonalEigensolve(PetscInt n, PetscRea
   PetscCall(PetscMalloc1(2 * n, &isuppz));
   lwork = -1;
   liwork = -1;
-  PetscStackCallBLAS("LAPACKstegr",LAPACKstegr_(&jobz,&range,&bn,diag,subdiag,&VL,&VU,&IL,&IU,&abstol,&bm,eigs,V,&ldz,isuppz,&workquery,&lwork,&iworkquery,&liwork,&info));
+  PetscCallBLAS("LAPACKstegr",LAPACKstegr_(&jobz,&range,&bn,diag,subdiag,&VL,&VU,&IL,&IU,&abstol,&bm,eigs,V,&ldz,isuppz,&workquery,&lwork,&iworkquery,&liwork,&info));
   PetscCheck(!info,PETSC_COMM_SELF,PETSC_ERR_PLIB,"xSTEGR error");
   lwork = (PetscBLASInt) workquery;
   liwork = (PetscBLASInt) iworkquery;
   PetscCall(PetscMalloc2(lwork, &work, liwork, &iwork));
   PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
-  PetscStackCallBLAS("LAPACKstegr",LAPACKstegr_(&jobz,&range,&bn,diag,subdiag,&VL,&VU,&IL,&IU,&abstol,&bm,eigs,V,&ldz,isuppz,work,&lwork,iwork,&liwork,&info));
+  PetscCallBLAS("LAPACKstegr",LAPACKstegr_(&jobz,&range,&bn,diag,subdiag,&VL,&VU,&IL,&IU,&abstol,&bm,eigs,V,&ldz,isuppz,work,&lwork,iwork,&liwork,&info));
   PetscCall(PetscFPTrapPop());
   PetscCheck(!info,PETSC_COMM_SELF,PETSC_ERR_PLIB,"xSTEGR error");
   PetscCall(PetscFree2(work, iwork));
@@ -1403,7 +1403,7 @@ static PetscErrorCode PetscDTSymmetricTridiagonalEigensolve(PetscInt n, PetscRea
                  tridiagonal matrix.  Z is initialized to the identity
                  matrix. */
   PetscCall(PetscMalloc1(PetscMax(1,2*n-2),&work));
-  PetscStackCallBLAS("LAPACKsteqr",LAPACKsteqr_("I",&bn,diag,subdiag,V,&ldz,work,&info));
+  PetscCallBLAS("LAPACKsteqr",LAPACKsteqr_("I",&bn,diag,subdiag,V,&ldz,work,&info));
   PetscCall(PetscFPTrapPop());
   PetscCheck(!info,PETSC_COMM_SELF,PETSC_ERR_PLIB,"xSTEQR error");
   PetscCall(PetscFree(work));
@@ -1645,11 +1645,8 @@ static PetscErrorCode PetscDTGaussJacobiQuadrature_Internal(PetscInt npoints,Pet
   PetscCheck(alpha > -1.,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"alpha must be > -1.");
   PetscCheck(beta > -1.,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"beta must be > -1.");
 
-  if (newton) {
-    PetscCall(PetscDTGaussJacobiQuadrature_Newton_Internal(npoints, alpha, beta, x, w));
-  } else {
-    PetscCall(PetscDTGaussJacobiQuadrature_GolubWelsch_Internal(npoints, alpha, beta, x, w));
-  }
+  if (newton) PetscCall(PetscDTGaussJacobiQuadrature_Newton_Internal(npoints, alpha, beta, x, w));
+  else PetscCall(PetscDTGaussJacobiQuadrature_GolubWelsch_Internal(npoints, alpha, beta, x, w));
   if (alpha == beta) { /* symmetrize */
     PetscInt i;
     for (i = 0; i < (npoints + 1) / 2; i++) {
@@ -2313,7 +2310,7 @@ static PetscErrorCode PetscDTPseudoInverseQR(PetscInt m,PetscInt mstride,PetscIn
   PetscCall(PetscBLASIntCast(mstride,&lda));
   PetscCall(PetscBLASIntCast(worksize,&ldwork));
   PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
-  PetscStackCallBLAS("LAPACKgeqrf",LAPACKgeqrf_(&M,&N,A,&lda,tau,work,&ldwork,&info));
+  PetscCallBLAS("LAPACKgeqrf",LAPACKgeqrf_(&M,&N,A,&lda,tau,work,&ldwork,&info));
   PetscCall(PetscFPTrapPop());
   PetscCheck(!info,PETSC_COMM_SELF,PETSC_ERR_LIB,"xGEQRF error");
   R = A; /* Upper triangular part of A now contains R, the rest contains the elementary reflectors */
@@ -2322,13 +2319,13 @@ static PetscErrorCode PetscDTPseudoInverseQR(PetscInt m,PetscInt mstride,PetscIn
   Q = Ainv;
   PetscCall(PetscArraycpy(Q,A,mstride*n));
   K = N;                        /* full rank */
-  PetscStackCallBLAS("LAPACKorgqr",LAPACKorgqr_(&M,&N,&K,Q,&lda,tau,work,&ldwork,&info));
+  PetscCallBLAS("LAPACKorgqr",LAPACKorgqr_(&M,&N,&K,Q,&lda,tau,work,&ldwork,&info));
   PetscCheck(!info,PETSC_COMM_SELF,PETSC_ERR_LIB,"xORGQR/xUNGQR error");
 
   /* Compute A^{-T} = (R^{-1} Q^T)^T = Q R^{-T} */
   Alpha = 1.0;
   ldb = lda;
-  PetscStackCallBLAS("BLAStrsm",BLAStrsm_("Right","Upper","ConjugateTranspose","NotUnitTriangular",&M,&N,&Alpha,R,&lda,Q,&ldb));
+  PetscCallBLAS("BLAStrsm",BLAStrsm_("Right","Upper","ConjugateTranspose","NotUnitTriangular",&M,&N,&Alpha,R,&lda,Q,&ldb));
   /* Ainv is Q, overwritten with inverse */
 
 #if defined(PETSC_USE_COMPLEX)

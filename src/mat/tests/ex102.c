@@ -10,6 +10,7 @@ int main(int argc,char **args)
   PetscInt       M = 5, N = 7;
   PetscBool      flg;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-m",&M,NULL));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&N,NULL));
@@ -77,9 +78,7 @@ int main(int argc,char **args)
   PetscCall(MatDiagonalScale(X,c,NULL));
   PetscCall(MatMatMult(U,X,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&LRe));
   PetscCall(MatDestroy(&X));
-  if (A) {
-    PetscCall(MatAYPX(LRe,1.0,A,DIFFERENT_NONZERO_PATTERN));
-  }
+  if (A) PetscCall(MatAYPX(LRe,1.0,A,DIFFERENT_NONZERO_PATTERN));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
          Create test vectors

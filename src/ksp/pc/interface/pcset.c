@@ -160,9 +160,7 @@ PetscErrorCode  PCSetFromOptions(PC pc)
 
   PetscCall(PetscOptionsBool("-pc_use_amat","use Amat (instead of Pmat) to define preconditioner in nested inner solves","PCSetUseAmat",pc->useAmat,&pc->useAmat,NULL));
 
-  if (pc->ops->setfromoptions) {
-    PetscCall((*pc->ops->setfromoptions)(PetscOptionsObject,pc));
-  }
+  if (pc->ops->setfromoptions) PetscCall((*pc->ops->setfromoptions)(PetscOptionsObject,pc));
 
   skipoptions:
   /* process any options handlers added with PetscObjectAddOptionsHandler() */

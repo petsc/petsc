@@ -16,6 +16,7 @@ int main(int argc, char **argv)
   PetscInt           maxleafB;
   PetscBool          flag = PETSC_FALSE;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheck(size == 1,PETSC_COMM_WORLD, PETSC_ERR_USER, "Only coded for one MPI process");

@@ -107,55 +107,52 @@ PetscErrorCode MatViennaCLCopyFromGPU(Mat A, const ViennaCLAIJMatrix *Agpu)
   if (A->offloadmask == PETSC_OFFLOAD_UNALLOCATED && Agpu) {
     try {
       PetscCheck(!a->compressedrow.use,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "ViennaCL: Cannot handle row compression for GPU matrices");
-      else {
-
-        PetscCheck((PetscInt)Agpu->size1() == m,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "GPU matrix has %lu rows, should be %" PetscInt_FMT, Agpu->size1(), m);
-        a->nz           = Agpu->nnz();
-        a->maxnz        = a->nz; /* Since we allocate exactly the right amount */
-        A->preallocated = PETSC_TRUE;
-        if (a->singlemalloc) {
-          if (a->a) PetscCall(PetscFree3(a->a,a->j,a->i));
-        } else {
-          if (a->i) PetscCall(PetscFree(a->i));
-          if (a->j) PetscCall(PetscFree(a->j));
-          if (a->a) PetscCall(PetscFree(a->a));
-        }
-        PetscCall(PetscMalloc3(a->nz,&a->a,a->nz,&a->j,m+1,&a->i));
-        PetscCall(PetscLogObjectMemory((PetscObject)A, a->nz*(sizeof(PetscScalar)+sizeof(PetscInt))+(m+1)*sizeof(PetscInt)));
-
-        a->singlemalloc = PETSC_TRUE;
-
-        /* Setup row lengths */
-        PetscCall(PetscFree(a->imax));
-        PetscCall(PetscFree(a->ilen));
-        PetscCall(PetscMalloc1(m,&a->imax));
-        PetscCall(PetscMalloc1(m,&a->ilen));
-        PetscCall(PetscLogObjectMemory((PetscObject)A, 2*m*sizeof(PetscInt)));
-
-        /* Copy data back from GPU */
-        viennacl::backend::typesafe_host_array<unsigned int> row_buffer; row_buffer.raw_resize(Agpu->handle1(), Agpu->size1() + 1);
-
-        // copy row array
-        viennacl::backend::memory_read(Agpu->handle1(), 0, row_buffer.raw_size(), row_buffer.get());
-        (a->i)[0] = row_buffer[0];
-        for (PetscInt i = 0; i < (PetscInt)Agpu->size1(); ++i) {
-          (a->i)[i+1] = row_buffer[i+1];
-          a->imax[i]  = a->ilen[i] = a->i[i+1] - a->i[i];  //Set imax[] and ilen[] arrays at the same time as i[] for better cache reuse
-        }
-
-        // copy column indices
-        viennacl::backend::typesafe_host_array<unsigned int> col_buffer; col_buffer.raw_resize(Agpu->handle2(), Agpu->nnz());
-        viennacl::backend::memory_read(Agpu->handle2(), 0, col_buffer.raw_size(), col_buffer.get());
-        for (PetscInt i=0; i < (PetscInt)Agpu->nnz(); ++i)
-          (a->j)[i] = col_buffer[i];
-
-        // copy nonzero entries directly to destination (no conversion required)
-        viennacl::backend::memory_read(Agpu->handle(), 0, sizeof(PetscScalar)*Agpu->nnz(), a->a);
-
-        PetscCall(PetscLogGpuToCpu(row_buffer.raw_size()+col_buffer.raw_size()+(Agpu->nnz()*sizeof(PetscScalar))));
-        ViennaCLWaitForGPU();
-        /* TODO: Once a->diag is moved out of MatAssemblyEnd(), invalidate it here. */
+      PetscCheck((PetscInt)Agpu->size1() == m,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "GPU matrix has %lu rows, should be %" PetscInt_FMT, Agpu->size1(), m);
+      a->nz           = Agpu->nnz();
+      a->maxnz        = a->nz; /* Since we allocate exactly the right amount */
+      A->preallocated = PETSC_TRUE;
+      if (a->singlemalloc) {
+        if (a->a) PetscCall(PetscFree3(a->a,a->j,a->i));
+      } else {
+        if (a->i) PetscCall(PetscFree(a->i));
+        if (a->j) PetscCall(PetscFree(a->j));
+        if (a->a) PetscCall(PetscFree(a->a));
       }
+      PetscCall(PetscMalloc3(a->nz,&a->a,a->nz,&a->j,m+1,&a->i));
+      PetscCall(PetscLogObjectMemory((PetscObject)A, a->nz*(sizeof(PetscScalar)+sizeof(PetscInt))+(m+1)*sizeof(PetscInt)));
+
+      a->singlemalloc = PETSC_TRUE;
+
+      /* Setup row lengths */
+      PetscCall(PetscFree(a->imax));
+      PetscCall(PetscFree(a->ilen));
+      PetscCall(PetscMalloc1(m,&a->imax));
+      PetscCall(PetscMalloc1(m,&a->ilen));
+      PetscCall(PetscLogObjectMemory((PetscObject)A, 2*m*sizeof(PetscInt)));
+
+      /* Copy data back from GPU */
+      viennacl::backend::typesafe_host_array<unsigned int> row_buffer; row_buffer.raw_resize(Agpu->handle1(), Agpu->size1() + 1);
+
+      // copy row array
+      viennacl::backend::memory_read(Agpu->handle1(), 0, row_buffer.raw_size(), row_buffer.get());
+      (a->i)[0] = row_buffer[0];
+      for (PetscInt i = 0; i < (PetscInt)Agpu->size1(); ++i) {
+        (a->i)[i+1] = row_buffer[i+1];
+        a->imax[i]  = a->ilen[i] = a->i[i+1] - a->i[i];  //Set imax[] and ilen[] arrays at the same time as i[] for better cache reuse
+      }
+
+      // copy column indices
+      viennacl::backend::typesafe_host_array<unsigned int> col_buffer; col_buffer.raw_resize(Agpu->handle2(), Agpu->nnz());
+      viennacl::backend::memory_read(Agpu->handle2(), 0, col_buffer.raw_size(), col_buffer.get());
+      for (PetscInt i=0; i < (PetscInt)Agpu->nnz(); ++i)
+        (a->j)[i] = col_buffer[i];
+
+      // copy nonzero entries directly to destination (no conversion required)
+      viennacl::backend::memory_read(Agpu->handle(), 0, sizeof(PetscScalar)*Agpu->nnz(), a->a);
+
+      PetscCall(PetscLogGpuToCpu(row_buffer.raw_size()+col_buffer.raw_size()+(Agpu->nnz()*sizeof(PetscScalar))));
+      ViennaCLWaitForGPU();
+      /* TODO: Once a->diag is moved out of MatAssemblyEnd(), invalidate it here. */
     } catch(std::exception const & ex) {
       SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "ViennaCL error: %s", ex.what());
     }

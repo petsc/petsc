@@ -13,6 +13,7 @@ int main(int argc,char **args)
   PetscScalar    *v;
   PetscMPIInt    rank,size;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
@@ -65,9 +66,7 @@ int main(int argc,char **args)
   PetscCall(MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY));
 
   /* Test MatView() */
-  if (mats_view) {
-    PetscCall(MatView(C,PETSC_VIEWER_STDOUT_WORLD));
-  }
+  if (mats_view) PetscCall(MatView(C,PETSC_VIEWER_STDOUT_WORLD));
 
   /* Test MatMissingDiagonal() */
   PetscCall(MatMissingDiagonal(C,&flg,NULL));

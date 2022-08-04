@@ -47,6 +47,7 @@ int main(int argc,char **argv)
   IS             iss,ist,is[2];
   Vec            right,left,perm;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)NULL,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-m_local",&m,NULL));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-n_local",&n,NULL));

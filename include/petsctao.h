@@ -12,21 +12,21 @@ PETSC_EXTERN PetscErrorCode MatDSFischer(Mat,Vec,Vec,Vec,Vec,PetscReal,Vec,Vec,V
 PETSC_EXTERN PetscErrorCode TaoSoftThreshold(Vec,PetscReal,PetscReal,Vec);
 
 /*E
-  TaoSubsetType - PetscInt representing the way TAO handles active sets
+  TaoSubsetType - Type representing the way Tao handles active sets
 
-+ TAO_SUBSET_SUBVEC - TAO uses PETSc's MatCreateSubMatrix and VecGetSubVector
-. TAO_SUBSET_MASK - Matrices are zeroed out corresponding to active set entries
-- TAO_SUBSET_MATRIXFREE - Same as TAO_SUBSET_MASK but it can be applied to matrix-free operators
++ `TAO_SUBSET_SUBVEC` - Tao uses PETSc's MatCreateSubMatrix and VecGetSubVector
+. `TAO_SUBSET_MASK` - Matrices are zeroed out corresponding to active set entries
+- `TAO_SUBSET_MATRIXFREE` - Same as `TAO_SUBSET_MASK` but it can be applied to matrix-free operators
 
   Options database keys:
-. -different_hessian - TAO will use a copy of the hessian operator for masking.  By default
-                       TAO will directly alter the hessian operator.
+. -different_hessian - Tao will use a copy of the hessian operator for masking.  By default
+                       Tao will directly alter the hessian operator.
   Level: intermediate
 
 E*/
-
 typedef enum {TAO_SUBSET_SUBVEC,TAO_SUBSET_MASK,TAO_SUBSET_MATRIXFREE} TaoSubsetType;
 PETSC_EXTERN const char *const TaoSubsetTypes[];
+
 /*S
      Tao - Abstract PETSc object that manages nonlinear optimization solves
 
@@ -34,9 +34,10 @@ PETSC_EXTERN const char *const TaoSubsetTypes[];
 
 .seealso `TaoCreate()`, `TaoDestroy()`, `TaoSetType()`, `TaoType`
 S*/
+typedef struct _p_Tao*   Tao;
 
 /*E
-     TaoADMMUpdateType - Determine spectral penalty update routine for lagrange augmented term for ADMM.
+     TaoADMMUpdateType - Determine spectral penalty update routine for Lagrange augmented term for ADMM.
 
   Level: advanced
 
@@ -44,6 +45,7 @@ S*/
 E*/
 typedef enum {TAO_ADMM_UPDATE_BASIC,TAO_ADMM_UPDATE_ADAPTIVE,TAO_ADMM_UPDATE_ADAPTIVE_RELAXED} TaoADMMUpdateType;
 PETSC_EXTERN const char *const TaoADMMUpdateTypes[];
+
 /*MC
      TAO_ADMM_UPDATE_BASIC - Use same spectral penalty set at the beginning. No update
 
@@ -83,6 +85,7 @@ M*/
 E*/
 typedef enum {TAO_ADMM_REGULARIZER_USER,TAO_ADMM_REGULARIZER_SOFT_THRESH} TaoADMMRegularizerType;
 PETSC_EXTERN const char *const TaoADMMRegularizerTypes[];
+
 /*MC
      TAO_ADMM_REGULARIZER_USER - User provided routines for regularizer part of ADMM
 
@@ -117,13 +120,12 @@ E*/
 typedef enum {TAO_ALMM_CLASSIC,TAO_ALMM_PHR} TaoALMMType;
 PETSC_EXTERN const char *const TaoALMMTypes[];
 
-typedef struct _p_Tao*   Tao;
-
 /*J
-        TaoType - String with the name of a TAO method
+        TaoType - String with the name of a Tao method
 
        Level: beginner
 
+.seealso `Tao`, `TaoCreate()`, `TaoSetType()`
 J*/
 typedef const char *TaoType;
 #define TAOLMVM     "lmvm"
@@ -164,7 +166,7 @@ PETSC_EXTERN PetscClassId TAO_CLASSID;
 PETSC_EXTERN PetscFunctionList TaoList;
 
 /*E
-    TaoConvergedReason - reason a TAO method was said to have converged or diverged
+    TaoConvergedReason - reason a Tao method was said to have converged or diverged
 
    Level: beginner
 
@@ -179,7 +181,7 @@ $      testing with -pc_type lu to eliminate the linear solver as the cause of t
        The string versions of these are in TAOConvergedReasons, if you change any value here you must
      also adjust that array.
 
-.seealso: `TaoSolve()`, `TaoGetConvergedReason()`, `KSPConvergedReason`, `SNESConvergedReason`, `TSConvergedReason`
+.seealso: `Tao`, `TaoSolve()`, `TaoGetConvergedReason()`, `KSPConvergedReason`, `SNESConvergedReason`, `TSConvergedReason`
 E*/
 typedef enum {/* converged */
   TAO_CONVERGED_GATOL         =  3, /* ||g(X)|| < gatol */

@@ -53,6 +53,7 @@ int main(int argc,char **argv)
   PetscInt       lits[100];
   AppCtx         user;               /* user-defined work context */
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char *)0,help));
   /* Allocate vectors */
   PetscCall(VecCreateSeq(MPI_COMM_SELF,NPARAMETERS,&x));

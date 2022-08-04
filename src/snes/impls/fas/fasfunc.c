@@ -24,9 +24,7 @@ PetscErrorCode  SNESFASSetType(SNES snes,SNESFASType fastype)
   PetscValidLogicalCollectiveEnum(snes,fastype,2);
   fas = (SNES_FAS*)snes->data;
   fas->fastype = fastype;
-  if (fas->next) {
-    PetscCall(SNESFASSetType(fas->next, fastype));
-  }
+  if (fas->next) PetscCall(SNESFASSetType(fas->next, fastype));
   PetscFunctionReturn(0);
 }
 
@@ -214,12 +212,8 @@ PetscErrorCode SNESFASSetNumberSmoothUp(SNES snes, PetscInt n)
   if (!fas->smoothu && fas->level != 0) {
     PetscCall(SNESFASCycleCreateSmoother_Private(snes, &fas->smoothu));
   }
-  if (fas->smoothu) {
-    PetscCall(SNESSetTolerances(fas->smoothu, fas->smoothu->abstol, fas->smoothu->rtol, fas->smoothu->stol, n, fas->smoothu->max_funcs));
-  }
-  if (fas->next) {
-    PetscCall(SNESFASSetNumberSmoothUp(fas->next, n));
-  }
+  if (fas->smoothu) PetscCall(SNESSetTolerances(fas->smoothu, fas->smoothu->abstol, fas->smoothu->rtol, fas->smoothu->stol, n, fas->smoothu->max_funcs));
+  if (fas->next) PetscCall(SNESFASSetNumberSmoothUp(fas->next, n));
   PetscFunctionReturn(0);
 }
 
@@ -253,9 +247,7 @@ PetscErrorCode SNESFASSetNumberSmoothDown(SNES snes, PetscInt n)
   PetscCall(SNESSetTolerances(fas->smoothd, fas->smoothd->abstol, fas->smoothd->rtol, fas->smoothd->stol, n, fas->smoothd->max_funcs));
 
   fas->max_down_it = n;
-  if (fas->next) {
-    PetscCall(SNESFASSetNumberSmoothDown(fas->next, n));
-  }
+  if (fas->next) PetscCall(SNESFASSetNumberSmoothDown(fas->next, n));
   PetscFunctionReturn(0);
 }
 
@@ -297,9 +289,7 @@ PetscErrorCode SNESFASSetContinuation(SNES snes,PetscBool continuation)
   PetscCall(SNESSetType(fas->smoothu,SNESNEWTONLS));
   PetscCall(SNESSetTolerances(fas->smoothu,fas->fine->abstol,fas->fine->rtol,fas->fine->stol,50,100));
   fas->continuation = continuation;
-  if (fas->next) {
-    PetscCall(SNESFASSetContinuation(fas->next,continuation));
-  }
+  if (fas->next) PetscCall(SNESFASSetContinuation(fas->next,continuation));
   PetscFunctionReturn(0);
 }
 
@@ -333,9 +323,7 @@ PetscErrorCode SNESFASSetCycles(SNES snes, PetscInt cycles)
   if (!isFine) {
     PetscCall(SNESSetTolerances(snes, snes->abstol, snes->rtol, snes->stol, cycles, snes->max_funcs));
   }
-  if (fas->next) {
-    PetscCall(SNESFASSetCycles(fas->next, cycles));
-  }
+  if (fas->next) PetscCall(SNESFASSetCycles(fas->next, cycles));
   PetscFunctionReturn(0);
 }
 
@@ -1139,9 +1127,7 @@ PetscErrorCode SNESFASFullSetDownSweep(SNES snes,PetscBool swp)
   PetscValidHeaderSpecificType(snes,SNES_CLASSID,1,SNESFAS);
   fas = (SNES_FAS*)snes->data;
   fas->full_downsweep = swp;
-  if (fas->next) {
-    PetscCall(SNESFASFullSetDownSweep(fas->next,swp));
-  }
+  if (fas->next) PetscCall(SNESFASFullSetDownSweep(fas->next,swp));
   PetscFunctionReturn(0);
 }
 
@@ -1171,9 +1157,7 @@ PetscErrorCode SNESFASFullSetTotal(SNES snes,PetscBool total)
   PetscValidHeaderSpecificType(snes,SNES_CLASSID,1,SNESFAS);
   fas = (SNES_FAS*)snes->data;
   fas->full_total = total;
-  if (fas->next) {
-    PetscCall(SNESFASFullSetTotal(fas->next,total));
-  }
+  if (fas->next) PetscCall(SNESFASFullSetTotal(fas->next,total));
   PetscFunctionReturn(0);
 }
 

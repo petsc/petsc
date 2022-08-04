@@ -491,9 +491,7 @@ PETSC_INTERN PetscErrorCode MatKAIJ_build_AIJ_OAIJ(Mat A)
     } else T = a->T;
     PetscCall(MatCreateKAIJ(mpiaij->A,a->p,a->q,a->S,T,&a->AIJ));
     PetscCall(MatCreateKAIJ(mpiaij->B,a->p,a->q,NULL,T,&a->OAIJ));
-    if (a->isTI) {
-      PetscCall(PetscFree(T));
-    }
+    if (a->isTI) PetscCall(PetscFree(T));
     a->state = state;
   }
 
@@ -857,7 +855,8 @@ PetscErrorCode MatSOR_SeqKAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Petsc
   PetscCheck(!fshift,PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for diagonal shift");
   PetscCheck(!(flag & SOR_APPLY_UPPER) && !(flag & SOR_APPLY_LOWER),PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for applying upper or lower triangular parts");
   PetscCheck(p == q,PETSC_COMM_SELF,PETSC_ERR_SUP,"MatSOR for KAIJ: No support for non-square dense blocks");
-  else        {bs = p; bs2 = bs*bs; }
+  bs = p;
+  bs2 = bs*bs;
 
   if (!m) PetscFunctionReturn(0);
 

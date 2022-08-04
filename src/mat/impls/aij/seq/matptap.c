@@ -37,7 +37,7 @@ PetscErrorCode MatProductSymbolic_PtAP_SeqAIJ_SeqAIJ(Mat C)
     Mat_MatTransMatMult *atb;
 
     PetscCall(PetscNew(&atb));
-    PetscCall(MatTranspose_SeqAIJ(P,MAT_INITIAL_MATRIX,&Pt));
+    PetscCall(MatTranspose(P,MAT_INITIAL_MATRIX,&Pt));
     PetscCall(MatMatMatMultSymbolic_SeqAIJ_SeqAIJ_SeqAIJ(Pt,A,P,fill,C));
 
     atb->At                = Pt;
@@ -286,7 +286,7 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C)
   MatCheckProduct(C,3);
   atb  = (Mat_MatTransMatMult*)C->product->data;
   PetscCheck(atb,PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Missing data structure");
-  PetscCall(MatTranspose_SeqAIJ(P,MAT_REUSE_MATRIX,&atb->At));
+  PetscCall(MatTranspose(P,MAT_REUSE_MATRIX,&atb->At));
   PetscCheck(C->ops->matmultnumeric,PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Missing numeric operation");
   /* when using rap, MatMatMatMultSymbolic used a different data */
   if (atb->data) C->product->data = atb->data;

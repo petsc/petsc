@@ -189,9 +189,12 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
         } else if (outputState == 1) {
           outputState = 4;
           doOutput    = 1;
-        } else if (outputState == 2) doOutput = 0;
-        else PetscCheck(outputState != 3,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Tried to output CELL_DATA again after intervening POINT_DATA");
-        else if (outputState == 4) doOutput = 0;
+        } else if (outputState == 2) {
+          doOutput = 0;
+        } else {
+          PetscCheck(outputState != 3,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Tried to output CELL_DATA again after intervening POINT_DATA");
+          if (outputState == 4) doOutput = 0;
+        }
 
         if (doOutput) {
           PetscCall(PetscViewerASCIIPrintf(viewer, "CELL_DATA %" PetscInt_FMT "\n", xin->map->N/bs));
@@ -677,7 +680,7 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   }
 #endif
 
-  PetscStackCallHDF5Return(filespace,H5Screate_simple,(dim, dims, maxDims));
+  PetscCallHDF5Return(filespace,H5Screate_simple,(dim, dims, maxDims));
 
 #if defined(PETSC_USE_REAL_SINGLE)
   memscalartype = H5T_NATIVE_FLOAT;
@@ -696,16 +699,16 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   PetscCall(PetscObjectGetName((PetscObject) xin, &vecname));
   if (H5Lexists(group, vecname, H5P_DEFAULT) < 1) {
     /* Create chunk */
-    PetscStackCallHDF5Return(chunkspace,H5Pcreate,(H5P_DATASET_CREATE));
-    PetscStackCallHDF5(H5Pset_chunk,(chunkspace, dim, chunkDims));
+    PetscCallHDF5Return(chunkspace,H5Pcreate,(H5P_DATASET_CREATE));
+    PetscCallHDF5(H5Pset_chunk,(chunkspace, dim, chunkDims));
 
-    PetscStackCallHDF5Return(dset_id,H5Dcreate2,(group, vecname, filescalartype, filespace, H5P_DEFAULT, chunkspace, H5P_DEFAULT));
-    PetscStackCallHDF5(H5Pclose,(chunkspace));
+    PetscCallHDF5Return(dset_id,H5Dcreate2,(group, vecname, filescalartype, filespace, H5P_DEFAULT, chunkspace, H5P_DEFAULT));
+    PetscCallHDF5(H5Pclose,(chunkspace));
   } else {
-    PetscStackCallHDF5Return(dset_id,H5Dopen2,(group, vecname, H5P_DEFAULT));
-    PetscStackCallHDF5(H5Dset_extent,(dset_id, dims));
+    PetscCallHDF5Return(dset_id,H5Dopen2,(group, vecname, H5P_DEFAULT));
+    PetscCallHDF5(H5Dset_extent,(dset_id, dims));
   }
-  PetscStackCallHDF5(H5Sclose,(filespace));
+  PetscCallHDF5(H5Sclose,(filespace));
 
   /* Each process defines a dataset and writes it to the hyperslab in the file */
   dim = 0;
@@ -724,10 +727,10 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   ++dim;
 #endif
   if (xin->map->n > 0 || H5_VERSION_GE(1,10,0)) {
-    PetscStackCallHDF5Return(memspace,H5Screate_simple,(dim, count, NULL));
+    PetscCallHDF5Return(memspace,H5Screate_simple,(dim, count, NULL));
   } else {
     /* Can't create dataspace with zero for any dimension, so create null dataspace. */
-    PetscStackCallHDF5Return(memspace,H5Screate,(H5S_NULL));
+    PetscCallHDF5Return(memspace,H5Screate,(H5S_NULL));
   }
 
   /* Select hyperslab in the file */
@@ -748,23 +751,23 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   ++dim;
 #endif
   if (xin->map->n > 0 || H5_VERSION_GE(1,10,0)) {
-    PetscStackCallHDF5Return(filespace,H5Dget_space,(dset_id));
-    PetscStackCallHDF5(H5Sselect_hyperslab,(filespace, H5S_SELECT_SET, offset, NULL, count, NULL));
+    PetscCallHDF5Return(filespace,H5Dget_space,(dset_id));
+    PetscCallHDF5(H5Sselect_hyperslab,(filespace, H5S_SELECT_SET, offset, NULL, count, NULL));
   } else {
     /* Create null filespace to match null memspace. */
-    PetscStackCallHDF5Return(filespace,H5Screate,(H5S_NULL));
+    PetscCallHDF5Return(filespace,H5Screate,(H5S_NULL));
   }
 
   PetscCall(VecGetArrayRead(xin, &x));
-  PetscStackCallHDF5(H5Dwrite,(dset_id, memscalartype, memspace, filespace, hdf5->dxpl_id, x));
-  PetscStackCallHDF5(H5Fflush,(file_id, H5F_SCOPE_GLOBAL));
+  PetscCallHDF5(H5Dwrite,(dset_id, memscalartype, memspace, filespace, hdf5->dxpl_id, x));
+  PetscCallHDF5(H5Fflush,(file_id, H5F_SCOPE_GLOBAL));
   PetscCall(VecRestoreArrayRead(xin, &x));
 
   /* Close/release resources */
-  PetscStackCallHDF5(H5Gclose,(group));
-  PetscStackCallHDF5(H5Sclose,(filespace));
-  PetscStackCallHDF5(H5Sclose,(memspace));
-  PetscStackCallHDF5(H5Dclose,(dset_id));
+  PetscCallHDF5(H5Gclose,(group));
+  PetscCallHDF5(H5Sclose,(filespace));
+  PetscCallHDF5(H5Sclose,(memspace));
+  PetscCallHDF5(H5Dclose,(dset_id));
 
 #if defined(PETSC_USE_COMPLEX)
   {
@@ -842,9 +845,7 @@ PETSC_EXTERN PetscErrorCode VecView_MPI(Vec xin,PetscViewer viewer)
   } else if (ismatlab) {
     PetscCall(VecView_MPI_Matlab(xin,viewer));
 #endif
-  } else if (isglvis) {
-    PetscCall(VecView_GLVis(xin,viewer));
-  }
+  } else if (isglvis) PetscCall(VecView_GLVis(xin,viewer));
   PetscFunctionReturn(0);
 }
 
@@ -882,7 +883,7 @@ PetscErrorCode VecSetValues_MPI(Vec xin,PetscInt ni,const PetscInt ix[],const Pe
   PetscFunctionBegin;
   if (PetscDefined(USE_DEBUG)) {
     PetscCheck(xin->stash.insertmode != INSERT_VALUES || addv != ADD_VALUES,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"You have already inserted values; you cannot now add");
-    else PetscCheck(xin->stash.insertmode != ADD_VALUES || addv != INSERT_VALUES,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"You have already added values; you cannot now insert");
+    PetscCheck(xin->stash.insertmode != ADD_VALUES || addv != INSERT_VALUES,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"You have already added values; you cannot now insert");
   }
   PetscCall(VecGetArray(xin,&xx));
   xin->stash.insertmode = addv;
@@ -925,7 +926,7 @@ PetscErrorCode VecSetValuesBlocked_MPI(Vec xin,PetscInt ni,const PetscInt ix[],c
   PetscCall(VecGetArray(xin,&xx));
   if (PetscDefined(USE_DEBUG)) {
     PetscCheck(xin->stash.insertmode != INSERT_VALUES || addv != ADD_VALUES,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"You have already inserted values; you cannot now add");
-    else PetscCheck(xin->stash.insertmode != ADD_VALUES || addv != INSERT_VALUES,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"You have already added values; you cannot now insert");
+    PetscCheck(xin->stash.insertmode != ADD_VALUES || addv != INSERT_VALUES,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"You have already added values; you cannot now insert");
   }
   xin->stash.insertmode = addv;
 

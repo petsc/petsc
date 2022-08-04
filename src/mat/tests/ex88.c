@@ -154,6 +154,7 @@ int main(int argc,char **args)
   User              user;
   PetscInt          i;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCall(MatCreateSeqAIJ(PETSC_COMM_WORLD,2,2,2,NULL,&A));
   PetscCall(MatSetUp(A));

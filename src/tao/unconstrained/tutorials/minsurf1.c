@@ -44,6 +44,7 @@ int main(int argc, char **argv)
   AppCtx             user;              /* user-defined work context */
 
   /* Initialize TAO,PETSc */
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv,(char *)0,help));
 
   PetscCallMPI(MPI_Comm_size(MPI_COMM_WORLD,&size));
@@ -90,9 +91,7 @@ int main(int argc, char **argv)
 
   /* Limit the number of iterations in the KSP linear solver */
   PetscCall(TaoGetKSP(tao,&ksp));
-  if (ksp) {
-    PetscCall(KSPSetTolerances(ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,user.mx*user.my));
-  }
+  if (ksp) PetscCall(KSPSetTolerances(ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,user.mx*user.my));
 
   /* SOLVE THE APPLICATION */
   PetscCall(TaoSolve(tao));

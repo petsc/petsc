@@ -13,6 +13,7 @@ int main(int argc,char **argv)
   const char     *formatstr = "Greetings %D %3.2f %g\n";
   PetscInt       i,twentytwo = 22;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* test that PetscFormatConvertGetSize() correctly counts needed amount of space */

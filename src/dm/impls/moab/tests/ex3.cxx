@@ -79,6 +79,7 @@ int main(int argc, char **argv)
   PetscInt      *degrees;
   PetscBool      createR;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   comm = PETSC_COMM_WORLD;
   createR = PETSC_FALSE;

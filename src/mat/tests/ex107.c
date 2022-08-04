@@ -11,6 +11,7 @@ int main(int argc,char **argv)
   PetscScalar    v;
   PetscBool      struct_only=PETSC_TRUE;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
@@ -24,9 +25,7 @@ int main(int argc,char **argv)
   PetscCall(MatCreate(PETSC_COMM_WORLD,&mat));
   PetscCall(MatSetSizes(mat,PETSC_DECIDE,PETSC_DECIDE,m,n));
   PetscCall(MatSetFromOptions(mat));
-  if (struct_only) {
-    PetscCall(MatSetOption(mat,MAT_STRUCTURE_ONLY,PETSC_TRUE));
-  }
+  if (struct_only) PetscCall(MatSetOption(mat,MAT_STRUCTURE_ONLY,PETSC_TRUE));
   PetscCall(MatSetUp(mat));
   PetscCall(MatGetOwnershipRange(mat,&rstart,&rend));
   for (i=rstart; i<rend; i++) {

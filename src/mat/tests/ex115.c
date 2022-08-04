@@ -14,6 +14,7 @@ int main(int argc,char **args)
   PetscReal          norm;
   char               file[256];
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCall(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg));
 #if defined(PETSC_USE_COMPLEX)

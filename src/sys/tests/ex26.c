@@ -22,7 +22,8 @@ int main(int argc, char **argv)
   if (!initialized) return 1;
 #endif
   for (i = 0; i < imax; ++i) {
-    PetscCall(PetscInitialize(&argc, &argv, (char*) 0, help));
+    PetscFunctionBeginUser;
+  PetscCall(PetscInitialize(&argc, &argv, (char*) 0, help));
     PetscCall(PetscFinalize());
 #if defined(PETSC_HAVE_ELEMENTAL)
     PetscCall(PetscElementalInitialized(&initialized));
@@ -34,7 +35,8 @@ int main(int argc, char **argv)
   PetscCall(PetscElementalInitialized(&initialized));
   if (initialized) return 1;
   for (i = 0; i < 32; ++i) { /* increasing the upper bound will generate an error in Elemental */
-    PetscCall(PetscInitialize(&argc, &argv, (char*) 0, help));
+    PetscFunctionBeginUser;
+  PetscCall(PetscInitialize(&argc, &argv, (char*) 0, help));
     PetscCall(PetscElementalInitialized(&initialized));
     PetscCheck(initialized,PETSC_COMM_WORLD, PETSC_ERR_LIB, "Uninitialized Elemental");
     PetscCall(PetscFinalize());

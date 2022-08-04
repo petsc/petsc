@@ -39,6 +39,7 @@ int main(int argc,char **args)
   PetscScalar    one = 1.0,value[3];
   PetscBool      flg;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));

@@ -11,6 +11,7 @@ int main(int argc,char **argv)
 {
   DM             da;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   /* Build of the DMDA -- 1D -- boundary_none */
   PetscCall(PetscPrintf(PETSC_COMM_WORLD,"1D -- DM_BOUNDARY_NONE\n"));

@@ -601,9 +601,7 @@ static PetscErrorCode THISetUpDM(THI thi,DM dm)
   if (thi->tridiagonal) {       /* Reset coarse Jacobian evaluation */
     PetscCall(DMDASNESSetJacobianLocal(dm,(DMDASNESJacobian)THIJacobianLocal_3D_Full,thi));
   }
-  if (thi->coarse2d) {
-    PetscCall(DMDASNESSetJacobianLocal(dm,(DMDASNESJacobian)THIJacobianLocal_2D,thi));
-  }
+  if (thi->coarse2d) PetscCall(DMDASNESSetJacobianLocal(dm,(DMDASNESJacobian)THIJacobianLocal_2D,thi));
   PetscCall(PetscObjectCompose((PetscObject)dm,"DMDA2Prm",(PetscObject)da2prm));
   PetscCall(PetscObjectCompose((PetscObject)dm,"DMDA2Prm_Vec",(PetscObject)X));
   PetscCall(DMDestroy(&da2prm));
@@ -1444,6 +1442,7 @@ int main(int argc,char *argv[])
   DM             da;
   SNES           snes;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,0,help));
   comm = PETSC_COMM_WORLD;
 

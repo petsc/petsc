@@ -269,9 +269,9 @@ static PetscErrorCode SNESCompositeApply_AdditiveOptimal(SNES snes,Vec X,Vec B,V
   jac->rcond = -1.;
   PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
 #if defined(PETSC_USE_COMPLEX)
-  PetscStackCallBLAS("LAPACKgelss",LAPACKgelss_(&jac->n,&jac->n,&jac->nrhs,jac->h,&jac->lda,jac->beta,&jac->lda,jac->s,&jac->rcond,&jac->rank,jac->work,&jac->lwork,jac->rwork,&jac->info));
+  PetscCallBLAS("LAPACKgelss",LAPACKgelss_(&jac->n,&jac->n,&jac->nrhs,jac->h,&jac->lda,jac->beta,&jac->lda,jac->s,&jac->rcond,&jac->rank,jac->work,&jac->lwork,jac->rwork,&jac->info));
 #else
-  PetscStackCallBLAS("LAPACKgelss",LAPACKgelss_(&jac->n,&jac->n,&jac->nrhs,jac->h,&jac->lda,jac->beta,&jac->lda,jac->s,&jac->rcond,&jac->rank,jac->work,&jac->lwork,&jac->info));
+  PetscCallBLAS("LAPACKgelss",LAPACKgelss_(&jac->n,&jac->n,&jac->nrhs,jac->h,&jac->lda,jac->beta,&jac->lda,jac->s,&jac->rcond,&jac->rank,jac->work,&jac->lwork,&jac->info));
 #endif
   PetscCall(PetscFPTrapPop());
   PetscCheck(jac->info >= 0,PetscObjectComm((PetscObject)snes),PETSC_ERR_LIB,"Bad argument to GELSS");
@@ -436,9 +436,7 @@ static PetscErrorCode SNESSetFromOptions_Composite(PetscOptionItems *PetscOption
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject,"Composite preconditioner options");
   PetscCall(PetscOptionsEnum("-snes_composite_type","Type of composition","SNESCompositeSetType",SNESCompositeTypes,(PetscEnum)jac->type,(PetscEnum*)&jac->type,&flg));
-  if (flg) {
-    PetscCall(SNESCompositeSetType(snes,jac->type));
-  }
+  if (flg) PetscCall(SNESCompositeSetType(snes,jac->type));
   PetscCall(PetscOptionsStringArray("-snes_composite_sneses","List of composite solvers","SNESCompositeAddSNES",sneses,&nmax,&flg));
   if (flg) {
     for (i=0; i<nmax; i++) {
@@ -477,9 +475,7 @@ static PetscErrorCode SNESView_Composite(SNES snes,PetscViewer viewer)
     PetscCall(PetscViewerASCIIPrintf(viewer,"  SNESes on composite preconditioner follow\n"));
     PetscCall(PetscViewerASCIIPrintf(viewer,"  ---------------------------------\n"));
   }
-  if (iascii) {
-    PetscCall(PetscViewerASCIIPushTab(viewer));
-  }
+  if (iascii) PetscCall(PetscViewerASCIIPushTab(viewer));
   while (next) {
     PetscCall(SNESView(next->snes,viewer));
     next = next->next;
@@ -754,9 +750,7 @@ static PetscErrorCode SNESSolve_Composite(SNES snes)
 
   for (i = 0; i < snes->max_its; i++) {
     /* Call general purpose update function */
-    if (snes->ops->update) {
-      PetscCall((*snes->ops->update)(snes, snes->iter));
-    }
+    if (snes->ops->update) PetscCall((*snes->ops->update)(snes, snes->iter));
 
     /* Copy the state before modification by application of the composite solver;
        we will subtract the new state after application */

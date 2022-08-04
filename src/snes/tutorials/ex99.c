@@ -48,6 +48,7 @@ int main(int argc,char **argv)
   Mat            J;            /* Jacobian matrix */
   PetscMPIInt    size;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Example is only for sequential runs");

@@ -44,6 +44,7 @@ int main(int argc,char **argv)
   PetscBool      useLaxWendroff = PETSC_TRUE;
 
   /* Initialize program and set problem parameters */
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 

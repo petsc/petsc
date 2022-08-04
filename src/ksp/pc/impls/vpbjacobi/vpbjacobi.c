@@ -1,17 +1,4 @@
-
-/*
-   Include files needed for the variable size block PBJacobi preconditioner:
-     pcimpl.h - private include file intended for use by all preconditioners
-*/
-
-#include <petsc/private/pcimpl.h>   /*I "petscpc.h" I*/
-
-/*
-   Private context (data structure) for the VPBJacobi preconditioner.
-*/
-typedef struct {
-  MatScalar *diag;
-} PC_VPBJacobi;
+#include <../src/ksp/pc/impls/vpbjacobi/vpbjacobi.h>
 
 static PetscErrorCode PCApply_VPBJacobi(PC pc,Vec x,Vec y)
 {
@@ -96,7 +83,7 @@ static PetscErrorCode PCApply_VPBJacobi(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCSetUp_VPBJacobi(PC pc)
+PETSC_INTERN PetscErrorCode PCSetUp_VPBJacobi_Host(PC pc)
 {
   PC_VPBJacobi    *jac = (PC_VPBJacobi*)pc->data;
   Mat            A = pc->pmat;
@@ -120,7 +107,30 @@ static PetscErrorCode PCSetUp_VPBJacobi(PC pc)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCDestroy_VPBJacobi(PC pc)
+static PetscErrorCode PCSetUp_VPBJacobi(PC pc)
+{
+  PetscFunctionBegin;
+  /* In PCCreate_VPBJacobi() pmat might have not been set, so we wait to the last minute to do the dispatch */
+#if defined(PETSC_HAVE_CUDA)
+  PetscBool isCuda;
+  PetscCall(PetscObjectTypeCompareAny((PetscObject)pc->pmat,&isCuda,MATSEQAIJCUSPARSE,MATMPIAIJCUSPARSE,""));
+#endif
+#if defined(PETSC_HAVE_KOKKOS_KERNELS)
+  PetscBool isKok;
+  PetscCall(PetscObjectTypeCompareAny((PetscObject)pc->pmat,&isKok,MATSEQAIJKOKKOS,MATMPIAIJKOKKOS,""));
+#endif
+
+#if defined(PETSC_HAVE_CUDA)
+  if (isCuda) PetscCall(PCSetUp_VPBJacobi_CUDA(pc)); else
+#endif
+#if defined(PETSC_HAVE_KOKKOS_KERNELS)
+  if (isKok) PetscCall(PCSetUp_VPBJacobi_Kokkos(pc)); else
+#endif
+  {PetscCall(PCSetUp_VPBJacobi_Host(pc));}
+  PetscFunctionReturn(0);
+}
+
+PETSC_INTERN PetscErrorCode PCDestroy_VPBJacobi(PC pc)
 {
   PC_VPBJacobi    *jac = (PC_VPBJacobi*)pc->data;
 

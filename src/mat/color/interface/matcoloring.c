@@ -204,9 +204,7 @@ PetscErrorCode MatColoringSetFromOptions(MatColoring mc)
   if (flg) PetscCall(MatColoringSetDistance(mc,dist));
   PetscCall(PetscOptionsInt("-mat_coloring_maxcolors","Maximum colors returned at the end. 1 returns an independent set","MatColoringSetMaxColors",maxcolors,&maxcolors,&flg));
   if (flg) PetscCall(MatColoringSetMaxColors(mc,maxcolors));
-  if (mc->ops->setfromoptions) {
-    PetscCall((*mc->ops->setfromoptions)(PetscOptionsObject,mc));
-  }
+  if (mc->ops->setfromoptions) PetscCall((*mc->ops->setfromoptions)(PetscOptionsObject,mc));
   PetscCall(PetscOptionsBool("-mat_coloring_test","Check that a valid coloring has been produced","",mc->valid,&mc->valid,NULL));
   PetscCall(PetscOptionsBool("-mat_is_coloring_test","Check that a valid iscoloring has been produced","",mc->valid_iscoloring,&mc->valid_iscoloring,NULL));
   PetscCall(PetscOptionsEnum("-mat_coloring_weight_type","Sets the type of vertex weighting used","MatColoringSetWeightType",MatColoringWeightTypes,(PetscEnum)mc->weight_type,(PetscEnum*)&mc->weight_type,NULL));
@@ -349,12 +347,8 @@ PetscErrorCode MatColoringApply(MatColoring mc,ISColoring *coloring)
   PetscCall(PetscLogEventEnd(MATCOLORING_Apply,mc,0,0,0));
 
   /* valid */
-  if (mc->valid) {
-    PetscCall(MatColoringTest(mc,*coloring));
-  }
-  if (mc->valid_iscoloring) {
-    PetscCall(MatISColoringTest(mc->mat,*coloring));
-  }
+  if (mc->valid) PetscCall(MatColoringTest(mc,*coloring));
+  if (mc->valid_iscoloring) PetscCall(MatISColoringTest(mc->mat,*coloring));
 
   /* view */
   PetscCall(PetscOptionsGetViewer(PetscObjectComm((PetscObject)mc),((PetscObject)mc)->options,((PetscObject)mc)->prefix,"-mat_coloring_view",&viewer,&format,&flg));

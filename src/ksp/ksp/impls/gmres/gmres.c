@@ -124,11 +124,9 @@ PetscErrorCode KSPGMRESCycle(PetscInt *itcount,KSP ksp)
   /* the constant .1 is arbitrary, just some measure at how incorrect the residuals are */
   if ((ksp->rnorm > 0.0) && (PetscAbsReal(res-ksp->rnorm) > gmres->breakdowntol*gmres->rnorm0)) {
     PetscCheck(!ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_CONV_FAILED,"Residual norm computed by GMRES recursion formula %g is far from the computed residual norm %g at restart, residual norm at start of cycle %g",(double)ksp->rnorm,(double)res,(double)gmres->rnorm0);
-    else {
-      PetscCall(PetscInfo(ksp,"Residual norm computed by GMRES recursion formula %g is far from the computed residual norm %g at restart, residual norm at start of cycle %g",(double)ksp->rnorm,(double)res,(double)gmres->rnorm0));
-      ksp->reason =  KSP_DIVERGED_BREAKDOWN;
-      PetscFunctionReturn(0);
-    }
+    PetscCall(PetscInfo(ksp,"Residual norm computed by GMRES recursion formula %g is far from the computed residual norm %g at restart, residual norm at start of cycle %g",(double)ksp->rnorm,(double)res,(double)gmres->rnorm0));
+    ksp->reason =  KSP_DIVERGED_BREAKDOWN;
+    PetscFunctionReturn(0);
   }
   *GRS(0) = gmres->rnorm0 = res;
 
@@ -194,10 +192,8 @@ PetscErrorCode KSPGMRESCycle(PetscInt *itcount,KSP ksp)
         ksp->reason = KSP_CONVERGED_HAPPY_BREAKDOWN;
       } else if (!ksp->reason) {
         PetscCheck(!ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"You reached the happy break down, but convergence was not indicated. Residual norm = %g",(double)res);
-        else {
-          ksp->reason = KSP_DIVERGED_BREAKDOWN;
-          break;
-        }
+        ksp->reason = KSP_DIVERGED_BREAKDOWN;
+        break;
       }
     }
   }
@@ -349,7 +345,7 @@ static PetscErrorCode KSPGMRESBuildSoln(PetscScalar *nrs,Vec vs,Vec vdest,KSP ks
     nrs[it] = *GRS(it) / *HH(it,it);
   } else {
     PetscCheck(!ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"You reached the break down in GMRES; HH(it,it) = 0");
-    else ksp->reason = KSP_DIVERGED_BREAKDOWN;
+    ksp->reason = KSP_DIVERGED_BREAKDOWN;
 
     PetscCall(PetscInfo(ksp,"Likely your matrix or preconditioner is singular. HH(it,it) is identically zero; it = %" PetscInt_FMT " GRS(it) = %g\n",it,(double)PetscAbsScalar(*GRS(it))));
     PetscFunctionReturn(0);
@@ -360,11 +356,9 @@ static PetscErrorCode KSPGMRESBuildSoln(PetscScalar *nrs,Vec vs,Vec vdest,KSP ks
     for (j=k+1; j<=it; j++) tt = tt - *HH(k,j) * nrs[j];
     if (*HH(k,k) == 0.0) {
       PetscCheck(!ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"Likely your matrix or preconditioner is singular. HH(k,k) is identically zero; k = %" PetscInt_FMT,k);
-      else {
-        ksp->reason = KSP_DIVERGED_BREAKDOWN;
-        PetscCall(PetscInfo(ksp,"Likely your matrix or preconditioner is singular. HH(k,k) is identically zero; k = %" PetscInt_FMT "\n",k));
-        PetscFunctionReturn(0);
-      }
+      ksp->reason = KSP_DIVERGED_BREAKDOWN;
+      PetscCall(PetscInfo(ksp,"Likely your matrix or preconditioner is singular. HH(k,k) is identically zero; k = %" PetscInt_FMT "\n",k));
+      PetscFunctionReturn(0);
     }
     nrs[k] = tt / *HH(k,k);
   }
@@ -414,10 +408,8 @@ static PetscErrorCode KSPGMRESUpdateHessenberg(KSP ksp,PetscInt it,PetscBool hap
     tt = PetscSqrtScalar(PetscConj(*hh) * *hh + PetscConj(*(hh+1)) * *(hh+1));
     if (tt == 0.0) {
       PetscCheck(!ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"tt == 0.0");
-      else {
-        ksp->reason = KSP_DIVERGED_NULL;
-        PetscFunctionReturn(0);
-      }
+      ksp->reason = KSP_DIVERGED_NULL;
+      PetscFunctionReturn(0);
     }
     *cc        = *hh / tt;
     *ss        = *(hh+1) / tt;
@@ -909,9 +901,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_GMRES(KSP ksp)
   ksp->ops->setfromoptions               = KSPSetFromOptions_GMRES;
   ksp->ops->computeextremesingularvalues = KSPComputeExtremeSingularValues_GMRES;
   ksp->ops->computeeigenvalues           = KSPComputeEigenvalues_GMRES;
-#if !defined(PETSC_USE_COMPLEX)
   ksp->ops->computeritz                  = KSPComputeRitz_GMRES;
-#endif
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetPreAllocateVectors_C",KSPGMRESSetPreAllocateVectors_GMRES));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetOrthogonalization_C",KSPGMRESSetOrthogonalization_GMRES));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESGetOrthogonalization_C",KSPGMRESGetOrthogonalization_GMRES));

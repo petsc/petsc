@@ -1317,9 +1317,11 @@ PetscErrorCode MatSetOption_SeqBAIJ(Mat A,MatOption op,PetscBool flg)
   case MAT_STRUCTURALLY_SYMMETRIC:
   case MAT_HERMITIAN:
   case MAT_SYMMETRY_ETERNAL:
+  case MAT_STRUCTURAL_SYMMETRY_ETERNAL:
   case MAT_SUBMAT_SINGLEIS:
   case MAT_STRUCTURE_ONLY:
-    /* These options are handled directly by MatSetOption() */
+  case MAT_SPD_ETERNAL:
+    /* if the diagonal matrix is square it inherits some of the properties above */
     break;
   default:
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"unknown option %d",op);
@@ -1397,6 +1399,7 @@ PetscErrorCode MatTranspose_SeqBAIJ(Mat A,MatReuse reuse,Mat *B)
   MatScalar      *ata,*aa=a->a;
 
   PetscFunctionBegin;
+  if (reuse == MAT_REUSE_MATRIX) PetscCall(MatTransposeCheckNonzeroState_Private(A,*B));
   PetscCall(PetscCalloc1(1+nbs,&atfill));
   if (reuse == MAT_INITIAL_MATRIX || reuse == MAT_INPLACE_MATRIX) {
     for (i=0; i<ai[mbs]; i++) atfill[aj[i]] += 1; /* count num of non-zeros in row aj[i] */
@@ -1455,7 +1458,7 @@ PetscErrorCode MatIsTranspose_SeqBAIJ(Mat A,Mat B,PetscReal tol,PetscBool  *f)
 
   PetscFunctionBegin;
   *f   = PETSC_FALSE;
-  PetscCall(MatTranspose_SeqBAIJ(A,MAT_INITIAL_MATRIX,&Btrans));
+  PetscCall(MatTranspose(A,MAT_INITIAL_MATRIX,&Btrans));
   PetscCall(MatEqual_SeqBAIJ(B,Btrans,f));
   PetscCall(MatDestroy(&Btrans));
   PetscFunctionReturn(0);
@@ -2454,7 +2457,7 @@ PetscErrorCode MatAXPY_SeqBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
     PetscScalar  alpha = a;
     PetscBLASInt bnz;
     PetscCall(PetscBLASIntCast(x->nz*bs2,&bnz));
-    PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&bnz,&alpha,x->a,&one,y->a,&one));
+    PetscCallBLAS("BLASaxpy",BLASaxpy_(&bnz,&alpha,x->a,&one,y->a,&one));
     PetscCall(PetscObjectStateIncrease((PetscObject)Y));
   } else if (str == SUBSET_NONZERO_PATTERN) { /* nonzeros of X is a subset of Y's */
     PetscCall(MatAXPY_Basic(Y,a,X,str));
@@ -2527,31 +2530,29 @@ PetscErrorCode MatGetColumnIJ_SeqBAIJ(Mat A,PetscInt oshift,PetscBool symmetric,
   *nn = n;
   if (!ia) PetscFunctionReturn(0);
   PetscCheck(!symmetric,PETSC_COMM_SELF,PETSC_ERR_SUP,"Not for BAIJ matrices");
-  else {
-    PetscCall(PetscCalloc1(n,&collengths));
-    PetscCall(PetscMalloc1(n+1,&cia));
-    PetscCall(PetscMalloc1(nz,&cja));
-    jj   = a->j;
-    for (i=0; i<nz; i++) {
-      collengths[jj[i]]++;
-    }
-    cia[0] = oshift;
-    for (i=0; i<n; i++) {
-      cia[i+1] = cia[i] + collengths[i];
-    }
-    PetscCall(PetscArrayzero(collengths,n));
-    jj   = a->j;
-    for (row=0; row<m; row++) {
-      mr = a->i[row+1] - a->i[row];
-      for (i=0; i<mr; i++) {
-        col = *jj++;
-
-        cja[cia[col] + collengths[col]++ - oshift] = row + oshift;
-      }
-    }
-    PetscCall(PetscFree(collengths));
-    *ia  = cia; *ja = cja;
+  PetscCall(PetscCalloc1(n,&collengths));
+  PetscCall(PetscMalloc1(n+1,&cia));
+  PetscCall(PetscMalloc1(nz,&cja));
+  jj   = a->j;
+  for (i=0; i<nz; i++) {
+    collengths[jj[i]]++;
   }
+  cia[0] = oshift;
+  for (i=0; i<n; i++) {
+    cia[i+1] = cia[i] + collengths[i];
+  }
+  PetscCall(PetscArrayzero(collengths,n));
+  jj   = a->j;
+  for (row=0; row<m; row++) {
+    mr = a->i[row+1] - a->i[row];
+    for (i=0; i<mr; i++) {
+      col = *jj++;
+
+      cja[cia[col] + collengths[col]++ - oshift] = row + oshift;
+    }
+  }
+  PetscCall(PetscFree(collengths));
+  *ia  = cia; *ja = cja;
   PetscFunctionReturn(0);
 }
 
@@ -2774,10 +2775,13 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqBAIJ,
                                        NULL,
                                        MatFDColoringSetUp_SeqXAIJ,
                                        NULL,
-                                /*144*/MatCreateMPIMatConcatenateSeqMat_SeqBAIJ,
+                               /*144*/ MatCreateMPIMatConcatenateSeqMat_SeqBAIJ,
                                        MatDestroySubMatrices_SeqBAIJ,
                                        NULL,
-                                       NULL
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                               /*150*/ NULL,
 };
 
 PetscErrorCode  MatStoreValues_SeqBAIJ(Mat mat)
@@ -3647,14 +3651,7 @@ PetscErrorCode  MatCreateSeqBAIJWithArrays(MPI_Comm comm,PetscInt bs,PetscInt m,
 
 PetscErrorCode MatCreateMPIMatConcatenateSeqMat_SeqBAIJ(MPI_Comm comm,Mat inmat,PetscInt n,MatReuse scall,Mat *outmat)
 {
-  PetscMPIInt    size;
-
   PetscFunctionBegin;
-  PetscCallMPI(MPI_Comm_size(comm,&size));
-  if (size == 1 && scall == MAT_REUSE_MATRIX) {
-    PetscCall(MatCopy(inmat,*outmat,SAME_NONZERO_PATTERN));
-  } else {
-    PetscCall(MatCreateMPIMatConcatenateSeqMat_MPIBAIJ(comm,inmat,n,scall,outmat));
-  }
+  PetscCall(MatCreateMPIMatConcatenateSeqMat_MPIBAIJ(comm,inmat,n,scall,outmat));
   PetscFunctionReturn(0);
 }

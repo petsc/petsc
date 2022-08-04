@@ -16,17 +16,17 @@
   Returns a non-negative value if successful; otherwise returns a negative value.
   (see e.g. https://support.hdfgroup.org/HDF5/doc/RM/RM_H5O.html#Object-Close)
 */
-#define PetscStackCallHDF5(func,args) do {                        \
+#define PetscCallHDF5(func,args) do {                        \
     herr_t _status;                                               \
-    PetscStackPush(#func);_status = func args;PetscStackPop; PetscCheck(_status >= 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in HDF5 call %s() Status %d",#func,(int)_status); \
+    PetscStackPushExternal(#func);_status = func args;PetscStackPop; PetscCheck(_status >= 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in HDF5 call %s() Status %d",#func,(int)_status); \
   } while (0)
 
-#define PetscStackCallHDF5ReturnNoCheck(ret,func,args) do {       \
-    PetscStackPush(#func);ret = func args;PetscStackPop;          \
+#define PetscCallHDF5ReturnNoCheck(ret,func,args) do {       \
+    PetscStackPushExternal(#func);ret = func args;PetscStackPop;          \
   } while (0)
 
-#define PetscStackCallHDF5Return(ret,func,args) do {              \
-    PetscStackCallHDF5ReturnNoCheck(ret,func,args); PetscCheck(ret >= 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in HDF5 call %s() Status %d",#func,(int)ret); \
+#define PetscCallHDF5Return(ret,func,args) do {              \
+    PetscCallHDF5ReturnNoCheck(ret,func,args); PetscCheck(ret >= 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in HDF5 call %s() Status %d",#func,(int)ret); \
   } while (0)
 
 typedef struct PetscViewerHDF5GroupList {

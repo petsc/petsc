@@ -45,11 +45,11 @@ static struct _PetscRandomOps PetscRandomOps_Values = {
    PETSCRAND - access to the basic Unix random number generator
 
    Options Database Keys:
-. -random_type <rand,rand48,sprng>
+. -random_type <rand,rand48,sprng> - set the random number generator from the options database
 
   Level: beginner
 
-.seealso: `PetscRandomCreate()`, `PetscRandomSetType()`, `PETSCRAND48`, `PETSCSPRNG`
+.seealso: `PetscRandomCreate()`, `PetscRandomSetType()`, `PETSCRAND48`, `PETSCSPRNG`, `PetscRandomSetFromOptions()`
 M*/
 
 PETSC_EXTERN PetscErrorCode PetscRandomCreate_Rand(PetscRandom r)

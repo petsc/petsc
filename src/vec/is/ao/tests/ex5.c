@@ -22,6 +22,7 @@ int main(int argc, char *argv[])
   IS                    app_is, petsc_is;
   const PetscInt        n_loc = 8;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char *) 0, help));
   comm = PETSC_COMM_WORLD;
   PetscCallMPI(MPI_Comm_rank(comm, &rank));

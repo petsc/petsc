@@ -125,7 +125,7 @@ struct GlobToLoc
   }
 };
 
-static PetscErrorCode MatSetPreallocationCOO_MPIAIJCUSPARSE_Basic(Mat B, PetscCount n, const PetscInt coo_i[], const PetscInt coo_j[])
+static PetscErrorCode MatSetPreallocationCOO_MPIAIJCUSPARSE_Basic(Mat B, PetscCount n, PetscInt coo_i[], PetscInt coo_j[])
 {
   Mat_MPIAIJ             *b = (Mat_MPIAIJ*)B->data;
   Mat_MPIAIJCUSPARSE     *cusp = (Mat_MPIAIJCUSPARSE*)b->spptr;
@@ -205,7 +205,7 @@ static PetscErrorCode MatSetPreallocationCOO_MPIAIJCUSPARSE_Basic(Mat B, PetscCo
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatSetPreallocationCOO_MPIAIJCUSPARSE(Mat mat, PetscCount coo_n, const PetscInt coo_i[], const PetscInt coo_j[])
+static PetscErrorCode MatSetPreallocationCOO_MPIAIJCUSPARSE(Mat mat, PetscCount coo_n, PetscInt coo_i[], PetscInt coo_j[])
 {
   Mat_MPIAIJ         *mpiaij    = (Mat_MPIAIJ*)mat->data;
   Mat_MPIAIJCUSPARSE *mpidev;

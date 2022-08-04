@@ -34,8 +34,8 @@ static PetscErrorCode PetscViewerHDF5ReadInitialize_Private(PetscViewer viewer, 
   PetscCall(PetscViewerHDF5CheckTimestepping_Internal(viewer, name));
   PetscCall(PetscNew(&h));
   PetscCall(PetscViewerHDF5OpenGroup(viewer, &h->file, &h->group));
-  PetscStackCallHDF5Return(h->dataset,H5Dopen2,(h->group, name, H5P_DEFAULT));
-  PetscStackCallHDF5Return(h->dataspace,H5Dget_space,(h->dataset));
+  PetscCallHDF5Return(h->dataset,H5Dopen2,(h->group, name, H5P_DEFAULT));
+  PetscCallHDF5Return(h->dataspace,H5Dget_space,(h->dataset));
   PetscCall(PetscViewerHDF5ReadAttribute(viewer,name,"complex",PETSC_BOOL,&h->complexVal,&h->complexVal));
   if (!hdf5->horizontal) {
     /* MATLAB stores column vectors horizontally */
@@ -51,9 +51,9 @@ static PetscErrorCode PetscViewerHDF5ReadFinalize_Private(PetscViewer viewer, HD
 
   PetscFunctionBegin;
   h = *ctx;
-  PetscStackCallHDF5(H5Gclose,(h->group));
-  PetscStackCallHDF5(H5Sclose,(h->dataspace));
-  PetscStackCallHDF5(H5Dclose,(h->dataset));
+  PetscCallHDF5(H5Gclose,(h->group));
+  PetscCallHDF5(H5Sclose,(h->dataspace));
+  PetscCallHDF5(H5Dclose,(h->dataset));
   PetscCall(PetscFree((*ctx)->dims));
   PetscCall(PetscFree(*ctx));
   PetscFunctionReturn(0);
@@ -72,9 +72,9 @@ static PetscErrorCode PetscViewerHDF5ReadSizes_Private(PetscViewer viewer, HDF5R
   map = *map_;
 
   /* Get actual number of dimensions in dataset */
-  PetscStackCallHDF5Return(ctx->rdim,H5Sget_simple_extent_dims,(ctx->dataspace, NULL, NULL));
+  PetscCallHDF5Return(ctx->rdim,H5Sget_simple_extent_dims,(ctx->dataspace, NULL, NULL));
   PetscCall(PetscMalloc1(ctx->rdim, &ctx->dims));
-  PetscStackCallHDF5Return(ctx->rdim,H5Sget_simple_extent_dims,(ctx->dataspace, ctx->dims, NULL));
+  PetscCallHDF5Return(ctx->rdim,H5Sget_simple_extent_dims,(ctx->dataspace, ctx->dims, NULL));
 
   /*
      Dimensions are in this order:
@@ -161,8 +161,8 @@ static PetscErrorCode PetscViewerHDF5ReadSelectHyperslab_Private(PetscViewer vie
     PetscCall(PetscHDF5IntCast(n/bs, &count[ctx->lenInd]));
     PetscCall(PetscHDF5IntCast(low/bs, &offset[ctx->lenInd]));
   }
-  PetscStackCallHDF5Return(*memspace,H5Screate_simple,(ctx->rdim, count, NULL));
-  PetscStackCallHDF5(H5Sselect_hyperslab,(ctx->dataspace, H5S_SELECT_SET, offset, NULL, count, NULL));
+  PetscCallHDF5Return(*memspace,H5Screate_simple,(ctx->rdim, count, NULL));
+  PetscCallHDF5(H5Sselect_hyperslab,(ctx->dataspace, H5S_SELECT_SET, offset, NULL, count, NULL));
   PetscCall(PetscFree2(count, offset));
   PetscFunctionReturn(0);
 }
@@ -172,7 +172,7 @@ static PetscErrorCode PetscViewerHDF5ReadArray_Private(PetscViewer viewer, HDF5R
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*) viewer->data;
 
   PetscFunctionBegin;
-  PetscStackCallHDF5(H5Dread,(h->dataset, datatype, memspace, h->dataspace, hdf5->dxpl_id, arr));
+  PetscCallHDF5(H5Dread,(h->dataset, datatype, memspace, h->dataspace, hdf5->dxpl_id, arr));
   PetscFunctionReturn(0);
 }
 
@@ -236,7 +236,7 @@ PetscErrorCode PetscViewerHDF5Load(PetscViewer viewer, const char *name, PetscLa
   PetscCall(PetscMalloc(map->n*unitsize, &arr));
 
   PetscCall(PetscViewerHDF5ReadArray_Private(viewer, h, datatype, memspace, arr));
-  PetscStackCallHDF5(H5Sclose,(memspace));
+  PetscCallHDF5(H5Sclose,(memspace));
   PetscCall(PetscViewerHDF5ReadFinalize_Private(viewer, &h));
   *newarr = arr;
   PetscFunctionReturn(0);

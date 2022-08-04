@@ -53,6 +53,7 @@ int main(int argc, char **argv)
   MatFDColoring      matfdcoloring;
 
   /* Initialize TAO */
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv,(char *)0,help));
 
   /* Specify dimension of the problem */
@@ -127,9 +128,7 @@ int main(int argc, char **argv)
      monitoring function
   */
   PetscCall(PetscOptionsHasName(NULL,NULL,"-my_monitor",&viewmat));
-  if (viewmat) {
-    PetscCall(TaoSetMonitor(tao,My_Monitor,NULL,NULL));
-  }
+  if (viewmat) PetscCall(TaoSetMonitor(tao,My_Monitor,NULL,NULL));
 
   /* Check for any tao command line options */
   PetscCall(TaoSetFromOptions(tao));

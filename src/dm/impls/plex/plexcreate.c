@@ -14,24 +14,21 @@ static PetscErrorCode DMInitialize_Plex(DM dm);
 /* This copies internal things in the Plex structure that we generally want when making a new, related Plex */
 PetscErrorCode DMPlexCopy_Internal(DM dmin, PetscBool copyPeriodicity, PetscBool copyOverlap, DM dmout)
 {
-  const DMBoundaryType     *bd;
-  const PetscReal          *maxCell, *L;
-  PetscBool                 isper, dist;
-  DMPlexReorderDefaultFlag  reorder;
+  const PetscReal         *maxCell, *Lstart, *L;
+  PetscBool                dist;
+  DMPlexReorderDefaultFlag reorder;
 
   PetscFunctionBegin;
   if (copyPeriodicity) {
-    PetscCall(DMGetPeriodicity(dmin, &isper, &maxCell, &L, &bd));
-    PetscCall(DMSetPeriodicity(dmout, isper,  maxCell,  L,  bd));
+    PetscCall(DMGetPeriodicity(dmin, &maxCell, &Lstart, &L));
+    PetscCall(DMSetPeriodicity(dmout, maxCell,  Lstart,  L));
   }
   PetscCall(DMPlexDistributeGetDefault(dmin, &dist));
   PetscCall(DMPlexDistributeSetDefault(dmout, dist));
   PetscCall(DMPlexReorderGetDefault(dmin, &reorder));
   PetscCall(DMPlexReorderSetDefault(dmout, reorder));
   ((DM_Plex *) dmout->data)->useHashLocation  = ((DM_Plex *) dmin->data)->useHashLocation;
-  if (copyOverlap) {
-    PetscCall(DMPlexSetOverlap_Plex(dmout, dmin, 0));
-  }
+  if (copyOverlap) PetscCall(DMPlexSetOverlap_Plex(dmout, dmin, 0));
   PetscFunctionReturn(0);
 }
 
@@ -42,13 +39,11 @@ PetscErrorCode DMPlexCopy_Internal(DM dmin, PetscBool copyPeriodicity, PetscBool
 */
 static PetscErrorCode DMPlexReplace_Static(DM dm, DM *ndm)
 {
-  PetscSF               sf;
-  DM                    dmNew = *ndm, coordDM, coarseDM;
-  Vec                   coords;
-  PetscBool             isper;
-  const PetscReal      *maxCell, *L;
-  const DMBoundaryType *bd;
-  PetscInt              dim, cdim;
+  PetscSF          sf;
+  DM               dmNew = *ndm, coordDM, coarseDM;
+  Vec              coords;
+  const PetscReal *maxCell, *Lstart, *L;
+  PetscInt         dim, cdim;
 
   PetscFunctionBegin;
   if (dm == dmNew) {
@@ -66,12 +61,16 @@ static PetscErrorCode DMPlexReplace_Static(DM dm, DM *ndm)
   PetscCall(DMGetCoordinatesLocal(dmNew, &coords));
   PetscCall(DMSetCoordinateDM(dm, coordDM));
   PetscCall(DMSetCoordinatesLocal(dm, coords));
+  PetscCall(DMGetCellCoordinateDM(dmNew, &coordDM));
+  PetscCall(DMGetCellCoordinatesLocal(dmNew, &coords));
+  PetscCall(DMSetCellCoordinateDM(dm, coordDM));
+  PetscCall(DMSetCellCoordinatesLocal(dm, coords));
   /* Do not want to create the coordinate field if it does not already exist, so do not call DMGetCoordinateField() */
-  PetscCall(DMFieldDestroy(&dm->coordinateField));
-  dm->coordinateField = dmNew->coordinateField;
+  PetscCall(DMFieldDestroy(&dm->coordinates[0].field));
+  dm->coordinates[0].field = dmNew->coordinates[0].field;
   ((DM_Plex *) dmNew->data)->coordFunc = ((DM_Plex *) dm->data)->coordFunc;
-  PetscCall(DMGetPeriodicity(dmNew, &isper, &maxCell, &L, &bd));
-  PetscCall(DMSetPeriodicity(dm, isper, maxCell, L, bd));
+  PetscCall(DMGetPeriodicity(dmNew, &maxCell, &Lstart, &L));
+  PetscCall(DMSetPeriodicity(dm,     maxCell,  Lstart,  L));
   PetscCall(DMDestroy_Plex(dm));
   PetscCall(DMInitialize_Plex(dm));
   dm->data = dmNew->data;
@@ -123,9 +122,26 @@ static PetscErrorCode DMPlexSwap_Static(DM dmA, DM dmB)
   PetscCall(DMSetCoordinatesLocal(dmB, coordsA));
   PetscCall(PetscObjectDereference((PetscObject) coordsA));
 
-  fieldTmp             = dmA->coordinateField;
-  dmA->coordinateField = dmB->coordinateField;
-  dmB->coordinateField = fieldTmp;
+  PetscCall(DMGetCellCoordinateDM(dmA, &coordDMA));
+  PetscCall(DMGetCellCoordinateDM(dmB, &coordDMB));
+  PetscCall(PetscObjectReference((PetscObject) coordDMA));
+  PetscCall(DMSetCellCoordinateDM(dmA, coordDMB));
+  PetscCall(DMSetCellCoordinateDM(dmB, coordDMA));
+  PetscCall(PetscObjectDereference((PetscObject) coordDMA));
+
+  PetscCall(DMGetCellCoordinatesLocal(dmA, &coordsA));
+  PetscCall(DMGetCellCoordinatesLocal(dmB, &coordsB));
+  PetscCall(PetscObjectReference((PetscObject) coordsA));
+  PetscCall(DMSetCellCoordinatesLocal(dmA, coordsB));
+  PetscCall(DMSetCellCoordinatesLocal(dmB, coordsA));
+  PetscCall(PetscObjectDereference((PetscObject) coordsA));
+
+  fieldTmp                  = dmA->coordinates[0].field;
+  dmA->coordinates[0].field = dmB->coordinates[0].field;
+  dmB->coordinates[0].field = fieldTmp;
+  fieldTmp                  = dmA->coordinates[1].field;
+  dmA->coordinates[1].field = dmB->coordinates[1].field;
+  dmB->coordinates[1].field = fieldTmp;
   tmp       = dmA->data;
   dmA->data = dmB->data;
   dmB->data = tmp;
@@ -490,7 +506,14 @@ static PetscErrorCode DMPlexCreateBoxSurfaceMesh_Tensor_2D_Internal(DM dm, const
 static PetscErrorCode DMPlexCreateBoxSurfaceMesh_Tensor_3D_Internal(DM dm, const PetscReal lower[], const PetscReal upper[], const PetscInt faces[])
 {
   PetscInt       vertices[3], numVertices;
-  PetscInt       numFaces    = 2*faces[0]*faces[1] + 2*faces[1]*faces[2] + 2*faces[0]*faces[2];
+  PetscInt       numFaces       = 2*faces[0]*faces[1] + 2*faces[1]*faces[2] + 2*faces[0]*faces[2];
+  PetscInt       markerTop      = 1;
+  PetscInt       markerBottom   = 1;
+  PetscInt       markerFront    = 1;
+  PetscInt       markerBack     = 1;
+  PetscInt       markerRight    = 1;
+  PetscInt       markerLeft     = 1;
+  PetscBool      markerSeparate = PETSC_FALSE;
   Vec            coordinates;
   PetscSection   coordSection;
   PetscScalar    *coords;
@@ -502,6 +525,15 @@ static PetscErrorCode DMPlexCreateBoxSurfaceMesh_Tensor_3D_Internal(DM dm, const
   PetscFunctionBegin;
   PetscCheck(faces[0] >= 1 && faces[1] >= 1 && faces[2] >= 1,PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Must have at least 1 face per side");
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank));
+  PetscCall(PetscOptionsGetBool(((PetscObject) dm)->options,((PetscObject) dm)->prefix, "-dm_plex_separate_marker", &markerSeparate, NULL));
+  if (markerSeparate) {
+    markerBottom = 1;
+    markerTop    = 2;
+    markerFront  = 3;
+    markerBack   = 4;
+    markerRight  = 5;
+    markerLeft   = 6;
+  }
   vertices[0] = faces[0]+1; vertices[1] = faces[1]+1; vertices[2] = faces[2]+1;
   numVertices = vertices[0]*vertices[1]*vertices[2];
   if (rank == 0) {
@@ -519,11 +551,11 @@ static PetscErrorCode DMPlexCreateBoxSurfaceMesh_Tensor_3D_Internal(DM dm, const
         voffset = numFaces + vertices[0]*vertices[1]*(vertices[2]-1) + vy*vertices[0] + vx;
         cone[0] = voffset; cone[1] = voffset+1; cone[2] = voffset+vertices[0]+1; cone[3] = voffset+vertices[0];
         PetscCall(DMPlexSetCone(dm, iface, cone));
-        PetscCall(DMSetLabelValue(dm, "marker", iface, 1));
-        PetscCall(DMSetLabelValue(dm, "marker", voffset+0, 1));
-        PetscCall(DMSetLabelValue(dm, "marker", voffset+1, 1));
-        PetscCall(DMSetLabelValue(dm, "marker", voffset+vertices[0]+0, 1));
-        PetscCall(DMSetLabelValue(dm, "marker", voffset+vertices[0]+1, 1));
+        PetscCall(DMSetLabelValue(dm, "marker", iface, markerTop));
+        PetscCall(DMSetLabelValue(dm, "marker", voffset+0, markerTop));
+        PetscCall(DMSetLabelValue(dm, "marker", voffset+1, markerTop));
+        PetscCall(DMSetLabelValue(dm, "marker", voffset+vertices[0]+0, markerTop));
+        PetscCall(DMSetLabelValue(dm, "marker", voffset+vertices[0]+1, markerTop));
         iface++;
       }
     }
@@ -534,11 +566,11 @@ static PetscErrorCode DMPlexCreateBoxSurfaceMesh_Tensor_3D_Internal(DM dm, const
         voffset = numFaces + vy*(faces[0]+1) + vx;
         cone[0] = voffset+1; cone[1] = voffset; cone[2] = voffset+vertices[0]; cone[3] = voffset+vertices[0]+1;
         PetscCall(DMPlexSetCone(dm, iface, cone));
-        PetscCall(DMSetLabelValue(dm, "marker", iface, 1));
-        PetscCall(DMSetLabelValue(dm, "marker", voffset+0, 1));
-        PetscCall(DMSetLabelValue(dm, "marker", voffset+1, 1));
-        PetscCall(DMSetLabelValue(dm, "marker", voffset+vertices[0]+0, 1));
-        PetscCall(DMSetLabelValue(dm, "marker", voffset+vertices[0]+1, 1));
+        PetscCall(DMSetLabelValue(dm, "marker", iface, markerBottom));
+        PetscCall(DMSetLabelValue(dm, "marker", voffset+0, markerBottom));
+        PetscCall(DMSetLabelValue(dm, "marker", voffset+1, markerBottom));
+        PetscCall(DMSetLabelValue(dm, "marker", voffset+vertices[0]+0, markerBottom));
+        PetscCall(DMSetLabelValue(dm, "marker", voffset+vertices[0]+1, markerBottom));
         iface++;
       }
     }
@@ -549,11 +581,11 @@ static PetscErrorCode DMPlexCreateBoxSurfaceMesh_Tensor_3D_Internal(DM dm, const
         voffset = numFaces + vz*vertices[0]*vertices[1] + vx;
         cone[0] = voffset; cone[1] = voffset+1; cone[2] = voffset+vertices[0]*vertices[1]+1; cone[3] = voffset+vertices[0]*vertices[1];
         PetscCall(DMPlexSetCone(dm, iface, cone));
-        PetscCall(DMSetLabelValue(dm, "marker", iface, 1));
-        PetscCall(DMSetLabelValue(dm, "marker", voffset+0, 1));
-        PetscCall(DMSetLabelValue(dm, "marker", voffset+1, 1));
-        PetscCall(DMSetLabelValue(dm, "marker", voffset+vertices[0]*vertices[1]+0, 1));
-        PetscCall(DMSetLabelValue(dm, "marker", voffset+vertices[0]*vertices[1]+1, 1));
+        PetscCall(DMSetLabelValue(dm, "marker", iface, markerFront));
+        PetscCall(DMSetLabelValue(dm, "marker", voffset+0, markerFront));
+        PetscCall(DMSetLabelValue(dm, "marker", voffset+1, markerFront));
+        PetscCall(DMSetLabelValue(dm, "marker", voffset+vertices[0]*vertices[1]+0, markerFront));
+        PetscCall(DMSetLabelValue(dm, "marker", voffset+vertices[0]*vertices[1]+1, markerFront));
         iface++;
       }
     }
@@ -565,11 +597,11 @@ static PetscErrorCode DMPlexCreateBoxSurfaceMesh_Tensor_3D_Internal(DM dm, const
         cone[0] = voffset+vertices[0]*vertices[1]; cone[1] = voffset+vertices[0]*vertices[1]+1;
         cone[2] = voffset+1; cone[3] = voffset;
         PetscCall(DMPlexSetCone(dm, iface, cone));
-        PetscCall(DMSetLabelValue(dm, "marker", iface, 1));
-        PetscCall(DMSetLabelValue(dm, "marker", voffset+0, 1));
-        PetscCall(DMSetLabelValue(dm, "marker", voffset+1, 1));
-        PetscCall(DMSetLabelValue(dm, "marker", voffset+vertices[0]*vertices[1]+0, 1));
-        PetscCall(DMSetLabelValue(dm, "marker", voffset+vertices[0]*vertices[1]+1, 1));
+        PetscCall(DMSetLabelValue(dm, "marker", iface, markerBack));
+        PetscCall(DMSetLabelValue(dm, "marker", voffset+0, markerBack));
+        PetscCall(DMSetLabelValue(dm, "marker", voffset+1, markerBack));
+        PetscCall(DMSetLabelValue(dm, "marker", voffset+vertices[0]*vertices[1]+0, markerBack));
+        PetscCall(DMSetLabelValue(dm, "marker", voffset+vertices[0]*vertices[1]+1, markerBack));
         iface++;
       }
     }
@@ -581,11 +613,11 @@ static PetscErrorCode DMPlexCreateBoxSurfaceMesh_Tensor_3D_Internal(DM dm, const
         cone[0] = voffset; cone[1] = voffset+vertices[0]*vertices[1];
         cone[2] = voffset+vertices[0]*vertices[1]+vertices[0]; cone[3] = voffset+vertices[0];
         PetscCall(DMPlexSetCone(dm, iface, cone));
-        PetscCall(DMSetLabelValue(dm, "marker", iface, 1));
-        PetscCall(DMSetLabelValue(dm, "marker", voffset+0, 1));
-        PetscCall(DMSetLabelValue(dm, "marker", voffset+vertices[0]+0, 1));
-        PetscCall(DMSetLabelValue(dm, "marker", voffset+vertices[1]+0, 1));
-        PetscCall(DMSetLabelValue(dm, "marker", voffset+vertices[0]*vertices[1]+vertices[0], 1));
+        PetscCall(DMSetLabelValue(dm, "marker", iface, markerLeft));
+        PetscCall(DMSetLabelValue(dm, "marker", voffset+0, markerLeft));
+        PetscCall(DMSetLabelValue(dm, "marker", voffset+vertices[0]+0, markerLeft));
+        PetscCall(DMSetLabelValue(dm, "marker", voffset+vertices[1]+0, markerLeft));
+        PetscCall(DMSetLabelValue(dm, "marker", voffset+vertices[0]*vertices[1]+vertices[0], markerLeft));
         iface++;
       }
     }
@@ -597,11 +629,11 @@ static PetscErrorCode DMPlexCreateBoxSurfaceMesh_Tensor_3D_Internal(DM dm, const
         cone[0] = voffset+vertices[0]*vertices[1]; cone[1] = voffset;
         cone[2] = voffset+vertices[0]; cone[3] = voffset+vertices[0]*vertices[1]+vertices[0];
         PetscCall(DMPlexSetCone(dm, iface, cone));
-        PetscCall(DMSetLabelValue(dm, "marker", iface, 1));
-        PetscCall(DMSetLabelValue(dm, "marker", voffset+0, 1));
-        PetscCall(DMSetLabelValue(dm, "marker", voffset+vertices[0]+0, 1));
-        PetscCall(DMSetLabelValue(dm, "marker", voffset+vertices[0]*vertices[1]+0, 1));
-        PetscCall(DMSetLabelValue(dm, "marker", voffset+vertices[0]*vertices[1]+vertices[0], 1));
+        PetscCall(DMSetLabelValue(dm, "marker", iface, markerRight));
+        PetscCall(DMSetLabelValue(dm, "marker", voffset+0, markerRight));
+        PetscCall(DMSetLabelValue(dm, "marker", voffset+vertices[0]+0, markerRight));
+        PetscCall(DMSetLabelValue(dm, "marker", voffset+vertices[0]*vertices[1]+0, markerRight));
+        PetscCall(DMSetLabelValue(dm, "marker", voffset+vertices[0]*vertices[1]+vertices[0], markerRight));
         iface++;
       }
     }
@@ -735,7 +767,7 @@ static PetscErrorCode DMPlexCreateLineMesh_Internal(DM dm,PetscInt segments,Pets
   if (wrap) {
     L       = upper - lower;
     maxCell = (PetscReal)1.1*(L/(PetscReal)PetscMax(1,segments));
-    PetscCall(DMSetPeriodicity(dm,PETSC_TRUE,&maxCell,&L,&bd));
+    PetscCall(DMSetPeriodicity(dm, &maxCell, &lower, &L));
   }
   PetscCall(DMPlexSetRefinementUniform(dm, PETSC_TRUE));
   PetscFunctionReturn(0);
@@ -743,16 +775,18 @@ static PetscErrorCode DMPlexCreateLineMesh_Internal(DM dm,PetscInt segments,Pets
 
 static PetscErrorCode DMPlexCreateBoxMesh_Simplex_Internal(DM dm, PetscInt dim, const PetscInt faces[], const PetscReal lower[], const PetscReal upper[], const DMBoundaryType periodicity[], PetscBool interpolate)
 {
-  DM             boundary, vol;
-  PetscInt       i;
+  DM      boundary, vol;
+  DMLabel bdlabel;
 
   PetscFunctionBegin;
   PetscValidPointer(dm, 1);
-  for (i = 0; i < dim; ++i) PetscCheck(periodicity[i] == DM_BOUNDARY_NONE,PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Periodicity is not supported for simplex meshes");
+  for (PetscInt i = 0; i < dim; ++i) PetscCheck(periodicity[i] == DM_BOUNDARY_NONE, PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Periodicity is not supported for simplex meshes");
   PetscCall(DMCreate(PetscObjectComm((PetscObject) dm), &boundary));
   PetscCall(DMSetType(boundary, DMPLEX));
   PetscCall(DMPlexCreateBoxSurfaceMesh_Internal(boundary, dim, faces, lower, upper, PETSC_FALSE));
   PetscCall(DMPlexGenerate(boundary, NULL, interpolate, &vol));
+  PetscCall(DMGetLabel(vol, "marker", &bdlabel));
+  if (bdlabel) PetscCall(DMPlexLabelComplete(vol, bdlabel));
   PetscCall(DMPlexCopy_Internal(dm, PETSC_TRUE, PETSC_FALSE, vol));
   PetscCall(DMPlexReplace_Static(dm, &vol));
   PetscCall(DMDestroy(&boundary));
@@ -988,26 +1022,32 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
           const PetscInt vertexT = firstVertex + (((ez+1)%numZVertices)*numYVertices+vy)*numXVertices + vx;
           PetscInt       cone[2];
 
+          cone[0] = vertexB; cone[1] = vertexT;
+          PetscCall(DMPlexSetCone(dm, edge, cone));
           if (dim == 3) {
             if (bdX != DM_BOUNDARY_PERIODIC) {
               if (vx == numXVertices-1) {
                 PetscCall(DMSetLabelValue(dm, "marker", edge, markerRight));
-              }
-              else if (vx == 0) {
+                PetscCall(DMSetLabelValue(dm, "marker", cone[0], markerRight));
+                if (ez == numZEdges-1) PetscCall(DMSetLabelValue(dm, "marker", cone[1], markerRight));
+              } else if (vx == 0) {
                 PetscCall(DMSetLabelValue(dm, "marker", edge, markerLeft));
+                PetscCall(DMSetLabelValue(dm, "marker", cone[0], markerLeft));
+                if (ez == numZEdges-1) PetscCall(DMSetLabelValue(dm, "marker", cone[1], markerLeft));
               }
             }
             if (bdY != DM_BOUNDARY_PERIODIC) {
               if (vy == numYVertices-1) {
                 PetscCall(DMSetLabelValue(dm, "marker", edge, markerBack));
-              }
-              else if (vy == 0) {
+                PetscCall(DMSetLabelValue(dm, "marker", cone[0], markerBack));
+                if (ez == numZEdges-1) PetscCall(DMSetLabelValue(dm, "marker", cone[1], markerBack));
+              } else if (vy == 0) {
                 PetscCall(DMSetLabelValue(dm, "marker", edge, markerFront));
+                PetscCall(DMSetLabelValue(dm, "marker", cone[0], markerFront));
+                if (ez == numZEdges-1) PetscCall(DMSetLabelValue(dm, "marker", cone[1], markerFront));
               }
             }
           }
-          cone[0] = vertexB; cone[1] = vertexT;
-          PetscCall(DMPlexSetCone(dm, edge, cone));
         }
       }
     }
@@ -1029,39 +1069,41 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
                 PetscCall(DMSetLabelValue(dm, "Face Sets", edge, faceMarkerRight));
                 PetscCall(DMSetLabelValue(dm, "marker", edge,    markerRight));
                 PetscCall(DMSetLabelValue(dm, "marker", cone[0], markerRight));
-                if (ey == numYEdges-1) {
-                  PetscCall(DMSetLabelValue(dm, "marker", cone[1], markerRight));
-                }
+                if (ey == numYEdges-1) PetscCall(DMSetLabelValue(dm, "marker", cone[1], markerRight));
               } else if (vx == 0) {
                 PetscCall(DMSetLabelValue(dm, "Face Sets", edge, faceMarkerLeft));
                 PetscCall(DMSetLabelValue(dm, "marker", edge,    markerLeft));
                 PetscCall(DMSetLabelValue(dm, "marker", cone[0], markerLeft));
-                if (ey == numYEdges-1) {
-                  PetscCall(DMSetLabelValue(dm, "marker", cone[1], markerLeft));
-                }
+                if (ey == numYEdges-1) PetscCall(DMSetLabelValue(dm, "marker", cone[1], markerLeft));
               }
             } else {
               if (vx == 0 && cutLabel) {
                 PetscCall(DMLabelSetValue(cutLabel, edge,    1));
                 PetscCall(DMLabelSetValue(cutLabel, cone[0], 1));
-                if (ey == numYEdges-1) {
-                  PetscCall(DMLabelSetValue(cutLabel, cone[1], 1));
-                }
+                if (ey == numYEdges-1) PetscCall(DMLabelSetValue(cutLabel, cone[1], 1));
               }
             }
           } else {
             if (bdX != DM_BOUNDARY_PERIODIC) {
               if (vx == numXVertices-1) {
                 PetscCall(DMSetLabelValue(dm, "marker", edge, markerRight));
+                PetscCall(DMSetLabelValue(dm, "marker", cone[0], markerRight));
+                if (ey == numYEdges-1) PetscCall(DMSetLabelValue(dm, "marker", cone[1], markerRight));
               } else if (vx == 0) {
                 PetscCall(DMSetLabelValue(dm, "marker", edge, markerLeft));
+                PetscCall(DMSetLabelValue(dm, "marker", cone[0], markerLeft));
+                if (ey == numYEdges-1) PetscCall(DMSetLabelValue(dm, "marker", cone[1], markerLeft));
               }
             }
             if (bdZ != DM_BOUNDARY_PERIODIC) {
               if (vz == numZVertices-1) {
                 PetscCall(DMSetLabelValue(dm, "marker", edge, markerTop));
+                PetscCall(DMSetLabelValue(dm, "marker", cone[0], markerTop));
+                if (ey == numYEdges-1) PetscCall(DMSetLabelValue(dm, "marker", cone[1], markerTop));
               } else if (vz == 0) {
                 PetscCall(DMSetLabelValue(dm, "marker", edge, markerBottom));
+                PetscCall(DMSetLabelValue(dm, "marker", cone[0], markerBottom));
+                if (ey == numYEdges-1) PetscCall(DMSetLabelValue(dm, "marker", cone[1], markerBottom));
               }
             }
           }
@@ -1086,41 +1128,41 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
                 PetscCall(DMSetLabelValue(dm, "Face Sets", edge, faceMarkerTop));
                 PetscCall(DMSetLabelValue(dm, "marker", edge,    markerTop));
                 PetscCall(DMSetLabelValue(dm, "marker", cone[0], markerTop));
-                if (ex == numXEdges-1) {
-                  PetscCall(DMSetLabelValue(dm, "marker", cone[1], markerTop));
-                }
+                if (ex == numXEdges-1) PetscCall(DMSetLabelValue(dm, "marker", cone[1], markerTop));
               } else if (vy == 0) {
                 PetscCall(DMSetLabelValue(dm, "Face Sets", edge, faceMarkerBottom));
                 PetscCall(DMSetLabelValue(dm, "marker", edge,    markerBottom));
                 PetscCall(DMSetLabelValue(dm, "marker", cone[0], markerBottom));
-                if (ex == numXEdges-1) {
-                  PetscCall(DMSetLabelValue(dm, "marker", cone[1], markerBottom));
-                }
+                if (ex == numXEdges-1) PetscCall(DMSetLabelValue(dm, "marker", cone[1], markerBottom));
               }
             } else {
               if (vy == 0 && cutLabel) {
                 PetscCall(DMLabelSetValue(cutLabel, edge,    1));
                 PetscCall(DMLabelSetValue(cutLabel, cone[0], 1));
-                if (ex == numXEdges-1) {
-                  PetscCall(DMLabelSetValue(cutLabel, cone[1], 1));
-                }
+                if (ex == numXEdges-1) PetscCall(DMLabelSetValue(cutLabel, cone[1], 1));
               }
             }
           } else {
             if (bdY != DM_BOUNDARY_PERIODIC) {
               if (vy == numYVertices-1) {
                 PetscCall(DMSetLabelValue(dm, "marker", edge, markerBack));
-              }
-              else if (vy == 0) {
+                PetscCall(DMSetLabelValue(dm, "marker", cone[0], markerBack));
+                if (ex == numXEdges-1) PetscCall(DMSetLabelValue(dm, "marker", cone[1], markerBack));
+              } else if (vy == 0) {
                 PetscCall(DMSetLabelValue(dm, "marker", edge, markerFront));
+                PetscCall(DMSetLabelValue(dm, "marker", cone[0], markerFront));
+                if (ex == numXEdges-1) PetscCall(DMSetLabelValue(dm, "marker", cone[1], markerFront));
               }
             }
             if (bdZ != DM_BOUNDARY_PERIODIC) {
               if (vz == numZVertices-1) {
                 PetscCall(DMSetLabelValue(dm, "marker", edge, markerTop));
-              }
-              else if (vz == 0) {
+                PetscCall(DMSetLabelValue(dm, "marker", cone[0], markerTop));
+                if (ex == numXEdges-1) PetscCall(DMSetLabelValue(dm, "marker", cone[1], markerTop));
+              } else if (vz == 0) {
                 PetscCall(DMSetLabelValue(dm, "marker", edge, markerBottom));
+                PetscCall(DMSetLabelValue(dm, "marker", cone[0], markerBottom));
+                if (ex == numXEdges-1) PetscCall(DMSetLabelValue(dm, "marker", cone[1], markerBottom));
               }
             }
           }
@@ -1178,14 +1220,16 @@ static PetscErrorCode DMPlexCreateBoxMesh_Tensor_Internal(DM dm, PetscInt dim, c
   if (periodicity[0] == DM_BOUNDARY_PERIODIC || periodicity[0] == DM_BOUNDARY_TWIST ||
       periodicity[1] == DM_BOUNDARY_PERIODIC || periodicity[1] == DM_BOUNDARY_TWIST ||
       (dim > 2 && (periodicity[2] == DM_BOUNDARY_PERIODIC || periodicity[2] == DM_BOUNDARY_TWIST))) {
-    PetscReal L[3];
-    PetscReal maxCell[3];
+    PetscReal L[3]       = {-1., -1., 0.};
+    PetscReal maxCell[3] = {-1., -1., 0.};
 
     for (d = 0; d < dim; ++d) {
-      L[d]       = upper[d] - lower[d];
-      maxCell[d] = 1.1 * (L[d] / PetscMax(1, faces[d]));
+      if (periodicity[d] != DM_BOUNDARY_NONE) {
+        L[d]       = upper[d] - lower[d];
+        maxCell[d] = 1.1 * (L[d] / PetscMax(1, faces[d]));
+      }
     }
-    PetscCall(DMSetPeriodicity(dm, PETSC_TRUE, maxCell, L, periodicity));
+    PetscCall(DMSetPeriodicity(dm, maxCell, lower, L));
   }
   PetscCall(DMPlexSetRefinementUniform(dm, PETSC_TRUE));
   PetscFunctionReturn(0);
@@ -1277,6 +1321,7 @@ PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool simple
   PetscCall(DMCreate(comm,dm));
   PetscCall(DMSetType(*dm,DMPLEX));
   PetscCall(DMPlexCreateBoxMesh_Internal(*dm, dim, simplex, faces ? faces : fac, lower ? lower : low, upper ? upper : upp, periodicity ? periodicity : bdt, interpolate));
+  if (periodicity) PetscCall(DMLocalizeCoordinates(*dm));
   PetscFunctionReturn(0);
 }
 
@@ -1349,6 +1394,7 @@ PetscErrorCode DMPlexCreateWedgeBoxMesh(MPI_Comm comm, const PetscInt faces[], c
     PetscCall(DMPlexUninterpolate(*dm, &udm));
     PetscCall(DMPlexReplace_Static(*dm, &udm));
   }
+  if (periodicity) PetscCall(DMLocalizeCoordinates(*dm));
   PetscFunctionReturn(0);
 }
 
@@ -1586,21 +1632,15 @@ static PetscErrorCode DMPlexCreateHexCylinderMesh_Internal(DM dm, DMBoundaryType
   }
   /* Create periodicity */
   if (periodicZ == DM_BOUNDARY_PERIODIC || periodicZ == DM_BOUNDARY_TWIST) {
-    PetscReal      L[3];
-    PetscReal      maxCell[3];
-    DMBoundaryType bdType[3];
-    PetscReal      lower[3] = {0.0, 0.0, 0.0};
-    PetscReal      upper[3] = {1.0, 1.0, 1.5};
-    PetscInt       i, numZCells = 3;
+    PetscReal      L[3]       = {-1., -1., 0.};
+    PetscReal      maxCell[3] = {-1., -1., 0.};
+    PetscReal      lower[3]   = {0.0, 0.0, 0.0};
+    PetscReal      upper[3]   = {1.0, 1.0, 1.5};
+    PetscInt       numZCells  = 3;
 
-    bdType[0] = DM_BOUNDARY_NONE;
-    bdType[1] = DM_BOUNDARY_NONE;
-    bdType[2] = periodicZ;
-    for (i = 0; i < dim; i++) {
-      L[i]       = upper[i] - lower[i];
-      maxCell[i] = 1.1 * (L[i] / numZCells);
-    }
-    PetscCall(DMSetPeriodicity(dm, PETSC_TRUE, maxCell, L, bdType));
+    L[2]       = upper[2] - lower[2];
+    maxCell[2] = 1.1 * (L[2] / numZCells);
+    PetscCall(DMSetPeriodicity(dm, maxCell, lower, L));
   }
   {
     DM          cdm;
@@ -2823,8 +2863,9 @@ static PetscErrorCode DMPlexCreateTPSMesh_Internal(DM dm, DMPlexTPSType tpstype,
     PetscCall(DMPlexTransformCreateDiscLabels(tr, edm));
     PetscCall(DMPlexTransformDestroy(&tr));
     if (edm) {
-      ((DM_Plex *)edm->data)->printFEM = ((DM_Plex *)dm->data)->printFEM;
-      ((DM_Plex *)edm->data)->printL2  = ((DM_Plex *)dm->data)->printL2;
+      ((DM_Plex *)edm->data)->printFEM    = ((DM_Plex *)dm->data)->printFEM;
+      ((DM_Plex *)edm->data)->printL2     = ((DM_Plex *)dm->data)->printL2;
+      ((DM_Plex *)edm->data)->printLocate = ((DM_Plex *)dm->data)->printLocate;
     }
     PetscCall(DMPlexReplace_Static(dm, &edm));
   }
@@ -3158,13 +3199,14 @@ static PetscErrorCode DMPlexCreateBoundaryLabel_Private(DM dm, const char name[]
   DMLabel        label;
   PetscBool      hasLabel;
 
-  PetscFunctionBeginUser;
+  PetscFunctionBegin;
   PetscCall(DMHasLabel(dm, name, &hasLabel));
   if (hasLabel) PetscFunctionReturn(0);
   PetscCall(DMCreateLabel(dm, name));
   PetscCall(DMGetLabel(dm, name, &label));
   PetscCall(DMConvert(dm, DMPLEX, &plex));
   PetscCall(DMPlexMarkBoundaryFaces(plex, 1, label));
+  PetscCall(DMPlexLabelComplete(plex, label));
   PetscCall(DMDestroy(&plex));
   PetscFunctionReturn(0);
 }
@@ -3372,6 +3414,7 @@ PetscErrorCode DMSetFromOptions_NonRefinement_Plex(PetscOptionItems *PetscOption
   PetscCall(PetscOptionsBoundedInt("-dm_plex_print_fem", "Debug output level all fem computations", "DMPlexSNESComputeResidualFEM", 0, &mesh->printFEM, NULL,0));
   PetscCall(PetscOptionsReal("-dm_plex_print_tol", "Tolerance for FEM output", "DMPlexSNESComputeResidualFEM", mesh->printTol, &mesh->printTol, NULL));
   PetscCall(PetscOptionsBoundedInt("-dm_plex_print_l2", "Debug output level all L2 diff computations", "DMComputeL2Diff", 0, &mesh->printL2, NULL,0));
+  PetscCall(PetscOptionsBoundedInt("-dm_plex_print_locate", "Debug output level all point location computations", "DMLocatePoints", 0, &mesh->printLocate, NULL,0));
   PetscCall(DMMonitorSetFromOptions(dm, "-dm_plex_monitor_throughput", "Monitor the simulation throughput", "DMPlexMonitorThroughput", DMPlexMonitorThroughput, NULL, &flg));
   if (flg) PetscCall(PetscLogDefaultBegin());
   /* Labeling */
@@ -3574,7 +3617,7 @@ static PetscErrorCode DMSetFromOptions_Plex(PetscOptionItems *PetscOptionsObject
   if (created) {
     DM_Plex  *mesh = (DM_Plex *) dm->data;
     PetscInt  degree = 1;
-    PetscBool periodic, flg;
+    PetscBool flg;
 
     PetscCall(PetscOptionsBool("-dm_coord_space", "Use an FEM space for coordinates", "", coordSpace, &coordSpace, &flg));
     PetscCall(PetscOptionsInt("-dm_coord_petscspace_degree", "FEM degree for coordinate space", "", degree, &degree, NULL));
@@ -3600,9 +3643,8 @@ static PetscErrorCode DMSetFromOptions_Plex(PetscOptionItems *PetscOptionsObject
       }
       mesh->coordFunc = NULL;
     }
+    PetscCall(PetscOptionsBool("-dm_sparse_localize", "Localize only necessary cells", "", dm->sparseLocalize, &dm->sparseLocalize, &flg));
     PetscCall(DMLocalizeCoordinates(dm));
-    PetscCall(DMGetPeriodicity(dm, &periodic, NULL, NULL, NULL));
-    if (periodic) PetscCall(DMSetPeriodicity(dm, PETSC_TRUE, NULL, NULL, NULL));
   }
   /* Handle DMPlex refinement */
   remap = PETSC_TRUE;

@@ -230,6 +230,13 @@ context.
 The directory ``$PETSC_DIR/src/snes/tutorials`` provides a variety of
 examples.
 
+Sometimes a nonlinear solver may produce a step that is not within the domain
+of a given function, for example one with a negative pressure. When this occurs
+one can call ``SNESSetFunctionDomainError()`` or ``SNESSetJacobianDomainError()``
+to indicate to `SNES` the step is not valid. See :any:`sec_vi` for how to
+provide SNES with bounds on the variables to solve (differential) variational inequalities
+and how to control properties of the line step computed.
+
 .. _sec_nlsolvers:
 
 The Nonlinear Solvers
@@ -1144,22 +1151,30 @@ supported for the AIJ and BAIJ matrix formats.
 Variational Inequalities
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-``SNES`` can also solve variational inequalities with box constraints.
+``SNES`` can also solve (differential) variational inequalities with box (bound) constraints.
 These are nonlinear algebraic systems with additional inequality
 constraints on some or all of the variables:
-:math:`Lu_i \le u_i \le Hu_i`. Some or all of the lower bounds may be
-negative infinity (indicated to PETSc with ``SNES_VI_NINF``) and some or
-all of the upper bounds may be infinity (indicated by ``SNES_VI_INF``).
-The command
+:math:`L_i \le u_i \le H_i`. For example, the pressure variable cannot be negative.
+Some, or all, of the lower bounds may be
+negative infinity (indicated to PETSc with ``SNES_VI_NINF``) and some, or
+all, of the upper bounds may be infinity (indicated by ``SNES_VI_INF``).
+The commands
 
 .. code-block::
 
-   SNESVISetVariableBounds(SNES,Vec Lu,Vec Hu);
+   SNESVISetVariableBounds(SNES,Vec L,Vec H);
+   SNESVISetComputeVariableBounds(SNES snes, PetscErrorCode (*compute)(SNES,Vec,Vec))
 
-is used to indicate that one is solving a variational inequality. The
+are used to indicate that one is solving a variational inequality.  Problems with box constraints can be solved with
+the reduced space, `SNESVINEWTONRSLS`, and semi-smooth `SNESVINEWTONSSLS` solvers.
+
+The
 option ``-snes_vi_monitor`` turns on extra monitoring of the active set
 associated with the bounds and ``-snes_vi_type`` allows selecting from
 several VI solvers, the default is preferred.
+
+``SNESLineSearchSetPreCheck()`` and ``SNESLineSearchSetPostCheck()`` can also be used to control properties
+of the steps selected by `SNES`.
 
 .. _sec_snespc:
 

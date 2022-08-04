@@ -30,9 +30,7 @@ PetscErrorCode MatDestroy_Essl(Mat A)
   Mat_Essl       *essl=(Mat_Essl*)A->data;
 
   PetscFunctionBegin;
-  if (essl->CleanUpESSL) {
-    PetscCall(PetscFree4(essl->a,essl->aux,essl->ia,essl->ja));
-  }
+  if (essl->CleanUpESSL) PetscCall(PetscFree4(essl->a,essl->aux,essl->ia,essl->ja));
   PetscCall(PetscFree(A->data));
   PetscFunctionReturn(0);
 }

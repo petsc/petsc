@@ -387,7 +387,7 @@ PetscErrorCode PetscSFCreateSectionSF(PetscSF sf, PetscSection rootSection, Pets
 
     if ((localPoint >= lpStart) && (localPoint < lpEnd)) {
       PetscCall(PetscSectionGetDof(leafSection, localPoint, &dof));
-      numIndices += dof;
+      numIndices += dof < 0 ? 0 : dof;
     }
   }
   PetscCall(PetscMalloc1(numIndices, &localIndices));

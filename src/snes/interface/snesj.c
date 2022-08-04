@@ -64,9 +64,7 @@ PetscErrorCode  SNESComputeJacobianDefault(SNES snes,Vec x1,Mat J,Mat B,void *ct
   PetscCall(PetscObjectGetComm((PetscObject)x1,&comm));
   PetscCallMPI(MPI_Comm_size(comm,&size));
   PetscCall(MatAssembled(B,&assembled));
-  if (assembled) {
-    PetscCall(MatZeroEntries(B));
-  }
+  if (assembled) PetscCall(MatZeroEntries(B));
   if (!snes->nvwork) {
     if (snes->dm) {
       PetscCall(DMGetGlobalVector(snes->dm,&j1a));

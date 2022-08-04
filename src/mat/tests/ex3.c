@@ -11,6 +11,7 @@ int main(int argc,char **args)
   PetscScalar    v[3];
   PetscReal      omega = 1.0,norm;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCall(PetscOptionsGetReal(NULL,NULL,"-omega",&omega,NULL));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));

@@ -33,9 +33,7 @@ static PetscErrorCode MatSOR_BlockMat_Symmetric(Mat A,Vec bb,PetscReal omega,Mat
   PetscCheck(!(flag & SOR_EISENSTAT),PETSC_COMM_SELF,PETSC_ERR_SUP,"No support yet for Eisenstat");
   PetscCheck(omega == 1.0,PETSC_COMM_SELF,PETSC_ERR_SUP,"No support yet for omega not equal to 1.0");
   PetscCheck(!fshift,PETSC_COMM_SELF,PETSC_ERR_SUP,"No support yet for fshift");
-  if ((flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP) && !(flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP)) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot do backward sweep without forward sweep");
-  }
+  PetscCheck(!((flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP) && !(flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP)),PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot do backward sweep without forward sweep");
 
   if (!a->diags) {
     PetscCall(PetscMalloc1(mbs,&a->diags));
@@ -240,7 +238,7 @@ static PetscErrorCode MatSetValues_BlockMat(Mat A,PetscInt m,const PetscInt im[]
       if (in[l] < 0) continue;
       PetscCheck(in[l] < A->cmap->n,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %" PetscInt_FMT " max %" PetscInt_FMT,in[l],A->cmap->n-1);
       col = in[l]; bcol = col/bs;
-      if (A->symmetric && brow > bcol) continue;
+      if (A->symmetric == PETSC_BOOL3_TRUE && brow > bcol) continue;
       ridx = row % bs; cidx = col % bs;
       if (roworiented) value = v[l + k*n];
       else value = v[k + l*m];
@@ -341,9 +339,7 @@ static PetscErrorCode MatLoad_BlockMat(Mat newmat, PetscViewer viewer)
     PetscCall(MatSetSizes(newmat,m,n,PETSC_DETERMINE,PETSC_DETERMINE));
   }
   PetscCall(MatBlockMatSetPreallocation(newmat,bs,0,lens));
-  if (flg) {
-    PetscCall(MatSetOption(newmat,MAT_SYMMETRIC,PETSC_TRUE));
-  }
+  if (flg) PetscCall(MatSetOption(newmat,MAT_SYMMETRIC,PETSC_TRUE));
   amat = (Mat_BlockMat*)(newmat)->data;
 
   /* preallocate the submatrices */
@@ -413,9 +409,7 @@ static PetscErrorCode MatView_BlockMat(Mat A,PetscViewer viewer)
   PetscCall(PetscViewerGetFormat(viewer,&format));
   if (format == PETSC_VIEWER_ASCII_FACTOR_INFO || format == PETSC_VIEWER_ASCII_INFO) {
     PetscCall(PetscViewerASCIIPrintf(viewer,"Nonzero block matrices = %" PetscInt_FMT " \n",a->nz));
-    if (A->symmetric) {
-      PetscCall(PetscViewerASCIIPrintf(viewer,"Only upper triangular part of symmetric matrix is stored\n"));
-    }
+    if (A->symmetric == PETSC_BOOL3_TRUE) PetscCall(PetscViewerASCIIPrintf(viewer,"Only upper triangular part of symmetric matrix is stored\n"));
   }
   PetscFunctionReturn(0);
 }
@@ -602,11 +596,8 @@ static PetscErrorCode MatCreateSubMatrix_BlockMat(Mat A,IS isrow,IS iscol,MatReu
   } else {
     PetscCall(MatCreate(PetscObjectComm((PetscObject)A),&C));
     PetscCall(MatSetSizes(C,nrows,ncols,PETSC_DETERMINE,PETSC_DETERMINE));
-    if (A->symmetric) {
-      PetscCall(MatSetType(C,MATSEQSBAIJ));
-    } else {
-      PetscCall(MatSetType(C,MATSEQAIJ));
-    }
+    if (A->symmetric == PETSC_BOOL3_TRUE) PetscCall(MatSetType(C,MATSEQSBAIJ));
+    else PetscCall(MatSetType(C,MATSEQAIJ));
     PetscCall(MatSeqAIJSetPreallocation(C,0,ailen));
     PetscCall(MatSeqSBAIJSetPreallocation(C,1,0,ailen));
   }
@@ -844,7 +835,10 @@ static struct _MatOps MatOps_Values = {MatSetValues_BlockMat,
                                /*144*/ NULL,
                                        NULL,
                                        NULL,
-                                       NULL
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                               /*150*/ NULL
 };
 
 /*@C

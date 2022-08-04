@@ -49,7 +49,10 @@ class Configure(config.base.Configure):
       acfile  = os.path.join(testdir,'configure.ac')
       if not os.path.isdir(testdir):
         os.mkdir(testdir)
-      accode='AC_INIT(petscconftest, version-0.1)'
+      accode = '''
+AC_INIT(petscconftest, version-0.1)
+AC_OUTPUT
+'''
       fd = open(acfile,'w')
       fd.write(accode)
       fd.close()

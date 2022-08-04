@@ -232,6 +232,7 @@ int main(int argc, char **argv)
   PetscInt        numPoint = 0, numFE = 0, numFV = 0;
   PetscBool       testShell = PETSC_FALSE;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   comm = PETSC_COMM_WORLD;
   PetscOptionsBegin(comm, "", "DMField Tutorial Options", "DM");
@@ -271,11 +272,8 @@ int main(int argc, char **argv)
     }
     PetscCall(DMGetDimension(dm, &dim));
     PetscCall(DMPlexIsSimplex(dm, &simplex));
-    if (simplex) {
-      PetscCall(PetscDTStroudConicalQuadrature(dim, 1, pointsPerEdge, -1.0, 1.0, &quad));
-    } else {
-      PetscCall(PetscDTGaussTensorQuadrature(dim, 1, pointsPerEdge, -1.0, 1.0, &quad));
-    }
+    if (simplex) PetscCall(PetscDTStroudConicalQuadrature(dim, 1, pointsPerEdge, -1.0, 1.0, &quad));
+    else PetscCall(PetscDTGaussTensorQuadrature(dim, 1, pointsPerEdge, -1.0, 1.0, &quad));
     PetscCall(DMPlexGetHeightStratum(dm,0,&cStart,&cEnd));
     if (testShell) {
       Vec ctxVec;

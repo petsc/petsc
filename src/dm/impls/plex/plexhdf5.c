@@ -622,13 +622,13 @@ static PetscErrorCode DMPlexTopologyView_HDF5_XDMF_Private(DM dm, IS globalCellN
   DM              cdm;
   DMLabel         depthLabel, ctLabel;
   IS              cellIS;
-  PetscInt        dim, depth, cellHeight, c;
+  PetscInt        dim, depth, cellHeight, c, n = 0;
   hid_t           fileId, groupId;
 
   PetscFunctionBegin;
   PetscCall(PetscViewerHDF5PushGroup(viewer, "/viz"));
   PetscCall(PetscViewerHDF5OpenGroup(viewer, &fileId, &groupId));
-  PetscStackCallHDF5(H5Gclose,(groupId));
+  PetscCallHDF5(H5Gclose,(groupId));
 
   PetscCall(PetscViewerHDF5PopGroup(viewer));
   PetscCall(DMGetDimension(dm, &dim));
@@ -639,7 +639,7 @@ static PetscErrorCode DMPlexTopologyView_HDF5_XDMF_Private(DM dm, IS globalCellN
   PetscCall(DMPlexGetCellTypeLabel(dm, &ctLabel));
   for (c = 0; c < DM_NUM_POLYTOPES; ++c) {
     const DMPolytopeType ict = (DMPolytopeType) c;
-    PetscInt             pStart, pEnd, dep, numCorners, n = 0;
+    PetscInt             pStart, pEnd, dep, numCorners;
     PetscBool            output = PETSC_FALSE, doOutput;
 
     if (ict == DM_POLYTOPE_FV_GHOST) continue;
@@ -758,7 +758,6 @@ static PetscErrorCode DMPlexCoordinatesView_HDF5_XDMF_Private(DM dm, PetscViewer
   PetscScalar     *coords, *ncoords;
   DMLabel          cutLabel, cutVertexLabel = NULL;
   const PetscReal *L;
-  const DMBoundaryType *bd;
   PetscReal        lengthScale;
   PetscInt         vStart, vEnd, v, bs, N, coordSize, dof, off, d;
   PetscBool        localized, embedded;
@@ -771,7 +770,7 @@ static PetscErrorCode DMPlexCoordinatesView_HDF5_XDMF_Private(DM dm, PetscViewer
   PetscCall(VecGetBlockSize(coordinatesLocal, &bs));
   PetscCall(DMGetCoordinatesLocalized(dm, &localized));
   if (localized == PETSC_FALSE) PetscFunctionReturn(0);
-  PetscCall(DMGetPeriodicity(dm, NULL, NULL, &L, &bd));
+  PetscCall(DMGetPeriodicity(dm, NULL, NULL, &L));
   PetscCall(DMGetCoordinateDM(dm, &cdm));
   PetscCall(DMGetLocalSection(cdm, &cSection));
   PetscCall(DMGetGlobalSection(cdm, &cGlobalSection));
@@ -805,7 +804,7 @@ static PetscErrorCode DMPlexCoordinatesView_HDF5_XDMF_Private(DM dm, PetscViewer
     PetscCall(PetscSectionGetOffset(cSection, v, &off));
     if (dof < 0) continue;
     if (embedded) {
-      if ((bd[0] == DM_BOUNDARY_PERIODIC) && (bd[1] == DM_BOUNDARY_PERIODIC)) {
+      if (L && (L[0] > 0.0) && (L[1] > 0.0)) {
         PetscReal theta, phi, r, R;
         /* XY-periodic */
         /* Suppose its an y-z circle, then
@@ -819,16 +818,17 @@ static PetscErrorCode DMPlexCoordinatesView_HDF5_XDMF_Private(DM dm, PetscViewer
         ncoords[coordSize++] =  PetscSinReal(phi) * r;
         ncoords[coordSize++] = -PetscCosReal(theta) * (R + r * PetscCosReal(phi));
         ncoords[coordSize++] =  PetscSinReal(theta) * (R + r * PetscCosReal(phi));
-      } else if ((bd[0] == DM_BOUNDARY_PERIODIC)) {
+      } else if (L && (L[0] > 0.0)) {
         /* X-periodic */
         ncoords[coordSize++] = -PetscCosReal(2.0*PETSC_PI*PetscRealPart(coords[off+0])/L[0])*(L[0]/(2.0*PETSC_PI));
         ncoords[coordSize++] = coords[off+1];
         ncoords[coordSize++] = PetscSinReal(2.0*PETSC_PI*PetscRealPart(coords[off+0])/L[0])*(L[0]/(2.0*PETSC_PI));
-      } else if ((bd[1] == DM_BOUNDARY_PERIODIC)) {
+      } else if (L && (L[1] > 0.0)) {
         /* Y-periodic */
         ncoords[coordSize++] = coords[off+0];
         ncoords[coordSize++] = PetscSinReal(2.0*PETSC_PI*PetscRealPart(coords[off+1])/L[1])*(L[1]/(2.0*PETSC_PI));
         ncoords[coordSize++] = -PetscCosReal(2.0*PETSC_PI*PetscRealPart(coords[off+1])/L[1])*(L[1]/(2.0*PETSC_PI));
+#if 0
       } else if ((bd[0] == DM_BOUNDARY_TWIST)) {
         PetscReal phi, r, R;
         /* Mobius strip */
@@ -842,6 +842,7 @@ static PetscErrorCode DMPlexCoordinatesView_HDF5_XDMF_Private(DM dm, PetscViewer
         ncoords[coordSize++] = -PetscCosReal(phi) * (R + r * PetscCosReal(phi/2.0));
         ncoords[coordSize++] =  PetscSinReal(phi/2.0) * r;
         ncoords[coordSize++] =  PetscSinReal(phi) * (R + r * PetscCosReal(phi/2.0));
+#endif
       } else SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Cannot handle periodicity in this domain");
     } else {
       for (d = 0; d < dof; ++d, ++coordSize) ncoords[coordSize] = coords[off+d];
@@ -859,7 +860,7 @@ static PetscErrorCode DMPlexCoordinatesView_HDF5_XDMF_Private(DM dm, PetscViewer
       for (v = 0; v < n; ++v) {
         PetscCall(PetscSectionGetDof(cSection, verts[v], &dof));
         PetscCall(PetscSectionGetOffset(cSection, verts[v], &off));
-        for (d = 0; d < dof; ++d) ncoords[coordSize++] = coords[off+d] + ((bd[d] == DM_BOUNDARY_PERIODIC) ? L[d] : 0.0);
+        for (d = 0; d < dof; ++d) ncoords[coordSize++] = coords[off+d] + ((L[d] > 0.) ? L[d] : 0.0);
       }
       PetscCall(ISRestoreIndices(vertices, &verts));
       PetscCall(ISDestroy(&vertices));
@@ -873,7 +874,7 @@ static PetscErrorCode DMPlexCoordinatesView_HDF5_XDMF_Private(DM dm, PetscViewer
   PetscCall(VecScale(newcoords, lengthScale));
   PetscCall(PetscViewerHDF5PushGroup(viewer, "/viz"));
   PetscCall(PetscViewerHDF5OpenGroup(viewer, &fileId, &groupId));
-  PetscStackCallHDF5(H5Gclose,(groupId));
+  PetscCallHDF5(H5Gclose,(groupId));
   PetscCall(PetscViewerHDF5PopGroup(viewer));
   PetscCall(PetscViewerHDF5PushGroup(viewer, "/viz/geometry"));
   PetscCall(VecView(newcoords, viewer));
@@ -1306,7 +1307,7 @@ static herr_t ReadLabelHDF5_Static(hid_t g_id, const char *lname, const H5L_info
   ierr = DMGetLabel(dm, lname, &ctx->label); if (ierr) return (herr_t) ierr;
   ierr = PetscViewerHDF5PushGroup(ctx->viewer, lname); if (ierr) return (herr_t) ierr;
   /* Iterate over the label's strata */
-  PetscStackCallHDF5Return(err, H5Literate_by_name, (g_id, lname, H5_INDEX_NAME, H5_ITER_NATIVE, &idx, ReadLabelStratumHDF5_Static, op_data, 0));
+  PetscCallHDF5Return(err, H5Literate_by_name, (g_id, lname, H5_INDEX_NAME, H5_ITER_NATIVE, &idx, ReadLabelStratumHDF5_Static, op_data, 0));
   ierr = PetscViewerHDF5PopGroup(ctx->viewer); if (ierr) return (herr_t) ierr;
   return err;
 }
@@ -1340,8 +1341,8 @@ PetscErrorCode DMPlexLabelsLoad_HDF5_Internal(DM dm, PetscViewer viewer, PetscSF
 
     PetscCall(PetscViewerHDF5OpenGroup(viewer, &fileId, &groupId));
     /* Iterate over labels */
-    PetscStackCallHDF5(H5Literate,(groupId, H5_INDEX_NAME, H5_ITER_NATIVE, &idx, ReadLabelHDF5_Static, ctx));
-    PetscStackCallHDF5(H5Gclose,(groupId));
+    PetscCallHDF5(H5Literate,(groupId, H5_INDEX_NAME, H5_ITER_NATIVE, &idx, ReadLabelHDF5_Static, ctx));
+    PetscCallHDF5(H5Gclose,(groupId));
   }
   PetscCall(PetscViewerHDF5PopGroup(viewer));
   PetscCall(LoadLabelsCtxDestroy(&ctx));
@@ -1493,7 +1494,7 @@ static PetscErrorCode DMPlexCoordinatesLoad_HDF5_Legacy_Private(DM dm, PetscView
   numVertices /= spatialDim;
   /* Create coordinates */
   PetscCall(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
-  PetscCheck(numVertices == vEnd - vStart,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of coordinates loaded %d does not match number of vertices %d", numVertices, vEnd - vStart);
+  PetscCheck(numVertices == vEnd - vStart,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of coordinates loaded %" PetscInt_FMT " does not match number of vertices %" PetscInt_FMT, numVertices, vEnd - vStart);
   PetscCall(DMGetCoordinateSection(dm, &coordSection));
   PetscCall(PetscSectionSetNumFields(coordSection, 1));
   PetscCall(PetscSectionSetFieldComponents(coordSection, 0, spatialDim));
@@ -1849,7 +1850,7 @@ PetscErrorCode DMPlexVecLoad_HDF5_Internal(DM dm, PetscViewer viewer, DM section
     PetscCheck(m1 >= m,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Target vector size (%" PetscInt_FMT ") < SF leaf size (%" PetscInt_FMT ")", m1, m);
     for (i = 0; i < m; ++i) {
       j = ilocal ? ilocal[i] : i;
-      PetscCheck(j >= 0 && j < m1,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Leaf's %" PetscInt_FMT "-th index, %" PetscInt_FMT ", not in [%" PetscInt_FMT ", %" PetscInt_FMT ")", i, j, 0, m1);
+      PetscCheck(j >= 0 && j < m1,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Leaf's %" PetscInt_FMT "-th index, %" PetscInt_FMT ", not in [%" PetscInt_FMT ", %" PetscInt_FMT ")", i, j, (PetscInt)0, m1);
     }
   }
   PetscCall(VecSetSizes(vecA, mA, PETSC_DECIDE));

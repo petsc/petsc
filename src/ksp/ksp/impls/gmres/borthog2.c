@@ -19,19 +19,19 @@
 -   its - one less then the current GMRES restart iteration, i.e. the size of the Krylov space
 
    Options Database Keys:
-+   -ksp_gmres_classicalgramschmidt - Activates KSPGMRESClassicalGramSchmidtOrthogonalization()
++   -ksp_gmres_classicalgramschmidt - Activates `KSPGMRESClassicalGramSchmidtOrthogonalization()`
 -   -ksp_gmres_cgs_refinement_type <refine_never,refine_ifneeded,refine_always> - determine if iterative refinement is
                                    used to increase the stability of the classical Gram-Schmidt  orthogonalization.
 
     Notes:
-    Use KSPGMRESSetCGSRefinementType() to determine if iterative refinement is to be used.
-    This is much faster than KSPGMRESModifiedGramSchmidtOrthogonalization() but has the small possibility of stability issues
-    that can usually be handled by using a a single step of iterative refinement with KSPGMRESSetCGSRefinementType()
+    Use `KSPGMRESSetCGSRefinementType()` to determine if iterative refinement is to be used.
+    This is much faster than `KSPGMRESModifiedGramSchmidtOrthogonalization()` but has the small possibility of stability issues
+    that can usually be handled by using a a single step of iterative refinement with `KSPGMRESSetCGSRefinementType()`
 
    Level: intermediate
 
-.seelalso:  `KSPGMRESSetOrthogonalization()`, `KSPGMRESClassicalGramSchmidtOrthogonalization()`, `KSPGMRESSetCGSRefinementType()`,
-            `KSPGMRESGetCGSRefinementType()`, `KSPGMRESGetOrthogonalization(), `KSPGMRESModifiedGramSchmidtOrthogonalization()`
+.seealso:  `KSPGMRESSetOrthogonalization()`, `KSPGMRESSetCGSRefinementType()`,
+           `KSPGMRESGetCGSRefinementType()`, `KSPGMRESGetOrthogonalization()`, `KSPGMRESModifiedGramSchmidtOrthogonalization()`
 
 @*/
 PetscErrorCode  KSPGMRESClassicalGramSchmidtOrthogonalization(KSP ksp,PetscInt it)

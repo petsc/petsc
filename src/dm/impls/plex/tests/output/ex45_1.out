@@ -262,15 +262,6 @@ Cones:
 coordinates with 1 fields
   field 0 with 2 components
 Process 0:
-  (   0) dim  0 offset   0
-  (   1) dim  0 offset   0
-  (   2) dim  0 offset   0
-  (   3) dim  0 offset   0
-  (   4) dim  0 offset   0
-  (   5) dim  0 offset   0
-  (   6) dim  0 offset   0
-  (   7) dim  0 offset   0
-  (   8) dim  0 offset   0
   (   9) dim  2 offset   0 0. 0.333333
   (  10) dim  2 offset   2 0. 0.
   (  11) dim  2 offset   4 0.333333 0.
@@ -281,34 +272,7 @@ Process 0:
   (  16) dim  2 offset  14 0.666667 0.333333
   (  17) dim  2 offset  16 1. 0.
   (  18) dim  2 offset  18 0. 1.
-  (  19) dim  0 offset  20
-  (  20) dim  0 offset  20
-  (  21) dim  0 offset  20
-  (  22) dim  0 offset  20
-  (  23) dim  0 offset  20
-  (  24) dim  0 offset  20
-  (  25) dim  0 offset  20
-  (  26) dim  0 offset  20
-  (  27) dim  0 offset  20
-  (  28) dim  0 offset  20
-  (  29) dim  0 offset  20
-  (  30) dim  0 offset  20
-  (  31) dim  0 offset  20
-  (  32) dim  0 offset  20
-  (  33) dim  0 offset  20
-  (  34) dim  0 offset  20
-  (  35) dim  0 offset  20
-  (  36) dim  0 offset  20
 Process 1:
-  (   0) dim  0 offset   0
-  (   1) dim  0 offset   0
-  (   2) dim  0 offset   0
-  (   3) dim  0 offset   0
-  (   4) dim  0 offset   0
-  (   5) dim  0 offset   0
-  (   6) dim  0 offset   0
-  (   7) dim  0 offset   0
-  (   8) dim  0 offset   0
   (   9) dim  2 offset   0 0.333333 0.666667
   (  10) dim  2 offset   2 0.666667 0.333333
   (  11) dim  2 offset   4 1. 0.
@@ -319,24 +283,6 @@ Process 1:
   (  16) dim  2 offset  14 1. 0.666667
   (  17) dim  2 offset  16 0.666667 1.
   (  18) dim  2 offset  18 1. 1.
-  (  19) dim  0 offset  20
-  (  20) dim  0 offset  20
-  (  21) dim  0 offset  20
-  (  22) dim  0 offset  20
-  (  23) dim  0 offset  20
-  (  24) dim  0 offset  20
-  (  25) dim  0 offset  20
-  (  26) dim  0 offset  20
-  (  27) dim  0 offset  20
-  (  28) dim  0 offset  20
-  (  29) dim  0 offset  20
-  (  30) dim  0 offset  20
-  (  31) dim  0 offset  20
-  (  32) dim  0 offset  20
-  (  33) dim  0 offset  20
-  (  34) dim  0 offset  20
-  (  35) dim  0 offset  20
-  (  36) dim  0 offset  20
 Labels:
 Label 'celltype':
 [0]: 9 (0)

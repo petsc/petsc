@@ -175,9 +175,7 @@ PetscErrorCode MatSeqSELLSetPreallocation_SeqSELL(Mat B,PetscInt maxallocrow,con
   b->rlenmax          = maxallocrow;
   b->maxallocmat      = b->sliidx[totalslices];
   B->info.nz_unneeded = (double)b->maxallocmat;
-  if (realalloc) {
-    PetscCall(MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE));
-  }
+  if (realalloc) PetscCall(MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE));
   PetscFunctionReturn(0);
 }
 
@@ -687,7 +685,7 @@ PetscErrorCode MatMultTransposeAdd_SeqSELL(Mat A,Vec xx,Vec zz,Vec yy)
 #endif
 
   PetscFunctionBegin;
-  if (A->symmetric) {
+  if (A->symmetric == PETSC_BOOL3_TRUE) {
     PetscCall(MatMultAdd_SeqSELL(A,xx,zz,yy));
     PetscFunctionReturn(0);
   }
@@ -723,7 +721,7 @@ PetscErrorCode MatMultTransposeAdd_SeqSELL(Mat A,Vec xx,Vec zz,Vec yy)
 PetscErrorCode MatMultTranspose_SeqSELL(Mat A,Vec xx,Vec yy)
 {
   PetscFunctionBegin;
-  if (A->symmetric) {
+  if (A->symmetric == PETSC_BOOL3_TRUE) {
     PetscCall(MatMult_SeqSELL(A,xx,yy));
   } else {
     PetscCall(VecSet(yy,0.0));
@@ -908,6 +906,8 @@ PetscErrorCode MatSetOption_SeqSELL(Mat A,MatOption op,PetscBool flg)
   case MAT_STRUCTURALLY_SYMMETRIC:
   case MAT_HERMITIAN:
   case MAT_SYMMETRY_ETERNAL:
+  case MAT_STRUCTURAL_SYMMETRY_ETERNAL:
+  case MAT_SPD_ETERNAL:
     /* These options are handled directly by MatSetOption() */
     break;
   default:
@@ -1377,9 +1377,7 @@ PetscErrorCode MatView_SeqSELL(Mat A,PetscViewer viewer)
     PetscCall(MatView_SeqSELL_ASCII(A,viewer));
   } else if (isbinary) {
     /* PetscCall(MatView_SeqSELL_Binary(A,viewer)); */
-  } else if (isdraw) {
-    PetscCall(MatView_SeqSELL_Draw(A,viewer));
-  }
+  } else if (isdraw) PetscCall(MatView_SeqSELL_Draw(A,viewer));
   PetscFunctionReturn(0);
 }
 
@@ -1601,7 +1599,7 @@ PetscErrorCode MatScale_SeqSELL(Mat inA,PetscScalar alpha)
 
   PetscFunctionBegin;
   PetscCall(PetscBLASIntCast(a->sliidx[a->totalslices],&size));
-  PetscStackCallBLAS("BLASscal",BLASscal_(&size,&oalpha,aval,&one));
+  PetscCallBLAS("BLASscal",BLASscal_(&size,&oalpha,aval,&one));
   PetscCall(PetscLogFlops(a->nz));
   PetscCall(MatSeqSELLInvalidateDiagonal(inA));
   PetscFunctionReturn(0);
@@ -1869,7 +1867,10 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSELL,
                                /*144*/ NULL,
                                        NULL,
                                        NULL,
-                                       NULL
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                               /*150*/ NULL
 };
 
 PetscErrorCode MatStoreValues_SeqSELL(Mat mat)

@@ -19,6 +19,7 @@ int main(int argc,char **argv)
   const PetscScalar *x,*y;
   PetscScalar       *f;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* create vectors X,Y and F and set values in it*/

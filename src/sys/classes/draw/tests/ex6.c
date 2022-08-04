@@ -56,6 +56,7 @@ int main(int argc,char **argv)
   FunctionCtx ctx;
 
   ctx.function = Peaks;
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   PetscCall(PetscOptionsGetString(NULL,NULL,"-draw_cmap",cmap,sizeof(cmap),NULL));
   PetscCall(PetscSNPrintf(title,sizeof(title),"Colormap: %s",cmap));

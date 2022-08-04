@@ -40,9 +40,7 @@ static PetscErrorCode TaoSolve_LMVM(Tao tao)
   /*  Have not converged; continue with Newton method */
   while (tao->reason == TAO_CONTINUE_ITERATING) {
     /* Call general purpose update function */
-    if (tao->ops->update) {
-      PetscCall((*tao->ops->update)(tao, tao->niter, tao->user_update));
-    }
+    if (tao->ops->update) PetscCall((*tao->ops->update)(tao, tao->niter, tao->user_update));
 
     /*  Compute direction */
     if (lmP->H0) {
@@ -144,7 +142,7 @@ static PetscErrorCode TaoSetUp_LMVM(Tao tao)
 {
   TAO_LMVM       *lmP = (TAO_LMVM *)tao->data;
   PetscInt       n,N;
-  PetscBool      is_spd;
+  PetscBool      is_set,is_spd;
 
   PetscFunctionBegin;
   /* Existence of tao->solution checked in TaoSetUp() */
@@ -159,14 +157,11 @@ static PetscErrorCode TaoSetUp_LMVM(Tao tao)
   PetscCall(VecGetSize(tao->solution,&N));
   PetscCall(MatSetSizes(lmP->M, n, n, N, N));
   PetscCall(MatLMVMAllocate(lmP->M,tao->solution,tao->gradient));
-  PetscCall(MatGetOption(lmP->M, MAT_SPD, &is_spd));
-  PetscCheck(is_spd,PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "LMVM matrix is not symmetric positive-definite.");
+  PetscCall(MatIsSPDKnown(lmP->M, &is_set,&is_spd));
+  PetscCheck(is_set && is_spd,PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "LMVM matrix is not symmetric positive-definite.");
 
   /* If the user has set a matrix to solve as the initial H0, set the options prefix here, and set up the KSP */
-  if (lmP->H0) {
-    PetscCall(MatLMVMSetJ0(lmP->M, lmP->H0));
-  }
-
+  if (lmP->H0) PetscCall(MatLMVMSetJ0(lmP->M, lmP->H0));
   PetscFunctionReturn(0);
 }
 
@@ -182,11 +177,8 @@ static PetscErrorCode TaoDestroy_LMVM(Tao tao)
     PetscCall(VecDestroy(&lmP->D));
   }
   PetscCall(MatDestroy(&lmP->M));
-  if (lmP->H0) {
-    PetscCall(PetscObjectDereference((PetscObject)lmP->H0));
-  }
+  if (lmP->H0) PetscCall(PetscObjectDereference((PetscObject)lmP->H0));
   PetscCall(PetscFree(tao->data));
-
   PetscFunctionReturn(0);
 }
 

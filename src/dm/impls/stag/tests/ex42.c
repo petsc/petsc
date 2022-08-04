@@ -11,6 +11,7 @@ int main(int argc,char **argv)
   IS        *fields;
   char     **field_names;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   dim = 2;
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-dim",&dim,NULL));

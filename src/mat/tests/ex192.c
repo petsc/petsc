@@ -19,6 +19,7 @@ int main(int argc,char **args)
   char           solver[256];
   char           file[PETSC_MAX_PATH_LEN]; /* input file name */
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor test");
@@ -139,7 +140,6 @@ int main(int argc,char **args)
     PetscCall(MatGetFactor(A,solver,MAT_FACTOR_LU,&F));
   } else {
     if (herm) {
-      PetscCall(MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE));
       PetscCall(MatSetOption(A,MAT_SPD,PETSC_TRUE));
     } else {
       PetscCall(MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE));

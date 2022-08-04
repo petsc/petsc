@@ -104,6 +104,7 @@ int main(int argc,char **args)
   DM             da;
   PetscMPIInt    rank,size;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,NULL,NULL));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));

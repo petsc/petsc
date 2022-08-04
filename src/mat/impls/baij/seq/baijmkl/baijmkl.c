@@ -106,7 +106,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJMKL_SeqBAIJ(Mat A,MatType type,Mat
    * the spptr pointer. */
   if (reuse == MAT_INITIAL_MATRIX) baijmkl = (Mat_SeqBAIJMKL*)B->spptr;
 
-  if (baijmkl->sparse_optimized) PetscStackCallStandard(mkl_sparse_destroy,baijmkl->bsrA);
+  if (baijmkl->sparse_optimized) PetscCallExternal(mkl_sparse_destroy,baijmkl->bsrA);
   PetscCall(PetscFree2(baijmkl->ai1,baijmkl->aj1));
   PetscCall(PetscFree(B->spptr));
 
@@ -124,7 +124,7 @@ static PetscErrorCode MatDestroy_SeqBAIJMKL(Mat A)
   PetscFunctionBegin;
   if (baijmkl) {
     /* Clean up everything in the Mat_SeqBAIJMKL data structure, then free A->spptr. */
-    if (baijmkl->sparse_optimized) PetscStackCallStandard(mkl_sparse_destroy,baijmkl->bsrA);
+    if (baijmkl->sparse_optimized) PetscCallExternal(mkl_sparse_destroy,baijmkl->bsrA);
     PetscCall(PetscFree2(baijmkl->ai1,baijmkl->aj1));
     PetscCall(PetscFree(A->spptr));
   }

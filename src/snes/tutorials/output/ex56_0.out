@@ -9,13 +9,13 @@ Mesh in 3 dimensions:
   Number of 3-cells per rank: 1 1 1 1
 Labels:
   depth: 4 strata with value/size (0 (8), 1 (12), 2 (6), 3 (1))
-  marker: 1 strata with value/size (1 (15))
+  marker: 1 strata with value/size (1 (23))
   Face Sets: 4 strata with value/size (1 (1), 2 (1), 3 (1), 6 (1))
   boundary: 1 strata with value/size (1 (23))
   celltype: 4 strata with value/size (0 (8), 1 (12), 4 (6), 7 (1))
 Field deformation:
   adjacency FEM
-  Linear solve converged due to CONVERGED_RTOL iterations 18
+  Linear solve converged due to CONVERGED_RTOL iterations 16
 Nonlinear solve converged due to CONVERGED_ITS iterations 1
 DM Object: Mesh (ex56_) 4 MPI processes
   type: plex
@@ -27,7 +27,7 @@ Mesh in 3 dimensions:
 Labels:
   celltype: 4 strata with value/size (0 (27), 1 (54), 4 (36), 7 (8))
   depth: 4 strata with value/size (0 (27), 1 (54), 2 (36), 3 (8))
-  marker: 1 strata with value/size (1 (69))
+  marker: 1 strata with value/size (1 (77))
   Face Sets: 4 strata with value/size (1 (9), 2 (9), 3 (9), 6 (9))
   boundary: 1 strata with value/size (1 (77))
 Field deformation:

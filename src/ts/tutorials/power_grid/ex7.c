@@ -58,6 +58,7 @@ int main(int argc, char **argv)
   AppCtx         user; /* Application context */
   PetscViewer    viewer;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,"petscopt_ex7", help));
 
   /* Get physics and time parameters */

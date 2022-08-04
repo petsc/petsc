@@ -208,9 +208,7 @@ theend:
   PetscCall(PetscInfo(snes,"fct_now = %" PetscInt_FMT ", fct_cum = %" PetscInt_FMT ", rerrf=%g, sqrt(noise)=%g, h_more=%g\n",fcount,neP->function_count,(double)rerrf,(double)PetscSqrtReal(*fnoise),(double)*hopt));
 
   PetscCall(PetscOptionsGetBool(NULL,NULL,"-noise_test",&noise_test,NULL));
-  if (noise_test) {
-    PetscCall(JacMatMultCompare(snes,x,p,*hopt));
-  }
+  if (noise_test) PetscCall(JacMatMultCompare(snes,x,p,*hopt));
   PetscFunctionReturn(0);
 }
 

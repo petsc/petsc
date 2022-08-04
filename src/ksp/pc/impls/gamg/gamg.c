@@ -395,21 +395,21 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
     /* 'a_Amat_crs' output */
     {
       Mat       mat;
-      PetscBool flg;
-      PetscCall(MatCreateSubMatrix(Cmat, new_eq_indices, new_eq_indices, MAT_INITIAL_MATRIX, &mat));
-      PetscCall(MatGetOption(Cmat, MAT_SPD, &flg)); // like MatPropagateSymmetryOptions, but should set MAT_STRUCTURALLY_SYMMETRIC ?
-      if (flg) {
-        PetscCall(MatSetOption(mat, MAT_SPD,PETSC_TRUE));
-      } else {
-        PetscCall(MatGetOption(Cmat, MAT_HERMITIAN, &flg));
-        if (flg) {
-          PetscCall(MatSetOption(mat, MAT_HERMITIAN,PETSC_TRUE));
-        } else {
+      PetscBool isset,isspd,isher;
 #if !defined(PETSC_USE_COMPLEX)
-          PetscCall(MatGetOption(Cmat, MAT_SYMMETRIC, &flg));
-          if (flg) {
-            PetscCall(MatSetOption(mat, MAT_SYMMETRIC,PETSC_TRUE));
-          }
+      PetscBool issym;
+#endif
+
+      PetscCall(MatCreateSubMatrix(Cmat, new_eq_indices, new_eq_indices, MAT_INITIAL_MATRIX, &mat));
+      PetscCall(MatIsSPDKnown(Cmat, &isset, &isspd)); // like MatPropagateSymmetryOptions, but should set MAT_STRUCTURALLY_SYMMETRIC ?
+      if (isset) PetscCall(MatSetOption(mat, MAT_SPD,isspd));
+      else {
+        PetscCall(MatIsHermitianKnown(Cmat,&isset,&isher));
+        if (isset) PetscCall(MatSetOption(mat, MAT_HERMITIAN,isher));
+        else {
+#if !defined(PETSC_USE_COMPLEX)
+          PetscCall(MatIsSymmetricKnown(Cmat,&isset, &issym));
+          if (isset) PetscCall(MatSetOption(mat, MAT_SYMMETRIC,issym));
 #endif
         }
       }
@@ -466,6 +466,7 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
   PetscFunctionReturn(0);
 }
 
+// used in GEO
 PetscErrorCode PCGAMGSquareGraph_GAMG(PC a_pc, Mat Gmat1, Mat* Gmat2)
 {
   const char     *prefix;
@@ -480,7 +481,7 @@ PetscErrorCode PCGAMGSquareGraph_GAMG(PC a_pc, Mat Gmat1, Mat* Gmat2)
   PetscCall(MatSetOptionsPrefix(*Gmat2,prefix));
   PetscCall(PetscSNPrintf(addp,sizeof(addp),"pc_gamg_square_%" PetscInt_FMT "_",pc_gamg->current_level));
   PetscCall(MatAppendOptionsPrefix(*Gmat2,addp));
-  if ((*Gmat2)->structurally_symmetric) {
+  if ((*Gmat2)->structurally_symmetric == PETSC_BOOL3_TRUE) {
     PetscCall(MatProductSetType(*Gmat2,MATPRODUCT_AB));
   } else {
     PetscCall(MatSetOption(Gmat1,MAT_FORM_EXPLICIT_TRANSPOSE,PETSC_TRUE));
@@ -608,7 +609,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
   PetscCall(MatGetInfo(Pmat,MAT_GLOBAL_SUM,&info)); /* global reduction */
   nnz0   = info.nz_used;
   nnztot = info.nz_used;
-  PetscCall(PetscInfo(pc,"%s: level %" PetscInt_FMT ") N=0, n data rows=%" PetscInt_FMT ", n data cols=%" PetscInt_FMT ", nnz/row (ave)=%" PetscInt_FMT ", np=%d\n",((PetscObject)pc)->prefix,M,pc_gamg->data_cell_rows,pc_gamg->data_cell_cols,(PetscInt)(nnz0/(PetscReal)M+0.5),size));
+  PetscCall(PetscInfo(pc,"%s: level %d) N=%" PetscInt_FMT ", n data rows=%" PetscInt_FMT ", n data cols=%" PetscInt_FMT ", nnz/row (ave)=%" PetscInt_FMT ", np=%d\n",((PetscObject)pc)->prefix,0,M,pc_gamg->data_cell_rows,pc_gamg->data_cell_cols,(PetscInt)(nnz0/(PetscReal)M+0.5),size));
 
   /* Get A_i and R_i */
   for (level=0, Aarr[0]=Pmat, nactivepe = size; level < (pc_gamg->Nlevels-1) && (!level || M>pc_gamg->coarse_eq_limit); level++) {
@@ -684,7 +685,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
     PetscCall(MatGetSize(Aarr[level1], &M, &N)); /* M is loop test variables */
     PetscCall(MatGetInfo(Aarr[level1], MAT_GLOBAL_SUM, &info));
     nnztot += info.nz_used;
-    PetscCall(PetscInfo(pc,"%s: %" PetscInt_FMT ") N=%" PetscInt_FMT ", n data cols=%" PetscInt_FMT ", nnz/row (ave)=%" PetscInt_FMT ", %d active pes\n",((PetscObject)pc)->prefix,level1,M,pc_gamg->data_cell_cols,(PetscInt)(info.nz_used/(PetscReal)M),nactivepe));
+    PetscCall(PetscInfo(pc,"%s: %d) N=%" PetscInt_FMT ", n data cols=%" PetscInt_FMT ", nnz/row (ave)=%" PetscInt_FMT ", %d active pes\n",((PetscObject)pc)->prefix,(int)level1,M,pc_gamg->data_cell_cols,(PetscInt)(info.nz_used/(PetscReal)M),nactivepe));
 
 #if defined(GAMG_STAGES)
     PetscCall(PetscLogStagePop());
@@ -842,9 +843,7 @@ PetscErrorCode PCDestroy_GAMG(PC pc)
 
   PetscFunctionBegin;
   PetscCall(PCReset_GAMG(pc));
-  if (pc_gamg->ops->destroy) {
-    PetscCall((*pc_gamg->ops->destroy)(pc));
-  }
+  if (pc_gamg->ops->destroy) PetscCall((*pc_gamg->ops->destroy)(pc));
   PetscCall(PetscFree(pc_gamg->ops));
   PetscCall(PetscFree(pc_gamg->gamg_type_name));
   PetscCall(PetscFree(pc_gamg));
@@ -1286,7 +1285,7 @@ static PetscErrorCode PCGAMGSetNlevels_GAMG(PC pc, PetscInt n)
 
    Level: intermediate
 
-.seealso: `PCGAMGFilterGraph()`, `PCGAMGSetSquareGraph()`
+.seealso: `PCGAMGFilterGraph()`, `PCGAMGSetAggressiveLevels()`
 @*/
 PetscErrorCode PCGAMGSetThreshold(PC pc, PetscReal v[], PetscInt n)
 {
@@ -1495,9 +1494,7 @@ static PetscErrorCode PCView_GAMG(PC pc,PetscViewer viewer)
   /* } else { */
   /*   PetscCall(PetscViewerASCIIPrintf(viewer,"      Put reduced grids on whole machine (ie, 0,1*f,2*f...,np-f)\n")); */
   /* } */
-  if (pc_gamg->ops->view) {
-    PetscCall((*pc_gamg->ops->view)(pc,viewer));
-  }
+  if (pc_gamg->ops->view) PetscCall((*pc_gamg->ops->view)(pc,viewer));
   PetscCall(PCMGGetGridComplexity(pc,&gc,&oc));
   PetscCall(PetscViewerASCIIPrintf(viewer,"      Complexity:    grid = %g    operator = %g\n",(double)gc,(double)oc));
   PetscFunctionReturn(0);
@@ -1517,9 +1514,7 @@ PetscErrorCode PCSetFromOptions_GAMG(PetscOptionItems *PetscOptionsObject,PC pc)
   PetscCall(PetscObjectGetComm((PetscObject)pc,&comm));
   PetscOptionsHeadBegin(PetscOptionsObject,"GAMG options");
   PetscCall(PetscOptionsFList("-pc_gamg_type","Type of AMG method","PCGAMGSetType",GAMGList, pc_gamg->gamg_type_name, tname, sizeof(tname), &flag));
-  if (flag) {
-    PetscCall(PCGAMGSetType(pc,tname));
-  }
+  if (flag) PetscCall(PCGAMGSetType(pc,tname));
   PetscCall(PetscOptionsBool("-pc_gamg_repartition","Repartion coarse grids","PCGAMGSetRepartition",pc_gamg->repart,&pc_gamg->repart,NULL));
   PetscCall(PetscOptionsBool("-pc_gamg_use_sa_esteig","Use eigen estimate from Smoothed aggregation for smoother","PCGAMGSetUseSAEstEig",pc_gamg->use_sa_esteig,&pc_gamg->use_sa_esteig,NULL));
   PetscCall(PetscOptionsBool("-pc_gamg_reuse_interpolation","Reuse prolongation operator","PCGAMGReuseInterpolation",pc_gamg->reuse_prol,&pc_gamg->reuse_prol,NULL));
@@ -1568,18 +1563,19 @@ PetscErrorCode PCSetFromOptions_GAMG(PetscOptionItems *PetscOptionsObject,PC pc)
    Options Database Keys:
 +   -pc_gamg_type <type> - one of agg, geo, or classical
 .   -pc_gamg_repartition  <true,default=false> - repartition the degrees of freedom accross the coarse grids as they are determined
-.   -pc_gamg_reuse_interpolation <true,default=false> - when rebuilding the algebraic multigrid preconditioner reuse the previously computed interpolations
-.   -pc_gamg_asm_use_agg <true,default=false> - use the aggregates from the coasening process to defined the subdomains on each level for the PCASM smoother
+-   -pc_gamg_reuse_interpolation <true,default=false> - when rebuilding the algebraic multigrid preconditioner reuse the previously computed interpolations
++   -pc_gamg_asm_use_agg <true,default=false> - use the aggregates from the coasening process to defined the subdomains on each level for the PCASM smoother
 .   -pc_gamg_process_eq_limit <limit, default=50> - GAMG will reduce the number of MPI processes used directly on the coarse grids so that there are around <limit>
                                         equations on each process that has degrees of freedom
-.   -pc_gamg_coarse_eq_limit <limit, default=50> - Set maximum number of equations on coarsest grid to aim for.
-.   -pc_gamg_threshold[] <thresh,default=0> - Before aggregating the graph GAMG will remove small values from the graph on each level
--   -pc_gamg_threshold_scale <scale,default=1> - Scaling of threshold on each coarser grid if not specified
+-   -pc_gamg_coarse_eq_limit <limit, default=50> - Set maximum number of equations on coarsest grid to aim for.
++   -pc_gamg_threshold[] <thresh,default=-1> - Before aggregating the graph GAMG will remove small values from the graph on each level (< 0 is no filtering)
+.   -pc_gamg_threshold_scale <scale,default=1> - Scaling of threshold on each coarser grid if not specified
 
    Options Database Keys for default Aggregation:
 +  -pc_gamg_agg_nsmooths <nsmooth, default=1> - number of smoothing steps to use with smooth aggregation
-.  -pc_gamg_sym_graph <true,default=false> - symmetrize the graph before computing the aggregation
--  -pc_gamg_square_graph <n,default=1> - number of levels to square the graph before aggregating it
+.  -pc_gamg_symmetrize_graph <true,default=false> - symmetrize the graph before computing the aggregation
+-  -pc_gamg_square_graph <n,default=1> - alias for pc_gamg_aggressive_coarsening (deprecated)
+-  -pc_gamg_aggressive_coarsening <n,default=1> - number of aggressive coarsening (MIS-2) levels from finest.
 
    Multigrid options:
 +  -pc_mg_cycles <v> - v or w, see PCMGSetCycleType()
@@ -1655,7 +1651,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_GAMG(PC pc)
   pc_gamg->layout_type      = PCGAMG_LAYOUT_SPREAD;
   pc_gamg->min_eq_proc      = 50;
   pc_gamg->coarse_eq_limit  = 50;
-  PetscCall(PetscArrayzero(pc_gamg->threshold,PETSC_MG_MAXLEVELS));
+  for (int i=0;i<PETSC_MG_MAXLEVELS;i++) pc_gamg->threshold[i] = -1;
   pc_gamg->threshold_scale = 1.;
   pc_gamg->Nlevels          = PETSC_MG_MAXLEVELS;
   pc_gamg->current_level    = 0; /* don't need to init really */
@@ -1695,7 +1691,6 @@ PetscErrorCode PCGAMGInitializePackage(void)
   PetscCall(PetscLogEventRegister(" PCGAMGCreateG", PC_CLASSID, &petsc_gamg_setup_events[GAMG_GRAPH]));
   PetscCall(PetscLogEventRegister(" PCGAMGFilter", PC_CLASSID, &petsc_gamg_setup_events[GAMG_FILTER]));
   PetscCall(PetscLogEventRegister(" GAMG Coarsen", PC_CLASSID, &petsc_gamg_setup_events[GAMG_COARSEN]));
-  PetscCall(PetscLogEventRegister("  GAMG Square G", PC_CLASSID, &petsc_gamg_setup_events[GAMG_SQUARE]));
   PetscCall(PetscLogEventRegister("  GAMG MIS/Agg", PC_CLASSID, &petsc_gamg_setup_events[GAMG_MIS]));
   PetscCall(PetscLogEventRegister(" PCGAMGProl", PC_CLASSID, &petsc_gamg_setup_events[GAMG_PROL]));
   PetscCall(PetscLogEventRegister("  GAMG Prol-col", PC_CLASSID, &petsc_gamg_setup_events[GAMG_PROLA]));

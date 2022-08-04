@@ -445,6 +445,8 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     lines = [s for s in lines if s.find('The -gpu option has no effect unless a language-specific option to enable GPU code generation is used') < 0]
     # pgi dumps filename on stderr - but returns 0 errorcode'
     lines = [s for s in lines if lines != 'conftest.c:']
+
+    lines = [s for s in lines if len(s)]
     if lines: output = '\n'.join(lines)
     else: output = ''
     log.write("Preprocess output after filtering:\n"+output+":\n")
@@ -498,6 +500,8 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       lines = [s for s in lines if s.find('The -gpu option has no effect unless a language-specific option to enable GPU code generation is used') < 0]
       # pgi dumps filename on stderr - but returns 0 errorcode'
       lines = [s for s in lines if lines != 'conftest.c:']
+
+      lines = [s for s in lines if len(s)]
       if lines: output = '\n'.join(lines)
       else: output = ''
       self.log.write("Compiler output after filtering:\n"+output+":\n")
@@ -550,6 +554,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       lines = [s for s in lines if s.find(' was built for newer macOS version') < 0]
       lines = [s for s in lines if s.find(' was built for newer OSX version') < 0]
       lines = [s for s in lines if s.find(' stack subq instruction is too different from dwarf stack size') < 0]
+      lines = [s for s in lines if s.find('could not create compact unwind') < 0]
       # Nvidia linker
       lines = [s for s in lines if s.find('nvhpc.ld contains output sections') < 0]
       # Intel dpcpp linker
@@ -557,6 +562,10 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       lines = [s for s in lines if s.find('clang-offload-bundler: error:') < 0]
       lines = [s for s in lines if s.find('Compilation from IR - skipping loading of FCL') < 0]
       lines = [s for s in lines if s.find('Build succeeded') < 0]
+
+      lines = [s for s in lines if len(s)]
+      # a line with a single : can be created on macOS when the linker jumbles the output from warning messages with was "built for newer" warnings
+      lines = [s for s in lines if s != ':']
 
       if lines: output = '\n'.join(lines)
       else: output = ''
@@ -855,8 +864,9 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     self.outputMakeMacros(f, self)
     for child in self.childGraph.vertices:
       self.outputMakeMacros(f, child)
-    # The testoptions are provided in packages/
+    # This options are used in all runs of the test harness
     testoptions = ''
+    # Additional testoptions are provided in packages/
     for child in self.childGraph.vertices:
         if hasattr(child,'found') and child.found and hasattr(child,'testoptions') and child.testoptions:
           testoptions += ' '+child.testoptions
@@ -1028,6 +1038,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     return
 
   def configureExternalPackagesDir(self):
+    '''Set alternative directory external packages are built in'''
     if 'with-packages-build-dir' in self.argDB:
       self.externalPackagesDir = self.argDB['with-packages-build-dir']
     else:

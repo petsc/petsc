@@ -22,6 +22,7 @@ int main(int argc,char **argv)
   PetscBool      view_final;
   Ctx            ctx;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   ctx.n = 3;
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&ctx.n,NULL));
@@ -79,9 +80,7 @@ int main(int argc,char **argv)
   PetscCall(TSGetSNESIterations(ts,&nits));
   PetscCall(TSGetKSPIterations(ts,&lits));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Time integrator took (%" PetscInt_FMT ",%" PetscInt_FMT ",%" PetscInt_FMT ") iterations to reach final time %g\n",steps,nits,lits,(double)ftime));
-  if (view_final) {
-    PetscCall(VecView(X,PETSC_VIEWER_STDOUT_WORLD));
-  }
+  if (view_final) PetscCall(VecView(X,PETSC_VIEWER_STDOUT_WORLD));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they

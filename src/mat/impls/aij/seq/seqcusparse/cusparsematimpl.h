@@ -18,7 +18,7 @@
 #include <thrust/sequence.h>
 #include <thrust/system/system_error.h>
 
-#define PetscStackCallThrust(body) do {                                     \
+#define PetscCallThrust(body) do {                                     \
     try {                                                                   \
       body;                                                                 \
     } catch(thrust::system_error& e) {                                      \
@@ -30,57 +30,86 @@
   #if defined(PETSC_USE_REAL_SINGLE)
     const cuComplex PETSC_CUSPARSE_ONE        = {1.0f, 0.0f};
     const cuComplex PETSC_CUSPARSE_ZERO       = {0.0f, 0.0f};
+    #define cusparseXcsrilu02_bufferSize(a,b,c,d,e,f,g,h,i)     cusparseCcsrilu02_bufferSize(a,b,c,d,(cuComplex*)e,f,g,h,i)
+    #define cusparseXcsrilu02_analysis(a,b,c,d,e,f,g,h,i,j)     cusparseCcsrilu02_analysis(a,b,c,d,(cuComplex*)e,f,g,h,i,j)
+    #define cusparseXcsrilu02(a,b,c,d,e,f,g,h,i,j)              cusparseCcsrilu02(a,b,c,d,(cuComplex*)e,f,g,h,i,j)
+    #define cusparseXcsric02_bufferSize(a,b,c,d,e,f,g,h,i)      cusparseCcsric02_bufferSize(a,b,c,d,(cuComplex*)e,f,g,h,i)
+    #define cusparseXcsric02_analysis(a,b,c,d,e,f,g,h,i,j)      cusparseCcsric02_analysis(a,b,c,d,(cuComplex*)e,f,g,h,i,j)
+    #define cusparseXcsric02(a,b,c,d,e,f,g,h,i,j)               cusparseCcsric02(a,b,c,d,(cuComplex*)e,f,g,h,i,j)
   #elif defined(PETSC_USE_REAL_DOUBLE)
     const cuDoubleComplex PETSC_CUSPARSE_ONE  = {1.0, 0.0};
     const cuDoubleComplex PETSC_CUSPARSE_ZERO = {0.0, 0.0};
+    #define cusparseXcsrilu02_bufferSize(a,b,c,d,e,f,g,h,i)     cusparseZcsrilu02_bufferSize(a,b,c,d,(cuDoubleComplex*)e,f,g,h,i)
+    #define cusparseXcsrilu02_analysis(a,b,c,d,e,f,g,h,i,j)     cusparseZcsrilu02_analysis(a,b,c,d,(cuDoubleComplex*)e,f,g,h,i,j)
+    #define cusparseXcsrilu02(a,b,c,d,e,f,g,h,i,j)              cusparseZcsrilu02(a,b,c,d,(cuDoubleComplex*)e,f,g,h,i,j)
+    #define cusparseXcsric02_bufferSize(a,b,c,d,e,f,g,h,i)      cusparseZcsric02_bufferSize(a,b,c,d,(cuDoubleComplex*)e,f,g,h,i)
+    #define cusparseXcsric02_analysis(a,b,c,d,e,f,g,h,i,j)      cusparseZcsric02_analysis(a,b,c,d,(cuDoubleComplex*)e,f,g,h,i,j)
+    #define cusparseXcsric02(a,b,c,d,e,f,g,h,i,j)               cusparseZcsric02(a,b,c,d,(cuDoubleComplex*)e,f,g,h,i,j)
   #endif
 #else
   const PetscScalar PETSC_CUSPARSE_ONE        = 1.0;
   const PetscScalar PETSC_CUSPARSE_ZERO       = 0.0;
+  #if defined(PETSC_USE_REAL_SINGLE)
+    #define cusparseXcsrilu02_bufferSize    cusparseScsrilu02_bufferSize
+    #define cusparseXcsrilu02_analysis      cusparseScsrilu02_analysis
+    #define cusparseXcsrilu02               cusparseScsrilu02
+    #define cusparseXcsric02_bufferSize     cusparseScsric02_bufferSize
+    #define cusparseXcsric02_analysis       cusparseScsric02_analysis
+    #define cusparseXcsric02                cusparseScsric02
+  #elif defined(PETSC_USE_REAL_DOUBLE)
+    #define cusparseXcsrilu02_bufferSize    cusparseDcsrilu02_bufferSize
+    #define cusparseXcsrilu02_analysis      cusparseDcsrilu02_analysis
+    #define cusparseXcsrilu02               cusparseDcsrilu02
+    #define cusparseXcsric02_bufferSize     cusparseDcsric02_bufferSize
+    #define cusparseXcsric02_analysis       cusparseDcsric02_analysis
+    #define cusparseXcsric02                cusparseDcsric02
+  #endif
 #endif
 
 #if PETSC_PKG_CUDA_VERSION_GE(9,0,0)
-  #define cusparse_create_analysis_info  cusparseCreateCsrsv2Info
-  #define cusparse_destroy_analysis_info cusparseDestroyCsrsv2Info
+  #define csrsvInfo_t              csrsv2Info_t
+  #define cusparseCreateCsrsvInfo  cusparseCreateCsrsv2Info
+  #define cusparseDestroyCsrsvInfo cusparseDestroyCsrsv2Info
   #if defined(PETSC_USE_COMPLEX)
     #if defined(PETSC_USE_REAL_SINGLE)
-      #define cusparse_get_svbuffsize(a,b,c,d,e,f,g,h,i,j) cusparseCcsrsv2_bufferSize(a,b,c,d,e,(cuComplex*)(f),g,h,i,j)
-      #define cusparse_analysis(a,b,c,d,e,f,g,h,i,j,k)     cusparseCcsrsv2_analysis(a,b,c,d,e,(const cuComplex*)(f),g,h,i,j,k)
-      #define cusparse_solve(a,b,c,d,e,f,g,h,i,j,k,l,m,n)  cusparseCcsrsv2_solve(a,b,c,d,(const cuComplex*)(e),f,(const cuComplex*)(g),h,i,j,(const cuComplex*)(k),(cuComplex*)(l),m,n)
+      #define cusparseXcsrsv_buffsize(a,b,c,d,e,f,g,h,i,j)       cusparseCcsrsv2_bufferSize(a,b,c,d,e,(cuComplex*)(f),g,h,i,j)
+      #define cusparseXcsrsv_analysis(a,b,c,d,e,f,g,h,i,j,k)     cusparseCcsrsv2_analysis(a,b,c,d,e,(const cuComplex*)(f),g,h,i,j,k)
+      #define cusparseXcsrsv_solve(a,b,c,d,e,f,g,h,i,j,k,l,m,n)  cusparseCcsrsv2_solve(a,b,c,d,(const cuComplex*)(e),f,(const cuComplex*)(g),h,i,j,(const cuComplex*)(k),(cuComplex*)(l),m,n)
     #elif defined(PETSC_USE_REAL_DOUBLE)
-      #define cusparse_get_svbuffsize(a,b,c,d,e,f,g,h,i,j) cusparseZcsrsv2_bufferSize(a,b,c,d,e,(cuDoubleComplex*)(f),g,h,i,j)
-      #define cusparse_analysis(a,b,c,d,e,f,g,h,i,j,k)     cusparseZcsrsv2_analysis(a,b,c,d,e,(const cuDoubleComplex*)(f),g,h,i,j,k)
-      #define cusparse_solve(a,b,c,d,e,f,g,h,i,j,k,l,m,n)  cusparseZcsrsv2_solve(a,b,c,d,(const cuDoubleComplex*)(e),f,(const cuDoubleComplex*)(g),h,i,j,(const cuDoubleComplex*)(k),(cuDoubleComplex*)(l),m,n)
+      #define cusparseXcsrsv_buffsize(a,b,c,d,e,f,g,h,i,j)       cusparseZcsrsv2_bufferSize(a,b,c,d,e,(cuDoubleComplex*)(f),g,h,i,j)
+      #define cusparseXcsrsv_analysis(a,b,c,d,e,f,g,h,i,j,k)     cusparseZcsrsv2_analysis(a,b,c,d,e,(const cuDoubleComplex*)(f),g,h,i,j,k)
+      #define cusparseXcsrsv_solve(a,b,c,d,e,f,g,h,i,j,k,l,m,n)  cusparseZcsrsv2_solve(a,b,c,d,(const cuDoubleComplex*)(e),f,(const cuDoubleComplex*)(g),h,i,j,(const cuDoubleComplex*)(k),(cuDoubleComplex*)(l),m,n)
     #endif
   #else /* not complex */
     #if defined(PETSC_USE_REAL_SINGLE)
-      #define cusparse_get_svbuffsize cusparseScsrsv2_bufferSize
-      #define cusparse_analysis       cusparseScsrsv2_analysis
-      #define cusparse_solve          cusparseScsrsv2_solve
+      #define cusparseXcsrsv_buffsize       cusparseScsrsv2_bufferSize
+      #define cusparseXcsrsv_analysis       cusparseScsrsv2_analysis
+      #define cusparseXcsrsv_solve          cusparseScsrsv2_solve
     #elif defined(PETSC_USE_REAL_DOUBLE)
-      #define cusparse_get_svbuffsize cusparseDcsrsv2_bufferSize
-      #define cusparse_analysis       cusparseDcsrsv2_analysis
-      #define cusparse_solve          cusparseDcsrsv2_solve
+      #define cusparseXcsrsv_buffsize       cusparseDcsrsv2_bufferSize
+      #define cusparseXcsrsv_analysis       cusparseDcsrsv2_analysis
+      #define cusparseXcsrsv_solve          cusparseDcsrsv2_solve
     #endif
   #endif
 #else
-  #define cusparse_create_analysis_info  cusparseCreateSolveAnalysisInfo
-  #define cusparse_destroy_analysis_info cusparseDestroySolveAnalysisInfo
+  #define csrsvInfo_t              cusparseSolveAnalysisInfo_t
+  #define cusparseCreateCsrsvInfo  cusparseCreateSolveAnalysisInfo
+  #define cusparseDestroyCsrsvInfo cusparseDestroySolveAnalysisInfo
   #if defined(PETSC_USE_COMPLEX)
     #if defined(PETSC_USE_REAL_SINGLE)
-      #define cusparse_solve(a,b,c,d,e,f,g,h,i,j,k) cusparseCcsrsv_solve((a),(b),(c),(cuComplex*)(d),(e),(cuComplex*)(f),(g),(h),(i),(cuComplex*)(j),(cuComplex*)(k))
-      #define cusparse_analysis(a,b,c,d,e,f,g,h,i)  cusparseCcsrsv_analysis((a),(b),(c),(d),(e),(cuComplex*)(f),(g),(h),(i))
+      #define cusparseXcsrsv_solve(a,b,c,d,e,f,g,h,i,j,k) cusparseCcsrsv_solve((a),(b),(c),(cuComplex*)(d),(e),(cuComplex*)(f),(g),(h),(i),(cuComplex*)(j),(cuComplex*)(k))
+      #define cusparseXcsrsv_analysis(a,b,c,d,e,f,g,h,i)  cusparseCcsrsv_analysis((a),(b),(c),(d),(e),(cuComplex*)(f),(g),(h),(i))
     #elif defined(PETSC_USE_REAL_DOUBLE)
-      #define cusparse_solve(a,b,c,d,e,f,g,h,i,j,k) cusparseZcsrsv_solve((a),(b),(c),(cuDoubleComplex*)(d),(e),(cuDoubleComplex*)(f),(g),(h),(i),(cuDoubleComplex*)(j),(cuDoubleComplex*)(k))
-      #define cusparse_analysis(a,b,c,d,e,f,g,h,i)  cusparseZcsrsv_analysis((a),(b),(c),(d),(e),(cuDoubleComplex*)(f),(g),(h),(i))
+      #define cusparseXcsrsv_solve(a,b,c,d,e,f,g,h,i,j,k) cusparseZcsrsv_solve((a),(b),(c),(cuDoubleComplex*)(d),(e),(cuDoubleComplex*)(f),(g),(h),(i),(cuDoubleComplex*)(j),(cuDoubleComplex*)(k))
+      #define cusparseXcsrsv_analysis(a,b,c,d,e,f,g,h,i)  cusparseZcsrsv_analysis((a),(b),(c),(d),(e),(cuDoubleComplex*)(f),(g),(h),(i))
     #endif
   #else /* not complex */
     #if defined(PETSC_USE_REAL_SINGLE)
-      #define cusparse_solve    cusparseScsrsv_solve
-      #define cusparse_analysis cusparseScsrsv_analysis
+      #define cusparseXcsrsv_solve    cusparseScsrsv_solve
+      #define cusparseXcsrsv_analysis cusparseScsrsv_analysis
     #elif defined(PETSC_USE_REAL_DOUBLE)
-      #define cusparse_solve    cusparseDcsrsv_solve
-      #define cusparse_analysis cusparseDcsrsv_analysis
+      #define cusparseXcsrsv_solve    cusparseDcsrsv_solve
+      #define cusparseXcsrsv_analysis cusparseDcsrsv_analysis
     #endif
   #endif
 #endif
@@ -172,11 +201,7 @@ struct Mat_SeqAIJCUSPARSETriFactorStruct {
   cusparseMatDescr_t          descr;
   cusparseOperation_t         solveOp;
   CsrMatrix                   *csrMat;
- #if PETSC_PKG_CUDA_VERSION_GE(9,0,0)
-  csrsv2Info_t                solveInfo;
- #else
-  cusparseSolveAnalysisInfo_t solveInfo;
- #endif
+  csrsvInfo_t                 solveInfo;
   cusparseSolvePolicy_t       solvePolicy;     /* whether level information is generated and used */
   int                         solveBufferSize;
   void                        *solveBuffer;
@@ -200,6 +225,42 @@ struct Mat_SeqAIJCUSPARSETriFactors {
   int                               *i_band_d; /* this could be optimized away */
   cudaDeviceProp                    dev_prop;
   PetscBool                         init_dev_prop;
+
+  /* csrilu0/csric0 appeared in cusparse-8.0, but we use it along with cusparseSpSV,
+     which first appeared in cusparse-11.5 with cuda-11.3.
+  */
+  PetscBool             factorizeOnDevice; /* Do factorization on device or not */
+ #if CUSPARSE_VERSION >= 11500
+  PetscScalar           *csrVal;
+  int                   *csrRowPtr,*csrColIdx; /* a,i,j of M. Using int since some cusparse APIs only support 32-bit indices */
+
+  /* Mixed mat descriptor types? yes, different cusparse APIs use different types */
+  cusparseMatDescr_t    matDescr_M;
+  cusparseSpMatDescr_t  spMatDescr_L,spMatDescr_U;
+  cusparseSpSVDescr_t   spsvDescr_L,spsvDescr_Lt,spsvDescr_U,spsvDescr_Ut;
+
+  cusparseDnVecDescr_t  dnVecDescr_X,dnVecDescr_Y;
+  PetscScalar           *X,*Y; /* data array of dnVec X and Y */
+
+  /* Mixed size types? yes, CUDA-11.7.0 declared cusparseDcsrilu02_bufferSizeExt() that returns size_t but did not implement it! */
+  int                   factBufferSize_M; /* M ~= LU or LLt */
+  size_t                spsvBufferSize_L,spsvBufferSize_Lt,spsvBufferSize_U,spsvBufferSize_Ut;
+  /* cusparse needs various buffers for factorization and solve of L, U, Lt, or Ut.
+     So save memory, we share the factorization buffer with one of spsvBuffer_L/U.
+  */
+  void                  *factBuffer_M,*spsvBuffer_L,*spsvBuffer_U,*spsvBuffer_Lt,*spsvBuffer_Ut;
+
+  csrilu02Info_t        ilu0Info_M;
+  csric02Info_t         ic0Info_M;
+  int                   structural_zero,numerical_zero;
+  cusparseSolvePolicy_t policy_M;
+
+  /* In MatSolveTranspose() for ILU0, we use the two flags to do on-demand solve */
+  PetscBool             createdTransposeSpSVDescr; /* Have we created SpSV descriptors for Lt, Ut? */
+  PetscBool             updatedTransposeSpSVAnalysis; /* Have we updated SpSV analysis with the latest L, U values? */
+
+  PetscLogDouble        numericFactFlops; /* Estimated FLOPs in ILU0/ICC0 numeric factorization */
+ #endif
 };
 
 struct Mat_CusparseSpMV {
@@ -263,7 +324,7 @@ struct Mat_SeqAIJCUSPARSE {
 };
 
 PETSC_INTERN PetscErrorCode MatSeqAIJCUSPARSECopyToGPU(Mat);
-PETSC_INTERN PetscErrorCode MatSetPreallocationCOO_SeqAIJCUSPARSE_Basic(Mat,PetscCount,const PetscInt[],const PetscInt[]);
+PETSC_INTERN PetscErrorCode MatSetPreallocationCOO_SeqAIJCUSPARSE_Basic(Mat,PetscCount,PetscInt[],PetscInt[]);
 PETSC_INTERN PetscErrorCode MatSetValuesCOO_SeqAIJCUSPARSE_Basic(Mat,const PetscScalar[],InsertMode);
 PETSC_INTERN PetscErrorCode MatSeqAIJCUSPARSEMergeMats(Mat,Mat,MatReuse,Mat*);
 PETSC_INTERN PetscErrorCode MatSeqAIJCUSPARSETriFactors_Reset(Mat_SeqAIJCUSPARSETriFactors_p*);

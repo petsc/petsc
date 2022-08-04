@@ -34,9 +34,7 @@ PetscErrorCode CharacteristicView(Characteristic c, PetscViewer viewer)
 
   PetscCall(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii));
   if (!iascii) {
-    if (c->ops->view) {
-      PetscCall((*c->ops->view)(c, viewer));
-    }
+    if (c->ops->view) PetscCall((*c->ops->view)(c, viewer));
   }
   PetscFunctionReturn(0);
 }

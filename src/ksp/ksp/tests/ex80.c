@@ -13,7 +13,8 @@ int main(int argc,char **args)
     PetscScalar values[SIZE] = {1.0,1.0,1.0};
     Vec         sol,rhs,newsol,newrhs;
 
-    PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+    PetscFunctionBeginUser;
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
 
     /* common data structures */
     PetscCall(MatCreateSeqDense(PETSC_COMM_SELF,SIZE,SIZE,NULL,&A));

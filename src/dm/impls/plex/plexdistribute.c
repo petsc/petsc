@@ -36,7 +36,7 @@ PetscErrorCode DMPlexSetAdjacencyUser(DM dm,PetscErrorCode (*user)(DM,PetscInt,P
 . dm      - The DM object
 
   Output Parameters:
-+ user    - The user callback
++ user    - The callback
 - ctx     - context for callback evaluation
 
   Level: advanced
@@ -1138,9 +1138,7 @@ static PetscErrorCode DMPlexDistributeCones(DM dm, PetscSF migrationSF, ISLocalT
   PetscCall(DMPlexGetCones(dmParallel, &newCones));
   PetscCall(PetscSFBcastBegin(coneSF, MPIU_INT, globCones, newCones,MPI_REPLACE));
   PetscCall(PetscSFBcastEnd(coneSF, MPIU_INT, globCones, newCones,MPI_REPLACE));
-  if (original) {
-    PetscCall(PetscFree(globCones));
-  }
+  if (original) PetscCall(PetscFree(globCones));
   PetscCall(PetscSectionGetStorageSize(newConeSection, &newConesSize));
   PetscCall(ISGlobalToLocalMappingApplyBlock(renumbering, IS_GTOLM_MASK, newConesSize, newCones, NULL, newCones));
   if (PetscDefined(USE_DEBUG)) {
@@ -1192,16 +1190,17 @@ static PetscErrorCode DMPlexDistributeCoordinates(DM dm, PetscSF migrationSF, DM
   PetscSection     originalCoordSection, newCoordSection;
   Vec              originalCoordinates, newCoordinates;
   PetscInt         bs;
-  PetscBool        isper;
   const char      *name;
-  const PetscReal *maxCell, *L;
-  const DMBoundaryType *bd;
+  const PetscReal *maxCell, *Lstart, *L;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(dmParallel, DM_CLASSID, 3);
 
   PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
+  PetscCall(DMGetCoordinateDM(dm, &cdm));
+  PetscCall(DMGetCoordinateDM(dmParallel, &cdmParallel));
+  PetscCall(DMCopyDisc(cdm, cdmParallel));
   PetscCall(DMGetCoordinateSection(dm, &originalCoordSection));
   PetscCall(DMGetCoordinateSection(dmParallel, &newCoordSection));
   PetscCall(DMGetCoordinatesLocal(dm, &originalCoordinates));
@@ -1216,11 +1215,33 @@ static PetscErrorCode DMPlexDistributeCoordinates(DM dm, PetscSF migrationSF, DM
     PetscCall(VecSetBlockSize(newCoordinates, bs));
     PetscCall(VecDestroy(&newCoordinates));
   }
-  PetscCall(DMGetPeriodicity(dm, &isper, &maxCell, &L, &bd));
-  PetscCall(DMSetPeriodicity(dmParallel, isper, maxCell, L, bd));
-  PetscCall(DMGetCoordinateDM(dm, &cdm));
-  PetscCall(DMGetCoordinateDM(dmParallel, &cdmParallel));
-  PetscCall(DMCopyDisc(cdm, cdmParallel));
+
+  PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
+  PetscCall(DMGetPeriodicity(dm, &maxCell, &Lstart, &L));
+  PetscCall(DMSetPeriodicity(dmParallel, maxCell, Lstart, L));
+  PetscCall(DMGetCellCoordinateDM(dm, &cdm));
+  if (cdm) {
+    PetscCall(DMClone(dmParallel, &cdmParallel));
+    PetscCall(DMSetCellCoordinateDM(dmParallel, cdmParallel));
+    PetscCall(DMCopyDisc(cdm, cdmParallel));
+    PetscCall(DMDestroy(&cdmParallel));
+    PetscCall(DMGetCellCoordinateSection(dm, &originalCoordSection));
+    PetscCall(DMGetCellCoordinatesLocal(dm, &originalCoordinates));
+    PetscCall(PetscSectionCreate(comm, &newCoordSection));
+    if (originalCoordinates) {
+      PetscCall(VecCreate(PETSC_COMM_SELF, &newCoordinates));
+      PetscCall(PetscObjectGetName((PetscObject) originalCoordinates, &name));
+      PetscCall(PetscObjectSetName((PetscObject) newCoordinates, name));
+
+      PetscCall(DMPlexDistributeField(dm, migrationSF, originalCoordSection, originalCoordinates, newCoordSection, newCoordinates));
+      PetscCall(VecGetBlockSize(originalCoordinates, &bs));
+      PetscCall(VecSetBlockSize(newCoordinates, bs));
+      PetscCall(DMSetCellCoordinateSection(dmParallel, bs, newCoordSection));
+      PetscCall(DMSetCellCoordinatesLocal(dmParallel, newCoordinates));
+      PetscCall(VecDestroy(&newCoordinates));
+    }
+    PetscCall(PetscSectionDestroy(&newCoordSection));
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1292,6 +1313,13 @@ static PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, DM dmPa
     PetscCall(DMSetLabelOutput(dmParallel, name, isOutput));
     PetscCall(DMLabelDestroy(&labelNew));
   }
+  {
+    DMLabel ctLabel;
+
+    // Reset label for fast lookup
+    PetscCall(DMPlexGetCellTypeLabel(dmParallel, &ctLabel));
+    PetscCall(DMLabelMakeAllInvalid_Internal(ctLabel));
+  }
   PetscCall(PetscLogEventEnd(DMPLEX_DistributeLabels,dm,0,0,0));
   PetscFunctionReturn(0);
 }
@@ -1341,9 +1369,7 @@ static PetscErrorCode DMPlexDistributeSetupTree(DM dm, PetscSF migrationSF, ISLo
     }
     PetscCall(PetscSFBcastBegin(parentSF, MPIU_INT, globParents, newParents,MPI_REPLACE));
     PetscCall(PetscSFBcastEnd(parentSF, MPIU_INT, globParents, newParents,MPI_REPLACE));
-    if (original) {
-      PetscCall(PetscFree(globParents));
-    }
+    if (original) PetscCall(PetscFree(globParents));
     PetscCall(PetscSFBcastBegin(parentSF, MPIU_INT, origChildIDs, newChildIDs,MPI_REPLACE));
     PetscCall(PetscSFBcastEnd(parentSF, MPIU_INT, origChildIDs, newChildIDs,MPI_REPLACE));
     PetscCall(ISGlobalToLocalMappingApplyBlock(renumbering,IS_GTOLM_MASK, newParentSize, newParents, NULL, newParents));
@@ -2002,6 +2028,8 @@ PetscErrorCode DMPlexDistributeOverlap(DM dm, PetscInt overlap, PetscSF *sf, DM 
   PetscCall(DMPlexCreatePointSF(*dmOverlap, sfOverlap, PETSC_FALSE, &sfPoint));
   PetscCall(DMSetPointSF(*dmOverlap, sfPoint));
   PetscCall(DMGetCoordinateDM(*dmOverlap, &dmCoord));
+  if (dmCoord) PetscCall(DMSetPointSF(dmCoord, sfPoint));
+  PetscCall(DMGetCellCoordinateDM(*dmOverlap, &dmCoord));
   if (dmCoord) PetscCall(DMSetPointSF(dmCoord, sfPoint));
   PetscCall(PetscSFDestroy(&sfPoint));
   /* Cleanup overlap partition */

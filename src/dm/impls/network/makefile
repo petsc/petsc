@@ -3,7 +3,7 @@
 SOURCEC  = networkcreate.c network.c networkmonitor.c
 SOURCEF  =
 SOURCEH  =
-DIRS     =
+DIRS     = tests
 LIBBASE  = libpetscdm
 MANSEC   = DM
 SUBMANSEC= DMNetwork

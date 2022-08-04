@@ -32,6 +32,7 @@ int main(int argc,char **argv)
   PetscReal           nrm;
   Vec                 g,l,gg,ll; /* global/local vectors of the da */
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* ===========================================================================

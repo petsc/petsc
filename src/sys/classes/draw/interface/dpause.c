@@ -20,9 +20,7 @@ PetscErrorCode  PetscDrawPause(PetscDraw draw)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  if (draw->ops->pause) {
-    PetscCall((*draw->ops->pause)(draw));
-  }
+  if (draw->ops->pause) PetscCall((*draw->ops->pause)(draw));
   PetscFunctionReturn(0);
 }
 

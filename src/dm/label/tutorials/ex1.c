@@ -144,6 +144,7 @@ int main(int argc, char **argv)
 {
   DM             dm;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(CreateMesh("plex0", &dm));
   /* add custom labels to test adding/removal */

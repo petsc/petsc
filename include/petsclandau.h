@@ -7,7 +7,8 @@
 PETSC_EXTERN PetscErrorCode DMPlexLandauPrintNorms(Vec, PetscInt);
 PETSC_EXTERN PetscErrorCode DMPlexLandauCreateVelocitySpace(MPI_Comm,PetscInt,const char[],Vec*,Mat*,DM*);
 PETSC_EXTERN PetscErrorCode DMPlexLandauDestroyVelocitySpace(DM*);
-PETSC_EXTERN PetscErrorCode DMPlexLandauAddMaxwellians(DM, Vec, PetscReal, PetscReal[], PetscReal[], PetscInt, PetscInt, void *);
+PETSC_EXTERN PetscErrorCode DMPlexLandauAddToFunction(DM,Vec,PetscErrorCode (*)(DM, Vec, PetscInt, PetscInt, PetscInt, void*), void*);
+PETSC_EXTERN PetscErrorCode DMPlexLandauAddMaxwellians(DM, Vec, PetscReal, PetscReal[], PetscReal[], PetscInt, PetscInt, PetscInt, void *);
 PETSC_EXTERN PetscErrorCode DMPlexLandauCreateMassMatrix(DM dm, Mat *Amat);
 PETSC_EXTERN PetscErrorCode DMPlexLandauIFunction(TS, PetscReal,Vec,Vec,Vec,void *);
 PETSC_EXTERN PetscErrorCode DMPlexLandauIJacobian(TS, PetscReal,Vec,Vec,PetscReal,Mat,Mat,void *);
@@ -20,7 +21,7 @@ typedef int LandauIdx;
 #define LANDAU_MAX_SPECIES 10
 #define LANDAU_MAX_GRIDS 3
 #else
-#define LANDAU_MAX_SPECIES 3
+#define LANDAU_MAX_SPECIES 10
 #define LANDAU_MAX_GRIDS 3
 #endif
 #else
@@ -34,6 +35,7 @@ typedef int LandauIdx;
 #if defined(PETSC_USE_DMLANDAU_2D)
 #define LANDAU_MAX_Q 5
 #else
+// 3D CUDA fails with > 3 (KK-CUDA is OK)
 #define LANDAU_MAX_Q 3
 #endif
 #else
@@ -43,12 +45,12 @@ typedef int LandauIdx;
 #if defined(PETSC_USE_DMLANDAU_2D)
 #define LANDAU_MAX_Q_FACE LANDAU_MAX_Q
 #define LANDAU_MAX_NQ (LANDAU_MAX_Q*LANDAU_MAX_Q)
-#define LANDAU_MAX_BATCH_SZ 320
+#define LANDAU_MAX_BATCH_SZ 1024
 #define LANDAU_DIM 2
 #else
 #define LANDAU_MAX_Q_FACE (LANDAU_MAX_Q*LANDAU_MAX_Q)
 #define LANDAU_MAX_NQ (LANDAU_MAX_Q*LANDAU_MAX_Q*LANDAU_MAX_Q)
-#define LANDAU_MAX_BATCH_SZ 32
+#define LANDAU_MAX_BATCH_SZ 64
 #define LANDAU_DIM 3
 #endif
 
@@ -84,6 +86,7 @@ typedef struct {
   void             *coo_elem_offsets;
   void             *coo_elem_point_offsets;
   void             *coo_elem_fullNb;
+  void             *coo_vals;
   LandauIdx        coo_n_cellsTot;
   LandauIdx        coo_size;
   LandauIdx        coo_max_fullnb;

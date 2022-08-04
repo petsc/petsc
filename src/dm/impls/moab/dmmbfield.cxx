@@ -44,8 +44,7 @@ PetscErrorCode DMMoabSetFieldVector(DM dm, PetscInt ifield, Vec fvec)
     /* use the entity handle and the Dof index to set the right value */
     merr = dmmoab->mbiface->tag_set_data(ntag, *dmmoab->vowned, (const void*)varray); MBERRNM(merr);
     PetscCall(VecRestoreArrayRead(fvec, &varray));
-  }
-  else {
+  } else {
     PetscCall(PetscMalloc1(dmmoab->nloc, &farray));
     /* we are using a MOAB Vec - directly copy the tag data to new one */
     merr = dmmoab->mbiface->tag_get_data(vtag, *dmmoab->vowned, (void*)farray); MBERRNM(merr);
@@ -111,8 +110,7 @@ PetscErrorCode DMMoabSetGlobalFieldVector(DM dm, Vec fvec)
       merr = dmmoab->mbiface->tag_set_data(ntag, *dmmoab->vowned, (const void*)farray); MBERRNM(merr);
     }
     PetscCall(VecRestoreArrayRead(fvec, &rarray));
-  }
-  else {
+  } else {
     PetscCall(PetscMalloc1(dmmoab->nloc * dmmoab->numFields, &varray));
 
     /* we are using a MOAB Vec - directly copy the tag data to new one */

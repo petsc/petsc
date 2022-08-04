@@ -213,6 +213,7 @@ int main(int argc,char **args)
   PetscScalar    *aX,*aB,*aBt;
   PetscReal      err;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,NULL,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL));
@@ -299,9 +300,7 @@ int main(int argc,char **args)
     for (i=0;i<(k+ldr)*N;i++) dataBt[i] = MAGIC_NUMBER;
   }
   PetscCall(MatCreateDense(PETSC_COMM_WORLD,k,n,K,N,dataBt,&Bt));
-  if (local) {
-    PetscCall(MatDenseSetLDA(Bt,k+ldr));
-  }
+  if (local) PetscCall(MatDenseSetLDA(Bt,k+ldr));
 
   /* store pointer to dense data for testing */
   PetscCall(MatDenseGetArrayRead(B,(const PetscScalar**)&dataB));

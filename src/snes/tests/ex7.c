@@ -31,6 +31,7 @@ int main(int argc,char **argv)
   PetscInt       its,n = 5,i;
   PetscBool      puremf = PETSC_FALSE;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
   PetscCall(PetscOptionsHasName(NULL,NULL,"-variant",&user.variant));
@@ -194,9 +195,7 @@ PetscErrorCode  FormJacobian(SNES snes,Vec x,Mat jac,Mat B,void *dummy)
   PetscCall(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
   PetscCall(VecRestoreArrayRead(x,&xx));
 
-  if (user->variant) {
-    PetscCall(MatMFFDSetBase(jac,x,NULL));
-  }
+  if (user->variant) PetscCall(MatMFFDSetBase(jac,x,NULL));
   PetscCall(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY));
   return 0;
@@ -206,9 +205,7 @@ PetscErrorCode  FormJacobianNoMatrix(SNES snes,Vec x,Mat jac,Mat B,void *dummy)
 {
   AppCtx            *user = (AppCtx*) dummy;
 
-  if (user->variant) {
-    PetscCall(MatMFFDSetBase(jac,x,NULL));
-  }
+  if (user->variant) PetscCall(MatMFFDSetBase(jac,x,NULL));
   PetscCall(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY));
   return 0;

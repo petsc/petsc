@@ -12,6 +12,7 @@
 #include <petsctime.h>
 #include <petscviewer.h>
 
+/* this is not consistently used and is difficult to keep correct if done manually, possibly it should be removed */
 PetscErrorCode PetscLogObjectParent(PetscObject p,PetscObject c)
 {
   if (!c || !p) return 0;
@@ -32,7 +33,8 @@ PetscErrorCode PetscLogObjectParent(PetscObject p,PetscObject c)
    Level: developer
 
    Developer Notes:
-    Currently we do not always do a good job of associating all memory allocations with an object.
+   This is not used consistently. It is very difficult to manually track the memory usage per object so this should
+   likely be removed and replaced with an automated system.
 
 .seealso: `PetscFinalize()`, `PetscInitializeFortran()`, `PetscGetArgs()`, `PetscInitializeNoArguments()`
 
@@ -889,7 +891,7 @@ PetscErrorCode  PetscLogEventDeactivatePush(PetscLogEvent event)
 }
 
 /*@
-  PetscLogEventDeactivatePop - Indicates that a particular event shouldbe logged.
+  PetscLogEventDeactivatePop - Indicates that a particular event should be logged.
 
   Not Collective
 
@@ -1683,9 +1685,9 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
   PetscCall(PetscFPrintf(comm, fd, "      %%R - percent reductions in this phase\n"));
   PetscCall(PetscFPrintf(comm, fd, "   Total Mflop/s: 10e-6 * (sum of flop over all processors)/(max time over all processors)\n"));
   if (PetscLogMemory) {
-    PetscCall(PetscFPrintf(comm, fd, "   Malloc Mbytes: Memory allocated and kept during event (sum over all calls to event)\n"));
-    PetscCall(PetscFPrintf(comm, fd, "   EMalloc Mbytes: extra memory allocated during event and then freed (maximum over all calls to events)\n"));
-    PetscCall(PetscFPrintf(comm, fd, "   MMalloc Mbytes: Increase in high water mark of allocated memory (sum over all calls to event)\n"));
+    PetscCall(PetscFPrintf(comm, fd, "   Malloc Mbytes: Memory allocated and kept during event (sum over all calls to event). May be negative\n"));
+    PetscCall(PetscFPrintf(comm, fd, "   EMalloc Mbytes: extra memory allocated during event and then freed (maximum over all calls to events). Never negative\n"));
+    PetscCall(PetscFPrintf(comm, fd, "   MMalloc Mbytes: Increase in high water mark of allocated memory (sum over all calls to event). Never negative\n"));
     PetscCall(PetscFPrintf(comm, fd, "   RMI Mbytes: Increase in resident memory (sum over all calls to event)\n"));
   }
   #if defined(PETSC_HAVE_DEVICE)
@@ -1891,24 +1893,20 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
   #endif
   PetscCall(PetscFPrintf(comm, fd, "\n"));
   PetscCall(PetscFPrintf(comm, fd, "\n"));
-  PetscCall(PetscFPrintf(comm, fd, "Memory usage is given in bytes:\n\n"));
 
   /* Right now, only stages on the first processor are reported here, meaning only objects associated with
      the global communicator, or MPI_COMM_SELF for proc 1. We really should report global stats and then
      stats for stages local to processor sets.
   */
   /* We should figure out the longest object name here (now 20 characters) */
-  PetscCall(PetscFPrintf(comm, fd, "Object Type          Creations   Destructions     Memory  Descendants' Mem.\n"));
-  PetscCall(PetscFPrintf(comm, fd, "Reports information only for process 0.\n"));
+  PetscCall(PetscFPrintf(comm, fd, "Object Type          Creations   Destructions. Reports information only for process 0.\n"));
   for (stage = 0; stage < numStages; stage++) {
     if (localStageUsed[stage]) {
       classInfo = stageLog->stageInfo[stage].classLog->classInfo;
       PetscCall(PetscFPrintf(comm, fd, "\n--- Event Stage %d: %s\n\n", stage, stageInfo[stage].name));
       for (oclass = 0; oclass < stageLog->stageInfo[stage].classLog->numClasses; oclass++) {
         if ((classInfo[oclass].creations > 0) || (classInfo[oclass].destructions > 0)) {
-          PetscCall(PetscFPrintf(comm, fd, "%20s %5d          %5d  %11.0f     %g\n", stageLog->classLog->classInfo[oclass].name,
-                                 classInfo[oclass].creations, classInfo[oclass].destructions, classInfo[oclass].mem,
-                                 classInfo[oclass].descMem));
+          PetscCall(PetscFPrintf(comm, fd, "%20s %5d          %5d\n", stageLog->classLog->classInfo[oclass].name,classInfo[oclass].creations, classInfo[oclass].destructions));
         }
       }
     } else {

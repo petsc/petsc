@@ -148,8 +148,8 @@ PetscErrorCode MatPreallocatorPreallocate_Preallocator(Mat mat, PetscBool fill, 
   PetscCall(MatXAIJSetPreallocation(A, bs, p->dnz, p->onz, p->dnzu, p->onzu));
   PetscCall(MatSetUp(A));
   PetscCall(MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_TRUE));
-  PetscCall(MatSetOption(A, MAT_NO_OFF_PROC_ENTRIES, p->nooffproc));
   if (fill) {
+    PetscCall(MatSetOption(A, MAT_NO_OFF_PROC_ENTRIES, p->nooffproc));
     PetscHashIter  hi;
     PetscHashIJKey key;
     PetscScalar    *zeros;
@@ -169,7 +169,7 @@ PetscErrorCode MatPreallocatorPreallocate_Preallocator(Mat mat, PetscBool fill, 
     PetscCheck(rowstarts[rEnd-rStart] == n,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Hash claims %" PetscInt_FMT " entries, but dnz+onz counts %" PetscInt_FMT,n,rowstarts[rEnd-rStart]);
 
     PetscHashIterBegin(p->ht,hi);
-    for (PetscInt i=0; !PetscHashIterAtEnd(p->ht,hi); i++) {
+    while (!PetscHashIterAtEnd(p->ht,hi)) {
       PetscHashIterGetKey(p->ht,hi,key);
       PetscInt lrow = key.i - rStart;
       cols[rowstarts[lrow]] = key.j;
@@ -190,6 +190,7 @@ PetscErrorCode MatPreallocatorPreallocate_Preallocator(Mat mat, PetscBool fill, 
 
     PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatSetOption(A, MAT_NO_OFF_PROC_ENTRIES, PETSC_FALSE));
   }
   PetscFunctionReturn(0);
 }

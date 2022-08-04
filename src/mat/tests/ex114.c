@@ -15,6 +15,7 @@ int main(int argc,char **args)
   PetscMPIInt    size,rank;
   PetscReal      enorm;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
@@ -158,9 +159,7 @@ int main(int argc,char **args)
     PetscCall(VecNorm(e,NORM_INFINITY,&enorm));
     PetscCheck(enorm <= PETSC_MACHINE_EPSILON,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"max+min > PETSC_MACHINE_EPSILON ");
     for (j = 0; j < n; j++) {
-      if (imin[j] != imax[j]) {
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"imin[%" PetscInt_FMT "] %" PetscInt_FMT " != imax %" PetscInt_FMT " for seqdense matrix",j,imin[j],imax[j]);
-      }
+      PetscCheck(imin[j] == imax[j],PETSC_COMM_SELF,PETSC_ERR_PLIB,"imin[%" PetscInt_FMT "] %" PetscInt_FMT " != imax %" PetscInt_FMT " for seqdense matrix",j,imin[j],imax[j]);
     }
 
     PetscCall(PetscPrintf(PETSC_COMM_WORLD,"MatGetRowMaxAbs for seqdense matrix\n"));
@@ -232,15 +231,13 @@ int main(int argc,char **args)
     PetscCall(VecGetArrayRead(maxabsB,&vals));
     PetscCall(VecGetArrayRead(maxabsB2,&vals2));
     for (row=0; row<m; row++) {
-      if (PetscAbsScalar(vals[row] - vals2[bs*row]) > PETSC_MACHINE_EPSILON)
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"row %" PetscInt_FMT " maxabsB != maxabsB2",row);
+      PetscCheck(PetscAbsScalar(vals[row] - vals2[bs*row]) <= PETSC_MACHINE_EPSILON,PETSC_COMM_SELF,PETSC_ERR_PLIB,"row %" PetscInt_FMT " maxabsB != maxabsB2",row);
     }
     PetscCall(VecRestoreArrayRead(maxabsB,&vals));
     PetscCall(VecRestoreArrayRead(maxabsB2,&vals2));
 
     for (col=0; col<n; col++) {
-      if (imaxabsB[col] != imaxabsB2[bs*col]/bs)
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"col %" PetscInt_FMT " imaxabsB != imaxabsB2",col);
+      PetscCheck(imaxabsB[col] == imaxabsB2[bs*col]/bs,PETSC_COMM_SELF,PETSC_ERR_PLIB,"col %" PetscInt_FMT " imaxabsB != imaxabsB2",col);
     }
     PetscCall(VecDestroy(&maxabsB));
     PetscCall(MatDestroy(&B));

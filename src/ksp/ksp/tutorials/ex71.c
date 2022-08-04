@@ -186,6 +186,7 @@ int main(int argc,char **args)
   PetscLogStage          stages[2];
 #endif
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCall(ProcessOptions(PETSC_COMM_WORLD,&user));
   for (i=0; i<3; i++) nodes[i] = user.cells[i] + !user.per[i];
@@ -269,6 +270,7 @@ int main(int argc,char **args)
   PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
   PetscCall(MatSetOption(A,MAT_SPD,PETSC_TRUE));
+  PetscCall(MatSetOption(A,MAT_SPD_ETERNAL,PETSC_TRUE));
 
   /* Boundary conditions */
   zero = NULL;
@@ -423,18 +425,14 @@ int main(int argc,char **args)
     PetscCall(VecZeroEntries(b));
     PetscCall(VecSetRandom(x,NULL));
     if (user.random_real) PetscCall(VecRealPart(x));
-    if (nullsp) {
-      PetscCall(MatNullSpaceRemove(nullsp,x));
-    }
+    if (nullsp) PetscCall(MatNullSpaceRemove(nullsp,x));
     PetscCall(KSPSetInitialGuessNonzero(ksp,PETSC_TRUE));
     PetscCall(KSPSetComputeEigenvalues(ksp,PETSC_TRUE));
     PetscCall(KSPGMRESSetRestart(ksp,100));
   } else {
     PetscCall(VecSetRandom(b,NULL));
     if (user.random_real) PetscCall(VecRealPart(x));
-    if (nullsp) {
-      PetscCall(MatNullSpaceRemove(nullsp,b));
-    }
+    if (nullsp) PetscCall(MatNullSpaceRemove(nullsp,b));
   }
   PetscCall(PetscLogStagePush(stages[1]));
   PetscCall(KSPSolve(ksp,b,x));

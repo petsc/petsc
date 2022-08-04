@@ -318,6 +318,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Only for sequential runs");
@@ -417,9 +418,7 @@ int main(int argc,char **argv)
   PetscCall(VecDestroy(&r));
   PetscCall(VecDestroy(&mon.x));
   PetscCall(TSDestroy(&ts));
-  if (problem->destroy) {
-    PetscCall((*problem->destroy)(problem));
-  }
+  if (problem->destroy) PetscCall((*problem->destroy)(problem));
   PetscCall(PetscFree(problem));
   PetscCall(PetscFunctionListDestroy(&plist));
 

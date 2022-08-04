@@ -238,9 +238,7 @@ PetscErrorCode DMProjectField(DM dm, PetscReal time, Vec U,
     Mat cMat;
 
     PetscCall(DMGetDefaultConstraints(dm, NULL, &cMat, NULL));
-    if (cMat) {
-      PetscCall(DMGlobalToLocalSolve(dm, localX, X));
-    }
+    if (cMat) PetscCall(DMGlobalToLocalSolve(dm, localX, X));
   }
   PetscCall(DMRestoreLocalVector(dm, &localX));
   if (U != X) PetscCall(DMRestoreLocalVector(dmIn, &localU));
@@ -378,10 +376,10 @@ PetscErrorCode DMAdaptInterpolator(DM dmc, DM dmf, Mat In, KSP smoother, Mat MF,
     }
 #if defined(PETSC_USE_COMPLEX)
     /* ZGELSS( M, N, NRHS, A, LDA, B, LDB, S, RCOND, RANK, WORK, LWORK, RWORK, INFO) */
-    PetscStackCallBLAS("LAPACKgelss",LAPACKgelss_(&M, &N, &one, A, &M, b, M > N ? &M : &N, sing, &rcond, &irank, workscalar, &lwrk, workreal, &info));
+    PetscCallBLAS("LAPACKgelss",LAPACKgelss_(&M, &N, &one, A, &M, b, M > N ? &M : &N, sing, &rcond, &irank, workscalar, &lwrk, workreal, &info));
 #else
     /* DGELSS( M, N, NRHS, A, LDA, B, LDB, S, RCOND, RANK, WORK, LWORK, INFO) */
-    PetscStackCallBLAS("LAPACKgelss",LAPACKgelss_(&M, &N, &one, A, &M, b, M > N ? &M : &N, sing, &rcond, &irank, workscalar, &lwrk, &info));
+    PetscCallBLAS("LAPACKgelss",LAPACKgelss_(&M, &N, &one, A, &M, b, M > N ? &M : &N, sing, &rcond, &irank, workscalar, &lwrk, &info));
 #endif
     PetscCheck(info >= 0,PETSC_COMM_SELF, PETSC_ERR_LIB, "Bad argument to GELSS");
     PetscCheck(info <= 0,PETSC_COMM_SELF, PETSC_ERR_LIB, "SVD failed to converge");

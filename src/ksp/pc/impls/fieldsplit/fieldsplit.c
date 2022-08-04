@@ -806,7 +806,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
 
   if (jac->type == PC_COMPOSITE_SCHUR) {
     IS          ccis;
-    PetscBool   isspd;
+    PetscBool   isset,isspd;
     PetscInt    rstart,rend;
     char        lscname[256];
     PetscObject LSC_L;
@@ -815,8 +815,8 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
 
     /* If pc->mat is SPD, don't scale by -1 the Schur complement */
     if (jac->schurscale == (PetscScalar)-1.0) {
-      PetscCall(MatGetOption(pc->pmat,MAT_SPD,&isspd));
-      jac->schurscale = (isspd == PETSC_TRUE) ? 1.0 : -1.0;
+      PetscCall(MatIsSPDKnown(pc->pmat,&isset,&isspd));
+      jac->schurscale = (isset && isspd) ? 1.0 : -1.0;
     }
 
     /* When extracting off-diagonal submatrices, we take complements from this range */
@@ -898,9 +898,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
 
       /* Note: this is not true in general */
       PetscCall(MatGetNullSpace(jac->mat[1], &sp));
-      if (sp) {
-        PetscCall(MatSetNullSpace(jac->schur, sp));
-      }
+      if (sp) PetscCall(MatSetNullSpace(jac->schur, sp));
 
       PetscCall(PetscSNPrintf(schurtestoption, sizeof(schurtestoption), "-fieldsplit_%s_inner_", ilink->splitname));
       PetscCall(PetscOptionsFindPairPrefix_Private(((PetscObject)pc)->options,((PetscObject)pc)->prefix, schurtestoption, NULL, &flg));
@@ -1626,9 +1624,7 @@ static PetscErrorCode PCSetFromOptions_FieldSplit(PetscOptionItems *PetscOptions
   PetscOptionsHeadBegin(PetscOptionsObject,"FieldSplit options");
   PetscCall(PetscOptionsBool("-pc_fieldsplit_dm_splits","Whether to use DMCreateFieldDecomposition() for splits","PCFieldSplitSetDMSplits",jac->dm_splits,&jac->dm_splits,NULL));
   PetscCall(PetscOptionsInt("-pc_fieldsplit_block_size","Blocksize that defines number of fields","PCFieldSplitSetBlockSize",jac->bs,&bs,&flg));
-  if (flg) {
-    PetscCall(PCFieldSplitSetBlockSize(pc,bs));
-  }
+  if (flg) PetscCall(PCFieldSplitSetBlockSize(pc,bs));
   jac->diag_use_amat = pc->useAmat;
   PetscCall(PetscOptionsBool("-pc_fieldsplit_diag_use_amat","Use Amat (not Pmat) to extract diagonal fieldsplit blocks", "PCFieldSplitSetDiagUseAmat",jac->diag_use_amat,&jac->diag_use_amat,NULL));
   jac->offdiag_use_amat = pc->useAmat;
@@ -1636,9 +1632,7 @@ static PetscErrorCode PCSetFromOptions_FieldSplit(PetscOptionItems *PetscOptions
   PetscCall(PetscOptionsBool("-pc_fieldsplit_detect_saddle_point","Form 2-way split by detecting zero diagonal entries", "PCFieldSplitSetDetectSaddlePoint",jac->detect,&jac->detect,NULL));
   PetscCall(PCFieldSplitSetDetectSaddlePoint(pc,jac->detect)); /* Sets split type and Schur PC type */
   PetscCall(PetscOptionsEnum("-pc_fieldsplit_type","Type of composition","PCFieldSplitSetType",PCCompositeTypes,(PetscEnum)jac->type,(PetscEnum*)&ctype,&flg));
-  if (flg) {
-    PetscCall(PCFieldSplitSetType(pc,ctype));
-  }
+  if (flg) PetscCall(PCFieldSplitSetType(pc,ctype));
   /* Only setup fields once */
   if ((jac->bs > 0) && (jac->nsplits == 0)) {
     /* only allow user to set fields from command line if bs is already known.
@@ -1659,6 +1653,30 @@ static PetscErrorCode PCSetFromOptions_FieldSplit(PetscOptionItems *PetscOptions
     PetscCheck(jac->gkbnu >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"nu cannot be less than 0: value %g",(double)jac->gkbnu);
     PetscCall(PetscOptionsInt("-pc_fieldsplit_gkb_maxit","Maximum allowed number of iterations","PCFieldSplitGKBMaxit",jac->gkbmaxit,&jac->gkbmaxit,NULL));
     PetscCall(PetscOptionsBool("-pc_fieldsplit_gkb_monitor","Prints number of GKB iterations and error","PCFieldSplitGKB",jac->gkbmonitor,&jac->gkbmonitor,NULL));
+  }
+  /*
+    In the initial call to this routine the sub-solver data structures do not exist so we cannot call KSPSetFromOptions() on them yet.
+    But after the initial setup of ALL the layers of sub-solvers is completed we do want to call KSPSetFromOptions() on the sub-solvers every time it
+    is called on the outer solver in case changes were made in the options database
+
+    But even after PCSetUp_FieldSplit() is called all the options inside the inner levels of sub-solvers may still not have been set thus we only call the KSPSetFromOptions()
+    if we know that the entire stack of sub-solvers below this have been complete instantiated, we check this by seeing if any solver iterations are complete.
+    Without this extra check test p2p1fetidp_olof_full and others fail with incorrect matrix types.
+
+    There could be a negative side effect of calling the KSPSetFromOptions() below.
+
+    If one captured the PetscObjectState of the options database one could skip these calls if the database has not changed from the previous call
+  */
+  if (jac->issetup) {
+    PC_FieldSplitLink ilink = jac->head;
+    if (jac->type == PC_COMPOSITE_SCHUR) {
+      if (jac->kspupper && jac->kspupper->totalits > 0) PetscCall(KSPSetFromOptions(jac->kspupper));
+      if (jac->kspschur && jac->kspschur->totalits > 0) PetscCall(KSPSetFromOptions(jac->kspschur));
+    }
+    while (ilink) {
+      if  (ilink->ksp->totalits > 0) PetscCall(KSPSetFromOptions(ilink->ksp));
+      ilink = ilink->next;
+    }
   }
   PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
@@ -2795,14 +2813,12 @@ static PetscErrorCode PCSetCoordinates_FieldSplit(PC pc, PetscInt dim, PetscInt 
 {
   PC_FieldSplit *   jac = (PC_FieldSplit*)pc->data;
   PC_FieldSplitLink ilink_current = jac->head;
-  PetscInt          ii;
   IS                is_owned;
 
   PetscFunctionBegin;
   jac->coordinates_set = PETSC_TRUE; // Internal flag
   PetscCall(MatGetOwnershipIS(pc->mat,&is_owned,PETSC_NULL));
 
-  ii=0;
   while (ilink_current) {
     // For each IS, embed it to get local coords indces
     IS        is_coords;
@@ -2826,7 +2842,6 @@ static PetscErrorCode PCSetCoordinates_FieldSplit(PC pc, PetscInt dim, PetscInt 
     PetscCall(ISRestoreIndices(is_coords, &block_dofs_enumeration));
     PetscCall(ISDestroy(&is_coords));
     ilink_current = ilink_current->next;
-    ++ii;
   }
   PetscCall(ISDestroy(&is_owned));
   PetscFunctionReturn(0);

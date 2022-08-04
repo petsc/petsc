@@ -81,9 +81,7 @@ static PetscErrorCode TSTrajectoryGet_Basic(TSTrajectory tj,TS ts,PetscInt stepn
       PetscCall(VecLoad(Y[i],viewer));
     }
     PetscCall(PetscViewerBinaryRead(viewer,&timepre,1,NULL,PETSC_REAL));
-    if (tj->adjoint_solve_mode) {
-      PetscCall(TSSetTimeStep(ts,-(*t)+timepre));
-    }
+    if (tj->adjoint_solve_mode) PetscCall(TSSetTimeStep(ts,-(*t)+timepre));
   }
   /* Tangent linear sensitivities needed by second-order adjoint */
   if (ts->forward_solve) {

@@ -30,7 +30,7 @@ PETSC_EXTERN void fortranmaxpy2_(void*,void*,void*,const void*,const void*,Petsc
 #include <petscblaslapack.h>
 
 #if defined(PETSC_USE_FORTRAN_KERNEL_MAXPY)
-#define PetscKernelAXPY(U,a1,p1,n)                   {PetscBLASInt one=1; PetscBLASInt nn = (PetscBLASInt) n;  PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&nn,&a1,p1,&one,U,&one));}
+#define PetscKernelAXPY(U,a1,p1,n)                   {PetscBLASInt one=1; PetscBLASInt nn = (PetscBLASInt) n;  PetscCallBLAS("BLASaxpy",BLASaxpy_(&nn,&a1,p1,&one,U,&one));}
 #define PetscKernelAXPY2(U,a1,a2,p1,p2,n)            {fortranmaxpy2_(U,&a1,&a2,p1,p2,&n);}
 #define PetscKernelAXPY3(U,a1,a2,a3,p1,p2,p3,n)      {fortranmaxpy3_(U,&a1,&a2,&a3,p1,p2,p3,&n);}
 #define PetscKernelAXPY4(U,a1,a2,a3,a4,p1,p2,p3,p4,n){fortranmaxpy4_(U,&a1,&a2,&a3,&a4,p1,p2,p3,p4,&n);}
@@ -74,7 +74,7 @@ PETSC_EXTERN void fortranmaxpy2_(void*,void*,void*,const void*,const void*,Petsc
 
 #elif defined(PETSC_USE_BLAS_KERNELS)
 
-#define PetscKernelAXPY(U,a1,p1,n)  {PetscBLASInt one=1; PetscBLASInt nn = (PetscBLASInt) n; PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&nn,&a1,p1,&one,U,&one));}
+#define PetscKernelAXPY(U,a1,p1,n)  {PetscBLASInt one=1; PetscBLASInt nn = (PetscBLASInt) n; PetscCallBLAS("BLASaxpy",BLASaxpy_(&nn,&a1,p1,&one,U,&one));}
 #define PetscKernelAXPY2(U,a1,a2,p1,p2,n){PetscKernelAXPY(U,a1,p1,n); PetscKernelAXPY(U,a2,p2,n);}
 #define PetscKernelAXPY3(U,a1,a2,a3,p1,p2,p3,n){PetscKernelAXPY2(U,a1,a2,p1,p2,n); PetscKernelAXPY(U,a3,p3,n);}
 #define PetscKernelAXPY4(U,a1,a2,a3,a4,p1,p2,p3,p4,n){PetscKernelAXPY2(U,a1,a2,p1,p2,n); PetscKernelAXPY2(U,a3,a4,p3,p4,n);}

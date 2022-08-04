@@ -138,10 +138,8 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
     taun  = sigman_1 + betan*taun_1  - deltan*pin_1;
     if (taun == 0.0) {
       PetscCheck(!ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged due to taun is zero, iteration %" PetscInt_FMT,ksp->its);
-      else {
-        ksp->reason = KSP_DIVERGED_NANORINF;
-        PetscFunctionReturn(0);
-      }
+      ksp->reason = KSP_DIVERGED_NANORINF;
+      PetscFunctionReturn(0);
     }
     alphan = rhon/taun;
     PetscCall(PetscLogFlops(15.0));
@@ -228,17 +226,13 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
 
     if (kappan == 0.0) {
       PetscCheck(!ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged due to kappan is zero, iteration %" PetscInt_FMT,ksp->its);
-      else {
-        ksp->reason = KSP_DIVERGED_NANORINF;
-        PetscFunctionReturn(0);
-      }
+      ksp->reason = KSP_DIVERGED_NANORINF;
+      PetscFunctionReturn(0);
     }
     if (thetan == 0.0) {
       PetscCheck(!ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged due to thetan is zero, iteration %" PetscInt_FMT,ksp->its);
-      else {
-        ksp->reason = KSP_DIVERGED_NANORINF;
-        PetscFunctionReturn(0);
-      }
+      ksp->reason = KSP_DIVERGED_NANORINF;
+      PetscFunctionReturn(0);
     }
     omegan = thetan/kappan;
     sigman = gamman - omegan*etan;

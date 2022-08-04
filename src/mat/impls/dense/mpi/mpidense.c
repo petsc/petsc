@@ -733,9 +733,7 @@ PetscErrorCode MatView_MPIDense(Mat mat,PetscViewer viewer)
 
   if (iascii || issocket || isdraw) {
     PetscCall(MatView_MPIDense_ASCIIorDraworSocket(mat,viewer));
-  } else if (isbinary) {
-    PetscCall(MatView_Dense_Binary(mat,viewer));
-  }
+  } else if (isbinary) PetscCall(MatView_Dense_Binary(mat,viewer));
   PetscFunctionReturn(0);
 }
 
@@ -811,8 +809,12 @@ PetscErrorCode MatSetOption_MPIDense(Mat A,MatOption op,PetscBool flg)
   case MAT_STRUCTURALLY_SYMMETRIC:
   case MAT_HERMITIAN:
   case MAT_SYMMETRY_ETERNAL:
+  case MAT_STRUCTURAL_SYMMETRY_ETERNAL:
+  case MAT_SPD:
   case MAT_IGNORE_LOWER_TRIANGULAR:
   case MAT_IGNORE_ZERO_ENTRIES:
+  case MAT_SPD_ETERNAL:
+    /* if the diagonal matrix is square it inherits some of the properties above */
     PetscCall(PetscInfo(A,"Option %s ignored\n",MatOptions[op]));
     break;
   default:
@@ -924,6 +926,7 @@ PetscErrorCode MatTranspose_MPIDense(Mat A,MatReuse reuse,Mat *matout)
   PetscScalar    *v;
 
   PetscFunctionBegin;
+  if (reuse == MAT_REUSE_MATRIX) PetscCall(MatTransposeCheckNonzeroState_Private(A,*matout));
   if (reuse == MAT_INITIAL_MATRIX || reuse == MAT_INPLACE_MATRIX) {
     PetscCall(MatCreate(PetscObjectComm((PetscObject)A),&B));
     PetscCall(MatSetSizes(B,A->cmap->n,A->rmap->n,N,M));
@@ -1269,9 +1272,7 @@ static PetscErrorCode MatBindToCPU_MPIDenseCUDA(Mat mat,PetscBool bind)
   PetscFunctionBegin;
   PetscCheck(!d->vecinuse,PetscObjectComm((PetscObject)mat),PETSC_ERR_ORDER,"Need to call MatDenseRestoreColumnVec() first");
   PetscCheck(!d->matinuse,PetscObjectComm((PetscObject)mat),PETSC_ERR_ORDER,"Need to call MatDenseRestoreSubMatrix() first");
-  if (d->A) {
-    PetscCall(MatBindToCPU(d->A,bind));
-  }
+  if (d->A) PetscCall(MatBindToCPU(d->A,bind));
   mat->boundtocpu = bind;
   if (!bind) {
     PetscBool iscuda;
@@ -1300,9 +1301,7 @@ static PetscErrorCode MatBindToCPU_MPIDenseCUDA(Mat mat,PetscBool bind)
     PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatDenseRestoreColumnVecWrite_C",MatDenseRestoreColumnVecWrite_MPIDense));
     mat->ops->shift                   = MatShift_MPIDense;
   }
-  if (d->cmat) {
-    PetscCall(MatBindToCPU(d->cmat,bind));
-  }
+  if (d->cmat) PetscCall(MatBindToCPU(d->cmat,bind));
   PetscFunctionReturn(0);
 }
 
@@ -1501,7 +1500,10 @@ static struct _MatOps MatOps_Values = { MatSetValues_MPIDense,
                                         MatCreateMPIMatConcatenateSeqMat_MPIDense,
                                 /*145*/ NULL,
                                         NULL,
-                                        NULL
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                /*150*/ NULL
 };
 
 PetscErrorCode  MatMPIDenseSetPreallocation_MPIDense(Mat mat,PetscScalar *data)
@@ -2765,7 +2767,7 @@ static PetscErrorCode MatMatTransposeMultNumeric_MPIDense_MPIDense_Cyclic(Mat A,
 
     /* local aseq * sendbuf^T */
     PetscCall(PetscBLASIntCast(ranges[recvisfrom + 1] - ranges[recvisfrom], &cn));
-    if (cm && cn && ck) PetscStackCallBLAS("BLASgemm",BLASgemm_("N","T",&cm,&cn,&ck,&_DOne,av,&alda,sendbuf,&cn,&_DZero,cv + clda * ranges[recvisfrom],&clda));
+    if (cm && cn && ck) PetscCallBLAS("BLASgemm",BLASgemm_("N","T",&cm,&cn,&ck,&_DOne,av,&alda,sendbuf,&cn,&_DZero,cv + clda * ranges[recvisfrom],&clda));
 
     if (nextrecvisfrom != rank) {
       /* wait for the sends and receives to complete, swap sendbuf and recvbuf */
@@ -2823,7 +2825,7 @@ static PetscErrorCode MatMatTransposeMultNumeric_MPIDense_MPIDense_Allgatherv(Ma
   PetscCall(PetscBLASIntCast(cK,&ck));
   PetscCall(PetscBLASIntCast(c->A->rmap->n,&cm));
   PetscCall(PetscBLASIntCast(c->A->cmap->n,&cn));
-  if (cm && cn && ck) PetscStackCallBLAS("BLASgemm",BLASgemm_("N","N",&cm,&cn,&ck,&_DOne,av,&alda,recvbuf,&ck,&_DZero,cv,&clda));
+  if (cm && cn && ck) PetscCallBLAS("BLASgemm",BLASgemm_("N","N",&cm,&cn,&ck,&_DOne,av,&alda,recvbuf,&ck,&_DZero,cv,&clda));
   PetscCall(MatDenseRestoreArrayRead(a->A,&av));
   PetscCall(MatDenseRestoreArrayRead(b->A,&bv));
   PetscCall(MatDenseRestoreArrayWrite(c->A,&cv));

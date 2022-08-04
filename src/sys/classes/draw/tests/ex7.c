@@ -17,6 +17,7 @@ int main(int argc,char **argv)
   int c2 = 255;
   int c1 = (c0+c2)/2;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
 
   PetscCall(PetscDrawCreate(PETSC_COMM_WORLD,0,"Draw Example",PETSC_DECIDE,PETSC_DECIDE,101,101,&draw));

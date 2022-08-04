@@ -22,6 +22,7 @@ configure_options = [
   '--download-ml',
   '--download-suitesparse',
   '--download-triangle',
+  '--download-cgns',
   '--download-chaco',
   '--download-ctetgen',
   '--download-cmake',

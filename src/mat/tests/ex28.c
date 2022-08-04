@@ -16,6 +16,7 @@ int main(int argc,char **args)
   char           solvertype[64];
   char           factortype[64];
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
 

@@ -124,8 +124,10 @@ PetscErrorCode  DMDAGetRay(DM da,DMDirection dir,PetscInt gp,Vec *newvec,VecScat
         PetscCall(VecSetSizes(*newvec, dd->w, PETSC_DETERMINE));
         PetscCall(VecSetType(*newvec, VECSEQ));
         PetscCall(ISCreateGeneral(PETSC_COMM_SELF, dd->w, indices, PETSC_OWN_POINTER, &is));
-      } else PetscCheck(dir != DM_Y,PetscObjectComm((PetscObject) da), PETSC_ERR_SUP, "Cannot get Y slice from 1d DMDA");
-      else SETERRQ(PetscObjectComm((PetscObject) da), PETSC_ERR_ARG_OUTOFRANGE, "Unknown DMDirection");
+      } else {
+        PetscCheck(dir != DM_Y,PetscObjectComm((PetscObject) da), PETSC_ERR_SUP, "Cannot get Y slice from 1d DMDA");
+        SETERRQ(PetscObjectComm((PetscObject) da), PETSC_ERR_ARG_OUTOFRANGE, "Unknown DMDirection");
+      }
     } else {
       if (dir == DM_Y) {
         PetscCall(PetscMalloc1(dd->w*dd->M,&indices));

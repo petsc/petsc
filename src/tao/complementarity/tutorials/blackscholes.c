@@ -130,6 +130,7 @@ int main(int argc, char **argv)
   Vec            localX;
 
   /* Initialize PETSc, TAO */
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
 
   /*

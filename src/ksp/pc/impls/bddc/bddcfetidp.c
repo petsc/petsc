@@ -212,9 +212,7 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx)
     PetscCall(PetscObjectReference((PetscObject)fetidpmat_ctx->Bt_BB));
 
     PetscCall(PetscObjectQuery((PetscObject)fetidpmat_ctx->pc,"__KSPFETIDP_flip" ,(PetscObject*)&fetidpmat_ctx->rhs_flip));
-    if (fetidpmat_ctx->rhs_flip) {
-      PetscCall(PetscObjectReference((PetscObject)fetidpmat_ctx->rhs_flip));
-    }
+    if (fetidpmat_ctx->rhs_flip) PetscCall(PetscObjectReference((PetscObject)fetidpmat_ctx->rhs_flip));
   }
 
   /* Default type of lagrange multipliers is non-redundant */
@@ -506,7 +504,7 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx)
         B_lwork = -1;
         PetscCall(PetscBLASIntCast(mss,&B_N));
         PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
-        PetscStackCallBLAS("LAPACKgetri",LAPACKgetri_(&B_N,&dummy,&B_N,&B_N,&lwork,&B_lwork,&B_ierr));
+        PetscCallBLAS("LAPACKgetri",LAPACKgetri_(&B_N,&dummy,&B_N,&B_N,&lwork,&B_lwork,&B_ierr));
         PetscCall(PetscFPTrapPop());
         PetscCheck(!B_ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in query to GETRI Lapack routine %d",(int)B_ierr);
         PetscCall(PetscBLASIntCast((PetscInt)PetscRealPart(lwork),&B_lwork));
@@ -523,9 +521,9 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx)
         PetscCall(PetscArraycpy(W,M,subset_size*subset_size));
         PetscCall(MatDenseRestoreArrayRead(deluxe_ctx->seq_mat[i],&M));
         PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
-        PetscStackCallBLAS("LAPACKgetrf",LAPACKgetrf_(&B_N,&B_N,W,&B_N,pivots,&B_ierr));
+        PetscCallBLAS("LAPACKgetrf",LAPACKgetrf_(&B_N,&B_N,W,&B_N,pivots,&B_ierr));
         PetscCheck(!B_ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRF Lapack routine %d",(int)B_ierr);
-        PetscStackCallBLAS("LAPACKgetri",LAPACKgetri_(&B_N,W,&B_N,pivots,Bwork,&B_lwork,&B_ierr));
+        PetscCallBLAS("LAPACKgetri",LAPACKgetri_(&B_N,W,&B_N,pivots,Bwork,&B_lwork,&B_ierr));
         PetscCheck(!B_ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRI Lapack routine %d",(int)B_ierr);
         PetscCall(PetscFPTrapPop());
         /* silent static analyzer */
@@ -721,9 +719,7 @@ PetscErrorCode PCBDDCSetupFETIDPPCContext(Mat fetimat, FETIDPPC_ctx fetidppc_ctx
     PetscCall(KSPGetPC(pcbddc->ksp_D,&pc));
     PetscCall(PCSetType(mpc,PCLU));
     PetscCall(PCFactorGetMatSolverType(pc,(MatSolverType*)&solver));
-    if (solver) {
-      PetscCall(PCFactorSetMatSolverType(mpc,solver));
-    }
+    if (solver) PetscCall(PCFactorSetMatSolverType(mpc,solver));
     PetscCall(MatGetOptionsPrefix(fetimat,&prefix));
     PetscCall(KSPSetOptionsPrefix(ctx->kBD,prefix));
     PetscCall(KSPAppendOptionsPrefix(ctx->kBD,"bddelta_"));
@@ -805,9 +801,7 @@ PetscErrorCode PCBDDCSetupFETIDPPCContext(Mat fetimat, FETIDPPC_ctx fetidppc_ctx
         PetscCall(PCFactorGetMatSolverType(pc,(MatSolverType*)&solver));
         PetscCall(KSPGetPC(sksp,&pc));
         PetscCall(PCSetType(pc,pctype));
-        if (solver) {
-          PetscCall(PCFactorSetMatSolverType(pc,solver));
-        }
+        if (solver) PetscCall(PCFactorSetMatSolverType(pc,solver));
       } else {
         PetscCall(KSPGetPC(sksp,&pc));
         PetscCall(PCSetType(pc,PCLU));
@@ -874,9 +868,7 @@ PetscErrorCode FETIDPMatMult_Kernel(Mat fetimat, Vec x, Vec y, PetscBool trans)
       PetscCall(MatMultAdd(mat_ctx->Bt_BB,mat_ctx->vP,pcis->vec1_B,pcis->vec1_B));
     }
   } else {
-    if (pcbddc->switch_static) {
-      PetscCall(VecSet(pcis->vec1_D,0.0));
-    }
+    if (pcbddc->switch_static) PetscCall(VecSet(pcis->vec1_D,0.0));
   }
   /* Application of \widetilde{S}^-1 */
   PetscCall(PetscArrayzero(pcbddc->benign_p0,pcbddc->benign_n));

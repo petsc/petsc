@@ -226,9 +226,7 @@ static PetscErrorCode PCView_GASM(PC pc,PetscViewer viewer)
           PetscCall(ISGetLocalSize(osm->ois[d],&bsz));
           PetscCall(PetscViewerASCIISynchronizedPrintf(sviewer,"  [%d|%d] (subcomm [%d|%d]) local subdomain number %" PetscInt_FMT ", local size = %" PetscInt_FMT "\n",rank,size,srank,ssize,d,bsz));
           PetscCall(PetscViewerFlush(sviewer));
-          if (view_subdomains) {
-            PetscCall(PCGASMSubdomainView_Private(pc,d,sviewer));
-          }
+          if (view_subdomains) PetscCall(PCGASMSubdomainView_Private(pc,d,sviewer));
           if (!pc->setupcalled) {
             PetscCall(PetscViewerASCIIPrintf(sviewer, "  Solver not set up yet: PCSetUp() not yet called\n"));
           } else {
@@ -333,9 +331,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)pc),&rank));
   if (!pc->setupcalled) {
         /* use a hierarchical partitioning */
-    if (osm->hierarchicalpartitioning) {
-      PetscCall(PCGASMSetHierarchicalPartitioning(pc));
-    }
+    if (osm->hierarchicalpartitioning) PetscCall(PCGASMSetHierarchicalPartitioning(pc));
     if (osm->n == PETSC_DETERMINE) {
       if (osm->N != PETSC_DETERMINE) {
            /* No local subdomains given, but the desired number of total subdomains is known, so construct them accordingly. */
@@ -345,9 +341,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
         PetscInt  d;
         IS       *inner_subdomain_is, *outer_subdomain_is;
         PetscCall(DMCreateDomainDecomposition(pc->dm, &num_subdomains, &subdomain_names, &inner_subdomain_is, &outer_subdomain_is, &subdomain_dm));
-        if (num_subdomains) {
-          PetscCall(PCGASMSetSubdomains(pc, num_subdomains, inner_subdomain_is, outer_subdomain_is));
-        }
+        if (num_subdomains) PetscCall(PCGASMSetSubdomains(pc, num_subdomains, inner_subdomain_is, outer_subdomain_is));
         for (d = 0; d < num_subdomains; ++d) {
           if (inner_subdomain_is) PetscCall(ISDestroy(&inner_subdomain_is[d]));
           if (outer_subdomain_is) PetscCall(ISDestroy(&outer_subdomain_is[d]));
@@ -912,9 +906,7 @@ static PetscErrorCode PCSetFromOptions_GASM(PetscOptionItems *PetscOptionsObject
   PetscOptionsHeadBegin(PetscOptionsObject,"Generalized additive Schwarz options");
   PetscCall(PetscOptionsBool("-pc_gasm_use_dm_subdomains","If subdomains aren't set, use DMCreateDomainDecomposition() to define subdomains.","PCGASMSetUseDMSubdomains",osm->dm_subdomains,&osm->dm_subdomains,&flg));
   PetscCall(PetscOptionsInt("-pc_gasm_total_subdomains","Total number of subdomains across communicator","PCGASMSetTotalSubdomains",osm->N,&blocks,&flg));
-  if (flg) {
-    PetscCall(PCGASMSetTotalSubdomains(pc,blocks));
-  }
+  if (flg) PetscCall(PCGASMSetTotalSubdomains(pc,blocks));
   PetscCall(PetscOptionsInt("-pc_gasm_overlap","Number of overlapping degrees of freedom","PCGASMSetOverlap",osm->overlap,&ovl,&flg));
   if (flg) {
     PetscCall(PCGASMSetOverlap(pc,ovl));
@@ -1846,12 +1838,8 @@ PetscErrorCode  PCGASMGetSubdomains(PC pc,PetscInt *n,IS *iis[],IS *ois[])
   PetscCheck(match,PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "Incorrect object type: expected %s, got %s instead", PCGASM, ((PetscObject)pc)->type_name);
   osm = (PC_GASM*)pc->data;
   if (n) *n = osm->n;
-  if (iis) {
-    PetscCall(PetscMalloc1(osm->n, iis));
-  }
-  if (ois) {
-    PetscCall(PetscMalloc1(osm->n, ois));
-  }
+  if (iis) PetscCall(PetscMalloc1(osm->n, iis));
+  if (ois) PetscCall(PetscMalloc1(osm->n, ois));
   if (iis || ois) {
     for (i = 0; i < osm->n; ++i) {
       if (iis) (*iis)[i] = osm->iis[i];

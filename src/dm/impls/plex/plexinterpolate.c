@@ -1165,7 +1165,7 @@ PetscErrorCode DMPlexInterpolatePointSF(DM dm, PetscSF pointSF)
           if (debug) PetscCall(PetscSynchronizedPrintf(PetscObjectComm((PetscObject) dm), "[%d]    key (%" PetscInt_FMT ", %" PetscInt_FMT ") (%" PetscInt_FMT ", %" PetscInt_FMT ") (%" PetscInt_FMT ", %" PetscInt_FMT ") (%" PetscInt_FMT ", %" PetscInt_FMT ")\n", rank, key.i.rank, key.i.index, key.j.rank, key.j.index, key.k.rank, key.k.index, key.l.rank, key.l.index));
           PetscCall(PetscHashIJKLRemotePut(faceTable, key, &iter, &missing));
           PetscCheck(!missing,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Root %" PetscInt_FMT " Idx %" PetscInt_FMT " ought to have an associated face", r, idx2);
-          else        PetscCall(PetscHashIJKLRemoteIterGet(faceTable, iter, &candidatesRemote[hidx]));
+          PetscCall(PetscHashIJKLRemoteIterGet(faceTable, iter, &candidatesRemote[hidx]));
         }
       }
     }

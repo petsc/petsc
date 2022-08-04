@@ -104,6 +104,7 @@ int main(int argc, char **argv)
   PetscInt           ntests = 1;
   PetscInt           i;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char*)0,help));
   user.mx = 8;
   PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"elliptic example",NULL);

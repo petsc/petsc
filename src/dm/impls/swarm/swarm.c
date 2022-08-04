@@ -592,7 +592,7 @@ static PetscErrorCode DMSwarmComputeMassMatrixSquare_Private(DM dmc, DM dmf, Mat
 
         PetscCall(PetscBLASIntCast(numCIndices, &blasn));
         PetscCall(PetscBLASIntCast(numFIndices, &blask));
-        PetscStackCallBLAS("BLASgemm",BLASgemm_("T","N",&blasn,&blasn,&blask,&one,elemMat,&blask,elemMat,&blask,&zero,elemMatSq,&blasn));
+        PetscCallBLAS("BLASgemm",BLASgemm_("T","N",&blasn,&blasn,&blask,&one,elemMat,&blask,elemMat,&blask,&zero,elemMatSq,&blasn));
       }
       PetscCall(MatSetValues(mass, numCIndices, rowIDXs, numCIndices, rowIDXs, elemMatSq, ADD_VALUES));
       /* TODO Off-diagonal */
@@ -1647,14 +1647,15 @@ PetscErrorCode DMView_Swarm(DM dm, PetscViewer viewer)
         PetscCall(DMSwarmDataBucketView(PetscObjectComm((PetscObject) dm), swarm->db, NULL, DATABUCKET_VIEW_STDOUT));break;
       default: PetscCall(DMView_Swarm_Ascii(dm, viewer));
     }
-  } else PetscCheck(!ibinary,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"NO Binary support");
+  } else {
 #if defined(PETSC_HAVE_HDF5)
-  else if (ishdf5) {
-    PetscCall(DMSwarmView_HDF5(dm, viewer));
-  }
+    if (ishdf5) {
+      PetscCall(DMSwarmView_HDF5(dm, viewer));
+    }
 #endif
-  else if (isdraw) {
-    PetscCall(DMSwarmView_Draw(dm, viewer));
+    if (isdraw) {
+      PetscCall(DMSwarmView_Draw(dm, viewer));
+    }
   }
   PetscFunctionReturn(0);
 }

@@ -13,6 +13,7 @@ int main(int argc,char **args)
   Vec            x,y;
   char           mtype[256];
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL));
@@ -27,9 +28,7 @@ int main(int argc,char **args)
   PetscCall(MatProductSetFill(B,PETSC_DEFAULT));
   PetscCall(MatProductSetFromOptions(B));
   PetscCall(MatProductSymbolic(B));
-  if (no_inodes) {
-    PetscCall(MatSetOption(B,MAT_USE_INODES,PETSC_FALSE));
-  }
+  if (no_inodes) PetscCall(MatSetOption(B,MAT_USE_INODES,PETSC_FALSE));
   PetscCall(MatProductNumeric(B));
   PetscCall(MatTransposeMatMultEqual(A,A,B,10,&flg));
   if (!flg) {

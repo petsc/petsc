@@ -326,9 +326,7 @@ static PetscErrorCode SNESSolve_NCG(SNES snes)
   if (snes->reason) PetscFunctionReturn(0);
 
   /* Call general purpose update function */
-  if (snes->ops->update) {
-    PetscCall((*snes->ops->update)(snes, snes->iter));
-  }
+  if (snes->ops->update) PetscCall((*snes->ops->update)(snes, snes->iter));
 
   /* first update -- just use the (preconditioned) residual direction for the initial conjugate direction */
 
@@ -365,9 +363,7 @@ static PetscErrorCode SNESSolve_NCG(SNES snes)
     if (snes->reason) PetscFunctionReturn(0);
 
     /* Call general purpose update function */
-    if (snes->ops->update) {
-      PetscCall((*snes->ops->update)(snes, snes->iter));
-    }
+    if (snes->ops->update) PetscCall((*snes->ops->update)(snes, snes->iter));
     if (snes->npc) {
       if (snes->functype == SNES_FUNCTION_PRECONDITIONED) {
         PetscCall(SNESApplyNPC(snes,X,NULL,dX));

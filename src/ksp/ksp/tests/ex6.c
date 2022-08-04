@@ -36,6 +36,7 @@ int main(int argc,char **args)
   PetscBool      table = PETSC_FALSE,flg,test_residual = PETSC_FALSE,b_in_f = PETSC_TRUE;
   KSP            ksp;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCall(PetscOptionsGetBool(NULL,NULL,"-table",&table,NULL));
   PetscCall(PetscOptionsGetBool(NULL,NULL,"-test_residual",&test_residual,NULL));
@@ -93,9 +94,7 @@ int main(int argc,char **args)
   PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
   PetscCall(KSPSetOperators(ksp,A,A));
   PetscCall(KSPSetFromOptions(ksp));
-  if (test_residual) {
-    PetscCall(KSPMonitorSet(ksp,KSPTestResidualMonitor,NULL,NULL));
-  }
+  if (test_residual) PetscCall(KSPMonitorSet(ksp,KSPTestResidualMonitor,NULL,NULL));
   PetscCall(KSPSetUp(ksp));
   PetscCall(KSPSetUpOnBlocks(ksp));
   PetscCall(PetscLogStagePop());

@@ -73,9 +73,7 @@ static PetscErrorCode PetscViewerDestroy_Mathematica(PetscViewer viewer)
 PetscErrorCode PetscViewerDestroyMathematica_Private(void)
 {
   PetscFunctionBegin;
-  if (PETSC_VIEWER_MATHEMATICA_WORLD_PRIVATE) {
-    PetscCall(PetscViewerDestroy(PETSC_VIEWER_MATHEMATICA_WORLD_PRIVATE));
-  }
+  if (PETSC_VIEWER_MATHEMATICA_WORLD_PRIVATE) PetscCall(PetscViewerDestroy(PETSC_VIEWER_MATHEMATICA_WORLD_PRIVATE));
   PetscFunctionReturn(0);
 }
 
@@ -198,9 +196,7 @@ PetscErrorCode  PetscViewerMathematicaSetFromOptions(PetscViewer v)
 
   /* Get link name */
   PetscCall(PetscOptionsGetString("viewer_", "-math_linkname", linkname, sizeof(linkname), &opt));
-  if (opt) {
-    PetscCall(PetscViewerMathematicaSetLinkName(v, linkname));
-  }
+  if (opt) PetscCall(PetscViewerMathematicaSetLinkName(v, linkname));
   /* Get link port */
   numPorts = size;
   PetscCall(PetscMalloc1(size, &ports));

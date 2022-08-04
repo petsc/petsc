@@ -153,7 +153,7 @@ static PetscErrorCode  KSPSolve_FBCGSR(KSP ksp)
     /* test denominator */
     if ((xi3 == 0.0) || (sigma == 0.0)) {
       PetscCheck(!ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has failed due to zero inner product");
-      else ksp->reason = KSP_DIVERGED_BREAKDOWN;
+      ksp->reason = KSP_DIVERGED_BREAKDOWN;
       PetscCall(PetscInfo(ksp,"KSPSolve has failed due to zero inner product\n"));
       break;
     }

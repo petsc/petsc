@@ -40,6 +40,7 @@ int main(int argc, char **argv) {
   Vec             metric;
 
   /* Set up */
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   comm = PETSC_COMM_WORLD;
   PetscOptionsBegin(comm, "", "Mesh adaptation options", "DMPLEX");
@@ -62,6 +63,7 @@ int main(int argc, char **argv) {
     Vec                coordinates;
 
     /* Cell tags */
+    PetscCall(DMGetCoordinatesLocalSetUp(dm));
     PetscCall(DMCreateLabel(dm, "Cell Sets"));
     PetscCall(DMGetLabel(dm, "Cell Sets", &rgLabel));
     PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
@@ -181,19 +183,23 @@ int main(int argc, char **argv) {
     PetscCheck(errornorm < tol, comm, PETSC_ERR_ARG_OUTOFRANGE, "Metric average test failed");
 
     /* Test metric intersection */
-    if (isotropic) {
-      PetscCall(DMPlexMetricIntersection(dm, 2, metrics, metricComb));
-      PetscCall(VecAXPY(metricComb, -1, metric2));
-      PetscCall(VecNorm(metricComb, NORM_2, &errornorm));
-      errornorm /= norm;
-      PetscCall(PetscPrintf(comm, "Metric intersection L2 error: %.4f%%\n", (double)(100*errornorm)));
-      PetscCheck(errornorm < tol, comm, PETSC_ERR_ARG_OUTOFRANGE, "Metric intersection test failed");
+    PetscCall(DMPlexMetricDeterminantCreate(dm, 0, &determinant, &dmDet));
+    if (!isotropic) {
+      PetscCall(DMPlexMetricEnforceSPD(dm, metrics[0], PETSC_FALSE, PETSC_FALSE, metricComb, determinant));
+      PetscCall(VecCopy(metricComb, metrics[0]));
+      PetscCall(DMPlexMetricEnforceSPD(dm, metrics[1], PETSC_FALSE, PETSC_FALSE, metricComb, determinant));
+      PetscCall(VecCopy(metricComb, metrics[1]));
     }
+    PetscCall(DMPlexMetricIntersection(dm, 2, metrics, metricComb));
+    PetscCall(VecAXPY(metricComb, -1, metric2));
+    PetscCall(VecNorm(metricComb, NORM_2, &errornorm));
+    errornorm /= norm;
+    PetscCall(PetscPrintf(comm, "Metric intersection L2 error: %.4f%%\n", (double)(100*errornorm)));
+    PetscCheck(errornorm < tol, comm, PETSC_ERR_ARG_OUTOFRANGE, "Metric intersection test failed");
     PetscCall(VecDestroy(&metric2));
     PetscCall(VecDestroy(&metricComb));
 
     /* Test metric SPD enforcement */
-    PetscCall(DMPlexMetricDeterminantCreate(dm, 0, &determinant, &dmDet));
     PetscCall(DMPlexMetricEnforceSPD(dm, metric, PETSC_TRUE, PETSC_TRUE, metric1, determinant));
     if (isotropic) {
       Vec err;

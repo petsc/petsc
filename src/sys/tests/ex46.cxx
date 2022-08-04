@@ -54,6 +54,7 @@ int main(int argc,char **argv)
   // with size 1, whose only process has rank 0.
   Teuchos::RCP<const Teuchos::Comm<int> > comm = Tpetra::DefaultPlatform::getDefaultPlatform ().getComm ();
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   // Get my process' rank, and the total number of processes.

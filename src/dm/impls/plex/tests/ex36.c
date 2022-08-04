@@ -107,6 +107,7 @@ int main(int argc, char **argv)
   Vec              cell_geom, face_geom;
   PetscInt         overlap2 = 1;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(DMCreate(PETSC_COMM_WORLD, &dm));
   PetscCall(DMSetType(dm, DMPLEX));

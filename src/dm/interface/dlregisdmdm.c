@@ -8,6 +8,7 @@
 #include <petsc/private/petscfeimpl.h>
 #include <petsc/private/petscfvimpl.h>
 #include <petsc/private/dmswarmimpl.h>
+#include <petsc/private/dmnetworkimpl.h>
 
 static PetscBool DMPackageInitialized = PETSC_FALSE;
 /*@C
@@ -130,6 +131,12 @@ PetscErrorCode DMInitializePackage(void)
   PetscCall(PetscLogEventRegister("DMPlexMetricAverage",    DM_CLASSID,&DMPLEX_MetricAverage));
   PetscCall(PetscLogEventRegister("DMPlexMetricIntersect",  DM_CLASSID,&DMPLEX_MetricIntersection));
 
+  PetscCall(PetscLogEventRegister("RebalBuildGraph",        DM_CLASSID,&DMPLEX_RebalBuildGraph));
+  PetscCall(PetscLogEventRegister("RebalGatherGraph",       DM_CLASSID,&DMPLEX_RebalGatherGraph));
+  PetscCall(PetscLogEventRegister("RebalPartition",         DM_CLASSID,&DMPLEX_RebalPartition));
+  PetscCall(PetscLogEventRegister("RebalScatterPart",       DM_CLASSID,&DMPLEX_RebalScatterPart));
+  PetscCall(PetscLogEventRegister("RebalRewriteSF",         DM_CLASSID,&DMPLEX_RebalRewriteSF));
+
   PetscCall(PetscLogEventRegister("DMSwarmMigrate",         DM_CLASSID,&DMSWARM_Migrate));
   PetscCall(PetscLogEventRegister("DMSwarmDETSetup",        DM_CLASSID,&DMSWARM_DataExchangerTopologySetup));
   PetscCall(PetscLogEventRegister("DMSwarmDExBegin",        DM_CLASSID,&DMSWARM_DataExchangerBegin));
@@ -140,6 +147,10 @@ PetscErrorCode DMInitializePackage(void)
   PetscCall(PetscLogEventRegister("DMSwarmRmvPnts",         DM_CLASSID,&DMSWARM_RemovePoints));
   PetscCall(PetscLogEventRegister("DMSwarmSort",            DM_CLASSID,&DMSWARM_Sort));
   PetscCall(PetscLogEventRegister("DMSwarmSetSizes",        DM_CLASSID,&DMSWARM_SetSizes));
+
+  PetscCall(PetscLogEventRegister("DMNtLayoutSetUp",        DM_CLASSID,&DMNetwork_LayoutSetUp));
+  PetscCall(PetscLogEventRegister("DMNtSetUp",              DM_CLASSID,&DMNetwork_SetUpNetwork));
+  PetscCall(PetscLogEventRegister("DMNtDistribute",         DM_CLASSID,&DMNetwork_Distribute));
   /* Process Info */
   {
     PetscClassId  classids[1];

@@ -21,6 +21,7 @@ int main(int argc,char **args)
 #endif
   PetscEventPerfInfo info;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,NULL,help));
   PetscCall(PetscLogDefaultBegin());
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));

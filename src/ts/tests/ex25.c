@@ -68,6 +68,7 @@ PetscErrorCode Brusselator(int argc,char **argv,PetscInt cycle)
   struct _User      user;       /* user-defined work context */
   TSConvergedReason reason;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

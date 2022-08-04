@@ -35,6 +35,7 @@ int main(int argc,char **argv)
   TS             ts;
   Mat            A = 0,S;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-time",&time_steps,NULL));
 

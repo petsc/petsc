@@ -77,18 +77,10 @@ PetscErrorCode TSIRKTableauCreate(TS ts,PetscInt nstages,const PetscReal *A,cons
   PetscCall(PetscArraycpy(tab->b,b,nstages));
   PetscCall(PetscArraycpy(tab->c,c,nstages));
   /* optional coefficient arrays */
-  if (binterp) {
-    PetscCall(PetscArraycpy(tab->binterp,binterp,nstages));
-  }
-  if (A_inv) {
-    PetscCall(PetscArraycpy(tab->A_inv,A_inv,PetscSqr(nstages)));
-  }
-  if (A_inv_rowsum) {
-    PetscCall(PetscArraycpy(tab->A_inv_rowsum,A_inv_rowsum,nstages));
-  }
-  if (I_s) {
-    PetscCall(PetscArraycpy(tab->I_s,I_s,PetscSqr(nstages)));
-  }
+  if (binterp) PetscCall(PetscArraycpy(tab->binterp,binterp,nstages));
+  if (A_inv) PetscCall(PetscArraycpy(tab->A_inv,A_inv,PetscSqr(nstages)));
+  if (A_inv_rowsum) PetscCall(PetscArraycpy(tab->A_inv_rowsum,A_inv_rowsum,nstages));
+  if (I_s) PetscCall(PetscArraycpy(tab->I_s,I_s,PetscSqr(nstages)));
   PetscFunctionReturn(0);
 }
 
@@ -420,15 +412,9 @@ static PetscErrorCode TSReset_IRK(TS ts)
 
   PetscFunctionBegin;
   PetscCall(TSIRKTableauReset(ts));
-  if (irk->tableau) {
-    PetscCall(PetscFree(irk->tableau));
-  }
-  if (irk->method_name) {
-    PetscCall(PetscFree(irk->method_name));
-  }
-  if (irk->work) {
-    PetscCall(PetscFree(irk->work));
-  }
+  if (irk->tableau) PetscCall(PetscFree(irk->tableau));
+  if (irk->method_name) PetscCall(PetscFree(irk->method_name));
+  if (irk->work) PetscCall(PetscFree(irk->work));
   PetscCall(VecDestroyVecs(irk->nstages,&irk->Y));
   PetscCall(VecDestroyVecs(irk->nstages,&irk->YdotI));
   PetscCall(VecDestroy(&irk->Ydot));

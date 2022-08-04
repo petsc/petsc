@@ -100,7 +100,7 @@ PetscErrorCode TaoSetUp_BQNK(Tao tao)
   TAO_BNK        *bnk = (TAO_BNK *)tao->data;
   TAO_BQNK       *bqnk = (TAO_BQNK*)bnk->ctx;
   PetscInt       n, N;
-  PetscBool      is_lmvm, is_sym, is_spd;
+  PetscBool      is_lmvm, is_set,is_sym;
 
   PetscFunctionBegin;
   PetscCall(TaoSetUp_BNK(tao));
@@ -110,9 +110,8 @@ PetscErrorCode TaoSetUp_BQNK(Tao tao)
   PetscCall(MatLMVMAllocate(bqnk->B,tao->solution,bnk->unprojected_gradient));
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)bqnk->B, MATLMVM, &is_lmvm));
   PetscCheck(is_lmvm,PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "Matrix must be an LMVM-type");
-  PetscCall(MatGetOption(bqnk->B, MAT_SYMMETRIC, &is_sym));
-  PetscCheck(is_sym,PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "LMVM matrix must be symmetric");
-  PetscCall(MatGetOption(bqnk->B, MAT_SPD, &is_spd));
+  PetscCall(MatIsSymmetricKnown(bqnk->B, &is_set,&is_sym));
+  PetscCheck(is_set && is_sym,PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "LMVM matrix must be symmetric");
   PetscCall(KSPGetPC(tao->ksp, &bqnk->pc));
   PetscCall(PCSetType(bqnk->pc, PCLMVM));
   PetscCall(PCLMVMSetMatLMVM(bqnk->pc, bqnk->B));
@@ -121,8 +120,9 @@ PetscErrorCode TaoSetUp_BQNK(Tao tao)
 
 static PetscErrorCode TaoSetFromOptions_BQNK(PetscOptionItems *PetscOptionsObject,Tao tao)
 {
-  TAO_BNK        *bnk = (TAO_BNK *)tao->data;
-  TAO_BQNK       *bqnk = (TAO_BQNK*)bnk->ctx;
+  TAO_BNK   *bnk = (TAO_BNK *)tao->data;
+  TAO_BQNK  *bqnk = (TAO_BQNK*)bnk->ctx;
+  PetscBool is_set;
 
   PetscFunctionBegin;
   PetscCall(TaoSetFromOptions_BNK(PetscOptionsObject,tao));
@@ -130,7 +130,8 @@ static PetscErrorCode TaoSetFromOptions_BQNK(PetscOptionItems *PetscOptionsObjec
   PetscCall(MatSetOptionsPrefix(bqnk->B, ((PetscObject)tao)->prefix));
   PetscCall(MatAppendOptionsPrefix(bqnk->B, "tao_bqnk_"));
   PetscCall(MatSetFromOptions(bqnk->B));
-  PetscCall(MatGetOption(bqnk->B, MAT_SPD, &bqnk->is_spd));
+  PetscCall(MatIsSPDKnown(bqnk->B, &is_set, &bqnk->is_spd));
+  if (!is_set) bqnk->is_spd = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 

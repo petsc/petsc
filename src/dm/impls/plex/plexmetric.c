@@ -1108,11 +1108,11 @@ static PetscErrorCode DMPlexMetricModify_Private(PetscInt dim, PetscReal h_min, 
       {
         PetscReal *rwork;
         PetscCall(PetscMalloc1(3*dim, &rwork));
-        PetscStackCallBLAS("LAPACKsyev",LAPACKsyev_("V","U",&nb,Mpos,&nb,eigs,work,&lwork,rwork,&lierr));
+        PetscCallBLAS("LAPACKsyev",LAPACKsyev_("V","U",&nb,Mpos,&nb,eigs,work,&lwork,rwork,&lierr));
         PetscCall(PetscFree(rwork));
       }
 #else
-      PetscStackCallBLAS("LAPACKsyev",LAPACKsyev_("V","U",&nb,Mpos,&nb,eigs,work,&lwork,&lierr));
+      PetscCallBLAS("LAPACKsyev",LAPACKsyev_("V","U",&nb,Mpos,&nb,eigs,work,&lwork,&lierr));
 #endif
       if (lierr) {
         for (i = 0; i < dim; ++i) {
@@ -1498,7 +1498,7 @@ PetscErrorCode DMPlexMetricAverage3(DM dm, Vec metric1, Vec metric2, Vec metric3
 static PetscErrorCode DMPlexMetricIntersection_Private(PetscInt dim, PetscScalar M1[], PetscScalar M2[])
 {
   PetscInt       i, j, k, l, m;
-  PetscReal     *evals, *evals1;
+  PetscReal     *evals;
   PetscScalar   *evecs, *sqrtM1, *isqrtM1;
 
   PetscFunctionBegin;
@@ -1510,7 +1510,7 @@ static PetscErrorCode DMPlexMetricIntersection_Private(PetscInt dim, PetscScalar
   }
 
   /* Anisotropic case */
-  PetscCall(PetscMalloc5(dim*dim, &evecs, dim*dim, &sqrtM1, dim*dim, &isqrtM1, dim, &evals, dim, &evals1));
+  PetscCall(PetscMalloc4(dim*dim, &evecs, dim*dim, &sqrtM1, dim*dim, &isqrtM1, dim, &evals));
   for (i = 0; i < dim; ++i) {
     for (j = 0; j < dim; ++j) {
       evecs[i*dim+j] = M1[i*dim+j];
@@ -1524,7 +1524,7 @@ static PetscErrorCode DMPlexMetricIntersection_Private(PetscInt dim, PetscScalar
     PetscCall(PetscMalloc1(5*dim, &work));
     {
       PetscBLASInt lierr, nb;
-      PetscReal    sqrtk;
+      PetscReal    sqrtj;
 
       /* Compute eigendecomposition of M1 */
       PetscCall(PetscBLASIntCast(dim, &nb));
@@ -1533,11 +1533,11 @@ static PetscErrorCode DMPlexMetricIntersection_Private(PetscInt dim, PetscScalar
       {
         PetscReal *rwork;
         PetscCall(PetscMalloc1(3*dim, &rwork));
-        PetscStackCallBLAS("LAPACKsyev", LAPACKsyev_("V", "U", &nb, evecs, &nb, evals1, work, &lwork, rwork, &lierr));
+        PetscCallBLAS("LAPACKsyev", LAPACKsyev_("V", "U", &nb, evecs, &nb, evals, work, &lwork, rwork, &lierr));
         PetscCall(PetscFree(rwork));
       }
 #else
-      PetscStackCallBLAS("LAPACKsyev", LAPACKsyev_("V", "U", &nb, evecs, &nb, evals1, work, &lwork, &lierr));
+      PetscCallBLAS("LAPACKsyev", LAPACKsyev_("V", "U", &nb, evecs, &nb, evals, work, &lwork, &lierr));
 #endif
       if (lierr) {
         LAPACKsyevFail(dim, M1);
@@ -1545,26 +1545,26 @@ static PetscErrorCode DMPlexMetricIntersection_Private(PetscInt dim, PetscScalar
       }
       PetscCall(PetscFPTrapPop());
 
-      /* Compute square root and reciprocal */
+      /* Compute square root and the reciprocal thereof */
       for (i = 0; i < dim; ++i) {
-        for (j = 0; j < dim; ++j) {
-          sqrtM1[i*dim+j] = 0.0;
-          isqrtM1[i*dim+j] = 0.0;
-          for (k = 0; k < dim; ++k) {
-            sqrtk = PetscSqrtReal(evals1[k]);
-            sqrtM1[i*dim+j] += evecs[k*dim+i] * sqrtk * evecs[k*dim+j];
-            isqrtM1[i*dim+j] += evecs[k*dim+i] * (1.0/sqrtk) * evecs[k*dim+j];
+        for (k = 0; k < dim; ++k) {
+          sqrtM1[i*dim+k] = 0.0;
+          isqrtM1[i*dim+k] = 0.0;
+          for (j = 0; j < dim; ++j) {
+            sqrtj = PetscSqrtReal(evals[j]);
+            sqrtM1[i*dim+k] += evecs[j*dim+i] * sqrtj * evecs[j*dim+k];
+            isqrtM1[i*dim+k] += evecs[j*dim+i] * (1.0/sqrtj) * evecs[j*dim+k];
           }
         }
       }
 
-      /* Map into the space spanned by the eigenvectors of M1 */
+      /* Map M2 into the space spanned by the eigenvectors of M1 */
       for (i = 0; i < dim; ++i) {
-        for (j = 0; j < dim; ++j) {
-          evecs[i*dim+j] = 0.0;
-          for (k = 0; k < dim; ++k) {
-            for (l = 0; l < dim; ++l) {
-              evecs[i*dim+j] += isqrtM1[i*dim+k] * M2[l*dim+k] * isqrtM1[j*dim+l];
+        for (l = 0; l < dim; ++l) {
+          evecs[i*dim+l] = 0.0;
+          for (j = 0; j < dim; ++j) {
+            for (k = 0; k < dim; ++k) {
+              evecs[i*dim+l] += isqrtM1[j*dim+i] * M2[j*dim+k] * isqrtM1[k*dim+l];
             }
           }
         }
@@ -1576,19 +1576,19 @@ static PetscErrorCode DMPlexMetricIntersection_Private(PetscInt dim, PetscScalar
       {
         PetscReal *rwork;
         PetscCall(PetscMalloc1(3*dim, &rwork));
-        PetscStackCallBLAS("LAPACKsyev", LAPACKsyev_("V", "U", &nb, evecs, &nb, evals, work, &lwork, rwork, &lierr));
+        PetscCallBLAS("LAPACKsyev", LAPACKsyev_("V", "U", &nb, evecs, &nb, evals, work, &lwork, rwork, &lierr));
         PetscCall(PetscFree(rwork));
       }
 #else
-      PetscStackCallBLAS("LAPACKsyev", LAPACKsyev_("V", "U", &nb, evecs, &nb, evals, work, &lwork, &lierr));
+      PetscCallBLAS("LAPACKsyev", LAPACKsyev_("V", "U", &nb, evecs, &nb, evals, work, &lwork, &lierr));
 #endif
       if (lierr) {
         for (i = 0; i < dim; ++i) {
-          for (j = 0; j < dim; ++j) {
-            evecs[i*dim+j] = 0.0;
-            for (k = 0; k < dim; ++k) {
-              for (l = 0; l < dim; ++l) {
-                evecs[i*dim+j] += isqrtM1[i*dim+k] * M2[l*dim+k] * isqrtM1[j*dim+l];
+          for (l = 0; l < dim; ++l) {
+            evecs[i*dim+l] = 0.0;
+            for (j = 0; j < dim; ++j) {
+              for (k = 0; k < dim; ++k) {
+                evecs[i*dim+l] += isqrtM1[j*dim+i] * M2[j*dim+k] * isqrtM1[k*dim+l];
               }
             }
           }
@@ -1599,16 +1599,16 @@ static PetscErrorCode DMPlexMetricIntersection_Private(PetscInt dim, PetscScalar
       PetscCall(PetscFPTrapPop());
 
       /* Modify eigenvalues */
-      for (i = 0; i < dim; ++i) evals[i] = PetscMin(evals[i], evals1[i]);
+      for (i = 0; i < dim; ++i) evals[i] = PetscMax(evals[i], 1.0);
 
       /* Map back to get the intersection */
       for (i = 0; i < dim; ++i) {
-        for (j = 0; j < dim; ++j) {
-          M2[i*dim+j] = 0.0;
-          for (k = 0; k < dim; ++k) {
-            for (l = 0; l < dim; ++l) {
-              for (m = 0; m < dim; ++m) {
-                M2[i*dim+j] += sqrtM1[i*dim+k] * evecs[l*dim+k] * evals[l] * evecs[l*dim+m] * sqrtM1[j*dim+m];
+        for (m = 0; m < dim; ++m) {
+          M2[i*dim+m] = 0.0;
+          for (j = 0; j < dim; ++j) {
+            for (k = 0; k < dim; ++k) {
+              for (l = 0; l < dim; ++l) {
+                M2[i*dim+m] += sqrtM1[j*dim+i] * evecs[j*dim+k] * evals[k] * evecs[l*dim+k] * sqrtM1[l*dim+m];
               }
             }
           }
@@ -1617,7 +1617,7 @@ static PetscErrorCode DMPlexMetricIntersection_Private(PetscInt dim, PetscScalar
     }
     PetscCall(PetscFree(work));
   }
-  PetscCall(PetscFree5(evecs, sqrtM1, isqrtM1, evals, evals1));
+  PetscCall(PetscFree4(evecs, sqrtM1, isqrtM1, evals));
   PetscFunctionReturn(0);
 }
 
@@ -1636,9 +1636,9 @@ static PetscErrorCode DMPlexMetricIntersection_Private(PetscInt dim, PetscScalar
 
   Notes:
 
-  The intersection of a list of metrics has the maximal ellipsoid which fits within the ellipsoids of the component metrics.
+  The intersection of a list of metrics has the minimal ellipsoid which fits within the ellipsoids of the component metrics.
 
-  The implementation used here is only consistent with the maximal ellipsoid definition in the case numMetrics = 2.
+  The implementation used here is only consistent with the minimal ellipsoid definition in the case numMetrics = 2.
 
 .seealso: `DMPlexMetricIntersection2()`, `DMPlexMetricIntersection3()`, `DMPlexMetricAverage()`
 @*/

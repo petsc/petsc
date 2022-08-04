@@ -37,9 +37,7 @@ PetscErrorCode PetscPartitionerSetType(PetscPartitioner part, PetscPartitionerTy
   PetscCall(PetscFunctionListFind(PetscPartitionerList, name, &r));
   PetscCheck(r,PetscObjectComm((PetscObject) part), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscPartitioner type: %s", name);
 
-  if (part->ops->destroy) {
-    PetscCall((*part->ops->destroy)(part));
-  }
+  if (part->ops->destroy) PetscCall((*part->ops->destroy)(part));
   part->noGraph = PETSC_FALSE;
   PetscCall(PetscMemzero(part->ops, sizeof(*part->ops)));
   PetscCall(PetscObjectChangeTypeName((PetscObject) part, name));
@@ -176,13 +174,9 @@ PetscErrorCode PetscPartitionerSetFromOptions(PetscPartitioner part)
   PetscObjectOptionsBegin((PetscObject) part);
   PetscCall(PetscPartitionerGetType(part, &currentType));
   PetscCall(PetscOptionsFList("-petscpartitioner_type", "Graph partitioner", "PetscPartitionerSetType", PetscPartitionerList, currentType, name, sizeof(name), &flg));
-  if (flg) {
-    PetscCall(PetscPartitionerSetType(part, name));
-  }
+  if (flg) PetscCall(PetscPartitionerSetType(part, name));
   PetscCall(PetscOptionsBool("-petscpartitioner_use_vertex_weights","Use vertex weights","",part->usevwgt,&part->usevwgt,NULL));
-  if (part->ops->setfromoptions) {
-    PetscCall((*part->ops->setfromoptions)(PetscOptionsObject,part));
-  }
+  if (part->ops->setfromoptions) PetscCall((*part->ops->setfromoptions)(PetscOptionsObject,part));
   PetscCall(PetscViewerDestroy(&part->viewer));
   PetscCall(PetscViewerDestroy(&part->viewerGraph));
   PetscCall(PetscOptionsGetViewer(((PetscObject) part)->comm, ((PetscObject) part)->options, ((PetscObject) part)->prefix, "-petscpartitioner_view", &part->viewer, NULL, NULL));
@@ -355,9 +349,7 @@ PetscErrorCode PetscPartitionerPartition(PetscPartitioner part, PetscInt nparts,
       PetscCall(PetscViewerASCIIPopSynchronized(viewer));
     }
   }
-  if (part->viewer) {
-    PetscCall(PetscPartitionerView(part,part->viewer));
-  }
+  if (part->viewer) PetscCall(PetscPartitionerView(part,part->viewer));
   PetscFunctionReturn(0);
 }
 

@@ -87,9 +87,7 @@ static PetscErrorCode PetscSpaceSetUp_Ptrimmed(PetscSpace sp)
       PetscCall(PetscObjectGetName((PetscObject)sp, &name));
       PetscCall(PetscSNPrintf(subname, PETSC_MAX_PATH_LEN-1, "%s sum component", name));
       PetscCall(PetscObjectSetName((PetscObject)subsp, subname));
-    } else {
-      PetscCall(PetscObjectSetName((PetscObject)subsp, "sum component"));
-    }
+    } else PetscCall(PetscObjectSetName((PetscObject)subsp, "sum component"));
     PetscCall(PetscSpaceSetType(subsp, PETSCSPACEPTRIMMED));
     PetscCall(PetscSpaceGetNumVariables(sp, &Nv));
     PetscCall(PetscSpaceSetNumVariables(subsp, Nv));

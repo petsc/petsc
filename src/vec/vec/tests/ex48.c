@@ -531,9 +531,7 @@ static PetscErrorCode testAttributesAbsolutePath(PetscViewer viewer, const char 
   PetscCall(PetscMemzero(capsules, nap * ns * sizeof(Capsule)));
 
   /* test attribute writing */
-  if (prefix) {
-    PetscCall(PetscViewerHDF5PushGroup(viewer, prefix));
-  }
+  if (prefix) PetscCall(PetscViewerHDF5PushGroup(viewer, prefix));
   for (p=0; p<np; p++) for (s=0; s<ns; s++) {
     /* we test only absolute paths here */
     PetscCall(PetscViewerHDF5PathIsRelative(paths[p], PETSC_FALSE, &flg));
@@ -562,15 +560,11 @@ static PetscErrorCode testAttributesAbsolutePath(PetscViewer viewer, const char 
     capsules[paths2apaths[p]][s] = c;
     old = c;
   }
-  if (prefix) {
-    PetscCall(PetscViewerHDF5PopGroup(viewer));
-  }
+  if (prefix) PetscCall(PetscViewerHDF5PopGroup(viewer));
   PetscCall(PetscViewerFlush(viewer));
 
   if (verbose) PetscCall(PetscPrintf(comm, "\n## READ PHASE\n"));
-  if (prefix) {
-    PetscCall(PetscViewerHDF5PushGroup(viewer, prefix));
-  }
+  if (prefix) PetscCall(PetscViewerHDF5PushGroup(viewer, prefix));
   for (p=0; p<np; p++) for (s=0; s<ns; s++) {
     /* we test only absolute paths here */
     PetscCall(PetscViewerHDF5PathIsRelative(paths[p], PETSC_FALSE, &flg));
@@ -596,9 +590,7 @@ static PetscErrorCode testAttributesAbsolutePath(PetscViewer viewer, const char 
     /* check correct existence and fidelity of attributes in file */
     PetscCall(CapsuleReadAndCompareAttributes(c, viewer, buf));
   }
-  if (prefix) {
-    PetscCall(PetscViewerHDF5PopGroup(viewer));
-  }
+  if (prefix) PetscCall(PetscViewerHDF5PopGroup(viewer));
   PetscCall(PetscViewerFlush(viewer));
   for (p=0; p<nap; p++) for (s=0; s<ns; s++) {
     PetscCall(CapsuleDestroy(&capsules[p][s]));
@@ -767,9 +759,7 @@ static PetscErrorCode testObjectAttributes(PetscViewer viewer)
       PetscCheck(flg == flg1,comm, PETSC_ERR_PLIB, "Capsule should exist for %s/%s? %s Exists? %s", group, name, PetscBools[flg], PetscBools[flg1]);
 
       /* check correct existence of attributes in file */
-      if (flg) {
-        PetscCall(CapsuleReadAndCompareAttributes(c, viewer, name));
-      }
+      if (flg) PetscCall(CapsuleReadAndCompareAttributes(c, viewer, name));
       PetscCall(VecDestroy(&v));
     }
   }
@@ -811,9 +801,7 @@ static PetscErrorCode testAttributesDefaultValue(PetscViewer viewer)
   PetscCall(PetscViewerHDF5ReadAttribute(viewer, "/", "attr_nonExisting_int", PETSC_INT, &ints[1], &ints[3]));
   PetscCheck(ints[2] == ints[0],comm, PETSC_ERR_PLIB, "%" PetscInt_FMT " = ints[2] != ints[0] = %" PetscInt_FMT, ints[2], ints[0]);
   PetscCheck(ints[3] == ints[1],comm, PETSC_ERR_PLIB, "%" PetscInt_FMT " = ints[3] != ints[1] = %" PetscInt_FMT, ints[3], ints[1]);
-  if (verbose) {
-    PetscCall(PetscIntView(nv, ints, PETSC_VIEWER_STDOUT_WORLD));
-  }
+  if (verbose) PetscCall(PetscIntView(nv, ints, PETSC_VIEWER_STDOUT_WORLD));
 
   PetscCall(PetscViewerHDF5ReadAttribute(viewer, "/", "attr_0_real", PETSC_REAL, NULL, &reals[0]));
   reals[1] = reals[0] * -11.1;
@@ -821,9 +809,7 @@ static PetscErrorCode testAttributesDefaultValue(PetscViewer viewer)
   PetscCall(PetscViewerHDF5ReadAttribute(viewer, "/", "attr_nonExisting_real", PETSC_REAL, &reals[1], &reals[3]));
   PetscCheck(reals[2] == reals[0],comm, PETSC_ERR_PLIB, "%f = reals[2] != reals[0] = %f", reals[2], reals[0]);
   PetscCheck(reals[3] == reals[1],comm, PETSC_ERR_PLIB, "%f = reals[3] != reals[1] = %f", reals[3], reals[1]);
-  if (verbose) {
-    PetscCall(PetscRealView(nv, reals, PETSC_VIEWER_STDOUT_WORLD));
-  }
+  if (verbose) PetscCall(PetscRealView(nv, reals, PETSC_VIEWER_STDOUT_WORLD));
 
   PetscCall(PetscViewerHDF5ReadAttribute(viewer, "/", "attr_0_str", PETSC_STRING, NULL, &strings[0]));
   PetscCall(PetscStrallocpy(strings[0], &strings[1]));
@@ -854,6 +840,7 @@ int main(int argc,char **argv)
   PetscViewer    viewer;
 
   PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char*) 0, help));
   comm = PETSC_COMM_WORLD;
   PetscCallMPI(MPI_Comm_rank(comm, &rank));

@@ -231,9 +231,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_5(Mat C,Mat A,const MatFactorIn
   PetscCall(PetscFree(rtmp));
   PetscCall(PetscFree2(il,jl));
   PetscCall(PetscFree2(dk,uik));
-  if (a->permute) {
-    PetscCall(PetscFree(aa));
-  }
+  if (a->permute) PetscCall(PetscFree(aa));
 
   PetscCall(ISRestoreIndices(perm,&perm_ptr));
 

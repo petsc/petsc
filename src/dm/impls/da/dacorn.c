@@ -326,6 +326,7 @@ PetscErrorCode  DMDACreateCompatibleDMDA(DM da,PetscInt nfields,DM *nda)
   const PetscInt   *lx,*ly,*lz;
   DMBoundaryType   bx,by,bz;
   DMDAStencilType  stencil_type;
+  Vec              coords;
   PetscInt         ox,oy,oz;
   PetscInt         cl,rl;
 
@@ -353,10 +354,8 @@ PetscErrorCode  DMDACreateCompatibleDMDA(DM da,PetscInt nfields,DM *nda)
     PetscCall(DMDACreate3d(PetscObjectComm((PetscObject)da),bx,by,bz,stencil_type,M,N,P,m,n,p,nfields,s,lx,ly,lz,nda));
   }
   PetscCall(DMSetUp(*nda));
-  if (da->coordinates) {
-    PetscCall(PetscObjectReference((PetscObject)da->coordinates));
-    (*nda)->coordinates = da->coordinates;
-  }
+  PetscCall(DMGetCoordinates(da,   &coords));
+  PetscCall(DMSetCoordinates(*nda,  coords));
 
   /* allow for getting a reduced DA corresponding to a domain decomposition */
   PetscCall(DMDAGetOffset(da,&ox,&oy,&oz,&Mo,&No,&Po));

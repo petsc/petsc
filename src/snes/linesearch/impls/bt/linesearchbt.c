@@ -130,9 +130,7 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
 
   while (PETSC_TRUE) {
     PetscCall(VecWAXPY(W,-lambda,Y,X));
-    if (linesearch->ops->viproject) {
-      PetscCall((*linesearch->ops->viproject)(snes, W));
-    }
+    if (linesearch->ops->viproject) PetscCall((*linesearch->ops->viproject)(snes, W));
     if (snes->nfuncs >= snes->max_funcs && snes->max_funcs >= 0) {
       PetscCall(PetscInfo(snes,"Exceeded maximum function evaluations, while checking full step length!\n"));
       snes->reason = SNES_DIVERGED_FUNCTION_COUNT;
@@ -200,9 +198,7 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
     else                         lambda = lambdatemp;
 
     PetscCall(VecWAXPY(W,-lambda,Y,X));
-    if (linesearch->ops->viproject) {
-      PetscCall((*linesearch->ops->viproject)(snes, W));
-    }
+    if (linesearch->ops->viproject) PetscCall((*linesearch->ops->viproject)(snes, W));
     if (snes->nfuncs >= snes->max_funcs && snes->max_funcs >= 0) {
       PetscCall(PetscInfo(snes,"Exceeded maximum function evaluations, while attempting quadratic backtracking! %" PetscInt_FMT " \n",snes->nfuncs));
       snes->reason = SNES_DIVERGED_FUNCTION_COUNT;
@@ -279,9 +275,7 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
         if (lambdatemp <= .1*lambda) lambda     = .1*lambda;
         else                         lambda     = lambdatemp;
         PetscCall(VecWAXPY(W,-lambda,Y,X));
-        if (linesearch->ops->viproject) {
-          PetscCall((*linesearch->ops->viproject)(snes,W));
-        }
+        if (linesearch->ops->viproject) PetscCall((*linesearch->ops->viproject)(snes,W));
         if (snes->nfuncs >= snes->max_funcs && snes->max_funcs >= 0) {
           PetscCall(PetscInfo(snes,"Exceeded maximum function evaluations, while looking for good step length! %" PetscInt_FMT " \n",count));
           if (!objective) {
@@ -356,9 +350,7 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
   PetscCall(SNESLineSearchPostCheck(linesearch,X,Y,W,&changed_y,&changed_w));
   if (changed_y) {
     PetscCall(VecWAXPY(W,-1.0,Y,X));
-    if (linesearch->ops->viproject) {
-      PetscCall((*linesearch->ops->viproject)(snes, W));
-    }
+    if (linesearch->ops->viproject) PetscCall((*linesearch->ops->viproject)(snes, W));
   }
   if (changed_y || changed_w || objective) { /* recompute the function norm if the step has changed or the objective isn't the norm */
     PetscCall((*linesearch->ops->snesfunc)(snes,W,G));

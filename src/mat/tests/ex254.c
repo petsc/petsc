@@ -25,6 +25,7 @@ int main(int argc,char **args)
     PetscInt *i,*j,n;
   } coo[3] = {{i0,j0,sizeof(i0)/sizeof(PetscInt)}, {i1,j1,sizeof(i1)/sizeof(PetscInt)}, {i2,j2,sizeof(i2)/sizeof(PetscInt)}};
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCall(PetscOptionsGetBool(NULL,NULL,"-ignore_remote",&flg,NULL));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
@@ -40,9 +41,10 @@ int main(int argc,char **args)
   PetscCall(MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE));
   PetscCall(MatSetOption(A,MAT_IGNORE_OFF_PROC_ENTRIES,flg));
 
+  PetscCall(PetscMalloc1(coo[rank].n,&vals));
   for (k=0; k<coo[rank].n; k++) {
-    PetscScalar val = coo[rank].j[k];
-    PetscCall(MatSetValue(A,coo[rank].i[k],coo[rank].j[k],val,ADD_VALUES));
+    vals[k] = coo[rank].j[k];
+    PetscCall(MatSetValue(A,coo[rank].i[k],coo[rank].j[k],vals[k],ADD_VALUES));
   }
   PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
@@ -53,10 +55,7 @@ int main(int argc,char **args)
   PetscCall(MatSetOption(B,MAT_IGNORE_OFF_PROC_ENTRIES,flg));
   PetscCall(MatSetPreallocationCOO(B,coo[rank].n,coo[rank].i,coo[rank].j));
 
-  PetscCall(PetscMalloc1(coo[rank].n,&vals));
-  for (k=0; k<coo[rank].n; k++) vals[k] = coo[rank].j[k];
   PetscCall(MatSetValuesCOO(B,vals,ADD_VALUES));
-
   PetscCall(MatEqual(A,B,&equal));
 
   if (!equal) {

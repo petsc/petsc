@@ -73,6 +73,7 @@ int main(int argc,char **argv)
   PetscInt       i;
   PetscMPIInt    rank;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   PetscCall(TSCreate(PETSC_COMM_WORLD,&ts));

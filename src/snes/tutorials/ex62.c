@@ -431,6 +431,7 @@ int main(int argc, char **argv)
   Vec            u;
   AppCtx         user;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(ProcessOptions(PETSC_COMM_WORLD, &user));
   PetscCall(CreateMesh(PETSC_COMM_WORLD, &user, &dm));
@@ -577,7 +578,7 @@ int main(int argc, char **argv)
     args: -sol quadratic -dm_plex_simplex 0 -vel_petscspace_degree 1 -pres_petscspace_degree 0 -snes_convergence_estimate -convest_num_refine 2 \
       -ksp_atol 1e-10 -petscds_jac_pre 0 \
       -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type full -pc_fieldsplit_schur_precondition full \
-        -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type gamg -fieldsplit_pressure_mg_levels_pc_type jacobi -fieldsplit_pressure_mg_coarse_pc_type svd
+        -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type gamg -fieldsplit_pressure_mg_levels_pc_type jacobi -fieldsplit_pressure_mg_coarse_pc_type svd -fieldsplit_pressure_pc_gamg_aggressive_coarsening 0
 
   test:
     suffix: 3d_q1_p0_conv
@@ -586,7 +587,7 @@ int main(int argc, char **argv)
     args: -sol quadratic -dm_plex_simplex 0 -dm_plex_dim 3 -dm_refine 1 -vel_petscspace_degree 1 -pres_petscspace_degree 0 -snes_convergence_estimate -convest_num_refine 1 \
       -ksp_atol 1e-10 -petscds_jac_pre 0 \
       -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type full -pc_fieldsplit_schur_precondition full \
-        -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type gamg -fieldsplit_pressure_mg_levels_pc_type jacobi -fieldsplit_pressure_mg_coarse_pc_type svd
+        -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type gamg -fieldsplit_pressure_mg_levels_pc_type jacobi -fieldsplit_pressure_mg_coarse_pc_type svd -fieldsplit_pressure_pc_gamg_aggressive_coarsening 0
 
   # Stokes preconditioners
   #   Block diagonal \begin{pmatrix} A & 0 \\ 0 & I \end{pmatrix}

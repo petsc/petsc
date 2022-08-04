@@ -99,6 +99,7 @@ int main(int argc,char **argv)
   char           filename[PETSC_MAX_PATH_LEN] = "ex16.vts";
   char           filename_def[PETSC_MAX_PATH_LEN] = "ex16_def.vts";
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(FormElements());
   comm = PETSC_COMM_WORLD;
@@ -156,9 +157,7 @@ int main(int argc,char **argv)
   PetscCall(PetscPrintf(comm,"lambda: %f mu: %f\n",(double)user.lambda,(double)user.mu));
 
   /* show a cross-section of the initial state */
-  if (viewline) {
-    PetscCall(DisplayLine(snes,x));
-  }
+  if (viewline) PetscCall(DisplayLine(snes,x));
 
   /* get the loaded configuration */
   PetscCall(SNESSolve(snes,b,x));
@@ -167,9 +166,7 @@ int main(int argc,char **argv)
   PetscCall(PetscPrintf(comm,"Number of SNES iterations = %" PetscInt_FMT "\n", its));
   PetscCall(SNESGetSolution(snes,&X));
   /* show a cross-section of the final state */
-  if (viewline) {
-    PetscCall(DisplayLine(snes,X));
-  }
+  if (viewline) PetscCall(DisplayLine(snes,X));
 
   if (view) {
     PetscViewer viewer;

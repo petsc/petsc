@@ -248,9 +248,7 @@ PetscErrorCode PetscFESetFromOptions(PetscFE fem)
   }
   PetscCall(PetscOptionsBoundedInt("-petscfe_num_blocks", "The number of cell blocks to integrate concurrently", "PetscSpaceSetTileSizes", fem->numBlocks, &fem->numBlocks, NULL,1));
   PetscCall(PetscOptionsBoundedInt("-petscfe_num_batches", "The number of cell batches to integrate serially", "PetscSpaceSetTileSizes", fem->numBatches, &fem->numBatches, NULL,1));
-  if (fem->ops->setfromoptions) {
-    PetscCall((*fem->ops->setfromoptions)(PetscOptionsObject,fem));
-  }
+  if (fem->ops->setfromoptions) PetscCall((*fem->ops->setfromoptions)(PetscOptionsObject,fem));
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   PetscCall(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject) fem));
   PetscOptionsEnd();
@@ -391,7 +389,7 @@ PetscErrorCode PetscFECreate(MPI_Comm comm, PetscFE *fem)
 @*/
 PetscErrorCode PetscFEGetSpatialDimension(PetscFE fem, PetscInt *dim)
 {
-  DM             dm;
+  DM dm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
@@ -1091,11 +1089,8 @@ PETSC_EXTERN PetscErrorCode PetscFECreatePointTrace(PetscFE fe, PetscInt refPoin
   PetscCall(PetscFEGetQuadrature(fe,&fullQuad));
   PetscCall(PetscQuadratureGetOrder(fullQuad,&order));
   PetscCall(DMPlexGetConeSize(dm,refPoint,&coneSize));
-  if (coneSize == 2 * depth) {
-    PetscCall(PetscDTGaussTensorQuadrature(depth,1,(order + 1)/2,-1.,1.,&subQuad));
-  } else {
-    PetscCall(PetscDTStroudConicalQuadrature(depth,1,(order + 1)/2,-1.,1.,&subQuad));
-  }
+  if (coneSize == 2 * depth) PetscCall(PetscDTGaussTensorQuadrature(depth,1,(order + 1)/2,-1.,1.,&subQuad));
+  else PetscCall(PetscDTStroudConicalQuadrature(depth,1,(order + 1)/2,-1.,1.,&subQuad));
   PetscCall(PetscFESetQuadrature(*trFE,subQuad));
   PetscCall(PetscFESetUp(*trFE));
   PetscCall(PetscQuadratureDestroy(&subQuad));
@@ -1779,15 +1774,137 @@ PetscErrorCode PetscFERefine(PetscFE fe, PetscFE *feRef)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PetscFESetDefaultName_Private(PetscFE fe)
+{
+  PetscSpace     P;
+  PetscDualSpace Q;
+  DM             K;
+  DMPolytopeType ct;
+  PetscInt       degree;
+  char           name[64];
+
+  PetscFunctionBegin;
+  PetscCall(PetscFEGetBasisSpace(fe, &P));
+  PetscCall(PetscSpaceGetDegree(P, &degree, NULL));
+  PetscCall(PetscFEGetDualSpace(fe, &Q));
+  PetscCall(PetscDualSpaceGetDM(Q, &K));
+  PetscCall(DMPlexGetCellType(K, 0, &ct));
+  switch (ct) {
+    case DM_POLYTOPE_SEGMENT:
+    case DM_POLYTOPE_POINT_PRISM_TENSOR:
+    case DM_POLYTOPE_QUADRILATERAL:
+    case DM_POLYTOPE_SEG_PRISM_TENSOR:
+    case DM_POLYTOPE_HEXAHEDRON:
+    case DM_POLYTOPE_QUAD_PRISM_TENSOR:
+      PetscCall(PetscSNPrintf(name, sizeof(name), "Q%" PetscInt_FMT, degree));
+      break;
+    case DM_POLYTOPE_TRIANGLE:
+    case DM_POLYTOPE_TETRAHEDRON:
+      PetscCall(PetscSNPrintf(name, sizeof(name), "P%" PetscInt_FMT, degree));
+      break;
+    case DM_POLYTOPE_TRI_PRISM:
+    case DM_POLYTOPE_TRI_PRISM_TENSOR:
+      PetscCall(PetscSNPrintf(name, sizeof(name), "P%" PetscInt_FMT "xQ%" PetscInt_FMT, degree, degree));
+      break;
+    default:
+      PetscCall(PetscSNPrintf(name, sizeof(name), "FE"));
+  }
+  PetscCall(PetscFESetName(fe, name));
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PetscFECreateDefaultQuadrature_Private(PetscInt dim, DMPolytopeType ct, PetscInt qorder, PetscQuadrature *q, PetscQuadrature *fq)
+{
+  const PetscInt quadPointsPerEdge = PetscMax(qorder + 1, 1);
+
+  PetscFunctionBegin;
+  switch (ct) {
+    case DM_POLYTOPE_SEGMENT:
+    case DM_POLYTOPE_POINT_PRISM_TENSOR:
+    case DM_POLYTOPE_QUADRILATERAL:
+    case DM_POLYTOPE_SEG_PRISM_TENSOR:
+    case DM_POLYTOPE_HEXAHEDRON:
+    case DM_POLYTOPE_QUAD_PRISM_TENSOR:
+      PetscCall(PetscDTGaussTensorQuadrature(dim,   1, quadPointsPerEdge, -1.0, 1.0, q));
+      PetscCall(PetscDTGaussTensorQuadrature(dim-1, 1, quadPointsPerEdge, -1.0, 1.0, fq));
+      break;
+    case DM_POLYTOPE_TRIANGLE:
+    case DM_POLYTOPE_TETRAHEDRON:
+      PetscCall(PetscDTStroudConicalQuadrature(dim,   1, quadPointsPerEdge, -1.0, 1.0, q));
+      PetscCall(PetscDTStroudConicalQuadrature(dim-1, 1, quadPointsPerEdge, -1.0, 1.0, fq));
+      break;
+    case DM_POLYTOPE_TRI_PRISM:
+    case DM_POLYTOPE_TRI_PRISM_TENSOR:
+      {
+        PetscQuadrature q1, q2;
+
+        PetscCall(PetscDTStroudConicalQuadrature(2, 1, quadPointsPerEdge, -1.0, 1.0, &q1));
+        PetscCall(PetscDTGaussTensorQuadrature(1, 1, quadPointsPerEdge, -1.0, 1.0, &q2));
+        PetscCall(PetscDTTensorQuadratureCreate(q1, q2, q));
+        PetscCall(PetscQuadratureDestroy(&q1));
+        PetscCall(PetscQuadratureDestroy(&q2));
+      }
+      PetscCall(PetscDTStroudConicalQuadrature(dim-1, 1, quadPointsPerEdge, -1.0, 1.0, fq));
+      /* TODO Need separate quadratures for each face */
+      break;
+    default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No quadrature for celltype %s", DMPolytopeTypes[PetscMin(ct, DM_POLYTOPE_UNKNOWN)]);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscFECreateFromSpaces - Create a PetscFE from the basis and dual spaces
+
+  Collective
+
+  Input Parameters:
++ P  - The basis space
+. Q  - The dual space
+. q  - The cell quadrature
+- fq - The face quadrature
+
+  Output Parameter:
+. fem    - The PetscFE object
+
+  Note:
+  The PetscFE takes ownership of these spaces by calling destroy on each. They should not be used after this call, and for borrowed references from `PetscFEGetSpace()` and the like, the caller must use `PetscObjectReference` before this call.
+
+  Level: beginner
+
+.seealso: `PetscFECreateLagrangeByCell()`, `PetscFECreateDefault()`, `PetscFECreateByCell()`, `PetscFECreate()`, `PetscSpaceCreate()`, `PetscDualSpaceCreate()`
+@*/
+PetscErrorCode PetscFECreateFromSpaces(PetscSpace P, PetscDualSpace Q, PetscQuadrature q, PetscQuadrature fq, PetscFE *fem)
+{
+  PetscInt    Nc;
+  const char *prefix;
+
+  PetscFunctionBegin;
+  PetscCall(PetscFECreate(PetscObjectComm((PetscObject) P), fem));
+  PetscCall(PetscObjectGetOptionsPrefix((PetscObject) P, &prefix));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject) *fem, prefix));
+  PetscCall(PetscFESetType(*fem, PETSCFEBASIC));
+  PetscCall(PetscFESetBasisSpace(*fem, P));
+  PetscCall(PetscFESetDualSpace(*fem, Q));
+  PetscCall(PetscSpaceGetNumComponents(P, &Nc));
+  PetscCall(PetscFESetNumComponents(*fem, Nc));
+  PetscCall(PetscFESetUp(*fem));
+  PetscCall(PetscSpaceDestroy(&P));
+  PetscCall(PetscDualSpaceDestroy(&Q));
+  PetscCall(PetscFESetQuadrature(*fem, q));
+  PetscCall(PetscFESetFaceQuadrature(*fem, fq));
+  PetscCall(PetscQuadratureDestroy(&q));
+  PetscCall(PetscQuadratureDestroy(&fq));
+  PetscCall(PetscFESetDefaultName_Private(*fem));
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode PetscFECreate_Internal(MPI_Comm comm, PetscInt dim, PetscInt Nc, DMPolytopeType ct, const char prefix[], PetscInt degree, PetscInt qorder, PetscBool setFromOptions, PetscFE *fem)
 {
-  PetscQuadrature q, fq;
   DM              K;
   PetscSpace      P;
   PetscDualSpace  Q;
-  PetscInt        quadPointsPerEdge;
+  PetscQuadrature q, fq;
   PetscBool       tensor;
-  char            name[64];
 
   PetscFunctionBegin;
   if (prefix) PetscValidCharPointer(prefix, 5);
@@ -1853,82 +1970,17 @@ static PetscErrorCode PetscFECreate_Internal(MPI_Comm comm, PetscInt dim, PetscI
   PetscCall(PetscDualSpaceLagrangeSetTensor(Q, (tensor || (ct == DM_POLYTOPE_TRI_PRISM)) ? PETSC_TRUE : PETSC_FALSE));
   if (setFromOptions) PetscCall(PetscDualSpaceSetFromOptions(Q));
   PetscCall(PetscDualSpaceSetUp(Q));
-  /* Create finite element */
-  PetscCall(PetscFECreate(comm, fem));
-  PetscCall(PetscObjectSetOptionsPrefix((PetscObject) *fem, prefix));
-  PetscCall(PetscFESetType(*fem, PETSCFEBASIC));
-  PetscCall(PetscFESetBasisSpace(*fem, P));
-  PetscCall(PetscFESetDualSpace(*fem, Q));
-  PetscCall(PetscFESetNumComponents(*fem, Nc));
-  if (setFromOptions) PetscCall(PetscFESetFromOptions(*fem));
-  PetscCall(PetscFESetUp(*fem));
-  PetscCall(PetscSpaceDestroy(&P));
-  PetscCall(PetscDualSpaceDestroy(&Q));
-  /* Create quadrature (with specified order if given) */
+  /* Create quadrature */
   qorder = qorder >= 0 ? qorder : degree;
   if (setFromOptions) {
-    PetscObjectOptionsBegin((PetscObject)*fem);
-    PetscCall(PetscOptionsBoundedInt("-petscfe_default_quadrature_order","Quadrature order is one less than quadrature points per edge","PetscFECreateDefault",qorder,&qorder,NULL,0));
+    PetscObjectOptionsBegin((PetscObject) P);
+    PetscCall(PetscOptionsBoundedInt("-petscfe_default_quadrature_order", "Quadrature order is one less than quadrature points per edge", "PetscFECreateDefault", qorder, &qorder, NULL, 0));
     PetscOptionsEnd();
   }
-  quadPointsPerEdge = PetscMax(qorder + 1,1);
-  switch (ct) {
-    case DM_POLYTOPE_SEGMENT:
-    case DM_POLYTOPE_POINT_PRISM_TENSOR:
-    case DM_POLYTOPE_QUADRILATERAL:
-    case DM_POLYTOPE_SEG_PRISM_TENSOR:
-    case DM_POLYTOPE_HEXAHEDRON:
-    case DM_POLYTOPE_QUAD_PRISM_TENSOR:
-      PetscCall(PetscDTGaussTensorQuadrature(dim,   1, quadPointsPerEdge, -1.0, 1.0, &q));
-      PetscCall(PetscDTGaussTensorQuadrature(dim-1, 1, quadPointsPerEdge, -1.0, 1.0, &fq));
-      break;
-    case DM_POLYTOPE_TRIANGLE:
-    case DM_POLYTOPE_TETRAHEDRON:
-      PetscCall(PetscDTStroudConicalQuadrature(dim,   1, quadPointsPerEdge, -1.0, 1.0, &q));
-      PetscCall(PetscDTStroudConicalQuadrature(dim-1, 1, quadPointsPerEdge, -1.0, 1.0, &fq));
-      break;
-    case DM_POLYTOPE_TRI_PRISM:
-    case DM_POLYTOPE_TRI_PRISM_TENSOR:
-      {
-        PetscQuadrature q1, q2;
-
-        PetscCall(PetscDTStroudConicalQuadrature(2, 1, quadPointsPerEdge, -1.0, 1.0, &q1));
-        PetscCall(PetscDTGaussTensorQuadrature(1, 1, quadPointsPerEdge, -1.0, 1.0, &q2));
-        PetscCall(PetscDTTensorQuadratureCreate(q1, q2, &q));
-        PetscCall(PetscQuadratureDestroy(&q1));
-        PetscCall(PetscQuadratureDestroy(&q2));
-      }
-      PetscCall(PetscDTStroudConicalQuadrature(dim-1, 1, quadPointsPerEdge, -1.0, 1.0, &fq));
-      /* TODO Need separate quadratures for each face */
-      break;
-    default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No quadrature for celltype %s", DMPolytopeTypes[PetscMin(ct, DM_POLYTOPE_UNKNOWN)]);
-  }
-  PetscCall(PetscFESetQuadrature(*fem, q));
-  PetscCall(PetscFESetFaceQuadrature(*fem, fq));
-  PetscCall(PetscQuadratureDestroy(&q));
-  PetscCall(PetscQuadratureDestroy(&fq));
-  /* Set finite element name */
-  switch (ct) {
-    case DM_POLYTOPE_SEGMENT:
-    case DM_POLYTOPE_POINT_PRISM_TENSOR:
-    case DM_POLYTOPE_QUADRILATERAL:
-    case DM_POLYTOPE_SEG_PRISM_TENSOR:
-    case DM_POLYTOPE_HEXAHEDRON:
-    case DM_POLYTOPE_QUAD_PRISM_TENSOR:
-      PetscCall(PetscSNPrintf(name, sizeof(name), "Q%" PetscInt_FMT, degree));
-      break;
-    case DM_POLYTOPE_TRIANGLE:
-    case DM_POLYTOPE_TETRAHEDRON:
-      PetscCall(PetscSNPrintf(name, sizeof(name), "P%" PetscInt_FMT, degree));
-      break;
-    case DM_POLYTOPE_TRI_PRISM:
-    case DM_POLYTOPE_TRI_PRISM_TENSOR:
-      PetscCall(PetscSNPrintf(name, sizeof(name), "P%" PetscInt_FMT "xQ%" PetscInt_FMT, degree, degree));
-      break;
-    default:
-      PetscCall(PetscSNPrintf(name, sizeof(name), "FE"));
-  }
-  PetscCall(PetscFESetName(*fem, name));
+  PetscCall(PetscFECreateDefaultQuadrature_Private(dim, ct, qorder, &q, &fq));
+  /* Create finite element */
+  PetscCall(PetscFECreateFromSpaces(P, Q, q, fq, fem));
+  if (setFromOptions) PetscCall(PetscFESetFromOptions(*fem));
   PetscFunctionReturn(0);
 }
 

@@ -10,6 +10,7 @@ int main(int argc,char **argv)
   PetscBool       flg,setSizes;
 
   /* Create a DMStag object */
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-dim",&dim,&flg));
   PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Supply -dim option with value 1, 2, or 3");

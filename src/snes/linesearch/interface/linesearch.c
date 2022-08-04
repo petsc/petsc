@@ -240,9 +240,7 @@ PetscErrorCode SNESLineSearchSetUp(SNESLineSearch linesearch)
     if (!linesearch->vec_func_new) {
       PetscCall(VecDuplicate(linesearch->vec_sol, &linesearch->vec_func_new));
     }
-    if (linesearch->ops->setup) {
-      PetscCall((*linesearch->ops->setup)(linesearch));
-    }
+    if (linesearch->ops->setup) PetscCall((*linesearch->ops->setup)(linesearch));
     if (!linesearch->ops->snesfunc) PetscCall(SNESLineSearchSetFunction(linesearch,SNESComputeFunction));
     linesearch->lambda      = linesearch->damping;
     linesearch->setupcalled = PETSC_TRUE;
@@ -317,7 +315,15 @@ PetscErrorCode  SNESLineSearchSetFunction(SNESLineSearch linesearch, PetscErrorC
 
    Level: intermediate
 
-.seealso: `SNESGetLineSearch()`, `SNESLineSearchPreCheck()`, `SNESLineSearchSetPostCheck()`, `SNESLineSearchGetPostCheck()`, `SNESLineSearchGetPreCheck()`
+   Notes:
+   Use `SNESLineSearchSetPostCheck()` to change the step after the line search.
+   search is complete.
+
+   Use `SNESVISetVariableBounds()` and `SNESVISetComputeVariableBounds()` to cause `SNES` to automatically control the ranges of variables allowed.
+
+.seealso: `SNESGetLineSearch()`, `SNESLineSearchPreCheck()`, `SNESLineSearchSetPostCheck()`, `SNESLineSearchGetPostCheck()`, `SNESLineSearchGetPreCheck()`,
+          `SNESVISetVariableBounds()`, `SNESVISetComputeVariableBounds()`, `SNESSetFunctionDomainError()`, `SNESSetJacobianDomainError()
+
 @*/
 PetscErrorCode  SNESLineSearchSetPreCheck(SNESLineSearch linesearch, PetscErrorCode (*func)(SNESLineSearch,Vec,Vec,PetscBool*,void*),void *ctx)
 {
@@ -364,7 +370,14 @@ PetscErrorCode  SNESLineSearchGetPreCheck(SNESLineSearch linesearch, PetscErrorC
 
    Level: intermediate
 
-.seealso: `SNESGetLineSearch()`, `SNESLineSearchPostCheck()`, `SNESLineSearchSetPreCheck()`, `SNESLineSearchGetPreCheck()`, `SNESLineSearchGetPostCheck()`
+   Notes:
+   Use `SNESLineSearchSetPreCheck()` to change the step before the line search.
+   search is complete.
+
+   Use `SNESVISetVariableBounds()` and `SNESVISetComputeVariableBounds()` to cause `SNES` to automatically control the ranges of variables allowed.
+
+.seealso: `SNESGetLineSearch()`, `SNESLineSearchPostCheck()`, `SNESLineSearchSetPreCheck()`, `SNESLineSearchGetPreCheck()`, `SNESLineSearchGetPostCheck()`,
+          `SNESVISetVariableBounds()`, `SNESVISetComputeVariableBounds()`, `SNESSetFunctionDomainError()`, `SNESSetJacobianDomainError()
 @*/
 PetscErrorCode  SNESLineSearchSetPostCheck(SNESLineSearch linesearch, PetscErrorCode (*func)(SNESLineSearch,Vec,Vec,Vec,PetscBool*,PetscBool*,void*),void *ctx)
 {
@@ -411,9 +424,10 @@ PetscErrorCode  SNESLineSearchGetPostCheck(SNESLineSearch linesearch, PetscError
    Output Parameters:
 .  changed - Indicator that the precheck routine has changed anything
 
-   Level: developer
+   Level: advanced
 
-.seealso: `SNESGetLineSearch()`, `SNESLineSearchPostCheck()`, `SNESLineSearchSetPreCheck()`, `SNESLineSearchGetPreCheck()`, `SNESLineSearchSetPostCheck()`, `SNESLineSearchGetPostCheck()`
+.seealso: `SNESGetLineSearch()`, `SNESLineSearchPostCheck()`, `SNESLineSearchSetPreCheck()`, `SNESLineSearchGetPreCheck()`, `SNESLineSearchSetPostCheck()`,
+          `SNESLineSearchGetPostCheck()``
 @*/
 PetscErrorCode SNESLineSearchPreCheck(SNESLineSearch linesearch,Vec X,Vec Y,PetscBool *changed)
 {
@@ -725,9 +739,7 @@ PetscErrorCode  SNESLineSearchMonitorSetFromOptions(SNESLineSearch ls,const char
     PetscViewerAndFormat *vf;
     PetscCall(PetscViewerAndFormatCreate(viewer,format,&vf));
     PetscCall(PetscObjectDereference((PetscObject)viewer));
-    if (monitorsetup) {
-      PetscCall((*monitorsetup)(ls,vf));
-    }
+    if (monitorsetup) PetscCall((*monitorsetup)(ls,vf));
     PetscCall(SNESLineSearchMonitorSet(ls,(PetscErrorCode (*)(SNESLineSearch,void*))monitor,vf,(PetscErrorCode (*)(void**))PetscViewerAndFormatDestroy));
   }
   PetscFunctionReturn(0);
@@ -817,9 +829,7 @@ PetscErrorCode SNESLineSearchSetFromOptions(SNESLineSearch linesearch)
   PetscCall(PetscOptionsInt("-snes_linesearch_order","Order of approximation used in the line search","SNESLineSearchSetOrder",linesearch->order,&linesearch->order,NULL));
   PetscCall(PetscOptionsBool("-snes_linesearch_norms","Compute final norms in line search","SNESLineSearchSetComputeNorms",linesearch->norms,&linesearch->norms,NULL));
 
-  if (linesearch->ops->setfromoptions) {
-    PetscCall((*linesearch->ops->setfromoptions)(PetscOptionsObject,linesearch));
-  }
+  if (linesearch->ops->setfromoptions) PetscCall((*linesearch->ops->setfromoptions)(PetscOptionsObject,linesearch));
 
   PetscCall(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)linesearch));
   PetscOptionsEnd();

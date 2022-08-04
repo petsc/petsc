@@ -180,7 +180,7 @@ static PetscErrorCode PCSetUp_Jacobi(PC pc)
   diagsqrt = jac->diagsqrt;
 
   if (diag) {
-    PetscBool isspd;
+    PetscBool isset,isspd;
 
     if (jac->userowmax) {
       PetscCall(MatGetRowMaxAbs(pc->pmat,diag,NULL));
@@ -190,11 +190,9 @@ static PetscErrorCode PCSetUp_Jacobi(PC pc)
       PetscCall(MatGetDiagonal(pc->pmat,diag));
     }
     PetscCall(VecReciprocal(diag));
-    if (jac->useabs) {
-      PetscCall(VecAbs(diag));
-    }
-    PetscCall(MatGetOption(pc->pmat,MAT_SPD,&isspd));
-    if (jac->fixdiag && !isspd) {
+    if (jac->useabs) PetscCall(VecAbs(diag));
+    PetscCall(MatIsSPDKnown(pc->pmat,&isset,&isspd));
+    if (jac->fixdiag && (!isset || !isspd)) {
       PetscCall(VecGetLocalSize(diag,&n));
       PetscCall(VecGetArray(diag,&x));
       for (i=0; i<n; i++) {
@@ -366,9 +364,7 @@ static PetscErrorCode PCSetFromOptions_Jacobi(PetscOptionItems *PetscOptionsObje
   PetscCall(PCJacobiGetType(pc,&deflt));
   PetscOptionsHeadBegin(PetscOptionsObject,"Jacobi options");
   PetscCall(PetscOptionsEnum("-pc_jacobi_type","How to construct diagonal matrix","PCJacobiSetType",PCJacobiTypes,(PetscEnum)deflt,(PetscEnum*)&type,&flg));
-  if (flg) {
-    PetscCall(PCJacobiSetType(pc,type));
-  }
+  if (flg) PetscCall(PCJacobiSetType(pc,type));
   PetscCall(PetscOptionsBool("-pc_jacobi_abs","Use absolute values of diagonal entries","PCJacobiSetUseAbs",jac->useabs,&jac->useabs,NULL));
   PetscCall(PetscOptionsBool("-pc_jacobi_fixdiagonal","Fix null terms on diagonal","PCJacobiSetFixDiagonal",jac->fixdiag,&jac->fixdiag,NULL));
   PetscOptionsHeadEnd();

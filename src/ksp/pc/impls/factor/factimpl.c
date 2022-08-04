@@ -231,45 +231,31 @@ PetscErrorCode  PCSetFromOptions_Factor(PetscOptionItems *PetscOptionsObject,PC 
   PetscFunctionBegin;
   PetscCall(PCFactorGetUseInPlace(pc,&inplace));
   PetscCall(PetscOptionsBool("-pc_factor_in_place","Form factored matrix in the same memory as the matrix","PCFactorSetUseInPlace",inplace,&flg,&set));
-  if (set) {
-    PetscCall(PCFactorSetUseInPlace(pc,flg));
-  }
+  if (set) PetscCall(PCFactorSetUseInPlace(pc,flg));
   PetscCall(PetscOptionsReal("-pc_factor_fill","Expected non-zeros in factored matrix","PCFactorSetFill",((PC_Factor*)factor)->info.fill,&((PC_Factor*)factor)->info.fill,NULL));
 
   PetscCall(PetscOptionsEnum("-pc_factor_shift_type","Type of shift to add to diagonal","PCFactorSetShiftType",MatFactorShiftTypes,(PetscEnum)(int)((PC_Factor*)factor)->info.shifttype,&etmp,&flg));
-  if (flg) {
-    PetscCall(PCFactorSetShiftType(pc,(MatFactorShiftType)etmp));
-  }
+  if (flg) PetscCall(PCFactorSetShiftType(pc,(MatFactorShiftType)etmp));
   PetscCall(PetscOptionsReal("-pc_factor_shift_amount","Shift added to diagonal","PCFactorSetShiftAmount",((PC_Factor*)factor)->info.shiftamount,&((PC_Factor*)factor)->info.shiftamount,NULL));
 
   PetscCall(PetscOptionsReal("-pc_factor_zeropivot","Pivot is considered zero if less than","PCFactorSetZeroPivot",((PC_Factor*)factor)->info.zeropivot,&((PC_Factor*)factor)->info.zeropivot,NULL));
   PetscCall(PetscOptionsReal("-pc_factor_column_pivot","Column pivot tolerance (used only for some factorization)","PCFactorSetColumnPivot",((PC_Factor*)factor)->info.dtcol,&((PC_Factor*)factor)->info.dtcol,&flg));
 
   PetscCall(PetscOptionsBool("-pc_factor_pivot_in_blocks","Pivot inside matrix dense blocks for BAIJ and SBAIJ","PCFactorSetPivotInBlocks",((PC_Factor*)factor)->info.pivotinblocks ? PETSC_TRUE : PETSC_FALSE,&flg,&set));
-  if (set) {
-    PetscCall(PCFactorSetPivotInBlocks(pc,flg));
-  }
+  if (set) PetscCall(PCFactorSetPivotInBlocks(pc,flg));
 
   PetscCall(PetscOptionsBool("-pc_factor_reuse_fill","Use fill from previous factorization","PCFactorSetReuseFill",PETSC_FALSE,&flg,&set));
-  if (set) {
-    PetscCall(PCFactorSetReuseFill(pc,flg));
-  }
+  if (set) PetscCall(PCFactorSetReuseFill(pc,flg));
   PetscCall(PetscOptionsBool("-pc_factor_reuse_ordering","Reuse ordering from previous factorization","PCFactorSetReuseOrdering",PETSC_FALSE,&flg,&set));
-  if (set) {
-    PetscCall(PCFactorSetReuseOrdering(pc,flg));
-  }
+  if (set) PetscCall(PCFactorSetReuseOrdering(pc,flg));
 
   PetscCall(PetscOptionsDeprecated("-pc_factor_mat_solver_package","-pc_factor_mat_solver_type","3.9",NULL));
   PetscCall(PetscOptionsString("-pc_factor_mat_solver_type","Specific direct solver to use","MatGetFactor",((PC_Factor*)factor)->solvertype,solvertype,sizeof(solvertype),&flg));
-  if (flg) {
-    PetscCall(PCFactorSetMatSolverType(pc,solvertype));
-  }
+  if (flg) PetscCall(PCFactorSetMatSolverType(pc,solvertype));
   PetscCall(PCFactorSetDefaultOrdering_Factor(pc));
   PetscCall(MatGetOrderingList(&ordlist));
   PetscCall(PetscOptionsFList("-pc_factor_mat_ordering_type","Reordering to reduce nonzeros in factored matrix","PCFactorSetMatOrderingType",ordlist,((PC_Factor*)factor)->ordering,tname,sizeof(tname),&flg));
-  if (flg) {
-    PetscCall(PCFactorSetMatOrderingType(pc,tname));
-  }
+  if (flg) PetscCall(PCFactorSetMatOrderingType(pc,tname));
   PetscFunctionReturn(0);
 }
 

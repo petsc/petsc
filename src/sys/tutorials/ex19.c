@@ -7,6 +7,7 @@ int main(int argc,char **argv)
 {
   PetscOptions   options;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(PetscOptionsCreate(&options));
   PetscCall(PetscOptionsInsert(options,&argc,&argv,"optionsfile"));
@@ -21,6 +22,6 @@ int main(int argc,char **argv)
 
    test:
      localrunfiles: optionsfile
-     filter: egrep -v "(malloc|nox|display|saws_port|vecscatter|options_left|check_pointer_intensity|cuda_initialize|error_output_stdout|use_gpu_aware_mpi|checkstack|checkfunctionlist)"
+     filter: egrep -v "(options_left)"
 
 TEST*/

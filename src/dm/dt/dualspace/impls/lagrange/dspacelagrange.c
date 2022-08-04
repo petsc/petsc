@@ -2655,7 +2655,7 @@ PetscErrorCode PetscDualSpaceCreateInteriorSymmetryMatrix_Lagrange(PetscDualSpac
       PetscBLASInt blwork = 2 * nodeVecDim;
       PetscBLASInt info;
 
-      PetscStackCallBLAS("LAPACKgels",LAPACKgels_(&transpose,&bm,&bn,&bnrhs,V,&blda,W,&bldb,work,&blwork, &info));
+      PetscCallBLAS("LAPACKgels",LAPACKgels_(&transpose,&bm,&bn,&bnrhs,V,&blda,W,&bldb,work,&blwork, &info));
       PetscCheck(info == 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Bad argument to GELS");
       /* repack */
       {

@@ -49,11 +49,10 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 
 PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
-  PetscInt       dim           = user->dim;
-  PetscBool      testp4est_seq = user->testp4est[0];
-  PetscBool      testp4est_par = user->testp4est[1];
-  PetscMPIInt    rank, size;
-  PetscBool      periodic;
+  PetscInt    dim           = user->dim;
+  PetscBool   testp4est_seq = user->testp4est[0];
+  PetscBool   testp4est_par = user->testp4est[1];
+  PetscMPIInt rank, size;
 
   PetscFunctionBegin;
   PetscCall(PetscLogEventBegin(user->createMeshEvent,0,0,0,0));
@@ -64,21 +63,13 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscCall(DMSetType(*dm, DMPLEX));
   PetscCall(DMPlexDistributeSetDefault(*dm, PETSC_FALSE));
   PetscCall(DMSetFromOptions(*dm));
-
-  /* For topologically periodic meshes, we first localize coordinates,
-     and then remove any information related with the
-     automatic computation of localized vertices.
-     This way, refinement operations and conversions to p4est
-     will preserve the shape of the domain in physical space */
   PetscCall(DMLocalizeCoordinates(*dm));
-  PetscCall(DMGetPeriodicity(*dm, &periodic, NULL, NULL, NULL));
-  if (periodic) PetscCall(DMSetPeriodicity(*dm, PETSC_TRUE, NULL, NULL, NULL));
 
   PetscCall(DMViewFromOptions(*dm,NULL,"-init_dm_view"));
   PetscCall(DMGetDimension(*dm, &dim));
 
   if (testp4est_seq) {
-#if defined(PETSC_HAVE_P4EST)
+    PetscCheck(PetscDefined(HAVE_P4EST),PETSC_COMM_WORLD,PETSC_ERR_SUP,"Reconfigure PETSc with --download-p4est");
     DM dmConv = NULL;
 
     PetscCall(DMPlexCheck(*dm));
@@ -92,6 +83,13 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     }
     PetscCall(DMViewFromOptions(*dm,NULL,"-initref_dm_view"));
     PetscCall(DMPlexCheck(*dm));
+
+    /* For topologically periodic meshes, we first localize coordinates,
+       and then remove any information related with the
+       automatic computation of localized vertices.
+       This way, refinement operations and conversions to p4est
+       will preserve the shape of the domain in physical space */
+    PetscCall(DMSetPeriodicity(*dm, NULL, NULL, NULL));
 
     PetscCall(DMConvert(*dm,dim == 2 ? DMP4EST : DMP8EST,&dmConv));
     if (dmConv) {
@@ -114,9 +112,6 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     PetscCall(PetscObjectSetOptionsPrefix((PetscObject) *dm, "conv_seq_2_"));
     PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
     PetscCall(PetscObjectSetOptionsPrefix((PetscObject) *dm, NULL));
-#else
-    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Recompile with --download-p4est");
-#endif
   }
 
   PetscCall(PetscLogStagePop());
@@ -136,7 +131,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscCall(PetscLogStagePop());
 
   if (testp4est_par) {
-#if defined(PETSC_HAVE_P4EST)
+    PetscCheck(PetscDefined(HAVE_P4EST),PETSC_COMM_WORLD,PETSC_ERR_SUP,"Reconfigure PETSc with --download-p4est");
     DM dmConv = NULL;
 
     PetscCall(DMPlexCheck(*dm));
@@ -173,9 +168,6 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     PetscCall(PetscObjectSetOptionsPrefix((PetscObject) *dm, "conv_par_2_"));
     PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
     PetscCall(PetscObjectSetOptionsPrefix((PetscObject) *dm, NULL));
-#else
-    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Recompile with --download-p4est");
-#endif
   }
 
   /* test redistribution of an already distributed mesh */
@@ -228,9 +220,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
   PetscCall(PetscObjectSetName((PetscObject) *dm, "Generated Mesh"));
   PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
-  if (user->final_diagnostics) {
-    PetscCall(DMPlexCheck(*dm));
-  }
+  if (user->final_diagnostics) PetscCall(DMPlexCheck(*dm));
   PetscCall(PetscLogEventEnd(user->createMeshEvent,0,0,0,0));
   PetscFunctionReturn(0);
 }
@@ -240,6 +230,7 @@ int main(int argc, char **argv)
   DM             dm;
   AppCtx         user;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(ProcessOptions(PETSC_COMM_WORLD, &user));
   PetscCall(CreateMesh(PETSC_COMM_WORLD, &user, &dm));
@@ -289,6 +280,11 @@ int main(int argc, char **argv)
     suffix: 8
     nsize: 2
     args: -dm_plex_simplex 0 -ref_dm_refine 1 -dist_dm_distribute -petscpartitioner_type simple -dm_view ascii::ascii_latex
+  test:
+    suffix: box_2d_latex_xper
+    nsize: 1
+    args: -dm_plex_simplex 0 -dm_plex_box_faces 5,5 -dm_plex_box_bd periodic,none \
+          -dist_dm_distribute -petscpartitioner_type simple -dm_view ascii::ascii_latex -dm_plex_view_edges 0
 
   # 1D ASCII output
   testset:
@@ -511,6 +507,8 @@ int main(int argc, char **argv)
       args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/gmsh-3d-ascii.msh4
     test:
       suffix: gmsh_3d_binary_v22
+      # Could not remake binary to remove extra face labeling
+      output_file: output/ex1_gmsh_3d_legacy_v22_bin.out
       args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/gmsh-3d-binary.msh2
     test:
       suffix: gmsh_3d_binary_v40
@@ -711,6 +709,9 @@ int main(int argc, char **argv)
     test:
       suffix: glvis_2d_quad_per
       args: -dm_plex_simplex 0 -dm_plex_box_faces 3,3 -dm_plex_box_bd periodic,periodic -dm_view glvis: -viewer_glvis_dm_plex_enable_boundary
+    test:
+      suffix: glvis_2d_quad_per_shift
+      args: -dm_plex_simplex 0 -dm_plex_box_faces 3,3 -dm_plex_box_bd periodic,periodic -dm_plex_box_lower -1,-1 -dm_plex_box_upper 1,1 -dm_view glvis: -viewer_glvis_dm_plex_enable_boundary
     test:
       suffix: glvis_2d_quad_per_mfem
       args: -dm_plex_simplex 0 -dm_plex_box_faces 3,3 -dm_plex_box_bd periodic,periodic -dm_view glvis: -viewer_glvis_dm_plex_enable_boundary -viewer_glvis_dm_plex_enable_mfem
@@ -925,4 +926,8 @@ int main(int argc, char **argv)
   test:
     suffix: schwarz_p_extrude
     args: -dm_plex_shape schwarz_p -dm_plex_tps_extent 1,1,1 -dm_plex_tps_layers 1 -dm_plex_tps_thickness .2 -dm_view
+
+  test:
+    suffix: pyr_mixed_0
+    args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/pyr_tet.msh -dm_plex_check_all -dm_view
 TEST*/

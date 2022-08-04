@@ -207,9 +207,10 @@ PetscErrorCode MatSetValues_MPIBAIJ(Mat mat,PetscInt m,const PetscInt im[],Petsc
           if (roworiented) value = v[i*n+j];
           else             value = v[i+j*m];
           MatSetValues_SeqBAIJ_A_Private(row,col,value,addv,im[i],in[j]);
-        } else if (in[j] < 0) continue;
-        else PetscCheck(in[j] < mat->cmap->N,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %" PetscInt_FMT " max %" PetscInt_FMT,in[j],mat->cmap->N-1);
-        else {
+        } else if (in[j] < 0) {
+          continue;
+        } else {
+          PetscCheck(in[j] < mat->cmap->N,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %" PetscInt_FMT " max %" PetscInt_FMT,in[j],mat->cmap->N-1);
           if (mat->was_assembled) {
             if (!baij->colmap) {
               PetscCall(MatCreateColmap_MPIBAIJ_Private(mat));
@@ -228,8 +229,10 @@ PetscErrorCode MatSetValues_MPIBAIJ(Mat mat,PetscInt m,const PetscInt im[],Petsc
               b    = (Mat_SeqBAIJ*)(B)->data;
               bimax=b->imax;bi=b->i;bilen=b->ilen;bj=b->j;
               ba   =b->a;
-            } else PetscCheck(col >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%" PetscInt_FMT ", %" PetscInt_FMT ") into matrix", im[i], in[j]);
-            else col += in[j]%bs;
+            } else {
+              PetscCheck(col >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%" PetscInt_FMT ", %" PetscInt_FMT ") into matrix", im[i], in[j]);
+              col += in[j]%bs;
+            }
           } else col = in[j];
           if (roworiented) value = v[i*n+j];
           else             value = v[i+j*m];
@@ -390,9 +393,10 @@ PetscErrorCode MatSetValuesBlocked_MPIBAIJ(Mat mat,PetscInt m,const PetscInt im[
         if (in[j] >= cstart && in[j] < cend) {
           col  = in[j] - cstart;
           PetscCall(MatSetValuesBlocked_SeqBAIJ_Inlined(baij->A,row,col,barray,addv,im[i],in[j]));
-        } else if (in[j] < 0) continue;
-        else PetscCheck(in[j] < baij->Nbs,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Block indexed column too large %" PetscInt_FMT " max %" PetscInt_FMT,in[j],baij->Nbs-1);
-        else {
+        } else if (in[j] < 0) {
+          continue;
+        } else {
+          PetscCheck(in[j] < baij->Nbs,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Block indexed column too large %" PetscInt_FMT " max %" PetscInt_FMT,in[j],baij->Nbs-1);
           if (mat->was_assembled) {
             if (!baij->colmap) {
               PetscCall(MatCreateColmap_MPIBAIJ_Private(mat));
@@ -922,7 +926,7 @@ PetscErrorCode MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
      no processor disassembled thus we can skip this stuff
   */
   if (!((Mat_SeqBAIJ*)baij->B->data)->nonew) {
-    PetscCall(MPIU_Allreduce(&mat->was_assembled,&other_disassembled,1,MPIU_BOOL,MPI_PROD,PetscObjectComm((PetscObject)mat)));
+    PetscCall(MPIU_Allreduce(&mat->was_assembled,&other_disassembled,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)mat)));
     if (mat->was_assembled && !other_disassembled) {
       PetscCall(MatDisAssemble_MPIBAIJ(mat));
     }
@@ -1173,9 +1177,7 @@ PetscErrorCode MatView_MPIBAIJ(Mat mat,PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary));
   if (iascii || isdraw || issocket) {
     PetscCall(MatView_MPIBAIJ_ASCIIorDraworSocket(mat,viewer));
-  } else if (isbinary) {
-    PetscCall(MatView_MPIBAIJ_Binary(mat,viewer));
-  }
+  } else if (isbinary) PetscCall(MatView_MPIBAIJ_Binary(mat,viewer));
   PetscFunctionReturn(0);
 }
 
@@ -1485,8 +1487,9 @@ PetscErrorCode MatSetOption_MPIBAIJ(Mat A,MatOption op,PetscBool flg)
   case MAT_HERMITIAN:
   case MAT_SUBMAT_SINGLEIS:
   case MAT_SYMMETRY_ETERNAL:
-    MatCheckPreallocated(A,1);
-    PetscCall(MatSetOption(a->A,op,flg));
+  case MAT_STRUCTURAL_SYMMETRY_ETERNAL:
+  case MAT_SPD_ETERNAL:
+    /* if the diagonal matrix is square it inherits some of the properties above */
     break;
   default:
     SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"unknown option %d",op);
@@ -1504,6 +1507,7 @@ PetscErrorCode MatTranspose_MPIBAIJ(Mat A,MatReuse reuse,Mat *matout)
   MatScalar      *a;
 
   PetscFunctionBegin;
+  if (reuse == MAT_REUSE_MATRIX) PetscCall(MatTransposeCheckNonzeroState_Private(A,*matout));
   if (reuse == MAT_INITIAL_MATRIX || reuse == MAT_INPLACE_MATRIX) {
     PetscCall(MatCreate(PetscObjectComm((PetscObject)A),&B));
     PetscCall(MatSetSizes(B,A->cmap->n,A->rmap->n,N,M));
@@ -1817,11 +1821,11 @@ PetscErrorCode MatAXPY_MPIBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
     x    = (Mat_SeqBAIJ*)xx->A->data;
     y    = (Mat_SeqBAIJ*)yy->A->data;
     PetscCall(PetscBLASIntCast(x->nz*bs2,&bnz));
-    PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&bnz,&alpha,x->a,&one,y->a,&one));
+    PetscCallBLAS("BLASaxpy",BLASaxpy_(&bnz,&alpha,x->a,&one,y->a,&one));
     x    = (Mat_SeqBAIJ*)xx->B->data;
     y    = (Mat_SeqBAIJ*)yy->B->data;
     PetscCall(PetscBLASIntCast(x->nz*bs2,&bnz));
-    PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&bnz,&alpha,x->a,&one,y->a,&one));
+    PetscCallBLAS("BLASaxpy",BLASaxpy_(&bnz,&alpha,x->a,&one,y->a,&one));
     PetscCall(PetscObjectStateIncrease((PetscObject)Y));
   } else if (str == SUBSET_NONZERO_PATTERN) { /* nonzeros of X is a subset of Y's */
     PetscCall(MatAXPY_Basic(Y,a,X,str));
@@ -2182,13 +2186,7 @@ PetscErrorCode MatGetSeqNonzeroStructure_MPIBAIJ(Mat A,Mat *newmat)
   PetscCall(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
   PetscCall(PetscFree(recvcounts));
 
-  if (A->symmetric) {
-    PetscCall(MatSetOption(B,MAT_SYMMETRIC,PETSC_TRUE));
-  } else if (A->hermitian) {
-    PetscCall(MatSetOption(B,MAT_HERMITIAN,PETSC_TRUE));
-  } else if (A->structurally_symmetric) {
-    PetscCall(MatSetOption(B,MAT_STRUCTURALLY_SYMMETRIC,PETSC_TRUE));
-  }
+  PetscCall(MatPropagateSymmetryOptions(A,B));
   *newmat = B;
   PetscFunctionReturn(0);
 }
@@ -2561,17 +2559,17 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIBAIJ,
                                        MatInvertBlockDiagonal_MPIBAIJ,
                                        NULL,
                                        NULL,
-                               /*129*/ NULL,
+                                /*129*/NULL,
                                        NULL,
                                        NULL,
                                        NULL,
                                        NULL,
-                               /*134*/ NULL,
+                                /*134*/NULL,
                                        NULL,
                                        NULL,
                                        NULL,
                                        NULL,
-                               /*139*/ MatSetBlockSizes_Default,
+                                /*139*/MatSetBlockSizes_Default,
                                        NULL,
                                        NULL,
                                        MatFDColoringSetUp_MPIXAIJ,
@@ -2579,7 +2577,10 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIBAIJ,
                                 /*144*/MatCreateMPIMatConcatenateSeqMat_MPIBAIJ,
                                        NULL,
                                        NULL,
-                                       NULL
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                                /*150*/NULL
 };
 
 PETSC_INTERN PetscErrorCode MatConvert_MPIBAIJ_MPISBAIJ(Mat,MatType,MatReuse,Mat*);
@@ -3499,9 +3500,10 @@ PetscErrorCode matmpibaijsetvaluesblocked_(Mat *matin,PetscInt *min,const PetscI
         if (in[j] >= cstart && in[j] < cend) {
           col  = in[j] - cstart;
           PetscCall(MatSetValuesBlocked_SeqBAIJ_Inlined(baij->A,row,col,barray,addv,im[i],in[j]));
-        } else if (in[j] < 0) continue;
-        else PetscCheck(in[j] < baij->Nbs,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large, col %" PetscInt_FMT " max %" PetscInt_FMT,in[j],baij->Nbs-1);
-        else {
+        } else if (in[j] < 0) {
+          continue;
+        } else {
+          PetscCheck(in[j] < baij->Nbs,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large, col %" PetscInt_FMT " max %" PetscInt_FMT,in[j],baij->Nbs-1);
           if (mat->was_assembled) {
             if (!baij->colmap) {
               PetscCall(MatCreateColmap_MPIBAIJ_Private(mat));

@@ -15,6 +15,7 @@ int main(int argc,char **args)
   PetscScalar    value[4];
   PetscInt       ridx[2],cidx[2];
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCall(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&loadmat));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));

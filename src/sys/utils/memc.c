@@ -80,7 +80,7 @@ PetscErrorCode PetscProcessPlacementView(PetscViewer viewer)
   hwloc_topology_load ( topology);
   set = hwloc_bitmap_alloc();
 
-  PetscStackCallStandard(hwloc_get_proc_cpubind,topology, getpid(), set, HWLOC_CPUBIND_PROCESS);
+  PetscCallExternal(hwloc_get_proc_cpubind,topology, getpid(), set, HWLOC_CPUBIND_PROCESS);
   PetscCall(PetscViewerASCIIPushSynchronized(viewer));
   PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"MPI rank %d Process id: %d coreid %d\n",rank,getpid(),hwloc_bitmap_first(set)));
   PetscCall(PetscViewerFlush(viewer));

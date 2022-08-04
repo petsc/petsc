@@ -80,9 +80,7 @@ PetscErrorCode  DMDACreateNaturalVector(DM da,Vec *g)
     if (cnt == 1) { /* object is not currently used by anyone */
       PetscCall(PetscObjectReference((PetscObject)dd->natural));
       *g   = dd->natural;
-    } else {
-      PetscCall(VecDuplicate(dd->natural,g));
-    }
+    } else PetscCall(VecDuplicate(dd->natural,g));
   } else { /* create the first version of this guy */
     PetscCall(VecCreate(PetscObjectComm((PetscObject)da),g));
     PetscCall(VecSetSizes(*g,dd->Nlocal,PETSC_DETERMINE));

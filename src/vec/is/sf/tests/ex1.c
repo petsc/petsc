@@ -61,6 +61,7 @@ int main(int argc,char **argv)
   const PetscInt *degree;
   char           sftype[64] = PETSCSFBASIC;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   PetscCall(PetscOptionsGetString(NULL,NULL,"-user_sf_type",sftype,sizeof(sftype),NULL));
 
