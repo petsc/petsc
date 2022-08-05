@@ -26,6 +26,30 @@ PetscErrorCode  MatPythonSetType(Mat mat,const char pyname[])
 }
 
 /*@C
+   MatPythonGetType - Get the type of a Mat object implemented in Python.
+
+   Not collective
+
+   Input Parameter:
+.  mat - the matrix object
+
+   Output Parameter:
+.  pyname - full dotted Python name [package].module[.{class|function}]
+
+   Level: intermediate
+
+.seealso: `MatCreate()`, `MatSetType()`, `MATPYTHON`, `PetscPythonInitialize()`, `MatPythonSetType()`
+@*/
+PetscErrorCode  MatPythonGetType(Mat mat,const char *pyname[])
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidPointer(pyname,2);
+  PetscUseMethod(mat,"MatPythonGetType_C",(Mat, const char*[]),(mat,pyname));
+  PetscFunctionReturn(0);
+}
+
+/*@C
    MatPythonCreate - Create a Mat object implemented in Python.
 
    Collective on Mat

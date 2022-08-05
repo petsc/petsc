@@ -761,6 +761,7 @@ PETSC_DEPRECATED_FUNCTION("Use KSPGLTRGetMinEig (since v3.12)") static inline Pe
 PETSC_DEPRECATED_FUNCTION("Use KSPGLTRGetLambda (since v3.12)") static inline PetscErrorCode KSPCGGLTRGetLambda(KSP ksp,PetscReal *x) {return KSPGLTRGetLambda(ksp,x);}
 
 PETSC_EXTERN PetscErrorCode KSPPythonSetType(KSP,const char[]);
+PETSC_EXTERN PetscErrorCode KSPPythonGetType(KSP,const char*[]);
 
 PETSC_EXTERN PetscErrorCode PCSetPreSolve(PC,PetscErrorCode (*)(PC,KSP));
 PETSC_EXTERN PetscErrorCode PCPreSolve(PC,KSP);

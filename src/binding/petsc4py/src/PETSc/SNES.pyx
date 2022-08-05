@@ -761,6 +761,11 @@ cdef class SNES(Object):
         py_type = str2bytes(py_type, &cval)
         CHKERR( SNESPythonSetType(self.snes, cval) )
 
+    def getPythonType(self):
+        cdef const char *cval = NULL
+        CHKERR( SNESPythonGetType(self.snes, &cval) )
+        return bytes2str(cval)
+
     # --- Composite ---
 
     def getCompositeSNES(self, n):

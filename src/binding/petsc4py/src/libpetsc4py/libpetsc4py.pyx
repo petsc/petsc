@@ -583,6 +583,12 @@ cdef PetscErrorCode MatPythonSetType_PYTHON(PetscMat mat, char name[]) \
     PyMat(mat).setname(name)
     return FunctionEnd()
 
+cdef PetscErrorCode MatPythonGetType_PYTHON(PetscMat mat, const char *name[]) \
+    except IERR with gil:
+    FunctionBegin(b"MatPythonGetType_PYTHON")
+    name[0] = PyMat(mat).getname()
+    return FunctionEnd()
+
 cdef dict dMatOps = {   3 : 'mult',
                         4 : 'multAdd',
                         5 : 'multTranspose',
@@ -669,6 +675,9 @@ cdef PetscErrorCode MatCreate_Python(
             <PetscObject>mat, b"MatPythonSetType_C",
             <PetscVoidFunction>MatPythonSetType_PYTHON) )
     CHKERR( PetscObjectComposeFunction(
+            <PetscObject>mat, b"MatPythonGetType_C",
+            <PetscVoidFunction>MatPythonGetType_PYTHON) )
+    CHKERR( PetscObjectComposeFunction(
             <PetscObject>mat, b"MatProductSetFromOptions_anytype_C",
             <PetscVoidFunction>MatProductSetFromOptions_Python) )
     CHKERR( PetscObjectChangeTypeName(
@@ -686,6 +695,9 @@ cdef PetscErrorCode MatDestroy_Python(
     FunctionBegin(b"MatDestroy_Python")
     CHKERR( PetscObjectComposeFunction(
             <PetscObject>mat, b"MatPythonSetType_C",
+            <PetscVoidFunction>NULL) )
+    CHKERR( PetscObjectComposeFunction(
+            <PetscObject>mat, b"MatPythonGetType_C",
             <PetscVoidFunction>NULL) )
     CHKERR( PetscObjectComposeFunction(
             <PetscObject>mat, b"MatProductSetFromOptions_anytype_C",
@@ -1474,6 +1486,12 @@ cdef PetscErrorCode PCPythonSetType_PYTHON(PetscPC pc, char name[]) \
     PyPC(pc).setname(name)
     return FunctionEnd()
 
+cdef PetscErrorCode PCPythonGetType_PYTHON(PetscPC pc, const char *name[]) \
+    except IERR with gil:
+    FunctionBegin(b"PCPythonGetType_PYTHON")
+    name[0] = PyPC(pc).getname()
+    return FunctionEnd()
+
 cdef PetscErrorCode PCCreate_Python(
     PetscPC pc,
     ) \
@@ -1497,6 +1515,9 @@ cdef PetscErrorCode PCCreate_Python(
     CHKERR( PetscObjectComposeFunction(
             <PetscObject>pc, b"PCPythonSetType_C",
             <PetscVoidFunction>PCPythonSetType_PYTHON) )
+    CHKERR( PetscObjectComposeFunction(
+            <PetscObject>pc, b"PCPythonGetType_C",
+            <PetscVoidFunction>PCPythonGetType_PYTHON) )
     #
     cdef ctx = PyPC(NULL)
     pc.data = <void*> ctx
@@ -1510,6 +1531,9 @@ cdef PetscErrorCode PCDestroy_Python(
     FunctionBegin(b"PCDestroy_Python")
     CHKERR( PetscObjectComposeFunction(
             <PetscObject>pc, b"PCPythonSetType_C",
+            <PetscVoidFunction>NULL) )
+    CHKERR( PetscObjectComposeFunction(
+            <PetscObject>pc, b"PCPythonGetType_C",
             <PetscVoidFunction>NULL) )
     #
     if not Py_IsInitialized(): return FunctionEnd()
@@ -1770,6 +1794,12 @@ cdef PetscErrorCode KSPPythonSetType_PYTHON(PetscKSP ksp, char name[]) \
     PyKSP(ksp).setname(name)
     return FunctionEnd()
 
+cdef PetscErrorCode KSPPythonGetType_PYTHON(PetscKSP ksp, const char *name[]) \
+    except IERR with gil:
+    FunctionBegin(b"KSPPythonGetType_PYTHON")
+    name[0] = PyKSP(ksp).getname()
+    return FunctionEnd()
+
 cdef PetscErrorCode KSPCreate_Python(
     PetscKSP ksp,
     ) \
@@ -1789,6 +1819,9 @@ cdef PetscErrorCode KSPCreate_Python(
     CHKERR( PetscObjectComposeFunction(
             <PetscObject>ksp, b"KSPPythonSetType_C",
             <PetscVoidFunction>KSPPythonSetType_PYTHON) )
+    CHKERR( PetscObjectComposeFunction(
+            <PetscObject>ksp, b"KSPPythonGetType_C",
+            <PetscVoidFunction>KSPPythonGetType_PYTHON) )
     #
     cdef ctx = PyKSP(NULL)
     ksp.data = <void*> ctx
@@ -1815,6 +1848,9 @@ cdef PetscErrorCode KSPDestroy_Python(
     FunctionBegin(b"KSPDestroy_Python")
     CHKERR( PetscObjectComposeFunction(
             <PetscObject>ksp, b"KSPPythonSetType_C",
+            <PetscVoidFunction>NULL))
+    CHKERR( PetscObjectComposeFunction(
+            <PetscObject>ksp, b"KSPPythonGetType_C",
             <PetscVoidFunction>NULL))
     #
     if not Py_IsInitialized(): return FunctionEnd()
@@ -2132,6 +2168,12 @@ cdef PetscErrorCode SNESPythonSetType_PYTHON(PetscSNES snes, char name[]) \
     PySNES(snes).setname(name)
     return FunctionEnd()
 
+cdef PetscErrorCode SNESPythonGetType_PYTHON(PetscSNES snes, const char *name[]) \
+    except IERR with gil:
+    FunctionBegin(b"SNESPythonGetType_PYTHON")
+    name[0] = PySNES(snes).getname()
+    return FunctionEnd()
+
 cdef PetscErrorCode SNESCreate_Python(
     PetscSNES snes,
     ) \
@@ -2150,6 +2192,9 @@ cdef PetscErrorCode SNESCreate_Python(
     CHKERR( PetscObjectComposeFunction(
             <PetscObject>snes, b"SNESPythonSetType_C",
             <PetscVoidFunction>SNESPythonSetType_PYTHON) )
+    CHKERR( PetscObjectComposeFunction(
+            <PetscObject>snes, b"SNESPythonGetType_C",
+            <PetscVoidFunction>SNESPythonGetType_PYTHON) )
     #
     cdef ctx = PySNES(NULL)
     snes.data = <void*> ctx
@@ -2167,6 +2212,9 @@ cdef PetscErrorCode SNESDestroy_Python(
     FunctionBegin(b"SNESDestroy_Python")
     CHKERR( PetscObjectComposeFunction(
             <PetscObject>snes, b"SNESPythonSetType_C",
+            <PetscVoidFunction>NULL) )
+    CHKERR( PetscObjectComposeFunction(
+            <PetscObject>snes, b"SNESPythonGetType_C",
             <PetscVoidFunction>NULL) )
     #
     if not Py_IsInitialized(): return FunctionEnd()
@@ -2478,6 +2526,12 @@ cdef PetscErrorCode TSPythonSetType_PYTHON(PetscTS ts, char name[]) \
     PyTS(ts).setname(name)
     return FunctionEnd()
 
+cdef PetscErrorCode TSPythonGetType_PYTHON(PetscTS ts, const char *name[]) \
+    except IERR with gil:
+    FunctionBegin(b"TSPythonGetType_PYTHON")
+    name[0] = PyTS(ts).getname()
+    return FunctionEnd()
+
 cdef PetscErrorCode TSCreate_Python(
     PetscTS ts,
     ) \
@@ -2500,6 +2554,9 @@ cdef PetscErrorCode TSCreate_Python(
     CHKERR( PetscObjectComposeFunction(
             <PetscObject>ts, b"TSPythonSetType_C",
             <PetscVoidFunction>TSPythonSetType_PYTHON) )
+    CHKERR( PetscObjectComposeFunction(
+            <PetscObject>ts, b"TSPythonGetType_C",
+            <PetscVoidFunction>TSPythonGetType_PYTHON) )
     #
     ts.usessnes = PETSC_TRUE
     #
@@ -2515,6 +2572,9 @@ cdef PetscErrorCode TSDestroy_Python(
     FunctionBegin(b"TSDestroy_Python")
     CHKERR( PetscObjectComposeFunction(
             <PetscObject>ts, b"TSPythonSetType_C",
+            <PetscVoidFunction>NULL) )
+    CHKERR( PetscObjectComposeFunction(
+            <PetscObject>ts, b"TSPythonGetType_C",
             <PetscVoidFunction>NULL) )
     #
     if not Py_IsInitialized(): return FunctionEnd()
@@ -2892,6 +2952,12 @@ cdef PetscErrorCode TaoPythonSetType_PYTHON(PetscTAO tao, char name[]) \
     PyTao(tao).setname(name)
     return FunctionEnd()
 
+cdef PetscErrorCode TaoPythonGetType_PYTHON(PetscTAO tao, const char *name[]) \
+    except IERR with gil:
+    FunctionBegin(b"TaoPythonGetType_PYTHON")
+    name[0] = PyTao(tao).getname()
+    return FunctionEnd()
+
 cdef PetscErrorCode TaoCreate_Python(
     PetscTAO tao,
     ) \
@@ -2908,6 +2974,9 @@ cdef PetscErrorCode TaoCreate_Python(
     CHKERR( PetscObjectComposeFunction(
             <PetscObject>tao, b"TaoPythonSetType_C",
             <PetscVoidFunction>TaoPythonSetType_PYTHON) )
+    CHKERR( PetscObjectComposeFunction(
+            <PetscObject>tao, b"TaoPythonGetType_C",
+            <PetscVoidFunction>TaoPythonGetType_PYTHON) )
     #
     tao.max_it = 10000
     #
@@ -2926,6 +2995,9 @@ cdef PetscErrorCode TaoDestroy_Python(
     FunctionBegin(b"TaoDestroy_Python")
     CHKERR( PetscObjectComposeFunction(
             <PetscObject>tao, b"TaoPythonSetType_C",
+            <PetscVoidFunction>NULL) )
+    CHKERR( PetscObjectComposeFunction(
+            <PetscObject>tao, b"TaoPythonGetType_C",
             <PetscVoidFunction>NULL) )
     #
     if not Py_IsInitialized(): return FunctionEnd()

@@ -6,7 +6,7 @@
    Collective on TS
 
    Input Parameters:
-+  ts - the nonlinear solver (TS) context.
++  ts - the TS context
 -  pyname - full dotted Python name [package].module[.{class|function}]
 
    Options Database Key:
@@ -22,5 +22,29 @@ PetscErrorCode  TSPythonSetType(TS ts,const char pyname[])
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidCharPointer(pyname,2);
   PetscTryMethod(ts,"TSPythonSetType_C",(TS, const char[]),(ts,pyname));
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   TSPythonGetType - Get the type of a TS object implemented in Python.
+
+   Not collective
+
+   Input Parameter:
+.  ts - the TS context
+
+   Output Parameter:
+.  pyname - full dotted Python name [package].module[.{class|function}]
+
+   Level: intermediate
+
+.seealso: `TSCreate()`, `TSSetType()`, `TSPYTHON`, `PetscPythonInitialize()`, `TSPythonSetType()`
+@*/
+PetscErrorCode  TSPythonGetType(TS ts,const char *pyname[])
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidPointer(pyname,2);
+  PetscUseMethod(ts,"TSPythonGetType_C",(TS, const char*[]),(ts,pyname));
   PetscFunctionReturn(0);
 }

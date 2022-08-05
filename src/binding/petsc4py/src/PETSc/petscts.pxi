@@ -8,7 +8,7 @@ cdef extern from * nogil:
     PetscTSType TSCN
     PetscTSType TSSUNDIALS
     PetscTSType TSRK
-    #PetscTSType TSPYTHON
+    PetscTSType TSPYTHON
     PetscTSType TSTHETA
     PetscTSType TSALPHA
     PetscTSType TSALPHA2
@@ -310,6 +310,9 @@ cdef extern from * nogil:
     int TSARKIMEXSetType(PetscTS ts,PetscTSRKType)
     int TSARKIMEXSetFullyImplicit(PetscTS ts,PetscBool)
 
+    int TSPythonSetType(PetscTS,char[])
+    int TSPythonGetType(PetscTS,char*[])
+
 cdef extern from * nogil:
     struct _p_TSAdapt
     ctypedef _p_TSAdapt *PetscTSAdapt "TSAdapt"
@@ -321,10 +324,8 @@ cdef extern from "custom.h" nogil:
     int TSSetTimeStepNumber(PetscTS,PetscInt)
 
 cdef extern from "libpetsc4py.h":
-    PetscTSType TSPYTHON
     int TSPythonSetContext(PetscTS,void*)
     int TSPythonGetContext(PetscTS,void**)
-    int TSPythonSetType(PetscTS,char[])
 
 # -----------------------------------------------------------------------------
 

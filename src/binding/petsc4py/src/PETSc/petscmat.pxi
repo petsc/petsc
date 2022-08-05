@@ -60,7 +60,7 @@ cdef extern from * nogil:
     PetscMatType   MATSEQCUFFT
     PetscMatType MATTRANSPOSEMAT
     PetscMatType MATSCHURCOMPLEMENT
-    #PetscMatType MATPYTHON
+    PetscMatType MATPYTHON
     PetscMatType MATHYPRE
     PetscMatType MATHYPRESTRUCT
     PetscMatType MATHYPRESSTRUCT
@@ -477,16 +477,17 @@ cdef extern from * nogil:
     int MatDenseCUDAGetArrayRead(PetscMat,const PetscScalar*[])
     int MatDenseCUDARestoreArrayRead(PetscMat,const PetscScalar*[])
 
+    int MatPythonSetType(PetscMat,char[])
+    int MatPythonGetType(PetscMat,char*[])
+
 cdef extern from "custom.h" nogil:
     int MatGetCurrentMemType(PetscMat,PetscMemType*)
     int MatIsPreallocated(PetscMat,PetscBool*)
     int MatHasPreallocationAIJ(PetscMat,PetscBool*,PetscBool*,PetscBool*,PetscBool*)
 
 cdef extern from "libpetsc4py.h":
-    PetscMatType MATPYTHON
     int MatPythonSetContext(PetscMat,void*)
     int MatPythonGetContext(PetscMat,void**)
-    int MatPythonSetType(PetscMat,char[])
 
 # -----------------------------------------------------------------------------
 

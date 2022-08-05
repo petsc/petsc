@@ -267,6 +267,7 @@ PETSC_EXTERN PetscErrorCode TaoSetJacobianInequalityRoutine(Tao,Mat,Mat,PetscErr
 PETSC_EXTERN PetscErrorCode TaoSetJacobianEqualityRoutine(Tao,Mat,Mat,PetscErrorCode(*)(Tao,Vec,Mat,Mat,void*),void*);
 
 PETSC_EXTERN PetscErrorCode TaoPythonSetType(Tao,const char[]);
+PETSC_EXTERN PetscErrorCode TaoPythonGetType(Tao,const char*[]);
 
 PETSC_EXTERN PetscErrorCode TaoShellSetSolve(Tao,PetscErrorCode(*)(Tao));
 PETSC_EXTERN PetscErrorCode TaoShellSetContext(Tao,void*);

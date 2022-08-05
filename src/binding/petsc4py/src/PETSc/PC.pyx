@@ -302,6 +302,11 @@ cdef class PC(Object):
         py_type = str2bytes(py_type, &cval)
         CHKERR( PCPythonSetType(self.pc, cval) )
 
+    def getPythonType(self):
+        cdef const char *cval = NULL
+        CHKERR( PCPythonGetType(self.pc, &cval) )
+        return bytes2str(cval)
+
     # --- ASM ---
 
     def setASMType(self, asmtype):
