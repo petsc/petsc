@@ -5,7 +5,7 @@ Example: mpiexec -n <np> ./ex125 -f <matrix binary file> -nrhs 4 \n\n";
 
 int main(int argc,char **args)
 {
-  Mat            A,RHS,C,F,X;
+  Mat            A,RHS=NULL,RHS1=NULL,C,F,X;
   Vec            u,x,b;
   PetscMPIInt    size;
   PetscInt       m,n,nfact,nsolve,nrhs,ipack=0;
@@ -13,7 +13,7 @@ int main(int argc,char **args)
   IS             perm,iperm;
   MatFactorInfo  info;
   PetscRandom    rand;
-  PetscBool      flg,testMatSolve=PETSC_TRUE,testMatMatSolve=PETSC_TRUE;
+  PetscBool      flg,testMatSolve=PETSC_TRUE,testMatMatSolve=PETSC_TRUE,testMatMatSolveTranspose=PETSC_TRUE;
   PetscBool      chol=PETSC_FALSE,view=PETSC_FALSE,matsolvexx = PETSC_FALSE;
 #if defined(PETSC_HAVE_MUMPS)
   PetscBool      test_mumps_opts=PETSC_FALSE;
@@ -217,7 +217,7 @@ int main(int argc,char **args)
     }
 #endif
 
-    /* Test MatMatSolve() */
+    /* Test MatMatSolve(), A X = B, where B can be dense or sparse */
     if (testMatMatSolve) {
       if (!nfact) {
         PetscCall(MatMatMult(A,C,MAT_INITIAL_MATRIX,2.0,&RHS));
@@ -231,10 +231,9 @@ int main(int argc,char **args)
         /* Check the error */
         PetscCall(MatAXPY(X,-1.0,C,SAME_NONZERO_PATTERN));
         PetscCall(MatNorm(X,NORM_FROBENIUS,&norm));
-        if (norm > tol) {
-          PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%" PetscInt_FMT "-the MatMatSolve: Norm of error %g, nsolve %" PetscInt_FMT "\n",nsolve,(double)norm,nsolve));
-        }
+        if (norm > tol) PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%" PetscInt_FMT "-the MatMatSolve: Norm of error %g, nsolve %" PetscInt_FMT "\n",nsolve,(double)norm,nsolve));
       }
+
       if (matsolvexx) {
         /* Test MatMatSolve(F,RHS,RHS), RHS is a dense matrix */
         PetscCall(MatCopy(RHS,X,SAME_NONZERO_PATTERN));
@@ -242,9 +241,7 @@ int main(int argc,char **args)
         /* Check the error */
         PetscCall(MatAXPY(X,-1.0,C,SAME_NONZERO_PATTERN));
         PetscCall(MatNorm(X,NORM_FROBENIUS,&norm));
-        if (norm > tol) {
-          PetscCall(PetscPrintf(PETSC_COMM_WORLD,"MatMatSolve(F,RHS,RHS): Norm of error %g\n",(double)norm));
-        }
+        if (norm > tol) PetscCall(PetscPrintf(PETSC_COMM_WORLD,"MatMatSolve(F,RHS,RHS): Norm of error %g\n",(double)norm));
       }
 
       if (ipack == 2 && size == 1) {
@@ -260,9 +257,44 @@ int main(int argc,char **args)
           /* Check the error */
           PetscCall(MatAXPY(X,-1.0,C,SAME_NONZERO_PATTERN));
           PetscCall(MatNorm(X,NORM_FROBENIUS,&norm));
-          if (norm > tol) {
-            PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%" PetscInt_FMT "-the sparse MatMatSolve: Norm of error %g, nsolve %" PetscInt_FMT "\n",nsolve,(double)norm,nsolve));
-          }
+          if (norm > tol) PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%" PetscInt_FMT "-the sparse MatMatSolve: Norm of error %g, nsolve %" PetscInt_FMT "\n",nsolve,(double)norm,nsolve));
+        }
+        PetscCall(MatDestroy(&spRHST));
+        PetscCall(MatDestroy(&spRHS));
+        PetscCall(MatDestroy(&RHST));
+      }
+    }
+
+    /* Test testMatMatSolveTranspose(), A^T X = B, where B can be dense or sparse */
+    if (testMatMatSolveTranspose) {
+      if (!nfact) {
+        PetscCall(MatTransposeMatMult(A,C,MAT_INITIAL_MATRIX,2.0,&RHS1));
+      } else {
+        PetscCall(MatTransposeMatMult(A,C,MAT_REUSE_MATRIX,2.0,&RHS1));
+      }
+
+      for (nsolve = 0; nsolve < 2; nsolve++) {
+        PetscCall(MatMatSolveTranspose(F,RHS1,X));
+
+        /* Check the error */
+        PetscCall(MatAXPY(X,-1.0,C,SAME_NONZERO_PATTERN));
+        PetscCall(MatNorm(X,NORM_FROBENIUS,&norm));
+        if (norm > tol) PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%" PetscInt_FMT "-the MatMatSolveTranspose: Norm of error %g, nsolve %" PetscInt_FMT "\n",nsolve,(double)norm,nsolve));
+      }
+
+      if (ipack == 2 && size == 1) {
+        Mat spRHS,spRHST,RHST;
+
+        PetscCall(MatTranspose(RHS1,MAT_INITIAL_MATRIX,&RHST));
+        PetscCall(MatConvert(RHST,MATAIJ,MAT_INITIAL_MATRIX,&spRHST));
+        PetscCall(MatCreateTranspose(spRHST,&spRHS));
+        for (nsolve = 0; nsolve < 2; nsolve++) {
+          PetscCall(MatMatSolveTranspose(F,spRHS,X));
+
+          /* Check the error */
+          PetscCall(MatAXPY(X,-1.0,C,SAME_NONZERO_PATTERN));
+          PetscCall(MatNorm(X,NORM_FROBENIUS,&norm));
+          if (norm > tol) PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%" PetscInt_FMT "-the sparse MatMatSolveTranspose: Norm of error %g, nsolve %" PetscInt_FMT "\n",nsolve,(double)norm,nsolve));
         }
         PetscCall(MatDestroy(&spRHST));
         PetscCall(MatDestroy(&spRHS));
@@ -299,9 +331,8 @@ int main(int argc,char **args)
   PetscCall(MatDestroy(&C));
   PetscCall(MatDestroy(&F));
   PetscCall(MatDestroy(&X));
-  if (testMatMatSolve) {
-    PetscCall(MatDestroy(&RHS));
-  }
+  PetscCall(MatDestroy(&RHS));
+  PetscCall(MatDestroy(&RHS1));
 
   PetscCall(PetscRandomDestroy(&rand));
   PetscCall(ISDestroy(&perm));
