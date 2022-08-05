@@ -863,7 +863,7 @@ PetscErrorCode DMDAMapMatStencilToGlobal(DM da,PetscInt m,const MatStencil idxm[
     tmp = *dxm++ - starts[0];
     for (j=0; j<sdim-1; j++) {
       if (tmp < 0 || (*dxm - starts[j+1]) < 0) tmp = -1; /* Beyond the ghost region, therefore ignored with negative indices */
-      else                                     tmp = tmp*dims[j] + (*dxm - starts[j+1]);
+      else                                     tmp = tmp*dims[j+1] + (*dxm - starts[j+1]);
       dxm++;
     }
     if (dof == 1) dxm++; /* If no dof, skip the unused c */
