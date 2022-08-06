@@ -1251,7 +1251,8 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_matmatmult(Mat P,Mat A,M
   PetscCheck(ptap,PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_WRONGSTATE,"PtAP cannot be computed. Missing data");
   PetscCheck(ptap->Pt,PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_WRONGSTATE,"PtA cannot be reused. Do not call MatProductClear()");
 
-  Pt   = ptap->Pt;
+  Pt = ptap->Pt;
+  PetscCall(MatTransposeSetPrecursor(P,Pt));
   PetscCall(MatTranspose(P,MAT_REUSE_MATRIX,&Pt));
   PetscCall(MatMatMultNumeric_MPIAIJ_MPIAIJ(Pt,A,C));
   PetscFunctionReturn(0);
@@ -1297,7 +1298,6 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A
 
   /* create struct Mat_APMPI and attached it to C later */
   PetscCall(PetscNew(&ptap));
-  ptap->reuse = MAT_INITIAL_MATRIX;
 
   /* (0) compute Rd = Pd^T, Ro = Po^T  */
   /* --------------------------------- */
@@ -1547,17 +1547,17 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A,
   PetscCheck(ptap->A_loc,PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_WRONGSTATE,"PtA cannot be reused. Do not call MatProductClear()");
   PetscCall(MatZeroEntries(C));
 
-  if (ptap->reuse == MAT_REUSE_MATRIX) {
-    /* These matrices are obtained in MatTransposeMatMultSymbolic() */
-    /* 1) get R = Pd^T, Ro = Po^T */
-    /*----------------------------*/
-    PetscCall(MatTranspose(p->A,MAT_REUSE_MATRIX,&ptap->Rd));
-    PetscCall(MatTranspose(p->B,MAT_REUSE_MATRIX,&ptap->Ro));
+  /* These matrices are obtained in MatTransposeMatMultSymbolic() */
+  /* 1) get R = Pd^T, Ro = Po^T */
+  /*----------------------------*/
+  PetscCall(MatTransposeSetPrecursor(p->A,ptap->Rd));
+  PetscCall(MatTranspose(p->A,MAT_REUSE_MATRIX,&ptap->Rd));
+  PetscCall(MatTransposeSetPrecursor(p->B,ptap->Ro));
+  PetscCall(MatTranspose(p->B,MAT_REUSE_MATRIX,&ptap->Ro));
 
-    /* 2) compute numeric A_loc */
-    /*--------------------------*/
-    PetscCall(MatMPIAIJGetLocalMat(A,MAT_REUSE_MATRIX,&ptap->A_loc));
-  }
+  /* 2) compute numeric A_loc */
+  /*--------------------------*/
+  PetscCall(MatMPIAIJGetLocalMat(A,MAT_REUSE_MATRIX,&ptap->A_loc));
 
   /* 3) C_loc = Rd*A_loc, C_oth = Ro*A_loc */
   A_loc = ptap->A_loc;
@@ -1595,8 +1595,6 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A,
   PetscCall(MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY));
   PetscCall(MatSetOption(C,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE));
-
-  ptap->reuse = MAT_REUSE_MATRIX;
   PetscFunctionReturn(0);
 }
 
@@ -1605,7 +1603,7 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ(Mat P,Mat A,Mat C)
   Mat_Merge_SeqsToMPI *merge;
   Mat_MPIAIJ          *p =(Mat_MPIAIJ*)P->data;
   Mat_SeqAIJ          *pd=(Mat_SeqAIJ*)(p->A)->data,*po=(Mat_SeqAIJ*)(p->B)->data;
-  Mat_APMPI           *ptap;
+  Mat_APMPI           *ap;
   PetscInt            *adj;
   PetscInt            i,j,k,anz,pnz,row,*cj,nexta;
   MatScalar           *ada,*ca,valtmp;
@@ -1625,14 +1623,14 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ(Mat P,Mat A,Mat C)
 
   PetscFunctionBegin;
   MatCheckProduct(C,3);
-  ptap = (Mat_APMPI*)C->product->data;
-  PetscCheck(ptap,PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_WRONGSTATE,"PtAP cannot be computed. Missing data");
-  PetscCheck(ptap->A_loc,PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_WRONGSTATE,"PtA cannot be reused. Do not call MatProductClear()");
+  ap = (Mat_APMPI*)C->product->data;
+  PetscCheck(ap,PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_WRONGSTATE,"PtA cannot be computed. Missing data");
+  PetscCheck(ap->A_loc,PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_WRONGSTATE,"PtA cannot be reused. Do not call MatProductClear()");
   PetscCall(PetscObjectGetComm((PetscObject)C,&comm));
   PetscCallMPI(MPI_Comm_size(comm,&size));
   PetscCallMPI(MPI_Comm_rank(comm,&rank));
 
-  merge = ptap->merge;
+  merge = ap->merge;
 
   /* 2) compute numeric C_seq = P_loc^T*A_loc */
   /*------------------------------------------*/
@@ -1644,7 +1642,7 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ(Mat P,Mat A,Mat C)
   PetscCall(PetscCalloc1(bi[cm]+1,&ba));
 
   /* get A_loc by taking all local rows of A */
-  A_loc = ptap->A_loc;
+  A_loc = ap->A_loc;
   PetscCall(MatMPIAIJGetLocalMat(A,MAT_REUSE_MATRIX,&A_loc));
   a_loc = (Mat_SeqAIJ*)(A_loc)->data;
   ai    = a_loc->i;
@@ -1772,7 +1770,7 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ(Mat P,Mat A,Mat C)
 PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal fill,Mat C)
 {
   Mat                 A_loc;
-  Mat_APMPI           *ptap;
+  Mat_APMPI           *ap;
   PetscFreeSpaceList  free_space=NULL,current_space=NULL;
   Mat_MPIAIJ          *p=(Mat_MPIAIJ*)P->data,*a=(Mat_MPIAIJ*)A->data;
   PetscInt            *pdti,*pdtj,*poti,*potj,*ptJ;
@@ -1804,12 +1802,12 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal f
   PetscCallMPI(MPI_Comm_rank(comm,&rank));
 
   /* create struct Mat_APMPI and attached it to C later */
-  PetscCall(PetscNew(&ptap));
+  PetscCall(PetscNew(&ap));
 
   /* get A_loc by taking all local rows of A */
   PetscCall(MatMPIAIJGetLocalMat(A,MAT_INITIAL_MATRIX,&A_loc));
 
-  ptap->A_loc = A_loc;
+  ap->A_loc = A_loc;
   a_loc       = (Mat_SeqAIJ*)(A_loc)->data;
   ai          = a_loc->i;
   aj          = a_loc->j;
@@ -2092,9 +2090,9 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal f
   merge->owners_co = owners_co;
 
   /* attach the supporting struct to C for reuse */
-  C->product->data    = ptap;
+  C->product->data    = ap;
   C->product->destroy = MatDestroy_MPIAIJ_PtAP;
-  ptap->merge         = merge;
+  ap->merge           = merge;
 
   C->ops->mattransposemultnumeric = MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ;
 
