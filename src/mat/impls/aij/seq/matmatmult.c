@@ -1927,7 +1927,10 @@ static PetscErrorCode MatProductNumeric_AtB_SeqAIJ_SeqAIJ(Mat C)
     Mat_MatTransMatMult *atb = (Mat_MatTransMatMult *)product->data;
 
     PetscCheck(atb,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing product struct");
-    if (atb->At) { /* At is computed in MatTransposeMatMultSymbolic_SeqAIJ_SeqAIJ() */
+    if (atb->At) {
+      /* At is computed in MatTransposeMatMultSymbolic_SeqAIJ_SeqAIJ();
+         user may have called MatProductReplaceMats() to get this A=product->A */
+      PetscCall(MatTransposeSetPrecursor(A,atb->At));
       PetscCall(MatTranspose(A,MAT_REUSE_MATRIX,&atb->At));
     }
     PetscCall(MatMatMultNumeric_SeqAIJ_SeqAIJ(atb->At ? atb->At : A,B,C));

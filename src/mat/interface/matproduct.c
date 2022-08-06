@@ -215,7 +215,7 @@ static PetscErrorCode MatProductSymbolic_Unsafe(Mat mat)
 
    Notes:
      To reuse the symbolic phase, input matrices must have exactly the same data structure as the replaced one.
-     If the type of any of the input matrices is different than what was previously used, or their symmetry changed but
+     If the type of any of the input matrices is different than what was previously used, or their symmetry flag changed but
      the symbolic phase took advantage of their symmetry, the product is cleared and `MatProductSetFromOptions()` and `MatProductSymbolic()` are invoked again.
 
 .seealso: `MatProductCreate()`, `MatProductSetFromOptions()`, `MatProductSymbolic().` `MatProductClear()`
