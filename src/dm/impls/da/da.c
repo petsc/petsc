@@ -840,34 +840,37 @@ PetscErrorCode DMDAMapMatStencilToGlobal(DM da,PetscInt m,const MatStencil idxm[
 
   PetscFunctionBegin;
   if (m <= 0) PetscFunctionReturn(0);
-  dim       = da->dim; /* DA dim: 1 to 3 */
-  sdim      = dim + (dof > 1? 1 : 0); /* Dimension in MatStencil's (k,j,i,c) view */
 
+  /* Code adapted from DMDAGetGhostCorners() */
   starts2[0] = dd->Xs/dof + dd->xo;
-  starts2[1] = dd->Ys   + dd->yo;
-  starts2[2] = dd->Zs   + dd->zo;
+  starts2[1] = dd->Ys  + dd->yo;
+  starts2[2] = dd->Zs  + dd->zo;
   dims2[0]   = (dd->Xe - dd->Xs)/dof;
   dims2[1]   = (dd->Ye - dd->Ys);
   dims2[2]   = (dd->Ze - dd->Zs);
 
-  for (i=0; i<dim; i++) {
-    dims[i]   = dims2[dim-i-1];  /* copy the values in backwards */
+  /* As if we do MatSetStencil() to get dims[]/starts[] of mat->stencil */
+  dim  = da->dim; /* DA dim: 1 to 3 */
+  sdim = dim + (dof > 1? 1 : 0); /* Dimensions in MatStencil's (k,j,i,c) view */
+  for (i=0; i<dim; i++) { /* Reverse the order and also skip the unused dimensions */
+    dims[i]   = dims2[dim-i-1]; /* ex. dims/starts[] are in order of {i} for 1D, {j,i} for 2D and {k,j,i} for 3D */
     starts[i] = starts2[dim-i-1];
   }
-  starts[dim] = 0;
+  starts[dim] = 0; /* Append the extra dim for dof (won't be used below if dof=1) */
   dims[dim]   = dof;
 
   /* Map stencils to local indices (code adapted from MatSetValuesStencil()) */
   for (i=0; i<m; i++) {
-    for (j=0; j<3-dim; j++) dxm++; /* dxm[] is in k,j,i,c order; move to the first significant index */
-    tmp = *dxm++ - starts[0];
-    for (j=0; j<sdim-1; j++) {
-      if (tmp < 0 || (*dxm - starts[j+1]) < 0) tmp = -1; /* Beyond the ghost region, therefore ignored with negative indices */
-      else                                     tmp = tmp*dims[j] + (*dxm - starts[j+1]);
-      dxm++;
+    dxm += 3-dim; /* Input is {k,j,i,c}; move the pointer to the first used index, e.g., j in 2D */
+    tmp  = 0;
+    for (j=0; j<sdim; j++) { /* Iter over, ex. j,i or j,i,c in 2D */
+      if (tmp < 0 || dxm[j] < starts[j] || dxm[j] >= (starts[j] + dims[j])) tmp = -1; /* Beyond the ghost region, therefore ignored with negative indices */
+      else tmp = tmp*dims[j] + (dxm[j] - starts[j]);
     }
-    if (dof == 1) dxm++; /* If no dof, skip the unused c */
     gidxm[i] = tmp;
+    /* Move to the next MatStencil point */
+    if (dof > 1) dxm += sdim; /* c is already counted in sdim */
+    else dxm += sdim + 1; /* skip the unused c */
   }
 
   /* Map local indices to global indices */
