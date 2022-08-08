@@ -90,10 +90,11 @@ PetscErrorCode Destroy(Mat *A,IS *is0,IS *is1)
 
 int main(int argc,char *argv[])
 {
-  Mat                        A,S = NULL,Sexplicit = NULL,Sp;
+  Mat                        A,S = NULL,Sexplicit = NULL,Sp,B,C;
   MatSchurComplementAinvType ainv_type = MAT_SCHUR_COMPLEMENT_AINV_DIAG;
   IS                         is0,is1;
   PetscBool                  flg;
+  PetscInt                   m,N = 10;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,0,help));
@@ -120,6 +121,16 @@ int main(int argc,char *argv[])
     PetscCall(MatDestroy(&Sp));
   }
   PetscCall(Destroy(&A,&is0,&is1));
+  if (ainv_type == MAT_SCHUR_COMPLEMENT_AINV_DIAG) {
+    PetscCall(MatGetLocalSize(Sexplicit,&m,NULL));
+    PetscCall(MatCreateDense(PetscObjectComm((PetscObject)Sexplicit),m,PETSC_DECIDE,PETSC_DECIDE,N,NULL,&B));
+    PetscCall(MatSetRandom(B,NULL));
+    PetscCall(MatMatMult(S,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C));
+    PetscCall(MatMatMultEqual(Sexplicit,B,C,10,&flg));
+    PetscCheck(flg,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "S*B != C");
+    PetscCall(MatDestroy(&C));
+    PetscCall(MatDestroy(&B));
+  }
   PetscCall(MatDestroy(&S));
   PetscCall(MatDestroy(&Sexplicit));
 
@@ -139,6 +150,16 @@ int main(int argc,char *argv[])
     PetscCall(MatDestroy(&Sp));
   }
   PetscCall(Destroy(&A,&is0,&is1));
+  if (ainv_type == MAT_SCHUR_COMPLEMENT_AINV_DIAG) {
+    PetscCall(MatGetLocalSize(Sexplicit,&m,NULL));
+    PetscCall(MatCreateDense(PetscObjectComm((PetscObject)Sexplicit),m,PETSC_DECIDE,PETSC_DECIDE,N,NULL,&B));
+    PetscCall(MatSetRandom(B,NULL));
+    PetscCall(MatMatMult(S,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C));
+    PetscCall(MatMatMultEqual(Sexplicit,B,C,10,&flg));
+    PetscCheck(flg,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "S*B != C");
+    PetscCall(MatDestroy(&C));
+    PetscCall(MatDestroy(&B));
+  }
   PetscCall(MatDestroy(&S));
   PetscCall(MatDestroy(&Sexplicit));
 
@@ -181,7 +202,7 @@ int main(int argc,char *argv[])
     # does not work with single because residual norm computed by GMRES recurrence formula becomes invalid
     requires: !single
     suffix: diag_3
-    args: -mat_schur_complement_ainv_type diag
+    args: -mat_schur_complement_ainv_type diag -ksp_rtol 1e-12
     nsize: 3
   test:
     # does not work with single because residual norm computed by GMRES recurrence formula becomes invalid
