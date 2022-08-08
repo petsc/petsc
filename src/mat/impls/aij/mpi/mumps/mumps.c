@@ -1473,6 +1473,18 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode MatMatSolveTranspose_MUMPS(Mat A,Mat B,Mat X)
+{
+  Mat_MUMPS     *mumps=(Mat_MUMPS*)A->data;
+  PetscMUMPSInt oldvalue = mumps->id.ICNTL(9);
+
+  PetscFunctionBegin;
+  mumps->id.ICNTL(9) = 0;
+  PetscCall(MatMatSolve_MUMPS(A,B,X));
+  mumps->id.ICNTL(9) = oldvalue;
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode MatMatTransposeSolve_MUMPS(Mat A,Mat Bt,Mat X)
 {
   PetscBool      flg;
@@ -2015,6 +2027,7 @@ PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFacto
   F->ops->solvetranspose  = MatSolveTranspose_MUMPS;
   F->ops->matsolve        = MatMatSolve_MUMPS;
   F->ops->mattransposesolve = MatMatTransposeSolve_MUMPS;
+  F->ops->matsolvetranspose = MatMatSolveTranspose_MUMPS;
 
   mumps->matstruc = SAME_NONZERO_PATTERN;
   PetscFunctionReturn(0);
@@ -2071,9 +2084,10 @@ PetscErrorCode MatLUFactorSymbolic_BAIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFact
   PetscMUMPS_c(mumps);
   PetscCall(MatFactorSymbolic_MUMPS_ReportIfError(F,A,info,mumps));
 
-  F->ops->lufactornumeric = MatFactorNumeric_MUMPS;
-  F->ops->solve           = MatSolve_MUMPS;
-  F->ops->solvetranspose  = MatSolveTranspose_MUMPS;
+  F->ops->lufactornumeric   = MatFactorNumeric_MUMPS;
+  F->ops->solve             = MatSolve_MUMPS;
+  F->ops->solvetranspose    = MatSolveTranspose_MUMPS;
+  F->ops->matsolvetranspose = MatMatSolveTranspose_MUMPS;
 
   mumps->matstruc = SAME_NONZERO_PATTERN;
   PetscFunctionReturn(0);
@@ -2135,6 +2149,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_MUMPS(Mat F,Mat A,IS r,const MatFactorI
   F->ops->solvetranspose        = MatSolve_MUMPS;
   F->ops->matsolve              = MatMatSolve_MUMPS;
   F->ops->mattransposesolve     = MatMatTransposeSolve_MUMPS;
+  F->ops->matsolvetranspose     = MatMatSolveTranspose_MUMPS;
 #if defined(PETSC_USE_COMPLEX)
   F->ops->getinertia = NULL;
 #else
