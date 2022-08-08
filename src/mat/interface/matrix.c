@@ -579,9 +579,10 @@ PetscErrorCode MatConjugate(Mat mat)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscCheck(mat->assembled,PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
-  if (PetscDefined(USE_COMPLEX)) {
+  if (PetscDefined(USE_COMPLEX) && mat->hermitian != PETSC_BOOL3_TRUE) {
     PetscCheck(mat->ops->conjugate,PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Not provided for matrix type %s, send email to petsc-maint@mcs.anl.gov",((PetscObject)mat)->type_name);
     PetscCall((*mat->ops->conjugate)(mat));
+    PetscCall(PetscObjectStateIncrease((PetscObject)mat));
   }
   PetscFunctionReturn(0);
 }
@@ -5229,9 +5230,11 @@ PetscErrorCode MatTranspose(Mat mat,MatReuse reuse,Mat *B)
   }
 
   PetscCall(PetscLogEventBegin(MAT_Transpose,mat,0,0,0));
-  PetscCall((*mat->ops->transpose)(mat,reuse,B));
+  if (reuse != MAT_INPLACE_MATRIX || mat->symmetric != PETSC_BOOL3_TRUE) {
+    PetscCall((*mat->ops->transpose)(mat,reuse,B));
+    PetscCall(PetscObjectStateIncrease((PetscObject)*B));
+  }
   PetscCall(PetscLogEventEnd(MAT_Transpose,mat,0,0,0));
-  PetscCall(PetscObjectStateIncrease((PetscObject)*B));
 
   if (reuse == MAT_INITIAL_MATRIX) PetscCall(MatTransposeSetPrecursor(mat,*B));
   if (reuse != MAT_INPLACE_MATRIX) {
