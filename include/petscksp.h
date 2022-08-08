@@ -816,7 +816,7 @@ PETSC_EXTERN PetscErrorCode KSPGetInitialGuessKnoll(KSP,PetscBool*);
 
 .seealso: `MatSchurComplementGetAinvType()`, `MatSchurComplementSetAinvType()`, `MatSchurComplementGetPmat()`, `MatGetSchurComplement()`, `MatCreateSchurComplementPmat()`
 E*/
-typedef enum {MAT_SCHUR_COMPLEMENT_AINV_DIAG, MAT_SCHUR_COMPLEMENT_AINV_LUMP, MAT_SCHUR_COMPLEMENT_AINV_BLOCK_DIAG} MatSchurComplementAinvType;
+typedef enum {MAT_SCHUR_COMPLEMENT_AINV_DIAG, MAT_SCHUR_COMPLEMENT_AINV_LUMP, MAT_SCHUR_COMPLEMENT_AINV_BLOCK_DIAG, MAT_SCHUR_COMPLEMENT_AINV_FULL} MatSchurComplementAinvType;
 PETSC_EXTERN const char *const MatSchurComplementAinvTypes[];
 
 typedef enum {MAT_LMVM_SYMBROYDEN_SCALE_NONE       = 0,

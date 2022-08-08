@@ -1,6 +1,6 @@
 #include <../src/ksp/ksp/utils/schurm/schurm.h> /*I "petscksp.h" I*/
 
-const char *const MatSchurComplementAinvTypes[] = {"DIAG","LUMP","BLOCKDIAG","MatSchurComplementAinvType","MAT_SCHUR_COMPLEMENT_AINV_",NULL};
+const char *const MatSchurComplementAinvTypes[] = {"DIAG","LUMP","BLOCKDIAG","FULL","MatSchurComplementAinvType","MAT_SCHUR_COMPLEMENT_AINV_",NULL};
 
 PetscErrorCode MatCreateVecs_SchurComplement(Mat N,Vec *right,Vec *left)
 {
@@ -554,7 +554,7 @@ PetscErrorCode MatGetSchurComplement_Basic(Mat mat,IS isrow0,IS iscol0,IS isrow1
 .   iscol1 - columns in which the Schur complement is formed
 .   mreuse - MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX, use MAT_IGNORE_MATRIX to put nothing in S
 .   ainvtype - the type of approximation used for the inverse of the (0,0) block used in forming Sp:
-                       MAT_SCHUR_COMPLEMENT_AINV_DIAG, MAT_SCHUR_COMPLEMENT_AINV_BLOCK_DIAG, or MAT_SCHUR_COMPLEMENT_AINV_LUMP
+                       MAT_SCHUR_COMPLEMENT_AINV_DIAG, MAT_SCHUR_COMPLEMENT_AINV_LUMP, MAT_SCHUR_COMPLEMENT_AINV_BLOCK_DIAG, or MAT_SCHUR_COMPLEMENT_AINV_FULL
 -   preuse - MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX, use MAT_IGNORE_MATRIX to put nothing in Sp
 
     Output Parameters:
@@ -618,10 +618,10 @@ PetscErrorCode  MatGetSchurComplement(Mat A,IS isrow0,IS iscol0,IS isrow1,IS isc
     Input Parameters:
 +   S        - matrix obtained with MatCreateSchurComplement() (or equivalent) and implementing the action of A11 - A10 ksp(A00,Ap00) A01
 -   ainvtype - type of approximation to be used to form approximate Schur complement Sp = A11 - A10 inv(DIAGFORM(A00)) A01:
-                      MAT_SCHUR_COMPLEMENT_AINV_DIAG, MAT_SCHUR_COMPLEMENT_AINV_LUMP, or MAT_SCHUR_COMPLEMENT_AINV_BLOCK_DIAG
+                      MAT_SCHUR_COMPLEMENT_AINV_DIAG, MAT_SCHUR_COMPLEMENT_AINV_LUMP, MAT_SCHUR_COMPLEMENT_AINV_BLOCK_DIAG, or MAT_SCHUR_COMPLEMENT_AINV_FULL
 
     Options database:
-    -mat_schur_complement_ainv_type diag | lump | blockdiag
+    -mat_schur_complement_ainv_type diag | lump | blockdiag | full
 
     Level: advanced
 
@@ -638,7 +638,7 @@ PetscErrorCode  MatSchurComplementSetAinvType(Mat S,MatSchurComplementAinvType a
   if (!isschur) PetscFunctionReturn(0);
   PetscValidLogicalCollectiveEnum(S,ainvtype,2);
   schur = (Mat_SchurComplement*)S->data;
-  PetscCheck(ainvtype == MAT_SCHUR_COMPLEMENT_AINV_DIAG || ainvtype == MAT_SCHUR_COMPLEMENT_AINV_LUMP || ainvtype == MAT_SCHUR_COMPLEMENT_AINV_BLOCK_DIAG,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown MatSchurComplementAinvType: %d",(int)ainvtype);
+  PetscCheck(ainvtype == MAT_SCHUR_COMPLEMENT_AINV_DIAG || ainvtype == MAT_SCHUR_COMPLEMENT_AINV_LUMP || ainvtype == MAT_SCHUR_COMPLEMENT_AINV_BLOCK_DIAG || ainvtype == MAT_SCHUR_COMPLEMENT_AINV_FULL,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown MatSchurComplementAinvType: %d",(int)ainvtype);
   schur->ainvtype = ainvtype;
   PetscFunctionReturn(0);
 }
@@ -653,7 +653,7 @@ PetscErrorCode  MatSchurComplementSetAinvType(Mat S,MatSchurComplementAinvType a
 
     Output Parameter:
 .   ainvtype - type of approximation used to form approximate Schur complement Sp = A11 - A10 inv(DIAGFORM(A00)) A01:
-                      MAT_SCHUR_COMPLEMENT_AINV_DIAG, MAT_SCHUR_COMPLEMENT_AINV_LUMP, or MAT_SCHUR_COMPLEMENT_AINV_BLOCK_DIAG
+                      MAT_SCHUR_COMPLEMENT_AINV_DIAG, MAT_SCHUR_COMPLEMENT_AINV_LUMP, MAT_SCHUR_COMPLEMENT_AINV_BLOCK_DIAG, or MAT_SCHUR_COMPLEMENT_AINV_FULL
 
     Level: advanced
 
@@ -765,7 +765,11 @@ PetscErrorCode  MatSchurComplementGetPmat_Basic(Mat S,MatReuse preuse,Mat *Sp)
   if (preuse == MAT_IGNORE_MATRIX) PetscFunctionReturn(0);
   PetscCall(MatSchurComplementGetSubMatrices(S,&A,NULL,&B,&C,&D));
   PetscCheck(A,PetscObjectComm((PetscObject)S),PETSC_ERR_ARG_WRONGSTATE,"Schur complement component matrices unset");
-  PetscCall(MatCreateSchurComplementPmat(A,B,C,D,schur->ainvtype,preuse,Sp));
+  if (schur->ainvtype != MAT_SCHUR_COMPLEMENT_AINV_FULL) PetscCall(MatCreateSchurComplementPmat(A,B,C,D,schur->ainvtype,preuse,Sp));
+  else {
+    if (preuse == MAT_REUSE_MATRIX) PetscCall(MatDestroy(Sp));
+    PetscCall(MatSchurComplementComputeExplicitOperator(S,Sp));
+  }
   PetscFunctionReturn(0);
 }
 
@@ -783,8 +787,8 @@ PetscErrorCode  MatSchurComplementGetPmat_Basic(Mat S,MatReuse preuse,Mat *Sp)
 
     Note:
     The approximation of Sp depends on the the argument passed to to MatSchurComplementSetAinvType()
-    MAT_SCHUR_COMPLEMENT_AINV_DIAG, MAT_SCHUR_COMPLEMENT_AINV_LUMP, or MAT_SCHUR_COMPLEMENT_AINV_BLOCK_DIAG or
-    -mat_schur_complement_ainv_type <diag,lump,blockdiag>
+    MAT_SCHUR_COMPLEMENT_AINV_DIAG, MAT_SCHUR_COMPLEMENT_AINV_LUMP, MAT_SCHUR_COMPLEMENT_AINV_BLOCK_DIAG, or MAT_SCHUR_COMPLEMENT_AINV_FULL
+    -mat_schur_complement_ainv_type <diag,lump,blockdiag,full>
 
     Sometimes users would like to provide problem-specific data in the Schur complement, usually only
     for special row and column index sets.  In that case, the user should call PetscObjectComposeFunction() to set
