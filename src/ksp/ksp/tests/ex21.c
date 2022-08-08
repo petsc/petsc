@@ -90,9 +90,10 @@ PetscErrorCode Destroy(Mat *A,IS *is0,IS *is1)
 
 int main(int argc,char *argv[])
 {
-  Mat                        A,S = NULL,Sexplicit = NULL;
+  Mat                        A,S = NULL,Sexplicit = NULL,Sp;
   MatSchurComplementAinvType ainv_type = MAT_SCHUR_COMPLEMENT_AINV_DIAG;
   IS                         is0,is1;
+  PetscBool                  flg;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,0,help));
@@ -110,6 +111,14 @@ int main(int argc,char *argv[])
   PetscCall(MatComputeOperator(S,MATAIJ,&Sexplicit));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\nExplicit Schur complement of (0,0) in (1,1)\n"));
   PetscCall(MatView(Sexplicit,PETSC_VIEWER_STDOUT_WORLD));
+  if (ainv_type == MAT_SCHUR_COMPLEMENT_AINV_DIAG) {
+    PetscCall(MatSchurComplementSetAinvType(S,MAT_SCHUR_COMPLEMENT_AINV_FULL));
+    PetscCall(MatSchurComplementGetPmat(S,MAT_INITIAL_MATRIX,&Sp));
+    PetscCall(MatMultEqual(Sp,Sexplicit,10,&flg));
+    PetscCheck(flg,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Sp != S");
+    PetscCall(MatSchurComplementSetAinvType(S,MAT_SCHUR_COMPLEMENT_AINV_DIAG));
+    PetscCall(MatDestroy(&Sp));
+  }
   PetscCall(Destroy(&A,&is0,&is1));
   PetscCall(MatDestroy(&S));
   PetscCall(MatDestroy(&Sexplicit));
@@ -121,6 +130,14 @@ int main(int argc,char *argv[])
   PetscCall(MatComputeOperator(S,MATAIJ,&Sexplicit));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\nExplicit Schur complement of (1,1) in (0,0)\n"));
   PetscCall(MatView(Sexplicit,PETSC_VIEWER_STDOUT_WORLD));
+  if (ainv_type == MAT_SCHUR_COMPLEMENT_AINV_DIAG) {
+    PetscCall(MatSchurComplementSetAinvType(S,MAT_SCHUR_COMPLEMENT_AINV_FULL));
+    PetscCall(MatSchurComplementGetPmat(S,MAT_INITIAL_MATRIX,&Sp));
+    PetscCall(MatMultEqual(Sp,Sexplicit,10,&flg));
+    PetscCheck(flg,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Sp != S");
+    PetscCall(MatSchurComplementSetAinvType(S,MAT_SCHUR_COMPLEMENT_AINV_DIAG));
+    PetscCall(MatDestroy(&Sp));
+  }
   PetscCall(Destroy(&A,&is0,&is1));
   PetscCall(MatDestroy(&S));
   PetscCall(MatDestroy(&Sexplicit));

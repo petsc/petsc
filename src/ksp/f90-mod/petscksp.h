@@ -21,6 +21,7 @@
       PetscEnum, parameter :: MAT_SCHUR_COMPLEMENT_AINV_DIAG=0
       PetscEnum, parameter :: MAT_SCHUR_COMPLEMENT_AINV_LUMP=1
       PetscEnum, parameter :: MAT_SCHUR_COMPLEMENT_AINV_BLOCK_DIAG=2
+      PetscEnum, parameter :: MAT_SCHUR_COMPLEMENT_AINV_FULL=3
 
       PetscEnum, parameter :: KSP_FCD_TRUNC_TYPE_STANDARD=0
       PetscEnum, parameter :: KSP_FCD_TRUNC_TYPE_NOTAY=1
