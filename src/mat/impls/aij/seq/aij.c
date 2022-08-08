@@ -3082,6 +3082,7 @@ PetscErrorCode MatAXPY_SeqAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
     PetscCall(MatSeqAIJSetPreallocation(B,0,nnz));
     PetscCall(MatAXPY_BasicWithPreallocation(B,Y,a,X,str));
     PetscCall(MatHeaderMerge(Y,&B));
+    PetscCall(MatSeqAIJCheckInode(Y));
     PetscCall(PetscFree(nnz));
   }
   PetscFunctionReturn(0);
