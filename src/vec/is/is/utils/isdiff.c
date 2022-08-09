@@ -710,6 +710,7 @@ PetscErrorCode ISEmbed(IS a, IS b, PetscBool drop, IS *c)
   PetscCall(PetscMalloc1(alen, &cindices));
   if (!drop) gtoltype = IS_GTOLM_MASK;
   PetscCall(ISGlobalToLocalMappingApply(ltog,gtoltype,alen,aindices,&clen,cindices));
+  PetscCall(ISRestoreIndices(a, &aindices));
   PetscCall(ISLocalToGlobalMappingDestroy(&ltog));
   if (clen != alen) {
     cindices2 = cindices;
