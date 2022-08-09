@@ -25,22 +25,26 @@ const char *const DMPolytopeTypes[] = {"vertex", "segment", "tensor_segment", "t
 const char *const DMCopyLabelsModes[] = {"replace","keep","fail","DMCopyLabelsMode","DM_COPY_LABELS_", NULL};
 
 /*@
-  DMCreate - Creates an empty DM object. The type can then be set with DMSetType().
-
-   If you never  call DMSetType()  it will generate an
-   error when you try to use the vector.
+  DMCreate - Creates an empty `DM` object. `DM`s are the abstract objects in PETSc that mediate between meshes and discretizations and the
+  algebraic solvers, time integrators, and optimization algorithms.
 
   Collective
 
   Input Parameter:
-. comm - The communicator for the DM object
+. comm - The communicator for the `DM` object
 
   Output Parameter:
-. dm - The DM object
+. dm - The `DM` object
 
   Level: beginner
 
-.seealso: `DMSetType()`, `DMDA`, `DMSLICED`, `DMCOMPOSITE`, `DMPLEX`, `DMMOAB`, `DMNETWORK`
+  Notes:
+  See `DMType` for a brief summary of available `DM`.
+
+  The type must then be set with `DMSetType()`. If you never call `DMSetType()` it will generate an
+  error when you try to use the dm.
+
+.seealso: `DMSetType()`, `DMType`, `DMDACreate()`, `DMDA`, `DMSLICED`, `DMCOMPOSITE`, `DMPLEX`, `DMMOAB`, `DMNETWORK`
 @*/
 PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
 {
@@ -99,26 +103,28 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
 }
 
 /*@
-  DMClone - Creates a DM object with the same topology as the original.
+  DMClone - Creates a `DM` object with the same topology as the original.
 
   Collective
 
   Input Parameter:
-. dm - The original DM object
+. dm - The original `DM` object
 
   Output Parameter:
-. newdm  - The new DM object
+. newdm  - The new `DM` object
 
   Level: beginner
 
   Notes:
-  For some DM implementations this is a shallow clone, the result of which may share (referent counted) information with its parent. For example,
-  DMClone() applied to a DMPLEX object will result in a new DMPLEX that shares the topology with the original DMPLEX. It does not
-  share the PetscSection of the original DM.
+  For some `DM` implementations this is a shallow clone, the result of which may share (reference counted) information with its parent. For example,
+  `DMClone()` applied to a `DMPLEX` object will result in a new `DMPLEX` that shares the topology with the original `DMPLEX`. It does not
+  share the `PetscSection` of the original `DM`.
 
-  The clone is considered set up iff the original is.
+  The clone is considered set up if the original has been set up.
 
-.seealso: `DMDestroy()`, `DMCreate()`, `DMSetType()`, `DMSetLocalSection()`, `DMSetGlobalSection()`
+  Use `DMConvert()` for a general way to create new `DM` from a given `DM`
+
+.seealso: `DMDestroy()`, `DMCreate()`, `DMSetType()`, `DMSetLocalSection()`, `DMSetGlobalSection()`, `DMPLEX`, `DMSetType()`, `DMConvert()`
 
 @*/
 PetscErrorCode DMClone(DM dm, DM *newdm)
@@ -199,20 +205,21 @@ PetscErrorCode DMClone(DM dm, DM *newdm)
 }
 
 /*@C
-       DMSetVecType - Sets the type of vector created with DMCreateLocalVector() and DMCreateGlobalVector()
+       DMSetVecType - Sets the type of vector created with `DMCreateLocalVector()` and `DMCreateGlobalVector()`
 
    Logically Collective on da
 
    Input Parameters:
 +  da - initial distributed array
--  ctype - the vector type, currently either VECSTANDARD, VECCUDA, or VECVIENNACL
+-  ctype - the vector type, for example `VECSTANDARD`, `VECCUDA`, or `VECVIENNACL`
 
    Options Database:
 .   -dm_vec_type ctype - the type of vector to create
 
    Level: intermediate
 
-.seealso: `DMCreate()`, `DMDestroy()`, `DM`, `DMDAInterpolationType`, `VecType`, `DMGetVecType()`, `DMSetMatType()`, `DMGetMatType()`
+.seealso: `DMCreate()`, `DMDestroy()`, `DM`, `DMDAInterpolationType`, `VecType`, `DMGetVecType()`, `DMSetMatType()`, `DMGetMatType()`,
+          `VECSTANDARD`, `VECCUDA`, `VECVIENNACL`, `DMCreateLocalVector()`, `DMCreateGlobalVector()`
 @*/
 PetscErrorCode  DMSetVecType(DM da,VecType ctype)
 {
@@ -224,7 +231,7 @@ PetscErrorCode  DMSetVecType(DM da,VecType ctype)
 }
 
 /*@C
-       DMGetVecType - Gets the type of vector created with DMCreateLocalVector() and DMCreateGlobalVector()
+       DMGetVecType - Gets the type of vector created with `DMCreateLocalVector()` and `DMCreateGlobalVector()`
 
    Logically Collective on da
 
@@ -247,19 +254,22 @@ PetscErrorCode  DMGetVecType(DM da,VecType *ctype)
 }
 
 /*@
-  VecGetDM - Gets the DM defining the data layout of the vector
+  VecGetDM - Gets the `DM` defining the data layout of the vector
 
   Not collective
 
   Input Parameter:
-. v - The Vec
+. v - The `Vec`
 
   Output Parameter:
-. dm - The DM
+. dm - The `DM`
 
   Level: intermediate
 
-.seealso: `VecSetDM()`, `DMGetLocalVector()`, `DMGetGlobalVector()`, `DMSetVecType()`
+  Note:
+  A `Vec` may not have a `DM` associated with it.
+
+.seealso: `DM`, `VecSetDM()`, `DMGetLocalVector()`, `DMGetGlobalVector()`, `DMSetVecType()`
 @*/
 PetscErrorCode VecGetDM(Vec v, DM *dm)
 {
@@ -271,17 +281,20 @@ PetscErrorCode VecGetDM(Vec v, DM *dm)
 }
 
 /*@
-  VecSetDM - Sets the DM defining the data layout of the vector.
+  VecSetDM - Sets the `DM` defining the data layout of the vector.
 
   Not collective
 
   Input Parameters:
-+ v - The Vec
-- dm - The DM
++ v - The `Vec`
+- dm - The `DM`
 
-  Note: This is NOT the same as DMCreateGlobalVector() since it does not change the view methods or perform other customization, but merely sets the DM member.
+  Note:
+  This is rarely used, generally one uses `DMGetLocalVector()` or  `DMGetGlobalVector()` to create a vector associated with a given `DM`
 
-  Level: intermediate
+  This is NOT the same as `DMCreateGlobalVector()` since it does not change the view methods or perform other customization, but merely sets the `DM` member.
+
+  Level: developer
 
 .seealso: `VecGetDM()`, `DMGetLocalVector()`, `DMGetGlobalVector()`, `DMSetVecType()`
 @*/
@@ -295,12 +308,12 @@ PetscErrorCode VecSetDM(Vec v, DM dm)
 }
 
 /*@C
-       DMSetISColoringType - Sets the type of coloring, global or local, that is created by the DM
+       DMSetISColoringType - Sets the type of coloring, `IS_COLORING_GLOBAL` or `IS_COLORING_LOCAL` that is created by the `DM`
 
    Logically Collective on dm
 
    Input Parameters:
-+  dm - the DM context
++  dm - the `DM` context
 -  ctype - the matrix type
 
    Options Database:
@@ -309,7 +322,7 @@ PetscErrorCode VecSetDM(Vec v, DM dm)
    Level: intermediate
 
 .seealso: `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMSetMatrixPreallocateOnly()`, `MatType`, `DMGetMatType()`,
-          `DMGetISColoringType()`
+          `DMGetISColoringType()`, `ISColoringType`, `IS_COLORING_GLOBAL`, `IS_COLORING_LOCAL`
 @*/
 PetscErrorCode  DMSetISColoringType(DM dm,ISColoringType ctype)
 {
@@ -320,12 +333,12 @@ PetscErrorCode  DMSetISColoringType(DM dm,ISColoringType ctype)
 }
 
 /*@C
-       DMGetISColoringType - Gets the type of coloring, global or local, that is created by the DM
+       DMGetISColoringType - Gets the type of coloring,  `IS_COLORING_GLOBAL` or `IS_COLORING_LOCAL` that is created by the `DM`
 
    Logically Collective on dm
 
    Input Parameter:
-.  dm - the DM context
+.  dm - the `DM` context
 
    Output Parameter:
 .  ctype - the matrix type
@@ -336,7 +349,7 @@ PetscErrorCode  DMSetISColoringType(DM dm,ISColoringType ctype)
    Level: intermediate
 
 .seealso: `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMSetMatrixPreallocateOnly()`, `MatType`, `DMGetMatType()`,
-          `DMGetISColoringType()`
+          `DMGetISColoringType()`, `ISColoringType`, `IS_COLORING_GLOBAL`, `IS_COLORING_LOCAL`
 @*/
 PetscErrorCode  DMGetISColoringType(DM dm,ISColoringType *ctype)
 {
@@ -347,20 +360,20 @@ PetscErrorCode  DMGetISColoringType(DM dm,ISColoringType *ctype)
 }
 
 /*@C
-       DMSetMatType - Sets the type of matrix created with DMCreateMatrix()
+       DMSetMatType - Sets the type of matrix created with `DMCreateMatrix()`
 
    Logically Collective on dm
 
    Input Parameters:
-+  dm - the DM context
--  ctype - the matrix type
++  dm - the `DM` context
+-  ctype - the matrix type, for example `MATMPIAIJ`
 
    Options Database:
-.   -dm_mat_type ctype - the type of the matrix to create
+.   -dm_mat_type ctype - the type of the matrix to create, for example mpiaij
 
    Level: intermediate
 
-.seealso: `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMSetMatrixPreallocateOnly()`, `MatType`, `DMGetMatType()`, `DMSetMatType()`, `DMGetMatType()`
+.seealso: `MatType`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMSetMatrixPreallocateOnly()`, `MatType`, `DMGetMatType()`, `DMSetMatType()`, `DMGetMatType()`, `DMCreateGlobalVector()`, `DMCreateLocalVector()`
 @*/
 PetscErrorCode  DMSetMatType(DM dm,MatType ctype)
 {
@@ -372,18 +385,15 @@ PetscErrorCode  DMSetMatType(DM dm,MatType ctype)
 }
 
 /*@C
-       DMGetMatType - Gets the type of matrix created with DMCreateMatrix()
+       DMGetMatType - Gets the type of matrix created with `DMCreateMatrix()`
 
    Logically Collective on dm
 
    Input Parameter:
-.  dm - the DM context
+.  dm - the `DM` context
 
    Output Parameter:
 .  ctype - the matrix type
-
-   Options Database:
-.   -dm_mat_type ctype - the matrix type
 
    Level: intermediate
 
@@ -398,20 +408,23 @@ PetscErrorCode  DMGetMatType(DM dm,MatType *ctype)
 }
 
 /*@
-  MatGetDM - Gets the DM defining the data layout of the matrix
+  MatGetDM - Gets the `DM` defining the data layout of the matrix
 
   Not collective
 
   Input Parameter:
-. A - The Mat
+. A - The `Mat`
 
   Output Parameter:
-. dm - The DM
+. dm - The `DM`
 
   Level: intermediate
 
-  Developer Note: Since the Mat class doesn't know about the DM class the DM object is associated with
-                  the Mat through a PetscObjectCompose() operation
+  Note:
+  A matrix may not have a `DM` associated with it
+
+  Developer Note:
+  Since the `Mat` class doesn't know about the `DM` class the `DM` object is associated with the `Mat` through a `PetscObjectCompose()` operation
 
 .seealso: `MatSetDM()`, `DMCreateMatrix()`, `DMSetMatType()`
 @*/
@@ -425,7 +438,7 @@ PetscErrorCode MatGetDM(Mat A, DM *dm)
 }
 
 /*@
-  MatSetDM - Sets the DM defining the data layout of the matrix
+  MatSetDM - Sets the `DM` defining the data layout of the matrix
 
   Not collective
 
@@ -433,10 +446,14 @@ PetscErrorCode MatGetDM(Mat A, DM *dm)
 + A - The Mat
 - dm - The DM
 
-  Level: intermediate
+  Level: developer
 
-  Developer Note: Since the Mat class doesn't know about the DM class the DM object is associated with
-                  the Mat through a PetscObjectCompose() operation
+  Note:
+  This is rarely used in practice, rather `DMCreateMatrix()` is used to create a matrix associated with a particular `DM`
+
+  Developer Note:
+  Since the `Mat` class doesn't know about the `DM` class the `DM` object is associated with
+  the `Mat` through a `PetscObjectCompose()` operation
 
 .seealso: `MatGetDM()`, `DMCreateMatrix()`, `DMSetMatType()`
 @*/
@@ -450,14 +467,13 @@ PetscErrorCode MatSetDM(Mat A, DM dm)
 }
 
 /*@C
-   DMSetOptionsPrefix - Sets the prefix used for searching for all
-   DM options in the database.
+   DMSetOptionsPrefix - Sets the prefix prepended to all option names when searching through the options database
 
    Logically Collective on dm
 
    Input Parameters:
-+  da - the DM context
--  prefix - the prefix to prepend to all option names
++  da - the `DM` context
+-  prefix - the prefix to prepend
 
    Notes:
    A hyphen (-) must NOT be given at the beginning of the prefix name.
@@ -465,7 +481,7 @@ PetscErrorCode MatSetDM(Mat A, DM dm)
 
    Level: advanced
 
-.seealso: `DMSetFromOptions()`
+.seealso: `PetscObjectSetOptionsPrefix()`, `DMSetFromOptions()`
 @*/
 PetscErrorCode  DMSetOptionsPrefix(DM dm,const char prefix[])
 {
@@ -478,22 +494,23 @@ PetscErrorCode  DMSetOptionsPrefix(DM dm,const char prefix[])
 }
 
 /*@C
-   DMAppendOptionsPrefix - Appends to the prefix used for searching for all
-   DM options in the database.
+   DMAppendOptionsPrefix - Appends an additional string to an already exising prefix used for searching for
+   `DM` options in the options database.
 
    Logically Collective on dm
 
    Input Parameters:
-+  dm - the DM context
--  prefix - the prefix string to prepend to all DM option requests
++  dm - the `DM` context
+-  prefix - the string to append to the current prefix
 
    Notes:
+   If the `DM` does not currently have an options prefix then this value is used alone as the prefix as if `DMSetOptionsPrefix()` had been called.
    A hyphen (-) must NOT be given at the beginning of the prefix name.
    The first character of all runtime options is AUTOMATICALLY the hyphen.
 
    Level: advanced
 
-.seealso: `DMSetOptionsPrefix()`, `DMGetOptionsPrefix()`
+.seealso: `DMSetOptionsPrefix()`, `DMGetOptionsPrefix()`, `PetscObjectAppendOptionsPrefix()`, `DMSetFromOptions()`
 @*/
 PetscErrorCode  DMAppendOptionsPrefix(DM dm,const char prefix[])
 {
@@ -505,23 +522,23 @@ PetscErrorCode  DMAppendOptionsPrefix(DM dm,const char prefix[])
 
 /*@C
    DMGetOptionsPrefix - Gets the prefix used for searching for all
-   DM options in the database.
+   DM options in the options database.
 
    Not Collective
 
    Input Parameters:
-.  dm - the DM context
+.  dm - the `DM` context
 
    Output Parameters:
 .  prefix - pointer to the prefix string used is returned
 
-   Notes:
+   Fortran Note:
     On the fortran side, the user should pass in a string 'prefix' of
    sufficient length to hold the prefix.
 
    Level: advanced
 
-.seealso: `DMSetOptionsPrefix()`, `DMAppendOptionsPrefix()`
+.seealso: `DMSetOptionsPrefix()`, `DMAppendOptionsPrefix()`, `DMSetFromOptions()`
 @*/
 PetscErrorCode  DMGetOptionsPrefix(DM dm,const char *prefix[])
 {
@@ -590,16 +607,16 @@ PetscErrorCode DMDestroyCoordinates_Private(DMCoordinates *c)
 }
 
 /*@C
-    DMDestroy - Destroys a vector packer or DM.
+    DMDestroy - Destroys a `DM`.
 
     Collective on dm
 
     Input Parameter:
-.   dm - the DM object to destroy
+.   dm - the `DM` object to destroy
 
     Level: developer
 
-.seealso `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMCreateColoring()`, `DMCreateMatrix()`
+.seealso: `DMCreate()`, `DMType`, `DMSetType()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMCreateColoring()`, `DMCreateMatrix()`
 
 @*/
 PetscErrorCode DMDestroy(DM *dm)
@@ -780,16 +797,19 @@ PetscErrorCode DMDestroy(DM *dm)
 }
 
 /*@
-    DMSetUp - sets up the data structures inside a DM object
+    DMSetUp - sets up the data structures inside a `DM` object
 
     Collective on dm
 
     Input Parameter:
-.   dm - the DM object to setup
+.   dm - the `DM` object to setup
 
-    Level: developer
+    Level: intermediate
 
-.seealso `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMCreateColoring()`, `DMCreateMatrix()`
+    Note:
+    This is usually called after various parameter setting operations and `DMSetFromOptions()` are called on the `DM`
+
+.seealso: `DM`, `DMCreate()`, `DMSetType()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMCreateColoring()`, `DMCreateMatrix()`
 
 @*/
 PetscErrorCode  DMSetUp(DM dm)
@@ -803,35 +823,35 @@ PetscErrorCode  DMSetUp(DM dm)
 }
 
 /*@
-    DMSetFromOptions - sets parameters in a DM from the options database
+    DMSetFromOptions - sets parameters in a `DM` from the options database
 
     Collective on dm
 
     Input Parameter:
-.   dm - the DM object to set options for
+.   dm - the `DM` object to set options for
 
     Options Database:
-+   -dm_preallocate_only - Only preallocate the matrix for DMCreateMatrix() and DMCreateMassMatrix(), but do not fill it with zeros
-.   -dm_vec_type <type>  - type of vector to create inside DM
-.   -dm_mat_type <type>  - type of matrix to create inside DM
++   -dm_preallocate_only - Only preallocate the matrix for `DMCreateMatrix()` and `DMCreateMassMatrix()`, but do not fill it with zeros
+.   -dm_vec_type <type>  - type of vector to create inside `DM`
+.   -dm_mat_type <type>  - type of matrix to create inside `DM`
 .   -dm_is_coloring_type - <global or local>
--   -dm_bind_below <n>   - bind (force execution on CPU) for Vec and Mat objects with local size (number of vector entries or matrix rows) below n; currently only supported for DMDA
+-   -dm_bind_below <n>   - bind (force execution on CPU) for `Vec` and `Mat` objects with local size (number of vector entries or matrix rows) below n; currently only supported for `DMDA`
 
     DMPLEX Specific creation options
 + -dm_plex_filename <str>           - File containing a mesh
 . -dm_plex_boundary_filename <str>  - File containing a mesh boundary
 . -dm_plex_name <str>               - Name of the mesh in the file
-. -dm_plex_shape <shape>            - The domain shape, such as DM_SHAPE_BOX, DM_SHAPE_SPHERE, etc.
+. -dm_plex_shape <shape>            - The domain shape, such as `DM_SHAPE_BOX`, `DM_SHAPE_SPHERE`, etc.
 . -dm_plex_cell <ct>                - Cell shape
 . -dm_plex_reference_cell_domain <bool> - Use a reference cell domain
 . -dm_plex_dim <dim>                - Set the topological dimension
-. -dm_plex_simplex <bool>           - PETSC_TRUE for simplex elements, PETSC_FALSE for tensor elements
-. -dm_plex_interpolate <bool>       - PETSC_TRUE turns on topological interpolation (creating edges and faces)
+. -dm_plex_simplex <bool>           - `PETSC_TRUE` for simplex elements, `PETSC_FALSE` for tensor elements
+. -dm_plex_interpolate <bool>       - `PETSC_TRUE` turns on topological interpolation (creating edges and faces)
 . -dm_plex_scale <sc>               - Scale factor for mesh coordinates
 . -dm_plex_box_faces <m,n,p>        - Number of faces along each dimension
 . -dm_plex_box_lower <x,y,z>        - Specify lower-left-bottom coordinates for the box
 . -dm_plex_box_upper <x,y,z>        - Specify upper-right-top coordinates for the box
-. -dm_plex_box_bd <bx,by,bz>        - Specify the DMBoundaryType for each direction
+. -dm_plex_box_bd <bx,by,bz>        - Specify the `DMBoundaryType `for each direction
 . -dm_plex_sphere_radius <r>        - The sphere radius
 . -dm_plex_ball_radius <r>          - Radius of the ball
 . -dm_plex_cylinder_bd <bz>         - Boundary type in the z direction
@@ -855,18 +875,19 @@ PetscErrorCode  DMSetUp(DM dm)
 - -dm_plex_adj_closure <bool>       - Set adjacency size
 
     DMPLEX Specific Checks
-+   -dm_plex_check_symmetry        - Check that the adjacency information in the mesh is symmetric - DMPlexCheckSymmetry()
-.   -dm_plex_check_skeleton        - Check that each cell has the correct number of vertices (only for homogeneous simplex or tensor meshes) - DMPlexCheckSkeleton()
-.   -dm_plex_check_faces           - Check that the faces of each cell give a vertex order this is consistent with what we expect from the cell type - DMPlexCheckFaces()
-.   -dm_plex_check_geometry        - Check that cells have positive volume - DMPlexCheckGeometry()
-.   -dm_plex_check_pointsf         - Check some necessary conditions for PointSF - DMPlexCheckPointSF()
-.   -dm_plex_check_interface_cones - Check points on inter-partition interfaces have conforming order of cone points - DMPlexCheckInterfaceCones()
++   -dm_plex_check_symmetry        - Check that the adjacency information in the mesh is symmetric - `DMPlexCheckSymmetry()`
+.   -dm_plex_check_skeleton        - Check that each cell has the correct number of vertices (only for homogeneous simplex or tensor meshes) - `DMPlexCheckSkeleton()`
+.   -dm_plex_check_faces           - Check that the faces of each cell give a vertex order this is consistent with what we expect from the cell type - `DMPlexCheckFaces()`
+.   -dm_plex_check_geometry        - Check that cells have positive volume - `DMPlexCheckGeometry()`
+.   -dm_plex_check_pointsf         - Check some necessary conditions for `PointSF` - `DMPlexCheckPointSF()`
+.   -dm_plex_check_interface_cones - Check points on inter-partition interfaces have conforming order of cone points - `DMPlexCheckInterfaceCones()`
 -   -dm_plex_check_all             - Perform all the checks above
 
     Level: intermediate
 
-.seealso `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMCreateColoring()`, `DMCreateMatrix()`,
-         `DMPlexCheckSymmetry()`, `DMPlexCheckSkeleton()`, `DMPlexCheckFaces()`, `DMPlexCheckGeometry()`, `DMPlexCheckPointSF()`, `DMPlexCheckInterfaceCones()`
+.seealso: `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMCreateColoring()`, `DMCreateMatrix()`,
+         `DMPlexCheckSymmetry()`, `DMPlexCheckSkeleton()`, `DMPlexCheckFaces()`, `DMPlexCheckGeometry()`, `DMPlexCheckPointSF()`, `DMPlexCheckInterfaceCones()`,
+         `DMSetOptionsPrefix()`, `DM`, `DMType`, `DMPLEX`, `DMDA`
 
 @*/
 PetscErrorCode DMSetFromOptions(DM dm)
@@ -895,17 +916,21 @@ PetscErrorCode DMSetFromOptions(DM dm)
 }
 
 /*@C
-   DMViewFromOptions - View from Options
+   DMViewFromOptions - View a `DM` in a particular way based on a request in the options database
 
-   Collective on DM
+   Collective on dm
 
    Input Parameters:
-+  dm - the DM object
-.  obj - Optional object
--  name - command line option
++  dm - the `DM` object
+.  obj - optional object that provides the prefix for the options database (if NULL then the prefix in obj is used)
+-  optionname - option string that is used to activate viewing
 
    Level: intermediate
-.seealso: `DM`, `DMView`, `PetscObjectViewFromOptions()`, `DMCreate()`
+
+   Note:
+   See `PetscObjectViewFromOptions()` for a list of values that can be provided in the options database to determine how the `DM` is viewed
+
+.seealso: `DM`, `DMView()`, `PetscObjectViewFromOptions()`, `DMCreate()`, `PetscObjectViewFromOptions()`
 @*/
 PetscErrorCode  DMViewFromOptions(DM dm,PetscObject obj,const char name[])
 {
@@ -916,22 +941,23 @@ PetscErrorCode  DMViewFromOptions(DM dm,PetscObject obj,const char name[])
 }
 
 /*@C
-    DMView - Views a DM
+    DMView - Views a `DM`. Depending on the `PetscViewer` and its `PetscViewerFormat` it may print some ASCII information about the `DM` to the screen or a file or
+    save the `DM` in a binary file to be loaded later or create a visualization of the `DM`
 
     Collective on dm
 
     Input Parameters:
-+   dm - the DM object to view
++   dm - the `DM` object to view
 -   v - the viewer
 
     Notes:
-    Using PETSCVIEWERHDF5 type with PETSC_VIEWER_HDF5_PETSC format, one can save multiple DMPlex
-    meshes in a single HDF5 file. This in turn requires one to name the DMPlex object with PetscObjectSetName()
-    before saving it with DMView() and before loading it with DMLoad() for identification of the mesh object.
+    Using `PETSCVIEWERHDF5` type with `PETSC_VIEWER_HDF5_PETSC` as the `PetscViewerFormat` one can save multiple `DMPLEX`
+    meshes in a single HDF5 file. This in turn requires one to name the `DMPLEX` object with `PetscObjectSetName()`
+    before saving it with `DMView()` and before loading it with `DMLoad()` for identification of the mesh object.
 
     Level: beginner
 
-.seealso `DMDestroy()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMCreateColoring()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMLoad()`, `PetscObjectSetName()`
+.seealso: `PetscViewer`, `PetscViewerFormat`, `PetscViewerSetFormat`(), `DMDestroy()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMCreateColoring()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMLoad()`, `PetscObjectSetName()`
 
 @*/
 PetscErrorCode  DMView(DM dm,PetscViewer v)
@@ -974,19 +1000,21 @@ PetscErrorCode  DMView(DM dm,PetscViewer v)
 }
 
 /*@
-    DMCreateGlobalVector - Creates a global vector from a DM object
+    DMCreateGlobalVector - Creates a global vector from a `DM` object. A global vector is a parallel vector that has no duplicate values shared between MPI ranks,
+    that is it has no ghost locations.
 
     Collective on dm
 
     Input Parameter:
-.   dm - the DM object
+.   dm - the `DM` object
 
     Output Parameter:
 .   vec - the global vector
 
     Level: beginner
 
-.seealso `DMCreateLocalVector()`, `DMGetGlobalVector()`, `DMDestroy()`, `DMView()`, `DMCreateInterpolation()`, `DMCreateColoring()`, `DMCreateMatrix()`
+.seealso: `Vec`, `DMCreateLocalVector()`, `DMGetGlobalVector()`, `DMDestroy()`, `DMView()`, `DMCreateInterpolation()`, `DMCreateColoring()`, `DMCreateMatrix()`,
+         `DMGlobalToLocalBegin()`, `DMGlobalToLocalEnd()`
 
 @*/
 PetscErrorCode  DMCreateGlobalVector(DM dm,Vec *vec)
@@ -1006,19 +1034,23 @@ PetscErrorCode  DMCreateGlobalVector(DM dm,Vec *vec)
 }
 
 /*@
-    DMCreateLocalVector - Creates a local vector from a DM object
+    DMCreateLocalVector - Creates a local vector from a `DM` object.
 
     Not Collective
 
     Input Parameter:
-.   dm - the DM object
+.   dm - the `DM` object
 
     Output Parameter:
 .   vec - the local vector
 
     Level: beginner
 
-.seealso `DMCreateGlobalVector()`, `DMGetLocalVector()`, `DMDestroy()`, `DMView()`, `DMCreateInterpolation()`, `DMCreateColoring()`, `DMCreateMatrix()`
+    Notes:
+    A local vector usually has ghost locations that contain values that are owned by different MPI ranks. A global vector has no ghost locations.
+
+ .seealso: `Vec`, `DMCreateGlobalVector()`, `DMGetLocalVector()`, `DMDestroy()`, `DMView()`, `DMCreateInterpolation()`, `DMCreateColoring()`, `DMCreateMatrix()`
+         `DMGlobalToLocalBegin()`, `DMGlobalToLocalEnd()`
 
 @*/
 PetscErrorCode  DMCreateLocalVector(DM dm,Vec *vec)
@@ -1038,23 +1070,28 @@ PetscErrorCode  DMCreateLocalVector(DM dm,Vec *vec)
 }
 
 /*@
-   DMGetLocalToGlobalMapping - Accesses the local-to-global mapping in a DM.
+   DMGetLocalToGlobalMapping - Accesses the local-to-global mapping in a `DM`.
 
    Collective on dm
 
    Input Parameter:
-.  dm - the DM that provides the mapping
+.  dm - the `DM` that provides the mapping
 
    Output Parameter:
 .  ltog - the mapping
 
-   Level: intermediate
+   Level: advanced
 
    Notes:
-   This mapping can then be used by VecSetLocalToGlobalMapping() or
-   MatSetLocalToGlobalMapping().
+   The global to local mapping allows one to set values into the global vector or matrix using `VecSetValuesLocal()` and `MatSetValuesLocal()`
 
-.seealso: `DMCreateLocalVector()`
+   Vectors obtained with  `DMCreateGlobalVector()` and matrices obtained with `DMCreateMatrix()` already contain the global mapping so you do
+   need to use this function with those objects.
+
+   This mapping can then be used by `VecSetLocalToGlobalMapping()` or `MatSetLocalToGlobalMapping()`.
+
+.seealso: `DMCreateLocalVector()`,  `DMCreateLocalVector()`, `DMCreateGlobalVector()`, `VecSetLocalToGlobalMapping()`, `MatSetLocalToGlobalMapping()`,
+          `DMCreateMatrix()`
 @*/
 PetscErrorCode DMGetLocalToGlobalMapping(DM dm,ISLocalToGlobalMapping *ltog)
 {
@@ -1125,17 +1162,23 @@ PetscErrorCode DMGetLocalToGlobalMapping(DM dm,ISLocalToGlobalMapping *ltog)
 }
 
 /*@
-   DMGetBlockSize - Gets the inherent block size associated with a DM
+   DMGetBlockSize - Gets the inherent block size associated with a `DM`
 
    Not Collective
 
    Input Parameter:
-.  dm - the DM with block structure
+.  dm - the `DM` with block structure
 
    Output Parameter:
 .  bs - the block size, 1 implies no exploitable block structure
 
    Level: intermediate
+
+   Note:
+   This might be the number of degrees of freedom at each grid point for a structured grid.
+
+   Complex `DM` that represent multiphysics or staggered grids or mixed-methods do not generally have a single inherent block size, but
+   rather different locations in the vectors may have a different block size.
 
 .seealso: `ISCreateBlock()`, `VecSetBlockSize()`, `MatSetBlockSize()`, `DMGetLocalToGlobalMapping()`
 @*/
@@ -1150,28 +1193,29 @@ PetscErrorCode  DMGetBlockSize(DM dm,PetscInt *bs)
 }
 
 /*@C
-    DMCreateInterpolation - Gets interpolation matrix between two DM objects
+    DMCreateInterpolation - Gets the interpolation matrix between two `DM` objects. The resulting matrix map degrees of freedom in the vector obtained by
+    `DMCreateGlobalVector()` on the coarse `DM` to similar vectors on the fine grid `DM`.
 
     Collective on dmc
 
     Input Parameters:
-+   dmc - the DM object
--   dmf - the second, finer DM object
++   dmc - the `DM` object
+-   dmf - the second, finer `DM` object
 
     Output Parameters:
 +  mat - the interpolation
--  vec - the scaling (optional)
+-  vec - the scaling (optional), see `DMCreateInterpolationScale()`
 
     Level: developer
 
     Notes:
-    For DMDA objects this only works for "uniform refinement", that is the refined mesh was obtained DMRefine() or the coarse mesh was obtained by
-        DMCoarsen(). The coordinates set into the DMDA are completely ignored in computing the interpolation.
+    For `DMDA` objects this only works for "uniform refinement", that is the refined mesh was obtained `DMRefine()` or the coarse mesh was obtained by
+    DMCoarsen(). The coordinates set into the `DMDA` are completely ignored in computing the interpolation.
 
-        For DMDA objects you can use this interpolation (more precisely the interpolation from the DMGetCoordinateDM()) to interpolate the mesh coordinate vectors
-        EXCEPT in the periodic case where it does not make sense since the coordinate vectors are not periodic.
+    For `DMDA` objects you can use this interpolation (more precisely the interpolation from the `DMGetCoordinateDM()`) to interpolate the mesh coordinate
+    vectors EXCEPT in the periodic case where it does not make sense since the coordinate vectors are not periodic.
 
-.seealso `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateColoring()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMRefine()`, `DMCoarsen()`, `DMCreateRestriction()`, `DMCreateInterpolationScale()`
+.seealso: `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateColoring()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMRefine()`, `DMCoarsen()`, `DMCreateRestriction()`, `DMCreateInterpolationScale()`
 
 @*/
 PetscErrorCode  DMCreateInterpolation(DM dmc,DM dmf,Mat *mat,Vec *vec)
@@ -1188,23 +1232,25 @@ PetscErrorCode  DMCreateInterpolation(DM dmc,DM dmf,Mat *mat,Vec *vec)
 }
 
 /*@
-    DMCreateInterpolationScale - Forms L = 1/(R*1) such that diag(L)*R preserves scale and is thus suitable for state (versus residual) restriction.
+    DMCreateInterpolationScale - Forms L = 1/(R*1) where 1 is the vector of all ones, and R is the transpose of the interpolation between the `DM`.
+    xcoarse = diag(L)*R*xfine preserves scale and is thus suitable for state (versus residual) restriction. In other words xcoarse is the coarse
+    representation of xfine.
 
   Input Parameters:
-+      dac - DM that defines a coarse mesh
-.      daf - DM that defines a fine mesh
++      dac - `DM` that defines a coarse mesh
+.      daf - `DM` that defines a fine mesh
 -      mat - the restriction (or interpolation operator) from fine to coarse
 
   Output Parameter:
 .    scale - the scaled vector
 
-  Level: developer
+  Level: advanced
 
   Developer Notes:
-  If the fine-scale DMDA has the -dm_bind_below option set to true, then DMCreateInterpolationScale() calls MatSetBindingPropagates()
+  If the fine-scale `DMDA` has the -dm_bind_below option set to true, then `DMCreateInterpolationScale()` calls `MatSetBindingPropagates()`
   on the restriction/interpolation operator to set the bindingpropagates flag to true.
 
-.seealso: `DMCreateInterpolation()`
+.seealso: `MatRestrict()`, `MatInterpolate()`, `DMCreateInterpolation()`, DMCreateRestriction()`, `DMCreateGlobalVector()`
 
 @*/
 PetscErrorCode  DMCreateInterpolationScale(DM dac,DM daf,Mat mat,Vec *scale)
@@ -1237,24 +1283,25 @@ PetscErrorCode  DMCreateInterpolationScale(DM dac,DM daf,Mat mat,Vec *scale)
 }
 
 /*@
-    DMCreateRestriction - Gets restriction matrix between two DM objects
+    DMCreateRestriction - Gets restriction matrix between two `DM` objects. The resulting matrix map degrees of freedom in the vector obtained by
+    `DMCreateGlobalVector()` on the fine `DM` to similar vectors on the coarse grid `DM`.
 
     Collective on dmc
 
     Input Parameters:
-+   dmc - the DM object
--   dmf - the second, finer DM object
++   dmc - the `DM` object
+-   dmf - the second, finer `DM` object
 
     Output Parameter:
 .  mat - the restriction
 
     Level: developer
 
-    Notes:
-    For DMDA objects this only works for "uniform refinement", that is the refined mesh was obtained DMRefine() or the coarse mesh was obtained by
-        DMCoarsen(). The coordinates set into the DMDA are completely ignored in computing the interpolation.
+    Note:
+    This only works for `DMSTAG`. For many situations either the transpose of the operator obtained with `DMCreateInterpolation()` or that
+    matrix multiplied by the vector obtained with `DMCreateInterpolationScale()` provides the desired object.
 
-.seealso `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateColoring()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMRefine()`, `DMCoarsen()`, `DMCreateInterpolation()`
+.seealso: `DMRestrict()`, `DMInterpolate()`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateColoring()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMRefine()`, `DMCoarsen()`, `DMCreateInterpolation()`
 
 @*/
 PetscErrorCode  DMCreateRestriction(DM dmc,DM dmf,Mat *mat)
@@ -1271,24 +1318,28 @@ PetscErrorCode  DMCreateRestriction(DM dmc,DM dmf,Mat *mat)
 }
 
 /*@
-    DMCreateInjection - Gets injection matrix between two DM objects
+    DMCreateInjection - Gets injection matrix between two `DM` objects. This is an operator that applied to a vector obtained with
+    `DMCreateGlobalVector()` on the fine grid maps the values to a vector on the vector on the coarse `DM` by simply selecting the values
+    on the coarse grid points. This compares to the operator obtained by `DMCreateRestriction()` or the transpose of the operator obtained
+    by `DMCreateInterpolation()` that uses a "local weighted average" of the values around the coarse grid point as the coarse grid value.
 
     Collective on dac
 
     Input Parameters:
-+   dac - the DM object
--   daf - the second, finer DM object
++   dac - the `DM` object
+-   daf - the second, finer `DM` object
 
     Output Parameter:
 .   mat - the injection
 
     Level: developer
 
-   Notes:
-    For DMDA objects this only works for "uniform refinement", that is the refined mesh was obtained DMRefine() or the coarse mesh was obtained by
-        DMCoarsen(). The coordinates set into the DMDA are completely ignored in computing the injection.
+   Note:
+    For `DMDA` objects this only works for "uniform refinement", that is the refined mesh was obtained `DMRefine()` or the coarse mesh was obtained by
+        `DMCoarsen()`. The coordinates set into the `DMDA` are completely ignored in computing the injection.
 
-.seealso `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateColoring()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMCreateInterpolation()`
+.seealso: `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateColoring()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMCreateInterpolation()`,
+          `DMCreateRestriction()`, `MatRestrict()`, `MatInterpolate()`
 
 @*/
 PetscErrorCode  DMCreateInjection(DM dac,DM daf,Mat *mat)
@@ -1305,20 +1356,26 @@ PetscErrorCode  DMCreateInjection(DM dac,DM daf,Mat *mat)
 }
 
 /*@
-  DMCreateMassMatrix - Gets mass matrix between two DM objects, M_ij = \int \phi_i \psi_j
+  DMCreateMassMatrix - Gets the mass matrix between two `DM` objects, M_ij = \int \phi_i \psi_j where the \phi are Galerkin basis functions for a
+  a Galerkin finite element model on the `DM`
 
   Collective on dac
 
   Input Parameters:
-+ dmc - the target DM object
-- dmf - the source DM object
++ dmc - the target `DM` object
+- dmf - the source `DM` object
 
   Output Parameter:
 . mat - the mass matrix
 
   Level: developer
 
-.seealso `DMCreateMassMatrixLumped()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMRefine()`, `DMCoarsen()`, `DMCreateRestriction()`, `DMCreateInterpolation()`, `DMCreateInjection()`
+  Notes:
+  For `DMPLEX` the finite element model for the `DM` must have been already provided.
+
+  if dmc is dmf then x^t M x is an approximation to the L2 norm of the vector x which is obtained by `DMCreateGlobalVector()`
+
+.seealso: `DMCreateMassMatrixLumped()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMRefine()`, `DMCoarsen()`, `DMCreateRestriction()`, `DMCreateInterpolation()`, `DMCreateInjection()`
 @*/
 PetscErrorCode DMCreateMassMatrix(DM dmc, DM dmf, Mat *mat)
 {
@@ -1334,19 +1391,22 @@ PetscErrorCode DMCreateMassMatrix(DM dmc, DM dmf, Mat *mat)
 }
 
 /*@
-  DMCreateMassMatrixLumped - Gets the lumped mass matrix for a given DM
+  DMCreateMassMatrixLumped - Gets the lumped mass matrix for a given `DM`
 
   Collective on dm
 
   Input Parameter:
-. dm - the DM object
+. dm - the `DM` object
 
   Output Parameter:
-. lm - the lumped mass matrix
+. lm - the lumped mass matrix, which is a diagonal matrix, represented as a vector
 
   Level: developer
 
-.seealso `DMCreateMassMatrix()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMRefine()`, `DMCoarsen()`, `DMCreateRestriction()`, `DMCreateInterpolation()`, `DMCreateInjection()`
+  Note:
+  See `DMCreateMassMatrix()` for how to create the non-lumped version of the mass matrix.
+
+.seealso: `DMCreateMassMatrix()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMRefine()`, `DMCoarsen()`, `DMCreateRestriction()`, `DMCreateInterpolation()`, `DMCreateInjection()`
 @*/
 PetscErrorCode DMCreateMassMatrixLumped(DM dm, Vec *lm)
 {
@@ -1359,26 +1419,27 @@ PetscErrorCode DMCreateMassMatrixLumped(DM dm, Vec *lm)
 }
 
 /*@
-    DMCreateColoring - Gets coloring for a DM
+    DMCreateColoring - Gets coloring of a graph associated with the `DM`. Often the graph represents the operator matrix associated with the discretization
+    of a PDE on the `DM`.
 
     Collective on dm
 
     Input Parameters:
-+   dm - the DM object
--   ctype - IS_COLORING_LOCAL or IS_COLORING_GLOBAL
++   dm - the `DM` object
+-   ctype - `IS_COLORING_LOCAL` or `IS_COLORING_GLOBAL`
 
     Output Parameter:
 .   coloring - the coloring
 
     Notes:
-       Coloring of matrices can be computed directly from the sparse matrix nonzero structure via the MatColoring object or from the mesh from which the
-       matrix comes from. In general using the mesh produces a more optimal coloring (fewer colors).
+    Coloring of matrices can also be computed directly from the sparse matrix nonzero structure via the `MatColoring` object or from the mesh from which the
+    matrix comes from (what this function provides). In general using the mesh produces a more optimal coloring (fewer colors).
 
-       This produces a coloring with the distance of 2, see MatSetColoringDistance() which can be used for efficiently computing Jacobians with MatFDColoringCreate()
+    This produces a coloring with the distance of 2, see `MatSetColoringDistance()` which can be used for efficiently computing Jacobians with `MatFDColoringCreate()`
 
     Level: developer
 
-.seealso `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMSetMatType()`, `MatColoring`, `MatFDColoringCreate()`
+.seealso: `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMSetMatType()`, `MatColoring`, `MatFDColoringCreate()`
 
 @*/
 PetscErrorCode  DMCreateColoring(DM dm,ISColoringType ctype,ISColoring *coloring)
@@ -1392,12 +1453,12 @@ PetscErrorCode  DMCreateColoring(DM dm,ISColoringType ctype,ISColoring *coloring
 }
 
 /*@
-    DMCreateMatrix - Gets empty Jacobian for a DM
+    DMCreateMatrix - Gets an empty matrix for a `DM` that is most commonly used to store the Jacobian of a discrete PDE operator.
 
     Collective on dm
 
     Input Parameter:
-.   dm - the DM object
+.   dm - the `DM` object
 
     Output Parameter:
 .   mat - the empty Jacobian
@@ -1405,22 +1466,22 @@ PetscErrorCode  DMCreateColoring(DM dm,ISColoringType ctype,ISColoring *coloring
     Level: beginner
 
     Options Database Keys:
-. -dm_preallocate_only - Only preallocate the matrix for DMCreateMatrix() and DMCreateMassMatrix(), but do not fill it with zeros
+. -dm_preallocate_only - Only preallocate the matrix for `DMCreateMatrix()` and `DMCreateMassMatrix()`, but do not fill it with zeros
 
     Notes:
     This properly preallocates the number of nonzeros in the sparse matrix so you
-       do not need to do it yourself.
+    do not need to do it yourself.
 
-       By default it also sets the nonzero structure and puts in the zero entries. To prevent setting
-       the nonzero pattern call DMSetMatrixPreallocateOnly()
+    By default it also sets the nonzero structure and puts in the zero entries. To prevent setting
+    the nonzero pattern call `DMSetMatrixPreallocateOnly()`
 
-       For structured grid problems, when you call MatView() on this matrix it is displayed using the global natural ordering, NOT in the ordering used
-       internally by PETSc.
+    For `DMDA`, when you call `MatView()` on this matrix it is displayed using the global natural ordering, NOT in the ordering used
+    internally by PETSc.
 
-       For structured grid problems, in general it is easiest to use MatSetValuesStencil() or MatSetValuesLocal() to put values into the matrix because MatSetValues() requires
-       the indices for the global numbering for DMDAs which is complicated.
+    For `DMDA`, in general it is easiest to use `MatSetValuesStencil()` or `MatSetValuesLocal()` to put values into the matrix because
+    `MatSetValues()` requires the indices for the global numbering for the `DMDA` which is complic`ated to compute
 
-.seealso `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMSetMatType()`, `DMCreateMassMatrix()`
+.seealso: `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMSetMatType()`, `DMCreateMassMatrix()`
 
 @*/
 PetscErrorCode  DMCreateMatrix(DM dm,Mat *mat)
@@ -1465,19 +1526,19 @@ PetscErrorCode  DMCreateMatrix(DM dm,Mat *mat)
 }
 
 /*@
-  DMSetMatrixPreallocateSkip - When DMCreateMatrix() is called the matrix sizes and ISLocalToGlobalMapping will be
-  properly set, but the entries will not be preallocated. This is most useful to reduce initialization costs when
-  MatSetPreallocationCOO() and MatSetValuesCOO() will be used.
+  DMSetMatrixPreallocateSkip - When `DMCreateMatrix()` is called the matrix sizes and `ISLocalToGlobalMapping` will be
+  properly set, but the data structures to store values in the matrices will not be preallocated. This is most useful to reduce initialization costs when
+  `MatSetPreallocationCOO()` and `MatSetValuesCOO()` will be used.
 
   Logically Collective on dm
 
   Input Parameters:
-+ dm - the DM
-- skip - PETSC_TRUE to skip preallocation
++ dm - the `DM`
+- skip - `PETSC_TRUE` to skip preallocation
 
   Level: developer
 
-.seealso `DMCreateMatrix()`, `DMSetMatrixStructureOnly()`
+.seealso: `DMCreateMatrix()`, `DMSetMatrixStructureOnly()`, `DMSetMatrixPreallocateOnly()`
 @*/
 PetscErrorCode DMSetMatrixPreallocateSkip(DM dm, PetscBool skip)
 {
@@ -1488,21 +1549,21 @@ PetscErrorCode DMSetMatrixPreallocateSkip(DM dm, PetscBool skip)
 }
 
 /*@
-  DMSetMatrixPreallocateOnly - When DMCreateMatrix() is called the matrix will be properly
+  DMSetMatrixPreallocateOnly - When `DMCreateMatrix()` is called the matrix will be properly
     preallocated but the nonzero structure and zero values will not be set.
 
   Logically Collective on dm
 
   Input Parameters:
-+ dm - the DM
-- only - PETSC_TRUE if only want preallocation
++ dm - the `DM`
+- only - `PETSC_TRUE` if only want preallocation
 
   Level: developer
 
   Options Database Keys:
-. -dm_preallocate_only - Only preallocate the matrix for DMCreateMatrix(), DMCreateMassMatrix(), but do not fill it with zeros
+. -dm_preallocate_only - Only preallocate the matrix for `DMCreateMatrix()`, `DMCreateMassMatrix()`, but do not fill it with zeros
 
-.seealso `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMSetMatrixStructureOnly()`
+.seealso: `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMSetMatrixStructureOnly()`, `DMSetMatrixPreallocateSkip()`
 @*/
 PetscErrorCode DMSetMatrixPreallocateOnly(DM dm, PetscBool only)
 {
@@ -1513,17 +1574,18 @@ PetscErrorCode DMSetMatrixPreallocateOnly(DM dm, PetscBool only)
 }
 
 /*@
-  DMSetMatrixStructureOnly - When DMCreateMatrix() is called, the matrix structure will be created
-    but the array for values will not be allocated.
+  DMSetMatrixStructureOnly - When `DMCreateMatrix()` is called, the matrix structure will be created
+    but the array for numerical values will not be allocated.
 
   Logically Collective on dm
 
   Input Parameters:
-+ dm - the DM
-- only - PETSC_TRUE if only want matrix stucture
++ dm - the `DM`
+- only - `PETSC_TRUE` if you only want matrix stucture
 
   Level: developer
-.seealso `DMCreateMatrix()`, `DMSetMatrixPreallocateOnly()`
+
+.seealso: `DMCreateMatrix()`, `DMSetMatrixPreallocateOnly()`, `DMSetMatrixPreallocateSkip()`
 @*/
 PetscErrorCode DMSetMatrixStructureOnly(DM dm, PetscBool only)
 {
@@ -1534,21 +1596,26 @@ PetscErrorCode DMSetMatrixStructureOnly(DM dm, PetscBool only)
 }
 
 /*@C
-  DMGetWorkArray - Gets a work array guaranteed to be at least the input size, restore with DMRestoreWorkArray()
+  DMGetWorkArray - Gets a work array guaranteed to be at least the input size, restore with `DMRestoreWorkArray()`
 
   Not Collective
 
   Input Parameters:
-+ dm - the DM object
++ dm - the `DM` object
 . count - The minimum size
-- dtype - MPI data type, often MPIU_REAL, MPIU_SCALAR, MPIU_INT)
+- dtype - MPI data type, often MPIU_REAL, MPIU_SCALAR, or MPIU_INT)
 
   Output Parameter:
 . array - the work array
 
   Level: developer
 
-.seealso `DMDestroy()`, `DMCreate()`
+  Note:
+  A `DM` may stash the array between instantations so using this routine may be more efficient than calling `PetscMalloc()`
+
+  The array may contain nonzero values
+
+.seealso: `DMDestroy()`, `DMCreate()`, `DMRestoreWorkArray()`, `PetscMalloc()`
 @*/
 PetscErrorCode DMGetWorkArray(DM dm,PetscInt count,MPI_Datatype dtype,void *mem)
 {
@@ -1581,12 +1648,12 @@ PetscErrorCode DMGetWorkArray(DM dm,PetscInt count,MPI_Datatype dtype,void *mem)
 }
 
 /*@C
-  DMRestoreWorkArray - Restores a work array guaranteed to be at least the input size, restore with DMRestoreWorkArray()
+  DMRestoreWorkArray - Restores a work array obtained with `DMCreateWorkArray()`
 
   Not Collective
 
   Input Parameters:
-+ dm - the DM object
++ dm - the `DM` object
 . count - The minimum size
 - dtype - MPI data type, often MPIU_REAL, MPIU_SCALAR, MPIU_INT
 
@@ -1596,9 +1663,9 @@ PetscErrorCode DMGetWorkArray(DM dm,PetscInt count,MPI_Datatype dtype,void *mem)
   Level: developer
 
   Developer Notes:
-    count and dtype are ignored, they are only needed for DMGetWorkArray()
+  count and dtype are ignored, they are only needed for `DMGetWorkArray()`
 
-.seealso `DMDestroy()`, `DMCreate()`
+.seealso: `DMDestroy()`, `DMCreate()`, `DMGetWorkArray()`
 @*/
 PetscErrorCode DMRestoreWorkArray(DM dm,PetscInt count,MPI_Datatype dtype,void *mem)
 {
@@ -1620,12 +1687,13 @@ PetscErrorCode DMRestoreWorkArray(DM dm,PetscInt count,MPI_Datatype dtype,void *
 }
 
 /*@C
-  DMSetNullSpaceConstructor - Provide a callback function which constructs the nullspace for a given field when function spaces are joined or split, such as in DMCreateSubDM()
+  DMSetNullSpaceConstructor - Provide a callback function which constructs the nullspace for a given field, defined with `DMAddField()`, when function spaces
+  are joined or split, such as in `DMCreateSubDM()`
 
-  Logically collective on DM
+  Logically collective on dm
 
   Input Parameters:
-+ dm     - The DM
++ dm     - The `DM`
 . field  - The field number for the nullspace
 - nullsp - A callback to create the nullspace
 
@@ -1633,16 +1701,17 @@ PetscErrorCode DMRestoreWorkArray(DM dm,PetscInt count,MPI_Datatype dtype,void *
 .vb
     PetscErrorCode nullsp(DM dm, PetscInt origField, PetscInt field, MatNullSpace *nullSpace)
 .ve
-+  dm        - The present DM
-.  origField - The field number given above, in the original DM
++  dm        - The present `DM`
+.  origField - The field number given above, in the original `DM`
 .  field     - The field number in dm
 -  nullSpace - The nullspace for the given field
 
-  This function is currently not available from Fortran.
+  Level: intermediate
 
-   Level: intermediate
+  Fortran Notes:
+  This function is not available from Fortran.
 
-.seealso: `DMGetNullSpaceConstructor()`, `DMSetNearNullSpaceConstructor()`, `DMGetNearNullSpaceConstructor()`, `DMCreateSubDM()`, `DMCreateSuperDM()`
+.seealso: `DMAddField()`, `DMGetNullSpaceConstructor()`, `DMSetNearNullSpaceConstructor()`, `DMGetNearNullSpaceConstructor()`, `DMCreateSubDM()`, `DMCreateSuperDM()`
 @*/
 PetscErrorCode DMSetNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCode (*nullsp)(DM, PetscInt, PetscInt, MatNullSpace*))
 {
@@ -1654,12 +1723,12 @@ PetscErrorCode DMSetNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCode (
 }
 
 /*@C
-  DMGetNullSpaceConstructor - Return the callback function which constructs the nullspace for a given field, or NULL
+  DMGetNullSpaceConstructor - Return the callback function which constructs the nullspace for a given field, defined with `DMAddField()`
 
   Not collective
 
   Input Parameters:
-+ dm     - The DM
++ dm     - The `DM`
 - field  - The field number for the nullspace
 
   Output Parameter:
@@ -1674,11 +1743,12 @@ PetscErrorCode DMSetNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCode (
 .  field     - The field number in dm
 -  nullSpace - The nullspace for the given field
 
-  This function is currently not available from Fortran.
+  Fortran Note:
+  This function is not available from Fortran.
 
    Level: intermediate
 
-.seealso: `DMSetNullSpaceConstructor()`, `DMSetNearNullSpaceConstructor()`, `DMGetNearNullSpaceConstructor()`, `DMCreateSubDM()`, `DMCreateSuperDM()`
+.seealso: `DMAddField()`, `DMGetField()`, `DMSetNullSpaceConstructor()`, `DMSetNearNullSpaceConstructor()`, `DMGetNearNullSpaceConstructor()`, `DMCreateSubDM()`, `DMCreateSuperDM()`
 @*/
 PetscErrorCode DMGetNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCode (**nullsp)(DM, PetscInt, PetscInt, MatNullSpace *))
 {
@@ -1691,12 +1761,12 @@ PetscErrorCode DMGetNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCode (
 }
 
 /*@C
-  DMSetNearNullSpaceConstructor - Provide a callback function which constructs the near-nullspace for a given field
+  DMSetNearNullSpaceConstructor - Provide a callback function which constructs the near-nullspace for a given field, defined with `DMAddField()`
 
-  Logically collective on DM
+  Logically collective on dm
 
   Input Parameters:
-+ dm     - The DM
++ dm     - The `DM`
 . field  - The field number for the nullspace
 - nullsp - A callback to create the near-nullspace
 
@@ -1704,16 +1774,18 @@ PetscErrorCode DMGetNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCode (
 .vb
     PetscErrorCode nullsp(DM dm, PetscInt origField, PetscInt field, MatNullSpace *nullSpace)
 .ve
-+  dm        - The present DM
-.  origField - The field number given above, in the original DM
++  dm        - The present `DM`
+.  origField - The field number given above, in the original `DM`
 .  field     - The field number in dm
 -  nullSpace - The nullspace for the given field
 
-  This function is currently not available from Fortran.
+  Fortran Note:
+  This function is not available from Fortran.
 
    Level: intermediate
 
-.seealso: `DMGetNearNullSpaceConstructor()`, `DMSetNullSpaceConstructor()`, `DMGetNullSpaceConstructor()`, `DMCreateSubDM()`, `DMCreateSuperDM()`
+.seealso: `DMAddField()`, `DMGetNearNullSpaceConstructor()`, `DMSetNullSpaceConstructor()`, `DMGetNullSpaceConstructor()`, `DMCreateSubDM()`, `DMCreateSuperDM()`,
+          `MatNullSpace`
 @*/
 PetscErrorCode DMSetNearNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCode (*nullsp)(DM, PetscInt, PetscInt, MatNullSpace *))
 {
@@ -1725,12 +1797,12 @@ PetscErrorCode DMSetNearNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCo
 }
 
 /*@C
-  DMGetNearNullSpaceConstructor - Return the callback function which constructs the near-nullspace for a given field, or NULL
+  DMGetNearNullSpaceConstructor - Return the callback function which constructs the near-nullspace for a given field, defined with `DMAddField()`
 
   Not collective
 
   Input Parameters:
-+ dm     - The DM
++ dm     - The `DM`
 - field  - The field number for the nullspace
 
   Output Parameter:
@@ -1740,16 +1812,18 @@ PetscErrorCode DMSetNearNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCo
 .vb
     PetscErrorCode nullsp(DM dm, PetscInt origField, PetscInt field, MatNullSpace *nullSpace)
 .ve
-+  dm        - The present DM
-.  origField - The field number given above, in the original DM
++  dm        - The present `DM`
+.  origField - The field number given above, in the original `DM`
 .  field     - The field number in dm
 -  nullSpace - The nullspace for the given field
 
-  This function is currently not available from Fortran.
+  Fortran Note:
+  This function is not available from Fortran.
 
    Level: intermediate
 
-.seealso: `DMSetNearNullSpaceConstructor()`, `DMSetNullSpaceConstructor()`, `DMGetNullSpaceConstructor()`, `DMCreateSubDM()`, `DMCreateSuperDM()`
+.seealso: `DMAddField()`, `DMGetField()`, `DMSetNearNullSpaceConstructor()`, `DMSetNullSpaceConstructor()`, `DMGetNullSpaceConstructor()`, `DMCreateSubDM()`,
+          `MatNullSpace`, `DMCreateSuperDM()`
 @*/
 PetscErrorCode DMGetNearNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCode (**nullsp)(DM, PetscInt, PetscInt, MatNullSpace *))
 {
@@ -1762,26 +1836,34 @@ PetscErrorCode DMGetNearNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCo
 }
 
 /*@C
-  DMCreateFieldIS - Creates a set of IS objects with the global indices of dofs for each field
+  DMCreateFieldIS - Creates a set of `IS` objects with the global indices of dofs for each field defined with `DMAddField()`
 
   Not collective
 
   Input Parameter:
-. dm - the DM object
+. dm - the `DM` object
 
   Output Parameters:
 + numFields  - The number of fields (or NULL if not requested)
-. fieldNames - The name for each field (or NULL if not requested)
+. fieldNames - The number of each field (or NULL if not requested)
 - fields     - The global indices for each field (or NULL if not requested)
 
   Level: intermediate
 
-  Notes:
+  Note:
   The user is responsible for freeing all requested arrays. In particular, every entry of names should be freed with
-  PetscFree(), every entry of fields should be destroyed with ISDestroy(), and both arrays should be freed with
-  PetscFree().
+  `PetscFree()`, every entry of fields should be destroyed with `ISDestroy()`, and both arrays should be freed with
+  `PetscFree()`.
 
-.seealso `DMDestroy()`, `DMView()`, `DMCreateInterpolation()`, `DMCreateColoring()`, `DMCreateMatrix()`
+  Fortran Note:
+  Not available in Fortran.
+
+  Developer Note:
+  It is not clear why both this function and `DMCreateFieldDecomposition()` exist. Having two seems redundant and confusing. This function should
+  likely be removed.
+
+.seealso: `DMAddField()`, `DMGetField()`, `DMDestroy()`, `DMView()`, `DMCreateInterpolation()`, `DMCreateColoring()`, `DMCreateMatrix()`,
+          `DMCreateFieldDecomposition()`
 @*/
 PetscErrorCode DMCreateFieldIS(DM dm, PetscInt *numFields, char ***fieldNames, IS **fields)
 {
@@ -1883,30 +1965,36 @@ PetscErrorCode DMCreateFieldIS(DM dm, PetscInt *numFields, char ***fieldNames, I
 }
 
 /*@C
-  DMCreateFieldDecomposition - Returns a list of IS objects defining a decomposition of a problem into subproblems
-                          corresponding to different fields: each IS contains the global indices of the dofs of the
-                          corresponding field. The optional list of DMs define the DM for each subproblem.
-                          Generalizes DMCreateFieldIS().
+  DMCreateFieldDecomposition - Returns a list of `IS` objects defining a decomposition of a problem into subproblems
+                          corresponding to different fields: each `IS` contains the global indices of the dofs of the
+                          corresponding field, defined by `DMAddField()`. The optional list of `DM`s define the `DM` for each subproblem.
+                          The same as `DMCreateFieldIS()` but also returns a `DM` for each field.
 
   Not collective
 
   Input Parameter:
-. dm - the DM object
+. dm - the `DM` object
 
   Output Parameters:
-+ len       - The number of subproblems in the field decomposition (or NULL if not requested)
++ len       - The number of fields (or NULL if not requested)
 . namelist  - The name for each field (or NULL if not requested)
 . islist    - The global indices for each field (or NULL if not requested)
-- dmlist    - The DMs for each field subproblem (or NULL, if not requested; if NULL is returned, no DMs are defined)
+- dmlist    - The `DM`s for each field subproblem (or NULL, if not requested; if NULL is returned, no `DM`s are defined)
 
   Level: intermediate
 
-  Notes:
+  Note:
   The user is responsible for freeing all requested arrays. In particular, every entry of names should be freed with
-  PetscFree(), every entry of is should be destroyed with ISDestroy(), every entry of dm should be destroyed with DMDestroy(),
-  and all of the arrays should be freed with PetscFree().
+  `PetscFree()`, every entry of is should be destroyed with `ISDestroy()`, every entry of dm should be destroyed with `DMDestroy()`,
+  and all of the arrays should be freed with `PetscFree()`.
 
-.seealso `DMDestroy()`, `DMView()`, `DMCreateInterpolation()`, `DMCreateColoring()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMCreateFieldIS()`
+  Fortran Note:
+  Not available in Fortran.
+
+  Developer Note:
+  It is not clear why this function and `DMCreateFieldIS()` exist. Having two seems redundant and confusing.
+
+.seealso: `DMAddField()`, `DMCreateFieldIS()`, `DMCreateSubDM()`, `DMCreateDomainDecomposition()`, `DMDestroy()`, `DMView()`, `DMCreateInterpolation()`, `DMCreateColoring()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMCreateFieldIS()`
 @*/
 PetscErrorCode DMCreateFieldDecomposition(DM dm, PetscInt *len, char ***namelist, IS **islist, DM **dmlist)
 {
@@ -1966,25 +2054,25 @@ PetscErrorCode DMCreateFieldDecomposition(DM dm, PetscInt *len, char ***namelist
 }
 
 /*@
-  DMCreateSubDM - Returns an IS and DM encapsulating a subproblem defined by the fields passed in.
-                  The fields are defined by DMCreateFieldIS().
+  DMCreateSubDM - Returns an `IS` and `DM` encapsulating a subproblem defined by a selected number of fields, that were defined by `DMAddField()`
 
   Not collective
 
   Input Parameters:
-+ dm        - The DM object
-. numFields - The number of fields in this subproblem
++ dm        - The `DM `object
+. numFields - The number of fields to select
 - fields    - The field numbers of the selected fields
 
   Output Parameters:
-+ is - The global indices for the subproblem
-- subdm - The DM for the subproblem
++ is - The global indices for all the degrees of freedom in the new sub `DM`
+- subdm - The `DM` for the subproblem
 
-  Note: You need to call DMPlexSetMigrationSF() on the original DM if you want the Global-To-Natural map to be automatically constructed
+  Note:
+  You need to call `DMPlexSetMigrationSF()` on the original `DM` if you want the Global-To-Natural map to be automatically constructed
 
   Level: intermediate
 
-.seealso `DMPlexSetMigrationSF()`, `DMDestroy()`, `DMView()`, `DMCreateInterpolation()`, `DMCreateColoring()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMCreateFieldIS()`
+.seealso: `DMCreateFieldIS()`, `DMCreateFieldDecomposition()`, `DMAddField()`, `DMCreateSuperDM()`, `DM`, `IS`, `DMPlexSetMigrationSF()`, `DMDestroy()`, `DMView()`, `DMCreateInterpolation()`, `DMCreateColoring()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMCreateFieldIS()`
 @*/
 PetscErrorCode DMCreateSubDM(DM dm, PetscInt numFields, const PetscInt fields[], IS *is, DM *subdm)
 {
@@ -1999,78 +2087,82 @@ PetscErrorCode DMCreateSubDM(DM dm, PetscInt numFields, const PetscInt fields[],
 }
 
 /*@C
-  DMCreateSuperDM - Returns an arrays of ISes and DM encapsulating a superproblem defined by the DMs passed in.
+  DMCreateSuperDM - Returns an arrays of `IS` and `DM` encapsulating a superproblem defined by multiple `DM`s passed in.
 
   Not collective
 
   Input Parameters:
-+ dms - The DM objects
-- len - The number of DMs
++ dms - The `DM` objects
+- n - The number of `DM`s
 
   Output Parameters:
-+ is - The global indices for the subproblem, or NULL
-- superdm - The DM for the superproblem
++ is - The global indices for each of subproblem within the super `DM`, or NULL
+- superdm - The `DM` for the superproblem
 
-  Note: You need to call DMPlexSetMigrationSF() on the original DM if you want the Global-To-Natural map to be automatically constructed
+  Note:
+  You need to call `DMPlexSetMigrationSF()` on the original `DM` if you want the Global-To-Natural map to be automatically constructed
 
   Level: intermediate
 
-.seealso `DMPlexSetMigrationSF()`, `DMDestroy()`, `DMView()`, `DMCreateInterpolation()`, `DMCreateColoring()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMCreateFieldIS()`
+.seealso: `DM`, `DMCreateSubDM()`, `DMPlexSetMigrationSF()`, `DMDestroy()`, `DMView()`, `DMCreateInterpolation()`, `DMCreateColoring()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMCreateFieldIS()`
 @*/
-PetscErrorCode DMCreateSuperDM(DM dms[], PetscInt len, IS **is, DM *superdm)
+PetscErrorCode DMCreateSuperDM(DM dms[], PetscInt n, IS **is, DM *superdm)
 {
   PetscInt       i;
 
   PetscFunctionBegin;
   PetscValidPointer(dms,1);
-  for (i = 0; i < len; ++i) {PetscValidHeaderSpecific(dms[i],DM_CLASSID,1);}
+  for (i = 0; i < n; ++i) {PetscValidHeaderSpecific(dms[i],DM_CLASSID,1);}
   if (is) PetscValidPointer(is,3);
   PetscValidPointer(superdm,4);
-  PetscCheck(len >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of DMs must be nonnegative: %" PetscInt_FMT, len);
-  if (len) {
+  PetscCheck(n >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of DMs must be nonnegative: %" PetscInt_FMT, n);
+  if (n) {
     DM dm = dms[0];
     PetscCheck(dm->ops->createsuperdm,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DM type %s does not implement DMCreateSuperDM",((PetscObject)dm)->type_name);
-    PetscCall((*dm->ops->createsuperdm)(dms, len, is, superdm));
+    PetscCall((*dm->ops->createsuperdm)(dms, n, is, superdm));
   }
   PetscFunctionReturn(0);
 }
 
 /*@C
-  DMCreateDomainDecomposition - Returns lists of IS objects defining a decomposition of a problem into subproblems
-                          corresponding to restrictions to pairs nested subdomains: each IS contains the global
-                          indices of the dofs of the corresponding subdomains.  The inner subdomains conceptually
-                          define a nonoverlapping covering, while outer subdomains can overlap.
-                          The optional list of DMs define the DM for each subproblem.
+  DMCreateDomainDecomposition - Returns lists of `IS` objects defining a decomposition of a problem into subproblems
+                          corresponding to restrictions to pairs of nested subdomains: each `IS` contains the global
+                          indices of the dofs of the corresponding subdomains with in the dofs of the original `DM`.
+                          The inner subdomains conceptually define a nonoverlapping covering, while outer subdomains can overlap.
+                          The optional list of `DM`s define a `DM` for each subproblem.
 
   Not collective
 
   Input Parameter:
-. dm - the DM object
+. dm - the `DM` object
 
   Output Parameters:
-+ len         - The number of subproblems in the domain decomposition (or NULL if not requested)
++ n            - The number of subproblems in the domain decomposition (or NULL if not requested)
 . namelist    - The name for each subdomain (or NULL if not requested)
 . innerislist - The global indices for each inner subdomain (or NULL, if not requested)
 . outerislist - The global indices for each outer subdomain (or NULL, if not requested)
-- dmlist      - The DMs for each subdomain subproblem (or NULL, if not requested; if NULL is returned, no DMs are defined)
+- dmlist      - The `DM`s for each subdomain subproblem (or NULL, if not requested; if NULL is returned, no `DM`s are defined)
 
   Level: intermediate
 
-  Notes:
+  Note:
   The user is responsible for freeing all requested arrays. In particular, every entry of names should be freed with
-  PetscFree(), every entry of is should be destroyed with ISDestroy(), every entry of dm should be destroyed with DMDestroy(),
-  and all of the arrays should be freed with PetscFree().
+  `PetscFree()`, every entry of is should be destroyed with `ISDestroy()`, every entry of dm should be destroyed with `DMDestroy()`,
+  and all of the arrays should be freed with `PetscFree()`.
 
-.seealso `DMDestroy()`, `DMView()`, `DMCreateInterpolation()`, `DMCreateColoring()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMCreateFieldDecomposition()`
+  Questions:
+  The dmlist is for the inner subdomains or the outer subdomains or all subdomains?
+
+.seealso: `DMCreateFieldDecomposition()`, `DMDestroy()`, `DMCreateDomainDecompositionScatters()`, `DMView()`, `DMCreateInterpolation()`, `DMCreateColoring()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMCreateFieldDecomposition()`
 @*/
-PetscErrorCode DMCreateDomainDecomposition(DM dm, PetscInt *len, char ***namelist, IS **innerislist, IS **outerislist, DM **dmlist)
+PetscErrorCode DMCreateDomainDecomposition(DM dm, PetscInt *n, char ***namelist, IS **innerislist, IS **outerislist, DM **dmlist)
 {
   DMSubDomainHookLink link;
   PetscInt            i,l;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  if (len)           {PetscValidIntPointer(len,2);            *len         = 0;}
+  if (n)             {PetscValidIntPointer(n,2);           *n           = 0;}
   if (namelist)      {PetscValidPointer(namelist,3);       *namelist    = NULL;}
   if (innerislist)   {PetscValidPointer(innerislist,4);    *innerislist = NULL;}
   if (outerislist)   {PetscValidPointer(outerislist,5);    *outerislist = NULL;}
@@ -2092,7 +2184,7 @@ PetscErrorCode DMCreateDomainDecomposition(DM dm, PetscInt *len, char ***namelis
         if (dm->ctx) (*dmlist)[i]->ctx = dm->ctx;
       }
     }
-    if (len) *len = l;
+    if (n) *n = l;
   }
   PetscFunctionReturn(0);
 }
@@ -2103,7 +2195,7 @@ PetscErrorCode DMCreateDomainDecomposition(DM dm, PetscInt *len, char ***namelis
   Not collective
 
   Input Parameters:
-+ dm - the DM object
++ dm - the `DM` object
 . n  - the number of subdomain scatters
 - subdms - the local subdomains
 
@@ -2112,15 +2204,18 @@ PetscErrorCode DMCreateDomainDecomposition(DM dm, PetscInt *len, char ***namelis
 . oscat - scatter from global vector to overlapping global vector entries on subdomain
 - gscat - scatter from global vector to local vector on subdomain (fills in ghosts)
 
-  Notes:
-    This is an alternative to the iis and ois arguments in DMCreateDomainDecomposition that allow for the solution
+  Note:
+    This is an alternative to the iis and ois arguments in `DMCreateDomainDecomposition()` that allow for the solution
   of general nonlinear problems with overlapping subdomain methods.  While merely having index sets that enable subsets
   of the residual equations to be created is fine for linear problems, nonlinear problems require local assembly of
   solution and residual data.
 
+  Questions:
+  Can the subdms input be anything or are they exactly the `DM` obtained from `DMCreateDomainDecomposition()`?
+
   Level: developer
 
-.seealso `DMDestroy()`, `DMView()`, `DMCreateInterpolation()`, `DMCreateColoring()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMCreateFieldIS()`
+.seealso: `DM`, `DMCreateDomainDecomposition()`, `DMDestroy()`, `DMView()`, `DMCreateInterpolation()`, `DMCreateColoring()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMCreateFieldIS()`
 @*/
 PetscErrorCode DMCreateDomainDecompositionScatters(DM dm,PetscInt n,DM *subdms,VecScatter **iscat,VecScatter **oscat,VecScatter **gscat)
 {
@@ -2133,25 +2228,26 @@ PetscErrorCode DMCreateDomainDecompositionScatters(DM dm,PetscInt n,DM *subdms,V
 }
 
 /*@
-  DMRefine - Refines a DM object
+  DMRefine - Refines a `DM` object using a standard nonadaptive refinement of the underlying mesh
 
   Collective on dm
 
   Input Parameters:
-+ dm   - the DM object
-- comm - the communicator to contain the new DM object (or MPI_COMM_NULL)
++ dm   - the `DM` object
+- comm - the communicator to contain the new `DM` object (or `MPI_COMM_NULL`)
 
   Output Parameter:
-. dmf - the refined DM, or NULL
+. dmf - the refined `D`M, or NULL
 
   Options Database Keys:
 . -dm_plex_cell_refiner <strategy> - chooses the refinement strategy, e.g. regular, tohex
 
-  Note: If no refinement was done, the return value is NULL
+  Note:
+  If no refinement was done, the return value is NULL
 
   Level: developer
 
-.seealso `DMCoarsen()`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`
+.seealso: `DMCoarsen()`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`
 @*/
 PetscErrorCode  DMRefine(DM dm,MPI_Comm comm,DM *dmf)
 {
@@ -2183,39 +2279,43 @@ PetscErrorCode  DMRefine(DM dm,MPI_Comm comm,DM *dmf)
 /*@C
    DMRefineHookAdd - adds a callback to be run when interpolating a nonlinear problem to a finer grid
 
-   Logically Collective
+   Logically Collective on coarse
 
    Input Parameters:
-+  coarse - nonlinear solver context on which to run a hook when restricting to a coarser level
-.  refinehook - function to run when setting up a coarser level
-.  interphook - function to run to update data on finer levels (once per SNESSolve())
++  coarse - `DM` on which to run a hook when interpolating to a finer level
+.  refinehook - function to run when setting up the finer level
+.  interphook - function to run to update data on finer levels (once per `SNESSolve`())
 -  ctx - [optional] user-defined context for provide data for the hooks (may be NULL)
 
    Calling sequence of refinehook:
 $    refinehook(DM coarse,DM fine,void *ctx);
 
-+  coarse - coarse level DM
-.  fine - fine level DM to interpolate problem to
++  coarse - coarse level `DM`
+.  fine - fine level `DM` to interpolate problem to
 -  ctx - optional user-defined function context
 
    Calling sequence for interphook:
 $    interphook(DM coarse,Mat interp,DM fine,void *ctx)
 
-+  coarse - coarse level DM
++  coarse - coarse level `DM`
 .  interp - matrix interpolating a coarse-level solution to the finer grid
-.  fine - fine level DM to update
+.  fine - fine level `DM` to update
 -  ctx - optional user-defined function context
 
    Level: advanced
 
    Notes:
-   This function is only needed if auxiliary data needs to be passed to fine grids while grid sequencing
+   This function is only needed if auxiliary data that is attached to the `DM`s via, for example, `PetscObjectCompose()`, needs to be
+   passed to fine grids while grid sequencing.
+
+   The actual interpolation is done when `DMInterpolate()` is called.
 
    If this function is called multiple times, the hooks will be run in the order they are added.
 
-   This function is currently not available from Fortran.
+   Fortran Note:
+   This function is not available from Fortran.
 
-.seealso: `DMCoarsenHookAdd()`, `SNESFASGetInterpolation()`, `SNESFASGetInjection()`, `PetscObjectCompose()`, `PetscContainerCreate()`
+.seealso: `DM`, `DMCoarsenHookAdd()`, `DMInterpolate()`, `SNESFASGetInterpolation()`, `SNESFASGetInjection()`, `PetscObjectCompose()`, `PetscContainerCreate()`
 @*/
 PetscErrorCode DMRefineHookAdd(DM coarse,PetscErrorCode (*refinehook)(DM,DM,void*),PetscErrorCode (*interphook)(DM,Mat,DM,void*),void *ctx)
 {
@@ -2236,24 +2336,26 @@ PetscErrorCode DMRefineHookAdd(DM coarse,PetscErrorCode (*refinehook)(DM,DM,void
 }
 
 /*@C
-   DMRefineHookRemove - remove a callback from the list of hooks to be run when interpolating a nonlinear problem to a finer grid
+   DMRefineHookRemove - remove a callback from the list of hooks, that have been set with `DMRefineHookAdd()`, to be run when interpolating
+    a nonlinear problem to a finer grid
 
-   Logically Collective
+   Logically Collective on coarse
 
    Input Parameters:
-+  coarse - nonlinear solver context on which to run a hook when restricting to a coarser level
-.  refinehook - function to run when setting up a coarser level
-.  interphook - function to run to update data on finer levels (once per SNESSolve())
++  coarse - the `DM` on which to run a hook when restricting to a coarser level
+.  refinehook - function to run when setting up a finer level
+.  interphook - function to run to update data on finer levels
 -  ctx - [optional] user-defined context for provide data for the hooks (may be NULL)
 
    Level: advanced
 
-   Notes:
+   Note:
    This function does nothing if the hook is not in the list.
 
-   This function is currently not available from Fortran.
+   Fortran Note:
+   This function is not available from Fortran.
 
-.seealso: `DMCoarsenHookRemove()`, `SNESFASGetInterpolation()`, `SNESFASGetInjection()`, `PetscObjectCompose()`, `PetscContainerCreate()`
+.seealso: `DMRefineHookAdd()`, `DMCoarsenHookRemove()`, `DMInterpolate()`, `SNESFASGetInterpolation()`, `SNESFASGetInjection()`, `PetscObjectCompose()`, `PetscContainerCreate()`
 @*/
 PetscErrorCode DMRefineHookRemove(DM coarse,PetscErrorCode (*refinehook)(DM,DM,void*),PetscErrorCode (*interphook)(DM,Mat,DM,void*),void *ctx)
 {
@@ -2273,18 +2375,22 @@ PetscErrorCode DMRefineHookRemove(DM coarse,PetscErrorCode (*refinehook)(DM,DM,v
 }
 
 /*@
-   DMInterpolate - interpolates user-defined problem data to a finer DM by running hooks registered by DMRefineHookAdd()
+   DMInterpolate - interpolates user-defined problem data attached to a `DM` to a finer `DM` by running hooks registered by `DMRefineHookAdd()`
 
    Collective if any hooks are
 
    Input Parameters:
-+  coarse - coarser DM to use as a base
-.  interp - interpolation matrix, apply using MatInterpolate()
--  fine - finer DM to update
++  coarse - coarser `DM` to use as a base
+.  interp - interpolation matrix, apply using `MatInterpolate()`
+-  fine - finer `DM` to update
 
    Level: developer
 
-.seealso: `DMRefineHookAdd()`, `MatInterpolate()`
+   Developer Note:
+   This routine is called `DMInterpolate()` while the hook is called `DMRefineHookAdd()`. It would be better to have an
+   an API with consistent terminology.
+
+.seealso: `DM`, `DMRefineHookAdd()`, `MatInterpolate()`
 @*/
 PetscErrorCode DMInterpolate(DM coarse,Mat interp,DM fine)
 {
@@ -2300,14 +2406,14 @@ PetscErrorCode DMInterpolate(DM coarse,Mat interp,DM fine)
 /*@
    DMInterpolateSolution - Interpolates a solution from a coarse mesh to a fine mesh.
 
-   Collective on DM
+   Collective on dm
 
    Input Parameters:
-+  coarse - coarse DM
-.  fine   - fine DM
-.  interp - (optional) the matrix computed by DMCreateInterpolation().  Implementations may not need this, but if it
-            is available it can avoid some recomputation.  If it is provided, MatInterpolate() will be used if
-            the coarse DM does not have a specialized implementation.
++  coarse - coarse `DM`
+.  fine   - fine `DM`
+.  interp - (optional) the matrix computed by `DMCreateInterpolation()`.  Implementations may not need this, but if it
+            is available it can avoid some recomputation.  If it is provided, `MatInterpolate()` will be used if
+            the coarse `DM` does not have a specialized implementation.
 -  coarseSol - solution on the coarse mesh
 
    Output Parameter:
@@ -2315,12 +2421,16 @@ PetscErrorCode DMInterpolate(DM coarse,Mat interp,DM fine)
 
    Level: developer
 
-   Note: This function exists because the interpolation of a solution vector between meshes is not always a linear
+   Note:
+   This function exists because the interpolation of a solution vector between meshes is not always a linear
    map.  For example, if a boundary value problem has an inhomogeneous Dirichlet boundary condition that is compressed
    out of the solution vector.  Or if interpolation is inherently a nonlinear operation, such as a method using
    slope-limiting reconstruction.
 
-.seealso `DMInterpolate()`, `DMCreateInterpolation()`
+   Developer Note:
+   This doesn't just interpolate "solutions" so its API name is questionable.
+
+.seealso: `DMInterpolate()`, `DMCreateInterpolation()`
 @*/
 PetscErrorCode DMInterpolateSolution(DM coarse, DM fine, Mat interp, Vec coarseSol, Vec fineSol)
 {
@@ -2342,19 +2452,22 @@ PetscErrorCode DMInterpolateSolution(DM coarse, DM fine, Mat interp, Vec coarseS
 }
 
 /*@
-    DMGetRefineLevel - Gets the number of refinements that have generated this DM.
+    DMGetRefineLevel - Gets the number of refinements that have generated this `DM` from some initial `DM`.
 
     Not Collective
 
     Input Parameter:
-.   dm - the DM object
+.   dm - the `DM` object
 
     Output Parameter:
 .   level - number of refinements
 
     Level: developer
 
-.seealso `DMCoarsen()`, `DMGetCoarsenLevel()`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`
+    Note:
+    This can be used, by example, to set the number of coarser levels associated with this `DM` for a multigrid solver.
+
+.seealso: `DMRefine()`, `DMCoarsen()`, `DMGetCoarsenLevel()`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`
 
 @*/
 PetscErrorCode  DMGetRefineLevel(DM dm,PetscInt *level)
@@ -2366,20 +2479,22 @@ PetscErrorCode  DMGetRefineLevel(DM dm,PetscInt *level)
 }
 
 /*@
-    DMSetRefineLevel - Sets the number of refinements that have generated this DM.
+    DMSetRefineLevel - Sets the number of refinements that have generated this `DM`.
 
     Not Collective
 
     Input Parameters:
-+   dm - the DM object
++   dm - the `DM` object
 -   level - number of refinements
 
     Level: advanced
 
     Notes:
-    This value is used by PCMG to determine how many multigrid levels to use
+    This value is used by `PCMG` to determine how many multigrid levels to use
 
-.seealso `DMCoarsen()`, `DMGetCoarsenLevel()`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`
+    The values are usually set automatically by the process that is causing the refinements of an initial `DM` by calling this routine.
+
+.seealso: `DMGetRefineLevel()`, `DMCoarsen()`, `DMGetCoarsenLevel()`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`
 
 @*/
 PetscErrorCode  DMSetRefineLevel(DM dm,PetscInt level)
@@ -2391,22 +2506,23 @@ PetscErrorCode  DMSetRefineLevel(DM dm,PetscInt level)
 }
 
 /*@
-  DMExtrude - Extrude a DM object from a surface
+  DMExtrude - Extrude a `DM` object from a surface
 
   Collective on dm
 
   Input Parameters:
-+ dm     - the DM object
++ dm     - the `DM` object
 - layers - the number of extruded cell layers
 
   Output Parameter:
-. dme - the extruded DM, or NULL
+. dme - the extruded `DM`, or NULL
 
-  Note: If no extrusion was done, the return value is NULL
+  Note:
+  If no extrusion was done, the return value is NULL
 
   Level: developer
 
-.seealso `DMRefine()`, `DMCoarsen()`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`
+.seealso: `DMRefine()`, `DMCoarsen()`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`
 @*/
 PetscErrorCode DMExtrude(DM dm, PetscInt layers, DM *dme)
 {
@@ -2442,7 +2558,7 @@ PetscErrorCode DMGetBasisTransformVec_Internal(DM dm, Vec *tv)
 }
 
 /*@
-  DMHasBasisTransform - Whether we employ a basis transformation from functions in global vectors to functions in local vectors
+  DMHasBasisTransform - Whether the `DM` employs a basis transformation from functions in global vectors to functions in local vectors
 
   Input Parameter:
 . dm - The DM
@@ -2452,7 +2568,7 @@ PetscErrorCode DMGetBasisTransformVec_Internal(DM dm, Vec *tv)
 
   Level: developer
 
-.seealso: `DMPlexGlobalToLocalBasis()`, `DMPlexLocalToGlobalBasis()`, `DMPlexCreateBasisRotation()`
+.seealso: `DM`, `DMPlexGlobalToLocalBasis()`, `DMPlexLocalToGlobalBasis()`, `DMPlexCreateBasisRotation()`
 @*/
 PetscErrorCode DMHasBasisTransform(DM dm, PetscBool *flg)
 {
@@ -2528,14 +2644,14 @@ PetscErrorCode DMCopyTransform(DM dm, DM newdm)
 }
 
 /*@C
-   DMGlobalToLocalHookAdd - adds a callback to be run when global to local is called
+   DMGlobalToLocalHookAdd - adds a callback to be run when `DMGlobalToLocal()` is called
 
-   Logically Collective
+   Logically Collective on dm
 
    Input Parameters:
-+  dm - the DM
-.  beginhook - function to run at the beginning of DMGlobalToLocalBegin()
-.  endhook - function to run after DMGlobalToLocalEnd() has completed
++  dm - the `DM`
+.  beginhook - function to run at the beginning of `DMGlobalToLocalBegin()`
+.  endhook - function to run after `DMGlobalToLocalEnd()` has completed
 -  ctx - [optional] user-defined context for provide data for the hooks (may be NULL)
 
    Calling sequence for beginhook:
@@ -2555,7 +2671,10 @@ $    endhook(DM fine,VecScatter out,VecScatter in,DM coarse,void *ctx)
 
    Level: advanced
 
-.seealso: `DMRefineHookAdd()`, `SNESFASGetInterpolation()`, `SNESFASGetInjection()`, `PetscObjectCompose()`, `PetscContainerCreate()`
+   Note:
+   The hook may be used to provide, for example, values that represent boundary conditions in the local vectors that do not exist on the global vector.
+
+.seealso: `DM`, `DMGlobalToLocal()`, `DMRefineHookAdd()`, `SNESFASGetInterpolation()`, `SNESFASGetInjection()`, `PetscObjectCompose()`, `PetscContainerCreate()`
 @*/
 PetscErrorCode DMGlobalToLocalHookAdd(DM dm,PetscErrorCode (*beginhook)(DM,Vec,InsertMode,Vec,void*),PetscErrorCode (*endhook)(DM,Vec,InsertMode,Vec,void*),void *ctx)
 {
@@ -2612,18 +2731,22 @@ static PetscErrorCode DMGlobalToLocalHook_Constraints(DM dm, Vec g, InsertMode m
     Neighbor-wise Collective on dm
 
     Input Parameters:
-+   dm - the DM object
++   dm - the `DM` object
 .   g - the global vector
-.   mode - INSERT_VALUES or ADD_VALUES
+.   mode - `INSERT_VALUES` or `ADD_VALUES`
 -   l - the local vector
 
     Notes:
-    The communication involved in this update can be overlapped with computation by using
-    DMGlobalToLocalBegin() and DMGlobalToLocalEnd().
+    The communication involved in this update can be overlapped with computation by instead using
+    `DMGlobalToLocalBegin()` and `DMGlobalToLocalEnd()`.
+
+    `DMGlobalToLocalHookAdd()` may be used to provide additional operations that are performed during the update process.
 
     Level: beginner
 
-.seealso `DMCoarsen()`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMGlobalToLocalEnd()`, `DMLocalToGlobalBegin()`, `DMLocalToGlobal()`, `DMLocalToGlobalBegin()`, `DMLocalToGlobalEnd()`
+.seealso: `DM`, `DMGlobalToLocalHookAdd()`, `DMCoarsen()`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`,
+          `DMGlobalToLocalEnd()`, `DMLocalToGlobalBegin()`, `DMLocalToGlobal()`, `DMLocalToGlobalBegin()`, `DMLocalToGlobalEnd()`,
+          `DMGlobalToLocalBegin()` `DMGlobalToLocalEnd()`
 
 @*/
 PetscErrorCode DMGlobalToLocal(DM dm,Vec g,InsertMode mode,Vec l)
@@ -2640,14 +2763,23 @@ PetscErrorCode DMGlobalToLocal(DM dm,Vec g,InsertMode mode,Vec l)
     Neighbor-wise Collective on dm
 
     Input Parameters:
-+   dm - the DM object
++   dm - the `DM` object
 .   g - the global vector
-.   mode - INSERT_VALUES or ADD_VALUES
+.   mode - `INSERT_VALUES` or `ADD_VALUES`
 -   l - the local vector
 
     Level: intermediate
 
-.seealso `DMCoarsen()`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMGlobalToLocal()`, `DMGlobalToLocalEnd()`, `DMLocalToGlobalBegin()`, `DMLocalToGlobal()`, `DMLocalToGlobalBegin()`, `DMLocalToGlobalEnd()`
+    Notes:
+    The operation is completed with `DMGlobalToLocalEnd()`
+
+    One can perform local computations between the `DMGlobalToLocalBegin()` and  `DMGlobalToLocalEnd()` to overlap communication and computation
+
+    `DMGlobalToLocal()` is a short form of  `DMGlobalToLocalBegin()` and  `DMGlobalToLocalEnd()`
+
+    `DMGlobalToLocalHookAdd()` may be used to provide additional operations that are performed during the update process.
+
+.seealso: `DMCoarsen()`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMGlobalToLocal()`, `DMGlobalToLocalEnd()`, `DMLocalToGlobalBegin()`, `DMLocalToGlobal()`, `DMLocalToGlobalBegin()`, `DMLocalToGlobalEnd()`
 
 @*/
 PetscErrorCode  DMGlobalToLocalBegin(DM dm,Vec g,InsertMode mode,Vec l)
@@ -2685,14 +2817,17 @@ PetscErrorCode  DMGlobalToLocalBegin(DM dm,Vec g,InsertMode mode,Vec l)
     Neighbor-wise Collective on dm
 
     Input Parameters:
-+   dm - the DM object
++   dm - the `DM` object
 .   g - the global vector
-.   mode - INSERT_VALUES or ADD_VALUES
+.   mode - `INSERT_VALUES` or `ADD_VALUES`
 -   l - the local vector
 
     Level: intermediate
 
-.seealso `DMCoarsen()`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMGlobalToLocal()`, `DMLocalToGlobalBegin()`, `DMLocalToGlobal()`, `DMLocalToGlobalBegin()`, `DMLocalToGlobalEnd()`
+    Note:
+    See `DMGlobalToLocalBegin()` for details.
+
+.seealso: `DMCoarsen()`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMGlobalToLocal()`, `DMLocalToGlobalBegin()`, `DMLocalToGlobal()`, `DMLocalToGlobalBegin()`, `DMLocalToGlobalEnd()`
 
 @*/
 PetscErrorCode  DMGlobalToLocalEnd(DM dm,Vec g,InsertMode mode,Vec l)
@@ -2731,18 +2866,18 @@ PetscErrorCode  DMGlobalToLocalEnd(DM dm,Vec g,InsertMode mode,Vec l)
 /*@C
    DMLocalToGlobalHookAdd - adds a callback to be run when a local to global is called
 
-   Logically Collective
+   Logically Collective on dm
 
    Input Parameters:
-+  dm - the DM
-.  beginhook - function to run at the beginning of DMLocalToGlobalBegin()
-.  endhook - function to run after DMLocalToGlobalEnd() has completed
++  dm - the `DM`
+.  beginhook - function to run at the beginning of `DMLocalToGlobalBegin()`
+.  endhook - function to run after `DMLocalToGlobalEnd()` has completed
 -  ctx - [optional] user-defined context for provide data for the hooks (may be NULL)
 
    Calling sequence for beginhook:
 $    beginhook(DM fine,Vec l,InsertMode mode,Vec g,void *ctx)
 
-+  dm - global DM
++  dm - global `DM`
 .  l - local vector
 .  mode - mode
 .  g - global vector
@@ -2751,7 +2886,7 @@ $    beginhook(DM fine,Vec l,InsertMode mode,Vec g,void *ctx)
    Calling sequence for endhook:
 $    endhook(DM fine,Vec l,InsertMode mode,Vec g,void *ctx)
 
-+  global - global DM
++  global - global `DM`
 .  l - local vector
 .  mode - mode
 .  g - global vector
@@ -2759,7 +2894,7 @@ $    endhook(DM fine,Vec l,InsertMode mode,Vec g,void *ctx)
 
    Level: advanced
 
-.seealso: `DMRefineHookAdd()`, `SNESFASGetInterpolation()`, `SNESFASGetInjection()`, `PetscObjectCompose()`, `PetscContainerCreate()`
+.seealso: `DMLocalToGlobal()`, `DMRefineHookAdd()`, `DMGlobalToLocalHookAdd()`, `SNESFASGetInterpolation()`, `SNESFASGetInjection()`, `PetscObjectCompose()`, `PetscContainerCreate()`
 @*/
 PetscErrorCode DMLocalToGlobalHookAdd(DM dm,PetscErrorCode (*beginhook)(DM,Vec,InsertMode,Vec,void*),PetscErrorCode (*endhook)(DM,Vec,InsertMode,Vec,void*),void *ctx)
 {
@@ -2820,21 +2955,24 @@ static PetscErrorCode DMLocalToGlobalHook_Constraints(DM dm, Vec l, InsertMode m
     Neighbor-wise Collective on dm
 
     Input Parameters:
-+   dm - the DM object
++   dm - the `DM` object
 .   l - the local vector
-.   mode - if INSERT_VALUES then no parallel communication is used, if ADD_VALUES then all ghost points from the same base point accumulate into that base point.
+.   mode - if `INSERT_VALUES` then no parallel communication is used, if `ADD_VALUES` then all ghost points from the same base point accumulate into that base point.
 -   g - the global vector
 
     Notes:
     The communication involved in this update can be overlapped with computation by using
-    DMLocalToGlobalBegin() and DMLocalToGlobalEnd().
+    `DMLocalToGlobalBegin()` and `DMLocalToGlobalEnd()`.
 
-    In the ADD_VALUES case you normally would zero the receiving vector before beginning this operation.
-           INSERT_VALUES is not supported for DMDA; in that case simply compute the values directly into a global vector instead of a local one.
+    In the `ADD_VALUES` case you normally would zero the receiving vector before beginning this operation.
+
+    `INSERT_VALUES` is not supported for `DMDA`; in that case simply compute the values directly into a global vector instead of a local one.
+
+    Use `DMLocalToGlobalHookAdd()` to add additional operations that are performed on the data during the update process
 
     Level: beginner
 
-.seealso `DMLocalToGlobalBegin()`, `DMLocalToGlobalEnd()`, `DMCoarsen()`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMGlobalToLocal()`, `DMGlobalToLocalEnd()`, `DMGlobalToLocalBegin()`
+.seealso: `DMLocalToGlobalBegin()`, `DMLocalToGlobalEnd()`, `DMCoarsen()`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMGlobalToLocal()`, `DMGlobalToLocalEnd()`, `DMGlobalToLocalBegin()`,  `DMLocalToGlobalHookAdd()`,  `DMGlobaToLocallHookAdd()`
 
 @*/
 PetscErrorCode DMLocalToGlobal(DM dm,Vec l,InsertMode mode,Vec g)
@@ -2851,18 +2989,25 @@ PetscErrorCode DMLocalToGlobal(DM dm,Vec l,InsertMode mode,Vec g)
     Neighbor-wise Collective on dm
 
     Input Parameters:
-+   dm - the DM object
++   dm - the `DM` object
 .   l - the local vector
-.   mode - if INSERT_VALUES then no parallel communication is used, if ADD_VALUES then all ghost points from the same base point accumulate into that base point.
+.   mode - `if INSERT_VALUES` then no parallel communication is used, if `ADD_VALUES` then all ghost points from the same base point accumulate into that base point.
 -   g - the global vector
 
     Notes:
-    In the ADD_VALUES case you normally would zero the receiving vector before beginning this operation.
-           INSERT_VALUES is not supported for DMDA, in that case simply compute the values directly into a global vector instead of a local one.
+    In the `ADD_VALUES` case you normally would zero the receiving vector before beginning this operation.
+
+    `INSERT_VALUES is` not supported for `DMDA`, in that case simply compute the values directly into a global vector instead of a local one.
+
+    Use `DMLocalToGlobalEnd()` to complete the communication process.
+
+    `DMLocalToGlobal()` is a short form of  `DMLocalToGlobalBegin()` and  `DMLocalToGlobalEnd()`
+
+    `DMLocalToGlobalHookAdd()` may be used to provide additional operations that are performed during the update process.
 
     Level: intermediate
 
-.seealso `DMLocalToGlobal()`, `DMLocalToGlobalEnd()`, `DMCoarsen()`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMGlobalToLocal()`, `DMGlobalToLocalEnd()`, `DMGlobalToLocalBegin()`
+.seealso: `DMLocalToGlobal()`, `DMLocalToGlobalEnd()`, `DMCoarsen()`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMGlobalToLocal()`, `DMGlobalToLocalEnd()`, `DMGlobalToLocalBegin()`
 
 @*/
 PetscErrorCode  DMLocalToGlobalBegin(DM dm,Vec l,InsertMode mode,Vec g)
@@ -2977,14 +3122,17 @@ PetscErrorCode  DMLocalToGlobalBegin(DM dm,Vec l,InsertMode mode,Vec g)
     Neighbor-wise Collective on dm
 
     Input Parameters:
-+   dm - the DM object
++   dm - the `DM` object
 .   l - the local vector
-.   mode - INSERT_VALUES or ADD_VALUES
+.   mode - `INSERT_VALUES` or `ADD_VALUES`
 -   g - the global vector
 
     Level: intermediate
 
-.seealso `DMCoarsen()`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMGlobalToLocalEnd()`, `DMGlobalToLocalEnd()`
+    Note:
+    See `DMLocalToGlobalBegin()` for full details
+
+.seealso: `DMLocalToGlobalBegin()`, `DMCoarsen()`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMGlobalToLocalEnd()`, `DMGlobalToLocalEnd()`
 
 @*/
 PetscErrorCode  DMLocalToGlobalEnd(DM dm,Vec l,InsertMode mode,Vec g)
@@ -3041,29 +3189,23 @@ PetscErrorCode  DMLocalToGlobalEnd(DM dm,Vec l,InsertMode mode,Vec g)
 }
 
 /*@
-   DMLocalToLocalBegin - Maps from a local vector (including ghost points
+   DMLocalToLocalBegin - Begins the process of mapping values from a local vector (that include ghost points
    that contain irrelevant values) to another local vector where the ghost
-   points in the second are set correctly. Must be followed by DMLocalToLocalEnd().
+   points in the second are set correctly from values on other MPI ranks. Must be followed by `DMLocalToLocalEnd()`.
 
    Neighbor-wise Collective on dm
 
    Input Parameters:
-+  dm - the DM object
++  dm - the `DM` object
 .  g - the original local vector
--  mode - one of INSERT_VALUES or ADD_VALUES
+-  mode - one of `INSERT_VALUES` or `ADD_VALUES`
 
    Output Parameter:
 .  l  - the local vector with correct ghost values
 
    Level: intermediate
 
-   Notes:
-   The local vectors used here need not be the same as those
-   obtained from DMCreateLocalVector(), BUT they
-   must have the same parallel data layout; they could, for example, be
-   obtained with VecDuplicate() from the DM originating vectors.
-
-.seealso `DMCoarsen()`, `DMDestroy()`, `DMView()`, `DMCreateLocalVector()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMLocalToLocalEnd()`, `DMGlobalToLocalEnd()`, `DMLocalToGlobalBegin()`
+.seealso: `DMLocalToLocalEnd(), `DMCoarsen()`, `DMDestroy()`, `DMView()`, `DMCreateLocalVector()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMLocalToLocalEnd()`, `DMGlobalToLocalEnd()`, `DMLocalToGlobalBegin()`
 
 @*/
 PetscErrorCode  DMLocalToLocalBegin(DM dm,Vec g,InsertMode mode,Vec l)
@@ -3076,29 +3218,22 @@ PetscErrorCode  DMLocalToLocalBegin(DM dm,Vec g,InsertMode mode,Vec l)
 }
 
 /*@
-   DMLocalToLocalEnd - Maps from a local vector (including ghost points
-   that contain irrelevant values) to another local vector where the ghost
-   points in the second are set correctly. Must be preceded by DMLocalToLocalBegin().
+   DMLocalToLocalEnd - Maps from a local vector to another local vector where the ghost
+   points in the second are set correctly. Must be preceded by `DMLocalToLocalBegin()`.
 
    Neighbor-wise Collective on dm
 
    Input Parameters:
-+  da - the DM object
++  da - the `DM` object
 .  g - the original local vector
--  mode - one of INSERT_VALUES or ADD_VALUES
+-  mode - one of `INSERT_VALUES` or `ADD_VALUES`
 
    Output Parameter:
 .  l  - the local vector with correct ghost values
 
    Level: intermediate
 
-   Notes:
-   The local vectors used here need not be the same as those
-   obtained from DMCreateLocalVector(), BUT they
-   must have the same parallel data layout; they could, for example, be
-   obtained with VecDuplicate() from the DM originating vectors.
-
-.seealso `DMCoarsen()`, `DMDestroy()`, `DMView()`, `DMCreateLocalVector()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMLocalToLocalBegin()`, `DMGlobalToLocalEnd()`, `DMLocalToGlobalBegin()`
+.seealso: `DMLocalToLocalBegin()`, `DMCoarsen()`, `DMDestroy()`, `DMView()`, `DMCreateLocalVector()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMLocalToLocalBegin()`, `DMGlobalToLocalEnd()`, `DMLocalToGlobalBegin()`
 
 @*/
 PetscErrorCode  DMLocalToLocalEnd(DM dm,Vec g,InsertMode mode,Vec l)
@@ -3111,20 +3246,20 @@ PetscErrorCode  DMLocalToLocalEnd(DM dm,Vec g,InsertMode mode,Vec l)
 }
 
 /*@
-    DMCoarsen - Coarsens a DM object
+    DMCoarsen - Coarsens a `DM` object using a standard, non-adaptive coarsening of the underlying mesh
 
     Collective on dm
 
     Input Parameters:
-+   dm - the DM object
--   comm - the communicator to contain the new DM object (or MPI_COMM_NULL)
++   dm - the `DM` object
+-   comm - the communicator to contain the new `DM` object (or MPI_COMM_NULL)
 
     Output Parameter:
-.   dmc - the coarsened DM
+.   dmc - the coarsened `DM`
 
     Level: developer
 
-.seealso `DMRefine()`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`
+.seealso: `DM`, `DMRefine()`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`
 
 @*/
 PetscErrorCode DMCoarsen(DM dm, MPI_Comm comm, DM *dmc)
@@ -3157,26 +3292,26 @@ PetscErrorCode DMCoarsen(DM dm, MPI_Comm comm, DM *dmc)
 /*@C
    DMCoarsenHookAdd - adds a callback to be run when restricting a nonlinear problem to the coarse grid
 
-   Logically Collective
+   Logically Collective on fine
 
    Input Parameters:
-+  fine - nonlinear solver context on which to run a hook when restricting to a coarser level
++  fine - `DM` on which to run a hook when restricting to a coarser level
 .  coarsenhook - function to run when setting up a coarser level
-.  restricthook - function to run to update data on coarser levels (once per SNESSolve())
+.  restricthook - function to run to update data on coarser levels (called once per `SNESSolve()`)
 -  ctx - [optional] user-defined context for provide data for the hooks (may be NULL)
 
    Calling sequence of coarsenhook:
 $    coarsenhook(DM fine,DM coarse,void *ctx);
 
-+  fine - fine level DM
-.  coarse - coarse level DM to restrict problem to
++  fine - fine level `DM`
+.  coarse - coarse level `DM` to restrict problem to
 -  ctx - optional user-defined function context
 
    Calling sequence for restricthook:
 $    restricthook(DM fine,Mat mrestrict,Vec rscale,Mat inject,DM coarse,void *ctx)
-
-+  fine - fine level DM
-.  mrestrict - matrix restricting a fine-level solution to the coarse grid
+$
++  fine - fine level `DM`
+.  mrestrict - matrix restricting a fine-level solution to the coarse grid, usually the transpose of the interpolation
 .  rscale - scaling vector for restriction
 .  inject - matrix restricting by injection
 .  coarse - coarse level DM to update
@@ -3185,14 +3320,17 @@ $    restricthook(DM fine,Mat mrestrict,Vec rscale,Mat inject,DM coarse,void *ct
    Level: advanced
 
    Notes:
-   This function is only needed if auxiliary data needs to be set up on coarse grids.
+   This function is only needed if auxiliary data, attached to the `DM` with `PetscObjectCompose()`, needs to be set up or passed from the fine `DM` to the coarse `DM`.
 
    If this function is called multiple times, the hooks will be run in the order they are added.
 
    In order to compose with nonlinear preconditioning without duplicating storage, the hook should be implemented to
-   extract the finest level information from its context (instead of from the SNES).
+   extract the finest level information from its context (instead of from the `SNES`).
 
-   This function is currently not available from Fortran.
+   The hooks are automatically called by `DMRestrict()`
+
+   Fortran Note:
+   This function is not available from Fortran.
 
 .seealso: `DMCoarsenHookRemove()`, `DMRefineHookAdd()`, `SNESFASGetInterpolation()`, `SNESFASGetInjection()`, `PetscObjectCompose()`, `PetscContainerCreate()`
 @*/
@@ -3215,22 +3353,23 @@ PetscErrorCode DMCoarsenHookAdd(DM fine,PetscErrorCode (*coarsenhook)(DM,DM,void
 }
 
 /*@C
-   DMCoarsenHookRemove - remove a callback from the list of hooks to be run when restricting a nonlinear problem to the coarse grid
+   DMCoarsenHookRemove - remove a callback set with `DMCoarsenHookAdd()`
 
-   Logically Collective
+   Logically Collective on fine
 
    Input Parameters:
-+  fine - nonlinear solver context on which to run a hook when restricting to a coarser level
++  fine - `DM` on which to run a hook when restricting to a coarser level
 .  coarsenhook - function to run when setting up a coarser level
-.  restricthook - function to run to update data on coarser levels (once per SNESSolve())
+.  restricthook - function to run to update data on coarser levels
 -  ctx - [optional] user-defined context for provide data for the hooks (may be NULL)
 
    Level: advanced
 
-   Notes:
+   Note:
    This function does nothing if the hook is not in the list.
 
-   This function is currently not available from Fortran.
+   Fortran Note:
+   This function is not available from Fortran.
 
 .seealso: `DMCoarsenHookAdd()`, `DMRefineHookAdd()`, `SNESFASGetInterpolation()`, `SNESFASGetInjection()`, `PetscObjectCompose()`, `PetscContainerCreate()`
 @*/
@@ -3252,20 +3391,23 @@ PetscErrorCode DMCoarsenHookRemove(DM fine,PetscErrorCode (*coarsenhook)(DM,DM,v
 }
 
 /*@
-   DMRestrict - restricts user-defined problem data to a coarser DM by running hooks registered by DMCoarsenHookAdd()
+   DMRestrict - restricts user-defined problem data to a coarser `DM` by running hooks registered by `DMCoarsenHookAdd()`
 
    Collective if any hooks are
 
    Input Parameters:
-+  fine - finer DM to use as a base
-.  restrct - restriction matrix, apply using MatRestrict()
++  fine - finer `DM` from which the data is obtained
+.  restrct - restriction matrix, apply using `MatRestrict()`, usually the transpose of the interpolation
 .  rscale - scaling vector for restriction
-.  inject - injection matrix, also use MatRestrict()
+.  inject - injection matrix, also use `MatRestrict()`
 -  coarse - coarser DM to update
 
    Level: developer
 
-.seealso: `DMCoarsenHookAdd()`, `MatRestrict()`
+   Developer Note:
+   Though this routine is called `DMRestrict()` the hooks are added with `DMCoarsenHookAdd()`, a consistent terminology would be better
+
+.seealso: `DMCoarsenHookAdd()`, `MatRestrict()`, `DMInterpolate()`, `DMRefineHookAdd()`
 @*/
 PetscErrorCode DMRestrict(DM fine,Mat restrct,Vec rscale,Mat inject,DM coarse)
 {
@@ -3284,40 +3426,41 @@ PetscErrorCode DMRestrict(DM fine,Mat restrct,Vec rscale,Mat inject,DM coarse)
    Logically Collective on global
 
    Input Parameters:
-+  global - global DM
-.  ddhook - function to run to pass data to the decomposition DM upon its creation
++  global - global `DM`
+.  ddhook - function to run to pass data to the decomposition `DM` upon its creation
 .  restricthook - function to run to update data on block solve (at the beginning of the block solve)
 -  ctx - [optional] user-defined context for provide data for the hooks (may be NULL)
 
    Calling sequence for ddhook:
 $    ddhook(DM global,DM block,void *ctx)
 
-+  global - global DM
-.  block  - block DM
++  global - global `DM`
+.  block  - block `DM`
 -  ctx - optional user-defined function context
 
    Calling sequence for restricthook:
 $    restricthook(DM global,VecScatter out,VecScatter in,DM block,void *ctx)
 
-+  global - global DM
++  global - global `DM`
 .  out    - scatter to the outer (with ghost and overlap points) block vector
 .  in     - scatter to block vector values only owned locally
-.  block  - block DM
+.  block  - block `DM`
 -  ctx - optional user-defined function context
 
    Level: advanced
 
    Notes:
-   This function is only needed if auxiliary data needs to be set up on subdomain DMs.
+   This function is only needed if auxiliary data needs to be set up on subdomain `DM`s.
 
    If this function is called multiple times, the hooks will be run in the order they are added.
 
    In order to compose with nonlinear preconditioning without duplicating storage, the hook should be implemented to
-   extract the global information from its context (instead of from the SNES).
+   extract the global information from its context (instead of from the `SNES`).
 
-   This function is currently not available from Fortran.
+   Fortran Note:
+   This function is not available from Fortran.
 
-.seealso: `DMRefineHookAdd()`, `SNESFASGetInterpolation()`, `SNESFASGetInjection()`, `PetscObjectCompose()`, `PetscContainerCreate()`
+.seealso: `DMSubDomainHookRemove()`, `DMRefineHookAdd()`, `SNESFASGetInterpolation()`, `SNESFASGetInjection()`, `PetscObjectCompose()`, `PetscContainerCreate()`
 @*/
 PetscErrorCode DMSubDomainHookAdd(DM global,PetscErrorCode (*ddhook)(DM,DM,void*),PetscErrorCode (*restricthook)(DM,VecScatter,VecScatter,DM,void*),void *ctx)
 {
@@ -3340,19 +3483,18 @@ PetscErrorCode DMSubDomainHookAdd(DM global,PetscErrorCode (*ddhook)(DM,DM,void*
 /*@C
    DMSubDomainHookRemove - remove a callback from the list to be run when restricting a problem to the coarse grid
 
-   Logically Collective
+   Logically Collective on global
 
    Input Parameters:
-+  global - global DM
-.  ddhook - function to run to pass data to the decomposition DM upon its creation
++  global - global `DM`
+.  ddhook - function to run to pass data to the decomposition `DM` upon its creation
 .  restricthook - function to run to update data on block solve (at the beginning of the block solve)
 -  ctx - [optional] user-defined context for provide data for the hooks (may be NULL)
 
    Level: advanced
 
-   Notes:
-
-   This function is currently not available from Fortran.
+   Fortran Note:
+   This function is not available from Fortran.
 
 .seealso: `DMSubDomainHookAdd()`, `SNESFASGetInterpolation()`, `SNESFASGetInjection()`, `PetscObjectCompose()`, `PetscContainerCreate()`
 @*/
@@ -3374,15 +3516,15 @@ PetscErrorCode DMSubDomainHookRemove(DM global,PetscErrorCode (*ddhook)(DM,DM,vo
 }
 
 /*@
-   DMSubDomainRestrict - restricts user-defined problem data to a block DM by running hooks registered by DMSubDomainHookAdd()
+   DMSubDomainRestrict - restricts user-defined problem data to a block `DM` by running hooks registered by `DMSubDomainHookAdd()`
 
    Collective if any hooks are
 
    Input Parameters:
-+  fine - finer DM to use as a base
++  fine - finer `DM` to use as a base
 .  oscatter - scatter from domain global vector filling subdomain global vector with overlap
 .  gscatter - scatter from domain global vector filling subdomain local vector with ghosts
--  coarse - coarer DM to update
+-  coarse - coarser `DM` to update
 
    Level: developer
 
@@ -3400,19 +3542,19 @@ PetscErrorCode DMSubDomainRestrict(DM global,VecScatter oscatter,VecScatter gsca
 }
 
 /*@
-    DMGetCoarsenLevel - Get's the number of coarsenings that have generated this DM.
+    DMGetCoarsenLevel - Gets the number of coarsenings that have generated this `DM`.
 
     Not Collective
 
     Input Parameter:
-.   dm - the DM object
+.   dm - the `DM` object
 
     Output Parameter:
 .   level - number of coarsenings
 
     Level: developer
 
-.seealso `DMCoarsen()`, `DMGetRefineLevel()`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`
+.seealso: `DMCoarsen()`, `DMSetCoarsenLevel()`, `DMGetRefineLevel()`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`
 
 @*/
 PetscErrorCode  DMGetCoarsenLevel(DM dm,PetscInt *level)
@@ -3425,17 +3567,20 @@ PetscErrorCode  DMGetCoarsenLevel(DM dm,PetscInt *level)
 }
 
 /*@
-    DMSetCoarsenLevel - Sets the number of coarsenings that have generated this DM.
+    DMSetCoarsenLevel - Sets the number of coarsenings that have generated this `DM`.
 
-    Not Collective
+    Collective on dm
 
     Input Parameters:
-+   dm - the DM object
++   dm - the `DM` object
 -   level - number of coarsenings
 
     Level: developer
 
-.seealso `DMCoarsen()`, `DMGetCoarsenLevel()`, `DMGetRefineLevel()`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`
+    Note:
+    This is rarely used directly, the information is automatically set when a `DM` is created with `DMCoarsen()`
+
+.seealso: `DMSetCoarsenLevel()`, `DMCoarsen()`, `DMGetCoarsenLevel()`, `DMGetRefineLevel()`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`
 @*/
 PetscErrorCode DMSetCoarsenLevel(DM dm,PetscInt level)
 {
@@ -3446,20 +3591,20 @@ PetscErrorCode DMSetCoarsenLevel(DM dm,PetscInt level)
 }
 
 /*@C
-    DMRefineHierarchy - Refines a DM object, all levels at once
+    DMRefineHierarchy - Refines a `DM` object, all levels at once
 
     Collective on dm
 
     Input Parameters:
-+   dm - the DM object
++   dm - the `DM` object
 -   nlevels - the number of levels of refinement
 
     Output Parameter:
-.   dmf - the refined DM hierarchy
+.   dmf - the refined `DM` hierarchy
 
     Level: developer
 
-.seealso `DMCoarsenHierarchy()`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`
+.seealso: `DMCoarsen()`, `DMCoarsenHierarchy()`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`
 
 @*/
 PetscErrorCode  DMRefineHierarchy(DM dm,PetscInt nlevels,DM dmf[])
@@ -3483,20 +3628,20 @@ PetscErrorCode  DMRefineHierarchy(DM dm,PetscInt nlevels,DM dmf[])
 }
 
 /*@C
-    DMCoarsenHierarchy - Coarsens a DM object, all levels at once
+    DMCoarsenHierarchy - Coarsens a `DM` object, all levels at once
 
     Collective on dm
 
     Input Parameters:
-+   dm - the DM object
++   dm - the `DM` object
 -   nlevels - the number of levels of coarsening
 
     Output Parameter:
-.   dmc - the coarsened DM hierarchy
+.   dmc - the coarsened `DM` hierarchy
 
     Level: developer
 
-.seealso `DMRefineHierarchy()`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`
+.seealso: `DMCoarsen()`, `DMRefineHierarchy()`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`
 
 @*/
 PetscErrorCode  DMCoarsenHierarchy(DM dm, PetscInt nlevels, DM dmc[])
@@ -3520,17 +3665,17 @@ PetscErrorCode  DMCoarsenHierarchy(DM dm, PetscInt nlevels, DM dmc[])
 }
 
 /*@C
-    DMSetApplicationContextDestroy - Sets a user function that will be called to destroy the application context when the DM is destroyed
+    DMSetApplicationContextDestroy - Sets a user function that will be called to destroy the application context when the `DM` is destroyed
 
-    Not Collective
+    Logically Collective if the function is collective
 
     Input Parameters:
-+   dm - the DM object
++   dm - the `DM` object
 -   destroy - the destroy function
 
     Level: intermediate
 
-.seealso `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMCreateColoring()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMGetApplicationContext()`
+.seealso: `DMSetApplicationContext()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMCreateColoring()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMGetApplicationContext()`
 
 @*/
 PetscErrorCode  DMSetApplicationContextDestroy(DM dm,PetscErrorCode (*destroy)(void**))
@@ -3542,17 +3687,20 @@ PetscErrorCode  DMSetApplicationContextDestroy(DM dm,PetscErrorCode (*destroy)(v
 }
 
 /*@
-    DMSetApplicationContext - Set a user context into a DM object
+    DMSetApplicationContext - Set a user context into a `DM` object
 
     Not Collective
 
     Input Parameters:
-+   dm - the DM object
++   dm - the `DM` object
 -   ctx - the user context
 
     Level: intermediate
 
-.seealso `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMCreateColoring()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMGetApplicationContext()`
+    Note:
+    A user context is a way to pass problem specific information that is accessable whenever the `DM` is available
+
+.seealso: `DMGetApplicationContext()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMCreateColoring()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMGetApplicationContext()`
 
 @*/
 PetscErrorCode  DMSetApplicationContext(DM dm,void *ctx)
@@ -3564,19 +3712,22 @@ PetscErrorCode  DMSetApplicationContext(DM dm,void *ctx)
 }
 
 /*@
-    DMGetApplicationContext - Gets a user context from a DM object
+    DMGetApplicationContext - Gets a user context from a `DM` object
 
     Not Collective
 
     Input Parameter:
-.   dm - the DM object
+.   dm - the `DM` object
 
     Output Parameter:
 .   ctx - the user context
 
     Level: intermediate
 
-.seealso `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMCreateColoring()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMGetApplicationContext()`
+    Note:
+    A user context is a way to pass problem specific information that is accessable whenever the `DM` is available
+
+.seealso: `DMGetApplicationContext()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMCreateColoring()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMGetApplicationContext()`
 
 @*/
 PetscErrorCode  DMGetApplicationContext(DM dm,void *ctx)
@@ -3588,7 +3739,7 @@ PetscErrorCode  DMGetApplicationContext(DM dm,void *ctx)
 }
 
 /*@C
-    DMSetVariableBounds - sets a function to compute the lower and upper bound vectors for SNESVI.
+    DMSetVariableBounds - sets a function to compute the lower and upper bound vectors for `SNESVI`.
 
     Logically Collective on dm
 
@@ -3598,7 +3749,7 @@ PetscErrorCode  DMGetApplicationContext(DM dm,void *ctx)
 
     Level: intermediate
 
-.seealso `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMCreateColoring()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMGetApplicationContext()`,
+.seealso: `DMComputeVariableBounds()`, `DMHasVariableBounds()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMCreateColoring()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMGetApplicationContext()`,
          `DMSetJacobian()`
 
 @*/
@@ -3611,19 +3762,19 @@ PetscErrorCode DMSetVariableBounds(DM dm,PetscErrorCode (*f)(DM,Vec,Vec))
 }
 
 /*@
-    DMHasVariableBounds - does the DM object have a variable bounds function?
+    DMHasVariableBounds - does the `DM` object have a variable bounds function?
 
     Not Collective
 
     Input Parameter:
-.   dm - the DM object to destroy
+.   dm - the `DM` object to destroy
 
     Output Parameter:
-.   flg - PETSC_TRUE if the variable bounds function exists
+.   flg - `PETSC_TRUE` if the variable bounds function exists
 
     Level: developer
 
-.seealso `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMCreateColoring()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMGetApplicationContext()`
+.seealso: `DMComputeVariableBounds()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMCreateColoring()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMGetApplicationContext()`
 
 @*/
 PetscErrorCode DMHasVariableBounds(DM dm,PetscBool *flg)
@@ -3636,12 +3787,12 @@ PetscErrorCode DMHasVariableBounds(DM dm,PetscBool *flg)
 }
 
 /*@C
-    DMComputeVariableBounds - compute variable bounds used by SNESVI.
+    DMComputeVariableBounds - compute variable bounds used by `SNESVI`.
 
     Logically Collective on dm
 
     Input Parameter:
-.   dm - the DM object
+.   dm - the `DM` object
 
     Output parameters:
 +   xl - lower bound
@@ -3652,7 +3803,7 @@ PetscErrorCode DMHasVariableBounds(DM dm,PetscBool *flg)
     Notes:
     This is generally not called by users. It calls the function provided by the user with DMSetVariableBounds()
 
-.seealso `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMCreateColoring()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMGetApplicationContext()`
+.seealso: `DMHasVariableBounds()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMCreateColoring()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMGetApplicationContext()`
 
 @*/
 PetscErrorCode DMComputeVariableBounds(DM dm, Vec xl, Vec xu)
@@ -3667,7 +3818,7 @@ PetscErrorCode DMComputeVariableBounds(DM dm, Vec xl, Vec xu)
 }
 
 /*@
-    DMHasColoring - does the DM object have a method of providing a coloring?
+    DMHasColoring - does the `DM` object have a method of providing a coloring?
 
     Not Collective
 
@@ -3675,11 +3826,11 @@ PetscErrorCode DMComputeVariableBounds(DM dm, Vec xl, Vec xu)
 .   dm - the DM object
 
     Output Parameter:
-.   flg - PETSC_TRUE if the DM has facilities for DMCreateColoring().
+.   flg - `PETSC_TRUE` if the `DM` has facilities for `DMCreateColoring()`.
 
     Level: developer
 
-.seealso `DMCreateColoring()`
+.seealso: `DMCreateColoring()`
 
 @*/
 PetscErrorCode DMHasColoring(DM dm,PetscBool *flg)
@@ -3692,19 +3843,19 @@ PetscErrorCode DMHasColoring(DM dm,PetscBool *flg)
 }
 
 /*@
-    DMHasCreateRestriction - does the DM object have a method of providing a restriction?
+    DMHasCreateRestriction - does the `DM` object have a method of providing a restriction?
 
     Not Collective
 
     Input Parameter:
-.   dm - the DM object
+.   dm - the `DM` object
 
     Output Parameter:
-.   flg - PETSC_TRUE if the DM has facilities for DMCreateRestriction().
+.   flg - `PETSC_TRUE` if the `DM` has facilities for `DMCreateRestriction()`.
 
     Level: developer
 
-.seealso `DMCreateRestriction()`
+.seealso: `DMCreateRestriction()`, `DMHasCreateInterpolation()`, `DMHasCreateInjection()`
 
 @*/
 PetscErrorCode DMHasCreateRestriction(DM dm,PetscBool *flg)
@@ -3717,19 +3868,19 @@ PetscErrorCode DMHasCreateRestriction(DM dm,PetscBool *flg)
 }
 
 /*@
-    DMHasCreateInjection - does the DM object have a method of providing an injection?
+    DMHasCreateInjection - does the `DM` object have a method of providing an injection?
 
     Not Collective
 
     Input Parameter:
-.   dm - the DM object
+.   dm - the `DM` object
 
     Output Parameter:
-.   flg - PETSC_TRUE if the DM has facilities for DMCreateInjection().
+.   flg - `PETSC_TRUE` if the `DM` has facilities for `DMCreateInjection()`.
 
     Level: developer
 
-.seealso `DMCreateInjection()`
+.seealso: `DMCreateInjection()`, `DMHasCreateRestriction()`, `DMHasCreateInterpolation()`
 
 @*/
 PetscErrorCode DMHasCreateInjection(DM dm,PetscBool *flg)
@@ -3749,23 +3900,23 @@ PetscFunctionList DMList              = NULL;
 PetscBool         DMRegisterAllCalled = PETSC_FALSE;
 
 /*@C
-  DMSetType - Builds a DM, for a particular DM implementation.
+  DMSetType - Builds a `DM`, for a particular `DM` implementation.
 
   Collective on dm
 
   Input Parameters:
-+ dm     - The DM object
-- method - The name of the DM type
++ dm     - The `DM` object
+- method - The name of the `DMType`, for example `DMDA`, `DMPLEX`
 
   Options Database Key:
-. -dm_type <type> - Sets the DM type; use -help for a list of available types
-
-  Notes:
-  See "petsc/include/petscdm.h" for available DM types (for instance, DM1D, DM2D, or DM3D).
+. -dm_type <type> - Sets the `DM` type; use -help for a list of available types
 
   Level: intermediate
 
-.seealso: `DMGetType()`, `DMCreate()`
+  Note:
+  Of the `DM` is constructed by directly calling a function to construct a particular `DM`, for example, `DMDACreate2d()` or `DMPLEXCreateBoxMesh()`
+
+.seealso: `DMType`, `DMDA`, `DMPLEX`, `DMGetType()`, `DMCreate()`, `DMDACreate2d()`
 @*/
 PetscErrorCode  DMSetType(DM dm, DMType method)
 {
@@ -3789,19 +3940,19 @@ PetscErrorCode  DMSetType(DM dm, DMType method)
 }
 
 /*@C
-  DMGetType - Gets the DM type name (as a string) from the DM.
+  DMGetType - Gets the `DM` type name (as a string) from the `DM`.
 
   Not Collective
 
   Input Parameter:
-. dm  - The DM
+. dm  - The `DM`
 
   Output Parameter:
-. type - The DM type name
+. type - The `DMType` name
 
   Level: intermediate
 
-.seealso: `DMSetType()`, `DMCreate()`
+.seealso: `DMType`, `DMDA`, `DMPLEX`, `DMSetType()`, `DMCreate()`
 @*/
 PetscErrorCode  DMGetType(DM dm, DMType *type)
 {
@@ -3814,25 +3965,25 @@ PetscErrorCode  DMGetType(DM dm, DMType *type)
 }
 
 /*@C
-  DMConvert - Converts a DM to another DM, either of the same or different type.
+  DMConvert - Converts a `DM` to another `DM`, either of the same or different type.
 
   Collective on dm
 
   Input Parameters:
-+ dm - the DM
-- newtype - new DM type (use "same" for the same type)
++ dm - the `DM`
+- newtype - new `DM` type (use "same" for the same type)
 
   Output Parameter:
-. M - pointer to new DM
+. M - pointer to new `DM`
 
   Notes:
-  Cannot be used to convert a sequential DM to parallel or parallel to sequential,
-  the MPI communicator of the generated DM is always the same as the communicator
-  of the input DM.
+  Cannot be used to convert a sequential `DM` to a parallel or a parallel to sequential,
+  the MPI communicator of the generated `DM` is always the same as the communicator
+  of the input `DM`.
 
   Level: intermediate
 
-.seealso: `DMCreate()`
+.seealso: `DM`, `DMSetType()`, `DMCreate()`, `DMClone()`
 @*/
 PetscErrorCode DMConvert(DM dm, DMType newtype, DM *M)
 {
@@ -3925,7 +4076,7 @@ foundconv:
 /*--------------------------------------------------------------------------------------------------------------------*/
 
 /*@C
-  DMRegister -  Adds a new DM component implementation
+  DMRegister -  Adds a new `DM` type implementation
 
   Not Collective
 
@@ -3934,7 +4085,7 @@ foundconv:
 - create_func - The creation routine itself
 
   Notes:
-  DMRegister() may be called multiple times to add several user-defined DMs
+  DMRegister() may be called multiple times to add several user-defined `DM`s
 
   Sample usage:
 .vb
@@ -3953,7 +4104,7 @@ foundconv:
 
   Level: advanced
 
-.seealso: `DMRegisterAll()`, `DMRegisterDestroy()`
+.seealso: `DM`, `DMType`, `DMSetType()`, `DMRegisterAll()`, `DMRegisterDestroy()`
 
 @*/
 PetscErrorCode  DMRegister(const char sname[],PetscErrorCode (*function)(DM))
@@ -3965,28 +4116,28 @@ PetscErrorCode  DMRegister(const char sname[],PetscErrorCode (*function)(DM))
 }
 
 /*@C
-  DMLoad - Loads a DM that has been stored in binary  with DMView().
+  DMLoad - Loads a DM that has been stored in binary  with `DMView()`.
 
   Collective on viewer
 
   Input Parameters:
-+ newdm - the newly loaded DM, this needs to have been created with DMCreate() or
-           some related function before a call to DMLoad().
-- viewer - binary file viewer, obtained from PetscViewerBinaryOpen() or
-           HDF5 file viewer, obtained from PetscViewerHDF5Open()
++ newdm - the newly loaded `DM`, this needs to have been created with `DMCreate()` or
+           some related function before a call to `DMLoad()`.
+- viewer - binary file viewer, obtained from `PetscViewerBinaryOpen()` or
+           `PETSCVIEWERHDF5` file viewer, obtained from `PetscViewerHDF5Open()`
 
    Level: intermediate
 
   Notes:
   The type is determined by the data in the file, any type set into the DM before this call is ignored.
 
-  Using PETSCVIEWERHDF5 type with PETSC_VIEWER_HDF5_PETSC format, one can save multiple DMPlex
-  meshes in a single HDF5 file. This in turn requires one to name the DMPlex object with PetscObjectSetName()
-  before saving it with DMView() and before loading it with DMLoad() for identification of the mesh object.
+  Using `PETSCVIEWERHDF5` type with `PETSC_VIEWER_HDF5_PETSC` format, one can save multiple `DMPLEX`
+  meshes in a single HDF5 file. This in turn requires one to name the `DMPLEX` object with `PetscObjectSetName()`
+  before saving it with `DMView()` and before loading it with `DMLoad()` for identification of the mesh object.
 
   Notes for advanced users:
   Most users should not need to know the details of the binary storage
-  format, since DMLoad() and DMView() completely hide these details.
+  format, since `DMLoad()` and `DMView()` completely hide these details.
   But for anyone who's interested, the standard binary matrix storage
   format is
 .vb
@@ -4083,23 +4234,23 @@ PetscErrorCode DMPrintLocalVec(DM dm, const char name[], PetscReal tol, Vec X)
 }
 
 /*@
-  DMGetSection - Get the PetscSection encoding the local data layout for the DM.   This is equivalent to DMGetLocalSection(). Deprecated in v3.12
+  DMGetSection - Get the `PetscSection` encoding the local data layout for the `DM`.   This is equivalent to `DMGetLocalSection()`. Deprecated in v3.12
 
   Input Parameter:
-. dm - The DM
+. dm - The `DM`
 
   Output Parameter:
-. section - The PetscSection
+. section - The `PetscSection`
 
   Options Database Keys:
-. -dm_petscsection_view - View the Section created by the DM
+. -dm_petscsection_view - View the `PetscSection` created by the `DM`
 
   Level: advanced
 
   Notes:
-  Use DMGetLocalSection() in new code.
+  Use `DMGetLocalSection()` in new code.
 
-  This gets a borrowed reference, so the user should not destroy this PetscSection.
+  This gets a borrowed reference, so the user should not destroy this `PetscSection`.
 
 .seealso: `DMGetLocalSection()`, `DMSetLocalSection()`, `DMGetGlobalSection()`
 @*/
@@ -4111,20 +4262,21 @@ PetscErrorCode DMGetSection(DM dm, PetscSection *section)
 }
 
 /*@
-  DMGetLocalSection - Get the PetscSection encoding the local data layout for the DM.
+  DMGetLocalSection - Get the `PetscSection` encoding the local data layout for the `DM`.
 
   Input Parameter:
-. dm - The DM
+. dm - The `DM`
 
   Output Parameter:
-. section - The PetscSection
+. section - The `PetscSection`
 
   Options Database Keys:
-. -dm_petscsection_view - View the Section created by the DM
+. -dm_petscsection_view - View the section created by the `DM`
 
   Level: intermediate
 
-  Note: This gets a borrowed reference, so the user should not destroy this PetscSection.
+  Note:
+  This gets a borrowed reference, so the user should not destroy this `PetscSection`.
 
 .seealso: `DMSetLocalSection()`, `DMGetGlobalSection()`
 @*/
@@ -4162,18 +4314,18 @@ PetscErrorCode DMGetLocalSection(DM dm, PetscSection *section)
 }
 
 /*@
-  DMSetSection - Set the PetscSection encoding the local data layout for the DM.  This is equivalent to DMSetLocalSection(). Deprecated in v3.12
+  DMSetSection - Set the `PetscSection` encoding the local data layout for the `DM`.  This is equivalent to `DMSetLocalSection()`. Deprecated in v3.12
 
   Input Parameters:
-+ dm - The DM
-- section - The PetscSection
++ dm - The `DM`
+- section - The `PetscSection`
 
   Level: advanced
 
   Notes:
-  Use DMSetLocalSection() in new code.
+  Use `DMSetLocalSection()` in new code.
 
-  Any existing Section will be destroyed
+  Any existing `PetscSection` will be destroyed
 
 .seealso: `DMSetLocalSection()`, `DMGetLocalSection()`, `DMSetGlobalSection()`
 @*/
@@ -4185,17 +4337,18 @@ PetscErrorCode DMSetSection(DM dm, PetscSection section)
 }
 
 /*@
-  DMSetLocalSection - Set the PetscSection encoding the local data layout for the DM.
+  DMSetLocalSection - Set the `PetscSection` encoding the local data layout for the `DM`.
 
   Input Parameters:
-+ dm - The DM
-- section - The PetscSection
++ dm - The `DM`
+- section - The `PetscSection`
 
   Level: intermediate
 
-  Note: Any existing Section will be destroyed
+  Note:
+  Any existing Section will be destroyed
 
-.seealso: `DMGetLocalSection()`, `DMSetGlobalSection()`
+.seealso: `PetscSection`, `DMGetLocalSection()`, `DMSetGlobalSection()`
 @*/
 PetscErrorCode DMSetLocalSection(DM dm, PetscSection section)
 {
@@ -4226,21 +4379,22 @@ PetscErrorCode DMSetLocalSection(DM dm, PetscSection section)
 }
 
 /*@
-  DMGetDefaultConstraints - Get the PetscSection and Mat that specify the local constraint interpolation. See DMSetDefaultConstraints() for a description of the purpose of constraint interpolation.
+  DMGetDefaultConstraints - Get the `PetscSection` and `Mat` that specify the local constraint interpolation. See `DMSetDefaultConstraints()` for a description of the purpose of constraint interpolation.
 
   not collective
 
   Input Parameter:
-. dm - The DM
+. dm - The `DM`
 
   Output Parameters:
-+ section - The PetscSection describing the range of the constraint matrix: relates rows of the constraint matrix to dofs of the default section.  Returns NULL if there are no local constraints.
-. mat - The Mat that interpolates local constraints: its width should be the layout size of the default section.  Returns NULL if there are no local constraints.
++ section - The `PetscSection` describing the range of the constraint matrix: relates rows of the constraint matrix to dofs of the default section.  Returns NULL if there are no local constraints.
+. mat - The `Mat` that interpolates local constraints: its width should be the layout size of the default section.  Returns NULL if there are no local constraints.
 - bias - Vector containing bias to be added to constrained dofs
 
   Level: advanced
 
-  Note: This gets borrowed references, so the user should not destroy the PetscSection, Mat, or Vec.
+  Note:
+  This gets borrowed references, so the user should not destroy the `PetscSection`, `Mat`, or `Vec`.
 
 .seealso: `DMSetDefaultConstraints()`
 @*/
@@ -4256,23 +4410,24 @@ PetscErrorCode DMGetDefaultConstraints(DM dm, PetscSection *section, Mat *mat, V
 }
 
 /*@
-  DMSetDefaultConstraints - Set the PetscSection and Mat that specify the local constraint interpolation.
+  DMSetDefaultConstraints - Set the `PetscSection` and `Mat` that specify the local constraint interpolation.
 
-  If a constraint matrix is specified, then it is applied during DMGlobalToLocalEnd() when mode is INSERT_VALUES, INSERT_BC_VALUES, or INSERT_ALL_VALUES.  Without a constraint matrix, the local vector l returned by DMGlobalToLocalEnd() contains values that have been scattered from a global vector without modification; with a constraint matrix A, l is modified by computing c = A * l + bias, l[s[i]] = c[i], where the scatter s is defined by the PetscSection returned by DMGetDefaultConstraints().
+  If a constraint matrix is specified, then it is applied during `DMGlobalToLocalEnd()` when mode is `INSERT_VALUES`, `INSERT_BC_VALUES`, or `INSERT_ALL_VALUES`.  Without a constraint matrix, the local vector l returned by `DMGlobalToLocalEnd()` contains values that have been scattered from a global vector without modification; with a constraint matrix A, l is modified by computing c = A * l + bias, l[s[i]] = c[i], where the scatter s is defined by the `PetscSection` returned by `DMGetDefaultConstraints()`.
 
-  If a constraint matrix is specified, then its adjoint is applied during DMLocalToGlobalBegin() when mode is ADD_VALUES, ADD_BC_VALUES, or ADD_ALL_VALUES.  Without a constraint matrix, the local vector l is accumulated into a global vector without modification; with a constraint matrix A, l is first modified by computing c[i] = l[s[i]], l[s[i]] = 0, l = l + A'*c, which is the adjoint of the operation described above.  Any bias, if specified, is ignored when accumulating.
+  If a constraint matrix is specified, then its adjoint is applied during `DMLocalToGlobalBegin()` when mode is `ADD_VALUES`, `ADD_BC_VALUES`, or `ADD_ALL_VALUES`.  Without a constraint matrix, the local vector l is accumulated into a global vector without modification; with a constraint matrix A, l is first modified by computing c[i] = l[s[i]], l[s[i]] = 0, l = l + A'*c, which is the adjoint of the operation described above.  Any bias, if specified, is ignored when accumulating.
 
   collective on dm
 
   Input Parameters:
-+ dm - The DM
-. section - The PetscSection describing the range of the constraint matrix: relates rows of the constraint matrix to dofs of the default section.  Must have a local communicator (PETSC_COMM_SELF or derivative).
-. mat - The Mat that interpolates local constraints: its width should be the layout size of the default section:  NULL indicates no constraints.  Must have a local communicator (PETSC_COMM_SELF or derivative).
-- bias - A bias vector to be added to constrained values in the local vector.  NULL indicates no bias.  Must have a local communicator (PETSC_COMM_SELF or derivative).
++ dm - The `DM`
+. section - The `PetscSection` describing the range of the constraint matrix: relates rows of the constraint matrix to dofs of the default section.  Must have a local communicator (`PETSC_COMM_SELF` or derivative).
+. mat - The `Mat` that interpolates local constraints: its width should be the layout size of the default section:  NULL indicates no constraints.  Must have a local communicator (`PETSC_COMM_SELF` or derivative).
+- bias - A bias vector to be added to constrained values in the local vector.  NULL indicates no bias.  Must have a local communicator (`PETSC_COMM_SELF` or derivative).
 
   Level: advanced
 
-  Note: This increments the references of the PetscSection, Mat, and Vec, so they user can destroy them.
+  Note:
+  This increments the references of the `PetscSection`, `Mat`, and `Vec`, so they user can destroy them.
 
 .seealso: `DMGetDefaultConstraints()`
 @*/
@@ -4311,12 +4466,12 @@ PetscErrorCode DMSetDefaultConstraints(DM dm, PetscSection section, Mat mat, Vec
 
 #if defined(PETSC_USE_DEBUG)
 /*
-  DMDefaultSectionCheckConsistency - Check the consistentcy of the global and local sections.
+  DMDefaultSectionCheckConsistency - Check the consistentcy of the global and local sections. Generates and error if they are not consistent.
 
   Input Parameters:
-+ dm - The DM
-. localSection - PetscSection describing the local data layout
-- globalSection - PetscSection describing the global data layout
++ dm - The `DM`
+. localSection - `PetscSection` describing the local data layout
+- globalSection - `PetscSection` describing the global data layout
 
   Level: intermediate
 
@@ -4378,19 +4533,20 @@ static PetscErrorCode DMDefaultSectionCheckConsistency_Internal(DM dm, PetscSect
 #endif
 
 /*@
-  DMGetGlobalSection - Get the PetscSection encoding the global data layout for the DM.
+  DMGetGlobalSection - Get the `PetscSection` encoding the global data layout for the `DM`.
 
   Collective on dm
 
   Input Parameter:
-. dm - The DM
+. dm - The `DM`
 
   Output Parameter:
-. section - The PetscSection
+. section - The `PetscSection`
 
   Level: intermediate
 
-  Note: This gets a borrowed reference, so the user should not destroy this PetscSection.
+  Note:
+  This gets a borrowed reference, so the user should not destroy this `PetscSection`.
 
 .seealso: `DMSetLocalSection()`, `DMGetLocalSection()`
 @*/
@@ -4415,15 +4571,16 @@ PetscErrorCode DMGetGlobalSection(DM dm, PetscSection *section)
 }
 
 /*@
-  DMSetGlobalSection - Set the PetscSection encoding the global data layout for the DM.
+  DMSetGlobalSection - Set the `PetscSection` encoding the global data layout for the `DM`.
 
   Input Parameters:
-+ dm - The DM
++ dm - The `DM`
 - section - The PetscSection, or NULL
 
   Level: intermediate
 
-  Note: Any existing Section will be destroyed
+  Note:
+  Any existing `PetscSection` will be destroyed
 
 .seealso: `DMGetGlobalSection()`, `DMSetLocalSection()`
 @*/
@@ -4442,18 +4599,19 @@ PetscErrorCode DMSetGlobalSection(DM dm, PetscSection section)
 }
 
 /*@
-  DMGetSectionSF - Get the PetscSF encoding the parallel dof overlap for the DM. If it has not been set,
-  it is created from the default PetscSection layouts in the DM.
+  DMGetSectionSF - Get the `PetscSF` encoding the parallel dof overlap for the `DM`. If it has not been set,
+  it is created from the default `PetscSection` layouts in the `DM`.
 
   Input Parameter:
-. dm - The DM
+. dm - The `DM`
 
   Output Parameter:
-. sf - The PetscSF
+. sf - The `PetscSF`
 
   Level: intermediate
 
-  Note: This gets a borrowed reference, so the user should not destroy this PetscSF.
+  Note:
+  This gets a borrowed reference, so the user should not destroy this `PetscSF`.
 
 .seealso: `DMSetSectionSF()`, `DMCreateSectionSF()`
 @*/
@@ -4485,15 +4643,16 @@ PetscErrorCode DMGetSectionSF(DM dm, PetscSF *sf)
 }
 
 /*@
-  DMSetSectionSF - Set the PetscSF encoding the parallel dof overlap for the DM
+  DMSetSectionSF - Set the `PetscSF` encoding the parallel dof overlap for the `DM`
 
   Input Parameters:
-+ dm - The DM
-- sf - The PetscSF
++ dm - The `DM`
+- sf - The `PetscSF`
 
   Level: intermediate
 
-  Note: Any previous SF is destroyed
+  Note:
+  Any previous `PetscSF` is destroyed
 
 .seealso: `DMGetSectionSF()`, `DMCreateSectionSF()`
 @*/
@@ -4509,21 +4668,23 @@ PetscErrorCode DMSetSectionSF(DM dm, PetscSF sf)
 }
 
 /*@C
-  DMCreateSectionSF - Create the PetscSF encoding the parallel dof overlap for the DM based upon the PetscSections
+  DMCreateSectionSF - Create the `PetscSF` encoding the parallel dof overlap for the `DM` based upon the `PetscSection`s
   describing the data layout.
 
   Input Parameters:
-+ dm - The DM
-. localSection - PetscSection describing the local data layout
-- globalSection - PetscSection describing the global data layout
-
-  Notes: One usually uses DMGetSectionSF() to obtain the PetscSF
++ dm - The `DM`
+. localSection - `PetscSection` describing the local data layout
+- globalSection - `PetscSection` describing the global data layout
 
   Level: developer
 
-  Developer Note: Since this routine has for arguments the two sections from the DM and puts the resulting PetscSF
-                  directly into the DM, perhaps this function should not take the local and global sections as
-                  input and should just obtain them from the DM?
+  Note:
+  One usually uses `DMGetSectionSF()` to obtain the `PetscSF`
+
+  Developer Note:
+  Since this routine has for arguments the two sections from the `DM` and puts the resulting `PetscSF`
+  directly into the `DM`, perhaps this function should not take the local and global sections as
+  input and should just obtain them from the `DM`?
 
 .seealso: `DMGetSectionSF()`, `DMSetSectionSF()`, `DMGetLocalSection()`, `DMGetGlobalSection()`
 @*/
@@ -4536,17 +4697,20 @@ PetscErrorCode DMCreateSectionSF(DM dm, PetscSection localSection, PetscSection 
 }
 
 /*@
-  DMGetPointSF - Get the PetscSF encoding the parallel section point overlap for the DM.
+  DMGetPointSF - Get the `PetscSF` encoding the parallel section point overlap for the `DM`.
+
+  Not collective but the resulting `PetscSF` is collective
 
   Input Parameter:
-. dm - The DM
+. dm - The `DM`
 
   Output Parameter:
-. sf - The PetscSF
+. sf - The `PetscSF`
 
   Level: intermediate
 
-  Note: This gets a borrowed reference, so the user should not destroy this PetscSF.
+  Note:
+  This gets a borrowed reference, so the user should not destroy this `PetscSF`.
 
 .seealso: `DMSetPointSF()`, `DMGetSectionSF()`, `DMSetSectionSF()`, `DMCreateSectionSF()`
 @*/
@@ -4560,11 +4724,13 @@ PetscErrorCode DMGetPointSF(DM dm, PetscSF *sf)
 }
 
 /*@
-  DMSetPointSF - Set the PetscSF encoding the parallel section point overlap for the DM.
+  DMSetPointSF - Set the `PetscSF` encoding the parallel section point overlap for the `DM`.
+
+  Collective on dm
 
   Input Parameters:
-+ dm - The DM
-- sf - The PetscSF
++ dm - The `DM`
+- sf - The` PetscSF`
 
   Level: intermediate
 
@@ -4582,17 +4748,18 @@ PetscErrorCode DMSetPointSF(DM dm, PetscSF sf)
 }
 
 /*@
-  DMGetNaturalSF - Get the PetscSF encoding the map back to the original mesh ordering
+  DMGetNaturalSF - Get the `PetscSF` encoding the map back to the original mesh ordering
 
   Input Parameter:
-. dm - The DM
+. dm - The `DM`
 
   Output Parameter:
-. sf - The PetscSF
+. sf - The `PetscSF`
 
   Level: intermediate
 
-  Note: This gets a borrowed reference, so the user should not destroy this PetscSF.
+  Note:
+  This gets a borrowed reference, so the user should not destroy this `PetscSF`.
 
 .seealso: `DMSetNaturalSF()`, `DMSetUseNatural()`, `DMGetUseNatural()`, `DMPlexCreateGlobalToNaturalSF()`, `DMPlexDistribute()`
 @*/
@@ -4742,103 +4909,112 @@ PetscErrorCode DMSetNumFields(DM dm, PetscInt numFields)
 }
 
 /*@
-  DMGetField - Return the discretization object for a given DM field
+  DMGetField - Return the `DMLabel` and discretization object for a given `DM` field
 
   Not collective
 
   Input Parameters:
-+ dm - The DM
++ dm - The `DM`
 - f  - The field number
 
   Output Parameters:
-+ label - The label indicating the support of the field, or NULL for the entire mesh
-- field - The discretization object
++ label - The label indicating the support of the field, or NULL for the entire mesh (pass in NULL if not needed)
+- disc - The discretization object (pass in NULL if not needed)
 
   Level: intermediate
 
 .seealso: `DMAddField()`, `DMSetField()`
 @*/
-PetscErrorCode DMGetField(DM dm, PetscInt f, DMLabel *label, PetscObject *field)
+PetscErrorCode DMGetField(DM dm, PetscInt f, DMLabel *label, PetscObject *disc)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(field, 4);
+  PetscValidPointer(disc, 4);
   PetscCheck((f >= 0) && (f < dm->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be in [0, %" PetscInt_FMT ")", f, dm->Nf);
   if (label) *label = dm->fields[f].label;
-  if (field) *field = dm->fields[f].disc;
+  if (disc) *disc = dm->fields[f].disc;
   PetscFunctionReturn(0);
 }
 
 /* Does not clear the DS */
-PetscErrorCode DMSetField_Internal(DM dm, PetscInt f, DMLabel label, PetscObject field)
+PetscErrorCode DMSetField_Internal(DM dm, PetscInt f, DMLabel label, PetscObject disc)
 {
   PetscFunctionBegin;
   PetscCall(DMFieldEnlarge_Static(dm, f+1));
   PetscCall(DMLabelDestroy(&dm->fields[f].label));
   PetscCall(PetscObjectDestroy(&dm->fields[f].disc));
   dm->fields[f].label = label;
-  dm->fields[f].disc  = field;
+  dm->fields[f].disc  = disc;
   PetscCall(PetscObjectReference((PetscObject) label));
-  PetscCall(PetscObjectReference((PetscObject) field));
+  PetscCall(PetscObjectReference((PetscObject) disc));
   PetscFunctionReturn(0);
 }
 
 /*@
-  DMSetField - Set the discretization object for a given DM field
+  DMSetField - Set the discretization object for a given `DM` field. Usually one would call `DMAddField()` which automatically handles
+  the field numbering.
 
   Logically collective on dm
 
   Input Parameters:
-+ dm    - The DM
++ dm    - The `DM`
 . f     - The field number
 . label - The label indicating the support of the field, or NULL for the entire mesh
-- field - The discretization object
+- disc - The discretization object
 
   Level: intermediate
 
 .seealso: `DMAddField()`, `DMGetField()`
 @*/
-PetscErrorCode DMSetField(DM dm, PetscInt f, DMLabel label, PetscObject field)
+PetscErrorCode DMSetField(DM dm, PetscInt f, DMLabel label, PetscObject disc)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   if (label) PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 3);
-  PetscValidHeader(field, 4);
+  PetscValidHeader(disc, 4);
   PetscCheck(f >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be non-negative", f);
-  PetscCall(DMSetField_Internal(dm, f, label, field));
-  PetscCall(DMSetDefaultAdjacency_Private(dm, f, field));
+  PetscCall(DMSetField_Internal(dm, f, label, disc));
+  PetscCall(DMSetDefaultAdjacency_Private(dm, f, disc));
   PetscCall(DMClearDS(dm));
   PetscFunctionReturn(0);
 }
 
 /*@
-  DMAddField - Add the discretization object for the given DM field
+  DMAddField - Add a field to a `DM` object. A field is a function space defined by of a set of discretization points (geometric entities)
+  and a discretization object that defines the function space associated with those points.
 
   Logically collective on dm
 
   Input Parameters:
-+ dm    - The DM
++ dm    - The `DM`
 . label - The label indicating the support of the field, or NULL for the entire mesh
-- field - The discretization object
+- disc - The discretization object
 
   Level: intermediate
 
-.seealso: `DMSetField()`, `DMGetField()`
+  Notes:
+  The label already exists or will be added to the `DM` with `DMSetLabel()`.
+
+  For example, a piecewise continous pressure field can be defined by coefficients at the cell centers of a mesh and piecewise constant functions
+  within each cell. Thus a specific function in the space is defined by the combination of a `Vec` containing the coefficients, a `DM` defining the
+  geometry entities, a `DMLabel` indicating a subset of those geometric entities, and a discretization object, such as a `PetscFE`.
+
+.seealso: `DMSetLabel()`, `DMSetField()`, `DMGetField()`, `PetscFE`
 @*/
-PetscErrorCode DMAddField(DM dm, DMLabel label, PetscObject field)
+PetscErrorCode DMAddField(DM dm, DMLabel label, PetscObject disc)
 {
   PetscInt       Nf = dm->Nf;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   if (label) PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 2);
-  PetscValidHeader(field, 3);
+  PetscValidHeader(disc, 3);
   PetscCall(DMFieldEnlarge_Static(dm, Nf+1));
   dm->fields[Nf].label = label;
-  dm->fields[Nf].disc  = field;
+  dm->fields[Nf].disc  = disc;
   PetscCall(PetscObjectReference((PetscObject) label));
-  PetscCall(PetscObjectReference((PetscObject) field));
-  PetscCall(DMSetDefaultAdjacency_Private(dm, Nf, field));
+  PetscCall(PetscObjectReference((PetscObject) disc));
+  PetscCall(DMSetDefaultAdjacency_Private(dm, Nf, disc));
   PetscCall(DMClearDS(dm));
   PetscFunctionReturn(0);
 }
@@ -4849,9 +5025,9 @@ PetscErrorCode DMAddField(DM dm, DMLabel label, PetscObject field)
   Logically collective on dm
 
   Input Parameters:
-+ dm          - The DM
++ dm          - The `DM`
 . f           - The field index
-- avoidTensor - The flag to avoid defining the field on tensor cells
+- avoidTensor - `PETSC_TRUE` to skip defining the field on tensor cells
 
   Level: intermediate
 
@@ -4868,10 +5044,10 @@ PetscErrorCode DMSetFieldAvoidTensor(DM dm, PetscInt f, PetscBool avoidTensor)
 /*@
   DMGetFieldAvoidTensor - Get flag to avoid defining the field on tensor cells
 
-  Logically collective on dm
+  Not collective
 
   Input Parameters:
-+ dm          - The DM
++ dm          - The `DM`
 - f           - The field index
 
   Output Parameter:
@@ -4879,7 +5055,7 @@ PetscErrorCode DMSetFieldAvoidTensor(DM dm, PetscInt f, PetscBool avoidTensor)
 
   Level: intermediate
 
-.seealso: `DMSetFieldAvoidTensor()`, `DMSetField()`, `DMGetField()`
+ .seealso: `DMAddField()`, `DMSetField()`, `DMGetField()`, `DMSetFieldAvoidTensor()`, `DMSetField()`, `DMGetField()`
 @*/
 PetscErrorCode DMGetFieldAvoidTensor(DM dm, PetscInt f, PetscBool *avoidTensor)
 {
@@ -4890,15 +5066,15 @@ PetscErrorCode DMGetFieldAvoidTensor(DM dm, PetscInt f, PetscBool *avoidTensor)
 }
 
 /*@
-  DMCopyFields - Copy the discretizations for the DM into another DM
+  DMCopyFields - Copy the discretizations for the `DM` into another `DM`
 
   Collective on dm
 
   Input Parameter:
-. dm - The DM
+. dm - The `DM`
 
   Output Parameter:
-. newdm - The DM
+. newdm - The `DM`
 
   Level: advanced
 
@@ -5338,17 +5514,18 @@ PetscErrorCode DMGetRegionDS(DM dm, DMLabel label, IS *fields, PetscDS *ds)
 }
 
 /*@
-  DMSetRegionDS - Set the PetscDS for a given mesh region, defined by a DMLabel
+  DMSetRegionDS - Set the `PetscDS` for a given mesh region, defined by a `DMLabel`
 
   Collective on dm
 
   Input Parameters:
-+ dm     - The DM
-. label  - The DMLabel defining the mesh region, or NULL for the entire mesh
-. fields - The IS containing the DM field numbers for the fields in this DS, or NULL for all fields
-- prob   - The PetscDS defined on the given cell
++ dm     - The `DM`
+. label  - The `DMLabel` defining the mesh region, or NULL for the entire mesh
+. fields - The IS containing the `DM` field numbers for the fields in this `PetscDS`, or NULL for all fields
+- prob   - The `PetscDS` defined on the given region
 
-  Note: If the label has a DS defined, it will be replaced. Otherwise, it will be added to the DM. If DS is replaced,
+  Note:
+  If the label has a `PetscDS` defined, it will be replaced. Otherwise, it will be added to the `DM`. If the `PetscDS` is replaced,
   the fields argument is ignored.
 
   Level: advanced
@@ -5501,20 +5678,21 @@ PetscErrorCode DMFindRegionNum(DM dm, PetscDS ds, PetscInt *num)
 }
 
 /*@C
-  DMCreateFEDefault - Create a PetscFE based on the celltype for the mesh
+  DMCreateFEDefault - Create a `PetscFE` based on the celltype for the mesh
 
   Not collective
 
   Input Parameters:
-+ dm     - The DM
++ dm     - The `DM`
 . Nc     - The number of components for the field
-. prefix - The options prefix for the output PetscFE, or NULL
-- qorder - The quadrature order or PETSC_DETERMINE to use PetscSpace polynomial degree
+. prefix - The options prefix for the output `PetscFE`, or NULL
+- qorder - The quadrature order or `PETSC_DETERMINE` to use `PetscSpace` polynomial degree
 
   Output Parameter:
-. fem - The PetscFE
+. fem - The `PetscFE`
 
-  Note: This is a convenience method that just calls PetscFECreateByCell() underneath.
+  Note:
+  This is a convenience method that just calls `PetscFECreateByCell()` underneath.
 
   Level: intermediate
 
@@ -5539,17 +5717,18 @@ PetscErrorCode DMCreateFEDefault(DM dm, PetscInt Nc, const char prefix[], PetscI
 }
 
 /*@
-  DMCreateDS - Create the discrete systems for the DM based upon the fields added to the DM
+  DMCreateDS - Create the discrete systems for the `DM` based upon the fields added to the `DM`
 
   Collective on dm
 
   Input Parameter:
-. dm - The DM
+. dm - The `DM`
 
   Options Database Keys:
-. -dm_petscds_view - View all the PetscDS objects in this DM
+. -dm_petscds_view - View all the `PetscDS` objects in this `DM`
 
-  Note: If the label has a DS defined, it will be replaced. Otherwise, it will be added to the DM.
+  Note:
+  If the label has a `PetscDS` defined, it will be replaced. Otherwise, it will be added to the `DM`.
 
   Level: intermediate
 
@@ -5764,19 +5943,20 @@ PetscErrorCode DMCreateDS(DM dm)
 }
 
 /*@
-  DMComputeExactSolution - Compute the exact solution for a given DM, using the PetscDS information.
+  DMComputeExactSolution - Compute the exact solution for a given `DM`, using the `PetscDS` information.
 
-  Collective on DM
+  Collective on `DM`
 
   Input Parameters:
-+ dm   - The DM
++ dm   - The `DM`
 - time - The time
 
   Output Parameters:
 + u    - The vector will be filled with exact solution values, or NULL
 - u_t  - The vector will be filled with the time derivative of exact solution values, or NULL
 
-  Note: The user must call PetscDSSetExactSolution() beforehand
+  Note:
+  The user must call `PetscDSSetExactSolution()` before using this routine
 
   Level: developer
 
@@ -5886,15 +6066,15 @@ PetscErrorCode DMTransferDS_Internal(DM dm, DMLabel label, IS fields, PetscDS ds
 }
 
 /*@
-  DMCopyDS - Copy the discrete systems for the DM into another DM
+  DMCopyDS - Copy the discrete systems for the `DM` into another `DM`
 
   Collective on dm
 
   Input Parameter:
-. dm - The DM
+. dm - The `DM`
 
   Output Parameter:
-. newdm - The DM
+. newdm - The `DM`
 
   Level: advanced
 
@@ -5934,17 +6114,20 @@ PetscErrorCode DMCopyDS(DM dm, DM newdm)
 }
 
 /*@
-  DMCopyDisc - Copy the fields and discrete systems for the DM into another DM
+  DMCopyDisc - Copy the fields and discrete systems for the `DM` into another `DM`
 
   Collective on dm
 
   Input Parameter:
-. dm - The DM
+. dm - The `DM`
 
   Output Parameter:
-. newdm - The DM
+. newdm - The `DM`
 
   Level: advanced
+
+  Developer Note:
+  Really ugly name, nothing in PETSc is called a `Disc` plus it is an ugly abbreviation
 
 .seealso: `DMCopyFields()`, `DMCopyDS()`
 @*/
@@ -5957,12 +6140,12 @@ PetscErrorCode DMCopyDisc(DM dm, DM newdm)
 }
 
 /*@
-  DMGetDimension - Return the topological dimension of the DM
+  DMGetDimension - Return the topological dimension of the `DM`
 
   Not collective
 
   Input Parameter:
-. dm - The DM
+. dm - The `DM`
 
   Output Parameter:
 . dim - The topological dimension
@@ -5981,12 +6164,12 @@ PetscErrorCode DMGetDimension(DM dm, PetscInt *dim)
 }
 
 /*@
-  DMSetDimension - Set the topological dimension of the DM
+  DMSetDimension - Set the topological dimension of the `DM`
 
   Collective on dm
 
   Input Parameters:
-+ dm - The DM
++ dm - The `DM`
 - dim - The topological dimension
 
   Level: beginner
@@ -6018,7 +6201,7 @@ PetscErrorCode DMSetDimension(DM dm, PetscInt dim)
   Collective on dm
 
   Input Parameters:
-+ dm - the DM
++ dm - the `DM`
 - dim - the dimension
 
   Output Parameters:
@@ -6048,19 +6231,24 @@ PetscErrorCode DMGetDimPoints(DM dm, PetscInt dim, PetscInt *pStart, PetscInt *p
 }
 
 /*@
-  DMGetOutputDM - Retrieve the DM associated with the layout for output
+  DMGetOutputDM - Retrieve the `DM` associated with the layout for output
 
   Collective on dm
 
   Input Parameter:
-. dm - The original DM
+. dm - The original `DM`
 
   Output Parameter:
-. odm - The DM which provides the layout for output
+. odm - The `DM` which provides the layout for output
 
   Level: intermediate
 
-.seealso: `VecView()`, `DMGetGlobalSection()`
+  Note:
+  In some situations the vector obtained with `DMCreateGlobalVector()` excludes points for degrees of freedom that are associated with fixed (Dirichelet) boundary
+  conditions since the algebraic solver does not solve for those variables. The output `DM` includes these excluded points and its global vector contains the
+  locations for those dof so that they can be output to a file or other viewer along with the unconstrained dof.
+
+.seealso: `VecView()`, `DMGetGlobalSection()`, `DMCreateGlobalVector()`, `PetscSectionHasConstraints()`, `DMSetGlobalSection()`
 @*/
 PetscErrorCode DMGetOutputDM(DM dm, DM *odm)
 {
@@ -6099,7 +6287,7 @@ PetscErrorCode DMGetOutputDM(DM dm, DM *odm)
   DMGetOutputSequenceNumber - Retrieve the sequence number/value for output
 
   Input Parameter:
-. dm - The original DM
+. dm - The original `DM`
 
   Output Parameters:
 + num - The output sequence number
@@ -6107,8 +6295,13 @@ PetscErrorCode DMGetOutputDM(DM dm, DM *odm)
 
   Level: intermediate
 
-  Note: This is intended for output that should appear in sequence, for instance
-  a set of timesteps in an HDF5 file, or a set of realizations of a stochastic system.
+  Note:
+  This is intended for output that should appear in sequence, for instance
+  a set of timesteps in an `PETSCVIEWERHDF5` file, or a set of realizations of a stochastic system.
+
+  Developer Note:
+  The `DM` serves as a convenient place to store the current iteration value. The iteration is not
+  not directly related to the `DM`.
 
 .seealso: `VecView()`
 @*/
@@ -6125,14 +6318,15 @@ PetscErrorCode DMGetOutputSequenceNumber(DM dm, PetscInt *num, PetscReal *val)
   DMSetOutputSequenceNumber - Set the sequence number/value for output
 
   Input Parameters:
-+ dm - The original DM
++ dm - The original `DM`
 . num - The output sequence number
 - val - The output sequence value
 
   Level: intermediate
 
-  Note: This is intended for output that should appear in sequence, for instance
-  a set of timesteps in an HDF5 file, or a set of realizations of a stochastic system.
+  Note:
+  This is intended for output that should appear in sequence, for instance
+  a set of timesteps in an `PETSCVIEWERHDF5` file, or a set of realizations of a stochastic system.
 
 .seealso: `VecView()`
 @*/
@@ -6146,10 +6340,10 @@ PetscErrorCode DMSetOutputSequenceNumber(DM dm, PetscInt num, PetscReal val)
 }
 
 /*@C
-  DMOutputSequenceLoad - Retrieve the sequence value from a Viewer
+ DMOutputSequenceLoad - Retrieve the sequence value from a `PetscViewer`
 
   Input Parameters:
-+ dm   - The original DM
++ dm   - The original `DM`
 . name - The sequence name
 - num  - The output sequence number
 
@@ -6158,8 +6352,12 @@ PetscErrorCode DMSetOutputSequenceNumber(DM dm, PetscInt num, PetscReal val)
 
   Level: intermediate
 
-  Note: This is intended for output that should appear in sequence, for instance
-  a set of timesteps in an HDF5 file, or a set of realizations of a stochastic system.
+  Note:
+  This is intended for output that should appear in sequence, for instance
+  a set of timesteps in an `PETSCVIEWERHDF5` file, or a set of realizations of a stochastic system.
+
+  Developer Note:
+  It is unclear at the user API level why a `DM` is needed as input
 
 .seealso: `DMGetOutputSequenceNumber()`, `DMSetOutputSequenceNumber()`, `VecView()`
 @*/
@@ -6184,15 +6382,15 @@ PetscErrorCode DMOutputSequenceLoad(DM dm, PetscViewer viewer, const char *name,
 }
 
 /*@
-  DMGetUseNatural - Get the flag for creating a mapping to the natural order on distribution
+  DMGetUseNatural - Get the flag for creating a mapping to the natural order when a `DM` is (re)distributed in parallel
 
   Not collective
 
   Input Parameter:
-. dm - The DM
+. dm - The `DM`
 
   Output Parameter:
-. useNatural - The flag to build the mapping to a natural order during distribution
+. useNatural - `PETSC_TRUE` to build the mapping to a natural order during distribution
 
   Level: beginner
 
@@ -6208,15 +6406,16 @@ PetscErrorCode DMGetUseNatural(DM dm, PetscBool *useNatural)
 }
 
 /*@
-  DMSetUseNatural - Set the flag for creating a mapping to the natural order after distribution
+  DMSetUseNatural - Set the flag for creating a mapping to the natural order when a `DM` is (re)distributed in parallel
 
   Collective on dm
 
   Input Parameters:
-+ dm - The DM
-- useNatural - The flag to build the mapping to a natural order during distribution
+ + dm - The `DM`
+- useNatural - `PETSC_TRUE` to build the mapping to a natural order during distribution
 
-  Note: This also causes the map to be build after DMCreateSubDM() and DMCreateSuperDM()
+  Note:
+  This also causes the map to be build after `DMCreateSubDM()` and `DMCreateSuperDM()`
 
   Level: beginner
 
@@ -6232,12 +6431,12 @@ PetscErrorCode DMSetUseNatural(DM dm, PetscBool useNatural)
 }
 
 /*@C
-  DMCreateLabel - Create a label of the given name if it does not already exist
+  DMCreateLabel - Create a label of the given name if it does not already exist in the `DM`
 
   Not Collective
 
   Input Parameters:
-+ dm   - The DM object
++ dm   - The `DM` object
 - name - The label name
 
   Level: intermediate
@@ -6262,12 +6461,12 @@ PetscErrorCode DMCreateLabel(DM dm, const char name[])
 }
 
 /*@C
-  DMCreateLabelAtIndex - Create a label of the given name at the given index. If it already exists, move it to this index.
+  DMCreateLabelAtIndex - Create a label of the given name at the given index. If it already exists in the `DM`, move it to this index.
 
   Not Collective
 
   Input Parameters:
-+ dm   - The DM object
++ dm   - The `DM` object
 . l    - The index for the label
 - name - The label name
 
@@ -6314,12 +6513,12 @@ PetscErrorCode DMCreateLabelAtIndex(DM dm, PetscInt l, const char name[])
 }
 
 /*@C
-  DMGetLabelValue - Get the value in a DMLabel for the given point, with -1 as the default
+  DMGetLabelValue - Get the value in a `DMLabel` for the given point, with -1 as the default
 
   Not Collective
 
   Input Parameters:
-+ dm   - The DM object
++ dm   - The `DM` object
 . name - The label name
 - point - The mesh point
 
@@ -6344,12 +6543,12 @@ PetscErrorCode DMGetLabelValue(DM dm, const char name[], PetscInt point, PetscIn
 }
 
 /*@C
-  DMSetLabelValue - Add a point to a DMLabel with given value
+  DMSetLabelValue - Add a point to a `DMLabel` with given value
 
   Not Collective
 
   Input Parameters:
-+ dm   - The DM object
++ dm   - The `DM` object
 . name - The label name
 . point - The mesh point
 - value - The label value for this point
@@ -6377,17 +6576,15 @@ PetscErrorCode DMSetLabelValue(DM dm, const char name[], PetscInt point, PetscIn
 }
 
 /*@C
-  DMClearLabelValue - Remove a point from a DMLabel with given value
+  DMClearLabelValue - Remove a point from a `DMLabel` with given value
 
   Not Collective
 
   Input Parameters:
-+ dm   - The DM object
++ dm   - The `DM` object
 . name - The label name
 . point - The mesh point
 - value - The label value for this point
-
-  Output Parameter:
 
   Level: beginner
 
@@ -6407,12 +6604,12 @@ PetscErrorCode DMClearLabelValue(DM dm, const char name[], PetscInt point, Petsc
 }
 
 /*@C
-  DMGetLabelSize - Get the number of different integer ids in a Label
+  DMGetLabelSize - Get the value of `DMLabelGetNumValues()` of a `DMLabel` in the `DM`
 
   Not Collective
 
   Input Parameters:
-+ dm   - The DM object
++ dm   - The `DM` object
 - name - The label name
 
   Output Parameter:
@@ -6420,7 +6617,10 @@ PetscErrorCode DMClearLabelValue(DM dm, const char name[], PetscInt point, Petsc
 
   Level: beginner
 
-.seealso: `DMLabelGetNumValues()`, `DMSetLabelValue()`
+  Developer Note:
+  This should be renamed to something like `DMGetLabelNumValues()` or removed.
+
+.seealso: `DMLabelGetNumValues()`, `DMSetLabelValue()`, `DMGetLabel()`
 @*/
 PetscErrorCode DMGetLabelSize(DM dm, const char name[], PetscInt *size)
 {
@@ -6438,12 +6638,12 @@ PetscErrorCode DMGetLabelSize(DM dm, const char name[], PetscInt *size)
 }
 
 /*@C
-  DMGetLabelIdIS - Get the integer ids in a label
+  DMGetLabelIdIS - Get the `DMLabelGetValueIS()` from a `DMLabel` in the `DM`
 
   Not Collective
 
   Input Parameters:
-+ mesh - The DM object
++ mesh - The `DM` object
 - name - The label name
 
   Output Parameter:
@@ -6478,12 +6678,12 @@ PetscErrorCode DMGetLabelIdIS(DM dm, const char name[], IS *ids)
   Not Collective
 
   Input Parameters:
-+ dm - The DM object
++ dm - The `DM` object
 . name - The label name
 - value - The stratum value
 
   Output Parameter:
-. size - The stratum size
+. size - The number of points, also called the stratum size
 
   Level: beginner
 
@@ -6510,7 +6710,7 @@ PetscErrorCode DMGetStratumSize(DM dm, const char name[], PetscInt value, PetscI
   Not Collective
 
   Input Parameters:
-+ dm - The DM object
++ dm - The `DM` object
 . name - The label name
 - value - The stratum value
 
@@ -6542,14 +6742,14 @@ PetscErrorCode DMGetStratumIS(DM dm, const char name[], PetscInt value, IS *poin
   Not Collective
 
   Input Parameters:
-+ dm - The DM object
++ dm - The `DM` object
 . name - The label name
 . value - The stratum value
 - points - The stratum points
 
   Level: beginner
 
-.seealso: `DMLabelSetStratumIS()`, `DMGetStratumSize()`
+.seealso: `DMLabel`, `DMClearLabelStratum()`, `DMLabelClearStratum()`, `DMLabelSetStratumIS()`, `DMGetStratumSize()`
 @*/
 PetscErrorCode DMSetStratumIS(DM dm, const char name[], PetscInt value, IS points)
 {
@@ -6566,12 +6766,12 @@ PetscErrorCode DMSetStratumIS(DM dm, const char name[], PetscInt value, IS point
 }
 
 /*@C
-  DMClearLabelStratum - Remove all points from a stratum from a DMLabel
+  DMClearLabelStratum - Remove all points from a stratum from a `DMLabel`
 
   Not Collective
 
   Input Parameters:
-+ dm   - The DM object
++ dm   - The `DM` object
 . name - The label name
 - value - The label value for this point
 
@@ -6579,7 +6779,7 @@ PetscErrorCode DMSetStratumIS(DM dm, const char name[], PetscInt value, IS point
 
   Level: beginner
 
-.seealso: `DMLabelClearStratum()`, `DMSetLabelValue()`, `DMGetStratumIS()`, `DMClearLabelValue()`
+.seealso: `DMLabel`, `DMLabelClearStratum()`, `DMSetLabelValue()`, `DMGetStratumIS()`, `DMClearLabelValue()`
 @*/
 PetscErrorCode DMClearLabelStratum(DM dm, const char name[], PetscInt value)
 {
@@ -6595,19 +6795,19 @@ PetscErrorCode DMClearLabelStratum(DM dm, const char name[], PetscInt value)
 }
 
 /*@
-  DMGetNumLabels - Return the number of labels defined by the mesh
+  DMGetNumLabels - Return the number of labels defined by on the `DM`
 
   Not Collective
 
   Input Parameter:
-. dm   - The DM object
+. dm   - The `DM` object
 
   Output Parameter:
 . numLabels - the number of Labels
 
   Level: intermediate
 
-.seealso: `DMGetLabelValue()`, `DMSetLabelValue()`, `DMGetStratumIS()`
+.seealso: `DMLabel`, `DMGetLabelByNum()`, `DMGetLabelName()`, `DMGetLabelValue()`, `DMSetLabelValue()`, `DMGetStratumIS()`
 @*/
 PetscErrorCode DMGetNumLabels(DM dm, PetscInt *numLabels)
 {
@@ -6628,7 +6828,7 @@ PetscErrorCode DMGetNumLabels(DM dm, PetscInt *numLabels)
   Not Collective
 
   Input Parameters:
-+ dm - The DM object
++ dm - The `DM` object
 - n  - the label number
 
   Output Parameter:
@@ -6636,7 +6836,10 @@ PetscErrorCode DMGetNumLabels(DM dm, PetscInt *numLabels)
 
   Level: intermediate
 
-.seealso: `DMGetLabelValue()`, `DMSetLabelValue()`, `DMGetStratumIS()`
+  Developer Note:
+  Some of the functions that appropriate on labels using their number have the suffix ByNum, others do not.
+
+.seealso: `DMLabel`, `DMGetLabelByNum()`, `DMGetLabel()`, `DMGetLabelValue()`, `DMSetLabelValue()`, `DMGetStratumIS()`
 @*/
 PetscErrorCode DMGetLabelName(DM dm, PetscInt n, const char **name)
 {
@@ -6658,20 +6861,20 @@ PetscErrorCode DMGetLabelName(DM dm, PetscInt n, const char **name)
 }
 
 /*@C
-  DMHasLabel - Determine whether the mesh has a label of a given name
+  DMHasLabel - Determine whether the `DM` has a label of a given name
 
   Not Collective
 
   Input Parameters:
-+ dm   - The DM object
++ dm   - The `DM` object
 - name - The label name
 
   Output Parameter:
-. hasLabel - PETSC_TRUE if the label is present
+. hasLabel - `PETSC_TRUE` if the label is present
 
   Level: intermediate
 
-.seealso: `DMCreateLabel()`, `DMGetLabelValue()`, `DMSetLabelValue()`, `DMGetStratumIS()`
+.seealso: `DMLabel`, `DMGetLabel()`, `DMGetLabelByNum()`, `DMCreateLabel()`, `DMGetLabelValue()`, `DMSetLabelValue()`, `DMGetStratumIS()`
 @*/
 PetscErrorCode DMHasLabel(DM dm, const char name[], PetscBool *hasLabel)
 {
@@ -6693,28 +6896,28 @@ PetscErrorCode DMHasLabel(DM dm, const char name[], PetscBool *hasLabel)
 }
 
 /*@C
-  DMGetLabel - Return the label of a given name, or NULL
+  DMGetLabel - Return the label of a given name, or NULL, from a `DM`
 
   Not Collective
 
   Input Parameters:
-+ dm   - The DM object
++ dm   - The `DM` object
 - name - The label name
 
   Output Parameter:
-. label - The DMLabel, or NULL if the label is absent
+. label - The `DMLabel`, or NULL if the label is absent
 
-  Note: Some of the default labels in a DMPlex will be
-$ "depth"       - Holds the depth (co-dimension) of each mesh point
-$ "celltype"    - Holds the topological type of each cell
-$ "ghost"       - If the DM is distributed with overlap, this marks the cells and faces in the overlap
-$ "Cell Sets"   - Mirrors the cell sets defined by GMsh and ExodusII
-$ "Face Sets"   - Mirrors the face sets defined by GMsh and ExodusII
-$ "Vertex Sets" - Mirrors the vertex sets defined by GMsh
+  Default labels in a `DMPLEX`:
++   "depth"       - Holds the depth (co-dimension) of each mesh point
+.   "celltype"    - Holds the topological type of each cell
+.   "ghost"       - If the DM is distributed with overlap, this marks the cells and faces in the overlap
+.   "Cell Sets"   - Mirrors the cell sets defined by GMsh and ExodusII
+.   "Face Sets"   - Mirrors the face sets defined by GMsh and ExodusII
+-  "Vertex Sets" - Mirrors the vertex sets defined by GMsh
 
   Level: intermediate
 
-.seealso: `DMCreateLabel()`, `DMHasLabel()`, `DMPlexGetDepthLabel()`, `DMPlexGetCellType()`
+.seealso: `DMLabel`, `DMHasLabel()`, `DMGetLabelByNum()`, `DMAddLabel()`, `DMCreateLabel()`, `DMHasLabel()`, `DMPlexGetDepthLabel()`, `DMPlexGetCellType()`
 @*/
 PetscErrorCode DMGetLabel(DM dm, const char name[], DMLabel *label)
 {
@@ -6740,12 +6943,12 @@ PetscErrorCode DMGetLabel(DM dm, const char name[], DMLabel *label)
 }
 
 /*@C
-  DMGetLabelByNum - Return the nth label
+  DMGetLabelByNum - Return the nth label on a `DM`
 
   Not Collective
 
   Input Parameters:
-+ dm - The DM object
++ dm - The `DM` object
 - n  - the label number
 
   Output Parameter:
@@ -6753,7 +6956,7 @@ PetscErrorCode DMGetLabel(DM dm, const char name[], DMLabel *label)
 
   Level: intermediate
 
-.seealso: `DMGetLabelValue()`, `DMSetLabelValue()`, `DMGetStratumIS()`
+.seealso: `DMLabel`, `DMAddLabel()`, `DMGetLabelValue()`, `DMSetLabelValue()`, `DMGetStratumIS()`
 @*/
 PetscErrorCode DMGetLabelByNum(DM dm, PetscInt n, DMLabel *label)
 {
@@ -6775,17 +6978,17 @@ PetscErrorCode DMGetLabelByNum(DM dm, PetscInt n, DMLabel *label)
 }
 
 /*@C
-  DMAddLabel - Add the label to this mesh
+  DMAddLabel - Add the label to this `DM`
 
   Not Collective
 
   Input Parameters:
-+ dm   - The DM object
-- label - The DMLabel
++ dm   - The `DM` object
+- label - The `DMLabel`
 
   Level: developer
 
-.seealso: `DMCreateLabel()`, `DMHasLabel()`, `DMGetLabelValue()`, `DMSetLabelValue()`, `DMGetStratumIS()`
+.seealso: `DMLabel`, `DMLabel`, `DMCreateLabel()`, `DMHasLabel()`, `DMGetLabelValue()`, `DMSetLabelValue()`, `DMGetStratumIS()`
 @*/
 PetscErrorCode DMAddLabel(DM dm, DMLabel label)
 {
@@ -6818,20 +7021,20 @@ PetscErrorCode DMAddLabel(DM dm, DMLabel label)
   Not Collective
 
   Input Parameters:
-+ dm    - The DM object
-- label - The DMLabel, having the same name, to substitute
++ dm    - The `DM` object
+- label - The `DMLabel`, having the same name, to substitute
 
-  Note: Some of the default labels in a DMPlex will be
-$ "depth"       - Holds the depth (co-dimension) of each mesh point
-$ "celltype"    - Holds the topological type of each cell
-$ "ghost"       - If the DM is distributed with overlap, this marks the cells and faces in the overlap
-$ "Cell Sets"   - Mirrors the cell sets defined by GMsh and ExodusII
-$ "Face Sets"   - Mirrors the face sets defined by GMsh and ExodusII
-$ "Vertex Sets" - Mirrors the vertex sets defined by GMsh
+  Default labels in a `DMPLEX`:
++  "depth"       - Holds the depth (co-dimension) of each mesh point
+.  "celltype"    - Holds the topological type of each cell
+.  "ghost"       - If the DM is distributed with overlap, this marks the cells and faces in the overlap
+.  "Cell Sets"   - Mirrors the cell sets defined by GMsh and ExodusII
+.  "Face Sets"   - Mirrors the face sets defined by GMsh and ExodusII
+- "Vertex Sets" - Mirrors the vertex sets defined by GMsh
 
   Level: intermediate
 
-.seealso: `DMCreateLabel()`, `DMHasLabel()`, `DMPlexGetDepthLabel()`, `DMPlexGetCellType()`
+.seealso: `DMLabel`, `DMCreateLabel()`, `DMHasLabel()`, `DMPlexGetDepthLabel()`, `DMPlexGetCellType()`
 @*/
 PetscErrorCode DMSetLabel(DM dm, DMLabel label)
 {
@@ -6862,28 +7065,21 @@ PetscErrorCode DMSetLabel(DM dm, DMLabel label)
 }
 
 /*@C
-  DMRemoveLabel - Remove the label given by name from this mesh
+  DMRemoveLabel - Remove the label given by name from this `DM`
 
   Not Collective
 
   Input Parameters:
-+ dm   - The DM object
++ dm   - The `DM` object
 - name - The label name
 
   Output Parameter:
-. label - The DMLabel, or NULL if the label is absent
+. label - The `DMLabel`, or NULL if the label is absent. Pass in NULL to call `DMLabelDestroy()` on the label, otherwise the
+          caller is responsible for calling `DMLabelDestroy()`.
 
   Level: developer
 
-  Notes:
-  DMRemoveLabel(dm,name,NULL) removes the label from dm and calls
-  DMLabelDestroy() on the label.
-
-  DMRemoveLabel(dm,name,&label) removes the label from dm, but it DOES NOT
-  call DMLabelDestroy(). Instead, the label is returned and the user is
-  responsible of calling DMLabelDestroy() at some point.
-
-.seealso: `DMCreateLabel()`, `DMHasLabel()`, `DMGetLabel()`, `DMGetLabelValue()`, `DMSetLabelValue()`, `DMLabelDestroy()`, `DMRemoveLabelBySelf()`
+.seealso: `DMLabel`, `DMCreateLabel()`, `DMHasLabel()`, `DMGetLabel()`, `DMGetLabelValue()`, `DMSetLabelValue()`, `DMLabelDestroy()`, `DMRemoveLabelBySelf()`
 @*/
 PetscErrorCode DMRemoveLabel(DM dm, const char name[], DMLabel *label)
 {
@@ -6917,23 +7113,23 @@ PetscErrorCode DMRemoveLabel(DM dm, const char name[], DMLabel *label)
 }
 
 /*@
-  DMRemoveLabelBySelf - Remove the label from this mesh
+  DMRemoveLabelBySelf - Remove the label from this `DM`
 
   Not Collective
 
   Input Parameters:
-+ dm   - The DM object
-. label - The DMLabel to be removed from the DM
++ dm   - The `DM` object
+. label - The `DMLabel` to be removed from the `DM`
 - failNotFound - Should it fail if the label is not found in the DM?
 
   Level: developer
 
-  Notes:
+  Note:
   Only exactly the same instance is removed if found, name match is ignored.
-  If the DM has an exclusive reference to the label, it gets destroyed and
+  If the `DM` has an exclusive reference to the label, the label gets destroyed and
   *label nullified.
 
-.seealso: `DMCreateLabel()`, `DMHasLabel()`, `DMGetLabel()` `DMGetLabelValue()`, `DMSetLabelValue()`, `DMLabelDestroy()`, `DMRemoveLabel()`
+.seealso: `DMLabel`, `DMCreateLabel()`, `DMHasLabel()`, `DMGetLabel()` `DMGetLabelValue()`, `DMSetLabelValue()`, `DMLabelDestroy()`, `DMRemoveLabel()`
 @*/
 PetscErrorCode DMRemoveLabelBySelf(DM dm, DMLabel *label, PetscBool failNotFound)
 {
@@ -6968,7 +7164,7 @@ PetscErrorCode DMRemoveLabelBySelf(DM dm, DMLabel *label, PetscBool failNotFound
   Not Collective
 
   Input Parameters:
-+ dm   - The DM object
++ dm   - The `DM` object
 - name - The label name
 
   Output Parameter:
@@ -6976,7 +7172,7 @@ PetscErrorCode DMRemoveLabelBySelf(DM dm, DMLabel *label, PetscBool failNotFound
 
   Level: developer
 
-.seealso: `DMSetLabelOutput()`, `DMCreateLabel()`, `DMHasLabel()`, `DMGetLabelValue()`, `DMSetLabelValue()`, `DMGetStratumIS()`
+.seealso: `DMLabel`, `DMSetLabelOutput()`, `DMCreateLabel()`, `DMHasLabel()`, `DMGetLabelValue()`, `DMSetLabelValue()`, `DMGetStratumIS()`
 @*/
 PetscErrorCode DMGetLabelOutput(DM dm, const char name[], PetscBool *output)
 {
@@ -6999,18 +7195,18 @@ PetscErrorCode DMGetLabelOutput(DM dm, const char name[], PetscBool *output)
 }
 
 /*@C
-  DMSetLabelOutput - Set the output flag for a given label
+  DMSetLabelOutput - Set if a given label should be saved to a `PetscViewer` in calls to `DMView()`
 
   Not Collective
 
   Input Parameters:
-+ dm     - The DM object
++ dm     - The `DM` object
 . name   - The label name
-- output - The flag for output
+- output - `PETSC_TRUE` to save the label to the viewer
 
   Level: developer
 
-.seealso: `DMGetLabelOutput()`, `DMCreateLabel()`, `DMHasLabel()`, `DMGetLabelValue()`, `DMSetLabelValue()`, `DMGetStratumIS()`
+.seealso: `DMLabel`, `DMGetOutputFlag()`, `DMGetLabelOutput()`, `DMCreateLabel()`, `DMHasLabel()`, `DMGetLabelValue()`, `DMSetLabelValue()`, `DMGetStratumIS()`
 @*/
 PetscErrorCode DMSetLabelOutput(DM dm, const char name[], PetscBool output)
 {
@@ -7032,23 +7228,23 @@ PetscErrorCode DMSetLabelOutput(DM dm, const char name[], PetscBool output)
 }
 
 /*@
-  DMCopyLabels - Copy labels from one mesh to another with a superset of the points
+  DMCopyLabels - Copy labels from one `DM` mesh to another `DM` with a superset of the points
 
   Collective on dmA
 
   Input Parameters:
-+ dmA - The DM object with initial labels
-. dmB - The DM object to which labels are copied
-. mode - Copy labels by pointers (PETSC_OWN_POINTER) or duplicate them (PETSC_COPY_VALUES)
-. all  - Copy all labels including "depth", "dim", and "celltype" (PETSC_TRUE) which are otherwise ignored (PETSC_FALSE)
-- emode - How to behave when a DMLabel in the source and destination DMs with the same name is encountered (see DMCopyLabelsMode)
++ dmA - The `DM` object with initial labels
+. dmB - The `DM` object to which labels are copied
+. mode - Copy labels by pointers (`PETSC_OWN_POINTER`) or duplicate them (`PETSC_COPY_VALUES`)
+. all  - Copy all labels including "depth", "dim", and "celltype" (`PETSC_TRUE`) which are otherwise ignored (`PETSC_FALSE`)
+- emode - How to behave when a `DMLabel` in the source and destination `DM`s with the same name is encountered (see `DMCopyLabelsMode`)
 
   Level: intermediate
 
-  Notes:
+  Note:
   This is typically used when interpolating or otherwise adding to a mesh, or testing.
 
-.seealso: `DMAddLabel()`, `DMCopyLabelsMode`
+.seealso: `DMLabel`, `DMAddLabel()`, `DMCopyLabelsMode`
 @*/
 PetscErrorCode DMCopyLabels(DM dmA, DM dmB, PetscCopyMode mode, PetscBool all, DMCopyLabelsMode emode)
 {
@@ -7101,13 +7297,13 @@ PetscErrorCode DMCopyLabels(DM dmA, DM dmB, PetscCopyMode mode, PetscBool all, D
 }
 
 /*@C
-  DMCompareLabels - Compare labels of two DMPlex meshes
+  DMCompareLabels - Compare labels of two `DMPLEX` meshes
 
   Collective
 
   Input Parameters:
-+ dm0 - First DM object
-- dm1 - Second DM object
++ dm0 - First `DM` object
+- dm1 - Second `DM` object
 
   Output Parameters
 + equal   - (Optional) Flag whether labels of dm0 and dm1 are the same
@@ -7116,22 +7312,27 @@ PetscErrorCode DMCopyLabels(DM dmA, DM dmB, PetscCopyMode mode, PetscBool all, D
   Level: intermediate
 
   Notes:
-  The output flag equal is the same on all processes.
-  If it is passed as NULL and difference is found, an error is thrown on all processes.
-  Make sure to pass NULL on all processes.
+  The output flag equal will be the same on all processes.
+
+  If equal is passed as NULL and difference is found, an error is thrown on all processes.
+
+  Make sure to pass equal is NULL on all processes or none of them.
 
   The output message is set independently on each rank.
-  It is set to NULL if no difference was found on the current rank. It must be freed by user.
-  If message is passed as NULL and difference is found, the difference description is printed to stderr in synchronized manner.
-  Make sure to pass NULL on all processes.
+
+  message must be freed with `PetscFree()`
+
+  If message is passed as NULL and a difference is found, the difference description is printed to stderr in synchronized manner.
+
+  Make sure to pass message as NULL on all processes or no processes.
 
   Labels are matched by name. If the number of labels and their names are equal,
-  DMLabelCompare() is used to compare each pair of labels with the same name.
+  `DMLabelCompare()` is used to compare each pair of labels with the same name.
 
-  Fortran Notes:
-  This function is currently not available from Fortran.
+  Fortran Note:
+  This function is not available from Fortran.
 
-.seealso: `DMAddLabel()`, `DMCopyLabelsMode`, `DMLabelCompare()`
+.seealso: `DMLabel`, `DMAddLabel()`, `DMCopyLabelsMode`, `DMLabelCompare()`
 @*/
 PetscErrorCode DMCompareLabels(DM dm0, DM dm1, PetscBool *equal, char **message)
 {
@@ -7382,17 +7583,19 @@ PetscErrorCode DMUniversalLabelSetLabelValue(DMUniversalLabel ul, DM dm, PetscBo
 }
 
 /*@
-  DMGetCoarseDM - Get the coarse mesh from which this was obtained by refinement
+  DMGetCoarseDM - Get the coarse `DM`from which this `DM` was obtained by refinement
+
+  Not collective
 
   Input Parameter:
-. dm - The DM object
+. dm - The `DM` object
 
   Output Parameter:
-. cdm - The coarse DM
+. cdm - The coarse `DM`
 
   Level: intermediate
 
-.seealso: `DMSetCoarseDM()`
+.seealso: `DMSetCoarseDM()`, `DMCoarsen()`
 @*/
 PetscErrorCode DMGetCoarseDM(DM dm, DM *cdm)
 {
@@ -7404,15 +7607,18 @@ PetscErrorCode DMGetCoarseDM(DM dm, DM *cdm)
 }
 
 /*@
-  DMSetCoarseDM - Set the coarse mesh from which this was obtained by refinement
+  DMSetCoarseDM - Set the coarse `DM` from which this `DM` was obtained by refinement
 
   Input Parameters:
-+ dm - The DM object
-- cdm - The coarse DM
++ dm - The `DM` object
+- cdm - The coarse `DM`
 
   Level: intermediate
 
-.seealso: `DMGetCoarseDM()`
+  Note:
+  Normally this is set automatically by `DMRefine()`
+
+.seealso: `DMGetCoarseDM()`, `DMCoarsen()`, `DMSetRefine()`, `DMSetFineDM()`
 @*/
 PetscErrorCode DMSetCoarseDM(DM dm, DM cdm)
 {
@@ -7426,17 +7632,17 @@ PetscErrorCode DMSetCoarseDM(DM dm, DM cdm)
 }
 
 /*@
-  DMGetFineDM - Get the fine mesh from which this was obtained by refinement
+  DMGetFineDM - Get the fine mesh from which this `DM` was obtained by coarsening
 
   Input Parameter:
-. dm - The DM object
+. dm - The `DM` object
 
   Output Parameter:
-. fdm - The fine DM
+. fdm - The fine `DM`
 
   Level: intermediate
 
-.seealso: `DMSetFineDM()`
+.seealso: `DMSetFineDM()`, `DMCoarsen()`, `DMRefine()`
 @*/
 PetscErrorCode DMGetFineDM(DM dm, DM *fdm)
 {
@@ -7448,15 +7654,18 @@ PetscErrorCode DMGetFineDM(DM dm, DM *fdm)
 }
 
 /*@
-  DMSetFineDM - Set the fine mesh from which this was obtained by refinement
+  DMSetFineDM - Set the fine mesh from which this was obtained by coarsening
 
   Input Parameters:
-+ dm - The DM object
-- fdm - The fine DM
++ dm - The `DM` object
+- fdm - The fine `DM`
 
-  Level: intermediate
+  Level: developer
 
-.seealso: `DMGetFineDM()`
+  Note:
+  Normally this is set automatically by `DMCoarsen()`
+
+.seealso: `DMGetFineDM()`, `DMCoarsen()`, `DMRefine()`
 @*/
 PetscErrorCode DMSetFineDM(DM dm, DM fdm)
 {
@@ -7469,19 +7678,17 @@ PetscErrorCode DMSetFineDM(DM dm, DM fdm)
   PetscFunctionReturn(0);
 }
 
-/*=== DMBoundary code ===*/
-
 /*@C
-  DMAddBoundary - Add a boundary condition to the model
+  DMAddBoundary - Add a boundary condition to a model represented by a `DM`
 
   Collective on dm
 
   Input Parameters:
-+ dm       - The DM, with a PetscDS that matches the problem being constrained
-. type     - The type of condition, e.g. DM_BC_ESSENTIAL_ANALYTIC/DM_BC_ESSENTIAL_FIELD (Dirichlet), or DM_BC_NATURAL (Neumann)
++ dm       - The `DM`, with a `PetscDS` that matches the problem being constrained
+. type     - The type of condition, e.g. `DM_BC_ESSENTIAL_ANALYTIC`, `DM_BC_ESSENTIAL_FIELD` (Dirichlet), or `DM_BC_NATURAL` (Neumann)
 . name     - The BC name
 . label    - The label defining constrained points
-. Nv       - The number of DMLabel values for constrained points
+. Nv       - The number of `DMLabel` values for constrained points
 . values   - An array of values for constrained points
 . field    - The field to constrain
 . Nc       - The number of constrained field components (0 will constrain all fields)
@@ -7497,12 +7704,12 @@ PetscErrorCode DMSetFineDM(DM dm, DM fdm)
 + -bc_<boundary name> <num> - Overrides the boundary ids
 - -bc_<boundary name>_comp <num> - Overrides the boundary components
 
-  Note:
-  Both bcFunc abd bcFunc_t will depend on the boundary condition type. If the type if DM_BC_ESSENTIAL, Then the calling sequence is:
+  Notes:
+  Both bcFunc abd bcFunc_t will depend on the boundary condition type. If the type if `DM_BC_ESSENTIAL`, then the calling sequence is:
 
 $ bcFunc(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar bcval[])
 
-  If the type is DM_BC_ESSENTIAL_FIELD or other _FIELD value, then the calling sequence is:
+  If the type is `DM_BC_ESSENTIAL_FIELD` or other _FIELD value, then the calling sequence is:
 
 $ bcFunc(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 $        const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
@@ -7603,6 +7810,7 @@ static PetscErrorCode DMPopulateBoundary(DM dm)
   PetscFunctionReturn(0);
 }
 
+/* TODO: missing manual page */
 PetscErrorCode DMIsBoundaryPoint(DM dm, PetscInt point, PetscBool *isBd)
 {
   DMBoundary     b;
@@ -7627,12 +7835,12 @@ PetscErrorCode DMIsBoundaryPoint(DM dm, PetscInt point, PetscBool *isBd)
 }
 
 /*@C
-  DMProjectFunction - This projects the given function into the function space provided, putting the coefficients in a global vector.
+  DMProjectFunction - This projects the given function into the function space provided by a `DM`, putting the coefficients in a global vector.
 
-  Collective on DM
+  Collective on dm
 
   Input Parameters:
-+ dm      - The DM
++ dm      - The `DM`
 . time    - The time
 . funcs   - The coordinate functions to evaluate, one per field
 . ctxs    - Optional array of contexts to pass to each coordinate function.  ctxs itself may be null.
@@ -7653,6 +7861,11 @@ $    func(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscS
 
   Level: developer
 
+  Developer Notes:
+  This API is specific to only particular usage of `DM`
+
+  The notes need to provide some information about what has to be provided to the `DM` to be able to perform the computation.
+
 .seealso: `DMProjectFunctionLocal()`, `DMProjectFunctionLabel()`, `DMComputeL2Diff()`
 @*/
 PetscErrorCode DMProjectFunction(DM dm, PetscReal time, PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, InsertMode mode, Vec X)
@@ -7670,12 +7883,12 @@ PetscErrorCode DMProjectFunction(DM dm, PetscReal time, PetscErrorCode (**funcs)
 }
 
 /*@C
-  DMProjectFunctionLocal - This projects the given function into the function space provided, putting the coefficients in a local vector.
+  DMProjectFunctionLocal - This projects the given function into the function space provided by a `DM`, putting the coefficients in a local vector.
 
   Not collective
 
   Input Parameters:
-+ dm      - The DM
++ dm      - The `DM`
 . time    - The time
 . funcs   - The coordinate functions to evaluate, one per field
 . ctxs    - Optional array of contexts to pass to each coordinate function.  ctxs itself may be null.
@@ -7695,6 +7908,11 @@ $    func(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscS
 
   Level: developer
 
+  Developer Notes:
+  This API is specific to only particular usage of `DM`
+
+  The notes need to provide some information about what has to be provided to the `DM` to be able to perform the computation.
+
 .seealso: `DMProjectFunction()`, `DMProjectFunctionLabel()`, `DMComputeL2Diff()`
 @*/
 PetscErrorCode DMProjectFunctionLocal(DM dm, PetscReal time, PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, InsertMode mode, Vec localX)
@@ -7708,16 +7926,16 @@ PetscErrorCode DMProjectFunctionLocal(DM dm, PetscReal time, PetscErrorCode (**f
 }
 
 /*@C
-  DMProjectFunctionLabel - This projects the given function into the function space provided, putting the coefficients in a global vector, setting values only for points in the given label.
+  DMProjectFunctionLabel - This projects the given function into the function space provided by the `DM`, putting the coefficients in a global vector, setting values only for points in the given label.
 
-  Collective on DM
+  Collective on dm
 
   Input Parameters:
-+ dm      - The DM
++ dm      - The `DM`
 . time    - The time
-. label   - The DMLabel selecting the portion of the mesh for projection
+. label   - The `DMLabel` selecting the portion of the mesh for projection
 . funcs   - The coordinate functions to evaluate, one per field
-. ctxs    - Optional array of contexts to pass to each coordinate function.  ctxs itself may be null.
+. ctxs    - Optional array of contexts to pass to each coordinate function.  ctxs may be null.
 - mode    - The insertion mode for values
 
   Output Parameter:
@@ -7733,6 +7951,11 @@ $    func(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscS
 -  ctx - optional user-defined function context
 
   Level: developer
+
+  Developer Notes:
+  This API is specific to only particular usage of `DM`
+
+  The notes need to provide some information about what has to be provided to the `DM` to be able to perform the computation.
 
 .seealso: `DMProjectFunction()`, `DMProjectFunctionLocal()`, `DMProjectFunctionLabelLocal()`, `DMComputeL2Diff()`
 @*/
@@ -7751,14 +7974,14 @@ PetscErrorCode DMProjectFunctionLabel(DM dm, PetscReal time, DMLabel label, Pets
 }
 
 /*@C
-  DMProjectFunctionLabelLocal - This projects the given function into the function space provided, putting the coefficients in a local vector, setting values only for points in the given label.
+  DMProjectFunctionLabelLocal - This projects the given function into the function space provided by the `DM`, putting the coefficients in a local vector, setting values only for points in the given label.
 
   Not collective
 
   Input Parameters:
-+ dm      - The DM
++ dm      - The `DM`
 . time    - The time
-. label   - The DMLabel selecting the portion of the mesh for projection
+. label   - The `DMLabel` selecting the portion of the mesh for projection
 . funcs   - The coordinate functions to evaluate, one per field
 . ctxs    - Optional array of contexts to pass to each coordinate function.  ctxs itself may be null.
 - mode    - The insertion mode for values
@@ -7777,6 +8000,11 @@ $    func(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscS
 
   Level: developer
 
+  Developer Notes:
+  This API is specific to only particular usage of `DM`
+
+  The notes need to provide some information about what has to be provided to the `DM` to be able to perform the computation.
+
 .seealso: `DMProjectFunction()`, `DMProjectFunctionLocal()`, `DMProjectFunctionLabel()`, `DMComputeL2Diff()`
 @*/
 PetscErrorCode DMProjectFunctionLabelLocal(DM dm, PetscReal time, DMLabel label, PetscInt numIds, const PetscInt ids[], PetscInt Nc, const PetscInt comps[], PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, InsertMode mode, Vec localX)
@@ -7790,12 +8018,12 @@ PetscErrorCode DMProjectFunctionLabelLocal(DM dm, PetscReal time, DMLabel label,
 }
 
 /*@C
-  DMProjectFieldLocal - This projects the given function of the input fields into the function space provided, putting the coefficients in a local vector.
+  DMProjectFieldLocal - This projects the given function of the input fields into the function space provided by the `DM`, putting the coefficients in a local vector.
 
   Not collective
 
   Input Parameters:
-+ dm      - The DM
++ dm      - The `DM`
 . time    - The time
 . localU  - The input field vector
 . funcs   - The functions to evaluate, one per field
@@ -7829,12 +8057,18 @@ $         PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscSc
 .  constants    - The value of each constant
 -  f            - The value of the function at this point in space
 
-  Note: There are three different DMs that potentially interact in this function. The output DM, dm, specifies the layout of the values calculates by funcs.
-  The input DM, attached to U, may be different. For example, you can input the solution over the full domain, but output over a piece of the boundary, or
-  a subdomain. You can also output a different number of fields than the input, with different discretizations. Last the auxiliary DM, attached to the
+  Note:
+  There are three different `DM`s that potentially interact in this function. The output `DM`, dm, specifies the layout of the values calculates by funcs.
+  The input `DM`, attached to U, may be different. For example, you can input the solution over the full domain, but output over a piece of the boundary, or
+  a subdomain. You can also output a different number of fields than the input, with different discretizations. Last the auxiliary `DM`, attached to the
   auxiliary field vector, which is attached to dm, can also be different. It can have a different topology, number of fields, and discretizations.
 
   Level: intermediate
+
+  Developer Notes:
+  This API is specific to only particular usage of `DM`
+
+  The notes need to provide some information about what has to be provided to the `DM` to be able to perform the computation.
 
 .seealso: `DMProjectField()`, `DMProjectFieldLabelLocal()`, `DMProjectFunction()`, `DMComputeL2Diff()`
 @*/
@@ -7860,12 +8094,12 @@ PetscErrorCode DMProjectFieldLocal(DM dm, PetscReal time, Vec localU,
   Not collective
 
   Input Parameters:
-+ dm      - The DM
++ dm      - The `DM`
 . time    - The time
-. label   - The DMLabel marking the portion of the domain to output
+. label   - The `DMLabel` marking the portion of the domain to output
 . numIds  - The number of label ids to use
 . ids     - The label ids to use for marking
-. Nc      - The number of components to set in the output, or PETSC_DETERMINE for all components
+. Nc      - The number of components to set in the output, or `PETSC_DETERMINE` for all components
 . comps   - The components to set in the output, or NULL for all components
 . localU  - The input field vector
 . funcs   - The functions to evaluate, one per field
@@ -7899,12 +8133,18 @@ $         PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscSc
 .  constants    - The value of each constant
 -  f            - The value of the function at this point in space
 
-  Note: There are three different DMs that potentially interact in this function. The output DM, dm, specifies the layout of the values calculates by funcs.
-  The input DM, attached to localU, may be different. For example, you can input the solution over the full domain, but output over a piece of the boundary, or
-  a subdomain. You can also output a different number of fields than the input, with different discretizations. Last the auxiliary DM, attached to the
+  Note:
+  There are three different `DM`s that potentially interact in this function. The output `DM`, dm, specifies the layout of the values calculates by funcs.
+  The input `DM`, attached to localU, may be different. For example, you can input the solution over the full domain, but output over a piece of the boundary, or
+  a subdomain. You can also output a different number of fields than the input, with different discretizations. Last the auxiliary `DM`, attached to the
   auxiliary field vector, which is attached to dm, can also be different. It can have a different topology, number of fields, and discretizations.
 
   Level: intermediate
+
+  Developer Notes:
+  This API is specific to only particular usage of `DM`
+
+  The notes need to provide some information about what has to be provided to the `DM` to be able to perform the computation.
 
 .seealso: `DMProjectField()`, `DMProjectFieldLabel()`, `DMProjectFunction()`, `DMComputeL2Diff()`
 @*/
@@ -7930,12 +8170,12 @@ PetscErrorCode DMProjectFieldLabelLocal(DM dm, PetscReal time, DMLabel label, Pe
   Not collective
 
   Input Parameters:
-+ dm      - The DM
++ dm      - The `DM`
 . time    - The time
-. label   - The DMLabel marking the portion of the domain to output
+. label   - The `DMLabel` marking the portion of the domain to output
 . numIds  - The number of label ids to use
 . ids     - The label ids to use for marking
-. Nc      - The number of components to set in the output, or PETSC_DETERMINE for all components
+. Nc      - The number of components to set in the output, or `PETSC_DETERMINE` for all components
 . comps   - The components to set in the output, or NULL for all components
 . U       - The input field vector
 . funcs   - The functions to evaluate, one per field
@@ -7969,12 +8209,18 @@ $         PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscSc
 .  constants    - The value of each constant
 -  f            - The value of the function at this point in space
 
-  Note: There are three different DMs that potentially interact in this function. The output DM, dm, specifies the layout of the values calculates by funcs.
-  The input DM, attached to U, may be different. For example, you can input the solution over the full domain, but output over a piece of the boundary, or
-  a subdomain. You can also output a different number of fields than the input, with different discretizations. Last the auxiliary DM, attached to the
+  Note:
+  There are three different `DM`s that potentially interact in this function. The output `DM`, dm, specifies the layout of the values calculates by funcs.
+  The input `DM`, attached to U, may be different. For example, you can input the solution over the full domain, but output over a piece of the boundary, or
+  a subdomain. You can also output a different number of fields than the input, with different discretizations. Last the auxiliary `DM`, attached to the
   auxiliary field vector, which is attached to dm, can also be different. It can have a different topology, number of fields, and discretizations.
 
   Level: intermediate
+
+  Developer Notes:
+  This API is specific to only particular usage of `DM`
+
+  The notes need to provide some information about what has to be provided to the `DM` to be able to perform the computation.
 
 .seealso: `DMProjectField()`, `DMProjectFieldLabelLocal()`, `DMProjectFunction()`, `DMComputeL2Diff()`
 @*/
@@ -8009,12 +8255,12 @@ PetscErrorCode DMProjectFieldLabel(DM dm, PetscReal time, DMLabel label, PetscIn
   Not collective
 
   Input Parameters:
-+ dm      - The DM
++ dm      - The `DM`
 . time    - The time
-. label   - The DMLabel marking the portion of the domain boundary to output
+. label   - The `DMLabel` marking the portion of the domain boundary to output
 . numIds  - The number of label ids to use
 . ids     - The label ids to use for marking
-. Nc      - The number of components to set in the output, or PETSC_DETERMINE for all components
+. Nc      - The number of components to set in the output, or `PETSC_DETERMINE` for all components
 . comps   - The components to set in the output, or NULL for all components
 . localU  - The input field vector
 . funcs   - The functions to evaluate, one per field
@@ -8050,12 +8296,17 @@ $         PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscSc
 -  f            - The value of the function at this point in space
 
   Note:
-  There are three different DMs that potentially interact in this function. The output DM, dm, specifies the layout of the values calculates by funcs.
-  The input DM, attached to U, may be different. For example, you can input the solution over the full domain, but output over a piece of the boundary, or
-  a subdomain. You can also output a different number of fields than the input, with different discretizations. Last the auxiliary DM, attached to the
+  There are three different `DM`s that potentially interact in this function. The output `DM`, dm, specifies the layout of the values calculates by funcs.
+  The input `DM`, attached to U, may be different. For example, you can input the solution over the full domain, but output over a piece of the boundary, or
+  a subdomain. You can also output a different number of fields than the input, with different discretizations. Last the auxiliary `DM`, attached to the
   auxiliary field vector, which is attached to dm, can also be different. It can have a different topology, number of fields, and discretizations.
 
   Level: intermediate
+
+  Developer Notes:
+  This API is specific to only particular usage of `DM`
+
+  The notes need to provide some information about what has to be provided to the `DM` to be able to perform the computation.
 
 .seealso: `DMProjectField()`, `DMProjectFieldLabelLocal()`, `DMProjectFunction()`, `DMComputeL2Diff()`
 @*/
@@ -8078,8 +8329,10 @@ PetscErrorCode DMProjectBdFieldLabelLocal(DM dm, PetscReal time, DMLabel label, 
 /*@C
   DMComputeL2Diff - This function computes the L_2 difference between a function u and an FEM interpolant solution u_h.
 
+  Collective on dm
+
   Input Parameters:
-+ dm    - The DM
++ dm    - The `DM`
 . time  - The time
 . funcs - The functions to evaluate for each field component
 . ctxs  - Optional array of contexts to pass to each function, or NULL.
@@ -8089,6 +8342,11 @@ PetscErrorCode DMProjectBdFieldLabelLocal(DM dm, PetscReal time, DMLabel label, 
 . diff - The diff ||u - u_h||_2
 
   Level: developer
+
+  Developer Notes:
+  This API is specific to only particular usage of `DM`
+
+  The notes need to provide some information about what has to be provided to the `DM` to be able to perform the computation.
 
 .seealso: `DMProjectFunction()`, `DMComputeL2FieldDiff()`, `DMComputeL2GradientDiff()`
 @*/
@@ -8108,7 +8366,7 @@ PetscErrorCode DMComputeL2Diff(DM dm, PetscReal time, PetscErrorCode (**funcs)(P
   Collective on dm
 
   Input Parameters:
-+ dm    - The DM
++ dm    - The `DM`
 , time  - The time
 . funcs - The gradient functions to evaluate for each field component
 . ctxs  - Optional array of contexts to pass to each function, or NULL.
@@ -8120,7 +8378,12 @@ PetscErrorCode DMComputeL2Diff(DM dm, PetscReal time, PetscErrorCode (**funcs)(P
 
   Level: developer
 
-.seealso: `DMProjectFunction()`, `DMComputeL2Diff()`
+  Developer Notes:
+  This API is specific to only particular usage of `DM`
+
+  The notes need to provide some information about what has to be provided to the `DM` to be able to perform the computation.
+
+.seealso: `DMProjectFunction()`, `DMComputeL2Diff()`, `DMComputeL2FieldDiff()`
 @*/
 PetscErrorCode DMComputeL2GradientDiff(DM dm, PetscReal time, PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal [], const PetscReal[], PetscInt, PetscScalar *, void *), void **ctxs, Vec X, const PetscReal n[], PetscReal *diff)
 {
@@ -8138,7 +8401,7 @@ PetscErrorCode DMComputeL2GradientDiff(DM dm, PetscReal time, PetscErrorCode (**
   Collective on dm
 
   Input Parameters:
-+ dm    - The DM
++ dm    - The `DM`
 . time  - The time
 . funcs - The functions to evaluate for each field component
 . ctxs  - Optional array of contexts to pass to each function, or NULL.
@@ -8148,6 +8411,11 @@ PetscErrorCode DMComputeL2GradientDiff(DM dm, PetscReal time, PetscErrorCode (**
 . diff - The array of differences, ||u^f - u^f_h||_2
 
   Level: developer
+
+  Developer Notes:
+  This API is specific to only particular usage of `DM`
+
+  The notes need to provide some information about what has to be provided to the `DM` to be able to perform the computation.
 
 .seealso: `DMProjectFunction()`, `DMComputeL2FieldDiff()`, `DMComputeL2GradientDiff()`
 @*/
@@ -8162,19 +8430,19 @@ PetscErrorCode DMComputeL2FieldDiff(DM dm, PetscReal time, PetscErrorCode (**fun
 }
 
 /*@C
- DMGetNeighbors - Gets an array containing the MPI rank of all the processes neighbors
+ DMGetNeighbors - Gets an array containing the MPI ranks of all the processes neighbors
 
  Not Collective
 
  Input Parameter:
-.  dm    - The DM
+.  dm    - The `DM`
 
  Output Parameters:
 +  nranks - the number of neighbours
 -  ranks - the neighbors ranks
 
- Notes:
- Do not free the array, it is freed when the DM is destroyed.
+ Note:
+ Do not free the array, it is freed when the `DM` is destroyed.
 
  Level: beginner
 
@@ -8218,13 +8486,13 @@ PetscErrorCode  MatFDColoringApply_AIJDM(Mat J,MatFDColoring coloring,Vec x1,voi
 }
 
 /*@
-    MatFDColoringUseDM - allows a MatFDColoring object to use the DM associated with the matrix to use a IS_COLORING_LOCAL coloring
+    MatFDColoringUseDM - allows a `MatFDColoring` object to use the `DM` associated with the matrix to compute a `IS_COLORING_LOCAL` coloring
 
     Input Parameter:
-.    coloring - the MatFDColoring object
+.    coloring - the `MatFDColoring` object
 
-    Developer Notes:
-    this routine exists because the PETSc Mat library does not know about the DM objects
+    Developer Note:
+    this routine exists because the PETSc `Mat` library does not know about the `DM` objects
 
     Level: advanced
 
@@ -8238,35 +8506,35 @@ PetscErrorCode  MatFDColoringUseDM(Mat coloring,MatFDColoring fdcoloring)
 }
 
 /*@
-    DMGetCompatibility - determine if two DMs are compatible
+    DMGetCompatibility - determine if two `DM`s are compatible
 
     Collective
 
     Input Parameters:
-+    dm1 - the first DM
--    dm2 - the second DM
++    dm1 - the first `DM`
+-    dm2 - the second `DM`
 
     Output Parameters:
-+    compatible - whether or not the two DMs are compatible
--    set - whether or not the compatible value was set
++    compatible - whether or not the two `DM`s are compatible
+-    set - whether or not the compatible value was actually determined and set
 
     Notes:
-    Two DMs are deemed compatible if they represent the same parallel decomposition
+    Two `DM`s are deemed compatible if they represent the same parallel decomposition
     of the same topology. This implies that the section (field data) on one
     "makes sense" with respect to the topology and parallel decomposition of the other.
-    Loosely speaking, compatible DMs represent the same domain and parallel
+    Loosely speaking, compatible `DM`s represent the same domain and parallel
     decomposition, but hold different data.
 
     Typically, one would confirm compatibility if intending to simultaneously iterate
-    over a pair of vectors obtained from different DMs.
+    over a pair of vectors obtained from different `DM`s.
 
-    For example, two DMDA objects are compatible if they have the same local
+    For example, two `DMDA` objects are compatible if they have the same local
     and global sizes and the same stencil width. They can have different numbers
     of degrees of freedom per node. Thus, one could use the node numbering from
-    either DM in bounds for a loop over vectors derived from either DM.
+    either `DM` in bounds for a loop over vectors derived from either `DM`.
 
-    Consider the operation of summing data living on a 2-dof DMDA to data living
-    on a 1-dof DMDA, which should be compatible, as in the following snippet.
+    Consider the operation of summing data living on a 2-dof `DMDA` to data living
+    on a 1-dof `DMDA`, which should be compatible, as in the following snippet.
 .vb
   ...
   PetscCall(DMGetCompatibility(da1,da2,&compatible,&set));
@@ -8287,35 +8555,34 @@ PetscErrorCode  MatFDColoringUseDM(Mat coloring,MatFDColoring fdcoloring)
   ...
 .ve
 
-    Checking compatibility might be expensive for a given implementation of DM,
+    Checking compatibility might be expensive for a given implementation of `DM`,
     or might be impossible to unambiguously confirm or deny. For this reason,
     this function may decline to determine compatibility, and hence users should
     always check the "set" output parameter.
 
-    A DM is always compatible with itself.
+    A `DM` is always compatible with itself.
 
-    In the current implementation, DMs which live on "unequal" communicators
+    In the current implementation, `DM`s which live on "unequal" communicators
     (MPI_UNEQUAL in the terminology of MPI_Comm_compare()) are always deemed
     incompatible.
 
     This function is labeled "Collective," as information about all subdomains
-    is required on each rank. However, in DM implementations which store all this
+    is required on each rank. However, in `DM` implementations which store all this
     information locally, this function may be merely "Logically Collective".
 
-    Developer Notes:
-    Compatibility is assumed to be a symmetric concept; DM A is compatible with DM B
+    Developer Note:
+    Compatibility is assumed to be a symmetric concept; `DM` A is compatible with `DM` B
     iff B is compatible with A. Thus, this function checks the implementations
     of both dm and dmc (if they are of different types), attempting to determine
-    compatibility. It is left to DM implementers to ensure that symmetry is
+    compatibility. It is left to `DM` implementers to ensure that symmetry is
     preserved. The simplest way to do this is, when implementing type-specific
     logic for this function, is to check for existing logic in the implementation
-    of other DM types and let *set = PETSC_FALSE if found.
+    of other `DM` types and let *set = PETSC_FALSE if found.
 
     Level: advanced
 
 .seealso: `DM`, `DMDACreateCompatibleDMDA()`, `DMStagCreateCompatibleDMStag()`
 @*/
-
 PetscErrorCode DMGetCompatibility(DM dm1,DM dm2,PetscBool *compatible,PetscBool *set)
 {
   PetscMPIInt    compareResult;
@@ -8364,31 +8631,34 @@ PetscErrorCode DMGetCompatibility(DM dm1,DM dm2,PetscBool *compatible,PetscBool 
 }
 
 /*@C
-  DMMonitorSet - Sets an ADDITIONAL function that is to be used after a solve to monitor discretization performance.
+  DMMonitorSet - Sets an additional monitor function that is to be used after a solve to monitor discretization performance.
 
-  Logically Collective on DM
+  Logically Collective on dm
 
   Input Parameters:
-+ DM - the DM
++ DM - the `DM`
 . f - the monitor function
 . mctx - [optional] user-defined context for private data for the monitor routine (use NULL if no context is desired)
 - monitordestroy - [optional] routine that frees monitor context (may be NULL)
 
   Options Database Keys:
-- -dm_monitor_cancel - cancels all monitors that have been hardwired into a code by calls to DMMonitorSet(), but
+- -dm_monitor_cancel - cancels all monitors that have been hardwired into a code by calls to `DMMonitorSet()`, but
                             does not cancel those set via the options database.
 
-  Notes:
+  Note:
   Several different monitoring routines may be set by calling
-  DMMonitorSet() multiple times; all will be called in the
+  `DMMonitorSet()` multiple times or with `DMMonitorSetFromOptions()`; all will be called in the
   order in which they were set.
 
-  Fortran Notes:
-  Only a single monitor function can be set for each DM object
+  Fortran Note:
+  Only a single monitor function can be set for each `DM` object
+
+  Developer Note:
+  This API has a generic name but seems specific to a very particular aspect of the use of `DM`
 
   Level: intermediate
 
-.seealso: `DMMonitorCancel()`
+.seealso: `DMMonitorCancel()`,`DMMonitorSetFromOptions()`, `DMMonitor()`
 @*/
 PetscErrorCode DMMonitorSet(DM dm, PetscErrorCode (*f)(DM, void *), void *mctx, PetscErrorCode (*monitordestroy)(void**))
 {
@@ -8410,24 +8680,24 @@ PetscErrorCode DMMonitorSet(DM dm, PetscErrorCode (*f)(DM, void *), void *mctx, 
 }
 
 /*@
-  DMMonitorCancel - Clears all the monitor functions for a DM object.
+  DMMonitorCancel - Clears all the monitor functions for a `DM` object.
 
-  Logically Collective on DM
+  Logically Collective on dm
 
   Input Parameter:
 . dm - the DM
 
   Options Database Key:
 . -dm_monitor_cancel - cancels all monitors that have been hardwired
-  into a code by calls to DMonitorSet(), but does not cancel those
+  into a code by calls to `DMonitorSet()`, but does not cancel those
   set via the options database
 
-  Notes:
-  There is no way to clear one specific monitor from a DM object.
+  Note:
+  There is no way to clear one specific monitor from a `DM` object.
 
   Level: intermediate
 
-.seealso: `DMMonitorSet()`
+.seealso: `DMMonitorSet()`, `DMMonitorSetFromOptions()`,  `DMMonitor()`
 @*/
 PetscErrorCode DMMonitorCancel(DM dm)
 {
@@ -8445,15 +8715,15 @@ PetscErrorCode DMMonitorCancel(DM dm)
 /*@C
   DMMonitorSetFromOptions - Sets a monitor function and viewer appropriate for the type indicated by the user
 
-  Collective on DM
+  Collective on dm
 
   Input Parameters:
-+ dm   - DM object you wish to monitor
++ dm   - `DM` object you wish to monitor
 . name - the monitor type one is seeking
 . help - message indicating what monitoring is done
 . manual - manual page for the monitor
 . monitor - the monitor function
-- monitorsetup - a function that is called once ONLY if the user selected this monitor that may set additional features of the DM or PetscViewer objects
+- monitorsetup - a function that is called once ONLY if the user selected this monitor that may set additional features of the `DM` or `PetscViewer` objects
 
   Output Parameter:
 . flg - Flag set if the monitor was created
@@ -8466,7 +8736,7 @@ PetscErrorCode DMMonitorCancel(DM dm)
           `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
           `PetscOptionsStringArray()`, `PetscOptionsRealArray()`, `PetscOptionsScalar()`,
           `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
-          `PetscOptionsFList()`, `PetscOptionsEList()`
+          `PetscOptionsFList()`, `PetscOptionsEList()`, `DMMonitor()`, `DMMonitorSet()`
 @*/
 PetscErrorCode DMMonitorSetFromOptions(DM dm, const char name[], const char help[], const char manual[], PetscErrorCode (*monitor)(DM, void *), PetscErrorCode (*monitorsetup)(DM, PetscViewerAndFormat *), PetscBool *flg)
 {
@@ -8490,14 +8760,18 @@ PetscErrorCode DMMonitorSetFromOptions(DM dm, const char name[], const char help
 /*@
    DMMonitor - runs the user provided monitor routines, if they exist
 
-   Collective on DM
+   Collective on dm
 
    Input Parameters:
-.  dm - The DM
+.  dm - The `DM`
 
    Level: developer
 
-.seealso: `DMMonitorSet()`
+   Question:
+   Note should indicate when during the life of the `DM` the monitor is run. It appears to be related to the discretization process seems rather specialized
+   since some `DM` have no concept of discretization
+
+.seealso: `DMMonitorSet()`, `DMMonitorSetFromOptions()`
 @*/
 PetscErrorCode DMMonitor(DM dm)
 {
@@ -8513,12 +8787,12 @@ PetscErrorCode DMMonitor(DM dm)
 }
 
 /*@
-  DMComputeError - Computes the error assuming the user has given exact solution functions
+  DMComputeError - Computes the error assuming the user has provided the exact solution functions
 
-  Collective on DM
+  Collective on dm
 
   Input Parameters:
-+ dm     - The DM
++ dm     - The `DM`
 - sol    - The solution vector
 
   Input/Output Parameter:
@@ -8528,7 +8802,8 @@ PetscErrorCode DMMonitor(DM dm)
   Output Parameter:
 . errorVec - A vector to hold the cellwise error (may be NULL)
 
-  Note: The exact solutions come from the PetscDS object, and the time comes from DMGetOutputSequenceNumber().
+  Note:
+  The exact solutions come from the `PetscDS` object, and the time comes from `DMGetOutputSequenceNumber()`.
 
   Level: developer
 
@@ -8604,19 +8879,19 @@ PetscErrorCode DMComputeError(DM dm, Vec sol, PetscReal errors[], Vec *errorVec)
 }
 
 /*@
-  DMGetNumAuxiliaryVec - Get the number of auxiliary vectors associated with this DM
+  DMGetNumAuxiliaryVec - Get the number of auxiliary vectors associated with this `DM`
 
   Not collective
 
   Input Parameter:
-. dm     - The DM
+. dm     - The `DM`
 
   Output Parameter:
 . numAux - The number of auxiliary data vectors
 
   Level: advanced
 
-.seealso: `DMGetAuxiliaryLabels()`, `DMGetAuxiliaryVec()`, `DMSetAuxiliaryVec()`
+.seealso: `DMSetAuxiliaryVec()`, `DMGetAuxiliaryLabels()`, `DMGetAuxiliaryVec()`, `DMSetAuxiliaryVec()`
 @*/
 PetscErrorCode DMGetNumAuxiliaryVec(DM dm, PetscInt *numAux)
 {
@@ -8632,19 +8907,20 @@ PetscErrorCode DMGetNumAuxiliaryVec(DM dm, PetscInt *numAux)
   Not collective
 
   Input Parameters:
-+ dm     - The DM
-. label  - The DMLabel
++ dm     - The `DM`
+. label  - The `DMLabel`
 . value  - The label value indicating the region
 - part   - The equation part, or 0 if unused
 
   Output Parameter:
-. aux    - The Vec holding auxiliary field data
+. aux    - The `Vec` holding auxiliary field data
 
-  Note: If no auxiliary vector is found for this (label, value), (NULL, 0, 0) is checked as well.
+  Note:
+  If no auxiliary vector is found for this (label, value), (NULL, 0, 0) is checked as well.
 
   Level: advanced
 
-.seealso: `DMSetAuxiliaryVec()`, `DMGetNumAuxiliaryVec()`
+.seealso: `DMSetAuxiliaryVec()`, `DMGetNumAuxiliaryVec()`, `DMGetAuxiliaryLabels()`
 @*/
 PetscErrorCode DMGetAuxiliaryVec(DM dm, DMLabel label, PetscInt value, PetscInt part, Vec *aux)
 {
@@ -8664,20 +8940,20 @@ PetscErrorCode DMGetAuxiliaryVec(DM dm, DMLabel label, PetscInt value, PetscInt 
 }
 
 /*@
-  DMSetAuxiliaryVec - Set the auxiliary vector for region specified by the given label and value, and equation part
+  DMSetAuxiliaryVec - Set an auxiliary vector for region specified by the given label and value, and equation part
 
-  Not collective
+  Not collective because auxilary vectors are not parallel
 
   Input Parameters:
-+ dm     - The DM
-. label  - The DMLabel
++ dm     - The `DM`
+. label  - The `DMLabel`
 . value  - The label value indicating the region
 . part   - The equation part, or 0 if unused
-- aux    - The Vec holding auxiliary field data
+- aux    - The `Vec` holding auxiliary field data
 
   Level: advanced
 
-.seealso: `DMGetAuxiliaryVec()`
+.seealso: `DMGetAuxiliaryVec()`, `DMGetAuxiliaryLabels()`, `DMCopyAuxiliaryVec()`
 @*/
 PetscErrorCode DMSetAuxiliaryVec(DM dm, DMLabel label, PetscInt value, PetscInt part, Vec aux)
 {
@@ -8699,23 +8975,24 @@ PetscErrorCode DMSetAuxiliaryVec(DM dm, DMLabel label, PetscInt value, PetscInt 
 }
 
 /*@C
-  DMGetAuxiliaryLabels - Get the labels, values, and parts for all auxiliary vectors in this DM
+  DMGetAuxiliaryLabels - Get the labels, values, and parts for all auxiliary vectors in this `DM`
 
   Not collective
 
   Input Parameter:
-. dm      - The DM
+. dm      - The `DM`
 
   Output Parameters:
-+ labels  - The DMLabels for each Vec
-. values  - The label values for each Vec
-- parts   - The equation parts for each Vec
++ labels  - The `DMLabel`s for each `Vec`
+. values  - The label values for each `Vec`
+- parts   - The equation parts for each `Vec`
 
-  Note: The arrays passed in must be at least as large as DMGetNumAuxiliaryVec().
+  Note:
+  The arrays passed in must be at least as large as `DMGetNumAuxiliaryVec()`.
 
   Level: advanced
 
-.seealso: `DMGetNumAuxiliaryVec()`, `DMGetAuxiliaryVec()`, `DMSetAuxiliaryVec()`
+.seealso: `DMGetNumAuxiliaryVec()`, `DMGetAuxiliaryVec()`, `DMGetNumAuxiliaryVec()`, `DMSetAuxiliaryVec()`, DMCopyAuxiliaryVec()`
 @*/
 PetscErrorCode DMGetAuxiliaryLabels(DM dm, DMLabel labels[], PetscInt values[], PetscInt parts[])
 {
@@ -8736,17 +9013,20 @@ PetscErrorCode DMGetAuxiliaryLabels(DM dm, DMLabel labels[], PetscInt values[], 
 }
 
 /*@
-  DMCopyAuxiliaryVec - Copy the auxiliary data to a new DM
+  DMCopyAuxiliaryVec - Copy the auxiliary vector data on a `DM` to a new `DM`
 
   Not collective
 
   Input Parameter:
-. dm    - The DM
+. dm    - The `DM`
 
   Output Parameter:
-. dmNew - The new DM, now with the same auxiliary data
+. dmNew - The new `DM`, now with the same auxiliary data
 
   Level: advanced
+
+  Note:
+  This is a shallow copy of the auxiliary vectors
 
 .seealso: `DMGetNumAuxiliaryVec()`, `DMGetAuxiliaryVec()`, `DMSetAuxiliaryVec()`
 @*/
@@ -8760,22 +9040,30 @@ PetscErrorCode DMCopyAuxiliaryVec(DM dm, DM dmNew)
 }
 
 /*@C
-  DMPolytopeMatchOrientation - Determine an orientation that takes the source face arrangement to the target face arrangement
+  DMPolytopeMatchOrientation - Determine an orientation (transformation) that takes the source face arrangement to the target face arrangement
 
   Not collective
 
   Input Parameters:
-+ ct         - The DMPolytopeType
++ ct         - The `DMPolytopeType`
 . sourceCone - The source arrangement of faces
 - targetCone - The target arrangement of faces
 
   Output Parameters:
-+ ornt  - The orientation which will take the source arrangement to the target arrangement
++ ornt  - The orientation (transformation) which will take the source arrangement to the target arrangement
 - found - Flag indicating that a suitable orientation was found
 
   Level: advanced
 
-.seealso: `DMPolytopeGetOrientation()`, `DMPolytopeMatchVertexOrientation()`
+  Note:
+  An arrangement is a face order combined with an orientation for each face
+
+  Each orientation (transformation) is labeled with an integer from negative `DMPolytopeTypeGetNumArrangments(ct)`/2 to `DMPolytopeTypeGetNumArrangments(ct)`/2
+  that labels each arrangement (face ordering plus orientation for each face).
+
+  See `DMPolytopeMatchVertexOrientation()` to find a new vertex orientation that takes the source vertex arrangement to the target vertex arrangement
+
+.seealso: `DMPolytopeGetOrientation()`, `DMPolytopeMatchVertexOrientation()`, `DMPolytopeGetVertexOrientation()`
 @*/
 PetscErrorCode DMPolytopeMatchOrientation(DMPolytopeType ct, const PetscInt sourceCone[], const PetscInt targetCone[], PetscInt *ornt, PetscBool *found)
 {
@@ -8796,23 +9084,27 @@ PetscErrorCode DMPolytopeMatchOrientation(DMPolytopeType ct, const PetscInt sour
 }
 
 /*@C
-  DMPolytopeGetOrientation - Determine an orientation that takes the source face arrangement to the target face arrangement
+  DMPolytopeGetOrientation - Determine an orientation (transformation) that takes the source face arrangement to the target face arrangement
 
   Not collective
 
   Input Parameters:
-+ ct         - The DMPolytopeType
++ ct         - The `DMPolytopeType`
 . sourceCone - The source arrangement of faces
 - targetCone - The target arrangement of faces
 
   Output Parameters:
-. ornt  - The orientation which will take the source arrangement to the target arrangement
-
-  Note: This function will fail if no suitable orientation can be found.
+. ornt  - The orientation (transformation) which will take the source arrangement to the target arrangement
 
   Level: advanced
 
-.seealso: `DMPolytopeMatchOrientation()`, `DMPolytopeGetVertexOrientation()`
+  Note:
+  This function is the same as `DMPolytopeMatchOrientation()` except it will generate an error if no suitable orientation can be found.
+
+  Developer Note:
+  It is unclear why this function needs to exist since one can simply call `DMPolytopeMatchOrientation()` and error if none is found
+
+.seealso: `DMPolytopeType`, `DMPolytopeMatchOrientation()`, `DMPolytopeGetVertexOrientation()`, `DMPolytopeMatchVertexOrientation()`
 @*/
 PetscErrorCode DMPolytopeGetOrientation(DMPolytopeType ct, const PetscInt sourceCone[], const PetscInt targetCone[], PetscInt *ornt)
 {
@@ -8825,22 +9117,30 @@ PetscErrorCode DMPolytopeGetOrientation(DMPolytopeType ct, const PetscInt source
 }
 
 /*@C
-  DMPolytopeMatchVertexOrientation - Determine an orientation that takes the source vertex arrangement to the target vertex arrangement
+  DMPolytopeMatchVertexOrientation - Determine an orientation (transformation) that takes the source vertex arrangement to the target vertex arrangement
 
   Not collective
 
   Input Parameters:
-+ ct         - The DMPolytopeType
++ ct         - The `DMPolytopeType`
 . sourceVert - The source arrangement of vertices
 - targetVert - The target arrangement of vertices
 
   Output Parameters:
-+ ornt  - The orientation which will take the source arrangement to the target arrangement
++ ornt  - The orientation (transformation) which will take the source arrangement to the target arrangement
 - found - Flag indicating that a suitable orientation was found
 
   Level: advanced
 
-.seealso: `DMPolytopeGetOrientation()`, `DMPolytopeMatchOrientation()`
+  Note:
+  An arrangement is a vertex order
+
+  Each orientation (transformation) is labeled with an integer from negative `DMPolytopeTypeGetNumArrangments(ct)`/2 to `DMPolytopeTypeGetNumArrangments(ct)`/2
+  that labels each arrangement (vertex ordering).
+
+  See `DMPolytopeMatchOrientation()` to find a new face orientation that takes the source face arrangement to the target face arrangement
+
+.seealso: `DMPolytopeType`, `DMPolytopeGetOrientation()`, `DMPolytopeMatchOrientation()`, `DMPolytopeTypeGetNumVertices()`, `DMPolytopeTypeGetVertexArrangment()`
 @*/
 PetscErrorCode DMPolytopeMatchVertexOrientation(DMPolytopeType ct, const PetscInt sourceVert[], const PetscInt targetVert[], PetscInt *ornt, PetscBool *found)
 {
@@ -8861,23 +9161,27 @@ PetscErrorCode DMPolytopeMatchVertexOrientation(DMPolytopeType ct, const PetscIn
 }
 
 /*@C
-  DMPolytopeGetVertexOrientation - Determine an orientation that takes the source vertex arrangement to the target vertex arrangement
+  DMPolytopeGetVertexOrientation - Determine an orientation (transformation) that takes the source vertex arrangement to the target vertex arrangement
 
   Not collective
 
   Input Parameters:
-+ ct         - The DMPolytopeType
++ ct         - The `DMPolytopeType`
 . sourceCone - The source arrangement of vertices
 - targetCone - The target arrangement of vertices
 
   Output Parameters:
-. ornt  - The orientation which will take the source arrangement to the target arrangement
-
-  Note: This function will fail if no suitable orientation can be found.
+. ornt  - The orientation (transformation) which will take the source arrangement to the target arrangement
 
   Level: advanced
 
-.seealso: `DMPolytopeMatchVertexOrientation()`, `DMPolytopeGetOrientation()`
+  Note:
+  This function is the same as `DMPolytopeMatchVertexOrientation()` except it errors if not orientation is possible.
+
+  Developer Note:
+  It is unclear why this function needs to exist since one can simply call `DMPolytopeMatchVertexOrientation()` and error if none is found
+
+.seealso: `DMPolytopeType`, `DMPolytopeMatchVertexOrientation()`, `DMPolytopeGetOrientation()`
 @*/
 PetscErrorCode DMPolytopeGetVertexOrientation(DMPolytopeType ct, const PetscInt sourceCone[], const PetscInt targetCone[], PetscInt *ornt)
 {
@@ -8895,7 +9199,7 @@ PetscErrorCode DMPolytopeGetVertexOrientation(DMPolytopeType ct, const PetscInt 
   Not collective
 
   Input Parameters:
-+ ct    - The DMPolytopeType
++ ct    - The `DMPolytopeType`
 - point - Coordinates of the point
 
   Output Parameters:
@@ -8903,7 +9207,7 @@ PetscErrorCode DMPolytopeGetVertexOrientation(DMPolytopeType ct, const PetscInt 
 
   Level: advanced
 
-.seealso: `DMLocatePoints()`
+.seealso: `DM`, `DMPolytopeType`, `DMLocatePoints()`
 @*/
 PetscErrorCode DMPolytopeInCellTest(DMPolytopeType ct, const PetscReal point[], PetscBool *inside)
 {
