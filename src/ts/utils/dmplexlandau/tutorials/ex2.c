@@ -463,7 +463,7 @@ PetscErrorCode Monitor(TS ts, PetscInt stepi, PetscReal time, Vec X, void *actx)
     if (rectx->grid_view_idx != -1) {
       PetscCall(PetscObjectSetName((PetscObject) globXArray[ LAND_PACK_IDX(ctx->batch_view_idx,rectx->grid_view_idx) ], rectx->grid_view_idx==0 ? "ue" : "ui"));
       /* view, overwrite step when back tracked */
-      PetscCall(DMSetOutputSequenceNumber(pack, rectx->plotIdx, time*ctx->t_0));
+      PetscCall(DMSetOutputSequenceNumber(ctx->plex[rectx->grid_view_idx], rectx->plotIdx, time*ctx->t_0));
       PetscCall(VecViewFromOptions(globXArray[ LAND_PACK_IDX(ctx->batch_view_idx, rectx->grid_view_idx) ],NULL,"-ex2_vec_view"));
     }
     rectx->plotStep = stepi;
@@ -687,13 +687,14 @@ int main(int argc, char **argv)
     PetscCall(PetscMalloc(sizeof(*XsubArray)*nDMs, &XsubArray));
     PetscCall(DMCompositeGetAccessArray(pack, X, nDMs, NULL, XsubArray)); // read only
     PetscCall(PetscObjectSetName((PetscObject) XsubArray[ LAND_PACK_IDX(ctx->batch_view_idx, rectx->grid_view_idx) ], rectx->grid_view_idx==0 ? "ue" : "ui"));
+    PetscCall(DMSetOutputSequenceNumber(ctx->plex[rectx->grid_view_idx], 0, 0.0));
     PetscCall(DMViewFromOptions(ctx->plex[rectx->grid_view_idx],NULL,"-ex2_dm_view"));
     PetscCall(DMViewFromOptions(ctx->plex[rectx->grid_view_idx], NULL,"-ex2_dm_view_init"));
+    PetscCall(VecViewFromOptions(XsubArray[ LAND_PACK_IDX(ctx->batch_view_idx,rectx->grid_view_idx) ], NULL,"-ex2_vec_view")); // initial condition (monitor plots after step)
     PetscCall(VecViewFromOptions(XsubArray[ LAND_PACK_IDX(ctx->batch_view_idx,rectx->grid_view_idx) ], NULL,"-ex2_vec_view_init")); // initial condition (monitor plots after step)
     PetscCall(DMCompositeRestoreAccessArray(pack, X, nDMs, NULL, XsubArray)); // read only
     PetscCall(PetscFree(XsubArray));
   }
-  PetscCall(DMSetOutputSequenceNumber(pack, 0, 0.0));
   /* Create timestepping solver context */
   PetscCall(TSCreate(PETSC_COMM_SELF,&ts));
   PetscCall(TSSetDM(ts,pack));
