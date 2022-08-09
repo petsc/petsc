@@ -1,4 +1,4 @@
-program ex26f90
+program ex62f90
 #include "petsc/finclude/petsc.h"
     use petsc
     implicit none
@@ -478,7 +478,7 @@ program ex26f90
 
     PetscCallA(PetscViewerDestroy(viewer,ierr))
     PetscCallA(PetscFinalize(ierr))
-end program ex26f90
+end program ex62f90
 
 ! /*TEST
 !
