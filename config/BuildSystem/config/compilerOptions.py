@@ -81,6 +81,8 @@ class CompilerOptions(config.base.Configure):
             flags.extend(['-MD','-wd4996'])
           else:
             flags.extend(['-MT','-wd4996'])
+          # cause compiler to handle preprocessor per the standard https://docs.microsoft.com/en-us/cpp/build/reference/zc-preprocessor?view=msvc-170
+          flags.extend(['-Zc:preprocessor ','-experimental:preprocessor'])
         elif bopt == 'g':
           flags.extend(['-Z7','-Od'])
         elif bopt == 'O':
@@ -207,6 +209,8 @@ class CompilerOptions(config.base.Configure):
             flags.extend(['-MD','-GR','-EHsc'])
           else:
             flags.extend(['-MT','-GR','-EHsc']) # removing GX in favor of EHsc
+          # cause compiler to handle preprocessor per the standard https://docs.microsoft.com/en-us/cpp/build/reference/zc-preprocessor?view=msvc-170
+          flags.extend(['-Zc:preprocessor ','-experimental:preprocessor'])
         elif bopt == 'g':
           flags.extend(['-Z7','-Zm200','-Od'])
         elif bopt == 'O':
