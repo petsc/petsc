@@ -482,8 +482,9 @@ PetscErrorCode PetscObjectAddOptionsHandler(PetscObject obj,PetscErrorCode (*han
 
     Not Collective
 
-    Input Parameter:
-.   obj - the PETSc object
+    Input Parameters:
++   PetscOptionsObject - this is produced by the `PetscOptionsBegin()` macro
+-   obj - the PETSc object
 
     Level: developer
 

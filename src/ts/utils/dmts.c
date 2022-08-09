@@ -401,20 +401,23 @@ PetscErrorCode DMTSSetIFunction(DM dm,TSIFunction func,void *ctx)
 }
 
 /*@C
-   DMTSSetIFunctionContextDestroy - set TS implicit evaluation context destroy function
+   DMTSSetIFunctionContextDestroy - set `TS` implicit evaluation context destroy function
 
    Not Collective
 
    Input Parameters:
-+  dm - DM to be used with TS
-.  f - implicit evaluation context destroy function
++  dm - `DM` to be used with `TS`
+-  f - implicit evaluation context destroy function
 
    Level: advanced
 
    Note:
-   TSSetFunctionContextDestroy() is normally used, but it calls this function internally because the user context is actually
-   associated with the DM.  This makes the interface consistent regardless of whether the user interacts with a DM or
-   not. If DM took a more central role at some later date, this could become the primary method of setting the residual.
+   `TSSetFunctionContextDestroy()` is normally used, but it calls this function internally because the user context is actually
+   associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
+   not.
+
+   Developer Note:
+   If `DM` took a more central role at some later date, this could become the primary method of setting the residual.
 
 .seealso: `TSSetFunctionContextDestroy()`, `DMTSSetIFunction()`, `TSSetIFunction()`
 @*/
@@ -523,19 +526,19 @@ PetscErrorCode DMTSSetI2Function(DM dm,TSI2Function fun,void *ctx)
 }
 
 /*@C
-   DMTSSetI2FunctionContextDestroy - set TS implicit evaluation for 2nd order systems context destroy
+   DMTSSetI2FunctionContextDestroy - set `TS` implicit evaluation for 2nd order systems context destroy
 
    Not Collective
 
    Input Parameters:
-+  dm - DM to be used with TS
-.  f - implicit evaluation context destroy function
++  dm - `DM` to be used with `TS`
+-  f - implicit evaluation context destroy function
 
    Level: advanced
 
    Note:
-   TSSetI2FunctionContextDestroy() is normally used, but it calls this function internally because the user context is actually
-   associated with the DM.
+   `TSSetI2FunctionContextDestroy()` is normally used, but it calls this function internally because the user context is actually
+   associated with the `DM`.
 
 .seealso: `TSSetI2FunctionContextDestroy()`, `DMTSSetI2Function()`, `TSSetI2Function()`
 @*/
@@ -647,13 +650,13 @@ PetscErrorCode DMTSSetI2Jacobian(DM dm,TSI2Jacobian jac,void *ctx)
 }
 
 /*@C
-   DMTSSetI2JacobianContextDestroy - set TS implicit Jacobian evaluation for 2nd order systems context destroy function
+   DMTSSetI2JacobianContextDestroy - set `TS` implicit Jacobian evaluation for 2nd order systems context destroy function
 
    Not Collective
 
    Input Parameters:
-+  dm - DM to be used with TS
-.  f - implicit Jacobian evaluation context destroy function
++  dm - `DM` to be used with `TS`
+-  f - implicit Jacobian evaluation context destroy function
 
 .seealso: `TSSetI2JacobianContextDestroy()`, `DMTSSetI2Jacobian()`, `TSSetI2Jacobian()`
 @*/
@@ -762,20 +765,23 @@ PetscErrorCode DMTSSetRHSFunction(DM dm,TSRHSFunction func,void *ctx)
 }
 
 /*@C
-   DMTSSetRHSFunctionContextDestroy - set TS explicit residual evaluation context destroy function
+   DMTSSetRHSFunctionContextDestroy - set `TS` explicit residual evaluation context destroy function
 
    Not Collective
 
    Input Parameters:
-+  dm - DM to be used with TS
-.  f - explicit evaluation context destroy function
++  dm - `DM` to be used with `TS`
+-  f - explicit evaluation context destroy function
 
    Level: advanced
 
    Note:
-   TSSetRHSFunctionContextDestroy() is normally used, but it calls this function internally because the user context is actually
-   associated with the DM.  This makes the interface consistent regardless of whether the user interacts with a DM or
-   not. If DM took a more central role at some later date, this could become the primary method of setting the residual.
+   `TSSetRHSFunctionContextDestroy()` is normally used, but it calls this function internally because the user context is actually
+   associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
+   not.
+
+   Developer Note:
+   If `DM` took a more central role at some later date, this could become the primary method of setting the residual.
 
 .seealso: `TSSetRHSFunctionContextDestroy()`, `DMTSSetRHSFunction()`, `TSSetRHSFunction()`
 @*/
@@ -1097,22 +1103,25 @@ PetscErrorCode DMTSSetIJacobian(DM dm,TSIJacobian func,void *ctx)
 }
 
 /*@C
-   DMTSSetIJacobianContextDestroy - set TS Jacobian evaluation context destroy function
+   DMTSSetIJacobianContextDestroy - set `TS` Jacobian evaluation context destroy function
 
    Not Collective
 
    Input Parameters:
-+  dm - DM to be used with TS
-.  f - Jacobian evaluation context destroy function
++  dm - `DM` to be used with `TS`
+-  f - Jacobian evaluation context destroy function
 
    Level: advanced
 
    Note:
-   TSSetIJacobianContextDestroy() is normally used, but it calls this function internally because the user context is actually
-   associated with the DM.  This makes the interface consistent regardless of whether the user interacts with a DM or
-   not. If DM took a more central role at some later date, this could become the primary method of setting the Jacobian.
+   `TSSetIJacobianContextDestroy()` is normally used, but it calls this function internally because the user context is actually
+   associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
+   not.
 
-.seealso: `TSSetIJacobianContextDestroy()`, `DMTSSetIJacobian()`, `TSSetIJacobian()`
+   Developer Note:
+   If `DM` took a more central role at some later date, this could become the primary method of setting the Jacobian.
+
+.seealso: `TSSetIJacobianContextDestroy()`, `TSSetI2JacobianContextDestroy()`, `DMTSSetIJacobian()`, `TSSetIJacobian()`
 @*/
 PetscErrorCode DMTSSetIJacobianContextDestroy(DM dm,PetscErrorCode (*f)(void*))
 {
@@ -1220,13 +1229,18 @@ PetscErrorCode DMTSSetRHSJacobian(DM dm,TSRHSJacobian func,void *ctx)
 }
 
 /*@C
-   DMTSSetRHSJacobianContextDestroy - set TS Jacobian evaluation context destroy function
+   DMTSSetRHSJacobianContextDestroy - set `TS` Jacobian evaluation context destroy function
 
    Not Collective
 
    Input Parameters:
-+  dm - DM to be used with TS
-.  f - Jacobian evaluation context destroy function
++  dm - `DM` to be used with `TS`
+-  f - Jacobian evaluation context destroy function
+
+   Level: advanced
+
+   Note:
+   The user usually calls `TSSetRHSJacobianContextDestroy()` which calls this routine
 
 .seealso: `TSSetRHSJacobianContextDestroy()`, `DMTSSetRHSJacobian()`, `TSSetRHSJacobian()`
 @*/
