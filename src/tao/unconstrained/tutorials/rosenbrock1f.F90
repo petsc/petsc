@@ -12,7 +12,9 @@
 
 ! ----------------------------------------------------------------------
 !
-#include "rosenbrock1f.h"
+#include "petsc/finclude/petsctao.h"
+      use petsctao
+      implicit none
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
@@ -20,14 +22,17 @@
 !
 !  See additional variable declarations in the file rosenbrock1f.h
 
-      PetscErrorCode   ierr    ! used to check for functions returning nonzeros
-      Vec              x       ! solution vector
-      Mat              H       ! hessian matrix
-      Tao        tao     ! TAO_SOVER context
+      PetscErrorCode  ierr    ! used to check for functions returning nonzeros
+      Vec             x       ! solution vector
+      Mat             H       ! hessian matrix
+      Tao             tao     ! TAO_SOVER context
       PetscBool       flg
-      PetscInt         i2,i1
+      PetscInt        i2,i1
       PetscMPIInt     size
-      PetscReal      zero
+      PetscReal       zero
+      PetscReal       alpha
+      PetscInt        n
+      common /params/ alpha, n
 
 !  Note: Any user-defined Fortran routines (such as FormGradient)
 !  MUST be declared as external.
@@ -108,9 +113,10 @@
 !  f - function value
 
       subroutine FormFunctionGradient(tao, X, f, G, dummy, ierr)
-#include "rosenbrock1f.h"
+      use petsctao
+      implicit none
 
-      Tao        tao
+      Tao              tao
       Vec              X,G
       PetscReal        f
       PetscErrorCode   ierr
@@ -126,6 +132,9 @@
 ! Notice that by declaring the arrays with range (0:1), we are using the C 0-indexing practice.
       PetscReal        g_v(0:1),x_v(0:1)
       PetscOffset      g_i,x_i
+      PetscReal        alpha
+      PetscInt         n
+      common /params/ alpha, n
 
       ierr = 0
       nn = n/2
@@ -175,17 +184,18 @@
 !  require this matrix.
 
       subroutine FormHessian(tao,X,H,PrecH,dummy,ierr)
-#include "rosenbrock1f.h"
+      use petsctao
+      implicit none
 
 !  Input/output variables:
-      Tao        tao
+      Tao              tao
       Vec              X
       Mat              H, PrecH
       PetscErrorCode   ierr
       PetscInt         dummy
 
       PetscReal        v(0:1,0:1)
-      PetscBool assembled
+      PetscBool        assembled
 
 ! PETSc's VecGetArray acts differently in Fortran than it does in C.
 ! Calling VecGetArray((Vec) X, (PetscReal) x_array(0:1), (PetscOffset) x_index, ierr)
@@ -195,6 +205,9 @@
       PetscReal        x_v(0:1)
       PetscOffset      x_i
       PetscInt         i,nn,ind(0:1),i2
+      PetscReal        alpha
+      PetscInt         n
+      common /params/ alpha, n
 
       ierr = 0
       nn= n/2

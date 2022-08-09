@@ -6912,9 +6912,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
         PetscCall(MatMult(pcbddc->ChangeOfBasisMatrix,pcis->vec1_global,x_change));
         PetscCall(VecAXPY(x,-1.0,x_change));
         PetscCall(VecNorm(x,NORM_INFINITY,&error));
-        if (error > PETSC_SMALL) {
-          SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_PLIB,"Error global vs local change on N: %1.6e",(double)error);
-        }
+        PetscCheck(error <= PETSC_SMALL,PetscObjectComm((PetscObject)pc),PETSC_ERR_PLIB,"Error global vs local change on N: %1.6e",(double)error);
         PetscCall(VecDestroy(&x));
         PetscCall(VecDestroy(&x_change));
       }

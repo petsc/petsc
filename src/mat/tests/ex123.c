@@ -1,8 +1,7 @@
 static char help[] = "Test MatSetPreallocationCOO and MatSetValuesCOO\n\n";
 
 #include <petscmat.h>
-#define MyMatView(a,b) (PetscPrintf(PetscObjectComm((PetscObject)(a)),"LINE %d\n",__LINE__),MatView(a,b));
-#define MyVecView(a,b) (PetscPrintf(PetscObjectComm((PetscObject)(a)),"LINE %d\n",__LINE__),VecView(a,b));
+
 int main(int argc,char **args)
 {
   Mat                    A,At,AAt;
@@ -92,19 +91,19 @@ int main(int argc,char **args)
   }
   PetscCall(MatSetValuesCOO(A,v1,ADD_VALUES));
   PetscCall(MatMult(A,x,y));
-  PetscCall(MyMatView(A,NULL));
-  PetscCall(MyVecView(y,NULL));
+  PetscCall(MatView(A,NULL));
+  PetscCall(VecView(y,NULL));
   PetscCall(MatSetValuesCOO(A,v2,ADD_VALUES));
   PetscCall(MatMultAdd(A,x,y,y));
-  PetscCall(MyMatView(A,NULL));
-  PetscCall(MyVecView(y,NULL));
+  PetscCall(MatView(A,NULL));
+  PetscCall(VecView(y,NULL));
   PetscCall(MatTranspose(A,MAT_INITIAL_MATRIX,&At));
   if (!ismatis) {
     PetscCall(MatMatMult(A,At,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&AAt));
-    PetscCall(MyMatView(AAt,NULL));
+    PetscCall(MatView(AAt,NULL));
     PetscCall(MatDestroy(&AAt));
     PetscCall(MatMatMult(At,A,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&AAt));
-    PetscCall(MyMatView(AAt,NULL));
+    PetscCall(MatView(AAt,NULL));
     PetscCall(MatDestroy(&AAt));
   }
   PetscCall(MatDestroy(&At));
@@ -112,7 +111,7 @@ int main(int argc,char **args)
   /* INSERT_VALUES will overwrite matrix entries but
      still perform the sum of the repeated entries */
   PetscCall(MatSetValuesCOO(A,v2,INSERT_VALUES));
-  PetscCall(MyMatView(A,NULL));
+  PetscCall(MatView(A,NULL));
 
   /* test with unique entries */
   PetscCall(PetscArraycpy(it,i2,n2));
@@ -124,12 +123,12 @@ int main(int argc,char **args)
   }
   PetscCall(MatSetValuesCOO(A,v1,ADD_VALUES));
   PetscCall(MatMult(A,x,y));
-  PetscCall(MyMatView(A,NULL));
-  PetscCall(MyVecView(y,NULL));
+  PetscCall(MatView(A,NULL));
+  PetscCall(VecView(y,NULL));
   PetscCall(MatSetValuesCOO(A,v2,ADD_VALUES));
   PetscCall(MatMultAdd(A,x,y,z));
-  PetscCall(MyMatView(A,NULL));
-  PetscCall(MyVecView(z,NULL));
+  PetscCall(MatView(A,NULL));
+  PetscCall(VecView(z,NULL));
   PetscCall(PetscArraycpy(it,i2,n2));
   PetscCall(PetscArraycpy(jt,j2,n2));
   if (!localapi) {
@@ -139,19 +138,19 @@ int main(int argc,char **args)
   }
   PetscCall(MatSetValuesCOO(A,v1,INSERT_VALUES));
   PetscCall(MatMult(A,x,y));
-  PetscCall(MyMatView(A,NULL));
-  PetscCall(MyVecView(y,NULL));
+  PetscCall(MatView(A,NULL));
+  PetscCall(VecView(y,NULL));
   PetscCall(MatSetValuesCOO(A,v2,INSERT_VALUES));
   PetscCall(MatMultAdd(A,x,y,z));
-  PetscCall(MyMatView(A,NULL));
-  PetscCall(MyVecView(z,NULL));
+  PetscCall(MatView(A,NULL));
+  PetscCall(VecView(z,NULL));
   PetscCall(MatTranspose(A,MAT_INITIAL_MATRIX,&At));
   if (!ismatis) {
     PetscCall(MatMatMult(A,At,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&AAt));
-    PetscCall(MyMatView(AAt,NULL));
+    PetscCall(MatView(AAt,NULL));
     PetscCall(MatDestroy(&AAt));
     PetscCall(MatMatMult(At,A,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&AAt));
-    PetscCall(MyMatView(AAt,NULL));
+    PetscCall(MatView(AAt,NULL));
     PetscCall(MatDestroy(&AAt));
   }
   PetscCall(MatDestroy(&At));
@@ -198,18 +197,18 @@ int main(int argc,char **args)
     PetscCall(MatSetPreallocationCOO(A,nnz,coo_i,coo_j));
     PetscCall(MatSetValuesCOO(A,coo_v,ADD_VALUES));
     PetscCall(MatMult(A,x,y));
-    PetscCall(MyMatView(A,NULL));
-    PetscCall(MyVecView(y,NULL));
+    PetscCall(MatView(A,NULL));
+    PetscCall(VecView(y,NULL));
     PetscCall(MatSetValuesCOO(A,coo_v,INSERT_VALUES));
     PetscCall(MatMult(A,x,y));
-    PetscCall(MyMatView(A,NULL));
-    PetscCall(MyVecView(y,NULL));
+    PetscCall(MatView(A,NULL));
+    PetscCall(VecView(y,NULL));
     PetscCall(MatTranspose(A,MAT_INITIAL_MATRIX,&At));
     PetscCall(MatMatMult(A,At,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&AAt));
-    PetscCall(MyMatView(AAt,NULL));
+    PetscCall(MatView(AAt,NULL));
     PetscCall(MatDestroy(&AAt));
     PetscCall(MatMatMult(At,A,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&AAt));
-    PetscCall(MyMatView(AAt,NULL));
+    PetscCall(MatView(AAt,NULL));
     PetscCall(MatDestroy(&AAt));
     PetscCall(MatDestroy(&At));
 
