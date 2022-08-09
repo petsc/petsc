@@ -77,6 +77,7 @@ In addition to the changes above
 -  Change ``PetscStackCall()`` to ``PetscStackCallExternalVoid()``
 -  Change ``PetscStackCallXXX()`` to ``PetscCallXXX()``
 -  Add ``PetscCallBack()' for calling all PETSc callbacks (usually to user code) to replace the use of ``PetscStackPush()`` and ``PetscStackPop``
+-  Add ``PetscTryTypeMethod()`` and ``PetscUseTypeMethod()`` to replace direct calls of the form ``(\*obj->ops->op)(obj,...)``.
 
 .. rubric:: Event Logging:
 

@@ -470,7 +470,10 @@ void PetscValidLogicalCollectiveEnum(Ta,Tb,int);
 
    This does not return an error code, it is a macro that returns with an erorr code on error.
 
-.seealso: `PetscUseMethod()`, `PetscCall()`, `PetscCallMethod()`, `PetscCheck()`
+   Use `PetscUseTypeMethod()` or `PetscTryTypeMethod()` to call functions that are included in the objects function table, the `ops` array
+   in the object.
+
+.seealso: `PetscUseMethod()`, `PetscCall()`, `PetscUseTypeMethod()`, `PetscTryTypeMethod()`, `PetscCheck()`
 M*/
 #define PetscTryMethod(obj,A,B,C) do {                             \
     PetscErrorCode (*_7_f)B;                                       \
@@ -498,7 +501,10 @@ M*/
 
    This does not return an error code, it is a macro that returns with an erorr code on error.
 
-.seealso: `PetscTryMethod()`, `PetscCall()`, `PetscCallMethod()`, `PetscCheck()`
+   Use `PetscUseTypeMethod()` or `PetscTryTypeMethod()` to call functions that are included in the objects function table, the `ops` array
+   in the object.
+
+.seealso: `PetscTryMethod()`, `PetscCall()`, `PetscUseTypeMethod()`, `PetscTryTypeMethod()`, `PetscCheck()`
 M*/
 #define PetscUseMethod(obj,A,B,C) do {                                                         \
     PetscErrorCode (*_7_f)B;                                                                   \
@@ -557,6 +563,8 @@ M*/
    Note:
    This does not return an error code, it is a macro that returns with an erorr code on error.
 
+   Use `PetscUseMethod()` or `PetscTryMethod()` to call functions that have been composed to an object with `PetscObjectComposeFunction()`
+
 .seealso: `PetscTryMethod()`, `PetscUseMethod()`, `PetscCall()`, `PetscCheck()`, `PetscTryTypeMethod()`
 M*/
 #define PetscUseTypeMethod(obj,...) do {    \
@@ -580,6 +588,8 @@ M*/
 
    Note:
    This does not return an error code, it is a macro that returns with an erorr code on error.
+
+   Use `PetscUseMethod()` or `PetscTryMethod()` to call functions that have been composed to an object with `PetscObjectComposeFunction()`
 
 .seealso: `PetscTryMethod()`, `PetscUseMethod()`, `PetscCall()`, `PetscCheck()`, `PetscUseTypeMethod()`
 M*/
