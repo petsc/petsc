@@ -1,6 +1,6 @@
-DM Object: cubit(aise/AeroFS/Development/DMPlex/EXO/FourBrickHex-large.exo): 12/08/2017: 17 2 MPI processes
+DM Object: ex64_plex 2 MPI processes
   type: plex
-cubit(aise/AeroFS/Development/DMPlex/EXO/FourBrickHex-large.exo): 12/08/2017: 17 in 3 dimensions:
+ex64_plex in 3 dimensions:
   Number of 0-cells per rank: 125 0
   Number of 1-cells per rank: 300 0
   Number of 2-cells per rank: 240 0
@@ -9,18 +9,6 @@ Labels:
   celltype: 4 strata with value/size (0 (125), 7 (64), 4 (240), 1 (300))
   depth: 4 strata with value/size (0 (125), 1 (300), 2 (240), 3 (64))
   Cell Sets: 4 strata with value/size (1 (16), 2 (16), 5 (16), 20 (16))
-PetscViewer Object: 2 MPI processes
-  type: exodusii
-  Filename:    FourBrickHex-large_out.exo
-  exoid:       -1
-  IO Mode:     1
-  Mesh order:  2
-PetscViewer Object: 2 MPI processes
-  type: exodusii
-  Filename:    FourBrickHex-large_out.exo
-  exoid:       65536
-  IO Mode:     1
-  Mesh order:  2
 DM Object: Parallel Mesh 2 MPI processes
   type: plex
 Parallel Mesh in 3 dimensions:

@@ -367,3 +367,48 @@ PetscErrorCode DMPlexNaturalToGlobalEnd(DM dm, Vec nv, Vec gv)
   PetscCall(PetscLogEventEnd(DMPLEX_NaturalToGlobalEnd,dm,0,0,0));
   PetscFunctionReturn(0);
 }
+
+/*@
+  DMPlexCreateNaturalVector - Provide a Vec capable of holding the natural ordering and distribution.
+
+  Collective on dm
+
+  Input Parameters:
++ dm - The distributed DMPlex
+
+  Output Parameters:
+. nv - The natural Vec
+
+  Note: The user must call DMSetUseNatural(dm, PETSC_TRUE) before DMPlexDistribute().
+
+  Level: intermediate
+
+.seealso: `DMPlexDistribute()`, `DMPlexNaturalToGlobalBegin()`, `DMPlexGlobalToNaturalBegin()`
+ @*/
+PetscErrorCode DMPlexCreateNaturalVector(DM dm, Vec *nv)
+{
+  PetscMPIInt size;
+
+  PetscFunctionBegin;
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject) dm), &size));
+  if (dm->sfNatural) {
+    PetscInt    nleaves, bs;
+    Vec         v;
+    PetscCall(DMGetLocalVector(dm,&v));
+    PetscCall(VecGetBlockSize(v,&bs));
+    PetscCall(DMRestoreLocalVector(dm,&v));
+
+    PetscCall(PetscSFGetGraph(dm->sfNatural,NULL,&nleaves,NULL,NULL));
+    PetscCall(VecCreate(PetscObjectComm((PetscObject)dm), nv));
+    PetscCall(VecSetSizes(*nv, nleaves, PETSC_DETERMINE));
+    PetscCall(VecSetBlockSize(*nv, bs));
+    PetscCall(VecSetType(*nv,dm->vectype));
+    PetscCall(VecSetDM(*nv, dm));
+  } else if (size == 1) {
+    PetscCall(DMCreateLocalVector(dm,nv));
+  } else {
+    PetscCheck(!dm->useNatural,PetscObjectComm((PetscObject) dm), PETSC_ERR_PLIB, "DM global to natural SF not present.\nIf DMPlexDistribute() was called and a section was defined, report to petsc-maint@mcs.anl.gov.");
+    SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONGSTATE, "DM global to natural SF was not created.\nYou must call DMSetUseNatural() before DMPlexDistribute().");
+  }
+  PetscFunctionReturn(0);
+}
