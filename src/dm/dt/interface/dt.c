@@ -12,7 +12,11 @@
 #include <mpfr.h>
 #endif
 
-const char *const PetscDTNodeTypes[] = {"gaussjacobi", "equispaced", "tanhsinh", "PETSCDTNODES_", NULL};
+const char *const PetscDTNodeTypes_shifted[] = {"default", "gaussjacobi", "equispaced", "tanhsinh", "PETSCDTNODES_", NULL};
+const char *const*const PetscDTNodeTypes = PetscDTNodeTypes_shifted + 1;
+
+const char *const PetscDTSimplexQuadratureTypes_shifted[] = {"default", "conic", "minsym", "PETSCDTSIMPLEXQUAD_", NULL};
+const char *const*const PetscDTSimplexQuadratureTypes = PetscDTSimplexQuadratureTypes_shifted + 1;
 
 static PetscBool GolubWelschCite       = PETSC_FALSE;
 const char       GolubWelschCitation[] = "@article{GolubWelsch1969,\n"
@@ -1974,6 +1978,241 @@ PetscErrorCode PetscDTStroudConicalQuadrature(PetscInt dim, PetscInt Nc, PetscIn
   PetscCall(PetscQuadratureSetOrder(*q, 2*npoints-1));
   PetscCall(PetscQuadratureSetData(*q, dim, Nc, totpoints, x, w));
   PetscCall(PetscObjectChangeTypeName((PetscObject)*q,"StroudConical"));
+  PetscFunctionReturn(0);
+}
+
+static PetscBool MinSymTriQuadCite = PETSC_FALSE;
+const char       MinSymTriQuadCitation[] =
+"@article{WitherdenVincent2015,\n"
+"  title = {On the identification of symmetric quadrature rules for finite element methods},\n"
+"  journal = {Computers & Mathematics with Applications},\n"
+"  volume = {69},\n"
+"  number = {10},\n"
+"  pages = {1232-1241},\n"
+"  year = {2015},\n"
+"  issn = {0898-1221},\n"
+"  doi = {10.1016/j.camwa.2015.03.017},\n"
+"  url = {https://www.sciencedirect.com/science/article/pii/S0898122115001224},\n"
+"  author = {F.D. Witherden and P.E. Vincent},\n"
+"}\n";
+
+#include "petscdttriquadrules.h"
+
+static PetscBool MinSymTetQuadCite = PETSC_FALSE;
+const char       MinSymTetQuadCitation[] =
+  "@article{JaskowiecSukumar2021\n"
+  "  author = {Jaskowiec, Jan and Sukumar, N.},\n"
+  "  title = {High-order symmetric cubature rules for tetrahedra and pyramids},\n"
+  "  journal = {International Journal for Numerical Methods in Engineering},\n"
+  "  volume = {122},\n"
+  "  number = {1},\n"
+  "  pages = {148-171},\n"
+  "  doi = {10.1002/nme.6528},\n"
+  "  url = {https://onlinelibrary.wiley.com/doi/abs/10.1002/nme.6528},\n"
+  "  eprint = {https://onlinelibrary.wiley.com/doi/pdf/10.1002/nme.6528},\n"
+  "  year = {2021}\n"
+  "}\n";
+
+#include "petscdttetquadrules.h"
+
+// https://en.wikipedia.org/wiki/Partition_(number_theory)
+static PetscErrorCode PetscDTPartitionNumber(PetscInt n, PetscInt *p)
+{
+  // sequence A000041 in the OEIS
+  const PetscInt partition[] = {1, 1, 2, 3, 5, 7, 11, 15, 22, 30, 42, 56, 77, 101, 135, 176, 231, 297, 385, 490, 627, 792, 1002, 1255, 1575, 1958, 2436, 3010, 3718, 4565, 5604};
+  PetscInt tabulated_max = PETSC_STATIC_ARRAY_LENGTH(partition) - 1;
+
+  PetscFunctionBegin;
+  PetscCheck(n >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Partition number not defined for negative number %" PetscInt_FMT, n);
+  // not implementing the pentagonal number recurrence, we don't need partition numbers for n that high
+  PetscCheck(n <= tabulated_max, PETSC_COMM_SELF, PETSC_ERR_SUP, "Partition numbers only tabulated up to %" PetscInt_FMT", not computed for %" PetscInt_FMT, tabulated_max, n);
+  *p = partition[n];
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscDTSimplexQuadrature - Create a quadrature rule for a simplex that exactly integrates polynomials up to a given degree.
+
+  Not Collective
+
+  Input Parameters:
++ dim     - The spatial dimension of the simplex (1 = segment, 2 = triangle, 3 = tetrahedron)
+. degree  - The largest polynomial degree that is required to be integrated exactly
+- type    - left end of interval (often-1)
+
+  Output Parameter:
+. quad    - A PetscQuadrature object for integration over the biunit simplex
+            (defined by the bounds $x_i >= -1$ and $\sum_i x_i <= 2 - d$) that is exact for
+            polynomials up to the given degree
+
+  Level: intermediate
+
+.seealso: `PetscDTSimplexQuadratureType`, `PetscDTGaussQuadrature()`, `PetscDTStroudCononicalQuadrature()`
+@*/
+PetscErrorCode PetscDTSimplexQuadrature(PetscInt dim, PetscInt degree, PetscDTSimplexQuadratureType type, PetscQuadrature *quad)
+{
+  PetscDTSimplexQuadratureType orig_type = type;
+
+  PetscFunctionBegin;
+  PetscCheck(dim >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Negative dimension %" PetscInt_FMT, dim);
+  PetscCheck(degree >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Negative degree %" PetscInt_FMT, degree);
+  if (type == PETSCDTSIMPLEXQUAD_DEFAULT) {
+    type = PETSCDTSIMPLEXQUAD_MINSYM;
+  }
+  if (type == PETSCDTSIMPLEXQUAD_CONIC || dim < 2) {
+    PetscInt points_per_dim = (degree + 2) / 2; // ceil((degree + 1) / 2);
+    PetscCall(PetscDTStroudConicalQuadrature(dim, 1, points_per_dim, -1, 1, quad));
+  } else {
+    PetscInt n = dim + 1;
+    PetscInt fact = 1;
+    PetscInt *part, *perm;
+    PetscInt p = 0;
+    PetscInt max_degree;
+    const PetscInt *nodes_per_type = NULL;
+    const PetscInt *all_num_full_nodes = NULL;
+    const PetscReal **weights_list = NULL;
+    const PetscReal **compact_nodes_list = NULL;
+    const char *citation = NULL;
+    PetscBool *cited = NULL;
+
+    switch (dim) {
+    case 2:
+      cited = &MinSymTriQuadCite;
+      citation = MinSymTriQuadCitation;
+      max_degree = PetscDTWVTriQuad_max_degree;
+      nodes_per_type = PetscDTWVTriQuad_num_orbits;
+      all_num_full_nodes = PetscDTWVTriQuad_num_nodes;
+      weights_list = PetscDTWVTriQuad_weights;
+      compact_nodes_list = PetscDTWVTriQuad_orbits;
+      break;
+    case 3:
+      cited = &MinSymTetQuadCite;
+      citation = MinSymTetQuadCitation;
+      max_degree = PetscDTJSTetQuad_max_degree;
+      nodes_per_type = PetscDTJSTetQuad_num_orbits;
+      all_num_full_nodes = PetscDTJSTetQuad_num_nodes;
+      weights_list = PetscDTJSTetQuad_weights;
+      compact_nodes_list = PetscDTJSTetQuad_orbits;
+      break;
+    default:
+      max_degree = - 1;
+      break;
+    }
+
+    if (degree > max_degree) {
+      if (orig_type == PETSCDTSIMPLEXQUAD_DEFAULT) {
+        // fall back to conic
+        PetscCall(PetscDTSimplexQuadrature(dim, degree, PETSCDTSIMPLEXQUAD_CONIC, quad));
+        PetscFunctionReturn(0);
+      } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Minimal symmetric quadrature for dim %" PetscInt_FMT ", degree %" PetscInt_FMT " unsupported", dim, degree);
+    }
+
+    PetscCall(PetscCitationsRegister(citation, cited));
+
+    PetscCall(PetscDTPartitionNumber(n, &p));
+    for (PetscInt d = 2; d <= n; d++) fact *= d;
+
+    PetscInt num_full_nodes = all_num_full_nodes[degree];
+    const PetscReal *all_compact_nodes = compact_nodes_list[degree];
+    const PetscReal *all_compact_weights = weights_list[degree];
+    nodes_per_type = &nodes_per_type[p * degree];
+
+    PetscReal *points;
+    PetscReal *counts;
+    PetscReal *weights;
+    PetscReal *bary_to_biunit; // row-major transformation of barycentric coordinate to biunit
+    PetscQuadrature q;
+
+    // compute the transformation
+    PetscCall(PetscMalloc1(n * dim, &bary_to_biunit));
+    for (PetscInt d = 0; d < dim; d++) {
+      for (PetscInt b = 0; b < n; b++) {
+        bary_to_biunit[d * n + b] = (d == b) ? 1.0 : -1.0;
+      }
+    }
+
+    PetscCall(PetscMalloc3(n, &part, n, &perm, n, &counts));
+    PetscCall(PetscCalloc1(num_full_nodes * dim, &points));
+    PetscCall(PetscMalloc1(num_full_nodes, &weights));
+
+    // (0, 0, ...) is the first partition lexicographically
+    PetscCall(PetscArrayzero(part, n));
+    PetscCall(PetscArrayzero(counts, n));
+    counts[0] = n;
+
+    // for each partition
+    for (PetscInt s = 0, node_offset = 0; s < p; s++) {
+      PetscInt num_compact_coords = part[n-1] + 1;
+
+      const PetscReal *compact_nodes = all_compact_nodes;
+      const PetscReal *compact_weights = all_compact_weights;
+      all_compact_nodes += num_compact_coords * nodes_per_type[s];
+      all_compact_weights += nodes_per_type[s];
+
+      // for every permutation of the vertices
+      for (PetscInt f = 0; f < fact; f++) {
+        PetscCall(PetscDTEnumPerm(n, f, perm, NULL));
+
+        // check if it is a valid permutation
+        PetscInt digit;
+        for (digit = 1; digit < n; digit++) {
+          // skip permutations that would duplicate a node because it has a smaller symmetry group
+          if (part[digit - 1] == part[digit] && perm[digit - 1] > perm[digit]) break;
+        }
+        if (digit < n) continue;
+
+        // create full nodes from this permutation of the compact nodes
+        PetscReal *full_nodes = &points[node_offset * dim];
+        PetscReal *full_weights = &weights[node_offset];
+
+        PetscCall(PetscArraycpy(full_weights, compact_weights, nodes_per_type[s]));
+        for (PetscInt b = 0; b < n; b++) {
+          for (PetscInt d = 0; d < dim; d++) {
+            for (PetscInt node = 0; node < nodes_per_type[s]; node++) {
+              full_nodes[node * dim + d] += bary_to_biunit[d * n + perm[b]] * compact_nodes[node * num_compact_coords + part[b]];
+            }
+          }
+        }
+        node_offset += nodes_per_type[s];
+      }
+
+      if (s < p - 1) { // Generate the next partition
+        /* A partition is described by the number of coordinates that are in
+         * each set of duplicates (counts) and redundantly by mapping each
+         * index to its set of duplicates (part)
+         *
+         * Counts should always be in nonincreasing order
+         *
+         * We want to generate the partitions lexically by part, which means
+         * finding the last index where count > 1 and reducing by 1.
+         *
+         * For the new counts beyond that index, we eagerly assign the remaining
+         * capacity of the partition to smaller indices (ensures lexical ordering),
+         * while respecting the nonincreasing invariant of the counts
+         */
+        PetscInt last_digit = part[n-1];
+        PetscInt last_digit_with_extra = last_digit;
+        while (counts[last_digit_with_extra] == 1) last_digit_with_extra--;
+        PetscInt limit = --counts[last_digit_with_extra];
+        PetscInt total_to_distribute = last_digit - last_digit_with_extra + 1;
+        for (PetscInt digit = last_digit_with_extra + 1; digit < n; digit++) {
+          counts[digit] = PetscMin(limit, total_to_distribute);
+          total_to_distribute -= PetscMin(limit, total_to_distribute);
+        }
+        for (PetscInt digit = 0, offset = 0; digit < n; digit++) {
+          PetscInt count = counts[digit];
+          for (PetscInt c = 0; c < count; c++) {
+            part[offset++] = digit;
+          }
+        }
+      }
+    }
+    PetscCall(PetscFree3(part, perm, counts));
+    PetscCall(PetscFree(bary_to_biunit));
+    PetscCall(PetscQuadratureCreate(PETSC_COMM_SELF, &q));
+    PetscCall(PetscQuadratureSetData(q, dim, 1, num_full_nodes, points, weights));
+    *quad = q;
+  }
   PetscFunctionReturn(0);
 }
 
