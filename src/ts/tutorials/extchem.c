@@ -321,7 +321,7 @@ PetscErrorCode MassFractionToMoleFraction(User user,Vec massf,Vec *molef)
   PetscScalar       *mof;
   const PetscScalar *maf;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecDuplicate(massf,molef));
   PetscCall(VecGetArrayRead(massf,&maf));
   PetscCall(VecGetArray(*molef,&mof));
@@ -340,7 +340,7 @@ PetscErrorCode MoleFractionToMassFraction(User user,Vec molef,Vec *massf)
   const PetscScalar *mof;
   PetscScalar       *maf;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecDuplicate(molef,massf));
   PetscCall(VecGetArrayRead(molef,&mof));
   PetscCall(VecGetArray(*massf,&maf));
@@ -353,7 +353,7 @@ PetscErrorCode MoleFractionToMassFraction(User user,Vec molef,Vec *massf)
 
 PetscErrorCode ComputeMassConservation(Vec x,PetscReal *mass,void* ctx)
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecSum(x,mass));
   PetscFunctionReturn(0);
 }
@@ -363,7 +363,7 @@ PetscErrorCode MonitorMassConservation(TS ts,PetscInt step,PetscReal time,Vec x,
   const PetscScalar  *T;
   PetscReal          mass;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(ComputeMassConservation(x,&mass,ctx));
   PetscCall(VecGetArrayRead(x,&T));
   mass -= PetscAbsScalar(T[0]);
@@ -377,7 +377,7 @@ PetscErrorCode MonitorTempature(TS ts,PetscInt step,PetscReal time,Vec x,void* c
   User               user = (User) ctx;
   const PetscScalar  *T;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(x,&T));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Timestep %" PetscInt_FMT " time %g temperature %g\n",step,(double)time,(double)(T[0]*user->Tini)));
   PetscCall(VecRestoreArrayRead(x,&T));
@@ -392,7 +392,7 @@ PETSC_UNUSED PetscErrorCode PrintSpecies(User user,Vec molef)
   const PetscScalar *mof;
   PetscInt          i,*idx,n = user->Nspec+1;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(PetscMalloc1(n,&idx));
   for (i=0; i<n;i++) idx[i] = i;
   PetscCall(VecGetArrayRead(molef,&mof));

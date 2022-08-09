@@ -230,7 +230,7 @@ static PetscErrorCode CheckDistribution(DM dm, PetscReal m, PetscReal n, PetscRe
   PetscReal      vmin, vmax, neq, veq, Teq;
   PetscInt       Nq = 100, q, cStart, cEnd, c;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(DMGetBoundingBox(dm, &vmin, &vmax));
   /* Check analytic over entire line */
   neq  = ComputeCDF(m, n, T, vmin, vmax);

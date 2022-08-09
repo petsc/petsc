@@ -25,7 +25,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec U,Mat A,Mat BB,void *ctx)
   MatStencil     stencil[6],rowstencil;
   PetscScalar    entries[6];
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(TSGetDM(ts,&da));
   PetscCall(DMGetLocalVector(da,&localU));
   PetscCall(DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
@@ -122,7 +122,7 @@ PetscErrorCode InitialConditions(DM da,Vec U)
   Field          **u;
   PetscReal      hx,hy,x,y;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
 
   hx = 2.5/(PetscReal)Mx;

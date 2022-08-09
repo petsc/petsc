@@ -32,7 +32,7 @@ static PetscErrorCode CoefficientCoarsenHook(DM dm, DM dmc,void *ctx)
   Vec            vscale;
   DM             cdm,cdmc;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(PetscObjectQuery((PetscObject)dm,"coefficientdm",(PetscObject*)&cdm));
 
   PetscCheck(cdm,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"The coefficient DM needs to be set up!");
@@ -71,7 +71,7 @@ static PetscErrorCode CoefficientSubDomainRestrictHook(DM dm,DM subdm,void *ctx)
   DM             cdm,csubdm;
   VecScatter     *iscat,*oscat,*gscat;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(PetscObjectQuery((PetscObject)dm,"coefficientdm",(PetscObject*)&cdm));
 
   PetscCheck(cdm,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"The coefficient DM needs to be set up!");

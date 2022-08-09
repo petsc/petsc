@@ -976,12 +976,34 @@ PetscErrorCode PetscOptionsView(PetscOptions options,PetscViewer viewer)
 /*
    Called by error handlers to print options used in run
 */
+PetscErrorCode PetscOptionsLeftError(void)
+{
+  PetscInt i, nopt = 0;
+
+  for (i=0; i<defaultoptions->N; i++) {
+    if (!defaultoptions->used[i]) {
+      if (PetscCIOption(defaultoptions->names[i])) continue;
+      nopt++;
+    }
+  }
+  if (nopt) {
+    (*PetscErrorPrintf)("WARNING! There are option(s) set that were not used! Could be the program crashed before they were used or a spelling mistake, etc!\n");
+    for (i=0; i<defaultoptions->N; i++) {
+      if (!defaultoptions->used[i]) {
+        if (PetscCIOption(defaultoptions->names[i])) continue;
+        if (defaultoptions->values[i]) (*PetscErrorPrintf)("Option left: name:-%s value: %s\n",defaultoptions->names[i],defaultoptions->values[i]);
+        else (*PetscErrorPrintf)("Option left: name:-%s (no value)\n",defaultoptions->names[i]);
+      }
+    }
+  }
+  return 0;
+}
+
 PETSC_EXTERN PetscErrorCode PetscOptionsViewError(void)
 {
   PetscInt     i, N = 0;
   PetscOptions options = defaultoptions;
 
-  PetscFunctionBegin;
   for (i=0; i<options->N; i++) {
     if (PetscCIOption(options->names[i])) continue;
     N++;
@@ -1000,7 +1022,7 @@ PETSC_EXTERN PetscErrorCode PetscOptionsViewError(void)
       (*PetscErrorPrintf)("-%s\n",options->names[i]);
     }
   }
-  PetscFunctionReturn(0);
+  return 0;
 }
 
 /*@C

@@ -387,4 +387,5 @@ PETSC_EXTERN PetscErrorCode PetscObjectAddOptionsHandler(PetscObject,PetscErrorC
 PETSC_EXTERN PetscErrorCode PetscObjectProcessOptionsHandlers(PetscOptionItems*,PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectDestroyOptionsHandlers(PetscObject);
 
+PETSC_EXTERN PetscErrorCode PetscOptionsLeftError(void);
 #endif

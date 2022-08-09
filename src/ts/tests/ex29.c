@@ -8,7 +8,7 @@ static PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ctx)
   const PetscScalar *xx;
   PetscScalar       *ff;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecGetLocalSize(X,&n));
   PetscCall(VecGetArrayRead(X,&xx));
   PetscCall(VecGetArray(F,&ff));

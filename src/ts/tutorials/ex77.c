@@ -528,7 +528,7 @@ static PetscErrorCode SetInitialParticleConditions(TS ts, Vec u)
   PetscInt       n[3];
   PetscInt       dim, d, i, j, k;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(TSGetApplicationContext(ts, &ctx));
   user = ((AdvCtx *) ctx)->ctx;
   PetscCall(TSGetDM(ts, &dm));
@@ -723,7 +723,7 @@ static PetscErrorCode RemoveDiscretePressureNullspace_Private(TS ts, Vec u)
   DM             dm;
   MatNullSpace   nullsp;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(TSGetDM(ts, &dm));
   PetscCall(CreatePressureNullSpace(dm, 1, 1, &nullsp));
   PetscCall(MatNullSpaceRemove(nullsp, u));
@@ -736,7 +736,7 @@ static PetscErrorCode RemoveDiscretePressureNullspace(TS ts)
 {
   Vec            u;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(TSGetSolution(ts, &u));
   PetscCall(RemoveDiscretePressureNullspace_Private(ts, u));
   PetscFunctionReturn(0);
@@ -747,7 +747,7 @@ static PetscErrorCode SetInitialConditions(TS ts, Vec u)
   DM             dm;
   PetscReal      t;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(TSGetDM(ts, &dm));
   PetscCall(TSGetTime(ts, &t));
   PetscCall(DMComputeExactSolution(dm, t, u, NULL));

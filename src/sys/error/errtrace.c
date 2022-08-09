@@ -205,6 +205,7 @@ PetscErrorCode  PetscTraceBackErrorHandler(MPI_Comm comm,int line,const char *fu
         if (text) (*PetscErrorPrintf)("%s\n",text);
       }
       if (mess) (*PetscErrorPrintf)("%s\n",mess);
+      PetscOptionsLeftError();
       (*PetscErrorPrintf)("See https://petsc.org/release/faq/ for trouble shooting.\n");
       if (!PetscCIEnabledPortableErrorOutput) {
         (*PetscErrorPrintf)("%s\n",version);

@@ -194,7 +194,7 @@ static PetscErrorCode SetupAuxDM(DM dm, PetscFE feAux, AppCtx *user)
 {
   DM             dmAux, coordDM;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   /* MUST call DMGetCoordinateDM() in order to get p4est setup if present */
   PetscCall(DMGetCoordinateDM(dm, &coordDM));
   if (!feAux) PetscFunctionReturn(0);

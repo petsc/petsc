@@ -21,7 +21,7 @@ struct _p_TSDAESimple {
 
 PetscErrorCode TSDAESimpleCreate(MPI_Comm comm,TSDAESimple *tsdae)
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(PetscNew(tsdae));
   (*tsdae)->comm = comm;
   PetscFunctionReturn(0);
@@ -29,7 +29,7 @@ PetscErrorCode TSDAESimpleCreate(MPI_Comm comm,TSDAESimple *tsdae)
 
 PetscErrorCode TSDAESimpleSetRHSFunction(TSDAESimple tsdae,Vec U,PetscErrorCode (*f)(PetscReal,Vec,Vec,Vec,void*),void *ctx)
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   tsdae->f    = f;
   tsdae->U    = U;
   PetscCall(PetscObjectReference((PetscObject)U));
@@ -39,7 +39,7 @@ PetscErrorCode TSDAESimpleSetRHSFunction(TSDAESimple tsdae,Vec U,PetscErrorCode 
 
 PetscErrorCode TSDAESimpleSetIFunction(TSDAESimple tsdae,Vec V,PetscErrorCode (*F)(PetscReal,Vec,Vec,Vec,void*),void *ctx)
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   tsdae->F    = F;
   tsdae->V    = V;
   PetscCall(PetscObjectReference((PetscObject)V));
@@ -49,7 +49,7 @@ PetscErrorCode TSDAESimpleSetIFunction(TSDAESimple tsdae,Vec V,PetscErrorCode (*
 
 PetscErrorCode TSDAESimpleDestroy(TSDAESimple *tsdae)
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall((*(*tsdae)->destroy)(*tsdae));
   PetscCall(VecDestroy(&(*tsdae)->U));
   PetscCall(VecDestroy(&(*tsdae)->V));
@@ -59,14 +59,14 @@ PetscErrorCode TSDAESimpleDestroy(TSDAESimple *tsdae)
 
 PetscErrorCode TSDAESimpleSolve(TSDAESimple tsdae,Vec Usolution)
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall((*tsdae->solve)(tsdae,Usolution));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode TSDAESimpleSetFromOptions(TSDAESimple tsdae)
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall((*tsdae->setfromoptions)(PetscOptionsObject,tsdae));
   PetscFunctionReturn(0);
 }
@@ -121,7 +121,7 @@ PetscErrorCode TSDAESimpleSolve_Reduced(TSDAESimple tsdae,Vec U)
 {
   TSDAESimple_Reduced *red = (TSDAESimple_Reduced*)tsdae->data;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(TSSolve(red->ts,U));
   PetscFunctionReturn(0);
 }
@@ -130,7 +130,7 @@ PetscErrorCode TSDAESimpleSetFromOptions_Reduced(PetscOptionItems *PetscOptionsO
 {
   TSDAESimple_Reduced *red = (TSDAESimple_Reduced*)tsdae->data;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(TSSetFromOptions(red->ts));
   PetscCall(SNESSetFromOptions(red->snes));
   PetscFunctionReturn(0);
@@ -140,7 +140,7 @@ PetscErrorCode TSDAESimpleDestroy_Reduced(TSDAESimple tsdae)
 {
   TSDAESimple_Reduced *red = (TSDAESimple_Reduced*)tsdae->data;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(TSDestroy(&red->ts));
   PetscCall(SNESDestroy(&red->snes));
   PetscCall(PetscFree(red));
@@ -152,7 +152,7 @@ PetscErrorCode TSDAESimpleSetUp_Reduced(TSDAESimple tsdae)
   TSDAESimple_Reduced *red;
   Vec                 tsrhs;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(PetscNew(&red));
   tsdae->data = red;
 
@@ -239,7 +239,7 @@ PetscErrorCode TSDAESimpleSolve_Full(TSDAESimple tsdae,Vec U)
 {
   TSDAESimple_Full *full = (TSDAESimple_Full*)tsdae->data;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecSet(full->UV,1.0));
   PetscCall(VecScatterBegin(full->scatterU,U,full->UV,INSERT_VALUES,SCATTER_FORWARD));
   PetscCall(VecScatterEnd(full->scatterU,U,full->UV,INSERT_VALUES,SCATTER_FORWARD));
@@ -253,7 +253,7 @@ PetscErrorCode TSDAESimpleSetFromOptions_Full(PetscOptionItems *PetscOptionsObje
 {
   TSDAESimple_Full *full = (TSDAESimple_Full*)tsdae->data;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(TSSetFromOptions(full->ts));
   PetscFunctionReturn(0);
 }
@@ -262,7 +262,7 @@ PetscErrorCode TSDAESimpleDestroy_Full(TSDAESimple tsdae)
 {
   TSDAESimple_Full *full = (TSDAESimple_Full*)tsdae->data;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(TSDestroy(&full->ts));
   PetscCall(VecDestroy(&full->UV));
   PetscCall(VecDestroy(&full->UF));
@@ -280,7 +280,7 @@ PetscErrorCode TSDAESimpleSetUp_Full(TSDAESimple tsdae)
   PetscInt         nU,nV,UVstart;
   IS               is;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(PetscNew(&full));
   tsdae->data = full;
 

@@ -41,7 +41,7 @@ PetscErrorCode Solution(TS ts,PetscReal t,Vec X,void *ctx)
   PetscReal      u,v;
   PetscScalar    *x;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   Exact(t,user->Omega,user->Xi,user->u0,user->v0,&u,&v);
   PetscCall(VecGetArray(X,&x));
   x[0] = (PetscScalar)u;
@@ -56,7 +56,7 @@ PetscErrorCode Residual1(TS ts,PetscReal t,Vec U,Vec A,Vec R,void *ctx)
   const PetscScalar *u,*a;
   PetscScalar       *r;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(U,&u));
   PetscCall(VecGetArrayRead(A,&a));
   PetscCall(VecGetArrayWrite(R,&r));
@@ -77,7 +77,7 @@ PetscErrorCode Tangent1(TS ts,PetscReal t,Vec U,Vec A,PetscReal shiftA,Mat J,Mat
   PetscReal      Omega = user->Omega;
   PetscReal      T = 0;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
 
   T = shiftA + (Omega*Omega);
 
@@ -98,7 +98,7 @@ PetscErrorCode Residual2(TS ts,PetscReal t,Vec U,Vec V,Vec A,Vec R,void *ctx)
   const PetscScalar *u,*v,*a;
   PetscScalar       *r;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(U,&u));
   PetscCall(VecGetArrayRead(V,&v));
   PetscCall(VecGetArrayRead(A,&a));
@@ -121,7 +121,7 @@ PetscErrorCode Tangent2(TS ts,PetscReal t,Vec U,Vec V,Vec A,PetscReal shiftV,Pet
   PetscReal      Omega = user->Omega, Xi = user->Xi;
   PetscReal      T = 0;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
 
   T = shiftA + shiftV * (2*Xi*Omega) + (Omega*Omega);
 

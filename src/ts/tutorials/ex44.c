@@ -25,7 +25,7 @@ static PetscErrorCode Event(TS ts,PetscReal t,Vec U,PetscScalar *fvalue,void *ct
   Vec               V;
   const PetscScalar *u,*v;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   /* Event for ball height */
   PetscCall(TS2GetSolution(ts,&U,&V));
   PetscCall(VecGetArrayRead(U,&u));
@@ -45,7 +45,7 @@ static PetscErrorCode PostEvent(TS ts,PetscInt nevents,PetscInt event_list[],Pet
   PetscScalar    *u,*v;
   PetscMPIInt    rank;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (!nevents) PetscFunctionReturn(0);
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   if (event_list[0] == 0) {
@@ -70,7 +70,7 @@ static PetscErrorCode I2Function(TS ts,PetscReal t,Vec U,Vec V,Vec A,Vec F,void 
   const PetscScalar *u,*v,*a;
   PetscScalar       Res,*f;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(U,&u));
   PetscCall(VecGetArrayRead(V,&v));
   PetscCall(VecGetArrayRead(A,&a));
@@ -92,7 +92,7 @@ static PetscErrorCode I2Jacobian(TS ts,PetscReal t,Vec U,Vec V,Vec A,PetscReal s
   PetscInt          i;
   PetscScalar       Jac;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(U,&u));
   PetscCall(VecGetArrayRead(V,&v));
   PetscCall(VecGetArrayRead(A,&a));

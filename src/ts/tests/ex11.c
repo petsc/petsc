@@ -10,147 +10,147 @@ static char help[] = "Demonstrates previous memory leak for XXXRegister()\n\n";
 
 static PetscErrorCode TSGLLEAdaptCreate_Dummy(TSGLLEAdapt ts)
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode TSGLLECreate_Dummy(TS ts)
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode TSAdaptCreate_Dummy(TSAdapt ts)
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode TSCreate_Dummy(TS ts)
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscFunctionReturn(0);
 }
 
 #if !defined(PETSC_USE_COMPLEX)
 static PetscErrorCode CharacteristicCreate_Dummy(Characteristic chr)
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscFunctionReturn(0);
 }
 #endif
 
 static PetscErrorCode SNESLineSearchCreate_Dummy(SNESLineSearch sneslinesearch)
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode SNESCreate_Dummy(SNES snes)
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode KSPCreate_Dummy(KSP ksp)
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode KSPGuessCreate_Dummy(KSPGuess ksp)
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PCCreate_Dummy(PC pc)
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode DMCreate_Dummy(DM dm)
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode MatOrderingCreate_Dummy(Mat mat,MatOrderingType mtype,IS *isr,IS *isc)
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode MatPartitioningCreate_Dummy(MatPartitioning mat)
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode MatCreate_Dummy(Mat mat)
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PFCreate_Dummy(PF pf,void *ctx)
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode VecCreate_Dummy(Vec vec)
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode VecScatterCreate_Dummy(VecScatter vec)
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PetscSFCreate_Dummy(PetscSF sf)
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode ISLocalToGlobalMappingCreate_Dummy(ISLocalToGlobalMapping is)
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode ISCreate_Dummy(IS is)
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode AOCreate_Dummy(AO ao)
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PetscDrawCreate_Dummy(PetscDraw draw)
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PetscViewerCreate_Dummy(PetscViewer viewer)
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PetscRandomCreate_Dummy(PetscRandom arand)
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscFunctionReturn(0);
 }
 

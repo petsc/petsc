@@ -2014,7 +2014,7 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
 
 static PetscErrorCode CreateElasticityNullSpace(DM dm, PetscInt origField, PetscInt field, MatNullSpace *nullspace)
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(DMPlexCreateRigidBody(dm, origField, nullspace));
   PetscFunctionReturn(0);
 }
@@ -2029,7 +2029,7 @@ static PetscErrorCode SetupFE(DM dm, PetscInt Nf, PetscInt Nc[], const char *nam
   PetscInt        dim, f;
   PetscBool       simplex;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   /* Create finite element */
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(DMPlexIsSimplex(dm, &simplex));
@@ -2059,7 +2059,7 @@ static PetscErrorCode SetInitialConditions(TS ts, Vec u)
   DM             dm;
   PetscReal      t;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(TSGetDM(ts, &dm));
   PetscCall(TSGetTime(ts, &t));
   if (t <= 0.0) {
@@ -2106,7 +2106,7 @@ static PetscErrorCode SolutionMonitor(TS ts, PetscInt steps, PetscReal time, Vec
   PetscOptions      options;
   const char       *prefix;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(TSGetDM(ts, &dm));
   PetscCall(PetscObjectGetOptions((PetscObject) ts, &options));
   PetscCall(PetscObjectGetOptionsPrefix((PetscObject) ts, &prefix));
@@ -2167,7 +2167,7 @@ static PetscErrorCode SetupMonitor(TS ts, AppCtx *ctx)
   const char       *prefix;
   PetscBool         flg;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(PetscObjectGetOptions((PetscObject) ts, &options));
   PetscCall(PetscObjectGetOptionsPrefix((PetscObject) ts, &prefix));
   PetscCall(PetscOptionsGetViewer(PetscObjectComm((PetscObject) ts), options, prefix, "-monitor_solution", &viewer, &format, &flg));
@@ -2184,7 +2184,7 @@ static PetscErrorCode TSAdaptChoose_Terzaghi(TSAdapt adapt, TS ts, PetscReal h, 
   AppCtx          *ctx;
   PetscInt         step;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(TSGetDM(ts, &dm));
   PetscCall(DMGetApplicationContext(dm, &ctx));
   PetscCall(TSGetStepNumber(ts, &step));

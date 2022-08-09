@@ -94,7 +94,7 @@ PetscErrorCode MyMatMult(Mat S,Vec x,Vec y)
   const PetscScalar  *inptr;
   PetscScalar        *outptr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(x,&inptr));
   PetscCall(VecGetArrayWrite(y,&outptr));
 

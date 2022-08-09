@@ -120,7 +120,7 @@ PetscErrorCode ExactSolution(Vec u,void *c,PetscReal t)
   PetscScalar     *uarr;
   PetscReal       x,dx,a=ctxt->a,pi=PETSC_PI;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   dx = (ctxt->xmax - ctxt->xmin)/((PetscReal) ctxt->imax);
   PetscCall(VecGetOwnershipRange(u,&is,&ie));
   PetscCall(VecGetArray(u,&uarr));
@@ -146,7 +146,7 @@ static PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec U,Mat J,Mat Jpre,void *c
   PetscInt       matis,matie,i;
   PetscReal      dx,dx2;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   dx = (user->xmax - user->xmin)/((PetscReal)user->imax); dx2 = dx*dx;
   PetscCall(MatGetOwnershipRange(J,&matis,&matie));
   for (i=matis; i<matie; i++) {

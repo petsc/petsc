@@ -22,7 +22,7 @@ PetscErrorCode EventFunction(TS ts,PetscReal t,Vec U,PetscScalar *fvalue,void *c
   AppCtx            *app=(AppCtx*)ctx;
   const PetscScalar *u;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   /* Event for ball height */
   PetscCall(VecGetArrayRead(U,&u));
   fvalue[0] = u[0];
@@ -37,7 +37,7 @@ PetscErrorCode PostEventFunction(TS ts,PetscInt nevents,PetscInt event_list[],Pe
   AppCtx         *app=(AppCtx*)ctx;
   PetscScalar    *u;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (event_list[0] == 0) {
     PetscCall(PetscPrintf(PETSC_COMM_SELF,"Ball hit the ground at t = %5.2f seconds\n",(double)t));
     /* Set new initial conditions with .9 attenuation */
@@ -60,7 +60,7 @@ static PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec U,Vec F,void *ctx)
   PetscScalar       *f;
   const PetscScalar *u;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   /*  The next three lines allow us to access the entries of the vectors directly */
   PetscCall(VecGetArrayRead(U,&u));
   PetscCall(VecGetArray(F,&f));
@@ -82,7 +82,7 @@ static PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec U,Mat A,Mat B,void *ctx)
   PetscScalar       J[2][2];
   const PetscScalar *u;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(U,&u));
 
   J[0][0] = 0.0;     J[0][1] = 1.0;
@@ -108,7 +108,7 @@ static PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,void *ctx
   PetscScalar       *f;
   const PetscScalar *u,*udot;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   /*  The next three lines allow us to access the entries of the vectors directly */
   PetscCall(VecGetArrayRead(U,&u));
   PetscCall(VecGetArrayRead(Udot,&udot));
@@ -132,7 +132,7 @@ static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat
   PetscScalar       J[2][2];
   const PetscScalar *u,*udot;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(U,&u));
   PetscCall(VecGetArrayRead(Udot,&udot));
 
