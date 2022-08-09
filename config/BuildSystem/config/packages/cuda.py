@@ -221,6 +221,8 @@ class Configure(config.package.Package):
     self.pushLanguage('CUDA')
     petscNvcc = self.getCompiler()
     self.popLanguage()
+    if self.setCompilers.isCygwin(self.log):  # Handle win32fe nvcc as the compiler name
+      petscNvcc = petscNvcc.split(' ')[1]
     self.getExecutable(petscNvcc,getFullPath=1,resultName='systemNvcc')
     if hasattr(self,'systemNvcc'):
       self.nvccDir = os.path.dirname(self.systemNvcc) # /path/bin
@@ -238,6 +240,10 @@ class Configure(config.package.Package):
 
   def configureLibrary(self):
     import re
+
+    if self.setCompilers.isCygwin(self.log): arg_sep = '='
+    else: arg_sep = ' '
+
     self.setCudaDir()
     # skip this because it does not properly set self.lib and self.include if they have already been set
     if not self.found: config.package.Package.configureLibrary(self)
@@ -304,7 +310,7 @@ class Configure(config.package.Package):
       for gen in reversed(genArches):
         self.pushLanguage('CUDA')
         cflags = self.setCompilers.CUDAFLAGS
-        self.setCompilers.CUDAFLAGS += ' -gencode arch=compute_'+gen+',code=sm_'+gen
+        self.setCompilers.CUDAFLAGS += ' -gencode'+arg_sep+'arch=compute_'+gen+',code=sm_'+gen
         try:
           valid = self.checkCompile()
         except Exception as e:
@@ -329,11 +335,11 @@ to set the right generation for your hardware.')
     if hasattr(self,'cudaArch'):
       if self.cudaArch == 'all':
         for gen in genArches:
-          self.setCompilers.CUDAFLAGS += ' -gencode arch=compute_'+gen+',code=sm_'+gen+' '
+          self.setCompilers.CUDAFLAGS += ' -gencode'+arg_sep+'arch=compute_'+gen+',code=sm_'+gen+' '
           self.log.write(self.setCompilers.CUDAFLAGS+'\n')
         self.addDefine('CUDA_GENERATION','0')
       else:
-        self.setCompilers.CUDAFLAGS += ' -gencode arch=compute_'+self.cudaArch+',code=sm_'+self.cudaArch+' '
+        self.setCompilers.CUDAFLAGS += ' -gencode'+arg_sep+'arch=compute_'+self.cudaArch+',code=sm_'+self.cudaArch+' '
         self.addDefine('CUDA_GENERATION',self.cudaArch)
 
     self.addDefine('HAVE_CUDA','1')
