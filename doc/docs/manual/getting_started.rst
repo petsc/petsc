@@ -10,26 +10,26 @@ The important PETSc classes include
 -  index sets (``IS``),  for indexing into
    vectors, renumbering, permuting, etc;
 
--  vectors (``Vec``);
+-  vectors (``Vec``); :any:`chapter_vectors`
 
--  matrices (``Mat``) (generally sparse);
+-  matrices (``Mat``) (generally sparse); :any:`chapter_matrices`
 
--  Krylov subspace methods (``KSP``);
+-  Krylov subspace methods (``KSP``); :any:`chapter_ksp`
 
 -  preconditioners, including multigrid, block solvers, patch solvers, and
    sparse direct solvers (``PC``);
 
--  nonlinear solvers (``SNES``);
+-  nonlinear solvers (``SNES``); :any:`chapter_snes`
 
 -  timesteppers for solving time-dependent (nonlinear) PDEs, including
    support for differential algebraic equations, and the computation of
-   adjoints (sensitivities/gradients of the solutions) (``TS``);
+   adjoints (sensitivities/gradients of the solutions) (``TS``); :any:`chapter_ts`
+
+-  scalable optimization algorithms including a rich set of gradient-based optimizers,
+   Newton-based optimizers and optimization with constraints (``Tao``). :any:`chapter_tao`
 
 -  code for managing interactions between mesh data structures and vectors,
-   matrices, and solvers (``DM``);
-
--  scalable optimization algorithms (``Tao``).
-
+   matrices, and solvers (``DM``); :any:`chapter_dmbase`
 
 Each class consist of an abstract interface (simply a set of calling
 sequences; an abstract base class in C++) and an implementation for each algorithm and data structure.
@@ -60,11 +60,13 @@ appropriate for a particular problem.
 Suggested Reading
 ~~~~~~~~~~~~~~~~~
 
-The manual is divided into three parts:
+The manual is divided into four parts:
 
 -  :doc:`introduction`
 
 -  :doc:`programming`
+
+-  :doc:`dm`
 
 -  :doc:`additional`
 
@@ -74,9 +76,10 @@ section conveys the typical style used throughout the library and
 enables the application programmer to begin using the software
 immediately.
 
-:doc:`programming` explains in detail the use of the various PETSc libraries, such
-as vectors, matrices, index sets, linear and nonlinear solvers, and
-graphics. :doc:`additional` describes a variety of useful information, including
+:doc:`programming` explains in detail the use of the various PETSc algebraic objects, such
+as vectors, matrices, index sets and the PETSc solvers including linear and nonlinear solvers, time integrators,
+and optimization support. :doc:`dm` details how a user's models and discretizations can easily be interfaced with the
+solvers by using the `DM` construct. The :doc:`additional` describes a variety of useful information, including
 profiling, the options database, viewers, error handling, and some
 details of PETSc design.
 
