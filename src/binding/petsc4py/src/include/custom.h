@@ -478,7 +478,7 @@ SNESSetUseFDColoring(SNES snes,PetscBool flag)
     DMSNES sdm;
     PetscCall(SNESGetDM(snes,&dm));
     PetscCall(DMGetDMSNES(dm,&sdm));
-    sdm->jacobianctx = NULL;
+    PetscCall(DMSNESUnsetJacobianContext_Internal(dm));
   }
   PetscFunctionReturn(0);
 }

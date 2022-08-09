@@ -1,12 +1,30 @@
 #include <petsc/private/snesimpl.h>   /*I "petscsnes.h" I*/
 #include <petsc/private/dmimpl.h>     /*I "petscdm.h" I*/
 
+static PetscErrorCode DMSNESUnsetFunctionContext_DMSNES(DMSNES sdm)
+{
+  PetscFunctionBegin;
+  PetscCall(PetscObjectCompose((PetscObject)sdm,"function ctx",NULL));
+  sdm->functionctxcontainer = NULL;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode DMSNESUnsetJacobianContext_DMSNES(DMSNES sdm)
+{
+  PetscFunctionBegin;
+  PetscCall(PetscObjectCompose((PetscObject)sdm,"jacobian ctx",NULL));
+  sdm->jacobianctxcontainer = NULL;
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode DMSNESDestroy(DMSNES *kdm)
 {
   PetscFunctionBegin;
   if (!*kdm) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*kdm),DMSNES_CLASSID,1);
   if (--((PetscObject)(*kdm))->refct > 0) {*kdm = NULL; PetscFunctionReturn(0);}
+  PetscCall(DMSNESUnsetFunctionContext_DMSNES(*kdm));
+  PetscCall(DMSNESUnsetJacobianContext_DMSNES(*kdm));
   if ((*kdm)->ops->destroy) PetscCall(((*kdm)->ops->destroy)(*kdm));
   PetscCall(PetscHeaderDestroy(kdm));
   PetscFunctionReturn(0);
@@ -139,12 +157,14 @@ PetscErrorCode DMSNESCopy(DMSNES kdm,DMSNES nkdm)
   nkdm->ops->destroy          = kdm->ops->destroy;
   nkdm->ops->duplicate        = kdm->ops->duplicate;
 
-  nkdm->functionctx  = kdm->functionctx;
-  nkdm->gsctx        = kdm->gsctx;
-  nkdm->pctx         = kdm->pctx;
-  nkdm->jacobianctx  = kdm->jacobianctx;
-  nkdm->objectivectx = kdm->objectivectx;
-  nkdm->originaldm   = kdm->originaldm;
+  nkdm->gsctx                 = kdm->gsctx;
+  nkdm->pctx                  = kdm->pctx;
+  nkdm->objectivectx          = kdm->objectivectx;
+  nkdm->originaldm            = kdm->originaldm;
+  nkdm->functionctxcontainer  = kdm->functionctxcontainer;
+  nkdm->jacobianctxcontainer  = kdm->jacobianctxcontainer;
+  if (nkdm->functionctxcontainer) PetscCall(PetscObjectCompose((PetscObject)nkdm,"function ctx",(PetscObject)nkdm->functionctxcontainer));
+  if (nkdm->jacobianctxcontainer) PetscCall(PetscObjectCompose((PetscObject)nkdm,"jacobian ctx",(PetscObject)nkdm->jacobianctxcontainer));
 
   /*
   nkdm->fortran_func_pointers[0] = kdm->fortran_func_pointers[0];
@@ -283,11 +303,56 @@ PetscErrorCode DMSNESSetFunction(DM dm,PetscErrorCode (*f)(SNES,Vec,Vec,void*),v
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  if (f || ctx) {
-    PetscCall(DMGetDMSNESWrite(dm,&sdm));
-  }
+  PetscCall(DMGetDMSNESWrite(dm,&sdm));
   if (f) sdm->ops->computefunction = f;
-  if (ctx) sdm->functionctx = ctx;
+  if (ctx) {
+    PetscContainer ctxcontainer;
+    PetscCall(PetscContainerCreate(PetscObjectComm((PetscObject)sdm),&ctxcontainer));
+    PetscCall(PetscContainerSetPointer(ctxcontainer,ctx));
+    PetscCall(PetscObjectCompose((PetscObject)sdm,"function ctx",(PetscObject)ctxcontainer));
+    sdm->functionctxcontainer = ctxcontainer;
+    PetscCall(PetscContainerDestroy(&ctxcontainer));
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   DMSNESSetFunctionContextDestroy - set SNES residual evaluation context destroy function
+
+   Not Collective
+
+   Input Parameters:
++  dm - DM to be used with SNES
+.  f - residual evaluation context destroy function
+
+   Level: advanced
+
+   Note:
+   SNESSetFunctionContextDestroy() is normally used, but it calls this function internally because the user context is actually
+   associated with the DM.  This makes the interface consistent regardless of whether the user interacts with a DM or
+   not. If DM took a more central role at some later date, this could become the primary method of setting the residual.
+
+.seealso: `DMSNESSetFunction()`, `SNESSetFunction()`
+@*/
+PetscErrorCode DMSNESSetFunctionContextDestroy(DM dm,PetscErrorCode (*f)(void*))
+{
+  DMSNES         sdm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscCall(DMGetDMSNESWrite(dm,&sdm));
+  if (sdm->functionctxcontainer) PetscCall(PetscContainerSetUserDestroy(sdm->functionctxcontainer,f));
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode DMSNESUnsetFunctionContext_Internal(DM dm)
+{
+  DMSNES         sdm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscCall(DMGetDMSNESWrite(dm,&sdm));
+  PetscCall(DMSNESUnsetFunctionContext_DMSNES(sdm));
   PetscFunctionReturn(0);
 }
 
@@ -346,7 +411,10 @@ PetscErrorCode DMSNESGetFunction(DM dm,PetscErrorCode (**f)(SNES,Vec,Vec,void*),
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscCall(DMGetDMSNES(dm,&sdm));
   if (f) *f = sdm->ops->computefunction;
-  if (ctx) *ctx = sdm->functionctx;
+  if (ctx) {
+    if (sdm->functionctxcontainer) PetscCall(PetscContainerGetPointer(sdm->functionctxcontainer,ctx));
+    else *ctx = NULL;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -501,11 +569,56 @@ PetscErrorCode DMSNESSetJacobian(DM dm,PetscErrorCode (*J)(SNES,Vec,Mat,Mat,void
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  if (J || ctx) {
-    PetscCall(DMGetDMSNESWrite(dm,&sdm));
-  }
+  if (J || ctx) PetscCall(DMGetDMSNESWrite(dm,&sdm));
   if (J) sdm->ops->computejacobian = J;
-  if (ctx) sdm->jacobianctx = ctx;
+  if (ctx) {
+    PetscContainer ctxcontainer;
+    PetscCall(PetscContainerCreate(PetscObjectComm((PetscObject)sdm),&ctxcontainer));
+    PetscCall(PetscContainerSetPointer(ctxcontainer,ctx));
+    PetscCall(PetscObjectCompose((PetscObject)sdm,"jacobian ctx",(PetscObject)ctxcontainer));
+    sdm->jacobianctxcontainer = ctxcontainer;
+    PetscCall(PetscContainerDestroy(&ctxcontainer));
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   DMSNESSetJacobianContextDestroy - set SNES Jacobian evaluation context destroy function
+
+   Not Collective
+
+   Input Parameters:
++  dm - DM to be used with SNES
+.  f - Jacobian evaluation contex destroy function
+
+   Level: advanced
+
+   Note:
+   SNESSetJacobianContextDestroy() is normally used, but it calls this function internally because the user context is actually
+   associated with the DM.  This makes the interface consistent regardless of whether the user interacts with a DM or
+   not. If DM took a more central role at some later date, this could become the primary method of setting the Jacobian.
+
+.seealso: `DMSNESSetJacobian()`, `SNESSetJacobianContextDestroyFunction()`
+@*/
+PetscErrorCode DMSNESSetJacobianContextDestroy(DM dm,PetscErrorCode (*f)(void*))
+{
+  DMSNES         sdm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscCall(DMGetDMSNESWrite(dm,&sdm));
+  if (sdm->jacobianctxcontainer) PetscCall(PetscContainerSetUserDestroy(sdm->jacobianctxcontainer,f));
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode DMSNESUnsetJacobianContext_Internal(DM dm)
+{
+  DMSNES         sdm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscCall(DMGetDMSNESWrite(dm,&sdm));
+  PetscCall(DMSNESUnsetJacobianContext_DMSNES(sdm));
   PetscFunctionReturn(0);
 }
 
@@ -538,7 +651,10 @@ PetscErrorCode DMSNESGetJacobian(DM dm,PetscErrorCode (**J)(SNES,Vec,Mat,Mat,voi
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscCall(DMGetDMSNES(dm,&sdm));
   if (J) *J = sdm->ops->computejacobian;
-  if (ctx) *ctx = sdm->jacobianctx;
+  if (ctx) {
+    if (sdm->jacobianctxcontainer) PetscCall(PetscContainerGetPointer(sdm->jacobianctxcontainer,ctx));
+    else *ctx = NULL;
+  }
   PetscFunctionReturn(0);
 }
 

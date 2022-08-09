@@ -113,6 +113,7 @@ static PetscErrorCode MatDestroy_CF(Mat A)
   PetscCall(MatShellGetContext(A,&B));
   PetscCheck(B,PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Missing user matrix");
   PetscCall(MatDestroy(&B));
+  PetscCall(MatShellSetContext(A,NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatProductSetFromOptions_anytype_C",NULL));
   PetscFunctionReturn(0);
 }

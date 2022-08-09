@@ -1071,10 +1071,8 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
   if (flg) {
     void    *functx;
     DM      dm;
-    DMSNES  sdm;
     PetscCall(SNESGetDM(snes,&dm));
-    PetscCall(DMGetDMSNES(dm,&sdm));
-    sdm->jacobianctx = NULL;
+    PetscCall(DMSNESUnsetJacobianContext_Internal(dm));
     PetscCall(SNESGetFunction(snes,NULL,NULL,&functx));
     PetscCall(SNESSetJacobian(snes,snes->jacobian,snes->jacobian_pre,SNESComputeJacobianDefault,functx));
     PetscCall(PetscInfo(snes,"Setting default finite difference Jacobian matrix\n"));
@@ -1088,10 +1086,8 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
   PetscCall(PetscOptionsBool("-snes_fd_color","Use finite differences with coloring to compute Jacobian","SNESComputeJacobianDefaultColor",flg,&flg,NULL));
   if (flg) {
     DM             dm;
-    DMSNES         sdm;
     PetscCall(SNESGetDM(snes,&dm));
-    PetscCall(DMGetDMSNES(dm,&sdm));
-    sdm->jacobianctx = NULL;
+    PetscCall(DMSNESUnsetJacobianContext_Internal(dm));
     PetscCall(SNESSetJacobian(snes,snes->jacobian,snes->jacobian_pre,SNESComputeJacobianDefaultColor,NULL));
     PetscCall(PetscInfo(snes,"Setting default finite difference coloring Jacobian matrix\n"));
   }
@@ -2446,7 +2442,12 @@ PetscErrorCode  SNESComputeFunction(SNES snes,Vec x,Vec y)
     PetscCall(VecLockReadPush(x));
     /* ensure domainerror is false prior to computefunction evaluation (may not have been reset) */
     snes->domainerror = PETSC_FALSE;
-    PetscCallBack("SNES callback function",(*sdm->ops->computefunction)(snes,x,y,sdm->functionctx));
+    {
+      void *ctx;
+      PetscErrorCode (*computefunction)(SNES,Vec,Vec,void*);
+      PetscCall(DMSNESGetFunction(dm,&computefunction,&ctx));
+      PetscCallBack("SNES callback function",(*computefunction)(snes,x,y,ctx));
+    }
     PetscCall(VecLockReadPop(x));
     if (sdm->ops->computefunction != SNESObjectiveComputeFunctionDefaultFD) {
       PetscCall(PetscLogEventEnd(SNES_FunctionEval,snes,x,y,0));
@@ -2819,7 +2820,12 @@ PetscErrorCode  SNESComputeJacobian(SNES snes,Vec X,Mat A,Mat B)
 
   PetscCall(PetscLogEventBegin(SNES_JacobianEval,snes,X,A,B));
   PetscCall(VecLockReadPush(X));
-  PetscCallBack("SNES callback Jacobian",(*sdm->ops->computejacobian)(snes,X,A,B,sdm->jacobianctx));
+  {
+    void *ctx;
+    PetscErrorCode (*J)(SNES,Vec,Mat,Mat,void*);
+    PetscCall(DMSNESGetJacobian(dm,&J,&ctx));
+    PetscCallBack("SNES callback Jacobian",(*J)(snes,X,A,B,ctx));
+  }
   PetscCall(VecLockReadPop(X));
   PetscCall(PetscLogEventEnd(SNES_JacobianEval,snes,X,A,B));
 
@@ -3115,16 +3121,13 @@ PetscErrorCode  SNESSetJacobian(SNES snes,Mat Amat,Mat Pmat,PetscErrorCode (*J)(
 PetscErrorCode SNESGetJacobian(SNES snes,Mat *Amat,Mat *Pmat,PetscErrorCode (**J)(SNES,Vec,Mat,Mat,void*),void **ctx)
 {
   DM             dm;
-  DMSNES         sdm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   if (Amat) *Amat = snes->jacobian;
   if (Pmat) *Pmat = snes->jacobian_pre;
   PetscCall(SNESGetDM(snes,&dm));
-  PetscCall(DMGetDMSNES(dm,&sdm));
-  if (J) *J = sdm->ops->computejacobian;
-  if (ctx) *ctx = sdm->jacobianctx;
+  PetscCall(DMSNESGetJacobian(dm,J,ctx));
   PetscFunctionReturn(0);
 }
 

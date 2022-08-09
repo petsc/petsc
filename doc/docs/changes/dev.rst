@@ -124,6 +124,8 @@ In addition to the changes above
 - Change the coordinate array parameters in ``MatSetPreallocationCOO`` from const to non-const
 - Add enforcement of the previously unenforced rule that ``MAT_REUSE_MATRIX`` with ``MatTranspose()`` can only be used after a call to ``MatTranspose()`` with ``MAT_INITIAL_MATRIX``. Add ``MatTransposeSetPrecursor()`` to allow using ``MAT_REUSE_MATRIX`` with ``MatTranspose()`` without the initial call to ``MatTranspose()``.
 - Add ``MatTransposeSymbolic()``
+- Add ``MatShellSetContextDestroy()`` and add internal refrence counting for user defined ``MatShell`` context data
+- Add ``MatShellSetContextDestroy()`` and add internal reference counting for user defined ``MatShell`` context data
 
 .. rubric:: MatCoarsen:
 
@@ -144,6 +146,7 @@ In addition to the changes above
 - Add ``DMDASNESSetFunctionLocalVec()``, ``DMDASNESSetJacobianLocalVec()`` and ``DMDASNESSetObjectiveLocalVec()``, and associate types ``DMDASNESFunctionVec``, ``DMDASNESJacobianVec`` and ``DMDASNESObjectiveVec``,
   which accept Vec parameters instead of void pointers in contrast to versions without the Vec suffix
 - Add ``SNESLINESEARCHNONE`` as alias for ``SNESLINESEARCHBASIC``
+- Add ``DMSNESSetFunctionContextDestroy()`` and ``DMSNESSetJacobianContextDestroy()`` and use ``PetscContainter`` for user context to facilitate automatic destruction of user set context
 
 .. rubric:: SNESLineSearch:
 
@@ -151,6 +154,7 @@ In addition to the changes above
 
 - Add ``TSSetTimeSpan()``, ``TSGetTimeSpan()`` and ``TSGetTimeSpanSolutions()`` to support time span
 - Add ``DMTSGetIFunctionLocal()``, ``DMTSGetIJacobianLocal()``, and ``DMTSGetRHSFunctionLocal()``
+- Add ``DMTSSetIFunctionContextDestroy()``, ``DMTSSetIJacobianContextDestroy()``, ``DMTSSetRHSFunctionContextDestroy()``,  ``DMTSSetRHSJacobianContextDestroy()``, ``DMTSSetI2FunctionContextDestroy()``, and ``DMTSSetI2JacobianContextDestroy()`` and use ``PetscContainter`` for user context to facilitate automatic destruction of user set context
 
 .. rubric:: TAO:
 
