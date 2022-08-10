@@ -41,8 +41,8 @@ static PetscErrorCode IJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat,Mat,void*);
 int main(int argc, char **argv)
 {
   TS                ts;
-  Vec               x; /*solution vector*/
-  Mat               A; /*Jacobian*/
+  Vec               x; /* solution vector */
+  Mat               A; /* Jacobian */
   PetscInt          steps,mx,eimex_rowcol[2],two;
   PetscScalar       *x_ptr;
   PetscReal         ftime,dt,norm;
