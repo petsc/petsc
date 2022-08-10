@@ -48,7 +48,34 @@ $  PETSCDTNODES_TANHSINH - Nodes at Tanh-Sinh quadrature points
 E*/
 typedef enum {PETSCDTNODES_DEFAULT=-1, PETSCDTNODES_GAUSSJACOBI, PETSCDTNODES_EQUISPACED, PETSCDTNODES_TANHSINH} PetscDTNodeType;
 
-PETSC_EXTERN const char *const PetscDTNodeTypes[];
+PETSC_EXTERN const char *const*const PetscDTNodeTypes;
+
+/*E
+  PetscDTSimplexQuadratureType - A description of classes of quadrature rules for simplices
+
+  Level: intermediate
+
+$  PETSCDTSIMPLEXQUAD_DEFAULT - Quadrature rule chosen by PETSc
+$  PETSCDTSIMPLEXQUAD_CONIC   - Quadrature rules constructed as
+                                conically-warped tensor products of 1D
+                                Gauss-Jacobi quadrature rules.  These are
+                                explicitly computable in any dimension for any
+                                degree, and the tensor-product structure can be
+                                exploited by sum-factorization methods, but
+                                they are not efficient in terms of nodes per
+                                polynomial degree.
+$  PETSCDTSIMPLEXQUAD_MINSYM  - Quadrature rules that are fully symmetric
+                                (symmetries of the simplex preserve the nodes
+                                and weights) with minimal (or near minimal)
+                                number of nodes.  In dimensions higher than 1
+                                these are not simple to compute, so lookup
+                                tables are used.
+
+.seealso: `PetscDTSimplexQuadrature()`
+E*/
+typedef enum {PETSCDTSIMPLEXQUAD_DEFAULT=-1, PETSCDTSIMPLEXQUAD_CONIC=0, PETSCDTSIMPLEXQUAD_MINSYM} PetscDTSimplexQuadratureType;
+
+PETSC_EXTERN const char *const*const PetscDTSimplexQuadratureTypes;
 
 PETSC_EXTERN PetscErrorCode PetscQuadratureCreate(MPI_Comm, PetscQuadrature *);
 PETSC_EXTERN PetscErrorCode PetscQuadratureDuplicate(PetscQuadrature, PetscQuadrature *);
@@ -81,6 +108,7 @@ PETSC_EXTERN PetscErrorCode PetscDTGaussLobattoLegendreQuadrature(PetscInt,Petsc
 PETSC_EXTERN PetscErrorCode PetscDTReconstructPoly(PetscInt,PetscInt,const PetscReal*,PetscInt,const PetscReal*,PetscReal*);
 PETSC_EXTERN PetscErrorCode PetscDTGaussTensorQuadrature(PetscInt,PetscInt,PetscInt,PetscReal,PetscReal,PetscQuadrature*);
 PETSC_EXTERN PetscErrorCode PetscDTStroudConicalQuadrature(PetscInt,PetscInt,PetscInt,PetscReal,PetscReal,PetscQuadrature*);
+PETSC_EXTERN PetscErrorCode PetscDTSimplexQuadrature(PetscInt,PetscInt,PetscDTSimplexQuadratureType,PetscQuadrature*);
 
 PETSC_EXTERN PetscErrorCode PetscDTTanhSinhTensorQuadrature(PetscInt, PetscInt, PetscReal, PetscReal, PetscQuadrature *);
 PETSC_EXTERN PetscErrorCode PetscDTTanhSinhIntegrate(void (*)(const PetscReal[], void *, PetscReal *), PetscReal, PetscReal, PetscInt, void *, PetscReal *);
