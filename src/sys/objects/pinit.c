@@ -1536,7 +1536,7 @@ PetscErrorCode  PetscFinalize(void)
       char     string[64];
 
       PetscCall(PetscOptionsGetString(NULL,NULL,"-objects_dump",string,sizeof(string),NULL));
-      PetscCallMPI(MPI_Comm_dup(MPI_COMM_WORLD,&local_comm));
+      PetscCallMPI(MPI_Comm_dup(PETSC_COMM_WORLD,&local_comm));
       PetscCall(PetscSequentialPhaseBegin_Private(local_comm,1));
       PetscCall(PetscObjectsDump(stdout,(string[0] == 'a') ? PETSC_TRUE : PETSC_FALSE));
       PetscCall(PetscSequentialPhaseEnd_Private(local_comm,1));
@@ -1596,7 +1596,7 @@ PetscErrorCode  PetscFinalize(void)
     } else if (flg1 || flg2 || flg3) {
       MPI_Comm local_comm;
 
-      PetscCallMPI(MPI_Comm_dup(MPI_COMM_WORLD,&local_comm));
+      PetscCallMPI(MPI_Comm_dup(PETSC_COMM_WORLD,&local_comm));
       PetscCall(PetscSequentialPhaseBegin_Private(local_comm,1));
       PetscCall(PetscMallocDump(stdout));
       PetscCall(PetscSequentialPhaseEnd_Private(local_comm,1));
@@ -1614,7 +1614,7 @@ PetscErrorCode  PetscFinalize(void)
     } else if (flg1) {
       MPI_Comm local_comm;
 
-      PetscCallMPI(MPI_Comm_dup(MPI_COMM_WORLD,&local_comm));
+      PetscCallMPI(MPI_Comm_dup(PETSC_COMM_WORLD,&local_comm));
       PetscCall(PetscSequentialPhaseBegin_Private(local_comm,1));
       PetscCall(PetscMallocView(stdout));
       PetscCall(PetscSequentialPhaseEnd_Private(local_comm,1));
