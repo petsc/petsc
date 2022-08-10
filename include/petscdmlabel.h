@@ -12,6 +12,7 @@
 .seealso: `DM`, `DMPlexCreate()`, `DMPlexCreateLabel()`
 S*/
 typedef struct _p_DMLabel *DMLabel;
+
 PETSC_EXTERN PetscErrorCode DMLabelCreate(MPI_Comm, const char [], DMLabel *);
 PETSC_EXTERN PetscErrorCode DMLabelView(DMLabel, PetscViewer);
 PETSC_EXTERN PetscErrorCode DMLabelReset(DMLabel);

@@ -77,6 +77,7 @@ PETSC_EXTERN PetscErrorCode DMPlexPointGlobalFieldRead(DM,PetscInt,PetscInt,cons
 
 /* Topological interpolation */
 PETSC_EXTERN const char * const DMPlexInterpolatedFlags[];
+
 /*E
    DMPlexInterpolatedFlag - Describes level of topological interpolatedness.
      It is a local or collective property depending on whether it is returned by DMPlexIsInterpolated() or DMPlexIsInterpolatedCollective().
@@ -101,6 +102,7 @@ typedef enum {
   DMPLEX_INTERPOLATED_MIXED,
   DMPLEX_INTERPOLATED_FULL
 } DMPlexInterpolatedFlag;
+
 PETSC_EXTERN PetscErrorCode DMPlexInterpolate(DM, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexUninterpolate(DM, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexInterpolatePointSF(DM, PetscSF);
