@@ -2656,6 +2656,8 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
         PetscCall(ISRestoreIndices(patch->gtol, &gtolArray));
         PetscCall(ISRestoreIndices(patch->gtolWithArtificial, &gtolArrayWithArtificial));
       }
+    }
+    for (p = pStart; p < pEnd; ++p) {
       if (isNonlinear) {
         const PetscInt    *gtolArray, *gtolArrayWithAll = NULL;
         PetscInt           numPatchDofs, offset;
@@ -2750,7 +2752,7 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
       PetscCall(VecRestoreArray(global, &input));
       PetscCall(VecDestroy(&global));
     }
-    if (patch->local_composition_type == PC_COMPOSITE_MULTIPLICATIVE && patch->save_operators) {
+    if (patch->local_composition_type == PC_COMPOSITE_MULTIPLICATIVE && patch->save_operators && !patch->isNonlinear) {
       PetscCall(PetscMalloc1(patch->npatch, &patch->matWithArtificial));
     }
   }
@@ -3007,7 +3009,7 @@ static PetscErrorCode PCReset_PATCH(PC pc)
     for (i = 0; i < patch->npatch; ++i) PetscCall(MatDestroy(&patch->mat[i]));
     PetscCall(PetscFree(patch->mat));
   }
-  if (patch->matWithArtificial) {
+  if (patch->matWithArtificial && !patch->isNonlinear) {
     for (i = 0; i < patch->npatch; ++i) PetscCall(MatDestroy(&patch->matWithArtificial[i]));
     PetscCall(PetscFree(patch->matWithArtificial));
   }
