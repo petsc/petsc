@@ -7,7 +7,7 @@ SOURCEF  =
 SOURCEH  =
 LIBBASE  = libpetscdm
 MANSEC   = DM
-SUBMANSEC= DMPLEX
+SUBMANSEC= DMPlex
 LOCDIR   = src/dm/impls/plex/cgns/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

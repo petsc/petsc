@@ -6,7 +6,7 @@ SOURCEH  =
 DIRS     = p4est tests tutorials
 LIBBASE  = libpetscdm
 MANSEC   = DM
-SUBMANSEC= DMFOREST
+SUBMANSEC= DMForest
 LOCDIR   = src/dm/impls/forest/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

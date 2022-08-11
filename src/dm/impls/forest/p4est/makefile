@@ -8,7 +8,7 @@ SOURCEH  =
 DIRS     = tests
 LIBBASE  = libpetscdm
 MANSEC   = DM
-SUBMANSEC= DMFOREST
+SUBMANSEC= DMForest
 LOCDIR   = src/dm/impls/forest/p4est/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
