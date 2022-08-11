@@ -327,14 +327,6 @@ PetscErrorCode DMSNESSetFunction(DM dm,PetscErrorCode (*f)(SNES,Vec,Vec,void*),v
 
    Level: advanced
 
-   Note:
-   `SNESSetFunctionContextDestroy()` is normally used, but it calls this function internally because the user context is actually
-   associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
-   not.
-
-   Developer Note:
-   If `DM` took a more central role at some later date, this could become the primary method of setting the residual.
-
 .seealso: `DMSNESSetFunction()`, `SNESSetFunction()`
 @*/
 PetscErrorCode DMSNESSetFunctionContextDestroy(DM dm,PetscErrorCode (*f)(void*))
@@ -596,15 +588,7 @@ PetscErrorCode DMSNESSetJacobian(DM dm,PetscErrorCode (*J)(SNES,Vec,Mat,Mat,void
 
    Level: advanced
 
-   Note:
-   `SNESSetJacobianContextDestroy()` is normally used, but it calls this function internally because the user context is actually
-   associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
-   not.
-
-   Developer Note:
-   If `DM` took a more central role at some later date, this could become the primary method of setting the Jacobian.
-
-.seealso: `DMSNESSetJacobian()`, `SNESSetJacobianContextDestroyFunction()`
+.seealso: `DMSNESSetJacobian()`
 @*/
 PetscErrorCode DMSNESSetJacobianContextDestroy(DM dm,PetscErrorCode (*f)(void*))
 {

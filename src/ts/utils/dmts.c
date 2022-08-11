@@ -411,15 +411,7 @@ PetscErrorCode DMTSSetIFunction(DM dm,TSIFunction func,void *ctx)
 
    Level: advanced
 
-   Note:
-   `TSSetFunctionContextDestroy()` is normally used, but it calls this function internally because the user context is actually
-   associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
-   not.
-
-   Developer Note:
-   If `DM` took a more central role at some later date, this could become the primary method of setting the residual.
-
-.seealso: `TSSetFunctionContextDestroy()`, `DMTSSetIFunction()`, `TSSetIFunction()`
+.seealso: `DMTSSetIFunction()`, `TSSetIFunction()`
 @*/
 PetscErrorCode DMTSSetIFunctionContextDestroy(DM dm,PetscErrorCode (*f)(void*))
 {
