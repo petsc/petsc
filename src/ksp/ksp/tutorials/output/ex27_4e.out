@@ -1,0 +1,4 @@
+Failed to load initial guess, so use a vector of all zeros.
+KSP type: gmres
+Number of iterations =   6
+Residual norm 1.63035e-05
