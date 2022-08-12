@@ -664,6 +664,30 @@ preloading. The command line options ``-preload`` ``true`` and
 ``-preload`` ``false`` may be used to turn on and off preloading at run
 time for PETSc programs that use these macros.
 
+NVIDIA Nsight Systems profiling
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When a CUDA executable is preceeded by
+``nsys profile -f true -o file-name``, the default event profiling will add annotations to the
+Nsight Systems data that can help the navigation of ``file-name``  with the Nsight Systems GUI
+(https://developer.nvidia.com/nsight-systems). The Nsight Systems GUI
+lets you see a timeline of code performance information like kernels,
+mallocs, CPU-GPU communication, and high-level data like register
+usage in a kernel, among other things in a popup window when the mouse
+hovers over the section. The PETSc events are automatically also
+displayed in Nsight if the option -log_view is also used.
+
+For and MPI parallel job, only one process can call ``nsys``.
+For example one can in a bash script use something like:
+
+.. code-block:: bash
+
+   if [ "$OMPI_COMM_WORLD_RANK" == "0" ]; then
+       nsys profile -f true -o output "$@"
+   else
+       "$@"
+   fi
+
 .. raw:: html
 
     <hr>
