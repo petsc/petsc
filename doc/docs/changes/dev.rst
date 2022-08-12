@@ -77,6 +77,14 @@ In addition to the changes above
 -  Change ``PetscStackCallXXX()`` to ``PetscCallXXX()``
 -  Add ``PetscCallBack()' for calling all PETSc callbacks (usually to user code) to replace the use of ``PetscStackPush()`` and ``PetscStackPop``
 
+.. rubric:: Event Logging:
+
+Add NVIDIA NVTX sections to ``Default`` event logging. This tags code
+sections, like stages, with nvtxRangePushA(char name[]) and
+nvtxRangePop(), which can be visualized after the run with the NVIDIA Nsight GUI tool. To
+generate a data file, run code with ``nsys profile -f true -o file-name
+exec-name``.
+
 .. rubric:: PetscViewer:
 
 - Add ``PetscViewerHDF5PushGroupRelative()``
