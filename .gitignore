@@ -6,9 +6,13 @@
 *.gcda
 *.swp
 *.log
+*/.auctex-auto/*
 *.vt[ksu]
 *.pvt[ksu]
 *.h5m
+*.h5
+*.cgns
+*.xmf
 .*_license
 *.mypy_cache
 unix/*
@@ -84,6 +88,8 @@ valgrind*
 !share/petsc/valgrind/
 callgrind.out.*
 .DS_Store
+perf.data
+perf.data.old
 session_*
 *.xc*
 *.vim
@@ -177,7 +183,6 @@ horse.ply
 /docs/
 **/f90module*.f90
 compile_commands.json
-.clang-format
 .clangd/
 .cache/
 .vscode/
