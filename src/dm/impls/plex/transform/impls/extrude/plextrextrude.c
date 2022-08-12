@@ -75,30 +75,41 @@ static PetscErrorCode DMPlexTransformExtrudeComputeExtrusionDim(DMPlexTransform 
   DMPlexTransform_Extrude *ex = (DMPlexTransform_Extrude *) tr->data;
   DM                       dm;
   DMLabel                  active;
-  PetscInt                 dim, dimOrig;
+  PetscInt                 dim, dimExtPoint, dimExtPointG;
 
   PetscFunctionBegin;
   PetscCall(DMPlexTransformGetDM(tr, &dm));
   PetscCall(DMGetDimension(dm, &dim));
-  dimOrig = dim;
   PetscCall(DMPlexTransformGetActive(tr, &active));
   if (active) {
-    PetscInt pStart, pEnd, p;
+    IS              valueIS, pointIS;
+    const PetscInt *values, *points;
+    DMPolytopeType  ct;
+    PetscInt        Nv, Np;
 
-    PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
-    for (p = pStart; p < pEnd; ++p) {
-      DMPolytopeType ct;
-      PetscInt       val;
-
-      PetscCall(DMLabelGetValue(active, p, &val));
-      if (val < 0) continue;
-      PetscCall(DMPlexGetCellType(dm, p, &ct));
-      dim = DMPolytopeTypeGetDim(ct);
-      break;
+    dimExtPoint = 0;
+    PetscCall(DMLabelGetValueIS(active, &valueIS));
+    PetscCall(ISGetLocalSize(valueIS, &Nv));
+    PetscCall(ISGetIndices(valueIS, &values));
+    for (PetscInt v = 0; v < Nv; ++v) {
+      PetscCall(DMLabelGetStratumIS(active, values[v], &pointIS));
+      PetscCall(ISGetLocalSize(pointIS, &Np));
+      PetscCall(ISGetIndices(pointIS, &points));
+      for (PetscInt p = 0; p < Np; ++p) {
+        PetscCall(DMPlexGetCellType(dm, points[p], &ct));
+        dimExtPoint = PetscMax(dimExtPoint, DMPolytopeTypeGetDim(ct));
+      }
+      PetscCall(ISRestoreIndices(pointIS, &points));
+      PetscCall(ISDestroy(&pointIS));
     }
-  }
-  ex->dimEx  = PetscMax(dimOrig, dim+1);
-  ex->cdimEx = ex->cdim == dim ? ex->cdim+1 : ex->cdim;
+    PetscCall(ISRestoreIndices(valueIS, &values));
+    PetscCall(ISDestroy(&valueIS));
+  } else dimExtPoint = dim;
+  PetscCallMPI(MPI_Allreduce(&dimExtPoint, &dimExtPointG, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject) tr)));
+  ex->dimEx  = PetscMax(dim, dimExtPointG+1);
+  ex->cdimEx = ex->cdim == dimExtPointG ? ex->cdim+1 : ex->cdim;
+  PetscCheck(ex->dimEx  <= 3, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Topological dimension for extruded mesh %" PetscInt_FMT " must not exceed 3", ex->dimEx);
+  PetscCheck(ex->cdimEx <= 3, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Coordinate dimension for extruded mesh %" PetscInt_FMT " must not exceed 3", ex->cdimEx);
   PetscFunctionReturn(0);
 }
 
@@ -550,6 +561,7 @@ static PetscErrorCode DMPlexTransformMapCoordinates_Extrude(DMPlexTransform tr, 
   PetscCheck(ct  == DM_POLYTOPE_POINT,PETSC_COMM_SELF,PETSC_ERR_SUP,"Not for refined point type %s",DMPolytopeTypes[ct]);
   PetscCheck(Nv == 1,PETSC_COMM_SELF,PETSC_ERR_SUP,"Vertices should be produced from a single vertex, not %" PetscInt_FMT,Nv);
   PetscCheck(dE == ex->cdim,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Coordinate dim %" PetscInt_FMT " != %" PetscInt_FMT " original dimension", dE, ex->cdim);
+  PetscCheck(dEx <= 3, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Coordinate dimension for extruded mesh %" PetscInt_FMT " must not exceed 3", dEx);
 
   PetscCall(DMPlexTransformGetDM(tr, &dm));
   PetscCall(DMGetDimension(dm, &dim));
