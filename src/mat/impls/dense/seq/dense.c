@@ -2192,7 +2192,7 @@ PetscErrorCode  MatDenseGetArray(Mat A,PetscScalar **array)
 
    Input Parameters:
 +  mat - a dense matrix
--  array - pointer to the data
+-  array - pointer to the data (may be NULL)
 
    Level: intermediate
 
@@ -2242,7 +2242,7 @@ PetscErrorCode  MatDenseGetArrayRead(Mat A,const PetscScalar **array)
 
    Input Parameters:
 +  mat - a dense matrix
--  array - pointer to the data
+-  array - pointer to the data (may be NULL)
 
    Level: intermediate
 
@@ -2288,7 +2288,7 @@ PetscErrorCode  MatDenseGetArrayWrite(Mat A,PetscScalar **array)
 
    Input Parameters:
 +  mat - a dense matrix
--  array - pointer to the data
+-  array - pointer to the data (may be NULL)
 
    Level: intermediate
 
@@ -2838,7 +2838,7 @@ static PetscErrorCode MatDenseGetColumn_SeqDense(Mat A,PetscInt col,PetscScalar 
 static PetscErrorCode MatDenseRestoreColumn_SeqDense(Mat A,PetscScalar **vals)
 {
   PetscFunctionBegin;
-  *vals = NULL; /* user cannot accidentally use the array later */
+  if (vals) *vals = NULL; /* user cannot accidentally use the array later */
   PetscFunctionReturn(0);
 }
 
@@ -3282,7 +3282,7 @@ PetscErrorCode MatDenseRestoreSubMatrix_SeqDense(Mat A,Mat *v)
   PetscCheck(*v == a->cmat,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not the matrix obtained from MatDenseGetSubMatrix()");
   a->matinuse = 0;
   PetscCall(MatDenseResetArray(a->cmat));
-  *v   = NULL;
+  if (v) *v = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -3388,11 +3388,9 @@ PetscErrorCode MatDenseGetColumn(Mat A,PetscInt col,PetscScalar **vals)
 
    Not Collective
 
-   Input Parameter:
-.  mat - a MATSEQDENSE or MATMPIDENSE matrix
-
-   Output Parameter:
-.  vals - pointer to the data
+   Input Parameters:
++  mat - a MATSEQDENSE or MATMPIDENSE matrix
+-  vals - pointer to the data (may be NULL)
 
    Level: intermediate
 
@@ -3448,7 +3446,7 @@ PetscErrorCode MatDenseGetColumnVec(Mat A,PetscInt col,Vec *v)
    Input Parameters:
 +  mat - the Mat object
 .  col - the column index
--  v - the Vec object
+-  v - the Vec object (may be NULL)
 
    Level: intermediate
 
@@ -3508,7 +3506,7 @@ PetscErrorCode MatDenseGetColumnVecRead(Mat A,PetscInt col,Vec *v)
    Input Parameters:
 +  mat - the Mat object
 .  col - the column index
--  v - the Vec object
+-  v - the Vec object (may be NULL)
 
    Level: intermediate
 
@@ -3567,7 +3565,7 @@ PetscErrorCode MatDenseGetColumnVecWrite(Mat A,PetscInt col,Vec *v)
    Input Parameters:
 +  mat - the Mat object
 .  col - the column index
--  v - the Vec object
+-  v - the Vec object (may be NULL)
 
    Level: intermediate
 
@@ -3638,7 +3636,7 @@ PetscErrorCode MatDenseGetSubMatrix(Mat A,PetscInt rbegin,PetscInt rend,PetscInt
 
    Input Parameters:
 +  mat - the Mat object
--  v - the Mat object
+-  v - the Mat object (may be NULL)
 
    Level: intermediate
 

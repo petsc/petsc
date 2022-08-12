@@ -1454,7 +1454,7 @@ static PetscErrorCode MatDenseRestoreSubMatrix_SeqDenseCUDA(Mat A,Mat *v)
     PetscCall(MatSeqDenseCUDACopyFromGPU(A));
   } else A->offloadmask = (a->cmat->offloadmask == PETSC_OFFLOAD_CPU) ? PETSC_OFFLOAD_CPU : PETSC_OFFLOAD_GPU;
   a->cmat->offloadmask = PETSC_OFFLOAD_UNALLOCATED;
-  *v = NULL;
+  if (v) *v = NULL;
   PetscFunctionReturn(0);
 }
 
