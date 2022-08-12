@@ -474,9 +474,10 @@ PetscErrorCode  MatSchurComplementGetSubMatrices(Mat S,Mat *A00,Mat *Ap00,Mat *A
 @*/
 PetscErrorCode MatSchurComplementComputeExplicitOperator(Mat A, Mat *S)
 {
-  Mat            B, C, D, Bd, AinvBd;
+  Mat            B, C, D, E = NULL, Bd, AinvBd;
   KSP            ksp;
   PetscInt       n,N,m,M;
+  PetscBool      flg = PETSC_FALSE, set, symm;
 
   PetscFunctionBegin;
   PetscCall(MatSchurComplementGetSubMatrices(A, NULL, NULL, &B, &C, &D));
@@ -495,10 +496,16 @@ PetscErrorCode MatSchurComplementComputeExplicitOperator(Mat A, Mat *S)
   PetscCall(MatMatMult(C, AinvBd, D ? MAT_REUSE_MATRIX : MAT_INITIAL_MATRIX, PETSC_DEFAULT, S));
   PetscCall(MatDestroy(&AinvBd));
   if (D) {
-    PetscCall(MatAXPY(*S, -1.0, D, DIFFERENT_NONZERO_PATTERN));
+    PetscCall(PetscObjectTypeCompareAny((PetscObject)D, &flg, MATSEQSBAIJ, MATMPISBAIJ, ""));
+    if (flg) {
+      PetscCall(MatIsSymmetricKnown(A, &set, &symm));
+      if (!set || !symm) PetscCall(MatConvert(D, MATBAIJ, MAT_INITIAL_MATRIX, &E)); /* convert the (1,1) block to nonsymmetric storage for MatAXPY() */
+    }
+    PetscCall(MatAXPY(*S, -1.0, E ? E : D, DIFFERENT_NONZERO_PATTERN)); /* calls Mat[Get|Restore]RowUpperTriangular(), so only the upper triangular part is valid with symmetric storage */
   }
-  PetscCall(MatConvert(*S, MATAIJ, MAT_INPLACE_MATRIX, S));
+  PetscCall(MatConvert(*S, !E && flg ? MATSBAIJ : MATAIJ, MAT_INPLACE_MATRIX, S)); /* if A is symmetric and the (1,1) block is a MatSBAIJ, return S as a MatSBAIJ */
   PetscCall(MatScale(*S, -1.0));
+  PetscCall(MatDestroy(&E));
   PetscFunctionReturn(0);
 }
 
