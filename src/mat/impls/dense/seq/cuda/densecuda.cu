@@ -1369,7 +1369,7 @@ static PetscErrorCode MatDenseRestoreSubMatrix_SeqDenseCUDA(Mat A,Mat *v)
   PetscCall(MatDenseCUDAResetArray(a->cmat));
   if (a->unplacedarray) PetscCall(MatDenseResetArray(a->cmat));
   a->cmat->offloadmask = PETSC_OFFLOAD_UNALLOCATED;
-  *v = NULL;
+  if (v) *v = NULL;
   PetscFunctionReturn(0);
 }
 

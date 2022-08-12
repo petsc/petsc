@@ -1045,7 +1045,7 @@ static PetscErrorCode MatDenseRestoreColumnVec_MPIDenseCUDA(Mat A,PetscInt col,V
   a->vecinuse = 0;
   PetscCall(MatDenseCUDARestoreArray(a->A,(PetscScalar**)&a->ptrinuse));
   PetscCall(VecCUDAResetArray(a->cvec));
-  *v   = NULL;
+  if (v) *v = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -1081,7 +1081,7 @@ static PetscErrorCode MatDenseRestoreColumnVecRead_MPIDenseCUDA(Mat A,PetscInt c
   PetscCall(MatDenseCUDARestoreArrayRead(a->A,&a->ptrinuse));
   PetscCall(VecLockReadPop(a->cvec));
   PetscCall(VecCUDAResetArray(a->cvec));
-  *v   = NULL;
+  if (v) *v = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -1115,7 +1115,7 @@ static PetscErrorCode MatDenseRestoreColumnVecWrite_MPIDenseCUDA(Mat A,PetscInt 
   a->vecinuse = 0;
   PetscCall(MatDenseCUDARestoreArrayWrite(a->A,(PetscScalar**)&a->ptrinuse));
   PetscCall(VecCUDAResetArray(a->cvec));
-  *v   = NULL;
+  if (v) *v = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -1715,7 +1715,7 @@ PetscErrorCode MatDenseRestoreColumnVec_MPIDense(Mat A,PetscInt col,Vec *v)
   a->vecinuse = 0;
   PetscCall(MatDenseRestoreArray(a->A,(PetscScalar**)&a->ptrinuse));
   PetscCall(VecResetArray(a->cvec));
-  *v   = NULL;
+  if (v) *v = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -1750,7 +1750,7 @@ PetscErrorCode MatDenseRestoreColumnVecRead_MPIDense(Mat A,PetscInt col,Vec *v)
   PetscCall(MatDenseRestoreArrayRead(a->A,&a->ptrinuse));
   PetscCall(VecLockReadPop(a->cvec));
   PetscCall(VecResetArray(a->cvec));
-  *v   = NULL;
+  if (v) *v = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -1783,7 +1783,7 @@ PetscErrorCode MatDenseRestoreColumnVecWrite_MPIDense(Mat A,PetscInt col,Vec *v)
   a->vecinuse = 0;
   PetscCall(MatDenseRestoreArrayWrite(a->A,(PetscScalar**)&a->ptrinuse));
   PetscCall(VecResetArray(a->cvec));
-  *v   = NULL;
+  if (v) *v = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -1838,7 +1838,7 @@ PetscErrorCode MatDenseRestoreSubMatrix_MPIDense(Mat A,Mat *v)
   a->matinuse = 0;
   c    = (Mat_MPIDense*)a->cmat->data;
   PetscCall(MatDenseRestoreSubMatrix(a->A,&c->A));
-  *v   = NULL;
+  if (v) *v = NULL;
   PetscFunctionReturn(0);
 }
 
