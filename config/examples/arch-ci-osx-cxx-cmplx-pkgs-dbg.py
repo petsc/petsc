@@ -34,7 +34,6 @@ configure_options = [
   '--download-pnetcdf',
   '--download-hdf5',
   '--download-zlib=1',
-  '--with-python-exec=python2',
   '--with-petsc4py=1',
   '--download-mpi4py=1',
   '--download-elemental=1',
