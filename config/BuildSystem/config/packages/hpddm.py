@@ -14,7 +14,7 @@ class Configure(config.package.Package):
     self.skippackagewithoptions = 1
     self.linkedbypetsc          = 0
     self.builtafterpetsc        = 1
-    self.precisions             = ['single','double']
+    self.precisions             = ['single','double','__float128']
     self.hastestsdatafiles      = 1
     return
 
