@@ -118,14 +118,14 @@ typedef const char *PetscDualSpaceType;
 #define PETSCDUALSPACEBDM      "bdm"
 
 /*MC
-  PETSCDUALSPACEBDM = "bdm" - A PetscDualSpace object that encapsulates a dual space for Brezzi-Douglas-Marini elements
+  PETSCDUALSPACEBDM = "bdm" - A `PetscDualSpace` object that encapsulates a dual space for Brezzi-Douglas-Marini elements
 
   Level: intermediate
 
-  Note: This type is a constructor alias of PETSCDUALSPACELAGRANGE.  During
-  PetscDualSpaceSetUp(), the correct value of PetscDualSpaceSetFormDegree() is
+  Note: This type is a constructor alias of `PETSCDUALSPACELAGRANGE`.  During
+  `PetscDualSpaceSetUp()`, the correct value of `PetscDualSpaceSetFormDegree()` is
   set for H-div conforming spaces. The type of the dual space is then changed to
-  to PETSCDUALSPACELAGRANGE.
+  to `PETSCDUALSPACELAGRANGE`.
 
 .seealso: `PetscDualSpaceType`, `PetscDualSpaceCreate()`, `PetscDualSpaceSetType()`, `PETSCDUALSPACELAGRANGE`, `PetscDualSpaceSetFormDegree()`
 M*/

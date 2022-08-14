@@ -30,7 +30,7 @@ typedef const char* PFType;
 #define PFMATLAB        "matlab"
 
 /*S
-     PF - Abstract PETSc mathematical function
+     PF - Abstract PETSc mathematical function that can be evaluated with `PFApply()` and may be constructed at run time
 
    Level: beginner
 

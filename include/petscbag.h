@@ -13,20 +13,21 @@
    Level: beginner
 
     Sample Usage:
-$      typedef struct {
-$         PetscInt     height;
-$         PetscScalar  root;
-$         PetscReal    byebye;
-$      } MyParameters;
-$
-$      PetscBag     bag;
-$      MyParameters *params;
-$
-$      PetscCall(PetscBagCreate(PETSC_COMM_WORLD,sizeof(MyParameters),&bag));
-$      PetscCall(PetscBagGetData(bag,(void **)&params));
-$      PetscCall(PetscBagSetName(bag,"MyParameters"));
-$      PetscCall(PetscBagRegisterInt(bag,&params.height,22,"height","Height of the water tower"));
-$
+.vb
+      typedef struct {
+         PetscInt     height;
+         PetscScalar  root;
+         PetscReal    byebye;
+      } MyParameters;
+
+      PetscBag     bag;
+      MyParameters *params;
+
+      PetscCall(PetscBagCreate(PETSC_COMM_WORLD,sizeof(MyParameters),&bag));
+      PetscCall(PetscBagGetData(bag,(void **)&params));
+      PetscCall(PetscBagSetName(bag,"MyParameters"));
+      PetscCall(PetscBagRegisterInt(bag,&params.height,22,"height","Height of the water tower"));
+.ve
 
 .seealso: `PetscBagSetName()`, `PetscBagGetName()`, `PetscBagView()`, `PetscBagLoad()`, `PetscBagGetData()`
           `PetscBagRegisterReal()`, `PetscBagRegisterInt()`, `PetscBagRegisterBool()`, `PetscBagRegisterScalar()`

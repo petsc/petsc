@@ -1493,7 +1493,7 @@ PetscErrorCode TaoSetConvergenceTest(Tao tao, PetscErrorCode (*conv)(Tao, void*)
 .    -tao_view_ls_residual - view least-squares residual vector at each iteration
 -    -tao_cancelmonitors - cancels all monitors that have been hardwired into a code by calls to TaoSetMonitor(), but does not cancel those set via the options database.
 
-   Notes
+   Notes:
    Several different monitoring routines may be set by calling
    `TaoSetMonitor()` multiple times; all will be called in the
    order in which they were set.

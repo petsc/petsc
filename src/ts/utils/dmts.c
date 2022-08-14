@@ -650,6 +650,8 @@ PetscErrorCode DMTSSetI2Jacobian(DM dm,TSI2Jacobian jac,void *ctx)
 +  dm - `DM` to be used with `TS`
 -  f - implicit Jacobian evaluation context destroy function
 
+   Level: advanced
+
 .seealso: `TSSetI2JacobianContextDestroy()`, `DMTSSetI2Jacobian()`, `TSSetI2Jacobian()`
 @*/
 PetscErrorCode DMTSSetI2JacobianContextDestroy(DM dm,PetscErrorCode (*f)(void*))
@@ -1233,6 +1235,8 @@ PetscErrorCode DMTSSetRHSJacobian(DM dm,TSRHSJacobian func,void *ctx)
 
    Note:
    The user usually calls `TSSetRHSJacobianContextDestroy()` which calls this routine
+
+   Level: advanced
 
 .seealso: `TSSetRHSJacobianContextDestroy()`, `DMTSSetRHSJacobian()`, `TSSetRHSJacobian()`
 @*/

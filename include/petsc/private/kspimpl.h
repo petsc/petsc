@@ -443,23 +443,25 @@ PETSC_INTERN PetscErrorCode MatGetSchurComplement_Basic(Mat,IS,IS,IS,IS,MatReuse
 PETSC_INTERN PetscErrorCode PCPreSolveChangeRHS(PC,PetscBool*);
 
 /*MC
-   KSPCheckDot - Checks if the result of a dot product used by the corresponding KSP contains Inf or NaN. These indicate that the previous
-      application of the preconditioner generated an error
+   KSPCheckDot - Checks if the result of a dot product used by the corresponding `KSP` contains Inf or NaN. These indicate that the previous
+      application of the preconditioner generated an error. Sets a `KSPConvergedReason` and returns if the `PC` set a `PCFailedReason`.
 
    Collective on ksp
 
    Input Parameter:
-.  ksp - the linear solver (KSP) context.
+.  ksp - the linear solver `KSP` context.
 
    Output Parameter:
 .  beta - the result of the inner product
 
    Level: developer
 
-   Developer Note:
-   this is used to manage returning from KSP solvers whose preconditioners have failed in some way
+   Developer Notes:
+   Used to manage returning from `KSP` solvers whose preconditioners have failed, possibly only a subset of MPI ranks, in some way
 
-.seealso: `KSPCreate()`, `KSPSetType()`, `KSP`, `KSPCheckNorm()`, `KSPCheckSolve()`
+   It uses the fact that `KSP` piggy-backs the collectivity of certain error conditions on the results of norms and inner products.
+
+.seealso: `PCFailedReason`, `KSPConvergedReason`, `PCGetFailedReasonRank()`, `KSP`, `KSPCreate()`, `KSPSetType()`, `KSP`, `KSPCheckNorm()`, `KSPCheckSolve()`
 M*/
 #define KSPCheckDot(ksp,beta) do { \
   if (PetscIsInfOrNanScalar(beta)) { \
@@ -483,7 +485,7 @@ M*/
 
 /*MC
    KSPCheckNorm - Checks if the result of a norm used by the corresponding KSP contains Inf or NaN. These indicate that the previous
-      application of the preconditioner generated an error
+      application of the preconditioner generated an error. Sets a `KSPConvergedReason` and returns if the `PC` set a `PCFailedReason`.
 
    Collective on ksp
 
@@ -495,10 +497,12 @@ M*/
 
    Level: developer
 
-   Developer Note:
-   this is used to manage returning from KSP solvers whose preconditioners have failed in some way
+   Developer Notes:
+   Used to manage returning from `KSP` solvers whose preconditioners have failed, possibly only a subset of MPI ranks, in some way.
 
-.seealso: `KSPCreate()`, `KSPSetType()`, `KSP`, `KSPCheckDot()`, `KSPCheckSolve()`
+   It uses the fact that `KSP` piggy-backs the collectivity of certain error conditions on the results of norms and inner products.
+
+.seealso: `PCFailedReason`, `KSPConvergedReason`, `PCGetFailedReasonRank()`, `KSP`, `KSPCreate()`, `KSPSetType()`, `KSP`, `KSPCheckDot()`, `KSPCheckSolve()`
 M*/
 #define KSPCheckNorm(ksp,beta) do { \
   if (PetscIsInfOrNanReal(beta)) { \

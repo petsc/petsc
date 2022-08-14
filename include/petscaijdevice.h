@@ -126,21 +126,23 @@ static
        MatSetValuesDevice - sets a set of values into a matrix, this may be called by CUDA or KOKKOS kernels
 
     Input Parameters:
-+   d_mat - an object obtained with MatCUSPARSEGetDeviceMatWrite() or MatKokkosGetDeviceMatWrite()
++   d_mat - an object obtained with `MatCUSPARSEGetDeviceMatWrite()` or `MatKokkosGetDeviceMatWrite()`
 .   m - the number of rows to insert or add to
 .   im - the rows to insert or add to
 .   n - number of columns to insert or add to
 .   in - the columns to insert or add to
 .   v - the values to insert or add to the matrix (treated as a  by n row oriented dense array
--   is - either INSERT_VALUES or ADD_VALUES
+-   is - either `INSERT_VALUES` or `ADD_VALUES`
 
     Notes:
-      Any row or column indices that are outside the bounds of the matrix on the rank are discarded
+    Any row or column indices that are outside the bounds of the matrix on the rank are discarded
+
+    It is recommended that `MatSetValuesCOO()` be used instead of this routine for efficiency
 
    Level: advanced
 
 .seealso: `MatSetValues()`, `MatCreate()`, `MatCreateDenseCUDA()`, `MatCreateAIJCUSPARSE()`, `MatKokkosGetDeviceMatWrite()`,
-          `MatCUSPARSEGetDeviceMatWrite()`
+          `MatCUSPARSEGetDeviceMatWrite()`,  `MatSetValuesCOO()`
 @*/
 PetscErrorCode MatSetValuesDevice(PetscSplitCSRDataStructure d_mat, PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],const PetscScalar v[],InsertMode is)
 {

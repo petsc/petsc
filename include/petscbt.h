@@ -6,10 +6,14 @@
 /* SUBMANSEC = Sys */
 
 /*S
-     PetscBT - PETSc bitarrays
+     PetscBT - PETSc bitarrays, efficient storage of arrays of boolean values
 
      Level: advanced
 
+     Notes:
+     The following routines do not have their own manual pages
+
+.vb
      PetscBTCreate(m,&bt)         - creates a bit array with enough room to hold m values
      PetscBTDestroy(&bt)          - destroys the bit array
      PetscBTMemzero(m,bt)         - zeros the entire bit array (sets all values to false)
@@ -20,8 +24,9 @@
      PetscBTLookupClear(bt,index) - returns the value and then sets it false
      PetscBTLength(m)             - returns number of bytes in array with m bits
      PetscBTView(m,bt,viewer)     - prints all the entries in a bit array
+.ve
 
-    We do not currently check error flags on PetscBTLookup(), PetcBTLookupSet(), PetscBTLength() cause error checking
+    PETSc does not check error flags on `PetscBTLookup()`, `PetcBTLookupSet()`, `PetscBTLength()` because error checking
     would cost hundreds more cycles then the operation.
 
 S*/

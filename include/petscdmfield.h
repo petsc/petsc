@@ -13,9 +13,11 @@ PETSC_EXTERN PetscErrorCode DMFieldFinalizePackage(void);
 PETSC_EXTERN PetscClassId DMFIELD_CLASSID;
 
 /*J
-    DMFieldType - String with the name of a DMField method
+    DMFieldType - String with the name of a `DMField` method
 
     Level: intermediate
+
+.seealso: `DMField`, `DMFieldSetType()`, `DMFieldGetType()`, `DMFieldRegister()`
 J*/
 typedef const char *DMFieldType;
 #define DMFIELDDA    "da"

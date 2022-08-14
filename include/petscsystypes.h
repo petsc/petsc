@@ -22,12 +22,12 @@ typedef int PetscErrorCode;
     PetscClassId - A unique id used to identify each PETSc class.
 
     Notes:
-    Use PetscClassIdRegister() to obtain a new value for a new class being created. Usually
+    Use `PetscClassIdRegister()` to obtain a new value for a new class being created. Usually
          XXXInitializePackage() calls it for each class it defines.
 
     Developer Notes:
-    Internal integer stored in the _p_PetscObject data structure.
-         These are all computed by an offset from the lowest one, PETSC_SMALLEST_CLASSID.
+    Internal integer stored in the `_p_PetscObject` data structure.
+         These are all computed by an offset from the lowest one, `PETSC_SMALLEST_CLASSID`.
 
     Level: developer
 
@@ -41,11 +41,11 @@ typedef int PetscClassId;
     Level: intermediate
 
     Notes:
-    usually this is the same as PetscInt, but if PETSc was built with --with-64-bit-indices but
-           standard C/Fortran integers are 32 bit then this is NOT the same as PetscInt; it remains 32 bit.
+    This is always a 32 bit integer, sometimes it is the same as `PetscInt`, but if PETSc was built with --with-64-bit-indices but
+           standard C/Fortran integers are 32 bit then this is NOT the same as `PetscInt`; it remains 32 bit.
 
-    PetscMPIIntCast(a,&b) checks if the given PetscInt a will fit in a PetscMPIInt, if not it
-      generates a PETSC_ERR_ARG_OUTOFRANGE error.
+    `PetscMPIIntCast`(a,&b) checks if the given `PetscInt` a will fit in a `PetscMPIInt`, if not it
+      generates a `PETSC_ERR_ARG_OUTOFRANGE` error.
 
 .seealso: `PetscBLASInt`, `PetscInt`, `PetscMPIIntCast()`
 
@@ -73,7 +73,7 @@ typedef size_t PetscSizeT;
     Notes:
     This is equivalent to ptrdiff_t, but defined for consistency with Fortran, which lacks a native equivalent of ptrdiff_t.
 
-    Use PetscCount_FMT to format with PetscPrintf(), printf(), and related functions.
+    Use `PetscCount_FMT` to format with `PetscPrintf()`, `printf()`, and related functions.
 
 .seealso: `PetscInt`, `PetscInt64`, `PetscSizeT`
 
@@ -99,7 +99,7 @@ typedef float PetscFloat;
       represent size of arrays and indexing into arrays. Its size can be configured with the option --with-64-bit-indices to be either 32-bit (default) or 64-bit.
 
   Notes:
-  For MPI calls that require datatypes, use MPIU_INT as the datatype for PetscInt. It will automatically work correctly regardless of the size of PetscInt.
+  For MPI calls that require datatypes, use `MPIU_INT` as the datatype for `PetscInt`. It will automatically work correctly regardless of the size of PetscInt.
 
   Level: beginner
 
@@ -152,12 +152,12 @@ M*/
    PetscBLASInt - datatype used to represent 'int' parameters to BLAS/LAPACK functions.
 
    Notes:
-    Usually this is the same as PetscInt, but if PETSc was built with --with-64-bit-indices but
-           standard C/Fortran integers are 32 bit then this is NOT the same as PetscInt it remains 32 bit
-           (except on very rare BLAS/LAPACK implementations that support 64 bit integers see the notes below).
+    Usually this is the same as `PetscIn`t, but if PETSc was built with --with-64-bit-indices but
+           standard C/Fortran integers are 32 bit then this may not be the same as `PetscInt`,
+           except on some BLAS/LAPACK implementations that support 64 bit integers see the notes below.
 
-    PetscErrorCode PetscBLASIntCast(a,&b) checks if the given PetscInt a will fit in a PetscBLASInt, if not it
-      generates a PETSC_ERR_ARG_OUTOFRANGE error
+    `PetscErrorCode` `PetscBLASIntCast`(a,&b) checks if the given `PetscInt` a will fit in a `PetscBLASInt`, if not it
+      generates a `PETSC_ERR_ARG_OUTOFRANGE` error
 
    Installation Notes:
     ./configure automatically determines the size of the integers used by BLAS/LAPACK except when --with-batch is used
@@ -194,8 +194,8 @@ M*/
    Notes:
     As of this writing PetscCuBLASInt is always the system `int`.
 
-    PetscErrorCode PetscCuBLASIntCast(a,&b) checks if the given PetscInt a will fit in a PetscCuBLASInt, if not it
-      generates a PETSC_ERR_ARG_OUTOFRANGE error
+    `PetscErrorCode` `PetscCuBLASIntCast`(a,&b) checks if the given `PetscInt` a will fit in a `PetscCuBLASInt`, if not it
+      generates a `PETSC_ERR_ARG_OUTOFRANGE` error
 
    Level: intermediate
 
@@ -210,7 +210,7 @@ typedef int PetscCuBLASInt;
    Level: beginner
 
    Developer Note:
-   Why have PetscBool , why not use bool in C? The problem is that K and R C, C99 and C++ all have different mechanisms for
+   Why have `PetscBool`, why not use bool in C? The problem is that K and R C, C99 and C++ all have different mechanisms for
       boolean values. It is not easy to have a simple macro that that will work properly in all circumstances with all three mechanisms.
 
 .seealso: `PETSC_TRUE`, `PETSC_FALSE`, `PetscNot()`, `PetscBool3`
@@ -222,7 +222,7 @@ typedef enum { PETSC_FALSE,PETSC_TRUE } PetscBool;
 
    Level: beginner
 
-   Notes:
+   Note:
    Should not be used with the if (flg) or if (!flg) syntax.
 
 .seealso: `PETSC_TRUE`, `PETSC_FALSE`, `PetscNot()`, `PETSC_BOOL3_TRUE`, `PETSC_BOOL3_FALSE`, `PETSC_BOOL3_UKNOWN`
@@ -233,13 +233,13 @@ typedef enum { PETSC_BOOL3_FALSE,PETSC_BOOL3_TRUE, PETSC_BOOL3_UNKNOWN = -1 } Pe
 #define PetscBoolToBool3(a) ((a) == PETSC_TRUE ? PETSC_BOOL3_TRUE : PETSC_BOOL3_FALSE)
 
 /*MC
-   PetscReal - PETSc type that represents a real number version of PetscScalar
+   PetscReal - PETSc type that represents a real number version of `PetscScalar`
 
    Notes:
-   For MPI calls that require datatypes, use MPIU_REAL as the datatype for PetscScalar and MPIU_SUM, MPIU_MAX, etc. for operations.
-          They will automatically work correctly regardless of the size of PetscReal.
+   For MPI calls that require datatypes, use `MPIU_REAL` as the datatype for `PetscReal` and `MPIU_SUM`, `MPIU_MAX`, etc. for operations.
+          They will automatically work correctly regardless of the size of `PetscReal`.
 
-          See PetscScalar for details on how to ./configure the size of PetscReal.
+          See `PetscScalar` for details on how to ./configure the size of `PetscReal`.
 
    Level: beginner
 
@@ -264,25 +264,25 @@ M*/
 #endif /* PETSC_USE_REAL_* */
 
 /*MC
-   PetscComplex - PETSc type that represents a complex number with precision matching that of PetscReal.
+   PetscComplex - PETSc type that represents a complex number with precision matching that of `PetscReal`.
 
    Synopsis:
    #include <petscsys.h>
    PetscComplex number = 1. + 2.*PETSC_i;
 
    Notes:
-   For MPI calls that require datatypes, use MPIU_COMPLEX as the datatype for PetscComplex and MPIU_SUM etc for operations.
-          They will automatically work correctly regardless of the size of PetscComplex.
+   For MPI calls that require datatypes, use `MPIU_COMPLEX` as the datatype for `PetscComplex` and `MPIU_SUM` etc for operations.
+          They will automatically work correctly regardless of the size of `PetscComplex`.
 
-          See PetscScalar for details on how to ./configure the size of PetscReal
+          See PetscScalar for details on how to ./configure the size of `PetscReal`
 
           Complex numbers are automatically available if PETSc was able to find a working complex implementation
 
-    Petsc has a 'fix' for complex numbers to support expressions such as std::complex<PetscReal> + PetscInt, which are not supported by the standard
+    Petsc has a 'fix' for complex numbers to support expressions such as std::complex<PetscReal> + `PetscInt`, which are not supported by the standard
     C++ library, but are convenient for petsc users. If the C++ compiler is able to compile code in petsccxxcomplexfix.h (This is checked by
     configure), we include petsccxxcomplexfix.h to provide this convenience.
 
-    If the fix causes conflicts, or one really does not want this fix for a particular C++ file, one can define PETSC_SKIP_CXX_COMPLEX_FIX
+    If the fix causes conflicts, or one really does not want this fix for a particular C++ file, one can define `PETSC_SKIP_CXX_COMPLEX_FIX`
     at the beginning of the C++ file to skip the fix.
 
    Level: beginner
@@ -358,7 +358,7 @@ M*/
        with --with-scalar-type=real,complex --with-precision=single,double,__float128,__fp16
 
    Notes:
-   For MPI calls that require datatypes, use MPIU_SCALAR as the datatype for PetscScalar and MPIU_SUM, MPIU_MAX etc for operations. They will automatically work correctly regardless of the size of PetscScalar.
+   For MPI calls that require datatypes, use `MPIU_SCALAR` as the datatype for `PetscScalar` and `MPIU_SUM`, etc for operations. They will automatically work correctly regardless of the size of `PetscScalar`.
 
    Level: beginner
 
@@ -372,46 +372,46 @@ M*/
 #endif /* PETSC_USE_COMPLEX */
 
 /*E
-    PetscCopyMode  - Determines how an array or PetscObject passed to certain functions is copied or retained by the aggregate PetscObject
+    PetscCopyMode  - Determines how an array or `PetscObject` passed to certain functions is copied or retained by the aggregate `PetscObject`
 
    Level: beginner
 
    For the array input:
-$   PETSC_COPY_VALUES - the array values are copied into new space, the user is free to reuse or delete the passed in array
-$   PETSC_OWN_POINTER - the array values are NOT copied, the object takes ownership of the array and will free it later, the user cannot change or
+$   `PETSC_COPY_VALUES` - the array values are copied into new space, the user is free to reuse or delete the passed in array
+$   `PETSC_OWN_POINTER` - the array values are NOT copied, the object takes ownership of the array and will free it later, the user cannot change or
 $                       delete the array. The array MUST have been obtained with PetscMalloc(). Hence this mode cannot be used in Fortran.
-$   PETSC_USE_POINTER - the array values are NOT copied, the object uses the array but does NOT take ownership of the array. The user cannot use
+$   `PETSC_USE_POINTER` - the array values are NOT copied, the object uses the array but does NOT take ownership of the array. The user cannot use
 $                       the array but the user must delete the array after the object is destroyed.
 
    For the PetscObject input:
-$   PETSC_COPY_VALUES - the input PetscObject is cloned into the aggregate PetscObject; the user is free to reuse/modify the input PetscObject without side effects.
-$   PETSC_OWN_POINTER - the input PetscObject is referenced by pointer (with reference count), thus should not be modified by the user. (Modification may cause errors or unintended side-effects in this or a future version of PETSc.)
-   For either case above, the input PetscObject should be destroyed by the user when no longer needed (the aggregate object increases its reference count).
-$   PETSC_USE_POINTER - invalid for PetscObject inputs.
+$   `PETSC_COPY_VALUES` - the input `PetscObject` is cloned into the aggregate `PetscObject`; the user is free to reuse/modify the input `PetscObject` without side effects.
+$   `PETSC_OWN_POINTER` - the input `PetscObject` is referenced by pointer (with reference count), thus should not be modified by the user. (Modification may cause errors or unintended side-effects in this or a future version of PETSc.)
+   For either case above, the input `PetscObject` should be destroyed by the user when no longer needed (the aggregate object increases its reference count).
+$   `PETSC_USE_POINTER` - invalid for `PetscObject` inputs.
 
 E*/
 typedef enum {PETSC_COPY_VALUES, PETSC_OWN_POINTER, PETSC_USE_POINTER} PetscCopyMode;
 
 /*MC
-    PETSC_FALSE - False value of PetscBool
+    PETSC_FALSE - False value of `PetscBool`
 
     Level: beginner
 
     Note:
     Zero integer
 
-.seealso: `PetscBool`, `PETSC_TRUE`
+.seealso: `PetscBool`, `PetscBool3`, `PETSC_TRUE`
 M*/
 
 /*MC
-    PETSC_TRUE - True value of PetscBool
+    PETSC_TRUE - True value of `PetscBool`
 
     Level: beginner
 
     Note:
     Nonzero integer
 
-.seealso: `PetscBool`, `PETSC_FALSE`
+.seealso: `PetscBool`, `PetscBool3`, `PETSC_FALSE`
 M*/
 
 /*MC
@@ -431,15 +431,15 @@ typedef double PetscLogDouble;
    Level: beginner
 
    Notes:
-   Use of this should be avoided if one can directly use MPI_Datatype instead.
+   Use of this should be avoided if one can directly use `MPI_Datatype` instead.
 
-   PETSC_INT is the datatype for a PetscInt, regardless of whether it is 4 or 8 bytes.
-   PETSC_REAL, PETSC_COMPLEX and PETSC_SCALAR are the datatypes for PetscReal, PetscComplex and PetscScalar, regardless of their sizes.
+   `PETSC_INT` is the datatype for a `PetscInt`, regardless of whether it is 4 or 8 bytes.
+   `PETSC_REAL`, `PETSC_COMPLEX` and `PETSC_SCALAR` are the datatypes for `PetscReal`, `PetscComplex` and `PetscScalar`, regardless of their sizes.
 
-   Developer comment:
+   Developer Notes:
    It would be nice if we could always just use MPI Datatypes, why can we not?
 
-   If you change any values in PetscDatatype make sure you update their usage in
+   If you change any values in `PetscDatatype` make sure you update their usage in
    share/petsc/matlab/PetscBagRead.m and share/petsc/matlab/@PetscOpenSocket/read/write.m
 
    TODO: Add PETSC_INT32 and remove use of improper PETSC_ENUM
@@ -484,31 +484,34 @@ S*/
 typedef struct _p_PetscToken* PetscToken;
 
 /*S
-     PetscObject - any PETSc object, PetscViewer, Mat, Vec, KSP etc
+     PetscObject - any PETSc object, `PetscViewer`, `Mat`, `Vec`, `KSP` etc
 
    Level: beginner
 
-   Note:
+   Notes:
    This is the base class from which all PETSc objects are derived from.
+
+   In certain situations one can cast an object, for example a `Vec`, to a `PetscObject` with (`PetscObject`)vec
 
 .seealso: `PetscObjectDestroy()`, `PetscObjectView()`, `PetscObjectGetName()`, `PetscObjectSetName()`, `PetscObjectReference()`, `PetscObjectDereference()`
 S*/
 typedef struct _p_PetscObject* PetscObject;
 
 /*MC
-    PetscObjectId - unique integer Id for a PetscObject
+    PetscObjectId - unique integer Id for a `PetscObject`
 
     Level: developer
 
-    Notes:
-    Unlike pointer values, object ids are never reused.
+    Note:
+    Unlike pointer values, object ids are never reused so one may save a `PetscObjectId` and compare it to one obtained later from a `PetscObject` to determine
+    if the objects are the same. Never compare two object pointer values.
 
 .seealso: `PetscObjectState`, `PetscObjectGetId()`
 M*/
 typedef PetscInt64 PetscObjectId;
 
 /*MC
-    PetscObjectState - integer state for a PetscObject
+    PetscObjectState - integer state for a `PetscObject`
 
     Level: developer
 
@@ -535,12 +538,12 @@ typedef struct _n_PetscFunctionList *PetscFunctionList;
 
   Level: beginner
 
-$  FILE_MODE_UNDEFINED - initial invalid value
-$  FILE_MODE_READ - open a file at its beginning for reading
-$  FILE_MODE_WRITE - open a file at its beginning for writing (will create if the file does not exist)
-$  FILE_MODE_APPEND - open a file at end for writing
-$  FILE_MODE_UPDATE - open a file for updating, meaning for reading and writing
-$  FILE_MODE_APPEND_UPDATE - open a file for updating, meaning for reading and writing, at the end
+$  `FILE_MODE_UNDEFINED` - initial invalid value
+$  `FILE_MODE_READ` - open a file at its beginning for reading
+$  `FILE_MODE_WRITE` - open a file at its beginning for writing (will create if the file does not exist)
+$  `FILE_MODE_APPEND` - open a file at end for writing
+$  `FILE_MODE_UPDATE` - open a file for updating, meaning for reading and writing
+$  `FILE_MODE_APPEND_UPDATE` - open a file for updating, meaning for reading and writing, at the end
 
 .seealso: `PetscViewerFileSetMode()`
 E*/
@@ -554,8 +557,8 @@ typedef enum {PETSC_DL_DECIDE=0,PETSC_DL_NOW=1,PETSC_DL_LOCAL=2} PetscDLMode;
 
    Level: developer
 
-   Notes:
-   Used by PetscObjectCompose() and PetscObjectQuery()
+   Note:
+   Used by `PetscObjectCompose()` and `PetscObjectQuery()`
 
 .seealso: `PetscObjectListAdd()`, `PetscObjectListDestroy()`, `PetscObjectListFind()`, `PetscObjectCompose()`, `PetscObjectQuery()`, `PetscFunctionList`
 S*/
@@ -575,7 +578,10 @@ typedef struct _n_PetscDLLibrary *PetscDLLibrary;
 
    Level: advanced
 
-.seealso: `PetscObject`, `PetscContainerCreate()`
+   Note:
+   This is useful to attach arbitrary data to a `PetscObject` with `PetscObjectCompose()` and `PetscObjectQuery()`
+
+.seealso: `PetscObject`, `PetscContainerCreate()`, `PetscObjectCompose()`, `PetscObjectQuery()`
 S*/
 typedef struct _p_PetscContainer*  PetscContainer;
 
@@ -602,7 +608,7 @@ typedef struct _p_PetscRandom*   PetscRandom;
 #define PETSC_BINARY_SCALAR_SIZE sizeof(PetscScalar)
 
 /*E
-  PetscBinarySeekType - argument to PetscBinarySeek()
+  PetscBinarySeekType - argument to `PetscBinarySeek()`
 
   Level: advanced
 
@@ -613,12 +619,12 @@ typedef enum {PETSC_BINARY_SEEK_SET = 0,PETSC_BINARY_SEEK_CUR = 1,PETSC_BINARY_S
 /*E
     PetscBuildTwoSidedType - algorithm for setting up two-sided communication
 
-$  PETSC_BUILDTWOSIDED_ALLREDUCE - classical algorithm using an MPI_Allreduce with
+$  `PETSC_BUILDTWOSIDED_ALLREDUCE` - classical algorithm using an MPI_Allreduce with
 $      a buffer of length equal to the communicator size. Not memory-scalable due to
 $      the large reduction size. Requires only MPI-1.
-$  PETSC_BUILDTWOSIDED_IBARRIER - nonblocking algorithm based on MPI_Issend and MPI_Ibarrier.
+$  `PETSC_BUILDTWOSIDED_IBARRIER` - nonblocking algorithm based on MPI_Issend and MPI_Ibarrier.
 $      Proved communication-optimal in Hoefler, Siebert, and Lumsdaine (2010). Requires MPI-3.
-$  PETSC_BUILDTWOSIDED_REDSCATTER - similar to above, but use more optimized function
+$  `PETSC_BUILDTWOSIDED_REDSCATTER` - similar to above, but use more optimized function
 $      that only communicates the part of the reduction that is necessary.  Requires MPI-2.
 
    Level: developer
@@ -690,31 +696,33 @@ M*/
    PetscSubcomm - A decomposition of an MPI communicator into subcommunicators
 
    Notes:
-   After a call to PetscSubcommSetType(), PetscSubcommSetTypeGeneral(), or PetscSubcommSetFromOptions() one may call
-$     PetscSubcommChild() returns the associated subcommunicator on this process
-$     PetscSubcommContiguousParent() returns a parent communitor but with all child of the same subcommunicator having contiguous rank
+   After a call to `PetscSubcommSetType()`, `PetscSubcommSetTypeGeneral()`, or `PetscSubcommSetFromOptions()` one may call
+$     `PetscSubcommChild()` returns the associated subcommunicator on this process
+$     `PetscSubcommContiguousParent()` returns a parent communitor but with all child of the same subcommunicator having contiguous rank
 
    Sample Usage:
-       PetscSubcommCreate()
-       PetscSubcommSetNumber()
-       PetscSubcommSetType(PETSC_SUBCOMM_INTERLACED);
-       ccomm = PetscSubcommChild()
-       PetscSubcommDestroy()
+.vb
+       `PetscSubcommCreate()`
+       `PetscSubcommSetNumber()`
+       `PetscSubcommSetType`(`PETSC_SUBCOMM_INTERLACED`);
+       ccomm = `PetscSubcommChild()`
+       `PetscSubcommDestroy()`
+.ve
 
    Level: advanced
 
    Notes:
-$   PETSC_SUBCOMM_GENERAL - similar to MPI_Comm_split() each process sets the new communicator (color) they will belong to and the order within that communicator
-$   PETSC_SUBCOMM_CONTIGUOUS - each new communicator contains a set of process with contiguous ranks in the original MPI communicator
-$   PETSC_SUBCOMM_INTERLACED - each new communictor contains a set of processes equally far apart in rank from the others in that new communicator
+$   `PETSC_SUBCOMM_GENERAL` - similar to `MPI_Comm_split()` each process sets the new communicator (color) they will belong to and the order within that communicator
+$   `PETSC_SUBCOMM_CONTIGUOUS` - each new communicator contains a set of process with contiguous ranks in the original MPI communicator
+$   `PETSC_SUBCOMM_INTERLACED` - each new communictor contains a set of processes equally far apart in rank from the others in that new communicator
 
    Example: Consider a communicator with six processes split into 3 subcommunicators.
-$     PETSC_SUBCOMM_CONTIGUOUS - the first communicator contains rank 0,1  the second rank 2,3 and the third rank 4,5 in the original ordering of the original communicator
-$     PETSC_SUBCOMM_INTERLACED - the first communicator contains rank 0,3, the second 1,4 and the third 2,5
+$     `PETSC_SUBCOMM_CONTIGUOUS` - the first communicator contains rank 0,1  the second rank 2,3 and the third rank 4,5 in the original ordering of the original communicator
+$     `PETSC_SUBCOMM_INTERLACED` - the first communicator contains rank 0,3, the second 1,4 and the third 2,5
 
-   Developer Notes:
-   This is used in objects such as PCREDUNDANT to manage the subcommunicators on which the redundant computations
-      are performed.
+   Developer Note:
+   This is used in objects such as `PCREDUNDANT` to manage the subcommunicators on which the redundant computations
+   are performed.
 
 .seealso: `PetscSubcommCreate()`, `PetscSubcommSetNumber()`, `PetscSubcommSetType()`, `PetscSubcommView()`, `PetscSubcommSetFromOptions()`
 

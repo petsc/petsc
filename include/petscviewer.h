@@ -13,7 +13,7 @@
 PETSC_EXTERN PetscClassId PETSC_VIEWER_CLASSID;
 
 /*J
-    PetscViewerType - String with the name of a PETSc PETScViewer
+    PetscViewerType - String with the name of a PETSc `PetscViewer` implementation
 
    Level: beginner
 
@@ -247,13 +247,13 @@ PETSC_EXTERN PetscErrorCode PetscViewerVUFlushDeferred(PetscViewer);
   Not Collective
 
   Input Parameters:
-+ viewer - The PetscViewer
++ viewer - The `PetscViewer`
 - mode   - The file mode
 
   Level: deprecated
 
   Note:
-  Use PetscViewerFileSetMode() instead.
+  Use `PetscViewerFileSetMode()` instead.
 
 .seealso: `PetscViewerFileSetMode()`
 @*/
@@ -295,84 +295,84 @@ PETSC_EXTERN PetscViewer    PETSC_VIEWER_EXODUSII_(MPI_Comm);
 PETSC_EXTERN PetscViewer    PETSC_VIEWER_MATHEMATICA_WORLD_PRIVATE;
 
 /*MC
-  PETSC_VIEWER_STDERR_SELF  - same as PETSC_VIEWER_STDERR_(PETSC_COMM_SELF)
+  PETSC_VIEWER_STDERR_SELF  - same as `PETSC_VIEWER_STDERR_`(PETSC_COMM_SELF)
 
   Level: beginner
 M*/
 #define PETSC_VIEWER_STDERR_SELF  PETSC_VIEWER_STDERR_(PETSC_COMM_SELF)
 
 /*MC
-  PETSC_VIEWER_STDERR_WORLD  - same as PETSC_VIEWER_STDERR_(PETSC_COMM_WORLD)
+  PETSC_VIEWER_STDERR_WORLD  - same as `PETSC_VIEWER_STDERR_`(PETSC_COMM_WORLD)
 
   Level: beginner
 M*/
 #define PETSC_VIEWER_STDERR_WORLD PETSC_VIEWER_STDERR_(PETSC_COMM_WORLD)
 
 /*MC
-  PETSC_VIEWER_STDOUT_WORLD  - same as PETSC_VIEWER_STDOUT_(PETSC_COMM_WORLD)
+  PETSC_VIEWER_STDOUT_WORLD  - same as `PETSC_VIEWER_STDOUT_`(PETSC_COMM_WORLD)
 
   Level: beginner
 M*/
 #define PETSC_VIEWER_STDOUT_WORLD PETSC_VIEWER_STDOUT_(PETSC_COMM_WORLD)
 
 /*MC
-  PETSC_VIEWER_STDOUT_SELF  - same as PETSC_VIEWER_STDOUT_(PETSC_COMM_SELF)
+  PETSC_VIEWER_STDOUT_SELF  - same as `PETSC_VIEWER_STDOUT_`(PETSC_COMM_SELF)
 
   Level: beginner
 M*/
 #define PETSC_VIEWER_STDOUT_SELF  PETSC_VIEWER_STDOUT_(PETSC_COMM_SELF)
 
 /*MC
-  PETSC_VIEWER_DRAW_WORLD  - same as PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD)
+  PETSC_VIEWER_DRAW_WORLD  - same as `PETSC_VIEWER_DRAW_`(PETSC_COMM_WORLD)
 
   Level: intermediate
 M*/
 #define PETSC_VIEWER_DRAW_WORLD   PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD)
 
 /*MC
-  PETSC_VIEWER_DRAW_SELF  - same as PETSC_VIEWER_DRAW_(PETSC_COMM_SELF)
+  PETSC_VIEWER_DRAW_SELF  - same as `PETSC_VIEWER_DRAW_`(PETSC_COMM_SELF)
 
   Level: intermediate
 M*/
 #define PETSC_VIEWER_DRAW_SELF    PETSC_VIEWER_DRAW_(PETSC_COMM_SELF)
 
 /*MC
-  PETSC_VIEWER_SOCKET_WORLD  - same as PETSC_VIEWER_SOCKET_(PETSC_COMM_WORLD)
+  PETSC_VIEWER_SOCKET_WORLD  - same as `PETSC_VIEWER_SOCKET_`(PETSC_COMM_WORLD)
 
   Level: intermediate
 M*/
 #define PETSC_VIEWER_SOCKET_WORLD PETSC_VIEWER_SOCKET_(PETSC_COMM_WORLD)
 
 /*MC
-  PETSC_VIEWER_SOCKET_SELF  - same as PETSC_VIEWER_SOCKET_(PETSC_COMM_SELF)
+  PETSC_VIEWER_SOCKET_SELF  - same as `PETSC_VIEWER_SOCKET_`(PETSC_COMM_SELF)
 
   Level: intermediate
 M*/
 #define PETSC_VIEWER_SOCKET_SELF  PETSC_VIEWER_SOCKET_(PETSC_COMM_SELF)
 
 /*MC
-  PETSC_VIEWER_BINARY_WORLD  - same as PETSC_VIEWER_BINARY_(PETSC_COMM_WORLD)
+  PETSC_VIEWER_BINARY_WORLD  - same as `PETSC_VIEWER_BINARY_`(PETSC_COMM_WORLD)
 
   Level: intermediate
 M*/
 #define PETSC_VIEWER_BINARY_WORLD PETSC_VIEWER_BINARY_(PETSC_COMM_WORLD)
 
 /*MC
-  PETSC_VIEWER_BINARY_SELF  - same as PETSC_VIEWER_BINARY_(PETSC_COMM_SELF)
+  PETSC_VIEWER_BINARY_SELF  - same as `PETSC_VIEWER_BINARY_`(PETSC_COMM_SELF)
 
   Level: intermediate
 M*/
 #define PETSC_VIEWER_BINARY_SELF  PETSC_VIEWER_BINARY_(PETSC_COMM_SELF)
 
 /*MC
-  PETSC_VIEWER_MATLAB_WORLD  - same as PETSC_VIEWER_MATLAB_(PETSC_COMM_WORLD)
+  PETSC_VIEWER_MATLAB_WORLD  - same as `PETSC_VIEWER_MATLAB_`(PETSC_COMM_WORLD)
 
   Level: intermediate
 M*/
 #define PETSC_VIEWER_MATLAB_WORLD PETSC_VIEWER_MATLAB_(PETSC_COMM_WORLD)
 
 /*MC
-  PETSC_VIEWER_MATLAB_SELF  - same as PETSC_VIEWER_MATLAB_(PETSC_COMM_SELF)
+  PETSC_VIEWER_MATLAB_SELF  - same as `PETSC_VIEWER_MATLAB_`(PETSC_COMM_SELF)
 
   Level: intermediate
 M*/
@@ -400,7 +400,7 @@ PETSC_EXTERN PetscErrorCode PetscObjectViewSAWs(PetscObject,PetscViewer);
 #endif
 
 /*S
-     PetscViewers - Abstract collection of PetscViewers. It is just an expandable array of viewers.
+     PetscViewers - Abstract collection of `PetscViewer`s. It is just an expandable array of viewers.
 
    Level: intermediate
 

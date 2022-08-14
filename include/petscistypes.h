@@ -4,7 +4,7 @@
 /* SUBMANSEC = IS */
 
 /*S
-     IS - Abstract PETSc object that allows indexing.
+     IS - Abstract PETSc object that used for efficient indexing
 
    Level: beginner
 
@@ -19,34 +19,35 @@ typedef struct _p_IS* IS;
 
    Level: intermediate
 
-   Note: mapping from local to global is scalable; but global
-  to local may not be if the range of global values represented locally
-  is very large.
+   Notes:
+   Mapping from local to global is scalable; but global
+   to local may not be if the range of global values represented locally
+   is very large.
 
-   Note: the ISLocalToGlobalMapping is actually a private object; it is included
-  here for the inline function ISLocalToGlobalMappingApply() to allow it to be inlined since
-  it is used so often.
+   `ISLocalToGlobalMapping` is actually a private object; it is included
+   here for the inline function `ISLocalToGlobalMappingApply()` to allow it to be inlined since
+   it is used so often.
 
 .seealso: `ISLocalToGlobalMappingCreate()`, `ISLocalToGlobalMappingApply()`, `ISLocalToGlobalMappingDestroy()`
 S*/
 typedef struct _p_ISLocalToGlobalMapping* ISLocalToGlobalMapping;
 
 /*S
-     ISColoring - sets of IS's that define a coloring
-              of the underlying indices
+     ISColoring - sets of IS's that define a coloring of something, such as a graph defined by a sparse matrix
 
    Level: intermediate
 
     Notes:
-        One should not access the *is records below directly because they may not yet
-    have been created. One should use ISColoringGetIS() to make sure they are
+    One should not access the *is records below directly because they may not yet
+    have been created. One should use `ISColoringGetIS()` to make sure they are
     created when needed.
 
-        When the coloring type is IS_COLORING_LOCAL the coloring is in the local ordering of the unknowns.
+    When the coloring type is `IS_COLORING_LOCAL` the coloring is in the local ordering of the unknowns.
     That is the matching the local (ghosted) vector; a local to global mapping must be applied to map
     them to the global ordering.
 
-    Developer Note: this is not a PetscObject
+    Developer Note:
+    This is not a `PetscObject`
 
 .seealso: `ISColoringCreate()`, `ISColoringGetIS()`, `ISColoringView()`
 S*/

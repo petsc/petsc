@@ -19,7 +19,7 @@ PETSC_EXTERN PetscClassId DMLABEL_CLASSID;
 #define DMLOCATEPOINT_POINT_NOT_FOUND -367
 
 /*J
-    DMType - String with the name of a PETSc DM
+    DMType - String with the name of a PETSc `DM`
 
    Level: beginner
 
@@ -352,7 +352,7 @@ PETSC_EXTERN PetscErrorCode DMSetLabelOutput(DM, const char[], PetscBool);
 PETSC_EXTERN PetscErrorCode DMGetFirstLabeledPoint(DM, DM, DMLabel, PetscInt, const PetscInt *, PetscInt, PetscInt *, PetscDS *);
 
 /*E
-   DMCopyLabelsMode - Determines how DMCopyLabels() behaves when there is a DMLabel in the source and destination DMs with the same name
+   DMCopyLabelsMode - Determines how `DMCopyLabels()` behaves when there is a `DMLabel` in the source and destination DMs with the same name
 
    Level: advanced
 

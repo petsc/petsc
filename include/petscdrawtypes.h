@@ -4,11 +4,11 @@
 /* SUBMANSEC = Draw */
 
 /*J
-    PetscDrawType - String with the name of a PetscDraw
+    PetscDrawType - String with the name of a `PetscDraw`
 
    Level: beginner
 
-.seealso: `PetscDrawSetType()`, `PetscDraw`, `PetscViewer`, `PetscDrawCreate()`
+.seealso: `PetscDrawSetType()`, `PetscDraw`, `PetscViewer`, `PetscDrawCreate()`, `PetscDrawRegister()`
 J*/
 typedef const char* PetscDrawType;
 #define PETSC_DRAW_X     "x"
@@ -18,7 +18,7 @@ typedef const char* PetscDrawType;
 #define PETSC_DRAW_IMAGE "image"
 
 /*S
-     PetscDraw - Abstract PETSc object for graphics
+     PetscDraw - Abstract PETSc object for graphics, often represents a window on the screen
 
    Level: beginner
 

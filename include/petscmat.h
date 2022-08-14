@@ -428,14 +428,14 @@ PETSC_EXTERN PetscErrorCode MatSetRandom(Mat,PetscRandom);
 
 /*S
      MatStencil - Data structure (C struct) for storing information about a single row or
-        column of a matrix as indexed on an associated grid. These are arguments to MatSetStencil() and MatSetBlockStencil()
+        column of a matrix as indexed on an associated grid. These are arguments to `MatSetStencil()` and `MatSetBlockStencil()`
 
    The i,j, and k represent the logical coordinates over the entire grid (for 2 and 1 dimensional problems the k and j entries are ignored).
-   The c represents the the degrees of freedom at each grid point (the dof argument to DMDASetDOF()). If dof is 1 then this entry is ignored.
+   The c represents the the degrees of freedom at each grid point (the dof argument to `DMDASetDOF()`). If dof is 1 then this entry is ignored.
 
-   For stencil access to vectors see DMDAVecGetArray(), DMDAVecGetArrayF90().
+   For stencil access to vectors see `DMDAVecGetArray()`, `DMDAVecGetArrayF90()`.
 
-   Fortran usage is different, see MatSetValuesStencil() for details.
+   Fortran usage is different, see `MatSetValuesStencil()` for details.
 
    Level: beginner
 
@@ -450,7 +450,7 @@ PETSC_EXTERN PetscErrorCode MatSetValuesBlockedStencil(Mat,PetscInt,const MatSte
 PETSC_EXTERN PetscErrorCode MatSetStencil(Mat,PetscInt,const PetscInt[],const PetscInt[],PetscInt);
 
 /*E
-    MatAssemblyType - Indicates if the matrix is now to be used, or if you plan
+    MatAssemblyType - Indicates if the matrix is now to be used, for example in a solver, or if you plan
      to continue to add or insert values to it
 
     Level: beginner
@@ -467,11 +467,12 @@ PETSC_EXTERN PetscErrorCode MatAssembled(Mat,PetscBool *);
 
     Level: beginner
 
-   Any additions/changes here MUST also be made in include/petsc/finclude/petscmat.h
-   Any additions/changes here must also be made in src/mat/interface/dlregismat.c in MatOptions[]
-
    Developer Notes:
-    Entries that are negative need not be called collectively by all processes.
+   Entries that are negative need not be called collectively by all processes.
+
+   Any additions/changes here MUST also be made in include/petsc/finclude/petscmat.h
+
+   Any additions/changes here must also be made in src/mat/interface/dlregismat.c in MatOptions[]
 
 .seealso: `MatSetOption()`
 E*/
@@ -584,18 +585,18 @@ PETSC_EXTERN PetscErrorCode MatResidual(Mat,Vec,Vec,Vec);
 
    Any additions/changes here MUST also be made in include/petsc/finclude/petscmat.h
 
-$   MAT_DO_NOT_COPY_VALUES    - Create a matrix using the same nonzero pattern as the original matrix,
+$   `MAT_DO_NOT_COPY_VALUES`    - Create a matrix using the same nonzero pattern as the original matrix,
 $                               with zeros for the numerical values.
-$   MAT_COPY_VALUES           - Create a matrix with the same nonzero pattern as the original matrix
+$   `MAT_COPY_VALUES`           - Create a matrix with the same nonzero pattern as the original matrix
 $                               and with the same numerical values.
-$   MAT_SHARE_NONZERO_PATTERN - Create a matrix that shares the nonzero structure with the previous matrix
+$   `MAT_SHARE_NONZERO_PATTERN` - Create a matrix that shares the nonzero structure with the previous matrix
 $                               and does not copy it, using zeros for the numerical values. The parent and
 $                               child matrices will share their index (i and j) arrays, and you cannot
 $                               insert new nonzero entries into either matrix.
 
-Notes:
-    Many matrix types (including SeqAIJ) do not support the MAT_SHARE_NONZERO_PATTERN optimization; in
-this case the behavior is as if MAT_DO_NOT_COPY_VALUES has been specified.
+  Note:
+  Many matrix types (including `MATSEQAIJ`) do not support the `MAT_SHARE_NONZERO_PATTERN` optimization; in
+  this case the behavior is as if `MAT_DO_NOT_COPY_VALUES` has been specified.
 
 .seealso: `MatDuplicate()`
 E*/
@@ -622,9 +623,9 @@ PETSC_EXTERN PetscErrorCode MatGetColumnIJ(Mat,PetscInt,PetscBool ,PetscBool ,Pe
 PETSC_EXTERN PetscErrorCode MatRestoreColumnIJ(Mat,PetscInt,PetscBool ,PetscBool ,PetscInt *,const PetscInt *[],const PetscInt *[],PetscBool  *);
 
 /*S
-     MatInfo - Context of matrix information, used with MatGetInfo()
+     MatInfo - Context of matrix information, used with `MatGetInfo()`
 
-   In Fortran this is simply a double precision array of dimension MAT_INFO_SIZE
+   In Fortran this is simply a double precision array of dimension `MAT_INFO_SIZE`
 
    Level: intermediate
 
@@ -794,10 +795,10 @@ PETSC_EXTERN PetscErrorCode MatCreateMPIMatConcatenateSeqMat(MPI_Comm,Mat,PetscI
 .  row - the row location of the entry
 .  col - the column location of the entry
 .  value - the value to insert
--  mode - either INSERT_VALUES or ADD_VALUES
+-  mode - either `INSERT_VALUES` or `ADD_VALUES`
 
    Notes:
-   For efficiency one should use MatSetValues() and set several values simultaneously.
+   For efficiency one should use `MatSetValues()` and set several values simultaneously.
 
    Level: beginner
 
@@ -819,9 +820,9 @@ static inline PetscErrorCode MatSetValue(Mat v,PetscInt i,PetscInt j,PetscScalar
 .  va - the value
 
    Notes:
-   For efficiency one should use MatGetValues() and get several values simultaneously.
+   For efficiency one should use `MatGetValues()` and get several values simultaneously.
 
-   See notes for MatGetValues().
+   See notes for `MatGetValues()`.
 
    Level: advanced
 
@@ -840,12 +841,12 @@ static inline PetscErrorCode MatGetValue(Mat mat,PetscInt row,PetscInt col,Petsc
 .  row - the row location of the entry
 .  col - the column location of the entry
 .  value - the value to insert
--  mode - either INSERT_VALUES or ADD_VALUES
+-  mode - either `INSERT_VALUES` or `ADD_VALUES`
 
    Notes:
-   For efficiency one should use MatSetValuesLocal() and set several values simultaneously.
+   For efficiency one should use `MatSetValuesLocal()` and set several values simultaneously.
 
-   See notes for MatSetValuesLocal() for additional information on when and how this function can be used.
+   See notes for `MatSetValuesLocal()` for additional information on when and how this function can be used.
 
    Level: intermediate
 
@@ -1246,7 +1247,7 @@ PETSC_EXTERN PetscErrorCode MatFindZeroRows(Mat,IS*);
    Level: beginner
 
    Notes:
-      If MATORDERINGEXTERNAL is used then PETSc does not compute an ordering and utilizes one built into the factorization package
+      If `MATORDERINGEXTERNAL` is used then PETSc does not compute an ordering and utilizes one built into the factorization package
 
 .seealso: `MatGetOrdering()`
 J*/
@@ -1290,7 +1291,7 @@ PETSC_EXTERN const char *const MatFactorShiftTypesDetail[];
 
     Level: beginner
 
-    Developer Notes:
+    Developer Note:
     Any additions/changes here MUST also be made in include/petsc/finclude/petscmat.h
 
 .seealso: `MatGetFactor()`
@@ -1304,13 +1305,13 @@ PETSC_EXTERN PetscErrorCode MatFactorGetErrorZeroPivot(Mat,PetscReal*,PetscInt*)
 /*S
    MatFactorInfo - Data passed into the matrix factorization routines, and information about the resulting factorization
 
-   In Fortran these are simply double precision arrays of size MAT_FACTORINFO_SIZE, that is use
+   In Fortran these are simply double precision arrays of size `MAT_FACTORINFO_SIZE`, that is use
 $     MatFactorInfo  info(MAT_FACTORINFO_SIZE)
 
    Notes:
-    These are not usually directly used by users, instead use PC type of LU, ILU, CHOLESKY or ICC.
+    These are not usually directly used by users, instead use `PC` type of `PCLU`, `PCILU`, `PCCHOLESKY` or `PCICC`.
 
-      You can use MatFactorInfoInitialize() to set default values.
+      You can use `MatFactorInfoInitialize()` to set default values.
 
    Level: developer
 
@@ -1375,9 +1376,10 @@ PETSC_EXTERN PetscErrorCode MatSeqDenseInvert(Mat);
 
    May be bitwise ORd together
 
+   Developer Notes:
    Any additions/changes here MUST also be made in include/petsc/finclude/petscmat.h
 
-   MatSORType may be bitwise ORd together, so do not change the numbers
+  `MatSORType` may be bitwise ORd together, so do not change the numerical values
 
 .seealso: `MatSOR()`
 E*/
@@ -1387,20 +1389,16 @@ typedef enum {SOR_FORWARD_SWEEP=1,SOR_BACKWARD_SWEEP=2,SOR_SYMMETRIC_SWEEP=3,
               SOR_EISENSTAT=32,SOR_APPLY_UPPER=64,SOR_APPLY_LOWER=128} MatSORType;
 PETSC_EXTERN PetscErrorCode MatSOR(Mat,Vec,PetscReal,MatSORType,PetscReal,PetscInt,PetscInt,Vec);
 
-/*
-    These routines are for efficiently computing Jacobians via finite differences.
-*/
-
 /*S
      MatColoring - Object for managing the coloring of matrices.
 
    Level: beginner
 
     Notes:
-       Coloring of matrices can be computed directly from the sparse matrix nonzero structure via the MatColoring object or from the mesh from which the
-       matrix comes from via DMCreateColoring(). In general using the mesh produces a more optimal coloring (fewer colors).
+       Coloring of matrices can be computed directly from the sparse matrix nonzero structure via the `MatColoring` object or from the mesh from which the
+       matrix comes from via `DMCreateColoring()`. In general using the mesh produces a more optimal coloring (fewer colors).
 
-       Once a coloring is available MatFDColoringCreate() creates an object that can be used to efficiently compute Jacobians using that coloring. This
+       Once a coloring is available `MatFDColoringCreate()` creates an object that can be used to efficiently compute Jacobians using that coloring. This
        same object can also be used to efficiently convert data created by Automatic Differentation tools to PETSc sparse matrices.
 
 .seealso: `MatFDColoringCreate()`, `MatColoringWeightType`, `ISColoring`, `MatFDColoring`, `DMCreateColoring()`, `MatColoringCreate()`, `MatOrdering`, `MatPartitioning`, `MatColoringType`
@@ -1428,12 +1426,13 @@ typedef const  char*           MatColoringType;
 
     Not Collective
 
-+   MAT_COLORING_RANDOM  - Random weights
-.   MAT_COLORING_LEXICAL - Lexical weighting based upon global numbering.
--   MAT_COLORING_LF      - Last-first weighting.
++   `MAT_COLORING_RANDOM`  - Random weights
+.   `MAT_COLORING_LEXICAL` - Lexical weighting based upon global numbering.
+-   `MAT_COLORING_LF`      - Last-first weighting.
 
     Level: intermediate
 
+   Developer Note:
    Any additions/changes here MUST also be made in include/petsc/finclude/petscmat.h
 
 .seealso: `MatColoring`, `MatColoringCreate()`
@@ -1461,15 +1460,14 @@ PETSC_DEPRECATED_FUNCTION("Use MatColoringTest() (since version 3.10)") static i
 PETSC_EXTERN PetscErrorCode MatISColoringTest(Mat,ISColoring);
 
 /*S
-     MatFDColoring - Object for computing a sparse Jacobian via finite differences
-        and coloring
+     MatFDColoring - Object for computing a sparse Jacobian via finite differences with coloring
 
    Level: beginner
 
    Notes:
-      This object is creating utilizing a coloring provided by the MatColoring object or DMCreateColoring()
+      This object is creating utilizing a coloring provided by the `MatColoring` object or `DMCreateColoring()`
 
-.seealso: `MatFDColoringCreate()`, `MatColoring`, `DMCreateColoring()`
+.seealso: `MatFDColoringCreate()`, `MatFDColoringSetFunction()`, `MatColoring`, `DMCreateColoring()`
 S*/
 typedef struct _p_MatFDColoring* MatFDColoring;
 
@@ -1501,19 +1499,14 @@ PETSC_EXTERN PetscErrorCode MatTransColoringApplySpToDen(MatTransposeColoring,Ma
 PETSC_EXTERN PetscErrorCode MatTransColoringApplyDenToSp(MatTransposeColoring,Mat,Mat);
 PETSC_EXTERN PetscErrorCode MatTransposeColoringDestroy(MatTransposeColoring*);
 
-/*
-    These routines are for partitioning matrices: currently used only
-  for adjacency matrix, MatCreateMPIAdj().
-*/
-
 /*S
      MatPartitioning - Object for managing the partitioning of a matrix or graph
 
    Level: beginner
 
-   Notes:
-     There is also a PetscPartitioner object that provides the same functionality. It can utilize the MatPartitioning operations
-     via PetscPartitionerSetType(p,PETSCPARTITIONERMATPARTITIONING)
+   Note:
+     There is also a `PetscPartitioner` object that provides the same functionality. It can utilize the `MatPartitioning` operations
+     via `PetscPartitionerSetType`(p,`PETSCPARTITIONERMATPARTITIONING`)
 
    Developers Note:
      It is an extra maintainance and documentation cost to have two objects with the same functionality.
@@ -1527,7 +1520,7 @@ typedef struct _p_MatPartitioning* MatPartitioning;
 
    Level: beginner
 dm
-.seealso: `MatPartitioningCreate()`, `MatPartitioning`
+.seealso: `MatPartitioningCreate()`, `MatPartitioning`, `MatPartitioningSetType()`
 J*/
 typedef const char* MatPartitioningType;
 #define MATPARTITIONINGCURRENT  "current"
@@ -1815,7 +1808,7 @@ PETSC_EXTERN PETSC_DEPRECATED_FUNCTION("Use the MatConvert() interface (since ve
 
    Level: advanced
 
-.seealso: `MatNullSpaceCreate()`
+.seealso: `MatNullSpaceCreate()`, `MatNullSpaceSetFunction()`, `MatGetNullSpace()`, `MatSetNullSpace()`
 S*/
 typedef struct _p_MatNullSpace* MatNullSpace;
 
@@ -1884,9 +1877,9 @@ PETSC_EXTERN PetscErrorCode MatMFFDSetCheckh(Mat,PetscErrorCode (*)(void*,Vec,Ve
               Jacobian vector products
 
     Notes:
-    MATMFFD is a specific MatType which uses the MatMFFD data structure
+    `MATMFFD` is a specific `MatType` which uses the `MatMFFD` data structure
 
-           MatMFFD*() methods actually take the Mat as their first argument. Not a MatMFFD data structure
+    MatMFFD*() methods actually take the Mat as their first argument. Not a `MatMFFD` data structure
 
     Level: developer
 
@@ -1938,28 +1931,28 @@ PETSC_EXTERN PetscErrorCode MatHtoolGetPermutationSource(Mat,IS*);
 PETSC_EXTERN PetscErrorCode MatHtoolGetPermutationTarget(Mat,IS*);
 PETSC_EXTERN PetscErrorCode MatHtoolUsePermutation(Mat,PetscBool);
 /*E
-     MatHtoolCompressorType - Indicates the type of compressor used by a MATHTOOL
+     MatHtoolCompressorType - Indicates the type of compressor used by a `MATHTOOL`
 
    Level: beginner
 
     Values:
-+   MAT_HTOOL_COMPRESSOR_SYMPARTIAL_ACA (default) - symmetric partial adaptive cross approximation
-.   MAT_HTOOL_COMPRESSOR_FULL_ACA - full adaptive cross approximation
--   MAT_HTOOL_COMPRESSOR_SVD - singular value decomposition
++   `MAT_HTOOL_COMPRESSOR_SYMPARTIAL_ACA` (default) - symmetric partial adaptive cross approximation
+.   `MAT_HTOOL_COMPRESSOR_FULL_ACA` - full adaptive cross approximation
+-   `MAT_HTOOL_COMPRESSOR_SVD` - singular value decomposition
 
 .seealso: `MatCreateHtoolFromKernel()`, `MATHTOOL`, `MatHtoolClusteringType`
 E*/
 typedef enum { MAT_HTOOL_COMPRESSOR_SYMPARTIAL_ACA, MAT_HTOOL_COMPRESSOR_FULL_ACA, MAT_HTOOL_COMPRESSOR_SVD } MatHtoolCompressorType;
 /*E
-     MatHtoolClusteringType - Indicates the type of clustering used by a MATHTOOL
+     MatHtoolClusteringType - Indicates the type of clustering used by a `MATHTOOL`
 
    Level: beginner
 
     Values:
-+   MAT_HTOOL_CLUSTERING_PCA_REGULAR (default) - axis computed via principle component analysis, split uniformly
-.   MAT_HTOOL_CLUSTERING_PCA_GEOMETRIC - axis computed via principle component analysis, split barycentrically
-.   MAT_HTOOL_CLUSTERING_BOUNDING_BOX_1_REGULAR - axis along the largest extent of the bounding box, split uniformly
--   MAT_HTOOL_CLUSTERING_BOUNDING_BOX_1_GEOMETRIC - axis along the largest extent of the bounding box, split barycentrically
++   `MAT_HTOOL_CLUSTERING_PCA_REGULAR` (default) - axis computed via principle component analysis, split uniformly
+.   `MAT_HTOOL_CLUSTERING_PCA_GEOMETRIC` - axis computed via principle component analysis, split barycentrically
+.   `MAT_HTOOL_CLUSTERING_BOUNDING_BOX_1_REGULAR` - axis along the largest extent of the bounding box, split uniformly
+-   `MAT_HTOOL_CLUSTERING_BOUNDING_BOX_1_GEOMETRIC` - axis along the largest extent of the bounding box, split barycentrically
 
     Notes: higher-dimensional clustering is not yet supported in Htool, but once it is, one should add BOUNDING_BOX_{2,3} types
 
@@ -1968,9 +1961,6 @@ E*/
 typedef enum { MAT_HTOOL_CLUSTERING_PCA_REGULAR, MAT_HTOOL_CLUSTERING_PCA_GEOMETRIC, MAT_HTOOL_CLUSTERING_BOUNDING_BOX_1_REGULAR, MAT_HTOOL_CLUSTERING_BOUNDING_BOX_1_GEOMETRIC } MatHtoolClusteringType;
 #endif
 
-/*
-   PETSc interface to MUMPS
-*/
 #ifdef PETSC_HAVE_MUMPS
 PETSC_EXTERN PetscErrorCode MatMumpsSetIcntl(Mat,PetscInt,PetscInt);
 PETSC_EXTERN PetscErrorCode MatMumpsGetIcntl(Mat,PetscInt,PetscInt*);
@@ -1985,40 +1975,25 @@ PETSC_EXTERN PetscErrorCode MatMumpsGetInverse(Mat,Mat);
 PETSC_EXTERN PetscErrorCode MatMumpsGetInverseTranspose(Mat,Mat);
 #endif
 
-/*
-   PETSc interface to Mkl_Pardiso
-*/
 #ifdef PETSC_HAVE_MKL_PARDISO
 PETSC_EXTERN PetscErrorCode MatMkl_PardisoSetCntl(Mat,PetscInt,PetscInt);
 #endif
 
-/*
-   PETSc interface to Mkl_CPardiso
-*/
 #ifdef PETSC_HAVE_MKL_CPARDISO
 PETSC_EXTERN PetscErrorCode MatMkl_CPardisoSetCntl(Mat,PetscInt,PetscInt);
 #endif
 
-/*
-   PETSc interface to SUPERLU
-*/
 #ifdef PETSC_HAVE_SUPERLU
 PETSC_EXTERN PetscErrorCode MatSuperluSetILUDropTol(Mat,PetscReal);
 #endif
 
-/*
-   PETSc interface to SUPERLU_DIST
-*/
 #ifdef PETSC_HAVE_SUPERLU_DIST
 PETSC_EXTERN PetscErrorCode MatSuperluDistGetDiagU(Mat,PetscScalar*);
 #endif
 
-/*
-   PETSc interface to STRUMPACK
-*/
 #ifdef PETSC_HAVE_STRUMPACK
 /*E
-    MatSTRUMPACKReordering - sparsity reducing ordering to be used in STRUMPACK
+    MatSTRUMPACKReordering - sparsity reducing ordering to be used in `STRUMPACK`
 
     Level: intermediate
 E*/
@@ -2061,12 +2036,13 @@ PETSC_EXTERN PetscErrorCode MatSeqAIJKokkosGetDeviceMat(Mat,PetscSplitCSRDataStr
 
     Not Collective
 
-+   MAT_CUSPARSE_CSR - Compressed Sparse Row
-.   MAT_CUSPARSE_ELL - Ellpack (requires CUDA 4.2 or later).
--   MAT_CUSPARSE_HYB - Hybrid, a combination of Ellpack and Coordinate format (requires CUDA 4.2 or later).
++   `MAT_CUSPARSE_CSR` - Compressed Sparse Row
+.   `MAT_CUSPARSE_ELL` - Ellpack (requires CUDA 4.2 or later).
+-   `MAT_CUSPARSE_HYB` - Hybrid, a combination of Ellpack and Coordinate format (requires CUDA 4.2 or later).
 
     Level: intermediate
 
+   Developer Note:
    Any additions/changes here MUST also be made in include/petsc/finclude/petscmat.h
 
 .seealso: `MatCUSPARSESetFormat()`, `MatCUSPARSEFormatOperation`
@@ -2083,10 +2059,10 @@ PETSC_EXTERN const char *const MatCUSPARSEStorageFormats[];
 
     Not Collective
 
-+   MAT_CUSPARSE_MULT_DIAG - sets the storage format for the diagonal matrix in the parallel MatMult
-.   MAT_CUSPARSE_MULT_OFFDIAG - sets the storage format for the offdiagonal matrix in the parallel MatMult
-.   MAT_CUSPARSE_MULT - sets the storage format for the entire matrix in the serial (single GPU) MatMult
--   MAT_CUSPARSE_ALL - sets the storage format for all CUSPARSE (GPU) matrices
++   `MAT_CUSPARSE_MULT_DIAG` - sets the storage format for the diagonal matrix in the parallel MatMult
+.   `MAT_CUSPARSE_MULT_OFFDIAG` - sets the storage format for the offdiagonal matrix in the parallel MatMult
+.   `MAT_CUSPARSE_MULT` - sets the storage format for the entire matrix in the serial (single GPU) MatMult
+-   `MAT_CUSPARSE_ALL` - sets the storage format for all CUSPARSE (GPU) matrices
 
     Level: intermediate
 
@@ -2129,9 +2105,6 @@ PETSC_EXTERN PetscErrorCode MatCreateSeqAIJViennaCL(MPI_Comm,PetscInt,PetscInt,P
 PETSC_EXTERN PetscErrorCode MatCreateAIJViennaCL(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[],Mat*);
 #endif
 
-/*
-   PETSc interface to FFTW
-*/
 #if defined(PETSC_HAVE_FFTW)
 PETSC_EXTERN PetscErrorCode VecScatterPetscToFFTW(Mat,Vec,Vec);
 PETSC_EXTERN PetscErrorCode VecScatterFFTWToPetsc(Mat,Vec,Vec);

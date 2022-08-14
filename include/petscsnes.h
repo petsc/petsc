@@ -198,8 +198,7 @@ PETSC_EXTERN PetscErrorCode SNESGetCheckJacobianDomainError(SNES,PetscBool*);
 
 #define SNES_CONVERGED_TR_DELTA_DEPRECATED SNES_CONVERGED_TR_DELTA PETSC_DEPRECATED_ENUM("Use SNES_DIVERGED_TR_DELTA (since version 3.12)")
 /*E
-    SNESConvergedReason - reason a SNES method was said to
-         have converged or diverged
+    SNESConvergedReason - reason a `SNES` method was determined to have converged or diverged
 
    Level: beginner
 
@@ -209,7 +208,7 @@ $   2) failure or lack of convergence in the linear system (in this case we reco
 $      testing with -pc_type lu to eliminate the linear solver as the cause of the problem).
 
    Diverged Reasons:
-.    SNES_DIVERGED_LOCAL_MIN - this can only occur when using the line-search variant of SNES.
+.    `SNES_DIVERGED_LOCAL_MIN` - this can only occur when using the line-search variant of `SNES`.
        The line search wants to minimize Q(alpha) = 1/2 || F(x + alpha s) ||^2_2  this occurs
        at Q'(alpha) = s^T F'(x+alpha s)^T F(x+alpha s) = 0. If s is the Newton direction - F'(x)^(-1)F(x) then
        you get Q'(alpha) = -F(x)^T F'(x)^(-1)^T F'(x+alpha s)F(x+alpha s); when alpha = 0
@@ -233,17 +232,15 @@ $      testing with -pc_type lu to eliminate the linear solver as the cause of t
        Note that this RARELY happens in practice. Far more likely the linear system is not being solved
        (well enough?) or the Jacobian is wrong.
 
-   SNES_DIVERGED_MAX_IT means that the solver reached the maximum number of iterations without satisfying any
-   convergence criteria. SNES_CONVERGED_ITS means that SNESConvergedSkip() was chosen as the convergence test;
+   `SNES_DIVERGED_MAX_IT` means that the solver reached the maximum number of iterations without satisfying any
+   convergence criteria. `SNES_CONVERGED_ITS` means that `SNESConvergedSkip()` was chosen as the convergence test;
    thus the usual convergence criteria have not been checked and may or may not be satisfied.
 
    Developer Notes:
-    this must match petsc/finclude/petscsnes.h
+   This must match petsc/finclude/petscsnes.h
 
-       The string versions of these are in SNESConvergedReasons, if you change any value here you must
-     also adjust that array.
-
-   Each reason has its own manual page.
+   The string versions of these are in `SNESConvergedReasons`, if you change any value here you must
+   also adjust that array.
 
 .seealso: `SNESSolve()`, `SNESGetConvergedReason()`, `KSPConvergedReason`, `SNESSetConvergenceTest()`
 E*/
@@ -291,7 +288,7 @@ M*/
 
 /*MC
      SNES_CONVERGED_SNORM_RELATIVE - The 2-norm of the last step <= stol * 2-norm(x) where x is the current
-          solution and stol is the 4th argument to SNESSetTolerances()
+          solution and stol is the 4th argument to `SNESSetTolerances()`
 
      Options Database Keys:
       -snes_stol <stol> - the step tolerance
@@ -304,7 +301,7 @@ M*/
 
 /*MC
      SNES_DIVERGED_FUNCTION_COUNT - The user provided function has been called more times then the final
-         argument to SNESSetTolerances()
+         argument to `SNESSetTolerances()`
 
    Level: beginner
 
@@ -313,7 +310,7 @@ M*/
 M*/
 
 /*MC
-     SNES_DIVERGED_DTOL - The norm of the function has increased by a factor of divtol set with SNESSetDivergenceTolerance()
+     SNES_DIVERGED_DTOL - The norm of the function has increased by a factor of divtol set with `SNESSetDivergenceTolerance()`
 
    Level: beginner
 
@@ -341,7 +338,7 @@ M*/
 M*/
 
 /*MC
-     SNES_DIVERGED_LINE_SEARCH - The line search has failed. This only occurs for a SNES solvers that use a line search
+     SNES_DIVERGED_LINE_SEARCH - The line search has failed. This only occurs for a `SNES` solvers that use a line search
 
    Level: beginner
 
@@ -351,7 +348,7 @@ M*/
 
 /*MC
      SNES_DIVERGED_LOCAL_MIN - the algorithm seems to have stagnated at a local minimum that is not zero.
-        See the manual page for SNESConvergedReason for more details
+        See the manual page for `SNESConvergedReason` for more details
 
    Level: beginner
 
@@ -360,7 +357,7 @@ M*/
 M*/
 
 /*MC
-     SNES_CONERGED_ITERATING - this only occurs if SNESGetConvergedReason() is called during the SNESSolve()
+     SNES_CONERGED_ITERATING - this only occurs if `SNESGetConvergedReason()` is called during the `SNESSolve()`
 
    Level: beginner
 
@@ -469,7 +466,7 @@ M*/
 
    Notes:
    For solvers that require the computation of the L2 norm of the function as part of the method, behaves
-   exactly as SNES_NORM_DEFAULT.  This method is useful when the function is gotten after SNESSolve and
+   exactly as `SNES_NORM_DEFAULT`.  This method is useful when the function is gotten after `SNESSolve()` and
    used in subsequent computation for methods that do not need the norm computed during the rest of the
    solution procedure.
 
@@ -482,7 +479,7 @@ M*/
    Level: advanced
 
    Notes:
-   This method combines the benefits of SNES_NORM_INITIAL_ONLY and SNES_NORM_FINAL_ONLY.
+   This method combines the benefits of `SNES_NORM_INITIAL_ONLY` and `SNES_NORM_FINAL_ONLY`.
 
 .seealso: `SNESNormSchedule`, `SNESSetNormSchedule()`, `SNES_NORM_SNES_NORM_INITIAL_ONLY`, `SNES_NORM_FINAL_ONLY`
 M*/
@@ -531,7 +528,7 @@ PETSC_EXTERN PetscErrorCode SNESShellSetSolve(SNES,PetscErrorCode (*)(SNES,Vec))
 /* --------- Routines specifically for line search methods --------------- */
 
 /*S
-     SNESLineSearch - Abstract PETSc object that manages line-search operations
+     SNESLineSearch - Abstract PETSc object that manages line-search operations for nonlinear solvers
 
    Level: beginner
 
@@ -621,10 +618,10 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchSetOrder(SNESLineSearch,PetscInt order
    Level: intermediate
 
    Developer Notes:
-    this must match petsc/finclude/petscsnes.h
+   This must match petsc/finclude/petscsnes.h
 
-   Developer Note: The string versions of these are in SNESLineSearchReasons, if you change any value here you must
-     also adjust that array.
+   The string versions of these are in `SNESLineSearchReasons`, if you change any value here you must
+   also adjust that array.
 
 .seealso: `SNESSolve()`, `SNESGetConvergedReason()`, `KSPConvergedReason`, `SNESSetConvergenceTest()`
 E*/
@@ -747,7 +744,7 @@ PETSC_EXTERN PetscErrorCode SNESMultiblockSetBlockSize(SNES, PetscInt);
 PETSC_EXTERN PetscErrorCode SNESMultiblockSetType(SNES, PCCompositeType);
 
 /*J
-    SNESMSType - String with the name of a PETSc SNESMS method.
+    SNESMSType - String with the name of a PETSc `SNESMS` method.
 
    Level: intermediate
 
@@ -858,10 +855,10 @@ PETSC_EXTERN PetscErrorCode SNESPatchSetCellNumbering(SNES,PetscSection);
    Level: beginner
 
    Values:
-+  SNES_FAS_MULTIPLICATIVE (default) - traditional V or W cycle as determined by SNESFASSetCycles()
-.  SNES_FAS_ADDITIVE                 - additive FAS cycle
-.  SNES_FAS_FULL                     - full FAS cycle
--  SNES_FAS_KASKADE                  - Kaskade FAS cycle
++  `SNES_FAS_MULTIPLICATIVE` (default) - traditional V or W cycle as determined by `SNESFASSetCycles()`
+.  `SNES_FAS_ADDITIVE`                 - additive FAS cycle
+.  `SNES_FAS_FULL`                     - full FAS cycle
+-  `SNES_FAS_KASKADE`                  - Kaskade FAS cycle
 .seealso: `PCMGSetType()`, `PCMGType`
 
 E*/

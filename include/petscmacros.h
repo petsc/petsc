@@ -89,7 +89,7 @@ void assert_never_put_petsc_headers_inside_an_extern_c(int); void assert_never_p
   name should be identical to what you might pass to the __attribute__ declaration itself --
   plain, unbroken text.
 
-  As PetscHasAttribute() is wrapper over the function-like macro __has_attribute(), the exact
+  As `PetscHasAttribute()` is wrapper over the function-like macro __has_attribute(), the exact
   type and value returned is implementation defined. In practice however, it usually returns
   the integer literal 1 if the attribute is supported, and integer literal 0 if the attribute
   is not supported.
@@ -151,7 +151,7 @@ M*/
   The arguments to be formatted (and therefore checked by the compiler) must be "contiguous" in
   the argument list, that is, there is no way to indicate gaps which should not be checked.
 
-  Definition is suppressed by defining PETSC_SKIP_ATTRIBUTE_FORMAT prior to including PETSc
+  Definition is suppressed by defining `PETSC_SKIP_ATTRIBUTE_FORMAT` prior to including PETSc
   header files. In this case the macro will expand empty.
 
   Example Usage:
@@ -216,7 +216,7 @@ M*/
 
   Notes:
   Equivalent to NULL in C source, and nullptr in C++ source. Note that for the purposes of
-  interoperability between C and C++, setting a pointer to PETSC_NULLPTR in C++ is functonially
+  interoperability between C and C++, setting a pointer to `PETSC_NULLPTR` in C++ is functonially
   equivalent to setting the same pointer to NULL in C. That is to say that the following
   expressions are equivalent\:
 
@@ -257,7 +257,7 @@ M*/
 .ve
 
   Developer Notes:
-  PETSC_NULLPTR must be used in place of NULL in all C++ source files. Using NULL in source
+  `PETSC_NULLPTR` must be used in place of NULL in all C++ source files. Using NULL in source
   files compiled with a C++ compiler may lead to unexpected side-effects in function overload
   resolution and/or compiler warnings.
 
@@ -331,7 +331,7 @@ M*/
 
   Developer Notes:
   It is highly recommended if not downright required that any PETSc routines written in C++
-  returning a PetscErrorCode be marked PETSC_NODISCARD. Ignoring the return value of PETSc
+  returning a PetscErrorCode be marked `PETSC_NODISCARD`. Ignoring the return value of PETSc
   routines is not supported; unhandled errors may leave PETSc in an unrecoverable state.
 
   Level: beginner
@@ -377,7 +377,7 @@ M*/
 #endif
 
 /*MC
-  PetscUnlikely - Hints the compiler that the given condition is usually FALSE
+  PetscUnlikely - Hints the compiler that the given condition is usually false
 
   Synopsis:
   #include <petscmacros.h>
@@ -410,7 +410,7 @@ M*/
 M*/
 
 /*MC
-  PetscLikely - Hints the compiler that the given condition is usually TRUE
+  PetscLikely - Hints the compiler that the given condition is usually true
 
   Synopsis:
   #include <petscmacros.h>
@@ -644,15 +644,15 @@ M*/
 
   Notes:
   Not available from Fortran, requires variadic macro support, definition is disabled by
-  defining PETSC_SKIP_VARIADIC_MACROS.
+  defining `PETSC_SKIP_VARIADIC_MACROS`.
 
-  PetscDefined() returns 1 if and only if "PETSC_ ## def" is defined (but empty) or defined to
-  integer literal 1. In all other cases, PetscDefined() returns integer literal 0. Therefore
+  `PetscDefined()` returns 1 if and only if "PETSC_ ## def" is defined (but empty) or defined to
+  integer literal 1. In all other cases, `PetscDefined()` returns integer literal 0. Therefore
   this macro should not be used if its argument may be defined to a non-empty value other than
   1.
 
   The prefix "PETSC_" is automatically prepended to def. To avoid prepending "PETSC_", say to
-  add custom checks in user code, one should use PetscDefined_().
+  add custom checks in user code, one should use `PetscDefined_()`.
 
 $ #define FooDefined(d) PetscDefined_(PetscConcat(FOO_,d))
 
@@ -716,7 +716,7 @@ M*/
 #define PetscDefined(def)              PetscDefined_(PetscConcat(PETSC_,def))
 
 /*MC
-  PetscUnlikelyDebug - Hints the compiler that the given condition is usually FALSE, eliding
+  PetscUnlikelyDebug - Hints the compiler that the given condition is usually false, eliding
   the check in optimized mode
 
   Synopsis:
@@ -730,7 +730,7 @@ M*/
 
   Notes:
   Not available from Fortran, requires variadic macro support, definition is disabled by
-  defining PETSC_SKIP_VARIADIC_MACROS.
+  defining `PETSC_SKIP_VARIADIC_MACROS`.
 
   This returns the same truth value, it is only a hint to compilers that the result of cond is
   likely to be false. When PETSc is compiled in optimized mode this will always return
@@ -789,7 +789,7 @@ M*/
 
   Notes:
   Not available from Fortran, requires variadic macro support, definition is disabled by
-  defining PETSC_SKIP_VARIADIC_MACROS.
+  defining `PETSC_SKIP_VARIADIC_MACROS`.
 
   Must have at least 1 parameter.
 

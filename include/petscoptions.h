@@ -131,16 +131,16 @@ PetscErrorCode PetscOptionsEnd(void);
 +   comm - communicator that shares GUI
 .   prefix - options prefix for all options displayed on window (optional)
 .   title - short descriptive text, for example "Krylov Solver Options"
--   mansec - section of manual pages for options, for example KSP (optional)
+-   mansec - section of manual pages for options, for example `KSP` (optional)
 
   Level: intermediate
 
   Notes:
     This is a macro that handles its own error checking, it does not return an error code.
 
-    The set of queries needs to be ended by a call to PetscOptionsEnd().
+    The set of queries needs to be ended by a call to `PetscOptionsEnd()`.
 
-    One can add subheadings with PetscOptionsHeadBegin().
+    One can add subheadings with `PetscOptionsHeadBegin()`.
 
   Developer Notes:
       PetscOptionsPublish is set in PetscOptionsCheckInitial_Private() with -saws_options. When PetscOptionsPublish is set the
@@ -190,9 +190,9 @@ M*/
   Notes:
     This is a macro that handles its own error checking, it does not return an error code.
 
-    Needs to be ended by a call the PetscOptionsEnd()
+    Needs to be ended by a call the `PetscOptionsEnd()`
 
-    Can add subheadings with PetscOptionsHeadBegin()
+    Can add subheadings with `PetscOptionsHeadBegin()`
 
 .seealso: `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`, `PetscOptionsGetInt()`,
           `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`
@@ -214,7 +214,7 @@ M*/
     PetscOptionsEnd - Ends a set of queries on the options database that are related and should be
      displayed on the same window of a GUI that allows the user to set the options interactively.
 
-    Collective on the comm used in PetscOptionsBegin() or obj used in PetscObjectOptionsBegin()
+    Collective on the comm used in `PetscOptionsBegin()` or obj used in `PetscObjectOptionsBegin()`
 
    Synopsis:
      #include <petscoptions.h>
@@ -223,7 +223,7 @@ M*/
   Level: intermediate
 
   Notes:
-    Needs to be preceded by a call to PetscOptionsBegin() or PetscObjectOptionsBegin()
+    Needs to be preceded by a call to `PetscOptionsBegin()` or `PetscObjectOptionsBegin()`
 
     This is a macro that handles its own error checking, it does not return an error code.
 
@@ -279,14 +279,14 @@ template <typename... T> PetscErrorCode PetscOptionsDeprecatedNoObject(T...);
    Input Parameter:
 .   head - the heading text
 
-   Level: intermediate
+   Level: developer
 
    Notes:
     Handles errors directly, hence does not return an error code
 
-    Must be between a PetscOptionsBegin() and a PetscOptionsEnd(), and PetscOptionsObject created in PetscOptionsBegin() should be the first argument
+    Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`, and PetscOptionsObject created in `PetscOptionsBegin()` should be the first argument
 
-    Can be followed by a call to PetscOptionsHeadEnd() in the same function.
+    Must be followed by a call to `PetscOptionsHeadEnd()` in the same function.
 
 .seealso: `PetscOptionsGetInt()`, `PetscOptionsGetReal()`,
           `PetscOptionsHasName()`, `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`,
@@ -304,10 +304,10 @@ template <typename... T> PetscErrorCode PetscOptionsDeprecatedNoObject(T...);
 #define PetscOptionsHead(...) PETSC_DEPRECATED_MACRO("GCC warning \"Use PetscOptionsHeadBegin() (since version 3.18)\"") PetscOptionsHeadBegin(__VA_ARGS__)
 
 /*MC
-     PetscOptionsHeadEnd - Ends a section of options begun with PetscOptionsHeadBegin()
+     PetscOptionsHeadEnd - Ends a section of options begun with `PetscOptionsHeadBegin()`
             See, for example, KSPSetFromOptions_GMRES().
 
-    Collective on the comm used in PetscOptionsBegin() or obj used in PetscObjectOptionsBegin()
+    Collective on the comm used in `PetscOptionsBegin()` or obj used in `PetscObjectOptionsBegin()`
 
    Synopsis:
      #include <petscoptions.h>
@@ -316,13 +316,13 @@ template <typename... T> PetscErrorCode PetscOptionsDeprecatedNoObject(T...);
   Level: intermediate
 
    Notes:
-    Must be between a PetscOptionsBegin()/PetscObjectOptionsBegin() and a PetscOptionsEnd()
+    Must be between a `PetscOptionsBegin()` or `PetscObjectOptionsBegin()` and a `PetscOptionsEnd()`
 
-          Must be preceded by a call to PetscOptionsHeadBegin() in the same function.
+    Must be preceded by a call to `PetscOptionsHeadBegin()` in the same function.
 
-          This needs to be used only if the code below PetscOptionsHeadEnd() can be run ONLY once.
-      See, for example, PCSetFromOptions_Composite(). This is a return(0) in it for early exit
-      from the function.
+    This needs to be used only if the code below `PetscOptionsHeadEnd()` can be run ONLY once.
+    See, for example, `PCSetFromOptions_Composite()`. This is a return(0) in it for early exit
+    from the function.
 
           This is only for use with the PETSc options GUI
 

@@ -161,8 +161,8 @@ PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*PetscObjectViewFunction)(PetscObje
 .   descr - string containing short description; should be static (for example "Vector")
 .   mansec - string indicating section in manual pages; should be static (for example "Vec")
 .   comm - the MPI Communicator
-.   destroy - the destroy routine for this object (for example VecDestroy())
--   view - the view routine for this object (for example VecView())
+.   destroy - the destroy routine for this object (for example `VecDestroy()`)
+-   view - the view routine for this object (for example `VecView()`)
 
     Output Parameter:
 .   h - the newly created object
@@ -185,7 +185,7 @@ PETSC_EXTERN PetscErrorCode PetscHeaderCreate_Private(PetscObject,PetscClassId,c
     PetscHeaderDestroy - Final step in destroying a PetscObject
 
     Input Parameters:
-.   h - the header created with PetscHeaderCreate()
+.   h - the header created with `PetscHeaderCreate()`
 
     Level: developer
 
@@ -480,7 +480,7 @@ void PetscValidLogicalCollectiveEnum(Ta,Tb,int);
   } while (0)
 
 /*MC
-   PetscObjectStateIncrease - Increases the state of any PetscObject
+   PetscObjectStateIncrease - Increases the state of any `PetscObject`
 
    Synopsis:
    #include "petsc/private/petscimpl.h"
@@ -489,26 +489,30 @@ void PetscValidLogicalCollectiveEnum(Ta,Tb,int);
    Logically Collective
 
    Input Parameter:
-.  obj - any PETSc object, for example a Vec, Mat or KSP. This must be
+.  obj - any PETSc object, for example a `Vec`, `Mat` or `KSP`. This must be
          cast with a (PetscObject), for example,
-         PetscObjectStateIncrease((PetscObject)mat);
+         `PetscObjectStateIncrease`((`PetscObject`)mat);
 
    Notes:
-    object state is an integer which gets increased every time
+   Object state is a 64 bit integer which gets increased every time
    the object is changed internally. By saving and later querying the object state
    one can determine whether information about the object is still current.
-   Currently, state is maintained for Vec and Mat objects.
+   Currently, state is maintained for `Vec` and `Mat` objects.
 
    This routine is mostly for internal use by PETSc; a developer need only
    call it after explicit access to an object's internals. Routines such
-   as VecSet() or MatScale() already call this routine. It is also called, as a
-   precaution, in VecRestoreArray(), MatRestoreRow(), MatDenseRestoreArray().
+   as `VecSet()` or `MatScale()` already call this routine. It is also called, as a
+   precaution, in `VecRestoreArray()`, `MatRestoreRow()`, `MatDenseRestoreArray()`.
+
+   Routines such as `VecNorm()` can by-pass the computation if the norm has already been computed and the vector's state has not changed.
 
    This routine is logically collective because state equality comparison needs to be possible without communication.
 
+   `Mat` also has `MatGetNonzeroState()` and `MatSetNonzeroState()` for tracking changes to the nonzero structure.
+
    Level: developer
 
-   seealso: PetscObjectStateGet()
+.seealso: `PetscObjectStateGet()`, `MatSetNonzeroState()`, `PetscObject`
 
 M*/
 #define PetscObjectStateIncrease(obj) ((obj)->state++,0)
@@ -525,7 +529,7 @@ PETSC_EXTERN PetscErrorCode PetscObjectComposedDataIncreaseScalarstar(PetscObjec
 PETSC_EXTERN PetscInt       PetscObjectComposedDataMax;
 
 /*MC
-   PetscObjectComposedDataSetInt - attach integer data to a PetscObject
+   PetscObjectComposedDataSetInt - attach integer data to a `PetscObject` that may be accessed with `PetscObjectComposedDataGetInt()`
 
    Synopsis:
    #include "petsc/private/petscimpl.h"
@@ -538,17 +542,24 @@ PETSC_EXTERN PetscInt       PetscObjectComposedDataMax;
 .  id - the identifier for the data
 -  data - the data to  be attached
 
-   Notes
-   The data identifier can best be created through a call to  PetscObjectComposedDataRegister()
+   Notes:
+   The data identifier can be created through a call to  `PetscObjectComposedDataRegister()`
+
+   This allows the efficient composition of a single integer value with a `PetscObject`. Complex data may be
+   attached with `PetscObjectCompose()`
 
    Level: developer
+
+.seealso: `PetscObjectComposedDataGetInt()`, `PetscObjectComposedDataGetReal()`, `PetscObjectComposedDataSetReal()`,
+          `PetscObjectComposedDataGetIntstar()`, `PetscObjectComposedDataSetIntstar()`, `PetscObject`,
+          `PetscObjectCompose()`,  `PetscObjectQuery()`
 M*/
 #define PetscObjectComposedDataSetInt(obj,id,data)                                      \
   ((((obj)->int_idmax < PetscObjectComposedDataMax) && PetscObjectComposedDataIncreaseInt(obj)) ||  \
    ((obj)->intcomposeddata[id] = data,(obj)->intcomposedstate[id] = (obj)->state, 0))
 
 /*MC
-   PetscObjectComposedDataGetInt - retrieve integer data attached to an object
+   PetscObjectComposedDataGetInt - retrieve integer data attached to an object with `PetscObjectComposedDataSetInt()`
 
    Synopsis:
    #include "petsc/private/petscimpl.h"
@@ -562,17 +573,24 @@ M*/
 
    Output parameters:
 +  data - the data to be retrieved
--  flag - PETSC_TRUE if the data item exists and is valid, PETSC_FALSE otherwise
-
-   The 'data' and 'flag' variables are inlined, so they are not pointers.
+-  flag - `PETSC_TRUE` if the data item exists and is valid, `PETSC_FALSE` otherwise
 
    Level: developer
+
+   Notes:
+   The 'data' and 'flag' variables are inlined, so they are not pointers.
+
+   The length of the array accessed must be known.
+
+.seealso: `PetscObjectComposedDataSetInt()`, `PetscObjectComposedDataGetReal()`, `PetscObjectComposedDataSetReal()`,
+          `PetscObjectComposedDataGetIntstar()`, `PetscObjectComposedDataSetIntstar()`, `PetscObject`,
+          `PetscObjectCompose()`,  `PetscObjectQuery()`
 M*/
 #define PetscObjectComposedDataGetInt(obj,id,data,flag)                            \
   (((obj)->intcomposedstate ? (data = (obj)->intcomposeddata[id],flag = (PetscBool)((obj)->intcomposedstate[id] == (obj)->state)) : (flag = PETSC_FALSE)),0)
 
 /*MC
-   PetscObjectComposedDataSetIntstar - attach integer array data to a PetscObject
+   PetscObjectComposedDataSetIntstar - attach an integer array data to a `PetscObject` that may be accessed with `PetscObjectComposedDataGetIntstar()`
 
    Synopsis:
    #include "petsc/private/petscimpl.h"
@@ -585,19 +603,23 @@ M*/
 .  id - the identifier for the data
 -  data - the data to  be attached
 
-   Notes
-   The data identifier can best be determined through a call to
-   PetscObjectComposedDataRegister()
+   Notes:
+   The data identifier can be determined through a call to `PetscObjectComposedDataRegister()`
+
+   The length of the array accessed must be known, it is not available through this API.
 
    Level: developer
+
+.seealso: `PetscObjectComposedDataSetInt()`, `PetscObjectComposedDataGetReal()`, `PetscObjectComposedDataSetReal()`,
+          `PetscObjectComposedDataGetIntstar()`, `PetscObjectComposedDataGetInt()`, `PetscObject`,
+          `PetscObjectCompose()`,  `PetscObjectQuery()`
 M*/
 #define PetscObjectComposedDataSetIntstar(obj,id,data)                                          \
   ((((obj)->intstar_idmax < PetscObjectComposedDataMax) && PetscObjectComposedDataIncreaseIntstar(obj)) ||  \
    ((obj)->intstarcomposeddata[id] = data,(obj)->intstarcomposedstate[id] = (obj)->state, 0))
 
 /*MC
-   PetscObjectComposedDataGetIntstar - retrieve integer array data
-   attached to an object
+   PetscObjectComposedDataGetIntstar - retrieve integer array data attached to an object with `PetscObjectComposedDataSetIntstar()`
 
    Synopsis:
    #include "petsc/private/petscimpl.h"
@@ -611,17 +633,24 @@ M*/
 
    Output parameters:
 +  data - the data to be retrieved
--  flag - PETSC_TRUE if the data item exists and is valid, PETSC_FALSE otherwise
+-  flag - `PETSC_TRUE` if the data item exists and is valid, `PETSC_FALSE` otherwise
 
+   Notes:
    The 'data' and 'flag' variables are inlined, so they are not pointers.
 
+   The length of the array accessed must be known, it is not available through this API.
+
    Level: developer
+
+.seealso: `PetscObjectComposedDataSetInt()`, `PetscObjectComposedDataGetReal()`, `PetscObjectComposedDataSetReal()`,
+          `PetscObjectComposedDataSetIntstar()`, `PetscObjectComposedDataGetInt()`, `PetscObject`,
+          `PetscObjectCompose()`,  `PetscObjectQuery()`
 M*/
 #define PetscObjectComposedDataGetIntstar(obj,id,data,flag)                               \
   (((obj)->intstarcomposedstate ? (data = (obj)->intstarcomposeddata[id],flag = (PetscBool)((obj)->intstarcomposedstate[id] == (obj)->state)) : (flag = PETSC_FALSE)),0)
 
 /*MC
-   PetscObjectComposedDataSetReal - attach real data to a PetscObject
+   PetscObjectComposedDataSetReal - attach real data to a `PetscObject` that may be accessed with `PetscObjectComposedDataGetReal()`
 
    Synopsis:
    #include "petsc/private/petscimpl.h"
@@ -634,18 +663,21 @@ M*/
 .  id - the identifier for the data
 -  data - the data to  be attached
 
-   Notes
-   The data identifier can best be determined through a call to
-   PetscObjectComposedDataRegister()
+   Note:
+   The data identifier can be determined through a call to  `PetscObjectComposedDataRegister()`
 
    Level: developer
+
+.seealso: `PetscObjectComposedDataSetInt()`, `PetscObjectComposedDataGetReal()`, `PetscObjectComposedDataSetIntstar()`,
+          `PetscObjectComposedDataSetIntstar()`, `PetscObjectComposedDataGetInt()`, `PetscObject`,
+          `PetscObjectCompose()`,  `PetscObjectQuery()`
 M*/
 #define PetscObjectComposedDataSetReal(obj,id,data)                                       \
   ((((obj)->real_idmax < PetscObjectComposedDataMax) && PetscObjectComposedDataIncreaseReal(obj)) ||  \
    ((obj)->realcomposeddata[id] = data,(obj)->realcomposedstate[id] = (obj)->state, 0))
 
 /*MC
-   PetscObjectComposedDataGetReal - retrieve real data attached to an object
+   PetscObjectComposedDataGetReal - retrieve real data attached to an object set with `PetscObjectComposedDataSetReal()`
 
    Synopsis:
    #include "petsc/private/petscimpl.h"
@@ -659,17 +691,22 @@ M*/
 
    Output parameters:
 +  data - the data to be retrieved
--  flag - PETSC_TRUE if the data item exists and is valid, PETSC_FALSE otherwise
+-  flag - `PETSC_TRUE` if the data item exists and is valid, `PETSC_FALSE` otherwise
 
+   Note:
    The 'data' and 'flag' variables are inlined, so they are not pointers.
 
    Level: developer
+
+.seealso: `PetscObjectComposedDataSetInt()`, `PetscObjectComposedDataSetReal()`, `PetscObjectComposedDataSetIntstar()`,
+          `PetscObjectComposedDataSetIntstar()`, `PetscObjectComposedDataGetInt()`, `PetscObject`,
+          `PetscObjectCompose()`,  `PetscObjectQuery()`
 M*/
 #define PetscObjectComposedDataGetReal(obj,id,data,flag)                            \
   (((obj)->realcomposedstate ? (data = (obj)->realcomposeddata[id],flag = (PetscBool)((obj)->realcomposedstate[id] == (obj)->state)) : (flag = PETSC_FALSE)),0)
 
 /*MC
-   PetscObjectComposedDataSetRealstar - attach real array data to a PetscObject
+   PetscObjectComposedDataSetRealstar - attach real array data to a `PetscObject` that may be retrieved with `PetscObjectComposedDataGetRealstar()`
 
    Synopsis:
    #include "petsc/private/petscimpl.h"
@@ -682,19 +719,23 @@ M*/
 .  id - the identifier for the data
 -  data - the data to  be attached
 
-   Notes
-   The data identifier can best be determined through a call to
-   PetscObjectComposedDataRegister()
+   Notes:
+   The data identifier can be determined through a call to `PetscObjectComposedDataRegister()`
+
+   The length of the array accessed must be known, it is not available through this API.
 
    Level: developer
+
+.seealso: `PetscObjectComposedDataSetInt()`, `PetscObjectComposedDataSetReal()`, `PetscObjectComposedDataGetReal()`, `PetscObjectComposedDataSetIntstar()`,
+          `PetscObjectComposedDataSetIntstar()`, `PetscObjectComposedDataGetInt()`, `PetscObject`,
+          `PetscObjectCompose()`,  `PetscObjectQuery()`, `PetscObjectComposedDataGetRealstar()`
 M*/
 #define PetscObjectComposedDataSetRealstar(obj,id,data)                                           \
   ((((obj)->realstar_idmax < PetscObjectComposedDataMax) && PetscObjectComposedDataIncreaseRealstar(obj)) ||  \
    ((obj)->realstarcomposeddata[id] = data, (obj)->realstarcomposedstate[id] = (obj)->state, 0))
 
 /*MC
-   PetscObjectComposedDataGetRealstar - retrieve real array data
-   attached to an object
+   PetscObjectComposedDataGetRealstar - retrieve real array data attached to an object with `PetscObjectComposedDataSetRealstar()`
 
    Synopsis:
    #include "petsc/private/petscimpl.h"
@@ -708,17 +749,24 @@ M*/
 
    Output parameters:
 +  data - the data to be retrieved
--  flag - PETSC_TRUE if the data item exists and is valid, PETSC_FALSE otherwise
+-  flag - `PETSC_TRUE` if the data item exists and is valid, `PETSC_FALSE` otherwise
 
+   Notes:
    The 'data' and 'flag' variables are inlined, so they are not pointers.
 
+   The length of the array accessed must be known, it is not available through this API.
+
    Level: developer
+
+.seealso: `PetscObjectComposedDataSetInt()`, `PetscObjectComposedDataSetReal()`, `PetscObjectComposedDataGetReal()`, `PetscObjectComposedDataSetIntstar()`,
+          `PetscObjectComposedDataSetIntstar()`, `PetscObjectComposedDataGetInt()`, `PetscObject`,
+          `PetscObjectCompose()`,  `PetscObjectQuery()`, `PetscObjectComposedDataSetRealstar()`
 M*/
 #define PetscObjectComposedDataGetRealstar(obj,id,data,flag)                                \
   (((obj)->realstarcomposedstate ? (data = (obj)->realstarcomposeddata[id],flag = (PetscBool)((obj)->realstarcomposedstate[id] == (obj)->state)) : (flag = PETSC_FALSE)),0)
 
 /*MC
-   PetscObjectComposedDataSetScalar - attach scalar data to a PetscObject
+   PetscObjectComposedDataSetScalar - attach scalar data to a PetscObject that may be retrieved with `PetscObjectComposedDataGetScalar()`
 
    Synopsis:
    #include "petsc/private/petscimpl.h"
@@ -731,11 +779,14 @@ M*/
 .  id - the identifier for the data
 -  data - the data to  be attached
 
-   Notes
-   The data identifier can best be determined through a call to
-   PetscObjectComposedDataRegister()
+   Note:
+   The data identifier can be determined through a call to `PetscObjectComposedDataRegister()`
 
    Level: developer
+
+.seealso: `PetscObjectComposedDataSetInt()`, `PetscObjectComposedDataSetReal()`, `PetscObjectComposedDataGetReal()`, `PetscObjectComposedDataSetIntstar()`,
+          `PetscObjectComposedDataSetIntstar()`, `PetscObjectComposedDataGetInt()`, `PetscObject`,
+          `PetscObjectCompose()`,  `PetscObjectQuery()`, `PetscObjectComposedDataSetRealstar()`, `PetscObjectComposedDataGetScalar()`
 M*/
 #if defined(PETSC_USE_COMPLEX)
 #define PetscObjectComposedDataSetScalar(obj,id,data)                                        \
@@ -746,7 +797,7 @@ M*/
         PetscObjectComposedDataSetReal(obj,id,data)
 #endif
 /*MC
-   PetscObjectComposedDataGetScalar - retrieve scalar data attached to an object
+   PetscObjectComposedDataGetScalar - retrieve scalar data attached to an object that was set with `PetscObjectComposedDataSetScalar()`
 
    Synopsis:
    #include "petsc/private/petscimpl.h"
@@ -760,11 +811,16 @@ M*/
 
    Output parameters:
 +  data - the data to be retrieved
--  flag - PETSC_TRUE if the data item exists and is valid, PETSC_FALSE otherwise
+-  flag - `PETSC_TRUE` if the data item exists and is valid, `PETSC_FALSE` otherwise
 
+   Note:
    The 'data' and 'flag' variables are inlined, so they are not pointers.
 
    Level: developer
+
+.seealso: `PetscObjectComposedDataSetInt()`, `PetscObjectComposedDataSetReal()`, `PetscObjectComposedDataGetReal()`, `PetscObjectComposedDataSetIntstar()`,
+          `PetscObjectComposedDataSetIntstar()`, `PetscObjectComposedDataGetInt()`, `PetscObject`,
+          `PetscObjectCompose()`,  `PetscObjectQuery()`, `PetscObjectComposedDataSetRealstar()`, `PetscObjectComposedDataSetScalar()`
 M*/
 #if defined(PETSC_USE_COMPLEX)
 #define PetscObjectComposedDataGetScalar(obj,id,data,flag)                              \
@@ -775,7 +831,7 @@ M*/
 #endif
 
 /*MC
-   PetscObjectComposedDataSetScalarstar - attach scalar array data to a PetscObject
+   PetscObjectComposedDataSetScalarstar - attach scalar array data to a `PetscObject` that may be retrieved with `PetscObjectComposedDataSetScalarstar()`
 
    Synopsis:
    #include "petsc/private/petscimpl.h"
@@ -788,11 +844,16 @@ M*/
 .  id - the identifier for the data
 -  data - the data to  be attached
 
-   Notes
-   The data identifier can best be determined through a call to
-   PetscObjectComposedDataRegister()
+   Notes:
+   The data identifier can be determined through a call to `PetscObjectComposedDataRegister()`
+
+   The length of the array accessed must be known, it is not available through this API.
 
    Level: developer
+
+.seealso: `PetscObjectComposedDataSetInt()`, `PetscObjectComposedDataSetReal()`, `PetscObjectComposedDataGetReal()`, `PetscObjectComposedDataSetIntstar()`,
+          `PetscObjectComposedDataSetIntstar()`, `PetscObjectComposedDataGetInt()`, `PetscObject`,
+          `PetscObjectCompose()`,  `PetscObjectQuery()`, `PetscObjectComposedDataSetRealstar()`, `PetscObjectComposedDataGetScalarstar()`
 M*/
 #if defined(PETSC_USE_COMPLEX)
 #define PetscObjectComposedDataSetScalarstar(obj,id,data)                                             \
@@ -803,7 +864,7 @@ M*/
         PetscObjectComposedDataSetRealstar(obj,id,data)
 #endif
 /*MC
-   PetscObjectComposedDataGetScalarstar - retrieve scalar array data
+   PetscObjectComposedDataGetScalarstar - retrieve scalar array data set with `PetscObjectComposedDataSetScalarstar()`
    attached to an object
 
    Synopsis:
@@ -818,11 +879,18 @@ M*/
 
    Output parameters:
 +  data - the data to be retrieved
--  flag - PETSC_TRUE if the data item exists and is valid, PETSC_FALSE otherwise
+-  flag - `PETSC_TRUE` if the data item exists and is valid, `PETSC_FALSE` otherwise
 
+   Notes:
    The 'data' and 'flag' variables are inlined, so they are not pointers.
 
+   The length of the array accessed must be known, it is not available through this API.
+
    Level: developer
+
+.seealso: `PetscObjectComposedDataSetInt()`, `PetscObjectComposedDataSetReal()`, `PetscObjectComposedDataGetReal()`, `PetscObjectComposedDataSetIntstar()`,
+          `PetscObjectComposedDataSetIntstar()`, `PetscObjectComposedDataGetInt()`, `PetscObject`,
+          `PetscObjectCompose()`,  `PetscObjectQuery()`, `PetscObjectComposedDataSetRealstar()`, `PetscObjectComposedDataSetScalarstar()`
 M*/
 #if defined(PETSC_USE_COMPLEX)
 #define PetscObjectComposedDataGetScalarstar(obj,id,data,flag)                                 \

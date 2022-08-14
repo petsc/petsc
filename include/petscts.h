@@ -20,7 +20,7 @@ S*/
 typedef struct _p_TS* TS;
 
 /*J
-    TSType - String with the name of a PETSc TS method.
+    TSType - String with the name of a PETSc `TS` method.
 
    Level: beginner
 
@@ -52,7 +52,7 @@ typedef const char* TSType;
 #define TSIRK             "irk"
 
 /*E
-    TSProblemType - Determines the type of problem this TS object is to be used to solve
+    TSProblemType - Determines the type of problem this `TS` object is to be used to solve
 
    Level: beginner
 
@@ -61,7 +61,7 @@ E*/
 typedef enum {TS_LINEAR,TS_NONLINEAR} TSProblemType;
 
 /*E
-   TSEquationType - type of TS problem that is solved
+   TSEquationType - type of `TS` problem that is solved
 
    Level: beginner
 
@@ -69,9 +69,9 @@ typedef enum {TS_LINEAR,TS_NONLINEAR} TSProblemType;
     this must match petsc/finclude/petscts.h
 
    Supported types are:
-     TS_EQ_UNSPECIFIED (default)
-     TS_EQ_EXPLICIT {ODE and DAE index 1, 2, 3, HI}: F(t,U,U_t) := M(t) U_t - G(U,t) = 0
-     TS_EQ_IMPLICIT {ODE and DAE index 1, 2, 3, HI}: F(t,U,U_t) = 0
+     `TS_EQ_UNSPECIFIED` (default)
+     `TS_EQ_EXPLICIT` {ODE and DAE index 1, 2, 3, HI}: F(t,U,U_t) := M(t) U_t - G(U,t) = 0
+     `TS_EQ_IMPLICIT` {ODE and DAE index 1, 2, 3, HI}: F(t,U,U_t) = 0
 
 .seealso: `TSGetEquationType()`, `TSSetEquationType()`
 E*/
@@ -93,7 +93,7 @@ typedef enum {
 PETSC_EXTERN const char *const*TSEquationTypes;
 
 /*E
-   TSConvergedReason - reason a TS method has converged or not
+   TSConvergedReason - reason a `TS` method has converged or not
 
    Level: beginner
 
@@ -120,7 +120,7 @@ typedef enum {
 PETSC_EXTERN const char *const*TSConvergedReasons;
 
 /*MC
-   TS_CONVERGED_ITERATING - this only occurs if TSGetConvergedReason() is called during the TSSolve()
+   TS_CONVERGED_ITERATING - this only occurs if `TSGetConvergedReason()` is called during the `TSSolve()`
 
    Level: beginner
 
@@ -160,7 +160,7 @@ M*/
 M*/
 
 /*MC
-   TS_CONVERGED_PSEUDO_FRTOL - stops when function norm decreased by a set amount, used only for TSPSEUDO
+   TS_CONVERGED_PSEUDO_FRTOL - stops when function norm decreased by a set amount, used only for `TSPSEUDO`
 
    Level: beginner
 
@@ -171,7 +171,7 @@ M*/
 M*/
 
 /*MC
-   TS_CONVERGED_PSEUDO_FATOL - stops when function norm decreases below a set amount, used only for TSPSEUDO
+   TS_CONVERGED_PSEUDO_FATOL - stops when function norm decreases below a set amount, used only for `TSPSEUDO`
 
    Level: beginner
 
@@ -211,9 +211,9 @@ M*/
    Developer Notes:
     this must match petsc/finclude/petscts.h
 
-$  TS_EXACTFINALTIME_STEPOVER    - Don't do anything if final time is exceeded
-$  TS_EXACTFINALTIME_INTERPOLATE - Interpolate back to final time
-$  TS_EXACTFINALTIME_MATCHSTEP - Adapt final time step to match the final time
+$  `TS_EXACTFINALTIME_STEPOVER`    - Don't do anything if final time is exceeded
+$  `TS_EXACTFINALTIME_INTERPOLATE` - Interpolate back to final time
+$  `TS_EXACTFINALTIME_MATCHSTEP` - Adapt final time step to match the final time
 
 .seealso: `TSGetConvergedReason()`, `TSSetExactFinalTime()`, `TSGetExactFinalTime()`
 
@@ -297,7 +297,7 @@ S*/
 typedef struct _p_TSTrajectory* TSTrajectory;
 
 /*J
-    TSTrajectorySetType - String with the name of a PETSc TS trajectory storage method
+    TSTrajectorySetType - String with the name of a PETSc `TS` trajectory storage method
 
    Level: intermediate
 
@@ -678,7 +678,7 @@ PETSC_EXTERN PetscErrorCode TSSetEventTolerances(TS,PetscReal,PetscReal[]);
 PETSC_EXTERN PetscErrorCode TSGetNumEvents(TS,PetscInt*);
 
 /*J
-   TSSSPType - string with the name of TSSSP scheme.
+   TSSSPType - string with the name of `TSSSP` scheme.
 
    Level: beginner
 
@@ -707,7 +707,7 @@ S*/
 typedef struct _p_TSAdapt *TSAdapt;
 
 /*J
-    TSAdaptType - String with the name of TSAdapt scheme.
+    TSAdaptType - String with the name of `TSAdapt` scheme.
 
    Level: beginner
 
@@ -760,19 +760,19 @@ PETSC_EXTERN PetscErrorCode TSAdaptDSPSetFilter(TSAdapt,const char *);
 PETSC_EXTERN PetscErrorCode TSAdaptDSPSetPID(TSAdapt,PetscReal,PetscReal,PetscReal);
 
 /*S
-   TSGLLEAdapt - Abstract object that manages time-step adaptivity
+   TSGLLEAdapt - Abstract object that manages time-step adaptivity for `TSGLLE`
 
    Level: beginner
 
    Developer Notes:
-   This functionality should be replaced by the TSAdapt.
+   This functionality should be replaced by the `TSAdapt`.
 
 .seealso: `TSGLLE`, `TSGLLEAdaptCreate()`, `TSGLLEAdaptType`
 S*/
 typedef struct _p_TSGLLEAdapt *TSGLLEAdapt;
 
 /*J
-    TSGLLEAdaptType - String with the name of TSGLLEAdapt scheme
+    TSGLLEAdaptType - String with the name of `TSGLLEAdapt` scheme
 
    Level: beginner
 
@@ -795,7 +795,7 @@ PETSC_EXTERN PetscErrorCode TSGLLEAdaptSetFromOptions(PetscOptionItems*,TSGLLEAd
 PETSC_EXTERN PetscErrorCode TSGLLEAdaptDestroy(TSGLLEAdapt*);
 
 /*J
-    TSGLLEAcceptType - String with the name of TSGLLEAccept scheme
+    TSGLLEAcceptType - String with the name of `TSGLLEAccept` scheme
 
    Level: beginner
 
@@ -1029,7 +1029,8 @@ PETSC_EXTERN PetscErrorCode TSBasicSymplecticFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode TSBasicSymplecticRegisterDestroy(void);
 
 /*J
-  TSDiscreteGradient - The Discrete Gradient integrator is a timestepper for hamiltonian systems designed to conserve the first integral (energy), but also has the property for some systems of monotonicity in a functional.
+  TSDiscreteGradient - The Discrete Gradient integrator is a timestepper for Hamiltonian systems designed to conserve the first integral (energy),
+  but also has the property for some systems of monotonicity in a functional.
 
   Level: beginner
 

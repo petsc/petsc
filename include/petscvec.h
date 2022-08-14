@@ -33,7 +33,7 @@ E*/
 typedef enum {SCATTER_FORWARD=0, SCATTER_REVERSE=1, SCATTER_FORWARD_LOCAL=2, SCATTER_REVERSE_LOCAL=3, SCATTER_LOCAL=2} ScatterMode;
 
 /*MC
-    SCATTER_FORWARD - Scatters the values as dictated by the VecScatterCreate() call
+    SCATTER_FORWARD - Scatters the values as dictated by the `VecScatterCreate()` call
 
     Level: beginner
 
@@ -44,7 +44,7 @@ M*/
 
 /*MC
     SCATTER_REVERSE - Moves the values in the opposite direction then the directions indicated in
-         in the VecScatterCreate()
+         in the `VecScatterCreate()`
 
     Level: beginner
 
@@ -54,7 +54,7 @@ M*/
 M*/
 
 /*MC
-    SCATTER_FORWARD_LOCAL - Scatters the values as dictated by the VecScatterCreate() call except NO parallel communication
+    SCATTER_FORWARD_LOCAL - Scatters the values as dictated by the `VecScatterCreate()` call except NO parallel communication
        is done. Any variables that have be moved between processes are ignored
 
     Level: developer
@@ -66,7 +66,7 @@ M*/
 
 /*MC
     SCATTER_REVERSE_LOCAL - Moves the values in the opposite direction then the directions indicated in
-         in the VecScatterCreate()  except NO parallel communication
+         in the `VecScatterCreate()`  except NO parallel communication
        is done. Any variables that have be moved between processes are ignored
 
     Level: developer
@@ -185,7 +185,7 @@ M*/
 M*/
 
 /*MC
-     NORM_FROBENIUS - ||A|| = sqrt(sum_ij |A_ij|^2), same as NORM_2 for vectors
+     NORM_FROBENIUS - ||A|| = sqrt(sum_ij |A_ij|^2), same as `NORM_2` for vectors
 
    Level: beginner
 
@@ -215,14 +215,14 @@ M*/
 M*/
 
 /*MC
-     NORM_MAX - see NORM_INFINITY
+     NORM_MAX - see `NORM_INFINITY`
 
    Level: beginner
 
 M*/
 
 /*E
-    ReductionType - determines what type of column reduction (one that is not a type of norm defined in NormType) to compute
+    ReductionType - determines what type of column reduction (one that is not a type of norm defined in `NormType`) to compute
 
     Level: beginner
 
@@ -360,16 +360,16 @@ PETSC_EXTERN PetscErrorCode VecSetValuesCOO(Vec,const PetscScalar[],InsertMode);
 +  v - the vector
 .  row - the row location of the entry
 .  value - the value to insert
--  mode - either INSERT_VALUES or ADD_VALUES
+-  mode - either `INSERT_VALUES` or `ADD_VALUES`
 
    Notes:
-   For efficiency one should use VecSetValues() and set several or
+   For efficiency one should use `VecSetValues()` and set several or
    many values simultaneously if possible.
 
-   These values may be cached, so VecAssemblyBegin() and VecAssemblyEnd()
-   MUST be called after all calls to VecSetValue() have been completed.
+   These values may be cached, so `VecAssemblyBegin()` and `VecAssemblyEnd()`
+   MUST be called after all calls to `VecSetValue()` have been completed.
 
-   VecSetValue() uses 0-based indices in Fortran as well as in C.
+   `VecSetValue()` uses 0-based indices in Fortran as well as in C.
 
    Level: beginner
 
@@ -492,16 +492,16 @@ PETSC_EXTERN PetscErrorCode VecViennaCLRestoreCLMem(Vec);
 +  v - the vector
 .  row - the row location of the entry
 .  value - the value to insert
--  mode - either INSERT_VALUES or ADD_VALUES
+-  mode - either `INSERT_VALUES` or `ADD_VALUES`
 
    Notes:
-   For efficiency one should use VecSetValues() and set several or
+   For efficiency one should use `VecSetValues()` and set several or
    many values simultaneously if possible.
 
-   These values may be cached, so VecAssemblyBegin() and VecAssemblyEnd()
-   MUST be called after all calls to VecSetValues() have been completed.
+   These values may be cached, so `VecAssemblyBegin()` and `VecAssemblyEnd()`
+   MUST be called after all calls to `VecSetValues()` have been completed.
 
-   VecSetValues() uses 0-based indices in Fortran as well as in C.
+   `VecSetValues()` uses 0-based indices in Fortran as well as in C.
 
    Level: beginner
 
@@ -781,11 +781,15 @@ PETSC_EXTERN PetscErrorCode PetscSectionVecNorm(PetscSection, PetscSection, Vec,
               the values in an error indicator metric.
 
   Level: advanced
+
+  Developer Note:
+  Why not use a `DMLabel` or similar object
+
 S*/
 typedef struct _p_VecTagger *VecTagger;
 
 /*J
-  VecTaggerType - String with the name of a VecTagger type
+  VecTaggerType - String with the name of a `VecTagger` type
 
   Level: advanced
 J*/
@@ -842,9 +846,11 @@ PETSC_EXTERN PetscErrorCode VecTaggerCDFSetBox(VecTagger,VecTaggerBox *);
 PETSC_EXTERN PetscErrorCode VecTaggerCDFGetBox(VecTagger,const VecTaggerBox **);
 
 /*E
-  VecTaggerCDFMethod - Determines what method is used to compute absolute values from cumulative distribution values (e.g., what value is the preimage of .95 in the cdf).  Relevant only in parallel: in serial it is directly computed.
+  VecTaggerCDFMethod - Determines what method is used to compute absolute values from cumulative distribution values (e.g., what value is the preimage of .95 in the cdf).
+  Relevant only in parallel: in serial it is directly computed.
 
   Level: advanced
+
 .seealso: `VecTaggerCDFSetMethod()`, `VecTaggerCDFMethods`
 E*/
 typedef enum {VECTAGGER_CDF_GATHER,VECTAGGER_CDF_ITERATIVE,VECTAGGER_CDF_NUM_METHODS} VecTaggerCDFMethod;

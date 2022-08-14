@@ -889,8 +889,8 @@ PetscErrorCode DMNetworkGetSharedVertices(DM dm,PetscInt *nsv,const PetscInt **s
    Output Parameters:
 .  key - an integer key that defines the component
 
-   Notes
-   This routine should be called by all processors before calling DMNetworkLayoutSetup().
+   Note:
+   This routine should be called by all processors before calling `DMNetworkLayoutSetup()`.
 
    Level: beginner
 

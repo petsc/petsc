@@ -26,7 +26,7 @@
 
    Level: advanced
 
-   seealso: PetscObjectStateIncrease(), PetscObjectStateSet()
+.seealso: `PetscObjectStateIncrease()`, `PetscObjectStateSet()`
 
 @*/
 PetscErrorCode PetscObjectStateGet(PetscObject obj,PetscObjectState *state)
@@ -58,7 +58,7 @@ PetscErrorCode PetscObjectStateGet(PetscObject obj,PetscObjectState *state)
 
    Level: advanced
 
-   seealso: PetscObjectStateGet(),PetscObjectStateIncrease()
+.seealso: `PetscObjectStateGet()`, `PetscObjectStateIncrease()`
 
 @*/
 PetscErrorCode PetscObjectStateSet(PetscObject obj,PetscObjectState state)
@@ -82,11 +82,14 @@ PetscInt PetscObjectComposedDataMax = 10;
    Level: developer
 
    Notes:
-    You must keep this value (for example in a global variable) in order to attach the data to an object or
-          access in an object.
+   You must keep this value (for example in a global variable) in order to attach the data to an object or access in an object.
 
-   seealso: PetscObjectComposedDataSetInt()
+   `PetscObjectCompose()` and  `PetscObjectQuery()` provide a way to attach any data to an object
 
+.seealso: `PetscObjectComposedDataSetInt()`, `PetscObjectComposedDataSetReal()`, `PetscObjectComposedDataGetReal()`, `PetscObjectComposedDataSetIntstar()`,
+          `PetscObjectComposedDataSetIntstar()`, `PetscObjectComposedDataGetInt()`, `PetscObject`,
+          `PetscObjectCompose()`,  `PetscObjectQuery()`, `PetscObjectComposedDataSetRealstar()`, `PetscObjectComposedDataGetScalarstar()`,
+          `PetscObjectComposedDataSetScalarstar()`, `PetscObjectComposedDataSetScalarstar()`
 @*/
 PetscErrorCode PetscObjectComposedDataRegister(PetscInt *id)
 {

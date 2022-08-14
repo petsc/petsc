@@ -133,11 +133,12 @@ PETSC_EXTERN PetscErrorCode DMDAVecRestoreArrayDOFWrite(DM,Vec,void *);
 PETSC_EXTERN PetscErrorCode DMDACreatePatchIS(DM,MatStencil*,MatStencil*,IS*,PetscBool);
 
 /*MC
-      DMDACoor2d - Structure for holding 2d (x and y) coordinates.
+      DMDACoor2d - Structure for holding 2d (x and y) coordinates when working with `DMDA`
 
     Level: intermediate
 
     Synopsis:
+.vb
       DMDACoor2d **coors;
       Vec      vcoors;
       DM       cda;
@@ -153,17 +154,19 @@ PETSC_EXTERN PetscErrorCode DMDACreatePatchIS(DM,MatStencil*,MatStencil*,IS*,Pet
         }
       }
       DMDAVecRestoreArray(dac,vcoors,&coors);
+.ve
 
-.seealso: `DMDACoor3d`, `DMGetCoordinateDM()`, `DMGetCoordinates()`
+.seealso: `DMDACoor3d`, `DMDAVecRestoreArray()`, `DMDAVecGetArray()`, `DMGetCoordinateDM()`, `DMGetCoordinates()`
 M*/
 typedef struct {PetscScalar x,y;} DMDACoor2d;
 
 /*MC
-      DMDACoor3d - Structure for holding 3d (x, y and z) coordinates.
+      DMDACoor3d - Structure for holding 3d (x, y and z) coordinates  coordinates when working with `DMDA`
 
     Level: intermediate
 
     Synopsis:
+.vb
       DMDACoor3d ***coors;
       Vec      vcoors;
       DM       cda;
@@ -181,8 +184,9 @@ typedef struct {PetscScalar x,y;} DMDACoor2d;
         }
       }
       DMDAVecRestoreArray(dac,vcoors,&coors);
+.ve
 
-.seealso: `DMDACoor2d`, `DMGetCoordinateDM()`, `DMGetCoordinates()`
+.seealso: `DMDACoor2d`, `DMDAVecRestoreArray()`, `DMDAVecGetArray()`,`DMGetCoordinateDM()`, `DMGetCoordinates()`
 M*/
 typedef struct {PetscScalar x,y,z;} DMDACoor3d;
 

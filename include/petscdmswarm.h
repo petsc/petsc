@@ -7,7 +7,7 @@
 /* SUBMANSEC = DMSwarm */
 
 /*E
-   DMSwarmType - Defines the type of swarm
+   DMSwarmType - Defines the type of `DMSWARM`
 
    DMSWARM_BASIC defines N entries of varied data-types which the user may register.
 
