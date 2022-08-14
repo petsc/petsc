@@ -359,7 +359,7 @@ PetscErrorCode DMPlexCreateCGNS_Internal(MPI_Comm comm, PetscInt cgid, PetscBool
 }
 
 // Permute plex closure ordering to CGNS
-static PetscErrorCode DMPlexCGNSGetPermutation_Internal(DMPolytopeType cell_type, PetscInt closure_size, ElementType_t *element_type, const int **perm)
+static PetscErrorCode DMPlexCGNSGetPermutation_Internal(DMPolytopeType cell_type, PetscInt closure_size, CGNS_ENUMT(ElementType_t) *element_type, const int **perm)
 {
   // https://cgns.github.io/CGNS_docs_current/sids/conv.html#unst_example
   static const int bar_2[2] = {0, 1};
@@ -649,7 +649,7 @@ PetscErrorCode DMView_PlexCGNS(DM dm, PetscViewer viewer)
     int section;
     cgsize_t e_owned, e_global, e_start, *conn = NULL;
     const int *perm;
-    ElementType_t element_type= CGNS_ENUMV(ElementTypeNull);
+    CGNS_ENUMT(ElementType_t) element_type= CGNS_ENUMV(ElementTypeNull);
     {
       PetscCall(PetscMalloc1(nEnd - nStart, &x));
       for (PetscInt d=0; d<coord_dim; d++) {
