@@ -6,7 +6,7 @@ SOURCEH  =
 DIRS     = regular sbr tobox alfeld bl 1d
 LIBBASE  = libpetscdm
 MANSEC   = DM
-SUBMANSEC= DMPLEX
+SUBMANSEC= DMPlex
 LOCDIR   = src/dm/impls/plex/transform/impls
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

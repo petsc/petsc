@@ -317,20 +317,15 @@ PetscErrorCode DMSNESSetFunction(DM dm,PetscErrorCode (*f)(SNES,Vec,Vec,void*),v
 }
 
 /*@C
-   DMSNESSetFunctionContextDestroy - set SNES residual evaluation context destroy function
+   DMSNESSetFunctionContextDestroy - set `SNES` residual evaluation context destroy function
 
    Not Collective
 
    Input Parameters:
-+  dm - DM to be used with SNES
-.  f - residual evaluation context destroy function
++  dm - `DM` to be used with `SNES`
+-  f - residual evaluation context destroy function
 
    Level: advanced
-
-   Note:
-   SNESSetFunctionContextDestroy() is normally used, but it calls this function internally because the user context is actually
-   associated with the DM.  This makes the interface consistent regardless of whether the user interacts with a DM or
-   not. If DM took a more central role at some later date, this could become the primary method of setting the residual.
 
 .seealso: `DMSNESSetFunction()`, `SNESSetFunction()`
 @*/
@@ -583,22 +578,17 @@ PetscErrorCode DMSNESSetJacobian(DM dm,PetscErrorCode (*J)(SNES,Vec,Mat,Mat,void
 }
 
 /*@C
-   DMSNESSetJacobianContextDestroy - set SNES Jacobian evaluation context destroy function
+   DMSNESSetJacobianContextDestroy - set `SNES` Jacobian evaluation context destroy function
 
    Not Collective
 
    Input Parameters:
-+  dm - DM to be used with SNES
-.  f - Jacobian evaluation contex destroy function
++  dm - `DM` to be used with `SNES`
+-  f - Jacobian evaluation contex destroy function
 
    Level: advanced
 
-   Note:
-   SNESSetJacobianContextDestroy() is normally used, but it calls this function internally because the user context is actually
-   associated with the DM.  This makes the interface consistent regardless of whether the user interacts with a DM or
-   not. If DM took a more central role at some later date, this could become the primary method of setting the Jacobian.
-
-.seealso: `DMSNESSetJacobian()`, `SNESSetJacobianContextDestroyFunction()`
+.seealso: `DMSNESSetJacobian()`
 @*/
 PetscErrorCode DMSNESSetJacobianContextDestroy(DM dm,PetscErrorCode (*f)(void*))
 {

@@ -26,8 +26,8 @@ static PetscErrorCode FormInitialSolution(TS,Vec,void*);
 int main(int argc, char **argv)
 {
   TS                ts;
-  Vec               x; /*solution vector*/
-  Mat               A; /*Jacobian*/
+  Vec               x; /* solution vector */
+  Mat               A; /* Jacobian */
   PetscInt          steps,mx;
   PetscReal         ftime;
   AppCtx            user;       /* user-defined work context */

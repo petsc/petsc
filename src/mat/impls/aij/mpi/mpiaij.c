@@ -7871,28 +7871,6 @@ PETSC_INTERN PetscErrorCode MatCreateGraph_Simple_AIJ(Mat Amat, PetscBool symmet
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
-/*@C
-   MatFilter_AIJ - filter values with small absolute values
-     With vfilter < 0 does nothing so should not be called.
-
-   Collective on Mat
-
-   Input Parameters:
-+   Gmat - the graph
-.   vfilter - threshold parameter [0,1)
-
- Output Parameter:
- .  filteredG - output filtered scalar graph
-
-   Level: developer
-
-   Notes:
-    This is called before graph coarsers are called.
-    This could go into Mat, move 'symm' to GAMG
-
-.seealso: `PCGAMGSetThreshold()`
-@*/
 PETSC_INTERN PetscErrorCode MatFilter_AIJ(Mat Gmat,PetscReal vfilter, Mat *filteredG)
 {
   PetscInt          Istart,Iend,ncols,nnz0,nnz1, NN, MM, nloc;

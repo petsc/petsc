@@ -286,18 +286,18 @@ PetscErrorCode  VecStrideMin(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
    VecStrideSum - Computes the sum of subvector of a vector defined
    by a starting point and a stride.
 
-   Collective on Vec
+   Collective on v
 
    Input Parameters:
 +  v - the vector
-.  start - starting point of the subvector (defined by a stride)
+-  start - starting point of the subvector (defined by a stride)
 
    Output Parameter:
 .  sum - the sum
 
    Notes:
-   One must call VecSetBlockSize() before this routine to set the stride
-   information, or use a vector created from a multicomponent DMDA.
+   One must call `VecSetBlockSize()` before this routine to set the stride
+   information, or use a vector created from a multicomponent `DMDA`.
 
    If x is the array representing the vector x then this computes the sum
    of the array (x[start],x[start+stride],x[start+2*stride], ....)
@@ -565,20 +565,19 @@ PetscErrorCode  VecStrideMinAll(Vec v,PetscInt idex[],PetscReal nrm[])
 }
 
 /*@
-   VecStrideSumAll - Computes the sums of subvectors of a vector defined
-   by a starting point and a stride.
+   VecStrideSumAll - Computes the sums of subvectors of a vector defined by a stride.
 
    Collective on Vec
 
-   Input Parameters:
-+  v - the vector
+   Input Parameter:
+.  v - the vector
 
    Output Parameter:
 .  sums - the sums
 
    Notes:
-   One must call VecSetBlockSize() before this routine to set the stride
-   information, or use a vector created from a multicomponent DMDA.
+   One must call `VecSetBlockSize()` before this routine to set the stride
+   information, or use a vector created from a multicomponent `DMDA`.
 
    If x is the array representing the vector x then this computes the sum
    of the array (x[start],x[start+stride],x[start+2*stride], ....) for each start < stride

@@ -7,7 +7,7 @@ SOURCEH  =
 DIRS     = adaptors cgns generators transform tests tutorials
 LIBBASE  = libpetscdm
 MANSEC   = DM
-SUBMANSEC= DMPLEX
+SUBMANSEC= DMPlex
 LOCDIR   = src/dm/impls/plex/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

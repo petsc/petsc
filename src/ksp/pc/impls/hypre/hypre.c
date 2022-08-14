@@ -2945,21 +2945,21 @@ PetscErrorCode PCSetUp_SMG(PC pc)
 }
 
 /*MC
-     PCSMG - the hypre SMG multigrid solver
+     PCSMG - the hypre (structured grid) SMG multigrid solver
 
    Level: advanced
 
    Options Database:
-+ -pc_smg_its <its> number of iterations of SMG to use as preconditioner
-. -pc_smg_num_pre_relax <steps> number of smoothing steps before coarse grid
-. -pc_smg_num_post_relax <steps> number of smoothing steps after coarse grid
-. -pc_smg_tol <tol> tolerance of SMG
++ -pc_smg_its <its> - number of iterations of SMG to use as preconditioner
+. -pc_smg_num_pre_relax <steps> - number of smoothing steps before coarse grid
+. -pc_smg_num_post_relax <steps> - number of smoothing steps after coarse grid
+- -pc_smg_tol <tol> - tolerance of SMG
 
    Notes:
-    This is for CELL-centered descretizations
+   This is for CELL-centered descretizations
 
-           This must be used with the MATHYPRESTRUCT matrix type.
-           This is less general than in hypre, it supports only one block per process defined by a PETSc DMDA.
+  This must be used with the `MATHYPRESTRUCT` `MatType`.
+  This support is less general than in hypre, it supports only one block per process defined by a PETSc `DMDA`.
 
 .seealso:  PCMG, MATHYPRESTRUCT, PCPFMG
 M*/

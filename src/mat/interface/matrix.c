@@ -11073,9 +11073,10 @@ PETSC_EXTERN PetscErrorCode MatCreateGraph(Mat A, PetscBool sym, PetscBool scale
    Input/Output Parameter:
 .  A - the Mat to filter in place
 
-   Level: advanced
+   Level: developer
 
-   Notes:
+   Note:
+   This is called before graph coarsers are called in GAMG
 
 .seealso: `MatCreate()`, `MatCreateGraph()`
 */

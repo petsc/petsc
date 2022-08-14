@@ -369,17 +369,17 @@ PetscErrorCode DMPlexNaturalToGlobalEnd(DM dm, Vec nv, Vec gv)
 }
 
 /*@
-  DMPlexCreateNaturalVector - Provide a Vec capable of holding the natural ordering and distribution.
+  DMPlexCreateNaturalVector - Provide a `Vec` capable of holding the natural ordering and distribution.
 
   Collective on dm
 
-  Input Parameters:
-+ dm - The distributed DMPlex
+  Input Parameter:
+. dm - The distributed `DMPlex`
 
-  Output Parameters:
-. nv - The natural Vec
+  Output Parameter:
+. nv - The natural `Vec`
 
-  Note: The user must call DMSetUseNatural(dm, PETSC_TRUE) before DMPlexDistribute().
+  Note: The user must call `DMSetUseNatural`(dm, PETSC_TRUE) before `DMPlexDistribute()`.
 
   Level: intermediate
 

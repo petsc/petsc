@@ -276,8 +276,9 @@ C Formatting
 
 #. Do not leave sections of commented-out code in the source files.
 
-#. Use classic block comments (``/* Comment */``) for multi-line comments, and ``//
-   Comment`` for single-line comments in source files.
+#. Use classic block comments (``/* There must be a space before the first word in the comment and a space at the end */``,
+   (``/*Do not do this*/``) for multi-line comments, and ``// Comment`` for single-line comments in source files. Use appropriate grammar and spelling
+   in the comments.
 
 #. All variables must be declared at the beginning of the code block (C89
    style), never mixed in with code. When variables are only used in a limited
@@ -627,6 +628,9 @@ see the documentation for ``doctext``.
 
 -  | ``/*S``
    | a formatted comment for a data type such as ``KSP``. Note that each of these needs to be listed in ``lib/petsc/conf/bfort-petsc.txt`` as a ``nativeptr``.
+
+-  | ``/*J``
+   | a formatted comment for a string type such as ``KSPType``.
 
 -  | ``/*MC``
    | a formatted comment of a CPP macro or enum value for documentation.
