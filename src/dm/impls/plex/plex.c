@@ -3665,9 +3665,7 @@ PetscErrorCode DMPlexGetTransitiveClosure_Internal(DM dm, PetscInt p, PetscInt o
   Note:
   If using internal storage (points is NULL on input), each call overwrites the last output.
 
-  Fortran Notes:
-  Since it returns an array, this routine is only available in Fortran 90, and you must include petsc.h90 in your code.
-
+  Fortran Note:
   The numPoints argument is not present in the Fortran 90 binding since it is internal to the array.
 
   Level: beginner
@@ -3698,11 +3696,6 @@ PetscErrorCode DMPlexGetTransitiveClosure(DM dm, PetscInt p, PetscBool useCone, 
 
   Note:
   If not using internal storage (points is not NULL on input), this call is unnecessary
-
-  Fortran Notes:
-  Since it returns an array, this routine is only available in Fortran 90, and you must include petsc.h90 in your code.
-
-  The numPoints argument is not present in the Fortran 90 binding since it is internal to the array.
 
   Level: beginner
 
