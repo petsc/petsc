@@ -273,6 +273,28 @@
       End Interface
 
       Interface
+        Subroutine VecGetValuesSectionF90(v,s,p,va,ierr)
+          import tVec,tPetscSection
+          PetscScalar, pointer :: va(:)
+          PetscErrorCode ierr
+          Vec     v
+          PetscSection s
+          PetscInt p
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine VecRestoreValuesSectionF90(v,s,p,va,ierr)
+          import tVec,tPetscSection
+          PetscScalar, pointer :: va(:)
+          PetscErrorCode ierr
+          Vec     v
+          PetscSection s
+          PetscInt p
+        End Subroutine
+      End Interface
+
+      Interface
         Subroutine VecSetValuesSectionF90(v,s,p,va,mode,ierr)
           import tVec,tPetscSection
           PetscScalar, pointer :: va(:)

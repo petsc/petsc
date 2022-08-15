@@ -1,0 +1,49 @@
+Vec Object: 1 MPI process
+  type: seq
+0.
+100.
+200.
+300.
+400.
+401.
+500.
+501.
+600.
+601.
+700.
+701.
+800.
+801.
+900.
+901.
+1000.
+1001.
+1100.
+1101.
+1200.
+1201.
+ Point            0  dof            1  
+ Point            1  dof            1  
+ Point            2  dof            1  
+ Point            3  dof            1  
+ Point            4  dof            2  
+ Point            5  dof            2  
+ Point            6  dof            2  
+ Point            7  dof            2  
+ Point            8  dof            2  
+ Point            9  dof            2  
+ Point           10  dof            2  
+ Point           11  dof            2  
+ Point           12  dof            2  
+ Point           13  dof            0  
+ Point           14  dof            0  
+ Point           15  dof            0  
+ Point           16  dof            0  
+ Point           17  dof            0  
+ Point           18  dof            0  
+ Point           19  dof            0  
+ Point           20  dof            0  
+ Point           21  dof            0  
+ Point           22  dof            0  
+ Point           23  dof            0  
+ Point           24  dof            0  
