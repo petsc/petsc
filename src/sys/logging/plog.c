@@ -109,6 +109,8 @@ char             petsc_tracespace[128]       = " ";
 PetscLogDouble   petsc_tracetime             = 0.0;
 static PetscBool PetscLogInitializeCalled = PETSC_FALSE;
 
+static PetscIntStack current_log_event_stack = NULL;
+
 PETSC_INTERN PetscErrorCode PetscLogInitialize(void)
 {
   int            stage;
@@ -118,6 +120,7 @@ PETSC_INTERN PetscErrorCode PetscLogInitialize(void)
   if (PetscLogInitializeCalled) PetscFunctionReturn(0);
   PetscLogInitializeCalled = PETSC_TRUE;
 
+  PetscCall(PetscIntStackCreate(&current_log_event_stack));
   PetscCall(PetscOptionsHasName(NULL,NULL, "-log_exclude_actions", &opt));
   if (opt) petsc_logActions = PETSC_FALSE;
   PetscCall(PetscOptionsHasName(NULL,NULL, "-log_exclude_objects", &opt));
@@ -154,6 +157,8 @@ PETSC_INTERN PetscErrorCode PetscLogFinalize(void)
   /* Resetting phase */
   PetscCall(PetscLogGetStageLog(&stageLog));
   PetscCall(PetscStageLogDestroy(stageLog));
+  PetscCall(PetscIntStackDestroy(current_log_event_stack));
+  current_log_event_stack = NULL;
 
   petsc_TotalFlops            = 0.0;
   petsc_numActions            = 0;
@@ -631,6 +636,7 @@ PetscErrorCode  PetscLogStageGetId(const char name[], PetscLogStage *stage)
 }
 
 /*------------------------------------------------ Event Functions --------------------------------------------------*/
+
 /*@C
   PetscLogEventRegister - Registers an event name for logging operations in an application code.
 
@@ -1139,6 +1145,55 @@ PetscErrorCode  PetscLogEventGetId(const char name[], PetscLogEvent *event)
   PetscFunctionBegin;
   PetscCall(PetscLogGetStageLog(&stageLog));
   PetscCall(PetscEventRegLogGetEvent(stageLog->eventLog, name, event));
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode PetscLogPushCurrentEvent_Internal(PetscLogEvent event)
+{
+  PetscFunctionBegin;
+  PetscCall(PetscIntStackPush(current_log_event_stack,event));
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode PetscLogPopCurrentEvent_Internal(void)
+{
+  PetscFunctionBegin;
+  PetscCall(PetscIntStackPop(current_log_event_stack,NULL));
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode PetscLogGetCurrentEvent_Internal(PetscLogEvent *event)
+{
+  PetscBool empty;
+
+  PetscFunctionBegin;
+  PetscValidIntPointer(event,1);
+  *event = PETSC_DECIDE;
+  PetscCall(PetscIntStackEmpty(current_log_event_stack,&empty));
+  if (!empty) PetscCall(PetscIntStackTop(current_log_event_stack,event));
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode PetscLogEventPause_Internal(PetscLogEvent event)
+{
+  PetscFunctionBegin;
+  if (event != PETSC_DECIDE) PetscCall(PetscLogEventEnd(event,NULL,NULL,NULL,NULL));
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode PetscLogEventResume_Internal(PetscLogEvent event)
+{
+  PetscStageLog     stageLog;
+  PetscEventPerfLog eventLog;
+  int               stage;
+
+  PetscFunctionBegin;
+  if (event == PETSC_DECIDE) PetscFunctionReturn(0);
+  PetscCall(PetscLogEventBegin(event,NULL,NULL,NULL,NULL));
+  PetscCall(PetscLogGetStageLog(&stageLog));
+  PetscCall(PetscStageLogGetCurrent(stageLog,&stage));
+  PetscCall(PetscStageLogGetEventPerfLog(stageLog,stage,&eventLog));
+  eventLog->eventInfo[event].count--;
   PetscFunctionReturn(0);
 }
 

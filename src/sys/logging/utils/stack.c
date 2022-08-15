@@ -22,6 +22,7 @@
 PetscErrorCode PetscIntStackDestroy(PetscIntStack stack)
 {
   PetscFunctionBegin;
+  PetscValidPointer(stack,1);
   PetscCall(PetscFree(stack->stack));
   PetscCall(PetscFree(stack));
   PetscFunctionReturn(0);
@@ -45,9 +46,9 @@ PetscErrorCode PetscIntStackDestroy(PetscIntStack stack)
 PetscErrorCode PetscIntStackEmpty(PetscIntStack stack, PetscBool  *empty)
 {
   PetscFunctionBegin;
+  PetscValidPointer(stack,1);
   PetscValidBoolPointer(empty,2);
-  if (stack->top == -1) *empty = PETSC_TRUE;
-  else *empty = PETSC_FALSE;
+  *empty = stack->top == -1 ? PETSC_TRUE : PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -69,6 +70,7 @@ PetscErrorCode PetscIntStackEmpty(PetscIntStack stack, PetscBool  *empty)
 PetscErrorCode PetscIntStackTop(PetscIntStack stack, int *top)
 {
   PetscFunctionBegin;
+  PetscValidPointer(stack,1);
   PetscValidIntPointer(top,2);
   *top = stack->stack[stack->top];
   PetscFunctionReturn(0);
@@ -89,17 +91,11 @@ PetscErrorCode PetscIntStackTop(PetscIntStack stack, int *top)
 @*/
 PetscErrorCode PetscIntStackPush(PetscIntStack stack, int item)
 {
-  int            *array;
-
   PetscFunctionBegin;
-  stack->top++;
-  if (stack->top >= stack->max) {
-    PetscCall(PetscMalloc1(stack->max*2, &array));
-    PetscCall(PetscArraycpy(array, stack->stack, stack->max));
-    PetscCall(PetscFree(stack->stack));
-
-    stack->stack = array;
-    stack->max  *= 2;
+  PetscValidPointer(stack,1);
+  if (++stack->top >= stack->max) {
+    stack->max *= 2;
+    PetscCall(PetscRealloc(stack->max*sizeof(*stack->stack),&stack->stack));
   }
   stack->stack[stack->top] = item;
   PetscFunctionReturn(0);
@@ -123,9 +119,13 @@ PetscErrorCode PetscIntStackPush(PetscIntStack stack, int item)
 PetscErrorCode PetscIntStackPop(PetscIntStack stack, int *item)
 {
   PetscFunctionBegin;
-  PetscValidPointer(item,2);
+  PetscValidPointer(stack,1);
   PetscCheck(stack->top != -1,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Stack is empty");
-  *item = stack->stack[stack->top--];
+  if (item) {
+    PetscValidIntPointer(item,2);
+    PetscCall(PetscIntStackTop(stack,item));
+  }
+  --stack->top;
   PetscFunctionReturn(0);
 }
 
@@ -143,16 +143,13 @@ PetscErrorCode PetscIntStackPop(PetscIntStack stack, int *item)
 @*/
 PetscErrorCode PetscIntStackCreate(PetscIntStack *stack)
 {
-  PetscIntStack  s;
-
   PetscFunctionBegin;
   PetscValidPointer(stack,1);
-  PetscCall(PetscNew(&s));
+  PetscCall(PetscNew(stack));
 
-  s->top = -1;
-  s->max = 128;
+  (*stack)->top = -1;
+  (*stack)->max = 128;
 
-  PetscCall(PetscCalloc1(s->max, &s->stack));
-  *stack = s;
+  PetscCall(PetscCalloc1((*stack)->max, &(*stack)->stack));
   PetscFunctionReturn(0);
 }

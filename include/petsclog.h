@@ -333,6 +333,8 @@ PETSC_EXTERN PetscErrorCode PetscLogEventGetId(const char[],PetscLogEvent*);
 PETSC_EXTERN PetscErrorCode PetscLogEventGetPerfInfo(int,PetscLogEvent,PetscEventPerfInfo*);
 PETSC_EXTERN PetscErrorCode PetscLogEventSetDof(PetscLogEvent, PetscInt, PetscLogDouble);
 PETSC_EXTERN PetscErrorCode PetscLogEventSetError(PetscLogEvent, PetscInt, PetscLogDouble);
+PETSC_EXTERN PetscErrorCode PetscLogPushCurrentEvent_Internal(PetscLogEvent);
+PETSC_EXTERN PetscErrorCode PetscLogPopCurrentEvent_Internal(void);
 
 /* Global counters */
 PETSC_EXTERN PetscLogDouble petsc_irecv_ct;
@@ -361,12 +363,12 @@ PETSC_EXTERN PetscErrorCode PetscLogEventSynchronize(PetscLogEvent, MPI_Comm);
     PetscLogEventSynchronize((e),(comm)) : 0))
 
 #define PetscLogEventBegin(e,o1,o2,o3,o4) \
-  (((PetscLogPLB && petsc_stageLog->stageInfo[petsc_stageLog->curStage].perfInfo.active && petsc_stageLog->stageInfo[petsc_stageLog->curStage].eventLog->eventInfo[e].active) ? \
-    (*PetscLogPLB)((e),0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4)) : 0))
+  ((PetscLogPLB && petsc_stageLog->stageInfo[petsc_stageLog->curStage].perfInfo.active && petsc_stageLog->stageInfo[petsc_stageLog->curStage].eventLog->eventInfo[e].active) ? \
+   (((*PetscLogPLB)((e),0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4))) || PetscLogPushCurrentEvent_Internal(e)) : 0)
 
 #define PetscLogEventEnd(e,o1,o2,o3,o4) \
-  (((PetscLogPLE && petsc_stageLog->stageInfo[petsc_stageLog->curStage].perfInfo.active && petsc_stageLog->stageInfo[petsc_stageLog->curStage].eventLog->eventInfo[e].active) ? \
-    (*PetscLogPLE)((e),0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4)) : 0))
+  ((PetscLogPLE && petsc_stageLog->stageInfo[petsc_stageLog->curStage].perfInfo.active && petsc_stageLog->stageInfo[petsc_stageLog->curStage].eventLog->eventInfo[e].active) ? \
+   (((*PetscLogPLE)((e),0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4))) || PetscLogPopCurrentEvent_Internal()) : 0)
 
 PETSC_EXTERN PetscErrorCode PetscLogEventGetFlops(PetscLogEvent,PetscLogDouble*);
 PETSC_EXTERN PetscErrorCode PetscLogEventZeroFlops(PetscLogEvent);
@@ -696,6 +698,7 @@ PETSC_EXTERN PetscErrorCode PetscLogGpuTimeEnd(void);
 #define PetscLogCpuToGpuScalar(a)          0
 #define PetscLogGpuToCpuScalar(a)          0
 #define PetscLogGpuFlops(a)                0
+#define PetscLogGpuTime()                  0
 #define PetscLogGpuTimeAdd(a)              0
 #define PetscLogGpuTimeBegin()             0
 #define PetscLogGpuTimeEnd()               0
