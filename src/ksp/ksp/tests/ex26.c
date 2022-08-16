@@ -244,10 +244,17 @@ PetscErrorCode FormJacobian_Grid(GridCtx *grid,Mat jac)
         nsize: {{1 2}}
         args: -pc_mg_type {{additive multiplicative full kaskade}separate output} -ksp_matsolve_batch_size {{4 7}separate output}
       test:
+        requires: !__float128
         suffix: hpddm_mg_mixed_precision
         nsize: 2
         output_file: output/ex26_matcycles_hpddm_mg_pc_mg_type-multiplicative_ksp_matsolve_batch_size-4.out
         args: -ksp_matsolve_batch_size 4 -ksp_hpddm_precision {{single double}shared output}
+      test:
+        requires: __float128
+        suffix: hpddm_mg_mixed_precision___float128
+        nsize: 2
+        output_file: output/ex26_matcycles_hpddm_mg_pc_mg_type-multiplicative_ksp_matsolve_batch_size-4.out
+        args: -ksp_matsolve_batch_size 4 -ksp_hpddm_precision {{double quadruple}shared output}
 
     test:
       requires: hpddm

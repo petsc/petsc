@@ -201,11 +201,18 @@ static PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec U,Mat J,Mat Jpre,void *c
 
   testset:
     requires: hpddm
-    args: -ts_max_steps 5 -ts_monitor -ksp_monitor_short -pc_type pbjacobi -ksp_atol 1e-4 -ts_type irk -ts_irk_nstages 3 -ksp_view_final_residual -ksp_hpddm_type gcrodr -ksp_type hpddm -ksp_hpddm_precision {{single double}shared output}
+    args: -ts_max_steps 5 -ts_monitor -ksp_monitor_short -pc_type pbjacobi -ksp_atol 1e-4 -ts_type irk -ts_irk_nstages 3 -ksp_view_final_residual -ksp_hpddm_type gcrodr -ksp_type hpddm
     test:
       suffix: 3
       requires: double
+      args: -ksp_hpddm_precision {{single double}shared output}
     test:
       suffix: 3_single
       requires: single
+      args: -ksp_hpddm_precision {{single double}shared output}
+    test:
+      suffix: 3___float128
+      requires: __float128
+      output_file: output/ex74_3.out
+      args: -ksp_hpddm_precision {{double quadruple}shared output}
 TEST*/
