@@ -2857,8 +2857,8 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
 
       PetscCall(PetscMalloc1(pEndF-pStartF,&rootTypeCopy));
       PetscCall(PetscArraycpy(rootTypeCopy,rootType,pEndF-pStartF));
-      PetscCall(PetscSFReduceBegin(pointSF,MPIU_INT,rootTypeCopy,rootTypeCopy,MPIU_MAX));
-      PetscCall(PetscSFReduceEnd(pointSF,MPIU_INT,rootTypeCopy,rootTypeCopy,MPIU_MAX));
+      PetscCall(PetscSFReduceBegin(pointSF,MPIU_INT,rootTypeCopy,rootTypeCopy,MPI_MAX));
+      PetscCall(PetscSFReduceEnd(pointSF,MPIU_INT,rootTypeCopy,rootTypeCopy,MPI_MAX));
       PetscCall(PetscSFBcastBegin(pointSF,MPIU_INT,rootTypeCopy,rootTypeCopy,MPI_REPLACE));
       PetscCall(PetscSFBcastEnd(pointSF,MPIU_INT,rootTypeCopy,rootTypeCopy,MPI_REPLACE));
       for (p = pStartF; p < pEndF; p++) {
@@ -2916,8 +2916,8 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
 
       PetscCall(DMPlexGetReferenceTree(plexF,&refTree));
       PetscCall(DMGetPointSF(plexF,&pointSF));
-      PetscCall(PetscSFReduceBegin(pointSF,MPIU_INT,cids,cids,MPIU_MAX));
-      PetscCall(PetscSFReduceEnd(pointSF,MPIU_INT,cids,cids,MPIU_MAX));
+      PetscCall(PetscSFReduceBegin(pointSF,MPIU_INT,cids,cids,MPI_MAX));
+      PetscCall(PetscSFReduceEnd(pointSF,MPIU_INT,cids,cids,MPI_MAX));
       if (childIds) *childIds = cids;
       for (child = 0; child < P4EST_CHILDREN; child++) {
         PetscCall(DMPlexRestoreTransitiveClosure(refTree,child+1,PETSC_TRUE,NULL,&childClosures[child]));
@@ -3573,8 +3573,8 @@ static PetscErrorCode DMPforestLabelsFinalize(DM dm, DM plex)
         PetscCall(PetscSFBcastEnd(transferForward,MPIU_INT,adaptValues,values,MPI_REPLACE));
       }
       if (transferBackward) {
-        PetscCall(PetscSFReduceBegin(transferBackward,MPIU_INT,adaptValues,values,MPIU_MAX));
-        PetscCall(PetscSFReduceEnd(transferBackward,MPIU_INT,adaptValues,values,MPIU_MAX));
+        PetscCall(PetscSFReduceBegin(transferBackward,MPIU_INT,adaptValues,values,MPI_MAX));
+        PetscCall(PetscSFReduceEnd(transferBackward,MPIU_INT,adaptValues,values,MPI_MAX));
       }
       for (p = pStart; p < pEnd; p++) {
         PetscInt q = p, parent;
@@ -3586,8 +3586,8 @@ static PetscErrorCode DMPforestLabelsFinalize(DM dm, DM plex)
           PetscCall(DMPlexGetTreeParent(plex,q,&parent,NULL));
         }
       }
-      PetscCall(PetscSFReduceBegin(pointSF,MPIU_INT,values,values,MPIU_MAX));
-      PetscCall(PetscSFReduceEnd(pointSF,MPIU_INT,values,values,MPIU_MAX));
+      PetscCall(PetscSFReduceBegin(pointSF,MPIU_INT,values,values,MPI_MAX));
+      PetscCall(PetscSFReduceEnd(pointSF,MPIU_INT,values,values,MPI_MAX));
       PetscCall(PetscSFBcastBegin(pointSF,MPIU_INT,values,values,MPI_REPLACE));
       PetscCall(PetscSFBcastEnd(pointSF,MPIU_INT,values,values,MPI_REPLACE));
       for (p = pStart; p < pEnd; p++) {
@@ -3634,9 +3634,9 @@ static PetscErrorCode DMPforestLabelsFinalize(DM dm, DM plex)
       for (p = pStart; p < pEnd; p++) values[p] = PETSC_MIN_INT;
 
       if (transferForward) PetscCall(PetscSFBcastBegin(transferForward,MPIU_INT,adaptValues,values,MPI_REPLACE));
-      if (transferBackward) PetscCall(PetscSFReduceBegin(transferBackward,MPIU_INT,adaptValues,values,MPIU_MAX));
+      if (transferBackward) PetscCall(PetscSFReduceBegin(transferBackward,MPIU_INT,adaptValues,values,MPI_MAX));
       if (transferForward) PetscCall(PetscSFBcastEnd(transferForward,MPIU_INT,adaptValues,values,MPI_REPLACE));
-      if (transferBackward) PetscCall(PetscSFReduceEnd(transferBackward,MPIU_INT,adaptValues,values,MPIU_MAX));
+      if (transferBackward) PetscCall(PetscSFReduceEnd(transferBackward,MPIU_INT,adaptValues,values,MPI_MAX));
       for (p = pStart; p < pEnd; p++) {
         PetscInt q = p, parent;
 
@@ -3647,8 +3647,8 @@ static PetscErrorCode DMPforestLabelsFinalize(DM dm, DM plex)
           PetscCall(DMPlexGetTreeParent(plex,q,&parent,NULL));
         }
       }
-      PetscCall(PetscSFReduceBegin(pointSF,MPIU_INT,values,values,MPIU_MAX));
-      PetscCall(PetscSFReduceEnd(pointSF,MPIU_INT,values,values,MPIU_MAX));
+      PetscCall(PetscSFReduceBegin(pointSF,MPIU_INT,values,values,MPI_MAX));
+      PetscCall(PetscSFReduceEnd(pointSF,MPIU_INT,values,values,MPI_MAX));
       PetscCall(PetscSFBcastBegin(pointSF,MPIU_INT,values,values,MPI_REPLACE));
       PetscCall(PetscSFBcastEnd(pointSF,MPIU_INT,values,values,MPI_REPLACE));
 

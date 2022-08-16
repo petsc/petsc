@@ -94,7 +94,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once_Scalable(Mat mat,PetscInt n
    * generally speaking, we do not need to exchange
    * data when overlap is 1
    * */
-  PetscCall(MPIU_Allreduce(&nrrows,&reducednrrows,1,MPIU_INT,MPIU_MAX,comm));
+  PetscCall(MPIU_Allreduce(&nrrows,&reducednrrows,1,MPIU_INT,MPI_MAX,comm));
   /* we do not have any messages
    * It usually corresponds to overlap 1
    * */

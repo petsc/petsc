@@ -1926,8 +1926,8 @@ PetscErrorCode MatTranspose_MPIAIJ(Mat A,MatReuse reuse,Mat *matout)
     PetscCall(PetscSFSetGraphLayout(sf,A->cmap,nb,NULL,PETSC_USE_POINTER,a->garray));
     PetscCall(PetscSFSetFromOptions(sf));
     PetscCall(PetscArrayzero(o_nnz,na));
-    PetscCall(PetscSFReduceBegin(sf,MPIU_INT,g_nnz,o_nnz,MPIU_SUM));
-    PetscCall(PetscSFReduceEnd(sf,MPIU_INT,g_nnz,o_nnz,MPIU_SUM));
+    PetscCall(PetscSFReduceBegin(sf,MPIU_INT,g_nnz,o_nnz,MPI_SUM));
+    PetscCall(PetscSFReduceEnd(sf,MPIU_INT,g_nnz,o_nnz,MPI_SUM));
     PetscCall(PetscSFDestroy(&sf));
 
     PetscCall(MatCreate(PetscObjectComm((PetscObject)A),&B));
