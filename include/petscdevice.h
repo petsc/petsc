@@ -160,11 +160,19 @@ PETSC_EXTERN PetscErrorCode PetscCUSOLVERDnGetHandle(cusolverDnHandle_t*);
 
 #if defined(PETSC_HAVE_HIP)
 #include <hip/hip_runtime.h>
-#include <hipblas.h>
+#if PETSC_PKG_HIP_VERSION_GE(5,2,0)
+  #include <hipblas/hipblas.h>
+#else
+  #include <hipblas.h>
+#endif
 #if defined(__HIP_PLATFORM_NVCC__)
 #include <cusolverDn.h>
 #else /* __HIP_PLATFORM_HCC__ */
-#include <rocsolver.h>
+#if PETSC_PKG_HIP_VERSION_GE(5,2,0)
+  #include <rocsolver/rocsolver.h>
+#else
+  #include <rocsolver.h>
+#endif
 #endif /* __HIP_PLATFORM_NVCC__ */
 
 /* REMOVE ME */
