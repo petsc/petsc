@@ -34,12 +34,12 @@
 #define isviewfromoptions_                         isviewfromoptions
 #endif
 
-PETSC_EXTERN void petsclayoutfindowner_(PetscLayout *map,PetscInt *idx,PetscMPIInt *owner,int *ierr)
+PETSC_EXTERN void petsclayoutfindowner_(PetscLayout *map,PetscInt *idx,PetscMPIInt *owner,PetscErrorCode *ierr)
 {
   *ierr = PetscLayoutFindOwner(*map,*idx,owner);
 }
 
-PETSC_EXTERN void petsclayoutfindownerindex_(PetscLayout *map,PetscInt *idx,PetscMPIInt *owner,PetscInt *ridx,int *ierr)
+PETSC_EXTERN void petsclayoutfindownerindex_(PetscLayout *map,PetscInt *idx,PetscMPIInt *owner,PetscInt *ridx,PetscErrorCode *ierr)
 {
   *ierr = PetscLayoutFindOwnerIndex(*map,*idx,owner,ridx);
 }
