@@ -4,7 +4,7 @@
 /*MC
   MATSOLVERBAS -  Provides ICC(k) with drop tolerance
 
-  Works with MATAIJ  matrices
+  Works with `MATAIJ`  matrices
 
   Options Database Keys:
 + -pc_factor_levels <l> - number of levels of fill
@@ -14,13 +14,12 @@
 
    Contributed by: Bas van 't Hof
 
-   Notes:
+   Note:
     Since this currently hooked up to use drop tolerance it should produce the same factors and hence convergence as the PETSc ICC, for higher
      levels of fill it does not. This needs to be investigated. Unless you are interested in drop tolerance ICC and willing to work through the code
      we recommend not using this functionality.
 
 .seealso: `PCFactorSetMatSolverType()`, `MatSolverType`, `PCFactorSetLevels()`, `PCFactorSetDropTolerance()`
-
 M*/
 
 /*

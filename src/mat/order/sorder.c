@@ -83,7 +83,7 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_RowLength(Mat mat, MatOrderingType ty
    Not Collective
 
    Input Parameters:
-+  sname - name of ordering (for example MATORDERINGND)
++  sname - name of ordering (for example `MATORDERINGND`)
 -  function - function pointer that creates the ordering
 
    Level: developer
@@ -98,7 +98,7 @@ $     MatOrderingSetType(part,"my_order)
    or at runtime via the option
 $     -pc_factor_mat_ordering_type my_order
 
-.seealso: `MatOrderingRegisterAll()`
+.seealso: `MatOrderingRegisterAll()`, `MatGetOrdering()`
 @*/
 PetscErrorCode MatOrderingRegister(const char sname[], PetscErrorCode (*function)(Mat, MatOrderingType, IS *, IS *)) {
   PetscFunctionBegin;
@@ -116,14 +116,17 @@ PetscErrorCode MatOrderingRegister(const char sname[], PetscErrorCode (*function
 
    Input Parameters:
 +  mat - the matrix
--  type - type of reordering, one of the following:
-$      MATORDERINGNATURAL_OR_ND - Nested dissection unless matrix is SBAIJ then it is natural
-$      MATORDERINGNATURAL - Natural
-$      MATORDERINGND - Nested Dissection
-$      MATORDERING1WD - One-way Dissection
-$      MATORDERINGRCM - Reverse Cuthill-McKee
-$      MATORDERINGQMD - Quotient Minimum Degree
-$      MATORDERINGEXTERNAL - Use an ordering internal to the factorzation package and do not compute or use PETSc's
+-  type - type of reordering, one of the following
+
+.vb
+      MATORDERINGNATURAL_OR_ND - Nested dissection unless matrix is SBAIJ then it is natural
+      MATORDERINGNATURAL - Natural
+      MATORDERINGND - Nested Dissection
+      MATORDERING1WD - One-way Dissection
+      MATORDERINGRCM - Reverse Cuthill-McKee
+      MATORDERINGQMD - Quotient Minimum Degree
+      MATORDERINGEXTERNAL - Use an ordering internal to the factorzation package and do not compute or use PETSc's
+.ve
 
    Output Parameters:
 +  rperm - row permutation indices
@@ -131,14 +134,14 @@ $      MATORDERINGEXTERNAL - Use an ordering internal to the factorzation packag
 
    Options Database Key:
 + -mat_view_ordering draw - plots matrix nonzero structure in new ordering
-- -pc_factor_mat_ordering_type <nd,natural,..> - ordering to use with PCs based on factorization, LU, ILU, Cholesky, ICC
+- -pc_factor_mat_ordering_type <nd,natural,..> - ordering to use with `PC`s based on factorization, `MATLU`, `MATILU`, MATCHOLESKY`, `MATICC`
 
    Level: intermediate
 
    Notes:
       This DOES NOT actually reorder the matrix; it merely returns two index sets
    that define a reordering. This is usually not used directly, rather use the
-   options PCFactorSetMatOrderingType()
+   options `PCFactorSetMatOrderingType()`
 
    The user can define additional orderings; see MatOrderingRegister().
 
@@ -147,13 +150,9 @@ $      MATORDERINGEXTERNAL - Use an ordering internal to the factorzation packag
    Some external packages that PETSc can use for direct factorization such as SuperLU do not accept orderings provided by
    this call.
 
-   If MATORDERINGEXTERNAL is used then PETSc does not compute an ordering and utilizes one built into the factorization package
+   If `MATORDERINGEXTERNAL` is used then PETSc does not compute an ordering and utilizes one built into the factorization package
 
-           fill, reordering, natural, Nested Dissection,
-           One-way Dissection, Cholesky, Reverse Cuthill-McKee,
-           Quotient Minimum Degree
-
-.seealso: `MatOrderingRegister()`, `PCFactorSetMatOrderingType()`, `MatColoring`, `MatColoringCreate()`
+.seealso: `MatOrderingRegister()`, `PCFactorSetMatOrderingType()`, `MatColoring`, `MatColoringCreate()`, `MatOrderingType`, `Mat`
 @*/
 PetscErrorCode MatGetOrdering(Mat mat, MatOrderingType type, IS *rperm, IS *cperm) {
   PetscInt mmat, nmat, mis;

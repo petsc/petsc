@@ -1466,7 +1466,7 @@ static PetscErrorCode MatHYPRESetPreallocation_HYPRE(Mat A, PetscInt dnz, const 
 /*@C
    MatHYPRESetPreallocation - Preallocates memory for a sparse parallel matrix in HYPRE IJ format
 
-   Collective on Mat
+   Collective on A
 
    Input Parameters:
 +  A - the matrix
@@ -1474,7 +1474,7 @@ static PetscErrorCode MatHYPRESetPreallocation_HYPRE(Mat A, PetscInt dnz, const 
           (same value is used for all local rows)
 .  dnnz - array containing the number of nonzeros in the various rows of the
           DIAGONAL portion of the local submatrix (possibly different for each row)
-          or NULL (PETSC_NULL_INTEGER in Fortran), if d_nz is used to specify the nonzero structure.
+          or NULL (`PETSC_NULL_INTEGER` in Fortran), if d_nz is used to specify the nonzero structure.
           The size of this array is equal to the number of local rows, i.e 'm'.
           For matrices that will be factored, you must leave room for (and set)
           the diagonal entry even if it is zero.
@@ -1482,11 +1482,11 @@ static PetscErrorCode MatHYPRESetPreallocation_HYPRE(Mat A, PetscInt dnz, const 
           submatrix (same value is used for all local rows).
 -  onnz - array containing the number of nonzeros in the various rows of the
           OFF-DIAGONAL portion of the local submatrix (possibly different for
-          each row) or NULL (PETSC_NULL_INTEGER in Fortran), if o_nz is used to specify the nonzero
+          each row) or NULL (`PETSC_NULL_INTEGER` in Fortran), if o_nz is used to specify the nonzero
           structure. The size of this array is equal to the number
           of local rows, i.e 'm'.
 
-   Notes:
+   Note:
     If the *nnz parameter is given then the *nz parameter is ignored; for sequential matrices, onz and onnz are ignored.
 
    Level: intermediate
@@ -2228,7 +2228,7 @@ static PetscErrorCode MatSetValuesCOO_HYPRE(Mat mat, const PetscScalar v[], Inse
 
    Level: intermediate
 
-.seealso: `MatCreate()`
+.seealso: `MatCreate()`, `MatHYPRESetPreallocation`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatCreate_HYPRE(Mat B) {

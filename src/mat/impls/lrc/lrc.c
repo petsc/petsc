@@ -128,10 +128,10 @@ static PetscErrorCode MatLRCGetMats_LRC(Mat N, Mat *A, Mat *U, Vec *c, Mat *V) {
 /*@
    MatLRCGetMats - Returns the constituents of an LRC matrix
 
-   Collective on Mat
+   Collective on N
 
    Input Parameter:
-.  N - matrix of type LRC
+.  N - matrix of type `MATLRC`
 
    Output Parameters:
 +  A - the (sparse) matrix
@@ -144,7 +144,7 @@ static PetscErrorCode MatLRCGetMats_LRC(Mat N, Mat *A, Mat *U, Vec *c, Mat *V) {
 
    Level: intermediate
 
-.seealso: `MatCreateLRC()`
+.seealso: `MATLRC`, `MatCreateLRC()`
 @*/
 PetscErrorCode MatLRCGetMats(Mat N, Mat *A, Mat *U, Vec *c, Mat *V) {
   PetscFunctionBegin;
@@ -152,10 +152,22 @@ PetscErrorCode MatLRCGetMats(Mat N, Mat *A, Mat *U, Vec *c, Mat *V) {
   PetscFunctionReturn(0);
 }
 
-/*@
-   MatCreateLRC - Creates a new matrix object that behaves like A + U*C*V'
+/*MC
+  MATLRC -  "lrc" - a matrix object that behaves like A + U*C*V'
 
-   Collective on Mat
+  Note:
+   The matrix A + U*C*V' is not formed! Rather the matrix  object performs the matrix-vector product `MatMult()`, by first multiplying by
+   A and then adding the other term.
+
+  Level: advanced
+
+.seealso: `MatCreateLRC`
+M*/
+
+/*@
+   MatCreateLRC - Creates a new matrix object that behaves like A + U*C*V' of type `MATLRC`
+
+   Collective on A
 
    Input Parameters:
 +  A    - the (sparse) matrix (can be NULL)
@@ -167,7 +179,7 @@ PetscErrorCode MatLRCGetMats(Mat N, Mat *A, Mat *U, Vec *c, Mat *V) {
 
    Notes:
    The matrix A + U*C*V' is not formed! Rather the new matrix
-   object performs the matrix-vector product by first multiplying by
+   object performs the matrix-vector product `MatMult()`, by first multiplying by
    A and then adding the other term.
 
    C is a diagonal matrix (represented as a vector) of order k,
@@ -183,7 +195,7 @@ PetscErrorCode MatLRCGetMats(Mat N, Mat *A, Mat *U, Vec *c, Mat *V) {
 
    Level: intermediate
 
-.seealso: `MatLRCGetMats()`
+.seealso: `MATLRC`, `MatLRCGetMats()`
 @*/
 PetscErrorCode MatCreateLRC(Mat A, Mat U, Vec c, Mat V, Mat *N) {
   PetscBool   match;

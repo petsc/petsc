@@ -244,7 +244,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJViennaCL(Mat A, MatAssemblyType mode) {
 
 /* --------------------------------------------------------------------------------*/
 /*@C
-   MatCreateSeqAIJViennaCL - Creates a sparse matrix in AIJ (compressed row) format
+   MatCreateSeqAIJViennaCL - Creates a sparse matrix in `MATSEQAIJVIENNACL` (compressed row) format
    (the default parallel PETSc format).  This matrix will ultimately be pushed down
    to GPUs and use the ViennaCL library for calculations. For good matrix
    assembly performance the user should preallocate the matrix storage by setting
@@ -254,7 +254,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJViennaCL(Mat A, MatAssemblyType mode) {
    Collective
 
    Input Parameters:
-+  comm - MPI communicator, set to PETSC_COMM_SELF
++  comm - MPI communicator, set to `PETSC_COMM_SELF`
 .  m - number of rows
 .  n - number of columns
 .  nz - number of nonzeros per row (same for all rows)
@@ -264,27 +264,26 @@ PetscErrorCode MatAssemblyEnd_SeqAIJViennaCL(Mat A, MatAssemblyType mode) {
    Output Parameter:
 .  A - the matrix
 
-   It is recommended that one use the MatCreate(), MatSetType() and/or MatSetFromOptions(),
+   It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`,
    MatXXXXSetPreallocation() paradigm instead of this routine directly.
-   [MatXXXXSetPreallocation() is, for example, MatSeqAIJSetPreallocation]
+   [MatXXXXSetPreallocation() is, for example, `MatSeqAIJSetPreallocation()`]
 
    Notes:
    If nnz is given then nz is ignored
 
-   The AIJ format (also called the Yale sparse matrix format or
-   compressed row storage), is fully compatible with standard Fortran 77
+   The AIJ format, also called
+   compressed row storage, is fully compatible with standard Fortran 77
    storage.  That is, the stored row and column indices can begin at
    either one (as in Fortran) or zero.  See the users' manual for details.
 
    Specify the preallocated storage with either nz or nnz (not both).
-   Set nz=PETSC_DEFAULT and nnz=NULL for PETSc to control dynamic memory
+   Set nz = `PETSC_DEFAULT` and nnz = NULL for PETSc to control dynamic memory
    allocation.  For large problems you MUST preallocate memory or you
    will get TERRIBLE performance, see the users' manual chapter on matrices.
 
    Level: intermediate
 
-.seealso: `MatCreate()`, `MatCreateAIJ()`, `MatCreateAIJCUSPARSE()`, `MatSetValues()`, `MatSeqAIJSetColumnIndices()`, `MatCreateSeqAIJWithArrays()`, `MatCreateAIJ()`
-
+.seealso: `MATSEQAIJVIENNACL`, `MatCreate()`, `MatCreateAIJ()`, `MatCreateAIJCUSPARSE()`, `MatSetValues()`, `MatSeqAIJSetColumnIndices()`, `MatCreateSeqAIJWithArrays()`, `MatCreateAIJ()`
 @*/
 PetscErrorCode MatCreateSeqAIJViennaCL(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt nz, const PetscInt nnz[], Mat *A) {
   PetscFunctionBegin;
@@ -468,9 +467,9 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJViennaCL(Mat A, MatType type
    default. All matrix calculations are performed using the ViennaCL library.
 
    Options Database Keys:
-+  -mat_type aijviennacl - sets the matrix type to "seqaijviennacl" during a call to MatSetFromOptions()
-.  -mat_viennacl_storage_format csr - sets the storage format of matrices for MatMult during a call to MatSetFromOptions().
--  -mat_viennacl_mult_storage_format csr - sets the storage format of matrices for MatMult during a call to MatSetFromOptions().
++  -mat_type aijviennacl - sets the matrix type to `MATSEQAIJVIENNACL` during a call to `MatSetFromOptions()
+.  -mat_viennacl_storage_format csr - sets the storage format of matrices for `MatMult()` during a call to `MatSetFromOptions()`.
+-  -mat_viennacl_mult_storage_format csr - sets the storage format of matrices for `MatMult()` during a call to `MatSetFromOptions()`.
 
   Level: beginner
 

@@ -704,24 +704,23 @@ PetscErrorCode MatFDColoringCreate_MPIXAIJ(Mat mat, ISColoring iscoloring, MatFD
 
 /*@C
 
-    MatFDColoringSetValues - takes a matrix in compressed color format and enters the matrix into a PETSc Mat
+    MatFDColoringSetValues - takes a matrix in compressed color format and enters the matrix into a PETSc `Mat`
 
    Collective on J
 
    Input Parameters:
 +    J - the sparse matrix
-.    coloring - created with MatFDColoringCreate() and a local coloring
+.    coloring - created with `MatFDColoringCreate()` and a local coloring
 -    y - column major storage of matrix values with one color of values per column, the number of rows of y should match
          the number of local rows of J and the number of columns is the number of colors.
 
    Level: intermediate
 
-   Notes: the matrix in compressed color format may come from an Automatic Differentiation code
+   Notes: the matrix in compressed color format may come from an automatic differentiation code
 
-   The code will be slightly faster if MatFDColoringSetBlockSize(coloring,PETSC_DEFAULT,nc); is called immediately after creating the coloring
+   The code will be slightly faster if `MatFDColoringSetBlockSize`(coloring,`PETSC_DEFAULT`,nc); is called immediately after creating the coloring
 
 .seealso: `MatFDColoringCreate()`, `ISColoring`, `ISColoringCreate()`, `ISColoringSetType()`, `IS_COLORING_LOCAL`, `MatFDColoringSetBlockSize()`
-
 @*/
 PetscErrorCode MatFDColoringSetValues(Mat J, MatFDColoring coloring, const PetscScalar *y) {
   MatEntry2      *Jentry2;

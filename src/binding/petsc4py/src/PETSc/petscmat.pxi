@@ -58,7 +58,8 @@ cdef extern from * nogil:
     PetscMatType MATFFT
     PetscMatType   MATFFTW
     PetscMatType   MATSEQCUFFT
-    PetscMatType MATTRANSPOSEMAT
+    PetscMatType MATTRANSPOSE
+    PetscMatType MATHERMITIANTRANSPOSE
     PetscMatType MATSCHURCOMPLEMENT
     PetscMatType MATPYTHON
     PetscMatType MATHYPRE

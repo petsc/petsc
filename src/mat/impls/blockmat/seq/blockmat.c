@@ -826,14 +826,13 @@ static struct _MatOps MatOps_Values = {MatSetValues_BlockMat,
      If nnz is given then nz is ignored
 
    Specify the preallocated storage with either nz or nnz (not both).
-   Set nz=PETSC_DEFAULT and nnz=NULL for PETSc to control dynamic memory
+   Set nz = `PETSC_DEFAULT` and nnz = NULL for PETSc to control dynamic memory
    allocation.  For large problems you MUST preallocate memory or you
    will get TERRIBLE performance, see the users' manual chapter on matrices.
 
    Level: intermediate
 
 .seealso: `MatCreate()`, `MatCreateBlockMat()`, `MatSetValues()`
-
 @*/
 PetscErrorCode MatBlockMatSetPreallocation(Mat B, PetscInt bs, PetscInt nz, const PetscInt nnz[]) {
   PetscFunctionBegin;
@@ -899,13 +898,12 @@ static PetscErrorCode MatBlockMatSetPreallocation_BlockMat(Mat A, PetscInt bs, P
 }
 
 /*MC
-   MATBLOCKMAT - A matrix that is defined by a set of Mat's that represents a sparse block matrix
+   MATBLOCKMAT - A matrix that is defined by a set of `Mat`'s that represents a sparse block matrix
                  consisting of (usually) sparse blocks.
 
   Level: advanced
 
 .seealso: `MatCreateBlockMat()`
-
 M*/
 
 PETSC_EXTERN PetscErrorCode MatCreate_BlockMat(Mat A) {
@@ -925,7 +923,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_BlockMat(Mat A) {
 }
 
 /*@C
-   MatCreateBlockMat - Creates a new matrix in which each block contains a uniform-size sequential Mat object
+   MatCreateBlockMat - Creates a new matrix in which each block contains a uniform-size sequential `Mat` object
 
   Collective
 
@@ -934,7 +932,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_BlockMat(Mat A) {
 .  m - number of rows
 .  n  - number of columns
 .  bs - size of each submatrix
-.  nz  - expected maximum number of nonzero blocks in row (use PETSC_DEFAULT if not known)
+.  nz  - expected maximum number of nonzero blocks in row (use `PETSC_DEFAULT` if not known)
 -  nnz - expected number of nonzers per block row if known (use NULL otherwise)
 
    Output Parameter:
@@ -943,10 +941,13 @@ PETSC_EXTERN PetscErrorCode MatCreate_BlockMat(Mat A) {
    Level: intermediate
 
    Notes:
-    Matrices of this type are nominally-sparse matrices in which each "entry" is a Mat object.  Each Mat must
+    Matrices of this type are nominally-sparse matrices in which each "entry" is a `Mat` object.  Each `Mat` must
    have the same size and be sequential.  The local and global sizes must be compatible with this decomposition.
 
-   For matrices containing parallel submatrices and variable block sizes, see MATNEST.
+   For matrices containing parallel submatrices and variable block sizes, see `MATNEST`.
+
+   Developer Note:
+   I don't like the name, it is not `MATNESTMAT`
 
 .seealso: `MATBLOCKMAT`, `MatCreateNest()`
 @*/

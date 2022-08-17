@@ -1,33 +1,30 @@
 
 /*MC
-     MATMFFD_WP - Implements an alternative approach for computing the differencing parameter
-        h used with the finite difference based matrix-free Jacobian.  This code
-        implements the strategy of M. Pernice and H. Walker:
+     MATMFFD_WP - Implements an approach for computing the differencing parameter
+        h used with the finite difference based matrix-free Jacobian.
 
       h = error_rel * sqrt(1 + ||U||) / ||a||
 
-      Notes:
-        1) || U || does not change between linear iterations so is reused
-        2) In GMRES || a || == 1 and so does not need to ever be computed except at restart
-           when it is recomputed.
-
-      Reference:  M. Pernice and H. F. Walker, "NITSOL: A Newton Iterative
-      Solver for Nonlinear Systems", SIAM J. Sci. Stat. Comput.", 1998,
-      vol 19, pp. 302--318.
-
-   Options Database Keys:
-.   -mat_mffd_compute_normu -Compute the norm of u every time see MatMFFDWPSetComputeNormU()
+   Options Database Key:
+.   -mat_mffd_compute_normu -Compute the norm of u every time see `MatMFFDWPSetComputeNormU()`
 
    Level: intermediate
 
    Notes:
-    Requires no global collectives when used with GMRES
+   || U || does not change between linear iterations so is reused
+
+   In `KSPGMRES` || a || == 1 and so does not need to ever be computed except at restart
+    when it is recomputed.  Thus equires no global collectives when used with `KSPGMRES`
 
    Formula used:
      F'(u)*a = [F(u+h*a) - F(u)]/h where
 
-.seealso: `MATMFFD`, `MatCreateMFFD()`, `MatCreateSNESMF()`, `MATMFFD_DS`
+   Reference:
+.  * -  M. Pernice and H. F. Walker, "NITSOL: A Newton Iterative
+      Solver for Nonlinear Systems", SIAM J. Sci. Stat. Comput.", 1998,
+      vol 19, pp. 302--318.
 
+.seealso: `MATMFFD`, `MATMFFD_DS`, `MatCreateMFFD()`, `MatCreateSNESMF()`, `MATMFFD_DS`
 M*/
 
 /*
@@ -46,7 +43,7 @@ typedef struct {
 } MatMFFD_WP;
 
 /*
-     MatMFFDCompute_WP - Standard PETSc code for
+     MatMFFDCompute_WP - code for
    computing h with matrix-free finite differences.
 
   Input Parameters:
@@ -154,13 +151,13 @@ PetscErrorCode MatMFFDWPSetComputeNormU_P(Mat mat, PetscBool flag) {
 }
 
 /*@
-    MatMFFDWPSetComputeNormU - Sets whether it computes the ||U|| used by the WP
+    MatMFFDWPSetComputeNormU - Sets whether it computes the ||U|| used by the Walker-Pernice
              PETSc routine for computing h. With any Krylov solver this need only
              be computed during the first iteration and kept for later.
 
   Input Parameters:
-+   A - the matrix created with MatCreateSNESMF()
--   flag - PETSC_TRUE causes it to compute ||U||, PETSC_FALSE uses the previous value
++   A - the `MATMFFD` matrix
+-   flag - `PETSC_TRUE` causes it to compute ||U||, `PETSC_FALSE` uses the previous value
 
   Options Database Key:
 .   -mat_mffd_compute_normu <true,false> - true by default, false can save calculations but you
@@ -168,12 +165,11 @@ PetscErrorCode MatMFFDWPSetComputeNormU_P(Mat mat, PetscBool flag) {
 
   Level: advanced
 
-  Notes:
-   See the manual page for MATMFFD_WP for a complete description of the
+  Note:
+   See the manual page for `MATMFFD_WP` for a complete description of the
    algorithm used to compute h.
 
-.seealso: `MatMFFDSetFunctionError()`, `MatCreateSNESMF()`
-
+.seealso: `MATMFFD_WP`, `MATMFFD`, `MatMFFDSetFunctionError()`, `MatCreateSNESMF()`
 @*/
 PetscErrorCode MatMFFDWPSetComputeNormU(Mat A, PetscBool flag) {
   PetscFunctionBegin;

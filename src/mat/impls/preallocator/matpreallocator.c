@@ -188,35 +188,35 @@ PetscErrorCode MatPreallocatorPreallocate_Preallocator(Mat mat, PetscBool fill, 
 }
 
 /*@
-  MatPreallocatorPreallocate - Preallocates the A matrix, using information from mat, optionally filling A with zeros
+  MatPreallocatorPreallocate - Preallocates the A matrix, using information from a `MATPREALLOCATOR` mat, optionally filling A with zeros
 
   Input Parameters:
-+ mat  - the preallocator
++ mat  - the `MATPREALLOCATOR` preallocator matrix
 . fill - fill the matrix with zeros
 - A    - the matrix to be preallocated
 
   Notes:
-  This Mat implementation provides a helper utility to define the correct
+  This `MatType` implementation provides a helper utility to define the correct
   preallocation data for a given nonzero structure. Use this object like a
   regular matrix, e.g. loop over the nonzero structure of the matrix and
-  call MatSetValues() or MatSetValuesBlocked() to indicate the nonzero locations.
-  The matrix entries provided to MatSetValues() will be ignored, it only uses
+  call `MatSetValues()` or `MatSetValuesBlocked()` to indicate the nonzero locations.
+  The matrix entries provided to `MatSetValues()` will be ignored, it only uses
   the row / col indices provided to determine the information required to be
-  passed to MatXAIJSetPreallocation(). Once you have looped over the nonzero
-  structure, you must call MatAssemblyBegin(), MatAssemblyEnd() on mat.
+  passed to `MatXAIJSetPreallocation()`. Once you have looped over the nonzero
+  structure, you must call `MatAssemblyBegin()`, `MatAssemblyEnd()` on mat.
 
-  After you have assembled the preallocator matrix (mat), call MatPreallocatorPreallocate()
+  After you have assembled the preallocator matrix (mat), call `MatPreallocatorPreallocate()`
   to define the preallocation information on the matrix (A). Setting the parameter
-  fill = PETSC_TRUE will insert zeros into the matrix A. Internally MatPreallocatorPreallocate()
-  will call MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_TRUE);
+  fill = PETSC_TRUE will insert zeros into the matrix A. Internally `MatPreallocatorPreallocate()`
+  will call `MatSetOption`(A, `MAT_NEW_NONZERO_ALLOCATION_ERR`, `PETSC_TRUE`);
 
-  This function may only be called once for a given MatPreallocator object. If
-  multiple Mats need to be preallocated, consider using MatDuplicate() after
+  This function may only be called once for a given `MATPREALLOCATOR` object. If
+  multiple `Mat`s need to be preallocated, consider using `MatDuplicate()` after
   this function.
 
   Level: advanced
 
-.seealso: `MATPREALLOCATOR`
+.seealso: `MATPREALLOCATOR`, `MatXAIJSetPreallocation()`
 @*/
 PetscErrorCode MatPreallocatorPreallocate(Mat mat, PetscBool fill, Mat A) {
   PetscFunctionBegin;
@@ -236,12 +236,11 @@ PetscErrorCode MatPreallocatorPreallocate(Mat mat, PetscBool fill, Mat A) {
 .ve
 
    Options Database Keys:
-. -mat_type preallocator - sets the matrix type to "preallocator" during a call to MatSetFromOptions()
+. -mat_type preallocator - sets the matrix type to `MATPREALLOCATOR` during a call to `MatSetFromOptions()`
 
   Level: advanced
 
-.seealso: `Mat`, `MatPreallocatorPreallocate()`
-
+.seealso: `MATPREALLOCATOR`, `Mat`, `MatPreallocatorPreallocate()`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatCreate_Preallocator(Mat A) {

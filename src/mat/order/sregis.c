@@ -27,7 +27,7 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_METISND(Mat, MatOrderingType, IS *, I
 
   Adding new methods:
   To add a new method to the registry. Copy this routine and
-  modify it to incorporate a call to MatReorderRegister() for
+  modify it to incorporate a call to `MatReorderRegister()` for
   the new method, after the current list.
 
   Restricting the choices: To prevent all of the methods from being
@@ -35,7 +35,7 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_METISND(Mat, MatOrderingType, IS *, I
   those orderigs you do not wish to include.  Make sure that the
   replacement routine is linked before libpetscmat.a.
 
-.seealso: `MatOrderingRegister()`
+.seealso: `MatOrderingType`, `MatOrderingRegister()`
 @*/
 PetscErrorCode MatOrderingRegisterAll(void) {
   PetscFunctionBegin;

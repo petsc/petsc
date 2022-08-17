@@ -101,7 +101,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Htool(Mat);
 
   Level: advanced
 
-.seealso: `MatRegister()`
+.seealso: `MatType`, `MatSetType()`, `MatRegister()`
 @*/
 PetscErrorCode MatRegisterAll(void) {
   PetscFunctionBegin;

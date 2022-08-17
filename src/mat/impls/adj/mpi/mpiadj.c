@@ -892,7 +892,7 @@ PetscErrorCode MatMPIAdjToSeqRankZero_MPIAdj(Mat A, Mat *B) {
 }
 
 /*@
-   MatMPIAdjCreateNonemptySubcommMat - create the same MPIAdj matrix on a subcommunicator containing only processes owning a positive number of rows
+   MatMPIAdjCreateNonemptySubcommMat - create the same `MATMPIADJ` matrix on a subcommunicator containing only processes owning a positive number of rows
 
    Collective
 
@@ -907,9 +907,9 @@ PetscErrorCode MatMPIAdjToSeqRankZero_MPIAdj(Mat A, Mat *B) {
    Note:
    This function is mostly useful for internal use by mesh partitioning packages that require that every process owns at least one row.
 
-   The matrix B should be destroyed with MatDestroy(). The arrays are not copied, so B should be destroyed before A is destroyed.
+   The matrix B should be destroyed with `MatDestroy()`. The arrays are not copied, so B should be destroyed before A is destroyed.
 
-.seealso: `MatCreateMPIAdj()`
+.seealso: `MATMPIADJ`, `MatCreateMPIAdj()`
 @*/
 PetscErrorCode MatMPIAdjCreateNonemptySubcommMat(Mat A, Mat *B) {
   PetscFunctionBegin;
@@ -924,9 +924,9 @@ PetscErrorCode MatMPIAdjCreateNonemptySubcommMat(Mat A, Mat *B) {
 
   Level: beginner
 
-  Notes:
-    You can provide values to the matrix using MatMPIAdjSetPreallocation(), MatCreateMPIAdj(), or
-    by calling MatSetValues() and MatAssemblyBegin() followed by MatAssemblyEnd()
+  Note:
+    You can provide values to the matrix using `MatMPIAdjSetPreallocation()`, `MatCreateMPIAdj()`, or
+    by calling `MatSetValues()` and `MatAssemblyBegin()` followed by `MatAssemblyEnd()`
 
 .seealso: `MatCreateMPIAdj()`, `MatMPIAdjSetPreallocation()`, `MatSetValues()`
 M*/
@@ -950,7 +950,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAdj(Mat B) {
 }
 
 /*@C
-   MatMPIAdjToSeq - Converts an parallel MPIAdj matrix to complete MPIAdj on each process (needed by sequential partitioner)
+   MatMPIAdjToSeq - Converts an parallel `MATMPIADJ` matrix to complete `MATMPIADJ` on each process (needed by sequential partitioner)
 
    Logically Collective
 
@@ -962,7 +962,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAdj(Mat B) {
 
    Level: intermediate
 
-.seealso: `MatCreate()`, `MatCreateMPIAdj()`, `MatSetValues()`, `MatMPIAdjToSeqRankZero()`
+.seealso: `MATMPIADJ`, `MatCreate()`, `MatCreateMPIAdj()`, `MatSetValues()`, `MatMPIAdjToSeqRankZero()`
 @*/
 PetscErrorCode MatMPIAdjToSeq(Mat A, Mat *B) {
   PetscFunctionBegin;
@@ -971,7 +971,7 @@ PetscErrorCode MatMPIAdjToSeq(Mat A, Mat *B) {
 }
 
 /*@C
-   MatMPIAdjToSeqRankZero - Converts an parallel MPIAdj matrix to complete MPIAdj on rank zero (needed by sequential partitioner)
+   MatMPIAdjToSeqRankZero - Converts an parallel `MATMPIADJ` matrix to complete `MATMPIADJ` on rank zero (needed by sequential partitioner)
 
    Logically Collective
 
@@ -983,12 +983,12 @@ PetscErrorCode MatMPIAdjToSeq(Mat A, Mat *B) {
 
    Level: intermediate
 
-   Notes:
+   Note:
      This routine has the advantage on systems with multiple ranks per node since only one copy of the matrix
      is stored on the first node, instead of the number of ranks copies. This can allow partitioning much larger
      paralllel graph sequentially.
 
-.seealso: MatCreate(), MatCreateMPIAdj(), MatSetValues(), MatMPIAdjToSeq()
+.seealso: `MATMPIADJ`, `MatCreate()`, `MatCreateMPIAdj()`, `MatSetValues()`, `MatMPIAdjToSeq()`
 @*/
 PetscErrorCode MatMPIAdjToSeqRankZero(Mat A, Mat *B) {
   PetscFunctionBegin;
@@ -1041,15 +1041,15 @@ PetscErrorCode MatMPIAdjSetPreallocation(Mat B, PetscInt *i, PetscInt *j, PetscI
 
    Notes:
    You must NOT free the ii, values and jj arrays yourself. PETSc will free them
-   when the matrix is destroyed; you must allocate them with PetscMalloc(). If you
-   call from Fortran you need not create the arrays with PetscMalloc().
+   when the matrix is destroyed; you must allocate them with `PetscMalloc()`. If you
+   call from Fortran you need not create the arrays with `PetscMalloc()`.
 
    You should not include the matrix diagonals.
 
    If you already have a matrix, you can create its adjacency matrix by a call
-   to MatConvert(), specifying a type of MATMPIADJ.
+   to `MatConvert()`, specifying a type of `MATMPIADJ`.
 
-   Possible values for MatSetOption() - MAT_STRUCTURALLY_SYMMETRIC
+   Possible values for `MatSetOption()` - `MAT_STRUCTURALLY_SYMMETRIC`
 
 .seealso: `MatCreate()`, `MatConvert()`, `MatGetOrdering()`, `MATMPIADJ`, `MatMPIAdjSetPreallocation()`
 @*/

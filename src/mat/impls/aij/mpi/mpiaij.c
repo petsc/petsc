@@ -30,35 +30,35 @@ PetscErrorCode MatRestoreRowIJ_MPIAIJ(Mat A, PetscInt oshift, PetscBool symmetri
 /*MC
    MATAIJ - MATAIJ = "aij" - A matrix type to be used for sparse matrices.
 
-   This matrix type is identical to MATSEQAIJ when constructed with a single process communicator,
-   and MATMPIAIJ otherwise.  As a result, for single process communicators,
-  MatSeqAIJSetPreallocation is supported, and similarly MatMPIAIJSetPreallocation() is supported
+   This matrix type is identical to` MATSEQAIJ` when constructed with a single process communicator,
+   and `MATMPIAIJ` otherwise.  As a result, for single process communicators,
+  `MatSeqAIJSetPreallocation()` is supported, and similarly `MatMPIAIJSetPreallocation()` is supported
   for communicators controlling multiple processes.  It is recommended that you call both of
   the above preallocation routines for simplicity.
 
    Options Database Keys:
-. -mat_type aij - sets the matrix type to "aij" during a call to MatSetFromOptions()
+. -mat_type aij - sets the matrix type to `MATAIJ` during a call to `MatSetFromOptions()`
 
-  Developer Notes:
-    Subclasses include MATAIJCUSPARSE, MATAIJPERM, MATAIJSELL, MATAIJMKL, MATAIJCRL, and also automatically switches over to use inodes when
+  Developer Note:
+    Subclasses include `MATAIJCUSPARSE`, `MATAIJPERM`, `MATAIJSELL`, `MATAIJMKL`, `MATAIJCRL`, `MATAIJKOKKOS`,and also automatically switches over to use inodes when
    enough exist.
 
   Level: beginner
 
-.seealso: `MatCreateAIJ()`, `MatCreateSeqAIJ()`, `MATSEQAIJ`, `MATMPIAIJ`
+.seealso: `MATMPIAIJ`, `MATSEQAIJ`, `MatCreateAIJ()`, `MatCreateSeqAIJ()`, `MATSEQAIJ`, `MATMPIAIJ`
 M*/
 
 /*MC
    MATAIJCRL - MATAIJCRL = "aijcrl" - A matrix type to be used for sparse matrices.
 
-   This matrix type is identical to MATSEQAIJCRL when constructed with a single process communicator,
-   and MATMPIAIJCRL otherwise.  As a result, for single process communicators,
-   MatSeqAIJSetPreallocation() is supported, and similarly MatMPIAIJSetPreallocation() is supported
+   This matrix type is identical to `MATSEQAIJCRL` when constructed with a single process communicator,
+   and `MATMPIAIJCRL` otherwise.  As a result, for single process communicators,
+   `MatSeqAIJSetPreallocation()` is supported, and similarly `MatMPIAIJSetPreallocation()` is supported
   for communicators controlling multiple processes.  It is recommended that you call both of
   the above preallocation routines for simplicity.
 
    Options Database Keys:
-. -mat_type aijcrl - sets the matrix type to "aijcrl" during a call to MatSetFromOptions()
+. -mat_type aijcrl - sets the matrix type to `MATMPIAIJCRL` during a call to `MatSetFromOptions()`
 
   Level: beginner
 
@@ -2563,6 +2563,7 @@ PetscErrorCode MatMPIAIJSetUseScalableIncreaseOverlap_MPIAIJ(Mat A, PetscBool sc
 
  Level: advanced
 
+.seealso: `MATMPIAIJ`, `Mat`
 @*/
 PetscErrorCode MatMPIAIJGetNumberNonzeros(Mat A, PetscCount *nz) {
   Mat_MPIAIJ *maij = (Mat_MPIAIJ *)A->data;
@@ -2576,11 +2577,11 @@ PetscErrorCode MatMPIAIJGetNumberNonzeros(Mat A, PetscCount *nz) {
 /*@
    MatMPIAIJSetUseScalableIncreaseOverlap - Determine if the matrix uses a scalable algorithm to compute the overlap
 
-   Collective on Mat
+   Collective on A
 
    Input Parameters:
 +    A - the matrix
--    sc - PETSC_TRUE indicates use the scalable algorithm (default is not to use the scalable algorithm)
+-    sc - `PETSC_TRUE` indicates use the scalable algorithm (default is not to use the scalable algorithm)
 
  Level: advanced
 
@@ -3360,7 +3361,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ(Mat mat, IS isrow, IS iscol, MatReuse c
 }
 
 /*@C
-     MatCreateMPIAIJWithSeqAIJ - creates a MPIAIJ matrix using SeqAIJ matrices that contain the "diagonal"
+     MatCreateMPIAIJWithSeqAIJ - creates a `MATMPIAIJ` matrix using `MATSEQAIJ` matrices that contain the "diagonal"
          and "off-diagonal" part of the matrix in CSR format.
 
    Collective
@@ -3376,10 +3377,11 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ(Mat mat, IS isrow, IS iscol, MatReuse c
    Level: advanced
 
    Notes:
-       See MatCreateAIJ() for the definition of "diagonal" and "off-diagonal" portion of the matrix.
-       A becomes part of output mat, B is destroyed by this routine. The user cannot use A and B anymore.
+   See `MatCreateAIJ()` for the definition of "diagonal" and "off-diagonal" portion of the matrix.
 
-.seealso: `MatCreateMPIAIJWithSplitArrays()`
+   A becomes part of output mat, B is destroyed by this routine. The user cannot use A and B anymore.
+
+.seealso: `MATMPIAIJ`, `MATSEQAIJ`, `MatCreateMPIAIJWithSplitArrays()`
 @*/
 PetscErrorCode MatCreateMPIAIJWithSeqAIJ(MPI_Comm comm, Mat A, Mat B, const PetscInt garray[], Mat *mat) {
   Mat_MPIAIJ        *maij;
@@ -3667,7 +3669,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_SameRowDist(Mat mat, IS isrow, IS iscol
   in local and then by concatenating the local matrices the end result.
   Writing it directly would be much like MatCreateSubMatrices_MPIAIJ()
 
-  Note: This requires a sequential iscol with all indices.
+  This requires a sequential iscol with all indices.
 */
 PetscErrorCode MatCreateSubMatrix_MPIAIJ_nonscalable(Mat mat, IS isrow, IS iscol, PetscInt csize, MatReuse call, Mat *newmat) {
   PetscMPIInt rank, size;
@@ -3865,7 +3867,7 @@ PetscErrorCode MatMPIAIJSetPreallocationCSR_MPIAIJ(Mat B, const PetscInt Ii[], c
 }
 
 /*@
-   MatMPIAIJSetPreallocationCSR - Allocates memory for a sparse parallel matrix in AIJ format
+   MatMPIAIJSetPreallocationCSR - Allocates memory for a sparse parallel matrix in `MATAIJ` format
    (the default parallel PETSc format).
 
    Collective
@@ -3881,7 +3883,7 @@ PetscErrorCode MatMPIAIJSetPreallocationCSR_MPIAIJ(Mat B, const PetscInt Ii[], c
    Notes:
        The i, j, and v arrays ARE copied by this routine into the internal format used by PETSc;
      thus you CANNOT change the matrix entries by changing the values of v[] after you have
-     called this routine. Use MatCreateMPIAIJWithSplitArrays() to avoid needing to copy the arrays.
+     called this routine. Use `MatCreateMPIAIJWithSplitArrays()` to avoid needing to copy the arrays.
 
        The i and j indices are 0 based, and i indices are indices corresponding to the local j array.
 
@@ -3904,7 +3906,7 @@ $        i =  {0,3}    [size = nrow+1  = 1+1]
 $        j =  {0,1,2}  [size = 3]
 $        v =  {4,5,6}  [size = 3]
 
-.seealso: `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatMPIAIJSetPreallocation()`, `MatCreateAIJ()`, `MATMPIAIJ`,
+.seealso: `MATMPIAIJ`, `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatMPIAIJSetPreallocation()`, `MatCreateAIJ()`, `MATMPIAIJ`,
           `MatCreateSeqAIJWithArrays()`, `MatCreateMPIAIJWithSplitArrays()`
 @*/
 PetscErrorCode MatMPIAIJSetPreallocationCSR(Mat B, const PetscInt i[], const PetscInt j[], const PetscScalar v[]) {
@@ -3914,7 +3916,7 @@ PetscErrorCode MatMPIAIJSetPreallocationCSR(Mat B, const PetscInt i[], const Pet
 }
 
 /*@C
-   MatMPIAIJSetPreallocation - Preallocates memory for a sparse parallel matrix in AIJ format
+   MatMPIAIJSetPreallocation - Preallocates memory for a sparse parallel matrix in `MATMPIAIJ` format
    (the default parallel PETSc format).  For good matrix assembly performance
    the user should preallocate the matrix storage by setting the parameters
    d_nz (or d_nnz) and o_nz (or o_nnz).  By setting these parameters accurately,
@@ -3928,7 +3930,7 @@ PetscErrorCode MatMPIAIJSetPreallocationCSR(Mat B, const PetscInt i[], const Pet
            (same value is used for all local rows)
 .  d_nnz - array containing the number of nonzeros in the various rows of the
            DIAGONAL portion of the local submatrix (possibly different for each row)
-           or NULL (PETSC_NULL_INTEGER in Fortran), if d_nz is used to specify the nonzero structure.
+           or NULL (`PETSC_NULL_INTEGER` in Fortran), if d_nz is used to specify the nonzero structure.
            The size of this array is equal to the number of local rows, i.e 'm'.
            For matrices that will be factored, you must leave room for (and set)
            the diagonal entry even if it is zero.
@@ -3936,14 +3938,13 @@ PetscErrorCode MatMPIAIJSetPreallocationCSR(Mat B, const PetscInt i[], const Pet
            submatrix (same value is used for all local rows).
 -  o_nnz - array containing the number of nonzeros in the various rows of the
            OFF-DIAGONAL portion of the local submatrix (possibly different for
-           each row) or NULL (PETSC_NULL_INTEGER in Fortran), if o_nz is used to specify the nonzero
+           each row) or NULL (`PETSC_NULL_INTEGER` in Fortran), if o_nz is used to specify the nonzero
            structure. The size of this array is equal to the number
            of local rows, i.e 'm'.
 
    If the *_nnz parameter is given then the *_nz parameter is ignored
 
-   The AIJ format (also called the Yale sparse matrix format or
-   compressed row storage (CSR)), is fully compatible with standard Fortran 77
+   The `MATAIJ` format, also called compressed row storage (CSR)), is fully compatible with standard Fortran 77
    storage.  The stored row and column indices begin with zero.
    See Users-Manual: ch_mat for details.
 
@@ -4007,8 +4008,8 @@ PetscErrorCode MatMPIAIJSetPreallocationCSR(Mat B, const PetscInt i[], const Pet
    submatrices [A], [E], [I] respectively. The OFF-DIAGONAL submatrices
    corresponding to proc0,proc1,proc2 are [BC], [DF], [GH] respectively.
    Internally, each processor stores the DIAGONAL part, and the OFF-DIAGONAL
-   part as SeqAIJ matrices. for eg: proc1 will store [E] as a SeqAIJ
-   matrix, ans [DF] as another SeqAIJ matrix.
+   part as `MATSEQAIJ` matrices. for eg: proc1 will store [E] as a SeqAIJ
+   matrix, ans [DF] as another `MATSEQAIJ` matrix.
 
    When d_nz, o_nz parameters are specified, d_nz storage elements are
    allocated for every row of the local diagonal submatrix, and o_nz
@@ -4039,7 +4040,7 @@ PetscErrorCode MatMPIAIJSetPreallocationCSR(Mat B, const PetscInt i[], const Pet
 
    Level: intermediate
 
-.seealso: `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatCreateAIJ()`, `MatMPIAIJSetPreallocationCSR()`,
+.seealso: `MATMPIAIJ`, `MATAIJ`, `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatCreateAIJ()`, `MatMPIAIJSetPreallocationCSR()`,
           `MATMPIAIJ`, `MatGetInfo()`, `PetscSplitOwnership()`
 @*/
 PetscErrorCode MatMPIAIJSetPreallocation(Mat B, PetscInt d_nz, const PetscInt d_nnz[], PetscInt o_nz, const PetscInt o_nnz[]) {
@@ -4051,19 +4052,19 @@ PetscErrorCode MatMPIAIJSetPreallocation(Mat B, PetscInt d_nz, const PetscInt d_
 }
 
 /*@
-     MatCreateMPIAIJWithArrays - creates a MPI AIJ matrix using arrays that contain in standard
+     MatCreateMPIAIJWithArrays - creates a `MATMPIAIJ` matrix using arrays that contain in standard
          CSR format for the local rows.
 
    Collective
 
    Input Parameters:
 +  comm - MPI communicator
-.  m - number of local rows (Cannot be PETSC_DECIDE)
+.  m - number of local rows (Cannot be `PETSC_DECIDE`)
 .  n - This value should be the same as the local size used in creating the
-       x vector for the matrix-vector product y = Ax. (or PETSC_DECIDE to have
+       x vector for the matrix-vector product y = Ax. (or `PETSC_DECIDE` to have
        calculated if N is given) For square matrices n is almost always m.
-.  M - number of global rows (or PETSC_DETERMINE to have calculated if m is given)
-.  N - number of global columns (or PETSC_DETERMINE to have calculated if n is given)
+.  M - number of global rows (or `PETSC_DETERMINE` to have calculated if m is given)
+.  N - number of global columns (or `PETSC_DETERMINE` to have calculated if n is given)
 .   i - row indices; that is i[0] = 0, i[row] = i[row-1] + number of elements in that row of the matrix
 .   j - column indices
 -   a - optional matrix values
@@ -4101,7 +4102,7 @@ $        i =  {0,3}    [size = nrow+1  = 1+1]
 $        j =  {0,1,2}  [size = 3]
 $        v =  {4,5,6}  [size = 3]
 
-.seealso: `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatMPIAIJSetPreallocation()`, `MatMPIAIJSetPreallocationCSR()`,
+.seealso: `MATMPIAIK`, `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatMPIAIJSetPreallocation()`, `MatMPIAIJSetPreallocationCSR()`,
           `MATMPIAIJ`, `MatCreateAIJ()`, `MatCreateMPIAIJWithSplitArrays()`, `MatUpdateMPIAIJWithArrays()`
 @*/
 PetscErrorCode MatCreateMPIAIJWithArrays(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, PetscInt N, const PetscInt i[], const PetscInt j[], const PetscScalar a[], Mat *mat) {
@@ -4117,8 +4118,8 @@ PetscErrorCode MatCreateMPIAIJWithArrays(MPI_Comm comm, PetscInt m, PetscInt n, 
 }
 
 /*@
-     MatUpdateMPIAIJWithArrays - updates a MPI AIJ matrix using arrays that contain in standard
-         CSR format for the local rows. Only the numerical values are updated the other arrays must be identical to what was passed from MatCreateMPIAIJWithArrays()
+     MatUpdateMPIAIJWithArrays - updates a `MATMPIAIJ` matrix using arrays that contain in standard
+         CSR format for the local rows. Only the numerical values are updated the other arrays must be identical to what was passed from `MatCreateMPIAIJWithArrays()`
 
      Deprecated: Use `MatUpdateMPIAIJWithArray()`
 
@@ -4126,19 +4127,19 @@ PetscErrorCode MatCreateMPIAIJWithArrays(MPI_Comm comm, PetscInt m, PetscInt n, 
 
    Input Parameters:
 +  mat - the matrix
-.  m - number of local rows (Cannot be PETSC_DECIDE)
+.  m - number of local rows (Cannot be `PETSC_DECIDE`)
 .  n - This value should be the same as the local size used in creating the
-       x vector for the matrix-vector product y = Ax. (or PETSC_DECIDE to have
+       x vector for the matrix-vector product y = Ax. (or `PETSC_DECIDE` to have
        calculated if N is given) For square matrices n is almost always m.
-.  M - number of global rows (or PETSC_DETERMINE to have calculated if m is given)
-.  N - number of global columns (or PETSC_DETERMINE to have calculated if n is given)
+.  M - number of global rows (or `PETSC_DETERMINE` to have calculated if m is given)
+.  N - number of global columns (or `PETSC_DETERMINE` to have calculated if n is given)
 .  Ii - row indices; that is Ii[0] = 0, Ii[row] = Ii[row-1] + number of elements in that row of the matrix
 .  J - column indices
 -  v - matrix values
 
    Level: intermediate
 
-.seealso: `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatMPIAIJSetPreallocation()`, `MatMPIAIJSetPreallocationCSR()`,
+.seealso: `MATMPIAIJ`, `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatMPIAIJSetPreallocation()`, `MatMPIAIJSetPreallocationCSR()`,
           `MATMPIAIJ`, `MatCreateAIJ()`, `MatCreateMPIAIJWithSplitArrays()`, `MatUpdateMPIAIJWithArrays()`, `MatUpdateMPIAIJWithArray()`
 @*/
 PetscErrorCode MatUpdateMPIAIJWithArrays(Mat mat, PetscInt m, PetscInt n, PetscInt M, PetscInt N, const PetscInt Ii[], const PetscInt J[], const PetscScalar v[]) {
@@ -4185,7 +4186,7 @@ PetscErrorCode MatUpdateMPIAIJWithArrays(Mat mat, PetscInt m, PetscInt n, PetscI
 }
 
 /*@
-     MatUpdateMPIAIJWithArray - updates an MPI AIJ matrix using an array that contains the nonzero values
+     MatUpdateMPIAIJWithArray - updates an `MATMPIAIJ` matrix using an array that contains the nonzero values
 
    Collective
 
@@ -4195,7 +4196,7 @@ PetscErrorCode MatUpdateMPIAIJWithArrays(Mat mat, PetscInt m, PetscInt n, PetscI
 
    Level: intermediate
 
-   Notes:
+   Note:
    The matrix must have been obtained with `MatCreateMPIAIJWithArrays()` or `MatMPIAIJSetPreallocationCSR()`
 
 .seealso: `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatMPIAIJSetPreallocation()`, `MatMPIAIJSetPreallocationCSR()`,
@@ -4243,7 +4244,7 @@ PetscErrorCode MatUpdateMPIAIJWithArray(Mat mat, const PetscScalar v[]) {
 }
 
 /*@C
-   MatCreateAIJ - Creates a sparse parallel matrix in AIJ format
+   MatCreateAIJ - Creates a sparse parallel matrix in `MATAIJ` format
    (the default parallel PETSc format).  For good matrix assembly performance
    the user should preallocate the matrix storage by setting the parameters
    d_nz (or d_nnz) and o_nz (or o_nnz).  By setting these parameters accurately,
@@ -4253,14 +4254,14 @@ PetscErrorCode MatUpdateMPIAIJWithArray(Mat mat, const PetscScalar v[]) {
 
    Input Parameters:
 +  comm - MPI communicator
-.  m - number of local rows (or PETSC_DECIDE to have calculated if M is given)
+.  m - number of local rows (or `PETSC_DECIDE` to have calculated if M is given)
            This value should be the same as the local size used in creating the
            y vector for the matrix-vector product y = Ax.
 .  n - This value should be the same as the local size used in creating the
        x vector for the matrix-vector product y = Ax. (or PETSC_DECIDE to have
        calculated if N is given) For square matrices n is almost always m.
-.  M - number of global rows (or PETSC_DETERMINE to have calculated if m is given)
-.  N - number of global columns (or PETSC_DETERMINE to have calculated if n is given)
+.  M - number of global rows (or `PETSC_DETERMINE` to have calculated if m is given)
+.  N - number of global columns (or `PETSC_DETERMINE` to have calculated if n is given)
 .  d_nz  - number of nonzeros per row in DIAGONAL portion of local submatrix
            (same value is used for all local rows)
 .  d_nnz - array containing the number of nonzeros in the various rows of the
@@ -4278,9 +4279,9 @@ PetscErrorCode MatUpdateMPIAIJWithArray(Mat mat, const PetscScalar v[]) {
    Output Parameter:
 .  A - the matrix
 
-   It is recommended that one use the MatCreate(), MatSetType() and/or MatSetFromOptions(),
+   It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`,
    MatXXXXSetPreallocation() paradigm instead of this routine directly.
-   [MatXXXXSetPreallocation() is, for example, MatSeqAIJSetPreallocation]
+   [MatXXXXSetPreallocation() is, for example, `MatSeqAIJSetPreallocation()`]
 
    Notes:
    If the *_nnz parameter is given then the *_nz parameter is ignored
@@ -4289,7 +4290,7 @@ PetscErrorCode MatUpdateMPIAIJWithArray(Mat mat, const PetscScalar v[]) {
    processors, while d_nz,d_nnz,o_nz,o_nnz parameters specify the approximate
    storage requirements for this matrix.
 
-   If PETSC_DECIDE or  PETSC_DETERMINE is used for a particular argument on one
+   If `PETSC_DECIDE` or  `PETSC_DETERMINE` is used for a particular argument on one
    processor than it must be used on all processors that share the object for
    that argument.
 
@@ -4340,9 +4341,9 @@ $     MatMPIAIJSetPreallocation(A,...);
    Options Database Keys:
 +  -mat_no_inode  - Do not use inodes
 .  -mat_inode_limit <limit> - Sets inode limit (max limit=5)
--  -matmult_vecscatter_view <viewer> - View the vecscatter (i.e., communication pattern) used in MatMult() of sparse parallel matrices.
-        See viewer types in manual of MatView(). Of them, ascii_matlab, draw or binary cause the vecscatter be viewed as a matrix.
-        Entry (i,j) is the size of message (in bytes) rank i sends to rank j in one MatMult() call.
+-  -matmult_vecscatter_view <viewer> - View the vecscatter (i.e., communication pattern) used in `MatMult()` of sparse parallel matrices.
+        See viewer types in manual of `MatView()`. Of them, ascii_matlab, draw or binary cause the vecscatter be viewed as a matrix.
+        Entry (i,j) is the size of message (in bytes) rank i sends to rank j in one `MatMult()` call.
 
    Example usage:
 
@@ -4441,21 +4442,22 @@ PetscErrorCode MatCreateAIJ(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, P
   Not collective
 
   Input Parameter:
-. A - The MPIAIJ matrix
+. A - The `MATMPIAIJ` matrix
 
   Output Parameters:
-+ Ad - The local diagonal block as a SeqAIJ matrix
-. Ao - The local off-diagonal block as a SeqAIJ matrix
++ Ad - The local diagonal block as a `MATSEQAIJ` matrix
+. Ao - The local off-diagonal block as a `MATSEQAIJ` matrix
 - colmap - An array mapping local column numbers of Ao to global column numbers of the parallel matrix
 
-  Note: The rows in Ad and Ao are in [0, Nr), where Nr is the number of local rows on this process. The columns
+  Note:
+  The rows in Ad and Ao are in [0, Nr), where Nr is the number of local rows on this process. The columns
   in Ad are in [0, Nc) where Nc is the number of local columns. The columns are Ao are in [0, Nco), where Nco is
   the number of nonzero columns in the local off-diagonal piece of the matrix A. The array colmap maps these
   local column numbers to global column numbers in the original matrix.
 
   Level: intermediate
 
-.seealso: `MatMPIAIJGetLocalMat()`, `MatMPIAIJGetLocalMatCondensed()`, `MatCreateAIJ()`, `MATMPIAIJ`, `MATSEQAIJ`
+.seealso: `MATMPIAIJ`, `MatMPIAIJGetLocalMat()`, `MatMPIAIJGetLocalMatCondensed()`, `MatCreateAIJ()`, `MATMPIAIJ`, `MATSEQAIJ`
 @*/
 PetscErrorCode MatMPIAIJGetSeqAIJ(Mat A, Mat *Ad, Mat *Ao, const PetscInt *colmap[]) {
   Mat_MPIAIJ *a = (Mat_MPIAIJ *)A->data;
@@ -4952,7 +4954,7 @@ PetscErrorCode MatCreateMPIAIJSumSeqAIJSymbolic(MPI_Comm comm, Mat seqmat, Petsc
 }
 
 /*@C
-      MatCreateMPIAIJSumSeqAIJ - Creates a MATMPIAIJ matrix by adding sequential
+      MatCreateMPIAIJSumSeqAIJ - Creates a `MATMPIAIJ` matrix by adding sequential
                  matrices from each processor
 
     Collective
@@ -4960,19 +4962,19 @@ PetscErrorCode MatCreateMPIAIJSumSeqAIJSymbolic(MPI_Comm comm, Mat seqmat, Petsc
    Input Parameters:
 +    comm - the communicators the parallel matrix will live on
 .    seqmat - the input sequential matrices
-.    m - number of local rows (or PETSC_DECIDE)
-.    n - number of local columns (or PETSC_DECIDE)
--    scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
+.    m - number of local rows (or `PETSC_DECIDE`)
+.    n - number of local columns (or `PETSC_DECIDE`)
+-    scall - either `MAT_INITIAL_MATRIX` or `MAT_REUSE_MATRIX`
 
    Output Parameter:
 .    mpimat - the parallel matrix generated
 
     Level: advanced
 
-   Notes:
+   Note:
      The dimensions of the sequential matrix in each processor MUST be the same.
      The input seqmat is included into the container "Mat_Merge_SeqsToMPI", and will be
-     destroyed when mpimat is destroyed. Call PetscObjectQuery() to access seqmat.
+     destroyed when mpimat is destroyed. Call `PetscObjectQuery()` to access seqmat.
 @*/
 PetscErrorCode MatCreateMPIAIJSumSeqAIJ(MPI_Comm comm, Mat seqmat, PetscInt m, PetscInt n, MatReuse scall, Mat *mpimat) {
   PetscMPIInt size;
@@ -4997,15 +4999,15 @@ PetscErrorCode MatCreateMPIAIJSumSeqAIJ(MPI_Comm comm, Mat seqmat, PetscInt m, P
 }
 
 /*@
-     MatAIJGetLocalMat - Creates a SeqAIJ from a MATAIJ matrix by taking all its local rows and putting them into a sequential matrix with
-          mlocal rows and n columns. Where mlocal is the row count obtained with MatGetLocalSize() and n is the global column count obtained
-          with MatGetSize()
+     MatAIJGetLocalMat - Creates a `MATSEQAIJ` from a `MATAIJ` matrix by taking all its local rows and putting them into a sequential matrix with
+          mlocal rows and n columns. Where mlocal is the row count obtained with `MatGetLocalSize()` and n is the global column count obtained
+          with `MatGetSize()`
 
     Not Collective
 
    Input Parameters:
 +    A - the matrix
--    scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
+-    scall - either `MAT_INITIAL_MATRIX` or `MAT_REUSE_MATRIX`
 
    Output Parameter:
 .    A_loc - the local sequential matrix generated
@@ -5013,12 +5015,11 @@ PetscErrorCode MatCreateMPIAIJSumSeqAIJ(MPI_Comm comm, Mat seqmat, PetscInt m, P
     Level: developer
 
    Notes:
-     In other words combines the two parts of a parallel MPIAIJ matrix on each process to a single matrix.
+     In other words combines the two parts of a parallel `MATMPIAIJ` matrix on each process to a single matrix.
 
-     Destroy the matrix with MatDestroy()
+     Destroy the matrix with `MatDestroy()`
 
-.seealso: MatMPIAIJGetLocalMat()
-
+.seealso: `MatMPIAIJGetLocalMat()`
 @*/
 PetscErrorCode MatAIJGetLocalMat(Mat A, Mat *A_loc) {
   PetscBool mpi;
@@ -5035,15 +5036,15 @@ PetscErrorCode MatAIJGetLocalMat(Mat A, Mat *A_loc) {
 }
 
 /*@
-     MatMPIAIJGetLocalMat - Creates a SeqAIJ from a MATMPIAIJ matrix by taking all its local rows and putting them into a sequential matrix with
-          mlocal rows and n columns. Where mlocal is the row count obtained with MatGetLocalSize() and n is the global column count obtained
-          with MatGetSize()
+     MatMPIAIJGetLocalMat - Creates a `MATSEQAIJ` from a `MATMPIAIJ` matrix by taking all its local rows and putting them into a sequential matrix with
+          mlocal rows and n columns. Where mlocal is the row count obtained with `MatGetLocalSize()` and n is the global column count obtained
+          with `MatGetSize()`
 
     Not Collective
 
    Input Parameters:
 +    A - the matrix
--    scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
+-    scall - either `MAT_INITIAL_MATRIX` or `MAT_REUSE_MATRIX`
 
    Output Parameter:
 .    A_loc - the local sequential matrix generated
@@ -5051,14 +5052,14 @@ PetscErrorCode MatAIJGetLocalMat(Mat A, Mat *A_loc) {
     Level: developer
 
    Notes:
-     In other words combines the two parts of a parallel MPIAIJ matrix on each process to a single matrix.
+     In other words combines the two parts of a parallel `MATMPIAIJ` matrix on each process to a single matrix.
 
-     When the communicator associated with A has size 1 and MAT_INITIAL_MATRIX is requested, the matrix returned is the diagonal part of A.
-     If MAT_REUSE_MATRIX is requested with comm size 1, MatCopy(Adiag,*A_loc,SAME_NONZERO_PATTERN) is called.
-     This means that one can preallocate the proper sequential matrix first and then call this routine with MAT_REUSE_MATRIX to safely
+     When the communicator associated with A has size 1 and `MAT_INITIAL_MATRIX` is requested, the matrix returned is the diagonal part of A.
+     If `MAT_REUSE_MATRIX` is requested with comm size 1, `MatCopy`(Adiag,*A_loc,`SAME_NONZERO_PATTERN`) is called.
+     This means that one can preallocate the proper sequential matrix first and then call this routine with `MAT_REUSE_MATRIX` to safely
      modify the values of the returned A_loc.
 
-.seealso: `MatGetOwnershipRange()`, `MatMPIAIJGetLocalMatCondensed()`, `MatMPIAIJGetLocalMatMerge()`
+.seealso: `MATMPIAIJ`, `MatGetOwnershipRange()`, `MatMPIAIJGetLocalMatCondensed()`, `MatMPIAIJGetLocalMatMerge()`
 @*/
 PetscErrorCode MatMPIAIJGetLocalMat(Mat A, MatReuse scall, Mat *A_loc) {
   Mat_MPIAIJ        *mpimat = (Mat_MPIAIJ *)A->data;
@@ -5165,26 +5166,25 @@ PetscErrorCode MatMPIAIJGetLocalMat(Mat A, MatReuse scall, Mat *A_loc) {
 }
 
 /*@
-     MatMPIAIJGetLocalMatMerge - Creates a SeqAIJ from a MATMPIAIJ matrix by taking all its local rows and putting them into a sequential matrix with
+     MatMPIAIJGetLocalMatMerge - Creates a `MATSEQAIJ` from a `MATMPIAIJ` matrix by taking all its local rows and putting them into a sequential matrix with
           mlocal rows and n columns. Where n is the sum of the number of columns of the diagonal and offdiagonal part
 
     Not Collective
 
    Input Parameters:
 +    A - the matrix
--    scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
+-    scall - either `MAT_INITIAL_MATRIX` or `MAT_REUSE_MATRIX`
 
    Output Parameters:
-+    glob - sequential IS with global indices associated with the columns of the local sequential matrix generated (can be NULL)
++    glob - sequential `IS` with global indices associated with the columns of the local sequential matrix generated (can be NULL)
 -    A_loc - the local sequential matrix generated
 
     Level: developer
 
-   Notes:
-     This is different from MatMPIAIJGetLocalMat() since the first columns in the returning matrix are those associated with the diagonal part, then those associated with the offdiagonal part (in its local ordering)
+   Note:
+     This is different from `MatMPIAIJGetLocalMat()` since the first columns in the returning matrix are those associated with the diagonal part, then those associated with the off diagonal part (in its local ordering)
 
-.seealso: `MatGetOwnershipRange()`, `MatMPIAIJGetLocalMat()`, `MatMPIAIJGetLocalMatCondensed()`
-
+.seealso: `MATMPIAIJ`, `MatGetOwnershipRange()`, `MatMPIAIJGetLocalMat()`, `MatMPIAIJGetLocalMatCondensed()`
 @*/
 PetscErrorCode MatMPIAIJGetLocalMatMerge(Mat A, MatReuse scall, IS *glob, Mat *A_loc) {
   Mat             Ao, Ad;
@@ -5283,13 +5283,13 @@ PetscErrorCode MatMPIAIJGetLocalMatMerge(Mat A, MatReuse scall, IS *glob, Mat *A
 }
 
 /*@C
-     MatMPIAIJGetLocalMatCondensed - Creates a SeqAIJ matrix from an MATMPIAIJ matrix by taking all its local rows and NON-ZERO columns
+     MatMPIAIJGetLocalMatCondensed - Creates a `MATSEQAIJ` matrix from an `MATMPIAIJ` matrix by taking all its local rows and NON-ZERO columns
 
     Not Collective
 
    Input Parameters:
 +    A - the matrix
-.    scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
+.    scall - either `MAT_INITIAL_MATRIX` or `MAT_REUSE_MATRIX`
 -    row, col - index sets of rows and columns to extract (or NULL)
 
    Output Parameter:
@@ -5297,8 +5297,7 @@ PetscErrorCode MatMPIAIJGetLocalMatMerge(Mat A, MatReuse scall, IS *glob, Mat *A
 
     Level: developer
 
-.seealso: `MatGetOwnershipRange()`, `MatMPIAIJGetLocalMat()`
-
+.seealso: `MATMPIAIJ`, `MatGetOwnershipRange()`, `MatMPIAIJGetLocalMat()`
 @*/
 PetscErrorCode MatMPIAIJGetLocalMatCondensed(Mat A, MatReuse scall, IS *row, IS *col, Mat *A_loc) {
   Mat_MPIAIJ *a = (Mat_MPIAIJ *)A->data;
@@ -5603,14 +5602,14 @@ PetscErrorCode MatGetBrowsOfAcols_MPIXAIJ(Mat A, Mat P, PetscInt dof, MatReuse r
 }
 
 /*@C
-  MatGetBrowsOfAcols - Creates a SeqAIJ matrix by taking rows of B that equal to nonzero columns of local A
+  MatGetBrowsOfAcols - Returns `IS` that contain rows of B that equal to nonzero columns of local A
 
-  Collective on Mat
+  Collective on A
 
   Input Parameters:
-+ A - the first matrix in mpiaij format
-. B - the second matrix in mpiaij format
-- scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
++ A - the first matrix in `MATMPIAIJ` format
+. B - the second matrix in `MATMPIAIJ` format
+- scall - either `MAT_INITIAL_MATRIX` or `MAT_REUSE_MATRIX`
 
   Output Parameters:
 + rowb - On input index sets of rows of B to extract (or NULL), modified on output
@@ -5688,7 +5687,8 @@ PetscErrorCode MatGetBrowsOfAcols(Mat A, Mat B, MatReuse scall, IS *rowb, IS *co
 .    bufa_ptr - array for sending matrix values, saved for MAT_REUSE (or NULL)
 -    B_oth - the sequential matrix generated with size aBn=a->B->cmap->n by B->cmap->N
 
-    Developer Notes: This directly accesses information inside the VecScatter associated with the matrix-vector product
+    Developer Note:
+    This directly accesses information inside the VecScatter associated with the matrix-vector product
      for this matrix. This is not desirable..
 
     Level: developer
@@ -6603,19 +6603,19 @@ static PetscErrorCode MatSetValuesCOO_MPIAIJ(Mat mat, const PetscScalar v[], Ins
    MATMPIAIJ - MATMPIAIJ = "mpiaij" - A matrix type to be used for parallel sparse matrices.
 
    Options Database Keys:
-. -mat_type mpiaij - sets the matrix type to "mpiaij" during a call to MatSetFromOptions()
+. -mat_type mpiaij - sets the matrix type to `MATMPIAIJ` during a call to `MatSetFromOptions()`
 
    Level: beginner
 
    Notes:
-    MatSetValues() may be called for this matrix type with a NULL argument for the numerical values,
+    `MatSetValues()` may be called for this matrix type with a NULL argument for the numerical values,
     in this case the values associated with the rows and columns one passes in are set to zero
     in the matrix
 
-    MatSetOptions(,MAT_STRUCTURE_ONLY,PETSC_TRUE) may be called for this matrix type. In this no
-    space is allocated for the nonzero entries and any entries passed with MatSetValues() are ignored
+    `MatSetOptions`(,`MAT_STRUCTURE_ONLY`,`PETSC_TRUE`) may be called for this matrix type. In this no
+    space is allocated for the nonzero entries and any entries passed with `MatSetValues()` are ignored
 
-.seealso: `MatCreateAIJ()`
+.seealso: `MATSEQAIJ`, `MATAIJ`, `MatCreateAIJ()`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJ(Mat B) {
@@ -6698,19 +6698,19 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJ(Mat B) {
 }
 
 /*@C
-     MatCreateMPIAIJWithSplitArrays - creates a MPI AIJ matrix using arrays that contain the "diagonal"
+     MatCreateMPIAIJWithSplitArrays - creates a `MATMPIAIJ` matrix using arrays that contain the "diagonal"
          and "off-diagonal" part of the matrix in CSR format.
 
    Collective
 
    Input Parameters:
 +  comm - MPI communicator
-.  m - number of local rows (Cannot be PETSC_DECIDE)
+.  m - number of local rows (Cannot be `PETSC_DECIDE`)
 .  n - This value should be the same as the local size used in creating the
-       x vector for the matrix-vector product y = Ax. (or PETSC_DECIDE to have
+       x vector for the matrix-vector product y = Ax. (or `PETSC_DECIDE` to have
        calculated if N is given) For square matrices n is almost always m.
-.  M - number of global rows (or PETSC_DETERMINE to have calculated if m is given)
-.  N - number of global columns (or PETSC_DETERMINE to have calculated if n is given)
+.  M - number of global rows (or `PETSC_DETERMINE` to have calculated if m is given)
+.  N - number of global columns (or `PETSC_DETERMINE` to have calculated if n is given)
 .   i - row indices for "diagonal" portion of matrix; that is i[0] = 0, i[row] = i[row-1] + number of elements in that row of the matrix
 .   j - column indices, which must be local, i.e., based off the start column of the diagonal portion
 .   a - matrix values
@@ -6737,7 +6737,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJ(Mat B) {
        legacy application natively assembles into exactly this split format. The code to do so is nontrivial and does
        not easily support in-place reassembly. It is recommended to use MatSetValues() (or a variant thereof) because
        the resulting assembly is easier to implement, will work with any matrix format, and the user does not have to
-       keep track of the underlying array. Use MatSetOption(A,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE) to disable all
+       keep track of the underlying array. Use `MatSetOption`(A,`MAT_NO_OFF_PROC_ENTRIES`,`PETSC_TRUE`) to disable all
        communication if it is known that only local entries will be set.
 
 .seealso: `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatMPIAIJSetPreallocation()`, `MatMPIAIJSetPreallocationCSR()`,

@@ -130,8 +130,8 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJCRL(Mat A, MatType type, Mat
 }
 
 /*@C
-   MatCreateMPIAIJCRL - Creates a sparse matrix of type MPIAIJCRL.
-   This type inherits from AIJ, but stores some additional
+   MatCreateMPIAIJCRL - Creates a sparse matrix of type `MATMPIAIJCRL`.
+   This type inherits from `MATAIJ`, but stores some additional
    information that is used to allow better vectorization of
    the matrix-vector product. At the cost of increased storage, the AIJ formatted
    matrix can be copied to a format in which pieces of the matrix are
@@ -143,7 +143,7 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJCRL(Mat A, MatType type, Mat
    Collective
 
    Input Parameters:
-+  comm - MPI communicator, set to PETSC_COMM_SELF
++  comm - MPI communicator, set to `PETSC_COMM_SELF`
 .  m - number of rows
 .  n - number of columns
 .  nz - number of nonzeros per row (same for all rows)
@@ -153,12 +153,12 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJCRL(Mat A, MatType type, Mat
    Output Parameter:
 .  A - the matrix
 
-   Notes:
+   Note:
    If nnz is given then nz is ignored
 
    Level: intermediate
 
-.seealso: `MatCreate()`, `MatCreateMPIAIJPERM()`, `MatSetValues()`
+.seealso: `MATAIJ`, `MATAIJSELL`, `MATAIJPERM`, `MATAIJMKL`, `MatCreate()`, `MatCreateMPIAIJPERM()`, `MatSetValues()`
 @*/
 PetscErrorCode MatCreateMPIAIJCRL(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt nz, const PetscInt nnz[], PetscInt onz, const PetscInt onnz[], Mat *A) {
   PetscFunctionBegin;

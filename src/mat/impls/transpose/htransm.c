@@ -92,20 +92,19 @@ PetscErrorCode MatHermitianTransposeGetMat_HT(Mat N, Mat *M) {
 }
 
 /*@
-      MatHermitianTransposeGetMat - Gets the Mat object stored inside a MATTRANSPOSEMAT
+      MatHermitianTransposeGetMat - Gets the `Mat` object stored inside a `MATHERMITIANTRANSPOSE`
 
    Logically collective on Mat
 
    Input Parameter:
-.   A  - the MATTRANSPOSE matrix
+.   A  - the `MATHERMITIANTRANSPOSE` matrix
 
    Output Parameter:
 .   M - the matrix object stored inside A
 
    Level: intermediate
 
-.seealso: `MatCreateHermitianTranspose()`
-
+.seealso: `MATHERMITIANTRANSPOSE`, `MatCreateHermitianTranspose()`
 @*/
 PetscErrorCode MatHermitianTransposeGetMat(Mat A, Mat *M) {
   PetscFunctionBegin;
@@ -150,10 +149,18 @@ PetscErrorCode MatConvert_HT(Mat A, MatType newtype, MatReuse reuse, Mat *newmat
   PetscFunctionReturn(0);
 }
 
-/*@
-      MatCreateHermitianTranspose - Creates a new matrix object that behaves like A'*
+/*MC
+   MATHERMITIANTRANSPOSE - "hermitiantranspose" - A matrix type that represents a virtual transpose of a matrix
 
-   Collective on Mat
+  Level: advanced
+
+.seealso: `MATTRANSPOSE`, `Mat`, `MatCreateHermitianTranspose()`, `MatCreateTranspose()`
+M*/
+
+/*@
+      MatCreateHermitianTranspose - Creates a new matrix object of `MatType` `MATHERMITIANTRANSPOSE` that behaves like A'*
+
+   Collective on A
 
    Input Parameter:
 .   A  - the (possibly rectangular) matrix
@@ -163,12 +170,12 @@ PetscErrorCode MatConvert_HT(Mat A, MatType newtype, MatReuse reuse, Mat *newmat
 
    Level: intermediate
 
-   Notes:
-    The hermitian transpose A' is NOT actually formed! Rather the new matrix
-          object performs the matrix-vector product by using the MatMultHermitianTranspose() on
+   Note:
+    The Hermitian transpose A' is NOT actually formed! Rather the new matrix
+          object performs the matrix-vector product, `MatMult()`, by using the `MatMultHermitianTranspose()` on
           the original matrix
 
-.seealso: `MatCreateNormal()`, `MatMult()`, `MatMultHermitianTranspose()`, `MatCreate()`
+.seealso: `MATHERMITIANTRANSPOSE`, `MatCreateNormal()`, `MatMult()`, `MatMultHermitianTranspose()`, `MatCreate()`
 @*/
 PetscErrorCode MatCreateHermitianTranspose(Mat A, Mat *N) {
   PetscInt m, n;
@@ -181,7 +188,7 @@ PetscErrorCode MatCreateHermitianTranspose(Mat A, Mat *N) {
   PetscCall(MatSetSizes(*N, n, m, PETSC_DECIDE, PETSC_DECIDE));
   PetscCall(PetscLayoutSetUp((*N)->rmap));
   PetscCall(PetscLayoutSetUp((*N)->cmap));
-  PetscCall(PetscObjectChangeTypeName((PetscObject)*N, MATTRANSPOSEMAT));
+  PetscCall(PetscObjectChangeTypeName((PetscObject)*N, MATHERMITIANTRANSPOSE));
 
   PetscCall(PetscNewLog(*N, &Na));
   (*N)->data = (void *)Na;

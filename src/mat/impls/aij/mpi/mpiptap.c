@@ -755,7 +755,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIXAIJ_allatonce(Mat A, Mat P, PetscInt do
       c_rmtaa = c_rmta + ptap->c_rmti[pocol];
       for (jj = 0; jj < voff; jj++) {
         apvaluestmp[jj] = apvalues[jj] * poa[j];
-        /*If the row is empty */
+        /* If the row is empty */
         if (!c_rmtc[pocol]) {
           c_rmtjj[jj] = apindices[jj];
           c_rmtaa[jj] = apvaluestmp[jj];
@@ -917,7 +917,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIXAIJ_allatonce_merged(Mat A, Mat P, Pets
       c_rmtaa = c_rmta + ptap->c_rmti[pocol];
       for (jj = 0; jj < voff; jj++) {
         apvaluestmp[jj] = apvalues[jj] * poa[j];
-        /*If the row is empty */
+        /* If the row is empty */
         if (!c_rmtc[pocol]) {
           c_rmtjj[jj] = apindices[jj];
           c_rmtaa[jj] = apvaluestmp[jj];

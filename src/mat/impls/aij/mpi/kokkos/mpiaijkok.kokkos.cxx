@@ -622,22 +622,24 @@ static PetscErrorCode MatSeqAIJKokkosReduce(Mat A, MatReuse reuse, PetscBool loc
   PetscFunctionReturn(0);
 }
 
-/* MatSetMPIAIJKokkosWithGlobalCSRMatrix - Set the diag and offdiag parts of a MATMPIAIJKOKKOS matrix by splitting a KokkosCsrMatrix
+/* MatSetMPIAIJKokkosWithGlobalCSRMatrix - Set the diag and offdiag parts of a `MATMPIAIJKOKKOS` matrix by splitting a KokkosCsrMatrix
 
   Input Parameters:
-+  C        - the MATMPIAIJKOKKOS matrix, of size m,n,M,N
++  C        - the `MATMPIAIJKOKKOS` matrix, of size m,n,M,N
 .  reuse    - indicate whether the matrix has called this function before
 .  csrmat   - the KokkosCsrMatrix, of size m,N
--  Cdstart  - when reuse == MAT_REUSE_MATRIX, it is an input parameter. For each row in csrmat, it stores the start of the first
+-  Cdstart  - when reuse == `MAT_REUSE_MATRIX`, it is an input parameter. For each row in csrmat, it stores the start of the first
               entry of the diag block of C in csrmat's j array. E.g, if row i has col ids = {0, 3, 4, 5, 7, 9} and the first diag
               entry is 5, then Cdstart[i] = 3.
 
   Output Parameters:
-+  C        - the updated MATMPIAIJKOKKOS matrix
--  Cdstart - when reuse == MAT_INITIAL_MATRIX, it is an output parameter
++  C        - the updated `MATMPIAIJKOKKOS` matrix
+-  Cdstart - when reuse == `MAT_INITIAL_MATRIX`, it is an output parameter
 
-  Notes:
-   Between calls with MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX, csrmat must have the same nonzero pattern
+  Note:
+   Between calls with `MAT_INITIAL_MATRIX` or `MAT_REUSE_MATRIX`, csrmat must have the same nonzero pattern
+
+.seealso: `MATMPIAIJKOKKOS`
  */
 static PetscErrorCode MatSetMPIAIJKokkosWithGlobalCSRMatrix(Mat C, MatReuse reuse, const KokkosCsrMatrix &csrmat, MatRowMapKokkosView &Cdstart) {
   const MatScalarKokkosView      &Ca = csrmat.values;
@@ -820,7 +822,8 @@ static PetscErrorCode MatSetMPIAIJKokkosWithGlobalCSRMatrix(Mat C, MatReuse reus
 +  C        - the updated MATMPIAIJKOKKOS matrix
 -  Cdoffset - when reuse == MAT_INITIAL_MATRIX, it is an output parameter
 
-  Notes: the input matrix's col ids and col size will be changed.
+  Note:
+  the input matrix's col ids and col size will be changed.
 */
 static PetscErrorCode MatSeqAIJCompactOutExtraColumns_SeqAIJKokkos(Mat C, MatColIdxKokkosView &l2g) {
   Mat_SeqAIJKokkos      *ckok;
@@ -858,7 +861,7 @@ static PetscErrorCode MatSeqAIJCompactOutExtraColumns_SeqAIJKokkos(Mat C, MatCol
 .  B        - an MPIAIJKOKKOS matrix
 -  mm       - a struct used to stash intermediate data when computing AB. Persist from symbolic to numeric operations.
 
-  Notes: The local part of the result C is stored as mm->C_global, which is of type KokkosCsrMatrix and uses global col ids.
+  Note: The local part of the result C is stored as mm->C_global, which is of type KokkosCsrMatrix and uses global col ids.
 */
 static PetscErrorCode MatProductSymbolic_MPIAIJKokkos_AB(Mat_Product *product, Mat A, Mat B, MatMatStruct_AB *mm) {
   Mat_MPIAIJ              *a  = static_cast<Mat_MPIAIJ *>(A->data);
@@ -923,7 +926,7 @@ static PetscErrorCode MatProductSymbolic_MPIAIJKokkos_AB(Mat_Product *product, M
 .  l2g      - If localB, then l2g maps B's local col ids to global ones.
 -  mm       - a struct used to stash intermediate data in AtB
 
-  Notes: The local part of the result C is stored as mm->C_global, which is of type KokkosCsrMatrix and uses global col ids.
+  Note: The local part of the result C is stored as mm->C_global, which is of type KokkosCsrMatrix and uses global col ids.
 */
 static PetscErrorCode MatProductSymbolic_MPIAIJKokkos_AtB(Mat_Product *product, Mat A, Mat B, PetscBool localB, PetscInt N, const ConstMatColIdxKokkosView &l2g, MatMatStruct_AtB *mm) {
   Mat_MPIAIJ *a  = static_cast<Mat_MPIAIJ *>(A->data);
@@ -1001,11 +1004,11 @@ PetscErrorCode MatProductNumeric_MPIAIJKokkos(Mat C) {
     ab = mmdata->mmAB;
     /* C1 = Ad * B_local */
     PetscCheck(ab->C1->ops->productnumeric && ab->C2->ops->productnumeric, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Missing numeric op for MATPRODUCT_AB");
-    PetscCall(MatMPIAIJGetLocalMatMerge(B, MAT_REUSE_MATRIX, NULL /*glob*/, &ab->B_local));
+    PetscCall(MatMPIAIJGetLocalMatMerge(B, MAT_REUSE_MATRIX, NULL /* glob */, &ab->B_local));
     PetscCheck(ab->C1->product->B == ab->B_local, PETSC_COMM_SELF, PETSC_ERR_PLIB, "In MATPRODUCT_AB, internal mat product matrix C1->B has unexpectedly changed");
     if (ab->C1->product->A != Ad) PetscCall(MatProductReplaceMats(Ad, NULL, NULL, ab->C1));
     PetscCall((*ab->C1->ops->productnumeric)(ab->C1));
-    PetscCall(MatSeqAIJKokkosBcast(ab->B_local, MAT_REUSE_MATRIX, 0 /*N*/, MatColIdxKokkosView() /*l2g*/, NULL /*ownerSF*/, ab->sf, ab->abuf, ab->rows, ab->rowoffset, ab->B_other));
+    PetscCall(MatSeqAIJKokkosBcast(ab->B_local, MAT_REUSE_MATRIX, 0 /* N */, MatColIdxKokkosView() /*l2g*/, NULL /*ownerSF*/, ab->sf, ab->abuf, ab->rows, ab->rowoffset, ab->B_other));
     /* C2 = Ao * B_other */
     PetscCheck(ab->C2->product->B == ab->B_other, PETSC_COMM_SELF, PETSC_ERR_PLIB, "In MATPRODUCT_AB, internal mat product matrix C2->B has unexpectedly changed");
     if (ab->C1->product->A != Ao) PetscCall(MatProductReplaceMats(Ao, NULL, NULL, ab->C2));
@@ -1017,7 +1020,7 @@ PetscErrorCode MatProductNumeric_MPIAIJKokkos(Mat C) {
     atb = mmdata->mmAtB;
     PetscCheck(atb->C1->ops->productnumeric && atb->C2->ops->productnumeric, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Missing numeric op for MATPRODUCT_AtB");
     /* C1 = Ad^t * B_local */
-    PetscCall(MatMPIAIJGetLocalMatMerge(B, MAT_REUSE_MATRIX, NULL /*glob*/, &atb->B_local));
+    PetscCall(MatMPIAIJGetLocalMatMerge(B, MAT_REUSE_MATRIX, NULL /* glob */, &atb->B_local));
     PetscCheck(atb->C1->product->B == atb->B_local, PETSC_COMM_SELF, PETSC_ERR_PLIB, "In MATPRODUCT_AtB, internal mat product matrix C1->B has unexpectedly changed");
     if (atb->C1->product->A != Ad) PetscCall(MatProductReplaceMats(Ad, NULL, NULL, atb->C1));
     PetscCall((*atb->C1->ops->productnumeric)(atb->C1));
@@ -1027,19 +1030,19 @@ PetscErrorCode MatProductNumeric_MPIAIJKokkos(Mat C) {
     if (atb->C2->product->A != Ao) PetscCall(MatProductReplaceMats(Ao, NULL, NULL, atb->C2));
     PetscCall((*atb->C2->ops->productnumeric)(atb->C2));
     /* Form C2_global */
-    PetscCall(MatSeqAIJKokkosReduce(atb->C2, MAT_REUSE_MATRIX, PETSC_TRUE, 0 /*N*/, MatColIdxKokkosView() /*l2g*/, NULL /*ownerSF*/, atb->sf, atb->abuf, atb->srcrowoffset, atb->dstrowoffset, atb->C2_global));
+    PetscCall(MatSeqAIJKokkosReduce(atb->C2, MAT_REUSE_MATRIX, PETSC_TRUE, 0 /* N */, MatColIdxKokkosView() /*l2g*/, NULL /*ownerSF*/, atb->sf, atb->abuf, atb->srcrowoffset, atb->dstrowoffset, atb->C2_global));
     /* C = C1_global + C2_global */
     KokkosSparse::spadd_numeric(&atb->kh, one, atb->C1_global, one, atb->C2_global, atb->C_global);
     mm = static_cast<MatMatStruct *>(atb);
   } else if (ptype == MATPRODUCT_PtAP) { /* BtAB */
     ab = mmdata->mmAB;
-    PetscCall(MatMPIAIJGetLocalMatMerge(B, MAT_REUSE_MATRIX, NULL /*glob*/, &ab->B_local));
+    PetscCall(MatMPIAIJGetLocalMatMerge(B, MAT_REUSE_MATRIX, NULL /* glob */, &ab->B_local));
 
     /* ab->C1 = Ad * B_local */
     PetscCheck(ab->C1->product->B == ab->B_local, PETSC_COMM_SELF, PETSC_ERR_PLIB, "In MATPRODUCT_PtAP, internal mat product matrix ab->C1->B has unexpectedly changed");
     if (ab->C1->product->A != Ad) PetscCall(MatProductReplaceMats(Ad, NULL, NULL, ab->C1));
     PetscCall((*ab->C1->ops->productnumeric)(ab->C1));
-    PetscCall(MatSeqAIJKokkosBcast(ab->B_local, MAT_REUSE_MATRIX, 0 /*N*/, MatColIdxKokkosView() /*l2g*/, NULL /*ownerSF*/, ab->sf, ab->abuf, ab->rows, ab->rowoffset, ab->B_other));
+    PetscCall(MatSeqAIJKokkosBcast(ab->B_local, MAT_REUSE_MATRIX, 0 /* N */, MatColIdxKokkosView() /*l2g*/, NULL /*ownerSF*/, ab->sf, ab->abuf, ab->rows, ab->rowoffset, ab->B_other));
     /* ab->C2 = Ao * B_other */
     if (ab->C2->product->A != Ao) PetscCall(MatProductReplaceMats(Ao, NULL, NULL, ab->C2));
     PetscCall((*ab->C2->ops->productnumeric)(ab->C2)); /* C2 = Ao * B_other */
@@ -1053,7 +1056,7 @@ PetscErrorCode MatProductNumeric_MPIAIJKokkos(Mat C) {
     /* atb->C2 = Bo^t * ab->C_petsc */
     if (atb->C2->product->A != Bo) PetscCall(MatProductReplaceMats(Bo, NULL, NULL, atb->C2));
     PetscCall((*atb->C2->ops->productnumeric)(atb->C2));
-    PetscCall(MatSeqAIJKokkosReduce(atb->C2, MAT_REUSE_MATRIX, PETSC_FALSE, 0 /*N*/, MatColIdxKokkosView() /*l2g*/, NULL /*ownerSF*/, atb->sf, atb->abuf, atb->srcrowoffset, atb->dstrowoffset, atb->C2_global));
+    PetscCall(MatSeqAIJKokkosReduce(atb->C2, MAT_REUSE_MATRIX, PETSC_FALSE, 0 /* N */, MatColIdxKokkosView() /*l2g*/, NULL /* ownerSF */, atb->sf, atb->abuf, atb->srcrowoffset, atb->dstrowoffset, atb->C2_global));
     KokkosSparse::spadd_numeric(&atb->kh, one, atb->C1_global, one, atb->C2_global, atb->C_global);
     mm = static_cast<MatMatStruct *>(atb);
   }
@@ -1342,7 +1345,7 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJKokkos(Mat A, MatType mtype,
   PetscFunctionReturn(0);
 }
 /*MC
-   MATSMPIAIJKOKKOS - MATAIJKOKKOS = "(mpi)aijkokkos" - A matrix type to be used for sparse matrices with Kokkos
+   MATAIJKOKKOS - "mpiaijkokkos", a matrix type to be used for CSR sparse matrices with Kokkos
 
    A matrix type type using Kokkos-Kernels CrsMatrix type for portability across different device types
 
@@ -1351,7 +1354,7 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJKokkos(Mat A, MatType mtype,
 
   Level: beginner
 
-.seealso: `MatCreateAIJKokkos()`, `MATSEQAIJKOKKOS`
+.seealso: `MatCreateAIJKokkos()`, `MATSEQAIJKOKKOS`, `MATSEQAIJ`, `MATMPIAIJ`
 M*/
 PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJKokkos(Mat A) {
   PetscFunctionBegin;
@@ -1362,7 +1365,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJKokkos(Mat A) {
 }
 
 /*@C
-   MatCreateAIJKokkos - Creates a sparse matrix in AIJ (compressed row) format
+   MatCreateAIJKokkos - Creates a sparse matrix in `MATAIJKOKOS` (compressed row) format
    (the default parallel PETSc format).  This matrix will ultimately pushed down
    to Kokkos for calculations. For good matrix
    assembly performance the user should preallocate the matrix storage by setting
@@ -1372,7 +1375,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJKokkos(Mat A) {
    Collective
 
    Input Parameters:
-+  comm - MPI communicator, set to PETSC_COMM_SELF
++  comm - MPI communicator, set to `PETSC_COMM_SELF`
 .  m - number of rows
 .  n - number of columns
 .  nz - number of nonzeros per row (same for all rows)
@@ -1382,20 +1385,19 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJKokkos(Mat A) {
    Output Parameter:
 .  A - the matrix
 
-   It is recommended that one use the MatCreate(), MatSetType() and/or MatSetFromOptions(),
+   It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`,
    MatXXXXSetPreallocation() paradigm instead of this routine directly.
-   [MatXXXXSetPreallocation() is, for example, MatSeqAIJSetPreallocation]
+   [MatXXXXSetPreallocation() is, for example, `MatSeqAIJSetPreallocation()`]
 
    Notes:
    If nnz is given then nz is ignored
 
-   The AIJ format (also called the Yale sparse matrix format or
-   compressed row storage), is fully compatible with standard Fortran 77
+   The AIJ format, also called compressed row storage), is fully compatible with standard Fortran 77
    storage.  That is, the stored row and column indices can begin at
    either one (as in Fortran) or zero.  See the users' manual for details.
 
    Specify the preallocated storage with either nz or nnz (not both).
-   Set nz=PETSC_DEFAULT and nnz=NULL for PETSc to control dynamic memory
+   Set nz = `PETSC_DEFAULT` and nnz = NULL for PETSc to control dynamic memory
    allocation.  For large problems you MUST preallocate memory or you
    will get TERRIBLE performance, see the users' manual chapter on matrices.
 
@@ -1406,7 +1408,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJKokkos(Mat A) {
 
    Level: intermediate
 
-.seealso: `MatCreate()`, `MatCreateAIJ()`, `MatSetValues()`, `MatSeqAIJSetColumnIndices()`, `MatCreateSeqAIJWithArrays()`, `MatCreateAIJ()`, `MATMPIAIJKOKKOS`, `MATAIJKokkos`
+.seealso: `MATAIJKOKOS`, `MATSEQAIJKOKOS`, `MATMPIAIJKOKOS`, `MatCreate()`, `MatCreateAIJ()`, `MatSetValues()`, `MatSeqAIJSetColumnIndices()`, `MatCreateSeqAIJWithArrays()`, `MatCreateAIJ()`, `MATMPIAIJKOKKOS`, `MATAIJKOKKOS`
 @*/
 PetscErrorCode MatCreateAIJKokkos(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscInt d_nz, const PetscInt d_nnz[], PetscInt o_nz, const PetscInt o_nnz[], Mat *A) {
   PetscMPIInt size;

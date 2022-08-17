@@ -11,7 +11,7 @@ PETSC_EXTERN PetscErrorCode MatColoringCreate_ID(MatColoring);
 PETSC_EXTERN PetscErrorCode MatColoringCreate_LF(MatColoring);
 
 /*@C
-  MatColoringRegisterAll - Registers all of the matrix Coloring routines in PETSc.
+  MatColoringRegisterAll - Registers all of the matrix coloring routines in PETSc.
 
   Not Collective
 
@@ -19,10 +19,10 @@ PETSC_EXTERN PetscErrorCode MatColoringCreate_LF(MatColoring);
 
   Adding new methods:
   To add a new method to the registry. Copy this routine and
-  modify it to incorporate a call to MatColoringRegister() for
+  modify it to incorporate a call to `MatColoringRegister()` for
   the new method, after the current list.
 
- .seealso: `MatColoringRegister()`, `MatColoringRegisterDestroy()`
+ .seealso: `MatColoring`, `MatColoringRegister()`, `MatColoringRegisterDestroy()`
  @*/
 PetscErrorCode MatColoringRegisterAll(void) {
   PetscFunctionBegin;

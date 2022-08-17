@@ -382,8 +382,8 @@ static int gamg_hem_compare(const void *a, const void *b) {
   MatCoarsenApply_HEM_private - parallel heavy edge matching
 
   Input Parameter:
-   . perm - permutation
-   . a_Gmat - global matrix of graph (data not defined)
+. perm - permutation
+. a_Gmat - global matrix of the graph
 
   Output Parameter:
    . a_locals_llist - array of list of local nodes rooted at local node
@@ -1070,8 +1070,7 @@ static PetscErrorCode MatCoarsenView_HEM(MatCoarsen coarse, PetscViewer viewer) 
 
    Level: beginner
 
-.seealso: `MatCoarsenSetType()`, `MatCoarsenType`, `MatCoarsenCreate()`
-
+.seealso: `MatCoarsen`, `MatCoarsenSetType()`, `MatCoarsenGetData()`, `MatCoarsenType`, `MatCoarsenCreate()`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatCoarsenCreate_HEM(MatCoarsen coarse) {

@@ -109,30 +109,30 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_Transpose(Mat D) {
   A = D->product->A;
   B = D->product->B;
   C = D->product->C;
-  PetscCall(PetscObjectTypeCompare((PetscObject)A, MATTRANSPOSEMAT, &Aistrans));
-  PetscCall(PetscObjectTypeCompare((PetscObject)B, MATTRANSPOSEMAT, &Bistrans));
-  PetscCall(PetscObjectTypeCompare((PetscObject)C, MATTRANSPOSEMAT, &Cistrans));
+  PetscCall(PetscObjectTypeCompare((PetscObject)A, MATTRANSPOSE, &Aistrans));
+  PetscCall(PetscObjectTypeCompare((PetscObject)B, MATTRANSPOSE, &Bistrans));
+  PetscCall(PetscObjectTypeCompare((PetscObject)C, MATTRANSPOSE, &Cistrans));
   PetscCheck(Aistrans || Bistrans || Cistrans, PetscObjectComm((PetscObject)D), PETSC_ERR_PLIB, "This should not happen");
   Atrans = 0;
   Ain    = A;
   while (Aistrans) {
     Atrans++;
     PetscCall(MatTransposeGetMat(Ain, &Ain));
-    PetscCall(PetscObjectTypeCompare((PetscObject)Ain, MATTRANSPOSEMAT, &Aistrans));
+    PetscCall(PetscObjectTypeCompare((PetscObject)Ain, MATTRANSPOSE, &Aistrans));
   }
   Btrans = 0;
   Bin    = B;
   while (Bistrans) {
     Btrans++;
     PetscCall(MatTransposeGetMat(Bin, &Bin));
-    PetscCall(PetscObjectTypeCompare((PetscObject)Bin, MATTRANSPOSEMAT, &Bistrans));
+    PetscCall(PetscObjectTypeCompare((PetscObject)Bin, MATTRANSPOSE, &Bistrans));
   }
   Ctrans = 0;
   Cin    = C;
   while (Cistrans) {
     Ctrans++;
     PetscCall(MatTransposeGetMat(Cin, &Cin));
-    PetscCall(PetscObjectTypeCompare((PetscObject)Cin, MATTRANSPOSEMAT, &Cistrans));
+    PetscCall(PetscObjectTypeCompare((PetscObject)Cin, MATTRANSPOSE, &Cistrans));
   }
   Atrans = Atrans % 2;
   Btrans = Btrans % 2;
@@ -238,20 +238,19 @@ PetscErrorCode MatTransposeGetMat_Transpose(Mat A, Mat *M) {
 }
 
 /*@
-      MatTransposeGetMat - Gets the Mat object stored inside a MATTRANSPOSEMAT
+      MatTransposeGetMat - Gets the `Mat` object stored inside a `MATTRANSPOSE`
 
-   Logically collective on Mat
+   Logically collective on A
 
    Input Parameter:
-.   A  - the MATTRANSPOSE matrix
+.   A  - the `MATTRANSPOSE` matrix
 
    Output Parameter:
 .   M - the matrix object stored inside A
 
    Level: intermediate
 
-.seealso: `MatCreateTranspose()`
-
+.seealso: `MATTRANSPOSE`, `MatCreateTranspose()`
 @*/
 PetscErrorCode MatTransposeGetMat(Mat A, Mat *M) {
   PetscFunctionBegin;
@@ -262,10 +261,18 @@ PetscErrorCode MatTransposeGetMat(Mat A, Mat *M) {
   PetscFunctionReturn(0);
 }
 
-/*@
-      MatCreateTranspose - Creates a new matrix object that behaves like A'
+/*MC
+   MATTRANSPOSE - "transpose" - A matrix type that represents a virtual transpose of a matrix
 
-   Collective on Mat
+  Level: advanced
+
+.seealso: `MATHERMITIANTRANSPOSE`, `Mat`, `MatCreateHermitianTranspose()`, `MatCreateTranspose()`
+M*/
+
+/*@
+      MatCreateTranspose - Creates a new matrix `MATTRANSPOSE` object that behaves like A'
+
+   Collective on A
 
    Input Parameter:
 .   A  - the (possibly rectangular) matrix
@@ -275,13 +282,12 @@ PetscErrorCode MatTransposeGetMat(Mat A, Mat *M) {
 
    Level: intermediate
 
-   Notes:
+   Note:
     The transpose A' is NOT actually formed! Rather the new matrix
-          object performs the matrix-vector product by using the MatMultTranspose() on
+          object performs the matrix-vector product by using the `MatMultTranspose()` on
           the original matrix
 
-.seealso: `MatCreateNormal()`, `MatMult()`, `MatMultTranspose()`, `MatCreate()`
-
+.seealso: `MATTRANSPOSE`, `MatCreateNormal()`, `MatMult()`, `MatMultTranspose()`, `MatCreate()`
 @*/
 PetscErrorCode MatCreateTranspose(Mat A, Mat *N) {
   PetscInt       m, n;
@@ -294,7 +300,7 @@ PetscErrorCode MatCreateTranspose(Mat A, Mat *N) {
   PetscCall(MatSetSizes(*N, n, m, PETSC_DECIDE, PETSC_DECIDE));
   PetscCall(PetscLayoutSetUp((*N)->rmap));
   PetscCall(PetscLayoutSetUp((*N)->cmap));
-  PetscCall(PetscObjectChangeTypeName((PetscObject)*N, MATTRANSPOSEMAT));
+  PetscCall(PetscObjectChangeTypeName((PetscObject)*N, MATTRANSPOSE));
 
   PetscCall(PetscNewLog(*N, &Na));
   (*N)->data = (void *)Na;

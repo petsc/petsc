@@ -8,9 +8,9 @@
 /*MC
    MATSELL - MATSELL = "sell" - A matrix type to be used for sparse matrices.
 
-   This matrix type is identical to MATSEQSELL when constructed with a single process communicator,
-   and MATMPISELL otherwise.  As a result, for single process communicators,
-  MatSeqSELLSetPreallocation is supported, and similarly MatMPISELLSetPreallocation is supported
+   This matrix type is identical to `MATSEQSELL` when constructed with a single process communicator,
+   and `MATMPISELL` otherwise.  As a result, for single process communicators,
+  `MatSeqSELLSetPreallocation()` is supported, and similarly `MatMPISELLSetPreallocation()` is supported
   for communicators controlling multiple processes.  It is recommended that you call both of
   the above preallocation routines for simplicity.
 
@@ -19,7 +19,7 @@
 
   Level: beginner
 
-.seealso: `MatCreateSELL()`, `MatCreateSeqSELL()`, `MATSEQSELL`, `MATMPISELL`
+.seealso: `MATAIJ`, `MATBAIJ`, `MATSBAIJ`, `MatCreateSELL()`, `MatCreateSeqSELL()`, `MATSEQSELL`, `MATMPISELL`
 M*/
 
 PetscErrorCode MatDiagonalSet_MPISELL(Mat Y, Vec D, InsertMode is) {
@@ -1207,7 +1207,7 @@ PetscErrorCode MatDuplicate_MPISELL(Mat matin, MatDuplicateOption cpvalues, Mat 
 }
 
 /*@C
-   MatMPISELLSetPreallocation - Preallocates memory for a sparse parallel matrix in sell format.
+   MatMPISELLSetPreallocation - Preallocates memory for a `MATMPISELL` sparse parallel matrix in sell format.
    For good matrix assembly performance the user should preallocate the matrix storage by
    setting the parameters d_nz (or d_nnz) and o_nz (or o_nnz).
 
@@ -1219,7 +1219,7 @@ PetscErrorCode MatDuplicate_MPISELL(Mat matin, MatDuplicateOption cpvalues, Mat 
            (same value is used for all local rows)
 .  d_nnz - array containing the number of nonzeros in the various rows of the
            DIAGONAL portion of the local submatrix (possibly different for each row)
-           or NULL (PETSC_NULL_INTEGER in Fortran), if d_nz is used to specify the nonzero structure.
+           or NULL (`PETSC_NULL_INTEGER` in Fortran), if d_nz is used to specify the nonzero structure.
            The size of this array is equal to the number of local rows, i.e 'm'.
            For matrices that will be factored, you must leave room for (and set)
            the diagonal entry even if it is zero.
@@ -1227,7 +1227,7 @@ PetscErrorCode MatDuplicate_MPISELL(Mat matin, MatDuplicateOption cpvalues, Mat 
            submatrix (same value is used for all local rows).
 -  o_nnz - array containing the number of nonzeros in the various rows of the
            OFF-DIAGONAL portion of the local submatrix (possibly different for
-           each row) or NULL (PETSC_NULL_INTEGER in Fortran), if o_nz is used to specify the nonzero
+           each row) or NULL (`PETSC_NULL_INTEGER` in Fortran), if o_nz is used to specify the nonzero
            structure. The size of this array is equal to the number
            of local rows, i.e 'm'.
 
@@ -1251,7 +1251,7 @@ PetscErrorCode MatDuplicate_MPISELL(Mat matin, MatDuplicateOption cpvalues, Mat 
 
    If o_nnz, d_nnz are specified, then o_nz, and d_nz are ignored.
 
-   You can call MatGetInfo() to get information on how effective the preallocation was;
+   You can call `MatGetInfo()` to get information on how effective the preallocation was;
    for example the fields mallocs,nz_allocated,nz_used,nz_unneeded;
    You can also run with the option -info and look for messages with the string
    malloc in them to see if additional memory allocation was needed.
@@ -1328,7 +1328,7 @@ PetscErrorCode MatDuplicate_MPISELL(Mat matin, MatDuplicateOption cpvalues, Mat 
    Level: intermediate
 
 .seealso: `MatCreate()`, `MatCreateSeqSELL()`, `MatSetValues()`, `MatCreatesell()`,
-          `MATMPISELL`, `MatGetInfo()`, `PetscSplitOwnership()`
+          `MATMPISELL`, `MatGetInfo()`, `PetscSplitOwnership()`, `MATSELL`
 @*/
 PetscErrorCode MatMPISELLSetPreallocation(Mat B, PetscInt d_nz, const PetscInt d_nnz[], PetscInt o_nz, const PetscInt o_nnz[]) {
   PetscFunctionBegin;
@@ -1351,20 +1351,20 @@ PetscErrorCode MatMPISELLSetPreallocation(Mat B, PetscInt d_nz, const PetscInt d
 M*/
 
 /*@C
-   MatCreateSELL - Creates a sparse parallel matrix in SELL format.
+   MatCreateSELL - Creates a sparse parallel matrix in `MATSELL` format.
 
    Collective
 
    Input Parameters:
 +  comm - MPI communicator
-.  m - number of local rows (or PETSC_DECIDE to have calculated if M is given)
+.  m - number of local rows (or `PETSC_DECIDE` to have calculated if M is given)
            This value should be the same as the local size used in creating the
            y vector for the matrix-vector product y = Ax.
 .  n - This value should be the same as the local size used in creating the
        x vector for the matrix-vector product y = Ax. (or PETSC_DECIDE to have
        calculated if N is given) For square matrices n is almost always m.
-.  M - number of global rows (or PETSC_DETERMINE to have calculated if m is given)
-.  N - number of global columns (or PETSC_DETERMINE to have calculated if n is given)
+.  M - number of global rows (or `PETSC_DETERMINE` to have calculated if m is given)
+.  N - number of global columns (or `PETSC_DETERMINE` to have calculated if n is given)
 .  d_rlenmax - max number of nonzeros per row in DIAGONAL portion of local submatrix
                (same value is used for all local rows)
 .  d_rlen - array containing the number of nonzeros in the various rows of the
@@ -1382,9 +1382,9 @@ M*/
    Output Parameter:
 .  A - the matrix
 
-   It is recommended that one use the MatCreate(), MatSetType() and/or MatSetFromOptions(),
+   It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`,
    MatXXXXSetPreallocation() paradigm instead of this routine directly.
-   [MatXXXXSetPreallocation() is, for example, MatSeqSELLSetPreallocation]
+   [MatXXXXSetPreallocation() is, for example, `MatSeqSELLSetPreallocation()`]
 
    Notes:
    If the *_rlen parameter is given then the *_rlenmax parameter is ignored
@@ -1393,7 +1393,7 @@ M*/
    processors, while d_rlenmax,d_rlen,o_rlenmax,o_rlen parameters specify the approximate
    storage requirements for this matrix.
 
-   If PETSC_DECIDE or  PETSC_DETERMINE is used for a particular argument on one
+   If `PETSC_DECIDE` or  `PETSC_DETERMINE` is used for a particular argument on one
    processor than it must be used on all processors that share the object for
    that argument.
 
@@ -1426,9 +1426,9 @@ M*/
    If o_rlen, d_rlen are specified, then o_rlenmax, and d_rlenmax are ignored.
 
    When calling this routine with a single process communicator, a matrix of
-   type SEQSELL is returned.  If a matrix of type MATMPISELL is desired for this
+   type `MATSEQSELL` is returned.  If a matrix of type `MATMPISELL` is desired for this
    type of communicator, use the construction mechanism:
-     MatCreate(...,&A); MatSetType(A,MATMPISELL); MatSetSizes(A, m,n,M,N); MatMPISELLSetPreallocation(A,...);
+     `MatCreate`(...,&A); `MatSetType`(A,`MATMPISELL`); `MatSetSizes`(A, m,n,M,N); `MatMPISELLSetPreallocation`(A,...);
 
    Options Database Keys:
 -  -mat_sell_oneindex - Internally use indexing starting at 1
@@ -1474,8 +1474,8 @@ M*/
    submatrices [A], [E], [I] respectively. The OFF-DIAGONAL submatrices
    corresponding to proc0,proc1,proc2 are [BC], [DF], [GH] respectively.
    Internally, each processor stores the DIAGONAL part, and the OFF-DIAGONAL
-   part as SeqSELL matrices. for eg: proc1 will store [E] as a SeqSELL
-   matrix, ans [DF] as another SeqSELL matrix.
+   part as `MATSSESELL` matrices. for eg: proc1 will store [E] as a `MATSEQSELL`
+   matrix, ans [DF] as another `MATSEQSELL` matrix.
 
    When d_rlenmax, o_rlenmax parameters are specified, d_rlenmax storage elements are
    allocated for every row of the local diagonal submatrix, and o_rlenmax
@@ -1506,7 +1506,7 @@ M*/
 
    Level: intermediate
 
-.seealso: `MatCreate()`, `MatCreateSeqSELL()`, `MatSetValues()`, `MatMPISELLSetPreallocation()`, `MatMPISELLSetPreallocationSELL()`,
+.seealso: `MATSELL`, `MatCreate()`, `MatCreateSeqSELL()`, `MatSetValues()`, `MatMPISELLSetPreallocation()`, `MatMPISELLSetPreallocationSELL()`,
           `MATMPISELL`, `MatCreateMPISELLWithArrays()`
 @*/
 PetscErrorCode MatCreateSELL(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscInt d_rlenmax, const PetscInt d_rlen[], PetscInt o_rlenmax, const PetscInt o_rlen[], Mat *A) {
@@ -1540,13 +1540,13 @@ PetscErrorCode MatMPISELLGetSeqSELL(Mat A, Mat *Ad, Mat *Ao, const PetscInt *col
 }
 
 /*@C
-     MatMPISELLGetLocalMatCondensed - Creates a SeqSELL matrix from an MATMPISELL matrix by taking all its local rows and NON-ZERO columns
+     MatMPISELLGetLocalMatCondensed - Creates a `MATSEQSELL` matrix from an `MATMPISELL` matrix by taking all its local rows and NON-ZERO columns
 
     Not Collective
 
    Input Parameters:
 +    A - the matrix
-.    scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
+.    scall - either `MAT_INITIAL_MATRIX` or `MAT_REUSE_MATRIX`
 -    row, col - index sets of rows and columns to extract (or NULL)
 
    Output Parameter:
@@ -1554,8 +1554,7 @@ PetscErrorCode MatMPISELLGetSeqSELL(Mat A, Mat *Ad, Mat *Ao, const PetscInt *col
 
     Level: developer
 
-.seealso: `MatGetOwnershipRange()`, `MatMPISELLGetLocalMat()`
-
+.seealso: `MATSEQSELL`, `MATMPISELL`, `MatGetOwnershipRange()`, `MatMPISELLGetLocalMat()`
 @*/
 PetscErrorCode MatMPISELLGetLocalMatCondensed(Mat A, MatReuse scall, IS *row, IS *col, Mat *A_loc) {
   Mat_MPISELL *a = (Mat_MPISELL *)A->data;
@@ -1767,11 +1766,11 @@ PetscErrorCode MatSOR_MPISELL(Mat matin, Vec bb, PetscReal omega, MatSORType fla
    MATMPISELL - MATMPISELL = "MPISELL" - A matrix type to be used for parallel sparse matrices.
 
    Options Database Keys:
-. -mat_type MPISELL - sets the matrix type to "MPISELL" during a call to MatSetFromOptions()
+. -mat_type mpisell - sets the matrix type to `MATMPISELL` during a call to `MatSetFromOptions()`
 
   Level: beginner
 
-.seealso: `MatCreateSELL()`
+.seealso: `MATSELL`, `MATSEQSELL` `MatCreateSELL()`
 M*/
 PETSC_EXTERN PetscErrorCode MatCreate_MPISELL(Mat B) {
   Mat_MPISELL *b;

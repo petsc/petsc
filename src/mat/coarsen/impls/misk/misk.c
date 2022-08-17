@@ -400,12 +400,14 @@ static PetscErrorCode MatCoarsenSetFromOptions_MISK(MatCoarsen coarse, PetscOpti
 }
 
 /*MC
-   MATCOARSENMISK - A coarsener that uses MISK a simple greedy coarsener
+   MATCOARSENMISK - A coarsener that uses MISK, a simple greedy coarsener
 
    Level: beginner
 
-.seealso: `MatCoarsenSetType()`, `MatCoarsenType`, `MatCoarsenCreate()`
+   Options Database:
+.   -mat_coarsen_misk_distance <k> - distance for MIS
 
+.seealso:`MatCoarsen`,  `MatCoarsenMISKSetDistance()`, `MatCoarsenApply()`, `MatCoarsenSetType()`, `MatCoarsenType`, `MatCoarsenCreate()`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatCoarsenCreate_MISK(MatCoarsen coarse) {
@@ -417,12 +419,47 @@ PETSC_EXTERN PetscErrorCode MatCoarsenCreate_MISK(MatCoarsen coarse) {
   PetscFunctionReturn(0);
 }
 
+/*@
+   MatCoarsenMISKSetDistance - the distance to be used by MISK
+
+   Collective on coarser
+
+   Input Parameters:
++   coarsen - the coarsen
+-   k - the distance
+
+   Options Database Key:
+.   -mat_coarsen_misk_distance <k> - distance for MIS
+
+   Level: advanced
+
+.seealso: `MATCOARSENMISK`, `MatCoarsen`, `MatCoarseSetFromOptions()`, `MatCoarsenSetType()`, `MatCoarsenRegister()`, `MatCoarsenCreate()`,
+          `MatCoarsenDestroy()`, `MatCoarsenSetAdjacency()`, `MatCoarsenMISKGetDistance()`
+          `MatCoarsenGetData()`
+@*/
 PETSC_EXTERN PetscErrorCode MatCoarsenMISKSetDistance(MatCoarsen crs, PetscInt k) {
   PetscFunctionBegin;
   crs->subctx = (void *)(size_t)k;
   PetscFunctionReturn(0);
 }
 
+/*@
+   MatCoarsenMISKGetDistance - gets the distance to be used by MISK
+
+   Collective on coarser
+
+   Input Parameter:
+.   coarsen - the coarsen
+
+   Output Paramter:
+.   k - the distance
+
+   Level: advanced
+
+.seealso: `MATCOARSENMISK`, `MatCoarsen`, `MatCoarseSetFromOptions()`, `MatCoarsenSetType()`, `MatCoarsenRegister()`, `MatCoarsenCreate()`,
+          `MatCoarsenDestroy()`, `MatCoarsenSetAdjacency()`, `MatCoarsenMISKGetDistance()`
+          `MatCoarsenGetData()`
+@*/
 PETSC_EXTERN PetscErrorCode MatCoarsenMISKGetDistance(MatCoarsen crs, PetscInt *k) {
   PetscFunctionBegin;
   *k = (PetscInt)(size_t)crs->subctx;

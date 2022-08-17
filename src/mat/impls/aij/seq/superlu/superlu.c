@@ -471,10 +471,10 @@ static PetscErrorCode MatSuperluSetILUDropTol_SuperLU(Mat F, PetscReal dtol) {
 /*@
   MatSuperluSetILUDropTol - Set SuperLU ILU drop tolerance
 
-   Logically Collective on Mat
+   Logically Collective on F
 
    Input Parameters:
-+  F - the factored matrix obtained by calling MatGetFactor() from PETSc-SuperLU interface
++  F - the factored matrix obtained by calling `MatGetFactor()` from PETSc-SuperLU interface
 -  dtol - drop tolerance
 
   Options Database:
@@ -529,9 +529,9 @@ PetscErrorCode MatFactorGetSolverType_seqaij_superlu(Mat A, MatSolverType *type)
 - -mat_superlu_ilu_milu <0>             - ILU_MILU (None)
 
    Notes:
-    Do not confuse this with MATSOLVERSUPERLU_DIST which is for parallel sparse solves
+    Do not confuse this with `MATSOLVERSUPERLU_DIST` which is for parallel sparse solves
 
-    Cannot currently use ordering provided by PETSc.
+    Cannot use ordering provided by PETSc, provides its own.
 
    Level: beginner
 

@@ -5,13 +5,13 @@ PETSC_EXTERN PetscErrorCode MatCreateMFFD_DS(MatMFFD);
 PETSC_EXTERN PetscErrorCode MatCreateMFFD_WP(MatMFFD);
 
 /*@C
-  MatMFFDRegisterAll - Registers all of the compute-h in the MatMFFD package.
+  MatMFFDRegisterAll - Registers all of the compute-h in the `MATMFFD` package.
 
   Not Collective
 
   Level: developer
 
-.seealso: `MatMFFDRegisterDestroy()`, `MatMFFDRegister()`, `MatCreateMFFD()`,
+.seealso: `MATMFFD`, `MatMFFDRegisterDestroy()`, `MatMFFDRegister()`, `MatCreateMFFD()`,
           `MatMFFDSetType()`
 @*/
 PetscErrorCode MatMFFDRegisterAll(void) {

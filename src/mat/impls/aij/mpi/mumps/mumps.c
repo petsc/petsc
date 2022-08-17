@@ -1241,11 +1241,11 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A, Mat B, Mat X) {
     mumps->id.ICNTL(20) = 0; /* dense RHS */
   } else {                   /* sparse B */
     PetscCheck(X != B, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_IDN, "X and B must be different matrices");
-    PetscCall(PetscObjectTypeCompare((PetscObject)B, MATTRANSPOSEMAT, &flgT));
+    PetscCall(PetscObjectTypeCompare((PetscObject)B, MATTRANSPOSE, &flgT));
     if (flgT) { /* input B is transpose of actural RHS matrix,
                  because mumps requires sparse compressed COLUMN storage! See MatMatTransposeSolve_MUMPS() */
       PetscCall(MatTransposeGetMat(B, &Bt));
-    } else SETERRQ(PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_WRONG, "Matrix B must be MATTRANSPOSEMAT matrix");
+    } else SETERRQ(PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_WRONG, "Matrix B must be MATTRANSPOSE matrix");
     mumps->id.ICNTL(20) = 1; /* sparse RHS */
   }
 
@@ -2413,10 +2413,10 @@ PetscErrorCode MatMumpsGetIcntl_MUMPS(Mat F, PetscInt icntl, PetscInt *ival) {
 /*@
   MatMumpsSetIcntl - Set MUMPS parameter ICNTL()
 
-   Logically Collective on Mat
+   Logically Collective on F
 
    Input Parameters:
-+  F - the factored matrix obtained by calling MatGetFactor() from PETSc-MUMPS interface
++  F - the factored matrix obtained by calling `MatGetFactor()` from PETSc-MUMPS interface
 .  icntl - index of MUMPS parameter array ICNTL()
 -  ival - value of MUMPS ICNTL(icntl)
 
@@ -2444,10 +2444,10 @@ PetscErrorCode MatMumpsSetIcntl(Mat F, PetscInt icntl, PetscInt ival) {
 /*@
   MatMumpsGetIcntl - Get MUMPS parameter ICNTL()
 
-   Logically Collective on Mat
+   Logically Collective on F
 
    Input Parameters:
-+  F - the factored matrix obtained by calling MatGetFactor() from PETSc-MUMPS interface
++  F - the factored matrix obtained by calling `MatGetFactor()` from PETSc-MUMPS interface
 -  icntl - index of MUMPS parameter array ICNTL()
 
   Output Parameter:
@@ -2502,10 +2502,10 @@ PetscErrorCode MatMumpsGetCntl_MUMPS(Mat F, PetscInt icntl, PetscReal *val) {
 /*@
   MatMumpsSetCntl - Set MUMPS parameter CNTL()
 
-   Logically Collective on Mat
+   Logically Collective on F
 
    Input Parameters:
-+  F - the factored matrix obtained by calling MatGetFactor() from PETSc-MUMPS interface
++  F - the factored matrix obtained by calling `MatGetFactor()` from PETSc-MUMPS interface
 .  icntl - index of MUMPS parameter array CNTL()
 -  val - value of MUMPS CNTL(icntl)
 
@@ -2533,10 +2533,10 @@ PetscErrorCode MatMumpsSetCntl(Mat F, PetscInt icntl, PetscReal val) {
 /*@
   MatMumpsGetCntl - Get MUMPS parameter CNTL()
 
-   Logically Collective on Mat
+   Logically Collective on F
 
    Input Parameters:
-+  F - the factored matrix obtained by calling MatGetFactor() from PETSc-MUMPS interface
++  F - the factored matrix obtained by calling `MatGetFactor()` from PETSc-MUMPS interface
 -  icntl - index of MUMPS parameter array CNTL()
 
   Output Parameter:
@@ -2601,10 +2601,10 @@ PetscErrorCode MatMumpsGetInverse_MUMPS(Mat F, Mat spRHS) {
 
   PetscFunctionBegin;
   PetscValidPointer(spRHS, 2);
-  PetscCall(PetscObjectTypeCompare((PetscObject)spRHS, MATTRANSPOSEMAT, &flg));
+  PetscCall(PetscObjectTypeCompare((PetscObject)spRHS, MATTRANSPOSE, &flg));
   if (flg) {
     PetscCall(MatTransposeGetMat(spRHS, &Bt));
-  } else SETERRQ(PetscObjectComm((PetscObject)spRHS), PETSC_ERR_ARG_WRONG, "Matrix spRHS must be type MATTRANSPOSEMAT matrix");
+  } else SETERRQ(PetscObjectComm((PetscObject)spRHS), PETSC_ERR_ARG_WRONG, "Matrix spRHS must be type MATTRANSPOSE matrix");
 
   PetscCall(MatMumpsSetIcntl(F, 30, 1));
 
@@ -2652,11 +2652,11 @@ PetscErrorCode MatMumpsGetInverse_MUMPS(Mat F, Mat spRHS) {
 /*@
   MatMumpsGetInverse - Get user-specified set of entries in inverse of A
 
-   Logically Collective on Mat
+   Logically Collective on F
 
    Input Parameters:
-+  F - the factored matrix obtained by calling MatGetFactor() from PETSc-MUMPS interface
--  spRHS - sequential sparse matrix in MATTRANSPOSEMAT format holding specified indices in processor[0]
++  F - the factored matrix obtained by calling `MatGetFactor()` from PETSc-MUMPS interface
+-  spRHS - sequential sparse matrix in `MATTRANSPOSE` format holding specified indices in processor[0]
 
   Output Parameter:
 . spRHS - requested entries of inverse of A
@@ -2689,11 +2689,11 @@ PetscErrorCode MatMumpsGetInverseTranspose_MUMPS(Mat F, Mat spRHST) {
 /*@
   MatMumpsGetInverseTranspose - Get user-specified set of entries in inverse of matrix A^T
 
-   Logically Collective on Mat
+   Logically Collective on F
 
    Input Parameters:
-+  F - the factored matrix of A obtained by calling MatGetFactor() from PETSc-MUMPS interface
--  spRHST - sequential sparse matrix in MATAIJ format holding specified indices of A^T in processor[0]
++  F - the factored matrix of A obtained by calling `MatGetFactor()` from PETSc-MUMPS interface
+-  spRHST - sequential sparse matrix in `MATAIJ` format holding specified indices of A^T in processor[0]
 
   Output Parameter:
 . spRHST - requested entries of inverse of A^T
@@ -2721,10 +2721,10 @@ PetscErrorCode MatMumpsGetInverseTranspose(Mat F, Mat spRHST) {
 /*@
   MatMumpsGetInfo - Get MUMPS parameter INFO()
 
-   Logically Collective on Mat
+   Logically Collective on F
 
    Input Parameters:
-+  F - the factored matrix obtained by calling MatGetFactor() from PETSc-MUMPS interface
++  F - the factored matrix obtained by calling `MatGetFactor()` from PETSc-MUMPS interface
 -  icntl - index of MUMPS parameter array INFO()
 
   Output Parameter:
@@ -2749,10 +2749,10 @@ PetscErrorCode MatMumpsGetInfo(Mat F, PetscInt icntl, PetscInt *ival) {
 /*@
   MatMumpsGetInfog - Get MUMPS parameter INFOG()
 
-   Logically Collective on Mat
+   Logically Collective on F
 
    Input Parameters:
-+  F - the factored matrix obtained by calling MatGetFactor() from PETSc-MUMPS interface
++  F - the factored matrix obtained by calling `MatGetFactor()` from PETSc-MUMPS interface
 -  icntl - index of MUMPS parameter array INFOG()
 
   Output Parameter:
@@ -2777,10 +2777,10 @@ PetscErrorCode MatMumpsGetInfog(Mat F, PetscInt icntl, PetscInt *ival) {
 /*@
   MatMumpsGetRinfo - Get MUMPS parameter RINFO()
 
-   Logically Collective on Mat
+   Logically Collective on F
 
    Input Parameters:
-+  F - the factored matrix obtained by calling MatGetFactor() from PETSc-MUMPS interface
++  F - the factored matrix obtained by calling `MatGetFactor()` from PETSc-MUMPS interface
 -  icntl - index of MUMPS parameter array RINFO()
 
   Output Parameter:
@@ -2805,10 +2805,10 @@ PetscErrorCode MatMumpsGetRinfo(Mat F, PetscInt icntl, PetscReal *val) {
 /*@
   MatMumpsGetRinfog - Get MUMPS parameter RINFOG()
 
-   Logically Collective on Mat
+   Logically Collective on F
 
    Input Parameters:
-+  F - the factored matrix obtained by calling MatGetFactor() from PETSc-MUMPS interface
++  F - the factored matrix obtained by calling `MatGetFactor()` from PETSc-MUMPS interface
 -  icntl - index of MUMPS parameter array RINFOG()
 
   Output Parameter:
@@ -2834,7 +2834,7 @@ PetscErrorCode MatMumpsGetRinfog(Mat F, PetscInt icntl, PetscReal *val) {
   MATSOLVERMUMPS -  A matrix type providing direct solvers (LU and Cholesky) for
   distributed and sequential matrices via the external package MUMPS.
 
-  Works with MATAIJ and MATSBAIJ matrices
+  Works with `MATAIJ` and `MATSBAIJ` matrices
 
   Use ./configure --download-mumps --download-scalapack --download-parmetis --download-metis --download-ptscotch to have PETSc installed with MUMPS
 
@@ -2889,7 +2889,7 @@ PetscErrorCode MatMumpsGetRinfog(Mat F, PetscInt icntl, PetscReal *val) {
     When used within a `KSP`/`PC` solve the options are prefixed with that of the `PC`. Otherwise one can set the options prefix by calling
     `MatSetOptionsPrefixFactor()` on the matrix from which the factor was obtained or `MatSetOptionsPrefix()` on the factor matrix.
 
-    When a MUMPS factorization fails inside a KSP solve, for example with a KSP_DIVERGED_PC_FAILED, one can find the MUMPS information about the failure by calling
+    When a MUMPS factorization fails inside a KSP solve, for example with a `KSP_DIVERGED_PC_FAILED`, one can find the MUMPS information about the failure by calling
 $          KSPGetPC(ksp,&pc);
 $          PCFactorGetMatrix(pc,&mat);
 $          MatMumpsGetInfo(mat,....);
@@ -2934,16 +2934,15 @@ $     if a compute node has 32 cores and you run on two nodes, you may use "mpir
    For example, with the Slurm job scheduler, one can use srun --cpu-bind=verbose -m block:block to map consecutive MPI ranks to sockets and
    examine the mapping result.
 
-   PETSc does not control thread binding in MUMPS. So to get best performance, one still has to set OMP_PROC_BIND and OMP_PLACES in job scripts,
-   for example, export OMP_PLACES=threads and export OMP_PROC_BIND=spread. One does not need to export OMP_NUM_THREADS=m in job scripts as PETSc
-   calls omp_set_num_threads(m) internally before calling MUMPS.
+   PETSc does not control thread binding in MUMPS. So to get best performance, one still has to set `OMP_PROC_BIND` and `OMP_PLACES` in job scripts,
+   for example, export `OMP_PLACES`=threads and export `OMP_PROC_BIND`=spread. One does not need to export `OMP_NUM_THREADS`=m in job scripts as PETSc
+   calls `omp_set_num_threads`(m) internally before calling MUMPS.
 
    References:
 +  * - Heroux, Michael A., R. Brightwell, and Michael M. Wolf. "Bi-modal MPI and MPI+ threads computing on scalable multicore systems." IJHPCA (Submitted) (2011).
 -  * - Gutierrez, Samuel K., et al. "Accommodating Thread-Level Heterogeneity in Coupled Parallel Applications." Parallel and Distributed Processing Symposium (IPDPS), 2017 IEEE International. IEEE, 2017.
 
 .seealso: `PCFactorSetMatSolverType()`, `MatSolverType`, `MatMumpsSetIcntl()`, `MatMumpsGetIcntl()`, `MatMumpsSetCntl()`, `MatMumpsGetCntl()`, `MatMumpsGetInfo()`, `MatMumpsGetInfog()`, `MatMumpsGetRinfo()`, `MatMumpsGetRinfog()`, `KSPGetPC()`, `PCFactorGetMatrix()`
-
 M*/
 
 static PetscErrorCode MatFactorGetSolverType_mumps(Mat A, MatSolverType *type) {

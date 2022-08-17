@@ -2002,18 +2002,18 @@ PetscErrorCode MatMPISBAIJSetPreallocationCSR_MPISBAIJ(Mat B, PetscInt bs, const
    the matrix is stored.
 
    For complex numbers by default this matrix is symmetric, NOT Hermitian symmetric. To make it Hermitian symmetric you
-   can call MatSetOption(Mat, MAT_HERMITIAN);
+   can call `MatSetOption`(`Mat`, `MAT_HERMITIAN`);
 
    Options Database Keys:
-. -mat_type mpisbaij - sets the matrix type to "mpisbaij" during a call to MatSetFromOptions()
+. -mat_type mpisbaij - sets the matrix type to "mpisbaij" during a call to `MatSetFromOptions()`
 
-   Notes:
+   Note:
      The number of rows in the matrix must be less than or equal to the number of columns. Similarly the number of rows in the
      diagonal portion of the matrix of each process has to less than or equal the number of columns.
 
    Level: beginner
 
-.seealso: `MatCreateBAIJ()`, `MATSEQSBAIJ`, `MatType`
+.seealso: `MATSBAIJ`, `MATBAIJ`, `MatCreateBAIJ()`, `MATSEQSBAIJ`, `MatType`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatCreate_MPISBAIJ(Mat B) {
@@ -2119,15 +2119,15 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPISBAIJ(Mat B) {
 /*MC
    MATSBAIJ - MATSBAIJ = "sbaij" - A matrix type to be used for symmetric block sparse matrices.
 
-   This matrix type is identical to MATSEQSBAIJ when constructed with a single process communicator,
-   and MATMPISBAIJ otherwise.
+   This matrix type is identical to `MATSEQSBAIJ` when constructed with a single process communicator,
+   and `MATMPISBAIJ` otherwise.
 
-   Options Database Keys:
+   Options Database Key:
 . -mat_type sbaij - sets the matrix type to "sbaij" during a call to MatSetFromOptions()
 
   Level: beginner
 
-.seealso: `MatCreateSBAIJ`, `MATSEQSBAIJ`, `MATMPISBAIJ`
+.seealso: `MATSEQSBAIJ`, `MATMPISBAIJ`, `MatCreateSBAIJ`, `MATSEQSBAIJ`, `MATMPISBAIJ`
 M*/
 
 /*@C
@@ -2136,7 +2136,7 @@ M*/
    d_nz (or d_nnz) and o_nz (or o_nnz).  By setting these parameters accurately,
    performance can be increased by more than a factor of 50.
 
-   Collective on Mat
+   Collective on B
 
    Input Parameters:
 +  B - the matrix
@@ -2161,7 +2161,7 @@ M*/
 
    Notes:
 
-   If PETSC_DECIDE or  PETSC_DETERMINE is used for a particular argument on one processor
+   If `PETSC_DECIDE` or  `PETSC_DETERMINE` is used for a particular argument on one processor
    than it must be used on all processors that share the object for that argument.
 
    If the *_nnz parameter is given then the *_nz parameter is ignored
@@ -2174,11 +2174,11 @@ M*/
 
    The user can specify preallocated storage for the diagonal part of
    the local submatrix with either d_nz or d_nnz (not both).  Set
-   d_nz=PETSC_DEFAULT and d_nnz=NULL for PETSc to control dynamic
+   d_nz = `PETSC_DEFAULT` and d_nnz = NULL for PETSc to control dynamic
    memory allocation.  Likewise, specify preallocated storage for the
    off-diagonal part of the local submatrix with o_nz or o_nnz (not both).
 
-   You can call MatGetInfo() to get information on how effective the preallocation was;
+   You can call `MatGetInfo()` to get information on how effective the preallocation was;
    for example the fields mallocs,nz_allocated,nz_used,nz_unneeded;
    You can also run with the option -info and look for messages with the string
    malloc in them to see if additional memory allocation was needed.
@@ -2198,7 +2198,7 @@ M*/
    Thus, any entries in the d locations are stored in the d (diagonal)
    submatrix, and any entries in the o locations are stored in the
    o (off-diagonal) submatrix.  Note that the d matrix is stored in
-   MatSeqSBAIJ format and the o submatrix in MATSEQBAIJ format.
+   `MATSEQSBAIJ` format and the o submatrix in `MATSEQBAIJ` format.
 
    Now d_nz should indicate the number of block nonzeros per row in the upper triangular
    plus the diagonal part of the d matrix,
@@ -2211,7 +2211,7 @@ M*/
 
    Level: intermediate
 
-.seealso: `MatCreate()`, `MatCreateSeqSBAIJ()`, `MatSetValues()`, `MatCreateBAIJ()`, `PetscSplitOwnership()`
+.seealso: `MATMPISBAIJ`, `MATSBAIJ`, `MatCreate()`, `MatCreateSeqSBAIJ()`, `MatSetValues()`, `MatCreateBAIJ()`, `PetscSplitOwnership()`
 @*/
 PetscErrorCode MatMPISBAIJSetPreallocation(Mat B, PetscInt bs, PetscInt d_nz, const PetscInt d_nnz[], PetscInt o_nz, const PetscInt o_nnz[]) {
   PetscFunctionBegin;
@@ -2223,7 +2223,7 @@ PetscErrorCode MatMPISBAIJSetPreallocation(Mat B, PetscInt bs, PetscInt d_nz, co
 }
 
 /*@C
-   MatCreateSBAIJ - Creates a sparse parallel matrix in symmetric block AIJ format
+   MatCreateSBAIJ - Creates a sparse parallel matrix in symmetric block AIJ format, `MATSBAIJ`,
    (block compressed row).  For good matrix assembly performance
    the user should preallocate the matrix storage by setting the parameters
    d_nz (or d_nnz) and o_nz (or o_nnz).  By setting these parameters accurately,
@@ -2233,16 +2233,16 @@ PetscErrorCode MatMPISBAIJSetPreallocation(Mat B, PetscInt bs, PetscInt d_nz, co
 
    Input Parameters:
 +  comm - MPI communicator
-.  bs   - size of block, the blocks are ALWAYS square. One can use MatSetBlockSizes() to set a different row and column blocksize but the row
+.  bs   - size of block, the blocks are ALWAYS square. One can use `MatSetBlockSizes()` to set a different row and column blocksize but the row
           blocksize always defines the size of the blocks. The column blocksize sets the blocksize of the vectors obtained with MatCreateVecs()
-.  m - number of local rows (or PETSC_DECIDE to have calculated if M is given)
+.  m - number of local rows (or `PETSC_DECIDE` to have calculated if M is given)
            This value should be the same as the local size used in creating the
            y vector for the matrix-vector product y = Ax.
-.  n - number of local columns (or PETSC_DECIDE to have calculated if N is given)
+.  n - number of local columns (or `PETSC_DECIDE` to have calculated if N is given)
            This value should be the same as the local size used in creating the
            x vector for the matrix-vector product y = Ax.
-.  M - number of global rows (or PETSC_DETERMINE to have calculated if m is given)
-.  N - number of global columns (or PETSC_DETERMINE to have calculated if n is given)
+.  M - number of global rows (or `PETSC_DETERMINE` to have calculated if m is given)
+.  N - number of global columns (or `PETSC_DETERMINE` to have calculated if n is given)
 .  d_nz  - number of block nonzeros per block row in diagonal portion of local
            submatrix  (same for all local rows)
 .  d_nnz - array containing the number of block nonzeros in the various block rows
@@ -2266,9 +2266,9 @@ PetscErrorCode MatMPISBAIJSetPreallocation(Mat B, PetscInt bs, PetscInt d_nz, co
 -   -mat_mpi - use the parallel matrix data structures even on one processor
                (defaults to using SeqBAIJ format on one processor)
 
-   It is recommended that one use the MatCreate(), MatSetType() and/or MatSetFromOptions(),
+   It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`,
    MatXXXXSetPreallocation() paradigm instead of this routine directly.
-   [MatXXXXSetPreallocation() is, for example, MatSeqAIJSetPreallocation]
+   [MatXXXXSetPreallocation() is, for example, `MatSeqAIJSetPreallocation()`]
 
    Notes:
    The number of rows and columns must be divisible by blocksize.
@@ -2277,7 +2277,7 @@ PetscErrorCode MatMPISBAIJSetPreallocation(Mat B, PetscInt bs, PetscInt d_nz, co
    The user MUST specify either the local or global matrix dimensions
    (possibly both).
 
-   If PETSC_DECIDE or  PETSC_DETERMINE is used for a particular argument on one processor
+   If` PETSC_DECIDE` or  `PETSC_DETERMINE` is used for a particular argument on one processor
    than it must be used on all processors that share the object for that argument.
 
    If the *_nnz parameter is given then the *_nz parameter is ignored
@@ -2309,7 +2309,7 @@ PetscErrorCode MatMPISBAIJSetPreallocation(Mat B, PetscInt bs, PetscInt d_nz, co
    Thus, any entries in the d locations are stored in the d (diagonal)
    submatrix, and any entries in the o locations are stored in the
    o (off-diagonal) submatrix.  Note that the d matrix is stored in
-   MatSeqSBAIJ format and the o submatrix in MATSEQBAIJ format.
+   MatSeqSBAIJ format and the o submatrix in `MATSEQBAIJ` format.
 
    Now d_nz should indicate the number of block nonzeros per row in the upper triangular
    plus the diagonal part of the d matrix,
@@ -2321,7 +2321,7 @@ PetscErrorCode MatMPISBAIJSetPreallocation(Mat B, PetscInt bs, PetscInt d_nz, co
 
    Level: intermediate
 
-.seealso: `MatCreate()`, `MatCreateSeqSBAIJ()`, `MatSetValues()`, `MatCreateBAIJ()`
+.seealso: `MATSBAIJ`, `MatCreate()`, `MatCreateSeqSBAIJ()`, `MatSetValues()`, `MatCreateBAIJ()`
 @*/
 
 PetscErrorCode MatCreateSBAIJ(MPI_Comm comm, PetscInt bs, PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscInt d_nz, const PetscInt d_nnz[], PetscInt o_nz, const PetscInt o_nnz[], Mat *A) {
@@ -2458,23 +2458,6 @@ PetscErrorCode MatLoad_MPISBAIJ(Mat mat, PetscViewer viewer) {
   PetscCall(MatLoad_MPISBAIJ_Binary(mat, viewer));
   PetscFunctionReturn(0);
 }
-
-/*XXXXX@
-   MatMPISBAIJSetHashTableFactor - Sets the factor required to compute the size of the HashTable.
-
-   Input Parameters:
-.  mat  - the matrix
-.  fact - factor
-
-   Not Collective on Mat, each process can have a different hash factor
-
-   Level: advanced
-
-  Notes:
-   This can also be set by the command line option: -mat_use_hash_table fact
-
-.seealso: `MatSetOption()`
-@XXXXX*/
 
 PetscErrorCode MatGetRowMaxAbs_MPISBAIJ(Mat A, Vec v, PetscInt idx[]) {
   Mat_MPISBAIJ *a = (Mat_MPISBAIJ *)A->data;
@@ -2688,7 +2671,7 @@ PetscErrorCode MatSOR_MPISBAIJ(Mat matin, Vec bb, PetscReal omega, MatSORType fl
 }
 
 /*@
-     MatCreateMPISBAIJWithArrays - creates a MPI SBAIJ matrix using arrays that contain in standard
+     MatCreateMPISBAIJWithArrays - creates a `MATMPISBAIJ` matrix using arrays that contain in standard
          CSR format the local rows.
 
    Collective
@@ -2696,12 +2679,12 @@ PetscErrorCode MatSOR_MPISBAIJ(Mat matin, Vec bb, PetscReal omega, MatSORType fl
    Input Parameters:
 +  comm - MPI communicator
 .  bs - the block size, only a block size of 1 is supported
-.  m - number of local rows (Cannot be PETSC_DECIDE)
+.  m - number of local rows (Cannot be `PETSC_DECIDE`)
 .  n - This value should be the same as the local size used in creating the
-       x vector for the matrix-vector product y = Ax. (or PETSC_DECIDE to have
+       x vector for the matrix-vector product y = Ax. (or `PETSC_DECIDE` to have
        calculated if N is given) For square matrices n is almost always m.
-.  M - number of global rows (or PETSC_DETERMINE to have calculated if m is given)
-.  N - number of global columns (or PETSC_DETERMINE to have calculated if n is given)
+.  M - number of global rows (or `PETSC_DETERMINE` to have calculated if m is given)
+.  N - number of global columns (or `PETSC_DETERMINE` to have calculated if n is given)
 .   i - row indices; that is i[0] = 0, i[row] = i[row-1] + number of block elements in that row block row of the matrix
 .   j - column indices
 -   a - matrix values
@@ -2718,7 +2701,7 @@ PetscErrorCode MatSOR_MPISBAIJ(Mat matin, Vec bb, PetscReal omega, MatSORType fl
 
        The i and j indices are 0 based, and i indices are indices corresponding to the local j array.
 
-.seealso: `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatMPIAIJSetPreallocation()`, `MatMPIAIJSetPreallocationCSR()`,
+.seealso: `MATMPISBAIJ`, `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatMPIAIJSetPreallocation()`, `MatMPIAIJSetPreallocationCSR()`,
           `MPIAIJ`, `MatCreateAIJ()`, `MatCreateMPIAIJWithSplitArrays()`
 @*/
 PetscErrorCode MatCreateMPISBAIJWithArrays(MPI_Comm comm, PetscInt bs, PetscInt m, PetscInt n, PetscInt M, PetscInt N, const PetscInt i[], const PetscInt j[], const PetscScalar a[], Mat *mat) {
@@ -2733,7 +2716,7 @@ PetscErrorCode MatCreateMPISBAIJWithArrays(MPI_Comm comm, PetscInt bs, PetscInt 
 }
 
 /*@C
-   MatMPISBAIJSetPreallocationCSR - Creates a sparse parallel matrix in SBAIJ format using the given nonzero structure and (optional) numerical values
+   MatMPISBAIJSetPreallocationCSR - Creates a sparse parallel matrix in `MATMPISBAIJ` format using the given nonzero structure and (optional) numerical values
 
    Collective
 
@@ -2752,7 +2735,7 @@ PetscErrorCode MatCreateMPISBAIJWithArrays(MPI_Comm comm, PetscInt bs, PetscInt 
 
    Any entries below the diagonal are ignored
 
-.seealso: `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatMPIBAIJSetPreallocation()`, `MatCreateAIJ()`, `MPIAIJ`
+.seealso: `MATMPISBAIJ`, `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatMPIBAIJSetPreallocation()`, `MatCreateAIJ()`, `MPIAIJ`
 @*/
 PetscErrorCode MatMPISBAIJSetPreallocationCSR(Mat B, PetscInt bs, const PetscInt i[], const PetscInt j[], const PetscScalar v[]) {
   PetscFunctionBegin;

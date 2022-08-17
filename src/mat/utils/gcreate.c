@@ -28,11 +28,11 @@ PETSC_INTERN PetscErrorCode MatShift_Basic(Mat Y, PetscScalar a) {
 
 /*@
    MatCreate - Creates a matrix where the type is determined
-   from either a call to MatSetType() or from the options database
-   with a call to MatSetFromOptions(). The default matrix type is
-   AIJ, using the routines MatCreateSeqAIJ() or MatCreateAIJ()
+   from either a call to `MatSetType()` or from the options database
+   with a call to `MatSetFromOptions()`. The default matrix type is
+   `MATAIJ`, using the routines `MatCreateSeqAIJ()` or `MatCreateAIJ()`
    if you do not set a type in the options database. If you never
-   call MatSetType() or MatSetFromOptions() it will generate an
+   call `MatSetType()` or `MatSetFromOptions()` it will generate an
    error when you try to use the matrix.
 
    Collective
@@ -44,20 +44,20 @@ PETSC_INTERN PetscErrorCode MatShift_Basic(Mat Y, PetscScalar a) {
 .  A - the matrix
 
    Options Database Keys:
-+    -mat_type seqaij   - AIJ type, uses MatCreateSeqAIJ()
-.    -mat_type mpiaij   - AIJ type, uses MatCreateAIJ()
-.    -mat_type seqdense - dense type, uses MatCreateSeqDense()
-.    -mat_type mpidense - dense type, uses MatCreateDense()
-.    -mat_type seqbaij  - block AIJ type, uses MatCreateSeqBAIJ()
--    -mat_type mpibaij  - block AIJ type, uses MatCreateBAIJ()
++    -mat_type seqaij   - `MATSEQAIJ` type, uses `MatCreateSeqAIJ()`
+.    -mat_type mpiaij   - `MATMPIAIJ` type, uses `MatCreateAIJ()`
+.    -mat_type seqdense - `MATSEQDENSE`, uses `MatCreateSeqDense()`
+.    -mat_type mpidense - `MATMPIDENSE` type, uses `MatCreateDense()`
+.    -mat_type seqbaij  - `MATSEQBAIJ` type, uses `MatCreateSeqBAIJ()`
+-    -mat_type mpibaij  - `MATMPIBAIJ` type, uses `MatCreateBAIJ()`
 
    Even More Options Database Keys:
-   See the manpages for particular formats (e.g., MatCreateSeqAIJ())
+   See the manpages for particular formats (e.g., `MatCreateSeqAIJ()`)
    for additional format-specific options.
 
    Level: beginner
 
-.seealso: `MatCreateSeqAIJ()`, `MatCreateAIJ()`,
+`.seealso: `MatCreateSeqAIJ()`, `MatCreateAIJ()`,
           `MatCreateSeqDense()`, `MatCreateDense()`,
           `MatCreateSeqBAIJ()`, `MatCreateBAIJ()`,
           `MatCreateSeqSBAIJ()`, `MatCreateSBAIJ()`,
@@ -94,17 +94,21 @@ PetscErrorCode MatCreate(MPI_Comm comm, Mat *A) {
 }
 
 /*@
-   MatSetErrorIfFailure - Causes Mat to generate an error, for example a zero pivot, is detected.
+   MatSetErrorIfFailure - Causes `Mat` to generate an immediate error, for example a zero pivot, is detected.
 
-   Logically Collective on Mat
+   Logically Collective on mat
 
    Input Parameters:
-+  mat -  matrix obtained from MatCreate()
--  flg - PETSC_TRUE indicates you want the error generated
++  mat -  matrix obtained from `MatCreate()`
+-  flg - `PETSC_TRUE` indicates you want the error generated
 
    Level: advanced
 
-.seealso: `PCSetErrorIfFailure()`
+   Note:
+   If this flag is not set then the matrix operation will note the error and continue. The error may cause a later `PC` or `KSP` error
+   or result in a `KSPConvergedReason` indicating the method did not converge.
+
+.seealso: `PCSetErrorIfFailure()`, `KSPConvergedReason`, `SNESConvergedReason`
 @*/
 PetscErrorCode MatSetErrorIfFailure(Mat mat, PetscBool flg) {
   PetscFunctionBegin;
@@ -121,26 +125,26 @@ PetscErrorCode MatSetErrorIfFailure(Mat mat, PetscBool flg) {
 
   Input Parameters:
 +  A - the matrix
-.  m - number of local rows (or PETSC_DECIDE)
-.  n - number of local columns (or PETSC_DECIDE)
-.  M - number of global rows (or PETSC_DETERMINE)
--  N - number of global columns (or PETSC_DETERMINE)
+.  m - number of local rows (or `PETSC_DECIDE`)
+.  n - number of local columns (or `PETSC_DECIDE`)
+.  M - number of global rows (or `PETSC_DETERMINE`)
+-  N - number of global columns (or `PETSC_DETERMINE`)
 
    Notes:
-   m (n) and M (N) cannot be both PETSC_DECIDE
-   If one processor calls this with M (N) of PETSC_DECIDE then all processors must, otherwise the program will hang.
+   m (n) and M (N) cannot be both `PETSC_DECIDE`
+   If one processor calls this with M (N) of `PETSC_DECIDE` then all processors must, otherwise the program will hang.
 
-   If PETSC_DECIDE is not used for the arguments 'm' and 'n', then the
+   If `PETSC_DECIDE` is not used for the arguments 'm' and 'n', then the
    user must ensure that they are chosen to be compatible with the
    vectors. To do this, one first considers the matrix-vector product
    'y = A x'. The 'm' that is used in the above routine must match the
    local size used in the vector creation routine VecCreateMPI() for 'y'.
    Likewise, the 'n' used must match that used as the local size in
-   VecCreateMPI() for 'x'.
+   `VecCreateMPI()` for 'x'.
 
    You cannot change the sizes once they have been set.
 
-   The sizes must be set before MatSetUp() or MatXXXSetPreallocation() is called.
+   The sizes must be set before `MatSetUp()` or MatXXXSetPreallocation() is called.
 
   Level: beginner
 
@@ -168,24 +172,24 @@ PetscErrorCode MatSetSizes(Mat A, PetscInt m, PetscInt n, PetscInt M, PetscInt N
    MatSetFromOptions - Creates a matrix where the type is determined
    from the options database. Generates a parallel MPI matrix if the
    communicator has more than one processor.  The default matrix type is
-   AIJ, using the routines MatCreateSeqAIJ() and MatCreateAIJ() if
+   `MATAIJ`, using the routines `MatCreateSeqAIJ()` and `MatCreateAIJ()` if
    you do not select a type in the options database.
 
-   Collective on Mat
+   Collective on B
 
    Input Parameter:
 .  A - the matrix
 
    Options Database Keys:
-+    -mat_type seqaij   - AIJ type, uses MatCreateSeqAIJ()
-.    -mat_type mpiaij   - AIJ type, uses MatCreateAIJ()
-.    -mat_type seqdense - dense type, uses MatCreateSeqDense()
-.    -mat_type mpidense - dense type, uses MatCreateDense()
-.    -mat_type seqbaij  - block AIJ type, uses MatCreateSeqBAIJ()
--    -mat_type mpibaij  - block AIJ type, uses MatCreateBAIJ()
++    -mat_type seqaij   - `MATSEQAIJ` type, uses `MatCreateSeqAIJ()`
+.    -mat_type mpiaij   - `MATMPIAIJ` type, uses `MatCreateAIJ()`
+.    -mat_type seqdense - `MATSEQDENSE` type, uses `MatCreateSeqDense()`
+.    -mat_type mpidense - `MATMPIDENSE`, uses `MatCreateDense()`
+.    -mat_type seqbaij  - `MATSEQBAIJ`, uses `MatCreateSeqBAIJ()`
+-    -mat_type mpibaij  - `MATMPIBAIJ`, uses `MatCreateBAIJ()`
 
    Even More Options Database Keys:
-   See the manpages for particular formats (e.g., MatCreateSeqAIJ())
+   See the manpages for particular formats (e.g., `MatCreateSeqAIJ()`)
    for additional format-specific options.
 
    Level: beginner
@@ -257,9 +261,9 @@ PetscErrorCode MatSetFromOptions(Mat B) {
 }
 
 /*@C
-   MatXAIJSetPreallocation - set preallocation for serial and parallel AIJ, BAIJ, and SBAIJ matrices and their unassembled versions.
+   MatXAIJSetPreallocation - set preallocation for serial and parallel `MATAIJ`, `MATBAIJ`, and `MATSBAIJ` matrices and their unassembled versions.
 
-   Collective on Mat
+   Collective on A
 
    Input Parameters:
 +  A - matrix being preallocated
@@ -442,11 +446,11 @@ PETSC_EXTERN PetscErrorCode MatHeaderReplace(Mat A, Mat *C) {
 /*@
      MatBindToCPU - marks a matrix to temporarily stay on the CPU and perform computations on the CPU
 
-   Logically collective on Mat
+   Logically collective on A
 
    Input Parameters:
 +   A - the matrix
--   flg - bind to the CPU if value of PETSC_TRUE
+-   flg - bind to the CPU if value of `PETSC_TRUE`
 
    Level: intermediate
 
@@ -543,7 +547,7 @@ PetscErrorCode MatSetPreallocationCOO_Basic(Mat A, PetscCount ncoo, const PetscI
 /*@C
    MatSetPreallocationCOO - set preallocation for matrices using a coordinate format of the entries with global indices
 
-   Collective on Mat
+   Collective on A
 
    Input Parameters:
 +  A - matrix being preallocated
@@ -558,10 +562,10 @@ PetscErrorCode MatSetPreallocationCOO_Basic(Mat A, PetscCount ncoo, const PetscI
    having any specific value after this function returns. The arrays can be freed or reused immediately
    after this function returns.
 
-   Entries can be repeated, see MatSetValuesCOO(). Entries with negative row or column indices are allowed
-   but will be ignored. The corresponding entries in MatSetValuesCOO() will be ignored too. Remote entries
+   Entries can be repeated, see `MatSetValuesCOO()`. Entries with negative row or column indices are allowed
+   but will be ignored. The corresponding entries in `MatSetValuesCOO()` will be ignored too. Remote entries
    are allowed and will be properly added or inserted to the matrix, unless the matrix option MAT_IGNORE_OFF_PROC_ENTRIES
-   is set, in which case remote entries are ignored, or MAT_NO_OFF_PROC_ENTRIES is set, in which case an error will be generated.
+   is set, in which case remote entries are ignored, or `MAT_NO_OFF_PROC_ENTRIES` is set, in which case an error will be generated.
 
 .seealso: `MatSetValuesCOO()`, `MatSeqAIJSetPreallocation()`, `MatMPIAIJSetPreallocation()`, `MatSeqBAIJSetPreallocation()`, `MatMPIBAIJSetPreallocation()`, `MatSeqSBAIJSetPreallocation()`, `MatMPISBAIJSetPreallocation()`, `MatSetPreallocationCOOLocal()`, `DMSetMatrixPreallocateSkip()`
 @*/
@@ -592,7 +596,7 @@ PetscErrorCode MatSetPreallocationCOO(Mat A, PetscCount ncoo, PetscInt coo_i[], 
 /*@C
    MatSetPreallocationCOOLocal - set preallocation for matrices using a coordinate format of the entries with local indices
 
-   Collective on Mat
+   Collective on A
 
    Input Parameters:
 +  A - matrix being preallocated
@@ -603,15 +607,15 @@ PetscErrorCode MatSetPreallocationCOO(Mat A, PetscCount ncoo, PetscInt coo_i[], 
    Level: beginner
 
    Notes:
-   The local indices are translated using the local to global mapping, thus MatSetLocalToGlobalMapping() must have been
-   called prior to this function.
+   The local indices are translated using the local to global mapping, thus `MatSetLocalToGlobalMapping()` must have been
+   called prior to this function. For matrices created with `DMCreateMatrix()` the local to global mapping is often already provided.
 
    The indices coo_i and coo_j may be modified within this function. They might be translated to corresponding global
    indices, but the caller should not rely on them having any specific value after this function returns. The arrays
    can be freed or reused immediately after this function returns.
 
-   Entries can be repeated, see MatSetValuesCOO(). Entries with negative row or column indices are allowed
-   but will be ignored. The corresponding entries in MatSetValuesCOO() will be ignored too. Remote entries
+   Entries can be repeated, see `MatSetValuesCOO()`. Entries with negative row or column indices are allowed
+   but will be ignored. The corresponding entries in `MatSetValuesCOO()` will be ignored too. Remote entries
    are allowed and will be properly added or inserted to the matrix.
 
 .seealso: `MatSetValuesCOO()`, `MatSeqAIJSetPreallocation()`, `MatMPIAIJSetPreallocation()`, `MatSeqBAIJSetPreallocation()`, `MatMPIBAIJSetPreallocation()`, `MatSeqSBAIJSetPreallocation()`, `MatMPISBAIJSetPreallocation()`, `MatSetPreallocationCOO()`, `DMSetMatrixPreallocateSkip()`
@@ -644,9 +648,9 @@ PetscErrorCode MatSetPreallocationCOOLocal(Mat A, PetscCount ncoo, PetscInt coo_
 }
 
 /*@
-   MatSetValuesCOO - set values at once in a matrix preallocated using MatSetPreallocationCOO()
+   MatSetValuesCOO - set values at once in a matrix preallocated using `MatSetPreallocationCOO()`
 
-   Collective on Mat
+   Collective on A
 
    Input Parameters:
 +  A - matrix being preallocated
@@ -655,10 +659,13 @@ PetscErrorCode MatSetPreallocationCOOLocal(Mat A, PetscCount ncoo, PetscInt coo_
 
    Level: beginner
 
-   Notes: The values must follow the order of the indices prescribed with MatSetPreallocationCOO() or MatSetPreallocationCOOLocal().
+   Notes:
+   The values must follow the order of the indices prescribed with `MatSetPreallocationCOO()` or `MatSetPreallocationCOOLocal()`.
+
           When repeated entries are specified in the COO indices the coo_v values are first properly summed, regardless of the value of imode.
-          The imode flag indicates if coo_v must be added to the current values of the matrix (ADD_VALUES) or overwritten (INSERT_VALUES).
-          MatAssemblyBegin() and MatAssemblyEnd() do not need to be called after this routine. It automatically handles the assembly process.
+          The imode flag indicates if coo_v must be added to the current values of the matrix (`ADD_VALUES`) or overwritten (`INSERT_VALUES`).
+
+          `MatAssemblyBegin()` and `MatAssemblyEnd()` do not need to be called after this routine. It automatically handles the assembly process.
 
 .seealso: `MatSetPreallocationCOO()`, `MatSetPreallocationCOOLocal()`, `InsertMode`, `INSERT_VALUES`, `ADD_VALUES`
 @*/
@@ -695,12 +702,13 @@ PetscErrorCode MatSetValuesCOO(Mat A, const PetscScalar coo_v[], InsertMode imod
    Notes:
    If the value of flg is set to true, the following will occur:
 
-   MatCreateSubMatrices() and MatCreateRedundantMatrix() will bind created matrices to CPU if the input matrix is bound to the CPU.
-   MatCreateVecs() will bind created vectors to CPU if the input matrix is bound to the CPU.
+   `MatCreateSubMatrices()` and `MatCreateRedundantMatrix()` will bind created matrices to CPU if the input matrix is bound to the CPU.
+
+   `MatCreateVecs()` will bind created vectors to CPU if the input matrix is bound to the CPU.
    The bindingpropagates flag itself is also propagated by the above routines.
 
-   Developer Notes:
-   If the fine-scale DMDA has the -dm_bind_below option set to true, then DMCreateInterpolationScale() calls MatSetBindingPropagates()
+   Developer Note:
+   If the fine-scale `DMDA `has the -dm_bind_below option set to true, then `DMCreateInterpolationScale()` calls `MatSetBindingPropagates()`
    on the restriction/interpolation operator to set the bindingpropagates flag to true.
 
 .seealso: `VecSetBindingPropagates()`, `MatGetBindingPropagates()`

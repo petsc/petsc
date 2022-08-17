@@ -244,19 +244,17 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJSELL(Mat A, MatType type, Ma
 }
 
 /*@C
-   MatCreateSeqAIJSELL - Creates a sparse matrix of type SEQAIJSELL.
+   MatCreateSeqAIJSELL - Creates a sparse matrix of type `MATSEQAIJSELL`.
    This type inherits from AIJ and is largely identical, but keeps a "shadow"
-   copy of the matrix in SEQSELL format, which is used when this format
-   may be more suitable for a requested operation. Currently, SEQSELL format
-   is used for MatMult, MatMultTranspose, MatMultAdd, MatMultTransposeAdd,
-   and MatSOR operations.
-   Because SEQAIJSELL is a subtype of SEQAIJ, the option "-mat_seqaij_type seqaijsell" can be used to make
-   sequential AIJ matrices default to being instances of MATSEQAIJSELL.
+   copy of the matrix in `MATSEQSELL` format, which is used when this format
+   may be more suitable for a requested operation. Currently, `MATSEQSELL` format
+   is used for `MatMult()`, `MatMultTranspose()`, `MatMultAdd()`, `MatMultTransposeAdd()`,
+   and `MatSOR()` operations.
 
    Collective
 
    Input Parameters:
-+  comm - MPI communicator, set to PETSC_COMM_SELF
++  comm - MPI communicator, set to `PETSC_COMM_SELF`
 .  m - number of rows
 .  n - number of columns
 .  nz - number of nonzeros per row (same for all rows)
@@ -271,6 +269,9 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJSELL(Mat A, MatType type, Ma
 
    Notes:
    If nnz is given then nz is ignored
+
+   Because `MATSEQAIJSELL is a subtype of `MATSEQAIJ`, the option "-mat_seqaij_type seqaijsell" can be used to make
+   sequential `MATSEAIJ` matrices default to being instances of `MATSEQAIJSELL`.
 
    Level: intermediate
 

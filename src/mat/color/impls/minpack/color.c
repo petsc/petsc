@@ -225,13 +225,13 @@ static PetscErrorCode MatColoringApply_LF(MatColoring mc, ISColoring *iscoloring
    Notes:
     Supports only distance two colorings (for computation of Jacobians)
 
-          This is a sequential algorithm
+    This is a sequential algorithm
 
    References:
 .  * - TF Coleman and J More, "Estimation of sparse Jacobian matrices and graph coloring," SIAM Journal on Numerical Analysis, vol. 20, no. 1,
    pp. 187-209, 1983.
 
-.seealso: `MatColoringCreate()`, `MatColoring`, `MatColoringSetType()`, `MATCOLORINGGREEDY`, `MatColoringType`
+.seealso: `MatColoringTpe`, `MatColoringCreate()`, `MatColoring`, `MatColoringSetType()`, `MATCOLORINGGREEDY`, `MatColoringType`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatColoringCreate_LF(MatColoring mc) {

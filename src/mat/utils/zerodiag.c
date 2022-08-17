@@ -16,27 +16,27 @@
 
 /*@
     MatReorderForNonzeroDiagonal - Changes matrix ordering to remove
-    zeros from diagonal. This may help in the LU factorization to
+    zeros from diagonal. This may help in the `PCLU` factorization to
     prevent a zero pivot.
 
-    Collective on Mat
+    Collective on mat
 
     Input Parameters:
 +   mat  - matrix to reorder
 -   rmap,cmap - row and column permutations.  Usually obtained from
-               MatGetOrdering().
+               `MatGetOrdering()`.
 
     Level: intermediate
 
     Notes:
     This is not intended as a replacement for pivoting for matrices that
     have ``bad'' structure. It is only a stop-gap measure. Should be called
-    after a call to MatGetOrdering(), this routine changes the column
+    after a call to `MatGetOrdering()`, this routine changes the column
     ordering defined in cis.
 
-    Only works for SeqAIJ matrices
+    Only works for `MATSEQAIJ` matrices
 
-    Options Database Keys (When using KSP):
+    Options Database Keys (When using `KSP`):
 .      -pc_factor_nonzeros_along_diagonal - Reorder to remove zeros from diagonal
 
     Algorithm Notes:

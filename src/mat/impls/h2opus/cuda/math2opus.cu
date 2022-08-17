@@ -1236,17 +1236,17 @@ static PetscErrorCode MatBindToCPU_H2OPUS(Mat A, PetscBool flg) {
 .     -mat_type h2opus - matrix type to "h2opus" during a call to MatSetFromOptions()
 
    Notes:
-     H2Opus implements hierarchical matrices in the H^2 flavour.
-     It supports CPU or NVIDIA GPUs.
+     H2Opus implements hierarchical matrices in the H^2 flavour. It supports CPU or NVIDIA GPUs.
+
      For CPU only builds, use ./configure --download-h2opus --download-thrust to install PETSc to use H2Opus.
      In order to run on NVIDIA GPUs, use ./configure --download-h2opus --download-magma --download-kblas.
-     For details and additional references, see
-       "H2Opus: A distributed-memory multi-GPU software package for non-local operators",
-     available at https://arxiv.org/abs/2109.05451.
 
    Level: beginner
 
-.seealso: `MATHTOOL`, `MATDENSE`, `MatCreateH2OpusFromKernel()`, `MatCreateH2OpusFromMat()`
+   Reference:
+.  * -  "H2Opus: A distributed-memory multi-GPU software package for non-local operators", https://arxiv.org/abs/2109.05451
+
+.seealso: `MATH2OPUS`, `MATHTOOL`, `MATDENSE`, `MatCreateH2OpusFromKernel()`, `MatCreateH2OpusFromMat()`
 M*/
 PETSC_EXTERN PetscErrorCode MatCreate_H2OPUS(Mat A) {
   Mat_H2OPUS *a;
@@ -1501,7 +1501,8 @@ PetscErrorCode MatH2OpusCompress(Mat A, PetscReal tol) {
 .     bs - maximum number of samples to be taken concurrently
 -     tol - relative tolerance for construction
 
-   Notes: Need to call MatAssemblyBegin/End() to update the hierarchical matrix.
+   Notes:
+   You need to call `MatAssemblyBegin()` and `MatAssemblyEnd()` to update the hierarchical matrix.
 
    Level: intermediate
 
@@ -1530,14 +1531,14 @@ PetscErrorCode MatH2OpusSetSamplingMat(Mat A, Mat B, PetscInt bs, PetscReal tol)
 }
 
 /*@C
-     MatCreateH2OpusFromKernel - Creates a MATH2OPUS from a user-supplied kernel.
+     MatCreateH2OpusFromKernel - Creates a `MATH2OPUS` from a user-supplied kernel.
 
    Input Parameters:
 +     comm - MPI communicator
-.     m - number of local rows (or PETSC_DECIDE to have calculated if M is given)
-.     n - number of local columns (or PETSC_DECIDE to have calculated if N is given)
-.     M - number of global rows (or PETSC_DETERMINE to have calculated if m is given)
-.     N - number of global columns (or PETSC_DETERMINE to have calculated if n is given)
+.     m - number of local rows (or `PETSC_DECIDE` to have calculated if M is given)
+.     n - number of local columns (or `PETSC_DECIDE` to have calculated if N is given)
+.     M - number of global rows (or `PETSC_DETERMINE` to have calculated if m is given)
+.     N - number of global columns (or `PETSC_DETERMINE` to have calculated if n is given)
 .     spacedim - dimension of the space coordinates
 .     coords - coordinates of the points
 .     cdist - whether or not coordinates are distributed
@@ -1551,10 +1552,10 @@ PetscErrorCode MatH2OpusSetSamplingMat(Mat A, Mat B, PetscInt bs, PetscReal tol)
 .     nA - matrix
 
    Options Database Keys:
-+     -mat_h2opus_leafsize <PetscInt> - Leaf size of cluster tree
-.     -mat_h2opus_eta <PetscReal> - Admissibility condition tolerance
-.     -mat_h2opus_order <PetscInt> - Chebychev approximation order
--     -mat_h2opus_normsamples <PetscInt> - Maximum number of samples to be used when estimating norms
++     -mat_h2opus_leafsize <`PetscInt`> - Leaf size of cluster tree
+.     -mat_h2opus_eta <`PetscReal`> - Admissibility condition tolerance
+.     -mat_h2opus_order <`PetscInt`> - Chebychev approximation order
+-     -mat_h2opus_normsamples <`PetscInt`> - Maximum number of samples to be used when estimating norms
 
    Level: intermediate
 
@@ -1588,7 +1589,7 @@ PetscErrorCode MatCreateH2OpusFromKernel(MPI_Comm comm, PetscInt m, PetscInt n, 
 }
 
 /*@C
-     MatCreateH2OpusFromMat - Creates a MATH2OPUS sampling from a user-supplied operator.
+     MatCreateH2OpusFromMat - Creates a `MATH2OPUS` sampling from a user-supplied operator.
 
    Input Parameters:
 +     B - the matrix to be sampled
@@ -1605,16 +1606,17 @@ PetscErrorCode MatCreateH2OpusFromKernel(MPI_Comm comm, PetscInt m, PetscInt n, 
 .     nA - matrix
 
    Options Database Keys:
-+     -mat_h2opus_leafsize <PetscInt> - Leaf size of cluster tree
-.     -mat_h2opus_eta <PetscReal> - Admissibility condition tolerance
-.     -mat_h2opus_maxrank <PetscInt> - Maximum rank when constructed from matvecs
-.     -mat_h2opus_samples <PetscInt> - Maximum number of samples to be taken concurrently when constructing from matvecs
-.     -mat_h2opus_rtol <PetscReal> - Relative tolerance for construction from sampling
-.     -mat_h2opus_check <PetscBool> - Check error when constructing from sampling during MatAssemblyEnd()
-.     -mat_h2opus_hara_verbose <PetscBool> - Verbose output from hara construction
--     -mat_h2opus_normsamples <PetscInt> - Maximum bumber of samples to be when estimating norms
++     -mat_h2opus_leafsize <`PetscInt`> - Leaf size of cluster tree
+.     -mat_h2opus_eta <`PetscReal`> - Admissibility condition tolerance
+.     -mat_h2opus_maxrank <`PetscInt`> - Maximum rank when constructed from matvecs
+.     -mat_h2opus_samples <`PetscInt`> - Maximum number of samples to be taken concurrently when constructing from matvecs
+.     -mat_h2opus_rtol <`PetscReal`> - Relative tolerance for construction from sampling
+.     -mat_h2opus_check <`PetscBool`> - Check error when constructing from sampling during MatAssemblyEnd()
+.     -mat_h2opus_hara_verbose <`PetscBool`> - Verbose output from hara construction
+-     -mat_h2opus_normsamples <`PetscInt`> - Maximum bumber of samples to be when estimating norms
 
-   Notes: not available in parallel
+   Note:
+   Not available in parallel
 
    Level: intermediate
 
@@ -1757,12 +1759,13 @@ PetscErrorCode MatH2OpusMapVec(Mat A, PetscBool nativetopetsc, Vec in, Vec *out)
      MatH2OpusLowRankUpdate - Perform a low-rank update of the form A = A + s * U * V^T
 
    Input Parameters:
-+     A - the hierarchical matrix
++     A - the hierarchical `MATH2OPUS` matrix
 .     s - the scaling factor
 .     U - the dense low-rank update matrix
 -     V - (optional) the dense low-rank update matrix (if NULL, then V = U is assumed)
 
-   Notes: The U and V matrices must be in dense format
+   Note:
+   The U and V matrices must be in dense format
 
    Level: intermediate
 

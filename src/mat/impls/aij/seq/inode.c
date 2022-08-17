@@ -4495,12 +4495,12 @@ PetscErrorCode MatInodeAdjustForInodes_SeqAIJ_Inode(Mat A, IS *rperm, IS *cperm)
 }
 
 /*@C
-   MatInodeGetInodeSizes - Returns the inode information of the Inode matrix.
+   MatInodeGetInodeSizes - Returns the inode information of a matrix with inodes
 
    Not Collective
 
    Input Parameter:
-.  A - the Inode matrix or matrix derived from the Inode class -- e.g., SeqAIJ
+.  A - the Inode matrix or matrix derived from the Inode class -- e.g., `MATSEQAIJ`
 
    Output Parameters:
 +  node_count - no of inodes present in the matrix.
@@ -4509,7 +4509,7 @@ PetscErrorCode MatInodeAdjustForInodes_SeqAIJ_Inode(Mat A, IS *rperm, IS *cperm)
 
    Level: advanced
 
-   Notes:
+   Note:
     This routine returns some internal storage information
    of the matrix, it is intended to be used by advanced users.
    It should be called after the matrix is assembled.

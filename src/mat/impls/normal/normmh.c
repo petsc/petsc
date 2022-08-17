@@ -258,20 +258,19 @@ PetscErrorCode MatNormalGetMat_NormalHermitian(Mat A, Mat *M) {
 }
 
 /*@
-      MatNormalHermitianGetMat - Gets the Mat object stored inside a MATNORMALHERMITIAN
+      MatNormalHermitianGetMat - Gets the `Mat` object stored inside a `MATNORMALHERMITIAN`
 
-   Logically collective on Mat
+   Logically collective on A
 
    Input Parameter:
-.   A  - the MATNORMALHERMITIAN matrix
+.   A  - the `MATNORMALHERMITIAN` matrix
 
    Output Parameter:
 .   M - the matrix object stored inside A
 
    Level: intermediate
 
-.seealso: `MatCreateNormalHermitian()`
-
+.seealso: `MATNORMALHERMITIAN`, `MatCreateNormalHermitian()`
 @*/
 PetscErrorCode MatNormalHermitianGetMat(Mat A, Mat *M) {
   PetscFunctionBegin;
@@ -315,9 +314,9 @@ PetscErrorCode MatConvert_NormalHermitian_AIJ(Mat A, MatType newtype, MatReuse r
 }
 
 /*@
-      MatCreateNormalHermitian - Creates a new matrix object that behaves like (A*)'*A.
+      MatCreateNormalHermitian - Creates a new matrix object `MATNORMALHERMITIAN` that behaves like (A*)'*A.
 
-   Collective on Mat
+   Collective on A
 
    Input Parameter:
 .   A  - the (possibly rectangular complex) matrix
@@ -327,10 +326,12 @@ PetscErrorCode MatConvert_NormalHermitian_AIJ(Mat A, MatType newtype, MatReuse r
 
    Level: intermediate
 
-   Notes:
+   Note:
     The product (A*)'*A is NOT actually formed! Rather the new matrix
-          object performs the matrix-vector product by first multiplying by
+          object performs the matrix-vector product, `MatMult()`, by first multiplying by
           A and then (A*)'
+
+.seealso: `MATNORMAL`, `MATNORMALHERMITIAN`, `MatNormalHermitianGetMat()`
 @*/
 PetscErrorCode MatCreateNormalHermitian(Mat A, Mat *N) {
   PetscInt    m, n;
