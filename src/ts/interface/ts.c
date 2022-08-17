@@ -3432,14 +3432,13 @@ PetscErrorCode  TSStep(TS ts)
   PetscCall((*ts->ops->step)(ts));
   PetscCall(PetscLogEventEnd(TS_Step,ts,0,0,0));
 
+  if (ts->tspan && PetscIsCloseAtTol(ts->ptime,ts->tspan->span_times[ts->tspan->spanctr],ts->tspan->reltol*ts->time_step+ts->tspan->abstol,0) && ts->tspan->spanctr < ts->tspan->num_span_times) PetscCall(VecCopy(ts->vec_sol,ts->tspan->vecs_sol[ts->tspan->spanctr++]));
   if (ts->reason >= 0) {
     ts->ptime_prev = ptime;
     ts->steps++;
     ts->steprollback = PETSC_FALSE;
     ts->steprestart  = PETSC_FALSE;
-    if (ts->tspan && PetscIsCloseAtTol(ts->ptime,ts->tspan->span_times[ts->tspan->spanctr],ts->tspan->reltol*ts->time_step+ts->tspan->abstol,0) && ts->tspan->spanctr < ts->tspan->num_span_times) PetscCall(VecCopy(ts->vec_sol,ts->tspan->vecs_sol[ts->tspan->spanctr++]));
   }
-
   if (!ts->reason) {
     if (ts->steps >= ts->max_steps) ts->reason = TS_CONVERGED_ITS;
     else if (ts->ptime >= ts->max_time) ts->reason = TS_CONVERGED_TIME;
