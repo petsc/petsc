@@ -26,7 +26,7 @@ $ xxxxyyy1 = 0000,0101 - SYCL memory
   Level: beginner
 
   Notes:
-  PETSC_MEMTYPE_KOKKOS depends on the KOKKOS backend configuration
+  `PETSC_MEMTYPE_KOKKOS` depends on the Kokkos backend configuration
 
 .seealso: `VecGetArrayAndMemType()`, `PetscSFBcastWithMemTypeBegin()`, `PetscSFReduceWithMemTypeBegin()`
 E*/
@@ -77,7 +77,7 @@ typedef enum {
 } PetscOffloadMask;
 
 /*E
-  PetscDeviceInitType - Initialization strategy for PetscDevice
+  PetscDeviceInitType - Initialization strategy for `PetscDevice`
 
 $ PETSC_DEVICE_INIT_NONE  - PetscDevice is never initialized
 $ PETSC_DEVICE_INIT_LAZY  - PetscDevice is initialized on demand
@@ -134,11 +134,11 @@ PETSC_EXTERN const char *const PetscDeviceTypes[];
 #endif
 
 /*S
-  PetscDevice - Handle to an accelerator "device" (usually a GPU)
+  PetscDevice - Object to manage an accelerator "device" (usually a GPU)
 
-  Notes:
+  Note:
   This object is used to house configuration and state of a device, but does not offer any ability to interact with or
-  drive device computation. This functionality is facilitated instead by the PetscDeviceContext object.
+  drive device computation. This functionality is facilitated instead by the `PetscDeviceContext` object.
 
   Level: beginner
 
@@ -168,7 +168,7 @@ typedef enum {
 PETSC_EXTERN const char *const PetscStreamTypes[];
 
 /*E
-  PetscDeviceContextJoinMode - Describes the type of join operation to perform in PetscDeviceContextJoin()
+  PetscDeviceContextJoinMode - Describes the type of join operation to perform in `PetscDeviceContextJoin()`
 
 $ PETSC_DEVICE_CONTEXT_JOIN_DESTROY - Destroy all incoming sub-contexts after join.
 $ PETSC_DEVICE_CONTEXT_JOIN_SYNC    - Synchronize incoming sub-contexts after join.

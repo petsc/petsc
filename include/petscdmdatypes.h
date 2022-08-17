@@ -17,7 +17,7 @@ typedef enum { DMDA_STENCIL_STAR,DMDA_STENCIL_BOX } DMDAStencilType;
 
 /*E
     DMDAInterpolationType - Defines the type of interpolation that will be returned by
-       DMCreateInterpolation.
+       `DMCreateInterpolation()`.
 
    Level: beginner
 
@@ -27,7 +27,7 @@ typedef enum { DMDA_Q0, DMDA_Q1 } DMDAInterpolationType;
 
 /*E
     DMDAElementType - Defines the type of elements that will be returned by
-       DMDAGetElements()
+       `DMDAGetElements()`
 
    Level: beginner
 
@@ -43,7 +43,7 @@ typedef enum { DMDA_ELEMENT_P1, DMDA_ELEMENT_Q1 } DMDAElementType;
    Level: beginner
 
   Fortran Notes - This should be declared as
-$    DMDALocalInfo :: info(DMDA_LOCAL_INFO_SIZE)
+$    `DMDALocalInfo` :: info(DMDA_LOCAL_INFO_SIZE)
      and the entries accessed via
 $    info(DMDA_LOCAL_INFO_DIM)
 $    info(DMDA_LOCAL_INFO_DOF) etc.

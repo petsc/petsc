@@ -80,20 +80,24 @@ PETSC_EXTERN const char * const DMPlexInterpolatedFlags[];
 
 /*E
    DMPlexInterpolatedFlag - Describes level of topological interpolatedness.
-     It is a local or collective property depending on whether it is returned by DMPlexIsInterpolated() or DMPlexIsInterpolatedCollective().
 
-$  DMPLEX_INTERPOLATED_INVALID - Uninitialized value (internal use only; never returned by DMPlexIsInterpolated() or DMPlexIsInterpolatedCollective())
+   Local or collective property depending on whether it is returned by `DMPlexIsInterpolated()` or `DMPlexIsInterpolatedCollective()`.
+
+$  DMPLEX_INTERPOLATED_INVALID - Uninitialized value (internal use only; never returned by `DMPlexIsInterpolated()` or `DMPlexIsInterpolatedCollective()`)
 $  DMPLEX_INTERPOLATED_NONE    - Mesh is not interpolated
-$  DMPLEX_INTERPOLATED_PARTIAL - Mesh is partially interpolated. This can e.g. mean DMPlex with cells, faces and vertices but no edges represented, or a mesh with mixed cones (see DMPlexStratify() for an example)
-$  DMPLEX_INTERPOLATED_MIXED   - Can be returned only by DMPlexIsInterpolatedCollective(), meaning that DMPlexIsInterpolated() returns different interpolatedness on different ranks
+$  DMPLEX_INTERPOLATED_PARTIAL - Mesh is partially interpolated. This can e.g. mean `DMPLEX` with cells, faces and vertices but no edges represented, or a mesh with mixed cones (see `DMPlexStratify()` for an example)
+$  DMPLEX_INTERPOLATED_MIXED   - Can be returned only by `DMPlexIsInterpolatedCollective()`, meaning that `DMPlexIsInterpolated()` returns different interpolatedness on different ranks
 $  DMPLEX_INTERPOLATED_FULL    - Mesh is fully interpolated
 
    Level: intermediate
 
+   Note:
+   An interpolated `DMPLEX` means that edges (and faces for 3d meshes) are present in the `DMPLEX` data structures.
+
    Developer Note:
    Any additions/changes here MUST also be made in include/petsc/finclude/petscdmplex.h and src/dm/f90-mod/petscdmplex.h
 
-.seealso: `DMPlexIsInterpolated()`, `DMPlexIsInterpolatedCollective()`, `DMPlexInterpolate()`, `DMPlexUninterpolate()`
+.seealso: `DMPLEX`, `DMPlexIsInterpolated()`, `DMPlexIsInterpolatedCollective()`, `DMPlexInterpolate()`, `DMPlexUninterpolate()`
 E*/
 typedef enum {
   DMPLEX_INTERPOLATED_INVALID = -1,
@@ -142,7 +146,7 @@ PETSC_EXTERN PetscErrorCode DMPlexGetCompressedClosure(DM, PetscSection, PetscIn
 PETSC_EXTERN PetscErrorCode DMPlexRestoreCompressedClosure(DM, PetscSection, PetscInt, PetscInt *, PetscInt **, PetscSection *, IS *, const PetscInt **);
 
 /*E
-   DMPlexTPSType - Type of triply-periodic surface for DMPlex
+   DMPlexTPSType - Type of triply-periodic surface for a `DMPLEX`
 
 $  DMPLEX_TPS_SCHWARZ_P - Schwarz Primitive surface, defined by the equation cos(x) + cos(y) + cos(z) = 0.
 $  DMPLEX_TPS_GYROID    - Gyroid surface, defined by the equation sin(x)cos(y) + sin(y)cos(z) + sin(z)cos(x) = 0
@@ -247,10 +251,10 @@ PETSC_EXTERN PetscErrorCode DMPlexSetMigrationSF(DM, PetscSF);
 PETSC_EXTERN PetscErrorCode DMPlexGetMigrationSF(DM, PetscSF *);
 
 /*E
-   DMPlexReorderDefaultFlag - Flag indicating whether the DMPlex should be reordered by default
+   DMPlexReorderDefaultFlag - Flag indicating whether the `DMPLEX` should be reordered by default
 
 $  DMPLEX_REORDER_DEFAULT_NOTSET - Flag not set.
-$  DMPLEX_REORDER_DEFAULT_FALSE  - Do not Reorder by default.
+$  DMPLEX_REORDER_DEFAULT_FALSE  - Do not reorder by default.
 $  DMPLEX_REORDER_DEFAULT_TRUE   - Reorder by default.
 
    Level: intermediate
@@ -258,7 +262,9 @@ $  DMPLEX_REORDER_DEFAULT_TRUE   - Reorder by default.
    Developer Note:
    Any additions/changes here MUST also be made in include/petsc/finclude/petscdmplex.h and src/dm/f90-mod/petscdmplex.h
 
-.seealso: `DMPlexReorderSetDefault()`, `DMPlexReorderGetDefault()`
+   Could be replaced with `PETSC_BOOL3`
+
+.seealso: `DMPlexReorderSetDefault()`, `DMPlexReorderGetDefault()`, `DMPlexGetOrdering()`, `DMPlexPermute()`
 E*/
 typedef enum {
   DMPLEX_REORDER_DEFAULT_NOTSET = -1,

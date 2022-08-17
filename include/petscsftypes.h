@@ -4,11 +4,11 @@
 /* SUBMANSEC = PetscSF */
 
 /*S
-   PetscSF - PETSc object for setting up and managing the communication of certain entries of arrays and Vecs between MPI processes.
+   PetscSF - PETSc object for setting up and managing the communication of certain entries of arrays and `Vec` between MPI ranks.
 
    Level: intermediate
 
-       PetscSF uses the concept of star forests to indicate and determine the communication patterns concisely and efficiently.
+       `PetscSF` uses the concept of star forests to indicate and determine the communication patterns concisely and efficiently.
   A star  https://en.wikipedia.org/wiki/Star_(graph_theory) forest is simply a collection of trees of height 1. The leave nodes represent
   "ghost locations" for the root nodes.
 
@@ -17,7 +17,7 @@ S*/
 typedef struct _p_PetscSF* PetscSF;
 
 /*J
-    PetscSFType - String with the name of a PetscSF type
+    PetscSFType - String with the name of a `PetscSF` type
 
    Level: beginner
 
@@ -56,7 +56,7 @@ typedef struct {
 
    Level: beginner
 
-.seealso: `VecScatterCreate()`, `VecScatterBegin()`, `VecScatterEnd()`
+.seealso: `Vec`, `PetscSF`, `VecScatterCreate()`, `VecScatterBegin()`, `VecScatterEnd()`
 S*/
 typedef PetscSF VecScatter;
 
@@ -65,7 +65,7 @@ typedef PetscSF VecScatter;
 
    Level: beginner
 
-.seealso: `VecScatterSetType()`, `VecScatter`, `VecScatterCreate()`, `VecScatterDestroy()`
+.seealso: `PetscSFType`, `VecScatterSetType()`, `VecScatter`, `VecScatterCreate()`, `VecScatterDestroy()`
 J*/
 typedef PetscSFType VecScatterType;
 #endif

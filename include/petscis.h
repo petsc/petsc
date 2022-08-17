@@ -48,11 +48,12 @@ PETSC_EXTERN PetscErrorCode ISContiguousLocal(IS,PetscInt,PetscInt,PetscInt*,Pet
 
     Level: beginner
 
-   Any additions/changes here MUST also be made in include/petsc/finclude/petscis.h
-   Any additions/changes here must also be made in src/vec/vec/interface/dlregisvec.c in ISInfos[]
-
    Developer Notes:
-    Entries that are negative need not be called collectively by all processes.
+   Entries that are negative need not be called collectively by all processes.
+
+   Any additions/changes here MUST also be made in include/petsc/finclude/petscis.h
+
+   Any additions/changes here must also be made in src/vec/vec/interface/dlregisvec.c in ISInfos[]
 
 .seealso: `ISSetInfo()`
 E*/
@@ -143,8 +144,8 @@ PETSC_EXTERN PetscClassId IS_LTOGM_CLASSID;
 /*E
     ISGlobalToLocalMappingMode - Indicates mapping behavior if global indices are missing
 
-   IS_GTOLM_MASK - missing global indices are masked by mapping them to a local index of -1
-   IS_GTOLM_DROP - missing global indices are dropped
+   `IS_GTOLM_MASK` - missing global indices are masked by mapping them to a local index of -1
+   `IS_GTOLM_DROP` - missing global indices are dropped
 
    Level: beginner
 
@@ -206,9 +207,9 @@ PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingDuplicate(ISLocalToGlobalMappi
 
     Level: beginner
 
-$   IS_COLORING_GLOBAL - does not include the colors for ghost points, this is used when the function
+$   `IS_COLORING_GLOBAL` - does not include the colors for ghost points, this is used when the function
 $                        is called synchronously in parallel. This requires generating a "parallel coloring".
-$   IS_COLORING_LOCAL - includes colors for ghost points, this is used when the function can be called
+$   `IS_COLORING_LOCAL` - includes colors for ghost points, this is used when the function can be called
 $                         separately on individual processes with the ghost points already filled in. Does not
 $                         require a "parallel coloring", rather each process colors its local + ghost part.
 $                         Using this can result in much less parallel communication. Currently only works
@@ -275,9 +276,10 @@ struct _n_PetscLayout{
 
    Level: developer
 
-    Fortran Notes:
+    Fortran Note:
       Not available from Fortran
 
+.seealso: `PetscLayoutFindOwnerIndex()`
 @*/
 static inline PetscErrorCode PetscLayoutFindOwner(PetscLayout map,PetscInt idx,PetscMPIInt *owner)
 {
@@ -314,8 +316,10 @@ static inline PetscErrorCode PetscLayoutFindOwner(PetscLayout map,PetscInt idx,P
 
    Level: developer
 
-    Fortran Notes:
+    Fortran Note:
       Not available from Fortran
+
+.seealso: `PetscLayoutFindOwner()`
 
 @*/
 static inline PetscErrorCode PetscLayoutFindOwnerIndex(PetscLayout map,PetscInt idx,PetscMPIInt *owner,PetscInt *lidx)

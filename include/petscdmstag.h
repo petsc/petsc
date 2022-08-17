@@ -7,7 +7,7 @@
 /* SUBMANSEC = DMStag */
 
 /*E
-  DMStagStencilLocation - enumerated type denoted a location relative to an element in a DMStag grid
+  DMStagStencilLocation - enumerated type denoted a location relative to an element in a `DMSTAG` grid
 
   The interpretation of these values is dimension-dependent.
 
@@ -51,11 +51,11 @@ DMSTAG_FRONT_UP_RIGHT
 PETSC_EXTERN const char *const DMStagStencilLocations[]; /* Corresponding strings (see stagstencil.c) */
 
 /*S
-  DMStagStencil - data structure representing a degree of freedom on a DMStag grid
+  DMStagStencil - data structure representing a degree of freedom on a `DMSTAG` grid
 
-  Data structure (C struct), analogous to describing a degree of freedom associated with a DMStag object,
-  in terms of a global element index in each of up to three directions, a "location" as defined by DMStagStencilLocation,
-  and a component number. Primarily for use with DMStagMatSetValuesStencil() (compare with use of MatStencil with MatSetValuesStencil()).
+  Data structure (C struct), analogous to describing a degree of freedom associated with a `DMSTAG` object,
+  in terms of a global element index in each of up to three directions, a "location" as defined by `DMStagStencilLocation`,
+  and a component number. Primarily for use with `DMStagMatSetValuesStencil()` (compare with use of `MatStencil` with `MatSetValuesStencil()`).
 
   Note:
   The component (c) field must always be set, even if there is a single component at a given location (in which case c should be set to 0).
@@ -74,7 +74,7 @@ typedef struct {
 
   Level: beginner
 
-.seealso: `DMSTAG`, `DMStagCreate1d()`, `DMStagCreate2d()`, `DMStagCreate3d()`, `DMStagStencil`
+.seealso: `DMSTAG`, `DMStagCreate1d()`, `DMStagCreate2d()`, `DMStagCreate3d()`, `DMStagStencil`, `DMDAStencilType`
 E*/
 
 typedef enum{DMSTAG_STENCIL_NONE=0,DMSTAG_STENCIL_STAR,DMSTAG_STENCIL_BOX} DMStagStencilType;

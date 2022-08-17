@@ -29,16 +29,19 @@
    Logically Collective on Vec
 
    Input Parameter:
-.  v - the vector in type of VECKOKKOS
+.  v - the vector in type of `VECKOKKOS`
 
    Output Parameter:
 .  kv - the Kokkos View with a user-specified template parameter MemorySpace
 
    Notes:
-   If the vector is not of type VECKOKKOS, an error will be raised.
-   The functions are similar to VecGetArrayRead() and VecGetArray() respectively. One can read-only or read/write the returned Kokkos View.
-   Note that passing in a const View enables read-only access.
-   One must return the View by a matching VecRestoreKokkosView() after finishing using the View. Currently, only two memory
+   If the vector is not of type `VECKOKKOS`, an error will be raised.
+
+   The functions are similar to `VecGetArrayRead()` and `VecGetArray()` respectively. One can read-only or read/write the returned Kokkos View.
+
+   Passing in a const View enables read-only access.
+
+   One must return the View by a matching `VecRestoreKokkosView()` after finishing using the View. Currently, only two memory
    spaces are supported: Kokkos::HostSpace and Kokkos::DefaultExecutionSpace::memory_space.
    If needed, a memory copy will be internally called to copy the latest vector data to the specified memory space.
 
@@ -51,7 +54,7 @@
   template<class MemorySpace> PetscErrorCode VecGetKokkosView (Vec,Kokkos::View<PetscScalar*,MemorySpace>*);
 
 /*@C
-   VecRestoreKokkosView - Returns a Kokkos View gotten by VecGetKokkosView().
+   VecRestoreKokkosView - Returns a Kokkos View gotten by `VecGetKokkosView()`.
 
    Synopsis:
    #include <petscvec_kokkos.hpp>
@@ -61,12 +64,12 @@
    Logically Collective on Vec
 
    Input Parameters:
-+  v  - the vector in type of VECKOKKOS
++  v  - the vector in type of `VECKOKKOS`
 -  kv - the Kokkos View with a user-specified template parameter MemorySpace
 
    Notes:
-   If the vector is not of type VECKOKKOS, an error will be raised.
-   The functions are similar to VecRestoreArrayRead() and VecRestoreArray() respectively. They are the counterpart of VecGetKokkosView().
+   If the vector is not of type `VECKOKKOS`, an error will be raised.
+   The functions are similar to `VecRestoreArrayRead()` and `VecRestoreArray()` respectively. They are the counterpart of `VecGetKokkosView()`.
 
    Level: beginner
 
@@ -87,17 +90,19 @@
    Logically Collective on Vec
 
    Input Parameter:
-.  v - the vector in type of VECKOKKOS
+.  v - the vector in type of `VECKOKKOS`
 
    Output Parameter:
 .  kv - the Kokkos View with a user-specified template parameter MemorySpace
 
    Notes:
-   If the vector is not of type VECKOKKOS, an error will be raised.
-   The functions is similar to VecGetArrayWrite(). The returned view might contain garbage data or stale data and one is not
+   If the vector is not of type `VECKOKKOS`, an error will be raised.
+
+   The functions is similar to `VecGetArrayWrite()`. The returned view might contain garbage data or stale data and one is not
    expected to read data from the View. Instead, one is expected to overwrite all data in the View.
-   One must return the View by a matching VecRestoreKokkosViewWrite() after finishing using the View.
-  Currently, only two memory spaces are supported: Kokkos::HostSpace and Kokkos::DefaultExecutionSpace::memory_space.
+   One must return the View by a matching `VecRestoreKokkosViewWrite()` after finishing using the View.
+
+   Currently, only two memory spaces are supported: Kokkos::HostSpace and Kokkos::DefaultExecutionSpace::memory_space.
 
    Level: beginner
 
@@ -107,7 +112,7 @@
   template<class MemorySpace> PetscErrorCode VecGetKokkosViewWrite    (Vec,Kokkos::View<PetscScalar*,MemorySpace>*);
 
 /*@C
-   VecRestoreKokkosViewWrite - Returns a Kokkos View gotten by VecGetKokkosViewWrite().
+   VecRestoreKokkosViewWrite - Returns a Kokkos View gotten with `VecGetKokkosViewWrite()`.
 
    Synopsis:
    #include <petscvec_kokkos.hpp>
@@ -116,12 +121,13 @@
    Logically Collective on Vec
 
    Input Parameters:
-+  v  - the vector in type of VECKOKKOS
++  v  - the vector in type of `VECKOKKOS`
 -  kv - the Kokkos View with a user-specified template parameter MemorySpace
 
    Notes:
-   If the vector is not of type VECKOKKOS, an error will be raised.
-   The function is similar to VecRestoreArrayWrite(). It is the counterpart of VecGetKokkosViewWrite().
+   If the vector is not of type `VECKOKKOS`, an error will be raised.
+
+   The function is similar to `VecRestoreArrayWrite()`. It is the counterpart of `VecGetKokkosViewWrite()`.
 
    Level: beginner
 

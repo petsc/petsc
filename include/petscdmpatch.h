@@ -13,7 +13,8 @@
 
   Level: intermediate
 
-.seealso: `DM`, `DMPatchCreate()`
+.seealso: `DM`, `DMPatchCreate()`, `DMPatchSolve()`, `DMPatchZoom()`, `DMPatchGetPatchSize()`, `DMPatchSetPatchSize()`,
+          `DMPatchGetCommSize()`, `DMPatchSetCommSize()`, `DMPatchGetCoarse()`, `DMPatchCreateGrid()`
 S*/
 PETSC_EXTERN PetscErrorCode DMPatchCreate(MPI_Comm, DM*);
 

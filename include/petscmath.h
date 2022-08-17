@@ -185,10 +185,10 @@ PETSC_EXTERN MPI_Datatype MPIU___FP16 PetscAttrMPITypeTag(__fp16);
 #endif
 
 /*MC
-   MPIU_REAL - MPI datatype corresponding to PetscReal
+   MPIU_REAL - Portable MPI datatype corresponding to `PetscReal` independent of what precision `PetscReal` is in
 
    Notes:
-   In MPI calls that require an MPI datatype that matches a PetscReal or array of PetscReal values, pass this value.
+   In MPI calls that require an MPI datatype that matches a `PetscReal` or array of `PetscReal` values, pass this value.
 
    Level: beginner
 
@@ -419,10 +419,10 @@ PETSC_EXTERN MPI_Datatype MPIU___COMPLEX128 PetscAttrMPITypeTag(__complex128);
 #endif /* PETSC_USE_REAL___FLOAT128 */
 
 /*MC
-   MPIU_COMPLEX - MPI datatype corresponding to PetscComplex
+   MPIU_COMPLEX - Portable MPI datatype corresponding to `PetscComplex` independent of the precision of `PetscComplex`
 
    Notes:
-   In MPI calls that require an MPI datatype that matches a PetscComplex or array of PetscComplex values, pass this value.
+   In MPI calls that require an MPI datatype that matches a `PetscComplex` or array of `PetscComplex` values, pass this value.
 
    Level: beginner
 
@@ -445,10 +445,10 @@ M*/
  */
 #if defined(PETSC_USE_COMPLEX) && defined(PETSC_HAVE_COMPLEX)
 /*MC
-   MPIU_SCALAR - MPI datatype corresponding to PetscScalar
+   MPIU_SCALAR - Portable MPI datatype corresponding to `PetscScalar` independent of the precision of `PetscScalar`
 
    Notes:
-   In MPI calls that require an MPI datatype that matches a PetscScalar or array of PetscScalar values, pass this value.
+   In MPI calls that require an MPI datatype that matches a `PetscScalar` or array of `PetscScalar` values, pass this value.
 
    Level: beginner
 
@@ -457,7 +457,7 @@ M*/
 #define MPIU_SCALAR MPIU_COMPLEX
 
 /*MC
-   PetscRealPart - Returns the real part of a PetscScalar
+   PetscRealPart - Returns the real part of a `PetscScalar`
 
    Synopsis:
    #include <petscmath.h>
@@ -476,7 +476,7 @@ M*/
 #define PetscRealPart(a)      PetscRealPartComplex(a)
 
 /*MC
-   PetscImaginaryPart - Returns the imaginary part of a PetscScalar
+   PetscImaginaryPart - Returns the imaginary part of a `PetscScalar`
 
    Synopsis:
    #include <petscmath.h>
@@ -563,8 +563,8 @@ typedef enum { PETSC_SCALAR_DOUBLE, PETSC_SCALAR_SINGLE, PETSC_SCALAR_LONG_DOUBL
    Input Parameter:
 .  v - the number
 
-   Notes:
-    type can be integer or real floating point value
+   Note:
+   The type can be integer or real floating point value, but cannot be complex
 
    Level: beginner
 
@@ -585,8 +585,8 @@ M*/
    Input Parameter:
 .  v - the number
 
-   Notes:
-    type can be integer or real floating point value
+   Note:
+   The type can be integer or real floating point value
 
    Level: beginner
 
@@ -606,8 +606,8 @@ M*/
 +  v1 - first value to find minimum of
 -  v2 - second value to find minimum of
 
-   Notes:
-    type can be integer or floating point value
+   Note:
+   The type can be integer or floating point value
 
    Level: beginner
 
@@ -629,8 +629,8 @@ M*/
 +  v1 - first value to find maximum of
 -  v2 - second value to find maximum of
 
-   Notes:
-    type can be integer or floating point value
+   Note:
+   The type can be integer or floating point value
 
    Level: beginner
 
@@ -653,8 +653,8 @@ M*/
 .  a - lower end of interval
 -  b - upper end of interval
 
-   Notes:
-    type can be integer or floating point value
+   Note:
+   The type can be integer or floating point value
 
    Level: beginner
 
@@ -669,8 +669,6 @@ M*/
    Synopsis:
    #include <petscmath.h>
    int abs PetscAbsInt(int v1)
-
-   Not Collective
 
    Input Parameter:
 .   v1 - the integer
@@ -688,8 +686,6 @@ M*/
    Synopsis:
    #include <petscmath.h>
    Real abs PetscAbsReal(PetscReal v1)
-
-   Not Collective
 
    Input Parameter:
 .   v1 - the double
@@ -721,8 +717,8 @@ M*/
    Input Parameter:
 .   v1 - the value
 
-   Notes:
-    type can be integer or floating point value
+   Note:
+   The type can be integer or floating point value
 
    Level: beginner
 
@@ -901,7 +897,7 @@ static inline PetscScalar PetscPowScalarReal(PetscScalar base,PetscReal power)
 -   b - the constant float it is checking if x is less than or equal to
 
    Notes:
-     The fudge factor is the value PETSC_SMALL
+     The fudge factor is the value `PETSC_SMALL`
 
      The constant numerical value is automatically set to the appropriate precision of PETSc so can just be provided as, for example, 3.2
 
@@ -929,7 +925,7 @@ M*/
 -   b - the constant float it is checking if x is greater than or equal to
 
    Notes:
-     The fudge factor is the value PETSC_SMALL
+     The fudge factor is the value `PETSC_SMALL`
 
      The constant numerical value is automatically set to the appropriate precision of PETSc so can just be provided as, for example, 3.2
 

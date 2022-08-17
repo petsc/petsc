@@ -14,7 +14,7 @@ PETSC_EXTERN PetscErrorCode TaoSoftThreshold(Vec,PetscReal,PetscReal,Vec);
 /*E
   TaoSubsetType - Type representing the way Tao handles active sets
 
-+ `TAO_SUBSET_SUBVEC` - Tao uses PETSc's MatCreateSubMatrix and VecGetSubVector
++ `TAO_SUBSET_SUBVEC` - Tao uses `MatCreateSubMatrix()` and `VecGetSubVector()`
 . `TAO_SUBSET_MASK` - Matrices are zeroed out corresponding to active set entries
 - `TAO_SUBSET_MATRIXFREE` - Same as `TAO_SUBSET_MASK` but it can be applied to matrix-free operators
 
@@ -37,7 +37,7 @@ S*/
 typedef struct _p_Tao*   Tao;
 
 /*E
-     TaoADMMUpdateType - Determine spectral penalty update routine for Lagrange augmented term for ADMM.
+     TaoADMMUpdateType - Determine spectral penalty update routine for Lagrange augmented term for `TAOADMM`.
 
   Level: advanced
 
@@ -51,7 +51,8 @@ PETSC_EXTERN const char *const TaoADMMUpdateTypes[];
 
   Level: advanced
 
-  Note: Most basic implementation. Generally slower than adaptive or adaptive relaxed version.
+  Note:
+  Most basic implementation. Generally slower than adaptive or adaptive relaxed version.
 
 .seealso: `TaoADMMSetUpdateType()`, `TAO_ADMM_UPDATE_ADAPTIVE`, `TAO_ADMM_UPDATE_ADAPTIVE_RELAXED`
 M*/
@@ -61,7 +62,8 @@ M*/
 
   Level: advanced
 
-  Note: Adaptively updates spectral penalty by using both steepest descent and minimum gradient.
+  Note:
+  Adaptively updates spectral penalty by using both steepest descent and minimum gradient.
 
 .seealso: `TaoADMMSetUpdateType()`, `TAO_ADMM_UPDATE_BASIC`, `TAO_ADMM_UPDATE_ADAPTIVE_RELAXED`
 M*/
@@ -71,7 +73,8 @@ M*/
 
   Level: advanced
 
-  Note: With adaptive spectral penalty update, it also relaxes x vector update by a factor.
+  Note:
+  With adaptive spectral penalty update, it also relaxes x vector update by a factor.
 
 .seealso: `TaoADMMSetUpdateType()`, `TAO_ADMM_UPDATE_BASIC`, `TAO_ADMM_UPDATE_ADAPTIVE`
 M*/
@@ -87,31 +90,33 @@ typedef enum {TAO_ADMM_REGULARIZER_USER,TAO_ADMM_REGULARIZER_SOFT_THRESH} TaoADM
 PETSC_EXTERN const char *const TaoADMMRegularizerTypes[];
 
 /*MC
-     TAO_ADMM_REGULARIZER_USER - User provided routines for regularizer part of ADMM
+  TAO_ADMM_REGULARIZER_USER - User provided routines for regularizer part of `TAOADMM`
 
   Level: advanced
 
-  Note: User needs to provided appropriate routines and type for regularizer solver
+  Note:
+  User needs to provided appropriate routines and type for regularizer solver
 
 .seealso: `TaoADMMSetRegularizerType()`, `TAO_ADMM_REGULARIZER_SOFT_THRESH`
 M*/
 
 /*MC
-     TAO_ADMM_REGULARIZER_SOFT_THRESH - Soft threshold to solve regularizer part of ADMM
+  TAO_ADMM_REGULARIZER_SOFT_THRESH - Soft threshold to solve regularizer part of `TAOADMM`
 
   Level: advanced
 
-  Note: Utilizes built-in SoftThreshold routines
+  Note:
+  Utilizes built-in SoftThreshold routines
 
 .seealso: `TaoSoftThreshold()`, `TaoADMMSetRegularizerObjectiveAndGradientRoutine()`,
           `TaoADMMSetRegularizerHessianRoutine()`, `TaoADMMSetRegularizerType()`, `TAO_ADMM_REGULARIZER_USER`
 M*/
 
 /*E
-     TaoALMMType - Determine the augmented Lagrangian formulation used in the TAOALMM subproblem.
+     TaoALMMType - Determine the augmented Lagrangian formulation used in the `TAOALMM` subproblem.
 
-$  TAO_ALMM_CLASSIC - classic augmented Lagrangian definition including slack variables for inequality constraints
-$  TAO_ALMM_PHR     - Powell-Hestenes-Rockafellar formulation without slack variables, uses pointwise min() for inequalities
+$  `TAO_ALMM_CLASSIC` - classic augmented Lagrangian definition including slack variables for inequality constraints
+$  `TAO_ALMM_PHR`     - Powell-Hestenes-Rockafellar formulation without slack variables, uses pointwise min() for inequalities
 
   Level: advanced
 
@@ -121,7 +126,7 @@ typedef enum {TAO_ALMM_CLASSIC,TAO_ALMM_PHR} TaoALMMType;
 PETSC_EXTERN const char *const TaoALMMTypes[];
 
 /*J
-        TaoType - String with the name of a Tao method
+        TaoType - String with the name of a `Tao` method
 
        Level: beginner
 
@@ -176,9 +181,9 @@ $   2) failure or lack of convergence in the linear system (in this case we reco
 $      testing with -pc_type lu to eliminate the linear solver as the cause of the problem).
 
    Developer Notes:
-    this must match petsc/finclude/petsctao.h
+    This must match petsc/finclude/petsctao.h
 
-       The string versions of these are in TAOConvergedReasons, if you change any value here you must
+       The string versions of these are in `TAOConvergedReasons`, if you change any value here you must
      also adjust that array.
 
 .seealso: `Tao`, `TaoSolve()`, `TaoGetConvergedReason()`, `KSPConvergedReason`, `SNESConvergedReason`, `TSConvergedReason`

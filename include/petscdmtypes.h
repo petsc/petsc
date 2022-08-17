@@ -8,10 +8,7 @@
 
    Level: intermediate
 
-   Notes:
-    The DMDACreate() based object and the DMCompositeCreate() based object are examples of DMs
-
-.seealso: `DMCompositeCreate()`, `DMDACreate()`, `DMSetType()`, `DMType`
+.seealso: `DMType`, `DMDGetType()`, `DMCompositeCreate()`, `DMDACreate()`, `DMSetType()`, `DMType`, `DMDA`, `DMPLEX`
 S*/
 typedef struct _p_DM* DM;
 
@@ -20,20 +17,20 @@ typedef struct _p_DM* DM;
 
   Level: beginner
 
-  A boundary may be of type DM_BOUNDARY_NONE (no ghost nodes), DM_BOUNDARY_GHOSTED (ghost vertices/cells
+  A boundary may be of type `DM_BOUNDARY_NONE` (no ghost nodes), `DM_BOUNDARY_GHOSTED` (ghost vertices/cells
   exist but aren't filled; you can put values into them and then apply a stencil that uses those ghost locations),
-  DM_BOUNDARY_MIRROR (the ghost value is the same as the value 1 grid point in; that is, the 0th grid point in the real mesh acts like a mirror to define the ghost point value;
-  not yet implemented for 3d), DM_BOUNDARY_PERIODIC (ghost vertices/cells filled by the opposite
-  edge of the domain), or DM_BOUNDARY_TWIST (like periodic, only glued backwards like a Mobius strip).
+  `DM_BOUNDARY_MIRROR` (the ghost value is the same as the value 1 grid point in; that is, the 0th grid point in the real mesh acts like a mirror to define the ghost point value;
+  not yet implemented for 3d), `DM_BOUNDARY_PERIODIC` (ghost vertices/cells filled by the opposite
+  edge of the domain), or `DM_BOUNDARY_TWIST` (like periodic, only glued backwards like a Mobius strip).
 
   Notes:
   This is information for the boundary of the __PHYSICAL__ domain. It has nothing to do with boundaries between
-  processes. That width is always determined by the stencil width; see DMDASetStencilWidth().
+  processes. That width is always determined by the stencil width; see `DMDASetStencilWidth()`.
 
-  If the physical grid points have values 0 1 2 3 with DM_BOUNDARY_MIRROR then the local vector with ghost points has the values 1 0 1 2 3 2 .
+  If the physical grid points have values 0 1 2 3 with `DM_BOUNDARY_MIRROR` then the local vector with ghost points has the values 1 0 1 2 3 2 .
 
   Developer Notes:
-    Should DM_BOUNDARY_MIRROR have the same meaning with DMDA_Q0, that is a staggered grid? In that case should the ghost point have the same value
+    Should` DM_BOUNDARY_MIRROR` have the same meaning with DMDA_Q0, that is a staggered grid? In that case should the ghost point have the same value
   as the 0th grid point where the physical boundary serves as the mirror?
 
   References:
@@ -66,9 +63,9 @@ typedef enum {DM_BC_ESSENTIAL = 1, DM_BC_ESSENTIAL_FIELD = 5, DM_BC_NATURAL = 2,
 
   Level: beginner
 
-  If a search using DM_POINTLOCATION_NONE fails, the failure is signaled with a negative cell number. On the
-  other hand, if DM_POINTLOCATION_NEAREST is used, on failure, the (approximate) nearest point in the mesh is
-  used, replacing the given point in the input vector. DM_POINTLOCATION_REMOVE returns values only for points
+  If a search using `DM_POINTLOCATION_NONE` fails, the failure is signaled with a negative cell number. On the
+  other hand, if `DM_POINTLOCATION_NEAREST` is used, on failure, the (approximate) nearest point in the mesh is
+  used, replacing the given point in the input vector. `DM_POINTLOCATION_REMOVE` returns values only for points
   which were located.
 
 .seealso: `DMLocatePoints()`
@@ -93,8 +90,8 @@ typedef enum {DM_ADAPTATION_INITIAL, DM_ADAPTATION_SEQUENTIAL, DM_ADAPTATION_MUL
 
   Level: beginner
 
-  DM_ADAPTATION_REFINE will uniformly refine a mesh, much like grid sequencing. DM_ADAPTATION_LABEL will adapt
-  the mesh based upon a label of the cells filled with DMAdaptFlag markers. DM_ADAPTATION_METRIC will try to
+  `DM_ADAPTATION_REFINE` will uniformly refine a mesh, much like grid sequencing. `DM_ADAPTATION_LABEL` will adapt
+  the mesh based upon a label of the cells filled with `DMAdaptFlag` markers. `DM_ADAPTATION_METRIC` will try to
   mesh the manifold described by the input metric tensor uniformly. PETSc can also construct such a metric based
   upon an input primal or a gradient field.
 
@@ -121,14 +118,20 @@ E*/
 typedef enum {DM_X, DM_Y, DM_Z} DMDirection;
 
 /*E
-DMEnclosureType - The type of enclosure relation between one DM and another
+  DMEnclosureType - The type of enclosure relation between one `DM` and another
 
-Level: beginner
+  Level: beginner
 
-For example, one DM dmA may be the boundary of another dmB, in which case it would be labeled DM_ENC_SUBMESH. If
-the situation is reversed, and dmA has boundary dmB, it would be labeled DM_ENC_SUPERMESH. Likewise, if dmA was
-a subregion of dmB, it would be labeled DM_ENC_SUBMESH. If no relation can be determined, DM_ENC_NONE is used.
-If a relation is not yet known, then DM_ENC_UNKNOWN is used.
+  Notes:
+  For example, one `DM` dmA may be the boundary of another dmB, in which case it would be labeled `DM_ENC_SUBMESH`.
+
+  If the situation is reversed, and dmA has boundary dmB, it would be labeled `DM_ENC_SUPERMESH`.
+
+  Likewise, if dmA was a subregion of dmB, it would be labeled `DM_ENC_SUBMESH`.
+
+  If no relation can be determined, `DM_ENC_NONE` is used.
+
+  If a relation is not yet known, then `DM_ENC_UNKNOWN` is used.
 
 .seealso: `DMGetEnclosureRelation()`
 E*/
@@ -139,9 +142,9 @@ typedef enum {DM_ENC_EQUALITY, DM_ENC_SUPERMESH, DM_ENC_SUBMESH, DM_ENC_NONE, DM
 
   Level: beginner
 
-  While most operations only need the topology information in the Plex, we must sometimes have the
+  While most operations only need the topology information in the `DMPLEX`, we must sometimes have the
   user specify a polytope. For instance, when interpolating from a cell-vertex mesh, the type of
-  polytope can be ambiguous. Also, Plex allows different symmetries of prism cell with the same
+  polytope can be ambiguous. Also, `DMPLEX` allows different symmetries of a prism cell with the same
   constituent points. Normally these types are autoamtically inferred and the user does not specify
   them.
 
@@ -167,7 +170,7 @@ S*/
 typedef struct _p_DMField* DMField;
 
 /*S
-    DMUniversalLabel - A label that encodes a set of DMLabels, bijectively
+    DMUniversalLabel - A label that encodes a set of `DMLabel`s, bijectively
 
     Level: developer
 S*/

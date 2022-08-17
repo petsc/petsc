@@ -72,7 +72,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawViewFromOptions(PetscDraw,PetscObject,const
 /*MC
 
    PetscDrawRealToColor - Maps a real value within an interval to a color.
-   The color is an integer value in the range [PETSC_DRAW_BASIC_COLORS to 255]
+   The color is an integer value in the range [`PETSC_DRAW_BASIC_COLORS` to 255]
    that can be passed to various drawing routines.
 
    Synopsis:
@@ -86,8 +86,8 @@ PETSC_EXTERN PetscErrorCode PetscDrawViewFromOptions(PetscDraw,PetscObject,const
 .  min - lower end of interval
 -  max - upper end of interval
 
-   Notes:
-    Values outside the interval [min,max] are clipped.
+   Note:
+   Values outside the interval [min,max] are clipped.
 
    Level: intermediate
 
@@ -133,10 +133,10 @@ PETSC_EXTERN PetscErrorCode PetscDrawLineGetWidth(PetscDraw,PetscReal*);
 
    Level: intermediate
 
-$  PETSC_MARKER_CROSS - a small pixel based x symbol or the character x if that is not available
-$  PETSC_MARKER_PLUS - a small pixel based + symbol or the character + if that is not available
-$  PETSC_MARKER_CIRCLE - a small pixel based circle symbol or the character o if that is not available
-$  PETSC_MARKER_POINT - the make obtained with PetscDrawPoint()
+$  `PETSC_MARKER_CROSS` - a small pixel based x symbol or the character x if that is not available
+$  `PETSC_MARKER_PLUS` - a small pixel based + symbol or the character + if that is not available
+$  `PETSC_MARKER_CIRCLE` - a small pixel based circle symbol or the character o if that is not available
+$  `PETSC_MARKER_POINT` - the make obtained with PetscDrawPoint()
 
 .seealso: `PetscDrawMarker()`, `PetscDrawSetMarkerType()`
 E*/
@@ -213,7 +213,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawGetMouseButton(PetscDraw,PetscDrawButton *,
 PETSC_EXTERN PetscErrorCode PetscDrawZoom(PetscDraw,PetscErrorCode (*)(PetscDraw,void *),void *);
 
 /*S
-     PetscDrawViewPorts - Subwindows in a PetscDraw object
+     PetscDrawViewPorts - Subwindows in a `PetscDraw` object
 
    Level: intermediate
 
@@ -339,19 +339,19 @@ PETSC_EXTERN PetscXIOErrorHandler PetscSetXIOErrorHandler(PetscXIOErrorHandler);
 
     Collective
 
-  Input Parameters:
+   Input Parameters:
 .   draw - the draw object
 
-  Notes:
+   Notes:
     This is a macro that handles its own error checking, it does not return an error code.
 
-    The set of operations needs to be ended by a call to PetscDrawCollectiveEnd().
+    The set of operations needs to be ended by a call to `PetscDrawCollectiveEnd()`.
 
     X windows draw operations that are enclosed by these routines handle correctly resizing or closing of
     the window without crashing the program.
 
   Developer Notes:
-    This only applies to X windows and so should have a more specific name such as PetscDrawXCollectiveBegin()
+    This only applies to X windows and so should have a more specific name such as `PetscDrawXCollectiveBegin()`
 
   Level: advanced
 
@@ -374,7 +374,7 @@ M*/
   do {} while (0)
 
 /*MC
-    PetscDrawCollectiveEnd - Ends a set of draw operations begun with PetscDrawCollectiveBegin()
+    PetscDrawCollectiveEnd - Ends a set of draw operations begun with `PetscDrawCollectiveBegin()`
 
    Collective
 
@@ -394,7 +394,7 @@ M*/
     the window without crashing the program.
 
   Developer Notes:
-    This only applies to X windows and so should have a more specific name such as PetscDrawXCollectiveEnd()
+    This only applies to X windows and so should have a more specific name such as `PetscDrawXCollectiveEnd()`
 
   Level: advanced
 

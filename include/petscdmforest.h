@@ -63,11 +63,11 @@ PETSC_EXTERN PetscErrorCode DMForestSetAdaptivityLabel(DM, DMLabel);
 PETSC_EXTERN PetscErrorCode DMForestGetAdaptivityLabel(DM, DMLabel*);
 
 /*J
-    DMForestAdaptivityStrategy - String with the name of a PETSc DMForest adaptivity strategy
+    DMForestAdaptivityStrategy - String with the name of a PETSc `DMFOREST` adaptivity strategy
 
    Level: intermediate
 
-.seealso: `DMForestSetType()`, `DMForest`
+.seealso: `DMForestSetType()`, `DMFOREST`, `DMForestSetAdaptivityStrategy()`, `DMForestGetAdaptivityStrategy()`, `DMForestSetGradeFactor()`
 J*/
 typedef const char* DMForestAdaptivityStrategy;
 #define DMFORESTADAPTALL "all"

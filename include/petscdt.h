@@ -24,8 +24,8 @@ typedef struct _p_PetscQuadrature *PetscQuadrature;
 
   Level: intermediate
 
-$  PETSCGAUSSLOBATTOLEGENDRE_VIA_LINEAR_ALGEBRA - compute the nodes via linear algebra
-$  PETSCGAUSSLOBATTOLEGENDRE_VIA_NEWTON - compute the nodes by solving a nonlinear equation with Newton's method
+$  `PETSCGAUSSLOBATTOLEGENDRE_VIA_LINEAR_ALGEBRA` - compute the nodes via linear algebra
+$  `PETSCGAUSSLOBATTOLEGENDRE_VIA_NEWTON` - compute the nodes by solving a nonlinear equation with Newton's method
 
 E*/
 typedef enum {PETSCGAUSSLOBATTOLEGENDRE_VIA_LINEAR_ALGEBRA,PETSCGAUSSLOBATTOLEGENDRE_VIA_NEWTON} PetscGaussLobattoLegendreCreateType;
@@ -36,13 +36,14 @@ typedef enum {PETSCGAUSSLOBATTOLEGENDRE_VIA_LINEAR_ALGEBRA,PETSCGAUSSLOBATTOLEGE
 
   Level: intermediate
 
-$  PETSCDTNODES_DEFAULT - Nodes chosen by PETSc
-$  PETSCDTNODES_GAUSSJACOBI - Nodes at either Gauss-Jacobi or Gauss-Lobatto-Jacobi quadrature points
-$  PETSCDTNODES_EQUISPACED - Nodes equispaced either including the endpoints or excluding them
-$  PETSCDTNODES_TANHSINH - Nodes at Tanh-Sinh quadrature points
+$  `PETSCDTNODES_DEFAULT` - Nodes chosen by PETSc
+$  `PETSCDTNODES_GAUSSJACOBI` - Nodes at either Gauss-Jacobi or Gauss-Lobatto-Jacobi quadrature points
+$  `PETSCDTNODES_EQUISPACED` - Nodes equispaced either including the endpoints or excluding them
+$  `PETSCDTNODES_TANHSINH` - Nodes at Tanh-Sinh quadrature points
 
-  Note: a PetscDTNodeType can be paired with a PetscBool to indicate whether
-  the nodes include endpoints or not, and in the case of PETSCDT_GAUSSJACOBI
+  Note:
+  A `PetscDTNodeType` can be paired with a `PetscBool` to indicate whether
+  the nodes include endpoints or not, and in the case of `PETSCDT_GAUSSJACOBI`
   with exponents for the weight function.
 
 E*/
@@ -55,8 +56,8 @@ PETSC_EXTERN const char *const*const PetscDTNodeTypes;
 
   Level: intermediate
 
-$  PETSCDTSIMPLEXQUAD_DEFAULT - Quadrature rule chosen by PETSc
-$  PETSCDTSIMPLEXQUAD_CONIC   - Quadrature rules constructed as
+$  `PETSCDTSIMPLEXQUAD_DEFAULT` - Quadrature rule chosen by PETSc
+$  `PETSCDTSIMPLEXQUAD_CONIC`   - Quadrature rules constructed as
                                 conically-warped tensor products of 1D
                                 Gauss-Jacobi quadrature rules.  These are
                                 explicitly computable in any dimension for any
@@ -64,7 +65,7 @@ $  PETSCDTSIMPLEXQUAD_CONIC   - Quadrature rules constructed as
                                 exploited by sum-factorization methods, but
                                 they are not efficient in terms of nodes per
                                 polynomial degree.
-$  PETSCDTSIMPLEXQUAD_MINSYM  - Quadrature rules that are fully symmetric
+$  `PETSCDTSIMPLEXQUAD_MINSYM`  - Quadrature rules that are fully symmetric
                                 (symmetries of the simplex preserve the nodes
                                 and weights) with minimal (or near minimal)
                                 number of nodes.  In dimensions higher than 1
@@ -243,7 +244,7 @@ static inline PetscErrorCode PetscDTBinomial(PetscInt n, PetscInt k, PetscReal *
    Output Parameter:
 .  binomial - the binomial coefficient n choose k
 
-   Note: this is limited by integers that can be represented by PetscInt
+   Note: this is limited by integers that can be represented by `PetscInt`
 
    Level: beginner
 M*/
@@ -287,7 +288,8 @@ static inline PetscErrorCode PetscDTBinomialInt(PetscInt n, PetscInt k, PetscInt
 +  perm - the permuted list of the integers [0, ..., n-1]
 -  isOdd - if not NULL, returns wether the permutation used an even or odd number of swaps.
 
-   Note: this is limited to n such that n! can be represented by PetscInt, which is 12 if PetscInt is a signed 32-bit integer and 20 if PetscInt is a signed 64-bit integer.
+   Note:
+   Limited to n such that n! can be represented by `PetscInt`, which is 12 if `PetscInt` is a signed 32-bit integer and 20 if `PetscInt` is a signed 64-bit integer.
 
    Level: beginner
 M*/
@@ -320,7 +322,7 @@ static inline PetscErrorCode PetscDTEnumPerm(PetscInt n, PetscInt k, PetscInt *p
 }
 
 /*MC
-   PetscDTPermIndex - Encode a permutation of n into an integer in [0, n!).  This inverts PetscDTEnumPerm.
+   PetscDTPermIndex - Encode a permutation of n into an integer in [0, n!).  This inverts `PetscDTEnumPerm`.
 
    Input Parameters:
 +  n - a non-negative integer (see note about limits below)
@@ -330,7 +332,8 @@ static inline PetscErrorCode PetscDTEnumPerm(PetscInt n, PetscInt k, PetscInt *p
 +  k - an integer in [0, n!)
 -  isOdd - if not NULL, returns wether the permutation used an even or odd number of swaps.
 
-   Note: this is limited to n such that n! can be represented by PetscInt, which is 12 if PetscInt is a signed 32-bit integer and 20 if PetscInt is a signed 64-bit integer.
+   Note:
+   Limited to n such that n! can be represented by `PetscInt`, which is 12 if `PetscInt` is a signed 32-bit integer and 20 if `PetscInt` is a signed 64-bit integer.
 
    Level: beginner
 M*/
@@ -378,7 +381,8 @@ static inline PetscErrorCode PetscDTPermIndex(PetscInt n, const PetscInt *perm, 
    Output Parameter:
 .  subset - the jth subset of size k of the integers [0, ..., n - 1]
 
-   Note: this is limited by arguments such that n choose k can be represented by PetscInt
+   Note:
+   Limited by arguments such that n choose k can be represented by `PetscInt`
 
    Level: beginner
 
@@ -406,7 +410,8 @@ static inline PetscErrorCode PetscDTEnumSubset(PetscInt n, PetscInt k, PetscInt 
 }
 
 /*MC
-   PetscDTSubsetIndex - Convert an ordered subset of k integers from the set [0, ..., n - 1] to its encoding as an integers in [0, n choose k) in lexicographic order.  This is the inverse of PetscDTEnumSubset.
+   PetscDTSubsetIndex - Convert an ordered subset of k integers from the set [0, ..., n - 1] to its encoding as an integers in [0, n choose k) in lexicographic order.
+   This is the inverse of `PetscDTEnumSubset`.
 
    Input Parameters:
 +  n - a non-negative integer (see note about limits below)
@@ -416,7 +421,8 @@ static inline PetscErrorCode PetscDTEnumSubset(PetscInt n, PetscInt k, PetscInt 
    Output Parameter:
 .  index - the rank of the subset in lexicographic order
 
-   Note: this is limited by arguments such that n choose k can be represented by PetscInt
+   Note:
+   Limited by arguments such that n choose k can be represented by `PetscInt`
 
    Level: beginner
 
@@ -457,7 +463,8 @@ static inline PetscErrorCode PetscDTSubsetIndex(PetscInt n, PetscInt k, const Pe
 +  perm - the jth subset of size k of the integers [0, ..., n - 1], followed by its complementary set.
 -  isOdd - if not NULL, return whether perm is an even or odd permutation.
 
-   Note: this is limited by arguments such that n choose k can be represented by PetscInt
+   Note:
+   Limited by arguments such that n choose k can be represented by `PetscInt`
 
    Level: beginner
 

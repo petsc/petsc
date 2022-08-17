@@ -13,7 +13,7 @@ PETSC_EXTERN PetscFunctionList MatCoarsenList;
    Level: advanced
 
   Notes:
-    This is used by the PCGAMG to generate coarser representations of an algebraic problem
+    This is used by the `PCGAMG` to generate coarser representations of an algebraic problem
 
 .seealso: `MatCoarsenCreate()`, `MatCoarsenType`
 S*/

@@ -1,8 +1,3 @@
-/*
-  An application ordering is mapping between an application-centric
-  ordering (the ordering that is "natural" for the application) and
-  the parallel ordering that PETSc uses.
-*/
 #if !defined(PETSCAO_H)
 #define PETSCAO_H
 
@@ -15,7 +10,12 @@
 
    Level: intermediate
 
-.seealso: `AOCreateBasic()`, `AOCreateBasicIS()`, `AOPetscToApplication()`, `AOView()`, `AOApplicationToPetsc()`
+   Notes:
+   An application ordering is mapping between an application-centric
+   ordering (the ordering that is "natural" for the application) and
+   the parallel ordering that PETSc uses.
+
+.seealso: `AOCreateBasic()`, `AOCreateBasicIS()`, `AOPetscToApplication()`, `AOView()`, `AOApplicationToPetsc()`, `AOType`, `AOSetType()`
 S*/
 typedef struct _p_AO* AO;
 

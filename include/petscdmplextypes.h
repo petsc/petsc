@@ -27,9 +27,9 @@ PETSC_EXTERN const char * const DMPlexShapes[];
   DMPlexCSRAlgorithm - The algorithm for building the adjacency graph in CSR format, usually for a mesh partitioner
 
   Existing shapes include
-$ DM_PLEX_CSR_MAT     - Use MatPartition by first making a matrix
-$ DM_PLEX_CSR_GRAPH   - Use the original Plex and communicate along the boundary
-$ DM_PLEX_CSR_OVERLAP - Build an overlapped Plex and then locally compute
+$ DM_PLEX_CSR_MAT     - Use `MatPartitioning` by first making a matrix
+$ DM_PLEX_CSR_GRAPH   - Use the original `DMPLEX` and communicate along the boundary
+$ DM_PLEX_CSR_OVERLAP - Build an overlapped `DMPLEX` and then locally compute
 
   Level: beginner
 
