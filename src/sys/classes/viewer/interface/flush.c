@@ -19,6 +19,6 @@ PetscErrorCode  PetscViewerFlush(PetscViewer viewer)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  if (viewer->ops->flush) PetscCall((*viewer->ops->flush)(viewer));
+  PetscTryTypeMethod(viewer,flush);
   PetscFunctionReturn(0);
 }

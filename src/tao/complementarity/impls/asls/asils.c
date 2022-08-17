@@ -148,11 +148,11 @@ static PetscErrorCode TaoSolve_ASILS(Tao tao)
     PetscCall(PetscInfo(tao,"iter %" PetscInt_FMT ", merit: %g, ||dpsi||: %g\n",tao->niter, (double)asls->merit,  (double)ndpsi));
     PetscCall(TaoLogConvergenceHistory(tao,asls->merit,ndpsi,0.0,tao->ksp_its));
     PetscCall(TaoMonitor(tao,tao->niter,asls->merit,ndpsi,0.0,t));
-    PetscCall((*tao->ops->convergencetest)(tao,tao->cnvP));
+    PetscUseTypeMethod(tao,convergencetest ,tao->cnvP);
     if (TAO_CONTINUE_ITERATING != tao->reason) break;
 
     /* Call general purpose update function */
-    if (tao->ops->update) PetscCall((*tao->ops->update)(tao, tao->niter, tao->user_update));
+    PetscTryTypeMethod(tao,update, tao->niter, tao->user_update);
     tao->niter++;
 
     /* We are going to solve a linear system of equations.  We need to

@@ -891,7 +891,7 @@ static PetscErrorCode PCGAMGDestroy_Classical(PC pc)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCGAMGSetFromOptions_Classical(PetscOptionItems *PetscOptionsObject,PC pc)
+PetscErrorCode PCGAMGSetFromOptions_Classical(PC pc,PetscOptionItems *PetscOptionsObject)
 {
   PC_MG             *mg          = (PC_MG*)pc->data;
   PC_GAMG           *pc_gamg     = (PC_GAMG*)mg->innerctx;

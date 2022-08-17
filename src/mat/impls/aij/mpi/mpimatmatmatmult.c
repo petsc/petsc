@@ -86,9 +86,7 @@ PetscErrorCode MatMatMatMultNumeric_MPIAIJ_MPIAIJ_MPIAIJ(Mat A,Mat B,Mat C,Mat D
   PetscCheck(D->product->data,PetscObjectComm((PetscObject)D),PETSC_ERR_PLIB,"Product data empty");
   product = D->product;
   BC = product->Dwork;
-  PetscCheck(BC->ops->matmultnumeric,PetscObjectComm((PetscObject)D),PETSC_ERR_PLIB,"Missing numeric operation");
   PetscCall((*BC->ops->matmultnumeric)(B,C,BC));
-  PetscCheck(D->ops->matmultnumeric,PetscObjectComm((PetscObject)D),PETSC_ERR_PLIB,"Missing numeric operation");
   PetscCall((*D->ops->matmultnumeric)(A,BC,D));
   PetscFunctionReturn(0);
 }

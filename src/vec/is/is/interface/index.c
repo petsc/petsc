@@ -474,7 +474,7 @@ static PetscErrorCode ISGetInfo_Sorted(IS is, ISInfoType type, PetscBool *flg)
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCallMPI(MPI_Comm_size(comm, &rank));
   if (type == IS_GLOBAL && is->ops->sortedglobal) {
-    PetscCall((*is->ops->sortedglobal)(is,flg));
+    PetscUseTypeMethod(is,sortedglobal ,flg);
   } else {
     PetscBool sortedLocal = PETSC_FALSE;
 
@@ -483,7 +483,7 @@ static PetscErrorCode ISGetInfo_Sorted(IS is, ISInfoType type, PetscBool *flg)
       /* call ISGetInfo so that a cached value will be used if possible */
       PetscCall(ISGetInfo(is, IS_SORTED, IS_LOCAL, PETSC_TRUE, &sortedLocal));
     } else if (is->ops->sortedlocal) {
-      PetscCall((*is->ops->sortedlocal)(is,&sortedLocal));
+      PetscUseTypeMethod(is,sortedlocal ,&sortedLocal);
     } else {
       /* default: get the local indices and directly check */
       const PetscInt *idx;
@@ -528,7 +528,7 @@ static PetscErrorCode ISGetInfo_Unique(IS is, ISInfoType type, PetscBool *flg)
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCallMPI(MPI_Comm_size(comm, &rank));
   if (type == IS_GLOBAL && is->ops->uniqueglobal) {
-    PetscCall((*is->ops->uniqueglobal)(is,flg));
+    PetscUseTypeMethod(is,uniqueglobal ,flg);
   } else {
     PetscBool uniqueLocal;
     PetscInt  n = -1;
@@ -539,7 +539,7 @@ static PetscErrorCode ISGetInfo_Unique(IS is, ISInfoType type, PetscBool *flg)
       /* call ISGetInfo so that a cached value will be used if possible */
       PetscCall(ISGetInfo(is, IS_UNIQUE, IS_LOCAL, PETSC_TRUE, &uniqueLocal));
     } else if (is->ops->uniquelocal) {
-      PetscCall((*is->ops->uniquelocal)(is,&uniqueLocal));
+      PetscUseTypeMethod(is,uniquelocal ,&uniqueLocal);
     } else {
       /* default: get the local indices and directly check */
       uniqueLocal = PETSC_TRUE;
@@ -592,9 +592,9 @@ static PetscErrorCode ISGetInfo_Permutation(IS is, ISInfoType type, PetscBool *f
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCallMPI(MPI_Comm_size(comm, &rank));
   if (type == IS_GLOBAL && is->ops->permglobal) {
-    PetscCall((*is->ops->permglobal)(is,flg));
+    PetscUseTypeMethod(is,permglobal ,flg);
   } else if (type == IS_LOCAL && is->ops->permlocal) {
-    PetscCall((*is->ops->permlocal)(is,flg));
+    PetscUseTypeMethod(is,permlocal ,flg);
   } else {
     PetscBool permLocal;
     PetscInt  n, i, rStart;
@@ -636,7 +636,7 @@ static PetscErrorCode ISGetInfo_Interval(IS is, ISInfoType type, PetscBool *flg)
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCallMPI(MPI_Comm_size(comm, &rank));
   if (type == IS_GLOBAL && is->ops->intervalglobal) {
-    PetscCall((*is->ops->intervalglobal)(is,flg));
+    PetscUseTypeMethod(is,intervalglobal ,flg);
   } else {
     PetscBool intervalLocal;
 
@@ -645,7 +645,7 @@ static PetscErrorCode ISGetInfo_Interval(IS is, ISInfoType type, PetscBool *flg)
       /* call ISGetInfo so that a cached value will be used if possible */
       PetscCall(ISGetInfo(is, IS_INTERVAL, IS_LOCAL, PETSC_TRUE, &intervalLocal));
     } else if (is->ops->intervallocal) {
-      PetscCall((*is->ops->intervallocal)(is,&intervalLocal));
+      PetscUseTypeMethod(is,intervallocal ,&intervalLocal);
     } else {
       PetscInt        n;
       const PetscInt  *idx;
@@ -690,7 +690,7 @@ static PetscErrorCode ISGetInfo_Identity(IS is, ISInfoType type, PetscBool *flg)
   if (type == IS_GLOBAL && is->ops->intervalglobal) {
     PetscBool isinterval;
 
-    PetscCall((*is->ops->intervalglobal)(is,&isinterval));
+    PetscUseTypeMethod(is,intervalglobal ,&isinterval);
     *flg = PETSC_FALSE;
     if (isinterval) {
       PetscInt  min;
@@ -702,7 +702,7 @@ static PetscErrorCode ISGetInfo_Identity(IS is, ISInfoType type, PetscBool *flg)
   } else if (type == IS_LOCAL && is->ops->intervallocal) {
     PetscBool isinterval;
 
-    PetscCall((*is->ops->intervallocal)(is,&isinterval));
+    PetscUseTypeMethod(is,intervallocal ,&isinterval);
     *flg = PETSC_FALSE;
     if (isinterval) {
       PetscInt  min;
@@ -906,7 +906,7 @@ PetscErrorCode  ISContiguousLocal(IS is,PetscInt gstart,PetscInt gend,PetscInt *
   PetscValidBoolPointer(contig,5);
   *start  = -1;
   *contig = PETSC_FALSE;
-  if (is->ops->contiguous) PetscCall((*is->ops->contiguous)(is,gstart,gend,start,contig));
+  PetscTryTypeMethod(is,contiguous,gstart,gend,start,contig);
   PetscFunctionReturn(0);
 }
 
@@ -1067,7 +1067,7 @@ PetscErrorCode  ISInvertPermutation(IS is,PetscInt nlocal,IS *isout)
   if (issame) {
     PetscCall(ISDuplicate(is,isout));
   } else {
-    PetscCall((*is->ops->invertpermutation)(is,nlocal,isout));
+    PetscUseTypeMethod(is,invertpermutation ,nlocal,isout);
     PetscCall(ISSetPermutation(*isout));
   }
   PetscFunctionReturn(0);
@@ -1216,7 +1216,7 @@ PetscErrorCode  ISGetIndices(IS is,const PetscInt *ptr[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(ptr,2);
-  PetscCall((*is->ops->getindices)(is,ptr));
+  PetscUseTypeMethod(is,getindices ,ptr);
   PetscFunctionReturn(0);
 }
 
@@ -1267,7 +1267,7 @@ PetscErrorCode ISLocate(IS is, PetscInt key, PetscInt *location)
 {
   PetscFunctionBegin;
   if (is->ops->locate) {
-    PetscCall((*is->ops->locate)(is,key,location));
+    PetscUseTypeMethod(is,locate ,key,location);
   } else {
     PetscInt       numIdx;
     PetscBool      sorted;
@@ -1333,7 +1333,7 @@ PetscErrorCode  ISRestoreIndices(IS is,const PetscInt *ptr[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(ptr,2);
-  if (is->ops->restoreindices) PetscCall((*is->ops->restoreindices)(is,ptr));
+  PetscTryTypeMethod(is,restoreindices,ptr);
   PetscFunctionReturn(0);
 }
 
@@ -1401,7 +1401,7 @@ PetscErrorCode ISGetTotalIndices(IS is, const PetscInt *indices[])
   PetscValidPointer(indices,2);
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)is), &size));
   if (size == 1) {
-    PetscCall((*is->ops->getindices)(is,indices));
+    PetscUseTypeMethod(is,getindices ,indices);
   } else {
     if (!is->total) {
       PetscCall(ISGatherTotal_Private(is));
@@ -1433,7 +1433,7 @@ PetscErrorCode  ISRestoreTotalIndices(IS is, const PetscInt *indices[])
   PetscValidPointer(indices,2);
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)is), &size));
   if (size == 1) {
-    PetscCall((*is->ops->restoreindices)(is,indices));
+    PetscUseTypeMethod(is,restoreindices ,indices);
   } else {
     PetscCheck(is->total == *indices,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Index array pointer being restored does not point to the array obtained from the IS.");
   }
@@ -1625,7 +1625,7 @@ PetscErrorCode  ISView(IS is,PetscViewer viewer)
 
   PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)is,viewer));
   PetscCall(PetscLogEventBegin(IS_View,is,viewer,0,0));
-  PetscCall((*is->ops->view)(is,viewer));
+  PetscUseTypeMethod(is,view ,viewer);
   PetscCall(PetscLogEventEnd(IS_View,is,viewer,0,0));
   PetscFunctionReturn(0);
 }
@@ -1661,7 +1661,7 @@ PetscErrorCode ISLoad(IS is, PetscViewer viewer)
   PetscCheck(isbinary || ishdf5,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
   if (!((PetscObject)is)->type_name) PetscCall(ISSetType(is, ISGENERAL));
   PetscCall(PetscLogEventBegin(IS_Load,is,viewer,0,0));
-  PetscCall((*is->ops->load)(is, viewer));
+  PetscUseTypeMethod(is,load , viewer);
   PetscCall(PetscLogEventEnd(IS_Load,is,viewer,0,0));
   PetscFunctionReturn(0);
 }
@@ -1682,7 +1682,7 @@ PetscErrorCode  ISSort(IS is)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
-  PetscCall((*is->ops->sort)(is));
+  PetscUseTypeMethod(is,sort);
   PetscCall(ISSetInfo(is,IS_SORTED,IS_LOCAL,is->info_permanent[IS_LOCAL][IS_SORTED],PETSC_TRUE));
   PetscFunctionReturn(0);
 }
@@ -1704,7 +1704,7 @@ PetscErrorCode ISSortRemoveDups(IS is)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscCall(ISClearInfoCache(is,PETSC_FALSE));
-  PetscCall((*is->ops->sortremovedups)(is));
+  PetscUseTypeMethod(is,sortremovedups);
   PetscCall(ISSetInfo(is,IS_SORTED,IS_LOCAL,is->info_permanent[IS_LOCAL][IS_SORTED],PETSC_TRUE));
   PetscCall(ISSetInfo(is,IS_UNIQUE,IS_LOCAL,is->info_permanent[IS_LOCAL][IS_UNIQUE],PETSC_TRUE));
   PetscFunctionReturn(0);
@@ -1726,9 +1726,7 @@ PetscErrorCode  ISToGeneral(IS is)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
-  if (is->ops->togeneral) {
-    PetscCall((*is->ops->togeneral)(is));
-  } else SETERRQ(PetscObjectComm((PetscObject)is),PETSC_ERR_SUP,"Not written for this type %s",((PetscObject)is)->type_name);
+  PetscUseTypeMethod(is,togeneral);
   PetscFunctionReturn(0);
 }
 
@@ -1782,7 +1780,7 @@ PetscErrorCode  ISDuplicate(IS is,IS *newIS)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(newIS,2);
-  PetscCall((*is->ops->duplicate)(is,newIS));
+  PetscUseTypeMethod(is,duplicate ,newIS);
   PetscCall(ISCopyInfo(is,*newIS));
   PetscFunctionReturn(0);
 }
@@ -1819,7 +1817,7 @@ PetscErrorCode  ISCopy(IS is,IS isy)
   PetscCall(ISCopyInfo(is,isy));
   isy->max        = is->max;
   isy->min        = is->min;
-  PetscCall((*is->ops->copy)(is,isy));
+  PetscUseTypeMethod(is,copy ,isy);
   PetscFunctionReturn(0);
 }
 
@@ -1897,9 +1895,7 @@ PetscErrorCode  ISOnComm(IS is,MPI_Comm comm,PetscCopyMode mode,IS *newis)
   if (mode != PETSC_COPY_VALUES && (match == MPI_IDENT || match == MPI_CONGRUENT)) {
     PetscCall(PetscObjectReference((PetscObject)is));
     *newis = is;
-  } else {
-    PetscCall((*is->ops->oncomm)(is,comm,mode,newis));
-  }
+  } else PetscUseTypeMethod(is,oncomm ,comm,mode,newis);
   PetscFunctionReturn(0);
 }
 
@@ -1943,7 +1939,7 @@ PetscErrorCode  ISSetBlockSize(IS is,PetscInt bs)
     }
     PetscCall(ISRestoreIndices(is,&indices));
   }
-  PetscCall((*is->ops->setblocksize)(is,bs));
+  PetscUseTypeMethod(is,setblocksize ,bs);
   PetscFunctionReturn(0);
 }
 

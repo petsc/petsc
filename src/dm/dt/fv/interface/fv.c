@@ -86,7 +86,7 @@ PetscErrorCode PetscLimiterSetType(PetscLimiter lim, PetscLimiterType name)
   PetscCheck(r,PetscObjectComm((PetscObject) lim), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscLimiter type: %s", name);
 
   if (lim->ops->destroy) {
-    PetscCall((*lim->ops->destroy)(lim));
+    PetscUseTypeMethod(lim,destroy);
     lim->ops->destroy = NULL;
   }
   PetscCall((*r)(lim));
@@ -158,7 +158,7 @@ PetscErrorCode PetscLimiterView(PetscLimiter lim, PetscViewer v)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lim, PETSCLIMITER_CLASSID, 1);
   if (!v) PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject) lim), &v));
-  if (lim->ops->view) PetscCall((*lim->ops->view)(lim, v));
+  PetscTryTypeMethod(lim,view, v);
   PetscFunctionReturn(0);
 }
 
@@ -193,9 +193,9 @@ PetscErrorCode PetscLimiterSetFromOptions(PetscLimiter lim)
   } else if (!((PetscObject) lim)->type_name) {
     PetscCall(PetscLimiterSetType(lim, defaultType));
   }
-  if (lim->ops->setfromoptions) PetscCall((*lim->ops->setfromoptions)(lim));
+  PetscTryTypeMethod(lim,setfromoptions);
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
-  PetscCall(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject) lim));
+  PetscCall(PetscObjectProcessOptionsHandlers((PetscObject) lim,PetscOptionsObject));
   PetscOptionsEnd();
   PetscCall(PetscLimiterViewFromOptions(lim, NULL, "-petsclimiter_view"));
   PetscFunctionReturn(0);
@@ -217,7 +217,7 @@ PetscErrorCode PetscLimiterSetUp(PetscLimiter lim)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lim, PETSCLIMITER_CLASSID, 1);
-  if (lim->ops->setup) PetscCall((*lim->ops->setup)(lim));
+  PetscTryTypeMethod(lim,setup);
   PetscFunctionReturn(0);
 }
 
@@ -242,7 +242,7 @@ PetscErrorCode PetscLimiterDestroy(PetscLimiter *lim)
   if (--((PetscObject)(*lim))->refct > 0) {*lim = NULL; PetscFunctionReturn(0);}
   ((PetscObject) (*lim))->refct = 0;
 
-  if ((*lim)->ops->destroy) PetscCall((*(*lim)->ops->destroy)(*lim));
+  PetscTryTypeMethod((*lim),destroy);
   PetscCall(PetscHeaderDestroy(lim));
   PetscFunctionReturn(0);
 }
@@ -331,7 +331,7 @@ PetscErrorCode PetscLimiterLimit(PetscLimiter lim, PetscReal flim, PetscReal *ph
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lim, PETSCLIMITER_CLASSID, 1);
   PetscValidRealPointer(phi, 3);
-  PetscCall((*lim->ops->limit)(lim, flim, phi));
+  PetscUseTypeMethod(lim,limit , flim, phi);
   PetscFunctionReturn(0);
 }
 
@@ -954,10 +954,9 @@ PetscErrorCode PetscFVSetType(PetscFV fvm, PetscFVType name)
   PetscCall(PetscFunctionListFind(PetscFVList, name, &r));
   PetscCheck(r,PetscObjectComm((PetscObject) fvm), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscFV type: %s", name);
 
-  if (fvm->ops->destroy) {
-    PetscCall((*fvm->ops->destroy)(fvm));
-    fvm->ops->destroy = NULL;
-  }
+  PetscTryTypeMethod(fvm,destroy);
+  fvm->ops->destroy = NULL;
+
   PetscCall((*r)(fvm));
   PetscCall(PetscObjectChangeTypeName((PetscObject) fvm, name));
   PetscFunctionReturn(0);
@@ -1027,7 +1026,7 @@ PetscErrorCode PetscFVView(PetscFV fvm, PetscViewer v)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
   if (!v) PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject) fvm), &v));
-  if (fvm->ops->view) PetscCall((*fvm->ops->view)(fvm, v));
+  PetscTryTypeMethod(fvm,view, v);
   PetscFunctionReturn(0);
 }
 
@@ -1067,9 +1066,9 @@ PetscErrorCode PetscFVSetFromOptions(PetscFV fvm)
 
   }
   PetscCall(PetscOptionsBool("-petscfv_compute_gradients", "Compute cell gradients", "PetscFVSetComputeGradients", fvm->computeGradients, &fvm->computeGradients, NULL));
-  if (fvm->ops->setfromoptions) PetscCall((*fvm->ops->setfromoptions)(fvm));
+  PetscTryTypeMethod(fvm,setfromoptions);
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
-  PetscCall(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject) fvm));
+  PetscCall(PetscObjectProcessOptionsHandlers((PetscObject) fvm,PetscOptionsObject));
   PetscCall(PetscLimiterSetFromOptions(fvm->limiter));
   PetscOptionsEnd();
   PetscCall(PetscFVViewFromOptions(fvm, NULL, "-petscfv_view"));
@@ -1093,7 +1092,7 @@ PetscErrorCode PetscFVSetUp(PetscFV fvm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
   PetscCall(PetscLimiterSetUp(fvm->limiter));
-  if (fvm->ops->setup) PetscCall((*fvm->ops->setup)(fvm));
+  PetscTryTypeMethod(fvm,setup);
   PetscFunctionReturn(0);
 }
 
@@ -1130,7 +1129,7 @@ PetscErrorCode PetscFVDestroy(PetscFV *fvm)
   PetscCall(PetscQuadratureDestroy(&(*fvm)->quadrature));
   PetscCall(PetscTabulationDestroy(&(*fvm)->T));
 
-  if ((*fvm)->ops->destroy) PetscCall((*(*fvm)->ops->destroy)(*fvm));
+  PetscTryTypeMethod((*fvm),destroy);
   PetscCall(PetscHeaderDestroy(fvm));
   PetscFunctionReturn(0);
 }
@@ -1655,7 +1654,7 @@ PetscErrorCode PetscFVComputeGradient(PetscFV fvm, PetscInt numFaces, PetscScala
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
-  if (fvm->ops->computegradient) PetscCall((*fvm->ops->computegradient)(fvm, numFaces, dx, grad));
+  PetscTryTypeMethod(fvm,computegradient, numFaces, dx, grad);
   PetscFunctionReturn(0);
 }
 
@@ -1687,7 +1686,7 @@ PetscErrorCode PetscFVIntegrateRHSFunction(PetscFV fvm, PetscDS prob, PetscInt f
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
-  if (fvm->ops->integraterhsfunction) PetscCall((*fvm->ops->integraterhsfunction)(fvm, prob, field, Nf, fgeom, neighborVol, uL, uR, fluxL, fluxR));
+  PetscTryTypeMethod(fvm,integraterhsfunction, prob, field, Nf, fgeom, neighborVol, uL, uR, fluxL, fluxR);
   PetscFunctionReturn(0);
 }
 

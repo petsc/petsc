@@ -72,13 +72,12 @@ static PetscErrorCode DMPlexTransformCellTransform_1D(DMPlexTransform tr, DMPoly
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexTransformSetFromOptions_1D(PetscOptionItems *PetscOptionsObject, DMPlexTransform tr)
+static PetscErrorCode DMPlexTransformSetFromOptions_1D(DMPlexTransform tr,PetscOptionItems *PetscOptionsObject)
 {
   PetscInt       cells[256], n = 256, i;
   PetscBool      flg;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 2);
   PetscOptionsHeadBegin(PetscOptionsObject,"DMPlex Options");
   PetscCall(PetscOptionsIntArray("-dm_plex_transform_1d_ref_cell", "Mark cells for refinement", "", cells, &n, &flg));
   if (flg) {

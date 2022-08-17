@@ -486,7 +486,7 @@ PetscErrorCode PetscViewerRestoreSubViewer_Draw(PetscViewer viewer,MPI_Comm comm
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscViewerSetFromOptions_Draw(PetscOptionItems *PetscOptionsObject,PetscViewer v)
+PetscErrorCode PetscViewerSetFromOptions_Draw(PetscViewer v,PetscOptionItems *PetscOptionsObject)
 {
   PetscReal      bounds[16];
   PetscInt       nbounds = 16;

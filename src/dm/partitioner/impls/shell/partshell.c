@@ -49,7 +49,7 @@ static PetscErrorCode PetscPartitionerView_Shell(PetscPartitioner part, PetscVie
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscPartitionerSetFromOptions_Shell(PetscOptionItems *PetscOptionsObject, PetscPartitioner part)
+static PetscErrorCode PetscPartitionerSetFromOptions_Shell(PetscPartitioner part,PetscOptionItems *PetscOptionsObject)
 {
   PetscBool      random = PETSC_FALSE, set;
 

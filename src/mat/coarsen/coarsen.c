@@ -98,9 +98,8 @@ PetscErrorCode  MatCoarsenApply(MatCoarsen coarser)
   PetscValidPointer(coarser,1);
   PetscCheck(coarser->graph->assembled,PetscObjectComm((PetscObject)coarser),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   PetscCheck(!coarser->graph->factortype,PetscObjectComm((PetscObject)coarser),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
-  PetscCheck(coarser->ops->apply,PetscObjectComm((PetscObject)coarser),PETSC_ERR_ARG_WRONGSTATE,"Must set type with MatCoarsenSetFromOptions() or MatCoarsenSetType()");
   PetscCall(PetscLogEventBegin(MAT_Coarsen,coarser,0,0,0));
-  PetscCall((*coarser->ops->apply)(coarser));
+  PetscUseTypeMethod(coarser,apply);
   PetscCall(PetscLogEventEnd(MAT_Coarsen,coarser,0,0,0));
   PetscFunctionReturn(0);
 }
@@ -270,7 +269,7 @@ PetscErrorCode  MatCoarsenView(MatCoarsen agg,PetscViewer viewer)
   PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)agg,viewer));
   if (agg->ops->view) {
     PetscCall(PetscViewerASCIIPushTab(viewer));
-    PetscCall((*agg->ops->view)(agg,viewer));
+    PetscUseTypeMethod(agg,view ,viewer);
     PetscCall(PetscViewerASCIIPopTab(viewer));
   }
   PetscFunctionReturn(0);
@@ -307,10 +306,8 @@ PetscErrorCode  MatCoarsenSetType(MatCoarsen coarser, MatCoarsenType type)
   PetscCall(PetscObjectTypeCompare((PetscObject)coarser,type,&match));
   if (match) PetscFunctionReturn(0);
 
-  if (coarser->ops->destroy) {
-    PetscCall((*coarser->ops->destroy)(coarser));
-    coarser->ops->destroy = NULL;
-  }
+  PetscTryTypeMethod(coarser,destroy);
+  coarser->ops->destroy = NULL;
   PetscCall(PetscMemzero(coarser->ops,sizeof(struct _MatCoarsenOps)));
 
   PetscCall(PetscFunctionListFind(MatCoarsenList,type,&r));
@@ -411,7 +408,7 @@ PetscErrorCode MatCoarsenSetFromOptions(MatCoarsen coarser)
     PetscCall(MatCoarsenSetType(coarser,def));
   }
 
-  if (coarser->ops->setfromoptions) PetscCall((*coarser->ops->setfromoptions)(PetscOptionsObject,coarser));
+  PetscTryTypeMethod(coarser,setfromoptions,PetscOptionsObject);
   PetscOptionsEnd();
 
   PetscFunctionReturn(0);

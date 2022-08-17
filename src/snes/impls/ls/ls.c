@@ -182,13 +182,13 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
   PetscCall(SNESMonitor(snes,0,fnorm));
 
   /* test convergence */
-  PetscCall((*snes->ops->converged)(snes,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP));
+  PetscUseTypeMethod(snes,converged ,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP);
   if (snes->reason) PetscFunctionReturn(0);
 
   for (i=0; i<maxits; i++) {
 
     /* Call general purpose update function */
-    if (snes->ops->update) PetscCall((*snes->ops->update)(snes, snes->iter));
+    PetscTryTypeMethod(snes,update, snes->iter);
 
     /* apply the nonlinear preconditioner */
     if (snes->npc) {
@@ -264,7 +264,7 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
     PetscCall(SNESLogConvergenceHistory(snes,snes->norm,lits));
     PetscCall(SNESMonitor(snes,snes->iter,snes->norm));
     /* Test for convergence */
-    PetscCall((*snes->ops->converged)(snes,snes->iter,xnorm,ynorm,fnorm,&snes->reason,snes->cnvP));
+    PetscUseTypeMethod(snes,converged ,snes->iter,xnorm,ynorm,fnorm,&snes->reason,snes->cnvP);
     if (snes->reason) break;
   }
   if (i == maxits) {
@@ -351,7 +351,7 @@ static PetscErrorCode SNESView_NEWTONLS(SNES snes,PetscViewer viewer)
 
    Application Interface Routine: SNESSetFromOptions()
 */
-static PetscErrorCode SNESSetFromOptions_NEWTONLS(PetscOptionItems *PetscOptionsObject,SNES snes)
+static PetscErrorCode SNESSetFromOptions_NEWTONLS(SNES snes,PetscOptionItems *PetscOptionsObject)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);

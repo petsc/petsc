@@ -195,7 +195,7 @@ static PetscErrorCode PCView_LMVM(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCSetFromOptions_LMVM(PetscOptionItems* PetscOptionsObject, PC pc)
+static PetscErrorCode PCSetFromOptions_LMVM(PC pc,PetscOptionItems* PetscOptionsObject)
 {
   PC_LMVM        *ctx = (PC_LMVM*)pc->data;
   const char     *prefix;

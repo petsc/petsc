@@ -517,22 +517,22 @@ PetscErrorCode MatView_LMVMSymBrdn(Mat B, PetscViewer pv)
 
 /*------------------------------------------------------------*/
 
-PetscErrorCode MatSetFromOptions_LMVMSymBrdn(PetscOptionItems *PetscOptionsObject, Mat B)
+PetscErrorCode MatSetFromOptions_LMVMSymBrdn(Mat B,PetscOptionItems *PetscOptionsObject)
 {
   Mat_LMVM                     *lmvm = (Mat_LMVM*)B->data;
   Mat_SymBrdn                  *lsb = (Mat_SymBrdn*)lmvm->ctx;
 
   PetscFunctionBegin;
-  PetscCall(MatSetFromOptions_LMVM(PetscOptionsObject, B));
+  PetscCall(MatSetFromOptions_LMVM(B,PetscOptionsObject));
   PetscOptionsHeadBegin(PetscOptionsObject,"Restricted/Symmetric Broyden method for approximating SPD Jacobian actions (MATLMVMSYMBRDN)");
   PetscCall(PetscOptionsReal("-mat_lmvm_phi","(developer) convex ratio between BFGS and DFP components of the update","",lsb->phi,&lsb->phi,NULL));
   PetscCheck(!(lsb->phi < 0.0) && !(lsb->phi > 1.0),PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_OUTOFRANGE, "convex ratio for the update formula cannot be outside the range of [0, 1]");
-  PetscCall(MatSetFromOptions_LMVMSymBrdn_Private(PetscOptionsObject, B));
+  PetscCall(MatSetFromOptions_LMVMSymBrdn_Private(B,PetscOptionsObject));
   PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatSetFromOptions_LMVMSymBrdn_Private(PetscOptionItems *PetscOptionsObject, Mat B)
+PetscErrorCode MatSetFromOptions_LMVMSymBrdn_Private(Mat B,PetscOptionItems *PetscOptionsObject)
 {
   Mat_LMVM                     *lmvm = (Mat_LMVM*)B->data;
   Mat_SymBrdn                  *lsb = (Mat_SymBrdn*)lmvm->ctx;

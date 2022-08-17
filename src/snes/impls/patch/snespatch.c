@@ -227,7 +227,7 @@ static PetscErrorCode SNESDestroy_Patch(SNES snes)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESSetFromOptions_Patch(PetscOptionItems *PetscOptionsObject, SNES snes)
+static PetscErrorCode SNESSetFromOptions_Patch(SNES snes,PetscOptionItems *PetscOptionsObject)
 {
   SNES_Patch    *patch = (SNES_Patch *) snes->data;
   const char    *prefix;
@@ -283,7 +283,7 @@ static PetscErrorCode SNESSolve_Patch(SNES snes)
   snes->ttol = fnorm*snes->rtol;
 
   if (snes->ops->converged) {
-    PetscCall((*snes->ops->converged)(snes,its,xnorm,ynorm,fnorm,&snes->reason,snes->cnvP));
+    PetscUseTypeMethod(snes,converged ,its,xnorm,ynorm,fnorm,&snes->reason,snes->cnvP);
   } else {
     PetscCall(SNESConvergedSkip(snes,its,xnorm,ynorm,fnorm,&snes->reason,NULL));
   }
@@ -318,7 +318,7 @@ static PetscErrorCode SNESSolve_Patch(SNES snes)
     PetscCall(VecNorm(update, NORM_2, &ynorm));
 
     if (snes->ops->converged) {
-      PetscCall((*snes->ops->converged)(snes,its,xnorm,ynorm,fnorm,&snes->reason,snes->cnvP));
+      PetscUseTypeMethod(snes,converged ,its,xnorm,ynorm,fnorm,&snes->reason,snes->cnvP);
     } else {
       PetscCall(SNESConvergedSkip(snes,its,xnorm,ynorm,fnorm,&snes->reason,NULL));
     }

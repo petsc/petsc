@@ -76,7 +76,7 @@ static PetscErrorCode TaoSolve_OWLQN(Tao tao)
   tao->reason = TAO_CONTINUE_ITERATING;
   PetscCall(TaoLogConvergenceHistory(tao,f,gnorm,0.0,tao->ksp_its));
   PetscCall(TaoMonitor(tao,iter,f,gnorm,0.0,step));
-  PetscCall((*tao->ops->convergencetest)(tao,tao->cnvP));
+  PetscUseTypeMethod(tao,convergencetest ,tao->cnvP);
   if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
 
   /* Set initial scaling for the function */
@@ -91,7 +91,7 @@ static PetscErrorCode TaoSolve_OWLQN(Tao tao)
   /* Have not converged; continue with Newton method */
   while (tao->reason == TAO_CONTINUE_ITERATING) {
     /* Call general purpose update function */
-    if (tao->ops->update) PetscCall((*tao->ops->update)(tao, tao->niter, tao->user_update));
+    PetscTryTypeMethod(tao,update, tao->niter, tao->user_update);
 
     /* Compute direction */
     PetscCall(MatLMVMUpdate(lmP->M,tao->solution,tao->gradient));
@@ -217,7 +217,7 @@ static PetscErrorCode TaoSolve_OWLQN(Tao tao)
     iter++;
     PetscCall(TaoLogConvergenceHistory(tao,f,gnorm,0.0,tao->ksp_its));
     PetscCall(TaoMonitor(tao,iter,f,gnorm,0.0,step));
-    PetscCall((*tao->ops->convergencetest)(tao,tao->cnvP));
+    PetscUseTypeMethod(tao,convergencetest ,tao->cnvP);
 
     if ((int)ls_status < 0) break;
   }
@@ -264,7 +264,7 @@ static PetscErrorCode TaoDestroy_OWLQN(Tao tao)
 }
 
 /*------------------------------------------------------------*/
-static PetscErrorCode TaoSetFromOptions_OWLQN(PetscOptionItems *PetscOptionsObject,Tao tao)
+static PetscErrorCode TaoSetFromOptions_OWLQN(Tao tao,PetscOptionItems *PetscOptionsObject)
 {
   TAO_OWLQN      *lmP = (TAO_OWLQN *)tao->data;
 

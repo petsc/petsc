@@ -141,10 +141,9 @@ PetscErrorCode PetscDualSpaceSetType(PetscDualSpace sp, PetscDualSpaceType name)
   PetscCall(PetscFunctionListFind(PetscDualSpaceList, name, &r));
   PetscCheck(r,PetscObjectComm((PetscObject) sp), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscDualSpace type: %s", name);
 
-  if (sp->ops->destroy) {
-    PetscCall((*sp->ops->destroy)(sp));
-    sp->ops->destroy = NULL;
-  }
+  PetscTryTypeMethod(sp,destroy);
+  sp->ops->destroy = NULL;
+
   PetscCall((*r)(sp));
   PetscCall(PetscObjectChangeTypeName((PetscObject) sp, name));
   PetscFunctionReturn(0);
@@ -191,7 +190,7 @@ static PetscErrorCode PetscDualSpaceView_ASCII(PetscDualSpace sp, PetscViewer v)
   } else {
     PetscCall(PetscViewerASCIIPrintf(v, "Dual space with %" PetscInt_FMT " components, size %" PetscInt_FMT "\n", sp->Nc, pdim));
   }
-  if (sp->ops->view) PetscCall((*sp->ops->view)(sp, v));
+  PetscTryTypeMethod(sp,view, v);
   PetscCall(PetscViewerGetFormat(v, &format));
   if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
     PetscCall(PetscViewerASCIIPushTab(v));
@@ -298,7 +297,7 @@ PetscErrorCode PetscDualSpaceSetFromOptions(PetscDualSpace sp)
   PetscCall(PetscOptionsBoundedInt("-petscdualspace_order", "The approximation order", "PetscDualSpaceSetOrder", sp->order, &sp->order, NULL,0));
   PetscCall(PetscOptionsInt("-petscdualspace_form_degree", "The form degree of the dofs", "PetscDualSpaceSetFormDegree", sp->k, &sp->k, NULL));
   PetscCall(PetscOptionsBoundedInt("-petscdualspace_components", "The number of components", "PetscDualSpaceSetNumComponents", sp->Nc, &sp->Nc, NULL,1));
-  if (sp->ops->setfromoptions) PetscCall((*sp->ops->setfromoptions)(PetscOptionsObject,sp));
+  PetscTryTypeMethod(sp,setfromoptions,PetscOptionsObject);
   PetscCall(PetscOptionsEnum("-petscdualspace_refcell", "Reference cell shape", "PetscDualSpaceSetReferenceCell", DMPolytopeTypes, (PetscEnum) refCell, (PetscEnum *) &refCell, &flg));
   if (flg) {
     DM K;
@@ -309,7 +308,7 @@ PetscErrorCode PetscDualSpaceSetFromOptions(PetscDualSpace sp)
   }
 
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
-  PetscCall(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject) sp));
+  PetscCall(PetscObjectProcessOptionsHandlers((PetscObject) sp,PetscOptionsObject));
   PetscOptionsEnd();
   sp->setfromoptionscalled = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -334,7 +333,7 @@ PetscErrorCode PetscDualSpaceSetUp(PetscDualSpace sp)
   if (sp->setupcalled) PetscFunctionReturn(0);
   PetscCall(PetscLogEventBegin(PETSCDUALSPACE_SetUp, sp, 0, 0, 0));
   sp->setupcalled = PETSC_TRUE;
-  if (sp->ops->setup) PetscCall((*sp->ops->setup)(sp));
+  PetscTryTypeMethod(sp,setup);
   PetscCall(PetscLogEventEnd(PETSCDUALSPACE_SetUp, sp, 0, 0, 0));
   if (sp->setfromoptionscalled) PetscCall(PetscDualSpaceViewFromOptions(sp, NULL, "-petscdualspace_view"));
   PetscFunctionReturn(0);
@@ -407,7 +406,7 @@ PetscErrorCode PetscDualSpaceDestroy(PetscDualSpace *sp)
   PetscCall(PetscDualSpaceGetDimension(*sp, &dim));
   dm = (*sp)->dm;
 
-  if ((*sp)->ops->destroy) PetscCall((*(*sp)->ops->destroy)(*sp));
+  PetscTryTypeMethod((*sp),destroy);
   PetscCall(PetscDualSpaceClearDMData_Internal(*sp, dm));
 
   for (f = 0; f < dim; ++f) {
@@ -494,7 +493,7 @@ PetscErrorCode PetscDualSpaceDuplicate(PetscDualSpace sp, PetscDualSpace *spNew)
   (*spNew)->k       = sp->k;
   (*spNew)->Nc      = sp->Nc;
   (*spNew)->uniform = sp->uniform;
-  if (sp->ops->duplicate) PetscCall((*sp->ops->duplicate)(sp, *spNew));
+  PetscTryTypeMethod(sp,duplicate , *spNew);
   PetscFunctionReturn(0);
 }
 
@@ -1004,7 +1003,7 @@ PetscErrorCode PetscDualSpaceApply(PetscDualSpace sp, PetscInt f, PetscReal time
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
   PetscValidPointer(cgeom, 4);
   PetscValidScalarPointer(value, 8);
-  PetscCall((*sp->ops->apply)(sp, f, time, cgeom, numComp, func, ctx, value));
+  PetscUseTypeMethod(sp,apply , f, time, cgeom, numComp, func, ctx, value);
   PetscFunctionReturn(0);
 }
 
@@ -1026,7 +1025,7 @@ PetscErrorCode PetscDualSpaceApplyAll(PetscDualSpace sp, const PetscScalar *poin
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
-  PetscCall((*sp->ops->applyall)(sp, pointEval, spValue));
+  PetscUseTypeMethod(sp,applyall , pointEval, spValue);
   PetscFunctionReturn(0);
 }
 
@@ -1048,7 +1047,7 @@ PetscErrorCode PetscDualSpaceApplyInterior(PetscDualSpace sp, const PetscScalar 
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
-  PetscCall((*sp->ops->applyint)(sp, pointEval, spValue));
+  PetscUseTypeMethod(sp,applyint , pointEval, spValue);
   PetscFunctionReturn(0);
 }
 
@@ -1223,7 +1222,7 @@ PetscErrorCode PetscDualSpaceGetAllData(PetscDualSpace sp, PetscQuadrature *allN
     PetscQuadrature qpoints;
     Mat amat;
 
-    PetscCall((*sp->ops->createalldata)(sp,&qpoints,&amat));
+    PetscUseTypeMethod(sp,createalldata ,&qpoints,&amat);
     PetscCall(PetscQuadratureDestroy(&(sp->allNodes)));
     PetscCall(MatDestroy(&(sp->allMat)));
     sp->allNodes = qpoints;
@@ -1335,7 +1334,7 @@ PetscErrorCode PetscDualSpaceGetInteriorData(PetscDualSpace sp, PetscQuadrature 
     PetscQuadrature qpoints;
     Mat imat;
 
-    PetscCall((*sp->ops->createintdata)(sp,&qpoints,&imat));
+    PetscUseTypeMethod(sp,createintdata ,&qpoints,&imat);
     PetscCall(PetscQuadratureDestroy(&(sp->intNodes)));
     PetscCall(MatDestroy(&(sp->intMat)));
     sp->intNodes = qpoints;

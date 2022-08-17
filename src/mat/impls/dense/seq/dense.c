@@ -874,7 +874,7 @@ static PetscErrorCode MatLUFactorNumeric_SeqDense(Mat fact,Mat A,const MatFactor
 
   PetscFunctionBegin;
   PetscCall(MatDuplicateNoCreate_SeqDense(fact,A,MAT_COPY_VALUES));
-  PetscCall((*fact->ops->lufactor)(fact,NULL,NULL,&info));
+  PetscUseTypeMethod(fact,lufactor ,NULL,NULL,&info);
   PetscFunctionReturn(0);
 }
 
@@ -964,7 +964,7 @@ static PetscErrorCode MatCholeskyFactorNumeric_SeqDense(Mat fact,Mat A,const Mat
   info.fill = 1.0;
 
   PetscCall(MatDuplicateNoCreate_SeqDense(fact,A,MAT_COPY_VALUES));
-  PetscCall((*fact->ops->choleskyfactor)(fact,NULL,&info));
+  PetscUseTypeMethod(fact,choleskyfactor ,NULL,&info);
   PetscFunctionReturn(0);
 }
 

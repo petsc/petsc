@@ -27,41 +27,33 @@ PetscErrorCode  PetscDrawMarker(PetscDraw draw,PetscReal xl,PetscReal yl,int cl)
   if (draw->markertype == PETSC_DRAW_MARKER_CROSS) {
     if (draw->ops->coordinatetopixel && draw->ops->pointpixel) {
       int i,j,k;
-      PetscCall((*draw->ops->coordinatetopixel)(draw,xl,yl,&i,&j));
+      PetscUseTypeMethod(draw,coordinatetopixel ,xl,yl,&i,&j);
       for (k=-2; k<=2; k++) {
         PetscCall((*draw->ops->pointpixel)(draw,i+k,j+k,cl));
         PetscCall((*draw->ops->pointpixel)(draw,i+k,j-k,cl));
       }
-    } else if (draw->ops->string) {
-       PetscCall((*draw->ops->string)(draw,xl,yl,cl,"x"));
-    } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for drawing marker type CROSS");
+    } else PetscUseTypeMethod(draw,string,xl,yl,cl,"x");
   } else if (draw->markertype == PETSC_DRAW_MARKER_PLUS) {
     if (draw->ops->coordinatetopixel && draw->ops->pointpixel) {
       int i,j,k;
-      PetscCall((*draw->ops->coordinatetopixel)(draw,xl,yl,&i,&j));
+      PetscUseTypeMethod(draw,coordinatetopixel ,xl,yl,&i,&j);
       for (k=-2; k<=2; k++) {
         PetscCall((*draw->ops->pointpixel)(draw,i,j+k,cl));
         PetscCall((*draw->ops->pointpixel)(draw,i+k,j,cl));
       }
-    } else if (draw->ops->string) {
-       PetscCall((*draw->ops->string)(draw,xl,yl,cl,"+"));
-    } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for drawing marker type PLUS");
+    } else PetscUseTypeMethod(draw,string,xl,yl,cl,"+");
   } else if (draw->markertype == PETSC_DRAW_MARKER_CIRCLE) {
     if (draw->ops->coordinatetopixel && draw->ops->pointpixel) {
       int i,j,k;
-      PetscCall((*draw->ops->coordinatetopixel)(draw,xl,yl,&i,&j));
+      PetscUseTypeMethod(draw,coordinatetopixel ,xl,yl,&i,&j);
       for (k=-1; k<=1; k++) {
         PetscCall((*draw->ops->pointpixel)(draw,i+2,j+k,cl));
         PetscCall((*draw->ops->pointpixel)(draw,i-2,j+k,cl));
         PetscCall((*draw->ops->pointpixel)(draw,i+k,j+2,cl));
         PetscCall((*draw->ops->pointpixel)(draw,i+k,j-2,cl));
       }
-    } else if (draw->ops->string) {
-       PetscCall((*draw->ops->string)(draw,xl,yl,cl,"+"));
-    } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for drawing marker type CIRCLE");
-  } else {
-    PetscCall((*draw->ops->point)(draw,xl,yl,cl));
-  }
+    } else PetscUseTypeMethod(draw,string,xl,yl,cl,"+");
+  } else PetscUseTypeMethod(draw,point ,xl,yl,cl);
   PetscFunctionReturn(0);
 }
 

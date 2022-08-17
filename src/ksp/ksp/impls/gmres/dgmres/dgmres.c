@@ -548,7 +548,7 @@ static PetscErrorCode  KSPDGMRESForce_DGMRES(KSP ksp,PetscBool force)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPSetFromOptions_DGMRES(PetscOptionItems *PetscOptionsObject,KSP ksp)
+PetscErrorCode KSPSetFromOptions_DGMRES(KSP ksp,PetscOptionItems *PetscOptionsObject)
 {
   PetscInt       neig;
   PetscInt       max_neig;
@@ -556,7 +556,7 @@ PetscErrorCode KSPSetFromOptions_DGMRES(PetscOptionItems *PetscOptionsObject,KSP
   PetscBool      flg;
 
   PetscFunctionBegin;
-  PetscCall(KSPSetFromOptions_GMRES(PetscOptionsObject,ksp));
+  PetscCall(KSPSetFromOptions_GMRES(ksp,PetscOptionsObject));
   PetscOptionsHeadBegin(PetscOptionsObject,"KSP DGMRES Options");
   PetscCall(PetscOptionsInt("-ksp_dgmres_eigen","Number of smallest eigenvalues to extract at each restart","KSPDGMRESSetEigen",dgmres->neig, &neig, &flg));
   if (flg) PetscCall(KSPDGMRESSetEigen(ksp, neig));

@@ -576,7 +576,7 @@ static PetscErrorCode  KSPCGGetObjFcn_STCG(KSP ksp, PetscReal *o_fcn)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPCGSetFromOptions_STCG(PetscOptionItems *PetscOptionsObject,KSP ksp)
+static PetscErrorCode KSPCGSetFromOptions_STCG(KSP ksp,PetscOptionItems *PetscOptionsObject)
 {
   KSPCG_STCG     *cg = (KSPCG_STCG*)ksp->data;
 

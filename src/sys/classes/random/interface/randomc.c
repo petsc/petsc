@@ -112,7 +112,7 @@ PetscErrorCode  PetscRandomSetSeed(PetscRandom r,unsigned long seed)
 
 .seealso: `PetscRandomSetFromOptions()`, `PetscRandomSetType()`
 */
-static PetscErrorCode PetscRandomSetTypeFromOptions_Private(PetscOptionItems *PetscOptionsObject,PetscRandom rnd)
+static PetscErrorCode PetscRandomSetTypeFromOptions_Private(PetscRandom rnd,PetscOptionItems *PetscOptionsObject)
 {
   PetscBool      opt;
   const char     *defaultType;
@@ -167,10 +167,10 @@ PetscErrorCode  PetscRandomSetFromOptions(PetscRandom rnd)
   PetscObjectOptionsBegin((PetscObject)rnd);
 
   /* Handle PetscRandom type options */
-  PetscCall(PetscRandomSetTypeFromOptions_Private(PetscOptionsObject,rnd));
+  PetscCall(PetscRandomSetTypeFromOptions_Private(rnd,PetscOptionsObject));
 
   /* Handle specific random generator's options */
-  if (rnd->ops->setfromoptions) PetscCall((*rnd->ops->setfromoptions)(PetscOptionsObject,rnd));
+  PetscTryTypeMethod(rnd,setfromoptions,PetscOptionsObject);
   PetscCall(PetscOptionsInt("-random_seed","Seed to use to generate random numbers","PetscRandomSetSeed",0,&seed,&set));
   if (set) {
     PetscCall(PetscRandomSetSeed(rnd,(unsigned long int)seed));
@@ -378,7 +378,7 @@ PetscErrorCode  PetscRandomSeed(PetscRandom r)
   PetscValidHeaderSpecific(r,PETSC_RANDOM_CLASSID,1);
   PetscValidType(r,1);
 
-  PetscCall((*r->ops->seed)(r));
+  PetscUseTypeMethod(r,seed);
   PetscCall(PetscObjectStateIncrease((PetscObject)r));
   PetscFunctionReturn(0);
 }

@@ -272,7 +272,7 @@ static inline PetscErrorCode PetscDeviceContextGetBLASHandle_Internal(PetscDevic
   /* we do error checking here as this routine is an entry-point */
   PetscValidDeviceContext(dctx,1);
   PetscValidPointer(handle,2);
-  PetscCall((*dctx->ops->getblashandle)(dctx,handle));
+  PetscUseTypeMethod(dctx,getblashandle ,handle);
   PetscFunctionReturn(0);
 }
 
@@ -282,7 +282,7 @@ static inline PetscErrorCode PetscDeviceContextGetSOLVERHandle_Internal(PetscDev
   /* we do error checking here as this routine is an entry-point */
   PetscValidDeviceContext(dctx,1);
   PetscValidPointer(handle,2);
-  PetscCall((*dctx->ops->getsolverhandle)(dctx,handle));
+  PetscUseTypeMethod(dctx,getsolverhandle ,handle);
   PetscFunctionReturn(0);
 }
 
@@ -292,7 +292,7 @@ static inline PetscErrorCode PetscDeviceContextGetStreamHandle_Internal(PetscDev
   /* we do error checking here as this routine is an entry-point */
   PetscValidDeviceContext(dctx,1);
   PetscValidPointer(handle,2);
-  PetscCall((*dctx->ops->getstreamhandle)(dctx,handle));
+  PetscUseTypeMethod(dctx,getstreamhandle ,handle);
   PetscFunctionReturn(0);
 }
 
@@ -301,7 +301,7 @@ static inline PetscErrorCode PetscDeviceContextBeginTimer_Internal(PetscDeviceCo
   PetscFunctionBegin;
   /* we do error checking here as this routine is an entry-point */
   PetscValidDeviceContext(dctx,1);
-  PetscCall((*dctx->ops->begintimer)(dctx));
+  PetscUseTypeMethod(dctx,begintimer);
   PetscFunctionReturn(0);
 }
 
@@ -311,7 +311,7 @@ static inline PetscErrorCode PetscDeviceContextEndTimer_Internal(PetscDeviceCont
   /* we do error checking here as this routine is an entry-point */
   PetscValidDeviceContext(dctx,1);
   PetscValidRealPointer(elapsed,2);
-  PetscCall((*dctx->ops->endtimer)(dctx,elapsed));
+  PetscUseTypeMethod(dctx,endtimer ,elapsed);
   PetscFunctionReturn(0);
 }
 #else /* PETSC_HAVE_CXX for PetscDeviceContext Internal Functions */

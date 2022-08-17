@@ -302,13 +302,13 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
   PetscCall(SNESMonitor(snes,0,fnorm));
 
   /* test convergence */
-  PetscCall((*snes->ops->converged)(snes,snes->iter,0.0,0.0,fnorm,&snes->reason,snes->cnvP));
+  PetscUseTypeMethod(snes,converged ,snes->iter,0.0,0.0,fnorm,&snes->reason,snes->cnvP);
   if (snes->reason) PetscFunctionReturn(0);
 
   for (i=0; i<maxits; i++) {
 
     /* Call general purpose update function */
-    if (snes->ops->update) PetscCall((*snes->ops->update)(snes, snes->iter));
+    PetscTryTypeMethod(snes,update, snes->iter);
 
     /* Solve J Y = F, where J is Jacobian matrix */
     PetscCall(SNESComputeJacobian(snes,X,snes->jacobian,snes->jacobian_pre));
@@ -368,7 +368,7 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
       /* check to see if progress is hopeless */
       neP->itflag = PETSC_FALSE;
       PetscCall(SNESTR_Converged_Private(snes,snes->iter,xnorm,ynorm,fnorm,&reason,snes->cnvP));
-      if (!reason) PetscCall((*snes->ops->converged)(snes,snes->iter,xnorm,ynorm,fnorm,&reason,snes->cnvP));
+      if (!reason) PetscUseTypeMethod(snes,converged ,snes->iter,xnorm,ynorm,fnorm,&reason,snes->cnvP);
       if (reason == SNES_CONVERGED_SNORM_RELATIVE) reason = SNES_DIVERGED_INNER;
       if (reason) {
         /* We're not progressing, so return with the current iterate */
@@ -395,7 +395,7 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
       /* Test for convergence, xnorm = || X || */
       neP->itflag = PETSC_TRUE;
       if (snes->ops->converged != SNESConvergedSkip) PetscCall(VecNorm(X,NORM_2,&xnorm));
-      PetscCall((*snes->ops->converged)(snes,snes->iter,xnorm,ynorm,fnorm,&reason,snes->cnvP));
+      PetscUseTypeMethod(snes,converged ,snes->iter,xnorm,ynorm,fnorm,&reason,snes->cnvP);
       if (reason) break;
     } else break;
   }
@@ -439,7 +439,7 @@ static PetscErrorCode SNESDestroy_NEWTONTR(SNES snes)
 }
 /*------------------------------------------------------------*/
 
-static PetscErrorCode SNESSetFromOptions_NEWTONTR(PetscOptionItems *PetscOptionsObject,SNES snes)
+static PetscErrorCode SNESSetFromOptions_NEWTONTR(SNES snes,PetscOptionItems *PetscOptionsObject)
 {
   SNES_NEWTONTR  *ctx = (SNES_NEWTONTR*)snes->data;
 

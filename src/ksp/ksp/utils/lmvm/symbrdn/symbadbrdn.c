@@ -169,7 +169,7 @@ static PetscErrorCode MatMult_LMVMSymBadBrdn(Mat B, Vec X, Vec Z)
 
 /*------------------------------------------------------------*/
 
-static PetscErrorCode MatSetFromOptions_LMVMSymBadBrdn(PetscOptionItems *PetscOptionsObject, Mat B)
+static PetscErrorCode MatSetFromOptions_LMVMSymBadBrdn(Mat B,PetscOptionItems *PetscOptionsObject)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   Mat_SymBrdn       *lsb = (Mat_SymBrdn*)lmvm->ctx;
@@ -177,7 +177,7 @@ static PetscErrorCode MatSetFromOptions_LMVMSymBadBrdn(PetscOptionItems *PetscOp
   Mat_DiagBrdn      *dctx;
 
   PetscFunctionBegin;
-  PetscCall(MatSetFromOptions_LMVMSymBrdn(PetscOptionsObject, B));
+  PetscCall(MatSetFromOptions_LMVMSymBrdn(B,PetscOptionsObject));
   if (lsb->scale_type == MAT_LMVM_SYMBROYDEN_SCALE_DIAGONAL) {
     dbase = (Mat_LMVM*)lsb->D->data;
     dctx = (Mat_DiagBrdn*)dbase->ctx;

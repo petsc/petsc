@@ -259,7 +259,7 @@ static PetscErrorCode TSAdaptDSPSetPID_DSP(TSAdapt adapt,PetscReal kkI,PetscReal
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSAdaptSetFromOptions_DSP(PetscOptionItems *PetscOptionsObject,TSAdapt adapt)
+static PetscErrorCode TSAdaptSetFromOptions_DSP(TSAdapt adapt,PetscOptionItems *PetscOptionsObject)
 {
   TSAdapt_DSP    *dsp = (TSAdapt_DSP*)adapt->data;
   const char     *names[sizeof(filterlist)/sizeof(filterlist[0])];

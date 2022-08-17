@@ -124,7 +124,7 @@ static PetscErrorCode PCApplySymmetricRight_ICC(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCSetFromOptions_ICC(PetscOptionItems *PetscOptionsObject,PC pc)
+static PetscErrorCode PCSetFromOptions_ICC(PC pc,PetscOptionItems *PetscOptionsObject)
 {
   PC_ICC         *icc = (PC_ICC*)pc->data;
   PetscBool      flg;
@@ -132,7 +132,7 @@ static PetscErrorCode PCSetFromOptions_ICC(PetscOptionItems *PetscOptionsObject,
 
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject,"ICC Options");
-  PetscCall(PCSetFromOptions_Factor(PetscOptionsObject,pc));
+  PetscCall(PCSetFromOptions_Factor(pc,PetscOptionsObject));
 
   PetscCall(PetscOptionsReal("-pc_factor_levels","levels of fill","PCFactorSetLevels",((PC_Factor*)icc)->info.levels,&((PC_Factor*)icc)->info.levels,&flg));
   /*dt[0] = ((PC_Factor*)icc)->info.dt;

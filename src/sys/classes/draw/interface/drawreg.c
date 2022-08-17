@@ -81,7 +81,7 @@ PetscErrorCode  PetscDrawView(PetscDraw indraw,PetscViewer viewer)
       PetscCall(PetscObjectViewSAWs((PetscObject)indraw,viewer));
     }
 #endif
-  } else if (indraw->ops->view) PetscCall((*indraw->ops->view)(indraw,viewer));
+  } else PetscTryTypeMethod(indraw,view,viewer);
   PetscFunctionReturn(0);
 }
 
@@ -256,7 +256,7 @@ PetscErrorCode  PetscDrawSetType(PetscDraw draw,PetscDrawType type)
 
   PetscCall(PetscFunctionListFind(PetscDrawList,type,&r));
   PetscCheck(r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown PetscDraw type given: %s",type);
-  if (draw->ops->destroy) PetscCall((*draw->ops->destroy)(draw));
+  PetscTryTypeMethod(draw,destroy);
   PetscCall(PetscMemzero(draw->ops,sizeof(struct _PetscDrawOps)));
   PetscCall(PetscObjectChangeTypeName((PetscObject)draw,type));
   PetscCall((*r)(draw));
@@ -429,7 +429,7 @@ PetscErrorCode  PetscDrawSetFromOptions(PetscDraw draw)
   PetscCall(PetscOptionsEnum("-draw_marker_type","Type of marker to use on plots","PetscDrawSetMarkerType",PetscDrawMarkerTypes,(PetscEnum)draw->markertype,(PetscEnum *)&draw->markertype,NULL));
 
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
-  PetscCall(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)draw));
+  PetscCall(PetscObjectProcessOptionsHandlers((PetscObject)draw,PetscOptionsObject));
 
   PetscCall(PetscDrawViewFromOptions(draw,NULL,"-draw_view"));
   PetscOptionsEnd();

@@ -60,9 +60,8 @@ PetscErrorCode  KSPComputeExtremeSingularValues(KSP ksp,PetscReal *emax,PetscRea
   PetscValidRealPointer(emin,3);
   PetscCheck(ksp->calc_sings,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONGSTATE,"Singular values not requested before KSPSetUp()");
 
-  if (ksp->ops->computeextremesingularvalues) {
-    PetscCall((*ksp->ops->computeextremesingularvalues)(ksp,emax,emin));
-  } else {
+  if (ksp->ops->computeextremesingularvalues) PetscUseTypeMethod(ksp,computeextremesingularvalues ,emax,emin);
+  else {
     *emin = -1.0;
     *emax = -1.0;
   }
@@ -123,11 +122,8 @@ PetscErrorCode  KSPComputeEigenvalues(KSP ksp,PetscInt n,PetscReal r[],PetscReal
   PetscValidIntPointer(neig,5);
   PetscCheck(ksp->calc_sings,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONGSTATE,"Eigenvalues not requested before KSPSetUp()");
 
-  if (n && ksp->ops->computeeigenvalues) {
-    PetscCall((*ksp->ops->computeeigenvalues)(ksp,n,r,c,neig));
-  } else {
-    *neig = 0;
-  }
+  if (n && ksp->ops->computeeigenvalues) PetscUseTypeMethod(ksp,computeeigenvalues ,n,r,c,neig);
+  else *neig = 0;
   PetscFunctionReturn(0);
 }
 
@@ -186,7 +182,7 @@ PetscErrorCode  KSPComputeRitz(KSP ksp,PetscBool ritz,PetscBool small,PetscInt *
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscCheck(ksp->calc_ritz,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONGSTATE,"Ritz pairs not requested before KSPSetUp()");
-  if (ksp->ops->computeritz) PetscCall((*ksp->ops->computeritz)(ksp,ritz,small,nrit,S,tetar,tetai));
+  PetscTryTypeMethod(ksp,computeritz,ritz,small,nrit,S,tetar,tetai);
   PetscFunctionReturn(0);
 }
 /*@
@@ -374,10 +370,10 @@ PetscErrorCode KSPSetUp(KSP ksp)
 
   switch (ksp->setupstage) {
   case KSP_SETUP_NEW:
-    PetscCall((*ksp->ops->setup)(ksp));
+    PetscUseTypeMethod(ksp,setup);
     break;
   case KSP_SETUP_NEWMATRIX: {   /* This should be replaced with a more general mechanism */
-    if (ksp->setupnewmatrix) PetscCall((*ksp->ops->setup)(ksp));
+    if (ksp->setupnewmatrix) PetscUseTypeMethod(ksp,setup);
   } break;
   default: break;
   }
@@ -906,7 +902,7 @@ static PetscErrorCode KSPSolve_Private(KSP ksp,Vec b,Vec x)
     ksp->vec_rhs = btmp;
   }
   PetscCall(VecLockReadPush(ksp->vec_rhs));
-  PetscCall((*ksp->ops->solve)(ksp));
+  PetscUseTypeMethod(ksp,solve);
   PetscCall(KSPMonitorPauseFinal_Internal(ksp));
 
   PetscCall(VecLockReadPop(ksp->vec_rhs));
@@ -1221,7 +1217,7 @@ PetscErrorCode KSPMatSolve(KSP ksp, Mat B, Mat X)
     PetscCall(PetscInfo(ksp, "KSP type %s solving using batches of width at most %" PetscInt_FMT "\n", ((PetscObject)ksp)->type_name, Bbn));
     /* if -ksp_matsolve_batch_size is greater than the actual number of columns, do a single solve with all columns */
     if (Bbn >= N2) {
-      PetscCall((*ksp->ops->matsolve)(ksp, B, X));
+      PetscUseTypeMethod(ksp,matsolve , B, X);
       if (ksp->viewFinalRes) PetscCall(KSPViewFinalMatResidual_Internal(ksp, B, X, ksp->viewerFinalRes, ksp->formatFinalRes, 0));
 
       PetscCall(KSPConvergedReasonViewFromOptions(ksp));
@@ -1235,7 +1231,7 @@ PetscErrorCode KSPMatSolve(KSP ksp, Mat B, Mat X)
       for (n2 = 0; n2 < N2; n2 += Bbn) {
         PetscCall(MatDenseGetSubMatrix(B, PETSC_DECIDE, PETSC_DECIDE, n2, PetscMin(n2+Bbn, N2), &vB));
         PetscCall(MatDenseGetSubMatrix(X, PETSC_DECIDE, PETSC_DECIDE, n2, PetscMin(n2+Bbn, N2), &vX));
-        PetscCall((*ksp->ops->matsolve)(ksp, vB, vX));
+        PetscUseTypeMethod(ksp,matsolve , vB, vX);
         if (ksp->viewFinalRes) PetscCall(KSPViewFinalMatResidual_Internal(ksp, vB, vX, ksp->viewerFinalRes, ksp->formatFinalRes, n2));
 
         PetscCall(KSPConvergedReasonViewFromOptions(ksp));
@@ -1376,11 +1372,11 @@ PetscErrorCode  KSPReset(KSP ksp)
   PetscFunctionBegin;
   if (ksp) PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   if (!ksp) PetscFunctionReturn(0);
-  if (ksp->ops->reset) PetscCall((*ksp->ops->reset)(ksp));
+  PetscTryTypeMethod(ksp,reset);
   if (ksp->pc) PetscCall(PCReset(ksp->pc));
   if (ksp->guess) {
     KSPGuess guess = ksp->guess;
-    if (guess->ops->reset) PetscCall((*guess->ops->reset)(guess));
+    PetscTryTypeMethod(guess,reset);
   }
   PetscCall(VecDestroyVecs(ksp->nwork,&ksp->work));
   PetscCall(VecDestroy(&ksp->vec_rhs));
@@ -1427,7 +1423,7 @@ PetscErrorCode  KSPDestroy(KSP *ksp)
   (*ksp)->pc = NULL;
   PetscCall(KSPReset((*ksp)));
   (*ksp)->pc = pc;
-  if ((*ksp)->ops->destroy) PetscCall((*(*ksp)->ops->destroy)(*ksp));
+  PetscTryTypeMethod((*ksp),destroy);
 
   if ((*ksp)->transpose.use_explicittranspose) {
     PetscCall(MatDestroy(&(*ksp)->transpose.AT));
@@ -2632,7 +2628,7 @@ PetscErrorCode  KSPBuildSolution(KSP ksp,Vec v,Vec *V)
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscCheck(V || v,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONG,"Must provide either v or V");
   if (!V) V = &v;
-  PetscCall((*ksp->ops->buildsolution)(ksp,v,V));
+  PetscUseTypeMethod(ksp,buildsolution ,v,V);
   PetscFunctionReturn(0);
 }
 
@@ -2673,7 +2669,7 @@ PetscErrorCode  KSPBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
     PetscCall(VecDuplicate(ksp->vec_sol,&tt)); flag = PETSC_TRUE;
     PetscCall(PetscLogObjectParent((PetscObject)ksp,(PetscObject)tt));
   }
-  PetscCall((*ksp->ops->buildresidual)(ksp,tt,w,V));
+  PetscUseTypeMethod(ksp,buildresidual ,tt,w,V);
   if (flag) PetscCall(VecDestroy(&tt));
   PetscFunctionReturn(0);
 }

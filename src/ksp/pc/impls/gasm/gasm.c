@@ -895,7 +895,7 @@ static PetscErrorCode PCDestroy_GASM(PC pc)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCSetFromOptions_GASM(PetscOptionItems *PetscOptionsObject,PC pc)
+static PetscErrorCode PCSetFromOptions_GASM(PC pc,PetscOptionItems *PetscOptionsObject)
 {
   PC_GASM        *osm = (PC_GASM*)pc->data;
   PetscInt       blocks,ovl;

@@ -7,7 +7,7 @@
 typedef struct _p_DMPlexTransformOps *DMPlexTransformOps;
 struct _p_DMPlexTransformOps {
   PetscErrorCode (*view)(DMPlexTransform, PetscViewer);
-  PetscErrorCode (*setfromoptions)(PetscOptionItems *, DMPlexTransform);
+  PetscErrorCode (*setfromoptions)(DMPlexTransform,PetscOptionItems *);
   PetscErrorCode (*setup)(DMPlexTransform);
   PetscErrorCode (*destroy)(DMPlexTransform);
   PetscErrorCode (*setdimensions)(DMPlexTransform,DM,DM);

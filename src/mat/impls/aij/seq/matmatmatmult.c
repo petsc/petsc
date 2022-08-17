@@ -54,9 +54,7 @@ PetscErrorCode MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C,Mat D
   matmatmatmult = (Mat_MatMatMatMult*)D->product->data;
   BC = matmatmatmult->BC;
   PetscCheck(BC,PetscObjectComm((PetscObject)D),PETSC_ERR_PLIB,"Missing BC mat");
-  PetscCheck(BC->ops->matmultnumeric,PetscObjectComm((PetscObject)BC),PETSC_ERR_PLIB,"Missing numeric operation");
   PetscCall((*BC->ops->matmultnumeric)(B,C,BC));
-  PetscCheck(D->ops->matmultnumeric,PetscObjectComm((PetscObject)D),PETSC_ERR_PLIB,"Missing numeric operation");
   PetscCall((*D->ops->matmultnumeric)(A,BC,D));
   PetscFunctionReturn(0);
 }

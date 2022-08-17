@@ -623,7 +623,7 @@ static PetscErrorCode TSSetUp_IRK(TS ts)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSSetFromOptions_IRK(PetscOptionItems *PetscOptionsObject,TS ts)
+static PetscErrorCode TSSetFromOptions_IRK(TS ts,PetscOptionItems *PetscOptionsObject)
 {
   TS_IRK         *irk = (TS_IRK*)ts->data;
   char           tname[256] = TSIRKGAUSS;

@@ -3123,7 +3123,7 @@ static PetscErrorCode MatGetLocalSubMatrix_IS(Mat A,IS row,IS col,Mat *submat)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatSetFromOptions_IS(PetscOptionItems *PetscOptionsObject, Mat A)
+static PetscErrorCode MatSetFromOptions_IS(Mat A,PetscOptionItems *PetscOptionsObject)
 {
   Mat_IS         *a = (Mat_IS*)A->data;
   char           type[256];

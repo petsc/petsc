@@ -1,6 +1,6 @@
 #include <../src/snes/impls/ngmres/snesngmres.h> /*I "petscsnes.h" I*/
 
-static PetscErrorCode SNESSetFromOptions_Anderson(PetscOptionItems *PetscOptionsObject,SNES snes)
+static PetscErrorCode SNESSetFromOptions_Anderson(SNES snes,PetscOptionItems *PetscOptionsObject)
 {
   SNES_NGMRES    *ngmres = (SNES_NGMRES*) snes->data;
   PetscBool      monitor = PETSC_FALSE;
@@ -86,7 +86,7 @@ static PetscErrorCode SNESSolve_Anderson(SNES snes)
   PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
   PetscCall(SNESLogConvergenceHistory(snes,fnorm,0));
   PetscCall(SNESMonitor(snes,0,fnorm));
-  PetscCall((*snes->ops->converged)(snes,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP));
+  PetscUseTypeMethod(snes,converged ,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP);
   if (snes->reason) PetscFunctionReturn(0);
 
   k_restart = 0;
@@ -164,7 +164,7 @@ static PetscErrorCode SNESSolve_Anderson(SNES snes)
     PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
     PetscCall(SNESLogConvergenceHistory(snes,snes->norm,snes->iter));
     PetscCall(SNESMonitor(snes,snes->iter,snes->norm));
-    PetscCall((*snes->ops->converged)(snes,snes->iter,xnorm,ynorm,fnorm,&snes->reason,snes->cnvP));
+    PetscUseTypeMethod(snes,converged ,snes->iter,xnorm,ynorm,fnorm,&snes->reason,snes->cnvP);
     if (snes->reason) PetscFunctionReturn(0);
   }
   snes->reason = SNES_DIVERGED_MAX_IT;

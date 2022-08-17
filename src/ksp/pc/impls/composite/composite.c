@@ -223,7 +223,7 @@ static PetscErrorCode PCDestroy_Composite(PC pc)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCSetFromOptions_Composite(PetscOptionItems *PetscOptionsObject,PC pc)
+static PetscErrorCode PCSetFromOptions_Composite(PC pc,PetscOptionItems *PetscOptionsObject)
 {
   PC_Composite     *jac = (PC_Composite*)pc->data;
   PetscInt         nmax = 8,i;

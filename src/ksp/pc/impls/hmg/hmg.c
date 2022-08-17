@@ -13,7 +13,7 @@ typedef struct {
   PetscInt         component;          /* Which subspace is used for the subspace-based coarsening algorithm? */
 } PC_HMG;
 
-PetscErrorCode PCSetFromOptions_HMG(PetscOptionItems*,PC);
+PetscErrorCode PCSetFromOptions_HMG(PC,PetscOptionItems*);
 PetscErrorCode PCReset_MG(PC);
 
 static PetscErrorCode PCHMGExtractSubMatrix_Private(Mat pmat,Mat *submat,MatReuse reuse,PetscInt component,PetscInt blocksize)
@@ -212,7 +212,7 @@ PetscErrorCode PCSetUp_HMG(PC pc)
   PetscCall(PCSetDM(pc,NULL));
   PetscCall(PCSetUseAmat(pc,PETSC_FALSE));
   PetscObjectOptionsBegin((PetscObject)pc);
-  PetscCall(PCSetFromOptions_MG(PetscOptionsObject,pc)); /* should be called in PCSetFromOptions_HMG(), but cannot be called prior to PCMGSetLevels() */
+  PetscCall(PCSetFromOptions_MG(pc,PetscOptionsObject)); /* should be called in PCSetFromOptions_HMG(), but cannot be called prior to PCMGSetLevels() */
   PetscOptionsEnd();
   PetscCall(PCSetUp_MG(pc));
   PetscFunctionReturn(0);
@@ -256,7 +256,7 @@ PetscErrorCode PCView_HMG(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCSetFromOptions_HMG(PetscOptionItems *PetscOptionsObject,PC pc)
+PetscErrorCode PCSetFromOptions_HMG(PC pc,PetscOptionItems *PetscOptionsObject)
 {
   PC_MG          *mg = (PC_MG*)pc->data;
   PC_HMG         *hmg = (PC_HMG*) mg->innerctx;
@@ -485,10 +485,8 @@ PETSC_EXTERN PetscErrorCode PCCreate_HMG(PC pc)
 
   PetscFunctionBegin;
   /* if type was previously mg; must manually destroy it because call to PCSetType(pc,PCMG) will not destroy it */
-  if (pc->ops->destroy) {
-    PetscCall((*pc->ops->destroy)(pc));
-    pc->data = NULL;
-  }
+  PetscTryTypeMethod(pc,destroy);
+  pc->data = NULL;
   PetscCall(PetscFree(((PetscObject)pc)->type_name));
 
   PetscCall(PCSetType(pc,PCMG));

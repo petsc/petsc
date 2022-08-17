@@ -570,7 +570,7 @@ PetscErrorCode KSPPIPEFCGGetTruncationType(KSP ksp,KSPFCDTruncationType *truncst
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPSetFromOptions_PIPEFCG(PetscOptionItems *PetscOptionsObject,KSP ksp)
+static PetscErrorCode KSPSetFromOptions_PIPEFCG(KSP ksp,PetscOptionItems *PetscOptionsObject)
 {
   KSP_PIPEFCG    *pipefcg=(KSP_PIPEFCG*)ksp->data;
   PetscInt       mmax,nprealloc;

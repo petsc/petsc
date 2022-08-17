@@ -197,7 +197,7 @@ PetscErrorCode PetscDeviceConfigure(PetscDevice device)
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PETSc was seemingly configured for PetscDeviceType %s but we've fallen through all cases in a switch",PetscDeviceTypes[device->type]);
     }
   }
-  PetscCall((*device->ops->configure)(device));
+  PetscUseTypeMethod(device,configure);
   PetscFunctionReturn(0);
 }
 
@@ -220,7 +220,7 @@ PetscErrorCode PetscDeviceView(PetscDevice device, PetscViewer viewer)
   PetscValidDevice(device,1);
   if (!viewer) PetscCall(PetscViewerASCIIGetStdout(PETSC_COMM_WORLD,&viewer));
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
-  PetscCall((*device->ops->view)(device,viewer));
+  PetscUseTypeMethod(device,view ,viewer);
   PetscFunctionReturn(0);
 }
 

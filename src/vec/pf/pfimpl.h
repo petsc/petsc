@@ -15,7 +15,7 @@ struct _PFOps {
   PetscErrorCode (*applyvec)(void*,Vec,Vec);
   PetscErrorCode (*destroy)(void*);
   PetscErrorCode (*view)(void*,PetscViewer);
-  PetscErrorCode (*setfromoptions)(PetscOptionItems*,PF);
+  PetscErrorCode (*setfromoptions)(PF,PetscOptionItems*);
 };
 
 struct _p_PF {

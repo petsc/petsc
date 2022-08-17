@@ -19,7 +19,7 @@ PetscErrorCode  PetscDrawFlush(PetscDraw draw)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  if (draw->ops->flush) PetscCall((*draw->ops->flush)(draw));
+  PetscTryTypeMethod(draw,flush);
   if (draw->saveonflush) PetscCall(PetscDrawSave(draw));
   PetscFunctionReturn(0);
 }

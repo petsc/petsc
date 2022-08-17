@@ -326,6 +326,8 @@ M*/
 
   Should not be used to call callback functions provided by users, `PetscCallBack()` should be used in that situation.
 
+  `PetscUseTypeMethod()` or `PetscTryTypeMethod()` should be used when calling functions pointers contained in a PETSc object's `ops` array
+
   Fortran Notes:
     The Fortran function from which this is used must declare a variable PetscErrorCode ierr and ierr must be
     the final argument to the PETSc function being called.

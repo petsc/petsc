@@ -1353,7 +1353,7 @@ static PetscErrorCode TSSetUp_RosW(TS ts)
 }
 /*------------------------------------------------------------*/
 
-static PetscErrorCode TSSetFromOptions_RosW(PetscOptionItems *PetscOptionsObject,TS ts)
+static PetscErrorCode TSSetFromOptions_RosW(TS ts,PetscOptionItems *PetscOptionsObject)
 {
   TS_RosW        *ros = (TS_RosW*)ts->data;
   SNES           snes;

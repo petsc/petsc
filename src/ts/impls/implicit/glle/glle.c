@@ -1088,7 +1088,7 @@ static PetscErrorCode TSSetUp_GLLE(TS ts)
 }
 /*------------------------------------------------------------*/
 
-static PetscErrorCode TSSetFromOptions_GLLE(PetscOptionItems *PetscOptionsObject,TS ts)
+static PetscErrorCode TSSetFromOptions_GLLE(TS ts,PetscOptionItems *PetscOptionsObject)
 {
   TS_GLLE        *gl        = (TS_GLLE*)ts->data;
   char           tname[256] = TSGLLE_IRKS,completef[256] = "rescale-and-modify";
@@ -1128,7 +1128,7 @@ static PetscErrorCode TSSetFromOptions_GLLE(PetscOptionItems *PetscOptionsObject
     {
       TSGLLEAdapt adapt;
       PetscCall(TSGLLEGetAdapt(ts,&adapt));
-      PetscCall(TSGLLEAdaptSetFromOptions(PetscOptionsObject,adapt));
+      PetscCall(TSGLLEAdaptSetFromOptions(adapt,PetscOptionsObject));
     }
   }
   PetscOptionsHeadEnd();

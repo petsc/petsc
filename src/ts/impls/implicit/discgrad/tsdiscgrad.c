@@ -117,7 +117,7 @@ static PetscErrorCode TSSetUp_DiscGrad(TS ts)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSSetFromOptions_DiscGrad(PetscOptionItems *PetscOptionsObject, TS ts)
+static PetscErrorCode TSSetFromOptions_DiscGrad(TS ts,PetscOptionItems *PetscOptionsObject)
 {
   TS_DiscGrad   *dg = (TS_DiscGrad *) ts->data;
 

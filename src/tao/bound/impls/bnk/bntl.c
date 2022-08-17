@@ -125,7 +125,7 @@ PetscErrorCode TaoSolve_BNTL(Tao tao)
   while (tao->reason == TAO_CONTINUE_ITERATING) {
     /* Call general purpose update function */
     if (tao->ops->update) {
-      PetscCall((*tao->ops->update)(tao, tao->niter, tao->user_update));
+      PetscUseTypeMethod(tao,update , tao->niter, tao->user_update);
       PetscCall(TaoComputeObjectiveAndGradient(tao, tao->solution, &bnk->f, bnk->unprojected_gradient));
     }
 
@@ -224,7 +224,7 @@ PetscErrorCode TaoSolve_BNTL(Tao tao)
     ++tao->niter;
     PetscCall(TaoLogConvergenceHistory(tao, bnk->f, resnorm, 0.0, tao->ksp_its));
     PetscCall(TaoMonitor(tao, tao->niter, bnk->f, resnorm, 0.0, steplen));
-    PetscCall((*tao->ops->convergencetest)(tao, tao->cnvP));
+    PetscUseTypeMethod(tao,convergencetest , tao->cnvP);
   }
   PetscFunctionReturn(0);
 }
@@ -244,12 +244,12 @@ static PetscErrorCode TaoSetUp_BNTL(Tao tao)
 }
 
 /*------------------------------------------------------------*/
-static PetscErrorCode TaoSetFromOptions_BNTL(PetscOptionItems *PetscOptionsObject,Tao tao)
+static PetscErrorCode TaoSetFromOptions_BNTL(Tao tao,PetscOptionItems *PetscOptionsObject)
 {
   TAO_BNK        *bnk = (TAO_BNK *)tao->data;
 
   PetscFunctionBegin;
-  PetscCall(TaoSetFromOptions_BNK(PetscOptionsObject, tao));
+  PetscCall(TaoSetFromOptions_BNK(tao,PetscOptionsObject));
   if (bnk->update_type == BNK_UPDATE_STEP) bnk->update_type = BNK_UPDATE_REDUCTION;
   PetscFunctionReturn(0);
 }

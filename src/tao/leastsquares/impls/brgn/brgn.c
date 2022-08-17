@@ -266,7 +266,7 @@ static PetscErrorCode TaoSolve_BRGN(Tao tao)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoSetFromOptions_BRGN(PetscOptionItems *PetscOptionsObject,Tao tao)
+static PetscErrorCode TaoSetFromOptions_BRGN(Tao tao,PetscOptionItems *PetscOptionsObject)
 {
   TAO_BRGN              *gn = (TAO_BRGN *)tao->data;
   TaoLineSearch         ls;

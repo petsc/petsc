@@ -974,9 +974,9 @@ PetscErrorCode MatMult_MPIAIJ(Mat A,Vec xx,Vec yy)
   PetscCall(VecGetLocalSize(xx,&nt));
   PetscCheck(nt == A->cmap->n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Incompatible partition of A (%" PetscInt_FMT ") and xx (%" PetscInt_FMT ")",A->cmap->n,nt);
   PetscCall(VecScatterBegin(Mvctx,xx,a->lvec,INSERT_VALUES,SCATTER_FORWARD));
-  PetscCall((*a->A->ops->mult)(a->A,xx,yy));
+  PetscUseTypeMethod(a->A,mult,xx,yy);
   PetscCall(VecScatterEnd(Mvctx,xx,a->lvec,INSERT_VALUES,SCATTER_FORWARD));
-  PetscCall((*a->B->ops->multadd)(a->B,a->lvec,yy,yy));
+  PetscUseTypeMethod(a->B,multadd,a->lvec,yy,yy);
   PetscFunctionReturn(0);
 }
 
@@ -2002,15 +2002,15 @@ PetscErrorCode MatDiagonalScale_MPIAIJ(Mat mat,Vec ll,Vec rr)
   if (ll) {
     PetscCall(VecGetLocalSize(ll,&s1));
     PetscCheck(s1==s2,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"left vector non-conforming local size");
-    PetscCall((*b->ops->diagonalscale)(b,ll,NULL));
+    PetscUseTypeMethod(b,diagonalscale ,ll,NULL);
   }
   /* scale  the diagonal block */
-  PetscCall((*a->ops->diagonalscale)(a,ll,rr));
+  PetscUseTypeMethod(a,diagonalscale ,ll,rr);
 
   if (rr) {
     /* Do a scatter end and then right scale the off-diagonal block */
     PetscCall(VecScatterEnd(aij->Mvctx,rr,aij->lvec,INSERT_VALUES,SCATTER_FORWARD));
-    PetscCall((*b->ops->diagonalscale)(b,NULL,aij->lvec));
+    PetscUseTypeMethod(b,diagonalscale ,NULL,aij->lvec);
   }
   PetscFunctionReturn(0);
 }
@@ -2630,7 +2630,7 @@ PetscErrorCode MatMPIAIJSetUseScalableIncreaseOverlap(Mat A,PetscBool sc)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatSetFromOptions_MPIAIJ(PetscOptionItems *PetscOptionsObject,Mat A)
+PetscErrorCode MatSetFromOptions_MPIAIJ(Mat A,PetscOptionItems *PetscOptionsObject)
 {
   PetscBool            sc = PETSC_FALSE,flg;
 
@@ -7125,7 +7125,6 @@ PetscErrorCode MatProductSymbolic_MPIAIJBACKEND(Mat C)
       PetscCall(MatAppendOptionsPrefix(mp[cp],pprefix));
       mp[cp]->product->api_user = product->api_user;
       PetscCall(MatProductSetFromOptions(mp[cp]));
-      PetscCheck(mp[cp]->ops->productsymbolic,PetscObjectComm((PetscObject)mp[cp]),PETSC_ERR_PLIB,"Missing symbolic op for %s",MatProductTypes[mp[cp]->product->type]);
       PetscCall((*mp[cp]->ops->productsymbolic)(mp[cp]));
       PetscCall(ISGetIndices(glob,&globidx));
       rmapt[cp] = 1;
@@ -7142,7 +7141,6 @@ PetscErrorCode MatProductSymbolic_MPIAIJBACKEND(Mat C)
       PetscCall(MatAppendOptionsPrefix(mp[cp],pprefix));
       mp[cp]->product->api_user = product->api_user;
       PetscCall(MatProductSetFromOptions(mp[cp]));
-      PetscCheck(mp[cp]->ops->productsymbolic,PetscObjectComm((PetscObject)mp[cp]),PETSC_ERR_PLIB,"Missing symbolic op for %s",MatProductTypes[mp[cp]->product->type]);
       PetscCall((*mp[cp]->ops->productsymbolic)(mp[cp]));
       rmapt[cp] = 1;
       cmapt[cp] = 1;
@@ -7156,7 +7154,6 @@ PetscErrorCode MatProductSymbolic_MPIAIJBACKEND(Mat C)
       PetscCall(MatAppendOptionsPrefix(mp[cp],pprefix));
       mp[cp]->product->api_user = product->api_user;
       PetscCall(MatProductSetFromOptions(mp[cp]));
-      PetscCheck(mp[cp]->ops->productsymbolic,PetscObjectComm((PetscObject)mp[cp]),PETSC_ERR_PLIB,"Missing symbolic op for %s",MatProductTypes[mp[cp]->product->type]);
       PetscCall((*mp[cp]->ops->productsymbolic)(mp[cp]));
       rmapt[cp] = 1;
       cmapt[cp] = 2;
@@ -7179,7 +7176,6 @@ PetscErrorCode MatProductSymbolic_MPIAIJBACKEND(Mat C)
       PetscCall(MatAppendOptionsPrefix(mp[cp],pprefix));
       mp[cp]->product->api_user = product->api_user;
       PetscCall(MatProductSetFromOptions(mp[cp]));
-      PetscCheck(mp[cp]->ops->productsymbolic,PetscObjectComm((PetscObject)mp[cp]),PETSC_ERR_PLIB,"Missing symbolic op for %s",MatProductTypes[mp[cp]->product->type]);
       PetscCall((*mp[cp]->ops->productsymbolic)(mp[cp]));
       rmapt[cp] = 1;
       cmapt[cp] = 2;
@@ -7201,7 +7197,6 @@ PetscErrorCode MatProductSymbolic_MPIAIJBACKEND(Mat C)
       PetscCall(MatAppendOptionsPrefix(mp[cp],pprefix));
       mp[cp]->product->api_user = product->api_user;
       PetscCall(MatProductSetFromOptions(mp[cp]));
-      PetscCheck(mp[cp]->ops->productsymbolic,PetscObjectComm((PetscObject)mp[cp]),PETSC_ERR_PLIB,"Missing symbolic op for %s",MatProductTypes[mp[cp]->product->type]);
       PetscCall((*mp[cp]->ops->productsymbolic)(mp[cp]));
       PetscCall(ISGetIndices(glob,&globidx));
       rmapt[cp] = 2;
@@ -7219,7 +7214,6 @@ PetscErrorCode MatProductSymbolic_MPIAIJBACKEND(Mat C)
       PetscCall(MatAppendOptionsPrefix(mp[cp],pprefix));
       mp[cp]->product->api_user = product->api_user;
       PetscCall(MatProductSetFromOptions(mp[cp]));
-      PetscCheck(mp[cp]->ops->productsymbolic,PetscObjectComm((PetscObject)mp[cp]),PETSC_ERR_PLIB,"Missing symbolic op for %s",MatProductTypes[mp[cp]->product->type]);
       PetscCall((*mp[cp]->ops->productsymbolic)(mp[cp]));
       PetscCall(ISGetIndices(glob,&globidx));
       rmapt[cp] = 1;
@@ -7235,7 +7229,6 @@ PetscErrorCode MatProductSymbolic_MPIAIJBACKEND(Mat C)
       PetscCall(MatAppendOptionsPrefix(mp[cp],pprefix));
       mp[cp]->product->api_user = product->api_user;
       PetscCall(MatProductSetFromOptions(mp[cp]));
-      PetscCheck(mp[cp]->ops->productsymbolic,PetscObjectComm((PetscObject)mp[cp]),PETSC_ERR_PLIB,"Missing symbolic op for %s",MatProductTypes[mp[cp]->product->type]);
       PetscCall((*mp[cp]->ops->productsymbolic)(mp[cp]));
       rmapt[cp] = 2;
       rmapa[cp] = p->garray;
@@ -7257,7 +7250,6 @@ PetscErrorCode MatProductSymbolic_MPIAIJBACKEND(Mat C)
     PetscCall(MatAppendOptionsPrefix(mp[cp],pprefix));
     mp[cp]->product->api_user = product->api_user;
     PetscCall(MatProductSetFromOptions(mp[cp]));
-    PetscCheck(mp[cp]->ops->productsymbolic,PetscObjectComm((PetscObject)mp[cp]),PETSC_ERR_PLIB,"Missing symbolic op for %s",MatProductTypes[mp[cp]->product->type]);
     PetscCall((*mp[cp]->ops->productsymbolic)(mp[cp]));
     PetscCall(ISGetIndices(glob,&globidx));
     rmapt[cp] = 2;
@@ -7279,7 +7271,6 @@ PetscErrorCode MatProductSymbolic_MPIAIJBACKEND(Mat C)
       PetscCall(MatAppendOptionsPrefix(mp[cp],pprefix));
       mp[cp]->product->api_user = product->api_user;
       PetscCall(MatProductSetFromOptions(mp[cp]));
-      PetscCheck(mp[cp]->ops->productsymbolic,PetscObjectComm((PetscObject)mp[cp]),PETSC_ERR_PLIB,"Missing symbolic op for %s",MatProductTypes[mp[cp]->product->type]);
       PetscCall((*mp[cp]->ops->productsymbolic)(mp[cp]));
       mptmp[cp] = PETSC_TRUE;
       cp++;
@@ -7291,7 +7282,6 @@ PetscErrorCode MatProductSymbolic_MPIAIJBACKEND(Mat C)
       PetscCall(MatAppendOptionsPrefix(mp[cp],pprefix));
       mp[cp]->product->api_user = product->api_user;
       PetscCall(MatProductSetFromOptions(mp[cp]));
-      PetscCheck(mp[cp]->ops->productsymbolic,PetscObjectComm((PetscObject)mp[cp]),PETSC_ERR_PLIB,"Missing symbolic op for %s",MatProductTypes[mp[cp]->product->type]);
       PetscCall((*mp[cp]->ops->productsymbolic)(mp[cp]));
       rmapt[cp] = 2;
       rmapa[cp] = globidx;

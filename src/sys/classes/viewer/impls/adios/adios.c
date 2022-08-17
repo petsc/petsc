@@ -4,7 +4,7 @@
 
 #include <petsc/private/vieweradiosimpl.h>
 
-static PetscErrorCode PetscViewerSetFromOptions_ADIOS(PetscOptionItems *PetscOptionsObject,PetscViewer v)
+static PetscErrorCode PetscViewerSetFromOptions_ADIOS(PetscViewer v,PetscOptionItems *PetscOptionsObject)
 {
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject,"ADIOS PetscViewer Options");

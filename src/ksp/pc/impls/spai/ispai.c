@@ -481,7 +481,7 @@ PetscErrorCode  PCSPAISetSp(PC pc,PetscInt sp)
 
 /**********************************************************************/
 
-static PetscErrorCode PCSetFromOptions_SPAI(PetscOptionItems *PetscOptionsObject,PC pc)
+static PetscErrorCode PCSetFromOptions_SPAI(PC pc,PetscOptionItems *PetscOptionsObject)
 {
   PC_SPAI        *ispai = (PC_SPAI*)pc->data;
   int            nbsteps1,max1,maxnew1,block_size1,cache_size,verbose,sp;

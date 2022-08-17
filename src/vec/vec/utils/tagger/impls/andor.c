@@ -93,7 +93,7 @@ PetscErrorCode VecTaggerSetSubs_AndOr(VecTagger tagger, PetscInt nsubs, VecTagge
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecTaggerSetFromOptions_AndOr(PetscOptionItems *PetscOptionsObject,VecTagger tagger)
+static PetscErrorCode VecTaggerSetFromOptions_AndOr(VecTagger tagger,PetscOptionItems *PetscOptionsObject)
 {
   PetscInt       i, nsubs, nsubsOrig;
   const char     *name;

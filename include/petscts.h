@@ -352,7 +352,7 @@ PETSC_EXTERN PetscErrorCode TSComputeCostIntegrand(TS,PetscReal,Vec,Vec);
 PETSC_EXTERN PetscErrorCode TSCreateQuadratureTS(TS,PetscBool,TS*);
 PETSC_EXTERN PetscErrorCode TSGetQuadratureTS(TS,PetscBool*,TS*);
 
-PETSC_EXTERN PetscErrorCode TSAdjointSetFromOptions(PetscOptionItems*,TS);
+PETSC_EXTERN PetscErrorCode TSAdjointSetFromOptions(TS,PetscOptionItems*);
 PETSC_EXTERN PetscErrorCode TSAdjointMonitor(TS,PetscInt,PetscReal,Vec,PetscInt,Vec*,Vec*);
 PETSC_EXTERN PetscErrorCode TSAdjointMonitorSet(TS,PetscErrorCode(*)(TS,PetscInt,PetscReal,Vec,PetscInt,Vec*,Vec*,void*),void *,PetscErrorCode (*)(void**));
 PETSC_EXTERN PetscErrorCode TSAdjointMonitorCancel(TS);
@@ -736,7 +736,7 @@ PETSC_EXTERN PetscErrorCode TSAdaptChoose(TSAdapt,TS,PetscReal,PetscInt*,PetscRe
 PETSC_EXTERN PetscErrorCode TSAdaptCheckStage(TSAdapt,TS,PetscReal,Vec,PetscBool*);
 PETSC_EXTERN PetscErrorCode TSAdaptView(TSAdapt,PetscViewer);
 PETSC_EXTERN PetscErrorCode TSAdaptLoad(TSAdapt,PetscViewer);
-PETSC_EXTERN PetscErrorCode TSAdaptSetFromOptions(PetscOptionItems*,TSAdapt);
+PETSC_EXTERN PetscErrorCode TSAdaptSetFromOptions(TSAdapt,PetscOptionItems*);
 PETSC_EXTERN PetscErrorCode TSAdaptReset(TSAdapt);
 PETSC_EXTERN PetscErrorCode TSAdaptDestroy(TSAdapt*);
 PETSC_EXTERN PetscErrorCode TSAdaptSetMonitor(TSAdapt,PetscBool);
@@ -791,7 +791,7 @@ PETSC_EXTERN PetscErrorCode TSGLLEAdaptSetType(TSGLLEAdapt,TSGLLEAdaptType);
 PETSC_EXTERN PetscErrorCode TSGLLEAdaptSetOptionsPrefix(TSGLLEAdapt,const char[]);
 PETSC_EXTERN PetscErrorCode TSGLLEAdaptChoose(TSGLLEAdapt,PetscInt,const PetscInt[],const PetscReal[],const PetscReal[],PetscInt,PetscReal,PetscReal,PetscInt*,PetscReal*,PetscBool *);
 PETSC_EXTERN PetscErrorCode TSGLLEAdaptView(TSGLLEAdapt,PetscViewer);
-PETSC_EXTERN PetscErrorCode TSGLLEAdaptSetFromOptions(PetscOptionItems*,TSGLLEAdapt);
+PETSC_EXTERN PetscErrorCode TSGLLEAdaptSetFromOptions(TSGLLEAdapt,PetscOptionItems*);
 PETSC_EXTERN PetscErrorCode TSGLLEAdaptDestroy(TSGLLEAdapt*);
 
 /*J

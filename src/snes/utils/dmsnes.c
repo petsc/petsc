@@ -173,7 +173,7 @@ PetscErrorCode DMSNESCopy(DMSNES kdm,DMSNES nkdm)
   */
 
   /* implementation specific copy hooks */
-  if (kdm->ops->duplicate) PetscCall((*kdm->ops->duplicate)(kdm,nkdm));
+  PetscTryTypeMethod(kdm,duplicate,nkdm);
   PetscFunctionReturn(0);
 }
 

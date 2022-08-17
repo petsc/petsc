@@ -679,7 +679,7 @@ PetscErrorCode KSPPIPEGCRGetTruncationType(KSP ksp,KSPFCDTruncationType *truncst
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPSetFromOptions_PIPEGCR(PetscOptionItems *PetscOptionsObject,KSP ksp)
+static PetscErrorCode KSPSetFromOptions_PIPEGCR(KSP ksp,PetscOptionItems *PetscOptionsObject)
 {
   KSP_PIPEGCR    *pipegcr = (KSP_PIPEGCR*)ksp->data;
   PetscInt       mmax,nprealloc;

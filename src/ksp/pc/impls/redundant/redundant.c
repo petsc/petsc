@@ -291,7 +291,7 @@ static PetscErrorCode PCDestroy_Redundant(PC pc)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCSetFromOptions_Redundant(PetscOptionItems *PetscOptionsObject,PC pc)
+static PetscErrorCode PCSetFromOptions_Redundant(PC pc,PetscOptionItems *PetscOptionsObject)
 {
   PC_Redundant   *red = (PC_Redundant*)pc->data;
 

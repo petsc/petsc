@@ -46,7 +46,7 @@ PetscErrorCode DMFieldDestroy(DMField *field)
   if (!*field) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*field),DMFIELD_CLASSID,1);
   if (--((PetscObject)(*field))->refct > 0) {*field = NULL; PetscFunctionReturn(0);}
-  if ((*field)->ops->destroy) PetscCall((*(*field)->ops->destroy)(*field));
+  PetscTryTypeMethod((*field),destroy);
   PetscCall(DMDestroy(&((*field)->dm)));
   PetscCall(PetscHeaderDestroy(field));
   PetscFunctionReturn(0);
@@ -84,7 +84,7 @@ PetscErrorCode DMFieldView(DMField field,PetscViewer viewer)
     PetscCall(DMView(field->dm,viewer));
     PetscCall(PetscViewerPopFormat(viewer));
   }
-  if (field->ops->view) PetscCall((*field->ops->view)(field,viewer));
+  PetscTryTypeMethod(field,view,viewer);
   if (iascii) PetscCall(PetscViewerASCIIPopTab(viewer));
   PetscFunctionReturn(0);
 }
@@ -123,7 +123,7 @@ PetscErrorCode DMFieldSetType(DMField field,DMFieldType type)
   PetscCall(PetscFunctionListFind(DMFieldList,type,&r));
   PetscCheck(r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested DMField type %s",type);
   /* Destroy the previous private DMField context */
-  if (field->ops->destroy) PetscCall((*(field)->ops->destroy)(field));
+  PetscTryTypeMethod(field,destroy);
 
   PetscCall(PetscMemzero(field->ops,sizeof(*field->ops)));
   PetscCall(PetscObjectChangeTypeName((PetscObject)field,type));
@@ -392,7 +392,7 @@ PetscErrorCode DMFieldCreateDefaultQuadrature(DMField field, IS pointIS, PetscQu
   PetscValidPointer(quad,3);
 
   *quad = NULL;
-  if (field->ops->createDefaultQuadrature) PetscCall((*field->ops->createDefaultQuadrature)(field, pointIS, quad));
+  PetscTryTypeMethod(field,createDefaultQuadrature, pointIS, quad);
   PetscFunctionReturn(0);
 }
 
@@ -503,7 +503,6 @@ PetscErrorCode DMFieldCreateFEGeom(DMField field, IS pointIS, PetscQuadrature qu
   PetscCall(DMFieldGetDegree(field,pointIS,NULL,&maxDegree));
   g->isAffine = (maxDegree <= 1) ? PETSC_TRUE : PETSC_FALSE;
   if (faceData) {
-    PetscCheck(field->ops->computeFaceData,PETSC_COMM_SELF, PETSC_ERR_PLIB, "DMField implementation does not compute face data");
     PetscCall((*field->ops->computeFaceData) (field, pointIS, quad, g));
   }
   *geom = g;

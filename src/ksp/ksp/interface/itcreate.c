@@ -66,7 +66,7 @@ PetscErrorCode  KSPLoad(KSP newdm, PetscViewer viewer)
   PetscCheck(classid == KSP_FILE_CLASSID,PetscObjectComm((PetscObject)newdm),PETSC_ERR_ARG_WRONG,"Not KSP next in file");
   PetscCall(PetscViewerBinaryRead(viewer,type,256,NULL,PETSC_CHAR));
   PetscCall(KSPSetType(newdm, type));
-  if (newdm->ops->load) PetscCall((*newdm->ops->load)(newdm,viewer));
+  PetscTryTypeMethod(newdm,load,viewer);
   PetscCall(KSPGetPC(newdm,&pc));
   PetscCall(PCLoad(pc,viewer));
   PetscFunctionReturn(0);
@@ -133,11 +133,9 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
 #endif
   if (iascii) {
     PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)ksp,viewer));
-    if (ksp->ops->view) {
-      PetscCall(PetscViewerASCIIPushTab(viewer));
-      PetscCall((*ksp->ops->view)(ksp,viewer));
-      PetscCall(PetscViewerASCIIPopTab(viewer));
-    }
+    PetscCall(PetscViewerASCIIPushTab(viewer));
+    PetscTryTypeMethod(ksp,view ,viewer);
+    PetscCall(PetscViewerASCIIPopTab(viewer));
     if (ksp->guess_zero) {
       PetscCall(PetscViewerASCIIPrintf(viewer,"  maximum iterations=%" PetscInt_FMT ", initial guess is zero\n",ksp->max_it));
     } else {
@@ -172,12 +170,12 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
       PetscCall(PetscStrncpy(type,((PetscObject)ksp)->type_name,256));
       PetscCall(PetscViewerBinaryWrite(viewer,type,256,PETSC_CHAR));
     }
-    if (ksp->ops->view) PetscCall((*ksp->ops->view)(ksp,viewer));
+    PetscTryTypeMethod(ksp,view,viewer);
   } else if (isstring) {
     const char *type;
     PetscCall(KSPGetType(ksp,&type));
     PetscCall(PetscViewerStringSPrintf(viewer," KSPType: %-7.7s",type));
-    if (ksp->ops->view) PetscCall((*ksp->ops->view)(ksp,viewer));
+    PetscTryTypeMethod(ksp,view,viewer);
   } else if (isdraw) {
     PetscDraw draw;
     char      str[36];
@@ -216,7 +214,7 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
       PetscCallSAWs(SAWs_Register,(dir,ksp->res_hist,10,SAWs_READ,SAWs_DOUBLE));
     }
 #endif
-  } else if (ksp->ops->view) PetscCall((*ksp->ops->view)(ksp,viewer));
+  } else PetscTryTypeMethod(ksp,view,viewer);
   if (ksp->pc) PetscCall(PCView(ksp->pc,viewer));
   if (isdraw) {
     PetscDraw draw;
@@ -775,10 +773,9 @@ PetscErrorCode  KSPSetType(KSP ksp, KSPType type)
   PetscCall(PetscFunctionListFind(KSPList,type,&r));
   PetscCheck(r,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested KSP type %s",type);
   /* Destroy the previous private KSP context */
-  if (ksp->ops->destroy) {
-    PetscCall((*ksp->ops->destroy)(ksp));
-    ksp->ops->destroy = NULL;
-  }
+  PetscTryTypeMethod(ksp,destroy);
+  ksp->ops->destroy = NULL;
+
   /* Reinitialize function pointers in KSPOps structure */
   PetscCall(PetscMemzero(ksp->ops,sizeof(struct _KSPOps)));
   ksp->ops->buildsolution = KSPBuildSolutionDefault;

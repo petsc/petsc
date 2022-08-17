@@ -1153,7 +1153,7 @@ static PetscErrorCode TSSetUp_ARKIMEX(TS ts)
 }
 /*------------------------------------------------------------*/
 
-static PetscErrorCode TSSetFromOptions_ARKIMEX(PetscOptionItems *PetscOptionsObject,TS ts)
+static PetscErrorCode TSSetFromOptions_ARKIMEX(TS ts,PetscOptionItems *PetscOptionsObject)
 {
   TS_ARKIMEX     *ark = (TS_ARKIMEX*)ts->data;
 

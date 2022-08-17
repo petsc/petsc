@@ -179,7 +179,7 @@ static PetscErrorCode SNESSetUp_NASM(SNES snes)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESSetFromOptions_NASM(PetscOptionItems *PetscOptionsObject,SNES snes)
+static PetscErrorCode SNESSetFromOptions_NASM(SNES snes,PetscOptionItems *PetscOptionsObject)
 {
   PCASMType         asmtype;
   PetscBool         flg,monflg;
@@ -771,7 +771,7 @@ static PetscErrorCode SNESSolve_NASM(SNES snes)
     PetscCall(SNESMonitor(snes,0,snes->norm));
 
     /* test convergence */
-    PetscCall((*snes->ops->converged)(snes,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP));
+    PetscUseTypeMethod(snes,converged ,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP);
     if (snes->reason) PetscFunctionReturn(0);
   } else {
     PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
@@ -780,7 +780,7 @@ static PetscErrorCode SNESSolve_NASM(SNES snes)
   }
 
   /* Call general purpose update function */
-  if (snes->ops->update) PetscCall((*snes->ops->update)(snes, snes->iter));
+  PetscTryTypeMethod(snes,update, snes->iter);
   /* copy the initial solution over for later */
   if (nasm->fjtype == 2) PetscCall(VecCopy(X,nasm->xinit));
 
@@ -799,10 +799,10 @@ static PetscErrorCode SNESSolve_NASM(SNES snes)
     PetscCall(SNESLogConvergenceHistory(snes,snes->norm,0));
     PetscCall(SNESMonitor(snes,snes->iter,snes->norm));
     /* Test for convergence */
-    if (normschedule == SNES_NORM_ALWAYS) PetscCall((*snes->ops->converged)(snes,snes->iter,0.0,0.0,fnorm,&snes->reason,snes->cnvP));
+    if (normschedule == SNES_NORM_ALWAYS) PetscUseTypeMethod(snes,converged ,snes->iter,0.0,0.0,fnorm,&snes->reason,snes->cnvP);
     if (snes->reason) break;
     /* Call general purpose update function */
-    if (snes->ops->update) PetscCall((*snes->ops->update)(snes, snes->iter));
+    PetscTryTypeMethod(snes,update, snes->iter);
   }
   if (nasm->finaljacobian) {
     PetscCall(SNESNASMComputeFinalJacobian_Private(snes,X));

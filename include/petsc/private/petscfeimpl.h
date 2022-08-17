@@ -24,7 +24,7 @@ PETSC_EXTERN PetscLogEvent PETSCFE_SetUp;
 
 typedef struct _PetscSpaceOps *PetscSpaceOps;
 struct _PetscSpaceOps {
-  PetscErrorCode (*setfromoptions)(PetscOptionItems*,PetscSpace);
+  PetscErrorCode (*setfromoptions)(PetscSpace,PetscOptionItems*);
   PetscErrorCode (*setup)(PetscSpace);
   PetscErrorCode (*view)(PetscSpace,PetscViewer);
   PetscErrorCode (*destroy)(PetscSpace);
@@ -85,7 +85,7 @@ typedef struct {
 
 typedef struct _PetscDualSpaceOps *PetscDualSpaceOps;
 struct _PetscDualSpaceOps {
-  PetscErrorCode (*setfromoptions)(PetscOptionItems*,PetscDualSpace);
+  PetscErrorCode (*setfromoptions)(PetscDualSpace,PetscOptionItems*);
   PetscErrorCode (*setup)(PetscDualSpace);
   PetscErrorCode (*view)(PetscDualSpace,PetscViewer);
   PetscErrorCode (*destroy)(PetscDualSpace);
@@ -177,7 +177,7 @@ typedef struct {
 
 typedef struct _PetscFEOps *PetscFEOps;
 struct _PetscFEOps {
-  PetscErrorCode (*setfromoptions)(PetscOptionItems*,PetscFE);
+  PetscErrorCode (*setfromoptions)(PetscFE,PetscOptionItems*);
   PetscErrorCode (*setup)(PetscFE);
   PetscErrorCode (*view)(PetscFE,PetscViewer);
   PetscErrorCode (*destroy)(PetscFE);

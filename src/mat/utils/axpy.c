@@ -81,7 +81,7 @@ PetscErrorCode MatAXPY(Mat Y,PetscScalar a,Mat X,MatStructure str)
   PetscCall(PetscStrcmp(t1,t2,&sametype));
   PetscCall(PetscLogEventBegin(MAT_AXPY,Y,0,0,0));
   if (Y->ops->axpy && (sametype || X->ops->axpy == Y->ops->axpy)) {
-    PetscCall((*Y->ops->axpy)(Y,a,X,str));
+    PetscUseTypeMethod(Y,axpy,a,X,str);
   } else {
     PetscCall(PetscStrcmp(t1,MATTRANSPOSEMAT,&transpose));
     if (transpose) {
@@ -298,7 +298,7 @@ PetscErrorCode  MatShift(Mat Y,PetscScalar a)
   MatCheckPreallocated(Y,1);
   if (a == 0.0) PetscFunctionReturn(0);
 
-  if (Y->ops->shift) PetscCall((*Y->ops->shift)(Y,a));
+  if (Y->ops->shift) PetscUseTypeMethod(Y,shift,a);
   else PetscCall(MatShift_Basic(Y,a));
 
   PetscCall(PetscObjectStateIncrease((PetscObject)Y));
@@ -353,11 +353,8 @@ PetscErrorCode  MatDiagonalSet(Mat Y,Vec D,InsertMode is)
   PetscCall(MatGetLocalSize(Y,&matlocal,NULL));
   PetscCall(VecGetLocalSize(D,&veclocal));
   PetscCheck(matlocal == veclocal,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number local rows of matrix %" PetscInt_FMT " does not match that of vector for diagonal %" PetscInt_FMT,matlocal,veclocal);
-  if (Y->ops->diagonalset) {
-    PetscCall((*Y->ops->diagonalset)(Y,D,is));
-  } else {
-    PetscCall(MatDiagonalSet_Default(Y,D,is));
-  }
+  if (Y->ops->diagonalset) PetscUseTypeMethod(Y,diagonalset,D,is);
+  else PetscCall(MatDiagonalSet_Default(Y,D,is));
   PetscCall(PetscObjectStateIncrease((PetscObject)Y));
   PetscFunctionReturn(0);
 }

@@ -277,7 +277,7 @@ skip_merge_mvctx:
 
     for (cur=shell->head,tot=i=0; cur; cur=cur->next,i++) { /* i-th matrix */
       PetscCall(MatMPIAIJGetSeqAIJ(cur->mat,&A,&B,NULL));
-      PetscCall((*A->ops->mult)(A,in,y2));
+      PetscUseTypeMethod(A,mult ,in,y2);
       PetscCall(MatGetLocalSize(B,NULL,&n));
       PetscCall(VecPlaceArray(shell->lvecs[i],&shell->larray[tot]));
       PetscCall((*B->ops->multadd)(B,shell->lvecs[i],y2,y2));
@@ -443,7 +443,7 @@ PetscErrorCode MatDiagonalScale_Composite(Mat inA,Vec left,Vec right)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatSetFromOptions_Composite(PetscOptionItems *PetscOptionsObject,Mat A)
+PetscErrorCode MatSetFromOptions_Composite(Mat A,PetscOptionItems *PetscOptionsObject)
 {
   Mat_Composite  *a = (Mat_Composite*)A->data;
 

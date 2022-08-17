@@ -138,15 +138,13 @@ PetscErrorCode  MatSetType(Mat mat, MatType matype)
     PetscCall(MatConvert(mat,matype,MAT_INPLACE_MATRIX,&mat));
     PetscFunctionReturn(0);
   }
-  if (mat->ops->destroy) {
-    /* free the old data structure if it existed */
-    PetscCall((*mat->ops->destroy)(mat));
-    mat->ops->destroy = NULL;
+  PetscTryTypeMethod(mat,destroy);
+  mat->ops->destroy = NULL;
 
-    /* should these null spaces be removed? */
-    PetscCall(MatNullSpaceDestroy(&mat->nullsp));
-    PetscCall(MatNullSpaceDestroy(&mat->nearnullsp));
-  }
+  /* should these null spaces be removed? */
+  PetscCall(MatNullSpaceDestroy(&mat->nullsp));
+  PetscCall(MatNullSpaceDestroy(&mat->nearnullsp));
+
   PetscCall(PetscMemzero(mat->ops,sizeof(struct _MatOps)));
   mat->preallocated  = PETSC_FALSE;
   mat->assembled     = PETSC_FALSE;

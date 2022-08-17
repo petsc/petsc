@@ -199,7 +199,7 @@ PetscErrorCode DMPlexTransformSetType(DMPlexTransform tr, DMPlexTransformType me
   PetscCall(PetscFunctionListFind(DMPlexTransformList, method, &r));
   PetscCheck(r,PetscObjectComm((PetscObject) tr), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown DMPlexTransform type: %s", method);
 
-  if (tr->ops->destroy) PetscCall((*tr->ops->destroy)(tr));
+  PetscTryTypeMethod(tr,destroy);
   PetscCall(PetscMemzero(tr->ops, sizeof(*tr->ops)));
   PetscCall(PetscObjectChangeTypeName((PetscObject) tr, method));
   PetscCall((*r)(tr));
@@ -306,7 +306,7 @@ PetscErrorCode DMPlexTransformView(DMPlexTransform tr, PetscViewer v)
   PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject) tr, v));
   PetscCall(PetscObjectTypeCompare((PetscObject) v, PETSCVIEWERASCII, &isascii));
   if (isascii) PetscCall(DMPlexTransformView_Ascii(tr, v));
-  if (tr->ops->view) PetscCall((*tr->ops->view)(tr, v));
+  PetscTryTypeMethod(tr,view, v);
   PetscFunctionReturn(0);
 }
 
@@ -337,9 +337,9 @@ PetscErrorCode DMPlexTransformSetFromOptions(DMPlexTransform tr)
   PetscCall(PetscOptionsFList("-dm_plex_transform_type", "DMPlexTransform", "DMPlexTransformSetType", DMPlexTransformList, defName, typeName, 1024, &flg));
   if (flg) PetscCall(DMPlexTransformSetType(tr, typeName));
   else if (!((PetscObject) tr)->type_name) PetscCall(DMPlexTransformSetType(tr, defName));
-  if (tr->ops->setfromoptions) PetscCall((*tr->ops->setfromoptions)(PetscOptionsObject,tr));
+  PetscTryTypeMethod(tr,setfromoptions,PetscOptionsObject);
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
-  PetscCall(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject) tr));
+  PetscCall(PetscObjectProcessOptionsHandlers((PetscObject) tr,PetscOptionsObject));
   PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
@@ -513,7 +513,7 @@ PetscErrorCode DMPlexTransformSetUp(DMPlexTransform tr)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
   if (tr->setupcalled) PetscFunctionReturn(0);
-  if (tr->ops->setup) PetscCall((*tr->ops->setup)(tr));
+  PetscTryTypeMethod(tr,setup);
   PetscCall(DMPlexTransformGetDM(tr, &dm));
   PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
   if (pEnd > pStart) {
@@ -675,9 +675,8 @@ static PetscErrorCode DMPlexTransformGetCoordinateFE(DMPlexTransform tr, DMPolyt
 PetscErrorCode DMPlexTransformSetDimensions(DMPlexTransform tr, DM dm, DM tdm)
 {
   PetscFunctionBegin;
-  if (tr->ops->setdimensions) {
-    PetscCall((*tr->ops->setdimensions)(tr, dm, tdm));
-  } else {
+  if (tr->ops->setdimensions) PetscUseTypeMethod(tr,setdimensions , dm, tdm);
+  else {
     PetscInt dim, cdim;
 
     PetscCall(DMGetDimension(dm, &dim));
@@ -878,7 +877,7 @@ $   ornt   = {                         0,                       0,              
 PetscErrorCode DMPlexTransformCellTransform(DMPlexTransform tr, DMPolytopeType source, PetscInt p, PetscInt *rt, PetscInt *Nt, DMPolytopeType *target[], PetscInt *size[], PetscInt *cone[], PetscInt *ornt[])
 {
   PetscFunctionBegin;
-  PetscCall((*tr->ops->celltransform)(tr, source, p, rt, Nt, target, size, cone, ornt));
+  PetscUseTypeMethod(tr,celltransform , source, p, rt, Nt, target, size, cone, ornt);
   PetscFunctionReturn(0);
 }
 
@@ -992,7 +991,7 @@ PetscErrorCode DMPlexTransformCellTransformIdentity(DMPlexTransform tr, DMPolyto
 PetscErrorCode DMPlexTransformGetSubcellOrientation(DMPlexTransform tr, DMPolytopeType sct, PetscInt sp, PetscInt so, DMPolytopeType tct, PetscInt r, PetscInt o, PetscInt *rnew, PetscInt *onew)
 {
   PetscFunctionBeginHot;
-  PetscCall((*tr->ops->getsubcellorientation)(tr, sct, sp, so, tct, r, o, rnew, onew));
+  PetscUseTypeMethod(tr,getsubcellorientation , sct, sp, so, tct, r, o, rnew, onew);
   PetscFunctionReturn(0);
 }
 
@@ -1422,7 +1421,7 @@ PetscErrorCode DMPlexTransformMapCoordinatesBarycenter_Internal(DMPlexTransform 
 PetscErrorCode DMPlexTransformMapCoordinates(DMPlexTransform tr, DMPolytopeType pct, DMPolytopeType ct, PetscInt p, PetscInt r, PetscInt Nv, PetscInt dE, const PetscScalar in[], PetscScalar out[])
 {
   PetscFunctionBeginHot;
-  PetscCall((*tr->ops->mapcoordinates)(tr, pct, ct, p, r, Nv, dE, in, out));
+  PetscUseTypeMethod(tr,mapcoordinates , pct, ct, p, r, Nv, dE, in, out);
   PetscFunctionReturn(0);
 }
 

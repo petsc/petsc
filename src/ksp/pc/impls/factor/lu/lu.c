@@ -18,7 +18,7 @@ PetscErrorCode PCFactorReorderForNonzeroDiagonal_LU(PC pc,PetscReal z)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCSetFromOptions_LU(PetscOptionItems *PetscOptionsObject,PC pc)
+static PetscErrorCode PCSetFromOptions_LU(PC pc,PetscOptionItems *PetscOptionsObject)
 {
   PC_LU          *lu = (PC_LU*)pc->data;
   PetscBool      flg = PETSC_FALSE;
@@ -26,7 +26,7 @@ static PetscErrorCode PCSetFromOptions_LU(PetscOptionItems *PetscOptionsObject,P
 
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject,"LU options");
-  PetscCall(PCSetFromOptions_Factor(PetscOptionsObject,pc));
+  PetscCall(PCSetFromOptions_Factor(pc,PetscOptionsObject));
 
   PetscCall(PetscOptionsName("-pc_factor_nonzeros_along_diagonal","Reorder to remove zeros from diagonal","PCFactorReorderForNonzeroDiagonal",&flg));
   if (flg) {

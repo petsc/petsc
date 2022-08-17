@@ -92,7 +92,7 @@ PetscErrorCode SNESSetUp_NGMRES(SNES snes)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SNESSetFromOptions_NGMRES(PetscOptionItems *PetscOptionsObject,SNES snes)
+PetscErrorCode SNESSetFromOptions_NGMRES(SNES snes,PetscOptionItems *PetscOptionsObject)
 {
   SNES_NGMRES    *ngmres = (SNES_NGMRES*) snes->data;
   PetscBool      debug = PETSC_FALSE;
@@ -213,7 +213,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
   PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
   PetscCall(SNESLogConvergenceHistory(snes,fnorm,0));
   PetscCall(SNESMonitor(snes,0,fnorm));
-  PetscCall((*snes->ops->converged)(snes,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP));
+  PetscUseTypeMethod(snes,converged ,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP);
   if (snes->reason) PetscFunctionReturn(0);
   SNESNGMRESUpdateSubspace_Private(snes,0,0,F,fnorm,X);
 
@@ -316,7 +316,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
     PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
     PetscCall(SNESLogConvergenceHistory(snes,snes->norm,snes->iter));
     PetscCall(SNESMonitor(snes,snes->iter,snes->norm));
-    PetscCall((*snes->ops->converged)(snes,snes->iter,0,0,fnorm,&snes->reason,snes->cnvP));
+    PetscUseTypeMethod(snes,converged ,snes->iter,0,0,fnorm,&snes->reason,snes->cnvP);
     if (snes->reason) PetscFunctionReturn(0);
   }
   snes->reason = SNES_DIVERGED_MAX_IT;

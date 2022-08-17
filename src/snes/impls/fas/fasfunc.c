@@ -90,7 +90,7 @@ PetscErrorCode SNESFASSetLevels(SNES snes, PetscInt levels, MPI_Comm *comms)
     if (!comms) PetscFunctionReturn(0);
   }
   /* user has changed the number of levels; reset */
-  PetscCall((*snes->ops->reset)(snes));
+  PetscUseTypeMethod(snes,reset);
   /* destroy any coarser levels if necessary */
   PetscCall(SNESDestroy(&fas->next));
   fas->next     = NULL;

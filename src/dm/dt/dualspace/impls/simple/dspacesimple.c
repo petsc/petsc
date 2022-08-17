@@ -47,7 +47,7 @@ static PetscErrorCode PetscDualSpaceDuplicate_Simple(PetscDualSpace sp, PetscDua
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscDualSpaceSetFromOptions_Simple(PetscOptionItems *PetscOptionsObject,PetscDualSpace sp)
+static PetscErrorCode PetscDualSpaceSetFromOptions_Simple(PetscDualSpace sp,PetscOptionItems *PetscOptionsObject)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);

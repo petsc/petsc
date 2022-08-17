@@ -306,7 +306,7 @@ static PetscErrorCode TSDestroy_BasicSymplectic(TS ts)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSSetFromOptions_BasicSymplectic(PetscOptionItems *PetscOptionsObject,TS ts)
+static PetscErrorCode TSSetFromOptions_BasicSymplectic(TS ts,PetscOptionItems *PetscOptionsObject)
 {
   TS_BasicSymplectic *bsymp = (TS_BasicSymplectic*)ts->data;
 

@@ -61,11 +61,11 @@ static PetscErrorCode TaoSolve_SSILS(Tao tao)
     /* Check the termination criteria */
     PetscCall(TaoLogConvergenceHistory(tao,ssls->merit,ndpsi,0.0,tao->ksp_its));
     PetscCall(TaoMonitor(tao,tao->niter,ssls->merit,ndpsi,0.0,t));
-    PetscCall((*tao->ops->convergencetest)(tao,tao->cnvP));
+    PetscUseTypeMethod(tao,convergencetest ,tao->cnvP);
     if (tao->reason!=TAO_CONTINUE_ITERATING) break;
 
     /* Call general purpose update function */
-    if (tao->ops->update) PetscCall((*tao->ops->update)(tao, tao->niter, tao->user_update));
+    PetscTryTypeMethod(tao,update, tao->niter, tao->user_update);
     tao->niter++;
 
     /* Calculate direction.  (Really negative of newton direction.  Therefore,

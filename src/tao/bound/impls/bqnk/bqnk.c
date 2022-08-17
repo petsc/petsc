@@ -118,14 +118,14 @@ PetscErrorCode TaoSetUp_BQNK(Tao tao)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoSetFromOptions_BQNK(PetscOptionItems *PetscOptionsObject,Tao tao)
+static PetscErrorCode TaoSetFromOptions_BQNK(Tao tao,PetscOptionItems *PetscOptionsObject)
 {
   TAO_BNK   *bnk = (TAO_BNK *)tao->data;
   TAO_BQNK  *bqnk = (TAO_BQNK*)bnk->ctx;
   PetscBool is_set;
 
   PetscFunctionBegin;
-  PetscCall(TaoSetFromOptions_BNK(PetscOptionsObject,tao));
+  PetscCall(TaoSetFromOptions_BNK(tao,PetscOptionsObject));
   if (bnk->init_type == BNK_INIT_INTERPOLATION) bnk->init_type = BNK_INIT_DIRECTION;
   PetscCall(MatSetOptionsPrefix(bqnk->B, ((PetscObject)tao)->prefix));
   PetscCall(MatAppendOptionsPrefix(bqnk->B, "tao_bqnk_"));

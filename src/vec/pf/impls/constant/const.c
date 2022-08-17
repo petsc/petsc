@@ -40,7 +40,7 @@ static PetscErrorCode PFDestroy_Constant(void *value)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PFSetFromOptions_Constant(PetscOptionItems *PetscOptionsObject,PF pf)
+static PetscErrorCode PFSetFromOptions_Constant(PF pf,PetscOptionItems *PetscOptionsObject)
 {
   PetscScalar    *value = (PetscScalar*)pf->data;
 

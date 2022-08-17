@@ -354,9 +354,8 @@ PetscErrorCode DMAdaptorTransferSolution(DMAdaptor adaptor, DM dm, Vec x, DM adm
 
   PetscFunctionBegin;
   PetscCall(DMGetApplicationContext(dm, &ctx));
-  if (adaptor->ops->transfersolution) {
-    PetscCall((*adaptor->ops->transfersolution)(adaptor, dm, x, adm, ax, ctx));
-  } else {
+  if (adaptor->ops->transfersolution) PetscUseTypeMethod(adaptor,transfersolution , dm, x, adm, ax, ctx);
+  else {
     switch (adaptor->adaptCriterion) {
     case DM_ADAPTATION_LABEL:
       PetscCall(DMForestTransferVec(dm, x, adm, ax, PETSC_TRUE, time));
@@ -458,7 +457,7 @@ static PetscErrorCode DMAdaptorComputeErrorIndicator_Private(DMAdaptor adaptor, 
     PetscCall(DMPlexPointLocalRead(plex, cell, pointSols, (void *) &pointSol));
     PetscCall(DMPlexPointLocalRead(adaptor->gradDM, cell, adaptor->cellGradArray, (void *) &pointGrad));
     PetscCall(DMPlexPointLocalRead(adaptor->cellDM, cell, adaptor->cellGeomArray, &cg));
-    PetscCall((*adaptor->ops->computeerrorindicator)(adaptor, dim, Nc, pointSol, pointGrad, cg, errInd, ctx));
+    PetscUseTypeMethod(adaptor,computeerrorindicator , dim, Nc, pointSol, pointGrad, cg, errInd, ctx);
     PetscCall(VecRestoreArrayRead(locX, &pointSols));
   } else {
     PetscScalar     *x = NULL, *field, *gradient, *interpolant, *interpolantGrad;
@@ -505,7 +504,7 @@ static PetscErrorCode DMAdaptorComputeErrorIndicator_Private(DMAdaptor adaptor, 
       field[fc] /= cg.volume;
       for (d = 0; d < cdim; ++d) gradient[fc*cdim+d] /= cg.volume;
     }
-    PetscCall((*adaptor->ops->computeerrorindicator)(adaptor, dim, Nc, field, gradient, &cg, errInd, ctx));
+    PetscUseTypeMethod(adaptor,computeerrorindicator , dim, Nc, field, gradient, &cg, errInd, ctx);
     PetscCall(PetscFree6(field,gradient,coords,fegeom.detJ,fegeom.J,fegeom.invJ));
   }
   PetscFunctionReturn(0);

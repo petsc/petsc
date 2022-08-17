@@ -419,12 +419,10 @@ PetscErrorCode  PetscViewerSetType(PetscViewer viewer,PetscViewerType type)
   if (match) PetscFunctionReturn(0);
 
   /* cleanup any old type that may be there */
-  if (viewer->data) {
-    PetscCall((*viewer->ops->destroy)(viewer));
+  PetscTryTypeMethod(viewer,destroy);
+  viewer->ops->destroy = NULL;
+  viewer->data         = NULL;
 
-    viewer->ops->destroy = NULL;
-    viewer->data         = NULL;
-  }
   PetscCall(PetscMemzero(viewer->ops,sizeof(struct _PetscViewerOps)));
 
   PetscCall(PetscFunctionListFind(PetscViewerList,type,&r));
@@ -503,10 +501,10 @@ PetscErrorCode  PetscViewerSetFromOptions(PetscViewer viewer)
   if (!((PetscObject)viewer)->type_name) {
     PetscCall(PetscViewerSetType(viewer,PETSCVIEWERASCII));
   }
-  if (viewer->ops->setfromoptions) PetscCall((*viewer->ops->setfromoptions)(PetscOptionsObject,viewer));
+  PetscTryTypeMethod(viewer,setfromoptions,PetscOptionsObject);
 
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
-  PetscCall(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)viewer));
+  PetscCall(PetscObjectProcessOptionsHandlers((PetscObject)viewer,PetscOptionsObject));
   PetscCall(PetscViewerViewFromOptions(viewer,NULL,"-viewer_view"));
   PetscOptionsEnd();
   PetscFunctionReturn(0);

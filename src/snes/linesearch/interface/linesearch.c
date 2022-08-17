@@ -240,7 +240,7 @@ PetscErrorCode SNESLineSearchSetUp(SNESLineSearch linesearch)
     if (!linesearch->vec_func_new) {
       PetscCall(VecDuplicate(linesearch->vec_sol, &linesearch->vec_func_new));
     }
-    if (linesearch->ops->setup) PetscCall((*linesearch->ops->setup)(linesearch));
+    if (linesearch->ops->setup) PetscUseTypeMethod(linesearch,setup);
     if (!linesearch->ops->snesfunc) PetscCall(SNESLineSearchSetFunction(linesearch,SNESComputeFunction));
     linesearch->lambda      = linesearch->damping;
     linesearch->setupcalled = PETSC_TRUE;
@@ -267,7 +267,7 @@ PetscErrorCode SNESLineSearchSetUp(SNESLineSearch linesearch)
 PetscErrorCode SNESLineSearchReset(SNESLineSearch linesearch)
 {
   PetscFunctionBegin;
-  if (linesearch->ops->reset) PetscCall((*linesearch->ops->reset)(linesearch));
+  if (linesearch->ops->reset) PetscUseTypeMethod(linesearch,reset);
 
   PetscCall(VecDestroy(&linesearch->vec_sol_new));
   PetscCall(VecDestroy(&linesearch->vec_func_new));
@@ -434,7 +434,7 @@ PetscErrorCode SNESLineSearchPreCheck(SNESLineSearch linesearch,Vec X,Vec Y,Pets
   PetscFunctionBegin;
   *changed = PETSC_FALSE;
   if (linesearch->ops->precheck) {
-    PetscCall((*linesearch->ops->precheck)(linesearch, X, Y, changed, linesearch->precheckctx));
+    PetscUseTypeMethod(linesearch,precheck , X, Y, changed, linesearch->precheckctx);
     PetscValidLogicalCollectiveBool(linesearch,*changed,4);
   }
   PetscFunctionReturn(0);
@@ -465,7 +465,7 @@ PetscErrorCode SNESLineSearchPostCheck(SNESLineSearch linesearch,Vec X,Vec Y,Vec
   *changed_Y = PETSC_FALSE;
   *changed_W = PETSC_FALSE;
   if (linesearch->ops->postcheck) {
-    PetscCall((*linesearch->ops->postcheck)(linesearch,X,Y,W,changed_Y,changed_W,linesearch->postcheckctx));
+    PetscUseTypeMethod(linesearch,postcheck ,X,Y,W,changed_Y,changed_W,linesearch->postcheckctx);
     PetscValidLogicalCollectiveBool(linesearch,*changed_Y,5);
     PetscValidLogicalCollectiveBool(linesearch,*changed_W,6);
   }
@@ -614,7 +614,7 @@ PetscErrorCode SNESLineSearchApply(SNESLineSearch linesearch, Vec X, Vec F, Pets
 
   PetscCall(PetscLogEventBegin(SNESLINESEARCH_Apply,linesearch,X,F,Y));
 
-  PetscCall((*linesearch->ops->apply)(linesearch));
+  PetscUseTypeMethod(linesearch,apply);
 
   PetscCall(PetscLogEventEnd(SNESLINESEARCH_Apply,linesearch,X,F,Y));
 
@@ -829,9 +829,9 @@ PetscErrorCode SNESLineSearchSetFromOptions(SNESLineSearch linesearch)
   PetscCall(PetscOptionsInt("-snes_linesearch_order","Order of approximation used in the line search","SNESLineSearchSetOrder",linesearch->order,&linesearch->order,NULL));
   PetscCall(PetscOptionsBool("-snes_linesearch_norms","Compute final norms in line search","SNESLineSearchSetComputeNorms",linesearch->norms,&linesearch->norms,NULL));
 
-  if (linesearch->ops->setfromoptions) PetscCall((*linesearch->ops->setfromoptions)(PetscOptionsObject,linesearch));
+  PetscTryTypeMethod(linesearch,setfromoptions,PetscOptionsObject);
 
-  PetscCall(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)linesearch));
+  PetscCall(PetscObjectProcessOptionsHandlers((PetscObject)linesearch,PetscOptionsObject));
   PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
@@ -863,11 +863,9 @@ PetscErrorCode SNESLineSearchView(SNESLineSearch linesearch, PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
     PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)linesearch,viewer));
-    if (linesearch->ops->view) {
-      PetscCall(PetscViewerASCIIPushTab(viewer));
-      PetscCall((*linesearch->ops->view)(linesearch,viewer));
-      PetscCall(PetscViewerASCIIPopTab(viewer));
-    }
+    PetscCall(PetscViewerASCIIPushTab(viewer));
+    PetscTryTypeMethod(linesearch,view ,viewer);
+    PetscCall(PetscViewerASCIIPopTab(viewer));
     PetscCall(PetscViewerASCIIPrintf(viewer,"  maxstep=%e, minlambda=%e\n", (double)linesearch->maxstep,(double)linesearch->steptol));
     PetscCall(PetscViewerASCIIPrintf(viewer,"  tolerances: relative=%e, absolute=%e, lambda=%e\n", (double)linesearch->rtol,(double)linesearch->atol,(double)linesearch->ltol));
     PetscCall(PetscViewerASCIIPrintf(viewer,"  maximum iterations=%" PetscInt_FMT "\n", linesearch->max_its));

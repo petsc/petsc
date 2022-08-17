@@ -463,14 +463,13 @@ static PetscErrorCode DMPlexTransformMapCoordinates_BL(DMPlexTransform tr, DMPol
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexTransformSetFromOptions_BL(PetscOptionItems *PetscOptionsObject, DMPlexTransform tr)
+static PetscErrorCode DMPlexTransformSetFromOptions_BL(DMPlexTransform tr,PetscOptionItems *PetscOptionsObject)
 {
   DMPlexRefine_BL *bl = (DMPlexRefine_BL *) tr->data;
   PetscInt         cells[256], n = 256, i;
   PetscBool        flg;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 2);
   PetscOptionsHeadBegin(PetscOptionsObject,"DMPlexTransform Boundary Layer Options");
   PetscCall(PetscOptionsBoundedInt("-dm_plex_transform_bl_splits", "Number of divisions of a cell", "", bl->n, &bl->n, NULL, 1));
   PetscCall(PetscOptionsReal("-dm_plex_transform_bl_height_factor", "Factor increase for height at each division", "", bl->r, &bl->r, NULL));

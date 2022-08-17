@@ -135,7 +135,7 @@ PetscErrorCode  TSAdaptSetType(TSAdapt adapt,TSAdaptType type)
   if (match) PetscFunctionReturn(0);
   PetscCall(PetscFunctionListFind(TSAdaptList,type,&r));
   PetscCheck(r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown TSAdapt type \"%s\" given",type);
-  if (adapt->ops->destroy) PetscCall((*adapt->ops->destroy)(adapt));
+  PetscTryTypeMethod(adapt,destroy);
   PetscCall(PetscMemzero(adapt->ops,sizeof(struct _TSAdaptOps)));
   PetscCall(PetscObjectChangeTypeName((PetscObject)adapt,type));
   PetscCall((*r)(adapt));
@@ -214,7 +214,7 @@ PetscErrorCode  TSAdaptLoad(TSAdapt adapt,PetscViewer viewer)
 
   PetscCall(PetscViewerBinaryRead(viewer,type,256,NULL,PETSC_CHAR));
   PetscCall(TSAdaptSetType(adapt,type));
-  if (adapt->ops->load) PetscCall((*adapt->ops->load)(adapt,viewer));
+  PetscTryTypeMethod(adapt,load,viewer);
   PetscFunctionReturn(0);
 }
 
@@ -250,18 +250,16 @@ PetscErrorCode  TSAdaptView(TSAdapt adapt,PetscViewer viewer)
         PetscCall(PetscViewerASCIIPrintf(viewer,"  GLEE uses global error control\n"));
       }
     }
-    if (adapt->ops->view) {
-      PetscCall(PetscViewerASCIIPushTab(viewer));
-      PetscCall((*adapt->ops->view)(adapt,viewer));
-      PetscCall(PetscViewerASCIIPopTab(viewer));
-    }
+    PetscCall(PetscViewerASCIIPushTab(viewer));
+    PetscTryTypeMethod(adapt,view ,viewer);
+    PetscCall(PetscViewerASCIIPopTab(viewer));
   } else if (isbinary) {
     char type[256];
 
     /* need to save FILE_CLASS_ID for adapt class */
     PetscCall(PetscStrncpy(type,((PetscObject)adapt)->type_name,256));
     PetscCall(PetscViewerBinaryWrite(viewer,type,256,PETSC_CHAR));
-  } else if (adapt->ops->view) PetscCall((*adapt->ops->view)(adapt,viewer));
+  } else PetscTryTypeMethod(adapt,view,viewer);
   PetscFunctionReturn(0);
 }
 
@@ -281,7 +279,7 @@ PetscErrorCode  TSAdaptReset(TSAdapt adapt)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
-  if (adapt->ops->reset) PetscCall((*adapt->ops->reset)(adapt));
+  PetscTryTypeMethod(adapt,reset);
   PetscFunctionReturn(0);
 }
 
@@ -294,7 +292,7 @@ PetscErrorCode  TSAdaptDestroy(TSAdapt *adapt)
 
   PetscCall(TSAdaptReset(*adapt));
 
-  if ((*adapt)->ops->destroy) PetscCall((*(*adapt)->ops->destroy)(*adapt));
+  PetscTryTypeMethod((*adapt),destroy);
   PetscCall(PetscViewerDestroy(&(*adapt)->monitor));
   PetscCall(PetscHeaderDestroy(adapt));
   PetscFunctionReturn(0);
@@ -690,7 +688,7 @@ PetscErrorCode TSAdaptGetStepLimits(TSAdapt adapt,PetscReal *hmin,PetscReal *hma
 .seealso: `TSGetAdapt()`, `TSAdaptSetType()`, `TSAdaptSetAlwaysAccept()`, `TSAdaptSetSafety()`,
           `TSAdaptSetClip()`, `TSAdaptSetScaleSolveFailed()`, `TSAdaptSetStepLimits()`, `TSAdaptSetMonitor()`
 */
-PetscErrorCode  TSAdaptSetFromOptions(PetscOptionItems *PetscOptionsObject,TSAdapt adapt)
+PetscErrorCode  TSAdaptSetFromOptions(TSAdapt adapt,PetscOptionItems *PetscOptionsObject)
 {
   char           type[256] = TSADAPTBASIC;
   PetscReal      safety,reject_safety,clip[2],scale,hmin,hmax;
@@ -698,7 +696,7 @@ PetscErrorCode  TSAdaptSetFromOptions(PetscOptionItems *PetscOptionsObject,TSAda
   PetscInt       two;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,2);
+  PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
   /* This should use PetscOptionsBegin() if/when this becomes an object used outside of TS, but currently this
    * function can only be called from inside TSSetFromOptions()  */
   PetscOptionsHeadBegin(PetscOptionsObject,"TS Adaptivity options");
@@ -739,7 +737,7 @@ PetscErrorCode  TSAdaptSetFromOptions(PetscOptionItems *PetscOptionsObject,TSAda
   PetscCall(PetscOptionsBool("-ts_adapt_monitor","Print choices made by adaptive controller","TSAdaptSetMonitor",adapt->monitor ? PETSC_TRUE : PETSC_FALSE,&flg,&set));
   if (set) PetscCall(TSAdaptSetMonitor(adapt,flg));
 
-  if (adapt->ops->setfromoptions) PetscCall((*adapt->ops->setfromoptions)(PetscOptionsObject,adapt));
+  PetscTryTypeMethod(adapt,setfromoptions,PetscOptionsObject);
   PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
@@ -888,7 +886,7 @@ PetscErrorCode TSAdaptChoose(TSAdapt adapt,TS ts,PetscReal h,PetscInt *next_sc,P
     PetscFunctionReturn(0);
   }
 
-  PetscCall((*adapt->ops->choose)(adapt,ts,h,&scheme,next_h,accept,&wlte,&wltea,&wlter));
+  PetscUseTypeMethod(adapt,choose ,ts,h,&scheme,next_h,accept,&wlte,&wltea,&wlter);
   PetscCheck(scheme >= 0 && (ncandidates <= 0 || scheme < ncandidates),PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_OUTOFRANGE,"Chosen scheme %" PetscInt_FMT " not in valid range 0..%" PetscInt_FMT,scheme,ncandidates-1);
   PetscCheck(*next_h >= 0,PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_OUTOFRANGE,"Computed step size %g must be positive",(double)*next_h);
   if (next_sc) *next_sc = scheme;

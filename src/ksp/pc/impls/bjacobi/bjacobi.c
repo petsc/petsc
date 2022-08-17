@@ -149,7 +149,7 @@ static PetscErrorCode PCDestroy_BJacobi(PC pc)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCSetFromOptions_BJacobi(PetscOptionItems *PetscOptionsObject,PC pc)
+static PetscErrorCode PCSetFromOptions_BJacobi(PC pc,PetscOptionItems *PetscOptionsObject)
 {
   PC_BJacobi     *jac = (PC_BJacobi*)pc->data;
   PetscInt       blocks,i;

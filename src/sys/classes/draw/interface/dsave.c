@@ -181,7 +181,7 @@ PetscErrorCode  PetscDrawSave(PetscDraw draw)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   if (!draw->ops->save && !draw->ops->getimage) PetscFunctionReturn(0);
-  if (draw->ops->save) {PetscCall((*draw->ops->save)(draw)); goto finally;}
+  if (draw->ops->save) {PetscUseTypeMethod(draw,save); goto finally;}
   if (!draw->savefilename || !draw->saveimageext) PetscFunctionReturn(0);
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank));
 
@@ -216,7 +216,7 @@ PetscErrorCode  PetscDrawSave(PetscDraw draw)
   }
 
   /* this call is collective, only the first process gets the image data */
-  PetscCall((*draw->ops->getimage)(draw,palette,&w,&h,&pixels));
+  PetscUseTypeMethod(draw,getimage ,palette,&w,&h,&pixels);
   /* only the first process handles the saving business */
   if (rank == 0) PetscCall(PetscDrawImageSave(basename,draw->saveimageext,palette,w,h,pixels));
   PetscCall(PetscFree(pixels));

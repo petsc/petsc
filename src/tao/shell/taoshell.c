@@ -125,7 +125,7 @@ PetscErrorCode TaoSetUp_Shell(Tao tao)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TaoSetFromOptions_Shell(PetscOptionItems *PetscOptionsObject,Tao tao)
+PetscErrorCode TaoSetFromOptions_Shell(Tao tao,PetscOptionItems *PetscOptionsObject)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);

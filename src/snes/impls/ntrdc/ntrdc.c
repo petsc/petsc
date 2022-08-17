@@ -344,7 +344,7 @@ static PetscErrorCode SNESSolve_NEWTONTRDC(SNES snes)
   neP->rho_satisfied = PETSC_FALSE;
 
   /* test convergence */
-  PetscCall((*snes->ops->converged)(snes,snes->iter,0.0,0.0,fnorm,&snes->reason,snes->cnvP));
+  PetscUseTypeMethod(snes,converged ,snes->iter,0.0,0.0,fnorm,&snes->reason,snes->cnvP);
   if (snes->reason) PetscFunctionReturn(0);
 
   for (i=0; i<maxits; i++) {
@@ -544,7 +544,7 @@ static PetscErrorCode SNESSolve_NEWTONTRDC(SNES snes)
       /* Test for convergence, xnorm = || X || */
       neP->itflag = PETSC_TRUE;
       if (snes->ops->converged != SNESConvergedSkip) PetscCall(VecNorm(X,NORM_2,&xnorm));
-      PetscCall((*snes->ops->converged)(snes,snes->iter,xnorm,ynorm,fnorm,&reason,snes->cnvP));
+      PetscUseTypeMethod(snes,converged ,snes->iter,xnorm,ynorm,fnorm,&reason,snes->cnvP);
       if (reason) break;
     } else break;
   }
@@ -589,7 +589,7 @@ static PetscErrorCode SNESDestroy_NEWTONTRDC(SNES snes)
 }
 /*------------------------------------------------------------*/
 
-static PetscErrorCode SNESSetFromOptions_NEWTONTRDC(PetscOptionItems *PetscOptionsObject,SNES snes)
+static PetscErrorCode SNESSetFromOptions_NEWTONTRDC(SNES snes,PetscOptionItems *PetscOptionsObject)
 {
   SNES_NEWTONTRDC  *ctx = (SNES_NEWTONTRDC*)snes->data;
 

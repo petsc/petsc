@@ -386,7 +386,7 @@ static PetscErrorCode TSSSPGetNumStages_SSP(TS ts,PetscInt *nstages)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSSetFromOptions_SSP(PetscOptionItems *PetscOptionsObject,TS ts)
+static PetscErrorCode TSSetFromOptions_SSP(TS ts,PetscOptionItems *PetscOptionsObject)
 {
   char           tname[256] = TSSSPRKS2;
   TS_SSP         *ssp       = (TS_SSP*)ts->data;

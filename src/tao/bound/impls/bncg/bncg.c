@@ -120,7 +120,7 @@ static PetscErrorCode TaoSolve_BNCG(Tao tao)
   PetscCheck(!PetscIsInfOrNanReal(resnorm),PetscObjectComm((PetscObject)tao),PETSC_ERR_USER, "User provided compute function generated Inf or NaN");
   PetscCall(TaoLogConvergenceHistory(tao, cg->f, resnorm, 0.0, tao->ksp_its));
   PetscCall(TaoMonitor(tao, tao->niter, cg->f, resnorm, 0.0, step));
-  PetscCall((*tao->ops->convergencetest)(tao,tao->cnvP));
+  PetscUseTypeMethod(tao,convergencetest ,tao->cnvP);
   if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
   /* Calculate initial direction. */
   if (!tao->recycle) {
@@ -131,7 +131,7 @@ static PetscErrorCode TaoSolve_BNCG(Tao tao)
   while (1) {
     /* Call general purpose update function */
     if (tao->ops->update) {
-      PetscCall((*tao->ops->update)(tao, tao->niter, tao->user_update));
+      PetscUseTypeMethod(tao,update , tao->niter, tao->user_update);
       PetscCall(TaoComputeObjectiveAndGradient(tao, tao->solution, &cg->f, cg->unprojected_gradient));
     }
     PetscCall(TaoBNCGConductIteration(tao, gnorm));
@@ -217,7 +217,7 @@ static PetscErrorCode TaoDestroy_BNCG(Tao tao)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoSetFromOptions_BNCG(PetscOptionItems *PetscOptionsObject,Tao tao)
+static PetscErrorCode TaoSetFromOptions_BNCG(Tao tao,PetscOptionItems *PetscOptionsObject)
 {
   TAO_BNCG       *cg = (TAO_BNCG*)tao->data;
 
@@ -1010,7 +1010,7 @@ PETSC_INTERN PetscErrorCode TaoBNCGConductIteration(Tao tao, PetscReal gnorm)
     PetscCheck(!PetscIsInfOrNanReal(resnorm),PetscObjectComm((PetscObject)tao),PETSC_ERR_USER, "User provided compute function generated Inf or NaN");
     PetscCall(TaoLogConvergenceHistory(tao, cg->f, resnorm, 0.0, tao->ksp_its));
     PetscCall(TaoMonitor(tao, tao->niter, cg->f, resnorm, 0.0, step));
-    PetscCall((*tao->ops->convergencetest)(tao,tao->cnvP));
+    PetscUseTypeMethod(tao,convergencetest ,tao->cnvP);
     if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
   }
   /* Assert we have an updated step and we need at least one more iteration. */

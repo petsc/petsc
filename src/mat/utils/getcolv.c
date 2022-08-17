@@ -42,9 +42,8 @@ PetscErrorCode  MatGetColumnVector(Mat A,Vec yy,PetscInt col)
   PetscCall(VecGetOwnershipRange(yy,&rs,&re));
   PetscCheck(Rs == rs && Re == re,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Matrix %" PetscInt_FMT " %" PetscInt_FMT " does not have same ownership range (size) as vector %" PetscInt_FMT " %" PetscInt_FMT,Rs,Re,rs,re);
 
-  if (A->ops->getcolumnvector) {
-    PetscCall((*A->ops->getcolumnvector)(A,yy,col));
-  } else {
+  if (A->ops->getcolumnvector) PetscUseTypeMethod(A,getcolumnvector ,yy,col);
+  else {
     PetscCall(VecSet(yy,0.0));
     PetscCall(VecGetArray(yy,&y));
     /* TODO for general matrices */
@@ -312,8 +311,6 @@ PetscErrorCode MatGetColumnReductions(Mat A,PetscInt type,PetscReal reductions[]
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  if (A->ops->getcolumnreductions) {
-    PetscCall((*A->ops->getcolumnreductions)(A,type,reductions));
-  } else SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Not coded for this matrix type");
+  PetscUseTypeMethod(A,getcolumnreductions ,type,reductions);
   PetscFunctionReturn(0);
 }

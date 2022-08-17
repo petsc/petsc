@@ -273,8 +273,8 @@ PETSC_EXTERN PetscErrorCode VecView_Plex_Local_CGNS(Vec, PetscViewer);
 
 PETSC_INTERN PetscErrorCode DMPlexVecGetClosureAtDepth_Internal(DM, PetscSection, Vec, PetscInt, PetscInt, PetscInt *, PetscScalar *[]);
 PETSC_INTERN PetscErrorCode DMPlexClosurePoints_Private(DM,PetscInt,const PetscInt[],IS*);
-PETSC_INTERN PetscErrorCode DMSetFromOptions_NonRefinement_Plex(PetscOptionItems *, DM);
-PETSC_INTERN PetscErrorCode DMSetFromOptions_Overlap_Plex(PetscOptionItems *, DM, PetscInt *);
+PETSC_INTERN PetscErrorCode DMSetFromOptions_NonRefinement_Plex(DM,PetscOptionItems *);
+PETSC_INTERN PetscErrorCode DMSetFromOptions_Overlap_Plex(DM, PetscOptionItems *, PetscInt *);
 PETSC_INTERN PetscErrorCode DMCoarsen_Plex(DM, MPI_Comm, DM *);
 PETSC_INTERN PetscErrorCode DMCoarsenHierarchy_Plex(DM, PetscInt, DM []);
 PETSC_INTERN PetscErrorCode DMRefine_Plex(DM, MPI_Comm, DM *);

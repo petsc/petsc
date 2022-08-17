@@ -398,7 +398,7 @@ PetscErrorCode SNESSetUp_Multiblock(SNES snes)
 
   Application Interface Routine: SNESSetFromOptions()
 */
-static PetscErrorCode SNESSetFromOptions_Multiblock(PetscOptionItems *PetscOptionsObject,SNES snes)
+static PetscErrorCode SNESSetFromOptions_Multiblock(SNES snes,PetscOptionItems *PetscOptionsObject)
 {
   SNES_Multiblock *mb = (SNES_Multiblock*) snes->data;
   PCCompositeType ctype;
@@ -516,12 +516,12 @@ PetscErrorCode SNESSolve_Multiblock(SNES snes)
   PetscCall(SNESMonitor(snes,0,fnorm));
 
   /* test convergence */
-  PetscCall((*snes->ops->converged)(snes,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP));
+  PetscUseTypeMethod(snes,converged ,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP);
   if (snes->reason) PetscFunctionReturn(0);
 
   for (i = 0; i < maxits; i++) {
     /* Call general purpose update function */
-    if (snes->ops->update) PetscCall((*snes->ops->update)(snes, snes->iter));
+    PetscTryTypeMethod(snes,update, snes->iter);
     /* Compute X^{new} from subsolves */
     if (mb->type == PC_COMPOSITE_ADDITIVE) {
       BlockDesc blocks = mb->blocks;
@@ -563,7 +563,7 @@ PetscErrorCode SNESSolve_Multiblock(SNES snes)
     PetscCall(SNESLogConvergenceHistory(snes,snes->norm,0));
     PetscCall(SNESMonitor(snes,snes->iter,snes->norm));
     /* Test for convergence */
-    PetscCall((*snes->ops->converged)(snes,snes->iter,0.0,0.0,fnorm,&snes->reason,snes->cnvP));
+    PetscUseTypeMethod(snes,converged ,snes->iter,0.0,0.0,fnorm,&snes->reason,snes->cnvP);
     if (snes->reason) break;
   }
   if (i == maxits) {

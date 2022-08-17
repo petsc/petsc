@@ -550,7 +550,7 @@ static PetscErrorCode PetscViewerDestroy_GLVis(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscViewerSetFromOptions_GLVis(PetscOptionItems *PetscOptionsObject,PetscViewer v)
+static PetscErrorCode PetscViewerSetFromOptions_GLVis(PetscViewer v,PetscOptionItems *PetscOptionsObject)
 {
   PetscViewerGLVis socket = (PetscViewerGLVis)v->data;
   PetscInt         nsizes = 2, prec = PETSC_DECIDE;

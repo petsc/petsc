@@ -48,9 +48,7 @@ PetscErrorCode  PetscViewerGetSubViewer(PetscViewer viewer,MPI_Comm comm,PetscVi
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidPointer(outviewer,3);
-  if (viewer->ops->getsubviewer) {
-    PetscCall((*viewer->ops->getsubviewer)(viewer,comm,outviewer));
-  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot get SubViewer PetscViewer for type %s",((PetscObject)viewer)->type_name);
+  PetscUseTypeMethod(viewer,getsubviewer ,comm,outviewer);
   PetscFunctionReturn(0);
 }
 
@@ -75,8 +73,6 @@ PetscErrorCode  PetscViewerRestoreSubViewer(PetscViewer viewer,MPI_Comm comm,Pet
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
 
-  if (viewer->ops->restoresubviewer) {
-    PetscCall((*viewer->ops->restoresubviewer)(viewer,comm,outviewer));
-  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot restore SubViewer PetscViewer for type %s",((PetscObject)viewer)->type_name);
+  PetscUseTypeMethod(viewer,restoresubviewer ,comm,outviewer);
   PetscFunctionReturn(0);
 }

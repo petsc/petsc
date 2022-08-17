@@ -1015,7 +1015,6 @@ PetscErrorCode MatMult_Shell(Mat A,Vec x,Vec y)
   PetscObjectState instate,outstate;
 
   PetscFunctionBegin;
-  PetscCheck(shell->ops->mult,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Have not provided a MatMult() for this MATSHELL");
   PetscCall(MatShellPreZeroRight(A,x,&xx));
   PetscCall(MatShellPreScaleRight(A,xx,&xx));
   PetscCall(PetscObjectStateGet((PetscObject)y, &instate));
@@ -1068,7 +1067,6 @@ static PetscErrorCode MatMultTranspose_Shell(Mat A,Vec x,Vec y)
   PetscObjectState instate,outstate;
 
   PetscFunctionBegin;
-  PetscCheck(shell->ops->multtranspose,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Have not provided a MatMultTranspose() for this MATSHELL");
   PetscCall(MatShellPreZeroLeft(A,x,&xx));
   PetscCall(MatShellPreScaleLeft(A,xx,&xx));
   PetscCall(PetscObjectStateGet((PetscObject)y, &instate));
@@ -1204,7 +1202,6 @@ PetscErrorCode MatDiagonalSet_Shell(Mat A,Vec D,InsertMode ins)
   PetscCall(MatHasCongruentLayouts(A,&flg));
   PetscCheck(flg,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Cannot diagonal set or shift shell matrix if it is not congruent");
   if (ins == INSERT_VALUES) {
-    PetscCheck(A->ops->getdiagonal,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Operation MATOP_GETDIAGONAL must be set first");
     PetscCall(VecDuplicate(D,&d));
     PetscCall(MatGetDiagonal(A,d));
     PetscCall(MatDiagonalSet_Shell_Private(A,d,-1.));

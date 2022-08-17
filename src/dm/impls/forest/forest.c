@@ -1410,7 +1410,7 @@ PetscErrorCode DMForestGetWeightCapacity(DM dm, PetscReal *capacity)
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode DMSetFromOptions_Forest(PetscOptionItems *PetscOptionsObject,DM dm)
+PETSC_EXTERN PetscErrorCode DMSetFromOptions_Forest(DM dm,PetscOptionItems *PetscOptionsObject)
 {
   PetscBool                  flg, flg1, flg2, flg3, flg4;
   DMForestTopology           oldTopo;
@@ -1422,7 +1422,6 @@ PETSC_EXTERN PetscErrorCode DMSetFromOptions_Forest(PetscOptionItems *PetscOptio
   DMForestAdaptivityStrategy adaptStrategy;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscCall(DMForestGetTopology(dm, &oldTopo));
   PetscOptionsHeadBegin(PetscOptionsObject,"DMForest Options");
   PetscCall(PetscOptionsString("-dm_forest_topology","the topology of the forest's base mesh","DMForestSetTopology",oldTopo,stringBuffer,sizeof(stringBuffer),&flg1));

@@ -244,7 +244,7 @@ PetscErrorCode PCHPDDMSetRHSMat(PC pc, Mat B)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCSetFromOptions_HPDDM(PetscOptionItems *PetscOptionsObject, PC pc)
+static PetscErrorCode PCSetFromOptions_HPDDM(PC pc,PetscOptionItems *PetscOptionsObject)
 {
   PC_HPDDM                    *data = (PC_HPDDM*)pc->data;
   PC_HPDDM_Level              **levels = data->levels;

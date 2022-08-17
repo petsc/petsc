@@ -368,7 +368,7 @@ PetscErrorCode SNESSetUp_VI(SNES snes)
     if (snes->ops->computevariablebounds) {
       if (!snes->xl) PetscCall(VecDuplicate(snes->vec_sol,&snes->xl));
       if (!snes->xu) PetscCall(VecDuplicate(snes->vec_sol,&snes->xu));
-      PetscCall((*snes->ops->computevariablebounds)(snes,snes->xl,snes->xu));
+      PetscUseTypeMethod(snes,computevariablebounds ,snes->xl,snes->xu);
     } else if (!snes->xl && !snes->xu) {
       /* If the lower and upper bound on variables are not set, set it to -Inf and Inf */
       PetscCall(VecDuplicate(snes->vec_sol, &snes->xl));
@@ -483,7 +483,7 @@ PetscErrorCode SNESVISetVariableBounds_VI(SNES snes,Vec xl,Vec xu)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SNESSetFromOptions_VI(PetscOptionItems *PetscOptionsObject,SNES snes)
+PetscErrorCode SNESSetFromOptions_VI(SNES snes,PetscOptionItems *PetscOptionsObject)
 {
   PetscBool      flg = PETSC_FALSE;
 

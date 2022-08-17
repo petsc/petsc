@@ -7,7 +7,7 @@ typedef struct {
 } VecTagger_Simple;
 
 PETSC_EXTERN PetscErrorCode VecTaggerDestroy_Simple(VecTagger);
-PETSC_EXTERN PetscErrorCode VecTaggerSetFromOptions_Simple(PetscOptionItems *,VecTagger);
+PETSC_EXTERN PetscErrorCode VecTaggerSetFromOptions_Simple(VecTagger,PetscOptionItems *);
 PETSC_EXTERN PetscErrorCode VecTaggerSetUp_Simple(VecTagger);
 PETSC_EXTERN PetscErrorCode VecTaggerView_Simple(VecTagger,PetscViewer);
 PETSC_EXTERN PetscErrorCode VecTaggerSetBox_Simple(VecTagger,VecTaggerBox *);

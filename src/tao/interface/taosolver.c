@@ -173,7 +173,7 @@ PetscErrorCode TaoSolve(Tao tao)
   if (tao->linesearch) PetscCall(TaoLineSearchReset(tao->linesearch));
 
   PetscCall(PetscLogEventBegin(TAO_Solve,tao,0,0,0));
-  if (tao->ops->solve) PetscCall((*tao->ops->solve)(tao));
+  PetscTryTypeMethod(tao,solve);
   PetscCall(PetscLogEventEnd(TAO_Solve,tao,0,0,0));
 
   PetscCall(VecViewFromOptions(tao->solution,(PetscObject)tao,"-tao_view_solution"));
@@ -217,7 +217,7 @@ PetscErrorCode TaoSetUp(Tao tao)
   if (tao->setupcalled) PetscFunctionReturn(0);
   PetscCall(TaoSetUpEW_Private(tao));
   PetscCheck(tao->solution,PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_WRONGSTATE,"Must call TaoSetSolution");
-  if (tao->ops->setup) PetscCall((*tao->ops->setup)(tao));
+  PetscTryTypeMethod(tao,setup);
   tao->setupcalled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -531,7 +531,7 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
 
     if (tao->linesearch) PetscCall(TaoLineSearchSetFromOptions(tao->linesearch));
 
-    if (tao->ops->setfromoptions) PetscCall((*tao->ops->setfromoptions)(PetscOptionsObject,tao));
+    PetscTryTypeMethod(tao,setfromoptions,PetscOptionsObject);
   }
   PetscOptionsEnd();
   PetscFunctionReturn(0);
@@ -602,7 +602,7 @@ PetscErrorCode TaoView(Tao tao, PetscViewer viewer)
 
     if (tao->ops->view) {
       PetscCall(PetscViewerASCIIPushTab(viewer));
-      PetscCall((*tao->ops->view)(tao,viewer));
+      PetscUseTypeMethod(tao,view ,viewer);
       PetscCall(PetscViewerASCIIPopTab(viewer));
     }
     if (tao->linesearch) {
@@ -2167,7 +2167,7 @@ PetscErrorCode TaoSetType(Tao tao, TaoType type)
   PetscCheck(create_xxx,PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested Tao type %s",type);
 
   /* Destroy the existing solver information */
-  if (tao->ops->destroy) PetscCall((*tao->ops->destroy)(tao));
+  PetscTryTypeMethod(tao,destroy);
   PetscCall(KSPDestroy(&tao->ksp));
   PetscCall(TaoLineSearchDestroy(&tao->linesearch));
   tao->ops->setup          = NULL;

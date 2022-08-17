@@ -45,7 +45,7 @@ PetscErrorCode  AOView(AO ao,PetscViewer viewer)
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
 
   PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)ao,viewer));
-  PetscCall((*ao->ops->view)(ao,viewer));
+  PetscUseTypeMethod(ao,view ,viewer);
   PetscFunctionReturn(0);
 }
 
@@ -143,7 +143,7 @@ PetscErrorCode  AOPetscToApplicationIS(AO ao,IS is)
   /* we cheat because we know the is is general and that we can change the indices */
   PetscCall(ISGetIndices(is,(const PetscInt**)&ia));
   PetscCall(ISGetLocalSize(is,&n));
-  PetscCall((*ao->ops->petsctoapplication)(ao,n,ia));
+  PetscUseTypeMethod(ao,petsctoapplication ,n,ia);
   PetscCall(ISRestoreIndices(is,(const PetscInt**)&ia));
   /* updated cached values (sorted, min, max, etc.)*/
   PetscCall(ISSetUp_General(is));
@@ -186,7 +186,7 @@ PetscErrorCode  AOApplicationToPetscIS(AO ao,IS is)
   /* we cheat because we know the is is general and that we can change the indices */
   PetscCall(ISGetIndices(is,(const PetscInt**)&ia));
   PetscCall(ISGetLocalSize(is,&n));
-  PetscCall((*ao->ops->applicationtopetsc)(ao,n,ia));
+  PetscUseTypeMethod(ao,applicationtopetsc ,n,ia);
   PetscCall(ISRestoreIndices(is,(const PetscInt**)&ia));
   /* updated cached values (sorted, min, max, etc.)*/
   PetscCall(ISSetUp_General(is));
@@ -224,7 +224,7 @@ PetscErrorCode  AOPetscToApplication(AO ao,PetscInt n,PetscInt ia[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao,AO_CLASSID,1);
   if (n) PetscValidIntPointer(ia,3);
-  PetscCall((*ao->ops->petsctoapplication)(ao,n,ia));
+  PetscUseTypeMethod(ao,petsctoapplication ,n,ia);
   PetscFunctionReturn(0);
 }
 
@@ -259,7 +259,7 @@ PetscErrorCode  AOApplicationToPetsc(AO ao,PetscInt n,PetscInt ia[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao,AO_CLASSID,1);
   if (n) PetscValidIntPointer(ia,3);
-  PetscCall((*ao->ops->applicationtopetsc)(ao,n,ia));
+  PetscUseTypeMethod(ao,applicationtopetsc ,n,ia);
   PetscFunctionReturn(0);
 }
 
@@ -293,7 +293,7 @@ PetscErrorCode  AOPetscToApplicationPermuteInt(AO ao, PetscInt block, PetscInt a
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao, AO_CLASSID,1);
   PetscValidIntPointer(array,3);
-  PetscCall((*ao->ops->petsctoapplicationpermuteint)(ao, block, array));
+  PetscUseTypeMethod(ao,petsctoapplicationpermuteint , block, array);
   PetscFunctionReturn(0);
 }
 
@@ -327,7 +327,7 @@ PetscErrorCode  AOApplicationToPetscPermuteInt(AO ao, PetscInt block, PetscInt a
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao, AO_CLASSID,1);
   PetscValidIntPointer(array,3);
-  PetscCall((*ao->ops->applicationtopetscpermuteint)(ao, block, array));
+  PetscUseTypeMethod(ao,applicationtopetscpermuteint , block, array);
   PetscFunctionReturn(0);
 }
 
@@ -361,7 +361,7 @@ PetscErrorCode  AOPetscToApplicationPermuteReal(AO ao, PetscInt block, PetscReal
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao, AO_CLASSID,1);
   PetscValidRealPointer(array,3);
-  PetscCall((*ao->ops->petsctoapplicationpermutereal)(ao, block, array));
+  PetscUseTypeMethod(ao,petsctoapplicationpermutereal , block, array);
   PetscFunctionReturn(0);
 }
 
@@ -395,7 +395,7 @@ PetscErrorCode  AOApplicationToPetscPermuteReal(AO ao, PetscInt block, PetscReal
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao, AO_CLASSID,1);
   PetscValidRealPointer(array,3);
-  PetscCall((*ao->ops->applicationtopetscpermutereal)(ao, block, array));
+  PetscUseTypeMethod(ao,applicationtopetscpermutereal , block, array);
   PetscFunctionReturn(0);
 }
 

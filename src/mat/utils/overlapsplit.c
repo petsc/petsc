@@ -33,7 +33,7 @@ PetscErrorCode  MatIncreaseOverlapSplit_Single(Mat mat,IS *is,PetscInt ov)
   PetscCall(PetscCommDuplicate(dcomm,&scomm,NULL));
   /* get a global communicator, where mat should be a global matrix  */
   PetscCall(PetscObjectGetComm((PetscObject)mat,&gcomm));
-  PetscCall((*mat->ops->increaseoverlap)(mat,1,is,ov));
+  PetscUseTypeMethod(mat,increaseoverlap ,1,is,ov);
   PetscCallMPI(MPI_Comm_compare(gcomm,scomm,&issamecomm));
   /* if the sub-communicator is the same as the global communicator,
    * user does not want to use a sub-communicator

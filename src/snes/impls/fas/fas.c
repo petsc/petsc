@@ -185,7 +185,7 @@ static PetscErrorCode SNESSetUp_FAS(SNES snes)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESSetFromOptions_FAS(PetscOptionItems *PetscOptionsObject,SNES snes)
+static PetscErrorCode SNESSetFromOptions_FAS(SNES snes,PetscOptionItems *PetscOptionsObject)
 {
   SNES_FAS       *fas   = (SNES_FAS*) snes->data;
   PetscInt       levels = 1;
@@ -867,7 +867,7 @@ static PetscErrorCode SNESSolve_FAS(SNES snes)
   PetscCall(SNESMonitor(snes,snes->iter,fnorm));
 
   /* test convergence */
-  PetscCall((*snes->ops->converged)(snes,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP));
+  PetscUseTypeMethod(snes,converged ,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP);
   if (snes->reason) PetscFunctionReturn(0);
 
   if (isFine) {
@@ -883,7 +883,7 @@ static PetscErrorCode SNESSolve_FAS(SNES snes)
 
   for (i = 0; i < snes->max_its; i++) {
     /* Call general purpose update function */
-    if (snes->ops->update) PetscCall((*snes->ops->update)(snes, snes->iter));
+    PetscTryTypeMethod(snes,update, snes->iter);
 
     if (fas->fastype == SNES_FAS_MULTIPLICATIVE) {
       PetscCall(SNESFASCycle_Multiplicative(snes, X));
@@ -906,7 +906,7 @@ static PetscErrorCode SNESSolve_FAS(SNES snes)
     PetscCall(SNESMonitor(snes,snes->iter,snes->norm));
     /* Test for convergence */
     if (isFine) {
-      PetscCall((*snes->ops->converged)(snes,snes->iter,0.0,0.0,snes->norm,&snes->reason,snes->cnvP));
+      PetscUseTypeMethod(snes,converged ,snes->iter,0.0,0.0,snes->norm,&snes->reason,snes->cnvP);
       if (snes->reason) break;
     }
   }

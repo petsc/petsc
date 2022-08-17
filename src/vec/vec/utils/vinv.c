@@ -843,8 +843,7 @@ PetscErrorCode  VecStrideGather(Vec v,PetscInt start,Vec s,InsertMode addv)
   PetscValidHeaderSpecific(s,VEC_CLASSID,3);
   PetscCheck(start >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative start %" PetscInt_FMT,start);
   PetscCheck(start < v->map->bs,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Start of stride subvector (%" PetscInt_FMT ") is too large for stride\n Have you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?",start,v->map->bs);
-  PetscCheck(v->ops->stridegather,PetscObjectComm((PetscObject)s),PETSC_ERR_SUP,"Not implemented for this Vec class");
-  PetscCall((*v->ops->stridegather)(v,start,s,addv));
+  PetscUseTypeMethod(v,stridegather ,start,s,addv);
   PetscFunctionReturn(0);
 }
 
@@ -882,7 +881,6 @@ PetscErrorCode  VecStrideScatter(Vec s,PetscInt start,Vec v,InsertMode addv)
   PetscValidHeaderSpecific(v,VEC_CLASSID,3);
   PetscCheck(start >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative start %" PetscInt_FMT,start);
   PetscCheck(start < v->map->bs,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Start of stride subvector (%" PetscInt_FMT ") is too large for stride\n Have you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?",start,v->map->bs);
-  PetscCheck(v->ops->stridescatter,PetscObjectComm((PetscObject)s),PETSC_ERR_SUP,"Not implemented for this Vec class");
   PetscCall((*v->ops->stridescatter)(s,start,v,addv));
   PetscFunctionReturn(0);
 }
@@ -922,8 +920,7 @@ PetscErrorCode  VecStrideSubSetGather(Vec v,PetscInt nidx,const PetscInt idxv[],
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   PetscValidHeaderSpecific(s,VEC_CLASSID,5);
   if (nidx == PETSC_DETERMINE) nidx = s->map->bs;
-  PetscCheck(v->ops->stridesubsetgather,PetscObjectComm((PetscObject)s),PETSC_ERR_SUP,"Not implemented for this Vec class");
-  PetscCall((*v->ops->stridesubsetgather)(v,nidx,idxv,idxs,s,addv));
+  PetscUseTypeMethod(v,stridesubsetgather ,nidx,idxv,idxs,s,addv);
   PetscFunctionReturn(0);
 }
 
@@ -961,7 +958,6 @@ PetscErrorCode  VecStrideSubSetScatter(Vec s,PetscInt nidx,const PetscInt idxs[]
   PetscValidHeaderSpecific(s,VEC_CLASSID,1);
   PetscValidHeaderSpecific(v,VEC_CLASSID,5);
   if (nidx == PETSC_DETERMINE) nidx = s->map->bs;
-  PetscCheck(v->ops->stridesubsetscatter,PetscObjectComm((PetscObject)s),PETSC_ERR_SUP,"Not implemented for this Vec class");
   PetscCall((*v->ops->stridesubsetscatter)(s,nidx,idxs,idxv,v,addv));
   PetscFunctionReturn(0);
 }
@@ -1198,9 +1194,8 @@ PetscErrorCode  VecExp(Vec v)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID,1);
-  if (v->ops->exp) {
-    PetscCall((*v->ops->exp)(v));
-  } else {
+  if (v->ops->exp) PetscUseTypeMethod(v,exp);
+  else {
     PetscCall(VecGetLocalSize(v, &n));
     PetscCall(VecGetArray(v, &x));
     for (i = 0; i < n; i++) x[i] = PetscExpScalar(x[i]);
@@ -1232,9 +1227,8 @@ PetscErrorCode  VecLog(Vec v)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID,1);
-  if (v->ops->log) {
-    PetscCall((*v->ops->log)(v));
-  } else {
+  if (v->ops->log) PetscUseTypeMethod(v,log);
+  else {
     PetscCall(VecGetLocalSize(v, &n));
     PetscCall(VecGetArray(v, &x));
     for (i = 0; i < n; i++) x[i] = PetscLogScalar(x[i]);
@@ -1268,9 +1262,8 @@ PetscErrorCode  VecSqrtAbs(Vec v)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID,1);
-  if (v->ops->sqrt) {
-    PetscCall((*v->ops->sqrt)(v));
-  } else {
+  if (v->ops->sqrt) PetscUseTypeMethod(v,sqrt);
+  else {
     PetscCall(VecGetLocalSize(v, &n));
     PetscCall(VecGetArray(v, &x));
     for (i = 0; i < n; i++) x[i] = PetscSqrtReal(PetscAbsScalar(x[i]));
@@ -1319,7 +1312,7 @@ PetscErrorCode  VecDotNorm2(Vec s,Vec t,PetscScalar *dp, PetscReal *nm)
 
   PetscCall(PetscLogEventBegin(VEC_DotNorm2,s,t,0,0));
   if (s->ops->dotnorm2) {
-    PetscCall((*s->ops->dotnorm2)(s,t,dp,&dpx));
+    PetscUseTypeMethod(s,dotnorm2 ,t,dp,&dpx);
     *nm  = PetscRealPart(dpx);
   } else {
     PetscCall(VecGetLocalSize(s, &n));
@@ -1370,7 +1363,7 @@ PetscErrorCode  VecSum(Vec v,PetscScalar *sum)
   PetscValidScalarPointer(sum,2);
   *sum = 0.0;
   if (v->ops->sum) {
-    PetscCall((*v->ops->sum)(v,sum));
+    PetscUseTypeMethod(v,sum ,sum);
   } else {
     PetscCall(VecGetLocalSize(v,&n));
     PetscCall(VecGetArrayRead(v,&x));
@@ -1485,9 +1478,8 @@ PetscErrorCode  VecShift(Vec v,PetscScalar shift)
   PetscCall(VecSetErrorIfLocked(v,1));
   if (shift == 0.0) PetscFunctionReturn(0);
 
-  if (v->ops->shift) {
-    PetscCall((*v->ops->shift)(v,shift));
-  } else {
+  if (v->ops->shift) PetscUseTypeMethod(v,shift ,shift);
+  else {
     PetscCall(VecGetLocalSize(v,&n));
     PetscCall(VecGetArray(v,&x));
     for (i=0; i<n; i++) x[i] += shift;
@@ -1517,7 +1509,7 @@ PetscErrorCode  VecAbs(Vec v)
   PetscCall(VecSetErrorIfLocked(v,1));
 
   if (v->ops->abs) {
-    PetscCall((*v->ops->abs)(v));
+    PetscUseTypeMethod(v,abs);
   } else {
     PetscCall(VecGetLocalSize(v,&n));
     PetscCall(VecGetArray(v,&x));

@@ -301,7 +301,7 @@ PetscErrorCode  SNESLoad(SNES snes, PetscViewer viewer)
   PetscCheck(classid == SNES_FILE_CLASSID,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONG,"Not SNES next in file");
   PetscCall(PetscViewerBinaryRead(viewer,type,256,NULL,PETSC_CHAR));
   PetscCall(SNESSetType(snes, type));
-  if (snes->ops->load) PetscCall((*snes->ops->load)(snes,viewer));
+  PetscTryTypeMethod(snes,load,viewer);
   PetscCall(SNESGetDM(snes,&dm));
   PetscCall(DMGetDMSNES(dm,&dmsnes));
   PetscCall(DMSNESLoad(dmsnes,viewer));
@@ -410,7 +410,7 @@ PetscErrorCode  SNESView(SNES snes,PetscViewer viewer)
     }
     if (snes->ops->view) {
       PetscCall(PetscViewerASCIIPushTab(viewer));
-      PetscCall((*snes->ops->view)(snes,viewer));
+      PetscUseTypeMethod(snes,view ,viewer);
       PetscCall(PetscViewerASCIIPopTab(viewer));
     }
     PetscCall(PetscViewerASCIIPrintf(viewer,"  maximum iterations=%" PetscInt_FMT ", maximum function evaluations=%" PetscInt_FMT "\n",snes->max_its,snes->max_funcs));
@@ -468,7 +468,7 @@ PetscErrorCode  SNESView(SNES snes,PetscViewer viewer)
     const char *type;
     PetscCall(SNESGetType(snes,&type));
     PetscCall(PetscViewerStringSPrintf(viewer," SNESType: %-7.7s",type));
-    if (snes->ops->view) PetscCall((*snes->ops->view)(snes,viewer));
+    PetscTryTypeMethod(snes,view,viewer);
   } else if (isbinary) {
     PetscInt    classid = SNES_FILE_CLASSID;
     MPI_Comm    comm;
@@ -482,7 +482,7 @@ PetscErrorCode  SNESView(SNES snes,PetscViewer viewer)
       PetscCall(PetscStrncpy(type,((PetscObject)snes)->type_name,sizeof(type)));
       PetscCall(PetscViewerBinaryWrite(viewer,type,sizeof(type),PETSC_CHAR));
     }
-    if (snes->ops->view) PetscCall((*snes->ops->view)(snes,viewer));
+    PetscTryTypeMethod(snes,view,viewer);
   } else if (isdraw) {
     PetscDraw draw;
     char      str[36];
@@ -495,7 +495,7 @@ PetscErrorCode  SNESView(SNES snes,PetscViewer viewer)
     PetscCall(PetscDrawStringBoxed(draw,x,y,PETSC_DRAW_BLUE,PETSC_DRAW_BLACK,str,NULL,&h));
     bottom = y - h;
     PetscCall(PetscDrawPushCurrentPoint(draw,x,bottom));
-    if (snes->ops->view) PetscCall((*snes->ops->view)(snes,viewer));
+    PetscTryTypeMethod(snes,view,viewer);
 #if defined(PETSC_HAVE_SAWS)
   } else if (issaws) {
     PetscMPIInt rank;
@@ -1133,10 +1133,10 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
     PetscCall((*othersetfromoptions[i])(snes));
   }
 
-  if (snes->ops->setfromoptions) PetscCall((*snes->ops->setfromoptions)(PetscOptionsObject,snes));
+  PetscTryTypeMethod(snes,setfromoptions,PetscOptionsObject);
 
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
-  PetscCall(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)snes));
+  PetscCall(PetscObjectProcessOptionsHandlers((PetscObject)snes,PetscOptionsObject));
   PetscOptionsEnd();
 
   if (snes->linesearch) {
@@ -2204,7 +2204,6 @@ PetscErrorCode SNESPicardComputeMFFunction(SNES snes,Vec x,Vec f,void *ctx)
   PetscFunctionBegin;
   PetscCall(SNESGetDM(snes,&dm));
   PetscCall(DMGetDMSNES(dm,&sdm));
-  PetscCheck(sdm->ops->computepjacobian,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Must call SNESSetPicard() to provide Picard Jacobian.");
   /*  A(x)*x - b(x) */
   if (sdm->ops->computepfunction) {
     PetscCallBack("SNES Picard callback function",(*sdm->ops->computepfunction)(snes,x,f,sdm->pctx));
@@ -2228,7 +2227,6 @@ PetscErrorCode SNESPicardComputeFunction(SNES snes,Vec x,Vec f,void *ctx)
   PetscFunctionBegin;
   PetscCall(SNESGetDM(snes,&dm));
   PetscCall(DMGetDMSNES(dm,&sdm));
-  PetscCheck(sdm->ops->computepjacobian,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Must call SNESSetPicard() to provide Picard Jacobian.");
   /*  A(x)*x - b(x) */
   if (sdm->ops->computepfunction) {
     PetscCallBack("SNES Picard callback function",(*sdm->ops->computepfunction)(snes,x,f,sdm->pctx));
@@ -2787,10 +2785,7 @@ PetscErrorCode  SNESComputeJacobian(SNES snes,Vec X,Mat A,Mat B)
   PetscCall(SNESGetDM(snes,&dm));
   PetscCall(DMGetDMSNES(dm,&sdm));
 
-  PetscCheck(sdm->ops->computejacobian,PetscObjectComm((PetscObject)snes),PETSC_ERR_USER,"Must call SNESSetJacobian(), DMSNESSetJacobian(), DMDASNESSetJacobianLocal(), etc");
-
   /* make sure that MatAssemblyBegin/End() is called on A matrix if it is matrix free */
-
   if (snes->lagjacobian == -2) {
     snes->lagjacobian = -1;
 
@@ -3203,7 +3198,6 @@ PetscErrorCode  SNESSetUp(SNES snes)
 
   PetscCall(SNESGetDM(snes,&dm));
   PetscCall(DMGetDMSNES(dm,&sdm));
-  PetscCheck(sdm->ops->computefunction,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Function never provided to SNES object");
   PetscCall(SNESSetDefaultComputeJacobian(snes));
 
   if (!snes->vec_func) {
@@ -3269,7 +3263,7 @@ PetscErrorCode  SNESSetUp(SNES snes)
   snes->jac_iter = 0;
   snes->pre_iter = 0;
 
-  if (snes->ops->setup) PetscCall((*snes->ops->setup)(snes));
+  PetscTryTypeMethod(snes,setup);
 
   PetscCall(SNESSetDefaultComputeJacobian(snes));
 
@@ -3311,7 +3305,7 @@ PetscErrorCode  SNESReset(SNES snes)
   }
   if (snes->npc) PetscCall(SNESReset(snes->npc));
 
-  if (snes->ops->reset) PetscCall((*snes->ops->reset)(snes));
+  PetscTryTypeMethod(snes,reset);
   if (snes->ksp) PetscCall(KSPReset(snes->ksp));
 
   if (snes->linesearch) PetscCall(SNESLineSearchReset(snes->linesearch));
@@ -3385,7 +3379,7 @@ PetscErrorCode  SNESDestroy(SNES *snes)
 
   /* if memory was published with SAWs then destroy it */
   PetscCall(PetscObjectSAWsViewOff((PetscObject)*snes));
-  if ((*snes)->ops->destroy) PetscCall((*((*snes))->ops->destroy)((*snes)));
+  PetscTryTypeMethod((*snes),destroy);
 
   if ((*snes)->dm) PetscCall(DMCoarsenHookRemove((*snes)->dm,DMCoarsenHook_SNESVecSol,DMRestrictHook_SNESVecSol,*snes));
   PetscCall(DMDestroy(&(*snes)->dm));
@@ -4729,7 +4723,7 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
     if (snes->counters_reset) {snes->nfuncs = 0; snes->linear_its = 0; snes->numFailures = 0;}
 
     PetscCall(PetscLogEventBegin(SNES_Solve,snes,0,0,0));
-    PetscCall((*snes->ops->solve)(snes));
+    PetscUseTypeMethod(snes,solve);
     PetscCall(PetscLogEventEnd(SNES_Solve,snes,0,0,0));
     PetscCheck(snes->reason,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Internal error, solver returned without setting converged reason");
     snes->domainerror = PETSC_FALSE; /* clear the flag if it has been set */
@@ -4832,7 +4826,7 @@ PetscErrorCode  SNESSetType(SNES snes,SNESType type)
   PetscCall(PetscFunctionListFind(SNESList,type,&r));
   PetscCheck(r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested SNES type %s",type);
   /* Destroy the previous private SNES context */
-  if (snes->ops->destroy) PetscCall((*snes->ops->destroy)(snes));
+  PetscTryTypeMethod(snes,destroy);
   /* Reinitialize function pointers in SNESOps structure */
   snes->ops->setup          = NULL;
   snes->ops->solve          = NULL;

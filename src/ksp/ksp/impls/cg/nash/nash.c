@@ -557,7 +557,7 @@ static PetscErrorCode  KSPCGGetObjFcn_NASH(KSP ksp, PetscReal *o_fcn)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPCGSetFromOptions_NASH(PetscOptionItems *PetscOptionsObject,KSP ksp)
+static PetscErrorCode KSPCGSetFromOptions_NASH(KSP ksp,PetscOptionItems *PetscOptionsObject)
 {
   KSPCG_NASH     *cg = (KSPCG_NASH*)ksp->data;
 

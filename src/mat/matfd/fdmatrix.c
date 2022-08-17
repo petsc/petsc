@@ -232,9 +232,7 @@ PetscErrorCode MatFDColoringSetUp(Mat mat,ISColoring iscoloring,MatFDColoring co
   PetscCheck(eq,PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONG,"Matrix used with MatFDColoringSetUp() must be that used with MatFDColoringCreate()");
 
   PetscCall(PetscLogEventBegin(MAT_FDColoringSetUp,mat,0,0,0));
-  if (mat->ops->fdcoloringsetup) {
-    PetscCall((*mat->ops->fdcoloringsetup)(mat,iscoloring,color));
-  } else SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Code not yet written for matrix type %s",((PetscObject)mat)->type_name);
+  PetscUseTypeMethod(mat,fdcoloringsetup ,iscoloring,color);
 
   color->setupcalled = PETSC_TRUE;
    PetscCall(PetscLogEventEnd(MAT_FDColoringSetUp,mat,0,0,0));
@@ -359,7 +357,7 @@ PetscErrorCode  MatFDColoringSetFromOptions(MatFDColoring matfd)
   }
 
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
-  PetscCall(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)matfd));
+  PetscCall(PetscObjectProcessOptionsHandlers((PetscObject)matfd,PetscOptionsObject));
   PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
@@ -457,9 +455,7 @@ PetscErrorCode  MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring 
   c->ctype = iscoloring->ctype;
   PetscCall(PetscObjectGetId((PetscObject)mat,&c->matid));
 
-  if (mat->ops->fdcoloringcreate) {
-    PetscCall((*mat->ops->fdcoloringcreate)(mat,iscoloring,c));
-  } else SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Code not yet written for matrix type %s",((PetscObject)mat)->type_name);
+  PetscUseTypeMethod(mat,fdcoloringcreate ,iscoloring,c);
 
   PetscCall(MatCreateVecs(mat,NULL,&c->w1));
   /* Vec is used intensively in particular piece of scalar CPU code; won't benefit from bouncing back and forth to the GPU */
@@ -603,12 +599,11 @@ PetscErrorCode  MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,void *sct
   PetscCall(PetscObjectCompareId((PetscObject)J,coloring->matid,&eq));
   PetscCheck(eq,PetscObjectComm((PetscObject)J),PETSC_ERR_ARG_WRONG,"Matrix used with MatFDColoringApply() must be that used with MatFDColoringCreate()");
   PetscCheck(coloring->f,PetscObjectComm((PetscObject)J),PETSC_ERR_ARG_WRONGSTATE,"Must call MatFDColoringSetFunction()");
-  PetscCheck(J->ops->fdcoloringapply,PETSC_COMM_SELF,PETSC_ERR_SUP,"Not supported for this matrix type %s",((PetscObject)J)->type_name);
   PetscCheck(coloring->setupcalled,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call MatFDColoringSetUp()");
 
   PetscCall(MatSetUnfactored(J));
   PetscCall(PetscLogEventBegin(MAT_FDColoringApply,coloring,J,x1,0));
-  PetscCall((*J->ops->fdcoloringapply)(J,coloring,x1,sctx));
+  PetscUseTypeMethod(J,fdcoloringapply ,coloring,x1,sctx);
   PetscCall(PetscLogEventEnd(MAT_FDColoringApply,coloring,J,x1,0));
   if (!coloring->viewed) {
     PetscCall(MatFDColoringViewFromOptions(coloring,NULL,"-mat_fd_coloring_view"));

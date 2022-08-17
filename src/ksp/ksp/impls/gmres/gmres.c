@@ -559,7 +559,7 @@ PetscErrorCode  KSPGMRESMonitorKrylov(KSP ksp,PetscInt its,PetscReal fgnorm,void
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPSetFromOptions_GMRES(PetscOptionItems *PetscOptionsObject,KSP ksp)
+PetscErrorCode KSPSetFromOptions_GMRES(KSP ksp,PetscOptionItems *PetscOptionsObject)
 {
   PetscInt       restart;
   PetscReal      haptol,breakdowntol;

@@ -87,7 +87,7 @@ PetscErrorCode VecTaggerSetType(VecTagger tagger,VecTaggerType type)
   PetscCall(PetscFunctionListFind(VecTaggerList,type,&r));
   PetscCheck(r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested VecTagger type %s",type);
   /* Destroy the previous private VecTagger context */
-  if (tagger->ops->destroy) PetscCall((*(tagger)->ops->destroy)(tagger));
+  PetscTryTypeMethod(tagger,destroy);
   PetscCall(PetscMemzero(tagger->ops,sizeof(*tagger->ops)));
   PetscCall(PetscObjectChangeTypeName((PetscObject)tagger,type));
   tagger->ops->create = r;
@@ -138,7 +138,7 @@ PetscErrorCode VecTaggerDestroy(VecTagger *tagger)
   if (!*tagger) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*tagger),VEC_TAGGER_CLASSID,1);
   if (--((PetscObject)(*tagger))->refct > 0) {*tagger = NULL; PetscFunctionReturn(0);}
-  if ((*tagger)->ops->destroy) PetscCall((*(*tagger)->ops->destroy)(*tagger));
+  PetscTryTypeMethod((*tagger),destroy);
   PetscCall(PetscHeaderDestroy(tagger));
   PetscFunctionReturn(0);
 }
@@ -160,7 +160,7 @@ PetscErrorCode VecTaggerSetUp(VecTagger tagger)
   PetscFunctionBegin;
   if (tagger->setupcalled) PetscFunctionReturn(0);
   if (!((PetscObject)tagger)->type_name) PetscCall(VecTaggerSetType(tagger,VECTAGGERABSOLUTE));
-  if (tagger->ops->setup) PetscCall((*tagger->ops->setup)(tagger));
+  PetscTryTypeMethod(tagger,setup);
   tagger->setupcalled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -197,7 +197,7 @@ PetscErrorCode VecTaggerSetFromOptions(VecTagger tagger)
   PetscCall(VecTaggerSetType(tagger,flg ? type : deft));
   PetscCall(PetscOptionsInt("-vec_tagger_block_size","block size of the vectors the tagger operates on","VecTaggerSetBlockSize",tagger->blocksize,&tagger->blocksize,NULL));
   PetscCall(PetscOptionsBool("-vec_tagger_invert","invert the set of indices returned by VecTaggerComputeIS()","VecTaggerSetInvert",tagger->invert,&tagger->invert,NULL));
-  if (tagger->ops->setfromoptions) PetscCall((*tagger->ops->setfromoptions)(PetscOptionsObject,tagger));
+  PetscTryTypeMethod(tagger,setfromoptions,PetscOptionsObject);
   PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
@@ -333,7 +333,7 @@ PetscErrorCode VecTaggerView(VecTagger tagger,PetscViewer viewer)
     PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)tagger,viewer));
     PetscCall(PetscViewerASCIIPushTab(viewer));
     PetscCall(PetscViewerASCIIPrintf(viewer,"Block size: %" PetscInt_FMT "\n",tagger->blocksize));
-    if (tagger->ops->view) PetscCall((*tagger->ops->view)(tagger,viewer));
+    PetscTryTypeMethod(tagger,view,viewer);
     if (tagger->invert) PetscCall(PetscViewerASCIIPrintf(viewer,"Inverting ISs.\n"));
     PetscCall(PetscViewerASCIIPopTab(viewer));
   }
