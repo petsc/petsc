@@ -13,6 +13,7 @@ configure_options = [
   '--download-f2cblaslapack=1',
   '--with-f2cblaslapack-float128-bindings=1',
   '--with-f2cblaslapack-fp16-bindings=1',
+  '--download-hpddm=1',
   '--with-shared-libraries=1'
   ]
 
