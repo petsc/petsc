@@ -193,6 +193,10 @@ program ex62f90
     PetscCallA(DMGetLabelIdIS(dm, "Cell Sets", csIS, ierr))
     PetscCallA(ISGetIndicesF90(csIS, csID, ierr))
     do set = 1,numCS
+        !!! This is pointless but will avoid a warning with gfortran and -Werror=maybe-uninitialized
+        nullify(dofA)
+        nullify(dofU)
+        nullify(dofS)
         PetscCallA(DMGetStratumSize(dm, "Cell Sets", csID(set), numCells,ierr))
         PetscCallA(DMGetStratumIS(dm, "Cell Sets", csID(set), cellIS,ierr))
         if (numCells > 0) then
