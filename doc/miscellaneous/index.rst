@@ -13,6 +13,5 @@ interesting enough to share.
    applications_publications
    prizes
    funding
-   threads
    saws
    codemanagement
