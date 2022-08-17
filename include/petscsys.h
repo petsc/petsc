@@ -1188,6 +1188,20 @@ PETSC_EXTERN MPI_Op MPIU_MIN;
 #define MPIU_MAX MPI_MAX
 #define MPIU_MIN MPI_MIN
 #endif
+#if defined(PETSC_HAVE_REAL___FLOAT128)
+/*MC
+    MPIU_SUM___FLOAT128 - MPI_Op that acts as a replacement for MPI_SUM with
+    custom MPI_Datatype `MPIU___FLOAT128` and `MPIU___COMPLEX128`.
+
+   Level: advanced
+
+   Developer Note:
+   This should be unified with `MPIU_SUM`
+
+.seealso: `MPIU_REAL`, `MPIU_SCALAR`, `MPIU_COMPLEX`
+M*/
+PETSC_EXTERN MPI_Op MPIU_SUM___FLOAT128;
+#endif
 PETSC_EXTERN PetscErrorCode PetscMaxSum(MPI_Comm,const PetscInt[],PetscInt*,PetscInt*);
 
 PETSC_EXTERN PetscErrorCode MPIULong_Send(void*,PetscInt,MPI_Datatype,PetscMPIInt,PetscMPIInt,MPI_Comm);

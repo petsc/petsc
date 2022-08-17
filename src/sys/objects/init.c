@@ -62,7 +62,7 @@ M*/
 PetscComplex PETSC_i;
 MPI_Datatype MPIU___COMPLEX128 = 0;
 #endif /* PETSC_HAVE_COMPLEX */
-#if defined(PETSC_USE_REAL___FLOAT128)
+#if defined(PETSC_HAVE_REAL___FLOAT128)
 MPI_Datatype MPIU___FLOAT128 = 0;
 #elif defined(PETSC_USE_REAL___FP16)
 MPI_Datatype MPIU___FP16 = 0;
