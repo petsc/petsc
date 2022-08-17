@@ -2425,6 +2425,8 @@ or message.
 .. bibliography:: /petsc.bib
    :filter: docname in docnames
 
+.. _sec_pcmpi:
+
 Using a MPI parallel linear solver from a non-MPI program
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
