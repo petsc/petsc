@@ -2220,8 +2220,8 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
   for (p = pStartC; p < pEndC; p++) {
     maxChildIds[p - pStartC] = -2;
   }
-  PetscCall(PetscSFReduceBegin(coarseToFineEmbedded,MPIU_INT,childIds,maxChildIds,MPIU_MAX));
-  PetscCall(PetscSFReduceEnd(coarseToFineEmbedded,MPIU_INT,childIds,maxChildIds,MPIU_MAX));
+  PetscCall(PetscSFReduceBegin(coarseToFineEmbedded,MPIU_INT,childIds,maxChildIds,MPI_MAX));
+  PetscCall(PetscSFReduceEnd(coarseToFineEmbedded,MPIU_INT,childIds,maxChildIds,MPI_MAX));
 
   PetscCall(DMGetLocalSection(coarse,&localCoarse));
   PetscCall(DMGetGlobalSection(coarse,&globalCoarse));

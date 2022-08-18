@@ -69,11 +69,11 @@ static PetscErrorCode MatGetInfo_ScaLAPACK(Mat A,MatInfoType flag,MatInfo *info)
     info->nz_allocated   = isend[0];
     info->nz_used        = isend[1];
   } else if (flag == MAT_GLOBAL_MAX) {
-    PetscCall(MPIU_Allreduce(isend,irecv,2,MPIU_PETSCLOGDOUBLE,MPIU_MAX,PetscObjectComm((PetscObject)A)));
+    PetscCall(MPIU_Allreduce(isend,irecv,2,MPIU_PETSCLOGDOUBLE,MPI_MAX,PetscObjectComm((PetscObject)A)));
     info->nz_allocated   = irecv[0];
     info->nz_used        = irecv[1];
   } else if (flag == MAT_GLOBAL_SUM) {
-    PetscCall(MPIU_Allreduce(isend,irecv,2,MPIU_PETSCLOGDOUBLE,MPIU_SUM,PetscObjectComm((PetscObject)A)));
+    PetscCall(MPIU_Allreduce(isend,irecv,2,MPIU_PETSCLOGDOUBLE,MPI_SUM,PetscObjectComm((PetscObject)A)));
     info->nz_allocated   = irecv[0];
     info->nz_used        = irecv[1];
   }

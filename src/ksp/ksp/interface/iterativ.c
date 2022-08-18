@@ -1422,7 +1422,7 @@ PetscErrorCode  KSPConvergedDefault(KSP ksp,PetscInt n,PetscReal rnorm,KSPConver
     PetscInt       sendbuf,recvbuf;
     PetscCall(PCGetFailedReasonRank(ksp->pc,&pcreason));
     sendbuf = (PetscInt)pcreason;
-    PetscCallMPI(MPI_Allreduce(&sendbuf,&recvbuf,1,MPIU_INT,MPIU_MAX,PetscObjectComm((PetscObject)ksp)));
+    PetscCallMPI(MPI_Allreduce(&sendbuf,&recvbuf,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)ksp)));
     if (recvbuf) {
       *reason = KSP_DIVERGED_PC_FAILED;
       PetscCall(PCSetFailedReason(ksp->pc,(PCFailedReason)recvbuf));

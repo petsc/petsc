@@ -495,8 +495,8 @@ static PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc,Pets
       nd_global=0;
       PetscCall(PetscFree(colorweights));
       PetscCall(PetscLogEventBegin(MATCOLORING_Comm,mc,0,0,0));
-      PetscCall(PetscSFReduceBegin(sf,MPIU_INT,oconf,conf,MPIU_SUM));
-      PetscCall(PetscSFReduceEnd(sf,MPIU_INT,oconf,conf,MPIU_SUM));
+      PetscCall(PetscSFReduceBegin(sf,MPIU_INT,oconf,conf,MPI_SUM));
+      PetscCall(PetscSFReduceEnd(sf,MPIU_INT,oconf,conf,MPI_SUM));
       PetscCall(PetscLogEventEnd(MATCOLORING_Comm,mc,0,0,0));
       /* go through and unset local colors that have conflicts */
       for (i=0;i<n;i++) {
