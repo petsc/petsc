@@ -177,7 +177,7 @@ static inline PetscReal PetscLog2Real(PetscReal a)
 }
 #endif
 
-#if defined(PETSC_USE_REAL___FLOAT128)
+#if defined(PETSC_HAVE_REAL___FLOAT128)
 PETSC_EXTERN MPI_Datatype MPIU___FLOAT128 PetscAttrMPITypeTag(__float128);
 #endif
 #if defined(PETSC_USE_REAL___FP16)
@@ -414,9 +414,9 @@ static inline PetscComplex PetscCMPLX(PetscReal x, PetscReal y)
 #define MPIU_C_COMPLEX MPI_C_COMPLEX PETSC_DEPRECATED_MACRO("GCC warning \"MPIU_C_COMPLEX macro is deprecated use MPI_C_COMPLEX (since version 3.15)\"")
 #define MPIU_C_DOUBLE_COMPLEX MPI_C_DOUBLE_COMPLEX PETSC_DEPRECATED_MACRO("GCC warning \"MPIU_C_DOUBLE_COMPLEX macro is deprecated use MPI_C_DOUBLE_COMPLEX (since version 3.15)\"")
 
-#if defined(PETSC_USE_REAL___FLOAT128)
+#if defined(PETSC_HAVE_REAL___FLOAT128)
 PETSC_EXTERN MPI_Datatype MPIU___COMPLEX128 PetscAttrMPITypeTag(__complex128);
-#endif /* PETSC_USE_REAL___FLOAT128 */
+#endif /* PETSC_HAVE_REAL___FLOAT128 */
 
 /*MC
    MPIU_COMPLEX - Portable MPI datatype corresponding to `PetscComplex` independent of the precision of `PetscComplex`
