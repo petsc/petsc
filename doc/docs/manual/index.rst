@@ -6,6 +6,8 @@ PETSc/TAO Users Manual
   \thispagestyle{plain}
   {\Huge\textbf{PETSc/TAO Users Manual}}
 
+`PETSc/TAO Users Manual in PDF <manual/manual.pdf>`__
+
 **Argonne National Laboratory**
 
 **Mathematics and Computer Science Division**
