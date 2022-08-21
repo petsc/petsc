@@ -313,7 +313,7 @@ PETSC_EXTERN const char *const KSPHPDDMTypes[];
     Level: intermediate
 
     Values:
-$   `KSP_HPDDM_PRECISION_HALF` (currently unsupported)
+$   `KSP_HPDDM_PRECISION_HALF`
 $   `KSP_HPDDM_PRECISION_SINGLE` (default when PETSc is configured --with-precision=single)
 $   `KSP_HPDDM_PRECISION_DOUBLE` (default when PETSc is configured --with-precision=double)
 $   `KSP_HPDDM_PRECISION_QUADRUPLE` (default when PETSc is configured --with-precision=__float128)
