@@ -178,7 +178,7 @@ static inline PetscReal PetscLog2Real(PetscReal a) {
 #if defined(PETSC_HAVE_REAL___FLOAT128)
 PETSC_EXTERN MPI_Datatype MPIU___FLOAT128 PetscAttrMPITypeTag(__float128);
 #endif
-#if defined(PETSC_USE_REAL___FP16)
+#if defined(PETSC_HAVE_REAL___FP16)
 PETSC_EXTERN MPI_Datatype MPIU___FP16 PetscAttrMPITypeTag(__fp16);
 #endif
 

@@ -43,6 +43,8 @@ class Configure(config.package.Package):
       else:
         make_target = 'blas_qlib lapack_qlib'
     if self.argDB['with-f2cblaslapack-fp16-bindings'] and self.defaultPrecision != '__fp16':
+      if not self.scalartypes.have__fp16:
+        raise RuntimeError('No __fp16 support provided by the compiler, cannot use --with-f2cblaslapack-fp16-bindings')
       if self.defaultPrecision == '__float128' or self.argDB['with-f2cblaslapack-float128-bindings']:
         make_target = make_target + ' blas_hlib lapack_hlib'
       else:
