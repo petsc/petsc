@@ -14,17 +14,17 @@
 !     u(0,t) = 1-sin(12*t)^4
 !
 
-  module PETScShiftMod
+  module ex22f_mfmodule
 #include <petsc/finclude/petscts.h>
     use petscts
     PetscScalar::PETSC_SHIFT
     TS::tscontext
     Mat::Jmat
     PetscReal::MFuser(6)
-  end module PETScShiftMod
+  end module ex22f_mfmodule
 
 program main
-  use PETScShiftMod
+  use ex22f_mfmodule
   use petscdmda
   implicit none
 
@@ -426,7 +426,7 @@ end subroutine FormInitialSolution
 !  IJacobian - Compute IJacobian = dF/dU + shift*dF/dUdot
 !
 subroutine FormIJacobianMF(ts,t,X,Xdot,shift,J,Jpre,user,ierr)
-  use PETScShiftMod
+  use ex22f_mfmodule
   implicit none
   TS ts
   PetscReal t,shift
@@ -451,7 +451,7 @@ end subroutine FormIJacobianMF
 !.  F - function vector
 !
 subroutine  MyMult(A,X,F,ierr)
-  use PETScShiftMod
+  use ex22f_mfmodule
   implicit none
 
   Mat     A

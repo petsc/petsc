@@ -23,7 +23,7 @@
 !
 ! ----------------------------------------------------------------------
 
-      module mymodule
+      module eptorsion2fmodule
 #include "petsc/finclude/petsctao.h"
       use petscdmda
       use petsctao
@@ -35,7 +35,7 @@
       PetscInt         mx, my
       end module
 
-      use mymodule
+      use eptorsion2fmodule
       implicit none
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
@@ -144,7 +144,7 @@
 !   ierr - error code
 !
       subroutine FormInitialGuess(X,ierr)
-      use mymodule
+      use eptorsion2fmodule
       implicit none
 
 !  Input/output variables:
@@ -203,7 +203,7 @@
 !  input vector data as an array over the local mesh.
 !
       subroutine FormFunctionGradient(tao,X,f,G,dummy,ierr)
-      use mymodule
+      use eptorsion2fmodule
       implicit none
 
 !  Input/output variables:
@@ -367,7 +367,7 @@
       end
 
       subroutine ComputeHessian(tao, X, H, Hpre, dummy, ierr)
-      use mymodule
+      use eptorsion2fmodule
       implicit none
 
       Tao       tao
@@ -443,7 +443,7 @@
       end
 
       subroutine Monitor(tao, dummy, ierr)
-      use mymodule
+      use eptorsion2fmodule
       implicit none
 
       Tao tao
@@ -465,7 +465,7 @@
       end
 
       subroutine ConvergenceTest(tao, dummy, ierr)
-      use mymodule
+      use eptorsion2fmodule
       implicit none
 
       Tao tao

@@ -31,16 +31,9 @@
 !  in them
 !
 
-      module f90module
-      use petscsys
-      use petscis
-      use petscvec
-      use petscdm
-      use petscdmda
-      use petscmat
-      use petscpc
-      use petscksp
+      module ex5f90module
       use petscsnes
+      use petscdmda
 #include <petsc/finclude/petscsnes.h>
       type userctx
         PetscInt xs,xe,xm,gxs,gxe,gxm
@@ -122,14 +115,14 @@
 !      PetscCallA(VecView(F,PETSC_VIEWER_STDOUT_WORLD,ierr))
       return
       end subroutine formfunction
-      end module f90module
+      end module ex5f90module
 
-      module f90moduleinterfaces
-        use f90module
+      module ex5f90moduleinterfaces
+        use ex5f90module
 
       Interface SNESSetApplicationContext
         Subroutine SNESSetApplicationContext(snes,ctx,ierr)
-        use f90module
+        use ex5f90module
           SNES snes
           type(userctx) ctx
           PetscErrorCode ierr
@@ -138,17 +131,17 @@
 
       Interface SNESGetApplicationContext
         Subroutine SNESGetApplicationContext(snes,ctx,ierr)
-        use f90module
+        use ex5f90module
           SNES snes
           type(userctx), pointer :: ctx
           PetscErrorCode ierr
         End Subroutine
       End Interface SNESGetApplicationContext
-      end module f90moduleinterfaces
+      end module ex5f90moduleinterfaces
 
       program main
-      use f90module
-      use f90moduleinterfaces
+      use ex5f90module
+      use ex5f90moduleinterfaces
       implicit none
 !
 
@@ -332,8 +325,8 @@
 !  the local vector data via VecGetArrayF90() and VecRestoreArrayF90().
 !
       subroutine FormInitialGuess(snes,X,ierr)
-      use f90module
-      use f90moduleinterfaces
+      use ex5f90module
+      use ex5f90moduleinterfaces
       implicit none
 
 !  Input/output variables:
@@ -386,7 +379,7 @@
 !  This routine uses standard Fortran-style computations over a 2-dim array.
 !
       subroutine InitialGuessLocal(user,x,ierr)
-      use f90module
+      use ex5f90module
       implicit none
 
 !  Input/output variables:
@@ -437,7 +430,7 @@
 !  This routine uses standard Fortran-style computations over a 2-dim array.
 !
       subroutine FormFunctionLocal(x,f,user,ierr)
-      use f90module
+      use ex5f90module
 
       implicit none
 
@@ -522,7 +515,7 @@
 !  used in this example.
 !
       subroutine FormJacobian(snes,X,jac,jac_prec,user,ierr)
-      use f90module
+      use ex5f90module
       implicit none
 
 !  Input/output variables:
@@ -613,7 +606,7 @@
 !  used in this example.
 !
       subroutine FormJacobianLocal(x,jac_prec,user,ierr)
-      use f90module
+      use ex5f90module
       implicit none
 
 !  Input/output variables:

@@ -6,7 +6,7 @@
 
 !
 !  -------------------------------------------------------------------------
-      module mymoduleex21f
+      module ex62fmodule
 #include <petsc/finclude/petscksp.h>
       use petscksp
       PC jacobi,sor
@@ -14,7 +14,7 @@
       end module
 
       program main
-      use mymoduleex21f
+      use ex62fmodule
       implicit none
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -251,7 +251,7 @@
 !   used within the routine SampleShellPCApply().
 !
       subroutine SampleShellPCSetUp(pc,x,ierr)
-      use mymoduleex21f
+      use ex62fmodule
       implicit none
 
       PC      pc
@@ -296,7 +296,7 @@
 ! mpiexec -n 1 ex21f -ksp_monitor -pc_type composite -pc_composite_pcs jacobi,sor -pc_composite_type additive
 !
       subroutine SampleShellPCApply(pc,x,y,ierr)
-      use mymoduleex21f
+      use ex62fmodule
       implicit none
 
       PC      pc

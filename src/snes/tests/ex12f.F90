@@ -3,7 +3,7 @@
 !  This example demonstrates basic use of the SNES Fortran interface.
 !
 !
-        module UserModule
+        module ex12fmodule
 #include <petsc/finclude/petscsnes.h>
         use petscsnes
         type User
@@ -32,7 +32,7 @@
 !    snesm - monctx designed module (included in Snesmmod)
 ! ---------------------------------------------------------------------
       subroutine FormMonitor(snes,its,norm,snesm,ierr)
-      use UserModule
+      use ex12fmodule
       implicit none
 
       SNES ::           snes
@@ -65,7 +65,7 @@
 #define ff(ib)  vff(iff + (ib))
 #define F2(ib)  vF2(iF2 + (ib))
       program main
-      use UserModule
+      use ex12fmodule
       implicit none
       type(User) ctx
       PetscMPIInt rank,size
@@ -163,7 +163,7 @@
 ! --------------------  Evaluate Function F(x) ---------------------
 
       subroutine FormFunction(snes,x,f,ctx,ierr)
-      use UserModule
+      use ex12fmodule
       implicit none
       SNES             snes
       Vec              x,f
@@ -237,7 +237,7 @@
 ! --------------------  Form initial approximation -----------------
 
       subroutine FormInitialGuess(snes,x,ierr)
-      use UserModule
+      use ex12fmodule
       implicit none
 
       PetscErrorCode   ierr
@@ -253,7 +253,7 @@
 ! --------------------  Evaluate Jacobian --------------------
 
       subroutine FormJacobian(snes,x,jac,B,ctx,ierr)
-      use UserModule
+      use ex12fmodule
       implicit none
 
       SNES             snes

@@ -1,7 +1,7 @@
 !
 !  Test Fortran binding of sort routines
 !
-module UserContext
+module ex49fmodule
   use petsc
 #include "petsc/finclude/petsc.h"
   implicit none
@@ -25,11 +25,11 @@ contains
     end if
     return
   end subroutine CompareIntegers
-end module UserContext
+end module ex49fmodule
 
 program main
 
-  use UserContext
+  use ex49fmodule
   implicit none
 
   PetscErrorCode          ierr
