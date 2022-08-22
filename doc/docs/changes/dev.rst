@@ -145,6 +145,7 @@ exec-name``.
 
 - Add PC type of mpi which can be used in conjunction with -mpi_linear_solver_server to use MPI parallelism to solve a system created on a single MPI rank
 - Add ``PCHYPREAMSSetInteriorNodes()`` to set interior nodes for HYPRE AMS
+- Add ``PCAMGX``, a PC interface for NVIDIA's AMGx AMG solver
 
 .. rubric:: KSP:
 
