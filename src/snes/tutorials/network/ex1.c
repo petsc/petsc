@@ -203,12 +203,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *appctx)
       PetscCall(DMNetworkGetNumComponents(networkdm,e,&ncomp));
       /* printf("\n  [%d] connected edge[%" PetscInt_FMT "]=%" PetscInt_FMT " has ncomp %" PetscInt_FMT "\n",rank,k,e,ncomp); */
       PetscCall(DMNetworkGetComponent(networkdm,e,0,&keye,&component,NULL));
-      if (keye == appctx_water.compkey_edge) { /* water_compkey_edge */
-        EDGE_Water        edge=(EDGE_Water)component;
-        if (edge->type == EDGE_TYPE_PUMP) {
-          /* printf("  connected edge[%" PetscInt_FMT "]=%" PetscInt_FMT " has keye=%" PetscInt_FMT ", is appctx_water.compkey_edge with EDGE_TYPE_PUMP\n",k,e,keye); */
-        }
-      } else { /* ower->compkey_branch */
+      if (keye != appctx_water.compkey_edge) {
         PetscCheck(keye == appctx_power.compkey_branch,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not a power branch");
       }
     }

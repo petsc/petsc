@@ -112,10 +112,9 @@ static PetscErrorCode PetscPartitionerPartition_Chaco(PetscPartitioner part, Pet
   FREE_GRAPH = 0; /* Do not let Chaco free my memory */
   for (i = 0; i < start[numVertices]; ++i) ++adjacency[i];
 
-  if (global_method == INERTIAL_METHOD) {
-    /* manager.createCellCoordinates(nvtxs, &x, &y, &z); */
-    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Inertial partitioning not yet supported");
-  }
+  /* code would use manager.createCellCoordinates(nvtxs, &x, &y, &z); */
+  PetscCheck(global_method != INERTIAL_METHOD,PETSC_COMM_SELF, PETSC_ERR_SUP, "Inertial partitioning not yet supported");
+
   mesh_dims[0] = nparts;
   mesh_dims[1] = 1;
   mesh_dims[2] = 1;
@@ -167,9 +166,8 @@ static PetscErrorCode PetscPartitionerPartition_Chaco(PetscPartitioner part, Pet
   }
   PetscCheck(i == nvtxs,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of points %" PetscInt_FMT " should be %" PetscInt_FMT, i, nvtxs);
   PetscCall(ISCreateGeneral(comm, nvtxs, points, PETSC_OWN_POINTER, partition));
-  if (global_method == INERTIAL_METHOD) {
-    /* manager.destroyCellCoordinates(nvtxs, &x, &y, &z); */
-  }
+  /* code would use manager.destroyCellCoordinates(nvtxs, &x, &y, &z); */
+  PetscCheck(global_method != INERTIAL_METHOD,PETSC_COMM_SELF, PETSC_ERR_SUP, "Inertial partitioning not yet supported");
   PetscCall(PetscFree(assignment));
   for (i = 0; i < start[numVertices]; ++i) --adjacency[i];
   PetscFunctionReturn(0);

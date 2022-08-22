@@ -1484,16 +1484,6 @@ static PetscErrorCode PCView_GAMG(PC pc,PetscViewer viewer)
   if (pc_gamg->use_parallel_coarse_grid_solver) {
     PetscCall(PetscViewerASCIIPrintf(viewer,"      Using parallel coarse grid solver (all coarse grid equations not put on one process)\n"));
   }
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
-  if (pc_gamg->cpu_pin_coarse_grids) {
-    /* PetscCall(PetscViewerASCIIPrintf(viewer,"      Pinning coarse grids to the CPU)\n")); */
-  }
-#endif
-  /* if (pc_gamg->layout_type==PCGAMG_LAYOUT_COMPACT) { */
-  /*   PetscCall(PetscViewerASCIIPrintf(viewer,"      Put reduced grids on processes in natural order (ie, 0,1,2...)\n")); */
-  /* } else { */
-  /*   PetscCall(PetscViewerASCIIPrintf(viewer,"      Put reduced grids on whole machine (ie, 0,1*f,2*f...,np-f)\n")); */
-  /* } */
   if (pc_gamg->ops->view) PetscCall((*pc_gamg->ops->view)(pc,viewer));
   PetscCall(PCMGGetGridComplexity(pc,&gc,&oc));
   PetscCall(PetscViewerASCIIPrintf(viewer,"      Complexity:    grid = %g    operator = %g\n",(double)gc,(double)oc));
