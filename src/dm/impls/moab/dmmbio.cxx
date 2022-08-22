@@ -1,12 +1,11 @@
 #include <petsc/private/dmmbimpl.h> /*I  "petscdmmoab.h"   I*/
 #include <petscdmmoab.h>
 
-static PetscErrorCode DMMoab_GetWriteOptions_Private(PetscInt fsetid, PetscInt numproc, PetscInt dim, MoabWriteMode mode, PetscInt dbglevel, const char* dm_opts, const char* extra_opts, const char** write_opts)
-{
-  char           *wopts;
-  char           wopts_par[PETSC_MAX_PATH_LEN];
-  char           wopts_parid[PETSC_MAX_PATH_LEN];
-  char           wopts_dbg[PETSC_MAX_PATH_LEN];
+static PetscErrorCode DMMoab_GetWriteOptions_Private(PetscInt fsetid, PetscInt numproc, PetscInt dim, MoabWriteMode mode, PetscInt dbglevel, const char *dm_opts, const char *extra_opts, const char **write_opts) {
+  char *wopts;
+  char  wopts_par[PETSC_MAX_PATH_LEN];
+  char  wopts_parid[PETSC_MAX_PATH_LEN];
+  char  wopts_dbg[PETSC_MAX_PATH_LEN];
   PetscFunctionBegin;
 
   PetscCall(PetscMalloc1(PETSC_MAX_PATH_LEN, &wopts));
@@ -17,14 +16,10 @@ static PetscErrorCode DMMoab_GetWriteOptions_Private(PetscInt fsetid, PetscInt n
   // do parallel read unless only one processor
   if (numproc > 1) {
     PetscCall(PetscSNPrintf(wopts_par, PETSC_MAX_PATH_LEN, "PARALLEL=%s;", MoabWriteModes[mode]));
-    if (fsetid >= 0) {
-      PetscCall(PetscSNPrintf(wopts_parid, PETSC_MAX_PATH_LEN, "PARALLEL_COMM=%d;", fsetid));
-    }
+    if (fsetid >= 0) { PetscCall(PetscSNPrintf(wopts_parid, PETSC_MAX_PATH_LEN, "PARALLEL_COMM=%d;", fsetid)); }
   }
 
-  if (dbglevel) {
-    PetscCall(PetscSNPrintf(wopts_dbg, PETSC_MAX_PATH_LEN, "CPUTIME;DEBUG_IO=%d;", dbglevel));
-  }
+  if (dbglevel) { PetscCall(PetscSNPrintf(wopts_dbg, PETSC_MAX_PATH_LEN, "CPUTIME;DEBUG_IO=%d;", dbglevel)); }
 
   PetscCall(PetscSNPrintf(wopts, PETSC_MAX_PATH_LEN, "%s%s%s%s%s", wopts_par, wopts_parid, wopts_dbg, (extra_opts ? extra_opts : ""), (dm_opts ? dm_opts : "")));
   *write_opts = wopts;
@@ -52,25 +47,24 @@ static PetscErrorCode DMMoab_GetWriteOptions_Private(PetscInt fsetid, PetscInt n
 
 .seealso: `DMMoabLoadFromFile()`, `DMMoabSetGlobalFieldVector()`
 @*/
-PetscErrorCode DMMoabOutput(DM dm, const char* filename, const char* usrwriteopts)
-{
-  DM_Moab         *dmmoab;
-  const char      *writeopts;
+PetscErrorCode DMMoabOutput(DM dm, const char *filename, const char *usrwriteopts) {
+  DM_Moab        *dmmoab;
+  const char     *writeopts;
   PetscBool       isftype;
   moab::ErrorCode merr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  dmmoab = (DM_Moab*)(dm)->data;
+  dmmoab = (DM_Moab *)(dm)->data;
 
   PetscCall(PetscStrendswith(filename, "h5m", &isftype));
 
   /* add mesh loading options specific to the DM */
   if (isftype) {
 #ifdef MOAB_HAVE_MPI
-    PetscCall(DMMoab_GetWriteOptions_Private(dmmoab->pcomm->get_id(), dmmoab->pcomm->size(), dmmoab->dim, dmmoab->write_mode,dmmoab->rw_dbglevel, dmmoab->extra_write_options, usrwriteopts, &writeopts));
+    PetscCall(DMMoab_GetWriteOptions_Private(dmmoab->pcomm->get_id(), dmmoab->pcomm->size(), dmmoab->dim, dmmoab->write_mode, dmmoab->rw_dbglevel, dmmoab->extra_write_options, usrwriteopts, &writeopts));
 #else
-    PetscCall(DMMoab_GetWriteOptions_Private(0, 1, dmmoab->dim, dmmoab->write_mode,dmmoab->rw_dbglevel, dmmoab->extra_write_options, usrwriteopts, &writeopts));
+    PetscCall(DMMoab_GetWriteOptions_Private(0, 1, dmmoab->dim, dmmoab->write_mode, dmmoab->rw_dbglevel, dmmoab->extra_write_options, usrwriteopts, &writeopts));
 #endif
     PetscCall(PetscInfo(dm, "Writing file %s with options: %s\n", filename, writeopts));
   } else {
@@ -78,7 +72,8 @@ PetscErrorCode DMMoabOutput(DM dm, const char* filename, const char* usrwriteopt
   }
 
   /* output file, using parallel write */
-  merr = dmmoab->mbiface->write_file(filename, NULL, writeopts, &dmmoab->fileset, 1); MBERRVM(dmmoab->mbiface, "Writing output of DMMoab failed.", merr);
+  merr = dmmoab->mbiface->write_file(filename, NULL, writeopts, &dmmoab->fileset, 1);
+  MBERRVM(dmmoab->mbiface, "Writing output of DMMoab failed.", merr);
   PetscCall(PetscFree(writeopts));
   PetscFunctionReturn(0);
 }

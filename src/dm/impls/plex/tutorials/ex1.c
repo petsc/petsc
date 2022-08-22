@@ -2,20 +2,19 @@ static char help[] = "Define a simple field over the mesh\n\n";
 
 #include <petscdmplex.h>
 
-int main(int argc, char **argv)
-{
-  DM             dm;
-  Vec            u;
-  PetscSection   section;
-  PetscViewer    viewer;
-  PetscInt       dim, numFields, numBC, i;
-  PetscInt       numComp[3];
-  PetscInt       numDof[12];
-  PetscInt       bcField[1];
-  IS             bcPointIS[1];
+int main(int argc, char **argv) {
+  DM           dm;
+  Vec          u;
+  PetscSection section;
+  PetscViewer  viewer;
+  PetscInt     dim, numFields, numBC, i;
+  PetscInt     numComp[3];
+  PetscInt     numDof[12];
+  PetscInt     bcField[1];
+  IS           bcPointIS[1];
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, NULL,help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   /* Create a mesh */
   PetscCall(DMCreate(PETSC_COMM_WORLD, &dm));
   PetscCall(DMSetType(dm, DMPLEX));
@@ -26,19 +25,19 @@ int main(int argc, char **argv)
   numFields  = 3;
   numComp[0] = 1;
   numComp[1] = dim;
-  numComp[2] = dim-1;
-  for (i = 0; i < numFields*(dim+1); ++i) numDof[i] = 0;
+  numComp[2] = dim - 1;
+  for (i = 0; i < numFields * (dim + 1); ++i) numDof[i] = 0;
   /* Let u be defined on vertices */
-  numDof[0*(dim+1)+0]     = 1;
+  numDof[0 * (dim + 1) + 0]       = 1;
   /* Let v be defined on cells */
-  numDof[1*(dim+1)+dim]   = dim;
+  numDof[1 * (dim + 1) + dim]     = dim;
   /* Let w be defined on faces */
-  numDof[2*(dim+1)+dim-1] = dim-1;
+  numDof[2 * (dim + 1) + dim - 1] = dim - 1;
   /* Setup boundary conditions */
-  numBC = 1;
+  numBC                           = 1;
   /* Prescribe a Dirichlet condition on u on the boundary
        Label "marker" is made by the mesh creation routine */
-  bcField[0] = 0;
+  bcField[0]                      = 0;
   PetscCall(DMGetStratumIS(dm, "marker", 1, &bcPointIS[0]));
   /* Create a PetscSection with this data layout */
   PetscCall(DMSetNumFields(dm, numFields));

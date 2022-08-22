@@ -2,10 +2,9 @@
 
 /*------------------------------------------------------------*/
 
-static PetscErrorCode MatSolve_DiagBrdn(Mat B, Vec F, Vec dX)
-{
-  Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
-  Mat_DiagBrdn      *ldb = (Mat_DiagBrdn*)lmvm->ctx;
+static PetscErrorCode MatSolve_DiagBrdn(Mat B, Vec F, Vec dX) {
+  Mat_LMVM     *lmvm = (Mat_LMVM *)B->data;
+  Mat_DiagBrdn *ldb  = (Mat_DiagBrdn *)lmvm->ctx;
 
   PetscFunctionBegin;
   VecCheckSameSize(F, 2, dX, 3);
@@ -16,10 +15,9 @@ static PetscErrorCode MatSolve_DiagBrdn(Mat B, Vec F, Vec dX)
 
 /*------------------------------------------------------------*/
 
-static PetscErrorCode MatMult_DiagBrdn(Mat B, Vec X, Vec Z)
-{
-  Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
-  Mat_DiagBrdn      *ldb = (Mat_DiagBrdn*)lmvm->ctx;
+static PetscErrorCode MatMult_DiagBrdn(Mat B, Vec X, Vec Z) {
+  Mat_LMVM     *lmvm = (Mat_LMVM *)B->data;
+  Mat_DiagBrdn *ldb  = (Mat_DiagBrdn *)lmvm->ctx;
 
   PetscFunctionBegin;
   VecCheckSameSize(X, 2, Z, 3);
@@ -30,13 +28,12 @@ static PetscErrorCode MatMult_DiagBrdn(Mat B, Vec X, Vec Z)
 
 /*------------------------------------------------------------*/
 
-static PetscErrorCode MatUpdate_DiagBrdn(Mat B, Vec X, Vec F)
-{
-  Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
-  Mat_DiagBrdn      *ldb = (Mat_DiagBrdn*)lmvm->ctx;
-  PetscInt          old_k, i, start;
-  PetscScalar       yty, ststmp, curvature, ytDy, stDs, ytDs;
-  PetscReal         curvtol, sigma, yy_sum, ss_sum, ys_sum, denom;
+static PetscErrorCode MatUpdate_DiagBrdn(Mat B, Vec X, Vec F) {
+  Mat_LMVM     *lmvm = (Mat_LMVM *)B->data;
+  Mat_DiagBrdn *ldb  = (Mat_DiagBrdn *)lmvm->ctx;
+  PetscInt      old_k, i, start;
+  PetscScalar   yty, ststmp, curvature, ytDy, stDs, ytDs;
+  PetscReal     curvtol, sigma, yy_sum, ss_sum, ys_sum, denom;
 
   PetscFunctionBegin;
   if (!lmvm->m) PetscFunctionReturn(0);
@@ -61,10 +58,10 @@ static PetscErrorCode MatUpdate_DiagBrdn(Mat B, Vec X, Vec F)
       PetscCall(MatUpdateKernel_LMVM(B, lmvm->Xprev, lmvm->Fprev));
       /* If we hit the memory limit, shift the yty and yts arrays */
       if (old_k == lmvm->k) {
-        for (i = 0; i <= lmvm->k-1; ++i) {
-          ldb->yty[i] = ldb->yty[i+1];
-          ldb->yts[i] = ldb->yts[i+1];
-          ldb->sts[i] = ldb->sts[i+1];
+        for (i = 0; i <= lmvm->k - 1; ++i) {
+          ldb->yty[i] = ldb->yty[i + 1];
+          ldb->yts[i] = ldb->yts[i + 1];
+          ldb->sts[i] = ldb->sts[i + 1];
         }
       }
       /* Accept dot products into the history */
@@ -94,7 +91,7 @@ static PetscErrorCode MatUpdate_DiagBrdn(Mat B, Vec X, Vec F)
           PetscCall(VecPointwiseMult(ldb->U, ldb->W, ldb->W));
 
           /*  Assemble */
-          PetscCall(VecAXPBY(ldb->BFGS, -1.0/stDs, 0.0, ldb->U));
+          PetscCall(VecAXPBY(ldb->BFGS, -1.0 / stDs, 0.0, ldb->U));
         }
         if (0.0 != ldb->theta) {
           /*  DFP portion of the update */
@@ -102,20 +99,20 @@ static PetscErrorCode MatUpdate_DiagBrdn(Mat B, Vec X, Vec F)
           PetscCall(VecPointwiseMult(ldb->U, ldb->W, lmvm->Y[lmvm->k]));
 
           /*  Assemble */
-          PetscCall(VecAXPBY(ldb->DFP, stDs/ldb->yts[lmvm->k], 0.0, ldb->V));
+          PetscCall(VecAXPBY(ldb->DFP, stDs / ldb->yts[lmvm->k], 0.0, ldb->V));
           PetscCall(VecAXPY(ldb->DFP, -2.0, ldb->U));
         }
 
         if (0.0 == ldb->theta) {
           PetscCall(VecAXPY(ldb->invDnew, 1.0, ldb->BFGS));
         } else if (1.0 == ldb->theta) {
-          PetscCall(VecAXPY(ldb->invDnew, 1.0/ldb->yts[lmvm->k], ldb->DFP));
+          PetscCall(VecAXPY(ldb->invDnew, 1.0 / ldb->yts[lmvm->k], ldb->DFP));
         } else {
           /*  Broyden update Dkp1 = Dk + (1-theta)*P + theta*Q + y_i^2/yts*/
-          PetscCall(VecAXPBYPCZ(ldb->invDnew, 1.0-ldb->theta, (ldb->theta)/ldb->yts[lmvm->k], 1.0, ldb->BFGS, ldb->DFP));
+          PetscCall(VecAXPBYPCZ(ldb->invDnew, 1.0 - ldb->theta, (ldb->theta) / ldb->yts[lmvm->k], 1.0, ldb->BFGS, ldb->DFP));
         }
 
-        PetscCall(VecAXPY(ldb->invDnew, 1.0/ldb->yts[lmvm->k], ldb->V));
+        PetscCall(VecAXPY(ldb->invDnew, 1.0 / ldb->yts[lmvm->k], ldb->V));
         /*  Obtain inverse and ensure positive definite */
         PetscCall(VecReciprocal(ldb->invDnew));
         PetscCall(VecAbs(ldb->invDnew));
@@ -140,7 +137,7 @@ static PetscErrorCode MatUpdate_DiagBrdn(Mat B, Vec X, Vec F)
           PetscCall(VecPointwiseMult(ldb->U, ldb->W, lmvm->S[lmvm->k]));
 
           /*  Assemble */
-          PetscCall(VecAXPBY(ldb->BFGS, ytDy/ldb->yts[lmvm->k], 0.0, ldb->V));
+          PetscCall(VecAXPBY(ldb->BFGS, ytDy / ldb->yts[lmvm->k], 0.0, ldb->V));
           PetscCall(VecAXPY(ldb->BFGS, -2.0, ldb->U));
         }
         if (0.0 != ldb->theta) {
@@ -150,18 +147,18 @@ static PetscErrorCode MatUpdate_DiagBrdn(Mat B, Vec X, Vec F)
           PetscCall(VecPointwiseMult(ldb->U, ldb->W, ldb->W));
 
           /*  Assemble */
-          PetscCall(VecAXPBY(ldb->DFP, -1.0/ytDy, 0.0, ldb->U));
+          PetscCall(VecAXPBY(ldb->DFP, -1.0 / ytDy, 0.0, ldb->U));
         }
 
         if (0.0 == ldb->theta) {
-          PetscCall(VecAXPY(ldb->invDnew, 1.0/ldb->yts[lmvm->k], ldb->BFGS));
+          PetscCall(VecAXPY(ldb->invDnew, 1.0 / ldb->yts[lmvm->k], ldb->BFGS));
         } else if (1.0 == ldb->theta) {
           PetscCall(VecAXPY(ldb->invDnew, 1.0, ldb->DFP));
         } else {
           /*  Broyden update U=(1-theta)*P + theta*Q */
-          PetscCall(VecAXPBYPCZ(ldb->invDnew, (1.0-ldb->theta)/ldb->yts[lmvm->k], ldb->theta, 1.0, ldb->BFGS, ldb->DFP));
+          PetscCall(VecAXPBYPCZ(ldb->invDnew, (1.0 - ldb->theta) / ldb->yts[lmvm->k], ldb->theta, 1.0, ldb->BFGS, ldb->DFP));
         }
-        PetscCall(VecAXPY(ldb->invDnew, 1.0/ldb->yts[lmvm->k], ldb->V));
+        PetscCall(VecAXPY(ldb->invDnew, 1.0 / ldb->yts[lmvm->k], ldb->V));
         /*  Ensure positive definite */
         PetscCall(VecAbs(ldb->invDnew));
       }
@@ -185,10 +182,10 @@ static PetscErrorCode MatUpdate_DiagBrdn(Mat B, Vec X, Vec F)
             PetscCall(VecReciprocal(ldb->U));
 
             /*  Compute summations for scalar scaling */
-            yy_sum = 0;       /*  No safeguard required */
-            ys_sum = 0;       /*  No safeguard required */
-            ss_sum = 0;       /*  No safeguard required */
-            start = PetscMax(0, lmvm->k-ldb->sigma_hist+1);
+            yy_sum = 0; /*  No safeguard required */
+            ys_sum = 0; /*  No safeguard required */
+            ss_sum = 0; /*  No safeguard required */
+            start  = PetscMax(0, lmvm->k - ldb->sigma_hist + 1);
             for (i = start; i < PetscMin(lmvm->nupdates, ldb->sigma_hist); ++i) {
               PetscCall(VecPointwiseMult(ldb->V, lmvm->Y[i], ldb->U));
               PetscCall(VecPointwiseMult(ldb->W, lmvm->S[i], ldb->U));
@@ -221,10 +218,10 @@ static PetscErrorCode MatUpdate_DiagBrdn(Mat B, Vec X, Vec F)
             PetscCall(VecReciprocal(ldb->U));
 
             /*  Compute summations for scalar scaling */
-            yy_sum = 0;       /*  No safeguard required */
-            ys_sum = 0;       /*  No safeguard required */
-            ss_sum = 0;       /*  No safeguard required */
-            start = PetscMax(0, lmvm->k-ldb->sigma_hist+1);
+            yy_sum = 0; /*  No safeguard required */
+            ys_sum = 0; /*  No safeguard required */
+            ss_sum = 0; /*  No safeguard required */
+            start  = PetscMax(0, lmvm->k - ldb->sigma_hist + 1);
             for (i = start; i < PetscMin(lmvm->nupdates, ldb->sigma_hist); ++i) {
               PetscCall(VecPointwiseMult(ldb->W, lmvm->S[i], ldb->U));
 
@@ -243,7 +240,7 @@ static PetscErrorCode MatUpdate_DiagBrdn(Mat B, Vec X, Vec F)
           yy_sum = 0; /*  No safeguard required */
           ys_sum = 0; /*  No safeguard required */
           ss_sum = 0; /*  No safeguard required */
-          start = PetscMax(0, lmvm->k-ldb->sigma_hist+1);
+          start  = PetscMax(0, lmvm->k - ldb->sigma_hist + 1);
           for (i = start; i < PetscMin(lmvm->nupdates, ldb->sigma_hist); ++i) {
             PetscCall(VecPointwiseMult(ldb->V, lmvm->Y[i], ldb->invDnew));
 
@@ -258,13 +255,13 @@ static PetscErrorCode MatUpdate_DiagBrdn(Mat B, Vec X, Vec F)
           }
         } else {
           PetscCall(VecCopy(ldb->invDnew, ldb->U));
-          PetscCall(VecPow(ldb->U, ldb->beta-1));
+          PetscCall(VecPow(ldb->U, ldb->beta - 1));
 
           /*  Compute summations for scalar scaling */
           yy_sum = 0; /*  No safeguard required */
           ys_sum = 0; /*  No safeguard required */
           ss_sum = 0; /*  No safeguard required */
-          start = PetscMax(0, lmvm->k-ldb->sigma_hist+1);
+          start  = PetscMax(0, lmvm->k - ldb->sigma_hist + 1);
           for (i = start; i < PetscMin(lmvm->nupdates, ldb->sigma_hist); ++i) {
             PetscCall(VecPointwiseMult(ldb->V, ldb->invDnew, lmvm->Y[i]));
             PetscCall(VecPointwiseMult(ldb->W, ldb->U, lmvm->S[i]));
@@ -291,12 +288,12 @@ static PetscErrorCode MatUpdate_DiagBrdn(Mat B, Vec X, Vec F)
           /* yy_sum is never 0; if it were, we'd be at the minimum */
           sigma = ys_sum / yy_sum;
         } else {
-          denom = 2.0*ldb->alpha*yy_sum;
+          denom = 2.0 * ldb->alpha * yy_sum;
 
           /*  Safeguard denom */
           denom = PetscMax(ldb->tol, denom);
 
-          sigma = ((2.0*ldb->alpha-1)*ys_sum + PetscSqrtReal((2.0*ldb->alpha-1)*(2.0*ldb->alpha-1)*ys_sum*ys_sum - 4.0*ldb->alpha*(ldb->alpha-1)*yy_sum*ss_sum)) / denom;
+          sigma = ((2.0 * ldb->alpha - 1) * ys_sum + PetscSqrtReal((2.0 * ldb->alpha - 1) * (2.0 * ldb->alpha - 1) * ys_sum * ys_sum - 4.0 * ldb->alpha * (ldb->alpha - 1) * yy_sum * ss_sum)) / denom;
         }
       } else {
         sigma = 1.0;
@@ -318,12 +315,11 @@ static PetscErrorCode MatUpdate_DiagBrdn(Mat B, Vec X, Vec F)
       /* Combine the old diagonal and the new diagonal using a convex limiter */
       if (1.0 == ldb->rho) {
         PetscCall(VecCopy(ldb->invDnew, ldb->invD));
-      } else if (ldb->rho) PetscCall(VecAXPBY(ldb->invD, 1.0-ldb->rho, ldb->rho, ldb->invDnew));
+      } else if (ldb->rho) PetscCall(VecAXPBY(ldb->invD, 1.0 - ldb->rho, ldb->rho, ldb->invDnew));
     } else {
       PetscCall(MatLMVMReset(B, PETSC_FALSE));
     }
     /* End DiagBrdn update */
-
   }
   /* Save the solution and function to be used in the next update */
   PetscCall(VecCopy(X, lmvm->Xprev));
@@ -334,28 +330,27 @@ static PetscErrorCode MatUpdate_DiagBrdn(Mat B, Vec X, Vec F)
 
 /*------------------------------------------------------------*/
 
-static PetscErrorCode MatCopy_DiagBrdn(Mat B, Mat M, MatStructure str)
-{
-  Mat_LMVM          *bdata = (Mat_LMVM*)B->data;
-  Mat_DiagBrdn      *bctx = (Mat_DiagBrdn*)bdata->ctx;
-  Mat_LMVM          *mdata = (Mat_LMVM*)M->data;
-  Mat_DiagBrdn      *mctx = (Mat_DiagBrdn*)mdata->ctx;
-  PetscInt          i;
+static PetscErrorCode MatCopy_DiagBrdn(Mat B, Mat M, MatStructure str) {
+  Mat_LMVM     *bdata = (Mat_LMVM *)B->data;
+  Mat_DiagBrdn *bctx  = (Mat_DiagBrdn *)bdata->ctx;
+  Mat_LMVM     *mdata = (Mat_LMVM *)M->data;
+  Mat_DiagBrdn *mctx  = (Mat_DiagBrdn *)mdata->ctx;
+  PetscInt      i;
 
   PetscFunctionBegin;
-  mctx->theta = bctx->theta;
-  mctx->alpha = bctx->alpha;
-  mctx->beta = bctx->beta;
-  mctx->rho = bctx->rho;
-  mctx->delta = bctx->delta;
-  mctx->delta_min = bctx->delta_min;
-  mctx->delta_max = bctx->delta_max;
-  mctx->tol = bctx->tol;
-  mctx->sigma = bctx->sigma;
+  mctx->theta      = bctx->theta;
+  mctx->alpha      = bctx->alpha;
+  mctx->beta       = bctx->beta;
+  mctx->rho        = bctx->rho;
+  mctx->delta      = bctx->delta;
+  mctx->delta_min  = bctx->delta_min;
+  mctx->delta_max  = bctx->delta_max;
+  mctx->tol        = bctx->tol;
+  mctx->sigma      = bctx->sigma;
   mctx->sigma_hist = bctx->sigma_hist;
-  mctx->forward = bctx->forward;
+  mctx->forward    = bctx->forward;
   PetscCall(VecCopy(bctx->invD, mctx->invD));
-  for (i=0; i<=bdata->k; ++i) {
+  for (i = 0; i <= bdata->k; ++i) {
     mctx->yty[i] = bctx->yty[i];
     mctx->yts[i] = bctx->yts[i];
     mctx->sts[i] = bctx->sts[i];
@@ -365,18 +360,17 @@ static PetscErrorCode MatCopy_DiagBrdn(Mat B, Mat M, MatStructure str)
 
 /*------------------------------------------------------------*/
 
-static PetscErrorCode MatView_DiagBrdn(Mat B, PetscViewer pv)
-{
-  Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
-  Mat_DiagBrdn      *ldb = (Mat_DiagBrdn*)lmvm->ctx;
-  PetscBool         isascii;
+static PetscErrorCode MatView_DiagBrdn(Mat B, PetscViewer pv) {
+  Mat_LMVM     *lmvm = (Mat_LMVM *)B->data;
+  Mat_DiagBrdn *ldb  = (Mat_DiagBrdn *)lmvm->ctx;
+  PetscBool     isascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)pv,PETSCVIEWERASCII,&isascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)pv, PETSCVIEWERASCII, &isascii));
   if (isascii) {
-    PetscCall(PetscViewerASCIIPrintf(pv,"Scale history: %" PetscInt_FMT "\n",ldb->sigma_hist));
-    PetscCall(PetscViewerASCIIPrintf(pv,"Scale params: alpha=%g, beta=%g, rho=%g\n",(double)ldb->alpha, (double)ldb->beta, (double)ldb->rho));
-    PetscCall(PetscViewerASCIIPrintf(pv,"Convex factor: theta=%g\n", (double)ldb->theta));
+    PetscCall(PetscViewerASCIIPrintf(pv, "Scale history: %" PetscInt_FMT "\n", ldb->sigma_hist));
+    PetscCall(PetscViewerASCIIPrintf(pv, "Scale params: alpha=%g, beta=%g, rho=%g\n", (double)ldb->alpha, (double)ldb->beta, (double)ldb->rho));
+    PetscCall(PetscViewerASCIIPrintf(pv, "Convex factor: theta=%g\n", (double)ldb->theta));
   }
   PetscCall(MatView_LMVM(B, pv));
   PetscFunctionReturn(0);
@@ -384,35 +378,33 @@ static PetscErrorCode MatView_DiagBrdn(Mat B, PetscViewer pv)
 
 /*------------------------------------------------------------*/
 
-static PetscErrorCode MatSetFromOptions_DiagBrdn(Mat B,PetscOptionItems *PetscOptionsObject)
-{
-  Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
-  Mat_DiagBrdn       *ldb = (Mat_DiagBrdn*)lmvm->ctx;
+static PetscErrorCode MatSetFromOptions_DiagBrdn(Mat B, PetscOptionItems *PetscOptionsObject) {
+  Mat_LMVM     *lmvm = (Mat_LMVM *)B->data;
+  Mat_DiagBrdn *ldb  = (Mat_DiagBrdn *)lmvm->ctx;
 
   PetscFunctionBegin;
-  PetscCall(MatSetFromOptions_LMVM(B,PetscOptionsObject));
-  PetscOptionsHeadBegin(PetscOptionsObject,"Restricted Broyden method for approximating SPD Jacobian actions (MATLMVMDIAGBRDN)");
-  PetscCall(PetscOptionsReal("-mat_lmvm_theta","(developer) convex ratio between BFGS and DFP components of the diagonal J0 scaling","",ldb->theta,&ldb->theta,NULL));
-  PetscCall(PetscOptionsReal("-mat_lmvm_rho","(developer) update limiter in the J0 scaling","",ldb->rho,&ldb->rho,NULL));
-  PetscCall(PetscOptionsReal("-mat_lmvm_tol","(developer) tolerance for bounding rescaling denominator","",ldb->tol,&ldb->tol,NULL));
-  PetscCall(PetscOptionsReal("-mat_lmvm_alpha","(developer) convex ratio in the J0 scaling","",ldb->alpha,&ldb->alpha,NULL));
-  PetscCall(PetscOptionsBool("-mat_lmvm_forward","Forward -> Update diagonal scaling for B. Else -> diagonal scaling for H.","",ldb->forward,&ldb->forward,NULL));
-  PetscCall(PetscOptionsReal("-mat_lmvm_beta","(developer) exponential factor in the diagonal J0 scaling","",ldb->beta,&ldb->beta,NULL));
-  PetscCall(PetscOptionsInt("-mat_lmvm_sigma_hist","(developer) number of past updates to use in the default J0 scalar","",ldb->sigma_hist,&ldb->sigma_hist,NULL));
+  PetscCall(MatSetFromOptions_LMVM(B, PetscOptionsObject));
+  PetscOptionsHeadBegin(PetscOptionsObject, "Restricted Broyden method for approximating SPD Jacobian actions (MATLMVMDIAGBRDN)");
+  PetscCall(PetscOptionsReal("-mat_lmvm_theta", "(developer) convex ratio between BFGS and DFP components of the diagonal J0 scaling", "", ldb->theta, &ldb->theta, NULL));
+  PetscCall(PetscOptionsReal("-mat_lmvm_rho", "(developer) update limiter in the J0 scaling", "", ldb->rho, &ldb->rho, NULL));
+  PetscCall(PetscOptionsReal("-mat_lmvm_tol", "(developer) tolerance for bounding rescaling denominator", "", ldb->tol, &ldb->tol, NULL));
+  PetscCall(PetscOptionsReal("-mat_lmvm_alpha", "(developer) convex ratio in the J0 scaling", "", ldb->alpha, &ldb->alpha, NULL));
+  PetscCall(PetscOptionsBool("-mat_lmvm_forward", "Forward -> Update diagonal scaling for B. Else -> diagonal scaling for H.", "", ldb->forward, &ldb->forward, NULL));
+  PetscCall(PetscOptionsReal("-mat_lmvm_beta", "(developer) exponential factor in the diagonal J0 scaling", "", ldb->beta, &ldb->beta, NULL));
+  PetscCall(PetscOptionsInt("-mat_lmvm_sigma_hist", "(developer) number of past updates to use in the default J0 scalar", "", ldb->sigma_hist, &ldb->sigma_hist, NULL));
   PetscOptionsHeadEnd();
-  PetscCheck(!(ldb->theta < 0.0) && !(ldb->theta > 1.0),PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_OUTOFRANGE, "convex ratio for the diagonal J0 scale cannot be outside the range of [0, 1]");
-  PetscCheck(!(ldb->alpha < 0.0) && !(ldb->alpha > 1.0),PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_OUTOFRANGE, "convex ratio in the J0 scaling cannot be outside the range of [0, 1]");
-  PetscCheck(!(ldb->rho < 0.0) && !(ldb->rho > 1.0),PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_OUTOFRANGE, "convex update limiter in the J0 scaling cannot be outside the range of [0, 1]");
-  PetscCheck(ldb->sigma_hist >= 0,PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_OUTOFRANGE, "J0 scaling history length cannot be negative");
+  PetscCheck(!(ldb->theta < 0.0) && !(ldb->theta > 1.0), PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_OUTOFRANGE, "convex ratio for the diagonal J0 scale cannot be outside the range of [0, 1]");
+  PetscCheck(!(ldb->alpha < 0.0) && !(ldb->alpha > 1.0), PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_OUTOFRANGE, "convex ratio in the J0 scaling cannot be outside the range of [0, 1]");
+  PetscCheck(!(ldb->rho < 0.0) && !(ldb->rho > 1.0), PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_OUTOFRANGE, "convex update limiter in the J0 scaling cannot be outside the range of [0, 1]");
+  PetscCheck(ldb->sigma_hist >= 0, PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_OUTOFRANGE, "J0 scaling history length cannot be negative");
   PetscFunctionReturn(0);
 }
 
 /*------------------------------------------------------------*/
 
-static PetscErrorCode MatReset_DiagBrdn(Mat B, PetscBool destructive)
-{
-  Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
-  Mat_DiagBrdn      *ldb = (Mat_DiagBrdn*)lmvm->ctx;
+static PetscErrorCode MatReset_DiagBrdn(Mat B, PetscBool destructive) {
+  Mat_LMVM     *lmvm = (Mat_LMVM *)B->data;
+  Mat_DiagBrdn *ldb  = (Mat_DiagBrdn *)lmvm->ctx;
 
   PetscFunctionBegin;
   PetscCall(VecSet(ldb->invD, ldb->delta));
@@ -433,10 +425,9 @@ static PetscErrorCode MatReset_DiagBrdn(Mat B, PetscBool destructive)
 
 /*------------------------------------------------------------*/
 
-static PetscErrorCode MatAllocate_DiagBrdn(Mat B, Vec X, Vec F)
-{
-  Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
-  Mat_DiagBrdn      *ldb = (Mat_DiagBrdn*)lmvm->ctx;
+static PetscErrorCode MatAllocate_DiagBrdn(Mat B, Vec X, Vec F) {
+  Mat_LMVM     *lmvm = (Mat_LMVM *)B->data;
+  Mat_DiagBrdn *ldb  = (Mat_DiagBrdn *)lmvm->ctx;
 
   PetscFunctionBegin;
   PetscCall(MatAllocate_LMVM(B, X, F));
@@ -456,10 +447,9 @@ static PetscErrorCode MatAllocate_DiagBrdn(Mat B, Vec X, Vec F)
 
 /*------------------------------------------------------------*/
 
-static PetscErrorCode MatDestroy_DiagBrdn(Mat B)
-{
-  Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
-  Mat_DiagBrdn      *ldb = (Mat_DiagBrdn*)lmvm->ctx;
+static PetscErrorCode MatDestroy_DiagBrdn(Mat B) {
+  Mat_LMVM     *lmvm = (Mat_LMVM *)B->data;
+  Mat_DiagBrdn *ldb  = (Mat_DiagBrdn *)lmvm->ctx;
 
   PetscFunctionBegin;
   if (ldb->allocated) {
@@ -480,10 +470,9 @@ static PetscErrorCode MatDestroy_DiagBrdn(Mat B)
 
 /*------------------------------------------------------------*/
 
-static PetscErrorCode MatSetUp_DiagBrdn(Mat B)
-{
-  Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
-  Mat_DiagBrdn      *ldb = (Mat_DiagBrdn*)lmvm->ctx;
+static PetscErrorCode MatSetUp_DiagBrdn(Mat B) {
+  Mat_LMVM     *lmvm = (Mat_LMVM *)B->data;
+  Mat_DiagBrdn *ldb  = (Mat_DiagBrdn *)lmvm->ctx;
 
   PetscFunctionBegin;
   PetscCall(MatSetUp_LMVM(B));
@@ -503,43 +492,42 @@ static PetscErrorCode MatSetUp_DiagBrdn(Mat B)
 
 /*------------------------------------------------------------*/
 
-PetscErrorCode MatCreate_LMVMDiagBrdn(Mat B)
-{
-  Mat_LMVM          *lmvm;
-  Mat_DiagBrdn      *ldb;
+PetscErrorCode MatCreate_LMVMDiagBrdn(Mat B) {
+  Mat_LMVM     *lmvm;
+  Mat_DiagBrdn *ldb;
 
   PetscFunctionBegin;
   PetscCall(MatCreate_LMVM(B));
   PetscCall(PetscObjectChangeTypeName((PetscObject)B, MATLMVMDIAGBROYDEN));
-  B->ops->setup = MatSetUp_DiagBrdn;
+  B->ops->setup          = MatSetUp_DiagBrdn;
   B->ops->setfromoptions = MatSetFromOptions_DiagBrdn;
-  B->ops->destroy = MatDestroy_DiagBrdn;
-  B->ops->solve = MatSolve_DiagBrdn;
-  B->ops->view = MatView_DiagBrdn;
+  B->ops->destroy        = MatDestroy_DiagBrdn;
+  B->ops->solve          = MatSolve_DiagBrdn;
+  B->ops->view           = MatView_DiagBrdn;
 
-  lmvm = (Mat_LMVM*)B->data;
-  lmvm->square = PETSC_TRUE;
-  lmvm->m = 1;
+  lmvm                = (Mat_LMVM *)B->data;
+  lmvm->square        = PETSC_TRUE;
+  lmvm->m             = 1;
   lmvm->ops->allocate = MatAllocate_DiagBrdn;
-  lmvm->ops->reset = MatReset_DiagBrdn;
-  lmvm->ops->mult = MatMult_DiagBrdn;
-  lmvm->ops->update = MatUpdate_DiagBrdn;
-  lmvm->ops->copy = MatCopy_DiagBrdn;
+  lmvm->ops->reset    = MatReset_DiagBrdn;
+  lmvm->ops->mult     = MatMult_DiagBrdn;
+  lmvm->ops->update   = MatUpdate_DiagBrdn;
+  lmvm->ops->copy     = MatCopy_DiagBrdn;
 
   PetscCall(PetscNewLog(B, &ldb));
-  lmvm->ctx = (void*)ldb;
-  ldb->theta = 0.0;
-  ldb->alpha = 1.0;
-  ldb->rho = 1.0;
-  ldb->forward = PETSC_TRUE;
-  ldb->beta = 0.5;
-  ldb->sigma = 1.0;
-  ldb->delta = 1.0;
-  ldb->delta_min = 1e-7;
-  ldb->delta_max = 100.0;
-  ldb->tol = 1e-8;
+  lmvm->ctx       = (void *)ldb;
+  ldb->theta      = 0.0;
+  ldb->alpha      = 1.0;
+  ldb->rho        = 1.0;
+  ldb->forward    = PETSC_TRUE;
+  ldb->beta       = 0.5;
+  ldb->sigma      = 1.0;
+  ldb->delta      = 1.0;
+  ldb->delta_min  = 1e-7;
+  ldb->delta_max  = 100.0;
+  ldb->tol        = 1e-8;
   ldb->sigma_hist = 1;
-  ldb->allocated = PETSC_FALSE;
+  ldb->allocated  = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -591,8 +579,7 @@ PetscErrorCode MatCreate_LMVMDiagBrdn(Mat B)
 .seealso: `MatCreate()`, `MATLMVM`, `MATLMVMDIAGBRDN`, `MatCreateLMVMDFP()`, `MatCreateLMVMSR1()`,
           `MatCreateLMVMBFGS()`, `MatCreateLMVMBrdn()`, `MatCreateLMVMSymBrdn()`
 @*/
-PetscErrorCode MatCreateLMVMDiagBroyden(MPI_Comm comm, PetscInt n, PetscInt N, Mat *B)
-{
+PetscErrorCode MatCreateLMVMDiagBroyden(MPI_Comm comm, PetscInt n, PetscInt N, Mat *B) {
   PetscFunctionBegin;
   PetscCall(MatCreate(comm, B));
   PetscCall(MatSetSizes(*B, n, n, N, N));

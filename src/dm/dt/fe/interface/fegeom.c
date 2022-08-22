@@ -16,14 +16,13 @@
 
 .seealso: `PetscFEGeomDestroy()`, `PetscFEGeomComplete()`
 @*/
-PetscErrorCode PetscFEGeomCreate(PetscQuadrature quad, PetscInt numCells, PetscInt dimEmbed, PetscBool faceData, PetscFEGeom **geom)
-{
+PetscErrorCode PetscFEGeomCreate(PetscQuadrature quad, PetscInt numCells, PetscInt dimEmbed, PetscBool faceData, PetscFEGeom **geom) {
   PetscFEGeom     *g;
-  PetscInt        dim, Nq, N;
+  PetscInt         dim, Nq, N;
   const PetscReal *p;
 
   PetscFunctionBegin;
-  PetscCall(PetscQuadratureGetData(quad,&dim,NULL,&Nq,&p,NULL));
+  PetscCall(PetscQuadratureGetData(quad, &dim, NULL, &Nq, &p, NULL));
   PetscCall(PetscNew(&g));
   g->xi         = p;
   g->numCells   = numCells;
@@ -31,13 +30,11 @@ PetscErrorCode PetscFEGeomCreate(PetscQuadrature quad, PetscInt numCells, PetscI
   g->dim        = dim;
   g->dimEmbed   = dimEmbed;
   g->isCohesive = PETSC_FALSE;
-  N = numCells * Nq;
+  N             = numCells * Nq;
   PetscCall(PetscCalloc3(N * dimEmbed, &g->v, N * dimEmbed * dimEmbed, &g->J, N, &g->detJ));
   if (faceData) {
     PetscCall(PetscCalloc2(numCells, &g->face, N * dimEmbed, &g->n));
-    PetscCall(PetscCalloc6(N * dimEmbed * dimEmbed, &(g->suppJ[0]),    N * dimEmbed * dimEmbed, &(g->suppJ[1]),
-                         N * dimEmbed * dimEmbed, &(g->suppInvJ[0]), N * dimEmbed * dimEmbed, &(g->suppInvJ[1]),
-                         N,                       &(g->suppDetJ[0]), N,                       &(g->suppDetJ[1])));
+    PetscCall(PetscCalloc6(N * dimEmbed * dimEmbed, &(g->suppJ[0]), N * dimEmbed * dimEmbed, &(g->suppJ[1]), N * dimEmbed * dimEmbed, &(g->suppInvJ[0]), N * dimEmbed * dimEmbed, &(g->suppInvJ[1]), N, &(g->suppDetJ[0]), N, &(g->suppDetJ[1])));
   }
   PetscCall(PetscCalloc1(N * dimEmbed * dimEmbed, &g->invJ));
   *geom = g;
@@ -54,14 +51,13 @@ PetscErrorCode PetscFEGeomCreate(PetscQuadrature quad, PetscInt numCells, PetscI
 
 .seealso: `PetscFEGeomCreate()`
 @*/
-PetscErrorCode PetscFEGeomDestroy(PetscFEGeom **geom)
-{
+PetscErrorCode PetscFEGeomDestroy(PetscFEGeom **geom) {
   PetscFunctionBegin;
   if (!*geom) PetscFunctionReturn(0);
-  PetscCall(PetscFree3((*geom)->v,(*geom)->J,(*geom)->detJ));
+  PetscCall(PetscFree3((*geom)->v, (*geom)->J, (*geom)->detJ));
   PetscCall(PetscFree((*geom)->invJ));
-  PetscCall(PetscFree2((*geom)->face,(*geom)->n));
-  PetscCall(PetscFree6((*geom)->suppJ[0],(*geom)->suppJ[1],(*geom)->suppInvJ[0],(*geom)->suppInvJ[1],(*geom)->suppDetJ[0],(*geom)->suppDetJ[1]));
+  PetscCall(PetscFree2((*geom)->face, (*geom)->n));
+  PetscCall(PetscFree6((*geom)->suppJ[0], (*geom)->suppJ[1], (*geom)->suppInvJ[0], (*geom)->suppInvJ[1], (*geom)->suppDetJ[0], (*geom)->suppDetJ[1]));
   PetscCall(PetscFree(*geom));
   PetscFunctionReturn(0);
 }
@@ -81,37 +77,34 @@ PetscErrorCode PetscFEGeomDestroy(PetscFEGeom **geom)
 
 .seealso: `PetscFEGeomRestoreChunk()`, `PetscFEGeomCreate()`
 @*/
-PetscErrorCode PetscFEGeomGetChunk(PetscFEGeom *geom, PetscInt cStart, PetscInt cEnd, PetscFEGeom **chunkGeom)
-{
-  PetscInt       Nq;
-  PetscInt       dE;
+PetscErrorCode PetscFEGeomGetChunk(PetscFEGeom *geom, PetscInt cStart, PetscInt cEnd, PetscFEGeom **chunkGeom) {
+  PetscInt Nq;
+  PetscInt dE;
 
   PetscFunctionBegin;
-  PetscValidPointer(geom,1);
-  PetscValidPointer(chunkGeom,4);
-  if (!(*chunkGeom)) {
-    PetscCall(PetscNew(chunkGeom));
-  }
-  Nq = geom->numPoints;
-  dE= geom->dimEmbed;
-  (*chunkGeom)->dim = geom->dim;
-  (*chunkGeom)->dimEmbed = geom->dimEmbed;
-  (*chunkGeom)->numPoints = geom->numPoints;
-  (*chunkGeom)->numCells = cEnd - cStart;
-  (*chunkGeom)->xi = geom->xi;
-  (*chunkGeom)->v = &geom->v[Nq*dE*cStart];
-  (*chunkGeom)->J = &geom->J[Nq*dE*dE*cStart];
-  (*chunkGeom)->invJ = (geom->invJ) ? &geom->invJ[Nq*dE*dE*cStart] : NULL;
-  (*chunkGeom)->detJ = &geom->detJ[Nq*cStart];
-  (*chunkGeom)->n = geom->n ? &geom->n[Nq*dE*cStart] : NULL;
-  (*chunkGeom)->face = geom->face ? &geom->face[cStart] : NULL;
-  (*chunkGeom)->suppJ[0]    = geom->suppJ[0]    ? &geom->suppJ[0][Nq*dE*dE*cStart]    : NULL;
-  (*chunkGeom)->suppJ[1]    = geom->suppJ[1]    ? &geom->suppJ[1][Nq*dE*dE*cStart]    : NULL;
-  (*chunkGeom)->suppInvJ[0] = geom->suppInvJ[0] ? &geom->suppInvJ[0][Nq*dE*dE*cStart] : NULL;
-  (*chunkGeom)->suppInvJ[1] = geom->suppInvJ[1] ? &geom->suppInvJ[1][Nq*dE*dE*cStart] : NULL;
-  (*chunkGeom)->suppDetJ[0] = geom->suppDetJ[0] ? &geom->suppDetJ[0][Nq*cStart]       : NULL;
-  (*chunkGeom)->suppDetJ[1] = geom->suppDetJ[1] ? &geom->suppDetJ[1][Nq*cStart]       : NULL;
-  (*chunkGeom)->isAffine = geom->isAffine;
+  PetscValidPointer(geom, 1);
+  PetscValidPointer(chunkGeom, 4);
+  if (!(*chunkGeom)) { PetscCall(PetscNew(chunkGeom)); }
+  Nq                        = geom->numPoints;
+  dE                        = geom->dimEmbed;
+  (*chunkGeom)->dim         = geom->dim;
+  (*chunkGeom)->dimEmbed    = geom->dimEmbed;
+  (*chunkGeom)->numPoints   = geom->numPoints;
+  (*chunkGeom)->numCells    = cEnd - cStart;
+  (*chunkGeom)->xi          = geom->xi;
+  (*chunkGeom)->v           = &geom->v[Nq * dE * cStart];
+  (*chunkGeom)->J           = &geom->J[Nq * dE * dE * cStart];
+  (*chunkGeom)->invJ        = (geom->invJ) ? &geom->invJ[Nq * dE * dE * cStart] : NULL;
+  (*chunkGeom)->detJ        = &geom->detJ[Nq * cStart];
+  (*chunkGeom)->n           = geom->n ? &geom->n[Nq * dE * cStart] : NULL;
+  (*chunkGeom)->face        = geom->face ? &geom->face[cStart] : NULL;
+  (*chunkGeom)->suppJ[0]    = geom->suppJ[0] ? &geom->suppJ[0][Nq * dE * dE * cStart] : NULL;
+  (*chunkGeom)->suppJ[1]    = geom->suppJ[1] ? &geom->suppJ[1][Nq * dE * dE * cStart] : NULL;
+  (*chunkGeom)->suppInvJ[0] = geom->suppInvJ[0] ? &geom->suppInvJ[0][Nq * dE * dE * cStart] : NULL;
+  (*chunkGeom)->suppInvJ[1] = geom->suppInvJ[1] ? &geom->suppInvJ[1][Nq * dE * dE * cStart] : NULL;
+  (*chunkGeom)->suppDetJ[0] = geom->suppDetJ[0] ? &geom->suppDetJ[0][Nq * cStart] : NULL;
+  (*chunkGeom)->suppDetJ[1] = geom->suppDetJ[1] ? &geom->suppDetJ[1][Nq * cStart] : NULL;
+  (*chunkGeom)->isAffine    = geom->isAffine;
   PetscFunctionReturn(0);
 }
 
@@ -128,8 +121,7 @@ PetscErrorCode PetscFEGeomGetChunk(PetscFEGeom *geom, PetscInt cStart, PetscInt 
 
 .seealso: `PetscFEGeomGetChunk()`, `PetscFEGeomCreate()`
 @*/
-PetscErrorCode PetscFEGeomRestoreChunk(PetscFEGeom *geom, PetscInt cStart, PetscInt cEnd, PetscFEGeom **chunkGeom)
-{
+PetscErrorCode PetscFEGeomRestoreChunk(PetscFEGeom *geom, PetscInt cStart, PetscInt cEnd, PetscFEGeom **chunkGeom) {
   PetscFunctionBegin;
   PetscCall(PetscFree(*chunkGeom));
   PetscFunctionReturn(0);
@@ -156,8 +148,7 @@ PetscErrorCode PetscFEGeomRestoreChunk(PetscFEGeom *geom, PetscInt cStart, Petsc
 
 .seealso: `PetscFEGeomRestoreChunk()`, `PetscFEGeomCreate()`
 @*/
-PetscErrorCode PetscFEGeomGetPoint(PetscFEGeom *geom, PetscInt c, PetscInt p, const PetscReal pcoords[], PetscFEGeom *pgeom)
-{
+PetscErrorCode PetscFEGeomGetPoint(PetscFEGeom *geom, PetscInt c, PetscInt p, const PetscReal pcoords[], PetscFEGeom *pgeom) {
   const PetscInt dim = geom->dim;
   const PetscInt dE  = geom->dimEmbed;
   const PetscInt Np  = geom->numPoints;
@@ -169,18 +160,18 @@ PetscErrorCode PetscFEGeomGetPoint(PetscFEGeom *geom, PetscInt c, PetscInt p, co
   if (geom->isAffine) {
     if (!p) {
       pgeom->xi   = geom->xi;
-      pgeom->J    = &geom->J[c*Np*dE*dE];
-      pgeom->invJ = &geom->invJ[c*Np*dE*dE];
-      pgeom->detJ = &geom->detJ[c*Np];
-      pgeom->n    = geom->n ? &geom->n[c*Np*dE] : NULL;
+      pgeom->J    = &geom->J[c * Np * dE * dE];
+      pgeom->invJ = &geom->invJ[c * Np * dE * dE];
+      pgeom->detJ = &geom->detJ[c * Np];
+      pgeom->n    = geom->n ? &geom->n[c * Np * dE] : NULL;
     }
-    if (pcoords) {CoordinatesRefToReal(dE, dim, pgeom->xi, &geom->v[c*Np*dE], pgeom->J, pcoords, pgeom->v);}
+    if (pcoords) { CoordinatesRefToReal(dE, dim, pgeom->xi, &geom->v[c * Np * dE], pgeom->J, pcoords, pgeom->v); }
   } else {
-    pgeom->v    = &geom->v[(c*Np+p)*dE];
-    pgeom->J    = &geom->J[(c*Np+p)*dE*dE];
-    pgeom->invJ = &geom->invJ[(c*Np+p)*dE*dE];
-    pgeom->detJ = &geom->detJ[c*Np+p];
-    pgeom->n    = geom->n ? &geom->n[(c*Np+p)*dE] : NULL;
+    pgeom->v    = &geom->v[(c * Np + p) * dE];
+    pgeom->J    = &geom->J[(c * Np + p) * dE * dE];
+    pgeom->invJ = &geom->invJ[(c * Np + p) * dE * dE];
+    pgeom->detJ = &geom->detJ[c * Np + p];
+    pgeom->n    = geom->n ? &geom->n[(c * Np + p) * dE] : NULL;
   }
   PetscFunctionReturn(0);
 }
@@ -203,8 +194,7 @@ PetscErrorCode PetscFEGeomGetPoint(PetscFEGeom *geom, PetscInt c, PetscInt p, co
 
 .seealso: `PetscFEGeomRestoreChunk()`, `PetscFEGeomCreate()`
 @*/
-PetscErrorCode PetscFEGeomGetCellPoint(PetscFEGeom *geom, PetscInt c, PetscInt p, PetscFEGeom *pgeom)
-{
+PetscErrorCode PetscFEGeomGetCellPoint(PetscFEGeom *geom, PetscInt c, PetscInt p, PetscFEGeom *pgeom) {
   const PetscBool bd  = geom->dimEmbed > geom->dim && !geom->isCohesive ? PETSC_TRUE : PETSC_FALSE;
   const PetscInt  dim = bd ? geom->dimEmbed : geom->dim;
   const PetscInt  dE  = geom->dimEmbed;
@@ -217,24 +207,24 @@ PetscErrorCode PetscFEGeomGetCellPoint(PetscFEGeom *geom, PetscInt c, PetscInt p
   if (geom->isAffine) {
     if (!p) {
       if (bd) {
-        pgeom->J     = &geom->suppJ[0][c*Np*dE*dE];
-        pgeom->invJ  = &geom->suppInvJ[0][c*Np*dE*dE];
-        pgeom->detJ  = &geom->suppDetJ[0][c*Np];
+        pgeom->J    = &geom->suppJ[0][c * Np * dE * dE];
+        pgeom->invJ = &geom->suppInvJ[0][c * Np * dE * dE];
+        pgeom->detJ = &geom->suppDetJ[0][c * Np];
       } else {
-        pgeom->J    = &geom->J[c*Np*dE*dE];
-        pgeom->invJ = &geom->invJ[c*Np*dE*dE];
-        pgeom->detJ = &geom->detJ[c*Np];
+        pgeom->J    = &geom->J[c * Np * dE * dE];
+        pgeom->invJ = &geom->invJ[c * Np * dE * dE];
+        pgeom->detJ = &geom->detJ[c * Np];
       }
     }
   } else {
     if (bd) {
-      pgeom->J     = &geom->suppJ[0][(c*Np+p)*dE*dE];
-      pgeom->invJ  = &geom->suppInvJ[0][(c*Np+p)*dE*dE];
-      pgeom->detJ  = &geom->suppDetJ[0][c*Np+p];
+      pgeom->J    = &geom->suppJ[0][(c * Np + p) * dE * dE];
+      pgeom->invJ = &geom->suppInvJ[0][(c * Np + p) * dE * dE];
+      pgeom->detJ = &geom->suppDetJ[0][c * Np + p];
     } else {
-      pgeom->J    = &geom->J[(c*Np+p)*dE*dE];
-      pgeom->invJ = &geom->invJ[(c*Np+p)*dE*dE];
-      pgeom->detJ = &geom->detJ[c*Np+p];
+      pgeom->J    = &geom->J[(c * Np + p) * dE * dE];
+      pgeom->invJ = &geom->invJ[(c * Np + p) * dE * dE];
+      pgeom->detJ = &geom->detJ[c * Np + p];
     }
   }
   PetscFunctionReturn(0);
@@ -250,24 +240,23 @@ PetscErrorCode PetscFEGeomGetCellPoint(PetscFEGeom *geom, PetscInt c, PetscInt p
 
 .seealso: `PetscFEGeomCreate()`
 @*/
-PetscErrorCode PetscFEGeomComplete(PetscFEGeom *geom)
-{
+PetscErrorCode PetscFEGeomComplete(PetscFEGeom *geom) {
   PetscInt i, j, N, dE;
 
   PetscFunctionBeginHot;
-  N = geom->numPoints * geom->numCells;
+  N  = geom->numPoints * geom->numCells;
   dE = geom->dimEmbed;
   switch (dE) {
   case 3:
     for (i = 0; i < N; i++) {
-      DMPlex_Det3D_Internal(&geom->detJ[i], &geom->J[dE*dE*i]);
-      if (geom->invJ) DMPlex_Invert3D_Internal(&geom->invJ[dE*dE*i], &geom->J[dE*dE*i], geom->detJ[i]);
+      DMPlex_Det3D_Internal(&geom->detJ[i], &geom->J[dE * dE * i]);
+      if (geom->invJ) DMPlex_Invert3D_Internal(&geom->invJ[dE * dE * i], &geom->J[dE * dE * i], geom->detJ[i]);
     }
     break;
   case 2:
     for (i = 0; i < N; i++) {
-      DMPlex_Det2D_Internal(&geom->detJ[i], &geom->J[dE*dE*i]);
-      if (geom->invJ) DMPlex_Invert2D_Internal(&geom->invJ[dE*dE*i], &geom->J[dE*dE*i], geom->detJ[i]);
+      DMPlex_Det2D_Internal(&geom->detJ[i], &geom->J[dE * dE * i]);
+      if (geom->invJ) DMPlex_Invert2D_Internal(&geom->invJ[dE * dE * i], &geom->J[dE * dE * i], geom->detJ[i]);
     }
     break;
   case 1:
@@ -279,9 +268,7 @@ PetscErrorCode PetscFEGeomComplete(PetscFEGeom *geom)
   }
   if (geom->n) {
     for (i = 0; i < N; i++) {
-      for (j = 0; j < dE; j++) {
-        geom->n[dE*i + j] = geom->J[dE*dE*i + dE*j + dE-1] * ((dE == 2) ? -1. : 1.);
-      }
+      for (j = 0; j < dE; j++) { geom->n[dE * i + j] = geom->J[dE * dE * i + dE * j + dE - 1] * ((dE == 2) ? -1. : 1.); }
     }
   }
   PetscFunctionReturn(0);

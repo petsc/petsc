@@ -1,15 +1,14 @@
-#include <petsc/private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
+#include <petsc/private/dmpleximpl.h> /*I      "petscdmplex.h"   I*/
 
 /* Set the number of dof on each point and separate by fields */
-static PetscErrorCode DMPlexCreateSectionFields(DM dm, const PetscInt numComp[], PetscSection *section)
-{
-  DMLabel        depthLabel;
-  PetscInt       depth, Nf, f, pStart, pEnd;
-  PetscBool     *isFE;
+static PetscErrorCode DMPlexCreateSectionFields(DM dm, const PetscInt numComp[], PetscSection *section) {
+  DMLabel    depthLabel;
+  PetscInt   depth, Nf, f, pStart, pEnd;
+  PetscBool *isFE;
 
   PetscFunctionBegin;
   PetscCall(DMPlexGetDepth(dm, &depth));
-  PetscCall(DMPlexGetDepthLabel(dm,&depthLabel));
+  PetscCall(DMPlexGetDepthLabel(dm, &depthLabel));
   PetscCall(DMGetNumFields(dm, &Nf));
   PetscCall(PetscCalloc1(Nf, &isFE));
   for (f = 0; f < Nf; ++f) {
@@ -18,8 +17,11 @@ static PetscErrorCode DMPlexCreateSectionFields(DM dm, const PetscInt numComp[],
 
     PetscCall(DMGetField(dm, f, NULL, &obj));
     PetscCall(PetscObjectGetClassId(obj, &id));
-    if (id == PETSCFE_CLASSID)      {isFE[f] = PETSC_TRUE;}
-    else if (id == PETSCFV_CLASSID) {isFE[f] = PETSC_FALSE;}
+    if (id == PETSCFE_CLASSID) {
+      isFE[f] = PETSC_TRUE;
+    } else if (id == PETSCFV_CLASSID) {
+      isFE[f] = PETSC_FALSE;
+    }
   }
 
   PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)dm), section));
@@ -29,35 +31,35 @@ static PetscErrorCode DMPlexCreateSectionFields(DM dm, const PetscInt numComp[],
       for (f = 0; f < Nf; ++f) {
         PetscCall(PetscSectionSetFieldComponents(*section, f, numComp[f]));
         if (isFE[f]) {
-          PetscFE           fe;
-          PetscDualSpace    dspace;
+          PetscFE              fe;
+          PetscDualSpace       dspace;
           const PetscInt    ***perms;
           const PetscScalar ***flips;
-          const PetscInt    *numDof;
+          const PetscInt      *numDof;
 
-          PetscCall(DMGetField(dm,f,NULL,(PetscObject *) &fe));
-          PetscCall(PetscFEGetDualSpace(fe,&dspace));
-          PetscCall(PetscDualSpaceGetSymmetries(dspace,&perms,&flips));
-          PetscCall(PetscDualSpaceGetNumDof(dspace,&numDof));
+          PetscCall(DMGetField(dm, f, NULL, (PetscObject *)&fe));
+          PetscCall(PetscFEGetDualSpace(fe, &dspace));
+          PetscCall(PetscDualSpaceGetSymmetries(dspace, &perms, &flips));
+          PetscCall(PetscDualSpaceGetNumDof(dspace, &numDof));
           if (perms || flips) {
             DM              K;
             PetscInt        sph, spdepth;
             PetscSectionSym sym;
 
-            PetscCall(PetscDualSpaceGetDM(dspace,&K));
+            PetscCall(PetscDualSpaceGetDM(dspace, &K));
             PetscCall(DMPlexGetDepth(K, &spdepth));
-            PetscCall(PetscSectionSymCreateLabel(PetscObjectComm((PetscObject)*section),depthLabel,&sym));
+            PetscCall(PetscSectionSymCreateLabel(PetscObjectComm((PetscObject)*section), depthLabel, &sym));
             for (sph = 0; sph <= spdepth; sph++) {
-              PetscDualSpace    hspace;
-              PetscInt          kStart, kEnd;
-              PetscInt          kConeSize, h = sph + (depth - spdepth);
+              PetscDualSpace      hspace;
+              PetscInt            kStart, kEnd;
+              PetscInt            kConeSize, h = sph + (depth - spdepth);
               const PetscInt    **perms0 = NULL;
               const PetscScalar **flips0 = NULL;
 
               PetscCall(PetscDualSpaceGetHeightSubspace(dspace, sph, &hspace));
               PetscCall(DMPlexGetHeightStratum(K, h, &kStart, &kEnd));
               if (!hspace) continue;
-              PetscCall(PetscDualSpaceGetSymmetries(hspace,&perms,&flips));
+              PetscCall(PetscDualSpaceGetSymmetries(hspace, &perms, &flips));
               if (perms) perms0 = perms[0];
               if (flips) flips0 = flips[0];
               if (!(perms0 || flips0)) continue;
@@ -67,9 +69,9 @@ static PetscErrorCode DMPlexCreateSectionFields(DM dm, const PetscInt numComp[],
                 PetscCall(DMPlexGetCellType(K, kStart, &ct));
                 kConeSize = DMPolytopeTypeGetNumArrangments(ct) / 2;
               }
-              PetscCall(PetscSectionSymLabelSetStratum(sym,depth - h,numDof[depth - h],-kConeSize,kConeSize,PETSC_USE_POINTER,perms0 ? &perms0[-kConeSize] : NULL,flips0 ? &flips0[-kConeSize] : NULL));
+              PetscCall(PetscSectionSymLabelSetStratum(sym, depth - h, numDof[depth - h], -kConeSize, kConeSize, PETSC_USE_POINTER, perms0 ? &perms0[-kConeSize] : NULL, flips0 ? &flips0[-kConeSize] : NULL));
             }
-            PetscCall(PetscSectionSetFieldSym(*section,f,sym));
+            PetscCall(PetscSectionSetFieldSym(*section, f, sym));
             PetscCall(PetscSectionSymDestroy(&sym));
           }
         }
@@ -83,8 +85,7 @@ static PetscErrorCode DMPlexCreateSectionFields(DM dm, const PetscInt numComp[],
 }
 
 /* Set the number of dof on each point and separate by fields */
-static PetscErrorCode DMPlexCreateSectionDof(DM dm, DMLabel label[],const PetscInt numDof[], PetscSection section)
-{
+static PetscErrorCode DMPlexCreateSectionDof(DM dm, DMLabel label[], const PetscInt numDof[], PetscSection section) {
   DMLabel        depthLabel;
   DMPolytopeType ct;
   PetscInt       depth, cellHeight, pStart = 0, pEnd = 0;
@@ -94,7 +95,7 @@ static PetscErrorCode DMPlexCreateSectionDof(DM dm, DMLabel label[],const PetscI
   PetscFunctionBegin;
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(DMPlexGetDepth(dm, &depth));
-  PetscCall(DMPlexGetDepthLabel(dm,&depthLabel));
+  PetscCall(DMPlexGetDepthLabel(dm, &depthLabel));
   PetscCall(DMGetNumFields(dm, &Nf));
   PetscCall(DMGetNumDS(dm, &Nds));
   for (n = 0; n < Nds; ++n) {
@@ -103,7 +104,10 @@ static PetscErrorCode DMPlexCreateSectionDof(DM dm, DMLabel label[],const PetscI
 
     PetscCall(DMGetRegionNumDS(dm, n, NULL, NULL, &ds));
     PetscCall(PetscDSIsCohesive(ds, &isCohesive));
-    if (isCohesive) {hasCohesive = PETSC_TRUE; break;}
+    if (isCohesive) {
+      hasCohesive = PETSC_TRUE;
+      break;
+    }
   }
   PetscCall(PetscMalloc1(Nf, &isFE));
   for (f = 0; f < Nf; ++f) {
@@ -139,14 +143,15 @@ static PetscErrorCode DMPlexCreateSectionDof(DM dm, DMLabel label[],const PetscI
         PetscCall(DMLabelGetValue(depthLabel, point, &d));
         /* If this is a tensor prism point, use dof for one dimension lower */
         switch (ct) {
-          case DM_POLYTOPE_POINT_PRISM_TENSOR:
-          case DM_POLYTOPE_SEG_PRISM_TENSOR:
-          case DM_POLYTOPE_TRI_PRISM_TENSOR:
-          case DM_POLYTOPE_QUAD_PRISM_TENSOR:
-            if (hasCohesive) {--d;} break;
-          default: break;
+        case DM_POLYTOPE_POINT_PRISM_TENSOR:
+        case DM_POLYTOPE_SEG_PRISM_TENSOR:
+        case DM_POLYTOPE_TRI_PRISM_TENSOR:
+        case DM_POLYTOPE_QUAD_PRISM_TENSOR:
+          if (hasCohesive) { --d; }
+          break;
+        default: break;
         }
-        dof  = d < 0 ? 0 : numDof[f*(dim+1)+d];
+        dof = d < 0 ? 0 : numDof[f * (dim + 1) + d];
         PetscCall(PetscSectionSetFieldDof(section, point, f, dof));
         PetscCall(PetscSectionAddDof(section, point, dof));
       }
@@ -155,19 +160,19 @@ static PetscErrorCode DMPlexCreateSectionDof(DM dm, DMLabel label[],const PetscI
     } else {
       for (dep = 0; dep <= depth - cellHeight; ++dep) {
         /* Cases: dim > depth (cell-vertex mesh), dim == depth (fully interpolated), dim < depth (interpolated submesh) */
-        d    = dim <= depth ? dep : (!dep ? 0 : dim);
+        d = dim <= depth ? dep : (!dep ? 0 : dim);
         PetscCall(DMPlexGetDepthStratum(dm, dep, &pStart, &pEnd));
         for (p = pStart; p < pEnd; ++p) {
-          const PetscInt dof = numDof[f*(dim+1)+d];
+          const PetscInt dof = numDof[f * (dim + 1) + d];
 
           PetscCall(DMPlexGetCellType(dm, p, &ct));
           switch (ct) {
-            case DM_POLYTOPE_POINT_PRISM_TENSOR:
-            case DM_POLYTOPE_SEG_PRISM_TENSOR:
-            case DM_POLYTOPE_TRI_PRISM_TENSOR:
-            case DM_POLYTOPE_QUAD_PRISM_TENSOR:
-              if (avoidTensor && isFE[f]) continue;
-            default: break;
+          case DM_POLYTOPE_POINT_PRISM_TENSOR:
+          case DM_POLYTOPE_SEG_PRISM_TENSOR:
+          case DM_POLYTOPE_TRI_PRISM_TENSOR:
+          case DM_POLYTOPE_QUAD_PRISM_TENSOR:
+            if (avoidTensor && isFE[f]) continue;
+          default: break;
           }
           PetscCall(PetscSectionSetFieldDof(section, p, f, dof));
           PetscCall(PetscSectionAddDof(section, p, dof));
@@ -182,11 +187,10 @@ static PetscErrorCode DMPlexCreateSectionDof(DM dm, DMLabel label[],const PetscI
 /* Set the number of dof on each point and separate by fields
    If bcComps is NULL or the IS is NULL, constrain every dof on the point
 */
-static PetscErrorCode DMPlexCreateSectionBCDof(DM dm, PetscInt numBC, const PetscInt bcField[], const IS bcComps[], const IS bcPoints[], PetscSection section)
-{
-  PetscInt       Nf;
-  PetscInt       bc;
-  PetscSection   aSec;
+static PetscErrorCode DMPlexCreateSectionBCDof(DM dm, PetscInt numBC, const PetscInt bcField[], const IS bcComps[], const IS bcPoints[], PetscSection section) {
+  PetscInt     Nf;
+  PetscInt     bc;
+  PetscSection aSec;
 
   PetscFunctionBegin;
   PetscCall(PetscSectionGetNumFields(section, &Nf));
@@ -219,8 +223,8 @@ static PetscErrorCode DMPlexCreateSectionBCDof(DM dm, PetscInt numBC, const Pets
           /* We assume that a point may have multiple "nodes", which are collections of Nc dofs,
              and that those dofs are numbered n*Nc+c */
           if (Nf) {
-            PetscCheck(numConst % Nc == 0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %" PetscInt_FMT " has %" PetscInt_FMT " dof which is not divisible by %" PetscInt_FMT " field components", p, numConst, Nc);
-            numConst = (numConst/Nc) * cNc;
+            PetscCheck(numConst % Nc == 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %" PetscInt_FMT " has %" PetscInt_FMT " dof which is not divisible by %" PetscInt_FMT " field components", p, numConst, Nc);
+            numConst = (numConst / Nc) * cNc;
           } else {
             numConst = PetscMin(numConst, cNc);
           }
@@ -258,21 +262,24 @@ static PetscErrorCode DMPlexCreateSectionBCDof(DM dm, PetscInt numBC, const Pets
 /* Set the constrained field indices on each point
    If bcComps is NULL or the IS is NULL, constrain every dof on the point
 */
-static PetscErrorCode DMPlexCreateSectionBCIndicesField(DM dm, PetscInt numBC,const PetscInt bcField[], const IS bcComps[], const IS bcPoints[], PetscSection section)
-{
-  PetscSection   aSec;
-  PetscInt      *indices;
-  PetscInt       Nf, cdof, maxDof = 0, pStart, pEnd, p, bc, f, d;
+static PetscErrorCode DMPlexCreateSectionBCIndicesField(DM dm, PetscInt numBC, const PetscInt bcField[], const IS bcComps[], const IS bcPoints[], PetscSection section) {
+  PetscSection aSec;
+  PetscInt    *indices;
+  PetscInt     Nf, cdof, maxDof = 0, pStart, pEnd, p, bc, f, d;
 
   PetscFunctionBegin;
   PetscCall(PetscSectionGetNumFields(section, &Nf));
   if (!Nf) PetscFunctionReturn(0);
   /* Initialize all field indices to -1 */
   PetscCall(PetscSectionGetChart(section, &pStart, &pEnd));
-  for (p = pStart; p < pEnd; ++p) {PetscCall(PetscSectionGetConstraintDof(section, p, &cdof)); maxDof = PetscMax(maxDof, cdof);}
+  for (p = pStart; p < pEnd; ++p) {
+    PetscCall(PetscSectionGetConstraintDof(section, p, &cdof));
+    maxDof = PetscMax(maxDof, cdof);
+  }
   PetscCall(PetscMalloc1(maxDof, &indices));
   for (d = 0; d < maxDof; ++d) indices[d] = -1;
-  for (p = pStart; p < pEnd; ++p) for (f = 0; f < Nf; ++f) PetscCall(PetscSectionSetFieldConstraintIndices(section, p, f, indices));
+  for (p = pStart; p < pEnd; ++p)
+    for (f = 0; f < Nf; ++f) PetscCall(PetscSectionSetFieldConstraintIndices(section, p, f, indices));
   /* Handle BC constraints */
   for (bc = 0; bc < numBC; ++bc) {
     const PetscInt  field = bcField[bc];
@@ -301,8 +308,12 @@ static PetscErrorCode DMPlexCreateSectionBCIndicesField(DM dm, PetscInt numBC,co
           PetscCall(PetscSectionGetFieldConstraintDof(section, p, field, &fcdof));
           PetscCall(PetscSectionGetFieldConstraintIndices(section, p, field, &find));
           /* Get indices constrained by previous bcs */
-          for (d = 0; d < fcdof; ++d) {if (find[d] < 0) break; indices[d] = find[d];}
-          for (j = 0; j < fdof/Nc; ++j) for (c = 0; c < cNc; ++c) indices[d++] = j*Nc + comp[c];
+          for (d = 0; d < fcdof; ++d) {
+            if (find[d] < 0) break;
+            indices[d] = find[d];
+          }
+          for (j = 0; j < fdof / Nc; ++j)
+            for (c = 0; c < cNc; ++c) indices[d++] = j * Nc + comp[c];
           PetscCall(PetscSortRemoveDupsInt(&d, indices));
           for (c = d; c < fcdof; ++c) indices[c] = -1;
           fcdof = d;
@@ -327,9 +338,7 @@ static PetscErrorCode DMPlexCreateSectionBCIndicesField(DM dm, PetscInt numBC,co
       PetscCall(PetscSectionGetDof(aSec, a, &dof));
       if (dof) {
         /* if there are point-to-point constraints, then all dofs are constrained */
-        for (f = 0; f < Nf; f++) {
-          PetscCall(PetscSectionSetFieldConstraintIndices(section, a, f, indices));
-        }
+        for (f = 0; f < Nf; f++) { PetscCall(PetscSectionSetFieldConstraintIndices(section, a, f, indices)); }
       }
     }
   }
@@ -338,10 +347,9 @@ static PetscErrorCode DMPlexCreateSectionBCIndicesField(DM dm, PetscInt numBC,co
 }
 
 /* Set the constrained indices on each point */
-static PetscErrorCode DMPlexCreateSectionBCIndices(DM dm, PetscSection section)
-{
-  PetscInt      *indices;
-  PetscInt       Nf, maxDof, pStart, pEnd, p, f, d;
+static PetscErrorCode DMPlexCreateSectionBCIndices(DM dm, PetscSection section) {
+  PetscInt *indices;
+  PetscInt  Nf, maxDof, pStart, pEnd, p, f, d;
 
   PetscFunctionBegin;
   PetscCall(PetscSectionGetNumFields(section, &Nf));
@@ -365,9 +373,9 @@ static PetscErrorCode DMPlexCreateSectionBCIndices(DM dm, PetscSection section)
           PetscCall(PetscSectionGetFieldConstraintDof(section, p, f, &fcdof));
           /* Change constraint numbering from field component to local dof number */
           PetscCall(PetscSectionGetFieldConstraintIndices(section, p, f, &find));
-          for (d = 0; d < fcdof; ++d) indices[numConst+d] = find[d] + foff;
+          for (d = 0; d < fcdof; ++d) indices[numConst + d] = find[d] + foff;
           numConst += fcdof;
-          foff     += fdof;
+          foff += fdof;
         }
         if (cdof != numConst) PetscCall(PetscSectionSetConstraintDof(section, p, numConst));
       } else {
@@ -411,9 +419,8 @@ static PetscErrorCode DMPlexCreateSectionBCIndices(DM dm, PetscSection section)
 
 .seealso: `DMPlexCreate()`, `PetscSectionCreate()`, `PetscSectionSetPermutation()`
 @*/
-PetscErrorCode DMPlexCreateSection(DM dm, DMLabel label[], const PetscInt numComp[],const PetscInt numDof[], PetscInt numBC, const PetscInt bcField[], const IS bcComps[], const IS bcPoints[], IS perm, PetscSection *section)
-{
-  PetscSection   aSec;
+PetscErrorCode DMPlexCreateSection(DM dm, DMLabel label[], const PetscInt numComp[], const PetscInt numDof[], PetscInt numBC, const PetscInt bcField[], const IS bcComps[], const IS bcPoints[], IS perm, PetscSection *section) {
+  PetscSection aSec;
 
   PetscFunctionBegin;
   PetscCall(DMPlexCreateSectionFields(dm, numComp, section));
@@ -422,24 +429,23 @@ PetscErrorCode DMPlexCreateSection(DM dm, DMLabel label[], const PetscInt numCom
   if (perm) PetscCall(PetscSectionSetPermutation(*section, perm));
   PetscCall(PetscSectionSetFromOptions(*section));
   PetscCall(PetscSectionSetUp(*section));
-  PetscCall(DMPlexGetAnchors(dm,&aSec,NULL));
+  PetscCall(DMPlexGetAnchors(dm, &aSec, NULL));
   if (numBC || aSec) {
     PetscCall(DMPlexCreateSectionBCIndicesField(dm, numBC, bcField, bcComps, bcPoints, *section));
     PetscCall(DMPlexCreateSectionBCIndices(dm, *section));
   }
-  PetscCall(PetscSectionViewFromOptions(*section,NULL,"-section_view"));
+  PetscCall(PetscSectionViewFromOptions(*section, NULL, "-section_view"));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMCreateLocalSection_Plex(DM dm)
-{
-  PetscSection   section;
-  DMLabel       *labels;
-  IS            *bcPoints, *bcComps;
-  PetscBool     *isFE;
-  PetscInt      *bcFields, *numComp, *numDof;
-  PetscInt       depth, dim, numBC = 0, Nf, Nds, s, bc = 0, f;
-  PetscInt       cStart, cEnd, cEndInterior;
+PetscErrorCode DMCreateLocalSection_Plex(DM dm) {
+  PetscSection section;
+  DMLabel     *labels;
+  IS          *bcPoints, *bcComps;
+  PetscBool   *isFE;
+  PetscInt    *bcFields, *numComp, *numDof;
+  PetscInt     depth, dim, numBC = 0, Nf, Nds, s, bc = 0, f;
+  PetscInt     cStart, cEnd, cEndInterior;
 
   PetscFunctionBegin;
   PetscCall(DMGetNumFields(dm, &Nf));
@@ -453,9 +459,11 @@ PetscErrorCode DMCreateLocalSection_Plex(DM dm)
 
     PetscCall(DMGetField(dm, f, NULL, &obj));
     PetscCall(PetscObjectGetClassId(obj, &id));
-    if (id == PETSCFE_CLASSID)      {isFE[f] = PETSC_TRUE;}
-    else if (id == PETSCFV_CLASSID) {isFE[f] = PETSC_FALSE;}
-    else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %" PetscInt_FMT, f);
+    if (id == PETSCFE_CLASSID) {
+      isFE[f] = PETSC_TRUE;
+    } else if (id == PETSCFV_CLASSID) {
+      isFE[f] = PETSC_FALSE;
+    } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %" PetscInt_FMT, f);
   }
   /* Allocate boundary point storage for FEM boundaries */
   PetscCall(DMGetNumDS(dm, &Nds));
@@ -465,7 +473,7 @@ PetscErrorCode DMCreateLocalSection_Plex(DM dm)
 
     PetscCall(DMGetRegionNumDS(dm, s, NULL, NULL, &dsBC));
     PetscCall(PetscDSGetNumBoundary(dsBC, &numBd));
-    PetscCheck(Nf || !numBd,PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "number of fields is zero and number of boundary conditions is nonzero (this should never happen)");
+    PetscCheck(Nf || !numBd, PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "number of fields is zero and number of boundary conditions is nonzero (this should never happen)");
     for (bd = 0; bd < numBd; ++bd) {
       PetscInt                field;
       DMBoundaryConditionType type;
@@ -477,17 +485,18 @@ PetscErrorCode DMCreateLocalSection_Plex(DM dm)
   }
   /* Add ghost cell boundaries for FVM */
   PetscCall(DMPlexGetGhostCellStratum(dm, &cEndInterior, NULL));
-  for (f = 0; f < Nf; ++f) if (!isFE[f] && cEndInterior >= 0) ++numBC;
+  for (f = 0; f < Nf; ++f)
+    if (!isFE[f] && cEndInterior >= 0) ++numBC;
   PetscCall(PetscCalloc3(numBC, &bcFields, numBC, &bcPoints, numBC, &bcComps));
   /* Constrain ghost cells for FV */
   for (f = 0; f < Nf; ++f) {
     PetscInt *newidx, c;
 
     if (isFE[f] || cEndInterior < 0) continue;
-    PetscCall(PetscMalloc1(cEnd-cEndInterior,&newidx));
-    for (c = cEndInterior; c < cEnd; ++c) newidx[c-cEndInterior] = c;
+    PetscCall(PetscMalloc1(cEnd - cEndInterior, &newidx));
+    for (c = cEndInterior; c < cEnd; ++c) newidx[c - cEndInterior] = c;
     bcFields[bc] = f;
-    PetscCall(ISCreateGeneral(PETSC_COMM_SELF, cEnd-cEndInterior, newidx, PETSC_OWN_POINTER, &bcPoints[bc++]));
+    PetscCall(ISCreateGeneral(PETSC_COMM_SELF, cEnd - cEndInterior, newidx, PETSC_OWN_POINTER, &bcPoints[bc++]));
   }
   /* Complete labels for boundary conditions */
   PetscCall(DMCompleteBCLabels_Internal(dm));
@@ -519,8 +528,8 @@ PetscErrorCode DMCreateLocalSection_Plex(DM dm)
       }
       /* Filter out cells, if you actually want to constrain cells you need to do things by hand right now */
       if (type & DM_BC_ESSENTIAL) {
-        PetscInt       *newidx;
-        PetscInt        n, newn = 0, p, v;
+        PetscInt *newidx;
+        PetscInt  n, newn = 0, p, v;
 
         bcFields[bc] = field;
         if (numComps) PetscCall(ISCreateGeneral(PETSC_COMM_SELF, numComps, comps, PETSC_COPY_VALUES, &bcComps[bc]));
@@ -533,9 +542,11 @@ PetscErrorCode DMCreateLocalSection_Plex(DM dm)
           PetscCall(ISGetLocalSize(tmp, &n));
           PetscCall(ISGetIndices(tmp, &idx));
           if (isFE[field]) {
-            for (p = 0; p < n; ++p) if ((idx[p] < cStart) || (idx[p] >= cEnd)) ++newn;
+            for (p = 0; p < n; ++p)
+              if ((idx[p] < cStart) || (idx[p] >= cEnd)) ++newn;
           } else {
-            for (p = 0; p < n; ++p) if ((idx[p] >= cStart) || (idx[p] < cEnd)) ++newn;
+            for (p = 0; p < n; ++p)
+              if ((idx[p] >= cStart) || (idx[p] < cEnd)) ++newn;
           }
           PetscCall(ISRestoreIndices(tmp, &idx));
           PetscCall(ISDestroy(&tmp));
@@ -551,9 +562,11 @@ PetscErrorCode DMCreateLocalSection_Plex(DM dm)
           PetscCall(ISGetLocalSize(tmp, &n));
           PetscCall(ISGetIndices(tmp, &idx));
           if (isFE[field]) {
-            for (p = 0; p < n; ++p) if ((idx[p] < cStart) || (idx[p] >= cEnd)) newidx[newn++] = idx[p];
+            for (p = 0; p < n; ++p)
+              if ((idx[p] < cStart) || (idx[p] >= cEnd)) newidx[newn++] = idx[p];
           } else {
-            for (p = 0; p < n; ++p) if ((idx[p] >= cStart) || (idx[p] < cEnd)) newidx[newn++] = idx[p];
+            for (p = 0; p < n; ++p)
+              if ((idx[p] >= cStart) || (idx[p] < cEnd)) newidx[newn++] = idx[p];
           }
           PetscCall(ISRestoreIndices(tmp, &idx));
           PetscCall(ISDestroy(&tmp));
@@ -563,47 +576,48 @@ PetscErrorCode DMCreateLocalSection_Plex(DM dm)
     }
   }
   /* Handle discretization */
-  PetscCall(PetscCalloc3(Nf,&labels,Nf,&numComp,Nf*(dim+1),&numDof));
+  PetscCall(PetscCalloc3(Nf, &labels, Nf, &numComp, Nf * (dim + 1), &numDof));
   for (f = 0; f < Nf; ++f) {
     labels[f] = dm->fields[f].label;
     if (isFE[f]) {
-      PetscFE         fe = (PetscFE) dm->fields[f].disc;
+      PetscFE         fe = (PetscFE)dm->fields[f].disc;
       const PetscInt *numFieldDof;
       PetscInt        fedim, d;
 
       PetscCall(PetscFEGetNumComponents(fe, &numComp[f]));
       PetscCall(PetscFEGetNumDof(fe, &numFieldDof));
       PetscCall(PetscFEGetSpatialDimension(fe, &fedim));
-      for (d = 0; d < PetscMin(dim, fedim)+1; ++d) numDof[f*(dim+1)+d] = numFieldDof[d];
+      for (d = 0; d < PetscMin(dim, fedim) + 1; ++d) numDof[f * (dim + 1) + d] = numFieldDof[d];
     } else {
-      PetscFV fv = (PetscFV) dm->fields[f].disc;
+      PetscFV fv = (PetscFV)dm->fields[f].disc;
 
       PetscCall(PetscFVGetNumComponents(fv, &numComp[f]));
-      numDof[f*(dim+1)+dim] = numComp[f];
+      numDof[f * (dim + 1) + dim] = numComp[f];
     }
   }
   PetscCall(DMPlexGetDepth(dm, &depth));
   for (f = 0; f < Nf; ++f) {
     PetscInt d;
-    for (d = 1; d < dim; ++d) {
-      PetscCheck(numDof[f*(dim+1)+d] <= 0 || depth >= dim,PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Mesh must be interpolated when unknowns are specified on edges or faces.");
-    }
+    for (d = 1; d < dim; ++d) { PetscCheck(numDof[f * (dim + 1) + d] <= 0 || depth >= dim, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Mesh must be interpolated when unknowns are specified on edges or faces."); }
   }
   PetscCall(DMPlexCreateSection(dm, labels, numComp, numDof, numBC, bcFields, bcComps, bcPoints, NULL, &section));
   for (f = 0; f < Nf; ++f) {
     PetscFE     fe;
     const char *name;
 
-    PetscCall(DMGetField(dm, f, NULL, (PetscObject *) &fe));
-    if (!((PetscObject) fe)->name) continue;
-    PetscCall(PetscObjectGetName((PetscObject) fe, &name));
+    PetscCall(DMGetField(dm, f, NULL, (PetscObject *)&fe));
+    if (!((PetscObject)fe)->name) continue;
+    PetscCall(PetscObjectGetName((PetscObject)fe, &name));
     PetscCall(PetscSectionSetFieldName(section, f, name));
   }
   PetscCall(DMSetLocalSection(dm, section));
   PetscCall(PetscSectionDestroy(&section));
-  for (bc = 0; bc < numBC; ++bc) {PetscCall(ISDestroy(&bcPoints[bc]));PetscCall(ISDestroy(&bcComps[bc]));}
-  PetscCall(PetscFree3(bcFields,bcPoints,bcComps));
-  PetscCall(PetscFree3(labels,numComp,numDof));
+  for (bc = 0; bc < numBC; ++bc) {
+    PetscCall(ISDestroy(&bcPoints[bc]));
+    PetscCall(ISDestroy(&bcComps[bc]));
+  }
+  PetscCall(PetscFree3(bcFields, bcPoints, bcComps));
+  PetscCall(PetscFree3(labels, numComp, numDof));
   PetscCall(PetscFree(isFE));
   PetscFunctionReturn(0);
 }

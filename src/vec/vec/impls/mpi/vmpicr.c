@@ -3,7 +3,7 @@
    This file contains routines for Parallel vector operations.
  */
 
-#include <petscvec.h>   /*I  "petscvec.h"   I*/
+#include <petscvec.h> /*I  "petscvec.h"   I*/
 
 /*@
    VecCreateMPI - Creates a parallel vector.
@@ -28,11 +28,10 @@
           `VecCreateMPIWithArray()`, `VecCreateGhostWithArray()`, `VecMPISetGhost()`
 
 @*/
-PetscErrorCode  VecCreateMPI(MPI_Comm comm,PetscInt n,PetscInt N,Vec *v)
-{
+PetscErrorCode VecCreateMPI(MPI_Comm comm, PetscInt n, PetscInt N, Vec *v) {
   PetscFunctionBegin;
-  PetscCall(VecCreate(comm,v));
-  PetscCall(VecSetSizes(*v,n,N));
-  PetscCall(VecSetType(*v,VECMPI));
+  PetscCall(VecCreate(comm, v));
+  PetscCall(VecSetSizes(*v, n, N));
+  PetscCall(VecSetType(*v, VECMPI));
   PetscFunctionReturn(0);
 }

@@ -7,8 +7,7 @@ typedef struct {
   PetscInt dummy;
 } AppCtx;
 
-static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
-{
+static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   PetscFunctionBeginUser;
   options->dummy = 1;
   PetscOptionsBegin(comm, "", "Dof Ordering Options", "DMPLEX");
@@ -17,8 +16,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
-{
+static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm) {
   PetscFunctionBeginUser;
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetType(*dm, DMPLEX));
@@ -28,8 +26,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
-{
+static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user) {
   DM       cdm = dm;
   PetscFE  fe;
   PetscInt dim;
@@ -37,40 +34,39 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   PetscFunctionBeginUser;
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, PETSC_FALSE, NULL, -1, &fe));
-  PetscCall(PetscObjectSetName((PetscObject) fe, "scalar"));
-  PetscCall(DMSetField(dm, 0, NULL, (PetscObject) fe));
-  PetscCall(DMSetField(dm, 1, NULL, (PetscObject) fe));
+  PetscCall(PetscObjectSetName((PetscObject)fe, "scalar"));
+  PetscCall(DMSetField(dm, 0, NULL, (PetscObject)fe));
+  PetscCall(DMSetField(dm, 1, NULL, (PetscObject)fe));
   PetscCall(PetscFEDestroy(&fe));
   PetscCall(DMCreateDS(dm));
   while (cdm) {
-    PetscCall(DMCopyDisc(dm,cdm));
+    PetscCall(DMCopyDisc(dm, cdm));
     PetscCall(DMGetCoarseDM(cdm, &cdm));
   }
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CheckOffsets(DM dm, const char *domain_name, PetscInt label_value, PetscInt height)
-{
+static PetscErrorCode CheckOffsets(DM dm, const char *domain_name, PetscInt label_value, PetscInt height) {
   const char *height_name[] = {"cells", "faces"};
-  DMLabel   domain_label = NULL;
-  DM        cdm;
-  IS        offIS;
-  PetscInt *offsets, Ncell, Ncl, Nc, n;
-  PetscInt  Nf, f;
+  DMLabel     domain_label  = NULL;
+  DM          cdm;
+  IS          offIS;
+  PetscInt   *offsets, Ncell, Ncl, Nc, n;
+  PetscInt    Nf, f;
 
   PetscFunctionBeginUser;
   if (domain_name) PetscCall(DMGetLabel(dm, domain_name, &domain_label));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "## %s: '%s' {%" PetscInt_FMT "}\n", height_name[height], domain_name?domain_name:"default", label_value));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "## %s: '%s' {%" PetscInt_FMT "}\n", height_name[height], domain_name ? domain_name : "default", label_value));
   // Offsets for cell closures
   PetscCall(DMGetNumFields(dm, &Nf));
   for (f = 0; f < Nf; ++f) {
     char name[PETSC_MAX_PATH_LEN];
 
     PetscCall(DMPlexGetLocalOffsets(dm, domain_label, label_value, height, f, &Ncell, &Ncl, &Nc, &n, &offsets));
-    PetscCall(ISCreateGeneral(PETSC_COMM_SELF, Ncell*Ncl, offsets, PETSC_OWN_POINTER, &offIS));
+    PetscCall(ISCreateGeneral(PETSC_COMM_SELF, Ncell * Ncl, offsets, PETSC_OWN_POINTER, &offIS));
     PetscCall(PetscSNPrintf(name, PETSC_MAX_PATH_LEN, "Field %" PetscInt_FMT " Offsets", f));
-    PetscCall(PetscObjectSetName((PetscObject) offIS, name));
-    PetscCall(ISViewFromOptions(offIS,  NULL, "-offsets_view"));
+    PetscCall(PetscObjectSetName((PetscObject)offIS, name));
+    PetscCall(ISViewFromOptions(offIS, NULL, "-offsets_view"));
     PetscCall(ISDestroy(&offIS));
   }
   // Offsets for coordinates
@@ -84,7 +80,8 @@ static PetscErrorCode CheckOffsets(DM dm, const char *domain_name, PetscInt labe
 
     PetscCall(DMGetCellCoordinateDM(dm, &cdm));
     if (!cdm) {
-      PetscCall(DMGetCoordinateDM(dm, &cdm)); cname = "Coordinates";
+      PetscCall(DMGetCoordinateDM(dm, &cdm));
+      cname = "Coordinates";
       PetscCall(DMGetCoordinatesLocal(dm, &X));
     } else {
       isDG  = PETSC_TRUE;
@@ -101,19 +98,17 @@ static PetscErrorCode CheckOffsets(DM dm, const char *domain_name, PetscInt labe
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%s by element\n", cname));
     for (PetscInt c = 0; c < Ncell; ++c) {
       for (PetscInt v = 0; v < Ncl; ++v) {
-        PetscInt off = offsets[c*Ncl+v], dgdof;
-        const PetscScalar *vx = &x[off];
+        PetscInt           off = offsets[c * Ncl + v], dgdof;
+        const PetscScalar *vx  = &x[off];
 
         if (isDG) {
           PetscCall(PetscSectionGetDof(s, c, &dgdof));
-          PetscCheck(Ncl*Nc == dgdof, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Offset size %" PetscInt_FMT " should be %" PetscInt_FMT, Ncl*Nc, dgdof);
+          PetscCheck(Ncl * Nc == dgdof, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Offset size %" PetscInt_FMT " should be %" PetscInt_FMT, Ncl * Nc, dgdof);
         }
         switch (cdim) {
-        case 2:
-          PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[%" PetscInt_FMT "] %" PetscInt_FMT " <-- %2" PetscInt_FMT " (% 4.2f, % 4.2f)\n", c, v, off, (double) PetscRealPart(vx[0]), (double) PetscRealPart(vx[1])));
-          break;
+        case 2: PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[%" PetscInt_FMT "] %" PetscInt_FMT " <-- %2" PetscInt_FMT " (% 4.2f, % 4.2f)\n", c, v, off, (double)PetscRealPart(vx[0]), (double)PetscRealPart(vx[1]))); break;
         case 3:
-          PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[%" PetscInt_FMT "] %" PetscInt_FMT " <-- %2" PetscInt_FMT " (% 4.2f, % 4.2f, % 4.2f)\n", c, v, off, (double) PetscRealPart(vx[0]), (double) PetscRealPart(vx[1]), (double) PetscRealPart(vx[2])));
+          PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[%" PetscInt_FMT "] %" PetscInt_FMT " <-- %2" PetscInt_FMT " (% 4.2f, % 4.2f, % 4.2f)\n", c, v, off, (double)PetscRealPart(vx[0]), (double)PetscRealPart(vx[1]), (double)PetscRealPart(vx[2])));
           break;
         }
       }
@@ -124,8 +119,7 @@ static PetscErrorCode CheckOffsets(DM dm, const char *domain_name, PetscInt labe
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
   DM     dm;
   AppCtx user;
 

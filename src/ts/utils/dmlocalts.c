@@ -1,11 +1,11 @@
 #include <petsc/private/dmimpl.h>
-#include <petsc/private/tsimpl.h>   /*I "petscts.h" I*/
+#include <petsc/private/tsimpl.h> /*I "petscts.h" I*/
 
 typedef struct {
-  PetscErrorCode (*boundarylocal)(DM,PetscReal,Vec,Vec,void*);
-  PetscErrorCode (*ifunctionlocal)(DM,PetscReal,Vec,Vec,Vec,void*);
-  PetscErrorCode (*ijacobianlocal)(DM,PetscReal,Vec,Vec,PetscReal,Mat,Mat,void*);
-  PetscErrorCode (*rhsfunctionlocal)(DM,PetscReal,Vec,Vec,void*);
+  PetscErrorCode (*boundarylocal)(DM, PetscReal, Vec, Vec, void *);
+  PetscErrorCode (*ifunctionlocal)(DM, PetscReal, Vec, Vec, Vec, void *);
+  PetscErrorCode (*ijacobianlocal)(DM, PetscReal, Vec, Vec, PetscReal, Mat, Mat, void *);
+  PetscErrorCode (*rhsfunctionlocal)(DM, PetscReal, Vec, Vec, void *);
   void *boundarylocalctx;
   void *ifunctionlocalctx;
   void *ijacobianlocalctx;
@@ -15,53 +15,49 @@ typedef struct {
   KSP   kspmass;
 } DMTS_Local;
 
-static PetscErrorCode DMTSDestroy_DMLocal(DMTS tdm)
-{
+static PetscErrorCode DMTSDestroy_DMLocal(DMTS tdm) {
   PetscFunctionBegin;
   PetscCall(PetscFree(tdm->data));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMTSDuplicate_DMLocal(DMTS oldtdm, DMTS tdm)
-{
+static PetscErrorCode DMTSDuplicate_DMLocal(DMTS oldtdm, DMTS tdm) {
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(tdm, (DMTS_Local **) &tdm->data));
+  PetscCall(PetscNewLog(tdm, (DMTS_Local **)&tdm->data));
   if (oldtdm->data) PetscCall(PetscMemcpy(tdm->data, oldtdm->data, sizeof(DMTS_Local)));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMLocalTSGetContext(DM dm, DMTS tdm, DMTS_Local **dmlocalts)
-{
+static PetscErrorCode DMLocalTSGetContext(DM dm, DMTS tdm, DMTS_Local **dmlocalts) {
   PetscFunctionBegin;
   *dmlocalts = NULL;
   if (!tdm->data) {
-    PetscCall(PetscNewLog(dm, (DMTS_Local **) &tdm->data));
+    PetscCall(PetscNewLog(dm, (DMTS_Local **)&tdm->data));
 
     tdm->ops->destroy   = DMTSDestroy_DMLocal;
     tdm->ops->duplicate = DMTSDuplicate_DMLocal;
   }
-  *dmlocalts = (DMTS_Local *) tdm->data;
+  *dmlocalts = (DMTS_Local *)tdm->data;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSComputeIFunction_DMLocal(TS ts, PetscReal time, Vec X, Vec X_t, Vec F, void *ctx)
-{
-  DM             dm;
-  Vec            locX, locX_t, locF;
-  DMTS_Local    *dmlocalts = (DMTS_Local *) ctx;
+static PetscErrorCode TSComputeIFunction_DMLocal(TS ts, PetscReal time, Vec X, Vec X_t, Vec F, void *ctx) {
+  DM          dm;
+  Vec         locX, locX_t, locF;
+  DMTS_Local *dmlocalts = (DMTS_Local *)ctx;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscValidHeaderSpecific(X,VEC_CLASSID,3);
-  PetscValidHeaderSpecific(X_t,VEC_CLASSID,4);
-  PetscValidHeaderSpecific(F,VEC_CLASSID,5);
+  PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
+  PetscValidHeaderSpecific(X, VEC_CLASSID, 3);
+  PetscValidHeaderSpecific(X_t, VEC_CLASSID, 4);
+  PetscValidHeaderSpecific(F, VEC_CLASSID, 5);
   PetscCall(TSGetDM(ts, &dm));
   PetscCall(DMGetLocalVector(dm, &locX));
   PetscCall(DMGetLocalVector(dm, &locX_t));
   PetscCall(DMGetLocalVector(dm, &locF));
   PetscCall(VecZeroEntries(locX));
   PetscCall(VecZeroEntries(locX_t));
-  if (dmlocalts->boundarylocal) PetscCall((*dmlocalts->boundarylocal)(dm, time, locX, locX_t,dmlocalts->boundarylocalctx));
+  if (dmlocalts->boundarylocal) PetscCall((*dmlocalts->boundarylocal)(dm, time, locX, locX_t, dmlocalts->boundarylocalctx));
   PetscCall(DMGlobalToLocalBegin(dm, X, INSERT_VALUES, locX));
   PetscCall(DMGlobalToLocalEnd(dm, X, INSERT_VALUES, locX));
   PetscCall(DMGlobalToLocalBegin(dm, X_t, INSERT_VALUES, locX_t));
@@ -79,21 +75,20 @@ static PetscErrorCode TSComputeIFunction_DMLocal(TS ts, PetscReal time, Vec X, V
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSComputeRHSFunction_DMLocal(TS ts, PetscReal time, Vec X, Vec F, void *ctx)
-{
-  DM             dm;
-  Vec            locX, locF;
-  DMTS_Local    *dmlocalts = (DMTS_Local *) ctx;
+static PetscErrorCode TSComputeRHSFunction_DMLocal(TS ts, PetscReal time, Vec X, Vec F, void *ctx) {
+  DM          dm;
+  Vec         locX, locF;
+  DMTS_Local *dmlocalts = (DMTS_Local *)ctx;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscValidHeaderSpecific(X,VEC_CLASSID,3);
-  PetscValidHeaderSpecific(F,VEC_CLASSID,4);
+  PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
+  PetscValidHeaderSpecific(X, VEC_CLASSID, 3);
+  PetscValidHeaderSpecific(F, VEC_CLASSID, 4);
   PetscCall(TSGetDM(ts, &dm));
   PetscCall(DMGetLocalVector(dm, &locX));
   PetscCall(DMGetLocalVector(dm, &locF));
   PetscCall(VecZeroEntries(locX));
-  if (dmlocalts->boundarylocal) PetscCall((*dmlocalts->boundarylocal)(dm,time,locX,NULL,dmlocalts->boundarylocalctx));
+  if (dmlocalts->boundarylocal) PetscCall((*dmlocalts->boundarylocal)(dm, time, locX, NULL, dmlocalts->boundarylocalctx));
   PetscCall(DMGlobalToLocalBegin(dm, X, INSERT_VALUES, locX));
   PetscCall(DMGlobalToLocalEnd(dm, X, INSERT_VALUES, locX));
   PetscCall(VecZeroEntries(locF));
@@ -118,11 +113,10 @@ static PetscErrorCode TSComputeRHSFunction_DMLocal(TS ts, PetscReal time, Vec X,
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSComputeIJacobian_DMLocal(TS ts, PetscReal time, Vec X, Vec X_t, PetscReal a, Mat A, Mat B, void *ctx)
-{
-  DM             dm;
-  Vec            locX, locX_t;
-  DMTS_Local    *dmlocalts = (DMTS_Local *) ctx;
+static PetscErrorCode TSComputeIJacobian_DMLocal(TS ts, PetscReal time, Vec X, Vec X_t, PetscReal a, Mat A, Mat B, void *ctx) {
+  DM          dm;
+  Vec         locX, locX_t;
+  DMTS_Local *dmlocalts = (DMTS_Local *)ctx;
 
   PetscFunctionBegin;
   PetscCall(TSGetDM(ts, &dm));
@@ -131,7 +125,7 @@ static PetscErrorCode TSComputeIJacobian_DMLocal(TS ts, PetscReal time, Vec X, V
     PetscCall(DMGetLocalVector(dm, &locX_t));
     PetscCall(VecZeroEntries(locX));
     PetscCall(VecZeroEntries(locX_t));
-    if (dmlocalts->boundarylocal) PetscCall((*dmlocalts->boundarylocal)(dm,time,locX,locX_t,dmlocalts->boundarylocalctx));
+    if (dmlocalts->boundarylocal) PetscCall((*dmlocalts->boundarylocal)(dm, time, locX, locX_t, dmlocalts->boundarylocalctx));
     PetscCall(DMGlobalToLocalBegin(dm, X, INSERT_VALUES, locX));
     PetscCall(DMGlobalToLocalEnd(dm, X, INSERT_VALUES, locX));
     PetscCall(DMGlobalToLocalBegin(dm, X_t, INSERT_VALUES, locX_t));
@@ -143,7 +137,7 @@ static PetscErrorCode TSComputeIJacobian_DMLocal(TS ts, PetscReal time, Vec X, V
     PetscCall(DMRestoreLocalVector(dm, &locX_t));
   } else {
     MatFDColoring fdcoloring;
-    PetscCall(PetscObjectQuery((PetscObject) dm, "DMDASNES_FDCOLORING", (PetscObject *) &fdcoloring));
+    PetscCall(PetscObjectQuery((PetscObject)dm, "DMDASNES_FDCOLORING", (PetscObject *)&fdcoloring));
     if (!fdcoloring) {
       ISColoring coloring;
 
@@ -151,16 +145,14 @@ static PetscErrorCode TSComputeIJacobian_DMLocal(TS ts, PetscReal time, Vec X, V
       PetscCall(MatFDColoringCreate(B, coloring, &fdcoloring));
       PetscCall(ISColoringDestroy(&coloring));
       switch (dm->coloringtype) {
-      case IS_COLORING_GLOBAL:
-        PetscCall(MatFDColoringSetFunction(fdcoloring, (PetscErrorCode (*)(void)) TSComputeIFunction_DMLocal, dmlocalts));
-        break;
-      default: SETERRQ(PetscObjectComm((PetscObject) ts), PETSC_ERR_SUP, "No support for coloring type '%s'", ISColoringTypes[dm->coloringtype]);
+      case IS_COLORING_GLOBAL: PetscCall(MatFDColoringSetFunction(fdcoloring, (PetscErrorCode(*)(void))TSComputeIFunction_DMLocal, dmlocalts)); break;
+      default: SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_SUP, "No support for coloring type '%s'", ISColoringTypes[dm->coloringtype]);
       }
-      PetscCall(PetscObjectSetOptionsPrefix((PetscObject) fdcoloring, ((PetscObject) dm)->prefix));
+      PetscCall(PetscObjectSetOptionsPrefix((PetscObject)fdcoloring, ((PetscObject)dm)->prefix));
       PetscCall(MatFDColoringSetFromOptions(fdcoloring));
       PetscCall(MatFDColoringSetUp(B, coloring, fdcoloring));
-      PetscCall(PetscObjectCompose((PetscObject) dm, "DMDASNES_FDCOLORING", (PetscObject) fdcoloring));
-      PetscCall(PetscObjectDereference((PetscObject) fdcoloring));
+      PetscCall(PetscObjectCompose((PetscObject)dm, "DMDASNES_FDCOLORING", (PetscObject)fdcoloring));
+      PetscCall(PetscObjectDereference((PetscObject)fdcoloring));
 
       /* The following breaks an ugly reference counting loop that deserves a paragraph. MatFDColoringApply() will call
        * VecDuplicate() with the state Vec and store inside the MatFDColoring. This Vec will duplicate the Vec, but the
@@ -168,7 +160,7 @@ static PetscErrorCode TSComputeIJacobian_DMLocal(TS ts, PetscReal time, Vec X, V
        * drop to 0. Note the code in DMDestroy() that exits early for a negative reference count. That code path will be
        * taken when the PetscObjectList for the Vec inside MatFDColoring is destroyed.
        */
-      PetscCall(PetscObjectDereference((PetscObject) dm));
+      PetscCall(PetscObjectDereference((PetscObject)dm));
     }
     PetscCall(MatFDColoringApply(B, fdcoloring, X, ts));
   }
@@ -200,13 +192,12 @@ static PetscErrorCode TSComputeIJacobian_DMLocal(TS ts, PetscReal time, Vec X, V
 
 .seealso: `DMTSSetIFunction()`, `DMTSSetIJacobianLocal()`
 @*/
-PetscErrorCode DMTSSetBoundaryLocal(DM dm, PetscErrorCode (*func)(DM, PetscReal, Vec, Vec, void *), void *ctx)
-{
-  DMTS           tdm;
-  DMTS_Local    *dmlocalts;
+PetscErrorCode DMTSSetBoundaryLocal(DM dm, PetscErrorCode (*func)(DM, PetscReal, Vec, Vec, void *), void *ctx) {
+  DMTS        tdm;
+  DMTS_Local *dmlocalts;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscCall(DMGetDMTSWrite(dm, &tdm));
   PetscCall(DMLocalTSGetContext(dm, tdm, &dmlocalts));
 
@@ -234,18 +225,25 @@ PetscErrorCode DMTSSetBoundaryLocal(DM dm, PetscErrorCode (*func)(DM, PetscReal,
 
 .seealso: `DMTSSetIFunctionLocal(()`, `DMTSSetIFunction()`, `DMTSSetIJacobianLocal()`
 @*/
-PetscErrorCode DMTSGetIFunctionLocal(DM dm, PetscErrorCode (**func)(DM, PetscReal, Vec, Vec, Vec, void *), void **ctx)
-{
+PetscErrorCode DMTSGetIFunctionLocal(DM dm, PetscErrorCode (**func)(DM, PetscReal, Vec, Vec, Vec, void *), void **ctx) {
   DMTS           tdm;
   DMTS_Local    *dmlocalts;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = DMGetDMTS(dm, &tdm);CHKERRQ(ierr);
-  ierr = DMLocalTSGetContext(dm, tdm, &dmlocalts);CHKERRQ(ierr);
-  if (func) {PetscValidPointer(func, 2); *func = dmlocalts->ifunctionlocal;}
-  if (ctx)  {PetscValidPointer(ctx, 3);  *ctx  = dmlocalts->ifunctionlocalctx;}
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = DMGetDMTS(dm, &tdm);
+  CHKERRQ(ierr);
+  ierr = DMLocalTSGetContext(dm, tdm, &dmlocalts);
+  CHKERRQ(ierr);
+  if (func) {
+    PetscValidPointer(func, 2);
+    *func = dmlocalts->ifunctionlocal;
+  }
+  if (ctx) {
+    PetscValidPointer(ctx, 3);
+    *ctx = dmlocalts->ifunctionlocalctx;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -265,13 +263,12 @@ PetscErrorCode DMTSGetIFunctionLocal(DM dm, PetscErrorCode (**func)(DM, PetscRea
 
 .seealso: `DMTSGetIFunctionLocal()`, `DMTSSetIFunction()`, `DMTSSetIJacobianLocal()`
 @*/
-PetscErrorCode DMTSSetIFunctionLocal(DM dm, PetscErrorCode (*func)(DM, PetscReal, Vec, Vec, Vec, void *), void *ctx)
-{
-  DMTS           tdm;
-  DMTS_Local    *dmlocalts;
+PetscErrorCode DMTSSetIFunctionLocal(DM dm, PetscErrorCode (*func)(DM, PetscReal, Vec, Vec, Vec, void *), void *ctx) {
+  DMTS        tdm;
+  DMTS_Local *dmlocalts;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscCall(DMGetDMTSWrite(dm, &tdm));
   PetscCall(DMLocalTSGetContext(dm, tdm, &dmlocalts));
 
@@ -279,7 +276,7 @@ PetscErrorCode DMTSSetIFunctionLocal(DM dm, PetscErrorCode (*func)(DM, PetscReal
   dmlocalts->ifunctionlocalctx = ctx;
 
   PetscCall(DMTSSetIFunction(dm, TSComputeIFunction_DMLocal, dmlocalts));
-  if (!tdm->ops->ijacobian) {  /* Call us for the Jacobian too, can be overridden by the user. */
+  if (!tdm->ops->ijacobian) { /* Call us for the Jacobian too, can be overridden by the user. */
     PetscCall(DMTSSetIJacobian(dm, TSComputeIJacobian_DMLocal, dmlocalts));
   }
   PetscFunctionReturn(0);
@@ -301,18 +298,25 @@ PetscErrorCode DMTSSetIFunctionLocal(DM dm, PetscErrorCode (*func)(DM, PetscReal
 
 .seealso: `DMTSSetIJacobianLocal()`, `DMTSSetIFunctionLocal()`, `DMTSSetIJacobian()`, `DMTSSetIFunction()`
 @*/
-PetscErrorCode DMTSGetIJacobianLocal(DM dm, PetscErrorCode (**func)(DM, PetscReal, Vec, Vec, PetscReal, Mat, Mat, void *), void **ctx)
-{
+PetscErrorCode DMTSGetIJacobianLocal(DM dm, PetscErrorCode (**func)(DM, PetscReal, Vec, Vec, PetscReal, Mat, Mat, void *), void **ctx) {
   DMTS           tdm;
   DMTS_Local    *dmlocalts;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = DMGetDMTS(dm, &tdm);CHKERRQ(ierr);
-  ierr = DMLocalTSGetContext(dm, tdm, &dmlocalts);CHKERRQ(ierr);
-  if (func) {PetscValidPointer(func, 2); *func = dmlocalts->ijacobianlocal;}
-  if (ctx)  {PetscValidPointer(ctx, 3);  *ctx  = dmlocalts->ijacobianlocalctx;}
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = DMGetDMTS(dm, &tdm);
+  CHKERRQ(ierr);
+  ierr = DMLocalTSGetContext(dm, tdm, &dmlocalts);
+  CHKERRQ(ierr);
+  if (func) {
+    PetscValidPointer(func, 2);
+    *func = dmlocalts->ijacobianlocal;
+  }
+  if (ctx) {
+    PetscValidPointer(ctx, 3);
+    *ctx = dmlocalts->ijacobianlocalctx;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -330,13 +334,12 @@ PetscErrorCode DMTSGetIJacobianLocal(DM dm, PetscErrorCode (**func)(DM, PetscRea
 
 .seealso: `DMTSGetIJacobianLocal()`, `DMTSSetIFunctionLocal()`, `DMTSSetIJacobian()`, `DMTSSetIFunction()`
 @*/
-PetscErrorCode DMTSSetIJacobianLocal(DM dm, PetscErrorCode (*func)(DM, PetscReal, Vec, Vec, PetscReal, Mat, Mat, void *), void *ctx)
-{
-  DMTS           tdm;
-  DMTS_Local    *dmlocalts;
+PetscErrorCode DMTSSetIJacobianLocal(DM dm, PetscErrorCode (*func)(DM, PetscReal, Vec, Vec, PetscReal, Mat, Mat, void *), void *ctx) {
+  DMTS        tdm;
+  DMTS_Local *dmlocalts;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscCall(DMGetDMTSWrite(dm, &tdm));
   PetscCall(DMLocalTSGetContext(dm, tdm, &dmlocalts));
 
@@ -365,18 +368,25 @@ PetscErrorCode DMTSSetIJacobianLocal(DM dm, PetscErrorCode (*func)(DM, PetscReal
 
 .seealso: `DMTSSetRHSFunctionLocal()`, `DMTSSetRHSFunction()`, `DMTSSetIFunction()`, `DMTSSetIJacobianLocal()`
 @*/
-PetscErrorCode DMTSGetRHSFunctionLocal(DM dm, PetscErrorCode (**func)(DM, PetscReal, Vec, Vec, void *), void **ctx)
-{
+PetscErrorCode DMTSGetRHSFunctionLocal(DM dm, PetscErrorCode (**func)(DM, PetscReal, Vec, Vec, void *), void **ctx) {
   DMTS           tdm;
   DMTS_Local    *dmlocalts;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = DMGetDMTS(dm, &tdm);CHKERRQ(ierr);
-  ierr = DMLocalTSGetContext(dm, tdm, &dmlocalts);CHKERRQ(ierr);
-  if (func) {PetscValidPointer(func, 2); *func = dmlocalts->rhsfunctionlocal;}
-  if (ctx)  {PetscValidPointer(ctx, 3);  *ctx  = dmlocalts->rhsfunctionlocalctx;}
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = DMGetDMTS(dm, &tdm);
+  CHKERRQ(ierr);
+  ierr = DMLocalTSGetContext(dm, tdm, &dmlocalts);
+  CHKERRQ(ierr);
+  if (func) {
+    PetscValidPointer(func, 2);
+    *func = dmlocalts->rhsfunctionlocal;
+  }
+  if (ctx) {
+    PetscValidPointer(ctx, 3);
+    *ctx = dmlocalts->rhsfunctionlocalctx;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -396,13 +406,12 @@ PetscErrorCode DMTSGetRHSFunctionLocal(DM dm, PetscErrorCode (**func)(DM, PetscR
 
 .seealso: `DMTSGetRHSFunctionLocal()`, `DMTSSetRHSFunction()`, `DMTSSetIFunction()`, `DMTSSetIJacobianLocal()`
 @*/
-PetscErrorCode DMTSSetRHSFunctionLocal(DM dm, PetscErrorCode (*func)(DM, PetscReal, Vec, Vec, void *), void *ctx)
-{
-  DMTS           tdm;
-  DMTS_Local    *dmlocalts;
+PetscErrorCode DMTSSetRHSFunctionLocal(DM dm, PetscErrorCode (*func)(DM, PetscReal, Vec, Vec, void *), void *ctx) {
+  DMTS        tdm;
+  DMTS_Local *dmlocalts;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscCall(DMGetDMTSWrite(dm, &tdm));
   PetscCall(DMLocalTSGetContext(dm, tdm, &dmlocalts));
 
@@ -427,19 +436,18 @@ PetscErrorCode DMTSSetRHSFunctionLocal(DM dm, PetscErrorCode (*func)(DM, PetscRe
 
 .seealso: `DMTSCreateRHSMassMatrixLumped()`, `DMTSDestroyRHSMassMatrix()`, `DMCreateMassMatrix()`, `DMTS`
 @*/
-PetscErrorCode DMTSCreateRHSMassMatrix(DM dm)
-{
-  DMTS           tdm;
-  DMTS_Local    *dmlocalts;
-  const char    *prefix;
+PetscErrorCode DMTSCreateRHSMassMatrix(DM dm) {
+  DMTS        tdm;
+  DMTS_Local *dmlocalts;
+  const char *prefix;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscCall(DMGetDMTSWrite(dm, &tdm));
   PetscCall(DMLocalTSGetContext(dm, tdm, &dmlocalts));
   PetscCall(DMCreateMassMatrix(dm, dm, &dmlocalts->mass));
-  PetscCall(KSPCreate(PetscObjectComm((PetscObject) dm), &dmlocalts->kspmass));
-  PetscCall(PetscObjectGetOptionsPrefix((PetscObject) dm, &prefix));
+  PetscCall(KSPCreate(PetscObjectComm((PetscObject)dm), &dmlocalts->kspmass));
+  PetscCall(PetscObjectGetOptionsPrefix((PetscObject)dm, &prefix));
   PetscCall(KSPSetOptionsPrefix(dmlocalts->kspmass, prefix));
   PetscCall(KSPAppendOptionsPrefix(dmlocalts->kspmass, "mass_"));
   PetscCall(KSPSetFromOptions(dmlocalts->kspmass));
@@ -462,13 +470,12 @@ PetscErrorCode DMTSCreateRHSMassMatrix(DM dm)
 
 .seealso: `DMTSCreateRHSMassMatrix()`, `DMTSDestroyRHSMassMatrix()`, `DMCreateMassMatrix()`, `DMTS`
 @*/
-PetscErrorCode DMTSCreateRHSMassMatrixLumped(DM dm)
-{
-  DMTS           tdm;
-  DMTS_Local    *dmlocalts;
+PetscErrorCode DMTSCreateRHSMassMatrixLumped(DM dm) {
+  DMTS        tdm;
+  DMTS_Local *dmlocalts;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscCall(DMGetDMTSWrite(dm, &tdm));
   PetscCall(DMLocalTSGetContext(dm, tdm, &dmlocalts));
   PetscCall(DMCreateMassMatrixLumped(dm, &dmlocalts->lumpedmassinv));
@@ -489,13 +496,12 @@ PetscErrorCode DMTSCreateRHSMassMatrixLumped(DM dm)
 
 .seealso: `DMTSCreateRHSMassMatrixLumped()`, `DMCreateMassMatrix()`, `DMCreateMassMatrix()`, `DMTS`
 @*/
-PetscErrorCode DMTSDestroyRHSMassMatrix(DM dm)
-{
-  DMTS           tdm;
-  DMTS_Local    *dmlocalts;
+PetscErrorCode DMTSDestroyRHSMassMatrix(DM dm) {
+  DMTS        tdm;
+  DMTS_Local *dmlocalts;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscCall(DMGetDMTSWrite(dm, &tdm));
   PetscCall(DMLocalTSGetContext(dm, tdm, &dmlocalts));
   PetscCall(VecDestroy(&dmlocalts->lumpedmassinv));

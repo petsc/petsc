@@ -2,7 +2,7 @@
 /*
        Provides the calling sequences for all the basic PetscDraw routines.
 */
-#include <petsc/private/drawimpl.h>  /*I "petscdraw.h" I*/
+#include <petsc/private/drawimpl.h> /*I "petscdraw.h" I*/
 
 /*@C
    PetscDrawIndicatorFunction - Draws an indicator function (where a relationship is true) on a PetscDraw
@@ -17,26 +17,29 @@
    Level: developer
 
 @*/
-PetscErrorCode PetscDrawIndicatorFunction(PetscDraw draw,PetscReal xmin,PetscReal xmax,PetscReal ymin,PetscReal ymax,int c,PetscErrorCode (*indicator)(void*,PetscReal,PetscReal,PetscBool*),void *ctx)
-{
-  int            i,j,xstart,ystart,xend,yend;
-  PetscReal      x,y;
-  PetscBool      isnull,flg;
+PetscErrorCode PetscDrawIndicatorFunction(PetscDraw draw, PetscReal xmin, PetscReal xmax, PetscReal ymin, PetscReal ymax, int c, PetscErrorCode (*indicator)(void *, PetscReal, PetscReal, PetscBool *), void *ctx) {
+  int       i, j, xstart, ystart, xend, yend;
+  PetscReal x, y;
+  PetscBool isnull, flg;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  PetscCall(PetscDrawIsNull(draw,&isnull));
+  PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
+  PetscCall(PetscDrawIsNull(draw, &isnull));
   if (isnull) PetscFunctionReturn(0);
 
-  PetscCall(PetscDrawCoordinateToPixel(draw,xmin,ymin,&xstart,&ystart));
-  PetscCall(PetscDrawCoordinateToPixel(draw,xmax,ymax,&xend,&yend));
-  if (yend < ystart) { PetscInt tmp = ystart; ystart = yend; yend = tmp; }
+  PetscCall(PetscDrawCoordinateToPixel(draw, xmin, ymin, &xstart, &ystart));
+  PetscCall(PetscDrawCoordinateToPixel(draw, xmax, ymax, &xend, &yend));
+  if (yend < ystart) {
+    PetscInt tmp = ystart;
+    ystart       = yend;
+    yend         = tmp;
+  }
 
-  for (i=xstart; i<=xend; i++) {
-    for (j=ystart; j<=yend; j++) {
-      PetscCall(PetscDrawPixelToCoordinate(draw,i,j,&x,&y));
-      PetscCall(indicator(ctx,x,y,&flg));
-      if (flg) PetscCall(PetscDrawPointPixel(draw,i,j,c));
+  for (i = xstart; i <= xend; i++) {
+    for (j = ystart; j <= yend; j++) {
+      PetscCall(PetscDrawPixelToCoordinate(draw, i, j, &x, &y));
+      PetscCall(indicator(ctx, x, y, &flg));
+      if (flg) PetscCall(PetscDrawPointPixel(draw, i, j, c));
     }
   }
   PetscFunctionReturn(0);
@@ -59,11 +62,10 @@ PetscErrorCode PetscDrawIndicatorFunction(PetscDraw draw,PetscReal xmin,PetscRea
    Level: developer
 
 @*/
-PetscErrorCode PetscDrawCoordinateToPixel(PetscDraw draw,PetscReal x,PetscReal y,int *i,int *j)
-{
+PetscErrorCode PetscDrawCoordinateToPixel(PetscDraw draw, PetscReal x, PetscReal y, int *i, int *j) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  PetscUseTypeMethod(draw,coordinatetopixel ,x,y,i,j);
+  PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
+  PetscUseTypeMethod(draw, coordinatetopixel, x, y, i, j);
   PetscFunctionReturn(0);
 }
 
@@ -84,11 +86,10 @@ PetscErrorCode PetscDrawCoordinateToPixel(PetscDraw draw,PetscReal x,PetscReal y
    Level: developer
 
 @*/
-PetscErrorCode PetscDrawPixelToCoordinate(PetscDraw draw,int i,int j,PetscReal *x,PetscReal *y)
-{
+PetscErrorCode PetscDrawPixelToCoordinate(PetscDraw draw, int i, int j, PetscReal *x, PetscReal *y) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  PetscUseTypeMethod(draw,pixeltocoordinate ,i,j,x,y);
+  PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
+  PetscUseTypeMethod(draw, pixeltocoordinate, i, j, x, y);
   PetscFunctionReturn(0);
 }
 
@@ -108,10 +109,9 @@ PetscErrorCode PetscDrawPixelToCoordinate(PetscDraw draw,int i,int j,PetscReal *
           `PetscDrawMarker()`, `PetscDrawPoint()`, `PetscDrawString()`, `PetscDrawPoint()`, `PetscDrawArrow()`
 
 @*/
-PetscErrorCode  PetscDrawRectangle(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr,int c1,int c2,int c3,int c4)
-{
+PetscErrorCode PetscDrawRectangle(PetscDraw draw, PetscReal xl, PetscReal yl, PetscReal xr, PetscReal yr, int c1, int c2, int c3, int c4) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  PetscUseTypeMethod(draw,rectangle ,xl,yl,xr,yr,c1,c2,c3,c4);
+  PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
+  PetscUseTypeMethod(draw, rectangle, xl, yl, xr, yr, c1, c2, c3, c4);
   PetscFunctionReturn(0);
 }

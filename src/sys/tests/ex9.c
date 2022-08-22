@@ -3,13 +3,11 @@ static char help[] = "Tests PetscSequentialPhaseBegin() and PetscSequentialPhase
 
 #include <petscsys.h>
 
-int main(int argc,char **args)
-{
-
+int main(int argc, char **args) {
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&args,NULL,help));
-  PetscCall(PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1));
-  PetscCall(PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
+  PetscCall(PetscSequentialPhaseBegin(PETSC_COMM_WORLD, 1));
+  PetscCall(PetscSequentialPhaseEnd(PETSC_COMM_WORLD, 1));
   PetscCall(PetscFinalize());
   return 0;
 }

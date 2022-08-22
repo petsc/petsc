@@ -1,5 +1,5 @@
 
-#include <../src/vec/is/ao/aoimpl.h>      /*I "petscao.h" I*/
+#include <../src/vec/is/ao/aoimpl.h> /*I "petscao.h" I*/
 PETSC_EXTERN PetscErrorCode AOCreate_Basic(AO ao);
 PETSC_EXTERN PetscErrorCode AOCreate_MemoryScalable(AO ao);
 
@@ -12,13 +12,12 @@ PETSC_EXTERN PetscErrorCode AOCreate_MemoryScalable(AO ao);
 
 .seealso: `AORegister()`, `AORegisterDestroy()`
 @*/
-PetscErrorCode  AORegisterAll(void)
-{
+PetscErrorCode AORegisterAll(void) {
   PetscFunctionBegin;
   if (AORegisterAllCalled) PetscFunctionReturn(0);
   AORegisterAllCalled = PETSC_TRUE;
 
-  PetscCall(AORegister(AOBASIC,          AOCreate_Basic));
+  PetscCall(AORegister(AOBASIC, AOCreate_Basic));
   PetscCall(AORegister(AOMEMORYSCALABLE, AOCreate_MemoryScalable));
   PetscFunctionReturn(0);
 }

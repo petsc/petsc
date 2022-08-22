@@ -29,14 +29,13 @@ C    STORED IN ROW J (AND THUS M(I,J) IS NOT STORED).
              nonzero A_(perm(i),iperm(k)) will be stored in the upper triangle.
              Note: matrix A is not permuted by this function!
 */
-PetscErrorCode  MatReorderingSeqSBAIJ(Mat A,IS perm)
-{
-  Mat_SeqSBAIJ   *a=(Mat_SeqSBAIJ*)A->data;
-  const PetscInt mbs=a->mbs;
+PetscErrorCode MatReorderingSeqSBAIJ(Mat A, IS perm) {
+  Mat_SeqSBAIJ  *a   = (Mat_SeqSBAIJ *)A->data;
+  const PetscInt mbs = a->mbs;
 
   PetscFunctionBegin;
   if (!mbs) PetscFunctionReturn(0);
-  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Matrix reordering is not supported for sbaij matrix. Use aij format");
+  SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Matrix reordering is not supported for sbaij matrix. Use aij format");
 #if 0
   const PetscInt *rip,*riip;
   PetscInt       *ai,*aj,*r;

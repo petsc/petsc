@@ -3,41 +3,40 @@ static char help[] = "Test DMStag refinement and coarsening\n\n";
 #include <petscdm.h>
 #include <petscdmstag.h>
 
-int main(int argc,char **argv)
-{
-  DM              dm,dmCoarsened,dmRefined;
-  PetscInt        dim;
-  PetscBool       flg;
+int main(int argc, char **argv) {
+  DM        dm, dmCoarsened, dmRefined;
+  PetscInt  dim;
+  PetscBool flg;
 
   /* Create a DMStag object */
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
-  PetscCall(PetscOptionsGetInt(NULL,NULL,"-dim",&dim,&flg));
+  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-dim", &dim, &flg));
   if (!flg) {
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Supply -dim option\n"));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Supply -dim option\n"));
     return 1;
   }
   if (dim == 1) {
-    PetscCall(DMStagCreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,8,2,3,DMSTAG_STENCIL_BOX,1,NULL,&dm));
+    PetscCall(DMStagCreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, 8, 2, 3, DMSTAG_STENCIL_BOX, 1, NULL, &dm));
   } else if (dim == 2) {
-    PetscCall(DMStagCreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,4,6,PETSC_DECIDE,PETSC_DECIDE,2,1,1,DMSTAG_STENCIL_BOX,1,NULL,NULL,&dm));
+    PetscCall(DMStagCreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, 4, 6, PETSC_DECIDE, PETSC_DECIDE, 2, 1, 1, DMSTAG_STENCIL_BOX, 1, NULL, NULL, &dm));
   } else if (dim == 3) {
-    PetscCall(DMStagCreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,4,4,6,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,1,1,DMSTAG_STENCIL_BOX,1,NULL,NULL,NULL,&dm));
+    PetscCall(DMStagCreate3d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, 4, 4, 6, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, 1, 1, 1, 1, DMSTAG_STENCIL_BOX, 1, NULL, NULL, NULL, &dm));
   } else {
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Supply -dim option with value 1, 2, or 3\n"));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Supply -dim option with value 1, 2, or 3\n"));
     return 1;
   }
   PetscCall(DMSetFromOptions(dm));
   PetscCall(DMSetUp(dm));
-  PetscCall(DMView(dm,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(DMView(dm, PETSC_VIEWER_STDOUT_WORLD));
 
   /* Create a refined DMStag object */
-  PetscCall(DMRefine(dm,PetscObjectComm((PetscObject)dm),&dmRefined));
-  PetscCall(DMView(dmRefined,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(DMRefine(dm, PetscObjectComm((PetscObject)dm), &dmRefined));
+  PetscCall(DMView(dmRefined, PETSC_VIEWER_STDOUT_WORLD));
 
   /* Create a coarsened DMStag object */
-  PetscCall(DMCoarsen(dm,PetscObjectComm((PetscObject)dm),&dmCoarsened));
-  PetscCall(DMView(dmCoarsened,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(DMCoarsen(dm, PetscObjectComm((PetscObject)dm), &dmCoarsened));
+  PetscCall(DMView(dmCoarsened, PETSC_VIEWER_STDOUT_WORLD));
 
   PetscCall(DMDestroy(&dmCoarsened));
   PetscCall(DMDestroy(&dmRefined));

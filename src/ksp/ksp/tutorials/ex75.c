@@ -2,53 +2,50 @@
 
 static char help[] = "Solves a series of linear systems using KSPHPDDM.\n\n";
 
-int main(int argc,char **args)
-{
-  Vec            x,b;        /* computed solution and RHS */
-  Mat            A;          /* linear system matrix */
-  KSP            ksp;        /* linear solver context */
+int main(int argc, char **args) {
+  Vec x, b; /* computed solution and RHS */
+  Mat A;    /* linear system matrix */
+  KSP ksp;  /* linear solver context */
 #if defined(PETSC_HAVE_HPDDM)
-  Mat            U;          /* deflation space */
+  Mat U; /* deflation space */
 #endif
-  PetscInt       i,j,nmat = 10;
-  PetscViewer    viewer;
-  char           dir[PETSC_MAX_PATH_LEN],name[256];
-  PetscBool      flg,reset = PETSC_FALSE;
+  PetscInt    i, j, nmat = 10;
+  PetscViewer viewer;
+  char        dir[PETSC_MAX_PATH_LEN], name[256];
+  PetscBool   flg, reset = PETSC_FALSE;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&args,NULL,help));
-  PetscCall(PetscStrcpy(dir,"."));
-  PetscCall(PetscOptionsGetString(NULL,NULL,"-load_dir",dir,sizeof(dir),NULL));
-  PetscCall(PetscOptionsGetInt(NULL,NULL,"-nmat",&nmat,NULL));
-  PetscCall(PetscOptionsGetBool(NULL,NULL,"-reset",&reset,NULL));
-  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
-  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
-  PetscCall(KSPSetOperators(ksp,A,A));
-  for (i=0; i<nmat; i++) {
-    j = i+400;
-    PetscCall(PetscSNPrintf(name,sizeof(name),"%s/A_%" PetscInt_FMT ".dat",dir,j));
-    PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,name,FILE_MODE_READ,&viewer));
-    PetscCall(MatLoad(A,viewer));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
+  PetscCall(PetscStrcpy(dir, "."));
+  PetscCall(PetscOptionsGetString(NULL, NULL, "-load_dir", dir, sizeof(dir), NULL));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-nmat", &nmat, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-reset", &reset, NULL));
+  PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
+  PetscCall(KSPCreate(PETSC_COMM_WORLD, &ksp));
+  PetscCall(KSPSetOperators(ksp, A, A));
+  for (i = 0; i < nmat; i++) {
+    j = i + 400;
+    PetscCall(PetscSNPrintf(name, sizeof(name), "%s/A_%" PetscInt_FMT ".dat", dir, j));
+    PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, name, FILE_MODE_READ, &viewer));
+    PetscCall(MatLoad(A, viewer));
     PetscCall(PetscViewerDestroy(&viewer));
-    if (i == 0) {
-      PetscCall(MatCreateVecs(A,&x,&b));
-    }
-    PetscCall(PetscSNPrintf(name,sizeof(name),"%s/rhs_%" PetscInt_FMT ".dat",dir,j));
-    PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,name,FILE_MODE_READ,&viewer));
-    PetscCall(VecLoad(b,viewer));
+    if (i == 0) { PetscCall(MatCreateVecs(A, &x, &b)); }
+    PetscCall(PetscSNPrintf(name, sizeof(name), "%s/rhs_%" PetscInt_FMT ".dat", dir, j));
+    PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, name, FILE_MODE_READ, &viewer));
+    PetscCall(VecLoad(b, viewer));
     PetscCall(PetscViewerDestroy(&viewer));
     PetscCall(KSPSetFromOptions(ksp));
-    PetscCall(KSPSolve(ksp,b,x));
-    PetscCall(PetscObjectTypeCompare((PetscObject)ksp,KSPHPDDM,&flg));
+    PetscCall(KSPSolve(ksp, b, x));
+    PetscCall(PetscObjectTypeCompare((PetscObject)ksp, KSPHPDDM, &flg));
 #if defined(PETSC_HAVE_HPDDM)
     if (flg && reset) {
-      PetscCall(KSPHPDDMGetDeflationMat(ksp,&U));
+      PetscCall(KSPHPDDMGetDeflationMat(ksp, &U));
       PetscCall(KSPReset(ksp));
-      PetscCall(KSPSetOperators(ksp,A,A));
+      PetscCall(KSPSetOperators(ksp, A, A));
       PetscCall(KSPSetFromOptions(ksp));
       PetscCall(KSPSetUp(ksp));
       if (U) {
-        PetscCall(KSPHPDDMSetDeflationMat(ksp,U));
+        PetscCall(KSPHPDDMSetDeflationMat(ksp, U));
         PetscCall(MatDestroy(&U));
       }
     }

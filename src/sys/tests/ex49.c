@@ -2,10 +2,9 @@
 static char help[] = "Demonstrates PetscDataTypeFromString().\n\n";
 
 #include <petscsys.h>
-int main(int argc,char **argv)
-{
-  PetscDataType  dtype;
-  PetscBool      found;
+int main(int argc, char **argv) {
+  PetscDataType dtype;
+  PetscBool     found;
 
   /*
     Every PETSc routine should begin with the PetscInitialize() routine.
@@ -17,22 +16,22 @@ int main(int argc,char **argv)
                  additional help messages in this printout.
   */
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
 
-  PetscCall(PetscDataTypeFromString("Scalar",&dtype,&found));
-  PetscCheck(found,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Did not find scalar datatype");
-  PetscCheck(dtype == PETSC_SCALAR,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Found wrong datatype for scalar");
+  PetscCall(PetscDataTypeFromString("Scalar", &dtype, &found));
+  PetscCheck(found, PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Did not find scalar datatype");
+  PetscCheck(dtype == PETSC_SCALAR, PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Found wrong datatype for scalar");
 
-  PetscCall(PetscDataTypeFromString("INT",&dtype,&found));
-  PetscCheck(found,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Did not find int datatype");
-  PetscCheck(dtype == PETSC_INT,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Found wrong datatype for int");
+  PetscCall(PetscDataTypeFromString("INT", &dtype, &found));
+  PetscCheck(found, PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Did not find int datatype");
+  PetscCheck(dtype == PETSC_INT, PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Found wrong datatype for int");
 
-  PetscCall(PetscDataTypeFromString("real",&dtype,&found));
-  PetscCheck(found,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Did not find real datatype");
-  PetscCheck(dtype == PETSC_REAL,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Found wrong datatype for real");
+  PetscCall(PetscDataTypeFromString("real", &dtype, &found));
+  PetscCheck(found, PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Did not find real datatype");
+  PetscCheck(dtype == PETSC_REAL, PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Found wrong datatype for real");
 
-  PetscCall(PetscDataTypeFromString("abogusdatatype",&dtype,&found));
-  PetscCheck(!found,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Found a bogus datatype");
+  PetscCall(PetscDataTypeFromString("abogusdatatype", &dtype, &found));
+  PetscCheck(!found, PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Found a bogus datatype");
 
   PetscCall(PetscFinalize());
   return 0;

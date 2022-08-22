@@ -1,5 +1,5 @@
 
-#include <petsc/private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
+#include <petsc/private/dmdaimpl.h> /*I   "petscdmda.h"   I*/
 
 /*@C
    DMDAVecGetArray - Returns a multiple dimension array that shares data with
@@ -39,36 +39,35 @@
           `DMDAVecGetArrayDOF()`, `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`, `DMDAVecGetArrayRead()`, `DMDAVecRestoreArrayRead()`,
           `DMStagVecGetArray()`
 @*/
-PetscErrorCode  DMDAVecGetArray(DM da,Vec vec,void *array)
-{
-  PetscInt       xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,N,dim,dof;
+PetscErrorCode DMDAVecGetArray(DM da, Vec vec, void *array) {
+  PetscInt xs, ys, zs, xm, ym, zm, gxs, gys, gzs, gxm, gym, gzm, N, dim, dof;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecificType(da, DM_CLASSID, 1,DMDA);
+  PetscValidHeaderSpecificType(da, DM_CLASSID, 1, DMDA);
   PetscValidHeaderSpecific(vec, VEC_CLASSID, 2);
   PetscValidPointer(array, 3);
-  PetscCall(DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm));
-  PetscCall(DMDAGetGhostCorners(da,&gxs,&gys,&gzs,&gxm,&gym,&gzm));
-  PetscCall(DMDAGetInfo(da,&dim,NULL,NULL,NULL,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL));
+  PetscCall(DMDAGetCorners(da, &xs, &ys, &zs, &xm, &ym, &zm));
+  PetscCall(DMDAGetGhostCorners(da, &gxs, &gys, &gzs, &gxm, &gym, &gzm));
+  PetscCall(DMDAGetInfo(da, &dim, NULL, NULL, NULL, NULL, NULL, NULL, &dof, NULL, NULL, NULL, NULL, NULL));
 
   /* Handle case where user passes in global vector as opposed to local */
-  PetscCall(VecGetLocalSize(vec,&N));
-  if (N == xm*ym*zm*dof) {
+  PetscCall(VecGetLocalSize(vec, &N));
+  if (N == xm * ym * zm * dof) {
     gxm = xm;
     gym = ym;
     gzm = zm;
     gxs = xs;
     gys = ys;
     gzs = zs;
-  } else PetscCheck(N == gxm*gym*gzm*dof,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vector local size %" PetscInt_FMT " is not compatible with DMDA local sizes %" PetscInt_FMT " %" PetscInt_FMT,N,xm*ym*zm*dof,gxm*gym*gzm*dof);
+  } else PetscCheck(N == gxm * gym * gzm * dof, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Vector local size %" PetscInt_FMT " is not compatible with DMDA local sizes %" PetscInt_FMT " %" PetscInt_FMT, N, xm * ym * zm * dof, gxm * gym * gzm * dof);
 
   if (dim == 1) {
-    PetscCall(VecGetArray1d(vec,gxm*dof,gxs*dof,(PetscScalar**)array));
+    PetscCall(VecGetArray1d(vec, gxm * dof, gxs * dof, (PetscScalar **)array));
   } else if (dim == 2) {
-    PetscCall(VecGetArray2d(vec,gym,gxm*dof,gys,gxs*dof,(PetscScalar***)array));
+    PetscCall(VecGetArray2d(vec, gym, gxm * dof, gys, gxs * dof, (PetscScalar ***)array));
   } else if (dim == 3) {
-    PetscCall(VecGetArray3d(vec,gzm,gym,gxm*dof,gzs,gys,gxs*dof,(PetscScalar****)array));
-  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"DMDA dimension not 1, 2, or 3, it is %" PetscInt_FMT,dim);
+    PetscCall(VecGetArray3d(vec, gzm, gym, gxm * dof, gzs, gys, gxs * dof, (PetscScalar ****)array));
+  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "DMDA dimension not 1, 2, or 3, it is %" PetscInt_FMT, dim);
   PetscFunctionReturn(0);
 }
 
@@ -92,36 +91,35 @@ PetscErrorCode  DMDAVecGetArray(DM da,Vec vec,void *array)
           `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`, `DMDAVecGetArrayRead()`, `DMDAVecRestoreArrayRead()`,
           `DMDStagVecRestoreArray()`
 @*/
-PetscErrorCode  DMDAVecRestoreArray(DM da,Vec vec,void *array)
-{
-  PetscInt       xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,N,dim,dof;
+PetscErrorCode DMDAVecRestoreArray(DM da, Vec vec, void *array) {
+  PetscInt xs, ys, zs, xm, ym, zm, gxs, gys, gzs, gxm, gym, gzm, N, dim, dof;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecificType(da, DM_CLASSID, 1,DMDA);
+  PetscValidHeaderSpecificType(da, DM_CLASSID, 1, DMDA);
   PetscValidHeaderSpecific(vec, VEC_CLASSID, 2);
   PetscValidPointer(array, 3);
-  PetscCall(DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm));
-  PetscCall(DMDAGetGhostCorners(da,&gxs,&gys,&gzs,&gxm,&gym,&gzm));
-  PetscCall(DMDAGetInfo(da,&dim,NULL,NULL,NULL,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL));
+  PetscCall(DMDAGetCorners(da, &xs, &ys, &zs, &xm, &ym, &zm));
+  PetscCall(DMDAGetGhostCorners(da, &gxs, &gys, &gzs, &gxm, &gym, &gzm));
+  PetscCall(DMDAGetInfo(da, &dim, NULL, NULL, NULL, NULL, NULL, NULL, &dof, NULL, NULL, NULL, NULL, NULL));
 
   /* Handle case where user passes in global vector as opposed to local */
-  PetscCall(VecGetLocalSize(vec,&N));
-  if (N == xm*ym*zm*dof) {
+  PetscCall(VecGetLocalSize(vec, &N));
+  if (N == xm * ym * zm * dof) {
     gxm = xm;
     gym = ym;
     gzm = zm;
     gxs = xs;
     gys = ys;
     gzs = zs;
-  } else PetscCheck(N == gxm*gym*gzm*dof,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vector local size %" PetscInt_FMT " is not compatible with DMDA local sizes %" PetscInt_FMT " %" PetscInt_FMT,N,xm*ym*zm*dof,gxm*gym*gzm*dof);
+  } else PetscCheck(N == gxm * gym * gzm * dof, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Vector local size %" PetscInt_FMT " is not compatible with DMDA local sizes %" PetscInt_FMT " %" PetscInt_FMT, N, xm * ym * zm * dof, gxm * gym * gzm * dof);
 
   if (dim == 1) {
-    PetscCall(VecRestoreArray1d(vec,gxm*dof,gxs*dof,(PetscScalar**)array));
+    PetscCall(VecRestoreArray1d(vec, gxm * dof, gxs * dof, (PetscScalar **)array));
   } else if (dim == 2) {
-    PetscCall(VecRestoreArray2d(vec,gym,gxm*dof,gys,gxs*dof,(PetscScalar***)array));
+    PetscCall(VecRestoreArray2d(vec, gym, gxm * dof, gys, gxs * dof, (PetscScalar ***)array));
   } else if (dim == 3) {
-    PetscCall(VecRestoreArray3d(vec,gzm,gym,gxm*dof,gzs,gys,gxs*dof,(PetscScalar****)array));
-  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"DMDA dimension not 1, 2, or 3, it is %" PetscInt_FMT,dim);
+    PetscCall(VecRestoreArray3d(vec, gzm, gym, gxm * dof, gzs, gys, gxs * dof, (PetscScalar ****)array));
+  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "DMDA dimension not 1, 2, or 3, it is %" PetscInt_FMT, dim);
   PetscFunctionReturn(0);
 }
 
@@ -164,40 +162,39 @@ PetscErrorCode  DMDAVecRestoreArray(DM da,Vec vec,void *array)
 .seealso: `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecRestoreArrayWrite()`, `DMDAVecRestoreArrayDOF()`
           `DMDAVecGetArrayDOF()`, `DMDAVecGetArray()`, `DMDAVecRestoreArray()`, `DMDAVecGetArrayRead()`, `DMDAVecRestoreArrayRead()`
 @*/
-PetscErrorCode  DMDAVecGetArrayWrite(DM da,Vec vec,void *array)
-{
-  PetscInt       xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,N,dim,dof;
+PetscErrorCode DMDAVecGetArrayWrite(DM da, Vec vec, void *array) {
+  PetscInt xs, ys, zs, xm, ym, zm, gxs, gys, gzs, gxm, gym, gzm, N, dim, dof;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecificType(da, DM_CLASSID, 1,DMDA);
+  PetscValidHeaderSpecificType(da, DM_CLASSID, 1, DMDA);
   PetscValidHeaderSpecific(vec, VEC_CLASSID, 2);
   PetscValidPointer(array, 3);
   if (da->localSection) {
-    PetscCall(VecGetArrayWrite(vec,(PetscScalar**)array));
+    PetscCall(VecGetArrayWrite(vec, (PetscScalar **)array));
     PetscFunctionReturn(0);
   }
-  PetscCall(DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm));
-  PetscCall(DMDAGetGhostCorners(da,&gxs,&gys,&gzs,&gxm,&gym,&gzm));
-  PetscCall(DMDAGetInfo(da,&dim,NULL,NULL,NULL,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL));
+  PetscCall(DMDAGetCorners(da, &xs, &ys, &zs, &xm, &ym, &zm));
+  PetscCall(DMDAGetGhostCorners(da, &gxs, &gys, &gzs, &gxm, &gym, &gzm));
+  PetscCall(DMDAGetInfo(da, &dim, NULL, NULL, NULL, NULL, NULL, NULL, &dof, NULL, NULL, NULL, NULL, NULL));
 
   /* Handle case where user passes in global vector as opposed to local */
-  PetscCall(VecGetLocalSize(vec,&N));
-  if (N == xm*ym*zm*dof) {
+  PetscCall(VecGetLocalSize(vec, &N));
+  if (N == xm * ym * zm * dof) {
     gxm = xm;
     gym = ym;
     gzm = zm;
     gxs = xs;
     gys = ys;
     gzs = zs;
-  } else PetscCheck(N == gxm*gym*gzm*dof,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vector local size %" PetscInt_FMT " is not compatible with DMDA local sizes %" PetscInt_FMT " %" PetscInt_FMT,N,xm*ym*zm*dof,gxm*gym*gzm*dof);
+  } else PetscCheck(N == gxm * gym * gzm * dof, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Vector local size %" PetscInt_FMT " is not compatible with DMDA local sizes %" PetscInt_FMT " %" PetscInt_FMT, N, xm * ym * zm * dof, gxm * gym * gzm * dof);
 
   if (dim == 1) {
-    PetscCall(VecGetArray1dWrite(vec,gxm*dof,gxs*dof,(PetscScalar**)array));
+    PetscCall(VecGetArray1dWrite(vec, gxm * dof, gxs * dof, (PetscScalar **)array));
   } else if (dim == 2) {
-    PetscCall(VecGetArray2dWrite(vec,gym,gxm*dof,gys,gxs*dof,(PetscScalar***)array));
+    PetscCall(VecGetArray2dWrite(vec, gym, gxm * dof, gys, gxs * dof, (PetscScalar ***)array));
   } else if (dim == 3) {
-    PetscCall(VecGetArray3dWrite(vec,gzm,gym,gxm*dof,gzs,gys,gxs*dof,(PetscScalar****)array));
-  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"DMDA dimension not 1, 2, or 3, it is %" PetscInt_FMT,dim);
+    PetscCall(VecGetArray3dWrite(vec, gzm, gym, gxm * dof, gzs, gys, gxs * dof, (PetscScalar ****)array));
+  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "DMDA dimension not 1, 2, or 3, it is %" PetscInt_FMT, dim);
   PetscFunctionReturn(0);
 }
 
@@ -220,40 +217,39 @@ PetscErrorCode  DMDAVecGetArrayWrite(DM da,Vec vec,void *array)
 .seealso: `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecGetArrayWrite()`,
           `DMDAVecGetArray()`, `DMDAVecRestoreArray()`, `DMDAVecGetArrayRead()`, `DMDAVecRestoreArrayRead()`
 @*/
-PetscErrorCode  DMDAVecRestoreArrayWrite(DM da,Vec vec,void *array)
-{
-  PetscInt       xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,N,dim,dof;
+PetscErrorCode DMDAVecRestoreArrayWrite(DM da, Vec vec, void *array) {
+  PetscInt xs, ys, zs, xm, ym, zm, gxs, gys, gzs, gxm, gym, gzm, N, dim, dof;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecificType(da, DM_CLASSID, 1,DMDA);
+  PetscValidHeaderSpecificType(da, DM_CLASSID, 1, DMDA);
   PetscValidHeaderSpecific(vec, VEC_CLASSID, 2);
   PetscValidPointer(array, 3);
   if (da->localSection) {
-    PetscCall(VecRestoreArray(vec,(PetscScalar**)array));
+    PetscCall(VecRestoreArray(vec, (PetscScalar **)array));
     PetscFunctionReturn(0);
   }
-  PetscCall(DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm));
-  PetscCall(DMDAGetGhostCorners(da,&gxs,&gys,&gzs,&gxm,&gym,&gzm));
-  PetscCall(DMDAGetInfo(da,&dim,NULL,NULL,NULL,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL));
+  PetscCall(DMDAGetCorners(da, &xs, &ys, &zs, &xm, &ym, &zm));
+  PetscCall(DMDAGetGhostCorners(da, &gxs, &gys, &gzs, &gxm, &gym, &gzm));
+  PetscCall(DMDAGetInfo(da, &dim, NULL, NULL, NULL, NULL, NULL, NULL, &dof, NULL, NULL, NULL, NULL, NULL));
 
   /* Handle case where user passes in global vector as opposed to local */
-  PetscCall(VecGetLocalSize(vec,&N));
-  if (N == xm*ym*zm*dof) {
+  PetscCall(VecGetLocalSize(vec, &N));
+  if (N == xm * ym * zm * dof) {
     gxm = xm;
     gym = ym;
     gzm = zm;
     gxs = xs;
     gys = ys;
     gzs = zs;
-  } else PetscCheck(N == gxm*gym*gzm*dof,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vector local size %" PetscInt_FMT " is not compatible with DMDA local sizes %" PetscInt_FMT " %" PetscInt_FMT,N,xm*ym*zm*dof,gxm*gym*gzm*dof);
+  } else PetscCheck(N == gxm * gym * gzm * dof, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Vector local size %" PetscInt_FMT " is not compatible with DMDA local sizes %" PetscInt_FMT " %" PetscInt_FMT, N, xm * ym * zm * dof, gxm * gym * gzm * dof);
 
   if (dim == 1) {
-    PetscCall(VecRestoreArray1dWrite(vec,gxm*dof,gxs*dof,(PetscScalar**)array));
+    PetscCall(VecRestoreArray1dWrite(vec, gxm * dof, gxs * dof, (PetscScalar **)array));
   } else if (dim == 2) {
-    PetscCall(VecRestoreArray2dWrite(vec,gym,gxm*dof,gys,gxs*dof,(PetscScalar***)array));
+    PetscCall(VecRestoreArray2dWrite(vec, gym, gxm * dof, gys, gxs * dof, (PetscScalar ***)array));
   } else if (dim == 3) {
-    PetscCall(VecRestoreArray3dWrite(vec,gzm,gym,gxm*dof,gzs,gys,gxs*dof,(PetscScalar****)array));
-  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"DMDA dimension not 1, 2, or 3, it is %" PetscInt_FMT,dim);
+    PetscCall(VecRestoreArray3dWrite(vec, gzm, gym, gxm * dof, gzs, gys, gxs * dof, (PetscScalar ****)array));
+  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "DMDA dimension not 1, 2, or 3, it is %" PetscInt_FMT, dim);
   PetscFunctionReturn(0);
 }
 
@@ -284,33 +280,32 @@ PetscErrorCode  DMDAVecRestoreArrayWrite(DM da,Vec vec,void *array)
 .seealso: `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecRestoreArray()`, `DMDAVecGetArray()`, `DMDAVecRestoreArrayDOF()`,
           `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`, `DMDAVecGetArrayRead()`, `DMDAVecRestoreArrayRead()`, `DMDAVecGetArrayDOFRead()`
 @*/
-PetscErrorCode  DMDAVecGetArrayDOF(DM da,Vec vec,void *array)
-{
-  PetscInt       xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,N,dim,dof;
+PetscErrorCode DMDAVecGetArrayDOF(DM da, Vec vec, void *array) {
+  PetscInt xs, ys, zs, xm, ym, zm, gxs, gys, gzs, gxm, gym, gzm, N, dim, dof;
 
   PetscFunctionBegin;
-  PetscCall(DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm));
-  PetscCall(DMDAGetGhostCorners(da,&gxs,&gys,&gzs,&gxm,&gym,&gzm));
-  PetscCall(DMDAGetInfo(da,&dim,NULL,NULL,NULL,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL));
+  PetscCall(DMDAGetCorners(da, &xs, &ys, &zs, &xm, &ym, &zm));
+  PetscCall(DMDAGetGhostCorners(da, &gxs, &gys, &gzs, &gxm, &gym, &gzm));
+  PetscCall(DMDAGetInfo(da, &dim, NULL, NULL, NULL, NULL, NULL, NULL, &dof, NULL, NULL, NULL, NULL, NULL));
 
   /* Handle case where user passes in global vector as opposed to local */
-  PetscCall(VecGetLocalSize(vec,&N));
-  if (N == xm*ym*zm*dof) {
+  PetscCall(VecGetLocalSize(vec, &N));
+  if (N == xm * ym * zm * dof) {
     gxm = xm;
     gym = ym;
     gzm = zm;
     gxs = xs;
     gys = ys;
     gzs = zs;
-  } else PetscCheck(N == gxm*gym*gzm*dof,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vector local size %" PetscInt_FMT " is not compatible with DMDA local sizes %" PetscInt_FMT " %" PetscInt_FMT,N,xm*ym*zm*dof,gxm*gym*gzm*dof);
+  } else PetscCheck(N == gxm * gym * gzm * dof, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Vector local size %" PetscInt_FMT " is not compatible with DMDA local sizes %" PetscInt_FMT " %" PetscInt_FMT, N, xm * ym * zm * dof, gxm * gym * gzm * dof);
 
   if (dim == 1) {
-    PetscCall(VecGetArray2d(vec,gxm,dof,gxs,0,(PetscScalar***)array));
+    PetscCall(VecGetArray2d(vec, gxm, dof, gxs, 0, (PetscScalar ***)array));
   } else if (dim == 2) {
-    PetscCall(VecGetArray3d(vec,gym,gxm,dof,gys,gxs,0,(PetscScalar****)array));
+    PetscCall(VecGetArray3d(vec, gym, gxm, dof, gys, gxs, 0, (PetscScalar ****)array));
   } else if (dim == 3) {
-    PetscCall(VecGetArray4d(vec,gzm,gym,gxm,dof,gzs,gys,gxs,0,(PetscScalar*****)array));
-  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"DMDA dimension not 1, 2, or 3, it is %" PetscInt_FMT,dim);
+    PetscCall(VecGetArray4d(vec, gzm, gym, gxm, dof, gzs, gys, gxs, 0, (PetscScalar *****)array));
+  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "DMDA dimension not 1, 2, or 3, it is %" PetscInt_FMT, dim);
   PetscFunctionReturn(0);
 }
 
@@ -330,18 +325,17 @@ PetscErrorCode  DMDAVecGetArrayDOF(DM da,Vec vec,void *array)
 .seealso: `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecGetArray()`, `DMDAVecGetArrayDOF()`, `DMDAVecRestoreArrayDOF()`,
           `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`, `DMDAVecGetArrayRead()`, `DMDAVecRestoreArrayRead()`
 @*/
-PetscErrorCode  DMDAVecRestoreArrayDOF(DM da,Vec vec,void *array)
-{
-  PetscInt       xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,N,dim,dof;
+PetscErrorCode DMDAVecRestoreArrayDOF(DM da, Vec vec, void *array) {
+  PetscInt xs, ys, zs, xm, ym, zm, gxs, gys, gzs, gxm, gym, gzm, N, dim, dof;
 
   PetscFunctionBegin;
-  PetscCall(DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm));
-  PetscCall(DMDAGetGhostCorners(da,&gxs,&gys,&gzs,&gxm,&gym,&gzm));
-  PetscCall(DMDAGetInfo(da,&dim,NULL,NULL,NULL,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL));
+  PetscCall(DMDAGetCorners(da, &xs, &ys, &zs, &xm, &ym, &zm));
+  PetscCall(DMDAGetGhostCorners(da, &gxs, &gys, &gzs, &gxm, &gym, &gzm));
+  PetscCall(DMDAGetInfo(da, &dim, NULL, NULL, NULL, NULL, NULL, NULL, &dof, NULL, NULL, NULL, NULL, NULL));
 
   /* Handle case where user passes in global vector as opposed to local */
-  PetscCall(VecGetLocalSize(vec,&N));
-  if (N == xm*ym*zm*dof) {
+  PetscCall(VecGetLocalSize(vec, &N));
+  if (N == xm * ym * zm * dof) {
     gxm = xm;
     gym = ym;
     gzm = zm;
@@ -351,12 +345,12 @@ PetscErrorCode  DMDAVecRestoreArrayDOF(DM da,Vec vec,void *array)
   }
 
   if (dim == 1) {
-    PetscCall(VecRestoreArray2d(vec,gxm,dof,gxs,0,(PetscScalar***)array));
+    PetscCall(VecRestoreArray2d(vec, gxm, dof, gxs, 0, (PetscScalar ***)array));
   } else if (dim == 2) {
-    PetscCall(VecRestoreArray3d(vec,gym,gxm,dof,gys,gxs,0,(PetscScalar****)array));
+    PetscCall(VecRestoreArray3d(vec, gym, gxm, dof, gys, gxs, 0, (PetscScalar ****)array));
   } else if (dim == 3) {
-    PetscCall(VecRestoreArray4d(vec,gzm,gym,gxm,dof,gzs,gys,gxs,0,(PetscScalar*****)array));
-  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"DMDA dimension not 1, 2, or 3, it is %" PetscInt_FMT,dim);
+    PetscCall(VecRestoreArray4d(vec, gzm, gym, gxm, dof, gzs, gys, gxs, 0, (PetscScalar *****)array));
+  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "DMDA dimension not 1, 2, or 3, it is %" PetscInt_FMT, dim);
   PetscFunctionReturn(0);
 }
 
@@ -398,36 +392,35 @@ PetscErrorCode  DMDAVecRestoreArrayDOF(DM da,Vec vec,void *array)
           `DMDAVecGetArrayDOF()`, `DMDAVecGetArray()`, `DMDAVecRestoreArray()`, `DMDAVecGetArrayRead()`, `DMDAVecRestoreArrayRead()`,
           `DMStagVecGetArrayRead()`
 @*/
-PetscErrorCode  DMDAVecGetArrayRead(DM da,Vec vec,void *array)
-{
-  PetscInt       xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,N,dim,dof;
+PetscErrorCode DMDAVecGetArrayRead(DM da, Vec vec, void *array) {
+  PetscInt xs, ys, zs, xm, ym, zm, gxs, gys, gzs, gxm, gym, gzm, N, dim, dof;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecificType(da, DM_CLASSID, 1,DMDA);
+  PetscValidHeaderSpecificType(da, DM_CLASSID, 1, DMDA);
   PetscValidHeaderSpecific(vec, VEC_CLASSID, 2);
   PetscValidPointer(array, 3);
-  PetscCall(DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm));
-  PetscCall(DMDAGetGhostCorners(da,&gxs,&gys,&gzs,&gxm,&gym,&gzm));
-  PetscCall(DMDAGetInfo(da,&dim,NULL,NULL,NULL,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL));
+  PetscCall(DMDAGetCorners(da, &xs, &ys, &zs, &xm, &ym, &zm));
+  PetscCall(DMDAGetGhostCorners(da, &gxs, &gys, &gzs, &gxm, &gym, &gzm));
+  PetscCall(DMDAGetInfo(da, &dim, NULL, NULL, NULL, NULL, NULL, NULL, &dof, NULL, NULL, NULL, NULL, NULL));
 
   /* Handle case where user passes in global vector as opposed to local */
-  PetscCall(VecGetLocalSize(vec,&N));
-  if (N == xm*ym*zm*dof) {
+  PetscCall(VecGetLocalSize(vec, &N));
+  if (N == xm * ym * zm * dof) {
     gxm = xm;
     gym = ym;
     gzm = zm;
     gxs = xs;
     gys = ys;
     gzs = zs;
-  } else PetscCheck(N == gxm*gym*gzm*dof,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vector local size %" PetscInt_FMT " is not compatible with DMDA local sizes %" PetscInt_FMT " %" PetscInt_FMT,N,xm*ym*zm*dof,gxm*gym*gzm*dof);
+  } else PetscCheck(N == gxm * gym * gzm * dof, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Vector local size %" PetscInt_FMT " is not compatible with DMDA local sizes %" PetscInt_FMT " %" PetscInt_FMT, N, xm * ym * zm * dof, gxm * gym * gzm * dof);
 
   if (dim == 1) {
-    PetscCall(VecGetArray1dRead(vec,gxm*dof,gxs*dof,(PetscScalar**)array));
+    PetscCall(VecGetArray1dRead(vec, gxm * dof, gxs * dof, (PetscScalar **)array));
   } else if (dim == 2) {
-    PetscCall(VecGetArray2dRead(vec,gym,gxm*dof,gys,gxs*dof,(PetscScalar***)array));
+    PetscCall(VecGetArray2dRead(vec, gym, gxm * dof, gys, gxs * dof, (PetscScalar ***)array));
   } else if (dim == 3) {
-    PetscCall(VecGetArray3dRead(vec,gzm,gym,gxm*dof,gzs,gys,gxs*dof,(PetscScalar****)array));
-  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"DMDA dimension not 1, 2, or 3, it is %" PetscInt_FMT,dim);
+    PetscCall(VecGetArray3dRead(vec, gzm, gym, gxm * dof, gzs, gys, gxs * dof, (PetscScalar ****)array));
+  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "DMDA dimension not 1, 2, or 3, it is %" PetscInt_FMT, dim);
   PetscFunctionReturn(0);
 }
 
@@ -451,36 +444,35 @@ PetscErrorCode  DMDAVecGetArrayRead(DM da,Vec vec,void *array)
           `DMDAVecGetArray()`, `DMDAVecRestoreArray()`, `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`,
           `DMStagVecRestoreArrayRead()`
 @*/
-PetscErrorCode  DMDAVecRestoreArrayRead(DM da,Vec vec,void *array)
-{
-  PetscInt       xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,N,dim,dof;
+PetscErrorCode DMDAVecRestoreArrayRead(DM da, Vec vec, void *array) {
+  PetscInt xs, ys, zs, xm, ym, zm, gxs, gys, gzs, gxm, gym, gzm, N, dim, dof;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecificType(da, DM_CLASSID, 1,DMDA);
+  PetscValidHeaderSpecificType(da, DM_CLASSID, 1, DMDA);
   PetscValidHeaderSpecific(vec, VEC_CLASSID, 2);
   PetscValidPointer(array, 3);
-  PetscCall(DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm));
-  PetscCall(DMDAGetGhostCorners(da,&gxs,&gys,&gzs,&gxm,&gym,&gzm));
-  PetscCall(DMDAGetInfo(da,&dim,NULL,NULL,NULL,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL));
+  PetscCall(DMDAGetCorners(da, &xs, &ys, &zs, &xm, &ym, &zm));
+  PetscCall(DMDAGetGhostCorners(da, &gxs, &gys, &gzs, &gxm, &gym, &gzm));
+  PetscCall(DMDAGetInfo(da, &dim, NULL, NULL, NULL, NULL, NULL, NULL, &dof, NULL, NULL, NULL, NULL, NULL));
 
   /* Handle case where user passes in global vector as opposed to local */
-  PetscCall(VecGetLocalSize(vec,&N));
-  if (N == xm*ym*zm*dof) {
+  PetscCall(VecGetLocalSize(vec, &N));
+  if (N == xm * ym * zm * dof) {
     gxm = xm;
     gym = ym;
     gzm = zm;
     gxs = xs;
     gys = ys;
     gzs = zs;
-  } else PetscCheck(N == gxm*gym*gzm*dof,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vector local size %" PetscInt_FMT " is not compatible with DMDA local sizes %" PetscInt_FMT " %" PetscInt_FMT,N,xm*ym*zm*dof,gxm*gym*gzm*dof);
+  } else PetscCheck(N == gxm * gym * gzm * dof, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Vector local size %" PetscInt_FMT " is not compatible with DMDA local sizes %" PetscInt_FMT " %" PetscInt_FMT, N, xm * ym * zm * dof, gxm * gym * gzm * dof);
 
   if (dim == 1) {
-    PetscCall(VecRestoreArray1dRead(vec,gxm*dof,gxs*dof,(PetscScalar**)array));
+    PetscCall(VecRestoreArray1dRead(vec, gxm * dof, gxs * dof, (PetscScalar **)array));
   } else if (dim == 2) {
-    PetscCall(VecRestoreArray2dRead(vec,gym,gxm*dof,gys,gxs*dof,(PetscScalar***)array));
+    PetscCall(VecRestoreArray2dRead(vec, gym, gxm * dof, gys, gxs * dof, (PetscScalar ***)array));
   } else if (dim == 3) {
-    PetscCall(VecRestoreArray3dRead(vec,gzm,gym,gxm*dof,gzs,gys,gxs*dof,(PetscScalar****)array));
-  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"DMDA dimension not 1, 2, or 3, it is %" PetscInt_FMT,dim);
+    PetscCall(VecRestoreArray3dRead(vec, gzm, gym, gxm * dof, gzs, gys, gxs * dof, (PetscScalar ****)array));
+  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "DMDA dimension not 1, 2, or 3, it is %" PetscInt_FMT, dim);
   PetscFunctionReturn(0);
 }
 
@@ -511,33 +503,32 @@ PetscErrorCode  DMDAVecRestoreArrayRead(DM da,Vec vec,void *array)
 .seealso: `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecRestoreArray()`, `DMDAVecGetArray()`, `DMDAVecGetArrayDOF()`,
           `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`, `DMDAVecGetArrayRead()`, `DMDAVecRestoreArrayRead()`
 @*/
-PetscErrorCode  DMDAVecGetArrayDOFRead(DM da,Vec vec,void *array)
-{
-  PetscInt       xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,N,dim,dof;
+PetscErrorCode DMDAVecGetArrayDOFRead(DM da, Vec vec, void *array) {
+  PetscInt xs, ys, zs, xm, ym, zm, gxs, gys, gzs, gxm, gym, gzm, N, dim, dof;
 
   PetscFunctionBegin;
-  PetscCall(DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm));
-  PetscCall(DMDAGetGhostCorners(da,&gxs,&gys,&gzs,&gxm,&gym,&gzm));
-  PetscCall(DMDAGetInfo(da,&dim,NULL,NULL,NULL,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL));
+  PetscCall(DMDAGetCorners(da, &xs, &ys, &zs, &xm, &ym, &zm));
+  PetscCall(DMDAGetGhostCorners(da, &gxs, &gys, &gzs, &gxm, &gym, &gzm));
+  PetscCall(DMDAGetInfo(da, &dim, NULL, NULL, NULL, NULL, NULL, NULL, &dof, NULL, NULL, NULL, NULL, NULL));
 
   /* Handle case where user passes in global vector as opposed to local */
-  PetscCall(VecGetLocalSize(vec,&N));
-  if (N == xm*ym*zm*dof) {
+  PetscCall(VecGetLocalSize(vec, &N));
+  if (N == xm * ym * zm * dof) {
     gxm = xm;
     gym = ym;
     gzm = zm;
     gxs = xs;
     gys = ys;
     gzs = zs;
-  } else PetscCheck(N == gxm*gym*gzm*dof,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vector local size %" PetscInt_FMT " is not compatible with DMDA local sizes %" PetscInt_FMT " %" PetscInt_FMT,N,xm*ym*zm*dof,gxm*gym*gzm*dof);
+  } else PetscCheck(N == gxm * gym * gzm * dof, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Vector local size %" PetscInt_FMT " is not compatible with DMDA local sizes %" PetscInt_FMT " %" PetscInt_FMT, N, xm * ym * zm * dof, gxm * gym * gzm * dof);
 
   if (dim == 1) {
-    PetscCall(VecGetArray2dRead(vec,gxm,dof,gxs,0,(PetscScalar***)array));
+    PetscCall(VecGetArray2dRead(vec, gxm, dof, gxs, 0, (PetscScalar ***)array));
   } else if (dim == 2) {
-    PetscCall(VecGetArray3dRead(vec,gym,gxm,dof,gys,gxs,0,(PetscScalar****)array));
+    PetscCall(VecGetArray3dRead(vec, gym, gxm, dof, gys, gxs, 0, (PetscScalar ****)array));
   } else if (dim == 3) {
-    PetscCall(VecGetArray4dRead(vec,gzm,gym,gxm,dof,gzs,gys,gxs,0,(PetscScalar*****)array));
-  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"DMDA dimension not 1, 2, or 3, it is %" PetscInt_FMT,dim);
+    PetscCall(VecGetArray4dRead(vec, gzm, gym, gxm, dof, gzs, gys, gxs, 0, (PetscScalar *****)array));
+  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "DMDA dimension not 1, 2, or 3, it is %" PetscInt_FMT, dim);
   PetscFunctionReturn(0);
 }
 
@@ -557,18 +548,17 @@ PetscErrorCode  DMDAVecGetArrayDOFRead(DM da,Vec vec,void *array)
 .seealso: `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecGetArray()`, `DMDAVecGetArrayDOF()`, `DMDAVecRestoreArrayDOF()`,
           `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`, `DMDAVecGetArrayRead()`, `DMDAVecRestoreArrayRead()`
 @*/
-PetscErrorCode  DMDAVecRestoreArrayDOFRead(DM da,Vec vec,void *array)
-{
-  PetscInt       xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,N,dim,dof;
+PetscErrorCode DMDAVecRestoreArrayDOFRead(DM da, Vec vec, void *array) {
+  PetscInt xs, ys, zs, xm, ym, zm, gxs, gys, gzs, gxm, gym, gzm, N, dim, dof;
 
   PetscFunctionBegin;
-  PetscCall(DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm));
-  PetscCall(DMDAGetGhostCorners(da,&gxs,&gys,&gzs,&gxm,&gym,&gzm));
-  PetscCall(DMDAGetInfo(da,&dim,NULL,NULL,NULL,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL));
+  PetscCall(DMDAGetCorners(da, &xs, &ys, &zs, &xm, &ym, &zm));
+  PetscCall(DMDAGetGhostCorners(da, &gxs, &gys, &gzs, &gxm, &gym, &gzm));
+  PetscCall(DMDAGetInfo(da, &dim, NULL, NULL, NULL, NULL, NULL, NULL, &dof, NULL, NULL, NULL, NULL, NULL));
 
   /* Handle case where user passes in global vector as opposed to local */
-  PetscCall(VecGetLocalSize(vec,&N));
-  if (N == xm*ym*zm*dof) {
+  PetscCall(VecGetLocalSize(vec, &N));
+  if (N == xm * ym * zm * dof) {
     gxm = xm;
     gym = ym;
     gzm = zm;
@@ -578,12 +568,12 @@ PetscErrorCode  DMDAVecRestoreArrayDOFRead(DM da,Vec vec,void *array)
   }
 
   if (dim == 1) {
-    PetscCall(VecRestoreArray2dRead(vec,gxm,dof,gxs,0,(PetscScalar***)array));
+    PetscCall(VecRestoreArray2dRead(vec, gxm, dof, gxs, 0, (PetscScalar ***)array));
   } else if (dim == 2) {
-    PetscCall(VecRestoreArray3dRead(vec,gym,gxm,dof,gys,gxs,0,(PetscScalar****)array));
+    PetscCall(VecRestoreArray3dRead(vec, gym, gxm, dof, gys, gxs, 0, (PetscScalar ****)array));
   } else if (dim == 3) {
-    PetscCall(VecRestoreArray4dRead(vec,gzm,gym,gxm,dof,gzs,gys,gxs,0,(PetscScalar*****)array));
-  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"DMDA dimension not 1, 2, or 3, it is %" PetscInt_FMT,dim);
+    PetscCall(VecRestoreArray4dRead(vec, gzm, gym, gxm, dof, gzs, gys, gxs, 0, (PetscScalar *****)array));
+  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "DMDA dimension not 1, 2, or 3, it is %" PetscInt_FMT, dim);
   PetscFunctionReturn(0);
 }
 
@@ -614,33 +604,32 @@ PetscErrorCode  DMDAVecRestoreArrayDOFRead(DM da,Vec vec,void *array)
 .seealso: `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecRestoreArray()`, `DMDAVecGetArray()`, `DMDAVecGetArrayDOF()`,
           `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`, `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`
 @*/
-PetscErrorCode  DMDAVecGetArrayDOFWrite(DM da,Vec vec,void *array)
-{
-  PetscInt       xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,N,dim,dof;
+PetscErrorCode DMDAVecGetArrayDOFWrite(DM da, Vec vec, void *array) {
+  PetscInt xs, ys, zs, xm, ym, zm, gxs, gys, gzs, gxm, gym, gzm, N, dim, dof;
 
   PetscFunctionBegin;
-  PetscCall(DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm));
-  PetscCall(DMDAGetGhostCorners(da,&gxs,&gys,&gzs,&gxm,&gym,&gzm));
-  PetscCall(DMDAGetInfo(da,&dim,NULL,NULL,NULL,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL));
+  PetscCall(DMDAGetCorners(da, &xs, &ys, &zs, &xm, &ym, &zm));
+  PetscCall(DMDAGetGhostCorners(da, &gxs, &gys, &gzs, &gxm, &gym, &gzm));
+  PetscCall(DMDAGetInfo(da, &dim, NULL, NULL, NULL, NULL, NULL, NULL, &dof, NULL, NULL, NULL, NULL, NULL));
 
   /* Handle case where user passes in global vector as opposed to local */
-  PetscCall(VecGetLocalSize(vec,&N));
-  if (N == xm*ym*zm*dof) {
+  PetscCall(VecGetLocalSize(vec, &N));
+  if (N == xm * ym * zm * dof) {
     gxm = xm;
     gym = ym;
     gzm = zm;
     gxs = xs;
     gys = ys;
     gzs = zs;
-  } else PetscCheck(N == gxm*gym*gzm*dof,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vector local size %" PetscInt_FMT " is not compatible with DMDA local sizes %" PetscInt_FMT " %" PetscInt_FMT,N,xm*ym*zm*dof,gxm*gym*gzm*dof);
+  } else PetscCheck(N == gxm * gym * gzm * dof, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Vector local size %" PetscInt_FMT " is not compatible with DMDA local sizes %" PetscInt_FMT " %" PetscInt_FMT, N, xm * ym * zm * dof, gxm * gym * gzm * dof);
 
   if (dim == 1) {
-    PetscCall(VecGetArray2dWrite(vec,gxm,dof,gxs,0,(PetscScalar***)array));
+    PetscCall(VecGetArray2dWrite(vec, gxm, dof, gxs, 0, (PetscScalar ***)array));
   } else if (dim == 2) {
-    PetscCall(VecGetArray3dWrite(vec,gym,gxm,dof,gys,gxs,0,(PetscScalar****)array));
+    PetscCall(VecGetArray3dWrite(vec, gym, gxm, dof, gys, gxs, 0, (PetscScalar ****)array));
   } else if (dim == 3) {
-    PetscCall(VecGetArray4dWrite(vec,gzm,gym,gxm,dof,gzs,gys,gxs,0,(PetscScalar*****)array));
-  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"DMDA dimension not 1, 2, or 3, it is %" PetscInt_FMT,dim);
+    PetscCall(VecGetArray4dWrite(vec, gzm, gym, gxm, dof, gzs, gys, gxs, 0, (PetscScalar *****)array));
+  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "DMDA dimension not 1, 2, or 3, it is %" PetscInt_FMT, dim);
   PetscFunctionReturn(0);
 }
 
@@ -660,18 +649,17 @@ PetscErrorCode  DMDAVecGetArrayDOFWrite(DM da,Vec vec,void *array)
 .seealso: `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecGetArray()`, `DMDAVecGetArrayDOF()`, `DMDAVecRestoreArrayDOF()`,
           `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`, `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`
 @*/
-PetscErrorCode  DMDAVecRestoreArrayDOFWrite(DM da,Vec vec,void *array)
-{
-  PetscInt       xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,N,dim,dof;
+PetscErrorCode DMDAVecRestoreArrayDOFWrite(DM da, Vec vec, void *array) {
+  PetscInt xs, ys, zs, xm, ym, zm, gxs, gys, gzs, gxm, gym, gzm, N, dim, dof;
 
   PetscFunctionBegin;
-  PetscCall(DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm));
-  PetscCall(DMDAGetGhostCorners(da,&gxs,&gys,&gzs,&gxm,&gym,&gzm));
-  PetscCall(DMDAGetInfo(da,&dim,NULL,NULL,NULL,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL));
+  PetscCall(DMDAGetCorners(da, &xs, &ys, &zs, &xm, &ym, &zm));
+  PetscCall(DMDAGetGhostCorners(da, &gxs, &gys, &gzs, &gxm, &gym, &gzm));
+  PetscCall(DMDAGetInfo(da, &dim, NULL, NULL, NULL, NULL, NULL, NULL, &dof, NULL, NULL, NULL, NULL, NULL));
 
   /* Handle case where user passes in global vector as opposed to local */
-  PetscCall(VecGetLocalSize(vec,&N));
-  if (N == xm*ym*zm*dof) {
+  PetscCall(VecGetLocalSize(vec, &N));
+  if (N == xm * ym * zm * dof) {
     gxm = xm;
     gym = ym;
     gzm = zm;
@@ -681,11 +669,11 @@ PetscErrorCode  DMDAVecRestoreArrayDOFWrite(DM da,Vec vec,void *array)
   }
 
   if (dim == 1) {
-    PetscCall(VecRestoreArray2dWrite(vec,gxm,dof,gxs,0,(PetscScalar***)array));
+    PetscCall(VecRestoreArray2dWrite(vec, gxm, dof, gxs, 0, (PetscScalar ***)array));
   } else if (dim == 2) {
-    PetscCall(VecRestoreArray3dWrite(vec,gym,gxm,dof,gys,gxs,0,(PetscScalar****)array));
+    PetscCall(VecRestoreArray3dWrite(vec, gym, gxm, dof, gys, gxs, 0, (PetscScalar ****)array));
   } else if (dim == 3) {
-    PetscCall(VecRestoreArray4dWrite(vec,gzm,gym,gxm,dof,gzs,gys,gxs,0,(PetscScalar*****)array));
-  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"DMDA dimension not 1, 2, or 3, it is %" PetscInt_FMT,dim);
+    PetscCall(VecRestoreArray4dWrite(vec, gzm, gym, gxm, dof, gzs, gys, gxs, 0, (PetscScalar *****)array));
+  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "DMDA dimension not 1, 2, or 3, it is %" PetscInt_FMT, dim);
   PetscFunctionReturn(0);
 }

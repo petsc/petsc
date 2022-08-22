@@ -42,10 +42,7 @@
 /******************************************************************/
 /*                                                                */
 /*                                                                */
-PetscErrorCode SPARSEPACKgenqmd(const PetscInt *neqns,const PetscInt *xadj,const PetscInt *adjncy,
-                                PetscInt *perm, PetscInt *invp, PetscInt *deg, PetscInt *marker,
-                                PetscInt *rchset, PetscInt *nbrhd, PetscInt *qsize, PetscInt *qlink, PetscInt *nofsub)
-{
+PetscErrorCode SPARSEPACKgenqmd(const PetscInt *neqns, const PetscInt *xadj, const PetscInt *adjncy, PetscInt *perm, PetscInt *invp, PetscInt *deg, PetscInt *marker, PetscInt *rchset, PetscInt *nbrhd, PetscInt *qsize, PetscInt *qlink, PetscInt *nofsub) {
   /* System generated locals */
   PetscInt i__1;
 
@@ -54,7 +51,7 @@ PetscErrorCode SPARSEPACKgenqmd(const PetscInt *neqns,const PetscInt *xadj,const
   PetscInt ip, np, mindeg, search;
   PetscInt nhdsze, nxnode, rchsze, thresh, num;
 
-/*       INITIALIZE DEGREE VECTOR AND OTHER WORKING VARIABLES.   */
+  /*       INITIALIZE DEGREE VECTOR AND OTHER WORKING VARIABLES.   */
 
   PetscFunctionBegin;
   /* Parameter adjustments */
@@ -99,20 +96,18 @@ L300:
     ndeg = deg[node];
     if (ndeg <= thresh) goto L500;
     if (ndeg < mindeg) mindeg = ndeg;
-L400:
-    ;
+  L400:;
   }
   goto L200;
 /*          NODE HAS MINIMUM DEGREE. FIND ITS REACHABLE SETS BY    */
 /*          CALLING QMDRCH.                                        */
 L500:
-  search       = j;
-  *nofsub     += deg[node];
+  search = j;
+  *nofsub += deg[node];
   marker[node] = 1;
-  SPARSEPACKqmdrch(&node, &xadj[1], &adjncy[1], &deg[1], &marker[1], &rchsze, &
-                   rchset[1], &nhdsze, &nbrhd[1]);
-/*          ELIMINATE ALL NODES INDISTINGUISHABLE FROM NODE.       */
-/*          THEY ARE GIVEN BY NODE, QLINK(NODE), ....              */
+  SPARSEPACKqmdrch(&node, &xadj[1], &adjncy[1], &deg[1], &marker[1], &rchsze, &rchset[1], &nhdsze, &nbrhd[1]);
+  /*          ELIMINATE ALL NODES INDISTINGUISHABLE FROM NODE.       */
+  /*          THEY ARE GIVEN BY NODE, QLINK(NODE), ....              */
   nxnode = node;
 L600:
   ++num;
@@ -127,14 +122,13 @@ L600:
   if (nxnode > 0) goto L600;
   if (rchsze <= 0) goto L800;
 
-/*             UPDATE THE DEGREES OF THE NODES IN THE REACHABLE     */
-/*             SET AND IDENTIFY INDISTINGUISHABLE NODES.            */
-  SPARSEPACKqmdupd(&xadj[1], &adjncy[1], &rchsze, &rchset[1], &deg[1], &qsize[1], &
-                   qlink[1], &marker[1], &rchset[rchsze + 1], &nbrhd[nhdsze + 1]);
+  /*             UPDATE THE DEGREES OF THE NODES IN THE REACHABLE     */
+  /*             SET AND IDENTIFY INDISTINGUISHABLE NODES.            */
+  SPARSEPACKqmdupd(&xadj[1], &adjncy[1], &rchsze, &rchset[1], &deg[1], &qsize[1], &qlink[1], &marker[1], &rchset[rchsze + 1], &nbrhd[nhdsze + 1]);
 
-/*             RESET MARKER VALUE OF NODES IN REACH SET.            */
-/*             UPDATE THRESHOLD VALUE FOR CYCLIC SEARCH.            */
-/*             ALSO CALL QMDQT TO FORM NEW QUOTIENT GRAPH.          */
+  /*             RESET MARKER VALUE OF NODES IN REACH SET.            */
+  /*             UPDATE THRESHOLD VALUE FOR CYCLIC SEARCH.            */
+  /*             ALSO CALL QMDQT TO FORM NEW QUOTIENT GRAPH.          */
   marker[node] = 0;
   i__1         = rchsze;
   for (irch = 1; irch <= i__1; ++irch) {
@@ -148,13 +142,9 @@ L600:
     mindeg = thresh;
     thresh = ndeg;
     search = invp[inode];
-L700:
-    ;
+  L700:;
   }
-  if (nhdsze > 0) {
-    SPARSEPACKqmdqt(&node, &xadj[1], &adjncy[1], &marker[1], &rchsze, &rchset[1], &
-                    nbrhd[1]);
-  }
+  if (nhdsze > 0) { SPARSEPACKqmdqt(&node, &xadj[1], &adjncy[1], &marker[1], &rchsze, &rchset[1], &nbrhd[1]); }
 L800:
   if (num < *neqns) goto L300;
   PetscFunctionReturn(0);

@@ -4,34 +4,31 @@ static char help[] = "Test the Fischer-3 initial guess routine.\n\n";
 
 #define SIZE 3
 
-int main(int argc,char **args)
-{
+int main(int argc, char **args) {
   PetscInt i;
   {
     Mat         A;
-    PetscInt    indices[SIZE] = {0,1,2};
-    PetscScalar values[SIZE] = {1.0,1.0,1.0};
-    Vec         sol,rhs,newsol,newrhs;
+    PetscInt    indices[SIZE] = {0, 1, 2};
+    PetscScalar values[SIZE]  = {1.0, 1.0, 1.0};
+    Vec         sol, rhs, newsol, newrhs;
 
     PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+    PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
 
     /* common data structures */
-    PetscCall(MatCreateSeqDense(PETSC_COMM_SELF,SIZE,SIZE,NULL,&A));
-    for (i = 0; i < SIZE; ++i) {
-      PetscCall(MatSetValue(A,i,i,1.0,INSERT_VALUES));
-    }
-    PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-    PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, SIZE, SIZE, NULL, &A));
+    for (i = 0; i < SIZE; ++i) { PetscCall(MatSetValue(A, i, i, 1.0, INSERT_VALUES)); }
+    PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
 
-    PetscCall(VecCreateSeq(PETSC_COMM_SELF,SIZE,&sol));
-    PetscCall(VecDuplicate(sol,&rhs));
-    PetscCall(VecDuplicate(sol,&newrhs));
-    PetscCall(VecDuplicate(sol,&newsol));
+    PetscCall(VecCreateSeq(PETSC_COMM_SELF, SIZE, &sol));
+    PetscCall(VecDuplicate(sol, &rhs));
+    PetscCall(VecDuplicate(sol, &newrhs));
+    PetscCall(VecDuplicate(sol, &newsol));
 
-    PetscCall(VecSetValues(sol,SIZE,indices,values,INSERT_VALUES));
-    PetscCall(VecSetValues(rhs,SIZE - 1,indices,values,INSERT_VALUES));
-    PetscCall(VecSetValues(newrhs,SIZE - 2,indices,values,INSERT_VALUES));
+    PetscCall(VecSetValues(sol, SIZE, indices, values, INSERT_VALUES));
+    PetscCall(VecSetValues(rhs, SIZE - 1, indices, values, INSERT_VALUES));
+    PetscCall(VecSetValues(newrhs, SIZE - 2, indices, values, INSERT_VALUES));
     PetscCall(VecAssemblyBegin(sol));
     PetscCall(VecAssemblyBegin(rhs));
     PetscCall(VecAssemblyBegin(newrhs));
@@ -44,16 +41,16 @@ int main(int argc,char **args)
       KSP      ksp;
       KSPGuess guess;
 
-      PetscCall(KSPCreate(PETSC_COMM_SELF,&ksp));
-      PetscCall(KSPSetOperators(ksp,A,A));
+      PetscCall(KSPCreate(PETSC_COMM_SELF, &ksp));
+      PetscCall(KSPSetOperators(ksp, A, A));
       PetscCall(KSPSetFromOptions(ksp));
-      PetscCall(KSPGetGuess(ksp,&guess));
+      PetscCall(KSPGetGuess(ksp, &guess));
       /* we aren't calling through the KSP so we call this ourselves */
       PetscCall(KSPGuessSetUp(guess));
 
-      PetscCall(KSPGuessUpdate(guess,rhs,sol));
-      PetscCall(KSPGuessFormGuess(guess,newrhs,newsol));
-      PetscCall(VecView(newsol,PETSC_VIEWER_STDOUT_SELF));
+      PetscCall(KSPGuessUpdate(guess, rhs, sol));
+      PetscCall(KSPGuessFormGuess(guess, newrhs, newsol));
+      PetscCall(VecView(newsol, PETSC_VIEWER_STDOUT_SELF));
 
       PetscCall(KSPDestroy(&ksp));
     }
@@ -63,17 +60,15 @@ int main(int argc,char **args)
       KSP      ksp;
       KSPGuess guess;
 
-      PetscCall(KSPCreate(PETSC_COMM_SELF,&ksp));
-      PetscCall(KSPSetOperators(ksp,A,A));
+      PetscCall(KSPCreate(PETSC_COMM_SELF, &ksp));
+      PetscCall(KSPSetOperators(ksp, A, A));
       PetscCall(KSPSetFromOptions(ksp));
-      PetscCall(KSPGetGuess(ksp,&guess));
+      PetscCall(KSPGetGuess(ksp, &guess));
       PetscCall(KSPGuessSetUp(guess));
 
-      for (i = 0; i < 15; ++i) {
-        PetscCall(KSPGuessUpdate(guess,rhs,sol));
-      }
-      PetscCall(KSPGuessFormGuess(guess,newrhs,newsol));
-      PetscCall(VecView(newsol,PETSC_VIEWER_STDOUT_SELF));
+      for (i = 0; i < 15; ++i) { PetscCall(KSPGuessUpdate(guess, rhs, sol)); }
+      PetscCall(KSPGuessFormGuess(guess, newrhs, newsol));
+      PetscCall(VecView(newsol, PETSC_VIEWER_STDOUT_SELF));
 
       PetscCall(KSPDestroy(&ksp));
     }
@@ -90,52 +85,50 @@ int main(int argc,char **args)
     PetscInt triangle_size = 10;
     Mat      A;
 
-    PetscCall(MatCreateSeqDense(PETSC_COMM_SELF,triangle_size,triangle_size,NULL,&A));
-    for (i = 0; i < triangle_size; ++i) {
-      PetscCall(MatSetValue(A,i,i,1.0,INSERT_VALUES));
-    }
-    PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-    PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, triangle_size, triangle_size, NULL, &A));
+    for (i = 0; i < triangle_size; ++i) { PetscCall(MatSetValue(A, i, i, 1.0, INSERT_VALUES)); }
+    PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
 
     {
       KSP         ksp;
       KSPGuess    guess;
-      Vec         sol,rhs;
-      PetscInt    j,indices[] = {0,1,2,3,4};
-      PetscScalar values[] = {1.0,2.0,3.0,4.0,5.0};
+      Vec         sol, rhs;
+      PetscInt    j, indices[] = {0, 1, 2, 3, 4};
+      PetscScalar values[] = {1.0, 2.0, 3.0, 4.0, 5.0};
 
-      PetscCall(KSPCreate(PETSC_COMM_SELF,&ksp));
-      PetscCall(KSPSetOperators(ksp,A,A));
+      PetscCall(KSPCreate(PETSC_COMM_SELF, &ksp));
+      PetscCall(KSPSetOperators(ksp, A, A));
       PetscCall(KSPSetFromOptions(ksp));
-      PetscCall(KSPGetGuess(ksp,&guess));
+      PetscCall(KSPGetGuess(ksp, &guess));
       PetscCall(KSPGuessSetUp(guess));
 
       for (i = 0; i < 5; ++i) {
-        PetscCall(VecCreateSeq(PETSC_COMM_SELF,triangle_size,&sol));
-        PetscCall(VecCreateSeq(PETSC_COMM_SELF,triangle_size,&rhs));
+        PetscCall(VecCreateSeq(PETSC_COMM_SELF, triangle_size, &sol));
+        PetscCall(VecCreateSeq(PETSC_COMM_SELF, triangle_size, &rhs));
         for (j = 0; j < i; ++j) {
-          PetscCall(VecSetValue(sol,j,(PetscScalar)j,INSERT_VALUES));
-          PetscCall(VecSetValue(rhs,j,(PetscScalar)j,INSERT_VALUES));
+          PetscCall(VecSetValue(sol, j, (PetscScalar)j, INSERT_VALUES));
+          PetscCall(VecSetValue(rhs, j, (PetscScalar)j, INSERT_VALUES));
         }
         PetscCall(VecAssemblyBegin(sol));
         PetscCall(VecAssemblyBegin(rhs));
         PetscCall(VecAssemblyEnd(sol));
         PetscCall(VecAssemblyEnd(rhs));
 
-        PetscCall(KSPGuessUpdate(guess,rhs,sol));
+        PetscCall(KSPGuessUpdate(guess, rhs, sol));
 
         PetscCall(VecDestroy(&rhs));
         PetscCall(VecDestroy(&sol));
       }
 
-      PetscCall(VecCreateSeq(PETSC_COMM_SELF,triangle_size,&sol));
-      PetscCall(VecCreateSeq(PETSC_COMM_SELF,triangle_size,&rhs));
-      PetscCall(VecSetValues(rhs,5,indices,values,INSERT_VALUES));
+      PetscCall(VecCreateSeq(PETSC_COMM_SELF, triangle_size, &sol));
+      PetscCall(VecCreateSeq(PETSC_COMM_SELF, triangle_size, &rhs));
+      PetscCall(VecSetValues(rhs, 5, indices, values, INSERT_VALUES));
       PetscCall(VecAssemblyBegin(sol));
       PetscCall(VecAssemblyEnd(sol));
 
-      PetscCall(KSPGuessFormGuess(guess,rhs,sol));
-      PetscCall(VecView(sol,PETSC_VIEWER_STDOUT_SELF));
+      PetscCall(KSPGuessFormGuess(guess, rhs, sol));
+      PetscCall(VecView(sol, PETSC_VIEWER_STDOUT_SELF));
 
       PetscCall(VecDestroy(&rhs));
       PetscCall(VecDestroy(&sol));

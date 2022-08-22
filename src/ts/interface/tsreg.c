@@ -1,4 +1,4 @@
-#include <petsc/private/tsimpl.h>      /*I "petscts.h"  I*/
+#include <petsc/private/tsimpl.h> /*I "petscts.h"  I*/
 
 PetscFunctionList TSList              = NULL;
 PetscBool         TSRegisterAllCalled = PETSC_FALSE;
@@ -39,21 +39,20 @@ PetscBool         TSRegisterAllCalled = PETSC_FALSE;
 .seealso: `TS`, `TSSolve()`, `TSCreate()`, `TSSetFromOptions()`, `TSDestroy()`, `TSType`
 
 @*/
-PetscErrorCode  TSSetType(TS ts,TSType type)
-{
+PetscErrorCode TSSetType(TS ts, TSType type) {
   PetscErrorCode (*r)(TS);
-  PetscBool      match;
+  PetscBool match;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts, TS_CLASSID,1);
-  PetscValidCharPointer(type,2);
-  PetscCall(PetscObjectTypeCompare((PetscObject) ts, type, &match));
+  PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
+  PetscValidCharPointer(type, 2);
+  PetscCall(PetscObjectTypeCompare((PetscObject)ts, type, &match));
   if (match) PetscFunctionReturn(0);
 
-  PetscCall(PetscFunctionListFind(TSList,type,&r));
-  PetscCheck(r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown TS type: %s", type);
-  PetscTryTypeMethod(ts,destroy);
-  PetscCall(PetscMemzero(ts->ops,sizeof(*ts->ops)));
+  PetscCall(PetscFunctionListFind(TSList, type, &r));
+  PetscCheck(r, PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown TS type: %s", type);
+  PetscTryTypeMethod(ts, destroy);
+  PetscCall(PetscMemzero(ts->ops, sizeof(*ts->ops)));
   ts->usessnes           = PETSC_FALSE;
   ts->default_adapt_type = TSADAPTNONE;
 
@@ -79,11 +78,10 @@ PetscErrorCode  TSSetType(TS ts,TSType type)
 
 .seealso `TSSetType()`
 @*/
-PetscErrorCode  TSGetType(TS ts, TSType *type)
-{
+PetscErrorCode TSGetType(TS ts, TSType *type) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscValidPointer(type,2);
+  PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
+  PetscValidPointer(type, 2);
   *type = ((PetscObject)ts)->type_name;
   PetscFunctionReturn(0);
 }
@@ -122,10 +120,9 @@ PetscErrorCode  TSGetType(TS ts, TSType *type)
 
 .seealso: `TSRegisterAll()`, `TSRegisterDestroy()`
 @*/
-PetscErrorCode  TSRegister(const char sname[], PetscErrorCode (*function)(TS))
-{
+PetscErrorCode TSRegister(const char sname[], PetscErrorCode (*function)(TS)) {
   PetscFunctionBegin;
   PetscCall(TSInitializePackage());
-  PetscCall(PetscFunctionListAdd(&TSList,sname,function));
+  PetscCall(PetscFunctionListAdd(&TSList, sname, function));
   PetscFunctionReturn(0);
 }

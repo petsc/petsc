@@ -6,8 +6,8 @@
 */
 
 typedef struct {
-  Vec *P, *Q;
-  PetscBool allocated, needP, needQ;
+  Vec       *P, *Q;
+  PetscBool  allocated, needP, needQ;
   PetscReal *yty, *yts;
   PetscReal *sts, *stq;
 } Mat_Brdn;

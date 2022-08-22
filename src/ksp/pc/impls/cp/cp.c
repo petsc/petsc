@@ -1,122 +1,115 @@
 
-#include <petsc/private/pcimpl.h>   /*I "petscpc.h" I*/
+#include <petsc/private/pcimpl.h> /*I "petscpc.h" I*/
 #include <../src/mat/impls/aij/seq/aij.h>
 
 /*
    Private context (data structure) for the CP preconditioner.
 */
 typedef struct {
-  PetscInt    n,m;
-  Vec         work;
-  PetscScalar *d;       /* sum of squares of each column */
-  PetscScalar *a;       /* non-zeros by column */
-  PetscInt    *i,*j;    /* offsets of nonzeros by column, non-zero indices by column */
+  PetscInt     n, m;
+  Vec          work;
+  PetscScalar *d;     /* sum of squares of each column */
+  PetscScalar *a;     /* non-zeros by column */
+  PetscInt    *i, *j; /* offsets of nonzeros by column, non-zero indices by column */
 } PC_CP;
 
-static PetscErrorCode PCSetUp_CP(PC pc)
-{
-  PC_CP          *cp = (PC_CP*)pc->data;
-  PetscInt       i,j,*colcnt;
-  PetscBool      flg;
-  Mat_SeqAIJ     *aij = (Mat_SeqAIJ*)pc->pmat->data;
+static PetscErrorCode PCSetUp_CP(PC pc) {
+  PC_CP      *cp = (PC_CP *)pc->data;
+  PetscInt    i, j, *colcnt;
+  PetscBool   flg;
+  Mat_SeqAIJ *aij = (Mat_SeqAIJ *)pc->pmat->data;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)pc->pmat,MATSEQAIJ,&flg));
-  PetscCheck(flg,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Currently only handles SeqAIJ matrices");
+  PetscCall(PetscObjectTypeCompare((PetscObject)pc->pmat, MATSEQAIJ, &flg));
+  PetscCheck(flg, PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "Currently only handles SeqAIJ matrices");
 
-  PetscCall(MatGetLocalSize(pc->pmat,&cp->m,&cp->n));
-  PetscCheck(cp->m == cp->n,PETSC_COMM_SELF,PETSC_ERR_SUP,"Currently only for square matrices");
+  PetscCall(MatGetLocalSize(pc->pmat, &cp->m, &cp->n));
+  PetscCheck(cp->m == cp->n, PETSC_COMM_SELF, PETSC_ERR_SUP, "Currently only for square matrices");
 
-  if (!cp->work) PetscCall(MatCreateVecs(pc->pmat,&cp->work,NULL));
-  if (!cp->d) PetscCall(PetscMalloc1(cp->n,&cp->d));
+  if (!cp->work) PetscCall(MatCreateVecs(pc->pmat, &cp->work, NULL));
+  if (!cp->d) PetscCall(PetscMalloc1(cp->n, &cp->d));
   if (cp->a && pc->flag != SAME_NONZERO_PATTERN) {
-    PetscCall(PetscFree3(cp->a,cp->i,cp->j));
+    PetscCall(PetscFree3(cp->a, cp->i, cp->j));
     cp->a = NULL;
   }
 
   /* convert to column format */
-  if (!cp->a) {
-    PetscCall(PetscMalloc3(aij->nz,&cp->a,cp->n+1,&cp->i,aij->nz,&cp->j));
-  }
-  PetscCall(PetscCalloc1(cp->n,&colcnt));
+  if (!cp->a) { PetscCall(PetscMalloc3(aij->nz, &cp->a, cp->n + 1, &cp->i, aij->nz, &cp->j)); }
+  PetscCall(PetscCalloc1(cp->n, &colcnt));
 
-  for (i=0; i<aij->nz; i++) colcnt[aij->j[i]]++;
+  for (i = 0; i < aij->nz; i++) colcnt[aij->j[i]]++;
   cp->i[0] = 0;
-  for (i=0; i<cp->n; i++) cp->i[i+1] = cp->i[i] + colcnt[i];
-  PetscCall(PetscArrayzero(colcnt,cp->n));
-  for (i=0; i<cp->m; i++) {  /* over rows */
-    for (j=aij->i[i]; j<aij->i[i+1]; j++) {  /* over columns in row */
-      cp->j[cp->i[aij->j[j]]+colcnt[aij->j[j]]]   = i;
-      cp->a[cp->i[aij->j[j]]+colcnt[aij->j[j]]++] = aij->a[j];
+  for (i = 0; i < cp->n; i++) cp->i[i + 1] = cp->i[i] + colcnt[i];
+  PetscCall(PetscArrayzero(colcnt, cp->n));
+  for (i = 0; i < cp->m; i++) {                   /* over rows */
+    for (j = aij->i[i]; j < aij->i[i + 1]; j++) { /* over columns in row */
+      cp->j[cp->i[aij->j[j]] + colcnt[aij->j[j]]]   = i;
+      cp->a[cp->i[aij->j[j]] + colcnt[aij->j[j]]++] = aij->a[j];
     }
   }
   PetscCall(PetscFree(colcnt));
 
   /* compute sum of squares of each column d[] */
-  for (i=0; i<cp->n; i++) {  /* over columns */
+  for (i = 0; i < cp->n; i++) { /* over columns */
     cp->d[i] = 0.;
-    for (j=cp->i[i]; j<cp->i[i+1]; j++) cp->d[i] += cp->a[j]*cp->a[j]; /* over rows in column */
-    cp->d[i] = 1.0/cp->d[i];
+    for (j = cp->i[i]; j < cp->i[i + 1]; j++) cp->d[i] += cp->a[j] * cp->a[j]; /* over rows in column */
+    cp->d[i] = 1.0 / cp->d[i];
   }
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
-static PetscErrorCode PCApply_CP(PC pc,Vec bb,Vec xx)
-{
-  PC_CP          *cp = (PC_CP*)pc->data;
-  PetscScalar    *b,*x,xt;
-  PetscInt       i,j;
+static PetscErrorCode PCApply_CP(PC pc, Vec bb, Vec xx) {
+  PC_CP       *cp = (PC_CP *)pc->data;
+  PetscScalar *b, *x, xt;
+  PetscInt     i, j;
 
   PetscFunctionBegin;
-  PetscCall(VecCopy(bb,cp->work));
-  PetscCall(VecGetArray(cp->work,&b));
-  PetscCall(VecGetArray(xx,&x));
+  PetscCall(VecCopy(bb, cp->work));
+  PetscCall(VecGetArray(cp->work, &b));
+  PetscCall(VecGetArray(xx, &x));
 
-  for (i=0; i<cp->n; i++) {  /* over columns */
+  for (i = 0; i < cp->n; i++) { /* over columns */
     xt = 0.;
-    for (j=cp->i[i]; j<cp->i[i+1]; j++) xt += cp->a[j]*b[cp->j[j]]; /* over rows in column */
-    xt  *= cp->d[i];
+    for (j = cp->i[i]; j < cp->i[i + 1]; j++) xt += cp->a[j] * b[cp->j[j]]; /* over rows in column */
+    xt *= cp->d[i];
     x[i] = xt;
-    for (j=cp->i[i]; j<cp->i[i+1]; j++) b[cp->j[j]] -= xt*cp->a[j]; /* over rows in column updating b*/
+    for (j = cp->i[i]; j < cp->i[i + 1]; j++) b[cp->j[j]] -= xt * cp->a[j]; /* over rows in column updating b*/
   }
-  for (i=cp->n-1; i>-1; i--) {  /* over columns */
+  for (i = cp->n - 1; i > -1; i--) { /* over columns */
     xt = 0.;
-    for (j=cp->i[i]; j<cp->i[i+1]; j++) xt += cp->a[j]*b[cp->j[j]]; /* over rows in column */
-    xt  *= cp->d[i];
+    for (j = cp->i[i]; j < cp->i[i + 1]; j++) xt += cp->a[j] * b[cp->j[j]]; /* over rows in column */
+    xt *= cp->d[i];
     x[i] = xt;
-    for (j=cp->i[i]; j<cp->i[i+1]; j++) b[cp->j[j]] -= xt*cp->a[j]; /* over rows in column updating b*/
+    for (j = cp->i[i]; j < cp->i[i + 1]; j++) b[cp->j[j]] -= xt * cp->a[j]; /* over rows in column updating b*/
   }
 
-  PetscCall(VecRestoreArray(cp->work,&b));
-  PetscCall(VecRestoreArray(xx,&x));
+  PetscCall(VecRestoreArray(cp->work, &b));
+  PetscCall(VecRestoreArray(xx, &x));
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
-static PetscErrorCode PCReset_CP(PC pc)
-{
-  PC_CP          *cp = (PC_CP*)pc->data;
+static PetscErrorCode PCReset_CP(PC pc) {
+  PC_CP *cp = (PC_CP *)pc->data;
 
   PetscFunctionBegin;
   PetscCall(PetscFree(cp->d));
   PetscCall(VecDestroy(&cp->work));
-  PetscCall(PetscFree3(cp->a,cp->i,cp->j));
+  PetscCall(PetscFree3(cp->a, cp->i, cp->j));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCDestroy_CP(PC pc)
-{
-  PC_CP          *cp = (PC_CP*)pc->data;
+static PetscErrorCode PCDestroy_CP(PC pc) {
+  PC_CP *cp = (PC_CP *)pc->data;
 
   PetscFunctionBegin;
   PetscCall(PCReset_CP(pc));
   PetscCall(PetscFree(cp->d));
-  PetscCall(PetscFree3(cp->a,cp->i,cp->j));
+  PetscCall(PetscFree3(cp->a, cp->i, cp->j));
   PetscCall(PetscFree(pc->data));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCSetFromOptions_CP(PC pc,PetscOptionItems *PetscOptionsObject)
-{
+static PetscErrorCode PCSetFromOptions_CP(PC pc, PetscOptionItems *PetscOptionsObject) {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
@@ -161,13 +154,12 @@ $    This algorithm can be thought of as Gauss-Seidel on the normal equations
 
 M*/
 
-PETSC_EXTERN PetscErrorCode PCCreate_CP(PC pc)
-{
-  PC_CP          *cp;
+PETSC_EXTERN PetscErrorCode PCCreate_CP(PC pc) {
+  PC_CP *cp;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(pc,&cp));
-  pc->data = (void*)cp;
+  PetscCall(PetscNewLog(pc, &cp));
+  pc->data = (void *)cp;
 
   pc->ops->apply           = PCApply_CP;
   pc->ops->applytranspose  = PCApply_CP;

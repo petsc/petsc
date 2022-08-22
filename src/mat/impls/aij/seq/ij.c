@@ -29,20 +29,19 @@
     symmetric structure.  It is required since those routines call
     SparsePak routines that expect a symmetric  matrix.
 */
-PetscErrorCode MatToSymmetricIJ_SeqAIJ(PetscInt m,PetscInt *ai,PetscInt *aj,PetscBool lower_triangular,PetscInt shiftin,PetscInt shiftout,PetscInt **iia,PetscInt **jja)
-{
-  PetscInt       *work,*ia,*ja,*j,i,nz,row,col;
+PetscErrorCode MatToSymmetricIJ_SeqAIJ(PetscInt m, PetscInt *ai, PetscInt *aj, PetscBool lower_triangular, PetscInt shiftin, PetscInt shiftout, PetscInt **iia, PetscInt **jja) {
+  PetscInt *work, *ia, *ja, *j, i, nz, row, col;
 
   PetscFunctionBegin;
   /* allocate space for row pointers */
-  PetscCall(PetscCalloc1(m+1,&ia));
+  PetscCall(PetscCalloc1(m + 1, &ia));
   *iia = ia;
-  PetscCall(PetscMalloc1(m+1,&work));
+  PetscCall(PetscMalloc1(m + 1, &work));
 
   /* determine the number of columns in each row */
   ia[0] = shiftout;
   for (row = 0; row < m; row++) {
-    nz = ai[row+1] - ai[row];
+    nz = ai[row + 1] - ai[row];
     j  = aj + ai[row] + shiftin;
     while (nz--) {
       col = *j++ + shiftin;
@@ -51,26 +50,26 @@ PetscErrorCode MatToSymmetricIJ_SeqAIJ(PetscInt m,PetscInt *ai,PetscInt *aj,Pets
       } else {
         if (col < row) break;
       }
-      if (col != row) ia[row+1]++;
-      ia[col+1]++;
+      if (col != row) ia[row + 1]++;
+      ia[col + 1]++;
     }
   }
 
   /* shiftin ia[i] to point to next row */
-  for (i=1; i<m+1; i++) {
-    row       = ia[i-1];
-    ia[i]    += row;
-    work[i-1] = row - shiftout;
+  for (i = 1; i < m + 1; i++) {
+    row = ia[i - 1];
+    ia[i] += row;
+    work[i - 1] = row - shiftout;
   }
 
   /* allocate space for column pointers */
-  nz   = ia[m] + (!shiftin);
-  PetscCall(PetscMalloc1(nz,&ja));
+  nz = ia[m] + (!shiftin);
+  PetscCall(PetscMalloc1(nz, &ja));
   *jja = ja;
 
   /* loop over lower triangular part putting into ja */
   for (row = 0; row < m; row++) {
-    nz = ai[row+1] - ai[row];
+    nz = ai[row + 1] - ai[row];
     j  = aj + ai[row] + shiftin;
     while (nz--) {
       col = *j++ + shiftin;

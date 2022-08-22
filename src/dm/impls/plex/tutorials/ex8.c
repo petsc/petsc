@@ -2,9 +2,8 @@ static char help[] = "Element closure restrictions in tensor/lexicographic/spect
 
 #include <petscdmplex.h>
 
-static PetscErrorCode ViewOffsets(DM dm, Vec X)
-{
-  PetscInt          num_elem, elem_size, num_comp, num_dof;
+static PetscErrorCode ViewOffsets(DM dm, Vec X) {
+  PetscInt           num_elem, elem_size, num_comp, num_dof;
   PetscInt          *elem_restr_offsets;
   const PetscScalar *x = NULL;
   const char        *name;
@@ -12,15 +11,12 @@ static PetscErrorCode ViewOffsets(DM dm, Vec X)
   PetscFunctionBegin;
   PetscCall(PetscObjectGetName((PetscObject)dm, &name));
   PetscCall(DMPlexGetLocalOffsets(dm, NULL, 0, 0, 0, &num_elem, &elem_size, &num_comp, &num_dof, &elem_restr_offsets));
-  PetscCall(PetscPrintf(PETSC_COMM_SELF,"DM %s offsets: num_elem %" PetscInt_FMT ", size %" PetscInt_FMT
-                        ", comp %" PetscInt_FMT ", dof %" PetscInt_FMT "\n",name, num_elem, elem_size, num_comp, num_dof));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF, "DM %s offsets: num_elem %" PetscInt_FMT ", size %" PetscInt_FMT ", comp %" PetscInt_FMT ", dof %" PetscInt_FMT "\n", name, num_elem, elem_size, num_comp, num_dof));
   if (X) PetscCall(VecGetArrayRead(X, &x));
-  for (PetscInt c=0; c<num_elem; c++) {
-    PetscCall(PetscIntView(elem_size, &elem_restr_offsets[c*elem_size], PETSC_VIEWER_STDOUT_SELF));
+  for (PetscInt c = 0; c < num_elem; c++) {
+    PetscCall(PetscIntView(elem_size, &elem_restr_offsets[c * elem_size], PETSC_VIEWER_STDOUT_SELF));
     if (x) {
-      for (PetscInt i=0; i<elem_size; i++) {
-        PetscCall(PetscScalarView(num_comp, &x[elem_restr_offsets[c*elem_size+i]], PETSC_VIEWER_STDERR_SELF));
-      }
+      for (PetscInt i = 0; i < elem_size; i++) { PetscCall(PetscScalarView(num_comp, &x[elem_restr_offsets[c * elem_size + i]], PETSC_VIEWER_STDERR_SELF)); }
     }
   }
   if (X) PetscCall(VecRestoreArrayRead(X, &x));
@@ -28,16 +24,15 @@ static PetscErrorCode ViewOffsets(DM dm, Vec X)
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv)
-{
-  DM             dm;
-  PetscSection   section;
-  PetscFE        fe;
-  PetscInt       dim,c,cStart,cEnd;
-  PetscBool      view_coord = PETSC_FALSE, tensor = PETSC_TRUE, project = PETSC_FALSE;
+int main(int argc, char **argv) {
+  DM           dm;
+  PetscSection section;
+  PetscFE      fe;
+  PetscInt     dim, c, cStart, cEnd;
+  PetscBool    view_coord = PETSC_FALSE, tensor = PETSC_TRUE, project = PETSC_FALSE;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "Tensor closure restrictions", "DMPLEX");
   PetscCall(PetscOptionsBool("-closure_tensor", "Apply DMPlexSetClosurePermutationTensor", "ex8.c", tensor, &tensor, NULL));
   PetscCall(PetscOptionsBool("-project_coordinates", "Call DMProjectCoordinates explicitly", "ex8.c", project, &project, NULL));
@@ -48,7 +43,7 @@ int main(int argc, char **argv)
   PetscCall(DMSetType(dm, DMPLEX));
   PetscCall(DMSetFromOptions(dm));
   if (project) {
-    PetscFE fe_coords;
+    PetscFE  fe_coords;
     PetscInt cdim;
     PetscCall(DMGetCoordinateDim(dm, &cdim));
     PetscCall(PetscFECreateLagrange(PETSC_COMM_SELF, cdim, cdim, PETSC_FALSE, 1, 1, &fe_coords));
@@ -58,18 +53,18 @@ int main(int argc, char **argv)
   PetscCall(DMViewFromOptions(dm, NULL, "-dm_view"));
   PetscCall(DMGetDimension(dm, &dim));
 
-  PetscCall(PetscFECreateDefault(PETSC_COMM_SELF,dim,1,PETSC_FALSE,NULL,PETSC_DETERMINE,&fe));
-  PetscCall(DMAddField(dm,NULL,(PetscObject)fe));
+  PetscCall(PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, PETSC_FALSE, NULL, PETSC_DETERMINE, &fe));
+  PetscCall(DMAddField(dm, NULL, (PetscObject)fe));
   PetscCall(DMCreateDS(dm));
-  if (tensor) PetscCall(DMPlexSetClosurePermutationTensor(dm,PETSC_DETERMINE,NULL));
-  PetscCall(DMGetLocalSection(dm,&section));
-  PetscCall(DMPlexGetHeightStratum(dm,0,&cStart,&cEnd));
-  for (c=cStart; c<cEnd; c++) {
-    PetscInt numindices,*indices;
-    PetscCall(DMPlexGetClosureIndices(dm,section,section,c,PETSC_TRUE,&numindices,&indices,NULL,NULL));
-    PetscCall(PetscPrintf(PETSC_COMM_SELF,"Element #%" PetscInt_FMT "\n",c-cStart));
-    PetscCall(PetscIntView(numindices,indices,PETSC_VIEWER_STDOUT_SELF));
-    PetscCall(DMPlexRestoreClosureIndices(dm,section,section,c,PETSC_TRUE,&numindices,&indices,NULL,NULL));
+  if (tensor) PetscCall(DMPlexSetClosurePermutationTensor(dm, PETSC_DETERMINE, NULL));
+  PetscCall(DMGetLocalSection(dm, &section));
+  PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
+  for (c = cStart; c < cEnd; c++) {
+    PetscInt numindices, *indices;
+    PetscCall(DMPlexGetClosureIndices(dm, section, section, c, PETSC_TRUE, &numindices, &indices, NULL, NULL));
+    PetscCall(PetscPrintf(PETSC_COMM_SELF, "Element #%" PetscInt_FMT "\n", c - cStart));
+    PetscCall(PetscIntView(numindices, indices, PETSC_VIEWER_STDOUT_SELF));
+    PetscCall(DMPlexRestoreClosureIndices(dm, section, section, c, PETSC_TRUE, &numindices, &indices, NULL, NULL));
   }
   if (view_coord) {
     DM       cdm;
@@ -78,7 +73,7 @@ int main(int argc, char **argv)
 
     PetscCall(DMGetCoordinateDim(dm, &cdim));
     PetscCall(DMGetCoordinateDM(dm, &cdm));
-    PetscCall(PetscObjectSetName((PetscObject) cdm, "coords"));
+    PetscCall(PetscObjectSetName((PetscObject)cdm, "coords"));
     if (tensor) PetscCall(DMPlexSetClosurePermutationTensor(cdm, PETSC_DETERMINE, NULL));
     for (c = cStart; c < cEnd; ++c) {
       const PetscScalar *array;
@@ -88,8 +83,8 @@ int main(int argc, char **argv)
 
       PetscCall(DMPlexGetCellCoordinates(dm, c, &isDG, &ndof, &array, &x));
       PetscCheck(ndof % cdim == 0, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "ndof not divisible by cdim");
-      PetscCall(PetscPrintf(PETSC_COMM_SELF, "Element #%" PetscInt_FMT " coordinates\n", c-cStart));
-      for (PetscInt i = 0; i < ndof; i+= cdim) PetscCall(PetscScalarView(cdim, &x[i], PETSC_VIEWER_STDOUT_SELF));
+      PetscCall(PetscPrintf(PETSC_COMM_SELF, "Element #%" PetscInt_FMT " coordinates\n", c - cStart));
+      for (PetscInt i = 0; i < ndof; i += cdim) PetscCall(PetscScalarView(cdim, &x[i], PETSC_VIEWER_STDOUT_SELF));
       PetscCall(DMPlexRestoreCellCoordinates(dm, c, &isDG, &ndof, &array, &x));
     }
     PetscCall(ViewOffsets(dm, NULL));

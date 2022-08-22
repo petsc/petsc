@@ -3,18 +3,17 @@ const char help[] = "Test DMPlex implementation of DMAdaptLabel().\n\n";
 #include <petscdm.h>
 #include <petscdmplex.h>
 
-int main(int argc, char **argv)
-{
-  DM             dm, dmAdapt;
-  DMLabel        adaptLabel;
-  PetscInt       cStart, cEnd;
+int main(int argc, char **argv) {
+  DM       dm, dmAdapt;
+  DMLabel  adaptLabel;
+  PetscInt cStart, cEnd;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(DMCreate(PETSC_COMM_WORLD, &dm));
   PetscCall(DMSetType(dm, DMPLEX));
   PetscCall(DMSetFromOptions(dm));
-  PetscCall(PetscObjectSetName((PetscObject) dm, "Pre Adaptation Mesh"));
+  PetscCall(PetscObjectSetName((PetscObject)dm, "Pre Adaptation Mesh"));
   PetscCall(DMViewFromOptions(dm, NULL, "-pre_adapt_dm_view"));
 
   PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
@@ -22,7 +21,7 @@ int main(int argc, char **argv)
   PetscCall(DMLabelSetDefaultValue(adaptLabel, DM_ADAPT_COARSEN));
   if (cEnd > cStart) PetscCall(DMLabelSetValue(adaptLabel, cStart, DM_ADAPT_REFINE));
   PetscCall(DMAdaptLabel(dm, adaptLabel, &dmAdapt));
-  PetscCall(PetscObjectSetName((PetscObject) dmAdapt, "Post Adaptation Mesh"));
+  PetscCall(PetscObjectSetName((PetscObject)dmAdapt, "Post Adaptation Mesh"));
   PetscCall(DMViewFromOptions(dmAdapt, NULL, "-post_adapt_dm_view"));
   PetscCall(DMDestroy(&dmAdapt));
   PetscCall(DMLabelDestroy(&adaptLabel));

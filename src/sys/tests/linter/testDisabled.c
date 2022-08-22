@@ -1,7 +1,6 @@
 #include <petsc/private/petscimpl.h>
 
-void testDisabled(PetscRandom r)
-{
+void testDisabled(PetscRandom r) {
   /* incorrect */
   PetscValidHeaderSpecific(r, PETSC_RANDOM_CLASSID, 2);
 

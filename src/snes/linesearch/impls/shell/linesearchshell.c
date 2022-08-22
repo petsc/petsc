@@ -3,7 +3,7 @@
 
 typedef struct {
   SNESLineSearchUserFunc func;
-  void                   *ctx;
+  void                  *ctx;
 } SNESLineSearch_Shell;
 
 /*@C
@@ -47,14 +47,13 @@ $  PetscCall(SNESLineSearchShellSetUserFunc(linesearch, shellfunc, NULL));
 
    .seealso: `SNESLineSearchShellGetUserFunc()`, `SNESLINESEARCHSHELL`
 @*/
-PetscErrorCode SNESLineSearchShellSetUserFunc(SNESLineSearch linesearch, SNESLineSearchUserFunc func, void *ctx)
-{
-  PetscBool            flg;
-  SNESLineSearch_Shell *shell = (SNESLineSearch_Shell*)linesearch->data;
+PetscErrorCode SNESLineSearchShellSetUserFunc(SNESLineSearch linesearch, SNESLineSearchUserFunc func, void *ctx) {
+  PetscBool             flg;
+  SNESLineSearch_Shell *shell = (SNESLineSearch_Shell *)linesearch->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(linesearch, SNESLINESEARCH_CLASSID, 1);
-  PetscCall(PetscObjectTypeCompare((PetscObject)linesearch,SNESLINESEARCHSHELL,&flg));
+  PetscCall(PetscObjectTypeCompare((PetscObject)linesearch, SNESLINESEARCHSHELL, &flg));
   if (flg) {
     shell->ctx  = ctx;
     shell->func = func;
@@ -78,26 +77,24 @@ PetscErrorCode SNESLineSearchShellSetUserFunc(SNESLineSearch linesearch, SNESLin
 
    .seealso: `SNESLineSearchShellSetUserFunc()`
 @*/
-PetscErrorCode SNESLineSearchShellGetUserFunc(SNESLineSearch linesearch, SNESLineSearchUserFunc *func, void **ctx)
-{
-  PetscBool            flg;
-  SNESLineSearch_Shell *shell = (SNESLineSearch_Shell*)linesearch->data;
+PetscErrorCode SNESLineSearchShellGetUserFunc(SNESLineSearch linesearch, SNESLineSearchUserFunc *func, void **ctx) {
+  PetscBool             flg;
+  SNESLineSearch_Shell *shell = (SNESLineSearch_Shell *)linesearch->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(linesearch, SNESLINESEARCH_CLASSID, 1);
-  if (func) PetscValidPointer(func,2);
-  if (ctx)  PetscValidPointer(ctx,3);
-  PetscCall(PetscObjectTypeCompare((PetscObject)linesearch,SNESLINESEARCHSHELL,&flg));
+  if (func) PetscValidPointer(func, 2);
+  if (ctx) PetscValidPointer(ctx, 3);
+  PetscCall(PetscObjectTypeCompare((PetscObject)linesearch, SNESLINESEARCHSHELL, &flg));
   if (flg) {
     if (func) *func = shell->func;
-    if (ctx) *ctx  = shell->ctx;
+    if (ctx) *ctx = shell->ctx;
   }
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode  SNESLineSearchApply_Shell(SNESLineSearch linesearch)
-{
-  SNESLineSearch_Shell *shell = (SNESLineSearch_Shell*)linesearch->data;
+static PetscErrorCode SNESLineSearchApply_Shell(SNESLineSearch linesearch) {
+  SNESLineSearch_Shell *shell = (SNESLineSearch_Shell *)linesearch->data;
 
   PetscFunctionBegin;
   /* apply the user function */
@@ -107,9 +104,8 @@ static PetscErrorCode  SNESLineSearchApply_Shell(SNESLineSearch linesearch)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode  SNESLineSearchDestroy_Shell(SNESLineSearch linesearch)
-{
-  SNESLineSearch_Shell *shell = (SNESLineSearch_Shell*)linesearch->data;
+static PetscErrorCode SNESLineSearchDestroy_Shell(SNESLineSearch linesearch) {
+  SNESLineSearch_Shell *shell = (SNESLineSearch_Shell *)linesearch->data;
 
   PetscFunctionBegin;
   PetscCall(PetscFree(shell));
@@ -128,9 +124,7 @@ template in the documentation for SNESLineSearchShellSetUserFunc().
 Level: advanced
 
 M*/
-PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_Shell(SNESLineSearch linesearch)
-{
-
+PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_Shell(SNESLineSearch linesearch) {
   SNESLineSearch_Shell *shell;
 
   PetscFunctionBegin;
@@ -141,8 +135,8 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_Shell(SNESLineSearch linesearch
   linesearch->ops->view           = NULL;
   linesearch->ops->setup          = NULL;
 
-  PetscCall(PetscNewLog(linesearch,&shell));
+  PetscCall(PetscNewLog(linesearch, &shell));
 
-  linesearch->data = (void*) shell;
+  linesearch->data = (void *)shell;
   PetscFunctionReturn(0);
 }

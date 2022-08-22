@@ -3,7 +3,7 @@ static char help[] = "Demonstrates named colormaps\n";
 #include <petscsys.h>
 #include <petscdraw.h>
 
-typedef PetscReal (*Function)(PetscReal,PetscReal);
+typedef PetscReal (*Function)(PetscReal, PetscReal);
 
 typedef struct {
   Function function;
@@ -11,61 +11,59 @@ typedef struct {
 
 #define Exp PetscExpReal
 #define Pow PetscPowReal
-static PetscReal Peaks(PetscReal x,PetscReal y)
-{
-  return 3 * Pow(1-x,2) * Exp(-Pow(x,2) - Pow(y+1,2))
-       - 10 * (x/5 - Pow(x,3) - Pow(y,5)) * Exp(-Pow(x,2) - Pow(y,2))
-       - 1./3 * Exp(-Pow(x+1,2) - Pow(y,2));
+static PetscReal Peaks(PetscReal x, PetscReal y) {
+  return 3 * Pow(1 - x, 2) * Exp(-Pow(x, 2) - Pow(y + 1, 2)) - 10 * (x / 5 - Pow(x, 3) - Pow(y, 5)) * Exp(-Pow(x, 2) - Pow(y, 2)) - 1. / 3 * Exp(-Pow(x + 1, 2) - Pow(y, 2));
 }
 
-static PetscErrorCode DrawFunction(PetscDraw draw,void *ctx)
-{
-  int            i,j,w,h;
-  Function       function = ((FunctionCtx*)ctx)->function;
-  PetscReal      min = PETSC_MAX_REAL, max = PETSC_MIN_REAL;
-  MPI_Comm       comm = PetscObjectComm((PetscObject)draw);
-  PetscMPIInt    size,rank;
-  PetscDraw      popup;
+static PetscErrorCode DrawFunction(PetscDraw draw, void *ctx) {
+  int         i, j, w, h;
+  Function    function = ((FunctionCtx *)ctx)->function;
+  PetscReal   min = PETSC_MAX_REAL, max = PETSC_MIN_REAL;
+  MPI_Comm    comm = PetscObjectComm((PetscObject)draw);
+  PetscMPIInt size, rank;
+  PetscDraw   popup;
 
   PetscFunctionBegin;
-  PetscCall(PetscDrawGetWindowSize(draw,&w,&h));
-  PetscCallMPI(MPI_Comm_size(comm,&size));
-  PetscCallMPI(MPI_Comm_rank(comm,&rank));
+  PetscCall(PetscDrawGetWindowSize(draw, &w, &h));
+  PetscCallMPI(MPI_Comm_size(comm, &size));
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
 
   PetscDrawCollectiveBegin(draw);
-  for (j=rank; j<h; j+=size) {
-    for (i=0; i<w; i++) {
-      PetscReal x,y,f; int color;
-      PetscCall(PetscDrawPixelToCoordinate(draw,i,j,&x,&y));
-      f = function(x,y); color = PetscDrawRealToColor(f,-8,+8);
-      PetscCall(PetscDrawPointPixel(draw,i,j,color));
-      min = PetscMin(f,min); max = PetscMax(f,max);
+  for (j = rank; j < h; j += size) {
+    for (i = 0; i < w; i++) {
+      PetscReal x, y, f;
+      int       color;
+      PetscCall(PetscDrawPixelToCoordinate(draw, i, j, &x, &y));
+      f     = function(x, y);
+      color = PetscDrawRealToColor(f, -8, +8);
+      PetscCall(PetscDrawPointPixel(draw, i, j, color));
+      min = PetscMin(f, min);
+      max = PetscMax(f, max);
     }
   }
   PetscDrawCollectiveEnd(draw);
 
-  PetscCall(PetscDrawGetPopup(draw,&popup));
-  PetscCall(PetscDrawScalePopup(popup,-8,+8));
+  PetscCall(PetscDrawGetPopup(draw, &popup));
+  PetscCall(PetscDrawScalePopup(popup, -8, +8));
   PetscFunctionReturn(0);
 }
 
-int main(int argc,char **argv)
-{
-  char        title[64],cmap[32] = "";
+int main(int argc, char **argv) {
+  char        title[64], cmap[32] = "";
   PetscDraw   draw;
   FunctionCtx ctx;
 
   ctx.function = Peaks;
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
-  PetscCall(PetscOptionsGetString(NULL,NULL,"-draw_cmap",cmap,sizeof(cmap),NULL));
-  PetscCall(PetscSNPrintf(title,sizeof(title),"Colormap: %s",cmap));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
+  PetscCall(PetscOptionsGetString(NULL, NULL, "-draw_cmap", cmap, sizeof(cmap), NULL));
+  PetscCall(PetscSNPrintf(title, sizeof(title), "Colormap: %s", cmap));
 
-  PetscCall(PetscDrawCreate(PETSC_COMM_WORLD,NULL,title,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,&draw));
-  PetscCall(PetscObjectSetName((PetscObject)draw,"Peaks"));
+  PetscCall(PetscDrawCreate(PETSC_COMM_WORLD, NULL, title, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, &draw));
+  PetscCall(PetscObjectSetName((PetscObject)draw, "Peaks"));
   PetscCall(PetscDrawSetFromOptions(draw));
-  PetscCall(PetscDrawSetCoordinates(draw,-3,-3,+3,+3));
-  PetscCall(PetscDrawZoom(draw,DrawFunction,&ctx));
+  PetscCall(PetscDrawSetCoordinates(draw, -3, -3, +3, +3));
+  PetscCall(PetscDrawZoom(draw, DrawFunction, &ctx));
   PetscCall(PetscDrawSave(draw));
 
   PetscCall(PetscDrawDestroy(&draw));

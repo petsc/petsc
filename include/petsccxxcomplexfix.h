@@ -41,18 +41,42 @@
 */
 
 #define PETSC_CXX_COMPLEX_FIX(Type) \
-static inline PetscComplex operator+(const PetscComplex& lhs, const Type& rhs) { return const_cast<PetscComplex&>(lhs) + PetscReal(rhs); } \
-static inline PetscComplex operator+(const Type& lhs, const PetscComplex& rhs) { return PetscReal(lhs) + const_cast<PetscComplex&>(rhs); } \
-static inline PetscComplex operator-(const PetscComplex& lhs, const Type& rhs) { return const_cast<PetscComplex&>(lhs) - PetscReal(rhs); } \
-static inline PetscComplex operator-(const Type& lhs, const PetscComplex& rhs) { return PetscReal(lhs) - const_cast<PetscComplex&>(rhs); } \
-static inline PetscComplex operator*(const PetscComplex& lhs, const Type& rhs) { return const_cast<PetscComplex&>(lhs) * PetscReal(rhs); } \
-static inline PetscComplex operator*(const Type& lhs, const PetscComplex& rhs) { return PetscReal(lhs) * const_cast<PetscComplex&>(rhs); } \
-static inline PetscComplex operator/(const PetscComplex& lhs, const Type& rhs) { return const_cast<PetscComplex&>(lhs) / PetscReal(rhs); } \
-static inline PetscComplex operator/(const Type& lhs, const PetscComplex& rhs) { return PetscReal(lhs) / const_cast<PetscComplex&>(rhs); } \
-static inline bool operator==(const PetscComplex& lhs, const Type& rhs) { return const_cast<PetscComplex&>(lhs).imag() == PetscReal(0) && const_cast<PetscComplex&>(lhs).real() == PetscReal(rhs); } \
-static inline bool operator==(const Type& lhs, const PetscComplex& rhs) { return const_cast<PetscComplex&>(rhs).imag() == PetscReal(0) && const_cast<PetscComplex&>(rhs).real() == PetscReal(lhs); } \
-static inline bool operator!=(const PetscComplex& lhs, const Type& rhs) { return const_cast<PetscComplex&>(lhs).imag() != PetscReal(0) || const_cast<PetscComplex&>(lhs).real() != PetscReal(rhs); } \
-static inline bool operator!=(const Type& lhs, const PetscComplex& rhs) { return const_cast<PetscComplex&>(rhs).imag() != PetscReal(0) || const_cast<PetscComplex&>(rhs).real() != PetscReal(lhs); } \
+  static inline PetscComplex operator+(const PetscComplex &lhs, const Type &rhs) { \
+    return const_cast<PetscComplex &>(lhs) + PetscReal(rhs); \
+  } \
+  static inline PetscComplex operator+(const Type &lhs, const PetscComplex &rhs) { \
+    return PetscReal(lhs) + const_cast<PetscComplex &>(rhs); \
+  } \
+  static inline PetscComplex operator-(const PetscComplex &lhs, const Type &rhs) { \
+    return const_cast<PetscComplex &>(lhs) - PetscReal(rhs); \
+  } \
+  static inline PetscComplex operator-(const Type &lhs, const PetscComplex &rhs) { \
+    return PetscReal(lhs) - const_cast<PetscComplex &>(rhs); \
+  } \
+  static inline PetscComplex operator*(const PetscComplex &lhs, const Type &rhs) { \
+    return const_cast<PetscComplex &>(lhs) * PetscReal(rhs); \
+  } \
+  static inline PetscComplex operator*(const Type &lhs, const PetscComplex &rhs) { \
+    return PetscReal(lhs) * const_cast<PetscComplex &>(rhs); \
+  } \
+  static inline PetscComplex operator/(const PetscComplex &lhs, const Type &rhs) { \
+    return const_cast<PetscComplex &>(lhs) / PetscReal(rhs); \
+  } \
+  static inline PetscComplex operator/(const Type &lhs, const PetscComplex &rhs) { \
+    return PetscReal(lhs) / const_cast<PetscComplex &>(rhs); \
+  } \
+  static inline bool operator==(const PetscComplex &lhs, const Type &rhs) { \
+    return const_cast<PetscComplex &>(lhs).imag() == PetscReal(0) && const_cast<PetscComplex &>(lhs).real() == PetscReal(rhs); \
+  } \
+  static inline bool operator==(const Type &lhs, const PetscComplex &rhs) { \
+    return const_cast<PetscComplex &>(rhs).imag() == PetscReal(0) && const_cast<PetscComplex &>(rhs).real() == PetscReal(lhs); \
+  } \
+  static inline bool operator!=(const PetscComplex &lhs, const Type &rhs) { \
+    return const_cast<PetscComplex &>(lhs).imag() != PetscReal(0) || const_cast<PetscComplex &>(lhs).real() != PetscReal(rhs); \
+  } \
+  static inline bool operator!=(const Type &lhs, const PetscComplex &rhs) { \
+    return const_cast<PetscComplex &>(rhs).imag() != PetscReal(0) || const_cast<PetscComplex &>(rhs).real() != PetscReal(lhs); \
+  } \
 /* PETSC_CXX_COMPLEX_FIX */
 
 /*

@@ -10,16 +10,15 @@
   Level: beginner
 .seealso `TAOBNK`, `TAOBQNKTR`, `TAOBQNKTL`
 M*/
-PETSC_EXTERN PetscErrorCode TaoCreate_BQNKLS(Tao tao)
-{
-  TAO_BNK        *bnk;
-  TAO_BQNK       *bqnk;
+PETSC_EXTERN PetscErrorCode TaoCreate_BQNKLS(Tao tao) {
+  TAO_BNK  *bnk;
+  TAO_BQNK *bqnk;
 
   PetscFunctionBegin;
   PetscCall(TaoCreate_BQNK(tao));
-  bnk = (TAO_BNK*)tao->data;
+  bnk              = (TAO_BNK *)tao->data;
   bnk->update_type = BNK_UPDATE_STEP;
-  bqnk = (TAO_BQNK*)bnk->ctx;
-  bqnk->solve = TaoSolve_BNLS;
+  bqnk             = (TAO_BQNK *)bnk->ctx;
+  bqnk->solve      = TaoSolve_BNLS;
   PetscFunctionReturn(0);
 }

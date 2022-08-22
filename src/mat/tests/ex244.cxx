@@ -7,73 +7,70 @@ static char help[] = "Tests MatConvert(), MatLoad() for MATSCALAPACK interface.\
 
 #include <petscmat.h>
 
-int main(int argc,char **args)
-{
-  Mat            A,Ae,B,Be;
-  PetscViewer    view;
-  char           file[2][PETSC_MAX_PATH_LEN];
-  PetscBool      flg,flgB,isScaLAPACK,isDense,isAij,isSbaij;
-  PetscScalar    one = 1.0;
-  PetscMPIInt    rank,size;
-  PetscInt       M,N;
+int main(int argc, char **args) {
+  Mat         A, Ae, B, Be;
+  PetscViewer view;
+  char        file[2][PETSC_MAX_PATH_LEN];
+  PetscBool   flg, flgB, isScaLAPACK, isDense, isAij, isSbaij;
+  PetscScalar one = 1.0;
+  PetscMPIInt rank, size;
+  PetscInt    M, N;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
-  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
-  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
 
   /* Load PETSc matrices */
-  PetscCall(PetscOptionsGetString(NULL,NULL,"-fA",file[0],PETSC_MAX_PATH_LEN,NULL));
-  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[0],FILE_MODE_READ,&view));
-  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
-  PetscCall(MatSetOptionsPrefix(A,"orig_"));
-  PetscCall(MatSetType(A,MATAIJ));
+  PetscCall(PetscOptionsGetString(NULL, NULL, "-fA", file[0], PETSC_MAX_PATH_LEN, NULL));
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, file[0], FILE_MODE_READ, &view));
+  PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
+  PetscCall(MatSetOptionsPrefix(A, "orig_"));
+  PetscCall(MatSetType(A, MATAIJ));
   PetscCall(MatSetFromOptions(A));
-  PetscCall(MatLoad(A,view));
+  PetscCall(MatLoad(A, view));
   PetscCall(PetscViewerDestroy(&view));
 
-  PetscOptionsGetString(NULL,NULL,"-fB",file[1],PETSC_MAX_PATH_LEN,&flgB);
+  PetscOptionsGetString(NULL, NULL, "-fB", file[1], PETSC_MAX_PATH_LEN, &flgB);
   if (flgB) {
-    PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[1],FILE_MODE_READ,&view));
-    PetscCall(MatCreate(PETSC_COMM_WORLD,&B));
-    PetscCall(MatSetOptionsPrefix(B,"orig_"));
-    PetscCall(MatSetType(B,MATAIJ));
+    PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, file[1], FILE_MODE_READ, &view));
+    PetscCall(MatCreate(PETSC_COMM_WORLD, &B));
+    PetscCall(MatSetOptionsPrefix(B, "orig_"));
+    PetscCall(MatSetType(B, MATAIJ));
     PetscCall(MatSetFromOptions(B));
-    PetscCall(MatLoad(B,view));
+    PetscCall(MatLoad(B, view));
     PetscCall(PetscViewerDestroy(&view));
   } else {
     /* Create matrix B = I */
-    PetscInt rstart,rend,i;
-    PetscCall(MatGetSize(A,&M,&N));
-    PetscCall(MatGetOwnershipRange(A,&rstart,&rend));
+    PetscInt rstart, rend, i;
+    PetscCall(MatGetSize(A, &M, &N));
+    PetscCall(MatGetOwnershipRange(A, &rstart, &rend));
 
-    PetscCall(MatCreate(PETSC_COMM_WORLD,&B));
-    PetscCall(MatSetOptionsPrefix(B,"orig_"));
-    PetscCall(MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,M,N));
-    PetscCall(MatSetType(B,MATAIJ));
+    PetscCall(MatCreate(PETSC_COMM_WORLD, &B));
+    PetscCall(MatSetOptionsPrefix(B, "orig_"));
+    PetscCall(MatSetSizes(B, PETSC_DECIDE, PETSC_DECIDE, M, N));
+    PetscCall(MatSetType(B, MATAIJ));
     PetscCall(MatSetFromOptions(B));
     PetscCall(MatSetUp(B));
-    for (i=rstart; i<rend; i++) {
-      PetscCall(MatSetValues(B,1,&i,1,&i,&one,ADD_VALUES));
-    }
-    PetscCall(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
-    PetscCall(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
+    for (i = rstart; i < rend; i++) { PetscCall(MatSetValues(B, 1, &i, 1, &i, &one, ADD_VALUES)); }
+    PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
   }
 
-  PetscCall(PetscObjectTypeCompare((PetscObject)A,MATSCALAPACK,&isScaLAPACK));
+  PetscCall(PetscObjectTypeCompare((PetscObject)A, MATSCALAPACK, &isScaLAPACK));
   if (isScaLAPACK) {
-    Ae = A;
-    Be = B;
+    Ae      = A;
+    Be      = B;
     isDense = isAij = isSbaij = PETSC_FALSE;
   } else { /* Convert AIJ/DENSE/SBAIJ matrices into ScaLAPACK matrices */
     if (size == 1) {
-      PetscCall(PetscObjectTypeCompare((PetscObject)A,MATSEQDENSE,&isDense));
-      PetscCall(PetscObjectTypeCompare((PetscObject)A,MATSEQAIJ,&isAij));
-      PetscCall(PetscObjectTypeCompare((PetscObject)A,MATSEQSBAIJ,&isSbaij));
+      PetscCall(PetscObjectTypeCompare((PetscObject)A, MATSEQDENSE, &isDense));
+      PetscCall(PetscObjectTypeCompare((PetscObject)A, MATSEQAIJ, &isAij));
+      PetscCall(PetscObjectTypeCompare((PetscObject)A, MATSEQSBAIJ, &isSbaij));
     } else {
-      PetscCall(PetscObjectTypeCompare((PetscObject)A,MATMPIDENSE,&isDense));
-      PetscCall(PetscObjectTypeCompare((PetscObject)A,MATMPIAIJ,&isAij));
-       PetscCall(PetscObjectTypeCompare((PetscObject)A,MATMPISBAIJ,&isSbaij));
+      PetscCall(PetscObjectTypeCompare((PetscObject)A, MATMPIDENSE, &isDense));
+      PetscCall(PetscObjectTypeCompare((PetscObject)A, MATMPIAIJ, &isAij));
+      PetscCall(PetscObjectTypeCompare((PetscObject)A, MATMPISBAIJ, &isSbaij));
     }
 
     if (rank == 0) {
@@ -83,16 +80,16 @@ int main(int argc,char **args)
         printf(" Convert AIJ matrices A and B into ScaLAPACK matrix... \n");
       } else if (isSbaij) {
         printf(" Convert SBAIJ matrices A and B into ScaLAPACK matrix... \n");
-      } else SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Not supported yet");
+      } else SETERRQ(PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Not supported yet");
     }
     PetscCall(MatConvert(A, MATSCALAPACK, MAT_INITIAL_MATRIX, &Ae));
     PetscCall(MatConvert(B, MATSCALAPACK, MAT_INITIAL_MATRIX, &Be));
 
     /* Test accuracy */
-    PetscCall(MatMultEqual(A,Ae,5,&flg));
-    PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"A != A_scalapack.");
-    PetscCall(MatMultEqual(B,Be,5,&flg));
-    PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"B != B_scalapack.");
+    PetscCall(MatMultEqual(A, Ae, 5, &flg));
+    PetscCheck(flg, PETSC_COMM_SELF, PETSC_ERR_ARG_NOTSAMETYPE, "A != A_scalapack.");
+    PetscCall(MatMultEqual(B, Be, 5, &flg));
+    PetscCheck(flg, PETSC_COMM_SELF, PETSC_ERR_ARG_NOTSAMETYPE, "B != B_scalapack.");
   }
 
   if (!isScaLAPACK) {

@@ -5,16 +5,14 @@ This exposed a bug with sharing discretizations.\n\n\n";
 #include <petscdmplex.h>
 #include <petscviewerhdf5.h>
 
-int main (int argc, char **argv)
-{
-
-  DM             base, forest, plex;
-  Vec            g, g2;
-  PetscSection   s;
-  PetscViewer    viewer;
-  PetscReal      diff;
-  PetscInt       min_refine = 2, overlap = 0;
-  PetscInt       vStart, vEnd, v;
+int main(int argc, char **argv) {
+  DM           base, forest, plex;
+  Vec          g, g2;
+  PetscSection s;
+  PetscViewer  viewer;
+  PetscReal    diff;
+  PetscInt     min_refine = 2, overlap = 0;
+  PetscInt     vStart, vEnd, v;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
@@ -35,7 +33,7 @@ int main (int argc, char **argv)
   PetscCall(DMConvert(forest, DMPLEX, &plex));
   PetscCall(DMPlexGetDepthStratum(plex, 0, &vStart, &vEnd));
   PetscCall(DMDestroy(&plex));
-  PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject) forest), &s));
+  PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)forest), &s));
   PetscCall(PetscSectionSetChart(s, vStart, vEnd));
   for (v = vStart; v < vEnd; ++v) PetscCall(PetscSectionSetDof(s, v, 1));
   PetscCall(PetscSectionSetUp(s));
@@ -43,14 +41,14 @@ int main (int argc, char **argv)
   PetscCall(PetscSectionDestroy(&s));
 
   PetscCall(DMCreateGlobalVector(forest, &g));
-  PetscCall(PetscObjectSetName((PetscObject) g, "g"));
+  PetscCall(PetscObjectSetName((PetscObject)g, "g"));
   PetscCall(VecSet(g, 1.0));
   PetscCall(PetscViewerHDF5Open(PETSC_COMM_WORLD, "forest.h5", FILE_MODE_WRITE, &viewer));
   PetscCall(VecView(g, viewer));
   PetscCall(PetscViewerDestroy(&viewer));
 
   PetscCall(DMCreateGlobalVector(forest, &g2));
-  PetscCall(PetscObjectSetName((PetscObject) g2, "g"));
+  PetscCall(PetscObjectSetName((PetscObject)g2, "g"));
   PetscCall(PetscViewerHDF5Open(PETSC_COMM_WORLD, "forest.h5", FILE_MODE_READ, &viewer));
   PetscCall(VecLoad(g2, viewer));
   PetscCall(PetscViewerDestroy(&viewer));
@@ -58,7 +56,7 @@ int main (int argc, char **argv)
   /*  Check if the data is the same*/
   PetscCall(VecAXPY(g2, -1.0, g));
   PetscCall(VecNorm(g2, NORM_INFINITY, &diff));
-  if (diff > PETSC_MACHINE_EPSILON) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Check failed: %g\n", (double) diff));
+  if (diff > PETSC_MACHINE_EPSILON) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Check failed: %g\n", (double)diff));
 
   PetscCall(VecDestroy(&g));
   PetscCall(VecDestroy(&g2));

@@ -9,19 +9,18 @@ static char help[] = "Parallel vector layout.\n\n";
 */
 #include <petscvec.h>
 
-int main(int argc,char **argv)
-{
-  PetscMPIInt    rank;
-  PetscInt       i,istart,iend,n = 6,nlocal;
-  PetscScalar    v,*array;
-  Vec            x;
-  PetscViewer    viewer;
+int main(int argc, char **argv) {
+  PetscMPIInt rank;
+  PetscInt    i, istart, iend, n = 6, nlocal;
+  PetscScalar v, *array;
+  Vec         x;
+  PetscViewer viewer;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
-  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
 
-  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-n", &n, NULL));
 
   /*
      Create a vector, specifying only its global dimension.
@@ -30,8 +29,8 @@ int main(int argc,char **argv)
      determined at runtime.  Also, the parallel partitioning of
      the vector is determined by PETSc at runtime.
   */
-  PetscCall(VecCreate(PETSC_COMM_WORLD,&x));
-  PetscCall(VecSetSizes(x,PETSC_DECIDE,n));
+  PetscCall(VecCreate(PETSC_COMM_WORLD, &x));
+  PetscCall(VecSetSizes(x, PETSC_DECIDE, n));
   PetscCall(VecSetFromOptions(x));
 
   /*
@@ -39,7 +38,7 @@ int main(int argc,char **argv)
      contiguous chunks of rows across the processors.  Determine
      which vector are locally owned.
   */
-  PetscCall(VecGetOwnershipRange(x,&istart,&iend));
+  PetscCall(VecGetOwnershipRange(x, &istart, &iend));
 
   /* --------------------------------------------------------------------
      Set the vector elements.
@@ -48,9 +47,9 @@ int main(int argc,char **argv)
       - In this case each processor adds values to all the entries,
          this is not practical, but is merely done as an example
    */
-  for (i=0; i<n; i++) {
-    v    = (PetscReal)(rank*i);
-    PetscCall(VecSetValues(x,1,&i,&v,ADD_VALUES));
+  for (i = 0; i < n; i++) {
+    v = (PetscReal)(rank * i);
+    PetscCall(VecSetValues(x, 1, &i, &v, ADD_VALUES));
   }
 
   /*
@@ -71,28 +70,28 @@ int main(int argc,char **argv)
                   (0 is default, -1 implies until user input).
 
   */
-  PetscCall(PetscViewerDrawOpen(PETSC_COMM_WORLD,NULL,NULL,0,0,300,300,&viewer));
-  PetscCall(PetscObjectSetName((PetscObject)viewer,"Line graph Plot"));
-  PetscCall(PetscViewerPushFormat(viewer,PETSC_VIEWER_DRAW_LG));
+  PetscCall(PetscViewerDrawOpen(PETSC_COMM_WORLD, NULL, NULL, 0, 0, 300, 300, &viewer));
+  PetscCall(PetscObjectSetName((PetscObject)viewer, "Line graph Plot"));
+  PetscCall(PetscViewerPushFormat(viewer, PETSC_VIEWER_DRAW_LG));
   /*
      View the vector
   */
-  PetscCall(VecView(x,viewer));
+  PetscCall(VecView(x, viewer));
 
   /* --------------------------------------------------------------------
        Access the vector values directly. Each processor has access only
     to its portion of the vector. For default PETSc vectors VecGetArray()
     does NOT involve a copy
   */
-  PetscCall(VecGetLocalSize(x,&nlocal));
-  PetscCall(VecGetArray(x,&array));
-  for (i=0; i<nlocal; i++) array[i] = rank + 1;
-  PetscCall(VecRestoreArray(x,&array));
+  PetscCall(VecGetLocalSize(x, &nlocal));
+  PetscCall(VecGetArray(x, &array));
+  for (i = 0; i < nlocal; i++) array[i] = rank + 1;
+  PetscCall(VecRestoreArray(x, &array));
 
   /*
      View the vector
   */
-  PetscCall(VecView(x,viewer));
+  PetscCall(VecView(x, viewer));
 
   /*
      Free work space.  All PETSc objects should be destroyed when they

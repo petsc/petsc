@@ -3,27 +3,26 @@
 */
 static char help[] = "Test memory scalable AO.\n\n";
 
-#include<petsc.h>
-#include<petscvec.h>
-#include<petscmat.h>
-#include<petscao.h>
+#include <petsc.h>
+#include <petscvec.h>
+#include <petscmat.h>
+#include <petscao.h>
 
-int main(int argc, char *argv[])
-{
-  PetscInt              n_global = 16;
-  MPI_Comm              comm;
-  PetscLayout           layout;
-  PetscInt              local_size;
-  PetscInt              start, end;
-  PetscMPIInt           rank;
-  PetscInt              *app_indices,*petsc_indices,*ia,*ia0;
-  PetscInt              i;
-  AO                    app2petsc;
-  IS                    app_is, petsc_is;
-  const PetscInt        n_loc = 8;
+int main(int argc, char *argv[]) {
+  PetscInt       n_global = 16;
+  MPI_Comm       comm;
+  PetscLayout    layout;
+  PetscInt       local_size;
+  PetscInt       start, end;
+  PetscMPIInt    rank;
+  PetscInt      *app_indices, *petsc_indices, *ia, *ia0;
+  PetscInt       i;
+  AO             app2petsc;
+  IS             app_is, petsc_is;
+  const PetscInt n_loc = 8;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *) 0, help));
+  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
   comm = PETSC_COMM_WORLD;
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
 
@@ -34,12 +33,12 @@ int main(int argc, char *argv[])
   PetscCall(PetscLayoutGetLocalSize(layout, &local_size));
   PetscCall(PetscLayoutGetRange(layout, &start, &end));
 
-  PetscCall(PetscMalloc1(local_size,&app_indices));
-  PetscCall(PetscMalloc1(local_size,&petsc_indices));
+  PetscCall(PetscMalloc1(local_size, &app_indices));
+  PetscCall(PetscMalloc1(local_size, &petsc_indices));
   /*  Add values for local indices for usual states */
   for (i = 0; i < local_size; ++i) {
-    app_indices[i] = start + i;
-    petsc_indices[i] = end -1 - i;
+    app_indices[i]   = start + i;
+    petsc_indices[i] = end - 1 - i;
   }
 
   /* Create the AO object that maps from lexicographic ordering to Petsc Vec ordering */
@@ -54,8 +53,8 @@ int main(int argc, char *argv[])
   PetscCall(AOView(app2petsc, PETSC_VIEWER_STDOUT_WORLD));
 
   /* Test AOApplicationToPetsc */
-  PetscCall(PetscMalloc1(n_loc,&ia));
-  PetscCall(PetscMalloc1(n_loc,&ia0));
+  PetscCall(PetscMalloc1(n_loc, &ia));
+  PetscCall(PetscMalloc1(n_loc, &ia0));
   if (rank == 0) {
     ia[0] = 0;
     ia[1] = -1;
@@ -75,14 +74,12 @@ int main(int argc, char *argv[])
     ia[6] = 13;
     ia[7] = 14;
   }
-  PetscCall(PetscArraycpy(ia0,ia,n_loc));
+  PetscCall(PetscArraycpy(ia0, ia, n_loc));
 
   PetscCall(AOApplicationToPetsc(app2petsc, n_loc, ia));
 
-  for (i=0; i<n_loc; ++i) {
-    PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"proc = %d : %" PetscInt_FMT " -> %" PetscInt_FMT " \n", rank, ia0[i], ia[i]));
-  }
-  PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
+  for (i = 0; i < n_loc; ++i) { PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "proc = %d : %" PetscInt_FMT " -> %" PetscInt_FMT " \n", rank, ia0[i], ia[i])); }
+  PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD, PETSC_STDOUT));
   PetscCall(AODestroy(&app2petsc));
   PetscCall(PetscLayoutDestroy(&layout));
   PetscCall(PetscFree(app_indices));

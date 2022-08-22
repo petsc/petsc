@@ -1,33 +1,32 @@
 #define HPDDM_MIXED_PRECISION 1
 #include <petsc/private/petschpddm.h> /*I "petscksp.h" I*/
 
-const char *const KSPHPDDMTypes[]          = { KSPGMRES, "bgmres", KSPCG, "bcg", "gcrodr", "bgcrodr", "bfbcg", KSPPREONLY };
-const char *const KSPHPDDMPrecisionTypes[] = { "HALF", "SINGLE", "DOUBLE", "QUADRUPLE", "KSPHPDDMPrecisionType", "KSP_HPDDM_PRECISION_", NULL };
-const char *const HPDDMOrthogonalization[] = { "cgs", "mgs" };
-const char *const HPDDMQR[]                = { "cholqr", "cgs", "mgs" };
-const char *const HPDDMVariant[]           = { "left", "right", "flexible" };
-const char *const HPDDMRecycleTarget[]     = { "SM", "LM", "SR", "LR", "SI", "LI" };
-const char *const HPDDMRecycleStrategy[]   = { "A", "B" };
+const char *const KSPHPDDMTypes[]          = {KSPGMRES, "bgmres", KSPCG, "bcg", "gcrodr", "bgcrodr", "bfbcg", KSPPREONLY};
+const char *const KSPHPDDMPrecisionTypes[] = {"HALF", "SINGLE", "DOUBLE", "QUADRUPLE", "KSPHPDDMPrecisionType", "KSP_HPDDM_PRECISION_", NULL};
+const char *const HPDDMOrthogonalization[] = {"cgs", "mgs"};
+const char *const HPDDMQR[]                = {"cholqr", "cgs", "mgs"};
+const char *const HPDDMVariant[]           = {"left", "right", "flexible"};
+const char *const HPDDMRecycleTarget[]     = {"SM", "LM", "SR", "LR", "SI", "LI"};
+const char *const HPDDMRecycleStrategy[]   = {"A", "B"};
 
-PetscBool HPDDMCite = PETSC_FALSE;
+PetscBool  HPDDMCite       = PETSC_FALSE;
 const char HPDDMCitation[] = "@article{jolivet2020petsc,\n"
-"  Author = {Jolivet, Pierre and Roman, Jose E. and Zampini, Stefano},\n"
-"  Title = {{KSPHPDDM} and {PCHPDDM}: Extending {PETSc} with Robust Overlapping {Schwarz} Preconditioners and Advanced {Krylov} Methods},\n"
-"  Year = {2021},\n"
-"  Publisher = {Elsevier},\n"
-"  Journal = {Computer \\& Mathematics with Applications},\n"
-"  Volume = {84},\n"
-"  Pages = {277--295},\n"
-"  Url = {https://github.com/prj-/jolivet2020petsc}\n"
-"}\n";
+                             "  Author = {Jolivet, Pierre and Roman, Jose E. and Zampini, Stefano},\n"
+                             "  Title = {{KSPHPDDM} and {PCHPDDM}: Extending {PETSc} with Robust Overlapping {Schwarz} Preconditioners and Advanced {Krylov} Methods},\n"
+                             "  Year = {2021},\n"
+                             "  Publisher = {Elsevier},\n"
+                             "  Journal = {Computer \\& Mathematics with Applications},\n"
+                             "  Volume = {84},\n"
+                             "  Pages = {277--295},\n"
+                             "  Url = {https://github.com/prj-/jolivet2020petsc}\n"
+                             "}\n";
 
 #if defined(PETSC_HAVE_SLEPC) && defined(PETSC_USE_SHARED_LIBRARIES)
 static PetscBool loadedDL = PETSC_FALSE;
 #endif
 
-static PetscErrorCode KSPSetFromOptions_HPDDM(KSP ksp,PetscOptionItems *PetscOptionsObject)
-{
-  KSP_HPDDM   *data = (KSP_HPDDM*)ksp->data;
+static PetscErrorCode KSPSetFromOptions_HPDDM(KSP ksp, PetscOptionItems *PetscOptionsObject) {
+  KSP_HPDDM  *data = (KSP_HPDDM *)ksp->data;
   PetscInt    i, j;
   PetscMPIInt size;
 
@@ -35,17 +34,17 @@ static PetscErrorCode KSPSetFromOptions_HPDDM(KSP ksp,PetscOptionItems *PetscOpt
   PetscOptionsHeadBegin(PetscOptionsObject, "KSPHPDDM options, cf. https://github.com/hpddm/hpddm");
   i = (data->cntl[0] == static_cast<char>(PETSC_DECIDE) ? HPDDM_KRYLOV_METHOD_GMRES : data->cntl[0]);
   PetscCall(PetscOptionsEList("-ksp_hpddm_type", "Type of Krylov method", "KSPHPDDMGetType", KSPHPDDMTypes, PETSC_STATIC_ARRAY_LENGTH(KSPHPDDMTypes), KSPHPDDMTypes[HPDDM_KRYLOV_METHOD_GMRES], &i, NULL));
-  if (i == PETSC_STATIC_ARRAY_LENGTH(KSPHPDDMTypes) - 1)
-    i = HPDDM_KRYLOV_METHOD_NONE; /* need to shift the value since HPDDM_KRYLOV_METHOD_RICHARDSON is not registered in PETSc */
+  if (i == PETSC_STATIC_ARRAY_LENGTH(KSPHPDDMTypes) - 1) i = HPDDM_KRYLOV_METHOD_NONE; /* need to shift the value since HPDDM_KRYLOV_METHOD_RICHARDSON is not registered in PETSc */
   data->cntl[0] = i;
-  PetscCall(PetscOptionsEnum("-ksp_hpddm_precision", "Precision in which Krylov bases are stored", "KSPHPDDM", KSPHPDDMPrecisionTypes, (PetscEnum)data->precision, (PetscEnum*)&data->precision, NULL));
+  PetscCall(PetscOptionsEnum("-ksp_hpddm_precision", "Precision in which Krylov bases are stored", "KSPHPDDM", KSPHPDDMPrecisionTypes, (PetscEnum)data->precision, (PetscEnum *)&data->precision, NULL));
   PetscCheck(data->precision != KSP_HPDDM_PRECISION_HALF, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_WRONG, "Unhandled %s precision", KSPHPDDMPrecisionTypes[data->precision]);
   PetscCheck(data->precision != KSP_HPDDM_PRECISION_QUADRUPLE || PetscDefined(HAVE_REAL___FLOAT128), PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP_SYS, "Unsupported %s precision", KSPHPDDMPrecisionTypes[data->precision]);
   PetscCheck(std::abs(data->precision - PETSC_KSPHPDDM_DEFAULT_PRECISION) <= 1, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Unhandled mixed %s and %s precisions", KSPHPDDMPrecisionTypes[data->precision], KSPHPDDMPrecisionTypes[PETSC_KSPHPDDM_DEFAULT_PRECISION]);
   if (data->cntl[0] != HPDDM_KRYLOV_METHOD_NONE) {
     if (data->cntl[0] != HPDDM_KRYLOV_METHOD_BCG && data->cntl[0] != HPDDM_KRYLOV_METHOD_BFBCG) {
       i = (data->cntl[1] == static_cast<char>(PETSC_DECIDE) ? HPDDM_VARIANT_LEFT : data->cntl[1]);
-      if (ksp->pc_side_set == PC_SIDE_DEFAULT) PetscCall(PetscOptionsEList("-ksp_hpddm_variant", "Left, right, or variable preconditioning", "KSPHPDDM", HPDDMVariant, PETSC_STATIC_ARRAY_LENGTH(HPDDMVariant), HPDDMVariant[HPDDM_VARIANT_LEFT], &i, NULL));
+      if (ksp->pc_side_set == PC_SIDE_DEFAULT)
+        PetscCall(PetscOptionsEList("-ksp_hpddm_variant", "Left, right, or variable preconditioning", "KSPHPDDM", HPDDMVariant, PETSC_STATIC_ARRAY_LENGTH(HPDDMVariant), HPDDMVariant[HPDDM_VARIANT_LEFT], &i, NULL));
       else if (ksp->pc_side_set == PC_RIGHT) i = HPDDM_VARIANT_RIGHT;
       PetscCheck(ksp->pc_side_set != PC_SYMMETRIC, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Symmetric preconditioning not implemented");
       data->cntl[1] = i;
@@ -64,7 +63,7 @@ static PetscErrorCode KSPSetFromOptions_HPDDM(KSP ksp,PetscOptionItems *PetscOpt
       j = (data->cntl[2] == static_cast<char>(PETSC_DECIDE) ? HPDDM_QR_CHOLQR : ((data->cntl[2] >> 2) & 7));
       PetscCall(PetscOptionsEList("-ksp_hpddm_qr", "Distributed QR factorizations computed with Cholesky QR, Classical or Modified Gram--Schmidt process", "KSPHPDDM", HPDDMQR, PETSC_STATIC_ARRAY_LENGTH(HPDDMQR), HPDDMQR[HPDDM_QR_CHOLQR], &j, NULL));
       data->cntl[2] = static_cast<char>(i) + (static_cast<char>(j) << 2);
-      i = (data->scntl[0] == static_cast<unsigned short>(PETSC_DECIDE) ? PetscMin(30, ksp->max_it) : data->scntl[0]);
+      i             = (data->scntl[0] == static_cast<unsigned short>(PETSC_DECIDE) ? PetscMin(30, ksp->max_it) : data->scntl[0]);
       PetscCall(PetscOptionsRangeInt("-ksp_gmres_restart", "Maximum number of Arnoldi vectors generated per cycle", "KSPHPDDM", i, &i, NULL, PetscMin(1, ksp->max_it), PetscMin(ksp->max_it, std::numeric_limits<unsigned short>::max() - 1)));
       data->scntl[0] = i;
     }
@@ -93,21 +92,21 @@ static PetscErrorCode KSPSetFromOptions_HPDDM(KSP ksp,PetscOptionItems *PetscOpt
       data->cntl[4] = i;
     }
   } else {
-    data->cntl[0] = HPDDM_KRYLOV_METHOD_NONE;
+    data->cntl[0]  = HPDDM_KRYLOV_METHOD_NONE;
     data->scntl[1] = 1;
   }
-  PetscCheck(ksp->nmax >= std::numeric_limits<int>::min() && ksp->nmax <= std::numeric_limits<int>::max(), PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "KSPMatSolve() block size %" PetscInt_FMT " not representable by an integer, which is not handled by KSPHPDDM", ksp->nmax);
+  PetscCheck(ksp->nmax >= std::numeric_limits<int>::min() && ksp->nmax <= std::numeric_limits<int>::max(), PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "KSPMatSolve() block size %" PetscInt_FMT " not representable by an integer, which is not handled by KSPHPDDM",
+             ksp->nmax);
   data->icntl[1] = static_cast<int>(ksp->nmax);
   PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPView_HPDDM(KSP ksp, PetscViewer viewer)
-{
-  KSP_HPDDM            *data = (KSP_HPDDM*)ksp->data;
-  HPDDM::PETScOperator *op = data->op;
+static PetscErrorCode KSPView_HPDDM(KSP ksp, PetscViewer viewer) {
+  KSP_HPDDM            *data  = (KSP_HPDDM *)ksp->data;
+  HPDDM::PETScOperator *op    = data->op;
   const PetscScalar    *array = op ? op->storage() : NULL;
-  PetscBool            ascii;
+  PetscBool             ascii;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &ascii));
@@ -128,12 +127,11 @@ static PetscErrorCode KSPView_HPDDM(KSP ksp, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPSetUp_HPDDM(KSP ksp)
-{
-  KSP_HPDDM *data = (KSP_HPDDM*)ksp->data;
-  Mat       A;
-  PetscInt  n, bs;
-  PetscBool match;
+static PetscErrorCode KSPSetUp_HPDDM(KSP ksp) {
+  KSP_HPDDM *data = (KSP_HPDDM *)ksp->data;
+  Mat        A;
+  PetscInt   n, bs;
+  PetscBool  match;
 
   PetscFunctionBegin;
   PetscCall(KSPGetOperators(ksp, &A, NULL));
@@ -144,9 +142,8 @@ static PetscErrorCode KSPSetUp_HPDDM(KSP ksp)
   data->op = new HPDDM::PETScOperator(ksp, n);
   if (PetscUnlikely(!ksp->setfromoptionscalled || data->cntl[0] == static_cast<char>(PETSC_DECIDE))) { /* what follows is basically a copy/paste of KSPSetFromOptions_HPDDM, with no call to PetscOptions() */
     PetscCall(PetscInfo(ksp, "KSPSetFromOptions() not called or uninitialized internal structure, hardwiring default KSPHPDDM options\n"));
-    if (data->cntl[0] == static_cast<char>(PETSC_DECIDE))
-      data->cntl[0] = 0; /* GMRES by default */
-    if (data->cntl[0] != HPDDM_KRYLOV_METHOD_NONE) { /* following options do not matter with PREONLY */
+    if (data->cntl[0] == static_cast<char>(PETSC_DECIDE)) data->cntl[0] = 0; /* GMRES by default */
+    if (data->cntl[0] != HPDDM_KRYLOV_METHOD_NONE) {                         /* following options do not matter with PREONLY */
       if (data->cntl[0] != HPDDM_KRYLOV_METHOD_BCG && data->cntl[0] != HPDDM_KRYLOV_METHOD_BFBCG) {
         data->cntl[1] = HPDDM_VARIANT_LEFT; /* left preconditioning by default */
         if (ksp->pc_side_set == PC_RIGHT) data->cntl[1] = HPDDM_VARIANT_RIGHT;
@@ -154,16 +151,14 @@ static PetscErrorCode KSPSetUp_HPDDM(KSP ksp)
         if (data->cntl[1] > 0) PetscCall(KSPSetPCSide(ksp, PC_RIGHT));
       }
       if (data->cntl[0] == HPDDM_KRYLOV_METHOD_BGMRES || data->cntl[0] == HPDDM_KRYLOV_METHOD_BGCRODR || data->cntl[0] == HPDDM_KRYLOV_METHOD_BFBCG) {
-        data->rcntl[0] = -1.0; /* no deflation by default */
-        data->scntl[data->cntl[0] != HPDDM_KRYLOV_METHOD_BFBCG] = 1; /* Krylov subspace not enlarged by default */
+        data->rcntl[0]                                          = -1.0; /* no deflation by default */
+        data->scntl[data->cntl[0] != HPDDM_KRYLOV_METHOD_BFBCG] = 1;    /* Krylov subspace not enlarged by default */
       } else data->scntl[data->cntl[0] != HPDDM_KRYLOV_METHOD_BCG] = 0;
       if (data->cntl[0] == HPDDM_KRYLOV_METHOD_GMRES || data->cntl[0] == HPDDM_KRYLOV_METHOD_BGMRES || data->cntl[0] == HPDDM_KRYLOV_METHOD_GCRODR || data->cntl[0] == HPDDM_KRYLOV_METHOD_BGCRODR) {
-        data->cntl[2] = static_cast<char>(HPDDM_ORTHOGONALIZATION_CGS) + (static_cast<char>(HPDDM_QR_CHOLQR) << 2); /* CGS and CholQR by default */
-        data->scntl[0] = PetscMin(30, ksp->max_it); /* restart parameter of 30 by default */
+        data->cntl[2]  = static_cast<char>(HPDDM_ORTHOGONALIZATION_CGS) + (static_cast<char>(HPDDM_QR_CHOLQR) << 2); /* CGS and CholQR by default */
+        data->scntl[0] = PetscMin(30, ksp->max_it);                                                                  /* restart parameter of 30 by default */
       }
-      if (data->cntl[0] == HPDDM_KRYLOV_METHOD_BCG || data->cntl[0] == HPDDM_KRYLOV_METHOD_BFBCG) {
-        data->cntl[1] = HPDDM_QR_CHOLQR; /* CholQR by default */
-      }
+      if (data->cntl[0] == HPDDM_KRYLOV_METHOD_BCG || data->cntl[0] == HPDDM_KRYLOV_METHOD_BFBCG) { data->cntl[1] = HPDDM_QR_CHOLQR; /* CholQR by default */ }
       if (data->cntl[0] == HPDDM_KRYLOV_METHOD_GCRODR || data->cntl[0] == HPDDM_KRYLOV_METHOD_BGCRODR) {
         data->icntl[0] = PetscMin(20, data->scntl[0] - 1); /* recycled subspace of size 20 by default */
         if (!PetscDefined(HAVE_SLEPC) || !PetscDefined(USE_SHARED_LIBRARIES) || data->cntl[0] == HPDDM_KRYLOV_METHOD_GCRODR) {
@@ -175,28 +170,27 @@ static PetscErrorCode KSPSetUp_HPDDM(KSP ksp)
       }
     } else data->scntl[1] = 1;
   }
-  PetscCheck(ksp->nmax >= std::numeric_limits<int>::min() && ksp->nmax <= std::numeric_limits<int>::max(), PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "KSPMatSolve() block size %" PetscInt_FMT " not representable by an integer, which is not handled by KSPHPDDM", ksp->nmax);
+  PetscCheck(ksp->nmax >= std::numeric_limits<int>::min() && ksp->nmax <= std::numeric_limits<int>::max(), PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "KSPMatSolve() block size %" PetscInt_FMT " not representable by an integer, which is not handled by KSPHPDDM",
+             ksp->nmax);
   data->icntl[1] = static_cast<int>(ksp->nmax);
   PetscFunctionReturn(0);
 }
 
-static inline PetscErrorCode KSPHPDDMReset_Private(KSP ksp)
-{
-  KSP_HPDDM *data = (KSP_HPDDM*)ksp->data;
+static inline PetscErrorCode KSPHPDDMReset_Private(KSP ksp) {
+  KSP_HPDDM *data = (KSP_HPDDM *)ksp->data;
 
   PetscFunctionBegin;
   /* cast PETSC_DECIDE into the appropriate types to avoid compiler warnings */
   std::fill_n(data->rcntl, PETSC_STATIC_ARRAY_LENGTH(data->rcntl), static_cast<PetscReal>(PETSC_DECIDE));
   std::fill_n(data->icntl, PETSC_STATIC_ARRAY_LENGTH(data->icntl), static_cast<int>(PETSC_DECIDE));
   std::fill_n(data->scntl, PETSC_STATIC_ARRAY_LENGTH(data->scntl), static_cast<unsigned short>(PETSC_DECIDE));
-  std::fill_n(data->cntl , PETSC_STATIC_ARRAY_LENGTH(data->cntl) , static_cast<char>(PETSC_DECIDE));
+  std::fill_n(data->cntl, PETSC_STATIC_ARRAY_LENGTH(data->cntl), static_cast<char>(PETSC_DECIDE));
   data->precision = PETSC_KSPHPDDM_DEFAULT_PRECISION;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPReset_HPDDM(KSP ksp)
-{
-  KSP_HPDDM *data = (KSP_HPDDM*)ksp->data;
+static PetscErrorCode KSPReset_HPDDM(KSP ksp) {
+  KSP_HPDDM *data = (KSP_HPDDM *)ksp->data;
 
   PetscFunctionBegin;
   if (data->op) {
@@ -207,8 +201,7 @@ static PetscErrorCode KSPReset_HPDDM(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPDestroy_HPDDM(KSP ksp)
-{
+static PetscErrorCode KSPDestroy_HPDDM(KSP ksp) {
   PetscFunctionBegin;
   PetscCall(KSPReset_HPDDM(ksp));
   PetscCall(KSPDestroyDefault(ksp));
@@ -219,16 +212,15 @@ static PetscErrorCode KSPDestroy_HPDDM(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-static inline PetscErrorCode KSPSolve_HPDDM_Private(KSP ksp, const PetscScalar *b, PetscScalar *x, PetscInt n)
-{
-  KSP_HPDDM                           *data = (KSP_HPDDM*)ksp->data;
-  KSPConvergedDefaultCtx              *ctx = (KSPConvergedDefaultCtx*)ksp->cnvP;
+static inline PetscErrorCode KSPSolve_HPDDM_Private(KSP ksp, const PetscScalar *b, PetscScalar *x, PetscInt n) {
+  KSP_HPDDM              *data = (KSP_HPDDM *)ksp->data;
+  KSPConvergedDefaultCtx *ctx  = (KSPConvergedDefaultCtx *)ksp->cnvP;
 #if !PetscDefined(USE_REAL_DOUBLE) || PetscDefined(HAVE_F2CBLASLAPACK)
-  HPDDM::upscaled_type<PetscScalar>   *high[2];
+  HPDDM::upscaled_type<PetscScalar> *high[2];
 #endif
   HPDDM::downscaled_type<PetscScalar> *low[2];
-  const PetscInt                      N = data->op->getDof() * n;
-  PetscBool                           scale;
+  const PetscInt                       N = data->op->getDof() * n;
+  PetscBool                            scale;
 
   PetscFunctionBegin;
   PetscCall(PCGetDiagonalScale(ksp->pc, &scale));
@@ -244,7 +236,7 @@ static inline PetscErrorCode KSPSolve_HPDDM_Private(KSP ksp, const PetscScalar *
   }
   /* initial guess is always nonzero with recycling methods if there is a deflation subspace available */
   if ((data->cntl[0] == HPDDM_KRYLOV_METHOD_GCRODR || data->cntl[0] == HPDDM_KRYLOV_METHOD_BGCRODR) && data->op->storage()) ksp->guess_zero = PETSC_FALSE;
-  ksp->its = 0;
+  ksp->its    = 0;
   ksp->reason = KSP_CONVERGED_ITERATING;
   if (data->precision > PETSC_KSPHPDDM_DEFAULT_PRECISION) { /* Krylov basis stored in higher precision than PetscScalar */
 #if !PetscDefined(USE_REAL_DOUBLE) || PetscDefined(HAVE_F2CBLASLAPACK)
@@ -259,7 +251,7 @@ static inline PetscErrorCode KSPSolve_HPDDM_Private(KSP ksp, const PetscScalar *
 #endif
   } else if (data->precision < PETSC_KSPHPDDM_DEFAULT_PRECISION) { /* Krylov basis stored in lower precision than PetscScalar */
     PetscCall(PetscMalloc1(N, low));
-    low[1] = reinterpret_cast<HPDDM::downscaled_type<PetscScalar>*>(x);
+    low[1] = reinterpret_cast<HPDDM::downscaled_type<PetscScalar> *>(x);
     std::copy_n(b, N, low[0]);
     for (PetscInt i = 0; i < N; ++i) low[1][i] = x[i];
     PetscCall(HPDDM::IterativeMethod::solve(*data->op, low[0], low[1], n, PetscObjectComm((PetscObject)ksp)));
@@ -270,7 +262,7 @@ static inline PetscErrorCode KSPSolve_HPDDM_Private(KSP ksp, const PetscScalar *
     }
     PetscCall(PetscFree(low[0]));
   } else PetscCall(HPDDM::IterativeMethod::solve(*data->op, b, x, n, PetscObjectComm((PetscObject)ksp))); /* Krylov basis stored in the same precision as PetscScalar */
-  if (!ksp->reason) { /* KSPConvergedDefault() is still returning 0 (= KSP_CONVERGED_ITERATING) */
+  if (!ksp->reason) {                                                                                     /* KSPConvergedDefault() is still returning 0 (= KSP_CONVERGED_ITERATING) */
     if (ksp->its >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
     else ksp->reason = KSP_CONVERGED_RTOL; /* early exit by HPDDM, which only happens on breakdowns or convergence */
   }
@@ -278,14 +270,13 @@ static inline PetscErrorCode KSPSolve_HPDDM_Private(KSP ksp, const PetscScalar *
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPSolve_HPDDM(KSP ksp)
-{
-  KSP_HPDDM         *data = (KSP_HPDDM*)ksp->data;
-  Mat               A, B;
+static PetscErrorCode KSPSolve_HPDDM(KSP ksp) {
+  KSP_HPDDM         *data = (KSP_HPDDM *)ksp->data;
+  Mat                A, B;
   PetscScalar       *x, *bt = NULL, **ptr;
   const PetscScalar *b;
-  PetscInt          i, j, n;
-  PetscBool         flg;
+  PetscInt           i, j, n;
+  PetscBool          flg;
 
   PetscFunctionBegin;
   PetscCall(PetscCitationsRegister(HPDDMCitation, &HPDDMCite));
@@ -301,7 +292,7 @@ static PetscErrorCode KSPSolve_HPDDM(KSP ksp)
     PetscCall(MatGetLocalSize(B, &i, NULL));
     j = data->op->getDof();
     if (!flg) i *= n; /* S and T are not scaled identities, cannot use block methods */
-    if (i != j) { /* switching between block and standard methods */
+    if (i != j) {     /* switching between block and standard methods */
       delete data->op;
       data->op = new HPDDM::PETScOperator(ksp, i);
     }
@@ -309,7 +300,7 @@ static PetscErrorCode KSPSolve_HPDDM(KSP ksp)
       PetscCall(PetscMalloc1(i * n, &bt));
       /* from row- to column-major to be consistent with HPDDM */
       HPDDM::Wrapper<PetscScalar>::omatcopy<'T'>(i, n, b, n, bt, i);
-      ptr = const_cast<PetscScalar**>(&b);
+      ptr = const_cast<PetscScalar **>(&b);
       std::swap(*ptr, bt);
       HPDDM::Wrapper<PetscScalar>::imatcopy<'T'>(i, n, x, n, i);
     }
@@ -337,8 +328,7 @@ static PetscErrorCode KSPSolve_HPDDM(KSP ksp)
 
 .seealso: `KSPCreate()`, `KSPType`, `KSPHPDDMGetDeflationMat()`
 @*/
-PetscErrorCode KSPHPDDMSetDeflationMat(KSP ksp, Mat U)
-{
+PetscErrorCode KSPHPDDMSetDeflationMat(KSP ksp, Mat U) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscValidHeaderSpecific(U, MAT_CLASSID, 2);
@@ -360,26 +350,24 @@ PetscErrorCode KSPHPDDMSetDeflationMat(KSP ksp, Mat U)
 
 .seealso: `KSPCreate()`, `KSPType`, `KSPHPDDMSetDeflationMat()`
 @*/
-PetscErrorCode KSPHPDDMGetDeflationMat(KSP ksp, Mat *U)
-{
+PetscErrorCode KSPHPDDMGetDeflationMat(KSP ksp, Mat *U) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   if (U) {
     PetscValidPointer(U, 2);
-    PetscUseMethod(ksp, "KSPHPDDMGetDeflationMat_C", (KSP, Mat*), (ksp, U));
+    PetscUseMethod(ksp, "KSPHPDDMGetDeflationMat_C", (KSP, Mat *), (ksp, U));
   }
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPHPDDMSetDeflationMat_HPDDM(KSP ksp, Mat U)
-{
-  KSP_HPDDM            *data = (KSP_HPDDM*)ksp->data;
-  HPDDM::PETScOperator *op = data->op;
-  Mat                  A;
+static PetscErrorCode KSPHPDDMSetDeflationMat_HPDDM(KSP ksp, Mat U) {
+  KSP_HPDDM            *data = (KSP_HPDDM *)ksp->data;
+  HPDDM::PETScOperator *op   = data->op;
+  Mat                   A;
   const PetscScalar    *array;
   PetscScalar          *copy;
-  PetscInt             m1, M1, m2, M2, n2, N2, ldu;
-  PetscBool            match;
+  PetscInt              m1, M1, m2, M2, n2, N2, ldu;
+  PetscBool             match;
 
   PetscFunctionBegin;
   if (!op) {
@@ -404,14 +392,13 @@ static PetscErrorCode KSPHPDDMSetDeflationMat_HPDDM(KSP ksp, Mat U)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPHPDDMGetDeflationMat_HPDDM(KSP ksp, Mat *U)
-{
-  KSP_HPDDM            *data = (KSP_HPDDM*)ksp->data;
-  HPDDM::PETScOperator *op = data->op;
-  Mat                  A;
+static PetscErrorCode KSPHPDDMGetDeflationMat_HPDDM(KSP ksp, Mat *U) {
+  KSP_HPDDM            *data = (KSP_HPDDM *)ksp->data;
+  HPDDM::PETScOperator *op   = data->op;
+  Mat                   A;
   const PetscScalar    *array;
   PetscScalar          *copy;
-  PetscInt             m1, M1, N2;
+  PetscInt              m1, M1, N2;
 
   PetscFunctionBegin;
   if (!op) {
@@ -420,7 +407,7 @@ static PetscErrorCode KSPHPDDMGetDeflationMat_HPDDM(KSP ksp, Mat *U)
   }
   PetscCheck(data->precision == PETSC_KSPHPDDM_DEFAULT_PRECISION, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "%s != %s", KSPHPDDMPrecisionTypes[data->precision], KSPHPDDMPrecisionTypes[PETSC_KSPHPDDM_DEFAULT_PRECISION]);
   array = op->storage();
-  N2 = op->k().first * op->k().second;
+  N2    = op->k().first * op->k().second;
   if (!array) *U = NULL;
   else {
     PetscCall(KSPGetOperators(ksp, &A, NULL));
@@ -434,14 +421,13 @@ static PetscErrorCode KSPHPDDMGetDeflationMat_HPDDM(KSP ksp, Mat *U)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPMatSolve_HPDDM(KSP ksp, Mat B, Mat X)
-{
-  KSP_HPDDM            *data = (KSP_HPDDM*)ksp->data;
-  HPDDM::PETScOperator *op = data->op;
-  Mat                  A;
+static PetscErrorCode KSPMatSolve_HPDDM(KSP ksp, Mat B, Mat X) {
+  KSP_HPDDM            *data = (KSP_HPDDM *)ksp->data;
+  HPDDM::PETScOperator *op   = data->op;
+  Mat                   A;
   const PetscScalar    *b;
   PetscScalar          *x;
-  PetscInt             n, lda;
+  PetscInt              n, lda;
 
   PetscFunctionBegin;
   PetscCall(PetscCitationsRegister(HPDDMCitation, &HPDDMCite));
@@ -482,8 +468,7 @@ static PetscErrorCode KSPMatSolve_HPDDM(KSP ksp, Mat B, Mat X)
 
 .seealso: `KSPCreate()`, `KSPType`, `KSPHPDDMType`, `KSPHPDDMGetType()`
 @*/
-PetscErrorCode KSPHPDDMSetType(KSP ksp, KSPHPDDMType type)
-{
+PetscErrorCode KSPHPDDMSetType(KSP ksp, KSPHPDDMType type) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscValidLogicalCollectiveEnum(ksp, type, 2);
@@ -504,22 +489,20 @@ PetscErrorCode KSPHPDDMSetType(KSP ksp, KSPHPDDMType type)
 
 .seealso: `KSPCreate()`, `KSPType`, `KSPHPDDMType`, `KSPHPDDMSetType()`
 @*/
-PetscErrorCode KSPHPDDMGetType(KSP ksp, KSPHPDDMType *type)
-{
+PetscErrorCode KSPHPDDMGetType(KSP ksp, KSPHPDDMType *type) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   if (type) {
     PetscValidPointer(type, 2);
-    PetscUseMethod(ksp, "KSPHPDDMGetType_C", (KSP, KSPHPDDMType*), (ksp, type));
+    PetscUseMethod(ksp, "KSPHPDDMGetType_C", (KSP, KSPHPDDMType *), (ksp, type));
   }
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPHPDDMSetType_HPDDM(KSP ksp, KSPHPDDMType type)
-{
-  KSP_HPDDM *data = (KSP_HPDDM*)ksp->data;
-  PetscInt  i;
-  PetscBool flg = PETSC_FALSE;
+static PetscErrorCode KSPHPDDMSetType_HPDDM(KSP ksp, KSPHPDDMType type) {
+  KSP_HPDDM *data = (KSP_HPDDM *)ksp->data;
+  PetscInt   i;
+  PetscBool  flg = PETSC_FALSE;
 
   PetscFunctionBegin;
   for (i = 0; i < static_cast<PetscInt>(PETSC_STATIC_ARRAY_LENGTH(KSPHPDDMTypes)); ++i) {
@@ -532,9 +515,8 @@ static PetscErrorCode KSPHPDDMSetType_HPDDM(KSP ksp, KSPHPDDMType type)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPHPDDMGetType_HPDDM(KSP ksp, KSPHPDDMType *type)
-{
-  KSP_HPDDM *data = (KSP_HPDDM*)ksp->data;
+static PetscErrorCode KSPHPDDMGetType_HPDDM(KSP ksp, KSPHPDDMType *type) {
+  KSP_HPDDM *data = (KSP_HPDDM *)ksp->data;
 
   PetscFunctionBegin;
   PetscCheck(data->cntl[0] != static_cast<char>(PETSC_DECIDE), PETSC_COMM_SELF, PETSC_ERR_ORDER, "KSPHPDDMType not set yet");
@@ -574,16 +556,15 @@ static PetscErrorCode KSPHPDDMGetType_HPDDM(KSP ksp, KSPHPDDMType *type)
 
 .seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPGMRES`, `KSPCG`, `KSPLGMRES`, `KSPDGMRES`
 M*/
-PETSC_EXTERN PetscErrorCode KSPCreate_HPDDM(KSP ksp)
-{
+PETSC_EXTERN PetscErrorCode KSPCreate_HPDDM(KSP ksp) {
   KSP_HPDDM  *data;
-  PetscInt   i;
-  const char *common[] = { KSPGMRES, KSPCG, KSPPREONLY };
-  PetscBool  flg = PETSC_FALSE;
+  PetscInt    i;
+  const char *common[] = {KSPGMRES, KSPCG, KSPPREONLY};
+  PetscBool   flg      = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscCall(PetscNewLog(ksp, &data));
-  ksp->data = (void*)data;
+  ksp->data = (void *)data;
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_PRECONDITIONED, PC_LEFT, 2));
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_UNPRECONDITIONED, PC_RIGHT, 1));
   ksp->ops->solve          = KSPSolve_HPDDM;

@@ -24,32 +24,31 @@ struct _n_User {
   PetscInt  steps;
 
   /* Sensitivity analysis support */
-  PetscReal ftime,x_ob[2];
-  Mat       A;             /* Jacobian matrix */
-  Vec       x,lambda[2];   /* adjoint variables */
+  PetscReal ftime, x_ob[2];
+  Mat       A;            /* Jacobian matrix */
+  Vec       x, lambda[2]; /* adjoint variables */
 
   /* Automatic differentiation support */
-  AdolcCtx  *adctx;
+  AdolcCtx *adctx;
 };
 
-PetscErrorCode FormFunctionGradient(Tao,Vec,PetscReal*,Vec,void*);
+PetscErrorCode FormFunctionGradient(Tao, Vec, PetscReal *, Vec, void *);
 
 /*
   'Passive' RHS function, used in residual evaluations during the time integration.
 */
-static PetscErrorCode RHSFunctionPassive(TS ts,PetscReal t,Vec X,Vec F,void *ctx)
-{
-  User              user = (User)ctx;
+static PetscErrorCode RHSFunctionPassive(TS ts, PetscReal t, Vec X, Vec F, void *ctx) {
+  User               user = (User)ctx;
   PetscScalar       *f;
   const PetscScalar *x;
 
   PetscFunctionBeginUser;
-  PetscCall(VecGetArrayRead(X,&x));
-  PetscCall(VecGetArray(F,&f));
+  PetscCall(VecGetArrayRead(X, &x));
+  PetscCall(VecGetArray(F, &f));
   f[0] = x[1];
-  f[1] = user->mu*(1.-x[0]*x[0])*x[1]-x[0];
-  PetscCall(VecRestoreArrayRead(X,&x));
-  PetscCall(VecRestoreArray(F,&f));
+  f[1] = user->mu * (1. - x[0] * x[0]) * x[1] - x[0];
+  PetscCall(VecRestoreArrayRead(X, &x));
+  PetscCall(VecRestoreArray(F, &f));
   PetscFunctionReturn(0);
 }
 
@@ -57,87 +56,85 @@ static PetscErrorCode RHSFunctionPassive(TS ts,PetscReal t,Vec X,Vec F,void *ctx
   Trace RHS to mark on tape 1 the dependence of f upon x. This tape is used in generating the
   Jacobian transform.
 */
-static PetscErrorCode RHSFunctionActive(TS ts,PetscReal t,Vec X,Vec F,void *ctx)
-{
-  User              user = (User)ctx;
-  PetscReal         mu   = user->mu;
+static PetscErrorCode RHSFunctionActive(TS ts, PetscReal t, Vec X, Vec F, void *ctx) {
+  User               user = (User)ctx;
+  PetscReal          mu   = user->mu;
   PetscScalar       *f;
   const PetscScalar *x;
 
-  adouble           f_a[2];                     /* adouble for dependent variables */
-  adouble           x_a[2];                     /* adouble for independent variables */
+  adouble f_a[2]; /* adouble for dependent variables */
+  adouble x_a[2]; /* adouble for independent variables */
 
   PetscFunctionBeginUser;
-  PetscCall(VecGetArrayRead(X,&x));
-  PetscCall(VecGetArray(F,&f));
+  PetscCall(VecGetArrayRead(X, &x));
+  PetscCall(VecGetArray(F, &f));
 
-  trace_on(1);                                  /* Start of active section */
-  x_a[0] <<= x[0]; x_a[1] <<= x[1];             /* Mark as independent */
+  trace_on(1); /* Start of active section */
+  x_a[0] <<= x[0];
+  x_a[1] <<= x[1]; /* Mark as independent */
   f_a[0] = x_a[1];
-  f_a[1] = mu*(1.-x_a[0]*x_a[0])*x_a[1]-x_a[0];
-  f_a[0] >>= f[0]; f_a[1] >>= f[1];             /* Mark as dependent */
-  trace_off(1);                                 /* End of active section */
+  f_a[1] = mu * (1. - x_a[0] * x_a[0]) * x_a[1] - x_a[0];
+  f_a[0] >>= f[0];
+  f_a[1] >>= f[1]; /* Mark as dependent */
+  trace_off(1);    /* End of active section */
 
-  PetscCall(VecRestoreArrayRead(X,&x));
-  PetscCall(VecRestoreArray(F,&f));
+  PetscCall(VecRestoreArrayRead(X, &x));
+  PetscCall(VecRestoreArray(F, &f));
   PetscFunctionReturn(0);
 }
 
 /*
   Compute the Jacobian w.r.t. x using PETSc-ADOL-C driver.
 */
-static PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec X,Mat A,Mat B,void *ctx)
-{
-  User              user=(User)ctx;
+static PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec X, Mat A, Mat B, void *ctx) {
+  User               user = (User)ctx;
   const PetscScalar *x;
 
   PetscFunctionBeginUser;
-  PetscCall(VecGetArrayRead(X,&x));
-  PetscCall(PetscAdolcComputeRHSJacobian(1,A,x,user->adctx));
-  PetscCall(VecRestoreArrayRead(X,&x));
+  PetscCall(VecGetArrayRead(X, &x));
+  PetscCall(PetscAdolcComputeRHSJacobian(1, A, x, user->adctx));
+  PetscCall(VecRestoreArrayRead(X, &x));
   PetscFunctionReturn(0);
 }
 
 /*
   Monitor timesteps and use interpolation to output at integer multiples of 0.1
 */
-static PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal t,Vec X,void *ctx)
-{
+static PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal t, Vec X, void *ctx) {
   const PetscScalar *x;
-  PetscReal         tfinal, dt, tprev;
-  User              user = (User)ctx;
+  PetscReal          tfinal, dt, tprev;
+  User               user = (User)ctx;
 
   PetscFunctionBeginUser;
-  PetscCall(TSGetTimeStep(ts,&dt));
-  PetscCall(TSGetMaxTime(ts,&tfinal));
-  PetscCall(TSGetPrevTime(ts,&tprev));
-  PetscCall(VecGetArrayRead(X,&x));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"[%.1f] %" PetscInt_FMT " TS %.6f (dt = %.6f) X % 12.6e % 12.6e\n",(double)user->next_output,step,(double)t,(double)dt,(double)PetscRealPart(x[0]),(double)PetscRealPart(x[1])));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"t %.6f (tprev = %.6f) \n",(double)t,(double)tprev));
-  PetscCall(VecGetArrayRead(X,&x));
+  PetscCall(TSGetTimeStep(ts, &dt));
+  PetscCall(TSGetMaxTime(ts, &tfinal));
+  PetscCall(TSGetPrevTime(ts, &tprev));
+  PetscCall(VecGetArrayRead(X, &x));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[%.1f] %" PetscInt_FMT " TS %.6f (dt = %.6f) X % 12.6e % 12.6e\n", (double)user->next_output, step, (double)t, (double)dt, (double)PetscRealPart(x[0]), (double)PetscRealPart(x[1])));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "t %.6f (tprev = %.6f) \n", (double)t, (double)tprev));
+  PetscCall(VecGetArrayRead(X, &x));
   PetscFunctionReturn(0);
 }
 
-int main(int argc,char **argv)
-{
-  TS                 ts = NULL;          /* nonlinear solver */
-  Vec                ic,r;
-  PetscBool          monitor = PETSC_FALSE;
-  PetscScalar        *x_ptr;
-  PetscMPIInt        size;
-  struct _n_User     user;
-  AdolcCtx           *adctx;
-  Tao                tao;
-  KSP                ksp;
-  PC                 pc;
+int main(int argc, char **argv) {
+  TS             ts = NULL; /* nonlinear solver */
+  Vec            ic, r;
+  PetscBool      monitor = PETSC_FALSE;
+  PetscScalar   *x_ptr;
+  PetscMPIInt    size;
+  struct _n_User user;
+  AdolcCtx      *adctx;
+  Tao            tao;
+  KSP            ksp;
+  PC             pc;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
-  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
-  PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
+  PetscCheck(size == 1, PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "This is a uniprocessor example only!");
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Set runtime options and create AdolcCtx
@@ -147,52 +144,53 @@ int main(int argc,char **argv)
   user.next_output = 0.0;
   user.steps       = 0;
   user.ftime       = 0.5;
-  adctx->m = 2;adctx->n = 2;adctx->p = 2;
-  user.adctx = adctx;
+  adctx->m         = 2;
+  adctx->n         = 2;
+  adctx->p         = 2;
+  user.adctx       = adctx;
 
-  PetscCall(PetscOptionsGetReal(NULL,NULL,"-mu",&user.mu,NULL));
-  PetscCall(PetscOptionsGetBool(NULL,NULL,"-monitor",&monitor,NULL));
+  PetscCall(PetscOptionsGetReal(NULL, NULL, "-mu", &user.mu, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-monitor", &monitor, NULL));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Create necessary matrix and vectors, solve same ODE on every process
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscCall(MatCreate(PETSC_COMM_WORLD,&user.A));
-  PetscCall(MatSetSizes(user.A,PETSC_DECIDE,PETSC_DECIDE,2,2));
+  PetscCall(MatCreate(PETSC_COMM_WORLD, &user.A));
+  PetscCall(MatSetSizes(user.A, PETSC_DECIDE, PETSC_DECIDE, 2, 2));
   PetscCall(MatSetFromOptions(user.A));
   PetscCall(MatSetUp(user.A));
-  PetscCall(MatCreateVecs(user.A,&user.x,NULL));
+  PetscCall(MatCreateVecs(user.A, &user.x, NULL));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscCall(VecGetArray(user.x,&x_ptr));
-  x_ptr[0] = 2.0;   x_ptr[1] = 0.66666654321;
-  PetscCall(VecRestoreArray(user.x,&x_ptr));
+  PetscCall(VecGetArray(user.x, &x_ptr));
+  x_ptr[0] = 2.0;
+  x_ptr[1] = 0.66666654321;
+  PetscCall(VecRestoreArray(user.x, &x_ptr));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Trace just once on each tape and put zeros on Jacobian diagonal
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscCall(VecDuplicate(user.x,&r));
-  PetscCall(RHSFunctionActive(ts,0.,user.x,r,&user));
-  PetscCall(VecSet(r,0));
-  PetscCall(MatDiagonalSet(user.A,r,INSERT_VALUES));
+  PetscCall(VecDuplicate(user.x, &r));
+  PetscCall(RHSFunctionActive(ts, 0., user.x, r, &user));
+  PetscCall(VecSet(r, 0));
+  PetscCall(MatDiagonalSet(user.A, r, INSERT_VALUES));
   PetscCall(VecDestroy(&r));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscCall(TSCreate(PETSC_COMM_WORLD,&ts));
-  PetscCall(TSSetType(ts,TSRK));
-  PetscCall(TSSetRHSFunction(ts,NULL,RHSFunctionPassive,&user));
-  PetscCall(TSSetRHSJacobian(ts,user.A,user.A,RHSJacobian,&user));
-  PetscCall(TSSetMaxTime(ts,user.ftime));
-  PetscCall(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP));
-  if (monitor) {
-    PetscCall(TSMonitorSet(ts,Monitor,&user,NULL));
-  }
+  PetscCall(TSCreate(PETSC_COMM_WORLD, &ts));
+  PetscCall(TSSetType(ts, TSRK));
+  PetscCall(TSSetRHSFunction(ts, NULL, RHSFunctionPassive, &user));
+  PetscCall(TSSetRHSJacobian(ts, user.A, user.A, RHSJacobian, &user));
+  PetscCall(TSSetMaxTime(ts, user.ftime));
+  PetscCall(TSSetExactFinalTime(ts, TS_EXACTFINALTIME_MATCHSTEP));
+  if (monitor) { PetscCall(TSMonitorSet(ts, Monitor, &user, NULL)); }
 
-  PetscCall(TSSetTime(ts,0.0));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"mu %g, steps %" PetscInt_FMT ", ftime %g\n",(double)user.mu,user.steps,(double)(user.ftime)));
+  PetscCall(TSSetTime(ts, 0.0));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "mu %g, steps %" PetscInt_FMT ", ftime %g\n", (double)user.mu, user.steps, (double)(user.ftime)));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Save trajectory of solution so that TSAdjointSolve() may be used
@@ -207,43 +205,43 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscCall(TSSolve(ts,user.x));
-  PetscCall(TSGetSolveTime(ts,&(user.ftime)));
-  PetscCall(TSGetStepNumber(ts,&user.steps));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"mu %g, steps %" PetscInt_FMT ", ftime %g\n",(double)user.mu,user.steps,(double)user.ftime));
+  PetscCall(TSSolve(ts, user.x));
+  PetscCall(TSGetSolveTime(ts, &(user.ftime)));
+  PetscCall(TSGetStepNumber(ts, &user.steps));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "mu %g, steps %" PetscInt_FMT ", ftime %g\n", (double)user.mu, user.steps, (double)user.ftime));
 
-  PetscCall(VecGetArray(user.x,&x_ptr));
+  PetscCall(VecGetArray(user.x, &x_ptr));
   user.x_ob[0] = x_ptr[0];
   user.x_ob[1] = x_ptr[1];
-  PetscCall(VecRestoreArray(user.x,&x_ptr));
+  PetscCall(VecRestoreArray(user.x, &x_ptr));
 
-  PetscCall(MatCreateVecs(user.A,&user.lambda[0],NULL));
+  PetscCall(MatCreateVecs(user.A, &user.lambda[0], NULL));
 
   /* Create TAO solver and set desired solution method */
-  PetscCall(TaoCreate(PETSC_COMM_WORLD,&tao));
-  PetscCall(TaoSetType(tao,TAOCG));
+  PetscCall(TaoCreate(PETSC_COMM_WORLD, &tao));
+  PetscCall(TaoSetType(tao, TAOCG));
 
   /* Set initial solution guess */
-  PetscCall(MatCreateVecs(user.A,&ic,NULL));
-  PetscCall(VecGetArray(ic,&x_ptr));
-  x_ptr[0]  = 2.1;
-  x_ptr[1]  = 0.7;
-  PetscCall(VecRestoreArray(ic,&x_ptr));
+  PetscCall(MatCreateVecs(user.A, &ic, NULL));
+  PetscCall(VecGetArray(ic, &x_ptr));
+  x_ptr[0] = 2.1;
+  x_ptr[1] = 0.7;
+  PetscCall(VecRestoreArray(ic, &x_ptr));
 
-  PetscCall(TaoSetSolution(tao,ic));
+  PetscCall(TaoSetSolution(tao, ic));
 
   /* Set routine for function and gradient evaluation */
-  PetscCall(TaoSetObjectiveAndGradient(tao,NULL,FormFunctionGradient,(void *)&user));
+  PetscCall(TaoSetObjectiveAndGradient(tao, NULL, FormFunctionGradient, (void *)&user));
 
   /* Check for any TAO command line options */
   PetscCall(TaoSetFromOptions(tao));
-  PetscCall(TaoGetKSP(tao,&ksp));
+  PetscCall(TaoGetKSP(tao, &ksp));
   if (ksp) {
-    PetscCall(KSPGetPC(ksp,&pc));
-    PetscCall(PCSetType(pc,PCNONE));
+    PetscCall(KSPGetPC(ksp, &pc));
+    PetscCall(PCSetType(pc, PCNONE));
   }
 
-  PetscCall(TaoSetTolerances(tao,1e-10,PETSC_DEFAULT,PETSC_DEFAULT));
+  PetscCall(TaoSetTolerances(tao, 1e-10, PETSC_DEFAULT, PETSC_DEFAULT));
 
   /* SOLVE THE APPLICATION */
   PetscCall(TaoSolve(tao));
@@ -278,33 +276,32 @@ int main(int argc,char **argv)
    f   - the newly evaluated function
    G   - the newly evaluated gradient
 */
-PetscErrorCode FormFunctionGradient(Tao tao,Vec IC,PetscReal *f,Vec G,void *ctx)
-{
-  User              user = (User)ctx;
-  TS                ts;
-  PetscScalar       *x_ptr,*y_ptr;
+PetscErrorCode FormFunctionGradient(Tao tao, Vec IC, PetscReal *f, Vec G, void *ctx) {
+  User         user = (User)ctx;
+  TS           ts;
+  PetscScalar *x_ptr, *y_ptr;
 
   PetscFunctionBeginUser;
-  PetscCall(VecCopy(IC,user->x));
+  PetscCall(VecCopy(IC, user->x));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscCall(TSCreate(PETSC_COMM_WORLD,&ts));
-  PetscCall(TSSetType(ts,TSRK));
-  PetscCall(TSSetRHSFunction(ts,NULL,RHSFunctionPassive,user));
+  PetscCall(TSCreate(PETSC_COMM_WORLD, &ts));
+  PetscCall(TSSetType(ts, TSRK));
+  PetscCall(TSSetRHSFunction(ts, NULL, RHSFunctionPassive, user));
   /*   Set RHS Jacobian  for the adjoint integration */
-  PetscCall(TSSetRHSJacobian(ts,user->A,user->A,RHSJacobian,user));
+  PetscCall(TSSetRHSJacobian(ts, user->A, user->A, RHSJacobian, user));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set time
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscCall(TSSetTime(ts,0.0));
-  PetscCall(TSSetTimeStep(ts,.001));
-  PetscCall(TSSetMaxTime(ts,0.5));
-  PetscCall(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP));
+  PetscCall(TSSetTime(ts, 0.0));
+  PetscCall(TSSetTimeStep(ts, .001));
+  PetscCall(TSSetMaxTime(ts, 0.5));
+  PetscCall(TSSetExactFinalTime(ts, TS_EXACTFINALTIME_MATCHSTEP));
 
-  PetscCall(TSSetTolerances(ts,1e-7,NULL,1e-7,NULL));
+  PetscCall(TSSetTolerances(ts, 1e-7, NULL, 1e-7, NULL));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Save trajectory of solution so that TSAdjointSolve() may be used
@@ -316,29 +313,29 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec IC,PetscReal *f,Vec G,void *ctx)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscCall(TSSetFromOptions(ts));
 
-  PetscCall(TSSolve(ts,user->x));
-  PetscCall(TSGetSolveTime(ts,&user->ftime));
-  PetscCall(TSGetStepNumber(ts,&user->steps));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"mu %.6f, steps %" PetscInt_FMT ", ftime %g\n",(double)user->mu,user->steps,(double)user->ftime));
+  PetscCall(TSSolve(ts, user->x));
+  PetscCall(TSGetSolveTime(ts, &user->ftime));
+  PetscCall(TSGetStepNumber(ts, &user->steps));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "mu %.6f, steps %" PetscInt_FMT ", ftime %g\n", (double)user->mu, user->steps, (double)user->ftime));
 
-  PetscCall(VecGetArray(user->x,&x_ptr));
-  *f   = (x_ptr[0]-user->x_ob[0])*(x_ptr[0]-user->x_ob[0])+(x_ptr[1]-user->x_ob[1])*(x_ptr[1]-user->x_ob[1]);
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Observed value y_ob=[%f; %f], ODE solution y=[%f;%f], Cost function f=%f\n",(double)user->x_ob[0],(double)user->x_ob[1],(double)x_ptr[0],(double)x_ptr[1],(double)(*f)));
+  PetscCall(VecGetArray(user->x, &x_ptr));
+  *f = (x_ptr[0] - user->x_ob[0]) * (x_ptr[0] - user->x_ob[0]) + (x_ptr[1] - user->x_ob[1]) * (x_ptr[1] - user->x_ob[1]);
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Observed value y_ob=[%f; %f], ODE solution y=[%f;%f], Cost function f=%f\n", (double)user->x_ob[0], (double)user->x_ob[1], (double)x_ptr[0], (double)x_ptr[1], (double)(*f)));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Adjoint model starts here
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   /*   Redet initial conditions for the adjoint integration */
-  PetscCall(VecGetArray(user->lambda[0],&y_ptr));
-  y_ptr[0] = 2.*(x_ptr[0]-user->x_ob[0]);
-  y_ptr[1] = 2.*(x_ptr[1]-user->x_ob[1]);
-  PetscCall(VecRestoreArray(user->lambda[0],&y_ptr));
-  PetscCall(VecRestoreArray(user->x,&x_ptr));
-  PetscCall(TSSetCostGradients(ts,1,user->lambda,NULL));
+  PetscCall(VecGetArray(user->lambda[0], &y_ptr));
+  y_ptr[0] = 2. * (x_ptr[0] - user->x_ob[0]);
+  y_ptr[1] = 2. * (x_ptr[1] - user->x_ob[1]);
+  PetscCall(VecRestoreArray(user->lambda[0], &y_ptr));
+  PetscCall(VecRestoreArray(user->x, &x_ptr));
+  PetscCall(TSSetCostGradients(ts, 1, user->lambda, NULL));
 
   PetscCall(TSAdjointSolve(ts));
 
-  PetscCall(VecCopy(user->lambda[0],G));
+  PetscCall(VecCopy(user->lambda[0], G));
 
   PetscCall(TSDestroy(&ts));
   PetscFunctionReturn(0);

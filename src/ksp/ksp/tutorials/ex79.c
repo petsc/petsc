@@ -2,53 +2,51 @@
 
 static char help[] = "Solves a linear system with a block of right-hand sides, apply a preconditioner to the same block.\n\n";
 
-PetscErrorCode MatApply(PC pc, Mat X, Mat Y)
-{
+PetscErrorCode MatApply(PC pc, Mat X, Mat Y) {
   PetscFunctionBeginUser;
-  PetscCall(MatCopy(X,Y,SAME_NONZERO_PATTERN));
+  PetscCall(MatCopy(X, Y, SAME_NONZERO_PATTERN));
   PetscFunctionReturn(0);
 }
 
-int main(int argc,char **args)
-{
-  Mat                X,B;         /* computed solutions and RHS */
-  Mat                A;           /* linear system matrix */
-  KSP                ksp;         /* linear solver context */
-  PC                 pc;          /* preconditioner context */
-  PetscInt           m = 10;
+int main(int argc, char **args) {
+  Mat      X, B; /* computed solutions and RHS */
+  Mat      A;    /* linear system matrix */
+  KSP      ksp;  /* linear solver context */
+  PC       pc;   /* preconditioner context */
+  PetscInt m = 10;
 #if defined(PETSC_USE_LOG)
-  PetscLogEvent      event;
+  PetscLogEvent event;
 #endif
   PetscEventPerfInfo info;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&args,NULL,help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCall(PetscLogDefaultBegin());
-  PetscCall(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
-  PetscCall(MatCreateAIJ(PETSC_COMM_WORLD,m,m,PETSC_DECIDE,PETSC_DECIDE,m,NULL,m,NULL,&A));
-  PetscCall(MatCreateDense(PETSC_COMM_WORLD,m,PETSC_DECIDE,PETSC_DECIDE,m,NULL,&B));
-  PetscCall(MatCreateDense(PETSC_COMM_WORLD,m,PETSC_DECIDE,PETSC_DECIDE,m,NULL,&X));
-  PetscCall(MatSetRandom(A,NULL));
-  PetscCall(MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE));
-  PetscCall(MatShift(A,10.0));
-  PetscCall(MatSetRandom(B,NULL));
-  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
-  PetscCall(KSPSetOperators(ksp,A,A));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-m", &m, NULL));
+  PetscCall(MatCreateAIJ(PETSC_COMM_WORLD, m, m, PETSC_DECIDE, PETSC_DECIDE, m, NULL, m, NULL, &A));
+  PetscCall(MatCreateDense(PETSC_COMM_WORLD, m, PETSC_DECIDE, PETSC_DECIDE, m, NULL, &B));
+  PetscCall(MatCreateDense(PETSC_COMM_WORLD, m, PETSC_DECIDE, PETSC_DECIDE, m, NULL, &X));
+  PetscCall(MatSetRandom(A, NULL));
+  PetscCall(MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE));
+  PetscCall(MatShift(A, 10.0));
+  PetscCall(MatSetRandom(B, NULL));
+  PetscCall(KSPCreate(PETSC_COMM_WORLD, &ksp));
+  PetscCall(KSPSetOperators(ksp, A, A));
   PetscCall(KSPSetFromOptions(ksp));
-  PetscCall(KSPGetPC(ksp,&pc));
-  PetscCall(PCShellSetMatApply(pc,MatApply));
-  PetscCall(KSPMatSolve(ksp,B,X));
-  PetscCall(PCMatApply(pc,B,X));
+  PetscCall(KSPGetPC(ksp, &pc));
+  PetscCall(PCShellSetMatApply(pc, MatApply));
+  PetscCall(KSPMatSolve(ksp, B, X));
+  PetscCall(PCMatApply(pc, B, X));
   PetscCall(MatDestroy(&X));
   PetscCall(MatDestroy(&B));
   PetscCall(MatDestroy(&A));
   PetscCall(KSPDestroy(&ksp));
-  PetscCall(PetscLogEventRegister("PCApply",PC_CLASSID,&event));
-  PetscCall(PetscLogEventGetPerfInfo(PETSC_DETERMINE,event,&info));
-  PetscCheck(!PetscDefined(USE_LOG) || m <= 1 || !info.count,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"PCApply() called %d times",info.count);
-  PetscCall(PetscLogEventRegister("PCMatApply",PC_CLASSID,&event));
-  PetscCall(PetscLogEventGetPerfInfo(PETSC_DETERMINE,event,&info));
-  PetscCheck(!PetscDefined(USE_LOG) || m <= 1 || info.count,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"PCMatApply() never called");
+  PetscCall(PetscLogEventRegister("PCApply", PC_CLASSID, &event));
+  PetscCall(PetscLogEventGetPerfInfo(PETSC_DETERMINE, event, &info));
+  PetscCheck(!PetscDefined(USE_LOG) || m <= 1 || !info.count, PetscObjectComm((PetscObject)ksp), PETSC_ERR_PLIB, "PCApply() called %d times", info.count);
+  PetscCall(PetscLogEventRegister("PCMatApply", PC_CLASSID, &event));
+  PetscCall(PetscLogEventGetPerfInfo(PETSC_DETERMINE, event, &info));
+  PetscCheck(!PetscDefined(USE_LOG) || m <= 1 || info.count, PetscObjectComm((PetscObject)ksp), PETSC_ERR_PLIB, "PCMatApply() never called");
   PetscCall(PetscFinalize());
   return 0;
 }

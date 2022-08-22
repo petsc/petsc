@@ -7,7 +7,7 @@
      pcimpl.h - private include file intended for use by all preconditioners
 */
 
-#include <petsc/private/pcimpl.h>   /*I "petscpc.h" I*/
+#include <petsc/private/pcimpl.h> /*I "petscpc.h" I*/
 #include <petscdevice.h>
 #include <amgx_c.h>
 #include <limits>
@@ -17,110 +17,141 @@
 #include <numeric>
 #include "cuda_runtime.h"
 
-enum class AmgXSmoother { PCG, PCGF, PBiCGStab, GMRES, FGMRES, JacobiL1,
-  BlockJacobi, GS, MulticolorGS, MulticolorILU, MulticolorDILU, ChebyshevPoly, NoSolver };
-enum class AmgXAMGMethod { Classical, Aggregation };
-enum class AmgXSelector { Size2, Size4, Size8, MultiPairwise, PMIS, HMIS };
-enum class AmgXCoarseSolver { DenseLU, NoSolver };
-enum class AmgXAMGCycle { V, W, F, CG, CGF };
+enum class AmgXSmoother {
+  PCG,
+  PCGF,
+  PBiCGStab,
+  GMRES,
+  FGMRES,
+  JacobiL1,
+  BlockJacobi,
+  GS,
+  MulticolorGS,
+  MulticolorILU,
+  MulticolorDILU,
+  ChebyshevPoly,
+  NoSolver
+};
+enum class AmgXAMGMethod {
+  Classical,
+  Aggregation
+};
+enum class AmgXSelector {
+  Size2,
+  Size4,
+  Size8,
+  MultiPairwise,
+  PMIS,
+  HMIS
+};
+enum class AmgXCoarseSolver {
+  DenseLU,
+  NoSolver
+};
+enum class AmgXAMGCycle {
+  V,
+  W,
+  F,
+  CG,
+  CGF
+};
 
-struct AmgXControlMap
-{
-  static const std::map<std::string, AmgXAMGMethod> AMGMethods;
-  static const std::map<std::string, AmgXSmoother> Smoothers;
-  static const std::map<std::string, AmgXSelector> Selectors;
+struct AmgXControlMap {
+  static const std::map<std::string, AmgXAMGMethod>    AMGMethods;
+  static const std::map<std::string, AmgXSmoother>     Smoothers;
+  static const std::map<std::string, AmgXSelector>     Selectors;
   static const std::map<std::string, AmgXCoarseSolver> CoarseSolvers;
-  static const std::map<std::string, AmgXAMGCycle> AMGCycles;
+  static const std::map<std::string, AmgXAMGCycle>     AMGCycles;
 };
 
 const std::map<std::string, AmgXAMGMethod> AmgXControlMap::AMGMethods = {
-  { "CLASSICAL", AmgXAMGMethod::Classical },
-  { "AGGREGATION", AmgXAMGMethod::Aggregation }
+  {"CLASSICAL",   AmgXAMGMethod::Classical  },
+  {"AGGREGATION", AmgXAMGMethod::Aggregation}
 };
 
 const std::map<std::string, AmgXSmoother> AmgXControlMap::Smoothers = {
-  { "PCG", AmgXSmoother::PCG },
-  { "PCGF", AmgXSmoother::PCGF },
-  { "PBICGSTAB", AmgXSmoother::PBiCGStab },
-  { "GMRES", AmgXSmoother::GMRES },
-  { "FGMRES", AmgXSmoother::FGMRES },
-  { "JACOBI_L1", AmgXSmoother::JacobiL1 },
-  { "BLOCK_JACOBI", AmgXSmoother::BlockJacobi },
-  { "GS", AmgXSmoother::GS },
-  { "MULTICOLOR_GS", AmgXSmoother::MulticolorGS },
-  { "MULTICOLOR_ILU", AmgXSmoother::MulticolorILU },
-  { "MULTICOLOR_DILU", AmgXSmoother::MulticolorDILU },
-  { "CHEBYSHEV_POLY", AmgXSmoother::ChebyshevPoly },
-  { "NOSOLVER", AmgXSmoother::NoSolver }
+  {"PCG",             AmgXSmoother::PCG           },
+  {"PCGF",            AmgXSmoother::PCGF          },
+  {"PBICGSTAB",       AmgXSmoother::PBiCGStab     },
+  {"GMRES",           AmgXSmoother::GMRES         },
+  {"FGMRES",          AmgXSmoother::FGMRES        },
+  {"JACOBI_L1",       AmgXSmoother::JacobiL1      },
+  {"BLOCK_JACOBI",    AmgXSmoother::BlockJacobi   },
+  {"GS",              AmgXSmoother::GS            },
+  {"MULTICOLOR_GS",   AmgXSmoother::MulticolorGS  },
+  {"MULTICOLOR_ILU",  AmgXSmoother::MulticolorILU },
+  {"MULTICOLOR_DILU", AmgXSmoother::MulticolorDILU},
+  {"CHEBYSHEV_POLY",  AmgXSmoother::ChebyshevPoly },
+  {"NOSOLVER",        AmgXSmoother::NoSolver      }
 };
 
 const std::map<std::string, AmgXSelector> AmgXControlMap::Selectors = {
-  { "SIZE_2", AmgXSelector::Size2 },
-  { "SIZE_4", AmgXSelector::Size4 },
-  { "SIZE_8", AmgXSelector::Size8 },
-  { "MULTI_PAIRWISE", AmgXSelector::MultiPairwise },
-  { "PMIS", AmgXSelector::PMIS },
-  { "HMIS", AmgXSelector::HMIS }
+  {"SIZE_2",         AmgXSelector::Size2        },
+  {"SIZE_4",         AmgXSelector::Size4        },
+  {"SIZE_8",         AmgXSelector::Size8        },
+  {"MULTI_PAIRWISE", AmgXSelector::MultiPairwise},
+  {"PMIS",           AmgXSelector::PMIS         },
+  {"HMIS",           AmgXSelector::HMIS         }
 };
 
 const std::map<std::string, AmgXCoarseSolver> AmgXControlMap::CoarseSolvers = {
-  { "DENSE_LU_SOLVER", AmgXCoarseSolver::DenseLU },
-  { "NOSOLVER", AmgXCoarseSolver::NoSolver }
+  {"DENSE_LU_SOLVER", AmgXCoarseSolver::DenseLU },
+  {"NOSOLVER",        AmgXCoarseSolver::NoSolver}
 };
 
 const std::map<std::string, AmgXAMGCycle> AmgXControlMap::AMGCycles = {
-  { "V", AmgXAMGCycle::V },
-  { "W", AmgXAMGCycle::W },
-  { "F", AmgXAMGCycle::F },
-  { "CG", AmgXAMGCycle::CG },
-  { "CGF", AmgXAMGCycle::CGF }
+  {"V",   AmgXAMGCycle::V  },
+  {"W",   AmgXAMGCycle::W  },
+  {"F",   AmgXAMGCycle::F  },
+  {"CG",  AmgXAMGCycle::CG },
+  {"CGF", AmgXAMGCycle::CGF}
 };
 
 /*
    Private context (data structure) for the AMGX preconditioner.
 */
 struct PC_AMGX {
-  AMGX_solver_handle solver;
-  AMGX_config_handle cfg;
+  AMGX_solver_handle    solver;
+  AMGX_config_handle    cfg;
   AMGX_resources_handle rsrc;
-  bool solve_state_init;
-  bool rsrc_init;
-  PetscBool verbose;
+  bool                  solve_state_init;
+  bool                  rsrc_init;
+  PetscBool             verbose;
 
   AMGX_matrix_handle A;
   AMGX_vector_handle sol;
   AMGX_vector_handle rhs;
 
-  MPI_Comm comm;
-  PetscMPIInt rank = 0;
+  MPI_Comm    comm;
+  PetscMPIInt rank   = 0;
   PetscMPIInt nranks = 0;
-  int devID = 0;
+  int         devID  = 0;
 
-  void *lib_handle = 0;
+  void       *lib_handle = 0;
   std::string cfg_contents;
 
   // Cached state for re-setup
-  PetscInt nnz;
-  PetscInt nLocalRows;
-  PetscInt nGlobalRows;
-  PetscInt bSize;
-  Mat localA;
+  PetscInt           nnz;
+  PetscInt           nLocalRows;
+  PetscInt           nGlobalRows;
+  PetscInt           bSize;
+  Mat                localA;
   const PetscScalar *values;
 
   // AMG Control parameters
-  AmgXSmoother smoother;
-  AmgXAMGMethod amg_method;
-  AmgXSelector selector;
+  AmgXSmoother     smoother;
+  AmgXAMGMethod    amg_method;
+  AmgXSelector     selector;
   AmgXCoarseSolver coarse_solver;
-  AmgXAMGCycle amg_cycle;
-  PetscInt presweeps;
-  PetscInt postsweeps;
-  PetscInt max_levels;
-  PetscInt aggressive_levels;
-  PetscInt dense_lu_num_rows;
-  PetscScalar strength_threshold;
-  PetscBool print_grid_stats;
-  PetscBool exact_coarse_solve;
+  AmgXAMGCycle     amg_cycle;
+  PetscInt         presweeps;
+  PetscInt         postsweeps;
+  PetscInt         max_levels;
+  PetscInt         aggressive_levels;
+  PetscInt         dense_lu_num_rows;
+  PetscScalar      strength_threshold;
+  PetscBool        print_grid_stats;
+  PetscBool        exact_coarse_solve;
 
   // Smoother control parameters
   PetscScalar jacobi_relaxation_factor;
@@ -131,17 +162,15 @@ static PetscInt s_count = 0;
 
 // Buffer of messages from AmgX
 // Currently necessary hack before we adapt AmgX to print from single rank only
-static std::string amgx_output {};
+static std::string amgx_output{};
 
 // A print callback that allows AmgX to return status messages
-static void print_callback(const char *msg, int length)
-{
+static void print_callback(const char *msg, int length) {
   amgx_output.append(msg);
 }
 
 // Outputs messages from the AmgX message buffer and clears it
-PetscErrorCode amgx_output_messages(PC_AMGX* amgx)
-{
+PetscErrorCode amgx_output_messages(PC_AMGX *amgx) {
   PetscFunctionBegin;
 
   // If AmgX output is enabled and we have a message, output it
@@ -158,17 +187,15 @@ PetscErrorCode amgx_output_messages(PC_AMGX* amgx)
 
 // XXX Need to add call in AmgX API that gracefully destroys everything
 // without abort etc.
-#define PetscCallAmgX(rc) do { \
-  AMGX_RC err = (rc); \
-  char msg[4096]; \
-  switch (err) { \
-    case AMGX_RC_OK: \
-      break; \
-    default: \
-      AMGX_get_error_string(err, msg, 4096); \
-      SETERRQ(amgx->comm, PETSC_ERR_LIB, "%s", msg); \
-  } \
-} while (0)
+#define PetscCallAmgX(rc) \
+  do { \
+    AMGX_RC err = (rc); \
+    char    msg[4096]; \
+    switch (err) { \
+    case AMGX_RC_OK: break; \
+    default: AMGX_get_error_string(err, msg, 4096); SETERRQ(amgx->comm, PETSC_ERR_LIB, "%s", msg); \
+    } \
+  } while (0)
 
 /*
    PCSetUp_AMGX - Prepares for the use of the AmgX preconditioner
@@ -183,9 +210,8 @@ PetscErrorCode amgx_output_messages(PC_AMGX* amgx)
    The interface routine PCSetUp() is not usually called directly by
    the user, but instead is called by PCApply() if necessary.
 */
-static PetscErrorCode PCSetUp_AMGX(PC pc)
-{
-  PC_AMGX   *amgx = (PC_AMGX *)pc->data;
+static PetscErrorCode PCSetUp_AMGX(PC pc) {
+  PC_AMGX  *amgx = (PC_AMGX *)pc->data;
   Mat       Pmat = pc->pmat;
   PetscBool is_dev_ptrs;
 
@@ -202,9 +228,7 @@ static PetscErrorCode PCSetUp_AMGX(PC pc)
       PetscCall(MatMPIAIJGetLocalMat(Pmat, MAT_INITIAL_MATRIX, &amgx->localA));
     }
 
-    if (is_dev_ptrs) {
-      PetscCall(MatConvert(amgx->localA,MATSEQAIJCUSPARSE,MAT_INPLACE_MATRIX,&amgx->localA));
-    }
+    if (is_dev_ptrs) { PetscCall(MatConvert(amgx->localA, MATSEQAIJCUSPARSE, MAT_INPLACE_MATRIX, &amgx->localA)); }
   } else {
     amgx->localA = Pmat;
   }
@@ -232,12 +256,12 @@ static PetscErrorCode PCSetUp_AMGX(PC pc)
     amgx->solve_state_init = true;
 
     // Extract the CSR data
-    PetscBool      done;
+    PetscBool       done;
     const PetscInt *colIndices;
     const PetscInt *rowOffsets;
     PetscCall(MatGetRowIJ(amgx->localA, 0, PETSC_FALSE, PETSC_FALSE, &amgx->nLocalRows, &rowOffsets, &colIndices, &done));
     PetscCheck(done, amgx->comm, PETSC_ERR_PLIB, "MatGetRowIJ was not successful");
-    PetscCheck(amgx->nLocalRows < std::numeric_limits<int>::max(), PETSC_COMM_SELF,PETSC_ERR_PLIB, "AmgX restricted to int local rows but nLocalRows = %" PetscInt_FMT " > max<int>", amgx->nLocalRows);
+    PetscCheck(amgx->nLocalRows < std::numeric_limits<int>::max(), PETSC_COMM_SELF, PETSC_ERR_PLIB, "AmgX restricted to int local rows but nLocalRows = %" PetscInt_FMT " > max<int>", amgx->nLocalRows);
 
     if (is_dev_ptrs) {
       PetscCallCUDA(cudaMemcpy(&amgx->nnz, &rowOffsets[amgx->nLocalRows], sizeof(int), cudaMemcpyDefault));
@@ -252,7 +276,7 @@ static PetscErrorCode PCSetUp_AMGX(PC pc)
 
     // Fetch the number of local rows per rank
     partitionOffsets[0] = 0; /* could use PetscLayoutGetRanges */
-    PetscCallMPI(MPI_Allgather(&amgx->nLocalRows, 1, MPIU_INT, partitionOffsets.data()+1, 1, MPIU_INT, amgx->comm));
+    PetscCallMPI(MPI_Allgather(&amgx->nLocalRows, 1, MPIU_INT, partitionOffsets.data() + 1, 1, MPIU_INT, amgx->comm));
     std::partial_sum(partitionOffsets.begin(), partitionOffsets.end(), partitionOffsets.begin());
 
     // Fetch the number of global rows
@@ -300,15 +324,14 @@ static PetscErrorCode PCSetUp_AMGX(PC pc)
 
    Application Interface Routine: PCApply()
  */
-static PetscErrorCode PCApply_AMGX(PC pc, Vec b, Vec x)
-{
+static PetscErrorCode PCApply_AMGX(PC pc, Vec b, Vec x) {
   PC_AMGX           *amgx = (PC_AMGX *)pc->data;
   PetscScalar       *x_;
   const PetscScalar *b_;
-  PetscBool         is_dev_ptrs;
+  PetscBool          is_dev_ptrs;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompareAny((PetscObject)x,&is_dev_ptrs,VECCUDA,VECMPICUDA,VECSEQCUDA,""));
+  PetscCall(PetscObjectTypeCompareAny((PetscObject)x, &is_dev_ptrs, VECCUDA, VECMPICUDA, VECSEQCUDA, ""));
 
   if (is_dev_ptrs) {
     PetscCall(VecCUDAGetArrayWrite(x, &x_));
@@ -339,8 +362,7 @@ static PetscErrorCode PCApply_AMGX(PC pc, Vec b, Vec x)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCReset_AMGX(PC pc)
-{
+static PetscErrorCode PCReset_AMGX(PC pc) {
   PC_AMGX *amgx = (PC_AMGX *)pc->data;
 
   PetscFunctionBegin;
@@ -365,8 +387,7 @@ static PetscErrorCode PCReset_AMGX(PC pc)
 
    Application Interface Routine: PCDestroy()
 */
-static PetscErrorCode PCDestroy_AMGX(PC pc)
-{
+static PetscErrorCode PCDestroy_AMGX(PC pc) {
   PC_AMGX *amgx = (PC_AMGX *)pc->data;
 
   PetscFunctionBegin;
@@ -389,21 +410,17 @@ static PetscErrorCode PCDestroy_AMGX(PC pc)
 }
 
 template <class T>
-std::string map_reverse_lookup(const std::map<std::string, T>& map, const T& key)
-{
-  for (auto const& m : map) {
-    if (m.second == key) {
-      return m.first;
-    }
+std::string map_reverse_lookup(const std::map<std::string, T> &map, const T &key) {
+  for (auto const &m : map) {
+    if (m.second == key) { return m.first; }
   }
   return "";
 }
 
-static PetscErrorCode PCSetFromOptions_AMGX(PetscOptionItems *PetscOptionsObject,PC pc)
-{
-  PC_AMGX *amgx = (PC_AMGX *)pc->data;
+static PetscErrorCode PCSetFromOptions_AMGX(PetscOptionItems *PetscOptionsObject, PC pc) {
+  PC_AMGX      *amgx          = (PC_AMGX *)pc->data;
   constexpr int MAX_PARAM_LEN = 128;
-  char option[MAX_PARAM_LEN];
+  char          option[MAX_PARAM_LEN];
 
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "AmgX options");
@@ -412,9 +429,7 @@ static PetscErrorCode PCSetFromOptions_AMGX(PetscOptionItems *PetscOptionsObject
 
   // Set exact coarse solve
   PetscCall(PetscOptionsBool("-pc_amgx_exact_coarse_solve", "AmgX AMG Exact Coarse Solve", "", amgx->exact_coarse_solve, &amgx->exact_coarse_solve, NULL));
-  if (amgx->exact_coarse_solve) {
-    amgx->cfg_contents += "exact_coarse_solve=1,";
-  }
+  if (amgx->exact_coarse_solve) { amgx->cfg_contents += "exact_coarse_solve=1,"; }
 
   amgx->cfg_contents += "solver(amg)=AMG,";
 
@@ -488,9 +503,7 @@ static PetscErrorCode PCSetFromOptions_AMGX(PetscOptionItems *PetscOptionsObject
 
   // Set aggressive_levels
   PetscCall(PetscOptionsInt("-pc_amgx_aggressive_levels", "AmgX AMG Presweep Count", "", amgx->aggressive_levels, &amgx->aggressive_levels, NULL));
-  if (amgx->aggressive_levels > 0) {
-    amgx->cfg_contents += "amg:aggressive_levels=" + std::to_string(amgx->aggressive_levels) + ",";
-  }
+  if (amgx->aggressive_levels > 0) { amgx->cfg_contents += "amg:aggressive_levels=" + std::to_string(amgx->aggressive_levels) + ","; }
 
   // Set coarse solver
   std::string def_coarse_solver = map_reverse_lookup(AmgXControlMap::CoarseSolvers, amgx->coarse_solver);
@@ -506,9 +519,7 @@ static PetscErrorCode PCSetFromOptions_AMGX(PetscOptionItems *PetscOptionsObject
   // Set output control parameters
   PetscCall(PetscOptionsBool("-pc_amgx_print_grid_stats", "AmgX Print Grid Stats", "", amgx->print_grid_stats, &amgx->print_grid_stats, NULL));
 
-  if (amgx->print_grid_stats) {
-    amgx->cfg_contents += "amg:print_grid_stats=1,";
-  }
+  if (amgx->print_grid_stats) { amgx->cfg_contents += "amg:print_grid_stats=1,"; }
   amgx->cfg_contents += "amg:monitor_residual=0";
 
   // Set whether AmgX output will be seen
@@ -517,9 +528,8 @@ static PetscErrorCode PCSetFromOptions_AMGX(PetscOptionItems *PetscOptionsObject
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCView_AMGX(PC pc, PetscViewer viewer)
-{
-  PC_AMGX *amgx = (PC_AMGX *)pc->data;
+static PetscErrorCode PCView_AMGX(PC pc, PetscViewer viewer) {
+  PC_AMGX  *amgx = (PC_AMGX *)pc->data;
   PetscBool iascii;
 
   PetscFunctionBegin;
@@ -570,39 +580,38 @@ static PetscErrorCode PCView_AMGX(PC pc, PetscViewer viewer)
 .seealso:  `PCGAMG`, `PCHYPRE`, `PCMG`, `PCAmgXGetResources()`, `PCCreate()`, `PCSetType()`, `PCType` (for list of available types), `PC`
 M*/
 
-PETSC_EXTERN PetscErrorCode PCCreate_AMGX(PC pc)
-{
+PETSC_EXTERN PetscErrorCode PCCreate_AMGX(PC pc) {
   PC_AMGX *amgx;
 
   PetscFunctionBegin;
   PetscCall(PetscNewLog(pc, &amgx));
-  pc->ops->apply = PCApply_AMGX;
+  pc->ops->apply          = PCApply_AMGX;
   pc->ops->setfromoptions = PCSetFromOptions_AMGX;
-  pc->ops->setup = PCSetUp_AMGX;
-  pc->ops->view = PCView_AMGX;
-  pc->ops->destroy = PCDestroy_AMGX;
-  pc->ops->reset = PCReset_AMGX;
-  pc->data = (void *)amgx;
+  pc->ops->setup          = PCSetUp_AMGX;
+  pc->ops->view           = PCView_AMGX;
+  pc->ops->destroy        = PCDestroy_AMGX;
+  pc->ops->reset          = PCReset_AMGX;
+  pc->data                = (void *)amgx;
 
   // Set the defaults
-  amgx->selector = AmgXSelector::PMIS;
-  amgx->smoother = AmgXSmoother::BlockJacobi;
-  amgx->amg_method = AmgXAMGMethod::Classical;
-  amgx->coarse_solver = AmgXCoarseSolver::DenseLU;
-  amgx->amg_cycle = AmgXAMGCycle::V;
-  amgx->exact_coarse_solve = PETSC_TRUE;
-  amgx->presweeps = 1;
-  amgx->postsweeps = 1;
-  amgx->max_levels = 100;
-  amgx->strength_threshold = 0.5;
-  amgx->aggressive_levels = 0;
-  amgx->dense_lu_num_rows = 1;
+  amgx->selector                 = AmgXSelector::PMIS;
+  amgx->smoother                 = AmgXSmoother::BlockJacobi;
+  amgx->amg_method               = AmgXAMGMethod::Classical;
+  amgx->coarse_solver            = AmgXCoarseSolver::DenseLU;
+  amgx->amg_cycle                = AmgXAMGCycle::V;
+  amgx->exact_coarse_solve       = PETSC_TRUE;
+  amgx->presweeps                = 1;
+  amgx->postsweeps               = 1;
+  amgx->max_levels               = 100;
+  amgx->strength_threshold       = 0.5;
+  amgx->aggressive_levels        = 0;
+  amgx->dense_lu_num_rows        = 1;
   amgx->jacobi_relaxation_factor = 0.9;
-  amgx->gs_symmetric = PETSC_FALSE;
-  amgx->print_grid_stats = PETSC_FALSE;
-  amgx->verbose = PETSC_FALSE;
-  amgx->rsrc_init = false;
-  amgx->solve_state_init = false;
+  amgx->gs_symmetric             = PETSC_FALSE;
+  amgx->print_grid_stats         = PETSC_FALSE;
+  amgx->verbose                  = PETSC_FALSE;
+  amgx->rsrc_init                = false;
+  amgx->solve_state_init         = false;
 
   s_count++;
 
@@ -637,8 +646,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_AMGX(PC pc)
 
 .seealso: `PCCreate_AMGX()`
 @*/
-PETSC_EXTERN PetscErrorCode PCAmgXGetResources(PC pc, void* rsrc_out)
-{
+PETSC_EXTERN PetscErrorCode PCAmgXGetResources(PC pc, void *rsrc_out) {
   PC_AMGX *amgx = (PC_AMGX *)pc->data;
 
   PetscFunctionBegin;
@@ -649,7 +657,6 @@ PETSC_EXTERN PetscErrorCode PCAmgXGetResources(PC pc, void* rsrc_out)
     amgx->rsrc_init = true;
   }
 
-  *static_cast<AMGX_resources_handle*>(rsrc_out) = amgx->rsrc;
+  *static_cast<AMGX_resources_handle *>(rsrc_out) = amgx->rsrc;
   PetscFunctionReturn(0);
 }
-

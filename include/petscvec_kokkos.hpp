@@ -6,17 +6,17 @@
 /* SUBMANSEC = Vec */
 
 #if defined(PETSC_HAVE_KOKKOS)
-  #if defined(petsccomplexlib)
-    #error "Error: You must include petscvec_kokkos.hpp before other petsc headers in this C++ file to use petsc complex with Kokkos"
-  #endif
+#if defined(petsccomplexlib)
+#error "Error: You must include petscvec_kokkos.hpp before other petsc headers in this C++ file to use petsc complex with Kokkos"
+#endif
 
-  #define PETSC_DESIRE_KOKKOS_COMPLEX   1   /* To control the definition of petsccomplexlib in petscsystypes.h */
+#define PETSC_DESIRE_KOKKOS_COMPLEX 1 /* To control the definition of petsccomplexlib in petscsystypes.h */
 #endif
 
 #include <petscvec.h>
 
 #if defined(PETSC_HAVE_KOKKOS)
-  #include <Kokkos_Core.hpp>
+#include <Kokkos_Core.hpp>
 
 /*@C
      VecGetKokkosView - Returns a constant Kokkos View that contains up-to-date data of a vector in the specified memory space.
@@ -50,8 +50,10 @@
 .seealso: `VecRestoreKokkosView()`, `VecRestoreArray()`, `VecGetKokkosViewWrite()`, `VecGetArrayRead()`, `VecGetArrays()`, `VecGetArrayF90()`, `VecGetArrayReadF90()`, `VecPlaceArray()`, `VecGetArray2d()`,
           `VecGetArrayPair()`, `VecRestoreArrayPair()`, `VecGetArrayWrite()`, `VecRestoreArrayWrite()`
 @*/
-  template<class MemorySpace> PetscErrorCode VecGetKokkosView (Vec,Kokkos::View<const PetscScalar*,MemorySpace>*);
-  template<class MemorySpace> PetscErrorCode VecGetKokkosView (Vec,Kokkos::View<PetscScalar*,MemorySpace>*);
+template <class MemorySpace>
+PetscErrorCode VecGetKokkosView(Vec, Kokkos::View<const PetscScalar *, MemorySpace> *);
+template <class MemorySpace>
+PetscErrorCode VecGetKokkosView(Vec, Kokkos::View<PetscScalar *, MemorySpace> *);
 
 /*@C
    VecRestoreKokkosView - Returns a Kokkos View gotten by `VecGetKokkosView()`.
@@ -76,9 +78,12 @@
 .seealso: `VecGetKokkosView()`, `VecRestoreKokkosViewWrite()`, `VecRestoreArray()`, `VecGetArrayRead()`, `VecGetArrays()`, `VecGetArrayF90()`, `VecGetArrayReadF90()`, `VecPlaceArray()`, `VecGetArray2d()`,
           `VecGetArrayPair()`, `VecRestoreArrayPair()`, `VecGetArrayWrite()`, `VecRestoreArrayWrite()`
 @*/
-  template<class MemorySpace> PetscErrorCode VecRestoreKokkosView(Vec,Kokkos::View<const PetscScalar*,MemorySpace>*){return 0;}
-  template<class MemorySpace> PetscErrorCode VecRestoreKokkosView(Vec,Kokkos::View<PetscScalar*,MemorySpace>*);
-
+template <class MemorySpace>
+PetscErrorCode VecRestoreKokkosView(Vec, Kokkos::View<const PetscScalar *, MemorySpace> *) {
+  return 0;
+}
+template <class MemorySpace>
+PetscErrorCode VecRestoreKokkosView(Vec, Kokkos::View<PetscScalar *, MemorySpace> *);
 
 /*@C
    VecGetKokkosViewWrite - Returns a Kokkos View that contains the array of a vector in the specified memory space.
@@ -109,7 +114,8 @@
 .seealso: `VecRestoreKokkosViewWrite()`, `VecRestoreKokkosView()`, `VecGetKokkosView()`, `VecRestoreArray()`, `VecGetArrayRead()`, `VecGetArrays()`, `VecGetArrayF90()`, `VecGetArrayReadF90()`, `VecPlaceArray()`, `VecGetArray2d()`,
           `VecGetArrayPair()`, `VecRestoreArrayPair()`, `VecGetArrayWrite()`, `VecRestoreArrayWrite()`
 @*/
-  template<class MemorySpace> PetscErrorCode VecGetKokkosViewWrite    (Vec,Kokkos::View<PetscScalar*,MemorySpace>*);
+template <class MemorySpace>
+PetscErrorCode VecGetKokkosViewWrite(Vec, Kokkos::View<PetscScalar *, MemorySpace> *);
 
 /*@C
    VecRestoreKokkosViewWrite - Returns a Kokkos View gotten with `VecGetKokkosViewWrite()`.
@@ -134,12 +140,13 @@
 .seealso: `VecGetKokkosViewWrite()`, `VecGetKokkosView()`, `VecGetKokkosView()`, `VecRestoreArray()`, `VecGetArrayRead()`, `VecGetArrays()`, `VecGetArrayF90()`, `VecGetArrayReadF90()`, `VecPlaceArray()`, `VecGetArray2d()`,
           `VecGetArrayPair()`, `VecRestoreArrayPair()`, `VecGetArrayWrite()`, `VecRestoreArrayWrite()`
 @*/
-  template<class MemorySpace> PetscErrorCode VecRestoreKokkosViewWrite(Vec,Kokkos::View<PetscScalar*,MemorySpace>*);
+template <class MemorySpace>
+PetscErrorCode VecRestoreKokkosViewWrite(Vec, Kokkos::View<PetscScalar *, MemorySpace> *);
 
- #if defined(PETSC_HAVE_COMPLEX) && defined(PETSC_USE_COMPLEX)
-  static_assert(std::alignment_of<Kokkos::complex<PetscReal>>::value == std::alignment_of<std::complex<PetscReal>>::value,
-   "Alignment of Kokkos::complex<PetscReal> and std::complex<PetscReal> mismatch. Reconfigure your Kokkos with -DKOKKOS_ENABLE_COMPLEX_ALIGN=OFF, or let PETSc install Kokkos for you with --download-kokkos --download-kokkos-kernels");
- #endif
+#if defined(PETSC_HAVE_COMPLEX) && defined(PETSC_USE_COMPLEX)
+static_assert(std::alignment_of<Kokkos::complex<PetscReal>>::value == std::alignment_of<std::complex<PetscReal>>::value,
+              "Alignment of Kokkos::complex<PetscReal> and std::complex<PetscReal> mismatch. Reconfigure your Kokkos with -DKOKKOS_ENABLE_COMPLEX_ALIGN=OFF, or let PETSc install Kokkos for you with --download-kokkos --download-kokkos-kernels");
+#endif
 
 #endif
 

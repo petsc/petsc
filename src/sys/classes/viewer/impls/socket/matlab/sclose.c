@@ -39,13 +39,19 @@ PETSC_EXTERN int close(int);
 #endif
 
 #include <mex.h>
-#define PETSC_MEX_ERROR(a) {mexErrMsgTxt(a); return;}
-typedef struct { int onoff; int time; } Linger;
+#define PETSC_MEX_ERROR(a) \
+  { \
+    mexErrMsgTxt(a); \
+    return; \
+  }
+typedef struct {
+  int onoff;
+  int time;
+} Linger;
 /*-----------------------------------------------------------------*/
 /*                                                                 */
 /*-----------------------------------------------------------------*/
-PETSC_EXTERN void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
-{
+PETSC_EXTERN void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
   int    t = 0;
   Linger linger;
 
@@ -55,13 +61,11 @@ PETSC_EXTERN void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *p
   if (!nrhs) PETSC_MEX_ERROR("Needs one argument, the port");
   t = (int)*mxGetPr(prhs[0]);
 
-  if (setsockopt(t,SOL_SOCKET,SO_LINGER,(char*)&linger,sizeof(Linger))) PETSC_MEX_ERROR("Setting linger");
+  if (setsockopt(t, SOL_SOCKET, SO_LINGER, (char *)&linger, sizeof(Linger))) PETSC_MEX_ERROR("Setting linger");
   if (close(t)) PETSC_MEX_ERROR("closing socket");
   return;
 }
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
   return 0;
 }
-

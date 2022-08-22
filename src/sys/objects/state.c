@@ -2,7 +2,7 @@
 /*
      Provides utility routines for manulating any type of PETSc object.
 */
-#include <petsc/private/petscimpl.h>  /*I   "petscsys.h"    I*/
+#include <petsc/private/petscimpl.h> /*I   "petscsys.h"    I*/
 
 /*@C
    PetscObjectStateGet - Gets the state of any PetscObject,
@@ -29,11 +29,10 @@
 .seealso: `PetscObjectStateIncrease()`, `PetscObjectStateSet()`
 
 @*/
-PetscErrorCode PetscObjectStateGet(PetscObject obj,PetscObjectState *state)
-{
+PetscErrorCode PetscObjectStateGet(PetscObject obj, PetscObjectState *state) {
   PetscFunctionBegin;
-  PetscValidHeader(obj,1);
-  PetscValidIntPointer(state,2);
+  PetscValidHeader(obj, 1);
+  PetscValidIntPointer(state, 2);
   *state = obj->state;
   PetscFunctionReturn(0);
 }
@@ -61,10 +60,9 @@ PetscErrorCode PetscObjectStateGet(PetscObject obj,PetscObjectState *state)
 .seealso: `PetscObjectStateGet()`, `PetscObjectStateIncrease()`
 
 @*/
-PetscErrorCode PetscObjectStateSet(PetscObject obj,PetscObjectState state)
-{
+PetscErrorCode PetscObjectStateSet(PetscObject obj, PetscObjectState state) {
   PetscFunctionBegin;
-  PetscValidHeader(obj,1);
+  PetscValidHeader(obj, 1);
   obj->state = state;
   PetscFunctionReturn(0);
 }
@@ -91,8 +89,7 @@ PetscInt PetscObjectComposedDataMax = 10;
           `PetscObjectCompose()`,  `PetscObjectQuery()`, `PetscObjectComposedDataSetRealstar()`, `PetscObjectComposedDataGetScalarstar()`,
           `PetscObjectComposedDataSetScalarstar()`, `PetscObjectComposedDataSetScalarstar()`
 @*/
-PetscErrorCode PetscObjectComposedDataRegister(PetscInt *id)
-{
+PetscErrorCode PetscObjectComposedDataRegister(PetscInt *id) {
   static PetscInt globalcurrentstate = 0;
 
   PetscFunctionBegin;
@@ -101,104 +98,103 @@ PetscErrorCode PetscObjectComposedDataRegister(PetscInt *id)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscObjectComposedDataIncreaseInt(PetscObject obj)
-{
-  PetscInt         *ar = obj->intcomposeddata,*new_ar,n = obj->int_idmax,new_n;
-  PetscObjectState *ir = obj->intcomposedstate,*new_ir;
+PetscErrorCode PetscObjectComposedDataIncreaseInt(PetscObject obj) {
+  PetscInt         *ar = obj->intcomposeddata, *new_ar, n = obj->int_idmax, new_n;
+  PetscObjectState *ir = obj->intcomposedstate, *new_ir;
 
   PetscFunctionBegin;
   new_n = PetscObjectComposedDataMax;
-  PetscCall(PetscCalloc2(new_n,&new_ar,new_n,&new_ir));
-  PetscCall(PetscMemcpy(new_ar,ar,n*sizeof(PetscInt)));
-  PetscCall(PetscMemcpy(new_ir,ir,n*sizeof(PetscObjectState)));
-  PetscCall(PetscFree2(ar,ir));
-  obj->int_idmax       = new_n;
-  obj->intcomposeddata = new_ar; obj->intcomposedstate = new_ir;
+  PetscCall(PetscCalloc2(new_n, &new_ar, new_n, &new_ir));
+  PetscCall(PetscMemcpy(new_ar, ar, n * sizeof(PetscInt)));
+  PetscCall(PetscMemcpy(new_ir, ir, n * sizeof(PetscObjectState)));
+  PetscCall(PetscFree2(ar, ir));
+  obj->int_idmax        = new_n;
+  obj->intcomposeddata  = new_ar;
+  obj->intcomposedstate = new_ir;
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscObjectComposedDataIncreaseIntstar(PetscObject obj)
-{
-  PetscInt         **ar = obj->intstarcomposeddata,**new_ar,n = obj->intstar_idmax,new_n;
-  PetscObjectState *ir  = obj->intstarcomposedstate,*new_ir;
+PetscErrorCode PetscObjectComposedDataIncreaseIntstar(PetscObject obj) {
+  PetscInt        **ar = obj->intstarcomposeddata, **new_ar, n = obj->intstar_idmax, new_n;
+  PetscObjectState *ir = obj->intstarcomposedstate, *new_ir;
 
   PetscFunctionBegin;
   new_n = PetscObjectComposedDataMax;
-  PetscCall(PetscCalloc2(new_n,&new_ar,new_n,&new_ir));
-  PetscCall(PetscMemcpy(new_ar,ar,n*sizeof(PetscInt*)));
-  PetscCall(PetscMemcpy(new_ir,ir,n*sizeof(PetscObjectState)));
-  PetscCall(PetscFree2(ar,ir));
+  PetscCall(PetscCalloc2(new_n, &new_ar, new_n, &new_ir));
+  PetscCall(PetscMemcpy(new_ar, ar, n * sizeof(PetscInt *)));
+  PetscCall(PetscMemcpy(new_ir, ir, n * sizeof(PetscObjectState)));
+  PetscCall(PetscFree2(ar, ir));
   obj->intstar_idmax        = new_n;
   obj->intstarcomposeddata  = new_ar;
   obj->intstarcomposedstate = new_ir;
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscObjectComposedDataIncreaseReal(PetscObject obj)
-{
-  PetscReal        *ar = obj->realcomposeddata,*new_ar;
-  PetscObjectState *ir = obj->realcomposedstate,*new_ir;
-  PetscInt         n   = obj->real_idmax,new_n;
+PetscErrorCode PetscObjectComposedDataIncreaseReal(PetscObject obj) {
+  PetscReal        *ar = obj->realcomposeddata, *new_ar;
+  PetscObjectState *ir = obj->realcomposedstate, *new_ir;
+  PetscInt          n  = obj->real_idmax, new_n;
 
   PetscFunctionBegin;
   new_n = PetscObjectComposedDataMax;
-  PetscCall(PetscCalloc2(new_n,&new_ar,new_n,&new_ir));
-  PetscCall(PetscMemcpy(new_ar,ar,n*sizeof(PetscReal)));
-  PetscCall(PetscMemcpy(new_ir,ir,n*sizeof(PetscObjectState)));
-  PetscCall(PetscFree2(ar,ir));
-  obj->real_idmax       = new_n;
-  obj->realcomposeddata = new_ar; obj->realcomposedstate = new_ir;
+  PetscCall(PetscCalloc2(new_n, &new_ar, new_n, &new_ir));
+  PetscCall(PetscMemcpy(new_ar, ar, n * sizeof(PetscReal)));
+  PetscCall(PetscMemcpy(new_ir, ir, n * sizeof(PetscObjectState)));
+  PetscCall(PetscFree2(ar, ir));
+  obj->real_idmax        = new_n;
+  obj->realcomposeddata  = new_ar;
+  obj->realcomposedstate = new_ir;
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscObjectComposedDataIncreaseRealstar(PetscObject obj)
-{
-  PetscReal        **ar = obj->realstarcomposeddata,**new_ar;
-  PetscObjectState *ir  = obj->realstarcomposedstate,*new_ir;
-  PetscInt         n    = obj->realstar_idmax,new_n;
+PetscErrorCode PetscObjectComposedDataIncreaseRealstar(PetscObject obj) {
+  PetscReal       **ar = obj->realstarcomposeddata, **new_ar;
+  PetscObjectState *ir = obj->realstarcomposedstate, *new_ir;
+  PetscInt          n  = obj->realstar_idmax, new_n;
 
   PetscFunctionBegin;
   new_n = PetscObjectComposedDataMax;
-  PetscCall(PetscCalloc2(new_n,&new_ar,new_n,&new_ir));
-  PetscCall(PetscMemcpy(new_ar,ar,n*sizeof(PetscReal*)));
-  PetscCall(PetscMemcpy(new_ir,ir,n*sizeof(PetscObjectState)));
-  PetscCall(PetscFree2(ar,ir));
-  obj->realstar_idmax       = new_n;
-  obj->realstarcomposeddata = new_ar; obj->realstarcomposedstate = new_ir;
+  PetscCall(PetscCalloc2(new_n, &new_ar, new_n, &new_ir));
+  PetscCall(PetscMemcpy(new_ar, ar, n * sizeof(PetscReal *)));
+  PetscCall(PetscMemcpy(new_ir, ir, n * sizeof(PetscObjectState)));
+  PetscCall(PetscFree2(ar, ir));
+  obj->realstar_idmax        = new_n;
+  obj->realstarcomposeddata  = new_ar;
+  obj->realstarcomposedstate = new_ir;
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscObjectComposedDataIncreaseScalar(PetscObject obj)
-{
-  PetscScalar      *ar = obj->scalarcomposeddata,*new_ar;
-  PetscObjectState *ir = obj->scalarcomposedstate,*new_ir;
-  PetscInt         n   = obj->scalar_idmax,new_n;
+PetscErrorCode PetscObjectComposedDataIncreaseScalar(PetscObject obj) {
+  PetscScalar      *ar = obj->scalarcomposeddata, *new_ar;
+  PetscObjectState *ir = obj->scalarcomposedstate, *new_ir;
+  PetscInt          n  = obj->scalar_idmax, new_n;
 
   PetscFunctionBegin;
   new_n = PetscObjectComposedDataMax;
-  PetscCall(PetscCalloc2(new_n,&new_ar,new_n,&new_ir));
-  PetscCall(PetscMemcpy(new_ar,ar,n*sizeof(PetscScalar)));
-  PetscCall(PetscMemcpy(new_ir,ir,n*sizeof(PetscObjectState)));
-  PetscCall(PetscFree2(ar,ir));
-  obj->scalar_idmax       = new_n;
-  obj->scalarcomposeddata = new_ar; obj->scalarcomposedstate = new_ir;
+  PetscCall(PetscCalloc2(new_n, &new_ar, new_n, &new_ir));
+  PetscCall(PetscMemcpy(new_ar, ar, n * sizeof(PetscScalar)));
+  PetscCall(PetscMemcpy(new_ir, ir, n * sizeof(PetscObjectState)));
+  PetscCall(PetscFree2(ar, ir));
+  obj->scalar_idmax        = new_n;
+  obj->scalarcomposeddata  = new_ar;
+  obj->scalarcomposedstate = new_ir;
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscObjectComposedDataIncreaseScalarstar(PetscObject obj)
-{
-  PetscScalar      **ar = obj->scalarstarcomposeddata,**new_ar;
-  PetscObjectState *ir  = obj->scalarstarcomposedstate,*new_ir;
-  PetscInt         n    = obj->scalarstar_idmax,new_n;
+PetscErrorCode PetscObjectComposedDataIncreaseScalarstar(PetscObject obj) {
+  PetscScalar     **ar = obj->scalarstarcomposeddata, **new_ar;
+  PetscObjectState *ir = obj->scalarstarcomposedstate, *new_ir;
+  PetscInt          n  = obj->scalarstar_idmax, new_n;
 
   PetscFunctionBegin;
   new_n = PetscObjectComposedDataMax;
-  PetscCall(PetscCalloc2(new_n,&new_ar,new_n,&new_ir));
-  PetscCall(PetscMemcpy(new_ar,ar,n*sizeof(PetscScalar*)));
-  PetscCall(PetscMemcpy(new_ir,ir,n*sizeof(PetscObjectState)));
-  PetscCall(PetscFree2(ar,ir));
-  obj->scalarstar_idmax       = new_n;
-  obj->scalarstarcomposeddata = new_ar; obj->scalarstarcomposedstate = new_ir;
+  PetscCall(PetscCalloc2(new_n, &new_ar, new_n, &new_ir));
+  PetscCall(PetscMemcpy(new_ar, ar, n * sizeof(PetscScalar *)));
+  PetscCall(PetscMemcpy(new_ir, ir, n * sizeof(PetscObjectState)));
+  PetscCall(PetscFree2(ar, ir));
+  obj->scalarstar_idmax        = new_n;
+  obj->scalarstarcomposeddata  = new_ar;
+  obj->scalarstarcomposedstate = new_ir;
   PetscFunctionReturn(0);
 }
 
@@ -220,8 +216,7 @@ PetscErrorCode PetscObjectComposedDataIncreaseScalarstar(PetscObject obj)
 
 .seealso: `PetscObjectStateGet()`, `PetscObjectCompareId()`
 @*/
-PetscErrorCode PetscObjectGetId(PetscObject obj,PetscObjectId *id)
-{
+PetscErrorCode PetscObjectGetId(PetscObject obj, PetscObjectId *id) {
   PetscFunctionBegin;
   *id = obj->id;
   PetscFunctionReturn(0);
@@ -246,8 +241,7 @@ PetscErrorCode PetscObjectGetId(PetscObject obj,PetscObjectId *id)
 
 .seealso: `PetscObjectStateGet()`, `PetscObjectGetId()`
 @*/
-PetscErrorCode PetscObjectCompareId(PetscObject obj,PetscObjectId id,PetscBool *eq)
-{
+PetscErrorCode PetscObjectCompareId(PetscObject obj, PetscObjectId id, PetscBool *eq) {
   PetscFunctionBegin;
   *eq = (id == obj->id) ? PETSC_TRUE : PETSC_FALSE;
   PetscFunctionReturn(0);

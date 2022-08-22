@@ -1,29 +1,25 @@
 #include <../src/mat/impls/baij/mpi/mpibaij.h>
 
-PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqBAIJMKL(Mat,MatType,MatReuse,Mat*);
+PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqBAIJMKL(Mat, MatType, MatReuse, Mat *);
 
-static PetscErrorCode  MatMPIBAIJSetPreallocation_MPIBAIJMKL(Mat B,PetscInt bs,PetscInt d_nz,const PetscInt *d_nnz,PetscInt o_nz,const PetscInt *o_nnz)
-{
-  Mat_MPIBAIJ     *b = (Mat_MPIBAIJ*)B->data;
+static PetscErrorCode MatMPIBAIJSetPreallocation_MPIBAIJMKL(Mat B, PetscInt bs, PetscInt d_nz, const PetscInt *d_nnz, PetscInt o_nz, const PetscInt *o_nnz) {
+  Mat_MPIBAIJ *b = (Mat_MPIBAIJ *)B->data;
 
   PetscFunctionBegin;
-  PetscCall(MatMPIBAIJSetPreallocation_MPIBAIJ(B,bs,d_nz,d_nnz,o_nz,o_nnz));
-  PetscCall(MatConvert_SeqBAIJ_SeqBAIJMKL(b->A,MATSEQBAIJMKL,MAT_INPLACE_MATRIX,&b->A));
-  PetscCall(MatConvert_SeqBAIJ_SeqBAIJMKL(b->B,MATSEQBAIJMKL,MAT_INPLACE_MATRIX,&b->B));
+  PetscCall(MatMPIBAIJSetPreallocation_MPIBAIJ(B, bs, d_nz, d_nnz, o_nz, o_nnz));
+  PetscCall(MatConvert_SeqBAIJ_SeqBAIJMKL(b->A, MATSEQBAIJMKL, MAT_INPLACE_MATRIX, &b->A));
+  PetscCall(MatConvert_SeqBAIJ_SeqBAIJMKL(b->B, MATSEQBAIJMKL, MAT_INPLACE_MATRIX, &b->B));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatConvert_MPIBAIJ_MPIBAIJMKL(Mat A,MatType type,MatReuse reuse,Mat *newmat)
-{
-  Mat            B = *newmat;
+static PetscErrorCode MatConvert_MPIBAIJ_MPIBAIJMKL(Mat A, MatType type, MatReuse reuse, Mat *newmat) {
+  Mat B = *newmat;
 
   PetscFunctionBegin;
-  if (reuse == MAT_INITIAL_MATRIX) {
-    PetscCall(MatDuplicate(A,MAT_COPY_VALUES,&B));
-  }
+  if (reuse == MAT_INITIAL_MATRIX) { PetscCall(MatDuplicate(A, MAT_COPY_VALUES, &B)); }
 
-  PetscCall(PetscObjectChangeTypeName((PetscObject) B, MATMPIBAIJMKL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)B,"MatMPIBAIJSetPreallocation_C",MatMPIBAIJSetPreallocation_MPIBAIJMKL));
+  PetscCall(PetscObjectChangeTypeName((PetscObject)B, MATMPIBAIJMKL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatMPIBAIJSetPreallocation_C", MatMPIBAIJSetPreallocation_MPIBAIJMKL));
   *newmat = B;
   PetscFunctionReturn(0);
 }
@@ -132,29 +128,27 @@ static PetscErrorCode MatConvert_MPIBAIJ_MPIBAIJMKL(Mat A,MatType type,MatReuse 
 .seealso: `MatCreate()`, `MatCreateSeqBAIJMKL()`, `MatSetValues()`, `MatCreateBAIJMKL()`, `MatMPIBAIJSetPreallocation()`, `MatMPIBAIJSetPreallocationCSR()`
 @*/
 
-PetscErrorCode  MatCreateBAIJMKL(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[],Mat *A)
-{
-  PetscMPIInt    size;
+PetscErrorCode MatCreateBAIJMKL(MPI_Comm comm, PetscInt bs, PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscInt d_nz, const PetscInt d_nnz[], PetscInt o_nz, const PetscInt o_nnz[], Mat *A) {
+  PetscMPIInt size;
 
   PetscFunctionBegin;
-  PetscCall(MatCreate(comm,A));
-  PetscCall(MatSetSizes(*A,m,n,M,N));
-  PetscCallMPI(MPI_Comm_size(comm,&size));
+  PetscCall(MatCreate(comm, A));
+  PetscCall(MatSetSizes(*A, m, n, M, N));
+  PetscCallMPI(MPI_Comm_size(comm, &size));
   if (size > 1) {
-    PetscCall(MatSetType(*A,MATMPIBAIJMKL));
-    PetscCall(MatMPIBAIJSetPreallocation(*A,bs,d_nz,d_nnz,o_nz,o_nnz));
+    PetscCall(MatSetType(*A, MATMPIBAIJMKL));
+    PetscCall(MatMPIBAIJSetPreallocation(*A, bs, d_nz, d_nnz, o_nz, o_nnz));
   } else {
-    PetscCall(MatSetType(*A,MATSEQBAIJMKL));
-    PetscCall(MatSeqBAIJSetPreallocation(*A,bs,d_nz,d_nnz));
+    PetscCall(MatSetType(*A, MATSEQBAIJMKL));
+    PetscCall(MatSeqBAIJSetPreallocation(*A, bs, d_nz, d_nnz));
   }
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode MatCreate_MPIBAIJMKL(Mat A)
-{
+PETSC_EXTERN PetscErrorCode MatCreate_MPIBAIJMKL(Mat A) {
   PetscFunctionBegin;
-  PetscCall(MatSetType(A,MATMPIBAIJ));
-  PetscCall(MatConvert_MPIBAIJ_MPIBAIJMKL(A,MATMPIBAIJMKL,MAT_INPLACE_MATRIX,&A));
+  PetscCall(MatSetType(A, MATMPIBAIJ));
+  PetscCall(MatConvert_MPIBAIJ_MPIBAIJMKL(A, MATMPIBAIJMKL, MAT_INPLACE_MATRIX, &A));
   PetscFunctionReturn(0);
 }
 

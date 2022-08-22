@@ -34,8 +34,7 @@ typedef struct _p_PetscWeakForm *PetscWeakForm;
 
 .seealso: `DMPlexSNESComputeResidualFEM()`, `DMPlexSNESComputeJacobianFEM()`, `DMPlexSNESComputeBoundaryFEM()`
 S*/
-typedef struct _PetscFormKey
-{
+typedef struct _PetscFormKey {
   DMLabel  label; /* The (label, value) select a subdomain */
   PetscInt value;
   PetscInt field; /* Selects the field for the test function */
@@ -60,7 +59,35 @@ $ R                          - Riemann solver
 
 .seealso: `PetscFEIntegrateResidual()`, `PetscFEIntegrateJacobian()`, `PetscFEIntegrateBdResidual()`, `PetscFEIntegrateBdJacobian()`, `PetscFVIntegrateRHSFunction()`, `PetscWeakFormSetIndexResidual()`, `PetscWeakFormClearIndex()`
 E*/
-typedef enum {PETSC_WF_OBJECTIVE, PETSC_WF_F0, PETSC_WF_F1, PETSC_WF_G0, PETSC_WF_G1, PETSC_WF_G2, PETSC_WF_G3, PETSC_WF_GP0, PETSC_WF_GP1, PETSC_WF_GP2, PETSC_WF_GP3, PETSC_WF_GT0, PETSC_WF_GT1, PETSC_WF_GT2, PETSC_WF_GT3, PETSC_WF_BDF0, PETSC_WF_BDF1, PETSC_WF_BDG0, PETSC_WF_BDG1, PETSC_WF_BDG2, PETSC_WF_BDG3, PETSC_WF_BDGP0, PETSC_WF_BDGP1, PETSC_WF_BDGP2, PETSC_WF_BDGP3, PETSC_WF_R, PETSC_NUM_WF} PetscWeakFormKind;
+typedef enum {
+  PETSC_WF_OBJECTIVE,
+  PETSC_WF_F0,
+  PETSC_WF_F1,
+  PETSC_WF_G0,
+  PETSC_WF_G1,
+  PETSC_WF_G2,
+  PETSC_WF_G3,
+  PETSC_WF_GP0,
+  PETSC_WF_GP1,
+  PETSC_WF_GP2,
+  PETSC_WF_GP3,
+  PETSC_WF_GT0,
+  PETSC_WF_GT1,
+  PETSC_WF_GT2,
+  PETSC_WF_GT3,
+  PETSC_WF_BDF0,
+  PETSC_WF_BDF1,
+  PETSC_WF_BDG0,
+  PETSC_WF_BDG1,
+  PETSC_WF_BDG2,
+  PETSC_WF_BDG3,
+  PETSC_WF_BDGP0,
+  PETSC_WF_BDGP1,
+  PETSC_WF_BDGP2,
+  PETSC_WF_BDGP3,
+  PETSC_WF_R,
+  PETSC_NUM_WF
+} PetscWeakFormKind;
 PETSC_EXTERN const char *const PetscWeakFormKinds[];
 
 #endif

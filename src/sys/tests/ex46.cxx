@@ -8,22 +8,19 @@ static char help[] = "Demonstrates calling Trilinos and then PETSc in the same p
 #include <petscsys.h>
 #include <Tpetra_DefaultPlatform.hpp>
 #include <Tpetra_Version.hpp>
-#include <Teuchos_GlobalMPISession.hpp>    // used if Trilinos is the one that starts up MPI
+#include <Teuchos_GlobalMPISession.hpp> // used if Trilinos is the one that starts up MPI
 
 // Do something with the given communicator.  In this case, we just
 // print Tpetra's version to stdout on Process 0 in the given
 // communicator.
-void
-exampleRoutine (const Teuchos::RCP<const Teuchos::Comm<int> >& comm)
-{
-  if (comm->getRank () == 0) {
+void exampleRoutine(const Teuchos::RCP<const Teuchos::Comm<int>> &comm) {
+  if (comm->getRank() == 0) {
     // On (MPI) Process 0, print out the Tpetra software version.
-    std::cout << Tpetra::version () << std::endl << std::endl;
+    std::cout << Tpetra::version() << std::endl << std::endl;
   }
 }
 
-int main(int argc,char **argv)
-{
+int main(int argc, char **argv) {
   // These "using" declarations make the code more concise, in that
   // you don't have to write the namespace along with the class or
   // object name.  This is especially helpful with commonly used
@@ -40,7 +37,7 @@ int main(int argc,char **argv)
   // undesirable if running with a large number of MPI processes.
   // You can avoid printing anything here by passing in either
   // NULL or the address of a Teuchos::oblackholestream.
-  Teuchos::GlobalMPISession mpiSession (&argc, &argv, NULL);
+  Teuchos::GlobalMPISession              mpiSession(&argc, &argv, NULL);
   // Get a pointer to the communicator object representing
   // MPI_COMM_WORLD.  getDefaultPlatform.getComm() doesn't create a
   // new object every time you call it; it just returns the same
@@ -52,24 +49,20 @@ int main(int argc,char **argv)
   // "Tpetra::DefaultPlatform" knows whether or not we built with MPI
   // support.  If we didn't build with MPI, we'll get a "communicator"
   // with size 1, whose only process has rank 0.
-  Teuchos::RCP<const Teuchos::Comm<int> > comm = Tpetra::DefaultPlatform::getDefaultPlatform ().getComm ();
+  Teuchos::RCP<const Teuchos::Comm<int>> comm = Tpetra::DefaultPlatform::getDefaultPlatform().getComm();
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
 
   // Get my process' rank, and the total number of processes.
   // Equivalent to MPI_Comm_rank resp. MPI_Comm_size.
-  const int myRank = comm->getRank ();
-  const int size = comm->getSize ();
-  if (myRank == 0) {
-    cout << "Total number of processes: " << size << endl;
-  }
+  const int myRank = comm->getRank();
+  const int size   = comm->getSize();
+  if (myRank == 0) { cout << "Total number of processes: " << size << endl; }
   // Do something with the new communicator.
-  exampleRoutine (comm);
+  exampleRoutine(comm);
   // This tells the Trilinos test framework that the test passed.
-  if (myRank == 0) {
-    cout << "End Result: TEST PASSED" << endl;
-  }
+  if (myRank == 0) { cout << "End Result: TEST PASSED" << endl; }
   // GlobalMPISession calls MPI_Finalize() in its destructor, if
   // appropriate.  You don't have to do anything here!  Just return
   // from main().  Isn't that helpful?

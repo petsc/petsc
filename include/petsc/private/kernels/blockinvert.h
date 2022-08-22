@@ -19,91 +19,23 @@
    src/mat/impls/baij/seq
 */
 
-PETSC_INTERN PetscErrorCode PetscLINPACKgefa(MatScalar*,PetscInt,PetscInt*,PetscBool,PetscBool*);
-PETSC_INTERN PetscErrorCode PetscLINPACKgedi(MatScalar*,PetscInt,PetscInt*,MatScalar*);
-PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_2(MatScalar*,PetscReal,PetscBool,PetscBool*);
-PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_3(MatScalar*,PetscReal,PetscBool,PetscBool*);
+PETSC_INTERN PetscErrorCode PetscLINPACKgefa(MatScalar *, PetscInt, PetscInt *, PetscBool, PetscBool *);
+PETSC_INTERN PetscErrorCode PetscLINPACKgedi(MatScalar *, PetscInt, PetscInt *, MatScalar *);
+PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_2(MatScalar *, PetscReal, PetscBool, PetscBool *);
+PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_3(MatScalar *, PetscReal, PetscBool, PetscBool *);
 
-#define PetscKernel_A_gets_inverse_A_4_nopivot(mat) PetscMacroReturnStandard(\
-    MatScalar d, di = mat[0];                                   \
-    mat[0]   = d = 1.0 / di;                                    \
-    mat[4]  *= -d;                                              \
-    mat[8]  *= -d;                                              \
-    mat[12] *= -d;                                              \
-    mat[1]  *= d;                                               \
-    mat[2]  *= d;                                               \
-    mat[3]  *= d;                                               \
-    mat[5]  += mat[4] * mat[1] * di;                            \
-    mat[6]  += mat[4] * mat[2] * di;                            \
-    mat[7]  += mat[4] * mat[3] * di;                            \
-    mat[9]  += mat[8] * mat[1] * di;                            \
-    mat[10] += mat[8] * mat[2] * di;                            \
-    mat[11] += mat[8] * mat[3] * di;                            \
-    mat[13] += mat[12] * mat[1] * di;                           \
-    mat[14] += mat[12] * mat[2] * di;                           \
-    mat[15] += mat[12] * mat[3] * di;                           \
-    di       = mat[5];                                          \
-    mat[5]   = d = 1.0 / di;                                    \
-    mat[1]  *= -d;                                              \
-    mat[9]  *= -d;                                              \
-    mat[13] *= -d;                                              \
-    mat[4]  *= d;                                               \
-    mat[6]  *= d;                                               \
-    mat[7]  *= d;                                               \
-    mat[0]  += mat[1] * mat[4] * di;                            \
-    mat[2]  += mat[1] * mat[6] * di;                            \
-    mat[3]  += mat[1] * mat[7] * di;                            \
-    mat[8]  += mat[9] * mat[4] * di;                            \
-    mat[10] += mat[9] * mat[6] * di;                            \
-    mat[11] += mat[9] * mat[7] * di;                            \
-    mat[12] += mat[13] * mat[4] * di;                           \
-    mat[14] += mat[13] * mat[6] * di;                           \
-    mat[15] += mat[13] * mat[7] * di;                           \
-    di       = mat[10];                                         \
-    mat[10]  = d = 1.0 / di;                                    \
-    mat[2]  *= -d;                                              \
-    mat[6]  *= -d;                                              \
-    mat[14] *= -d;                                              \
-    mat[8]  *= d;                                               \
-    mat[9]  *= d;                                               \
-    mat[11] *= d;                                               \
-    mat[0]  += mat[2] * mat[8] * di;                            \
-    mat[1]  += mat[2] * mat[9] * di;                            \
-    mat[3]  += mat[2] * mat[11] * di;                           \
-    mat[4]  += mat[6] * mat[8] * di;                            \
-    mat[5]  += mat[6] * mat[9] * di;                            \
-    mat[7]  += mat[6] * mat[11] * di;                           \
-    mat[12] += mat[14] * mat[8] * di;                           \
-    mat[13] += mat[14] * mat[9] * di;                           \
-    mat[15] += mat[14] * mat[11] * di;                          \
-    di       = mat[15];                                         \
-    mat[15]  = d = 1.0 / di;                                    \
-    mat[3]  *= -d;                                              \
-    mat[7]  *= -d;                                              \
-    mat[11] *= -d;                                              \
-    mat[12] *= d;                                               \
-    mat[13] *= d;                                               \
-    mat[14] *= d;                                               \
-    mat[0]  += mat[3] * mat[12] * di;                           \
-    mat[1]  += mat[3] * mat[13] * di;                           \
-    mat[2]  += mat[3] * mat[14] * di;                           \
-    mat[4]  += mat[7] * mat[12] * di;                           \
-    mat[5]  += mat[7] * mat[13] * di;                           \
-    mat[6]  += mat[7] * mat[14] * di;                           \
-    mat[8]  += mat[11] * mat[12] * di;                          \
-    mat[9]  += mat[11] * mat[13] * di;                          \
-    mat[10] += mat[11] * mat[14] * di;                          \
-  )
+#define PetscKernel_A_gets_inverse_A_4_nopivot(mat) \
+  PetscMacroReturnStandard(MatScalar d, di = mat[0]; mat[0] = d = 1.0 / di; mat[4] *= -d; mat[8] *= -d; mat[12] *= -d; mat[1] *= d; mat[2] *= d; mat[3] *= d; mat[5] += mat[4] * mat[1] * di; mat[6] += mat[4] * mat[2] * di; mat[7] += mat[4] * mat[3] * di; mat[9] += mat[8] * mat[1] * di; mat[10] += mat[8] * mat[2] * di; mat[11] += mat[8] * mat[3] * di; mat[13] += mat[12] * mat[1] * di; mat[14] += mat[12] * mat[2] * di; mat[15] += mat[12] * mat[3] * di; di = mat[5]; mat[5] = d = 1.0 / di; mat[1] *= -d; mat[9] *= -d; mat[13] *= -d; mat[4] *= d; mat[6] *= d; mat[7] *= d; mat[0] += mat[1] * mat[4] * di; mat[2] += mat[1] * mat[6] * di; mat[3] += mat[1] * mat[7] * di; mat[8] += mat[9] * mat[4] * di; mat[10] += mat[9] * mat[6] * di; mat[11] += mat[9] * mat[7] * di; mat[12] += mat[13] * mat[4] * di; mat[14] += mat[13] * mat[6] * di; mat[15] += mat[13] * mat[7] * di; di = mat[10]; mat[10] = d = 1.0 / di; mat[2] *= -d; mat[6] *= -d; mat[14] *= -d; mat[8] *= d; mat[9] *= d; mat[11] *= d; mat[0] += mat[2] * mat[8] * di; mat[1] += mat[2] * mat[9] * di; mat[3] += mat[2] * mat[11] * di; mat[4] += mat[6] * mat[8] * di; mat[5] += mat[6] * mat[9] * di; mat[7] += mat[6] * mat[11] * di; mat[12] += mat[14] * mat[8] * di; mat[13] += mat[14] * mat[9] * di; mat[15] += mat[14] * mat[11] * di; di = mat[15]; mat[15] = d = 1.0 / di; mat[3] *= -d; mat[7] *= -d; mat[11] *= -d; mat[12] *= d; mat[13] *= d; mat[14] *= d; mat[0] += mat[3] * mat[12] * di; mat[1] += mat[3] * mat[13] * di; mat[2] += mat[3] * mat[14] * di; mat[4] += mat[7] * mat[12] * di; mat[5] += mat[7] * mat[13] * di; mat[6] += mat[7] * mat[14] * di; mat[8] += mat[11] * mat[12] * di; mat[9] += mat[11] * mat[13] * di; mat[10] += mat[11] * mat[14] * di;)
 
-PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_4(MatScalar*,PetscReal,PetscBool,PetscBool*);
-# if defined(PETSC_HAVE_SSE)
-PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_4_SSE(MatScalar*);
-# endif
-PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_5(MatScalar*,PetscInt*,MatScalar*,PetscReal,PetscBool,PetscBool*);
-PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_6(MatScalar*,PetscReal,PetscBool,PetscBool*);
-PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_7(MatScalar*,PetscReal,PetscBool,PetscBool*);
-PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_9(MatScalar*,PetscReal,PetscBool,PetscBool*);
-PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar*,PetscInt*,MatScalar*,PetscReal,PetscBool,PetscBool*);
+PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_4(MatScalar *, PetscReal, PetscBool, PetscBool *);
+#if defined(PETSC_HAVE_SSE)
+PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_4_SSE(MatScalar *);
+#endif
+PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_5(MatScalar *, PetscInt *, MatScalar *, PetscReal, PetscBool, PetscBool *);
+PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_6(MatScalar *, PetscReal, PetscBool, PetscBool *);
+PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_7(MatScalar *, PetscReal, PetscBool, PetscBool *);
+PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_9(MatScalar *, PetscReal, PetscBool, PetscBool *);
+PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar *, PetscInt *, MatScalar *, PetscReal, PetscBool, PetscBool *);
 
 /*
     A = inv(A)    A_gets_inverse_A
@@ -112,7 +44,7 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar*,PetscInt*
    pivots - integer work array of length bs
    W      -  bs by 1 work array
 */
-#define PetscKernel_A_gets_inverse_A(bs,A,pivots,W,allowzeropivot,zeropivotdetected) (PetscLINPACKgefa((A),(bs),(pivots),(allowzeropivot),(zeropivotdetected)) || PetscLINPACKgedi((A),(bs),(pivots),(W)))
+#define PetscKernel_A_gets_inverse_A(bs, A, pivots, W, allowzeropivot, zeropivotdetected) (PetscLINPACKgefa((A), (bs), (pivots), (allowzeropivot), (zeropivotdetected)) || PetscLINPACKgedi((A), (bs), (pivots), (W)))
 
 /* -----------------------------------------------------------------------*/
 
@@ -127,15 +59,16 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar*,PetscInt*
    W    - square bs by bs work array
 
 */
-#define PetscKernel_A_gets_A_times_B(bs,A,B,W) do {                                            \
-    PetscBLASInt _bbs;                                                                         \
-    PetscScalar  _one = 1.0,_zero = 0.0;                                                       \
-    PetscCall(PetscBLASIntCast(bs,&_bbs));                                                       \
-    PetscCall(PetscArraycpy((W),(A),(bs)*(bs)));                                                 \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A,2)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(B,3)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(W,4)); \
-    PetscCallBLAS("BLASgemm",BLASgemm_("N","N",&(_bbs),&(_bbs),&(_bbs),&_one,(W),&(_bbs),(B),&(_bbs),&_zero,(A),&(_bbs))); \
+#define PetscKernel_A_gets_A_times_B(bs, A, B, W) \
+  do { \
+    PetscBLASInt _bbs; \
+    PetscScalar  _one = 1.0, _zero = 0.0; \
+    PetscCall(PetscBLASIntCast(bs, &_bbs)); \
+    PetscCall(PetscArraycpy((W), (A), (bs) * (bs))); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A, 2)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(B, 3)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(W, 4)); \
+    PetscCallBLAS("BLASgemm", BLASgemm_("N", "N", &(_bbs), &(_bbs), &(_bbs), &_one, (W), &(_bbs), (B), &(_bbs), &_zero, (A), &(_bbs))); \
   } while (0)
 
 /*
@@ -144,14 +77,15 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar*,PetscInt*
 
    A, B, C - square bs by bs arrays stored in column major order
 */
-#define PetscKernel_A_gets_A_minus_B_times_C(bs,A,B,C) do {                                    \
-    PetscScalar    _mone = -1.0,_one = 1.0;                                                    \
-    PetscBLASInt   _bbs;                                                                       \
-    PetscCall(PetscBLASIntCast(bs,&_bbs));                                                       \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A,2)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(B,3)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(C,4)); \
-    PetscCallBLAS("BLASgemm",BLASgemm_("N","N",&(_bbs),&(_bbs),&(_bbs),&_mone,(B),&(_bbs),(C),&(_bbs),&_one,(A),&(_bbs))); \
+#define PetscKernel_A_gets_A_minus_B_times_C(bs, A, B, C) \
+  do { \
+    PetscScalar  _mone = -1.0, _one = 1.0; \
+    PetscBLASInt _bbs; \
+    PetscCall(PetscBLASIntCast(bs, &_bbs)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A, 2)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(B, 3)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(C, 4)); \
+    PetscCallBLAS("BLASgemm", BLASgemm_("N", "N", &(_bbs), &(_bbs), &(_bbs), &_mone, (B), &(_bbs), (C), &(_bbs), &_one, (A), &(_bbs))); \
   } while (0)
 
 /*
@@ -160,14 +94,15 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar*,PetscInt*
 
    A, B, C - square bs by bs arrays stored in column major order
 */
-#define PetscKernel_A_gets_A_plus_Btranspose_times_C(bs,A,B,C) do {                            \
-    PetscScalar    _one = 1.0;                                                                 \
-    PetscBLASInt   _bbs;                                                                       \
-    PetscCall(PetscBLASIntCast(bs,&_bbs));                                                       \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A,2)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(B,3)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(C,4)); \
-    PetscCallBLAS("BLASgemm",BLASgemm_("T","N",&(_bbs),&(_bbs),&(_bbs),&_one,(B),&(_bbs),(C),&(_bbs),&_one,(A),&(_bbs))); \
+#define PetscKernel_A_gets_A_plus_Btranspose_times_C(bs, A, B, C) \
+  do { \
+    PetscScalar  _one = 1.0; \
+    PetscBLASInt _bbs; \
+    PetscCall(PetscBLASIntCast(bs, &_bbs)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A, 2)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(B, 3)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(C, 4)); \
+    PetscCallBLAS("BLASgemm", BLASgemm_("T", "N", &(_bbs), &(_bbs), &(_bbs), &_one, (B), &(_bbs), (C), &(_bbs), &_one, (A), &(_bbs))); \
   } while (0)
 
 /*
@@ -177,14 +112,15 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar*,PetscInt*
    A - square bs by bs array
    w - array of length bs
 */
-#define  PetscKernel_v_gets_v_plus_Atranspose_times_w(bs,v,A,w) do {                           \
-    PetscScalar    _one  = 1.0;                                                                \
-    PetscBLASInt   _ione = 1, _bbs;                                                            \
-    PetscCall(PetscBLASIntCast(bs,&_bbs));                                                       \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(v,2)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A,3)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(w,4)); \
-    PetscCallBLAS("BLASgemv",BLASgemv_("T",&(_bbs),&(_bbs),&_one,A,&(_bbs),w,&_ione,&_one,v,&_ione)); \
+#define PetscKernel_v_gets_v_plus_Atranspose_times_w(bs, v, A, w) \
+  do { \
+    PetscScalar  _one  = 1.0; \
+    PetscBLASInt _ione = 1, _bbs; \
+    PetscCall(PetscBLASIntCast(bs, &_bbs)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(v, 2)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A, 3)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(w, 4)); \
+    PetscCallBLAS("BLASgemv", BLASgemv_("T", &(_bbs), &(_bbs), &_one, A, &(_bbs), w, &_ione, &_one, v, &_ione)); \
   } while (0)
 
 /*
@@ -194,14 +130,15 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar*,PetscInt*
    A - square bs by bs array
    w - array of length bs
 */
-#define  PetscKernel_v_gets_v_minus_A_times_w(bs,v,A,w) do {                                   \
-    PetscScalar    _mone = -1.0,_one = 1.0;                                                    \
-    PetscBLASInt   _ione = 1,_bbs;                                                             \
-    PetscCall(PetscBLASIntCast(bs,&_bbs));                                                       \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(v,2)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A,3)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(w,4)); \
-    PetscCallBLAS("BLASgemv",BLASgemv_("N",&(_bbs),&(_bbs),&_mone,A,&(_bbs),w,&_ione,&_one,v,&_ione)); \
+#define PetscKernel_v_gets_v_minus_A_times_w(bs, v, A, w) \
+  do { \
+    PetscScalar  _mone = -1.0, _one = 1.0; \
+    PetscBLASInt _ione = 1, _bbs; \
+    PetscCall(PetscBLASIntCast(bs, &_bbs)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(v, 2)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A, 3)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(w, 4)); \
+    PetscCallBLAS("BLASgemv", BLASgemv_("N", &(_bbs), &(_bbs), &_mone, A, &(_bbs), w, &_ione, &_one, v, &_ione)); \
   } while (0)
 
 /*
@@ -211,14 +148,15 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar*,PetscInt*
    A - square bs by bs array
    w - array of length bs
 */
-#define  PetscKernel_v_gets_v_minus_transA_times_w(bs,v,A,w) do {                              \
-    PetscScalar    _mone = -1.0,_one = 1.0;                                                    \
-    PetscBLASInt   _ione = 1,_bbs;                                                             \
-    PetscCall(PetscBLASIntCast(bs,&_bbs));                                                       \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(v,2)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A,3)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(w,4)); \
-    PetscCallBLAS("BLASgemv",BLASgemv_("T",&(_bbs),&(_bbs),&_mone,A,&(_bbs),w,&_ione,&_one,v,&_ione)); \
+#define PetscKernel_v_gets_v_minus_transA_times_w(bs, v, A, w) \
+  do { \
+    PetscScalar  _mone = -1.0, _one = 1.0; \
+    PetscBLASInt _ione = 1, _bbs; \
+    PetscCall(PetscBLASIntCast(bs, &_bbs)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(v, 2)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A, 3)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(w, 4)); \
+    PetscCallBLAS("BLASgemv", BLASgemv_("T", &(_bbs), &(_bbs), &_mone, A, &(_bbs), w, &_ione, &_one, v, &_ione)); \
   } while (0)
 
 /*
@@ -228,14 +166,15 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar*,PetscInt*
    A - square bs by bs array
    w - array of length bs
 */
-#define  PetscKernel_v_gets_v_plus_A_times_w(bs,v,A,w) do {                                    \
-    PetscScalar    _one  = 1.0;                                                                \
-    PetscBLASInt   _ione = 1,_bbs;                                                             \
-    PetscCall(PetscBLASIntCast(bs,&_bbs));                                                       \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(v,2)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A,3)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(w,4)); \
-    PetscCallBLAS("BLASgemv",BLASgemv_("N",&(_bbs),&(_bbs),&_one,A,&(_bbs),w,&_ione,&_one,v,&_ione)); \
+#define PetscKernel_v_gets_v_plus_A_times_w(bs, v, A, w) \
+  do { \
+    PetscScalar  _one  = 1.0; \
+    PetscBLASInt _ione = 1, _bbs; \
+    PetscCall(PetscBLASIntCast(bs, &_bbs)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(v, 2)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A, 3)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(w, 4)); \
+    PetscCallBLAS("BLASgemv", BLASgemv_("N", &(_bbs), &(_bbs), &_one, A, &(_bbs), w, &_ione, &_one, v, &_ione)); \
   } while (0)
 
 /*
@@ -245,15 +184,16 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar*,PetscInt*
    A - square bs by bs array
    w - array of length bs
 */
-#define  PetscKernel_w_gets_w_plus_Ar_times_v(bs,ncols,v,A,w) do {                             \
-    PetscScalar    _one  = 1.0;                                                                \
-    PetscBLASInt   _ione = 1,_bbs,_bncols;                                                     \
-    PetscCall(PetscBLASIntCast(bs,&_bbs));                                                       \
-    PetscCall(PetscBLASIntCast(ncols,&_bncols));                                                 \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(v,3)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A,4)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(w,5)); \
-    PetscCallBLAS("BLASgemv",BLASgemv_("N",&(_bbs),&(_bncols),&_one,A,&(_bbs),v,&_ione,&_one,w,&_ione)); \
+#define PetscKernel_w_gets_w_plus_Ar_times_v(bs, ncols, v, A, w) \
+  do { \
+    PetscScalar  _one  = 1.0; \
+    PetscBLASInt _ione = 1, _bbs, _bncols; \
+    PetscCall(PetscBLASIntCast(bs, &_bbs)); \
+    PetscCall(PetscBLASIntCast(ncols, &_bncols)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(v, 3)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A, 4)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(w, 5)); \
+    PetscCallBLAS("BLASgemv", BLASgemv_("N", &(_bbs), &(_bncols), &_one, A, &(_bbs), v, &_ione, &_one, w, &_ione)); \
   } while (0)
 
 /*
@@ -263,15 +203,16 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar*,PetscInt*
    A(bs,ncols)
    w - array of length bs
 */
-#define  PetscKernel_w_gets_w_minus_Ar_times_v(bs,ncols,w,A,v) do {                            \
-    PetscScalar    _one  = 1.0,_mone = -1.0;                                                   \
-    PetscBLASInt   _ione = 1,_bbs,_bncols;                                                     \
-    PetscCall(PetscBLASIntCast(bs,&_bbs));                                                       \
-PetscCall(PetscBLASIntCast(ncols,&_bncols));                                                     \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(w,3)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A,4)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(v,5)); \
-    PetscCallBLAS("BLASgemv",BLASgemv_("N",&(_bbs),&(_bncols),&_mone,A,&(_bbs),v,&_ione,&_one,w,&_ione)); \
+#define PetscKernel_w_gets_w_minus_Ar_times_v(bs, ncols, w, A, v) \
+  do { \
+    PetscScalar  _one = 1.0, _mone = -1.0; \
+    PetscBLASInt _ione = 1, _bbs, _bncols; \
+    PetscCall(PetscBLASIntCast(bs, &_bbs)); \
+    PetscCall(PetscBLASIntCast(ncols, &_bncols)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(w, 3)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A, 4)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(v, 5)); \
+    PetscCallBLAS("BLASgemv", BLASgemv_("N", &(_bbs), &(_bncols), &_mone, A, &(_bbs), v, &_ione, &_one, w, &_ione)); \
   } while (0)
 
 /*
@@ -281,14 +222,15 @@ PetscCall(PetscBLASIntCast(ncols,&_bncols));                                    
    A - square bs by bs array
    w - array of length bs
  */
-#define PetscKernel_w_gets_A_times_v(bs,v,A,w) do {                                            \
-    PetscScalar    _zero = 0.0,_one = 1.0;                                                     \
-    PetscBLASInt   _ione = 1,_bbs;                                                             \
-    PetscCall(PetscBLASIntCast(bs,&_bbs));                                                       \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(v,2)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A,3)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(w,4)); \
-    PetscCallBLAS("BLASgemv",BLASgemv_("N",&(_bbs),&(_bbs),&_one,A,&(_bbs),v,&_ione,&_zero,w,&_ione)); \
+#define PetscKernel_w_gets_A_times_v(bs, v, A, w) \
+  do { \
+    PetscScalar  _zero = 0.0, _one = 1.0; \
+    PetscBLASInt _ione = 1, _bbs; \
+    PetscCall(PetscBLASIntCast(bs, &_bbs)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(v, 2)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A, 3)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(w, 4)); \
+    PetscCallBLAS("BLASgemv", BLASgemv_("N", &(_bbs), &(_bbs), &_one, A, &(_bbs), v, &_ione, &_zero, w, &_ione)); \
   } while (0)
 
 /*
@@ -298,42 +240,45 @@ PetscCall(PetscBLASIntCast(ncols,&_bncols));                                    
    A - square bs by bs array
    w - array of length bs
 */
-#define PetscKernel_w_gets_transA_times_v(bs,v,A,w) do {                                       \
-    PetscScalar    _zero = 0.0,_one = 1.0;                                                     \
-    PetscBLASInt   _ione = 1,_bbs;                                                             \
-    PetscCall(PetscBLASIntCast(bs,&_bbs));                                                       \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(v,2)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A,3)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(w,4)); \
-    PetscCallBLAS("BLASgemv",BLASgemv_("T",&(_bbs),&(_bbs),&_one,A,&(_bbs),v,&_ione,&_zero,w,&_ione)); \
+#define PetscKernel_w_gets_transA_times_v(bs, v, A, w) \
+  do { \
+    PetscScalar  _zero = 0.0, _one = 1.0; \
+    PetscBLASInt _ione = 1, _bbs; \
+    PetscCall(PetscBLASIntCast(bs, &_bbs)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(v, 2)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A, 3)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(w, 4)); \
+    PetscCallBLAS("BLASgemv", BLASgemv_("T", &(_bbs), &(_bbs), &_one, A, &(_bbs), v, &_ione, &_zero, w, &_ione)); \
   } while (0)
 
 /*
         z = A*x
 */
-#define PetscKernel_w_gets_Ar_times_v(bs,ncols,x,A,z) do {                                     \
-    PetscScalar    _one  = 1.0,_zero = 0.0;                                                    \
-    PetscBLASInt   _ione = 1,_bbs,_bncols;                                                     \
-    PetscCall(PetscBLASIntCast(bs,&_bbs));                                                       \
-    PetscCall(PetscBLASIntCast(ncols,&_bncols));                                                 \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(x,3)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A,4)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(z,5)); \
-    PetscCallBLAS("BLASgemv",BLASgemv_("N",&(_bbs),&_bncols,&_one,A,&(_bbs),x,&_ione,&_zero,z,&_ione)); \
+#define PetscKernel_w_gets_Ar_times_v(bs, ncols, x, A, z) \
+  do { \
+    PetscScalar  _one = 1.0, _zero = 0.0; \
+    PetscBLASInt _ione = 1, _bbs, _bncols; \
+    PetscCall(PetscBLASIntCast(bs, &_bbs)); \
+    PetscCall(PetscBLASIntCast(ncols, &_bncols)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(x, 3)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A, 4)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(z, 5)); \
+    PetscCallBLAS("BLASgemv", BLASgemv_("N", &(_bbs), &_bncols, &_one, A, &(_bbs), x, &_ione, &_zero, z, &_ione)); \
   } while (0)
 
 /*
         z = trans(A)*x
 */
-#define PetscKernel_w_gets_w_plus_trans_Ar_times_v(bs,ncols,x,A,z) do {                        \
-    PetscScalar    _one  = 1.0;                                                                \
-    PetscBLASInt   _ione = 1,_bbs,_bncols;                                                     \
-    PetscCall(PetscBLASIntCast(bs,&_bbs));                                                       \
-    PetscCall(PetscBLASIntCast(ncols,&_bncols));                                                 \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(x,3)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A,4)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(z,5)); \
-    PetscCallBLAS("BLASgemv",BLASgemv_("T",&_bbs,&_bncols,&_one,A,&_bbs,x,&_ione,&_one,z,&_ione)); \
+#define PetscKernel_w_gets_w_plus_trans_Ar_times_v(bs, ncols, x, A, z) \
+  do { \
+    PetscScalar  _one  = 1.0; \
+    PetscBLASInt _ione = 1, _bbs, _bncols; \
+    PetscCall(PetscBLASIntCast(bs, &_bbs)); \
+    PetscCall(PetscBLASIntCast(ncols, &_bncols)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(x, 3)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A, 4)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(z, 5)); \
+    PetscCallBLAS("BLASgemv", BLASgemv_("T", &_bbs, &_bncols, &_one, A, &_bbs, x, &_ione, &_one, z, &_ione)); \
   } while (0)
 
 #else /* !defined(PETSC_USE_REAL_MAT_SINGLE) */
@@ -366,12 +311,12 @@ PetscCall(PetscBLASIntCast(ncols,&_bncols));                                    
 #define msgemm_  msgemm
 #endif
 
-PETSC_EXTERN void msgemv_(PetscInt*,PetscInt*,MatScalar*,PetscScalar*,PetscScalar*);
-PETSC_EXTERN void msgemvp_(PetscInt*,PetscInt*,MatScalar*,PetscScalar*,PetscScalar*);
-PETSC_EXTERN void msgemvm_(PetscInt*,PetscInt*,MatScalar*,PetscScalar*,PetscScalar*);
-PETSC_EXTERN void msgemvt_(PetscInt*,PetscInt*,MatScalar*,PetscScalar*,PetscScalar*);
-PETSC_EXTERN void msgemmi_(PetscInt*,MatScalar*,MatScalar*,MatScalar*);
-PETSC_EXTERN void msgemm_(PetscInt*,MatScalar*,MatScalar*,MatScalar*);
+PETSC_EXTERN void msgemv_(PetscInt *, PetscInt *, MatScalar *, PetscScalar *, PetscScalar *);
+PETSC_EXTERN void msgemvp_(PetscInt *, PetscInt *, MatScalar *, PetscScalar *, PetscScalar *);
+PETSC_EXTERN void msgemvm_(PetscInt *, PetscInt *, MatScalar *, PetscScalar *, PetscScalar *);
+PETSC_EXTERN void msgemvt_(PetscInt *, PetscInt *, MatScalar *, PetscScalar *, PetscScalar *);
+PETSC_EXTERN void msgemmi_(PetscInt *, MatScalar *, MatScalar *, MatScalar *);
+PETSC_EXTERN void msgemm_(PetscInt *, MatScalar *, MatScalar *, MatScalar *);
 
 /*
       A = A * B   A_gets_A_times_B
@@ -380,9 +325,10 @@ PETSC_EXTERN void msgemm_(PetscInt*,MatScalar*,MatScalar*,MatScalar*);
    W    - square bs by bs work array
 
 */
-#define PetscKernel_A_gets_A_times_B(bs,A,B,W) do {                     \
-    PetscCall(PetscArraycpy((W),(A),(bs)*(bs)));                          \
-    msgemmi_(&bs,A,B,W);                                                \
+#define PetscKernel_A_gets_A_times_B(bs, A, B, W) \
+  do { \
+    PetscCall(PetscArraycpy((W), (A), (bs) * (bs))); \
+    msgemmi_(&bs, A, B, W); \
   } while (0)
 
 /*
@@ -391,7 +337,7 @@ PETSC_EXTERN void msgemm_(PetscInt*,MatScalar*,MatScalar*,MatScalar*);
 
    A, B, C - square bs by bs arrays stored in column major order
 */
-#define PetscKernel_A_gets_A_minus_B_times_C(bs,A,B,C) msgemm_(&(bs),(A),(B),(C))
+#define PetscKernel_A_gets_A_minus_B_times_C(bs, A, B, C)              msgemm_(&(bs), (A), (B), (C))
 
 /*
     v = v - A w  v_gets_v_minus_A_times_w
@@ -400,7 +346,7 @@ PETSC_EXTERN void msgemm_(PetscInt*,MatScalar*,MatScalar*,MatScalar*);
    A - square bs by bs array
    w - array of length bs
 */
-#define  PetscKernel_v_gets_v_minus_A_times_w(bs,v,A,w) msgemvm_(&(bs),&(bs),(A),(w),(v))
+#define PetscKernel_v_gets_v_minus_A_times_w(bs, v, A, w)              msgemvm_(&(bs), &(bs), (A), (w), (v))
 
 /*
     v = v + A w  v_gets_v_plus_A_times_w
@@ -409,7 +355,7 @@ PETSC_EXTERN void msgemm_(PetscInt*,MatScalar*,MatScalar*,MatScalar*);
    A - square bs by bs array
    w - array of length bs
 */
-#define  PetscKernel_v_gets_v_plus_A_times_w(bs,v,A,w) msgemvp_(&(bs),&(bs),(A),(w),(v))
+#define PetscKernel_v_gets_v_plus_A_times_w(bs, v, A, w)               msgemvp_(&(bs), &(bs), (A), (w), (v))
 
 /*
     v = v + A w  v_gets_v_plus_Ar_times_w
@@ -418,7 +364,7 @@ PETSC_EXTERN void msgemm_(PetscInt*,MatScalar*,MatScalar*,MatScalar*);
    A - square bs by bs array
    w - array of length bs
 */
-#define  PetscKernel_w_gets_w_plus_Ar_times_v(bs,ncol,v,A,w) msgemvp_(&(bs),&(ncol),(A),(v),(w))
+#define PetscKernel_w_gets_w_plus_Ar_times_v(bs, ncol, v, A, w)        msgemvp_(&(bs), &(ncol), (A), (v), (w))
 
 /*
     w = A v   w_gets_A_times_v
@@ -427,21 +373,21 @@ PETSC_EXTERN void msgemm_(PetscInt*,MatScalar*,MatScalar*,MatScalar*);
    A - square bs by bs array
    w - array of length bs
 */
-#define PetscKernel_w_gets_A_times_v(bs,v,A,w) msgemv_(&(bs),&(bs),(A),(v),(w))
+#define PetscKernel_w_gets_A_times_v(bs, v, A, w)                      msgemv_(&(bs), &(bs), (A), (v), (w))
 
 /*
         z = A*x
 */
-#define PetscKernel_w_gets_Ar_times_v(bs,ncols,x,A,z) msgemv_(&(bs),&(ncols),(A),(x),(z))
+#define PetscKernel_w_gets_Ar_times_v(bs, ncols, x, A, z)              msgemv_(&(bs), &(ncols), (A), (x), (z))
 
 /*
         z = trans(A)*x
 */
-#define PetscKernel_w_gets_w_plus_trans_Ar_times_v(bs,ncols,x,A,z) msgemvt_(&(bs),&(ncols),(A),(x),(z))
+#define PetscKernel_w_gets_w_plus_trans_Ar_times_v(bs, ncols, x, A, z) msgemvt_(&(bs), &(ncols), (A), (x), (z))
 
 /* These do not work yet */
-#define PetscKernel_A_gets_A_plus_Btranspose_times_C(bs,A,B,C)
-#define PetscKernel_v_gets_v_plus_Atranspose_times_w(bs,v,A,w)
+#define PetscKernel_A_gets_A_plus_Btranspose_times_C(bs, A, B, C)
+#define PetscKernel_v_gets_v_plus_Atranspose_times_w(bs, v, A, w)
 
 #endif /* !defined(PETSC_USE_REAL_MAT_SINGLE) */
 

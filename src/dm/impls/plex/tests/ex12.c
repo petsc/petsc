@@ -23,20 +23,24 @@ Load a file in serial, distribute it randomly, refine it in parallel, and then r
 
 */
 
-enum {STAGE_LOAD, STAGE_DISTRIBUTE, STAGE_REFINE, STAGE_REDISTRIBUTE};
+enum {
+  STAGE_LOAD,
+  STAGE_DISTRIBUTE,
+  STAGE_REFINE,
+  STAGE_REDISTRIBUTE
+};
 
 typedef struct {
   /* Domain and mesh definition */
-  PetscInt  overlap;                      /* The cell overlap to use during partitioning */
-  PetscBool testPartition;                /* Use a fixed partitioning for testing */
-  PetscBool testRedundant;                /* Use a redundant partitioning for testing */
-  PetscBool loadBalance;                  /* Load balance via a second distribute step */
-  PetscBool partitionBalance;             /* Balance shared point partition */
+  PetscInt      overlap;          /* The cell overlap to use during partitioning */
+  PetscBool     testPartition;    /* Use a fixed partitioning for testing */
+  PetscBool     testRedundant;    /* Use a redundant partitioning for testing */
+  PetscBool     loadBalance;      /* Load balance via a second distribute step */
+  PetscBool     partitionBalance; /* Balance shared point partition */
   PetscLogStage stages[4];
 } AppCtx;
 
-PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
-{
+PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   PetscFunctionBegin;
   options->overlap          = 0;
   options->testPartition    = PETSC_FALSE;
@@ -45,37 +49,36 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->partitionBalance = PETSC_FALSE;
 
   PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");
-  PetscCall(PetscOptionsBoundedInt("-overlap", "The cell overlap for partitioning", "ex12.c", options->overlap, &options->overlap, NULL,0));
+  PetscCall(PetscOptionsBoundedInt("-overlap", "The cell overlap for partitioning", "ex12.c", options->overlap, &options->overlap, NULL, 0));
   PetscCall(PetscOptionsBool("-test_partition", "Use a fixed partition for testing", "ex12.c", options->testPartition, &options->testPartition, NULL));
   PetscCall(PetscOptionsBool("-test_redundant", "Use a redundant partition for testing", "ex12.c", options->testRedundant, &options->testRedundant, NULL));
   PetscCall(PetscOptionsBool("-load_balance", "Perform parallel load balancing in a second distribution step", "ex12.c", options->loadBalance, &options->loadBalance, NULL));
   PetscCall(PetscOptionsBool("-partition_balance", "Balance the ownership of shared points", "ex12.c", options->partitionBalance, &options->partitionBalance, NULL));
   PetscOptionsEnd();
 
-  PetscCall(PetscLogStageRegister("MeshLoad",         &options->stages[STAGE_LOAD]));
-  PetscCall(PetscLogStageRegister("MeshDistribute",   &options->stages[STAGE_DISTRIBUTE]));
-  PetscCall(PetscLogStageRegister("MeshRefine",       &options->stages[STAGE_REFINE]));
+  PetscCall(PetscLogStageRegister("MeshLoad", &options->stages[STAGE_LOAD]));
+  PetscCall(PetscLogStageRegister("MeshDistribute", &options->stages[STAGE_DISTRIBUTE]));
+  PetscCall(PetscLogStageRegister("MeshRefine", &options->stages[STAGE_REFINE]));
   PetscCall(PetscLogStageRegister("MeshRedistribute", &options->stages[STAGE_REDISTRIBUTE]));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
-{
-  DM             pdm             = NULL;
-  PetscInt       triSizes_n2[2]  = {4, 4};
-  PetscInt       triPoints_n2[8] = {0, 1, 4, 6, 2, 3, 5, 7};
-  PetscInt       triSizes_n3[3]  = {3, 2, 3};
-  PetscInt       triPoints_n3[8] = {3, 5, 6, 1, 7, 0, 2, 4};
-  PetscInt       triSizes_n4[4]  = {2, 2, 2, 2};
-  PetscInt       triPoints_n4[8] = {0, 7, 1, 5, 2, 3, 4, 6};
-  PetscInt       triSizes_n8[8]  = {1, 1, 1, 1, 1, 1, 1, 1};
-  PetscInt       triPoints_n8[8] = {0, 1, 2, 3, 4, 5, 6, 7};
-  PetscInt       quadSizes[2]    = {2, 2};
-  PetscInt       quadPoints[4]   = {2, 3, 0, 1};
-  PetscInt       overlap         = user->overlap >= 0 ? user->overlap : 0;
-  PetscInt       dim;
-  PetscBool      simplex;
-  PetscMPIInt    rank, size;
+PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm) {
+  DM          pdm             = NULL;
+  PetscInt    triSizes_n2[2]  = {4, 4};
+  PetscInt    triPoints_n2[8] = {0, 1, 4, 6, 2, 3, 5, 7};
+  PetscInt    triSizes_n3[3]  = {3, 2, 3};
+  PetscInt    triPoints_n3[8] = {3, 5, 6, 1, 7, 0, 2, 4};
+  PetscInt    triSizes_n4[4]  = {2, 2, 2, 2};
+  PetscInt    triPoints_n4[8] = {0, 7, 1, 5, 2, 3, 4, 6};
+  PetscInt    triSizes_n8[8]  = {1, 1, 1, 1, 1, 1, 1, 1};
+  PetscInt    triPoints_n8[8] = {0, 1, 2, 3, 4, 5, 6, 7};
+  PetscInt    quadSizes[2]    = {2, 2};
+  PetscInt    quadPoints[4]   = {2, 3, 0, 1};
+  PetscInt    overlap         = user->overlap >= 0 ? user->overlap : 0;
+  PetscInt    dim;
+  PetscBool   simplex;
+  PetscMPIInt rank, size;
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
@@ -97,20 +100,25 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     PetscCall(PetscPartitionerSetFromOptions(part));
     PetscCall(DMPlexSetPartitionBalance(*dm, user->partitionBalance));
     if (user->testPartition) {
-      const PetscInt *sizes = NULL;
+      const PetscInt *sizes  = NULL;
       const PetscInt *points = NULL;
 
       if (rank == 0) {
         if (dim == 2 && simplex && size == 2) {
-          sizes = triSizes_n2; points = triPoints_n2;
+          sizes  = triSizes_n2;
+          points = triPoints_n2;
         } else if (dim == 2 && simplex && size == 3) {
-          sizes = triSizes_n3; points = triPoints_n3;
+          sizes  = triSizes_n3;
+          points = triPoints_n3;
         } else if (dim == 2 && simplex && size == 4) {
-          sizes = triSizes_n4; points = triPoints_n4;
+          sizes  = triSizes_n4;
+          points = triPoints_n4;
         } else if (dim == 2 && simplex && size == 8) {
-          sizes = triSizes_n8; points = triPoints_n8;
+          sizes  = triSizes_n8;
+          points = triPoints_n8;
         } else if (dim == 2 && !simplex && size == 2) {
-          sizes = quadSizes; points = quadPoints;
+          sizes  = quadSizes;
+          points = quadPoints;
         }
       }
       PetscCall(PetscPartitionerSetType(part, PETSCPARTITIONERSHELL));
@@ -124,7 +132,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     if (sf) {
       DM test;
 
-      PetscCall(DMPlexCreate(comm,&test));
+      PetscCall(DMPlexCreate(comm, &test));
       PetscCall(PetscObjectSetName((PetscObject)test, "Test SF-migrated Redundant Mesh"));
       PetscCall(DMPlexMigrate(*dm, sf, test));
       PetscCall(DMViewFromOptions(test, NULL, "-redundant_migrated_dm_view"));
@@ -134,7 +142,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   }
   if (pdm) {
     PetscCall(DMDestroy(dm));
-    *dm  = pdm;
+    *dm = pdm;
   }
   PetscCall(PetscLogStagePop());
   PetscCall(DMSetFromOptions(*dm));
@@ -145,12 +153,15 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     PetscCall(DMPlexSetOptionsPrefix(*dm, "lb_"));
     PetscCall(PetscLogStagePush(user->stages[STAGE_REDISTRIBUTE]));
     PetscCall(DMPlexGetPartitioner(*dm, &part));
-    PetscCall(PetscObjectSetOptionsPrefix((PetscObject) part, "lb_"));
+    PetscCall(PetscObjectSetOptionsPrefix((PetscObject)part, "lb_"));
     PetscCall(PetscPartitionerSetFromOptions(part));
     if (user->testPartition) {
-      PetscInt         reSizes_n2[2]  = {2, 2};
-      PetscInt         rePoints_n2[4] = {2, 3, 0, 1};
-      if (rank) {rePoints_n2[0] = 1; rePoints_n2[1] = 2, rePoints_n2[2] = 0, rePoints_n2[3] = 3;}
+      PetscInt reSizes_n2[2]  = {2, 2};
+      PetscInt rePoints_n2[4] = {2, 3, 0, 1};
+      if (rank) {
+        rePoints_n2[0] = 1;
+        rePoints_n2[1] = 2, rePoints_n2[2] = 0, rePoints_n2[3] = 3;
+      }
 
       PetscCall(PetscPartitionerSetType(part, PETSCPARTITIONERSHELL));
       PetscCall(PetscPartitionerShellSetPartition(part, size, reSizes_n2, rePoints_n2));
@@ -159,7 +170,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     PetscCall(DMPlexDistribute(*dm, overlap, NULL, &pdm));
     if (pdm) {
       PetscCall(DMDestroy(dm));
-      *dm  = pdm;
+      *dm = pdm;
     }
     PetscCall(PetscLogStagePop());
   }
@@ -169,10 +180,9 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv)
-{
-  DM             dm;
-  AppCtx         user; /* user-defined work context */
+int main(int argc, char **argv) {
+  DM     dm;
+  AppCtx user; /* user-defined work context */
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));

@@ -1,29 +1,25 @@
 
-#include <petsc/private/pcimpl.h>   /*I "petscpc.h" I*/
+#include <petsc/private/pcimpl.h> /*I "petscpc.h" I*/
 
-static PetscErrorCode PCApply_Mat(PC pc,Vec x,Vec y)
-{
+static PetscErrorCode PCApply_Mat(PC pc, Vec x, Vec y) {
   PetscFunctionBegin;
-  PetscCall(MatMult(pc->pmat,x,y));
+  PetscCall(MatMult(pc->pmat, x, y));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCMatApply_Mat(PC pc,Mat X,Mat Y)
-{
+static PetscErrorCode PCMatApply_Mat(PC pc, Mat X, Mat Y) {
   PetscFunctionBegin;
-  PetscCall(MatMatMult(pc->pmat,X,MAT_REUSE_MATRIX,PETSC_DEFAULT,&Y));
+  PetscCall(MatMatMult(pc->pmat, X, MAT_REUSE_MATRIX, PETSC_DEFAULT, &Y));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCApplyTranspose_Mat(PC pc,Vec x,Vec y)
-{
+static PetscErrorCode PCApplyTranspose_Mat(PC pc, Vec x, Vec y) {
   PetscFunctionBegin;
-  PetscCall(MatMultTranspose(pc->pmat,x,y));
+  PetscCall(MatMultTranspose(pc->pmat, x, y));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCDestroy_Mat(PC pc)
-{
+static PetscErrorCode PCDestroy_Mat(PC pc) {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
@@ -43,8 +39,7 @@ static PetscErrorCode PCDestroy_Mat(PC pc)
 
 M*/
 
-PETSC_EXTERN PetscErrorCode PCCreate_Mat(PC pc)
-{
+PETSC_EXTERN PetscErrorCode PCCreate_Mat(PC pc) {
   PetscFunctionBegin;
   pc->ops->apply               = PCApply_Mat;
   pc->ops->matapply            = PCMatApply_Mat;

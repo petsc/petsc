@@ -52,54 +52,51 @@
        University of Wisconsin  Madison, 1999.
 */
 
-static PetscErrorCode TaoSetUp_ASILS(Tao tao)
-{
-  TAO_SSLS       *asls = (TAO_SSLS *)tao->data;
+static PetscErrorCode TaoSetUp_ASILS(Tao tao) {
+  TAO_SSLS *asls = (TAO_SSLS *)tao->data;
 
   PetscFunctionBegin;
-  PetscCall(VecDuplicate(tao->solution,&tao->gradient));
-  PetscCall(VecDuplicate(tao->solution,&tao->stepdirection));
-  PetscCall(VecDuplicate(tao->solution,&asls->ff));
-  PetscCall(VecDuplicate(tao->solution,&asls->dpsi));
-  PetscCall(VecDuplicate(tao->solution,&asls->da));
-  PetscCall(VecDuplicate(tao->solution,&asls->db));
-  PetscCall(VecDuplicate(tao->solution,&asls->t1));
-  PetscCall(VecDuplicate(tao->solution,&asls->t2));
-  asls->fixed = NULL;
-  asls->free = NULL;
-  asls->J_sub = NULL;
+  PetscCall(VecDuplicate(tao->solution, &tao->gradient));
+  PetscCall(VecDuplicate(tao->solution, &tao->stepdirection));
+  PetscCall(VecDuplicate(tao->solution, &asls->ff));
+  PetscCall(VecDuplicate(tao->solution, &asls->dpsi));
+  PetscCall(VecDuplicate(tao->solution, &asls->da));
+  PetscCall(VecDuplicate(tao->solution, &asls->db));
+  PetscCall(VecDuplicate(tao->solution, &asls->t1));
+  PetscCall(VecDuplicate(tao->solution, &asls->t2));
+  asls->fixed    = NULL;
+  asls->free     = NULL;
+  asls->J_sub    = NULL;
   asls->Jpre_sub = NULL;
-  asls->w = NULL;
-  asls->r1 = NULL;
-  asls->r2 = NULL;
-  asls->r3 = NULL;
-  asls->dxfree = NULL;
+  asls->w        = NULL;
+  asls->r1       = NULL;
+  asls->r2       = NULL;
+  asls->r3       = NULL;
+  asls->dxfree   = NULL;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode Tao_ASLS_FunctionGradient(TaoLineSearch ls, Vec X, PetscReal *fcn,  Vec G, void *ptr)
-{
-  Tao            tao = (Tao)ptr;
-  TAO_SSLS       *asls = (TAO_SSLS *)tao->data;
+static PetscErrorCode Tao_ASLS_FunctionGradient(TaoLineSearch ls, Vec X, PetscReal *fcn, Vec G, void *ptr) {
+  Tao       tao  = (Tao)ptr;
+  TAO_SSLS *asls = (TAO_SSLS *)tao->data;
 
   PetscFunctionBegin;
   PetscCall(TaoComputeConstraints(tao, X, tao->constraints));
-  PetscCall(VecFischer(X,tao->constraints,tao->XL,tao->XU,asls->ff));
-  PetscCall(VecNorm(asls->ff,NORM_2,&asls->merit));
-  *fcn = 0.5*asls->merit*asls->merit;
+  PetscCall(VecFischer(X, tao->constraints, tao->XL, tao->XU, asls->ff));
+  PetscCall(VecNorm(asls->ff, NORM_2, &asls->merit));
+  *fcn = 0.5 * asls->merit * asls->merit;
 
-  PetscCall(TaoComputeJacobian(tao,tao->solution,tao->jacobian,tao->jacobian_pre));
-  PetscCall(MatDFischer(tao->jacobian, tao->solution, tao->constraints,tao->XL, tao->XU, asls->t1, asls->t2,asls->da, asls->db));
+  PetscCall(TaoComputeJacobian(tao, tao->solution, tao->jacobian, tao->jacobian_pre));
+  PetscCall(MatDFischer(tao->jacobian, tao->solution, tao->constraints, tao->XL, tao->XU, asls->t1, asls->t2, asls->da, asls->db));
   PetscCall(VecPointwiseMult(asls->t1, asls->ff, asls->db));
-  PetscCall(MatMultTranspose(tao->jacobian,asls->t1,G));
+  PetscCall(MatMultTranspose(tao->jacobian, asls->t1, G));
   PetscCall(VecPointwiseMult(asls->t1, asls->ff, asls->da));
-  PetscCall(VecAXPY(G,1.0,asls->t1));
+  PetscCall(VecAXPY(G, 1.0, asls->t1));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoDestroy_ASILS(Tao tao)
-{
-  TAO_SSLS       *ssls = (TAO_SSLS *)tao->data;
+static PetscErrorCode TaoDestroy_ASILS(Tao tao) {
+  TAO_SSLS *ssls = (TAO_SSLS *)tao->data;
 
   PetscFunctionBegin;
   PetscCall(VecDestroy(&ssls->ff));
@@ -122,10 +119,9 @@ static PetscErrorCode TaoDestroy_ASILS(Tao tao)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoSolve_ASILS(Tao tao)
-{
-  TAO_SSLS                     *asls = (TAO_SSLS *)tao->data;
-  PetscReal                    psi,ndpsi, normd, innerd, t=0;
+static PetscErrorCode TaoSolve_ASILS(Tao tao) {
+  TAO_SSLS                    *asls = (TAO_SSLS *)tao->data;
+  PetscReal                    psi, ndpsi, normd, innerd, t = 0;
   PetscInt                     nf;
   TaoLineSearchConvergedReason ls_reason;
 
@@ -134,25 +130,25 @@ static PetscErrorCode TaoSolve_ASILS(Tao tao)
      Set the structure for the Jacobian and create a linear solver. */
 
   PetscCall(TaoComputeVariableBounds(tao));
-  PetscCall(TaoLineSearchSetObjectiveAndGradientRoutine(tao->linesearch,Tao_ASLS_FunctionGradient,tao));
-  PetscCall(TaoLineSearchSetObjectiveRoutine(tao->linesearch,Tao_SSLS_Function,tao));
+  PetscCall(TaoLineSearchSetObjectiveAndGradientRoutine(tao->linesearch, Tao_ASLS_FunctionGradient, tao));
+  PetscCall(TaoLineSearchSetObjectiveRoutine(tao->linesearch, Tao_SSLS_Function, tao));
 
   /* Calculate the function value and fischer function value at the
      current iterate */
-  PetscCall(TaoLineSearchComputeObjectiveAndGradient(tao->linesearch,tao->solution,&psi,asls->dpsi));
-  PetscCall(VecNorm(asls->dpsi,NORM_2,&ndpsi));
+  PetscCall(TaoLineSearchComputeObjectiveAndGradient(tao->linesearch, tao->solution, &psi, asls->dpsi));
+  PetscCall(VecNorm(asls->dpsi, NORM_2, &ndpsi));
 
   tao->reason = TAO_CONTINUE_ITERATING;
   while (1) {
     /* Check the termination criteria */
-    PetscCall(PetscInfo(tao,"iter %" PetscInt_FMT ", merit: %g, ||dpsi||: %g\n",tao->niter, (double)asls->merit,  (double)ndpsi));
-    PetscCall(TaoLogConvergenceHistory(tao,asls->merit,ndpsi,0.0,tao->ksp_its));
-    PetscCall(TaoMonitor(tao,tao->niter,asls->merit,ndpsi,0.0,t));
-    PetscUseTypeMethod(tao,convergencetest ,tao->cnvP);
+    PetscCall(PetscInfo(tao, "iter %" PetscInt_FMT ", merit: %g, ||dpsi||: %g\n", tao->niter, (double)asls->merit, (double)ndpsi));
+    PetscCall(TaoLogConvergenceHistory(tao, asls->merit, ndpsi, 0.0, tao->ksp_its));
+    PetscCall(TaoMonitor(tao, tao->niter, asls->merit, ndpsi, 0.0, t));
+    PetscUseTypeMethod(tao, convergencetest, tao->cnvP);
     if (TAO_CONTINUE_ITERATING != tao->reason) break;
 
     /* Call general purpose update function */
-    PetscTryTypeMethod(tao,update, tao->niter, tao->user_update);
+    PetscTryTypeMethod(tao, update, tao->niter, tao->user_update);
     tao->niter++;
 
     /* We are going to solve a linear system of equations.  We need to
@@ -177,27 +173,27 @@ static PetscErrorCode TaoSolve_ASILS(Tao tao)
        No one rule is guaranteed to work in all cases.  The following
        definition is based on the norm of the Jacobian matrix.  If the
        norm is large, the tolerance becomes smaller. */
-    PetscCall(MatNorm(tao->jacobian,NORM_1,&asls->identifier));
+    PetscCall(MatNorm(tao->jacobian, NORM_1, &asls->identifier));
     asls->identifier = PetscMin(asls->merit, 1e-2) / (1 + asls->identifier);
 
-    PetscCall(VecSet(asls->t1,-asls->identifier));
+    PetscCall(VecSet(asls->t1, -asls->identifier));
     PetscCall(VecSet(asls->t2, asls->identifier));
 
     PetscCall(ISDestroy(&asls->fixed));
     PetscCall(ISDestroy(&asls->free));
     PetscCall(VecWhichBetweenOrEqual(asls->t1, asls->db, asls->t2, &asls->fixed));
-    PetscCall(ISComplementVec(asls->fixed,asls->t1, &asls->free));
+    PetscCall(ISComplementVec(asls->fixed, asls->t1, &asls->free));
 
-    PetscCall(ISGetSize(asls->fixed,&nf));
-    PetscCall(PetscInfo(tao,"Number of fixed variables: %" PetscInt_FMT "\n", nf));
+    PetscCall(ISGetSize(asls->fixed, &nf));
+    PetscCall(PetscInfo(tao, "Number of fixed variables: %" PetscInt_FMT "\n", nf));
 
     /* We now have our partition.  Now calculate the direction in the
        fixed variable space. */
     PetscCall(TaoVecGetSubVec(asls->ff, asls->fixed, tao->subset_type, 0.0, &asls->r1));
     PetscCall(TaoVecGetSubVec(asls->da, asls->fixed, tao->subset_type, 1.0, &asls->r2));
-    PetscCall(VecPointwiseDivide(asls->r1,asls->r1,asls->r2));
-    PetscCall(VecSet(tao->stepdirection,0.0));
-    PetscCall(VecISAXPY(tao->stepdirection, asls->fixed,1.0,asls->r1));
+    PetscCall(VecPointwiseDivide(asls->r1, asls->r1, asls->r2));
+    PetscCall(VecSet(tao->stepdirection, 0.0));
+    PetscCall(VecISAXPY(tao->stepdirection, asls->fixed, 1.0, asls->r1));
 
     /* Our direction in the Fixed Variable Set is fixed.  Calculate the
        information needed for the step in the Free Variable Set.  To
@@ -207,8 +203,8 @@ static PetscErrorCode TaoSolve_ASILS(Tao tao)
     PetscCall(TaoVecGetSubVec(asls->da, asls->free, tao->subset_type, 0.0, &asls->r1));
     PetscCall(TaoVecGetSubVec(asls->ff, asls->free, tao->subset_type, 0.0, &asls->r2));
     PetscCall(TaoVecGetSubVec(asls->db, asls->free, tao->subset_type, 1.0, &asls->r3));
-    PetscCall(VecPointwiseDivide(asls->r1,asls->r1, asls->r3));
-    PetscCall(VecPointwiseDivide(asls->r2,asls->r2, asls->r3));
+    PetscCall(VecPointwiseDivide(asls->r1, asls->r1, asls->r3));
+    PetscCall(VecPointwiseDivide(asls->r2, asls->r2, asls->r3));
 
     /* r1 is the diagonal perturbation
        r2 is the right hand side
@@ -219,14 +215,12 @@ static PetscErrorCode TaoSolve_ASILS(Tao tao)
        of t1 and modify r2. */
 
     PetscCall(MatMult(tao->jacobian, tao->stepdirection, asls->t1));
-    PetscCall(TaoVecGetSubVec(asls->t1,asls->free,tao->subset_type,0.0,&asls->r3));
+    PetscCall(TaoVecGetSubVec(asls->t1, asls->free, tao->subset_type, 0.0, &asls->r3));
     PetscCall(VecAXPY(asls->r2, -1.0, asls->r3));
 
     /* Calculate the reduced problem matrix and the direction */
-    if (!asls->w && (tao->subset_type == TAO_SUBSET_MASK || tao->subset_type == TAO_SUBSET_MATRIXFREE)) {
-      PetscCall(VecDuplicate(tao->solution, &asls->w));
-    }
-    PetscCall(TaoMatGetSubMat(tao->jacobian, asls->free, asls->w, tao->subset_type,&asls->J_sub));
+    if (!asls->w && (tao->subset_type == TAO_SUBSET_MASK || tao->subset_type == TAO_SUBSET_MATRIXFREE)) { PetscCall(VecDuplicate(tao->solution, &asls->w)); }
+    PetscCall(TaoMatGetSubMat(tao->jacobian, asls->free, asls->w, tao->subset_type, &asls->J_sub));
     if (tao->jacobian != tao->jacobian_pre) {
       PetscCall(TaoMatGetSubMat(tao->jacobian_pre, asls->free, asls->w, tao->subset_type, &asls->Jpre_sub));
     } else {
@@ -234,7 +228,7 @@ static PetscErrorCode TaoSolve_ASILS(Tao tao)
       asls->Jpre_sub = asls->J_sub;
       PetscCall(PetscObjectReference((PetscObject)(asls->Jpre_sub)));
     }
-    PetscCall(MatDiagonalSet(asls->J_sub, asls->r1,ADD_VALUES));
+    PetscCall(MatDiagonalSet(asls->J_sub, asls->r1, ADD_VALUES));
     PetscCall(TaoVecGetSubVec(tao->stepdirection, asls->free, tao->subset_type, 0.0, &asls->dxfree));
     PetscCall(VecSet(asls->dxfree, 0.0));
 
@@ -243,19 +237,19 @@ static PetscErrorCode TaoSolve_ASILS(Tao tao)
     PetscCall(KSPReset(tao->ksp));
     PetscCall(KSPSetOperators(tao->ksp, asls->J_sub, asls->Jpre_sub));
     PetscCall(KSPSolve(tao->ksp, asls->r2, asls->dxfree));
-    PetscCall(KSPGetIterationNumber(tao->ksp,&tao->ksp_its));
-    tao->ksp_tot_its+=tao->ksp_its;
+    PetscCall(KSPGetIterationNumber(tao->ksp, &tao->ksp_its));
+    tao->ksp_tot_its += tao->ksp_its;
 
     /* Add the direction in the free variables back into the real direction. */
-    PetscCall(VecISAXPY(tao->stepdirection, asls->free, 1.0,asls->dxfree));
+    PetscCall(VecISAXPY(tao->stepdirection, asls->free, 1.0, asls->dxfree));
 
     /* Check the real direction for descent and if not, use the negative
        gradient direction. */
     PetscCall(VecNorm(tao->stepdirection, NORM_2, &normd));
     PetscCall(VecDot(tao->stepdirection, asls->dpsi, &innerd));
 
-    if (innerd <= asls->delta*PetscPowReal(normd, asls->rho)) {
-      PetscCall(PetscInfo(tao,"Gradient direction: %5.4e.\n", (double)innerd));
+    if (innerd <= asls->delta * PetscPowReal(normd, asls->rho)) {
+      PetscCall(PetscInfo(tao, "Gradient direction: %5.4e.\n", (double)innerd));
       PetscCall(PetscInfo(tao, "Iteration %" PetscInt_FMT ": newton direction not descent\n", tao->niter));
       PetscCall(VecCopy(asls->dpsi, tao->stepdirection));
       PetscCall(VecDot(asls->dpsi, tao->stepdirection, &innerd));
@@ -267,7 +261,7 @@ static PetscErrorCode TaoSolve_ASILS(Tao tao)
     /* We now have a correct descent direction.  Apply a linesearch to
        find the new iterate. */
     PetscCall(TaoLineSearchSetInitialStepLength(tao->linesearch, 1.0));
-    PetscCall(TaoLineSearchApply(tao->linesearch, tao->solution, &psi,asls->dpsi, tao->stepdirection, &t, &ls_reason));
+    PetscCall(TaoLineSearchApply(tao->linesearch, tao->solution, &psi, asls->dpsi, tao->stepdirection, &t, &ls_reason));
     PetscCall(VecNorm(asls->dpsi, NORM_2, &ndpsi));
   }
   PetscFunctionReturn(0);
@@ -284,45 +278,44 @@ static PetscErrorCode TaoSolve_ASILS(Tao tao)
 
   Level: beginner
 M*/
-PETSC_EXTERN PetscErrorCode TaoCreate_ASILS(Tao tao)
-{
-  TAO_SSLS       *asls;
-  const char     *armijo_type = TAOLINESEARCHARMIJO;
+PETSC_EXTERN PetscErrorCode TaoCreate_ASILS(Tao tao) {
+  TAO_SSLS   *asls;
+  const char *armijo_type = TAOLINESEARCHARMIJO;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(tao,&asls));
-  tao->data = (void*)asls;
-  tao->ops->solve = TaoSolve_ASILS;
-  tao->ops->setup = TaoSetUp_ASILS;
-  tao->ops->view = TaoView_SSLS;
+  PetscCall(PetscNewLog(tao, &asls));
+  tao->data                = (void *)asls;
+  tao->ops->solve          = TaoSolve_ASILS;
+  tao->ops->setup          = TaoSetUp_ASILS;
+  tao->ops->view           = TaoView_SSLS;
   tao->ops->setfromoptions = TaoSetFromOptions_SSLS;
-  tao->ops->destroy = TaoDestroy_ASILS;
-  tao->subset_type = TAO_SUBSET_SUBVEC;
-  asls->delta = 1e-10;
-  asls->rho = 2.1;
-  asls->fixed = NULL;
-  asls->free = NULL;
-  asls->J_sub = NULL;
-  asls->Jpre_sub = NULL;
-  asls->w = NULL;
-  asls->r1 = NULL;
-  asls->r2 = NULL;
-  asls->r3 = NULL;
-  asls->t1 = NULL;
-  asls->t2 = NULL;
-  asls->dxfree = NULL;
+  tao->ops->destroy        = TaoDestroy_ASILS;
+  tao->subset_type         = TAO_SUBSET_SUBVEC;
+  asls->delta              = 1e-10;
+  asls->rho                = 2.1;
+  asls->fixed              = NULL;
+  asls->free               = NULL;
+  asls->J_sub              = NULL;
+  asls->Jpre_sub           = NULL;
+  asls->w                  = NULL;
+  asls->r1                 = NULL;
+  asls->r2                 = NULL;
+  asls->r3                 = NULL;
+  asls->t1                 = NULL;
+  asls->t2                 = NULL;
+  asls->dxfree             = NULL;
 
   asls->identifier = 1e-5;
 
   PetscCall(TaoLineSearchCreate(((PetscObject)tao)->comm, &tao->linesearch));
   PetscCall(PetscObjectIncrementTabLevel((PetscObject)tao->linesearch, (PetscObject)tao, 1));
   PetscCall(TaoLineSearchSetType(tao->linesearch, armijo_type));
-  PetscCall(TaoLineSearchSetOptionsPrefix(tao->linesearch,tao->hdr.prefix));
+  PetscCall(TaoLineSearchSetOptionsPrefix(tao->linesearch, tao->hdr.prefix));
   PetscCall(TaoLineSearchSetFromOptions(tao->linesearch));
 
   PetscCall(KSPCreate(((PetscObject)tao)->comm, &tao->ksp));
   PetscCall(PetscObjectIncrementTabLevel((PetscObject)tao->ksp, (PetscObject)tao, 1));
-  PetscCall(KSPSetOptionsPrefix(tao->ksp,tao->hdr.prefix));
+  PetscCall(KSPSetOptionsPrefix(tao->ksp, tao->hdr.prefix));
   PetscCall(KSPSetFromOptions(tao->ksp));
 
   /* Override default settings (unless already changed) */
@@ -332,7 +325,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_ASILS(Tao tao)
   if (!tao->grtol_changed) tao->grtol = 0;
 #if defined(PETSC_USE_REAL_SINGLE)
   if (!tao->gatol_changed) tao->gatol = 1.0e-6;
-  if (!tao->fmin_changed)  tao->fmin = 1.0e-4;
+  if (!tao->fmin_changed) tao->fmin = 1.0e-4;
 #else
   if (!tao->gatol_changed) tao->gatol = 1.0e-16;
   if (!tao->fmin_changed) tao->fmin = 1.0e-8;

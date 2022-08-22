@@ -2,16 +2,15 @@
 
 using namespace Petsc::Device::CUPM;
 
-PetscErrorCode PetscDeviceContextCreate_HIP(PetscDeviceContext dctx)
-{
-  static constexpr auto     contextHip = CUPMContextHip();
-  PetscDeviceContext_(HIP) *dci;
+PetscErrorCode PetscDeviceContextCreate_HIP(PetscDeviceContext dctx) {
+  static constexpr auto contextHip = CUPMContextHip();
+  PetscDeviceContext_(HIP) * dci;
 
   PetscFunctionBegin;
   PetscCall(contextHip.initialize());
   PetscCall(PetscNew(&dci));
   dctx->data = static_cast<decltype(dctx->data)>(dci);
-  PetscCall(PetscMemcpy(dctx->ops,&contextHip.ops,sizeof(contextHip.ops)));
+  PetscCall(PetscMemcpy(dctx->ops, &contextHip.ops, sizeof(contextHip.ops)));
   PetscFunctionReturn(0);
 }
 
@@ -24,24 +23,22 @@ PetscErrorCode PetscDeviceContextCreate_HIP(PetscDeviceContext dctx)
  cuda manually.
  */
 
-PetscErrorCode PetscHIPBLASGetHandle(hipblasHandle_t *handle)
-{
+PetscErrorCode PetscHIPBLASGetHandle(hipblasHandle_t *handle) {
   PetscDeviceContext dctx;
 
   PetscFunctionBegin;
-  PetscValidPointer(handle,1);
-  PetscCall(PetscDeviceContextGetCurrentContextAssertType_Internal(&dctx,PETSC_DEVICE_HIP));
-  PetscCall(PetscDeviceContextGetBLASHandle_Internal(dctx,handle));
+  PetscValidPointer(handle, 1);
+  PetscCall(PetscDeviceContextGetCurrentContextAssertType_Internal(&dctx, PETSC_DEVICE_HIP));
+  PetscCall(PetscDeviceContextGetBLASHandle_Internal(dctx, handle));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscHIPSOLVERGetHandle(hipsolverHandle_t *handle)
-{
+PetscErrorCode PetscHIPSOLVERGetHandle(hipsolverHandle_t *handle) {
   PetscDeviceContext dctx;
 
   PetscFunctionBegin;
-  PetscValidPointer(handle,1);
-  PetscCall(PetscDeviceContextGetCurrentContextAssertType_Internal(&dctx,PETSC_DEVICE_HIP));
-  PetscCall(PetscDeviceContextGetSOLVERHandle_Internal(dctx,handle));
+  PetscValidPointer(handle, 1);
+  PetscCall(PetscDeviceContextGetCurrentContextAssertType_Internal(&dctx, PETSC_DEVICE_HIP));
+  PetscCall(PetscDeviceContextGetSOLVERHandle_Internal(dctx, handle));
   PetscFunctionReturn(0);
 }

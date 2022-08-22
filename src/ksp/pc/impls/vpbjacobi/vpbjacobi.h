@@ -7,8 +7,8 @@
    Private context (data structure) for the VPBJacobi preconditioner.
 */
 typedef struct {
-  MatScalar *diag; /* on host */
-  void *spptr; /* offload to devices */
+  MatScalar *diag;  /* on host */
+  void      *spptr; /* offload to devices */
 } PC_VPBJacobi;
 
 #if defined(PETSC_HAVE_CUDA)

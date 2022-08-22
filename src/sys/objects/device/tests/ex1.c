@@ -3,17 +3,16 @@ static const char help[] = "Tests creation and destruction of PetscDevice.\n\n";
 #include <petsc/private/deviceimpl.h>
 #include "petscdevicetestcommon.h"
 
-int main(int argc, char *argv[])
-{
-  const PetscInt n = 10;
+int main(int argc, char *argv[]) {
+  const PetscInt n      = 10;
   PetscDevice    device = NULL;
   PetscDevice    devices[n];
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   /* normal create and destroy */
-  PetscCall(PetscDeviceCreate(PETSC_DEVICE_DEFAULT,PETSC_DECIDE,&device));
+  PetscCall(PetscDeviceCreate(PETSC_DEVICE_DEFAULT, PETSC_DECIDE, &device));
   PetscCall(AssertDeviceExists(device));
   PetscCall(PetscDeviceDestroy(&device));
   PetscCall(AssertDeviceDoesNotExist(device));
@@ -23,8 +22,8 @@ int main(int argc, char *argv[])
 
   /* test reference counting */
   device = NULL;
-  PetscCall(PetscArrayzero(devices,n));
-  PetscCall(PetscDeviceCreate(PETSC_DEVICE_DEFAULT,PETSC_DECIDE,&device));
+  PetscCall(PetscArrayzero(devices, n));
+  PetscCall(PetscDeviceCreate(PETSC_DEVICE_DEFAULT, PETSC_DECIDE, &device));
   PetscCall(AssertDeviceExists(device));
   for (int i = 0; i < n; ++i) {
     PetscCall(PetscDeviceReference_Internal(device));
@@ -41,12 +40,12 @@ int main(int argc, char *argv[])
 
   /* test the default devices exist */
   device = NULL;
-  PetscCall(PetscArrayzero(devices,n));
+  PetscCall(PetscArrayzero(devices, n));
   {
     PetscDeviceContext dctx;
     /* global context will have the default device */
     PetscCall(PetscDeviceContextGetCurrentContext(&dctx));
-    PetscCall(PetscDeviceContextGetDevice(dctx,&device));
+    PetscCall(PetscDeviceContextGetDevice(dctx, &device));
   }
   PetscCall(AssertDeviceExists(device));
   /* test reference counting for default device */
@@ -61,7 +60,7 @@ int main(int argc, char *argv[])
     PetscCall(AssertDeviceDoesNotExist(devices[i]));
   }
 
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"EXIT_SUCCESS\n"));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "EXIT_SUCCESS\n"));
   PetscCall(PetscFinalize());
   return 0;
 }

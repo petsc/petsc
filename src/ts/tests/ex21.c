@@ -1,4 +1,4 @@
-static char help[] ="Solves a time-dependent nonlinear PDE.\n";
+static char help[] = "Solves a time-dependent nonlinear PDE.\n";
 
 /* ------------------------------------------------------------------------
 
@@ -31,37 +31,36 @@ typedef struct {
 /*
    FormIFunctionLocal - Evaluates nonlinear implicit function on local process patch
  */
-static PetscErrorCode FormIFunctionLocal(DMDALocalInfo *info,PetscReal t,PetscScalar **x,PetscScalar **xdot,PetscScalar **f,AppCtx *app)
-{
-  PetscInt       i,j;
-  PetscReal      lambda,hx,hy;
-  PetscScalar    ut,u,ue,uw,un,us,uxx,uyy;
+static PetscErrorCode FormIFunctionLocal(DMDALocalInfo *info, PetscReal t, PetscScalar **x, PetscScalar **xdot, PetscScalar **f, AppCtx *app) {
+  PetscInt    i, j;
+  PetscReal   lambda, hx, hy;
+  PetscScalar ut, u, ue, uw, un, us, uxx, uyy;
 
   PetscFunctionBeginUser;
   lambda = app->lambda;
-  hx     = 1.0/(PetscReal)(info->mx-1);
-  hy     = 1.0/(PetscReal)(info->my-1);
+  hx     = 1.0 / (PetscReal)(info->mx - 1);
+  hy     = 1.0 / (PetscReal)(info->my - 1);
 
   /*
      Compute RHS function over the locally owned part of the grid
   */
-  for (j=info->ys; j<info->ys+info->ym; j++) {
-    for (i=info->xs; i<info->xs+info->xm; i++) {
-      if (i == 0 || j == 0 || i == info->mx-1 || j == info->my-1) {
+  for (j = info->ys; j < info->ys + info->ym; j++) {
+    for (i = info->xs; i < info->xs + info->xm; i++) {
+      if (i == 0 || j == 0 || i == info->mx - 1 || j == info->my - 1) {
         /* boundary points */
         f[j][i] = x[j][i] - (PetscReal)0;
       } else {
         /* interior points */
         ut = xdot[j][i];
         u  = x[j][i];
-        uw = x[j][i-1];
-        ue = x[j][i+1];
-        un = x[j+1][i];
-        us = x[j-1][i];
+        uw = x[j][i - 1];
+        ue = x[j][i + 1];
+        un = x[j + 1][i];
+        us = x[j - 1][i];
 
-        uxx = (uw - 2.0*u + ue)/(hx*hx);
-        uyy = (un - 2.0*u + us)/(hy*hy);
-        f[j][i] = ut - uxx - uyy - lambda*PetscExpScalar(u);
+        uxx     = (uw - 2.0 * u + ue) / (hx * hx);
+        uyy     = (un - 2.0 * u + us) / (hy * hy);
+        f[j][i] = ut - uxx - uyy - lambda * PetscExpScalar(u);
       }
     }
   }
@@ -71,39 +70,54 @@ static PetscErrorCode FormIFunctionLocal(DMDALocalInfo *info,PetscReal t,PetscSc
 /*
    FormIJacobianLocal - Evaluates implicit Jacobian matrix on local process patch
 */
-static PetscErrorCode FormIJacobianLocal(DMDALocalInfo *info,PetscReal t,PetscScalar **x,PetscScalar **xdot,PetscScalar shift,Mat jac,Mat jacpre,AppCtx *app)
-{
-  PetscInt       i,j,k;
-  MatStencil     col[5],row;
-  PetscScalar    v[5],lambda,hx,hy;
+static PetscErrorCode FormIJacobianLocal(DMDALocalInfo *info, PetscReal t, PetscScalar **x, PetscScalar **xdot, PetscScalar shift, Mat jac, Mat jacpre, AppCtx *app) {
+  PetscInt    i, j, k;
+  MatStencil  col[5], row;
+  PetscScalar v[5], lambda, hx, hy;
 
   PetscFunctionBeginUser;
   lambda = app->lambda;
-  hx     = 1.0/(PetscReal)(info->mx-1);
-  hy     = 1.0/(PetscReal)(info->my-1);
+  hx     = 1.0 / (PetscReal)(info->mx - 1);
+  hy     = 1.0 / (PetscReal)(info->my - 1);
 
   /*
      Compute Jacobian entries for the locally owned part of the grid
   */
-  for (j=info->ys; j<info->ys+info->ym; j++) {
-    for (i=info->xs; i<info->xs+info->xm; i++) {
-      row.j = j; row.i = i; k = 0;
-      if (i == 0 || j == 0 || i == info->mx-1 || j == info->my-1) {
+  for (j = info->ys; j < info->ys + info->ym; j++) {
+    for (i = info->xs; i < info->xs + info->xm; i++) {
+      row.j = j;
+      row.i = i;
+      k     = 0;
+      if (i == 0 || j == 0 || i == info->mx - 1 || j == info->my - 1) {
         /* boundary points */
         v[0] = 1.0;
-        PetscCall(MatSetValuesStencil(jacpre,1,&row,1,&row,v,INSERT_VALUES));
+        PetscCall(MatSetValuesStencil(jacpre, 1, &row, 1, &row, v, INSERT_VALUES));
       } else {
         /* interior points */
-        v[k] = -1.0/(hy*hy); col[k].j = j-1; col[k].i = i;   k++;
-        v[k] = -1.0/(hx*hx); col[k].j = j;   col[k].i = i-1; k++;
+        v[k]     = -1.0 / (hy * hy);
+        col[k].j = j - 1;
+        col[k].i = i;
+        k++;
+        v[k]     = -1.0 / (hx * hx);
+        col[k].j = j;
+        col[k].i = i - 1;
+        k++;
 
-        v[k] = shift + 2.0/(hx*hx) + 2.0/(hy*hy) - lambda*PetscExpScalar(x[j][i]);
-        col[k].j = j; col[k].i = i; k++;
+        v[k]     = shift + 2.0 / (hx * hx) + 2.0 / (hy * hy) - lambda * PetscExpScalar(x[j][i]);
+        col[k].j = j;
+        col[k].i = i;
+        k++;
 
-        v[k] = -1.0/(hx*hx); col[k].j = j;   col[k].i = i+1; k++;
-        v[k] = -1.0/(hy*hy); col[k].j = j+1; col[k].i = i;   k++;
+        v[k]     = -1.0 / (hx * hx);
+        col[k].j = j;
+        col[k].i = i + 1;
+        k++;
+        v[k]     = -1.0 / (hy * hy);
+        col[k].j = j + 1;
+        col[k].i = i;
+        k++;
 
-        PetscCall(MatSetValuesStencil(jacpre,1,&row,k,col,v,INSERT_VALUES));
+        PetscCall(MatSetValuesStencil(jacpre, 1, &row, k, col, v, INSERT_VALUES));
       }
     }
   }
@@ -111,16 +125,15 @@ static PetscErrorCode FormIJacobianLocal(DMDALocalInfo *info,PetscReal t,PetscSc
   /*
      Assemble matrix
   */
-  PetscCall(MatAssemblyBegin(jacpre,MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(jacpre,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(jacpre, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(jacpre, MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }
 
-int main(int argc,char **argv)
-{
-  TS              ts;            /* ODE integrator */
-  DM              da;            /* DM context */
-  Vec             U;             /* solution vector */
+int main(int argc, char **argv) {
+  TS              ts; /* ODE integrator */
+  DM              da; /* DM context */
+  Vec             U;  /* solution vector */
   DMBoundaryType  bt = DM_BOUNDARY_NONE;
   DMDAStencilType st = DMDA_STENCIL_STAR;
   PetscInt        sw = 1;
@@ -132,55 +145,56 @@ int main(int argc,char **argv)
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
-  PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"ex21 options","");
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
+  PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "ex21 options", "");
   {
-    app.lambda = 6.8; app.lambda = 6.0;
-    PetscCall(PetscOptionsReal("-lambda","","",app.lambda,&app.lambda,NULL));
+    app.lambda = 6.8;
+    app.lambda = 6.0;
+    PetscCall(PetscOptionsReal("-lambda", "", "", app.lambda, &app.lambda, NULL));
   }
   PetscOptionsEnd();
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create DM context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscCall(DMDACreate2d(PETSC_COMM_WORLD,bt,bt,st,N,N,n,n,1,sw,NULL,NULL,&da));
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, bt, bt, st, N, N, n, n, 1, sw, NULL, NULL, &da));
   PetscCall(DMSetFromOptions(da));
   PetscCall(DMSetUp(da));
-  PetscCall(DMDASetUniformCoordinates(da,0.0,1.0,0.0,1.0,0,1.0));
+  PetscCall(DMDASetUniformCoordinates(da, 0.0, 1.0, 0.0, 1.0, 0, 1.0));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscCall(TSCreate(PETSC_COMM_WORLD,&ts));
-  PetscCall(TSSetProblemType(ts,TS_NONLINEAR));
-  PetscCall(TSSetDM(ts,da));
+  PetscCall(TSCreate(PETSC_COMM_WORLD, &ts));
+  PetscCall(TSSetProblemType(ts, TS_NONLINEAR));
+  PetscCall(TSSetDM(ts, da));
   PetscCall(DMDestroy(&da));
 
-  PetscCall(TSGetDM(ts,&da));
-  PetscCall(DMDATSSetIFunctionLocal(da,INSERT_VALUES,(DMDATSIFunctionLocal)FormIFunctionLocal,&app));
-  PetscCall(DMDATSSetIJacobianLocal(da,(DMDATSIJacobianLocal)FormIJacobianLocal,&app));
+  PetscCall(TSGetDM(ts, &da));
+  PetscCall(DMDATSSetIFunctionLocal(da, INSERT_VALUES, (DMDATSIFunctionLocal)FormIFunctionLocal, &app));
+  PetscCall(DMDATSSetIJacobianLocal(da, (DMDATSIJacobianLocal)FormIJacobianLocal, &app));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set solver options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscCall(TSSetType(ts,TSBDF));
-  PetscCall(TSSetTimeStep(ts,1e-4));
-  PetscCall(TSSetMaxTime(ts,1.0));
-  PetscCall(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER));
+  PetscCall(TSSetType(ts, TSBDF));
+  PetscCall(TSSetTimeStep(ts, 1e-4));
+  PetscCall(TSSetMaxTime(ts, 1.0));
+  PetscCall(TSSetExactFinalTime(ts, TS_EXACTFINALTIME_STEPOVER));
   PetscCall(TSSetFromOptions(ts));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscCall(TSGetDM(ts,&da));
-  PetscCall(DMCreateGlobalVector(da,&U));
-  PetscCall(VecSet(U,0.0));
-  PetscCall(TSSetSolution(ts,U));
+  PetscCall(TSGetDM(ts, &da));
+  PetscCall(DMCreateGlobalVector(da, &U));
+  PetscCall(VecSet(U, 0.0));
+  PetscCall(TSSetSolution(ts, U));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Run timestepping solver
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscCall(TSSolve(ts,U));
+  PetscCall(TSSolve(ts, U));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       All PETSc objects should be destroyed when they are no longer needed.

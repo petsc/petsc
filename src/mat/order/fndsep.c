@@ -32,9 +32,8 @@
 /*       FNROOT.                                                 */
 /*                                                               */
 /*****************************************************************/
-PetscErrorCode SPARSEPACKfndsep(PetscInt *root,const PetscInt *inxadj,const PetscInt *adjncy,PetscInt *mask, PetscInt *nsep, PetscInt *sep, PetscInt *xls, PetscInt *ls)
-{
-  PetscInt *xadj = (PetscInt*)inxadj; /* Used as temporary and reset within this function */
+PetscErrorCode SPARSEPACKfndsep(PetscInt *root, const PetscInt *inxadj, const PetscInt *adjncy, PetscInt *mask, PetscInt *nsep, PetscInt *sep, PetscInt *xls, PetscInt *ls) {
+  PetscInt *xadj = (PetscInt *)inxadj; /* Used as temporary and reset within this function */
 
   /* System generated locals */
   PetscInt i__1, i__2;
@@ -53,8 +52,8 @@ PetscErrorCode SPARSEPACKfndsep(PetscInt *root,const PetscInt *inxadj,const Pets
   --xadj;
 
   SPARSEPACKfnroot(root, &xadj[1], &adjncy[1], &mask[1], &nlvl, &xls[1], &ls[1]);
-/*       IF THE NUMBER OF LEVELS IS LESS THAN 3, RETURN */
-/*       THE WHOLE COMPONENT AS THE SEPARATOR.*/
+  /*       IF THE NUMBER OF LEVELS IS LESS THAN 3, RETURN */
+  /*       THE WHOLE COMPONENT AS THE SEPARATOR.*/
   if (nlvl >= 3) goto L200;
   *nsep = xls[nlvl + 1] - 1;
   i__1  = *nsep;
@@ -71,11 +70,11 @@ L200:
   mp1beg = xls[midlvl + 1];
   midend = mp1beg - 1;
   mp1end = xls[midlvl + 2] - 1;
-/*       THE SEPARATOR IS OBTAINED BY INCLUDING ONLY THOSE*/
-/*       MIDDLE-LEVEL NODES WITH NEIGHBORS IN THE MIDDLE+1*/
-/*       LEVEL. XADJ IS USED TEMPORARILY TO MARK THOSE*/
-/*       NODES IN THE MIDDLE+1 LEVEL.*/
-  i__1 = mp1end;
+  /*       THE SEPARATOR IS OBTAINED BY INCLUDING ONLY THOSE*/
+  /*       MIDDLE-LEVEL NODES WITH NEIGHBORS IN THE MIDDLE+1*/
+  /*       LEVEL. XADJ IS USED TEMPORARILY TO MARK THOSE*/
+  /*       NODES IN THE MIDDLE+1 LEVEL.*/
+  i__1   = mp1end;
   for (i = mp1beg; i <= i__1; ++i) {
     node       = ls[i];
     xadj[node] = -xadj[node];
@@ -95,13 +94,11 @@ L200:
       sep[*nsep] = node;
       mask[node] = 0;
       goto L500;
-L400:
-      ;
+    L400:;
     }
-L500:
-    ;
+  L500:;
   }
-/*       RESET XADJ TO ITS CORRECT SIGN.*/
+  /*       RESET XADJ TO ITS CORRECT SIGN.*/
   i__1 = mp1end;
   for (i = mp1beg; i <= i__1; ++i) {
     node       = ls[i];

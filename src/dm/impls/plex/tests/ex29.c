@@ -2,38 +2,41 @@ static char help[] = "Test scalable partitioning on distributed meshes\n\n";
 
 #include <petscdmplex.h>
 
-enum {STAGE_LOAD, STAGE_DISTRIBUTE, STAGE_REFINE, STAGE_OVERLAP};
+enum {
+  STAGE_LOAD,
+  STAGE_DISTRIBUTE,
+  STAGE_REFINE,
+  STAGE_OVERLAP
+};
 
 typedef struct {
   PetscLogEvent createMeshEvent;
   PetscLogStage stages[4];
   /* Domain and mesh definition */
-  PetscInt overlap; /* The cell overlap to use during partitioning */
+  PetscInt      overlap; /* The cell overlap to use during partitioning */
 } AppCtx;
 
-PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
-{
+PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   PetscFunctionBegin;
   options->overlap = PETSC_FALSE;
 
   PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");
-  PetscCall(PetscOptionsBoundedInt("-overlap", "The cell overlap for partitioning", "ex29.c", options->overlap, &options->overlap, NULL,0));
+  PetscCall(PetscOptionsBoundedInt("-overlap", "The cell overlap for partitioning", "ex29.c", options->overlap, &options->overlap, NULL, 0));
   PetscOptionsEnd();
 
   PetscCall(PetscLogEventRegister("CreateMesh", DM_CLASSID, &options->createMeshEvent));
-  PetscCall(PetscLogStageRegister("MeshLoad",       &options->stages[STAGE_LOAD]));
+  PetscCall(PetscLogStageRegister("MeshLoad", &options->stages[STAGE_LOAD]));
   PetscCall(PetscLogStageRegister("MeshDistribute", &options->stages[STAGE_DISTRIBUTE]));
-  PetscCall(PetscLogStageRegister("MeshRefine",     &options->stages[STAGE_REFINE]));
-  PetscCall(PetscLogStageRegister("MeshOverlap",    &options->stages[STAGE_OVERLAP]));
+  PetscCall(PetscLogStageRegister("MeshRefine", &options->stages[STAGE_REFINE]));
+  PetscCall(PetscLogStageRegister("MeshOverlap", &options->stages[STAGE_OVERLAP]));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
-{
-  PetscMPIInt    rank, size;
+PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm) {
+  PetscMPIInt rank, size;
 
   PetscFunctionBegin;
-  PetscCall(PetscLogEventBegin(user->createMeshEvent,0,0,0,0));
+  PetscCall(PetscLogEventBegin(user->createMeshEvent, 0, 0, 0, 0));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCall(PetscLogStagePush(user->stages[STAGE_LOAD]));
@@ -52,14 +55,14 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     PetscCall(DMPlexDistribute(*dm, 0, NULL, &pdm));
     if (pdm) {
       PetscCall(DMDestroy(dm));
-      *dm  = pdm;
+      *dm = pdm;
     }
     PetscCall(PetscLogStagePop());
   }
   PetscCall(PetscLogStagePush(user->stages[STAGE_REFINE]));
-  PetscCall(PetscObjectSetOptionsPrefix((PetscObject) *dm, "post_"));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)*dm, "post_"));
   PetscCall(DMSetFromOptions(*dm));
-  PetscCall(PetscObjectSetOptionsPrefix((PetscObject) *dm, ""));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)*dm, ""));
   PetscCall(PetscLogStagePop());
   if (user->overlap) {
     DM odm = NULL;
@@ -74,14 +77,13 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     PetscCall(PetscLogStagePop());
   }
   PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
-  PetscCall(PetscLogEventEnd(user->createMeshEvent,0,0,0,0));
+  PetscCall(PetscLogEventEnd(user->createMeshEvent, 0, 0, 0, 0));
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv)
-{
-  DM             dm, pdm;
-  AppCtx         user;                 /* user-defined work context */
+int main(int argc, char **argv) {
+  DM               dm, pdm;
+  AppCtx           user; /* user-defined work context */
   PetscPartitioner part;
 
   PetscFunctionBeginUser;

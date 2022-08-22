@@ -1,5 +1,5 @@
 
-#include <petsc/private/viewerimpl.h>   /*I  "petscsys.h"  */
+#include <petsc/private/viewerimpl.h> /*I  "petscsys.h"  */
 #include <petscviewersaws.h>
 
 /*@C
@@ -35,11 +35,10 @@
           `PetscObjectSAWsViewOff()`, `PetscObjectSAWsTakeAccess()`, `PetscObjectSAWsGrantAccess()`
 
 @*/
-PetscErrorCode PetscViewerSAWsOpen(MPI_Comm comm,PetscViewer *lab)
-{
+PetscErrorCode PetscViewerSAWsOpen(MPI_Comm comm, PetscViewer *lab) {
   PetscFunctionBegin;
-  PetscCall(PetscViewerCreate(comm,lab));
-  PetscCall(PetscViewerSetType(*lab,PETSCVIEWERSAWS));
+  PetscCall(PetscViewerCreate(comm, lab));
+  PetscCall(PetscViewerSetType(*lab, PETSCVIEWERSAWS));
   PetscFunctionReturn(0);
 }
 
@@ -64,26 +63,25 @@ PetscErrorCode PetscViewerSAWsOpen(MPI_Comm comm,PetscViewer *lab)
 .seealso: `PetscObjectSetName()`, `PetscObjectSAWsViewOff()`
 
 @*/
-PetscErrorCode  PetscObjectViewSAWs(PetscObject obj,PetscViewer viewer)
-{
+PetscErrorCode PetscObjectViewSAWs(PetscObject obj, PetscViewer viewer) {
   char        dir[1024];
   PetscMPIInt rank;
 
   PetscFunctionBegin;
-  PetscValidHeader(obj,1);
+  PetscValidHeader(obj, 1);
   if (obj->amsmem) PetscFunctionReturn(0);
-  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
-  PetscCheck(rank == 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Should only be being called on rank zero");
-  PetscCheck(obj->name,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Object must already have been named");
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
+  PetscCheck(rank == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Should only be being called on rank zero");
+  PetscCheck(obj->name, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Object must already have been named");
 
   obj->amsmem = PETSC_TRUE;
-  PetscCall(PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/Class",obj->name));
-  PetscCallSAWs(SAWs_Register,(dir,&obj->class_name,1,SAWs_READ,SAWs_STRING));
-  PetscCall(PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/Type",obj->name));
-  PetscCallSAWs(SAWs_Register,(dir,&obj->type_name,1,SAWs_READ,SAWs_STRING));
-  PetscCall(PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/__Id",obj->name));
-  PetscCallSAWs(SAWs_Register,(dir,&obj->id,1,SAWs_READ,SAWs_INT));
-  PetscCall(PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/__ParentID",obj->name));
-  PetscCallSAWs(SAWs_Register,(dir,&obj->parentid,1,SAWs_READ,SAWs_INT));
+  PetscCall(PetscSNPrintf(dir, 1024, "/PETSc/Objects/%s/Class", obj->name));
+  PetscCallSAWs(SAWs_Register, (dir, &obj->class_name, 1, SAWs_READ, SAWs_STRING));
+  PetscCall(PetscSNPrintf(dir, 1024, "/PETSc/Objects/%s/Type", obj->name));
+  PetscCallSAWs(SAWs_Register, (dir, &obj->type_name, 1, SAWs_READ, SAWs_STRING));
+  PetscCall(PetscSNPrintf(dir, 1024, "/PETSc/Objects/%s/__Id", obj->name));
+  PetscCallSAWs(SAWs_Register, (dir, &obj->id, 1, SAWs_READ, SAWs_INT));
+  PetscCall(PetscSNPrintf(dir, 1024, "/PETSc/Objects/%s/__ParentID", obj->name));
+  PetscCallSAWs(SAWs_Register, (dir, &obj->parentid, 1, SAWs_READ, SAWs_INT));
   PetscFunctionReturn(0);
 }

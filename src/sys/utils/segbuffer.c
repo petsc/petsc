@@ -2,38 +2,38 @@
 
 struct _PetscSegBufferLink {
   struct _PetscSegBufferLink *tail;
-  size_t alloc;
-  size_t used;
-  size_t tailused;
-  union {                       /* Dummy types to ensure alignment */
+  size_t                      alloc;
+  size_t                      used;
+  size_t                      tailused;
+  union
+  { /* Dummy types to ensure alignment */
     PetscReal dummy_real;
     PetscInt  dummy_int;
-    char      array[1];         /* This array is over-allocated for the size of the link */
+    char      array[1]; /* This array is over-allocated for the size of the link */
   } u;
 };
 
 /* Segmented (extendable) array implementation */
 struct _n_PetscSegBuffer {
   struct _PetscSegBufferLink *head;
-  size_t unitbytes;
+  size_t                      unitbytes;
 };
 
-static PetscErrorCode PetscSegBufferAlloc_Private(PetscSegBuffer seg,size_t count)
-{
-  size_t             alloc;
-  struct _PetscSegBufferLink *newlink,*s;
+static PetscErrorCode PetscSegBufferAlloc_Private(PetscSegBuffer seg, size_t count) {
+  size_t                      alloc;
+  struct _PetscSegBufferLink *newlink, *s;
 
   PetscFunctionBegin;
-  s = seg->head;
+  s     = seg->head;
   /* Grow at least fast enough to hold next item, like Fibonacci otherwise (up to 1MB chunks) */
-  alloc = PetscMax(s->used+count,PetscMin(1000000/seg->unitbytes+1,s->alloc+s->tailused));
-  PetscCall(PetscMalloc(offsetof(struct _PetscSegBufferLink,u)+alloc*seg->unitbytes,&newlink));
-  PetscCall(PetscMemzero(newlink,offsetof(struct _PetscSegBufferLink,u)));
+  alloc = PetscMax(s->used + count, PetscMin(1000000 / seg->unitbytes + 1, s->alloc + s->tailused));
+  PetscCall(PetscMalloc(offsetof(struct _PetscSegBufferLink, u) + alloc * seg->unitbytes, &newlink));
+  PetscCall(PetscMemzero(newlink, offsetof(struct _PetscSegBufferLink, u)));
 
-  newlink->tailused  = s->used + s->tailused;
-  newlink->tail      = s;
-  newlink->alloc     = alloc;
-  seg->head = newlink;
+  newlink->tailused = s->used + s->tailused;
+  newlink->tail     = s;
+  newlink->alloc    = alloc;
+  seg->head         = newlink;
   PetscFunctionReturn(0);
 }
 
@@ -53,14 +53,13 @@ static PetscErrorCode PetscSegBufferAlloc_Private(PetscSegBuffer seg,size_t coun
 
 .seealso: `PetscSegBufferGet()`, `PetscSegBufferExtractAlloc()`, `PetscSegBufferExtractTo()`, `PetscSegBufferExtractInPlace()`, `PetscSegBufferDestroy()`
 @*/
-PetscErrorCode PetscSegBufferCreate(size_t unitbytes,size_t expected,PetscSegBuffer *seg)
-{
+PetscErrorCode PetscSegBufferCreate(size_t unitbytes, size_t expected, PetscSegBuffer *seg) {
   struct _PetscSegBufferLink *head;
 
   PetscFunctionBegin;
   PetscCall(PetscNew(seg));
-  PetscCall(PetscMalloc(offsetof(struct _PetscSegBufferLink,u)+expected*unitbytes,&head));
-  PetscCall(PetscMemzero(head,offsetof(struct _PetscSegBufferLink,u)));
+  PetscCall(PetscMalloc(offsetof(struct _PetscSegBufferLink, u) + expected * unitbytes, &head));
+  PetscCall(PetscMemzero(head, offsetof(struct _PetscSegBufferLink, u)));
 
   head->alloc       = expected;
   (*seg)->unitbytes = unitbytes;
@@ -84,15 +83,14 @@ PetscErrorCode PetscSegBufferCreate(size_t unitbytes,size_t expected,PetscSegBuf
 
 .seealso: `PetscSegBufferCreate()`, `PetscSegBufferExtractAlloc()`, `PetscSegBufferExtractTo()`, `PetscSegBufferExtractInPlace()`, `PetscSegBufferDestroy()`
 @*/
-PetscErrorCode PetscSegBufferGet(PetscSegBuffer seg,size_t count,void *buf)
-{
+PetscErrorCode PetscSegBufferGet(PetscSegBuffer seg, size_t count, void *buf) {
   struct _PetscSegBufferLink *s;
 
   PetscFunctionBegin;
   s = seg->head;
-  if (PetscUnlikely(s->used + count > s->alloc)) PetscCall(PetscSegBufferAlloc_Private(seg,count));
-  s = seg->head;
-  *(char**)buf = &s->u.array[s->used*seg->unitbytes];
+  if (PetscUnlikely(s->used + count > s->alloc)) PetscCall(PetscSegBufferAlloc_Private(seg, count));
+  s             = seg->head;
+  *(char **)buf = &s->u.array[s->used * seg->unitbytes];
   s->used += count;
   PetscFunctionReturn(0);
 }
@@ -109,13 +107,12 @@ PetscErrorCode PetscSegBufferGet(PetscSegBuffer seg,size_t count,void *buf)
 
 .seealso: `PetscSegBufferCreate()`
 @*/
-PetscErrorCode PetscSegBufferDestroy(PetscSegBuffer *seg)
-{
+PetscErrorCode PetscSegBufferDestroy(PetscSegBuffer *seg) {
   struct _PetscSegBufferLink *s;
 
   PetscFunctionBegin;
   if (!*seg) PetscFunctionReturn(0);
-  for (s=(*seg)->head; s;) {
+  for (s = (*seg)->head; s;) {
     struct _PetscSegBufferLink *tail = s->tail;
     PetscCall(PetscFree(s));
     s = tail;
@@ -137,28 +134,27 @@ PetscErrorCode PetscSegBufferDestroy(PetscSegBuffer *seg)
 
 .seealso: `PetscSegBufferCreate()`, `PetscSegBufferGet()`, `PetscSegBufferDestroy()`, `PetscSegBufferExtractAlloc()`, `PetscSegBufferExtractInPlace()`
 @*/
-PetscErrorCode PetscSegBufferExtractTo(PetscSegBuffer seg,void *contig)
-{
-  size_t                     unitbytes;
-  struct _PetscSegBufferLink *s,*t;
+PetscErrorCode PetscSegBufferExtractTo(PetscSegBuffer seg, void *contig) {
+  size_t                      unitbytes;
+  struct _PetscSegBufferLink *s, *t;
   char                       *ptr;
 
   PetscFunctionBegin;
   unitbytes = seg->unitbytes;
-  s = seg->head;
-  ptr  = ((char*)contig) + s->tailused*unitbytes;
-  PetscCall(PetscMemcpy(ptr,s->u.array,s->used*unitbytes));
-  for (t=s->tail; t;) {
+  s         = seg->head;
+  ptr       = ((char *)contig) + s->tailused * unitbytes;
+  PetscCall(PetscMemcpy(ptr, s->u.array, s->used * unitbytes));
+  for (t = s->tail; t;) {
     struct _PetscSegBufferLink *tail = t->tail;
-    ptr -= t->used*unitbytes;
-    PetscCall(PetscMemcpy(ptr,t->u.array,t->used*unitbytes));
+    ptr -= t->used * unitbytes;
+    PetscCall(PetscMemcpy(ptr, t->u.array, t->used * unitbytes));
     PetscCall(PetscFree(t));
-    t    = tail;
+    t = tail;
   }
-  PetscCheck(ptr == contig,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Tail count does not match");
-  s->used             = 0;
-  s->tailused         = 0;
-  s->tail             = NULL;
+  PetscCheck(ptr == contig, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Tail count does not match");
+  s->used     = 0;
+  s->tailused = 0;
+  s->tail     = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -179,17 +175,16 @@ PetscErrorCode PetscSegBufferExtractTo(PetscSegBuffer seg,void *contig)
 
 .seealso: `PetscSegBufferCreate()`, `PetscSegBufferGet()`, `PetscSegBufferDestroy()`, `PetscSegBufferExtractTo()`, `PetscSegBufferExtractInPlace()`
 @*/
-PetscErrorCode PetscSegBufferExtractAlloc(PetscSegBuffer seg,void *contiguous)
-{
+PetscErrorCode PetscSegBufferExtractAlloc(PetscSegBuffer seg, void *contiguous) {
   struct _PetscSegBufferLink *s;
   void                       *contig;
 
   PetscFunctionBegin;
   s = seg->head;
 
-  PetscCall(PetscMalloc((s->used+s->tailused)*seg->unitbytes,&contig));
-  PetscCall(PetscSegBufferExtractTo(seg,contig));
-  *(void**)contiguous = contig;
+  PetscCall(PetscMalloc((s->used + s->tailused) * seg->unitbytes, &contig));
+  PetscCall(PetscSegBufferExtractTo(seg, contig));
+  *(void **)contiguous = contig;
   PetscFunctionReturn(0);
 }
 
@@ -208,8 +203,7 @@ PetscErrorCode PetscSegBufferExtractAlloc(PetscSegBuffer seg,void *contiguous)
 
 .seealso: `PetscSegBufferExtractAlloc()`, `PetscSegBufferExtractTo()`
 @*/
-PetscErrorCode PetscSegBufferExtractInPlace(PetscSegBuffer seg,void *contig)
-{
+PetscErrorCode PetscSegBufferExtractInPlace(PetscSegBuffer seg, void *contig) {
   struct _PetscSegBufferLink *head;
 
   PetscFunctionBegin;
@@ -217,14 +211,14 @@ PetscErrorCode PetscSegBufferExtractInPlace(PetscSegBuffer seg,void *contig)
   if (PetscUnlikely(head->tail)) {
     PetscSegBuffer newseg;
 
-    PetscCall(PetscSegBufferCreate(seg->unitbytes,head->used+head->tailused,&newseg));
-    PetscCall(PetscSegBufferExtractTo(seg,newseg->head->u.array));
-    seg->head = newseg->head;
+    PetscCall(PetscSegBufferCreate(seg->unitbytes, head->used + head->tailused, &newseg));
+    PetscCall(PetscSegBufferExtractTo(seg, newseg->head->u.array));
+    seg->head    = newseg->head;
     newseg->head = head;
     PetscCall(PetscSegBufferDestroy(&newseg));
     head = seg->head;
   }
-  if (contig) *(char**)contig = head->u.array;
+  if (contig) *(char **)contig = head->u.array;
   head->used = 0;
   PetscFunctionReturn(0);
 }
@@ -244,8 +238,7 @@ PetscErrorCode PetscSegBufferExtractInPlace(PetscSegBuffer seg,void *contig)
 
 .seealso: `PetscSegBufferExtractAlloc()`, `PetscSegBufferExtractTo()`, `PetscSegBufferCreate()`, `PetscSegBufferGet()`
 @*/
-PetscErrorCode PetscSegBufferGetSize(PetscSegBuffer seg,size_t *usedsize)
-{
+PetscErrorCode PetscSegBufferGetSize(PetscSegBuffer seg, size_t *usedsize) {
   PetscFunctionBegin;
   *usedsize = seg->head->tailused + seg->head->used;
   PetscFunctionReturn(0);
@@ -264,13 +257,12 @@ PetscErrorCode PetscSegBufferGetSize(PetscSegBuffer seg,size_t *usedsize)
 
 .seealso: `PetscSegBufferCreate()`, `PetscSegBufferGet()`
 @*/
-PetscErrorCode PetscSegBufferUnuse(PetscSegBuffer seg,size_t unused)
-{
+PetscErrorCode PetscSegBufferUnuse(PetscSegBuffer seg, size_t unused) {
   struct _PetscSegBufferLink *head;
 
   PetscFunctionBegin;
   head = seg->head;
-  PetscCheck(head->used >= unused,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Attempt to return more unused entries (%zu) than previously gotten (%zu)",unused,head->used);
+  PetscCheck(head->used >= unused, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Attempt to return more unused entries (%zu) than previously gotten (%zu)", unused, head->used);
   head->used -= unused;
   PetscFunctionReturn(0);
 }

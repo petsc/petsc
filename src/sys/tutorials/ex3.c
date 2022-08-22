@@ -12,14 +12,13 @@ codes.\n\n";
 #include <petscsys.h>
 #include <petscviewer.h>
 
-int main(int argc,char **argv)
-{
-  PetscMPIInt    rank;
-  int            i,imax=10000,icount;
-  PetscLogEvent  USER_EVENT,check_USER_EVENT;
+int main(int argc, char **argv) {
+  PetscMPIInt   rank;
+  int           i, imax = 10000, icount;
+  PetscLogEvent USER_EVENT, check_USER_EVENT;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   /*
      Create a new user-defined event.
@@ -29,44 +28,44 @@ int main(int argc,char **argv)
       - The user can also optionally log floating point operations
         with the routine PetscLogFlops().
   */
-  PetscCall(PetscLogEventRegister("User event",PETSC_VIEWER_CLASSID,&USER_EVENT));
-  PetscCall(PetscLogEventGetId("User event",&check_USER_EVENT));
-  PetscCheck(USER_EVENT == check_USER_EVENT,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Event Ids do not match");
+  PetscCall(PetscLogEventRegister("User event", PETSC_VIEWER_CLASSID, &USER_EVENT));
+  PetscCall(PetscLogEventGetId("User event", &check_USER_EVENT));
+  PetscCheck(USER_EVENT == check_USER_EVENT, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Event Ids do not match");
 
-  PetscCall(PetscLogEventBegin(USER_EVENT,0,0,0,0));
+  PetscCall(PetscLogEventBegin(USER_EVENT, 0, 0, 0, 0));
   icount = 0;
-  for (i=0; i<imax; i++) icount++;
+  for (i = 0; i < imax; i++) icount++;
   PetscCall(PetscLogFlops(imax));
   PetscCall(PetscSleep(0.5));
-  PetscCall(PetscLogEventEnd(USER_EVENT,0,0,0,0));
+  PetscCall(PetscLogEventEnd(USER_EVENT, 0, 0, 0, 0));
 
   /*
      We disable the logging of an event.
 
   */
   PetscCall(PetscLogEventDeactivate(USER_EVENT));
-  PetscCall(PetscLogEventBegin(USER_EVENT,0,0,0,0));
+  PetscCall(PetscLogEventBegin(USER_EVENT, 0, 0, 0, 0));
   PetscCall(PetscSleep(0.5));
-  PetscCall(PetscLogEventEnd(USER_EVENT,0,0,0,0));
+  PetscCall(PetscLogEventEnd(USER_EVENT, 0, 0, 0, 0));
 
   /*
      We next enable the logging of an event
   */
   PetscCall(PetscLogEventActivate(USER_EVENT));
-  PetscCall(PetscLogEventBegin(USER_EVENT,0,0,0,0));
+  PetscCall(PetscLogEventBegin(USER_EVENT, 0, 0, 0, 0));
   PetscCall(PetscSleep(0.5));
-  PetscCall(PetscLogEventEnd(USER_EVENT,0,0,0,0));
+  PetscCall(PetscLogEventEnd(USER_EVENT, 0, 0, 0, 0));
 
   /*
      We test event logging imbalance
   */
-  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
   if (rank == 0) PetscCall(PetscSleep(0.5));
-  PetscCall(PetscLogEventSync(USER_EVENT,PETSC_COMM_WORLD));
-  PetscCall(PetscLogEventBegin(USER_EVENT,0,0,0,0));
+  PetscCall(PetscLogEventSync(USER_EVENT, PETSC_COMM_WORLD));
+  PetscCall(PetscLogEventBegin(USER_EVENT, 0, 0, 0, 0));
   PetscCallMPI(MPI_Barrier(PETSC_COMM_WORLD));
   PetscCall(PetscSleep(0.5));
-  PetscCall(PetscLogEventEnd(USER_EVENT,0,0,0,0));
+  PetscCall(PetscLogEventEnd(USER_EVENT, 0, 0, 0, 0));
 
   PetscCall(PetscFinalize());
   return 0;

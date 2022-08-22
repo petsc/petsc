@@ -16,36 +16,35 @@ Input parameters include:\n\
 */
 #include <petscksp.h>
 
-int main(int argc,char **args)
-{
-  Vec            x,b,u;  /* approx solution, RHS, exact solution */
-  Mat            A;        /* linear system matrix */
-  KSP            ksp;     /* linear solver context */
-  PetscRandom    rctx;     /* random number generator context */
-  PetscReal      norm;     /* norm of solution error */
-  PetscInt       i,j,Ii,J,Istart,Iend,m,n,its;
-  PetscBool      random_exact_sol,view_exact_sol,permute;
-  char           ordering[256] = MATORDERINGRCM;
-  IS             rowperm       = NULL,colperm = NULL;
-  PetscScalar    v;
+int main(int argc, char **args) {
+  Vec         x, b, u; /* approx solution, RHS, exact solution */
+  Mat         A;       /* linear system matrix */
+  KSP         ksp;     /* linear solver context */
+  PetscRandom rctx;    /* random number generator context */
+  PetscReal   norm;    /* norm of solution error */
+  PetscInt    i, j, Ii, J, Istart, Iend, m, n, its;
+  PetscBool   random_exact_sol, view_exact_sol, permute;
+  char        ordering[256] = MATORDERINGRCM;
+  IS          rowperm = NULL, colperm = NULL;
+  PetscScalar v;
 #if defined(PETSC_USE_LOG)
   PetscLogStage stage;
 #endif
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
-  PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Poisson example options","");
+  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "Poisson example options", "");
   {
-    m                = 8;
-    PetscCall(PetscOptionsInt("-m","Number of grid points in x direction","",m,&m,NULL));
-    n                = m-1;
-    PetscCall(PetscOptionsInt("-n","Number of grid points in y direction","",n,&n,NULL));
+    m = 8;
+    PetscCall(PetscOptionsInt("-m", "Number of grid points in x direction", "", m, &m, NULL));
+    n = m - 1;
+    PetscCall(PetscOptionsInt("-n", "Number of grid points in y direction", "", n, &n, NULL));
     random_exact_sol = PETSC_FALSE;
-    PetscCall(PetscOptionsBool("-random_exact_sol","Choose a random exact solution","",random_exact_sol,&random_exact_sol,NULL));
-    view_exact_sol   = PETSC_FALSE;
-    PetscCall(PetscOptionsBool("-view_exact_sol","View exact solution","",view_exact_sol,&view_exact_sol,NULL));
-    permute          = PETSC_FALSE;
-    PetscCall(PetscOptionsFList("-permute","Permute matrix and vector to solving in new ordering","",MatOrderingList,ordering,ordering,sizeof(ordering),&permute));
+    PetscCall(PetscOptionsBool("-random_exact_sol", "Choose a random exact solution", "", random_exact_sol, &random_exact_sol, NULL));
+    view_exact_sol = PETSC_FALSE;
+    PetscCall(PetscOptionsBool("-view_exact_sol", "View exact solution", "", view_exact_sol, &view_exact_sol, NULL));
+    permute = PETSC_FALSE;
+    PetscCall(PetscOptionsFList("-permute", "Permute matrix and vector to solving in new ordering", "", MatOrderingList, ordering, ordering, sizeof(ordering), &permute));
   }
   PetscOptionsEnd();
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -62,11 +61,11 @@ int main(int argc,char **args)
      preallocation of matrix memory is crucial for attaining good
      performance. See the matrix chapter of the users manual for details.
   */
-  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
-  PetscCall(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n));
+  PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
+  PetscCall(MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, m * n, m * n));
   PetscCall(MatSetFromOptions(A));
-  PetscCall(MatMPIAIJSetPreallocation(A,5,NULL,5,NULL));
-  PetscCall(MatSeqAIJSetPreallocation(A,5,NULL));
+  PetscCall(MatMPIAIJSetPreallocation(A, 5, NULL, 5, NULL));
+  PetscCall(MatSeqAIJSetPreallocation(A, 5, NULL));
   PetscCall(MatSetUp(A));
 
   /*
@@ -74,7 +73,7 @@ int main(int argc,char **args)
      contiguous chunks of rows across the processors.  Determine which
      rows of the matrix are locally owned.
   */
-  PetscCall(MatGetOwnershipRange(A,&Istart,&Iend));
+  PetscCall(MatGetOwnershipRange(A, &Istart, &Iend));
 
   /*
      Set matrix elements for the 2-D, five-point stencil in parallel.
@@ -91,13 +90,28 @@ int main(int argc,char **args)
    */
   PetscCall(PetscLogStageRegister("Assembly", &stage));
   PetscCall(PetscLogStagePush(stage));
-  for (Ii=Istart; Ii<Iend; Ii++) {
-    v = -1.0; i = Ii/n; j = Ii - i*n;
-    if (i>0)   {J = Ii - n; PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
-    if (i<m-1) {J = Ii + n; PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
-    if (j>0)   {J = Ii - 1; PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
-    if (j<n-1) {J = Ii + 1; PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
-    v = 4.0; PetscCall(MatSetValues(A,1,&Ii,1,&Ii,&v,INSERT_VALUES));
+  for (Ii = Istart; Ii < Iend; Ii++) {
+    v = -1.0;
+    i = Ii / n;
+    j = Ii - i * n;
+    if (i > 0) {
+      J = Ii - n;
+      PetscCall(MatSetValues(A, 1, &Ii, 1, &J, &v, INSERT_VALUES));
+    }
+    if (i < m - 1) {
+      J = Ii + n;
+      PetscCall(MatSetValues(A, 1, &Ii, 1, &J, &v, INSERT_VALUES));
+    }
+    if (j > 0) {
+      J = Ii - 1;
+      PetscCall(MatSetValues(A, 1, &Ii, 1, &J, &v, INSERT_VALUES));
+    }
+    if (j < n - 1) {
+      J = Ii + 1;
+      PetscCall(MatSetValues(A, 1, &Ii, 1, &J, &v, INSERT_VALUES));
+    }
+    v = 4.0;
+    PetscCall(MatSetValues(A, 1, &Ii, 1, &Ii, &v, INSERT_VALUES));
   }
 
   /*
@@ -106,12 +120,12 @@ int main(int argc,char **args)
      Computations can be done while messages are in transition
      by placing code between these two statements.
   */
-  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
   PetscCall(PetscLogStagePop());
 
   /* A is symmetric. Set symmetric flag to enable ICC/Cholesky preconditioner */
-  PetscCall(MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE));
+  PetscCall(MatSetOption(A, MAT_SYMMETRIC, PETSC_TRUE));
 
   /*
      Create parallel vectors.
@@ -129,11 +143,11 @@ int main(int argc,char **args)
         (replacing the PETSC_DECIDE argument in the VecSetSizes() statement
         below).
   */
-  PetscCall(VecCreate(PETSC_COMM_WORLD,&u));
-  PetscCall(VecSetSizes(u,PETSC_DECIDE,m*n));
+  PetscCall(VecCreate(PETSC_COMM_WORLD, &u));
+  PetscCall(VecSetSizes(u, PETSC_DECIDE, m * n));
   PetscCall(VecSetFromOptions(u));
-  PetscCall(VecDuplicate(u,&b));
-  PetscCall(VecDuplicate(b,&x));
+  PetscCall(VecDuplicate(u, &b));
+  PetscCall(VecDuplicate(b, &x));
 
   /*
      Set exact solution; then compute right-hand-side vector.
@@ -142,27 +156,27 @@ int main(int argc,char **args)
      -random_sol forms a solution vector with random components.
   */
   if (random_exact_sol) {
-    PetscCall(PetscRandomCreate(PETSC_COMM_WORLD,&rctx));
+    PetscCall(PetscRandomCreate(PETSC_COMM_WORLD, &rctx));
     PetscCall(PetscRandomSetFromOptions(rctx));
-    PetscCall(VecSetRandom(u,rctx));
+    PetscCall(VecSetRandom(u, rctx));
     PetscCall(PetscRandomDestroy(&rctx));
   } else {
-    PetscCall(VecSet(u,1.0));
+    PetscCall(VecSet(u, 1.0));
   }
-  PetscCall(MatMult(A,u,b));
+  PetscCall(MatMult(A, u, b));
 
   /*
      View the exact solution vector if desired
   */
-  if (view_exact_sol) PetscCall(VecView(u,PETSC_VIEWER_STDOUT_WORLD));
+  if (view_exact_sol) PetscCall(VecView(u, PETSC_VIEWER_STDOUT_WORLD));
 
   if (permute) {
     Mat Aperm;
-    PetscCall(MatGetOrdering(A,ordering,&rowperm,&colperm));
-    PetscCall(MatPermute(A,rowperm,colperm,&Aperm));
-    PetscCall(VecPermute(b,colperm,PETSC_FALSE));
+    PetscCall(MatGetOrdering(A, ordering, &rowperm, &colperm));
+    PetscCall(MatPermute(A, rowperm, colperm, &Aperm));
+    PetscCall(VecPermute(b, colperm, PETSC_FALSE));
     PetscCall(MatDestroy(&A));
-    A    = Aperm;               /* Replace original operator with permuted version */
+    A = Aperm; /* Replace original operator with permuted version */
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -172,13 +186,13 @@ int main(int argc,char **args)
   /*
      Create linear solver context
   */
-  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  PetscCall(KSPCreate(PETSC_COMM_WORLD, &ksp));
 
   /*
      Set operators. Here the matrix that defines the linear system
      also serves as the preconditioning matrix.
   */
-  PetscCall(KSPSetOperators(ksp,A,A));
+  PetscCall(KSPSetOperators(ksp, A, A));
 
   /*
      Set linear solver defaults for this problem (optional).
@@ -190,7 +204,7 @@ int main(int argc,char **args)
        KSPSetFromOptions().  All of these defaults can be
        overridden at runtime, as indicated below.
   */
-  PetscCall(KSPSetTolerances(ksp,1.e-2/((m+1)*(n+1)),PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT));
+  PetscCall(KSPSetTolerances(ksp, 1.e-2 / ((m + 1) * (n + 1)), PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT));
 
   /*
     Set runtime options, e.g.,
@@ -205,36 +219,39 @@ int main(int argc,char **args)
                       Solve the linear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  PetscCall(KSPSolve(ksp,b,x));
+  PetscCall(KSPSolve(ksp, b, x));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                       Check solution and clean up
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  if (permute) PetscCall(VecPermute(x,rowperm,PETSC_TRUE));
+  if (permute) PetscCall(VecPermute(x, rowperm, PETSC_TRUE));
 
   /*
      Check the error
   */
-  PetscCall(VecAXPY(x,-1.0,u));
-  PetscCall(VecNorm(x,NORM_2,&norm));
-  PetscCall(KSPGetIterationNumber(ksp,&its));
+  PetscCall(VecAXPY(x, -1.0, u));
+  PetscCall(VecNorm(x, NORM_2, &norm));
+  PetscCall(KSPGetIterationNumber(ksp, &its));
 
   /*
      Print convergence information.  PetscPrintf() produces a single
      print statement from all processes that share a communicator.
      An alternative is PetscFPrintf(), which prints to a file.
   */
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g iterations %" PetscInt_FMT "\n",(double)norm,its));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Norm of error %g iterations %" PetscInt_FMT "\n", (double)norm, its));
 
   /*
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
   PetscCall(KSPDestroy(&ksp));
-  PetscCall(VecDestroy(&u));  PetscCall(VecDestroy(&x));
-  PetscCall(VecDestroy(&b));  PetscCall(MatDestroy(&A));
-  PetscCall(ISDestroy(&rowperm));  PetscCall(ISDestroy(&colperm));
+  PetscCall(VecDestroy(&u));
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&b));
+  PetscCall(MatDestroy(&A));
+  PetscCall(ISDestroy(&rowperm));
+  PetscCall(ISDestroy(&colperm));
 
   /*
      Always call PetscFinalize() before exiting a program.  This routine

@@ -11,15 +11,15 @@
 #define ADOLCCTX
 typedef struct {
   /* No ADOL-C annotation */
-  PetscBool   no_an;
+  PetscBool no_an;
 
   /* Compressed Jacobian computation */
-  PetscBool   sparse,sparse_view,sparse_view_done;
-  PetscScalar **Seed,**Rec,*rec;
-  PetscInt    p;
+  PetscBool     sparse, sparse_view, sparse_view_done;
+  PetscScalar **Seed, **Rec, *rec;
+  PetscInt      p;
 
   /* Matrix dimensions, number of parameters */
-  PetscInt    m,n,num_params;
+  PetscInt m, n, num_params;
 } AdolcCtx;
 #endif
 
@@ -27,15 +27,15 @@ typedef struct {
 #ifndef MATCTX
 #define MATCTX
 typedef struct {
-  PetscReal time;
+  PetscReal     time;
   Vec           X;
   Vec           Xdot;
   Vec           localX0;
   PetscReal     shift;
-  PetscInt      m,n;
-  PetscInt      tag1,tag2;
+  PetscInt      m, n;
+  PetscInt      tag1, tag2;
   TS            ts;
   PetscBool     flg;
-  PetscLogEvent event1,event2,event3,event4;
+  PetscLogEvent event1, event2, event3, event4;
 } AdolcMatCtx;
 #endif

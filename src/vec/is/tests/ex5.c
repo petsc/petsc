@@ -93,10 +93,9 @@ typedef struct {
   PetscBool includes_constraints;      /* Flag for if global section is to include constrained DoFs or not */
 } AppCtx;
 
-PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
-{
+PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   PetscFunctionBegin;
-  options->fname[0] = '\0';
+  options->fname[0]             = '\0';
   options->includes_constraints = PETSC_TRUE;
   PetscOptionsBegin(comm, "", "PetscSectionView()/Load() in HDF5 Test Options", "DMPLEX");
   PetscCall(PetscOptionsString("-fname", "The output file", "ex5.c", options->fname, options->fname, sizeof(options->fname), NULL));
@@ -105,28 +104,27 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv)
-{
-  MPI_Comm        comm;
-  PetscMPIInt     size, rank, mycolor;
-  AppCtx          user;
+int main(int argc, char **argv) {
+  MPI_Comm    comm;
+  PetscMPIInt size, rank, mycolor;
+  AppCtx      user;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(ProcessOptions(PETSC_COMM_WORLD, &user));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
-  PetscCheck(size >= 3,PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "Example only works with three or more processes");
+  PetscCheck(size >= 3, PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "Example only works with three or more processes");
 
   /* Save */
   mycolor = (PetscMPIInt)(rank >= 2);
   PetscCallMPI(MPI_Comm_split(PETSC_COMM_WORLD, mycolor, rank, &comm));
   if (mycolor == 0) {
-    PetscSection  section, gsection;
-    PetscSF       sf;
-    PetscInt      nroots = -1, nleaves = -1, *ilocal;
-    PetscSFNode  *iremote;
-    PetscViewer   viewer;
+    PetscSection section, gsection;
+    PetscSF      sf;
+    PetscInt     nroots = -1, nleaves = -1, *ilocal;
+    PetscSFNode *iremote;
+    PetscViewer  viewer;
 
     /* Create section */
     PetscCall(PetscSectionCreate(comm, &section));
@@ -158,9 +156,8 @@ int main(int argc, char **argv)
       break;
     }
     PetscCall(PetscSectionSetUp(section));
-    if (rank == 1)
-    {
-      const PetscInt indices[] = {7};
+    if (rank == 1) {
+      const PetscInt indices[]  = {7};
       const PetscInt indices0[] = {7};
 
       PetscCall(PetscSectionSetConstraintIndices(section, 2, indices));
@@ -169,21 +166,21 @@ int main(int argc, char **argv)
     /* Create sf */
     switch (rank) {
     case 0:
-      nroots = 4;
+      nroots  = 4;
       nleaves = 1;
       PetscCall(PetscMalloc1(nleaves, &ilocal));
       PetscCall(PetscMalloc1(nleaves, &iremote));
-      ilocal[0] = 3;
-      iremote[0].rank = 1;
+      ilocal[0]        = 3;
+      iremote[0].rank  = 1;
       iremote[0].index = 0;
       break;
     case 1:
-      nroots = 3;
+      nroots  = 3;
       nleaves = 1;
       PetscCall(PetscMalloc1(nleaves, &ilocal));
       PetscCall(PetscMalloc1(nleaves, &iremote));
-      ilocal[0] = 1;
-      iremote[0].rank = 0;
+      ilocal[0]        = 1;
+      iremote[0].rank  = 0;
       iremote[0].index = 2;
       break;
     }
@@ -209,21 +206,15 @@ int main(int argc, char **argv)
   mycolor = (PetscMPIInt)(rank >= 3);
   PetscCallMPI(MPI_Comm_split(PETSC_COMM_WORLD, mycolor, rank, &comm));
   if (mycolor == 0) {
-    PetscSection  section;
-    PetscInt      chartSize = -1;
-    PetscViewer   viewer;
+    PetscSection section;
+    PetscInt     chartSize = -1;
+    PetscViewer  viewer;
 
     PetscCall(PetscSectionCreate(comm, &section));
     switch (rank) {
-    case 0:
-      chartSize = 4;
-      break;
-    case 1:
-      chartSize = 0;
-      break;
-    case 2:
-      chartSize = 1;
-      break;
+    case 0: chartSize = 4; break;
+    case 1: chartSize = 0; break;
+    case 2: chartSize = 1; break;
     }
     PetscCall(PetscSectionSetChart(section, 0, chartSize));
     PetscCall(PetscViewerHDF5Open(comm, user.fname, FILE_MODE_READ, &viewer));

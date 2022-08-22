@@ -11,12 +11,11 @@ static PetscBool AOPackageInitialized = PETSC_FALSE;
 
 .seealso: `PetscInitialize()`
 @*/
-PetscErrorCode  AOFinalizePackage(void)
-{
+PetscErrorCode AOFinalizePackage(void) {
   PetscFunctionBegin;
   PetscCall(PetscFunctionListDestroy(&AOList));
   AOPackageInitialized = PETSC_FALSE;
-  AORegisterAllCalled = PETSC_FALSE;
+  AORegisterAllCalled  = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -29,32 +28,31 @@ PetscErrorCode  AOFinalizePackage(void)
 
 .seealso: `PetscInitialize()`
 @*/
-PetscErrorCode  AOInitializePackage(void)
-{
-  char           logList[256];
-  PetscBool      opt,pkg;
+PetscErrorCode AOInitializePackage(void) {
+  char      logList[256];
+  PetscBool opt, pkg;
 
   PetscFunctionBegin;
   if (AOPackageInitialized) PetscFunctionReturn(0);
   AOPackageInitialized = PETSC_TRUE;
   /* Register Classes */
-  PetscCall(PetscClassIdRegister("Application Order",&AO_CLASSID));
+  PetscCall(PetscClassIdRegister("Application Order", &AO_CLASSID));
   /* Register Constructors */
   PetscCall(AORegisterAll());
   /* Register Events */
-  PetscCall(PetscLogEventRegister("AOPetscToApplication", AO_CLASSID,&AO_PetscToApplication));
-  PetscCall(PetscLogEventRegister("AOApplicationToPetsc", AO_CLASSID,&AO_ApplicationToPetsc));
+  PetscCall(PetscLogEventRegister("AOPetscToApplication", AO_CLASSID, &AO_PetscToApplication));
+  PetscCall(PetscLogEventRegister("AOApplicationToPetsc", AO_CLASSID, &AO_ApplicationToPetsc));
   /* Process Info */
   {
-    PetscClassId  classids[1];
+    PetscClassId classids[1];
 
     classids[0] = AO_CLASSID;
     PetscCall(PetscInfoProcessClass("ao", 1, classids));
   }
   /* Process summary exclusions */
-  PetscCall(PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt));
+  PetscCall(PetscOptionsGetString(NULL, NULL, "-log_exclude", logList, sizeof(logList), &opt));
   if (opt) {
-    PetscCall(PetscStrInList("ao",logList,',',&pkg));
+    PetscCall(PetscStrInList("ao", logList, ',', &pkg));
     if (pkg) PetscCall(PetscLogEventExcludeClass(AO_CLASSID));
   }
   /* Register package finalizer */

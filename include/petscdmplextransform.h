@@ -6,7 +6,7 @@
 
 PETSC_EXTERN PetscClassId DMPLEXTRANSFORM_CLASSID;
 
-typedef const char* DMPlexTransformType;
+typedef const char *DMPlexTransformType;
 #define DMPLEXREFINEREGULAR       "refine_regular"
 #define DMPLEXREFINEALFELD        "refine_alfeld"
 #define DMPLEXREFINEPOWELLSABIN   "refine_powell_sabin"
@@ -19,16 +19,16 @@ typedef const char* DMPlexTransformType;
 #define DMPLEXTRANSFORMFILTER     "transform_filter"
 
 PETSC_EXTERN PetscFunctionList DMPlexTransformList;
-PETSC_EXTERN PetscErrorCode DMPlexTransformCreate(MPI_Comm, DMPlexTransform *);
-PETSC_EXTERN PetscErrorCode DMPlexTransformSetType(DMPlexTransform, DMPlexTransformType);
-PETSC_EXTERN PetscErrorCode DMPlexTransformGetType(DMPlexTransform, DMPlexTransformType *);
-PETSC_EXTERN PetscErrorCode DMPlexTransformRegister(const char[], PetscErrorCode (*)(DMPlexTransform));
-PETSC_EXTERN PetscErrorCode DMPlexTransformRegisterAll(void);
-PETSC_EXTERN PetscErrorCode DMPlexTransformRegisterDestroy(void);
-PETSC_EXTERN PetscErrorCode DMPlexTransformSetFromOptions(DMPlexTransform);
-PETSC_EXTERN PetscErrorCode DMPlexTransformSetUp(DMPlexTransform);
-PETSC_EXTERN PetscErrorCode DMPlexTransformView(DMPlexTransform, PetscViewer);
-PETSC_EXTERN PetscErrorCode DMPlexTransformDestroy(DMPlexTransform *);
+PETSC_EXTERN PetscErrorCode    DMPlexTransformCreate(MPI_Comm, DMPlexTransform *);
+PETSC_EXTERN PetscErrorCode    DMPlexTransformSetType(DMPlexTransform, DMPlexTransformType);
+PETSC_EXTERN PetscErrorCode    DMPlexTransformGetType(DMPlexTransform, DMPlexTransformType *);
+PETSC_EXTERN PetscErrorCode    DMPlexTransformRegister(const char[], PetscErrorCode (*)(DMPlexTransform));
+PETSC_EXTERN PetscErrorCode    DMPlexTransformRegisterAll(void);
+PETSC_EXTERN PetscErrorCode    DMPlexTransformRegisterDestroy(void);
+PETSC_EXTERN PetscErrorCode    DMPlexTransformSetFromOptions(DMPlexTransform);
+PETSC_EXTERN PetscErrorCode    DMPlexTransformSetUp(DMPlexTransform);
+PETSC_EXTERN PetscErrorCode    DMPlexTransformView(DMPlexTransform, PetscViewer);
+PETSC_EXTERN PetscErrorCode    DMPlexTransformDestroy(DMPlexTransform *);
 
 PETSC_EXTERN PetscErrorCode DMPlexGetTransformType(DM, DMPlexTransformType *);
 PETSC_EXTERN PetscErrorCode DMPlexSetTransformType(DM, DMPlexTransformType);

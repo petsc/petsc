@@ -7,22 +7,19 @@ static char help[] = "Demonstrates call PETSc first and then Trilinos in the sam
 
 #include <petscsys.h>
 #include <Teuchos_DefaultMpiComm.hpp> // wrapper for MPI_Comm
-#include <Tpetra_Version.hpp> // Tpetra version string
+#include <Tpetra_Version.hpp>         // Tpetra version string
 
 // Do something with the given communicator.  In this case, we just
 // print Tpetra's version to stdout on Process 0 in the given
 // communicator.
-void
-exampleRoutine (const Teuchos::RCP<const Teuchos::Comm<int> >& comm)
-{
-  if (comm->getRank () == 0) {
+void exampleRoutine(const Teuchos::RCP<const Teuchos::Comm<int>> &comm) {
+  if (comm->getRank() == 0) {
     // On (MPI) Process 0, print out the Tpetra software version.
-    std::cout << Tpetra::version () << std::endl << std::endl;
+    std::cout << Tpetra::version() << std::endl << std::endl;
   }
 }
 
-int main(int argc,char **argv)
-{
+int main(int argc, char **argv) {
   // These "using" declarations make the code more concise, in that
   // you don't have to write the namespace along with the class or
   // object name.  This is especially helpful with commonly used
@@ -44,21 +41,17 @@ int main(int argc,char **argv)
                  additional help messages in this printout.
   */
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
-  RCP<const Comm<int> > comm (new MpiComm<int> (PETSC_COMM_WORLD));
+  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  RCP<const Comm<int>> comm(new MpiComm<int>(PETSC_COMM_WORLD));
   // Get my process' rank, and the total number of processes.
   // Equivalent to MPI_Comm_rank resp. MPI_Comm_size.
-  const int myRank = comm->getRank ();
-  const int size = comm->getSize ();
-  if (myRank == 0) {
-    cout << "Total number of processes: " << size << endl;
-  }
+  const int            myRank = comm->getRank();
+  const int            size   = comm->getSize();
+  if (myRank == 0) { cout << "Total number of processes: " << size << endl; }
   // Do something with the new communicator.
-  exampleRoutine (comm);
+  exampleRoutine(comm);
   // This tells the Trilinos test framework that the test passed.
-  if (myRank == 0) {
-    cout << "End Result: TEST PASSED" << endl;
-  }
+  if (myRank == 0) { cout << "End Result: TEST PASSED" << endl; }
 
   PetscCall(PetscFinalize());
   return 0;

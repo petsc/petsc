@@ -28,7 +28,7 @@ typedef struct _p_Characteristic *Characteristic;
 .seealso: `CharacteristicSetType()`, `Characteristic`
 J*/
 #define CHARACTERISTICDA "da"
-typedef const char* CharacteristicType;
+typedef const char *CharacteristicType;
 
 PETSC_EXTERN PetscErrorCode CharacteristicCreate(MPI_Comm, Characteristic *);
 PETSC_EXTERN PetscErrorCode CharacteristicSetType(Characteristic, CharacteristicType);
@@ -38,10 +38,10 @@ PETSC_EXTERN PetscErrorCode CharacteristicSetVelocityInterpolationLocal(Characte
 PETSC_EXTERN PetscErrorCode CharacteristicSetFieldInterpolation(Characteristic, DM, Vec, PetscInt, PetscInt[], PetscErrorCode (*)(Vec, PetscReal[], PetscInt, PetscInt[], PetscScalar[], void *), void *);
 PETSC_EXTERN PetscErrorCode CharacteristicSetFieldInterpolationLocal(Characteristic, DM, Vec, PetscInt, PetscInt[], PetscErrorCode (*)(void *, PetscReal[], PetscInt, PetscInt[], PetscScalar[], void *), void *);
 PETSC_EXTERN PetscErrorCode CharacteristicSolve(Characteristic, PetscReal, Vec);
-PETSC_EXTERN PetscErrorCode CharacteristicDestroy(Characteristic*);
+PETSC_EXTERN PetscErrorCode CharacteristicDestroy(Characteristic *);
 
 PETSC_EXTERN PetscFunctionList CharacteristicList;
 
-PETSC_EXTERN PetscErrorCode CharacteristicRegister(const char[],PetscErrorCode (*)(Characteristic));
+PETSC_EXTERN PetscErrorCode CharacteristicRegister(const char[], PetscErrorCode (*)(Characteristic));
 
 #endif /* PETSCCHARACTERISTICS_H */

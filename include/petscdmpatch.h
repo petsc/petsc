@@ -16,16 +16,16 @@
 .seealso: `DM`, `DMPatchCreate()`, `DMPatchSolve()`, `DMPatchZoom()`, `DMPatchGetPatchSize()`, `DMPatchSetPatchSize()`,
           `DMPatchGetCommSize()`, `DMPatchSetCommSize()`, `DMPatchGetCoarse()`, `DMPatchCreateGrid()`
 S*/
-PETSC_EXTERN PetscErrorCode DMPatchCreate(MPI_Comm, DM*);
+PETSC_EXTERN PetscErrorCode DMPatchCreate(MPI_Comm, DM *);
 
-PETSC_EXTERN PetscErrorCode DMPatchZoom(DM,MatStencil,MatStencil,MPI_Comm,DM*,PetscSF*,PetscSF*);
+PETSC_EXTERN PetscErrorCode DMPatchZoom(DM, MatStencil, MatStencil, MPI_Comm, DM *, PetscSF *, PetscSF *);
 PETSC_EXTERN PetscErrorCode DMPatchSolve(DM);
-PETSC_EXTERN PetscErrorCode DMPatchGetPatchSize(DM,MatStencil*);
-PETSC_EXTERN PetscErrorCode DMPatchSetPatchSize(DM,MatStencil);
-PETSC_EXTERN PetscErrorCode DMPatchGetCommSize(DM,MatStencil*);
-PETSC_EXTERN PetscErrorCode DMPatchSetCommSize(DM,MatStencil);
-PETSC_EXTERN PetscErrorCode DMPatchGetCoarse(DM,DM*);
-PETSC_EXTERN PetscErrorCode DMPatchCreateGrid(MPI_Comm,PetscInt,MatStencil,MatStencil,MatStencil,DM*);
+PETSC_EXTERN PetscErrorCode DMPatchGetPatchSize(DM, MatStencil *);
+PETSC_EXTERN PetscErrorCode DMPatchSetPatchSize(DM, MatStencil);
+PETSC_EXTERN PetscErrorCode DMPatchGetCommSize(DM, MatStencil *);
+PETSC_EXTERN PetscErrorCode DMPatchSetCommSize(DM, MatStencil);
+PETSC_EXTERN PetscErrorCode DMPatchGetCoarse(DM, DM *);
+PETSC_EXTERN PetscErrorCode DMPatchCreateGrid(MPI_Comm, PetscInt, MatStencil, MatStencil, MatStencil, DM *);
 
 /*
  * We want each patch to consist of an entire DM, DMDA at first

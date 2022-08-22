@@ -37,8 +37,7 @@ stress there).
 #include <petscts.h>
 
 /* A struct defining the parameters of the problem */
-typedef struct
-{
+typedef struct {
   DM          dm_velocity, dm_stress;
   DM          dm_buoyancy, dm_lame;
   Vec         buoyancy, lame;  /* Global, but for efficiency one could store local vectors */
@@ -57,8 +56,7 @@ static PetscErrorCode DumpStress(const Ctx *, Vec, PetscInt);
 static PetscErrorCode UpdateVelocity(const Ctx *, Vec, Vec, Vec);
 static PetscErrorCode UpdateStress(const Ctx *, Vec, Vec, Vec);
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
   Ctx      ctx;
   Vec      velocity, stress;
   PetscInt timestep;
@@ -220,8 +218,7 @@ int main(int argc, char *argv[])
   return 0;
 }
 
-static PetscErrorCode CreateLame(Ctx *ctx)
-{
+static PetscErrorCode CreateLame(Ctx *ctx) {
   PetscInt N[3], ex, ey, ez, startx, starty, startz, nx, ny, nz, extrax, extray, extraz;
 
   PetscFunctionBeginUser;
@@ -319,8 +316,7 @@ static PetscErrorCode CreateLame(Ctx *ctx)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode ForceStress(const Ctx *ctx, Vec stress, PetscReal t)
-{
+static PetscErrorCode ForceStress(const Ctx *ctx, Vec stress, PetscReal t) {
   PetscInt          start[3], n[3], N[3];
   DMStagStencil     pos;
   PetscBool         this_rank;
@@ -363,8 +359,7 @@ static PetscErrorCode ForceStress(const Ctx *ctx, Vec stress, PetscReal t)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode UpdateVelocity_2d(const Ctx *ctx, Vec velocity, Vec stress, Vec buoyancy)
-{
+static PetscErrorCode UpdateVelocity_2d(const Ctx *ctx, Vec velocity, Vec stress, Vec buoyancy) {
   Vec                  velocity_local, stress_local, buoyancy_local;
   PetscInt             ex, ey, startx, starty, nx, ny;
   PetscInt             slot_coord_next, slot_coord_element, slot_coord_prev;
@@ -442,8 +437,7 @@ static PetscErrorCode UpdateVelocity_2d(const Ctx *ctx, Vec velocity, Vec stress
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode UpdateVelocity_3d(const Ctx *ctx, Vec velocity, Vec stress, Vec buoyancy)
-{
+static PetscErrorCode UpdateVelocity_3d(const Ctx *ctx, Vec velocity, Vec stress, Vec buoyancy) {
   Vec                   velocity_local, stress_local, buoyancy_local;
   PetscInt              ex, ey, ez, startx, starty, startz, nx, ny, nz;
   PetscInt              slot_coord_next, slot_coord_element, slot_coord_prev;
@@ -547,8 +541,7 @@ static PetscErrorCode UpdateVelocity_3d(const Ctx *ctx, Vec velocity, Vec stress
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode UpdateVelocity(const Ctx *ctx, Vec velocity, Vec stress, Vec buoyancy)
-{
+static PetscErrorCode UpdateVelocity(const Ctx *ctx, Vec velocity, Vec stress, Vec buoyancy) {
   PetscFunctionBeginUser;
   if (ctx->dim == 2) {
     PetscCall(UpdateVelocity_2d(ctx, velocity, stress, buoyancy));
@@ -558,8 +551,7 @@ static PetscErrorCode UpdateVelocity(const Ctx *ctx, Vec velocity, Vec stress, V
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode UpdateStress_2d(const Ctx *ctx, Vec velocity, Vec stress, Vec lame)
-{
+static PetscErrorCode UpdateStress_2d(const Ctx *ctx, Vec velocity, Vec stress, Vec lame) {
   Vec                  velocity_local, stress_local, lame_local;
   PetscInt             ex, ey, startx, starty, nx, ny;
   PetscInt             slot_coord_next, slot_coord_element, slot_coord_prev;
@@ -642,8 +634,7 @@ static PetscErrorCode UpdateStress_2d(const Ctx *ctx, Vec velocity, Vec stress, 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode UpdateStress_3d(const Ctx *ctx, Vec velocity, Vec stress, Vec lame)
-{
+static PetscErrorCode UpdateStress_3d(const Ctx *ctx, Vec velocity, Vec stress, Vec lame) {
   Vec                   velocity_local, stress_local, lame_local;
   PetscInt              ex, ey, ez, startx, starty, startz, nx, ny, nz;
   PetscInt              slot_coord_next, slot_coord_element, slot_coord_prev;
@@ -708,13 +699,13 @@ static PetscErrorCode UpdateStress_3d(const Ctx *ctx, Vec velocity, Vec stress, 
           const PetscScalar Lp2M = arr_lame[ez][ey][ex][slot_lambda_element] + 2 * arr_lame[ez][ey][ex][slot_mu_element];
 
           arr_stress[ez][ey][ex][slot_txx] += Lp2M * ctx->dt * (arr_velocity[ez][ey][ex][slot_vx_right] - arr_velocity[ez][ey][ex][slot_vx_left]) / dx + L * ctx->dt * (arr_velocity[ez][ey][ex][slot_vy_up] - arr_velocity[ez][ey][ex][slot_vy_down]) / dy +
-            L * ctx->dt * (arr_velocity[ez][ey][ex][slot_vz_front] - arr_velocity[ez][ey][ex][slot_vz_back]) / dz;
+                                              L * ctx->dt * (arr_velocity[ez][ey][ex][slot_vz_front] - arr_velocity[ez][ey][ex][slot_vz_back]) / dz;
 
           arr_stress[ez][ey][ex][slot_tyy] += Lp2M * ctx->dt * (arr_velocity[ez][ey][ex][slot_vy_up] - arr_velocity[ez][ey][ex][slot_vy_down]) / dy + L * ctx->dt * (arr_velocity[ez][ey][ex][slot_vz_front] - arr_velocity[ez][ey][ex][slot_vz_back]) / dz +
-            L * ctx->dt * (arr_velocity[ez][ey][ex][slot_vx_right] - arr_velocity[ez][ey][ex][slot_vx_left]) / dx;
+                                              L * ctx->dt * (arr_velocity[ez][ey][ex][slot_vx_right] - arr_velocity[ez][ey][ex][slot_vx_left]) / dx;
 
           arr_stress[ez][ey][ex][slot_tzz] += Lp2M * ctx->dt * (arr_velocity[ez][ey][ex][slot_vz_front] - arr_velocity[ez][ey][ex][slot_vz_back]) / dz + L * ctx->dt * (arr_velocity[ez][ey][ex][slot_vx_right] - arr_velocity[ez][ey][ex][slot_vx_left]) / dx +
-            L * ctx->dt * (arr_velocity[ez][ey][ex][slot_vy_up] - arr_velocity[ez][ey][ex][slot_vy_down]) / dy;
+                                              L * ctx->dt * (arr_velocity[ez][ey][ex][slot_vy_up] - arr_velocity[ez][ey][ex][slot_vy_down]) / dy;
         }
 
         /* Update tau_xy, tau_xz, tau_yz */
@@ -761,8 +752,7 @@ static PetscErrorCode UpdateStress_3d(const Ctx *ctx, Vec velocity, Vec stress, 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode UpdateStress(const Ctx *ctx, Vec velocity, Vec stress, Vec lame)
-{
+static PetscErrorCode UpdateStress(const Ctx *ctx, Vec velocity, Vec stress, Vec lame) {
   PetscFunctionBeginUser;
   if (ctx->dim == 2) {
     PetscCall(UpdateStress_2d(ctx, velocity, stress, lame));
@@ -772,8 +762,7 @@ static PetscErrorCode UpdateStress(const Ctx *ctx, Vec velocity, Vec stress, Vec
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DumpStress(const Ctx *ctx, Vec stress, PetscInt timestep)
-{
+static PetscErrorCode DumpStress(const Ctx *ctx, Vec stress, PetscInt timestep) {
   DM  da_normal, da_shear   = NULL;
   Vec vec_normal, vec_shear = NULL;
 
@@ -819,8 +808,7 @@ static PetscErrorCode DumpStress(const Ctx *ctx, Vec stress, PetscInt timestep)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DumpVelocity(const Ctx *ctx, Vec velocity, PetscInt timestep)
-{
+static PetscErrorCode DumpVelocity(const Ctx *ctx, Vec velocity, PetscInt timestep) {
   DM       dmVelAvg;
   Vec      velAvg;
   DM       daVelAvg;

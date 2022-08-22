@@ -31,16 +31,16 @@ typedef const char *PetscLimiterType;
 #define PETSCLIMITERMC        "mc"
 
 PETSC_EXTERN PetscFunctionList PetscLimiterList;
-PETSC_EXTERN PetscErrorCode PetscLimiterCreate(MPI_Comm, PetscLimiter *);
-PETSC_EXTERN PetscErrorCode PetscLimiterDestroy(PetscLimiter *);
-PETSC_EXTERN PetscErrorCode PetscLimiterSetType(PetscLimiter, PetscLimiterType);
-PETSC_EXTERN PetscErrorCode PetscLimiterGetType(PetscLimiter, PetscLimiterType *);
-PETSC_EXTERN PetscErrorCode PetscLimiterSetUp(PetscLimiter);
-PETSC_EXTERN PetscErrorCode PetscLimiterSetFromOptions(PetscLimiter);
-PETSC_EXTERN PetscErrorCode PetscLimiterViewFromOptions(PetscLimiter,PetscObject,const char[]);
-PETSC_EXTERN PetscErrorCode PetscLimiterView(PetscLimiter, PetscViewer);
-PETSC_EXTERN PetscErrorCode PetscLimiterRegister(const char [], PetscErrorCode (*)(PetscLimiter));
-PETSC_EXTERN PetscErrorCode PetscLimiterRegisterDestroy(void);
+PETSC_EXTERN PetscErrorCode    PetscLimiterCreate(MPI_Comm, PetscLimiter *);
+PETSC_EXTERN PetscErrorCode    PetscLimiterDestroy(PetscLimiter *);
+PETSC_EXTERN PetscErrorCode    PetscLimiterSetType(PetscLimiter, PetscLimiterType);
+PETSC_EXTERN PetscErrorCode    PetscLimiterGetType(PetscLimiter, PetscLimiterType *);
+PETSC_EXTERN PetscErrorCode    PetscLimiterSetUp(PetscLimiter);
+PETSC_EXTERN PetscErrorCode    PetscLimiterSetFromOptions(PetscLimiter);
+PETSC_EXTERN PetscErrorCode    PetscLimiterViewFromOptions(PetscLimiter, PetscObject, const char[]);
+PETSC_EXTERN PetscErrorCode    PetscLimiterView(PetscLimiter, PetscViewer);
+PETSC_EXTERN PetscErrorCode    PetscLimiterRegister(const char[], PetscErrorCode (*)(PetscLimiter));
+PETSC_EXTERN PetscErrorCode    PetscLimiterRegisterDestroy(void);
 
 PETSC_EXTERN PetscErrorCode PetscLimiterLimit(PetscLimiter, PetscReal, PetscReal *);
 
@@ -60,18 +60,18 @@ typedef const char *PetscFVType;
 #define PETSCFVLEASTSQUARES "leastsquares"
 
 PETSC_EXTERN PetscFunctionList PetscFVList;
-PETSC_EXTERN PetscErrorCode PetscFVCreate(MPI_Comm, PetscFV *);
-PETSC_EXTERN PetscErrorCode PetscFVDestroy(PetscFV *);
-PETSC_EXTERN PetscErrorCode PetscFVSetType(PetscFV, PetscFVType);
-PETSC_EXTERN PetscErrorCode PetscFVGetType(PetscFV, PetscFVType *);
-PETSC_EXTERN PetscErrorCode PetscFVSetUp(PetscFV);
-PETSC_EXTERN PetscErrorCode PetscFVSetFromOptions(PetscFV);
-PETSC_EXTERN PetscErrorCode PetscFVViewFromOptions(PetscFV,PetscObject,const char[]);
-PETSC_EXTERN PetscErrorCode PetscFVView(PetscFV, PetscViewer);
-PETSC_EXTERN PetscErrorCode PetscFVRegister(const char [], PetscErrorCode (*)(PetscFV));
-PETSC_EXTERN PetscErrorCode PetscFVRegisterDestroy(void);
-PETSC_EXTERN PetscErrorCode PetscFVSetComponentName(PetscFV, PetscInt, const char []);
-PETSC_EXTERN PetscErrorCode PetscFVGetComponentName(PetscFV, PetscInt, const char *[]);
+PETSC_EXTERN PetscErrorCode    PetscFVCreate(MPI_Comm, PetscFV *);
+PETSC_EXTERN PetscErrorCode    PetscFVDestroy(PetscFV *);
+PETSC_EXTERN PetscErrorCode    PetscFVSetType(PetscFV, PetscFVType);
+PETSC_EXTERN PetscErrorCode    PetscFVGetType(PetscFV, PetscFVType *);
+PETSC_EXTERN PetscErrorCode    PetscFVSetUp(PetscFV);
+PETSC_EXTERN PetscErrorCode    PetscFVSetFromOptions(PetscFV);
+PETSC_EXTERN PetscErrorCode    PetscFVViewFromOptions(PetscFV, PetscObject, const char[]);
+PETSC_EXTERN PetscErrorCode    PetscFVView(PetscFV, PetscViewer);
+PETSC_EXTERN PetscErrorCode    PetscFVRegister(const char[], PetscErrorCode (*)(PetscFV));
+PETSC_EXTERN PetscErrorCode    PetscFVRegisterDestroy(void);
+PETSC_EXTERN PetscErrorCode    PetscFVSetComponentName(PetscFV, PetscInt, const char[]);
+PETSC_EXTERN PetscErrorCode    PetscFVGetComponentName(PetscFV, PetscInt, const char *[]);
 
 PETSC_EXTERN PetscErrorCode PetscFVSetLimiter(PetscFV, PetscLimiter);
 PETSC_EXTERN PetscErrorCode PetscFVGetLimiter(PetscFV, PetscLimiter *);
@@ -96,6 +96,6 @@ PETSC_EXTERN PetscErrorCode PetscFVIntegrateRHSFunction(PetscFV, PetscDS, PetscI
 
 PETSC_EXTERN PetscErrorCode PetscFVLeastSquaresSetMaxFaces(PetscFV, PetscInt);
 
-PETSC_EXTERN PetscErrorCode PetscDualSpaceApplyFVM(PetscDualSpace, PetscInt, PetscReal, PetscFVCellGeom *, PetscInt, PetscErrorCode (*)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void *, PetscScalar *);
+PETSC_EXTERN PetscErrorCode PetscDualSpaceApplyFVM(PetscDualSpace, PetscInt, PetscReal, PetscFVCellGeom *, PetscInt, PetscErrorCode (*)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *), void *, PetscScalar *);
 
 #endif

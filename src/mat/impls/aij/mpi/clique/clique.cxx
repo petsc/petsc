@@ -11,57 +11,51 @@
   output:
 .   cliq - Clique context
 */
-PetscErrorCode MatConvertToSparseElemental(Mat A,MatReuse reuse,Mat_SparseElemental *cliq)
-{
+PetscErrorCode MatConvertToSparseElemental(Mat A, MatReuse reuse, Mat_SparseElemental *cliq) {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatView_SparseElemental(Mat A,PetscViewer viewer)
-{
+PetscErrorCode MatView_SparseElemental(Mat A, PetscViewer viewer) {
   PetscBool iascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   if (iascii) {
     PetscViewerFormat format;
-    PetscCall(PetscViewerGetFormat(viewer,&format));
+    PetscCall(PetscViewerGetFormat(viewer, &format));
     if (format == PETSC_VIEWER_ASCII_INFO) {
-      PetscCall(PetscViewerASCIIPrintf(viewer,"SparseElemental run parameters:\n"));
+      PetscCall(PetscViewerASCIIPrintf(viewer, "SparseElemental run parameters:\n"));
     } else if (format == PETSC_VIEWER_DEFAULT) { /* matrix A is factored matrix, remove this block */
       Mat Aaij;
-      PetscCall(PetscViewerASCIIUseTabs(viewer,PETSC_FALSE));
-      PetscCall(PetscViewerASCIIUseTabs(viewer,PETSC_TRUE));
-      PetscCall(PetscPrintf(PetscObjectComm((PetscObject)viewer),"SparseElemental matrix\n"));
-      PetscCall(MatComputeOperator(A,MATAIJ,&Aaij));
-      PetscCall(MatView(Aaij,viewer));
+      PetscCall(PetscViewerASCIIUseTabs(viewer, PETSC_FALSE));
+      PetscCall(PetscViewerASCIIUseTabs(viewer, PETSC_TRUE));
+      PetscCall(PetscPrintf(PetscObjectComm((PetscObject)viewer), "SparseElemental matrix\n"));
+      PetscCall(MatComputeOperator(A, MATAIJ, &Aaij));
+      PetscCall(MatView(Aaij, viewer));
       PetscCall(MatDestroy(&Aaij));
     }
   }
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatDestroy_SparseElemental(Mat A)
-{
+PetscErrorCode MatDestroy_SparseElemental(Mat A) {
   PetscFunctionBegin;
-  PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverType_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatFactorGetSolverType_C", NULL));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatSolve_SparseElemental(Mat A,Vec B,Vec X)
-{
+PetscErrorCode MatSolve_SparseElemental(Mat A, Vec B, Vec X) {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatCholeskyFactorNumeric_SparseElemental(Mat F,Mat A,const MatFactorInfo *info)
-{
+PetscErrorCode MatCholeskyFactorNumeric_SparseElemental(Mat F, Mat A, const MatFactorInfo *info) {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatCholeskyFactorSymbolic_SparseElemental(Mat F,Mat A,IS r,const MatFactorInfo *info)
-{
+PetscErrorCode MatCholeskyFactorSymbolic_SparseElemental(Mat F, Mat A, IS r, const MatFactorInfo *info) {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
@@ -87,22 +81,19 @@ PetscErrorCode MatCholeskyFactorSymbolic_SparseElemental(Mat F,Mat A,IS r,const 
 
 M*/
 
-PetscErrorCode MatFactorGetSolverType_SparseElemental(Mat A,MatSolverType *type)
-{
+PetscErrorCode MatFactorGetSolverType_SparseElemental(Mat A, MatSolverType *type) {
   PetscFunctionBegin;
   *type = MATSOLVERSPARSEELEMENTAL;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatGetFactor_aij_sparseelemental(Mat A,MatFactorType ftype,Mat *F)
-{
+static PetscErrorCode MatGetFactor_aij_sparseelemental(Mat A, MatFactorType ftype, Mat *F) {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_SparseElemental(void)
-{
+PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_SparseElemental(void) {
   PetscFunctionBegin;
-  PetscCall(MatSolverTypeRegister(MATSOLVERSPARSEELEMENTAL,MATMPIAIJ,MAT_FACTOR_LU,MatGetFactor_aij_sparseelemental));
+  PetscCall(MatSolverTypeRegister(MATSOLVERSPARSEELEMENTAL, MATMPIAIJ, MAT_FACTOR_LU, MatGetFactor_aij_sparseelemental));
   PetscFunctionReturn(0);
 }

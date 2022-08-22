@@ -1,4 +1,4 @@
-#include <petsc/private/pcimpl.h>          /*I "petscpc.h" I*/
+#include <petsc/private/pcimpl.h> /*I "petscpc.h" I*/
 
 /*@C
    PCPythonSetType - Initialize a PC object implemented in Python.
@@ -16,12 +16,11 @@
 
 .seealso: `PCCreate()`, `PCSetType()`, `PCPYTHON`, `PetscPythonInitialize()`
 @*/
-PetscErrorCode  PCPythonSetType(PC pc,const char pyname[])
-{
+PetscErrorCode PCPythonSetType(PC pc, const char pyname[]) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscValidCharPointer(pyname,2);
-  PetscTryMethod(pc,"PCPythonSetType_C",(PC, const char[]),(pc,pyname));
+  PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
+  PetscValidCharPointer(pyname, 2);
+  PetscTryMethod(pc, "PCPythonSetType_C", (PC, const char[]), (pc, pyname));
   PetscFunctionReturn(0);
 }
 
@@ -40,11 +39,10 @@ PetscErrorCode  PCPythonSetType(PC pc,const char pyname[])
 
 .seealso: `PCCreate()`, `PCSetType()`, `PCPYTHON`, `PetscPythonInitialize()`, `PCPythonSetType()`
 @*/
-PetscErrorCode  PCPythonGetType(PC pc,const char *pyname[])
-{
+PetscErrorCode PCPythonGetType(PC pc, const char *pyname[]) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscValidPointer(pyname,2);
-  PetscUseMethod(pc,"PCPythonGetType_C",(PC, const char*[]),(pc,pyname));
+  PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
+  PetscValidPointer(pyname, 2);
+  PetscUseMethod(pc, "PCPythonGetType_C", (PC, const char *[]), (pc, pyname));
   PetscFunctionReturn(0);
 }

@@ -10,7 +10,7 @@
 
 .seealso: `ISCreateGeneral()`, `ISCreateBlock()`, `ISCreateStride()`, `ISGetIndices()`, `ISDestroy()`
 S*/
-typedef struct _p_IS* IS;
+typedef struct _p_IS *IS;
 
 /*S
    ISLocalToGlobalMapping - mappings from an arbitrary
@@ -30,7 +30,7 @@ typedef struct _p_IS* IS;
 
 .seealso: `ISLocalToGlobalMappingCreate()`, `ISLocalToGlobalMappingApply()`, `ISLocalToGlobalMappingDestroy()`
 S*/
-typedef struct _p_ISLocalToGlobalMapping* ISLocalToGlobalMapping;
+typedef struct _p_ISLocalToGlobalMapping *ISLocalToGlobalMapping;
 
 /*S
      ISColoring - sets of IS's that define a coloring of something, such as a graph defined by a sparse matrix
@@ -51,7 +51,7 @@ typedef struct _p_ISLocalToGlobalMapping* ISLocalToGlobalMapping;
 
 .seealso: `ISColoringCreate()`, `ISColoringGetIS()`, `ISColoringView()`
 S*/
-typedef struct _n_ISColoring* ISColoring;
+typedef struct _n_ISColoring *ISColoring;
 
 /*S
      PetscLayout - defines layout of vectors and matrices across processes (which rows are owned by which processes)
@@ -60,6 +60,6 @@ typedef struct _n_ISColoring* ISColoring;
 
 .seealso: `PetscLayoutCreate()`, `PetscLayoutDestroy()`
 S*/
-typedef struct _n_PetscLayout* PetscLayout;
+typedef struct _n_PetscLayout *PetscLayout;
 
 #endif

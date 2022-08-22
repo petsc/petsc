@@ -32,39 +32,38 @@
 
 .seealso: `PetscTellMyCell()`, `PetscOpenSocket()`, `PetscHTTPRequest()`
 @*/
-PetscErrorCode PetscTextBelt(MPI_Comm comm,const char number[],const char message[],PetscBool *flg)
-{
-  size_t         nlen,mlen,blen;
-  PetscMPIInt    rank;
+PetscErrorCode PetscTextBelt(MPI_Comm comm, const char number[], const char message[], PetscBool *flg) {
+  size_t      nlen, mlen, blen;
+  PetscMPIInt rank;
 
   PetscFunctionBegin;
-  PetscCall(PetscStrlen(number,&nlen));
-  PetscCheck(nlen == 10,comm,PETSC_ERR_ARG_WRONG,"Number %s is not ten digits",number);
-  PetscCall(PetscStrlen(message,&mlen));
-  PetscCheck(mlen <= 100,comm,PETSC_ERR_ARG_WRONG,"Message  %s is too long",message);
-  PetscCallMPI(MPI_Comm_rank(comm,&rank));
+  PetscCall(PetscStrlen(number, &nlen));
+  PetscCheck(nlen == 10, comm, PETSC_ERR_ARG_WRONG, "Number %s is not ten digits", number);
+  PetscCall(PetscStrlen(message, &mlen));
+  PetscCheck(mlen <= 100, comm, PETSC_ERR_ARG_WRONG, "Message  %s is too long", message);
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
   if (rank == 0) {
-    int       sock;
-    char      buff[474],*body;
-    PetscInt  i;
+    int      sock;
+    char     buff[474], *body;
+    PetscInt i;
 
-    PetscCall(PetscMalloc1(mlen+nlen+100,&body));
-    PetscCall(PetscStrcpy(body,"number="));
-    PetscCall(PetscStrcat(body,number));
-    PetscCall(PetscStrcat(body,"&"));
-    PetscCall(PetscStrcat(body,"message="));
-    PetscCall(PetscStrcat(body,message));
-    PetscCall(PetscStrlen(body,&blen));
-    for (i=0; i<(int)blen; i++) {
+    PetscCall(PetscMalloc1(mlen + nlen + 100, &body));
+    PetscCall(PetscStrcpy(body, "number="));
+    PetscCall(PetscStrcat(body, number));
+    PetscCall(PetscStrcat(body, "&"));
+    PetscCall(PetscStrcat(body, "message="));
+    PetscCall(PetscStrcat(body, message));
+    PetscCall(PetscStrlen(body, &blen));
+    for (i = 0; i < (int)blen; i++) {
       if (body[i] == ' ') body[i] = '+';
     }
-    PetscCall(PetscOpenSocket("textbelt.com",80,&sock));
-    PetscCall(PetscHTTPRequest("POST","textbelt.com/text",NULL,"application/x-www-form-urlencoded",body,sock,buff,sizeof(buff)));
+    PetscCall(PetscOpenSocket("textbelt.com", 80, &sock));
+    PetscCall(PetscHTTPRequest("POST", "textbelt.com/text", NULL, "application/x-www-form-urlencoded", body, sock, buff, sizeof(buff)));
     close(sock);
     PetscCall(PetscFree(body));
     if (flg) {
       char *found;
-      PetscCall(PetscStrstr(buff,"\"success\":tr",&found));
+      PetscCall(PetscStrstr(buff, "\"success\":tr", &found));
       *flg = found ? PETSC_TRUE : PETSC_FALSE;
     }
   }

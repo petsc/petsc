@@ -4,32 +4,31 @@ static char help[] = "Test VecCreate{Seq|MPI}ViennaCLWithArrays.\n\n";
 #include "petsc.h"
 #include "petscviennacl.h"
 
-int main(int argc,char **argv)
-{
-  Vec            x,y;
-  PetscMPIInt    size;
-  PetscInt       n = 5;
-  PetscScalar    xHost[5] = {0.,1.,2.,3.,4.};
+int main(int argc, char **argv) {
+  Vec         x, y;
+  PetscMPIInt size;
+  PetscInt    n        = 5;
+  PetscScalar xHost[5] = {0., 1., 2., 3., 4.};
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char*)0, help));
-  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
 
   if (size == 1) {
-    PetscCall(VecCreateSeqViennaCLWithArrays(PETSC_COMM_WORLD,1,n,xHost,NULL,&x));
+    PetscCall(VecCreateSeqViennaCLWithArrays(PETSC_COMM_WORLD, 1, n, xHost, NULL, &x));
   } else {
-    PetscCall(VecCreateMPIViennaCLWithArrays(PETSC_COMM_WORLD,1,n,PETSC_DECIDE,xHost,NULL,&x));
+    PetscCall(VecCreateMPIViennaCLWithArrays(PETSC_COMM_WORLD, 1, n, PETSC_DECIDE, xHost, NULL, &x));
   }
   /* print x should be equivalent too xHost */
-  PetscCall(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
-  PetscCall(VecSet(x,42.0));
+  PetscCall(VecView(x, PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecSet(x, 42.0));
   /* print x should be all 42 */
-  PetscCall(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecView(x, PETSC_VIEWER_STDOUT_WORLD));
 
   if (size == 1) {
-    PetscCall(VecCreateSeqWithArray(PETSC_COMM_WORLD,1,n,xHost,&y));
+    PetscCall(VecCreateSeqWithArray(PETSC_COMM_WORLD, 1, n, xHost, &y));
   } else {
-    PetscCall(VecCreateMPIWithArray(PETSC_COMM_WORLD,1,n,PETSC_DECIDE,xHost,&y));
+    PetscCall(VecCreateMPIWithArray(PETSC_COMM_WORLD, 1, n, PETSC_DECIDE, xHost, &y));
   }
 
   /* print y should be all 42 */

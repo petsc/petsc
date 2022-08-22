@@ -1,4 +1,4 @@
-#include <petsc/private/matimpl.h>          /*I "petscmat.h" I*/
+#include <petsc/private/matimpl.h> /*I "petscmat.h" I*/
 
 /*@C
    MatPythonSetType - Initialize a Mat object implemented in Python.
@@ -16,12 +16,11 @@
 
 .seealso: `MatCreate()`, `MatSetType()`, `MATPYTHON`, `PetscPythonInitialize()`
 @*/
-PetscErrorCode  MatPythonSetType(Mat mat,const char pyname[])
-{
+PetscErrorCode MatPythonSetType(Mat mat, const char pyname[]) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  PetscValidCharPointer(pyname,2);
-  PetscTryMethod(mat,"MatPythonSetType_C",(Mat, const char[]),(mat,pyname));
+  PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
+  PetscValidCharPointer(pyname, 2);
+  PetscTryMethod(mat, "MatPythonSetType_C", (Mat, const char[]), (mat, pyname));
   PetscFunctionReturn(0);
 }
 
@@ -40,12 +39,11 @@ PetscErrorCode  MatPythonSetType(Mat mat,const char pyname[])
 
 .seealso: `MatCreate()`, `MatSetType()`, `MATPYTHON`, `PetscPythonInitialize()`, `MatPythonSetType()`
 @*/
-PetscErrorCode  MatPythonGetType(Mat mat,const char *pyname[])
-{
+PetscErrorCode MatPythonGetType(Mat mat, const char *pyname[]) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  PetscValidPointer(pyname,2);
-  PetscUseMethod(mat,"MatPythonGetType_C",(Mat, const char*[]),(mat,pyname));
+  PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
+  PetscValidPointer(pyname, 2);
+  PetscUseMethod(mat, "MatPythonGetType_C", (Mat, const char *[]), (mat, pyname));
   PetscFunctionReturn(0);
 }
 
@@ -70,15 +68,14 @@ PetscErrorCode  MatPythonGetType(Mat mat,const char *pyname[])
 .seealso: `MATPYTHON`, `MatPythonSetType()`, `PetscPythonInitialize()`
 
 @*/
-PetscErrorCode  MatPythonCreate(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,const char pyname[],Mat *A)
-{
+PetscErrorCode MatPythonCreate(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, PetscInt N, const char pyname[], Mat *A) {
   PetscFunctionBegin;
-  PetscValidCharPointer(pyname,6);
-  PetscValidPointer(A,6);
-  PetscCall(MatCreate(comm,A));
-  PetscCall(MatSetSizes(*A,m,n,M,N));
-  PetscCall(MatSetType(*A,MATPYTHON));
-  PetscCall(MatPythonSetType(*A,pyname));
-  PetscCall(MatBindToCPU(*A,PETSC_FALSE));
+  PetscValidCharPointer(pyname, 6);
+  PetscValidPointer(A, 6);
+  PetscCall(MatCreate(comm, A));
+  PetscCall(MatSetSizes(*A, m, n, M, N));
+  PetscCall(MatSetType(*A, MATPYTHON));
+  PetscCall(MatPythonSetType(*A, pyname));
+  PetscCall(MatBindToCPU(*A, PETSC_FALSE));
   PetscFunctionReturn(0);
 }

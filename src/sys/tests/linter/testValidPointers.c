@@ -1,7 +1,6 @@
 #include <petsc/private/petscimpl.h>
 
-void testValidPointers(void *a, char *b, PetscInt *c, PetscMPIInt *d, PetscInt64 *e, PetscBool *f, PetscScalar *g, PetscReal *h)
-{
+void testValidPointers(void *a, char *b, PetscInt *c, PetscMPIInt *d, PetscInt64 *e, PetscBool *f, PetscScalar *g, PetscReal *h) {
   /* incorrect */
   PetscValidCharPointer(a, 2);
   PetscValidIntPointer(b, 3);
@@ -24,8 +23,7 @@ void testValidPointers(void *a, char *b, PetscInt *c, PetscMPIInt *d, PetscInt64
   return;
 }
 
-void testValidPointers2(void *a, char *b, PetscInt *c, PetscMPIInt *d, PetscInt64 *e, PetscBool *f, PetscScalar *g, PetscReal *h)
-{
+void testValidPointers2(void *a, char *b, PetscInt *c, PetscMPIInt *d, PetscInt64 *e, PetscBool *f, PetscScalar *g, PetscReal *h) {
   /* incorrect */
   PetscValidCharPointer(a, 2);
   PetscValidPointer(b, 3);
@@ -48,8 +46,7 @@ void testValidPointers2(void *a, char *b, PetscInt *c, PetscMPIInt *d, PetscInt6
   return;
 }
 
-void testValidPointers3(void **a, char **b, PetscInt **c, PetscMPIInt **d, PetscInt64 **e, PetscBool **f, PetscScalar **g, PetscReal **h)
-{
+void testValidPointers3(void **a, char **b, PetscInt **c, PetscMPIInt **d, PetscInt64 **e, PetscBool **f, PetscScalar **g, PetscReal **h) {
   /* incorrect */
   PetscValidCharPointer(a, 1);
   PetscValidCharPointer(b, 2);

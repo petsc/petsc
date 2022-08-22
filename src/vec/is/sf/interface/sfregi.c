@@ -1,4 +1,4 @@
-#include <petsc/private/sfimpl.h>     /*I  "petscsf.h"  I*/
+#include <petsc/private/sfimpl.h> /*I  "petscsf.h"  I*/
 
 PETSC_INTERN PetscErrorCode PetscSFCreate_Basic(PetscSF);
 #if defined(PETSC_HAVE_MPI_WIN_CREATE)
@@ -25,22 +25,21 @@ PetscBool         PetscSFRegisterAllCalled;
 
 .seealso: `PetscSFRegisterDestroy()`
 @*/
-PetscErrorCode  PetscSFRegisterAll(void)
-{
+PetscErrorCode PetscSFRegisterAll(void) {
   PetscFunctionBegin;
   if (PetscSFRegisterAllCalled) PetscFunctionReturn(0);
   PetscSFRegisterAllCalled = PETSC_TRUE;
-  PetscCall(PetscSFRegister(PETSCSFBASIC,  PetscSFCreate_Basic));
+  PetscCall(PetscSFRegister(PETSCSFBASIC, PetscSFCreate_Basic));
 #if defined(PETSC_HAVE_MPI_WIN_CREATE)
   PetscCall(PetscSFRegister(PETSCSFWINDOW, PetscSFCreate_Window));
 #endif
-  PetscCall(PetscSFRegister(PETSCSFALLGATHERV,PetscSFCreate_Allgatherv));
+  PetscCall(PetscSFRegister(PETSCSFALLGATHERV, PetscSFCreate_Allgatherv));
   PetscCall(PetscSFRegister(PETSCSFALLGATHER, PetscSFCreate_Allgather));
-  PetscCall(PetscSFRegister(PETSCSFGATHERV,   PetscSFCreate_Gatherv));
-  PetscCall(PetscSFRegister(PETSCSFGATHER,    PetscSFCreate_Gather));
-  PetscCall(PetscSFRegister(PETSCSFALLTOALL,  PetscSFCreate_Alltoall));
+  PetscCall(PetscSFRegister(PETSCSFGATHERV, PetscSFCreate_Gatherv));
+  PetscCall(PetscSFRegister(PETSCSFGATHER, PetscSFCreate_Gather));
+  PetscCall(PetscSFRegister(PETSCSFALLTOALL, PetscSFCreate_Alltoall));
 #if defined(PETSC_HAVE_MPI_NEIGHBORHOOD_COLLECTIVES)
-  PetscCall(PetscSFRegister(PETSCSFNEIGHBOR,  PetscSFCreate_Neighbor));
+  PetscCall(PetscSFRegister(PETSCSFNEIGHBOR, PetscSFCreate_Neighbor));
 #endif
   PetscFunctionReturn(0);
 }
@@ -71,10 +70,9 @@ $     -sf_type my_impl
 
 .seealso: `PetscSFRegisterAll()`, `PetscSFInitializePackage()`
 @*/
-PetscErrorCode  PetscSFRegister(const char name[],PetscErrorCode (*create)(PetscSF))
-{
+PetscErrorCode PetscSFRegister(const char name[], PetscErrorCode (*create)(PetscSF)) {
   PetscFunctionBegin;
   PetscCall(PetscSFInitializePackage());
-  PetscCall(PetscFunctionListAdd(&PetscSFList,name,create));
+  PetscCall(PetscFunctionListAdd(&PetscSFList, name, create));
   PetscFunctionReturn(0);
 }

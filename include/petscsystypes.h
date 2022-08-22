@@ -88,7 +88,9 @@ typedef ptrdiff_t PetscCount;
 
 .seealso: `PetscOptionsGetEnum()`, `PetscOptionsEnum()`, `PetscBagRegisterEnum()`
 M*/
-typedef enum { ENUM_DUMMY } PetscEnum;
+typedef enum {
+  ENUM_DUMMY
+} PetscEnum;
 
 typedef short PetscShort;
 typedef char  PetscChar;
@@ -107,45 +109,45 @@ typedef float PetscFloat;
 M*/
 
 #if defined(PETSC_HAVE_STDINT_H)
-#  include <stdint.h>
+#include <stdint.h>
 #endif
-#if defined (PETSC_HAVE_INTTYPES_H)
-#  if !defined(__STDC_FORMAT_MACROS)
-#    define __STDC_FORMAT_MACROS /* required for using PRId64 from c++ */
-#  endif
-#  include <inttypes.h>
-#  if !defined(PRId64)
-#    define PRId64 "ld"
-#  endif
+#if defined(PETSC_HAVE_INTTYPES_H)
+#if !defined(__STDC_FORMAT_MACROS)
+#define __STDC_FORMAT_MACROS /* required for using PRId64 from c++ */
+#endif
+#include <inttypes.h>
+#if !defined(PRId64)
+#define PRId64 "ld"
+#endif
 #endif
 
 #if defined(PETSC_HAVE_STDINT_H) && defined(PETSC_HAVE_INTTYPES_H) && defined(PETSC_HAVE_MPI_INT64_T) /* MPI_INT64_T is not guaranteed to be a macro */
-   typedef int64_t PetscInt64;
+typedef int64_t PetscInt64;
 #elif (PETSC_SIZEOF_LONG_LONG == 8)
-   typedef long long PetscInt64;
+typedef long long PetscInt64;
 #elif defined(PETSC_HAVE___INT64)
-   typedef __int64 PetscInt64;
+typedef __int64 PetscInt64;
 #else
-#  error "cannot determine PetscInt64 type"
+#error "cannot determine PetscInt64 type"
 #endif
 
 #if defined(PETSC_USE_64BIT_INDICES)
-   typedef PetscInt64 PetscInt;
+typedef PetscInt64 PetscInt;
 #else
-   typedef int PetscInt;
+typedef int       PetscInt;
 #endif
 
 #if defined(PETSC_HAVE_STDINT_H) && defined(PETSC_HAVE_INTTYPES_H) && defined(PETSC_HAVE_MPI_INT64_T) /* MPI_INT64_T is not guaranteed to be a macro */
-#  define MPIU_INT64     MPI_INT64_T
-#  define PetscInt64_FMT PRId64
+#define MPIU_INT64     MPI_INT64_T
+#define PetscInt64_FMT PRId64
 #elif (PETSC_SIZEOF_LONG_LONG == 8)
-#  define MPIU_INT64     MPI_LONG_LONG_INT
-#  define PetscInt64_FMT "lld"
+#define MPIU_INT64     MPI_LONG_LONG_INT
+#define PetscInt64_FMT "lld"
 #elif defined(PETSC_HAVE___INT64)
-#  define MPIU_INT64     MPI_INT64_T
-#  define PetscInt64_FMT "ld"
+#define MPIU_INT64     MPI_INT64_T
+#define PetscInt64_FMT "ld"
 #else
-#  error "cannot determine PetscInt64 type"
+#error "cannot determine PetscInt64 type"
 #endif
 
 /*MC
@@ -181,11 +183,11 @@ M*/
 
 M*/
 #if defined(PETSC_HAVE_64BIT_BLAS_INDICES)
-#  define PetscBLASInt_FMT PetscInt64_FMT
-   typedef PetscInt64 PetscBLASInt;
+#define PetscBLASInt_FMT PetscInt64_FMT
+typedef PetscInt64 PetscBLASInt;
 #else
-#  define PetscBLASInt_FMT "d"
-   typedef int PetscBLASInt;
+#define PetscBLASInt_FMT "d"
+typedef int       PetscBLASInt;
 #endif
 
 /*MC
@@ -215,7 +217,10 @@ typedef int PetscCuBLASInt;
 
 .seealso: `PETSC_TRUE`, `PETSC_FALSE`, `PetscNot()`, `PetscBool3`
 E*/
-typedef enum { PETSC_FALSE,PETSC_TRUE } PetscBool;
+typedef enum {
+  PETSC_FALSE,
+  PETSC_TRUE
+} PetscBool;
 
 /*E
     PetscBool3  - Ternary logical variable. Actually an enum in C and a 4 byte integer in Fortran.
@@ -227,7 +232,11 @@ typedef enum { PETSC_FALSE,PETSC_TRUE } PetscBool;
 
 .seealso: `PETSC_TRUE`, `PETSC_FALSE`, `PetscNot()`, `PETSC_BOOL3_TRUE`, `PETSC_BOOL3_FALSE`, `PETSC_BOOL3_UKNOWN`
 E*/
-typedef enum { PETSC_BOOL3_FALSE,PETSC_BOOL3_TRUE, PETSC_BOOL3_UNKNOWN = -1 } PetscBool3;
+typedef enum {
+  PETSC_BOOL3_FALSE,
+  PETSC_BOOL3_TRUE,
+  PETSC_BOOL3_UNKNOWN = -1
+} PetscBool3;
 
 #define PetscBool3ToBool(a) ((a) == PETSC_BOOL3_TRUE ? PETSC_TRUE : PETSC_FALSE)
 #define PetscBoolToBool3(a) ((a) == PETSC_TRUE ? PETSC_BOOL3_TRUE : PETSC_BOOL3_FALSE)
@@ -247,20 +256,20 @@ typedef enum { PETSC_BOOL3_FALSE,PETSC_BOOL3_TRUE, PETSC_BOOL3_UNKNOWN = -1 } Pe
 M*/
 
 #if defined(PETSC_USE_REAL_SINGLE)
-   typedef float PetscReal;
+typedef float PetscReal;
 #elif defined(PETSC_USE_REAL_DOUBLE)
-   typedef double PetscReal;
+typedef double    PetscReal;
 #elif defined(PETSC_USE_REAL___FLOAT128)
-#  if defined(__cplusplus)
-     extern "C" {
-#  endif
-#  include <quadmath.h>
-#  if defined(__cplusplus)
-     }
-#  endif
-   typedef __float128 PetscReal;
+#if defined(__cplusplus)
+extern "C" {
+#endif
+#include <quadmath.h>
+#if defined(__cplusplus)
+}
+#endif
+typedef __float128 PetscReal;
 #elif defined(PETSC_USE_REAL___FP16)
-   typedef __fp16 PetscReal;
+typedef __fp16 PetscReal;
 #endif /* PETSC_USE_REAL_* */
 
 /*MC
@@ -290,66 +299,66 @@ M*/
 .seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscInt`, `MPIU_REAL`, `MPIU_SCALAR`, `MPIU_COMPLEX`, `MPIU_INT`, `PETSC_i`
 M*/
 #if !defined(PETSC_SKIP_COMPLEX)
-#  if defined(PETSC_CLANGUAGE_CXX)
-#    if !defined(PETSC_USE_REAL___FP16) && !defined(PETSC_USE_REAL___FLOAT128)
-#      if defined(__cplusplus) && defined(PETSC_HAVE_CXX_COMPLEX)  /* enable complex for library code */
-#        define PETSC_HAVE_COMPLEX 1
-#      elif !defined(__cplusplus) && defined(PETSC_HAVE_C99_COMPLEX) && defined(PETSC_HAVE_CXX_COMPLEX)  /* User code only - conditional on libary code complex support */
-#        define PETSC_HAVE_COMPLEX 1
-#      endif
-#    elif defined(PETSC_USE_REAL___FLOAT128) && defined(PETSC_HAVE_C99_COMPLEX)
-#        define PETSC_HAVE_COMPLEX 1
-#    endif
-#  else /* !PETSC_CLANGUAGE_CXX */
-#    if !defined(PETSC_USE_REAL___FP16)
-#      if !defined(__cplusplus) && defined(PETSC_HAVE_C99_COMPLEX) /* enable complex for library code */
-#        define PETSC_HAVE_COMPLEX 1
-#      elif defined(__cplusplus) && defined(PETSC_HAVE_C99_COMPLEX) && defined(PETSC_HAVE_CXX_COMPLEX)  /* User code only - conditional on libary code complex support */
-#        define PETSC_HAVE_COMPLEX 1
-#      endif
-#    endif
-#  endif /* PETSC_CLANGUAGE_CXX */
+#if defined(PETSC_CLANGUAGE_CXX)
+#if !defined(PETSC_USE_REAL___FP16) && !defined(PETSC_USE_REAL___FLOAT128)
+#if defined(__cplusplus) && defined(PETSC_HAVE_CXX_COMPLEX) /* enable complex for library code */
+#define PETSC_HAVE_COMPLEX 1
+#elif !defined(__cplusplus) && defined(PETSC_HAVE_C99_COMPLEX) && defined(PETSC_HAVE_CXX_COMPLEX) /* User code only - conditional on libary code complex support */
+#define PETSC_HAVE_COMPLEX 1
+#endif
+#elif defined(PETSC_USE_REAL___FLOAT128) && defined(PETSC_HAVE_C99_COMPLEX)
+#define PETSC_HAVE_COMPLEX 1
+#endif
+#else /* !PETSC_CLANGUAGE_CXX */
+#if !defined(PETSC_USE_REAL___FP16)
+#if !defined(__cplusplus) && defined(PETSC_HAVE_C99_COMPLEX) /* enable complex for library code */
+#define PETSC_HAVE_COMPLEX 1
+#elif defined(__cplusplus) && defined(PETSC_HAVE_C99_COMPLEX) && defined(PETSC_HAVE_CXX_COMPLEX) /* User code only - conditional on libary code complex support */
+#define PETSC_HAVE_COMPLEX 1
+#endif
+#endif
+#endif /* PETSC_CLANGUAGE_CXX */
 #endif /* !PETSC_SKIP_COMPLEX */
 
 #if defined(PETSC_HAVE_COMPLEX)
-  #if defined(__cplusplus)  /* C++ complex support */
-    /* Locate a C++ complex template library */
-    #if defined(PETSC_DESIRE_KOKKOS_COMPLEX) /* Defined in petscvec_kokkos.hpp for *.kokkos.cxx files */
-      #define petsccomplexlib Kokkos
-      #include <Kokkos_Complex.hpp>
-    #elif defined(__CUDACC__) || defined(__HIPCC__)
-      #define petsccomplexlib thrust
-      #include <thrust/complex.h>
-    #elif defined(PETSC_USE_REAL___FLOAT128)
-      #include <complex.h>
-    #else
-      #define petsccomplexlib std
-      #include <complex>
-    #endif
+#if defined(__cplusplus) /* C++ complex support */
+/* Locate a C++ complex template library */
+#if defined(PETSC_DESIRE_KOKKOS_COMPLEX) /* Defined in petscvec_kokkos.hpp for *.kokkos.cxx files */
+#define petsccomplexlib Kokkos
+#include <Kokkos_Complex.hpp>
+#elif defined(__CUDACC__) || defined(__HIPCC__)
+#define petsccomplexlib thrust
+#include <thrust/complex.h>
+#elif defined(PETSC_USE_REAL___FLOAT128)
+#include <complex.h>
+#else
+#define petsccomplexlib std
+#include <complex>
+#endif
 
-    /* Define PetscComplex based on the precision */
-    #if defined(PETSC_USE_REAL_SINGLE)
-      typedef petsccomplexlib::complex<float> PetscComplex;
-    #elif defined(PETSC_USE_REAL_DOUBLE)
-      typedef petsccomplexlib::complex<double> PetscComplex;
-    #elif defined(PETSC_USE_REAL___FLOAT128)
-      typedef __complex128 PetscComplex;
-    #endif
+/* Define PetscComplex based on the precision */
+#if defined(PETSC_USE_REAL_SINGLE)
+typedef petsccomplexlib::complex<float> PetscComplex;
+#elif defined(PETSC_USE_REAL_DOUBLE)
+typedef petsccomplexlib::complex<double> PetscComplex;
+#elif defined(PETSC_USE_REAL___FLOAT128)
+typedef __complex128 PetscComplex;
+#endif
 
-    /* Include a PETSc C++ complex 'fix'. Check PetscComplex manual page for details */
-    #if defined(PETSC_HAVE_CXX_COMPLEX_FIX) && !defined(PETSC_SKIP_CXX_COMPLEX_FIX)
-      #include <petsccxxcomplexfix.h>
-    #endif
-  #else /* c99 complex support */
-    #include <complex.h>
-    #if defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL___FP16)
-      typedef float _Complex PetscComplex;
-    #elif defined(PETSC_USE_REAL_DOUBLE)
-      typedef double _Complex PetscComplex;
-    #elif defined(PETSC_USE_REAL___FLOAT128)
-      typedef __complex128 PetscComplex;
-    #endif /* PETSC_USE_REAL_* */
-  #endif /* !__cplusplus */
+/* Include a PETSc C++ complex 'fix'. Check PetscComplex manual page for details */
+#if defined(PETSC_HAVE_CXX_COMPLEX_FIX) && !defined(PETSC_SKIP_CXX_COMPLEX_FIX)
+#include <petsccxxcomplexfix.h>
+#endif
+#else /* c99 complex support */
+#include <complex.h>
+#if defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL___FP16)
+typedef float _Complex PetscComplex;
+#elif defined(PETSC_USE_REAL_DOUBLE)
+typedef double _Complex PetscComplex;
+#elif defined(PETSC_USE_REAL___FLOAT128)
+typedef __complex128 PetscComplex;
+#endif /* PETSC_USE_REAL_* */
+#endif /* !__cplusplus */
 #endif /* PETSC_HAVE_COMPLEX */
 
 /*MC
@@ -366,9 +375,9 @@ M*/
 M*/
 
 #if defined(PETSC_USE_COMPLEX) && defined(PETSC_HAVE_COMPLEX)
-   typedef PetscComplex PetscScalar;
-#else /* PETSC_USE_COMPLEX */
-   typedef PetscReal PetscScalar;
+typedef PetscComplex PetscScalar;
+#else  /* PETSC_USE_COMPLEX */
+typedef PetscReal PetscScalar;
 #endif /* PETSC_USE_COMPLEX */
 
 /*E
@@ -390,7 +399,11 @@ $   `PETSC_OWN_POINTER` - the input `PetscObject` is referenced by pointer (with
 $   `PETSC_USE_POINTER` - invalid for `PetscObject` inputs.
 
 E*/
-typedef enum {PETSC_COPY_VALUES, PETSC_OWN_POINTER, PETSC_USE_POINTER} PetscCopyMode;
+typedef enum {
+  PETSC_COPY_VALUES,
+  PETSC_OWN_POINTER,
+  PETSC_USE_POINTER
+} PetscCopyMode;
 
 /*MC
     PETSC_FALSE - False value of `PetscBool`
@@ -448,28 +461,43 @@ typedef double PetscLogDouble;
           `PetscDataTypeGetSize()`
 
 E*/
-typedef enum {PETSC_DATATYPE_UNKNOWN = 0,
-              PETSC_DOUBLE = 1, PETSC_COMPLEX = 2, PETSC_LONG = 3, PETSC_SHORT = 4, PETSC_FLOAT = 5,
-              PETSC_CHAR = 6, PETSC_BIT_LOGICAL = 7, PETSC_ENUM = 8, PETSC_BOOL = 9, PETSC___FLOAT128 = 10,
-              PETSC_OBJECT = 11, PETSC_FUNCTION = 12, PETSC_STRING = 13, PETSC___FP16 = 14, PETSC_STRUCT = 15,
-              PETSC_INT = 16, PETSC_INT64 = 17} PetscDataType;
+typedef enum {
+  PETSC_DATATYPE_UNKNOWN = 0,
+  PETSC_DOUBLE           = 1,
+  PETSC_COMPLEX          = 2,
+  PETSC_LONG             = 3,
+  PETSC_SHORT            = 4,
+  PETSC_FLOAT            = 5,
+  PETSC_CHAR             = 6,
+  PETSC_BIT_LOGICAL      = 7,
+  PETSC_ENUM             = 8,
+  PETSC_BOOL             = 9,
+  PETSC___FLOAT128       = 10,
+  PETSC_OBJECT           = 11,
+  PETSC_FUNCTION         = 12,
+  PETSC_STRING           = 13,
+  PETSC___FP16           = 14,
+  PETSC_STRUCT           = 15,
+  PETSC_INT              = 16,
+  PETSC_INT64            = 17
+} PetscDataType;
 
 #if defined(PETSC_USE_REAL_SINGLE)
-#  define PETSC_REAL PETSC_FLOAT
+#define PETSC_REAL PETSC_FLOAT
 #elif defined(PETSC_USE_REAL_DOUBLE)
-#  define PETSC_REAL PETSC_DOUBLE
+#define PETSC_REAL PETSC_DOUBLE
 #elif defined(PETSC_USE_REAL___FLOAT128)
-#  define PETSC_REAL PETSC___FLOAT128
+#define PETSC_REAL PETSC___FLOAT128
 #elif defined(PETSC_USE_REAL___FP16)
-#  define PETSC_REAL PETSC___FP16
+#define PETSC_REAL PETSC___FP16
 #else
-#  define PETSC_REAL PETSC_DOUBLE
+#define PETSC_REAL PETSC_DOUBLE
 #endif
 
 #if defined(PETSC_USE_COMPLEX)
-#  define PETSC_SCALAR PETSC_COMPLEX
+#define PETSC_SCALAR PETSC_COMPLEX
 #else
-#  define PETSC_SCALAR PETSC_REAL
+#define PETSC_SCALAR PETSC_REAL
 #endif
 
 #define PETSC_FORTRANADDR PETSC_LONG
@@ -481,7 +509,7 @@ typedef enum {PETSC_DATATYPE_UNKNOWN = 0,
 
 .seealso: `PetscTokenCreate()`, `PetscTokenFind()`, `PetscTokenDestroy()`
 S*/
-typedef struct _p_PetscToken* PetscToken;
+typedef struct _p_PetscToken *PetscToken;
 
 /*S
      PetscObject - any PETSc object, `PetscViewer`, `Mat`, `Vec`, `KSP` etc
@@ -495,7 +523,7 @@ typedef struct _p_PetscToken* PetscToken;
 
 .seealso: `PetscObjectDestroy()`, `PetscObjectView()`, `PetscObjectGetName()`, `PetscObjectSetName()`, `PetscObjectReference()`, `PetscObjectDereference()`
 S*/
-typedef struct _p_PetscObject* PetscObject;
+typedef struct _p_PetscObject *PetscObject;
 
 /*MC
     PetscObjectId - unique integer Id for a `PetscObject`
@@ -547,10 +575,21 @@ $  `FILE_MODE_APPEND_UPDATE` - open a file for updating, meaning for reading and
 
 .seealso: `PetscViewerFileSetMode()`
 E*/
-typedef enum {FILE_MODE_UNDEFINED=-1, FILE_MODE_READ=0, FILE_MODE_WRITE, FILE_MODE_APPEND, FILE_MODE_UPDATE, FILE_MODE_APPEND_UPDATE} PetscFileMode;
+typedef enum {
+  FILE_MODE_UNDEFINED = -1,
+  FILE_MODE_READ      = 0,
+  FILE_MODE_WRITE,
+  FILE_MODE_APPEND,
+  FILE_MODE_UPDATE,
+  FILE_MODE_APPEND_UPDATE
+} PetscFileMode;
 
-typedef void* PetscDLHandle;
-typedef enum {PETSC_DL_DECIDE=0,PETSC_DL_NOW=1,PETSC_DL_LOCAL=2} PetscDLMode;
+typedef void *PetscDLHandle;
+typedef enum {
+  PETSC_DL_DECIDE = 0,
+  PETSC_DL_NOW    = 1,
+  PETSC_DL_LOCAL  = 2
+} PetscDLMode;
 
 /*S
      PetscObjectList - Linked list of PETSc objects, each accessible by string name
@@ -583,7 +622,7 @@ typedef struct _n_PetscDLLibrary *PetscDLLibrary;
 
 .seealso: `PetscObject`, `PetscContainerCreate()`, `PetscObjectCompose()`, `PetscObjectQuery()`
 S*/
-typedef struct _p_PetscContainer*  PetscContainer;
+typedef struct _p_PetscContainer *PetscContainer;
 
 /*S
      PetscRandom - Abstract PETSc object that manages generating random numbers
@@ -592,7 +631,7 @@ typedef struct _p_PetscContainer*  PetscContainer;
 
 .seealso: `PetscRandomCreate()`, `PetscRandomGetValue()`, `PetscRandomType`
 S*/
-typedef struct _p_PetscRandom*   PetscRandom;
+typedef struct _p_PetscRandom *PetscRandom;
 
 /*
    In binary files variables are stored using the following lengths,
@@ -600,11 +639,11 @@ typedef struct _p_PetscRandom*   PetscRandom;
   machine. Use these rather then sizeof() in computing sizes for
   PetscBinarySeek().
 */
-#define PETSC_BINARY_INT_SIZE    (32/8)
-#define PETSC_BINARY_FLOAT_SIZE  (32/8)
-#define PETSC_BINARY_CHAR_SIZE   (8/8)
-#define PETSC_BINARY_SHORT_SIZE  (16/8)
-#define PETSC_BINARY_DOUBLE_SIZE (64/8)
+#define PETSC_BINARY_INT_SIZE    (32 / 8)
+#define PETSC_BINARY_FLOAT_SIZE  (32 / 8)
+#define PETSC_BINARY_CHAR_SIZE   (8 / 8)
+#define PETSC_BINARY_SHORT_SIZE  (16 / 8)
+#define PETSC_BINARY_DOUBLE_SIZE (64 / 8)
 #define PETSC_BINARY_SCALAR_SIZE sizeof(PetscScalar)
 
 /*E
@@ -614,7 +653,11 @@ typedef struct _p_PetscRandom*   PetscRandom;
 
 .seealso: `PetscBinarySeek()`, `PetscBinarySynchronizedSeek()`
 E*/
-typedef enum {PETSC_BINARY_SEEK_SET = 0,PETSC_BINARY_SEEK_CUR = 1,PETSC_BINARY_SEEK_END = 2} PetscBinarySeekType;
+typedef enum {
+  PETSC_BINARY_SEEK_SET = 0,
+  PETSC_BINARY_SEEK_CUR = 1,
+  PETSC_BINARY_SEEK_END = 2
+} PetscBinarySeekType;
 
 /*E
     PetscBuildTwoSidedType - algorithm for setting up two-sided communication
@@ -632,9 +675,9 @@ $      that only communicates the part of the reduction that is necessary.  Requ
 .seealso: `PetscCommBuildTwoSided()`, `PetscCommBuildTwoSidedSetType()`, `PetscCommBuildTwoSidedGetType()`
 E*/
 typedef enum {
-  PETSC_BUILDTWOSIDED_NOTSET = -1,
-  PETSC_BUILDTWOSIDED_ALLREDUCE = 0,
-  PETSC_BUILDTWOSIDED_IBARRIER = 1,
+  PETSC_BUILDTWOSIDED_NOTSET     = -1,
+  PETSC_BUILDTWOSIDED_ALLREDUCE  = 0,
+  PETSC_BUILDTWOSIDED_IBARRIER   = 1,
   PETSC_BUILDTWOSIDED_REDSCATTER = 2
   /* Updates here must be accompanied by updates in finclude/petscsys.h and the string array in mpits.c */
 } PetscBuildTwoSidedType;
@@ -649,7 +692,17 @@ typedef enum {
           `VecSetValuesLocal()`, `VecSetValuesBlockedLocal()`, `MatSetValuesBlocked()`,
           `MatSetValuesBlockedLocal()`, `MatSetValuesLocal()`, `VecScatterBegin()`, `VecScatterEnd()`
 E*/
- typedef enum {NOT_SET_VALUES, INSERT_VALUES, ADD_VALUES, MAX_VALUES, MIN_VALUES, INSERT_ALL_VALUES, ADD_ALL_VALUES, INSERT_BC_VALUES, ADD_BC_VALUES} InsertMode;
+typedef enum {
+  NOT_SET_VALUES,
+  INSERT_VALUES,
+  ADD_VALUES,
+  MAX_VALUES,
+  MIN_VALUES,
+  INSERT_ALL_VALUES,
+  ADD_ALL_VALUES,
+  INSERT_BC_VALUES,
+  ADD_BC_VALUES
+} InsertMode;
 
 /*MC
     INSERT_VALUES - Put a value into a vector or matrix, overwrites any previous value
@@ -727,8 +780,12 @@ $     `PETSC_SUBCOMM_INTERLACED` - the first communicator contains rank 0,3, the
 .seealso: `PetscSubcommCreate()`, `PetscSubcommSetNumber()`, `PetscSubcommSetType()`, `PetscSubcommView()`, `PetscSubcommSetFromOptions()`
 
 S*/
-typedef struct _n_PetscSubcomm* PetscSubcomm;
-typedef enum {PETSC_SUBCOMM_GENERAL=0,PETSC_SUBCOMM_CONTIGUOUS=1,PETSC_SUBCOMM_INTERLACED=2} PetscSubcommType;
+typedef struct _n_PetscSubcomm *PetscSubcomm;
+typedef enum {
+  PETSC_SUBCOMM_GENERAL    = 0,
+  PETSC_SUBCOMM_CONTIGUOUS = 1,
+  PETSC_SUBCOMM_INTERLACED = 2
+} PetscSubcommType;
 
 /*S
      PetscHeap - A simple class for managing heaps
@@ -739,8 +796,8 @@ typedef enum {PETSC_SUBCOMM_GENERAL=0,PETSC_SUBCOMM_CONTIGUOUS=1,PETSC_SUBCOMM_I
 S*/
 typedef struct _PetscHeap *PetscHeap;
 
-typedef struct _n_PetscShmComm* PetscShmComm;
-typedef struct _n_PetscOmpCtrl* PetscOmpCtrl;
+typedef struct _n_PetscShmComm *PetscShmComm;
+typedef struct _n_PetscOmpCtrl *PetscOmpCtrl;
 
 /*S
    PetscSegBuffer - a segmented extendable buffer

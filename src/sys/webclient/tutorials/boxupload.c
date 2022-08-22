@@ -8,13 +8,12 @@
 
 #include <petscsys.h>
 
-int main(int argc,char **argv)
-{
-  char           access_token[512],new_refresh_token[512];
+int main(int argc, char **argv) {
+  char access_token[512], new_refresh_token[512];
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&argv,NULL,NULL));
-  PetscCall(PetscBoxRefresh(PETSC_COMM_WORLD,NULL,access_token,new_refresh_token,sizeof(access_token)));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, NULL));
+  PetscCall(PetscBoxRefresh(PETSC_COMM_WORLD, NULL, access_token, new_refresh_token, sizeof(access_token)));
   PetscCall(PetscFinalize());
   return 0;
 }

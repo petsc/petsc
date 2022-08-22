@@ -3,57 +3,56 @@ static char help[] = "Tests MatTranspose(), MatNorm(), MatAXPY() and MatAYPX().\
 
 #include <petscmat.h>
 
-static PetscErrorCode TransposeAXPY(Mat C,PetscScalar alpha,Mat mat,PetscErrorCode (*f)(Mat,Mat*))
-{
-  Mat            D,E,F,G;
-  MatType        mtype;
+static PetscErrorCode TransposeAXPY(Mat C, PetscScalar alpha, Mat mat, PetscErrorCode (*f)(Mat, Mat *)) {
+  Mat     D, E, F, G;
+  MatType mtype;
 
   PetscFunctionBegin;
-  PetscCall(MatGetType(mat,&mtype));
+  PetscCall(MatGetType(mat, &mtype));
   if (f == MatCreateTranspose) {
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\nMatAXPY:  (C^T)^T = (C^T)^T + alpha * A, C=A, SAME_NONZERO_PATTERN\n"));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\nMatAXPY:  (C^T)^T = (C^T)^T + alpha * A, C=A, SAME_NONZERO_PATTERN\n"));
   } else {
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\nMatAXPY:  (C^H)^H = (C^H)^H + alpha * A, C=A, SAME_NONZERO_PATTERN\n"));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\nMatAXPY:  (C^H)^H = (C^H)^H + alpha * A, C=A, SAME_NONZERO_PATTERN\n"));
   }
-  PetscCall(MatDuplicate(mat,MAT_COPY_VALUES,&C));
-  PetscCall(f(C,&D));
-  PetscCall(f(D,&E));
-  PetscCall(MatAXPY(E,alpha,mat,SAME_NONZERO_PATTERN));
-  PetscCall(MatConvert(E,mtype,MAT_INPLACE_MATRIX,&E));
-  PetscCall(MatView(E,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(MatDuplicate(mat, MAT_COPY_VALUES, &C));
+  PetscCall(f(C, &D));
+  PetscCall(f(D, &E));
+  PetscCall(MatAXPY(E, alpha, mat, SAME_NONZERO_PATTERN));
+  PetscCall(MatConvert(E, mtype, MAT_INPLACE_MATRIX, &E));
+  PetscCall(MatView(E, PETSC_VIEWER_STDOUT_WORLD));
   PetscCall(MatDestroy(&E));
   PetscCall(MatDestroy(&D));
   PetscCall(MatDestroy(&C));
   if (f == MatCreateTranspose) {
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"MatAXPY:  C = C + alpha * (A^T)^T, C=A, SAME_NONZERO_PATTERN\n"));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "MatAXPY:  C = C + alpha * (A^T)^T, C=A, SAME_NONZERO_PATTERN\n"));
   } else {
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"MatAXPY:  C = C + alpha * (A^H)^H, C=A, SAME_NONZERO_PATTERN\n"));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "MatAXPY:  C = C + alpha * (A^H)^H, C=A, SAME_NONZERO_PATTERN\n"));
   }
   if (f == MatCreateTranspose) {
-    PetscCall(MatTranspose(mat,MAT_INITIAL_MATRIX,&D));
+    PetscCall(MatTranspose(mat, MAT_INITIAL_MATRIX, &D));
   } else {
-    PetscCall(MatHermitianTranspose(mat,MAT_INITIAL_MATRIX,&D));
+    PetscCall(MatHermitianTranspose(mat, MAT_INITIAL_MATRIX, &D));
   }
-  PetscCall(f(D,&E));
-  PetscCall(MatDuplicate(mat,MAT_COPY_VALUES,&C));
-  PetscCall(MatAXPY(C,alpha,E,SAME_NONZERO_PATTERN));
-  PetscCall(MatView(C,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(f(D, &E));
+  PetscCall(MatDuplicate(mat, MAT_COPY_VALUES, &C));
+  PetscCall(MatAXPY(C, alpha, E, SAME_NONZERO_PATTERN));
+  PetscCall(MatView(C, PETSC_VIEWER_STDOUT_WORLD));
   PetscCall(MatDestroy(&E));
   PetscCall(MatDestroy(&D));
   PetscCall(MatDestroy(&C));
   if (f == MatCreateTranspose) {
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"MatAXPY:  (C^T)^T = (C^T)^T + alpha * (A^T)^T, C=A, SAME_NONZERO_PATTERN\n"));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "MatAXPY:  (C^T)^T = (C^T)^T + alpha * (A^T)^T, C=A, SAME_NONZERO_PATTERN\n"));
   } else {
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"MatAXPY:  (C^H)^H = (C^H)^H + alpha * (A^H)^H, C=A, SAME_NONZERO_PATTERN\n"));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "MatAXPY:  (C^H)^H = (C^H)^H + alpha * (A^H)^H, C=A, SAME_NONZERO_PATTERN\n"));
   }
-  PetscCall(MatDuplicate(mat,MAT_COPY_VALUES,&C));
-  PetscCall(f(C,&D));
-  PetscCall(f(D,&E));
-  PetscCall(f(mat,&F));
-  PetscCall(f(F,&G));
-  PetscCall(MatAXPY(E,alpha,G,SAME_NONZERO_PATTERN));
-  PetscCall(MatConvert(E,mtype,MAT_INPLACE_MATRIX,&E));
-  PetscCall(MatView(E,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(MatDuplicate(mat, MAT_COPY_VALUES, &C));
+  PetscCall(f(C, &D));
+  PetscCall(f(D, &E));
+  PetscCall(f(mat, &F));
+  PetscCall(f(F, &G));
+  PetscCall(MatAXPY(E, alpha, G, SAME_NONZERO_PATTERN));
+  PetscCall(MatConvert(E, mtype, MAT_INPLACE_MATRIX, &E));
+  PetscCall(MatView(E, PETSC_VIEWER_STDOUT_WORLD));
   PetscCall(MatDestroy(&G));
   PetscCall(MatDestroy(&F));
   PetscCall(MatDestroy(&E));
@@ -61,14 +60,14 @@ static PetscErrorCode TransposeAXPY(Mat C,PetscScalar alpha,Mat mat,PetscErrorCo
   PetscCall(MatDestroy(&C));
 
   /* Call f on a matrix that does not implement the transposition */
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"MatAXPY:  Now without the transposition operation\n"));
-  PetscCall(MatConvert(mat,MATSHELL,MAT_INITIAL_MATRIX,&C));
-  PetscCall(f(C,&D));
-  PetscCall(f(D,&E));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "MatAXPY:  Now without the transposition operation\n"));
+  PetscCall(MatConvert(mat, MATSHELL, MAT_INITIAL_MATRIX, &C));
+  PetscCall(f(C, &D));
+  PetscCall(f(D, &E));
   /* XXX cannot use MAT_INPLACE_MATRIX, it leaks mat */
-  PetscCall(MatConvert(E,mtype,MAT_INITIAL_MATRIX,&F));
-  PetscCall(MatAXPY(F,alpha,mat,SAME_NONZERO_PATTERN));
-  PetscCall(MatView(F,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(MatConvert(E, mtype, MAT_INITIAL_MATRIX, &F));
+  PetscCall(MatAXPY(F, alpha, mat, SAME_NONZERO_PATTERN));
+  PetscCall(MatView(F, PETSC_VIEWER_STDOUT_WORLD));
   PetscCall(MatDestroy(&F));
   PetscCall(MatDestroy(&E));
   PetscCall(MatDestroy(&D));
@@ -76,130 +75,135 @@ static PetscErrorCode TransposeAXPY(Mat C,PetscScalar alpha,Mat mat,PetscErrorCo
   PetscFunctionReturn(0);
 }
 
-int main(int argc,char **argv)
-{
-  Mat            mat,tmat = 0;
-  PetscInt       m = 7,n,i,j,rstart,rend,rect = 0;
-  PetscMPIInt    size,rank;
-  PetscBool      flg;
-  PetscScalar    v, alpha;
-  PetscReal      normf,normi,norm1;
+int main(int argc, char **argv) {
+  Mat         mat, tmat = 0;
+  PetscInt    m = 7, n, i, j, rstart, rend, rect = 0;
+  PetscMPIInt size, rank;
+  PetscBool   flg;
+  PetscScalar v, alpha;
+  PetscReal   normf, normi, norm1;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
-  PetscCall(PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_COMMON));
-  PetscCall(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
-  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
-  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
-  n    = m;
-  PetscCall(PetscOptionsHasName(NULL,NULL,"-rectA",&flg));
-  if (flg) {n += 2; rect = 1;}
-  PetscCall(PetscOptionsHasName(NULL,NULL,"-rectB",&flg));
-  if (flg) {n -= 2; rect = 1;}
+  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD, PETSC_VIEWER_ASCII_COMMON));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-m", &m, NULL));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
+  n = m;
+  PetscCall(PetscOptionsHasName(NULL, NULL, "-rectA", &flg));
+  if (flg) {
+    n += 2;
+    rect = 1;
+  }
+  PetscCall(PetscOptionsHasName(NULL, NULL, "-rectB", &flg));
+  if (flg) {
+    n -= 2;
+    rect = 1;
+  }
 
   /* ------- Assemble matrix --------- */
-  PetscCall(MatCreate(PETSC_COMM_WORLD,&mat));
-  PetscCall(MatSetSizes(mat,PETSC_DECIDE,PETSC_DECIDE,m,n));
+  PetscCall(MatCreate(PETSC_COMM_WORLD, &mat));
+  PetscCall(MatSetSizes(mat, PETSC_DECIDE, PETSC_DECIDE, m, n));
   PetscCall(MatSetFromOptions(mat));
   PetscCall(MatSetUp(mat));
-  PetscCall(MatGetOwnershipRange(mat,&rstart,&rend));
-  for (i=rstart; i<rend; i++) {
-    for (j=0; j<n; j++) {
-      v    = 10.0*i+j+1.0;
-      PetscCall(MatSetValues(mat,1,&i,1,&j,&v,INSERT_VALUES));
+  PetscCall(MatGetOwnershipRange(mat, &rstart, &rend));
+  for (i = rstart; i < rend; i++) {
+    for (j = 0; j < n; j++) {
+      v = 10.0 * i + j + 1.0;
+      PetscCall(MatSetValues(mat, 1, &i, 1, &j, &v, INSERT_VALUES));
     }
   }
-  PetscCall(MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(mat, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(mat, MAT_FINAL_ASSEMBLY));
 
   /* ----------------- Test MatNorm()  ----------------- */
-  PetscCall(MatNorm(mat,NORM_FROBENIUS,&normf));
-  PetscCall(MatNorm(mat,NORM_1,&norm1));
-  PetscCall(MatNorm(mat,NORM_INFINITY,&normi));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"original A: Frobenious norm = %g, one norm = %g, infinity norm = %g\n",(double)normf,(double)norm1,(double)normi));
-  PetscCall(MatView(mat,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(MatNorm(mat, NORM_FROBENIUS, &normf));
+  PetscCall(MatNorm(mat, NORM_1, &norm1));
+  PetscCall(MatNorm(mat, NORM_INFINITY, &normi));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "original A: Frobenious norm = %g, one norm = %g, infinity norm = %g\n", (double)normf, (double)norm1, (double)normi));
+  PetscCall(MatView(mat, PETSC_VIEWER_STDOUT_WORLD));
 
   /* --------------- Test MatTranspose()  -------------- */
-  PetscCall(PetscOptionsHasName(NULL,NULL,"-in_place",&flg));
+  PetscCall(PetscOptionsHasName(NULL, NULL, "-in_place", &flg));
   if (!rect && flg) {
-    PetscCall(MatTranspose(mat,MAT_REUSE_MATRIX,&mat));   /* in-place transpose */
+    PetscCall(MatTranspose(mat, MAT_REUSE_MATRIX, &mat)); /* in-place transpose */
     tmat = mat;
     mat  = NULL;
   } else { /* out-of-place transpose */
-    PetscCall(MatTranspose(mat,MAT_INITIAL_MATRIX,&tmat));
+    PetscCall(MatTranspose(mat, MAT_INITIAL_MATRIX, &tmat));
   }
 
   /* ----------------- Test MatNorm()  ----------------- */
   /* Print info about transpose matrix */
-  PetscCall(MatNorm(tmat,NORM_FROBENIUS,&normf));
-  PetscCall(MatNorm(tmat,NORM_1,&norm1));
-  PetscCall(MatNorm(tmat,NORM_INFINITY,&normi));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"B = A^T: Frobenious norm = %g, one norm = %g, infinity norm = %g\n",(double)normf,(double)norm1,(double)normi));
-  PetscCall(MatView(tmat,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(MatNorm(tmat, NORM_FROBENIUS, &normf));
+  PetscCall(MatNorm(tmat, NORM_1, &norm1));
+  PetscCall(MatNorm(tmat, NORM_INFINITY, &normi));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "B = A^T: Frobenious norm = %g, one norm = %g, infinity norm = %g\n", (double)normf, (double)norm1, (double)normi));
+  PetscCall(MatView(tmat, PETSC_VIEWER_STDOUT_WORLD));
 
   /* ----------------- Test MatAXPY(), MatAYPX()  ----------------- */
   if (mat && !rect) {
     alpha = 1.0;
-    PetscCall(PetscOptionsGetScalar(NULL,NULL,"-alpha",&alpha,NULL));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"MatAXPY:  B = B + alpha * A\n"));
-    PetscCall(MatAXPY(tmat,alpha,mat,DIFFERENT_NONZERO_PATTERN));
-    PetscCall(MatView(tmat,PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(PetscOptionsGetScalar(NULL, NULL, "-alpha", &alpha, NULL));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "MatAXPY:  B = B + alpha * A\n"));
+    PetscCall(MatAXPY(tmat, alpha, mat, DIFFERENT_NONZERO_PATTERN));
+    PetscCall(MatView(tmat, PETSC_VIEWER_STDOUT_WORLD));
 
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"MatAYPX:  B = alpha*B + A\n"));
-    PetscCall(MatAYPX(tmat,alpha,mat,DIFFERENT_NONZERO_PATTERN));
-    PetscCall(MatView(tmat,PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "MatAYPX:  B = alpha*B + A\n"));
+    PetscCall(MatAYPX(tmat, alpha, mat, DIFFERENT_NONZERO_PATTERN));
+    PetscCall(MatView(tmat, PETSC_VIEWER_STDOUT_WORLD));
   }
 
   {
     Mat C;
     alpha = 1.0;
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"MatAXPY:  C = C + alpha * A, C=A, SAME_NONZERO_PATTERN\n"));
-    PetscCall(MatDuplicate(mat,MAT_COPY_VALUES,&C));
-    PetscCall(MatAXPY(C,alpha,mat,SAME_NONZERO_PATTERN));
-    PetscCall(MatView(C,PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "MatAXPY:  C = C + alpha * A, C=A, SAME_NONZERO_PATTERN\n"));
+    PetscCall(MatDuplicate(mat, MAT_COPY_VALUES, &C));
+    PetscCall(MatAXPY(C, alpha, mat, SAME_NONZERO_PATTERN));
+    PetscCall(MatView(C, PETSC_VIEWER_STDOUT_WORLD));
     PetscCall(MatDestroy(&C));
-    PetscCall(TransposeAXPY(C,alpha,mat,MatCreateTranspose));
-    PetscCall(TransposeAXPY(C,alpha,mat,MatCreateHermitianTranspose));
+    PetscCall(TransposeAXPY(C, alpha, mat, MatCreateTranspose));
+    PetscCall(TransposeAXPY(C, alpha, mat, MatCreateHermitianTranspose));
   }
 
   {
     Mat matB;
     /* get matB that has nonzeros of mat in all even numbers of row and col */
-    PetscCall(MatCreate(PETSC_COMM_WORLD,&matB));
-    PetscCall(MatSetSizes(matB,PETSC_DECIDE,PETSC_DECIDE,m,n));
+    PetscCall(MatCreate(PETSC_COMM_WORLD, &matB));
+    PetscCall(MatSetSizes(matB, PETSC_DECIDE, PETSC_DECIDE, m, n));
     PetscCall(MatSetFromOptions(matB));
     PetscCall(MatSetUp(matB));
-    PetscCall(MatGetOwnershipRange(matB,&rstart,&rend));
+    PetscCall(MatGetOwnershipRange(matB, &rstart, &rend));
     if (rstart % 2 != 0) rstart++;
-    for (i=rstart; i<rend; i += 2) {
-      for (j=0; j<n; j += 2) {
-        v    = 10.0*i+j+1.0;
-        PetscCall(MatSetValues(matB,1,&i,1,&j,&v,INSERT_VALUES));
+    for (i = rstart; i < rend; i += 2) {
+      for (j = 0; j < n; j += 2) {
+        v = 10.0 * i + j + 1.0;
+        PetscCall(MatSetValues(matB, 1, &i, 1, &j, &v, INSERT_VALUES));
       }
     }
-    PetscCall(MatAssemblyBegin(matB,MAT_FINAL_ASSEMBLY));
-    PetscCall(MatAssemblyEnd(matB,MAT_FINAL_ASSEMBLY));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD," A: original matrix:\n"));
-    PetscCall(MatView(mat,PETSC_VIEWER_STDOUT_WORLD));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD," B(a subset of A):\n"));
-    PetscCall(MatView(matB,PETSC_VIEWER_STDOUT_WORLD));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"MatAXPY:  B = B + alpha * A, SUBSET_NONZERO_PATTERN\n"));
-    PetscCall(MatAXPY(mat,alpha,matB,SUBSET_NONZERO_PATTERN));
-    PetscCall(MatView(mat,PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(MatAssemblyBegin(matB, MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(matB, MAT_FINAL_ASSEMBLY));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, " A: original matrix:\n"));
+    PetscCall(MatView(mat, PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, " B(a subset of A):\n"));
+    PetscCall(MatView(matB, PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "MatAXPY:  B = B + alpha * A, SUBSET_NONZERO_PATTERN\n"));
+    PetscCall(MatAXPY(mat, alpha, matB, SUBSET_NONZERO_PATTERN));
+    PetscCall(MatView(mat, PETSC_VIEWER_STDOUT_WORLD));
     PetscCall(MatDestroy(&matB));
   }
 
   /* Test MatZeroRows */
   j = rstart - 1;
-  if (j < 0) j = m-1;
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"MatZeroRows:\n"));
-  PetscCall(MatZeroRows(mat,1,&j,0.0,NULL,NULL));
-  PetscCall(MatView(mat,PETSC_VIEWER_STDOUT_WORLD));
+  if (j < 0) j = m - 1;
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "MatZeroRows:\n"));
+  PetscCall(MatZeroRows(mat, 1, &j, 0.0, NULL, NULL));
+  PetscCall(MatView(mat, PETSC_VIEWER_STDOUT_WORLD));
 
   /* Test MatShift */
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"MatShift: B = B - 2*I\n"));
-  PetscCall(MatShift(mat,-2.0));
-  PetscCall(MatView(mat,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "MatShift: B = B - 2*I\n"));
+  PetscCall(MatShift(mat, -2.0));
+  PetscCall(MatView(mat, PETSC_VIEWER_STDOUT_WORLD));
 
   PetscCall(PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD));
   /* Free data structures */

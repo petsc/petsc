@@ -39,20 +39,20 @@ typedef enum {
   PETSC_MEMTYPE_SYCL    = 0x05,
 } PetscMemType;
 #if PetscDefined(HAVE_CUDA)
-# define PETSC_MEMTYPE_KOKKOS PETSC_MEMTYPE_CUDA
+#define PETSC_MEMTYPE_KOKKOS PETSC_MEMTYPE_CUDA
 #elif PetscDefined(HAVE_HIP)
-# define PETSC_MEMTYPE_KOKKOS PETSC_MEMTYPE_HIP
+#define PETSC_MEMTYPE_KOKKOS PETSC_MEMTYPE_HIP
 #elif PetscDefined(HAVE_SYCL)
-# define PETSC_MEMTYPE_KOKKOS PETSC_MEMTYPE_SYCL
+#define PETSC_MEMTYPE_KOKKOS PETSC_MEMTYPE_SYCL
 #else
-# define PETSC_MEMTYPE_KOKKOS PETSC_MEMTYPE_HOST
+#define PETSC_MEMTYPE_KOKKOS PETSC_MEMTYPE_HOST
 #endif
 
-#define PetscMemTypeHost(m)    (((m) & 0x1) == PETSC_MEMTYPE_HOST)
-#define PetscMemTypeDevice(m)  (((m) & 0x1) == PETSC_MEMTYPE_DEVICE)
-#define PetscMemTypeCUDA(m)    (((m) & 0xF) == PETSC_MEMTYPE_CUDA)
-#define PetscMemTypeHIP(m)     (((m) & 0xF) == PETSC_MEMTYPE_HIP)
-#define PetscMemTypeSYCL(m)    (((m) & 0xF) == PETSC_MEMTYPE_SYCL)
+#define PetscMemTypeHost(m)    (((m)&0x1) == PETSC_MEMTYPE_HOST)
+#define PetscMemTypeDevice(m)  (((m)&0x1) == PETSC_MEMTYPE_DEVICE)
+#define PetscMemTypeCUDA(m)    (((m)&0xF) == PETSC_MEMTYPE_CUDA)
+#define PetscMemTypeHIP(m)     (((m)&0xF) == PETSC_MEMTYPE_HIP)
+#define PetscMemTypeSYCL(m)    (((m)&0xF) == PETSC_MEMTYPE_SYCL)
 #define PetscMemTypeNVSHMEM(m) ((m) == PETSC_MEMTYPE_NVSHMEM)
 
 #define PETSC_OFFLOAD_VECKOKKOS_DEPRECATED PETSC_OFFLOAD_VECKOKKOS PETSC_DEPRECATED_ENUM("Use PETSC_OFFLOAD_KOKKOS (since version 3.17.0)")
@@ -68,12 +68,12 @@ $ PETSC_OFFLOAD_KOKKOS      - Reserved for Kokkos matrix and vector. It means th
   Level: developer
 E*/
 typedef enum {
-  PETSC_OFFLOAD_UNALLOCATED = 0x0,
-  PETSC_OFFLOAD_CPU         = 0x1,
-  PETSC_OFFLOAD_GPU         = 0x2,
-  PETSC_OFFLOAD_BOTH        = 0x3,
+  PETSC_OFFLOAD_UNALLOCATED          = 0x0,
+  PETSC_OFFLOAD_CPU                  = 0x1,
+  PETSC_OFFLOAD_GPU                  = 0x2,
+  PETSC_OFFLOAD_BOTH                 = 0x3,
   PETSC_OFFLOAD_VECKOKKOS_DEPRECATED = 0x100,
-  PETSC_OFFLOAD_KOKKOS      = 0x100
+  PETSC_OFFLOAD_KOKKOS               = 0x100
 } PetscOffloadMask;
 
 /*E
@@ -124,13 +124,13 @@ typedef enum {
 } PetscDeviceType;
 PETSC_EXTERN const char *const PetscDeviceTypes[];
 #if defined(PETSC_HAVE_HIP)
-#  define PETSC_DEVICE_DEFAULT PETSC_DEVICE_HIP
+#define PETSC_DEVICE_DEFAULT PETSC_DEVICE_HIP
 #elif defined(PETSC_HAVE_CUDA)
-#  define PETSC_DEVICE_DEFAULT PETSC_DEVICE_CUDA
+#define PETSC_DEVICE_DEFAULT PETSC_DEVICE_CUDA
 #elif PetscDefined(HAVE_SYCL)
-#  define PETSC_DEVICE_DEFAULT PETSC_DEVICE_SYCL
+#define PETSC_DEVICE_DEFAULT PETSC_DEVICE_SYCL
 #else
-#  define PETSC_DEVICE_DEFAULT PETSC_DEVICE_INVALID
+#define PETSC_DEVICE_DEFAULT PETSC_DEVICE_INVALID
 #endif
 
 /*S

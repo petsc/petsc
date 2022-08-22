@@ -3,21 +3,19 @@ static char help[] = "Tests catching of floating point exceptions.\n\n";
 
 #include <petscsys.h>
 
-int CreateError(PetscReal x)
-{
+int CreateError(PetscReal x) {
   PetscFunctionBegin;
-  x    = 1.0/x;
-  PetscCall(PetscPrintf(PETSC_COMM_SELF,"x = %g\n",(double)x));
+  x = 1.0 / x;
+  PetscCall(PetscPrintf(PETSC_COMM_SELF, "x = %g\n", (double)x));
   PetscFunctionReturn(0);
 }
 
-int main(int argc,char **argv)
-{
+int main(int argc, char **argv) {
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
-  PetscCall(PetscPrintf(PETSC_COMM_SELF,"This is a contrived example to test floating pointing\n"));
-  PetscCall(PetscPrintf(PETSC_COMM_SELF,"It is not a true error.\n"));
-  PetscCall(PetscPrintf(PETSC_COMM_SELF,"Run with -fp_trap to catch the floating point error\n"));
+  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF, "This is a contrived example to test floating pointing\n"));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF, "It is not a true error.\n"));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF, "Run with -fp_trap to catch the floating point error\n"));
   PetscCall(CreateError(0.0));
   return 0;
 }

@@ -4,8 +4,7 @@ const char help[] = "Construct and set a Lagrange dual space from options, then 
 #include <petscfe.h>
 #include <petscdmplex.h>
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
   PetscInt       dim;
   PetscBool      tensorCell;
   DM             K;
@@ -13,11 +12,11 @@ int main(int argc, char **argv)
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
-  dim = 2;
+  dim        = 2;
   tensorCell = PETSC_FALSE;
-  PetscOptionsBegin(PETSC_COMM_WORLD,"","Options for PETSCDUALSPACELAGRANGE test","none");
-  PetscCall(PetscOptionsRangeInt("-dim", "The spatial dimension","ex1.c",dim,&dim,NULL,0,3));
-  PetscCall(PetscOptionsBool("-tensor", "Whether the cell is a tensor product cell or a simplex","ex1.c",tensorCell,&tensorCell,NULL));
+  PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for PETSCDUALSPACELAGRANGE test", "none");
+  PetscCall(PetscOptionsRangeInt("-dim", "The spatial dimension", "ex1.c", dim, &dim, NULL, 0, 3));
+  PetscCall(PetscOptionsBool("-tensor", "Whether the cell is a tensor product cell or a simplex", "ex1.c", tensorCell, &tensorCell, NULL));
   PetscOptionsEnd();
 
   PetscCall(PetscDualSpaceCreate(PETSC_COMM_WORLD, &dsp));
@@ -30,7 +29,7 @@ int main(int argc, char **argv)
    * conveying continuity requirements to a finite element assembly routines,
    * so a PetscDualSpace needs a reference element: a single element mesh,
    * whose boundary points are the interstitial points in a mesh */
-  PetscCall(DMPlexCreateReferenceCell(PETSC_COMM_WORLD, DMPolytopeTypeSimpleShape(dim, (PetscBool) !tensorCell), &K));
+  PetscCall(DMPlexCreateReferenceCell(PETSC_COMM_WORLD, DMPolytopeTypeSimpleShape(dim, (PetscBool)!tensorCell), &K));
   PetscCall(PetscDualSpaceSetDM(dsp, K));
   /* This gives us the opportunity to change the parameters of the dual space
    * from the command line, as we do in the tests below.  When

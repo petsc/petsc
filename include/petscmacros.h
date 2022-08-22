@@ -9,9 +9,9 @@
 /* ========================================================================== */
 /* This facilitates using the C version of PETSc from C++ and the C++ version from C. */
 #if defined(__cplusplus)
-#  define PETSC_FUNCTION_NAME PETSC_FUNCTION_NAME_CXX
+#define PETSC_FUNCTION_NAME PETSC_FUNCTION_NAME_CXX
 #else
-#  define PETSC_FUNCTION_NAME PETSC_FUNCTION_NAME_C
+#define PETSC_FUNCTION_NAME PETSC_FUNCTION_NAME_C
 #endif
 
 /* ========================================================================== */
@@ -20,59 +20,60 @@
  * file within an extern "C".
  */
 #if defined(__cplusplus)
-void assert_never_put_petsc_headers_inside_an_extern_c(int); void assert_never_put_petsc_headers_inside_an_extern_c(double);
+void assert_never_put_petsc_headers_inside_an_extern_c(int);
+void assert_never_put_petsc_headers_inside_an_extern_c(double);
 #endif
 
 #if defined(__cplusplus)
-#  define PETSC_RESTRICT PETSC_CXX_RESTRICT
+#define PETSC_RESTRICT PETSC_CXX_RESTRICT
 #else
-#  define PETSC_RESTRICT restrict
+#define PETSC_RESTRICT restrict
 #endif
 
-#define PETSC_INLINE PETSC_DEPRECATED_MACRO("GCC warning \"PETSC_INLINE is deprecated (since version 3.17)\"") inline
+#define PETSC_INLINE        PETSC_DEPRECATED_MACRO("GCC warning \"PETSC_INLINE is deprecated (since version 3.17)\"") inline
 #define PETSC_STATIC_INLINE PETSC_DEPRECATED_MACRO("GCC warning \"PETSC_STATIC_INLINE is deprecated (since version 3.17)\"") static inline
 
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES) /* For Win32 shared libraries */
-#  define PETSC_DLLEXPORT __declspec(dllexport)
-#  define PETSC_DLLIMPORT __declspec(dllimport)
-#  define PETSC_VISIBILITY_INTERNAL
+#define PETSC_DLLEXPORT __declspec(dllexport)
+#define PETSC_DLLIMPORT __declspec(dllimport)
+#define PETSC_VISIBILITY_INTERNAL
 #elif defined(__cplusplus) && defined(PETSC_USE_VISIBILITY_CXX)
-#  define PETSC_DLLEXPORT __attribute__((visibility ("default")))
-#  define PETSC_DLLIMPORT __attribute__((visibility ("default")))
-#  define PETSC_VISIBILITY_INTERNAL __attribute__((visibility ("hidden")))
+#define PETSC_DLLEXPORT           __attribute__((visibility("default")))
+#define PETSC_DLLIMPORT           __attribute__((visibility("default")))
+#define PETSC_VISIBILITY_INTERNAL __attribute__((visibility("hidden")))
 #elif !defined(__cplusplus) && defined(PETSC_USE_VISIBILITY_C)
-#  define PETSC_DLLEXPORT __attribute__((visibility ("default")))
-#  define PETSC_DLLIMPORT __attribute__((visibility ("default")))
-#  define PETSC_VISIBILITY_INTERNAL __attribute__((visibility ("hidden")))
+#define PETSC_DLLEXPORT           __attribute__((visibility("default")))
+#define PETSC_DLLIMPORT           __attribute__((visibility("default")))
+#define PETSC_VISIBILITY_INTERNAL __attribute__((visibility("hidden")))
 #else
-#  define PETSC_DLLEXPORT
-#  define PETSC_DLLIMPORT
-#  define PETSC_VISIBILITY_INTERNAL
+#define PETSC_DLLEXPORT
+#define PETSC_DLLIMPORT
+#define PETSC_VISIBILITY_INTERNAL
 #endif
 
 #if defined(petsc_EXPORTS) /* CMake defines this when building the shared library */
-#  define PETSC_VISIBILITY_PUBLIC PETSC_DLLEXPORT
-#else  /* Win32 users need this to import symbols from petsc.dll */
-#  define PETSC_VISIBILITY_PUBLIC PETSC_DLLIMPORT
+#define PETSC_VISIBILITY_PUBLIC PETSC_DLLEXPORT
+#else /* Win32 users need this to import symbols from petsc.dll */
+#define PETSC_VISIBILITY_PUBLIC PETSC_DLLIMPORT
 #endif
 
 /* Functions tagged with PETSC_EXTERN in the header files are always defined as extern "C" when
  * compiled with C++ so they may be used from C and are always visible in the shared libraries
  */
 #if defined(__cplusplus)
-#  define PETSC_EXTERN         extern "C" PETSC_VISIBILITY_PUBLIC
-#  define PETSC_EXTERN_TYPEDEF extern "C"
-#  define PETSC_INTERN         extern "C" PETSC_VISIBILITY_INTERNAL
+#define PETSC_EXTERN         extern "C" PETSC_VISIBILITY_PUBLIC
+#define PETSC_EXTERN_TYPEDEF extern "C"
+#define PETSC_INTERN         extern "C" PETSC_VISIBILITY_INTERNAL
 #else
-#  define PETSC_EXTERN         extern PETSC_VISIBILITY_PUBLIC
-#  define PETSC_EXTERN_TYPEDEF
-#  define PETSC_INTERN         extern PETSC_VISIBILITY_INTERNAL
+#define PETSC_EXTERN extern PETSC_VISIBILITY_PUBLIC
+#define PETSC_EXTERN_TYPEDEF
+#define PETSC_INTERN extern PETSC_VISIBILITY_INTERNAL
 #endif
 
 #if defined(PETSC_USE_SINGLE_LIBRARY)
-#  define PETSC_SINGLE_LIBRARY_INTERN PETSC_INTERN
+#define PETSC_SINGLE_LIBRARY_INTERN PETSC_INTERN
 #else
-#  define PETSC_SINGLE_LIBRARY_INTERN PETSC_EXTERN
+#define PETSC_SINGLE_LIBRARY_INTERN PETSC_EXTERN
 #endif
 
 /*MC
@@ -122,7 +123,7 @@ void assert_never_put_petsc_headers_inside_an_extern_c(int); void assert_never_p
 .seealso: `PetscDefined()`, `PetscLikely()`, `PetscUnlikely()`, `PETSC_ATTRIBUTE_FORMAT`
 M*/
 #if !defined(__has_attribute)
-#  define __has_attribute(x) 0
+#define __has_attribute(x) 0
 #endif
 #define PetscHasAttribute(name) __has_attribute(name)
 
@@ -172,9 +173,9 @@ M*/
 .seealso: `PETSC_ATTRIBUTE_COLD`, `PetscHasAttribute()`
 M*/
 #if PetscHasAttribute(format) && !defined(PETSC_SKIP_ATTRIBUTE_FORMAT)
-#  define PETSC_ATTRIBUTE_FORMAT(strIdx,vaArgIdx) __attribute__((format(printf,strIdx,vaArgIdx)))
+#define PETSC_ATTRIBUTE_FORMAT(strIdx, vaArgIdx) __attribute__((format(printf, strIdx, vaArgIdx)))
 #else
-#  define PETSC_ATTRIBUTE_FORMAT(strIdx,vaArgIdx)
+#define PETSC_ATTRIBUTE_FORMAT(strIdx, vaArgIdx)
 #endif
 
 /*MC
@@ -204,11 +205,11 @@ M*/
           `PetscUnreachable()`, `PETSC_ATTRIBUTE_FORMAT`
 M*/
 #if PetscHasAttribute(__cold__)
-#  define PETSC_ATTRIBUTE_COLD __attribute__((__cold__))
+#define PETSC_ATTRIBUTE_COLD __attribute__((__cold__))
 #elif PetscHasAttribute(cold) /* some implementations (old gcc) use no underscores */
-#  define PETSC_ATTRIBUTE_COLD __attribute__((cold))
+#define PETSC_ATTRIBUTE_COLD __attribute__((cold))
 #else
-#  define PETSC_ATTRIBUTE_COLD
+#define PETSC_ATTRIBUTE_COLD
 #endif
 
 /*MC
@@ -341,39 +342,39 @@ M*/
 
 /* C++11 features */
 #if defined(__cplusplus)
-#  define PETSC_NULLPTR nullptr
+#define PETSC_NULLPTR nullptr
 #else
-#  define PETSC_NULLPTR NULL
+#define PETSC_NULLPTR NULL
 #endif
 
 /* C++14 features */
 #if defined(__cplusplus) && defined(PETSC_HAVE_CXX_DIALECT_CXX14) && __cplusplus >= 201402L
-#  define PETSC_CONSTEXPR_14 constexpr
+#define PETSC_CONSTEXPR_14 constexpr
 #else
-#  define PETSC_CONSTEXPR_14
+#define PETSC_CONSTEXPR_14
 #endif
 
 /* C++17 features */
 /* We met cases that the host CXX compiler (say mpicxx) supports C++17, but nvcc does not
  * agree, even with -ccbin mpicxx! */
 #if defined(__cplusplus) && defined(PETSC_HAVE_CXX_DIALECT_CXX17) && (!defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_CUDA_DIALECT_CXX17))
-#  define PETSC_NODISCARD [[nodiscard]]
+#define PETSC_NODISCARD [[nodiscard]]
 #else
-#  if PetscHasAttribute(warn_unused_result)
-#    define PETSC_NODISCARD __attribute__((warn_unused_result))
-#  else
-#    define PETSC_NODISCARD
-#  endif
+#if PetscHasAttribute(warn_unused_result)
+#define PETSC_NODISCARD __attribute__((warn_unused_result))
+#else
+#define PETSC_NODISCARD
+#endif
 #endif
 
 #include <petscversion.h>
-#define PETSC_AUTHOR_INFO  "       The PETSc Team\n    petsc-maint@mcs.anl.gov\n https://petsc.org/\n"
+#define PETSC_AUTHOR_INFO "       The PETSc Team\n    petsc-maint@mcs.anl.gov\n https://petsc.org/\n"
 
 /* designated initializers since C99 and C++20, MSVC never supports them though */
 #if defined(_MSC_VER) || (defined(__cplusplus) && (__cplusplus < 202002L))
-#  define PetscDesignatedInitializer(name,...) __VA_ARGS__
+#define PetscDesignatedInitializer(name, ...) __VA_ARGS__
 #else
-#  define PetscDesignatedInitializer(name,...) .name = __VA_ARGS__
+#define PetscDesignatedInitializer(name, ...) .name = __VA_ARGS__
 #endif
 
 /*MC
@@ -442,11 +443,11 @@ M*/
           `PETSC_ATTRIBUTE_COLD`
 M*/
 #if defined(PETSC_HAVE_BUILTIN_EXPECT)
-#  define PetscUnlikely(cond) __builtin_expect(!!(cond),0)
-#  define PetscLikely(cond)   __builtin_expect(!!(cond),1)
+#define PetscUnlikely(cond) __builtin_expect(!!(cond), 0)
+#define PetscLikely(cond)   __builtin_expect(!!(cond), 1)
 #else
-#  define PetscUnlikely(cond) (cond)
-#  define PetscLikely(cond)   (cond)
+#define PetscUnlikely(cond) (cond)
+#define PetscLikely(cond)   (cond)
 #endif
 
 /*MC
@@ -489,11 +490,11 @@ M*/
 M*/
 #if defined(__GNUC__)
 /* GCC 4.8+, Clang, Intel and other compilers compatible with GCC (-std=c++0x or above) */
-#  define PetscUnreachable() __builtin_unreachable()
+#define PetscUnreachable() __builtin_unreachable()
 #elif defined(_MSC_VER) /* MSVC */
-#  define PetscUnreachable() __assume(0)
+#define PetscUnreachable() __assume(0)
 #else /* ??? */
-#  define PetscUnreachable() SETERRABORT(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Code path explicitly marked as unreachable executed")
+#define PetscUnreachable() SETERRABORT(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Code path explicitly marked as unreachable executed")
 #endif
 
 /*MC
@@ -582,8 +583,8 @@ M*/
 
 .seealso: `PetscStringize()`, `PetscExpand()`
 M*/
-#define PetscConcat_(x,y) x ## y
-#define PetscConcat(x,y)  PetscConcat_(x,y)
+#define PetscConcat_(x, y) x##y
+#define PetscConcat(x, y)  PetscConcat_(x, y)
 
 #define PETSC_INTERNAL_COMPL_0 1
 #define PETSC_INTERNAL_COMPL_1 0
@@ -626,7 +627,7 @@ $ #define PETSC_DONT_HAVE_FOO PetscCompl(PetscDefined(HAVE_FOO))
 
 .seealso: `PetscConcat()`, `PetscDefined()`
 M*/
-#define PetscCompl(b) PetscConcat_(PETSC_INTERNAL_COMPL_,PetscExpand(b))
+#define PetscCompl(b) PetscConcat_(PETSC_INTERNAL_COMPL_, PetscExpand(b))
 
 #if !defined(PETSC_SKIP_VARIADIC_MACROS)
 /*MC
@@ -706,14 +707,14 @@ $ #define FooDefined(d) PetscDefined_(PetscConcat(FOO_,d))
 .seealso: `PetscHasAttribute()`, `PetscUnlikely()`, `PetscLikely()`, `PetscConcat()`,
           `PetscExpandToNothing()`, `PetscCompl()`
 M*/
-#define PetscDefined_arg_1 shift,
-#define PetscDefined_arg_  shift,
+#define PetscDefined_arg_1                                    shift,
+#define PetscDefined_arg_                                     shift,
 #define PetscDefined__take_second_expanded(ignored, val, ...) val
-#define PetscDefined__take_second_expand(args) PetscDefined__take_second_expanded args
-#define PetscDefined__take_second(...) PetscDefined__take_second_expand((__VA_ARGS__))
-#define PetscDefined__(arg1_or_junk)   PetscDefined__take_second(arg1_or_junk 1, 0, at_)
-#define PetscDefined_(value)           PetscDefined__(PetscConcat_(PetscDefined_arg_,value))
-#define PetscDefined(def)              PetscDefined_(PetscConcat(PETSC_,def))
+#define PetscDefined__take_second_expand(args)                PetscDefined__take_second_expanded args
+#define PetscDefined__take_second(...)                        PetscDefined__take_second_expand((__VA_ARGS__))
+#define PetscDefined__(arg1_or_junk)                          PetscDefined__take_second(arg1_or_junk 1, 0, at_)
+#define PetscDefined_(value)                                  PetscDefined__(PetscConcat_(PetscDefined_arg_, value))
+#define PetscDefined(def)                                     PetscDefined_(PetscConcat(PETSC_, def))
 
 /*MC
   PetscUnlikelyDebug - Hints the compiler that the given condition is usually false, eliding
@@ -772,9 +773,15 @@ M*/
 #if defined(PETSC_CLANG_STATIC_ANALYZER)
 // silence compiler warnings when using -pedantic, this is only used by the linter and it cares
 // not what ISO C allows
-#  define PetscMacroReturns_(retexpr,...) __extension__ ({ __VA_ARGS__; retexpr; })
+#define PetscMacroReturns_(retexpr, ...) \
+  __extension__({ \
+    __VA_ARGS__; \
+    retexpr; \
+  })
 #else
-#  define PetscMacroReturns_(retexpr,...) retexpr; do { __VA_ARGS__; } while (0)
+#define PetscMacroReturns_(retexpr, ...) \
+  retexpr; \
+  do { __VA_ARGS__; } while (0)
 #endif
 
 /*MC
@@ -878,9 +885,9 @@ M*/
 
 .seealso: `PetscExpand()`, `PetscConcat()`, `PetscStringize()`
 M*/
-#define PetscMacroReturns(retexpr,...) PetscMacroReturns_(retexpr,__VA_ARGS__)
+#define PetscMacroReturns(retexpr, ...) PetscMacroReturns_(retexpr, __VA_ARGS__)
 
-#define PetscMacroReturnStandard(...) PetscMacroReturns(0,__VA_ARGS__)
+#define PetscMacroReturnStandard(...) PetscMacroReturns(0, __VA_ARGS__)
 
 #endif /* !PETSC_SKIP_VARIADIC_MACROS */
 
@@ -889,7 +896,7 @@ M*/
 
   Level: intermediate
 M*/
-#define PETSC_STATIC_ARRAY_LENGTH(a) (sizeof(a)/sizeof((a)[0]))
+#define PETSC_STATIC_ARRAY_LENGTH(a) (sizeof(a) / sizeof((a)[0]))
 
 /*
   These macros allow extracting out the first argument or all but the first argument from a macro __VAR_ARGS__ INSIDE another macro.
@@ -906,14 +913,14 @@ M*/
   Reference:
   https://stackoverflow.com/questions/5588855/standard-alternative-to-gccs-va-args-trick
 */
-#define PETSC_FIRST_ARG_(N, ...) N
-#define PETSC_FIRST_ARG(args) PETSC_FIRST_ARG_ args
+#define PETSC_FIRST_ARG_(N, ...)                                                                      N
+#define PETSC_FIRST_ARG(args)                                                                         PETSC_FIRST_ARG_ args
 #define PETSC_SELECT_16TH(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, ...) a16
-#define PETSC_NUM(...) PETSC_SELECT_16TH(__VA_ARGS__, TWOORMORE, TWOORMORE, TWOORMORE, TWOORMORE, TWOORMORE, TWOORMORE, TWOORMORE, TWOORMORE, TWOORMORE, TWOORMORE, TWOORMORE, TWOORMORE, TWOORMORE, TWOORMORE, ONE, throwaway)
-#define PETSC_REST_HELPER_TWOORMORE(first, ...) , __VA_ARGS__
+#define PETSC_NUM(...)                                                                                PETSC_SELECT_16TH(__VA_ARGS__, TWOORMORE, TWOORMORE, TWOORMORE, TWOORMORE, TWOORMORE, TWOORMORE, TWOORMORE, TWOORMORE, TWOORMORE, TWOORMORE, TWOORMORE, TWOORMORE, TWOORMORE, TWOORMORE, ONE, throwaway)
+#define PETSC_REST_HELPER_TWOORMORE(first, ...)                                                       , __VA_ARGS__
 #define PETSC_REST_HELPER_ONE(first)
 #define PETSC_REST_HELPER2(qty, ...) PETSC_REST_HELPER_##qty(__VA_ARGS__)
-#define PETSC_REST_HELPER(qty, ...) PETSC_REST_HELPER2(qty, __VA_ARGS__)
-#define PETSC_REST_ARG(...) PETSC_REST_HELPER(PETSC_NUM(__VA_ARGS__), __VA_ARGS__)
+#define PETSC_REST_HELPER(qty, ...)  PETSC_REST_HELPER2(qty, __VA_ARGS__)
+#define PETSC_REST_ARG(...)          PETSC_REST_HELPER(PETSC_NUM(__VA_ARGS__), __VA_ARGS__)
 
 #endif /* PETSC_PREPROCESSOR_MACROS_H */

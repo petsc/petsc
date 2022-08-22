@@ -1,4 +1,4 @@
-#include <petsc/private/taoimpl.h>          /*I "petsctao.h" I*/
+#include <petsc/private/taoimpl.h> /*I "petsctao.h" I*/
 
 /*@C
    TaoPythonSetType - Initialize a Tao object implemented in Python.
@@ -16,12 +16,11 @@
 
 .seealso: `TaoCreate()`, `TaoSetType()`, `TAOPYTHON`, `PetscPythonInitialize()`
 @*/
-PetscErrorCode TaoPythonSetType(Tao tao, const char pyname[])
-{
+PetscErrorCode TaoPythonSetType(Tao tao, const char pyname[]) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
-  PetscValidCharPointer(pyname,2);
-  PetscTryMethod(tao,"TaoPythonSetType_C",(Tao,const char[]),(tao,pyname));
+  PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
+  PetscValidCharPointer(pyname, 2);
+  PetscTryMethod(tao, "TaoPythonSetType_C", (Tao, const char[]), (tao, pyname));
   PetscFunctionReturn(0);
 }
 
@@ -40,11 +39,10 @@ PetscErrorCode TaoPythonSetType(Tao tao, const char pyname[])
 
 .seealso: `TaoCreate()`, `TaoSetType()`, `TaoPYTHON`, `PetscPythonInitialize()`, `TaoPythonSetType()`
 @*/
-PetscErrorCode  TaoPythonGetType(Tao tao,const char *pyname[])
-{
+PetscErrorCode TaoPythonGetType(Tao tao, const char *pyname[]) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
-  PetscValidPointer(pyname,2);
-  PetscUseMethod(tao,"TaoPythonGetType_C",(Tao, const char*[]),(tao,pyname));
+  PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
+  PetscValidPointer(pyname, 2);
+  PetscUseMethod(tao, "TaoPythonGetType_C", (Tao, const char *[]), (tao, pyname));
   PetscFunctionReturn(0);
 }

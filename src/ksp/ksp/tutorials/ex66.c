@@ -24,35 +24,34 @@ static char help[] = "Solves 2D Poisson equation,\n\
 #include <petscsys.h>
 #include <petscvec.h>
 
-extern PetscErrorCode ComputeJacobian(KSP,Mat,Mat,void*);
-extern PetscErrorCode ComputeRHS(KSP,Vec,void*);
+extern PetscErrorCode ComputeJacobian(KSP, Mat, Mat, void *);
+extern PetscErrorCode ComputeRHS(KSP, Vec, void *);
 
 typedef struct {
   PetscScalar uu, tt;
 } UserContext;
 
-int main(int argc,char **argv)
-{
-  KSP            ksp;
-  DM             da;
-  UserContext    user;
+int main(int argc, char **argv) {
+  KSP         ksp;
+  DM          da;
+  UserContext user;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
-  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
-  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_PERIODIC, DM_BOUNDARY_MIRROR,DMDA_STENCIL_STAR,11,11,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da));
+  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(KSPCreate(PETSC_COMM_WORLD, &ksp));
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_PERIODIC, DM_BOUNDARY_MIRROR, DMDA_STENCIL_STAR, 11, 11, PETSC_DECIDE, PETSC_DECIDE, 1, 1, NULL, NULL, &da));
   PetscCall(DMSetFromOptions(da));
   PetscCall(DMSetUp(da));
-  PetscCall(KSPSetDM(ksp,(DM)da));
-  PetscCall(DMSetApplicationContext(da,&user));
+  PetscCall(KSPSetDM(ksp, (DM)da));
+  PetscCall(DMSetApplicationContext(da, &user));
 
-  user.uu     = 1.0;
-  user.tt     = 1.0;
+  user.uu = 1.0;
+  user.tt = 1.0;
 
-  PetscCall(KSPSetComputeRHS(ksp,ComputeRHS,&user));
-  PetscCall(KSPSetComputeOperators(ksp,ComputeJacobian,&user));
+  PetscCall(KSPSetComputeRHS(ksp, ComputeRHS, &user));
+  PetscCall(KSPSetComputeOperators(ksp, ComputeJacobian, &user));
   PetscCall(KSPSetFromOptions(ksp));
-  PetscCall(KSPSolve(ksp,NULL,NULL));
+  PetscCall(KSPSolve(ksp, NULL, NULL));
 
   PetscCall(DMDestroy(&da));
   PetscCall(KSPDestroy(&ksp));
@@ -60,29 +59,27 @@ int main(int argc,char **argv)
   return 0;
 }
 
-PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
-{
-  UserContext    *user = (UserContext*)ctx;
-  PetscInt       i,j,M,N,xm,ym,xs,ys;
-  PetscScalar    Hx,Hy,pi,uu,tt;
-  PetscScalar    **array;
-  DM             da;
-  MatNullSpace   nullspace;
+PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ctx) {
+  UserContext  *user = (UserContext *)ctx;
+  PetscInt      i, j, M, N, xm, ym, xs, ys;
+  PetscScalar   Hx, Hy, pi, uu, tt;
+  PetscScalar **array;
+  DM            da;
+  MatNullSpace  nullspace;
 
   PetscFunctionBeginUser;
-  PetscCall(KSPGetDM(ksp,&da));
-  PetscCall(DMDAGetInfo(da, 0, &M, &N, 0,0,0,0,0,0,0,0,0,0));
-  uu   = user->uu; tt = user->tt;
-  pi   = 4*PetscAtanReal(1.0);
-  Hx   = 1.0/(PetscReal)(M);
-  Hy   = 1.0/(PetscReal)(N);
+  PetscCall(KSPGetDM(ksp, &da));
+  PetscCall(DMDAGetInfo(da, 0, &M, &N, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+  uu = user->uu;
+  tt = user->tt;
+  pi = 4 * PetscAtanReal(1.0);
+  Hx = 1.0 / (PetscReal)(M);
+  Hy = 1.0 / (PetscReal)(N);
 
-  PetscCall(DMDAGetCorners(da,&xs,&ys,0,&xm,&ym,0)); /* Fine grid */
+  PetscCall(DMDAGetCorners(da, &xs, &ys, 0, &xm, &ym, 0)); /* Fine grid */
   PetscCall(DMDAVecGetArray(da, b, &array));
-  for (j=ys; j<ys+ym; j++) {
-    for (i=xs; i<xs+xm; i++) {
-      array[j][i] = -PetscCosScalar(uu*pi*((PetscReal)i+0.5)*Hx)*PetscCosScalar(tt*pi*((PetscReal)j+0.5)*Hy)*Hx*Hy;
-    }
+  for (j = ys; j < ys + ym; j++) {
+    for (i = xs; i < xs + xm; i++) { array[j][i] = -PetscCosScalar(uu * pi * ((PetscReal)i + 0.5) * Hx) * PetscCosScalar(tt * pi * ((PetscReal)j + 0.5) * Hy) * Hx * Hy; }
   }
   PetscCall(DMDAVecRestoreArray(da, b, &array));
   PetscCall(VecAssemblyBegin(b));
@@ -90,44 +87,54 @@ PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
 
   /* force right hand side to be consistent for singular matrix */
   /* note this is really a hack, normally the model would provide you with a consistent right handside */
-  PetscCall(MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,0,&nullspace));
-  PetscCall(MatNullSpaceRemove(nullspace,b));
+  PetscCall(MatNullSpaceCreate(PETSC_COMM_WORLD, PETSC_TRUE, 0, 0, &nullspace));
+  PetscCall(MatNullSpaceRemove(nullspace, b));
   PetscCall(MatNullSpaceDestroy(&nullspace));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode ComputeJacobian(KSP ksp,Mat J, Mat jac,void *ctx)
-{
-  PetscInt       i, j, M, N, xm, ym, xs, ys;
-  PetscScalar    v[5], Hx, Hy, HydHx, HxdHy;
-  MatStencil     row, col[5];
-  DM             da;
-  MatNullSpace   nullspace;
+PetscErrorCode ComputeJacobian(KSP ksp, Mat J, Mat jac, void *ctx) {
+  PetscInt     i, j, M, N, xm, ym, xs, ys;
+  PetscScalar  v[5], Hx, Hy, HydHx, HxdHy;
+  MatStencil   row, col[5];
+  DM           da;
+  MatNullSpace nullspace;
 
   PetscFunctionBeginUser;
-  PetscCall(KSPGetDM(ksp,&da));
-  PetscCall(DMDAGetInfo(da,0,&M,&N,0,0,0,0,0,0,0,0,0,0));
+  PetscCall(KSPGetDM(ksp, &da));
+  PetscCall(DMDAGetInfo(da, 0, &M, &N, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
   Hx    = 1.0 / (PetscReal)(M);
   Hy    = 1.0 / (PetscReal)(N);
-  HxdHy = Hx/Hy;
-  HydHx = Hy/Hx;
-  PetscCall(DMDAGetCorners(da,&xs,&ys,0,&xm,&ym,0));
-  for (j=ys; j<ys+ym; j++) {
-    for (i=xs; i<xs+xm; i++) {
-      row.i = i; row.j = j;
-      v[0] = -HxdHy;              col[0].i = i;   col[0].j = j-1;
-      v[1] = -HydHx;              col[1].i = i-1; col[1].j = j;
-      v[2] = 2.0*(HxdHy + HydHx); col[2].i = i;   col[2].j = j;
-      v[3] = -HydHx;              col[3].i = i+1; col[3].j = j;
-      v[4] = -HxdHy;              col[4].i = i;   col[4].j = j+1;
-      PetscCall(MatSetValuesStencil(jac,1,&row,5,col,v,ADD_VALUES));
+  HxdHy = Hx / Hy;
+  HydHx = Hy / Hx;
+  PetscCall(DMDAGetCorners(da, &xs, &ys, 0, &xm, &ym, 0));
+  for (j = ys; j < ys + ym; j++) {
+    for (i = xs; i < xs + xm; i++) {
+      row.i    = i;
+      row.j    = j;
+      v[0]     = -HxdHy;
+      col[0].i = i;
+      col[0].j = j - 1;
+      v[1]     = -HydHx;
+      col[1].i = i - 1;
+      col[1].j = j;
+      v[2]     = 2.0 * (HxdHy + HydHx);
+      col[2].i = i;
+      col[2].j = j;
+      v[3]     = -HydHx;
+      col[3].i = i + 1;
+      col[3].j = j;
+      v[4]     = -HxdHy;
+      col[4].i = i;
+      col[4].j = j + 1;
+      PetscCall(MatSetValuesStencil(jac, 1, &row, 5, col, v, ADD_VALUES));
     }
   }
-  PetscCall(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(jac, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(jac, MAT_FINAL_ASSEMBLY));
 
-  PetscCall(MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,0,&nullspace));
-  PetscCall(MatSetNullSpace(J,nullspace));
+  PetscCall(MatNullSpaceCreate(PETSC_COMM_WORLD, PETSC_TRUE, 0, 0, &nullspace));
+  PetscCall(MatSetNullSpace(J, nullspace));
   PetscCall(MatNullSpaceDestroy(&nullspace));
   PetscFunctionReturn(0);
 }

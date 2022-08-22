@@ -3,11 +3,10 @@ static char help[] = "Tests DMLabel operations.\n\n";
 #include <petscdm.h>
 #include <petscdmplex.h>
 
-PetscErrorCode ViewLabels(DM dm, PetscViewer viewer)
-{
-  DMLabel        label;
-  const char    *labelName;
-  PetscInt       numLabels, l;
+PetscErrorCode ViewLabels(DM dm, PetscViewer viewer) {
+  DMLabel     label;
+  const char *labelName;
+  PetscInt    numLabels, l;
 
   PetscFunctionBegin;
   /* query the number and name of labels*/
@@ -30,7 +29,7 @@ PetscErrorCode ViewLabels(DM dm, PetscViewer viewer)
     PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
   }
   /* Making sure that string literals work */
-  PetscCall(PetscViewerASCIIPrintf(viewer,"\n\nCell Set label IS\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "\n\nCell Set label IS\n"));
   PetscCall(DMGetLabel(dm, "Cell Sets", &label));
   if (label) {
     IS labelIS, tmpIS;
@@ -44,81 +43,76 @@ PetscErrorCode ViewLabels(DM dm, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode CheckLabelsSame(DMLabel label0, DMLabel label1)
-{
-  const char     *name0, *name1;
-  PetscBool       same;
-  char           *msg;
+PetscErrorCode CheckLabelsSame(DMLabel label0, DMLabel label1) {
+  const char *name0, *name1;
+  PetscBool   same;
+  char       *msg;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetName((PetscObject)label0, &name0));
   PetscCall(PetscObjectGetName((PetscObject)label1, &name1));
   PetscCall(DMLabelCompare(PETSC_COMM_WORLD, label0, label1, &same, &msg));
-  PetscCheck(same == (PetscBool) !msg,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "DMLabelCompare returns inconsistent same=%d msg=\"%s\"", same, msg);
-  PetscCheck(same,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Labels \"%s\" and \"%s\" should not differ! Message:\n%s", name0, name1, msg);
+  PetscCheck(same == (PetscBool)!msg, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "DMLabelCompare returns inconsistent same=%d msg=\"%s\"", same, msg);
+  PetscCheck(same, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Labels \"%s\" and \"%s\" should not differ! Message:\n%s", name0, name1, msg);
   /* Test passing NULL, must not fail */
   PetscCall(DMLabelCompare(PETSC_COMM_WORLD, label0, label1, NULL, NULL));
   PetscCall(PetscFree(msg));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode CheckLabelsNotSame(DMLabel label0, DMLabel label1)
-{
-  const char     *name0, *name1;
-  PetscBool       same;
-  char           *msg;
+PetscErrorCode CheckLabelsNotSame(DMLabel label0, DMLabel label1) {
+  const char *name0, *name1;
+  PetscBool   same;
+  char       *msg;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetName((PetscObject)label0, &name0));
   PetscCall(PetscObjectGetName((PetscObject)label1, &name1));
   PetscCall(DMLabelCompare(PETSC_COMM_WORLD, label0, label1, &same, &msg));
-  PetscCheck(same == (PetscBool) !msg,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "DMLabelCompare returns inconsistent same=%d msg=\"%s\"", same, msg);
-  PetscCheck(!same,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Labels \"%s\" and \"%s\" should differ!", name0, name1);
+  PetscCheck(same == (PetscBool)!msg, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "DMLabelCompare returns inconsistent same=%d msg=\"%s\"", same, msg);
+  PetscCheck(!same, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Labels \"%s\" and \"%s\" should differ!", name0, name1);
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Compare label \"%s\" with \"%s\": %s\n", name0, name1, msg));
   PetscCall(PetscFree(msg));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode CheckDMLabelsSame(DM dm0, DM dm1)
-{
-  const char     *name0, *name1;
-  PetscBool       same;
-  char           *msg;
+PetscErrorCode CheckDMLabelsSame(DM dm0, DM dm1) {
+  const char *name0, *name1;
+  PetscBool   same;
+  char       *msg;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetName((PetscObject)dm0, &name0));
   PetscCall(PetscObjectGetName((PetscObject)dm1, &name1));
   PetscCall(DMCompareLabels(dm0, dm1, &same, &msg));
-  PetscCheck(same == (PetscBool) !msg,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "DMCompareLabels returns inconsistent same=%d msg=\"%s\"", same, msg);
-  PetscCheck(same,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Labels of DMs \"%s\" and \"%s\" should not differ! Message:\n%s", name0, name1, msg);
+  PetscCheck(same == (PetscBool)!msg, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "DMCompareLabels returns inconsistent same=%d msg=\"%s\"", same, msg);
+  PetscCheck(same, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Labels of DMs \"%s\" and \"%s\" should not differ! Message:\n%s", name0, name1, msg);
   /* Test passing NULL, must not fail */
   PetscCall(DMCompareLabels(dm0, dm1, NULL, NULL));
   PetscCall(PetscFree(msg));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode CheckDMLabelsNotSame(DM dm0, DM dm1)
-{
-  const char     *name0, *name1;
-  PetscBool       same;
-  char           *msg;
+PetscErrorCode CheckDMLabelsNotSame(DM dm0, DM dm1) {
+  const char *name0, *name1;
+  PetscBool   same;
+  char       *msg;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetName((PetscObject)dm0, &name0));
   PetscCall(PetscObjectGetName((PetscObject)dm1, &name1));
   PetscCall(DMCompareLabels(dm0, dm1, &same, &msg));
-  PetscCheck(same == (PetscBool) !msg,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "DMCompareLabels returns inconsistent same=%d msg=\"%s\"", same, msg);
-  PetscCheck(!same,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Labels of DMs \"%s\" and \"%s\" should differ!", name0, name1);
+  PetscCheck(same == (PetscBool)!msg, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "DMCompareLabels returns inconsistent same=%d msg=\"%s\"", same, msg);
+  PetscCheck(!same, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Labels of DMs \"%s\" and \"%s\" should differ!", name0, name1);
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Labels of DMs \"%s\" and \"%s\" differ: %s\n", name0, name1, msg));
   PetscCall(PetscFree(msg));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode CreateMesh(const char name[], DM *newdm)
-{
-  DM             dm, dmDist;
-  char           filename[PETSC_MAX_PATH_LEN]="";
-  PetscBool      interpolate = PETSC_FALSE;
+PetscErrorCode CreateMesh(const char name[], DM *newdm) {
+  DM        dm, dmDist;
+  char      filename[PETSC_MAX_PATH_LEN] = "";
+  PetscBool interpolate                  = PETSC_FALSE;
 
   PetscFunctionBegin;
   /* initialize and get options */
@@ -132,7 +126,7 @@ PetscErrorCode CreateMesh(const char name[], DM *newdm)
   PetscCall(DMPlexDistribute(dm, 0, NULL, &dmDist));
   if (dmDist) {
     PetscCall(DMDestroy(&dm));
-    dm   = dmDist;
+    dm = dmDist;
   }
   PetscCall(DMSetFromOptions(dm));
   PetscCall(PetscObjectSetName((PetscObject)dm, name));
@@ -140,16 +134,15 @@ PetscErrorCode CreateMesh(const char name[], DM *newdm)
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv)
-{
-  DM             dm;
+int main(int argc, char **argv) {
+  DM dm;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(CreateMesh("plex0", &dm));
   /* add custom labels to test adding/removal */
   {
-    DMLabel label0, label1, label2, label3;
+    DMLabel  label0, label1, label2, label3;
     PetscInt p, pStart, pEnd;
     PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
     /* create label in DM and get from DM */
@@ -160,7 +153,7 @@ int main(int argc, char **argv)
     PetscCall(DMAddLabel(dm, label1));
 
     pEnd = PetscMin(pEnd, pStart + 5);
-    for (p=pStart; p < pEnd; p++) {
+    for (p = pStart; p < pEnd; p++) {
       PetscCall(DMLabelSetValue(label0, p, 1));
       PetscCall(DMLabelSetValue(label1, p, 2));
     }
@@ -181,9 +174,9 @@ int main(int argc, char **argv)
 
   /* do label perturbations and comparisons */
   {
-    DMLabel   label0, label1, label2, label3;
-    PetscInt  val;
-    PetscInt  p, pStart, pEnd;
+    DMLabel  label0, label1, label2, label3;
+    PetscInt val;
+    PetscInt p, pStart, pEnd;
 
     PetscCall(DMGetLabel(dm, "label0", &label0));
     PetscCall(DMGetLabel(dm, "label1", &label1));
@@ -202,7 +195,7 @@ int main(int argc, char **argv)
 
     PetscCall(DMLabelGetBounds(label1, &pStart, &pEnd));
 
-    for (p=pStart; p<pEnd; p++) {
+    for (p = pStart; p < pEnd; p++) {
       PetscCall(DMLabelGetValue(label1, p, &val));
       // This is weird. Perhaps we should not need to call DMLabelClearValue()
       PetscCall(DMLabelClearValue(label1, p, val));
@@ -210,7 +203,7 @@ int main(int argc, char **argv)
       PetscCall(DMLabelSetValue(label1, p, val));
     }
     PetscCall(CheckLabelsNotSame(label1, label3));
-    for (p=pStart; p<pEnd; p++) {
+    for (p = pStart; p < pEnd; p++) {
       PetscCall(DMLabelGetValue(label1, p, &val));
       // This is weird. Perhaps we should not need to call DMLabelClearValue()
       PetscCall(DMLabelClearValue(label1, p, val));
@@ -219,7 +212,7 @@ int main(int argc, char **argv)
     }
     PetscCall(CheckLabelsSame(label1, label3));
 
-    PetscCall(DMLabelGetValue(label3, pEnd-1, &val));
+    PetscCall(DMLabelGetValue(label3, pEnd - 1, &val));
     PetscCall(DMLabelSetValue(label3, pEnd, val));
     PetscCall(CheckLabelsNotSame(label1, label3));
     // This is weird. Perhaps we should not need to call DMLabelClearValue()
@@ -228,9 +221,9 @@ int main(int argc, char **argv)
   }
 
   {
-    DM        dm1;
-    DMLabel   label02, label12;
-    PetscInt  p = 0, val;
+    DM       dm1;
+    DMLabel  label02, label12;
+    PetscInt p = 0, val;
 
     PetscCall(CreateMesh("plex1", &dm1));
     PetscCall(CheckDMLabelsNotSame(dm, dm1));
@@ -246,12 +239,12 @@ int main(int argc, char **argv)
     PetscCall(DMLabelGetValue(label12, p, &val));
     // This is weird. Perhaps we should not need to call DMLabelClearValue()
     PetscCall(DMLabelClearValue(label12, p, val));
-    PetscCall(DMLabelSetValue(label12, p, val+1));
+    PetscCall(DMLabelSetValue(label12, p, val + 1));
     PetscCall(CheckLabelsNotSame(label02, label12));
     PetscCall(CheckDMLabelsNotSame(dm, dm1));
 
     // This is weird. Perhaps we should not need to call DMLabelClearValue()
-    PetscCall(DMLabelClearValue(label12, p, val+1));
+    PetscCall(DMLabelClearValue(label12, p, val + 1));
     PetscCall(DMLabelSetValue(label12, p, val));
     PetscCall(CheckLabelsSame(label02, label12));
     PetscCall(CheckDMLabelsSame(dm, dm1));
@@ -269,21 +262,21 @@ int main(int argc, char **argv)
     DMLabel label0, label1, label2;
     PetscCall(DMGetLabel(dm, "label0", &label0));
     PetscCall(DMGetLabel(dm, "label1", &label1));
-    PetscCheck(label0,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "label0 must not be NULL now");
-    PetscCheck(label1,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "label1 must not be NULL now");
+    PetscCheck(label0, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "label0 must not be NULL now");
+    PetscCheck(label1, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "label1 must not be NULL now");
     PetscCall(DMRemoveLabel(dm, "label1", NULL));
     PetscCall(DMRemoveLabel(dm, "label2", &label2));
     PetscCall(DMRemoveLabelBySelf(dm, &label0, PETSC_TRUE));
     PetscCall(DMGetLabel(dm, "label0", &label0));
     PetscCall(DMGetLabel(dm, "label1", &label1));
-    PetscCheck(!label0,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "label0 must be NULL now");
-    PetscCheck(!label1,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "label1 must be NULL now");
-    PetscCheck(label2,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "label2 must not be NULL now");
+    PetscCheck(!label0, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "label0 must be NULL now");
+    PetscCheck(!label1, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "label1 must be NULL now");
+    PetscCheck(label2, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "label2 must not be NULL now");
     PetscCall(DMRemoveLabelBySelf(dm, &label2, PETSC_FALSE)); /* this should do nothing */
-    PetscCheck(label2,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "label2 must not be NULL now");
+    PetscCheck(label2, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "label2 must not be NULL now");
     PetscCall(DMLabelDestroy(&label2));
     PetscCall(DMGetLabel(dm, "label2", &label2));
-    PetscCheck(!label2,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "label2 must be NULL now");
+    PetscCheck(!label2, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "label2 must be NULL now");
   }
 
   PetscCall(DMDestroy(&dm));

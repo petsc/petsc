@@ -25,4 +25,3 @@ typedef struct {
 } KSPCG_NASH;
 
 #endif
-

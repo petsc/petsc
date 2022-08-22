@@ -8,20 +8,18 @@
 #include <stack>
 #include <type_traits>
 
-namespace Petsc
-{
+namespace Petsc {
 
 // Allocator ABC for interoperability with C ctors and dtors.
 template <typename T>
-class AllocatorBase
-{
+class AllocatorBase {
 public:
   using value_type = T;
 
-  PETSC_NODISCARD PetscErrorCode create(value_type*)  noexcept;
-  PETSC_NODISCARD PetscErrorCode destroy(value_type&) noexcept;
-  PETSC_NODISCARD PetscErrorCode reset(value_type&)   noexcept;
-  PETSC_NODISCARD PetscErrorCode finalize()           noexcept;
+  PETSC_NODISCARD PetscErrorCode create(value_type *) noexcept;
+  PETSC_NODISCARD PetscErrorCode destroy(value_type &) noexcept;
+  PETSC_NODISCARD PetscErrorCode reset(value_type &) noexcept;
+  PETSC_NODISCARD PetscErrorCode finalize() noexcept;
 
 protected:
   // make the constructor protected, this forces this class to be derived from to ever be
@@ -32,29 +30,25 @@ protected:
 // Default allocator that performs the bare minimum of petsc object creation and
 // desctruction
 template <typename T>
-class CAllocator : public AllocatorBase<T>
-{
+class CAllocator : public AllocatorBase<T> {
 public:
   using allocator_type = AllocatorBase<T>;
   using value_type     = typename allocator_type::value_type;
 
-  PETSC_NODISCARD PetscErrorCode create(value_type *obj) const noexcept
-  {
+  PETSC_NODISCARD PetscErrorCode create(value_type *obj) const noexcept {
     PetscFunctionBegin;
     PetscCall(PetscNew(obj));
     PetscFunctionReturn(0);
   }
 
-  PETSC_NODISCARD PetscErrorCode destroy(value_type &obj) const noexcept
-  {
+  PETSC_NODISCARD PetscErrorCode destroy(value_type &obj) const noexcept {
     PetscFunctionBegin;
-    PetscUseTypeMethod(obj,destroy );
+    PetscUseTypeMethod(obj, destroy);
     PetscCall(PetscHeaderDestroy(&obj));
     PetscFunctionReturn(0);
   }
 
-  PETSC_NODISCARD PetscErrorCode reset(value_type &obj) const noexcept
-  {
+  PETSC_NODISCARD PetscErrorCode reset(value_type &obj) const noexcept {
     PetscFunctionBegin;
     PetscCall(this->destroy(obj));
     PetscCall(this->create(&obj));
@@ -64,13 +58,11 @@ public:
   PETSC_NODISCARD PetscErrorCode finalize() const noexcept { return 0; }
 };
 
-namespace detail
-{
+namespace detail {
 
 // Base class to object pool, defines helpful typedefs and stores the allocator instance
 template <typename T, class Allocator>
-class ObjectPoolBase
-{
+class ObjectPoolBase {
 public:
   using allocator_type = Allocator;
   using value_type     = typename allocator_type::value_type;
@@ -78,39 +70,34 @@ public:
 protected:
   allocator_type alloc_;
 
-  PETSC_NODISCARD       allocator_type&  allocator()       noexcept { return alloc_; }
-  PETSC_NODISCARD const allocator_type& callocator() const noexcept { return alloc_; }
+  PETSC_NODISCARD allocator_type       &allocator() noexcept { return alloc_; }
+  PETSC_NODISCARD const allocator_type &callocator() const noexcept { return alloc_; }
 
   // default constructor
-  constexpr ObjectPoolBase() noexcept(std::is_nothrow_default_constructible<allocator_type>::value)
-    : alloc_()
-  { }
+  constexpr ObjectPoolBase() noexcept(std::is_nothrow_default_constructible<allocator_type>::value) : alloc_() { }
 
   // const copy constructor
   explicit ObjectPoolBase(const allocator_type &alloc) : alloc_(alloc) { }
 
   // move constructor
-  explicit ObjectPoolBase(allocator_type &&alloc)
-    noexcept(std::is_nothrow_move_assignable<allocator_type>::value)
-    : alloc_(std::move(alloc))
-  { }
+  explicit ObjectPoolBase(allocator_type &&alloc) noexcept(std::is_nothrow_move_assignable<allocator_type>::value) : alloc_(std::move(alloc)) { }
 
-  static_assert(std::is_base_of<AllocatorBase<value_type>,Allocator>::value,"");
+  static_assert(std::is_base_of<AllocatorBase<value_type>, Allocator>::value, "");
 };
 
 } // namespace detail
 
 // default implementation, use the petsc c allocator
-template <typename T, class Allocator = CAllocator<T>> class ObjectPool;
+template <typename T, class Allocator = CAllocator<T>>
+class ObjectPool;
 
 // multi-purpose basic object-pool, useful for recirculating old "destroyed" objects. Uses
 // a stack to take advantage of LIFO for memory locallity. Registers all objects to be
 // cleaned up on PetscFinalize()
 template <typename T, class Allocator>
-class ObjectPool : detail::ObjectPoolBase<T,Allocator>
-{
+class ObjectPool : detail::ObjectPoolBase<T, Allocator> {
 protected:
-  using base_type = detail::ObjectPoolBase<T,Allocator>;
+  using base_type = detail::ObjectPoolBase<T, Allocator>;
 
 public:
   using allocator_type = typename base_type::allocator_type;
@@ -123,102 +110,80 @@ private:
   stack_type stack_;
   bool       registered_ = false;
 
-  PETSC_NODISCARD        PetscErrorCode registerFinalize_()     noexcept;
-  PETSC_NODISCARD        PetscErrorCode finalizer_()            noexcept;
-  PETSC_NODISCARD static PetscErrorCode staticFinalizer_(void*) noexcept;
+  PETSC_NODISCARD PetscErrorCode        registerFinalize_() noexcept;
+  PETSC_NODISCARD PetscErrorCode        finalizer_() noexcept;
+  PETSC_NODISCARD static PetscErrorCode staticFinalizer_(void *) noexcept;
 
 public:
   // default constructor
-  constexpr ObjectPool() noexcept(std::is_nothrow_default_constructible<allocator_type>::value)
-    : stack_()
-  { }
+  constexpr ObjectPool() noexcept(std::is_nothrow_default_constructible<allocator_type>::value) : stack_() { }
 
   // destructor
-  ~ObjectPool() noexcept
-  {
-    PetscCallAbort(PETSC_COMM_SELF,finalizer_());
-  }
+  ~ObjectPool() noexcept { PetscCallAbort(PETSC_COMM_SELF, finalizer_()); }
 
   // copy constructor
-  ObjectPool(ObjectPool &other) noexcept(std::is_nothrow_copy_constructible<stack_type>::value)
-    : stack_(other.stack_),registered_(other.registered_)
-  { }
+  ObjectPool(ObjectPool &other) noexcept(std::is_nothrow_copy_constructible<stack_type>::value) : stack_(other.stack_), registered_(other.registered_) { }
 
   // const copy constructor
-  ObjectPool(const ObjectPool &other)
-    noexcept(std::is_nothrow_copy_constructible<stack_type>::value)
-    : stack_(other.stack_),registered_(other.registered_)
-  { }
+  ObjectPool(const ObjectPool &other) noexcept(std::is_nothrow_copy_constructible<stack_type>::value) : stack_(other.stack_), registered_(other.registered_) { }
 
   // move constructor
-  ObjectPool(ObjectPool &&other) noexcept(std::is_nothrow_move_constructible<stack_type>::value)
-    : stack_(std::move(other.stack_)),registered_(std::move(other.registered_))
-  { }
+  ObjectPool(ObjectPool &&other) noexcept(std::is_nothrow_move_constructible<stack_type>::value) : stack_(std::move(other.stack_)), registered_(std::move(other.registered_)) { }
 
   // copy constructor with allocator
   explicit ObjectPool(const allocator_type &alloc) : base_type(alloc) { }
 
   // move constructor with allocator
-  explicit ObjectPool(allocator_type &&alloc)
-    noexcept(std::is_nothrow_move_constructible<allocator_type>::value)
-    : base_type(std::move(alloc))
-  { }
+  explicit ObjectPool(allocator_type &&alloc) noexcept(std::is_nothrow_move_constructible<allocator_type>::value) : base_type(std::move(alloc)) { }
 
   // Retrieve an object from the pool, if the pool is empty a new object is created instead
-  PETSC_NODISCARD PetscErrorCode get(value_type&)      noexcept;
+  PETSC_NODISCARD PetscErrorCode get(value_type &) noexcept;
 
   // Return an object to the pool, the object need not necessarily have been created by
   // the pool, note this only accepts r-value references. The pool takes ownership of all
   // managed objects.
-  PETSC_NODISCARD PetscErrorCode reclaim(value_type&&) noexcept;
+  PETSC_NODISCARD PetscErrorCode reclaim(value_type &&) noexcept;
 
   // operators
   template <typename T_, class A_>
-  PetscBool friend operator==(const ObjectPool<T_,A_>&,const ObjectPool<T_,A_>&) noexcept;
+  PetscBool friend operator==(const ObjectPool<T_, A_> &, const ObjectPool<T_, A_> &) noexcept;
 
   template <typename T_, class A_>
-  PetscBool friend operator< (const ObjectPool<T_,A_>&,const ObjectPool<T_,A_>&) noexcept;
+  PetscBool friend operator<(const ObjectPool<T_, A_> &, const ObjectPool<T_, A_> &) noexcept;
 };
 
 template <typename T, class Allocator>
-inline PetscBool operator==(const ObjectPool<T,Allocator> &l,const ObjectPool<T,Allocator> &r) noexcept
-{
+inline PetscBool operator==(const ObjectPool<T, Allocator> &l, const ObjectPool<T, Allocator> &r) noexcept {
   return static_cast<PetscBool>(l.stack_ == r.stack_);
 }
 
 template <typename T, class Allocator>
-inline PetscBool operator< (const ObjectPool<T,Allocator> &l, const ObjectPool<T,Allocator> &r) noexcept
-{
+inline PetscBool operator<(const ObjectPool<T, Allocator> &l, const ObjectPool<T, Allocator> &r) noexcept {
   return static_cast<PetscBool>(l.stack_ < r.stack_);
 }
 
 template <typename T, class Allocator>
-inline PetscBool operator!=(const ObjectPool<T,Allocator> &l, const ObjectPool<T,Allocator> &r) noexcept
-{
+inline PetscBool operator!=(const ObjectPool<T, Allocator> &l, const ObjectPool<T, Allocator> &r) noexcept {
   return !(l.stack_ == r.stack_);
 }
 
 template <typename T, class Allocator>
-inline PetscBool operator> (const ObjectPool<T,Allocator> &l, const ObjectPool<T,Allocator> &r) noexcept
-{
+inline PetscBool operator>(const ObjectPool<T, Allocator> &l, const ObjectPool<T, Allocator> &r) noexcept {
   return r.stack_ < l.stack_;
 }
 
 template <typename T, class Allocator>
-inline PetscBool operator>=(const ObjectPool<T,Allocator> &l, const ObjectPool<T,Allocator> &r) noexcept
-{
+inline PetscBool operator>=(const ObjectPool<T, Allocator> &l, const ObjectPool<T, Allocator> &r) noexcept {
   return !(l.stack_ < r.stack_);
 }
 
 template <typename T, class Allocator>
-inline PetscBool operator<=(const ObjectPool<T,Allocator> &l, const ObjectPool<T,Allocator> &r) noexcept
-{
+inline PetscBool operator<=(const ObjectPool<T, Allocator> &l, const ObjectPool<T, Allocator> &r) noexcept {
   return !(r.stack_ < l.stack_);
 }
 
 template <typename T, class Allocator>
-inline PetscErrorCode ObjectPool<T,Allocator>::finalizer_() noexcept
-{
+inline PetscErrorCode ObjectPool<T, Allocator>::finalizer_() noexcept {
   PetscFunctionBegin;
   while (!stack_.empty()) {
     // we do CHKERRQ __after__ the CHKERCXX on the off chance that someone uses the CXX
@@ -232,16 +197,14 @@ inline PetscErrorCode ObjectPool<T,Allocator>::finalizer_() noexcept
 }
 
 template <typename T, class Allocator>
-inline PetscErrorCode ObjectPool<T,Allocator>::staticFinalizer_(void *obj) noexcept
-{
+inline PetscErrorCode ObjectPool<T, Allocator>::staticFinalizer_(void *obj) noexcept {
   PetscFunctionBegin;
-  PetscCall(static_cast<ObjectPool<T,Allocator>*>(obj)->finalizer_());
+  PetscCall(static_cast<ObjectPool<T, Allocator> *>(obj)->finalizer_());
   PetscFunctionReturn(0);
 }
 
 template <typename T, class Allocator>
-inline PetscErrorCode ObjectPool<T,Allocator>::registerFinalize_() noexcept
-{
+inline PetscErrorCode ObjectPool<T, Allocator>::registerFinalize_() noexcept {
   PetscContainer contain;
 
   PetscFunctionBegin;
@@ -250,17 +213,16 @@ inline PetscErrorCode ObjectPool<T,Allocator>::registerFinalize_() noexcept
      also the pointer to the static member function, which just converts the thunk back
      to this. none of this would be needed if PetscRegisterFinalize() just took a void*
      itself though...  */
-  PetscCall(PetscContainerCreate(PETSC_COMM_SELF,&contain));
-  PetscCall(PetscContainerSetPointer(contain,this));
-  PetscCall(PetscContainerSetUserDestroy(contain,staticFinalizer_));
+  PetscCall(PetscContainerCreate(PETSC_COMM_SELF, &contain));
+  PetscCall(PetscContainerSetPointer(contain, this));
+  PetscCall(PetscContainerSetUserDestroy(contain, staticFinalizer_));
   PetscCall(PetscObjectRegisterDestroy(reinterpret_cast<PetscObject>(contain)));
   registered_ = true;
   PetscFunctionReturn(0);
 }
 
 template <typename T, class Allocator>
-inline PetscErrorCode ObjectPool<T,Allocator>::get(value_type &obj) noexcept
-{
+inline PetscErrorCode ObjectPool<T, Allocator>::get(value_type &obj) noexcept {
   PetscFunctionBegin;
   PetscCall(registerFinalize_());
   if (stack_.empty()) {
@@ -273,8 +235,7 @@ inline PetscErrorCode ObjectPool<T,Allocator>::get(value_type &obj) noexcept
 }
 
 template <typename T, class Allocator>
-inline PetscErrorCode ObjectPool<T,Allocator>::reclaim(value_type &&obj) noexcept
-{
+inline PetscErrorCode ObjectPool<T, Allocator>::reclaim(value_type &&obj) noexcept {
   PetscFunctionBegin;
   if (PetscLikely(registered_)) {
     // allows const allocator_t& to be used if allocator defines a const reset

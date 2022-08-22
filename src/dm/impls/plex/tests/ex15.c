@@ -3,30 +3,29 @@ static char help[] = "An example of writing a global Vec from a DMPlex with HDF5
 #include <petscdmplex.h>
 #include <petscviewerhdf5.h>
 
-int main(int argc, char **argv)
-{
-  MPI_Comm       comm;
-  DM             dm;
-  Vec            v, nv, rv, coord;
-  PetscBool      test_read = PETSC_FALSE, verbose = PETSC_FALSE, flg;
-  PetscViewer    hdf5Viewer;
-  PetscInt       numFields   = 1;
-  PetscInt       numBC       = 0;
-  PetscInt       numComp[1]  = {2};
-  PetscInt       numDof[3]   = {2, 0, 0};
-  PetscInt       bcFields[1] = {0};
-  IS             bcPoints[1] = {NULL};
-  PetscSection   section;
-  PetscReal      norm;
-  PetscInt       dim;
+int main(int argc, char **argv) {
+  MPI_Comm     comm;
+  DM           dm;
+  Vec          v, nv, rv, coord;
+  PetscBool    test_read = PETSC_FALSE, verbose = PETSC_FALSE, flg;
+  PetscViewer  hdf5Viewer;
+  PetscInt     numFields   = 1;
+  PetscInt     numBC       = 0;
+  PetscInt     numComp[1]  = {2};
+  PetscInt     numDof[3]   = {2, 0, 0};
+  PetscInt     bcFields[1] = {0};
+  IS           bcPoints[1] = {NULL};
+  PetscSection section;
+  PetscReal    norm;
+  PetscInt     dim;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *) 0, help));
+  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
   comm = PETSC_COMM_WORLD;
 
-  PetscOptionsBegin(PETSC_COMM_WORLD,"","Test Options","none");
-  PetscCall(PetscOptionsBool("-test_read","Test reading from the HDF5 file","",PETSC_FALSE,&test_read,NULL));
-  PetscCall(PetscOptionsBool("-verbose","print the Vecs","",PETSC_FALSE,&verbose,NULL));
+  PetscOptionsBegin(PETSC_COMM_WORLD, "", "Test Options", "none");
+  PetscCall(PetscOptionsBool("-test_read", "Test reading from the HDF5 file", "", PETSC_FALSE, &test_read, NULL));
+  PetscCall(PetscOptionsBool("-verbose", "print the Vecs", "", PETSC_FALSE, &verbose, NULL));
   PetscOptionsEnd();
 
   PetscCall(DMCreate(comm, &dm));
@@ -45,17 +44,17 @@ int main(int argc, char **argv)
     PetscPartitioner part;
     DM               dmDist;
 
-    PetscCall(DMPlexGetPartitioner(dm,&part));
+    PetscCall(DMPlexGetPartitioner(dm, &part));
     PetscCall(PetscPartitionerSetFromOptions(part));
     PetscCall(DMPlexDistribute(dm, 0, NULL, &dmDist));
     if (dmDist) {
       PetscCall(DMDestroy(&dm));
-      dm   = dmDist;
+      dm = dmDist;
     }
   }
 
   PetscCall(DMCreateGlobalVector(dm, &v));
-  PetscCall(PetscObjectSetName((PetscObject) v, "V"));
+  PetscCall(PetscObjectSetName((PetscObject)v, "V"));
   PetscCall(DMGetCoordinates(dm, &coord));
   PetscCall(VecCopy(coord, v));
 
@@ -69,7 +68,7 @@ int main(int argc, char **argv)
   }
 
   PetscCall(DMPlexCreateNaturalVector(dm, &nv));
-  PetscCall(PetscObjectSetName((PetscObject) nv, "NV"));
+  PetscCall(PetscObjectSetName((PetscObject)nv, "NV"));
   PetscCall(DMPlexGlobalToNaturalBegin(dm, v, nv));
   PetscCall(DMPlexGlobalToNaturalEnd(dm, v, nv));
 
@@ -86,7 +85,7 @@ int main(int argc, char **argv)
 
   if (0 && test_read) {
     PetscCall(DMCreateGlobalVector(dm, &rv));
-    PetscCall(PetscObjectSetName((PetscObject) rv, "V"));
+    PetscCall(PetscObjectSetName((PetscObject)rv, "V"));
     /* Test native read */
     PetscCall(PetscViewerHDF5Open(comm, "V.h5", FILE_MODE_READ, &hdf5Viewer));
     PetscCall(PetscViewerPushFormat(hdf5Viewer, PETSC_VIEWER_NATIVE));
@@ -108,7 +107,7 @@ int main(int argc, char **argv)
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, "V and RV are not equal\n\n"));
       PetscCall(VecAXPY(rv, -1.0, v));
       PetscCall(VecNorm(rv, NORM_INFINITY, &norm));
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "diff norm is = %g\n", (double) norm));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "diff norm is = %g\n", (double)norm));
       PetscCall(VecView(rv, PETSC_VIEWER_STDOUT_WORLD));
     }
     /* Test raw read */
@@ -130,7 +129,7 @@ int main(int argc, char **argv)
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, "NV and RV are not equal\n\n"));
       PetscCall(VecAXPY(rv, -1.0, v));
       PetscCall(VecNorm(rv, NORM_INFINITY, &norm));
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "diff norm is = %g\n", (double) norm));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "diff norm is = %g\n", (double)norm));
       PetscCall(VecView(rv, PETSC_VIEWER_STDOUT_WORLD));
     }
     PetscCall(VecDestroy(&rv));

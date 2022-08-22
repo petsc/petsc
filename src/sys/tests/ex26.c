@@ -2,11 +2,10 @@ static char help[] = "Tests repeated PetscInitialize/PetscFinalize calls.\n\n";
 
 #include <petscsys.h>
 
-int main(int argc, char **argv)
-{
-  int            i,imax;
+int main(int argc, char **argv) {
+  int i, imax;
 #if defined(PETSC_HAVE_ELEMENTAL)
-  PetscBool      initialized;
+  PetscBool initialized;
 #endif
 
 #if defined(PETSC_HAVE_MPIUNI)
@@ -23,7 +22,7 @@ int main(int argc, char **argv)
 #endif
   for (i = 0; i < imax; ++i) {
     PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char*) 0, help));
+    PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
     PetscCall(PetscFinalize());
 #if defined(PETSC_HAVE_ELEMENTAL)
     PetscCall(PetscElementalInitialized(&initialized));
@@ -36,9 +35,9 @@ int main(int argc, char **argv)
   if (initialized) return 1;
   for (i = 0; i < 32; ++i) { /* increasing the upper bound will generate an error in Elemental */
     PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char*) 0, help));
+    PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
     PetscCall(PetscElementalInitialized(&initialized));
-    PetscCheck(initialized,PETSC_COMM_WORLD, PETSC_ERR_LIB, "Uninitialized Elemental");
+    PetscCheck(initialized, PETSC_COMM_WORLD, PETSC_ERR_LIB, "Uninitialized Elemental");
     PetscCall(PetscFinalize());
     PetscCall(PetscElementalInitialized(&initialized));
     if (initialized) return PETSC_ERR_LIB;

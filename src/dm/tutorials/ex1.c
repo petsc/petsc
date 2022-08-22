@@ -33,72 +33,67 @@ Use the options
 #include <petscdm.h>
 #include <petscdmda.h>
 
-int main(int argc,char **argv)
-{
-  PetscMPIInt      rank;
-  PetscInt         M = 10,N = 8;
-  PetscBool        flg = PETSC_FALSE;
-  DM               da;
-  PetscViewer      viewer;
-  Vec              local,global;
-  PetscScalar      value;
-  DMBoundaryType   bx    = DM_BOUNDARY_NONE,by = DM_BOUNDARY_NONE;
-  DMDAStencilType  stype = DMDA_STENCIL_BOX;
+int main(int argc, char **argv) {
+  PetscMPIInt     rank;
+  PetscInt        M = 10, N = 8;
+  PetscBool       flg = PETSC_FALSE;
+  DM              da;
+  PetscViewer     viewer;
+  Vec             local, global;
+  PetscScalar     value;
+  DMBoundaryType  bx = DM_BOUNDARY_NONE, by = DM_BOUNDARY_NONE;
+  DMDAStencilType stype = DMDA_STENCIL_BOX;
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-  PetscViewer      mviewer;
-  PetscMPIInt      size;
+  PetscViewer mviewer;
+  PetscMPIInt size;
 #endif
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
-  PetscCall(PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",300,0,300,300,&viewer));
+  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscViewerDrawOpen(PETSC_COMM_WORLD, 0, "", 300, 0, 300, 300, &viewer));
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
-  if (size == 1) {
-    PetscCall(PetscViewerMatlabOpen(PETSC_COMM_WORLD,"tmp.mat",FILE_MODE_WRITE,&mviewer));
-  }
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
+  if (size == 1) { PetscCall(PetscViewerMatlabOpen(PETSC_COMM_WORLD, "tmp.mat", FILE_MODE_WRITE, &mviewer)); }
 #endif
 
-  PetscCall(PetscOptionsGetBool(NULL,NULL,"-star_stencil",&flg,NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-star_stencil", &flg, NULL));
   if (flg) stype = DMDA_STENCIL_STAR;
 
   /* Create distributed array and get vectors */
-  PetscCall(DMDACreate2d(PETSC_COMM_WORLD,bx,by,stype,M,N,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da));
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, bx, by, stype, M, N, PETSC_DECIDE, PETSC_DECIDE, 1, 1, NULL, NULL, &da));
   PetscCall(DMSetFromOptions(da));
   PetscCall(DMSetUp(da));
-  PetscCall(DMCreateGlobalVector(da,&global));
-  PetscCall(DMCreateLocalVector(da,&local));
+  PetscCall(DMCreateGlobalVector(da, &global));
+  PetscCall(DMCreateLocalVector(da, &local));
 
   value = -3.0;
-  PetscCall(VecSet(global,value));
-  PetscCall(DMGlobalToLocalBegin(da,global,INSERT_VALUES,local));
-  PetscCall(DMGlobalToLocalEnd(da,global,INSERT_VALUES,local));
+  PetscCall(VecSet(global, value));
+  PetscCall(DMGlobalToLocalBegin(da, global, INSERT_VALUES, local));
+  PetscCall(DMGlobalToLocalEnd(da, global, INSERT_VALUES, local));
 
-  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
-  value = rank+1;
-  PetscCall(VecScale(local,value));
-  PetscCall(DMLocalToGlobalBegin(da,local,ADD_VALUES,global));
-  PetscCall(DMLocalToGlobalEnd(da,local,ADD_VALUES,global));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
+  value = rank + 1;
+  PetscCall(VecScale(local, value));
+  PetscCall(DMLocalToGlobalBegin(da, local, ADD_VALUES, global));
+  PetscCall(DMLocalToGlobalEnd(da, local, ADD_VALUES, global));
 
-  flg  = PETSC_FALSE;
-  PetscCall(PetscOptionsGetBool(NULL,NULL, "-view_global", &flg,NULL));
+  flg = PETSC_FALSE;
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-view_global", &flg, NULL));
   if (flg) { /* view global vector in natural ordering */
-    PetscCall(VecView(global,PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(VecView(global, PETSC_VIEWER_STDOUT_WORLD));
   }
-  PetscCall(DMView(da,viewer));
-  PetscCall(VecView(global,viewer));
+  PetscCall(DMView(da, viewer));
+  PetscCall(VecView(global, viewer));
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
   if (size == 1) {
-    PetscCall(DMView(da,mviewer));
-    PetscCall(VecView(global,mviewer));
+    PetscCall(DMView(da, mviewer));
+    PetscCall(VecView(global, mviewer));
   }
 #endif
 
   /* Free memory */
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-  if (size == 1) {
-    PetscCall(PetscViewerDestroy(&mviewer));
-  }
+  if (size == 1) { PetscCall(PetscViewerDestroy(&mviewer)); }
 #endif
   PetscCall(PetscViewerDestroy(&viewer));
   PetscCall(VecDestroy(&local));

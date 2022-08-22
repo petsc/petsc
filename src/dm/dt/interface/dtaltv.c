@@ -70,36 +70,36 @@ M*/
 
 .seealso: `PetscDTAltV`, `PetscDTAltVPullback()`, `PetscDTAltVPullbackMatrix()`
 @*/
-PetscErrorCode PetscDTAltVApply(PetscInt N, PetscInt k, const PetscReal *w, const PetscReal *v, PetscReal *wv)
-{
+PetscErrorCode PetscDTAltVApply(PetscInt N, PetscInt k, const PetscReal *w, const PetscReal *v, PetscReal *wv) {
   PetscFunctionBegin;
-  PetscCheck(N >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid dimension");
-  PetscCheck(k >= 0 && k <= N,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid form degree");
+  PetscCheck(N >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid dimension");
+  PetscCheck(k >= 0 && k <= N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid form degree");
   if (N <= 3) {
     if (!k) {
       *wv = w[0];
     } else {
-      if (N == 1)        {*wv = w[0] * v[0];}
-      else if (N == 2) {
-        if (k == 1)      {*wv = w[0] * v[0] + w[1] * v[1];}
-        else             {*wv = w[0] * (v[0] * v[3] - v[1] * v[2]);}
-      } else {
-        if (k == 1)      {*wv = w[0] * v[0] + w[1] * v[1] + w[2] * v[2];}
-        else if (k == 2) {
-          *wv = w[0] * (v[0] * v[4] - v[1] * v[3]) +
-                w[1] * (v[0] * v[5] - v[2] * v[3]) +
-                w[2] * (v[1] * v[5] - v[2] * v[4]);
+      if (N == 1) {
+        *wv = w[0] * v[0];
+      } else if (N == 2) {
+        if (k == 1) {
+          *wv = w[0] * v[0] + w[1] * v[1];
         } else {
-          *wv = w[0] * (v[0] * (v[4] * v[8] - v[5] * v[7]) +
-                        v[1] * (v[5] * v[6] - v[3] * v[8]) +
-                        v[2] * (v[3] * v[7] - v[4] * v[6]));
+          *wv = w[0] * (v[0] * v[3] - v[1] * v[2]);
+        }
+      } else {
+        if (k == 1) {
+          *wv = w[0] * v[0] + w[1] * v[1] + w[2] * v[2];
+        } else if (k == 2) {
+          *wv = w[0] * (v[0] * v[4] - v[1] * v[3]) + w[1] * (v[0] * v[5] - v[2] * v[3]) + w[2] * (v[1] * v[5] - v[2] * v[4]);
+        } else {
+          *wv = w[0] * (v[0] * (v[4] * v[8] - v[5] * v[7]) + v[1] * (v[5] * v[6] - v[3] * v[8]) + v[2] * (v[3] * v[7] - v[4] * v[6]));
         }
       }
     }
   } else {
-    PetscInt Nk, Nf;
+    PetscInt  Nk, Nf;
     PetscInt *subset, *perm;
-    PetscInt i, j, l;
+    PetscInt  i, j, l;
     PetscReal sum = 0.;
 
     PetscCall(PetscDTFactorialInt(k, &Nf));
@@ -115,9 +115,7 @@ PetscErrorCode PetscDTAltVApply(PetscInt N, PetscInt k, const PetscReal *w, cons
 
         PetscCall(PetscDTEnumPerm(k, j, perm, &permOdd));
         prod = permOdd ? -1. : 1.;
-        for (l = 0; l < k; l++) {
-          prod *= v[perm[l] * N + subset[l]];
-        }
+        for (l = 0; l < k; l++) { prod *= v[perm[l] * N + subset[l]]; }
         subsum += prod;
       }
       sum += w[i] * subsum;
@@ -146,24 +144,26 @@ PetscErrorCode PetscDTAltVApply(PetscInt N, PetscInt k, const PetscReal *w, cons
 
 .seealso: `PetscDTAltV`, `PetscDTAltVWedgeMatrix()`, `PetscDTAltVPullback()`, `PetscDTAltVPullbackMatrix()`
 @*/
-PetscErrorCode PetscDTAltVWedge(PetscInt N, PetscInt j, PetscInt k, const PetscReal *a, const PetscReal *b, PetscReal *awedgeb)
-{
-  PetscInt       i;
+PetscErrorCode PetscDTAltVWedge(PetscInt N, PetscInt j, PetscInt k, const PetscReal *a, const PetscReal *b, PetscReal *awedgeb) {
+  PetscInt i;
 
   PetscFunctionBegin;
-  PetscCheck(N >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid dimension");
-  PetscCheck(j >= 0 && k >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "negative form degree");
-  PetscCheck(j + k <= N,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Wedge greater than dimension");
+  PetscCheck(N >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid dimension");
+  PetscCheck(j >= 0 && k >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "negative form degree");
+  PetscCheck(j + k <= N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Wedge greater than dimension");
   if (N <= 3) {
     PetscInt Njk;
 
-    PetscCall(PetscDTBinomialInt(N, j+k, &Njk));
-    if (!j)      {for (i = 0; i < Njk; i++) {awedgeb[i] = a[0] * b[i];}}
-    else if (!k) {for (i = 0; i < Njk; i++) {awedgeb[i] = a[i] * b[0];}}
-    else {
-      if (N == 2) {awedgeb[0] = a[0] * b[1] - a[1] * b[0];}
-      else {
-        if (j+k == 2) {
+    PetscCall(PetscDTBinomialInt(N, j + k, &Njk));
+    if (!j) {
+      for (i = 0; i < Njk; i++) { awedgeb[i] = a[0] * b[i]; }
+    } else if (!k) {
+      for (i = 0; i < Njk; i++) { awedgeb[i] = a[i] * b[0]; }
+    } else {
+      if (N == 2) {
+        awedgeb[0] = a[0] * b[1] - a[1] * b[0];
+      } else {
+        if (j + k == 2) {
           awedgeb[0] = a[0] * b[1] - a[1] * b[0];
           awedgeb[1] = a[0] * b[2] - a[2] * b[0];
           awedgeb[2] = a[1] * b[2] - a[2] * b[1];
@@ -178,25 +178,21 @@ PetscErrorCode PetscDTAltVWedge(PetscInt N, PetscInt j, PetscInt k, const PetscR
     PetscInt *subset, *subsetjk, *subsetj, *subsetk;
     PetscInt  i;
 
-    PetscCall(PetscDTBinomialInt(N, j+k, &Njk));
-    PetscCall(PetscDTBinomialInt(j+k, j, &JKj));
-    PetscCall(PetscMalloc4(j+k, &subset, j+k, &subsetjk, j, &subsetj, k, &subsetk));
+    PetscCall(PetscDTBinomialInt(N, j + k, &Njk));
+    PetscCall(PetscDTBinomialInt(j + k, j, &JKj));
+    PetscCall(PetscMalloc4(j + k, &subset, j + k, &subsetjk, j, &subsetj, k, &subsetk));
     for (i = 0; i < Njk; i++) {
       PetscReal sum = 0.;
       PetscInt  l;
 
-      PetscCall(PetscDTEnumSubset(N, j+k, i, subset));
+      PetscCall(PetscDTEnumSubset(N, j + k, i, subset));
       for (l = 0; l < JKj; l++) {
         PetscBool jkOdd;
         PetscInt  m, jInd, kInd;
 
-        PetscCall(PetscDTEnumSplit(j+k, j, l, subsetjk, &jkOdd));
-        for (m = 0; m < j; m++) {
-          subsetj[m] = subset[subsetjk[m]];
-        }
-        for (m = 0; m < k; m++) {
-          subsetk[m] = subset[subsetjk[j+m]];
-        }
+        PetscCall(PetscDTEnumSplit(j + k, j, l, subsetjk, &jkOdd));
+        for (m = 0; m < j; m++) { subsetj[m] = subset[subsetjk[m]]; }
+        for (m = 0; m < k; m++) { subsetk[m] = subset[subsetjk[j + m]]; }
         PetscCall(PetscDTSubsetIndex(N, j, subsetj, &jInd));
         PetscCall(PetscDTSubsetIndex(N, k, subsetk, &kInd));
         sum += jkOdd ? -(a[jInd] * b[kInd]) : (a[jInd] * b[kInd]);
@@ -224,33 +220,41 @@ PetscErrorCode PetscDTAltVWedge(PetscInt N, PetscInt j, PetscInt k, const PetscR
 
 .seealso: `PetscDTAltV`, `PetscDTAltVPullback()`, `PetscDTAltVPullbackMatrix()`
 @*/
-PetscErrorCode PetscDTAltVWedgeMatrix(PetscInt N, PetscInt j, PetscInt k, const PetscReal *a, PetscReal *awedgeMat)
-{
-  PetscInt       i;
+PetscErrorCode PetscDTAltVWedgeMatrix(PetscInt N, PetscInt j, PetscInt k, const PetscReal *a, PetscReal *awedgeMat) {
+  PetscInt i;
 
   PetscFunctionBegin;
-  PetscCheck(N >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid dimension");
-  PetscCheck(j >= 0 && k >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "negative form degree");
-  PetscCheck(j + k <= N,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Wedge greater than dimension");
+  PetscCheck(N >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid dimension");
+  PetscCheck(j >= 0 && k >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "negative form degree");
+  PetscCheck(j + k <= N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Wedge greater than dimension");
   if (N <= 3) {
     PetscInt Njk;
 
-    PetscCall(PetscDTBinomialInt(N, j+k, &Njk));
+    PetscCall(PetscDTBinomialInt(N, j + k, &Njk));
     if (!j) {
-      for (i = 0; i < Njk * Njk; i++) {awedgeMat[i] = 0.;}
-      for (i = 0; i < Njk; i++) {awedgeMat[i * (Njk + 1)] = a[0];}
+      for (i = 0; i < Njk * Njk; i++) { awedgeMat[i] = 0.; }
+      for (i = 0; i < Njk; i++) { awedgeMat[i * (Njk + 1)] = a[0]; }
     } else if (!k) {
-      for (i = 0; i < Njk; i++) {awedgeMat[i] = a[i];}
+      for (i = 0; i < Njk; i++) { awedgeMat[i] = a[i]; }
     } else {
       if (N == 2) {
-        awedgeMat[0] = -a[1]; awedgeMat[1] =  a[0];
+        awedgeMat[0] = -a[1];
+        awedgeMat[1] = a[0];
       } else {
-        if (j+k == 2) {
-          awedgeMat[0] = -a[1]; awedgeMat[1] =  a[0]; awedgeMat[2] =    0.;
-          awedgeMat[3] = -a[2]; awedgeMat[4] =    0.; awedgeMat[5] =  a[0];
-          awedgeMat[6] =    0.; awedgeMat[7] = -a[2]; awedgeMat[8] =  a[1];
+        if (j + k == 2) {
+          awedgeMat[0] = -a[1];
+          awedgeMat[1] = a[0];
+          awedgeMat[2] = 0.;
+          awedgeMat[3] = -a[2];
+          awedgeMat[4] = 0.;
+          awedgeMat[5] = a[0];
+          awedgeMat[6] = 0.;
+          awedgeMat[7] = -a[2];
+          awedgeMat[8] = a[1];
         } else {
-          awedgeMat[0] =  a[2]; awedgeMat[1] = -a[1]; awedgeMat[2] =  a[0];
+          awedgeMat[0] = a[2];
+          awedgeMat[1] = -a[1];
+          awedgeMat[2] = a[0];
         }
       }
     }
@@ -260,29 +264,25 @@ PetscErrorCode PetscDTAltVWedgeMatrix(PetscInt N, PetscInt j, PetscInt k, const 
     PetscInt  JKj, i;
     PetscInt *subset, *subsetjk, *subsetj, *subsetk;
 
-    PetscCall(PetscDTBinomialInt(N,   k,   &Nk));
-    PetscCall(PetscDTBinomialInt(N,   j+k, &Njk));
-    PetscCall(PetscDTBinomialInt(j+k, j,   &JKj));
-    PetscCall(PetscMalloc4(j+k, &subset, j+k, &subsetjk, j, &subsetj, k, &subsetk));
+    PetscCall(PetscDTBinomialInt(N, k, &Nk));
+    PetscCall(PetscDTBinomialInt(N, j + k, &Njk));
+    PetscCall(PetscDTBinomialInt(j + k, j, &JKj));
+    PetscCall(PetscMalloc4(j + k, &subset, j + k, &subsetjk, j, &subsetj, k, &subsetk));
     for (i = 0; i < Njk * Nk; i++) awedgeMat[i] = 0.;
     for (i = 0; i < Njk; i++) {
-      PetscInt  l;
+      PetscInt l;
 
-      PetscCall(PetscDTEnumSubset(N, j+k, i, subset));
+      PetscCall(PetscDTEnumSubset(N, j + k, i, subset));
       for (l = 0; l < JKj; l++) {
         PetscBool jkOdd;
         PetscInt  m, jInd, kInd;
 
-        PetscCall(PetscDTEnumSplit(j+k, j, l, subsetjk, &jkOdd));
-        for (m = 0; m < j; m++) {
-          subsetj[m] = subset[subsetjk[m]];
-        }
-        for (m = 0; m < k; m++) {
-          subsetk[m] = subset[subsetjk[j+m]];
-        }
+        PetscCall(PetscDTEnumSplit(j + k, j, l, subsetjk, &jkOdd));
+        for (m = 0; m < j; m++) { subsetj[m] = subset[subsetjk[m]]; }
+        for (m = 0; m < k; m++) { subsetk[m] = subset[subsetjk[j + m]]; }
         PetscCall(PetscDTSubsetIndex(N, j, subsetj, &jInd));
         PetscCall(PetscDTSubsetIndex(N, k, subsetk, &kInd));
-        awedgeMat[i * Nk + kInd] += jkOdd ? - a[jInd] : a[jInd];
+        awedgeMat[i * Nk + kInd] += jkOdd ? -a[jInd] : a[jInd];
       }
     }
     PetscCall(PetscFree4(subset, subsetjk, subsetj, subsetk));
@@ -311,15 +311,13 @@ PetscErrorCode PetscDTAltVWedgeMatrix(PetscInt N, PetscInt j, PetscInt k, const 
 
 .seealso: `PetscDTAltV`, `PetscDTAltVPullbackMatrix()`, `PetscDTAltVStar()`
 @*/
-PetscErrorCode PetscDTAltVPullback(PetscInt N, PetscInt M, const PetscReal *L, PetscInt k, const PetscReal *w, PetscReal *Lstarw)
-{
-  PetscInt         i, j, Nk, Mk;
+PetscErrorCode PetscDTAltVPullback(PetscInt N, PetscInt M, const PetscReal *L, PetscInt k, const PetscReal *w, PetscReal *Lstarw) {
+  PetscInt i, j, Nk, Mk;
 
   PetscFunctionBegin;
-  PetscCheck(N >= 0 && M >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid dimensions");
-  PetscCheck(PetscAbsInt(k) <= N && PetscAbsInt(k) <= M,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid form degree");
+  PetscCheck(N >= 0 && M >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid dimensions");
+  PetscCheck(PetscAbsInt(k) <= N && PetscAbsInt(k) <= M, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid form degree");
   if (N <= 3 && M <= 3) {
-
     PetscCall(PetscDTBinomialInt(M, PetscAbsInt(k), &Mk));
     PetscCall(PetscDTBinomialInt(N, PetscAbsInt(k), &Nk));
     if (!k) {
@@ -328,7 +326,7 @@ PetscErrorCode PetscDTAltVPullback(PetscInt N, PetscInt M, const PetscReal *L, P
       for (i = 0; i < Nk; i++) {
         PetscReal sum = 0.;
 
-        for (j = 0; j < Mk; j++) {sum += L[j * Nk + i] * w[j];}
+        for (j = 0; j < Mk; j++) { sum += L[j * Nk + i] * w[j]; }
         Lstarw[i] = sum;
       }
     } else if (k == -1) {
@@ -337,53 +335,48 @@ PetscErrorCode PetscDTAltVPullback(PetscInt N, PetscInt M, const PetscReal *L, P
       for (i = 0; i < Nk; i++) {
         PetscReal sum = 0.;
 
-        for (j = 0; j < Mk; j++) {
-          sum += L[(Mk - 1 - j) * Nk + (Nk - 1 - i)] * w[j] * mult[j];
-        }
+        for (j = 0; j < Mk; j++) { sum += L[(Mk - 1 - j) * Nk + (Nk - 1 - i)] * w[j] * mult[j]; }
         Lstarw[i] = mult[i] * sum;
       }
     } else if (k == 2) {
-      PetscInt pairs[3][2] = {{0,1},{0,2},{1,2}};
+      PetscInt pairs[3][2] = {
+        {0, 1},
+        {0, 2},
+        {1, 2}
+      };
 
       for (i = 0; i < Nk; i++) {
         PetscReal sum = 0.;
-        for (j = 0; j < Mk; j++) {
-          sum += (L[pairs[j][0] * N + pairs[i][0]] * L[pairs[j][1] * N + pairs[i][1]] -
-                  L[pairs[j][1] * N + pairs[i][0]] * L[pairs[j][0] * N + pairs[i][1]]) * w[j];
-        }
+        for (j = 0; j < Mk; j++) { sum += (L[pairs[j][0] * N + pairs[i][0]] * L[pairs[j][1] * N + pairs[i][1]] - L[pairs[j][1] * N + pairs[i][0]] * L[pairs[j][0] * N + pairs[i][1]]) * w[j]; }
         Lstarw[i] = sum;
       }
     } else if (k == -2) {
-      PetscInt  pairs[3][2] = {{1,2},{2,0},{0,1}};
-      PetscInt  offi = (N == 2) ? 2 : 0;
-      PetscInt  offj = (M == 2) ? 2 : 0;
+      PetscInt pairs[3][2] = {
+        {1, 2},
+        {2, 0},
+        {0, 1}
+      };
+      PetscInt offi = (N == 2) ? 2 : 0;
+      PetscInt offj = (M == 2) ? 2 : 0;
 
       for (i = 0; i < Nk; i++) {
-        PetscReal sum   = 0.;
+        PetscReal sum = 0.;
 
-        for (j = 0; j < Mk; j++) {
-          sum += (L[pairs[offj + j][0] * N + pairs[offi + i][0]] *
-                  L[pairs[offj + j][1] * N + pairs[offi + i][1]] -
-                  L[pairs[offj + j][1] * N + pairs[offi + i][0]] *
-                  L[pairs[offj + j][0] * N + pairs[offi + i][1]]) * w[j];
-
-        }
+        for (j = 0; j < Mk; j++) { sum += (L[pairs[offj + j][0] * N + pairs[offi + i][0]] * L[pairs[offj + j][1] * N + pairs[offi + i][1]] - L[pairs[offj + j][1] * N + pairs[offi + i][0]] * L[pairs[offj + j][0] * N + pairs[offi + i][1]]) * w[j]; }
         Lstarw[i] = sum;
       }
     } else {
-      PetscReal detL = L[0] * (L[4] * L[8] - L[5] * L[7]) +
-                       L[1] * (L[5] * L[6] - L[3] * L[8]) +
-                       L[2] * (L[3] * L[7] - L[4] * L[6]);
+      PetscReal detL = L[0] * (L[4] * L[8] - L[5] * L[7]) + L[1] * (L[5] * L[6] - L[3] * L[8]) + L[2] * (L[3] * L[7] - L[4] * L[6]);
 
-      for (i = 0; i < Nk; i++) {Lstarw[i] = detL * w[i];}
+      for (i = 0; i < Nk; i++) { Lstarw[i] = detL * w[i]; }
     }
   } else {
     PetscInt         Nf, l, p;
     PetscReal       *Lw, *Lwv;
     PetscInt        *subsetw, *subsetv;
     PetscInt        *perm;
-    PetscReal       *walloc = NULL;
-    const PetscReal *ww = NULL;
+    PetscReal       *walloc   = NULL;
+    const PetscReal *ww       = NULL;
     PetscBool        negative = PETSC_FALSE;
 
     PetscCall(PetscDTBinomialInt(M, PetscAbsInt(k), &Mk));
@@ -391,7 +384,7 @@ PetscErrorCode PetscDTAltVPullback(PetscInt N, PetscInt M, const PetscReal *L, P
     PetscCall(PetscDTFactorialInt(PetscAbsInt(k), &Nf));
     if (k < 0) {
       negative = PETSC_TRUE;
-      k = -k;
+      k        = -k;
       PetscCall(PetscMalloc1(Mk, &walloc));
       PetscCall(PetscDTAltVStar(M, M - k, 1, w, walloc));
       ww = walloc;
@@ -410,9 +403,7 @@ PetscErrorCode PetscDTAltVPullback(PetscInt N, PetscInt M, const PetscReal *L, P
 
           PetscCall(PetscDTEnumPerm(k, p, perm, &isOdd));
           prod = isOdd ? -ww[i] : ww[i];
-          for (l = 0; l < k; l++) {
-            prod *= L[subsetw[perm[l]] * N + subsetv[l]];
-          }
+          for (l = 0; l < k; l++) { prod *= L[subsetw[perm[l]] * N + subsetv[l]]; }
           Lstarw[j] += prod;
         }
       }
@@ -421,7 +412,7 @@ PetscErrorCode PetscDTAltVPullback(PetscInt N, PetscInt M, const PetscReal *L, P
       PetscReal *sLsw;
 
       PetscCall(PetscMalloc1(Nk, &sLsw));
-      PetscCall(PetscDTAltVStar(N, N - k, -1,  Lstarw, sLsw));
+      PetscCall(PetscDTAltVStar(N, N - k, -1, Lstarw, sLsw));
       for (i = 0; i < Nk; i++) Lstarw[i] = sLsw[i];
       PetscCall(PetscFree(sLsw));
     }
@@ -447,17 +438,16 @@ PetscErrorCode PetscDTAltVPullback(PetscInt N, PetscInt M, const PetscReal *L, P
 
 .seealso: `PetscDTAltV`, `PetscDTAltVPullback()`, `PetscDTAltVStar()`
 @*/
-PetscErrorCode PetscDTAltVPullbackMatrix(PetscInt N, PetscInt M, const PetscReal *L, PetscInt k, PetscReal *Lstar)
-{
-  PetscInt        Nk, Mk, Nf, i, j, l, p;
-  PetscReal      *Lw, *Lwv;
-  PetscInt       *subsetw, *subsetv;
-  PetscInt       *perm;
-  PetscBool       negative = PETSC_FALSE;
+PetscErrorCode PetscDTAltVPullbackMatrix(PetscInt N, PetscInt M, const PetscReal *L, PetscInt k, PetscReal *Lstar) {
+  PetscInt   Nk, Mk, Nf, i, j, l, p;
+  PetscReal *Lw, *Lwv;
+  PetscInt  *subsetw, *subsetv;
+  PetscInt  *perm;
+  PetscBool  negative = PETSC_FALSE;
 
   PetscFunctionBegin;
-  PetscCheck(N >= 0 && M >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid dimensions");
-  PetscCheck(PetscAbsInt(k) <= N && PetscAbsInt(k) <= M,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid form degree");
+  PetscCheck(N >= 0 && M >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid dimensions");
+  PetscCheck(PetscAbsInt(k) <= N && PetscAbsInt(k) <= M, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid form degree");
   if (N <= 3 && M <= 3) {
     PetscReal mult[3] = {1., -1., 1.};
 
@@ -466,48 +456,46 @@ PetscErrorCode PetscDTAltVPullbackMatrix(PetscInt N, PetscInt M, const PetscReal
     if (!k) {
       Lstar[0] = 1.;
     } else if (k == 1) {
-      for (i = 0; i < Nk; i++) {for (j = 0; j < Mk; j++) {Lstar[i * Mk + j] = L[j * Nk + i];}}
+      for (i = 0; i < Nk; i++) {
+        for (j = 0; j < Mk; j++) { Lstar[i * Mk + j] = L[j * Nk + i]; }
+      }
     } else if (k == -1) {
       for (i = 0; i < Nk; i++) {
-        for (j = 0; j < Mk; j++) {
-          Lstar[i * Mk + j] = L[(Mk - 1 - j) * Nk + (Nk - 1 - i)] * mult[i] * mult[j];
-        }
+        for (j = 0; j < Mk; j++) { Lstar[i * Mk + j] = L[(Mk - 1 - j) * Nk + (Nk - 1 - i)] * mult[i] * mult[j]; }
       }
     } else if (k == 2) {
-      PetscInt pairs[3][2] = {{0,1},{0,2},{1,2}};
+      PetscInt pairs[3][2] = {
+        {0, 1},
+        {0, 2},
+        {1, 2}
+      };
 
       for (i = 0; i < Nk; i++) {
-        for (j = 0; j < Mk; j++) {
-          Lstar[i * Mk + j] = L[pairs[j][0] * N + pairs[i][0]] *
-                              L[pairs[j][1] * N + pairs[i][1]] -
-                              L[pairs[j][1] * N + pairs[i][0]] *
-                              L[pairs[j][0] * N + pairs[i][1]];
-        }
+        for (j = 0; j < Mk; j++) { Lstar[i * Mk + j] = L[pairs[j][0] * N + pairs[i][0]] * L[pairs[j][1] * N + pairs[i][1]] - L[pairs[j][1] * N + pairs[i][0]] * L[pairs[j][0] * N + pairs[i][1]]; }
       }
     } else if (k == -2) {
-      PetscInt  pairs[3][2] = {{1,2},{2,0},{0,1}};
-      PetscInt  offi = (N == 2) ? 2 : 0;
-      PetscInt  offj = (M == 2) ? 2 : 0;
+      PetscInt pairs[3][2] = {
+        {1, 2},
+        {2, 0},
+        {0, 1}
+      };
+      PetscInt offi = (N == 2) ? 2 : 0;
+      PetscInt offj = (M == 2) ? 2 : 0;
 
       for (i = 0; i < Nk; i++) {
         for (j = 0; j < Mk; j++) {
-          Lstar[i * Mk + j] = L[pairs[offj + j][0] * N + pairs[offi + i][0]] *
-                              L[pairs[offj + j][1] * N + pairs[offi + i][1]] -
-                              L[pairs[offj + j][1] * N + pairs[offi + i][0]] *
-                              L[pairs[offj + j][0] * N + pairs[offi + i][1]];
+          Lstar[i * Mk + j] = L[pairs[offj + j][0] * N + pairs[offi + i][0]] * L[pairs[offj + j][1] * N + pairs[offi + i][1]] - L[pairs[offj + j][1] * N + pairs[offi + i][0]] * L[pairs[offj + j][0] * N + pairs[offi + i][1]];
         }
       }
     } else {
-      PetscReal detL = L[0] * (L[4] * L[8] - L[5] * L[7]) +
-                       L[1] * (L[5] * L[6] - L[3] * L[8]) +
-                       L[2] * (L[3] * L[7] - L[4] * L[6]);
+      PetscReal detL = L[0] * (L[4] * L[8] - L[5] * L[7]) + L[1] * (L[5] * L[6] - L[3] * L[8]) + L[2] * (L[3] * L[7] - L[4] * L[6]);
 
-      for (i = 0; i < Nk; i++) {Lstar[i] = detL;}
+      for (i = 0; i < Nk; i++) { Lstar[i] = detL; }
     }
   } else {
     if (k < 0) {
       negative = PETSC_TRUE;
-      k = -k;
+      k        = -k;
     }
     PetscCall(PetscDTBinomialInt(M, PetscAbsInt(k), &Mk));
     PetscCall(PetscDTBinomialInt(N, PetscAbsInt(k), &Nk));
@@ -520,23 +508,21 @@ PetscErrorCode PetscDTAltVPullbackMatrix(PetscInt N, PetscInt M, const PetscReal
 
       PetscCall(PetscDTEnumSplit(M, k, i, subsetw, &iOdd));
       iidx = negative ? Mk - 1 - i : i;
-      iOdd = negative ? (PetscBool) (iOdd ^ ((k * (M-k)) & 1)) : PETSC_FALSE;
+      iOdd = negative ? (PetscBool)(iOdd ^ ((k * (M - k)) & 1)) : PETSC_FALSE;
       for (j = 0; j < Nk; j++) {
         PetscBool jOdd;
 
         PetscCall(PetscDTEnumSplit(N, k, j, subsetv, &jOdd));
         jidx = negative ? Nk - 1 - j : j;
-        jOdd = negative ? (PetscBool) (iOdd ^ jOdd ^ ((k * (N-k)) & 1)) : PETSC_FALSE;
+        jOdd = negative ? (PetscBool)(iOdd ^ jOdd ^ ((k * (N - k)) & 1)) : PETSC_FALSE;
         for (p = 0; p < Nf; p++) {
           PetscReal prod;
           PetscBool isOdd;
 
           PetscCall(PetscDTEnumPerm(k, p, perm, &isOdd));
-          isOdd = (PetscBool) (isOdd ^ jOdd);
-          prod = isOdd ? -1. : 1.;
-          for (l = 0; l < k; l++) {
-            prod *= L[subsetw[perm[l]] * N + subsetv[l]];
-          }
+          isOdd = (PetscBool)(isOdd ^ jOdd);
+          prod  = isOdd ? -1. : 1.;
+          for (l = 0; l < k; l++) { prod *= L[subsetw[perm[l]] * N + subsetv[l]]; }
           Lstar[jidx * Mk + iidx] += prod;
         }
       }
@@ -562,51 +548,46 @@ PetscErrorCode PetscDTAltVPullbackMatrix(PetscInt N, PetscInt M, const PetscReal
 
 .seealso: `PetscDTAltV`, `PetscDTAltVInteriorMatrix()`, `PetscDTAltVInteriorPattern()`, `PetscDTAltVPullback()`, `PetscDTAltVPullbackMatrix()`
 @*/
-PetscErrorCode PetscDTAltVInterior(PetscInt N, PetscInt k, const PetscReal *w, const PetscReal *v, PetscReal *wIntv)
-{
-  PetscInt        i, Nk, Nkm;
+PetscErrorCode PetscDTAltVInterior(PetscInt N, PetscInt k, const PetscReal *w, const PetscReal *v, PetscReal *wIntv) {
+  PetscInt i, Nk, Nkm;
 
   PetscFunctionBegin;
-  PetscCheck(k > 0 && k <= N,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid form degree");
-  PetscCall(PetscDTBinomialInt(N, k,   &Nk));
-  PetscCall(PetscDTBinomialInt(N, k-1, &Nkm));
+  PetscCheck(k > 0 && k <= N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid form degree");
+  PetscCall(PetscDTBinomialInt(N, k, &Nk));
+  PetscCall(PetscDTBinomialInt(N, k - 1, &Nkm));
   if (N <= 3) {
     if (k == 1) {
       PetscReal sum = 0.;
 
-      for (i = 0; i < N; i++) {
-        sum += w[i] * v[i];
-      }
+      for (i = 0; i < N; i++) { sum += w[i] * v[i]; }
       wIntv[0] = sum;
     } else if (k == N) {
       PetscReal mult[3] = {1., -1., 1.};
 
-      for (i = 0; i < N; i++) {
-        wIntv[N - 1 - i] = w[0] * v[i] * mult[i];
-      }
+      for (i = 0; i < N; i++) { wIntv[N - 1 - i] = w[0] * v[i] * mult[i]; }
     } else {
-      wIntv[0] = - w[0]*v[1] - w[1]*v[2];
-      wIntv[1] =   w[0]*v[0] - w[2]*v[2];
-      wIntv[2] =   w[1]*v[0] + w[2]*v[1];
+      wIntv[0] = -w[0] * v[1] - w[1] * v[2];
+      wIntv[1] = w[0] * v[0] - w[2] * v[2];
+      wIntv[2] = w[1] * v[0] + w[2] * v[1];
     }
   } else {
-    PetscInt       *subset, *work;
+    PetscInt *subset, *work;
 
     PetscCall(PetscMalloc2(k, &subset, k, &work));
     for (i = 0; i < Nkm; i++) wIntv[i] = 0.;
     for (i = 0; i < Nk; i++) {
-      PetscInt  j, l, m;
+      PetscInt j, l, m;
 
       PetscCall(PetscDTEnumSubset(N, k, i, subset));
       for (j = 0; j < k; j++) {
         PetscInt  idx;
-        PetscBool flip = (PetscBool) (j & 1);
+        PetscBool flip = (PetscBool)(j & 1);
 
         for (l = 0, m = 0; l < k; l++) {
           if (l != j) work[m++] = subset[l];
         }
         PetscCall(PetscDTSubsetIndex(N, k - 1, work, &idx));
-        wIntv[idx] += flip ? -(w[i] * v[subset[j]]) :  (w[i] * v[subset[j]]);
+        wIntv[idx] += flip ? -(w[i] * v[subset[j]]) : (w[i] * v[subset[j]]);
       }
     }
     PetscCall(PetscFree2(subset, work));
@@ -629,14 +610,13 @@ PetscErrorCode PetscDTAltVInterior(PetscInt N, PetscInt k, const PetscReal *w, c
 
 .seealso: `PetscDTAltV`, `PetscDTAltVInterior()`, `PetscDTAltVInteriorPattern()`, `PetscDTAltVPullback()`, `PetscDTAltVPullbackMatrix()`
 @*/
-PetscErrorCode PetscDTAltVInteriorMatrix(PetscInt N, PetscInt k, const PetscReal *v, PetscReal *intvMat)
-{
-  PetscInt        i, Nk, Nkm;
+PetscErrorCode PetscDTAltVInteriorMatrix(PetscInt N, PetscInt k, const PetscReal *v, PetscReal *intvMat) {
+  PetscInt i, Nk, Nkm;
 
   PetscFunctionBegin;
-  PetscCheck(k > 0 && k <= N,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid form degree");
-  PetscCall(PetscDTBinomialInt(N, k,   &Nk));
-  PetscCall(PetscDTBinomialInt(N, k-1, &Nkm));
+  PetscCheck(k > 0 && k <= N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid form degree");
+  PetscCall(PetscDTBinomialInt(N, k, &Nk));
+  PetscCall(PetscDTBinomialInt(N, k - 1, &Nkm));
   if (N <= 3) {
     if (k == 1) {
       for (i = 0; i < N; i++) intvMat[i] = v[i];
@@ -645,28 +625,34 @@ PetscErrorCode PetscDTAltVInteriorMatrix(PetscInt N, PetscInt k, const PetscReal
 
       for (i = 0; i < N; i++) intvMat[N - 1 - i] = v[i] * mult[i];
     } else {
-      intvMat[0] = -v[1]; intvMat[1] = -v[2]; intvMat[2] =    0.;
-      intvMat[3] =  v[0]; intvMat[4] =    0.; intvMat[5] = -v[2];
-      intvMat[6] =    0.; intvMat[7] =  v[0]; intvMat[8] =  v[1];
+      intvMat[0] = -v[1];
+      intvMat[1] = -v[2];
+      intvMat[2] = 0.;
+      intvMat[3] = v[0];
+      intvMat[4] = 0.;
+      intvMat[5] = -v[2];
+      intvMat[6] = 0.;
+      intvMat[7] = v[0];
+      intvMat[8] = v[1];
     }
   } else {
-    PetscInt       *subset, *work;
+    PetscInt *subset, *work;
 
     PetscCall(PetscMalloc2(k, &subset, k, &work));
     for (i = 0; i < Nk * Nkm; i++) intvMat[i] = 0.;
     for (i = 0; i < Nk; i++) {
-      PetscInt  j, l, m;
+      PetscInt j, l, m;
 
       PetscCall(PetscDTEnumSubset(N, k, i, subset));
       for (j = 0; j < k; j++) {
         PetscInt  idx;
-        PetscBool flip = (PetscBool) (j & 1);
+        PetscBool flip = (PetscBool)(j & 1);
 
         for (l = 0, m = 0; l < k; l++) {
           if (l != j) work[m++] = subset[l];
         }
         PetscCall(PetscDTSubsetIndex(N, k - 1, work, &idx));
-        intvMat[idx * Nk + i] += flip ? -v[subset[j]] :  v[subset[j]];
+        intvMat[idx * Nk + i] += flip ? -v[subset[j]] : v[subset[j]];
       }
     }
     PetscCall(PetscFree2(subset, work));
@@ -692,14 +678,13 @@ PetscErrorCode PetscDTAltVInteriorMatrix(PetscInt N, PetscInt k, const PetscReal
 
 .seealso: `PetscDTAltV`, `PetscDTAltVInterior()`, `PetscDTAltVInteriorMatrix()`, `PetscDTAltVPullback()`, `PetscDTAltVPullbackMatrix()`
 @*/
-PetscErrorCode PetscDTAltVInteriorPattern(PetscInt N, PetscInt k, PetscInt (*indices)[3])
-{
-  PetscInt        i, Nk, Nkm;
+PetscErrorCode PetscDTAltVInteriorPattern(PetscInt N, PetscInt k, PetscInt (*indices)[3]) {
+  PetscInt i, Nk, Nkm;
 
   PetscFunctionBegin;
-  PetscCheck(k > 0 && k <= N,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid form degree");
-  PetscCall(PetscDTBinomialInt(N, k,   &Nk));
-  PetscCall(PetscDTBinomialInt(N, k-1, &Nkm));
+  PetscCheck(k > 0 && k <= N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid form degree");
+  PetscCall(PetscDTBinomialInt(N, k, &Nk));
+  PetscCall(PetscDTBinomialInt(N, k - 1, &Nkm));
   if (N <= 3) {
     if (k == 1) {
       for (i = 0; i < N; i++) {
@@ -716,24 +701,36 @@ PetscErrorCode PetscDTAltVInteriorPattern(PetscInt N, PetscInt k, PetscInt (*ind
         indices[i][2] = val[i];
       }
     } else {
-      indices[0][0] = 0; indices[0][1] = 0; indices[0][2] = -(1 + 1);
-      indices[1][0] = 0; indices[1][1] = 1; indices[1][2] = -(2 + 1);
-      indices[2][0] = 1; indices[2][1] = 0; indices[2][2] = 0;
-      indices[3][0] = 1; indices[3][1] = 2; indices[3][2] = -(2 + 1);
-      indices[4][0] = 2; indices[4][1] = 1; indices[4][2] = 0;
-      indices[5][0] = 2; indices[5][1] = 2; indices[5][2] = 1;
+      indices[0][0] = 0;
+      indices[0][1] = 0;
+      indices[0][2] = -(1 + 1);
+      indices[1][0] = 0;
+      indices[1][1] = 1;
+      indices[1][2] = -(2 + 1);
+      indices[2][0] = 1;
+      indices[2][1] = 0;
+      indices[2][2] = 0;
+      indices[3][0] = 1;
+      indices[3][1] = 2;
+      indices[3][2] = -(2 + 1);
+      indices[4][0] = 2;
+      indices[4][1] = 1;
+      indices[4][2] = 0;
+      indices[5][0] = 2;
+      indices[5][1] = 2;
+      indices[5][2] = 1;
     }
   } else {
-    PetscInt       *subset, *work;
+    PetscInt *subset, *work;
 
     PetscCall(PetscMalloc2(k, &subset, k, &work));
     for (i = 0; i < Nk; i++) {
-      PetscInt  j, l, m;
+      PetscInt j, l, m;
 
       PetscCall(PetscDTEnumSubset(N, k, i, subset));
       for (j = 0; j < k; j++) {
         PetscInt  idx;
-        PetscBool flip = (PetscBool) (j & 1);
+        PetscBool flip = (PetscBool)(j & 1);
 
         for (l = 0, m = 0; l < k; l++) {
           if (l != j) work[m++] = subset[l];
@@ -765,12 +762,11 @@ PetscErrorCode PetscDTAltVInteriorPattern(PetscInt N, PetscInt k, PetscInt (*ind
 
 .seealso: `PetscDTAltV`, `PetscDTAltVPullback()`, `PetscDTAltVPullbackMatrix()`
 @*/
-PetscErrorCode PetscDTAltVStar(PetscInt N, PetscInt k, PetscInt pow, const PetscReal *w, PetscReal *starw)
-{
-  PetscInt        Nk, i;
+PetscErrorCode PetscDTAltVStar(PetscInt N, PetscInt k, PetscInt pow, const PetscReal *w, PetscReal *starw) {
+  PetscInt Nk, i;
 
   PetscFunctionBegin;
-  PetscCheck(k >= 0 && k <= N,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid form degree");
+  PetscCheck(k >= 0 && k <= N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid form degree");
   PetscCall(PetscDTBinomialInt(N, k, &Nk));
   pow = pow % 4;
   pow = (pow + 4) % 4; /* make non-negative */
@@ -787,7 +783,7 @@ PetscErrorCode PetscDTAltVStar(PetscInt N, PetscInt k, PetscInt pow, const Petsc
       for (i = 0; i < Nk; i++) starw[i] = -starw[i];
     }
   } else {
-    PetscInt       *subset;
+    PetscInt *subset;
 
     PetscCall(PetscMalloc1(N, &subset));
     if (pow % 2) {
@@ -798,7 +794,7 @@ PetscErrorCode PetscDTAltVStar(PetscInt N, PetscInt k, PetscInt pow, const Petsc
 
         PetscCall(PetscDTEnumSplit(N, l, i, subset, &sOdd));
         PetscCall(PetscDTSubsetIndex(N, l, subset, &idx));
-        PetscCall(PetscDTSubsetIndex(N, N-l, &subset[l], &j));
+        PetscCall(PetscDTSubsetIndex(N, N - l, &subset[l], &j));
         starw[j] = sOdd ? -w[idx] : w[idx];
       }
     } else {

@@ -1,5 +1,5 @@
 
-#include <petsc/private/viewerimpl.h>  /*I "petscviewer.h" I*/
+#include <petsc/private/viewerimpl.h> /*I "petscviewer.h" I*/
 
 /*@
    PetscViewerFlush - Flushes a PetscViewer (i.e. tries to dump all the
@@ -15,10 +15,9 @@
 .seealso: `PetscViewerSocketOpen()`, `PetscViewerASCIIOpen()`, `PetscViewerDrawOpen()`, `PetscViewerCreate()`, `PetscViewerDestroy()`,
           `PetscViewerSetType()`
 @*/
-PetscErrorCode  PetscViewerFlush(PetscViewer viewer)
-{
+PetscErrorCode PetscViewerFlush(PetscViewer viewer) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  PetscTryTypeMethod(viewer,flush);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
+  PetscTryTypeMethod(viewer, flush);
   PetscFunctionReturn(0);
 }

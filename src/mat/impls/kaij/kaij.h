@@ -3,16 +3,16 @@
 
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 
-#define KAIJHEADER                                \
-  PetscInt    p,q;                                \
-  Mat         AIJ;                                \
-  PetscScalar *S;                                 \
-  PetscScalar *T;                                 \
-  PetscScalar *ibdiag;                            \
-  PetscBool   ibdiagvalid,getrowactive,isTI;      \
-  struct {                                        \
-    PetscBool setup;                              \
-    PetscScalar *w,*work,*t,*arr,*y;              \
+#define KAIJHEADER \
+  PetscInt     p, q; \
+  Mat          AIJ; \
+  PetscScalar *S; \
+  PetscScalar *T; \
+  PetscScalar *ibdiag; \
+  PetscBool    ibdiagvalid, getrowactive, isTI; \
+  struct { \
+    PetscBool    setup; \
+    PetscScalar *w, *work, *t, *arr, *y; \
   } sor;
 
 typedef struct {

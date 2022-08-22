@@ -1,165 +1,154 @@
-#include <petsc/private/tsimpl.h>     /*I "petscts.h" I*/
+#include <petsc/private/tsimpl.h> /*I "petscts.h" I*/
 #include <petsc/private/dmimpl.h>
 
-static PetscErrorCode DMTSUnsetRHSFunctionContext_DMTS(DMTS tsdm)
-{
+static PetscErrorCode DMTSUnsetRHSFunctionContext_DMTS(DMTS tsdm) {
   PetscFunctionBegin;
-  PetscCall(PetscObjectCompose((PetscObject)tsdm,"rhs function ctx",NULL));
+  PetscCall(PetscObjectCompose((PetscObject)tsdm, "rhs function ctx", NULL));
   tsdm->rhsfunctionctxcontainer = NULL;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMTSUnsetRHSJacobianContext_DMTS(DMTS tsdm)
-{
+static PetscErrorCode DMTSUnsetRHSJacobianContext_DMTS(DMTS tsdm) {
   PetscFunctionBegin;
-  PetscCall(PetscObjectCompose((PetscObject)tsdm,"rhs jacobian ctx",NULL));
+  PetscCall(PetscObjectCompose((PetscObject)tsdm, "rhs jacobian ctx", NULL));
   tsdm->rhsjacobianctxcontainer = NULL;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMTSUnsetIFunctionContext_DMTS(DMTS tsdm)
-{
+static PetscErrorCode DMTSUnsetIFunctionContext_DMTS(DMTS tsdm) {
   PetscFunctionBegin;
-  PetscCall(PetscObjectCompose((PetscObject)tsdm,"ifunction ctx",NULL));
+  PetscCall(PetscObjectCompose((PetscObject)tsdm, "ifunction ctx", NULL));
   tsdm->ifunctionctxcontainer = NULL;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMTSUnsetIJacobianContext_DMTS(DMTS tsdm)
-{
+static PetscErrorCode DMTSUnsetIJacobianContext_DMTS(DMTS tsdm) {
   PetscFunctionBegin;
-  PetscCall(PetscObjectCompose((PetscObject)tsdm,"ijacobian ctx",NULL));
+  PetscCall(PetscObjectCompose((PetscObject)tsdm, "ijacobian ctx", NULL));
   tsdm->ijacobianctxcontainer = NULL;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMTSUnsetI2FunctionContext_DMTS(DMTS tsdm)
-{
+static PetscErrorCode DMTSUnsetI2FunctionContext_DMTS(DMTS tsdm) {
   PetscFunctionBegin;
-  PetscCall(PetscObjectCompose((PetscObject)tsdm,"i2function ctx",NULL));
+  PetscCall(PetscObjectCompose((PetscObject)tsdm, "i2function ctx", NULL));
   tsdm->i2functionctxcontainer = NULL;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMTSUnsetI2JacobianContext_DMTS(DMTS tsdm)
-{
+static PetscErrorCode DMTSUnsetI2JacobianContext_DMTS(DMTS tsdm) {
   PetscFunctionBegin;
-  PetscCall(PetscObjectCompose((PetscObject)tsdm,"i2jacobian ctx",NULL));
+  PetscCall(PetscObjectCompose((PetscObject)tsdm, "i2jacobian ctx", NULL));
   tsdm->i2jacobianctxcontainer = NULL;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMTSDestroy(DMTS *kdm)
-{
+static PetscErrorCode DMTSDestroy(DMTS *kdm) {
   PetscFunctionBegin;
   if (!*kdm) PetscFunctionReturn(0);
-  PetscValidHeaderSpecific((*kdm),DMTS_CLASSID,1);
-  if (--((PetscObject)(*kdm))->refct > 0) {*kdm = NULL; PetscFunctionReturn(0);}
+  PetscValidHeaderSpecific((*kdm), DMTS_CLASSID, 1);
+  if (--((PetscObject)(*kdm))->refct > 0) {
+    *kdm = NULL;
+    PetscFunctionReturn(0);
+  }
   PetscCall(DMTSUnsetRHSFunctionContext_DMTS(*kdm));
   PetscCall(DMTSUnsetRHSJacobianContext_DMTS(*kdm));
   PetscCall(DMTSUnsetIFunctionContext_DMTS(*kdm));
   PetscCall(DMTSUnsetIJacobianContext_DMTS(*kdm));
   PetscCall(DMTSUnsetI2FunctionContext_DMTS(*kdm));
   PetscCall(DMTSUnsetI2JacobianContext_DMTS(*kdm));
-  PetscTryTypeMethod(*kdm,destroy);
+  PetscTryTypeMethod(*kdm, destroy);
   PetscCall(PetscHeaderDestroy(kdm));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMTSLoad(DMTS kdm,PetscViewer viewer)
-{
+PetscErrorCode DMTSLoad(DMTS kdm, PetscViewer viewer) {
   PetscFunctionBegin;
-  PetscCall(PetscViewerBinaryRead(viewer,&kdm->ops->ifunction,1,NULL,PETSC_FUNCTION));
-  PetscCall(PetscViewerBinaryRead(viewer,&kdm->ops->ifunctionview,1,NULL,PETSC_FUNCTION));
-  PetscCall(PetscViewerBinaryRead(viewer,&kdm->ops->ifunctionload,1,NULL,PETSC_FUNCTION));
+  PetscCall(PetscViewerBinaryRead(viewer, &kdm->ops->ifunction, 1, NULL, PETSC_FUNCTION));
+  PetscCall(PetscViewerBinaryRead(viewer, &kdm->ops->ifunctionview, 1, NULL, PETSC_FUNCTION));
+  PetscCall(PetscViewerBinaryRead(viewer, &kdm->ops->ifunctionload, 1, NULL, PETSC_FUNCTION));
   if (kdm->ops->ifunctionload) {
     void *ctx;
 
-    PetscCall(PetscContainerGetPointer(kdm->ifunctionctxcontainer,&ctx));
-    PetscCall((*kdm->ops->ifunctionload)(&ctx,viewer));
+    PetscCall(PetscContainerGetPointer(kdm->ifunctionctxcontainer, &ctx));
+    PetscCall((*kdm->ops->ifunctionload)(&ctx, viewer));
   }
-  PetscCall(PetscViewerBinaryRead(viewer,&kdm->ops->ijacobian,1,NULL,PETSC_FUNCTION));
-  PetscCall(PetscViewerBinaryRead(viewer,&kdm->ops->ijacobianview,1,NULL,PETSC_FUNCTION));
-  PetscCall(PetscViewerBinaryRead(viewer,&kdm->ops->ijacobianload,1,NULL,PETSC_FUNCTION));
+  PetscCall(PetscViewerBinaryRead(viewer, &kdm->ops->ijacobian, 1, NULL, PETSC_FUNCTION));
+  PetscCall(PetscViewerBinaryRead(viewer, &kdm->ops->ijacobianview, 1, NULL, PETSC_FUNCTION));
+  PetscCall(PetscViewerBinaryRead(viewer, &kdm->ops->ijacobianload, 1, NULL, PETSC_FUNCTION));
   if (kdm->ops->ijacobianload) {
     void *ctx;
 
-    PetscCall(PetscContainerGetPointer(kdm->ijacobianctxcontainer,&ctx));
-    PetscCall((*kdm->ops->ijacobianload)(&ctx,viewer));
+    PetscCall(PetscContainerGetPointer(kdm->ijacobianctxcontainer, &ctx));
+    PetscCall((*kdm->ops->ijacobianload)(&ctx, viewer));
   }
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMTSView(DMTS kdm,PetscViewer viewer)
-{
-  PetscBool      isascii,isbinary;
+PetscErrorCode DMTSView(DMTS kdm, PetscViewer viewer) {
+  PetscBool isascii, isbinary;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii));
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERBINARY, &isbinary));
   if (isascii) {
 #if defined(PETSC_SERIALIZE_FUNCTIONS)
     const char *fname;
 
-    PetscCall(PetscFPTFind(kdm->ops->ifunction,&fname));
-    if (fname) {
-      PetscCall(PetscViewerASCIIPrintf(viewer,"  IFunction used by TS: %s\n",fname));
-    }
-    PetscCall(PetscFPTFind(kdm->ops->ijacobian,&fname));
-    if (fname) {
-      PetscCall(PetscViewerASCIIPrintf(viewer,"  IJacobian function used by TS: %s\n",fname));
-    }
+    PetscCall(PetscFPTFind(kdm->ops->ifunction, &fname));
+    if (fname) { PetscCall(PetscViewerASCIIPrintf(viewer, "  IFunction used by TS: %s\n", fname)); }
+    PetscCall(PetscFPTFind(kdm->ops->ijacobian, &fname));
+    if (fname) { PetscCall(PetscViewerASCIIPrintf(viewer, "  IJacobian function used by TS: %s\n", fname)); }
 #endif
   } else if (isbinary) {
     struct {
       TSIFunction ifunction;
     } funcstruct;
     struct {
-      PetscErrorCode (*ifunctionview)(void*,PetscViewer);
+      PetscErrorCode (*ifunctionview)(void *, PetscViewer);
     } funcviewstruct;
     struct {
-      PetscErrorCode (*ifunctionload)(void**,PetscViewer);
+      PetscErrorCode (*ifunctionload)(void **, PetscViewer);
     } funcloadstruct;
     struct {
       TSIJacobian ijacobian;
     } jacstruct;
     struct {
-      PetscErrorCode (*ijacobianview)(void*,PetscViewer);
+      PetscErrorCode (*ijacobianview)(void *, PetscViewer);
     } jacviewstruct;
     struct {
-      PetscErrorCode (*ijacobianload)(void**,PetscViewer);
+      PetscErrorCode (*ijacobianload)(void **, PetscViewer);
     } jacloadstruct;
 
     funcstruct.ifunction         = kdm->ops->ifunction;
     funcviewstruct.ifunctionview = kdm->ops->ifunctionview;
     funcloadstruct.ifunctionload = kdm->ops->ifunctionload;
-    PetscCall(PetscViewerBinaryWrite(viewer,&funcstruct,1,PETSC_FUNCTION));
-    PetscCall(PetscViewerBinaryWrite(viewer,&funcviewstruct,1,PETSC_FUNCTION));
-    PetscCall(PetscViewerBinaryWrite(viewer,&funcloadstruct,1,PETSC_FUNCTION));
+    PetscCall(PetscViewerBinaryWrite(viewer, &funcstruct, 1, PETSC_FUNCTION));
+    PetscCall(PetscViewerBinaryWrite(viewer, &funcviewstruct, 1, PETSC_FUNCTION));
+    PetscCall(PetscViewerBinaryWrite(viewer, &funcloadstruct, 1, PETSC_FUNCTION));
     if (kdm->ops->ifunctionview) {
       void *ctx;
 
-      PetscCall(PetscContainerGetPointer(kdm->ifunctionctxcontainer,&ctx));
-      PetscCall((*kdm->ops->ifunctionview)(ctx,viewer));
+      PetscCall(PetscContainerGetPointer(kdm->ifunctionctxcontainer, &ctx));
+      PetscCall((*kdm->ops->ifunctionview)(ctx, viewer));
     }
-    jacstruct.ijacobian = kdm->ops->ijacobian;
+    jacstruct.ijacobian         = kdm->ops->ijacobian;
     jacviewstruct.ijacobianview = kdm->ops->ijacobianview;
     jacloadstruct.ijacobianload = kdm->ops->ijacobianload;
-    PetscCall(PetscViewerBinaryWrite(viewer,&jacstruct,1,PETSC_FUNCTION));
-    PetscCall(PetscViewerBinaryWrite(viewer,&jacviewstruct,1,PETSC_FUNCTION));
-    PetscCall(PetscViewerBinaryWrite(viewer,&jacloadstruct,1,PETSC_FUNCTION));
+    PetscCall(PetscViewerBinaryWrite(viewer, &jacstruct, 1, PETSC_FUNCTION));
+    PetscCall(PetscViewerBinaryWrite(viewer, &jacviewstruct, 1, PETSC_FUNCTION));
+    PetscCall(PetscViewerBinaryWrite(viewer, &jacloadstruct, 1, PETSC_FUNCTION));
     if (kdm->ops->ijacobianview) {
       void *ctx;
 
-      PetscCall(PetscContainerGetPointer(kdm->ijacobianctxcontainer,&ctx));
-      PetscCall((*kdm->ops->ijacobianview)(ctx,viewer));
+      PetscCall(PetscContainerGetPointer(kdm->ijacobianctxcontainer, &ctx));
+      PetscCall((*kdm->ops->ijacobianview)(ctx, viewer));
     }
   }
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMTSCreate(MPI_Comm comm,DMTS *kdm)
-{
+static PetscErrorCode DMTSCreate(MPI_Comm comm, DMTS *kdm) {
   PetscFunctionBegin;
   PetscCall(TSInitializePackage());
   PetscCall(PetscHeaderCreate(*kdm, DMTS_CLASSID, "DMTS", "DMTS", "DMTS", comm, DMTSDestroy, DMTSView));
@@ -169,32 +158,28 @@ static PetscErrorCode DMTSCreate(MPI_Comm comm,DMTS *kdm)
 /* Attaches the DMTS to the coarse level.
  * Under what conditions should we copy versus duplicate?
  */
-static PetscErrorCode DMCoarsenHook_DMTS(DM dm,DM dmc,void *ctx)
-{
+static PetscErrorCode DMCoarsenHook_DMTS(DM dm, DM dmc, void *ctx) {
   PetscFunctionBegin;
-  PetscCall(DMCopyDMTS(dm,dmc));
+  PetscCall(DMCopyDMTS(dm, dmc));
   PetscFunctionReturn(0);
 }
 
 /* This could restrict auxiliary information to the coarse level.
  */
-static PetscErrorCode DMRestrictHook_DMTS(DM dm,Mat Restrict,Vec rscale,Mat Inject,DM dmc,void *ctx)
-{
+static PetscErrorCode DMRestrictHook_DMTS(DM dm, Mat Restrict, Vec rscale, Mat Inject, DM dmc, void *ctx) {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMSubDomainHook_DMTS(DM dm,DM subdm,void *ctx)
-{
+static PetscErrorCode DMSubDomainHook_DMTS(DM dm, DM subdm, void *ctx) {
   PetscFunctionBegin;
-  PetscCall(DMCopyDMTS(dm,subdm));
+  PetscCall(DMCopyDMTS(dm, subdm));
   PetscFunctionReturn(0);
 }
 
 /* This could restrict auxiliary information to the coarse level.
  */
-static PetscErrorCode DMSubDomainRestrictHook_DMTS(DM dm,VecScatter gscat,VecScatter lscat,DM subdm,void *ctx)
-{
+static PetscErrorCode DMSubDomainRestrictHook_DMTS(DM dm, VecScatter gscat, VecScatter lscat, DM subdm, void *ctx) {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
@@ -212,20 +197,19 @@ static PetscErrorCode DMSubDomainRestrictHook_DMTS(DM dm,VecScatter gscat,VecSca
 
 .seealso: `DMTSCreate()`, `DMTSDestroy()`
 @*/
-PetscErrorCode DMTSCopy(DMTS kdm,DMTS nkdm)
-{
+PetscErrorCode DMTSCopy(DMTS kdm, DMTS nkdm) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(kdm,DMTS_CLASSID,1);
-  PetscValidHeaderSpecific(nkdm,DMTS_CLASSID,2);
-  nkdm->ops->rhsfunction        = kdm->ops->rhsfunction;
-  nkdm->ops->rhsjacobian        = kdm->ops->rhsjacobian;
-  nkdm->ops->ifunction          = kdm->ops->ifunction;
-  nkdm->ops->ijacobian          = kdm->ops->ijacobian;
-  nkdm->ops->i2function         = kdm->ops->i2function;
-  nkdm->ops->i2jacobian         = kdm->ops->i2jacobian;
-  nkdm->ops->solution           = kdm->ops->solution;
-  nkdm->ops->destroy            = kdm->ops->destroy;
-  nkdm->ops->duplicate          = kdm->ops->duplicate;
+  PetscValidHeaderSpecific(kdm, DMTS_CLASSID, 1);
+  PetscValidHeaderSpecific(nkdm, DMTS_CLASSID, 2);
+  nkdm->ops->rhsfunction = kdm->ops->rhsfunction;
+  nkdm->ops->rhsjacobian = kdm->ops->rhsjacobian;
+  nkdm->ops->ifunction   = kdm->ops->ifunction;
+  nkdm->ops->ijacobian   = kdm->ops->ijacobian;
+  nkdm->ops->i2function  = kdm->ops->i2function;
+  nkdm->ops->i2jacobian  = kdm->ops->i2jacobian;
+  nkdm->ops->solution    = kdm->ops->solution;
+  nkdm->ops->destroy     = kdm->ops->destroy;
+  nkdm->ops->duplicate   = kdm->ops->duplicate;
 
   nkdm->solutionctx             = kdm->solutionctx;
   nkdm->rhsfunctionctxcontainer = kdm->rhsfunctionctxcontainer;
@@ -234,12 +218,12 @@ PetscErrorCode DMTSCopy(DMTS kdm,DMTS nkdm)
   nkdm->ijacobianctxcontainer   = kdm->ijacobianctxcontainer;
   nkdm->i2functionctxcontainer  = kdm->i2functionctxcontainer;
   nkdm->i2jacobianctxcontainer  = kdm->i2jacobianctxcontainer;
-  if (nkdm->rhsfunctionctxcontainer) PetscCall(PetscObjectCompose((PetscObject)nkdm,"rhs function ctx",(PetscObject)nkdm->rhsfunctionctxcontainer));
-  if (nkdm->rhsjacobianctxcontainer) PetscCall(PetscObjectCompose((PetscObject)nkdm,"rhs jacobian ctx",(PetscObject)nkdm->rhsjacobianctxcontainer));
-  if (nkdm->ifunctionctxcontainer) PetscCall(PetscObjectCompose((PetscObject)nkdm,"ifunction ctx",(PetscObject)nkdm->ifunctionctxcontainer));
-  if (nkdm->ijacobianctxcontainer) PetscCall(PetscObjectCompose((PetscObject)nkdm,"ijacobian ctx",(PetscObject)nkdm->ijacobianctxcontainer));
-  if (nkdm->i2functionctxcontainer) PetscCall(PetscObjectCompose((PetscObject)nkdm,"i2function ctx",(PetscObject)nkdm->i2functionctxcontainer));
-  if (nkdm->i2jacobianctxcontainer) PetscCall(PetscObjectCompose((PetscObject)nkdm,"i2jacobian ctx",(PetscObject)nkdm->i2jacobianctxcontainer));
+  if (nkdm->rhsfunctionctxcontainer) PetscCall(PetscObjectCompose((PetscObject)nkdm, "rhs function ctx", (PetscObject)nkdm->rhsfunctionctxcontainer));
+  if (nkdm->rhsjacobianctxcontainer) PetscCall(PetscObjectCompose((PetscObject)nkdm, "rhs jacobian ctx", (PetscObject)nkdm->rhsjacobianctxcontainer));
+  if (nkdm->ifunctionctxcontainer) PetscCall(PetscObjectCompose((PetscObject)nkdm, "ifunction ctx", (PetscObject)nkdm->ifunctionctxcontainer));
+  if (nkdm->ijacobianctxcontainer) PetscCall(PetscObjectCompose((PetscObject)nkdm, "ijacobian ctx", (PetscObject)nkdm->ijacobianctxcontainer));
+  if (nkdm->i2functionctxcontainer) PetscCall(PetscObjectCompose((PetscObject)nkdm, "i2function ctx", (PetscObject)nkdm->i2functionctxcontainer));
+  if (nkdm->i2jacobianctxcontainer) PetscCall(PetscObjectCompose((PetscObject)nkdm, "i2jacobian ctx", (PetscObject)nkdm->i2jacobianctxcontainer));
 
   nkdm->data = kdm->data;
 
@@ -250,7 +234,7 @@ PetscErrorCode DMTSCopy(DMTS kdm,DMTS nkdm)
   */
 
   /* implementation specific copy hooks */
-  PetscTryTypeMethod(kdm,duplicate,nkdm);
+  PetscTryTypeMethod(kdm, duplicate, nkdm);
   PetscFunctionReturn(0);
 }
 
@@ -272,18 +256,17 @@ PetscErrorCode DMTSCopy(DMTS kdm,DMTS nkdm)
 
 .seealso: `DMGetDMTSWrite()`
 @*/
-PetscErrorCode DMGetDMTS(DM dm,DMTS *tsdm)
-{
+PetscErrorCode DMGetDMTS(DM dm, DMTS *tsdm) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  *tsdm = (DMTS) dm->dmts;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  *tsdm = (DMTS)dm->dmts;
   if (!*tsdm) {
-    PetscCall(PetscInfo(dm,"Creating new DMTS\n"));
-    PetscCall(DMTSCreate(PetscObjectComm((PetscObject)dm),tsdm));
-    dm->dmts = (PetscObject) *tsdm;
+    PetscCall(PetscInfo(dm, "Creating new DMTS\n"));
+    PetscCall(DMTSCreate(PetscObjectComm((PetscObject)dm), tsdm));
+    dm->dmts            = (PetscObject)*tsdm;
     (*tsdm)->originaldm = dm;
-    PetscCall(DMCoarsenHookAdd(dm,DMCoarsenHook_DMTS,DMRestrictHook_DMTS,NULL));
-    PetscCall(DMSubDomainHookAdd(dm,DMSubDomainHook_DMTS,DMSubDomainRestrictHook_DMTS,NULL));
+    PetscCall(DMCoarsenHookAdd(dm, DMCoarsenHook_DMTS, DMRestrictHook_DMTS, NULL));
+    PetscCall(DMSubDomainHookAdd(dm, DMSubDomainHook_DMTS, DMSubDomainRestrictHook_DMTS, NULL));
   }
   PetscFunctionReturn(0);
 }
@@ -303,21 +286,20 @@ PetscErrorCode DMGetDMTS(DM dm,DMTS *tsdm)
 
 .seealso: `DMGetDMTS()`
 @*/
-PetscErrorCode DMGetDMTSWrite(DM dm,DMTS *tsdm)
-{
-  DMTS           sdm;
+PetscErrorCode DMGetDMTSWrite(DM dm, DMTS *tsdm) {
+  DMTS sdm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscCall(DMGetDMTS(dm,&sdm));
-  PetscCheck(sdm->originaldm,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"DMTS has a NULL originaldm");
-  if (sdm->originaldm != dm) {  /* Copy on write */
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscCall(DMGetDMTS(dm, &sdm));
+  PetscCheck(sdm->originaldm, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "DMTS has a NULL originaldm");
+  if (sdm->originaldm != dm) { /* Copy on write */
     DMTS oldsdm = sdm;
-    PetscCall(PetscInfo(dm,"Copying DMTS due to write\n"));
-    PetscCall(DMTSCreate(PetscObjectComm((PetscObject)dm),&sdm));
-    PetscCall(DMTSCopy(oldsdm,sdm));
-    PetscCall(DMTSDestroy((DMTS*)&dm->dmts));
-    dm->dmts = (PetscObject) sdm;
+    PetscCall(PetscInfo(dm, "Copying DMTS due to write\n"));
+    PetscCall(DMTSCreate(PetscObjectComm((PetscObject)dm), &sdm));
+    PetscCall(DMTSCopy(oldsdm, sdm));
+    PetscCall(DMTSDestroy((DMTS *)&dm->dmts));
+    dm->dmts        = (PetscObject)sdm;
     sdm->originaldm = dm;
   }
   *tsdm = sdm;
@@ -340,16 +322,15 @@ PetscErrorCode DMGetDMTSWrite(DM dm,DMTS *tsdm)
 
 .seealso: `DMGetDMTS()`, `TSSetDM()`
 @*/
-PetscErrorCode DMCopyDMTS(DM dmsrc,DM dmdest)
-{
+PetscErrorCode DMCopyDMTS(DM dmsrc, DM dmdest) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dmsrc,DM_CLASSID,1);
-  PetscValidHeaderSpecific(dmdest,DM_CLASSID,2);
-  PetscCall(DMTSDestroy((DMTS*)&dmdest->dmts));
+  PetscValidHeaderSpecific(dmsrc, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(dmdest, DM_CLASSID, 2);
+  PetscCall(DMTSDestroy((DMTS *)&dmdest->dmts));
   dmdest->dmts = dmsrc->dmts;
   PetscCall(PetscObjectReference(dmdest->dmts));
-  PetscCall(DMCoarsenHookAdd(dmdest,DMCoarsenHook_DMTS,DMRestrictHook_DMTS,NULL));
-  PetscCall(DMSubDomainHookAdd(dmdest,DMSubDomainHook_DMTS,DMSubDomainRestrictHook_DMTS,NULL));
+  PetscCall(DMCoarsenHookAdd(dmdest, DMCoarsenHook_DMTS, DMRestrictHook_DMTS, NULL));
+  PetscCall(DMSubDomainHookAdd(dmdest, DMSubDomainHook_DMTS, DMSubDomainRestrictHook_DMTS, NULL));
   PetscFunctionReturn(0);
 }
 
@@ -381,19 +362,18 @@ $     PetscErrorCode func(TS ts,PetscReal t,Vec u,Vec u_t,Vec F,ctx);
 
 .seealso: `DMTSSetContext()`, `TSSetIFunction()`, `DMTSSetJacobian()`
 @*/
-PetscErrorCode DMTSSetIFunction(DM dm,TSIFunction func,void *ctx)
-{
-  DMTS           tsdm;
+PetscErrorCode DMTSSetIFunction(DM dm, TSIFunction func, void *ctx) {
+  DMTS tsdm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscCall(DMGetDMTSWrite(dm,&tsdm));
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscCall(DMGetDMTSWrite(dm, &tsdm));
   if (func) tsdm->ops->ifunction = func;
   if (ctx) {
     PetscContainer ctxcontainer;
-    PetscCall(PetscContainerCreate(PetscObjectComm((PetscObject)tsdm),&ctxcontainer));
-    PetscCall(PetscContainerSetPointer(ctxcontainer,ctx));
-    PetscCall(PetscObjectCompose((PetscObject)tsdm,"ifunction ctx",(PetscObject)ctxcontainer));
+    PetscCall(PetscContainerCreate(PetscObjectComm((PetscObject)tsdm), &ctxcontainer));
+    PetscCall(PetscContainerSetPointer(ctxcontainer, ctx));
+    PetscCall(PetscObjectCompose((PetscObject)tsdm, "ifunction ctx", (PetscObject)ctxcontainer));
     tsdm->ifunctionctxcontainer = ctxcontainer;
     PetscCall(PetscContainerDestroy(&ctxcontainer));
   }
@@ -413,24 +393,22 @@ PetscErrorCode DMTSSetIFunction(DM dm,TSIFunction func,void *ctx)
 
 .seealso: `DMTSSetIFunction()`, `TSSetIFunction()`
 @*/
-PetscErrorCode DMTSSetIFunctionContextDestroy(DM dm,PetscErrorCode (*f)(void*))
-{
-  DMTS           tsdm;
+PetscErrorCode DMTSSetIFunctionContextDestroy(DM dm, PetscErrorCode (*f)(void *)) {
+  DMTS tsdm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscCall(DMGetDMTSWrite(dm,&tsdm));
-  if (tsdm->ifunctionctxcontainer)PetscCall(PetscContainerSetUserDestroy(tsdm->ifunctionctxcontainer,f));
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscCall(DMGetDMTSWrite(dm, &tsdm));
+  if (tsdm->ifunctionctxcontainer) PetscCall(PetscContainerSetUserDestroy(tsdm->ifunctionctxcontainer, f));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMTSUnsetIFunctionContext_Internal(DM dm)
-{
-  DMTS           tsdm;
+PetscErrorCode DMTSUnsetIFunctionContext_Internal(DM dm) {
+  DMTS tsdm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscCall(DMGetDMTSWrite(dm,&tsdm));
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscCall(DMGetDMTSWrite(dm, &tsdm));
   PetscCall(DMTSUnsetIFunctionContext_DMTS(tsdm));
   PetscFunctionReturn(0);
 }
@@ -455,16 +433,15 @@ PetscErrorCode DMTSUnsetIFunctionContext_Internal(DM dm)
 
 .seealso: `DMTSSetContext()`, `DMTSSetFunction()`, `TSSetFunction()`
 @*/
-PetscErrorCode DMTSGetIFunction(DM dm,TSIFunction *func,void **ctx)
-{
-  DMTS           tsdm;
+PetscErrorCode DMTSGetIFunction(DM dm, TSIFunction *func, void **ctx) {
+  DMTS tsdm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscCall(DMGetDMTS(dm,&tsdm));
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscCall(DMGetDMTS(dm, &tsdm));
   if (func) *func = tsdm->ops->ifunction;
   if (ctx) {
-    if (tsdm->ifunctionctxcontainer) PetscCall(PetscContainerGetPointer(tsdm->ifunctionctxcontainer,ctx));
+    if (tsdm->ifunctionctxcontainer) PetscCall(PetscContainerGetPointer(tsdm->ifunctionctxcontainer, ctx));
     else *ctx = NULL;
   }
   PetscFunctionReturn(0);
@@ -498,19 +475,18 @@ $     PetscErrorCode fun(TS ts,PetscReal t,Vec U,Vec U_t,Vec U_tt,Vec F,ctx);
 
 .seealso: `TSSetI2Function()`
 @*/
-PetscErrorCode DMTSSetI2Function(DM dm,TSI2Function fun,void *ctx)
-{
-  DMTS           tsdm;
+PetscErrorCode DMTSSetI2Function(DM dm, TSI2Function fun, void *ctx) {
+  DMTS tsdm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscCall(DMGetDMTSWrite(dm,&tsdm));
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscCall(DMGetDMTSWrite(dm, &tsdm));
   if (fun) tsdm->ops->i2function = fun;
   if (ctx) {
     PetscContainer ctxcontainer;
-    PetscCall(PetscContainerCreate(PetscObjectComm((PetscObject)tsdm),&ctxcontainer));
-    PetscCall(PetscContainerSetPointer(ctxcontainer,ctx));
-    PetscCall(PetscObjectCompose((PetscObject)tsdm,"i2function ctx",(PetscObject)ctxcontainer));
+    PetscCall(PetscContainerCreate(PetscObjectComm((PetscObject)tsdm), &ctxcontainer));
+    PetscCall(PetscContainerSetPointer(ctxcontainer, ctx));
+    PetscCall(PetscObjectCompose((PetscObject)tsdm, "i2function ctx", (PetscObject)ctxcontainer));
     tsdm->i2functionctxcontainer = ctxcontainer;
     PetscCall(PetscContainerDestroy(&ctxcontainer));
   }
@@ -534,24 +510,22 @@ PetscErrorCode DMTSSetI2Function(DM dm,TSI2Function fun,void *ctx)
 
 .seealso: `TSSetI2FunctionContextDestroy()`, `DMTSSetI2Function()`, `TSSetI2Function()`
 @*/
-PetscErrorCode DMTSSetI2FunctionContextDestroy(DM dm,PetscErrorCode (*f)(void*))
-{
-  DMTS           tsdm;
+PetscErrorCode DMTSSetI2FunctionContextDestroy(DM dm, PetscErrorCode (*f)(void *)) {
+  DMTS tsdm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscCall(DMGetDMTSWrite(dm,&tsdm));
-  if (tsdm->i2functionctxcontainer) PetscCall(PetscContainerSetUserDestroy(tsdm->i2functionctxcontainer,f));
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscCall(DMGetDMTSWrite(dm, &tsdm));
+  if (tsdm->i2functionctxcontainer) PetscCall(PetscContainerSetUserDestroy(tsdm->i2functionctxcontainer, f));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMTSUnsetI2FunctionContext_Internal(DM dm)
-{
-  DMTS           tsdm;
+PetscErrorCode DMTSUnsetI2FunctionContext_Internal(DM dm) {
+  DMTS tsdm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscCall(DMGetDMTSWrite(dm,&tsdm));
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscCall(DMGetDMTSWrite(dm, &tsdm));
   PetscCall(DMTSUnsetI2FunctionContext_DMTS(tsdm));
   PetscFunctionReturn(0);
 }
@@ -576,16 +550,15 @@ PetscErrorCode DMTSUnsetI2FunctionContext_Internal(DM dm)
 
 .seealso: `DMTSSetI2Function()`, `TSGetI2Function()`
 @*/
-PetscErrorCode DMTSGetI2Function(DM dm,TSI2Function *fun,void **ctx)
-{
-  DMTS           tsdm;
+PetscErrorCode DMTSGetI2Function(DM dm, TSI2Function *fun, void **ctx) {
+  DMTS tsdm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscCall(DMGetDMTS(dm,&tsdm));
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscCall(DMGetDMTS(dm, &tsdm));
   if (fun) *fun = tsdm->ops->i2function;
   if (ctx) {
-    if (tsdm->i2functionctxcontainer) PetscCall(PetscContainerGetPointer(tsdm->i2functionctxcontainer,ctx));
+    if (tsdm->i2functionctxcontainer) PetscCall(PetscContainerGetPointer(tsdm->i2functionctxcontainer, ctx));
     else *ctx = NULL;
   }
   PetscFunctionReturn(0);
@@ -622,19 +595,18 @@ $    PetscErrorCode jac(TS ts,PetscReal t,Vec U,Vec U_t,Vec U_tt,PetscReal v,Pet
 
 .seealso: `TSSetI2Jacobian()`
 @*/
-PetscErrorCode DMTSSetI2Jacobian(DM dm,TSI2Jacobian jac,void *ctx)
-{
-  DMTS           tsdm;
+PetscErrorCode DMTSSetI2Jacobian(DM dm, TSI2Jacobian jac, void *ctx) {
+  DMTS tsdm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscCall(DMGetDMTSWrite(dm,&tsdm));
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscCall(DMGetDMTSWrite(dm, &tsdm));
   if (jac) tsdm->ops->i2jacobian = jac;
   if (ctx) {
     PetscContainer ctxcontainer;
-    PetscCall(PetscContainerCreate(PetscObjectComm((PetscObject)tsdm),&ctxcontainer));
-    PetscCall(PetscContainerSetPointer(ctxcontainer,ctx));
-    PetscCall(PetscObjectCompose((PetscObject)tsdm,"i2jacobian ctx",(PetscObject)ctxcontainer));
+    PetscCall(PetscContainerCreate(PetscObjectComm((PetscObject)tsdm), &ctxcontainer));
+    PetscCall(PetscContainerSetPointer(ctxcontainer, ctx));
+    PetscCall(PetscObjectCompose((PetscObject)tsdm, "i2jacobian ctx", (PetscObject)ctxcontainer));
     tsdm->i2jacobianctxcontainer = ctxcontainer;
     PetscCall(PetscContainerDestroy(&ctxcontainer));
   }
@@ -654,24 +626,22 @@ PetscErrorCode DMTSSetI2Jacobian(DM dm,TSI2Jacobian jac,void *ctx)
 
 .seealso: `TSSetI2JacobianContextDestroy()`, `DMTSSetI2Jacobian()`, `TSSetI2Jacobian()`
 @*/
-PetscErrorCode DMTSSetI2JacobianContextDestroy(DM dm,PetscErrorCode (*f)(void*))
-{
-  DMTS           tsdm;
+PetscErrorCode DMTSSetI2JacobianContextDestroy(DM dm, PetscErrorCode (*f)(void *)) {
+  DMTS tsdm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscCall(DMGetDMTSWrite(dm,&tsdm));
-  if (tsdm->i2jacobianctxcontainer) PetscCall(PetscContainerSetUserDestroy(tsdm->i2jacobianctxcontainer,f));
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscCall(DMGetDMTSWrite(dm, &tsdm));
+  if (tsdm->i2jacobianctxcontainer) PetscCall(PetscContainerSetUserDestroy(tsdm->i2jacobianctxcontainer, f));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMTSUnsetI2JacobianContext_Internal(DM dm)
-{
-  DMTS           tsdm;
+PetscErrorCode DMTSUnsetI2JacobianContext_Internal(DM dm) {
+  DMTS tsdm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscCall(DMGetDMTSWrite(dm,&tsdm));
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscCall(DMGetDMTSWrite(dm, &tsdm));
   PetscCall(DMTSUnsetI2JacobianContext_DMTS(tsdm));
   PetscFunctionReturn(0);
 }
@@ -696,16 +666,15 @@ PetscErrorCode DMTSUnsetI2JacobianContext_Internal(DM dm)
 
 .seealso: `DMTSSetI2Jacobian()`, `TSGetI2Jacobian()`
 @*/
-PetscErrorCode DMTSGetI2Jacobian(DM dm,TSI2Jacobian *jac,void **ctx)
-{
-  DMTS           tsdm;
+PetscErrorCode DMTSGetI2Jacobian(DM dm, TSI2Jacobian *jac, void **ctx) {
+  DMTS tsdm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscCall(DMGetDMTS(dm,&tsdm));
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscCall(DMGetDMTS(dm, &tsdm));
   if (jac) *jac = tsdm->ops->i2jacobian;
   if (ctx) {
-    if (tsdm->i2jacobianctxcontainer) PetscCall(PetscContainerGetPointer(tsdm->i2jacobianctxcontainer,ctx));
+    if (tsdm->i2jacobianctxcontainer) PetscCall(PetscContainerGetPointer(tsdm->i2jacobianctxcontainer, ctx));
     else *ctx = NULL;
   }
   PetscFunctionReturn(0);
@@ -739,19 +708,18 @@ $     PetscErrorCode func(TS ts,PetscReal t,Vec u,Vec F,void *ctx);
 
 .seealso: `DMTSSetContext()`, `TSSetRHSFunction()`, `DMTSSetJacobian()`
 @*/
-PetscErrorCode DMTSSetRHSFunction(DM dm,TSRHSFunction func,void *ctx)
-{
-  DMTS           tsdm;
+PetscErrorCode DMTSSetRHSFunction(DM dm, TSRHSFunction func, void *ctx) {
+  DMTS tsdm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscCall(DMGetDMTSWrite(dm,&tsdm));
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscCall(DMGetDMTSWrite(dm, &tsdm));
   if (func) tsdm->ops->rhsfunction = func;
   if (ctx) {
     PetscContainer ctxcontainer;
-    PetscCall(PetscContainerCreate(PetscObjectComm((PetscObject)tsdm),&ctxcontainer));
-    PetscCall(PetscContainerSetPointer(ctxcontainer,ctx));
-    PetscCall(PetscObjectCompose((PetscObject)tsdm,"rhs function ctx",(PetscObject)ctxcontainer));
+    PetscCall(PetscContainerCreate(PetscObjectComm((PetscObject)tsdm), &ctxcontainer));
+    PetscCall(PetscContainerSetPointer(ctxcontainer, ctx));
+    PetscCall(PetscObjectCompose((PetscObject)tsdm, "rhs function ctx", (PetscObject)ctxcontainer));
     tsdm->rhsfunctionctxcontainer = ctxcontainer;
     PetscCall(PetscContainerDestroy(&ctxcontainer));
   }
@@ -779,24 +747,22 @@ PetscErrorCode DMTSSetRHSFunction(DM dm,TSRHSFunction func,void *ctx)
 
 .seealso: `TSSetRHSFunctionContextDestroy()`, `DMTSSetRHSFunction()`, `TSSetRHSFunction()`
 @*/
-PetscErrorCode DMTSSetRHSFunctionContextDestroy(DM dm,PetscErrorCode (*f)(void*))
-{
-  DMTS           tsdm;
+PetscErrorCode DMTSSetRHSFunctionContextDestroy(DM dm, PetscErrorCode (*f)(void *)) {
+  DMTS tsdm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscCall(DMGetDMTSWrite(dm,&tsdm));
-  if (tsdm->rhsfunctionctxcontainer) PetscCall(PetscContainerSetUserDestroy(tsdm->rhsfunctionctxcontainer,f));
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscCall(DMGetDMTSWrite(dm, &tsdm));
+  if (tsdm->rhsfunctionctxcontainer) PetscCall(PetscContainerSetUserDestroy(tsdm->rhsfunctionctxcontainer, f));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMTSUnsetRHSFunctionContext_Internal(DM dm)
-{
-  DMTS           tsdm;
+PetscErrorCode DMTSUnsetRHSFunctionContext_Internal(DM dm) {
+  DMTS tsdm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscCall(DMGetDMTSWrite(dm,&tsdm));
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscCall(DMGetDMTSWrite(dm, &tsdm));
   PetscCall(DMTSUnsetRHSFunctionContext_DMTS(tsdm));
   tsdm->rhsfunctionctxcontainer = NULL;
   PetscFunctionReturn(0);
@@ -833,15 +799,14 @@ $     PetscErrorCode tvar(TS ts,Vec p,Vec c,void *ctx);
 
 .seealso: `TSSetTransientVariable()`, `DMTSGetTransientVariable()`, `DMTSSetIFunction()`, `DMTSSetIJacobian()`
 @*/
-PetscErrorCode DMTSSetTransientVariable(DM dm,TSTransientVariable tvar,void *ctx)
-{
-  DMTS           dmts;
+PetscErrorCode DMTSSetTransientVariable(DM dm, TSTransientVariable tvar, void *ctx) {
+  DMTS dmts;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscCall(DMGetDMTSWrite(dm,&dmts));
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscCall(DMGetDMTSWrite(dm, &dmts));
   dmts->ops->transientvar = tvar;
-  dmts->transientvarctx = ctx;
+  dmts->transientvarctx   = ctx;
   PetscFunctionReturn(0);
 }
 
@@ -861,15 +826,14 @@ PetscErrorCode DMTSSetTransientVariable(DM dm,TSTransientVariable tvar,void *ctx
 
 .seealso: `DMTSSetTransientVariable()`, `DMTSGetIFunction()`, `DMTSGetIJacobian()`
 @*/
-PetscErrorCode DMTSGetTransientVariable(DM dm,TSTransientVariable *tvar,void *ctx)
-{
-  DMTS           dmts;
+PetscErrorCode DMTSGetTransientVariable(DM dm, TSTransientVariable *tvar, void *ctx) {
+  DMTS dmts;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscCall(DMGetDMTS(dm,&dmts));
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscCall(DMGetDMTS(dm, &dmts));
   if (tvar) *tvar = dmts->ops->transientvar;
-  if (ctx)  *(void**)ctx = dmts->transientvarctx;
+  if (ctx) *(void **)ctx = dmts->transientvarctx;
   PetscFunctionReturn(0);
 }
 
@@ -889,15 +853,14 @@ PetscErrorCode DMTSGetTransientVariable(DM dm,TSTransientVariable *tvar,void *ct
 
 .seealso: `DMTSSetContext()`, `TSSetFunction()`, `DMTSSetJacobian()`, `DMTSSetSolutionFunction()`
 @*/
-PetscErrorCode DMTSGetSolutionFunction(DM dm,TSSolutionFunction *func,void **ctx)
-{
-  DMTS           tsdm;
+PetscErrorCode DMTSGetSolutionFunction(DM dm, TSSolutionFunction *func, void **ctx) {
+  DMTS tsdm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscCall(DMGetDMTS(dm,&tsdm));
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscCall(DMGetDMTS(dm, &tsdm));
   if (func) *func = tsdm->ops->solution;
-  if (ctx)  *ctx  = tsdm->solutionctx;
+  if (ctx) *ctx = tsdm->solutionctx;
   PetscFunctionReturn(0);
 }
 
@@ -928,15 +891,14 @@ $     PetscErrorCode f(TS ts,PetscReal t,Vec u,void *ctx);
 
 .seealso: `DMTSSetContext()`, `TSSetFunction()`, `DMTSSetJacobian()`, `DMTSGetSolutionFunction()`
 @*/
-PetscErrorCode DMTSSetSolutionFunction(DM dm,TSSolutionFunction func,void *ctx)
-{
-  DMTS           tsdm;
+PetscErrorCode DMTSSetSolutionFunction(DM dm, TSSolutionFunction func, void *ctx) {
+  DMTS tsdm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscCall(DMGetDMTSWrite(dm,&tsdm));
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscCall(DMGetDMTSWrite(dm, &tsdm));
   if (func) tsdm->ops->solution = func;
-  if (ctx)  tsdm->solutionctx   = ctx;
+  if (ctx) tsdm->solutionctx = ctx;
   PetscFunctionReturn(0);
 }
 
@@ -967,15 +929,14 @@ $     PetscErrorCode func (TS ts,PetscReal t,Vec f,void *ctx);
 
 .seealso: `DMTSSetContext()`, `TSSetFunction()`, `DMTSSetJacobian()`, `TSSetForcingFunction()`, `DMTSGetForcingFunction()`
 @*/
-PetscErrorCode DMTSSetForcingFunction(DM dm,TSForcingFunction f,void *ctx)
-{
-  DMTS           tsdm;
+PetscErrorCode DMTSSetForcingFunction(DM dm, TSForcingFunction f, void *ctx) {
+  DMTS tsdm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscCall(DMGetDMTSWrite(dm,&tsdm));
-  if (f)    tsdm->ops->forcing = f;
-  if (ctx)  tsdm->forcingctx   = ctx;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscCall(DMGetDMTSWrite(dm, &tsdm));
+  if (f) tsdm->ops->forcing = f;
+  if (ctx) tsdm->forcingctx = ctx;
   PetscFunctionReturn(0);
 }
 
@@ -1000,14 +961,13 @@ PetscErrorCode DMTSSetForcingFunction(DM dm,TSForcingFunction f,void *ctx)
 
 .seealso: `DMTSSetContext()`, `TSSetFunction()`, `DMTSSetJacobian()`, `TSSetForcingFunction()`, `DMTSGetForcingFunction()`
 @*/
-PetscErrorCode DMTSGetForcingFunction(DM dm,TSForcingFunction *f,void **ctx)
-{
-  DMTS           tsdm;
+PetscErrorCode DMTSGetForcingFunction(DM dm, TSForcingFunction *f, void **ctx) {
+  DMTS tsdm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscCall(DMGetDMTSWrite(dm,&tsdm));
-  if (f)   *f   = tsdm->ops->forcing;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscCall(DMGetDMTSWrite(dm, &tsdm));
+  if (f) *f = tsdm->ops->forcing;
   if (ctx) *ctx = tsdm->forcingctx;
   PetscFunctionReturn(0);
 }
@@ -1032,16 +992,15 @@ PetscErrorCode DMTSGetForcingFunction(DM dm,TSForcingFunction *f,void **ctx)
 
 .seealso: `DMTSSetContext()`, `DMTSSetRHSFunction()`, `TSSetRHSFunction()`
 @*/
-PetscErrorCode DMTSGetRHSFunction(DM dm,TSRHSFunction *func,void **ctx)
-{
-  DMTS           tsdm;
+PetscErrorCode DMTSGetRHSFunction(DM dm, TSRHSFunction *func, void **ctx) {
+  DMTS tsdm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscCall(DMGetDMTS(dm,&tsdm));
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscCall(DMGetDMTS(dm, &tsdm));
   if (func) *func = tsdm->ops->rhsfunction;
   if (ctx) {
-    if (tsdm->rhsfunctionctxcontainer) PetscCall(PetscContainerGetPointer(tsdm->rhsfunctionctxcontainer,ctx));
+    if (tsdm->rhsfunctionctxcontainer) PetscCall(PetscContainerGetPointer(tsdm->rhsfunctionctxcontainer, ctx));
     else *ctx = NULL;
   }
   PetscFunctionReturn(0);
@@ -1077,19 +1036,18 @@ $    PetscErrorCode f(TS ts,PetscReal t,Vec U,Vec U_t,PetscReal a,Mat Amat,Mat P
 
 .seealso: `DMTSSetContext()`, `TSSetRHSFunction()`, `DMTSGetJacobian()`, `TSSetIJacobian()`, `TSSetIFunction()`
 @*/
-PetscErrorCode DMTSSetIJacobian(DM dm,TSIJacobian func,void *ctx)
-{
-  DMTS           tsdm;
+PetscErrorCode DMTSSetIJacobian(DM dm, TSIJacobian func, void *ctx) {
+  DMTS tsdm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscCall(DMGetDMTSWrite(dm,&tsdm));
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscCall(DMGetDMTSWrite(dm, &tsdm));
   if (func) tsdm->ops->ijacobian = func;
   if (ctx) {
     PetscContainer ctxcontainer;
-    PetscCall(PetscContainerCreate(PetscObjectComm((PetscObject)tsdm),&ctxcontainer));
-    PetscCall(PetscContainerSetPointer(ctxcontainer,ctx));
-    PetscCall(PetscObjectCompose((PetscObject)tsdm,"ijacobian ctx",(PetscObject)ctxcontainer));
+    PetscCall(PetscContainerCreate(PetscObjectComm((PetscObject)tsdm), &ctxcontainer));
+    PetscCall(PetscContainerSetPointer(ctxcontainer, ctx));
+    PetscCall(PetscObjectCompose((PetscObject)tsdm, "ijacobian ctx", (PetscObject)ctxcontainer));
     tsdm->ijacobianctxcontainer = ctxcontainer;
     PetscCall(PetscContainerDestroy(&ctxcontainer));
   }
@@ -1117,24 +1075,22 @@ PetscErrorCode DMTSSetIJacobian(DM dm,TSIJacobian func,void *ctx)
 
 .seealso: `TSSetIJacobianContextDestroy()`, `TSSetI2JacobianContextDestroy()`, `DMTSSetIJacobian()`, `TSSetIJacobian()`
 @*/
-PetscErrorCode DMTSSetIJacobianContextDestroy(DM dm,PetscErrorCode (*f)(void*))
-{
-  DMTS           tsdm;
+PetscErrorCode DMTSSetIJacobianContextDestroy(DM dm, PetscErrorCode (*f)(void *)) {
+  DMTS tsdm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscCall(DMGetDMTSWrite(dm,&tsdm));
-  if (tsdm->ijacobianctxcontainer) PetscCall(PetscContainerSetUserDestroy(tsdm->ijacobianctxcontainer,f));
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscCall(DMGetDMTSWrite(dm, &tsdm));
+  if (tsdm->ijacobianctxcontainer) PetscCall(PetscContainerSetUserDestroy(tsdm->ijacobianctxcontainer, f));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMTSUnsetIJacobianContext_Internal(DM dm)
-{
-  DMTS           tsdm;
+PetscErrorCode DMTSUnsetIJacobianContext_Internal(DM dm) {
+  DMTS tsdm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscCall(DMGetDMTSWrite(dm,&tsdm));
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscCall(DMGetDMTSWrite(dm, &tsdm));
   PetscCall(DMTSUnsetIJacobianContext_DMTS(tsdm));
   PetscFunctionReturn(0);
 }
@@ -1160,16 +1116,15 @@ PetscErrorCode DMTSUnsetIJacobianContext_Internal(DM dm)
 
 .seealso: `DMTSSetContext()`, `TSSetFunction()`, `DMTSSetJacobian()`
 @*/
-PetscErrorCode DMTSGetIJacobian(DM dm,TSIJacobian *func,void **ctx)
-{
-  DMTS           tsdm;
+PetscErrorCode DMTSGetIJacobian(DM dm, TSIJacobian *func, void **ctx) {
+  DMTS tsdm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscCall(DMGetDMTS(dm,&tsdm));
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscCall(DMGetDMTS(dm, &tsdm));
   if (func) *func = tsdm->ops->ijacobian;
   if (ctx) {
-    if (tsdm->ijacobianctxcontainer) PetscCall(PetscContainerGetPointer(tsdm->ijacobianctxcontainer,ctx));
+    if (tsdm->ijacobianctxcontainer) PetscCall(PetscContainerGetPointer(tsdm->ijacobianctxcontainer, ctx));
     else *ctx = NULL;
   }
   PetscFunctionReturn(0);
@@ -1203,19 +1158,18 @@ $     PetscErrorCode func(TS ts,PetscReal t,Vec u,Mat A,Mat B,void *ctx);
 
 .seealso: `DMTSSetContext()`, `TSSetFunction()`, `DMTSGetJacobian()`, `TSSetRHSJacobian()`
 @*/
-PetscErrorCode DMTSSetRHSJacobian(DM dm,TSRHSJacobian func,void *ctx)
-{
-  DMTS           tsdm;
+PetscErrorCode DMTSSetRHSJacobian(DM dm, TSRHSJacobian func, void *ctx) {
+  DMTS tsdm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscCall(DMGetDMTSWrite(dm,&tsdm));
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscCall(DMGetDMTSWrite(dm, &tsdm));
   if (func) tsdm->ops->rhsjacobian = func;
   if (ctx) {
     PetscContainer ctxcontainer;
-    PetscCall(PetscContainerCreate(PetscObjectComm((PetscObject)tsdm),&ctxcontainer));
-    PetscCall(PetscContainerSetPointer(ctxcontainer,ctx));
-    PetscCall(PetscObjectCompose((PetscObject)tsdm,"rhs jacobian ctx",(PetscObject)ctxcontainer));
+    PetscCall(PetscContainerCreate(PetscObjectComm((PetscObject)tsdm), &ctxcontainer));
+    PetscCall(PetscContainerSetPointer(ctxcontainer, ctx));
+    PetscCall(PetscObjectCompose((PetscObject)tsdm, "rhs jacobian ctx", (PetscObject)ctxcontainer));
     tsdm->rhsjacobianctxcontainer = ctxcontainer;
     PetscCall(PetscContainerDestroy(&ctxcontainer));
   }
@@ -1240,24 +1194,22 @@ PetscErrorCode DMTSSetRHSJacobian(DM dm,TSRHSJacobian func,void *ctx)
 
 .seealso: `TSSetRHSJacobianContextDestroy()`, `DMTSSetRHSJacobian()`, `TSSetRHSJacobian()`
 @*/
-PetscErrorCode DMTSSetRHSJacobianContextDestroy(DM dm,PetscErrorCode (*f)(void*))
-{
-  DMTS           tsdm;
+PetscErrorCode DMTSSetRHSJacobianContextDestroy(DM dm, PetscErrorCode (*f)(void *)) {
+  DMTS tsdm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscCall(DMGetDMTSWrite(dm,&tsdm));
-  if (tsdm->rhsjacobianctxcontainer) PetscCall(PetscContainerSetUserDestroy(tsdm->rhsjacobianctxcontainer,f));
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscCall(DMGetDMTSWrite(dm, &tsdm));
+  if (tsdm->rhsjacobianctxcontainer) PetscCall(PetscContainerSetUserDestroy(tsdm->rhsjacobianctxcontainer, f));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMTSUnsetRHSJacobianContext_Internal(DM dm)
-{
-  DMTS           tsdm;
+PetscErrorCode DMTSUnsetRHSJacobianContext_Internal(DM dm) {
+  DMTS tsdm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscCall(DMGetDMTSWrite(dm,&tsdm));
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscCall(DMGetDMTSWrite(dm, &tsdm));
   PetscCall(DMTSUnsetRHSJacobianContext_DMTS(tsdm));
   PetscFunctionReturn(0);
 }
@@ -1283,16 +1235,15 @@ PetscErrorCode DMTSUnsetRHSJacobianContext_Internal(DM dm)
 
 .seealso: `DMTSSetContext()`, `TSSetRHSFunction()`, `DMTSSetRHSJacobian()`, `TSSetRHSJacobian()`
 @*/
-PetscErrorCode DMTSGetRHSJacobian(DM dm,TSRHSJacobian *func,void **ctx)
-{
-  DMTS           tsdm;
+PetscErrorCode DMTSGetRHSJacobian(DM dm, TSRHSJacobian *func, void **ctx) {
+  DMTS tsdm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscCall(DMGetDMTS(dm,&tsdm));
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscCall(DMGetDMTS(dm, &tsdm));
   if (func) *func = tsdm->ops->rhsjacobian;
   if (ctx) {
-    if (tsdm->rhsjacobianctxcontainer) PetscCall(PetscContainerGetPointer(tsdm->rhsjacobianctxcontainer,ctx));
+    if (tsdm->rhsjacobianctxcontainer) PetscCall(PetscContainerGetPointer(tsdm->rhsjacobianctxcontainer, ctx));
     else *ctx = NULL;
   }
   PetscFunctionReturn(0);
@@ -1312,13 +1263,12 @@ PetscErrorCode DMTSGetRHSJacobian(DM dm,TSRHSJacobian *func,void **ctx)
 
 .seealso: `DMTSSetContext()`, `TSSetFunction()`, `DMTSSetJacobian()`
 @*/
-PetscErrorCode DMTSSetIFunctionSerialize(DM dm,PetscErrorCode (*view)(void*,PetscViewer),PetscErrorCode (*load)(void**,PetscViewer))
-{
-  DMTS           tsdm;
+PetscErrorCode DMTSSetIFunctionSerialize(DM dm, PetscErrorCode (*view)(void *, PetscViewer), PetscErrorCode (*load)(void **, PetscViewer)) {
+  DMTS tsdm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscCall(DMGetDMTSWrite(dm,&tsdm));
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscCall(DMGetDMTSWrite(dm, &tsdm));
   tsdm->ops->ifunctionview = view;
   tsdm->ops->ifunctionload = load;
   PetscFunctionReturn(0);
@@ -1338,13 +1288,12 @@ PetscErrorCode DMTSSetIFunctionSerialize(DM dm,PetscErrorCode (*view)(void*,Pets
 
 .seealso: `DMTSSetContext()`, `TSSetFunction()`, `DMTSSetJacobian()`
 @*/
-PetscErrorCode DMTSSetIJacobianSerialize(DM dm,PetscErrorCode (*view)(void*,PetscViewer),PetscErrorCode (*load)(void**,PetscViewer))
-{
-  DMTS           tsdm;
+PetscErrorCode DMTSSetIJacobianSerialize(DM dm, PetscErrorCode (*view)(void *, PetscViewer), PetscErrorCode (*load)(void **, PetscViewer)) {
+  DMTS tsdm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscCall(DMGetDMTSWrite(dm,&tsdm));
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscCall(DMGetDMTSWrite(dm, &tsdm));
   tsdm->ops->ijacobianview = view;
   tsdm->ops->ijacobianload = load;
   PetscFunctionReturn(0);

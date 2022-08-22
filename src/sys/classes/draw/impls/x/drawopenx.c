@@ -3,7 +3,7 @@
     Defines the operations for the X PetscDraw implementation.
 */
 
-#include <../src/sys/classes/draw/impls/x/ximpl.h>         /*I  "petscsys.h" I*/
+#include <../src/sys/classes/draw/impls/x/ximpl.h> /*I  "petscsys.h" I*/
 
 /*@C
    PetscDrawOpenX - Opens an X-window for use with the PetscDraw routines.
@@ -56,10 +56,9 @@
 
 .seealso: `PetscDrawFlush()`, `PetscDrawDestroy()`, `PetscDrawCreate()`, `PetscDrawOpnOpenGL()`
 @*/
-PetscErrorCode  PetscDrawOpenX(MPI_Comm comm,const char display[],const char title[],int x,int y,int w,int h,PetscDraw *draw)
-{
+PetscErrorCode PetscDrawOpenX(MPI_Comm comm, const char display[], const char title[], int x, int y, int w, int h, PetscDraw *draw) {
   PetscFunctionBegin;
-  PetscCall(PetscDrawCreate(comm,display,title,x,y,w,h,draw));
-  PetscCall(PetscDrawSetType(*draw,PETSC_DRAW_X));
+  PetscCall(PetscDrawCreate(comm, display, title, x, y, w, h, draw));
+  PetscCall(PetscDrawSetType(*draw, PETSC_DRAW_X));
   PetscFunctionReturn(0);
 }

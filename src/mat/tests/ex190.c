@@ -2,33 +2,32 @@ static char help[] = "Tests MatLoad() with uneven dimensions set in program\n\n"
 
 #include <petscmat.h>
 
-int main(int argc,char **args)
-{
-  Mat            A;
-  PetscViewer    fd;
-  char           file[PETSC_MAX_PATH_LEN];
-  PetscBool      flg;
-  PetscMPIInt    rank;
+int main(int argc, char **args) {
+  Mat         A;
+  PetscViewer fd;
+  char        file[PETSC_MAX_PATH_LEN];
+  PetscBool   flg;
+  PetscMPIInt rank;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
-  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
 
   /* Determine files from which we read the matrix */
-  PetscCall(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg));
-  PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -f");
+  PetscCall(PetscOptionsGetString(NULL, NULL, "-f", file, sizeof(file), &flg));
+  PetscCheck(flg, PETSC_COMM_WORLD, PETSC_ERR_USER, "Must indicate binary file with the -f");
 
   /* Load matrices */
-  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd));
-  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, file, FILE_MODE_READ, &fd));
+  PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
   PetscCall(MatSetFromOptions(A));
-  PetscCall(MatSetBlockSize(A,2));
+  PetscCall(MatSetBlockSize(A, 2));
   if (rank == 0) {
-    PetscCall(MatSetSizes(A, 4, PETSC_DETERMINE, PETSC_DETERMINE,PETSC_DETERMINE));
+    PetscCall(MatSetSizes(A, 4, PETSC_DETERMINE, PETSC_DETERMINE, PETSC_DETERMINE));
   } else {
-    PetscCall(MatSetSizes(A, 8, PETSC_DETERMINE, PETSC_DETERMINE,PETSC_DETERMINE));
+    PetscCall(MatSetSizes(A, 8, PETSC_DETERMINE, PETSC_DETERMINE, PETSC_DETERMINE));
   }
-  PetscCall(MatLoad(A,fd));
+  PetscCall(MatLoad(A, fd));
   PetscCall(PetscViewerDestroy(&fd));
   PetscCall(MatDestroy(&A));
   PetscCall(PetscFinalize());

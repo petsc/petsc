@@ -13,83 +13,81 @@ static char help[] = "Tests recovery from domain errors in MatMult() and PCApply
    User-defined routines and data structures
 */
 typedef struct {
-  PetscScalar u,v,omega,temp;
+  PetscScalar u, v, omega, temp;
 } Field;
 
-PetscErrorCode FormFunctionLocal(DMDALocalInfo*,Field**,Field**,void*);
+PetscErrorCode FormFunctionLocal(DMDALocalInfo *, Field **, Field **, void *);
 
 typedef struct {
-  PetscReal   lidvelocity,prandtl,grashof;  /* physical parameters */
-  PetscBool   draw_contours;                /* flag - 1 indicates drawing contours */
-  PetscBool   errorindomain;
-  PetscBool   errorindomainmf;
-  SNES        snes;
+  PetscReal lidvelocity, prandtl, grashof; /* physical parameters */
+  PetscBool draw_contours;                 /* flag - 1 indicates drawing contours */
+  PetscBool errorindomain;
+  PetscBool errorindomainmf;
+  SNES      snes;
 } AppCtx;
 
 typedef struct {
   Mat Jmf;
 } MatShellCtx;
 
-extern PetscErrorCode FormInitialGuess(AppCtx*,DM,Vec);
-extern PetscErrorCode MatMult_MyShell(Mat,Vec,Vec);
-extern PetscErrorCode MatAssemblyEnd_MyShell(Mat,MatAssemblyType);
-extern PetscErrorCode PCApply_MyShell(PC,Vec,Vec);
-extern PetscErrorCode SNESComputeJacobian_MyShell(SNES,Vec,Mat,Mat,void*);
+extern PetscErrorCode FormInitialGuess(AppCtx *, DM, Vec);
+extern PetscErrorCode MatMult_MyShell(Mat, Vec, Vec);
+extern PetscErrorCode MatAssemblyEnd_MyShell(Mat, MatAssemblyType);
+extern PetscErrorCode PCApply_MyShell(PC, Vec, Vec);
+extern PetscErrorCode SNESComputeJacobian_MyShell(SNES, Vec, Mat, Mat, void *);
 
-int main(int argc,char **argv)
-{
-  AppCtx         user;                /* user-defined work context */
-  PetscInt       mx,my;
-  MPI_Comm       comm;
-  DM             da;
-  Vec            x;
-  Mat            J = NULL,Jmf = NULL;
-  MatShellCtx    matshellctx;
-  PetscInt       mlocal,nlocal;
-  PC             pc;
-  KSP            ksp;
-  PetscBool      errorinmatmult = PETSC_FALSE,errorinpcapply = PETSC_FALSE,errorinpcsetup = PETSC_FALSE;
+int main(int argc, char **argv) {
+  AppCtx      user; /* user-defined work context */
+  PetscInt    mx, my;
+  MPI_Comm    comm;
+  DM          da;
+  Vec         x;
+  Mat         J = NULL, Jmf = NULL;
+  MatShellCtx matshellctx;
+  PetscInt    mlocal, nlocal;
+  PC          pc;
+  KSP         ksp;
+  PetscBool   errorinmatmult = PETSC_FALSE, errorinpcapply = PETSC_FALSE, errorinpcsetup = PETSC_FALSE;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
-  PetscCall(PetscOptionsGetBool(NULL,NULL,"-error_in_matmult",&errorinmatmult,NULL));
-  PetscCall(PetscOptionsGetBool(NULL,NULL,"-error_in_pcapply",&errorinpcapply,NULL));
-  PetscCall(PetscOptionsGetBool(NULL,NULL,"-error_in_pcsetup",&errorinpcsetup,NULL));
+  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-error_in_matmult", &errorinmatmult, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-error_in_pcapply", &errorinpcapply, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-error_in_pcsetup", &errorinpcsetup, NULL));
   user.errorindomain = PETSC_FALSE;
-  PetscCall(PetscOptionsGetBool(NULL,NULL,"-error_in_domain",&user.errorindomain,NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-error_in_domain", &user.errorindomain, NULL));
   user.errorindomainmf = PETSC_FALSE;
-  PetscCall(PetscOptionsGetBool(NULL,NULL,"-error_in_domainmf",&user.errorindomainmf,NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-error_in_domainmf", &user.errorindomainmf, NULL));
 
   comm = PETSC_COMM_WORLD;
-  PetscCall(SNESCreate(comm,&user.snes));
+  PetscCall(SNESCreate(comm, &user.snes));
 
   /*
       Create distributed array object to manage parallel grid and vectors
       for principal unknowns (x) and governing residuals (f)
   */
-  PetscCall(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,4,4,PETSC_DECIDE,PETSC_DECIDE,4,1,0,0,&da));
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_STAR, 4, 4, PETSC_DECIDE, PETSC_DECIDE, 4, 1, 0, 0, &da));
   PetscCall(DMSetFromOptions(da));
   PetscCall(DMSetUp(da));
-  PetscCall(SNESSetDM(user.snes,da));
+  PetscCall(SNESSetDM(user.snes, da));
 
-  PetscCall(DMDAGetInfo(da,0,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
-                        PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
+  PetscCall(DMDAGetInfo(da, 0, &mx, &my, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE));
   /*
      Problem parameters (velocity of lid, prandtl, and grashof numbers)
   */
-  user.lidvelocity = 1.0/(mx*my);
+  user.lidvelocity = 1.0 / (mx * my);
   user.prandtl     = 1.0;
   user.grashof     = 1.0;
 
-  PetscCall(PetscOptionsGetReal(NULL,NULL,"-lidvelocity",&user.lidvelocity,NULL));
-  PetscCall(PetscOptionsGetReal(NULL,NULL,"-prandtl",&user.prandtl,NULL));
-  PetscCall(PetscOptionsGetReal(NULL,NULL,"-grashof",&user.grashof,NULL));
-  PetscCall(PetscOptionsHasName(NULL,NULL,"-contours",&user.draw_contours));
+  PetscCall(PetscOptionsGetReal(NULL, NULL, "-lidvelocity", &user.lidvelocity, NULL));
+  PetscCall(PetscOptionsGetReal(NULL, NULL, "-prandtl", &user.prandtl, NULL));
+  PetscCall(PetscOptionsGetReal(NULL, NULL, "-grashof", &user.grashof, NULL));
+  PetscCall(PetscOptionsHasName(NULL, NULL, "-contours", &user.draw_contours));
 
-  PetscCall(DMDASetFieldName(da,0,"x_velocity"));
-  PetscCall(DMDASetFieldName(da,1,"y_velocity"));
-  PetscCall(DMDASetFieldName(da,2,"Omega"));
-  PetscCall(DMDASetFieldName(da,3,"temperature"));
+  PetscCall(DMDASetFieldName(da, 0, "x_velocity"));
+  PetscCall(DMDASetFieldName(da, 1, "y_velocity"));
+  PetscCall(DMDASetFieldName(da, 2, "Omega"));
+  PetscCall(DMDASetFieldName(da, 3, "temperature"));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create user context, set problem data, create vector data structures.
@@ -100,41 +98,41 @@ int main(int argc,char **argv)
      Create nonlinear solver context
 
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscCall(DMSetApplicationContext(da,&user));
-  PetscCall(DMDASNESSetFunctionLocal(da,INSERT_VALUES,(PetscErrorCode (*)(DMDALocalInfo*,void*,void*,void*))FormFunctionLocal,&user));
+  PetscCall(DMSetApplicationContext(da, &user));
+  PetscCall(DMDASNESSetFunctionLocal(da, INSERT_VALUES, (PetscErrorCode(*)(DMDALocalInfo *, void *, void *, void *))FormFunctionLocal, &user));
 
   if (errorinmatmult) {
-    PetscCall(MatCreateSNESMF(user.snes,&Jmf));
+    PetscCall(MatCreateSNESMF(user.snes, &Jmf));
     PetscCall(MatSetFromOptions(Jmf));
-    PetscCall(MatGetLocalSize(Jmf,&mlocal,&nlocal));
+    PetscCall(MatGetLocalSize(Jmf, &mlocal, &nlocal));
     matshellctx.Jmf = Jmf;
-    PetscCall(MatCreateShell(PetscObjectComm((PetscObject)Jmf),mlocal,nlocal,PETSC_DECIDE,PETSC_DECIDE,&matshellctx,&J));
-    PetscCall(MatShellSetOperation(J,MATOP_MULT,(void (*)(void))MatMult_MyShell));
-    PetscCall(MatShellSetOperation(J,MATOP_ASSEMBLY_END,(void (*)(void))MatAssemblyEnd_MyShell));
-    PetscCall(SNESSetJacobian(user.snes,J,J,MatMFFDComputeJacobian,NULL));
+    PetscCall(MatCreateShell(PetscObjectComm((PetscObject)Jmf), mlocal, nlocal, PETSC_DECIDE, PETSC_DECIDE, &matshellctx, &J));
+    PetscCall(MatShellSetOperation(J, MATOP_MULT, (void (*)(void))MatMult_MyShell));
+    PetscCall(MatShellSetOperation(J, MATOP_ASSEMBLY_END, (void (*)(void))MatAssemblyEnd_MyShell));
+    PetscCall(SNESSetJacobian(user.snes, J, J, MatMFFDComputeJacobian, NULL));
   }
 
   PetscCall(SNESSetFromOptions(user.snes));
-  PetscCall(PetscPrintf(comm,"lid velocity = %g, prandtl # = %g, grashof # = %g\n",(double)user.lidvelocity,(double)user.prandtl,(double)user.grashof));
+  PetscCall(PetscPrintf(comm, "lid velocity = %g, prandtl # = %g, grashof # = %g\n", (double)user.lidvelocity, (double)user.prandtl, (double)user.grashof));
 
   if (errorinpcapply) {
-    PetscCall(SNESGetKSP(user.snes,&ksp));
-    PetscCall(KSPGetPC(ksp,&pc));
-    PetscCall(PCSetType(pc,PCSHELL));
-    PetscCall(PCShellSetApply(pc,PCApply_MyShell));
+    PetscCall(SNESGetKSP(user.snes, &ksp));
+    PetscCall(KSPGetPC(ksp, &pc));
+    PetscCall(PCSetType(pc, PCSHELL));
+    PetscCall(PCShellSetApply(pc, PCApply_MyShell));
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve the nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscCall(DMCreateGlobalVector(da,&x));
-  PetscCall(FormInitialGuess(&user,da,x));
+  PetscCall(DMCreateGlobalVector(da, &x));
+  PetscCall(FormInitialGuess(&user, da, x));
 
   if (errorinpcsetup) {
     PetscCall(SNESSetUp(user.snes));
-    PetscCall(SNESSetJacobian(user.snes,NULL,NULL,SNESComputeJacobian_MyShell,NULL));
+    PetscCall(SNESSetJacobian(user.snes, NULL, NULL, SNESComputeJacobian_MyShell, NULL));
   }
-  PetscCall(SNESSolve(user.snes,NULL,x));
+  PetscCall(SNESSolve(user.snes, NULL, x));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
@@ -161,24 +159,23 @@ int main(int argc,char **argv)
    Output Parameter:
    X - vector
 */
-PetscErrorCode FormInitialGuess(AppCtx *user,DM da,Vec X)
-{
-  PetscInt       i,j,mx,xs,ys,xm,ym;
-  PetscReal      grashof,dx;
-  Field          **x;
+PetscErrorCode FormInitialGuess(AppCtx *user, DM da, Vec X) {
+  PetscInt  i, j, mx, xs, ys, xm, ym;
+  PetscReal grashof, dx;
+  Field   **x;
 
   PetscFunctionBeginUser;
   grashof = user->grashof;
 
-  PetscCall(DMDAGetInfo(da,0,&mx,0,0,0,0,0,0,0,0,0,0,0));
-  dx   = 1.0/(mx-1);
+  PetscCall(DMDAGetInfo(da, 0, &mx, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+  dx = 1.0 / (mx - 1);
 
   /*
      Get local grid boundaries (for 2-dimensional DMDA):
        xs, ys   - starting grid indices (no ghost points)
        xm, ym   - widths of local grid (no ghost points)
   */
-  PetscCall(DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL));
+  PetscCall(DMDAGetCorners(da, &xs, &ys, NULL, &xm, &ym, NULL));
 
   /*
      Get a pointer to vector data.
@@ -187,44 +184,41 @@ PetscErrorCode FormInitialGuess(AppCtx *user,DM da,Vec X)
        - You MUST call VecRestoreArray() when you no longer need access to
          the array.
   */
-  PetscCall(DMDAVecGetArray(da,X,&x));
+  PetscCall(DMDAVecGetArray(da, X, &x));
 
   /*
      Compute initial guess over the locally owned part of the grid
      Initial condition is motionless fluid and equilibrium temperature
   */
-  for (j=ys; j<ys+ym; j++) {
-    for (i=xs; i<xs+xm; i++) {
+  for (j = ys; j < ys + ym; j++) {
+    for (i = xs; i < xs + xm; i++) {
       x[j][i].u     = 0.0;
       x[j][i].v     = 0.0;
       x[j][i].omega = 0.0;
-      x[j][i].temp  = (grashof>0)*i*dx;
+      x[j][i].temp  = (grashof > 0) * i * dx;
     }
   }
 
   /*
      Restore vector
   */
-  PetscCall(DMDAVecRestoreArray(da,X,&x));
+  PetscCall(DMDAVecRestoreArray(da, X, &x));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field **x,Field **f,void *ptr)
-{
-  AppCtx          *user = (AppCtx*)ptr;
-  PetscInt        xints,xinte,yints,yinte,i,j;
-  PetscReal       hx,hy,dhx,dhy,hxdhy,hydhx;
-  PetscReal       grashof,prandtl,lid;
-  PetscScalar     u,uxx,uyy,vx,vy,avx,avy,vxp,vxm,vyp,vym;
+PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, Field **x, Field **f, void *ptr) {
+  AppCtx         *user = (AppCtx *)ptr;
+  PetscInt        xints, xinte, yints, yinte, i, j;
+  PetscReal       hx, hy, dhx, dhy, hxdhy, hydhx;
+  PetscReal       grashof, prandtl, lid;
+  PetscScalar     u, uxx, uyy, vx, vy, avx, avy, vxp, vxm, vyp, vym;
   static PetscInt fail = 0;
 
   PetscFunctionBeginUser;
   if ((fail++ > 7 && user->errorindomainmf) || (fail++ > 36 && user->errorindomain)) {
     PetscMPIInt rank;
-    PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)user->snes),&rank));
-    if (rank == 0) {
-      PetscCall(SNESSetFunctionDomainError(user->snes));
-    }
+    PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)user->snes), &rank));
+    if (rank == 0) { PetscCall(SNESSetFunctionDomainError(user->snes)); }
   }
   grashof = user->grashof;
   prandtl = user->prandtl;
@@ -237,22 +231,28 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field **x,Field **f,void *p
      local volume element (i.e. hx*hy) to obtain coefficients O(1) in two dimensions.
 
   */
-  dhx   = (PetscReal)(info->mx-1);  dhy = (PetscReal)(info->my-1);
-  hx    = 1.0/dhx;                   hy = 1.0/dhy;
-  hxdhy = hx*dhy;                 hydhx = hy*dhx;
+  dhx   = (PetscReal)(info->mx - 1);
+  dhy   = (PetscReal)(info->my - 1);
+  hx    = 1.0 / dhx;
+  hy    = 1.0 / dhy;
+  hxdhy = hx * dhy;
+  hydhx = hy * dhx;
 
-  xints = info->xs; xinte = info->xs+info->xm; yints = info->ys; yinte = info->ys+info->ym;
+  xints = info->xs;
+  xinte = info->xs + info->xm;
+  yints = info->ys;
+  yinte = info->ys + info->ym;
 
   /* Test whether we are on the bottom edge of the global array */
   if (yints == 0) {
     j     = 0;
     yints = yints + 1;
     /* bottom edge */
-    for (i=info->xs; i<info->xs+info->xm; i++) {
+    for (i = info->xs; i < info->xs + info->xm; i++) {
       f[j][i].u     = x[j][i].u;
       f[j][i].v     = x[j][i].v;
-      f[j][i].omega = x[j][i].omega + (x[j+1][i].u - x[j][i].u)*dhy;
-      f[j][i].temp  = x[j][i].temp-x[j+1][i].temp;
+      f[j][i].omega = x[j][i].omega + (x[j + 1][i].u - x[j][i].u) * dhy;
+      f[j][i].temp  = x[j][i].temp - x[j + 1][i].temp;
     }
   }
 
@@ -261,11 +261,11 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field **x,Field **f,void *p
     j     = info->my - 1;
     yinte = yinte - 1;
     /* top edge */
-    for (i=info->xs; i<info->xs+info->xm; i++) {
+    for (i = info->xs; i < info->xs + info->xm; i++) {
       f[j][i].u     = x[j][i].u - lid;
       f[j][i].v     = x[j][i].v;
-      f[j][i].omega = x[j][i].omega + (x[j][i].u - x[j-1][i].u)*dhy;
-      f[j][i].temp  = x[j][i].temp-x[j-1][i].temp;
+      f[j][i].omega = x[j][i].omega + (x[j][i].u - x[j - 1][i].u) * dhy;
+      f[j][i].temp  = x[j][i].temp - x[j - 1][i].temp;
     }
   }
 
@@ -274,10 +274,10 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field **x,Field **f,void *p
     i     = 0;
     xints = xints + 1;
     /* left edge */
-    for (j=info->ys; j<info->ys+info->ym; j++) {
+    for (j = info->ys; j < info->ys + info->ym; j++) {
       f[j][i].u     = x[j][i].u;
       f[j][i].v     = x[j][i].v;
-      f[j][i].omega = x[j][i].omega - (x[j][i+1].v - x[j][i].v)*dhx;
+      f[j][i].omega = x[j][i].omega - (x[j][i + 1].v - x[j][i].v) * dhx;
       f[j][i].temp  = x[j][i].temp;
     }
   }
@@ -287,113 +287,107 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field **x,Field **f,void *p
     i     = info->mx - 1;
     xinte = xinte - 1;
     /* right edge */
-    for (j=info->ys; j<info->ys+info->ym; j++) {
+    for (j = info->ys; j < info->ys + info->ym; j++) {
       f[j][i].u     = x[j][i].u;
       f[j][i].v     = x[j][i].v;
-      f[j][i].omega = x[j][i].omega - (x[j][i].v - x[j][i-1].v)*dhx;
-      f[j][i].temp  = x[j][i].temp - (PetscReal)(grashof>0);
+      f[j][i].omega = x[j][i].omega - (x[j][i].v - x[j][i - 1].v) * dhx;
+      f[j][i].temp  = x[j][i].temp - (PetscReal)(grashof > 0);
     }
   }
 
   /* Compute over the interior points */
-  for (j=yints; j<yinte; j++) {
-    for (i=xints; i<xinte; i++) {
-
+  for (j = yints; j < yinte; j++) {
+    for (i = xints; i < xinte; i++) {
       /*
        convective coefficients for upwinding
       */
-      vx  = x[j][i].u; avx = PetscAbsScalar(vx);
-      vxp = .5*(vx+avx); vxm = .5*(vx-avx);
-      vy  = x[j][i].v; avy = PetscAbsScalar(vy);
-      vyp = .5*(vy+avy); vym = .5*(vy-avy);
+      vx  = x[j][i].u;
+      avx = PetscAbsScalar(vx);
+      vxp = .5 * (vx + avx);
+      vxm = .5 * (vx - avx);
+      vy  = x[j][i].v;
+      avy = PetscAbsScalar(vy);
+      vyp = .5 * (vy + avy);
+      vym = .5 * (vy - avy);
 
       /* U velocity */
       u         = x[j][i].u;
-      uxx       = (2.0*u - x[j][i-1].u - x[j][i+1].u)*hydhx;
-      uyy       = (2.0*u - x[j-1][i].u - x[j+1][i].u)*hxdhy;
-      f[j][i].u = uxx + uyy - .5*(x[j+1][i].omega-x[j-1][i].omega)*hx;
+      uxx       = (2.0 * u - x[j][i - 1].u - x[j][i + 1].u) * hydhx;
+      uyy       = (2.0 * u - x[j - 1][i].u - x[j + 1][i].u) * hxdhy;
+      f[j][i].u = uxx + uyy - .5 * (x[j + 1][i].omega - x[j - 1][i].omega) * hx;
 
       /* V velocity */
       u         = x[j][i].v;
-      uxx       = (2.0*u - x[j][i-1].v - x[j][i+1].v)*hydhx;
-      uyy       = (2.0*u - x[j-1][i].v - x[j+1][i].v)*hxdhy;
-      f[j][i].v = uxx + uyy + .5*(x[j][i+1].omega-x[j][i-1].omega)*hy;
+      uxx       = (2.0 * u - x[j][i - 1].v - x[j][i + 1].v) * hydhx;
+      uyy       = (2.0 * u - x[j - 1][i].v - x[j + 1][i].v) * hxdhy;
+      f[j][i].v = uxx + uyy + .5 * (x[j][i + 1].omega - x[j][i - 1].omega) * hy;
 
       /* Omega */
       u             = x[j][i].omega;
-      uxx           = (2.0*u - x[j][i-1].omega - x[j][i+1].omega)*hydhx;
-      uyy           = (2.0*u - x[j-1][i].omega - x[j+1][i].omega)*hxdhy;
-      f[j][i].omega = uxx + uyy + (vxp*(u - x[j][i-1].omega) + vxm*(x[j][i+1].omega - u))*hy +
-                      (vyp*(u - x[j-1][i].omega) + vym*(x[j+1][i].omega - u))*hx -
-                      .5*grashof*(x[j][i+1].temp - x[j][i-1].temp)*hy;
+      uxx           = (2.0 * u - x[j][i - 1].omega - x[j][i + 1].omega) * hydhx;
+      uyy           = (2.0 * u - x[j - 1][i].omega - x[j + 1][i].omega) * hxdhy;
+      f[j][i].omega = uxx + uyy + (vxp * (u - x[j][i - 1].omega) + vxm * (x[j][i + 1].omega - u)) * hy + (vyp * (u - x[j - 1][i].omega) + vym * (x[j + 1][i].omega - u)) * hx - .5 * grashof * (x[j][i + 1].temp - x[j][i - 1].temp) * hy;
 
       /* Temperature */
       u            = x[j][i].temp;
-      uxx          = (2.0*u - x[j][i-1].temp - x[j][i+1].temp)*hydhx;
-      uyy          = (2.0*u - x[j-1][i].temp - x[j+1][i].temp)*hxdhy;
-      f[j][i].temp =  uxx + uyy  + prandtl*((vxp*(u - x[j][i-1].temp) + vxm*(x[j][i+1].temp - u))*hy +
-                                            (vyp*(u - x[j-1][i].temp) + vym*(x[j+1][i].temp - u))*hx);
+      uxx          = (2.0 * u - x[j][i - 1].temp - x[j][i + 1].temp) * hydhx;
+      uyy          = (2.0 * u - x[j - 1][i].temp - x[j + 1][i].temp) * hxdhy;
+      f[j][i].temp = uxx + uyy + prandtl * ((vxp * (u - x[j][i - 1].temp) + vxm * (x[j][i + 1].temp - u)) * hy + (vyp * (u - x[j - 1][i].temp) + vym * (x[j + 1][i].temp - u)) * hx);
     }
   }
 
   /*
      Flop count (multiply-adds are counted as 2 operations)
   */
-  PetscCall(PetscLogFlops(84.0*info->ym*info->xm));
+  PetscCall(PetscLogFlops(84.0 * info->ym * info->xm));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatMult_MyShell(Mat A,Vec x,Vec y)
-{
-  MatShellCtx     *matshellctx;
+PetscErrorCode MatMult_MyShell(Mat A, Vec x, Vec y) {
+  MatShellCtx    *matshellctx;
   static PetscInt fail = 0;
 
   PetscFunctionBegin;
-  PetscCall(MatShellGetContext(A,&matshellctx));
-  PetscCall(MatMult(matshellctx->Jmf,x,y));
+  PetscCall(MatShellGetContext(A, &matshellctx));
+  PetscCall(MatMult(matshellctx->Jmf, x, y));
   if (fail++ > 5) {
     PetscMPIInt rank;
-    PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)A),&rank));
+    PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)A), &rank));
     if (rank == 0) PetscCall(VecSetInf(y));
   }
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatAssemblyEnd_MyShell(Mat A,MatAssemblyType tp)
-{
-  MatShellCtx    *matshellctx;
+PetscErrorCode MatAssemblyEnd_MyShell(Mat A, MatAssemblyType tp) {
+  MatShellCtx *matshellctx;
 
   PetscFunctionBegin;
-  PetscCall(MatShellGetContext(A,&matshellctx));
-  PetscCall(MatAssemblyEnd(matshellctx->Jmf,tp));
+  PetscCall(MatShellGetContext(A, &matshellctx));
+  PetscCall(MatAssemblyEnd(matshellctx->Jmf, tp));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCApply_MyShell(PC pc,Vec x,Vec y)
-{
+PetscErrorCode PCApply_MyShell(PC pc, Vec x, Vec y) {
   static PetscInt fail = 0;
 
   PetscFunctionBegin;
-  PetscCall(VecCopy(x,y));
+  PetscCall(VecCopy(x, y));
   if (fail++ > 3) {
     PetscMPIInt rank;
-    PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)pc),&rank));
+    PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)pc), &rank));
     if (rank == 0) PetscCall(VecSetInf(y));
   }
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode SNESComputeJacobian_DMDA(SNES,Vec,Mat,Mat,void*);
+PETSC_EXTERN PetscErrorCode SNESComputeJacobian_DMDA(SNES, Vec, Mat, Mat, void *);
 
-PetscErrorCode SNESComputeJacobian_MyShell(SNES snes,Vec X,Mat A,Mat B,void *ctx)
-{
+PetscErrorCode SNESComputeJacobian_MyShell(SNES snes, Vec X, Mat A, Mat B, void *ctx) {
   static PetscInt fail = 0;
 
   PetscFunctionBegin;
-  PetscCall(SNESComputeJacobian_DMDA(snes,X,A,B,ctx));
-  if (fail++ > 0) {
-    PetscCall(MatZeroEntries(A));
-  }
+  PetscCall(SNESComputeJacobian_DMDA(snes, X, A, B, ctx));
+  if (fail++ > 0) { PetscCall(MatZeroEntries(A)); }
   PetscFunctionReturn(0);
 }
 

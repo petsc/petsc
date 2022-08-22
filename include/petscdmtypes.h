@@ -10,7 +10,7 @@
 
 .seealso: `DMType`, `DMDGetType()`, `DMCompositeCreate()`, `DMDACreate()`, `DMSetType()`, `DMType`, `DMDA`, `DMPLEX`
 S*/
-typedef struct _p_DM* DM;
+typedef struct _p_DM *DM;
 
 /*E
   DMBoundaryType - Describes the choice for fill of ghost cells on physical domain boundaries.
@@ -38,7 +38,13 @@ typedef struct _p_DM* DM;
 
 .seealso: `DMDASetBoundaryType()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMDACreate()`
 E*/
-typedef enum {DM_BOUNDARY_NONE, DM_BOUNDARY_GHOSTED, DM_BOUNDARY_MIRROR, DM_BOUNDARY_PERIODIC, DM_BOUNDARY_TWIST} DMBoundaryType;
+typedef enum {
+  DM_BOUNDARY_NONE,
+  DM_BOUNDARY_GHOSTED,
+  DM_BOUNDARY_MIRROR,
+  DM_BOUNDARY_PERIODIC,
+  DM_BOUNDARY_TWIST
+} DMBoundaryType;
 /*E
   DMBoundaryConditionType - indicates what type of boundary condition is to be imposed
 
@@ -56,7 +62,14 @@ natural conditions (type & DM_BC_NATURAL)
 
 .seealso: `DMAddBoundary()`, `DSAddBoundary()`, `DSGetBoundary()`
 E*/
-typedef enum {DM_BC_ESSENTIAL = 1, DM_BC_ESSENTIAL_FIELD = 5, DM_BC_NATURAL = 2, DM_BC_NATURAL_FIELD = 6, DM_BC_ESSENTIAL_BD_FIELD = 9, DM_BC_NATURAL_RIEMANN = 10} DMBoundaryConditionType;
+typedef enum {
+  DM_BC_ESSENTIAL          = 1,
+  DM_BC_ESSENTIAL_FIELD    = 5,
+  DM_BC_NATURAL            = 2,
+  DM_BC_NATURAL_FIELD      = 6,
+  DM_BC_ESSENTIAL_BD_FIELD = 9,
+  DM_BC_NATURAL_RIEMANN    = 10
+} DMBoundaryConditionType;
 
 /*E
   DMPointLocationType - Describes the method to handle point location failure
@@ -70,7 +83,11 @@ typedef enum {DM_BC_ESSENTIAL = 1, DM_BC_ESSENTIAL_FIELD = 5, DM_BC_NATURAL = 2,
 
 .seealso: `DMLocatePoints()`
 E*/
-typedef enum {DM_POINTLOCATION_NONE, DM_POINTLOCATION_NEAREST, DM_POINTLOCATION_REMOVE} DMPointLocationType;
+typedef enum {
+  DM_POINTLOCATION_NONE,
+  DM_POINTLOCATION_NEAREST,
+  DM_POINTLOCATION_REMOVE
+} DMPointLocationType;
 
 /*E
   DMAdaptationStrategy - Describes the strategy used for adaptive solves
@@ -83,7 +100,11 @@ typedef enum {DM_POINTLOCATION_NONE, DM_POINTLOCATION_NEAREST, DM_POINTLOCATION_
 
 .seealso: `DMAdaptorSolve()`
 E*/
-typedef enum {DM_ADAPTATION_INITIAL, DM_ADAPTATION_SEQUENTIAL, DM_ADAPTATION_MULTILEVEL} DMAdaptationStrategy;
+typedef enum {
+  DM_ADAPTATION_INITIAL,
+  DM_ADAPTATION_SEQUENTIAL,
+  DM_ADAPTATION_MULTILEVEL
+} DMAdaptationStrategy;
 
 /*E
   DMAdaptationCriterion - Describes the test used to decide whether to coarsen or refine parts of the mesh
@@ -97,7 +118,12 @@ typedef enum {DM_ADAPTATION_INITIAL, DM_ADAPTATION_SEQUENTIAL, DM_ADAPTATION_MUL
 
 .seealso: `DMAdaptorSolve()`
 E*/
-typedef enum {DM_ADAPTATION_NONE, DM_ADAPTATION_REFINE, DM_ADAPTATION_LABEL, DM_ADAPTATION_METRIC} DMAdaptationCriterion;
+typedef enum {
+  DM_ADAPTATION_NONE,
+  DM_ADAPTATION_REFINE,
+  DM_ADAPTATION_LABEL,
+  DM_ADAPTATION_METRIC
+} DMAdaptationCriterion;
 
 /*E
   DMAdaptFlag - Marker in the label prescribing adaptation
@@ -106,7 +132,14 @@ typedef enum {DM_ADAPTATION_NONE, DM_ADAPTATION_REFINE, DM_ADAPTATION_LABEL, DM_
 
 .seealso: `DMAdaptLabel()`
 E*/
-typedef enum {DM_ADAPT_DETERMINE = PETSC_DETERMINE, DM_ADAPT_KEEP = 0, DM_ADAPT_REFINE, DM_ADAPT_COARSEN, DM_ADAPT_COARSEN_LAST, DM_ADAPT_RESERVED_COUNT} DMAdaptFlag;
+typedef enum {
+  DM_ADAPT_DETERMINE = PETSC_DETERMINE,
+  DM_ADAPT_KEEP      = 0,
+  DM_ADAPT_REFINE,
+  DM_ADAPT_COARSEN,
+  DM_ADAPT_COARSEN_LAST,
+  DM_ADAPT_RESERVED_COUNT
+} DMAdaptFlag;
 
 /*E
   DMDirection - Indicates a coordinate direction
@@ -115,7 +148,11 @@ typedef enum {DM_ADAPT_DETERMINE = PETSC_DETERMINE, DM_ADAPT_KEEP = 0, DM_ADAPT_
 
 .seealso: `DMDAGetRay()`, `DMDAGetProcessorSubset()`, `DMPlexShearGeometry()`
 E*/
-typedef enum {DM_X, DM_Y, DM_Z} DMDirection;
+typedef enum {
+  DM_X,
+  DM_Y,
+  DM_Z
+} DMDirection;
 
 /*E
   DMEnclosureType - The type of enclosure relation between one `DM` and another
@@ -135,7 +172,13 @@ typedef enum {DM_X, DM_Y, DM_Z} DMDirection;
 
 .seealso: `DMGetEnclosureRelation()`
 E*/
-typedef enum {DM_ENC_EQUALITY, DM_ENC_SUPERMESH, DM_ENC_SUBMESH, DM_ENC_NONE, DM_ENC_UNKNOWN} DMEnclosureType;
+typedef enum {
+  DM_ENC_EQUALITY,
+  DM_ENC_SUPERMESH,
+  DM_ENC_SUBMESH,
+  DM_ENC_NONE,
+  DM_ENC_UNKNOWN
+} DMEnclosureType;
 
 /*E
   DMPolytopeType - This describes the polytope represented by each cell.
@@ -150,7 +193,24 @@ typedef enum {DM_ENC_EQUALITY, DM_ENC_SUPERMESH, DM_ENC_SUBMESH, DM_ENC_NONE, DM
 
 .seealso: `DMPlexComputeCellTypes()`
 E*/
-typedef enum {DM_POLYTOPE_POINT, DM_POLYTOPE_SEGMENT, DM_POLYTOPE_POINT_PRISM_TENSOR, DM_POLYTOPE_TRIANGLE, DM_POLYTOPE_QUADRILATERAL, DM_POLYTOPE_SEG_PRISM_TENSOR, DM_POLYTOPE_TETRAHEDRON, DM_POLYTOPE_HEXAHEDRON, DM_POLYTOPE_TRI_PRISM, DM_POLYTOPE_TRI_PRISM_TENSOR, DM_POLYTOPE_QUAD_PRISM_TENSOR, DM_POLYTOPE_PYRAMID, DM_POLYTOPE_FV_GHOST, DM_POLYTOPE_INTERIOR_GHOST, DM_POLYTOPE_UNKNOWN, DM_NUM_POLYTOPES} DMPolytopeType;
+typedef enum {
+  DM_POLYTOPE_POINT,
+  DM_POLYTOPE_SEGMENT,
+  DM_POLYTOPE_POINT_PRISM_TENSOR,
+  DM_POLYTOPE_TRIANGLE,
+  DM_POLYTOPE_QUADRILATERAL,
+  DM_POLYTOPE_SEG_PRISM_TENSOR,
+  DM_POLYTOPE_TETRAHEDRON,
+  DM_POLYTOPE_HEXAHEDRON,
+  DM_POLYTOPE_TRI_PRISM,
+  DM_POLYTOPE_TRI_PRISM_TENSOR,
+  DM_POLYTOPE_QUAD_PRISM_TENSOR,
+  DM_POLYTOPE_PYRAMID,
+  DM_POLYTOPE_FV_GHOST,
+  DM_POLYTOPE_INTERIOR_GHOST,
+  DM_POLYTOPE_UNKNOWN,
+  DM_NUM_POLYTOPES
+} DMPolytopeType;
 PETSC_EXTERN const char *const DMPolytopeTypes[];
 
 /*E
@@ -160,21 +220,30 @@ PETSC_EXTERN const char *const DMPolytopeTypes[];
 
 .seealso: `DMPlexGetScale()`, `DMPlexSetScale()`
 E*/
-typedef enum {PETSC_UNIT_LENGTH, PETSC_UNIT_MASS, PETSC_UNIT_TIME, PETSC_UNIT_CURRENT, PETSC_UNIT_TEMPERATURE, PETSC_UNIT_AMOUNT, PETSC_UNIT_LUMINOSITY, NUM_PETSC_UNITS} PetscUnit;
+typedef enum {
+  PETSC_UNIT_LENGTH,
+  PETSC_UNIT_MASS,
+  PETSC_UNIT_TIME,
+  PETSC_UNIT_CURRENT,
+  PETSC_UNIT_TEMPERATURE,
+  PETSC_UNIT_AMOUNT,
+  PETSC_UNIT_LUMINOSITY,
+  NUM_PETSC_UNITS
+} PetscUnit;
 
 /*S
     DMField - PETSc object for defining a field on a mesh topology
 
     Level: intermediate
 S*/
-typedef struct _p_DMField* DMField;
+typedef struct _p_DMField *DMField;
 
 /*S
     DMUniversalLabel - A label that encodes a set of `DMLabel`s, bijectively
 
     Level: developer
 S*/
-typedef struct _p_UniversalLabel* DMUniversalLabel;
+typedef struct _p_UniversalLabel *DMUniversalLabel;
 
 typedef struct _n_DMGeneratorFunctionList *DMGeneratorFunctionList;
 

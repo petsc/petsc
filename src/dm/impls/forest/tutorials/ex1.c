@@ -4,33 +4,32 @@ static char help[] = "Create and view a forest mesh\n\n";
 #include <petscdmplex.h>
 #include <petscoptions.h>
 
-int main(int argc, char **argv)
-{
-  DM             dm;
-  char           typeString[256] = {'\0'};
-  PetscViewer    viewer          = NULL;
-  PetscBool      conv = PETSC_FALSE;
+int main(int argc, char **argv) {
+  DM          dm;
+  char        typeString[256] = {'\0'};
+  PetscViewer viewer          = NULL;
+  PetscBool   conv            = PETSC_FALSE;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, NULL,help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(DMCreate(PETSC_COMM_WORLD, &dm));
-  PetscCall(PetscStrncpy(typeString,DMFOREST,256));
-  PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"DM Forest example options",NULL);
-  PetscCall(PetscOptionsString("-dm_type","The type of the dm",NULL,DMFOREST,typeString,sizeof(typeString),NULL));
-  PetscCall(PetscOptionsBool("-test_convert","Test conversion to DMPLEX",NULL,conv,&conv,NULL));
+  PetscCall(PetscStrncpy(typeString, DMFOREST, 256));
+  PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "DM Forest example options", NULL);
+  PetscCall(PetscOptionsString("-dm_type", "The type of the dm", NULL, DMFOREST, typeString, sizeof(typeString), NULL));
+  PetscCall(PetscOptionsBool("-test_convert", "Test conversion to DMPLEX", NULL, conv, &conv, NULL));
   PetscOptionsEnd();
-  PetscCall(DMSetType(dm,(DMType) typeString));
+  PetscCall(DMSetType(dm, (DMType)typeString));
   PetscCall(DMSetFromOptions(dm));
   PetscCall(DMSetUp(dm));
-  PetscCall(DMViewFromOptions(dm,NULL,"-dm_view"));
+  PetscCall(DMViewFromOptions(dm, NULL, "-dm_view"));
   PetscCall(PetscViewerDestroy(&viewer));
   if (conv) {
     DM dmConv;
 
-    PetscCall(DMConvert(dm,DMPLEX,&dmConv));
+    PetscCall(DMConvert(dm, DMPLEX, &dmConv));
     PetscCall(DMLocalizeCoordinates(dmConv));
-    PetscCall(DMViewFromOptions(dmConv,NULL,"-dm_conv_view"));
-    PetscCall(DMPlexCheckCellShape(dmConv,PETSC_FALSE,PETSC_DETERMINE));
+    PetscCall(DMViewFromOptions(dmConv, NULL, "-dm_conv_view"));
+    PetscCall(DMPlexCheckCellShape(dmConv, PETSC_FALSE, PETSC_DETERMINE));
     PetscCall(DMDestroy(&dmConv));
   }
   PetscCall(DMDestroy(&dm));

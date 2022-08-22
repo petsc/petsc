@@ -69,95 +69,91 @@ struct _n_User {
    User-defined routines
 */
 
-static PetscErrorCode IFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx)
-{
+static PetscErrorCode IFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, void *ctx) {
   PetscScalar       *f;
-  const PetscScalar *x,*xdot;
+  const PetscScalar *x, *xdot;
 
   PetscFunctionBeginUser;
-  PetscCall(VecGetArrayRead(X,&x));
-  PetscCall(VecGetArrayRead(Xdot,&xdot));
-  PetscCall(VecGetArray(F,&f));
+  PetscCall(VecGetArrayRead(X, &x));
+  PetscCall(VecGetArrayRead(Xdot, &xdot));
+  PetscCall(VecGetArray(F, &f));
   f[0] = xdot[0] + x[1];
-  f[1] = (x[1]*x[1]*x[1]/3.0 - x[1])-x[0];
-  PetscCall(VecRestoreArrayRead(X,&x));
-  PetscCall(VecRestoreArrayRead(Xdot,&xdot));
-  PetscCall(VecRestoreArray(F,&f));
+  f[1] = (x[1] * x[1] * x[1] / 3.0 - x[1]) - x[0];
+  PetscCall(VecRestoreArrayRead(X, &x));
+  PetscCall(VecRestoreArrayRead(Xdot, &xdot));
+  PetscCall(VecRestoreArray(F, &f));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat A,Mat B,void *ctx)
-{
-  PetscInt          rowcol[] = {0,1};
-  PetscScalar       J[2][2];
+static PetscErrorCode IJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, Mat A, Mat B, void *ctx) {
+  PetscInt           rowcol[] = {0, 1};
+  PetscScalar        J[2][2];
   const PetscScalar *x;
 
   PetscFunctionBeginUser;
-  PetscCall(VecGetArrayRead(X,&x));
-  J[0][0] = a;    J[0][1] = -1.;
-  J[1][0] = 1.;   J[1][1] = -1. + x[1]*x[1];
-  PetscCall(MatSetValues(B,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES));
-  PetscCall(VecRestoreArrayRead(X,&x));
+  PetscCall(VecGetArrayRead(X, &x));
+  J[0][0] = a;
+  J[0][1] = -1.;
+  J[1][0] = 1.;
+  J[1][1] = -1. + x[1] * x[1];
+  PetscCall(MatSetValues(B, 2, rowcol, 2, rowcol, &J[0][0], INSERT_VALUES));
+  PetscCall(VecRestoreArrayRead(X, &x));
 
-  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
   if (A != B) {
-    PetscCall(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
-    PetscCall(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
   }
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode RegisterMyARK2(void)
-{
+static PetscErrorCode RegisterMyARK2(void) {
   PetscFunctionBeginUser;
   {
-    const PetscReal
-      A[3][3] = {{0,0,0},
-                 {0.41421356237309504880,0,0},
-                 {0.75,0.25,0}},
-      At[3][3] = {{0,0,0},
-                  {0.12132034355964257320,0.29289321881345247560,0},
-                  {0.20710678118654752440,0.50000000000000000000,0.29289321881345247560}},
-    *bembedt = NULL,*bembed = NULL;
-    PetscCall(TSARKIMEXRegister("myark2",2,3,&At[0][0],NULL,NULL,&A[0][0],NULL,NULL,bembedt,bembed,0,NULL,NULL));
+    const PetscReal A[3][3] =
+      {
+        {0,                      0,    0},
+        {0.41421356237309504880, 0,    0},
+        {0.75,                   0.25, 0}
+    },
+                    At[3][3] = {{0, 0, 0}, {0.12132034355964257320, 0.29289321881345247560, 0}, {0.20710678118654752440, 0.50000000000000000000, 0.29289321881345247560}}, *bembedt = NULL, *bembed = NULL;
+    PetscCall(TSARKIMEXRegister("myark2", 2, 3, &At[0][0], NULL, NULL, &A[0][0], NULL, NULL, bembedt, bembed, 0, NULL, NULL));
   }
   PetscFunctionReturn(0);
 }
 
 /* Monitor timesteps and use interpolation to output at integer multiples of 0.1 */
-static PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal t,Vec X,void *ctx)
-{
+static PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal t, Vec X, void *ctx) {
   const PetscScalar *x;
-  PetscReal         tfinal, dt;
-  User              user = (User)ctx;
-  Vec               interpolatedX;
+  PetscReal          tfinal, dt;
+  User               user = (User)ctx;
+  Vec                interpolatedX;
 
   PetscFunctionBeginUser;
-  PetscCall(TSGetTimeStep(ts,&dt));
-  PetscCall(TSGetMaxTime(ts,&tfinal));
+  PetscCall(TSGetTimeStep(ts, &dt));
+  PetscCall(TSGetMaxTime(ts, &tfinal));
 
   while (user->next_output <= t && user->next_output <= tfinal) {
-    PetscCall(VecDuplicate(X,&interpolatedX));
-    PetscCall(TSInterpolate(ts,user->next_output,interpolatedX));
-    PetscCall(VecGetArrayRead(interpolatedX,&x));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"[%.1f] %3" PetscInt_FMT " TS %.6f (dt = %.6f) X % 12.6e % 12.6e\n",(double)user->next_output,step,(double)t,(double)dt,(double)PetscRealPart(x[0]),(double)PetscRealPart(x[1])));
-    PetscCall(VecRestoreArrayRead(interpolatedX,&x));
+    PetscCall(VecDuplicate(X, &interpolatedX));
+    PetscCall(TSInterpolate(ts, user->next_output, interpolatedX));
+    PetscCall(VecGetArrayRead(interpolatedX, &x));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[%.1f] %3" PetscInt_FMT " TS %.6f (dt = %.6f) X % 12.6e % 12.6e\n", (double)user->next_output, step, (double)t, (double)dt, (double)PetscRealPart(x[0]), (double)PetscRealPart(x[1])));
+    PetscCall(VecRestoreArrayRead(interpolatedX, &x));
     PetscCall(VecDestroy(&interpolatedX));
     user->next_output += PetscRealConstant(0.1);
   }
   PetscFunctionReturn(0);
 }
 
-int main(int argc,char **argv)
-{
-  TS             ts;            /* nonlinear solver */
-  Vec            x;             /* solution, residual vectors */
-  Mat            A;             /* Jacobian matrix */
+int main(int argc, char **argv) {
+  TS             ts; /* nonlinear solver */
+  Vec            x;  /* solution, residual vectors */
+  Mat            A;  /* Jacobian matrix */
   PetscInt       steps;
   PetscReal      ftime   = 0.5;
   PetscBool      monitor = PETSC_FALSE;
-  PetscScalar    *x_ptr;
+  PetscScalar   *x_ptr;
   PetscMPIInt    size;
   struct _n_User user;
 
@@ -165,9 +161,9 @@ int main(int argc,char **argv)
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
-  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
-  PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
+  PetscCheck(size == 1, PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "This is a uniprocessor example only!");
 
   PetscCall(RegisterMyARK2());
 
@@ -176,37 +172,36 @@ int main(int argc,char **argv)
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   user.next_output = 0.0;
-  PetscCall(PetscOptionsGetBool(NULL,NULL,"-monitor",&monitor,NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-monitor", &monitor, NULL));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Create necessary matrix and vectors, solve same ODE on every process
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
-  PetscCall(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,2,2));
+  PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
+  PetscCall(MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, 2, 2));
   PetscCall(MatSetFromOptions(A));
   PetscCall(MatSetUp(A));
-  PetscCall(MatCreateVecs(A,&x,NULL));
+  PetscCall(MatCreateVecs(A, &x, NULL));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscCall(TSCreate(PETSC_COMM_WORLD,&ts));
-  PetscCall(TSSetType(ts,TSBEULER));
-  PetscCall(TSSetIFunction(ts,NULL,IFunction,&user));
-  PetscCall(TSSetIJacobian(ts,A,A,IJacobian,&user));
-  PetscCall(TSSetMaxTime(ts,ftime));
-  PetscCall(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER));
-  if (monitor) {
-    PetscCall(TSMonitorSet(ts,Monitor,&user,NULL));
-  }
+  PetscCall(TSCreate(PETSC_COMM_WORLD, &ts));
+  PetscCall(TSSetType(ts, TSBEULER));
+  PetscCall(TSSetIFunction(ts, NULL, IFunction, &user));
+  PetscCall(TSSetIJacobian(ts, A, A, IJacobian, &user));
+  PetscCall(TSSetMaxTime(ts, ftime));
+  PetscCall(TSSetExactFinalTime(ts, TS_EXACTFINALTIME_STEPOVER));
+  if (monitor) { PetscCall(TSMonitorSet(ts, Monitor, &user, NULL)); }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscCall(VecGetArray(x,&x_ptr));
-  x_ptr[0] = -2;   x_ptr[1] = -2.355301397608119909925287735864250951918;
-  PetscCall(VecRestoreArray(x,&x_ptr));
-  PetscCall(TSSetTimeStep(ts,.001));
+  PetscCall(VecGetArray(x, &x_ptr));
+  x_ptr[0] = -2;
+  x_ptr[1] = -2.355301397608119909925287735864250951918;
+  PetscCall(VecRestoreArray(x, &x_ptr));
+  PetscCall(TSSetTimeStep(ts, .001));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set runtime options
@@ -216,11 +211,11 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscCall(TSSolve(ts,x));
-  PetscCall(TSGetSolveTime(ts,&ftime));
-  PetscCall(TSGetStepNumber(ts,&steps));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"steps %3" PetscInt_FMT ", ftime %g\n",steps,(double)ftime));
-  PetscCall(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(TSSolve(ts, x));
+  PetscCall(TSGetSolveTime(ts, &ftime));
+  PetscCall(TSGetStepNumber(ts, &steps));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "steps %3" PetscInt_FMT ", ftime %g\n", steps, (double)ftime));
+  PetscCall(VecView(x, PETSC_VIEWER_STDOUT_WORLD));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they

@@ -11,14 +11,14 @@ Context for bounded quasi-Newton-Krylov type optimization algorithms
 
 typedef struct {
   PetscErrorCode (*solve)(Tao);
-  Mat B;
-  PC pc;
+  Mat       B;
+  PC        pc;
   PetscBool is_spd;
 } TAO_BQNK;
 
-#define BQNK_INIT_CONSTANT         0
-#define BQNK_INIT_DIRECTION        1
-#define BQNK_INIT_TYPES            2
+#define BQNK_INIT_CONSTANT  0
+#define BQNK_INIT_DIRECTION 1
+#define BQNK_INIT_TYPES     2
 
 PETSC_INTERN PetscErrorCode TaoSolve_BQNK(Tao);
 PETSC_INTERN PetscErrorCode TaoSetUp_BQNK(Tao);

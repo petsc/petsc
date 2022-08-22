@@ -1,4 +1,4 @@
-#include <petsc/private/dmimpl.h>           /*I      "petscdm.h"          I*/
+#include <petsc/private/dmimpl.h> /*I      "petscdm.h"          I*/
 
 #ifdef PETSC_HAVE_LIBCEED
 #include <petscdmceed.h>
@@ -18,8 +18,7 @@
 
 .seealso: `DMCreate()`
 @*/
-PetscErrorCode DMGetCeed(DM dm, Ceed *ceed)
-{
+PetscErrorCode DMGetCeed(DM dm, Ceed *ceed) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(ceed, 2);
@@ -28,7 +27,7 @@ PetscErrorCode DMGetCeed(DM dm, Ceed *ceed)
     const char *prefix;
 
     PetscCall(PetscStrcpy(ceedresource, "/cpu/self"));
-    PetscCall(PetscObjectGetOptionsPrefix((PetscObject) dm, &prefix));
+    PetscCall(PetscObjectGetOptionsPrefix((PetscObject)dm, &prefix));
     PetscCall(PetscOptionsGetString(NULL, prefix, "-dm_ceed", ceedresource, sizeof(ceedresource), NULL));
     PetscCallCEED(CeedInit(ceedresource, &dm->ceed));
   }

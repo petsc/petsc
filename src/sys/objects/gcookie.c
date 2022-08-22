@@ -2,7 +2,7 @@
 /*
      Provides utility routines for manulating any type of PETSc object.
 */
-#include <petsc/private/petscimpl.h>  /*I   "petscsys.h"    I*/
+#include <petsc/private/petscimpl.h> /*I   "petscsys.h"    I*/
 
 /*@
    PetscObjectGetClassId - Gets the classid for any PetscObject
@@ -20,11 +20,10 @@
    Level: developer
 
 @*/
-PetscErrorCode  PetscObjectGetClassId(PetscObject obj,PetscClassId *classid)
-{
+PetscErrorCode PetscObjectGetClassId(PetscObject obj, PetscClassId *classid) {
   PetscFunctionBegin;
-  PetscValidHeader(obj,1);
-  PetscValidIntPointer(classid,2);
+  PetscValidHeader(obj, 1);
+  PetscValidIntPointer(classid, 2);
   *classid = obj->classid;
   PetscFunctionReturn(0);
 }
@@ -45,11 +44,10 @@ PetscErrorCode  PetscObjectGetClassId(PetscObject obj,PetscClassId *classid)
    Level: developer
 
 @*/
-PetscErrorCode  PetscObjectGetClassName(PetscObject obj, const char *classname[])
-{
+PetscErrorCode PetscObjectGetClassName(PetscObject obj, const char *classname[]) {
   PetscFunctionBegin;
-  PetscValidHeader(obj,1);
-  PetscValidPointer(classname,2);
+  PetscValidHeader(obj, 1);
+  PetscValidPointer(classname, 2);
   *classname = obj->class_name;
   PetscFunctionReturn(0);
 }

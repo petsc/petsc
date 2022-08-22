@@ -3,36 +3,33 @@ static char help[] = "Tests PetscOptionsGetScalar(), PetscOptionsScalarArray() f
 
 #include <petscsys.h>
 
-int main(int argc,char **argv)
-{
-  PetscInt    n,i;
-  PetscScalar a,array[10];
+int main(int argc, char **argv) {
+  PetscInt    n, i;
+  PetscScalar a, array[10];
   PetscReal   rarray[10];
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
-  PetscCall(PetscOptionsGetScalar(NULL,NULL,"-a",&a,NULL));
-  PetscCall(PetscPrintf(PETSC_COMM_SELF,"Scalar a = %g + %gi\n",(double)PetscRealPart(a),(double)PetscImaginaryPart(a)));
+  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscOptionsGetScalar(NULL, NULL, "-a", &a, NULL));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF, "Scalar a = %g + %gi\n", (double)PetscRealPart(a), (double)PetscImaginaryPart(a)));
 
-  PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"test options",NULL);
+  PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "test options", NULL);
   n = 10; /* max num of input values */
   PetscCall(PetscOptionsRealArray("-rarray", "Input a real array", "ex14.c", rarray, &n, NULL));
   if (n) {
-    PetscCall(PetscPrintf(PETSC_COMM_SELF,"Real rarray of length %" PetscInt_FMT "\n",n));
-    for (i=0; i<n; i++) {
-      PetscCall(PetscPrintf(PETSC_COMM_SELF," %g,\n",(double)rarray[i]));
-    }
+    PetscCall(PetscPrintf(PETSC_COMM_SELF, "Real rarray of length %" PetscInt_FMT "\n", n));
+    for (i = 0; i < n; i++) { PetscCall(PetscPrintf(PETSC_COMM_SELF, " %g,\n", (double)rarray[i])); }
   }
 
   n = 10; /* max num of input values */
   PetscCall(PetscOptionsScalarArray("-array", "Input a scalar array", "ex14.c", array, &n, NULL));
   if (n) {
-    PetscCall(PetscPrintf(PETSC_COMM_SELF,"Scalar rarray of length %" PetscInt_FMT "\n",n));
-    for (i=0; i<n; i++) {
+    PetscCall(PetscPrintf(PETSC_COMM_SELF, "Scalar rarray of length %" PetscInt_FMT "\n", n));
+    for (i = 0; i < n; i++) {
       if (PetscImaginaryPart(array[i]) < 0.0) {
-        PetscCall(PetscPrintf(PETSC_COMM_SELF," %g - %gi\n",(double)PetscRealPart(array[i]),(double)PetscAbsReal(PetscImaginaryPart(array[i]))));
+        PetscCall(PetscPrintf(PETSC_COMM_SELF, " %g - %gi\n", (double)PetscRealPart(array[i]), (double)PetscAbsReal(PetscImaginaryPart(array[i]))));
       } else {
-        PetscCall(PetscPrintf(PETSC_COMM_SELF," %g + %gi\n",(double)PetscRealPart(array[i]),(double)PetscImaginaryPart(array[i])));
+        PetscCall(PetscPrintf(PETSC_COMM_SELF, " %g + %gi\n", (double)PetscRealPart(array[i]), (double)PetscImaginaryPart(array[i])));
       }
     }
   }

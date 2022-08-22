@@ -2,19 +2,17 @@
 /*
     Identity preconditioner, simply copies vector x to y.
 */
-#include <petsc/private/pcimpl.h>          /*I "petscpc.h" I*/
+#include <petsc/private/pcimpl.h> /*I "petscpc.h" I*/
 
-PetscErrorCode PCApply_None(PC pc,Vec x,Vec y)
-{
+PetscErrorCode PCApply_None(PC pc, Vec x, Vec y) {
   PetscFunctionBegin;
-  PetscCall(VecCopy(x,y));
+  PetscCall(VecCopy(x, y));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCMatApply_None(PC pc,Mat X,Mat Y)
-{
+PetscErrorCode PCMatApply_None(PC pc, Mat X, Mat Y) {
   PetscFunctionBegin;
-  PetscCall(MatCopy(X,Y,SAME_NONZERO_PATTERN));
+  PetscCall(MatCopy(X, Y, SAME_NONZERO_PATTERN));
   PetscFunctionReturn(0);
 }
 
@@ -30,8 +28,7 @@ PetscErrorCode PCMatApply_None(PC pc,Mat X,Mat Y)
 .seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`
 M*/
 
-PETSC_EXTERN PetscErrorCode PCCreate_None(PC pc)
-{
+PETSC_EXTERN PetscErrorCode PCCreate_None(PC pc) {
   PetscFunctionBegin;
   pc->ops->apply               = PCApply_None;
   pc->ops->matapply            = PCMatApply_None;

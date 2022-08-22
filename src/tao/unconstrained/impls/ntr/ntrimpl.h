@@ -31,16 +31,16 @@ typedef struct {
      fi
   */
 
-  PetscReal eta1;          /*  used to compute trust-region radius */
-  PetscReal eta2;          /*  used to compute trust-region radius */
-  PetscReal eta3;          /*  used to compute trust-region radius */
-  PetscReal eta4;          /*  used to compute trust-region radius */
+  PetscReal eta1; /*  used to compute trust-region radius */
+  PetscReal eta2; /*  used to compute trust-region radius */
+  PetscReal eta3; /*  used to compute trust-region radius */
+  PetscReal eta4; /*  used to compute trust-region radius */
 
-  PetscReal alpha1;        /*  factor used for trust-region update */
-  PetscReal alpha2;        /*  factor used for trust-region update */
-  PetscReal alpha3;        /*  factor used for trust-region update */
-  PetscReal alpha4;        /*  factor used for trust-region update */
-  PetscReal alpha5;        /*  factor used for trust-region update */
+  PetscReal alpha1; /*  factor used for trust-region update */
+  PetscReal alpha2; /*  factor used for trust-region update */
+  PetscReal alpha3; /*  factor used for trust-region update */
+  PetscReal alpha4; /*  factor used for trust-region update */
+  PetscReal alpha5; /*  factor used for trust-region update */
 
   /* Parameters when updating the trust-region radius based on interpolation
 
@@ -61,34 +61,34 @@ typedef struct {
      fi
   */
 
-  PetscReal mu1;           /*  used for model agreement in radius update */
-  PetscReal mu2;           /*  used for model agreement in radius update */
+  PetscReal mu1; /*  used for model agreement in radius update */
+  PetscReal mu2; /*  used for model agreement in radius update */
 
-  PetscReal gamma1;        /*  factor used for radius update */
-  PetscReal gamma2;        /*  factor used for radius update */
-  PetscReal gamma3;        /*  factor used for radius update */
-  PetscReal gamma4;        /*  factor used for radius update */
+  PetscReal gamma1; /*  factor used for radius update */
+  PetscReal gamma2; /*  factor used for radius update */
+  PetscReal gamma3; /*  factor used for radius update */
+  PetscReal gamma4; /*  factor used for radius update */
 
-  PetscReal theta;         /*  factor used for radius update */
+  PetscReal theta; /*  factor used for radius update */
 
   /* Parameters when initializing trust-region radius based on interpolation */
 
-  PetscReal mu1_i;         /*  used for model agreement in interpolation */
-  PetscReal mu2_i;         /*  used for model agreement in interpolation */
+  PetscReal mu1_i; /*  used for model agreement in interpolation */
+  PetscReal mu2_i; /*  used for model agreement in interpolation */
 
-  PetscReal gamma1_i;      /*  factor used for interpolation */
-  PetscReal gamma2_i;      /*  factor used for interpolation */
-  PetscReal gamma3_i;      /*  factor used for interpolation */
-  PetscReal gamma4_i;      /*  factor used for interpolation */
+  PetscReal gamma1_i; /*  factor used for interpolation */
+  PetscReal gamma2_i; /*  factor used for interpolation */
+  PetscReal gamma3_i; /*  factor used for interpolation */
+  PetscReal gamma4_i; /*  factor used for interpolation */
 
-  PetscReal theta_i;       /*  factor used for interpolation */
+  PetscReal theta_i; /*  factor used for interpolation */
 
-  PetscReal min_radius;    /*  lower bound on initial radius value */
-  PetscReal max_radius;    /*  upper bound on trust region radius */
-  PetscReal epsilon;       /*  tolerance used when computing actred/prered */
+  PetscReal min_radius; /*  lower bound on initial radius value */
+  PetscReal max_radius; /*  upper bound on trust region radius */
+  PetscReal epsilon;    /*  tolerance used when computing actred/prered */
 
-  PetscInt init_type;      /*  Trust-region initialization method */
-  PetscInt update_type;    /*  Trust-region update method */
+  PetscInt init_type;   /*  Trust-region initialization method */
+  PetscInt update_type; /*  Trust-region update method */
 } TAO_NTR;
 
 #endif /* if !defined(__TAO_NTR_H) */

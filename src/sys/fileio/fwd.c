@@ -36,18 +36,16 @@
    Level: developer
 
 @*/
-PetscErrorCode  PetscGetWorkingDirectory(char path[],size_t len)
-{
+PetscErrorCode PetscGetWorkingDirectory(char path[], size_t len) {
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_GETCWD)
-  PetscCheck(getcwd(path,len),PETSC_COMM_SELF,PETSC_ERR_LIB,"getcwd()");
+  PetscCheck(getcwd(path, len), PETSC_COMM_SELF, PETSC_ERR_LIB, "getcwd()");
 #elif defined(PETSC_HAVE__GETCWD)
-  _getcwd(path,len);
+  _getcwd(path, len);
 #elif defined(PETSC_HAVE_GETWD)
   getwd(path);
 #else
-  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS, "Could not find getcwd() or getwd()");
+  SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP_SYS, "Could not find getcwd() or getwd()");
 #endif
   PetscFunctionReturn(0);
 }
-

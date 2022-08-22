@@ -20,14 +20,13 @@
 
 .seealso: `DMCreate()`, `DM`, `MATIS`, `PCHPDDM`, `PCHPDDMSetAuxiliaryMat()`
 @*/
-PetscErrorCode DMCreateNeumannOverlap_Plex(DM dm, IS *ovl, Mat *J, PetscErrorCode (**setup)(Mat, PetscReal, Vec, Vec, PetscReal, IS, void*), void **setup_ctx)
-{
+PetscErrorCode DMCreateNeumannOverlap_Plex(DM dm, IS *ovl, Mat *J, PetscErrorCode (**setup)(Mat, PetscReal, Vec, Vec, PetscReal, IS, void *), void **setup_ctx) {
   DM                     odm;
   Mat                    pJ;
   PetscSF                sf = NULL;
   PetscSection           sec, osec;
   ISLocalToGlobalMapping l2g;
-  const PetscInt         *idxs;
+  const PetscInt        *idxs;
   PetscInt               n, mh;
 
   PetscFunctionBegin;
@@ -61,7 +60,7 @@ PetscErrorCode DMCreateNeumannOverlap_Plex(DM dm, IS *ovl, Mat *J, PetscErrorCod
 
     PetscCall(DMGetAuxiliaryVec(dm, NULL, 0, 0, &A));
     if (A) {
-      DM dmAux, ocdm, odmAux;
+      DM  dmAux, ocdm, odmAux;
       Vec oA;
 
       PetscCall(VecGetDM(A, &dmAux));

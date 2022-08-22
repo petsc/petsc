@@ -9,16 +9,15 @@ static char help[] = "Demonstrates using a local ordering to set values into a p
 */
 #include <petscvec.h>
 
-int main(int argc,char **argv)
-{
-  PetscMPIInt    rank;
-  PetscInt       i,ng,*gindices,rstart,rend,M;
-  PetscScalar    one = 1.0;
-  Vec            x;
+int main(int argc, char **argv) {
+  PetscMPIInt rank;
+  PetscInt    i, ng, *gindices, rstart, rend, M;
+  PetscScalar one = 1.0;
+  Vec         x;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
-  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
 
   /*
      Create a parallel vector.
@@ -27,10 +26,10 @@ int main(int argc,char **argv)
         PETSc could determine the vector's distribution if we specify
         just the global size.
   */
-  PetscCall(VecCreate(PETSC_COMM_WORLD,&x));
-  PetscCall(VecSetSizes(x,rank+1,PETSC_DECIDE));
+  PetscCall(VecCreate(PETSC_COMM_WORLD, &x));
+  PetscCall(VecSetSizes(x, rank + 1, PETSC_DECIDE));
   PetscCall(VecSetFromOptions(x));
-  PetscCall(VecSet(x,one));
+  PetscCall(VecSet(x, one));
 
   /*
      Set the local to global ordering for the vector. Each processor
@@ -40,19 +39,19 @@ int main(int argc,char **argv)
      have one ghost point on each end of the blocks owned by each processor.
   */
 
-  PetscCall(VecGetSize(x,&M));
-  PetscCall(VecGetOwnershipRange(x,&rstart,&rend));
-  ng   = rend - rstart + 2;
-  PetscCall(PetscMalloc1(ng,&gindices));
+  PetscCall(VecGetSize(x, &M));
+  PetscCall(VecGetOwnershipRange(x, &rstart, &rend));
+  ng = rend - rstart + 2;
+  PetscCall(PetscMalloc1(ng, &gindices));
   gindices[0] = rstart - 1;
-  for (i=0; i<ng-1; i++) gindices[i+1] = gindices[i] + 1;
+  for (i = 0; i < ng - 1; i++) gindices[i + 1] = gindices[i] + 1;
   /* map the first and last point as periodic */
-  if (gindices[0]    == -1) gindices[0]    = M - 1;
-  if (gindices[ng-1] == M)  gindices[ng-1] = 0;
+  if (gindices[0] == -1) gindices[0] = M - 1;
+  if (gindices[ng - 1] == M) gindices[ng - 1] = 0;
   {
     ISLocalToGlobalMapping ltog;
-    PetscCall(ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,1,ng,gindices,PETSC_COPY_VALUES,&ltog));
-    PetscCall(VecSetLocalToGlobalMapping(x,ltog));
+    PetscCall(ISLocalToGlobalMappingCreate(PETSC_COMM_SELF, 1, ng, gindices, PETSC_COPY_VALUES, &ltog));
+    PetscCall(VecSetLocalToGlobalMapping(x, ltog));
     PetscCall(ISLocalToGlobalMappingDestroy(&ltog));
   }
   PetscCall(PetscFree(gindices));
@@ -67,9 +66,7 @@ int main(int argc,char **argv)
       - In this example, the flag ADD_VALUES indicates that all
         contributions will be added together.
   */
-  for (i=0; i<ng; i++) {
-    PetscCall(VecSetValuesLocal(x,1,&i,&one,ADD_VALUES));
-  }
+  for (i = 0; i < ng; i++) { PetscCall(VecSetValuesLocal(x, 1, &i, &one, ADD_VALUES)); }
 
   /*
      Assemble vector, using the 2-step process:
@@ -83,7 +80,7 @@ int main(int argc,char **argv)
   /*
       View the vector; then destroy it.
   */
-  PetscCall(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecView(x, PETSC_VIEWER_STDOUT_WORLD));
   PetscCall(VecDestroy(&x));
 
   PetscCall(PetscFinalize());
