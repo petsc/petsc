@@ -3,7 +3,7 @@
 #include <petsc/finclude/petscbag.h>
 #include <petsc/finclude/petscviewer.h>
 
-      module Bag_data_module
+      module ex5f90module
 !     Data structure used to contain information about the problem
 !     You can add physical values etc here
 
@@ -22,23 +22,23 @@
          character*(80) :: c
          type(tuple) :: pos
       end type bag_data_type
-      end module Bag_data_module
+      end module ex5f90module
 
-      module Bag_interface_module
-      use Bag_data_module
+      module ex5f90Bag_interface_module
+      use ex5f90module
 
       interface PetscBagGetData
          subroutine PetscBagGetData(bag,data,ierr)
-           use Bag_data_module
+           use ex5f90module
            PetscBag bag
            type(bag_data_type),pointer :: data
            PetscErrorCode ierr
          end subroutine PetscBagGetData
       end interface
-      end module Bag_interface_module
+      end module ex5f90Bag_interface_module
 
       program ex5f90
-      use Bag_interface_module
+      use ex5f90Bag_interface_module
       use petsc
       implicit none
 

@@ -38,12 +38,12 @@
 !  into a module or interface. This is because they can't handle declarations
 !  in them
 !
-      module petsc_kkt_solver
+      module ex73f90tmodule
 #include <petsc/finclude/petscdm.h>
 #include <petsc/finclude/petscmat.h>
       use petscdm
       use petscmat
-      type petsc_kkt_solver_type
+      type ex73f90tmodule_type
         DM::da
 !     temp A block stuff
         PetscInt mx,my
@@ -52,20 +52,20 @@
 !     Mats
         Mat::Amat,AmatLin,Bmat,CMat,Dmat
         IS::isPhi,isLambda
-      end type petsc_kkt_solver_type
+      end type ex73f90tmodule_type
 
-      end module petsc_kkt_solver
+      end module ex73f90tmodule
 
-      module petsc_kkt_solver_interfaces
-        use petsc_kkt_solver
+      module ex73f90tmodule_interfaces
+        use ex73f90tmodule
 
       Interface SNESSetApplicationContext
         Subroutine SNESSetApplicationContext(snesIn,ctx,ierr)
 #include <petsc/finclude/petscsnes.h>
         use petscsnes
-        use petsc_kkt_solver
+        use ex73f90tmodule
           SNES::    snesIn
-          type(petsc_kkt_solver_type) ctx
+          type(ex73f90tmodule_type) ctx
           PetscErrorCode ierr
         End Subroutine
       End Interface SNESSetApplicationContext
@@ -74,13 +74,13 @@
         Subroutine SNESGetApplicationContext(snesIn,ctx,ierr)
 #include <petsc/finclude/petscsnes.h>
         use petscsnes
-        use petsc_kkt_solver
+        use ex73f90tmodule
           SNES::     snesIn
-          type(petsc_kkt_solver_type), pointer :: ctx
+          type(ex73f90tmodule_type), pointer :: ctx
           PetscErrorCode ierr
         End Subroutine
       End Interface SNESGetApplicationContext
-      end module petsc_kkt_solver_interfaces
+      end module ex73f90tmodule_interfaces
 
       program main
 #include <petsc/finclude/petscdm.h>
@@ -88,8 +88,8 @@
       use petscdm
       use petscdmda
       use petscsnes
-      use petsc_kkt_solver
-      use petsc_kkt_solver_interfaces
+      use ex73f90tmodule
+      use ex73f90tmodule_interfaces
       implicit none
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
@@ -114,7 +114,7 @@
       PetscBool        flg
       PetscInt         ione,nfour,itwo,nloc,nloclam
       PetscReal lambda_max,lambda_min
-      type(petsc_kkt_solver_type)  solver
+      type(ex73f90tmodule_type)  solver
       PetscScalar      bval(1),cval(1),one
 
 !  Note: Any user-defined Fortran routines (such as FormJacobian)
@@ -379,8 +379,8 @@
       subroutine FormInitialGuess(mysnes,Xnest,ierr)
 #include <petsc/finclude/petscsnes.h>
       use petscsnes
-      use petsc_kkt_solver
-      use petsc_kkt_solver_interfaces
+      use ex73f90tmodule
+      use ex73f90tmodule_interfaces
       implicit none
 !  Input/output variables:
       SNES::     mysnes
@@ -388,7 +388,7 @@
       PetscErrorCode ierr
 
 !  Declarations for use with local arrays:
-      type(petsc_kkt_solver_type), pointer:: solver
+      type(ex73f90tmodule_type), pointer:: solver
       Vec::      Xsub(2)
       PetscInt::  izero,ione,itwo
 
@@ -428,10 +428,10 @@
       subroutine InitialGuessLocal(solver,X1,ierr)
 #include <petsc/finclude/petscsys.h>
       use petscsys
-      use petsc_kkt_solver
+      use ex73f90tmodule
       implicit none
 !  Input/output variables:
-      type (petsc_kkt_solver_type)         solver
+      type (ex73f90tmodule_type)         solver
       Vec::      X1
       PetscErrorCode ierr
 
@@ -482,13 +482,13 @@
       subroutine FormJacobian(dummy,X,jac,jac_prec,solver,ierr)
 #include <petsc/finclude/petscsnes.h>
       use petscsnes
-      use petsc_kkt_solver
+      use ex73f90tmodule
       implicit none
 !  Input/output variables:
       SNES::     dummy
       Vec::      X
      Mat::     jac,jac_prec
-      type(petsc_kkt_solver_type)  solver
+      type(ex73f90tmodule_type)  solver
       PetscErrorCode ierr
 
 !  Declarations for use with local arrays:
@@ -540,10 +540,10 @@
       subroutine FormJacobianLocal(X1,jac,solver,add_nl_term,ierr)
 #include <petsc/finclude/petscmat.h>
       use petscmat
-      use petsc_kkt_solver
+      use ex73f90tmodule
       implicit none
 !  Input/output variables:
-      type (petsc_kkt_solver_type) solver
+      type (ex73f90tmodule_type) solver
       Vec::      X1
      Mat::     jac
       logical        add_nl_term
@@ -624,13 +624,13 @@
       subroutine FormFunction(snesIn,X,F,solver,ierr)
 #include <petsc/finclude/petscsnes.h>
       use petscsnes
-      use petsc_kkt_solver
+      use ex73f90tmodule
       implicit none
 !  Input/output variables:
       SNES::     snesIn
      Vec::      X,F
       PetscErrorCode ierr
-      type (petsc_kkt_solver_type) solver
+      type (ex73f90tmodule_type) solver
 
 !  Declarations for use with local arrays:
      Vec::              Xsub(2),Fsub(2)
@@ -676,10 +676,10 @@
       subroutine FormFunctionNLTerm(X1,F1,solver,ierr)
 #include <petsc/finclude/petscvec.h>
       use petscvec
-      use petsc_kkt_solver
+      use ex73f90tmodule
       implicit none
 !  Input/output variables:
-      type (petsc_kkt_solver_type) solver
+      type (ex73f90tmodule_type) solver
      Vec::      X1,F1
       PetscErrorCode ierr
 !  Local variables:

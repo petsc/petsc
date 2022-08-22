@@ -1,4 +1,4 @@
-module ex13f90aux
+module ex13f90auxmodule
   implicit none
 contains
   !
@@ -101,4 +101,4 @@ contains
     PetscReal, intent(in),dimension(:,1-stw:,1-stw:,1-stw:)      :: f
     array(:,:,:,:) = f(:,:,:,:)
   end subroutine transform_us_petsc
-end module ex13f90aux
+end module ex13f90auxmodule
