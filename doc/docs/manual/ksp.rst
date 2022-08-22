@@ -1039,7 +1039,10 @@ Algebraic Multigrid (AMG) Preconditioners
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 PETSc has a native algebraic multigrid preconditioner ``PCGAMG`` –
-*gamg* – and interfaces to two external AMG packages: *hypre* and *ML*.
+*gamg* – and interfaces to three external AMG packages: *hypre*, *ML*
+and *AMGx* (CUDA platforms only), that can be downloaded in the
+configuration phase (eg, ``--download-hypre`` ) and used by
+specifiying that command line parameter (eg, ``-pc_type hypre``).
 *Hypre* is relatively monolithic in that a PETSc matrix is converted into a hypre
 matrix and then *hypre* is called to do the entire solve. *ML* is more
 modular in that PETSc only has *ML* generate the coarse grid spaces
@@ -1145,7 +1148,7 @@ Note, the parallel algorithm requires symmetric weights/matrix. You must
 use ``-pc_gamg_symmetrize_graph <true>`` to symmetrize the graph if your
 problem is not symmetric.
 
-**Trouble shooting algebraic multigrid methods:** If *GAMG*, *ML*, or
+**Trouble shooting algebraic multigrid methods:** If *GAMG*, *ML*, *AMGx* or
 *hypre* does not perform well the first thing to try is one of the other
 methods. Often the default parameters or just the strengths of different
 algorithms can fix performance problems or provide useful information to

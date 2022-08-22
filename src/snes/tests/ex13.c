@@ -6,6 +6,9 @@ using a parallel unstructured mesh (DMPLEX) to discretize it.\n\n\n";
 #include <petscsnes.h>
 #include <petscds.h>
 #include <petscconvest.h>
+#if defined(PETSC_HAVE_AMGX)
+#include <amgx_c.h>
+#endif
 
 typedef struct {
   PetscInt  nit;    /* Number of benchmark iterations */
@@ -164,6 +167,19 @@ int main(int argc, char **argv)
   PetscCall(DMSNESCheckFromOptions(snes, u));
   PetscCall(PetscTime(&time));
   PetscCall(SNESSetUp(snes));
+#if defined(PETSC_HAVE_AMGX)
+  KSP ksp;
+  PC pc;
+  PetscBool flg;
+  AMGX_resources_handle rsc;
+  PetscCall(SNESGetKSP(snes,&ksp));
+  PetscCall(KSPGetPC(ksp,&pc));
+  PetscCall(PetscObjectTypeCompare((PetscObject)pc,PCAMGX,&flg));
+  if (flg) {
+    PetscCall(PCAmgXGetResources(pc,(void*)&rsc));
+    /* do ... with resource */
+  }
+#endif
   PetscCall(SNESGetJacobian(snes, &Amat, NULL, NULL, NULL));
   PetscCall(MatSetOption(Amat,MAT_SPD,PETSC_TRUE));
   PetscCall(MatSetOption(Amat,MAT_SPD_ETERNAL,PETSC_TRUE));
@@ -247,5 +263,18 @@ int main(int argc, char **argv)
           -snes_type ksponly -dm_view -pc_type gamg -pc_gamg_threshold -1 -pc_gamg_square_graph 10 -pc_gamg_process_eq_limit 400 \
           -pc_gamg_reuse_interpolation -pc_gamg_coarse_eq_limit 10 -pc_gamg_esteig_ksp_type cg -ksp_type cg -ksp_norm_type unpreconditioned \
           -ksp_converged_reason -snes_rtol 1.e-4 -dm_mat_type aijmkl -dm_vec_type standard
+
+  testset:
+    requires: amgx
+    output_file: output/ex13_amgx.out
+    args: -dm_plex_dim 2 -dm_plex_box_faces 2,2 -dm_refine 2 -petscpartitioner_type simple -potential_petscspace_degree 2 -dm_plex_simplex 0 -ksp_monitor \
+          -snes_type ksponly -dm_view -ksp_type cg -ksp_norm_type unpreconditioned -ksp_converged_reason -snes_rtol 1.e-4 -pc_type amgx -benchmark_it 1 -pc_amgx_verbose true
+    nsize: 4
+    test:
+      suffix: amgx
+      args: -dm_mat_type aijcusparse -dm_vec_type cuda
+    test:
+      suffix: amgx_cpu
+      args: -dm_mat_type aij
 
 TEST*/

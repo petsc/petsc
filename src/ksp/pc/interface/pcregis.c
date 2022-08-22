@@ -35,6 +35,9 @@ PETSC_EXTERN PetscErrorCode PCCreate_Telescope(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_Patch(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_LMVM(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_HMG(PC);
+#if defined(PETSC_HAVE_AMGX)
+PETSC_EXTERN PetscErrorCode PCCreate_AMGX(PC);
+#endif
 #if defined(PETSC_HAVE_ML)
 PETSC_EXTERN PetscErrorCode PCCreate_ML(PC);
 #endif
@@ -123,6 +126,9 @@ PetscErrorCode  PCRegisterAll(void)
   PetscCall(PCRegister(PCTELESCOPE    ,PCCreate_Telescope));
   PetscCall(PCRegister(PCPATCH        ,PCCreate_Patch));
   PetscCall(PCRegister(PCHMG          ,PCCreate_HMG));
+#if defined(PETSC_HAVE_AMGX)
+  PetscCall(PCRegister(PCAMGX         ,PCCreate_AMGX));
+#endif
 #if defined(PETSC_HAVE_ML)
   PetscCall(PCRegister(PCML           ,PCCreate_ML));
 #endif
