@@ -1,4 +1,4 @@
-@@ -6,4 +6,4 @@
+@@ -5,4 +5,4 @@
 -  PetscValidHeaderSpecificType(r, PETSC_VIEWER_CLASSID, 0, DMDA);
 -  PetscValidHeaderSpecificType(v, PETSC_DRAW_CLASSID, 0, DMDA);
 -  PetscValidHeaderSpecificType(d, PETSC_DRAWAXIS_CLASSID, 0, DMDA);
@@ -7,7 +7,7 @@
 +  PetscValidHeaderSpecificType(v, PETSC_VIEWER_CLASSID, 2, DMDA);
 +  PetscValidHeaderSpecificType(d, PETSC_DRAW_CLASSID, 3, DMDA);
 +  PetscValidHeaderSpecificType(a, PETSC_DRAWAXIS_CLASSID, 4, DMDA);
-@@ -18,4 +18,4 @@
+@@ -17,4 +17,4 @@
 -  PetscValidHeaderSpecific(r, PETSC_DRAW_CLASSID, 0);
 -  PetscValidHeaderSpecific(v, PETSC_DRAWAXIS_CLASSID, 0);
 -  PetscValidHeaderSpecific(d, PETSC_RANDOM_CLASSID, 0);
@@ -16,7 +16,7 @@
 +  PetscValidHeaderSpecific(v, PETSC_VIEWER_CLASSID, 2);
 +  PetscValidHeaderSpecific(d, PETSC_DRAW_CLASSID, 3);
 +  PetscValidHeaderSpecific(a, PETSC_DRAWAXIS_CLASSID, 4);
-@@ -30,4 +30,4 @@
+@@ -29,4 +29,4 @@
 -  PetscValidHeader(r, 55);
 -  PetscValidHeader(v, 56);
 -  PetscValidHeader(d, 57);

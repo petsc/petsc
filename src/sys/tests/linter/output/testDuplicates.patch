@@ -1,37 +1,37 @@
-@@ -10 +10 @@
+@@ -9 +9 @@
 -  PetscValidIntPointer(b, 5);
 +  PetscValidScalarPointer(b, 2);
-@@ -12,2 +12,2 @@
+@@ -11,2 +11,2 @@
 -  PetscValidScalarPointer(b, 7);
 -  PetscValidScalarPointer(b, 3);
 +  PetscValidScalarPointer(b, 2);
 +  PetscValidScalarPointer(b, 2);
-@@ -8 +7,0 @@
+@@ -7 +6,0 @@
 -  PetscValidIntPointer(a, 1);
-@@ -23,2 +22,0 @@
--  PetscValidIntPointer(a, 1);
--  PetscValidScalarPointer(b, 2);
-@@ -27,2 +26,0 @@
--    PetscValidIntPointer(a, 1);
--    PetscValidScalarPointer(b, 2);
-@@ -39,2 +38,0 @@
+@@ -21,2 +20,0 @@
 -  PetscValidIntPointer(a, 1);
 -  PetscValidScalarPointer(b, 2);
-@@ -43,2 +42,0 @@
+@@ -25,2 +24,0 @@
 -    PetscValidIntPointer(a, 1);
 -    PetscValidScalarPointer(b, 2);
-@@ -48,2 +47,0 @@
+@@ -36,2 +35,0 @@
+-  PetscValidIntPointer(a, 1);
+-  PetscValidScalarPointer(b, 2);
+@@ -40,2 +39,0 @@
+-    PetscValidIntPointer(a, 1);
+-    PetscValidScalarPointer(b, 2);
+@@ -45,2 +44,0 @@
+-    PetscValidIntPointer(a, 1);
+-    PetscValidScalarPointer(b, 2);
+@@ -74,2 +73,0 @@
 -    PetscValidIntPointer(a, 1);
 -    PetscValidScalarPointer(b, 2);
 @@ -79,2 +78,0 @@
 -    PetscValidIntPointer(a, 1);
 -    PetscValidScalarPointer(b, 2);
-@@ -84,2 +83,0 @@
+@@ -105,2 +104,0 @@
 -    PetscValidIntPointer(a, 1);
 -    PetscValidScalarPointer(b, 2);
-@@ -112,2 +111,0 @@
--    PetscValidIntPointer(a, 1);
--    PetscValidScalarPointer(b, 2);
-@@ -116,2 +115,0 @@
+@@ -109,2 +108,0 @@
 -    PetscValidIntPointer(a, 1);
 -    PetscValidScalarPointer(b, 2);

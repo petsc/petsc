@@ -1,4 +1,4 @@
-@@ -6,4 +6,4 @@
+@@ -5,4 +5,4 @@
 -  PetscValidType(r, -1);
 -  PetscCheckSameType(r, -1, v, -1);
 -  PetscCheckSameComm(o, -2, f, -2);

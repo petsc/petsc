@@ -1,4 +1,4 @@
-@@ -6,8 +6,8 @@
+@@ -5,8 +5,8 @@
 -  PetscValidCharPointer(a, 2);
 -  PetscValidIntPointer(b, 3);
 -  PetscValidBoolPointer(c, 4);
@@ -15,7 +15,7 @@
 +  PetscValidBoolPointer(f, 6);
 +  PetscValidScalarPointer(g, 7);
 +  PetscValidRealPointer(h, 8);
-@@ -30,8 +30,8 @@
+@@ -28,8 +28,8 @@
 -  PetscValidCharPointer(a, 2);
 -  PetscValidPointer(b, 3);
 -  PetscValidPointer(c, 4);
@@ -32,7 +32,7 @@
 +  PetscValidBoolPointer(f, 6);
 +  PetscValidScalarPointer(g, 7);
 +  PetscValidRealPointer(h, 8);
-@@ -54,8 +54,8 @@
+@@ -51,8 +51,8 @@
 -  PetscValidCharPointer(a, 1);
 -  PetscValidCharPointer(b, 2);
 -  PetscValidIntPointer(c, 3);
