@@ -20,7 +20,9 @@ static char help[] = "Benchmarking various accessing methods of DMDA vectors on 
 #include <petscdm.h>
 #include <petscdmda.h>
 
-using namespace Kokkos;
+using Kokkos::Iterate;
+using Kokkos::MDRangePolicy;
+using Kokkos::Rank;
 using PetscScalarKokkosOffsetView3D      = Kokkos::Experimental::OffsetView<PetscScalar ***, Kokkos::LayoutRight, Kokkos::HostSpace>;
 using ConstPetscScalarKokkosOffsetView3D = Kokkos::Experimental::OffsetView<const PetscScalar ***, Kokkos::LayoutRight, Kokkos::HostSpace>;
 

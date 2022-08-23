@@ -4,7 +4,9 @@ static char help[] = "Tests DMDAVecGetKokkosOffsetView() and DMDAVecGetKokkosOff
 #include <petscdm.h>
 #include <petscdmda.h>
 
-using namespace Kokkos;
+using Kokkos::Iterate;
+using Kokkos::MDRangePolicy;
+using Kokkos::Rank;
 using PetscScalarKokkosOffsetView2D      = Kokkos::Experimental::OffsetView<PetscScalar **, Kokkos::LayoutRight, Kokkos::DefaultExecutionSpace::memory_space>;
 using ConstPetscScalarKokkosOffsetView2D = Kokkos::Experimental::OffsetView<const PetscScalar **, Kokkos::LayoutRight, Kokkos::DefaultExecutionSpace::memory_space>;
 
