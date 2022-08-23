@@ -12,8 +12,7 @@ typedef struct {
   PetscBool volumeMesh;
 } AppCtx;
 
-static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
-{
+static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   PetscFunctionBeginUser;
   options->filename[0] = '\0';
   options->volumeMesh  = PETSC_TRUE;
@@ -25,13 +24,12 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode ComputeVolume(DM dm)
-{
-  PetscObject    obj = (PetscObject) dm;
-  DMLabel        bodyLabel, faceLabel, edgeLabel;
-  double         surface = 0., volume = 0., vol;
-  PetscInt       dim, pStart, pEnd, p, pid;
-  const char    *name;
+static PetscErrorCode ComputeVolume(DM dm) {
+  PetscObject obj = (PetscObject)dm;
+  DMLabel     bodyLabel, faceLabel, edgeLabel;
+  double      surface = 0., volume = 0., vol;
+  PetscInt    dim, pStart, pEnd, p, pid;
+  const char *name;
 
   PetscFunctionBeginUser;
   PetscCall(DMGetDimension(dm, &dim));
@@ -62,24 +60,23 @@ static PetscErrorCode ComputeVolume(DM dm)
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char *argv[])
-{
-  DM             surface, dm;
-  AppCtx         ctx;
+int main(int argc, char *argv[]) {
+  DM     surface, dm;
+  AppCtx ctx;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(ProcessOptions(PETSC_COMM_WORLD, &ctx));
   PetscCall(DMPlexCreateFromFile(PETSC_COMM_WORLD, ctx.filename, "ex37_plex", PETSC_TRUE, &surface));
-  PetscCall(PetscObjectSetName((PetscObject) surface, "CAD Surface"));
-  PetscCall(PetscObjectSetOptionsPrefix((PetscObject) surface, "sur_"));
+  PetscCall(PetscObjectSetName((PetscObject)surface, "CAD Surface"));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)surface, "sur_"));
   PetscCall(DMSetFromOptions(surface));
   PetscCall(DMViewFromOptions(surface, NULL, "-dm_view"));
   PetscCall(ComputeVolume(surface));
 
   if (ctx.volumeMesh) {
     PetscCall(DMPlexGenerate(surface, "tetgen", PETSC_TRUE, &dm));
-    PetscCall(PetscObjectSetName((PetscObject) dm, "CAD Mesh"));
+    PetscCall(PetscObjectSetName((PetscObject)dm, "CAD Mesh"));
     PetscCall(DMPlexSetRefinementUniform(dm, PETSC_TRUE));
     PetscCall(DMViewFromOptions(dm, NULL, "-pre_dm_view"));
 

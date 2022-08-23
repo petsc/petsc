@@ -24,4 +24,3 @@ typedef struct {
 } KSPCG_STCG;
 
 #endif
-

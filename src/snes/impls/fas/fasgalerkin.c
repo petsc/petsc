@@ -13,13 +13,12 @@
 
 .seealso: `SNESFASSetLevels()`, `SNESFASSetGalerkin()`
 @*/
-PetscErrorCode SNESFASGetGalerkin(SNES snes, PetscBool *flg)
-{
+PetscErrorCode SNESFASGetGalerkin(SNES snes, PetscBool *flg) {
   SNES_FAS *fas;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecificType(snes,SNES_CLASSID,1,SNESFAS);
-  fas = (SNES_FAS*)snes->data;
+  PetscValidHeaderSpecificType(snes, SNES_CLASSID, 1, SNESFAS);
+  fas  = (SNES_FAS *)snes->data;
   *flg = fas->galerkin;
   PetscFunctionReturn(0);
 }
@@ -35,13 +34,12 @@ PetscErrorCode SNESFASGetGalerkin(SNES snes, PetscBool *flg)
 
 .seealso: `SNESFASSetLevels()`, `SNESFASGetGalerkin()`
 @*/
-PetscErrorCode SNESFASSetGalerkin(SNES snes, PetscBool flg)
-{
-  SNES_FAS       *fas;
+PetscErrorCode SNESFASSetGalerkin(SNES snes, PetscBool flg) {
+  SNES_FAS *fas;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecificType(snes,SNES_CLASSID,1,SNESFAS);
-  fas = (SNES_FAS*)snes->data;
+  PetscValidHeaderSpecificType(snes, SNES_CLASSID, 1, SNESFAS);
+  fas           = (SNES_FAS *)snes->data;
   fas->galerkin = flg;
   if (fas->next) PetscCall(SNESFASSetGalerkin(fas->next, flg));
   PetscFunctionReturn(0);
@@ -66,20 +64,19 @@ $  F^l(x^l) = I^l_0 F^0(P^0_l x^l)
 
 .seealso: `SNESFASGetGalerkin()`, `SNESFASSetGalerkin()`
 @*/
-PetscErrorCode SNESFASGalerkinFunctionDefault(SNES snes, Vec X, Vec F, void *ctx)
-{
-  SNES           fassnes;
-  SNES_FAS       *fas;
-  SNES_FAS       *prevfas;
-  SNES           prevsnes;
-  Vec            b_temp;
+PetscErrorCode SNESFASGalerkinFunctionDefault(SNES snes, Vec X, Vec F, void *ctx) {
+  SNES      fassnes;
+  SNES_FAS *fas;
+  SNES_FAS *prevfas;
+  SNES      prevsnes;
+  Vec       b_temp;
 
   PetscFunctionBegin;
   /* prolong to the fine level and evaluate there. */
   fassnes  = (SNES)ctx;
-  fas      = (SNES_FAS*)fassnes->data;
+  fas      = (SNES_FAS *)fassnes->data;
   prevsnes = fas->previous;
-  prevfas  = (SNES_FAS*)prevsnes->data;
+  prevfas  = (SNES_FAS *)prevsnes->data;
   /* interpolate down the solution */
   PetscCall(MatInterpolate(prevfas->interpolate, X, prevfas->Xg));
   /* the RHS we care about is at the coarsest level */

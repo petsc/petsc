@@ -10,7 +10,7 @@
 
 .seealso: `PetscDrawSetType()`, `PetscDraw`, `PetscViewer`, `PetscDrawCreate()`, `PetscDrawRegister()`
 J*/
-typedef const char* PetscDrawType;
+typedef const char *PetscDrawType;
 #define PETSC_DRAW_X     "x"
 #define PETSC_DRAW_NULL  "null"
 #define PETSC_DRAW_WIN32 "win32"
@@ -24,7 +24,7 @@ typedef const char* PetscDrawType;
 
 .seealso: `PetscDrawCreate()`, `PetscDrawSetType()`, `PetscDrawType`
 S*/
-typedef struct _p_PetscDraw* PetscDraw;
+typedef struct _p_PetscDraw *PetscDraw;
 
 /*S
      PetscDrawAxis - Manages X-Y axis
@@ -33,7 +33,7 @@ typedef struct _p_PetscDraw* PetscDraw;
 
 .seealso: `PetscDrawAxisCreate()`, `PetscDrawAxisSetLimits()`, `PetscDrawAxisSetColors()`, `PetscDrawAxisSetLabels()`
 S*/
-typedef struct _p_PetscDrawAxis* PetscDrawAxis;
+typedef struct _p_PetscDrawAxis *PetscDrawAxis;
 
 /*S
      PetscDrawLG - Manages drawing x-y plots
@@ -42,7 +42,7 @@ typedef struct _p_PetscDrawAxis* PetscDrawAxis;
 
 .seealso: `PetscDrawAxisCreate()`, `PetscDrawLGCreate()`, `PetscDrawLGAddPoint()`
 S*/
-typedef struct _p_PetscDrawLG*   PetscDrawLG;
+typedef struct _p_PetscDrawLG *PetscDrawLG;
 
 /*S
      PetscDrawSP - Manages drawing scatter plots
@@ -51,7 +51,7 @@ typedef struct _p_PetscDrawLG*   PetscDrawLG;
 
 .seealso: `PetscDrawSPCreate()`
 S*/
-typedef struct _p_PetscDrawSP*   PetscDrawSP;
+typedef struct _p_PetscDrawSP *PetscDrawSP;
 
 /*S
      PetscDrawHG - Manages drawing histograms
@@ -60,7 +60,7 @@ typedef struct _p_PetscDrawSP*   PetscDrawSP;
 
 .seealso: `PetscDrawHGCreate()`
 S*/
-typedef struct _p_PetscDrawHG*   PetscDrawHG;
+typedef struct _p_PetscDrawHG *PetscDrawHG;
 
 /*S
      PetscDrawBar - Manages drawing bar graphs
@@ -69,6 +69,6 @@ typedef struct _p_PetscDrawHG*   PetscDrawHG;
 
 .seealso: `PetscDrawBarCreate()`
 S*/
-typedef struct _p_PetscDrawBar*   PetscDrawBar;
+typedef struct _p_PetscDrawBar *PetscDrawBar;
 
 #endif

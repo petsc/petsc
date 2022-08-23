@@ -2,7 +2,7 @@
    This file contains routines for basic section object implementation.
 */
 
-#include <petsc/private/sectionimpl.h>   /*I  "petscsection.h"   I*/
+#include <petsc/private/sectionimpl.h> /*I  "petscsection.h"   I*/
 #include <petscsf.h>
 
 PetscClassId PETSC_SECTION_CLASSID;
@@ -33,13 +33,12 @@ $       PetscSectionDestroy(PetscSection);
 
 .seealso: `PetscSection`, `PetscSectionDestroy()`
 @*/
-PetscErrorCode PetscSectionCreate(MPI_Comm comm, PetscSection *s)
-{
+PetscErrorCode PetscSectionCreate(MPI_Comm comm, PetscSection *s) {
   PetscFunctionBegin;
-  PetscValidPointer(s,2);
+  PetscValidPointer(s, 2);
   PetscCall(ISInitializePackage());
 
-  PetscCall(PetscHeaderCreate(*s,PETSC_SECTION_CLASSID,"PetscSection","Section","IS",comm,PetscSectionDestroy,PetscSectionView));
+  PetscCall(PetscHeaderCreate(*s, PETSC_SECTION_CLASSID, "PetscSection", "Section", "IS", comm, PetscSectionDestroy, PetscSectionView));
 
   (*s)->pStart              = -1;
   (*s)->pEnd                = -1;
@@ -79,8 +78,7 @@ PetscErrorCode PetscSectionCreate(MPI_Comm comm, PetscSection *s)
 
 .seealso: `PetscSection`, `PetscSectionCreate()`, `PetscSectionDestroy()`
 @*/
-PetscErrorCode PetscSectionCopy(PetscSection section, PetscSection newSection)
-{
+PetscErrorCode PetscSectionCopy(PetscSection section, PetscSection newSection) {
   PetscSectionSym sym;
   IS              perm;
   PetscInt        numFields, f, c, pStart, pEnd, p;
@@ -93,7 +91,7 @@ PetscErrorCode PetscSectionCopy(PetscSection section, PetscSection newSection)
   if (numFields) PetscCall(PetscSectionSetNumFields(newSection, numFields));
   for (f = 0; f < numFields; ++f) {
     const char *fieldName = NULL, *compName = NULL;
-    PetscInt   numComp = 0;
+    PetscInt    numComp = 0;
 
     PetscCall(PetscSectionGetFieldName(section, f, &fieldName));
     PetscCall(PetscSectionSetFieldName(newSection, f, fieldName));
@@ -130,7 +128,7 @@ PetscErrorCode PetscSectionCopy(PetscSection section, PetscSection newSection)
   }
   PetscCall(PetscSectionSetUp(newSection));
   for (p = pStart; p < pEnd; ++p) {
-    PetscInt       off, cdof, fcdof = 0;
+    PetscInt        off, cdof, fcdof = 0;
     const PetscInt *cInd;
 
     /* Must set offsets in case they do not agree with the prefix sums */
@@ -167,12 +165,11 @@ PetscErrorCode PetscSectionCopy(PetscSection section, PetscSection newSection)
 
 .seealso: `PetscSection`, `PetscSectionCreate()`, `PetscSectionDestroy()`
 @*/
-PetscErrorCode PetscSectionClone(PetscSection section, PetscSection *newSection)
-{
+PetscErrorCode PetscSectionClone(PetscSection section, PetscSection *newSection) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, PETSC_SECTION_CLASSID, 1);
   PetscValidPointer(newSection, 2);
-  PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject) section), newSection));
+  PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)section), newSection));
   PetscCall(PetscSectionCopy(section, *newSection));
   PetscFunctionReturn(0);
 }
@@ -192,16 +189,15 @@ PetscErrorCode PetscSectionClone(PetscSection section, PetscSection *newSection)
 
 .seealso: `PetscSection`, `PetscSectionCreate()`, `PetscSectionDestroy()`
 @*/
-PetscErrorCode PetscSectionSetFromOptions(PetscSection s)
-{
+PetscErrorCode PetscSectionSetFromOptions(PetscSection s) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
-  PetscObjectOptionsBegin((PetscObject) s);
+  PetscObjectOptionsBegin((PetscObject)s);
   PetscCall(PetscOptionsBool("-petscsection_point_major", "The for ordering, either point major or field major", "PetscSectionSetPointMajor", s->pointMajor, &s->pointMajor, NULL));
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
-  PetscCall(PetscObjectProcessOptionsHandlers((PetscObject) s,PetscOptionsObject));
+  PetscCall(PetscObjectProcessOptionsHandlers((PetscObject)s, PetscOptionsObject));
   PetscOptionsEnd();
-  PetscCall(PetscObjectViewFromOptions((PetscObject) s, NULL, "-petscsection_view"));
+  PetscCall(PetscObjectViewFromOptions((PetscObject)s, NULL, "-petscsection_view"));
   PetscFunctionReturn(0);
 }
 
@@ -224,21 +220,20 @@ PetscErrorCode PetscSectionSetFromOptions(PetscSection s)
 
 .seealso: `PetscSection`, `PetscSectionCreate()`, `PetscSectionCopy()`, `PetscSectionClone()`
 @*/
-PetscErrorCode PetscSectionCompare(PetscSection s1, PetscSection s2, PetscBool *congruent)
-{
-  PetscInt pStart, pEnd, nfields, ncdof, nfcdof, p, f, n1, n2;
+PetscErrorCode PetscSectionCompare(PetscSection s1, PetscSection s2, PetscBool *congruent) {
+  PetscInt        pStart, pEnd, nfields, ncdof, nfcdof, p, f, n1, n2;
   const PetscInt *idx1, *idx2;
-  IS perm1, perm2;
-  PetscBool flg;
-  PetscMPIInt mflg;
+  IS              perm1, perm2;
+  PetscBool       flg;
+  PetscMPIInt     mflg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s1, PETSC_SECTION_CLASSID, 1);
   PetscValidHeaderSpecific(s2, PETSC_SECTION_CLASSID, 2);
-  PetscValidBoolPointer(congruent,3);
+  PetscValidBoolPointer(congruent, 3);
   flg = PETSC_FALSE;
 
-  PetscCallMPI(MPI_Comm_compare(PetscObjectComm((PetscObject)s1),PetscObjectComm((PetscObject)s2),&mflg));
+  PetscCallMPI(MPI_Comm_compare(PetscObjectComm((PetscObject)s1), PetscObjectComm((PetscObject)s2), &mflg));
   if (mflg != MPI_CONGRUENT && mflg != MPI_IDENT) {
     *congruent = PETSC_FALSE;
     PetscFunctionReturn(0);
@@ -305,7 +300,7 @@ PetscErrorCode PetscSectionCompare(PetscSection s1, PetscSection s2, PetscBool *
 
   flg = PETSC_TRUE;
 not_congruent:
-  PetscCall(MPIU_Allreduce(&flg,congruent,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)s1)));
+  PetscCall(MPIU_Allreduce(&flg, congruent, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)s1)));
   PetscFunctionReturn(0);
 }
 
@@ -324,11 +319,10 @@ not_congruent:
 
 .seealso: `PetscSectionSetNumFields()`
 @*/
-PetscErrorCode PetscSectionGetNumFields(PetscSection s, PetscInt *numFields)
-{
+PetscErrorCode PetscSectionGetNumFields(PetscSection s, PetscInt *numFields) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
-  PetscValidIntPointer(numFields,2);
+  PetscValidIntPointer(numFields, 2);
   *numFields = s->numFields;
   PetscFunctionReturn(0);
 }
@@ -346,13 +340,12 @@ PetscErrorCode PetscSectionGetNumFields(PetscSection s, PetscInt *numFields)
 
 .seealso: `PetscSectionGetNumFields()`
 @*/
-PetscErrorCode PetscSectionSetNumFields(PetscSection s, PetscInt numFields)
-{
-  PetscInt       f;
+PetscErrorCode PetscSectionSetNumFields(PetscSection s, PetscInt numFields) {
+  PetscInt f;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
-  PetscCheck(numFields > 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "The number of fields %" PetscInt_FMT " must be positive", numFields);
+  PetscCheck(numFields > 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "The number of fields %" PetscInt_FMT " must be positive", numFields);
   PetscCall(PetscSectionReset(s));
 
   s->numFields = numFields;
@@ -365,12 +358,12 @@ PetscErrorCode PetscSectionSetNumFields(PetscSection s, PetscInt numFields)
 
     s->numFieldComponents[f] = 1;
 
-    PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject) s), &s->field[f]));
+    PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)s), &s->field[f]));
     PetscCall(PetscSNPrintf(name, 64, "Field_%" PetscInt_FMT, f));
-    PetscCall(PetscStrallocpy(name, (char **) &s->fieldNames[f]));
+    PetscCall(PetscStrallocpy(name, (char **)&s->fieldNames[f]));
     PetscCall(PetscSNPrintf(name, 64, "Component_0"));
     PetscCall(PetscMalloc1(s->numFieldComponents[f], &s->compNames[f]));
-    PetscCall(PetscStrallocpy(name, (char **) &s->compNames[f][0]));
+    PetscCall(PetscStrallocpy(name, (char **)&s->compNames[f][0]));
   }
   PetscFunctionReturn(0);
 }
@@ -391,12 +384,11 @@ PetscErrorCode PetscSectionSetNumFields(PetscSection s, PetscInt numFields)
 
 .seealso: `PetscSectionSetFieldName()`
 @*/
-PetscErrorCode PetscSectionGetFieldName(PetscSection s, PetscInt field, const char *fieldName[])
-{
+PetscErrorCode PetscSectionGetFieldName(PetscSection s, PetscInt field, const char *fieldName[]) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   PetscValidPointer(fieldName, 3);
-  PetscSectionCheckValidField(field,s->numFields);
+  PetscSectionCheckValidField(field, s->numFields);
   *fieldName = s->fieldNames[field];
   PetscFunctionReturn(0);
 }
@@ -415,14 +407,13 @@ PetscErrorCode PetscSectionGetFieldName(PetscSection s, PetscInt field, const ch
 
 .seealso: `PetscSectionGetFieldName()`
 @*/
-PetscErrorCode PetscSectionSetFieldName(PetscSection s, PetscInt field, const char fieldName[])
-{
+PetscErrorCode PetscSectionSetFieldName(PetscSection s, PetscInt field, const char fieldName[]) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   if (fieldName) PetscValidCharPointer(fieldName, 3);
-  PetscSectionCheckValidField(field,s->numFields);
+  PetscSectionCheckValidField(field, s->numFields);
   PetscCall(PetscFree(s->fieldNames[field]));
-  PetscCall(PetscStrallocpy(fieldName, (char**) &s->fieldNames[field]));
+  PetscCall(PetscStrallocpy(fieldName, (char **)&s->fieldNames[field]));
   PetscFunctionReturn(0);
 }
 
@@ -441,13 +432,12 @@ PetscErrorCode PetscSectionSetFieldName(PetscSection s, PetscInt field, const ch
 
 .seealso: `PetscSectionSetComponentName()`
 @*/
-PetscErrorCode PetscSectionGetComponentName(PetscSection s, PetscInt field, PetscInt comp, const char *compName[])
-{
+PetscErrorCode PetscSectionGetComponentName(PetscSection s, PetscInt field, PetscInt comp, const char *compName[]) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   PetscValidPointer(compName, 4);
-  PetscSectionCheckValidField(field,s->numFields);
-  PetscSectionCheckValidFieldComponent(comp,s->numFieldComponents[field]);
+  PetscSectionCheckValidField(field, s->numFields);
+  PetscSectionCheckValidFieldComponent(comp, s->numFieldComponents[field]);
   *compName = s->compNames[field][comp];
   PetscFunctionReturn(0);
 }
@@ -467,15 +457,14 @@ PetscErrorCode PetscSectionGetComponentName(PetscSection s, PetscInt field, Pets
 
 .seealso: `PetscSectionGetComponentName()`
 @*/
-PetscErrorCode PetscSectionSetComponentName(PetscSection s, PetscInt field, PetscInt comp, const char compName[])
-{
+PetscErrorCode PetscSectionSetComponentName(PetscSection s, PetscInt field, PetscInt comp, const char compName[]) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   if (compName) PetscValidCharPointer(compName, 4);
-  PetscSectionCheckValidField(field,s->numFields);
-  PetscSectionCheckValidFieldComponent(comp,s->numFieldComponents[field]);
+  PetscSectionCheckValidField(field, s->numFields);
+  PetscSectionCheckValidFieldComponent(comp, s->numFieldComponents[field]);
   PetscCall(PetscFree(s->compNames[field][comp]));
-  PetscCall(PetscStrallocpy(compName, (char**) &s->compNames[field][comp]));
+  PetscCall(PetscStrallocpy(compName, (char **)&s->compNames[field][comp]));
   PetscFunctionReturn(0);
 }
 
@@ -495,12 +484,11 @@ PetscErrorCode PetscSectionSetComponentName(PetscSection s, PetscInt field, Pets
 
 .seealso: `PetscSectionSetFieldComponents()`, `PetscSectionGetNumFields()`
 @*/
-PetscErrorCode PetscSectionGetFieldComponents(PetscSection s, PetscInt field, PetscInt *numComp)
-{
+PetscErrorCode PetscSectionGetFieldComponents(PetscSection s, PetscInt field, PetscInt *numComp) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   PetscValidIntPointer(numComp, 3);
-  PetscSectionCheckValidField(field,s->numFields);
+  PetscSectionCheckValidField(field, s->numFields);
   *numComp = s->numFieldComponents[field];
   PetscFunctionReturn(0);
 }
@@ -519,28 +507,25 @@ PetscErrorCode PetscSectionGetFieldComponents(PetscSection s, PetscInt field, Pe
 
 .seealso: `PetscSectionGetFieldComponents()`, `PetscSectionGetNumFields()`
 @*/
-PetscErrorCode PetscSectionSetFieldComponents(PetscSection s, PetscInt field, PetscInt numComp)
-{
-  PetscInt       c;
+PetscErrorCode PetscSectionSetFieldComponents(PetscSection s, PetscInt field, PetscInt numComp) {
+  PetscInt c;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
-  PetscSectionCheckValidField(field,s->numFields);
+  PetscSectionCheckValidField(field, s->numFields);
   if (s->compNames) {
-    for (c = 0; c < s->numFieldComponents[field]; ++c) {
-      PetscCall(PetscFree(s->compNames[field][c]));
-    }
+    for (c = 0; c < s->numFieldComponents[field]; ++c) { PetscCall(PetscFree(s->compNames[field][c])); }
     PetscCall(PetscFree(s->compNames[field]));
   }
 
   s->numFieldComponents[field] = numComp;
   if (numComp) {
-    PetscCall(PetscMalloc1(numComp, (char ***) &s->compNames[field]));
+    PetscCall(PetscMalloc1(numComp, (char ***)&s->compNames[field]));
     for (c = 0; c < numComp; ++c) {
       char name[64];
 
       PetscCall(PetscSNPrintf(name, 64, "%" PetscInt_FMT, c));
-      PetscCall(PetscStrallocpy(name, (char **) &s->compNames[field][c]));
+      PetscCall(PetscStrallocpy(name, (char **)&s->compNames[field][c]));
     }
   }
   PetscFunctionReturn(0);
@@ -562,12 +547,11 @@ PetscErrorCode PetscSectionSetFieldComponents(PetscSection s, PetscInt field, Pe
 
 .seealso: `PetscSectionSetChart()`, `PetscSectionCreate()`
 @*/
-PetscErrorCode PetscSectionGetChart(PetscSection s, PetscInt *pStart, PetscInt *pEnd)
-{
+PetscErrorCode PetscSectionGetChart(PetscSection s, PetscInt *pStart, PetscInt *pEnd) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   if (pStart) *pStart = s->pStart;
-  if (pEnd)   *pEnd   = s->pEnd;
+  if (pEnd) *pEnd = s->pEnd;
   PetscFunctionReturn(0);
 }
 
@@ -585,9 +569,8 @@ PetscErrorCode PetscSectionGetChart(PetscSection s, PetscInt *pStart, PetscInt *
 
 .seealso: `PetscSectionGetChart()`, `PetscSectionCreate()`
 @*/
-PetscErrorCode PetscSectionSetChart(PetscSection s, PetscInt pStart, PetscInt pEnd)
-{
-  PetscInt       f;
+PetscErrorCode PetscSectionSetChart(PetscSection s, PetscInt pStart, PetscInt pEnd) {
+  PetscInt f;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
@@ -602,9 +585,7 @@ PetscErrorCode PetscSectionSetChart(PetscSection s, PetscInt pStart, PetscInt pE
   s->pEnd   = pEnd;
   PetscCall(PetscMalloc2((pEnd - pStart), &s->atlasDof, (pEnd - pStart), &s->atlasOff));
   PetscCall(PetscArrayzero(s->atlasDof, pEnd - pStart));
-  for (f = 0; f < s->numFields; ++f) {
-    PetscCall(PetscSectionSetChart(s->field[f], pStart, pEnd));
-  }
+  for (f = 0; f < s->numFields; ++f) { PetscCall(PetscSectionSetChart(s->field[f], pStart, pEnd)); }
   PetscFunctionReturn(0);
 }
 
@@ -623,11 +604,13 @@ PetscErrorCode PetscSectionSetChart(PetscSection s, PetscInt pStart, PetscInt pE
 
 .seealso: `PetscSectionSetPermutation()`, `PetscSectionCreate()`
 @*/
-PetscErrorCode PetscSectionGetPermutation(PetscSection s, IS *perm)
-{
+PetscErrorCode PetscSectionGetPermutation(PetscSection s, IS *perm) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
-  if (perm) {PetscValidPointer(perm, 2); *perm = s->perm;}
+  if (perm) {
+    PetscValidPointer(perm, 2);
+    *perm = s->perm;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -644,17 +627,16 @@ PetscErrorCode PetscSectionGetPermutation(PetscSection s, IS *perm)
 
 .seealso: `PetscSectionGetPermutation()`, `PetscSectionCreate()`
 @*/
-PetscErrorCode PetscSectionSetPermutation(PetscSection s, IS perm)
-{
+PetscErrorCode PetscSectionSetPermutation(PetscSection s, IS perm) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   if (perm) PetscValidHeaderSpecific(perm, IS_CLASSID, 2);
-  PetscCheck(!s->setup,PetscObjectComm((PetscObject) s), PETSC_ERR_ARG_WRONGSTATE, "Cannot set a permutation after the section is setup");
+  PetscCheck(!s->setup, PetscObjectComm((PetscObject)s), PETSC_ERR_ARG_WRONGSTATE, "Cannot set a permutation after the section is setup");
   if (s->perm != perm) {
     PetscCall(ISDestroy(&s->perm));
     if (perm) {
       s->perm = perm;
-      PetscCall(PetscObjectReference((PetscObject) s->perm));
+      PetscCall(PetscObjectReference((PetscObject)s->perm));
     }
   }
   PetscFunctionReturn(0);
@@ -675,11 +657,10 @@ PetscErrorCode PetscSectionSetPermutation(PetscSection s, IS perm)
 
 .seealso: `PetscSectionSetPointMajor()`
 @*/
-PetscErrorCode PetscSectionGetPointMajor(PetscSection s, PetscBool *pm)
-{
+PetscErrorCode PetscSectionGetPointMajor(PetscSection s, PetscBool *pm) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
-  PetscValidBoolPointer(pm,2);
+  PetscValidBoolPointer(pm, 2);
   *pm = s->pointMajor;
   PetscFunctionReturn(0);
 }
@@ -697,11 +678,10 @@ PetscErrorCode PetscSectionGetPointMajor(PetscSection s, PetscBool *pm)
 
 .seealso: `PetscSectionGetPointMajor()`
 @*/
-PetscErrorCode PetscSectionSetPointMajor(PetscSection s, PetscBool pm)
-{
+PetscErrorCode PetscSectionSetPointMajor(PetscSection s, PetscBool pm) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
-  PetscCheck(!s->setup,PetscObjectComm((PetscObject) s), PETSC_ERR_ARG_WRONGSTATE, "Cannot set the dof ordering after the section is setup");
+  PetscCheck(!s->setup, PetscObjectComm((PetscObject)s), PETSC_ERR_ARG_WRONGSTATE, "Cannot set the dof ordering after the section is setup");
   s->pointMajor = pm;
   PetscFunctionReturn(0);
 }
@@ -721,11 +701,10 @@ PetscErrorCode PetscSectionSetPointMajor(PetscSection s, PetscBool pm)
 
 .seealso: `PetscSectionSetIncludesConstraints()`
 @*/
-PetscErrorCode PetscSectionGetIncludesConstraints(PetscSection s, PetscBool *includesConstraints)
-{
+PetscErrorCode PetscSectionGetIncludesConstraints(PetscSection s, PetscBool *includesConstraints) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
-  PetscValidBoolPointer(includesConstraints,2);
+  PetscValidBoolPointer(includesConstraints, 2);
   *includesConstraints = s->includesConstraints;
   PetscFunctionReturn(0);
 }
@@ -743,11 +722,10 @@ PetscErrorCode PetscSectionGetIncludesConstraints(PetscSection s, PetscBool *inc
 
 .seealso: `PetscSectionGetIncludesConstraints()`
 @*/
-PetscErrorCode PetscSectionSetIncludesConstraints(PetscSection s, PetscBool includesConstraints)
-{
+PetscErrorCode PetscSectionSetIncludesConstraints(PetscSection s, PetscBool includesConstraints) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
-  PetscCheck(!s->setup,PetscObjectComm((PetscObject) s), PETSC_ERR_ARG_WRONGSTATE, "Cannot set includesConstraints after the section is set up");
+  PetscCheck(!s->setup, PetscObjectComm((PetscObject)s), PETSC_ERR_ARG_WRONGSTATE, "Cannot set includesConstraints after the section is set up");
   s->includesConstraints = includesConstraints;
   PetscFunctionReturn(0);
 }
@@ -768,8 +746,7 @@ PetscErrorCode PetscSectionSetIncludesConstraints(PetscSection s, PetscBool incl
 
 .seealso: `PetscSectionSetDof()`, `PetscSectionCreate()`
 @*/
-PetscErrorCode PetscSectionGetDof(PetscSection s, PetscInt point, PetscInt *numDof)
-{
+PetscErrorCode PetscSectionGetDof(PetscSection s, PetscInt point, PetscInt *numDof) {
   PetscFunctionBeginHot;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   PetscValidIntPointer(numDof, 3);
@@ -792,8 +769,7 @@ PetscErrorCode PetscSectionGetDof(PetscSection s, PetscInt point, PetscInt *numD
 
 .seealso: `PetscSectionGetDof()`, `PetscSectionAddDof()`, `PetscSectionCreate()`
 @*/
-PetscErrorCode PetscSectionSetDof(PetscSection s, PetscInt point, PetscInt numDof)
-{
+PetscErrorCode PetscSectionSetDof(PetscSection s, PetscInt point, PetscInt numDof) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   PetscAssert(point >= s->pStart && point < s->pEnd, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section point %" PetscInt_FMT " should be in [%" PetscInt_FMT ", %" PetscInt_FMT ")", point, s->pStart, s->pEnd);
@@ -816,8 +792,7 @@ PetscErrorCode PetscSectionSetDof(PetscSection s, PetscInt point, PetscInt numDo
 
 .seealso: `PetscSectionGetDof()`, `PetscSectionSetDof()`, `PetscSectionCreate()`
 @*/
-PetscErrorCode PetscSectionAddDof(PetscSection s, PetscInt point, PetscInt numDof)
-{
+PetscErrorCode PetscSectionAddDof(PetscSection s, PetscInt point, PetscInt numDof) {
   PetscFunctionBeginHot;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   PetscAssert(point >= s->pStart && point < s->pEnd, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section point %" PetscInt_FMT " should be in [%" PetscInt_FMT ", %" PetscInt_FMT ")", point, s->pStart, s->pEnd);
@@ -843,12 +818,11 @@ PetscErrorCode PetscSectionAddDof(PetscSection s, PetscInt point, PetscInt numDo
 
 .seealso: `PetscSectionSetFieldDof()`, `PetscSectionCreate()`
 @*/
-PetscErrorCode PetscSectionGetFieldDof(PetscSection s, PetscInt point, PetscInt field, PetscInt *numDof)
-{
+PetscErrorCode PetscSectionGetFieldDof(PetscSection s, PetscInt point, PetscInt field, PetscInt *numDof) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
-  PetscValidIntPointer(numDof,4);
-  PetscSectionCheckValidField(field,s->numFields);
+  PetscValidIntPointer(numDof, 4);
+  PetscSectionCheckValidField(field, s->numFields);
   PetscCall(PetscSectionGetDof(s->field[field], point, numDof));
   PetscFunctionReturn(0);
 }
@@ -868,11 +842,10 @@ PetscErrorCode PetscSectionGetFieldDof(PetscSection s, PetscInt point, PetscInt 
 
 .seealso: `PetscSectionGetFieldDof()`, `PetscSectionCreate()`
 @*/
-PetscErrorCode PetscSectionSetFieldDof(PetscSection s, PetscInt point, PetscInt field, PetscInt numDof)
-{
+PetscErrorCode PetscSectionSetFieldDof(PetscSection s, PetscInt point, PetscInt field, PetscInt numDof) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
-  PetscSectionCheckValidField(field,s->numFields);
+  PetscSectionCheckValidField(field, s->numFields);
   PetscCall(PetscSectionSetDof(s->field[field], point, numDof));
   PetscFunctionReturn(0);
 }
@@ -892,11 +865,10 @@ PetscErrorCode PetscSectionSetFieldDof(PetscSection s, PetscInt point, PetscInt 
 
 .seealso: `PetscSectionSetFieldDof()`, `PetscSectionGetFieldDof()`, `PetscSectionCreate()`
 @*/
-PetscErrorCode PetscSectionAddFieldDof(PetscSection s, PetscInt point, PetscInt field, PetscInt numDof)
-{
+PetscErrorCode PetscSectionAddFieldDof(PetscSection s, PetscInt point, PetscInt field, PetscInt numDof) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
-  PetscSectionCheckValidField(field,s->numFields);
+  PetscSectionCheckValidField(field, s->numFields);
   PetscCall(PetscSectionAddDof(s->field[field], point, numDof));
   PetscFunctionReturn(0);
 }
@@ -917,8 +889,7 @@ PetscErrorCode PetscSectionAddFieldDof(PetscSection s, PetscInt point, PetscInt 
 
 .seealso: `PetscSectionGetDof()`, `PetscSectionSetConstraintDof()`, `PetscSectionCreate()`
 @*/
-PetscErrorCode PetscSectionGetConstraintDof(PetscSection s, PetscInt point, PetscInt *numDof)
-{
+PetscErrorCode PetscSectionGetConstraintDof(PetscSection s, PetscInt point, PetscInt *numDof) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   PetscValidIntPointer(numDof, 3);
@@ -942,8 +913,7 @@ PetscErrorCode PetscSectionGetConstraintDof(PetscSection s, PetscInt point, Pets
 
 .seealso: `PetscSectionSetDof()`, `PetscSectionGetConstraintDof()`, `PetscSectionCreate()`
 @*/
-PetscErrorCode PetscSectionSetConstraintDof(PetscSection s, PetscInt point, PetscInt numDof)
-{
+PetscErrorCode PetscSectionSetConstraintDof(PetscSection s, PetscInt point, PetscInt numDof) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   if (numDof) {
@@ -967,8 +937,7 @@ PetscErrorCode PetscSectionSetConstraintDof(PetscSection s, PetscInt point, Pets
 
 .seealso: `PetscSectionAddDof()`, `PetscSectionGetConstraintDof()`, `PetscSectionCreate()`
 @*/
-PetscErrorCode PetscSectionAddConstraintDof(PetscSection s, PetscInt point, PetscInt numDof)
-{
+PetscErrorCode PetscSectionAddConstraintDof(PetscSection s, PetscInt point, PetscInt numDof) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   if (numDof) {
@@ -995,12 +964,11 @@ PetscErrorCode PetscSectionAddConstraintDof(PetscSection s, PetscInt point, Pets
 
 .seealso: `PetscSectionGetDof()`, `PetscSectionSetFieldConstraintDof()`, `PetscSectionCreate()`
 @*/
-PetscErrorCode PetscSectionGetFieldConstraintDof(PetscSection s, PetscInt point, PetscInt field, PetscInt *numDof)
-{
+PetscErrorCode PetscSectionGetFieldConstraintDof(PetscSection s, PetscInt point, PetscInt field, PetscInt *numDof) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   PetscValidIntPointer(numDof, 4);
-  PetscSectionCheckValidField(field,s->numFields);
+  PetscSectionCheckValidField(field, s->numFields);
   PetscCall(PetscSectionGetConstraintDof(s->field[field], point, numDof));
   PetscFunctionReturn(0);
 }
@@ -1020,11 +988,10 @@ PetscErrorCode PetscSectionGetFieldConstraintDof(PetscSection s, PetscInt point,
 
 .seealso: `PetscSectionSetDof()`, `PetscSectionGetFieldConstraintDof()`, `PetscSectionCreate()`
 @*/
-PetscErrorCode PetscSectionSetFieldConstraintDof(PetscSection s, PetscInt point, PetscInt field, PetscInt numDof)
-{
+PetscErrorCode PetscSectionSetFieldConstraintDof(PetscSection s, PetscInt point, PetscInt field, PetscInt numDof) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
-  PetscSectionCheckValidField(field,s->numFields);
+  PetscSectionCheckValidField(field, s->numFields);
   PetscCall(PetscSectionSetConstraintDof(s->field[field], point, numDof));
   PetscFunctionReturn(0);
 }
@@ -1044,11 +1011,10 @@ PetscErrorCode PetscSectionSetFieldConstraintDof(PetscSection s, PetscInt point,
 
 .seealso: `PetscSectionAddDof()`, `PetscSectionGetFieldConstraintDof()`, `PetscSectionCreate()`
 @*/
-PetscErrorCode PetscSectionAddFieldConstraintDof(PetscSection s, PetscInt point, PetscInt field, PetscInt numDof)
-{
+PetscErrorCode PetscSectionAddFieldConstraintDof(PetscSection s, PetscInt point, PetscInt field, PetscInt numDof) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
-  PetscSectionCheckValidField(field,s->numFields);
+  PetscSectionCheckValidField(field, s->numFields);
   PetscCall(PetscSectionAddConstraintDof(s->field[field], point, numDof));
   PetscFunctionReturn(0);
 }
@@ -1065,12 +1031,11 @@ PetscErrorCode PetscSectionAddFieldConstraintDof(PetscSection s, PetscInt point,
 
 .seealso: `PetscSectionSetUp()`, `PetscSectionCreate()`
 @*/
-PetscErrorCode PetscSectionSetUpBC(PetscSection s)
-{
+PetscErrorCode PetscSectionSetUpBC(PetscSection s) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   if (s->bc) {
-    const PetscInt last = (s->bc->pEnd-s->bc->pStart) - 1;
+    const PetscInt last = (s->bc->pEnd - s->bc->pStart) - 1;
 
     PetscCall(PetscSectionSetUp(s->bc));
     PetscCall(PetscMalloc1((last >= 0 ? s->bc->atlasOff[last] + s->bc->atlasDof[last] : 0), &s->bcIndices));
@@ -1090,8 +1055,7 @@ PetscErrorCode PetscSectionSetUpBC(PetscSection s)
 
 .seealso: `PetscSectionCreate()`
 @*/
-PetscErrorCode PetscSectionSetUp(PetscSection s)
-{
+PetscErrorCode PetscSectionSetUp(PetscSection s) {
   const PetscInt *pind   = NULL;
   PetscInt        offset = 0, foff, p, f;
 
@@ -1101,7 +1065,7 @@ PetscErrorCode PetscSectionSetUp(PetscSection s)
   s->setup = PETSC_TRUE;
   /* Set offsets and field offsets for all points */
   /*   Assume that all fields have the same chart */
-  PetscCheck(s->includesConstraints,PETSC_COMM_SELF,PETSC_ERR_SUP,"PetscSectionSetUp is currently unsupported for includesConstraints = PETSC_TRUE");
+  PetscCheck(s->includesConstraints, PETSC_COMM_SELF, PETSC_ERR_SUP, "PetscSectionSetUp is currently unsupported for includesConstraints = PETSC_TRUE");
   if (s->perm) PetscCall(ISGetIndices(s->perm, &pind));
   if (s->pointMajor) {
     for (p = 0; p < s->pEnd - s->pStart; ++p) {
@@ -1109,7 +1073,7 @@ PetscErrorCode PetscSectionSetUp(PetscSection s)
 
       /* Set point offset */
       s->atlasOff[q] = offset;
-      offset        += s->atlasDof[q];
+      offset += s->atlasDof[q];
       /* Set field offset */
       for (f = 0, foff = s->atlasOff[q]; f < s->numFields; ++f) {
         PetscSection sf = s->field[f];
@@ -1131,9 +1095,7 @@ PetscErrorCode PetscSectionSetUp(PetscSection s)
       }
     }
     /* Disable point offsets since these are unused */
-    for (p = 0; p < s->pEnd - s->pStart; ++p) {
-      s->atlasOff[p] = -1;
-    }
+    for (p = 0; p < s->pEnd - s->pStart; ++p) { s->atlasOff[p] = -1; }
   }
   if (s->perm) PetscCall(ISRestoreIndices(s->perm, &pind));
   /* Setup BC sections */
@@ -1166,8 +1128,7 @@ PetscErrorCode PetscSectionSetUp(PetscSection s)
 
 .seealso: `PetscSectionGetDof()`, `PetscSectionSetDof()`, `PetscSectionAddDof()`, `PetscSectionCreate()`
 @*/
-PetscErrorCode PetscSectionGetMaxDof(PetscSection s, PetscInt *maxDof)
-{
+PetscErrorCode PetscSectionGetMaxDof(PetscSection s, PetscInt *maxDof) {
   PetscInt p;
 
   PetscFunctionBegin;
@@ -1175,9 +1136,7 @@ PetscErrorCode PetscSectionGetMaxDof(PetscSection s, PetscInt *maxDof)
   PetscValidIntPointer(maxDof, 2);
   if (s->maxDof == PETSC_MIN_INT) {
     s->maxDof = 0;
-    for (p = 0; p < s->pEnd - s->pStart; ++p) {
-      s->maxDof = PetscMax(s->maxDof, s->atlasDof[p]);
-    }
+    for (p = 0; p < s->pEnd - s->pStart; ++p) { s->maxDof = PetscMax(s->maxDof, s->atlasDof[p]); }
   }
   *maxDof = s->maxDof;
   PetscFunctionReturn(0);
@@ -1198,8 +1157,7 @@ PetscErrorCode PetscSectionGetMaxDof(PetscSection s, PetscInt *maxDof)
 
 .seealso: `PetscSectionGetOffset()`, `PetscSectionGetConstrainedStorageSize()`, `PetscSectionCreate()`
 @*/
-PetscErrorCode PetscSectionGetStorageSize(PetscSection s, PetscInt *size)
-{
+PetscErrorCode PetscSectionGetStorageSize(PetscSection s, PetscInt *size) {
   PetscInt p, n = 0;
 
   PetscFunctionBegin;
@@ -1225,8 +1183,7 @@ PetscErrorCode PetscSectionGetStorageSize(PetscSection s, PetscInt *size)
 
 .seealso: `PetscSectionGetStorageSize()`, `PetscSectionGetOffset()`, `PetscSectionCreate()`
 @*/
-PetscErrorCode PetscSectionGetConstrainedStorageSize(PetscSection s, PetscInt *size)
-{
+PetscErrorCode PetscSectionGetConstrainedStorageSize(PetscSection s, PetscInt *size) {
   PetscInt p, n = 0;
 
   PetscFunctionBegin;
@@ -1259,8 +1216,7 @@ PetscErrorCode PetscSectionGetConstrainedStorageSize(PetscSection s, PetscInt *s
 
 .seealso: `PetscSectionCreate()`
 @*/
-PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, PetscBool includeConstraints, PetscBool localOffsets, PetscSection *gsection)
-{
+PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, PetscBool includeConstraints, PetscBool localOffsets, PetscSection *gsection) {
   PetscSection    gs;
   const PetscInt *pind = NULL;
   PetscInt       *recv = NULL, *neg = NULL;
@@ -1273,22 +1229,22 @@ PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, Petsc
   PetscValidLogicalCollectiveBool(s, includeConstraints, 3);
   PetscValidLogicalCollectiveBool(s, localOffsets, 4);
   PetscValidPointer(gsection, 5);
-  PetscCheck(s->pointMajor,PETSC_COMM_SELF,PETSC_ERR_SUP, "No support for field major ordering");
-  PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject) s), &gs));
+  PetscCheck(s->pointMajor, PETSC_COMM_SELF, PETSC_ERR_SUP, "No support for field major ordering");
+  PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)s), &gs));
   PetscCall(PetscSectionGetNumFields(s, &numFields));
   if (numFields > 0) PetscCall(PetscSectionSetNumFields(gs, numFields));
   PetscCall(PetscSectionGetChart(s, &pStart, &pEnd));
   PetscCall(PetscSectionSetChart(gs, pStart, pEnd));
   gs->includesConstraints = includeConstraints;
   PetscCall(PetscSFGetGraph(sf, &nroots, NULL, NULL, NULL));
-  nlocal = nroots;              /* The local/leaf space matches global/root space */
+  nlocal = nroots; /* The local/leaf space matches global/root space */
   /* Must allocate for all points visible to SF, which may be more than this section */
-  if (nroots >= 0) {             /* nroots < 0 means that the graph has not been set, only happens in serial */
+  if (nroots >= 0) { /* nroots < 0 means that the graph has not been set, only happens in serial */
     PetscCall(PetscSFGetLeafRange(sf, NULL, &maxleaf));
-    PetscCheck(nroots >= pEnd,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "SF roots %" PetscInt_FMT " < pEnd %" PetscInt_FMT, nroots, pEnd);
-    PetscCheck(maxleaf < nroots,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Max local leaf %" PetscInt_FMT " >= nroots %" PetscInt_FMT, maxleaf, nroots);
-    PetscCall(PetscMalloc2(nroots,&neg,nlocal,&recv));
-    PetscCall(PetscArrayzero(neg,nroots));
+    PetscCheck(nroots >= pEnd, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "SF roots %" PetscInt_FMT " < pEnd %" PetscInt_FMT, nroots, pEnd);
+    PetscCheck(maxleaf < nroots, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Max local leaf %" PetscInt_FMT " >= nroots %" PetscInt_FMT, maxleaf, nroots);
+    PetscCall(PetscMalloc2(nroots, &neg, nlocal, &recv));
+    PetscCall(PetscArrayzero(neg, nroots));
   }
   /* Mark all local points with negative dof */
   for (p = pStart; p < pEnd; ++p) {
@@ -1296,50 +1252,50 @@ PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, Petsc
     PetscCall(PetscSectionSetDof(gs, p, dof));
     PetscCall(PetscSectionGetConstraintDof(s, p, &cdof));
     if (!includeConstraints && cdof > 0) PetscCall(PetscSectionSetConstraintDof(gs, p, cdof));
-    if (neg) neg[p] = -(dof+1);
+    if (neg) neg[p] = -(dof + 1);
   }
   PetscCall(PetscSectionSetUpBC(gs));
-  if (gs->bcIndices) PetscCall(PetscArraycpy(gs->bcIndices, s->bcIndices, gs->bc->atlasOff[gs->bc->pEnd-gs->bc->pStart-1] + gs->bc->atlasDof[gs->bc->pEnd-gs->bc->pStart-1]));
+  if (gs->bcIndices) PetscCall(PetscArraycpy(gs->bcIndices, s->bcIndices, gs->bc->atlasOff[gs->bc->pEnd - gs->bc->pStart - 1] + gs->bc->atlasDof[gs->bc->pEnd - gs->bc->pStart - 1]));
   if (nroots >= 0) {
-    PetscCall(PetscArrayzero(recv,nlocal));
-    PetscCall(PetscSFBcastBegin(sf, MPIU_INT, neg, recv,MPI_REPLACE));
-    PetscCall(PetscSFBcastEnd(sf, MPIU_INT, neg, recv,MPI_REPLACE));
+    PetscCall(PetscArrayzero(recv, nlocal));
+    PetscCall(PetscSFBcastBegin(sf, MPIU_INT, neg, recv, MPI_REPLACE));
+    PetscCall(PetscSFBcastEnd(sf, MPIU_INT, neg, recv, MPI_REPLACE));
     for (p = pStart; p < pEnd; ++p) {
       if (recv[p] < 0) {
-        gs->atlasDof[p-pStart] = recv[p];
+        gs->atlasDof[p - pStart] = recv[p];
         PetscCall(PetscSectionGetDof(s, p, &dof));
-        PetscCheck(-(recv[p]+1) == dof,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Global dof %" PetscInt_FMT " for point %" PetscInt_FMT " is not the unconstrained %" PetscInt_FMT, -(recv[p]+1), p, dof);
+        PetscCheck(-(recv[p] + 1) == dof, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Global dof %" PetscInt_FMT " for point %" PetscInt_FMT " is not the unconstrained %" PetscInt_FMT, -(recv[p] + 1), p, dof);
       }
     }
   }
   /* Calculate new sizes, get process offset, and calculate point offsets */
   if (s->perm) PetscCall(ISGetIndices(s->perm, &pind));
-  for (p = 0, off = 0; p < pEnd-pStart; ++p) {
+  for (p = 0, off = 0; p < pEnd - pStart; ++p) {
     const PetscInt q = pind ? pind[p] : p;
 
-    cdof = (!includeConstraints && s->bc) ? s->bc->atlasDof[q] : 0;
+    cdof            = (!includeConstraints && s->bc) ? s->bc->atlasDof[q] : 0;
     gs->atlasOff[q] = off;
-    off += gs->atlasDof[q] > 0 ? gs->atlasDof[q]-cdof : 0;
+    off += gs->atlasDof[q] > 0 ? gs->atlasDof[q] - cdof : 0;
   }
   if (!localOffsets) {
-    PetscCallMPI(MPI_Scan(&off, &globalOff, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject) s)));
+    PetscCallMPI(MPI_Scan(&off, &globalOff, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)s)));
     globalOff -= off;
   }
   for (p = pStart, off = 0; p < pEnd; ++p) {
-    gs->atlasOff[p-pStart] += globalOff;
-    if (neg) neg[p] = -(gs->atlasOff[p-pStart]+1);
+    gs->atlasOff[p - pStart] += globalOff;
+    if (neg) neg[p] = -(gs->atlasOff[p - pStart] + 1);
   }
   if (s->perm) PetscCall(ISRestoreIndices(s->perm, &pind));
   /* Put in negative offsets for ghost points */
   if (nroots >= 0) {
-    PetscCall(PetscArrayzero(recv,nlocal));
-    PetscCall(PetscSFBcastBegin(sf, MPIU_INT, neg, recv,MPI_REPLACE));
-    PetscCall(PetscSFBcastEnd(sf, MPIU_INT, neg, recv,MPI_REPLACE));
+    PetscCall(PetscArrayzero(recv, nlocal));
+    PetscCall(PetscSFBcastBegin(sf, MPIU_INT, neg, recv, MPI_REPLACE));
+    PetscCall(PetscSFBcastEnd(sf, MPIU_INT, neg, recv, MPI_REPLACE));
     for (p = pStart; p < pEnd; ++p) {
-      if (recv[p] < 0) gs->atlasOff[p-pStart] = recv[p];
+      if (recv[p] < 0) gs->atlasOff[p - pStart] = recv[p];
     }
   }
-  PetscCall(PetscFree2(neg,recv));
+  PetscCall(PetscFree2(neg, recv));
   /* Set field dofs/offsets/constraints */
   for (f = 0; f < numFields; ++f) {
     gs->field[f]->includesConstraints = includeConstraints;
@@ -1362,7 +1318,7 @@ PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, Petsc
     PetscSection gfs = gs->field[f];
 
     PetscCall(PetscSectionSetUpBC(gfs));
-    if (gfs->bcIndices) PetscCall(PetscArraycpy(gfs->bcIndices, s->field[f]->bcIndices, gfs->bc->atlasOff[gfs->bc->pEnd-gfs->bc->pStart-1] + gfs->bc->atlasDof[gfs->bc->pEnd-gfs->bc->pStart-1]));
+    if (gfs->bcIndices) PetscCall(PetscArraycpy(gfs->bcIndices, s->field[f]->bcIndices, gfs->bc->atlasOff[gfs->bc->pEnd - gfs->bc->pStart - 1] + gfs->bc->atlasDof[gfs->bc->pEnd - gfs->bc->pStart - 1]));
   }
   gs->setup = PETSC_TRUE;
   PetscCall(PetscSectionViewFromOptions(gs, NULL, "-global_section_view"));
@@ -1390,24 +1346,23 @@ PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, Petsc
 
 .seealso: `PetscSectionCreate()`
 @*/
-PetscErrorCode PetscSectionCreateGlobalSectionCensored(PetscSection s, PetscSF sf, PetscBool includeConstraints, PetscInt numExcludes, const PetscInt excludes[], PetscSection *gsection)
-{
+PetscErrorCode PetscSectionCreateGlobalSectionCensored(PetscSection s, PetscSF sf, PetscBool includeConstraints, PetscInt numExcludes, const PetscInt excludes[], PetscSection *gsection) {
   const PetscInt *pind = NULL;
-  PetscInt       *neg  = NULL, *tmpOff = NULL;
+  PetscInt       *neg = NULL, *tmpOff = NULL;
   PetscInt        pStart, pEnd, p, e, dof, cdof, off, globalOff = 0, nroots;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 2);
   PetscValidPointer(gsection, 6);
-  PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject) s), gsection));
+  PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)s), gsection));
   PetscCall(PetscSectionGetChart(s, &pStart, &pEnd));
   PetscCall(PetscSectionSetChart(*gsection, pStart, pEnd));
   PetscCall(PetscSFGetGraph(sf, &nroots, NULL, NULL, NULL));
   if (nroots >= 0) {
-    PetscCheck(nroots >= pEnd-pStart,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "PetscSF nroots %" PetscInt_FMT " < %" PetscInt_FMT " section size", nroots, pEnd-pStart);
+    PetscCheck(nroots >= pEnd - pStart, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "PetscSF nroots %" PetscInt_FMT " < %" PetscInt_FMT " section size", nroots, pEnd - pStart);
     PetscCall(PetscCalloc1(nroots, &neg));
-    if (nroots > pEnd-pStart) {
+    if (nroots > pEnd - pStart) {
       PetscCall(PetscCalloc1(nroots, &tmpOff));
     } else {
       tmpOff = &(*gsection)->atlasDof[-pStart];
@@ -1416,7 +1371,7 @@ PetscErrorCode PetscSectionCreateGlobalSectionCensored(PetscSection s, PetscSF s
   /* Mark ghost points with negative dof */
   for (p = pStart; p < pEnd; ++p) {
     for (e = 0; e < numExcludes; ++e) {
-      if ((p >= excludes[e*2+0]) && (p < excludes[e*2+1])) {
+      if ((p >= excludes[e * 2 + 0]) && (p < excludes[e * 2 + 1])) {
         PetscCall(PetscSectionSetDof(*gsection, p, 0));
         break;
       }
@@ -1426,42 +1381,46 @@ PetscErrorCode PetscSectionCreateGlobalSectionCensored(PetscSection s, PetscSF s
     PetscCall(PetscSectionSetDof(*gsection, p, dof));
     PetscCall(PetscSectionGetConstraintDof(s, p, &cdof));
     if (!includeConstraints && cdof > 0) PetscCall(PetscSectionSetConstraintDof(*gsection, p, cdof));
-    if (neg) neg[p] = -(dof+1);
+    if (neg) neg[p] = -(dof + 1);
   }
   PetscCall(PetscSectionSetUpBC(*gsection));
   if (nroots >= 0) {
-    PetscCall(PetscSFBcastBegin(sf, MPIU_INT, neg, tmpOff,MPI_REPLACE));
-    PetscCall(PetscSFBcastEnd(sf, MPIU_INT, neg, tmpOff,MPI_REPLACE));
+    PetscCall(PetscSFBcastBegin(sf, MPIU_INT, neg, tmpOff, MPI_REPLACE));
+    PetscCall(PetscSFBcastEnd(sf, MPIU_INT, neg, tmpOff, MPI_REPLACE));
     if (nroots > pEnd - pStart) {
-      for (p = pStart; p < pEnd; ++p) {if (tmpOff[p] < 0) (*gsection)->atlasDof[p-pStart] = tmpOff[p];}
+      for (p = pStart; p < pEnd; ++p) {
+        if (tmpOff[p] < 0) (*gsection)->atlasDof[p - pStart] = tmpOff[p];
+      }
     }
   }
   /* Calculate new sizes, get proccess offset, and calculate point offsets */
   if (s->perm) PetscCall(ISGetIndices(s->perm, &pind));
-  for (p = 0, off = 0; p < pEnd-pStart; ++p) {
+  for (p = 0, off = 0; p < pEnd - pStart; ++p) {
     const PetscInt q = pind ? pind[p] : p;
 
-    cdof = (!includeConstraints && s->bc) ? s->bc->atlasDof[q] : 0;
+    cdof                     = (!includeConstraints && s->bc) ? s->bc->atlasDof[q] : 0;
     (*gsection)->atlasOff[q] = off;
-    off += (*gsection)->atlasDof[q] > 0 ? (*gsection)->atlasDof[q]-cdof : 0;
+    off += (*gsection)->atlasDof[q] > 0 ? (*gsection)->atlasDof[q] - cdof : 0;
   }
-  PetscCallMPI(MPI_Scan(&off, &globalOff, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject) s)));
+  PetscCallMPI(MPI_Scan(&off, &globalOff, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)s)));
   globalOff -= off;
-  for (p = 0, off = 0; p < pEnd-pStart; ++p) {
+  for (p = 0, off = 0; p < pEnd - pStart; ++p) {
     (*gsection)->atlasOff[p] += globalOff;
-    if (neg) neg[p+pStart] = -((*gsection)->atlasOff[p]+1);
+    if (neg) neg[p + pStart] = -((*gsection)->atlasOff[p] + 1);
   }
   if (s->perm) PetscCall(ISRestoreIndices(s->perm, &pind));
   /* Put in negative offsets for ghost points */
   if (nroots >= 0) {
-    if (nroots == pEnd-pStart) tmpOff = &(*gsection)->atlasOff[-pStart];
-    PetscCall(PetscSFBcastBegin(sf, MPIU_INT, neg, tmpOff,MPI_REPLACE));
-    PetscCall(PetscSFBcastEnd(sf, MPIU_INT, neg, tmpOff,MPI_REPLACE));
+    if (nroots == pEnd - pStart) tmpOff = &(*gsection)->atlasOff[-pStart];
+    PetscCall(PetscSFBcastBegin(sf, MPIU_INT, neg, tmpOff, MPI_REPLACE));
+    PetscCall(PetscSFBcastEnd(sf, MPIU_INT, neg, tmpOff, MPI_REPLACE));
     if (nroots > pEnd - pStart) {
-      for (p = pStart; p < pEnd; ++p) {if (tmpOff[p] < 0) (*gsection)->atlasOff[p-pStart] = tmpOff[p];}
+      for (p = pStart; p < pEnd; ++p) {
+        if (tmpOff[p] < 0) (*gsection)->atlasOff[p - pStart] = tmpOff[p];
+      }
     }
   }
-  if (nroots >= 0 && nroots > pEnd-pStart) PetscCall(PetscFree(tmpOff));
+  if (nroots >= 0 && nroots > pEnd - pStart) PetscCall(PetscFree(tmpOff));
   PetscCall(PetscFree(neg));
   PetscFunctionReturn(0);
 }
@@ -1484,9 +1443,8 @@ PetscErrorCode PetscSectionCreateGlobalSectionCensored(PetscSection s, PetscSF s
 
 .seealso: `PetscSectionGetValueLayout()`, `PetscSectionCreate()`
 @*/
-PetscErrorCode PetscSectionGetPointLayout(MPI_Comm comm, PetscSection s, PetscLayout *layout)
-{
-  PetscInt       pStart, pEnd, p, localSize = 0;
+PetscErrorCode PetscSectionGetPointLayout(MPI_Comm comm, PetscSection s, PetscLayout *layout) {
+  PetscInt pStart, pEnd, p, localSize = 0;
 
   PetscFunctionBegin;
   PetscCall(PetscSectionGetChart(s, &pStart, &pEnd));
@@ -1521,20 +1479,19 @@ PetscErrorCode PetscSectionGetPointLayout(MPI_Comm comm, PetscSection s, PetscLa
 
 .seealso: `PetscSectionGetPointLayout()`, `PetscSectionCreate()`
 @*/
-PetscErrorCode PetscSectionGetValueLayout(MPI_Comm comm, PetscSection s, PetscLayout *layout)
-{
-  PetscInt       pStart, pEnd, p, localSize = 0;
+PetscErrorCode PetscSectionGetValueLayout(MPI_Comm comm, PetscSection s, PetscLayout *layout) {
+  PetscInt pStart, pEnd, p, localSize = 0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 2);
   PetscValidPointer(layout, 3);
   PetscCall(PetscSectionGetChart(s, &pStart, &pEnd));
   for (p = pStart; p < pEnd; ++p) {
-    PetscInt dof,cdof;
+    PetscInt dof, cdof;
 
     PetscCall(PetscSectionGetDof(s, p, &dof));
     PetscCall(PetscSectionGetConstraintDof(s, p, &cdof));
-    if (dof-cdof > 0) localSize += dof-cdof;
+    if (dof - cdof > 0) localSize += dof - cdof;
   }
   PetscCall(PetscLayoutCreate(comm, layout));
   PetscCall(PetscLayoutSetLocalSize(*layout, localSize));
@@ -1559,14 +1516,11 @@ PetscErrorCode PetscSectionGetValueLayout(MPI_Comm comm, PetscSection s, PetscLa
 
 .seealso: `PetscSectionGetFieldOffset()`, `PetscSectionCreate()`
 @*/
-PetscErrorCode PetscSectionGetOffset(PetscSection s, PetscInt point, PetscInt *offset)
-{
+PetscErrorCode PetscSectionGetOffset(PetscSection s, PetscInt point, PetscInt *offset) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   PetscValidIntPointer(offset, 3);
-  if (PetscDefined(USE_DEBUG)) {
-    PetscCheck(!(point < s->pStart) && !(point >= s->pEnd),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section point %" PetscInt_FMT " should be in [%" PetscInt_FMT ", %" PetscInt_FMT ")", point, s->pStart, s->pEnd);
-  }
+  if (PetscDefined(USE_DEBUG)) { PetscCheck(!(point < s->pStart) && !(point >= s->pEnd), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section point %" PetscInt_FMT " should be in [%" PetscInt_FMT ", %" PetscInt_FMT ")", point, s->pStart, s->pEnd); }
   *offset = s->atlasOff[point - s->pStart];
   PetscFunctionReturn(0);
 }
@@ -1587,11 +1541,10 @@ PetscErrorCode PetscSectionGetOffset(PetscSection s, PetscInt point, PetscInt *o
 
 .seealso: `PetscSectionGetFieldOffset()`, `PetscSectionCreate()`, `PetscSectionSetUp()`
 @*/
-PetscErrorCode PetscSectionSetOffset(PetscSection s, PetscInt point, PetscInt offset)
-{
+PetscErrorCode PetscSectionSetOffset(PetscSection s, PetscInt point, PetscInt offset) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
-  PetscCheck(!(point < s->pStart) && !(point >= s->pEnd),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section point %" PetscInt_FMT " should be in [%" PetscInt_FMT ", %" PetscInt_FMT ")", point, s->pStart, s->pEnd);
+  PetscCheck(!(point < s->pStart) && !(point >= s->pEnd), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section point %" PetscInt_FMT " should be in [%" PetscInt_FMT ", %" PetscInt_FMT ")", point, s->pStart, s->pEnd);
   s->atlasOff[point - s->pStart] = offset;
   PetscFunctionReturn(0);
 }
@@ -1613,12 +1566,11 @@ PetscErrorCode PetscSectionSetOffset(PetscSection s, PetscInt point, PetscInt of
 
 .seealso: `PetscSectionGetOffset()`, `PetscSectionCreate()`
 @*/
-PetscErrorCode PetscSectionGetFieldOffset(PetscSection s, PetscInt point, PetscInt field, PetscInt *offset)
-{
+PetscErrorCode PetscSectionGetFieldOffset(PetscSection s, PetscInt point, PetscInt field, PetscInt *offset) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   PetscValidIntPointer(offset, 4);
-  PetscSectionCheckValidField(field,s->numFields);
+  PetscSectionCheckValidField(field, s->numFields);
   PetscCall(PetscSectionGetOffset(s->field[field], point, offset));
   PetscFunctionReturn(0);
 }
@@ -1640,11 +1592,10 @@ PetscErrorCode PetscSectionGetFieldOffset(PetscSection s, PetscInt point, PetscI
 
 .seealso: `PetscSectionGetFieldOffset()`, `PetscSectionSetOffset()`, `PetscSectionCreate()`, `PetscSectionSetUp()`
 @*/
-PetscErrorCode PetscSectionSetFieldOffset(PetscSection s, PetscInt point, PetscInt field, PetscInt offset)
-{
+PetscErrorCode PetscSectionSetFieldOffset(PetscSection s, PetscInt point, PetscInt field, PetscInt offset) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
-  PetscSectionCheckValidField(field,s->numFields);
+  PetscSectionCheckValidField(field, s->numFields);
   PetscCall(PetscSectionSetOffset(s->field[field], point, offset));
   PetscFunctionReturn(0);
 }
@@ -1669,14 +1620,13 @@ PetscErrorCode PetscSectionSetFieldOffset(PetscSection s, PetscInt point, PetscI
 
 .seealso: `PetscSectionGetOffset()`, `PetscSectionCreate()`
 @*/
-PetscErrorCode PetscSectionGetFieldPointOffset(PetscSection s, PetscInt point, PetscInt field, PetscInt *offset)
-{
-  PetscInt       off, foff;
+PetscErrorCode PetscSectionGetFieldPointOffset(PetscSection s, PetscInt point, PetscInt field, PetscInt *offset) {
+  PetscInt off, foff;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   PetscValidIntPointer(offset, 4);
-  PetscSectionCheckValidField(field,s->numFields);
+  PetscSectionCheckValidField(field, s->numFields);
   PetscCall(PetscSectionGetOffset(s, point, &off));
   PetscCall(PetscSectionGetOffset(s->field[field], point, &foff));
   *offset = foff - off;
@@ -1699,24 +1649,26 @@ PetscErrorCode PetscSectionGetFieldPointOffset(PetscSection s, PetscInt point, P
 
 .seealso: `PetscSectionGetOffset()`, `PetscSectionCreate()`
 @*/
-PetscErrorCode PetscSectionGetOffsetRange(PetscSection s, PetscInt *start, PetscInt *end)
-{
-  PetscInt       os = 0, oe = 0, pStart, pEnd, p;
+PetscErrorCode PetscSectionGetOffsetRange(PetscSection s, PetscInt *start, PetscInt *end) {
+  PetscInt os = 0, oe = 0, pStart, pEnd, p;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
-  if (s->atlasOff) {os = s->atlasOff[0]; oe = s->atlasOff[0];}
+  if (s->atlasOff) {
+    os = s->atlasOff[0];
+    oe = s->atlasOff[0];
+  }
   PetscCall(PetscSectionGetChart(s, &pStart, &pEnd));
-  for (p = 0; p < pEnd-pStart; ++p) {
+  for (p = 0; p < pEnd - pStart; ++p) {
     PetscInt dof = s->atlasDof[p], off = s->atlasOff[p];
 
     if (off >= 0) {
       os = PetscMin(os, off);
-      oe = PetscMax(oe, off+dof);
+      oe = PetscMax(oe, off + dof);
     }
   }
   if (start) *start = os;
-  if (end)   *end   = oe;
+  if (end) *end = oe;
   PetscFunctionReturn(0);
 }
 
@@ -1739,9 +1691,8 @@ PetscErrorCode PetscSectionGetOffsetRange(PetscSection s, PetscInt *start, Petsc
 
 .seealso: `PetscSectionCreateSupersection()`, `PetscSectionCreate()`
 @*/
-PetscErrorCode PetscSectionCreateSubsection(PetscSection s, PetscInt len, const PetscInt fields[], PetscSection *subs)
-{
-  PetscInt       nF, f, c, pStart, pEnd, p, maxCdof = 0;
+PetscErrorCode PetscSectionCreateSubsection(PetscSection s, PetscInt len, const PetscInt fields[], PetscSection *subs) {
+  PetscInt nF, f, c, pStart, pEnd, p, maxCdof = 0;
 
   PetscFunctionBegin;
   if (!len) PetscFunctionReturn(0);
@@ -1749,12 +1700,12 @@ PetscErrorCode PetscSectionCreateSubsection(PetscSection s, PetscInt len, const 
   PetscValidIntPointer(fields, 3);
   PetscValidPointer(subs, 4);
   PetscCall(PetscSectionGetNumFields(s, &nF));
-  PetscCheck(len <= nF,PetscObjectComm((PetscObject) s), PETSC_ERR_ARG_WRONG, "Number of requested fields %" PetscInt_FMT " greater than number of fields %" PetscInt_FMT, len, nF);
-  PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject) s), subs));
+  PetscCheck(len <= nF, PetscObjectComm((PetscObject)s), PETSC_ERR_ARG_WRONG, "Number of requested fields %" PetscInt_FMT " greater than number of fields %" PetscInt_FMT, len, nF);
+  PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)s), subs));
   PetscCall(PetscSectionSetNumFields(*subs, len));
   for (f = 0; f < len; ++f) {
-    const char *name   = NULL;
-    PetscInt   numComp = 0;
+    const char *name    = NULL;
+    PetscInt    numComp = 0;
 
     PetscCall(PetscSectionGetFieldName(s, fields[f], &name));
     PetscCall(PetscSectionSetFieldName(*subs, f, name));
@@ -1775,7 +1726,7 @@ PetscErrorCode PetscSectionCreateSubsection(PetscSection s, PetscInt len, const 
       PetscCall(PetscSectionSetFieldDof(*subs, p, f, fdof));
       PetscCall(PetscSectionGetFieldConstraintDof(s, p, fields[f], &cfdof));
       if (cfdof) PetscCall(PetscSectionSetFieldConstraintDof(*subs, p, f, cfdof));
-      dof  += fdof;
+      dof += fdof;
       cdof += cfdof;
     }
     PetscCall(PetscSectionSetDof(*subs, p, dof));
@@ -1793,16 +1744,16 @@ PetscErrorCode PetscSectionCreateSubsection(PetscSection s, PetscInt len, const 
       PetscCall(PetscSectionGetConstraintDof(*subs, p, &cdof));
       if (cdof) {
         const PetscInt *oldIndices = NULL;
-        PetscInt       fdof = 0, cfdof = 0, fc, numConst = 0, fOff = 0;
+        PetscInt        fdof = 0, cfdof = 0, fc, numConst = 0, fOff = 0;
 
         for (f = 0; f < len; ++f) {
           PetscCall(PetscSectionGetFieldDof(s, p, fields[f], &fdof));
           PetscCall(PetscSectionGetFieldConstraintDof(s, p, fields[f], &cfdof));
           PetscCall(PetscSectionGetFieldConstraintIndices(s, p, fields[f], &oldIndices));
           PetscCall(PetscSectionSetFieldConstraintIndices(*subs, p, f, oldIndices));
-          for (fc = 0; fc < cfdof; ++fc) indices[numConst+fc] = oldIndices[fc] + fOff;
+          for (fc = 0; fc < cfdof; ++fc) indices[numConst + fc] = oldIndices[fc] + fOff;
           numConst += cfdof;
-          fOff     += fdof;
+          fOff += fdof;
         }
         PetscCall(PetscSectionSetConstraintIndices(*subs, p, indices));
       }
@@ -1830,9 +1781,8 @@ PetscErrorCode PetscSectionCreateSubsection(PetscSection s, PetscInt len, const 
 
 .seealso: `PetscSectionCreateSubsection()`, `PetscSectionCreate()`
 @*/
-PetscErrorCode PetscSectionCreateSupersection(PetscSection s[], PetscInt len, PetscSection *supers)
-{
-  PetscInt       Nf = 0, f, pStart = PETSC_MAX_INT, pEnd = 0, p, maxCdof = 0, i;
+PetscErrorCode PetscSectionCreateSupersection(PetscSection s[], PetscInt len, PetscSection *supers) {
+  PetscInt Nf = 0, f, pStart = PETSC_MAX_INT, pEnd = 0, p, maxCdof = 0, i;
 
   PetscFunctionBegin;
   if (!len) PetscFunctionReturn(0);
@@ -1842,18 +1792,18 @@ PetscErrorCode PetscSectionCreateSupersection(PetscSection s[], PetscInt len, Pe
     PetscCall(PetscSectionGetNumFields(s[i], &nf));
     PetscCall(PetscSectionGetChart(s[i], &pStarti, &pEndi));
     pStart = PetscMin(pStart, pStarti);
-    pEnd   = PetscMax(pEnd,   pEndi);
+    pEnd   = PetscMax(pEnd, pEndi);
     Nf += nf;
   }
-  PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject) s[0]), supers));
+  PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)s[0]), supers));
   PetscCall(PetscSectionSetNumFields(*supers, Nf));
   for (i = 0, f = 0; i < len; ++i) {
     PetscInt nf, fi, ci;
 
     PetscCall(PetscSectionGetNumFields(s[i], &nf));
     for (fi = 0; fi < nf; ++fi, ++f) {
-      const char *name   = NULL;
-      PetscInt   numComp = 0;
+      const char *name    = NULL;
+      PetscInt    numComp = 0;
 
       PetscCall(PetscSectionGetFieldName(s[i], fi, &name));
       PetscCall(PetscSectionSetFieldName(*supers, f, name));
@@ -1881,7 +1831,7 @@ PetscErrorCode PetscSectionCreateSupersection(PetscSection s[], PetscInt len, Pe
         PetscCall(PetscSectionAddFieldDof(*supers, p, f, fdof));
         PetscCall(PetscSectionGetFieldConstraintDof(s[i], p, fi, &cfdof));
         if (cfdof) PetscCall(PetscSectionAddFieldConstraintDof(*supers, p, f, cfdof));
-        dof  += fdof;
+        dof += fdof;
         cdof += cfdof;
       }
     }
@@ -1912,9 +1862,9 @@ PetscErrorCode PetscSectionCreateSupersection(PetscSection s[], PetscInt len, Pe
             PetscCall(PetscSectionGetFieldDof(s[i], p, fi, &fdof));
             PetscCall(PetscSectionGetFieldConstraintDof(s[i], p, fi, &cfdof));
             PetscCall(PetscSectionGetFieldConstraintIndices(s[i], p, fi, &oldIndices));
-            for (fc = 0; fc < cfdof; ++fc) indices[numConst+fc] = oldIndices[fc];
+            for (fc = 0; fc < cfdof; ++fc) indices[numConst + fc] = oldIndices[fc];
             PetscCall(PetscSectionSetFieldConstraintIndices(*supers, p, f, &indices[numConst]));
-            for (fc = 0; fc < cfdof; ++fc) indices[numConst+fc] += fOff;
+            for (fc = 0; fc < cfdof; ++fc) indices[numConst + fc] += fOff;
             numConst += cfdof;
           }
           PetscCall(PetscSectionGetDof(s[i], p, &dof));
@@ -1928,21 +1878,20 @@ PetscErrorCode PetscSectionCreateSupersection(PetscSection s[], PetscInt len, Pe
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscSectionCreateSubplexSection_Internal(PetscSection s, IS subpointMap, PetscBool renumberPoints, PetscSection *subs)
-{
+PetscErrorCode PetscSectionCreateSubplexSection_Internal(PetscSection s, IS subpointMap, PetscBool renumberPoints, PetscSection *subs) {
   const PetscInt *points = NULL, *indices = NULL;
-  PetscInt       numFields, f, c, numSubpoints = 0, pStart, pEnd, p, spStart, spEnd, subp;
+  PetscInt        numFields, f, c, numSubpoints = 0, pStart, pEnd, p, spStart, spEnd, subp;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   PetscValidHeaderSpecific(subpointMap, IS_CLASSID, 2);
   PetscValidPointer(subs, 4);
   PetscCall(PetscSectionGetNumFields(s, &numFields));
-  PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject) s), subs));
+  PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)s), subs));
   if (numFields) PetscCall(PetscSectionSetNumFields(*subs, numFields));
   for (f = 0; f < numFields; ++f) {
-    const char *name   = NULL;
-    PetscInt   numComp = 0;
+    const char *name    = NULL;
+    PetscInt    numComp = 0;
 
     PetscCall(PetscSectionGetFieldName(s, f, &name));
     PetscCall(PetscSectionSetFieldName(*subs, f, name));
@@ -2006,10 +1955,10 @@ PetscErrorCode PetscSectionCreateSubplexSection_Internal(PetscSection s, IS subp
     PetscCall(PetscSectionGetConstraintDof(*subs, subp, &cdof));
     if (cdof) {
       for (f = 0; f < numFields; ++f) {
-        PetscCall(PetscSectionGetFieldConstraintIndices(s, points[subp-spStart], f, &indices));
+        PetscCall(PetscSectionGetFieldConstraintIndices(s, points[subp - spStart], f, &indices));
         PetscCall(PetscSectionSetFieldConstraintIndices(*subs, subp, f, indices));
       }
-      PetscCall(PetscSectionGetConstraintIndices(s, points[subp-spStart], &indices));
+      PetscCall(PetscSectionGetConstraintIndices(s, points[subp - spStart], &indices));
       PetscCall(PetscSectionSetConstraintIndices(*subs, subp, indices));
     }
   }
@@ -2036,8 +1985,7 @@ PetscErrorCode PetscSectionCreateSubplexSection_Internal(PetscSection s, IS subp
 
 .seealso: `PetscSectionCreateSubdomainSection()`, `PetscSectionCreateSubsection()`, `DMPlexGetSubpointMap()`, `PetscSectionCreate()`
 @*/
-PetscErrorCode PetscSectionCreateSubmeshSection(PetscSection s, IS subpointMap, PetscSection *subs)
-{
+PetscErrorCode PetscSectionCreateSubmeshSection(PetscSection s, IS subpointMap, PetscSection *subs) {
   PetscFunctionBegin;
   PetscCall(PetscSectionCreateSubplexSection_Internal(s, subpointMap, PETSC_TRUE, subs));
   PetscFunctionReturn(0);
@@ -2062,17 +2010,15 @@ PetscErrorCode PetscSectionCreateSubmeshSection(PetscSection s, IS subpointMap, 
 
 .seealso: `PetscSectionCreateSubmeshSection()`, `PetscSectionCreateSubsection()`, `DMPlexGetSubpointMap()`, `PetscSectionCreate()`
 @*/
-PetscErrorCode PetscSectionCreateSubdomainSection(PetscSection s, IS subpointMap, PetscSection *subs)
-{
+PetscErrorCode PetscSectionCreateSubdomainSection(PetscSection s, IS subpointMap, PetscSection *subs) {
   PetscFunctionBegin;
   PetscCall(PetscSectionCreateSubplexSection_Internal(s, subpointMap, PETSC_FALSE, subs));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSectionView_ASCII(PetscSection s, PetscViewer viewer)
-{
-  PetscInt       p;
-  PetscMPIInt    rank;
+static PetscErrorCode PetscSectionView_ASCII(PetscSection s, PetscViewer viewer) {
+  PetscInt    p;
+  PetscMPIInt rank;
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)viewer), &rank));
@@ -2082,22 +2028,20 @@ static PetscErrorCode PetscSectionView_ASCII(PetscSection s, PetscViewer viewer)
     if ((s->bc) && (s->bc->atlasDof[p] > 0)) {
       PetscInt b;
 
-      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "  (%4" PetscInt_FMT ") dim %2" PetscInt_FMT " offset %3" PetscInt_FMT " constrained", p+s->pStart, s->atlasDof[p], s->atlasOff[p]));
+      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "  (%4" PetscInt_FMT ") dim %2" PetscInt_FMT " offset %3" PetscInt_FMT " constrained", p + s->pStart, s->atlasDof[p], s->atlasOff[p]));
       if (s->bcIndices) {
-        for (b = 0; b < s->bc->atlasDof[p]; ++b) {
-          PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %" PetscInt_FMT, s->bcIndices[s->bc->atlasOff[p]+b]));
-        }
+        for (b = 0; b < s->bc->atlasDof[p]; ++b) { PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %" PetscInt_FMT, s->bcIndices[s->bc->atlasOff[p] + b])); }
       }
       PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "\n"));
     } else {
-      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "  (%4" PetscInt_FMT ") dim %2" PetscInt_FMT " offset %3" PetscInt_FMT "\n", p+s->pStart, s->atlasDof[p], s->atlasOff[p]));
+      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "  (%4" PetscInt_FMT ") dim %2" PetscInt_FMT " offset %3" PetscInt_FMT "\n", p + s->pStart, s->atlasDof[p], s->atlasOff[p]));
     }
   }
   PetscCall(PetscViewerFlush(viewer));
   PetscCall(PetscViewerASCIIPopSynchronized(viewer));
   if (s->sym) {
     PetscCall(PetscViewerASCIIPushTab(viewer));
-    PetscCall(PetscSectionSymView(s->sym,viewer));
+    PetscCall(PetscSectionSymView(s->sym, viewer));
     PetscCall(PetscViewerASCIIPopTab(viewer));
   }
   PetscFunctionReturn(0);
@@ -2116,11 +2060,10 @@ static PetscErrorCode PetscSectionView_ASCII(PetscSection s, PetscViewer viewer)
    Level: intermediate
 .seealso: `PetscSection`, `PetscSectionView`, `PetscObjectViewFromOptions()`, `PetscSectionCreate()`
 @*/
-PetscErrorCode  PetscSectionViewFromOptions(PetscSection A,PetscObject obj,const char name[])
-{
+PetscErrorCode PetscSectionViewFromOptions(PetscSection A, PetscObject obj, const char name[]) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(A,PETSC_SECTION_CLASSID,1);
-  PetscCall(PetscObjectViewFromOptions((PetscObject)A,obj,name));
+  PetscValidHeaderSpecific(A, PETSC_SECTION_CLASSID, 1);
+  PetscCall(PetscObjectViewFromOptions((PetscObject)A, obj, name));
   PetscFunctionReturn(0);
 }
 
@@ -2145,19 +2088,18 @@ PetscErrorCode  PetscSectionViewFromOptions(PetscSection A,PetscObject obj,const
 
 .seealso `PetscSectionCreate()`, `PetscSectionDestroy()`, `PetscSectionLoad()`
 @*/
-PetscErrorCode PetscSectionView(PetscSection s, PetscViewer viewer)
-{
-  PetscBool      isascii, ishdf5;
-  PetscInt       f;
+PetscErrorCode PetscSectionView(PetscSection s, PetscViewer viewer) {
+  PetscBool isascii, ishdf5;
+  PetscInt  f;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   if (!viewer) PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)s), &viewer));
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
-  PetscCall(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &isascii));
-  PetscCall(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5, &ishdf5));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERHDF5, &ishdf5));
   if (isascii) {
-    PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)s,viewer));
+    PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)s, viewer));
     if (s->numFields) {
       PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT " fields\n", s->numFields));
       for (f = 0; f < s->numFields; ++f) {
@@ -2171,7 +2113,7 @@ PetscErrorCode PetscSectionView(PetscSection s, PetscViewer viewer)
 #if PetscDefined(HAVE_HDF5)
     PetscCall(PetscSectionView_HDF5_Internal(s, viewer));
 #else
-    SETERRQ(PetscObjectComm((PetscObject) s), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
+    SETERRQ(PetscObjectComm((PetscObject)s), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
 #endif
   }
   PetscFunctionReturn(0);
@@ -2198,34 +2140,32 @@ PetscErrorCode PetscSectionView(PetscSection s, PetscViewer viewer)
 
 .seealso `PetscSectionCreate()`, `PetscSectionDestroy()`, `PetscSectionView()`
 @*/
-PetscErrorCode PetscSectionLoad(PetscSection s, PetscViewer viewer)
-{
-  PetscBool      ishdf5;
+PetscErrorCode PetscSectionLoad(PetscSection s, PetscViewer viewer) {
+  PetscBool ishdf5;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
-  PetscCall(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5, &ishdf5));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERHDF5, &ishdf5));
   if (ishdf5) {
 #if PetscDefined(HAVE_HDF5)
     PetscCall(PetscSectionLoad_HDF5_Internal(s, viewer));
     PetscFunctionReturn(0);
 #else
-    SETERRQ(PetscObjectComm((PetscObject) s), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
+    SETERRQ(PetscObjectComm((PetscObject)s), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
 #endif
-  } else SETERRQ(PetscObjectComm((PetscObject) s), PETSC_ERR_SUP, "Viewer type %s not yet supported for PetscSection loading", ((PetscObject)viewer)->type_name);
+  } else SETERRQ(PetscObjectComm((PetscObject)s), PETSC_ERR_SUP, "Viewer type %s not yet supported for PetscSection loading", ((PetscObject)viewer)->type_name);
 }
 
-static PetscErrorCode PetscSectionResetClosurePermutation(PetscSection section)
-{
+static PetscErrorCode PetscSectionResetClosurePermutation(PetscSection section) {
   PetscSectionClosurePermVal clVal;
 
   PetscFunctionBegin;
   if (!section->clHash) PetscFunctionReturn(0);
   kh_foreach_value(section->clHash, clVal, {
-      PetscCall(PetscFree(clVal.perm));
-      PetscCall(PetscFree(clVal.invPerm));
-    });
+    PetscCall(PetscFree(clVal.perm));
+    PetscCall(PetscFree(clVal.invPerm));
+  });
   kh_destroy(ClPerm, section->clHash);
   section->clHash = NULL;
   PetscFunctionReturn(0);
@@ -2243,18 +2183,15 @@ static PetscErrorCode PetscSectionResetClosurePermutation(PetscSection section)
 
 .seealso: `PetscSection`, `PetscSectionCreate()`
 @*/
-PetscErrorCode PetscSectionReset(PetscSection s)
-{
-  PetscInt       f, c;
+PetscErrorCode PetscSectionReset(PetscSection s) {
+  PetscInt f, c;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   for (f = 0; f < s->numFields; ++f) {
     PetscCall(PetscSectionDestroy(&s->field[f]));
     PetscCall(PetscFree(s->fieldNames[f]));
-    for (c = 0; c < s->numFieldComponents[f]; ++c) {
-      PetscCall(PetscFree(s->compNames[f][c]));
-    }
+    for (c = 0; c < s->numFieldComponents[f]; ++c) { PetscCall(PetscFree(s->compNames[f][c])); }
     PetscCall(PetscFree(s->compNames[f]));
   }
   PetscCall(PetscFree(s->numFieldComponents));
@@ -2293,11 +2230,10 @@ PetscErrorCode PetscSectionReset(PetscSection s)
 
 .seealso: `PetscSection`, `PetscSectionCreate()`
 @*/
-PetscErrorCode PetscSectionDestroy(PetscSection *s)
-{
+PetscErrorCode PetscSectionDestroy(PetscSection *s) {
   PetscFunctionBegin;
   if (!*s) PetscFunctionReturn(0);
-  PetscValidHeaderSpecific(*s,PETSC_SECTION_CLASSID,1);
+  PetscValidHeaderSpecific(*s, PETSC_SECTION_CLASSID, 1);
   if (--((PetscObject)(*s))->refct > 0) {
     *s = NULL;
     PetscFunctionReturn(0);
@@ -2307,8 +2243,7 @@ PetscErrorCode PetscSectionDestroy(PetscSection *s)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecIntGetValuesSection(PetscInt *baseArray, PetscSection s, PetscInt point, const PetscInt **values)
-{
+PetscErrorCode VecIntGetValuesSection(PetscInt *baseArray, PetscSection s, PetscInt point, const PetscInt **values) {
   const PetscInt p = point - s->pStart;
 
   PetscFunctionBegin;
@@ -2317,9 +2252,8 @@ PetscErrorCode VecIntGetValuesSection(PetscInt *baseArray, PetscSection s, Petsc
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecIntSetValuesSection(PetscInt *baseArray, PetscSection s, PetscInt point, const PetscInt values[], InsertMode mode)
-{
-  PetscInt       *array;
+PetscErrorCode VecIntSetValuesSection(PetscInt *baseArray, PetscSection s, PetscInt point, const PetscInt values[], InsertMode mode) {
+  PetscInt      *array;
   const PetscInt p           = point - s->pStart;
   const PetscInt orientation = 0; /* Needs to be included for use in closure operations */
   PetscInt       cDim        = 0;
@@ -2345,46 +2279,55 @@ PetscErrorCode VecIntSetValuesSection(PetscInt *baseArray, PetscSection s, Petsc
       for (field = 0; field < s->numFields; ++field) {
         const PetscInt dim = s->field[field]->atlasDof[p];
 
-        for (i = dim-1; i >= 0; --i) array[++j] = values[i+offset];
+        for (i = dim - 1; i >= 0; --i) array[++j] = values[i + offset];
         offset += dim;
       }
     }
   } else {
     if (orientation >= 0) {
-      const PetscInt dim  = s->atlasDof[p];
-      PetscInt       cInd = 0, i;
+      const PetscInt  dim  = s->atlasDof[p];
+      PetscInt        cInd = 0, i;
       const PetscInt *cDof;
 
       PetscCall(PetscSectionGetConstraintIndices(s, point, &cDof));
       if (mode == INSERT_VALUES) {
         for (i = 0; i < dim; ++i) {
-          if ((cInd < cDim) && (i == cDof[cInd])) {++cInd; continue;}
+          if ((cInd < cDim) && (i == cDof[cInd])) {
+            ++cInd;
+            continue;
+          }
           array[i] = values[i];
         }
       } else {
         for (i = 0; i < dim; ++i) {
-          if ((cInd < cDim) && (i == cDof[cInd])) {++cInd; continue;}
+          if ((cInd < cDim) && (i == cDof[cInd])) {
+            ++cInd;
+            continue;
+          }
           array[i] += values[i];
         }
       }
     } else {
       const PetscInt *cDof;
-      PetscInt       offset  = 0;
-      PetscInt       cOffset = 0;
-      PetscInt       j       = 0, field;
+      PetscInt        offset  = 0;
+      PetscInt        cOffset = 0;
+      PetscInt        j       = 0, field;
 
       PetscCall(PetscSectionGetConstraintIndices(s, point, &cDof));
       for (field = 0; field < s->numFields; ++field) {
         const PetscInt dim  = s->field[field]->atlasDof[p];     /* PetscSectionGetFieldDof() */
         const PetscInt tDim = s->field[field]->bc->atlasDof[p]; /* PetscSectionGetFieldConstraintDof() */
         const PetscInt sDim = dim - tDim;
-        PetscInt       cInd = 0, i,k;
+        PetscInt       cInd = 0, i, k;
 
-        for (i = 0, k = dim+offset-1; i < dim; ++i, ++j, --k) {
-          if ((cInd < sDim) && (j == cDof[cInd+cOffset])) {++cInd; continue;}
+        for (i = 0, k = dim + offset - 1; i < dim; ++i, ++j, --k) {
+          if ((cInd < sDim) && (j == cDof[cInd + cOffset])) {
+            ++cInd;
+            continue;
+          }
           array[j] = values[k];
         }
-        offset  += dim;
+        offset += dim;
         cOffset += dim - tDim;
       }
     }
@@ -2407,8 +2350,7 @@ PetscErrorCode VecIntSetValuesSection(PetscInt *baseArray, PetscSection s, Petsc
 
 .seealso: `PetscSectionSetConstraintIndices()`, `PetscSectionGetConstraintDof()`, `PetscSection`
 @*/
-PetscErrorCode PetscSectionHasConstraints(PetscSection s, PetscBool *hasConstraints)
-{
+PetscErrorCode PetscSectionHasConstraints(PetscSection s, PetscBool *hasConstraints) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   PetscValidBoolPointer(hasConstraints, 2);
@@ -2434,8 +2376,7 @@ PetscErrorCode PetscSectionHasConstraints(PetscSection s, PetscBool *hasConstrai
 
 .seealso: `PetscSectionSetConstraintIndices()`, `PetscSectionGetConstraintDof()`, `PetscSection`
 @*/
-PetscErrorCode PetscSectionGetConstraintIndices(PetscSection s, PetscInt point, const PetscInt **indices)
-{
+PetscErrorCode PetscSectionGetConstraintIndices(PetscSection s, PetscInt point, const PetscInt **indices) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   if (s->bc) {
@@ -2460,8 +2401,7 @@ PetscErrorCode PetscSectionGetConstraintIndices(PetscSection s, PetscInt point, 
 
 .seealso: `PetscSectionGetConstraintIndices()`, `PetscSectionGetConstraintDof()`, `PetscSection`
 @*/
-PetscErrorCode PetscSectionSetConstraintIndices(PetscSection s, PetscInt point, const PetscInt indices[])
-{
+PetscErrorCode PetscSectionSetConstraintIndices(PetscSection s, PetscInt point, const PetscInt indices[]) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   if (s->bc) {
@@ -2469,9 +2409,7 @@ PetscErrorCode PetscSectionSetConstraintIndices(PetscSection s, PetscInt point, 
     const PetscInt cdof = s->bc->atlasDof[point];
     PetscInt       d;
 
-    for (d = 0; d < cdof; ++d) {
-      PetscCheck(indices[d] < dof,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %" PetscInt_FMT " dof %" PetscInt_FMT ", invalid constraint index[%" PetscInt_FMT "]: %" PetscInt_FMT, point, dof, d, indices[d]);
-    }
+    for (d = 0; d < cdof; ++d) { PetscCheck(indices[d] < dof, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %" PetscInt_FMT " dof %" PetscInt_FMT ", invalid constraint index[%" PetscInt_FMT "]: %" PetscInt_FMT, point, dof, d, indices[d]); }
     PetscCall(VecIntSetValuesSection(s->bcIndices, s->bc, point, indices, INSERT_VALUES));
   }
   PetscFunctionReturn(0);
@@ -2500,12 +2438,11 @@ PetscErrorCode PetscSectionSetConstraintIndices(PetscSection s, PetscInt point, 
 
 .seealso: `PetscSectionSetFieldConstraintIndices()`, `PetscSectionGetConstraintIndices()`, `PetscSectionGetConstraintDof()`, `PetscSection`
 @*/
-PetscErrorCode PetscSectionGetFieldConstraintIndices(PetscSection s, PetscInt point, PetscInt field, const PetscInt **indices)
-{
+PetscErrorCode PetscSectionGetFieldConstraintIndices(PetscSection s, PetscInt point, PetscInt field, const PetscInt **indices) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
-  PetscValidPointer(indices,4);
-  PetscSectionCheckValidField(field,s->numFields);
+  PetscValidPointer(indices, 4);
+  PetscSectionCheckValidField(field, s->numFields);
   PetscCall(PetscSectionGetConstraintIndices(s->field[field], point, indices));
   PetscFunctionReturn(0);
 }
@@ -2527,8 +2464,7 @@ PetscErrorCode PetscSectionGetFieldConstraintIndices(PetscSection s, PetscInt po
 
 .seealso: `PetscSectionSetConstraintIndices()`, `PetscSectionGetFieldConstraintIndices()`, `PetscSectionGetConstraintDof()`, `PetscSection`
 @*/
-PetscErrorCode PetscSectionSetFieldConstraintIndices(PetscSection s, PetscInt point, PetscInt field, const PetscInt indices[])
-{
+PetscErrorCode PetscSectionSetFieldConstraintIndices(PetscSection s, PetscInt point, PetscInt field, const PetscInt indices[]) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   if (PetscDefined(USE_DEBUG)) {
@@ -2537,7 +2473,7 @@ PetscErrorCode PetscSectionSetFieldConstraintIndices(PetscSection s, PetscInt po
     PetscCall(PetscSectionGetFieldConstraintDof(s, point, field, &nfdof));
     if (nfdof) PetscValidIntPointer(indices, 4);
   }
-  PetscSectionCheckValidField(field,s->numFields);
+  PetscSectionCheckValidField(field, s->numFields);
   PetscCall(PetscSectionSetConstraintIndices(s->field[field], point, indices));
   PetscFunctionReturn(0);
 }
@@ -2558,8 +2494,7 @@ PetscErrorCode PetscSectionSetFieldConstraintIndices(PetscSection s, PetscInt po
 
 .seealso: `MatPermute()`
 @*/
-PetscErrorCode PetscSectionPermute(PetscSection section, IS permutation, PetscSection *sectionNew)
-{
+PetscErrorCode PetscSectionPermute(PetscSection section, IS permutation, PetscSection *sectionNew) {
   PetscSection    s = section, sNew;
   const PetscInt *perm;
   PetscInt        numFields, f, c, numPoints, pStart, pEnd, p;
@@ -2568,7 +2503,7 @@ PetscErrorCode PetscSectionPermute(PetscSection section, IS permutation, PetscSe
   PetscValidHeaderSpecific(section, PETSC_SECTION_CLASSID, 1);
   PetscValidHeaderSpecific(permutation, IS_CLASSID, 2);
   PetscValidPointer(sectionNew, 3);
-  PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject) s), &sNew));
+  PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)s), &sNew));
   PetscCall(PetscSectionGetNumFields(s, &numFields));
   if (numFields) PetscCall(PetscSectionSetNumFields(sNew, numFields));
   for (f = 0; f < numFields; ++f) {
@@ -2588,7 +2523,7 @@ PetscErrorCode PetscSectionPermute(PetscSection section, IS permutation, PetscSe
   PetscCall(ISGetIndices(permutation, &perm));
   PetscCall(PetscSectionGetChart(s, &pStart, &pEnd));
   PetscCall(PetscSectionSetChart(sNew, pStart, pEnd));
-  PetscCheck(numPoints >= pEnd,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Permutation size %" PetscInt_FMT " is less than largest Section point %" PetscInt_FMT, numPoints, pEnd);
+  PetscCheck(numPoints >= pEnd, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Permutation size %" PetscInt_FMT " is less than largest Section point %" PetscInt_FMT, numPoints, pEnd);
   for (p = pStart; p < pEnd; ++p) {
     PetscInt dof, cdof;
 
@@ -2643,14 +2578,13 @@ PetscErrorCode PetscSectionPermute(PetscSection section, IS permutation, PetscSe
 
 .seealso: `PetscSectionGetClosureIndex()`, `DMPlexCreateClosureIndex()`
 @*/
-PetscErrorCode PetscSectionSetClosureIndex(PetscSection section, PetscObject obj, PetscSection clSection, IS clPoints)
-{
+PetscErrorCode PetscSectionSetClosureIndex(PetscSection section, PetscObject obj, PetscSection clSection, IS clPoints) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(section,PETSC_SECTION_CLASSID,1);
-  PetscValidHeaderSpecific(clSection,PETSC_SECTION_CLASSID,3);
-  PetscValidHeaderSpecific(clPoints,IS_CLASSID,4);
+  PetscValidHeaderSpecific(section, PETSC_SECTION_CLASSID, 1);
+  PetscValidHeaderSpecific(clSection, PETSC_SECTION_CLASSID, 3);
+  PetscValidHeaderSpecific(clPoints, IS_CLASSID, 4);
   if (section->clObj != obj) PetscCall(PetscSectionResetClosurePermutation(section));
-  section->clObj     = obj;
+  section->clObj = obj;
   PetscCall(PetscObjectReference((PetscObject)clSection));
   PetscCall(PetscObjectReference((PetscObject)clPoints));
   PetscCall(PetscSectionDestroy(&section->clSection));
@@ -2679,25 +2613,23 @@ PetscErrorCode PetscSectionSetClosureIndex(PetscSection section, PetscObject obj
 
 .seealso: `PetscSectionSetClosureIndex()`, `DMPlexCreateClosureIndex()`
 @*/
-PetscErrorCode PetscSectionGetClosureIndex(PetscSection section, PetscObject obj, PetscSection *clSection, IS *clPoints)
-{
+PetscErrorCode PetscSectionGetClosureIndex(PetscSection section, PetscObject obj, PetscSection *clSection, IS *clPoints) {
   PetscFunctionBegin;
   if (section->clObj == obj) {
     if (clSection) *clSection = section->clSection;
-    if (clPoints)  *clPoints  = section->clPoints;
+    if (clPoints) *clPoints = section->clPoints;
   } else {
     if (clSection) *clSection = NULL;
-    if (clPoints)  *clPoints  = NULL;
+    if (clPoints) *clPoints = NULL;
   }
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscSectionSetClosurePermutation_Internal(PetscSection section, PetscObject obj, PetscInt depth, PetscInt clSize, PetscCopyMode mode, PetscInt *clPerm)
-{
-  PetscInt       i;
-  khiter_t iter;
-  int new_entry;
-  PetscSectionClosurePermKey key = {depth, clSize};
+PetscErrorCode PetscSectionSetClosurePermutation_Internal(PetscSection section, PetscObject obj, PetscInt depth, PetscInt clSize, PetscCopyMode mode, PetscInt *clPerm) {
+  PetscInt                    i;
+  khiter_t                    iter;
+  int                         new_entry;
+  PetscSectionClosurePermKey  key = {depth, clSize};
   PetscSectionClosurePermVal *val;
 
   PetscFunctionBegin;
@@ -2708,14 +2640,14 @@ PetscErrorCode PetscSectionSetClosurePermutation_Internal(PetscSection section, 
   section->clObj = obj;
   if (!section->clHash) PetscCall(PetscClPermCreate(&section->clHash));
   iter = kh_put(ClPerm, section->clHash, key, &new_entry);
-  val = &kh_val(section->clHash, iter);
+  val  = &kh_val(section->clHash, iter);
   if (!new_entry) {
     PetscCall(PetscFree(val->perm));
     PetscCall(PetscFree(val->invPerm));
   }
   if (mode == PETSC_COPY_VALUES) {
     PetscCall(PetscMalloc1(clSize, &val->perm));
-    PetscCall(PetscLogObjectMemory((PetscObject) obj, clSize*sizeof(PetscInt)));
+    PetscCall(PetscLogObjectMemory((PetscObject)obj, clSize * sizeof(PetscInt)));
     PetscCall(PetscArraycpy(val->perm, clPerm, clSize));
   } else if (mode == PETSC_OWN_POINTER) {
     val->perm = clPerm;
@@ -2748,8 +2680,7 @@ PetscErrorCode PetscSectionSetClosurePermutation_Internal(PetscSection section, 
 
 .seealso: `PetscSectionGetClosurePermutation()`, `PetscSectionGetClosureIndex()`, `DMPlexCreateClosureIndex()`, `PetscCopyMode`
 @*/
-PetscErrorCode PetscSectionSetClosurePermutation(PetscSection section, PetscObject obj, PetscInt depth, IS perm)
-{
+PetscErrorCode PetscSectionSetClosurePermutation(PetscSection section, PetscObject obj, PetscInt depth, IS perm) {
   const PetscInt *clPerm = NULL;
   PetscInt        clSize = 0;
 
@@ -2758,13 +2689,12 @@ PetscErrorCode PetscSectionSetClosurePermutation(PetscSection section, PetscObje
     PetscCall(ISGetLocalSize(perm, &clSize));
     PetscCall(ISGetIndices(perm, &clPerm));
   }
-  PetscCall(PetscSectionSetClosurePermutation_Internal(section, obj, depth, clSize, PETSC_COPY_VALUES, (PetscInt *) clPerm));
+  PetscCall(PetscSectionSetClosurePermutation_Internal(section, obj, depth, clSize, PETSC_COPY_VALUES, (PetscInt *)clPerm));
   if (perm) PetscCall(ISRestoreIndices(perm, &clPerm));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscSectionGetClosurePermutation_Internal(PetscSection section, PetscObject obj, PetscInt depth, PetscInt size, const PetscInt *perm[])
-{
+PetscErrorCode PetscSectionGetClosurePermutation_Internal(PetscSection section, PetscObject obj, PetscInt depth, PetscInt size, const PetscInt *perm[]) {
   PetscFunctionBegin;
   if (section->clObj == obj) {
     PetscSectionClosurePermKey k = {depth, size};
@@ -2798,8 +2728,7 @@ PetscErrorCode PetscSectionGetClosurePermutation_Internal(PetscSection section, 
 
 .seealso: `PetscSectionSetClosurePermutation()`, `PetscSectionGetClosureInversePermutation()`, `PetscSectionGetClosureIndex()`, `PetscSectionSetClosureIndex()`, `DMPlexCreateClosureIndex()`
 @*/
-PetscErrorCode PetscSectionGetClosurePermutation(PetscSection section, PetscObject obj, PetscInt depth, PetscInt clSize, IS *perm)
-{
+PetscErrorCode PetscSectionGetClosurePermutation(PetscSection section, PetscObject obj, PetscInt depth, PetscInt clSize, IS *perm) {
   const PetscInt *clPerm;
 
   PetscFunctionBegin;
@@ -2808,8 +2737,7 @@ PetscErrorCode PetscSectionGetClosurePermutation(PetscSection section, PetscObje
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscSectionGetClosureInversePermutation_Internal(PetscSection section, PetscObject obj, PetscInt depth, PetscInt size, const PetscInt *perm[])
-{
+PetscErrorCode PetscSectionGetClosureInversePermutation_Internal(PetscSection section, PetscObject obj, PetscInt depth, PetscInt size, const PetscInt *perm[]) {
   PetscFunctionBegin;
   if (section->clObj == obj && section->clHash) {
     PetscSectionClosurePermKey k = {depth, size};
@@ -2843,8 +2771,7 @@ PetscErrorCode PetscSectionGetClosureInversePermutation_Internal(PetscSection se
 
 .seealso: `PetscSectionSetClosurePermutation()`, `PetscSectionGetClosureIndex()`, `PetscSectionSetClosureIndex()`, `DMPlexCreateClosureIndex()`
 @*/
-PetscErrorCode PetscSectionGetClosureInversePermutation(PetscSection section, PetscObject obj, PetscInt depth, PetscInt clSize, IS *perm)
-{
+PetscErrorCode PetscSectionGetClosureInversePermutation(PetscSection section, PetscObject obj, PetscInt depth, PetscInt clSize, IS *perm) {
   const PetscInt *clPerm;
 
   PetscFunctionBegin;
@@ -2867,12 +2794,11 @@ PetscErrorCode PetscSectionGetClosureInversePermutation(PetscSection section, Pe
 
 .seealso: `PetscSectionSetNumFields()`
 @*/
-PetscErrorCode PetscSectionGetField(PetscSection s, PetscInt field, PetscSection *subs)
-{
+PetscErrorCode PetscSectionGetField(PetscSection s, PetscInt field, PetscSection *subs) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(s,PETSC_SECTION_CLASSID,1);
-  PetscValidPointer(subs,3);
-  PetscSectionCheckValidField(field,s->numFields);
+  PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
+  PetscValidPointer(subs, 3);
+  PetscSectionCheckValidField(field, s->numFields);
   *subs = s->field[field];
   PetscFunctionReturn(0);
 }
@@ -2895,12 +2821,11 @@ PetscFunctionList PetscSectionSymList = NULL;
 
 .seealso: `PetscSectionSym`, `PetscSectionSymDestroy()`
 @*/
-PetscErrorCode PetscSectionSymCreate(MPI_Comm comm, PetscSectionSym *sym)
-{
+PetscErrorCode PetscSectionSymCreate(MPI_Comm comm, PetscSectionSym *sym) {
   PetscFunctionBegin;
-  PetscValidPointer(sym,2);
+  PetscValidPointer(sym, 2);
   PetscCall(ISInitializePackage());
-  PetscCall(PetscHeaderCreate(*sym,PETSC_SECTION_SYM_CLASSID,"PetscSectionSym","Section Symmetry","IS",comm,PetscSectionSymDestroy,PetscSectionSymView));
+  PetscCall(PetscHeaderCreate(*sym, PETSC_SECTION_SYM_CLASSID, "PetscSectionSym", "Section Symmetry", "IS", comm, PetscSectionSymDestroy, PetscSectionSymView));
   PetscFunctionReturn(0);
 }
 
@@ -2917,23 +2842,22 @@ PetscErrorCode PetscSectionSymCreate(MPI_Comm comm, PetscSectionSym *sym)
 
 .seealso: `PetscSectionSymGetType()`, `PetscSectionSymCreate()`
 @*/
-PetscErrorCode  PetscSectionSymSetType(PetscSectionSym sym, PetscSectionSymType method)
-{
+PetscErrorCode PetscSectionSymSetType(PetscSectionSym sym, PetscSectionSymType method) {
   PetscErrorCode (*r)(PetscSectionSym);
-  PetscBool      match;
+  PetscBool match;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(sym, PETSC_SECTION_SYM_CLASSID,1);
-  PetscCall(PetscObjectTypeCompare((PetscObject) sym, method, &match));
+  PetscValidHeaderSpecific(sym, PETSC_SECTION_SYM_CLASSID, 1);
+  PetscCall(PetscObjectTypeCompare((PetscObject)sym, method, &match));
   if (match) PetscFunctionReturn(0);
 
-  PetscCall(PetscFunctionListFind(PetscSectionSymList,method,&r));
-  PetscCheck(r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscSectionSym type: %s", method);
-  PetscTryTypeMethod(sym,destroy);
+  PetscCall(PetscFunctionListFind(PetscSectionSymList, method, &r));
+  PetscCheck(r, PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscSectionSym type: %s", method);
+  PetscTryTypeMethod(sym, destroy);
   sym->ops->destroy = NULL;
 
   PetscCall((*r)(sym));
-  PetscCall(PetscObjectChangeTypeName((PetscObject)sym,method));
+  PetscCall(PetscObjectChangeTypeName((PetscObject)sym, method));
   PetscFunctionReturn(0);
 }
 
@@ -2952,11 +2876,10 @@ PetscErrorCode  PetscSectionSymSetType(PetscSectionSym sym, PetscSectionSymType 
 
 .seealso: `PetscSectionSymSetType()`, `PetscSectionSymCreate()`
 @*/
-PetscErrorCode PetscSectionSymGetType(PetscSectionSym sym, PetscSectionSymType *type)
-{
+PetscErrorCode PetscSectionSymGetType(PetscSectionSym sym, PetscSectionSymType *type) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(sym, PETSC_SECTION_SYM_CLASSID,1);
-  PetscValidPointer(type,2);
+  PetscValidHeaderSpecific(sym, PETSC_SECTION_SYM_CLASSID, 1);
+  PetscValidPointer(type, 2);
   *type = ((PetscObject)sym)->type_name;
   PetscFunctionReturn(0);
 }
@@ -2977,11 +2900,10 @@ PetscErrorCode PetscSectionSymGetType(PetscSectionSym sym, PetscSectionSymType *
 
 .seealso: `PetscSectionSymCreate()`, `PetscSectionSymSetType()`
 @*/
-PetscErrorCode PetscSectionSymRegister(const char sname[], PetscErrorCode (*function)(PetscSectionSym))
-{
+PetscErrorCode PetscSectionSymRegister(const char sname[], PetscErrorCode (*function)(PetscSectionSym)) {
   PetscFunctionBegin;
   PetscCall(ISInitializePackage());
-  PetscCall(PetscFunctionListAdd(&PetscSectionSymList,sname,function));
+  PetscCall(PetscFunctionListAdd(&PetscSectionSymList, sname, function));
   PetscFunctionReturn(0);
 }
 
@@ -2997,22 +2919,22 @@ PetscErrorCode PetscSectionSymRegister(const char sname[], PetscErrorCode (*func
 
 .seealso: `PetscSectionSymCreate()`, `PetscSectionSymDestroy()`
 @*/
-PetscErrorCode PetscSectionSymDestroy(PetscSectionSym *sym)
-{
-  SymWorkLink    link,next;
+PetscErrorCode PetscSectionSymDestroy(PetscSectionSym *sym) {
+  SymWorkLink link, next;
 
   PetscFunctionBegin;
   if (!*sym) PetscFunctionReturn(0);
-  PetscValidHeaderSpecific((*sym),PETSC_SECTION_SYM_CLASSID,1);
-  if (--((PetscObject)(*sym))->refct > 0) {*sym = NULL; PetscFunctionReturn(0);}
-  if ((*sym)->ops->destroy) {
-    PetscCall((*(*sym)->ops->destroy)(*sym));
+  PetscValidHeaderSpecific((*sym), PETSC_SECTION_SYM_CLASSID, 1);
+  if (--((PetscObject)(*sym))->refct > 0) {
+    *sym = NULL;
+    PetscFunctionReturn(0);
   }
-  PetscCheck(!(*sym)->workout,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Work array still checked out");
-  for (link=(*sym)->workin; link; link=next) {
+  if ((*sym)->ops->destroy) { PetscCall((*(*sym)->ops->destroy)(*sym)); }
+  PetscCheck(!(*sym)->workout, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Work array still checked out");
+  for (link = (*sym)->workin; link; link = next) {
     PetscInt    **perms = (PetscInt **)link->perms;
-    PetscScalar **rots  = (PetscScalar **) link->rots;
-    PetscCall(PetscFree2(perms,rots));
+    PetscScalar **rots  = (PetscScalar **)link->rots;
+    PetscCall(PetscFree2(perms, rots));
     next = link->next;
     PetscCall(PetscFree(link));
   }
@@ -3034,17 +2956,14 @@ PetscErrorCode PetscSectionSymDestroy(PetscSectionSym *sym)
 
 .seealso: `PetscViewerASCIIOpen()`
 @*/
-PetscErrorCode PetscSectionSymView(PetscSectionSym sym,PetscViewer viewer)
-{
+PetscErrorCode PetscSectionSymView(PetscSectionSym sym, PetscViewer viewer) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(sym,PETSC_SECTION_SYM_CLASSID,1);
-  if (!viewer) {
-    PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)sym),&viewer));
-  }
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
-  PetscCheckSameComm(sym,1,viewer,2);
-  PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)sym,viewer));
-  PetscTryTypeMethod(sym,view,viewer);
+  PetscValidHeaderSpecific(sym, PETSC_SECTION_SYM_CLASSID, 1);
+  if (!viewer) { PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)sym), &viewer)); }
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
+  PetscCheckSameComm(sym, 1, viewer, 2);
+  PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)sym, viewer));
+  PetscTryTypeMethod(sym, view, viewer);
   PetscFunctionReturn(0);
 }
 
@@ -3061,15 +2980,14 @@ PetscErrorCode PetscSectionSymView(PetscSectionSym sym,PetscViewer viewer)
 
 .seealso: `PetscSectionGetSym()`, `PetscSectionSymCreate()`
 @*/
-PetscErrorCode PetscSectionSetSym(PetscSection section, PetscSectionSym sym)
-{
+PetscErrorCode PetscSectionSetSym(PetscSection section, PetscSectionSym sym) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(section,PETSC_SECTION_CLASSID,1);
+  PetscValidHeaderSpecific(section, PETSC_SECTION_CLASSID, 1);
   PetscCall(PetscSectionSymDestroy(&(section->sym)));
   if (sym) {
-    PetscValidHeaderSpecific(sym,PETSC_SECTION_SYM_CLASSID,2);
-    PetscCheckSameComm(section,1,sym,2);
-    PetscCall(PetscObjectReference((PetscObject) sym));
+    PetscValidHeaderSpecific(sym, PETSC_SECTION_SYM_CLASSID, 2);
+    PetscCheckSameComm(section, 1, sym, 2);
+    PetscCall(PetscObjectReference((PetscObject)sym));
   }
   section->sym = sym;
   PetscFunctionReturn(0);
@@ -3090,10 +3008,9 @@ PetscErrorCode PetscSectionSetSym(PetscSection section, PetscSectionSym sym)
 
 .seealso: `PetscSectionSetSym()`, `PetscSectionSymCreate()`
 @*/
-PetscErrorCode PetscSectionGetSym(PetscSection section, PetscSectionSym *sym)
-{
+PetscErrorCode PetscSectionGetSym(PetscSection section, PetscSectionSym *sym) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(section,PETSC_SECTION_CLASSID,1);
+  PetscValidHeaderSpecific(section, PETSC_SECTION_CLASSID, 1);
   *sym = section->sym;
   PetscFunctionReturn(0);
 }
@@ -3112,12 +3029,11 @@ PetscErrorCode PetscSectionGetSym(PetscSection section, PetscSectionSym *sym)
 
 .seealso: `PetscSectionGetFieldSym()`, `PetscSectionSymCreate()`
 @*/
-PetscErrorCode PetscSectionSetFieldSym(PetscSection section, PetscInt field, PetscSectionSym sym)
-{
+PetscErrorCode PetscSectionSetFieldSym(PetscSection section, PetscInt field, PetscSectionSym sym) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(section,PETSC_SECTION_CLASSID,1);
-  PetscSectionCheckValidField(field,section->numFields);
-  PetscCall(PetscSectionSetSym(section->field[field],sym));
+  PetscValidHeaderSpecific(section, PETSC_SECTION_CLASSID, 1);
+  PetscSectionCheckValidField(field, section->numFields);
+  PetscCall(PetscSectionSetSym(section->field[field], sym));
   PetscFunctionReturn(0);
 }
 
@@ -3137,11 +3053,10 @@ PetscErrorCode PetscSectionSetFieldSym(PetscSection section, PetscInt field, Pet
 
 .seealso: `PetscSectionSetFieldSym()`, `PetscSectionSymCreate()`
 @*/
-PetscErrorCode PetscSectionGetFieldSym(PetscSection section, PetscInt field, PetscSectionSym *sym)
-{
+PetscErrorCode PetscSectionGetFieldSym(PetscSection section, PetscInt field, PetscSectionSym *sym) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(section,PETSC_SECTION_CLASSID,1);
-  PetscSectionCheckValidField(field,section->numFields);
+  PetscValidHeaderSpecific(section, PETSC_SECTION_CLASSID, 1);
+  PetscSectionCheckValidField(field, section->numFields);
   *sym = section->field[field]->sym;
   PetscFunctionReturn(0);
 }
@@ -3212,15 +3127,14 @@ PetscErrorCode PetscSectionGetFieldSym(PetscSection section, PetscInt field, Pet
 
 .seealso: `PetscSectionRestorePointSyms()`, `PetscSectionSymCreate()`, `PetscSectionSetSym()`, `PetscSectionGetSym()`
 @*/
-PetscErrorCode PetscSectionGetPointSyms(PetscSection section, PetscInt numPoints, const PetscInt *points, const PetscInt ***perms, const PetscScalar ***rots)
-{
+PetscErrorCode PetscSectionGetPointSyms(PetscSection section, PetscInt numPoints, const PetscInt *points, const PetscInt ***perms, const PetscScalar ***rots) {
   PetscSectionSym sym;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(section,PETSC_SECTION_CLASSID,1);
-  if (numPoints) PetscValidIntPointer(points,3);
+  PetscValidHeaderSpecific(section, PETSC_SECTION_CLASSID, 1);
+  if (numPoints) PetscValidIntPointer(points, 3);
   if (perms) *perms = NULL;
-  if (rots)  *rots  = NULL;
+  if (rots) *rots = NULL;
   sym = section->sym;
   if (sym && (perms || rots)) {
     SymWorkLink link;
@@ -3229,22 +3143,22 @@ PetscErrorCode PetscSectionGetPointSyms(PetscSection section, PetscInt numPoints
       link        = sym->workin;
       sym->workin = sym->workin->next;
     } else {
-      PetscCall(PetscNewLog(sym,&link));
+      PetscCall(PetscNewLog(sym, &link));
     }
     if (numPoints > link->numPoints) {
       PetscInt    **perms = (PetscInt **)link->perms;
-      PetscScalar **rots  = (PetscScalar **) link->rots;
-      PetscCall(PetscFree2(perms,rots));
-      PetscCall(PetscMalloc2(numPoints,(PetscInt***)&link->perms,numPoints,(PetscScalar***)&link->rots));
+      PetscScalar **rots  = (PetscScalar **)link->rots;
+      PetscCall(PetscFree2(perms, rots));
+      PetscCall(PetscMalloc2(numPoints, (PetscInt ***)&link->perms, numPoints, (PetscScalar ***)&link->rots));
       link->numPoints = numPoints;
     }
     link->next   = sym->workout;
     sym->workout = link;
-    PetscCall(PetscArrayzero((PetscInt**)link->perms,numPoints));
-    PetscCall(PetscArrayzero((PetscInt**)link->rots,numPoints));
-    PetscCall((*sym->ops->getpoints) (sym, section, numPoints, points, link->perms, link->rots));
+    PetscCall(PetscArrayzero((PetscInt **)link->perms, numPoints));
+    PetscCall(PetscArrayzero((PetscInt **)link->rots, numPoints));
+    PetscCall((*sym->ops->getpoints)(sym, section, numPoints, points, link->perms, link->rots));
     if (perms) *perms = link->perms;
-    if (rots)  *rots  = link->rots;
+    if (rots) *rots = link->rots;
   }
   PetscFunctionReturn(0);
 }
@@ -3269,27 +3183,26 @@ PetscErrorCode PetscSectionGetPointSyms(PetscSection section, PetscInt numPoints
 
 .seealso: `PetscSectionGetPointSyms()`, `PetscSectionSymCreate()`, `PetscSectionSetSym()`, `PetscSectionGetSym()`
 @*/
-PetscErrorCode PetscSectionRestorePointSyms(PetscSection section, PetscInt numPoints, const PetscInt *points, const PetscInt ***perms, const PetscScalar ***rots)
-{
+PetscErrorCode PetscSectionRestorePointSyms(PetscSection section, PetscInt numPoints, const PetscInt *points, const PetscInt ***perms, const PetscScalar ***rots) {
   PetscSectionSym sym;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(section,PETSC_SECTION_CLASSID,1);
+  PetscValidHeaderSpecific(section, PETSC_SECTION_CLASSID, 1);
   sym = section->sym;
   if (sym && (perms || rots)) {
-    SymWorkLink *p,link;
+    SymWorkLink *p, link;
 
-    for (p=&sym->workout; (link=*p); p=&link->next) {
+    for (p = &sym->workout; (link = *p); p = &link->next) {
       if ((perms && link->perms == *perms) || (rots && link->rots == *rots)) {
         *p          = link->next;
         link->next  = sym->workin;
         sym->workin = link;
         if (perms) *perms = NULL;
-        if (rots)  *rots  = NULL;
+        if (rots) *rots = NULL;
         PetscFunctionReturn(0);
       }
     }
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Array was not checked out");
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Array was not checked out");
   }
   PetscFunctionReturn(0);
 }
@@ -3316,12 +3229,11 @@ PetscErrorCode PetscSectionRestorePointSyms(PetscSection section, PetscInt numPo
 
 .seealso: `PetscSectionGetPointSyms()`, `PetscSectionRestoreFieldPointSyms()`
 @*/
-PetscErrorCode PetscSectionGetFieldPointSyms(PetscSection section, PetscInt field, PetscInt numPoints, const PetscInt *points, const PetscInt ***perms, const PetscScalar ***rots)
-{
+PetscErrorCode PetscSectionGetFieldPointSyms(PetscSection section, PetscInt field, PetscInt numPoints, const PetscInt *points, const PetscInt ***perms, const PetscScalar ***rots) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(section,PETSC_SECTION_CLASSID,1);
-  PetscCheck(field <= section->numFields,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"field %" PetscInt_FMT " greater than number of fields (%" PetscInt_FMT ") in section",field,section->numFields);
-  PetscCall(PetscSectionGetPointSyms(section->field[field],numPoints,points,perms,rots));
+  PetscValidHeaderSpecific(section, PETSC_SECTION_CLASSID, 1);
+  PetscCheck(field <= section->numFields, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "field %" PetscInt_FMT " greater than number of fields (%" PetscInt_FMT ") in section", field, section->numFields);
+  PetscCall(PetscSectionGetPointSyms(section->field[field], numPoints, points, perms, rots));
   PetscFunctionReturn(0);
 }
 
@@ -3346,12 +3258,11 @@ PetscErrorCode PetscSectionGetFieldPointSyms(PetscSection section, PetscInt fiel
 
 .seealso: `PetscSectionRestorePointSyms()`, `petscSectionGetFieldPointSyms()`, `PetscSectionSymCreate()`, `PetscSectionSetSym()`, `PetscSectionGetSym()`
 @*/
-PetscErrorCode PetscSectionRestoreFieldPointSyms(PetscSection section, PetscInt field, PetscInt numPoints, const PetscInt *points, const PetscInt ***perms, const PetscScalar ***rots)
-{
+PetscErrorCode PetscSectionRestoreFieldPointSyms(PetscSection section, PetscInt field, PetscInt numPoints, const PetscInt *points, const PetscInt ***perms, const PetscScalar ***rots) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(section,PETSC_SECTION_CLASSID,1);
-  PetscCheck(field <= section->numFields,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"field %" PetscInt_FMT " greater than number of fields (%" PetscInt_FMT ") in section",field,section->numFields);
-  PetscCall(PetscSectionRestorePointSyms(section->field[field],numPoints,points,perms,rots));
+  PetscValidHeaderSpecific(section, PETSC_SECTION_CLASSID, 1);
+  PetscCheck(field <= section->numFields, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "field %" PetscInt_FMT " greater than number of fields (%" PetscInt_FMT ") in section", field, section->numFields);
+  PetscCall(PetscSectionRestorePointSyms(section->field[field], numPoints, points, perms, rots));
   PetscFunctionReturn(0);
 }
 
@@ -3370,12 +3281,11 @@ PetscErrorCode PetscSectionRestoreFieldPointSyms(PetscSection section, PetscInt 
 
 .seealso: `PetscSectionSymCreate()`, `PetscSectionSetSym()`, `PetscSectionGetSym()`, `PetscSectionSymLabelSetStratum()`, `PetscSectionGetPointSyms()`
 @*/
-PetscErrorCode PetscSectionSymCopy(PetscSectionSym sym, PetscSectionSym nsym)
-{
+PetscErrorCode PetscSectionSymCopy(PetscSectionSym sym, PetscSectionSym nsym) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sym, PETSC_SECTION_SYM_CLASSID, 1);
   PetscValidHeaderSpecific(nsym, PETSC_SECTION_SYM_CLASSID, 2);
-  PetscTryTypeMethod(sym,copy, nsym);
+  PetscTryTypeMethod(sym, copy, nsym);
   PetscFunctionReturn(0);
 }
 
@@ -3395,13 +3305,12 @@ PetscErrorCode PetscSectionSymCopy(PetscSectionSym sym, PetscSectionSym nsym)
 
 .seealso: `PetscSectionSymCreate()`, `PetscSectionSetSym()`, `PetscSectionGetSym()`, `PetscSectionSymLabelSetStratum()`, `PetscSectionGetPointSyms()`
 @*/
-PetscErrorCode PetscSectionSymDistribute(PetscSectionSym sym, PetscSF migrationSF, PetscSectionSym *dsym)
-{
+PetscErrorCode PetscSectionSymDistribute(PetscSectionSym sym, PetscSF migrationSF, PetscSectionSym *dsym) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sym, PETSC_SECTION_SYM_CLASSID, 1);
   PetscValidHeaderSpecific(migrationSF, PETSCSF_CLASSID, 2);
   PetscValidPointer(dsym, 3);
-  PetscTryTypeMethod(sym,distribute, migrationSF, dsym);
+  PetscTryTypeMethod(sym, distribute, migrationSF, dsym);
   PetscFunctionReturn(0);
 }
 
@@ -3420,8 +3329,7 @@ PetscErrorCode PetscSectionSymDistribute(PetscSectionSym sym, PetscSF migrationS
 
 .seealso: `PetscSectionSetChart()`, `PetscSectionCreate()`
 @*/
-PetscErrorCode PetscSectionGetUseFieldOffsets(PetscSection s, PetscBool *flg)
-{
+PetscErrorCode PetscSectionGetUseFieldOffsets(PetscSection s, PetscBool *flg) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   *flg = s->useFieldOff;
@@ -3441,8 +3349,7 @@ PetscErrorCode PetscSectionGetUseFieldOffsets(PetscSection s, PetscBool *flg)
 
 .seealso: `PetscSectionGetUseFieldOffsets()`, `PetscSectionSetChart()`, `PetscSectionCreate()`
 @*/
-PetscErrorCode PetscSectionSetUseFieldOffsets(PetscSection s, PetscBool flg)
-{
+PetscErrorCode PetscSectionSetUseFieldOffsets(PetscSection s, PetscBool flg) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   s->useFieldOff = flg;
@@ -3450,19 +3357,19 @@ PetscErrorCode PetscSectionSetUseFieldOffsets(PetscSection s, PetscBool flg)
 }
 
 #define PetscSectionExpandPoints_Loop(TYPE) \
-{ \
-  PetscInt i, n, o0, o1, size; \
-  TYPE *a0 = (TYPE*)origArray, *a1; \
-  PetscCall(PetscSectionGetStorageSize(s, &size)); \
-  PetscCall(PetscMalloc1(size, &a1)); \
-  for (i=0; i<npoints; i++) { \
-    PetscCall(PetscSectionGetOffset(origSection, points_[i], &o0)); \
-    PetscCall(PetscSectionGetOffset(s, i, &o1)); \
-    PetscCall(PetscSectionGetDof(s, i, &n)); \
-    PetscCall(PetscMemcpy(&a1[o1], &a0[o0], n*unitsize)); \
-  } \
-  *newArray = (void*)a1; \
-}
+  { \
+    PetscInt i, n, o0, o1, size; \
+    TYPE    *a0 = (TYPE *)origArray, *a1; \
+    PetscCall(PetscSectionGetStorageSize(s, &size)); \
+    PetscCall(PetscMalloc1(size, &a1)); \
+    for (i = 0; i < npoints; i++) { \
+      PetscCall(PetscSectionGetOffset(origSection, points_[i], &o0)); \
+      PetscCall(PetscSectionGetOffset(s, i, &o1)); \
+      PetscCall(PetscSectionGetDof(s, i, &n)); \
+      PetscCall(PetscMemcpy(&a1[o1], &a0[o0], n *unitsize)); \
+    } \
+    *newArray = (void *)a1; \
+  }
 
 /*@
   PetscSectionExtractDofsFromArray - Extracts elements of an array corresponding to DOFs of specified points.
@@ -3483,12 +3390,11 @@ PetscErrorCode PetscSectionSetUseFieldOffsets(PetscSection s, PetscBool flg)
 
 .seealso: `PetscSectionGetChart()`, `PetscSectionGetDof()`, `PetscSectionGetStorageSize()`, `PetscSectionCreate()`
 @*/
-PetscErrorCode PetscSectionExtractDofsFromArray(PetscSection origSection, MPI_Datatype dataType, const void *origArray, IS points, PetscSection *newSection, void *newArray[])
-{
-  PetscSection        s;
-  const PetscInt      *points_;
-  PetscInt            i, n, npoints, pStart, pEnd;
-  PetscMPIInt         unitsize;
+PetscErrorCode PetscSectionExtractDofsFromArray(PetscSection origSection, MPI_Datatype dataType, const void *origArray, IS points, PetscSection *newSection, void *newArray[]) {
+  PetscSection    s;
+  const PetscInt *points_;
+  PetscInt        i, n, npoints, pStart, pEnd;
+  PetscMPIInt     unitsize;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(origSection, PETSC_SECTION_CLASSID, 1);
@@ -3502,17 +3408,20 @@ PetscErrorCode PetscSectionExtractDofsFromArray(PetscSection origSection, MPI_Da
   PetscCall(PetscSectionGetChart(origSection, &pStart, &pEnd));
   PetscCall(PetscSectionCreate(PETSC_COMM_SELF, &s));
   PetscCall(PetscSectionSetChart(s, 0, npoints));
-  for (i=0; i<npoints; i++) {
-    PetscCheck(points_[i] >= pStart && points_[i] < pEnd,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "point %" PetscInt_FMT " (index %" PetscInt_FMT ") in input IS out of input section's chart", points_[i], i);
+  for (i = 0; i < npoints; i++) {
+    PetscCheck(points_[i] >= pStart && points_[i] < pEnd, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "point %" PetscInt_FMT " (index %" PetscInt_FMT ") in input IS out of input section's chart", points_[i], i);
     PetscCall(PetscSectionGetDof(origSection, points_[i], &n));
     PetscCall(PetscSectionSetDof(s, i, n));
   }
   PetscCall(PetscSectionSetUp(s));
   if (newArray) {
-    if (dataType == MPIU_INT)           {PetscSectionExpandPoints_Loop(PetscInt);}
-    else if (dataType == MPIU_SCALAR)   {PetscSectionExpandPoints_Loop(PetscScalar);}
-    else if (dataType == MPIU_REAL)     {PetscSectionExpandPoints_Loop(PetscReal);}
-    else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "not implemented for this MPI_Datatype");
+    if (dataType == MPIU_INT) {
+      PetscSectionExpandPoints_Loop(PetscInt);
+    } else if (dataType == MPIU_SCALAR) {
+      PetscSectionExpandPoints_Loop(PetscScalar);
+    } else if (dataType == MPIU_REAL) {
+      PetscSectionExpandPoints_Loop(PetscReal);
+    } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "not implemented for this MPI_Datatype");
   }
   if (newSection) {
     *newSection = s;

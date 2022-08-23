@@ -5,11 +5,10 @@ static const char help[] = "Tests for Plex transforms, including regular refinem
 
 #include <petsc/private/dmpleximpl.h>
 
-static PetscErrorCode LabelPoints(DM dm)
-{
-  DMLabel        label;
-  PetscInt       pStart, pEnd, p;
-  PetscBool      flg = PETSC_FALSE;
+static PetscErrorCode LabelPoints(DM dm) {
+  DMLabel   label;
+  PetscInt  pStart, pEnd, p;
+  PetscBool flg = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-label_mesh", &flg, NULL));
@@ -17,29 +16,25 @@ static PetscErrorCode LabelPoints(DM dm)
   PetscCall(DMCreateLabel(dm, "test"));
   PetscCall(DMGetLabel(dm, "test", &label));
   PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
-  for (p = pStart; p < pEnd; ++p) {
-    PetscCall(DMLabelSetValue(label, p, p));
-  }
+  for (p = pStart; p < pEnd; ++p) { PetscCall(DMLabelSetValue(label, p, p)); }
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm)
-{
+static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm) {
   PetscFunctionBegin;
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetType(*dm, DMPLEX));
   PetscCall(DMSetFromOptions(*dm));
   PetscCall(LabelPoints(*dm));
-  PetscCall(PetscObjectSetOptionsPrefix((PetscObject) *dm, "post_label_"));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)*dm, "post_label_"));
   PetscCall(DMSetFromOptions(*dm));
-  PetscCall(PetscObjectSetOptionsPrefix((PetscObject) *dm, NULL));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)*dm, NULL));
   PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv)
-{
-  DM             dm;
+int main(int argc, char **argv) {
+  DM dm;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));

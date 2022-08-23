@@ -14,7 +14,7 @@ typedef struct {
   Vec G;
   Vec D;
   Vec W;
-  Vec GV;  /* the pseudo gradient */
+  Vec GV; /* the pseudo gradient */
 
   Vec Xold;
   Vec Gold;

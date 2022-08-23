@@ -14,7 +14,7 @@
 
 .seealso: `PetscSFCreate()`, `VecScatter`, `VecScatterCreate()`
 S*/
-typedef struct _p_PetscSF* PetscSF;
+typedef struct _p_PetscSF *PetscSF;
 
 /*J
     PetscSFType - String with the name of a `PetscSF` type
@@ -46,8 +46,8 @@ $      remote(1)%index = 1 * stride
 .seealso: `PetscSFSetGraph()`
 S*/
 typedef struct {
-  PetscInt rank;                /* Rank of owner */
-  PetscInt index;               /* Index of node on rank */
+  PetscInt rank;  /* Rank of owner */
+  PetscInt index; /* Index of node on rank */
 } PetscSFNode;
 
 /*S

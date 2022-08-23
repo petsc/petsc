@@ -1,4 +1,4 @@
-#include <petsc/private/dmfieldimpl.h>     /*I  "petscdmfield.h"  I*/
+#include <petsc/private/dmfieldimpl.h> /*I  "petscdmfield.h"  I*/
 
 PETSC_EXTERN PetscErrorCode DMFieldCreate_DA(DMField);
 PETSC_EXTERN PetscErrorCode DMFieldCreate_DS(DMField);
@@ -15,13 +15,12 @@ PetscFunctionList DMFieldList;
 
 .seealso: `DMFieldRegisterDestroy()`
 @*/
-PetscErrorCode  DMFieldRegisterAll(void)
-{
+PetscErrorCode DMFieldRegisterAll(void) {
   PetscFunctionBegin;
   if (DMFieldRegisterAllCalled) PetscFunctionReturn(0);
   DMFieldRegisterAllCalled = PETSC_TRUE;
-  PetscCall(DMFieldRegister(DMFIELDDA,    DMFieldCreate_DA));
-  PetscCall(DMFieldRegister(DMFIELDDS,    DMFieldCreate_DS));
+  PetscCall(DMFieldRegister(DMFIELDDA, DMFieldCreate_DA));
+  PetscCall(DMFieldRegister(DMFIELDDS, DMFieldCreate_DS));
   PetscCall(DMFieldRegister(DMFIELDSHELL, DMFieldCreate_Shell));
   PetscFunctionReturn(0);
 }
@@ -50,9 +49,8 @@ $     DMFieldSetType(tagger,"my_impl")
 
 .seealso: `DMFieldRegisterAll()`, `DMFieldRegisterDestroy()`
 @*/
-PetscErrorCode  DMFieldRegister(const char sname[],PetscErrorCode (*function)(DMField))
-{
+PetscErrorCode DMFieldRegister(const char sname[], PetscErrorCode (*function)(DMField)) {
   PetscFunctionBegin;
-  PetscCall(PetscFunctionListAdd(&DMFieldList,sname,function));
+  PetscCall(PetscFunctionListAdd(&DMFieldList, sname, function));
   PetscFunctionReturn(0);
 }

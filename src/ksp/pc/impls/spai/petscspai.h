@@ -7,8 +7,7 @@
 #define __SPAI_PACKAGE
 #include <petscpc.h>
 
-PETSC_EXTERN PetscErrorCode MatDumpSPAI(Mat,FILE*);
-PETSC_EXTERN PetscErrorCode VecDumpSPAI(Vec,FILE*);
+PETSC_EXTERN PetscErrorCode MatDumpSPAI(Mat, FILE *);
+PETSC_EXTERN PetscErrorCode VecDumpSPAI(Vec, FILE *);
 
 #endif
-

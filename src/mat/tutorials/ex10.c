@@ -10,57 +10,56 @@ static char help[] = "Reads a PETSc matrix and computes the 2 norm of the column
 */
 #include <petscmat.h>
 
-int main(int argc,char **args)
-{
-  Mat            A;                       /* matrix */
-  PetscViewer    fd;                      /* viewer */
-  char           file[PETSC_MAX_PATH_LEN];            /* input file name */
-  PetscReal      *norms;
-  PetscInt       n,cstart,cend;
-  PetscBool      flg;
+int main(int argc, char **args) {
+  Mat               A;                        /* matrix */
+  PetscViewer       fd;                       /* viewer */
+  char              file[PETSC_MAX_PATH_LEN]; /* input file name */
+  PetscReal        *norms;
+  PetscInt          n, cstart, cend;
+  PetscBool         flg;
   PetscViewerFormat format;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
   /*
      Determine files from which we read the matrix
   */
-  PetscCall(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg));
-  PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -f option");
+  PetscCall(PetscOptionsGetString(NULL, NULL, "-f", file, sizeof(file), &flg));
+  PetscCheck(flg, PETSC_COMM_WORLD, PETSC_ERR_USER, "Must indicate binary file with the -f option");
 
   /*
      Open binary file.  Note that we use FILE_MODE_READ to indicate
      reading from this file.
   */
-  PetscCall(PetscViewerCreate(PETSC_COMM_WORLD,&fd));
-  PetscCall(PetscViewerSetType(fd,PETSCVIEWERBINARY));
+  PetscCall(PetscViewerCreate(PETSC_COMM_WORLD, &fd));
+  PetscCall(PetscViewerSetType(fd, PETSCVIEWERBINARY));
   PetscCall(PetscViewerSetFromOptions(fd));
-  PetscCall(PetscOptionsGetEnum(NULL,NULL,"-viewer_format",PetscViewerFormats,(PetscEnum*)&format,&flg));
-  if (flg) PetscCall(PetscViewerPushFormat(fd,format));
-  PetscCall(PetscViewerFileSetMode(fd,FILE_MODE_READ));
-  PetscCall(PetscViewerFileSetName(fd,file));
+  PetscCall(PetscOptionsGetEnum(NULL, NULL, "-viewer_format", PetscViewerFormats, (PetscEnum *)&format, &flg));
+  if (flg) PetscCall(PetscViewerPushFormat(fd, format));
+  PetscCall(PetscViewerFileSetMode(fd, FILE_MODE_READ));
+  PetscCall(PetscViewerFileSetName(fd, file));
 
   /*
     Load the matrix; then destroy the viewer.
     Matrix type is set automatically but you can override it by MatSetType() prior to MatLoad().
     Do that only if you really insist on the given type.
   */
-  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
-  PetscCall(MatSetOptionsPrefix(A,"a_"));
-  PetscCall(PetscObjectSetName((PetscObject) A,"A"));
+  PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
+  PetscCall(MatSetOptionsPrefix(A, "a_"));
+  PetscCall(PetscObjectSetName((PetscObject)A, "A"));
   PetscCall(MatSetFromOptions(A));
-  PetscCall(MatLoad(A,fd));
+  PetscCall(MatLoad(A, fd));
   PetscCall(PetscViewerDestroy(&fd));
 
-  PetscCall(MatGetSize(A,NULL,&n));
-  PetscCall(MatGetOwnershipRangeColumn(A,&cstart,&cend));
-  PetscCall(PetscMalloc1(n,&norms));
-  PetscCall(MatGetColumnNorms(A,NORM_2,norms));
-  PetscCall(PetscRealView(cend-cstart,norms+cstart,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(MatGetSize(A, NULL, &n));
+  PetscCall(MatGetOwnershipRangeColumn(A, &cstart, &cend));
+  PetscCall(PetscMalloc1(n, &norms));
+  PetscCall(MatGetColumnNorms(A, NORM_2, norms));
+  PetscCall(PetscRealView(cend - cstart, norms + cstart, PETSC_VIEWER_STDOUT_WORLD));
   PetscCall(PetscFree(norms));
 
-  PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)A,PETSC_VIEWER_STDOUT_WORLD));
-  PetscCall(MatViewFromOptions(A,NULL,"-mat_view"));
+  PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)A, PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(MatViewFromOptions(A, NULL, "-mat_view"));
 
   PetscCall(MatDestroy(&A));
   PetscCall(PetscFinalize());

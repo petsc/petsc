@@ -30,42 +30,41 @@
 
   .seealso: `DMClone()`, `DMStagCreateCompatibleDMStag()`, `DMCoarsen()`, `DMRefine()`
 @*/
-PetscErrorCode DMStagDuplicateWithoutSetup(DM dm, MPI_Comm comm, DM *newdm)
-{
-  DM_Stag * const stag  = (DM_Stag*)dm->data;
-  DM_Stag         *newstag;
-  PetscInt        dim;
-  MPI_Comm        newcomm;
+PetscErrorCode DMStagDuplicateWithoutSetup(DM dm, MPI_Comm comm, DM *newdm) {
+  DM_Stag *const stag = (DM_Stag *)dm->data;
+  DM_Stag       *newstag;
+  PetscInt       dim;
+  MPI_Comm       newcomm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMSTAG);
+  PetscValidHeaderSpecificType(dm, DM_CLASSID, 1, DMSTAG);
   newcomm = (comm == MPI_COMM_NULL) ? PetscObjectComm((PetscObject)dm) : comm;
-  PetscCall(DMCreate(newcomm,newdm));
-  PetscCall(DMGetDimension(dm,&dim));
-  PetscCall(DMSetDimension(*newdm,dim));
+  PetscCall(DMCreate(newcomm, newdm));
+  PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(DMSetDimension(*newdm, dim));
 
   /* Call routine to define all data required for setup */
-  PetscCall(DMStagInitialize(stag->boundaryType[0],stag->boundaryType[1],stag->boundaryType[2],stag->N[0],stag->N[1],stag->N[2],stag->nRanks[0],stag->nRanks[1],stag->nRanks[2],stag->dof[0],stag->dof[1],stag->dof[2],stag->dof[3],stag->stencilType,stag->stencilWidth,stag->l[0],stag->l[1],stag->l[2],*newdm));
+  PetscCall(DMStagInitialize(stag->boundaryType[0], stag->boundaryType[1], stag->boundaryType[2], stag->N[0], stag->N[1], stag->N[2], stag->nRanks[0], stag->nRanks[1], stag->nRanks[2], stag->dof[0], stag->dof[1], stag->dof[2], stag->dof[3], stag->stencilType,
+                             stag->stencilWidth, stag->l[0], stag->l[1], stag->l[2], *newdm));
 
   /* Copy all data unrelated to setup */
-  newstag = (DM_Stag*)(*newdm)->data;
-  PetscCall(PetscStrallocpy(stag->coordinateDMType,(char**)&newstag->coordinateDMType));
+  newstag = (DM_Stag *)(*newdm)->data;
+  PetscCall(PetscStrallocpy(stag->coordinateDMType, (char **)&newstag->coordinateDMType));
   PetscFunctionReturn(0);
 }
 
 /* Populate data created after DMCreate_Stag() is called, which is used by DMSetUp_Stag(),
    such as the grid dimensions and dof information. Arguments are ignored for dimensions
    less than three. */
-PetscErrorCode DMStagInitialize(DMBoundaryType bndx,DMBoundaryType bndy,DMBoundaryType bndz,PetscInt M,PetscInt N,PetscInt P,PetscInt m,PetscInt n,PetscInt p,PetscInt dof0,PetscInt dof1,PetscInt dof2,PetscInt dof3,DMStagStencilType stencilType,PetscInt stencilWidth,const PetscInt lx[],const PetscInt ly[],const PetscInt lz[],DM dm)
-{
+PetscErrorCode DMStagInitialize(DMBoundaryType bndx, DMBoundaryType bndy, DMBoundaryType bndz, PetscInt M, PetscInt N, PetscInt P, PetscInt m, PetscInt n, PetscInt p, PetscInt dof0, PetscInt dof1, PetscInt dof2, PetscInt dof3, DMStagStencilType stencilType, PetscInt stencilWidth, const PetscInt lx[], const PetscInt ly[], const PetscInt lz[], DM dm) {
   PetscFunctionBegin;
-  PetscCall(DMSetType(dm,DMSTAG));
-  PetscCall(DMStagSetBoundaryTypes(dm,bndx,bndy,bndz));
-  PetscCall(DMStagSetGlobalSizes(dm,M,N,P));
-  PetscCall(DMStagSetNumRanks(dm,m,n,p));
-  PetscCall(DMStagSetStencilType(dm,stencilType));
-  PetscCall(DMStagSetStencilWidth(dm,stencilWidth));
-  PetscCall(DMStagSetDOF(dm,dof0,dof1,dof2,dof3));
-  PetscCall(DMStagSetOwnershipRanges(dm,lx,ly,lz));
+  PetscCall(DMSetType(dm, DMSTAG));
+  PetscCall(DMStagSetBoundaryTypes(dm, bndx, bndy, bndz));
+  PetscCall(DMStagSetGlobalSizes(dm, M, N, P));
+  PetscCall(DMStagSetNumRanks(dm, m, n, p));
+  PetscCall(DMStagSetStencilType(dm, stencilType));
+  PetscCall(DMStagSetStencilWidth(dm, stencilWidth));
+  PetscCall(DMStagSetDOF(dm, dof0, dof1, dof2, dof3));
+  PetscCall(DMStagSetOwnershipRanges(dm, lx, ly, lz));
   PetscFunctionReturn(0);
 }

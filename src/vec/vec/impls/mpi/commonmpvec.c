@@ -1,5 +1,5 @@
 
-#include <../src/vec/vec/impls/mpi/pvecimpl.h>   /*I  "petscvec.h"   I*/
+#include <../src/vec/vec/impls/mpi/pvecimpl.h> /*I  "petscvec.h"   I*/
 
 /*
   This is used in VecGhostGetLocalForm and VecGhostRestoreLocalForm to ensure
@@ -15,15 +15,14 @@
   Note that this function is correct and changes nothing if both arguments are the
   same, which is the case in serial.
 */
-static PetscErrorCode VecGhostStateSync_Private(Vec g,Vec l)
-{
-  PetscObjectState gstate,lstate;
+static PetscErrorCode VecGhostStateSync_Private(Vec g, Vec l) {
+  PetscObjectState gstate, lstate;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectStateGet((PetscObject)g,&gstate));
-  PetscCall(PetscObjectStateGet((PetscObject)l,&lstate));
-  PetscCall(PetscObjectStateSet((PetscObject)g,PetscMax(gstate,lstate)));
-  PetscCall(PetscObjectStateSet((PetscObject)l,PetscMax(gstate,lstate)));
+  PetscCall(PetscObjectStateGet((PetscObject)g, &gstate));
+  PetscCall(PetscObjectStateGet((PetscObject)l, &lstate));
+  PetscCall(PetscObjectStateSet((PetscObject)g, PetscMax(gstate, lstate)));
+  PetscCall(PetscObjectStateSet((PetscObject)l, PetscMax(gstate, lstate)));
   PetscFunctionReturn(0);
 }
 
@@ -65,26 +64,25 @@ $     VecGhostRestoreLocalForm(x,&xlocal);
 .seealso: `VecCreateGhost()`, `VecGhostRestoreLocalForm()`, `VecCreateGhostWithArray()`
 
 @*/
-PetscErrorCode  VecGhostGetLocalForm(Vec g,Vec *l)
-{
-  PetscBool      isseq,ismpi;
+PetscErrorCode VecGhostGetLocalForm(Vec g, Vec *l) {
+  PetscBool isseq, ismpi;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(g,VEC_CLASSID,1);
-  PetscValidPointer(l,2);
+  PetscValidHeaderSpecific(g, VEC_CLASSID, 1);
+  PetscValidPointer(l, 2);
 
-  PetscCall(PetscObjectTypeCompare((PetscObject)g,VECSEQ,&isseq));
-  PetscCall(PetscObjectTypeCompare((PetscObject)g,VECMPI,&ismpi));
+  PetscCall(PetscObjectTypeCompare((PetscObject)g, VECSEQ, &isseq));
+  PetscCall(PetscObjectTypeCompare((PetscObject)g, VECMPI, &ismpi));
   if (ismpi) {
-    Vec_MPI *v = (Vec_MPI*)g->data;
-    *l = v->localrep;
+    Vec_MPI *v = (Vec_MPI *)g->data;
+    *l         = v->localrep;
   } else if (isseq) {
     *l = g;
   } else {
     *l = NULL;
   }
   if (*l) {
-    PetscCall(VecGhostStateSync_Private(g,*l));
+    PetscCall(VecGhostStateSync_Private(g, *l));
     PetscCall(PetscObjectReference((PetscObject)*l));
   }
   PetscFunctionReturn(0);
@@ -107,23 +105,22 @@ PetscErrorCode  VecGhostGetLocalForm(Vec g,Vec *l)
 .seealso: `VecCreateGhost()`, `VecGhostRestoreLocalForm()`, `VecCreateGhostWithArray()`, `VecGhostGetLocalForm()`
 
 @*/
-PetscErrorCode VecGhostIsLocalForm(Vec g,Vec l,PetscBool *flg)
-{
-  PetscBool      isseq,ismpi;
+PetscErrorCode VecGhostIsLocalForm(Vec g, Vec l, PetscBool *flg) {
+  PetscBool isseq, ismpi;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(g,VEC_CLASSID,1);
-  PetscValidHeaderSpecific(l,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(g, VEC_CLASSID, 1);
+  PetscValidHeaderSpecific(l, VEC_CLASSID, 2);
 
   *flg = PETSC_FALSE;
-  PetscCall(PetscObjectTypeCompare((PetscObject)g,VECSEQ,&isseq));
-  PetscCall(PetscObjectTypeCompare((PetscObject)g,VECMPI,&ismpi));
+  PetscCall(PetscObjectTypeCompare((PetscObject)g, VECSEQ, &isseq));
+  PetscCall(PetscObjectTypeCompare((PetscObject)g, VECMPI, &ismpi));
   if (ismpi) {
-    Vec_MPI *v = (Vec_MPI*)g->data;
+    Vec_MPI *v = (Vec_MPI *)g->data;
     if (l == v->localrep) *flg = PETSC_TRUE;
   } else if (isseq) {
     if (l == g) *flg = PETSC_TRUE;
-  } else SETERRQ(PetscObjectComm((PetscObject)g),PETSC_ERR_ARG_WRONG,"Global vector is not ghosted");
+  } else SETERRQ(PetscObjectComm((PetscObject)g), PETSC_ERR_ARG_WRONG, "Global vector is not ghosted");
   PetscFunctionReturn(0);
 }
 
@@ -146,11 +143,10 @@ PetscErrorCode VecGhostIsLocalForm(Vec g,Vec l,PetscBool *flg)
 
 .seealso: `VecCreateGhost()`, `VecGhostGetLocalForm()`, `VecCreateGhostWithArray()`
 @*/
-PetscErrorCode  VecGhostRestoreLocalForm(Vec g,Vec *l)
-{
+PetscErrorCode VecGhostRestoreLocalForm(Vec g, Vec *l) {
   PetscFunctionBegin;
   if (*l) {
-    PetscCall(VecGhostStateSync_Private(g,*l));
+    PetscCall(VecGhostStateSync_Private(g, *l));
     PetscCall(PetscObjectDereference((PetscObject)*l));
   }
   PetscFunctionReturn(0);
@@ -195,27 +191,26 @@ PetscErrorCode  VecGhostRestoreLocalForm(Vec g,Vec *l)
           `VecGhostRestoreLocalForm()`, `VecCreateGhostWithArray()`
 
 @*/
-PetscErrorCode  VecGhostUpdateBegin(Vec g,InsertMode insertmode,ScatterMode scattermode)
-{
-  Vec_MPI        *v;
-  PetscBool      ismpi,isseq;
+PetscErrorCode VecGhostUpdateBegin(Vec g, InsertMode insertmode, ScatterMode scattermode) {
+  Vec_MPI  *v;
+  PetscBool ismpi, isseq;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(g,VEC_CLASSID,1);
-  PetscCall(PetscObjectTypeCompare((PetscObject)g,VECMPI,&ismpi));
-  PetscCall(PetscObjectTypeCompare((PetscObject)g,VECSEQ,&isseq));
+  PetscValidHeaderSpecific(g, VEC_CLASSID, 1);
+  PetscCall(PetscObjectTypeCompare((PetscObject)g, VECMPI, &ismpi));
+  PetscCall(PetscObjectTypeCompare((PetscObject)g, VECSEQ, &isseq));
   if (ismpi) {
-    v = (Vec_MPI*)g->data;
-    PetscCheck(v->localrep,PetscObjectComm((PetscObject)g),PETSC_ERR_ARG_WRONG,"Vector is not ghosted");
+    v = (Vec_MPI *)g->data;
+    PetscCheck(v->localrep, PetscObjectComm((PetscObject)g), PETSC_ERR_ARG_WRONG, "Vector is not ghosted");
     if (!v->localupdate) PetscFunctionReturn(0);
     if (scattermode == SCATTER_REVERSE) {
-      PetscCall(VecScatterBegin(v->localupdate,v->localrep,g,insertmode,scattermode));
+      PetscCall(VecScatterBegin(v->localupdate, v->localrep, g, insertmode, scattermode));
     } else {
-      PetscCall(VecScatterBegin(v->localupdate,g,v->localrep,insertmode,scattermode));
+      PetscCall(VecScatterBegin(v->localupdate, g, v->localrep, insertmode, scattermode));
     }
   } else if (isseq) {
     /* Do nothing */
-  } else SETERRQ(PetscObjectComm((PetscObject)g),PETSC_ERR_ARG_WRONG,"Vector is not ghosted");
+  } else SETERRQ(PetscObjectComm((PetscObject)g), PETSC_ERR_ARG_WRONG, "Vector is not ghosted");
   PetscFunctionReturn(0);
 }
 
@@ -259,22 +254,21 @@ PetscErrorCode  VecGhostUpdateBegin(Vec g,InsertMode insertmode,ScatterMode scat
           `VecGhostRestoreLocalForm()`, `VecCreateGhostWithArray()`
 
 @*/
-PetscErrorCode  VecGhostUpdateEnd(Vec g,InsertMode insertmode,ScatterMode scattermode)
-{
-  Vec_MPI        *v;
-  PetscBool      ismpi;
+PetscErrorCode VecGhostUpdateEnd(Vec g, InsertMode insertmode, ScatterMode scattermode) {
+  Vec_MPI  *v;
+  PetscBool ismpi;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(g,VEC_CLASSID,1);
-  PetscCall(PetscObjectTypeCompare((PetscObject)g,VECMPI,&ismpi));
+  PetscValidHeaderSpecific(g, VEC_CLASSID, 1);
+  PetscCall(PetscObjectTypeCompare((PetscObject)g, VECMPI, &ismpi));
   if (ismpi) {
-    v = (Vec_MPI*)g->data;
-    PetscCheck(v->localrep,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Vector is not ghosted");
+    v = (Vec_MPI *)g->data;
+    PetscCheck(v->localrep, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Vector is not ghosted");
     if (!v->localupdate) PetscFunctionReturn(0);
     if (scattermode == SCATTER_REVERSE) {
-      PetscCall(VecScatterEnd(v->localupdate,v->localrep,g,insertmode,scattermode));
+      PetscCall(VecScatterEnd(v->localupdate, v->localrep, g, insertmode, scattermode));
     } else {
-      PetscCall(VecScatterEnd(v->localupdate,g,v->localrep,insertmode,scattermode));
+      PetscCall(VecScatterEnd(v->localupdate, g, v->localrep, insertmode, scattermode));
     }
   }
   PetscFunctionReturn(0);

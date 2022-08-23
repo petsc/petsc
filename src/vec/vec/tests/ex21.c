@@ -4,34 +4,33 @@ static char help[] = "Tests VecMax() with index.\n\
 
 #include <petscvec.h>
 
-int main(int argc,char **argv)
-{
-  PetscInt       n = 5,idx;
-  PetscReal      value,value2;
-  Vec            x;
-  PetscScalar    one = 1.0;
+int main(int argc, char **argv) {
+  PetscInt    n = 5, idx;
+  PetscReal   value, value2;
+  Vec         x;
+  PetscScalar one = 1.0;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
-  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-n", &n, NULL));
 
   /* create vector */
-  PetscCall(VecCreate(PETSC_COMM_WORLD,&x));
-  PetscCall(VecSetSizes(x,PETSC_DECIDE,n));
+  PetscCall(VecCreate(PETSC_COMM_WORLD, &x));
+  PetscCall(VecSetSizes(x, PETSC_DECIDE, n));
   PetscCall(VecSetFromOptions(x));
 
-  PetscCall(VecSet(x,one));
-  PetscCall(VecSetValue(x,0,0.0,INSERT_VALUES));
-  PetscCall(VecSetValue(x,n-1,2.0,INSERT_VALUES));
+  PetscCall(VecSet(x, one));
+  PetscCall(VecSetValue(x, 0, 0.0, INSERT_VALUES));
+  PetscCall(VecSetValue(x, n - 1, 2.0, INSERT_VALUES));
   PetscCall(VecAssemblyBegin(x));
   PetscCall(VecAssemblyEnd(x));
-  PetscCall(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
-  PetscCall(VecMax(x,&idx,&value));
-  PetscCall(VecMax(x,NULL,&value2));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Maximum value %g index %" PetscInt_FMT " (no index %g)\n",(double)value,idx,(double)value2));
-  PetscCall(VecMin(x,&idx,&value));
-  PetscCall(VecMin(x,NULL,&value2));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Minimum value %g index %" PetscInt_FMT " (no index %g)\n",(double)value,idx,(double)value2));
+  PetscCall(VecView(x, PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecMax(x, &idx, &value));
+  PetscCall(VecMax(x, NULL, &value2));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Maximum value %g index %" PetscInt_FMT " (no index %g)\n", (double)value, idx, (double)value2));
+  PetscCall(VecMin(x, &idx, &value));
+  PetscCall(VecMin(x, NULL, &value2));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Minimum value %g index %" PetscInt_FMT " (no index %g)\n", (double)value, idx, (double)value2));
 
   PetscCall(VecDestroy(&x));
 

@@ -15,29 +15,28 @@ Compare this to ex2 which solves the same problem without a DM.\n\n";
 #include <petscdmda.h>
 #include <petscksp.h>
 
-int main(int argc,char **argv)
-{
-  DM             da;            /* distributed array */
-  Vec            x,b,u;         /* approx solution, RHS, exact solution */
-  Mat            A;             /* linear system matrix */
-  KSP            ksp;           /* linear solver context */
-  PetscRandom    rctx;          /* random number generator context */
-  PetscReal      norm;          /* norm of solution error */
-  PetscInt       i,j,its;
-  PetscBool      flg = PETSC_FALSE;
+int main(int argc, char **argv) {
+  DM          da;      /* distributed array */
+  Vec         x, b, u; /* approx solution, RHS, exact solution */
+  Mat         A;       /* linear system matrix */
+  KSP         ksp;     /* linear solver context */
+  PetscRandom rctx;    /* random number generator context */
+  PetscReal   norm;    /* norm of solution error */
+  PetscInt    i, j, its;
+  PetscBool   flg = PETSC_FALSE;
 #if defined(PETSC_USE_LOG)
-  PetscLogStage  stage;
+  PetscLogStage stage;
 #endif
-  DMDALocalInfo  info;
+  DMDALocalInfo info;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
   /*
      Create distributed array to handle parallel distribution.
      The problem size will default to 8 by 7, but this can be
      changed using -da_grid_x M -da_grid_y N
   */
-  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,8,7,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da));
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_STAR, 8, 7, PETSC_DECIDE, PETSC_DECIDE, 1, 1, NULL, NULL, &da));
   PetscCall(DMSetFromOptions(da));
   PetscCall(DMSetUp(da));
 
@@ -49,7 +48,7 @@ int main(int argc,char **argv)
      Create parallel matrix preallocated according to the DMDA, format AIJ by default.
      To use symmetric storage, run with -dm_mat_type sbaij -mat_ignore_lower_triangular
   */
-  PetscCall(DMCreateMatrix(da,&A));
+  PetscCall(DMCreateMatrix(da, &A));
 
   /*
      Set matrix elements for the 2-D, five-point stencil in parallel.
@@ -61,21 +60,40 @@ int main(int argc,char **argv)
    */
   PetscCall(PetscLogStageRegister("Assembly", &stage));
   PetscCall(PetscLogStagePush(stage));
-  PetscCall(DMDAGetLocalInfo(da,&info));
-  for (j=info.ys; j<info.ys+info.ym; j++) {
-    for (i=info.xs; i<info.xs+info.xm; i++) {
-      PetscReal   hx  = 1./info.mx,hy = 1./info.my;
-      MatStencil  row = {0},col[5] = {{0}};
+  PetscCall(DMDAGetLocalInfo(da, &info));
+  for (j = info.ys; j < info.ys + info.ym; j++) {
+    for (i = info.xs; i < info.xs + info.xm; i++) {
+      PetscReal   hx = 1. / info.mx, hy = 1. / info.my;
+      MatStencil  row = {0}, col[5] = {{0}};
       PetscScalar v[5];
       PetscInt    ncols = 0;
-      row.j        = j; row.i = i;
-      col[ncols].j = j; col[ncols].i = i; v[ncols++] = 2*(hx/hy + hy/hx);
+      row.j             = j;
+      row.i             = i;
+      col[ncols].j      = j;
+      col[ncols].i      = i;
+      v[ncols++]        = 2 * (hx / hy + hy / hx);
       /* boundaries */
-      if (i>0)         {col[ncols].j = j;   col[ncols].i = i-1; v[ncols++] = -hy/hx;}
-      if (i<info.mx-1) {col[ncols].j = j;   col[ncols].i = i+1; v[ncols++] = -hy/hx;}
-      if (j>0)         {col[ncols].j = j-1; col[ncols].i = i;   v[ncols++] = -hx/hy;}
-      if (j<info.my-1) {col[ncols].j = j+1; col[ncols].i = i;   v[ncols++] = -hx/hy;}
-      PetscCall(MatSetValuesStencil(A,1,&row,ncols,col,v,INSERT_VALUES));
+      if (i > 0) {
+        col[ncols].j = j;
+        col[ncols].i = i - 1;
+        v[ncols++]   = -hy / hx;
+      }
+      if (i < info.mx - 1) {
+        col[ncols].j = j;
+        col[ncols].i = i + 1;
+        v[ncols++]   = -hy / hx;
+      }
+      if (j > 0) {
+        col[ncols].j = j - 1;
+        col[ncols].i = i;
+        v[ncols++]   = -hx / hy;
+      }
+      if (j < info.my - 1) {
+        col[ncols].j = j + 1;
+        col[ncols].i = i;
+        v[ncols++]   = -hx / hy;
+      }
+      PetscCall(MatSetValuesStencil(A, 1, &row, ncols, col, v, INSERT_VALUES));
     }
   }
 
@@ -85,16 +103,16 @@ int main(int argc,char **argv)
      Computations can be done while messages are in transition
      by placing code between these two statements.
   */
-  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
   PetscCall(PetscLogStagePop());
 
   /*
      Create parallel vectors compatible with the DMDA.
   */
-  PetscCall(DMCreateGlobalVector(da,&u));
-  PetscCall(VecDuplicate(u,&b));
-  PetscCall(VecDuplicate(u,&x));
+  PetscCall(DMCreateGlobalVector(da, &u));
+  PetscCall(VecDuplicate(u, &b));
+  PetscCall(VecDuplicate(u, &x));
 
   /*
      Set exact solution; then compute right-hand-side vector.
@@ -102,23 +120,23 @@ int main(int argc,char **argv)
      elements of 1.0;  Alternatively, using the runtime option
      -random_sol forms a solution vector with random components.
   */
-  PetscCall(PetscOptionsGetBool(NULL,NULL,"-random_exact_sol",&flg,NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-random_exact_sol", &flg, NULL));
   if (flg) {
-    PetscCall(PetscRandomCreate(PETSC_COMM_WORLD,&rctx));
+    PetscCall(PetscRandomCreate(PETSC_COMM_WORLD, &rctx));
     PetscCall(PetscRandomSetFromOptions(rctx));
-    PetscCall(VecSetRandom(u,rctx));
+    PetscCall(VecSetRandom(u, rctx));
     PetscCall(PetscRandomDestroy(&rctx));
   } else {
-    PetscCall(VecSet(u,1.));
+    PetscCall(VecSet(u, 1.));
   }
-  PetscCall(MatMult(A,u,b));
+  PetscCall(MatMult(A, u, b));
 
   /*
      View the exact solution vector if desired
   */
-  flg  = PETSC_FALSE;
-  PetscCall(PetscOptionsGetBool(NULL,NULL,"-view_exact_sol",&flg,NULL));
-  if (flg) PetscCall(VecView(u,PETSC_VIEWER_STDOUT_WORLD));
+  flg = PETSC_FALSE;
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-view_exact_sol", &flg, NULL));
+  if (flg) PetscCall(VecView(u, PETSC_VIEWER_STDOUT_WORLD));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                 Create the linear solver and set various options
@@ -127,13 +145,13 @@ int main(int argc,char **argv)
   /*
      Create linear solver context
   */
-  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  PetscCall(KSPCreate(PETSC_COMM_WORLD, &ksp));
 
   /*
      Set operators. Here the matrix that defines the linear system
      also serves as the preconditioning matrix.
   */
-  PetscCall(KSPSetOperators(ksp,A,A));
+  PetscCall(KSPSetOperators(ksp, A, A));
 
   /*
     Set runtime options, e.g.,
@@ -148,7 +166,7 @@ int main(int argc,char **argv)
                       Solve the linear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  PetscCall(KSPSolve(ksp,b,x));
+  PetscCall(KSPSolve(ksp, b, x));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                       Check solution and clean up
@@ -157,16 +175,16 @@ int main(int argc,char **argv)
   /*
      Check the error
   */
-  PetscCall(VecAXPY(x,-1.,u));
-  PetscCall(VecNorm(x,NORM_2,&norm));
-  PetscCall(KSPGetIterationNumber(ksp,&its));
+  PetscCall(VecAXPY(x, -1., u));
+  PetscCall(VecNorm(x, NORM_2, &norm));
+  PetscCall(KSPGetIterationNumber(ksp, &its));
 
   /*
      Print convergence information.  PetscPrintf() produces a single
      print statement from all processes that share a communicator.
      An alternative is PetscFPrintf(), which prints to a file.
   */
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g iterations %" PetscInt_FMT "\n",(double)norm,its));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Norm of error %g iterations %" PetscInt_FMT "\n", (double)norm, its));
 
   /*
      Free work space.  All PETSc objects should be destroyed when they

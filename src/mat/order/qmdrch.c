@@ -28,18 +28,15 @@
 /*              LT 0 MEANS THE NODE HAS BEEN MERGED WITH*/
 /*              OTHERS IN THE QUOTIENT OR IT IS IN NBRHD SET.*/
 /*****************************************************************/
-PetscErrorCode SPARSEPACKqmdrch(const PetscInt *root,const PetscInt *xadj,const PetscInt *adjncy,
-                                PetscInt *deg, PetscInt *marker, PetscInt *rchsze, PetscInt *rchset,
-                                PetscInt *nhdsze, PetscInt *nbrhd)
-{
+PetscErrorCode SPARSEPACKqmdrch(const PetscInt *root, const PetscInt *xadj, const PetscInt *adjncy, PetscInt *deg, PetscInt *marker, PetscInt *rchsze, PetscInt *rchset, PetscInt *nhdsze, PetscInt *nbrhd) {
   /* System generated locals */
   PetscInt i__1, i__2;
 
   /* Local variables */
   PetscInt node, i, j, nabor, istop, jstop, istrt, jstrt;
 
-/*       LOOP THROUGH THE NEIGHBORS OF ROOT IN THE*/
-/*       QUOTIENT GRAPH.*/
+  /*       LOOP THROUGH THE NEIGHBORS OF ROOT IN THE*/
+  /*       QUOTIENT GRAPH.*/
 
   PetscFunctionBegin;
   /* Parameter adjustments */
@@ -62,18 +59,18 @@ PetscErrorCode SPARSEPACKqmdrch(const PetscInt *root,const PetscInt *xadj,const 
     if (marker[nabor] != 0) goto L600;
     if (deg[nabor] < 0) goto L200;
 
-/*                   INCLUDE NABOR INTO THE REACHABLE SET.*/
+    /*                   INCLUDE NABOR INTO THE REACHABLE SET.*/
     ++(*rchsze);
     rchset[*rchsze] = nabor;
     marker[nabor]   = 1;
     goto L600;
-/*                NABOR HAS BEEN ELIMINATED. FIND NODES*/
-/*                REACHABLE FROM IT.*/
-L200:
+  /*                NABOR HAS BEEN ELIMINATED. FIND NODES*/
+  /*                REACHABLE FROM IT.*/
+  L200:
     marker[nabor] = -1;
     ++(*nhdsze);
     nbrhd[*nhdsze] = nabor;
-L300:
+  L300:
     jstrt = xadj[nabor];
     jstop = xadj[nabor + 1] - 1;
     i__2  = jstop;
@@ -83,17 +80,14 @@ L300:
       if (node < 0) goto L300;
       else if (!node) goto L600;
       else goto L400;
-L400:
+    L400:
       if (marker[node] != 0) goto L500;
       ++(*rchsze);
       rchset[*rchsze] = node;
       marker[node]    = 1;
-L500:
-      ;
+    L500:;
     }
-L600:
-    ;
+  L600:;
   }
   PetscFunctionReturn(0);
 }
-

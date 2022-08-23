@@ -1,5 +1,5 @@
 
-#include <petsc/private/petscimpl.h>        /*I  "petscsys.h"   I*/
+#include <petsc/private/petscimpl.h> /*I  "petscsys.h"   I*/
 
 #if PetscDefined(USE_DEBUG)
 PetscStack petscstack;
@@ -22,8 +22,7 @@ static PetscBool amsmemstack = PETSC_FALSE;
 .seealso: `PetscObjectSetName()`, `PetscObjectSAWsViewOff()`, `PetscObjectSAWsTakeAccess()`
 
 @*/
-void  PetscStackSAWsGrantAccess(void)
-{
+void PetscStackSAWsGrantAccess(void) {
   if (amsmemstack) {
     /* ignore any errors from SAWs */
     SAWs_Unlock();
@@ -42,48 +41,43 @@ void  PetscStackSAWsGrantAccess(void)
 .seealso: `PetscObjectSetName()`, `PetscObjectSAWsViewOff()`, `PetscObjectSAWsTakeAccess()`
 
 @*/
-void  PetscStackSAWsTakeAccess(void)
-{
+void PetscStackSAWsTakeAccess(void) {
   if (amsmemstack) {
     /* ignore any errors from SAWs */
     SAWs_Lock();
   }
 }
 
-PetscErrorCode PetscStackViewSAWs(void)
-{
-  PetscMPIInt    rank;
+PetscErrorCode PetscStackViewSAWs(void) {
+  PetscMPIInt rank;
 
-  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
   if (rank) return 0;
 #if PetscDefined(USE_DEBUG)
-  PetscCallSAWs(SAWs_Register,("/PETSc/Stack/functions",petscstack.function,20,SAWs_READ,SAWs_STRING));
-  PetscCallSAWs(SAWs_Register,("/PETSc/Stack/__current_size",&petscstack.currentsize,1,SAWs_READ,SAWs_INT));
+  PetscCallSAWs(SAWs_Register, ("/PETSc/Stack/functions", petscstack.function, 20, SAWs_READ, SAWs_STRING));
+  PetscCallSAWs(SAWs_Register, ("/PETSc/Stack/__current_size", &petscstack.currentsize, 1, SAWs_READ, SAWs_INT));
 #endif
   amsmemstack = PETSC_TRUE;
   return 0;
 }
 
-PetscErrorCode PetscStackSAWsViewOff(void)
-{
+PetscErrorCode PetscStackSAWsViewOff(void) {
   PetscFunctionBegin;
   if (!amsmemstack) PetscFunctionReturn(0);
-  PetscCallSAWs(SAWs_Delete,("/PETSc/Stack"));
+  PetscCallSAWs(SAWs_Delete, ("/PETSc/Stack"));
   amsmemstack = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 #endif /* PETSC_HAVE_SAWS */
 
 #if PetscDefined(USE_DEBUG)
-PetscErrorCode PetscStackSetCheck(PetscBool check)
-{
+PetscErrorCode PetscStackSetCheck(PetscBool check) {
   petscstack.check = check;
   return 0;
 }
 
-PetscErrorCode PetscStackReset(void)
-{
-  memset(&petscstack,0,sizeof(petscstack));
+PetscErrorCode PetscStackReset(void) {
+  memset(&petscstack, 0, sizeof(petscstack));
   return 0;
 }
 
@@ -106,41 +100,40 @@ PetscErrorCode PetscStackReset(void)
 
 .seealso: `PetscAttachDebugger()`, `PetscStackCopy()`, `PetscStackPrint()`, `PetscStackSAWsGrantAccess()`, `PetscStackSAWsTakeAccess()`
 @*/
-PetscErrorCode  PetscStackView(FILE *file)
-{
+PetscErrorCode PetscStackView(FILE *file) {
   if (!file) file = PETSC_STDOUT;
   if (petscstack.currentsize < 0) {
     /* < 0 is absolutely a corrupted stack, but this function is usually called in an error
      * handler, which are not capable of recovering from errors so best we can do is print
      * this warning */
-    fprintf(file,"PetscStack is definitely corrupted with stack size %d\n",petscstack.currentsize);
+    fprintf(file, "PetscStack is definitely corrupted with stack size %d\n", petscstack.currentsize);
   } else if (petscstack.currentsize == 0) {
     if (file == PETSC_STDOUT) {
       (*PetscErrorPrintf)("No error traceback is available, the problem could be in the main program. \n");
     } else {
-      fprintf(file,"No error traceback is available, the problem could be in the main program. \n");
+      fprintf(file, "No error traceback is available, the problem could be in the main program. \n");
     }
   } else {
     char *ptr;
 
     if (file == PETSC_STDOUT) {
       (*PetscErrorPrintf)("The line numbers in the error traceback are not always exact.\n");
-      for (int i = petscstack.currentsize-1, j = 1; i >= 0; --i, ++j) {
-        if (petscstack.file[i]) (*PetscErrorPrintf)("#%d %s() at %s:%d\n",j,petscstack.function[i],PetscCIFilename(petscstack.file[i]),PetscCILinenumber(petscstack.line[i]));
+      for (int i = petscstack.currentsize - 1, j = 1; i >= 0; --i, ++j) {
+        if (petscstack.file[i]) (*PetscErrorPrintf)("#%d %s() at %s:%d\n", j, petscstack.function[i], PetscCIFilename(petscstack.file[i]), PetscCILinenumber(petscstack.line[i]));
         else {
-          PetscStrstr(petscstack.function[i]," ",&ptr);
-          if (!ptr) (*PetscErrorPrintf)("#%d %s()\n",j,petscstack.function[i]);
-          else (*PetscErrorPrintf)("#%d %s\n",j,petscstack.function[i]);
+          PetscStrstr(petscstack.function[i], " ", &ptr);
+          if (!ptr) (*PetscErrorPrintf)("#%d %s()\n", j, petscstack.function[i]);
+          else (*PetscErrorPrintf)("#%d %s\n", j, petscstack.function[i]);
         }
       }
     } else {
-      fprintf(file,"The line numbers in the error traceback are not always exact.\n");
-      for (int i = petscstack.currentsize-1, j = 1; i >= 0; --i, ++j) {
-        if (petscstack.file[i]) fprintf(file,"[%d] #%d %s() at %s:%d\n",PetscGlobalRank,j,petscstack.function[i],PetscCIFilename(petscstack.file[i]),PetscCILinenumber(petscstack.line[i]));
+      fprintf(file, "The line numbers in the error traceback are not always exact.\n");
+      for (int i = petscstack.currentsize - 1, j = 1; i >= 0; --i, ++j) {
+        if (petscstack.file[i]) fprintf(file, "[%d] #%d %s() at %s:%d\n", PetscGlobalRank, j, petscstack.function[i], PetscCIFilename(petscstack.file[i]), PetscCILinenumber(petscstack.line[i]));
         else {
-          PetscStrstr(petscstack.function[i]," ",&ptr);
-          if (!ptr) fprintf(file,"[%d] #%d %s()\n",PetscGlobalRank,j,petscstack.function[i]);
-          else fprintf(file,"[%d] #%d %s\n",PetscGlobalRank,j,petscstack.function[i]);
+          PetscStrstr(petscstack.function[i], " ", &ptr);
+          if (!ptr) fprintf(file, "[%d] #%d %s()\n", PetscGlobalRank, j, petscstack.function[i]);
+          else fprintf(file, "[%d] #%d %s\n", PetscGlobalRank, j, petscstack.function[i]);
         }
       }
     }
@@ -168,8 +161,7 @@ PetscErrorCode  PetscStackView(FILE *file)
 
 .seealso: `PetscAttachDebugger()`, `PetscStackView()`
 @*/
-PetscErrorCode  PetscStackCopy(PetscStack *sint,PetscStack *sout)
-{
+PetscErrorCode PetscStackCopy(PetscStack *sint, PetscStack *sout) {
   if (sint) {
     for (int i = 0; i < sint->currentsize; ++i) {
       sout->function[i]     = sint->function[i];
@@ -207,12 +199,11 @@ PetscErrorCode  PetscStackCopy(PetscStack *sint,PetscStack *sout)
 
 .seealso: `PetscAttachDebugger()`, `PetscStackCopy()`, `PetscStackView()`
 @*/
-PetscErrorCode  PetscStackPrint(PetscStack *sint,FILE *fp)
-{
+PetscErrorCode PetscStackPrint(PetscStack *sint, FILE *fp) {
   if (sint) {
-    for (int i = sint->currentsize-2; i >= 0; --i) {
-      if (sint->file[i]) fprintf(fp,"      [%d]  %s() at %s:%d\n",PetscGlobalRank,sint->function[i],PetscCIFilename(sint->file[i]),PetscCILinenumber(sint->line[i]));
-      else fprintf(fp,"      [%d]  %s()\n",PetscGlobalRank,sint->function[i]);
+    for (int i = sint->currentsize - 2; i >= 0; --i) {
+      if (sint->file[i]) fprintf(fp, "      [%d]  %s() at %s:%d\n", PetscGlobalRank, sint->function[i], PetscCIFilename(sint->file[i]), PetscCILinenumber(sint->line[i]));
+      else fprintf(fp, "      [%d]  %s()\n", PetscGlobalRank, sint->function[i]);
     }
   }
   return 0;

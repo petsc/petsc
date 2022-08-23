@@ -1,4 +1,4 @@
-@@ -18,6 +18,6 @@
+@@ -17,6 +17,6 @@
 -  PetscValidPointer(foo, -1);
 -  PetscValidPointer(bar, -2);
 -  PetscValidPointer(baz, -3);

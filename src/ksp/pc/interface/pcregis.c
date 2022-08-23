@@ -1,5 +1,5 @@
 
-#include <petsc/private/pcimpl.h>          /*I   "petscpc.h"   I*/
+#include <petsc/private/pcimpl.h> /*I   "petscpc.h"   I*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_Jacobi(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_BJacobi(PC);
@@ -84,83 +84,82 @@ PETSC_EXTERN PetscErrorCode PCCreate_MPI(PC);
 
 .seealso: `PCRegister()`
 @*/
-PetscErrorCode  PCRegisterAll(void)
-{
+PetscErrorCode PCRegisterAll(void) {
   PetscFunctionBegin;
   if (PCRegisterAllCalled) PetscFunctionReturn(0);
   PCRegisterAllCalled = PETSC_TRUE;
 
-  PetscCall(PCRegister(PCNONE         ,PCCreate_None));
-  PetscCall(PCRegister(PCJACOBI       ,PCCreate_Jacobi));
-  PetscCall(PCRegister(PCPBJACOBI     ,PCCreate_PBJacobi));
-  PetscCall(PCRegister(PCVPBJACOBI    ,PCCreate_VPBJacobi));
-  PetscCall(PCRegister(PCBJACOBI      ,PCCreate_BJacobi));
-  PetscCall(PCRegister(PCSOR          ,PCCreate_SOR));
-  PetscCall(PCRegister(PCLU           ,PCCreate_LU));
-  PetscCall(PCRegister(PCQR           ,PCCreate_QR));
-  PetscCall(PCRegister(PCSHELL        ,PCCreate_Shell));
-  PetscCall(PCRegister(PCMG           ,PCCreate_MG));
-  PetscCall(PCRegister(PCEISENSTAT    ,PCCreate_Eisenstat));
-  PetscCall(PCRegister(PCILU          ,PCCreate_ILU));
-  PetscCall(PCRegister(PCICC          ,PCCreate_ICC));
-  PetscCall(PCRegister(PCCHOLESKY     ,PCCreate_Cholesky));
-  PetscCall(PCRegister(PCASM          ,PCCreate_ASM));
-  PetscCall(PCRegister(PCGASM         ,PCCreate_GASM));
-  PetscCall(PCRegister(PCKSP          ,PCCreate_KSP));
+  PetscCall(PCRegister(PCNONE, PCCreate_None));
+  PetscCall(PCRegister(PCJACOBI, PCCreate_Jacobi));
+  PetscCall(PCRegister(PCPBJACOBI, PCCreate_PBJacobi));
+  PetscCall(PCRegister(PCVPBJACOBI, PCCreate_VPBJacobi));
+  PetscCall(PCRegister(PCBJACOBI, PCCreate_BJacobi));
+  PetscCall(PCRegister(PCSOR, PCCreate_SOR));
+  PetscCall(PCRegister(PCLU, PCCreate_LU));
+  PetscCall(PCRegister(PCQR, PCCreate_QR));
+  PetscCall(PCRegister(PCSHELL, PCCreate_Shell));
+  PetscCall(PCRegister(PCMG, PCCreate_MG));
+  PetscCall(PCRegister(PCEISENSTAT, PCCreate_Eisenstat));
+  PetscCall(PCRegister(PCILU, PCCreate_ILU));
+  PetscCall(PCRegister(PCICC, PCCreate_ICC));
+  PetscCall(PCRegister(PCCHOLESKY, PCCreate_Cholesky));
+  PetscCall(PCRegister(PCASM, PCCreate_ASM));
+  PetscCall(PCRegister(PCGASM, PCCreate_GASM));
+  PetscCall(PCRegister(PCKSP, PCCreate_KSP));
 #if defined(PETSC_HAVE_KOKKOS_KERNELS)
-  PetscCall(PCRegister(PCBJKOKKOS     ,PCCreate_BJKOKKOS));
+  PetscCall(PCRegister(PCBJKOKKOS, PCCreate_BJKOKKOS));
 #endif
-  PetscCall(PCRegister(PCCOMPOSITE    ,PCCreate_Composite));
-  PetscCall(PCRegister(PCREDUNDANT    ,PCCreate_Redundant));
-  PetscCall(PCRegister(PCNN           ,PCCreate_NN));
-  PetscCall(PCRegister(PCMAT          ,PCCreate_Mat));
-  PetscCall(PCRegister(PCFIELDSPLIT   ,PCCreate_FieldSplit));
-  PetscCall(PCRegister(PCGALERKIN     ,PCCreate_Galerkin));
-  PetscCall(PCRegister(PCEXOTIC       ,PCCreate_Exotic));
-  PetscCall(PCRegister(PCCP           ,PCCreate_CP));
-  PetscCall(PCRegister(PCLSC          ,PCCreate_LSC));
-  PetscCall(PCRegister(PCREDISTRIBUTE ,PCCreate_Redistribute));
-  PetscCall(PCRegister(PCSVD          ,PCCreate_SVD));
-  PetscCall(PCRegister(PCGAMG         ,PCCreate_GAMG));
-  PetscCall(PCRegister(PCKACZMARZ     ,PCCreate_Kaczmarz));
-  PetscCall(PCRegister(PCTELESCOPE    ,PCCreate_Telescope));
-  PetscCall(PCRegister(PCPATCH        ,PCCreate_Patch));
-  PetscCall(PCRegister(PCHMG          ,PCCreate_HMG));
+  PetscCall(PCRegister(PCCOMPOSITE, PCCreate_Composite));
+  PetscCall(PCRegister(PCREDUNDANT, PCCreate_Redundant));
+  PetscCall(PCRegister(PCNN, PCCreate_NN));
+  PetscCall(PCRegister(PCMAT, PCCreate_Mat));
+  PetscCall(PCRegister(PCFIELDSPLIT, PCCreate_FieldSplit));
+  PetscCall(PCRegister(PCGALERKIN, PCCreate_Galerkin));
+  PetscCall(PCRegister(PCEXOTIC, PCCreate_Exotic));
+  PetscCall(PCRegister(PCCP, PCCreate_CP));
+  PetscCall(PCRegister(PCLSC, PCCreate_LSC));
+  PetscCall(PCRegister(PCREDISTRIBUTE, PCCreate_Redistribute));
+  PetscCall(PCRegister(PCSVD, PCCreate_SVD));
+  PetscCall(PCRegister(PCGAMG, PCCreate_GAMG));
+  PetscCall(PCRegister(PCKACZMARZ, PCCreate_Kaczmarz));
+  PetscCall(PCRegister(PCTELESCOPE, PCCreate_Telescope));
+  PetscCall(PCRegister(PCPATCH, PCCreate_Patch));
+  PetscCall(PCRegister(PCHMG, PCCreate_HMG));
 #if defined(PETSC_HAVE_AMGX)
-  PetscCall(PCRegister(PCAMGX         ,PCCreate_AMGX));
+  PetscCall(PCRegister(PCAMGX, PCCreate_AMGX));
 #endif
 #if defined(PETSC_HAVE_ML)
-  PetscCall(PCRegister(PCML           ,PCCreate_ML));
+  PetscCall(PCRegister(PCML, PCCreate_ML));
 #endif
 #if defined(PETSC_HAVE_SPAI)
-  PetscCall(PCRegister(PCSPAI         ,PCCreate_SPAI));
+  PetscCall(PCRegister(PCSPAI, PCCreate_SPAI));
 #endif
 #if defined(PETSC_HAVE_HYPRE)
-  PetscCall(PCRegister(PCHYPRE        ,PCCreate_HYPRE));
-  PetscCall(PCRegister(PCPFMG         ,PCCreate_PFMG));
-  PetscCall(PCRegister(PCSYSPFMG      ,PCCreate_SysPFMG));
-  PetscCall(PCRegister(PCSMG      ,PCCreate_SMG));
+  PetscCall(PCRegister(PCHYPRE, PCCreate_HYPRE));
+  PetscCall(PCRegister(PCPFMG, PCCreate_PFMG));
+  PetscCall(PCRegister(PCSYSPFMG, PCCreate_SysPFMG));
+  PetscCall(PCRegister(PCSMG, PCCreate_SMG));
 #endif
 #if !defined(PETSC_USE_COMPLEX)
-  PetscCall(PCRegister(PCTFS          ,PCCreate_TFS));
+  PetscCall(PCRegister(PCTFS, PCCreate_TFS));
 #endif
 #if defined(PETSC_HAVE_VIENNACL)
-  PetscCall(PCRegister(PCCHOWILUVIENNACL,PCCreate_CHOWILUVIENNACL));
-  PetscCall(PCRegister(PCROWSCALINGVIENNACL,PCCreate_ROWSCALINGVIENNACL));
-  PetscCall(PCRegister(PCSAVIENNACL   ,PCCreate_SAVIENNACL));
+  PetscCall(PCRegister(PCCHOWILUVIENNACL, PCCreate_CHOWILUVIENNACL));
+  PetscCall(PCRegister(PCROWSCALINGVIENNACL, PCCreate_ROWSCALINGVIENNACL));
+  PetscCall(PCRegister(PCSAVIENNACL, PCCreate_SAVIENNACL));
 #endif
 #if defined(PETSC_HAVE_PARMS)
-  PetscCall(PCRegister(PCPARMS        ,PCCreate_PARMS));
+  PetscCall(PCRegister(PCPARMS, PCCreate_PARMS));
 #endif
-  PetscCall(PCRegister(PCBDDC         ,PCCreate_BDDC));
-  PetscCall(PCRegister(PCLMVM         ,PCCreate_LMVM));
-  PetscCall(PCRegister(PCDEFLATION    ,PCCreate_Deflation));
+  PetscCall(PCRegister(PCBDDC, PCCreate_BDDC));
+  PetscCall(PCRegister(PCLMVM, PCCreate_LMVM));
+  PetscCall(PCRegister(PCDEFLATION, PCCreate_Deflation));
 #if defined(PETSC_HAVE_HPDDM) && defined(PETSC_HAVE_DYNAMIC_LIBRARIES) && defined(PETSC_USE_SHARED_LIBRARIES)
-  PetscCall(PCRegister(PCHPDDM        ,PCCreate_HPDDM));
+  PetscCall(PCRegister(PCHPDDM, PCCreate_HPDDM));
 #endif
 #if defined(PETSC_HAVE_H2OPUS)
-  PetscCall(PCRegister(PCH2OPUS       ,PCCreate_H2OPUS));
+  PetscCall(PCRegister(PCH2OPUS, PCCreate_H2OPUS));
 #endif
-  PetscCall(PCRegister(PCMPI         ,PCCreate_MPI));
+  PetscCall(PCRegister(PCMPI, PCCreate_MPI));
   PetscFunctionReturn(0);
 }

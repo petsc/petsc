@@ -1,7 +1,7 @@
 /*
        Provides the calling sequences for all the basic PetscDraw routines.
 */
-#include <petsc/private/drawimpl.h>  /*I "petscdraw.h" I*/
+#include <petsc/private/drawimpl.h> /*I "petscdraw.h" I*/
 
 /*@
    PetscDrawPause - Waits n seconds or until user input, depending on input
@@ -16,11 +16,10 @@
 
 .seealso: `PetscDrawSetPause()`, `PetscDrawGetPause()`
 @*/
-PetscErrorCode  PetscDrawPause(PetscDraw draw)
-{
+PetscErrorCode PetscDrawPause(PetscDraw draw) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  PetscTryTypeMethod(draw,pause);
+  PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
+  PetscTryTypeMethod(draw, pause);
   PetscFunctionReturn(0);
 }
 
@@ -42,11 +41,10 @@ PetscErrorCode  PetscDrawPause(PetscDraw draw)
 
 .seealso: `PetscDrawGetPause()`, `PetscDrawPause()`
 @*/
-PetscErrorCode  PetscDrawSetPause(PetscDraw draw,PetscReal lpause)
-{
+PetscErrorCode PetscDrawSetPause(PetscDraw draw, PetscReal lpause) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  PetscValidLogicalCollectiveReal(draw,lpause,2);
+  PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
+  PetscValidLogicalCollectiveReal(draw, lpause, 2);
   draw->pause = lpause;
   PetscFunctionReturn(0);
 }
@@ -68,11 +66,10 @@ PetscErrorCode  PetscDrawSetPause(PetscDraw draw,PetscReal lpause)
 
 .seealso: `PetscDrawSetPause()`, `PetscDrawPause()`
 @*/
-PetscErrorCode  PetscDrawGetPause(PetscDraw draw,PetscReal *lpause)
-{
+PetscErrorCode PetscDrawGetPause(PetscDraw draw, PetscReal *lpause) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  PetscValidRealPointer(lpause,2);
+  PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
+  PetscValidRealPointer(lpause, 2);
   *lpause = draw->pause;
   PetscFunctionReturn(0);
 }

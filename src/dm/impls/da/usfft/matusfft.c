@@ -4,24 +4,23 @@
     Testing examples can be found in ~/src/mat/tests FIX: should these be moved to dm/da/tests?
 */
 
-#include <petsc/private/matimpl.h>          /*I "petscmat.h" I*/
-#include <petscdmda.h>                  /*I "petscdmda.h"  I*/ /* Unlike equispaced FFT, USFFT requires geometric information encoded by a DMDA */
+#include <petsc/private/matimpl.h>            /*I "petscmat.h" I*/
+#include <petscdmda.h> /*I "petscdmda.h"  I*/ /* Unlike equispaced FFT, USFFT requires geometric information encoded by a DMDA */
 #include <fftw3.h>
 
 typedef struct {
   PetscInt  dim;
   Vec       sampleCoords;
   PetscInt  dof;
-  DM        freqDA;            /* frequency DMDA */
-  PetscInt  *freqSizes;        /* sizes of the frequency DMDA, one per each dim */
-  DM        resampleDa;        /* the Battle-Lemarie interpolant DMDA */
-  Vec       resample;          /* Vec of samples, one per dof per sample point */
-  fftw_plan p_forward,p_backward;
-  unsigned  p_flag;      /* planner flags, FFTW_ESTIMATE,FFTW_MEASURE, FFTW_PATIENT, FFTW_EXHAUSTIVE */
+  DM        freqDA;     /* frequency DMDA */
+  PetscInt *freqSizes;  /* sizes of the frequency DMDA, one per each dim */
+  DM        resampleDa; /* the Battle-Lemarie interpolant DMDA */
+  Vec       resample;   /* Vec of samples, one per dof per sample point */
+  fftw_plan p_forward, p_backward;
+  unsigned  p_flag; /* planner flags, FFTW_ESTIMATE,FFTW_MEASURE, FFTW_PATIENT, FFTW_EXHAUSTIVE */
 } Mat_USFFT;
 
-PetscErrorCode MatApply_USFFT_Private(Mat A, fftw_plan *plan, int direction, Vec x,Vec y)
-{
+PetscErrorCode MatApply_USFFT_Private(Mat A, fftw_plan *plan, int direction, Vec x, Vec y) {
 #if 0
   PetscScalar    *r_array, *y_array;
   Mat_USFFT* = (Mat_USFFT*)(A->data);

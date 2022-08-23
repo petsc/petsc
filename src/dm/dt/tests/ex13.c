@@ -4,15 +4,11 @@ const char help[] = "Tests PetscDTPTrimmedEvalJet()";
 #include <petscblaslapack.h>
 #include <petscmat.h>
 
-static PetscErrorCode constructTabulationAndMass(PetscInt dim, PetscInt deg, PetscInt form, PetscInt jetDegree, PetscInt npoints,
-                                                 const PetscReal *points, const PetscReal *weights,
-                                                 PetscInt *_Nb, PetscInt *_Nf, PetscInt *_Nk,
-                                                 PetscReal **B, PetscScalar **M)
-{
-  PetscInt       Nf; // Number of form components
-  PetscInt       Nbpt; // number of trimmed polynomials
-  PetscInt       Nk; // jet size
-  PetscReal     *p_trimmed;
+static PetscErrorCode constructTabulationAndMass(PetscInt dim, PetscInt deg, PetscInt form, PetscInt jetDegree, PetscInt npoints, const PetscReal *points, const PetscReal *weights, PetscInt *_Nb, PetscInt *_Nf, PetscInt *_Nk, PetscReal **B, PetscScalar **M) {
+  PetscInt   Nf;   // Number of form components
+  PetscInt   Nbpt; // number of trimmed polynomials
+  PetscInt   Nk;   // jet size
+  PetscReal *p_trimmed;
 
   PetscFunctionBegin;
   PetscCall(PetscDTBinomialInt(dim, PetscAbsInt(form), &Nf));
@@ -32,9 +28,7 @@ static PetscErrorCode constructTabulationAndMass(PetscInt dim, PetscInt deg, Pet
         const PetscReal *p_i = &p_trimmed[(i * Nf + f) * Nk * npoints];
         const PetscReal *p_j = &p_trimmed[(j * Nf + f) * Nk * npoints];
 
-        for (PetscInt pt = 0; pt < npoints; pt++) {
-          v += p_i[pt] * p_j[pt] * weights[pt];
-        }
+        for (PetscInt pt = 0; pt < npoints; pt++) { v += p_i[pt] * p_j[pt] * weights[pt]; }
       }
       M_trimmed[i * Nbpt + j] += v;
     }
@@ -42,19 +36,18 @@ static PetscErrorCode constructTabulationAndMass(PetscInt dim, PetscInt deg, Pet
   *_Nb = Nbpt;
   *_Nf = Nf;
   *_Nk = Nk;
-  *B = p_trimmed;
-  *M = M_trimmed;
+  *B   = p_trimmed;
+  *M   = M_trimmed;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt jetDegree, PetscBool cond)
-{
+static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt jetDegree, PetscBool cond) {
   PetscQuadrature  q;
   PetscInt         npoints;
   const PetscReal *points;
   const PetscReal *weights;
-  PetscInt         Nf; // Number of form components
-  PetscInt         Nk; // jet size
+  PetscInt         Nf;   // Number of form components
+  PetscInt         Nk;   // jet size
   PetscInt         Nbpt; // number of trimmed polynomials
   PetscReal       *p_trimmed;
   PetscScalar     *M_trimmed;
@@ -86,19 +79,19 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
   // Print the condition numbers (useful for testing out different bases internally in PetscDTPTrimmedEvalJet())
 #if !defined(PETSC_USE_COMPLEX)
   if (cond) {
-    PetscReal *S;
+    PetscReal   *S;
     PetscScalar *work;
-    PetscBLASInt n = Nbpt;
+    PetscBLASInt n     = Nbpt;
     PetscBLASInt lwork = 5 * Nbpt;
     PetscBLASInt lierr;
 
     PetscCall(PetscMalloc1(Nbpt, &S));
-    PetscCall(PetscMalloc1(5*Nbpt, &work));
+    PetscCall(PetscMalloc1(5 * Nbpt, &work));
     PetscCall(PetscArraycpy(Mcopy, M_trimmed, Nbpt * Nbpt));
 
-    PetscCallBLAS("LAPACKgesvd",LAPACKgesvd_("N","N",&n,&n,Mcopy,&n,S,NULL,&n,NULL,&n,work,&lwork,&lierr));
+    PetscCallBLAS("LAPACKgesvd", LAPACKgesvd_("N", "N", &n, &n, Mcopy, &n, S, NULL, &n, NULL, &n, work, &lwork, &lierr));
     PetscReal cond = S[0] / S[Nbpt - 1];
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "dimension %" PetscInt_FMT ", degree %" PetscInt_FMT ", form %" PetscInt_FMT ": condition number %g\n", dim, deg, form, (double) cond));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "dimension %" PetscInt_FMT ", degree %" PetscInt_FMT ", form %" PetscInt_FMT ": condition number %g\n", dim, deg, form, (double)cond));
     PetscCall(PetscFree(work));
     PetscCall(PetscFree(S));
   }
@@ -109,13 +102,11 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
   for (PetscInt i = 0; i < Nbp; i++) {
     for (PetscInt j = 0; j < Nbpt; j++) {
       for (PetscInt f = 0; f < Nf; f++) {
-        PetscReal        v = 0.;
+        PetscReal        v   = 0.;
         const PetscReal *p_i = &p_scalar[i * Nk * npoints];
         const PetscReal *p_j = &p_trimmed[(j * Nf + f) * Nk * npoints];
 
-        for (PetscInt pt = 0; pt < npoints; pt++) {
-          v += p_i[pt] * p_j[pt] * weights[pt];
-        }
+        for (PetscInt pt = 0; pt < npoints; pt++) { v += p_i[pt] * p_j[pt] * weights[pt]; }
         M_moments[(i * Nf + f) * Nbpt + j] += v;
       }
     }
@@ -125,20 +116,20 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
   // the full polynomials, the result should be zero
   PetscCall(PetscArraycpy(Mcopy, M_trimmed, Nbpt * Nbpt));
   {
-    PetscBLASInt m = Nbpt;
-    PetscBLASInt n = Nbpt;
-    PetscBLASInt k = Nbp * Nf;
-    PetscScalar mone = -1.;
-    PetscScalar one = 1.;
+    PetscBLASInt m    = Nbpt;
+    PetscBLASInt n    = Nbpt;
+    PetscBLASInt k    = Nbp * Nf;
+    PetscScalar  mone = -1.;
+    PetscScalar  one  = 1.;
 
-    PetscCallBLAS("BLASgemm",BLASgemm_("N","T",&m,&n,&k,&mone,M_moments,&m,M_moments,&m,&one,Mcopy,&m));
+    PetscCallBLAS("BLASgemm", BLASgemm_("N", "T", &m, &n, &k, &mone, M_moments, &m, M_moments, &m, &one, Mcopy, &m));
   }
 
   frob_err = 0.;
   for (PetscInt i = 0; i < Nbpt * Nbpt; i++) frob_err += PetscRealPart(Mcopy[i]) * PetscRealPart(Mcopy[i]);
   frob_err = PetscSqrtReal(frob_err);
 
-  PetscCheck(frob_err <= PETSC_SMALL,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "dimension %" PetscInt_FMT ", degree %" PetscInt_FMT ", form %" PetscInt_FMT ": trimmed projection error %g", dim, deg, form, (double) frob_err);
+  PetscCheck(frob_err <= PETSC_SMALL, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "dimension %" PetscInt_FMT ", degree %" PetscInt_FMT ", form %" PetscInt_FMT ": trimmed projection error %g", dim, deg, form, (double)frob_err);
 
   // P trimmed is also supposed to contain the polynomials of one degree less: construction M_moment[0:sub,:] * M_trimmed^{-1} * M_moments[0:sub,:]^T should be the identity matrix
   PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, Nbpt, Nbpt, M_trimmed, &mat_trimmed));
@@ -150,7 +141,7 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
   PetscCall(MatTransposeMatMult(mat_moments_T, AinvB, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Mm1));
   PetscCall(MatShift(Mm1, -1.));
   PetscCall(MatNorm(Mm1, NORM_FROBENIUS, &frob_err));
-  PetscCheck(frob_err <= PETSC_SMALL,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "dimension %" PetscInt_FMT ", degree %" PetscInt_FMT ", form %" PetscInt_FMT ": trimmed reverse projection error %g", dim, deg, form, (double) frob_err);
+  PetscCheck(frob_err <= PETSC_SMALL, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "dimension %" PetscInt_FMT ", degree %" PetscInt_FMT ", form %" PetscInt_FMT ": trimmed reverse projection error %g", dim, deg, form, (double)frob_err);
   PetscCall(MatDestroy(&Mm1));
   PetscCall(MatDestroy(&AinvB));
   PetscCall(MatDestroy(&mat_moments_T));
@@ -160,7 +151,7 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
     PetscInt     Nf1, Nbpt1, Nk1;
     PetscReal   *p_trimmed1;
     PetscScalar *M_trimmed1;
-    PetscInt   (*pattern)[3];
+    PetscInt(*pattern)[3];
     PetscReal   *p_koszul;
     PetscScalar *M_koszul;
     PetscScalar *M_k_moment;
@@ -169,8 +160,7 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
     Mat          AinvB;
     Mat          prod;
 
-    PetscCall(constructTabulationAndMass(dim, deg, form < 0 ? form - 1 : form + 1, 0, npoints, points, weights, &Nbpt1, &Nf1, &Nk1,
-                                       &p_trimmed1, &M_trimmed1));
+    PetscCall(constructTabulationAndMass(dim, deg, form < 0 ? form - 1 : form + 1, 0, npoints, points, weights, &Nbpt1, &Nf1, &Nk1, &p_trimmed1, &M_trimmed1));
 
     PetscCall(PetscMalloc1(Nf1 * (PetscAbsInt(form) + 1), &pattern));
     PetscCall(PetscDTAltVInteriorPattern(dim, PetscAbsInt(form) + 1, pattern));
@@ -179,30 +169,22 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
     PetscCall(PetscCalloc1(Nbpt1 * Nf * npoints, &p_koszul));
     for (PetscInt b = 0; b < Nbpt1; b++) {
       for (PetscInt a = 0; a < Nf1 * (PetscAbsInt(form) + 1); a++) {
-        PetscInt         i,j,k;
+        PetscInt         i, j, k;
         PetscReal        sign;
         PetscReal       *p_i;
         const PetscReal *p_j;
 
         i = pattern[a][0];
-        if (form < 0) {
-          i = Nf-1-i;
-        }
+        if (form < 0) { i = Nf - 1 - i; }
         j = pattern[a][1];
-        if (form < 0) {
-          j = Nf1-1-j;
-        }
-        k = pattern[a][2] < 0 ? -(pattern[a][2] + 1) : pattern[a][2];
+        if (form < 0) { j = Nf1 - 1 - j; }
+        k    = pattern[a][2] < 0 ? -(pattern[a][2] + 1) : pattern[a][2];
         sign = pattern[a][2] < 0 ? -1 : 1;
-        if (form < 0 && (i & 1) ^ (j & 1)) {
-          sign = -sign;
-        }
+        if (form < 0 && (i & 1) ^ (j & 1)) { sign = -sign; }
 
         p_i = &p_koszul[(b * Nf + i) * npoints];
         p_j = &p_trimmed1[(b * Nf1 + j) * npoints];
-        for (PetscInt pt = 0; pt < npoints; pt++) {
-          p_i[pt] += p_j[pt] * points[pt * dim + k] * sign;
-        }
+        for (PetscInt pt = 0; pt < npoints; pt++) { p_i[pt] += p_j[pt] * points[pt * dim + k] * sign; }
       }
     }
 
@@ -216,9 +198,7 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
           const PetscReal *p_i = &p_koszul[(i * Nf + v) * npoints];
           const PetscReal *p_j = &p_koszul[(j * Nf + v) * npoints];
 
-          for (PetscInt pt = 0; pt < npoints; pt++) {
-            val += p_i[pt] * p_j[pt] * weights[pt];
-          }
+          for (PetscInt pt = 0; pt < npoints; pt++) { val += p_i[pt] * p_j[pt] * weights[pt]; }
         }
         M_koszul[i * Nbpt1 + j] = val;
       }
@@ -234,9 +214,7 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
           const PetscReal *p_i = &p_koszul[(i * Nf + v) * npoints];
           const PetscReal *p_j = &p_trimmed[(j * Nf + v) * Nk * npoints];
 
-          for (PetscInt pt = 0; pt < npoints; pt++) {
-            val += p_i[pt] * p_j[pt] * weights[pt];
-          }
+          for (PetscInt pt = 0; pt < npoints; pt++) { val += p_i[pt] * p_j[pt] * weights[pt]; }
         }
         M_k_moment[i * Nbpt + j] = val;
       }
@@ -251,7 +229,7 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
     PetscCall(MatAXPY(prod, -1., mat_koszul, SAME_NONZERO_PATTERN));
     PetscCall(MatNorm(prod, NORM_FROBENIUS, &frob_err));
     if (frob_err > PETSC_SMALL) {
-      SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "dimension %" PetscInt_FMT ", degree %" PetscInt_FMT ", forms (%" PetscInt_FMT ", %" PetscInt_FMT "): koszul projection error %g", dim, deg, form, form < 0 ? (form-1):(form+1), (double) frob_err);
+      SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "dimension %" PetscInt_FMT ", degree %" PetscInt_FMT ", forms (%" PetscInt_FMT ", %" PetscInt_FMT "): koszul projection error %g", dim, deg, form, form < 0 ? (form - 1) : (form + 1), (double)frob_err);
     }
 
     PetscCall(MatDestroy(&prod));
@@ -272,28 +250,24 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
   // p_trimmed, which is [Nbpt][Nf][Nk][npoints]
   PetscCall(PetscCalloc1(Nbpt * Nf * Nk * npoints, &p_trimmed_copy));
   PetscCall(PetscMalloc1(Nbp * Nf * Nbpt, &M_moment_real));
-  for (PetscInt i = 0; i < Nbp * Nf * Nbpt; i++) {
-    M_moment_real[i] = PetscRealPart(M_moments[i]);
-  }
+  for (PetscInt i = 0; i < Nbp * Nf * Nbpt; i++) { M_moment_real[i] = PetscRealPart(M_moments[i]); }
   for (PetscInt f = 0; f < Nf; f++) {
-    PetscBLASInt m = Nk * npoints;
-    PetscBLASInt n = Nbpt;
-    PetscBLASInt k = Nbp;
-    PetscBLASInt lda = Nk * npoints;
-    PetscBLASInt ldb = Nf * Nbpt;
-    PetscBLASInt ldc = Nf * Nk * npoints;
+    PetscBLASInt m     = Nk * npoints;
+    PetscBLASInt n     = Nbpt;
+    PetscBLASInt k     = Nbp;
+    PetscBLASInt lda   = Nk * npoints;
+    PetscBLASInt ldb   = Nf * Nbpt;
+    PetscBLASInt ldc   = Nf * Nk * npoints;
     PetscReal    alpha = 1.0;
-    PetscReal    beta = 1.0;
+    PetscReal    beta  = 1.0;
 
-    PetscCallBLAS("BLASREALgemm",BLASREALgemm_("N","T",&m,&n,&k,&alpha,p_scalar,&lda,&M_moment_real[f * Nbpt],&ldb,&beta,&p_trimmed_copy[f * Nk * npoints],&ldc));
+    PetscCallBLAS("BLASREALgemm", BLASREALgemm_("N", "T", &m, &n, &k, &alpha, p_scalar, &lda, &M_moment_real[f * Nbpt], &ldb, &beta, &p_trimmed_copy[f * Nk * npoints], &ldc));
   }
   frob_err = 0.;
-  for (PetscInt i = 0; i < Nbpt * Nf * Nk * npoints; i++) {
-    frob_err += (p_trimmed_copy[i] - p_trimmed[i]) * (p_trimmed_copy[i] - p_trimmed[i]);
-  }
+  for (PetscInt i = 0; i < Nbpt * Nf * Nk * npoints; i++) { frob_err += (p_trimmed_copy[i] - p_trimmed[i]) * (p_trimmed_copy[i] - p_trimmed[i]); }
   frob_err = PetscSqrtReal(frob_err);
 
-  PetscCheck(frob_err < 10*PETSC_SMALL,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "dimension %" PetscInt_FMT ", degree %" PetscInt_FMT ", form %" PetscInt_FMT ": jet error %g", dim, deg, form, (double) frob_err);
+  PetscCheck(frob_err < 10 * PETSC_SMALL, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "dimension %" PetscInt_FMT ", degree %" PetscInt_FMT ", form %" PetscInt_FMT ": jet error %g", dim, deg, form, (double)frob_err);
 
   PetscCall(PetscFree(M_moment_real));
   PetscCall(PetscFree(p_trimmed_copy));
@@ -307,26 +281,23 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv)
-{
-  PetscInt       max_dim = 3;
-  PetscInt       max_deg = 4;
-  PetscInt       k       = 3;
-  PetscBool      cond    = PETSC_FALSE;
+int main(int argc, char **argv) {
+  PetscInt  max_dim = 3;
+  PetscInt  max_deg = 4;
+  PetscInt  k       = 3;
+  PetscBool cond    = PETSC_FALSE;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
-  PetscOptionsBegin(PETSC_COMM_WORLD,"","Options for PetscDTPTrimmedEvalJet() tests","none");
-  PetscCall(PetscOptionsInt("-max_dim", "Maximum dimension of the simplex",__FILE__,max_dim,&max_dim,NULL));
-  PetscCall(PetscOptionsInt("-max_degree", "Maximum degree of the trimmed polynomial space",__FILE__,max_deg,&max_deg,NULL));
-  PetscCall(PetscOptionsInt("-max_jet", "The number of derivatives to test",__FILE__,k,&k,NULL));
-  PetscCall(PetscOptionsBool("-cond", "Compute the condition numbers of the mass matrices of the bases",__FILE__,cond,&cond,NULL));
+  PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for PetscDTPTrimmedEvalJet() tests", "none");
+  PetscCall(PetscOptionsInt("-max_dim", "Maximum dimension of the simplex", __FILE__, max_dim, &max_dim, NULL));
+  PetscCall(PetscOptionsInt("-max_degree", "Maximum degree of the trimmed polynomial space", __FILE__, max_deg, &max_deg, NULL));
+  PetscCall(PetscOptionsInt("-max_jet", "The number of derivatives to test", __FILE__, k, &k, NULL));
+  PetscCall(PetscOptionsBool("-cond", "Compute the condition numbers of the mass matrices of the bases", __FILE__, cond, &cond, NULL));
   PetscOptionsEnd();
   for (PetscInt dim = 2; dim <= max_dim; dim++) {
     for (PetscInt deg = 1; deg <= max_deg; deg++) {
-      for (PetscInt form = -dim+1; form <= dim; form++) {
-        PetscCall(test(dim, deg, form, PetscMax(1, k), cond));
-      }
+      for (PetscInt form = -dim + 1; form <= dim; form++) { PetscCall(test(dim, deg, form, PetscMax(1, k), cond)); }
     }
   }
   PetscCall(PetscFinalize());

@@ -1,4 +1,4 @@
-#include <petsctao.h>         /*I  "petsctao.h"  I*/
+#include <petsctao.h> /*I  "petsctao.h"  I*/
 #include <petsc/private/taoimpl.h>
 #include <petscsnes.h>
 #include <petscdmshell.h>
@@ -6,13 +6,12 @@
 /*
    For finited difference computations of the Hessian, we use PETSc's SNESComputeJacobianDefault
 */
-static PetscErrorCode Fsnes(SNES snes,Vec X,Vec G,void* ctx)
-{
-  Tao            tao = (Tao)ctx;
+static PetscErrorCode Fsnes(SNES snes, Vec X, Vec G, void *ctx) {
+  Tao tao = (Tao)ctx;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(tao,TAO_CLASSID,4);
-  PetscCall(TaoComputeGradient(tao,X,G));
+  PetscValidHeaderSpecific(tao, TAO_CLASSID, 4);
+  PetscCall(TaoComputeGradient(tao, X, G));
   PetscFunctionReturn(0);
 }
 
@@ -46,40 +45,37 @@ static PetscErrorCode Fsnes(SNES snes,Vec X,Vec G,void* ctx)
 
 .seealso: `Tao`, `TaoSetGradient()`
 @*/
-PetscErrorCode TaoDefaultComputeGradient(Tao tao,Vec Xin,Vec G,void *dummy)
-{
-  Vec            X;
-  PetscScalar    *g;
-  PetscReal      f, f2;
-  PetscInt       low,high,N,i;
-  PetscBool      flg;
-  PetscReal      h=.5*PETSC_SQRT_MACHINE_EPSILON;
+PetscErrorCode TaoDefaultComputeGradient(Tao tao, Vec Xin, Vec G, void *dummy) {
+  Vec          X;
+  PetscScalar *g;
+  PetscReal    f, f2;
+  PetscInt     low, high, N, i;
+  PetscBool    flg;
+  PetscReal    h = .5 * PETSC_SQRT_MACHINE_EPSILON;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsGetReal(((PetscObject)tao)->options,((PetscObject)tao)->prefix,"-tao_fd_delta",&h,&flg));
-  PetscCall(VecDuplicate(Xin,&X));
-  PetscCall(VecCopy(Xin,X));
-  PetscCall(VecGetSize(X,&N));
-  PetscCall(VecGetOwnershipRange(X,&low,&high));
-  PetscCall(VecSetOption(X,VEC_IGNORE_OFF_PROC_ENTRIES,PETSC_TRUE));
-  PetscCall(VecGetArray(G,&g));
-  for (i=0;i<N;i++) {
-    PetscCall(VecSetValue(X,i,-h,ADD_VALUES));
+  PetscCall(PetscOptionsGetReal(((PetscObject)tao)->options, ((PetscObject)tao)->prefix, "-tao_fd_delta", &h, &flg));
+  PetscCall(VecDuplicate(Xin, &X));
+  PetscCall(VecCopy(Xin, X));
+  PetscCall(VecGetSize(X, &N));
+  PetscCall(VecGetOwnershipRange(X, &low, &high));
+  PetscCall(VecSetOption(X, VEC_IGNORE_OFF_PROC_ENTRIES, PETSC_TRUE));
+  PetscCall(VecGetArray(G, &g));
+  for (i = 0; i < N; i++) {
+    PetscCall(VecSetValue(X, i, -h, ADD_VALUES));
     PetscCall(VecAssemblyBegin(X));
     PetscCall(VecAssemblyEnd(X));
-    PetscCall(TaoComputeObjective(tao,X,&f));
-    PetscCall(VecSetValue(X,i,2.0*h,ADD_VALUES));
+    PetscCall(TaoComputeObjective(tao, X, &f));
+    PetscCall(VecSetValue(X, i, 2.0 * h, ADD_VALUES));
     PetscCall(VecAssemblyBegin(X));
     PetscCall(VecAssemblyEnd(X));
-    PetscCall(TaoComputeObjective(tao,X,&f2));
-    PetscCall(VecSetValue(X,i,-h,ADD_VALUES));
+    PetscCall(TaoComputeObjective(tao, X, &f2));
+    PetscCall(VecSetValue(X, i, -h, ADD_VALUES));
     PetscCall(VecAssemblyBegin(X));
     PetscCall(VecAssemblyEnd(X));
-    if (i>=low && i<high) {
-      g[i-low]=(f2-f)/(2.0*h);
-    }
+    if (i >= low && i < high) { g[i - low] = (f2 - f) / (2.0 * h); }
   }
-  PetscCall(VecRestoreArray(G,&g));
+  PetscCall(VecRestoreArray(G, &g));
   PetscCall(VecDestroy(&X));
   PetscFunctionReturn(0);
 }
@@ -112,35 +108,34 @@ PetscErrorCode TaoDefaultComputeGradient(Tao tao,Vec Xin,Vec G,void *dummy)
 
 .seealso: `Tao`, `TaoSetHessian()`, `TaoDefaultComputeHessianColor()`, `SNESComputeJacobianDefault()`, `TaoSetGradient()`, `TaoDefaultComputeGradient()`
 @*/
-PetscErrorCode TaoDefaultComputeHessian(Tao tao,Vec V,Mat H,Mat B,void *dummy)
-{
-  SNES           snes;
-  DM             dm;
+PetscErrorCode TaoDefaultComputeHessian(Tao tao, Vec V, Mat H, Mat B, void *dummy) {
+  SNES snes;
+  DM   dm;
 
   PetscFunctionBegin;
-  PetscCall(PetscInfo(tao,"TAO Using finite differences w/o coloring to compute Hessian matrix\n"));
-  PetscCall(SNESCreate(PetscObjectComm((PetscObject)H),&snes));
-  PetscCall(SNESSetFunction(snes,NULL,Fsnes,tao));
-  PetscCall(SNESGetDM(snes,&dm));
-  PetscCall(DMShellSetGlobalVector(dm,V));
+  PetscCall(PetscInfo(tao, "TAO Using finite differences w/o coloring to compute Hessian matrix\n"));
+  PetscCall(SNESCreate(PetscObjectComm((PetscObject)H), &snes));
+  PetscCall(SNESSetFunction(snes, NULL, Fsnes, tao));
+  PetscCall(SNESGetDM(snes, &dm));
+  PetscCall(DMShellSetGlobalVector(dm, V));
   PetscCall(SNESSetUp(snes));
   if (H) {
-    PetscInt n,N;
+    PetscInt n, N;
 
-    PetscCall(VecGetSize(V,&N));
-    PetscCall(VecGetLocalSize(V,&n));
-    PetscCall(MatSetSizes(H,n,n,N,N));
+    PetscCall(VecGetSize(V, &N));
+    PetscCall(VecGetLocalSize(V, &n));
+    PetscCall(MatSetSizes(H, n, n, N, N));
     PetscCall(MatSetUp(H));
   }
   if (B && B != H) {
-    PetscInt n,N;
+    PetscInt n, N;
 
-    PetscCall(VecGetSize(V,&N));
-    PetscCall(VecGetLocalSize(V,&n));
-    PetscCall(MatSetSizes(B,n,n,N,N));
+    PetscCall(VecGetSize(V, &N));
+    PetscCall(VecGetLocalSize(V, &n));
+    PetscCall(MatSetSizes(B, n, n, N, N));
     PetscCall(MatSetUp(B));
   }
-  PetscCall(SNESComputeJacobianDefault(snes,V,H,B,NULL));
+  PetscCall(SNESComputeJacobianDefault(snes, V, H, B, NULL));
   PetscCall(SNESDestroy(&snes));
   PetscFunctionReturn(0);
 }
@@ -163,14 +158,13 @@ PetscErrorCode TaoDefaultComputeHessian(Tao tao,Vec V,Mat H,Mat B,void *dummy)
 
 .seealso: `Tao`, `MatColoring`, `TaoSetHessian()`, `TaoDefaultComputeHessian()`, `SNESComputeJacobianDefaultColor()`, `TaoSetGradient()`
 @*/
-PetscErrorCode TaoDefaultComputeHessianColor(Tao tao,Vec V,Mat H,Mat B,void *ctx)
-{
-  MatFDColoring       coloring = (MatFDColoring)ctx;
+PetscErrorCode TaoDefaultComputeHessianColor(Tao tao, Vec V, Mat H, Mat B, void *ctx) {
+  MatFDColoring coloring = (MatFDColoring)ctx;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(coloring,MAT_FDCOLORING_CLASSID,5);
-  PetscCall(PetscInfo(tao,"TAO computing matrix using finite differences Hessian and coloring\n"));
-  PetscCall(MatFDColoringApply(B,coloring,V,ctx));
+  PetscValidHeaderSpecific(coloring, MAT_FDCOLORING_CLASSID, 5);
+  PetscCall(PetscInfo(tao, "TAO computing matrix using finite differences Hessian and coloring\n"));
+  PetscCall(MatFDColoringApply(B, coloring, V, ctx));
   if (H != B) {
     PetscCall(MatAssemblyBegin(H, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(H, MAT_FINAL_ASSEMBLY));
@@ -178,24 +172,23 @@ PetscErrorCode TaoDefaultComputeHessianColor(Tao tao,Vec V,Mat H,Mat B,void *ctx
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TaoDefaultComputeHessianMFFD(Tao tao,Vec X,Mat H,Mat B,void *ctx)
-{
-  PetscInt       n,N;
-  PetscBool      assembled;
+PetscErrorCode TaoDefaultComputeHessianMFFD(Tao tao, Vec X, Mat H, Mat B, void *ctx) {
+  PetscInt  n, N;
+  PetscBool assembled;
 
   PetscFunctionBegin;
-  PetscCheck(!B || B == H,PetscObjectComm((PetscObject)tao),PETSC_ERR_SUP,"Preconditioning Hessian matrix");
+  PetscCheck(!B || B == H, PetscObjectComm((PetscObject)tao), PETSC_ERR_SUP, "Preconditioning Hessian matrix");
   PetscCall(MatAssembled(H, &assembled));
   if (!assembled) {
-    PetscCall(VecGetSize(X,&N));
-    PetscCall(VecGetLocalSize(X,&n));
-    PetscCall(MatSetSizes(H,n,n,N,N));
-    PetscCall(MatSetType(H,MATMFFD));
+    PetscCall(VecGetSize(X, &N));
+    PetscCall(VecGetLocalSize(X, &n));
+    PetscCall(MatSetSizes(H, n, n, N, N));
+    PetscCall(MatSetType(H, MATMFFD));
     PetscCall(MatSetUp(H));
-    PetscCall(MatMFFDSetFunction(H,(PetscErrorCode (*)(void*,Vec,Vec))TaoComputeGradient,tao));
+    PetscCall(MatMFFDSetFunction(H, (PetscErrorCode(*)(void *, Vec, Vec))TaoComputeGradient, tao));
   }
-  PetscCall(MatMFFDSetBase(H,X,NULL));
-  PetscCall(MatAssemblyBegin(H,MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(H,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatMFFDSetBase(H, X, NULL));
+  PetscCall(MatAssemblyBegin(H, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(H, MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }

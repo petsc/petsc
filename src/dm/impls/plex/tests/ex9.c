@@ -21,10 +21,9 @@ typedef struct {
   PetscBool printTimes;        /* Print total times, do not check limits */
 } AppCtx;
 
-static PetscErrorCode ProcessOptions(AppCtx *options)
-{
-  PetscInt       len;
-  PetscBool      flg;
+static PetscErrorCode ProcessOptions(AppCtx *options) {
+  PetscInt  len;
+  PetscBool flg;
 
   PetscFunctionBegin;
   options->dim               = 2;
@@ -44,35 +43,35 @@ static PetscErrorCode ProcessOptions(AppCtx *options)
   options->printTimes        = PETSC_FALSE;
 
   PetscOptionsBegin(PETSC_COMM_SELF, "", "Meshing Problem Options", "DMPLEX");
-  PetscCall(PetscOptionsRangeInt("-dim", "The topological mesh dimension", "ex9.c", options->dim, &options->dim, NULL,1,3));
+  PetscCall(PetscOptionsRangeInt("-dim", "The topological mesh dimension", "ex9.c", options->dim, &options->dim, NULL, 1, 3));
   PetscCall(PetscOptionsBool("-cellSimplex", "Flag for simplices", "ex9.c", options->cellSimplex, &options->cellSimplex, NULL));
   PetscCall(PetscOptionsBool("-spectral", "Flag for spectral element layout", "ex9.c", options->spectral, &options->spectral, NULL));
   PetscCall(PetscOptionsBool("-interpolate", "Flag for mesh interpolation", "ex9.c", options->interpolate, &options->interpolate, NULL));
   PetscCall(PetscOptionsReal("-refinement_limit", "The maximum volume of a refined cell", "ex9.c", options->refinementLimit, &options->refinementLimit, NULL));
   PetscCall(PetscOptionsBoundedInt("-num_fields", "The number of section fields", "ex9.c", options->numFields, &options->numFields, NULL, 0));
   if (options->numFields) {
-    len  = options->numFields;
+    len = options->numFields;
     PetscCall(PetscMalloc1(len, &options->numComponents));
     PetscCall(PetscOptionsIntArray("-num_components", "The number of components per field", "ex9.c", options->numComponents, &len, &flg));
-    PetscCheck(!flg || !(len != options->numFields),PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Length of components array is %" PetscInt_FMT " should be %" PetscInt_FMT, len, options->numFields);
+    PetscCheck(!flg || !(len != options->numFields), PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Length of components array is %" PetscInt_FMT " should be %" PetscInt_FMT, len, options->numFields);
   }
-  len  = (options->dim+1) * PetscMax(1, options->numFields);
+  len = (options->dim + 1) * PetscMax(1, options->numFields);
   PetscCall(PetscMalloc1(len, &options->numDof));
   PetscCall(PetscOptionsIntArray("-num_dof", "The dof signature for the section", "ex9.c", options->numDof, &len, &flg));
-  PetscCheck(!flg || len == (options->dim+1) * PetscMax(1, options->numFields),PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Length of dof array is %" PetscInt_FMT " should be %" PetscInt_FMT, len, (options->dim+1) * PetscMax(1, options->numFields));
+  PetscCheck(!flg || len == (options->dim + 1) * PetscMax(1, options->numFields), PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Length of dof array is %" PetscInt_FMT " should be %" PetscInt_FMT, len, (options->dim + 1) * PetscMax(1, options->numFields));
 
   /* We are specifying the scalar dof, so augment it for multiple components */
   {
     PetscInt f, d;
 
     for (f = 0; f < options->numFields; ++f) {
-      for (d = 0; d <= options->dim; ++d) options->numDof[f*(options->dim+1)+d] *= options->numComponents[f];
+      for (d = 0; d <= options->dim; ++d) options->numDof[f * (options->dim + 1) + d] *= options->numComponents[f];
     }
   }
 
   PetscCall(PetscOptionsBool("-reuse_array", "Pass in user allocated array to VecGetClosure()", "ex9.c", options->reuseArray, &options->reuseArray, NULL));
   PetscCall(PetscOptionsBool("-errors", "Treat failures as errors", "ex9.c", options->errors, &options->errors, NULL));
-  PetscCall(PetscOptionsBoundedInt("-iterations", "The number of iterations for a query", "ex9.c", options->iterations, &options->iterations, NULL,0));
+  PetscCall(PetscOptionsBoundedInt("-iterations", "The number of iterations for a query", "ex9.c", options->iterations, &options->iterations, NULL, 0));
   PetscCall(PetscOptionsReal("-max_cone_time", "The maximum time per run for DMPlexGetCone()", "ex9.c", options->maxConeTime, &options->maxConeTime, NULL));
   PetscCall(PetscOptionsReal("-max_closure_time", "The maximum time per run for DMPlexGetTransitiveClosure()", "ex9.c", options->maxClosureTime, &options->maxClosureTime, NULL));
   PetscCall(PetscOptionsReal("-max_vec_closure_time", "The maximum time per run for DMPlexVecGetClosure()", "ex9.c", options->maxVecClosureTime, &options->maxVecClosureTime, NULL));
@@ -81,108 +80,93 @@ static PetscErrorCode ProcessOptions(AppCtx *options)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateSimplex_2D(MPI_Comm comm, DM *newdm)
-{
-  DM             dm;
-  PetscInt       numPoints[2]        = {4, 2};
-  PetscInt       coneSize[6]         = {3, 3, 0, 0, 0, 0};
-  PetscInt       cones[6]            = {2, 3, 4,  5, 4, 3};
-  PetscInt       coneOrientations[6] = {0, 0, 0,  0, 0, 0};
-  PetscScalar    vertexCoords[8]     = {-0.5, 0.5, 0.0, 0.0, 0.0, 1.0, 0.5, 0.5};
-  PetscInt       markerPoints[8]     = {2, 1, 3, 1, 4, 1, 5, 1};
-  PetscInt       dim = 2, depth = 1, p;
+static PetscErrorCode CreateSimplex_2D(MPI_Comm comm, DM *newdm) {
+  DM          dm;
+  PetscInt    numPoints[2]        = {4, 2};
+  PetscInt    coneSize[6]         = {3, 3, 0, 0, 0, 0};
+  PetscInt    cones[6]            = {2, 3, 4, 5, 4, 3};
+  PetscInt    coneOrientations[6] = {0, 0, 0, 0, 0, 0};
+  PetscScalar vertexCoords[8]     = {-0.5, 0.5, 0.0, 0.0, 0.0, 1.0, 0.5, 0.5};
+  PetscInt    markerPoints[8]     = {2, 1, 3, 1, 4, 1, 5, 1};
+  PetscInt    dim = 2, depth = 1, p;
 
   PetscFunctionBegin;
   PetscCall(DMCreate(comm, &dm));
-  PetscCall(PetscObjectSetName((PetscObject) dm, "triangular"));
+  PetscCall(PetscObjectSetName((PetscObject)dm, "triangular"));
   PetscCall(DMSetType(dm, DMPLEX));
   PetscCall(DMSetDimension(dm, dim));
   PetscCall(DMPlexCreateFromDAG(dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords));
-  for (p = 0; p < 4; ++p) {
-    PetscCall(DMSetLabelValue(dm, "marker", markerPoints[p*2], markerPoints[p*2+1]));
-  }
+  for (p = 0; p < 4; ++p) { PetscCall(DMSetLabelValue(dm, "marker", markerPoints[p * 2], markerPoints[p * 2 + 1])); }
   *newdm = dm;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateSimplex_3D(MPI_Comm comm, DM *newdm)
-{
-  DM             dm;
-  PetscInt       numPoints[2]        = {5, 2};
-  PetscInt       coneSize[23]        = {4, 4, 0, 0, 0, 0, 0};
-  PetscInt       cones[8]            = {2, 4, 3, 5,  3, 4, 6, 5};
-  PetscInt       coneOrientations[8] = {0, 0, 0, 0,  0, 0, 0, 0};
-  PetscScalar    vertexCoords[15]    = {0.0, 0.0, -0.5,  0.0, -0.5, 0.0,  1.0, 0.0, 0.0,  0.0, 0.5, 0.0,  0.0, 0.0, 0.5};
-  PetscInt       markerPoints[10]    = {2, 1, 3, 1, 4, 1, 5, 1, 6, 1};
-  PetscInt       dim = 3, depth = 1, p;
+static PetscErrorCode CreateSimplex_3D(MPI_Comm comm, DM *newdm) {
+  DM          dm;
+  PetscInt    numPoints[2]        = {5, 2};
+  PetscInt    coneSize[23]        = {4, 4, 0, 0, 0, 0, 0};
+  PetscInt    cones[8]            = {2, 4, 3, 5, 3, 4, 6, 5};
+  PetscInt    coneOrientations[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+  PetscScalar vertexCoords[15]    = {0.0, 0.0, -0.5, 0.0, -0.5, 0.0, 1.0, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.0, 0.5};
+  PetscInt    markerPoints[10]    = {2, 1, 3, 1, 4, 1, 5, 1, 6, 1};
+  PetscInt    dim = 3, depth = 1, p;
 
   PetscFunctionBegin;
   PetscCall(DMCreate(comm, &dm));
-  PetscCall(PetscObjectSetName((PetscObject) dm, "tetrahedral"));
+  PetscCall(PetscObjectSetName((PetscObject)dm, "tetrahedral"));
   PetscCall(DMSetType(dm, DMPLEX));
   PetscCall(DMSetDimension(dm, dim));
   PetscCall(DMPlexCreateFromDAG(dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords));
-  for (p = 0; p < 5; ++p) {
-    PetscCall(DMSetLabelValue(dm, "marker", markerPoints[p*2], markerPoints[p*2+1]));
-  }
+  for (p = 0; p < 5; ++p) { PetscCall(DMSetLabelValue(dm, "marker", markerPoints[p * 2], markerPoints[p * 2 + 1])); }
   *newdm = dm;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateQuad_2D(MPI_Comm comm, DM *newdm)
-{
-  DM             dm;
-  PetscInt       numPoints[2]        = {6, 2};
-  PetscInt       coneSize[8]         = {4, 4, 0, 0, 0, 0, 0, 0};
-  PetscInt       cones[8]            = {2, 3, 4, 5,  3, 6, 7, 4};
-  PetscInt       coneOrientations[8] = {0, 0, 0, 0,  0, 0, 0, 0};
-  PetscScalar    vertexCoords[12]    = {-0.5, 0.0, 0.0, 0.0, 0.0, 1.0, -0.5, 1.0, 0.5, 0.0, 0.5, 1.0};
-  PetscInt       markerPoints[12]    = {2, 1, 3, 1, 4, 1, 5, 1, 6, 1, 7, 1};
-  PetscInt       dim = 2, depth = 1, p;
+static PetscErrorCode CreateQuad_2D(MPI_Comm comm, DM *newdm) {
+  DM          dm;
+  PetscInt    numPoints[2]        = {6, 2};
+  PetscInt    coneSize[8]         = {4, 4, 0, 0, 0, 0, 0, 0};
+  PetscInt    cones[8]            = {2, 3, 4, 5, 3, 6, 7, 4};
+  PetscInt    coneOrientations[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+  PetscScalar vertexCoords[12]    = {-0.5, 0.0, 0.0, 0.0, 0.0, 1.0, -0.5, 1.0, 0.5, 0.0, 0.5, 1.0};
+  PetscInt    markerPoints[12]    = {2, 1, 3, 1, 4, 1, 5, 1, 6, 1, 7, 1};
+  PetscInt    dim = 2, depth = 1, p;
 
   PetscFunctionBegin;
   PetscCall(DMCreate(comm, &dm));
-  PetscCall(PetscObjectSetName((PetscObject) dm, "quadrilateral"));
+  PetscCall(PetscObjectSetName((PetscObject)dm, "quadrilateral"));
   PetscCall(DMSetType(dm, DMPLEX));
   PetscCall(DMSetDimension(dm, dim));
   PetscCall(DMPlexCreateFromDAG(dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords));
-  for (p = 0; p < 6; ++p) {
-    PetscCall(DMSetLabelValue(dm, "marker", markerPoints[p*2], markerPoints[p*2+1]));
-  }
+  for (p = 0; p < 6; ++p) { PetscCall(DMSetLabelValue(dm, "marker", markerPoints[p * 2], markerPoints[p * 2 + 1])); }
   *newdm = dm;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateHex_3D(MPI_Comm comm, DM *newdm)
-{
-  DM             dm;
-  PetscInt       numPoints[2]         = {12, 2};
-  PetscInt       coneSize[14]         = {8, 8, 0,0,0,0,0,0,0,0,0,0,0,0};
-  PetscInt       cones[16]            = {2,5,4,3,6,7,8,9,  3,4,11,10,7,12,13,8};
-  PetscInt       coneOrientations[16] = {0,0,0,0,0,0,0,0,  0,0, 0, 0,0, 0, 0,0};
-  PetscScalar    vertexCoords[36]     = {-0.5,0.0,0.0, 0.0,0.0,0.0, 0.0,1.0,0.0, -0.5,1.0,0.0,
-                                         -0.5,0.0,1.0, 0.0,0.0,1.0, 0.0,1.0,1.0, -0.5,1.0,1.0,
-                                          0.5,0.0,0.0, 0.5,1.0,0.0, 0.5,0.0,1.0,  0.5,1.0,1.0};
-  PetscInt       markerPoints[24]     = {2,1,3,1,4,1,5,1,6,1,7,1,8,1,9,1,10,1,11,1,12,1,13,1};
-  PetscInt       dim = 3, depth = 1, p;
+static PetscErrorCode CreateHex_3D(MPI_Comm comm, DM *newdm) {
+  DM          dm;
+  PetscInt    numPoints[2]         = {12, 2};
+  PetscInt    coneSize[14]         = {8, 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  PetscInt    cones[16]            = {2, 5, 4, 3, 6, 7, 8, 9, 3, 4, 11, 10, 7, 12, 13, 8};
+  PetscInt    coneOrientations[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  PetscScalar vertexCoords[36]     = {-0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, -0.5, 1.0, 0.0, -0.5, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 1.0, 1.0, -0.5, 1.0, 1.0, 0.5, 0.0, 0.0, 0.5, 1.0, 0.0, 0.5, 0.0, 1.0, 0.5, 1.0, 1.0};
+  PetscInt    markerPoints[24]     = {2, 1, 3, 1, 4, 1, 5, 1, 6, 1, 7, 1, 8, 1, 9, 1, 10, 1, 11, 1, 12, 1, 13, 1};
+  PetscInt    dim = 3, depth = 1, p;
 
   PetscFunctionBegin;
   PetscCall(DMCreate(comm, &dm));
-  PetscCall(PetscObjectSetName((PetscObject) dm, "hexahedral"));
+  PetscCall(PetscObjectSetName((PetscObject)dm, "hexahedral"));
   PetscCall(DMSetType(dm, DMPLEX));
   PetscCall(DMSetDimension(dm, dim));
   PetscCall(DMPlexCreateFromDAG(dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords));
-  for (p = 0; p < 12; ++p) {
-    PetscCall(DMSetLabelValue(dm, "marker", markerPoints[p*2], markerPoints[p*2+1]));
-  }
+  for (p = 0; p < 12; ++p) { PetscCall(DMSetLabelValue(dm, "marker", markerPoints[p * 2], markerPoints[p * 2 + 1])); }
   *newdm = dm;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *newdm)
-{
-  PetscInt       dim         = user->dim;
-  PetscBool      cellSimplex = user->cellSimplex;
+static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *newdm) {
+  PetscInt  dim         = user->dim;
+  PetscBool cellSimplex = user->cellSimplex;
 
   PetscFunctionBegin;
   switch (dim) {
@@ -200,18 +184,17 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *newdm)
       PetscCall(CreateHex_3D(comm, newdm));
     }
     break;
-  default:
-    SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make meshes for dimension %" PetscInt_FMT, dim);
+  default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make meshes for dimension %" PetscInt_FMT, dim);
   }
   if (user->refinementLimit > 0.0) {
-    DM rdm;
+    DM          rdm;
     const char *name;
 
     PetscCall(DMPlexSetRefinementUniform(*newdm, PETSC_FALSE));
     PetscCall(DMPlexSetRefinementLimit(*newdm, user->refinementLimit));
     PetscCall(DMRefine(*newdm, PETSC_COMM_SELF, &rdm));
-    PetscCall(PetscObjectGetName((PetscObject) *newdm, &name));
-    PetscCall(PetscObjectSetName((PetscObject)    rdm,  name));
+    PetscCall(PetscObjectGetName((PetscObject)*newdm, &name));
+    PetscCall(PetscObjectSetName((PetscObject)rdm, name));
     PetscCall(DMDestroy(newdm));
     *newdm = rdm;
   }
@@ -226,8 +209,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *newdm)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TestCone(DM dm, AppCtx *user)
-{
+static PetscErrorCode TestCone(DM dm, AppCtx *user) {
   PetscInt           numRuns, cStart, cEnd, c, i;
   PetscReal          maxTimePerRun = user->maxConeTime;
   PetscLogStage      stage;
@@ -243,7 +225,7 @@ static PetscErrorCode TestCone(DM dm, AppCtx *user)
   PetscCall(PetscLogEventRegister("Cone", PETSC_OBJECT_CLASSID, &event));
   PetscCall(PetscLogStagePush(stage));
   PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
-  PetscCall(PetscLogEventBegin(event,0,0,0,0));
+  PetscCall(PetscLogEventBegin(event, 0, 0, 0, 0));
   for (i = 0; i < user->iterations; ++i) {
     for (c = cStart; c < cEnd; ++c) {
       const PetscInt *cone;
@@ -251,26 +233,25 @@ static PetscErrorCode TestCone(DM dm, AppCtx *user)
       PetscCall(DMPlexGetCone(dm, c, &cone));
     }
   }
-  PetscCall(PetscLogEventEnd(event,0,0,0,0));
+  PetscCall(PetscLogEventEnd(event, 0, 0, 0, 0));
   PetscCall(PetscLogStagePop());
 
   PetscCall(PetscLogEventGetPerfInfo(stage, event, &eventInfo));
-  numRuns = (cEnd-cStart) * user->iterations;
-  PetscCheck(eventInfo.count == 1,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of event calls %d should be 1", eventInfo.count);
-  PetscCheck((PetscInt) eventInfo.flops == 0,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of event flops %" PetscInt_FMT " should be 0", (PetscInt) eventInfo.flops);
+  numRuns = (cEnd - cStart) * user->iterations;
+  PetscCheck(eventInfo.count == 1, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of event calls %d should be 1", eventInfo.count);
+  PetscCheck((PetscInt)eventInfo.flops == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of event flops %" PetscInt_FMT " should be 0", (PetscInt)eventInfo.flops);
   if (user->printTimes) {
-    PetscCall(PetscSynchronizedPrintf(comm, "[%d] Cones: %" PetscInt_FMT " Total time: %.3es Average time per cone: %.3es\n", rank, numRuns, eventInfo.time, eventInfo.time/numRuns));
+    PetscCall(PetscSynchronizedPrintf(comm, "[%d] Cones: %" PetscInt_FMT " Total time: %.3es Average time per cone: %.3es\n", rank, numRuns, eventInfo.time, eventInfo.time / numRuns));
     PetscCall(PetscSynchronizedFlush(comm, PETSC_STDOUT));
   } else if (eventInfo.time > maxTimePerRun * numRuns) {
-    PetscCall(PetscSynchronizedPrintf(comm, "[%d] Cones: %" PetscInt_FMT " Average time per cone: %gs standard: %gs\n", rank, numRuns, (double)(eventInfo.time/numRuns), (double)maxTimePerRun));
+    PetscCall(PetscSynchronizedPrintf(comm, "[%d] Cones: %" PetscInt_FMT " Average time per cone: %gs standard: %gs\n", rank, numRuns, (double)(eventInfo.time / numRuns), (double)maxTimePerRun));
     PetscCall(PetscSynchronizedFlush(comm, PETSC_STDOUT));
-    PetscCheck(!user->errors,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Average time for cone %g > standard %g", (double)(eventInfo.time/numRuns), (double)maxTimePerRun);
+    PetscCheck(!user->errors, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Average time for cone %g > standard %g", (double)(eventInfo.time / numRuns), (double)maxTimePerRun);
   }
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TestTransitiveClosure(DM dm, AppCtx *user)
-{
+static PetscErrorCode TestTransitiveClosure(DM dm, AppCtx *user) {
   PetscInt           numRuns, cStart, cEnd, c, i;
   PetscReal          maxTimePerRun = user->maxClosureTime;
   PetscLogStage      stage;
@@ -286,7 +267,7 @@ static PetscErrorCode TestTransitiveClosure(DM dm, AppCtx *user)
   PetscCall(PetscLogEventRegister("TransitiveClosure", PETSC_OBJECT_CLASSID, &event));
   PetscCall(PetscLogStagePush(stage));
   PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
-  PetscCall(PetscLogEventBegin(event,0,0,0,0));
+  PetscCall(PetscLogEventBegin(event, 0, 0, 0, 0));
   for (i = 0; i < user->iterations; ++i) {
     for (c = cStart; c < cEnd; ++c) {
       PetscInt *closure = NULL;
@@ -296,26 +277,25 @@ static PetscErrorCode TestTransitiveClosure(DM dm, AppCtx *user)
       PetscCall(DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure));
     }
   }
-  PetscCall(PetscLogEventEnd(event,0,0,0,0));
+  PetscCall(PetscLogEventEnd(event, 0, 0, 0, 0));
   PetscCall(PetscLogStagePop());
 
   PetscCall(PetscLogEventGetPerfInfo(stage, event, &eventInfo));
-  numRuns = (cEnd-cStart) * user->iterations;
-  PetscCheck(eventInfo.count == 1,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of event calls %d should be 1", eventInfo.count);
-  PetscCheck((PetscInt) eventInfo.flops == 0,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of event flops %" PetscInt_FMT " should be 0", (PetscInt) eventInfo.flops);
+  numRuns = (cEnd - cStart) * user->iterations;
+  PetscCheck(eventInfo.count == 1, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of event calls %d should be 1", eventInfo.count);
+  PetscCheck((PetscInt)eventInfo.flops == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of event flops %" PetscInt_FMT " should be 0", (PetscInt)eventInfo.flops);
   if (user->printTimes) {
-    PetscCall(PetscSynchronizedPrintf(comm, "[%d] Closures: %" PetscInt_FMT " Total time: %.3es Average time per cone: %.3es\n", rank, numRuns, eventInfo.time, eventInfo.time/numRuns));
+    PetscCall(PetscSynchronizedPrintf(comm, "[%d] Closures: %" PetscInt_FMT " Total time: %.3es Average time per cone: %.3es\n", rank, numRuns, eventInfo.time, eventInfo.time / numRuns));
     PetscCall(PetscSynchronizedFlush(comm, PETSC_STDOUT));
   } else if (eventInfo.time > maxTimePerRun * numRuns) {
-    PetscCall(PetscSynchronizedPrintf(comm, "[%d] Closures: %" PetscInt_FMT " Average time per cone: %gs standard: %gs\n", rank, numRuns, (double)(eventInfo.time/numRuns), (double)maxTimePerRun));
+    PetscCall(PetscSynchronizedPrintf(comm, "[%d] Closures: %" PetscInt_FMT " Average time per cone: %gs standard: %gs\n", rank, numRuns, (double)(eventInfo.time / numRuns), (double)maxTimePerRun));
     PetscCall(PetscSynchronizedFlush(comm, PETSC_STDOUT));
-    PetscCheck(!user->errors,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Average time for closure %g > standard %g", (double)(eventInfo.time/numRuns), (double)maxTimePerRun);
+    PetscCheck(!user->errors, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Average time for closure %g > standard %g", (double)(eventInfo.time / numRuns), (double)maxTimePerRun);
   }
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TestVecClosure(DM dm, PetscBool useIndex, PetscBool useSpectral, AppCtx *user)
-{
+static PetscErrorCode TestVecClosure(DM dm, PetscBool useIndex, PetscBool useSpectral, AppCtx *user) {
   PetscSection       s;
   Vec                v;
   PetscInt           numRuns, cStart, cEnd, c, i;
@@ -357,7 +337,7 @@ static PetscErrorCode TestVecClosure(DM dm, PetscBool useIndex, PetscBool useSpe
   PetscCall(PetscSectionDestroy(&s));
   PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
   PetscCall(DMGetLocalVector(dm, &v));
-  PetscCall(PetscLogEventBegin(event,0,0,0,0));
+  PetscCall(PetscLogEventBegin(event, 0, 0, 0, 0));
   for (i = 0; i < user->iterations; ++i) {
     for (c = cStart; c < cEnd; ++c) {
       PetscScalar *closure     = userArray;
@@ -367,57 +347,57 @@ static PetscErrorCode TestVecClosure(DM dm, PetscBool useIndex, PetscBool useSpe
       if (!user->reuseArray) PetscCall(DMPlexVecRestoreClosure(dm, s, v, c, &closureSize, &closure));
     }
   }
-  PetscCall(PetscLogEventEnd(event,0,0,0,0));
+  PetscCall(PetscLogEventEnd(event, 0, 0, 0, 0));
   PetscCall(DMRestoreLocalVector(dm, &v));
   PetscCall(PetscLogStagePop());
 
   PetscCall(PetscLogEventGetPerfInfo(stage, event, &eventInfo));
-  numRuns = (cEnd-cStart) * user->iterations;
-  PetscCheck(eventInfo.count == 1,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of event calls %d should be 1", eventInfo.count);
-  PetscCheck((PetscInt) eventInfo.flops == 0,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of event flops %" PetscInt_FMT " should be 0", (PetscInt) eventInfo.flops);
+  numRuns = (cEnd - cStart) * user->iterations;
+  PetscCheck(eventInfo.count == 1, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of event calls %d should be 1", eventInfo.count);
+  PetscCheck((PetscInt)eventInfo.flops == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of event flops %" PetscInt_FMT " should be 0", (PetscInt)eventInfo.flops);
   if (user->printTimes || eventInfo.time > maxTimePerRun * numRuns) {
-    const char *title = "VecClosures";
-    const char *titleIndex = "VecClosures with Index";
-    const char *titleSpec = "VecClosures Spectral";
+    const char *title          = "VecClosures";
+    const char *titleIndex     = "VecClosures with Index";
+    const char *titleSpec      = "VecClosures Spectral";
     const char *titleSpecIndex = "VecClosures Spectral with Index";
 
     if (user->printTimes) {
-      PetscCall(PetscSynchronizedPrintf(comm, "[%d] %s: %" PetscInt_FMT " Total time: %.3es Average time per vector closure: %.3es\n", rank, useIndex ? (useSpectral ? titleSpecIndex : titleIndex) : (useSpectral ? titleSpec : title), numRuns, eventInfo.time, eventInfo.time/numRuns));
+      PetscCall(PetscSynchronizedPrintf(comm, "[%d] %s: %" PetscInt_FMT " Total time: %.3es Average time per vector closure: %.3es\n", rank, useIndex ? (useSpectral ? titleSpecIndex : titleIndex) : (useSpectral ? titleSpec : title), numRuns,
+                                        eventInfo.time, eventInfo.time / numRuns));
       PetscCall(PetscSynchronizedFlush(comm, PETSC_STDOUT));
     } else {
-      PetscCall(PetscSynchronizedPrintf(comm, "[%d] %s: %" PetscInt_FMT " Average time per vector closure: %gs standard: %gs\n", rank, useIndex ? (useSpectral ? titleSpecIndex : titleIndex) : (useSpectral ? titleSpec : title), numRuns, (double)(eventInfo.time/numRuns), (double)maxTimePerRun));
+      PetscCall(
+        PetscSynchronizedPrintf(comm, "[%d] %s: %" PetscInt_FMT " Average time per vector closure: %gs standard: %gs\n", rank, useIndex ? (useSpectral ? titleSpecIndex : titleIndex) : (useSpectral ? titleSpec : title), numRuns, (double)(eventInfo.time / numRuns), (double)maxTimePerRun));
       PetscCall(PetscSynchronizedFlush(comm, PETSC_STDOUT));
-      PetscCheck(!user->errors,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Average time for vector closure %g > standard %g", (double)(eventInfo.time/numRuns), (double)maxTimePerRun);
+      PetscCheck(!user->errors, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Average time for vector closure %g > standard %g", (double)(eventInfo.time / numRuns), (double)maxTimePerRun);
     }
   }
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CleanupContext(AppCtx *user)
-{
+static PetscErrorCode CleanupContext(AppCtx *user) {
   PetscFunctionBegin;
   PetscCall(PetscFree(user->numComponents));
   PetscCall(PetscFree(user->numDof));
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv)
-{
-  DM             dm;
-  AppCtx         user;
+int main(int argc, char **argv) {
+  DM     dm;
+  AppCtx user;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, NULL,help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(ProcessOptions(&user));
   PetscCall(PetscLogDefaultBegin());
   PetscCall(CreateMesh(PETSC_COMM_WORLD, &user, &dm));
   PetscCall(TestCone(dm, &user));
   PetscCall(TestTransitiveClosure(dm, &user));
   PetscCall(TestVecClosure(dm, PETSC_FALSE, PETSC_FALSE, &user));
-  PetscCall(TestVecClosure(dm, PETSC_TRUE,  PETSC_FALSE, &user));
+  PetscCall(TestVecClosure(dm, PETSC_TRUE, PETSC_FALSE, &user));
   if (!user.cellSimplex && user.spectral) {
-    PetscCall(TestVecClosure(dm, PETSC_FALSE, PETSC_TRUE,  &user));
-    PetscCall(TestVecClosure(dm, PETSC_TRUE,  PETSC_TRUE,  &user));
+    PetscCall(TestVecClosure(dm, PETSC_FALSE, PETSC_TRUE, &user));
+    PetscCall(TestVecClosure(dm, PETSC_TRUE, PETSC_TRUE, &user));
   }
   PetscCall(DMDestroy(&dm));
   PetscCall(CleanupContext(&user));

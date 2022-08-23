@@ -2,17 +2,16 @@
     Provides an interface to the FFT packages.
 */
 
-#include <../src/mat/impls/fft/fft.h>   /*I "petscmat.h" I*/
+#include <../src/mat/impls/fft/fft.h> /*I "petscmat.h" I*/
 
-PetscErrorCode MatDestroy_FFT(Mat A)
-{
-  Mat_FFT *fft = (Mat_FFT*)A->data;
+PetscErrorCode MatDestroy_FFT(Mat A) {
+  Mat_FFT *fft = (Mat_FFT *)A->data;
 
   PetscFunctionBegin;
   if (fft->matdestroy) PetscCall((fft->matdestroy)(A));
   PetscCall(PetscFree(fft->dim));
   PetscCall(PetscFree(A->data));
-  PetscCall(PetscObjectChangeTypeName((PetscObject)A,NULL));
+  PetscCall(PetscObjectChangeTypeName((PetscObject)A, NULL));
   PetscFunctionReturn(0);
 }
 
@@ -39,37 +38,36 @@ PetscErrorCode MatDestroy_FFT(Mat A)
 
 .seealso: `MatCreateVecsFFTW()`
 @*/
-PetscErrorCode MatCreateFFT(MPI_Comm comm,PetscInt ndim,const PetscInt dim[],MatType mattype,Mat *A)
-{
-  PetscMPIInt    size;
-  Mat            FFT;
-  PetscInt       N,i;
-  Mat_FFT        *fft;
+PetscErrorCode MatCreateFFT(MPI_Comm comm, PetscInt ndim, const PetscInt dim[], MatType mattype, Mat *A) {
+  PetscMPIInt size;
+  Mat         FFT;
+  PetscInt    N, i;
+  Mat_FFT    *fft;
 
   PetscFunctionBegin;
-  PetscValidIntPointer(dim,3);
-  PetscValidPointer(A,5);
-  PetscCheck(ndim >= 1,comm,PETSC_ERR_USER,"ndim %" PetscInt_FMT " must be > 0",ndim);
+  PetscValidIntPointer(dim, 3);
+  PetscValidPointer(A, 5);
+  PetscCheck(ndim >= 1, comm, PETSC_ERR_USER, "ndim %" PetscInt_FMT " must be > 0", ndim);
   PetscCallMPI(MPI_Comm_size(comm, &size));
 
-  PetscCall(MatCreate(comm,&FFT));
-  PetscCall(PetscNewLog(FFT,&fft));
-  FFT->data = (void*)fft;
+  PetscCall(MatCreate(comm, &FFT));
+  PetscCall(PetscNewLog(FFT, &fft));
+  FFT->data = (void *)fft;
   N         = 1;
-  for (i=0; i<ndim; i++) {
-    PetscCheck(dim[i] >= 1,PETSC_COMM_SELF,PETSC_ERR_USER,"dim[%" PetscInt_FMT "]=%" PetscInt_FMT " must be > 0",i,dim[i]);
+  for (i = 0; i < ndim; i++) {
+    PetscCheck(dim[i] >= 1, PETSC_COMM_SELF, PETSC_ERR_USER, "dim[%" PetscInt_FMT "]=%" PetscInt_FMT " must be > 0", i, dim[i]);
     N *= dim[i];
   }
 
-  PetscCall(PetscMalloc1(ndim,&fft->dim));
-  PetscCall(PetscArraycpy(fft->dim,dim,ndim));
+  PetscCall(PetscMalloc1(ndim, &fft->dim));
+  PetscCall(PetscArraycpy(fft->dim, dim, ndim));
 
   fft->ndim = ndim;
   fft->n    = PETSC_DECIDE;
   fft->N    = N;
   fft->data = NULL;
 
-  PetscCall(MatSetType(FFT,mattype));
+  PetscCall(MatSetType(FFT, mattype));
 
   FFT->ops->destroy = MatDestroy_FFT;
 

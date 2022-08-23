@@ -1,4 +1,4 @@
-#include <petsc/private/linesearchimpl.h>     /*I  "petscsnes.h"  I*/
+#include <petsc/private/linesearchimpl.h> /*I  "petscsnes.h"  I*/
 
 PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_Basic(SNESLineSearch);
 PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_L2(SNESLineSearch);
@@ -17,18 +17,17 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_NCGLinear(SNESLineSearch);
 
 .seealso: `SNESLineSearchRegisterDestroy()`
 @*/
-PetscErrorCode SNESLineSearchRegisterAll(void)
-{
+PetscErrorCode SNESLineSearchRegisterAll(void) {
   PetscFunctionBegin;
   if (SNESLineSearchRegisterAllCalled) PetscFunctionReturn(0);
   SNESLineSearchRegisterAllCalled = PETSC_TRUE;
-  PetscCall(SNESLineSearchRegister(SNESLINESEARCHSHELL,     SNESLineSearchCreate_Shell));
-  PetscCall(SNESLineSearchRegister(SNESLINESEARCHBASIC,     SNESLineSearchCreate_Basic));
-  PetscCall(SNESLineSearchRegister(SNESLINESEARCHNONE,      SNESLineSearchCreate_Basic));
-  PetscCall(SNESLineSearchRegister(SNESLINESEARCHL2,        SNESLineSearchCreate_L2));
-  PetscCall(SNESLineSearchRegister(SNESLINESEARCHBT,        SNESLineSearchCreate_BT));
-  PetscCall(SNESLineSearchRegister(SNESLINESEARCHNLEQERR,   SNESLineSearchCreate_NLEQERR));
-  PetscCall(SNESLineSearchRegister(SNESLINESEARCHCP,        SNESLineSearchCreate_CP));
+  PetscCall(SNESLineSearchRegister(SNESLINESEARCHSHELL, SNESLineSearchCreate_Shell));
+  PetscCall(SNESLineSearchRegister(SNESLINESEARCHBASIC, SNESLineSearchCreate_Basic));
+  PetscCall(SNESLineSearchRegister(SNESLINESEARCHNONE, SNESLineSearchCreate_Basic));
+  PetscCall(SNESLineSearchRegister(SNESLINESEARCHL2, SNESLineSearchCreate_L2));
+  PetscCall(SNESLineSearchRegister(SNESLINESEARCHBT, SNESLineSearchCreate_BT));
+  PetscCall(SNESLineSearchRegister(SNESLINESEARCHNLEQERR, SNESLineSearchCreate_NLEQERR));
+  PetscCall(SNESLineSearchRegister(SNESLINESEARCHCP, SNESLineSearchCreate_CP));
   PetscCall(SNESLineSearchRegister(SNESLINESEARCHNCGLINEAR, SNESLineSearchCreate_NCGLinear));
   PetscFunctionReturn(0);
 }

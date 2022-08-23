@@ -4,86 +4,83 @@ static const char help[] = "Test overlapped communication on a single star fores
 #include <petscsf.h>
 #include <petscviewer.h>
 
-int main(int argc, char **argv)
-{
-  PetscSF     sf;
-  Vec         A,Aout;
-  Vec         B,Bout;
+int main(int argc, char **argv) {
+  PetscSF      sf;
+  Vec          A, Aout;
+  Vec          B, Bout;
   PetscScalar *bufA;
   PetscScalar *bufAout;
   PetscScalar *bufB;
   PetscScalar *bufBout;
-  PetscMPIInt rank, size;
-  PetscInt    nroots, nleaves;
-  PetscInt    i;
+  PetscMPIInt  rank, size;
+  PetscInt     nroots, nleaves;
+  PetscInt     i;
   PetscInt    *ilocal;
   PetscSFNode *iremote;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
-  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
-  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
 
-  PetscCheck(size == 2,PETSC_COMM_WORLD, PETSC_ERR_USER, "Only coded for two MPI processes");
+  PetscCheck(size == 2, PETSC_COMM_WORLD, PETSC_ERR_USER, "Only coded for two MPI processes");
 
-  PetscCall(PetscSFCreate(PETSC_COMM_WORLD,&sf));
+  PetscCall(PetscSFCreate(PETSC_COMM_WORLD, &sf));
   PetscCall(PetscSFSetFromOptions(sf));
 
   nleaves = 2;
-  nroots = 1;
-  PetscCall(PetscMalloc1(nleaves,&ilocal));
+  nroots  = 1;
+  PetscCall(PetscMalloc1(nleaves, &ilocal));
 
-  for (i = 0; i<nleaves; i++) {
-    ilocal[i] = i;
-  }
+  for (i = 0; i < nleaves; i++) { ilocal[i] = i; }
 
-  PetscCall(PetscMalloc1(nleaves,&iremote));
+  PetscCall(PetscMalloc1(nleaves, &iremote));
   if (rank == 0) {
-    iremote[0].rank = 0;
+    iremote[0].rank  = 0;
     iremote[0].index = 0;
-    iremote[1].rank = 1;
+    iremote[1].rank  = 1;
     iremote[1].index = 0;
   } else {
-    iremote[0].rank = 1;
+    iremote[0].rank  = 1;
     iremote[0].index = 0;
-    iremote[1].rank = 0;
+    iremote[1].rank  = 0;
     iremote[1].index = 0;
   }
-  PetscCall(PetscSFSetGraph(sf,nroots,nleaves,ilocal,PETSC_OWN_POINTER,iremote,PETSC_OWN_POINTER));
+  PetscCall(PetscSFSetGraph(sf, nroots, nleaves, ilocal, PETSC_OWN_POINTER, iremote, PETSC_OWN_POINTER));
   PetscCall(PetscSFSetUp(sf));
-  PetscCall(PetscSFView(sf,PETSC_VIEWER_STDOUT_WORLD));
-  PetscCall(VecCreate(PETSC_COMM_WORLD,&A));
-  PetscCall(VecSetSizes(A,2,PETSC_DETERMINE));
+  PetscCall(PetscSFView(sf, PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecCreate(PETSC_COMM_WORLD, &A));
+  PetscCall(VecSetSizes(A, 2, PETSC_DETERMINE));
   PetscCall(VecSetFromOptions(A));
   PetscCall(VecSetUp(A));
 
-  PetscCall(VecDuplicate(A,&B));
-  PetscCall(VecDuplicate(A,&Aout));
-  PetscCall(VecDuplicate(A,&Bout));
-  PetscCall(VecGetArray(A,&bufA));
-  PetscCall(VecGetArray(B,&bufB));
-  for (i=0; i<2; i++) {
+  PetscCall(VecDuplicate(A, &B));
+  PetscCall(VecDuplicate(A, &Aout));
+  PetscCall(VecDuplicate(A, &Bout));
+  PetscCall(VecGetArray(A, &bufA));
+  PetscCall(VecGetArray(B, &bufB));
+  for (i = 0; i < 2; i++) {
     bufA[i] = (PetscScalar)rank;
     bufB[i] = (PetscScalar)(rank) + 10.0;
   }
-  PetscCall(VecRestoreArray(A,&bufA));
-  PetscCall(VecRestoreArray(B,&bufB));
+  PetscCall(VecRestoreArray(A, &bufA));
+  PetscCall(VecRestoreArray(B, &bufB));
 
-  PetscCall(VecGetArrayRead(A,(const PetscScalar**)&bufA));
-  PetscCall(VecGetArrayRead(B,(const PetscScalar**)&bufB));
-  PetscCall(VecGetArray(Aout,&bufAout));
-  PetscCall(VecGetArray(Bout,&bufBout));
-  PetscCall(PetscSFBcastBegin(sf,MPIU_SCALAR,(const void*)bufA,(void *)bufAout,MPI_REPLACE));
-  PetscCall(PetscSFBcastBegin(sf,MPIU_SCALAR,(const void*)bufB,(void *)bufBout,MPI_REPLACE));
-  PetscCall(PetscSFBcastEnd(sf,MPIU_SCALAR,(const void*)bufA,(void *)bufAout,MPI_REPLACE));
-  PetscCall(PetscSFBcastEnd(sf,MPIU_SCALAR,(const void*)bufB,(void *)bufBout,MPI_REPLACE));
-  PetscCall(VecRestoreArrayRead(A,(const PetscScalar**)&bufA));
-  PetscCall(VecRestoreArrayRead(B,(const PetscScalar**)&bufB));
-  PetscCall(VecRestoreArray(Aout,&bufAout));
-  PetscCall(VecRestoreArray(Bout,&bufBout));
+  PetscCall(VecGetArrayRead(A, (const PetscScalar **)&bufA));
+  PetscCall(VecGetArrayRead(B, (const PetscScalar **)&bufB));
+  PetscCall(VecGetArray(Aout, &bufAout));
+  PetscCall(VecGetArray(Bout, &bufBout));
+  PetscCall(PetscSFBcastBegin(sf, MPIU_SCALAR, (const void *)bufA, (void *)bufAout, MPI_REPLACE));
+  PetscCall(PetscSFBcastBegin(sf, MPIU_SCALAR, (const void *)bufB, (void *)bufBout, MPI_REPLACE));
+  PetscCall(PetscSFBcastEnd(sf, MPIU_SCALAR, (const void *)bufA, (void *)bufAout, MPI_REPLACE));
+  PetscCall(PetscSFBcastEnd(sf, MPIU_SCALAR, (const void *)bufB, (void *)bufBout, MPI_REPLACE));
+  PetscCall(VecRestoreArrayRead(A, (const PetscScalar **)&bufA));
+  PetscCall(VecRestoreArrayRead(B, (const PetscScalar **)&bufB));
+  PetscCall(VecRestoreArray(Aout, &bufAout));
+  PetscCall(VecRestoreArray(Bout, &bufBout));
 
-  PetscCall(VecView(Aout,PETSC_VIEWER_STDOUT_WORLD));
-  PetscCall(VecView(Bout,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecView(Aout, PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecView(Bout, PETSC_VIEWER_STDOUT_WORLD));
   PetscCall(VecDestroy(&A));
   PetscCall(VecDestroy(&B));
   PetscCall(VecDestroy(&Aout));

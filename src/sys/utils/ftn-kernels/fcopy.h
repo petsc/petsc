@@ -9,6 +9,6 @@
 #define fortrancopy_ fortrancopy
 #define fortranzero_ fortranzero
 #endif
-PETSC_EXTERN void fortrancopy_(PetscInt*,PetscScalar*,PetscScalar*);
-PETSC_EXTERN void fortranzero_(PetscInt*,PetscScalar*);
+PETSC_EXTERN void fortrancopy_(PetscInt *, PetscScalar *, PetscScalar *);
+PETSC_EXTERN void fortranzero_(PetscInt *, PetscScalar *);
 #endif

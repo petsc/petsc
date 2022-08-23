@@ -5,55 +5,53 @@ Input arguments are:\n\
 #include <petscksp.h>
 #include <petsclog.h>
 
-static PetscErrorCode KSPTestResidualMonitor(KSP ksp, PetscInt i, PetscReal r, void* ctx)
-{
-  Vec            *t,*v;
-  PetscReal      err;
+static PetscErrorCode KSPTestResidualMonitor(KSP ksp, PetscInt i, PetscReal r, void *ctx) {
+  Vec      *t, *v;
+  PetscReal err;
 
   PetscFunctionBeginUser;
-  PetscCall(KSPCreateVecs(ksp,2,&t,2,&v));
-  PetscCall(KSPBuildResidualDefault(ksp,t[0],v[0],&v[0]));
-  PetscCall(KSPBuildResidual(ksp,t[1],v[1],&v[1]));
-  PetscCall(VecAXPY(v[1],-1.0,v[0]));
-  PetscCall(VecNorm(v[1],NORM_INFINITY,&err));
-  PetscCheck(err <= PETSC_SMALL,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"Inconsistent residual computed at step %" PetscInt_FMT ": %g (KSP %g)",i,(double)err,(double)r);
-  PetscCall(VecDestroyVecs(2,&t));
-  PetscCall(VecDestroyVecs(2,&v));
+  PetscCall(KSPCreateVecs(ksp, 2, &t, 2, &v));
+  PetscCall(KSPBuildResidualDefault(ksp, t[0], v[0], &v[0]));
+  PetscCall(KSPBuildResidual(ksp, t[1], v[1], &v[1]));
+  PetscCall(VecAXPY(v[1], -1.0, v[0]));
+  PetscCall(VecNorm(v[1], NORM_INFINITY, &err));
+  PetscCheck(err <= PETSC_SMALL, PetscObjectComm((PetscObject)ksp), PETSC_ERR_PLIB, "Inconsistent residual computed at step %" PetscInt_FMT ": %g (KSP %g)", i, (double)err, (double)r);
+  PetscCall(VecDestroyVecs(2, &t));
+  PetscCall(VecDestroyVecs(2, &v));
   PetscFunctionReturn(0);
 }
 
-int main(int argc,char **args)
-{
-  PetscInt       its;
+int main(int argc, char **args) {
+  PetscInt its;
 #if defined(PETSC_USE_LOG)
-  PetscLogStage  stage1,stage2;
+  PetscLogStage stage1, stage2;
 #endif
-  PetscReal      norm;
-  Vec            x,b,u;
-  Mat            A;
-  char           file[PETSC_MAX_PATH_LEN];
-  PetscViewer    fd;
-  PetscBool      table = PETSC_FALSE,flg,test_residual = PETSC_FALSE,b_in_f = PETSC_TRUE;
-  KSP            ksp;
+  PetscReal   norm;
+  Vec         x, b, u;
+  Mat         A;
+  char        file[PETSC_MAX_PATH_LEN];
+  PetscViewer fd;
+  PetscBool   table = PETSC_FALSE, flg, test_residual = PETSC_FALSE, b_in_f = PETSC_TRUE;
+  KSP         ksp;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
-  PetscCall(PetscOptionsGetBool(NULL,NULL,"-table",&table,NULL));
-  PetscCall(PetscOptionsGetBool(NULL,NULL,"-test_residual",&test_residual,NULL));
-  PetscCall(PetscOptionsGetBool(NULL,NULL,"-b_in_f",&b_in_f,NULL));
+  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-table", &table, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_residual", &test_residual, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-b_in_f", &b_in_f, NULL));
 
   /* Read matrix and RHS */
-  PetscCall(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg));
-  PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_USER_INPUT,"Must indicate binary file with the -f option");
-  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd));
-  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
-  PetscCall(MatLoad(A,fd));
+  PetscCall(PetscOptionsGetString(NULL, NULL, "-f", file, sizeof(file), &flg));
+  PetscCheck(flg, PETSC_COMM_WORLD, PETSC_ERR_USER_INPUT, "Must indicate binary file with the -f option");
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, file, FILE_MODE_READ, &fd));
+  PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
+  PetscCall(MatLoad(A, fd));
   if (b_in_f) {
-    PetscCall(VecCreate(PETSC_COMM_WORLD,&b));
-    PetscCall(VecLoad(b,fd));
+    PetscCall(VecCreate(PETSC_COMM_WORLD, &b));
+    PetscCall(VecLoad(b, fd));
   } else {
-    PetscCall(MatCreateVecs(A,NULL,&b));
-    PetscCall(VecSetRandom(b,NULL));
+    PetscCall(MatCreateVecs(A, NULL, &b));
+    PetscCall(VecSetRandom(b, NULL));
   }
   PetscCall(PetscViewerDestroy(&fd));
 
@@ -62,66 +60,66 @@ int main(int argc,char **args)
    to match the blocksize then create a new padded vector
   */
   {
-    PetscInt    m,n,j,mvec,start,end,indx;
-    Vec         tmp;
+    PetscInt     m, n, j, mvec, start, end, indx;
+    Vec          tmp;
     PetscScalar *bold;
 
-    PetscCall(MatGetLocalSize(A,&m,&n));
-    PetscCall(VecCreate(PETSC_COMM_WORLD,&tmp));
-    PetscCall(VecSetSizes(tmp,m,PETSC_DECIDE));
+    PetscCall(MatGetLocalSize(A, &m, &n));
+    PetscCall(VecCreate(PETSC_COMM_WORLD, &tmp));
+    PetscCall(VecSetSizes(tmp, m, PETSC_DECIDE));
     PetscCall(VecSetFromOptions(tmp));
-    PetscCall(VecGetOwnershipRange(b,&start,&end));
-    PetscCall(VecGetLocalSize(b,&mvec));
-    PetscCall(VecGetArray(b,&bold));
-    for (j=0; j<mvec; j++) {
-      indx = start+j;
-      PetscCall(VecSetValues(tmp,1,&indx,bold+j,INSERT_VALUES));
+    PetscCall(VecGetOwnershipRange(b, &start, &end));
+    PetscCall(VecGetLocalSize(b, &mvec));
+    PetscCall(VecGetArray(b, &bold));
+    for (j = 0; j < mvec; j++) {
+      indx = start + j;
+      PetscCall(VecSetValues(tmp, 1, &indx, bold + j, INSERT_VALUES));
     }
-    PetscCall(VecRestoreArray(b,&bold));
+    PetscCall(VecRestoreArray(b, &bold));
     PetscCall(VecDestroy(&b));
     PetscCall(VecAssemblyBegin(tmp));
     PetscCall(VecAssemblyEnd(tmp));
-    b    = tmp;
+    b = tmp;
   }
-  PetscCall(VecDuplicate(b,&x));
-  PetscCall(VecDuplicate(b,&u));
+  PetscCall(VecDuplicate(b, &x));
+  PetscCall(VecDuplicate(b, &u));
 
-  PetscCall(VecSet(x,0.0));
+  PetscCall(VecSet(x, 0.0));
   PetscCall(PetscBarrier((PetscObject)A));
 
-  PetscCall(PetscLogStageRegister("mystage 1",&stage1));
+  PetscCall(PetscLogStageRegister("mystage 1", &stage1));
   PetscCall(PetscLogStagePush(stage1));
-  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
-  PetscCall(KSPSetOperators(ksp,A,A));
+  PetscCall(KSPCreate(PETSC_COMM_WORLD, &ksp));
+  PetscCall(KSPSetOperators(ksp, A, A));
   PetscCall(KSPSetFromOptions(ksp));
-  if (test_residual) PetscCall(KSPMonitorSet(ksp,KSPTestResidualMonitor,NULL,NULL));
+  if (test_residual) PetscCall(KSPMonitorSet(ksp, KSPTestResidualMonitor, NULL, NULL));
   PetscCall(KSPSetUp(ksp));
   PetscCall(KSPSetUpOnBlocks(ksp));
   PetscCall(PetscLogStagePop());
   PetscCall(PetscBarrier((PetscObject)A));
 
-  PetscCall(PetscLogStageRegister("mystage 2",&stage2));
+  PetscCall(PetscLogStageRegister("mystage 2", &stage2));
   PetscCall(PetscLogStagePush(stage2));
-  PetscCall(KSPSolve(ksp,b,x));
+  PetscCall(KSPSolve(ksp, b, x));
   PetscCall(PetscLogStagePop());
 
   /* Show result */
-  PetscCall(MatMult(A,x,u));
-  PetscCall(VecAXPY(u,-1.0,b));
-  PetscCall(VecNorm(u,NORM_2,&norm));
-  PetscCall(KSPGetIterationNumber(ksp,&its));
+  PetscCall(MatMult(A, x, u));
+  PetscCall(VecAXPY(u, -1.0, b));
+  PetscCall(VecNorm(u, NORM_2, &norm));
+  PetscCall(KSPGetIterationNumber(ksp, &its));
   /*  matrix PC   KSP   Options       its    residual  */
   if (table) {
-    char        *matrixname,kspinfo[120];
+    char       *matrixname, kspinfo[120];
     PetscViewer viewer;
-    PetscCall(PetscViewerStringOpen(PETSC_COMM_WORLD,kspinfo,sizeof(kspinfo),&viewer));
-    PetscCall(KSPView(ksp,viewer));
-    PetscCall(PetscStrrchr(file,'/',&matrixname));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%-8.8s %3" PetscInt_FMT " %2.0e %s \n",matrixname,its,(double)norm,kspinfo));
+    PetscCall(PetscViewerStringOpen(PETSC_COMM_WORLD, kspinfo, sizeof(kspinfo), &viewer));
+    PetscCall(KSPView(ksp, viewer));
+    PetscCall(PetscStrrchr(file, '/', &matrixname));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%-8.8s %3" PetscInt_FMT " %2.0e %s \n", matrixname, its, (double)norm, kspinfo));
     PetscCall(PetscViewerDestroy(&viewer));
   } else {
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3" PetscInt_FMT "\n",its));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Residual norm = %g\n",(double)norm));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Number of iterations = %3" PetscInt_FMT "\n", its));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Residual norm = %g\n", (double)norm));
   }
 
   /* Cleanup */

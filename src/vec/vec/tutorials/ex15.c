@@ -7,8 +7,7 @@ static char help[] = "Tests Mathematica I/O of vectors and illustrates the use o
   the same program.  This example is intended only to demonstrate
   both input and output. */
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
   PetscViewer viewer;
   Vec         u;
   PetscScalar v;
@@ -20,11 +19,11 @@ int main(int argc, char *argv[])
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
-  PetscCall(PetscOptionsGetInt(NULL,NULL, "-m", &m, NULL));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-m", &m, NULL));
 
   /* PART 1:  Generate vector, then write it to Mathematica */
 
-  PetscCall(PetscLogEventRegister("Generate Vector", VEC_CLASSID,&VECTOR_GENERATE));
+  PetscCall(PetscLogEventRegister("Generate Vector", VEC_CLASSID, &VECTOR_GENERATE));
   PetscCall(PetscLogEventBegin(VECTOR_GENERATE, 0, 0, 0, 0));
   /* Generate vector */
   PetscCall(VecCreate(PETSC_COMM_WORLD, &u));
@@ -34,7 +33,7 @@ int main(int argc, char *argv[])
   PetscCall(VecGetLocalSize(u, &ldim));
   for (i = 0; i < ldim; i++) {
     iglobal = i + low;
-    v       = (PetscScalar) (i + 100*rank);
+    v       = (PetscScalar)(i + 100 * rank);
     PetscCall(VecSetValues(u, 1, &iglobal, &v, INSERT_VALUES));
   }
   PetscCall(VecAssemblyBegin(u));
@@ -49,8 +48,8 @@ int main(int argc, char *argv[])
 #else
   PetscCall(VecView(u, PETSC_VIEWER_MATHEMATICA_WORLD));
 #endif
-  v    = 0.0;
-  PetscCall(VecSet(u,v));
+  v = 0.0;
+  PetscCall(VecSet(u, v));
   PetscCall(PetscLogEventEnd(VECTOR_GENERATE, 0, 0, 0, 0));
 
   /* All processors wait until test vector has been dumped */
@@ -59,7 +58,7 @@ int main(int argc, char *argv[])
 
   /* PART 2:  Read in vector in from Mathematica */
 
-  PetscCall(PetscLogEventRegister("Read Vector", VEC_CLASSID,&VECTOR_READ));
+  PetscCall(PetscLogEventRegister("Read Vector", VEC_CLASSID, &VECTOR_READ));
   PetscCall(PetscLogEventBegin(VECTOR_READ, 0, 0, 0, 0));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "reading vector from Mathematica...\n"));
   /* Read new vector in binary format */

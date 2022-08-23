@@ -1,7 +1,7 @@
 
 #include <petscwebclient.h>
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-#pragma gcc diagnostic ignored "-Wdeprecated-declarations"
+#pragma gcc diagnostic   ignored "-Wdeprecated-declarations"
 
 /*
    These variables identify the code as a PETSc application to Box.
@@ -10,31 +10,29 @@
    Users can get their own application IDs - goto https://developer.box.com
 
 */
-#define PETSC_BOX_CLIENT_ID  "sse42nygt4zqgrdwi0luv79q1u1f0xza"
-#define PETSC_BOX_CLIENT_ST  "A0Dy4KgOYLB2JIYZqpbze4EzjeIiX5k4"
+#define PETSC_BOX_CLIENT_ID "sse42nygt4zqgrdwi0luv79q1u1f0xza"
+#define PETSC_BOX_CLIENT_ST "A0Dy4KgOYLB2JIYZqpbze4EzjeIiX5k4"
 
 #if defined(PETSC_HAVE_SAWS)
 #include <mongoose.h>
 
 static volatile char *result = NULL;
 
-static int PetscBoxWebServer_Private(struct mg_connection *conn)
-{
+static int PetscBoxWebServer_Private(struct mg_connection *conn) {
   const struct mg_request_info *request_info = mg_get_request_info(conn);
-  result = (char*) request_info->query_string;
-  return 1;  /* Mongoose will now not handle the request */
+  result                                     = (char *)request_info->query_string;
+  return 1; /* Mongoose will now not handle the request */
 }
 
 /*
     Box can only return an authorization code to a Webserver, hence we need to start one up and wait for
     the authorization code to arrive from Box
 */
-static PetscErrorCode PetscBoxStartWebServer_Private(void)
-{
+static PetscErrorCode PetscBoxStartWebServer_Private(void) {
   int                 optionsLen = 5;
-  const char          *options[optionsLen];
+  const char         *options[optionsLen];
   struct mg_callbacks callbacks;
-  struct mg_context   *ctx;
+  struct mg_context  *ctx;
   char                keyfile[PETSC_MAX_PATH_LEN];
   PetscBool           exists;
 
@@ -42,14 +40,14 @@ static PetscErrorCode PetscBoxStartWebServer_Private(void)
   options[0] = "listening_ports";
   options[1] = "8081s";
 
-  PetscCall(PetscStrcpy(keyfile,"sslclient.pem"));
-  PetscCall(PetscTestFile(keyfile,'r',&exists));
+  PetscCall(PetscStrcpy(keyfile, "sslclient.pem"));
+  PetscCall(PetscTestFile(keyfile, 'r', &exists));
   if (!exists) {
-    PetscCall(PetscGetHomeDirectory(keyfile,PETSC_MAX_PATH_LEN));
-    PetscCall(PetscStrcat(keyfile,"/"));
-    PetscCall(PetscStrcat(keyfile,"sslclient.pem"));
-    PetscCall(PetscTestFile(keyfile,'r',&exists));
-    PetscCheck(exists,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate sslclient.pem file in current directory or home directory");
+    PetscCall(PetscGetHomeDirectory(keyfile, PETSC_MAX_PATH_LEN));
+    PetscCall(PetscStrcat(keyfile, "/"));
+    PetscCall(PetscStrcat(keyfile, "sslclient.pem"));
+    PetscCall(PetscTestFile(keyfile, 'r', &exists));
+    PetscCheck(exists, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to locate sslclient.pem file in current directory or home directory");
   }
 
   options[2] = "ssl_certificate";
@@ -59,9 +57,9 @@ static PetscErrorCode PetscBoxStartWebServer_Private(void)
   /* Prepare callbacks structure. We have only one callback, the rest are NULL. */
   PetscCall(PetscMemzero(&callbacks, sizeof(callbacks)));
   callbacks.begin_request = PetscBoxWebServer_Private;
-  ctx = mg_start(&callbacks, NULL, options);
-  PetscCheck(ctx,PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to start up webserver");
-  while (!result) {};
+  ctx                     = mg_start(&callbacks, NULL, options);
+  PetscCheck(ctx, PETSC_COMM_SELF, PETSC_ERR_LIB, "Unable to start up webserver");
+  while (!result) { };
   PetscFunctionReturn(0);
 }
 
@@ -104,53 +102,50 @@ $    cat newkey.pem newcert.pem > sslclient.pem
 .seealso: `PetscBoxRefresh()`, `PetscBoxUpload()`, `PetscURLShorten()`
 
 @*/
-PetscErrorCode PetscBoxAuthorize(MPI_Comm comm,char access_token[],char refresh_token[],size_t tokensize)
-{
-  SSL_CTX        *ctx;
-  SSL            *ssl;
-  int            sock;
-  char           buff[8*1024],body[1024];
-  PetscMPIInt    rank;
-  PetscBool      flg,found;
+PetscErrorCode PetscBoxAuthorize(MPI_Comm comm, char access_token[], char refresh_token[], size_t tokensize) {
+  SSL_CTX    *ctx;
+  SSL        *ssl;
+  int         sock;
+  char        buff[8 * 1024], body[1024];
+  PetscMPIInt rank;
+  PetscBool   flg, found;
 
   PetscFunctionBegin;
-  PetscCallMPI(MPI_Comm_rank(comm,&rank));
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
   if (rank == 0) {
-    PetscCheck(isatty(fileno(PETSC_STDOUT)),PETSC_COMM_SELF,PETSC_ERR_USER,"Requires users input/output");
-    PetscCall(PetscPrintf(comm,"Cut and paste the following into your browser:\n\n"
-                          "https://www.box.com/api/oauth2/authorize?"
-                          "response_type=code&"
-                          "client_id="
-                          PETSC_BOX_CLIENT_ID
-                          "&state=PETScState"
-                          "\n\n"));
+    PetscCheck(isatty(fileno(PETSC_STDOUT)), PETSC_COMM_SELF, PETSC_ERR_USER, "Requires users input/output");
+    PetscCall(PetscPrintf(comm, "Cut and paste the following into your browser:\n\n"
+                                "https://www.box.com/api/oauth2/authorize?"
+                                "response_type=code&"
+                                "client_id=" PETSC_BOX_CLIENT_ID "&state=PETScState"
+                                "\n\n"));
     PetscCall(PetscBoxStartWebServer_Private());
-    PetscCall(PetscStrbeginswith((const char*)result,"state=PETScState&code=",&flg));
-    PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_LIB,"Did not get expected string from Box got %s",result);
-    PetscCall(PetscStrncpy(buff,(const char*)result+22,sizeof(buff)));
+    PetscCall(PetscStrbeginswith((const char *)result, "state=PETScState&code=", &flg));
+    PetscCheck(flg, PETSC_COMM_SELF, PETSC_ERR_LIB, "Did not get expected string from Box got %s", result);
+    PetscCall(PetscStrncpy(buff, (const char *)result + 22, sizeof(buff)));
 
     PetscCall(PetscSSLInitializeContext(&ctx));
-    PetscCall(PetscHTTPSConnect("www.box.com",443,ctx,&sock,&ssl));
-    PetscCall(PetscStrcpy(body,"code="));
-    PetscCall(PetscStrcat(body,buff));
-    PetscCall(PetscStrcat(body,"&client_id="));
-    PetscCall(PetscStrcat(body,PETSC_BOX_CLIENT_ID));
-    PetscCall(PetscStrcat(body,"&client_secret="));
-    PetscCall(PetscStrcat(body,PETSC_BOX_CLIENT_ST));
-    PetscCall(PetscStrcat(body,"&grant_type=authorization_code"));
+    PetscCall(PetscHTTPSConnect("www.box.com", 443, ctx, &sock, &ssl));
+    PetscCall(PetscStrcpy(body, "code="));
+    PetscCall(PetscStrcat(body, buff));
+    PetscCall(PetscStrcat(body, "&client_id="));
+    PetscCall(PetscStrcat(body, PETSC_BOX_CLIENT_ID));
+    PetscCall(PetscStrcat(body, "&client_secret="));
+    PetscCall(PetscStrcat(body, PETSC_BOX_CLIENT_ST));
+    PetscCall(PetscStrcat(body, "&grant_type=authorization_code"));
 
-    PetscCall(PetscHTTPSRequest("POST","www.box.com/api/oauth2/token",NULL,"application/x-www-form-urlencoded",body,ssl,buff,sizeof(buff)));
+    PetscCall(PetscHTTPSRequest("POST", "www.box.com/api/oauth2/token", NULL, "application/x-www-form-urlencoded", body, ssl, buff, sizeof(buff)));
     PetscCall(PetscSSLDestroyContext(ctx));
     close(sock);
 
-    PetscCall(PetscPullJSONValue(buff,"access_token",access_token,tokensize,&found));
-    PetscCheck(found,PETSC_COMM_SELF,PETSC_ERR_LIB,"Box did not return access token");
-    PetscCall(PetscPullJSONValue(buff,"refresh_token",refresh_token,tokensize,&found));
-    PetscCheck(found,PETSC_COMM_SELF,PETSC_ERR_LIB,"Box did not return refresh token");
+    PetscCall(PetscPullJSONValue(buff, "access_token", access_token, tokensize, &found));
+    PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_LIB, "Box did not return access token");
+    PetscCall(PetscPullJSONValue(buff, "refresh_token", refresh_token, tokensize, &found));
+    PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_LIB, "Box did not return refresh token");
 
-    PetscCall(PetscPrintf(comm,"Here is your Box refresh token, save it in a save place, in the future you can run PETSc\n"));
-    PetscCall(PetscPrintf(comm,"programs with the option -box_refresh_token %s\n",refresh_token));
-    PetscCall(PetscPrintf(comm,"to access Box Drive automatically\n"));
+    PetscCall(PetscPrintf(comm, "Here is your Box refresh token, save it in a save place, in the future you can run PETSc\n"));
+    PetscCall(PetscPrintf(comm, "programs with the option -box_refresh_token %s\n", refresh_token));
+    PetscCall(PetscPrintf(comm, "to access Box Drive automatically\n"));
   }
   PetscFunctionReturn(0);
 }
@@ -176,56 +171,55 @@ PetscErrorCode PetscBoxAuthorize(MPI_Comm comm,char access_token[],char refresh_
 .seealso: `PetscURLShorten()`, `PetscBoxAuthorize()`, `PetscBoxUpload()`
 
 @*/
-PetscErrorCode PetscBoxRefresh(MPI_Comm comm,const char refresh_token[],char access_token[],char new_refresh_token[],size_t tokensize)
-{
-  SSL_CTX        *ctx;
-  SSL            *ssl;
-  int            sock;
-  char           buff[8*1024],body[1024];
-  PetscMPIInt    rank;
-  char           *refreshtoken = (char*)refresh_token;
-  PetscBool      found;
+PetscErrorCode PetscBoxRefresh(MPI_Comm comm, const char refresh_token[], char access_token[], char new_refresh_token[], size_t tokensize) {
+  SSL_CTX    *ctx;
+  SSL        *ssl;
+  int         sock;
+  char        buff[8 * 1024], body[1024];
+  PetscMPIInt rank;
+  char       *refreshtoken = (char *)refresh_token;
+  PetscBool   found;
 
   PetscFunctionBegin;
-  PetscCallMPI(MPI_Comm_rank(comm,&rank));
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
   if (rank == 0) {
     if (!refresh_token) {
       PetscBool set;
-      PetscCall(PetscMalloc1(512,&refreshtoken));
-      PetscCall(PetscOptionsGetString(NULL,NULL,"-box_refresh_token",refreshtoken,sizeof(refreshtoken),&set));
+      PetscCall(PetscMalloc1(512, &refreshtoken));
+      PetscCall(PetscOptionsGetString(NULL, NULL, "-box_refresh_token", refreshtoken, sizeof(refreshtoken), &set));
 #if defined(PETSC_HAVE_SAWS)
       if (!set) {
-        PetscCall(PetscBoxAuthorize(comm,access_token,new_refresh_token,512*sizeof(char)));
+        PetscCall(PetscBoxAuthorize(comm, access_token, new_refresh_token, 512 * sizeof(char)));
         PetscCall(PetscFree(refreshtoken));
         PetscFunctionReturn(0);
       }
 #else
-      PetscCheck(set,PETSC_COMM_SELF,PETSC_ERR_LIB,"Must provide refresh token with -box_refresh_token XXX");
+      PetscCheck(set, PETSC_COMM_SELF, PETSC_ERR_LIB, "Must provide refresh token with -box_refresh_token XXX");
 #endif
     }
     PetscCall(PetscSSLInitializeContext(&ctx));
-    PetscCall(PetscHTTPSConnect("www.box.com",443,ctx,&sock,&ssl));
-    PetscCall(PetscStrcpy(body,"client_id="));
-    PetscCall(PetscStrcat(body,PETSC_BOX_CLIENT_ID));
-    PetscCall(PetscStrcat(body,"&client_secret="));
-    PetscCall(PetscStrcat(body,PETSC_BOX_CLIENT_ST));
-    PetscCall(PetscStrcat(body,"&refresh_token="));
-    PetscCall(PetscStrcat(body,refreshtoken));
+    PetscCall(PetscHTTPSConnect("www.box.com", 443, ctx, &sock, &ssl));
+    PetscCall(PetscStrcpy(body, "client_id="));
+    PetscCall(PetscStrcat(body, PETSC_BOX_CLIENT_ID));
+    PetscCall(PetscStrcat(body, "&client_secret="));
+    PetscCall(PetscStrcat(body, PETSC_BOX_CLIENT_ST));
+    PetscCall(PetscStrcat(body, "&refresh_token="));
+    PetscCall(PetscStrcat(body, refreshtoken));
     if (!refresh_token) PetscCall(PetscFree(refreshtoken));
-    PetscCall(PetscStrcat(body,"&grant_type=refresh_token"));
+    PetscCall(PetscStrcat(body, "&grant_type=refresh_token"));
 
-    PetscCall(PetscHTTPSRequest("POST","www.box.com/api/oauth2/token",NULL,"application/x-www-form-urlencoded",body,ssl,buff,sizeof(buff)));
+    PetscCall(PetscHTTPSRequest("POST", "www.box.com/api/oauth2/token", NULL, "application/x-www-form-urlencoded", body, ssl, buff, sizeof(buff)));
     PetscCall(PetscSSLDestroyContext(ctx));
     close(sock);
 
-    PetscCall(PetscPullJSONValue(buff,"access_token",access_token,tokensize,&found));
-    PetscCheck(found,PETSC_COMM_SELF,PETSC_ERR_LIB,"Box did not return access token");
-    PetscCall(PetscPullJSONValue(buff,"refresh_token",new_refresh_token,tokensize,&found));
-    PetscCheck(found,PETSC_COMM_SELF,PETSC_ERR_LIB,"Box did not return refresh token");
+    PetscCall(PetscPullJSONValue(buff, "access_token", access_token, tokensize, &found));
+    PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_LIB, "Box did not return access token");
+    PetscCall(PetscPullJSONValue(buff, "refresh_token", new_refresh_token, tokensize, &found));
+    PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_LIB, "Box did not return refresh token");
 
-    PetscCall(PetscPrintf(comm,"Here is your new Box refresh token, save it in a save place, in the future you can run PETSc\n"));
-    PetscCall(PetscPrintf(comm,"programs with the option -box_refresh_token %s\n",new_refresh_token));
-    PetscCall(PetscPrintf(comm,"to access Box Drive automatically\n"));
+    PetscCall(PetscPrintf(comm, "Here is your new Box refresh token, save it in a save place, in the future you can run PETSc\n"));
+    PetscCall(PetscPrintf(comm, "programs with the option -box_refresh_token %s\n", new_refresh_token));
+    PetscCall(PetscPrintf(comm, "to access Box Drive automatically\n"));
   }
   PetscFunctionReturn(0);
 }
@@ -270,58 +264,57 @@ PetscErrorCode PetscBoxRefresh(MPI_Comm comm,const char refresh_token[],char acc
 .seealso: `PetscURLShorten()`, `PetscBoxAuthorize()`, `PetscBoxRefresh()`
 
 @*/
-PetscErrorCode PetscBoxUpload(MPI_Comm comm,const char access_token[],const char filename[])
-{
-  SSL_CTX        *ctx;
-  SSL            *ssl;
-  int            sock;
-  char           head[1024],buff[8*1024],*body,*title;
-  PetscMPIInt    rank;
-  struct stat    sb;
-  size_t         len,blen,rd;
-  FILE           *fd;
-  int            err;
+PetscErrorCode PetscBoxUpload(MPI_Comm comm, const char access_token[], const char filename[]) {
+  SSL_CTX    *ctx;
+  SSL        *ssl;
+  int         sock;
+  char        head[1024], buff[8 * 1024], *body, *title;
+  PetscMPIInt rank;
+  struct stat sb;
+  size_t      len, blen, rd;
+  FILE       *fd;
+  int         err;
 
   PetscFunctionBegin;
-  PetscCallMPI(MPI_Comm_rank(comm,&rank));
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
   if (rank == 0) {
-    PetscCall(PetscStrcpy(head,"Authorization: Bearer "));
-    PetscCall(PetscStrcat(head,access_token));
-    PetscCall(PetscStrcat(head,"\r\n"));
-    PetscCall(PetscStrcat(head,"uploadType: multipart\r\n"));
+    PetscCall(PetscStrcpy(head, "Authorization: Bearer "));
+    PetscCall(PetscStrcat(head, access_token));
+    PetscCall(PetscStrcat(head, "\r\n"));
+    PetscCall(PetscStrcat(head, "uploadType: multipart\r\n"));
 
-    err = stat(filename,&sb);
-    PetscCheck(!err,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to stat file: %s",filename);
+    err = stat(filename, &sb);
+    PetscCheck(!err, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to stat file: %s", filename);
     len = 1024 + sb.st_size;
-    PetscCall(PetscMalloc1(len,&body));
-    PetscCall(PetscStrcpy(body,"--foo_bar_baz\r\n"
-                               "Content-Type: application/json\r\n\r\n"
-                               "{"));
-    PetscCall(PetscPushJSONValue(body,"title",filename,len));
-    PetscCall(PetscStrcat(body,","));
-    PetscCall(PetscPushJSONValue(body,"mimeType","text.html",len));
-    PetscCall(PetscStrcat(body,","));
-    PetscCall(PetscPushJSONValue(body,"description","a file",len));
+    PetscCall(PetscMalloc1(len, &body));
+    PetscCall(PetscStrcpy(body, "--foo_bar_baz\r\n"
+                                "Content-Type: application/json\r\n\r\n"
+                                "{"));
+    PetscCall(PetscPushJSONValue(body, "title", filename, len));
+    PetscCall(PetscStrcat(body, ","));
+    PetscCall(PetscPushJSONValue(body, "mimeType", "text.html", len));
+    PetscCall(PetscStrcat(body, ","));
+    PetscCall(PetscPushJSONValue(body, "description", "a file", len));
     PetscCall(PetscStrcat(body, "}\r\n\r\n"
                                 "--foo_bar_baz\r\n"
                                 "Content-Type: text/html\r\n\r\n"));
-    PetscCall(PetscStrlen(body,&blen));
-    fd = fopen (filename, "r");
-    PetscCheck(fd,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to open file: %s",filename);
-    rd = fread (body+blen, sizeof (unsigned char), sb.st_size, fd);
-    PetscCheck(rd == (size_t)sb.st_size,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to read entire file: %s %d %d",filename,(int)rd,(int)sb.st_size);
+    PetscCall(PetscStrlen(body, &blen));
+    fd = fopen(filename, "r");
+    PetscCheck(fd, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to open file: %s", filename);
+    rd = fread(body + blen, sizeof(unsigned char), sb.st_size, fd);
+    PetscCheck(rd == (size_t)sb.st_size, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to read entire file: %s %d %d", filename, (int)rd, (int)sb.st_size);
     fclose(fd);
     body[blen + rd] = 0;
-    PetscCall(PetscStrcat(body,"\r\n\r\n"
-                               "--foo_bar_baz\r\n"));
+    PetscCall(PetscStrcat(body, "\r\n\r\n"
+                                "--foo_bar_baz\r\n"));
     PetscCall(PetscSSLInitializeContext(&ctx));
-    PetscCall(PetscHTTPSConnect("www.boxapis.com",443,ctx,&sock,&ssl));
-    PetscCall(PetscHTTPSRequest("POST","www.boxapis.com/upload/drive/v2/files/",head,"multipart/related; boundary=\"foo_bar_baz\"",body,ssl,buff,sizeof(buff)));
+    PetscCall(PetscHTTPSConnect("www.boxapis.com", 443, ctx, &sock, &ssl));
+    PetscCall(PetscHTTPSRequest("POST", "www.boxapis.com/upload/drive/v2/files/", head, "multipart/related; boundary=\"foo_bar_baz\"", body, ssl, buff, sizeof(buff)));
     PetscCall(PetscFree(body));
     PetscCall(PetscSSLDestroyContext(ctx));
     close(sock);
-    PetscCall(PetscStrstr(buff,"\"title\"",&title));
-    PetscCheck(title,PETSC_COMM_SELF,PETSC_ERR_LIB,"Upload of file %s failed",filename);
+    PetscCall(PetscStrstr(buff, "\"title\"", &title));
+    PetscCheck(title, PETSC_COMM_SELF, PETSC_ERR_LIB, "Upload of file %s failed", filename);
   }
   PetscFunctionReturn(0);
 }

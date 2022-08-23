@@ -15,13 +15,12 @@
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 #include <../src/mat/impls/aij/seq/crl/crl.h>
 
-PetscErrorCode MatDestroy_MPIAIJCRL(Mat A)
-{
-  Mat_AIJCRL     *aijcrl = (Mat_AIJCRL*) A->spptr;
+PetscErrorCode MatDestroy_MPIAIJCRL(Mat A) {
+  Mat_AIJCRL *aijcrl = (Mat_AIJCRL *)A->spptr;
 
   PetscFunctionBegin;
   if (aijcrl) {
-    PetscCall(PetscFree2(aijcrl->acols,aijcrl->icols));
+    PetscCall(PetscFree2(aijcrl->acols, aijcrl->icols));
     PetscCall(VecDestroy(&aijcrl->fwork));
     PetscCall(VecDestroy(&aijcrl->xwork));
     PetscCall(PetscFree(aijcrl->array));
@@ -33,69 +32,65 @@ PetscErrorCode MatDestroy_MPIAIJCRL(Mat A)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatMPIAIJCRL_create_aijcrl(Mat A)
-{
-  Mat_MPIAIJ     *a      = (Mat_MPIAIJ*)(A)->data;
-  Mat_SeqAIJ     *Aij    = (Mat_SeqAIJ*)(a->A->data), *Bij = (Mat_SeqAIJ*)(a->B->data);
-  Mat_AIJCRL     *aijcrl = (Mat_AIJCRL*) A->spptr;
-  PetscInt       m       = A->rmap->n; /* Number of rows in the matrix. */
-  PetscInt       nd      = a->A->cmap->n; /* number of columns in diagonal portion */
-  PetscInt       *aj     = Aij->j,*bj = Bij->j; /* From the CSR representation; points to the beginning  of each row. */
-  PetscInt       i, j,rmax = 0,*icols, *ailen = Aij->ilen, *bilen = Bij->ilen;
-  PetscScalar    *aa = Aij->a,*ba = Bij->a,*acols,*array;
+PetscErrorCode MatMPIAIJCRL_create_aijcrl(Mat A) {
+  Mat_MPIAIJ  *a   = (Mat_MPIAIJ *)(A)->data;
+  Mat_SeqAIJ  *Aij = (Mat_SeqAIJ *)(a->A->data), *Bij = (Mat_SeqAIJ *)(a->B->data);
+  Mat_AIJCRL  *aijcrl = (Mat_AIJCRL *)A->spptr;
+  PetscInt     m      = A->rmap->n;       /* Number of rows in the matrix. */
+  PetscInt     nd     = a->A->cmap->n;    /* number of columns in diagonal portion */
+  PetscInt    *aj = Aij->j, *bj = Bij->j; /* From the CSR representation; points to the beginning  of each row. */
+  PetscInt     i, j, rmax = 0, *icols, *ailen = Aij->ilen, *bilen = Bij->ilen;
+  PetscScalar *aa = Aij->a, *ba = Bij->a, *acols, *array;
 
   PetscFunctionBegin;
   /* determine the row with the most columns */
-  for (i=0; i<m; i++) {
-    rmax = PetscMax(rmax,ailen[i]+bilen[i]);
-  }
-  aijcrl->nz   = Aij->nz+Bij->nz;
+  for (i = 0; i < m; i++) { rmax = PetscMax(rmax, ailen[i] + bilen[i]); }
+  aijcrl->nz   = Aij->nz + Bij->nz;
   aijcrl->m    = A->rmap->n;
   aijcrl->rmax = rmax;
 
-  PetscCall(PetscFree2(aijcrl->acols,aijcrl->icols));
-  PetscCall(PetscMalloc2(rmax*m,&aijcrl->acols,rmax*m,&aijcrl->icols));
+  PetscCall(PetscFree2(aijcrl->acols, aijcrl->icols));
+  PetscCall(PetscMalloc2(rmax * m, &aijcrl->acols, rmax * m, &aijcrl->icols));
   acols = aijcrl->acols;
   icols = aijcrl->icols;
-  for (i=0; i<m; i++) {
-    for (j=0; j<ailen[i]; j++) {
-      acols[j*m+i] = *aa++;
-      icols[j*m+i] = *aj++;
+  for (i = 0; i < m; i++) {
+    for (j = 0; j < ailen[i]; j++) {
+      acols[j * m + i] = *aa++;
+      icols[j * m + i] = *aj++;
     }
-    for (; j<ailen[i]+bilen[i]; j++) {
-      acols[j*m+i] = *ba++;
-      icols[j*m+i] = nd + *bj++;
+    for (; j < ailen[i] + bilen[i]; j++) {
+      acols[j * m + i] = *ba++;
+      icols[j * m + i] = nd + *bj++;
     }
-    for (; j<rmax; j++) { /* empty column entries */
-      acols[j*m+i] = 0.0;
-      icols[j*m+i] = (j) ? icols[(j-1)*m+i] : 0;  /* handle case where row is EMPTY */
+    for (; j < rmax; j++) { /* empty column entries */
+      acols[j * m + i] = 0.0;
+      icols[j * m + i] = (j) ? icols[(j - 1) * m + i] : 0; /* handle case where row is EMPTY */
     }
   }
-  PetscCall(PetscInfo(A,"Percentage of 0's introduced for vectorized multiply %g\n",1.0-((double)(aijcrl->nz))/((double)(rmax*m))));
+  PetscCall(PetscInfo(A, "Percentage of 0's introduced for vectorized multiply %g\n", 1.0 - ((double)(aijcrl->nz)) / ((double)(rmax * m))));
 
   PetscCall(PetscFree(aijcrl->array));
-  PetscCall(PetscMalloc1(a->B->cmap->n+nd,&array));
+  PetscCall(PetscMalloc1(a->B->cmap->n + nd, &array));
   /* xwork array is actually B->n+nd long, but we define xwork this length so can copy into it */
   PetscCall(VecDestroy(&aijcrl->xwork));
-  PetscCall(VecCreateMPIWithArray(PetscObjectComm((PetscObject)A),1,nd,PETSC_DECIDE,array,&aijcrl->xwork));
+  PetscCall(VecCreateMPIWithArray(PetscObjectComm((PetscObject)A), 1, nd, PETSC_DECIDE, array, &aijcrl->xwork));
   PetscCall(VecDestroy(&aijcrl->fwork));
-  PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF,1,a->B->cmap->n,array+nd,&aijcrl->fwork));
+  PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF, 1, a->B->cmap->n, array + nd, &aijcrl->fwork));
 
   aijcrl->array = array;
   aijcrl->xscat = a->Mvctx;
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatAssemblyEnd_MPIAIJCRL(Mat A, MatAssemblyType mode)
-{
-  Mat_MPIAIJ     *a   = (Mat_MPIAIJ*)A->data;
-  Mat_SeqAIJ     *Aij = (Mat_SeqAIJ*)(a->A->data), *Bij = (Mat_SeqAIJ*)(a->A->data);
+PetscErrorCode MatAssemblyEnd_MPIAIJCRL(Mat A, MatAssemblyType mode) {
+  Mat_MPIAIJ *a   = (Mat_MPIAIJ *)A->data;
+  Mat_SeqAIJ *Aij = (Mat_SeqAIJ *)(a->A->data), *Bij = (Mat_SeqAIJ *)(a->A->data);
 
   PetscFunctionBegin;
   Aij->inode.use = PETSC_FALSE;
   Bij->inode.use = PETSC_FALSE;
 
-  PetscCall(MatAssemblyEnd_MPIAIJ(A,mode));
+  PetscCall(MatAssemblyEnd_MPIAIJ(A, mode));
   if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
 
   /* Now calculate the permutation and grouping information. */
@@ -103,26 +98,23 @@ PetscErrorCode MatAssemblyEnd_MPIAIJCRL(Mat A, MatAssemblyType mode)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode MatMult_AIJCRL(Mat,Vec,Vec);
-extern PetscErrorCode MatDuplicate_AIJCRL(Mat,MatDuplicateOption,Mat*);
+extern PetscErrorCode MatMult_AIJCRL(Mat, Vec, Vec);
+extern PetscErrorCode MatDuplicate_AIJCRL(Mat, MatDuplicateOption, Mat *);
 
 /* MatConvert_MPIAIJ_MPIAIJCRL converts a MPIAIJ matrix into a
  * MPIAIJCRL matrix.  This routine is called by the MatCreate_MPIAIJCRL()
  * routine, but can also be used to convert an assembled MPIAIJ matrix
  * into a MPIAIJCRL one. */
 
-PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJCRL(Mat A,MatType type,MatReuse reuse,Mat *newmat)
-{
-  Mat            B = *newmat;
-  Mat_AIJCRL     *aijcrl;
+PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJCRL(Mat A, MatType type, MatReuse reuse, Mat *newmat) {
+  Mat         B = *newmat;
+  Mat_AIJCRL *aijcrl;
 
   PetscFunctionBegin;
-  if (reuse == MAT_INITIAL_MATRIX) {
-    PetscCall(MatDuplicate(A,MAT_COPY_VALUES,&B));
-  }
+  if (reuse == MAT_INITIAL_MATRIX) { PetscCall(MatDuplicate(A, MAT_COPY_VALUES, &B)); }
 
-  PetscCall(PetscNewLog(B,&aijcrl));
-  B->spptr = (void*) aijcrl;
+  PetscCall(PetscNewLog(B, &aijcrl));
+  B->spptr = (void *)aijcrl;
 
   /* Set function pointers for methods that we inherit from AIJ but override. */
   B->ops->duplicate   = MatDuplicate_AIJCRL;
@@ -132,7 +124,7 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJCRL(Mat A,MatType type,MatRe
 
   /* If A has already been assembled, compute the permutation. */
   if (A->assembled) PetscCall(MatMPIAIJCRL_create_aijcrl(B));
-  PetscCall(PetscObjectChangeTypeName((PetscObject)B,MATMPIAIJCRL));
+  PetscCall(PetscObjectChangeTypeName((PetscObject)B, MATMPIAIJCRL));
   *newmat = B;
   PetscFunctionReturn(0);
 }
@@ -168,20 +160,18 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJCRL(Mat A,MatType type,MatRe
 
 .seealso: `MatCreate()`, `MatCreateMPIAIJPERM()`, `MatSetValues()`
 @*/
-PetscErrorCode  MatCreateMPIAIJCRL(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt nz,const PetscInt nnz[],PetscInt onz,const PetscInt onnz[],Mat *A)
-{
+PetscErrorCode MatCreateMPIAIJCRL(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt nz, const PetscInt nnz[], PetscInt onz, const PetscInt onnz[], Mat *A) {
   PetscFunctionBegin;
-  PetscCall(MatCreate(comm,A));
-  PetscCall(MatSetSizes(*A,m,n,m,n));
-  PetscCall(MatSetType(*A,MATMPIAIJCRL));
-  PetscCall(MatMPIAIJSetPreallocation_MPIAIJ(*A,nz,(PetscInt*)nnz,onz,(PetscInt*)onnz));
+  PetscCall(MatCreate(comm, A));
+  PetscCall(MatSetSizes(*A, m, n, m, n));
+  PetscCall(MatSetType(*A, MATMPIAIJCRL));
+  PetscCall(MatMPIAIJSetPreallocation_MPIAIJ(*A, nz, (PetscInt *)nnz, onz, (PetscInt *)onnz));
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCRL(Mat A)
-{
+PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCRL(Mat A) {
   PetscFunctionBegin;
-  PetscCall(MatSetType(A,MATMPIAIJ));
-  PetscCall(MatConvert_MPIAIJ_MPIAIJCRL(A,MATMPIAIJCRL,MAT_INPLACE_MATRIX,&A));
+  PetscCall(MatSetType(A, MATMPIAIJ));
+  PetscCall(MatConvert_MPIAIJ_MPIAIJCRL(A, MATMPIAIJCRL, MAT_INPLACE_MATRIX, &A));
   PetscFunctionReturn(0);
 }

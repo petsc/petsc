@@ -2,26 +2,25 @@
 #include <petsc/private/snesimpl.h>
 
 typedef struct {
-  PetscReal norm_delta_x_prev; /* norm of previous update */
+  PetscReal norm_delta_x_prev;     /* norm of previous update */
   PetscReal norm_bar_delta_x_prev; /* norm of previous bar update */
-  PetscReal mu_curr; /* current local Lipschitz estimate */
-  PetscReal lambda_prev; /* previous step length: for some reason SNESLineSearchGetLambda returns 1 instead of the previous step length */
+  PetscReal mu_curr;               /* current local Lipschitz estimate */
+  PetscReal lambda_prev;           /* previous step length: for some reason SNESLineSearchGetLambda returns 1 instead of the previous step length */
 } SNESLineSearch_NLEQERR;
 
-static PetscBool NLEQERR_cited = PETSC_FALSE;
+static PetscBool  NLEQERR_cited      = PETSC_FALSE;
 static const char NLEQERR_citation[] = "@book{deuflhard2011,\n"
-                               "  title = {Newton Methods for Nonlinear Problems},\n"
-                               "  author = {Peter Deuflhard},\n"
-                               "  volume = 35,\n"
-                               "  year = 2011,\n"
-                               "  isbn = {978-3-642-23898-7},\n"
-                               "  doi  = {10.1007/978-3-642-23899-4},\n"
-                               "  publisher = {Springer-Verlag},\n"
-                               "  address = {Berlin, Heidelberg}\n}\n";
+                                       "  title = {Newton Methods for Nonlinear Problems},\n"
+                                       "  author = {Peter Deuflhard},\n"
+                                       "  volume = 35,\n"
+                                       "  year = 2011,\n"
+                                       "  isbn = {978-3-642-23898-7},\n"
+                                       "  doi  = {10.1007/978-3-642-23899-4},\n"
+                                       "  publisher = {Springer-Verlag},\n"
+                                       "  address = {Berlin, Heidelberg}\n}\n";
 
-static PetscErrorCode SNESLineSearchReset_NLEQERR(SNESLineSearch linesearch)
-{
-  SNESLineSearch_NLEQERR *nleqerr = (SNESLineSearch_NLEQERR*)linesearch->data;
+static PetscErrorCode SNESLineSearchReset_NLEQERR(SNESLineSearch linesearch) {
+  SNESLineSearch_NLEQERR *nleqerr = (SNESLineSearch_NLEQERR *)linesearch->data;
 
   PetscFunctionBegin;
   nleqerr->mu_curr               = 0.0;
@@ -30,18 +29,17 @@ static PetscErrorCode SNESLineSearchReset_NLEQERR(SNESLineSearch linesearch)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode  SNESLineSearchApply_NLEQERR(SNESLineSearch linesearch)
-{
-  PetscBool              changed_y,changed_w;
-  Vec                    X,F,Y,W,G;
-  SNES                   snes;
-  PetscReal              fnorm, xnorm, ynorm, gnorm, wnorm;
-  PetscReal              lambda, minlambda, stol;
-  PetscViewer            monitor;
-  PetscInt               max_its, count, snes_iteration;
-  PetscReal              theta, mudash, lambdadash;
-  SNESLineSearch_NLEQERR *nleqerr = (SNESLineSearch_NLEQERR*)linesearch->data;
-  KSPConvergedReason     kspreason;
+static PetscErrorCode SNESLineSearchApply_NLEQERR(SNESLineSearch linesearch) {
+  PetscBool               changed_y, changed_w;
+  Vec                     X, F, Y, W, G;
+  SNES                    snes;
+  PetscReal               fnorm, xnorm, ynorm, gnorm, wnorm;
+  PetscReal               lambda, minlambda, stol;
+  PetscViewer             monitor;
+  PetscInt                max_its, count, snes_iteration;
+  PetscReal               theta, mudash, lambdadash;
+  SNESLineSearch_NLEQERR *nleqerr = (SNESLineSearch_NLEQERR *)linesearch->data;
+  KSPConvergedReason      kspreason;
 
   PetscFunctionBegin;
   PetscCall(PetscCitationsRegister(NLEQERR_citation, &NLEQERR_cited));
@@ -51,17 +49,15 @@ static PetscErrorCode  SNESLineSearchApply_NLEQERR(SNESLineSearch linesearch)
   PetscCall(SNESLineSearchGetLambda(linesearch, &lambda));
   PetscCall(SNESLineSearchGetSNES(linesearch, &snes));
   PetscCall(SNESLineSearchGetDefaultMonitor(linesearch, &monitor));
-  PetscCall(SNESLineSearchGetTolerances(linesearch,&minlambda,NULL,NULL,NULL,NULL,&max_its));
-  PetscCall(SNESGetTolerances(snes,NULL,NULL,&stol,NULL,NULL));
+  PetscCall(SNESLineSearchGetTolerances(linesearch, &minlambda, NULL, NULL, NULL, NULL, &max_its));
+  PetscCall(SNESGetTolerances(snes, NULL, NULL, &stol, NULL, NULL));
 
   /* reset the state of the Lipschitz estimates */
   PetscCall(SNESGetIterationNumber(snes, &snes_iteration));
-  if (!snes_iteration) {
-    PetscCall(SNESLineSearchReset_NLEQERR(linesearch));
-  }
+  if (!snes_iteration) { PetscCall(SNESLineSearchReset_NLEQERR(linesearch)); }
 
   /* precheck */
-  PetscCall(SNESLineSearchPreCheck(linesearch,X,Y,&changed_y));
+  PetscCall(SNESLineSearchPreCheck(linesearch, X, Y, &changed_y));
   PetscCall(SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_SUCCEEDED));
 
   PetscCall(VecNormBegin(Y, NORM_2, &ynorm));
@@ -73,13 +69,13 @@ static PetscErrorCode  SNESLineSearchApply_NLEQERR(SNESLineSearch linesearch)
 
   if (ynorm == 0.0) {
     if (monitor) {
-      PetscCall(PetscViewerASCIIAddTab(monitor,((PetscObject)linesearch)->tablevel));
-      PetscCall(PetscViewerASCIIPrintf(monitor,"    Line search: Initial direction and size is 0\n"));
-      PetscCall(PetscViewerASCIISubtractTab(monitor,((PetscObject)linesearch)->tablevel));
+      PetscCall(PetscViewerASCIIAddTab(monitor, ((PetscObject)linesearch)->tablevel));
+      PetscCall(PetscViewerASCIIPrintf(monitor, "    Line search: Initial direction and size is 0\n"));
+      PetscCall(PetscViewerASCIISubtractTab(monitor, ((PetscObject)linesearch)->tablevel));
     }
-    PetscCall(VecCopy(X,W));
-    PetscCall(VecCopy(F,G));
-    PetscCall(SNESLineSearchSetNorms(linesearch,xnorm,fnorm,ynorm));
+    PetscCall(VecCopy(X, W));
+    PetscCall(VecCopy(F, G));
+    PetscCall(SNESLineSearchSetNorms(linesearch, xnorm, fnorm, ynorm));
     PetscCall(SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_REDUCT));
     PetscFunctionReturn(0);
   }
@@ -91,9 +87,9 @@ static PetscErrorCode  SNESLineSearchApply_NLEQERR(SNESLineSearch linesearch)
      W contains bar_delta_x_prev at this point. */
 
   if (monitor) {
-    PetscCall(PetscViewerASCIIAddTab(monitor,((PetscObject)linesearch)->tablevel));
-    PetscCall(PetscViewerASCIIPrintf(monitor,"    Line search: norm of Newton step: %14.12e\n", (double) ynorm));
-    PetscCall(PetscViewerASCIISubtractTab(monitor,((PetscObject)linesearch)->tablevel));
+    PetscCall(PetscViewerASCIIAddTab(monitor, ((PetscObject)linesearch)->tablevel));
+    PetscCall(PetscViewerASCIIPrintf(monitor, "    Line search: norm of Newton step: %14.12e\n", (double)ynorm));
+    PetscCall(PetscViewerASCIISubtractTab(monitor, ((PetscObject)linesearch)->tablevel));
   }
 
   /* this needs information from a previous iteration, so can't do it on the first one */
@@ -103,12 +99,12 @@ static PetscErrorCode  SNESLineSearchApply_NLEQERR(SNESLineSearch linesearch)
     PetscCall(VecNormEnd(G, NORM_2, &gnorm));
 
     nleqerr->mu_curr = nleqerr->lambda_prev * (nleqerr->norm_delta_x_prev * nleqerr->norm_bar_delta_x_prev) / (gnorm * ynorm);
-    lambda = PetscMin(1.0, nleqerr->mu_curr);
+    lambda           = PetscMin(1.0, nleqerr->mu_curr);
 
     if (monitor) {
-      PetscCall(PetscViewerASCIIAddTab(monitor,((PetscObject)linesearch)->tablevel));
-      PetscCall(PetscViewerASCIIPrintf(monitor,"    Line search: Lipschitz estimate: %14.12e; lambda: %14.12e\n", (double) nleqerr->mu_curr, (double) lambda));
-      PetscCall(PetscViewerASCIISubtractTab(monitor,((PetscObject)linesearch)->tablevel));
+      PetscCall(PetscViewerASCIIAddTab(monitor, ((PetscObject)linesearch)->tablevel));
+      PetscCall(PetscViewerASCIIPrintf(monitor, "    Line search: Lipschitz estimate: %14.12e; lambda: %14.12e\n", (double)nleqerr->mu_curr, (double)lambda));
+      PetscCall(PetscViewerASCIISubtractTab(monitor, ((PetscObject)linesearch)->tablevel));
     }
   } else {
     lambda = linesearch->damping;
@@ -120,18 +116,18 @@ static PetscErrorCode  SNESLineSearchApply_NLEQERR(SNESLineSearch linesearch)
   count = 0;
   while (PETSC_TRUE) {
     if (monitor) {
-      PetscCall(PetscViewerASCIIAddTab(monitor,((PetscObject)linesearch)->tablevel));
-      PetscCall(PetscViewerASCIIPrintf(monitor,"    Line search: entering iteration with lambda: %14.12e\n", (double)lambda));
-      PetscCall(PetscViewerASCIISubtractTab(monitor,((PetscObject)linesearch)->tablevel));
+      PetscCall(PetscViewerASCIIAddTab(monitor, ((PetscObject)linesearch)->tablevel));
+      PetscCall(PetscViewerASCIIPrintf(monitor, "    Line search: entering iteration with lambda: %14.12e\n", (double)lambda));
+      PetscCall(PetscViewerASCIISubtractTab(monitor, ((PetscObject)linesearch)->tablevel));
     }
 
     /* Check that we haven't performed too many iterations */
     count += 1;
     if (count >= max_its) {
       if (monitor) {
-        PetscCall(PetscViewerASCIIAddTab(monitor,((PetscObject)linesearch)->tablevel));
-        PetscCall(PetscViewerASCIIPrintf(monitor,"    Line search: maximum iterations reached\n"));
-        PetscCall(PetscViewerASCIISubtractTab(monitor,((PetscObject)linesearch)->tablevel));
+        PetscCall(PetscViewerASCIIAddTab(monitor, ((PetscObject)linesearch)->tablevel));
+        PetscCall(PetscViewerASCIIPrintf(monitor, "    Line search: maximum iterations reached\n"));
+        PetscCall(PetscViewerASCIISubtractTab(monitor, ((PetscObject)linesearch)->tablevel));
       }
       PetscCall(SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_REDUCT));
       PetscFunctionReturn(0);
@@ -141,9 +137,9 @@ static PetscErrorCode  SNESLineSearchApply_NLEQERR(SNESLineSearch linesearch)
     if (lambda <= minlambda) {
       /* This isn't what is suggested by Deuflhard, but it works better in my experience */
       if (monitor) {
-        PetscCall(PetscViewerASCIIAddTab(monitor,((PetscObject)linesearch)->tablevel));
-        PetscCall(PetscViewerASCIIPrintf(monitor,"    Line search: lambda has reached lambdamin, taking full Newton step\n"));
-        PetscCall(PetscViewerASCIISubtractTab(monitor,((PetscObject)linesearch)->tablevel));
+        PetscCall(PetscViewerASCIIAddTab(monitor, ((PetscObject)linesearch)->tablevel));
+        PetscCall(PetscViewerASCIIPrintf(monitor, "    Line search: lambda has reached lambdamin, taking full Newton step\n"));
+        PetscCall(PetscViewerASCIISubtractTab(monitor, ((PetscObject)linesearch)->tablevel));
       }
       lambda = 1.0;
       PetscCall(VecWAXPY(G, -lambda, Y, X));
@@ -169,17 +165,15 @@ static PetscErrorCode  SNESLineSearchApply_NLEQERR(SNESLineSearch linesearch)
     /* Solve linear system for bar_delta_x_curr: old Jacobian, new RHS. Note absence of minus sign, compared to Deuflhard, in keeping with PETSc convention */
     PetscCall(KSPSolve(snes->ksp, G, W));
     PetscCall(KSPGetConvergedReason(snes->ksp, &kspreason));
-    if (kspreason < 0) {
-      PetscCall(PetscInfo(snes,"Solution for \\bar{delta x}^{k+1} failed."));
-    }
+    if (kspreason < 0) { PetscCall(PetscInfo(snes, "Solution for \\bar{delta x}^{k+1} failed.")); }
 
     /* W now contains -bar_delta_x_curr. */
 
     PetscCall(VecNorm(W, NORM_2, &wnorm));
     if (monitor) {
-      PetscCall(PetscViewerASCIIAddTab(monitor,((PetscObject)linesearch)->tablevel));
-      PetscCall(PetscViewerASCIIPrintf(monitor,"    Line search: norm of simplified Newton update: %14.12e\n", (double) wnorm));
-      PetscCall(PetscViewerASCIISubtractTab(monitor,((PetscObject)linesearch)->tablevel));
+      PetscCall(PetscViewerASCIIAddTab(monitor, ((PetscObject)linesearch)->tablevel));
+      PetscCall(PetscViewerASCIIPrintf(monitor, "    Line search: norm of simplified Newton update: %14.12e\n", (double)wnorm));
+      PetscCall(PetscViewerASCIISubtractTab(monitor, ((PetscObject)linesearch)->tablevel));
     }
 
     /* compute the monitoring quantities theta and mudash. */
@@ -195,9 +189,9 @@ static PetscErrorCode  SNESLineSearchApply_NLEQERR(SNESLineSearch linesearch)
     if (theta >= 1.0) {
       /* need to go around again with smaller lambda */
       if (monitor) {
-        PetscCall(PetscViewerASCIIAddTab(monitor,((PetscObject)linesearch)->tablevel));
-        PetscCall(PetscViewerASCIIPrintf(monitor,"    Line search: monotonicity check failed, ratio: %14.12e\n", (double) theta));
-        PetscCall(PetscViewerASCIISubtractTab(monitor,((PetscObject)linesearch)->tablevel));
+        PetscCall(PetscViewerASCIIAddTab(monitor, ((PetscObject)linesearch)->tablevel));
+        PetscCall(PetscViewerASCIIPrintf(monitor, "    Line search: monotonicity check failed, ratio: %14.12e\n", (double)theta));
+        PetscCall(PetscViewerASCIISubtractTab(monitor, ((PetscObject)linesearch)->tablevel));
       }
       lambda = PetscMin(mudash, 0.5 * lambda);
       lambda = PetscMax(lambda, minlambda);
@@ -237,10 +231,10 @@ static PetscErrorCode  SNESLineSearchApply_NLEQERR(SNESLineSearch linesearch)
   PetscCall(VecScale(W, -1.0));
 
   /* postcheck */
-  PetscCall(SNESLineSearchPostCheck(linesearch,X,Y,G,&changed_y,&changed_w));
+  PetscCall(SNESLineSearchPostCheck(linesearch, X, Y, G, &changed_y, &changed_w));
   if (changed_y || changed_w) {
     PetscCall(SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_USER));
-    PetscCall(PetscInfo(snes,"Changing the search direction here doesn't make sense.\n"));
+    PetscCall(PetscInfo(snes, "Changing the search direction here doesn't make sense.\n"));
     PetscFunctionReturn(0);
   }
 
@@ -258,14 +252,13 @@ static PetscErrorCode  SNESLineSearchApply_NLEQERR(SNESLineSearch linesearch)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SNESLineSearchView_NLEQERR(SNESLineSearch linesearch, PetscViewer viewer)
-{
+PetscErrorCode SNESLineSearchView_NLEQERR(SNESLineSearch linesearch, PetscViewer viewer) {
   PetscBool               iascii;
   SNESLineSearch_NLEQERR *nleqerr;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
-  nleqerr   = (SNESLineSearch_NLEQERR*)linesearch->data;
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
+  nleqerr = (SNESLineSearch_NLEQERR *)linesearch->data;
   if (iascii) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "  NLEQ-ERR affine-covariant linesearch"));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  current local Lipschitz estimate omega=%e\n", (double)nleqerr->mu_curr));
@@ -273,8 +266,7 @@ PetscErrorCode SNESLineSearchView_NLEQERR(SNESLineSearch linesearch, PetscViewer
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESLineSearchDestroy_NLEQERR(SNESLineSearch linesearch)
-{
+static PetscErrorCode SNESLineSearchDestroy_NLEQERR(SNESLineSearch linesearch) {
   PetscFunctionBegin;
   PetscCall(PetscFree(linesearch->data));
   PetscFunctionReturn(0);
@@ -311,8 +303,7 @@ static PetscErrorCode SNESLineSearchDestroy_NLEQERR(SNESLineSearch linesearch)
 
 .seealso: `SNESLineSearchCreate()`, `SNESLineSearchSetType()`
 M*/
-PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_NLEQERR(SNESLineSearch linesearch)
-{
+PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_NLEQERR(SNESLineSearch linesearch) {
   SNESLineSearch_NLEQERR *nleqerr;
 
   PetscFunctionBegin;
@@ -323,9 +314,9 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_NLEQERR(SNESLineSearch linesear
   linesearch->ops->view           = SNESLineSearchView_NLEQERR;
   linesearch->ops->setup          = NULL;
 
-  PetscCall(PetscNewLog(linesearch,&nleqerr));
+  PetscCall(PetscNewLog(linesearch, &nleqerr));
 
-  linesearch->data    = (void*)nleqerr;
+  linesearch->data    = (void *)nleqerr;
   linesearch->max_its = 40;
   SNESLineSearchReset_NLEQERR(linesearch);
   PetscFunctionReturn(0);

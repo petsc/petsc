@@ -1,51 +1,7 @@
 
-#include <petsc/private/viewerimpl.h>  /*I "petscsys.h" I*/
+#include <petsc/private/viewerimpl.h> /*I "petscsys.h" I*/
 
-const char *const PetscViewerFormats[] = {
-  "DEFAULT",
-  "ASCII_MATLAB",
-  "ASCII_MATHEMATICA",
-  "ASCII_IMPL",
-  "ASCII_INFO",
-  "ASCII_INFO_DETAIL",
-  "ASCII_COMMON",
-  "ASCII_SYMMODU",
-  "ASCII_INDEX",
-  "ASCII_DENSE",
-  "ASCII_MATRIXMARKET",
-  "ASCII_VTK",
-  "ASCII_VTK_CELL",
-  "ASCII_VTK_COORDS",
-  "ASCII_PCICE",
-  "ASCII_PYTHON",
-  "ASCII_FACTOR_INFO",
-  "ASCII_LATEX",
-  "ASCII_XML",
-  "ASCII_FLAMEGRAPH",
-  "ASCII_GLVIS",
-  "ASCII_CSV",
-  "DRAW_BASIC",
-  "DRAW_LG",
-  "DRAW_LG_XRANGE",
-  "DRAW_CONTOUR",
-  "DRAW_PORTS",
-  "VTK_VTS",
-  "VTK_VTR",
-  "VTK_VTU",
-  "BINARY_MATLAB",
-  "NATIVE",
-  "HDF5_PETSC",
-  "HDF5_VIZ",
-  "HDF5_XDMF",
-  "HDF5_MAT",
-  "NOFORMAT",
-  "LOAD_BALANCE",
-  "FAILED",
-  "ALL",
-  "PetscViewerFormat",
-  "PETSC_VIEWER_",
-  NULL
-};
+const char *const PetscViewerFormats[] = {"DEFAULT", "ASCII_MATLAB", "ASCII_MATHEMATICA", "ASCII_IMPL", "ASCII_INFO", "ASCII_INFO_DETAIL", "ASCII_COMMON", "ASCII_SYMMODU", "ASCII_INDEX", "ASCII_DENSE", "ASCII_MATRIXMARKET", "ASCII_VTK", "ASCII_VTK_CELL", "ASCII_VTK_COORDS", "ASCII_PCICE", "ASCII_PYTHON", "ASCII_FACTOR_INFO", "ASCII_LATEX", "ASCII_XML", "ASCII_FLAMEGRAPH", "ASCII_GLVIS", "ASCII_CSV", "DRAW_BASIC", "DRAW_LG", "DRAW_LG_XRANGE", "DRAW_CONTOUR", "DRAW_PORTS", "VTK_VTS", "VTK_VTR", "VTK_VTU", "BINARY_MATLAB", "NATIVE", "HDF5_PETSC", "HDF5_VIZ", "HDF5_XDMF", "HDF5_MAT", "NOFORMAT", "LOAD_BALANCE", "FAILED", "ALL", "PetscViewerFormat", "PETSC_VIEWER_", NULL};
 
 /*@C
    PetscViewerSetFormat - Sets the format for PetscViewers.
@@ -96,12 +52,11 @@ const char *const PetscViewerFormats[] = {
 .seealso: `PetscViewerGetFormat()`, `PetscViewerASCIIOpen()`, `PetscViewerBinaryOpen()`, `MatView()`, `VecView()`, `PetscViewerType`,
           `PetscViewerPushFormat()`, `PetscViewerPopFormat()`, `PetscViewerDrawOpen()`, `PetscViewerSocketOpen()`
 @*/
-PetscErrorCode  PetscViewerSetFormat(PetscViewer viewer,PetscViewerFormat format)
-{
+PetscErrorCode PetscViewerSetFormat(PetscViewer viewer, PetscViewerFormat format) {
   PetscFunctionBegin;
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_SELF;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  PetscValidLogicalCollectiveEnum(viewer,format,2);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
+  PetscValidLogicalCollectiveEnum(viewer, format, 2);
   viewer->format = format;
   PetscFunctionReturn(0);
 }
@@ -144,12 +99,11 @@ PetscErrorCode  PetscViewerSetFormat(PetscViewer viewer,PetscViewerFormat format
 .seealso: `PetscViewerASCIIOpen()`, `PetscViewerBinaryOpen()`, `MatView()`, `VecView()`,
           `PetscViewerSetFormat()`, `PetscViewerPopFormat()`
 @*/
-PetscErrorCode  PetscViewerPushFormat(PetscViewer viewer,PetscViewerFormat format)
-{
+PetscErrorCode PetscViewerPushFormat(PetscViewer viewer, PetscViewerFormat format) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  PetscValidLogicalCollectiveEnum(viewer,format,2);
-  PetscCheck(viewer->iformat <= PETSCVIEWERFORMATPUSHESMAX-1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many PetscViewerPushFormat(), perhaps you forgot PetscViewerPopFormat()?");
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
+  PetscValidLogicalCollectiveEnum(viewer, format, 2);
+  PetscCheck(viewer->iformat <= PETSCVIEWERFORMATPUSHESMAX - 1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Too many PetscViewerPushFormat(), perhaps you forgot PetscViewerPopFormat()?");
 
   viewer->formats[viewer->iformat++] = viewer->format;
   viewer->format                     = format;
@@ -169,10 +123,9 @@ PetscErrorCode  PetscViewerPushFormat(PetscViewer viewer,PetscViewerFormat forma
 .seealso: `PetscViewerASCIIOpen()`, `PetscViewerBinaryOpen()`, `MatView()`, `VecView()`,
           `PetscViewerSetFormat()`, `PetscViewerPushFormat()`
 @*/
-PetscErrorCode  PetscViewerPopFormat(PetscViewer viewer)
-{
+PetscErrorCode PetscViewerPopFormat(PetscViewer viewer) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
   if (viewer->iformat <= 0) PetscFunctionReturn(0);
 
   viewer->format = viewer->formats[--viewer->iformat];
@@ -226,9 +179,8 @@ PetscErrorCode  PetscViewerPopFormat(PetscViewer viewer)
 .seealso: `PetscViewerSetFormat()`, `PetscViewerASCIIOpen()`, `PetscViewerBinaryOpen()`, `MatView()`, `VecView()`, `PetscViewerType`,
           `PetscViewerPushFormat()`, `PetscViewerPopFormat()`, `PetscViewerDrawOpen()`, `PetscViewerSocketOpen()`
 @*/
-PetscErrorCode PetscViewerGetFormat(PetscViewer viewer,PetscViewerFormat *format)
-{
+PetscErrorCode PetscViewerGetFormat(PetscViewer viewer, PetscViewerFormat *format) {
   PetscFunctionBegin;
-  *format =  viewer->format;
+  *format = viewer->format;
   PetscFunctionReturn(0);
 }

@@ -5,8 +5,8 @@
 
 /* ------------------------------ Like petscmacros.h but advanced ------------------------------ */
 
-#define PETSC_IF_INTERNAL_0(result_if_true,...) __VA_ARGS__
-#define PETSC_IF_INTERNAL_1(result_if_true,...) result_if_true
+#define PETSC_IF_INTERNAL_0(result_if_true, ...) __VA_ARGS__
+#define PETSC_IF_INTERNAL_1(result_if_true, ...) result_if_true
 
 /*
   PetscIf - Conditionally expand to the second or remaining args
@@ -39,7 +39,7 @@
 
 .seealso: `PetscIfPetscDefined()`, `PetscConcat()`, `PetscExpandToNothing()`, `PetscCompl()`
 */
-#define PetscIf(cond,result_if_true,...) PetscConcat_(PETSC_IF_INTERNAL_,cond)(result_if_true,__VA_ARGS__)
+#define PetscIf(cond, result_if_true, ...) PetscConcat_(PETSC_IF_INTERNAL_, cond)(result_if_true, __VA_ARGS__)
 
 /*
   PetscIfPetscDefined - Like PetscIf(), but passes cond through PetscDefined() first
@@ -69,6 +69,6 @@
 
 .seealso: `PetscIf()`, `PetscDefined()`, `PetscConcat()`, `PetscExpand()`, `PetscCompl()`
 */
-#define PetscIfPetscDefined(cond,result_if_true,...) PetscIf(PetscDefined(cond),result_if_true,__VA_ARGS__)
+#define PetscIfPetscDefined(cond, result_if_true, ...) PetscIf(PetscDefined(cond), result_if_true, __VA_ARGS__)
 
 #endif /* PETSCADVANCEDMACROS_H */

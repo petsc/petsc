@@ -20,56 +20,54 @@ static const int GLIDER[3][3] = {
   {1, 0, 1}
 };
 
-int main(int argc,char **argv)
-{
-  DM               da;
-  PetscViewer      viewer;
-  Vec              Xlocal, Xglobal;
-  PetscInt         glider_loc[2] = {10, 20}, blinker_loc[2] = {20, 10}, two, steps = 100, viz_interval = 1;
-  PetscInt         check_step_alive = -1, check_step_dead = -1;
-  PetscBool        has_glider, has_blinker;
+int main(int argc, char **argv) {
+  DM          da;
+  PetscViewer viewer;
+  Vec         Xlocal, Xglobal;
+  PetscInt    glider_loc[2] = {10, 20}, blinker_loc[2] = {20, 10}, two, steps = 100, viz_interval = 1;
+  PetscInt    check_step_alive = -1, check_step_dead = -1;
+  PetscBool   has_glider, has_blinker;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
-  PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Conway's Game of Life","");
+  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "Conway's Game of Life", "");
   {
-    PetscCall(PetscOptionsIntArray("-glider","Coordinate at which to center a glider",NULL,glider_loc,(two=2,&two),&has_glider));
-    PetscCall(PetscOptionsIntArray("-blinker","Coordinate at which to center a blinker",NULL,blinker_loc,(two=2,&two),&has_blinker));
-    PetscCall(PetscOptionsInt("-steps","Number of steps to take",NULL,steps,&steps,NULL));
-    PetscCall(PetscOptionsInt("-viz_interval","Vizualization interval",NULL,viz_interval,&viz_interval,NULL));
-    PetscCall(PetscOptionsInt("-check_step_alive","Step on which to check that the simulation is alive",NULL,check_step_alive,&check_step_alive,NULL));
-    PetscCall(PetscOptionsInt("-check_step_dead","Step on which to check that the simulation is dead",NULL,check_step_dead,&check_step_dead,NULL));
+    PetscCall(PetscOptionsIntArray("-glider", "Coordinate at which to center a glider", NULL, glider_loc, (two = 2, &two), &has_glider));
+    PetscCall(PetscOptionsIntArray("-blinker", "Coordinate at which to center a blinker", NULL, blinker_loc, (two = 2, &two), &has_blinker));
+    PetscCall(PetscOptionsInt("-steps", "Number of steps to take", NULL, steps, &steps, NULL));
+    PetscCall(PetscOptionsInt("-viz_interval", "Vizualization interval", NULL, viz_interval, &viz_interval, NULL));
+    PetscCall(PetscOptionsInt("-check_step_alive", "Step on which to check that the simulation is alive", NULL, check_step_alive, &check_step_alive, NULL));
+    PetscCall(PetscOptionsInt("-check_step_dead", "Step on which to check that the simulation is dead", NULL, check_step_dead, &check_step_dead, NULL));
   }
   PetscOptionsEnd();
 
-  PetscCall(PetscViewerDrawOpen(PETSC_COMM_WORLD,NULL,"Life",PETSC_DECIDE,PETSC_DECIDE,1000,1000,&viewer));
+  PetscCall(PetscViewerDrawOpen(PETSC_COMM_WORLD, NULL, "Life", PETSC_DECIDE, PETSC_DECIDE, 1000, 1000, &viewer));
 
   /* Create distributed array and get vectors */
-  PetscCall(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,DM_BOUNDARY_PERIODIC,DMDA_STENCIL_BOX,30,30,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da));
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_PERIODIC, DM_BOUNDARY_PERIODIC, DMDA_STENCIL_BOX, 30, 30, PETSC_DECIDE, PETSC_DECIDE, 1, 1, NULL, NULL, &da));
   PetscCall(DMSetFromOptions(da));
   PetscCall(DMSetUp(da));
-  PetscCall(DMCreateLocalVector(da,&Xlocal));
-  PetscCall(DMCreateGlobalVector(da,&Xglobal));
+  PetscCall(DMCreateLocalVector(da, &Xlocal));
+  PetscCall(DMCreateGlobalVector(da, &Xglobal));
 
-  {  /* Initialize */
+  { /* Initialize */
     DMDALocalInfo info;
-    PetscScalar   **x;
-    PetscInt      i,j;
+    PetscScalar **x;
+    PetscInt      i, j;
 
-    PetscCall(DMDAGetLocalInfo(da,&info));
+    PetscCall(DMDAGetLocalInfo(da, &info));
     PetscCall(DMDAVecGetArray(da, Xlocal, &x));
-    for (j=info.ys; j<info.ys+info.ym; j++) {
-      for (i=info.xs; i<info.xs+info.xm; i++) {
+    for (j = info.ys; j < info.ys + info.ym; j++) {
+      for (i = info.xs; i < info.xs + info.xm; i++) {
         if (has_glider && i == glider_loc[0] && j == glider_loc[1]) {
-          PetscInt ii,jj;
-          for (ii=-1; ii<=1; ii++)
-            for (jj=-1; jj<=1; jj++)
-              x[j+jj][i+ii] = GLIDER[1-jj][ii+1];
+          PetscInt ii, jj;
+          for (ii = -1; ii <= 1; ii++)
+            for (jj = -1; jj <= 1; jj++) x[j + jj][i + ii] = GLIDER[1 - jj][ii + 1];
         }
         if (has_blinker && i == blinker_loc[0] && j == blinker_loc[1]) {
-          x[j-1][i] = 1;
-          x[j][i]   = 1;
-          x[j+1][i] = 1;
+          x[j - 1][i] = 1;
+          x[j][i]     = 1;
+          x[j + 1][i] = 1;
         }
       }
     }
@@ -80,38 +78,37 @@ int main(int argc,char **argv)
   /* View the initial condition */
   PetscCall(VecView(Xglobal, viewer));
 
-  {                             /* Play */
+  { /* Play */
     PetscInt step;
 
-    for (step=0; step<steps; step++) {
+    for (step = 0; step < steps; step++) {
       const PetscScalar **x;
       PetscScalar       **y;
-      DMDALocalInfo     info;
-      PetscInt          i,j;
+      DMDALocalInfo       info;
+      PetscInt            i, j;
 
       PetscCall(DMGlobalToLocal(da, Xglobal, INSERT_VALUES, Xlocal));
-      PetscCall(DMDAGetLocalInfo(da,&info));
-      PetscCall(DMDAVecGetArrayRead(da, Xlocal, (void*)&x));
+      PetscCall(DMDAGetLocalInfo(da, &info));
+      PetscCall(DMDAVecGetArrayRead(da, Xlocal, (void *)&x));
       PetscCall(DMDAVecGetArrayWrite(da, Xglobal, &y));
-      for (j=info.ys; j<info.ys+info.ym; j++) {
-        for (i=info.xs; i<info.xs+info.xm; i++) {
+      for (j = info.ys; j < info.ys + info.ym; j++) {
+        for (i = info.xs; i < info.xs + info.xm; i++) {
           PetscInt live_neighbors = 0;
-          live_neighbors += PetscRealPart(x[j-1][i-1]) > 0;
-          live_neighbors += PetscRealPart(x[j-1][i]) > 0;
-          live_neighbors += PetscRealPart(x[j-1][i+1]) > 0;
-          live_neighbors += PetscRealPart(x[j][i-1]) > 0;
-          live_neighbors += PetscRealPart(x[j][i+1]) > 0;
-          live_neighbors += PetscRealPart(x[j+1][i-1]) > 0;
-          live_neighbors += PetscRealPart(x[j+1][i]) > 0;
-          live_neighbors += PetscRealPart(x[j+1][i+1]) > 0;
-          if (PetscRealPart(x[j][i]) > 0) {    /* Live cell */
+          live_neighbors += PetscRealPart(x[j - 1][i - 1]) > 0;
+          live_neighbors += PetscRealPart(x[j - 1][i]) > 0;
+          live_neighbors += PetscRealPart(x[j - 1][i + 1]) > 0;
+          live_neighbors += PetscRealPart(x[j][i - 1]) > 0;
+          live_neighbors += PetscRealPart(x[j][i + 1]) > 0;
+          live_neighbors += PetscRealPart(x[j + 1][i - 1]) > 0;
+          live_neighbors += PetscRealPart(x[j + 1][i]) > 0;
+          live_neighbors += PetscRealPart(x[j + 1][i + 1]) > 0;
+          if (PetscRealPart(x[j][i]) > 0) { /* Live cell */
             switch (live_neighbors) {
             case 2:
             case 3:
-              y[j][i] = 1;      /* Survive */
+              y[j][i] = 1; /* Survive */
               break;
-            default:
-              y[j][i] = 0;      /* Death */
+            default: y[j][i] = 0; /* Death */
             }
           } else {                                /* Dead cell */
             if (live_neighbors == 3) y[j][i] = 1; /* Birth */
@@ -119,22 +116,18 @@ int main(int argc,char **argv)
           }
         }
       }
-      PetscCall(DMDAVecRestoreArrayRead(da, Xlocal, (void*)&x));
+      PetscCall(DMDAVecRestoreArrayRead(da, Xlocal, (void *)&x));
       PetscCall(DMDAVecRestoreArrayWrite(da, Xglobal, &y));
       if (step == check_step_alive || step == check_step_dead) {
         PetscScalar sum;
         PetscCall(VecSum(Xglobal, &sum));
         if (PetscAbsScalar(sum) > 0.1) {
-          if (step == check_step_dead) {
-            PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Simulation alive at step %" PetscInt_FMT "\n",step));
-          }
+          if (step == check_step_dead) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Simulation alive at step %" PetscInt_FMT "\n", step)); }
         } else if (step == check_step_alive) {
-          PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Simulation dead at step %" PetscInt_FMT "\n",step));
+          PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Simulation dead at step %" PetscInt_FMT "\n", step));
         }
       }
-      if (step % viz_interval == 0) {
-        PetscCall(VecView(Xglobal, viewer));
-      }
+      if (step % viz_interval == 0) { PetscCall(VecView(Xglobal, viewer)); }
     }
   }
 

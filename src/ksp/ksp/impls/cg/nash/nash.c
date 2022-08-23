@@ -1,21 +1,20 @@
 
-#include <../src/ksp/ksp/impls/cg/nash/nashimpl.h>    /*I "petscksp.h" I*/
+#include <../src/ksp/ksp/impls/cg/nash/nashimpl.h> /*I "petscksp.h" I*/
 
 #define NASH_PRECONDITIONED_DIRECTION   0
 #define NASH_UNPRECONDITIONED_DIRECTION 1
 #define NASH_DIRECTION_TYPES            2
 
-static const char *DType_Table[64] = {  "preconditioned", "unpreconditioned"};
+static const char *DType_Table[64] = {"preconditioned", "unpreconditioned"};
 
-static PetscErrorCode KSPCGSolve_NASH(KSP ksp)
-{
+static PetscErrorCode KSPCGSolve_NASH(KSP ksp) {
 #if defined(PETSC_USE_COMPLEX)
-  SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP, "NASH is not available for complex systems");
+  SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "NASH is not available for complex systems");
 #else
-  KSPCG_NASH     *cg = (KSPCG_NASH*)ksp->data;
-  Mat            Qmat, Mmat;
-  Vec            r, z, p, d;
-  PC             pc;
+  KSPCG_NASH *cg = (KSPCG_NASH *)ksp->data;
+  Mat         Qmat, Mmat;
+  Vec         r, z, p, d;
+  PC          pc;
 
   PetscReal norm_r, norm_d, norm_dp1, norm_p, dMp;
   PetscReal alpha, beta, kappa, rz, rzm1;
@@ -31,8 +30,8 @@ static PetscErrorCode KSPCGSolve_NASH(KSP ksp)
   /***************************************************************************/
 
   PetscCall(PCGetDiagonalScale(ksp->pc, &diagonalscale));
-  PetscCheck(!diagonalscale,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP, "Krylov method %s does not support diagonal scaling", ((PetscObject)ksp)->type_name);
-  PetscCheck(cg->radius >= 0.0,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE, "Input error: radius < 0");
+  PetscCheck(!diagonalscale, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Krylov method %s does not support diagonal scaling", ((PetscObject)ksp)->type_name);
+  PetscCheck(cg->radius >= 0.0, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "Input error: radius < 0");
 
   /***************************************************************************/
   /* Get the workspace vectors and initialize variables                      */
@@ -57,7 +56,7 @@ static PetscErrorCode KSPCGSolve_NASH(KSP ksp)
 
   cg->o_fcn = 0.0;
 
-  PetscCall(VecSet(d, 0.0));            /* d = 0             */
+  PetscCall(VecSet(d, 0.0)); /* d = 0             */
   cg->norm_d = 0.0;
 
   /***************************************************************************/
@@ -66,9 +65,9 @@ static PetscErrorCode KSPCGSolve_NASH(KSP ksp)
   /* need be performed only once.                                            */
   /***************************************************************************/
 
-  PetscCall(VecCopy(ksp->vec_rhs, r));        /* r = -grad         */
-  PetscCall(VecDot(r, r, &rr));               /* rr = r^T r        */
-  KSPCheckDot(ksp,rr);
+  PetscCall(VecCopy(ksp->vec_rhs, r)); /* r = -grad         */
+  PetscCall(VecDot(r, r, &rr));        /* rr = r^T r        */
+  KSPCheckDot(ksp, rr);
 
   /***************************************************************************/
   /* Check the preconditioner for numerical problems and for positive        */
@@ -76,8 +75,8 @@ static PetscErrorCode KSPCGSolve_NASH(KSP ksp)
   /* performed only once.                                                    */
   /***************************************************************************/
 
-  PetscCall(KSP_PCApply(ksp, r, z));          /* z = inv(M) r      */
-  PetscCall(VecDot(r, z, &rz));               /* rz = r^T inv(M) r */
+  PetscCall(KSP_PCApply(ksp, r, z)); /* z = inv(M) r      */
+  PetscCall(VecDot(r, z, &rz));      /* rz = r^T inv(M) r */
   if (PetscIsInfOrNanScalar(rz)) {
     /*************************************************************************/
     /* The preconditioner contains not-a-number or an infinite value.        */
@@ -96,7 +95,7 @@ static PetscErrorCode KSPCGSolve_NASH(KSP ksp)
         cg->norm_d = cg->radius;
       }
 
-      PetscCall(VecAXPY(d, alpha, r));        /* d = d + alpha r   */
+      PetscCall(VecAXPY(d, alpha, r)); /* d = d + alpha r   */
 
       /***********************************************************************/
       /* Compute objective function.                                         */
@@ -131,7 +130,7 @@ static PetscErrorCode KSPCGSolve_NASH(KSP ksp)
         cg->norm_d = cg->radius;
       }
 
-      PetscCall(VecAXPY(d, alpha, r));        /* d = d + alpha r   */
+      PetscCall(VecAXPY(d, alpha, r)); /* d = d + alpha r   */
 
       /***********************************************************************/
       /* Compute objective function.                                         */
@@ -155,20 +154,18 @@ static PetscErrorCode KSPCGSolve_NASH(KSP ksp)
 
   switch (ksp->normtype) {
   case KSP_NORM_PRECONDITIONED:
-    PetscCall(VecNorm(z, NORM_2, &norm_r));   /* norm_r = |z|      */
+    PetscCall(VecNorm(z, NORM_2, &norm_r)); /* norm_r = |z|      */
     break;
 
   case KSP_NORM_UNPRECONDITIONED:
-    norm_r = PetscSqrtReal(rr);                                 /* norm_r = |r|      */
+    norm_r = PetscSqrtReal(rr); /* norm_r = |r|      */
     break;
 
   case KSP_NORM_NATURAL:
-    norm_r = PetscSqrtReal(rz);                                 /* norm_r = |r|_M    */
+    norm_r = PetscSqrtReal(rz); /* norm_r = |r|_M    */
     break;
 
-  default:
-    norm_r = 0.0;
-    break;
+  default: norm_r = 0.0; break;
   }
 
   PetscCall(KSPLogResidualHistory(ksp, norm_r));
@@ -181,15 +178,15 @@ static PetscErrorCode KSPCGSolve_NASH(KSP ksp)
   /* Compute the first direction and update the iteration.                   */
   /***************************************************************************/
 
-  PetscCall(VecCopy(z, p));                   /* p = z             */
-  PetscCall(KSP_MatMult(ksp, Qmat, p, z));    /* z = Q * p         */
+  PetscCall(VecCopy(z, p));                /* p = z             */
+  PetscCall(KSP_MatMult(ksp, Qmat, p, z)); /* z = Q * p         */
   ++ksp->its;
 
   /***************************************************************************/
   /* Check the matrix for numerical problems.                                */
   /***************************************************************************/
 
-  PetscCall(VecDot(p, z, &kappa));            /* kappa = p^T Q p   */
+  PetscCall(VecDot(p, z, &kappa)); /* kappa = p^T Q p   */
   if (PetscIsInfOrNanScalar(kappa)) {
     /*************************************************************************/
     /* The matrix produced not-a-number or an infinite value.  In this case, */
@@ -209,7 +206,7 @@ static PetscErrorCode KSPCGSolve_NASH(KSP ksp)
         cg->norm_d = cg->radius;
       }
 
-      PetscCall(VecAXPY(d, alpha, r));        /* d = d + alpha r   */
+      PetscCall(VecAXPY(d, alpha, r)); /* d = d + alpha r   */
 
       /***********************************************************************/
       /* Compute objective function.                                         */
@@ -231,13 +228,9 @@ static PetscErrorCode KSPCGSolve_NASH(KSP ksp)
   dMp    = 0.0;
   norm_d = 0.0;
   switch (cg->dtype) {
-  case NASH_PRECONDITIONED_DIRECTION:
-    norm_p = rz;
-    break;
+  case NASH_PRECONDITIONED_DIRECTION: norm_p = rz; break;
 
-  default:
-    PetscCall(VecDot(p, p, &norm_p));
-    break;
+  default: PetscCall(VecDot(p, p, &norm_p)); break;
   }
 
   /***************************************************************************/
@@ -284,7 +277,7 @@ static PetscErrorCode KSPCGSolve_NASH(KSP ksp)
         cg->norm_d = cg->radius;
       }
 
-      PetscCall(VecAXPY(d, alpha, r));        /* d = d + alpha r   */
+      PetscCall(VecAXPY(d, alpha, r)); /* d = d + alpha r   */
 
       /***********************************************************************/
       /* Compute objective function.                                         */
@@ -318,7 +311,7 @@ static PetscErrorCode KSPCGSolve_NASH(KSP ksp)
     /* region.                                                               */
     /*************************************************************************/
 
-    norm_dp1 = norm_d + alpha*(2.0*dMp + alpha*norm_p);
+    norm_dp1 = norm_d + alpha * (2.0 * dMp + alpha * norm_p);
     if (cg->radius && norm_dp1 >= r2) {
       /***********************************************************************/
       /* In this case, the matrix is positive definite as far as we know.    */
@@ -333,10 +326,10 @@ static PetscErrorCode KSPCGSolve_NASH(KSP ksp)
         /* Follow the direction to the boundary of the trust region.         */
         /*********************************************************************/
 
-        step       = (PetscSqrtReal(dMp*dMp+norm_p*(r2-norm_d))-dMp)/norm_p;
+        step       = (PetscSqrtReal(dMp * dMp + norm_p * (r2 - norm_d)) - dMp) / norm_p;
         cg->norm_d = cg->radius;
 
-        PetscCall(VecAXPY(d, step, p));       /* d = d + step p    */
+        PetscCall(VecAXPY(d, step, p)); /* d = d + step p    */
 
         /*********************************************************************/
         /* Update objective function.                                        */
@@ -355,18 +348,14 @@ static PetscErrorCode KSPCGSolve_NASH(KSP ksp)
     /* Now we can update the direction and residual.                         */
     /*************************************************************************/
 
-    PetscCall(VecAXPY(d, alpha, p));          /* d = d + alpha p   */
-    PetscCall(VecAXPY(r, -alpha, z));         /* r = r - alpha Q p */
-    PetscCall(KSP_PCApply(ksp, r, z));        /* z = inv(M) r      */
+    PetscCall(VecAXPY(d, alpha, p));   /* d = d + alpha p   */
+    PetscCall(VecAXPY(r, -alpha, z));  /* r = r - alpha Q p */
+    PetscCall(KSP_PCApply(ksp, r, z)); /* z = inv(M) r      */
 
     switch (cg->dtype) {
-    case NASH_PRECONDITIONED_DIRECTION:
-      norm_d = norm_dp1;
-      break;
+    case NASH_PRECONDITIONED_DIRECTION: norm_d = norm_dp1; break;
 
-    default:
-      PetscCall(VecDot(d, d, &norm_d));
-      break;
+    default: PetscCall(VecDot(d, d, &norm_d)); break;
     }
     cg->norm_d = PetscSqrtReal(norm_d);
 
@@ -381,7 +370,7 @@ static PetscErrorCode KSPCGSolve_NASH(KSP ksp)
     /*************************************************************************/
 
     rzm1 = rz;
-    PetscCall(VecDot(r, z, &rz));             /* rz = r^T z        */
+    PetscCall(VecDot(r, z, &rz)); /* rz = r^T z        */
     if (rz < 0.0) {
       /***********************************************************************/
       /* The preconditioner is indefinite.                                   */
@@ -407,12 +396,10 @@ static PetscErrorCode KSPCGSolve_NASH(KSP ksp)
       break;
 
     case KSP_NORM_NATURAL:
-      norm_r = PetscSqrtReal(rz);                               /* norm_r = |r|_M    */
+      norm_r = PetscSqrtReal(rz); /* norm_r = |r|_M    */
       break;
 
-    default:
-      norm_r = 0.;
-      break;
+    default: norm_r = 0.; break;
     }
 
     PetscCall(KSPLogResidualHistory(ksp, norm_r));
@@ -458,12 +445,12 @@ static PetscErrorCode KSPCGSolve_NASH(KSP ksp)
     /* Update p and the norms.                                               */
     /*************************************************************************/
 
-    PetscCall(VecAYPX(p, beta, z));          /* p = z + beta p    */
+    PetscCall(VecAYPX(p, beta, z)); /* p = z + beta p    */
 
     switch (cg->dtype) {
     case NASH_PRECONDITIONED_DIRECTION:
-      dMp    = beta*(dMp + alpha*norm_p);
-      norm_p = beta*(rzm1 + beta*norm_p);
+      dMp    = beta * (dMp + alpha * norm_p);
+      norm_p = beta * (rzm1 + beta * norm_p);
       break;
 
     default:
@@ -476,8 +463,8 @@ static PetscErrorCode KSPCGSolve_NASH(KSP ksp)
     /* Compute the new direction and update the iteration.                   */
     /*************************************************************************/
 
-    PetscCall(KSP_MatMult(ksp, Qmat, p, z));  /* z = Q * p         */
-    PetscCall(VecDot(p, z, &kappa));          /* kappa = p^T Q p   */
+    PetscCall(KSP_MatMult(ksp, Qmat, p, z)); /* z = Q * p         */
+    PetscCall(VecDot(p, z, &kappa));         /* kappa = p^T Q p   */
     ++ksp->its;
 
     /*************************************************************************/
@@ -499,28 +486,25 @@ static PetscErrorCode KSPCGSolve_NASH(KSP ksp)
 #endif
 }
 
-static PetscErrorCode KSPCGSetUp_NASH(KSP ksp)
-{
-
+static PetscErrorCode KSPCGSetUp_NASH(KSP ksp) {
   /***************************************************************************/
   /* Set work vectors needed by conjugate gradient method and allocate       */
   /***************************************************************************/
 
   PetscFunctionBegin;
-  PetscCall(KSPSetWorkVecs(ksp,3));
+  PetscCall(KSPSetWorkVecs(ksp, 3));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPCGDestroy_NASH(KSP ksp)
-{
+static PetscErrorCode KSPCGDestroy_NASH(KSP ksp) {
   PetscFunctionBegin;
   /***************************************************************************/
   /* Clear composed functions                                                */
   /***************************************************************************/
 
-  PetscCall(PetscObjectComposeFunction((PetscObject)ksp,"KSPCGSetRadius_C",NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)ksp,"KSPCGGetNormD_C",NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)ksp,"KSPCGGetObjFcn_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGSetRadius_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGGetNormD_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGGetObjFcn_C", NULL));
 
   /***************************************************************************/
   /* Destroy KSP object.                                                     */
@@ -530,39 +514,35 @@ static PetscErrorCode KSPCGDestroy_NASH(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode  KSPCGSetRadius_NASH(KSP ksp, PetscReal radius)
-{
-  KSPCG_NASH *cg = (KSPCG_NASH*)ksp->data;
+static PetscErrorCode KSPCGSetRadius_NASH(KSP ksp, PetscReal radius) {
+  KSPCG_NASH *cg = (KSPCG_NASH *)ksp->data;
 
   PetscFunctionBegin;
   cg->radius = radius;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode  KSPCGGetNormD_NASH(KSP ksp, PetscReal *norm_d)
-{
-  KSPCG_NASH *cg = (KSPCG_NASH*)ksp->data;
+static PetscErrorCode KSPCGGetNormD_NASH(KSP ksp, PetscReal *norm_d) {
+  KSPCG_NASH *cg = (KSPCG_NASH *)ksp->data;
 
   PetscFunctionBegin;
   *norm_d = cg->norm_d;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode  KSPCGGetObjFcn_NASH(KSP ksp, PetscReal *o_fcn)
-{
-  KSPCG_NASH *cg = (KSPCG_NASH*)ksp->data;
+static PetscErrorCode KSPCGGetObjFcn_NASH(KSP ksp, PetscReal *o_fcn) {
+  KSPCG_NASH *cg = (KSPCG_NASH *)ksp->data;
 
   PetscFunctionBegin;
   *o_fcn = cg->o_fcn;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPCGSetFromOptions_NASH(KSP ksp,PetscOptionItems *PetscOptionsObject)
-{
-  KSPCG_NASH     *cg = (KSPCG_NASH*)ksp->data;
+static PetscErrorCode KSPCGSetFromOptions_NASH(KSP ksp, PetscOptionItems *PetscOptionsObject) {
+  KSPCG_NASH *cg = (KSPCG_NASH *)ksp->data;
 
   PetscFunctionBegin;
-  PetscOptionsHeadBegin(PetscOptionsObject,"KSPCG NASH options");
+  PetscOptionsHeadBegin(PetscOptionsObject, "KSPCG NASH options");
 
   PetscCall(PetscOptionsReal("-ksp_cg_radius", "Trust Region Radius", "KSPCGSetRadius", cg->radius, &cg->radius, NULL));
 
@@ -615,20 +595,19 @@ $  other KSP converged/diverged reasons
 .seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPCGSetRadius()`, `KSPCGGetNormD()`, `KSPCGGetObjFcn()`
 M*/
 
-PETSC_EXTERN PetscErrorCode KSPCreate_NASH(KSP ksp)
-{
-  KSPCG_NASH     *cg;
+PETSC_EXTERN PetscErrorCode KSPCreate_NASH(KSP ksp) {
+  KSPCG_NASH *cg;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(ksp,&cg));
+  PetscCall(PetscNewLog(ksp, &cg));
   cg->radius = 0.0;
   cg->dtype  = NASH_UNPRECONDITIONED_DIRECTION;
 
-  ksp->data = (void*) cg;
-  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,3));
-  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2));
-  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,2));
-  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1));
+  ksp->data = (void *)cg;
+  PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_UNPRECONDITIONED, PC_LEFT, 3));
+  PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_PRECONDITIONED, PC_LEFT, 2));
+  PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_NATURAL, PC_LEFT, 2));
+  PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_NONE, PC_LEFT, 1));
 
   /***************************************************************************/
   /* Sets the functions that are associated with this data structure         */
@@ -643,8 +622,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_NASH(KSP ksp)
   ksp->ops->buildresidual  = KSPBuildResidualDefault;
   ksp->ops->view           = NULL;
 
-  PetscCall(PetscObjectComposeFunction((PetscObject)ksp,"KSPCGSetRadius_C",KSPCGSetRadius_NASH));
-  PetscCall(PetscObjectComposeFunction((PetscObject)ksp,"KSPCGGetNormD_C",KSPCGGetNormD_NASH));
-  PetscCall(PetscObjectComposeFunction((PetscObject)ksp,"KSPCGGetObjFcn_C",KSPCGGetObjFcn_NASH));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGSetRadius_C", KSPCGSetRadius_NASH));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGGetNormD_C", KSPCGGetNormD_NASH));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGGetObjFcn_C", KSPCGGetObjFcn_NASH));
   PetscFunctionReturn(0);
 }

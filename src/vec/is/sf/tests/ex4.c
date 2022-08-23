@@ -1,9 +1,8 @@
-static char help[]= "Test PetscSFFCompose when the ilocal array is not the identity\n\n";
+static char help[] = "Test PetscSFFCompose when the ilocal array is not the identity\n\n";
 
 #include <petscsf.h>
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
   PetscSF            sfA, sfB, sfBA;
   PetscInt           nrootsA, nleavesA, nrootsB, nleavesB;
   PetscInt          *ilocalA, *ilocalB;
@@ -17,22 +16,22 @@ int main(int argc, char **argv)
   PetscBool          flag = PETSC_FALSE;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
-  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
-  PetscCheck(size == 1,PETSC_COMM_WORLD, PETSC_ERR_USER, "Only coded for one MPI process");
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
+  PetscCheck(size == 1, PETSC_COMM_WORLD, PETSC_ERR_USER, "Only coded for one MPI process");
 
   PetscCall(PetscSFCreate(PETSC_COMM_WORLD, &sfA));
   PetscCall(PetscSFCreate(PETSC_COMM_WORLD, &sfB));
   PetscCall(PetscSFSetFromOptions(sfA));
   PetscCall(PetscSFSetFromOptions(sfB));
 
-  PetscCall(PetscOptionsGetBool(NULL,NULL,"-sparse_sfB",&flag,NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-sparse_sfB", &flag, NULL));
 
   if (flag) {
     /* sfA permutes indices, sfB has sparse leaf space. */
-    nrootsA = 3;
+    nrootsA  = 3;
     nleavesA = 3;
-    nrootsB = 3;
+    nrootsB  = 3;
     nleavesB = 2;
   } else {
     /* sfA reverses indices, sfB is identity */
@@ -44,7 +43,7 @@ int main(int argc, char **argv)
   PetscCall(PetscMalloc1(nleavesB, &iremoteB));
 
   for (i = 0; i < nleavesA; i++) {
-    iremoteA[i].rank = 0;
+    iremoteA[i].rank  = 0;
     iremoteA[i].index = i;
     if (flag) {
       ilocalA[i] = (i + 1) % nleavesA;
@@ -56,10 +55,10 @@ int main(int argc, char **argv)
   for (i = 0; i < nleavesB; i++) {
     iremoteB[i].rank = 0;
     if (flag) {
-      ilocalB[i] = nleavesB - i;
+      ilocalB[i]        = nleavesB - i;
       iremoteB[i].index = nleavesB - i - 1;
     } else {
-      ilocalB[i] = i;
+      ilocalB[i]        = i;
       iremoteB[i].index = i;
     }
   }
@@ -74,11 +73,9 @@ int main(int argc, char **argv)
   PetscCall(VecCreateSeq(PETSC_COMM_WORLD, nrootsA, &a));
   PetscCall(VecCreateSeq(PETSC_COMM_WORLD, nleavesA, &b));
   PetscCall(PetscSFGetLeafRange(sfB, NULL, &maxleafB));
-  PetscCall(VecCreateSeq(PETSC_COMM_WORLD, maxleafB+1, &ba));
+  PetscCall(VecCreateSeq(PETSC_COMM_WORLD, maxleafB + 1, &ba));
   PetscCall(VecGetArray(a, &arrayW));
-  for (i = 0; i < nrootsA; i++) {
-    arrayW[i] = (PetscScalar)i;
-  }
+  for (i = 0; i < nrootsA; i++) { arrayW[i] = (PetscScalar)i; }
   PetscCall(VecRestoreArray(a, &arrayW));
 
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Initial Vec A\n"));
@@ -86,8 +83,8 @@ int main(int argc, char **argv)
   PetscCall(VecGetArrayRead(a, &arrayR));
   PetscCall(VecGetArray(b, &arrayW));
 
-  PetscCall(PetscSFBcastBegin(sfA, MPIU_SCALAR, arrayR, arrayW,MPI_REPLACE));
-  PetscCall(PetscSFBcastEnd(sfA, MPIU_SCALAR, arrayR, arrayW,MPI_REPLACE));
+  PetscCall(PetscSFBcastBegin(sfA, MPIU_SCALAR, arrayR, arrayW, MPI_REPLACE));
+  PetscCall(PetscSFBcastEnd(sfA, MPIU_SCALAR, arrayR, arrayW, MPI_REPLACE));
   PetscCall(VecRestoreArray(b, &arrayW));
   PetscCall(VecRestoreArrayRead(a, &arrayR));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\nBroadcast A->B over sfA\n"));
@@ -95,9 +92,9 @@ int main(int argc, char **argv)
 
   PetscCall(VecGetArrayRead(b, &arrayR));
   PetscCall(VecGetArray(ba, &arrayW));
-  arrayW[0] = 10.0;             /* Not touched by bcast */
-  PetscCall(PetscSFBcastBegin(sfB, MPIU_SCALAR, arrayR, arrayW,MPI_REPLACE));
-  PetscCall(PetscSFBcastEnd(sfB, MPIU_SCALAR, arrayR, arrayW,MPI_REPLACE));
+  arrayW[0] = 10.0; /* Not touched by bcast */
+  PetscCall(PetscSFBcastBegin(sfB, MPIU_SCALAR, arrayR, arrayW, MPI_REPLACE));
+  PetscCall(PetscSFBcastEnd(sfB, MPIU_SCALAR, arrayR, arrayW, MPI_REPLACE));
   PetscCall(VecRestoreArrayRead(b, &arrayR));
   PetscCall(VecRestoreArray(ba, &arrayW));
 
@@ -109,9 +106,9 @@ int main(int argc, char **argv)
   PetscCall(PetscObjectSetName((PetscObject)sfBA, "(sfB o sfA)"));
   PetscCall(VecGetArrayRead(a, &arrayR));
   PetscCall(VecGetArray(ba, &arrayW));
-  arrayW[0] = 11.0;             /* Not touched by bcast */
-  PetscCall(PetscSFBcastBegin(sfBA, MPIU_SCALAR, arrayR, arrayW,MPI_REPLACE));
-  PetscCall(PetscSFBcastEnd(sfBA, MPIU_SCALAR, arrayR, arrayW,MPI_REPLACE));
+  arrayW[0] = 11.0; /* Not touched by bcast */
+  PetscCall(PetscSFBcastBegin(sfBA, MPIU_SCALAR, arrayR, arrayW, MPI_REPLACE));
+  PetscCall(PetscSFBcastEnd(sfBA, MPIU_SCALAR, arrayR, arrayW, MPI_REPLACE));
   PetscCall(VecRestoreArray(ba, &arrayW));
   PetscCall(VecRestoreArrayRead(a, &arrayR));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\nBroadcast A->BA over sfBA (sfB o sfA)\n"));

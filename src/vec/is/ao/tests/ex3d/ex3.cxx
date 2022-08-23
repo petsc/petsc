@@ -15,39 +15,38 @@ static char help[] = "AO test contributed by Sebastian Steiger <steiger@purdue.e
 
 using namespace std;
 
-int main(int argc, char** argv)
-{
-  AO             ao;
-  IS             isapp;
-  char           infile[PETSC_MAX_PATH_LEN],datafiles[PETSC_MAX_PATH_LEN];
-  PetscBool      flg;
-  PetscMPIInt    size,rank;
+int main(int argc, char **argv) {
+  AO          ao;
+  IS          isapp;
+  char        infile[PETSC_MAX_PATH_LEN], datafiles[PETSC_MAX_PATH_LEN];
+  PetscBool   flg;
+  PetscMPIInt size, rank;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char*)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
 
-  PetscCall(PetscOptionsGetString(NULL,NULL,"-datafiles",datafiles,sizeof(datafiles),&flg));
-  PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must specify -datafiles ${DATAFILESPATH}/ao");
+  PetscCall(PetscOptionsGetString(NULL, NULL, "-datafiles", datafiles, sizeof(datafiles), &flg));
+  PetscCheck(flg, PETSC_COMM_WORLD, PETSC_ERR_USER, "Must specify -datafiles ${DATAFILESPATH}/ao");
 
   // read in application indices
-  PetscCall(PetscSNPrintf(infile,sizeof(infile),"%s/AO%dCPUs/ao_p%d_appindices.txt",datafiles,size,rank));
+  PetscCall(PetscSNPrintf(infile, sizeof(infile), "%s/AO%dCPUs/ao_p%d_appindices.txt", datafiles, size, rank));
   ifstream fin(infile);
-  PetscCheck(fin,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"File not found: %s",infile);
-  vector<PetscInt>  myapp;
-  int tmp=-1;
+  PetscCheck(fin, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "File not found: %s", infile);
+  vector<PetscInt> myapp;
+  int              tmp = -1;
   while (!fin.eof()) {
-    tmp=-1;
+    tmp = -1;
     fin >> tmp;
-    if (tmp==-1) break;
+    if (tmp == -1) break;
     myapp.push_back(tmp);
   }
 #if __cplusplus >= 201103L // c++11
-  static_assert(is_same<decltype(myapp.size()),size_t>::value,"");
+  static_assert(is_same<decltype(myapp.size()), size_t>::value, "");
 #endif
-  PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] has %zu indices.\n",rank,myapp.size()));
-  PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
+  PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "[%d] has %zu indices.\n", rank, myapp.size()));
+  PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD, PETSC_STDOUT));
 
   PetscCall(ISCreateGeneral(PETSC_COMM_WORLD, myapp.size(), &(myapp[0]), PETSC_USE_POINTER, &isapp));
 
@@ -56,12 +55,12 @@ int main(int argc, char** argv)
   PetscCall(AOSetType(ao, AOMEMORYSCALABLE));
   PetscCall(AOSetFromOptions(ao));
 
-  if (rank==0) cout << "AO has been set up." << endl;
+  if (rank == 0) cout << "AO has been set up." << endl;
 
   PetscCall(AODestroy(&ao));
   PetscCall(ISDestroy(&isapp));
 
-  if (rank==0) cout << "AO is done." << endl;
+  if (rank == 0) cout << "AO is done." << endl;
 
   PetscCall(PetscFinalize());
   return 0;

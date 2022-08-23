@@ -2,26 +2,25 @@ static char help[] = "Tests MatLoad() with blocksize set in in program\n\n";
 
 #include <petscmat.h>
 
-int main(int argc,char **args)
-{
-  Mat            A;
-  PetscViewer    fd;
-  char           file[PETSC_MAX_PATH_LEN];
-  PetscBool      flg;
+int main(int argc, char **args) {
+  Mat         A;
+  PetscViewer fd;
+  char        file[PETSC_MAX_PATH_LEN];
+  PetscBool   flg;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
   /* Determine files from which we read the matrix */
-  PetscCall(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg));
-  PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -f");
+  PetscCall(PetscOptionsGetString(NULL, NULL, "-f", file, sizeof(file), &flg));
+  PetscCheck(flg, PETSC_COMM_WORLD, PETSC_ERR_USER, "Must indicate binary file with the -f");
 
   /* Load matrices */
-  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd));
-  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
-  PetscCall(MatSetType(A,MATSBAIJ));
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, file, FILE_MODE_READ, &fd));
+  PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
+  PetscCall(MatSetType(A, MATSBAIJ));
   PetscCall(MatSetFromOptions(A));
-  PetscCall(MatSetBlockSize(A,2));
-  PetscCall(MatLoad(A,fd));
+  PetscCall(MatSetBlockSize(A, 2));
+  PetscCall(MatLoad(A, fd));
   PetscCall(PetscViewerDestroy(&fd));
   PetscCall(MatDestroy(&A));
   PetscCall(PetscFinalize());

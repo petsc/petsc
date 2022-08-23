@@ -43,58 +43,57 @@ The command line options are:\n\
 
 typedef struct {
   PetscScalar *bottom, *top, *left, *right;
-  PetscScalar lb,ub;
+  PetscScalar  lb, ub;
 } AppCtx;
 
 /* -------- User-defined Routines --------- */
 
-extern PetscErrorCode FormBoundaryConditions(SNES,AppCtx**);
-extern PetscErrorCode DestroyBoundaryConditions(AppCtx**);
-extern PetscErrorCode ComputeInitialGuess(SNES,Vec,void*);
-extern PetscErrorCode FormGradient(SNES,Vec,Vec,void*);
-extern PetscErrorCode FormJacobian(SNES,Vec,Mat,Mat,void*);
-extern PetscErrorCode FormBounds(SNES,Vec,Vec);
+extern PetscErrorCode FormBoundaryConditions(SNES, AppCtx **);
+extern PetscErrorCode DestroyBoundaryConditions(AppCtx **);
+extern PetscErrorCode ComputeInitialGuess(SNES, Vec, void *);
+extern PetscErrorCode FormGradient(SNES, Vec, Vec, void *);
+extern PetscErrorCode FormJacobian(SNES, Vec, Mat, Mat, void *);
+extern PetscErrorCode FormBounds(SNES, Vec, Vec);
 
-int main(int argc, char **argv)
-{
-  Vec            x,r;               /* solution and residual vectors */
-  SNES           snes;              /* nonlinear solver context */
-  Mat            J;                 /* Jacobian matrix */
-  DM             da;
+int main(int argc, char **argv) {
+  Vec  x, r; /* solution and residual vectors */
+  SNES snes; /* nonlinear solver context */
+  Mat  J;    /* Jacobian matrix */
+  DM   da;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char*)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
 
   /* Create distributed array to manage the 2d grid */
-  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,4,4,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da));
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, 4, 4, PETSC_DECIDE, PETSC_DECIDE, 1, 1, NULL, NULL, &da));
   PetscCall(DMSetFromOptions(da));
   PetscCall(DMSetUp(da));
 
   /* Extract global vectors from DMDA; */
-  PetscCall(DMCreateGlobalVector(da,&x));
+  PetscCall(DMCreateGlobalVector(da, &x));
   PetscCall(VecDuplicate(x, &r));
 
-  PetscCall(DMSetMatType(da,MATAIJ));
-  PetscCall(DMCreateMatrix(da,&J));
+  PetscCall(DMSetMatType(da, MATAIJ));
+  PetscCall(DMCreateMatrix(da, &J));
 
   /* Create nonlinear solver context */
-  PetscCall(SNESCreate(PETSC_COMM_WORLD,&snes));
-  PetscCall(SNESSetDM(snes,da));
+  PetscCall(SNESCreate(PETSC_COMM_WORLD, &snes));
+  PetscCall(SNESSetDM(snes, da));
 
   /*  Set function evaluation and Jacobian evaluation  routines */
-  PetscCall(SNESSetFunction(snes,r,FormGradient,NULL));
-  PetscCall(SNESSetJacobian(snes,J,J,FormJacobian,NULL));
+  PetscCall(SNESSetFunction(snes, r, FormGradient, NULL));
+  PetscCall(SNESSetJacobian(snes, J, J, FormJacobian, NULL));
 
-  PetscCall(SNESSetComputeApplicationContext(snes,(PetscErrorCode (*)(SNES,void**))FormBoundaryConditions,(PetscErrorCode (*)(void**))DestroyBoundaryConditions));
+  PetscCall(SNESSetComputeApplicationContext(snes, (PetscErrorCode(*)(SNES, void **))FormBoundaryConditions, (PetscErrorCode(*)(void **))DestroyBoundaryConditions));
 
-  PetscCall(SNESSetComputeInitialGuess(snes,ComputeInitialGuess,NULL));
+  PetscCall(SNESSetComputeInitialGuess(snes, ComputeInitialGuess, NULL));
 
-  PetscCall(SNESVISetComputeVariableBounds(snes,FormBounds));
+  PetscCall(SNESVISetComputeVariableBounds(snes, FormBounds));
 
   PetscCall(SNESSetFromOptions(snes));
 
   /* Solve the application */
-  PetscCall(SNESSolve(snes,NULL,x));
+  PetscCall(SNESSolve(snes, NULL, x));
 
   /* Free memory */
   PetscCall(VecDestroy(&x));
@@ -120,14 +119,13 @@ int main(int argc, char **argv)
 .   xl - lower bounds
 .   xu - upper bounds
 */
-PetscErrorCode FormBounds(SNES snes, Vec xl, Vec xu)
-{
-  AppCtx         *ctx;
+PetscErrorCode FormBounds(SNES snes, Vec xl, Vec xu) {
+  AppCtx *ctx;
 
   PetscFunctionBeginUser;
-  PetscCall(SNESGetApplicationContext(snes,&ctx));
-  PetscCall(VecSet(xl,ctx->lb));
-  PetscCall(VecSet(xu,ctx->ub));
+  PetscCall(SNESGetApplicationContext(snes, &ctx));
+  PetscCall(VecSet(xl, ctx->lb));
+  PetscCall(VecSet(xu, ctx->ub));
   PetscFunctionReturn(0);
 }
 
@@ -143,82 +141,83 @@ PetscErrorCode FormBounds(SNES snes, Vec xl, Vec xu)
     Output Parameters:
 .   G - vector containing the newly evaluated gradient
 */
-PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr)
-{
-  AppCtx      *user;
-  PetscInt    i,j;
-  PetscInt    mx, my;
-  PetscScalar hx,hy, hydhx, hxdhy;
-  PetscScalar f1,f2,f3,f4,f5,f6,d1,d2,d3,d4,d5,d6,d7,d8,xc,xl,xr,xt,xb,xlt,xrb;
-  PetscScalar df1dxc,df2dxc,df3dxc,df4dxc,df5dxc,df6dxc;
+PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr) {
+  AppCtx       *user;
+  PetscInt      i, j;
+  PetscInt      mx, my;
+  PetscScalar   hx, hy, hydhx, hxdhy;
+  PetscScalar   f1, f2, f3, f4, f5, f6, d1, d2, d3, d4, d5, d6, d7, d8, xc, xl, xr, xt, xb, xlt, xrb;
+  PetscScalar   df1dxc, df2dxc, df3dxc, df4dxc, df5dxc, df6dxc;
   PetscScalar **g, **x;
-  PetscInt    xs,xm,ys,ym;
-  Vec         localX;
-  DM          da;
+  PetscInt      xs, xm, ys, ym;
+  Vec           localX;
+  DM            da;
 
   PetscFunctionBeginUser;
-  PetscCall(SNESGetDM(snes,&da));
-  PetscCall(SNESGetApplicationContext(snes,&user));
-  PetscCall(DMDAGetInfo(da,PETSC_IGNORE,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
-  hx   = 1.0/(mx+1);hy=1.0/(my+1); hydhx=hy/hx; hxdhy=hx/hy;
+  PetscCall(SNESGetDM(snes, &da));
+  PetscCall(SNESGetApplicationContext(snes, &user));
+  PetscCall(DMDAGetInfo(da, PETSC_IGNORE, &mx, &my, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE));
+  hx    = 1.0 / (mx + 1);
+  hy    = 1.0 / (my + 1);
+  hydhx = hy / hx;
+  hxdhy = hx / hy;
 
-  PetscCall(VecSet(G,0.0));
+  PetscCall(VecSet(G, 0.0));
 
   /* Get local vector */
-  PetscCall(DMGetLocalVector(da,&localX));
+  PetscCall(DMGetLocalVector(da, &localX));
   /* Get ghost points */
-  PetscCall(DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX));
-  PetscCall(DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX));
+  PetscCall(DMGlobalToLocalBegin(da, X, INSERT_VALUES, localX));
+  PetscCall(DMGlobalToLocalEnd(da, X, INSERT_VALUES, localX));
   /* Get pointer to local vector data */
-  PetscCall(DMDAVecGetArray(da,localX, &x));
-  PetscCall(DMDAVecGetArray(da,G, &g));
+  PetscCall(DMDAVecGetArray(da, localX, &x));
+  PetscCall(DMDAVecGetArray(da, G, &g));
 
-  PetscCall(DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL));
+  PetscCall(DMDAGetCorners(da, &xs, &ys, NULL, &xm, &ym, NULL));
   /* Compute function over the locally owned part of the mesh */
-  for (j=ys; j < ys+ym; j++) {
-    for (i=xs; i< xs+xm; i++) {
+  for (j = ys; j < ys + ym; j++) {
+    for (i = xs; i < xs + xm; i++) {
+      xc  = x[j][i];
+      xlt = xrb = xl = xr = xb = xt = xc;
 
-      xc = x[j][i];
-      xlt=xrb=xl=xr=xb=xt=xc;
+      if (i == 0) { /* left side */
+        xl  = user->left[j + 1];
+        xlt = user->left[j + 2];
+      } else xl = x[j][i - 1];
 
-      if (i==0) { /* left side */
-        xl  = user->left[j+1];
-        xlt = user->left[j+2];
-      } else xl = x[j][i-1];
+      if (j == 0) { /* bottom side */
+        xb  = user->bottom[i + 1];
+        xrb = user->bottom[i + 2];
+      } else xb = x[j - 1][i];
 
-      if (j==0) { /* bottom side */
-        xb  = user->bottom[i+1];
-        xrb = user->bottom[i+2];
-      } else xb = x[j-1][i];
-
-      if (i+1 == mx) { /* right side */
-        xr  = user->right[j+1];
+      if (i + 1 == mx) { /* right side */
+        xr  = user->right[j + 1];
         xrb = user->right[j];
-      } else xr = x[j][i+1];
+      } else xr = x[j][i + 1];
 
-      if (j+1==0+my) { /* top side */
-        xt  = user->top[i+1];
+      if (j + 1 == 0 + my) { /* top side */
+        xt  = user->top[i + 1];
         xlt = user->top[i];
-      } else xt = x[j+1][i];
+      } else xt = x[j + 1][i];
 
-      if (i>0 && j+1<my) xlt = x[j+1][i-1]; /* left top side */
-      if (j>0 && i+1<mx) xrb = x[j-1][i+1]; /* right bottom */
+      if (i > 0 && j + 1 < my) xlt = x[j + 1][i - 1]; /* left top side */
+      if (j > 0 && i + 1 < mx) xrb = x[j - 1][i + 1]; /* right bottom */
 
-      d1 = (xc-xl);
-      d2 = (xc-xr);
-      d3 = (xc-xt);
-      d4 = (xc-xb);
-      d5 = (xr-xrb);
-      d6 = (xrb-xb);
-      d7 = (xlt-xl);
-      d8 = (xt-xlt);
+      d1 = (xc - xl);
+      d2 = (xc - xr);
+      d3 = (xc - xt);
+      d4 = (xc - xb);
+      d5 = (xr - xrb);
+      d6 = (xrb - xb);
+      d7 = (xlt - xl);
+      d8 = (xt - xlt);
 
-      df1dxc = d1*hydhx;
-      df2dxc = (d1*hydhx + d4*hxdhy);
-      df3dxc = d3*hxdhy;
-      df4dxc = (d2*hydhx + d3*hxdhy);
-      df5dxc = d2*hydhx;
-      df6dxc = d4*hxdhy;
+      df1dxc = d1 * hydhx;
+      df2dxc = (d1 * hydhx + d4 * hxdhy);
+      df3dxc = d3 * hxdhy;
+      df4dxc = (d2 * hydhx + d3 * hxdhy);
+      df5dxc = d2 * hydhx;
+      df6dxc = d4 * hxdhy;
 
       d1 /= hx;
       d2 /= hx;
@@ -229,12 +228,12 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr)
       d7 /= hy;
       d8 /= hx;
 
-      f1 = PetscSqrtScalar(1.0 + d1*d1 + d7*d7);
-      f2 = PetscSqrtScalar(1.0 + d1*d1 + d4*d4);
-      f3 = PetscSqrtScalar(1.0 + d3*d3 + d8*d8);
-      f4 = PetscSqrtScalar(1.0 + d3*d3 + d2*d2);
-      f5 = PetscSqrtScalar(1.0 + d2*d2 + d5*d5);
-      f6 = PetscSqrtScalar(1.0 + d4*d4 + d6*d6);
+      f1 = PetscSqrtScalar(1.0 + d1 * d1 + d7 * d7);
+      f2 = PetscSqrtScalar(1.0 + d1 * d1 + d4 * d4);
+      f3 = PetscSqrtScalar(1.0 + d3 * d3 + d8 * d8);
+      f4 = PetscSqrtScalar(1.0 + d3 * d3 + d2 * d2);
+      f5 = PetscSqrtScalar(1.0 + d2 * d2 + d5 * d5);
+      f6 = PetscSqrtScalar(1.0 + d4 * d4 + d6 * d6);
 
       df1dxc /= f1;
       df2dxc /= f2;
@@ -243,16 +242,15 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr)
       df5dxc /= f5;
       df6dxc /= f6;
 
-      g[j][i] = (df1dxc+df2dxc+df3dxc+df4dxc+df5dxc+df6dxc)/2.0;
-
+      g[j][i] = (df1dxc + df2dxc + df3dxc + df4dxc + df5dxc + df6dxc) / 2.0;
     }
   }
 
   /* Restore vectors */
-  PetscCall(DMDAVecRestoreArray(da,localX, &x));
-  PetscCall(DMDAVecRestoreArray(da,G, &g));
-  PetscCall(DMRestoreLocalVector(da,&localX));
-  PetscCall(PetscLogFlops(67.0*mx*my));
+  PetscCall(DMDAVecRestoreArray(da, localX, &x));
+  PetscCall(DMDAVecRestoreArray(da, G, &g));
+  PetscCall(DMRestoreLocalVector(da, &localX));
+  PetscCall(PetscLogFlops(67.0 * mx * my));
   PetscFunctionReturn(0);
 }
 
@@ -269,164 +267,181 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr)
 .  tH    - Jacobian matrix
 
 */
-PetscErrorCode FormJacobian(SNES snes, Vec X, Mat H, Mat tHPre, void *ptr)
-{
-  AppCtx         *user;
-  PetscInt       i,j,k;
-  PetscInt       mx, my;
-  MatStencil     row,col[7];
-  PetscScalar    hx, hy, hydhx, hxdhy;
-  PetscScalar    f1,f2,f3,f4,f5,f6,d1,d2,d3,d4,d5,d6,d7,d8,xc,xl,xr,xt,xb,xlt,xrb;
-  PetscScalar    hl,hr,ht,hb,hc,htl,hbr;
-  PetscScalar    **x, v[7];
-  PetscBool      assembled;
-  PetscInt       xs,xm,ys,ym;
-  Vec            localX;
-  DM             da;
+PetscErrorCode FormJacobian(SNES snes, Vec X, Mat H, Mat tHPre, void *ptr) {
+  AppCtx       *user;
+  PetscInt      i, j, k;
+  PetscInt      mx, my;
+  MatStencil    row, col[7];
+  PetscScalar   hx, hy, hydhx, hxdhy;
+  PetscScalar   f1, f2, f3, f4, f5, f6, d1, d2, d3, d4, d5, d6, d7, d8, xc, xl, xr, xt, xb, xlt, xrb;
+  PetscScalar   hl, hr, ht, hb, hc, htl, hbr;
+  PetscScalar **x, v[7];
+  PetscBool     assembled;
+  PetscInt      xs, xm, ys, ym;
+  Vec           localX;
+  DM            da;
 
   PetscFunctionBeginUser;
-  PetscCall(SNESGetDM(snes,&da));
-  PetscCall(SNESGetApplicationContext(snes,&user));
-  PetscCall(DMDAGetInfo(da,PETSC_IGNORE,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
-  hx   = 1.0/(mx+1); hy=1.0/(my+1); hydhx=hy/hx; hxdhy=hx/hy;
+  PetscCall(SNESGetDM(snes, &da));
+  PetscCall(SNESGetApplicationContext(snes, &user));
+  PetscCall(DMDAGetInfo(da, PETSC_IGNORE, &mx, &my, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE));
+  hx    = 1.0 / (mx + 1);
+  hy    = 1.0 / (my + 1);
+  hydhx = hy / hx;
+  hxdhy = hx / hy;
 
-/* Set various matrix options */
-  PetscCall(MatAssembled(H,&assembled));
+  /* Set various matrix options */
+  PetscCall(MatAssembled(H, &assembled));
   if (assembled) PetscCall(MatZeroEntries(H));
 
   /* Get local vector */
-  PetscCall(DMGetLocalVector(da,&localX));
+  PetscCall(DMGetLocalVector(da, &localX));
   /* Get ghost points */
-  PetscCall(DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX));
-  PetscCall(DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX));
+  PetscCall(DMGlobalToLocalBegin(da, X, INSERT_VALUES, localX));
+  PetscCall(DMGlobalToLocalEnd(da, X, INSERT_VALUES, localX));
 
   /* Get pointers to vector data */
-  PetscCall(DMDAVecGetArray(da,localX, &x));
+  PetscCall(DMDAVecGetArray(da, localX, &x));
 
-  PetscCall(DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL));
+  PetscCall(DMDAGetCorners(da, &xs, &ys, NULL, &xm, &ym, NULL));
   /* Compute Jacobian over the locally owned part of the mesh */
-  for (j=ys; j< ys+ym; j++) {
-    for (i=xs; i< xs+xm; i++) {
-      xc = x[j][i];
-      xlt=xrb=xl=xr=xb=xt=xc;
+  for (j = ys; j < ys + ym; j++) {
+    for (i = xs; i < xs + xm; i++) {
+      xc  = x[j][i];
+      xlt = xrb = xl = xr = xb = xt = xc;
 
       /* Left */
-      if (i==0) {
-        xl  = user->left[j+1];
-        xlt = user->left[j+2];
-      } else xl = x[j][i-1];
+      if (i == 0) {
+        xl  = user->left[j + 1];
+        xlt = user->left[j + 2];
+      } else xl = x[j][i - 1];
 
       /* Bottom */
-      if (j==0) {
-        xb  =user->bottom[i+1];
-        xrb = user->bottom[i+2];
-      } else xb = x[j-1][i];
+      if (j == 0) {
+        xb  = user->bottom[i + 1];
+        xrb = user->bottom[i + 2];
+      } else xb = x[j - 1][i];
 
       /* Right */
-      if (i+1 == mx) {
-        xr  =user->right[j+1];
+      if (i + 1 == mx) {
+        xr  = user->right[j + 1];
         xrb = user->right[j];
-      } else xr = x[j][i+1];
+      } else xr = x[j][i + 1];
 
       /* Top */
-      if (j+1==my) {
-        xt  =user->top[i+1];
+      if (j + 1 == my) {
+        xt  = user->top[i + 1];
         xlt = user->top[i];
-      } else xt = x[j+1][i];
+      } else xt = x[j + 1][i];
 
       /* Top left */
-      if (i>0 && j+1<my) xlt = x[j+1][i-1];
+      if (i > 0 && j + 1 < my) xlt = x[j + 1][i - 1];
 
       /* Bottom right */
-      if (j>0 && i+1<mx) xrb = x[j-1][i+1];
+      if (j > 0 && i + 1 < mx) xrb = x[j - 1][i + 1];
 
-      d1 = (xc-xl)/hx;
-      d2 = (xc-xr)/hx;
-      d3 = (xc-xt)/hy;
-      d4 = (xc-xb)/hy;
-      d5 = (xrb-xr)/hy;
-      d6 = (xrb-xb)/hx;
-      d7 = (xlt-xl)/hy;
-      d8 = (xlt-xt)/hx;
+      d1 = (xc - xl) / hx;
+      d2 = (xc - xr) / hx;
+      d3 = (xc - xt) / hy;
+      d4 = (xc - xb) / hy;
+      d5 = (xrb - xr) / hy;
+      d6 = (xrb - xb) / hx;
+      d7 = (xlt - xl) / hy;
+      d8 = (xlt - xt) / hx;
 
-      f1 = PetscSqrtScalar(1.0 + d1*d1 + d7*d7);
-      f2 = PetscSqrtScalar(1.0 + d1*d1 + d4*d4);
-      f3 = PetscSqrtScalar(1.0 + d3*d3 + d8*d8);
-      f4 = PetscSqrtScalar(1.0 + d3*d3 + d2*d2);
-      f5 = PetscSqrtScalar(1.0 + d2*d2 + d5*d5);
-      f6 = PetscSqrtScalar(1.0 + d4*d4 + d6*d6);
+      f1 = PetscSqrtScalar(1.0 + d1 * d1 + d7 * d7);
+      f2 = PetscSqrtScalar(1.0 + d1 * d1 + d4 * d4);
+      f3 = PetscSqrtScalar(1.0 + d3 * d3 + d8 * d8);
+      f4 = PetscSqrtScalar(1.0 + d3 * d3 + d2 * d2);
+      f5 = PetscSqrtScalar(1.0 + d2 * d2 + d5 * d5);
+      f6 = PetscSqrtScalar(1.0 + d4 * d4 + d6 * d6);
 
-      hl = (-hydhx*(1.0+d7*d7)+d1*d7)/(f1*f1*f1)+
-           (-hydhx*(1.0+d4*d4)+d1*d4)/(f2*f2*f2);
-      hr = (-hydhx*(1.0+d5*d5)+d2*d5)/(f5*f5*f5)+
-           (-hydhx*(1.0+d3*d3)+d2*d3)/(f4*f4*f4);
-      ht = (-hxdhy*(1.0+d8*d8)+d3*d8)/(f3*f3*f3)+
-           (-hxdhy*(1.0+d2*d2)+d2*d3)/(f4*f4*f4);
-      hb = (-hxdhy*(1.0+d6*d6)+d4*d6)/(f6*f6*f6)+
-           (-hxdhy*(1.0+d1*d1)+d1*d4)/(f2*f2*f2);
+      hl = (-hydhx * (1.0 + d7 * d7) + d1 * d7) / (f1 * f1 * f1) + (-hydhx * (1.0 + d4 * d4) + d1 * d4) / (f2 * f2 * f2);
+      hr = (-hydhx * (1.0 + d5 * d5) + d2 * d5) / (f5 * f5 * f5) + (-hydhx * (1.0 + d3 * d3) + d2 * d3) / (f4 * f4 * f4);
+      ht = (-hxdhy * (1.0 + d8 * d8) + d3 * d8) / (f3 * f3 * f3) + (-hxdhy * (1.0 + d2 * d2) + d2 * d3) / (f4 * f4 * f4);
+      hb = (-hxdhy * (1.0 + d6 * d6) + d4 * d6) / (f6 * f6 * f6) + (-hxdhy * (1.0 + d1 * d1) + d1 * d4) / (f2 * f2 * f2);
 
-      hbr = -d2*d5/(f5*f5*f5) - d4*d6/(f6*f6*f6);
-      htl = -d1*d7/(f1*f1*f1) - d3*d8/(f3*f3*f3);
+      hbr = -d2 * d5 / (f5 * f5 * f5) - d4 * d6 / (f6 * f6 * f6);
+      htl = -d1 * d7 / (f1 * f1 * f1) - d3 * d8 / (f3 * f3 * f3);
 
-      hc = hydhx*(1.0+d7*d7)/(f1*f1*f1) + hxdhy*(1.0+d8*d8)/(f3*f3*f3) +
-           hydhx*(1.0+d5*d5)/(f5*f5*f5) + hxdhy*(1.0+d6*d6)/(f6*f6*f6) +
-           (hxdhy*(1.0+d1*d1)+hydhx*(1.0+d4*d4)-2.0*d1*d4)/(f2*f2*f2) +
-           (hxdhy*(1.0+d2*d2)+hydhx*(1.0+d3*d3)-2.0*d2*d3)/(f4*f4*f4);
+      hc = hydhx * (1.0 + d7 * d7) / (f1 * f1 * f1) + hxdhy * (1.0 + d8 * d8) / (f3 * f3 * f3) + hydhx * (1.0 + d5 * d5) / (f5 * f5 * f5) + hxdhy * (1.0 + d6 * d6) / (f6 * f6 * f6) + (hxdhy * (1.0 + d1 * d1) + hydhx * (1.0 + d4 * d4) - 2.0 * d1 * d4) / (f2 * f2 * f2) + (hxdhy * (1.0 + d2 * d2) + hydhx * (1.0 + d3 * d3) - 2.0 * d2 * d3) / (f4 * f4 * f4);
 
-      hl/=2.0; hr/=2.0; ht/=2.0; hb/=2.0; hbr/=2.0; htl/=2.0;  hc/=2.0;
+      hl /= 2.0;
+      hr /= 2.0;
+      ht /= 2.0;
+      hb /= 2.0;
+      hbr /= 2.0;
+      htl /= 2.0;
+      hc /= 2.0;
 
-      k     =0;
-      row.i = i;row.j= j;
+      k     = 0;
+      row.i = i;
+      row.j = j;
       /* Bottom */
-      if (j>0) {
-        v[k]     =hb;
-        col[k].i = i; col[k].j=j-1; k++;
+      if (j > 0) {
+        v[k]     = hb;
+        col[k].i = i;
+        col[k].j = j - 1;
+        k++;
       }
 
       /* Bottom right */
-      if (j>0 && i < mx -1) {
-        v[k]     =hbr;
-        col[k].i = i+1; col[k].j = j-1; k++;
+      if (j > 0 && i < mx - 1) {
+        v[k]     = hbr;
+        col[k].i = i + 1;
+        col[k].j = j - 1;
+        k++;
       }
 
       /* left */
-      if (i>0) {
+      if (i > 0) {
         v[k]     = hl;
-        col[k].i = i-1; col[k].j = j; k++;
+        col[k].i = i - 1;
+        col[k].j = j;
+        k++;
       }
 
       /* Centre */
-      v[k]= hc; col[k].i= row.i; col[k].j = row.j; k++;
+      v[k]     = hc;
+      col[k].i = row.i;
+      col[k].j = row.j;
+      k++;
 
       /* Right */
-      if (i < mx-1) {
-        v[k]    = hr;
-        col[k].i= i+1; col[k].j = j;k++;
+      if (i < mx - 1) {
+        v[k]     = hr;
+        col[k].i = i + 1;
+        col[k].j = j;
+        k++;
       }
 
       /* Top left */
-      if (i>0 && j < my-1) {
+      if (i > 0 && j < my - 1) {
         v[k]     = htl;
-        col[k].i = i-1;col[k].j = j+1; k++;
+        col[k].i = i - 1;
+        col[k].j = j + 1;
+        k++;
       }
 
       /* Top */
-      if (j < my-1) {
+      if (j < my - 1) {
         v[k]     = ht;
-        col[k].i = i; col[k].j = j+1; k++;
+        col[k].i = i;
+        col[k].j = j + 1;
+        k++;
       }
 
-      PetscCall(MatSetValuesStencil(H,1,&row,k,col,v,INSERT_VALUES));
+      PetscCall(MatSetValuesStencil(H, 1, &row, k, col, v, INSERT_VALUES));
     }
   }
 
   /* Assemble the matrix */
-  PetscCall(MatAssemblyBegin(H,MAT_FINAL_ASSEMBLY));
-  PetscCall(DMDAVecRestoreArray(da,localX,&x));
-  PetscCall(MatAssemblyEnd(H,MAT_FINAL_ASSEMBLY));
-  PetscCall(DMRestoreLocalVector(da,&localX));
+  PetscCall(MatAssemblyBegin(H, MAT_FINAL_ASSEMBLY));
+  PetscCall(DMDAVecRestoreArray(da, localX, &x));
+  PetscCall(MatAssemblyEnd(H, MAT_FINAL_ASSEMBLY));
+  PetscCall(DMRestoreLocalVector(da, &localX));
 
-  PetscCall(PetscLogFlops(199.0*mx*my));
+  PetscCall(PetscLogFlops(199.0 * mx * my));
   PetscFunctionReturn(0);
 }
 
@@ -441,52 +456,55 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat H, Mat tHPre, void *ptr)
    Output Parameter:
 .  user - user-defined application context
 */
-PetscErrorCode FormBoundaryConditions(SNES snes,AppCtx **ouser)
-{
-  PetscInt       i,j,k,limit=0,maxits=5;
-  PetscInt       mx,my;
-  PetscInt       bsize=0, lsize=0, tsize=0, rsize=0;
-  PetscScalar    one  =1.0, two=2.0, three=3.0;
-  PetscScalar    det,hx,hy,xt=0,yt=0;
-  PetscReal      fnorm, tol=1e-10;
-  PetscScalar    u1,u2,nf1,nf2,njac11,njac12,njac21,njac22;
-  PetscScalar    b=-0.5, t=0.5, l=-0.5, r=0.5;
-  PetscScalar    *boundary;
-  AppCtx         *user;
-  DM             da;
+PetscErrorCode FormBoundaryConditions(SNES snes, AppCtx **ouser) {
+  PetscInt     i, j, k, limit = 0, maxits = 5;
+  PetscInt     mx, my;
+  PetscInt     bsize = 0, lsize = 0, tsize = 0, rsize = 0;
+  PetscScalar  one = 1.0, two = 2.0, three = 3.0;
+  PetscScalar  det, hx, hy, xt = 0, yt = 0;
+  PetscReal    fnorm, tol = 1e-10;
+  PetscScalar  u1, u2, nf1, nf2, njac11, njac12, njac21, njac22;
+  PetscScalar  b = -0.5, t = 0.5, l = -0.5, r = 0.5;
+  PetscScalar *boundary;
+  AppCtx      *user;
+  DM           da;
 
   PetscFunctionBeginUser;
-  PetscCall(SNESGetDM(snes,&da));
+  PetscCall(SNESGetDM(snes, &da));
   PetscCall(PetscNew(&user));
   *ouser   = user;
   user->lb = .05;
   user->ub = PETSC_INFINITY;
-  PetscCall(DMDAGetInfo(da,PETSC_IGNORE,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
+  PetscCall(DMDAGetInfo(da, PETSC_IGNORE, &mx, &my, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE));
 
   /* Check if lower and upper bounds are set */
-  PetscCall(PetscOptionsGetScalar(NULL,NULL, "-lb", &user->lb, 0));
-  PetscCall(PetscOptionsGetScalar(NULL,NULL, "-ub", &user->ub, 0));
-  bsize=mx+2; lsize=my+2; rsize=my+2; tsize=mx+2;
+  PetscCall(PetscOptionsGetScalar(NULL, NULL, "-lb", &user->lb, 0));
+  PetscCall(PetscOptionsGetScalar(NULL, NULL, "-ub", &user->ub, 0));
+  bsize = mx + 2;
+  lsize = my + 2;
+  rsize = my + 2;
+  tsize = mx + 2;
 
   PetscCall(PetscMalloc1(bsize, &user->bottom));
   PetscCall(PetscMalloc1(tsize, &user->top));
   PetscCall(PetscMalloc1(lsize, &user->left));
   PetscCall(PetscMalloc1(rsize, &user->right));
 
-  hx= (r-l)/(mx+1.0); hy=(t-b)/(my+1.0);
+  hx = (r - l) / (mx + 1.0);
+  hy = (t - b) / (my + 1.0);
 
-  for (j=0; j<4; j++) {
-    if (j==0) {
+  for (j = 0; j < 4; j++) {
+    if (j == 0) {
       yt       = b;
       xt       = l;
       limit    = bsize;
       boundary = user->bottom;
-    } else if (j==1) {
+    } else if (j == 1) {
       yt       = t;
       xt       = l;
       limit    = tsize;
       boundary = user->top;
-    } else if (j==2) {
+    } else if (j == 2) {
       yt       = b;
       xt       = l;
       limit    = lsize;
@@ -498,34 +516,33 @@ PetscErrorCode FormBoundaryConditions(SNES snes,AppCtx **ouser)
       boundary = user->right;
     }
 
-    for (i=0; i<limit; i++) {
-      u1=xt;
-      u2=-yt;
-      for (k=0; k<maxits; k++) {
-        nf1   = u1 + u1*u2*u2 - u1*u1*u1/three-xt;
-        nf2   = -u2 - u1*u1*u2 + u2*u2*u2/three-yt;
-        fnorm = PetscRealPart(PetscSqrtScalar(nf1*nf1+nf2*nf2));
+    for (i = 0; i < limit; i++) {
+      u1 = xt;
+      u2 = -yt;
+      for (k = 0; k < maxits; k++) {
+        nf1   = u1 + u1 * u2 * u2 - u1 * u1 * u1 / three - xt;
+        nf2   = -u2 - u1 * u1 * u2 + u2 * u2 * u2 / three - yt;
+        fnorm = PetscRealPart(PetscSqrtScalar(nf1 * nf1 + nf2 * nf2));
         if (fnorm <= tol) break;
-        njac11=one+u2*u2-u1*u1;
-        njac12=two*u1*u2;
-        njac21=-two*u1*u2;
-        njac22=-one - u1*u1 + u2*u2;
-        det   = njac11*njac22-njac21*njac12;
-        u1    = u1-(njac22*nf1-njac12*nf2)/det;
-        u2    = u2-(njac11*nf2-njac21*nf1)/det;
+        njac11 = one + u2 * u2 - u1 * u1;
+        njac12 = two * u1 * u2;
+        njac21 = -two * u1 * u2;
+        njac22 = -one - u1 * u1 + u2 * u2;
+        det    = njac11 * njac22 - njac21 * njac12;
+        u1     = u1 - (njac22 * nf1 - njac12 * nf2) / det;
+        u2     = u2 - (njac11 * nf2 - njac21 * nf1) / det;
       }
 
-      boundary[i]=u1*u1-u2*u2;
-      if (j==0 || j==1) xt=xt+hx;
-      else yt=yt+hy; /* if (j==2 || j==3) */
+      boundary[i] = u1 * u1 - u2 * u2;
+      if (j == 0 || j == 1) xt = xt + hx;
+      else yt = yt + hy; /* if (j==2 || j==3) */
     }
   }
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DestroyBoundaryConditions(AppCtx **ouser)
-{
-  AppCtx         *user = *ouser;
+PetscErrorCode DestroyBoundaryConditions(AppCtx **ouser) {
+  AppCtx *user = *ouser;
 
   PetscFunctionBeginUser;
   PetscCall(PetscFree(user->bottom));
@@ -547,31 +564,28 @@ PetscErrorCode DestroyBoundaryConditions(AppCtx **ouser)
    Output Parameters:
 .  X - newly computed initial guess
 */
-PetscErrorCode ComputeInitialGuess(SNES snes, Vec X,void *dummy)
-{
-  PetscInt       i,j,mx,my;
-  DM             da;
-  AppCtx         *user;
-  PetscScalar    **x;
-  PetscInt       xs,xm,ys,ym;
+PetscErrorCode ComputeInitialGuess(SNES snes, Vec X, void *dummy) {
+  PetscInt      i, j, mx, my;
+  DM            da;
+  AppCtx       *user;
+  PetscScalar **x;
+  PetscInt      xs, xm, ys, ym;
 
   PetscFunctionBeginUser;
-  PetscCall(SNESGetDM(snes,&da));
-  PetscCall(SNESGetApplicationContext(snes,&user));
+  PetscCall(SNESGetDM(snes, &da));
+  PetscCall(SNESGetApplicationContext(snes, &user));
 
-  PetscCall(DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL));
-  PetscCall(DMDAGetInfo(da,PETSC_IGNORE,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
+  PetscCall(DMDAGetCorners(da, &xs, &ys, NULL, &xm, &ym, NULL));
+  PetscCall(DMDAGetInfo(da, PETSC_IGNORE, &mx, &my, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE));
 
   /* Get pointers to vector data */
-  PetscCall(DMDAVecGetArray(da,X,&x));
+  PetscCall(DMDAVecGetArray(da, X, &x));
   /* Perform local computations */
-  for (j=ys; j<ys+ym; j++) {
-    for (i=xs; i< xs+xm; i++) {
-      x[j][i] = (((j+1.0)*user->bottom[i+1]+(my-j+1.0)*user->top[i+1])/(my+2.0)+((i+1.0)*user->left[j+1]+(mx-i+1.0)*user->right[j+1])/(mx+2.0))/2.0;
-    }
+  for (j = ys; j < ys + ym; j++) {
+    for (i = xs; i < xs + xm; i++) { x[j][i] = (((j + 1.0) * user->bottom[i + 1] + (my - j + 1.0) * user->top[i + 1]) / (my + 2.0) + ((i + 1.0) * user->left[j + 1] + (mx - i + 1.0) * user->right[j + 1]) / (mx + 2.0)) / 2.0; }
   }
   /* Restore vectors */
-  PetscCall(DMDAVecRestoreArray(da,X,&x));
+  PetscCall(DMDAVecRestoreArray(da, X, &x));
   PetscFunctionReturn(0);
 }
 

@@ -1,4 +1,4 @@
-#include <petsc/private/tsimpl.h>        /*I "petscts.h"  I*/
+#include <petsc/private/tsimpl.h> /*I "petscts.h"  I*/
 #include <petscdm.h>
 #include <petscds.h>
 #include <petscdmswarm.h>
@@ -24,22 +24,19 @@
    Level: developer
 
 @*/
-PetscErrorCode TSMonitor(TS ts,PetscInt step,PetscReal ptime,Vec u)
-{
-  DM             dm;
-  PetscInt       i,n = ts->numbermonitors;
+PetscErrorCode TSMonitor(TS ts, PetscInt step, PetscReal ptime, Vec u) {
+  DM       dm;
+  PetscInt i, n = ts->numbermonitors;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscValidHeaderSpecific(u,VEC_CLASSID,4);
+  PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
+  PetscValidHeaderSpecific(u, VEC_CLASSID, 4);
 
-  PetscCall(TSGetDM(ts,&dm));
-  PetscCall(DMSetOutputSequenceNumber(dm,step,ptime));
+  PetscCall(TSGetDM(ts, &dm));
+  PetscCall(DMSetOutputSequenceNumber(dm, step, ptime));
 
   PetscCall(VecLockReadPush(u));
-  for (i=0; i<n; i++) {
-    PetscCall((*ts->monitor[i])(ts,step,ptime,u,ts->monitorcontext[i]));
-  }
+  for (i = 0; i < n; i++) { PetscCall((*ts->monitor[i])(ts, step, ptime, u, ts->monitorcontext[i])); }
   PetscCall(VecLockReadPop(u));
   PetscFunctionReturn(0);
 }
@@ -67,20 +64,19 @@ PetscErrorCode TSMonitor(TS ts,PetscInt step,PetscReal ptime,Vec u)
           `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
           `PetscOptionsFList()`, `PetscOptionsEList()`
 @*/
-PetscErrorCode  TSMonitorSetFromOptions(TS ts,const char name[],const char help[], const char manual[],PetscErrorCode (*monitor)(TS,PetscInt,PetscReal,Vec,PetscViewerAndFormat*),PetscErrorCode (*monitorsetup)(TS,PetscViewerAndFormat*))
-{
+PetscErrorCode TSMonitorSetFromOptions(TS ts, const char name[], const char help[], const char manual[], PetscErrorCode (*monitor)(TS, PetscInt, PetscReal, Vec, PetscViewerAndFormat *), PetscErrorCode (*monitorsetup)(TS, PetscViewerAndFormat *)) {
   PetscViewer       viewer;
   PetscViewerFormat format;
   PetscBool         flg;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsGetViewer(PetscObjectComm((PetscObject)ts),((PetscObject) ts)->options,((PetscObject)ts)->prefix,name,&viewer,&format,&flg));
+  PetscCall(PetscOptionsGetViewer(PetscObjectComm((PetscObject)ts), ((PetscObject)ts)->options, ((PetscObject)ts)->prefix, name, &viewer, &format, &flg));
   if (flg) {
     PetscViewerAndFormat *vf;
-    PetscCall(PetscViewerAndFormatCreate(viewer,format,&vf));
+    PetscCall(PetscViewerAndFormatCreate(viewer, format, &vf));
     PetscCall(PetscObjectDereference((PetscObject)viewer));
-    if (monitorsetup) PetscCall((*monitorsetup)(ts,vf));
-    PetscCall(TSMonitorSet(ts,(PetscErrorCode (*)(TS,PetscInt,PetscReal,Vec,void*))monitor,vf,(PetscErrorCode (*)(void**))PetscViewerAndFormatDestroy));
+    if (monitorsetup) PetscCall((*monitorsetup)(ts, vf));
+    PetscCall(TSMonitorSet(ts, (PetscErrorCode(*)(TS, PetscInt, PetscReal, Vec, void *))monitor, vf, (PetscErrorCode(*)(void **))PetscViewerAndFormatDestroy));
   }
   PetscFunctionReturn(0);
 }
@@ -121,21 +117,20 @@ $    PetscErrorCode monitor(TS ts,PetscInt steps,PetscReal time,Vec u,void *mctx
           `TSMonitorDrawSolutionPhase()`, `TSMonitorDrawSolutionFunction()`, `TSMonitorDrawError()`, `TSMonitorSolution()`, `TSMonitorSolutionVTK()`,
           `TSMonitorLGSolution()`, `TSMonitorLGError()`, `TSMonitorSPSwarmSolution()`, `TSMonitorError()`, `TSMonitorEnvelope()`, `TSDMSwarmMonitorMoments()`
 @*/
-PetscErrorCode  TSMonitorSet(TS ts,PetscErrorCode (*monitor)(TS,PetscInt,PetscReal,Vec,void*),void *mctx,PetscErrorCode (*mdestroy)(void**))
-{
-  PetscInt       i;
-  PetscBool      identical;
+PetscErrorCode TSMonitorSet(TS ts, PetscErrorCode (*monitor)(TS, PetscInt, PetscReal, Vec, void *), void *mctx, PetscErrorCode (*mdestroy)(void **)) {
+  PetscInt  i;
+  PetscBool identical;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  for (i=0; i<ts->numbermonitors;i++) {
-    PetscCall(PetscMonitorCompare((PetscErrorCode (*)(void))monitor,mctx,mdestroy,(PetscErrorCode (*)(void))ts->monitor[i],ts->monitorcontext[i],ts->monitordestroy[i],&identical));
+  PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
+  for (i = 0; i < ts->numbermonitors; i++) {
+    PetscCall(PetscMonitorCompare((PetscErrorCode(*)(void))monitor, mctx, mdestroy, (PetscErrorCode(*)(void))ts->monitor[i], ts->monitorcontext[i], ts->monitordestroy[i], &identical));
     if (identical) PetscFunctionReturn(0);
   }
-  PetscCheck(ts->numbermonitors < MAXTSMONITORS,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many monitors set");
+  PetscCheck(ts->numbermonitors < MAXTSMONITORS, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Too many monitors set");
   ts->monitor[ts->numbermonitors]          = monitor;
   ts->monitordestroy[ts->numbermonitors]   = mdestroy;
-  ts->monitorcontext[ts->numbermonitors++] = (void*)mctx;
+  ts->monitorcontext[ts->numbermonitors++] = (void *)mctx;
   PetscFunctionReturn(0);
 }
 
@@ -154,16 +149,13 @@ PetscErrorCode  TSMonitorSet(TS ts,PetscErrorCode (*monitor)(TS,PetscInt,PetscRe
 
 .seealso: `TSMonitorDefault()`, `TSMonitorSet()`
 @*/
-PetscErrorCode  TSMonitorCancel(TS ts)
-{
-  PetscInt       i;
+PetscErrorCode TSMonitorCancel(TS ts) {
+  PetscInt i;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  for (i=0; i<ts->numbermonitors; i++) {
-    if (ts->monitordestroy[i]) {
-      PetscCall((*ts->monitordestroy[i])(&ts->monitorcontext[i]));
-    }
+  PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
+  for (i = 0; i < ts->numbermonitors; i++) {
+    if (ts->monitordestroy[i]) { PetscCall((*ts->monitordestroy[i])(&ts->monitorcontext[i])); }
   }
   ts->numbermonitors = 0;
   PetscFunctionReturn(0);
@@ -185,38 +177,35 @@ PetscErrorCode  TSMonitorCancel(TS ts)
           `TSMonitorDrawSolutionPhase()`, `TSMonitorDrawSolutionFunction()`, `TSMonitorDrawError()`, `TSMonitorSolution()`, `TSMonitorSolutionVTK()`,
           `TSMonitorLGSolution()`, `TSMonitorLGError()`, `TSMonitorSPSwarmSolution()`, `TSMonitorError()`, `TSMonitorEnvelope()`, `TSDMSwarmMonitorMoments()`
 @*/
-PetscErrorCode TSMonitorDefault(TS ts,PetscInt step,PetscReal ptime,Vec v,PetscViewerAndFormat *vf)
-{
-  PetscViewer    viewer =  vf->viewer;
-  PetscBool      iascii,ibinary;
+PetscErrorCode TSMonitorDefault(TS ts, PetscInt step, PetscReal ptime, Vec v, PetscViewerAndFormat *vf) {
+  PetscViewer viewer = vf->viewer;
+  PetscBool   iascii, ibinary;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,5);
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&ibinary));
-  PetscCall(PetscViewerPushFormat(viewer,vf->format));
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 5);
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERBINARY, &ibinary));
+  PetscCall(PetscViewerPushFormat(viewer, vf->format));
   if (iascii) {
-    PetscCall(PetscViewerASCIIAddTab(viewer,((PetscObject)ts)->tablevel));
+    PetscCall(PetscViewerASCIIAddTab(viewer, ((PetscObject)ts)->tablevel));
     if (step == -1) { /* this indicates it is an interpolated solution */
-      PetscCall(PetscViewerASCIIPrintf(viewer,"Interpolated solution at time %g between steps %" PetscInt_FMT " and %" PetscInt_FMT "\n",(double)ptime,ts->steps-1,ts->steps));
+      PetscCall(PetscViewerASCIIPrintf(viewer, "Interpolated solution at time %g between steps %" PetscInt_FMT " and %" PetscInt_FMT "\n", (double)ptime, ts->steps - 1, ts->steps));
     } else {
-      PetscCall(PetscViewerASCIIPrintf(viewer,"%" PetscInt_FMT " TS dt %g time %g%s",step,(double)ts->time_step,(double)ptime,ts->steprollback ? " (r)\n" : "\n"));
+      PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT " TS dt %g time %g%s", step, (double)ts->time_step, (double)ptime, ts->steprollback ? " (r)\n" : "\n"));
     }
-    PetscCall(PetscViewerASCIISubtractTab(viewer,((PetscObject)ts)->tablevel));
+    PetscCall(PetscViewerASCIISubtractTab(viewer, ((PetscObject)ts)->tablevel));
   } else if (ibinary) {
     PetscMPIInt rank;
-    PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&rank));
+    PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)viewer), &rank));
     if (rank == 0) {
       PetscBool skipHeader;
       PetscInt  classid = REAL_FILE_CLASSID;
 
-      PetscCall(PetscViewerBinaryGetSkipHeader(viewer,&skipHeader));
-      if (!skipHeader) {
-         PetscCall(PetscViewerBinaryWrite(viewer,&classid,1,PETSC_INT));
-       }
-      PetscCall(PetscRealView(1,&ptime,viewer));
+      PetscCall(PetscViewerBinaryGetSkipHeader(viewer, &skipHeader));
+      if (!skipHeader) { PetscCall(PetscViewerBinaryWrite(viewer, &classid, 1, PETSC_INT)); }
+      PetscCall(PetscRealView(1, &ptime, viewer));
     } else {
-      PetscCall(PetscRealView(0,&ptime,viewer));
+      PetscCall(PetscRealView(0, &ptime, viewer));
     }
   }
   PetscCall(PetscViewerPopFormat(viewer));
@@ -234,22 +223,21 @@ PetscErrorCode TSMonitorDefault(TS ts,PetscInt step,PetscReal ptime,Vec v,PetscV
 
 .seealso: `TSMonitorSet()`
 @*/
-PetscErrorCode TSMonitorExtreme(TS ts,PetscInt step,PetscReal ptime,Vec v,PetscViewerAndFormat *vf)
-{
-  PetscViewer    viewer =  vf->viewer;
-  PetscBool      iascii;
-  PetscReal      max,min;
+PetscErrorCode TSMonitorExtreme(TS ts, PetscInt step, PetscReal ptime, Vec v, PetscViewerAndFormat *vf) {
+  PetscViewer viewer = vf->viewer;
+  PetscBool   iascii;
+  PetscReal   max, min;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,5);
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
-  PetscCall(PetscViewerPushFormat(viewer,vf->format));
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 5);
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
+  PetscCall(PetscViewerPushFormat(viewer, vf->format));
   if (iascii) {
-    PetscCall(VecMax(v,NULL,&max));
-    PetscCall(VecMin(v,NULL,&min));
-    PetscCall(PetscViewerASCIIAddTab(viewer,((PetscObject)ts)->tablevel));
-    PetscCall(PetscViewerASCIIPrintf(viewer,"%" PetscInt_FMT " TS dt %g time %g%s max %g min %g\n",step,(double)ts->time_step,(double)ptime,ts->steprollback ? " (r)" : "",(double)max,(double)min));
-    PetscCall(PetscViewerASCIISubtractTab(viewer,((PetscObject)ts)->tablevel));
+    PetscCall(VecMax(v, NULL, &max));
+    PetscCall(VecMin(v, NULL, &min));
+    PetscCall(PetscViewerASCIIAddTab(viewer, ((PetscObject)ts)->tablevel));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT " TS dt %g time %g%s max %g min %g\n", step, (double)ts->time_step, (double)ptime, ts->steprollback ? " (r)" : "", (double)max, (double)min));
+    PetscCall(PetscViewerASCIISubtractTab(viewer, ((PetscObject)ts)->tablevel));
   }
   PetscCall(PetscViewerPopFormat(viewer));
   PetscFunctionReturn(0);
@@ -300,38 +288,36 @@ PetscErrorCode TSMonitorExtreme(TS ts,PetscInt step,PetscReal ptime,Vec v,PetscV
           `TSMonitorEnvelopeCtxCreate()`, `TSMonitorEnvelopeGetBounds()`, `TSMonitorEnvelopeCtxDestroy()`, `TSMonitorEnvelop()`
 
 @*/
-PetscErrorCode  TSMonitorLGCtxCreate(MPI_Comm comm,const char host[],const char label[],int x,int y,int m,int n,PetscInt howoften,TSMonitorLGCtx *ctx)
-{
-  PetscDraw      draw;
+PetscErrorCode TSMonitorLGCtxCreate(MPI_Comm comm, const char host[], const char label[], int x, int y, int m, int n, PetscInt howoften, TSMonitorLGCtx *ctx) {
+  PetscDraw draw;
 
   PetscFunctionBegin;
   PetscCall(PetscNew(ctx));
-  PetscCall(PetscDrawCreate(comm,host,label,x,y,m,n,&draw));
+  PetscCall(PetscDrawCreate(comm, host, label, x, y, m, n, &draw));
   PetscCall(PetscDrawSetFromOptions(draw));
-  PetscCall(PetscDrawLGCreate(draw,1,&(*ctx)->lg));
+  PetscCall(PetscDrawLGCreate(draw, 1, &(*ctx)->lg));
   PetscCall(PetscDrawLGSetFromOptions((*ctx)->lg));
   PetscCall(PetscDrawDestroy(&draw));
   (*ctx)->howoften = howoften;
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TSMonitorLGTimeStep(TS ts,PetscInt step,PetscReal ptime,Vec v,void *monctx)
-{
-  TSMonitorLGCtx ctx = (TSMonitorLGCtx) monctx;
-  PetscReal      x   = ptime,y;
+PetscErrorCode TSMonitorLGTimeStep(TS ts, PetscInt step, PetscReal ptime, Vec v, void *monctx) {
+  TSMonitorLGCtx ctx = (TSMonitorLGCtx)monctx;
+  PetscReal      x   = ptime, y;
 
   PetscFunctionBegin;
   if (step < 0) PetscFunctionReturn(0); /* -1 indicates an interpolated solution */
   if (!step) {
     PetscDrawAxis axis;
-    const char *ylabel = ctx->semilogy ? "Log Time Step" : "Time Step";
-    PetscCall(PetscDrawLGGetAxis(ctx->lg,&axis));
-    PetscCall(PetscDrawAxisSetLabels(axis,"Timestep as function of time","Time",ylabel));
+    const char   *ylabel = ctx->semilogy ? "Log Time Step" : "Time Step";
+    PetscCall(PetscDrawLGGetAxis(ctx->lg, &axis));
+    PetscCall(PetscDrawAxisSetLabels(axis, "Timestep as function of time", "Time", ylabel));
     PetscCall(PetscDrawLGReset(ctx->lg));
   }
-  PetscCall(TSGetTimeStep(ts,&y));
+  PetscCall(TSGetTimeStep(ts, &y));
   if (ctx->semilogy) y = PetscLog10Real(y);
-  PetscCall(PetscDrawLGAddPoint(ctx->lg,&x,&y));
+  PetscCall(PetscDrawLGAddPoint(ctx->lg, &x, &y));
   if (((ctx->howoften > 0) && (!(step % ctx->howoften))) || ((ctx->howoften == -1) && ts->reason)) {
     PetscCall(PetscDrawLGDraw(ctx->lg));
     PetscCall(PetscDrawLGSave(ctx->lg));
@@ -352,12 +338,9 @@ PetscErrorCode TSMonitorLGTimeStep(TS ts,PetscInt step,PetscReal ptime,Vec v,voi
 
 .seealso: `TSMonitorLGCtxCreate()`, `TSMonitorSet()`, `TSMonitorLGTimeStep();`
 @*/
-PetscErrorCode  TSMonitorLGCtxDestroy(TSMonitorLGCtx *ctx)
-{
+PetscErrorCode TSMonitorLGCtxDestroy(TSMonitorLGCtx *ctx) {
   PetscFunctionBegin;
-  if ((*ctx)->transformdestroy) {
-    PetscCall(((*ctx)->transformdestroy)((*ctx)->transformctx));
-  }
+  if ((*ctx)->transformdestroy) { PetscCall(((*ctx)->transformdestroy)((*ctx)->transformctx)); }
   PetscCall(PetscDrawLGDestroy(&(*ctx)->lg));
   PetscCall(PetscStrArrayDestroy(&(*ctx)->names));
   PetscCall(PetscStrArrayDestroy(&(*ctx)->displaynames));
@@ -368,15 +351,14 @@ PetscErrorCode  TSMonitorLGCtxDestroy(TSMonitorLGCtx *ctx)
 }
 
 /* Creates a TS Monitor SPCtx for use with DMSwarm particle visualizations */
-PetscErrorCode TSMonitorSPCtxCreate(MPI_Comm comm,const char host[],const char label[],int x,int y,int m,int n,PetscInt howoften,PetscInt retain,PetscBool phase,TSMonitorSPCtx *ctx)
-{
-  PetscDraw      draw;
+PetscErrorCode TSMonitorSPCtxCreate(MPI_Comm comm, const char host[], const char label[], int x, int y, int m, int n, PetscInt howoften, PetscInt retain, PetscBool phase, TSMonitorSPCtx *ctx) {
+  PetscDraw draw;
 
   PetscFunctionBegin;
   PetscCall(PetscNew(ctx));
-  PetscCall(PetscDrawCreate(comm,host,label,x,y,m,n,&draw));
+  PetscCall(PetscDrawCreate(comm, host, label, x, y, m, n, &draw));
   PetscCall(PetscDrawSetFromOptions(draw));
-  PetscCall(PetscDrawSPCreate(draw,1,&(*ctx)->sp));
+  PetscCall(PetscDrawSPCreate(draw, 1, &(*ctx)->sp));
   PetscCall(PetscDrawDestroy(&draw));
   (*ctx)->howoften = howoften;
   (*ctx)->retain   = retain;
@@ -387,15 +369,13 @@ PetscErrorCode TSMonitorSPCtxCreate(MPI_Comm comm,const char host[],const char l
 /*
   Destroys a TSMonitorSPCtx that was created with TSMonitorSPCtxCreate
 */
-PetscErrorCode TSMonitorSPCtxDestroy(TSMonitorSPCtx *ctx)
-{
+PetscErrorCode TSMonitorSPCtxDestroy(TSMonitorSPCtx *ctx) {
   PetscFunctionBegin;
 
   PetscCall(PetscDrawSPDestroy(&(*ctx)->sp));
   PetscCall(PetscFree(*ctx));
 
   PetscFunctionReturn(0);
-
 }
 
 /*@C
@@ -424,42 +404,39 @@ PetscErrorCode TSMonitorSPCtxDestroy(TSMonitorSPCtx *ctx)
 
 .seealso: `TSMonitorSet()`, `TSMonitorDefault()`, `VecView()`
 @*/
-PetscErrorCode  TSMonitorDrawSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,void *dummy)
-{
+PetscErrorCode TSMonitorDrawSolution(TS ts, PetscInt step, PetscReal ptime, Vec u, void *dummy) {
   TSMonitorDrawCtx ictx = (TSMonitorDrawCtx)dummy;
   PetscDraw        draw;
 
   PetscFunctionBegin;
   if (!step && ictx->showinitial) {
-    if (!ictx->initialsolution) {
-      PetscCall(VecDuplicate(u,&ictx->initialsolution));
-    }
-    PetscCall(VecCopy(u,ictx->initialsolution));
+    if (!ictx->initialsolution) { PetscCall(VecDuplicate(u, &ictx->initialsolution)); }
+    PetscCall(VecCopy(u, ictx->initialsolution));
   }
   if (!(((ictx->howoften > 0) && (!(step % ictx->howoften))) || ((ictx->howoften == -1) && ts->reason))) PetscFunctionReturn(0);
 
   if (ictx->showinitial) {
     PetscReal pause;
-    PetscCall(PetscViewerDrawGetPause(ictx->viewer,&pause));
-    PetscCall(PetscViewerDrawSetPause(ictx->viewer,0.0));
-    PetscCall(VecView(ictx->initialsolution,ictx->viewer));
-    PetscCall(PetscViewerDrawSetPause(ictx->viewer,pause));
-    PetscCall(PetscViewerDrawSetHold(ictx->viewer,PETSC_TRUE));
+    PetscCall(PetscViewerDrawGetPause(ictx->viewer, &pause));
+    PetscCall(PetscViewerDrawSetPause(ictx->viewer, 0.0));
+    PetscCall(VecView(ictx->initialsolution, ictx->viewer));
+    PetscCall(PetscViewerDrawSetPause(ictx->viewer, pause));
+    PetscCall(PetscViewerDrawSetHold(ictx->viewer, PETSC_TRUE));
   }
-  PetscCall(VecView(u,ictx->viewer));
+  PetscCall(VecView(u, ictx->viewer));
   if (ictx->showtimestepandtime) {
-    PetscReal xl,yl,xr,yr,h;
+    PetscReal xl, yl, xr, yr, h;
     char      time[32];
 
-    PetscCall(PetscViewerDrawGetDraw(ictx->viewer,0,&draw));
-    PetscCall(PetscSNPrintf(time,32,"Timestep %d Time %g",(int)step,(double)ptime));
-    PetscCall(PetscDrawGetCoordinates(draw,&xl,&yl,&xr,&yr));
-    h    = yl + .95*(yr - yl);
-    PetscCall(PetscDrawStringCentered(draw,.5*(xl+xr),h,PETSC_DRAW_BLACK,time));
+    PetscCall(PetscViewerDrawGetDraw(ictx->viewer, 0, &draw));
+    PetscCall(PetscSNPrintf(time, 32, "Timestep %d Time %g", (int)step, (double)ptime));
+    PetscCall(PetscDrawGetCoordinates(draw, &xl, &yl, &xr, &yr));
+    h = yl + .95 * (yr - yl);
+    PetscCall(PetscDrawStringCentered(draw, .5 * (xl + xr), h, PETSC_DRAW_BLACK, time));
     PetscCall(PetscDrawFlush(draw));
   }
 
-  if (ictx->showinitial) PetscCall(PetscViewerDrawSetHold(ictx->viewer,PETSC_FALSE));
+  if (ictx->showinitial) PetscCall(PetscViewerDrawSetHold(ictx->viewer, PETSC_FALSE));
   PetscFunctionReturn(0);
 }
 
@@ -482,44 +459,43 @@ PetscErrorCode  TSMonitorDrawSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,
 
 .seealso: `TSMonitorSet()`, `TSMonitorDefault()`, `VecView()`
 @*/
-PetscErrorCode  TSMonitorDrawSolutionPhase(TS ts,PetscInt step,PetscReal ptime,Vec u,void *dummy)
-{
-  TSMonitorDrawCtx  ictx = (TSMonitorDrawCtx)dummy;
-  PetscDraw         draw;
-  PetscDrawAxis     axis;
-  PetscInt          n;
-  PetscMPIInt       size;
-  PetscReal         U0,U1,xl,yl,xr,yr,h;
-  char              time[32];
+PetscErrorCode TSMonitorDrawSolutionPhase(TS ts, PetscInt step, PetscReal ptime, Vec u, void *dummy) {
+  TSMonitorDrawCtx   ictx = (TSMonitorDrawCtx)dummy;
+  PetscDraw          draw;
+  PetscDrawAxis      axis;
+  PetscInt           n;
+  PetscMPIInt        size;
+  PetscReal          U0, U1, xl, yl, xr, yr, h;
+  char               time[32];
   const PetscScalar *U;
 
   PetscFunctionBegin;
-  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)ts),&size));
-  PetscCheck(size == 1,PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Only allowed for sequential runs");
-  PetscCall(VecGetSize(u,&n));
-  PetscCheck(n == 2,PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Only for ODEs with two unknowns");
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)ts), &size));
+  PetscCheck(size == 1, PetscObjectComm((PetscObject)ts), PETSC_ERR_SUP, "Only allowed for sequential runs");
+  PetscCall(VecGetSize(u, &n));
+  PetscCheck(n == 2, PetscObjectComm((PetscObject)ts), PETSC_ERR_SUP, "Only for ODEs with two unknowns");
 
-  PetscCall(PetscViewerDrawGetDraw(ictx->viewer,0,&draw));
-  PetscCall(PetscViewerDrawGetDrawAxis(ictx->viewer,0,&axis));
-  PetscCall(PetscDrawAxisGetLimits(axis,&xl,&xr,&yl,&yr));
+  PetscCall(PetscViewerDrawGetDraw(ictx->viewer, 0, &draw));
+  PetscCall(PetscViewerDrawGetDrawAxis(ictx->viewer, 0, &axis));
+  PetscCall(PetscDrawAxisGetLimits(axis, &xl, &xr, &yl, &yr));
   if (!step) {
     PetscCall(PetscDrawClear(draw));
     PetscCall(PetscDrawAxisDraw(axis));
   }
 
-  PetscCall(VecGetArrayRead(u,&U));
+  PetscCall(VecGetArrayRead(u, &U));
   U0 = PetscRealPart(U[0]);
   U1 = PetscRealPart(U[1]);
-  PetscCall(VecRestoreArrayRead(u,&U));
+  PetscCall(VecRestoreArrayRead(u, &U));
   if ((U0 < xl) || (U1 < yl) || (U0 > xr) || (U1 > yr)) PetscFunctionReturn(0);
 
   PetscDrawCollectiveBegin(draw);
-  PetscCall(PetscDrawPoint(draw,U0,U1,PETSC_DRAW_BLACK));
+  PetscCall(PetscDrawPoint(draw, U0, U1, PETSC_DRAW_BLACK));
   if (ictx->showtimestepandtime) {
-    PetscCall(PetscDrawGetCoordinates(draw,&xl,&yl,&xr,&yr));
-    PetscCall(PetscSNPrintf(time,32,"Timestep %d Time %g",(int)step,(double)ptime));
-    h    = yl + .95*(yr - yl);
-    PetscCall(PetscDrawStringCentered(draw,.5*(xl+xr),h,PETSC_DRAW_BLACK,time));
+    PetscCall(PetscDrawGetCoordinates(draw, &xl, &yl, &xr, &yr));
+    PetscCall(PetscSNPrintf(time, 32, "Timestep %d Time %g", (int)step, (double)ptime));
+    h = yl + .95 * (yr - yl);
+    PetscCall(PetscDrawStringCentered(draw, .5 * (xl + xr), h, PETSC_DRAW_BLACK, time));
   }
   PetscDrawCollectiveEnd(draw);
   PetscCall(PetscDrawFlush(draw));
@@ -540,8 +516,7 @@ PetscErrorCode  TSMonitorDrawSolutionPhase(TS ts,PetscInt step,PetscReal ptime,V
 
 .seealso: `TSMonitorSet()`, `TSMonitorDefault()`, `VecView()`, `TSMonitorDrawSolution()`, `TSMonitorDrawError()`
 @*/
-PetscErrorCode  TSMonitorDrawCtxDestroy(TSMonitorDrawCtx *ictx)
-{
+PetscErrorCode TSMonitorDrawCtxDestroy(TSMonitorDrawCtx *ictx) {
   PetscFunctionBegin;
   PetscCall(PetscViewerDestroy(&(*ictx)->viewer));
   PetscCall(VecDestroy(&(*ictx)->initialsolution));
@@ -567,19 +542,18 @@ PetscErrorCode  TSMonitorDrawCtxDestroy(TSMonitorDrawCtx *ictx)
 
 .seealso: `TSMonitorSet()`, `TSMonitorDefault()`, `VecView()`, `TSMonitorDrawCtx()`
 @*/
-PetscErrorCode  TSMonitorDrawCtxCreate(MPI_Comm comm,const char host[],const char label[],int x,int y,int m,int n,PetscInt howoften,TSMonitorDrawCtx *ctx)
-{
+PetscErrorCode TSMonitorDrawCtxCreate(MPI_Comm comm, const char host[], const char label[], int x, int y, int m, int n, PetscInt howoften, TSMonitorDrawCtx *ctx) {
   PetscFunctionBegin;
   PetscCall(PetscNew(ctx));
-  PetscCall(PetscViewerDrawOpen(comm,host,label,x,y,m,n,&(*ctx)->viewer));
+  PetscCall(PetscViewerDrawOpen(comm, host, label, x, y, m, n, &(*ctx)->viewer));
   PetscCall(PetscViewerSetFromOptions((*ctx)->viewer));
 
   (*ctx)->howoften    = howoften;
   (*ctx)->showinitial = PETSC_FALSE;
-  PetscCall(PetscOptionsGetBool(NULL,NULL,"-ts_monitor_draw_solution_initial",&(*ctx)->showinitial,NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-ts_monitor_draw_solution_initial", &(*ctx)->showinitial, NULL));
 
   (*ctx)->showtimestepandtime = PETSC_FALSE;
-  PetscCall(PetscOptionsGetBool(NULL,NULL,"-ts_monitor_draw_solution_show_time",&(*ctx)->showtimestepandtime,NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-ts_monitor_draw_solution_show_time", &(*ctx)->showtimestepandtime, NULL));
   PetscFunctionReturn(0);
 }
 
@@ -605,17 +579,16 @@ PetscErrorCode  TSMonitorDrawCtxCreate(MPI_Comm comm,const char host[],const cha
 
 .seealso: `TSMonitorSet()`, `TSMonitorDefault()`, `VecView()`, `TSSetSolutionFunction()`
 @*/
-PetscErrorCode  TSMonitorDrawSolutionFunction(TS ts,PetscInt step,PetscReal ptime,Vec u,void *dummy)
-{
+PetscErrorCode TSMonitorDrawSolutionFunction(TS ts, PetscInt step, PetscReal ptime, Vec u, void *dummy) {
   TSMonitorDrawCtx ctx    = (TSMonitorDrawCtx)dummy;
   PetscViewer      viewer = ctx->viewer;
   Vec              work;
 
   PetscFunctionBegin;
   if (!(((ctx->howoften > 0) && (!(step % ctx->howoften))) || ((ctx->howoften == -1) && ts->reason))) PetscFunctionReturn(0);
-  PetscCall(VecDuplicate(u,&work));
-  PetscCall(TSComputeSolutionFunction(ts,ptime,work));
-  PetscCall(VecView(work,viewer));
+  PetscCall(VecDuplicate(u, &work));
+  PetscCall(TSComputeSolutionFunction(ts, ptime, work));
+  PetscCall(VecView(work, viewer));
   PetscCall(VecDestroy(&work));
   PetscFunctionReturn(0);
 }
@@ -643,18 +616,17 @@ PetscErrorCode  TSMonitorDrawSolutionFunction(TS ts,PetscInt step,PetscReal ptim
 
 .seealso: `TSMonitorSet()`, `TSMonitorDefault()`, `VecView()`, `TSSetSolutionFunction()`
 @*/
-PetscErrorCode  TSMonitorDrawError(TS ts,PetscInt step,PetscReal ptime,Vec u,void *dummy)
-{
+PetscErrorCode TSMonitorDrawError(TS ts, PetscInt step, PetscReal ptime, Vec u, void *dummy) {
   TSMonitorDrawCtx ctx    = (TSMonitorDrawCtx)dummy;
   PetscViewer      viewer = ctx->viewer;
   Vec              work;
 
   PetscFunctionBegin;
   if (!(((ctx->howoften > 0) && (!(step % ctx->howoften))) || ((ctx->howoften == -1) && ts->reason))) PetscFunctionReturn(0);
-  PetscCall(VecDuplicate(u,&work));
-  PetscCall(TSComputeSolutionFunction(ts,ptime,work));
-  PetscCall(VecAXPY(work,-1.0,u));
-  PetscCall(VecView(work,viewer));
+  PetscCall(VecDuplicate(u, &work));
+  PetscCall(TSComputeSolutionFunction(ts, ptime, work));
+  PetscCall(VecAXPY(work, -1.0, u));
+  PetscCall(VecView(work, viewer));
   PetscCall(VecDestroy(&work));
   PetscFunctionReturn(0);
 }
@@ -679,11 +651,10 @@ PetscErrorCode  TSMonitorDrawError(TS ts,PetscInt step,PetscReal ptime,Vec u,voi
 
 .seealso: `TSMonitorSet()`, `TSMonitorDefault()`, `VecView()`
 @*/
-PetscErrorCode  TSMonitorSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,PetscViewerAndFormat *vf)
-{
+PetscErrorCode TSMonitorSolution(TS ts, PetscInt step, PetscReal ptime, Vec u, PetscViewerAndFormat *vf) {
   PetscFunctionBegin;
-  PetscCall(PetscViewerPushFormat(vf->viewer,vf->format));
-  PetscCall(VecView(u,vf->viewer));
+  PetscCall(PetscViewerPushFormat(vf->viewer, vf->format));
+  PetscCall(VecView(u, vf->viewer));
   PetscCall(PetscViewerPopFormat(vf->viewer));
   PetscFunctionReturn(0);
 }
@@ -711,16 +682,15 @@ PetscErrorCode  TSMonitorSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,Pets
 
 .seealso: `TSMonitorSet()`, `TSMonitorDefault()`, `VecView()`
 @*/
-PetscErrorCode TSMonitorSolutionVTK(TS ts,PetscInt step,PetscReal ptime,Vec u,void *filenametemplate)
-{
-  char           filename[PETSC_MAX_PATH_LEN];
-  PetscViewer    viewer;
+PetscErrorCode TSMonitorSolutionVTK(TS ts, PetscInt step, PetscReal ptime, Vec u, void *filenametemplate) {
+  char        filename[PETSC_MAX_PATH_LEN];
+  PetscViewer viewer;
 
   PetscFunctionBegin;
   if (step < 0) PetscFunctionReturn(0); /* -1 indicates interpolated solution */
-  PetscCall(PetscSNPrintf(filename,sizeof(filename),(const char*)filenametemplate,step));
-  PetscCall(PetscViewerVTKOpen(PetscObjectComm((PetscObject)ts),filename,FILE_MODE_WRITE,&viewer));
-  PetscCall(VecView(u,viewer));
+  PetscCall(PetscSNPrintf(filename, sizeof(filename), (const char *)filenametemplate, step));
+  PetscCall(PetscViewerVTKOpen(PetscObjectComm((PetscObject)ts), filename, FILE_MODE_WRITE, &viewer));
+  PetscCall(VecView(u, viewer));
   PetscCall(PetscViewerDestroy(&viewer));
   PetscFunctionReturn(0);
 }
@@ -740,10 +710,9 @@ PetscErrorCode TSMonitorSolutionVTK(TS ts,PetscInt step,PetscReal ptime,Vec u,vo
 
 .seealso: `TSMonitorSet()`, `TSMonitorSolutionVTK()`
 @*/
-PetscErrorCode TSMonitorSolutionVTKDestroy(void *filenametemplate)
-{
+PetscErrorCode TSMonitorSolutionVTKDestroy(void *filenametemplate) {
   PetscFunctionBegin;
-  PetscCall(PetscFree(*(char**)filenametemplate));
+  PetscCall(PetscFree(*(char **)filenametemplate));
   PetscFunctionReturn(0);
 }
 
@@ -776,81 +745,79 @@ PetscErrorCode TSMonitorSolutionVTKDestroy(void *filenametemplate)
           `TSMonitorLGCtxSetTransform()`, `TSMonitorLGSetTransform()`, `TSMonitorLGError()`, `TSMonitorLGSNESIterations()`, `TSMonitorLGKSPIterations()`,
           `TSMonitorEnvelopeCtxCreate()`, `TSMonitorEnvelopeGetBounds()`, `TSMonitorEnvelopeCtxDestroy()`, `TSMonitorEnvelop()`
 @*/
-PetscErrorCode  TSMonitorLGSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,void *dctx)
-{
-  TSMonitorLGCtx    ctx = (TSMonitorLGCtx)dctx;
+PetscErrorCode TSMonitorLGSolution(TS ts, PetscInt step, PetscReal ptime, Vec u, void *dctx) {
+  TSMonitorLGCtx     ctx = (TSMonitorLGCtx)dctx;
   const PetscScalar *yy;
-  Vec               v;
+  Vec                v;
 
   PetscFunctionBegin;
   if (step < 0) PetscFunctionReturn(0); /* -1 indicates interpolated solution */
   if (!step) {
     PetscDrawAxis axis;
     PetscInt      dim;
-    PetscCall(PetscDrawLGGetAxis(ctx->lg,&axis));
-    PetscCall(PetscDrawAxisSetLabels(axis,"Solution as function of time","Time","Solution"));
+    PetscCall(PetscDrawLGGetAxis(ctx->lg, &axis));
+    PetscCall(PetscDrawAxisSetLabels(axis, "Solution as function of time", "Time", "Solution"));
     if (!ctx->names) {
       PetscBool flg;
       /* user provides names of variables to plot but no names has been set so assume names are integer values */
-      PetscCall(PetscOptionsHasName(((PetscObject)ts)->options,((PetscObject)ts)->prefix,"-ts_monitor_lg_solution_variables",&flg));
+      PetscCall(PetscOptionsHasName(((PetscObject)ts)->options, ((PetscObject)ts)->prefix, "-ts_monitor_lg_solution_variables", &flg));
       if (flg) {
-        PetscInt i,n;
-        char     **names;
-        PetscCall(VecGetSize(u,&n));
-        PetscCall(PetscMalloc1(n+1,&names));
-        for (i=0; i<n; i++) {
-          PetscCall(PetscMalloc1(5,&names[i]));
-          PetscCall(PetscSNPrintf(names[i],5,"%" PetscInt_FMT,i));
+        PetscInt i, n;
+        char   **names;
+        PetscCall(VecGetSize(u, &n));
+        PetscCall(PetscMalloc1(n + 1, &names));
+        for (i = 0; i < n; i++) {
+          PetscCall(PetscMalloc1(5, &names[i]));
+          PetscCall(PetscSNPrintf(names[i], 5, "%" PetscInt_FMT, i));
         }
-        names[n] = NULL;
+        names[n]   = NULL;
         ctx->names = names;
       }
     }
     if (ctx->names && !ctx->displaynames) {
-      char      **displaynames;
+      char    **displaynames;
       PetscBool flg;
-      PetscCall(VecGetLocalSize(u,&dim));
-      PetscCall(PetscCalloc1(dim+1,&displaynames));
-      PetscCall(PetscOptionsGetStringArray(((PetscObject)ts)->options,((PetscObject)ts)->prefix,"-ts_monitor_lg_solution_variables",displaynames,&dim,&flg));
-      if (flg) PetscCall(TSMonitorLGCtxSetDisplayVariables(ctx,(const char *const *)displaynames));
+      PetscCall(VecGetLocalSize(u, &dim));
+      PetscCall(PetscCalloc1(dim + 1, &displaynames));
+      PetscCall(PetscOptionsGetStringArray(((PetscObject)ts)->options, ((PetscObject)ts)->prefix, "-ts_monitor_lg_solution_variables", displaynames, &dim, &flg));
+      if (flg) PetscCall(TSMonitorLGCtxSetDisplayVariables(ctx, (const char *const *)displaynames));
       PetscCall(PetscStrArrayDestroy(&displaynames));
     }
     if (ctx->displaynames) {
-      PetscCall(PetscDrawLGSetDimension(ctx->lg,ctx->ndisplayvariables));
-      PetscCall(PetscDrawLGSetLegend(ctx->lg,(const char *const *)ctx->displaynames));
+      PetscCall(PetscDrawLGSetDimension(ctx->lg, ctx->ndisplayvariables));
+      PetscCall(PetscDrawLGSetLegend(ctx->lg, (const char *const *)ctx->displaynames));
     } else if (ctx->names) {
-      PetscCall(VecGetLocalSize(u,&dim));
-      PetscCall(PetscDrawLGSetDimension(ctx->lg,dim));
-      PetscCall(PetscDrawLGSetLegend(ctx->lg,(const char *const *)ctx->names));
+      PetscCall(VecGetLocalSize(u, &dim));
+      PetscCall(PetscDrawLGSetDimension(ctx->lg, dim));
+      PetscCall(PetscDrawLGSetLegend(ctx->lg, (const char *const *)ctx->names));
     } else {
-      PetscCall(VecGetLocalSize(u,&dim));
-      PetscCall(PetscDrawLGSetDimension(ctx->lg,dim));
+      PetscCall(VecGetLocalSize(u, &dim));
+      PetscCall(PetscDrawLGSetDimension(ctx->lg, dim));
     }
     PetscCall(PetscDrawLGReset(ctx->lg));
   }
 
   if (!ctx->transform) v = u;
-  else PetscCall((*ctx->transform)(ctx->transformctx,u,&v));
-  PetscCall(VecGetArrayRead(v,&yy));
+  else PetscCall((*ctx->transform)(ctx->transformctx, u, &v));
+  PetscCall(VecGetArrayRead(v, &yy));
   if (ctx->displaynames) {
     PetscInt i;
-    for (i=0; i<ctx->ndisplayvariables; i++)
-      ctx->displayvalues[i] = PetscRealPart(yy[ctx->displayvariables[i]]);
-    PetscCall(PetscDrawLGAddCommonPoint(ctx->lg,ptime,ctx->displayvalues));
+    for (i = 0; i < ctx->ndisplayvariables; i++) ctx->displayvalues[i] = PetscRealPart(yy[ctx->displayvariables[i]]);
+    PetscCall(PetscDrawLGAddCommonPoint(ctx->lg, ptime, ctx->displayvalues));
   } else {
 #if defined(PETSC_USE_COMPLEX)
-    PetscInt  i,n;
+    PetscInt   i, n;
     PetscReal *yreal;
-    PetscCall(VecGetLocalSize(v,&n));
-    PetscCall(PetscMalloc1(n,&yreal));
-    for (i=0; i<n; i++) yreal[i] = PetscRealPart(yy[i]);
-    PetscCall(PetscDrawLGAddCommonPoint(ctx->lg,ptime,yreal));
+    PetscCall(VecGetLocalSize(v, &n));
+    PetscCall(PetscMalloc1(n, &yreal));
+    for (i = 0; i < n; i++) yreal[i] = PetscRealPart(yy[i]);
+    PetscCall(PetscDrawLGAddCommonPoint(ctx->lg, ptime, yreal));
     PetscCall(PetscFree(yreal));
 #else
-    PetscCall(PetscDrawLGAddCommonPoint(ctx->lg,ptime,yy));
+    PetscCall(PetscDrawLGAddCommonPoint(ctx->lg, ptime, yy));
 #endif
   }
-  PetscCall(VecRestoreArrayRead(v,&yy));
+  PetscCall(VecRestoreArrayRead(v, &yy));
   if (ctx->transform) PetscCall(VecDestroy(&v));
 
   if (((ctx->howoften > 0) && (!(step % ctx->howoften))) || ((ctx->howoften == -1) && ts->reason)) {
@@ -876,14 +843,13 @@ PetscErrorCode  TSMonitorLGSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,vo
 
 .seealso: `TSMonitorSet()`, `TSMonitorDefault()`, `VecView()`, `TSMonitorLGSetDisplayVariables()`, `TSMonitorLGCtxSetVariableNames()`
 @*/
-PetscErrorCode  TSMonitorLGSetVariableNames(TS ts,const char * const *names)
-{
-  PetscInt          i;
+PetscErrorCode TSMonitorLGSetVariableNames(TS ts, const char *const *names) {
+  PetscInt i;
 
   PetscFunctionBegin;
-  for (i=0; i<ts->numbermonitors; i++) {
+  for (i = 0; i < ts->numbermonitors; i++) {
     if (ts->monitor[i] == TSMonitorLGSolution) {
-      PetscCall(TSMonitorLGCtxSetVariableNames((TSMonitorLGCtx)ts->monitorcontext[i],names));
+      PetscCall(TSMonitorLGCtxSetVariableNames((TSMonitorLGCtx)ts->monitorcontext[i], names));
       break;
     }
   }
@@ -903,11 +869,10 @@ PetscErrorCode  TSMonitorLGSetVariableNames(TS ts,const char * const *names)
 
 .seealso: `TSMonitorSet()`, `TSMonitorDefault()`, `VecView()`, `TSMonitorLGSetDisplayVariables()`, `TSMonitorLGSetVariableNames()`
 @*/
-PetscErrorCode  TSMonitorLGCtxSetVariableNames(TSMonitorLGCtx ctx,const char * const *names)
-{
+PetscErrorCode TSMonitorLGCtxSetVariableNames(TSMonitorLGCtx ctx, const char *const *names) {
   PetscFunctionBegin;
   PetscCall(PetscStrArrayDestroy(&ctx->names));
-  PetscCall(PetscStrArrayallocpy(names,&ctx->names));
+  PetscCall(PetscStrArrayallocpy(names, &ctx->names));
   PetscFunctionReturn(0);
 }
 
@@ -929,16 +894,15 @@ PetscErrorCode  TSMonitorLGCtxSetVariableNames(TSMonitorLGCtx ctx,const char * c
 
 .seealso: `TSMonitorSet()`, `TSMonitorDefault()`, `VecView()`, `TSMonitorLGSetDisplayVariables()`
 @*/
-PetscErrorCode  TSMonitorLGGetVariableNames(TS ts,const char *const **names)
-{
-  PetscInt       i;
+PetscErrorCode TSMonitorLGGetVariableNames(TS ts, const char *const **names) {
+  PetscInt i;
 
   PetscFunctionBegin;
   *names = NULL;
-  for (i=0; i<ts->numbermonitors; i++) {
+  for (i = 0; i < ts->numbermonitors; i++) {
     if (ts->monitor[i] == TSMonitorLGSolution) {
-      TSMonitorLGCtx  ctx = (TSMonitorLGCtx) ts->monitorcontext[i];
-      *names = (const char *const *)ctx->names;
+      TSMonitorLGCtx ctx = (TSMonitorLGCtx)ts->monitorcontext[i];
+      *names             = (const char *const *)ctx->names;
       break;
     }
   }
@@ -958,24 +922,23 @@ PetscErrorCode  TSMonitorLGGetVariableNames(TS ts,const char *const **names)
 
 .seealso: `TSMonitorSet()`, `TSMonitorDefault()`, `VecView()`, `TSMonitorLGSetVariableNames()`
 @*/
-PetscErrorCode  TSMonitorLGCtxSetDisplayVariables(TSMonitorLGCtx ctx,const char * const *displaynames)
-{
-  PetscInt          j = 0,k;
+PetscErrorCode TSMonitorLGCtxSetDisplayVariables(TSMonitorLGCtx ctx, const char *const *displaynames) {
+  PetscInt j = 0, k;
 
   PetscFunctionBegin;
   if (!ctx->names) PetscFunctionReturn(0);
   PetscCall(PetscStrArrayDestroy(&ctx->displaynames));
-  PetscCall(PetscStrArrayallocpy(displaynames,&ctx->displaynames));
+  PetscCall(PetscStrArrayallocpy(displaynames, &ctx->displaynames));
   while (displaynames[j]) j++;
   ctx->ndisplayvariables = j;
-  PetscCall(PetscMalloc1(ctx->ndisplayvariables,&ctx->displayvariables));
-  PetscCall(PetscMalloc1(ctx->ndisplayvariables,&ctx->displayvalues));
+  PetscCall(PetscMalloc1(ctx->ndisplayvariables, &ctx->displayvariables));
+  PetscCall(PetscMalloc1(ctx->ndisplayvariables, &ctx->displayvalues));
   j = 0;
   while (displaynames[j]) {
     k = 0;
     while (ctx->names[k]) {
       PetscBool flg;
-      PetscCall(PetscStrcmp(displaynames[j],ctx->names[k],&flg));
+      PetscCall(PetscStrcmp(displaynames[j], ctx->names[k], &flg));
       if (flg) {
         ctx->displayvariables[j] = k;
         break;
@@ -1003,14 +966,13 @@ PetscErrorCode  TSMonitorLGCtxSetDisplayVariables(TSMonitorLGCtx ctx,const char 
 
 .seealso: `TSMonitorSet()`, `TSMonitorDefault()`, `VecView()`, `TSMonitorLGSetVariableNames()`
 @*/
-PetscErrorCode  TSMonitorLGSetDisplayVariables(TS ts,const char * const *displaynames)
-{
-  PetscInt          i;
+PetscErrorCode TSMonitorLGSetDisplayVariables(TS ts, const char *const *displaynames) {
+  PetscInt i;
 
   PetscFunctionBegin;
-  for (i=0; i<ts->numbermonitors; i++) {
+  for (i = 0; i < ts->numbermonitors; i++) {
     if (ts->monitor[i] == TSMonitorLGSolution) {
-      PetscCall(TSMonitorLGCtxSetDisplayVariables((TSMonitorLGCtx)ts->monitorcontext[i],displaynames));
+      PetscCall(TSMonitorLGCtxSetDisplayVariables((TSMonitorLGCtx)ts->monitorcontext[i], displaynames));
       break;
     }
   }
@@ -1035,15 +997,12 @@ PetscErrorCode  TSMonitorLGSetDisplayVariables(TS ts,const char * const *display
 
 .seealso: `TSMonitorSet()`, `TSMonitorDefault()`, `VecView()`, `TSMonitorLGSetVariableNames()`, `TSMonitorLGCtxSetTransform()`
 @*/
-PetscErrorCode  TSMonitorLGSetTransform(TS ts,PetscErrorCode (*transform)(void*,Vec,Vec*),PetscErrorCode (*destroy)(void*),void *tctx)
-{
-  PetscInt          i;
+PetscErrorCode TSMonitorLGSetTransform(TS ts, PetscErrorCode (*transform)(void *, Vec, Vec *), PetscErrorCode (*destroy)(void *), void *tctx) {
+  PetscInt i;
 
   PetscFunctionBegin;
-  for (i=0; i<ts->numbermonitors; i++) {
-    if (ts->monitor[i] == TSMonitorLGSolution) {
-      PetscCall(TSMonitorLGCtxSetTransform((TSMonitorLGCtx)ts->monitorcontext[i],transform,destroy,tctx));
-    }
+  for (i = 0; i < ts->numbermonitors; i++) {
+    if (ts->monitor[i] == TSMonitorLGSolution) { PetscCall(TSMonitorLGCtxSetTransform((TSMonitorLGCtx)ts->monitorcontext[i], transform, destroy, tctx)); }
   }
   PetscFunctionReturn(0);
 }
@@ -1063,12 +1022,11 @@ PetscErrorCode  TSMonitorLGSetTransform(TS ts,PetscErrorCode (*transform)(void*,
 
 .seealso: `TSMonitorSet()`, `TSMonitorDefault()`, `VecView()`, `TSMonitorLGSetVariableNames()`, `TSMonitorLGSetTransform()`
 @*/
-PetscErrorCode  TSMonitorLGCtxSetTransform(TSMonitorLGCtx ctx,PetscErrorCode (*transform)(void*,Vec,Vec*),PetscErrorCode (*destroy)(void*),void *tctx)
-{
+PetscErrorCode TSMonitorLGCtxSetTransform(TSMonitorLGCtx ctx, PetscErrorCode (*transform)(void *, Vec, Vec *), PetscErrorCode (*destroy)(void *), void *tctx) {
   PetscFunctionBegin;
-  ctx->transform    = transform;
+  ctx->transform        = transform;
   ctx->transformdestroy = destroy;
-  ctx->transformctx = tctx;
+  ctx->transformctx     = tctx;
   PetscFunctionReturn(0);
 }
 
@@ -1100,40 +1058,39 @@ PetscErrorCode  TSMonitorLGCtxSetTransform(TSMonitorLGCtx ctx,PetscErrorCode (*t
 
 .seealso: `TSMonitorSet()`, `TSMonitorDefault()`, `VecView()`, `TSSetSolutionFunction()`
 @*/
-PetscErrorCode  TSMonitorLGError(TS ts,PetscInt step,PetscReal ptime,Vec u,void *dummy)
-{
-  TSMonitorLGCtx    ctx = (TSMonitorLGCtx)dummy;
+PetscErrorCode TSMonitorLGError(TS ts, PetscInt step, PetscReal ptime, Vec u, void *dummy) {
+  TSMonitorLGCtx     ctx = (TSMonitorLGCtx)dummy;
   const PetscScalar *yy;
-  Vec               y;
+  Vec                y;
 
   PetscFunctionBegin;
   if (!step) {
     PetscDrawAxis axis;
     PetscInt      dim;
-    PetscCall(PetscDrawLGGetAxis(ctx->lg,&axis));
-    PetscCall(PetscDrawAxisSetLabels(axis,"Error in solution as function of time","Time","Error"));
-    PetscCall(VecGetLocalSize(u,&dim));
-    PetscCall(PetscDrawLGSetDimension(ctx->lg,dim));
+    PetscCall(PetscDrawLGGetAxis(ctx->lg, &axis));
+    PetscCall(PetscDrawAxisSetLabels(axis, "Error in solution as function of time", "Time", "Error"));
+    PetscCall(VecGetLocalSize(u, &dim));
+    PetscCall(PetscDrawLGSetDimension(ctx->lg, dim));
     PetscCall(PetscDrawLGReset(ctx->lg));
   }
-  PetscCall(VecDuplicate(u,&y));
-  PetscCall(TSComputeSolutionFunction(ts,ptime,y));
-  PetscCall(VecAXPY(y,-1.0,u));
-  PetscCall(VecGetArrayRead(y,&yy));
+  PetscCall(VecDuplicate(u, &y));
+  PetscCall(TSComputeSolutionFunction(ts, ptime, y));
+  PetscCall(VecAXPY(y, -1.0, u));
+  PetscCall(VecGetArrayRead(y, &yy));
 #if defined(PETSC_USE_COMPLEX)
   {
     PetscReal *yreal;
-    PetscInt  i,n;
-    PetscCall(VecGetLocalSize(y,&n));
-    PetscCall(PetscMalloc1(n,&yreal));
-    for (i=0; i<n; i++) yreal[i] = PetscRealPart(yy[i]);
-    PetscCall(PetscDrawLGAddCommonPoint(ctx->lg,ptime,yreal));
+    PetscInt   i, n;
+    PetscCall(VecGetLocalSize(y, &n));
+    PetscCall(PetscMalloc1(n, &yreal));
+    for (i = 0; i < n; i++) yreal[i] = PetscRealPart(yy[i]);
+    PetscCall(PetscDrawLGAddCommonPoint(ctx->lg, ptime, yreal));
     PetscCall(PetscFree(yreal));
   }
 #else
-  PetscCall(PetscDrawLGAddCommonPoint(ctx->lg,ptime,yy));
+  PetscCall(PetscDrawLGAddCommonPoint(ctx->lg, ptime, yy));
 #endif
-  PetscCall(VecRestoreArrayRead(y,&yy));
+  PetscCall(VecRestoreArrayRead(y, &yy));
   PetscCall(VecDestroy(&y));
   if (((ctx->howoften > 0) && (!(step % ctx->howoften))) || ((ctx->howoften == -1) && ts->reason)) {
     PetscCall(PetscDrawLGDraw(ctx->lg));
@@ -1165,9 +1122,8 @@ PetscErrorCode  TSMonitorLGError(TS ts,PetscInt step,PetscReal ptime,Vec u,void 
 
 .seealso: `TSMonitoSet()`
 @*/
-PetscErrorCode TSMonitorSPSwarmSolution(TS ts, PetscInt step, PetscReal ptime, Vec u, void *dctx)
-{
-  TSMonitorSPCtx     ctx = (TSMonitorSPCtx) dctx;
+PetscErrorCode TSMonitorSPSwarmSolution(TS ts, PetscInt step, PetscReal ptime, Vec u, void *dctx) {
+  TSMonitorSPCtx     ctx = (TSMonitorSPCtx)dctx;
   PetscDraw          draw;
   DM                 dm, cdm;
   const PetscScalar *yy;
@@ -1185,25 +1141,23 @@ PetscErrorCode TSMonitorSPSwarmSolution(TS ts, PetscInt step, PetscReal ptime, V
     PetscCall(DMSwarmGetCellDM(dm, &cdm));
     PetscCall(DMGetBoundingBox(cdm, dmboxlower, dmboxupper));
     PetscCall(VecGetLocalSize(u, &Np));
-    Np /= dim*2;
-    PetscCall(PetscDrawSPGetAxis(ctx->sp,&axis));
+    Np /= dim * 2;
+    PetscCall(PetscDrawSPGetAxis(ctx->sp, &axis));
     if (ctx->phase) {
-      PetscCall(PetscDrawAxisSetLabels(axis,"Particles","X","V"));
+      PetscCall(PetscDrawAxisSetLabels(axis, "Particles", "X", "V"));
       PetscCall(PetscDrawAxisSetLimits(axis, dmboxlower[0], dmboxupper[0], -5, 5));
     } else {
-      PetscCall(PetscDrawAxisSetLabels(axis,"Particles","X","Y"));
+      PetscCall(PetscDrawAxisSetLabels(axis, "Particles", "X", "Y"));
       PetscCall(PetscDrawAxisSetLimits(axis, dmboxlower[0], dmboxupper[0], dmboxlower[1], dmboxupper[1]));
     }
     PetscCall(PetscDrawAxisSetHoldLimits(axis, PETSC_TRUE));
     PetscCall(PetscDrawSPReset(ctx->sp));
   }
   PetscCall(VecGetLocalSize(u, &Np));
-  Np /= dim*2;
+  Np /= dim * 2;
   if (((ctx->howoften > 0) && (!(step % ctx->howoften))) || ((ctx->howoften == -1) && ts->reason)) {
     PetscCall(PetscDrawSPGetDraw(ctx->sp, &draw));
-    if ((ctx->retain == 0) || (ctx->retain > 0 && !(step % ctx->retain))) {
-      PetscCall(PetscDrawClear(draw));
-    }
+    if ((ctx->retain == 0) || (ctx->retain > 0 && !(step % ctx->retain))) { PetscCall(PetscDrawClear(draw)); }
     PetscCall(PetscDrawFlush(draw));
     PetscCall(PetscDrawSPReset(ctx->sp));
     PetscCall(VecGetArrayRead(u, &yy));
@@ -1211,11 +1165,11 @@ PetscErrorCode TSMonitorSPSwarmSolution(TS ts, PetscInt step, PetscReal ptime, V
       PetscReal x, y;
 
       if (ctx->phase) {
-        x = PetscRealPart(yy[p*dim*2]);
-        y = PetscRealPart(yy[p*dim*2 + dim]);
+        x = PetscRealPart(yy[p * dim * 2]);
+        y = PetscRealPart(yy[p * dim * 2 + dim]);
       } else {
-        x = PetscRealPart(yy[p*dim*2]);
-        y = PetscRealPart(yy[p*dim*2 + 1]);
+        x = PetscRealPart(yy[p * dim * 2]);
+        y = PetscRealPart(yy[p * dim * 2 + 1]);
       }
       PetscCall(PetscDrawSPAddPoint(ctx->sp, &x, &y));
     }
@@ -1251,12 +1205,11 @@ PetscErrorCode TSMonitorSPSwarmSolution(TS ts, PetscInt step, PetscReal ptime, V
 
 .seealso: `TSMonitorSet()`, `TSMonitorDefault()`, `VecView()`, `TSSetSolutionFunction()`
 @*/
-PetscErrorCode TSMonitorError(TS ts,PetscInt step,PetscReal ptime,Vec u,PetscViewerAndFormat *vf)
-{
-  DM             dm;
-  PetscDS        ds = NULL;
-  PetscInt       Nf = -1, f;
-  PetscBool      flg;
+PetscErrorCode TSMonitorError(TS ts, PetscInt step, PetscReal ptime, Vec u, PetscViewerAndFormat *vf) {
+  DM        dm;
+  PetscDS   ds = NULL;
+  PetscInt  Nf = -1, f;
+  PetscBool flg;
 
   PetscFunctionBegin;
   PetscCall(TSGetDM(ts, &dm));
@@ -1266,30 +1219,30 @@ PetscErrorCode TSMonitorError(TS ts,PetscInt step,PetscReal ptime,Vec u,PetscVie
     Vec       y;
     PetscReal nrm;
 
-    PetscCall(VecDuplicate(u,&y));
-    PetscCall(TSComputeSolutionFunction(ts,ptime,y));
-    PetscCall(VecAXPY(y,-1.0,u));
-    PetscCall(PetscObjectTypeCompare((PetscObject)vf->viewer,PETSCVIEWERASCII,&flg));
+    PetscCall(VecDuplicate(u, &y));
+    PetscCall(TSComputeSolutionFunction(ts, ptime, y));
+    PetscCall(VecAXPY(y, -1.0, u));
+    PetscCall(PetscObjectTypeCompare((PetscObject)vf->viewer, PETSCVIEWERASCII, &flg));
     if (flg) {
-      PetscCall(VecNorm(y,NORM_2,&nrm));
-      PetscCall(PetscViewerASCIIPrintf(vf->viewer,"2-norm of error %g\n",(double)nrm));
+      PetscCall(VecNorm(y, NORM_2, &nrm));
+      PetscCall(PetscViewerASCIIPrintf(vf->viewer, "2-norm of error %g\n", (double)nrm));
     }
-    PetscCall(PetscObjectTypeCompare((PetscObject)vf->viewer,PETSCVIEWERDRAW,&flg));
-    if (flg) PetscCall(VecView(y,vf->viewer));
+    PetscCall(PetscObjectTypeCompare((PetscObject)vf->viewer, PETSCVIEWERDRAW, &flg));
+    if (flg) PetscCall(VecView(y, vf->viewer));
     PetscCall(VecDestroy(&y));
   } else {
     PetscErrorCode (**exactFuncs)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
-    void            **ctxs;
-    Vec               v;
-    PetscReal         ferrors[1];
+    void    **ctxs;
+    Vec       v;
+    PetscReal ferrors[1];
 
     PetscCall(PetscMalloc2(Nf, &exactFuncs, Nf, &ctxs));
     for (f = 0; f < Nf; ++f) PetscCall(PetscDSGetExactSolution(ds, f, &exactFuncs[f], &ctxs[f]));
     PetscCall(DMComputeL2FieldDiff(dm, ptime, exactFuncs, ctxs, u, ferrors));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Timestep: %04d time = %-8.4g \t L_2 Error: [", (int) step, (double) ptime));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Timestep: %04d time = %-8.4g \t L_2 Error: [", (int)step, (double)ptime));
     for (f = 0; f < Nf; ++f) {
       if (f > 0) PetscCall(PetscPrintf(PETSC_COMM_WORLD, ", "));
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%2.3g", (double) ferrors[f]));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%2.3g", (double)ferrors[f]));
     }
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "]\n"));
 
@@ -1299,7 +1252,7 @@ PetscErrorCode TSMonitorError(TS ts,PetscInt step,PetscReal ptime,Vec u,PetscVie
     if (flg) {
       PetscCall(DMGetGlobalVector(dm, &v));
       PetscCall(DMProjectFunction(dm, ptime, exactFuncs, ctxs, INSERT_ALL_VALUES, v));
-      PetscCall(PetscObjectSetName((PetscObject) v, "Exact Solution"));
+      PetscCall(PetscObjectSetName((PetscObject)v, "Exact Solution"));
       PetscCall(VecViewFromOptions(v, NULL, "-exact_vec_view"));
       PetscCall(DMRestoreGlobalVector(dm, &v));
     }
@@ -1308,24 +1261,23 @@ PetscErrorCode TSMonitorError(TS ts,PetscInt step,PetscReal ptime,Vec u,PetscVie
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TSMonitorLGSNESIterations(TS ts,PetscInt n,PetscReal ptime,Vec v,void *monctx)
-{
-  TSMonitorLGCtx ctx = (TSMonitorLGCtx) monctx;
-  PetscReal      x   = ptime,y;
+PetscErrorCode TSMonitorLGSNESIterations(TS ts, PetscInt n, PetscReal ptime, Vec v, void *monctx) {
+  TSMonitorLGCtx ctx = (TSMonitorLGCtx)monctx;
+  PetscReal      x   = ptime, y;
   PetscInt       its;
 
   PetscFunctionBegin;
   if (n < 0) PetscFunctionReturn(0); /* -1 indicates interpolated solution */
   if (!n) {
     PetscDrawAxis axis;
-    PetscCall(PetscDrawLGGetAxis(ctx->lg,&axis));
-    PetscCall(PetscDrawAxisSetLabels(axis,"Nonlinear iterations as function of time","Time","SNES Iterations"));
+    PetscCall(PetscDrawLGGetAxis(ctx->lg, &axis));
+    PetscCall(PetscDrawAxisSetLabels(axis, "Nonlinear iterations as function of time", "Time", "SNES Iterations"));
     PetscCall(PetscDrawLGReset(ctx->lg));
     ctx->snes_its = 0;
   }
-  PetscCall(TSGetSNESIterations(ts,&its));
-  y    = its - ctx->snes_its;
-  PetscCall(PetscDrawLGAddPoint(ctx->lg,&x,&y));
+  PetscCall(TSGetSNESIterations(ts, &its));
+  y = its - ctx->snes_its;
+  PetscCall(PetscDrawLGAddPoint(ctx->lg, &x, &y));
   if (((ctx->howoften > 0) && (!(n % ctx->howoften)) && (n > -1)) || ((ctx->howoften == -1) && (n == -1))) {
     PetscCall(PetscDrawLGDraw(ctx->lg));
     PetscCall(PetscDrawLGSave(ctx->lg));
@@ -1334,24 +1286,23 @@ PetscErrorCode TSMonitorLGSNESIterations(TS ts,PetscInt n,PetscReal ptime,Vec v,
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TSMonitorLGKSPIterations(TS ts,PetscInt n,PetscReal ptime,Vec v,void *monctx)
-{
-  TSMonitorLGCtx ctx = (TSMonitorLGCtx) monctx;
-  PetscReal      x   = ptime,y;
+PetscErrorCode TSMonitorLGKSPIterations(TS ts, PetscInt n, PetscReal ptime, Vec v, void *monctx) {
+  TSMonitorLGCtx ctx = (TSMonitorLGCtx)monctx;
+  PetscReal      x   = ptime, y;
   PetscInt       its;
 
   PetscFunctionBegin;
   if (n < 0) PetscFunctionReturn(0); /* -1 indicates interpolated solution */
   if (!n) {
     PetscDrawAxis axis;
-    PetscCall(PetscDrawLGGetAxis(ctx->lg,&axis));
-    PetscCall(PetscDrawAxisSetLabels(axis,"Linear iterations as function of time","Time","KSP Iterations"));
+    PetscCall(PetscDrawLGGetAxis(ctx->lg, &axis));
+    PetscCall(PetscDrawAxisSetLabels(axis, "Linear iterations as function of time", "Time", "KSP Iterations"));
     PetscCall(PetscDrawLGReset(ctx->lg));
     ctx->ksp_its = 0;
   }
-  PetscCall(TSGetKSPIterations(ts,&its));
-  y    = its - ctx->ksp_its;
-  PetscCall(PetscDrawLGAddPoint(ctx->lg,&x,&y));
+  PetscCall(TSGetKSPIterations(ts, &its));
+  y = its - ctx->ksp_its;
+  PetscCall(PetscDrawLGAddPoint(ctx->lg, &x, &y));
   if (((ctx->howoften > 0) && (!(n % ctx->howoften)) && (n > -1)) || ((ctx->howoften == -1) && (n == -1))) {
     PetscCall(PetscDrawLGDraw(ctx->lg));
     PetscCall(PetscDrawLGSave(ctx->lg));
@@ -1376,8 +1327,7 @@ PetscErrorCode TSMonitorLGKSPIterations(TS ts,PetscInt n,PetscReal ptime,Vec v,v
 .seealso: `TSMonitorLGTimeStep()`, `TSMonitorSet()`, `TSMonitorLGSolution()`, `TSMonitorLGError()`
 
 @*/
-PetscErrorCode  TSMonitorEnvelopeCtxCreate(TS ts,TSMonitorEnvelopeCtx *ctx)
-{
+PetscErrorCode TSMonitorEnvelopeCtxCreate(TS ts, TSMonitorEnvelopeCtx *ctx) {
   PetscFunctionBegin;
   PetscCall(PetscNew(ctx));
   PetscFunctionReturn(0);
@@ -1408,19 +1358,18 @@ PetscErrorCode  TSMonitorEnvelopeCtxCreate(TS ts,TSMonitorEnvelopeCtx *ctx)
 
 .seealso: `TSMonitorSet()`, `TSMonitorDefault()`, `VecView()`, `TSMonitorEnvelopeGetBounds()`, `TSMonitorEnvelopeCtxCreate()`
 @*/
-PetscErrorCode  TSMonitorEnvelope(TS ts,PetscInt step,PetscReal ptime,Vec u,void *dctx)
-{
+PetscErrorCode TSMonitorEnvelope(TS ts, PetscInt step, PetscReal ptime, Vec u, void *dctx) {
   TSMonitorEnvelopeCtx ctx = (TSMonitorEnvelopeCtx)dctx;
 
   PetscFunctionBegin;
   if (!ctx->max) {
-    PetscCall(VecDuplicate(u,&ctx->max));
-    PetscCall(VecDuplicate(u,&ctx->min));
-    PetscCall(VecCopy(u,ctx->max));
-    PetscCall(VecCopy(u,ctx->min));
+    PetscCall(VecDuplicate(u, &ctx->max));
+    PetscCall(VecDuplicate(u, &ctx->min));
+    PetscCall(VecCopy(u, ctx->max));
+    PetscCall(VecCopy(u, ctx->min));
   } else {
-    PetscCall(VecPointwiseMax(ctx->max,u,ctx->max));
-    PetscCall(VecPointwiseMin(ctx->min,u,ctx->min));
+    PetscCall(VecPointwiseMax(ctx->max, u, ctx->max));
+    PetscCall(VecPointwiseMin(ctx->min, u, ctx->min));
   }
   PetscFunctionReturn(0);
 }
@@ -1444,16 +1393,15 @@ PetscErrorCode  TSMonitorEnvelope(TS ts,PetscInt step,PetscReal ptime,Vec u,void
 
 .seealso: `TSMonitorSet()`, `TSMonitorDefault()`, `VecView()`, `TSMonitorLGSetDisplayVariables()`
 @*/
-PetscErrorCode  TSMonitorEnvelopeGetBounds(TS ts,Vec *max,Vec *min)
-{
+PetscErrorCode TSMonitorEnvelopeGetBounds(TS ts, Vec *max, Vec *min) {
   PetscInt i;
 
   PetscFunctionBegin;
   if (max) *max = NULL;
   if (min) *min = NULL;
-  for (i=0; i<ts->numbermonitors; i++) {
+  for (i = 0; i < ts->numbermonitors; i++) {
     if (ts->monitor[i] == TSMonitorEnvelope) {
-      TSMonitorEnvelopeCtx  ctx = (TSMonitorEnvelopeCtx) ts->monitorcontext[i];
+      TSMonitorEnvelopeCtx ctx = (TSMonitorEnvelopeCtx)ts->monitorcontext[i];
       if (max) *max = ctx->max;
       if (min) *min = ctx->min;
       break;
@@ -1474,8 +1422,7 @@ PetscErrorCode  TSMonitorEnvelopeGetBounds(TS ts,Vec *max,Vec *min)
 
 .seealso: `TSMonitorLGCtxCreate()`, `TSMonitorSet()`, `TSMonitorLGTimeStep()`
 @*/
-PetscErrorCode  TSMonitorEnvelopeCtxDestroy(TSMonitorEnvelopeCtx *ctx)
-{
+PetscErrorCode TSMonitorEnvelopeCtxDestroy(TSMonitorEnvelopeCtx *ctx) {
   PetscFunctionBegin;
   PetscCall(VecDestroy(&(*ctx)->min));
   PetscCall(VecDestroy(&(*ctx)->max));
@@ -1508,8 +1455,7 @@ PetscErrorCode  TSMonitorEnvelopeCtxDestroy(TSMonitorEnvelopeCtx *ctx)
 
 .seealso: `TSMonitorSet()`, `TSMonitorDefault()`, `DMSWARM`
 @*/
-PetscErrorCode TSDMSwarmMonitorMoments(TS ts, PetscInt step, PetscReal t, Vec U, PetscViewerAndFormat *vf)
-{
+PetscErrorCode TSDMSwarmMonitorMoments(TS ts, PetscInt step, PetscReal t, Vec U, PetscViewerAndFormat *vf) {
   DM                 sw;
   const PetscScalar *u;
   PetscReal          m = 1.0, totE = 0., totMom[3] = {0., 0., 0.};
@@ -1518,23 +1464,23 @@ PetscErrorCode TSDMSwarmMonitorMoments(TS ts, PetscInt step, PetscReal t, Vec U,
 
   PetscFunctionBeginUser;
   PetscCall(TSGetDM(ts, &sw));
-  if (!sw || step%ts->monitorFrequency != 0) PetscFunctionReturn(0);
-  PetscCall(PetscObjectGetComm((PetscObject) ts, &comm));
+  if (!sw || step % ts->monitorFrequency != 0) PetscFunctionReturn(0);
+  PetscCall(PetscObjectGetComm((PetscObject)ts, &comm));
   PetscCall(DMGetDimension(sw, &dim));
   PetscCall(VecGetLocalSize(U, &Np));
-  Np  /= dim;
+  Np /= dim;
   PetscCall(VecGetArrayRead(U, &u));
   for (p = 0; p < Np; ++p) {
     for (d = 0; d < dim; ++d) {
-      totE      += PetscRealPart(u[p*dim+d]*u[p*dim+d]);
-      totMom[d] += PetscRealPart(u[p*dim+d]);
+      totE += PetscRealPart(u[p * dim + d] * u[p * dim + d]);
+      totMom[d] += PetscRealPart(u[p * dim + d]);
     }
   }
   PetscCall(VecRestoreArrayRead(U, &u));
   for (d = 0; d < dim; ++d) totMom[d] *= m;
-  totE *= 0.5*m;
-  PetscCall(PetscPrintf(comm, "Step %4" PetscInt_FMT " Total Energy: %10.8lf", step, (double) totE));
-  for (d = 0; d < dim; ++d) PetscCall(PetscPrintf(comm, "    Total Momentum %c: %10.8lf", (char)('x'+d), (double) totMom[d]));
+  totE *= 0.5 * m;
+  PetscCall(PetscPrintf(comm, "Step %4" PetscInt_FMT " Total Energy: %10.8lf", step, (double)totE));
+  for (d = 0; d < dim; ++d) PetscCall(PetscPrintf(comm, "    Total Momentum %c: %10.8lf", (char)('x' + d), (double)totMom[d]));
   PetscCall(PetscPrintf(comm, "\n"));
   PetscFunctionReturn(0);
 }

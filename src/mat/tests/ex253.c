@@ -1,14 +1,13 @@
 static char help[] = "Tests MatMultHermitianTranspose() for real numbers.\n\n";
 #include <petsc.h>
 
-int main(int argc, char **args)
-{
-  Mat            A, AHT;
-  Vec            x, y;
-  PetscRandom    rand;
+int main(int argc, char **args) {
+  Mat         A, AHT;
+  Vec         x, y;
+  PetscRandom rand;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char*)0, help));
+  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
 
   PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
   PetscCall(MatSetType(A, MATAIJ));

@@ -12,7 +12,7 @@ static const char help[] = "Simple libCEED test to calculate surface area using 
 
 typedef struct {
   PetscReal         areaExact;
-  CeedQFunctionUser setupgeo,       apply;
+  CeedQFunctionUser setupgeo, apply;
   const char       *setupgeofname, *applyfname;
 } AppCtx;
 
@@ -22,8 +22,7 @@ typedef struct {
   CeedVector    qdata, uceed, vceed;
 } CeedData;
 
-static PetscErrorCode CeedDataDestroy(CeedData *data)
-{
+static PetscErrorCode CeedDataDestroy(CeedData *data) {
   PetscFunctionBeginUser;
   PetscCall(CeedVectorDestroy(&data->qdata));
   PetscCall(CeedVectorDestroy(&data->uceed));
@@ -33,14 +32,11 @@ static PetscErrorCode CeedDataDestroy(CeedData *data)
   PetscFunctionReturn(0);
 }
 
-CEED_QFUNCTION(Mass)(void *ctx, const CeedInt Q, const CeedScalar *const *in, CeedScalar *const *out)
-{
+CEED_QFUNCTION(Mass)(void *ctx, const CeedInt Q, const CeedScalar *const *in, CeedScalar *const *out) {
   const CeedScalar *u = in[0], *qdata = in[1];
   CeedScalar       *v = out[0];
 
-  CeedPragmaSIMD
-  for (CeedInt i = 0; i < Q; ++i)
-    v[i] = qdata[i] * u[i];
+  CeedPragmaSIMD for (CeedInt i = 0; i < Q; ++i) v[i] = qdata[i] * u[i];
 
   return 0;
 }
@@ -69,32 +65,33 @@ CEED_QFUNCTION(Mass)(void *ctx, const CeedInt Q, const CeedScalar *const *in, Ce
 //
 // Qdata: w * det(dx_i/dX_j)
 */
-CEED_QFUNCTION(SetupMassGeoCube)(void *ctx, const CeedInt Q, const CeedScalar *const *in, CeedScalar *const *out)
-{
+CEED_QFUNCTION(SetupMassGeoCube)(void *ctx, const CeedInt Q, const CeedScalar *const *in, CeedScalar *const *out) {
   const CeedScalar *J = in[1], *w = in[2];
   CeedScalar       *qdata = out[0];
 
-  CeedPragmaSIMD
-  for (CeedInt i = 0; i < Q; ++i) {
+  CeedPragmaSIMD for (CeedInt i = 0; i < Q; ++i) {
     // Read dxxdX Jacobian entries, stored as [[0 3], [1 4], [2 5]]
-    const CeedScalar dxxdX[3][2] = {{J[i+Q*0], J[i+Q*3]},
-                                    {J[i+Q*1], J[i+Q*4]},
-                                    {J[i+Q*2], J[i+Q*5]}};
+    const CeedScalar dxxdX[3][2] = {
+      {J[i + Q * 0], J[i + Q * 3]},
+      {J[i + Q * 1], J[i + Q * 4]},
+      {J[i + Q * 2], J[i + Q * 5]}
+    };
     // Modulus of dxxdX column vectors
-    const CeedScalar modg1 = PetscSqrtReal(dxxdX[0][0]*dxxdX[0][0] + dxxdX[1][0]*dxxdX[1][0] + dxxdX[2][0]*dxxdX[2][0]);
-    const CeedScalar modg2 = PetscSqrtReal(dxxdX[0][1]*dxxdX[0][1] + dxxdX[1][1]*dxxdX[1][1] + dxxdX[2][1]*dxxdX[2][1]);
+    const CeedScalar modg1       = PetscSqrtReal(dxxdX[0][0] * dxxdX[0][0] + dxxdX[1][0] * dxxdX[1][0] + dxxdX[2][0] * dxxdX[2][0]);
+    const CeedScalar modg2       = PetscSqrtReal(dxxdX[0][1] * dxxdX[0][1] + dxxdX[1][1] * dxxdX[1][1] + dxxdX[2][1] * dxxdX[2][1]);
     // Use normalized column vectors of dxxdX as rows of dxdxx
-    const CeedScalar dxdxx[2][3] = {{dxxdX[0][0] / modg1, dxxdX[1][0] / modg1, dxxdX[2][0] / modg1},
-                                    {dxxdX[0][1] / modg2, dxxdX[1][1] / modg2, dxxdX[2][1] / modg2}};
+    const CeedScalar dxdxx[2][3] = {
+      {dxxdX[0][0] / modg1, dxxdX[1][0] / modg1, dxxdX[2][0] / modg1},
+      {dxxdX[0][1] / modg2, dxxdX[1][1] / modg2, dxxdX[2][1] / modg2}
+    };
 
     CeedScalar dxdX[2][2];
     for (int j = 0; j < 2; ++j)
       for (int k = 0; k < 2; ++k) {
         dxdX[j][k] = 0;
-        for (int l = 0; l < 3; ++l)
-          dxdX[j][k] += dxdxx[j][l]*dxxdX[l][k];
+        for (int l = 0; l < 3; ++l) dxdX[j][k] += dxdxx[j][l] * dxxdX[l][k];
       }
-    qdata[i+Q*0] = (dxdX[0][0]*dxdX[1][1] - dxdX[1][0]*dxdX[0][1]) * w[i]; /* det J * weight */
+    qdata[i + Q * 0] = (dxdX[0][0] * dxdX[1][1] - dxdX[1][0] * dxdX[0][1]) * w[i]; /* det J * weight */
   }
   return 0;
 }
@@ -132,76 +129,73 @@ CEED_QFUNCTION(SetupMassGeoSphere)(void *ctx, const CeedInt Q, const CeedScalar 
   const CeedScalar *X = in[0], *J = in[1], *w = in[2];
   CeedScalar       *qdata = out[0];
 
-  CeedPragmaSIMD
-  for (CeedInt i = 0; i < Q; ++i) {
-    const CeedScalar xx[3][1] = {{X[i+0*Q]}, {X[i+1*Q]}, {X[i+2*Q]}};
+  CeedPragmaSIMD for (CeedInt i = 0; i < Q; ++i) {
+    const CeedScalar xx[3][1]    = {{X[i + 0 * Q]}, {X[i + 1 * Q]}, {X[i + 2 * Q]}};
     // Read dxxdX Jacobian entries, stored as [[0 3], [1 4], [2 5]]
-    const CeedScalar dxxdX[3][2] = {{J[i+Q*0], J[i+Q*3]},
-                                    {J[i+Q*1], J[i+Q*4]},
-                                    {J[i+Q*2], J[i+Q*5]}};
+    const CeedScalar dxxdX[3][2] = {
+      {J[i + Q * 0], J[i + Q * 3]},
+      {J[i + Q * 1], J[i + Q * 4]},
+      {J[i + Q * 2], J[i + Q * 5]}
+    };
     // Setup
-    const CeedScalar modxxsq = xx[0][0]*xx[0][0]+xx[1][0]*xx[1][0]+xx[2][0]*xx[2][0];
-    CeedScalar xxsq[3][3];
+    const CeedScalar modxxsq = xx[0][0] * xx[0][0] + xx[1][0] * xx[1][0] + xx[2][0] * xx[2][0];
+    CeedScalar       xxsq[3][3];
     for (int j = 0; j < 3; ++j)
       for (int k = 0; k < 3; ++k) {
         xxsq[j][k] = 0.;
-        for (int l = 0; l < 1; ++l)
-          xxsq[j][k] += xx[j][l]*xx[k][l] / (sqrt(modxxsq) * modxxsq);
+        for (int l = 0; l < 1; ++l) xxsq[j][k] += xx[j][l] * xx[k][l] / (sqrt(modxxsq) * modxxsq);
       }
 
-    const CeedScalar dxdxx[3][3] = {{1./sqrt(modxxsq) - xxsq[0][0], -xxsq[0][1], -xxsq[0][2]},
-                                    {-xxsq[1][0], 1./sqrt(modxxsq) - xxsq[1][1], -xxsq[1][2]},
-                                    {-xxsq[2][0], -xxsq[2][1], 1./sqrt(modxxsq) - xxsq[2][2]}};
+    const CeedScalar dxdxx[3][3] = {
+      {1. / sqrt(modxxsq) - xxsq[0][0], -xxsq[0][1],                     -xxsq[0][2]                    },
+      {-xxsq[1][0],                     1. / sqrt(modxxsq) - xxsq[1][1], -xxsq[1][2]                    },
+      {-xxsq[2][0],                     -xxsq[2][1],                     1. / sqrt(modxxsq) - xxsq[2][2]}
+    };
 
     CeedScalar dxdX[3][2];
     for (int j = 0; j < 3; ++j)
       for (int k = 0; k < 2; ++k) {
         dxdX[j][k] = 0.;
-        for (int l = 0; l < 3; ++l)
-          dxdX[j][k] += dxdxx[j][l]*dxxdX[l][k];
+        for (int l = 0; l < 3; ++l) dxdX[j][k] += dxdxx[j][l] * dxxdX[l][k];
       }
     // J is given by the cross product of the columns of dxdX
-    const CeedScalar J[3][1] = {{dxdX[1][0]*dxdX[2][1] - dxdX[2][0]*dxdX[1][1]},
-                                {dxdX[2][0]*dxdX[0][1] - dxdX[0][0]*dxdX[2][1]},
-                                {dxdX[0][0]*dxdX[1][1] - dxdX[1][0]*dxdX[0][1]}};
+    const CeedScalar J[3][1] = {{dxdX[1][0] * dxdX[2][1] - dxdX[2][0] * dxdX[1][1]}, {dxdX[2][0] * dxdX[0][1] - dxdX[0][0] * dxdX[2][1]}, {dxdX[0][0] * dxdX[1][1] - dxdX[1][0] * dxdX[0][1]}};
     // Use the magnitude of J as our detJ (volume scaling factor)
-    const CeedScalar modJ = sqrt(J[0][0]*J[0][0]+J[1][0]*J[1][0]+J[2][0]*J[2][0]);
-    qdata[i+Q*0] = modJ * w[i];
+    const CeedScalar modJ    = sqrt(J[0][0] * J[0][0] + J[1][0] * J[1][0] + J[2][0] * J[2][0]);
+    qdata[i + Q * 0]         = modJ * w[i];
   }
   return 0;
 }
 
-static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *ctx)
-{
-  DMPlexShape    shape = DM_SHAPE_UNKNOWN;
+static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *ctx) {
+  DMPlexShape shape = DM_SHAPE_UNKNOWN;
 
   PetscFunctionBeginUser;
   PetscOptionsBegin(comm, "", "libCEED Test Options", "DMPLEX");
   PetscOptionsEnd();
-  PetscCall(PetscOptionsGetEnum(NULL, NULL, "-dm_plex_shape", DMPlexShapes, (PetscEnum *) &shape, NULL));
+  PetscCall(PetscOptionsGetEnum(NULL, NULL, "-dm_plex_shape", DMPlexShapes, (PetscEnum *)&shape, NULL));
   ctx->setupgeo      = NULL;
   ctx->setupgeofname = NULL;
   ctx->apply         = Mass;
   ctx->applyfname    = Mass_loc;
   ctx->areaExact     = 0.0;
   switch (shape) {
-    case DM_SHAPE_BOX_SURFACE:
-      ctx->setupgeo      = SetupMassGeoCube;
-      ctx->setupgeofname = SetupMassGeoCube_loc;
-      ctx->areaExact     = 6.0;
-      break;
-    case DM_SHAPE_SPHERE:
-      ctx->setupgeo      = SetupMassGeoSphere;
-      ctx->setupgeofname = SetupMassGeoSphere_loc;
-      ctx->areaExact     = 4.0*M_PI;
-      break;
-    default: break;
+  case DM_SHAPE_BOX_SURFACE:
+    ctx->setupgeo      = SetupMassGeoCube;
+    ctx->setupgeofname = SetupMassGeoCube_loc;
+    ctx->areaExact     = 6.0;
+    break;
+  case DM_SHAPE_SPHERE:
+    ctx->setupgeo      = SetupMassGeoSphere;
+    ctx->setupgeofname = SetupMassGeoSphere_loc;
+    ctx->areaExact     = 4.0 * M_PI;
+    break;
+  default: break;
   }
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *ctx, DM *dm)
-{
+static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *ctx, DM *dm) {
   PetscFunctionBegin;
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetType(*dm, DMPLEX));
@@ -214,14 +208,13 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *ctx, DM *dm)
 
     PetscCall(DMGetCeed(*dm, &ceed));
     PetscCall(CeedGetResource(ceed, &usedresource));
-    PetscCall(PetscPrintf(PetscObjectComm((PetscObject) *dm), "libCEED Backend: %s\n", usedresource));
+    PetscCall(PetscPrintf(PetscObjectComm((PetscObject)*dm), "libCEED Backend: %s\n", usedresource));
   }
 #endif
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SetupDiscretization(DM dm)
-{
+static PetscErrorCode SetupDiscretization(DM dm) {
   DM        cdm;
   PetscFE   fe, cfe;
   PetscInt  dim, cnc;
@@ -232,7 +225,7 @@ static PetscErrorCode SetupDiscretization(DM dm)
   PetscCall(DMPlexIsSimplex(dm, &simplex));
   PetscCall(PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, simplex, NULL, PETSC_DETERMINE, &fe));
   PetscCall(PetscFESetName(fe, "indicator"));
-  PetscCall(DMAddField(dm, NULL, (PetscObject) fe));
+  PetscCall(DMAddField(dm, NULL, (PetscObject)fe));
   PetscCall(PetscFEDestroy(&fe));
   PetscCall(DMCreateDS(dm));
   PetscCall(DMPlexSetClosurePermutationTensor(dm, PETSC_DETERMINE, NULL));
@@ -245,8 +238,7 @@ static PetscErrorCode SetupDiscretization(DM dm)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode LibCeedSetupByDegree(DM dm, AppCtx *ctx, CeedData *data)
-{
+static PetscErrorCode LibCeedSetupByDegree(DM dm, AppCtx *ctx, CeedData *data) {
   PetscDS             ds;
   PetscFE             fe, cfe;
   Ceed                ceed;
@@ -270,24 +262,24 @@ static PetscErrorCode LibCeedSetupByDegree(DM dm, AppCtx *ctx, CeedData *data)
   Ncell = cEnd - cStart;
   // CEED bases
   PetscCall(DMGetDS(dm, &ds));
-  PetscCall(PetscDSGetDiscretization(ds, 0, (PetscObject *) &fe));
+  PetscCall(PetscDSGetDiscretization(ds, 0, (PetscObject *)&fe));
   PetscCall(PetscFEGetCeedBasis(fe, &basisu));
   PetscCall(DMGetCoordinateDM(dm, &cdm));
   PetscCall(DMGetDS(cdm, &ds));
-  PetscCall(PetscDSGetDiscretization(ds, 0, (PetscObject *) &cfe));
+  PetscCall(PetscDSGetDiscretization(ds, 0, (PetscObject *)&cfe));
   PetscCall(PetscFEGetCeedBasis(cfe, &basisx));
 
   PetscCall(DMPlexGetCeedRestriction(cdm, NULL, 0, 0, 0, &Erestrictx));
-  PetscCall(DMPlexGetCeedRestriction(dm,  NULL, 0, 0, 0, &Erestrictu));
+  PetscCall(DMPlexGetCeedRestriction(dm, NULL, 0, 0, 0, &Erestrictu));
   PetscCall(CeedBasisGetNumQuadraturePoints(basisu, &nqpts));
   PetscCall(CeedBasisGetNumQuadraturePoints(basisx, &nqptsx));
-  PetscCheck(nqptsx == nqpts,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Number of qpoints for u %" PetscInt_FMT " != %" PetscInt_FMT " Number of qpoints for x", nqpts, nqptsx);
-  PetscCall(CeedElemRestrictionCreateStrided(ceed, Ncell, nqpts, Nqdata, Nqdata*Ncell*nqpts, CEED_STRIDES_BACKEND, &Erestrictq));
+  PetscCheck(nqptsx == nqpts, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Number of qpoints for u %" PetscInt_FMT " != %" PetscInt_FMT " Number of qpoints for x", nqpts, nqptsx);
+  PetscCall(CeedElemRestrictionCreateStrided(ceed, Ncell, nqpts, Nqdata, Nqdata * Ncell * nqpts, CEED_STRIDES_BACKEND, &Erestrictq));
 
   PetscCall(DMGetCoordinatesLocal(dm, &coords));
   PetscCall(VecGetArrayRead(coords, &coordArray));
   PetscCall(CeedElemRestrictionCreateVector(Erestrictx, &xcoord, NULL));
-  PetscCall(CeedVectorSetArray(xcoord, CEED_MEM_HOST, CEED_COPY_VALUES, (PetscScalar *) coordArray));
+  PetscCall(CeedVectorSetArray(xcoord, CEED_MEM_HOST, CEED_COPY_VALUES, (PetscScalar *)coordArray));
   PetscCall(VecRestoreArrayRead(coords, &coordArray));
 
   // Create the vectors that will be needed in setup and apply
@@ -297,29 +289,29 @@ static PetscErrorCode LibCeedSetupByDegree(DM dm, AppCtx *ctx, CeedData *data)
 
   // Create the Q-function that builds the operator (i.e. computes its quadrature data) and set its context data
   PetscCall(CeedQFunctionCreateInterior(ceed, 1, ctx->setupgeo, ctx->setupgeofname, &qf_setupgeo));
-  PetscCall(CeedQFunctionAddInput(qf_setupgeo,  "x",      cdim,     CEED_EVAL_INTERP));
-  PetscCall(CeedQFunctionAddInput(qf_setupgeo,  "dx",     cdim*dim, CEED_EVAL_GRAD));
-  PetscCall(CeedQFunctionAddInput(qf_setupgeo,  "weight", 1,        CEED_EVAL_WEIGHT));
-  PetscCall(CeedQFunctionAddOutput(qf_setupgeo, "qdata",  Nqdata,   CEED_EVAL_NONE));
+  PetscCall(CeedQFunctionAddInput(qf_setupgeo, "x", cdim, CEED_EVAL_INTERP));
+  PetscCall(CeedQFunctionAddInput(qf_setupgeo, "dx", cdim * dim, CEED_EVAL_GRAD));
+  PetscCall(CeedQFunctionAddInput(qf_setupgeo, "weight", 1, CEED_EVAL_WEIGHT));
+  PetscCall(CeedQFunctionAddOutput(qf_setupgeo, "qdata", Nqdata, CEED_EVAL_NONE));
 
   // Set up the mass operator
   PetscCall(CeedQFunctionCreateInterior(ceed, 1, ctx->apply, ctx->applyfname, &data->qf_apply));
-  PetscCall(CeedQFunctionAddInput(data->qf_apply,  "u",     1,      CEED_EVAL_INTERP));
-  PetscCall(CeedQFunctionAddInput(data->qf_apply,  "qdata", Nqdata, CEED_EVAL_NONE));
-  PetscCall(CeedQFunctionAddOutput(data->qf_apply, "v",     1,      CEED_EVAL_INTERP));
+  PetscCall(CeedQFunctionAddInput(data->qf_apply, "u", 1, CEED_EVAL_INTERP));
+  PetscCall(CeedQFunctionAddInput(data->qf_apply, "qdata", Nqdata, CEED_EVAL_NONE));
+  PetscCall(CeedQFunctionAddOutput(data->qf_apply, "v", 1, CEED_EVAL_INTERP));
 
   // Create the operator that builds the quadrature data for the operator
   PetscCall(CeedOperatorCreate(ceed, qf_setupgeo, CEED_QFUNCTION_NONE, CEED_QFUNCTION_NONE, &op_setupgeo));
-  PetscCall(CeedOperatorSetField(op_setupgeo, "x",      Erestrictx, basisx, CEED_VECTOR_ACTIVE));
-  PetscCall(CeedOperatorSetField(op_setupgeo, "dx",     Erestrictx, basisx, CEED_VECTOR_ACTIVE));
+  PetscCall(CeedOperatorSetField(op_setupgeo, "x", Erestrictx, basisx, CEED_VECTOR_ACTIVE));
+  PetscCall(CeedOperatorSetField(op_setupgeo, "dx", Erestrictx, basisx, CEED_VECTOR_ACTIVE));
   PetscCall(CeedOperatorSetField(op_setupgeo, "weight", CEED_ELEMRESTRICTION_NONE, basisx, CEED_VECTOR_NONE));
-  PetscCall(CeedOperatorSetField(op_setupgeo, "qdata",  Erestrictq, CEED_BASIS_COLLOCATED, CEED_VECTOR_ACTIVE));
+  PetscCall(CeedOperatorSetField(op_setupgeo, "qdata", Erestrictq, CEED_BASIS_COLLOCATED, CEED_VECTOR_ACTIVE));
 
   // Create the mass operator
   PetscCall(CeedOperatorCreate(ceed, data->qf_apply, CEED_QFUNCTION_NONE, CEED_QFUNCTION_NONE, &data->op_apply));
-  PetscCall(CeedOperatorSetField(data->op_apply, "u",     Erestrictu, basisu, CEED_VECTOR_ACTIVE));
+  PetscCall(CeedOperatorSetField(data->op_apply, "u", Erestrictu, basisu, CEED_VECTOR_ACTIVE));
   PetscCall(CeedOperatorSetField(data->op_apply, "qdata", Erestrictq, CEED_BASIS_COLLOCATED, data->qdata));
-  PetscCall(CeedOperatorSetField(data->op_apply, "v",     Erestrictu, basisu, CEED_VECTOR_ACTIVE));
+  PetscCall(CeedOperatorSetField(data->op_apply, "v", Erestrictu, basisu, CEED_VECTOR_ACTIVE));
 
   // Setup qdata
   PetscCall(CeedOperatorApply(op_setupgeo, xcoord, data->qdata, CEED_REQUEST_IMMEDIATE));
@@ -331,15 +323,14 @@ static PetscErrorCode LibCeedSetupByDegree(DM dm, AppCtx *ctx, CeedData *data)
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv)
-{
-  MPI_Comm       comm;
-  DM             dm;
-  AppCtx         ctx;
-  Vec            U, Uloc, V, Vloc;
-  PetscScalar   *v;
-  PetscScalar    area;
-  CeedData       ceeddata;
+int main(int argc, char **argv) {
+  MPI_Comm     comm;
+  DM           dm;
+  AppCtx       ctx;
+  Vec          U, Uloc, V, Vloc;
+  PetscScalar *v;
+  PetscScalar  area;
+  CeedData     ceeddata;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
@@ -373,10 +364,10 @@ int main(int argc, char **argv)
     PetscReal error = PetscAbsReal(area - ctx.areaExact);
     PetscReal tol   = PETSC_SMALL;
 
-    PetscCall(PetscPrintf(comm,   "Exact mesh surface area    : % .*f\n", PetscAbsReal(ctx.areaExact - round(ctx.areaExact)) > 1E-15 ? 14 : 1, (double) ctx.areaExact));
-    PetscCall(PetscPrintf(comm,   "Computed mesh surface area : % .*f\n", PetscAbsScalar(area          - round(area))          > 1E-15 ? 14 : 1, (double)PetscRealPart(area)));
+    PetscCall(PetscPrintf(comm, "Exact mesh surface area    : % .*f\n", PetscAbsReal(ctx.areaExact - round(ctx.areaExact)) > 1E-15 ? 14 : 1, (double)ctx.areaExact));
+    PetscCall(PetscPrintf(comm, "Computed mesh surface area : % .*f\n", PetscAbsScalar(area - round(area)) > 1E-15 ? 14 : 1, (double)PetscRealPart(area)));
     if (error > tol) {
-      PetscCall(PetscPrintf(comm, "Area error                 : % .14g\n", (double) error));
+      PetscCall(PetscPrintf(comm, "Area error                 : % .14g\n", (double)error));
     } else {
       PetscCall(PetscPrintf(comm, "Area verifies!\n"));
     }

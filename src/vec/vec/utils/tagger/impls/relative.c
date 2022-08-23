@@ -2,43 +2,42 @@
 #include <petsc/private/vecimpl.h> /*I "petscvec.h" I*/
 #include "../src/vec/vec/utils/tagger/impls/simple.h"
 
-static PetscErrorCode VecTaggerComputeBoxes_Relative(VecTagger tagger,Vec vec,PetscInt *numBoxes,VecTaggerBox **boxes,PetscBool *listed)
-{
-  VecTagger_Simple *smpl = (VecTagger_Simple *)tagger->data;
-  PetscInt          bs, i, j, k, n;
+static PetscErrorCode VecTaggerComputeBoxes_Relative(VecTagger tagger, Vec vec, PetscInt *numBoxes, VecTaggerBox **boxes, PetscBool *listed) {
+  VecTagger_Simple  *smpl = (VecTagger_Simple *)tagger->data;
+  PetscInt           bs, i, j, k, n;
   VecTaggerBox      *bxs;
   const PetscScalar *vArray;
 
   PetscFunctionBegin;
-  PetscCall(VecTaggerGetBlockSize(tagger,&bs));
+  PetscCall(VecTaggerGetBlockSize(tagger, &bs));
   *numBoxes = 1;
-  PetscCall(PetscMalloc1(bs,&bxs));
-  PetscCall(VecGetLocalSize(vec,&n));
+  PetscCall(PetscMalloc1(bs, &bxs));
+  PetscCall(VecGetLocalSize(vec, &n));
   n /= bs;
   for (i = 0; i < bs; i++) {
 #if !defined(PETSC_USE_COMPLEX)
     bxs[i].min = PETSC_MAX_REAL;
     bxs[i].max = PETSC_MIN_REAL;
 #else
-    bxs[i].min = PetscCMPLX(PETSC_MAX_REAL,PETSC_MAX_REAL);
-    bxs[i].max = PetscCMPLX(PETSC_MIN_REAL,PETSC_MIN_REAL);
+    bxs[i].min = PetscCMPLX(PETSC_MAX_REAL, PETSC_MAX_REAL);
+    bxs[i].max = PetscCMPLX(PETSC_MIN_REAL, PETSC_MIN_REAL);
 #endif
   }
   PetscCall(VecGetArrayRead(vec, &vArray));
   for (i = 0, k = 0; i < n; i++) {
     for (j = 0; j < bs; j++, k++) {
 #if !defined(PETSC_USE_COMPLEX)
-      bxs[j].min = PetscMin(bxs[j].min,vArray[k]);
-      bxs[j].max = PetscMax(bxs[j].max,vArray[k]);
+      bxs[j].min = PetscMin(bxs[j].min, vArray[k]);
+      bxs[j].max = PetscMax(bxs[j].max, vArray[k]);
 #else
-      bxs[j].min = PetscCMPLX(PetscMin(PetscRealPart(bxs[j].min),PetscRealPart(vArray[k])),PetscMin(PetscImaginaryPart(bxs[j].min),PetscImaginaryPart(vArray[k])));
-      bxs[j].max = PetscCMPLX(PetscMax(PetscRealPart(bxs[j].max),PetscRealPart(vArray[k])),PetscMax(PetscImaginaryPart(bxs[j].max),PetscImaginaryPart(vArray[k])));
+      bxs[j].min = PetscCMPLX(PetscMin(PetscRealPart(bxs[j].min), PetscRealPart(vArray[k])), PetscMin(PetscImaginaryPart(bxs[j].min), PetscImaginaryPart(vArray[k])));
+      bxs[j].max = PetscCMPLX(PetscMax(PetscRealPart(bxs[j].max), PetscRealPart(vArray[k])), PetscMax(PetscImaginaryPart(bxs[j].max), PetscImaginaryPart(vArray[k])));
 #endif
     }
   }
   for (i = 0; i < bs; i++) bxs[i].max = -bxs[i].max;
   PetscCall(VecRestoreArrayRead(vec, &vArray));
-  PetscCall(MPIU_Allreduce(MPI_IN_PLACE,(PetscReal *) bxs,2*(sizeof(PetscScalar)/sizeof(PetscReal))*bs,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)tagger)));
+  PetscCall(MPIU_Allreduce(MPI_IN_PLACE, (PetscReal *)bxs, 2 * (sizeof(PetscScalar) / sizeof(PetscReal)) * bs, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)tagger)));
   for (i = 0; i < bs; i++) {
     PetscScalar mins = bxs[i].min;
     PetscScalar difs = -bxs[i].max - mins;
@@ -46,8 +45,8 @@ static PetscErrorCode VecTaggerComputeBoxes_Relative(VecTagger tagger,Vec vec,Pe
     bxs[i].min = mins + smpl->box[i].min * difs;
     bxs[i].max = mins + smpl->box[i].max * difs;
 #else
-    bxs[i].min = mins + PetscCMPLX(PetscRealPart(smpl->box[i].min)*PetscRealPart(difs),PetscImaginaryPart(smpl->box[i].min)*PetscImaginaryPart(difs));
-    bxs[i].max = mins + PetscCMPLX(PetscRealPart(smpl->box[i].max)*PetscRealPart(difs),PetscImaginaryPart(smpl->box[i].max)*PetscImaginaryPart(difs));
+    bxs[i].min = mins + PetscCMPLX(PetscRealPart(smpl->box[i].min) * PetscRealPart(difs), PetscImaginaryPart(smpl->box[i].min) * PetscImaginaryPart(difs));
+    bxs[i].max = mins + PetscCMPLX(PetscRealPart(smpl->box[i].max) * PetscRealPart(difs), PetscImaginaryPart(smpl->box[i].max) * PetscImaginaryPart(difs));
 #endif
   }
   *boxes = bxs;
@@ -68,10 +67,9 @@ static PetscErrorCode VecTaggerComputeBoxes_Relative(VecTagger tagger,Vec vec,Pe
 
 .seealso: `VecTaggerRelativeGetBox()`
 @*/
-PetscErrorCode VecTaggerRelativeSetBox(VecTagger tagger,VecTaggerBox *box)
-{
+PetscErrorCode VecTaggerRelativeSetBox(VecTagger tagger, VecTaggerBox *box) {
   PetscFunctionBegin;
-  PetscCall(VecTaggerSetBox_Simple(tagger,box));
+  PetscCall(VecTaggerSetBox_Simple(tagger, box));
   PetscFunctionReturn(0);
 }
 
@@ -90,15 +88,13 @@ PetscErrorCode VecTaggerRelativeSetBox(VecTagger tagger,VecTaggerBox *box)
 
 .seealso: `VecTaggerRelativeSetBox()`
 @*/
-PetscErrorCode VecTaggerRelativeGetBox(VecTagger tagger,const VecTaggerBox **box)
-{
+PetscErrorCode VecTaggerRelativeGetBox(VecTagger tagger, const VecTaggerBox **box) {
   PetscFunctionBegin;
-  PetscCall(VecTaggerGetBox_Simple(tagger,box));
+  PetscCall(VecTaggerGetBox_Simple(tagger, box));
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode VecTaggerCreate_Relative(VecTagger tagger)
-{
+PETSC_INTERN PetscErrorCode VecTaggerCreate_Relative(VecTagger tagger) {
   PetscFunctionBegin;
   PetscCall(VecTaggerCreate_Simple(tagger));
   tagger->ops->computeboxes = VecTaggerComputeBoxes_Relative;

@@ -9,35 +9,34 @@ static char help[] = "Benchmarking HIP kernel launch time\n";
 #include <petscsys.h>
 #include <petscdevice.h>
 
-__global__ void NullKernel(){}
+__global__ void NullKernel() { }
 
-int main(int argc,char **argv)
-{
-  PetscInt       i,n=100000;
-  PetscLogDouble tstart,tend,time;
+int main(int argc, char **argv) {
+  PetscInt       i, n = 100000;
+  PetscLogDouble tstart, tend, time;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
-  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-n", &n, NULL));
   PetscCallHIP(hipStreamSynchronize(NULL)); /* Initialize HIP runtime to get more accurate timing below */
 
   /* Launch a sequence of kernels asynchronously. Previous launched kernels do not need to be completed before launching a new one */
   PetscCall(PetscTime(&tstart));
-  for (i=0; i<n; i++) {hipLaunchKernelGGL(NullKernel,dim3(1),dim3(1),0,NULL);}
+  for (i = 0; i < n; i++) { hipLaunchKernelGGL(NullKernel, dim3(1), dim3(1), 0, NULL); }
   PetscCall(PetscTime(&tend));
   PetscCallHIP(hipStreamSynchronize(NULL)); /* Sync after tend since we don't want to count kernel execution time */
-  time = (tend-tstart)*1e6/n;
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Average asynchronous HIP kernel launch time = %.2f microseconds\n",time));
+  time = (tend - tstart) * 1e6 / n;
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Average asynchronous HIP kernel launch time = %.2f microseconds\n", time));
 
   /* Launch a sequence of kernels synchronously. Only launch a new kernel after the one before it has been completed */
   PetscCall(PetscTime(&tstart));
-  for (i=0; i<n; i++) {
-    hipLaunchKernelGGL(NullKernel,dim3(1),dim3(1),0,NULL);
+  for (i = 0; i < n; i++) {
+    hipLaunchKernelGGL(NullKernel, dim3(1), dim3(1), 0, NULL);
     PetscCallHIP(hipStreamSynchronize(NULL));
   }
   PetscCall(PetscTime(&tend));
-  time = (tend-tstart)*1e6/n;
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Average synchronous  HIP kernel launch time = %.2f microseconds\n",time));
+  time = (tend - tstart) * 1e6 / n;
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Average synchronous  HIP kernel launch time = %.2f microseconds\n", time));
 
   PetscCall(PetscFinalize());
   return 0;

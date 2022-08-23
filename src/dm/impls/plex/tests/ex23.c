@@ -4,66 +4,51 @@ static char help[] = "Test for function and field projection\n\n";
 #include <petscds.h>
 
 typedef struct {
-  PetscBool multifield;  /* Different numbers of input and output fields */
-  PetscBool subdomain;   /* Try with a volumetric submesh */
-  PetscBool submesh;     /* Try with a boundary submesh */
-  PetscBool auxfield;    /* Try with auxiliary fields */
+  PetscBool multifield; /* Different numbers of input and output fields */
+  PetscBool subdomain;  /* Try with a volumetric submesh */
+  PetscBool submesh;    /* Try with a boundary submesh */
+  PetscBool auxfield;   /* Try with auxiliary fields */
 } AppCtx;
 
 /* (x + y)*dim + d */
-static PetscErrorCode linear(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
-{
+static PetscErrorCode linear(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx) {
   PetscInt c;
-  for (c = 0; c < Nc; ++c) u[c] = (x[0] + x[1])*Nc + c;
+  for (c = 0; c < Nc; ++c) u[c] = (x[0] + x[1]) * Nc + c;
   return 0;
 }
 
 /* {x, y, z} */
-static PetscErrorCode linear2(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
-{
+static PetscErrorCode linear2(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx) {
   PetscInt c;
   for (c = 0; c < Nc; ++c) u[c] = x[c];
   return 0;
 }
 
 /* {u_x, u_y, u_z} */
-static void linear_vector(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-                          const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-                          const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                          PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f[])
-{
+static void linear_vector(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f[]) {
   PetscInt d;
-  for (d = 0; d < uOff[1]-uOff[0]; ++d) f[d] = u[d+uOff[0]];
+  for (d = 0; d < uOff[1] - uOff[0]; ++d) f[d] = u[d + uOff[0]];
 }
 
 /* p */
-static void linear_scalar(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-                          const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-                          const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                          PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f[])
-{
+static void linear_scalar(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f[]) {
   f[0] = u[uOff[1]];
 }
 
 /* {div u, p^2} */
-static void divergence_sq(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-                          const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-                          const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                          PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f[])
-{
+static void divergence_sq(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f[]) {
   PetscInt d;
   f[0] = 0.0;
-  for (d = 0; d < dim; ++d) f[0] += u_x[uOff_x[0]+d*dim+d];
+  for (d = 0; d < dim; ++d) f[0] += u_x[uOff_x[0] + d * dim + d];
   f[1] = PetscSqr(u[uOff[1]]);
 }
 
-static PetscErrorCode ProcessOptions(AppCtx *options)
-{
+static PetscErrorCode ProcessOptions(AppCtx *options) {
   PetscFunctionBegin;
-  options->multifield  = PETSC_FALSE;
-  options->subdomain   = PETSC_FALSE;
-  options->submesh     = PETSC_FALSE;
-  options->auxfield    = PETSC_FALSE;
+  options->multifield = PETSC_FALSE;
+  options->subdomain  = PETSC_FALSE;
+  options->submesh    = PETSC_FALSE;
+  options->auxfield   = PETSC_FALSE;
 
   PetscOptionsBegin(PETSC_COMM_SELF, "", "Meshing Problem Options", "DMPLEX");
   PetscCall(PetscOptionsBool("-multifield", "Flag for trying different numbers of input/output fields", "ex23.c", options->multifield, &options->multifield, NULL));
@@ -74,8 +59,7 @@ static PetscErrorCode ProcessOptions(AppCtx *options)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
-{
+static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm) {
   PetscFunctionBegin;
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetType(*dm, DMPLEX));
@@ -84,66 +68,62 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SetupDiscretization(DM dm, PetscInt dim, PetscBool simplex, AppCtx *user)
-{
-  PetscFE        fe;
-  MPI_Comm       comm;
+static PetscErrorCode SetupDiscretization(DM dm, PetscInt dim, PetscBool simplex, AppCtx *user) {
+  PetscFE  fe;
+  MPI_Comm comm;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscObjectGetComm((PetscObject) dm, &comm));
+  PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
   PetscCall(PetscFECreateDefault(comm, dim, dim, simplex, "velocity_", -1, &fe));
-  PetscCall(PetscObjectSetName((PetscObject) fe, "velocity"));
-  PetscCall(DMSetField(dm, 0, NULL, (PetscObject) fe));
+  PetscCall(PetscObjectSetName((PetscObject)fe, "velocity"));
+  PetscCall(DMSetField(dm, 0, NULL, (PetscObject)fe));
   PetscCall(PetscFEDestroy(&fe));
   PetscCall(PetscFECreateDefault(comm, dim, 1, simplex, "pressure_", -1, &fe));
-  PetscCall(PetscObjectSetName((PetscObject) fe, "pressure"));
-  PetscCall(DMSetField(dm, 1, NULL, (PetscObject) fe));
+  PetscCall(PetscObjectSetName((PetscObject)fe, "pressure"));
+  PetscCall(DMSetField(dm, 1, NULL, (PetscObject)fe));
   PetscCall(PetscFEDestroy(&fe));
   PetscCall(DMCreateDS(dm));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SetupOutputDiscretization(DM dm, PetscInt dim, PetscBool simplex, AppCtx *user)
-{
-  PetscFE        fe;
-  MPI_Comm       comm;
+static PetscErrorCode SetupOutputDiscretization(DM dm, PetscInt dim, PetscBool simplex, AppCtx *user) {
+  PetscFE  fe;
+  MPI_Comm comm;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscObjectGetComm((PetscObject) dm, &comm));
+  PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
   PetscCall(PetscFECreateDefault(comm, dim, dim, simplex, "output_", -1, &fe));
-  PetscCall(PetscObjectSetName((PetscObject) fe, "output"));
-  PetscCall(DMSetField(dm, 0, NULL, (PetscObject) fe));
+  PetscCall(PetscObjectSetName((PetscObject)fe, "output"));
+  PetscCall(DMSetField(dm, 0, NULL, (PetscObject)fe));
   PetscCall(PetscFEDestroy(&fe));
   PetscCall(DMCreateDS(dm));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateSubdomainMesh(DM dm, DMLabel *domLabel, DM *subdm, AppCtx *user)
-{
-  DMLabel        label;
-  PetscBool      simplex;
-  PetscInt       dim, cStart, cEnd, c;
+static PetscErrorCode CreateSubdomainMesh(DM dm, DMLabel *domLabel, DM *subdm, AppCtx *user) {
+  DMLabel   label;
+  PetscBool simplex;
+  PetscInt  dim, cStart, cEnd, c;
 
   PetscFunctionBeginUser;
   PetscCall(DMPlexIsSimplex(dm, &simplex));
   PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
   PetscCall(DMLabelCreate(PETSC_COMM_SELF, "subdomain", &label));
-  for (c = cStart + (cEnd-cStart)/2; c < cEnd; ++c) PetscCall(DMLabelSetValue(label, c, 1));
+  for (c = cStart + (cEnd - cStart) / 2; c < cEnd; ++c) PetscCall(DMLabelSetValue(label, c, 1));
   PetscCall(DMPlexFilter(dm, label, 1, subdm));
   PetscCall(DMGetDimension(*subdm, &dim));
   PetscCall(SetupDiscretization(*subdm, dim, simplex, user));
-  PetscCall(PetscObjectSetName((PetscObject) *subdm, "subdomain"));
+  PetscCall(PetscObjectSetName((PetscObject)*subdm, "subdomain"));
   PetscCall(DMViewFromOptions(*subdm, NULL, "-sub_dm_view"));
   if (domLabel) *domLabel = label;
-  else          PetscCall(DMLabelDestroy(&label));
+  else PetscCall(DMLabelDestroy(&label));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateBoundaryMesh(DM dm, DMLabel *bdLabel, DM *subdm, AppCtx *user)
-{
-  DMLabel        label;
-  PetscBool      simplex;
-  PetscInt       dim;
+static PetscErrorCode CreateBoundaryMesh(DM dm, DMLabel *bdLabel, DM *subdm, AppCtx *user) {
+  DMLabel   label;
+  PetscBool simplex;
+  PetscInt  dim;
 
   PetscFunctionBeginUser;
   PetscCall(DMPlexIsSimplex(dm, &simplex));
@@ -153,25 +133,24 @@ static PetscErrorCode CreateBoundaryMesh(DM dm, DMLabel *bdLabel, DM *subdm, App
   PetscCall(DMPlexCreateSubmesh(dm, label, 1, PETSC_TRUE, subdm));
   PetscCall(DMGetDimension(*subdm, &dim));
   PetscCall(SetupDiscretization(*subdm, dim, simplex, user));
-  PetscCall(PetscObjectSetName((PetscObject) *subdm, "boundary"));
+  PetscCall(PetscObjectSetName((PetscObject)*subdm, "boundary"));
   PetscCall(DMViewFromOptions(*subdm, NULL, "-sub_dm_view"));
   if (bdLabel) *bdLabel = label;
-  else         PetscCall(DMLabelDestroy(&label));
+  else PetscCall(DMLabelDestroy(&label));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateAuxiliaryVec(DM dm, DM *auxdm, Vec *la, AppCtx *user)
-{
-  PetscErrorCode (**afuncs)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *);
-  PetscBool         simplex;
-  PetscInt          dim, Nf, f;
+static PetscErrorCode CreateAuxiliaryVec(DM dm, DM *auxdm, Vec *la, AppCtx *user) {
+  PetscErrorCode (**afuncs)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *);
+  PetscBool simplex;
+  PetscInt  dim, Nf, f;
 
   PetscFunctionBeginUser;
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(DMPlexIsSimplex(dm, &simplex));
   PetscCall(DMGetNumFields(dm, &Nf));
   PetscCall(PetscMalloc1(Nf, &afuncs));
-  for (f = 0; f < Nf; ++f) afuncs[f]  = linear;
+  for (f = 0; f < Nf; ++f) afuncs[f] = linear;
   PetscCall(DMClone(dm, auxdm));
   PetscCall(SetupDiscretization(*auxdm, dim, simplex, user));
   PetscCall(DMCreateLocalVector(*auxdm, la));
@@ -181,13 +160,12 @@ static PetscErrorCode CreateAuxiliaryVec(DM dm, DM *auxdm, Vec *la, AppCtx *user
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TestFunctionProjection(DM dm, DM dmAux, DMLabel label, Vec la, const char name[], AppCtx *user)
-{
-  PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *);
-  Vec               x, lx;
-  PetscInt          Nf, f;
-  PetscInt          val[1] = {1};
-  char              lname[PETSC_MAX_PATH_LEN];
+static PetscErrorCode TestFunctionProjection(DM dm, DM dmAux, DMLabel label, Vec la, const char name[], AppCtx *user) {
+  PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *);
+  Vec      x, lx;
+  PetscInt Nf, f;
+  PetscInt val[1] = {1};
+  char     lname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBeginUser;
   if (dmAux) PetscCall(DMSetAuxiliaryVec(dm, NULL, 0, 0, la));
@@ -197,17 +175,17 @@ static PetscErrorCode TestFunctionProjection(DM dm, DM dmAux, DMLabel label, Vec
   PetscCall(DMGetGlobalVector(dm, &x));
   PetscCall(PetscStrcpy(lname, "Function "));
   PetscCall(PetscStrcat(lname, name));
-  PetscCall(PetscObjectSetName((PetscObject) x, lname));
+  PetscCall(PetscObjectSetName((PetscObject)x, lname));
   if (!label) PetscCall(DMProjectFunction(dm, 0.0, funcs, NULL, INSERT_VALUES, x));
-  else        PetscCall(DMProjectFunctionLabel(dm, 0.0, label, 1, val, 0, NULL, funcs, NULL, INSERT_VALUES, x));
+  else PetscCall(DMProjectFunctionLabel(dm, 0.0, label, 1, val, 0, NULL, funcs, NULL, INSERT_VALUES, x));
   PetscCall(VecViewFromOptions(x, NULL, "-func_view"));
   PetscCall(DMRestoreGlobalVector(dm, &x));
   PetscCall(DMGetLocalVector(dm, &lx));
   PetscCall(PetscStrcpy(lname, "Local Function "));
   PetscCall(PetscStrcat(lname, name));
-  PetscCall(PetscObjectSetName((PetscObject) lx, lname));
+  PetscCall(PetscObjectSetName((PetscObject)lx, lname));
   if (!label) PetscCall(DMProjectFunctionLocal(dm, 0.0, funcs, NULL, INSERT_VALUES, lx));
-  else        PetscCall(DMProjectFunctionLabelLocal(dm, 0.0, label, 1, val, 0, NULL, funcs, NULL, INSERT_VALUES, lx));
+  else PetscCall(DMProjectFunctionLabelLocal(dm, 0.0, label, 1, val, 0, NULL, funcs, NULL, INSERT_VALUES, lx));
   PetscCall(VecViewFromOptions(lx, NULL, "-local_func_view"));
   PetscCall(DMRestoreLocalVector(dm, &lx));
   PetscCall(PetscFree(funcs));
@@ -215,38 +193,34 @@ static PetscErrorCode TestFunctionProjection(DM dm, DM dmAux, DMLabel label, Vec
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TestFieldProjection(DM dm, DM dmAux, DMLabel label, Vec la, const char name[], AppCtx *user)
-{
-  PetscErrorCode (**afuncs)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *);
-  void           (**funcs)(PetscInt, PetscInt, PetscInt,
-                           const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
-                           const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
-                           PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]);
-  Vec               lx, lu;
-  PetscInt          Nf, f;
-  PetscInt          val[1] = {1};
-  char              lname[PETSC_MAX_PATH_LEN];
+static PetscErrorCode TestFieldProjection(DM dm, DM dmAux, DMLabel label, Vec la, const char name[], AppCtx *user) {
+  PetscErrorCode (**afuncs)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *);
+  void (**funcs)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]);
+  Vec      lx, lu;
+  PetscInt Nf, f;
+  PetscInt val[1] = {1};
+  char     lname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBeginUser;
   if (dmAux) PetscCall(DMSetAuxiliaryVec(dm, NULL, 0, 0, la));
   PetscCall(DMGetNumFields(dm, &Nf));
   PetscCall(PetscMalloc2(Nf, &funcs, Nf, &afuncs));
-  for (f = 0; f < Nf; ++f) afuncs[f]  = linear;
+  for (f = 0; f < Nf; ++f) afuncs[f] = linear;
   funcs[0] = linear_vector;
   funcs[1] = linear_scalar;
   PetscCall(DMGetLocalVector(dm, &lu));
   PetscCall(PetscStrcpy(lname, "Local Field Input "));
   PetscCall(PetscStrcat(lname, name));
-  PetscCall(PetscObjectSetName((PetscObject) lu, lname));
+  PetscCall(PetscObjectSetName((PetscObject)lu, lname));
   if (!label) PetscCall(DMProjectFunctionLocal(dm, 0.0, afuncs, NULL, INSERT_VALUES, lu));
-  else        PetscCall(DMProjectFunctionLabelLocal(dm, 0.0, label, 1, val, 0, NULL, afuncs, NULL, INSERT_VALUES, lu));
+  else PetscCall(DMProjectFunctionLabelLocal(dm, 0.0, label, 1, val, 0, NULL, afuncs, NULL, INSERT_VALUES, lu));
   PetscCall(VecViewFromOptions(lu, NULL, "-local_input_view"));
   PetscCall(DMGetLocalVector(dm, &lx));
   PetscCall(PetscStrcpy(lname, "Local Field "));
   PetscCall(PetscStrcat(lname, name));
-  PetscCall(PetscObjectSetName((PetscObject) lx, lname));
+  PetscCall(PetscObjectSetName((PetscObject)lx, lname));
   if (!label) PetscCall(DMProjectFieldLocal(dm, 0.0, lu, funcs, INSERT_VALUES, lx));
-  else        PetscCall(DMProjectFieldLabelLocal(dm, 0.0, label, 1, val, 0, NULL, lu, funcs, INSERT_VALUES, lx));
+  else PetscCall(DMProjectFieldLabelLocal(dm, 0.0, label, 1, val, 0, NULL, lu, funcs, INSERT_VALUES, lx));
   PetscCall(VecViewFromOptions(lx, NULL, "-local_field_view"));
   PetscCall(DMRestoreLocalVector(dm, &lx));
   PetscCall(DMRestoreLocalVector(dm, &lu));
@@ -255,17 +229,13 @@ static PetscErrorCode TestFieldProjection(DM dm, DM dmAux, DMLabel label, Vec la
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TestFieldProjectionMultiple(DM dm, DM dmIn, DM dmAux, DMLabel label, Vec la, const char name[], AppCtx *user)
-{
-  PetscErrorCode (**afuncs)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *);
-  void           (**funcs)(PetscInt, PetscInt, PetscInt,
-                           const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
-                           const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
-                           PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]);
-  Vec               lx, lu;
-  PetscInt          Nf, NfIn;
-  PetscInt          val[1] = {1};
-  char              lname[PETSC_MAX_PATH_LEN];
+static PetscErrorCode TestFieldProjectionMultiple(DM dm, DM dmIn, DM dmAux, DMLabel label, Vec la, const char name[], AppCtx *user) {
+  PetscErrorCode (**afuncs)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *);
+  void (**funcs)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]);
+  Vec      lx, lu;
+  PetscInt Nf, NfIn;
+  PetscInt val[1] = {1};
+  char     lname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBeginUser;
   if (dmAux) PetscCall(DMSetAuxiliaryVec(dm, NULL, 0, 0, la));
@@ -278,16 +248,16 @@ static PetscErrorCode TestFieldProjectionMultiple(DM dm, DM dmIn, DM dmAux, DMLa
   PetscCall(DMGetLocalVector(dmIn, &lu));
   PetscCall(PetscStrcpy(lname, "Local MultiField Input "));
   PetscCall(PetscStrcat(lname, name));
-  PetscCall(PetscObjectSetName((PetscObject) lu, lname));
+  PetscCall(PetscObjectSetName((PetscObject)lu, lname));
   if (!label) PetscCall(DMProjectFunctionLocal(dmIn, 0.0, afuncs, NULL, INSERT_VALUES, lu));
-  else        PetscCall(DMProjectFunctionLabelLocal(dmIn, 0.0, label, 1, val, 0, NULL, afuncs, NULL, INSERT_VALUES, lu));
+  else PetscCall(DMProjectFunctionLabelLocal(dmIn, 0.0, label, 1, val, 0, NULL, afuncs, NULL, INSERT_VALUES, lu));
   PetscCall(VecViewFromOptions(lu, NULL, "-local_input_view"));
   PetscCall(DMGetLocalVector(dm, &lx));
   PetscCall(PetscStrcpy(lname, "Local MultiField "));
   PetscCall(PetscStrcat(lname, name));
-  PetscCall(PetscObjectSetName((PetscObject) lx, lname));
+  PetscCall(PetscObjectSetName((PetscObject)lx, lname));
   if (!label) PetscCall(DMProjectFieldLocal(dm, 0.0, lu, funcs, INSERT_VALUES, lx));
-  else        PetscCall(DMProjectFieldLabelLocal(dm, 0.0, label, 1, val, 0, NULL, lu, funcs, INSERT_VALUES, lx));
+  else PetscCall(DMProjectFieldLabelLocal(dm, 0.0, label, 1, val, 0, NULL, lu, funcs, INSERT_VALUES, lx));
   PetscCall(VecViewFromOptions(lx, NULL, "-local_field_view"));
   PetscCall(DMRestoreLocalVector(dm, &lx));
   PetscCall(DMRestoreLocalVector(dmIn, &lu));
@@ -296,16 +266,15 @@ static PetscErrorCode TestFieldProjectionMultiple(DM dm, DM dmIn, DM dmAux, DMLa
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv)
-{
-  DM             dm, subdm, auxdm;
-  Vec            la;
-  PetscInt       dim;
-  PetscBool      simplex;
-  AppCtx         user;
+int main(int argc, char **argv) {
+  DM        dm, subdm, auxdm;
+  Vec       la;
+  PetscInt  dim;
+  PetscBool simplex;
+  AppCtx    user;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, NULL,help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(ProcessOptions(&user));
   PetscCall(CreateMesh(PETSC_COMM_WORLD, &user, &dm));
   PetscCall(DMGetDimension(dm, &dim));

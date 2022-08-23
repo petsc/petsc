@@ -69,98 +69,94 @@
 #include "petsc.h"
 
 int main(int argc, char *argv[]) {
-  Teuchos::GlobalMPISession mpiSession(&argc,&argv);
+  Teuchos::GlobalMPISession mpiSession(&argc, &argv);
 
-  typedef double Scalar;
-  typedef Teuchos::ScalarTraits<Scalar>::magnitudeType Magnitude;
-  typedef int LO;
-  typedef int GO;
+  typedef double                                                 Scalar;
+  typedef Teuchos::ScalarTraits<Scalar>::magnitudeType           Magnitude;
+  typedef int                                                    LO;
+  typedef int                                                    GO;
   typedef Tpetra::DefaultPlatform::DefaultPlatformType           Platform;
   typedef Tpetra::DefaultPlatform::DefaultPlatformType::NodeType Node;
 
-  typedef Tpetra::CrsMatrix<Scalar,LO,GO> MAT;
-  typedef Tpetra::MultiVector<Scalar,LO,GO> MV;
+  typedef Tpetra::CrsMatrix<Scalar, LO, GO>   MAT;
+  typedef Tpetra::MultiVector<Scalar, LO, GO> MV;
 
-  using Tpetra::global_size_t;
-  using Teuchos::tuple;
   using Teuchos::RCP;
   using Teuchos::rcp;
+  using Teuchos::tuple;
+  using Tpetra::global_size_t;
 
-  Platform &platform = Tpetra::DefaultPlatform::getDefaultPlatform();
-  Teuchos::RCP<const Teuchos::Comm<int> > comm = platform.getComm();
-  Teuchos::RCP<Node>             node = platform.getNode();
-  size_t myRank = comm->getRank();
+  Platform                              &platform = Tpetra::DefaultPlatform::getDefaultPlatform();
+  Teuchos::RCP<const Teuchos::Comm<int>> comm     = platform.getComm();
+  Teuchos::RCP<Node>                     node     = platform.getNode();
+  size_t                                 myRank   = comm->getRank();
 
   RCP<Teuchos::FancyOStream> fos = Teuchos::fancyOStream(Teuchos::rcpFromRef(std::cout));
 
   *fos << Amesos2::version() << std::endl << std::endl;
 
-  bool printMatrix   = false;
-  bool printSolution = false;
-  bool printTiming   = false;
-  bool printResidual = false;
-  bool printLUStats  = false;
-  bool verbose       = false;
-  std::string solver_name;
-  std::string filedir;
-  std::string filename;
-  Teuchos::CommandLineProcessor cmdp(false,false); // set last argument to false so Trilinos won't generate exceptionif it sees unrecognized option
-                                                   // note it still prints a warning to stderr which cannot be stopped.
-  cmdp.setOption("verbose","quiet",&verbose,"Print messages and results.");
-  cmdp.setOption("filedir",&filedir,"Directory where matrix-market files are located");
-  cmdp.setOption("filename",&filename,"Filename for Matrix-Market test matrix.");
-  cmdp.setOption("print-matrix","no-print-matrix",&printMatrix,"Print the full matrix after reading it.");
-  cmdp.setOption("print-solution","no-print-solution",&printSolution,"Print solution vector after solve.");
-  cmdp.setOption("print-timing","no-print-timing",&printTiming,"Print solver timing statistics");
-  cmdp.setOption("print-residual","no-print-residual",&printResidual,"Print solution residual");
-  cmdp.setOption("print-lu-stats","no-print-lu-stats",&printLUStats,"Print nnz in L and U factors");
+  bool                          printMatrix   = false;
+  bool                          printSolution = false;
+  bool                          printTiming   = false;
+  bool                          printResidual = false;
+  bool                          printLUStats  = false;
+  bool                          verbose       = false;
+  std::string                   solver_name;
+  std::string                   filedir;
+  std::string                   filename;
+  Teuchos::CommandLineProcessor cmdp(false, false); // set last argument to false so Trilinos won't generate exceptionif it sees unrecognized option
+                                                    // note it still prints a warning to stderr which cannot be stopped.
+  cmdp.setOption("verbose", "quiet", &verbose, "Print messages and results.");
+  cmdp.setOption("filedir", &filedir, "Directory where matrix-market files are located");
+  cmdp.setOption("filename", &filename, "Filename for Matrix-Market test matrix.");
+  cmdp.setOption("print-matrix", "no-print-matrix", &printMatrix, "Print the full matrix after reading it.");
+  cmdp.setOption("print-solution", "no-print-solution", &printSolution, "Print solution vector after solve.");
+  cmdp.setOption("print-timing", "no-print-timing", &printTiming, "Print solver timing statistics");
+  cmdp.setOption("print-residual", "no-print-residual", &printResidual, "Print solution residual");
+  cmdp.setOption("print-lu-stats", "no-print-lu-stats", &printLUStats, "Print nnz in L and U factors");
   cmdp.setOption("solver", &solver_name, "Which TPL solver library to use.");
-  if (cmdp.parse(argc,argv) != Teuchos::CommandLineProcessor::PARSE_SUCCESSFUL) {
-    std::cerr << "Options unknown to Trilinos in command line"<< std::endl;
-  }
+  if (cmdp.parse(argc, argv) != Teuchos::CommandLineProcessor::PARSE_SUCCESSFUL) { std::cerr << "Options unknown to Trilinos in command line" << std::endl; }
 
   // Before we do anything, check that the solver is enabled
   if (!Amesos2::query(solver_name)) {
     std::cerr << solver_name << " not enabled.  Exiting..." << std::endl;
-    return EXIT_SUCCESS;        // Otherwise CTest will pick it up as
-                                // failure, which it isn't really
+    return EXIT_SUCCESS; // Otherwise CTest will pick it up as
+                         // failure, which it isn't really
   }
 
   const size_t numVectors = 1;
 
   // create a Map
-  global_size_t nrows = 6;
-  RCP<Tpetra::Map<LO,GO> > map
-    = rcp( new Tpetra::Map<LO,GO>(nrows,0,comm));
+  global_size_t            nrows = 6;
+  RCP<Tpetra::Map<LO, GO>> map   = rcp(new Tpetra::Map<LO, GO>(nrows, 0, comm));
 
   std::string mat_pathname = filedir + filename;
-  RCP<MAT> A = Tpetra::MatrixMarket::Reader<MAT>::readSparseFile(mat_pathname,comm,node);
+  RCP<MAT>    A            = Tpetra::MatrixMarket::Reader<MAT>::readSparseFile(mat_pathname, comm, node);
 
   if (printMatrix) {
     A->describe(*fos, Teuchos::VERB_EXTREME);
-  }
-  else if (verbose && myRank==0) {
+  } else if (verbose && myRank == 0) {
     *fos << std::endl << A->description() << std::endl << std::endl;
   }
 
   // get the maps
-  RCP<const Tpetra::Map<LO,GO,Node> > dmnmap = A->getDomainMap();
-  RCP<const Tpetra::Map<LO,GO,Node> > rngmap = A->getRangeMap();
+  RCP<const Tpetra::Map<LO, GO, Node>> dmnmap = A->getDomainMap();
+  RCP<const Tpetra::Map<LO, GO, Node>> rngmap = A->getRangeMap();
 
   // Create random X
-  RCP<MV> Xhat = rcp( new MV(dmnmap,numVectors));
-  RCP<MV> X = rcp( new MV(dmnmap,numVectors));
+  RCP<MV> Xhat = rcp(new MV(dmnmap, numVectors));
+  RCP<MV> X    = rcp(new MV(dmnmap, numVectors));
   X->setObjectLabel("X");
   Xhat->setObjectLabel("Xhat");
   X->randomize();
 
-  RCP<MV> B = rcp(new MV(rngmap,numVectors));
+  RCP<MV> B = rcp(new MV(rngmap, numVectors));
   A->apply(*X, *B);
 
   // Constructor from Factory
-  RCP<Amesos2::Solver<MAT,MV> > solver;
-  try{
-    solver = Amesos2::create<MAT,MV>(solver_name, A, Xhat, B);
+  RCP<Amesos2::Solver<MAT, MV>> solver;
+  try {
+    solver = Amesos2::create<MAT, MV>(solver_name, A, Xhat, B);
   } catch (std::invalid_argument e) {
     *fos << e.what() << std::endl;
     return 0;
@@ -177,8 +173,8 @@ int main(int argc, char *argv[]) {
 
   if (printSolution) {
     // Print the solution
-    Xhat->describe(*fos,Teuchos::VERB_EXTREME);
-    X->describe(*fos,Teuchos::VERB_EXTREME);
+    Xhat->describe(*fos, Teuchos::VERB_EXTREME);
+    X->describe(*fos, Teuchos::VERB_EXTREME);
   }
 
   if (printTiming) {
@@ -190,27 +186,25 @@ int main(int argc, char *argv[]) {
     Teuchos::Array<Magnitude> xhatnorms(numVectors);
     Xhat->update(-1.0, *X, 1.0);
     Xhat->norm2(xhatnorms());
-    if (myRank == 0) {
-      *fos << "Norm2 of Ax - b = " << xhatnorms << std::endl;
-    }
+    if (myRank == 0) { *fos << "Norm2 of Ax - b = " << xhatnorms << std::endl; }
   }
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&argv,NULL,NULL));
-  PetscCall(PetscOptionsSetValue(NULL,"-options_left","false"));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, NULL));
+  PetscCall(PetscOptionsSetValue(NULL, "-options_left", "false"));
   KSP ksp;
-  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  PetscCall(KSPCreate(PETSC_COMM_WORLD, &ksp));
   Mat Apetsc;
-  PetscCall(MatCreate(PETSC_COMM_WORLD,&Apetsc));
+  PetscCall(MatCreate(PETSC_COMM_WORLD, &Apetsc));
   PetscViewer viewer;
-  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"${PETSC_DIR}/share/petsc/datafiles/matrices/spd-real-int32-float64",FILE_MODE_READ,&viewer));
-  PetscCall(MatLoad(Apetsc,viewer));
-  Vec x,b;
-  PetscCall(MatCreateVecs(Apetsc,&x,&b));
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, "${PETSC_DIR}/share/petsc/datafiles/matrices/spd-real-int32-float64", FILE_MODE_READ, &viewer));
+  PetscCall(MatLoad(Apetsc, viewer));
+  Vec x, b;
+  PetscCall(MatCreateVecs(Apetsc, &x, &b));
   PetscCall(PetscViewerDestroy(&viewer));
-  PetscCall(KSPSetOperators(ksp,Apetsc,Apetsc));
+  PetscCall(KSPSetOperators(ksp, Apetsc, Apetsc));
   PetscCall(KSPSetFromOptions(ksp));
-  PetscCall(KSPSolve(ksp,x,b));
+  PetscCall(KSPSolve(ksp, x, b));
   PetscCall(VecDestroy(&x));
   PetscCall(VecDestroy(&b));
   PetscCall(MatDestroy(&Apetsc));

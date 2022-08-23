@@ -3,8 +3,7 @@
 #include <petsc/private/taoimpl.h>
 #include <petsctaolinesearch.h>
 
-typedef struct{
-
+typedef struct {
   /* Parameters */
   PetscReal pg_ftol;
   PetscReal actred;
@@ -13,7 +12,7 @@ typedef struct{
   PetscReal stepsize;
   PetscReal gnorm;
 
-  PetscReal sigma1,sigma2,sigma3;
+  PetscReal sigma1, sigma2, sigma3;
 
   PetscInt maxgpits;
 
@@ -21,7 +20,7 @@ typedef struct{
 
   /* Problem statistics */
 
-  PetscInt n;   /* Dimension of the Problem */
+  PetscInt n; /* Dimension of the Problem */
 
   PetscInt total_cgits;
   PetscInt cg_iterates;
@@ -38,25 +37,24 @@ typedef struct{
   Vec G, PG;
   Vec Work;
 
-  Mat H;
-  Vec B;
+  Mat       H;
+  Vec       B;
   PetscReal c;
 
   PetscReal f;
   PetscReal step;
-  Mat Hsub;
-  Mat Hsub_pre;
+  Mat       Hsub;
+  Mat       Hsub_pre;
 
-  IS Free_Local;  /* Indices of local variables equal to lower bound */
-  IS TT;  /* Indices of local variables equal to upper bound */
+  IS Free_Local; /* Indices of local variables equal to lower bound */
+  IS TT;         /* Indices of local variables equal to upper bound */
 
-  PetscInt n_free;       /* Number of free variables */
+  PetscInt n_free; /* Number of free variables */
   PetscInt n_upper;
   PetscInt n_lower;
-  PetscInt n_bind;       /* Number of binding varibles */
+  PetscInt n_bind; /* Number of binding varibles */
   PetscInt ksp_type;
   PetscInt subset_type;
-}TAO_GPCG;
+} TAO_GPCG;
 
 #endif
-

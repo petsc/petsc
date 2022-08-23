@@ -4,8 +4,8 @@
   NOT real time usage. Do not use this for reported timings, speedup etc.
 */
 
-#include <petscsys.h>                       /*I "petscsys.h" I*/
-#include <petsctime.h>                      /*I "petsctime.h" I*/
+#include <petscsys.h>  /*I "petscsys.h" I*/
+#include <petsctime.h> /*I "petsctime.h" I*/
 #include <ctype.h>
 #include <sys/stat.h>
 #if defined(PETSC_HAVE_SYS_UTSNAME_H)
@@ -21,13 +21,12 @@
 #if defined(PETSC_HAVE_SYS_TIMES_H)
 
 #include <sys/times.h>
-PetscErrorCode  PetscGetCPUTime(PetscLogDouble *t)
-{
+PetscErrorCode PetscGetCPUTime(PetscLogDouble *t) {
   struct tms temp;
 
   PetscFunctionBegin;
   times(&temp);
-  *t = ((double)temp.tms_utime)/((double)CLOCKS_PER_SEC);
+  *t = ((double)temp.tms_utime) / ((double)CLOCKS_PER_SEC);
   PetscFunctionReturn(0);
 }
 
@@ -35,8 +34,7 @@ PetscErrorCode  PetscGetCPUTime(PetscLogDouble *t)
 
 #include <time.h>
 
-PetscErrorCode  PetscGetCPUTime(PetscLogDouble *t)
-{
+PetscErrorCode PetscGetCPUTime(PetscLogDouble *t) {
   PetscFunctionBegin;
   *t = ((double)clock()) / ((double)CLOCKS_PER_SEC);
   PetscFunctionReturn(0);
@@ -75,15 +73,14 @@ PetscErrorCode  PetscGetCPUTime(PetscLogDouble *t)
     use since it does not include the time for message passing etc.
     Also on many systems the accuracy is only on the order of microseconds.
 @*/
-PetscErrorCode  PetscGetCPUTime(PetscLogDouble *t)
-{
+PetscErrorCode PetscGetCPUTime(PetscLogDouble *t) {
   static struct rusage temp;
-  PetscLogDouble       foo,foo1;
+  PetscLogDouble       foo, foo1;
 
   PetscFunctionBegin;
-  getrusage(RUSAGE_SELF,&temp);
-  foo  = temp.ru_utime.tv_sec;        /* seconds */
-  foo1 = temp.ru_utime.tv_usec;       /* uSecs */
+  getrusage(RUSAGE_SELF, &temp);
+  foo  = temp.ru_utime.tv_sec;  /* seconds */
+  foo1 = temp.ru_utime.tv_usec; /* uSecs */
   *t   = foo + foo1 * 1.0e-6;
   PetscFunctionReturn(0);
 }

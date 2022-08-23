@@ -40,18 +40,17 @@
 #include <stdio.h>
 
 #define DATA_FORMAT_BUFFER_SIZE 1048576
-#define TV_FORMAT_INACTIVE 0
-#define TV_FORMAT_FIRST_CALL 1
-#define TV_FORMAT_APPEND_CALL 2
+#define TV_FORMAT_INACTIVE      0
+#define TV_FORMAT_FIRST_CALL    1
+#define TV_FORMAT_APPEND_CALL   2
 
 volatile int TV_data_format_control = TV_FORMAT_INACTIVE;
 
 /* TV_data_format_buffer should not be static for icc 11, and others */
-char        TV_data_format_buffer[DATA_FORMAT_BUFFER_SIZE];
+char         TV_data_format_buffer[DATA_FORMAT_BUFFER_SIZE];
 static char *TV_data_buffer_ptr = TV_data_format_buffer;
 
-int TV_add_row(const char *field_name, const char *type_name, const void *value)
-{
+int TV_add_row(const char *field_name, const char *type_name, const void *value) {
   size_t remaining;
   int    out;
 
@@ -76,7 +75,7 @@ int TV_add_row(const char *field_name, const char *type_name, const void *value)
 #if defined(PETSC_HAVE__SNPRINTF) && !defined(PETSC_HAVE_SNPRINTF)
 #define snprintf _snprintf
 #endif
-  out = snprintf(TV_data_buffer_ptr,remaining, "%s\t%s\t%p\n",field_name, type_name, value);
+  out = snprintf(TV_data_buffer_ptr, remaining, "%s\t%s\t%p\n", field_name, type_name, value);
 
   if (out < 1) return ENOMEM;
 
@@ -85,13 +84,10 @@ int TV_add_row(const char *field_name, const char *type_name, const void *value)
   return 0;
 }
 
-void TV_pre_display_callback(void)
-{
+void TV_pre_display_callback(void) {
   TV_data_format_control = TV_FORMAT_FIRST_CALL;
 }
 
-void TV_post_display_callback(void)
-{
+void TV_post_display_callback(void) {
   TV_data_format_control = TV_FORMAT_INACTIVE;
 }
-

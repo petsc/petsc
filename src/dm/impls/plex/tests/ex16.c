@@ -2,8 +2,7 @@ static char help[] = "Tests for creation of submeshes\n\n";
 
 #include <petscdmplex.h>
 
-static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm)
-{
+static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm) {
   PetscFunctionBeginUser;
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetType(*dm, DMPLEX));
@@ -13,8 +12,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm)
 }
 
 // Label half of the cells
-static PetscErrorCode CreateHalfCellsLabel(DM dm, PetscBool lower, DMLabel *label)
-{
+static PetscErrorCode CreateHalfCellsLabel(DM dm, PetscBool lower, DMLabel *label) {
   PetscInt cStart, cEnd, cStartSub, cEndSub;
 
   PetscFunctionBeginUser;
@@ -22,16 +20,20 @@ static PetscErrorCode CreateHalfCellsLabel(DM dm, PetscBool lower, DMLabel *labe
   PetscCall(DMGetLabel(dm, "cells", label));
   PetscCall(DMLabelClearStratum(*label, 1));
   PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
-  if (lower) {cStartSub = cStart; cEndSub = cEnd/2;}
-  else       {cStartSub = cEnd/2; cEndSub = cEnd;}
+  if (lower) {
+    cStartSub = cStart;
+    cEndSub   = cEnd / 2;
+  } else {
+    cStartSub = cEnd / 2;
+    cEndSub   = cEnd;
+  }
   for (PetscInt c = cStartSub; c < cEndSub; ++c) PetscCall(DMLabelSetValue(*label, c, 1));
   PetscCall(DMPlexLabelComplete(dm, *label));
   PetscFunctionReturn(0);
 }
 
 // Label everything on the right half of the domain
-static PetscErrorCode CreateHalfDomainLabel(DM dm, PetscBool lower, DMLabel *label)
-{
+static PetscErrorCode CreateHalfDomainLabel(DM dm, PetscBool lower, DMLabel *label) {
   PetscReal centroid[3];
   PetscInt  cStart, cEnd, cdim;
 
@@ -43,31 +45,32 @@ static PetscErrorCode CreateHalfDomainLabel(DM dm, PetscBool lower, DMLabel *lab
   PetscCall(DMGetCoordinateDim(dm, &cdim));
   for (PetscInt c = cStart; c < cEnd; ++c) {
     PetscCall(DMPlexComputeCellGeometryFVM(dm, c, NULL, centroid, NULL));
-    if (lower) {if (centroid[0] < 0.5) PetscCall(DMLabelSetValue(*label, c, 1));}
-    else       {if (centroid[0] > 0.5) PetscCall(DMLabelSetValue(*label, c, 1));}
+    if (lower) {
+      if (centroid[0] < 0.5) PetscCall(DMLabelSetValue(*label, c, 1));
+    } else {
+      if (centroid[0] > 0.5) PetscCall(DMLabelSetValue(*label, c, 1));
+    }
   }
   PetscCall(DMPlexLabelComplete(dm, *label));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode CreateSubmesh(DM dm, PetscBool domain, PetscBool lower, DM *subdm)
-{
+PetscErrorCode CreateSubmesh(DM dm, PetscBool domain, PetscBool lower, DM *subdm) {
   DMLabel label, map;
 
   PetscFunctionBegin;
   if (domain) PetscCall(CreateHalfDomainLabel(dm, lower, &label));
-  else        PetscCall(CreateHalfCellsLabel(dm, lower, &label));
+  else PetscCall(CreateHalfCellsLabel(dm, lower, &label));
   PetscCall(DMPlexFilter(dm, label, 1, subdm));
-  PetscCall(PetscObjectSetName((PetscObject) *subdm, "Submesh"));
-  PetscCall(PetscObjectSetOptionsPrefix((PetscObject) *subdm, "sub_"));
+  PetscCall(PetscObjectSetName((PetscObject)*subdm, "Submesh"));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)*subdm, "sub_"));
   PetscCall(DMViewFromOptions(*subdm, NULL, "-dm_view"));
   PetscCall(DMPlexGetSubpointMap(*subdm, &map));
-  PetscCall(PetscObjectViewFromOptions((PetscObject) map, NULL, "-map_view"));
+  PetscCall(PetscObjectViewFromOptions((PetscObject)map, NULL, "-map_view"));
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
   DM        dm, subdm;
   PetscBool domain = PETSC_FALSE;
 

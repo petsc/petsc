@@ -30,8 +30,11 @@ typedef struct _p_PetscDualSpace *PetscDualSpace;
 
 .seealso: `PetscSpace`
 M*/
-typedef enum { PETSCDUALSPACE_REFCELL_SIMPLEX, PETSCDUALSPACE_REFCELL_TENSOR } PetscDualSpaceReferenceCell;
-PETSC_EXTERN const char * const PetscDualSpaceReferenceCells[];
+typedef enum {
+  PETSCDUALSPACE_REFCELL_SIMPLEX,
+  PETSCDUALSPACE_REFCELL_TENSOR
+} PetscDualSpaceReferenceCell;
+PETSC_EXTERN const char *const PetscDualSpaceReferenceCells[];
 
 /*MC
   PetscDualSpaceTransformType - The type of function transform
@@ -51,7 +54,11 @@ $ Contravariant Piola: $\sigma^*(F) = 1/|J| J F \circ \phi^{-1)$
 
 .seealso: `PetscDualSpaceGetDeRahm()`
 M*/
-typedef enum {IDENTITY_TRANSFORM, COVARIANT_PIOLA_TRANSFORM, CONTRAVARIANT_PIOLA_TRANSFORM} PetscDualSpaceTransformType;
+typedef enum {
+  IDENTITY_TRANSFORM,
+  COVARIANT_PIOLA_TRANSFORM,
+  CONTRAVARIANT_PIOLA_TRANSFORM
+} PetscDualSpaceTransformType;
 
 /*S
   PetscFE - PETSc object that manages a finite element space, e.g. the P_1 Lagrange element
@@ -69,6 +76,10 @@ typedef struct _p_PetscFE *PetscFE;
 
 .seealso: `PetscFEIntegrateJacobian()`
 M*/
-typedef enum { PETSCFE_JACOBIAN, PETSCFE_JACOBIAN_PRE, PETSCFE_JACOBIAN_DYN } PetscFEJacobianType;
+typedef enum {
+  PETSCFE_JACOBIAN,
+  PETSCFE_JACOBIAN_PRE,
+  PETSCFE_JACOBIAN_DYN
+} PetscFEJacobianType;
 
 #endif

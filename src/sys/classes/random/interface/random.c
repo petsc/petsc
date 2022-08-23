@@ -12,7 +12,7 @@
     one to reinitialize and set the seed.
  */
 
-#include <petsc/private/randomimpl.h>                              /*I "petscsys.h" I*/
+#include <petsc/private/randomimpl.h> /*I "petscsys.h" I*/
 
 /*@
    PetscRandomGetValue - Generates a random number.  Call this after first calling
@@ -49,13 +49,12 @@
 
 .seealso: `PetscRandomCreate()`, `PetscRandomDestroy()`, `VecSetRandom()`, `PetscRandomGetValueReal()`
 @*/
-PetscErrorCode  PetscRandomGetValue(PetscRandom r,PetscScalar *val)
-{
+PetscErrorCode PetscRandomGetValue(PetscRandom r, PetscScalar *val) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(r,PETSC_RANDOM_CLASSID,1);
-  PetscValidType(r,1);
-  if (!r->ops->getvalue) PetscUseTypeMethod(r,getvalues ,1,val);
-  else PetscUseTypeMethod(r,getvalue ,val);
+  PetscValidHeaderSpecific(r, PETSC_RANDOM_CLASSID, 1);
+  PetscValidType(r, 1);
+  if (!r->ops->getvalue) PetscUseTypeMethod(r, getvalues, 1, val);
+  else PetscUseTypeMethod(r, getvalue, val);
   PetscCall(PetscObjectStateIncrease((PetscObject)r));
   PetscFunctionReturn(0);
 }
@@ -88,13 +87,12 @@ PetscErrorCode  PetscRandomGetValue(PetscRandom r,PetscScalar *val)
 
 .seealso: `PetscRandomCreate()`, `PetscRandomDestroy()`, `VecSetRandom()`, `PetscRandomGetValue()`
 @*/
-PetscErrorCode  PetscRandomGetValueReal(PetscRandom r,PetscReal *val)
-{
+PetscErrorCode PetscRandomGetValueReal(PetscRandom r, PetscReal *val) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(r,PETSC_RANDOM_CLASSID,1);
-  PetscValidType(r,1);
-  if (!r->ops->getvaluereal) PetscUseTypeMethod(r,getvaluesreal ,1,val);
-  else PetscUseTypeMethod(r,getvaluereal ,val);
+  PetscValidHeaderSpecific(r, PETSC_RANDOM_CLASSID, 1);
+  PetscValidType(r, 1);
+  if (!r->ops->getvaluereal) PetscUseTypeMethod(r, getvaluesreal, 1, val);
+  else PetscUseTypeMethod(r, getvaluereal, val);
   PetscCall(PetscObjectStateIncrease((PetscObject)r));
   PetscFunctionReturn(0);
 }
@@ -122,17 +120,14 @@ PetscErrorCode  PetscRandomGetValueReal(PetscRandom r,PetscReal *val)
 
 .seealso: `PetscRandomCreate()`, `PetscRandomDestroy()`, `VecSetRandom()`, `PetscRandomGetValue()`
 @*/
-PetscErrorCode  PetscRandomGetValues(PetscRandom r, PetscInt n, PetscScalar *val)
-{
+PetscErrorCode PetscRandomGetValues(PetscRandom r, PetscInt n, PetscScalar *val) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(r,PETSC_RANDOM_CLASSID,1);
-  PetscValidType(r,1);
+  PetscValidHeaderSpecific(r, PETSC_RANDOM_CLASSID, 1);
+  PetscValidType(r, 1);
   if (!r->ops->getvalues) {
     PetscInt i;
-    for (i = 0; i < n; i++) {
-      PetscCall((*r->ops->getvalue)(r,val+i));
-    }
-  } else PetscUseTypeMethod(r,getvalues ,n,val);
+    for (i = 0; i < n; i++) { PetscCall((*r->ops->getvalue)(r, val + i)); }
+  } else PetscUseTypeMethod(r, getvalues, n, val);
   PetscCall(PetscObjectStateIncrease((PetscObject)r));
   PetscFunctionReturn(0);
 }
@@ -157,17 +152,14 @@ PetscErrorCode  PetscRandomGetValues(PetscRandom r, PetscInt n, PetscScalar *val
 
 .seealso: `PetscRandomCreate()`, `PetscRandomDestroy()`, `VecSetRandom()`, `PetscRandomGetValues()`
 @*/
-PetscErrorCode  PetscRandomGetValuesReal(PetscRandom r, PetscInt n, PetscReal *val)
-{
+PetscErrorCode PetscRandomGetValuesReal(PetscRandom r, PetscInt n, PetscReal *val) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(r,PETSC_RANDOM_CLASSID,1);
-  PetscValidType(r,1);
+  PetscValidHeaderSpecific(r, PETSC_RANDOM_CLASSID, 1);
+  PetscValidType(r, 1);
   if (!r->ops->getvaluesreal) {
     PetscInt i;
-    for (i = 0; i < n; i++) {
-      PetscCall((*r->ops->getvaluereal)(r,val+i));
-    }
-  } else PetscUseTypeMethod(r,getvaluesreal ,n,val);
+    for (i = 0; i < n; i++) { PetscCall((*r->ops->getvaluereal)(r, val + i)); }
+  } else PetscUseTypeMethod(r, getvaluesreal, n, val);
   PetscCall(PetscObjectStateIncrease((PetscObject)r));
   PetscFunctionReturn(0);
 }
@@ -189,17 +181,16 @@ PetscErrorCode  PetscRandomGetValuesReal(PetscRandom r, PetscInt n, PetscReal *v
 
 .seealso: `PetscRandomCreate()`, `PetscRandomSetInterval()`
 @*/
-PetscErrorCode  PetscRandomGetInterval(PetscRandom r,PetscScalar *low,PetscScalar *high)
-{
+PetscErrorCode PetscRandomGetInterval(PetscRandom r, PetscScalar *low, PetscScalar *high) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(r,PETSC_RANDOM_CLASSID,1);
+  PetscValidHeaderSpecific(r, PETSC_RANDOM_CLASSID, 1);
   if (low) {
-    PetscValidScalarPointer(low,2);
+    PetscValidScalarPointer(low, 2);
     *low = r->low;
   }
   if (high) {
-    PetscValidScalarPointer(high,3);
-    *high = r->low+r->width;
+    PetscValidScalarPointer(high, 3);
+    *high = r->low + r->width;
   }
   PetscFunctionReturn(0);
 }
@@ -223,18 +214,17 @@ PetscErrorCode  PetscRandomGetInterval(PetscRandom r,PetscScalar *low,PetscScala
 
 .seealso: `PetscRandomCreate()`, `PetscRandomGetInterval()`
 @*/
-PetscErrorCode  PetscRandomSetInterval(PetscRandom r,PetscScalar low,PetscScalar high)
-{
+PetscErrorCode PetscRandomSetInterval(PetscRandom r, PetscScalar low, PetscScalar high) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(r,PETSC_RANDOM_CLASSID,1);
+  PetscValidHeaderSpecific(r, PETSC_RANDOM_CLASSID, 1);
 #if defined(PETSC_USE_COMPLEX)
-  PetscCheck(PetscRealPart(low) <= PetscRealPart(high),PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"only low <= high");
-  PetscCheck(PetscImaginaryPart(low) <= PetscImaginaryPart(high),PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"only low <= high");
+  PetscCheck(PetscRealPart(low) <= PetscRealPart(high), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "only low <= high");
+  PetscCheck(PetscImaginaryPart(low) <= PetscImaginaryPart(high), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "only low <= high");
 #else
-  PetscCheck(low < high,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"only low <= high: Instead %g %g",(double)low,(double)high);
+  PetscCheck(low < high, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "only low <= high: Instead %g %g", (double)low, (double)high);
 #endif
   r->low   = low;
-  r->width = high-low;
+  r->width = high - low;
   r->iset  = PETSC_TRUE;
   PetscFunctionReturn(0);
 }

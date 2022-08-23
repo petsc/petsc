@@ -38,8 +38,7 @@
 /*       DEGREE.                                                */
 /*                                                              */
 /****************************************************************/
-PetscErrorCode SPARSEPACKrcm(const PetscInt *root,const PetscInt *xadj,const PetscInt *adjncy,PetscInt *mask, PetscInt *perm, PetscInt *ccsize, PetscInt *deg)
-{
+PetscErrorCode SPARSEPACKrcm(const PetscInt *root, const PetscInt *xadj, const PetscInt *adjncy, PetscInt *mask, PetscInt *perm, PetscInt *ccsize, PetscInt *deg) {
   /* System generated locals */
   PetscInt i__1, i__2;
 
@@ -47,9 +46,9 @@ PetscErrorCode SPARSEPACKrcm(const PetscInt *root,const PetscInt *xadj,const Pet
   PetscInt node, fnbr, lnbr, i, j, k, l, lperm, jstop, jstrt;
   PetscInt lbegin, lvlend, nbr;
 
-/*       FIND THE DEGREES OF THE NODES IN THE                  */
-/*       COMPONENT SPECIFIED BY MASK AND ROOT.                 */
-/*       -------------------------------------                 */
+  /*       FIND THE DEGREES OF THE NODES IN THE                  */
+  /*       COMPONENT SPECIFIED BY MASK AND ROOT.                 */
+  /*       -------------------------------------                 */
 
   PetscFunctionBegin;
   /* Parameter adjustments */
@@ -71,15 +70,15 @@ L100:
   lvlend = lnbr;
   i__1   = lvlend;
   for (i = lbegin; i <= i__1; ++i) {
-/*          FOR EACH NODE IN CURRENT LEVEL ...     */
+    /*          FOR EACH NODE IN CURRENT LEVEL ...     */
     node  = perm[i];
     jstrt = xadj[node];
     jstop = xadj[node + 1] - 1;
 
-/*          FIND THE UNNUMBERED NEIGHBORS OF NODE.   */
-/*          FNBR AND LNBR POINT TO THE FIRST AND LAST  */
-/*          UNNUMBERED NEIGHBORS RESPECTIVELY OF THE CURRENT  */
-/*          NODE IN PERM. */
+    /*          FIND THE UNNUMBERED NEIGHBORS OF NODE.   */
+    /*          FNBR AND LNBR POINT TO THE FIRST AND LAST  */
+    /*          UNNUMBERED NEIGHBORS RESPECTIVELY OF THE CURRENT  */
+    /*          NODE IN PERM. */
     fnbr = lnbr + 1;
     i__2 = jstop;
     for (j = jstrt; j <= i__2; ++j) {
@@ -88,35 +87,33 @@ L100:
       ++lnbr;
       mask[nbr]  = 0;
       perm[lnbr] = nbr;
-L200:
-      ;
+    L200:;
     }
     if (fnbr >= lnbr) goto L600;
 
-/*             SORT THE NEIGHBORS OF NODE IN INCREASING    */
-/*             ORDER BY DEGREE. LINEAR INSERTION IS USED.*/
+    /*             SORT THE NEIGHBORS OF NODE IN INCREASING    */
+    /*             ORDER BY DEGREE. LINEAR INSERTION IS USED.*/
     k = fnbr;
-L300:
+  L300:
     l = k;
     ++k;
     nbr = perm[k];
-L400:
+  L400:
     if (l < fnbr) goto L500;
     lperm = perm[l];
     if (deg[lperm] <= deg[nbr]) goto L500;
     perm[l + 1] = lperm;
     --l;
     goto L400;
-L500:
+  L500:
     perm[l + 1] = nbr;
     if (k < lnbr) goto L300;
-L600:
-    ;
+  L600:;
   }
   if (lnbr > lvlend) goto L100;
 
-/*       WE NOW HAVE THE CUTHILL MCKEE ORDERING.*/
-/*       REVERSE IT BELOW ...*/
+  /*       WE NOW HAVE THE CUTHILL MCKEE ORDERING.*/
+  /*       REVERSE IT BELOW ...*/
   k    = *ccsize / 2;
   l    = *ccsize;
   i__1 = k;
@@ -128,4 +125,3 @@ L600:
   }
   PetscFunctionReturn(0);
 }
-

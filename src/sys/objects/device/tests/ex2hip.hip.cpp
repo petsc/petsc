@@ -8,37 +8,36 @@ static char help[] = "Benchmarking hipPointerGetAttributes() time\n";
 #include <petscsys.h>
 #include <petscdevice.h>
 
-int main(int argc,char **argv)
-{
-  PetscInt                     i,n=4000;
-  hipError_t                   cerr;
-  PetscScalar                  **ptrs;
-  PetscLogDouble               tstart,tend,time;
-  hipPointerAttribute_t        attr;
+int main(int argc, char **argv) {
+  PetscInt              i, n = 4000;
+  hipError_t            cerr;
+  PetscScalar         **ptrs;
+  PetscLogDouble        tstart, tend, time;
+  hipPointerAttribute_t attr;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
-  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-n", &n, NULL));
   PetscCallHIP(hipStreamSynchronize(NULL)); /* Initialize HIP runtime to get more accurate timing below */
 
-  PetscCall(PetscMalloc1(n,&ptrs));
-  for (i=0; i<n; i++) {
-    if (i%2) PetscCall(PetscMalloc1(i+16,&ptrs[i]));
-    else PetscCallHIP(hipMalloc((void**)&ptrs[i],(i+16)*sizeof(PetscScalar)));
+  PetscCall(PetscMalloc1(n, &ptrs));
+  for (i = 0; i < n; i++) {
+    if (i % 2) PetscCall(PetscMalloc1(i + 16, &ptrs[i]));
+    else PetscCallHIP(hipMalloc((void **)&ptrs[i], (i + 16) * sizeof(PetscScalar)));
   }
 
   PetscCall(PetscTime(&tstart));
-  for (i=0; i<n; i++) {
-    cerr = hipPointerGetAttributes(&attr,ptrs[i]);
+  for (i = 0; i < n; i++) {
+    cerr = hipPointerGetAttributes(&attr, ptrs[i]);
     if (cerr) cerr = hipGetLastError();
   }
   PetscCall(PetscTime(&tend));
-  time = (tend-tstart)*1e6/n;
+  time = (tend - tstart) * 1e6 / n;
 
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Average hipPointerGetAttributes() time = %.2f microseconds\n",time));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Average hipPointerGetAttributes() time = %.2f microseconds\n", time));
 
-  for (i=0; i<n; i++) {
-    if (i%2) PetscCall(PetscFree(ptrs[i]));
+  for (i = 0; i < n; i++) {
+    if (i % 2) PetscCall(PetscFree(ptrs[i]));
     else PetscCallHIP(hipFree(ptrs[i]));
   }
   PetscCall(PetscFree(ptrs));

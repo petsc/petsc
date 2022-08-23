@@ -15,6 +15,6 @@
 
 .seealso: `PetscViewerCreate()`, `PetscViewerSetType()`, `PetscViewerType`
 S*/
-typedef struct _p_PetscViewer* PetscViewer;
+typedef struct _p_PetscViewer *PetscViewer;
 
 #endif

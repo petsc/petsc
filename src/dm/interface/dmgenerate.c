@@ -1,33 +1,33 @@
-#include <petsc/private/dmimpl.h>           /*I      "petscdm.h"          I*/
+#include <petsc/private/dmimpl.h> /*I      "petscdm.h"          I*/
 
-PETSC_EXTERN PetscErrorCode DMIsForest(DM,PetscBool*);
+PETSC_EXTERN PetscErrorCode DMIsForest(DM, PetscBool *);
 
-DMGeneratorFunctionList DMGenerateList = NULL;
-PetscBool DMGenerateRegisterAllCalled = PETSC_FALSE;
+DMGeneratorFunctionList DMGenerateList              = NULL;
+PetscBool               DMGenerateRegisterAllCalled = PETSC_FALSE;
 
 #if defined(PETSC_HAVE_TRIANGLE)
-PETSC_EXTERN PetscErrorCode DMPlexGenerate_Triangle(DM, PetscBool, DM*);
-PETSC_EXTERN PetscErrorCode DMPlexRefine_Triangle(DM, double*, DM*);
+PETSC_EXTERN PetscErrorCode DMPlexGenerate_Triangle(DM, PetscBool, DM *);
+PETSC_EXTERN PetscErrorCode DMPlexRefine_Triangle(DM, double *, DM *);
 #endif
 #if defined(PETSC_HAVE_TETGEN)
-PETSC_EXTERN PetscErrorCode DMPlexGenerate_Tetgen(DM, PetscBool, DM*);
-PETSC_EXTERN PetscErrorCode DMPlexRefine_Tetgen(DM, double*, DM*);
+PETSC_EXTERN PetscErrorCode DMPlexGenerate_Tetgen(DM, PetscBool, DM *);
+PETSC_EXTERN PetscErrorCode DMPlexRefine_Tetgen(DM, double *, DM *);
 #endif
 #if defined(PETSC_HAVE_CTETGEN)
-PETSC_EXTERN PetscErrorCode DMPlexGenerate_CTetgen(DM, PetscBool, DM*);
-PETSC_EXTERN PetscErrorCode DMPlexRefine_CTetgen(DM, double*, DM*);
+PETSC_EXTERN PetscErrorCode DMPlexGenerate_CTetgen(DM, PetscBool, DM *);
+PETSC_EXTERN PetscErrorCode DMPlexRefine_CTetgen(DM, double *, DM *);
 #endif
 #if defined(PETSC_HAVE_PRAGMATIC)
-PETSC_EXTERN PetscErrorCode DMAdaptMetric_Pragmatic_Plex(DM, Vec, DMLabel, DMLabel, DM*);
+PETSC_EXTERN PetscErrorCode DMAdaptMetric_Pragmatic_Plex(DM, Vec, DMLabel, DMLabel, DM *);
 #endif
 #if defined(PETSC_HAVE_MMG)
-PETSC_EXTERN PetscErrorCode DMAdaptMetric_Mmg_Plex(DM, Vec, DMLabel, DMLabel, DM*);
+PETSC_EXTERN PetscErrorCode DMAdaptMetric_Mmg_Plex(DM, Vec, DMLabel, DMLabel, DM *);
 #endif
 #if defined(PETSC_HAVE_PARMMG)
-PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM, Vec, DMLabel, DMLabel, DM*);
+PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM, Vec, DMLabel, DMLabel, DM *);
 #endif
-PETSC_EXTERN PetscErrorCode DMPlexTransformAdaptLabel(DM, Vec, DMLabel, DMLabel, DM*);
-PETSC_EXTERN PetscErrorCode DMAdaptLabel_Forest(DM, Vec, DMLabel, DMLabel, DM*);
+PETSC_EXTERN PetscErrorCode DMPlexTransformAdaptLabel(DM, Vec, DMLabel, DMLabel, DM *);
+PETSC_EXTERN PetscErrorCode DMAdaptLabel_Forest(DM, Vec, DMLabel, DMLabel, DM *);
 
 /*@C
   DMGenerateRegisterAll - Registers all of the mesh generation methods in the DM package.
@@ -38,31 +38,30 @@ PETSC_EXTERN PetscErrorCode DMAdaptLabel_Forest(DM, Vec, DMLabel, DMLabel, DM*);
 
 .seealso: `DMGenerateRegisterDestroy()`
 @*/
-PetscErrorCode DMGenerateRegisterAll(void)
-{
+PetscErrorCode DMGenerateRegisterAll(void) {
   PetscFunctionBegin;
   if (DMGenerateRegisterAllCalled) PetscFunctionReturn(0);
   DMGenerateRegisterAllCalled = PETSC_TRUE;
 #if defined(PETSC_HAVE_TRIANGLE)
-  PetscCall(DMGenerateRegister("triangle",DMPlexGenerate_Triangle,DMPlexRefine_Triangle,NULL,1));
+  PetscCall(DMGenerateRegister("triangle", DMPlexGenerate_Triangle, DMPlexRefine_Triangle, NULL, 1));
 #endif
 #if defined(PETSC_HAVE_CTETGEN)
-  PetscCall(DMGenerateRegister("ctetgen",DMPlexGenerate_CTetgen,DMPlexRefine_CTetgen,NULL,2));
+  PetscCall(DMGenerateRegister("ctetgen", DMPlexGenerate_CTetgen, DMPlexRefine_CTetgen, NULL, 2));
 #endif
 #if defined(PETSC_HAVE_TETGEN)
-  PetscCall(DMGenerateRegister("tetgen",DMPlexGenerate_Tetgen,DMPlexRefine_Tetgen,NULL,2));
+  PetscCall(DMGenerateRegister("tetgen", DMPlexGenerate_Tetgen, DMPlexRefine_Tetgen, NULL, 2));
 #endif
 #if defined(PETSC_HAVE_PRAGMATIC)
-  PetscCall(DMGenerateRegister("pragmatic",NULL,NULL,DMAdaptMetric_Pragmatic_Plex,-1));
+  PetscCall(DMGenerateRegister("pragmatic", NULL, NULL, DMAdaptMetric_Pragmatic_Plex, -1));
 #endif
 #if defined(PETSC_HAVE_MMG)
-  PetscCall(DMGenerateRegister("mmg",NULL,NULL,DMAdaptMetric_Mmg_Plex,-1));
+  PetscCall(DMGenerateRegister("mmg", NULL, NULL, DMAdaptMetric_Mmg_Plex, -1));
 #endif
 #if defined(PETSC_HAVE_PARMMG)
-  PetscCall(DMGenerateRegister("parmmg",NULL,NULL,DMAdaptMetric_ParMmg_Plex,-1));
+  PetscCall(DMGenerateRegister("parmmg", NULL, NULL, DMAdaptMetric_ParMmg_Plex, -1));
 #endif
-  PetscCall(DMGenerateRegister("cellrefiner",NULL,NULL,DMPlexTransformAdaptLabel,-1));
-  PetscCall(DMGenerateRegister("forest",NULL,NULL,DMAdaptLabel_Forest,-1));
+  PetscCall(DMGenerateRegister("cellrefiner", NULL, NULL, DMPlexTransformAdaptLabel, -1));
+  PetscCall(DMGenerateRegister("forest", NULL, NULL, DMAdaptLabel_Forest, -1));
   PetscFunctionReturn(0);
 }
 
@@ -96,13 +95,12 @@ $     -dm_generator my_generator
 .seealso: `DMGenerateRegisterAll()`, `DMPlexGenerate()`, `DMGenerateRegisterDestroy()`
 
 @*/
-PetscErrorCode DMGenerateRegister(const char sname[], PetscErrorCode (*fnc)(DM, PetscBool, DM*), PetscErrorCode (*rfnc)(DM, PetscReal*, DM*), PetscErrorCode (*alfnc)(DM, Vec, DMLabel, DMLabel, DM*), PetscInt dim)
-{
+PetscErrorCode DMGenerateRegister(const char sname[], PetscErrorCode (*fnc)(DM, PetscBool, DM *), PetscErrorCode (*rfnc)(DM, PetscReal *, DM *), PetscErrorCode (*alfnc)(DM, Vec, DMLabel, DMLabel, DM *), PetscInt dim) {
   DMGeneratorFunctionList entry;
 
   PetscFunctionBegin;
   PetscCall(PetscNew(&entry));
-  PetscCall(PetscStrallocpy(sname,&entry->name));
+  PetscCall(PetscStrallocpy(sname, &entry->name));
   entry->generate = fnc;
   entry->refine   = rfnc;
   entry->adapt    = alfnc;
@@ -119,8 +117,7 @@ PetscErrorCode DMGenerateRegister(const char sname[], PetscErrorCode (*fnc)(DM, 
 
 extern PetscBool DMGenerateRegisterAllCalled;
 
-PetscErrorCode DMGenerateRegisterDestroy(void)
-{
+PetscErrorCode DMGenerateRegisterDestroy(void) {
   DMGeneratorFunctionList next, fl;
 
   PetscFunctionBegin;
@@ -153,8 +150,7 @@ PetscErrorCode DMGenerateRegisterDestroy(void)
 
 .seealso: `DMAdaptMetric()`, `DMCoarsen()`, `DMRefine()`
 @*/
-PetscErrorCode DMAdaptLabel(DM dm, DMLabel label, DM *dmAdapt)
-{
+PetscErrorCode DMAdaptLabel(DM dm, DMLabel label, DM *dmAdapt) {
   DMGeneratorFunctionList fl;
   char                    adaptname[PETSC_MAX_PATH_LEN];
   const char             *name;
@@ -169,7 +165,7 @@ PetscErrorCode DMAdaptLabel(DM dm, DMLabel label, DM *dmAdapt)
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(DMIsForest(dm, &isForest));
   name = isForest ? "forest" : "cellrefiner";
-  PetscCall(PetscOptionsGetString(((PetscObject) dm)->options, ((PetscObject) dm)->prefix, "-dm_adaptor", adaptname, sizeof(adaptname), &flg));
+  PetscCall(PetscOptionsGetString(((PetscObject)dm)->options, ((PetscObject)dm)->prefix, "-dm_adaptor", adaptname, sizeof(adaptname), &flg));
   if (flg) name = adaptname;
 
   fl = DMGenerateList;
@@ -181,13 +177,13 @@ PetscErrorCode DMAdaptLabel(DM dm, DMLabel label, DM *dmAdapt)
     }
     fl = fl->next;
   }
-  PetscCheck(found,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Grid adaptor %s not registered; you may need to add --download-%s to your ./configure options", name, name);
+  PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Grid adaptor %s not registered; you may need to add --download-%s to your ./configure options", name, name);
   if (*dmAdapt) {
-    (*dmAdapt)->prealloc_only = dm->prealloc_only;  /* maybe this should go .... */
+    (*dmAdapt)->prealloc_only = dm->prealloc_only; /* maybe this should go .... */
     PetscCall(PetscFree((*dmAdapt)->vectype));
-    PetscCall(PetscStrallocpy(dm->vectype,(char**)&(*dmAdapt)->vectype));
+    PetscCall(PetscStrallocpy(dm->vectype, (char **)&(*dmAdapt)->vectype));
     PetscCall(PetscFree((*dmAdapt)->mattype));
-    PetscCall(PetscStrallocpy(dm->mattype,(char**)&(*dmAdapt)->mattype));
+    PetscCall(PetscStrallocpy(dm->mattype, (char **)&(*dmAdapt)->mattype));
   }
   PetscFunctionReturn(0);
 }
@@ -210,12 +206,11 @@ PetscErrorCode DMAdaptLabel(DM dm, DMLabel label, DM *dmAdapt)
 
 .seealso: `DMAdaptLabel()`, `DMCoarsen()`, `DMRefine()`
 @*/
-PetscErrorCode DMAdaptMetric(DM dm, Vec metric, DMLabel bdLabel, DMLabel rgLabel, DM *dmAdapt)
-{
+PetscErrorCode DMAdaptMetric(DM dm, Vec metric, DMLabel bdLabel, DMLabel rgLabel, DM *dmAdapt) {
   DMGeneratorFunctionList fl;
   char                    adaptname[PETSC_MAX_PATH_LEN];
   const char             *name;
-  const char * const      adaptors[3] = {"pragmatic", "mmg", "parmmg"};
+  const char *const       adaptors[3] = {"pragmatic", "mmg", "parmmg"};
   PetscInt                dim;
   PetscBool               flg, found = PETSC_FALSE;
 
@@ -227,18 +222,18 @@ PetscErrorCode DMAdaptMetric(DM dm, Vec metric, DMLabel bdLabel, DMLabel rgLabel
   PetscValidPointer(dmAdapt, 5);
   *dmAdapt = NULL;
   PetscCall(DMGetDimension(dm, &dim));
-  PetscCall(PetscOptionsGetString(((PetscObject) dm)->options, ((PetscObject) dm)->prefix, "-dm_adaptor", adaptname, sizeof(adaptname), &flg));
+  PetscCall(PetscOptionsGetString(((PetscObject)dm)->options, ((PetscObject)dm)->prefix, "-dm_adaptor", adaptname, sizeof(adaptname), &flg));
 
   /* Default to Mmg in serial and ParMmg in parallel */
   if (flg) name = adaptname;
   else {
-    MPI_Comm                comm;
-    PetscMPIInt             size;
+    MPI_Comm    comm;
+    PetscMPIInt size;
 
     PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
     PetscCallMPI(MPI_Comm_size(comm, &size));
     if (size == 1) name = adaptors[1];
-    else           name = adaptors[2];
+    else name = adaptors[2];
   }
 
   fl = DMGenerateList;
@@ -250,13 +245,13 @@ PetscErrorCode DMAdaptMetric(DM dm, Vec metric, DMLabel bdLabel, DMLabel rgLabel
     }
     fl = fl->next;
   }
-  PetscCheck(found,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Grid adaptor %s not registered; you may need to add --download-%s to your ./configure options", name, name);
+  PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Grid adaptor %s not registered; you may need to add --download-%s to your ./configure options", name, name);
   if (*dmAdapt) {
-    (*dmAdapt)->prealloc_only = dm->prealloc_only;  /* maybe this should go .... */
+    (*dmAdapt)->prealloc_only = dm->prealloc_only; /* maybe this should go .... */
     PetscCall(PetscFree((*dmAdapt)->vectype));
-    PetscCall(PetscStrallocpy(dm->vectype,(char**)&(*dmAdapt)->vectype));
+    PetscCall(PetscStrallocpy(dm->vectype, (char **)&(*dmAdapt)->vectype));
     PetscCall(PetscFree((*dmAdapt)->mattype));
-    PetscCall(PetscStrallocpy(dm->mattype,(char**)&(*dmAdapt)->mattype));
+    PetscCall(PetscStrallocpy(dm->mattype, (char **)&(*dmAdapt)->mattype));
   }
   PetscFunctionReturn(0);
 }

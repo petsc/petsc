@@ -13,9 +13,8 @@ typedef struct {
   PetscInt          ntimes;                      /* How many times do the cycle */
 } AppCtx;
 
-static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
-{
-  PetscBool      flg;
+static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
+  PetscBool flg;
 
   PetscFunctionBeginUser;
   options->infile[0]     = '\0';
@@ -26,11 +25,11 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->ntimes        = 2;
   PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");
   PetscCall(PetscOptionsString("-infile", "The input mesh file", EX, options->infile, options->infile, sizeof(options->infile), &flg));
-  PetscCheck(flg,comm, PETSC_ERR_USER_INPUT, "-infile needs to be specified");
+  PetscCheck(flg, comm, PETSC_ERR_USER_INPUT, "-infile needs to be specified");
   PetscCall(PetscOptionsString("-outfile", "The output mesh file (by default it's the same as infile)", EX, options->outfile, options->outfile, sizeof(options->outfile), &flg));
-  PetscCheck(flg,comm, PETSC_ERR_USER_INPUT, "-outfile needs to be specified");
-  PetscCall(PetscOptionsEnum("-informat", "Input mesh format", EX, PetscViewerFormats, (PetscEnum)options->informat, (PetscEnum*)&options->informat, NULL));
-  PetscCall(PetscOptionsEnum("-outformat", "Dump/reload mesh format", EX, PetscViewerFormats, (PetscEnum)options->outformat, (PetscEnum*)&options->outformat, NULL));
+  PetscCheck(flg, comm, PETSC_ERR_USER_INPUT, "-outfile needs to be specified");
+  PetscCall(PetscOptionsEnum("-informat", "Input mesh format", EX, PetscViewerFormats, (PetscEnum)options->informat, (PetscEnum *)&options->informat, NULL));
+  PetscCall(PetscOptionsEnum("-outformat", "Dump/reload mesh format", EX, PetscViewerFormats, (PetscEnum)options->outformat, (PetscEnum *)&options->outformat, NULL));
   PetscCall(PetscOptionsBool("-heterogeneous", "Test save on N / load on M", EX, options->heterogeneous, &options->heterogeneous, NULL));
   PetscCall(PetscOptionsInt("-ntimes", "How many times do the cycle", EX, options->ntimes, &options->ntimes, NULL));
   PetscOptionsEnd();
@@ -38,25 +37,24 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 };
 
 //TODO test DMLabel I/O (not yet working for PETSC_VIEWER_HDF5_XDMF)
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
   AppCtx            user;
   MPI_Comm          comm;
   PetscMPIInt       gsize, grank, mycolor;
   PetscInt          i;
   PetscBool         flg;
   const char        exampleDMPlexName[] = "DMPlex Object";
-  const char        *infilename;
+  const char       *infilename;
   PetscViewerFormat informat;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, NULL,help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(ProcessOptions(PETSC_COMM_WORLD, &user));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &gsize));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &grank));
 
-  for (i=0; i<user.ntimes; i++) {
-    if (i==0) {
+  for (i = 0; i < user.ntimes; i++) {
+    if (i == 0) {
       /* Use infile/informat for the initial load */
       infilename = user.infile;
       informat   = user.informat;
@@ -67,9 +65,9 @@ int main(int argc, char **argv)
     }
 
     if (user.heterogeneous) {
-      mycolor = (PetscMPIInt) (grank > user.ntimes-i);
+      mycolor = (PetscMPIInt)(grank > user.ntimes - i);
     } else {
-      mycolor = (PetscMPIInt) 0;
+      mycolor = (PetscMPIInt)0;
     }
     PetscCallMPI(MPI_Comm_split(PETSC_COMM_WORLD, mycolor, grank, &comm));
 
@@ -89,8 +87,8 @@ int main(int argc, char **argv)
       PetscCall(PetscViewerPushFormat(v, informat));
       PetscCall(DMCreate(comm, &dm));
       PetscCall(DMSetType(dm, DMPLEX));
-      PetscCall(PetscObjectSetName((PetscObject) dm, exampleDMPlexName));
-      PetscCall(DMSetOptionsPrefix(dm,"loaded_"));
+      PetscCall(PetscObjectSetName((PetscObject)dm, exampleDMPlexName));
+      PetscCall(DMSetOptionsPrefix(dm, "loaded_"));
       PetscCall(DMLoad(dm, v));
       PetscCall(DMPlexDistributeSetDefault(dm, PETSC_FALSE));
       PetscCall(DMSetFromOptions(dm));
@@ -103,25 +101,25 @@ int main(int argc, char **argv)
       PetscCall(PetscPrintf(comm, "Loaded mesh distributed? %s\n", PetscBools[flg]));
 
       /* Interpolate */
-      PetscCall(DMSetOptionsPrefix(dm,"interpolated_"));
+      PetscCall(DMSetOptionsPrefix(dm, "interpolated_"));
       PetscCall(DMSetFromOptions(dm));
       PetscCall(DMViewFromOptions(dm, NULL, "-dm_view"));
 
       /* Redistribute */
-      PetscCall(DMSetOptionsPrefix(dm,"redistributed_"));
+      PetscCall(DMSetOptionsPrefix(dm, "redistributed_"));
       PetscCall(DMSetFromOptions(dm));
       PetscCall(DMViewFromOptions(dm, NULL, "-dm_view"));
 
       /* Save redistributed dm to XDMF in parallel and destroy it */
       PetscCall(PetscViewerHDF5Open(comm, user.outfile, FILE_MODE_WRITE, &v));
       PetscCall(PetscViewerPushFormat(v, user.outformat));
-      PetscCall(PetscObjectSetName((PetscObject) dm, exampleDMPlexName));
+      PetscCall(PetscObjectSetName((PetscObject)dm, exampleDMPlexName));
       PetscCall(DMView(dm, v));
       PetscCall(PetscViewerPopFormat(v));
       PetscCall(PetscViewerDestroy(&v));
       PetscCall(DMDestroy(&dm));
 
-      PetscCall(PetscPrintf(comm, "End   cycle %" PetscInt_FMT "\n--------\n",i));
+      PetscCall(PetscPrintf(comm, "End   cycle %" PetscInt_FMT "\n--------\n", i));
     }
     PetscCallMPI(MPI_Comm_free(&comm));
     PetscCallMPI(MPI_Barrier(PETSC_COMM_WORLD));

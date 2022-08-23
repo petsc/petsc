@@ -3,24 +3,23 @@ static char help[] = "Tests PetscOptionsGetViewer() via checking output of Petsc
 
 #include <petscviewer.h>
 
-int main(int argc,char **args)
-{
+int main(int argc, char **args) {
   PetscViewer       viewer;
   PetscViewerFormat format;
   PetscBool         iascii;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
-  PetscCall(PetscOptionsGetViewer(PETSC_COMM_WORLD,NULL,NULL,"-myviewer",&viewer,&format,NULL));
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
+  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscOptionsGetViewer(PETSC_COMM_WORLD, NULL, NULL, "-myviewer", &viewer, &format, NULL));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   if (iascii) {
-    PetscCall(PetscViewerPushFormat(viewer,format));
-    PetscCall(PetscViewerASCIIPrintf(viewer,"Testing PetscViewerASCIIPrintf %d\n", 0));
+    PetscCall(PetscViewerPushFormat(viewer, format));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "Testing PetscViewerASCIIPrintf %d\n", 0));
     PetscCall(PetscViewerPopFormat(viewer));
     PetscCall(PetscViewerDestroy(&viewer));
-    PetscCall(PetscOptionsGetViewer(PETSC_COMM_WORLD,NULL,NULL,"-myviewer",&viewer,&format,NULL));
-    PetscCall(PetscViewerPushFormat(viewer,format));
-    PetscCall(PetscViewerASCIIPrintf(viewer,"Testing PetscViewerASCIIPrintf %d\n", 1));
+    PetscCall(PetscOptionsGetViewer(PETSC_COMM_WORLD, NULL, NULL, "-myviewer", &viewer, &format, NULL));
+    PetscCall(PetscViewerPushFormat(viewer, format));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "Testing PetscViewerASCIIPrintf %d\n", 1));
     PetscCall(PetscViewerPopFormat(viewer));
   }
   PetscCall(PetscViewerDestroy(&viewer));

@@ -30,13 +30,12 @@
 
 .seealso: `PetscGetFullPath()`
 @*/
-PetscErrorCode  PetscGetRelativePath(const char fullpath[],char path[],size_t flen)
-{
-  char           *p;
+PetscErrorCode PetscGetRelativePath(const char fullpath[], char path[], size_t flen) {
+  char *p;
 
   PetscFunctionBegin;
   /* Find string after last / or entire string if no / */
-  PetscCall(PetscStrrchr(fullpath,'/',&p));
-  PetscCall(PetscStrncpy(path,p,flen));
+  PetscCall(PetscStrrchr(fullpath, '/', &p));
+  PetscCall(PetscStrncpy(path, p, flen));
   PetscFunctionReturn(0);
 }

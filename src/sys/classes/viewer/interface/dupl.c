@@ -1,5 +1,5 @@
 
-#include <petsc/private/viewerimpl.h>  /*I "petscviewer.h" I*/
+#include <petsc/private/viewerimpl.h> /*I "petscviewer.h" I*/
 
 /*@C
    PetscViewerGetSubViewer - Creates a new PetscViewer (same type as the old)
@@ -43,12 +43,11 @@
 
 .seealso: `PetscViewerSocketOpen()`, `PetscViewerASCIIOpen()`, `PetscViewerDrawOpen()`, `PetscViewerRestoreSubViewer()`
 @*/
-PetscErrorCode  PetscViewerGetSubViewer(PetscViewer viewer,MPI_Comm comm,PetscViewer *outviewer)
-{
+PetscErrorCode PetscViewerGetSubViewer(PetscViewer viewer, MPI_Comm comm, PetscViewer *outviewer) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  PetscValidPointer(outviewer,3);
-  PetscUseTypeMethod(viewer,getsubviewer ,comm,outviewer);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
+  PetscValidPointer(outviewer, 3);
+  PetscUseTypeMethod(viewer, getsubviewer, comm, outviewer);
   PetscFunctionReturn(0);
 }
 
@@ -68,11 +67,10 @@ PetscErrorCode  PetscViewerGetSubViewer(PetscViewer viewer,MPI_Comm comm,PetscVi
 
 .seealso: `PetscViewerSocketOpen()`, `PetscViewerASCIIOpen()`, `PetscViewerDrawOpen()`, `PetscViewerGetSubViewer()`
 @*/
-PetscErrorCode  PetscViewerRestoreSubViewer(PetscViewer viewer,MPI_Comm comm,PetscViewer *outviewer)
-{
+PetscErrorCode PetscViewerRestoreSubViewer(PetscViewer viewer, MPI_Comm comm, PetscViewer *outviewer) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
 
-  PetscUseTypeMethod(viewer,restoresubviewer ,comm,outviewer);
+  PetscUseTypeMethod(viewer, restoresubviewer, comm, outviewer);
   PetscFunctionReturn(0);
 }

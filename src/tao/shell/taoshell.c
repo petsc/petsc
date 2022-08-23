@@ -2,10 +2,9 @@
 
 typedef struct _n_TaoShell Tao_Shell;
 
-struct _n_TaoShell
-{
+struct _n_TaoShell {
   PetscErrorCode (*solve)(Tao);
-  void            *ctx;
+  void *ctx;
 };
 
 /*@C
@@ -31,9 +30,8 @@ struct _n_TaoShell
 
 .seealso: `TAOSHELL`, `TaoShellSetContext()`, `TaoShellGetContext()`
 @*/
-PetscErrorCode TaoShellSetSolve(Tao tao, PetscErrorCode (*solve) (Tao))
-{
-  Tao_Shell                    *shell = (Tao_Shell*)tao->data;
+PetscErrorCode TaoShellSetSolve(Tao tao, PetscErrorCode (*solve)(Tao)) {
+  Tao_Shell *shell = (Tao_Shell *)tao->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
@@ -59,16 +57,15 @@ PetscErrorCode TaoShellSetSolve(Tao tao, PetscErrorCode (*solve) (Tao))
 
 .seealso: `TaoCreateShell()`, `TaoShellSetContext()`
 @*/
-PetscErrorCode  TaoShellGetContext(Tao tao,void *ctx)
-{
-  PetscBool      flg;
+PetscErrorCode TaoShellGetContext(Tao tao, void *ctx) {
+  PetscBool flg;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
-  PetscValidPointer(ctx,2);
-  PetscCall(PetscObjectTypeCompare((PetscObject)tao,TAOSHELL,&flg));
-  if (!flg) *(void**)ctx = NULL;
-  else      *(void**)ctx = ((Tao_Shell*)(tao->data))->ctx;
+  PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
+  PetscValidPointer(ctx, 2);
+  PetscCall(PetscObjectTypeCompare((PetscObject)tao, TAOSHELL, &flg));
+  if (!flg) *(void **)ctx = NULL;
+  else *(void **)ctx = ((Tao_Shell *)(tao->data))->ctx;
   PetscFunctionReturn(0);
 }
 
@@ -89,50 +86,44 @@ PetscErrorCode  TaoShellGetContext(Tao tao,void *ctx)
 
 .seealso: `TaoCreateShell()`, `TaoShellGetContext()`
 @*/
-PetscErrorCode  TaoShellSetContext(Tao tao,void *ctx)
-{
-  Tao_Shell     *shell = (Tao_Shell*)tao->data;
-  PetscBool      flg;
+PetscErrorCode TaoShellSetContext(Tao tao, void *ctx) {
+  Tao_Shell *shell = (Tao_Shell *)tao->data;
+  PetscBool  flg;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
-  PetscCall(PetscObjectTypeCompare((PetscObject)tao,TAOSHELL,&flg));
+  PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
+  PetscCall(PetscObjectTypeCompare((PetscObject)tao, TAOSHELL, &flg));
   if (flg) shell->ctx = ctx;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoSolve_Shell(Tao tao)
-{
-  Tao_Shell                    *shell = (Tao_Shell*)tao->data;
+static PetscErrorCode TaoSolve_Shell(Tao tao) {
+  Tao_Shell *shell = (Tao_Shell *)tao->data;
 
   PetscFunctionBegin;
-  PetscCheck(shell->solve,PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_WRONGSTATE,"Must call TaoShellSetSolve() first");
+  PetscCheck(shell->solve, PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_WRONGSTATE, "Must call TaoShellSetSolve() first");
   tao->reason = TAO_CONVERGED_USER;
-  PetscCall((*(shell->solve)) (tao));
+  PetscCall((*(shell->solve))(tao));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TaoDestroy_Shell(Tao tao)
-{
+PetscErrorCode TaoDestroy_Shell(Tao tao) {
   PetscFunctionBegin;
   PetscCall(PetscFree(tao->data));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TaoSetUp_Shell(Tao tao)
-{
+PetscErrorCode TaoSetUp_Shell(Tao tao) {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TaoSetFromOptions_Shell(Tao tao,PetscOptionItems *PetscOptionsObject)
-{
+PetscErrorCode TaoSetFromOptions_Shell(Tao tao, PetscOptionItems *PetscOptionsObject) {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TaoView_Shell(Tao tao, PetscViewer viewer)
-{
+PetscErrorCode TaoView_Shell(Tao tao, PetscViewer viewer) {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
@@ -144,18 +135,17 @@ PetscErrorCode TaoView_Shell(Tao tao, PetscViewer viewer)
 
 .seealso: `TaoCreate()`, `Tao`, `TaoSetType()`, `TaoType`
 M*/
-PETSC_EXTERN PetscErrorCode TaoCreate_Shell(Tao tao)
-{
-  Tao_Shell      *shell;
+PETSC_EXTERN PetscErrorCode TaoCreate_Shell(Tao tao) {
+  Tao_Shell *shell;
 
   PetscFunctionBegin;
-  tao->ops->destroy = TaoDestroy_Shell;
-  tao->ops->setup = TaoSetUp_Shell;
+  tao->ops->destroy        = TaoDestroy_Shell;
+  tao->ops->setup          = TaoSetUp_Shell;
   tao->ops->setfromoptions = TaoSetFromOptions_Shell;
-  tao->ops->view = TaoView_Shell;
-  tao->ops->solve = TaoSolve_Shell;
+  tao->ops->view           = TaoView_Shell;
+  tao->ops->solve          = TaoSolve_Shell;
 
-  PetscCall(PetscNewLog(tao,&shell));
-  tao->data = (void*)shell;
+  PetscCall(PetscNewLog(tao, &shell));
+  tao->data = (void *)shell;
   PetscFunctionReturn(0);
 }

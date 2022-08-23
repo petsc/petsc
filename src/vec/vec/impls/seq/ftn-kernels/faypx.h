@@ -7,6 +7,6 @@
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define fortranaypx_ fortranaypx
 #endif
-PETSC_EXTERN void fortranaypx_(PetscInt*,const PetscScalar*,const PetscScalar*,PetscScalar*);
+PETSC_EXTERN void fortranaypx_(PetscInt *, const PetscScalar *, const PetscScalar *, PetscScalar *);
 #endif
 #endif

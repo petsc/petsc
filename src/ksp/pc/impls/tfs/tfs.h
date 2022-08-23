@@ -25,68 +25,74 @@ File Description:
 #include <petscsys.h>
 #include <petscblaslapack.h>
 
-#define X          0
-#define Y          1
-#define Z          2
-#define XY         3
-#define XZ         4
-#define YZ         5
+#define X  0
+#define Y  1
+#define Z  2
+#define XY 3
+#define XZ 4
+#define YZ 5
 
-#define THRESH          0.2
-#define N_HALF          4096
-#define PRIV_BUF_SZ     45
+#define THRESH      0.2
+#define N_HALF      4096
+#define PRIV_BUF_SZ 45
 
 /*4096 8192 32768 65536 1048576 */
-#define MAX_MSG_BUF     32768
+#define MAX_MSG_BUF 32768
 
-#define FULL           2
-#define PARTIAL        1
-#define NONE           0
+#define FULL    2
+#define PARTIAL 1
+#define NONE    0
 
-#define BYTE           8
-#define BIT_0          0x1
-#define BIT_1          0x2
-#define BIT_2          0x4
-#define BIT_3          0x8
-#define BIT_4          0x10
-#define BIT_5          0x20
-#define BIT_6          0x40
-#define BIT_7          0x80
-#define TOP_BIT        PETSC_MIN_INT
+#define BYTE    8
+#define BIT_0   0x1
+#define BIT_1   0x2
+#define BIT_2   0x4
+#define BIT_3   0x8
+#define BIT_4   0x10
+#define BIT_5   0x20
+#define BIT_6   0x40
+#define BIT_7   0x80
+#define TOP_BIT PETSC_MIN_INT
 
-#define C              0
+#define C 0
 
-#define MAX_VEC        1674
-#define FORMAT         30
-#define MAX_COL_LEN    100
-#define MAX_LINE       FORMAT*MAX_COL_LEN
-#define   DELIM        " \n \t"
-#define LINE           12
-#define C_LINE         80
+#define MAX_VEC     1674
+#define FORMAT      30
+#define MAX_COL_LEN 100
+#define MAX_LINE    FORMAT *MAX_COL_LEN
+#define DELIM       " \n \t"
+#define LINE        12
+#define C_LINE      80
 
-#define   UT            5               /* dump upper 1/2 */
-#define   LT            6               /* dump lower 1/2 */
-#define   SYMM          8               /* we assume symm and dump upper 1/2 */
-#define   NON_SYMM      9
+#define UT       5 /* dump upper 1/2 */
+#define LT       6 /* dump lower 1/2 */
+#define SYMM     8 /* we assume symm and dump upper 1/2 */
+#define NON_SYMM 9
 
-#define   ROW          10
-#define   COL          11
+#define ROW 10
+#define COL 11
 
-#define EPS   1.0e-14
-#define EPS2  1.0e-07
+#define EPS  1.0e-14
+#define EPS2 1.0e-07
 
-#define MPI   1
-#define NX    2
+#define MPI 1
+#define NX  2
 
-#define LOG2(x)         (PetscScalar)log((double)x)/log(2)
-#define SWAP(a,b)       temp=(a); (a)=(b); (b)=temp;
-#define P_SWAP(a,b)     ptr =(a); (a)=(b); (b)=ptr;
+#define LOG2(x) (PetscScalar) log((double)x) / log(2)
+#define SWAP(a, b) \
+  temp = (a); \
+  (a)  = (b); \
+  (b)  = temp;
+#define P_SWAP(a, b) \
+  ptr = (a); \
+  (a) = (b); \
+  (b) = ptr;
 
-#define MAX_FABS(x,y)   (PetscAbsScalar(x)>PetscAbsScalar(y)) ? ((PetscScalar)x) : ((PetscScalar)y)
-#define MIN_FABS(x,y)   (PetscAbsScalar(x)<PetscAbsScalar(y)) ? ((PetscScalar)x) : ((PetscScalar)y)
+#define MAX_FABS(x, y) (PetscAbsScalar(x) > PetscAbsScalar(y)) ? ((PetscScalar)x) : ((PetscScalar)y)
+#define MIN_FABS(x, y) (PetscAbsScalar(x) < PetscAbsScalar(y)) ? ((PetscScalar)x) : ((PetscScalar)y)
 
 /* specer's existence ... can be done w/MAX_ABS */
-#define EXISTS(x,y)     ((x)==0.0) ? (y) : (x)
+#define EXISTS(x, y) ((x) == 0.0) ? (y) : (x)
 
 #define MULT_NEG_ONE(a) (a) *= -1;
 #define NEG(a)          (a) |= BIT_31;
@@ -107,9 +113,9 @@ Last Modification:
 6.21.97
 ***********************************types.h************************************/
 
-typedef PetscErrorCode (*vfp)(void*,void*,PetscInt,...);
-typedef PetscErrorCode (*rbfp)(PetscScalar*, PetscScalar*, PetscInt);
-typedef PetscInt (*bfp)(void*, void*, PetscInt*, MPI_Datatype*);
+typedef PetscErrorCode (*vfp)(void *, void *, PetscInt, ...);
+typedef PetscErrorCode (*rbfp)(PetscScalar *, PetscScalar *, PetscInt);
+typedef PetscInt (*bfp)(void *, void *, PetscInt *, MPI_Datatype *);
 
 /***********************************comm.h*************************************
 
@@ -130,12 +136,12 @@ PETSC_INTERN PetscMPIInt PCTFS_num_nodes;
 PETSC_INTERN PetscMPIInt PCTFS_floor_num_nodes;
 PETSC_INTERN PetscMPIInt PCTFS_i_log2_num_nodes;
 
-PETSC_INTERN PetscErrorCode PCTFS_giop(PetscInt*,PetscInt*,PetscInt,PetscInt*);
-PETSC_INTERN PetscErrorCode PCTFS_grop(PetscScalar*,PetscScalar*,PetscInt,PetscInt*);
+PETSC_INTERN PetscErrorCode PCTFS_giop(PetscInt *, PetscInt *, PetscInt, PetscInt *);
+PETSC_INTERN PetscErrorCode PCTFS_grop(PetscScalar *, PetscScalar *, PetscInt, PetscInt *);
 PETSC_INTERN PetscErrorCode PCTFS_comm_init(void);
-PETSC_INTERN PetscErrorCode PCTFS_giop_hc(PetscInt*,PetscInt*,PetscInt,PetscInt*,PetscInt);
-PETSC_INTERN PetscErrorCode PCTFS_grop_hc(PetscScalar*,PetscScalar*,PetscInt,PetscInt*,PetscInt);
-PETSC_INTERN PetscErrorCode PCTFS_ssgl_radd(PetscScalar*,PetscScalar*,PetscInt,PetscInt*);
+PETSC_INTERN PetscErrorCode PCTFS_giop_hc(PetscInt *, PetscInt *, PetscInt, PetscInt *, PetscInt);
+PETSC_INTERN PetscErrorCode PCTFS_grop_hc(PetscScalar *, PetscScalar *, PetscInt, PetscInt *, PetscInt);
+PETSC_INTERN PetscErrorCode PCTFS_ssgl_radd(PetscScalar *, PetscScalar *, PetscInt, PetscInt *);
 
 #define MSGTAG0 101
 #define MSGTAG1 1001
@@ -145,68 +151,68 @@ PETSC_INTERN PetscErrorCode PCTFS_ssgl_radd(PetscScalar*,PetscScalar*,PetscInt,P
 #define MSGTAG5 249439
 #define MSGTAG6 10000001
 
-#define NON_UNIFORM     0
-#define GL_MAX          1
-#define GL_MIN          2
-#define GL_MULT         3
-#define GL_ADD          4
-#define GL_B_XOR        5
-#define GL_B_OR         6
-#define GL_B_AND        7
-#define GL_L_XOR        8
-#define GL_L_OR         9
-#define GL_L_AND        10
-#define GL_MAX_ABS      11
-#define GL_MIN_ABS      12
-#define GL_EXISTS       13
+#define NON_UNIFORM 0
+#define GL_MAX      1
+#define GL_MIN      2
+#define GL_MULT     3
+#define GL_ADD      4
+#define GL_B_XOR    5
+#define GL_B_OR     6
+#define GL_B_AND    7
+#define GL_L_XOR    8
+#define GL_L_OR     9
+#define GL_L_AND    10
+#define GL_MAX_ABS  11
+#define GL_MIN_ABS  12
+#define GL_EXISTS   13
 
-PETSC_INTERN PetscInt       *PCTFS_ivec_copy(PetscInt*,PetscInt*,PetscInt);
-PETSC_INTERN PetscErrorCode PCTFS_ivec_zero(PetscInt*, PetscInt);
-PETSC_INTERN PetscErrorCode PCTFS_ivec_set(PetscInt*,PetscInt,PetscInt);
+PETSC_INTERN PetscInt      *PCTFS_ivec_copy(PetscInt *, PetscInt *, PetscInt);
+PETSC_INTERN PetscErrorCode PCTFS_ivec_zero(PetscInt *, PetscInt);
+PETSC_INTERN PetscErrorCode PCTFS_ivec_set(PetscInt *, PetscInt, PetscInt);
 
-PETSC_INTERN PetscInt PCTFS_ivec_lb(PetscInt*,PetscInt);
-PETSC_INTERN PetscInt PCTFS_ivec_ub(PetscInt*,PetscInt);
-PETSC_INTERN PetscInt PCTFS_ivec_sum(PetscInt*,PetscInt);
+PETSC_INTERN PetscInt PCTFS_ivec_lb(PetscInt *, PetscInt);
+PETSC_INTERN PetscInt PCTFS_ivec_ub(PetscInt *, PetscInt);
+PETSC_INTERN PetscInt PCTFS_ivec_sum(PetscInt *, PetscInt);
 PETSC_INTERN vfp      PCTFS_ivec_fct_addr(PetscInt);
 
-PETSC_INTERN PetscErrorCode PCTFS_ivec_non_uniform(PetscInt*,PetscInt*,PetscInt,...);
-PETSC_INTERN PetscErrorCode PCTFS_ivec_max(PetscInt*,PetscInt*,PetscInt);
-PETSC_INTERN PetscErrorCode PCTFS_ivec_min(PetscInt*,PetscInt*,PetscInt);
-PETSC_INTERN PetscErrorCode PCTFS_ivec_mult(PetscInt*,PetscInt*,PetscInt);
-PETSC_INTERN PetscErrorCode PCTFS_ivec_add(PetscInt*,PetscInt*,PetscInt);
-PETSC_INTERN PetscErrorCode PCTFS_ivec_xor(PetscInt*,PetscInt*,PetscInt);
-PETSC_INTERN PetscErrorCode PCTFS_ivec_or(PetscInt*,PetscInt*,PetscInt);
-PETSC_INTERN PetscErrorCode PCTFS_ivec_and(PetscInt*,PetscInt*,PetscInt);
-PETSC_INTERN PetscErrorCode PCTFS_ivec_lxor(PetscInt*,PetscInt*,PetscInt);
-PETSC_INTERN PetscErrorCode PCTFS_ivec_lor(PetscInt*,PetscInt*,PetscInt);
-PETSC_INTERN PetscErrorCode PCTFS_ivec_land(PetscInt*,PetscInt*,PetscInt);
-PETSC_INTERN PetscErrorCode PCTFS_ivec_and3(PetscInt*,PetscInt*,PetscInt*,PetscInt);
+PETSC_INTERN PetscErrorCode PCTFS_ivec_non_uniform(PetscInt *, PetscInt *, PetscInt, ...);
+PETSC_INTERN PetscErrorCode PCTFS_ivec_max(PetscInt *, PetscInt *, PetscInt);
+PETSC_INTERN PetscErrorCode PCTFS_ivec_min(PetscInt *, PetscInt *, PetscInt);
+PETSC_INTERN PetscErrorCode PCTFS_ivec_mult(PetscInt *, PetscInt *, PetscInt);
+PETSC_INTERN PetscErrorCode PCTFS_ivec_add(PetscInt *, PetscInt *, PetscInt);
+PETSC_INTERN PetscErrorCode PCTFS_ivec_xor(PetscInt *, PetscInt *, PetscInt);
+PETSC_INTERN PetscErrorCode PCTFS_ivec_or(PetscInt *, PetscInt *, PetscInt);
+PETSC_INTERN PetscErrorCode PCTFS_ivec_and(PetscInt *, PetscInt *, PetscInt);
+PETSC_INTERN PetscErrorCode PCTFS_ivec_lxor(PetscInt *, PetscInt *, PetscInt);
+PETSC_INTERN PetscErrorCode PCTFS_ivec_lor(PetscInt *, PetscInt *, PetscInt);
+PETSC_INTERN PetscErrorCode PCTFS_ivec_land(PetscInt *, PetscInt *, PetscInt);
+PETSC_INTERN PetscErrorCode PCTFS_ivec_and3(PetscInt *, PetscInt *, PetscInt *, PetscInt);
 
-PETSC_INTERN PetscErrorCode PCTFS_ivec_sort_companion(PetscInt*,PetscInt*,PetscInt);
-PETSC_INTERN PetscErrorCode PCTFS_ivec_sort(PetscInt*,PetscInt);
-PETSC_INTERN PetscErrorCode PCTFS_SMI_sort(void*,void*,PetscInt,PetscInt);
-PETSC_INTERN PetscInt       PCTFS_ivec_binary_search(PetscInt,PetscInt*,PetscInt);
-PETSC_INTERN PetscInt       PCTFS_ivec_linear_search(PetscInt,PetscInt*,PetscInt);
+PETSC_INTERN PetscErrorCode PCTFS_ivec_sort_companion(PetscInt *, PetscInt *, PetscInt);
+PETSC_INTERN PetscErrorCode PCTFS_ivec_sort(PetscInt *, PetscInt);
+PETSC_INTERN PetscErrorCode PCTFS_SMI_sort(void *, void *, PetscInt, PetscInt);
+PETSC_INTERN PetscInt       PCTFS_ivec_binary_search(PetscInt, PetscInt *, PetscInt);
+PETSC_INTERN PetscInt       PCTFS_ivec_linear_search(PetscInt, PetscInt *, PetscInt);
 
-PETSC_INTERN PetscErrorCode PCTFS_ivec_sort_companion_hack(PetscInt*,PetscInt**,PetscInt);
+PETSC_INTERN PetscErrorCode PCTFS_ivec_sort_companion_hack(PetscInt *, PetscInt **, PetscInt);
 
 #define SORT_INTEGER 1
 #define SORT_INT_PTR 2
 
-PETSC_INTERN PetscErrorCode PCTFS_rvec_zero(PetscScalar*,PetscInt);
-PETSC_INTERN PetscErrorCode PCTFS_rvec_one(PetscScalar*,PetscInt);
-PETSC_INTERN PetscErrorCode PCTFS_rvec_set(PetscScalar*,PetscScalar,PetscInt);
-PETSC_INTERN PetscErrorCode PCTFS_rvec_copy(PetscScalar*,PetscScalar*,PetscInt);
-PETSC_INTERN PetscErrorCode PCTFS_rvec_scale(PetscScalar*,PetscScalar,PetscInt);
+PETSC_INTERN PetscErrorCode PCTFS_rvec_zero(PetscScalar *, PetscInt);
+PETSC_INTERN PetscErrorCode PCTFS_rvec_one(PetscScalar *, PetscInt);
+PETSC_INTERN PetscErrorCode PCTFS_rvec_set(PetscScalar *, PetscScalar, PetscInt);
+PETSC_INTERN PetscErrorCode PCTFS_rvec_copy(PetscScalar *, PetscScalar *, PetscInt);
+PETSC_INTERN PetscErrorCode PCTFS_rvec_scale(PetscScalar *, PetscScalar, PetscInt);
 
 PETSC_INTERN vfp            PCTFS_rvec_fct_addr(PetscInt);
-PETSC_INTERN PetscErrorCode PCTFS_rvec_add(PetscScalar*,PetscScalar*,PetscInt);
-PETSC_INTERN PetscErrorCode PCTFS_rvec_mult(PetscScalar*,PetscScalar*,PetscInt);
-PETSC_INTERN PetscErrorCode PCTFS_rvec_max(PetscScalar*,PetscScalar*,PetscInt);
-PETSC_INTERN PetscErrorCode PCTFS_rvec_max_abs(PetscScalar*,PetscScalar*,PetscInt);
-PETSC_INTERN PetscErrorCode PCTFS_rvec_min(PetscScalar*,PetscScalar*,PetscInt);
-PETSC_INTERN PetscErrorCode PCTFS_rvec_min_abs(PetscScalar*,PetscScalar*,PetscInt);
-PETSC_INTERN PetscErrorCode PCTFS_vec_exists(PetscScalar*,PetscScalar*,PetscInt);
+PETSC_INTERN PetscErrorCode PCTFS_rvec_add(PetscScalar *, PetscScalar *, PetscInt);
+PETSC_INTERN PetscErrorCode PCTFS_rvec_mult(PetscScalar *, PetscScalar *, PetscInt);
+PETSC_INTERN PetscErrorCode PCTFS_rvec_max(PetscScalar *, PetscScalar *, PetscInt);
+PETSC_INTERN PetscErrorCode PCTFS_rvec_max_abs(PetscScalar *, PetscScalar *, PetscInt);
+PETSC_INTERN PetscErrorCode PCTFS_rvec_min(PetscScalar *, PetscScalar *, PetscInt);
+PETSC_INTERN PetscErrorCode PCTFS_rvec_min_abs(PetscScalar *, PetscScalar *, PetscInt);
+PETSC_INTERN PetscErrorCode PCTFS_vec_exists(PetscScalar *, PetscScalar *, PetscInt);
 
 /***********************************gs.h***************************************
 
@@ -225,9 +231,9 @@ Last Modification:
 
 typedef struct gather_scatter_id *PCTFS_gs_ADT;
 
-PETSC_INTERN PCTFS_gs_ADT   PCTFS_gs_init(PetscInt*,PetscInt,PetscInt);
-PETSC_INTERN PetscErrorCode PCTFS_gs_gop_vec(PCTFS_gs_ADT,PetscScalar*,const char*,PetscInt);
-PETSC_INTERN PetscErrorCode PCTFS_gs_gop_hc(PCTFS_gs_ADT,PetscScalar*,const char*,PetscInt);
+PETSC_INTERN PCTFS_gs_ADT   PCTFS_gs_init(PetscInt *, PetscInt, PetscInt);
+PETSC_INTERN PetscErrorCode PCTFS_gs_gop_vec(PCTFS_gs_ADT, PetscScalar *, const char *, PetscInt);
+PETSC_INTERN PetscErrorCode PCTFS_gs_gop_hc(PCTFS_gs_ADT, PetscScalar *, const char *, PetscInt);
 PETSC_INTERN PetscErrorCode PCTFS_gs_free(PCTFS_gs_ADT);
 PETSC_INTERN PetscErrorCode PCTFS_gs_init_msg_buf_sz(PetscInt);
 PETSC_INTERN PetscErrorCode PCTFS_gs_init_vec_sz(PetscInt);
@@ -300,12 +306,12 @@ ML beliefs/usage: move this to to ML_XXT_factor routine
 
 Usage:
 **************************************xxt.h***********************************/
-PETSC_INTERN PetscErrorCode XXT_factor(xxt_ADT,     /* prev. allocated xxt  handle */
-                           PetscInt*, /* global column mapping       */
-                           PetscInt,             /* local num rows              */
-                           PetscInt,             /* local num cols              */
-                           PetscErrorCode (*)(void*,PetscScalar*,PetscScalar*),    /* b_loc=A_local.x_loc         */
-                           void*);       /* grid data for matvec        */
+PETSC_INTERN PetscErrorCode XXT_factor(xxt_ADT,                                                  /* prev. allocated xxt  handle */
+                                       PetscInt *,                                               /* global column mapping       */
+                                       PetscInt,                                                 /* local num rows              */
+                                       PetscInt,                                                 /* local num cols              */
+                                       PetscErrorCode (*)(void *, PetscScalar *, PetscScalar *), /* b_loc=A_local.x_loc         */
+                                       void *);                                                  /* grid data for matvec        */
 
 /*************************************xxt.h************************************
 Function: XXT_solve
@@ -319,7 +325,7 @@ XXT_solve(xxt_handle, double *x, double *b)
 XXT_solve(xxt_handle, double *x, NULL)
 assumes x has been initialized to be b
 **************************************xxt.h***********************************/
-PETSC_INTERN PetscErrorCode XXT_solve(xxt_ADT,PetscScalar*,PetscScalar*);
+PETSC_INTERN PetscErrorCode XXT_solve(xxt_ADT, PetscScalar *, PetscScalar *);
 
 /*************************************xxt.h************************************
 Function: XXT_stats
@@ -408,12 +414,12 @@ ML beliefs/usage: move this to to ML_XYT_factor routine
 
 Usage:
 **************************************xyt.h***********************************/
-PETSC_INTERN PetscErrorCode XYT_factor(xyt_ADT,     /* prev. allocated xyt  handle */
-                           PetscInt*, /* global column mapping       */
-                           PetscInt,             /* local num rows              */
-                           PetscInt,             /* local num cols              */
-                           PetscErrorCode (*)(void*,PetscScalar*,PetscScalar*), /* b_loc=A_local.x_loc         */
-                           void*);       /* grid data for matvec        */
+PETSC_INTERN PetscErrorCode XYT_factor(xyt_ADT,                                                  /* prev. allocated xyt  handle */
+                                       PetscInt *,                                               /* global column mapping       */
+                                       PetscInt,                                                 /* local num rows              */
+                                       PetscInt,                                                 /* local num cols              */
+                                       PetscErrorCode (*)(void *, PetscScalar *, PetscScalar *), /* b_loc=A_local.x_loc         */
+                                       void *);                                                  /* grid data for matvec        */
 
 /*************************************xyt.h************************************
 Function: XYT_solve
@@ -424,7 +430,7 @@ Return:
 Description: This function performs x = E^-1.b
 Usage: XYT_solve(xyt_handle, double *x, double *b)
 **************************************xyt.h***********************************/
-PETSC_INTERN PetscErrorCode XYT_solve(xyt_ADT,PetscScalar*,PetscScalar*);
+PETSC_INTERN PetscErrorCode XYT_solve(xyt_ADT, PetscScalar *, PetscScalar *);
 
 /*************************************xyt.h************************************
 Function: XYT_stats
@@ -447,12 +453,11 @@ Providence, RI 02912
 Last Modification:
 11.21.97
 *********************************bit_mask.h***********************************/
-PETSC_INTERN PetscInt       PCTFS_div_ceil(PetscInt,PetscInt);
-PETSC_INTERN PetscErrorCode PCTFS_set_bit_mask(PetscInt*,PetscInt,PetscInt);
+PETSC_INTERN PetscInt       PCTFS_div_ceil(PetscInt, PetscInt);
+PETSC_INTERN PetscErrorCode PCTFS_set_bit_mask(PetscInt *, PetscInt, PetscInt);
 PETSC_INTERN PetscInt       PCTFS_len_bit_mask(PetscInt);
-PETSC_INTERN PetscInt       PCTFS_ct_bits(char*, PetscInt);
-PETSC_INTERN PetscErrorCode PCTFS_bm_to_proc(char*,PetscInt,PetscInt*);
+PETSC_INTERN PetscInt       PCTFS_ct_bits(char *, PetscInt);
+PETSC_INTERN PetscErrorCode PCTFS_bm_to_proc(char *, PetscInt, PetscInt *);
 PETSC_INTERN PetscInt       PCTFS_len_buf(PetscInt, PetscInt);
 
 #endif
-

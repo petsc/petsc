@@ -2,7 +2,7 @@
 
 static PetscBool PetscSFPackageInitialized = PETSC_FALSE;
 
-PetscClassId  PETSCSF_CLASSID;
+PetscClassId PETSCSF_CLASSID;
 
 PetscLogEvent PETSCSF_SetGraph;
 PetscLogEvent PETSCSF_SetUp;
@@ -28,10 +28,9 @@ PetscLogEvent PETSCSF_Unpack;
 
 .seealso: `PetscSFFinalizePackage()`
 @*/
-PetscErrorCode PetscSFInitializePackage(void)
-{
-  char           logList[256];
-  PetscBool      opt,pkg;
+PetscErrorCode PetscSFInitializePackage(void) {
+  char      logList[256];
+  PetscBool opt, pkg;
 
   PetscFunctionBegin;
   if (PetscSFPackageInitialized) PetscFunctionReturn(0);
@@ -41,31 +40,31 @@ PetscErrorCode PetscSFInitializePackage(void)
   /* Register Constructors */
   PetscCall(PetscSFRegisterAll());
   /* Register Events */
-  PetscCall(PetscLogEventRegister("SFSetGraph"     , PETSCSF_CLASSID, &PETSCSF_SetGraph));
-  PetscCall(PetscLogEventRegister("SFSetUp"        , PETSCSF_CLASSID, &PETSCSF_SetUp));
-  PetscCall(PetscLogEventRegister("SFBcastBegin"   , PETSCSF_CLASSID, &PETSCSF_BcastBegin));
-  PetscCall(PetscLogEventRegister("SFBcastEnd"     , PETSCSF_CLASSID, &PETSCSF_BcastEnd));
-  PetscCall(PetscLogEventRegister("SFReduceBegin"  , PETSCSF_CLASSID, &PETSCSF_ReduceBegin));
-  PetscCall(PetscLogEventRegister("SFReduceEnd"    , PETSCSF_CLASSID, &PETSCSF_ReduceEnd));
-  PetscCall(PetscLogEventRegister("SFFetchOpBegin" , PETSCSF_CLASSID, &PETSCSF_FetchAndOpBegin));
-  PetscCall(PetscLogEventRegister("SFFetchOpEnd"   , PETSCSF_CLASSID, &PETSCSF_FetchAndOpEnd));
-  PetscCall(PetscLogEventRegister("SFCreateEmbed"  , PETSCSF_CLASSID, &PETSCSF_EmbedSF));
-  PetscCall(PetscLogEventRegister("SFDistSection"  , PETSCSF_CLASSID, &PETSCSF_DistSect));
-  PetscCall(PetscLogEventRegister("SFSectionSF"    , PETSCSF_CLASSID, &PETSCSF_SectSF));
-  PetscCall(PetscLogEventRegister("SFRemoteOff"    , PETSCSF_CLASSID, &PETSCSF_RemoteOff));
-  PetscCall(PetscLogEventRegister("SFPack"         , PETSCSF_CLASSID, &PETSCSF_Pack));
-  PetscCall(PetscLogEventRegister("SFUnpack"       , PETSCSF_CLASSID, &PETSCSF_Unpack));
+  PetscCall(PetscLogEventRegister("SFSetGraph", PETSCSF_CLASSID, &PETSCSF_SetGraph));
+  PetscCall(PetscLogEventRegister("SFSetUp", PETSCSF_CLASSID, &PETSCSF_SetUp));
+  PetscCall(PetscLogEventRegister("SFBcastBegin", PETSCSF_CLASSID, &PETSCSF_BcastBegin));
+  PetscCall(PetscLogEventRegister("SFBcastEnd", PETSCSF_CLASSID, &PETSCSF_BcastEnd));
+  PetscCall(PetscLogEventRegister("SFReduceBegin", PETSCSF_CLASSID, &PETSCSF_ReduceBegin));
+  PetscCall(PetscLogEventRegister("SFReduceEnd", PETSCSF_CLASSID, &PETSCSF_ReduceEnd));
+  PetscCall(PetscLogEventRegister("SFFetchOpBegin", PETSCSF_CLASSID, &PETSCSF_FetchAndOpBegin));
+  PetscCall(PetscLogEventRegister("SFFetchOpEnd", PETSCSF_CLASSID, &PETSCSF_FetchAndOpEnd));
+  PetscCall(PetscLogEventRegister("SFCreateEmbed", PETSCSF_CLASSID, &PETSCSF_EmbedSF));
+  PetscCall(PetscLogEventRegister("SFDistSection", PETSCSF_CLASSID, &PETSCSF_DistSect));
+  PetscCall(PetscLogEventRegister("SFSectionSF", PETSCSF_CLASSID, &PETSCSF_SectSF));
+  PetscCall(PetscLogEventRegister("SFRemoteOff", PETSCSF_CLASSID, &PETSCSF_RemoteOff));
+  PetscCall(PetscLogEventRegister("SFPack", PETSCSF_CLASSID, &PETSCSF_Pack));
+  PetscCall(PetscLogEventRegister("SFUnpack", PETSCSF_CLASSID, &PETSCSF_Unpack));
   /* Process Info */
   {
-    PetscClassId  classids[1];
+    PetscClassId classids[1];
 
     classids[0] = PETSCSF_CLASSID;
     PetscCall(PetscInfoProcessClass("sf", 1, classids));
   }
   /* Process summary exclusions */
-  PetscCall(PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt));
+  PetscCall(PetscOptionsGetString(NULL, NULL, "-log_exclude", logList, sizeof(logList), &opt));
   if (opt) {
-    PetscCall(PetscStrInList("sf",logList,',',&pkg));
+    PetscCall(PetscStrInList("sf", logList, ',', &pkg));
     if (pkg) PetscCall(PetscLogEventExcludeClass(PETSCSF_CLASSID));
   }
   /* Register package finalizer */
@@ -82,8 +81,7 @@ PetscErrorCode PetscSFInitializePackage(void)
 
 .seealso: `PetscSFInitializePackage()`
 @*/
-PetscErrorCode PetscSFFinalizePackage(void)
-{
+PetscErrorCode PetscSFFinalizePackage(void) {
   PetscFunctionBegin;
   PetscCall(PetscFunctionListDestroy(&PetscSFList));
   PetscSFPackageInitialized = PETSC_FALSE;

@@ -1,5 +1,5 @@
 
-#include <petsc/private/kspimpl.h>  /*I "petscksp.h" I*/
+#include <petsc/private/kspimpl.h> /*I "petscksp.h" I*/
 
 /*@C
    KSPFGMRESSetModifyPC - Sets the routine used by FGMRES to modify the preconditioner.
@@ -37,11 +37,10 @@
 .seealso: `KSPFGMRESModifyPCNoChange()`, `KSPFGMRESModifyPCKSP()`
 
 @*/
-PetscErrorCode  KSPFGMRESSetModifyPC(KSP ksp,PetscErrorCode (*fcn)(KSP,PetscInt,PetscInt,PetscReal,void*),void *ctx,PetscErrorCode (*d)(void*))
-{
+PetscErrorCode KSPFGMRESSetModifyPC(KSP ksp, PetscErrorCode (*fcn)(KSP, PetscInt, PetscInt, PetscReal, void *), void *ctx, PetscErrorCode (*d)(void *)) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  PetscTryMethod(ksp,"KSPFGMRESSetModifyPC_C",(KSP,PetscErrorCode (*)(KSP,PetscInt,PetscInt,PetscReal,void*),void*,PetscErrorCode (*)(void*)),(ksp,fcn,ctx,d));
+  PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
+  PetscTryMethod(ksp, "KSPFGMRESSetModifyPC_C", (KSP, PetscErrorCode(*)(KSP, PetscInt, PetscInt, PetscReal, void *), void *, PetscErrorCode (*)(void *)), (ksp, fcn, ctx, d));
   PetscFunctionReturn(0);
 }
 
@@ -68,8 +67,7 @@ You can use this as a template!
 .seealso: `KSPFGMRESSetModifyPC()`, `KSPFGMRESModifyPCKSP()`
 
 @*/
-PetscErrorCode  KSPFGMRESModifyPCNoChange(KSP ksp,PetscInt total_its,PetscInt loc_its,PetscReal res_norm,void *dummy)
-{
+PetscErrorCode KSPFGMRESModifyPCNoChange(KSP ksp, PetscInt total_its, PetscInt loc_its, PetscReal res_norm, void *dummy) {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
@@ -96,30 +94,29 @@ PetscErrorCode  KSPFGMRESModifyPCNoChange(KSP ksp,PetscInt total_its,PetscInt lo
 .seealso: `KSPFGMRESSetModifyPC()`, `KSPFGMRESModifyPCKSP()`
 
 @*/
-PetscErrorCode  KSPFGMRESModifyPCKSP(KSP ksp,PetscInt total_its,PetscInt loc_its,PetscReal res_norm,void *dummy)
-{
-  PC             pc;
-  PetscInt       maxits;
-  KSP            sub_ksp;
-  PetscReal      rtol,abstol,dtol;
-  PetscBool      isksp;
+PetscErrorCode KSPFGMRESModifyPCKSP(KSP ksp, PetscInt total_its, PetscInt loc_its, PetscReal res_norm, void *dummy) {
+  PC        pc;
+  PetscInt  maxits;
+  KSP       sub_ksp;
+  PetscReal rtol, abstol, dtol;
+  PetscBool isksp;
 
   PetscFunctionBegin;
-  PetscCall(KSPGetPC(ksp,&pc));
+  PetscCall(KSPGetPC(ksp, &pc));
 
-  PetscCall(PetscObjectTypeCompare((PetscObject)pc,PCKSP,&isksp));
+  PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCKSP, &isksp));
   if (isksp) {
-    PetscCall(PCKSPGetKSP(pc,&sub_ksp));
+    PetscCall(PCKSPGetKSP(pc, &sub_ksp));
 
     /* note that at this point you could check the type of KSP with KSPGetType() */
 
     /* Now we can use functions such as KSPGMRESSetRestart() or
       KSPGMRESSetOrthogonalization() or KSPSetTolerances() */
 
-    PetscCall(KSPGetTolerances(sub_ksp,&rtol,&abstol,&dtol,&maxits));
+    PetscCall(KSPGetTolerances(sub_ksp, &rtol, &abstol, &dtol, &maxits));
     if (!loc_its) rtol = .1;
     else rtol *= .9;
-    PetscCall(KSPSetTolerances(sub_ksp,rtol,abstol,dtol,maxits));
+    PetscCall(KSPSetTolerances(sub_ksp, rtol, abstol, dtol, maxits));
   }
   PetscFunctionReturn(0);
 }

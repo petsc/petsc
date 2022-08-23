@@ -4,53 +4,53 @@ static char help[] = "The main goal of this code is to retrieve the original ele
 #include <petsc.h>
 
 PetscReal sCoords2x5Mesh[18][2] = {
- {0.00000000000000000e+00, 0.00000000000000000e+00},
- {2.00000000000000000e+00, 0.00000000000000000e+00},
- {0.00000000000000000e+00, 1.00000000000000000e+00},
- {2.00000000000000000e+00, 1.00000000000000000e+00},
- {9.99999999997387978e-01, 0.00000000000000000e+00},
- {9.99999999997387978e-01, 1.00000000000000000e+00},
- {0.00000000000000000e+00, 2.00000000000000011e-01},
- {0.00000000000000000e+00, 4.00000000000000022e-01},
- {0.00000000000000000e+00, 5.99999999999999978e-01},
- {0.00000000000000000e+00, 8.00000000000000044e-01},
- {2.00000000000000000e+00, 2.00000000000000011e-01},
- {2.00000000000000000e+00, 4.00000000000000022e-01},
- {2.00000000000000000e+00, 5.99999999999999978e-01},
- {2.00000000000000000e+00, 8.00000000000000044e-01},
- {9.99999999997387756e-01, 2.00000000000000011e-01},
- {9.99999999997387978e-01, 4.00000000000000022e-01},
- {9.99999999997387978e-01, 6.00000000000000089e-01},
- {9.99999999997388089e-01, 8.00000000000000044e-01}};
+  {0.00000000000000000e+00, 0.00000000000000000e+00},
+  {2.00000000000000000e+00, 0.00000000000000000e+00},
+  {0.00000000000000000e+00, 1.00000000000000000e+00},
+  {2.00000000000000000e+00, 1.00000000000000000e+00},
+  {9.99999999997387978e-01, 0.00000000000000000e+00},
+  {9.99999999997387978e-01, 1.00000000000000000e+00},
+  {0.00000000000000000e+00, 2.00000000000000011e-01},
+  {0.00000000000000000e+00, 4.00000000000000022e-01},
+  {0.00000000000000000e+00, 5.99999999999999978e-01},
+  {0.00000000000000000e+00, 8.00000000000000044e-01},
+  {2.00000000000000000e+00, 2.00000000000000011e-01},
+  {2.00000000000000000e+00, 4.00000000000000022e-01},
+  {2.00000000000000000e+00, 5.99999999999999978e-01},
+  {2.00000000000000000e+00, 8.00000000000000044e-01},
+  {9.99999999997387756e-01, 2.00000000000000011e-01},
+  {9.99999999997387978e-01, 4.00000000000000022e-01},
+  {9.99999999997387978e-01, 6.00000000000000089e-01},
+  {9.99999999997388089e-01, 8.00000000000000044e-01}
+};
 
 //Connectivity of a 2x5 rectangular mesh of quads :
 const PetscInt sConnectivity2x5Mesh[10][4] = {
-  {0,4,14,6},
-  {6,14,15,7},
-  {7,15,16,8},
-  {8,16,17,9},
-  {9,17,5,2},
-  {4,1,10,14},
-  {14,10,11,15},
-  {15,11,12,16},
-  {16,12,13,17},
-  {17,13,3,5}};
+  {0,  4,  14, 6 },
+  {6,  14, 15, 7 },
+  {7,  15, 16, 8 },
+  {8,  16, 17, 9 },
+  {9,  17, 5,  2 },
+  {4,  1,  10, 14},
+  {14, 10, 11, 15},
+  {15, 11, 12, 16},
+  {16, 12, 13, 17},
+  {17, 13, 3,  5 }
+};
 
 const PetscInt sInitialPartition2x5Mesh[2][5] = {
-  {0,2,4,6,8},
-  {1,3,5,7,9}
+  {0, 2, 4, 6, 8},
+  {1, 3, 5, 7, 9}
 };
 
 const PetscInt sNLoclCells2x5Mesh = 5;
 const PetscInt sNGlobVerts2x5Mesh = 18;
 
-int main(int argc, char **argv)
-{
-  const PetscInt   Nc                 = sNLoclCells2x5Mesh; //Same on each rank for this example...
-  const PetscInt   Nv                 = sNGlobVerts2x5Mesh;
-  const PetscInt*  InitPartForRank[2] = {&sInitialPartition2x5Mesh[0][0],
-                                         &sInitialPartition2x5Mesh[1][0]};
-  const PetscInt (*Conn)[4]           = sConnectivity2x5Mesh;
+int main(int argc, char **argv) {
+  const PetscInt  Nc                 = sNLoclCells2x5Mesh; //Same on each rank for this example...
+  const PetscInt  Nv                 = sNGlobVerts2x5Mesh;
+  const PetscInt *InitPartForRank[2] = {&sInitialPartition2x5Mesh[0][0], &sInitialPartition2x5Mesh[1][0]};
+  const PetscInt(*Conn)[4]           = sConnectivity2x5Mesh;
 
   const PetscInt   Ncor = 4;
   const PetscInt   dim  = 2;
@@ -79,9 +79,7 @@ int main(int argc, char **argv)
     for (c = 0; c < Nc; ++c) {
       PetscInt cell = (InitPartForRank[rank])[c], cor;
 
-      for (cor = 0; cor < Ncor; ++cor) {
-        cells[c*Ncor + cor] = Conn[cell][cor];
-      }
+      for (cor = 0; cor < Ncor; ++cor) { cells[c * Ncor + cor] = Conn[cell][cor]; }
     }
     PetscCall(DMSetDimension(dm, dim));
     PetscCall(DMPlexBuildFromCellListParallel(dm, Nc, PETSC_DECIDE, Nv, Ncor, cells, &sfVert, NULL));
@@ -95,16 +93,16 @@ int main(int argc, char **argv)
   PetscCall(DMViewFromOptions(dm, NULL, "-dm_view"));
 
   if (field) {
-   const PetscInt Nf         = 1;
-   const PetscInt numComp[1] = {1};
-   const PetscInt numDof[3]  = {0, 0, 1};
-   const PetscInt numBC      = 0;
+    const PetscInt Nf         = 1;
+    const PetscInt numComp[1] = {1};
+    const PetscInt numDof[3]  = {0, 0, 1};
+    const PetscInt numBC      = 0;
 
-   PetscCall(DMSetNumFields(dm, Nf));
-   PetscCall(DMPlexCreateSection(dm, NULL, numComp, numDof, numBC, NULL, NULL, NULL, NULL, &s));
-   PetscCall(DMSetLocalSection(dm, s));
-   PetscCall(PetscSectionView(s, PETSC_VIEWER_STDOUT_WORLD));
-   PetscCall(PetscSectionDestroy(&s));
+    PetscCall(DMSetNumFields(dm, Nf));
+    PetscCall(DMPlexCreateSection(dm, NULL, numComp, numDof, numBC, NULL, NULL, NULL, NULL, &s));
+    PetscCall(DMSetLocalSection(dm, s));
+    PetscCall(PetscSectionView(s, PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(PetscSectionDestroy(&s));
   }
 
   PetscCall(DMPlexGetPartitioner(dm, &part));
@@ -113,7 +111,7 @@ int main(int argc, char **argv)
   PetscCall(DMPlexDistribute(dm, 0, &sfMig, &ddm));
   PetscCall(PetscSFView(sfMig, PETSC_VIEWER_STDOUT_WORLD));
   PetscCall(PetscSFCreateInverseSF(sfMig, &sfPart));
-  PetscCall(PetscObjectSetName((PetscObject) sfPart, "Inverse Migration SF"));
+  PetscCall(PetscObjectSetName((PetscObject)sfPart, "Inverse Migration SF"));
   PetscCall(PetscSFView(sfPart, PETSC_VIEWER_STDOUT_WORLD));
 
   Vec          lGlobalVec, lNatVec;
@@ -126,15 +124,15 @@ int main(int argc, char **argv)
     PetscCall(PetscSectionView(s, PETSC_VIEWER_STDOUT_WORLD));
   }
   PetscCall(DMGetGlobalVector(dm, &lNatVec));
-  PetscCall(PetscObjectSetName((PetscObject) lNatVec, "Natural Vector (initial partition)"));
+  PetscCall(PetscObjectSetName((PetscObject)lNatVec, "Natural Vector (initial partition)"));
 
   //Copying the initial partition into the "natural" vector:
   PetscCall(VecGetArray(lNatVec, &lNatVecArray));
   for (c = 0; c < Nc; ++c) lNatVecArray[c] = (InitPartForRank[rank])[c];
   PetscCall(VecRestoreArray(lNatVec, &lNatVecArray));
 
-  PetscCall(DMGetGlobalVector(ddm,&lGlobalVec));
-  PetscCall(PetscObjectSetName((PetscObject) lGlobalVec, "Global Vector (reordered element numbers in the petsc distributed order)"));
+  PetscCall(DMGetGlobalVector(ddm, &lGlobalVec));
+  PetscCall(PetscObjectSetName((PetscObject)lGlobalVec, "Global Vector (reordered element numbers in the petsc distributed order)"));
   PetscCall(VecZeroEntries(lGlobalVec));
 
   // The call to DMPlexNaturalToGlobalBegin/End does not produce our expected result...
@@ -169,20 +167,20 @@ int main(int argc, char **argv)
    * 0.
    */
 
-   {
-     PetscSF nsf;
+  {
+    PetscSF nsf;
 
-     PetscCall(DMPlexGetGlobalToNaturalSF(ddm, &nsf));
-     PetscCall(PetscSFView(nsf, NULL));
-   }
+    PetscCall(DMPlexGetGlobalToNaturalSF(ddm, &nsf));
+    PetscCall(PetscSFView(nsf, NULL));
+  }
   PetscCall(DMPlexNaturalToGlobalBegin(ddm, lNatVec, lGlobalVec));
-  PetscCall(DMPlexNaturalToGlobalEnd  (ddm, lNatVec, lGlobalVec));
+  PetscCall(DMPlexNaturalToGlobalEnd(ddm, lNatVec, lGlobalVec));
 
   PetscCall(VecView(lNatVec, PETSC_VIEWER_STDOUT_WORLD));
   PetscCall(VecView(lGlobalVec, PETSC_VIEWER_STDOUT_WORLD));
 
-  PetscCall(DMRestoreGlobalVector(dm,&lNatVec));
-  PetscCall(DMRestoreGlobalVector(ddm,&lGlobalVec));
+  PetscCall(DMRestoreGlobalVector(dm, &lNatVec));
+  PetscCall(DMRestoreGlobalVector(ddm, &lGlobalVec));
 
   PetscCall(PetscSFDestroy(&sfMig));
   PetscCall(PetscSFDestroy(&sfPart));

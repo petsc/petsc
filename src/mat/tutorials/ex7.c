@@ -1,26 +1,25 @@
 static char help[] = "Example use of PetscInfo() as a configurable informative logging or warning tool\n";
 
-# include <petscsys.h>
-# include <petscmat.h>
-# include <petscvec.h>
+#include <petscsys.h>
+#include <petscmat.h>
+#include <petscvec.h>
 
-int main(int argc, char **argv)
-{
-  Mat             A, Aself;
-  Vec             b, bself;
+int main(int argc, char **argv) {
+  Mat A, Aself;
+  Vec b, bself;
 #if defined(PETSC_USE_INFO)
-  PetscInt        testarg = 1234;
+  PetscInt testarg = 1234;
 #endif
-  int             numClasses;
-  PetscClassId    testMatClassid, testVecClassid, testSysClassid;
-  PetscBool       isEnabled = PETSC_FALSE, invert = PETSC_FALSE;
-  char            *testClassesStr, *filename;
-  const char      *testMatClassname, *testVecClassname;
-  char            **testClassesStrArr;
-  FILE            *infoFile;
+  int          numClasses;
+  PetscClassId testMatClassid, testVecClassid, testSysClassid;
+  PetscBool    isEnabled = PETSC_FALSE, invert = PETSC_FALSE;
+  char        *testClassesStr, *filename;
+  const char  *testMatClassname, *testVecClassname;
+  char       **testClassesStrArr;
+  FILE        *infoFile;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv,(char *) 0, help));
+  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
 
   /*
      Examples on how to call PetscInfo() using different objects with or without arguments, and different communicators.
@@ -52,12 +51,12 @@ int main(int argc, char **argv)
   /*
      First retrieve some basic information regarding the classes for which we want to filter
   */
-  PetscCall(PetscObjectGetClassId((PetscObject) A, &testMatClassid));
-  PetscCall(PetscObjectGetClassId((PetscObject) b, &testVecClassid));
+  PetscCall(PetscObjectGetClassId((PetscObject)A, &testMatClassid));
+  PetscCall(PetscObjectGetClassId((PetscObject)b, &testVecClassid));
   /* Sys class has PetscClassId = PETSC_SMALLEST_CLASSID */
   testSysClassid = PETSC_SMALLEST_CLASSID;
-  PetscCall(PetscObjectGetClassName((PetscObject) A, &testMatClassname));
-  PetscCall(PetscObjectGetClassName((PetscObject) b, &testVecClassname));
+  PetscCall(PetscObjectGetClassName((PetscObject)A, &testMatClassname));
+  PetscCall(PetscObjectGetClassName((PetscObject)b, &testVecClassname));
 
   /*
      Examples on how to use individual PetscInfo() commands.
@@ -119,7 +118,7 @@ int main(int argc, char **argv)
   */
   PetscCall(PetscStrallocpy("mat,vec,sys", &testClassesStr));
   PetscCall(PetscStrToArray((const char *)testClassesStr, ',', &numClasses, &testClassesStrArr));
-  PetscCall(PetscInfoSetClasses(invert, (PetscInt) numClasses, (const char *const *) testClassesStrArr));
+  PetscCall(PetscInfoSetClasses(invert, (PetscInt)numClasses, (const char *const *)testClassesStrArr));
   PetscCall(PetscInfoProcessClass(testMatClassname, 1, &testMatClassid));
   PetscCall(PetscInfoProcessClass(testVecClassname, 1, &testVecClassid));
   PetscCall(PetscInfoProcessClass("sys", 1, &testSysClassid));
@@ -142,7 +141,7 @@ int main(int argc, char **argv)
   PetscCall(PetscStrallocpy("vec,sys", &testClassesStr));
   PetscCall(PetscStrToArray((const char *)testClassesStr, ',', &numClasses, &testClassesStrArr));
   invert = PETSC_TRUE;
-  PetscCall(PetscInfoSetClasses(invert, (PetscInt) numClasses, (const char *const *) testClassesStrArr));
+  PetscCall(PetscInfoSetClasses(invert, (PetscInt)numClasses, (const char *const *)testClassesStrArr));
   PetscCall(PetscInfoProcessClass(testMatClassname, 1, &testMatClassid));
   PetscCall(PetscInfoProcessClass(testVecClassname, 1, &testVecClassid));
   PetscCall(PetscInfoProcessClass("sys", 1, &testSysClassid));

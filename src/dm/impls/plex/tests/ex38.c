@@ -2,17 +2,13 @@ const char help[] = "Test DMPlexInsertBoundaryValues with DMPlexSetClosurePermut
 
 #include <petscdmplex.h>
 
-static PetscErrorCode bc_func(PetscInt dim, PetscReal time,
-                     const PetscReal coords[], PetscInt num_comp_u,
-                     PetscScalar *u, void *ctx)
-{
+static PetscErrorCode bc_func(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt num_comp_u, PetscScalar *u, void *ctx) {
   PetscFunctionBeginUser;
-  for (PetscInt i=0; i<num_comp_u; i++) u[i] = coords[i];
+  for (PetscInt i = 0; i < num_comp_u; i++) u[i] = coords[i];
   PetscFunctionReturn(0);
 }
 
-int main(int argc,char **argv)
-{
+int main(int argc, char **argv) {
   DM        dm;
   PetscFE   fe;
   Vec       U_loc;
@@ -21,7 +17,7 @@ int main(int argc,char **argv)
 
   /* Initialize PETSc */
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-tensor_coords", &tensorCoords, NULL));
   PetscCall(DMCreate(PETSC_COMM_WORLD, &dm));
   PetscCall(DMSetType(dm, DMPLEX));
@@ -35,10 +31,10 @@ int main(int argc,char **argv)
 
   PetscCall(DMViewFromOptions(dm, NULL, "-dm_view"));
 
-  DMLabel label;
+  DMLabel  label;
   PetscInt marker_ids[] = {1};
   PetscCall(DMGetLabel(dm, "marker", &label));
-  PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "mms", label, 1, marker_ids, 0, 0, NULL, (void(*)(void))bc_func, NULL, NULL, NULL));
+  PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "mms", label, 1, marker_ids, 0, 0, NULL, (void (*)(void))bc_func, NULL, NULL, NULL));
   PetscCall(DMPlexSetClosurePermutationTensor(dm, PETSC_DETERMINE, NULL));
   {
     DM cdm;

@@ -1,14 +1,13 @@
-#include <petsc/private/tsimpl.h>        /*I "petscts.h"  I*/
+#include <petsc/private/tsimpl.h> /*I "petscts.h"  I*/
 #include <petscdm.h>
-static PetscErrorCode TSRHSSplitGetRHSSplit(TS ts,const char splitname[],TS_RHSSplitLink *isplit)
-{
-  PetscBool       found = PETSC_FALSE;
+static PetscErrorCode TSRHSSplitGetRHSSplit(TS ts, const char splitname[], TS_RHSSplitLink *isplit) {
+  PetscBool found = PETSC_FALSE;
 
   PetscFunctionBegin;
   *isplit = ts->tsrhssplit;
   /* look up the split */
   while (*isplit) {
-    PetscCall(PetscStrcmp((*isplit)->splitname,splitname,&found));
+    PetscCall(PetscStrcmp((*isplit)->splitname, splitname, &found));
     if (found) break;
     *isplit = (*isplit)->next;
   }
@@ -30,30 +29,29 @@ static PetscErrorCode TSRHSSplitGetRHSSplit(TS ts,const char splitname[],TS_RHSS
 .seealso: `TSRHSSplitGetIS()`
 
 @*/
-PetscErrorCode TSRHSSplitSetIS(TS ts,const char splitname[],IS is)
-{
-  TS_RHSSplitLink newsplit,next = ts->tsrhssplit;
+PetscErrorCode TSRHSSplitSetIS(TS ts, const char splitname[], IS is) {
+  TS_RHSSplitLink newsplit, next = ts->tsrhssplit;
   char            prefix[128];
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscValidHeaderSpecific(is,IS_CLASSID,3);
+  PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
+  PetscValidHeaderSpecific(is, IS_CLASSID, 3);
 
   PetscCall(PetscNew(&newsplit));
   if (splitname) {
-    PetscCall(PetscStrallocpy(splitname,&newsplit->splitname));
+    PetscCall(PetscStrallocpy(splitname, &newsplit->splitname));
   } else {
-    PetscCall(PetscMalloc1(8,&newsplit->splitname));
-    PetscCall(PetscSNPrintf(newsplit->splitname,7,"%" PetscInt_FMT,ts->num_rhs_splits));
+    PetscCall(PetscMalloc1(8, &newsplit->splitname));
+    PetscCall(PetscSNPrintf(newsplit->splitname, 7, "%" PetscInt_FMT, ts->num_rhs_splits));
   }
   PetscCall(PetscObjectReference((PetscObject)is));
   newsplit->is = is;
-  PetscCall(TSCreate(PetscObjectComm((PetscObject)ts),&newsplit->ts));
+  PetscCall(TSCreate(PetscObjectComm((PetscObject)ts), &newsplit->ts));
 
-  PetscCall(PetscObjectIncrementTabLevel((PetscObject)newsplit->ts,(PetscObject)ts,1));
-  PetscCall(PetscLogObjectParent((PetscObject)ts,(PetscObject)newsplit->ts));
-  PetscCall(PetscSNPrintf(prefix,sizeof(prefix),"%srhsplit_%s_",((PetscObject)ts)->prefix ? ((PetscObject)ts)->prefix : "",newsplit->splitname));
-  PetscCall(TSSetOptionsPrefix(newsplit->ts,prefix));
+  PetscCall(PetscObjectIncrementTabLevel((PetscObject)newsplit->ts, (PetscObject)ts, 1));
+  PetscCall(PetscLogObjectParent((PetscObject)ts, (PetscObject)newsplit->ts));
+  PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "%srhsplit_%s_", ((PetscObject)ts)->prefix ? ((PetscObject)ts)->prefix : "", newsplit->splitname));
+  PetscCall(TSSetOptionsPrefix(newsplit->ts, prefix));
   if (!next) ts->tsrhssplit = newsplit;
   else {
     while (next->next) next = next->next;
@@ -80,15 +78,14 @@ PetscErrorCode TSRHSSplitSetIS(TS ts,const char splitname[],IS is)
 .seealso: `TSRHSSplitSetIS()`
 
 @*/
-PetscErrorCode TSRHSSplitGetIS(TS ts,const char splitname[],IS *is)
-{
+PetscErrorCode TSRHSSplitGetIS(TS ts, const char splitname[], IS *is) {
   TS_RHSSplitLink isplit;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   *is = NULL;
   /* look up the split */
-  PetscCall(TSRHSSplitGetRHSSplit(ts,splitname,&isplit));
+  PetscCall(TSRHSSplitGetRHSSplit(ts, splitname, &isplit));
   if (isplit) *is = isplit->is;
   PetscFunctionReturn(0);
 }
@@ -116,25 +113,24 @@ $  rhsfunc(TS ts,PetscReal t,Vec u,Vec f,ctx);
  Level: beginner
 
 @*/
-PetscErrorCode TSRHSSplitSetRHSFunction(TS ts,const char splitname[],Vec r,TSRHSFunction rhsfunc,void *ctx)
-{
+PetscErrorCode TSRHSSplitSetRHSFunction(TS ts, const char splitname[], Vec r, TSRHSFunction rhsfunc, void *ctx) {
   TS_RHSSplitLink isplit;
   DM              dmc;
-  Vec             subvec,ralloc = NULL;
+  Vec             subvec, ralloc = NULL;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  if (r) PetscValidHeaderSpecific(r,VEC_CLASSID,3);
+  PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
+  if (r) PetscValidHeaderSpecific(r, VEC_CLASSID, 3);
 
   /* look up the split */
-  PetscCall(TSRHSSplitGetRHSSplit(ts,splitname,&isplit));
-  PetscCheck(isplit,PETSC_COMM_SELF,PETSC_ERR_USER,"The split %s is not created, check the split name or call TSRHSSplitSetIS() to create one",splitname);
+  PetscCall(TSRHSSplitGetRHSSplit(ts, splitname, &isplit));
+  PetscCheck(isplit, PETSC_COMM_SELF, PETSC_ERR_USER, "The split %s is not created, check the split name or call TSRHSSplitSetIS() to create one", splitname);
 
   if (!r && ts->vec_sol) {
-    PetscCall(VecGetSubVector(ts->vec_sol,isplit->is,&subvec));
-    PetscCall(VecDuplicate(subvec,&ralloc));
-    r    = ralloc;
-    PetscCall(VecRestoreSubVector(ts->vec_sol,isplit->is,&subvec));
+    PetscCall(VecGetSubVector(ts->vec_sol, isplit->is, &subvec));
+    PetscCall(VecDuplicate(subvec, &ralloc));
+    r = ralloc;
+    PetscCall(VecRestoreSubVector(ts->vec_sol, isplit->is, &subvec));
   }
 
   if (ts->dm) {
@@ -148,7 +144,7 @@ PetscErrorCode TSRHSSplitSetRHSFunction(TS ts,const char splitname[],Vec r,TSRHS
     }
   }
 
-  PetscCall(TSSetRHSFunction(isplit->ts,r,rhsfunc,ctx));
+  PetscCall(TSSetRHSFunction(isplit->ts, r, rhsfunc, ctx));
   PetscCall(VecDestroy(&ralloc));
   PetscFunctionReturn(0);
 }
@@ -169,16 +165,15 @@ PetscErrorCode TSRHSSplitSetRHSFunction(TS ts,const char splitname[],Vec r,TSRHS
 
 .seealso: `TSGetRHSSplitFunction()`
 @*/
-PetscErrorCode TSRHSSplitGetSubTS(TS ts,const char splitname[],TS *subts)
-{
+PetscErrorCode TSRHSSplitGetSubTS(TS ts, const char splitname[], TS *subts) {
   TS_RHSSplitLink isplit;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscValidPointer(subts,3);
+  PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
+  PetscValidPointer(subts, 3);
   *subts = NULL;
   /* look up the split */
-  PetscCall(TSRHSSplitGetRHSSplit(ts,splitname,&isplit));
+  PetscCall(TSRHSSplitGetRHSSplit(ts, splitname, &isplit));
   if (isplit) *subts = isplit->ts;
   PetscFunctionReturn(0);
 }
@@ -203,18 +198,17 @@ PetscErrorCode TSRHSSplitGetSubTS(TS ts,const char splitname[],TS *subts)
 
 .seealso: `TSGetRHSSplitFunction()`
 @*/
-PetscErrorCode TSRHSSplitGetSubTSs(TS ts,PetscInt *n,TS *subts[])
-{
+PetscErrorCode TSRHSSplitGetSubTSs(TS ts, PetscInt *n, TS *subts[]) {
   TS_RHSSplitLink ilink = ts->tsrhssplit;
-  PetscInt        i = 0;
+  PetscInt        i     = 0;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   if (subts) {
-    PetscCall(PetscMalloc1(ts->num_rhs_splits,subts));
+    PetscCall(PetscMalloc1(ts->num_rhs_splits, subts));
     while (ilink) {
       (*subts)[i++] = ilink->ts;
-      ilink = ilink->next;
+      ilink         = ilink->next;
     }
   }
   if (n) *n = ts->num_rhs_splits;

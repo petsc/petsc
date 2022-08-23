@@ -126,13 +126,12 @@ exampleVec: as global vector:
 */
 
 typedef struct {
-  char       fname[PETSC_MAX_PATH_LEN]; /* Output mesh filename */
-  PetscBool  shell;                     /* Use DMShell to wrap sections */
+  char      fname[PETSC_MAX_PATH_LEN]; /* Output mesh filename */
+  PetscBool shell;                     /* Use DMShell to wrap sections */
 } AppCtx;
 
-PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
-{
-  PetscBool       flg;
+PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
+  PetscBool flg;
 
   PetscFunctionBegin;
   options->fname[0] = '\0';
@@ -143,38 +142,37 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv)
-{
-  MPI_Comm           comm;
-  PetscMPIInt        size, rank, mycolor;
-  const char         exampleDMPlexName[]    = "exampleDMPlex";
-  const char         exampleSectionDMName[] = "exampleSectionDM";
-  const char         exampleVecName[]       = "exampleVec";
-  PetscScalar        constraintValue        = 1.5;
-  PetscViewerFormat  format                 = PETSC_VIEWER_HDF5_PETSC;
-  AppCtx             user;
+int main(int argc, char **argv) {
+  MPI_Comm          comm;
+  PetscMPIInt       size, rank, mycolor;
+  const char        exampleDMPlexName[]    = "exampleDMPlex";
+  const char        exampleSectionDMName[] = "exampleSectionDM";
+  const char        exampleVecName[]       = "exampleVec";
+  PetscScalar       constraintValue        = 1.5;
+  PetscViewerFormat format                 = PETSC_VIEWER_HDF5_PETSC;
+  AppCtx            user;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(ProcessOptions(PETSC_COMM_WORLD, &user));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
-  PetscCheck(size >= 3,PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "Example only works with three or more processes");
+  PetscCheck(size >= 3, PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "Example only works with three or more processes");
 
   /* Save */
   mycolor = (PetscMPIInt)(rank >= 2);
   PetscCallMPI(MPI_Comm_split(PETSC_COMM_WORLD, mycolor, rank, &comm));
   if (mycolor == 0) {
-    DM           dm;
-    PetscViewer  viewer;
+    DM          dm;
+    PetscViewer viewer;
 
     PetscCall(PetscViewerHDF5Open(comm, user.fname, FILE_MODE_WRITE, &viewer));
     /* Save exampleDMPlex */
     {
-      DM              pdm;
-      const PetscInt  faces[2] = {6, 1};
-      PetscSF         sf;
-      PetscInt        overlap = 1;
+      DM             pdm;
+      const PetscInt faces[2] = {6, 1};
+      PetscSF        sf;
+      PetscInt       overlap = 1;
 
       PetscCall(DMPlexCreateBoxMesh(comm, 2, PETSC_FALSE, faces, NULL, NULL, NULL, PETSC_TRUE, &dm));
       PetscCall(DMPlexDistribute(dm, overlap, &sf, &pdm));
@@ -195,12 +193,12 @@ int main(int argc, char **argv)
     PetscCall(PetscViewerPopFormat(viewer));
     /* Save exampleVec */
     {
-      PetscInt      pStart = -1, pEnd = -1;
-      DM            sdm;
-      PetscSection  section, gsection;
-      PetscBool     includesConstraints = PETSC_FALSE;
-      Vec           vec;
-      PetscScalar  *array = NULL;
+      PetscInt     pStart = -1, pEnd = -1;
+      DM           sdm;
+      PetscSection section, gsection;
+      PetscBool    includesConstraints = PETSC_FALSE;
+      Vec          vec;
+      PetscScalar *array = NULL;
 
       /* Create section */
       PetscCall(PetscSectionCreate(comm, &section));
@@ -235,7 +233,7 @@ int main(int argc, char **argv)
       }
       PetscCall(PetscSectionSetUp(section));
       {
-        const PetscInt indices[] = {2};
+        const PetscInt indices[]  = {2};
         const PetscInt indices1[] = {0};
 
         switch (rank) {
@@ -250,13 +248,12 @@ int main(int argc, char **argv)
         }
       }
       if (user.shell) {
-        PetscSF  sf;
+        PetscSF sf;
 
         PetscCall(DMShellCreate(comm, &sdm));
         PetscCall(DMGetPointSF(dm, &sf));
         PetscCall(DMSetPointSF(sdm, sf));
-      }
-      else {
+      } else {
         PetscCall(DMClone(dm, &sdm));
       }
       PetscCall(PetscObjectSetName((PetscObject)sdm, exampleSectionDMName));
@@ -267,7 +264,7 @@ int main(int argc, char **argv)
       PetscCall(DMGetGlobalSection(sdm, &gsection));
       PetscCall(PetscSectionGetIncludesConstraints(gsection, &includesConstraints));
       if (user.shell) {
-        PetscInt  n = -1;
+        PetscInt n = -1;
 
         PetscCall(VecCreate(comm, &vec));
         if (includesConstraints) PetscCall(PetscSectionGetStorageSize(gsection, &n));
@@ -281,8 +278,7 @@ int main(int argc, char **argv)
       PetscCall(VecGetArrayWrite(vec, &array));
       if (includesConstraints) {
         switch (rank) {
-        case 0:
-          break;
+        case 0: break;
         case 1:
           array[0] = 1.0;
           array[1] = 1.1;
@@ -296,8 +292,7 @@ int main(int argc, char **argv)
         }
       } else {
         switch (rank) {
-        case 0:
-          break;
+        case 0: break;
         case 1:
           array[0] = 1.0;
           array[1] = 1.1;
@@ -326,14 +321,14 @@ int main(int argc, char **argv)
   mycolor = (PetscMPIInt)(rank >= 3);
   PetscCallMPI(MPI_Comm_split(PETSC_COMM_WORLD, mycolor, rank, &comm));
   if (mycolor == 0) {
-    DM           dm;
-    PetscSF      sfXC;
-    PetscViewer  viewer;
+    DM          dm;
+    PetscSF     sfXC;
+    PetscViewer viewer;
 
     PetscCall(PetscViewerHDF5Open(comm, user.fname, FILE_MODE_READ, &viewer));
     /* Load exampleDMPlex */
     {
-      PetscSF  sfXB, sfBC;
+      PetscSF sfXB, sfBC;
 
       PetscCall(DMCreate(comm, &dm));
       PetscCall(DMSetType(dm, DMPLEX));
@@ -380,15 +375,15 @@ int main(int argc, char **argv)
     PetscCall(PetscObjectSetName((PetscObject)dm, exampleDMPlexName));
     /* Load exampleVec */
     {
-      DM            sdm;
-      PetscSection  section, gsection;
-      IS            perm;
-      PetscBool     includesConstraints = PETSC_FALSE;
-      Vec           vec;
-      PetscSF       lsf, gsf;
+      DM           sdm;
+      PetscSection section, gsection;
+      IS           perm;
+      PetscBool    includesConstraints = PETSC_FALSE;
+      Vec          vec;
+      PetscSF      lsf, gsf;
 
       if (user.shell) {
-        PetscSF  sf;
+        PetscSF sf;
 
         PetscCall(DMShellCreate(comm, &sdm));
         PetscCall(DMGetPointSF(dm, &sf));
@@ -399,13 +394,16 @@ int main(int argc, char **argv)
       PetscCall(PetscObjectSetName((PetscObject)sdm, exampleSectionDMName));
       PetscCall(PetscSectionCreate(comm, &section));
       {
-        PetscInt      pStart = -1, pEnd = -1, p = -1;
-        PetscInt     *pinds = NULL;
+        PetscInt  pStart = -1, pEnd = -1, p = -1;
+        PetscInt *pinds = NULL;
 
         PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
         PetscCall(PetscMalloc1(pEnd - pStart, &pinds));
         for (p = 0; p < pEnd - pStart; ++p) pinds[p] = p;
-        if (rank == 2) {pinds[10] = 20; pinds[20] = 10;}
+        if (rank == 2) {
+          pinds[10] = 20;
+          pinds[20] = 10;
+        }
         PetscCall(ISCreateGeneral(comm, pEnd - pStart, pinds, PETSC_OWN_POINTER, &perm));
       }
       PetscCall(PetscSectionSetPermutation(section, perm));
@@ -419,7 +417,7 @@ int main(int argc, char **argv)
       PetscCall(PetscSectionView(section, PETSC_VIEWER_STDOUT_(comm)));
       PetscCall(PetscSectionGetIncludesConstraints(section, &includesConstraints));
       if (user.shell) {
-        PetscInt  m = -1;
+        PetscInt m = -1;
 
         PetscCall(VecCreate(comm, &vec));
         if (includesConstraints) PetscCall(PetscSectionGetStorageSize(section, &m));
@@ -445,7 +443,7 @@ int main(int argc, char **argv)
       PetscCall(PetscSectionView(gsection, PETSC_VIEWER_STDOUT_(comm)));
       PetscCall(PetscSectionGetIncludesConstraints(gsection, &includesConstraints));
       if (user.shell) {
-        PetscInt  m = -1;
+        PetscInt m = -1;
 
         PetscCall(VecCreate(comm, &vec));
         if (includesConstraints) PetscCall(PetscSectionGetStorageSize(gsection, &m));

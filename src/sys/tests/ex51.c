@@ -2,11 +2,10 @@
 static char help[] = "Demonstrates PetscFileRetrieve().\n\n";
 
 #include <petscsys.h>
-int main(int argc,char **argv)
-{
-  PetscBool      found;
-  char           localname[PETSC_MAX_PATH_LEN];
-  const char     url[] = "https://www.mcs.anl.gov/petsc/index.html";
+int main(int argc, char **argv) {
+  PetscBool  found;
+  char       localname[PETSC_MAX_PATH_LEN];
+  const char url[] = "https://www.mcs.anl.gov/petsc/index.html";
 
   /*
     Every PETSc routine should begin with the PetscInitialize() routine.
@@ -18,11 +17,11 @@ int main(int argc,char **argv)
                  additional help messages in this printout.
   */
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
-  PetscCall(PetscFileRetrieve(PETSC_COMM_WORLD,url,localname,PETSC_MAX_PATH_LEN,&found));
+  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscFileRetrieve(PETSC_COMM_WORLD, url, localname, PETSC_MAX_PATH_LEN, &found));
   if (found) {
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Successfully download file %s\n",localname));
-  } else SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Unable to download url %s",url);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Successfully download file %s\n", localname));
+  } else SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Unable to download url %s", url);
 
   PetscCall(PetscFinalize());
   return 0;

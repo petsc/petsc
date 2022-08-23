@@ -34,28 +34,27 @@ static char help[] = "Krylov methods to solve u''  = f in parallel with periodic
 
 PetscBool symmetric = PETSC_TRUE;
 
-PetscErrorCode FormMatrix(Mat,void*);
-PetscErrorCode FormRightHandSide(Vec,void*);
+PetscErrorCode FormMatrix(Mat, void *);
+PetscErrorCode FormRightHandSide(Vec, void *);
 
-int main(int argc,char **argv)
-{
-  KSP            ksp;
-  Mat            J;
-  DM             da;
-  Vec            x,r;              /* vectors */
-  PetscInt       M = 10;
-  MatNullSpace   constants,nconstants;
+int main(int argc, char **argv) {
+  KSP          ksp;
+  Mat          J;
+  DM           da;
+  Vec          x, r; /* vectors */
+  PetscInt     M = 10;
+  MatNullSpace constants, nconstants;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
-  PetscCall(PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL));
-  PetscCall(PetscOptionsGetBool(NULL,NULL,"-symmetric",&symmetric,NULL));
+  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-M", &M, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-symmetric", &symmetric, NULL));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create linear solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  PetscCall(KSPCreate(PETSC_COMM_WORLD, &ksp));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create vector data structures; set function evaluation routine
@@ -64,7 +63,7 @@ int main(int argc,char **argv)
   /*
      Create distributed array (DMDA) to manage parallel grid and vectors
   */
-  PetscCall(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,M,1,2,NULL,&da));
+  PetscCall(DMDACreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_PERIODIC, M, 1, 2, NULL, &da));
   PetscCall(DMSetFromOptions(da));
   PetscCall(DMSetUp(da));
 
@@ -72,8 +71,8 @@ int main(int argc,char **argv)
      Extract global and local vectors from DMDA; then duplicate for remaining
      vectors that are the same types
   */
-  PetscCall(DMCreateGlobalVector(da,&x));
-  PetscCall(VecDuplicate(x,&r));
+  PetscCall(DMCreateGlobalVector(da, &x));
+  PetscCall(VecDuplicate(x, &r));
 
   /*
      Set function evaluation routine and vector.  Whenever the nonlinear
@@ -83,40 +82,40 @@ int main(int argc,char **argv)
         context that provides application-specific data for the
         function evaluation routine.
   */
-  PetscCall(FormRightHandSide(r,da));
+  PetscCall(FormRightHandSide(r, da));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create matrix data structure;
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscCall(DMCreateMatrix(da,&J));
-  PetscCall(MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,NULL,&constants));
+  PetscCall(DMCreateMatrix(da, &J));
+  PetscCall(MatNullSpaceCreate(PETSC_COMM_WORLD, PETSC_TRUE, 0, NULL, &constants));
   if (symmetric) {
-    PetscCall(MatSetOption(J,MAT_SYMMETRIC,PETSC_TRUE));
-    PetscCall(MatSetOption(J,MAT_SYMMETRY_ETERNAL,PETSC_TRUE));
+    PetscCall(MatSetOption(J, MAT_SYMMETRIC, PETSC_TRUE));
+    PetscCall(MatSetOption(J, MAT_SYMMETRY_ETERNAL, PETSC_TRUE));
   } else {
     Vec         n;
-    PetscInt    zero = 0;
+    PetscInt    zero  = 0;
     PetscScalar zeros = 0.0;
-    PetscCall(VecDuplicate(x,&n));
+    PetscCall(VecDuplicate(x, &n));
     /* the nullspace(A') is the constant vector but with a zero in the very first entry; hence nullspace(A') != nullspace(A) */
-    PetscCall(VecSet(n,1.0));
-    PetscCall(VecSetValues(n,1,&zero,&zeros,INSERT_VALUES));
+    PetscCall(VecSet(n, 1.0));
+    PetscCall(VecSetValues(n, 1, &zero, &zeros, INSERT_VALUES));
     PetscCall(VecAssemblyBegin(n));
     PetscCall(VecAssemblyEnd(n));
-    PetscCall(VecNormalize(n,NULL));
-    PetscCall(MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_FALSE,1,&n,&nconstants));
-    PetscCall(MatSetTransposeNullSpace(J,nconstants));
+    PetscCall(VecNormalize(n, NULL));
+    PetscCall(MatNullSpaceCreate(PETSC_COMM_WORLD, PETSC_FALSE, 1, &n, &nconstants));
+    PetscCall(MatSetTransposeNullSpace(J, nconstants));
     PetscCall(MatNullSpaceDestroy(&nconstants));
     PetscCall(VecDestroy(&n));
   }
-  PetscCall(MatSetNullSpace(J,constants));
-  PetscCall(FormMatrix(J,da));
+  PetscCall(MatSetNullSpace(J, constants));
+  PetscCall(FormMatrix(J, da));
 
-  PetscCall(KSPSetOperators(ksp,J,J));
+  PetscCall(KSPSetOperators(ksp, J, J));
 
   PetscCall(KSPSetFromOptions(ksp));
-  PetscCall(KSPSolve(ksp,r,x));
-  PetscCall(KSPSolveTranspose(ksp,r,x));
+  PetscCall(KSPSolve(ksp, r, x));
+  PetscCall(KSPSolveTranspose(ksp, r, x));
 
   PetscCall(VecDestroy(&x));
   PetscCall(VecDestroy(&r));
@@ -134,104 +133,106 @@ int main(int argc,char **argv)
      Since MatSetNullSpace() is called and the matrix is symmetric; the Krylov method automatically removes this
      portion of the right hand side before solving the linear system.
 */
-PetscErrorCode FormRightHandSide(Vec f,void *ctx)
-{
-  DM             da    = (DM) ctx;
-  PetscScalar    *ff;
-  PetscInt       i,M,xs,xm;
-  PetscReal      h;
+PetscErrorCode FormRightHandSide(Vec f, void *ctx) {
+  DM           da = (DM)ctx;
+  PetscScalar *ff;
+  PetscInt     i, M, xs, xm;
+  PetscReal    h;
 
   PetscFunctionBeginUser;
-  PetscCall(DMDAVecGetArray(da,f,&ff));
+  PetscCall(DMDAVecGetArray(da, f, &ff));
 
   /*
      Get local grid boundaries (for 1-dimensional DMDA):
        xs, xm  - starting grid index, width of local grid (no ghost points)
   */
-  PetscCall(DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL));
-  PetscCall(DMDAGetInfo(da,NULL,&M,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL));
+  PetscCall(DMDAGetCorners(da, &xs, NULL, NULL, &xm, NULL, NULL));
+  PetscCall(DMDAGetInfo(da, NULL, &M, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
 
   /*
      Compute function over locally owned part of the grid
      Note the [i-1] and [i+1] will automatically access the ghost points from other processes or the periodic points.
   */
-  h = 1.0/M;
-  for (i=xs; i<xs+xm; i++) ff[i] = - PetscSinReal(2.0*PETSC_PI*i*h) + 1.0;
+  h = 1.0 / M;
+  for (i = xs; i < xs + xm; i++) ff[i] = -PetscSinReal(2.0 * PETSC_PI * i * h) + 1.0;
 
   /*
      Restore vectors
   */
-  PetscCall(DMDAVecRestoreArray(da,f,&ff));
+  PetscCall(DMDAVecRestoreArray(da, f, &ff));
   PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------------- */
-PetscErrorCode FormMatrix(Mat jac,void *ctx)
-{
-  PetscScalar    A[3];
-  PetscInt       i,M,xs,xm;
-  DM             da = (DM) ctx;
-  MatStencil     row,cols[3];
-  PetscReal      h;
+PetscErrorCode FormMatrix(Mat jac, void *ctx) {
+  PetscScalar A[3];
+  PetscInt    i, M, xs, xm;
+  DM          da = (DM)ctx;
+  MatStencil  row, cols[3];
+  PetscReal   h;
 
   PetscFunctionBeginUser;
-  PetscCall(DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL));
+  PetscCall(DMDAGetCorners(da, &xs, NULL, NULL, &xm, NULL, NULL));
 
   /*
     Get range of locally owned matrix
   */
-  PetscCall(DMDAGetInfo(da,NULL,&M,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL));
+  PetscCall(DMDAGetInfo(da, NULL, &M, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
 
   PetscCall(MatZeroEntries(jac));
-  h = 1.0/M;
+  h = 1.0 / M;
   /* because of periodic boundary conditions we can simply loop over all local nodes and access to the left and right */
   if (symmetric) {
-    for (i=xs; i<xs+xm; i++) {
-      row.i = i;
+    for (i = xs; i < xs + xm; i++) {
+      row.i     = i;
       cols[0].i = i - 1;
       cols[1].i = i;
       cols[2].i = i + 1;
-      A[0] = A[2] = 1.0/(h*h); A[1] = -2.0/(h*h);
-      PetscCall(MatSetValuesStencil(jac,1,&row,3,cols,A,ADD_VALUES));
+      A[0] = A[2] = 1.0 / (h * h);
+      A[1]        = -2.0 / (h * h);
+      PetscCall(MatSetValuesStencil(jac, 1, &row, 3, cols, A, ADD_VALUES));
     }
   } else {
     MatStencil  *acols;
     PetscScalar *avals;
 
     /* only works for one process */
-    PetscCall(MatSetOption(jac,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_FALSE));
+    PetscCall(MatSetOption(jac, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_FALSE));
     row.i = 0;
-    PetscCall(PetscMalloc1(M,&acols));
-    PetscCall(PetscMalloc1(M,&avals));
-    for (i=0; i<M; i++) {
+    PetscCall(PetscMalloc1(M, &acols));
+    PetscCall(PetscMalloc1(M, &avals));
+    for (i = 0; i < M; i++) {
       acols[i].i = i;
-      avals[i]  = (i % 2) ? 1 : -1;
+      avals[i]   = (i % 2) ? 1 : -1;
     }
-    PetscCall(MatSetValuesStencil(jac,1,&row,M,acols,avals,ADD_VALUES));
+    PetscCall(MatSetValuesStencil(jac, 1, &row, M, acols, avals, ADD_VALUES));
     PetscCall(PetscFree(acols));
     PetscCall(PetscFree(avals));
-    row.i = 1;
-    cols[0].i = - 1;
+    row.i     = 1;
+    cols[0].i = -1;
     cols[1].i = 1;
     cols[2].i = 1 + 1;
-    A[0] = A[2] = 1.0/(h*h); A[1] = -2.0/(h*h);
-    PetscCall(MatSetValuesStencil(jac,1,&row,3,cols,A,ADD_VALUES));
-    for (i=2; i<xs+xm-1; i++) {
-      row.i = i;
+    A[0] = A[2] = 1.0 / (h * h);
+    A[1]        = -2.0 / (h * h);
+    PetscCall(MatSetValuesStencil(jac, 1, &row, 3, cols, A, ADD_VALUES));
+    for (i = 2; i < xs + xm - 1; i++) {
+      row.i     = i;
       cols[0].i = i - 1;
       cols[1].i = i;
       cols[2].i = i + 1;
-      A[0] = A[2] = 1.0/(h*h); A[1] = -2.0/(h*h);
-      PetscCall(MatSetValuesStencil(jac,1,&row,3,cols,A,ADD_VALUES));
+      A[0] = A[2] = 1.0 / (h * h);
+      A[1]        = -2.0 / (h * h);
+      PetscCall(MatSetValuesStencil(jac, 1, &row, 3, cols, A, ADD_VALUES));
     }
-    row.i = M - 1 ;
-    cols[0].i = M-2;
-    cols[1].i = M-1;
-    cols[2].i = M+1;
-    A[0] = A[2] = 1.0/(h*h); A[1] = -2.0/(h*h);
-    PetscCall(MatSetValuesStencil(jac,1,&row,3,cols,A,ADD_VALUES));
+    row.i     = M - 1;
+    cols[0].i = M - 2;
+    cols[1].i = M - 1;
+    cols[2].i = M + 1;
+    A[0] = A[2] = 1.0 / (h * h);
+    A[1]        = -2.0 / (h * h);
+    PetscCall(MatSetValuesStencil(jac, 1, &row, 3, cols, A, ADD_VALUES));
   }
-  PetscCall(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(jac, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(jac, MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }
 

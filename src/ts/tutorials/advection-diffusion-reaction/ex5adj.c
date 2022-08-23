@@ -15,45 +15,43 @@ static char help[] = "Demonstrates adjoint sensitivity analysis for Reaction-Dif
 #include <petscdm.h>
 #include <petscdmda.h>
 
-PetscErrorCode InitialConditions(DM,Vec);
+PetscErrorCode InitialConditions(DM, Vec);
 
-PetscErrorCode InitializeLambda(DM da,Vec lambda,PetscReal x,PetscReal y)
-{
-   PetscInt i,j,Mx,My,xs,ys,xm,ym;
-   Field **l;
-   PetscFunctionBegin;
+PetscErrorCode InitializeLambda(DM da, Vec lambda, PetscReal x, PetscReal y) {
+  PetscInt i, j, Mx, My, xs, ys, xm, ym;
+  Field  **l;
+  PetscFunctionBegin;
 
-   PetscCall(DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
-   /* locate the global i index for x and j index for y */
-   i = (PetscInt)(x*(Mx-1));
-   j = (PetscInt)(y*(My-1));
-   PetscCall(DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL));
+  PetscCall(DMDAGetInfo(da, PETSC_IGNORE, &Mx, &My, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE));
+  /* locate the global i index for x and j index for y */
+  i = (PetscInt)(x * (Mx - 1));
+  j = (PetscInt)(y * (My - 1));
+  PetscCall(DMDAGetCorners(da, &xs, &ys, NULL, &xm, &ym, NULL));
 
-   if (xs <= i && i < xs+xm && ys <= j && j < ys+ym) {
-     /* the i,j vertex is on this process */
-     PetscCall(DMDAVecGetArray(da,lambda,&l));
-     l[j][i].u = 1.0;
-     l[j][i].v = 1.0;
-     PetscCall(DMDAVecRestoreArray(da,lambda,&l));
-   }
-   PetscFunctionReturn(0);
+  if (xs <= i && i < xs + xm && ys <= j && j < ys + ym) {
+    /* the i,j vertex is on this process */
+    PetscCall(DMDAVecGetArray(da, lambda, &l));
+    l[j][i].u = 1.0;
+    l[j][i].v = 1.0;
+    PetscCall(DMDAVecRestoreArray(da, lambda, &l));
+  }
+  PetscFunctionReturn(0);
 }
 
-int main(int argc,char **argv)
-{
-  TS        ts;                 /* ODE integrator */
-  Vec       x;                  /* solution */
+int main(int argc, char **argv) {
+  TS        ts; /* ODE integrator */
+  Vec       x;  /* solution */
   DM        da;
   AppCtx    appctx;
   Vec       lambda[1];
-  PetscBool forwardonly = PETSC_FALSE,implicitform=PETSC_TRUE;
+  PetscBool forwardonly = PETSC_FALSE, implicitform = PETSC_TRUE;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
-  PetscCall(PetscOptionsGetBool(NULL,NULL,"-forwardonly",&forwardonly,NULL));
-  PetscCall(PetscOptionsGetBool(NULL,NULL,"-implicitform",&implicitform,NULL));
+  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-forwardonly", &forwardonly, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-implicitform", &implicitform, NULL));
   appctx.aijpc = PETSC_FALSE;
-  PetscCall(PetscOptionsGetBool(NULL,NULL,"-aijpc",&appctx.aijpc,NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-aijpc", &appctx.aijpc, NULL));
 
   appctx.D1    = 8.0e-5;
   appctx.D2    = 4.0e-5;
@@ -63,52 +61,52 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscCall(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,DM_BOUNDARY_PERIODIC,DMDA_STENCIL_STAR,64,64,PETSC_DECIDE,PETSC_DECIDE,2,1,NULL,NULL,&da));
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_PERIODIC, DM_BOUNDARY_PERIODIC, DMDA_STENCIL_STAR, 64, 64, PETSC_DECIDE, PETSC_DECIDE, 2, 1, NULL, NULL, &da));
   PetscCall(DMSetFromOptions(da));
   PetscCall(DMSetUp(da));
-  PetscCall(DMDASetFieldName(da,0,"u"));
-  PetscCall(DMDASetFieldName(da,1,"v"));
+  PetscCall(DMDASetFieldName(da, 0, "u"));
+  PetscCall(DMDASetFieldName(da, 1, "v"));
 
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Extract global vectors from DMDA; then duplicate for remaining
      vectors that are the same types
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscCall(DMCreateGlobalVector(da,&x));
+  PetscCall(DMCreateGlobalVector(da, &x));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscCall(TSCreate(PETSC_COMM_WORLD,&ts));
-  PetscCall(TSSetDM(ts,da));
-  PetscCall(TSSetProblemType(ts,TS_NONLINEAR));
-  PetscCall(TSSetEquationType(ts,TS_EQ_ODE_EXPLICIT)); /* less Jacobian evaluations when adjoint BEuler is used, otherwise no effect */
+  PetscCall(TSCreate(PETSC_COMM_WORLD, &ts));
+  PetscCall(TSSetDM(ts, da));
+  PetscCall(TSSetProblemType(ts, TS_NONLINEAR));
+  PetscCall(TSSetEquationType(ts, TS_EQ_ODE_EXPLICIT)); /* less Jacobian evaluations when adjoint BEuler is used, otherwise no effect */
   if (!implicitform) {
-    PetscCall(TSSetType(ts,TSRK));
-    PetscCall(TSSetRHSFunction(ts,NULL,RHSFunction,&appctx));
-    PetscCall(TSSetRHSJacobian(ts,NULL,NULL,RHSJacobian,&appctx));
+    PetscCall(TSSetType(ts, TSRK));
+    PetscCall(TSSetRHSFunction(ts, NULL, RHSFunction, &appctx));
+    PetscCall(TSSetRHSJacobian(ts, NULL, NULL, RHSJacobian, &appctx));
   } else {
-    PetscCall(TSSetType(ts,TSCN));
-    PetscCall(TSSetIFunction(ts,NULL,IFunction,&appctx));
+    PetscCall(TSSetType(ts, TSCN));
+    PetscCall(TSSetIFunction(ts, NULL, IFunction, &appctx));
     if (appctx.aijpc) {
-      Mat                    A,B;
+      Mat A, B;
 
-      PetscCall(DMSetMatType(da,MATSELL));
-      PetscCall(DMCreateMatrix(da,&A));
-      PetscCall(MatConvert(A,MATAIJ,MAT_INITIAL_MATRIX,&B));
+      PetscCall(DMSetMatType(da, MATSELL));
+      PetscCall(DMCreateMatrix(da, &A));
+      PetscCall(MatConvert(A, MATAIJ, MAT_INITIAL_MATRIX, &B));
       /* FIXME do we need to change viewer to display matrix in natural ordering as DMCreateMatrix_DA does? */
-      PetscCall(TSSetIJacobian(ts,A,B,IJacobian,&appctx));
+      PetscCall(TSSetIJacobian(ts, A, B, IJacobian, &appctx));
       PetscCall(MatDestroy(&A));
       PetscCall(MatDestroy(&B));
     } else {
-      PetscCall(TSSetIJacobian(ts,NULL,NULL,IJacobian,&appctx));
+      PetscCall(TSSetIJacobian(ts, NULL, NULL, IJacobian, &appctx));
     }
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscCall(InitialConditions(da,x));
-  PetscCall(TSSetSolution(ts,x));
+  PetscCall(InitialConditions(da, x));
+  PetscCall(TSSetSolution(ts, x));
 
   /*
     Have the TS save its trajectory so that TSAdjointSolve() may be used
@@ -118,23 +116,23 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set solver options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscCall(TSSetMaxTime(ts,200.0));
-  PetscCall(TSSetTimeStep(ts,0.5));
-  PetscCall(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP));
+  PetscCall(TSSetMaxTime(ts, 200.0));
+  PetscCall(TSSetTimeStep(ts, 0.5));
+  PetscCall(TSSetExactFinalTime(ts, TS_EXACTFINALTIME_MATCHSTEP));
   PetscCall(TSSetFromOptions(ts));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve ODE system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscCall(TSSolve(ts,x));
+  PetscCall(TSSolve(ts, x));
   if (!forwardonly) {
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
        Start the Adjoint model
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-    PetscCall(VecDuplicate(x,&lambda[0]));
+    PetscCall(VecDuplicate(x, &lambda[0]));
     /*   Reset initial conditions for the adjoint integration */
-    PetscCall(InitializeLambda(da,lambda[0],0.5,0.5));
-    PetscCall(TSSetCostGradients(ts,1,lambda,NULL));
+    PetscCall(InitializeLambda(da, lambda[0], 0.5, 0.5));
+    PetscCall(TSSetCostGradients(ts, 1, lambda, NULL));
     PetscCall(TSAdjointSolve(ts));
     PetscCall(VecDestroy(&lambda[0]));
   }
@@ -150,46 +148,46 @@ int main(int argc,char **argv)
 }
 
 /* ------------------------------------------------------------------- */
-PetscErrorCode InitialConditions(DM da,Vec U)
-{
-  PetscInt       i,j,xs,ys,xm,ym,Mx,My;
-  Field          **u;
-  PetscReal      hx,hy,x,y;
+PetscErrorCode InitialConditions(DM da, Vec U) {
+  PetscInt  i, j, xs, ys, xm, ym, Mx, My;
+  Field   **u;
+  PetscReal hx, hy, x, y;
 
   PetscFunctionBegin;
-  PetscCall(DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
+  PetscCall(DMDAGetInfo(da, PETSC_IGNORE, &Mx, &My, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE));
 
-  hx = 2.5/(PetscReal)Mx;
-  hy = 2.5/(PetscReal)My;
+  hx = 2.5 / (PetscReal)Mx;
+  hy = 2.5 / (PetscReal)My;
 
   /*
      Get pointers to vector data
   */
-  PetscCall(DMDAVecGetArray(da,U,&u));
+  PetscCall(DMDAVecGetArray(da, U, &u));
 
   /*
      Get local grid boundaries
   */
-  PetscCall(DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL));
+  PetscCall(DMDAGetCorners(da, &xs, &ys, NULL, &xm, &ym, NULL));
 
   /*
      Compute function over the locally owned part of the grid
   */
-  for (j=ys; j<ys+ym; j++) {
-    y = j*hy;
-    for (i=xs; i<xs+xm; i++) {
-      x = i*hx;
-      if (PetscApproximateGTE(x,1.0) && PetscApproximateLTE(x,1.5) && PetscApproximateGTE(y,1.0) && PetscApproximateLTE(y,1.5)) u[j][i].v = PetscPowReal(PetscSinReal(4.0*PETSC_PI*x),2.0)*PetscPowReal(PetscSinReal(4.0*PETSC_PI*y),2.0)/4.0;
+  for (j = ys; j < ys + ym; j++) {
+    y = j * hy;
+    for (i = xs; i < xs + xm; i++) {
+      x = i * hx;
+      if (PetscApproximateGTE(x, 1.0) && PetscApproximateLTE(x, 1.5) && PetscApproximateGTE(y, 1.0) && PetscApproximateLTE(y, 1.5))
+        u[j][i].v = PetscPowReal(PetscSinReal(4.0 * PETSC_PI * x), 2.0) * PetscPowReal(PetscSinReal(4.0 * PETSC_PI * y), 2.0) / 4.0;
       else u[j][i].v = 0.0;
 
-      u[j][i].u = 1.0 - 2.0*u[j][i].v;
+      u[j][i].u = 1.0 - 2.0 * u[j][i].v;
     }
   }
 
   /*
      Restore vectors
   */
-  PetscCall(DMDAVecRestoreArray(da,U,&u));
+  PetscCall(DMDAVecRestoreArray(da, U, &u));
   PetscFunctionReturn(0);
 }
 

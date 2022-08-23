@@ -4,71 +4,70 @@ Where at least a couple of mallocs will occur in the stash code.\n\n";
 
 #include <petscvec.h>
 
-int main(int argc,char **argv)
-{
-  PetscMPIInt    size;
-  PetscInt       i,j,r,n = 50,repeat = 1,bs;
-  PetscScalar    val,*vals,zero=0.0;
-  PetscBool      inv = PETSC_FALSE, subset = PETSC_FALSE,flg;
-  Vec            x,y;
+int main(int argc, char **argv) {
+  PetscMPIInt size;
+  PetscInt    i, j, r, n = 50, repeat = 1, bs;
+  PetscScalar val, *vals, zero = 0.0;
+  PetscBool   inv = PETSC_FALSE, subset = PETSC_FALSE, flg;
+  Vec         x, y;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
-  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
-  bs   = size;
+  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
+  bs = size;
 
-  PetscCall(PetscOptionsGetInt(NULL,NULL,"-repeat",&repeat,NULL));
-  PetscCall(PetscOptionsGetBool(NULL,NULL,"-subset",&subset,NULL));
-  PetscCall(PetscOptionsGetBool(NULL,NULL,"-invert",&inv,NULL));
-  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
-  PetscCall(PetscOptionsGetInt(NULL,NULL,"-bs",&bs,NULL));
-  PetscCall(VecCreate(PETSC_COMM_WORLD,&x));
-  PetscCall(VecSetSizes(x,PETSC_DECIDE,n*bs));
-  PetscCall(VecSetBlockSize(x,bs));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-repeat", &repeat, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-subset", &subset, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-invert", &inv, NULL));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-n", &n, NULL));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-bs", &bs, NULL));
+  PetscCall(VecCreate(PETSC_COMM_WORLD, &x));
+  PetscCall(VecSetSizes(x, PETSC_DECIDE, n * bs));
+  PetscCall(VecSetBlockSize(x, bs));
   PetscCall(VecSetFromOptions(x));
-  PetscCall(VecDuplicate(x,&y));
+  PetscCall(VecDuplicate(x, &y));
 
-  if (subset) PetscCall(VecSetOption(x,VEC_SUBSET_OFF_PROC_ENTRIES,PETSC_TRUE));
+  if (subset) PetscCall(VecSetOption(x, VEC_SUBSET_OFF_PROC_ENTRIES, PETSC_TRUE));
 
-  for (r=0; r<repeat; r++) {
+  for (r = 0; r < repeat; r++) {
     /* Assemble the full vector on the first and last iteration, otherwise don't set any values */
-    for (i=0; i<n*bs*(!r || !(repeat-1-r)); i++) {
-      val  = i*1.0;
-      PetscCall(VecSetValues(x,1,&i,&val,INSERT_VALUES));
+    for (i = 0; i < n * bs * (!r || !(repeat - 1 - r)); i++) {
+      val = i * 1.0;
+      PetscCall(VecSetValues(x, 1, &i, &val, INSERT_VALUES));
     }
     PetscCall(VecAssemblyBegin(x));
     PetscCall(VecAssemblyEnd(x));
-    if (!r) PetscCall(VecCopy(x,y)); /* Save result of first assembly */
+    if (!r) PetscCall(VecCopy(x, y)); /* Save result of first assembly */
   }
 
-  PetscCall(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
-  PetscCall(VecEqual(x,y,&flg));
-  if (!flg) PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Vectors from repeat assembly do not match."));
+  PetscCall(VecView(x, PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecEqual(x, y, &flg));
+  if (!flg) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Vectors from repeat assembly do not match."));
 
   /* Create a new vector because the old stash is a subset. */
   PetscCall(VecDestroy(&x));
-  PetscCall(VecDuplicate(y,&x));
-  if (subset) PetscCall(VecSetOption(x,VEC_SUBSET_OFF_PROC_ENTRIES,PETSC_TRUE));
+  PetscCall(VecDuplicate(y, &x));
+  if (subset) PetscCall(VecSetOption(x, VEC_SUBSET_OFF_PROC_ENTRIES, PETSC_TRUE));
 
   /* Now do the blocksetvalues */
-  PetscCall(VecSet(x,zero));
-  PetscCall(PetscMalloc1(bs,&vals));
-  for (r=0; r<repeat; r++) {
-    PetscInt up = n*(!r || !(repeat-1-r));
+  PetscCall(VecSet(x, zero));
+  PetscCall(PetscMalloc1(bs, &vals));
+  for (r = 0; r < repeat; r++) {
+    PetscInt up = n * (!r || !(repeat - 1 - r));
     /* Assemble the full vector on the first and last iteration, otherwise don't set any values */
-    for (i=0; i<up; i++) {
+    for (i = 0; i < up; i++) {
       PetscInt ii = inv ? up - i - 1 : i;
-      for (j=0; j<bs; j++) vals[j] = (ii*bs+j)*1.0;
-      PetscCall(VecSetValuesBlocked(x,1,&ii,vals,INSERT_VALUES));
+      for (j = 0; j < bs; j++) vals[j] = (ii * bs + j) * 1.0;
+      PetscCall(VecSetValuesBlocked(x, 1, &ii, vals, INSERT_VALUES));
     }
     PetscCall(VecAssemblyBegin(x));
     PetscCall(VecAssemblyEnd(x));
-    if (!r) PetscCall(VecCopy(x,y)); /* Save result of first assembly */
+    if (!r) PetscCall(VecCopy(x, y)); /* Save result of first assembly */
   }
 
-  PetscCall(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
-  PetscCall(VecEqual(x,y,&flg));
-  if (!flg) PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Vectors from repeat block assembly do not match."));
+  PetscCall(VecView(x, PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecEqual(x, y, &flg));
+  if (!flg) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Vectors from repeat block assembly do not match."));
 
   PetscCall(VecDestroy(&x));
   PetscCall(VecDestroy(&y));

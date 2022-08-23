@@ -19,13 +19,12 @@
 
 @*/
 
-PetscErrorCode PetscGetVersion(char version[], size_t len)
-{
+PetscErrorCode PetscGetVersion(char version[], size_t len) {
   PetscFunctionBegin;
 #if (PETSC_VERSION_RELEASE == 1)
-  PetscCall(PetscSNPrintf(version,len,"Petsc Release Version %d.%d.%d, %s ",PETSC_VERSION_MAJOR,PETSC_VERSION_MINOR, PETSC_VERSION_SUBMINOR,PETSC_VERSION_DATE));
+  PetscCall(PetscSNPrintf(version, len, "Petsc Release Version %d.%d.%d, %s ", PETSC_VERSION_MAJOR, PETSC_VERSION_MINOR, PETSC_VERSION_SUBMINOR, PETSC_VERSION_DATE));
 #else
-  PetscCall(PetscSNPrintf(version,len,"Petsc Development GIT revision: %s  GIT Date: %s",PETSC_VERSION_GIT, PETSC_VERSION_DATE_GIT));
+  PetscCall(PetscSNPrintf(version, len, "Petsc Development GIT revision: %s  GIT Date: %s", PETSC_VERSION_GIT, PETSC_VERSION_DATE_GIT));
 #endif
   PetscFunctionReturn(0);
 }
@@ -52,8 +51,7 @@ PetscErrorCode PetscGetVersion(char version[], size_t len)
 .seealso: `PetscGetProgramName()`, `PetscGetVersion()`, `PetscInitialize()`
 
 @*/
-PetscErrorCode PetscGetVersionNumber(PetscInt *major, PetscInt *minor, PetscInt *subminor,PetscInt *release)
-{
+PetscErrorCode PetscGetVersionNumber(PetscInt *major, PetscInt *minor, PetscInt *subminor, PetscInt *release) {
   if (major) *major = PETSC_VERSION_MAJOR;
   if (minor) *minor = PETSC_VERSION_MINOR;
   if (subminor) *subminor = PETSC_VERSION_SUBMINOR;

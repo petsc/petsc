@@ -1,4 +1,4 @@
-static char help[] = "Test that shared points on interface of partitions can be rebalanced.\n\n";
+static char help[]     = "Test that shared points on interface of partitions can be rebalanced.\n\n";
 static char FILENAME[] = "ex31.c";
 
 #include <petscdmplex.h>
@@ -11,23 +11,21 @@ typedef struct {
   PetscInt  entityDepth;     /* depth of the entities to rebalance ( 0 => vertices) */
 } AppCtx;
 
-static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
-{
+static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   PetscFunctionBegin;
   options->parallel        = PETSC_FALSE;
   options->useInitialGuess = PETSC_FALSE;
   options->entityDepth     = 0;
 
   PetscOptionsBegin(comm, "", "Meshing Interpolation Test Options", "DMPLEX");
-  PetscCall(PetscOptionsBoundedInt("-entity_depth", "Depth of the entities to rebalance (0 => vertices)", FILENAME, options->entityDepth, &options->entityDepth, NULL,0));
+  PetscCall(PetscOptionsBoundedInt("-entity_depth", "Depth of the entities to rebalance (0 => vertices)", FILENAME, options->entityDepth, &options->entityDepth, NULL, 0));
   PetscCall(PetscOptionsBool("-parallel", "Use ParMetis instead of Metis", FILENAME, options->parallel, &options->parallel, NULL));
   PetscCall(PetscOptionsBool("-use_initial_guess", "Use RefineKway function of ParMetis", FILENAME, options->useInitialGuess, &options->useInitialGuess, NULL));
   PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
-{
+static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm) {
   PetscFunctionBegin;
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetType(*dm, DMPLEX));
@@ -36,18 +34,17 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv)
-{
-  MPI_Comm       comm;
-  DM             dm, dmdist;
+int main(int argc, char **argv) {
+  MPI_Comm         comm;
+  DM               dm, dmdist;
   PetscPartitioner part;
-  AppCtx         user;
-  IS             is=NULL;
-  PetscSection   s=NULL, gsection=NULL;
-  PetscMPIInt    size;
-  PetscSF        sf;
-  PetscInt       pStart, pEnd, p, minBefore, maxBefore, minAfter, maxAfter, gSizeBefore, gSizeAfter;
-  PetscBool      success;
+  AppCtx           user;
+  IS               is = NULL;
+  PetscSection     s = NULL, gsection = NULL;
+  PetscMPIInt      size;
+  PetscSF          sf;
+  PetscInt         pStart, pEnd, p, minBefore, maxBefore, minAfter, maxAfter, gSizeBefore, gSizeAfter;
+  PetscBool        success;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
@@ -58,7 +55,7 @@ int main(int argc, char **argv)
 
   /* partition dm using PETSCPARTITIONERPARMETIS */
   PetscCall(DMPlexGetPartitioner(dm, &part));
-  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)part,"p_"));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)part, "p_"));
   PetscCall(PetscPartitionerSetType(part, PETSCPARTITIONERPARMETIS));
   PetscCall(PetscPartitionerSetFromOptions(part));
   PetscCall(PetscSectionCreate(comm, &s));
@@ -80,7 +77,7 @@ int main(int argc, char **argv)
    * remains the same. We also make sure that the balance has improved at least
    * a little bit compared to the initial decomposition. */
 
-  if (size>1) {
+  if (size > 1) {
     PetscCall(PetscSectionCreate(comm, &s));
     PetscCall(PetscSectionSetNumFields(s, 1));
     PetscCall(PetscSectionSetFieldComponents(s, 0, 1));
@@ -104,7 +101,7 @@ int main(int argc, char **argv)
 
   PetscCall(DMPlexRebalanceSharedPoints(dm, user.entityDepth, user.useInitialGuess, user.parallel, &success));
 
-  if (size>1) {
+  if (size > 1) {
     PetscCall(PetscSectionCreateGlobalSection(s, sf, PETSC_FALSE, PETSC_FALSE, &gsection));
     PetscCall(PetscSectionGetStorageSize(gsection, &gSizeAfter));
     minAfter = gSizeAfter;
@@ -112,8 +109,8 @@ int main(int argc, char **argv)
     PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, &gSizeAfter, 1, MPIU_INT, MPI_SUM, comm));
     PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, &minAfter, 1, MPIU_INT, MPI_MIN, comm));
     PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, &maxAfter, 1, MPIU_INT, MPI_MAX, comm));
-    PetscCheck(gSizeAfter == gSizeBefore,comm, PETSC_ERR_PLIB, "Global section has not the same size before and after.");
-    PetscCheck(minAfter >= minBefore && maxAfter <= maxBefore && (minAfter > minBefore || maxAfter < maxBefore),comm, PETSC_ERR_PLIB, "DMPlexRebalanceSharedPoints did not improve mesh point balance.");
+    PetscCheck(gSizeAfter == gSizeBefore, comm, PETSC_ERR_PLIB, "Global section has not the same size before and after.");
+    PetscCheck(minAfter >= minBefore && maxAfter <= maxBefore && (minAfter > minBefore || maxAfter < maxBefore), comm, PETSC_ERR_PLIB, "DMPlexRebalanceSharedPoints did not improve mesh point balance.");
     PetscCall(PetscSectionDestroy(&gsection));
     PetscCall(PetscSectionDestroy(&s));
   }

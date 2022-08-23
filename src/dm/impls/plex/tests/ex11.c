@@ -3,8 +3,7 @@ static char help[] = "Tests for DMLabel\n\n";
 #include <petscdmplex.h>
 #include <petsc/private/dmimpl.h>
 
-static PetscErrorCode TestInsertion()
-{
+static PetscErrorCode TestInsertion() {
   DMLabel        label, label2;
   const PetscInt values[5] = {0, 3, 4, -1, 176}, N = 10000;
   PetscInt       i, v;
@@ -12,15 +11,13 @@ static PetscErrorCode TestInsertion()
   PetscFunctionBegin;
   PetscCall(DMLabelCreate(PETSC_COMM_SELF, "Test Label", &label));
   PetscCall(DMLabelSetDefaultValue(label, -100));
-  for (i = 0; i < N; ++i) {
-    PetscCall(DMLabelSetValue(label, i, values[i%5]));
-  }
+  for (i = 0; i < N; ++i) { PetscCall(DMLabelSetValue(label, i, values[i % 5])); }
   /* Test get in hash mode */
   for (i = 0; i < N; ++i) {
     PetscInt val;
 
     PetscCall(DMLabelGetValue(label, i, &val));
-    PetscCheck(val == values[i%5],PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Value %" PetscInt_FMT " for point %" PetscInt_FMT " should be %" PetscInt_FMT, val, i, values[i%5]);
+    PetscCheck(val == values[i % 5], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Value %" PetscInt_FMT " for point %" PetscInt_FMT " should be %" PetscInt_FMT, val, i, values[i % 5]);
   }
   /* Test stratum */
   for (v = 0; v < 5; ++v) {
@@ -29,12 +26,10 @@ static PetscErrorCode TestInsertion()
     PetscInt        n;
 
     PetscCall(DMLabelGetStratumIS(label, values[v], &stratum));
-    PetscCheck(stratum,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Stratum %" PetscInt_FMT " is empty!", v);
+    PetscCheck(stratum, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Stratum %" PetscInt_FMT " is empty!", v);
     PetscCall(ISGetIndices(stratum, &points));
     PetscCall(ISGetLocalSize(stratum, &n));
-    for (i = 0; i < n; ++i) {
-      PetscCheck(points[i] == i*5+v,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %" PetscInt_FMT " should be %" PetscInt_FMT, points[i], i*5+v);
-    }
+    for (i = 0; i < n; ++i) { PetscCheck(points[i] == i * 5 + v, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %" PetscInt_FMT " should be %" PetscInt_FMT, points[i], i * 5 + v); }
     PetscCall(ISRestoreIndices(stratum, &points));
     PetscCall(ISDestroy(&stratum));
   }
@@ -43,7 +38,7 @@ static PetscErrorCode TestInsertion()
     PetscInt val;
 
     PetscCall(DMLabelGetValue(label, i, &val));
-    PetscCheck(val == values[i%5],PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Value %" PetscInt_FMT " should be %" PetscInt_FMT, val, values[i%5]);
+    PetscCheck(val == values[i % 5], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Value %" PetscInt_FMT " should be %" PetscInt_FMT, val, values[i % 5]);
   }
   /* Test Duplicate */
   PetscCall(DMLabelDuplicate(label, &label2));
@@ -51,30 +46,29 @@ static PetscErrorCode TestInsertion()
     PetscInt val;
 
     PetscCall(DMLabelGetValue(label2, i, &val));
-    PetscCheck(val == values[i%5],PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Value %" PetscInt_FMT " should be %" PetscInt_FMT, val, values[i%5]);
+    PetscCheck(val == values[i % 5], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Value %" PetscInt_FMT " should be %" PetscInt_FMT, val, values[i % 5]);
   }
   PetscCall(DMLabelDestroy(&label2));
   PetscCall(DMLabelDestroy(&label));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TestEmptyStrata(MPI_Comm comm)
-{
+static PetscErrorCode TestEmptyStrata(MPI_Comm comm) {
   DM               dm, dmDist;
   PetscPartitioner part;
-  PetscInt         c0[6]  = {2,3,6,7,9,11};
-  PetscInt         c1[6]  = {4,5,7,8,10,12};
-  PetscInt         c2[4]  = {13,15,19,21};
-  PetscInt         c3[4]  = {14,16,20,22};
-  PetscInt         c4[4]  = {15,17,21,23};
-  PetscInt         c5[4]  = {16,18,22,24};
-  PetscInt         c6[4]  = {13,14,19,20};
-  PetscInt         c7[4]  = {15,16,21,22};
-  PetscInt         c8[4]  = {17,18,23,24};
-  PetscInt         c9[4]  = {13,14,15,16};
-  PetscInt         c10[4] = {15,16,17,18};
-  PetscInt         c11[4] = {19,20,21,22};
-  PetscInt         c12[4] = {21,22,23,24};
+  PetscInt         c0[6]  = {2, 3, 6, 7, 9, 11};
+  PetscInt         c1[6]  = {4, 5, 7, 8, 10, 12};
+  PetscInt         c2[4]  = {13, 15, 19, 21};
+  PetscInt         c3[4]  = {14, 16, 20, 22};
+  PetscInt         c4[4]  = {15, 17, 21, 23};
+  PetscInt         c5[4]  = {16, 18, 22, 24};
+  PetscInt         c6[4]  = {13, 14, 19, 20};
+  PetscInt         c7[4]  = {15, 16, 21, 22};
+  PetscInt         c8[4]  = {17, 18, 23, 24};
+  PetscInt         c9[4]  = {13, 14, 15, 16};
+  PetscInt         c10[4] = {15, 16, 17, 18};
+  PetscInt         c11[4] = {19, 20, 21, 22};
+  PetscInt         c12[4] = {21, 22, 23, 24};
   PetscInt         dim    = 3;
   PetscMPIInt      rank;
 
@@ -119,7 +113,7 @@ static PetscErrorCode TestEmptyStrata(MPI_Comm comm)
   PetscCall(DMPlexSymmetrize(dm));
   /* Create a user managed depth label, so that we can leave out edges */
   {
-    DMLabel label;
+    DMLabel  label;
     PetscInt numValues, maxValues = 0, v;
 
     PetscCall(DMCreateLabel(dm, "depth"));
@@ -128,29 +122,29 @@ static PetscErrorCode TestEmptyStrata(MPI_Comm comm)
       PetscInt i;
 
       for (i = 0; i < 25; ++i) {
-        if (i < 2)       PetscCall(DMLabelSetValue(label, i, 3));
+        if (i < 2) PetscCall(DMLabelSetValue(label, i, 3));
         else if (i < 13) PetscCall(DMLabelSetValue(label, i, 2));
-        else             {
-          if (i==13) PetscCall(DMLabelAddStratum(label, 1));
+        else {
+          if (i == 13) PetscCall(DMLabelAddStratum(label, 1));
           PetscCall(DMLabelSetValue(label, i, 0));
         }
       }
     }
     PetscCall(DMLabelGetNumValues(label, &numValues));
-    PetscCallMPI(MPI_Allreduce(&numValues, &maxValues, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject) dm)));
-    for (v = numValues; v < maxValues; ++v) PetscCall(DMLabelAddStratum(label,v));
+    PetscCallMPI(MPI_Allreduce(&numValues, &maxValues, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
+    for (v = numValues; v < maxValues; ++v) PetscCall(DMLabelAddStratum(label, v));
   }
   {
     DMLabel label;
     PetscCall(DMPlexGetDepthLabel(dm, &label));
     PetscCall(DMLabelView(label, PETSC_VIEWER_STDOUT_(comm)));
   }
-  PetscCall(DMPlexGetPartitioner(dm,&part));
+  PetscCall(DMPlexGetPartitioner(dm, &part));
   PetscCall(PetscPartitionerSetFromOptions(part));
   PetscCall(DMPlexDistribute(dm, 1, NULL, &dmDist));
   if (dmDist) {
     PetscCall(DMDestroy(&dm));
-    dm   = dmDist;
+    dm = dmDist;
   }
   {
     DMLabel label;
@@ -162,7 +156,7 @@ static PetscErrorCode TestEmptyStrata(MPI_Comm comm)
     Vec          v;
     PetscSection s;
     PetscInt     numComp[] = {1};
-    PetscInt     dof[]     = {0,0,0,1};
+    PetscInt     dof[]     = {0, 0, 0, 1};
     PetscInt     N;
 
     PetscCall(DMSetNumFields(dm, 1));
@@ -181,8 +175,7 @@ static PetscErrorCode TestEmptyStrata(MPI_Comm comm)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TestDistribution(MPI_Comm comm)
-{
+static PetscErrorCode TestDistribution(MPI_Comm comm) {
   DM               dm, dmDist;
   PetscPartitioner part;
   DMLabel          label;
@@ -202,18 +195,16 @@ static PetscErrorCode TestDistribution(MPI_Comm comm)
   PetscCall(DMCreateLabel(dm, name));
   PetscCall(DMGetLabel(dm, name, &label));
   PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
-  for (c = cStart; c < cEnd; ++c) {
-    PetscCall(DMLabelSetValue(label, c, c));
-  }
+  for (c = cStart; c < cEnd; ++c) { PetscCall(DMLabelSetValue(label, c, c)); }
   PetscCall(DMLabelView(label, PETSC_VIEWER_STDOUT_WORLD));
-  PetscCall(DMPlexGetPartitioner(dm,&part));
+  PetscCall(DMPlexGetPartitioner(dm, &part));
   PetscCall(PetscPartitionerSetFromOptions(part));
   PetscCall(DMPlexDistribute(dm, overlap, NULL, &dmDist));
   if (dmDist) {
     PetscCall(DMDestroy(&dm));
-    dm   = dmDist;
+    dm = dmDist;
   }
-  PetscCall(PetscObjectSetName((PetscObject) dm, "Mesh"));
+  PetscCall(PetscObjectSetName((PetscObject)dm, "Mesh"));
   PetscCall(DMViewFromOptions(dm, NULL, "-dm_view"));
   PetscCall(DMGetLabel(dm, name, &label));
   PetscCall(DMLabelView(label, PETSC_VIEWER_STDOUT_WORLD));
@@ -221,8 +212,7 @@ static PetscErrorCode TestDistribution(MPI_Comm comm)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TestUniversalLabel(MPI_Comm comm)
-{
+static PetscErrorCode TestUniversalLabel(MPI_Comm comm) {
   DM               dm1, dm2;
   DMLabel          bd1, bd2, ulabel;
   DMUniversalLabel universal;
@@ -233,7 +223,7 @@ static PetscErrorCode TestUniversalLabel(MPI_Comm comm)
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-universal", &run, NULL));
   if (!run) PetscFunctionReturn(0);
 
-  char filename[PETSC_MAX_PATH_LEN];
+  char      filename[PETSC_MAX_PATH_LEN];
   PetscBool flg;
 
   PetscCall(PetscOptionsGetString(NULL, NULL, "-filename", filename, sizeof(filename), &flg));
@@ -254,19 +244,19 @@ static PetscErrorCode TestUniversalLabel(MPI_Comm comm)
     PetscCall(DMPlexMarkBoundaryFaces(dm1, 121, bd2));
     PetscCall(DMPlexLabelComplete(dm1, bd2));
   }
-  PetscCall(PetscObjectSetName((PetscObject) dm1, "First Mesh"));
+  PetscCall(PetscObjectSetName((PetscObject)dm1, "First Mesh"));
   PetscCall(DMViewFromOptions(dm1, NULL, "-dm_view"));
 
   PetscCall(DMUniversalLabelCreate(dm1, &universal));
   PetscCall(DMUniversalLabelGetLabel(universal, &ulabel));
-  PetscCall(PetscObjectViewFromOptions((PetscObject) ulabel, NULL, "-universal_view"));
+  PetscCall(PetscObjectViewFromOptions((PetscObject)ulabel, NULL, "-universal_view"));
 
   if (!notFile) {
     PetscInt Nl, l;
 
     PetscCall(DMClone(dm1, &dm2));
     PetscCall(DMGetNumLabels(dm2, &Nl));
-    for (l = Nl-1; l >= 0; --l) {
+    for (l = Nl - 1; l >= 0; --l) {
       PetscBool   isdepth, iscelltype;
       const char *name;
 
@@ -280,7 +270,7 @@ static PetscErrorCode TestUniversalLabel(MPI_Comm comm)
     PetscCall(DMSetType(dm2, DMPLEX));
     PetscCall(DMSetFromOptions(dm2));
   }
-  PetscCall(PetscObjectSetName((PetscObject) dm2, "Second Mesh"));
+  PetscCall(PetscObjectSetName((PetscObject)dm2, "Second Mesh"));
   PetscCall(DMUniversalLabelCreateLabels(universal, PETSC_TRUE, dm2));
   PetscCall(DMPlexGetChart(dm2, &pStart, &pEnd));
   for (p = pStart; p < pEnd; ++p) {
@@ -298,9 +288,7 @@ static PetscErrorCode TestUniversalLabel(MPI_Comm comm)
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv)
-{
-
+int main(int argc, char **argv) {
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   /*PetscCall(ProcessOptions(PETSC_COMM_WORLD, &user));*/

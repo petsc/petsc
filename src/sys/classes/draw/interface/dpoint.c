@@ -2,7 +2,7 @@
 /*
        Provides the calling sequences for all the basic PetscDraw routines.
 */
-#include <petsc/private/drawimpl.h>  /*I "petscdraw.h" I*/
+#include <petsc/private/drawimpl.h> /*I "petscdraw.h" I*/
 
 /*@
    PetscDrawPoint - PetscDraws a point onto a drawable.
@@ -20,11 +20,10 @@
           `PetscDrawMarker()`, `PetscDrawString()`, `PetscDrawArrow()`
 
 @*/
-PetscErrorCode  PetscDrawPoint(PetscDraw draw,PetscReal xl,PetscReal yl,int cl)
-{
+PetscErrorCode PetscDrawPoint(PetscDraw draw, PetscReal xl, PetscReal yl, int cl) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  PetscUseTypeMethod(draw,point ,xl,yl,cl);
+  PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
+  PetscUseTypeMethod(draw, point, xl, yl, cl);
   PetscFunctionReturn(0);
 }
 
@@ -43,11 +42,10 @@ PetscErrorCode  PetscDrawPoint(PetscDraw draw,PetscReal xl,PetscReal yl,int cl)
 .seealso: `PetscDrawPoint()`, `PetscDrawPointSetSize()`
 
 @*/
-PetscErrorCode  PetscDrawPointPixel(PetscDraw draw,int x,int y,int c)
-{
+PetscErrorCode PetscDrawPointPixel(PetscDraw draw, int x, int y, int c) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  PetscUseTypeMethod(draw,pointpixel ,x,y,c);
+  PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
+  PetscUseTypeMethod(draw, pointpixel, x, y, c);
   PetscFunctionReturn(0);
 }
 
@@ -69,11 +67,10 @@ PetscErrorCode  PetscDrawPointPixel(PetscDraw draw,int x,int y,int c)
 
 .seealso: `PetscDrawPoint()`, `PetscDrawMarker()`
 @*/
-PetscErrorCode  PetscDrawPointSetSize(PetscDraw draw,PetscReal width)
-{
+PetscErrorCode PetscDrawPointSetSize(PetscDraw draw, PetscReal width) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  PetscCheck(width >= 0.0 && width <= 1.0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Bad size %g, should be between 0 and 1",(double)width);
-  PetscTryTypeMethod(draw,pointsetsize,width);
+  PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
+  PetscCheck(width >= 0.0 && width <= 1.0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Bad size %g, should be between 0 and 1", (double)width);
+  PetscTryTypeMethod(draw, pointsetsize, width);
   PetscFunctionReturn(0);
 }

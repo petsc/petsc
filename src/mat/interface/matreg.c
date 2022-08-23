@@ -2,7 +2,7 @@
 /*
      Mechanism for register PETSc matrix types
 */
-#include <petsc/private/matimpl.h>      /*I "petscmat.h" I*/
+#include <petsc/private/matimpl.h> /*I "petscmat.h" I*/
 
 PetscBool MatRegisterAllCalled = PETSC_FALSE;
 
@@ -25,18 +25,17 @@ PetscFunctionList MatList = NULL;
 
 .seealso: `MatGetType()`, `MatSetType()`, `MatType`, `Mat`
 */
-PetscErrorCode MatGetRootType_Private(Mat mat, MatType *rootType)
-{
-  PetscBool      found = PETSC_FALSE;
-  MatRootName    names = MatRootNameList;
-  MatType        inType;
+PetscErrorCode MatGetRootType_Private(Mat mat, MatType *rootType) {
+  PetscBool   found = PETSC_FALSE;
+  MatRootName names = MatRootNameList;
+  MatType     inType;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  PetscCall(MatGetType(mat,&inType));
+  PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
+  PetscCall(MatGetType(mat, &inType));
   while (names) {
-    PetscCall(PetscStrcmp(inType,names->mname,&found));
-    if (!found) PetscCall(PetscStrcmp(inType,names->sname,&found));
+    PetscCall(PetscStrcmp(inType, names->mname, &found));
+    if (!found) PetscCall(PetscStrcmp(inType, names->sname, &found));
     if (found) {
       found     = PETSC_TRUE;
       *rootType = names->rname;
@@ -62,27 +61,26 @@ PetscErrorCode MatGetRootType_Private(Mat mat, MatType *rootType)
 
 .seealso: `MatGetType()`, `MatSetType()`, `MatType`, `Mat`
 */
-PetscErrorCode MatGetMPIMatType_Private(Mat mat, MatType *MPIType)
-{
-  PetscBool      found = PETSC_FALSE;
-  MatRootName    names = MatRootNameList;
-  MatType        inType;
+PetscErrorCode MatGetMPIMatType_Private(Mat mat, MatType *MPIType) {
+  PetscBool   found = PETSC_FALSE;
+  MatRootName names = MatRootNameList;
+  MatType     inType;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  PetscCall(MatGetType(mat,&inType));
+  PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
+  PetscCall(MatGetType(mat, &inType));
   while (names) {
-    PetscCall(PetscStrcmp(inType,names->sname,&found));
-    if (!found) PetscCall(PetscStrcmp(inType,names->mname,&found));
-    if (!found) PetscCall(PetscStrcmp(inType,names->rname,&found));
+    PetscCall(PetscStrcmp(inType, names->sname, &found));
+    if (!found) PetscCall(PetscStrcmp(inType, names->mname, &found));
+    if (!found) PetscCall(PetscStrcmp(inType, names->rname, &found));
     if (found) {
-      found     = PETSC_TRUE;
+      found    = PETSC_TRUE;
       *MPIType = names->mname;
       break;
     }
     names = names->next;
   }
-  PetscCheck(found,PETSC_COMM_SELF,PETSC_ERR_SUP,"No corresponding parallel (MPI) type for this matrix");
+  PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_SUP, "No corresponding parallel (MPI) type for this matrix");
   PetscFunctionReturn(0);
 }
 
@@ -106,20 +104,19 @@ PetscErrorCode MatGetMPIMatType_Private(Mat mat, MatType *MPIType)
 
 .seealso: `PCSetType()`, `VecSetType()`, `MatCreate()`, `MatType`, `Mat`
 @*/
-PetscErrorCode  MatSetType(Mat mat, MatType matype)
-{
-  PetscBool      sametype,found,subclass = PETSC_FALSE;
-  MatRootName    names = MatRootNameList;
+PetscErrorCode MatSetType(Mat mat, MatType matype) {
+  PetscBool   sametype, found, subclass = PETSC_FALSE;
+  MatRootName names = MatRootNameList;
   PetscErrorCode (*r)(Mat);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
 
   while (names) {
-    PetscCall(PetscStrcmp(matype,names->rname,&found));
+    PetscCall(PetscStrcmp(matype, names->rname, &found));
     if (found) {
       PetscMPIInt size;
-      PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)mat),&size));
+      PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)mat), &size));
       if (size == 1) matype = names->sname;
       else matype = names->mname;
       break;
@@ -127,25 +124,25 @@ PetscErrorCode  MatSetType(Mat mat, MatType matype)
     names = names->next;
   }
 
-  PetscCall(PetscObjectTypeCompare((PetscObject)mat,matype,&sametype));
+  PetscCall(PetscObjectTypeCompare((PetscObject)mat, matype, &sametype));
   if (sametype) PetscFunctionReturn(0);
 
-  PetscCall(PetscFunctionListFind(MatList,matype,&r));
-  PetscCheck(r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown Mat type given: %s",matype);
+  PetscCall(PetscFunctionListFind(MatList, matype, &r));
+  PetscCheck(r, PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown Mat type given: %s", matype);
 
-  if (mat->assembled && ((PetscObject)mat)->type_name) PetscCall(PetscStrbeginswith(matype,((PetscObject)mat)->type_name,&subclass));
+  if (mat->assembled && ((PetscObject)mat)->type_name) PetscCall(PetscStrbeginswith(matype, ((PetscObject)mat)->type_name, &subclass));
   if (subclass) {
-    PetscCall(MatConvert(mat,matype,MAT_INPLACE_MATRIX,&mat));
+    PetscCall(MatConvert(mat, matype, MAT_INPLACE_MATRIX, &mat));
     PetscFunctionReturn(0);
   }
-  PetscTryTypeMethod(mat,destroy);
+  PetscTryTypeMethod(mat, destroy);
   mat->ops->destroy = NULL;
 
   /* should these null spaces be removed? */
   PetscCall(MatNullSpaceDestroy(&mat->nullsp));
   PetscCall(MatNullSpaceDestroy(&mat->nearnullsp));
 
-  PetscCall(PetscMemzero(mat->ops,sizeof(struct _MatOps)));
+  PetscCall(PetscMemzero(mat->ops, sizeof(struct _MatOps)));
   mat->preallocated  = PETSC_FALSE;
   mat->assembled     = PETSC_FALSE;
   mat->was_assembled = PETSC_FALSE;
@@ -178,11 +175,10 @@ PetscErrorCode  MatSetType(Mat mat, MatType matype)
 
 .seealso: `MatSetType()`
 @*/
-PetscErrorCode  MatGetType(Mat mat,MatType *type)
-{
+PetscErrorCode MatGetType(Mat mat, MatType *type) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  PetscValidPointer(type,2);
+  PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
+  PetscValidPointer(type, 2);
   *type = ((PetscObject)mat)->type_name;
   PetscFunctionReturn(0);
 }
@@ -202,11 +198,10 @@ PetscErrorCode  MatGetType(Mat mat,MatType *type)
 
 .seealso: `MatSetVecType()`
 @*/
-PetscErrorCode MatGetVecType(Mat mat,VecType *vtype)
-{
+PetscErrorCode MatGetVecType(Mat mat, VecType *vtype) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  PetscValidPointer(vtype,2);
+  PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
+  PetscValidPointer(vtype, 2);
   *vtype = mat->defaultvectype;
   PetscFunctionReturn(0);
 }
@@ -227,12 +222,11 @@ PetscErrorCode MatGetVecType(Mat mat,VecType *vtype)
 
 .seealso: `VecSetType()`, `MatGetVecType()`
 @*/
-PetscErrorCode MatSetVecType(Mat mat,VecType vtype)
-{
+PetscErrorCode MatSetVecType(Mat mat, VecType vtype) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   PetscCall(PetscFree(mat->defaultvectype));
-  PetscCall(PetscStrallocpy(vtype,&mat->defaultvectype));
+  PetscCall(PetscStrallocpy(vtype, &mat->defaultvectype));
   PetscFunctionReturn(0);
 }
 
@@ -264,11 +258,10 @@ $     -mat_type my_mat
 
   Level: advanced
 @*/
-PetscErrorCode  MatRegister(const char sname[],PetscErrorCode (*function)(Mat))
-{
+PetscErrorCode MatRegister(const char sname[], PetscErrorCode (*function)(Mat)) {
   PetscFunctionBegin;
   PetscCall(MatInitializePackage());
-  PetscCall(PetscFunctionListAdd(&MatList,sname,function));
+  PetscCall(PetscFunctionListAdd(&MatList, sname, function));
   PetscFunctionReturn(0);
 }
 
@@ -296,15 +289,14 @@ MatRootName MatRootNameList = NULL;
 .seealso: `PetscObjectBaseTypeCompare()`
 
 @*/
-PetscErrorCode  MatRegisterRootName(const char rname[],const char sname[],const char mname[])
-{
-  MatRootName    names;
+PetscErrorCode MatRegisterRootName(const char rname[], const char sname[], const char mname[]) {
+  MatRootName names;
 
   PetscFunctionBegin;
   PetscCall(PetscNew(&names));
-  PetscCall(PetscStrallocpy(rname,&names->rname));
-  PetscCall(PetscStrallocpy(sname,&names->sname));
-  PetscCall(PetscStrallocpy(mname,&names->mname));
+  PetscCall(PetscStrallocpy(rname, &names->rname));
+  PetscCall(PetscStrallocpy(sname, &names->sname));
+  PetscCall(PetscStrallocpy(mname, &names->mname));
   if (!MatRootNameList) {
     MatRootNameList = names;
   } else {

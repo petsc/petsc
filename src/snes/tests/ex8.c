@@ -127,25 +127,28 @@ Interpolation tests pass for order 1 derivatives at tolerance 1e-10
 
 typedef struct {
   /* Element definition */
-  PetscInt  qorder;            /* Order of the quadrature */
-  PetscInt  Nc;                /* Number of field components */
+  PetscInt  qorder; /* Order of the quadrature */
+  PetscInt  Nc;     /* Number of field components */
   /* Testing space */
-  PetscInt  porder;            /* Order of polynomials to test */
-  PetscReal constants[3];      /* Constant values for each dimension */
-  PetscInt  m;                 /* The frequency of sinusoids to use */
-  PetscInt  dir;               /* The direction of sinusoids to use */
+  PetscInt  porder;       /* Order of polynomials to test */
+  PetscReal constants[3]; /* Constant values for each dimension */
+  PetscInt  m;            /* The frequency of sinusoids to use */
+  PetscInt  dir;          /* The direction of sinusoids to use */
   /* Adaptation */
-  PetscInt  K;                 /* Number of coarse modes used for optimization */
-  PetscBool usePoly;           /* Use polynomials, or harmonics, to adapt interpolator */
+  PetscInt  K;       /* Number of coarse modes used for optimization */
+  PetscBool usePoly; /* Use polynomials, or harmonics, to adapt interpolator */
 } AppCtx;
 
-typedef enum {INTERPOLATION, RESTRICTION, INJECTION} InterpType;
+typedef enum {
+  INTERPOLATION,
+  RESTRICTION,
+  INJECTION
+} InterpType;
 
 /* u = 1 */
-PetscErrorCode constant(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nc, PetscScalar *u, void *ctx)
-{
-  AppCtx  *user = (AppCtx *) ctx;
-  PetscInt d = user->dir;
+PetscErrorCode constant(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nc, PetscScalar *u, void *ctx) {
+  AppCtx  *user = (AppCtx *)ctx;
+  PetscInt d    = user->dir;
 
   if (Nc > 1) {
     for (d = 0; d < Nc; ++d) u[d] = user->constants[d];
@@ -154,10 +157,9 @@ PetscErrorCode constant(PetscInt dim, PetscReal time, const PetscReal coords[], 
   }
   return 0;
 }
-PetscErrorCode constantDer(PetscInt dim, PetscReal time, const PetscReal coords[], const PetscReal n[], PetscInt Nc, PetscScalar *u, void *ctx)
-{
-  AppCtx  *user = (AppCtx *) ctx;
-  PetscInt d = user->dir;
+PetscErrorCode constantDer(PetscInt dim, PetscReal time, const PetscReal coords[], const PetscReal n[], PetscInt Nc, PetscScalar *u, void *ctx) {
+  AppCtx  *user = (AppCtx *)ctx;
+  PetscInt d    = user->dir;
 
   if (Nc > 1) {
     for (d = 0; d < Nc; ++d) u[d] = 0.0;
@@ -168,10 +170,9 @@ PetscErrorCode constantDer(PetscInt dim, PetscReal time, const PetscReal coords[
 }
 
 /* u = x */
-PetscErrorCode linear(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nc, PetscScalar *u, void *ctx)
-{
-  AppCtx  *user = (AppCtx *) ctx;
-  PetscInt d = user->dir;
+PetscErrorCode linear(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nc, PetscScalar *u, void *ctx) {
+  AppCtx  *user = (AppCtx *)ctx;
+  PetscInt d    = user->dir;
 
   if (Nc > 1) {
     for (d = 0; d < Nc; ++d) u[d] = coords[d];
@@ -180,10 +181,9 @@ PetscErrorCode linear(PetscInt dim, PetscReal time, const PetscReal coords[], Pe
   }
   return 0;
 }
-PetscErrorCode linearDer(PetscInt dim, PetscReal time, const PetscReal coords[], const PetscReal n[], PetscInt Nc, PetscScalar *u, void *ctx)
-{
-  AppCtx  *user = (AppCtx *) ctx;
-  PetscInt d = user->dir;
+PetscErrorCode linearDer(PetscInt dim, PetscReal time, const PetscReal coords[], const PetscReal n[], PetscInt Nc, PetscScalar *u, void *ctx) {
+  AppCtx  *user = (AppCtx *)ctx;
+  PetscInt d    = user->dir;
 
   if (Nc > 1) {
     PetscInt e;
@@ -198,95 +198,122 @@ PetscErrorCode linearDer(PetscInt dim, PetscReal time, const PetscReal coords[],
 }
 
 /* u = x^2 or u = (x^2, xy) or u = (xy, yz, zx) */
-PetscErrorCode quadratic(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nc, PetscScalar *u, void *ctx)
-{
-  AppCtx  *user = (AppCtx *) ctx;
-  PetscInt d = user->dir;
+PetscErrorCode quadratic(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nc, PetscScalar *u, void *ctx) {
+  AppCtx  *user = (AppCtx *)ctx;
+  PetscInt d    = user->dir;
 
   if (Nc > 1) {
-    if (Nc > 2) {u[0] = coords[0]*coords[1]; u[1] = coords[1]*coords[2]; u[2] = coords[2]*coords[0];}
-    else        {u[0] = coords[0]*coords[0]; u[1] = coords[0]*coords[1];}
+    if (Nc > 2) {
+      u[0] = coords[0] * coords[1];
+      u[1] = coords[1] * coords[2];
+      u[2] = coords[2] * coords[0];
+    } else {
+      u[0] = coords[0] * coords[0];
+      u[1] = coords[0] * coords[1];
+    }
   } else {
-    u[0] = coords[d]*coords[d];
+    u[0] = coords[d] * coords[d];
   }
   return 0;
 }
-PetscErrorCode quadraticDer(PetscInt dim, PetscReal time, const PetscReal coords[], const PetscReal n[], PetscInt Nc, PetscScalar *u, void *ctx)
-{
-  AppCtx  *user = (AppCtx *) ctx;
-  PetscInt d = user->dir;
+PetscErrorCode quadraticDer(PetscInt dim, PetscReal time, const PetscReal coords[], const PetscReal n[], PetscInt Nc, PetscScalar *u, void *ctx) {
+  AppCtx  *user = (AppCtx *)ctx;
+  PetscInt d    = user->dir;
 
   if (Nc > 1) {
-    if (Nc > 2) {u[0] = coords[1]*n[0] + coords[0]*n[1]; u[1] = coords[2]*n[1] + coords[1]*n[2]; u[2] = coords[2]*n[0] + coords[0]*n[2];}
-    else        {u[0] = 2.0*coords[0]*n[0]; u[1] = coords[1]*n[0] + coords[0]*n[1];}
+    if (Nc > 2) {
+      u[0] = coords[1] * n[0] + coords[0] * n[1];
+      u[1] = coords[2] * n[1] + coords[1] * n[2];
+      u[2] = coords[2] * n[0] + coords[0] * n[2];
+    } else {
+      u[0] = 2.0 * coords[0] * n[0];
+      u[1] = coords[1] * n[0] + coords[0] * n[1];
+    }
   } else {
-    u[0] = 2.0*coords[d]*n[d];
+    u[0] = 2.0 * coords[d] * n[d];
   }
   return 0;
 }
 
 /* u = x^3 or u = (x^3, x^2y) or u = (x^2y, y^2z, z^2x) */
-PetscErrorCode cubic(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nc, PetscScalar *u, void *ctx)
-{
-  AppCtx  *user = (AppCtx *) ctx;
-  PetscInt d = user->dir;
+PetscErrorCode cubic(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nc, PetscScalar *u, void *ctx) {
+  AppCtx  *user = (AppCtx *)ctx;
+  PetscInt d    = user->dir;
 
   if (Nc > 1) {
-    if (Nc > 2) {u[0] = coords[0]*coords[0]*coords[1]; u[1] = coords[1]*coords[1]*coords[2]; u[2] = coords[2]*coords[2]*coords[0];}
-    else        {u[0] = coords[0]*coords[0]*coords[0]; u[1] = coords[0]*coords[0]*coords[1];}
+    if (Nc > 2) {
+      u[0] = coords[0] * coords[0] * coords[1];
+      u[1] = coords[1] * coords[1] * coords[2];
+      u[2] = coords[2] * coords[2] * coords[0];
+    } else {
+      u[0] = coords[0] * coords[0] * coords[0];
+      u[1] = coords[0] * coords[0] * coords[1];
+    }
   } else {
-    u[0] = coords[d]*coords[d]*coords[d];
+    u[0] = coords[d] * coords[d] * coords[d];
   }
   return 0;
 }
-PetscErrorCode cubicDer(PetscInt dim, PetscReal time, const PetscReal coords[], const PetscReal n[], PetscInt Nc, PetscScalar *u, void *ctx)
-{
-  AppCtx  *user = (AppCtx *) ctx;
-  PetscInt d = user->dir;
+PetscErrorCode cubicDer(PetscInt dim, PetscReal time, const PetscReal coords[], const PetscReal n[], PetscInt Nc, PetscScalar *u, void *ctx) {
+  AppCtx  *user = (AppCtx *)ctx;
+  PetscInt d    = user->dir;
 
   if (Nc > 1) {
-    if (Nc > 2) {u[0] = 2.0*coords[0]*coords[1]*n[0] + coords[0]*coords[0]*n[1]; u[1] = 2.0*coords[1]*coords[2]*n[1] + coords[1]*coords[1]*n[2]; u[2] = 2.0*coords[2]*coords[0]*n[2] + coords[2]*coords[2]*n[0];}
-    else        {u[0] = 3.0*coords[0]*coords[0]*n[0]; u[1] = 2.0*coords[0]*coords[1]*n[0] + coords[0]*coords[0]*n[1];}
+    if (Nc > 2) {
+      u[0] = 2.0 * coords[0] * coords[1] * n[0] + coords[0] * coords[0] * n[1];
+      u[1] = 2.0 * coords[1] * coords[2] * n[1] + coords[1] * coords[1] * n[2];
+      u[2] = 2.0 * coords[2] * coords[0] * n[2] + coords[2] * coords[2] * n[0];
+    } else {
+      u[0] = 3.0 * coords[0] * coords[0] * n[0];
+      u[1] = 2.0 * coords[0] * coords[1] * n[0] + coords[0] * coords[0] * n[1];
+    }
   } else {
-    u[0] = 3.0*coords[d]*coords[d]*n[d];
+    u[0] = 3.0 * coords[d] * coords[d] * n[d];
   }
   return 0;
 }
 
 /* u = x^4 or u = (x^4, x^2y^2) or u = (x^2y^2, y^2z^2, z^2x^2) */
-PetscErrorCode quartic(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nc, PetscScalar *u, void *ctx)
-{
-  AppCtx  *user = (AppCtx *) ctx;
-  PetscInt d = user->dir;
+PetscErrorCode quartic(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nc, PetscScalar *u, void *ctx) {
+  AppCtx  *user = (AppCtx *)ctx;
+  PetscInt d    = user->dir;
 
   if (Nc > 1) {
-    if (Nc > 2) {u[0] = coords[0]*coords[0]*coords[1]*coords[1]; u[1] = coords[1]*coords[1]*coords[2]*coords[2]; u[2] = coords[2]*coords[2]*coords[0]*coords[0];}
-    else        {u[0] = coords[0]*coords[0]*coords[0]*coords[0]; u[1] = coords[0]*coords[0]*coords[1]*coords[1];}
+    if (Nc > 2) {
+      u[0] = coords[0] * coords[0] * coords[1] * coords[1];
+      u[1] = coords[1] * coords[1] * coords[2] * coords[2];
+      u[2] = coords[2] * coords[2] * coords[0] * coords[0];
+    } else {
+      u[0] = coords[0] * coords[0] * coords[0] * coords[0];
+      u[1] = coords[0] * coords[0] * coords[1] * coords[1];
+    }
   } else {
-    u[0] = coords[d]*coords[d]*coords[d]*coords[d];
+    u[0] = coords[d] * coords[d] * coords[d] * coords[d];
   }
   return 0;
 }
-PetscErrorCode quarticDer(PetscInt dim, PetscReal time, const PetscReal coords[], const PetscReal n[], PetscInt Nc, PetscScalar *u, void *ctx)
-{
-  AppCtx  *user = (AppCtx *) ctx;
-  PetscInt d = user->dir;
+PetscErrorCode quarticDer(PetscInt dim, PetscReal time, const PetscReal coords[], const PetscReal n[], PetscInt Nc, PetscScalar *u, void *ctx) {
+  AppCtx  *user = (AppCtx *)ctx;
+  PetscInt d    = user->dir;
 
   if (Nc > 1) {
-    if (Nc > 2) {u[0] = 2.0*coords[0]*coords[1]*coords[1]*n[0] + 2.0*coords[0]*coords[0]*coords[1]*n[1];
-                 u[1] = 2.0*coords[1]*coords[2]*coords[2]*n[1] + 2.0*coords[1]*coords[1]*coords[2]*n[2];
-                 u[2] = 2.0*coords[2]*coords[0]*coords[0]*n[2] + 2.0*coords[2]*coords[2]*coords[0]*n[0];}
-    else        {u[0] = 4.0*coords[0]*coords[0]*coords[0]*n[0]; u[1] = 2.0*coords[0]*coords[1]*coords[1]*n[0] + 2.0*coords[0]*coords[0]*coords[1]*n[1];}
+    if (Nc > 2) {
+      u[0] = 2.0 * coords[0] * coords[1] * coords[1] * n[0] + 2.0 * coords[0] * coords[0] * coords[1] * n[1];
+      u[1] = 2.0 * coords[1] * coords[2] * coords[2] * n[1] + 2.0 * coords[1] * coords[1] * coords[2] * n[2];
+      u[2] = 2.0 * coords[2] * coords[0] * coords[0] * n[2] + 2.0 * coords[2] * coords[2] * coords[0] * n[0];
+    } else {
+      u[0] = 4.0 * coords[0] * coords[0] * coords[0] * n[0];
+      u[1] = 2.0 * coords[0] * coords[1] * coords[1] * n[0] + 2.0 * coords[0] * coords[0] * coords[1] * n[1];
+    }
   } else {
-    u[0] = 4.0*coords[d]*coords[d]*coords[d]*n[d];
+    u[0] = 4.0 * coords[d] * coords[d] * coords[d] * n[d];
   }
   return 0;
 }
 
-PetscErrorCode mytanh(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nc, PetscScalar *u, void *ctx)
-{
-  AppCtx  *user = (AppCtx *) ctx;
-  PetscInt d = user->dir;
+PetscErrorCode mytanh(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nc, PetscScalar *u, void *ctx) {
+  AppCtx  *user = (AppCtx *)ctx;
+  PetscInt d    = user->dir;
 
   if (Nc > 1) {
     for (d = 0; d < Nc; ++d) u[d] = PetscTanhReal(coords[d] - 0.5);
@@ -295,54 +322,50 @@ PetscErrorCode mytanh(PetscInt dim, PetscReal time, const PetscReal coords[], Pe
   }
   return 0;
 }
-PetscErrorCode mytanhDer(PetscInt dim, PetscReal time, const PetscReal coords[], const PetscReal n[], PetscInt Nc, PetscScalar *u, void *ctx)
-{
-  AppCtx  *user = (AppCtx *) ctx;
-  PetscInt d = user->dir;
+PetscErrorCode mytanhDer(PetscInt dim, PetscReal time, const PetscReal coords[], const PetscReal n[], PetscInt Nc, PetscScalar *u, void *ctx) {
+  AppCtx  *user = (AppCtx *)ctx;
+  PetscInt d    = user->dir;
 
   if (Nc > 1) {
-    for (d = 0; d < Nc; ++d) u[d] = 1.0/PetscSqr(PetscCoshReal(coords[d] - 0.5)) * n[d];
+    for (d = 0; d < Nc; ++d) u[d] = 1.0 / PetscSqr(PetscCoshReal(coords[d] - 0.5)) * n[d];
   } else {
-    u[0] = 1.0/PetscSqr(PetscCoshReal(coords[d] - 0.5)) * n[d];
+    u[0] = 1.0 / PetscSqr(PetscCoshReal(coords[d] - 0.5)) * n[d];
   }
   return 0;
 }
 
-PetscErrorCode trig(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nc, PetscScalar *u, void *ctx)
-{
-  AppCtx  *user = (AppCtx *) ctx;
+PetscErrorCode trig(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nc, PetscScalar *u, void *ctx) {
+  AppCtx  *user = (AppCtx *)ctx;
   PetscInt m = user->m, d = user->dir;
 
   if (Nc > 1) {
-    for (d = 0; d < Nc; ++d) u[d] = PetscSinReal(PETSC_PI*m*coords[d]);
+    for (d = 0; d < Nc; ++d) u[d] = PetscSinReal(PETSC_PI * m * coords[d]);
   } else {
-    u[0] = PetscSinReal(PETSC_PI*m*coords[d]);
+    u[0] = PetscSinReal(PETSC_PI * m * coords[d]);
   }
   return 0;
 }
-PetscErrorCode trigDer(PetscInt dim, PetscReal time, const PetscReal coords[], const PetscReal n[], PetscInt Nc, PetscScalar *u, void *ctx)
-{
-  AppCtx  *user = (AppCtx *) ctx;
+PetscErrorCode trigDer(PetscInt dim, PetscReal time, const PetscReal coords[], const PetscReal n[], PetscInt Nc, PetscScalar *u, void *ctx) {
+  AppCtx  *user = (AppCtx *)ctx;
   PetscInt m = user->m, d = user->dir;
 
   if (Nc > 1) {
-    for (d = 0; d < Nc; ++d) u[d] = PETSC_PI*m*PetscCosReal(PETSC_PI*m*coords[d]) * n[d];
+    for (d = 0; d < Nc; ++d) u[d] = PETSC_PI * m * PetscCosReal(PETSC_PI * m * coords[d]) * n[d];
   } else {
-    u[0] = PETSC_PI*m*PetscCosReal(PETSC_PI*m*coords[d]) * n[d];
+    u[0] = PETSC_PI * m * PetscCosReal(PETSC_PI * m * coords[d]) * n[d];
   }
   return 0;
 }
 
-static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
-{
+static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   PetscFunctionBeginUser;
-  options->qorder          = 0;
-  options->Nc              = PETSC_DEFAULT;
-  options->porder          = 0;
-  options->m               = 1;
-  options->dir             = 0;
-  options->K               = 0;
-  options->usePoly         = PETSC_TRUE;
+  options->qorder  = 0;
+  options->Nc      = PETSC_DEFAULT;
+  options->porder  = 0;
+  options->m       = 1;
+  options->dir     = 0;
+  options->K       = 0;
+  options->usePoly = PETSC_TRUE;
 
   PetscOptionsBegin(comm, "", "Projection Test Options", "DMPlex");
   PetscCall(PetscOptionsInt("-qorder", "The quadrature order", "ex8.c", options->qorder, &options->qorder, NULL));
@@ -354,8 +377,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
-{
+static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm) {
   PetscFunctionBeginUser;
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetType(*dm, DMPLEX));
@@ -365,10 +387,8 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 }
 
 /* Setup functions to approximate */
-static PetscErrorCode SetupFunctions(DM dm, PetscBool usePoly, PetscInt order, PetscInt dir, PetscErrorCode (**exactFuncs)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *),
-                                     PetscErrorCode (**exactFuncDers)(PetscInt, PetscReal, const PetscReal[], const PetscReal[], PetscInt, PetscScalar *, void *), AppCtx *user)
-{
-  PetscInt       dim;
+static PetscErrorCode SetupFunctions(DM dm, PetscBool usePoly, PetscInt order, PetscInt dir, PetscErrorCode (**exactFuncs)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *), PetscErrorCode (**exactFuncDers)(PetscInt, PetscReal, const PetscReal[], const PetscReal[], PetscInt, PetscScalar *, void *), AppCtx *user) {
+  PetscInt dim;
 
   PetscFunctionBeginUser;
   user->dir = dir;
@@ -394,9 +414,7 @@ static PetscErrorCode SetupFunctions(DM dm, PetscBool usePoly, PetscInt order, P
       exactFuncs[0]    = quartic;
       exactFuncDers[0] = quarticDer;
       break;
-    default:
-      PetscCall(DMGetDimension(dm, &dim));
-      SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "Could not determine functions to test for dimension %" PetscInt_FMT " order %" PetscInt_FMT, dim, order);
+    default: PetscCall(DMGetDimension(dm, &dim)); SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Could not determine functions to test for dimension %" PetscInt_FMT " order %" PetscInt_FMT, dim, order);
     }
   } else {
     user->m          = order;
@@ -406,12 +424,9 @@ static PetscErrorCode SetupFunctions(DM dm, PetscBool usePoly, PetscInt order, P
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode ComputeError(DM dm, PetscErrorCode (**exactFuncs)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *),
-                                   PetscErrorCode (**exactFuncDers)(PetscInt, PetscReal, const PetscReal[], const PetscReal[], PetscInt, PetscScalar *, void *),
-                                   void **exactCtxs, PetscReal *error, PetscReal *errorDer, AppCtx *user)
-{
-  Vec            u;
-  PetscReal      n[3] = {1.0, 1.0, 1.0};
+static PetscErrorCode ComputeError(DM dm, PetscErrorCode (**exactFuncs)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *), PetscErrorCode (**exactFuncDers)(PetscInt, PetscReal, const PetscReal[], const PetscReal[], PetscInt, PetscScalar *, void *), void **exactCtxs, PetscReal *error, PetscReal *errorDer, AppCtx *user) {
+  Vec       u;
+  PetscReal n[3] = {1.0, 1.0, 1.0};
 
   PetscFunctionBeginUser;
   PetscCall(DMGetGlobalVector(dm, &u));
@@ -425,13 +440,12 @@ static PetscErrorCode ComputeError(DM dm, PetscErrorCode (**exactFuncs)(PetscInt
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CheckFunctions(DM dm, PetscInt order, AppCtx *user)
-{
-  PetscErrorCode (*exactFuncs[1]) (PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
-  PetscErrorCode (*exactFuncDers[1]) (PetscInt dim, PetscReal time, const PetscReal x[], const PetscReal n[], PetscInt Nf, PetscScalar *u, void *ctx);
-  void            *exactCtxs[3];
-  MPI_Comm         comm;
-  PetscReal        error, errorDer, tol = PETSC_SMALL;
+static PetscErrorCode CheckFunctions(DM dm, PetscInt order, AppCtx *user) {
+  PetscErrorCode (*exactFuncs[1])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
+  PetscErrorCode (*exactFuncDers[1])(PetscInt dim, PetscReal time, const PetscReal x[], const PetscReal n[], PetscInt Nf, PetscScalar *u, void *ctx);
+  void     *exactCtxs[3];
+  MPI_Comm  comm;
+  PetscReal error, errorDer, tol = PETSC_SMALL;
 
   PetscFunctionBeginUser;
   exactCtxs[0]       = user;
@@ -444,22 +458,21 @@ static PetscErrorCode CheckFunctions(DM dm, PetscInt order, AppCtx *user)
   PetscCall(SetupFunctions(dm, PETSC_TRUE, order, 0, exactFuncs, exactFuncDers, user));
   PetscCall(ComputeError(dm, exactFuncs, exactFuncDers, exactCtxs, &error, &errorDer, user));
   /* Report result */
-  if (error > tol)    PetscCall(PetscPrintf(comm, "Function tests FAIL for order %" PetscInt_FMT " at tolerance %g error %g\n", order, (double)tol,(double) error));
-  else                PetscCall(PetscPrintf(comm, "Function tests pass for order %" PetscInt_FMT " at tolerance %g\n", order, (double)tol));
+  if (error > tol) PetscCall(PetscPrintf(comm, "Function tests FAIL for order %" PetscInt_FMT " at tolerance %g error %g\n", order, (double)tol, (double)error));
+  else PetscCall(PetscPrintf(comm, "Function tests pass for order %" PetscInt_FMT " at tolerance %g\n", order, (double)tol));
   if (errorDer > tol) PetscCall(PetscPrintf(comm, "Function tests FAIL for order %" PetscInt_FMT " derivatives at tolerance %g error %g\n", order, (double)tol, (double)errorDer));
-  else                PetscCall(PetscPrintf(comm, "Function tests pass for order %" PetscInt_FMT " derivatives at tolerance %g\n", order, (double)tol));
+  else PetscCall(PetscPrintf(comm, "Function tests pass for order %" PetscInt_FMT " derivatives at tolerance %g\n", order, (double)tol));
   PetscFunctionReturn(0);
 }
 
 /* Compare approximation to exact in L_2 */
-static PetscErrorCode CheckTransferError(DM fdm, PetscBool usePoly, PetscInt order, PetscInt dir, const char *testname, Vec fu, AppCtx *user)
-{
-  PetscErrorCode (*exactFuncs[1]) (PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
-  PetscErrorCode (*exactFuncDers[1]) (PetscInt dim, PetscReal time, const PetscReal x[], const PetscReal n[], PetscInt Nf, PetscScalar *u, void *ctx);
-  PetscReal        n[3] = {1.0, 1.0, 1.0};
-  void            *exactCtxs[3];
-  MPI_Comm         comm;
-  PetscReal        error, errorDer, tol = PETSC_SMALL;
+static PetscErrorCode CheckTransferError(DM fdm, PetscBool usePoly, PetscInt order, PetscInt dir, const char *testname, Vec fu, AppCtx *user) {
+  PetscErrorCode (*exactFuncs[1])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
+  PetscErrorCode (*exactFuncDers[1])(PetscInt dim, PetscReal time, const PetscReal x[], const PetscReal n[], PetscInt Nf, PetscScalar *u, void *ctx);
+  PetscReal n[3] = {1.0, 1.0, 1.0};
+  void     *exactCtxs[3];
+  MPI_Comm  comm;
+  PetscReal error, errorDer, tol = PETSC_SMALL;
 
   PetscFunctionBeginUser;
   exactCtxs[0]       = user;
@@ -468,33 +481,32 @@ static PetscErrorCode CheckTransferError(DM fdm, PetscBool usePoly, PetscInt ord
   user->constants[0] = 1.0;
   user->constants[1] = 2.0;
   user->constants[2] = 3.0;
-  PetscCall(PetscObjectGetComm((PetscObject) fdm, &comm));
+  PetscCall(PetscObjectGetComm((PetscObject)fdm, &comm));
   PetscCall(SetupFunctions(fdm, usePoly, order, dir, exactFuncs, exactFuncDers, user));
   PetscCall(DMComputeL2Diff(fdm, 0.0, exactFuncs, exactCtxs, fu, &error));
   PetscCall(DMComputeL2GradientDiff(fdm, 0.0, exactFuncDers, exactCtxs, fu, n, &errorDer));
   /* Report result */
-  if (error > tol)    PetscCall(PetscPrintf(comm, "%s tests FAIL for order %" PetscInt_FMT " at tolerance %g error %g\n", testname, order, (double)tol, (double)error));
-  else                PetscCall(PetscPrintf(comm, "%s tests pass for order %" PetscInt_FMT " at tolerance %g\n", testname, order, (double)tol));
+  if (error > tol) PetscCall(PetscPrintf(comm, "%s tests FAIL for order %" PetscInt_FMT " at tolerance %g error %g\n", testname, order, (double)tol, (double)error));
+  else PetscCall(PetscPrintf(comm, "%s tests pass for order %" PetscInt_FMT " at tolerance %g\n", testname, order, (double)tol));
   if (errorDer > tol) PetscCall(PetscPrintf(comm, "%s tests FAIL for order %" PetscInt_FMT " derivatives at tolerance %g error %g\n", testname, order, (double)tol, (double)errorDer));
-  else                PetscCall(PetscPrintf(comm, "%s tests pass for order %" PetscInt_FMT " derivatives at tolerance %g\n", testname, order, (double)tol));
+  else PetscCall(PetscPrintf(comm, "%s tests pass for order %" PetscInt_FMT " derivatives at tolerance %g\n", testname, order, (double)tol));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CheckTransfer(DM dm, InterpType inType, PetscInt order, AppCtx *user)
-{
-  PetscErrorCode (*exactFuncs[1]) (PetscInt, PetscReal, const PetscReal x[], PetscInt, PetscScalar *u, void *ctx);
-  PetscErrorCode (*exactFuncDers[1]) (PetscInt, PetscReal, const PetscReal x[], const PetscReal n[], PetscInt, PetscScalar *u, void *ctx);
-  void           *exactCtxs[3];
-  DM              rdm = NULL, idm = NULL, fdm = NULL;
-  Mat             Interp, InterpAdapt = NULL;
-  Vec             iu, fu, scaling = NULL;
-  MPI_Comm        comm;
-  const char     *testname = "Unknown";
-  char            checkname[PETSC_MAX_PATH_LEN];
+static PetscErrorCode CheckTransfer(DM dm, InterpType inType, PetscInt order, AppCtx *user) {
+  PetscErrorCode (*exactFuncs[1])(PetscInt, PetscReal, const PetscReal x[], PetscInt, PetscScalar *u, void *ctx);
+  PetscErrorCode (*exactFuncDers[1])(PetscInt, PetscReal, const PetscReal x[], const PetscReal n[], PetscInt, PetscScalar *u, void *ctx);
+  void       *exactCtxs[3];
+  DM          rdm = NULL, idm = NULL, fdm = NULL;
+  Mat         Interp, InterpAdapt = NULL;
+  Vec         iu, fu, scaling = NULL;
+  MPI_Comm    comm;
+  const char *testname = "Unknown";
+  char        checkname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBeginUser;
   exactCtxs[0] = exactCtxs[1] = exactCtxs[2] = user;
-  PetscCall(PetscObjectGetComm((PetscObject)dm,&comm));
+  PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
   PetscCall(DMRefine(dm, comm, &rdm));
   PetscCall(DMViewFromOptions(rdm, NULL, "-ref_dm_view"));
   PetscCall(DMSetCoarseDM(rdm, dm));
@@ -502,18 +514,18 @@ static PetscErrorCode CheckTransfer(DM dm, InterpType inType, PetscInt order, Ap
   switch (inType) {
   case INTERPOLATION:
     testname = "Interpolation";
-    idm = dm;
-    fdm = rdm;
+    idm      = dm;
+    fdm      = rdm;
     break;
   case RESTRICTION:
     testname = "Restriction";
-    idm = rdm;
-    fdm = dm;
+    idm      = rdm;
+    fdm      = dm;
     break;
   case INJECTION:
     testname = "Injection";
-    idm = rdm;
-    fdm = dm;
+    idm      = rdm;
+    fdm      = dm;
     break;
   }
   PetscCall(DMGetGlobalVector(idm, &iu));
@@ -551,21 +563,21 @@ static PetscErrorCode CheckTransfer(DM dm, InterpType inType, PetscInt order, Ap
     /* Project coarse modes into initial and final FE function space */
     PetscCall(DMGetGlobalVector(idm, &iV));
     PetscCall(DMGetGlobalVector(fdm, &fV));
-    PetscCall(VecGetLocalSize(iV,&im));
-    PetscCall(VecGetLocalSize(fV,&fm));
-    PetscCall(MatCreateDense(PetscObjectComm((PetscObject)dm),im,PETSC_DECIDE,PETSC_DECIDE,user->K*dim,NULL,&iVM));
-    PetscCall(MatCreateDense(PetscObjectComm((PetscObject)dm),fm,PETSC_DECIDE,PETSC_DECIDE,user->K*dim,NULL,&fVM));
+    PetscCall(VecGetLocalSize(iV, &im));
+    PetscCall(VecGetLocalSize(fV, &fm));
+    PetscCall(MatCreateDense(PetscObjectComm((PetscObject)dm), im, PETSC_DECIDE, PETSC_DECIDE, user->K * dim, NULL, &iVM));
+    PetscCall(MatCreateDense(PetscObjectComm((PetscObject)dm), fm, PETSC_DECIDE, PETSC_DECIDE, user->K * dim, NULL, &fVM));
     PetscCall(DMRestoreGlobalVector(idm, &iV));
     PetscCall(DMRestoreGlobalVector(fdm, &fV));
     for (k = 0; k < user->K; ++k) {
       for (d = 0; d < dim; ++d) {
-        PetscCall(MatDenseGetColumnVecWrite(iVM,k*dim+d,&iV));
-        PetscCall(MatDenseGetColumnVecWrite(fVM,k*dim+d,&fV));
-        PetscCall(SetupFunctions(idm, user->usePoly, user->usePoly ? k : k+1, d, exactFuncs, exactFuncDers, user));
+        PetscCall(MatDenseGetColumnVecWrite(iVM, k * dim + d, &iV));
+        PetscCall(MatDenseGetColumnVecWrite(fVM, k * dim + d, &fV));
+        PetscCall(SetupFunctions(idm, user->usePoly, user->usePoly ? k : k + 1, d, exactFuncs, exactFuncDers, user));
         PetscCall(DMProjectFunction(idm, 0.0, exactFuncs, exactCtxs, INSERT_ALL_VALUES, iV));
         PetscCall(DMProjectFunction(fdm, 0.0, exactFuncs, exactCtxs, INSERT_ALL_VALUES, fV));
-        PetscCall(MatDenseRestoreColumnVecWrite(iVM,k*dim+d,&iV));
-        PetscCall(MatDenseRestoreColumnVecWrite(fVM,k*dim+d,&fV));
+        PetscCall(MatDenseRestoreColumnVecWrite(iVM, k * dim + d, &iV));
+        PetscCall(MatDenseRestoreColumnVecWrite(fVM, k * dim + d, &fV));
       }
     }
 
@@ -583,12 +595,12 @@ static PetscErrorCode CheckTransfer(DM dm, InterpType inType, PetscInt order, Ap
     for (k = 0; k < user->K; ++k) {
       for (d = 0; d < dim; ++d) {
         PetscCall(PetscSNPrintf(checkname, PETSC_MAX_PATH_LEN, "  %s trig (%" PetscInt_FMT ", %" PetscInt_FMT ")", testname, k, d));
-        PetscCall(MatDenseGetColumnVecRead(iVM,k*dim+d,&iV));
-        PetscCall(MatDenseGetColumnVecWrite(fVM,k*dim+d,&fV));
+        PetscCall(MatDenseGetColumnVecRead(iVM, k * dim + d, &iV));
+        PetscCall(MatDenseGetColumnVecWrite(fVM, k * dim + d, &fV));
         PetscCall(MatInterpolate(InterpAdapt, iV, fV));
-        PetscCall(CheckTransferError(fdm, PETSC_FALSE, k+1, d, checkname, fV, user));
-        PetscCall(MatDenseRestoreColumnVecRead(iVM,k*dim+d,&iV));
-        PetscCall(MatDenseRestoreColumnVecWrite(fVM,k*dim+d,&fV));
+        PetscCall(CheckTransferError(fdm, PETSC_FALSE, k + 1, d, checkname, fV, user));
+        PetscCall(MatDenseRestoreColumnVecRead(iVM, k * dim + d, &iV));
+        PetscCall(MatDenseRestoreColumnVecWrite(fVM, k * dim + d, &fV));
       }
     }
     /* Cleanup */
@@ -606,13 +618,12 @@ static PetscErrorCode CheckTransfer(DM dm, InterpType inType, PetscInt order, Ap
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv)
-{
-  DM             dm;
-  PetscFE        fe;
-  AppCtx         user;
-  PetscInt       dim;
-  PetscBool      simplex;
+int main(int argc, char **argv) {
+  DM        dm;
+  PetscFE   fe;
+  AppCtx    user;
+  PetscInt  dim;
+  PetscBool simplex;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
@@ -622,13 +633,13 @@ int main(int argc, char **argv)
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(DMPlexIsSimplex(dm, &simplex));
   PetscCall(PetscFECreateDefault(PETSC_COMM_WORLD, dim, user.Nc < 0 ? dim : user.Nc, simplex, NULL, user.qorder, &fe));
-  PetscCall(DMSetField(dm, 0, NULL, (PetscObject) fe));
+  PetscCall(DMSetField(dm, 0, NULL, (PetscObject)fe));
   PetscCall(PetscFEDestroy(&fe));
   PetscCall(DMCreateDS(dm));
 
   PetscCall(CheckFunctions(dm, user.porder, &user));
   PetscCall(CheckTransfer(dm, INTERPOLATION, user.porder, &user));
-  PetscCall(CheckTransfer(dm, INJECTION,  user.porder, &user));
+  PetscCall(CheckTransfer(dm, INJECTION, user.porder, &user));
   PetscCall(DMDestroy(&dm));
   PetscCall(PetscFinalize());
   return 0;

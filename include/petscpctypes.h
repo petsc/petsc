@@ -10,7 +10,7 @@
 
 .seealso: `PCCreate()`, `PCSetType()`, `PCType`
 S*/
-typedef struct _p_PC* PC;
+typedef struct _p_PC *PC;
 
 /*J
     PCType - String with the name of a PETSc preconditioner method.
@@ -22,61 +22,61 @@ typedef struct _p_PC* PC;
 
 .seealso: `PCSetType()`, `PC`, `PCCreate()`, `PCRegister()`, `PCSetFromOptions()`, `PCLU`, `PCJACOBI`, `PCBJACOBI`
 J*/
-typedef const char* PCType;
-#define PCNONE            "none"
-#define PCJACOBI          "jacobi"
-#define PCSOR             "sor"
-#define PCLU              "lu"
-#define PCQR              "qr"
-#define PCSHELL           "shell"
-#define PCAMGX            "amgx"
-#define PCBJACOBI         "bjacobi"
-#define PCMG              "mg"
-#define PCEISENSTAT       "eisenstat"
-#define PCILU             "ilu"
-#define PCICC             "icc"
-#define PCASM             "asm"
-#define PCGASM            "gasm"
-#define PCKSP             "ksp"
-#define PCBJKOKKOS        "bjkokkos"
-#define PCCOMPOSITE       "composite"
-#define PCREDUNDANT       "redundant"
-#define PCSPAI            "spai"
-#define PCNN              "nn"
-#define PCCHOLESKY        "cholesky"
-#define PCPBJACOBI        "pbjacobi"
-#define PCVPBJACOBI       "vpbjacobi"
-#define PCMAT             "mat"
-#define PCHYPRE           "hypre"
-#define PCPARMS           "parms"
-#define PCFIELDSPLIT      "fieldsplit"
-#define PCTFS             "tfs"
-#define PCML              "ml"
-#define PCGALERKIN        "galerkin"
-#define PCEXOTIC          "exotic"
-#define PCCP              "cp"
-#define PCBFBT            "bfbt"
-#define PCLSC             "lsc"
-#define PCPYTHON          "python"
-#define PCPFMG            "pfmg"
-#define PCSMG             "smg"
-#define PCSYSPFMG         "syspfmg"
-#define PCREDISTRIBUTE    "redistribute"
-#define PCSVD             "svd"
-#define PCGAMG            "gamg"
-#define PCCHOWILUVIENNACL "chowiluviennacl"
+typedef const char *PCType;
+#define PCNONE               "none"
+#define PCJACOBI             "jacobi"
+#define PCSOR                "sor"
+#define PCLU                 "lu"
+#define PCQR                 "qr"
+#define PCSHELL              "shell"
+#define PCAMGX               "amgx"
+#define PCBJACOBI            "bjacobi"
+#define PCMG                 "mg"
+#define PCEISENSTAT          "eisenstat"
+#define PCILU                "ilu"
+#define PCICC                "icc"
+#define PCASM                "asm"
+#define PCGASM               "gasm"
+#define PCKSP                "ksp"
+#define PCBJKOKKOS           "bjkokkos"
+#define PCCOMPOSITE          "composite"
+#define PCREDUNDANT          "redundant"
+#define PCSPAI               "spai"
+#define PCNN                 "nn"
+#define PCCHOLESKY           "cholesky"
+#define PCPBJACOBI           "pbjacobi"
+#define PCVPBJACOBI          "vpbjacobi"
+#define PCMAT                "mat"
+#define PCHYPRE              "hypre"
+#define PCPARMS              "parms"
+#define PCFIELDSPLIT         "fieldsplit"
+#define PCTFS                "tfs"
+#define PCML                 "ml"
+#define PCGALERKIN           "galerkin"
+#define PCEXOTIC             "exotic"
+#define PCCP                 "cp"
+#define PCBFBT               "bfbt"
+#define PCLSC                "lsc"
+#define PCPYTHON             "python"
+#define PCPFMG               "pfmg"
+#define PCSMG                "smg"
+#define PCSYSPFMG            "syspfmg"
+#define PCREDISTRIBUTE       "redistribute"
+#define PCSVD                "svd"
+#define PCGAMG               "gamg"
+#define PCCHOWILUVIENNACL    "chowiluviennacl"
 #define PCROWSCALINGVIENNACL "rowscalingviennacl"
-#define PCSAVIENNACL      "saviennacl"
-#define PCBDDC            "bddc"
-#define PCKACZMARZ        "kaczmarz"
-#define PCTELESCOPE       "telescope"
-#define PCPATCH           "patch"
-#define PCLMVM            "lmvm"
-#define PCHMG             "hmg"
-#define PCDEFLATION       "deflation"
-#define PCHPDDM           "hpddm"
-#define PCH2OPUS          "h2opus"
-#define PCMPI             "mpi"
+#define PCSAVIENNACL         "saviennacl"
+#define PCBDDC               "bddc"
+#define PCKACZMARZ           "kaczmarz"
+#define PCTELESCOPE          "telescope"
+#define PCPATCH              "patch"
+#define PCLMVM               "lmvm"
+#define PCHMG                "hmg"
+#define PCDEFLATION          "deflation"
+#define PCHPDDM              "hpddm"
+#define PCH2OPUS             "h2opus"
+#define PCMPI                "mpi"
 
 /*E
     PCSide - If the preconditioner is to be applied to the left, right
@@ -86,7 +86,12 @@ typedef const char* PCType;
 
 .seealso:
 E*/
-typedef enum { PC_SIDE_DEFAULT=-1,PC_LEFT,PC_RIGHT,PC_SYMMETRIC} PCSide;
+typedef enum {
+  PC_SIDE_DEFAULT = -1,
+  PC_LEFT,
+  PC_RIGHT,
+  PC_SYMMETRIC
+} PCSide;
 #define PC_SIDE_MAX (PC_SYMMETRIC + 1)
 
 /*E
@@ -100,10 +105,11 @@ typedef enum { PC_SIDE_DEFAULT=-1,PC_LEFT,PC_RIGHT,PC_SYMMETRIC} PCSide;
 .seealso: `PCApplyRichardson()`
 E*/
 typedef enum {
-              PCRICHARDSON_CONVERGED_RTOL               =  2,
-              PCRICHARDSON_CONVERGED_ATOL               =  3,
-              PCRICHARDSON_CONVERGED_ITS                =  4,
-              PCRICHARDSON_DIVERGED_DTOL                = -4} PCRichardsonConvergedReason;
+  PCRICHARDSON_CONVERGED_RTOL = 2,
+  PCRICHARDSON_CONVERGED_ATOL = 3,
+  PCRICHARDSON_CONVERGED_ITS  = 4,
+  PCRICHARDSON_DIVERGED_DTOL  = -4
+} PCRichardsonConvergedReason;
 
 /*E
     PCJacobiType - What elements are used to form the Jacobi preconditioner
@@ -112,7 +118,11 @@ typedef enum {
 
 .seealso:
 E*/
-typedef enum { PC_JACOBI_DIAGONAL,PC_JACOBI_ROWMAX,PC_JACOBI_ROWSUM} PCJacobiType;
+typedef enum {
+  PC_JACOBI_DIAGONAL,
+  PC_JACOBI_ROWMAX,
+  PC_JACOBI_ROWSUM
+} PCJacobiType;
 
 /*E
     PCASMType - Type of additive Schwarz method to use
@@ -133,7 +143,12 @@ $                        Not very good.
 
 .seealso: `PCASMSetType()`
 E*/
-typedef enum {PC_ASM_BASIC = 3,PC_ASM_RESTRICT = 1,PC_ASM_INTERPOLATE = 2,PC_ASM_NONE = 0} PCASMType;
+typedef enum {
+  PC_ASM_BASIC       = 3,
+  PC_ASM_RESTRICT    = 1,
+  PC_ASM_INTERPOLATE = 2,
+  PC_ASM_NONE        = 0
+} PCASMType;
 
 /*E
     PCGASMType - Type of generalized additive Schwarz method to use (differs from `PCASM` in allowing multiple processors per subdomain).
@@ -163,7 +178,12 @@ $                        Not very good.
 
 .seealso: `PCGASMSetType()`
 E*/
-typedef enum {PC_GASM_BASIC = 3,PC_GASM_RESTRICT = 1,PC_GASM_INTERPOLATE = 2,PC_GASM_NONE = 0} PCGASMType;
+typedef enum {
+  PC_GASM_BASIC       = 3,
+  PC_GASM_RESTRICT    = 1,
+  PC_GASM_INTERPOLATE = 2,
+  PC_GASM_NONE        = 0
+} PCGASMType;
 
 /*E
     PCCompositeType - Determines how two or more preconditioner are composed
@@ -181,7 +201,14 @@ $                         alpha I + R
 
 .seealso: `PCCompositeSetType()`
 E*/
-typedef enum {PC_COMPOSITE_ADDITIVE,PC_COMPOSITE_MULTIPLICATIVE,PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE,PC_COMPOSITE_SPECIAL,PC_COMPOSITE_SCHUR,PC_COMPOSITE_GKB} PCCompositeType;
+typedef enum {
+  PC_COMPOSITE_ADDITIVE,
+  PC_COMPOSITE_MULTIPLICATIVE,
+  PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE,
+  PC_COMPOSITE_SPECIAL,
+  PC_COMPOSITE_SCHUR,
+  PC_COMPOSITE_GKB
+} PCCompositeType;
 
 /*E
     PCFieldSplitSchurPreType - Determines how to precondition a Schur complement
@@ -190,7 +217,13 @@ typedef enum {PC_COMPOSITE_ADDITIVE,PC_COMPOSITE_MULTIPLICATIVE,PC_COMPOSITE_SYM
 
 .seealso: `PCFieldSplitSetSchurPre()`
 E*/
-typedef enum {PC_FIELDSPLIT_SCHUR_PRE_SELF,PC_FIELDSPLIT_SCHUR_PRE_SELFP,PC_FIELDSPLIT_SCHUR_PRE_A11,PC_FIELDSPLIT_SCHUR_PRE_USER,PC_FIELDSPLIT_SCHUR_PRE_FULL} PCFieldSplitSchurPreType;
+typedef enum {
+  PC_FIELDSPLIT_SCHUR_PRE_SELF,
+  PC_FIELDSPLIT_SCHUR_PRE_SELFP,
+  PC_FIELDSPLIT_SCHUR_PRE_A11,
+  PC_FIELDSPLIT_SCHUR_PRE_USER,
+  PC_FIELDSPLIT_SCHUR_PRE_FULL
+} PCFieldSplitSchurPreType;
 
 /*E
     PCFieldSplitSchurFactType - determines which off-diagonal parts of the approximate block factorization to use
@@ -213,7 +246,11 @@ typedef enum {
 
 .seealso: `PCPARMSSetGlobal()`
 E*/
-typedef enum {PC_PARMS_GLOBAL_RAS,PC_PARMS_GLOBAL_SCHUR,PC_PARMS_GLOBAL_BJ} PCPARMSGlobalType;
+typedef enum {
+  PC_PARMS_GLOBAL_RAS,
+  PC_PARMS_GLOBAL_SCHUR,
+  PC_PARMS_GLOBAL_BJ
+} PCPARMSGlobalType;
 
 /*E
     PCPARMSLocalType - Determines the local preconditioner method in `PCPARMS`
@@ -222,7 +259,12 @@ typedef enum {PC_PARMS_GLOBAL_RAS,PC_PARMS_GLOBAL_SCHUR,PC_PARMS_GLOBAL_BJ} PCPA
 
 .seealso: `PCPARMSSetLocal()`
 E*/
-typedef enum {PC_PARMS_LOCAL_ILU0,PC_PARMS_LOCAL_ILUK,PC_PARMS_LOCAL_ILUT,PC_PARMS_LOCAL_ARMS} PCPARMSLocalType;
+typedef enum {
+  PC_PARMS_LOCAL_ILU0,
+  PC_PARMS_LOCAL_ILUK,
+  PC_PARMS_LOCAL_ILUT,
+  PC_PARMS_LOCAL_ARMS
+} PCPARMSLocalType;
 
 /*J
     PCGAMGType - type of generalized algebraic multigrid `PCGAMG` method
@@ -236,9 +278,9 @@ $   `PCGAMGCLASSICAL` - classical algebraic multigrid preconditioner, incomplete
 .seealso: `PCMG`, `PCSetType()`, `PCGAMGSetThreshold()`, `PCGAMGSetThreshold()`, `PCGAMGSetReuseInterpolation()`
 J*/
 typedef const char *PCGAMGType;
-#define PCGAMGAGG         "agg"
-#define PCGAMGGEO         "geo"
-#define PCGAMGCLASSICAL   "classical"
+#define PCGAMGAGG       "agg"
+#define PCGAMGGEO       "geo"
+#define PCGAMGCLASSICAL "classical"
 
 typedef const char *PCGAMGClassicalType;
 #define PCGAMGCLASSICALDIRECT   "direct"
@@ -265,7 +307,12 @@ typedef const char *PCGAMGClassicalType;
 .seealso: `PCMGSetType()`, `PCMGSetCycleType()`, `PCMGSetCycleTypeOnLevel()`
 
 E*/
-typedef enum { PC_MG_MULTIPLICATIVE,PC_MG_ADDITIVE,PC_MG_FULL,PC_MG_KASKADE } PCMGType;
+typedef enum {
+  PC_MG_MULTIPLICATIVE,
+  PC_MG_ADDITIVE,
+  PC_MG_FULL,
+  PC_MG_KASKADE
+} PCMGType;
 #define PC_MG_CASCADE PC_MG_KASKADE;
 
 /*E
@@ -280,7 +327,10 @@ typedef enum { PC_MG_MULTIPLICATIVE,PC_MG_ADDITIVE,PC_MG_FULL,PC_MG_KASKADE } PC
 .seealso: `PCMGSetCycleType()`
 
 E*/
-typedef enum { PC_MG_CYCLE_V = 1,PC_MG_CYCLE_W = 2 } PCMGCycleType;
+typedef enum {
+  PC_MG_CYCLE_V = 1,
+  PC_MG_CYCLE_W = 2
+} PCMGCycleType;
 
 /*E
     PCMGalerkinType - Determines if the coarse grid operators are computed via the Galerkin process
@@ -298,7 +348,13 @@ typedef enum { PC_MG_CYCLE_V = 1,PC_MG_CYCLE_W = 2 } PCMGCycleType;
 .seealso: `PCMGSetCycleType()`
 
 E*/
-typedef enum { PC_MG_GALERKIN_BOTH,PC_MG_GALERKIN_PMAT,PC_MG_GALERKIN_MAT, PC_MG_GALERKIN_NONE, PC_MG_GALERKIN_EXTERNAL} PCMGGalerkinType;
+typedef enum {
+  PC_MG_GALERKIN_BOTH,
+  PC_MG_GALERKIN_PMAT,
+  PC_MG_GALERKIN_MAT,
+  PC_MG_GALERKIN_NONE,
+  PC_MG_GALERKIN_EXTERNAL
+} PCMGGalerkinType;
 
 /*E
     PCExoticType - Face based or wirebasket based coarse grid space
@@ -307,7 +363,10 @@ typedef enum { PC_MG_GALERKIN_BOTH,PC_MG_GALERKIN_PMAT,PC_MG_GALERKIN_MAT, PC_MG
 
 .seealso: `PCExoticSetType()`, `PCEXOTIC`
 E*/
-typedef enum { PC_EXOTIC_FACE,PC_EXOTIC_WIREBASKET } PCExoticType;
+typedef enum {
+  PC_EXOTIC_FACE,
+  PC_EXOTIC_WIREBASKET
+} PCExoticType;
 
 /*E
    PCBDDCInterfaceExtType - Defines how interface balancing is extended into the interior of subdomains.
@@ -331,7 +390,14 @@ typedef enum {
 
 .seealso: `PCMGSetAdaptCoarseSpaceType()`, `PCMG`
 E*/
-typedef enum { PCMG_ADAPT_NONE, PCMG_ADAPT_POLYNOMIAL, PCMG_ADAPT_HARMONIC, PCMG_ADAPT_EIGENVECTOR, PCMG_ADAPT_GENERALIZED_EIGENVECTOR, PCMG_ADAPT_GDSW } PCMGCoarseSpaceType;
+typedef enum {
+  PCMG_ADAPT_NONE,
+  PCMG_ADAPT_POLYNOMIAL,
+  PCMG_ADAPT_HARMONIC,
+  PCMG_ADAPT_EIGENVECTOR,
+  PCMG_ADAPT_GENERALIZED_EIGENVECTOR,
+  PCMG_ADAPT_GDSW
+} PCMGCoarseSpaceType;
 
 /*E
     PCPatchConstructType - The algorithm used to construct patches for the preconditioner
@@ -340,7 +406,13 @@ typedef enum { PCMG_ADAPT_NONE, PCMG_ADAPT_POLYNOMIAL, PCMG_ADAPT_HARMONIC, PCMG
 
 .seealso: `PCPatchSetConstructType()`, `PCEXOTIC`
 E*/
-typedef enum {PC_PATCH_STAR, PC_PATCH_VANKA, PC_PATCH_PARDECOMP, PC_PATCH_USER, PC_PATCH_PYTHON} PCPatchConstructType;
+typedef enum {
+  PC_PATCH_STAR,
+  PC_PATCH_VANKA,
+  PC_PATCH_PARDECOMP,
+  PC_PATCH_USER,
+  PC_PATCH_PYTHON
+} PCPatchConstructType;
 
 /*E
     PCDeflationSpaceType - Type of deflation
@@ -387,7 +459,11 @@ typedef enum {
 
 .seealso: `PCHPDDM`, `PCSetType()`, `PCHPDDMShellApply()`
 E*/
-typedef enum { PC_HPDDM_COARSE_CORRECTION_DEFLATED, PC_HPDDM_COARSE_CORRECTION_ADDITIVE, PC_HPDDM_COARSE_CORRECTION_BALANCED } PCHPDDMCoarseCorrectionType;
+typedef enum {
+  PC_HPDDM_COARSE_CORRECTION_DEFLATED,
+  PC_HPDDM_COARSE_CORRECTION_ADDITIVE,
+  PC_HPDDM_COARSE_CORRECTION_BALANCED
+} PCHPDDMCoarseCorrectionType;
 
 /*E
     PCFailedReason - indicates type of `PC` failure
@@ -397,7 +473,15 @@ typedef enum { PC_HPDDM_COARSE_CORRECTION_DEFLATED, PC_HPDDM_COARSE_CORRECTION_A
     Developer Note:
     Any additions/changes here MUST also be made in include/petsc/finclude/petscpc.h
 E*/
-typedef enum {PC_SETUP_ERROR = -1,PC_NOERROR,PC_FACTOR_STRUCT_ZEROPIVOT,PC_FACTOR_NUMERIC_ZEROPIVOT,PC_FACTOR_OUTMEMORY,PC_FACTOR_OTHER,PC_SUBPC_ERROR} PCFailedReason;
+typedef enum {
+  PC_SETUP_ERROR = -1,
+  PC_NOERROR,
+  PC_FACTOR_STRUCT_ZEROPIVOT,
+  PC_FACTOR_NUMERIC_ZEROPIVOT,
+  PC_FACTOR_OUTMEMORY,
+  PC_FACTOR_OTHER,
+  PC_SUBPC_ERROR
+} PCFailedReason;
 
 /*E
     PCGAMGLayoutType - Layout for reduced grids
@@ -408,6 +492,9 @@ typedef enum {PC_SETUP_ERROR = -1,PC_NOERROR,PC_FACTOR_STRUCT_ZEROPIVOT,PC_FACTO
 
     Any additions/changes here MUST also be made in include/petsc/finclude/petscpc.h
 E*/
-typedef enum {PCGAMG_LAYOUT_COMPACT,PCGAMG_LAYOUT_SPREAD} PCGAMGLayoutType;
+typedef enum {
+  PCGAMG_LAYOUT_COMPACT,
+  PCGAMG_LAYOUT_SPREAD
+} PCGAMGLayoutType;
 
 #endif

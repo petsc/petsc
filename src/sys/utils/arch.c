@@ -1,5 +1,5 @@
 
-#include <petscsys.h>         /*I  "petscsys.h"  I*/
+#include <petscsys.h> /*I  "petscsys.h"  I*/
 
 /*@C
      PetscGetArchType - Returns the $PETSC_ARCH that was used for this configuration of PETSc
@@ -26,11 +26,10 @@ $       call PetscGetArchType(str,ierr)
 
 .seealso: `PetscGetUserName()`, `PetscGetHostName()`
 @*/
-PetscErrorCode  PetscGetArchType(char str[], size_t slen)
-{
+PetscErrorCode PetscGetArchType(char str[], size_t slen) {
   PetscFunctionBegin;
 #if defined(PETSC_ARCH)
-  PetscCall(PetscStrncpy(str,PETSC_ARCH,slen-1));
+  PetscCall(PetscStrncpy(str, PETSC_ARCH, slen - 1));
 #else
 #error "$PETSC_ARCH/include/petscconf.h is missing PETSC_ARCH"
 #endif

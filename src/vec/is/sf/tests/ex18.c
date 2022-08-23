@@ -1,40 +1,38 @@
 
-static char help[]= "Test PetscSFConcatenate()\n\n";
+static char help[] = "Test PetscSFConcatenate()\n\n";
 
 #include <petscsf.h>
 
 typedef struct {
-  MPI_Comm          comm;
-  PetscMPIInt       rank, size;
-  PetscInt          leaveStep, nsfs, nLeavesPerRank;
-  PetscBool         shareRoots, sparseLeaves;
+  MPI_Comm    comm;
+  PetscMPIInt rank, size;
+  PetscInt    leaveStep, nsfs, nLeavesPerRank;
+  PetscBool   shareRoots, sparseLeaves;
 } AppCtx;
 
-static PetscErrorCode GetOptions(MPI_Comm comm, AppCtx *ctx)
-{
+static PetscErrorCode GetOptions(MPI_Comm comm, AppCtx *ctx) {
   PetscFunctionBegin;
-  ctx->comm = comm;
-  ctx->nsfs = 3;
+  ctx->comm           = comm;
+  ctx->nsfs           = 3;
   ctx->nLeavesPerRank = 4;
-  ctx->leaveStep = 1;
-  ctx->shareRoots = PETSC_FALSE;
-  ctx->sparseLeaves = PETSC_FALSE;
+  ctx->leaveStep      = 1;
+  ctx->shareRoots     = PETSC_FALSE;
+  ctx->sparseLeaves   = PETSC_FALSE;
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-nsfs", &ctx->nsfs, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-n_leaves_per_rank", &ctx->nLeavesPerRank, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-leave_step", &ctx->leaveStep, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-share_roots", &ctx->shareRoots, NULL));
-  ctx->sparseLeaves = (PetscBool) (ctx->leaveStep != 1);
+  ctx->sparseLeaves = (PetscBool)(ctx->leaveStep != 1);
   PetscCallMPI(MPI_Comm_size(comm, &ctx->size));
   PetscCallMPI(MPI_Comm_rank(comm, &ctx->rank));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSFCheckEqual_Private(PetscSF sf0, PetscSF sf1)
-{
-  PetscInt          nRoot, nLeave;
-  Vec               vecRoot0, vecLeave0, vecRoot1, vecLeave1;
-  MPI_Comm          comm;
-  PetscBool         flg;
+static PetscErrorCode PetscSFCheckEqual_Private(PetscSF sf0, PetscSF sf1) {
+  PetscInt  nRoot, nLeave;
+  Vec       vecRoot0, vecLeave0, vecRoot1, vecLeave1;
+  MPI_Comm  comm;
+  PetscBool flg;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)sf0, &comm));
@@ -46,7 +44,7 @@ static PetscErrorCode PetscSFCheckEqual_Private(PetscSF sf0, PetscSF sf1)
   PetscCall(VecDuplicate(vecRoot0, &vecRoot1));
   PetscCall(VecDuplicate(vecLeave0, &vecLeave1));
   {
-    PetscRandom       rand;
+    PetscRandom rand;
 
     PetscCall(PetscRandomCreate(comm, &rand));
     PetscCall(PetscRandomSetFromOptions(rand));
@@ -58,16 +56,16 @@ static PetscErrorCode PetscSFCheckEqual_Private(PetscSF sf0, PetscSF sf1)
   }
 
   PetscCall(VecScatterBegin(sf0, vecRoot0, vecLeave0, ADD_VALUES, SCATTER_FORWARD));
-  PetscCall(VecScatterEnd(  sf0, vecRoot0, vecLeave0, ADD_VALUES, SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(sf0, vecRoot0, vecLeave0, ADD_VALUES, SCATTER_FORWARD));
   PetscCall(VecScatterBegin(sf1, vecRoot1, vecLeave1, ADD_VALUES, SCATTER_FORWARD));
-  PetscCall(VecScatterEnd(  sf1, vecRoot1, vecLeave1, ADD_VALUES, SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(sf1, vecRoot1, vecLeave1, ADD_VALUES, SCATTER_FORWARD));
   PetscCall(VecEqual(vecLeave0, vecLeave1, &flg));
   PetscCheck(flg, comm, PETSC_ERR_PLIB, "leave vectors differ");
 
   PetscCall(VecScatterBegin(sf0, vecLeave0, vecRoot0, ADD_VALUES, SCATTER_REVERSE));
-  PetscCall(VecScatterEnd(  sf0, vecLeave0, vecRoot0, ADD_VALUES, SCATTER_REVERSE));
+  PetscCall(VecScatterEnd(sf0, vecLeave0, vecRoot0, ADD_VALUES, SCATTER_REVERSE));
   PetscCall(VecScatterBegin(sf1, vecLeave1, vecRoot1, ADD_VALUES, SCATTER_REVERSE));
-  PetscCall(VecScatterEnd(  sf1, vecLeave1, vecRoot1, ADD_VALUES, SCATTER_REVERSE));
+  PetscCall(VecScatterEnd(sf1, vecLeave1, vecRoot1, ADD_VALUES, SCATTER_REVERSE));
   PetscCall(VecEqual(vecRoot0, vecRoot1, &flg));
   PetscCheck(flg, comm, PETSC_ERR_PLIB, "root vectors differ");
 
@@ -78,29 +76,24 @@ static PetscErrorCode PetscSFCheckEqual_Private(PetscSF sf0, PetscSF sf1)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode CreateReferenceSF(AppCtx *ctx, PetscSF *refSF)
-{
-  PetscInt          i, j, k, r;
-  PetscInt         *ilocal = NULL;
-  PetscSFNode      *iremote;
-  PetscInt          nLeaves = ctx->nsfs * ctx->nLeavesPerRank * ctx->size;
-  PetscInt          nroots  = ctx->nLeavesPerRank * ctx->nsfs;
-  PetscSF           sf;
+PetscErrorCode CreateReferenceSF(AppCtx *ctx, PetscSF *refSF) {
+  PetscInt     i, j, k, r;
+  PetscInt    *ilocal = NULL;
+  PetscSFNode *iremote;
+  PetscInt     nLeaves = ctx->nsfs * ctx->nLeavesPerRank * ctx->size;
+  PetscInt     nroots  = ctx->nLeavesPerRank * ctx->nsfs;
+  PetscSF      sf;
 
   PetscFunctionBegin;
   ilocal = NULL;
-  if (ctx->sparseLeaves) {
-    PetscCall(PetscCalloc1(nLeaves+1, &ilocal));
-  }
+  if (ctx->sparseLeaves) { PetscCall(PetscCalloc1(nLeaves + 1, &ilocal)); }
   PetscCall(PetscMalloc1(nLeaves, &iremote));
   PetscCall(PetscSFCreate(ctx->comm, &sf));
-  for (i=0, j=0; i<ctx->nsfs; i++) {
-    for (r=0; r<ctx->size; r++) {
-      for (k=0; k<ctx->nLeavesPerRank; k++, j++) {
-        if (ctx->sparseLeaves) {
-          ilocal[j+1] = ilocal[j] + ctx->leaveStep;
-        }
-        iremote[j].rank = r;
+  for (i = 0, j = 0; i < ctx->nsfs; i++) {
+    for (r = 0; r < ctx->size; r++) {
+      for (k = 0; k < ctx->nLeavesPerRank; k++, j++) {
+        if (ctx->sparseLeaves) { ilocal[j + 1] = ilocal[j] + ctx->leaveStep; }
+        iremote[j].rank  = r;
         iremote[j].index = k + i * ctx->nLeavesPerRank;
       }
     }
@@ -110,70 +103,59 @@ PetscErrorCode CreateReferenceSF(AppCtx *ctx, PetscSF *refSF)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode CreateSFs(AppCtx *ctx, PetscSF *newSFs[], PetscInt *leafOffsets[])
-{
-  PetscInt          i;
-  PetscInt         *lOffsets = NULL;
-  PetscSF          *sfs;
-  PetscInt          nLeaves = ctx->nLeavesPerRank * ctx->size;
-  PetscInt          nroots  = ctx->shareRoots ? ctx->nLeavesPerRank * ctx->nsfs : ctx->nLeavesPerRank;
+PetscErrorCode CreateSFs(AppCtx *ctx, PetscSF *newSFs[], PetscInt *leafOffsets[]) {
+  PetscInt  i;
+  PetscInt *lOffsets = NULL;
+  PetscSF  *sfs;
+  PetscInt  nLeaves = ctx->nLeavesPerRank * ctx->size;
+  PetscInt  nroots  = ctx->shareRoots ? ctx->nLeavesPerRank * ctx->nsfs : ctx->nLeavesPerRank;
 
   PetscFunctionBegin;
-  if (ctx->sparseLeaves) {
-    PetscCall(PetscCalloc1(ctx->nsfs+1, &lOffsets));
-  }
+  if (ctx->sparseLeaves) { PetscCall(PetscCalloc1(ctx->nsfs + 1, &lOffsets)); }
   PetscCall(PetscMalloc1(ctx->nsfs, &sfs));
-  for (i=0; i<ctx->nsfs; i++) {
-    PetscInt      j, k;
-    PetscMPIInt   r;
-    PetscInt     *ilocal = NULL;
-    PetscSFNode  *iremote;
+  for (i = 0; i < ctx->nsfs; i++) {
+    PetscInt     j, k;
+    PetscMPIInt  r;
+    PetscInt    *ilocal = NULL;
+    PetscSFNode *iremote;
 
-    if (ctx->sparseLeaves) {
-      PetscCall(PetscCalloc1(nLeaves+1, &ilocal));
-    }
+    if (ctx->sparseLeaves) { PetscCall(PetscCalloc1(nLeaves + 1, &ilocal)); }
     PetscCall(PetscMalloc1(nLeaves, &iremote));
-    for (r=0, j=0; r<ctx->size; r++) {
-      for (k=0; k<ctx->nLeavesPerRank; k++, j++) {
-        if (ctx->sparseLeaves) {
-          ilocal[j+1] = ilocal[j] + ctx->leaveStep;
-        }
-        iremote[j].rank = r;
+    for (r = 0, j = 0; r < ctx->size; r++) {
+      for (k = 0; k < ctx->nLeavesPerRank; k++, j++) {
+        if (ctx->sparseLeaves) { ilocal[j + 1] = ilocal[j] + ctx->leaveStep; }
+        iremote[j].rank  = r;
         iremote[j].index = ctx->shareRoots ? k + i * ctx->nLeavesPerRank : k;
       }
     }
-    if (ctx->sparseLeaves) lOffsets[i+1] = lOffsets[i] + ilocal[j];
+    if (ctx->sparseLeaves) lOffsets[i + 1] = lOffsets[i] + ilocal[j];
 
     PetscCall(PetscSFCreate(ctx->comm, &sfs[i]));
     PetscCall(PetscSFSetGraph(sfs[i], nroots, nLeaves, ilocal, PETSC_OWN_POINTER, iremote, PETSC_OWN_POINTER));
   }
-  *newSFs = sfs;
+  *newSFs      = sfs;
   *leafOffsets = lOffsets;
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DestroySFs(AppCtx *ctx, PetscSF *sfs[])
-{
-  PetscInt          i;
+PetscErrorCode DestroySFs(AppCtx *ctx, PetscSF *sfs[]) {
+  PetscInt i;
 
   PetscFunctionBegin;
-  for (i=0; i<ctx->nsfs; i++) {
-    PetscCall(PetscSFDestroy(&(*sfs)[i]));
-  }
+  for (i = 0; i < ctx->nsfs; i++) { PetscCall(PetscSFDestroy(&(*sfs)[i])); }
   PetscCall(PetscFree(*sfs));
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv)
-{
-  AppCtx            ctx;
-  PetscSF           sf, sfRef;
-  PetscSF          *sfs;
-  PetscInt         *leafOffsets;
-  MPI_Comm          comm;
+int main(int argc, char **argv) {
+  AppCtx    ctx;
+  PetscSF   sf, sfRef;
+  PetscSF  *sfs;
+  PetscInt *leafOffsets;
+  MPI_Comm  comm;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   comm = PETSC_COMM_WORLD;
   PetscCall(GetOptions(comm, &ctx));
 

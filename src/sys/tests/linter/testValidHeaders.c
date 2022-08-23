@@ -1,7 +1,6 @@
 #include <petscsys.h>
 
-void testValidHeaders(PetscRandom r, PetscViewer v, PetscDraw d, PetscDrawAxis a)
-{
+void testValidHeaders(PetscRandom r, PetscViewer v, PetscDraw d, PetscDrawAxis a) {
   /* incorrect */
   PetscValidHeaderSpecificType(r, PETSC_VIEWER_CLASSID, 0, DMDA);
   PetscValidHeaderSpecificType(v, PETSC_DRAW_CLASSID, 0, DMDA);

@@ -16,8 +16,7 @@
 
 .seealso: `PetscFEGetCeedBasis()`, `DMGetCeed()`
 @*/
-PetscErrorCode PetscFESetCeed(PetscFE fe, Ceed ceed)
-{
+PetscErrorCode PetscFESetCeed(PetscFE fe, Ceed ceed) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fe, PETSCFE_CLASSID, 1);
   if (fe->ceed == ceed) PetscFunctionReturn(0);
@@ -42,8 +41,7 @@ PetscErrorCode PetscFESetCeed(PetscFE fe, Ceed ceed)
 
 .seealso: `PetscFESetCeed()`, `DMGetCeed()`
 @*/
-PetscErrorCode PetscFEGetCeedBasis(PetscFE fe, CeedBasis *basis)
-{
+PetscErrorCode PetscFEGetCeedBasis(PetscFE fe, CeedBasis *basis) {
   PetscSpace      sp;
   PetscQuadrature q;
   PetscInt        dim, Nc, deg, ord;
@@ -58,7 +56,7 @@ PetscErrorCode PetscFEGetCeedBasis(PetscFE fe, CeedBasis *basis)
     PetscCall(PetscSpaceGetDegree(sp, &deg, NULL));
     PetscCall(PetscFEGetQuadrature(fe, &q));
     PetscCall(PetscQuadratureGetOrder(q, &ord));
-    PetscCallCEED(CeedBasisCreateTensorH1Lagrange(fe->ceed, dim, Nc, deg+1, (ord+1)/2, CEED_GAUSS, &fe->ceedBasis));
+    PetscCallCEED(CeedBasisCreateTensorH1Lagrange(fe->ceed, dim, Nc, deg + 1, (ord + 1) / 2, CEED_GAUSS, &fe->ceedBasis));
   }
   *basis = fe->ceedBasis;
   PetscFunctionReturn(0);

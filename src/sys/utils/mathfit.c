@@ -17,29 +17,28 @@
 
 .seealso: `PetscConvEstGetConvRate()`
 @*/
-PetscErrorCode PetscLinearRegression(PetscInt n, const PetscReal x[], const PetscReal y[], PetscReal *slope, PetscReal *intercept)
-{
-  PetscScalar  H[4];
-  PetscReal   *X, *Y, beta[2];
+PetscErrorCode PetscLinearRegression(PetscInt n, const PetscReal x[], const PetscReal y[], PetscReal *slope, PetscReal *intercept) {
+  PetscScalar H[4];
+  PetscReal  *X, *Y, beta[2];
 
   PetscFunctionBegin;
   if (n) {
-    PetscValidRealPointer(x,2);
-    PetscValidRealPointer(y,3);
+    PetscValidRealPointer(x, 2);
+    PetscValidRealPointer(y, 3);
   }
-  PetscValidRealPointer(slope,4);
-  PetscValidRealPointer(intercept,5);
-  PetscCall(PetscMalloc2(n*2, &X, n*2, &Y));
+  PetscValidRealPointer(slope, 4);
+  PetscValidRealPointer(intercept, 5);
+  PetscCall(PetscMalloc2(n * 2, &X, n * 2, &Y));
   for (PetscInt k = 0; k < n; ++k) {
     /* X[n,2] = [1, x] */
-    X[k*2+0] = 1.0;
-    X[k*2+1] = x[k];
+    X[k * 2 + 0] = 1.0;
+    X[k * 2 + 1] = x[k];
   }
   /* H = X^T X */
   for (PetscInt i = 0; i < 2; ++i) {
     for (PetscInt j = 0; j < 2; ++j) {
-      H[i*2+j] = 0.0;
-      for (PetscInt k = 0; k < n; ++k) H[i*2+j] += X[k*2+i] * X[k*2+j];
+      H[i * 2 + j] = 0.0;
+      for (PetscInt k = 0; k < n; ++k) H[i * 2 + j] += X[k * 2 + i] * X[k * 2 + j];
     }
   }
   /* H = (X^T X)^{-1} */
@@ -52,17 +51,17 @@ PetscErrorCode PetscLinearRegression(PetscInt n, const PetscReal x[], const Pets
     PetscCallBLAS("LAPACKgetri", LAPACKgetri_(&two, H, &two, ipiv, work, &two, &info));
     PetscCall(PetscFPTrapPop());
   }
-    /* Y = H X^T */
+  /* Y = H X^T */
   for (PetscInt i = 0; i < 2; ++i) {
     for (PetscInt k = 0; k < n; ++k) {
-      Y[i*n+k] = 0.0;
-      for (PetscInt j = 0; j < 2; ++j) Y[i*n+k] += PetscRealPart(H[i*2+j]) * X[k*2+j];
+      Y[i * n + k] = 0.0;
+      for (PetscInt j = 0; j < 2; ++j) Y[i * n + k] += PetscRealPart(H[i * 2 + j]) * X[k * 2 + j];
     }
   }
   /* beta = Y error = [y-intercept, slope] */
   for (PetscInt i = 0; i < 2; ++i) {
     beta[i] = 0.0;
-    for (PetscInt k = 0; k < n; ++k) beta[i] += Y[i*n+k] * y[k];
+    for (PetscInt k = 0; k < n; ++k) beta[i] += Y[i * n + k] * y[k];
   }
   PetscCall(PetscFree2(X, Y));
   *intercept = beta[0];

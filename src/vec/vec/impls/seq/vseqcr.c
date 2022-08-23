@@ -3,7 +3,7 @@
    Implements the sequential vectors.
 */
 
-#include <../src/vec/vec/impls/dvecimpl.h>          /*I  "petscvec.h"   I*/
+#include <../src/vec/vec/impls/dvecimpl.h> /*I  "petscvec.h"   I*/
 
 /*@
    VecCreateSeq - Creates a standard, sequential array-style vector.
@@ -25,11 +25,10 @@
 
 .seealso: `VecCreateMPI()`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`, `VecCreateGhost()`
 @*/
-PetscErrorCode  VecCreateSeq(MPI_Comm comm,PetscInt n,Vec *v)
-{
+PetscErrorCode VecCreateSeq(MPI_Comm comm, PetscInt n, Vec *v) {
   PetscFunctionBegin;
-  PetscCall(VecCreate(comm,v));
-  PetscCall(VecSetSizes(*v,n,n));
-  PetscCall(VecSetType(*v,VECSEQ));
+  PetscCall(VecCreate(comm, v));
+  PetscCall(VecSetSizes(*v, n, n));
+  PetscCall(VecSetType(*v, VECSEQ));
   PetscFunctionReturn(0);
 }

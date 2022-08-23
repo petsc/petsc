@@ -6,7 +6,7 @@ PETSC_EXTERN PetscErrorCode TaoLineSearchCreate_MT(TaoLineSearch);
 PETSC_EXTERN PetscErrorCode TaoLineSearchCreate_GPCG(TaoLineSearch);
 PETSC_EXTERN PetscErrorCode TaoLineSearchCreate_Armijo(TaoLineSearch);
 PETSC_EXTERN PetscErrorCode TaoLineSearchCreate_OWArmijo(TaoLineSearch);
-static PetscBool TaoLineSearchPackageInitialized = PETSC_FALSE;
+static PetscBool            TaoLineSearchPackageInitialized = PETSC_FALSE;
 
 /*@C
   TaoLineSearchFinalizePackage - This function destroys everything in the PETSc/TAO
@@ -14,8 +14,7 @@ static PetscBool TaoLineSearchPackageInitialized = PETSC_FALSE;
 
   Level: developer
 @*/
-PetscErrorCode TaoLineSearchFinalizePackage(void)
-{
+PetscErrorCode TaoLineSearchFinalizePackage(void) {
   PetscFunctionBegin;
   PetscCall(PetscFunctionListDestroy(&TaoLineSearchList));
   TaoLineSearchPackageInitialized = PETSC_FALSE;
@@ -32,20 +31,19 @@ PetscErrorCode TaoLineSearchFinalizePackage(void)
 
 .seealso: `TaoLineSearchCreate()`
 @*/
-PetscErrorCode TaoLineSearchInitializePackage(void)
-{
+PetscErrorCode TaoLineSearchInitializePackage(void) {
   PetscFunctionBegin;
   if (TaoLineSearchPackageInitialized) PetscFunctionReturn(0);
-  TaoLineSearchPackageInitialized=PETSC_TRUE;
+  TaoLineSearchPackageInitialized = PETSC_TRUE;
 #if !defined(PETSC_USE_COMPLEX)
-  PetscCall(PetscClassIdRegister("TaoLineSearch",&TAOLINESEARCH_CLASSID));
-  PetscCall(TaoLineSearchRegister("unit",TaoLineSearchCreate_Unit));
-  PetscCall(TaoLineSearchRegister("more-thuente",TaoLineSearchCreate_MT));
-  PetscCall(TaoLineSearchRegister("gpcg",TaoLineSearchCreate_GPCG));
-  PetscCall(TaoLineSearchRegister("armijo",TaoLineSearchCreate_Armijo));
-  PetscCall(TaoLineSearchRegister("owarmijo",TaoLineSearchCreate_OWArmijo));
-  PetscCall(PetscLogEventRegister("TaoLSApply",TAOLINESEARCH_CLASSID,&TAOLINESEARCH_Apply));
-  PetscCall(PetscLogEventRegister("TaoLSEval", TAOLINESEARCH_CLASSID,&TAOLINESEARCH_Eval));
+  PetscCall(PetscClassIdRegister("TaoLineSearch", &TAOLINESEARCH_CLASSID));
+  PetscCall(TaoLineSearchRegister("unit", TaoLineSearchCreate_Unit));
+  PetscCall(TaoLineSearchRegister("more-thuente", TaoLineSearchCreate_MT));
+  PetscCall(TaoLineSearchRegister("gpcg", TaoLineSearchCreate_GPCG));
+  PetscCall(TaoLineSearchRegister("armijo", TaoLineSearchCreate_Armijo));
+  PetscCall(TaoLineSearchRegister("owarmijo", TaoLineSearchCreate_OWArmijo));
+  PetscCall(PetscLogEventRegister("TaoLSApply", TAOLINESEARCH_CLASSID, &TAOLINESEARCH_Apply));
+  PetscCall(PetscLogEventRegister("TaoLSEval", TAOLINESEARCH_CLASSID, &TAOLINESEARCH_Eval));
 #endif
   PetscCall(PetscRegisterFinalize(TaoLineSearchFinalizePackage));
   PetscFunctionReturn(0);

@@ -64,22 +64,22 @@
 typedef struct {
   PetscReal *memory;
 
-  PetscReal alpha;                      /* Initial reference factor >= 1 */
-  PetscReal beta;                       /* Steplength determination < 1 */
-  PetscReal beta_inf;           /* Steplength determination < 1 */
-  PetscReal sigma;                      /* Acceptance criteria < 1) */
-  PetscReal minimumStep;                /* Minimum step size */
-  PetscReal lastReference;              /* Reference value of last iteration */
+  PetscReal alpha;         /* Initial reference factor >= 1 */
+  PetscReal beta;          /* Steplength determination < 1 */
+  PetscReal beta_inf;      /* Steplength determination < 1 */
+  PetscReal sigma;         /* Acceptance criteria < 1) */
+  PetscReal minimumStep;   /* Minimum step size */
+  PetscReal lastReference; /* Reference value of last iteration */
 
-  PetscInt memorySize;          /* Number of functions kept in memory */
-  PetscInt current;                     /* Current element for FIFO */
-  PetscInt referencePolicy;             /* Integer for reference calculation rule */
-  PetscInt replacementPolicy;   /* Policy for replacing values in memory */
+  PetscInt memorySize;        /* Number of functions kept in memory */
+  PetscInt current;           /* Current element for FIFO */
+  PetscInt referencePolicy;   /* Integer for reference calculation rule */
+  PetscInt replacementPolicy; /* Policy for replacing values in memory */
 
   PetscBool nondescending;
   PetscBool memorySetup;
 
-  Vec x;        /* Maintain reference to variable vector to check for changes */
+  Vec x; /* Maintain reference to variable vector to check for changes */
   Vec work;
 } TaoLineSearch_ARMIJO;
 

@@ -12,101 +12,102 @@ static char help[] = "Test sequential USFFT interface on a 3-dof field over a un
 #include <petscmat.h>
 #include <petscdm.h>
 #include <petscdmda.h>
-int main(int argc,char **args)
-{
-  typedef enum {RANDOM, CONSTANT, TANH, NUM_FUNCS} FuncType;
-  const char     *funcNames[NUM_FUNCS] = {"random", "constant", "tanh"};
-  Mat            A, AA;
-  PetscMPIInt    size;
-  PetscInt       N,i, stencil=1,dof=3;
-  PetscInt       dim[3] = {10,10,10}, ndim = 3;
-  Vec            coords,x,y,z,xx, yy, zz;
-  Vec            xxsplit[DOF], yysplit[DOF], zzsplit[DOF];
-  PetscReal      h[3];
-  PetscScalar    s;
-  PetscRandom    rdm;
-  PetscReal      norm, enorm;
-  PetscInt       func,ii;
-  FuncType       function = TANH;
-  DM             da, da1, coordsda;
-  PetscBool      view_x = PETSC_FALSE, view_y = PETSC_FALSE, view_z = PETSC_FALSE;
+int main(int argc, char **args) {
+  typedef enum {
+    RANDOM,
+    CONSTANT,
+    TANH,
+    NUM_FUNCS
+  } FuncType;
+  const char *funcNames[NUM_FUNCS] = {"random", "constant", "tanh"};
+  Mat         A, AA;
+  PetscMPIInt size;
+  PetscInt    N, i, stencil = 1, dof = 3;
+  PetscInt    dim[3] = {10, 10, 10}, ndim = 3;
+  Vec         coords, x, y, z, xx, yy, zz;
+  Vec         xxsplit[DOF], yysplit[DOF], zzsplit[DOF];
+  PetscReal   h[3];
+  PetscScalar s;
+  PetscRandom rdm;
+  PetscReal   norm, enorm;
+  PetscInt    func, ii;
+  FuncType    function = TANH;
+  DM          da, da1, coordsda;
+  PetscBool   view_x = PETSC_FALSE, view_y = PETSC_FALSE, view_z = PETSC_FALSE;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
-  PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_SUP, "This is a uniprocessor example only!");
+  PetscCheck(size == 1, PETSC_COMM_WORLD, PETSC_ERR_SUP, "This is a uniprocessor example only!");
   PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "USFFT Options", "ex27");
   PetscCall(PetscOptionsEList("-function", "Function type", "ex27", funcNames, NUM_FUNCS, funcNames[function], &func, NULL));
-  function = (FuncType) func;
+  function = (FuncType)func;
   PetscOptionsEnd();
-  PetscCall(PetscOptionsGetBool(NULL,NULL,"-view_x",&view_x,NULL));
-  PetscCall(PetscOptionsGetBool(NULL,NULL,"-view_y",&view_y,NULL));
-  PetscCall(PetscOptionsGetBool(NULL,NULL,"-view_z",&view_z,NULL));
-  PetscCall(PetscOptionsGetIntArray(NULL,NULL,"-dim",dim,&ndim,NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-view_x", &view_x, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-view_y", &view_y, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-view_z", &view_z, NULL));
+  PetscCall(PetscOptionsGetIntArray(NULL, NULL, "-dim", dim, &ndim, NULL));
 
   /* DMDA with the correct fiber dimension */
-  PetscCall(DMDACreate3d(PETSC_COMM_SELF,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,dim[0],dim[1],dim[2],PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,
-                         dof,stencil,NULL,NULL,NULL,&da));
+  PetscCall(DMDACreate3d(PETSC_COMM_SELF, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_STAR, dim[0], dim[1], dim[2], PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, dof, stencil, NULL, NULL, NULL, &da));
   PetscCall(DMSetFromOptions(da));
   PetscCall(DMSetUp(da));
   /* DMDA with fiber dimension 1 for split fields */
-  PetscCall(DMDACreate3d(PETSC_COMM_SELF,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,dim[0],dim[1],dim[2],PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,
-                         1,stencil,NULL,NULL,NULL,&da1));
+  PetscCall(DMDACreate3d(PETSC_COMM_SELF, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_STAR, dim[0], dim[1], dim[2], PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, 1, stencil, NULL, NULL, NULL, &da1));
   PetscCall(DMSetFromOptions(da1));
   PetscCall(DMSetUp(da1));
 
   /* Coordinates */
-  PetscCall(DMGetCoordinateDM(da,&coordsda));
-  PetscCall(DMGetGlobalVector(coordsda,&coords));
-  PetscCall(PetscObjectSetName((PetscObject) coords,"Grid coordinates"));
+  PetscCall(DMGetCoordinateDM(da, &coordsda));
+  PetscCall(DMGetGlobalVector(coordsda, &coords));
+  PetscCall(PetscObjectSetName((PetscObject)coords, "Grid coordinates"));
   for (i = 0, N = 1; i < 3; i++) {
-    h[i] = 1.0/dim[i];
+    h[i] = 1.0 / dim[i];
     PetscScalar *a;
     PetscCall(VecGetArray(coords, &a));
-    PetscInt j,k,n = 0;
+    PetscInt j, k, n = 0;
     for (i = 0; i < 3; ++i) {
       for (j = 0; j < dim[i]; ++j) {
         for (k = 0; k < 3; ++k) {
-          a[n] = j*h[i]; /* coordinate along the j-th point in the i-th dimension */
+          a[n] = j * h[i]; /* coordinate along the j-th point in the i-th dimension */
           ++n;
         }
       }
     }
     PetscCall(VecRestoreArray(coords, &a));
-
   }
   PetscCall(DMSetCoordinates(da, coords));
   PetscCall(VecDestroy(&coords));
 
   /* Work vectors */
   PetscCall(DMGetGlobalVector(da, &x));
-  PetscCall(PetscObjectSetName((PetscObject) x, "Real space vector"));
+  PetscCall(PetscObjectSetName((PetscObject)x, "Real space vector"));
   PetscCall(DMGetGlobalVector(da, &xx));
-  PetscCall(PetscObjectSetName((PetscObject) xx, "Real space vector"));
+  PetscCall(PetscObjectSetName((PetscObject)xx, "Real space vector"));
   PetscCall(DMGetGlobalVector(da, &y));
-  PetscCall(PetscObjectSetName((PetscObject) y, "USFFT frequency space vector"));
+  PetscCall(PetscObjectSetName((PetscObject)y, "USFFT frequency space vector"));
   PetscCall(DMGetGlobalVector(da, &yy));
-  PetscCall(PetscObjectSetName((PetscObject) yy, "FFTW frequency space vector"));
+  PetscCall(PetscObjectSetName((PetscObject)yy, "FFTW frequency space vector"));
   PetscCall(DMGetGlobalVector(da, &z));
-  PetscCall(PetscObjectSetName((PetscObject) z, "USFFT reconstructed vector"));
+  PetscCall(PetscObjectSetName((PetscObject)z, "USFFT reconstructed vector"));
   PetscCall(DMGetGlobalVector(da, &zz));
-  PetscCall(PetscObjectSetName((PetscObject) zz, "FFTW reconstructed vector"));
+  PetscCall(PetscObjectSetName((PetscObject)zz, "FFTW reconstructed vector"));
   /* Split vectors for FFTW */
   for (ii = 0; ii < 3; ++ii) {
     PetscCall(DMGetGlobalVector(da1, &xxsplit[ii]));
-    PetscCall(PetscObjectSetName((PetscObject) xxsplit[ii], "Real space split vector"));
+    PetscCall(PetscObjectSetName((PetscObject)xxsplit[ii], "Real space split vector"));
     PetscCall(DMGetGlobalVector(da1, &yysplit[ii]));
-    PetscCall(PetscObjectSetName((PetscObject) yysplit[ii], "FFTW frequency space split vector"));
+    PetscCall(PetscObjectSetName((PetscObject)yysplit[ii], "FFTW frequency space split vector"));
     PetscCall(DMGetGlobalVector(da1, &zzsplit[ii]));
-    PetscCall(PetscObjectSetName((PetscObject) zzsplit[ii], "FFTW reconstructed split vector"));
+    PetscCall(PetscObjectSetName((PetscObject)zzsplit[ii], "FFTW reconstructed split vector"));
   }
 
   PetscCall(PetscPrintf(PETSC_COMM_SELF, "%3-" PetscInt_FMT ": USFFT on vector of "));
   for (i = 0, N = 1; i < 3; i++) {
-    PetscCall(PetscPrintf(PETSC_COMM_SELF, "dim[%d] = %d ",i,dim[i]));
-    N   *= dim[i];
+    PetscCall(PetscPrintf(PETSC_COMM_SELF, "dim[%d] = %d ", i, dim[i]));
+    N *= dim[i];
   }
-  PetscCall(PetscPrintf(PETSC_COMM_SELF, "; total size %d \n",N));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF, "; total size %d \n", N));
 
   if (function == RANDOM) {
     PetscCall(PetscRandomCreate(PETSC_COMM_SELF, &rdm));
@@ -118,43 +119,37 @@ int main(int argc,char **args)
   } else if (function == TANH) {
     PetscScalar *a;
     PetscCall(VecGetArray(x, &a));
-    PetscInt j,k = 0;
+    PetscInt j, k = 0;
     for (i = 0; i < 3; ++i) {
       for (j = 0; j < dim[i]; ++j) {
-        a[k] = tanh((j - dim[i]/2.0)*(10.0/dim[i]));
+        a[k] = tanh((j - dim[i] / 2.0) * (10.0 / dim[i]));
         ++k;
       }
     }
     PetscCall(VecRestoreArray(x, &a));
   }
   if (view_x) PetscCall(VecView(x, PETSC_VIEWER_STDOUT_WORLD));
-  PetscCall(VecCopy(x,xx));
+  PetscCall(VecCopy(x, xx));
   /* Split xx */
-  PetscCall(VecStrideGatherAll(xx,xxsplit, INSERT_VALUES)); /*YES! 'Gather' means 'split' (or maybe 'scatter'?)! */
+  PetscCall(VecStrideGatherAll(xx, xxsplit, INSERT_VALUES)); /*YES! 'Gather' means 'split' (or maybe 'scatter'?)! */
 
-  PetscCall(VecNorm(x,NORM_2,&norm));
-  PetscCall(PetscPrintf(PETSC_COMM_SELF, "|x|_2 = %g\n",norm));
+  PetscCall(VecNorm(x, NORM_2, &norm));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF, "|x|_2 = %g\n", norm));
 
   /* create USFFT object */
-  PetscCall(MatCreateSeqUSFFT(da,da,&A));
+  PetscCall(MatCreateSeqUSFFT(da, da, &A));
   /* create FFTW object */
-  PetscCall(MatCreateSeqFFTW(PETSC_COMM_SELF,3,dim,&AA));
+  PetscCall(MatCreateSeqFFTW(PETSC_COMM_SELF, 3, dim, &AA));
 
   /* apply USFFT and FFTW FORWARD "preemptively", so the fftw_plans can be reused on different vectors */
-  PetscCall(MatMult(A,x,z));
-  for (ii = 0; ii < 3; ++ii) {
-    PetscCall(MatMult(AA,xxsplit[ii],zzsplit[ii]));
-  }
+  PetscCall(MatMult(A, x, z));
+  for (ii = 0; ii < 3; ++ii) { PetscCall(MatMult(AA, xxsplit[ii], zzsplit[ii])); }
   /* Now apply USFFT and FFTW forward several (3) times */
-  for (i=0; i<3; ++i) {
-    PetscCall(MatMult(A,x,y));
-    for (ii = 0; ii < 3; ++ii) {
-      PetscCall(MatMult(AA,xxsplit[ii],yysplit[ii]));
-    }
-    PetscCall(MatMultTranspose(A,y,z));
-    for (ii = 0; ii < 3; ++ii) {
-      PetscCall(MatMult(AA,yysplit[ii],zzsplit[ii]));
-    }
+  for (i = 0; i < 3; ++i) {
+    PetscCall(MatMult(A, x, y));
+    for (ii = 0; ii < 3; ++ii) { PetscCall(MatMult(AA, xxsplit[ii], yysplit[ii])); }
+    PetscCall(MatMultTranspose(A, y, z));
+    for (ii = 0; ii < 3; ++ii) { PetscCall(MatMult(AA, yysplit[ii], zzsplit[ii])); }
   }
   /* Unsplit yy */
   PetscCall(VecStrideScatterAll(yysplit, yy, INSERT_VALUES)); /*YES! 'Scatter' means 'collect' (or maybe 'gather'?)! */
@@ -176,40 +171,40 @@ int main(int argc,char **args)
   }
 
   /* compare x and z. USFFT computes an unnormalized DFT, thus z = N*x */
-  s    = 1.0/(PetscReal)N;
-  PetscCall(VecScale(z,s));
-  PetscCall(VecAXPY(x,-1.0,z));
-  PetscCall(VecNorm(x,NORM_1,&enorm));
-  PetscCall(PetscPrintf(PETSC_COMM_SELF, "|x-z| = %g\n",enorm));
+  s = 1.0 / (PetscReal)N;
+  PetscCall(VecScale(z, s));
+  PetscCall(VecAXPY(x, -1.0, z));
+  PetscCall(VecNorm(x, NORM_1, &enorm));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF, "|x-z| = %g\n", enorm));
 
   /* compare xx and zz. FFTW computes an unnormalized DFT, thus zz = N*x */
-  s    = 1.0/(PetscReal)N;
-  PetscCall(VecScale(zz,s));
-  PetscCall(VecAXPY(xx,-1.0,zz));
-  PetscCall(VecNorm(xx,NORM_1,&enorm));
-  PetscCall(PetscPrintf(PETSC_COMM_SELF, "|xx-zz| = %g\n",enorm));
+  s = 1.0 / (PetscReal)N;
+  PetscCall(VecScale(zz, s));
+  PetscCall(VecAXPY(xx, -1.0, zz));
+  PetscCall(VecNorm(xx, NORM_1, &enorm));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF, "|xx-zz| = %g\n", enorm));
 
   /* compare y and yy: USFFT and FFTW results*/
-  PetscCall(VecNorm(y,NORM_2,&norm));
-  PetscCall(VecAXPY(y,-1.0,yy));
-  PetscCall(VecNorm(y,NORM_1,&enorm));
-  PetscCall(PetscPrintf(PETSC_COMM_SELF, "|y|_2 = %g\n",norm));
-  PetscCall(PetscPrintf(PETSC_COMM_SELF, "|y-yy| = %g\n",enorm));
+  PetscCall(VecNorm(y, NORM_2, &norm));
+  PetscCall(VecAXPY(y, -1.0, yy));
+  PetscCall(VecNorm(y, NORM_1, &enorm));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF, "|y|_2 = %g\n", norm));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF, "|y-yy| = %g\n", enorm));
 
   /* compare z and zz: USFFT and FFTW results*/
-  PetscCall(VecNorm(z,NORM_2,&norm));
-  PetscCall(VecAXPY(z,-1.0,zz));
-  PetscCall(VecNorm(z,NORM_1,&enorm));
-  PetscCall(PetscPrintf(PETSC_COMM_SELF, "|z|_2 = %g\n",norm));
-  PetscCall(PetscPrintf(PETSC_COMM_SELF, "|z-zz| = %g\n",enorm));
+  PetscCall(VecNorm(z, NORM_2, &norm));
+  PetscCall(VecAXPY(z, -1.0, zz));
+  PetscCall(VecNorm(z, NORM_1, &enorm));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF, "|z|_2 = %g\n", norm));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF, "|z-zz| = %g\n", enorm));
 
   /* free spaces */
-  PetscCall(DMRestoreGlobalVector(da,&x));
-  PetscCall(DMRestoreGlobalVector(da,&xx));
-  PetscCall(DMRestoreGlobalVector(da,&y));
-  PetscCall(DMRestoreGlobalVector(da,&yy));
-  PetscCall(DMRestoreGlobalVector(da,&z));
-  PetscCall(DMRestoreGlobalVector(da,&zz));
+  PetscCall(DMRestoreGlobalVector(da, &x));
+  PetscCall(DMRestoreGlobalVector(da, &xx));
+  PetscCall(DMRestoreGlobalVector(da, &y));
+  PetscCall(DMRestoreGlobalVector(da, &yy));
+  PetscCall(DMRestoreGlobalVector(da, &z));
+  PetscCall(DMRestoreGlobalVector(da, &zz));
 
   PetscCall(PetscFinalize());
   return 0;

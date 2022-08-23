@@ -87,9 +87,8 @@
  end
 */
 
-PetscErrorCode TaoSolve_BNLS(Tao tao)
-{
-  TAO_BNK                      *bnk = (TAO_BNK *)tao->data;
+PetscErrorCode TaoSolve_BNLS(Tao tao) {
+  TAO_BNK                     *bnk = (TAO_BNK *)tao->data;
   KSPConvergedReason           ksp_reason;
   TaoLineSearchConvergedReason ls_reason;
   PetscReal                    steplen = 1.0, resnorm;
@@ -106,7 +105,7 @@ PetscErrorCode TaoSolve_BNLS(Tao tao)
   while (tao->reason == TAO_CONTINUE_ITERATING) {
     /* Call general purpose update function */
     if (tao->ops->update) {
-      PetscUseTypeMethod(tao,update , tao->niter, tao->user_update);
+      PetscUseTypeMethod(tao, update, tao->niter, tao->user_update);
       PetscCall(TaoComputeObjectiveAndGradient(tao, tao->solution, &bnk->f, bnk->unprojected_gradient));
     }
 
@@ -137,12 +136,12 @@ PetscErrorCode TaoSolve_BNLS(Tao tao)
 
     if (ls_reason != TAOLINESEARCH_SUCCESS && ls_reason != TAOLINESEARCH_SUCCESS_USER) {
       /* Failed to find an improving point */
-      needH = PETSC_FALSE;
+      needH  = PETSC_FALSE;
       bnk->f = bnk->fold;
       PetscCall(VecCopy(bnk->Xold, tao->solution));
       PetscCall(VecCopy(bnk->Gold, tao->gradient));
       PetscCall(VecCopy(bnk->unprojected_gradient_old, bnk->unprojected_gradient));
-      steplen = 0.0;
+      steplen     = 0.0;
       tao->reason = TAO_DIVERGED_LS_FAILURE;
     } else {
       /* new iterate so we need to recompute the Hessian */
@@ -163,11 +162,11 @@ PetscErrorCode TaoSolve_BNLS(Tao tao)
     /*  Check for termination */
     PetscCall(VecFischer(tao->solution, bnk->unprojected_gradient, tao->XL, tao->XU, bnk->W));
     PetscCall(VecNorm(bnk->W, NORM_2, &resnorm));
-    PetscCheck(!PetscIsInfOrNanReal(resnorm),PetscObjectComm((PetscObject)tao),PETSC_ERR_USER, "User provided compute function generated Inf or NaN");
+    PetscCheck(!PetscIsInfOrNanReal(resnorm), PetscObjectComm((PetscObject)tao), PETSC_ERR_USER, "User provided compute function generated Inf or NaN");
     ++tao->niter;
     PetscCall(TaoLogConvergenceHistory(tao, bnk->f, resnorm, 0.0, tao->ksp_its));
     PetscCall(TaoMonitor(tao, tao->niter, bnk->f, resnorm, 0.0, steplen));
-    PetscUseTypeMethod(tao,convergencetest , tao->cnvP);
+    PetscUseTypeMethod(tao, convergencetest, tao->cnvP);
   }
   PetscFunctionReturn(0);
 }
@@ -184,16 +183,15 @@ PetscErrorCode TaoSolve_BNLS(Tao tao)
 
   Level: beginner
 M*/
-PETSC_EXTERN PetscErrorCode TaoCreate_BNLS(Tao tao)
-{
-  TAO_BNK        *bnk;
+PETSC_EXTERN PetscErrorCode TaoCreate_BNLS(Tao tao) {
+  TAO_BNK *bnk;
 
   PetscFunctionBegin;
   PetscCall(TaoCreate_BNK(tao));
   tao->ops->solve = TaoSolve_BNLS;
 
-  bnk = (TAO_BNK *)tao->data;
-  bnk->init_type = BNK_INIT_DIRECTION;
+  bnk              = (TAO_BNK *)tao->data;
+  bnk->init_type   = BNK_INIT_DIRECTION;
   bnk->update_type = BNK_UPDATE_STEP; /* trust region updates based on line search step length */
   PetscFunctionReturn(0);
 }

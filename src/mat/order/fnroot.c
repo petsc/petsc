@@ -30,14 +30,13 @@
 /*      ROOTLS.                                                 */
 /*                                                              */
 /****************************************************************/
-PetscErrorCode SPARSEPACKfnroot(PetscInt *root,const PetscInt *xadj,const PetscInt *adjncy,PetscInt *mask, PetscInt *nlvl, PetscInt *xls, PetscInt *ls)
-{
+PetscErrorCode SPARSEPACKfnroot(PetscInt *root, const PetscInt *xadj, const PetscInt *adjncy, PetscInt *mask, PetscInt *nlvl, PetscInt *xls, PetscInt *ls) {
   /* System generated locals */
   PetscInt i__1, i__2;
 
   /* Local variables */
   PetscInt ndeg, node, j, k, nabor, kstop, jstrt, kstrt, mindeg, ccsize, nunlvl;
-/*       DETERMINE THE LEVEL STRUCTURE ROOTED AT ROOT. */
+  /*       DETERMINE THE LEVEL STRUCTURE ROOTED AT ROOT. */
 
   PetscFunctionBegin;
   /* Parameter adjustments */
@@ -71,8 +70,7 @@ L100:
     if (ndeg >= mindeg) goto L300;
     *root  = node;
     mindeg = ndeg;
-L300:
-    ;
+  L300:;
   }
 /*       AND GENERATE ITS ROOTED LEVEL STRUCTURE.*/
 L400:
@@ -82,4 +80,3 @@ L400:
   if (*nlvl < ccsize) goto L100;
   PetscFunctionReturn(0);
 }
-

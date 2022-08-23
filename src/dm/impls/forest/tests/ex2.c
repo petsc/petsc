@@ -5,9 +5,8 @@ static char help[] = "Create a mesh, refine and coarsen simultaneously, and tran
 #include <petscdmforest.h>
 #include <petscoptions.h>
 
-static PetscErrorCode AddIdentityLabel(DM dm)
-{
-  PetscInt       pStart,pEnd,p;
+static PetscErrorCode AddIdentityLabel(DM dm) {
+  PetscInt pStart, pEnd, p;
 
   PetscFunctionBegin;
   PetscCall(DMCreateLabel(dm, "identity"));
@@ -16,80 +15,72 @@ static PetscErrorCode AddIdentityLabel(DM dm)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateAdaptivityLabel(DM forest,DMLabel *adaptLabel)
-{
-  DMLabel        identLabel;
-  PetscInt       cStart, cEnd, c;
+static PetscErrorCode CreateAdaptivityLabel(DM forest, DMLabel *adaptLabel) {
+  DMLabel  identLabel;
+  PetscInt cStart, cEnd, c;
 
   PetscFunctionBegin;
-  PetscCall(DMLabelCreate(PETSC_COMM_SELF,"adapt",adaptLabel));
-  PetscCall(DMLabelSetDefaultValue(*adaptLabel,DM_ADAPT_COARSEN));
-  PetscCall(DMGetLabel(forest,"identity",&identLabel));
-  PetscCall(DMForestGetCellChart(forest,&cStart,&cEnd));
+  PetscCall(DMLabelCreate(PETSC_COMM_SELF, "adapt", adaptLabel));
+  PetscCall(DMLabelSetDefaultValue(*adaptLabel, DM_ADAPT_COARSEN));
+  PetscCall(DMGetLabel(forest, "identity", &identLabel));
+  PetscCall(DMForestGetCellChart(forest, &cStart, &cEnd));
   for (c = cStart; c < cEnd; c++) {
     PetscInt basePoint;
 
-    PetscCall(DMLabelGetValue(identLabel,c,&basePoint));
-    if (!basePoint) PetscCall(DMLabelSetValue(*adaptLabel,c,DM_ADAPT_REFINE));
+    PetscCall(DMLabelGetValue(identLabel, c, &basePoint));
+    if (!basePoint) PetscCall(DMLabelSetValue(*adaptLabel, c, DM_ADAPT_REFINE));
   }
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode LinearFunction(PetscInt dim,PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx)
-{
+static PetscErrorCode LinearFunction(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx) {
   PetscFunctionBeginUser;
   u[0] = (x[0] * 2.0 + 1.) + (x[1] * 20.0 + 10.) + ((dim == 3) ? (x[2] * 200.0 + 100.) : 0.);
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MultiaffineFunction(PetscInt dim,PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx)
-{
+static PetscErrorCode MultiaffineFunction(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx) {
   PetscFunctionBeginUser;
   u[0] = (x[0] * 1.0 + 2.0) * (x[1] * 3.0 - 4.0) * ((dim == 3) ? (x[2] * 5.0 + 6.0) : 1.);
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CoordsFunction(PetscInt dim,PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx)
-{
+static PetscErrorCode CoordsFunction(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx) {
   PetscInt f;
 
   PetscFunctionBeginUser;
-  for (f=0;f<Nf;f++) u[f] = x[f];
+  for (f = 0; f < Nf; f++) u[f] = x[f];
   PetscFunctionReturn(0);
 }
 
-typedef struct _bc_func_ctx
-{
-  PetscErrorCode (*func) (PetscInt,PetscReal,const PetscReal [], PetscInt, PetscScalar [], void *);
+typedef struct _bc_func_ctx {
+  PetscErrorCode (*func)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar[], void *);
   PetscInt dim;
   PetscInt Nf;
-  void *ctx;
-}
-bc_func_ctx;
+  void    *ctx;
+} bc_func_ctx;
 
-static PetscErrorCode bc_func_fv (PetscReal time, const PetscReal *c, const PetscReal *n, const PetscScalar *xI, PetscScalar *xG, void *ctx)
-{
-  bc_func_ctx    *bcCtx;
+static PetscErrorCode bc_func_fv(PetscReal time, const PetscReal *c, const PetscReal *n, const PetscScalar *xI, PetscScalar *xG, void *ctx) {
+  bc_func_ctx *bcCtx;
 
   PetscFunctionBegin;
-  bcCtx = (bc_func_ctx *) ctx;
-  PetscCall((bcCtx->func)(bcCtx->dim,time,c,bcCtx->Nf,xG,bcCtx->ctx));
+  bcCtx = (bc_func_ctx *)ctx;
+  PetscCall((bcCtx->func)(bcCtx->dim, time, c, bcCtx->Nf, xG, bcCtx->ctx));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode IdentifyBadPoints (DM dm, Vec vec, PetscReal tol)
-{
-  DM             dmplex;
-  PetscInt       p, pStart, pEnd, maxDof;
-  Vec            vecLocal;
-  DMLabel        depthLabel;
-  PetscSection   section;
+static PetscErrorCode IdentifyBadPoints(DM dm, Vec vec, PetscReal tol) {
+  DM           dmplex;
+  PetscInt     p, pStart, pEnd, maxDof;
+  Vec          vecLocal;
+  DMLabel      depthLabel;
+  PetscSection section;
 
   PetscFunctionBegin;
   PetscCall(DMCreateLocalVector(dm, &vecLocal));
   PetscCall(DMGlobalToLocalBegin(dm, vec, INSERT_VALUES, vecLocal));
   PetscCall(DMGlobalToLocalEnd(dm, vec, INSERT_VALUES, vecLocal));
-  PetscCall(DMConvert(dm ,DMPLEX, &dmplex));
+  PetscCall(DMConvert(dm, DMPLEX, &dmplex));
   PetscCall(DMPlexGetChart(dmplex, &pStart, &pEnd));
   PetscCall(DMPlexGetDepthLabel(dmplex, &depthLabel));
   PetscCall(DMGetLocalSection(dmplex, &section));
@@ -98,13 +89,16 @@ static PetscErrorCode IdentifyBadPoints (DM dm, Vec vec, PetscReal tol)
     PetscInt     s, c, cSize, parent, childID, numChildren;
     PetscInt     cl, closureSize, *closure = NULL;
     PetscScalar *values = NULL;
-    PetscBool    bad = PETSC_FALSE;
+    PetscBool    bad    = PETSC_FALSE;
 
     PetscCall(VecGetValuesSection(vecLocal, section, p, &values));
     PetscCall(PetscSectionGetDof(section, p, &cSize));
     for (c = 0; c < cSize; c++) {
       PetscReal absDiff = PetscAbsScalar(values[c]);
-      if (absDiff > tol) {bad = PETSC_TRUE; break;}
+      if (absDiff > tol) {
+        bad = PETSC_TRUE;
+        break;
+      }
     }
     if (!bad) continue;
     PetscCall(PetscPrintf(PETSC_COMM_SELF, "Bad point %" PetscInt_FMT "\n", p));
@@ -114,20 +108,14 @@ static PetscErrorCode IdentifyBadPoints (DM dm, Vec vec, PetscReal tol)
     for (cl = 0; cl < closureSize; cl++) {
       PetscInt cp = closure[2 * cl];
       PetscCall(DMPlexGetTreeParent(dmplex, cp, &parent, &childID));
-      if (parent != cp) {
-        PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Closure point %" PetscInt_FMT " (%" PetscInt_FMT ") child of %" PetscInt_FMT " (ID %" PetscInt_FMT ")\n", cl, cp, parent, childID));
-      }
+      if (parent != cp) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Closure point %" PetscInt_FMT " (%" PetscInt_FMT ") child of %" PetscInt_FMT " (ID %" PetscInt_FMT ")\n", cl, cp, parent, childID)); }
       PetscCall(DMPlexGetTreeChildren(dmplex, cp, &numChildren, NULL));
-      if (numChildren) {
-        PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Closure point %" PetscInt_FMT " (%" PetscInt_FMT ") is parent\n", cl, cp));
-      }
+      if (numChildren) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Closure point %" PetscInt_FMT " (%" PetscInt_FMT ") is parent\n", cl, cp)); }
     }
     PetscCall(DMPlexRestoreTransitiveClosure(dmplex, p, PETSC_TRUE, &closureSize, &closure));
     for (c = 0; c < cSize; c++) {
       PetscReal absDiff = PetscAbsScalar(values[c]);
-      if (absDiff > tol) {
-        PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Bad dof %" PetscInt_FMT "\n", c));
-      }
+      if (absDiff > tol) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Bad dof %" PetscInt_FMT "\n", c)); }
     }
   }
   PetscCall(DMDestroy(&dmplex));
@@ -135,42 +123,41 @@ static PetscErrorCode IdentifyBadPoints (DM dm, Vec vec, PetscReal tol)
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv)
-{
-  MPI_Comm       comm;
-  DM             base, preForest, postForest;
-  PetscInt       dim, Nf = 1;
-  PetscInt       step, adaptSteps = 1;
-  PetscInt       preCount, postCount;
-  Vec            preVec, postVecTransfer, postVecExact;
-  PetscErrorCode (*funcs[1]) (PetscInt,PetscReal,const PetscReal [],PetscInt,PetscScalar [], void *) = {MultiaffineFunction};
-  void           *ctxs[1] = {NULL};
-  PetscReal      diff, tol = PETSC_SMALL;
-  PetscBool      linear = PETSC_FALSE;
-  PetscBool      coords = PETSC_FALSE;
-  PetscBool      useFV = PETSC_FALSE;
-  PetscBool      conv = PETSC_FALSE;
-  PetscBool      transfer_from_base[2] = {PETSC_TRUE,PETSC_FALSE};
-  PetscBool      use_bcs = PETSC_TRUE;
-  bc_func_ctx    bcCtx;
-  DMLabel        adaptLabel;
+int main(int argc, char **argv) {
+  MPI_Comm comm;
+  DM       base, preForest, postForest;
+  PetscInt dim, Nf          = 1;
+  PetscInt step, adaptSteps = 1;
+  PetscInt preCount, postCount;
+  Vec      preVec, postVecTransfer, postVecExact;
+  PetscErrorCode (*funcs[1])(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar[], void *) = {MultiaffineFunction};
+  void       *ctxs[1]                                                                                 = {NULL};
+  PetscReal   diff, tol = PETSC_SMALL;
+  PetscBool   linear                = PETSC_FALSE;
+  PetscBool   coords                = PETSC_FALSE;
+  PetscBool   useFV                 = PETSC_FALSE;
+  PetscBool   conv                  = PETSC_FALSE;
+  PetscBool   transfer_from_base[2] = {PETSC_TRUE, PETSC_FALSE};
+  PetscBool   use_bcs               = PETSC_TRUE;
+  bc_func_ctx bcCtx;
+  DMLabel     adaptLabel;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, NULL,help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   comm = PETSC_COMM_WORLD;
   PetscOptionsBegin(comm, "", "DMForestTransferVec() Test Options", "DMFOREST");
-  PetscCall(PetscOptionsBool("-linear","Transfer a simple linear function", "ex2.c", linear, &linear, NULL));
-  PetscCall(PetscOptionsBool("-coords","Transfer a simple coordinate function", "ex2.c", coords, &coords, NULL));
-  PetscCall(PetscOptionsBool("-use_fv","Use a finite volume approximation", "ex2.c", useFV, &useFV, NULL));
-  PetscCall(PetscOptionsBool("-test_convert","Test conversion to DMPLEX",NULL,conv,&conv,NULL));
-  PetscCall(PetscOptionsBool("-transfer_from_base","Transfer a vector from base DM to DMForest", "ex2.c", transfer_from_base[0], &transfer_from_base[0], NULL));
+  PetscCall(PetscOptionsBool("-linear", "Transfer a simple linear function", "ex2.c", linear, &linear, NULL));
+  PetscCall(PetscOptionsBool("-coords", "Transfer a simple coordinate function", "ex2.c", coords, &coords, NULL));
+  PetscCall(PetscOptionsBool("-use_fv", "Use a finite volume approximation", "ex2.c", useFV, &useFV, NULL));
+  PetscCall(PetscOptionsBool("-test_convert", "Test conversion to DMPLEX", NULL, conv, &conv, NULL));
+  PetscCall(PetscOptionsBool("-transfer_from_base", "Transfer a vector from base DM to DMForest", "ex2.c", transfer_from_base[0], &transfer_from_base[0], NULL));
   transfer_from_base[1] = transfer_from_base[0];
-  PetscCall(PetscOptionsBool("-transfer_from_base_steps","Transfer a vector from base DM to the latest DMForest after the adaptivity steps", "ex2.c", transfer_from_base[1], &transfer_from_base[1], NULL));
-  PetscCall(PetscOptionsBool("-use_bcs","Use dirichlet boundary conditions", "ex2.c", use_bcs, &use_bcs, NULL));
-  PetscCall(PetscOptionsBoundedInt("-adapt_steps","Number of adaptivity steps", "ex2.c", adaptSteps, &adaptSteps, NULL,0));
+  PetscCall(PetscOptionsBool("-transfer_from_base_steps", "Transfer a vector from base DM to the latest DMForest after the adaptivity steps", "ex2.c", transfer_from_base[1], &transfer_from_base[1], NULL));
+  PetscCall(PetscOptionsBool("-use_bcs", "Use dirichlet boundary conditions", "ex2.c", use_bcs, &use_bcs, NULL));
+  PetscCall(PetscOptionsBoundedInt("-adapt_steps", "Number of adaptivity steps", "ex2.c", adaptSteps, &adaptSteps, NULL, 0));
   PetscOptionsEnd();
 
-  tol = PetscMax(1.e-10,tol); /* XXX fix for quadruple precision -> why do I need to do this? */
+  tol = PetscMax(1.e-10, tol); /* XXX fix for quadruple precision -> why do I need to do this? */
 
   /* the base mesh */
   PetscCall(DMCreate(comm, &base));
@@ -180,12 +167,10 @@ int main(int argc, char **argv)
   PetscCall(AddIdentityLabel(base));
   PetscCall(DMGetDimension(base, &dim));
 
-  if (linear) {
-    funcs[0] = LinearFunction;
-  }
+  if (linear) { funcs[0] = LinearFunction; }
   if (coords) {
     funcs[0] = CoordsFunction;
-    Nf = dim;
+    Nf       = dim;
   }
 
   bcCtx.func = funcs[0];
@@ -198,26 +183,26 @@ int main(int argc, char **argv)
     PetscLimiter limiter;
     DM           baseFV;
 
-    PetscCall(DMPlexConstructGhostCells(base,NULL,NULL,&baseFV));
+    PetscCall(DMPlexConstructGhostCells(base, NULL, NULL, &baseFV));
     PetscCall(DMViewFromOptions(baseFV, NULL, "-fv_dm_view"));
     PetscCall(DMDestroy(&base));
     base = baseFV;
     PetscCall(PetscFVCreate(PETSC_COMM_SELF, &fv));
-    PetscCall(PetscFVSetSpatialDimension(fv,dim));
-    PetscCall(PetscFVSetType(fv,PETSCFVLEASTSQUARES));
-    PetscCall(PetscFVSetNumComponents(fv,Nf));
-    PetscCall(PetscLimiterCreate(comm,&limiter));
-    PetscCall(PetscLimiterSetType(limiter,PETSCLIMITERNONE));
-    PetscCall(PetscFVSetLimiter(fv,limiter));
+    PetscCall(PetscFVSetSpatialDimension(fv, dim));
+    PetscCall(PetscFVSetType(fv, PETSCFVLEASTSQUARES));
+    PetscCall(PetscFVSetNumComponents(fv, Nf));
+    PetscCall(PetscLimiterCreate(comm, &limiter));
+    PetscCall(PetscLimiterSetType(limiter, PETSCLIMITERNONE));
+    PetscCall(PetscFVSetLimiter(fv, limiter));
     PetscCall(PetscLimiterDestroy(&limiter));
     PetscCall(PetscFVSetFromOptions(fv));
-    PetscCall(DMSetField(base,0,NULL,(PetscObject)fv));
+    PetscCall(DMSetField(base, 0, NULL, (PetscObject)fv));
     PetscCall(PetscFVDestroy(&fv));
   } else {
     PetscFE fe;
 
-    PetscCall(PetscFECreateDefault(comm,dim,Nf,PETSC_FALSE,NULL,PETSC_DEFAULT,&fe));
-    PetscCall(DMSetField(base,0,NULL,(PetscObject)fe));
+    PetscCall(PetscFECreateDefault(comm, dim, Nf, PETSC_FALSE, NULL, PETSC_DEFAULT, &fe));
+    PetscCall(DMSetField(base, 0, NULL, (PetscObject)fe));
     PetscCall(PetscFEDestroy(&fe));
   }
   PetscCall(DMCreateDS(base));
@@ -227,106 +212,103 @@ int main(int argc, char **argv)
     DMLabel  label;
 
     PetscCall(DMGetLabel(base, "marker", &label));
-    PetscCall(DMAddBoundary(base,DM_BC_ESSENTIAL, "bc", label, 2 * dim, ids, 0, 0, NULL, useFV ? (void(*)(void)) bc_func_fv : (void(*)(void)) funcs[0], NULL, useFV ? (void *) &bcCtx : NULL, NULL));
+    PetscCall(DMAddBoundary(base, DM_BC_ESSENTIAL, "bc", label, 2 * dim, ids, 0, 0, NULL, useFV ? (void (*)(void))bc_func_fv : (void (*)(void))funcs[0], NULL, useFV ? (void *)&bcCtx : NULL, NULL));
   }
-  PetscCall(DMViewFromOptions(base,NULL,"-dm_base_view"));
+  PetscCall(DMViewFromOptions(base, NULL, "-dm_base_view"));
 
   /* the pre adaptivity forest */
-  PetscCall(DMCreate(comm,&preForest));
-  PetscCall(DMSetType(preForest,(dim == 2) ? DMP4EST : DMP8EST));
-  PetscCall(DMCopyDisc(base,preForest));
-  PetscCall(DMForestSetBaseDM(preForest,base));
-  PetscCall(DMForestSetMinimumRefinement(preForest,0));
-  PetscCall(DMForestSetInitialRefinement(preForest,1));
+  PetscCall(DMCreate(comm, &preForest));
+  PetscCall(DMSetType(preForest, (dim == 2) ? DMP4EST : DMP8EST));
+  PetscCall(DMCopyDisc(base, preForest));
+  PetscCall(DMForestSetBaseDM(preForest, base));
+  PetscCall(DMForestSetMinimumRefinement(preForest, 0));
+  PetscCall(DMForestSetInitialRefinement(preForest, 1));
   PetscCall(DMSetFromOptions(preForest));
   PetscCall(DMSetUp(preForest));
-  PetscCall(DMViewFromOptions(preForest,NULL,"-dm_pre_view"));
+  PetscCall(DMViewFromOptions(preForest, NULL, "-dm_pre_view"));
 
   /* the pre adaptivity field */
-  PetscCall(DMCreateGlobalVector(preForest,&preVec));
-  PetscCall(DMProjectFunction(preForest,0.,funcs,ctxs,INSERT_VALUES,preVec));
-  PetscCall(VecViewFromOptions(preVec,NULL,"-vec_pre_view"));
+  PetscCall(DMCreateGlobalVector(preForest, &preVec));
+  PetscCall(DMProjectFunction(preForest, 0., funcs, ctxs, INSERT_VALUES, preVec));
+  PetscCall(VecViewFromOptions(preVec, NULL, "-vec_pre_view"));
 
   /* communicate between base and pre adaptivity forest */
   if (transfer_from_base[0]) {
     Vec baseVec, baseVecMapped;
 
-    PetscCall(DMGetGlobalVector(base,&baseVec));
-    PetscCall(DMProjectFunction(base,0.,funcs,ctxs,INSERT_VALUES,baseVec));
-    PetscCall(PetscObjectSetName((PetscObject)baseVec,"Function Base"));
-    PetscCall(VecViewFromOptions(baseVec,NULL,"-vec_base_view"));
+    PetscCall(DMGetGlobalVector(base, &baseVec));
+    PetscCall(DMProjectFunction(base, 0., funcs, ctxs, INSERT_VALUES, baseVec));
+    PetscCall(PetscObjectSetName((PetscObject)baseVec, "Function Base"));
+    PetscCall(VecViewFromOptions(baseVec, NULL, "-vec_base_view"));
 
-    PetscCall(DMGetGlobalVector(preForest,&baseVecMapped));
-    PetscCall(DMForestTransferVecFromBase(preForest,baseVec,baseVecMapped));
-    PetscCall(VecViewFromOptions(baseVecMapped,NULL,"-vec_map_base_view"));
+    PetscCall(DMGetGlobalVector(preForest, &baseVecMapped));
+    PetscCall(DMForestTransferVecFromBase(preForest, baseVec, baseVecMapped));
+    PetscCall(VecViewFromOptions(baseVecMapped, NULL, "-vec_map_base_view"));
 
     /* compare */
-    PetscCall(VecAXPY(baseVecMapped,-1.,preVec));
-    PetscCall(VecViewFromOptions(baseVecMapped,NULL,"-vec_map_diff_view"));
-    PetscCall(VecNorm(baseVecMapped,NORM_2,&diff));
+    PetscCall(VecAXPY(baseVecMapped, -1., preVec));
+    PetscCall(VecViewFromOptions(baseVecMapped, NULL, "-vec_map_diff_view"));
+    PetscCall(VecNorm(baseVecMapped, NORM_2, &diff));
 
     /* output */
     if (diff < tol) {
-      PetscCall(PetscPrintf(comm,"DMForestTransferVecFromBase() passes.\n"));
+      PetscCall(PetscPrintf(comm, "DMForestTransferVecFromBase() passes.\n"));
     } else {
-      PetscCall(PetscPrintf(comm,"DMForestTransferVecFromBase() fails with error %g and tolerance %g\n",(double)diff,(double)tol));
+      PetscCall(PetscPrintf(comm, "DMForestTransferVecFromBase() fails with error %g and tolerance %g\n", (double)diff, (double)tol));
     }
 
-    PetscCall(DMRestoreGlobalVector(base,&baseVec));
-    PetscCall(DMRestoreGlobalVector(preForest,&baseVecMapped));
+    PetscCall(DMRestoreGlobalVector(base, &baseVec));
+    PetscCall(DMRestoreGlobalVector(preForest, &baseVecMapped));
   }
 
   for (step = 0; step < adaptSteps; ++step) {
-
-    if (!transfer_from_base[1]) {
-      PetscCall(PetscObjectGetReference((PetscObject)preForest,&preCount));
-    }
+    if (!transfer_from_base[1]) { PetscCall(PetscObjectGetReference((PetscObject)preForest, &preCount)); }
 
     /* adapt */
-    PetscCall(CreateAdaptivityLabel(preForest,&adaptLabel));
-    PetscCall(DMForestTemplate(preForest,comm,&postForest));
-    if (step) PetscCall(DMForestSetAdaptivityLabel(postForest,adaptLabel));
+    PetscCall(CreateAdaptivityLabel(preForest, &adaptLabel));
+    PetscCall(DMForestTemplate(preForest, comm, &postForest));
+    if (step) PetscCall(DMForestSetAdaptivityLabel(postForest, adaptLabel));
     PetscCall(DMLabelDestroy(&adaptLabel));
     PetscCall(DMSetUp(postForest));
-    PetscCall(DMViewFromOptions(postForest,NULL,"-dm_post_view"));
+    PetscCall(DMViewFromOptions(postForest, NULL, "-dm_post_view"));
 
     /* transfer */
-    PetscCall(DMCreateGlobalVector(postForest,&postVecTransfer));
-    PetscCall(DMForestTransferVec(preForest,preVec,postForest,postVecTransfer,PETSC_TRUE,0.0));
-    PetscCall(VecViewFromOptions(postVecTransfer,NULL,"-vec_post_transfer_view"));
+    PetscCall(DMCreateGlobalVector(postForest, &postVecTransfer));
+    PetscCall(DMForestTransferVec(preForest, preVec, postForest, postVecTransfer, PETSC_TRUE, 0.0));
+    PetscCall(VecViewFromOptions(postVecTransfer, NULL, "-vec_post_transfer_view"));
 
     /* the exact post adaptivity field */
-    PetscCall(DMCreateGlobalVector(postForest,&postVecExact));
-    PetscCall(DMProjectFunction(postForest,0.,funcs,ctxs,INSERT_VALUES,postVecExact));
-    PetscCall(VecViewFromOptions(postVecExact,NULL,"-vec_post_exact_view"));
+    PetscCall(DMCreateGlobalVector(postForest, &postVecExact));
+    PetscCall(DMProjectFunction(postForest, 0., funcs, ctxs, INSERT_VALUES, postVecExact));
+    PetscCall(VecViewFromOptions(postVecExact, NULL, "-vec_post_exact_view"));
 
     /* compare */
-    PetscCall(VecAXPY(postVecExact,-1.,postVecTransfer));
-    PetscCall(VecViewFromOptions(postVecExact,NULL,"-vec_diff_view"));
-    PetscCall(VecNorm(postVecExact,NORM_2,&diff));
+    PetscCall(VecAXPY(postVecExact, -1., postVecTransfer));
+    PetscCall(VecViewFromOptions(postVecExact, NULL, "-vec_diff_view"));
+    PetscCall(VecNorm(postVecExact, NORM_2, &diff));
 
     /* output */
     if (diff < tol) {
-      PetscCall(PetscPrintf(comm,"DMForestTransferVec() passes.\n"));
+      PetscCall(PetscPrintf(comm, "DMForestTransferVec() passes.\n"));
     } else {
-      PetscCall(PetscPrintf(comm,"DMForestTransferVec() fails with error %g and tolerance %g\n",(double)diff,(double)tol));
+      PetscCall(PetscPrintf(comm, "DMForestTransferVec() fails with error %g and tolerance %g\n", (double)diff, (double)tol));
       PetscCall(IdentifyBadPoints(postForest, postVecExact, tol));
     }
     PetscCall(VecDestroy(&postVecExact));
 
     /* disconnect preForest from postForest if we don't test the transfer throughout the entire refinement process */
     if (!transfer_from_base[1]) {
-      PetscCall(DMForestSetAdaptivityForest(postForest,NULL));
-      PetscCall(PetscObjectGetReference((PetscObject)preForest,&postCount));
-      PetscCheck(postCount == preCount,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Adaptation not memory neutral: reference count increase from %" PetscInt_FMT " to %" PetscInt_FMT,preCount,postCount);
+      PetscCall(DMForestSetAdaptivityForest(postForest, NULL));
+      PetscCall(PetscObjectGetReference((PetscObject)preForest, &postCount));
+      PetscCheck(postCount == preCount, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Adaptation not memory neutral: reference count increase from %" PetscInt_FMT " to %" PetscInt_FMT, preCount, postCount);
     }
 
     if (conv) {
       DM dmConv;
 
-      PetscCall(DMConvert(postForest,DMPLEX,&dmConv));
-      PetscCall(DMViewFromOptions(dmConv,NULL,"-dm_conv_view"));
-      PetscCall(DMPlexCheckCellShape(dmConv,PETSC_TRUE,PETSC_DETERMINE));
+      PetscCall(DMConvert(postForest, DMPLEX, &dmConv));
+      PetscCall(DMViewFromOptions(dmConv, NULL, "-dm_conv_view"));
+      PetscCall(DMPlexCheckCellShape(dmConv, PETSC_TRUE, PETSC_DETERMINE));
       PetscCall(DMDestroy(&dmConv));
     }
 
@@ -341,29 +323,29 @@ int main(int argc, char **argv)
     Vec baseVec, baseVecMapped;
 
     /* communicate between base and last adapted forest */
-    PetscCall(DMGetGlobalVector(base,&baseVec));
-    PetscCall(DMProjectFunction(base,0.,funcs,ctxs,INSERT_VALUES,baseVec));
-    PetscCall(PetscObjectSetName((PetscObject)baseVec,"Function Base"));
-    PetscCall(VecViewFromOptions(baseVec,NULL,"-vec_base_view"));
+    PetscCall(DMGetGlobalVector(base, &baseVec));
+    PetscCall(DMProjectFunction(base, 0., funcs, ctxs, INSERT_VALUES, baseVec));
+    PetscCall(PetscObjectSetName((PetscObject)baseVec, "Function Base"));
+    PetscCall(VecViewFromOptions(baseVec, NULL, "-vec_base_view"));
 
-    PetscCall(DMGetGlobalVector(preForest,&baseVecMapped));
-    PetscCall(DMForestTransferVecFromBase(preForest,baseVec,baseVecMapped));
-    PetscCall(VecViewFromOptions(baseVecMapped,NULL,"-vec_map_base_view"));
+    PetscCall(DMGetGlobalVector(preForest, &baseVecMapped));
+    PetscCall(DMForestTransferVecFromBase(preForest, baseVec, baseVecMapped));
+    PetscCall(VecViewFromOptions(baseVecMapped, NULL, "-vec_map_base_view"));
 
     /* compare */
-    PetscCall(VecAXPY(baseVecMapped,-1.,preVec));
-    PetscCall(VecViewFromOptions(baseVecMapped,NULL,"-vec_map_diff_view"));
-    PetscCall(VecNorm(baseVecMapped,NORM_2,&diff));
+    PetscCall(VecAXPY(baseVecMapped, -1., preVec));
+    PetscCall(VecViewFromOptions(baseVecMapped, NULL, "-vec_map_diff_view"));
+    PetscCall(VecNorm(baseVecMapped, NORM_2, &diff));
 
     /* output */
     if (diff < tol) {
-      PetscCall(PetscPrintf(comm,"DMForestTransferVecFromBase() passes.\n"));
+      PetscCall(PetscPrintf(comm, "DMForestTransferVecFromBase() passes.\n"));
     } else {
-      PetscCall(PetscPrintf(comm,"DMForestTransferVecFromBase() fails with error %g and tolerance %g\n",(double)diff,(double)tol));
+      PetscCall(PetscPrintf(comm, "DMForestTransferVecFromBase() fails with error %g and tolerance %g\n", (double)diff, (double)tol));
     }
 
-    PetscCall(DMRestoreGlobalVector(base,&baseVec));
-    PetscCall(DMRestoreGlobalVector(preForest,&baseVecMapped));
+    PetscCall(DMRestoreGlobalVector(base, &baseVec));
+    PetscCall(DMRestoreGlobalVector(preForest, &baseVecMapped));
   }
 
   /* cleanup */

@@ -8,7 +8,7 @@
 
 typedef struct {
   PC_Factor hdr;
-  void      *implctx;
+  void     *implctx;
 } PC_ICC;
 
 #endif

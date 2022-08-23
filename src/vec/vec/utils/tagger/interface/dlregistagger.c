@@ -15,13 +15,12 @@ PetscBool VecTaggerRegisterAllCalled;
 
 .seealso: `VecTaggerFinalizePackage()`
 @*/
-PetscErrorCode VecTaggerInitializePackage(void)
-{
+PetscErrorCode VecTaggerInitializePackage(void) {
   PetscFunctionBegin;
   if (VecTaggerPackageInitialized) PetscFunctionReturn(0);
   VecTaggerPackageInitialized = PETSC_TRUE;
 
-  PetscCall(PetscClassIdRegister("Vector Indices Tagger",&VEC_TAGGER_CLASSID));
+  PetscCall(PetscClassIdRegister("Vector Indices Tagger", &VEC_TAGGER_CLASSID));
   PetscCall(VecTaggerRegisterAll());
   PetscCall(PetscRegisterFinalize(VecTaggerFinalizePackage));
   PetscFunctionReturn(0);
@@ -36,8 +35,7 @@ PetscErrorCode VecTaggerInitializePackage(void)
 
 .seealso: `VecTaggerInitializePackage()`
 @*/
-PetscErrorCode VecTaggerFinalizePackage(void)
-{
+PetscErrorCode VecTaggerFinalizePackage(void) {
   PetscFunctionBegin;
   PetscCall(PetscFunctionListDestroy(&VecTaggerList));
   VecTaggerPackageInitialized = PETSC_FALSE;

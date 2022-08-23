@@ -24,11 +24,10 @@
 /*    UPDATED PARAMETER -*/
 /*       ADJNCY - BECOMES THE ADJNCY OF THE QUOTIENT GRAPH.*/
 /***************************************************************/
-PetscErrorCode SPARSEPACKqmdqt(const PetscInt *root,const PetscInt *xadj,const PetscInt *inadjncy,PetscInt *marker, PetscInt *rchsze, PetscInt *rchset, PetscInt *nbrhd)
-{
-  PetscInt *adjncy = (PetscInt*)inadjncy; /* Used as temporary and reset within this function */
+PetscErrorCode SPARSEPACKqmdqt(const PetscInt *root, const PetscInt *xadj, const PetscInt *inadjncy, PetscInt *marker, PetscInt *rchsze, PetscInt *rchset, PetscInt *nbrhd) {
+  PetscInt *adjncy = (PetscInt *)inadjncy; /* Used as temporary and reset within this function */
   /* System generated locals */
-  PetscInt i__1, i__2;
+  PetscInt  i__1, i__2;
 
   /* Local variables */
   PetscInt inhd, irch, node, ilink, j, nabor, jstop, jstrt;
@@ -49,7 +48,7 @@ L100:
   jstop = xadj[node + 1] - 2;
   if (jstop < jstrt) goto L300;
 
-/*          PLACE REACH NODES INTO THE ADJACENT LIST OF NODE*/
+  /*          PLACE REACH NODES INTO THE ADJACENT LIST OF NODE*/
   i__1 = jstop;
   for (j = jstrt; j <= i__1; ++j) {
     ++irch;
@@ -82,12 +81,9 @@ L400:
       if (marker[nabor] >= 0) goto L500;
       adjncy[j] = *root;
       goto L600;
-L500:
-      ;
+    L500:;
     }
-L600:
-    ;
+  L600:;
   }
   PetscFunctionReturn(0);
 }
-

@@ -1,4 +1,4 @@
-#include <petsc/private/characteristicimpl.h>  /*I "petsccharacteristic.h" I*/
+#include <petsc/private/characteristicimpl.h> /*I "petsccharacteristic.h" I*/
 
 PETSC_EXTERN PetscErrorCode CharacteristicCreate_DA(Characteristic);
 
@@ -11,12 +11,11 @@ PETSC_EXTERN PetscErrorCode CharacteristicCreate_DA(Characteristic);
 
 .seealso: `CharacteristicRegisterDestroy()`
 @*/
-PetscErrorCode CharacteristicRegisterAll(void)
-{
+PetscErrorCode CharacteristicRegisterAll(void) {
   PetscFunctionBegin;
   if (CharacteristicRegisterAllCalled) PetscFunctionReturn(0);
   CharacteristicRegisterAllCalled = PETSC_TRUE;
 
-  PetscCall(CharacteristicRegister(CHARACTERISTICDA,  CharacteristicCreate_DA));
+  PetscCall(CharacteristicRegister(CHARACTERISTICDA, CharacteristicCreate_DA));
   PetscFunctionReturn(0);
 }

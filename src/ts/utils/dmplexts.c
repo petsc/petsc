@@ -4,27 +4,26 @@
 #include <petscds.h>
 #include <petscfv.h>
 
-static PetscErrorCode DMTSConvertPlex(DM dm, DM *plex, PetscBool copy)
-{
-  PetscBool      isPlex;
+static PetscErrorCode DMTSConvertPlex(DM dm, DM *plex, PetscBool copy) {
+  PetscBool isPlex;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject) dm, DMPLEX, &isPlex));
+  PetscCall(PetscObjectTypeCompare((PetscObject)dm, DMPLEX, &isPlex));
   if (isPlex) {
     *plex = dm;
-    PetscCall(PetscObjectReference((PetscObject) dm));
+    PetscCall(PetscObjectReference((PetscObject)dm));
   } else {
-    PetscCall(PetscObjectQuery((PetscObject) dm, "dm_plex", (PetscObject *) plex));
+    PetscCall(PetscObjectQuery((PetscObject)dm, "dm_plex", (PetscObject *)plex));
     if (!*plex) {
-      PetscCall(DMConvert(dm,DMPLEX,plex));
-      PetscCall(PetscObjectCompose((PetscObject) dm, "dm_plex", (PetscObject) *plex));
+      PetscCall(DMConvert(dm, DMPLEX, plex));
+      PetscCall(PetscObjectCompose((PetscObject)dm, "dm_plex", (PetscObject)*plex));
       if (copy) {
         PetscCall(DMCopyDMTS(dm, *plex));
         PetscCall(DMCopyDMSNES(dm, *plex));
         PetscCall(DMCopyAuxiliaryVec(dm, *plex));
       }
     } else {
-      PetscCall(PetscObjectReference((PetscObject) *plex));
+      PetscCall(PetscObjectReference((PetscObject)*plex));
     }
   }
   PetscFunctionReturn(0);
@@ -46,8 +45,7 @@ static PetscErrorCode DMTSConvertPlex(DM dm, DM *plex, PetscBool copy)
 
 .seealso: `DMPlexComputeJacobianActionFEM()`
 @*/
-PetscErrorCode DMPlexTSComputeRHSFunctionFVM(DM dm, PetscReal time, Vec locX, Vec F, void *user)
-{
+PetscErrorCode DMPlexTSComputeRHSFunctionFVM(DM dm, PetscReal time, Vec locX, Vec F, void *user) {
   Vec          locF;
   IS           cellIS;
   DM           plex;
@@ -55,7 +53,7 @@ PetscErrorCode DMPlexTSComputeRHSFunctionFVM(DM dm, PetscReal time, Vec locX, Ve
   PetscFormKey key = {NULL, 0, 0, 0};
 
   PetscFunctionBegin;
-  PetscCall(DMTSConvertPlex(dm,&plex,PETSC_TRUE));
+  PetscCall(DMTSConvertPlex(dm, &plex, PETSC_TRUE));
   PetscCall(DMPlexGetDepth(plex, &depth));
   PetscCall(DMGetStratumIS(plex, "dim", depth, &cellIS));
   if (!cellIS) PetscCall(DMGetStratumIS(plex, "depth", depth, &cellIS));
@@ -84,11 +82,10 @@ PetscErrorCode DMPlexTSComputeRHSFunctionFVM(DM dm, PetscReal time, Vec locX, Ve
 
 .seealso: `DMPlexComputeJacobianActionFEM()`
 @*/
-PetscErrorCode DMPlexTSComputeBoundary(DM dm, PetscReal time, Vec locX, Vec locX_t, void *user)
-{
-  DM             plex;
-  Vec            faceGeometryFVM = NULL;
-  PetscInt       Nf, f;
+PetscErrorCode DMPlexTSComputeBoundary(DM dm, PetscReal time, Vec locX, Vec locX_t, void *user) {
+  DM       plex;
+  Vec      faceGeometryFVM = NULL;
+  PetscInt Nf, f;
 
   PetscFunctionBegin;
   PetscCall(DMTSConvertPlex(dm, &plex, PETSC_TRUE));
@@ -130,19 +127,18 @@ PetscErrorCode DMPlexTSComputeBoundary(DM dm, PetscReal time, Vec locX, Vec locX
 
 .seealso: `DMPlexTSComputeIFunctionFEM()`, `DMPlexTSComputeRHSFunctionFEM()`
 @*/
-PetscErrorCode DMPlexTSComputeIFunctionFEM(DM dm, PetscReal time, Vec locX, Vec locX_t, Vec locF, void *user)
-{
-  DM             plex;
-  IS             allcellIS;
-  PetscInt       Nds, s;
+PetscErrorCode DMPlexTSComputeIFunctionFEM(DM dm, PetscReal time, Vec locX, Vec locX_t, Vec locF, void *user) {
+  DM       plex;
+  IS       allcellIS;
+  PetscInt Nds, s;
 
   PetscFunctionBegin;
   PetscCall(DMTSConvertPlex(dm, &plex, PETSC_TRUE));
   PetscCall(DMPlexGetAllCells_Internal(plex, &allcellIS));
   PetscCall(DMGetNumDS(dm, &Nds));
   for (s = 0; s < Nds; ++s) {
-    PetscDS          ds;
-    IS               cellIS;
+    PetscDS      ds;
+    IS           cellIS;
     PetscFormKey key;
 
     PetscCall(DMGetRegionNumDS(dm, s, &key.label, NULL, &ds));
@@ -150,7 +146,7 @@ PetscErrorCode DMPlexTSComputeIFunctionFEM(DM dm, PetscReal time, Vec locX, Vec 
     key.field = 0;
     key.part  = 0;
     if (!key.label) {
-      PetscCall(PetscObjectReference((PetscObject) allcellIS));
+      PetscCall(PetscObjectReference((PetscObject)allcellIS));
       cellIS = allcellIS;
     } else {
       IS pointIS;
@@ -186,20 +182,19 @@ PetscErrorCode DMPlexTSComputeIFunctionFEM(DM dm, PetscReal time, Vec locX, Vec 
 
 .seealso: `DMPlexTSComputeIFunctionFEM()`, `DMPlexTSComputeRHSFunctionFEM()`
 @*/
-PetscErrorCode DMPlexTSComputeIJacobianFEM(DM dm, PetscReal time, Vec locX, Vec locX_t, PetscReal X_tShift, Mat Jac, Mat JacP, void *user)
-{
-  DM             plex;
-  IS             allcellIS;
-  PetscBool      hasJac, hasPrec;
-  PetscInt       Nds, s;
+PetscErrorCode DMPlexTSComputeIJacobianFEM(DM dm, PetscReal time, Vec locX, Vec locX_t, PetscReal X_tShift, Mat Jac, Mat JacP, void *user) {
+  DM        plex;
+  IS        allcellIS;
+  PetscBool hasJac, hasPrec;
+  PetscInt  Nds, s;
 
   PetscFunctionBegin;
   PetscCall(DMTSConvertPlex(dm, &plex, PETSC_TRUE));
   PetscCall(DMPlexGetAllCells_Internal(plex, &allcellIS));
   PetscCall(DMGetNumDS(dm, &Nds));
   for (s = 0; s < Nds; ++s) {
-    PetscDS          ds;
-    IS               cellIS;
+    PetscDS      ds;
+    IS           cellIS;
     PetscFormKey key;
 
     PetscCall(DMGetRegionNumDS(dm, s, &key.label, NULL, &ds));
@@ -207,7 +202,7 @@ PetscErrorCode DMPlexTSComputeIJacobianFEM(DM dm, PetscReal time, Vec locX, Vec 
     key.field = 0;
     key.part  = 0;
     if (!key.label) {
-      PetscCall(PetscObjectReference((PetscObject) allcellIS));
+      PetscCall(PetscObjectReference((PetscObject)allcellIS));
       cellIS = allcellIS;
     } else {
       IS pointIS;
@@ -247,19 +242,18 @@ PetscErrorCode DMPlexTSComputeIJacobianFEM(DM dm, PetscReal time, Vec locX, Vec 
 
 .seealso: `DMPlexTSComputeIFunctionFEM()`, `DMPlexTSComputeIJacobianFEM()`
 @*/
-PetscErrorCode DMPlexTSComputeRHSFunctionFEM(DM dm, PetscReal time, Vec locX, Vec locG, void *user)
-{
-  DM             plex;
-  IS             allcellIS;
-  PetscInt       Nds, s;
+PetscErrorCode DMPlexTSComputeRHSFunctionFEM(DM dm, PetscReal time, Vec locX, Vec locG, void *user) {
+  DM       plex;
+  IS       allcellIS;
+  PetscInt Nds, s;
 
   PetscFunctionBegin;
   PetscCall(DMTSConvertPlex(dm, &plex, PETSC_TRUE));
   PetscCall(DMPlexGetAllCells_Internal(plex, &allcellIS));
   PetscCall(DMGetNumDS(dm, &Nds));
   for (s = 0; s < Nds; ++s) {
-    PetscDS          ds;
-    IS               cellIS;
+    PetscDS      ds;
+    IS           cellIS;
     PetscFormKey key;
 
     PetscCall(DMGetRegionNumDS(dm, s, &key.label, NULL, &ds));
@@ -267,7 +261,7 @@ PetscErrorCode DMPlexTSComputeRHSFunctionFEM(DM dm, PetscReal time, Vec locX, Ve
     key.field = 0;
     key.part  = 100;
     if (!key.label) {
-      PetscCall(PetscObjectReference((PetscObject) allcellIS));
+      PetscCall(PetscObjectReference((PetscObject)allcellIS));
       cellIS = allcellIS;
     } else {
       IS pointIS;
@@ -303,34 +297,33 @@ PetscErrorCode DMPlexTSComputeRHSFunctionFEM(DM dm, PetscReal time, Vec locX, Ve
 
 .seealso: `DNTSCheckFromOptions()`, `DMTSCheckJacobian()`, `DNSNESCheckFromOptions()`, `DMSNESCheckDiscretization()`, `DMSNESCheckJacobian()`
 @*/
-PetscErrorCode DMTSCheckResidual(TS ts, DM dm, PetscReal t, Vec u, Vec u_t, PetscReal tol, PetscReal *residual)
-{
-  MPI_Comm       comm;
-  Vec            r;
-  PetscReal      res;
+PetscErrorCode DMTSCheckResidual(TS ts, DM dm, PetscReal t, Vec u, Vec u_t, PetscReal tol, PetscReal *residual) {
+  MPI_Comm  comm;
+  Vec       r;
+  PetscReal res;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
   PetscValidHeaderSpecific(u, VEC_CLASSID, 4);
   if (residual) PetscValidRealPointer(residual, 7);
-  PetscCall(PetscObjectGetComm((PetscObject) ts, &comm));
+  PetscCall(PetscObjectGetComm((PetscObject)ts, &comm));
   PetscCall(DMComputeExactSolution(dm, t, u, u_t));
   PetscCall(VecDuplicate(u, &r));
   PetscCall(TSComputeIFunction(ts, t, u, u_t, r, PETSC_FALSE));
   PetscCall(VecNorm(r, NORM_2, &res));
   if (tol >= 0.0) {
-    PetscCheck(res <= tol,comm, PETSC_ERR_ARG_WRONG, "L_2 Residual %g exceeds tolerance %g", (double) res, (double) tol);
+    PetscCheck(res <= tol, comm, PETSC_ERR_ARG_WRONG, "L_2 Residual %g exceeds tolerance %g", (double)res, (double)tol);
   } else if (residual) {
     *residual = res;
   } else {
     PetscCall(PetscPrintf(comm, "L_2 Residual: %g\n", (double)res));
     PetscCall(VecChop(r, 1.0e-10));
-    PetscCall(PetscObjectCompose((PetscObject) r, "__Vec_bc_zero__", (PetscObject) dm));
-    PetscCall(PetscObjectSetName((PetscObject) r, "Initial Residual"));
-    PetscCall(PetscObjectSetOptionsPrefix((PetscObject)r,"res_"));
+    PetscCall(PetscObjectCompose((PetscObject)r, "__Vec_bc_zero__", (PetscObject)dm));
+    PetscCall(PetscObjectSetName((PetscObject)r, "Initial Residual"));
+    PetscCall(PetscObjectSetOptionsPrefix((PetscObject)r, "res_"));
     PetscCall(VecViewFromOptions(r, NULL, "-vec_view"));
-    PetscCall(PetscObjectCompose((PetscObject) r, "__Vec_bc_zero__", NULL));
+    PetscCall(PetscObjectCompose((PetscObject)r, "__Vec_bc_zero__", NULL));
   }
   PetscCall(VecDestroy(&r));
   PetscFunctionReturn(0);
@@ -355,14 +348,13 @@ PetscErrorCode DMTSCheckResidual(TS ts, DM dm, PetscReal t, Vec u, Vec u_t, Pets
 
 .seealso: `DNTSCheckFromOptions()`, `DMTSCheckResidual()`, `DNSNESCheckFromOptions()`, `DMSNESCheckDiscretization()`, `DMSNESCheckResidual()`
 @*/
-PetscErrorCode DMTSCheckJacobian(TS ts, DM dm, PetscReal t, Vec u, Vec u_t, PetscReal tol, PetscBool *isLinear, PetscReal *convRate)
-{
-  MPI_Comm       comm;
-  PetscDS        ds;
-  Mat            J, M;
-  MatNullSpace   nullspace;
-  PetscReal      dt, shift, slope, intercept;
-  PetscBool      hasJac, hasPrec, isLin = PETSC_FALSE;
+PetscErrorCode DMTSCheckJacobian(TS ts, DM dm, PetscReal t, Vec u, Vec u_t, PetscReal tol, PetscBool *isLinear, PetscReal *convRate) {
+  MPI_Comm     comm;
+  PetscDS      ds;
+  Mat          J, M;
+  MatNullSpace nullspace;
+  PetscReal    dt, shift, slope, intercept;
+  PetscBool    hasJac, hasPrec, isLin = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
@@ -370,11 +362,11 @@ PetscErrorCode DMTSCheckJacobian(TS ts, DM dm, PetscReal t, Vec u, Vec u_t, Pets
   PetscValidHeaderSpecific(u, VEC_CLASSID, 4);
   if (isLinear) PetscValidBoolPointer(isLinear, 7);
   if (convRate) PetscValidRealPointer(convRate, 8);
-  PetscCall(PetscObjectGetComm((PetscObject) ts, &comm));
+  PetscCall(PetscObjectGetComm((PetscObject)ts, &comm));
   PetscCall(DMComputeExactSolution(dm, t, u, u_t));
   /* Create and view matrices */
   PetscCall(TSGetTimeStep(ts, &dt));
-  shift = 1.0/dt;
+  shift = 1.0 / dt;
   PetscCall(DMCreateMatrix(dm, &J));
   PetscCall(DMGetDS(dm, &ds));
   PetscCall(PetscDSHasJacobian(ds, &hasJac));
@@ -382,22 +374,22 @@ PetscErrorCode DMTSCheckJacobian(TS ts, DM dm, PetscReal t, Vec u, Vec u_t, Pets
   if (hasJac && hasPrec) {
     PetscCall(DMCreateMatrix(dm, &M));
     PetscCall(TSComputeIJacobian(ts, t, u, u_t, shift, J, M, PETSC_FALSE));
-    PetscCall(PetscObjectSetName((PetscObject) M, "Preconditioning Matrix"));
-    PetscCall(PetscObjectSetOptionsPrefix((PetscObject) M, "jacpre_"));
+    PetscCall(PetscObjectSetName((PetscObject)M, "Preconditioning Matrix"));
+    PetscCall(PetscObjectSetOptionsPrefix((PetscObject)M, "jacpre_"));
     PetscCall(MatViewFromOptions(M, NULL, "-mat_view"));
     PetscCall(MatDestroy(&M));
   } else {
     PetscCall(TSComputeIJacobian(ts, t, u, u_t, shift, J, J, PETSC_FALSE));
   }
-  PetscCall(PetscObjectSetName((PetscObject) J, "Jacobian"));
-  PetscCall(PetscObjectSetOptionsPrefix((PetscObject) J, "jac_"));
+  PetscCall(PetscObjectSetName((PetscObject)J, "Jacobian"));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)J, "jac_"));
   PetscCall(MatViewFromOptions(J, NULL, "-mat_view"));
   /* Check nullspace */
   PetscCall(MatGetNullSpace(J, &nullspace));
   if (nullspace) {
     PetscBool isNull;
     PetscCall(MatNullSpaceTest(nullspace, J, &isNull));
-    PetscCheck(isNull,comm, PETSC_ERR_PLIB, "The null space calculated for the system operator is invalid.");
+    PetscCheck(isNull, comm, PETSC_ERR_PLIB, "The null space calculated for the system operator is invalid.");
   }
   /* Taylor test */
   {
@@ -419,14 +411,15 @@ PetscErrorCode DMTSCheckJacobian(TS ts, DM dm, PetscReal t, Vec u, Vec u_t, Pets
     PetscCall(VecDuplicate(u, &r));
     PetscCall(TSComputeIFunction(ts, t, u, u_t, r, PETSC_FALSE));
     /* Look at the convergence of our Taylor approximation as we approach u */
-    for (h = hMax, Nv = 0; h >= hMin; h *= hMult, ++Nv);
+    for (h = hMax, Nv = 0; h >= hMin; h *= hMult, ++Nv)
+      ;
     PetscCall(PetscCalloc3(Nv, &es, Nv, &hs, Nv, &errors));
     PetscCall(VecDuplicate(u, &uhat));
     PetscCall(VecDuplicate(u, &uhat_t));
     PetscCall(VecDuplicate(u, &rhat));
     for (h = hMax, Nv = 0; h >= hMin; h *= hMult, ++Nv) {
       PetscCall(VecWAXPY(uhat, h, du, u));
-      PetscCall(VecWAXPY(uhat_t, h*shift, du, u_t));
+      PetscCall(VecWAXPY(uhat_t, h * shift, du, u_t));
       /* F(\hat u, \hat u_t) \approx F(u, u_t) + J(u, u_t) (uhat - u) + J_t(u, u_t) (uhat_t - u_t) = F(u) + h * J(u) du + h * shift * J_t(u) du = F(u) + h F' du */
       PetscCall(TSComputeIFunction(ts, t, uhat, uhat_t, rhat, PETSC_FALSE));
       PetscCall(VecAXPBYPCZ(rhat, -1.0, -h, 1.0, r, df));
@@ -443,20 +436,20 @@ PetscErrorCode DMTSCheckJacobian(TS ts, DM dm, PetscReal t, Vec u, Vec u_t, Pets
     PetscCall(VecDestroy(&du));
     for (v = 0; v < Nv; ++v) {
       if ((tol >= 0) && (errors[v] > tol)) break;
-      else if (errors[v] > PETSC_SMALL)    break;
+      else if (errors[v] > PETSC_SMALL) break;
     }
     if (v == Nv) isLin = PETSC_TRUE;
     PetscCall(PetscLinearRegression(Nv, hs, es, &slope, &intercept));
     PetscCall(PetscFree3(es, hs, errors));
     /* Slope should be about 2 */
     if (tol >= 0) {
-      PetscCheck(isLin || PetscAbsReal(2 - slope) <= tol,comm, PETSC_ERR_ARG_WRONG, "Taylor approximation convergence rate should be 2, not %0.2f", (double) slope);
+      PetscCheck(isLin || PetscAbsReal(2 - slope) <= tol, comm, PETSC_ERR_ARG_WRONG, "Taylor approximation convergence rate should be 2, not %0.2f", (double)slope);
     } else if (isLinear || convRate) {
       if (isLinear) *isLinear = isLin;
       if (convRate) *convRate = slope;
     } else {
-      if (!isLin) PetscCall(PetscPrintf(comm, "Taylor approximation converging at order %3.2f\n", (double) slope));
-      else        PetscCall(PetscPrintf(comm, "Function appears to be linear\n"));
+      if (!isLin) PetscCall(PetscPrintf(comm, "Taylor approximation converging at order %3.2f\n", (double)slope));
+      else PetscCall(PetscPrintf(comm, "Function appears to be linear\n"));
     }
   }
   PetscCall(MatDestroy(&J));
@@ -474,16 +467,15 @@ PetscErrorCode DMTSCheckJacobian(TS ts, DM dm, PetscReal t, Vec u, Vec u_t, Pets
 
   Level: developer
 @*/
-PetscErrorCode DMTSCheckFromOptions(TS ts, Vec u)
-{
-  DM             dm;
-  SNES           snes;
-  Vec            sol, u_t;
-  PetscReal      t;
-  PetscBool      check;
+PetscErrorCode DMTSCheckFromOptions(TS ts, Vec u) {
+  DM        dm;
+  SNES      snes;
+  Vec       sol, u_t;
+  PetscReal t;
+  PetscBool check;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHasName(((PetscObject)ts)->options,((PetscObject)ts)->prefix, "-dmts_check", &check));
+  PetscCall(PetscOptionsHasName(((PetscObject)ts)->options, ((PetscObject)ts)->prefix, "-dmts_check", &check));
   if (!check) PetscFunctionReturn(0);
   PetscCall(VecDuplicate(u, &sol));
   PetscCall(VecCopy(u, sol));

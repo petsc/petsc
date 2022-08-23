@@ -3,8 +3,7 @@ static char help[] = "Tests for point location\n\n";
 #include <petscsf.h>
 #include <petscdmplex.h>
 
-static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm)
-{
+static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm) {
   PetscFunctionBeginUser;
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetType(*dm, DMPLEX));
@@ -13,8 +12,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TestLocation(DM dm)
-{
+static PetscErrorCode TestLocation(DM dm) {
   Vec                points;
   PetscSF            cellSF = NULL;
   const PetscSFNode *cells;
@@ -27,15 +25,15 @@ static PetscErrorCode TestLocation(DM dm)
   PetscCall(DMGetCoordinatesLocalSetUp(dm));
   PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
   /* Locate all centroids */
-  PetscCall(VecCreateSeq(PETSC_COMM_SELF, (cEnd - cStart)*cdim, &points));
+  PetscCall(VecCreateSeq(PETSC_COMM_SELF, (cEnd - cStart) * cdim, &points));
   PetscCall(VecSetBlockSize(points, cdim));
   PetscCall(VecGetArray(points, &a));
   for (c = cStart; c < cEnd; ++c) {
-    PetscReal          centroid[3];
-    PetscInt           off = (c - cStart)*cdim, d;
+    PetscReal centroid[3];
+    PetscInt  off = (c - cStart) * cdim, d;
 
     PetscCall(DMPlexComputeCellGeometryFVM(dm, c, NULL, centroid, NULL));
-    for (d = 0; d < cdim; ++d) a[off+d] = centroid[d];
+    for (d = 0; d < cdim; ++d) a[off + d] = centroid[d];
   }
   PetscCall(VecRestoreArray(points, &a));
   PetscCall(DMLocatePoints(dm, points, DM_POINTLOCATION_NONE, &cellSF));
@@ -43,20 +41,17 @@ static PetscErrorCode TestLocation(DM dm)
   PetscCall(PetscSFGetGraph(cellSF, NULL, &n, NULL, &cells));
   if (n != (cEnd - cStart)) {
     for (c = 0; c < n; ++c) {
-      if (cells[c].index != c+cStart) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Could not locate centroid of cell %" PetscInt_FMT ", error %" PetscInt_FMT "\n", c+cStart, cells[c].index));
+      if (cells[c].index != c + cStart) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Could not locate centroid of cell %" PetscInt_FMT ", error %" PetscInt_FMT "\n", c + cStart, cells[c].index));
     }
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Located %" PetscInt_FMT " points instead of %" PetscInt_FMT, n, cEnd - cStart);
   }
-  for (c = cStart; c < cEnd; ++c) {
-    PetscCheck(cells[c - cStart].index == c,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Could not locate centroid of cell %" PetscInt_FMT ", instead found %" PetscInt_FMT, c, cells[c - cStart].index);
-  }
+  for (c = cStart; c < cEnd; ++c) { PetscCheck(cells[c - cStart].index == c, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Could not locate centroid of cell %" PetscInt_FMT ", instead found %" PetscInt_FMT, c, cells[c - cStart].index); }
   PetscCall(PetscSFDestroy(&cellSF));
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv)
-{
-  DM             dm;
+int main(int argc, char **argv) {
+  DM dm;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));

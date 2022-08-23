@@ -20,9 +20,9 @@ typedef struct {
 } SampleShellPC;
 
 /* Declare routines for user-provided preconditioner */
-extern PetscErrorCode SampleShellPCCreate(SampleShellPC**);
-extern PetscErrorCode SampleShellPCSetUp(PC,Mat,Vec);
-extern PetscErrorCode SampleShellPCApply(PC,Vec x,Vec y);
+extern PetscErrorCode SampleShellPCCreate(SampleShellPC **);
+extern PetscErrorCode SampleShellPCSetUp(PC, Mat, Vec);
+extern PetscErrorCode SampleShellPCApply(PC, Vec x, Vec y);
 extern PetscErrorCode SampleShellPCDestroy(PC);
 
 /*
@@ -34,22 +34,21 @@ extern PetscErrorCode SampleShellPCDestroy(PC);
    provides the added traceback detail of the application routine names.
 */
 
-int main(int argc,char **args)
-{
-  Vec            x,b,u;   /* approx solution, RHS, exact solution */
-  Mat            A;         /* linear system matrix */
-  KSP            ksp;      /* linear solver context */
-  PC             pc;        /* preconditioner context */
-  PetscReal      norm;      /* norm of solution error */
-  SampleShellPC  *shell;    /* user-defined preconditioner context */
-  PetscScalar    v,one = 1.0,none = -1.0;
-  PetscInt       i,j,Ii,J,Istart,Iend,m = 8,n = 7,its;
+int main(int argc, char **args) {
+  Vec            x, b, u; /* approx solution, RHS, exact solution */
+  Mat            A;       /* linear system matrix */
+  KSP            ksp;     /* linear solver context */
+  PC             pc;      /* preconditioner context */
+  PetscReal      norm;    /* norm of solution error */
+  SampleShellPC *shell;   /* user-defined preconditioner context */
+  PetscScalar    v, one = 1.0, none = -1.0;
+  PetscInt       i, j, Ii, J, Istart, Iend, m = 8, n = 7, its;
   PetscBool      user_defined_pc = PETSC_FALSE;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
-  PetscCall(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
-  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-m", &m, NULL));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-n", &n, NULL));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
          Compute the matrix and right-hand-side vector that define
@@ -61,8 +60,8 @@ int main(int argc,char **args)
      runtime. Also, the parallel partioning of the matrix is
      determined by PETSc at runtime.
   */
-  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
-  PetscCall(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n));
+  PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
+  PetscCall(MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, m * n, m * n));
   PetscCall(MatSetFromOptions(A));
   PetscCall(MatSetUp(A));
 
@@ -71,7 +70,7 @@ int main(int argc,char **args)
      contiguous chunks of rows across the processors.  Determine which
      rows of the matrix are locally owned.
   */
-  PetscCall(MatGetOwnershipRange(A,&Istart,&Iend));
+  PetscCall(MatGetOwnershipRange(A, &Istart, &Iend));
 
   /*
      Set matrix elements for the 2-D, five-point stencil in parallel.
@@ -80,13 +79,28 @@ int main(int argc,char **args)
         appropriate processor during matrix assembly).
       - Always specify global rows and columns of matrix entries.
    */
-  for (Ii=Istart; Ii<Iend; Ii++) {
-    v = -1.0; i = Ii/n; j = Ii - i*n;
-    if (i>0)   {J = Ii - n; PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
-    if (i<m-1) {J = Ii + n; PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
-    if (j>0)   {J = Ii - 1; PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
-    if (j<n-1) {J = Ii + 1; PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
-    v = 4.0; PetscCall(MatSetValues(A,1,&Ii,1,&Ii,&v,INSERT_VALUES));
+  for (Ii = Istart; Ii < Iend; Ii++) {
+    v = -1.0;
+    i = Ii / n;
+    j = Ii - i * n;
+    if (i > 0) {
+      J = Ii - n;
+      PetscCall(MatSetValues(A, 1, &Ii, 1, &J, &v, INSERT_VALUES));
+    }
+    if (i < m - 1) {
+      J = Ii + n;
+      PetscCall(MatSetValues(A, 1, &Ii, 1, &J, &v, INSERT_VALUES));
+    }
+    if (j > 0) {
+      J = Ii - 1;
+      PetscCall(MatSetValues(A, 1, &Ii, 1, &J, &v, INSERT_VALUES));
+    }
+    if (j < n - 1) {
+      J = Ii + 1;
+      PetscCall(MatSetValues(A, 1, &Ii, 1, &J, &v, INSERT_VALUES));
+    }
+    v = 4.0;
+    PetscCall(MatSetValues(A, 1, &Ii, 1, &Ii, &v, INSERT_VALUES));
   }
 
   /*
@@ -95,8 +109,8 @@ int main(int argc,char **args)
      Computations can be done while messages are in transition
      by placing code between these two statements.
   */
-  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
 
   /*
      Create parallel vectors.
@@ -105,17 +119,17 @@ int main(int argc,char **args)
         dimension; the parallel partitioning is determined at runtime.
       - Note: We form 1 vector from scratch and then duplicate as needed.
   */
-  PetscCall(VecCreate(PETSC_COMM_WORLD,&u));
-  PetscCall(VecSetSizes(u,PETSC_DECIDE,m*n));
+  PetscCall(VecCreate(PETSC_COMM_WORLD, &u));
+  PetscCall(VecSetSizes(u, PETSC_DECIDE, m * n));
   PetscCall(VecSetFromOptions(u));
-  PetscCall(VecDuplicate(u,&b));
-  PetscCall(VecDuplicate(b,&x));
+  PetscCall(VecDuplicate(u, &b));
+  PetscCall(VecDuplicate(b, &x));
 
   /*
      Set exact solution; then compute right-hand-side vector.
   */
-  PetscCall(VecSet(u,one));
-  PetscCall(MatMult(A,u,b));
+  PetscCall(VecSet(u, one));
+  PetscCall(MatMult(A, u, b));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                 Create the linear solver and set various options
@@ -124,13 +138,13 @@ int main(int argc,char **args)
   /*
      Create linear solver context
   */
-  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  PetscCall(KSPCreate(PETSC_COMM_WORLD, &ksp));
 
   /*
      Set operators. Here the matrix that defines the linear system
      also serves as the preconditioning matrix.
   */
-  PetscCall(KSPSetOperators(ksp,A,A));
+  PetscCall(KSPSetOperators(ksp, A, A));
 
   /*
      Set linear solver defaults for this problem (optional).
@@ -138,37 +152,37 @@ int main(int argc,char **args)
        we can then directly call any KSP and PC routines
        to set various options.
   */
-  PetscCall(KSPGetPC(ksp,&pc));
-  PetscCall(KSPSetTolerances(ksp,1.e-7,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT));
+  PetscCall(KSPGetPC(ksp, &pc));
+  PetscCall(KSPSetTolerances(ksp, 1.e-7, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT));
 
   /*
      Set a user-defined "shell" preconditioner if desired
   */
-  PetscCall(PetscOptionsGetBool(NULL,NULL,"-user_defined_pc",&user_defined_pc,NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-user_defined_pc", &user_defined_pc, NULL));
   if (user_defined_pc) {
     /* (Required) Indicate to PETSc that we're using a "shell" preconditioner */
-    PetscCall(PCSetType(pc,PCSHELL));
+    PetscCall(PCSetType(pc, PCSHELL));
 
     /* (Optional) Create a context for the user-defined preconditioner; this
        context can be used to contain any application-specific data. */
     PetscCall(SampleShellPCCreate(&shell));
 
     /* (Required) Set the user-defined routine for applying the preconditioner */
-    PetscCall(PCShellSetApply(pc,SampleShellPCApply));
-    PetscCall(PCShellSetContext(pc,shell));
+    PetscCall(PCShellSetApply(pc, SampleShellPCApply));
+    PetscCall(PCShellSetContext(pc, shell));
 
     /* (Optional) Set user-defined function to free objects used by custom preconditioner */
-    PetscCall(PCShellSetDestroy(pc,SampleShellPCDestroy));
+    PetscCall(PCShellSetDestroy(pc, SampleShellPCDestroy));
 
     /* (Optional) Set a name for the preconditioner, used for PCView() */
-    PetscCall(PCShellSetName(pc,"MyPreconditioner"));
+    PetscCall(PCShellSetName(pc, "MyPreconditioner"));
 
     /* (Optional) Do any setup required for the preconditioner */
     /* Note: This function could be set with PCShellSetSetUp and it would be called when necessary */
-    PetscCall(SampleShellPCSetUp(pc,A,x));
+    PetscCall(SampleShellPCSetUp(pc, A, x));
 
   } else {
-    PetscCall(PCSetType(pc,PCJACOBI));
+    PetscCall(PCSetType(pc, PCJACOBI));
   }
 
   /*
@@ -184,7 +198,7 @@ int main(int argc,char **args)
                       Solve the linear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  PetscCall(KSPSolve(ksp,b,x));
+  PetscCall(KSPSolve(ksp, b, x));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                       Check solution and clean up
@@ -193,22 +207,23 @@ int main(int argc,char **args)
   /*
      Check the error
   */
-  PetscCall(VecAXPY(x,none,u));
-  PetscCall(VecNorm(x,NORM_2,&norm));
-  PetscCall(KSPGetIterationNumber(ksp,&its));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g iterations %" PetscInt_FMT "\n",(double)norm,its));
+  PetscCall(VecAXPY(x, none, u));
+  PetscCall(VecNorm(x, NORM_2, &norm));
+  PetscCall(KSPGetIterationNumber(ksp, &its));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Norm of error %g iterations %" PetscInt_FMT "\n", (double)norm, its));
 
   /*
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
   PetscCall(KSPDestroy(&ksp));
-  PetscCall(VecDestroy(&u));  PetscCall(VecDestroy(&x));
-  PetscCall(VecDestroy(&b));  PetscCall(MatDestroy(&A));
+  PetscCall(VecDestroy(&u));
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&b));
+  PetscCall(MatDestroy(&A));
 
   PetscCall(PetscFinalize());
   return 0;
-
 }
 
 /***********************************************************************/
@@ -222,9 +237,8 @@ int main(int argc,char **args)
    Output Parameter:
 .  shell - user-defined preconditioner context
 */
-PetscErrorCode SampleShellPCCreate(SampleShellPC **shell)
-{
-  SampleShellPC  *newctx;
+PetscErrorCode SampleShellPCCreate(SampleShellPC **shell) {
+  SampleShellPC *newctx;
 
   PetscCall(PetscNew(&newctx));
   newctx->diag = 0;
@@ -250,14 +264,13 @@ PetscErrorCode SampleShellPCCreate(SampleShellPC **shell)
    of the diagonal of the preconditioner matrix; this vector is then
    used within the routine SampleShellPCApply().
 */
-PetscErrorCode SampleShellPCSetUp(PC pc,Mat pmat,Vec x)
-{
-  SampleShellPC  *shell;
+PetscErrorCode SampleShellPCSetUp(PC pc, Mat pmat, Vec x) {
+  SampleShellPC *shell;
   Vec            diag;
 
-  PetscCall(PCShellGetContext(pc,&shell));
-  PetscCall(VecDuplicate(x,&diag));
-  PetscCall(MatGetDiagonal(pmat,diag));
+  PetscCall(PCShellGetContext(pc, &shell));
+  PetscCall(VecDuplicate(x, &diag));
+  PetscCall(MatGetDiagonal(pmat, diag));
   PetscCall(VecReciprocal(diag));
 
   shell->diag = diag;
@@ -280,12 +293,11 @@ PetscErrorCode SampleShellPCSetUp(PC pc,Mat pmat,Vec x)
    example of working with a PCSHELL.  Note that the Jacobi method
    is already provided within PETSc.
 */
-PetscErrorCode SampleShellPCApply(PC pc,Vec x,Vec y)
-{
-  SampleShellPC  *shell;
+PetscErrorCode SampleShellPCApply(PC pc, Vec x, Vec y) {
+  SampleShellPC *shell;
 
-  PetscCall(PCShellGetContext(pc,&shell));
-  PetscCall(VecPointwiseMult(y,x,shell->diag));
+  PetscCall(PCShellGetContext(pc, &shell));
+  PetscCall(VecPointwiseMult(y, x, shell->diag));
 
   return 0;
 }
@@ -297,11 +309,10 @@ PetscErrorCode SampleShellPCApply(PC pc,Vec x,Vec y)
    Input Parameter:
 .  shell - user-defined preconditioner context
 */
-PetscErrorCode SampleShellPCDestroy(PC pc)
-{
-  SampleShellPC  *shell;
+PetscErrorCode SampleShellPCDestroy(PC pc) {
+  SampleShellPC *shell;
 
-  PetscCall(PCShellGetContext(pc,&shell));
+  PetscCall(PCShellGetContext(pc, &shell));
   PetscCall(VecDestroy(&shell->diag));
   PetscCall(PetscFree(shell));
 
