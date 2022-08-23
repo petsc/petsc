@@ -1902,8 +1902,21 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
   if (dm->useNatural) {
     PetscSection section;
 
+    PetscCall(DMSetUseNatural(*dmParallel, PETSC_TRUE));
+    PetscCall(DMGetLocalSection(dm, &section));
+
     /* First DM with useNatural = PETSC_TRUE is considered natural */
     /* sfMigration and sfNatural are respectively the point and dofs SFs mapping to this natural DM */
+    /* Compose with a previous sfNatural if present */
+    if (dm->sfNatural) {
+      PetscSF natSF;
+
+      PetscCall(DMPlexCreateGlobalToNaturalSF(*dmParallel, section, sfMigration, &natSF));
+      PetscCall(PetscSFCompose(dm->sfNatural, natSF, &(*dmParallel)->sfNatural));
+      PetscCall(PetscSFDestroy(&natSF));
+    } else {
+      PetscCall(DMPlexCreateGlobalToNaturalSF(*dmParallel, section, sfMigration, &(*dmParallel)->sfNatural));
+    }
     /* Compose with a previous sfMigration if present */
     if (dm->sfMigration) {
       PetscSF naturalPointSF;
@@ -1912,9 +1925,6 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
       PetscCall(PetscSFDestroy(&sfMigration));
       sfMigration = naturalPointSF;
     }
-    PetscCall(DMGetLocalSection(dm, &section));
-    PetscCall(DMPlexCreateGlobalToNaturalSF(*dmParallel, section, sfMigration, &(*dmParallel)->sfNatural));
-    PetscCall(DMSetUseNatural(*dmParallel, PETSC_TRUE));
   }
   PetscCall(DMPlexCopy_Internal(dm, PETSC_TRUE, PETSC_FALSE, *dmParallel));
   /* Cleanup */
