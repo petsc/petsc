@@ -417,7 +417,7 @@ std::string map_reverse_lookup(const std::map<std::string, T> &map, const T &key
   return "";
 }
 
-static PetscErrorCode PCSetFromOptions_AMGX(PetscOptionItems *PetscOptionsObject, PC pc) {
+static PetscErrorCode PCSetFromOptions_AMGX(PC pc, PetscOptionItems *PetscOptionsObject) {
   PC_AMGX      *amgx          = (PC_AMGX *)pc->data;
   constexpr int MAX_PARAM_LEN = 128;
   char          option[MAX_PARAM_LEN];
@@ -631,7 +631,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_AMGX(PC pc) {
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
    PCAmgXGetResources - get AMGx's internal resource object
 
     Not Collective

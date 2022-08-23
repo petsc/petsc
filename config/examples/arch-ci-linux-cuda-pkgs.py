@@ -42,7 +42,7 @@ if __name__ == '__main__':
     '--download-hypre',
     '--download-hypre-configure-arguments=--enable-unified-memory',
     '--download-raja',
-
+    '--download-amgx',
   ]
 
   configure.petsc_configure(configure_options)

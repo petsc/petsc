@@ -161,7 +161,6 @@ int main(int argc, char **argv) {
   PetscCall(MatSetOption(Amat, MAT_SPD_ETERNAL, PETSC_TRUE));
   PetscCall(SNESSolve(snes, NULL, u));
   PetscCall(PetscTimeSubtract(&time));
-  // PetscCall(PetscPrintf(PETSC_COMM_WORLD,"First Solve time: %g\n",-time));
   /* Benchmark system */
   if (user.nit) {
     Vec      b;
@@ -241,10 +240,11 @@ int main(int argc, char **argv) {
           -ksp_converged_reason -snes_rtol 1.e-4 -dm_mat_type aijmkl -dm_vec_type standard
 
   testset:
-    requires: amgx
+    requires: cuda amgx
+    filter: grep -v Built | grep -v "AMGX version" | grep -v "CUDA Runtime"
     output_file: output/ex13_amgx.out
     args: -dm_plex_dim 2 -dm_plex_box_faces 2,2 -dm_refine 2 -petscpartitioner_type simple -potential_petscspace_degree 2 -dm_plex_simplex 0 -ksp_monitor \
-          -snes_type ksponly -dm_view -ksp_type cg -ksp_norm_type unpreconditioned -ksp_converged_reason -snes_rtol 1.e-4 -pc_type amgx -benchmark_it 1 -pc_amgx_verbose true
+          -snes_type ksponly -dm_view -ksp_type cg -ksp_norm_type unpreconditioned -ksp_converged_reason -snes_rtol 1.e-4 -pc_type amgx -benchmark_it 1 -pc_amgx_verbose false
     nsize: 4
     test:
       suffix: amgx
