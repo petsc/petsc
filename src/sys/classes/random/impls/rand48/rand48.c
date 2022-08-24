@@ -48,7 +48,7 @@ static struct _PetscRandomOps PetscRandomOps_Values = {
 
   Level: beginner
 
-  Notes:
+  Note:
   Not recommended because it may produce different results on different systems.
 
 .seealso: `PetscRandomCreate()`, `PetscRandomSetType()`, `PETSCRAND`, `PETSCSPRNG`, `PetscRandomSetFromOptions()`

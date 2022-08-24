@@ -8,12 +8,12 @@
 
    Input Parameters:
 +  obj - the Petsc variable
-         Thus must be cast with a (PetscObject), for example,
-         PetscObjectGetName((PetscObject)mat,&name);
+         Thus must be cast with a (`PetscObject`), for example,
+         `PetscObjectGetName`((`PetscObject`)mat,&name);
 -  name - the name associated with obj
 
-   Notes:
-    Calls PetscObjectName() if a name has not yet been provided to the object.
+   Note:
+    Calls `PetscObjectName()` if a name has not yet been provided to the object.
 
    Level: intermediate
 

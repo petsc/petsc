@@ -29,7 +29,7 @@ PetscErrorCode   PetscViewerMathematicaFinalizePackage(void) {
 
 /*@C
   PetscViewerMathematicaInitializePackage - This function initializes everything in the Petsc interface to Mathematica. It is
-  called from PetscViewerInitializePackage().
+  called from `PetscViewerInitializePackage()`.
 
   Level: developer
 
@@ -289,20 +289,6 @@ PetscErrorCode PetscViewerMathematicaSetLinkMode(PetscViewer v, LinkMode mode) {
   Output Parameter:
 . viewer  - The Mathematica viewer
 
-  Level: intermediate
-
-  Notes:
-  Most users should employ the following commands to access the
-  Mathematica viewers
-$
-$    PetscViewerMathematicaOpen(MPI_Comm comm, int port, char *machine, char *mode, PetscViewer &viewer)
-$    MatView(Mat matrix, PetscViewer viewer)
-$
-$                or
-$
-$    PetscViewerMathematicaOpen(MPI_Comm comm, int port, char *machine, char *mode, PetscViewer &viewer)
-$    VecView(Vec vector, PetscViewer viewer)
-
    Options Database Keys:
 +    -viewer_math_linkhost <machine> - The host machine for the kernel
 .    -viewer_math_linkname <name>    - The full link name for the connection
@@ -311,7 +297,22 @@ $    VecView(Vec vector, PetscViewer viewer)
 .    -viewer_math_type <type>        - The plot type, e.g. Triangulation, Vector
 -    -viewer_math_graphics <output>  - The output type, e.g. Motif, PS, PSFile
 
-.seealso: `MatView()`, `VecView()`
+  Level: intermediate
+
+  Note:
+  Most users should employ the following commands to access the
+  Mathematica viewers
+.vb
+    PetscViewerMathematicaOpen(MPI_Comm comm, int port, char *machine, char *mode, PetscViewer &viewer)
+    MatView(Mat matrix, PetscViewer viewer)
+
+                or
+
+    PetscViewerMathematicaOpen(MPI_Comm comm, int port, char *machine, char *mode, PetscViewer &viewer)
+    VecView(Vec vector, PetscViewer viewer)
+.ve
+
+.seealso: `PETSCVIEWERMATHEMATICA`, `MatView()`, `VecView()`
 @*/
 PetscErrorCode PetscViewerMathematicaOpen(MPI_Comm comm, int port, const char machine[], const char mode[], PetscViewer *v) {
   PetscFunctionBegin;
@@ -328,7 +329,7 @@ PetscErrorCode PetscViewerMathematicaOpen(MPI_Comm comm, int port, const char ma
 }
 
 /*@C
-  PetscViewerMathematicaGetLink - Returns the link to Mathematica
+  PetscViewerMathematicaGetLink - Returns the link to Mathematica from a `PETSCVIEWERMATHEMATICA`
 
   Input Parameters:
 + viewer - The Mathematica viewer
@@ -336,8 +337,7 @@ PetscErrorCode PetscViewerMathematicaOpen(MPI_Comm comm, int port, const char ma
 
   Level: intermediate
 
-.keywords PetscViewer, Mathematica, link
-.seealso `PetscViewerMathematicaOpen()`
+.seealso: `PETSCVIEWERMATHEMATICA`, `PetscViewerMathematicaOpen()`
 @*/
 PetscErrorCode PetscViewerMathematicaGetLink(PetscViewer viewer, MLINK *link) {
   PetscViewer_Mathematica *vmath = (PetscViewer_Mathematica *)viewer->data;
@@ -357,8 +357,7 @@ PetscErrorCode PetscViewerMathematicaGetLink(PetscViewer viewer, MLINK *link) {
 
   Level: advanced
 
-.keywords PetscViewer, Mathematica, packets
-.seealso `PetscViewerMathematicaSetName()`, `PetscViewerMathematicaGetVector()`
+.seealso: `PetscViewerMathematicaSetName()`, `PetscViewerMathematicaGetVector()`
 @*/
 PetscErrorCode PetscViewerMathematicaSkipPackets(PetscViewer viewer, int type) {
   PetscViewer_Mathematica *vmath = (PetscViewer_Mathematica *)viewer->data;
@@ -375,7 +374,7 @@ PetscErrorCode PetscViewerMathematicaSkipPackets(PetscViewer viewer, int type) {
 }
 
 /*@C
-  PetscViewerMathematicaGetName - Retrieve the default name for objects communicated to Mathematica
+  PetscViewerMathematicaGetName - Retrieve the default name for objects communicated to Mathematica via `PETSCVIEWERMATHEMATICA`
 
   Input Parameter:
 . viewer - The Mathematica viewer
@@ -385,8 +384,7 @@ PetscErrorCode PetscViewerMathematicaSkipPackets(PetscViewer viewer, int type) {
 
   Level: intermediate
 
-.keywords PetscViewer, Mathematica, name
-.seealso `PetscViewerMathematicaSetName()`, `PetscViewerMathematicaClearName()`
+.seealso:`PETSCVIEWERMATHEMATICA`, `PetscViewerMathematicaSetName()`, `PetscViewerMathematicaClearName()`
 @*/
 PetscErrorCode PetscViewerMathematicaGetName(PetscViewer viewer, const char **name) {
   PetscViewer_Mathematica *vmath = (PetscViewer_Mathematica *)viewer->data;
@@ -399,7 +397,7 @@ PetscErrorCode PetscViewerMathematicaGetName(PetscViewer viewer, const char **na
 }
 
 /*@C
-  PetscViewerMathematicaSetName - Override the default name for objects communicated to Mathematica
+  PetscViewerMathematicaSetName - Override the default name for objects communicated to Mathematica via `PETSCVIEWERMATHEMATICA`
 
   Input Parameters:
 + viewer - The Mathematica viewer
@@ -407,8 +405,7 @@ PetscErrorCode PetscViewerMathematicaGetName(PetscViewer viewer, const char **na
 
   Level: intermediate
 
-.keywords PetscViewer, Mathematica, name
-.seealso `PetscViewerMathematicaSetName()`, `PetscViewerMathematicaClearName()`
+.seealso:`PETSCVIEWERMATHEMATICA`, `PetscViewerMathematicaSetName()`, `PetscViewerMathematicaClearName()`
 @*/
 PetscErrorCode PetscViewerMathematicaSetName(PetscViewer viewer, const char name[]) {
   PetscViewer_Mathematica *vmath = (PetscViewer_Mathematica *)viewer->data;
@@ -420,7 +417,7 @@ PetscErrorCode PetscViewerMathematicaSetName(PetscViewer viewer, const char name
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
   PetscViewerMathematicaClearName - Use the default name for objects communicated to Mathematica
 
   Input Parameter:
@@ -428,8 +425,7 @@ PetscErrorCode PetscViewerMathematicaSetName(PetscViewer viewer, const char name
 
   Level: intermediate
 
-.keywords PetscViewer, Mathematica, name
-.seealso `PetscViewerMathematicaGetName()`, `PetscViewerMathematicaSetName()`
+.seealso:`PETSCVIEWERMATHEMATICA`,`PetscViewerMathematicaGetName()`, `PetscViewerMathematicaSetName()`
 @*/
 PetscErrorCode PetscViewerMathematicaClearName(PetscViewer viewer) {
   PetscViewer_Mathematica *vmath = (PetscViewer_Mathematica *)viewer->data;
@@ -440,8 +436,8 @@ PetscErrorCode PetscViewerMathematicaClearName(PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-/*@C
-  PetscViewerMathematicaGetVector - Retrieve a vector from Mathematica
+/*@
+  PetscViewerMathematicaGetVector - Retrieve a vector from Mathematica via a `PETSCVIEWERMATHEMATICA`
 
   Input Parameter:
 . viewer - The Mathematica viewer
@@ -451,8 +447,7 @@ PetscErrorCode PetscViewerMathematicaClearName(PetscViewer viewer) {
 
   Level: intermediate
 
-.keywords PetscViewer, Mathematica, vector
-.seealso `VecView()`, `PetscViewerMathematicaPutVector()`
+.seealso: `PETSCVIEWERMATHEMATICA`, `VecView()`, `PetscViewerMathematicaPutVector()`
 @*/
 PetscErrorCode PetscViewerMathematicaGetVector(PetscViewer viewer, Vec v) {
   PetscViewer_Mathematica *vmath = (PetscViewer_Mathematica *)viewer->data;
@@ -485,8 +480,8 @@ PetscErrorCode PetscViewerMathematicaGetVector(PetscViewer viewer, Vec v) {
   PetscFunctionReturn(0);
 }
 
-/*@C
-  PetscViewerMathematicaPutVector - Send a vector to Mathematica
+/*@
+  PetscViewerMathematicaPutVector - Send a vector to Mathematica via a `PETSCVIEWERMATHEMATICA` `PetscViewer`
 
   Input Parameters:
 + viewer - The Mathematica viewer
@@ -494,8 +489,7 @@ PetscErrorCode PetscViewerMathematicaGetVector(PetscViewer viewer, Vec v) {
 
   Level: intermediate
 
-.keywords PetscViewer, Mathematica, vector
-.seealso `VecView()`, `PetscViewerMathematicaGetVector()`
+.seealso: `PETSCVIEWERMATHEMATICA`, `VecView()`, `PetscViewerMathematicaGetVector()`
 @*/
 PetscErrorCode PetscViewerMathematicaPutVector(PetscViewer viewer, Vec v) {
   PetscViewer_Mathematica *vmath = (PetscViewer_Mathematica *)viewer->data;

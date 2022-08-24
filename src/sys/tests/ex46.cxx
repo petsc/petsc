@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
   // Note the third argument.  If you pass GlobalMPISession the
   // address of an std::ostream, it will print a one-line status
   // message with the rank on each MPI process.  This may be
-  // undesirable if running with a large number of MPI processes.
+  // undesirable if running with a large number of MPI ranks.
   // You can avoid printing anything here by passing in either
   // NULL or the address of a Teuchos::oblackholestream.
   Teuchos::GlobalMPISession              mpiSession(&argc, &argv, NULL);

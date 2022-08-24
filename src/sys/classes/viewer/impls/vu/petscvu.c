@@ -119,6 +119,14 @@ static PetscErrorCode PetscViewerFileSetName_VU(PetscViewer viewer, const char n
   PetscFunctionReturn(0);
 }
 
+/*MC
+   PETSCVIEWERVU - A viewer that prints to a VU file
+
+  Level: beginner
+
+.seealso: `PetscViewerVUFlushDeferred()`, `PetscViewerVUGetPointer()`, `PetscViewerVUSetVecSeen()`, `PetscViewerVUGetVecSeen()`,
+          `PetscViewerVUPrintDeferred()`, `PetscViewerVUFlushDeferred()`
+M*/
 PETSC_EXTERN PetscErrorCode PetscViewerCreate_VU(PetscViewer viewer) {
   PetscViewer_VU *vu;
 
@@ -147,19 +155,19 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_VU(PetscViewer viewer) {
 }
 
 /*@C
-  PetscViewerVUGetPointer - Extracts the file pointer from a VU PetscViewer.
+  PetscViewerVUGetPointer - Extracts the file pointer from a `PETSCVIEWERVU` `PetscViewer`.
 
   Not Collective
 
   Input Parameter:
-. viewer - The PetscViewer
+. viewer - The `PetscViewer`
 
   Output Parameter:
 . fd     - The file pointer
 
   Level: intermediate
 
-.seealso: `PetscViewerASCIIGetPointer()`
+.seealso: `PETSCVIEWERVU`, `PetscViewerASCIIGetPointer()`
 @*/
 PetscErrorCode PetscViewerVUGetPointer(PetscViewer viewer, FILE **fd) {
   PetscViewer_VU *vu = (PetscViewer_VU *)viewer->data;
@@ -178,12 +186,12 @@ PetscErrorCode PetscViewerVUGetPointer(PetscViewer viewer, FILE **fd) {
   Not Collective
 
   Input Parameters:
-+ viewer  - The PetscViewer
++ viewer  - The `PETSCVIEWERVU` `PetscViewer`
 - vecSeen - The flag which indicates whether we have viewed a vector
 
-  Level: advanced
+  Level: developer
 
-.seealso: `PetscViewerVUGetVecSeen()`
+.seealso: `PETSCVIEWERVU`, `PetscViewerVUGetVecSeen()`
 @*/
 PetscErrorCode PetscViewerVUSetVecSeen(PetscViewer viewer, PetscBool vecSeen) {
   PetscViewer_VU *vu = (PetscViewer_VU *)viewer->data;
@@ -200,14 +208,14 @@ PetscErrorCode PetscViewerVUSetVecSeen(PetscViewer viewer, PetscBool vecSeen) {
   Not Collective
 
   Input Parameter:
-. viewer  - The PetscViewer
+. viewer  - The `PETSCVIEWERVU` `PetscViewer`
 
   Output Parameter:
 . vecSeen - The flag which indicates whether we have viewed a vector
 
   Level: advanced
 
-.seealso: `PetscViewerVUGetVecSeen()`
+.seealso: `PETSCVIEWERVU`, `PetscViewerVUGetVecSeen()`
 @*/
 PetscErrorCode PetscViewerVUGetVecSeen(PetscViewer viewer, PetscBool *vecSeen) {
   PetscViewer_VU *vu = (PetscViewer_VU *)viewer->data;
@@ -225,12 +233,12 @@ PetscErrorCode PetscViewerVUGetVecSeen(PetscViewer viewer, PetscBool *vecSeen) {
   Not Collective
 
   Input Parameters:
-+ viewer - The PetscViewer
++ viewer - The `PETSCVIEWERVU` `PetscViewer`
 - format - The format string
 
   Level: intermediate
 
-.seealso: `PetscViewerVUFlushDeferred()`
+.seealso: `PETSCVIEWERVU`, `PetscViewerVUFlushDeferred()`
 @*/
 PetscErrorCode PetscViewerVUPrintDeferred(PetscViewer viewer, const char format[], ...) {
   PetscViewer_VU *vu = (PetscViewer_VU *)viewer->data;
@@ -262,11 +270,11 @@ PetscErrorCode PetscViewerVUPrintDeferred(PetscViewer viewer, const char format[
   Not Collective
 
   Input Parameter:
-. viewer - The PetscViewer
+. viewer - The `PETSCVIEWERVU` `PetscViewer`
 
   Level: intermediate
 
-.seealso: `PetscViewerVUPrintDeferred()`
+.seealso: `PETSCVIEWERVU`, `PetscViewerVUPrintDeferred()`
 @*/
 PetscErrorCode PetscViewerVUFlushDeferred(PetscViewer viewer) {
   PetscViewer_VU *vu   = (PetscViewer_VU *)viewer->data;

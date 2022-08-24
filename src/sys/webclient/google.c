@@ -17,24 +17,23 @@
 /*@C
      PetscGoogleDriveRefresh - Get a new authorization token for accessing Google drive from PETSc from a refresh token
 
-   Not collective, only the first process in the MPI_Comm does anything
+   Not collective, only the first process in the `MPI_Comm` does anything
 
    Input Parameters:
 +   comm - MPI communicator
-.   refresh token - obtained with PetscGoogleDriveAuthorize(), if NULL PETSc will first look for one in the options data
-                    if not found it will call PetscGoogleDriveAuthorize()
+.   refresh token - obtained with `PetscGoogleDriveAuthorize()`, if NULL PETSc will first look for one in the options data
+                    if not found it will call `PetscGoogleDriveAuthorize()`
 -   tokensize - size of the output string access_token
 
    Output Parameter:
-.   access_token - token that can be passed to PetscGoogleDriveUpload()
+.   access_token - token that can be passed to `PetscGoogleDriveUpload()`
 
-   Options Database:
-.  -google_refresh_token XXX - where XXX was obtained from PetscGoogleDriveAuthorize()
+   Options Database Key:
+.  -google_refresh_token XXX - where XXX was obtained from `PetscGoogleDriveAuthorize()`
 
    Level: intermediate
 
 .seealso: `PetscURLShorten()`, `PetscGoogleDriveAuthorize()`, `PetscGoogleDriveUpload()`
-
 @*/
 PetscErrorCode PetscGoogleDriveRefresh(MPI_Comm comm, const char refresh_token[], char access_token[], size_t tokensize) {
   SSL_CTX    *ctx;
@@ -84,17 +83,18 @@ PetscErrorCode PetscGoogleDriveRefresh(MPI_Comm comm, const char refresh_token[]
 /*@C
      PetscGoogleDriveUpload - Loads a file to the Google Drive
 
-     Not collective, only the first process in the MPI_Comm uploads the file
+     Not collective, only the first process in the `MPI_Comm` uploads the file
 
   Input Parameters:
 +   comm - MPI communicator
 .   access_token - obtained with PetscGoogleDriveRefresh(), pass NULL to have PETSc generate one
 -   filename - file to upload; if you upload multiple times it will have different names each time on Google Drive
 
-  Options Database:
+  Options Database Key:
 .  -google_refresh_token XXX - pass the access token for the operation
 
   Usage Patterns:
+.vb
     With PETSc option -google_refresh_token  XXX given
     PetscGoogleDriveUpload(comm,NULL,filename);        will upload file with no user interaction
 
@@ -111,11 +111,11 @@ PetscErrorCode PetscGoogleDriveRefresh(MPI_Comm comm, const char refresh_token[]
 
     PetscGoogleDriveAuthorize(comm,access_token,refresh_token,sizeof(access_token));
     PetscGoogleDriveUpload(comm,access_token,filename);
+.ve
 
    Level: intermediate
 
 .seealso: `PetscURLShorten()`, `PetscGoogleDriveAuthorize()`, `PetscGoogleDriveRefresh()`
-
 @*/
 PetscErrorCode PetscGoogleDriveUpload(MPI_Comm comm, const char access_token[], const char filename[]) {
   SSL_CTX    *ctx;
@@ -179,15 +179,15 @@ PetscErrorCode PetscGoogleDriveUpload(MPI_Comm comm, const char access_token[], 
 /*@C
      PetscGoogleDriveAuthorize - Get authorization and refresh token for accessing Google drive from PETSc
 
-   Not collective, only the first process in MPI_Comm does anything
+   Not collective, only the first process in `MPI_Comm` does anything
 
    Input Parameters:
 +  comm - the MPI communicator
 -  tokensize - size of the token arrays
 
    Output Parameters:
-+  access_token - can be used with PetscGoogleDriveUpload() for this one session
--  refresh_token - can be used for ever to obtain new access_tokens with PetscGoogleDriveRefresh(), guard this like a password
++  access_token - can be used with `PetscGoogleDriveUpload()` for this one session
+-  refresh_token - can be used for ever to obtain new access_tokens with `PetscGoogleDriveRefresh()`, guard this like a password
                    it gives access to your Google Drive
 
    Notes:
@@ -199,7 +199,6 @@ PetscErrorCode PetscGoogleDriveUpload(MPI_Comm comm, const char access_token[], 
    Level: intermediate
 
 .seealso: `PetscGoogleDriveRefresh()`, `PetscGoogleDriveUpload()`, `PetscURLShorten()`
-
 @*/
 PetscErrorCode PetscGoogleDriveAuthorize(MPI_Comm comm, char access_token[], char refresh_token[], size_t tokensize) {
   SSL_CTX    *ctx;
@@ -264,6 +263,9 @@ PetscErrorCode PetscGoogleDriveAuthorize(MPI_Comm comm, char access_token[], cha
 .    shorturl - the shortened URL
 
    Level: intermediate
+
+   Note:
+   Google no longer provides this service so this routine will no longer function
 
 .seealso: `PetscGoogleDriveRefresh()`, `PetscGoogleDriveUpload()`, `PetscGoogleDriveAuthorize()`
 @*/

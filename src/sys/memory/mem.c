@@ -39,6 +39,7 @@
 
    Options Database Key:
 +  -memory_view - Print memory usage at end of run
+.  -log_view_memory - Display memory information for each logged event
 -  -malloc_log - Activate logging of memory usage
 
    Level: intermediate
@@ -47,11 +48,12 @@
    The memory usage reported here includes all Fortran arrays
    (that may be used in application-defined sections of code).
    This routine thus provides a more complete picture of memory
-   usage than PetscMallocGetCurrentUsage() for codes that employ Fortran with
+   usage than `PetscMallocGetCurrentUsage()` for codes that employ Fortran with
    hardwired arrays.
 
-.seealso: `PetscMallocGetMaximumUsage()`, `PetscMemoryGetMaximumUsage()`, `PetscMallocGetCurrentUsage()`, `PetscMemorySetGetMaximumUsage()`, `PetscMemoryView()`
+   This value generally never decreases during a run even if the application has freed much of its memory that it allocated
 
+.seealso: `PetscMallocGetMaximumUsage()`, `PetscMemoryGetMaximumUsage()`, `PetscMallocGetCurrentUsage()`, `PetscMemorySetGetMaximumUsage()`, `PetscMemoryView()`
 @*/
 PetscErrorCode PetscMemoryGetCurrentUsage(PetscLogDouble *mem) {
 #if defined(PETSC_USE_PROCFS_FOR_SIZE)
@@ -115,7 +117,7 @@ PetscLogDouble PetscMemoryMaximumUsage        = 0;
 
 /*@
    PetscMemoryGetMaximumUsage - Returns the maximum resident set size (memory used)
-   for the program.
+   for the program since it started (the high water mark).
 
    Not Collective
 
@@ -124,20 +126,20 @@ PetscLogDouble PetscMemoryMaximumUsage        = 0;
 
    Options Database Key:
 +  -memory_view - Print memory usage at end of run
+.  -log_view_memory - Print memory information per event
 -  -malloc_log - Activate logging of memory usage
 
    Level: intermediate
 
-   Notes:
+   Note:
    The memory usage reported here includes all Fortran arrays
    (that may be used in application-defined sections of code).
    This routine thus provides a more complete picture of memory
-   usage than PetscMallocGetCurrentUsage() for codes that employ Fortran with
+   usage than `PetscMallocGetCurrentUsage()` for codes that employ Fortran with
    hardwired arrays.
 
 .seealso: `PetscMallocGetMaximumUsage()`, `PetscMemoryGetCurrentUsage()`, `PetscMallocGetCurrentUsage()`,
           `PetscMemorySetGetMaximumUsage()`
-
 @*/
 PetscErrorCode PetscMemoryGetMaximumUsage(PetscLogDouble *mem) {
   PetscFunctionBegin;
@@ -148,19 +150,19 @@ PetscErrorCode PetscMemoryGetMaximumUsage(PetscLogDouble *mem) {
 
 /*@
    PetscMemorySetGetMaximumUsage - Tells PETSc to monitor the maximum memory usage so that
-       PetscMemoryGetMaximumUsage() will work.
+       `PetscMemoryGetMaximumUsage()` will work.
 
    Not Collective
 
    Options Database Key:
 +  -memory_view - Print memory usage at end of run
+.  -log_view_memory - Print memory information per event
 -  -malloc_log - Activate logging of memory usage
 
    Level: intermediate
 
 .seealso: `PetscMallocGetMaximumUsage()`, `PetscMemoryGetCurrentUsage()`, `PetscMallocGetCurrentUsage()`,
           `PetscMemoryGetMaximumUsage()`
-
 @*/
 PetscErrorCode PetscMemorySetGetMaximumUsage(void) {
   PetscFunctionBegin;

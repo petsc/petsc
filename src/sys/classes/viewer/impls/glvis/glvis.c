@@ -31,17 +31,17 @@ struct _n_PetscViewerGLVis {
 typedef struct _n_PetscViewerGLVis *PetscViewerGLVis;
 
 /*@
-     PetscViewerGLVisSetPrecision - Set the number of digits for floating point values
+     PetscViewerGLVisSetPrecision - Set the number of digits for floating point values to be displayed
 
   Not Collective
 
   Input Parameters:
-+  viewer - the PetscViewer
++  viewer - the `PetscViewer` of type `PETSCVIEWERGLVIS`
 -  prec   - the number of digits required
 
   Level: beginner
 
-.seealso: `PetscViewerGLVisOpen()`, `PetscViewerGLVisSetFields()`, `PetscViewerCreate()`, `PetscViewerSetType()`
+.seealso: `PETSCVIEWERGLVIS`, `PetscViewerGLVisOpen()`, `PetscViewerGLVisSetFields()`, `PetscViewerCreate()`, `PetscViewerSetType()`
 @*/
 PetscErrorCode PetscViewerGLVisSetPrecision(PetscViewer viewer, PetscInt prec) {
   PetscFunctionBegin;
@@ -65,17 +65,17 @@ static PetscErrorCode PetscViewerGLVisSetPrecision_GLVis(PetscViewer viewer, Pet
 }
 
 /*@
-     PetscViewerGLVisSetSnapId - Set the snapshot id. Only relevant when the viewer is of type PETSC_VIEWER_GLVIS_DUMP
+     PetscViewerGLVisSetSnapId - Set the snapshot id. Only relevant when the `PetscViewerGLVisType` is `PETSC_VIEWER_GLVIS_DUMP`
 
-  Logically Collective on PetscViewer
+  Logically Collective on viewer
 
   Input Parameters:
-+  viewer - the PetscViewer
++  viewer - the `PetscViewer` of type `PETSCVIEWERGLVIS`
 -  id     - the current snapshot id in a time-dependent simulation
 
   Level: beginner
 
-.seealso: `PetscViewerGLVisOpen()`, `PetscViewerGLVisSetFields()`, `PetscViewerCreate()`, `PetscViewerSetType()`
+.seealso: `PETSCVIEWERGLVIS`, `PetscViewerGLVisOpen()`, `PetscViewerGLVisSetFields()`, `PetscViewerCreate()`, `PetscViewerSetType()`
 @*/
 PetscErrorCode PetscViewerGLVisSetSnapId(PetscViewer viewer, PetscInt id) {
   PetscFunctionBegin;
@@ -96,10 +96,10 @@ static PetscErrorCode PetscViewerGLVisSetSnapId_GLVis(PetscViewer viewer, PetscI
 /*@C
      PetscViewerGLVisSetFields - Sets the required information to visualize different fields from a vector.
 
-  Logically Collective on PetscViewer
+  Logically Collective on viewer
 
   Input Parameters:
-+  viewer     - the PetscViewer
++  viewer     - the `PetscViewer` of type `PETSCVIEWERGLVIS`
 .  nf         - number of fields to be visualized
 .  fec_type   - the type of finite element to be used to visualize the data (see FiniteElementCollection::Name() in MFEM)
 .  dim        - array of space dimension for field vectors (used to initialize the scene)
@@ -113,12 +113,13 @@ static PetscErrorCode PetscViewerGLVisSetSnapId_GLVis(PetscViewer viewer, PetscI
 .vb
   g2lfields((PetscObject)V,nfields,(PetscObject*)Vfield[],ctx).
 .ve
+
   For vector spaces, the block size of Vfield[i] represents the vector dimension. It misses the Fortran bindings.
   The names of the Vfield vectors will be displayed in the window title.
 
   Level: intermediate
 
-.seealso: `PetscViewerGLVisOpen()`, `PetscViewerCreate()`, `PetscViewerSetType()`, `PetscObjectSetName()`
+.seealso: `PETSCVIEWERGLVIS`, `PetscViewerGLVisOpen()`, `PetscViewerCreate()`, `PetscViewerSetType()`, `PetscObjectSetName()`
 @*/
 PetscErrorCode PetscViewerGLVisSetFields(PetscViewer viewer, PetscInt nf, const char *fec_type[], PetscInt dim[], PetscErrorCode (*g2l)(PetscObject, PetscInt, PetscObject[], void *), PetscObject Vfield[], void *ctx, PetscErrorCode (*destroyctx)(void *)) {
   PetscFunctionBegin;
@@ -555,18 +556,18 @@ static PetscErrorCode PetscViewerFileSetName_GLVis(PetscViewer viewer, const cha
 }
 
 /*@C
-  PetscViewerGLVisOpen - Opens a GLVis type viewer
+  PetscViewerGLVisOpen - Opens a `PETSCVIEWERGLVIS` `PetscViewer`
 
   Collective
 
   Input Parameters:
 +  comm      - the MPI communicator
-.  type      - the viewer type: PETSC_VIEWER_GLVIS_SOCKET for real-time visualization or PETSC_VIEWER_GLVIS_DUMP for dumping to disk
+.  type      - the viewer type: `PETSC_VIEWER_GLVIS_SOCKET` for real-time visualization or `PETSC_VIEWER_GLVIS_DUMP` for dumping to a file
 .  name      - either the hostname where the GLVis server is running or the base filename for dumping the data for subsequent visualizations
--  port      - socket port where the GLVis server is listening. Not referenced when type is PETSC_VIEWER_GLVIS_DUMP
+-  port      - socket port where the GLVis server is listening. Not referenced when type is `PETSC_VIEWER_GLVIS_DUMP`
 
   Output Parameters:
--  viewer    - the PetscViewer object
+-  viewer    - the `PetscViewer` object
 
   Options Database Keys:
 +  -glvis_precision <precision> - Sets number of digits for floating point values
@@ -576,12 +577,12 @@ static PetscErrorCode PetscViewerFileSetName_GLVis(PetscViewer viewer, const cha
 .  -glvis_keys - Additional keys to configure visualization
 -  -glvis_exec - Additional commands to configure visualization
 
-  Notes:
-    misses Fortran binding
+  Fortran Note:
+  Missing Fortran binding
 
   Level: beginner
 
-.seealso: `PetscViewerCreate()`, `PetscViewerSetType()`, `PetscViewerGLVisType`
+.seealso: `PETSCVIEWERGLVIS`, `PetscViewerCreate()`, `PetscViewerSetType()`, `PetscViewerGLVisType`
 @*/
 PetscErrorCode PetscViewerGLVisOpen(MPI_Comm comm, PetscViewerGLVisType type, const char name[], PetscInt port, PetscViewer *viewer) {
   PetscViewerGLVis socket;
@@ -603,29 +604,29 @@ PetscErrorCode PetscViewerGLVisOpen(MPI_Comm comm, PetscViewerGLVisType type, co
 }
 
 /*
-  PETSC_VIEWER_GLVIS_ - Creates an GLVIS PetscViewer shared by all processors in a communicator.
+  PETSC_VIEWER_GLVIS_ - Creates a `PETSCVIEWERGLVIS` `PetscViewer` shared by all processors in a communicator.
 
   Collective
 
   Input Parameter:
-. comm - the MPI communicator to share the GLVIS PetscViewer
+. comm - the MPI communicator to share the `PETSCVIEWERGLVIS` `PetscViewer`
 
   Level: intermediate
 
-  Notes:
-    misses Fortran bindings
-
   Environmental variables:
-+ PETSC_VIEWER_GLVIS_FILENAME : output filename (if specified dump to disk, and takes precedence on PETSC_VIEWER_GLVIS_HOSTNAME)
-. PETSC_VIEWER_GLVIS_HOSTNAME : machine where the GLVis server is listening (defaults to localhost)
-- PETSC_VIEWER_GLVIS_PORT     : port opened by the GLVis server (defaults to 19916)
++ `PETSC_VIEWER_GLVIS_FILENAME` : output filename (if specified dump to disk, and takes precedence on `PETSC_VIEWER_GLVIS_HOSTNAME`)
+. `PETSC_VIEWER_GLVIS_HOSTNAME` : machine where the GLVis server is listening (defaults to localhost)
+- `PETSC_VIEWER_GLVIS_PORT`     : port opened by the GLVis server (defaults to 19916)
 
-  Notes:
-  Unlike almost all other PETSc routines, PETSC_VIEWER_GLVIS_ does not return
-  an error code.  The GLVIS PetscViewer is usually used in the form
+  Note:
+  Unlike almost all other PETSc routines, `PETSC_VIEWER_GLVIS_()` does not return
+  an error code.  It is usually used in the form
 $       XXXView(XXX object, PETSC_VIEWER_GLVIS_(comm));
 
-.seealso: `PetscViewerGLVISOpen()`, `PetscViewerGLVisType`, `PetscViewerCreate()`, `PetscViewerDestroy()`
+  Fortran Note:
+  Missing Fortran bindings
+
+.seealso: `PETSCVIEWERGLVIS`, `PetscViewer`, `PetscViewerGLVISOpen()`, `PetscViewerGLVisType`, `PetscViewerCreate()`, `PetscViewerDestroy()`
 */
 PetscViewer PETSC_VIEWER_GLVIS_(MPI_Comm comm) {
   PetscErrorCode       ierr;

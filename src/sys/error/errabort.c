@@ -29,17 +29,11 @@
    Level: developer
 
    Notes:
-   Most users need not directly employ this routine and the other error
-   handlers, but can instead use the simplified interface SETERRQ, which
-   has the calling sequence
-$     SETERRQ(comm,number,mess)
-   or its variants, SETERRQ(number,formatstring,arg1), SETERRQ(), ... that
-   allow including arguments in the message.
+   Ussers do not directly employ this routine
 
-   Notes for experienced users:
-   Use PetscPushErrorHandler() to set the desired error handler.  The
-   currently available PETSc error handlers include PetscTraceBackErrorHandler(),
-   PetscAttachDebuggerErrorHandler(), and PetscAbortErrorHandler().
+   Use `PetscPushErrorHandler()` to set the desired error handler.  The
+   currently available PETSc error handlers include `PetscTraceBackErrorHandler()`,
+   `PetscAttachDebuggerErrorHandler()`, and `PetscAbortErrorHandler()`.
 
 .seealso: `PetscError()`, `PetscPushErrorHandler()`, `PetscPopErrorHander()`, `PetscTraceBackErrorHandler()`,
           `PetscAttachDebuggerErrorHandler()`, `PetscMPIAbortErrorHandler()`, `PetscReturnErrorHandler()`, `PetscEmacsClientErrorHandler()`

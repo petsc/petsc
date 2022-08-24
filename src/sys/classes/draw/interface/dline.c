@@ -5,7 +5,7 @@
 #include <petsc/private/drawimpl.h> /*I "petscdraw.h" I*/
 
 /*@
-   PetscDrawGetBoundingBox - Gets the bounding box of all PetscDrawStringBoxed() commands
+   PetscDrawGetBoundingBox - Gets the bounding box of all `PetscDrawStringBoxed()` commands
 
    Not collective
 
@@ -17,7 +17,7 @@
 
    Level: intermediate
 
-.seealso: `PetscDrawPushCurrentPoint()`, `PetscDrawPopCurrentPoint()`, `PetscDrawSetCurrentPoint()`
+.seealso: `PetscDraw`, `PetscDrawPushCurrentPoint()`, `PetscDrawPopCurrentPoint()`, `PetscDrawSetCurrentPoint()`
 @*/
 PetscErrorCode PetscDrawGetBoundingBox(PetscDraw draw, PetscReal *xl, PetscReal *yl, PetscReal *xr, PetscReal *yr) {
   PetscFunctionBegin;
@@ -46,7 +46,7 @@ PetscErrorCode PetscDrawGetBoundingBox(PetscDraw draw, PetscReal *xl, PetscReal 
 
    Level: intermediate
 
-.seealso: `PetscDrawPushCurrentPoint()`, `PetscDrawPopCurrentPoint()`, `PetscDrawSetCurrentPoint()`
+.seealso: `PetscDraw`, `PetscDrawPushCurrentPoint()`, `PetscDrawPopCurrentPoint()`, `PetscDrawSetCurrentPoint()`
 @*/
 PetscErrorCode PetscDrawGetCurrentPoint(PetscDraw draw, PetscReal *x, PetscReal *y) {
   PetscFunctionBegin;
@@ -69,7 +69,7 @@ PetscErrorCode PetscDrawGetCurrentPoint(PetscDraw draw, PetscReal *x, PetscReal 
 
    Level: intermediate
 
-.seealso: `PetscDrawPushCurrentPoint()`, `PetscDrawPopCurrentPoint()`, `PetscDrawGetCurrentPoint()`
+.seealso: `PetscDraw`, `PetscDrawPushCurrentPoint()`, `PetscDrawPopCurrentPoint()`, `PetscDrawGetCurrentPoint()`
 @*/
 PetscErrorCode PetscDrawSetCurrentPoint(PetscDraw draw, PetscReal x, PetscReal y) {
   PetscFunctionBegin;
@@ -90,7 +90,7 @@ PetscErrorCode PetscDrawSetCurrentPoint(PetscDraw draw, PetscReal x, PetscReal y
 
    Level: intermediate
 
-.seealso: `PetscDrawPushCurrentPoint()`, `PetscDrawPopCurrentPoint()`, `PetscDrawGetCurrentPoint()`
+.seealso: `PetscDraw`, `PetscDrawPushCurrentPoint()`, `PetscDrawPopCurrentPoint()`, `PetscDrawGetCurrentPoint()`
 @*/
 PetscErrorCode PetscDrawPushCurrentPoint(PetscDraw draw, PetscReal x, PetscReal y) {
   PetscFunctionBegin;
@@ -111,7 +111,7 @@ PetscErrorCode PetscDrawPushCurrentPoint(PetscDraw draw, PetscReal x, PetscReal 
 
    Level: intermediate
 
-.seealso: `PetscDrawPushCurrentPoint()`, `PetscDrawSetCurrentPoint()`, `PetscDrawGetCurrentPoint()`
+.seealso: `PetscDraw`, `PetscDrawPushCurrentPoint()`, `PetscDrawSetCurrentPoint()`, `PetscDrawGetCurrentPoint()`
 @*/
 PetscErrorCode PetscDrawPopCurrentPoint(PetscDraw draw) {
   PetscFunctionBegin;
@@ -121,7 +121,7 @@ PetscErrorCode PetscDrawPopCurrentPoint(PetscDraw draw) {
 }
 
 /*@
-   PetscDrawLine - PetscDraws a line onto a drawable.
+   PetscDrawLine - draws a line onto a drawable.
 
    Not collective
 
@@ -132,9 +132,8 @@ PetscErrorCode PetscDrawPopCurrentPoint(PetscDraw draw) {
 
    Level: beginner
 
-.seealso: `PetscDrawArrow()`, `PetscDrawLineSetWidth()`, `PetscDrawLineGetWidth()`, `PetscDrawRectangle()`, `PetscDrawTriangle()`, `PetscDrawEllipse()`,
+.seealso: `PetscDraw`, `PetscDrawArrow()`, `PetscDrawLineSetWidth()`, `PetscDrawLineGetWidth()`, `PetscDrawRectangle()`, `PetscDrawTriangle()`, `PetscDrawEllipse()`,
           `PetscDrawMarker()`, `PetscDrawPoint()`
-
 @*/
 PetscErrorCode PetscDrawLine(PetscDraw draw, PetscReal xl, PetscReal yl, PetscReal xr, PetscReal yr, int cl) {
   PetscFunctionBegin;
@@ -144,7 +143,7 @@ PetscErrorCode PetscDrawLine(PetscDraw draw, PetscReal xl, PetscReal yl, PetscRe
 }
 
 /*@
-   PetscDrawArrow - PetscDraws a line with arrow head at end if the line is long enough
+   PetscDrawArrow - draws a line with arrow head at end if the line is long enough
 
    Not collective
 
@@ -155,9 +154,8 @@ PetscErrorCode PetscDrawLine(PetscDraw draw, PetscReal xl, PetscReal yl, PetscRe
 
    Level: beginner
 
-.seealso: `PetscDrawLine()`, `PetscDrawLineSetWidth()`, `PetscDrawLineGetWidth()`, `PetscDrawRectangle()`, `PetscDrawTriangle()`, `PetscDrawEllipse()`,
+.seealso: `PetscDraw`, `PetscDrawLine()`, `PetscDrawLineSetWidth()`, `PetscDrawLineGetWidth()`, `PetscDrawRectangle()`, `PetscDrawTriangle()`, `PetscDrawEllipse()`,
           `PetscDrawMarker()`, `PetscDrawPoint()`
-
 @*/
 PetscErrorCode PetscDrawArrow(PetscDraw draw, PetscReal xl, PetscReal yl, PetscReal xr, PetscReal yr, int cl) {
   PetscFunctionBegin;
@@ -179,7 +177,7 @@ PetscErrorCode PetscDrawArrow(PetscDraw draw, PetscReal xl, PetscReal yl, PetscR
 
    Level: advanced
 
-.seealso: `PetscDrawLineGetWidth()`, `PetscDrawLine()`, `PetscDrawArrow()`
+.seealso: `PetscDraw`, `PetscDrawLineGetWidth()`, `PetscDrawLine()`, `PetscDrawArrow()`
 @*/
 PetscErrorCode PetscDrawLineSetWidth(PetscDraw draw, PetscReal width) {
   PetscFunctionBegin;
@@ -203,10 +201,10 @@ PetscErrorCode PetscDrawLineSetWidth(PetscDraw draw, PetscReal width) {
 
    Level: advanced
 
-   Notes:
+   Note:
    Not currently implemented.
 
-.seealso: `PetscDrawLineSetWidth()`, `PetscDrawLine()`, `PetscDrawArrow()`
+.seealso: `PetscDraw`, `PetscDrawLineSetWidth()`, `PetscDrawLine()`, `PetscDrawArrow()`
 @*/
 PetscErrorCode PetscDrawLineGetWidth(PetscDraw draw, PetscReal *width) {
   PetscFunctionBegin;

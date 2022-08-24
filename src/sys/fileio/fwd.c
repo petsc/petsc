@@ -35,6 +35,7 @@
 
    Level: developer
 
+.seealso: `PetscGetTmp()`, `PetscSharedTmp()`, `PetscSharedWorkingDirectory()`, `PetscGetHomeDirectory()`
 @*/
 PetscErrorCode PetscGetWorkingDirectory(char path[], size_t len) {
   PetscFunctionBegin;

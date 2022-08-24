@@ -55,7 +55,7 @@ PetscMPIInt Petsc_Seq_keyval = MPI_KEYVAL_INVALID;
    Level: intermediate
 
    Notes:
-   PetscSequentialPhaseBegin() and PetscSequentialPhaseEnd() provide a
+   `PetscSequentialPhaseBegin()` and `PetscSequentialPhaseEnd()` provide a
    way to force a section of code to be executed by the processes in
    rank order.  Typically, this is done with
 .vb
@@ -64,15 +64,9 @@ PetscMPIInt Petsc_Seq_keyval = MPI_KEYVAL_INVALID;
       PetscSequentialPhaseEnd(comm, 1);
 .ve
 
-   Often, the sequential code contains output statements (e.g., printf) to
-   be executed.  Note that you may need to flush the I/O buffers before
-   calling PetscSequentialPhaseEnd().  Also, note that some systems do
-   not propagate I/O in any order to the controling terminal (in other words,
-   even if you flush the output, you may not get the data in the order
-   that you want).
+   You should use `PetscSynchronizedPrintf()` to ensure output between MPI ranks is properly order and not these routines.
 
-.seealso: `PetscSequentialPhaseEnd()`
-
+.seealso: `PetscSequentialPhaseEnd()`,`PetscSynchronizedPrintf()`
 @*/
 PetscErrorCode PetscSequentialPhaseBegin(MPI_Comm comm, int ng) {
   PetscMPIInt size;
@@ -108,11 +102,10 @@ PetscErrorCode PetscSequentialPhaseBegin(MPI_Comm comm, int ng) {
 
    Level: intermediate
 
-   Notes:
-   See PetscSequentialPhaseBegin() for more details.
+   Note:
+   See `PetscSequentialPhaseBegin()` for more details.
 
 .seealso: `PetscSequentialPhaseBegin()`
-
 @*/
 PetscErrorCode PetscSequentialPhaseEnd(MPI_Comm comm, int ng) {
   PetscMPIInt size, flag;
@@ -147,7 +140,7 @@ PetscErrorCode PetscSequentialPhaseEnd(MPI_Comm comm, int ng) {
 
   Level: beginner
 
-.seealso: `PetscSplitOwnership()`
+.seealso: `PetscSplitOwnership()`, `PetscGlobalMinMaxReal()`
 @*/
 PetscErrorCode PetscGlobalMinMaxInt(MPI_Comm comm, const PetscInt minMaxVal[2], PetscInt minMaxValGlobal[2]) {
   PetscInt sendbuf[3], recvbuf[3];
@@ -175,7 +168,7 @@ PetscErrorCode PetscGlobalMinMaxInt(MPI_Comm comm, const PetscInt minMaxVal[2], 
 
   Level: beginner
 
-.seealso: `PetscSplitOwnership()`
+.seealso: `PetscSplitOwnership()`, `PetscGlobalMinMaxInt()`
 @*/
 PetscErrorCode PetscGlobalMinMaxReal(MPI_Comm comm, const PetscReal minMaxVal[2], PetscReal minMaxValGlobal[2]) {
   PetscReal sendbuf[2];

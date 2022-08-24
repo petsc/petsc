@@ -4,7 +4,7 @@
 /*@C
      PetscTextBelt - Sends an SMS to an American/Canadian phone number
 
-   Not collective, only the first process in MPI_Comm does anything
+   Not collective, only the first process in `MPI_Comm` does anything
 
    Input Parameters:
 +  comm - the MPI communicator
@@ -12,9 +12,9 @@
 -  message - the message
 
    Output Parameter:
-.   flg - PETSC_TRUE if the text was sent
+.   flg - `PETSC_TRUE` if the text was sent
 
-   Options Database:
+   Options Database Key:
 .   -textbelt <phonenumber[,message]> - sends a message to this number when the program ends
 
    Level: intermediate
@@ -23,12 +23,12 @@
     TextBelt is run for testing purposes only, please do not use this feature often
 
    As of November 2016 this service does not seem to be actually transmitting the SMS, which is unfortunate since it is such a great service. Consider
-   registering and using PetscTellMyCell() instead. Or email us with other alternatives we might add or make a pull request.
+   registering and using `PetscTellMyCell()` instead. Or email us with other alternatives we might add or make a pull request.
 
-   Developer Notes:
+   Developer Note:
     I do not know how to make the buff[] long enough to receive the "success" string but short enough that the code does not hang
-       waiting for part of the message to arrive that does not exist, hence the success flg may be improperly set to false even
-       though the message was delivered.
+    waiting for part of the message to arrive that does not exist, hence the success flg may be improperly set to false even
+    though the message was delivered.
 
 .seealso: `PetscTellMyCell()`, `PetscOpenSocket()`, `PetscHTTPRequest()`
 @*/

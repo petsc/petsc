@@ -7,7 +7,7 @@ PetscClassId PETSC_VIEWER_CLASSID;
 static PetscBool PetscViewerPackageInitialized = PETSC_FALSE;
 /*@C
   PetscViewerFinalizePackage - This function destroys any global objects created in the Petsc viewers. It is
-  called from PetscFinalize().
+  called from `PetscFinalize()`.
 
   Level: developer
 
@@ -33,7 +33,7 @@ PetscErrorCode   PetscViewerFinalizePackage(void) {
 }
 
 /*@C
-  PetscViewerInitializePackage - This function initializes everything in the main PetscViewer package.
+  PetscViewerInitializePackage - This function initializes everything in the `PetscViewer` package.
 
   Level: developer
 
@@ -72,17 +72,16 @@ PetscErrorCode PetscViewerInitializePackage(void) {
 }
 
 /*@
-   PetscViewerDestroy - Destroys a PetscViewer.
+   PetscViewerDestroy - Destroys a `PetscViewer`.
 
-   Collective on PetscViewer
+   Collective on viewer
 
    Input Parameters:
-.  viewer - the PetscViewer to be destroyed.
+.  viewer - the `PetscViewer` to be destroyed.
 
    Level: beginner
 
-.seealso: `PetscViewerSocketOpen()`, `PetscViewerASCIIOpen()`, `PetscViewerCreate()`, `PetscViewerDrawOpen()`
-
+.seealso: `PetscViewer`, `PetscViewerSocketOpen()`, `PetscViewerASCIIOpen()`, `PetscViewerCreate()`, `PetscViewerDrawOpen()`
 @*/
 PetscErrorCode PetscViewerDestroy(PetscViewer *viewer) {
   PetscFunctionBegin;
@@ -102,9 +101,9 @@ PetscErrorCode PetscViewerDestroy(PetscViewer *viewer) {
 }
 
 /*@C
-   PetscViewerAndFormatCreate - Creates a PetscViewerAndFormat struct.
+   PetscViewerAndFormatCreate - Creates a `PetscViewerAndFormat` struct.
 
-   Collective on PetscViewer
+   Collective on viewer
 
    Input Parameters:
 +  viewer - the viewer
@@ -113,14 +112,14 @@ PetscErrorCode PetscViewerDestroy(PetscViewer *viewer) {
    Output Parameter:
 .   vf - viewer and format object
 
-   Notes:
-    This increases the reference count of the viewer so you can destroy the viewer object after this call
    Level: developer
 
-   This is used as the context variable for many of the TS, SNES, and KSP monitor functions
+   Notes:
+   This increases the reference count of the viewer so you can destroy the viewer object after this call
+
+   This is used as the context variable for many of the `TS`, `SNES`, and `KSP` monitor functions
 
 .seealso: `PetscViewerSocketOpen()`, `PetscViewerASCIIOpen()`, `PetscViewerCreate()`, `PetscViewerDrawOpen()`, `PetscViewerAndFormatDestroy()`
-
 @*/
 PetscErrorCode PetscViewerAndFormatCreate(PetscViewer viewer, PetscViewerFormat format, PetscViewerAndFormat **vf) {
   PetscFunctionBegin;
@@ -134,12 +133,12 @@ PetscErrorCode PetscViewerAndFormatCreate(PetscViewer viewer, PetscViewerFormat 
 }
 
 /*@C
-   PetscViewerAndFormatDestroy - Destroys a PetscViewerAndFormat struct.
+   PetscViewerAndFormatDestroy - Destroys a `PetscViewerAndFormat` struct.
 
-   Collective on PetscViewer
+   Collective on vf
 
    Input Parameters:
-.  vf - the PetscViewerAndFormat to be destroyed.
+.  vf - the `PetscViewerAndFormat` to be destroyed.
 
    Level: developer
 
@@ -154,32 +153,31 @@ PetscErrorCode PetscViewerAndFormatDestroy(PetscViewerAndFormat **vf) {
 }
 
 /*@C
-   PetscViewerGetType - Returns the type of a PetscViewer.
+   PetscViewerGetType - Returns the type of a `PetscViewer`.
 
    Not Collective
 
    Input Parameter:
-.   viewer - the PetscViewer
+.   viewer - the `PetscViewer`
 
    Output Parameter:
 .  type - PetscViewer type (see below)
 
    Available Types Include:
-+  PETSCVIEWERSOCKET - Socket PetscViewer
-.  PETSCVIEWERASCII - ASCII PetscViewer
-.  PETSCVIEWERBINARY - binary file PetscViewer
-.  PETSCVIEWERSTRING - string PetscViewer
--  PETSCVIEWERDRAW - drawing PetscViewer
++  `PETSCVIEWERSOCKET` - Socket PetscViewer
+.  `PETSCVIEWERASCII` - ASCII PetscViewer
+.  `PETSCVIEWERBINARY` - binary file PetscViewer
+.  `PETSCVIEWERSTRING` - string PetscViewer
+-  `PETSCVIEWERDRAW` - drawing PetscViewer
 
    Level: intermediate
 
    Note:
-   See include/petscviewer.h for a complete list of PetscViewers.
+   See include/petscviewer.h for a complete list of `PetscViewer`s.
 
-   PetscViewerType is actually a string
+   `PetscViewerType` is actually a string
 
-.seealso: `PetscViewerCreate()`, `PetscViewerSetType()`, `PetscViewerType`
-
+.seealso: `PetscViewerType`, `PetscViewer`, `PetscViewerCreate()`, `PetscViewerSetType()`, `PetscViewerType`
 @*/
 PetscErrorCode PetscViewerGetType(PetscViewer viewer, PetscViewerType *type) {
   PetscFunctionBegin;
@@ -191,21 +189,21 @@ PetscErrorCode PetscViewerGetType(PetscViewer viewer, PetscViewerType *type) {
 
 /*@C
    PetscViewerSetOptionsPrefix - Sets the prefix used for searching for all
-   PetscViewer options in the database.
+   `PetscViewer` options in the database.
 
-   Logically Collective on PetscViewer
+   Logically Collective on viewer
 
    Input Parameters:
-+  viewer - the PetscViewer context
++  viewer - the `PetscViewer` context
 -  prefix - the prefix to prepend to all option names
 
-   Notes:
+   Note:
    A hyphen (-) must NOT be given at the beginning of the prefix name.
    The first character of all runtime options is AUTOMATICALLY the hyphen.
 
    Level: advanced
 
-.seealso: `PetscViewerSetFromOptions()`
+.seealso: `PetscViewer`, `PetscViewerSetFromOptions()`
 @*/
 PetscErrorCode PetscViewerSetOptionsPrefix(PetscViewer viewer, const char prefix[]) {
   PetscFunctionBegin;
@@ -216,21 +214,21 @@ PetscErrorCode PetscViewerSetOptionsPrefix(PetscViewer viewer, const char prefix
 
 /*@C
    PetscViewerAppendOptionsPrefix - Appends to the prefix used for searching for all
-   PetscViewer options in the database.
+   `PetscViewer` options in the database.
 
-   Logically Collective on PetscViewer
+   Logically Collective on viewer
 
    Input Parameters:
 +  viewer - the PetscViewer context
 -  prefix - the prefix to prepend to all option names
 
-   Notes:
+   Note:
    A hyphen (-) must NOT be given at the beginning of the prefix name.
    The first character of all runtime options is AUTOMATICALLY the hyphen.
 
    Level: advanced
 
-.seealso: `PetscViewerGetOptionsPrefix()`
+.seealso: `PetscViewer`, `PetscViewerGetOptionsPrefix()`
 @*/
 PetscErrorCode PetscViewerAppendOptionsPrefix(PetscViewer viewer, const char prefix[]) {
   PetscFunctionBegin;
@@ -246,18 +244,17 @@ PetscErrorCode PetscViewerAppendOptionsPrefix(PetscViewer viewer, const char pre
    Not Collective
 
    Input Parameter:
-.  viewer - the PetscViewer context
+.  viewer - the `PetscViewer` context
 
    Output Parameter:
 .  prefix - pointer to the prefix string used
 
-   Notes:
-    On the fortran side, the user should pass in a string 'prefix' of
-   sufficient length to hold the prefix.
+   Fortran Note:
+   The user should pass in a string 'prefix' of sufficient length to hold the prefix.
 
    Level: advanced
 
-.seealso: `PetscViewerAppendOptionsPrefix()`
+.seealso: `PetscViewer`, `PetscViewerAppendOptionsPrefix()`
 @*/
 PetscErrorCode PetscViewerGetOptionsPrefix(PetscViewer viewer, const char *prefix[]) {
   PetscFunctionBegin;
@@ -269,18 +266,18 @@ PetscErrorCode PetscViewerGetOptionsPrefix(PetscViewer viewer, const char *prefi
 /*@
    PetscViewerSetUp - Sets up the internal viewer data structures for the later use.
 
-   Collective on PetscViewer
+   Collective on viewer
 
    Input Parameters:
-.  viewer - the PetscViewer context
+.  viewer - the `PetscViewer` context
 
-   Notes:
-   For basic use of the PetscViewer classes the user need not explicitly call
-   PetscViewerSetUp(), since these actions will happen automatically.
+   Note:
+   For basic use of the `PetscViewer` classes the user need not explicitly call
+   `PetscViewerSetUp()`, since these actions will happen automatically.
 
    Level: advanced
 
-.seealso: `PetscViewerCreate()`, `PetscViewerDestroy()`
+.seealso: `PetscViewer`, `PetscViewerCreate()`, `PetscViewerDestroy()`
 @*/
 PetscErrorCode PetscViewerSetUp(PetscViewer viewer) {
   PetscFunctionBegin;
@@ -292,16 +289,17 @@ PetscErrorCode PetscViewerSetUp(PetscViewer viewer) {
 }
 
 /*@C
-   PetscViewerViewFromOptions - View from Options
+   PetscViewerViewFromOptions - View from the viewer based on the options database values
 
-   Collective on PetscViewer
+   Collective on A
 
    Input Parameters:
-+  A - the PetscViewer context
-.  obj - Optional object
++  A - the `PetscViewer` context
+.  obj - Optional object that provides the prefix for the option names
 -  name - command line option
 
    Level: intermediate
+
 .seealso: `PetscViewer`, `PetscViewerView`, `PetscObjectViewFromOptions()`, `PetscViewerCreate()`
 @*/
 PetscErrorCode PetscViewerViewFromOptions(PetscViewer A, PetscObject obj, const char name[]) {
@@ -314,24 +312,23 @@ PetscErrorCode PetscViewerViewFromOptions(PetscViewer A, PetscObject obj, const 
 /*@C
    PetscViewerView - Visualizes a viewer object.
 
-   Collective on PetscViewer
+   Collective on v
 
    Input Parameters:
 +  v - the viewer to be viewed
 -  viewer - visualization context
 
-  Notes:
+  Note:
   The available visualization contexts include
-+    PETSC_VIEWER_STDOUT_SELF - standard output (default)
-.    PETSC_VIEWER_STDOUT_WORLD - synchronized standard
-        output where only the first processor opens
-        the file.  All other processors send their
-        data to the first processor to print.
--     PETSC_VIEWER_DRAW_WORLD - graphical display of nonzero structure
+.vb
+  PETSC_VIEWER_STDOUT_SELF - standard output (default)
+  PETSC_VIEWER_STDOUT_WORLD - synchronized standard output where only the first rank opens the file. Other processors send their data to the first rank
+  PETSC_VIEWER_DRAW_WORLD - graphical display of nonzero structure
+.ve
 
    Level: beginner
 
-.seealso: `PetscViewerPushFormat()`, `PetscViewerASCIIOpen()`, `PetscViewerDrawOpen()`,
+.seealso: `PetscViewer`, `PetscViewerPushFormat()`, `PetscViewerASCIIOpen()`, `PetscViewerDrawOpen()`,
           `PetscViewerSocketOpen()`, `PetscViewerBinaryOpen()`, `PetscViewerLoad()`
 @*/
 PetscErrorCode PetscViewerView(PetscViewer v, PetscViewer viewer) {
@@ -373,7 +370,7 @@ PetscErrorCode PetscViewerView(PetscViewer v, PetscViewer viewer) {
 }
 
 /*@C
-   PetscViewerRead - Reads data from a PetscViewer
+   PetscViewerRead - Reads data from a `PetscViewer`
 
    Collective
 
@@ -386,13 +383,13 @@ PetscErrorCode PetscViewerView(PetscViewer v, PetscViewer viewer) {
    Output Parameters:
 .  count - number of items of data actually read, or NULL
 
-   Notes:
-   If datatype is PETSC_STRING and num is negative, reads until a newline character is found,
+   Note:
+   If datatype is `PETSC_STRING` and num is negative, reads until a newline character is found,
    until a maximum of (-num - 1) chars.
 
    Level: beginner
 
-.seealso: `PetscViewerASCIIOpen()`, `PetscViewerPushFormat()`, `PetscViewerDestroy()`,
+.seealso: `PetscViewer`, `PetscViewerASCIIOpen()`, `PetscViewerPushFormat()`, `PetscViewerDestroy()`,
           `VecView()`, `MatView()`, `VecLoad()`, `MatLoad()`, `PetscViewerBinaryGetDescriptor()`,
           `PetscViewerBinaryGetInfoPointer()`, `PetscFileMode`, `PetscViewer`
 @*/
@@ -440,19 +437,19 @@ PetscErrorCode PetscViewerRead(PetscViewer viewer, void *data, PetscInt num, Pet
    Not Collective
 
    Input Parameters:
-.  viewer - the PetscViewer context
+.  viewer - the `PetscViewer` context
 
    Output Parameters:
-.  flg - PETSC_TRUE if the viewer is readable, PETSC_FALSE otherwise
+.  flg - `PETSC_TRUE` if the viewer is readable, `PETSC_FALSE` otherwise
 
-   Notes:
-   PETSC_TRUE means that viewer's PetscViewerType supports reading (this holds e.g. for PETSCVIEWERBINARY)
-   and viewer is in a mode allowing reading, i.e. PetscViewerFileGetMode()
-   returns one of FILE_MODE_READ, FILE_MODE_UPDATE, FILE_MODE_APPEND_UPDATE.
+   Note:
+   `PETSC_TRUE` means that viewer's `PetscViewerType` supports reading (this holds e.g. for `PETSCVIEWERBINARY`)
+   and viewer is in a mode allowing reading, i.e. `PetscViewerFileGetMode()`
+   returns one of `FILE_MODE_READ`, `FILE_MODE_UPDATE`, `FILE_MODE_APPEND_UPDATE`.
 
    Level: intermediate
 
-.seealso: `PetscViewerWritable()`, `PetscViewerCheckReadable()`, `PetscViewerCreate()`, `PetscViewerFileSetMode()`, `PetscViewerFileSetType()`
+.seealso: `PetscViewer`, `PetscViewerWritable()`, `PetscViewerCheckReadable()`, `PetscViewerCreate()`, `PetscViewerFileSetMode()`, `PetscViewerFileSetType()`
 @*/
 PetscErrorCode PetscViewerReadable(PetscViewer viewer, PetscBool *flg) {
   PetscFileMode mode;
@@ -480,18 +477,18 @@ PetscErrorCode PetscViewerReadable(PetscViewer viewer, PetscBool *flg) {
    Not Collective
 
    Input Parameters:
-.  viewer - the PetscViewer context
+.  viewer - the `PetscViewer` context
 
    Output Parameters:
-.  flg - PETSC_TRUE if the viewer is writable, PETSC_FALSE otherwise
+.  flg - `PETSC_TRUE` if the viewer is writable, `PETSC_FALSE` otherwise
 
-   Notes:
-   PETSC_TRUE means viewer is in a mode allowing writing, i.e. PetscViewerFileGetMode()
-   returns one of FILE_MODE_WRITE, FILE_MODE_APPEND, FILE_MODE_UPDATE, FILE_MODE_APPEND_UPDATE.
+   Note:
+   `PETSC_TRUE` means viewer is in a mode allowing writing, i.e. `PetscViewerFileGetMode()`
+   returns one of `FILE_MODE_WRITE`, `FILE_MODE_APPEND`, `FILE_MODE_UPDATE`, `FILE_MODE_APPEND_UPDATE`.
 
    Level: intermediate
 
-.seealso: `PetscViewerReadable()`, `PetscViewerCheckWritable()`, `PetscViewerCreate()`, `PetscViewerFileSetMode()`, `PetscViewerFileSetType()`
+.seealso: `PetscViewer`, `PetscViewerReadable()`, `PetscViewerCheckWritable()`, `PetscViewerCreate()`, `PetscViewerFileSetMode()`, `PetscViewerFileSetType()`
 @*/
 PetscErrorCode PetscViewerWritable(PetscViewer viewer, PetscBool *flg) {
   PetscFileMode mode;
@@ -509,16 +506,16 @@ PetscErrorCode PetscViewerWritable(PetscViewer viewer, PetscBool *flg) {
 }
 
 /*@
-   PetscViewerCheckReadable - Check whether the viewer can be read from
+   PetscViewerCheckReadable - Check whether the viewer can be read from, generates an error if not
 
    Collective
 
    Input Parameters:
-.  viewer - the PetscViewer context
+.  viewer - the `PetscViewer` context
 
    Level: intermediate
 
-.seealso: `PetscViewerReadable()`, `PetscViewerCheckWritable()`, `PetscViewerCreate()`, `PetscViewerFileSetMode()`, `PetscViewerFileSetType()`
+.seealso: `PetscViewer`, `PetscViewerReadable()`, `PetscViewerCheckWritable()`, `PetscViewerCreate()`, `PetscViewerFileSetMode()`, `PetscViewerFileSetType()`
 @*/
 PetscErrorCode PetscViewerCheckReadable(PetscViewer viewer) {
   PetscBool flg;
@@ -531,16 +528,16 @@ PetscErrorCode PetscViewerCheckReadable(PetscViewer viewer) {
 }
 
 /*@
-   PetscViewerCheckWritable - Check whether the viewer can be written to
+   PetscViewerCheckWritable - Check whether the viewer can be written to, generates an error if not
 
    Collective
 
    Input Parameters:
-.  viewer - the PetscViewer context
+.  viewer - the `PetscViewer` context
 
    Level: intermediate
 
-.seealso: `PetscViewerWritable()`, `PetscViewerCheckReadable()`, `PetscViewerCreate()`, `PetscViewerFileSetMode()`, `PetscViewerFileSetType()`
+.seealso: `PetscViewer`, `PetscViewerWritable()`, `PetscViewerCheckReadable()`, `PetscViewerCreate()`, `PetscViewerFileSetMode()`, `PetscViewerFileSetType()`
 @*/
 PetscErrorCode PetscViewerCheckWritable(PetscViewer viewer) {
   PetscBool flg;

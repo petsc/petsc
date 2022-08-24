@@ -19,8 +19,8 @@ PetscStageLog petsc_stageLog = NULL;
 
   Level: developer
 
-  Developer Notes:
-    Inline since called for EACH PetscEventLogBeginDefault() and PetscEventLogEndDefault()
+  Developer Note:
+    Inline since called for EACH `PetscEventLogBeginDefault()` and `PetscEventLogEndDefault()`
 
 .seealso: `PetscStageLogCreate()`
 @*/
@@ -41,18 +41,18 @@ PetscErrorCode PetscLogGetStageLog(PetscStageLog *stageLog) {
   Not Collective
 
   Input Parameter:
-. stageLog - The PetscStageLog
+. stageLog - The `PetscStageLog`
 
   Output Parameter:
 . stage    - The current stage
 
-  Notes:
+  Note:
   If no stage is currently active, stage is set to -1.
 
   Level: developer
 
-  Developer Notes:
-    Inline since called for EACH PetscEventLogBeginDefault() and PetscEventLogEndDefault()
+  Developer Note:
+    Inline since called for EACH `PetscEventLogBeginDefault()` and `PetscEventLogEndDefault()`
 
 .seealso: `PetscStageLogPush()`, `PetscStageLogPop()`, `PetscLogGetStageLog()`
 @*/
@@ -71,21 +71,21 @@ PetscErrorCode PetscStageLogGetCurrent(PetscStageLog stageLog, int *stage) {
 }
 
 /*@C
-  PetscStageLogGetEventPerfLog - This function returns the PetscEventPerfLog for the given stage.
+  PetscStageLogGetEventPerfLog - This function returns the `PetscEventPerfLog` for the given stage.
 
   Not Collective
 
   Input Parameters:
-+ stageLog - The PetscStageLog
++ stageLog - The `PetscStageLog`
 - stage    - The stage
 
   Output Parameter:
-. eventLog - The PetscEventPerfLog
+. eventLog - The `PetscEventPerfLog`
 
   Level: developer
 
-  Developer Notes:
-    Inline since called for EACH PetscEventLogBeginDefault() and PetscEventLogEndDefault()
+  Developer Note:
+    Inline since called for EACH `PetscEventLogBeginDefault()` and `PetscEventLogEndDefault()`
 
 .seealso: `PetscStageLogPush()`, `PetscStageLogPop()`, `PetscLogGetStageLog()`
 @*/
@@ -98,12 +98,12 @@ PetscErrorCode PetscStageLogGetEventPerfLog(PetscStageLog stageLog, int stage, P
 }
 
 /*@C
-  PetscStageInfoDestroy - This destroys a PetscStageInfo object.
+  PetscStageInfoDestroy - This destroys a `PetscStageInfo` object.
 
   Not collective
 
   Input Parameter:
-. stageInfo - The PetscStageInfo
+. stageInfo - The `PetscStageInfo`
 
   Level: developer
 
@@ -118,12 +118,12 @@ PetscErrorCode PetscStageInfoDestroy(PetscStageInfo *stageInfo) {
 }
 
 /*@C
-  PetscStageLogDestroy - This destroys a PetscStageLog object.
+  PetscStageLogDestroy - This destroys a `PetscStageLog` object.
 
   Not collective
 
   Input Parameter:
-. stageLog - The PetscStageLog
+. stageLog - The `PetscStageLog`
 
   Level: developer
 
@@ -149,7 +149,7 @@ PetscErrorCode PetscStageLogDestroy(PetscStageLog stageLog) {
   Not Collective
 
   Input Parameters:
-+ stageLog - The PetscStageLog
++ stageLog - The `PetscStageLog`
 - sname    - the name to associate with that stage
 
   Output Parameter:
@@ -201,16 +201,16 @@ PetscErrorCode PetscStageLogRegister(PetscStageLog stageLog, const char sname[],
   Not Collective
 
   Input Parameters:
-+ stageLog   - The PetscStageLog
++ stageLog   - The `PetscStageLog`
 - stage - The stage to log
 
   Database Options:
 . -log_view - Activates logging
 
   Usage:
-  If the option -log_sumary is used to run the program containing the
+  If the option -log_view is used to run the program containing the
   following code, then 2 sets of summary data will be printed during
-  PetscFinalize().
+  `PetscFinalize()`.
 .vb
       PetscInitialize(int *argc,char ***args,0,0);
       [stage 0 of code]
@@ -222,8 +222,8 @@ PetscErrorCode PetscStageLogRegister(PetscStageLog stageLog, const char sname[],
       PetscFinalize();
 .ve
 
-  Notes:
-  Use PetscLogStageRegister() to register a stage. All previous stages are
+  Note;
+  Use `PetscLogStageRegister()` to register a stage. All previous stages are
   accumulating time and flops, but events will only be logged in this stage.
 
   Level: developer
@@ -272,10 +272,10 @@ PetscErrorCode PetscStageLogPush(PetscStageLog stageLog, int stage) {
   Not Collective
 
   Input Parameter:
-. stageLog - The PetscStageLog
+. stageLog - The `PetscStageLog`
 
   Usage:
-  If the option -log_sumary is used to run the program containing the
+  If the option -log_view is used to run the program containing the
   following code, then 2 sets of summary data will be printed during
   PetscFinalize().
 .vb
@@ -289,8 +289,8 @@ PetscErrorCode PetscStageLogPush(PetscStageLog stageLog, int stage) {
       PetscFinalize();
 .ve
 
-  Notes:
-  Use PetscStageLogRegister() to register a stage.
+  Note:
+  Use `PetscStageLogRegister()` to register a stage.
 
   Level: developer
 
@@ -332,10 +332,10 @@ PetscErrorCode PetscStageLogPop(PetscStageLog stageLog) {
   Not Collective
 
   Input Parameters:
-. stageLog - The PetscStageLog
+. stageLog - The `PetscStageLog`
 
   Output Parameter:
-. classLog - The PetscClassRegLog
+. classLog - The `PetscClassRegLog`
 
   Level: developer
 
@@ -349,15 +349,15 @@ PetscErrorCode PetscStageLogGetClassRegLog(PetscStageLog stageLog, PetscClassReg
 }
 
 /*@C
-  PetscStageLogGetEventRegLog - This function returns the PetscEventRegLog.
+  PetscStageLogGetEventRegLog - This function returns the `PetscEventRegLog`.
 
   Not Collective
 
   Input Parameters:
-. stageLog - The PetscStageLog
+. stageLog - The `PetscStageLog`
 
   Output Parameter:
-. eventLog - The PetscEventRegLog
+. eventLog - The `PetscEventRegLog`
 
   Level: developer
 
@@ -371,16 +371,16 @@ PetscErrorCode PetscStageLogGetEventRegLog(PetscStageLog stageLog, PetscEventReg
 }
 
 /*@C
-  PetscStageLogGetClassPerfLog - This function returns the PetscClassPerfLog for the given stage.
+  PetscStageLogGetClassPerfLog - This function returns the `PetscClassPerfLog` for the given stage.
 
   Not Collective
 
   Input Parameters:
-+ stageLog - The PetscStageLog
++ stageLog - The `PetscStageLog`
 - stage    - The stage
 
   Output Parameter:
-. classLog - The PetscClassPerfLog
+. classLog - The `PetscClassPerfLog`
 
   Level: developer
 
@@ -400,9 +400,9 @@ PetscErrorCode PetscStageLogGetClassPerfLog(PetscStageLog stageLog, int stage, P
   Not Collective
 
   Input Parameters:
-+ stageLog - The PetscStageLog
++ stageLog - The `PetscStageLog`
 . stage    - The stage to log
-- isActive - The activity flag, PETSC_TRUE for logging, otherwise PETSC_FALSE (default is PETSC_TRUE)
+- isActive - The activity flag, `PETSC_TRUE` for logging, otherwise `PETSC_FALSE` (default is `PETSC_TRUE`)
 
   Level: developer
 
@@ -421,11 +421,11 @@ PetscErrorCode PetscStageLogSetActive(PetscStageLog stageLog, int stage, PetscBo
   Not Collective
 
   Input Parameters:
-+ stageLog - The PetscStageLog
++ stageLog - The `PetscStageLog`
 - stage    - The stage to log
 
   Output Parameter:
-. isActive - The activity flag, PETSC_TRUE for logging, otherwise PETSC_FALSE (default is PETSC_TRUE)
+. isActive - The activity flag, `PETSC_TRUE` for logging, otherwise `PETSC_FALSE` (default is `PETSC_TRUE`)
 
   Level: developer
 
@@ -440,14 +440,14 @@ PetscErrorCode PetscStageLogGetActive(PetscStageLog stageLog, int stage, PetscBo
 }
 
 /*@C
-  PetscStageLogSetVisible - This function determines whether a stage is printed during PetscLogView()
+  PetscStageLogSetVisible - This function determines whether a stage is printed during `PetscLogView()`
 
   Not Collective
 
   Input Parameters:
-+ stageLog  - The PetscStageLog
++ stageLog  - The `PetscStageLog`
 . stage     - The stage to log
-- isVisible - The visibility flag, PETSC_TRUE for printing, otherwise PETSC_FALSE (default is PETSC_TRUE)
+- isVisible - The visibility flag, `PETSC_TRUE` for printing, otherwise `PETSC_FALSE` (default is `PETSC_TRUE`)
 
   Database Options:
 . -log_view - Activates log summary
@@ -464,16 +464,16 @@ PetscErrorCode PetscStageLogSetVisible(PetscStageLog stageLog, int stage, PetscB
 }
 
 /*@C
-  PetscStageLogGetVisible - This function returns whether a stage is printed during PetscLogView()
+  PetscStageLogGetVisible - This function returns whether a stage is printed during `PetscLogView()`
 
   Not Collective
 
   Input Parameters:
-+ stageLog  - The PetscStageLog
++ stageLog  - The `PetscStageLog`
 - stage     - The stage to log
 
   Output Parameter:
-. isVisible - The visibility flag, PETSC_TRUE for printing, otherwise PETSC_FALSE (default is PETSC_TRUE)
+. isVisible - The visibility flag, `PETSC_TRUE` for printing, otherwise `PETSC_FALSE` (default is `PETSC_TRUE`)
 
   Database Options:
 . -log_view - Activates log summary
@@ -496,7 +496,7 @@ PetscErrorCode PetscStageLogGetVisible(PetscStageLog stageLog, int stage, PetscB
   Not Collective
 
   Input Parameters:
-+ stageLog - The PetscStageLog
++ stageLog - The `PetscStageLog`
 - name     - The stage name
 
   Output Parameter:
@@ -525,12 +525,12 @@ PetscErrorCode PetscStageLogGetStage(PetscStageLog stageLog, const char name[], 
 }
 
 /*@C
-  PetscStageLogCreate - This creates a PetscStageLog object.
+  PetscStageLogCreate - This creates a `PetscStageLog` object.
 
   Not collective
 
-  Input Parameter:
-. stageLog - The PetscStageLog
+  Output Parameter:
+. stageLog - The `PetscStageLog`
 
   Level: developer
 

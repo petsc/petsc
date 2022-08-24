@@ -2,7 +2,7 @@
 
 /*@C
     PetscIsCloseAtTol - Returns whether the two floating point numbers
-       are close at given relative and absolute tolerances.
+       are close at a given relative and absolute tolerances.
 
     Input Parameters:
 +     a - first floating point number
@@ -10,9 +10,12 @@
 .     rtol - relative tolerance
 -     atol - absolute tolerances
 
-    Notes: https://www.python.org/dev/peps/pep-0485/
+    Reference:
+.   * -  https://www.python.org/dev/peps/pep-0485/
 
     Level: beginner
+
+.seealso: `PetscEqualReal()`, `PetscEqualScalar()`
 @*/
 PetscBool PetscIsCloseAtTol(PetscReal a, PetscReal b, PetscReal rtol, PetscReal atol) {
   PetscReal diff;

@@ -12,7 +12,7 @@ PetscClassId PETSC_DRAWSP_CLASSID = 0;
 /*@C
   PetscDrawSPCreate - Creates a scatter plot data structure.
 
-  Collective on PetscDraw
+  Collective on draw
 
   Input Parameters:
 + win - the window where the graph will be made.
@@ -24,11 +24,13 @@ PetscClassId PETSC_DRAWSP_CLASSID = 0;
   Level: intermediate
 
   Notes:
-  Add points to the plot with PetscDrawSPAddPoint() or PetscDrawSPAddPoints(); the new points are not displayed until PetscDrawSPDraw() is called.
+  Add points to the plot with `PetscDrawSPAddPoint()` or `PetscDrawSPAddPoints()`; the new points are not displayed until `PetscDrawSPDraw()` is called.
 
-  PetscDrawSPReset() removes all the points that have been added
+  `PetscDrawSPReset()` removes all the points that have been added
 
-  The MPI communicator that owns the PetscDraw owns this PetscDrawSP, and each processc can add points. All MPI processes in the communicator must call PetscDrawSPDraw() to display the updated graph.
+  `PetscDrawSPSetDimension()` determines how many point curves are being plotted.
+
+  The MPI communicator that owns the `PetscDraw` owns this `PetscDrawSP`, and each process can add points. All MPI ranks in the communicator must call `PetscDrawSPDraw()` to display the updated graph.
 
 .seealso: `PetscDrawLGCreate()`, `PetscDrawLG`, `PetscDrawBarCreate()`, `PetscDrawBar`, `PetscDrawHGCreate()`, `PetscDrawHG`, `PetscDrawSPDestroy()`, `PetscDraw`, `PetscDrawSP`, `PetscDrawSPSetDimension()`, `PetscDrawSPReset()`,
           `PetscDrawSPAddPoint()`, `PetscDrawSPAddPoints()`, `PetscDrawSPDraw()`, `PetscDrawSPSave()`, `PetscDrawSPSetLimits()`, `PetscDrawSPGetAxis()`, `PetscDrawAxis`, `PetscDrawSPGetDraw()`
@@ -66,13 +68,13 @@ PetscErrorCode PetscDrawSPCreate(PetscDraw draw, int dim, PetscDrawSP *drawsp) {
 }
 
 /*@
-  PetscDrawSPSetDimension - Change the number of sets of points that are to be drawn.
+  PetscDrawSPSetDimension - Change the number of points that are added at each  `PetscDrawSPAddPoint()`
 
   Not collective
 
   Input Parameters:
-+ sp  - the line graph context.
-- dim - the number of curves on this process
++ sp  - the scatter plot context.
+- dim - the number of point curves on this process
 
   Level: intermediate
 
@@ -91,15 +93,15 @@ PetscErrorCode PetscDrawSPSetDimension(PetscDrawSP sp, int dim) {
 }
 
 /*@
-  PetscDrawSPGetDimension - Get the number of sets of points that are to be drawn.
+  PetscDrawSPGetDimension - Get the number of sets of points that are to be drawn at each `PetscDrawSPAddPoint()`
 
   Not collective
 
   Input Parameters:
-. sp  - the line graph context.
+. sp  - the scatter plot context.
 
   Output Parameter:
-. dim - the number of curves on this process
+. dim - the number of point curves on this process
 
   Level: intermediate
 
@@ -114,12 +116,12 @@ PetscErrorCode PetscDrawSPGetDimension(PetscDrawSP sp, int *dim) {
 }
 
 /*@
-  PetscDrawSPReset - Clears line graph to allow for reuse with new data.
+  PetscDrawSPReset - Clears scatter plot to allow for reuse with new data.
 
   Not collective
 
   Input Parameter:
-. sp - the line graph context.
+. sp - the scatter plot context.
 
   Level: intermediate
 
@@ -142,10 +144,10 @@ PetscErrorCode PetscDrawSPReset(PetscDrawSP sp) {
 /*@
   PetscDrawSPDestroy - Frees all space taken up by scatter plot data structure.
 
-  Collective on PetscDrawSP
+  Collective on sp
 
   Input Parameter:
-. sp - the line graph context
+. sp - the scatter plot context
 
   Level: intermediate
 
@@ -168,18 +170,18 @@ PetscErrorCode PetscDrawSPDestroy(PetscDrawSP *sp) {
 }
 
 /*@
-  PetscDrawSPAddPoint - Adds another point to each of the scatter plots.
+  PetscDrawSPAddPoint - Adds another point to each of the scatter plot point curves.
 
   Not collective
 
   Input Parameters:
 + sp - the scatter plot data structure
-- x, y - two arrays of length dim containing the new x and y coordinate values for each of the curves. Here  dim is the number of curves passed to PetscDrawSPCreate()
+- x, y - two arrays of length dim containing the new x and y coordinate values for each of the point curves. Here  dim is the number of point curves passed to PetscDrawSPCreate()
 
   Level: intermediate
 
-  Notes:
-  The new points will not be displayed until a call to PetscDrawSPDraw() is made
+  Note:
+  The new points will not be displayed until a call to `PetscDrawSPDraw()` is made
 
 .seealso: `PetscDrawSPAddPoints()`, `PetscDrawSP`, `PetscDrawSPCreate()`, `PetscDrawSPReset()`, `PetscDrawSPDraw()`, `PetscDrawSPAddPointColorized()`
 @*/
@@ -216,19 +218,19 @@ PetscErrorCode PetscDrawSPAddPoint(PetscDrawSP sp, PetscReal *x, PetscReal *y) {
 }
 
 /*@C
-  PetscDrawSPAddPoints - Adds several points to each of the scatter plots.
+  PetscDrawSPAddPoints - Adds several points to each of the scatter plot point curves.
 
   Not collective
 
   Input Parameters:
-+ sp - the LineGraph data structure
++ sp - the scatter plot context
 . xx,yy - points to two arrays of pointers that point to arrays containing the new x and y points for each curve.
-- n - number of points being added
+- n - number of points being added, each represents a subarray of length dim where dim is the value from `PetscDrawSPGetDimension()`
 
   Level: intermediate
 
-  Notes:
-  The new points will not be displayed until a call to PetscDrawSPDraw() is made
+  Note:
+  The new points will not be displayed until a call to `PetscDrawSPDraw()` is made
 
 .seealso: `PetscDrawSPAddPoint()`, `PetscDrawSP`, `PetscDrawSPCreate()`, `PetscDrawSPReset()`, `PetscDrawSPDraw()`, `PetscDrawSPAddPointColorized()`
 @*/
@@ -282,13 +284,13 @@ PetscErrorCode PetscDrawSPAddPoints(PetscDrawSP sp, int n, PetscReal **xx, Petsc
 
   Input Parameters:
 + sp - the scatter plot data structure
-. x, y - two arrays of length dim containing the new x and y coordinate values for each of the curves. Here  dim is the number of curves passed to PetscDrawSPCreate()
+. x, y - two arrays of length dim containing the new x and y coordinate values for each of the point curves. Here  dim is the number of point curves passed to `PetscDrawSPCreate()`
 - z - array of length dim containing the numeric values that will be mapped to [0,255] and used for scatter point colors.
 
   Level: intermediate
 
-  Notes:
-  The new points will not be displayed until a call to PetscDrawSPDraw() is made
+  Note:
+  The new points will not be displayed until a call to `PetscDrawSPDraw()` is made
 
 .seealso: `PetscDrawSPAddPoints()`, `PetscDrawSP`, `PetscDrawSPCreate()`, `PetscDrawSPReset()`, `PetscDrawSPDraw()`, `PetscDrawSPAddPoint()`
 @*/
@@ -331,10 +333,10 @@ PetscErrorCode PetscDrawSPAddPointColorized(PetscDrawSP sp, PetscReal *x, PetscR
 /*@
   PetscDrawSPDraw - Redraws a scatter plot.
 
-  Collective on PetscDrawSP
+  Collective on sp
 
   Input Parameters:
-+ sp - the line graph context
++ sp - the scatter plot context
 - clear - clear the window before drawing the new plot
 
   Level: intermediate
@@ -389,14 +391,14 @@ PetscErrorCode PetscDrawSPDraw(PetscDrawSP sp, PetscBool clear) {
 /*@
   PetscDrawSPSave - Saves a drawn image
 
-  Collective on PetscDrawSP
+  Collective on sp
 
   Input Parameter:
 . sp - the scatter plot context
 
   Level: intermediate
 
-.seealso: `PetscDrawSPCreate()`, `PetscDrawSPGetDraw()`, `PetscDrawSetSave()`, `PetscDrawSave()`
+.seealso: `PetscDrawSPSave()`, `PetscDrawSPCreate()`, `PetscDrawSPGetDraw()`, `PetscDrawSetSave()`, `PetscDrawSave()`
 @*/
 PetscErrorCode PetscDrawSPSave(PetscDrawSP sp) {
   PetscFunctionBegin;
@@ -416,7 +418,7 @@ PetscErrorCode PetscDrawSPSave(PetscDrawSP sp) {
 
   Level: intermediate
 
-.seealso: `PetscDrawSP`, `PetscDrawSPCreate()`, `PetscDrawSPDraw()`, `PetscDrawSPAddPoint()`, `PetscDrawSPAddPoints()`, `PetscDrawSPGetAxis()`
+.seealso: `PetscDrawSP`, `PetscDrawAxis`, `PetscDrawSPCreate()`, `PetscDrawSPDraw()`, `PetscDrawSPAddPoint()`, `PetscDrawSPAddPoints()`, `PetscDrawSPGetAxis()`
 @*/
 PetscErrorCode PetscDrawSPSetLimits(PetscDrawSP sp, PetscReal x_min, PetscReal x_max, PetscReal y_min, PetscReal y_max) {
   PetscFunctionBegin;
@@ -429,12 +431,12 @@ PetscErrorCode PetscDrawSPSetLimits(PetscDrawSP sp, PetscReal x_min, PetscReal x
 }
 
 /*@
-  PetscDrawSPGetAxis - Gets the axis context associated with a line graph.
+  PetscDrawSPGetAxis - Gets the axis context associated with a scatter plot
 
   Not Collective
 
   Input Parameter:
-. sp - the line graph context
+. sp - the scatter plot context
 
   Output Parameter:
 . axis - the axis context
@@ -455,12 +457,12 @@ PetscErrorCode PetscDrawSPGetAxis(PetscDrawSP sp, PetscDrawAxis *axis) {
 }
 
 /*@
-  PetscDrawSPGetDraw - Gets the draw context associated with a line graph.
+  PetscDrawSPGetDraw - Gets the draw context associated with a scatter plot
 
   Not Collective
 
   Input Parameter:
-. sp - the line graph context
+. sp - the scatter plot context
 
   Output Parameter:
 . draw - the draw context

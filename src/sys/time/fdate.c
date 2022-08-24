@@ -8,13 +8,6 @@
 PETSC_EXTERN int gettimeofday(struct timeval *, struct timezone *);
 #endif
 
-/*
-  This function is called once during the initialize stage.
-  It stashes the timestamp, and uses it when needed. This is so that
-  error handlers may report the date without generating possible
-  additional system errors during the call to get the date.
-
-*/
 /*@C
     PetscGetDate - Gets the current date.
 
@@ -28,8 +21,14 @@ PETSC_EXTERN int gettimeofday(struct timeval *, struct timezone *);
 
   Level: beginner
 
-    This function DOES make a system call and thus SHOULD NOT be called
-    from an error handler.
+  Note:
+  This function makes a system call and thus SHOULD NOT be called from an error handler.
+
+  Developer Note:
+  This function is called once during `PetscInitialize()`.
+  It stashes the timestamp, and uses it when needed. This is so that
+  error handlers may report the date without generating possible
+  additional system errors during the call to get the date.
 
 @*/
 PetscErrorCode PetscGetDate(char date[], size_t len) {

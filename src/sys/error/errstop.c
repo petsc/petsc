@@ -12,21 +12,17 @@
 .  file - the file in which the error was detected (indicated by __FILE__)
 .  mess - an error text string, usually just printed to the screen
 .  n - the generic error number
-.  p - PETSC_ERROR_INITIAL if error just detected, otherwise PETSC_ERROR_REPEAT
+.  p - `PETSC_ERROR_INITIAL` if error just detected, otherwise `PETSC_ERROR_REPEAT`
 -  ctx - error handler context
 
    Level: developer
 
-   Notes:
-   Most users need not directly employ this routine and the other error
-   handlers, but can instead use the simplified interface SETERRQ, which has
-   the calling sequence
-$     SETERRQ(comm,n,p,mess)
+   Note:
+   Users do not directly call this routine
 
-   Notes for experienced users:
-   Use PetscPushErrorHandler() to set the desired error handler.  The
-   currently available PETSc error handlers include PetscTraceBackErrorHandler(),
-   PetscMPIAbortErrorHandler(), PetscAttachDebuggerErrorHandler(), and PetscAbortErrorHandler().
+   Use `PetscPushErrorHandler()` to set the desired error handler.  The
+   currently available PETSc error handlers include `PetscTraceBackErrorHandler()`,
+   `PetscMPIAbortErrorHandler()`, `PetscAttachDebuggerErrorHandler()`, and `PetscAbortErrorHandler()`.
 
 .seealso: `PetscError()`, `PetscPushErrorHandler()`, `PetscPopErrorHandler()`, `PetscAttachDebuggerErrorHandler()`,
           `PetscAbortErrorHandler()`, `PetscMPIAbortErrorHandler()`, `PetscTraceBackErrorHandler()`, `PetscEmacsClientErrorHandler()`, `PetscReturnErrorHandler()`

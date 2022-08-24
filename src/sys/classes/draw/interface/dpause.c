@@ -5,16 +5,16 @@
 
 /*@
    PetscDrawPause - Waits n seconds or until user input, depending on input
-               to PetscDrawSetPause().
+               to `PetscDrawSetPause()`.
 
-   Collective operation on PetscDraw object.
+   Collective on draw
 
    Input Parameter:
 .  draw - the drawing context
 
    Level: beginner
 
-.seealso: `PetscDrawSetPause()`, `PetscDrawGetPause()`
+.seealso: `PetscDraw`, `PetscDrawSetPause()`, `PetscDrawGetPause()`
 @*/
 PetscErrorCode PetscDrawPause(PetscDraw draw) {
   PetscFunctionBegin;
@@ -25,13 +25,16 @@ PetscErrorCode PetscDrawPause(PetscDraw draw) {
 
 /*@
    PetscDrawSetPause - Sets the amount of time that program pauses after
-   a PetscDrawPause() is called.
+   a `PetscDrawPause()` is called.
 
-   Logically Collective on PetscDraw
+   Logically Collective on draw
 
    Input Parameters:
 +  draw   - the drawing object
--  lpause - number of seconds to pause, -1 implies until user input, -2 pauses only on the PetscDrawDestroy()
+-  lpause - number of seconds to pause, -1 implies until user input, -2 pauses only on the `PetscDrawDestroy()`
+
+   Options Database Key:
+.  -draw_pause value - set the time to pause
 
    Level: intermediate
 
@@ -39,7 +42,7 @@ PetscErrorCode PetscDrawPause(PetscDraw draw) {
    By default the pause time is zero unless the -draw_pause option is given
    during PetscDrawCreate().
 
-.seealso: `PetscDrawGetPause()`, `PetscDrawPause()`
+.seealso: `PetscDraw`, `PetscDrawGetPause()`, `PetscDrawPause()`
 @*/
 PetscErrorCode PetscDrawSetPause(PetscDraw draw, PetscReal lpause) {
   PetscFunctionBegin;
@@ -51,7 +54,7 @@ PetscErrorCode PetscDrawSetPause(PetscDraw draw, PetscReal lpause) {
 
 /*@
    PetscDrawGetPause - Gets the amount of time that program pauses after
-   a PetscDrawPause() is called.
+   a `PetscDrawPause()` is called.
 
    Not collective
 
@@ -64,7 +67,7 @@ PetscErrorCode PetscDrawSetPause(PetscDraw draw, PetscReal lpause) {
    Note:
    By default the pause time is zero unless the -draw_pause option is given
 
-.seealso: `PetscDrawSetPause()`, `PetscDrawPause()`
+.seealso: `PetscDraw`, `PetscDrawSetPause()`, `PetscDrawPause()`
 @*/
 PetscErrorCode PetscDrawGetPause(PetscDraw draw, PetscReal *lpause) {
   PetscFunctionBegin;

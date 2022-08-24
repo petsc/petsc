@@ -300,7 +300,7 @@ PetscErrorCode PetscDLLibrarySym(MPI_Comm comm, PetscDLLibrary *outlist, const c
 
      Level: developer
 
-     Notes:
+     Note:
     if library is already in path will not add it.
 
   If the library has the symbol PetscDLLibraryRegister_basename() in it then that function is automatically run
@@ -385,7 +385,7 @@ PetscErrorCode PetscDLLibraryAppend(MPI_Comm comm, PetscDLLibrary *outlist, cons
 
      Level: developer
 
-     Notes:
+     Note:
     If library is already in path will remove old reference.
 
 @*/
@@ -462,7 +462,7 @@ PetscErrorCode PetscDLLibraryPrepend(MPI_Comm comm, PetscDLLibrary *outlist, con
 /*@C
      PetscDLLibraryClose - Destroys the search path of dynamic libraries and closes the libraries.
 
-    Collective on PetscDLLibrary
+    Collective on list
 
     Input Parameter:
 .     head - library list

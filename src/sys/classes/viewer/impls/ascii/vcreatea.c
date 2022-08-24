@@ -10,22 +10,21 @@
 PetscMPIInt Petsc_Viewer_Stdout_keyval = MPI_KEYVAL_INVALID;
 
 /*@
-   PetscViewerASCIIGetStdout - Creates a ASCII PetscViewer shared by all processors
-                    in a communicator. Error returning version of PETSC_VIEWER_STDOUT_()
+   PetscViewerASCIIGetStdout - Creates a `PETSCVIEWERASCII` `PetscViewer` shared by all processors
+                    in a communicator. Error returning version of `PETSC_VIEWER_STDOUT_()`
 
    Collective
 
    Input Parameter:
-.  comm - the MPI communicator to share the PetscViewer
+.  comm - the MPI communicator to share the `PetscViewer`
 
    Level: beginner
 
-   Notes:
-     This should be used in all PETSc source code instead of PETSC_VIEWER_STDOUT_()
+   Note:
+     This should be used in all PETSc source code instead of `PETSC_VIEWER_STDOUT_()`
 
 .seealso: `PETSC_VIEWER_DRAW_()`, `PetscViewerASCIIOpen()`, `PETSC_VIEWER_STDERR_`, `PETSC_VIEWER_STDOUT_WORLD`,
           `PETSC_VIEWER_STDOUT_SELF`
-
 @*/
 PetscErrorCode PetscViewerASCIIGetStdout(MPI_Comm comm, PetscViewer *viewer) {
   PetscBool flg;
@@ -47,24 +46,23 @@ PetscErrorCode PetscViewerASCIIGetStdout(MPI_Comm comm, PetscViewer *viewer) {
 }
 
 /*@C
-   PETSC_VIEWER_STDOUT_ - Creates a ASCII PetscViewer shared by all processors
+   PETSC_VIEWER_STDOUT_ - Creates a ASCII `PetscViewer` shared by all processors
                     in a communicator.
 
    Collective
 
    Input Parameter:
-.  comm - the MPI communicator to share the PetscViewer
+.  comm - the MPI communicator to share the `PetscViewer`
 
    Level: beginner
 
-   Notes:
+   Note:
    Unlike almost all other PETSc routines, this does not return
    an error code. Usually used in the form
 $      XXXView(XXX object,PETSC_VIEWER_STDOUT_(comm));
 
 .seealso: `PETSC_VIEWER_DRAW_()`, `PetscViewerASCIIOpen()`, `PETSC_VIEWER_STDERR_`, `PETSC_VIEWER_STDOUT_WORLD`,
           `PETSC_VIEWER_STDOUT_SELF`
-
 @*/
 PetscViewer PETSC_VIEWER_STDOUT_(MPI_Comm comm) {
   PetscErrorCode ierr;
@@ -88,22 +86,21 @@ PetscViewer PETSC_VIEWER_STDOUT_(MPI_Comm comm) {
 PetscMPIInt Petsc_Viewer_Stderr_keyval = MPI_KEYVAL_INVALID;
 
 /*@
-   PetscViewerASCIIGetStderr - Creates a ASCII PetscViewer shared by all processors
-                    in a communicator. Error returning version of PETSC_VIEWER_STDERR_()
+   PetscViewerASCIIGetStderr - Creates a `PETSCVIEWERASCII` `PetscViewer` shared by all processors
+                    in a communicator. Error returning version of `PETSC_VIEWER_STDERR_()`
 
    Collective
 
    Input Parameter:
-.  comm - the MPI communicator to share the PetscViewer
+.  comm - the MPI communicator to share the `PetscViewer`
 
    Level: beginner
 
-   Notes:
-     This should be used in all PETSc source code instead of PETSC_VIEWER_STDERR_()
+   Note:
+     This should be used in all PETSc source code instead of `PETSC_VIEWER_STDERR_()`
 
 .seealso: `PETSC_VIEWER_DRAW_()`, `PetscViewerASCIIOpen()`, `PETSC_VIEWER_STDERR_`, `PETSC_VIEWER_STDERR_WORLD`,
           `PETSC_VIEWER_STDERR_SELF`
-
 @*/
 PetscErrorCode PetscViewerASCIIGetStderr(MPI_Comm comm, PetscViewer *viewer) {
   PetscBool flg;
@@ -125,13 +122,13 @@ PetscErrorCode PetscViewerASCIIGetStderr(MPI_Comm comm, PetscViewer *viewer) {
 }
 
 /*@C
-   PETSC_VIEWER_STDERR_ - Creates a ASCII PetscViewer shared by all processors
+   PETSC_VIEWER_STDERR_ - Creates a `PETSCVIEWERASCII` `PetscViewer` shared by all processors
                     in a communicator.
 
    Collective
 
    Input Parameter:
-.  comm - the MPI communicator to share the PetscViewer
+.  comm - the MPI communicator to share the `PetscViewer`
 
    Level: beginner
 
@@ -171,7 +168,7 @@ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelViewer(MPI_Comm comm, PetscMPIInt keyva
 }
 
 /*@C
-   PetscViewerASCIIOpen - Opens an ASCII file for writing as a PetscViewer.
+   PetscViewerASCIIOpen - Opens an ASCII file for writing as a `PetscViewer`.
 
    Collective
 
@@ -186,24 +183,26 @@ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelViewer(MPI_Comm comm, PetscMPIInt keyva
 
    Notes:
    To open a ASCII file as a viewer for reading one must use the sequence
-$     PetscViewerCreate(comm,&lab);
-$     PetscViewerSetType(lab,PETSCVIEWERASCII);
-$     PetscViewerFileSetMode(lab,FILE_MODE_READ);
-$     PetscViewerFileSetName(lab,name);
+.vb
+   PetscViewerCreate(comm,&lab);
+   PetscViewerSetType(lab,PETSCVIEWERASCII);
+   PetscViewerFileSetMode(lab,FILE_MODE_READ);
+   PetscViewerFileSetName(lab,name);
+.ve
 
-   This PetscViewer can be destroyed with PetscViewerDestroy().
+   This `PetscViewer` can be destroyed with `PetscViewerDestroy()`.
 
    The MPI communicator used here must match that used by the object one is viewing. For example if the
-   Mat was created with a PETSC_COMM_WORLD, then the Viewer must be created with PETSC_COMM_WORLD
+   Mat was created with a `PETSC_COMM_WORLD`, then the Viewer must be created with `PETSC_COMM_WORLD`
 
-   As shown below, PetscViewerASCIIOpen() is useful in conjunction with
-   MatView() and VecView()
+   As shown below, `PetscViewerASCIIOpen()` is useful in conjunction with
+   `MatView()` and `VecView()`
 .vb
      PetscViewerASCIIOpen(PETSC_COMM_WORLD,"mat.output",&viewer);
      MatView(matrix,viewer);
 .ve
 
-.seealso: `MatView()`, `VecView()`, `PetscViewerDestroy()`, `PetscViewerBinaryOpen()`, `PetscViewerASCIIRead()`
+.seealso: `MatView()`, `VecView()`, `PetscViewerDestroy()`, `PetscViewerBinaryOpen()`, `PetscViewerASCIIRead()`, `PETSCVIEWERASCII`
           `PetscViewerASCIIGetPointer()`, `PetscViewerPushFormat()`, `PETSC_VIEWER_STDOUT_`, `PETSC_VIEWER_STDERR_`,
           `PETSC_VIEWER_STDOUT_WORLD`, `PETSC_VIEWER_STDOUT_SELF`,
 @*/
@@ -277,20 +276,20 @@ PetscErrorCode PetscViewerASCIIOpen(MPI_Comm comm, const char name[], PetscViewe
 -  fd - the FILE pointer
 
    Output Parameter:
-.  lab - the PetscViewer to use with the specified file
+.  lab - the `PetscViewer` to use with the specified file
 
    Level: beginner
 
    Notes:
-   This PetscViewer can be destroyed with PetscViewerDestroy(), but the fd will NOT be closed.
+   This `PetscViewer` can be destroyed with `PetscViewerDestroy()`, but the fd will NOT be closed.
 
-   If a multiprocessor communicator is used (such as PETSC_COMM_WORLD),
+   If a multiprocessor communicator is used (such as `PETSC_COMM_WORLD`),
    then only the first processor in the group uses the file.  All other
    processors send their data to the first processor to print.
 
 .seealso: `MatView()`, `VecView()`, `PetscViewerDestroy()`, `PetscViewerBinaryOpen()`,
           `PetscViewerASCIIGetPointer()`, `PetscViewerPushFormat()`, `PETSC_VIEWER_STDOUT_`, `PETSC_VIEWER_STDERR_`,
-          `PETSC_VIEWER_STDOUT_WORLD`, `PETSC_VIEWER_STDOUT_SELF`, `PetscViewerASCIIOpen()`
+          `PETSC_VIEWER_STDOUT_WORLD`, `PETSC_VIEWER_STDOUT_SELF`, `PetscViewerASCIIOpen()`, `PetscViewerASCIISetFILE()`, `PETSCVIEWERASCII`
 @*/
 PetscErrorCode PetscViewerASCIIOpenWithFILE(MPI_Comm comm, FILE *fd, PetscViewer *lab) {
   PetscFunctionBegin;
@@ -300,6 +299,28 @@ PetscErrorCode PetscViewerASCIIOpenWithFILE(MPI_Comm comm, FILE *fd, PetscViewer
   PetscFunctionReturn(0);
 }
 
+/*@C
+   PetscViewerASCIISetFILE - Given an open file sets the ASCII viewer to use the file for output
+
+   Not collective
+
+   Input Parameters:
++  viewer - the `PetscViewer` to use with the specified file
+-  fd - the FILE pointer
+
+   Level: beginner
+
+   Notes:
+   This `PetscViewer` can be destroyed with `PetscViewerDestroy()`, but the fd will NOT be closed.
+
+   If a multiprocessor communicator is used (such as `PETSC_COMM_WORLD`),
+   then only the first processor in the group uses the file.  All other
+   processors send their data to the first processor to print.
+
+.seealso: `MatView()`, `VecView()`, `PetscViewerDestroy()`, `PetscViewerBinaryOpen()`,
+          `PetscViewerASCIIGetPointer()`, `PetscViewerPushFormat()`, `PETSC_VIEWER_STDOUT_`, `PETSC_VIEWER_STDERR_`,
+          `PETSC_VIEWER_STDOUT_WORLD`, `PETSC_VIEWER_STDOUT_SELF`, `PetscViewerASCIIOpen()`, `PetscViewerASCIIOpenWithFILE()`, `PETSCVIEWERASCII`
+@*/
 PetscErrorCode PetscViewerASCIISetFILE(PetscViewer viewer, FILE *fd) {
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII *)viewer->data;
 

@@ -9,17 +9,17 @@ PetscLogEvent PETSC_Barrier;
                    processors owning the object obj.
 
    Input Parameters:
-.  obj - PETSc object  (Mat, Vec, IS, SNES etc...)
-        The object be caste with a (PetscObject). NULL can be used to indicate the barrier should be across MPI_COMM_WORLD
+.  obj - PETSc object  (`Mat`, `Vec`, `IS`, `SNES` etc...)
+        The object be caste with a (PetscObject). NULL can be used to indicate the barrier should be across `PETSC_COMM_WORLD`
 
   Level: intermediate
 
-  Notes:
-  This routine calls MPI_Barrier with the communicator of the PETSc Object obj
+  Developer Note:
+  This routine calls `MPI_Barrier()` with the communicator of the `PetscObject`
 
-  Fortran Usage:
-    You may pass PETSC_NULL_VEC or any other PETSc null object, such as PETSC_NULL_MAT, to indicate the barrier should be
-    across MPI_COMM_WORLD. You can also pass in any PETSc object, Vec, Mat, etc
+  Fortran Note:
+    You may pass `PETSC_NULL_VEC` or any other PETSc null object, such as `PETSC_NULL_MAT`, to indicate the barrier should be
+    across `PETSC_COMM_WORLD`. You can also pass in any PETSc object, `Vec`, `Mat`, etc
 
 @*/
 PetscErrorCode PetscBarrier(PetscObject obj) {

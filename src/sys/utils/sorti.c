@@ -62,7 +62,7 @@
    Output Parameters:
     + l,r       - of type PetscInt
 
-   Notes:
+   Note:
     The TwoWayPartition2/3 variants also partition other arrays along with X.
     These arrays can have different types, so they provide their own temp t2,t3
  */
@@ -95,7 +95,7 @@
    Output Parameters:
     + l,r       - of type PetscInt
 
-   Notes:
+   Note:
     The TwoWayPartition2/3 variants also partition other arrays along with X.
     These arrays can have different types, so they provide their own temp t2,t3
  */
@@ -241,7 +241,7 @@
   } while (0)
 
 /*@
-   PetscSortedInt - Determines whether the array is sorted.
+   PetscSortedInt - Determines whether the `PetscInt` array is sorted.
 
    Not Collective
 
@@ -265,7 +265,7 @@ PetscErrorCode PetscSortedInt(PetscInt n, const PetscInt X[], PetscBool *sorted)
 }
 
 /*@
-   PetscSortInt - Sorts an array of integers in place in increasing order.
+   PetscSortInt - Sorts an array of `PetscInt` in place in increasing order.
 
    Not Collective
 
@@ -273,8 +273,8 @@ PetscErrorCode PetscSortedInt(PetscInt n, const PetscInt X[], PetscBool *sorted)
 +  n  - number of values
 -  X  - array of integers
 
-   Notes:
-   This function serves as an alternative to PetscIntSortSemiOrdered(), and may perform faster especially if the array
+   Note:
+   This function serves as an alternative to `PetscIntSortSemiOrdered()`, and may perform faster especially if the array
    is completely random. There are exceptions to this and so it is __highly__ recommended that the user benchmark their
    code to see which routine is fastest.
 
@@ -292,7 +292,7 @@ PetscErrorCode PetscSortInt(PetscInt n, PetscInt X[]) {
 }
 
 /*@
-   PetscSortReverseInt - Sorts an array of integers in place in decreasing order.
+   PetscSortReverseInt - Sorts an array of `PetscInt` in place in decreasing order.
 
    Not Collective
 
@@ -314,7 +314,7 @@ PetscErrorCode PetscSortReverseInt(PetscInt n, PetscInt X[]) {
 }
 
 /*@
-   PetscSortedRemoveDupsInt - Removes all duplicate entries of a sorted input array
+   PetscSortedRemoveDupsInt - Removes all duplicate entries of a sorted `PetscInt` array
 
    Not Collective
 
@@ -346,7 +346,7 @@ PetscErrorCode PetscSortedRemoveDupsInt(PetscInt *n, PetscInt X[]) {
 }
 
 /*@
-   PetscSortedCheckDupsInt - Checks if a sorted integer array has duplicates
+   PetscSortedCheckDupsInt - Checks if a sorted `PetscInt` array has duplicates
 
    Not Collective
 
@@ -377,7 +377,7 @@ PetscErrorCode PetscSortedCheckDupsInt(PetscInt n, const PetscInt X[], PetscBool
 }
 
 /*@
-   PetscSortRemoveDupsInt - Sorts an array of integers in place in increasing order removes all duplicate entries
+   PetscSortRemoveDupsInt - Sorts an array of `PetscInt` in place in increasing order removes all duplicate entries
 
    Not Collective
 
@@ -401,7 +401,7 @@ PetscErrorCode PetscSortRemoveDupsInt(PetscInt *n, PetscInt X[]) {
 }
 
 /*@
-  PetscFindInt - Finds integer in a sorted array of integers
+ PetscFindInt - Finds `PetscInt` in a sorted array of `PetscInt`
 
    Not Collective
 
@@ -438,7 +438,7 @@ PetscErrorCode PetscFindInt(PetscInt key, PetscInt n, const PetscInt X[], PetscI
 }
 
 /*@
-  PetscCheckDupsInt - Checks if an integer array has duplicates
+  PetscCheckDupsInt - Checks if an `PetscInt` array has duplicates
 
    Not Collective
 
@@ -478,7 +478,7 @@ PetscErrorCode PetscCheckDupsInt(PetscInt n, const PetscInt X[], PetscBool *dups
 }
 
 /*@
-  PetscFindMPIInt - Finds MPI integer in a sorted array of integers
+  PetscFindMPIInt - Finds `PetscMPIInt` in a sorted array of `PetscMPIInt`
 
    Not Collective
 
@@ -515,8 +515,8 @@ PetscErrorCode PetscFindMPIInt(PetscMPIInt key, PetscInt n, const PetscMPIInt X[
 }
 
 /*@
-   PetscSortIntWithArray - Sorts an array of integers in place in increasing order;
-       changes a second array to match the sorted first array.
+   PetscSortIntWithArray - Sorts an array of `PetscInt` in place in increasing order;
+       changes a second array of `PetscInt` to match the sorted first array.
 
    Not Collective
 
@@ -538,8 +538,8 @@ PetscErrorCode PetscSortIntWithArray(PetscInt n, PetscInt X[], PetscInt Y[]) {
 }
 
 /*@
-   PetscSortIntWithArrayPair - Sorts an array of integers in place in increasing order;
-       changes a pair of integer arrays to match the sorted first array.
+   PetscSortIntWithArrayPair - Sorts an array of `PetscInt` in place in increasing order;
+       changes a pair of `PetscInt` arrays to match the sorted first array.
 
    Not Collective
 
@@ -562,8 +562,8 @@ PetscErrorCode PetscSortIntWithArrayPair(PetscInt n, PetscInt X[], PetscInt Y[],
 }
 
 /*@
-   PetscSortIntWithCountArray - Sorts an array of integers in place in increasing order;
-       changes a second array to match the sorted first array.
+   PetscSortIntWithCountArray - Sorts an array of `PetscInt` in place in increasing order;
+       changes a second array of `PetscCount` to match the sorted first array.
 
    Not Collective
 
@@ -586,8 +586,8 @@ PetscErrorCode PetscSortIntWithCountArray(PetscCount n, PetscInt X[], PetscCount
 }
 
 /*@
-   PetscSortIntWithIntCountArrayPair - Sorts an array of integers in place in increasing order;
-       changes an integer array and a PetscCount array to match the sorted first array.
+   PetscSortIntWithIntCountArrayPair - Sorts an array of `PetscInt` in place in increasing order;
+       changes a `PetscInt`  array and a `PetscCount` array to match the sorted first array.
 
    Not Collective
 
@@ -599,7 +599,7 @@ PetscErrorCode PetscSortIntWithCountArray(PetscCount n, PetscInt X[], PetscCount
 
    Level: intermediate
 
-   Notes:
+   Note:
     Usually X, Y are matrix row/column indices, and Z is a permutation array and therefore Z's type is PetscCount to allow 2B+ nonzeros even with 32-bit PetscInt.
 
 .seealso: `PetscSortReal()`, `PetscSortIntPermutation()`, `PetscSortIntWithArray()`, `PetscIntSortSemiOrdered()`, `PetscSortIntWithArrayPair()`
@@ -614,7 +614,7 @@ PetscErrorCode PetscSortIntWithIntCountArrayPair(PetscCount n, PetscInt X[], Pet
 }
 
 /*@
-   PetscSortedMPIInt - Determines whether the array is sorted.
+  PetscSortedMPIInt - Determines whether the `PetscMPIInt` array is sorted.
 
    Not Collective
 
@@ -636,7 +636,7 @@ PetscErrorCode PetscSortedMPIInt(PetscInt n, const PetscMPIInt X[], PetscBool *s
 }
 
 /*@
-   PetscSortMPIInt - Sorts an array of MPI integers in place in increasing order.
+   PetscSortMPIInt - Sorts an array of `PetscMPIInt` in place in increasing order.
 
    Not Collective
 
@@ -646,7 +646,7 @@ PetscErrorCode PetscSortedMPIInt(PetscInt n, const PetscMPIInt X[], PetscBool *s
 
    Level: intermediate
 
-   Notes:
+   Note:
    This function serves as an alternative to PetscMPIIntSortSemiOrdered(), and may perform faster especially if the array
    is completely random. There are exceptions to this and so it is __highly__ recommended that the user benchmark their
    code to see which routine is fastest.
@@ -662,7 +662,7 @@ PetscErrorCode PetscSortMPIInt(PetscInt n, PetscMPIInt X[]) {
 }
 
 /*@
-   PetscSortRemoveDupsMPIInt - Sorts an array of MPI integers in place in increasing order removes all duplicate entries
+   PetscSortRemoveDupsMPIInt - Sorts an array of `PetscMPIInt` in place in increasing order removes all duplicate entries
 
    Not Collective
 
@@ -693,8 +693,8 @@ PetscErrorCode PetscSortRemoveDupsMPIInt(PetscInt *n, PetscMPIInt X[]) {
 }
 
 /*@
-   PetscSortMPIIntWithArray - Sorts an array of integers in place in increasing order;
-       changes a second array to match the sorted first array.
+   PetscSortMPIIntWithArray - Sorts an array of `PetscMPIInt` in place in increasing order;
+       changes a second `PetscMPIInt` array to match the sorted first array.
 
    Not Collective
 
@@ -716,8 +716,8 @@ PetscErrorCode PetscSortMPIIntWithArray(PetscMPIInt n, PetscMPIInt X[], PetscMPI
 }
 
 /*@
-   PetscSortMPIIntWithIntArray - Sorts an array of MPI integers in place in increasing order;
-       changes a second array of Petsc intergers to match the sorted first array.
+   PetscSortMPIIntWithIntArray - Sorts an array of `PetscMPIInt` in place in increasing order;
+       changes a second array of `PetscInt` to match the sorted first array.
 
    Not Collective
 
@@ -728,7 +728,8 @@ PetscErrorCode PetscSortMPIIntWithArray(PetscMPIInt n, PetscMPIInt X[], PetscMPI
 
    Level: intermediate
 
-   Notes: this routine is useful when one needs to sort MPI ranks with other integer arrays.
+   Note:
+   This routine is useful when one needs to sort MPI ranks with other integer arrays.
 
 .seealso: `PetscSortMPIIntWithArray()`, `PetscIntSortSemiOrderedWithArray()`, `PetscTimSortWithArray()`
 @*/
@@ -742,8 +743,8 @@ PetscErrorCode PetscSortMPIIntWithIntArray(PetscMPIInt n, PetscMPIInt X[], Petsc
 }
 
 /*@
-   PetscSortIntWithScalarArray - Sorts an array of integers in place in increasing order;
-       changes a second SCALAR array to match the sorted first INTEGER array.
+   PetscSortIntWithScalarArray - Sorts an array of `PetscInt` in place in increasing order;
+       changes a second `PetscScalar` array to match the sorted first array.
 
    Not Collective
 
@@ -766,7 +767,7 @@ PetscErrorCode PetscSortIntWithScalarArray(PetscInt n, PetscInt X[], PetscScalar
 }
 
 /*@C
-   PetscSortIntWithDataArray - Sorts an array of integers in place in increasing order;
+   PetscSortIntWithDataArray - Sorts an array of `PetscInt` in place in increasing order;
        changes a second array to match the sorted first INTEGER array.  Unlike other sort routines, the user must
        provide workspace (the size of an element in the data array) to use when sorting.
 
@@ -821,7 +822,7 @@ PetscErrorCode PetscSortIntWithDataArray(PetscInt n, PetscInt X[], void *Y, size
 }
 
 /*@
-   PetscMergeIntArray -     Merges two SORTED integer arrays, removes duplicate elements.
+   PetscMergeIntArray -     Merges two SORTED `PetscInt` arrays, removes duplicate elements.
 
    Not Collective
 
@@ -877,7 +878,7 @@ PetscErrorCode PetscMergeIntArray(PetscInt an, const PetscInt aI[], PetscInt bn,
 }
 
 /*@
-   PetscMergeIntArrayPair -     Merges two SORTED integer arrays that share NO common values along with an additional array of integers.
+   PetscMergeIntArrayPair -     Merges two SORTED `PetscInt` arrays that share NO common values along with an additional array of `PetscInt`.
                                 The additional arrays are the same length as sorted arrays and are merged
                                 in the order determined by the merging of the sorted pair.
 
@@ -896,8 +897,9 @@ PetscErrorCode PetscMergeIntArray(PetscInt an, const PetscInt aI[], PetscInt bn,
 .  L   - merged sorted array
 -  J   - merged additional array
 
-   Notes:
+   Note:
     if L or J point to non-null arrays then this routine will assume they are of the approproate size and use them, otherwise this routine will allocate space for them
+
    Level: intermediate
 
 .seealso: `PetscIntSortSemiOrdered()`, `PetscSortReal()`, `PetscSortIntWithPermutation()`, `PetscSortInt()`, `PetscSortIntWithArray()`
@@ -941,7 +943,7 @@ PetscErrorCode PetscMergeIntArrayPair(PetscInt an, const PetscInt aI[], const Pe
 }
 
 /*@
-   PetscMergeMPIIntArray -     Merges two SORTED integer arrays.
+   PetscMergeMPIIntArray -     Merges two SORTED `PetscMPIInt` arrays.
 
    Not Collective
 
@@ -996,7 +998,7 @@ PetscErrorCode PetscMergeMPIIntArray(PetscInt an, const PetscMPIInt aI[], PetscI
 
    Level: developer
 
-   Notes:
+   Note:
     This code is not currently used
 
 .seealso: `PetscSortReal()`, `PetscSortIntWithPermutation()`
@@ -1080,7 +1082,7 @@ PetscErrorCode PetscProcessTree(PetscInt n, const PetscBool mask[], const PetscI
 }
 
 /*@
-  PetscParallelSortedInt - Check whether an integer array, distributed over a communicator, is globally sorted.
+  PetscParallelSortedInt - Check whether a `PetscInt` array, distributed over a communicator, is globally sorted.
 
   Collective
 

@@ -1,7 +1,7 @@
 #include <../src/sys/classes/viewer/impls/vtk/vtkvimpl.h> /*I "petscviewer.h" I*/
 
 /*MC
-    PetscViewerVTKWriteFunction - functional form used to provide writer to the PetscViewerVTK
+    PetscViewerVTKWriteFunction - functional form used to provide a writer to the `PETSCVIEWERVTK`
 
      Synopsis:
      #include <petscviewer.h>
@@ -22,20 +22,20 @@ M*/
    Collective
 
    Input Parameters:
-+ viewer - VTK viewer
-. dm - DM on which Vec lives
-. PetscViewerVTKWriteFunction - function to write this Vec
-. fieldnum - which field of the DM to write (PETSC_DEFAULT if the whle vector should be written)
-. fieldtype - Either PETSC_VTK_POINT_FIELD or PETSC_VTK_CELL_FIELD
-. checkdm - whether to check for identical dm arguments as fields are added
-- vec - Vec from which to write
++  viewer - `PETSCVIEWERVTK`
+.  dm - `DM` on which `Vec` lives
+.  PetscViewerVTKWriteFunction - function to write this `Vec`
+.  fieldnum - which field of the DM to write (`PETSC_DEFAULT` if the whle vector should be written)
+.  fieldtype - Either `PETSC_VTK_POINT_FIELD` or `PETSC_VTK_CELL_FIELD`
+.  checkdm - whether to check for identical dm arguments as fields are added
+-  vec - `Vec` from which to write
 
    Note:
-   This routine keeps exclusive ownership of the Vec. The caller should not use or destroy the Vec after adding it.
+   This routine keeps exclusive ownership of the `Vec`. The caller should not use or destroy the `Vec` after calling it.
 
    Level: developer
 
-.seealso: `PetscViewerVTKOpen()`, `DMDAVTKWriteAll()`, `PetscViewerVTKWriteFunction`, `PetscViewerVTKGetDM()`
+.seealso: `PETSCVIEWERVTK`, `PetscViewerVTKOpen()`, `DMDAVTKWriteAll()`, `PetscViewerVTKWriteFunction`, `PetscViewerVTKGetDM()`
 @*/
 PetscErrorCode PetscViewerVTKAddField(PetscViewer viewer, PetscObject dm, PetscErrorCode (*PetscViewerVTKWriteFunction)(PetscObject, PetscViewer), PetscInt fieldnum, PetscViewerVTKFieldType fieldtype, PetscBool checkdm, PetscObject vec) {
   PetscFunctionBegin;
@@ -47,17 +47,17 @@ PetscErrorCode PetscViewerVTKAddField(PetscViewer viewer, PetscObject dm, PetscE
 }
 
 /*@C
-   PetscViewerVTKGetDM - get the DM associated with the viewer
+   PetscViewerVTKGetDM - get the `DM` associated with the `PETSCVIEWERVTK` viewer
 
    Collective
 
    Input Parameters:
-+ viewer - VTK viewer
-- dm - DM associated with the viewer (as PetscObject)
++  viewer - `PETSCVIEWERVTK` viewer
+-  dm - `DM` associated with the viewer (as PetscObject)
 
    Level: developer
 
-.seealso: `PetscViewerVTKOpen()`, `DMDAVTKWriteAll()`, `PetscViewerVTKWriteFunction`, `PetscViewerVTKAddField()`
+.seealso: `PETSCVIEWERVTK`, `PetscViewerVTKOpen()`, `DMDAVTKWriteAll()`, `PetscViewerVTKWriteFunction`, `PetscViewerVTKAddField()`
 @*/
 PetscErrorCode PetscViewerVTKGetDM(PetscViewer viewer, PetscObject *dm) {
   PetscFunctionBegin;
@@ -192,12 +192,12 @@ PetscErrorCode PetscViewerVTKGetDM_VTK(PetscViewer viewer, PetscObject *dm) {
 /*MC
    PETSCVIEWERVTK - A viewer that writes to a VTK file
 
+  Level: beginner
+
 .seealso: `PetscViewerVTKOpen()`, `PetscViewerHDF5Open()`, `PetscViewerStringSPrintf()`, `PetscViewerSocketOpen()`, `PetscViewerDrawOpen()`, `PETSCVIEWERSOCKET`,
           `PetscViewerCreate()`, `PetscViewerASCIIOpen()`, `PetscViewerBinaryOpen()`, `PETSCVIEWERBINARY`, `PETSCVIEWERDRAW`, `PETSCVIEWERSTRING`,
           `PetscViewerMatlabOpen()`, `VecView()`, `DMView()`, `PetscViewerMatlabPutArray()`, `PETSCVIEWERASCII`, `PETSCVIEWERMATLAB`,
           `PetscViewerFileSetName()`, `PetscViewerFileSetMode()`, `PetscViewerFormat`, `PetscViewerType`, `PetscViewerSetType()`
-
-  Level: beginner
 M*/
 
 PETSC_EXTERN PetscErrorCode PetscViewerCreate_VTK(PetscViewer v) {
@@ -222,7 +222,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_VTK(PetscViewer v) {
 }
 
 /*@C
-   PetscViewerVTKOpen - Opens a file for VTK output.
+   PetscViewerVTKOpen - Opens a `PETSCVIEWERVTK` viewer file.
 
    Collective
 
@@ -230,19 +230,16 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_VTK(PetscViewer v) {
 +  comm - MPI communicator
 .  name - name of file
 -  type - type of file
-$    FILE_MODE_WRITE - create new file for binary output
-$    FILE_MODE_READ - open existing file for binary input (not currently supported)
-$    FILE_MODE_APPEND - open existing file for binary output (not currently supported)
+$    `FILE_MODE_WRITE` - create new file for binary output
+$    `FILE_MODE_READ` - open existing file for binary input (not currently supported)
+$    `FILE_MODE_APPEND` - open existing file for binary output (not currently supported)
 
    Output Parameter:
-.  vtk - PetscViewer for VTK input/output to use with the specified file
+.  vtk - `PetscViewer` for VTK input/output to use with the specified file
 
    Level: beginner
 
-   Note:
-   This PetscViewer should be destroyed with PetscViewerDestroy().
-
-.seealso: `PetscViewerASCIIOpen()`, `PetscViewerPushFormat()`, `PetscViewerDestroy()`,
+.seealso: `PETSCVIEWERVTK`, `PetscViewerASCIIOpen()`, `PetscViewerPushFormat()`, `PetscViewerDestroy()`,
           `VecView()`, `MatView()`, `VecLoad()`, `MatLoad()`,
           `PetscFileMode`, `PetscViewer`
 @*/
@@ -258,7 +255,7 @@ PetscErrorCode PetscViewerVTKOpen(MPI_Comm comm, const char name[], PetscFileMod
 /*@C
    PetscViewerVTKFWrite - write binary data preceded by 32-bit int length (in bytes), does not do byte swapping.
 
-   Logically collective on PetscViewer
+   Logically collective on viewer
 
    Input Parameters:
 +  viewer - logically collective viewer, data written from rank 0
@@ -269,10 +266,10 @@ PetscErrorCode PetscViewerVTKOpen(MPI_Comm comm, const char name[], PetscFileMod
 
    Level: developer
 
-   Notes:
-    If PetscScalar is __float128 then the binary files are written in double precision
+   Note:
+    If `PetscScalar` is `__float128` then the binary files are written in double precision
 
-.seealso: `DMDAVTKWriteAll()`, `DMPlexVTKWriteAll()`, `PetscViewerPushFormat()`, `PetscViewerVTKOpen()`, `PetscBinaryWrite()`
+.seealso: `PETSCVIEWERVTK`, `DMDAVTKWriteAll()`, `DMPlexVTKWriteAll()`, `PetscViewerPushFormat()`, `PetscViewerVTKOpen()`, `PetscBinaryWrite()`
 @*/
 PetscErrorCode PetscViewerVTKFWrite(PetscViewer viewer, FILE *fp, const void *data, PetscInt n, MPI_Datatype dtype) {
   PetscMPIInt  rank;

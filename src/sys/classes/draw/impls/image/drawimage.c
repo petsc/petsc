@@ -544,13 +544,13 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_Image(PetscDraw draw) {
 }
 
 /*@C
-   PetscDrawOpenImage - Opens an image for use with the PetscDraw routines.
+   PetscDrawOpenImage - Opens an image for use with the `PetscDraw` routines.
 
    Collective
 
    Input Parameters:
 +  comm - the communicator that will share image
--  filename - optional name of the file
+-  filename - optional name of the file where the image will be stored
 -  w, h - the image width and height in pixels
 
    Output Parameters:
@@ -558,7 +558,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_Image(PetscDraw draw) {
 
    Level: beginner
 
-.seealso: `PetscDrawSetSave()`, `PetscDrawSetFromOptions()`, `PetscDrawCreate()`, `PetscDrawDestroy()`
+.seealso: `PetscDraw`, `PETSC_DRAW_IMAGE`, `PETSC_DRAW_X`, `PetscDrawSetSave()`, `PetscDrawSetFromOptions()`, `PetscDrawCreate()`, `PetscDrawDestroy()`
 @*/
 PetscErrorCode PetscDrawOpenImage(MPI_Comm comm, const char filename[], int w, int h, PetscDraw *draw) {
   PetscFunctionBegin;
