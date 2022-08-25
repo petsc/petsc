@@ -203,7 +203,7 @@ checksource:
     name: "$CI_JOB_NAME"
     when: always
     paths:
-    - arch-*/lib/petsc/conf/*.diff
+    - arch-*/lib/petsc/conf/*.patch
     expire_in: 4 days
 
 pause-for-approval:

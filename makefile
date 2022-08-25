@@ -250,8 +250,7 @@ check_usermakefile:
 	-@echo "Completed compile with user makefile"
 
 checkgitclean:
-	@clean=`git status -s --untracked-files=no | wc -l`;\
-          if [ $$clean != 0 ]; then \
+	@if ! git diff --quiet; then \
            echo "The repository has uncommited files, cannot run checkclangformat" ;\
            git status -s --untracked-files=no ;\
            false;\
@@ -260,17 +259,24 @@ checkgitclean:
 checkclangformatversion:
 	@version=`clang-format --version | cut -d" " -f3 | cut -d"." -f 1` ;\
          if [ "$$version" == "version" ]; then version=`clang-format --version | cut -d" " -f4 | cut -d"." -f 1`; fi;\
-         if [ $$version -lt 14 ]; then echo "clang-format version is too old" ;false ; fi
+         if [ $$version != 14 ]; then echo "Require clang-format version 14! Currently used clang-format version is $$version" ;false ; fi
 
 # Check that all the source code in the repository satisfies the .clang_format
 checkclangformat: checkclangformatversion checkgitclean clangformat
-	@clean=`git status -s --untracked-files=no | wc -l`;\
-          if [ "$$clean" != "0" ]; then \
-           git diff >  ${PETSC_ARCH}/lib/petsc/conf/checkclangformat.diff ;\
-           echo "The current commit has source code formatting problems, check ${PETSC_ARCH}/lib/petsc/conf/checkclangformat.diff" ;\
-           git status -s --untracked-files=no ;\
-           false;\
-          fi;
+	@if ! git diff --quiet; then \
+          printf "The current commit has source code formatting problems\n" ;\
+          if [ -z "${CI_PIPELINE_ID}"  ]; then \
+            printf "Please run 'git diff' to check\n"; \
+            git diff --stat; \
+          else \
+            git diff --patch-with-stat >  ${PETSC_ARCH}/lib/petsc/conf/checkclangformat.patch; \
+            git diff --patch-with-stat --color=always | head -1000; \
+            if [ `wc -l < ${PETSC_ARCH}/lib/petsc/conf/checkclangformat.patch` -gt 1000 ]; then \
+              printf "The diff has been trimmed, check ${PETSC_ARCH}/lib/petsc/conf/checkclangformat.patch (in CI artifacts) for all changes\n"; \
+            fi;\
+          fi;\
+          false;\
+        fi;
 
 # Compare ABI/API of two versions of PETSc library with the old one defined by PETSC_{DIR,ARCH}_ABI_OLD
 abitest:
