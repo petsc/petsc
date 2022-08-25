@@ -136,8 +136,8 @@ exec-name``.
 - Add ``MatTransposeSymbolic()``
 - Add ``MatShellSetContextDestroy()`` and add internal refrence counting for user defined ``MatShell`` context data
 - Add ``MatShellSetContextDestroy()`` and add internal reference counting for user defined ``MatShell`` context data
-- Change ``MATTRANPOSEMAT`` to ``MATTRANPOSE``
-- Add ``MATHERMITIANTRANSPOSE``
+- Change ``MATTRANPOSEMAT`` to ``MATTRANPOSEVIRTUAL``
+- Add ``MATHERMITIANTRANSPOSEVIRTUAL``
 
 .. rubric:: MatCoarsen:
 

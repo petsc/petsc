@@ -421,7 +421,7 @@ int main(int argc, char **args) {
         suffix: 4f
         nsize: 4
         requires: hpddm slepc suitesparse defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
-        filter: sed "s/(1,0) : type=mpiaij/(1,0) : type=transpose/g"
+        filter: sed -e "s/(1,0) : type=mpiaij/(1,0) : type=transpose/g" -e "s/hermitiantranspose/transpose/g"
         args: -solve_augmented -ksp_type gmres -ksp_view -explicit_transpose {{false true}shared output}
         args: -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_precondition self -fieldsplit_0_pc_type jacobi -fieldsplit_ksp_type preonly
         args: -prefix_push fieldsplit_1_ -pc_type hpddm -pc_hpddm_define_subdomains -pc_hpddm_levels_1_eps_nev 20 -pc_hpddm_levels_1_st_share_sub_ksp -pc_hpddm_levels_1_sub_pc_type qr -prefix_pop

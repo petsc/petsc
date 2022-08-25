@@ -10,21 +10,21 @@ static PetscErrorCode MatTransposeAXPY_Private(Mat Y, PetscScalar a, Mat X, MatS
   if (f) {
     PetscCall(MatTransposeGetMat(T, &A));
     if (T == X) {
-      PetscCall(PetscInfo(NULL, "Explicitly transposing X of type MATTRANSPOSE to perform MatAXPY()\n"));
+      PetscCall(PetscInfo(NULL, "Explicitly transposing X of type MATTRANSPOSEVIRTUAL to perform MatAXPY()\n"));
       PetscCall(MatTranspose(A, MAT_INITIAL_MATRIX, &F));
       A = Y;
     } else {
-      PetscCall(PetscInfo(NULL, "Transposing X because Y of type MATTRANSPOSE to perform MatAXPY()\n"));
+      PetscCall(PetscInfo(NULL, "Transposing X because Y of type MATTRANSPOSEVIRTUAL to perform MatAXPY()\n"));
       PetscCall(MatTranspose(X, MAT_INITIAL_MATRIX, &F));
     }
   } else {
     PetscCall(MatHermitianTransposeGetMat(T, &A));
     if (T == X) {
-      PetscCall(PetscInfo(NULL, "Explicitly Hermitian transposing X of type MATTRANSPOSE to perform MatAXPY()\n"));
+      PetscCall(PetscInfo(NULL, "Explicitly Hermitian transposing X of type MATHERITIANTRANSPOSEVIRTUAL to perform MatAXPY()\n"));
       PetscCall(MatHermitianTranspose(A, MAT_INITIAL_MATRIX, &F));
       A = Y;
     } else {
-      PetscCall(PetscInfo(NULL, "Hermitian transposing X because Y of type MATTRANSPOSE to perform MatAXPY()\n"));
+      PetscCall(PetscInfo(NULL, "Hermitian transposing X because Y of type MATHERITIANTRANSPOSEVIRTUAL to perform MatAXPY()\n"));
       PetscCall(MatHermitianTranspose(X, MAT_INITIAL_MATRIX, &F));
     }
   }
@@ -54,7 +54,6 @@ static PetscErrorCode MatTransposeAXPY_Private(Mat Y, PetscScalar a, Mat X, MatS
 PetscErrorCode MatAXPY(Mat Y, PetscScalar a, Mat X, MatStructure str) {
   PetscInt  M1, M2, N1, N2;
   PetscInt  m1, m2, n1, n2;
-  MatType   t1, t2;
   PetscBool sametype, transpose;
 
   PetscFunctionBegin;
@@ -75,18 +74,16 @@ PetscErrorCode MatAXPY(Mat Y, PetscScalar a, Mat X, MatStructure str) {
     PetscCall(MatScale(Y, 1.0 + a));
     PetscFunctionReturn(0);
   }
-  PetscCall(MatGetType(X, &t1));
-  PetscCall(MatGetType(Y, &t2));
-  PetscCall(PetscStrcmp(t1, t2, &sametype));
+  PetscCall(PetscObjectObjectTypeCompare((PetscObject)X, (PetscObject)Y, &sametype));
   PetscCall(PetscLogEventBegin(MAT_AXPY, Y, 0, 0, 0));
   if (Y->ops->axpy && (sametype || X->ops->axpy == Y->ops->axpy)) {
     PetscUseTypeMethod(Y, axpy, a, X, str);
   } else {
-    PetscCall(PetscStrcmp(t1, MATTRANSPOSE, &transpose));
+    PetscCall(PetscObjectTypeCompareAny((PetscObject)X, &transpose, MATTRANSPOSEVIRTUAL, MATHERMITIANTRANSPOSEVIRTUAL, ""));
     if (transpose) {
       PetscCall(MatTransposeAXPY_Private(Y, a, X, str, X));
     } else {
-      PetscCall(PetscStrcmp(t2, MATTRANSPOSE, &transpose));
+      PetscCall(PetscObjectTypeCompareAny((PetscObject)Y, &transpose, MATTRANSPOSEVIRTUAL, MATHERMITIANTRANSPOSEVIRTUAL, ""));
       if (transpose) {
         PetscCall(MatTransposeAXPY_Private(Y, a, X, str, Y));
       } else {

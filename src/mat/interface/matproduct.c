@@ -14,7 +14,7 @@
              -> Query MatProductSetFromOptions_Atype_Btype_Ctype_C(D) from A, B and C (in order)
              if found -> run the specific setup that must set the symbolic operation (these callbacks should never fail)
            if callback not found or no symbolic operation set
-             -> Query MatProductSetFromOptions_anytype_C(D) from A, B and C (in order) (e.g, matrices may have inner matrices like MATTRANSPOSE)
+             -> Query MatProductSetFromOptions_anytype_C(D) from A, B and C (in order) (e.g, matrices may have inner matrices like MATTRANSPOSEVIRTUAL)
            if dispatch found but combination still not present do
              -> check if B is dense and product type AtB or AB -> if true, basic looping of dense columns
              -> check if triple product (PtAP, RARt or ABC) -> if true, set the Basic routines
@@ -435,7 +435,7 @@ static PetscErrorCode MatProductSetFromOptions_Private(Mat mat) {
     if (f) PetscCall((*f)(mat));
 
     /* We may have found f but it did not succeed */
-    /* some matrices (i.e. MATTRANSPOSE, MATSHELL constructed from MatConvert), knows what to do with their inner matrices */
+    /* some matrices (i.e. MATTRANSPOSEVIRTUAL, MATSHELL constructed from MatConvert), knows what to do with their inner matrices */
     if (!mat->ops->productsymbolic) {
       PetscCall(PetscStrncpy(mtypes, "MatProductSetFromOptions_anytype_C", sizeof(mtypes)));
       PetscCall(PetscObjectQueryFunction((PetscObject)A, mtypes, &f));

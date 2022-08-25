@@ -833,7 +833,7 @@ PETSC_INTERN PetscErrorCode MatConvert_Nest_IS(Mat A, MatType type, MatReuse reu
       if (!nest[i][j]) continue;
 
       /* Nested matrices should be of type MATIS */
-      PetscCall(PetscObjectTypeCompare((PetscObject)nest[i][j], MATTRANSPOSE, &istrans[ij]));
+      PetscCall(PetscObjectTypeCompare((PetscObject)nest[i][j], MATTRANSPOSEVIRTUAL, &istrans[ij]));
       if (istrans[ij]) {
         Mat T, lT;
         PetscCall(MatTransposeGetMat(nest[i][j], &T));

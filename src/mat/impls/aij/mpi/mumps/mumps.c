@@ -1241,11 +1241,11 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A, Mat B, Mat X) {
     mumps->id.ICNTL(20) = 0; /* dense RHS */
   } else {                   /* sparse B */
     PetscCheck(X != B, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_IDN, "X and B must be different matrices");
-    PetscCall(PetscObjectTypeCompare((PetscObject)B, MATTRANSPOSE, &flgT));
+    PetscCall(PetscObjectTypeCompare((PetscObject)B, MATTRANSPOSEVIRTUAL, &flgT));
     if (flgT) { /* input B is transpose of actural RHS matrix,
                  because mumps requires sparse compressed COLUMN storage! See MatMatTransposeSolve_MUMPS() */
       PetscCall(MatTransposeGetMat(B, &Bt));
-    } else SETERRQ(PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_WRONG, "Matrix B must be MATTRANSPOSE matrix");
+    } else SETERRQ(PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_WRONG, "Matrix B must be MATTRANSPOSEVIRTUAL matrix");
     mumps->id.ICNTL(20) = 1; /* sparse RHS */
   }
 
@@ -2601,10 +2601,10 @@ PetscErrorCode MatMumpsGetInverse_MUMPS(Mat F, Mat spRHS) {
 
   PetscFunctionBegin;
   PetscValidPointer(spRHS, 2);
-  PetscCall(PetscObjectTypeCompare((PetscObject)spRHS, MATTRANSPOSE, &flg));
+  PetscCall(PetscObjectTypeCompare((PetscObject)spRHS, MATTRANSPOSEVIRTUAL, &flg));
   if (flg) {
     PetscCall(MatTransposeGetMat(spRHS, &Bt));
-  } else SETERRQ(PetscObjectComm((PetscObject)spRHS), PETSC_ERR_ARG_WRONG, "Matrix spRHS must be type MATTRANSPOSE matrix");
+  } else SETERRQ(PetscObjectComm((PetscObject)spRHS), PETSC_ERR_ARG_WRONG, "Matrix spRHS must be type MATTRANSPOSEVIRTUAL matrix");
 
   PetscCall(MatMumpsSetIcntl(F, 30, 1));
 
@@ -2656,7 +2656,7 @@ PetscErrorCode MatMumpsGetInverse_MUMPS(Mat F, Mat spRHS) {
 
    Input Parameters:
 +  F - the factored matrix obtained by calling `MatGetFactor()` from PETSc-MUMPS interface
--  spRHS - sequential sparse matrix in `MATTRANSPOSE` format holding specified indices in processor[0]
+-  spRHS - sequential sparse matrix in `MATTRANSPOSEVIRTUAL` format holding specified indices in processor[0]
 
   Output Parameter:
 . spRHS - requested entries of inverse of A

@@ -146,7 +146,7 @@ PetscErrorCode PetscObjectViewFromOptions(PetscObject obj, PetscObject bobj, con
 
    Level: intermediate
 
-.seealso: `PetscObject`, `VecGetType()`, `KSPGetType()`, `PCGetType()`, `SNESGetType()`, `PetscObjectBaseTypeCompare()`, `PetscObjectTypeCompareAny()`, `PetscObjectBaseTypeCompareAny()`
+.seealso: `PetscObject`, `VecGetType()`, `KSPGetType()`, `PCGetType()`, `SNESGetType()`, `PetscObjectBaseTypeCompare()`, `PetscObjectTypeCompareAny()`, `PetscObjectBaseTypeCompareAny()`, `PetscObjectObjectTypeCompare()`
 @*/
 PetscErrorCode PetscObjectTypeCompare(PetscObject obj, const char type_name[], PetscBool *same) {
   PetscFunctionBegin;
@@ -159,6 +159,32 @@ PetscErrorCode PetscObjectTypeCompare(PetscObject obj, const char type_name[], P
     PetscValidCharPointer(type_name, 2);
     PetscCall(PetscStrcmp((char *)(obj->type_name), type_name, same));
   }
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   PetscObjectObjectTypeCompare - Determines whether two PETSc objects are of the same type
+
+   Logically Collective
+
+   Input Parameters:
++  obj1 - any PETSc object, for example a Vec, Mat or KSP.
+-  obj2 - anther PETSc object
+
+   Output Parameter:
+.  same - PETSC_TRUE if they are the same, else PETSC_FALSE
+
+   Level: intermediate
+
+.seealso: `PetscObjectTypeCompare()`, `VecGetType()`, `KSPGetType()`, `PCGetType()`, `SNESGetType()`, `PetscObjectBaseTypeCompare()`, `PetscObjectTypeCompareAny()`, `PetscObjectBaseTypeCompareAny()`
+
+@*/
+PetscErrorCode PetscObjectObjectTypeCompare(PetscObject obj1, PetscObject obj2, PetscBool *same) {
+  PetscFunctionBegin;
+  PetscValidBoolPointer(same, 3);
+  PetscValidHeader(obj1, 1);
+  PetscValidHeader(obj2, 2);
+  PetscCall(PetscStrcmp((char *)(obj1->type_name), (char *)(obj2->type_name), same));
   PetscFunctionReturn(0);
 }
 

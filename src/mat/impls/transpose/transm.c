@@ -97,7 +97,6 @@ PetscErrorCode MatHasOperation_Transpose(Mat mat, MatOperation op, PetscBool *ha
   PetscFunctionReturn(0);
 }
 
-/* used by hermitian transpose */
 PETSC_INTERN PetscErrorCode MatProductSetFromOptions_Transpose(Mat D) {
   Mat            A, B, C, Ain, Bin, Cin;
   PetscBool      Aistrans, Bistrans, Cistrans;
@@ -109,30 +108,30 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_Transpose(Mat D) {
   A = D->product->A;
   B = D->product->B;
   C = D->product->C;
-  PetscCall(PetscObjectTypeCompare((PetscObject)A, MATTRANSPOSE, &Aistrans));
-  PetscCall(PetscObjectTypeCompare((PetscObject)B, MATTRANSPOSE, &Bistrans));
-  PetscCall(PetscObjectTypeCompare((PetscObject)C, MATTRANSPOSE, &Cistrans));
+  PetscCall(PetscObjectTypeCompare((PetscObject)A, MATTRANSPOSEVIRTUAL, &Aistrans));
+  PetscCall(PetscObjectTypeCompare((PetscObject)B, MATTRANSPOSEVIRTUAL, &Bistrans));
+  PetscCall(PetscObjectTypeCompare((PetscObject)C, MATTRANSPOSEVIRTUAL, &Cistrans));
   PetscCheck(Aistrans || Bistrans || Cistrans, PetscObjectComm((PetscObject)D), PETSC_ERR_PLIB, "This should not happen");
   Atrans = 0;
   Ain    = A;
   while (Aistrans) {
     Atrans++;
     PetscCall(MatTransposeGetMat(Ain, &Ain));
-    PetscCall(PetscObjectTypeCompare((PetscObject)Ain, MATTRANSPOSE, &Aistrans));
+    PetscCall(PetscObjectTypeCompare((PetscObject)Ain, MATTRANSPOSEVIRTUAL, &Aistrans));
   }
   Btrans = 0;
   Bin    = B;
   while (Bistrans) {
     Btrans++;
     PetscCall(MatTransposeGetMat(Bin, &Bin));
-    PetscCall(PetscObjectTypeCompare((PetscObject)Bin, MATTRANSPOSE, &Bistrans));
+    PetscCall(PetscObjectTypeCompare((PetscObject)Bin, MATTRANSPOSEVIRTUAL, &Bistrans));
   }
   Ctrans = 0;
   Cin    = C;
   while (Cistrans) {
     Ctrans++;
     PetscCall(MatTransposeGetMat(Cin, &Cin));
-    PetscCall(PetscObjectTypeCompare((PetscObject)Cin, MATTRANSPOSE, &Cistrans));
+    PetscCall(PetscObjectTypeCompare((PetscObject)Cin, MATTRANSPOSEVIRTUAL, &Cistrans));
   }
   Atrans = Atrans % 2;
   Btrans = Btrans % 2;
@@ -238,19 +237,19 @@ PetscErrorCode MatTransposeGetMat_Transpose(Mat A, Mat *M) {
 }
 
 /*@
-      MatTransposeGetMat - Gets the `Mat` object stored inside a `MATTRANSPOSE`
+      MatTransposeGetMat - Gets the `Mat` object stored inside a `MATTRANSPOSEVIRTUAL`
 
    Logically collective on A
 
    Input Parameter:
-.   A  - the `MATTRANSPOSE` matrix
+.   A  - the `MATTRANSPOSEVIRTUAL` matrix
 
    Output Parameter:
 .   M - the matrix object stored inside A
 
    Level: intermediate
 
-.seealso: `MATTRANSPOSE`, `MatCreateTranspose()`
+.seealso: `MATTRANSPOSEVIRTUAL`, `MatCreateTranspose()`
 @*/
 PetscErrorCode MatTransposeGetMat(Mat A, Mat *M) {
   PetscFunctionBegin;
@@ -262,15 +261,15 @@ PetscErrorCode MatTransposeGetMat(Mat A, Mat *M) {
 }
 
 /*MC
-   MATTRANSPOSE - "transpose" - A matrix type that represents a virtual transpose of a matrix
+   MATTRANSPOSEVIRTUAL - "transpose" - A matrix type that represents a virtual transpose of a matrix
 
   Level: advanced
 
-.seealso: `MATHERMITIANTRANSPOSE`, `Mat`, `MatCreateHermitianTranspose()`, `MatCreateTranspose()`
+.seealso: `MATHERMITIANTRANSPOSEVIRTUAL`, `Mat`, `MatCreateHermitianTranspose()`, `MatCreateTranspose()`
 M*/
 
 /*@
-      MatCreateTranspose - Creates a new matrix `MATTRANSPOSE` object that behaves like A'
+      MatCreateTranspose - Creates a new matrix `MATTRANSPOSEVIRTUAL` object that behaves like A'
 
    Collective on A
 
@@ -287,7 +286,7 @@ M*/
           object performs the matrix-vector product by using the `MatMultTranspose()` on
           the original matrix
 
-.seealso: `MATTRANSPOSE`, `MatCreateNormal()`, `MatMult()`, `MatMultTranspose()`, `MatCreate()`
+.seealso: `MATTRANSPOSEVIRTUAL`, `MatCreateNormal()`, `MatMult()`, `MatMultTranspose()`, `MatCreate()`
 @*/
 PetscErrorCode MatCreateTranspose(Mat A, Mat *N) {
   PetscInt       m, n;
@@ -300,7 +299,7 @@ PetscErrorCode MatCreateTranspose(Mat A, Mat *N) {
   PetscCall(MatSetSizes(*N, n, m, PETSC_DECIDE, PETSC_DECIDE));
   PetscCall(PetscLayoutSetUp((*N)->rmap));
   PetscCall(PetscLayoutSetUp((*N)->cmap));
-  PetscCall(PetscObjectChangeTypeName((PetscObject)*N, MATTRANSPOSE));
+  PetscCall(PetscObjectChangeTypeName((PetscObject)*N, MATTRANSPOSEVIRTUAL));
 
   PetscCall(PetscNewLog(*N, &Na));
   (*N)->data = (void *)Na;

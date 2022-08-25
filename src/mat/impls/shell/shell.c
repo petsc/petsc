@@ -1999,9 +1999,9 @@ PetscErrorCode MatShellGetOperation(Mat mat, MatOperation op, void (**g)(void)) 
     Level: developer
 
     Developer Note:
-    In the future, we should allow the object type name to be changed still using the `MATSHELL` data structure for other matrices (i.e. `MATTRANSPOSE`, `MATSCHURCOMPLEMENT` etc)
+    In the future, we should allow the object type name to be changed still using the `MATSHELL` data structure for other matrices (i.e. `MATTRANSPOSEVIRTUAL`, `MATSCHURCOMPLEMENT` etc)
 
-.seealso: `MATSHELL`, `MATMFFD`, `MatCreateShell()`, `MATTRANSPOSE`, `MATSCHURCOMPLEMENT`
+.seealso: `MATSHELL`, `MATMFFD`, `MatCreateShell()`, `MATTRANSPOSEVIRTUAL`, `MATSCHURCOMPLEMENT`
 @*/
 PetscErrorCode MatIsShell(Mat mat, PetscBool *flg) {
   PetscFunctionBegin;

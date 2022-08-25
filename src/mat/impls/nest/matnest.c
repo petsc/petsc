@@ -1708,13 +1708,22 @@ PetscErrorCode MatConvert_Nest_SeqAIJ_fast(Mat A, MatType newtype, MatReuse reus
         PetscInt    *nii, *njj, nnr;
         PetscBool    istrans;
 
-        PetscCall(PetscObjectTypeCompare((PetscObject)B, MATTRANSPOSE, &istrans));
+        PetscCall(PetscObjectTypeCompare((PetscObject)B, MATTRANSPOSEVIRTUAL, &istrans));
         if (istrans) {
           Mat Bt;
 
           PetscCall(MatTransposeGetMat(B, &Bt));
           PetscCall(MatTranspose(Bt, MAT_INITIAL_MATRIX, &trans[i * nest->nc + j]));
           B = trans[i * nest->nc + j];
+        } else {
+          PetscCall(PetscObjectTypeCompare((PetscObject)B, MATHERMITIANTRANSPOSEVIRTUAL, &istrans));
+          if (istrans) {
+            Mat Bt;
+
+            PetscCall(MatHermitianTransposeGetMat(B, &Bt));
+            PetscCall(MatHermitianTranspose(Bt, MAT_INITIAL_MATRIX, &trans[i * nest->nc + j]));
+            B = trans[i * nest->nc + j];
+          }
         }
         PetscCall(MatGetRowIJ(B, 0, PETSC_FALSE, PETSC_FALSE, &nnr, (const PetscInt **)&nii, (const PetscInt **)&njj, &done));
         PetscCheck(done, PetscObjectComm((PetscObject)B), PETSC_ERR_PLIB, "MatGetRowIJ");
@@ -1844,7 +1853,7 @@ PETSC_INTERN PetscErrorCode MatAXPY_Dense_Nest(Mat Y, PetscScalar a, Mat X) {
       PetscInt        bm, br;
       const PetscInt *bmindices;
       if (!B) continue;
-      PetscCall(PetscObjectTypeCompare((PetscObject)B, MATTRANSPOSE, &flg));
+      PetscCall(PetscObjectTypeCompareAny((PetscObject)B, &flg, MATTRANSPOSEVIRTUAL, MATHERMITIANTRANSPOSEVIRTUAL, ""));
       if (flg) {
         PetscTryMethod(B, "MatTransposeGetMat_C", (Mat, Mat *), (B, &D));
         PetscTryMethod(B, "MatHermitianTransposeGetMat_C", (Mat, Mat *), (B, &D));
@@ -1916,12 +1925,20 @@ PetscErrorCode MatConvert_Nest_AIJ(Mat A, MatType newtype, MatReuse reuse, Mat *
           if (!fast) {
             PetscBool istrans;
 
-            PetscCall(PetscObjectTypeCompare((PetscObject)B, MATTRANSPOSE, &istrans));
+            PetscCall(PetscObjectTypeCompare((PetscObject)B, MATTRANSPOSEVIRTUAL, &istrans));
             if (istrans) {
               Mat Bt;
 
               PetscCall(MatTransposeGetMat(B, &Bt));
               PetscCall(PetscObjectTypeCompare((PetscObject)Bt, MATSEQAIJ, &fast));
+            } else {
+              PetscCall(PetscObjectTypeCompare((PetscObject)B, MATHERMITIANTRANSPOSEVIRTUAL, &istrans));
+              if (istrans) {
+                Mat Bt;
+
+                PetscCall(MatHermitianTransposeGetMat(B, &Bt));
+                PetscCall(PetscObjectTypeCompare((PetscObject)Bt, MATSEQAIJ, &fast));
+              }
             }
           }
         }
@@ -2001,7 +2018,7 @@ PetscErrorCode MatConvert_Nest_AIJ(Mat A, MatType newtype, MatReuse reuse, Mat *
         sub_dnnz[k] = 0;
         sub_onnz[k] = 0;
       }
-      PetscCall(PetscObjectTypeCompare((PetscObject)B, MATTRANSPOSE, &flg));
+      PetscCall(PetscObjectTypeCompare((PetscObject)B, MATTRANSPOSEVIRTUAL, &flg));
       if (flg) {
         PetscTryMethod(B, "MatTransposeGetMat_C", (Mat, Mat *), (B, &D));
         PetscTryMethod(B, "MatHermitianTransposeGetMat_C", (Mat, Mat *), (B, &D));

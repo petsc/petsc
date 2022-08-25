@@ -5,6 +5,106 @@ typedef struct {
   Mat A;
 } Mat_HT;
 
+PETSC_INTERN PetscErrorCode MatProductSetFromOptions_HermitianTranspose(Mat D) {
+  Mat            A, B, C, Ain, Bin, Cin;
+  PetscBool      Aistrans, Bistrans, Cistrans;
+  PetscInt       Atrans, Btrans, Ctrans;
+  MatProductType ptype;
+
+  PetscFunctionBegin;
+  MatCheckProduct(D, 1);
+  A = D->product->A;
+  B = D->product->B;
+  C = D->product->C;
+  PetscCall(PetscObjectTypeCompare((PetscObject)A, MATHERMITIANTRANSPOSEVIRTUAL, &Aistrans));
+  PetscCall(PetscObjectTypeCompare((PetscObject)B, MATHERMITIANTRANSPOSEVIRTUAL, &Bistrans));
+  PetscCall(PetscObjectTypeCompare((PetscObject)C, MATHERMITIANTRANSPOSEVIRTUAL, &Cistrans));
+  PetscCheck(Aistrans || Bistrans || Cistrans, PetscObjectComm((PetscObject)D), PETSC_ERR_PLIB, "This should not happen");
+  Atrans = 0;
+  Ain    = A;
+  while (Aistrans) {
+    Atrans++;
+    PetscCall(MatHermitianTransposeGetMat(Ain, &Ain));
+    PetscCall(PetscObjectTypeCompare((PetscObject)Ain, MATHERMITIANTRANSPOSEVIRTUAL, &Aistrans));
+  }
+  Btrans = 0;
+  Bin    = B;
+  while (Bistrans) {
+    Btrans++;
+    PetscCall(MatHermitianTransposeGetMat(Bin, &Bin));
+    PetscCall(PetscObjectTypeCompare((PetscObject)Bin, MATHERMITIANTRANSPOSEVIRTUAL, &Bistrans));
+  }
+  Ctrans = 0;
+  Cin    = C;
+  while (Cistrans) {
+    Ctrans++;
+    PetscCall(MatHermitianTransposeGetMat(Cin, &Cin));
+    PetscCall(PetscObjectTypeCompare((PetscObject)Cin, MATHERMITIANTRANSPOSEVIRTUAL, &Cistrans));
+  }
+  Atrans = Atrans % 2;
+  Btrans = Btrans % 2;
+  Ctrans = Ctrans % 2;
+  ptype  = D->product->type; /* same product type by default */
+  if (Ain->symmetric == PETSC_BOOL3_TRUE) Atrans = 0;
+  if (Bin->symmetric == PETSC_BOOL3_TRUE) Btrans = 0;
+  if (Cin && Cin->symmetric == PETSC_BOOL3_TRUE) Ctrans = 0;
+
+  if (Atrans || Btrans || Ctrans) {
+    if (PetscDefined(USE_COMPLEX)) SETERRQ(PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "No support for complex Hermitian transpose matrices");
+    ptype = MATPRODUCT_UNSPECIFIED;
+    switch (D->product->type) {
+    case MATPRODUCT_AB:
+      if (Atrans && Btrans) { /* At * Bt we do not have support for this */
+        /* TODO custom implementation ? */
+      } else if (Atrans) { /* At * B */
+        ptype = MATPRODUCT_AtB;
+      } else { /* A * Bt */
+        ptype = MATPRODUCT_ABt;
+      }
+      break;
+    case MATPRODUCT_AtB:
+      if (Atrans && Btrans) { /* A * Bt */
+        ptype = MATPRODUCT_ABt;
+      } else if (Atrans) { /* A * B */
+        ptype = MATPRODUCT_AB;
+      } else { /* At * Bt we do not have support for this */
+        /* TODO custom implementation ? */
+      }
+      break;
+    case MATPRODUCT_ABt:
+      if (Atrans && Btrans) { /* At * B */
+        ptype = MATPRODUCT_AtB;
+      } else if (Atrans) { /* At * Bt we do not have support for this */
+        /* TODO custom implementation ? */
+      } else { /* A * B */
+        ptype = MATPRODUCT_AB;
+      }
+      break;
+    case MATPRODUCT_PtAP:
+      if (Atrans) { /* PtAtP */
+        /* TODO custom implementation ? */
+      } else { /* RARt */
+        ptype = MATPRODUCT_RARt;
+      }
+      break;
+    case MATPRODUCT_RARt:
+      if (Atrans) { /* RAtRt */
+        /* TODO custom implementation ? */
+      } else { /* PtAP */
+        ptype = MATPRODUCT_PtAP;
+      }
+      break;
+    case MATPRODUCT_ABC:
+      /* TODO custom implementation ? */
+      break;
+    default: SETERRQ(PetscObjectComm((PetscObject)D), PETSC_ERR_SUP, "ProductType %s is not supported", MatProductTypes[D->product->type]);
+    }
+  }
+  PetscCall(MatProductReplaceMats(Ain, Bin, Cin, D));
+  PetscCall(MatProductSetType(D, ptype));
+  PetscCall(MatProductSetFromOptions(D));
+  PetscFunctionReturn(0);
+}
 PetscErrorCode MatMult_HT(Mat N, Vec x, Vec y) {
   Mat_HT *Na = (Mat_HT *)N->data;
 
@@ -43,9 +143,9 @@ PetscErrorCode MatDestroy_HT(Mat N) {
   PetscFunctionBegin;
   PetscCall(MatDestroy(&Na->A));
   PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatHermitianTransposeGetMat_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatProductSetFromOptions_anytype_C", NULL));
 #if !defined(PETSC_USE_COMPLEX)
   PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatTransposeGetMat_C", NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatProductSetFromOptions_anytype_C", NULL));
 #endif
   PetscCall(PetscFree(N->data));
   PetscFunctionReturn(0);
@@ -92,19 +192,19 @@ PetscErrorCode MatHermitianTransposeGetMat_HT(Mat N, Mat *M) {
 }
 
 /*@
-      MatHermitianTransposeGetMat - Gets the `Mat` object stored inside a `MATHERMITIANTRANSPOSE`
+      MatHermitianTransposeGetMat - Gets the `Mat` object stored inside a `MATHERMITIANTRANSPOSEVIRTUAL`
 
    Logically collective on Mat
 
    Input Parameter:
-.   A  - the `MATHERMITIANTRANSPOSE` matrix
+.   A  - the `MATHERMITIANTRANSPOSEVIRTUAL` matrix
 
    Output Parameter:
 .   M - the matrix object stored inside A
 
    Level: intermediate
 
-.seealso: `MATHERMITIANTRANSPOSE`, `MatCreateHermitianTranspose()`
+.seealso: `MATHERMITIANTRANSPOSEVIRTUAL`, `MatCreateHermitianTranspose()`
 @*/
 PetscErrorCode MatHermitianTransposeGetMat(Mat A, Mat *M) {
   PetscFunctionBegin;
@@ -150,15 +250,15 @@ PetscErrorCode MatConvert_HT(Mat A, MatType newtype, MatReuse reuse, Mat *newmat
 }
 
 /*MC
-   MATHERMITIANTRANSPOSE - "hermitiantranspose" - A matrix type that represents a virtual transpose of a matrix
+   MATHERMITIANTRANSPOSEVIRTUAL - "hermitiantranspose" - A matrix type that represents a virtual transpose of a matrix
 
   Level: advanced
 
-.seealso: `MATTRANSPOSE`, `Mat`, `MatCreateHermitianTranspose()`, `MatCreateTranspose()`
+.seealso: `MATTRANSPOSEVIRTUAL`, `Mat`, `MatCreateHermitianTranspose()`, `MatCreateTranspose()`
 M*/
 
 /*@
-      MatCreateHermitianTranspose - Creates a new matrix object of `MatType` `MATHERMITIANTRANSPOSE` that behaves like A'*
+      MatCreateHermitianTranspose - Creates a new matrix object of `MatType` `MATHERMITIANTRANSPOSEVIRTUAL` that behaves like A'*
 
    Collective on A
 
@@ -175,7 +275,8 @@ M*/
           object performs the matrix-vector product, `MatMult()`, by using the `MatMultHermitianTranspose()` on
           the original matrix
 
-.seealso: `MATHERMITIANTRANSPOSE`, `MatCreateNormal()`, `MatMult()`, `MatMultHermitianTranspose()`, `MatCreate()`
+.seealso: `MatCreateNormal()`, `MatMult()`, `MatMultHermitianTranspose()`, `MatCreate()`,
+          `MATTRANSPOSEVIRTUAL`, `MatCreateTranspose()`, `MatHermitianTransposeGetMat()`
 @*/
 PetscErrorCode MatCreateHermitianTranspose(Mat A, Mat *N) {
   PetscInt m, n;
@@ -188,7 +289,7 @@ PetscErrorCode MatCreateHermitianTranspose(Mat A, Mat *N) {
   PetscCall(MatSetSizes(*N, n, m, PETSC_DECIDE, PETSC_DECIDE));
   PetscCall(PetscLayoutSetUp((*N)->rmap));
   PetscCall(PetscLayoutSetUp((*N)->cmap));
-  PetscCall(PetscObjectChangeTypeName((PetscObject)*N, MATHERMITIANTRANSPOSE));
+  PetscCall(PetscObjectChangeTypeName((PetscObject)*N, MATHERMITIANTRANSPOSEVIRTUAL));
 
   PetscCall(PetscNewLog(*N, &Na));
   (*N)->data = (void *)Na;
@@ -215,9 +316,9 @@ PetscErrorCode MatCreateHermitianTranspose(Mat A, Mat *N) {
   (*N)->assembled        = PETSC_TRUE;
 
   PetscCall(PetscObjectComposeFunction((PetscObject)(*N), "MatHermitianTransposeGetMat_C", MatHermitianTransposeGetMat_HT));
+  PetscCall(PetscObjectComposeFunction((PetscObject)(*N), "MatProductSetFromOptions_anytype_C", MatProductSetFromOptions_HermitianTranspose));
 #if !defined(PETSC_USE_COMPLEX)
   PetscCall(PetscObjectComposeFunction((PetscObject)(*N), "MatTransposeGetMat_C", MatHermitianTransposeGetMat_HT));
-  PetscCall(PetscObjectComposeFunction((PetscObject)(*N), "MatProductSetFromOptions_anytype_C", MatProductSetFromOptions_Transpose));
 #endif
   PetscCall(MatSetBlockSizes(*N, PetscAbs(A->cmap->bs), PetscAbs(A->rmap->bs)));
   PetscCall(MatGetVecType(A, &vtype));

@@ -437,7 +437,7 @@ PETSC_EXTERN PetscErrorCode MatCoarsenCreate_MISK(MatCoarsen coarse) {
           `MatCoarsenDestroy()`, `MatCoarsenSetAdjacency()`, `MatCoarsenMISKGetDistance()`
           `MatCoarsenGetData()`
 @*/
-PETSC_EXTERN PetscErrorCode MatCoarsenMISKSetDistance(MatCoarsen crs, PetscInt k) {
+PetscErrorCode MatCoarsenMISKSetDistance(MatCoarsen crs, PetscInt k) {
   PetscFunctionBegin;
   crs->subctx = (void *)(size_t)k;
   PetscFunctionReturn(0);
@@ -460,7 +460,7 @@ PETSC_EXTERN PetscErrorCode MatCoarsenMISKSetDistance(MatCoarsen crs, PetscInt k
           `MatCoarsenDestroy()`, `MatCoarsenSetAdjacency()`, `MatCoarsenMISKGetDistance()`
           `MatCoarsenGetData()`
 @*/
-PETSC_EXTERN PetscErrorCode MatCoarsenMISKGetDistance(MatCoarsen crs, PetscInt *k) {
+PetscErrorCode MatCoarsenMISKGetDistance(MatCoarsen crs, PetscInt *k) {
   PetscFunctionBegin;
   *k = (PetscInt)(size_t)crs->subctx;
   PetscFunctionReturn(0);
