@@ -37,7 +37,6 @@ static PetscErrorCode KSPSetFromOptions_HPDDM(KSP ksp, PetscOptionItems *PetscOp
   if (i == PETSC_STATIC_ARRAY_LENGTH(KSPHPDDMTypes) - 1) i = HPDDM_KRYLOV_METHOD_NONE; /* need to shift the value since HPDDM_KRYLOV_METHOD_RICHARDSON is not registered in PETSc */
   data->cntl[0] = i;
   PetscCall(PetscOptionsEnum("-ksp_hpddm_precision", "Precision in which Krylov bases are stored", "KSPHPDDM", KSPHPDDMPrecisionTypes, (PetscEnum)data->precision, (PetscEnum *)&data->precision, NULL));
-  PetscCheck(data->precision != KSP_HPDDM_PRECISION_HALF, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_WRONG, "Unhandled %s precision", KSPHPDDMPrecisionTypes[data->precision]);
   PetscCheck(data->precision != KSP_HPDDM_PRECISION_QUADRUPLE || PetscDefined(HAVE_REAL___FLOAT128), PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP_SYS, "Unsupported %s precision", KSPHPDDMPrecisionTypes[data->precision]);
   PetscCheck(std::abs(data->precision - PETSC_KSPHPDDM_DEFAULT_PRECISION) <= 1, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Unhandled mixed %s and %s precisions", KSPHPDDMPrecisionTypes[data->precision], KSPHPDDMPrecisionTypes[PETSC_KSPHPDDM_DEFAULT_PRECISION]);
   if (data->cntl[0] != HPDDM_KRYLOV_METHOD_NONE) {
@@ -215,12 +214,14 @@ static PetscErrorCode KSPDestroy_HPDDM(KSP ksp) {
 static inline PetscErrorCode KSPSolve_HPDDM_Private(KSP ksp, const PetscScalar *b, PetscScalar *x, PetscInt n) {
   KSP_HPDDM              *data = (KSP_HPDDM *)ksp->data;
   KSPConvergedDefaultCtx *ctx  = (KSPConvergedDefaultCtx *)ksp->cnvP;
-#if !PetscDefined(USE_REAL_DOUBLE) || PetscDefined(HAVE_F2CBLASLAPACK)
+  const PetscInt          N    = data->op->getDof() * n;
+  PetscBool               scale;
+#if !PetscDefined(USE_REAL_DOUBLE) || PetscDefined(HAVE_F2CBLASLAPACK___FLOAT128_BINDINGS)
   HPDDM::upscaled_type<PetscScalar> *high[2];
 #endif
+#if !PetscDefined(USE_REAL_SINGLE) || PetscDefined(HAVE_F2CBLASLAPACK___FP16_BINDINGS)
   HPDDM::downscaled_type<PetscScalar> *low[2];
-  const PetscInt                       N = data->op->getDof() * n;
-  PetscBool                            scale;
+#endif
 
   PetscFunctionBegin;
   PetscCall(PCGetDiagonalScale(ksp->pc, &scale));
@@ -239,7 +240,7 @@ static inline PetscErrorCode KSPSolve_HPDDM_Private(KSP ksp, const PetscScalar *
   ksp->its    = 0;
   ksp->reason = KSP_CONVERGED_ITERATING;
   if (data->precision > PETSC_KSPHPDDM_DEFAULT_PRECISION) { /* Krylov basis stored in higher precision than PetscScalar */
-#if !PetscDefined(USE_REAL_DOUBLE) || PetscDefined(HAVE_F2CBLASLAPACK)
+#if !PetscDefined(USE_REAL_DOUBLE) || PetscDefined(HAVE_F2CBLASLAPACK___FLOAT128_BINDINGS)
     PetscCall(PetscMalloc2(N, high, N, high + 1));
     HPDDM::copy_n(b, N, high[0]);
     HPDDM::copy_n(x, N, high[1]);
@@ -247,9 +248,10 @@ static inline PetscErrorCode KSPSolve_HPDDM_Private(KSP ksp, const PetscScalar *
     HPDDM::copy_n(high[1], N, x);
     PetscCall(PetscFree2(high[0], high[1]));
 #else
-    PetscCheck(data->precision == KSP_HPDDM_PRECISION_QUADRUPLE, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Reconfigure with --download-f2cblaslapack");
+    PetscCheck(data->precision == KSP_HPDDM_PRECISION_QUADRUPLE, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Reconfigure with --download-f2cblaslapack --with-f2cblaslapack-float128-bindings");
 #endif
   } else if (data->precision < PETSC_KSPHPDDM_DEFAULT_PRECISION) { /* Krylov basis stored in lower precision than PetscScalar */
+#if !PetscDefined(USE_REAL_SINGLE) || PetscDefined(HAVE_F2CBLASLAPACK___FP16_BINDINGS)
     PetscCall(PetscMalloc1(N, low));
     low[1] = reinterpret_cast<HPDDM::downscaled_type<PetscScalar> *>(x);
     std::copy_n(b, N, low[0]);
@@ -261,6 +263,9 @@ static inline PetscErrorCode KSPSolve_HPDDM_Private(KSP ksp, const PetscScalar *
       x[0] = low[0][0];
     }
     PetscCall(PetscFree(low[0]));
+#else
+    PetscCheck(data->precision == KSP_HPDDM_PRECISION_HALF, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Reconfigure with --download-f2cblaslapack --with-f2cblaslapack-fp16-bindings");
+#endif
   } else PetscCall(HPDDM::IterativeMethod::solve(*data->op, b, x, n, PetscObjectComm((PetscObject)ksp))); /* Krylov basis stored in the same precision as PetscScalar */
   if (!ksp->reason) {                                                                                     /* KSPConvergedDefault() is still returning 0 (= KSP_CONVERGED_ITERATING) */
     if (ksp->its >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;

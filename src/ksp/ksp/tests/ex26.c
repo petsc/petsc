@@ -250,7 +250,7 @@ PetscErrorCode FormJacobian_Grid(GridCtx *grid, Mat jac) {
         nsize: {{1 2}}
         args: -pc_mg_type {{additive multiplicative full kaskade}separate output} -ksp_matsolve_batch_size {{4 7}separate output}
       test:
-        requires: !__float128
+        requires: !__float128 !__fp16
         suffix: hpddm_mg_mixed_precision
         nsize: 2
         output_file: output/ex26_matcycles_hpddm_mg_pc_mg_type-multiplicative_ksp_matsolve_batch_size-4.out
@@ -262,11 +262,17 @@ PetscErrorCode FormJacobian_Grid(GridCtx *grid, Mat jac) {
         output_file: output/ex26_matcycles_hpddm_mg_pc_mg_type-multiplicative_ksp_matsolve_batch_size-4.out
         args: -ksp_matsolve_batch_size 4 -ksp_hpddm_precision {{double quadruple}shared output}
       test:
-        requires: !__float128 defined(PETSC_HAVE_REAL___FLOAT128) defined(PETSC_HAVE_F2CBLASLAPACK)
+        requires: double defined(PETSC_HAVE_F2CBLASLAPACK___FP128_BINDINGS)
         suffix: hpddm_mg_mixed_precision_double
         nsize: 2
         output_file: output/ex26_matcycles_hpddm_mg_pc_mg_type-multiplicative_ksp_matsolve_batch_size-4.out
         args: -ksp_matsolve_batch_size 4 -ksp_hpddm_precision quadruple
+      test:
+        requires: single defined(PETSC_HAVE_F2CBLASLAPACK___FP16_BINDINGS)
+        suffix: hpddm_mg_mixed_precision_single
+        nsize: 2
+        output_file: output/ex26_matcycles_hpddm_mg_pc_mg_type-multiplicative_ksp_matsolve_batch_size-4.out
+        args: -ksp_matsolve_batch_size 4 -ksp_hpddm_precision half -ksp_rtol 1e-3
 
     test:
       requires: hpddm

@@ -541,6 +541,20 @@ class Configure(config.package.Package):
     if self.suffix != '':
       self.addDefine('BLASLAPACK_SUFFIX', self.suffix)
 
+    if self.f2cblaslapack.found:
+      oldLibs = self.compilers.LIBS
+      routine___float128 = self.mangleBlasNoPrefix('qdot')
+      routine___fp16 = self.mangleBlasNoPrefix('hdot')
+      self.libraries.saveLog()
+      if self.defaultPrecision != '__float128':
+        found = self.libraries.check(self.blasLibrary, routine___float128, fortranMangle = 0)
+        if found: self.addDefine('HAVE_F2CBLASLAPACK___FLOAT128_BINDINGS', 1)
+      if self.defaultPrecision != '__fp16':
+        found = self.libraries.check(self.blasLibrary, routine___fp16, fortranMangle = 0)
+        if found: self.addDefine('HAVE_F2CBLASLAPACK___FP16_BINDINGS', 1)
+      self.logWrite(self.libraries.restoreLog())
+      self.compilers.LIBS = oldLibs
+
     self.found = 1
     if not self.f2cblaslapack.found and not self.fblaslapack.found:
       self.executeTest(self.checkMKL)
