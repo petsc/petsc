@@ -16,14 +16,14 @@
 * [Data Management (DM) between Vec and Mat, and the distributed mesh datastructures](DM/index.md)
 
   -  [Structured Grids (DMDA)](DMDA/index.md)
-  -  [Staggered, Structured Grids (DMStag)](DMSTAG/index.md)
-  -  [Unstructured Grids (DMPlex)](DMPLEX/index.md)
+  -  [Staggered, Structured Grids (DMStag)](DMStag/index.md)
+  -  [Unstructured Grids (DMPlex)](DMPlex/index.md)
   -  [Graphs and Networks (DMNetwork)](DMNetwork/index.md)
-  -  [A Forest of Trees (DMFOREST)](DMFOREST/index.md)
-  -  [DMPATCH](DMPATCH/index.md)
-  -  [Particles (DMSWARM)](DMSWARM/index.md)
+  -  [A Forest of Trees (DMFOREST)](DMForest/index.md)
+  -  [DMPATCH](DMPatch/index.md)
+  -  [Particles (DMSWARM)](DMSwarm/index.md)
   -  [DMMOAB](DMMOAB/index.md)
-  -  [Selecting Parts of Meshes (DMLABEL)](DMLABEL/index.md)
+  -  [Selecting Parts of Meshes (DMLABEL)](DMLabel/index.md)
 
 * [Discretization Technology (DT)](DT/index.md)
 
@@ -74,15 +74,15 @@ AO/index
 Characteristic/index
 DM/index
 DMDA/index
-DMFOREST/index
-DMLABEL/index
+DMForest/index
+DMLabel/index
 DMMOAB/index
 DMNetwork/index
-DMPATCH/index
-DMPLEX/index
+DMPatch/index
+DMPlex/index
 DMPRODUCT/index
-DMSTAG/index
-DMSWARM/index
+DMStag/index
+DMSwarm/index
 DT/index
 DUALSPACE/index
 Draw/index

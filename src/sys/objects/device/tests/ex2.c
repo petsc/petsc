@@ -3,12 +3,11 @@ static const char help[] = "Tests creation and destruction of PetscDeviceContext
 #include <petsc/private/deviceimpl.h>
 #include "petscdevicetestcommon.h"
 
-int main(int argc, char *argv[])
-{
-  PetscDeviceContext dctx = NULL,ddup = NULL;
+int main(int argc, char *argv[]) {
+  PetscDeviceContext dctx = NULL, ddup = NULL;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   /* basic creation and destruction */
   PetscCall(PetscDeviceContextCreate(&dctx));
@@ -29,7 +28,7 @@ int main(int argc, char *argv[])
   PetscCall(AssertDeviceContextExists(dctx));
 
   /* test duplicate */
-  PetscCall(PetscDeviceContextDuplicate(dctx,&ddup));
+  PetscCall(PetscDeviceContextDuplicate(dctx, &ddup));
   /* both device contexts should exist */
   PetscCall(AssertDeviceContextExists(dctx));
   PetscCall(AssertDeviceContextExists(ddup));
@@ -39,7 +38,7 @@ int main(int argc, char *argv[])
   PetscCall(AssertDeviceContextDoesNotExist(ddup));
   PetscCall(AssertDeviceContextExists(dctx));
 
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"EXIT_SUCCESS\n"));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "EXIT_SUCCESS\n"));
   PetscCall(PetscFinalize());
   return 0;
 }

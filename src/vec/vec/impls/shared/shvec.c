@@ -2,47 +2,45 @@
 /*
    This file contains routines for Parallel vector operations that use shared memory
  */
-#include <../src/vec/vec/impls/mpi/pvecimpl.h>   /*I  "petscvec.h"   I*/
+#include <../src/vec/vec/impls/mpi/pvecimpl.h> /*I  "petscvec.h"   I*/
 
 #if defined(PETSC_USE_SHARED_MEMORY)
 
-extern PetscErrorCode PetscSharedMalloc(MPI_Comm,PetscInt,PetscInt,void**);
+extern PetscErrorCode PetscSharedMalloc(MPI_Comm, PetscInt, PetscInt, void **);
 
-PetscErrorCode VecDuplicate_Shared(Vec win,Vec *v)
-{
-  Vec_MPI        *w = (Vec_MPI*)win->data;
-  PetscScalar    *array;
+PetscErrorCode VecDuplicate_Shared(Vec win, Vec *v) {
+  Vec_MPI     *w = (Vec_MPI *)win->data;
+  PetscScalar *array;
 
   PetscFunctionBegin;
   /* first processor allocates entire array and sends it's address to the others */
-  PetscCall(PetscSharedMalloc(PetscObjectComm((PetscObject)win),win->map->n*sizeof(PetscScalar),win->map->N*sizeof(PetscScalar),(void**)&array));
+  PetscCall(PetscSharedMalloc(PetscObjectComm((PetscObject)win), win->map->n * sizeof(PetscScalar), win->map->N * sizeof(PetscScalar), (void **)&array));
 
-  PetscCall(VecCreate(PetscObjectComm((PetscObject)win),v));
-  PetscCall(VecSetSizes(*v,win->map->n,win->map->N));
-  PetscCall(VecCreate_MPI_Private(*v,PETSC_FALSE,w->nghost,array));
-  PetscCall(PetscLayoutReference(win->map,&(*v)->map));
+  PetscCall(VecCreate(PetscObjectComm((PetscObject)win), v));
+  PetscCall(VecSetSizes(*v, win->map->n, win->map->N));
+  PetscCall(VecCreate_MPI_Private(*v, PETSC_FALSE, w->nghost, array));
+  PetscCall(PetscLayoutReference(win->map, &(*v)->map));
 
   /* New vector should inherit stashing property of parent */
   (*v)->stash.donotstash   = win->stash.donotstash;
   (*v)->stash.ignorenegidx = win->stash.ignorenegidx;
 
-  PetscCall(PetscObjectListDuplicate(((PetscObject)win)->olist,&((PetscObject)*v)->olist));
-  PetscCall(PetscFunctionListDuplicate(((PetscObject)win)->qlist,&((PetscObject)*v)->qlist));
+  PetscCall(PetscObjectListDuplicate(((PetscObject)win)->olist, &((PetscObject)*v)->olist));
+  PetscCall(PetscFunctionListDuplicate(((PetscObject)win)->qlist, &((PetscObject)*v)->qlist));
 
   (*v)->ops->duplicate = VecDuplicate_Shared;
   (*v)->bstash.bs      = win->bstash.bs;
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode VecCreate_Shared(Vec vv)
-{
-  PetscScalar    *array;
+PETSC_EXTERN PetscErrorCode VecCreate_Shared(Vec vv) {
+  PetscScalar *array;
 
   PetscFunctionBegin;
-  PetscCall(PetscSplitOwnership(PetscObjectComm((PetscObject)vv),&vv->map->n,&vv->map->N));
-  PetscCall(PetscSharedMalloc(PetscObjectComm((PetscObject)vv),vv->map->n*sizeof(PetscScalar),vv->map->N*sizeof(PetscScalar),(void**)&array));
+  PetscCall(PetscSplitOwnership(PetscObjectComm((PetscObject)vv), &vv->map->n, &vv->map->N));
+  PetscCall(PetscSharedMalloc(PetscObjectComm((PetscObject)vv), vv->map->n * sizeof(PetscScalar), vv->map->N * sizeof(PetscScalar), (void **)&array));
 
-  PetscCall(VecCreate_MPI_Private(vv,PETSC_FALSE,0,array));
+  PetscCall(VecCreate_MPI_Private(vv, PETSC_FALSE, 0, array));
   vv->ops->duplicate = VecDuplicate_Shared;
   PetscFunctionReturn(0);
 }
@@ -79,8 +77,7 @@ static PetscMPIInt Petsc_ShmComm_keyval = MPI_KEYVAL_INVALID;
   The binding for the first argument changed from MPI 1.0 to 1.1; in 1.0
   it was MPI_Comm *comm.
 */
-static PetscErrorCode Petsc_DeleteShared(MPI_Comm comm,PetscInt keyval,void *attr_val,void *extra_state)
-{
+static PetscErrorCode Petsc_DeleteShared(MPI_Comm comm, PetscInt keyval, void *attr_val, void *extra_state) {
   PetscFunctionBegin;
   PetscCall(PetscFree(attr_val));
   PetscFunctionReturn(MPI_SUCCESS);
@@ -102,51 +99,49 @@ kern.sysv.shmall=1024
 ipcrm to remove the shared memory in use.
 
 */
-PetscErrorCode PetscSharedMalloc(MPI_Comm comm,PetscInt llen,PetscInt len,void **result)
-{
-  PetscInt       shift;
-  PetscMPIInt    rank,flag;
-  int            *arena,id,key = 0;
-  char           *value;
+PetscErrorCode PetscSharedMalloc(MPI_Comm comm, PetscInt llen, PetscInt len, void **result) {
+  PetscInt    shift;
+  PetscMPIInt rank, flag;
+  int        *arena, id, key = 0;
+  char       *value;
 
   PetscFunctionBegin;
   *result = 0;
 
-  PetscCallMPI(MPI_Scan(&llen,&shift,1,MPI_INT,MPI_SUM,comm));
+  PetscCallMPI(MPI_Scan(&llen, &shift, 1, MPI_INT, MPI_SUM, comm));
   shift -= llen;
 
-  PetscCallMPI(MPI_Comm_rank(comm,&rank));
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
   if (rank == 0) {
-    id = shmget(key,len, 0666 |IPC_CREAT);
+    id = shmget(key, len, 0666 | IPC_CREAT);
     if (id == -1) {
       perror("Unable to malloc shared memory");
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to malloc shared memory");
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Unable to malloc shared memory");
     }
   } else {
-    id = shmget(key,len, 0666);
+    id = shmget(key, len, 0666);
     if (id == -1) {
       perror("Unable to malloc shared memory");
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to malloc shared memory");
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Unable to malloc shared memory");
     }
   }
-  value = shmat(id,(void*)0,0);
-  if (value == (char*)-1) {
+  value = shmat(id, (void *)0, 0);
+  if (value == (char *)-1) {
     perror("Unable to access shared memory allocated");
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to access shared memory allocated");
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Unable to access shared memory allocated");
   }
-  *result = (void*) (value + shift);
+  *result = (void *)(value + shift);
   PetscFunctionReturn(0);
 }
 
 #else
 
-PETSC_EXTERN PetscErrorCode VecCreate_Shared(Vec vv)
-{
-  PetscMPIInt    size;
+PETSC_EXTERN PetscErrorCode VecCreate_Shared(Vec vv) {
+  PetscMPIInt size;
 
   PetscFunctionBegin;
-  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)vv),&size));
-  PetscCheck(size <= 1,PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"No supported for shared memory vector objects on this machine");
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)vv), &size));
+  PetscCheck(size <= 1, PETSC_COMM_SELF, PETSC_ERR_SUP_SYS, "No supported for shared memory vector objects on this machine");
   PetscCall(VecCreate_Seq(vv));
   PetscFunctionReturn(0);
 }
@@ -179,11 +174,10 @@ PETSC_EXTERN PetscErrorCode VecCreate_Shared(Vec vv)
           `VecCreateGhost()`, `VecCreateMPIWithArray()`, `VecCreateGhostWithArray()`
 
 @*/
-PetscErrorCode  VecCreateShared(MPI_Comm comm,PetscInt n,PetscInt N,Vec *v)
-{
+PetscErrorCode VecCreateShared(MPI_Comm comm, PetscInt n, PetscInt N, Vec *v) {
   PetscFunctionBegin;
-  PetscCall(VecCreate(comm,v));
-  PetscCall(VecSetSizes(*v,n,N));
-  PetscCall(VecSetType(*v,VECSHARED));
+  PetscCall(VecCreate(comm, v));
+  PetscCall(VecSetSizes(*v, n, N));
+  PetscCall(VecSetType(*v, VECSHARED));
   PetscFunctionReturn(0);
 }

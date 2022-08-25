@@ -23,7 +23,7 @@ small and simple, while remaining flexible and general. This also allows
 “dimension independent programming”, which means that the same algorithm
 can be used unchanged for meshes of different shapes and dimensions.
 
-All pieces of the mesh are treated as *points*, which are identified by
+All pieces of the mesh (vertices, edges, faces, and cells) are treated as *points*, which are identified by
 ``PetscInt``\ s. A mesh is built by relating points to other points, in
 particular specifying a “covering” relation among the points. For
 example, an edge is defined by being covered by two vertices, and a
@@ -49,11 +49,11 @@ which can also be represented as the DAG in
 
   The Hasse diagram for our 2D doublet mesh, expressed as a DAG.
 
-To use the PETSc API, we first consecutively number the mesh pieces. The
+To use the PETSc API, we consecutively number the mesh pieces. The
 PETSc convention in 3 dimensions is to number first cells, then
 vertices, then faces, and then edges. In 2 dimensions the convention is
-to number faces, vertices, and then edges. The user is free to violate
-these conventions. In terms of the labels in
+to number faces, vertices, and then edges.
+In terms of the labels in
 :numref:`fig_doubletMesh`, these numberings are
 
 .. math:: f_0 \mapsto \mathtt{0}, f_1 \mapsto \mathtt{1}, \quad v_0 \mapsto \mathtt{2}, v_1 \mapsto \mathtt{3}, v_2 \mapsto \mathtt{4}, v_3 \mapsto \mathtt{5}, \quad e_0 \mapsto \mathtt{6}, e_1 \mapsto \mathtt{7}, e_2 \mapsto \mathtt{8}, e_3 \mapsto \mathtt{9}, e_4 \mapsto \mathtt{10}
@@ -72,6 +72,7 @@ in the DAG. In order to preallocate correctly, we first setup sizes,
 
 .. code-block::
 
+   DMPlexSetConeSize(dm, point, number of points that cover the point);
    DMPlexSetConeSize(dm, 0, 3);
    DMPlexSetConeSize(dm, 1, 3);
    DMPlexSetConeSize(dm, 6, 2);
@@ -85,6 +86,7 @@ and then point values,
 
 .. code-block::
 
+   DMPlexSetCone(dm, point, [points that cover the point]);
    DMPlexSetCone(dm, 0, [6, 7, 8]);
    DMPlexSetCone(dm, 1, [7, 9, 10]);
    DMPlexSetCone(dm, 6, [2, 3]);
@@ -101,9 +103,10 @@ calculated automatically by calling
 
    DMPlexSymmetrize(dm);
 
-In order to support efficient queries, we also want to construct fast
-search structures and indices for the different types of points, which
-is done using
+The "symmetrization" in the sense of the DAG. Each point knows its covering (cone) and each point knows what it covers (support).
+
+In order to support efficient queries, we construct fast
+search structures and indices for the different types of points using
 
 .. code-block::
 
@@ -128,16 +131,14 @@ without any reference to the mesh (topology) or discretization
 Data Layout by Hand
 ^^^^^^^^^^^^^^^^^^^
 
-Data is associated with a mesh using the ``PetscSection`` object. A
-``PetscSection`` can be thought of as a generalization of
-``PetscLayout``, in the same way that a fiber bundle is a generalization
-of the normal Euclidean basis used in linear algebra. With
-``PetscLayout``, we associate a unit vector (:math:`e_i`) with every
-point in the space, and just divide up points between processes. Using
-``PetscSection``, we can associate a set of dofs, a small space
-:math:`\{e_k\}`, with every point, and though our points must be
-contiguous like ``PetscLayout``, they can be in any range
-:math:`[\mathrm{pStart}, \mathrm{pEnd})`.
+Data are associated with a mesh using the ``PetscSection`` object.
+
+A ``PetscSection``, associates a set of degrees of freedom (dof), (a small space
+:math:`\{e_k\} 0 < k < d_p`), with every point. The number of dof and their meaning may be different for different points. For example, the dof on a cell point may represent pressure
+while a dof on a face point may represent velocity. A reminder that though points must be
+contiguously numbered, they can be in any range
+:math:`[\mathrm{pStart}, \mathrm{pEnd})`. A ``PetscSection`` may be thought of as defining a two dimensional array indexed by point in the outer dimension with
+a variable length inner dimension indexed by the dof at that point, :math:`v[pStart <= point < pEnd][0 <= dof <d_p]` [#petscsection_footnote]_.
 
 The sequence for setting up any ``PetscSection`` is the following:
 
@@ -156,28 +157,28 @@ a continuous Galerkin :math:`P_3` finite element method,
    PetscInt pStart, pEnd, cStart, cEnd, c, vStart, vEnd, v, eStart, eEnd, e;
 
    DMPlexGetChart(dm, &pStart, &pEnd);
-   DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);   /* cells */
-   DMPlexGetHeightStratum(dm, 1, &eStart, &eEnd);   /* edges */
-   DMPlexGetHeightStratum(dm, 2, &vStart, &vEnd);   /* vertices, equivalent to DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd); */
+   DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);   // cells
+   DMPlexGetHeightStratum(dm, 1, &eStart, &eEnd);   // edges
+   DMPlexGetHeightStratum(dm, 2, &vStart, &vEnd);   // vertices, equivalent to DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);
    PetscSectionSetChart(s, pStart, pEnd);
    for(c = cStart; c < cEnd; ++c)
        PetscSectionSetDof(s, c, 1);
    for(v = vStart; v < vEnd; ++v)
        PetscSectionSetDof(s, v, 1);
    for(e = eStart; e < eEnd; ++e)
-       PetscSectionSetDof(s, e, 2);
+       PetscSectionSetDof(s, e, 2); // two dof on each edge
    PetscSectionSetUp(s);
 
 ``DMPlexGetHeightStratum()`` returns all the points of the requested height
 in the DAG. Since this problem is in two dimensions the edges are at
 height 1 and the vertices at height 2 (the cells are always at height
 0). One can also use ``DMPlexGetDepthStratum()`` to use the depth in the
-DAG to select the points. ``DMPlexGetDepth(,&depth)`` routines the depth
+DAG to select the points. ``DMPlexGetDepth(dm,&depth)`` returns the depth
 of the DAG, hence ``DMPlexGetDepthStratum(dm,depth-1-h,)`` returns the
 same values as ``DMPlexGetHeightStratum(dm,h,)``.
 
 For :math:`P_3` elements there is one degree of freedom at each vertex, 2 along
-each edge (resulting in a total of 4 degrees of freedom alone each edge
+each edge (resulting in a total of 4 degrees of freedom along each edge
 including the vertices, thus being able to reproduce a cubic function)
 and 1 degree of freedom within the cell (the bubble function which is
 zero along all edges).
@@ -199,7 +200,9 @@ provides global vectors,
    DMGetLocalVector(dm, &localVec);
    DMGetGlobalVector(dm, &globalVec);
 
-A global vector is missing both the shared dofs which are not owned by this process, as well as *constrained* dofs. These constraints are meant to mimic essential boundary conditions, or Dirichlet constraints. They are dofs that have a given fixed value, so they are present in local vectors for assembly purposes, but absent from global vectors since they are never solved for.
+A global vector is missing both the shared dofs which are not owned by this process, as well as *constrained* dofs. These constraints represent essential (Dirichlet)
+boundary conditions. They are dofs that have a given fixed value, so they are present in local vectors for assembly purposes, but absent
+from global vectors since they are never solved for during algebraic solves.
 
 We can indicate constraints in a local section using ``PetscSectionSetConstraintDof()``, to set the number of constrained dofs for a given point, and ``PetscSectionSetConstraintIndices()`` which indicates which dofs on the given point are constrained. Once we have this information, a global section can be created using ``PetscSectionCreateGlobalSection()``, and this is done automatically by the ``DM``. A global section returns :math:`-(dof+1)` for the number of dofs on an unowned point, and :math:`-(off+1)` for its offset on the owning process. This can be used to create global vectors, just as the local section is used to create local vectors.
 
@@ -215,35 +218,37 @@ A ``DM`` can automatically create the local section if given a description of th
   DMSetField(dm, 0, NULL, (PetscObject) fe);
   DMCreateDS(dm);
 
+Here the call to ``DMSetField()`` declares the discretization will have one field with the integer label 0 that has one degree of freedom at each point on the ``DMPlex``.
 To get the :math:`P_3` section above, we can either give the option ``-petscspace_degree 3``, or call ``PetscFECreateLagrange()`` and set the degree directly.
 
 Partitioning and Ordering
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-In exactly the same way as in ``MatPartitioning`` or with
-``MatGetOrdering()``, the results of a partition using
-``PetscPartitionerDMPlexPartition`` or reordering using ``DMPlexPermute`` are encoded in
-an ``IS``. However, the graph is not the adjacency graph of the problem
-Jacobian, but the mesh itself. Once the mesh is partitioned and
+In the same way as ``MatPartitioning`` or
+``MatGetOrdering()``, give the results of a partitioning or ordering of a graph defined by a sparse matrix,
+``PetscPartitionerDMPlexPartition`` or ``DMPlexPermute`` are encoded in
+an ``IS``. However, the graph is not the adjacency graph of the matrix
+but the mesh itself. Once the mesh is partitioned and
 reordered, the data layout from a ``PetscSection`` can be used to
 automatically derive a problem partitioning/ordering.
 
 Influence of Variables on One Another
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The Jacobian of a problem is intended to represent the influence of some
+The Jacobian of a problem represents the influence of some
 variable on other variables in the problem. Very often, this influence
 pattern is determined jointly by the computational mesh and
-discretization. ``DMCreateMatrix`` must compute this pattern when it
+discretization. ``DMCreateMatrix()`` must compute this pattern when it
 automatically creates the properly preallocated Jacobian matrix. In
 ``DMDA`` the influence pattern, or what we will call variable
 *adjacency*, depends only on the stencil since the topology is Cartesian
-and the discretization is implicitly finite difference. In DMPlex,
-we allow the user to specify the adjacency topologically, while
-maintaining good defaults.
+and the discretization is implicitly finite difference.
 
-The pattern is controlled by two flags. The first flag, ``useCone``,
-indicates whether variables couple first to their boundary and then to
+In DMPlex,
+we allow the user to specify the adjacency topologically, while
+maintaining good defaults. The pattern is controlled by two flags. The first flag, ``useCone``,
+indicates whether variables couple first to their boundary [#boundary_footnote]_
+and then to
 neighboring entities, or the reverse. For example, in finite elements,
 the variables couple to the set of neighboring cells containing the mesh
 point, and we set the flag to ``useCone = PETSC_FALSE``. By constrast,
@@ -268,15 +273,14 @@ the following general form:
 
 -  Traverse the mesh, picking out pieces (which in general overlap),
 
--  Extract some values from the solution vector, associated with this
+-  Extract some values from the current solution vector, associated with this
    piece,
 
 -  Calculate some values for the piece, and
 
 -  Insert these values into the residual vector
 
-DMPlex separates these different concerns by passing sets of points,
-which are just ``PetscInt``\ s, from mesh traversal routines to data
+DMPlex separates these different concerns by passing sets of points  from mesh traversal routines to data
 extraction routines and back. In this way, the ``PetscSection`` which
 structures the data inside a ``Vec`` does not need to know anything
 about the mesh inside a DMPlex.
@@ -300,7 +304,7 @@ Then we can retrieve the data using ``PetscSection`` methods,
    PetscScalar *a;
    PetscInt     numPoints, *points = NULL, p;
 
-   VecGetArray(u,&a);
+   VecGetArrayRead(u,&a);
    DMPlexGetTransitiveClosure(dm,cell,PETSC_TRUE,&numPoints,&points);
    for (p = 0; p <= numPoints*2; p += 2) {
      PetscInt dof, off, d;
@@ -312,7 +316,7 @@ Then we can retrieve the data using ``PetscSection`` methods,
      }
    }
    DMPlexRestoreTransitiveClosure(dm, cell, PETSC_TRUE, &numPoints, &points);
-   VecRestoreArray(u, &a);
+   VecRestoreArrayRead(u, &a);
 
 This operation is so common that we have built a convenience method
 around it which returns the values in a contiguous array, correctly
@@ -324,7 +328,7 @@ taking into account the orientations of various mesh points:
    PetscInt           csize;
 
    DMPlexVecGetClosure(dm, section, u, cell, &csize, &values);
-   /* Do integral in quadrature loop */
+   // Do integral in quadrature loop putting the result into r[]
    DMPlexVecRestoreClosure(dm, section, u, cell, &csize, &values);
    DMPlexVecSetClosure(dm, section, residual, cell, &r, ADD_VALUES);
 
@@ -355,8 +359,8 @@ where we want the data from neighboring cells for each face:
 This kind of calculation is used in
 `TS Tutorial ex11 <../../src/ts/tutorials/ex11.c.html>`__.
 
-Saving and Loading Data with HDF5
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Saving and Loading DMPlex Data with HDF5
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 PETSc allows users to save/load DMPlexs representing meshes,
 ``PetscSection``\ s representing data layouts on the meshes, and
@@ -400,7 +404,7 @@ As ``dm`` is a DMPlex object representing a mesh, we first give it a *mesh name*
    DMView(dm, viewer);
    PetscViewerPopFormat(viewer);
 
-The load call is shorthand for the following sequence
+The ``DMView()`` call is shorthand for the following sequence
 
 .. code-block::
 
@@ -603,220 +607,10 @@ settings, in which one can even use different number of processes for
 saving and for loading; a more comprehensive example is found in
 `DMPlex Tutorial ex12 <../../src/dm/impls/plex/tutorials/ex12.c.html>`__.
 
-.. _chapter_network:
-
-Networks
-~~~~~~~~
-
-Built on top of DMPlex, the DMNetwork subclass provides
-abstractions for representing general unstructured networks such as
-communication networks, power grid, computer networks, transportation
-networks, electrical circuits, graphs, and others.
-
-Application flow
-^^^^^^^^^^^^^^^^
-
-The general flow of an application code using DMNetwork is as
-follows:
-
-#. Create a network object.
-
-   .. code-block::
-
-      DMNetworkCreate(MPI_Comm comm, DM *dm);
-
-#. Create components and register them with the network. A “component”
-   is specific application data at a vertex/edge of the network required
-   for its residual evaluation. For example, components could be
-   resistor/inductor data for circuit applications, edge weights for
-   graph problems, or generator/transmission line data for power grids.
-   Components are registered by calling
-
-   .. code-block::
-
-      DMNetworkRegisterComponent(DM dm, const char *name, size_t size, PetscInt *compkey);
-
-   Here, ``name`` is the component name, ``size`` is the size of
-   component data type, and ``compkey`` is an integer key that can be
-   used for setting/getting the component at a vertex or an edge.
-
-#. A DMNetwork can consist of one or more physical subnetworks. When
-   multiple physical subnetworks are used one can (optionally) provide
-   coupling information between subnetworks which consist only of shared vertices of the physical subnetworks. The
-   topological sizes of the network are set by calling
-
-   .. code-block::
-
-      DMNetworkSetNumSubNetworks(DM dm, PetscInt nsubnet, PetscInt Nsubnet);
-
-   Here, ``nsubnet`` and ``Nsubnet`` are the local and global number of subnetworks.
-
-#. A subnetwork is added to the network by calling
-
-   .. code-block::
-
-      DMNetworkAddSubnetwork(DM dm, const char* name, PetscInt ne, PetscInt edgelist[], PetscInt *netnum);
-
-   Here ``name`` is the subnetwork name, ``ne`` is the number of local edges on the subnetwork, and ``edgelist`` is the connectivity for the subnetwork.
-   The output ``netnum`` is the global numbering of the subnetwork in the network.
-   Each element of ``edgelist`` is an integer array of size ``2*ne``
-   containing the edge connectivity for the subnetwork.
-
-   | As an example, consider a network comprising of 2 subnetworks that
-     are coupled. The topological information for the network is as
-     follows:
-   | subnetwork 0: v0 — v1 — v2 — v3
-   | subnetwork 1: v1 — v2 — v0
-   | The two subnetworks are coupled by merging vertex 0 from subnetwork 0 with vertex 2 from subnetwork 1.
-   | The ``edgelist`` of this network is
-   | edgelist[0] = {0,1,1,2,2,3}
-   | edgelist[1] = {1,2,2,0}
-
-   The coupling is done by calling
-
-   .. code-block::
-
-      DMNetworkAddSharedVertices(DM dm, PetscInt anet, PetscInt bnet, PetscInt nsv, PetscInt asv[], PetscInt bsv[]);
-
-   Here ``anet`` and ``bnet`` are the first and second subnetwork global numberings returned by ``DMNetworkAddSubnetwork()``,
-   ``nsv`` is the number of vertices shared by the two subnetworks, ``asv`` and ``bsv`` are the vertex indices in the subnetwork ``anet`` and ``bnet`` .
-
-#. The next step is to have DMNetwork create a bare layout (graph) of
-   the network by calling
-
-   .. code-block::
-
-      DMNetworkLayoutSetUp(DM dm);
-
-#. After completing the previous steps, the network graph is set up, but
-   no physics is associated yet. This is done by adding the components
-   and setting the number of variables to the vertices and edges.
-
-   A component and number of variables are added to a vertex/edge by calling
-
-   .. code-block::
-
-      DMNetworkAddComponent(DM dm, PetscInt p, PetscInt compkey, void* compdata, PetscInt nvar)
-
-   where ``p`` is the network vertex/edge point in the range obtained by
-   either ``DMNetworkGetVertexRange()``/``DMNetworkGetEdgeRange()``, ``DMNetworkGetSubnetwork()``, or ``DMNetworkGetSharedVertices()``;
-   ``compkey`` is the component key returned when registering the component
-   (``DMNetworkRegisterComponent()``); ``compdata`` holds the data for the
-   component; and ``nvar`` is the number of variables associated to the added component at this network point. DMNetwork supports setting multiple components
-   at a vertex/edge. At a shared vertex, DMNetwork currently requires the owner process of the vertex adds all the components and number of variables.
-
-   DMNetwork currently assumes the component data to be stored in a
-   contiguous chunk of memory. As such, it does not do any
-   packing/unpacking before/after the component data gets distributed.
-   Any such serialization (packing/unpacking) should be done by the
-   application.
-
-#. Set up network internal data structures.
-
-   .. code-block::
-
-      DMSetUp(DM dm);
-
-#. Distribute the network (also moves components attached with
-   vertices/edges) to multiple processors.
-
-   .. code-block::
-
-      DMNetworkDistribute(DM dm, const char partitioner[], PetscInt overlap, DM *distDM);
-
-#. Associate the ``DM`` with a PETSc solver:
-
-   .. code-block::
-
-      KSPSetDM(KSP ksp, DM dm) or SNESSetDM(SNES snes, DM dm) or TSSetDM(TS ts, DM dm).
-
-Utility functions
-^^^^^^^^^^^^^^^^^
-
-``DMNetwork`` provides several utility functions for operations on the
-network. The mostly commonly used functions are: obtaining iterators for
-vertices/edges,
-
-.. code-block::
-
-   DMNetworkGetEdgeRange(DM dm, PetscInt *eStart, PetscInt *eEnd);
-
-.. code-block::
-
-   DMNetworkGetVertexRange(DM dm, PetscInt *vStart, PetscInt *vEnd);
-
-.. code-block::
-
-   DMNetworkGetSubnetwork(DM dm, PetscInt netnum, PetscInt *nv, PetscInt *ne, const PetscInt **vtx, const PetscInt **edge);
-
-checking the status of a vertex,
-
-.. code-block::
-
-   DMNetworkIsGhostVertex(DM dm, PetscInt p, PetscBool *isghost);
-
-.. code-block::
-
-   DMNetworkIsSharedVertex(DM dm, PetscInt p, PetscBool *isshared);
-
-and retrieving local/global indices of vertex/edge component variables for
-inserting elements in vectors/matrices,
-
-.. code-block::
-
-   DMNetworkGetLocalVecOffset(DM dm, PetscInt p, PetscInt compnum, PetscInt *offset);
-
-.. code-block::
-
-   DMNetworkGetGlobalVecOffset(DM dm, PetscInt p, PetscInt compnum, PetscInt *offsetg).
-
-In network applications, one frequently needs to find the supporting
-edges for a vertex or the connecting vertices covering an edge. These
-can be obtained by the following two routines.
-
-.. code-block::
-
-   DMNetworkGetConnectedVertices(DM dm, PetscInt edge, const PetscInt *vertices[]);
-
-.. code-block::
-
-   DMNetworkGetSupportingEdges(DM dm, PetscInt vertex, PetscInt *nedges, const PetscInt *edges[]).
-
-Retrieving components and number of variables
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-The components and the corresponding number of variables set at a vertex/edge can be accessed by
-
-.. code-block::
-
-   DMNetworkGetComponent(DM dm, PetscInt p, PetscInt compnum, PetscInt *compkey, void **component, PetscInt *nvar)
-
-input ``compnum`` is the component number, output ``compkey`` is the key set by ``DMNetworkRegisterComponent``. An example
-of accessing and retrieving the components and number of variables at vertices is:
-
-.. code-block::
-
-   PetscInt Start,End,numcomps,key,v,compnum;
-   void *component;
-
-   DMNetworkGetVertexRange(dm, &Start, &End);
-   for (v = Start; v < End; v++) {
-     DMNetworkGetNumComponents(dm, v, &numcomps);
-     for (compnum=0; compnum < numcomps; compnum++) {
-       DMNetworkGetComponent(dm, v, compnum, &key, &component, &nvar);
-       compdata = (UserCompDataType)(component);
-     }
-   }
-
-The above example does not explicitly use the component key. It is
-used when different component types are set at different vertices. In
-this case, ``compkey`` is used to differentiate the component type.
-
-
 Metric-based mesh adaptation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-DMPlex supports mesh adaptation using the *Riemmanian metric framework*.
+DMPlex supports mesh adaptation using the *Riemannian metric framework*.
 The idea is to use a Riemannian metric space within the mesher. The
 metric space dictates how mesh resolution should be distributed across
 the domain. Using this information, the remesher transforms the mesh such
@@ -840,7 +634,7 @@ Such an object can be created using the routine
 
 .. code-block::
 
-   DMPlexMetricCreate(DM dm, PetscInt f, Vec *metric);
+   DMPlexMetricCreate(DM dm, PetscInt field, Vec *metric);
 
 A metric must be symmetric positive-definite, so that distances may be properly
 defined. This can be checked using
@@ -861,7 +655,8 @@ can be specified using
 
 or the command line arguments
 
-::
+.. code-block::
+
    -dm_plex_metric_h_min <h_min>
    -dm_plex_metric_h_max <h_max>
    -dm_plex_metric_a_max <a_max>
@@ -897,7 +692,8 @@ They are controlled using
 
 or the command line arguments
 
-::
+.. code-block:: console
+
    -dm_plex_metric_p <p>
    -dm_plex_metric_target_complexity <target>
 
@@ -907,12 +703,13 @@ Two different metric-based mesh adaptation tools are available in PETSc:
 
 - `Mmg/ParMmg <https://www.mmgtools.org/>`__.
 
-Mmg is a serial package, whereas ParMmg is the MPI parallel version.
+Mmg is a serial package, whereas ParMmg is the MPI version.
 Note that surface meshing is not currently supported and that ParMmg
-is only in 3D. Mmg and Pragmatic can be used for both 2D and 3D problems.
+works only in three dimensions. Mmg can be used for both two and three dimensional problems.
 Pragmatic, Mmg and ParMmg may be specified by the command line arguments
 
-::
+.. code-block::
+
    -dm_adaptor pragmatic
    -dm_adaptor mmg
    -dm_adaptor parmmg
@@ -933,3 +730,12 @@ preserved under adaptation, respectively.
 
 .. bibliography:: /petsc.bib
     :filter: docname in docnames
+
+
+.. rubric:: Footnotes
+
+.. [#petscsection_footnote] A ``PetscSection`` can be thought of as a generalization of ``PetscLayout``, in the same way that a fiber bundle is a generalization
+   of the normal Euclidean basis used in linear algebra. With ``PetscLayout``, we associate a unit vector (:math:`e_i`) with every
+   point in the space, and just divide up points between processes.
+
+.. [#boundary_footnote] The boundary of a cell is its faces, the boundary of a face is its edges and the boundary of an edge is the two vertices.

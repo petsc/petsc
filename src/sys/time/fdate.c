@@ -5,7 +5,7 @@
 #endif
 #include <time.h>
 #if defined(PETSC_NEEDS_GETTIMEOFDAY_PROTO)
-PETSC_EXTERN int gettimeofday(struct timeval*,struct timezone*);
+PETSC_EXTERN int gettimeofday(struct timeval *, struct timezone *);
 #endif
 
 /*
@@ -32,11 +32,10 @@ PETSC_EXTERN int gettimeofday(struct timeval*,struct timezone*);
     from an error handler.
 
 @*/
-PetscErrorCode  PetscGetDate(char date[],size_t len)
-{
-  char           *str=NULL;
+PetscErrorCode PetscGetDate(char date[], size_t len) {
+  char *str = NULL;
 #if defined(PETSC_HAVE_TIME)
-  time_t         aclock;
+  time_t aclock;
 #else
   struct timeval tp;
 #endif
@@ -44,13 +43,13 @@ PetscErrorCode  PetscGetDate(char date[],size_t len)
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_TIME)
   time(&aclock);
-  PetscCall(PetscStrncpy(date,asctime(localtime(&aclock)),len));
+  PetscCall(PetscStrncpy(date, asctime(localtime(&aclock)), len));
 #else
-  gettimeofday(&tp,(struct timezone*)0);
-  PetscCall(PetscStrncpy(date,asctime(localtime((time_t*)&tp.tv_sec)),len));
+  gettimeofday(&tp, (struct timezone *)0);
+  PetscCall(PetscStrncpy(date, asctime(localtime((time_t *)&tp.tv_sec)), len));
 #endif
   /* now strip out the new-line chars at the end of the string */
-  PetscCall(PetscStrstr(date,"\n",&str));
+  PetscCall(PetscStrstr(date, "\n", &str));
   if (str) str[0] = 0;
   PetscFunctionReturn(0);
 }

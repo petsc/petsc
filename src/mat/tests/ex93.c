@@ -4,77 +4,74 @@ static char help[] = "Test MatMatMult() and MatPtAP() for AIJ matrices.\n\n";
 
 extern PetscErrorCode testPTAPRectangular(void);
 
-int main(int argc,char **argv)
-{
-  Mat            A,B,C,D;
-  PetscScalar    a[] ={1.,1.,0.,0.,1.,1.,0.,0.,1.};
-  PetscInt       ij[]={0,1,2};
-  PetscReal      fill=4.0;
-  PetscMPIInt    size,rank;
-  PetscBool      isequal;
+int main(int argc, char **argv) {
+  Mat         A, B, C, D;
+  PetscScalar a[]  = {1., 1., 0., 0., 1., 1., 0., 0., 1.};
+  PetscInt    ij[] = {0, 1, 2};
+  PetscReal   fill = 4.0;
+  PetscMPIInt size, rank;
+  PetscBool   isequal;
 #if defined(PETSC_HAVE_HYPRE)
-  PetscBool      test_hypre=PETSC_FALSE;
+  PetscBool test_hypre = PETSC_FALSE;
 #endif
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
 #if defined(PETSC_HAVE_HYPRE)
-  PetscCall(PetscOptionsGetBool(NULL,NULL,"-test_hypre",&test_hypre,NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_hypre", &test_hypre, NULL));
 #endif
-  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
-  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
 
-  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
-  PetscCall(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,3,3));
-  PetscCall(MatSetType(A,MATAIJ));
+  PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
+  PetscCall(MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, 3, 3));
+  PetscCall(MatSetType(A, MATAIJ));
   PetscCall(MatSetFromOptions(A));
   PetscCall(MatSetUp(A));
-  PetscCall(MatSetOption(A,MAT_IGNORE_ZERO_ENTRIES,PETSC_TRUE));
+  PetscCall(MatSetOption(A, MAT_IGNORE_ZERO_ENTRIES, PETSC_TRUE));
 
-  if (rank == 0) {
-    PetscCall(MatSetValues(A,3,ij,3,ij,a,ADD_VALUES));
-  }
-  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  if (rank == 0) { PetscCall(MatSetValues(A, 3, ij, 3, ij, a, ADD_VALUES)); }
+  PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
 
   /* Test MatMatMult() */
-  PetscCall(MatTranspose(A,MAT_INITIAL_MATRIX,&B));      /* B = A^T */
-  PetscCall(MatMatMult(B,A,MAT_INITIAL_MATRIX,fill,&C)); /* C = B*A */
-  PetscCall(MatMatMult(B,A,MAT_REUSE_MATRIX,fill,&C));   /* recompute C=B*A */
-  PetscCall(MatSetOptionsPrefix(C,"C_"));
-  PetscCall(MatMatMultEqual(B,A,C,10,&isequal));
-  PetscCheck(isequal,PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"MatMatMult: C != B*A");
+  PetscCall(MatTranspose(A, MAT_INITIAL_MATRIX, &B));        /* B = A^T */
+  PetscCall(MatMatMult(B, A, MAT_INITIAL_MATRIX, fill, &C)); /* C = B*A */
+  PetscCall(MatMatMult(B, A, MAT_REUSE_MATRIX, fill, &C));   /* recompute C=B*A */
+  PetscCall(MatSetOptionsPrefix(C, "C_"));
+  PetscCall(MatMatMultEqual(B, A, C, 10, &isequal));
+  PetscCheck(isequal, PETSC_COMM_WORLD, PETSC_ERR_ARG_INCOMP, "MatMatMult: C != B*A");
 
-  PetscCall(MatMatMult(C,A,MAT_INITIAL_MATRIX,fill,&D)); /* D = C*A = (A^T*A)*A */
-  PetscCall(MatMatMult(C,A,MAT_REUSE_MATRIX,fill,&D));
-  PetscCall(MatMatMultEqual(C,A,D,10,&isequal));
-  PetscCheck(isequal,PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"MatMatMult: D != C*A");
+  PetscCall(MatMatMult(C, A, MAT_INITIAL_MATRIX, fill, &D)); /* D = C*A = (A^T*A)*A */
+  PetscCall(MatMatMult(C, A, MAT_REUSE_MATRIX, fill, &D));
+  PetscCall(MatMatMultEqual(C, A, D, 10, &isequal));
+  PetscCheck(isequal, PETSC_COMM_WORLD, PETSC_ERR_ARG_INCOMP, "MatMatMult: D != C*A");
 
   PetscCall(MatDestroy(&B));
   PetscCall(MatDestroy(&C));
   PetscCall(MatDestroy(&D));
 
   /* Test MatPtAP */
-  PetscCall(MatDuplicate(A,MAT_COPY_VALUES,&B));      /* B = A */
-  PetscCall(MatPtAP(A,B,MAT_INITIAL_MATRIX,fill,&C)); /* C = B^T*A*B */
-  PetscCall(MatPtAPMultEqual(A,B,C,10,&isequal));
-  PetscCheck(isequal,PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"MatPtAP: C != B^T*A*B");
+  PetscCall(MatDuplicate(A, MAT_COPY_VALUES, &B));        /* B = A */
+  PetscCall(MatPtAP(A, B, MAT_INITIAL_MATRIX, fill, &C)); /* C = B^T*A*B */
+  PetscCall(MatPtAPMultEqual(A, B, C, 10, &isequal));
+  PetscCheck(isequal, PETSC_COMM_WORLD, PETSC_ERR_ARG_INCOMP, "MatPtAP: C != B^T*A*B");
 
   /* Repeat MatPtAP to test symbolic/numeric separation for reuse of the symbolic product */
-  PetscCall(MatPtAP(A,B,MAT_REUSE_MATRIX,fill,&C));
-  PetscCall(MatPtAPMultEqual(A,B,C,10,&isequal));
-  PetscCheck(isequal,PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"MatPtAP(reuse): C != B^T*A*B");
+  PetscCall(MatPtAP(A, B, MAT_REUSE_MATRIX, fill, &C));
+  PetscCall(MatPtAPMultEqual(A, B, C, 10, &isequal));
+  PetscCheck(isequal, PETSC_COMM_WORLD, PETSC_ERR_ARG_INCOMP, "MatPtAP(reuse): C != B^T*A*B");
 
   PetscCall(MatDestroy(&C));
 
   /* Test MatPtAP with A as a dense matrix */
   {
     Mat Adense;
-    PetscCall(MatConvert(A,MATDENSE,MAT_INITIAL_MATRIX,&Adense));
-    PetscCall(MatPtAP(Adense,B,MAT_INITIAL_MATRIX,fill,&C));
+    PetscCall(MatConvert(A, MATDENSE, MAT_INITIAL_MATRIX, &Adense));
+    PetscCall(MatPtAP(Adense, B, MAT_INITIAL_MATRIX, fill, &C));
 
-    PetscCall(MatPtAPMultEqual(Adense,B,C,10,&isequal));
-    PetscCheck(isequal,PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"MatPtAP(reuse): C != B^T*Adense*B");
+    PetscCall(MatPtAPMultEqual(Adense, B, C, 10, &isequal));
+    PetscCheck(isequal, PETSC_COMM_WORLD, PETSC_ERR_ARG_INCOMP, "MatPtAP(reuse): C != B^T*Adense*B");
     PetscCall(MatDestroy(&Adense));
   }
 
@@ -83,11 +80,11 @@ int main(int argc,char **argv)
     PetscCall(testPTAPRectangular());
 
     /* test MatMatTransposeMult(): A*B^T */
-    PetscCall(MatMatTransposeMult(A,A,MAT_INITIAL_MATRIX,fill,&D)); /* D = A*A^T */
-    PetscCall(MatScale(A,2.0));
-    PetscCall(MatMatTransposeMult(A,A,MAT_REUSE_MATRIX,fill,&D));
-    PetscCall(MatMatTransposeMultEqual(A,A,D,10,&isequal));
-    PetscCheck(isequal,PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"MatMatTranspose: D != A*A^T");
+    PetscCall(MatMatTransposeMult(A, A, MAT_INITIAL_MATRIX, fill, &D)); /* D = A*A^T */
+    PetscCall(MatScale(A, 2.0));
+    PetscCall(MatMatTransposeMult(A, A, MAT_REUSE_MATRIX, fill, &D));
+    PetscCall(MatMatTransposeMultEqual(A, A, D, 10, &isequal));
+    PetscCheck(isequal, PETSC_COMM_WORLD, PETSC_ERR_ARG_INCOMP, "MatMatTranspose: D != A*A^T");
   }
 
   PetscCall(MatDestroy(&A));
@@ -99,45 +96,42 @@ int main(int argc,char **argv)
 }
 
 /* a test contributed by Tobias Neckel <neckel@in.tum.de>, 02 Jul 2008 */
-PetscErrorCode testPTAPRectangular(void)
-{
-  const int      rows = 3,cols = 5;
-  int            i;
-  Mat            A,P,C;
+PetscErrorCode testPTAPRectangular(void) {
+  const int rows = 3, cols = 5;
+  int       i;
+  Mat       A, P, C;
 
   PetscFunctionBegin;
   /* set up A  */
-  PetscCall(MatCreateSeqAIJ(PETSC_COMM_WORLD, rows, rows,1, NULL, &A));
-  for (i=0; i<rows; i++) {
-    PetscCall(MatSetValue(A, i, i, 1.0, INSERT_VALUES));
-  }
-  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatCreateSeqAIJ(PETSC_COMM_WORLD, rows, rows, 1, NULL, &A));
+  for (i = 0; i < rows; i++) { PetscCall(MatSetValue(A, i, i, 1.0, INSERT_VALUES)); }
+  PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
 
   /* set up P */
-  PetscCall(MatCreateSeqAIJ(PETSC_COMM_WORLD, rows, cols,5, NULL, &P));
-  PetscCall(MatSetValue(P, 0, 0,  1.0, INSERT_VALUES));
-  PetscCall(MatSetValue(P, 0, 1,  2.0, INSERT_VALUES));
-  PetscCall(MatSetValue(P, 0, 2,  0.0, INSERT_VALUES));
+  PetscCall(MatCreateSeqAIJ(PETSC_COMM_WORLD, rows, cols, 5, NULL, &P));
+  PetscCall(MatSetValue(P, 0, 0, 1.0, INSERT_VALUES));
+  PetscCall(MatSetValue(P, 0, 1, 2.0, INSERT_VALUES));
+  PetscCall(MatSetValue(P, 0, 2, 0.0, INSERT_VALUES));
 
   PetscCall(MatSetValue(P, 0, 3, -1.0, INSERT_VALUES));
 
-  PetscCall(MatSetValue(P, 1, 0,  0.0, INSERT_VALUES));
+  PetscCall(MatSetValue(P, 1, 0, 0.0, INSERT_VALUES));
   PetscCall(MatSetValue(P, 1, 1, -1.0, INSERT_VALUES));
-  PetscCall(MatSetValue(P, 1, 2,  1.0, INSERT_VALUES));
+  PetscCall(MatSetValue(P, 1, 2, 1.0, INSERT_VALUES));
 
-  PetscCall(MatSetValue(P, 2, 0,  3.0, INSERT_VALUES));
-  PetscCall(MatSetValue(P, 2, 1,  0.0, INSERT_VALUES));
+  PetscCall(MatSetValue(P, 2, 0, 3.0, INSERT_VALUES));
+  PetscCall(MatSetValue(P, 2, 1, 0.0, INSERT_VALUES));
   PetscCall(MatSetValue(P, 2, 2, -3.0, INSERT_VALUES));
 
-  PetscCall(MatAssemblyBegin(P,MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(P,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(P, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(P, MAT_FINAL_ASSEMBLY));
 
   /* compute C */
   PetscCall(MatPtAP(A, P, MAT_INITIAL_MATRIX, 1.0, &C));
 
-  PetscCall(MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(C, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(C, MAT_FINAL_ASSEMBLY));
 
   /* compare results */
   /*

@@ -1,4 +1,4 @@
-#include <petsc/private/dmdaimpl.h>   /*I      "petscdmda.h"   I*/
+#include <petsc/private/dmdaimpl.h> /*I      "petscdmda.h"   I*/
 #include <petsc/private/isimpl.h>
 #include <petscsf.h>
 
@@ -18,12 +18,11 @@ $     FVM++: Two points p and q are adjacent if q \in star(closure(p)), prealloc
 
 .seealso: `DMCreateMatrix()`, `DMDAPreallocateOperator()`
 @*/
-PetscErrorCode DMDASetPreallocationCenterDimension(DM dm, PetscInt preallocCenterDim)
-{
-  DM_DA *mesh = (DM_DA*) dm->data;
+PetscErrorCode DMDASetPreallocationCenterDimension(DM dm, PetscInt preallocCenterDim) {
+  DM_DA *mesh = (DM_DA *)dm->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecificType(dm, DM_CLASSID, 1,DMDA);
+  PetscValidHeaderSpecificType(dm, DM_CLASSID, 1, DMDA);
   mesh->preallocCenterDim = preallocCenterDim;
   PetscFunctionReturn(0);
 }
@@ -46,12 +45,11 @@ $     FVM++: Two points p and q are adjacent if q \in star(closure(p)), prealloc
 
 .seealso: `DMCreateMatrix()`, `DMDAPreallocateOperator()`, `DMDASetPreallocationCenterDimension()`
 @*/
-PetscErrorCode DMDAGetPreallocationCenterDimension(DM dm, PetscInt *preallocCenterDim)
-{
-  DM_DA *mesh = (DM_DA*) dm->data;
+PetscErrorCode DMDAGetPreallocationCenterDimension(DM dm, PetscInt *preallocCenterDim) {
+  DM_DA *mesh = (DM_DA *)dm->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecificType(dm, DM_CLASSID, 1,DMDA);
+  PetscValidHeaderSpecificType(dm, DM_CLASSID, 1, DMDA);
   PetscValidIntPointer(preallocCenterDim, 2);
   *preallocCenterDim = mesh->preallocCenterDim;
   PetscFunctionReturn(0);

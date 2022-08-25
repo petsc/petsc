@@ -3,7 +3,7 @@
   Code for manipulating distributed regular arrays in parallel.
 */
 
-#include <petsc/private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
+#include <petsc/private/dmdaimpl.h> /*I   "petscdmda.h"   I*/
 
 /*@C
    DMDAGetGhostCorners - Returns the global (x,y,z) indices of the lower left
@@ -34,22 +34,20 @@
 .seealso: `DMDAGetCorners()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMDAGetOwnershipRanges()`, `DMStagGetGhostCorners()`
 
 @*/
-PetscErrorCode  DMDAGetGhostCorners(DM da,PetscInt *x,PetscInt *y,PetscInt *z,PetscInt *m,PetscInt *n,PetscInt *p)
-{
+PetscErrorCode DMDAGetGhostCorners(DM da, PetscInt *x, PetscInt *y, PetscInt *z, PetscInt *m, PetscInt *n, PetscInt *p) {
   PetscInt w;
-  DM_DA    *dd = (DM_DA*)da->data;
+  DM_DA   *dd = (DM_DA *)da->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
+  PetscValidHeaderSpecificType(da, DM_CLASSID, 1, DMDA);
   /* since the xs, xe ... have all been multiplied by the number of degrees
      of freedom per cell, w = dd->w, we divide that out before returning.*/
   w = dd->w;
-  if (x) *x = dd->Xs/w + dd->xo;
-  if (y) *y = dd->Ys   + dd->yo;
-  if (z) *z = dd->Zs   + dd->zo;
-  if (m) *m = (dd->Xe - dd->Xs)/w;
+  if (x) *x = dd->Xs / w + dd->xo;
+  if (y) *y = dd->Ys + dd->yo;
+  if (z) *z = dd->Zs + dd->zo;
+  if (m) *m = (dd->Xe - dd->Xs) / w;
   if (n) *n = (dd->Ye - dd->Ys);
   if (p) *p = (dd->Ze - dd->Zs);
   PetscFunctionReturn(0);
 }
-

@@ -11,59 +11,57 @@ Input parameters include:\n\
 
 #if defined(PETSC_HAVE_MUMPS)
 /* Subroutine contributed by Varun Hiremath */
-PetscErrorCode printMumpsMemoryInfo(Mat F)
-{
-  PetscInt       maxMem, sumMem;
+PetscErrorCode printMumpsMemoryInfo(Mat F) {
+  PetscInt maxMem, sumMem;
 
   PetscFunctionBeginUser;
-  PetscCall(MatMumpsGetInfog(F,16,&maxMem));
-  PetscCall(MatMumpsGetInfog(F,17,&sumMem));
+  PetscCall(MatMumpsGetInfog(F, 16, &maxMem));
+  PetscCall(MatMumpsGetInfog(F, 17, &sumMem));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n MUMPS INFOG(16) :: Max memory in MB = %" PetscInt_FMT, maxMem));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n MUMPS INFOG(17) :: Sum memory in MB = %" PetscInt_FMT "\n", sumMem));
   PetscFunctionReturn(0);
 }
 #endif
 
-int main(int argc,char **args)
-{
-  Vec            x,b,u;    /* approx solution, RHS, exact solution */
-  Mat            A,F;
-  KSP            ksp;      /* linear solver context */
-  PC             pc;
-  PetscRandom    rctx;     /* random number generator context */
-  PetscReal      norm;     /* norm of solution error */
-  PetscInt       i,j,Ii,J,Istart,Iend,m = 8,n = 7,its;
-  PetscBool      flg=PETSC_FALSE,flg_ilu=PETSC_FALSE,flg_ch=PETSC_FALSE;
+int main(int argc, char **args) {
+  Vec         x, b, u; /* approx solution, RHS, exact solution */
+  Mat         A, F;
+  KSP         ksp; /* linear solver context */
+  PC          pc;
+  PetscRandom rctx; /* random number generator context */
+  PetscReal   norm; /* norm of solution error */
+  PetscInt    i, j, Ii, J, Istart, Iend, m = 8, n = 7, its;
+  PetscBool   flg = PETSC_FALSE, flg_ilu = PETSC_FALSE, flg_ch = PETSC_FALSE;
 #if defined(PETSC_HAVE_MUMPS)
-  PetscBool      flg_mumps=PETSC_FALSE,flg_mumps_ch=PETSC_FALSE;
+  PetscBool flg_mumps = PETSC_FALSE, flg_mumps_ch = PETSC_FALSE;
 #endif
 #if defined(PETSC_HAVE_SUPERLU) || defined(PETSC_HAVE_SUPERLU_DIST)
-  PetscBool      flg_superlu=PETSC_FALSE;
+  PetscBool flg_superlu = PETSC_FALSE;
 #endif
 #if defined(PETSC_HAVE_STRUMPACK)
-  PetscBool      flg_strumpack=PETSC_FALSE;
+  PetscBool flg_strumpack = PETSC_FALSE;
 #endif
-  PetscScalar    v;
-  PetscMPIInt    rank,size;
+  PetscScalar v;
+  PetscMPIInt rank, size;
 #if defined(PETSC_USE_LOG)
-  PetscLogStage  stage;
+  PetscLogStage stage;
 #endif
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
-  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
-  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
-  PetscCall(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
-  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-m", &m, NULL));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-n", &n, NULL));
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
          Compute the matrix and right-hand-side vector that define
          the linear system, Ax = b.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
-  PetscCall(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n));
+  PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
+  PetscCall(MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, m * n, m * n));
   PetscCall(MatSetFromOptions(A));
-  PetscCall(MatMPIAIJSetPreallocation(A,5,NULL,5,NULL));
-  PetscCall(MatSeqAIJSetPreallocation(A,5,NULL));
+  PetscCall(MatMPIAIJSetPreallocation(A, 5, NULL, 5, NULL));
+  PetscCall(MatSeqAIJSetPreallocation(A, 5, NULL));
   PetscCall(MatSetUp(A));
 
   /*
@@ -71,7 +69,7 @@ int main(int argc,char **args)
      contiguous chunks of rows across the processors.  Determine which
      rows of the matrix are locally owned.
   */
-  PetscCall(MatGetOwnershipRange(A,&Istart,&Iend));
+  PetscCall(MatGetOwnershipRange(A, &Istart, &Iend));
 
   /*
      Set matrix elements for the 2-D, five-point stencil in parallel.
@@ -88,13 +86,28 @@ int main(int argc,char **args)
    */
   PetscCall(PetscLogStageRegister("Assembly", &stage));
   PetscCall(PetscLogStagePush(stage));
-  for (Ii=Istart; Ii<Iend; Ii++) {
-    v = -1.0; i = Ii/n; j = Ii - i*n;
-    if (i>0)   {J = Ii - n; PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
-    if (i<m-1) {J = Ii + n; PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
-    if (j>0)   {J = Ii - 1; PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
-    if (j<n-1) {J = Ii + 1; PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
-    v = 4.0; PetscCall(MatSetValues(A,1,&Ii,1,&Ii,&v,INSERT_VALUES));
+  for (Ii = Istart; Ii < Iend; Ii++) {
+    v = -1.0;
+    i = Ii / n;
+    j = Ii - i * n;
+    if (i > 0) {
+      J = Ii - n;
+      PetscCall(MatSetValues(A, 1, &Ii, 1, &J, &v, INSERT_VALUES));
+    }
+    if (i < m - 1) {
+      J = Ii + n;
+      PetscCall(MatSetValues(A, 1, &Ii, 1, &J, &v, INSERT_VALUES));
+    }
+    if (j > 0) {
+      J = Ii - 1;
+      PetscCall(MatSetValues(A, 1, &Ii, 1, &J, &v, INSERT_VALUES));
+    }
+    if (j < n - 1) {
+      J = Ii + 1;
+      PetscCall(MatSetValues(A, 1, &Ii, 1, &J, &v, INSERT_VALUES));
+    }
+    v = 4.0;
+    PetscCall(MatSetValues(A, 1, &Ii, 1, &Ii, &v, INSERT_VALUES));
   }
 
   /*
@@ -103,12 +116,12 @@ int main(int argc,char **args)
      Computations can be done while messages are in transition
      by placing code between these two statements.
   */
-  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
   PetscCall(PetscLogStagePop());
 
   /* A is symmetric. Set symmetric flag to enable ICC/Cholesky preconditioner */
-  PetscCall(MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE));
+  PetscCall(MatSetOption(A, MAT_SYMMETRIC, PETSC_TRUE));
 
   /*
      Create parallel vectors.
@@ -126,11 +139,11 @@ int main(int argc,char **args)
         (replacing the PETSC_DECIDE argument in the VecSetSizes() statement
         below).
   */
-  PetscCall(VecCreate(PETSC_COMM_WORLD,&u));
-  PetscCall(VecSetSizes(u,PETSC_DECIDE,m*n));
+  PetscCall(VecCreate(PETSC_COMM_WORLD, &u));
+  PetscCall(VecSetSizes(u, PETSC_DECIDE, m * n));
   PetscCall(VecSetFromOptions(u));
-  PetscCall(VecDuplicate(u,&b));
-  PetscCall(VecDuplicate(b,&x));
+  PetscCall(VecDuplicate(u, &b));
+  PetscCall(VecDuplicate(b, &x));
 
   /*
      Set exact solution; then compute right-hand-side vector.
@@ -138,23 +151,23 @@ int main(int argc,char **args)
      elements of 1.0;  Alternatively, using the runtime option
      -random_sol forms a solution vector with random components.
   */
-  PetscCall(PetscOptionsGetBool(NULL,NULL,"-random_exact_sol",&flg,NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-random_exact_sol", &flg, NULL));
   if (flg) {
-    PetscCall(PetscRandomCreate(PETSC_COMM_WORLD,&rctx));
+    PetscCall(PetscRandomCreate(PETSC_COMM_WORLD, &rctx));
     PetscCall(PetscRandomSetFromOptions(rctx));
-    PetscCall(VecSetRandom(u,rctx));
+    PetscCall(VecSetRandom(u, rctx));
     PetscCall(PetscRandomDestroy(&rctx));
   } else {
-    PetscCall(VecSet(u,1.0));
+    PetscCall(VecSet(u, 1.0));
   }
-  PetscCall(MatMult(A,u,b));
+  PetscCall(MatMult(A, u, b));
 
   /*
      View the exact solution vector if desired
   */
-  flg  = PETSC_FALSE;
-  PetscCall(PetscOptionsGetBool(NULL,NULL,"-view_exact_sol",&flg,NULL));
-  if (flg) PetscCall(VecView(u,PETSC_VIEWER_STDOUT_WORLD));
+  flg = PETSC_FALSE;
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-view_exact_sol", &flg, NULL));
+  if (flg) PetscCall(VecView(u, PETSC_VIEWER_STDOUT_WORLD));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                 Create the linear solver and set various options
@@ -163,8 +176,8 @@ int main(int argc,char **args)
   /*
      Create linear solver context
   */
-  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
-  PetscCall(KSPSetOperators(ksp,A,A));
+  PetscCall(KSPCreate(PETSC_COMM_WORLD, &ksp));
+  PetscCall(KSPSetOperators(ksp, A, A));
 
   /*
     Example of how to use external package MUMPS
@@ -175,44 +188,46 @@ int main(int argc,char **args)
 #if defined(PETSC_HAVE_MUMPS)
   flg_mumps    = PETSC_FALSE;
   flg_mumps_ch = PETSC_FALSE;
-  PetscCall(PetscOptionsGetBool(NULL,NULL,"-use_mumps_lu",&flg_mumps,NULL));
-  PetscCall(PetscOptionsGetBool(NULL,NULL,"-use_mumps_ch",&flg_mumps_ch,NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-use_mumps_lu", &flg_mumps, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-use_mumps_ch", &flg_mumps_ch, NULL));
   if (flg_mumps || flg_mumps_ch) {
-    PetscCall(KSPSetType(ksp,KSPPREONLY));
-    PetscInt  ival,icntl;
+    PetscCall(KSPSetType(ksp, KSPPREONLY));
+    PetscInt  ival, icntl;
     PetscReal val;
-    PetscCall(KSPGetPC(ksp,&pc));
+    PetscCall(KSPGetPC(ksp, &pc));
     if (flg_mumps) {
-      PetscCall(PCSetType(pc,PCLU));
+      PetscCall(PCSetType(pc, PCLU));
     } else if (flg_mumps_ch) {
-      PetscCall(MatSetOption(A,MAT_SPD,PETSC_TRUE)); /* set MUMPS id%SYM=1 */
-      PetscCall(PCSetType(pc,PCCHOLESKY));
+      PetscCall(MatSetOption(A, MAT_SPD, PETSC_TRUE)); /* set MUMPS id%SYM=1 */
+      PetscCall(PCSetType(pc, PCCHOLESKY));
     }
-    PetscCall(PCFactorSetMatSolverType(pc,MATSOLVERMUMPS));
+    PetscCall(PCFactorSetMatSolverType(pc, MATSOLVERMUMPS));
     PetscCall(PCFactorSetUpMatSolverType(pc)); /* call MatGetFactor() to create F */
-    PetscCall(PCFactorGetMatrix(pc,&F));
+    PetscCall(PCFactorGetMatrix(pc, &F));
 
     if (flg_mumps) {
       /* Get memory estimates from MUMPS' MatLUFactorSymbolic(), e.g. INFOG(16), INFOG(17).
          KSPSetUp() below will do nothing inside MatLUFactorSymbolic() */
       MatFactorInfo info;
-      PetscCall(MatLUFactorSymbolic(F,A,NULL,NULL,&info));
+      PetscCall(MatLUFactorSymbolic(F, A, NULL, NULL, &info));
       flg = PETSC_FALSE;
-      PetscCall(PetscOptionsGetBool(NULL,NULL,"-print_mumps_memory",&flg,NULL));
+      PetscCall(PetscOptionsGetBool(NULL, NULL, "-print_mumps_memory", &flg, NULL));
       if (flg) PetscCall(printMumpsMemoryInfo(F));
     }
 
     /* sequential ordering */
-    icntl = 7; ival = 2;
-    PetscCall(MatMumpsSetIcntl(F,icntl,ival));
+    icntl = 7;
+    ival  = 2;
+    PetscCall(MatMumpsSetIcntl(F, icntl, ival));
 
     /* threshold for row pivot detection */
-    PetscCall(MatMumpsSetIcntl(F,24,1));
-    icntl = 3; val = 1.e-6;
-    PetscCall(MatMumpsSetCntl(F,icntl,val));
+    PetscCall(MatMumpsSetIcntl(F, 24, 1));
+    icntl = 3;
+    val   = 1.e-6;
+    PetscCall(MatMumpsSetCntl(F, icntl, val));
 
     /* compute determinant of A */
-    PetscCall(MatMumpsSetIcntl(F,33,1));
+    PetscCall(MatMumpsSetIcntl(F, 33, 1));
   }
 #endif
 
@@ -225,32 +240,30 @@ int main(int argc,char **args)
 #if defined(PETSC_HAVE_SUPERLU) || defined(PETSC_HAVE_SUPERLU_DIST)
   flg_ilu     = PETSC_FALSE;
   flg_superlu = PETSC_FALSE;
-  PetscCall(PetscOptionsGetBool(NULL,NULL,"-use_superlu_lu",&flg_superlu,NULL));
-  PetscCall(PetscOptionsGetBool(NULL,NULL,"-use_superlu_ilu",&flg_ilu,NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-use_superlu_lu", &flg_superlu, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-use_superlu_ilu", &flg_ilu, NULL));
   if (flg_superlu || flg_ilu) {
-    PetscCall(KSPSetType(ksp,KSPPREONLY));
-    PetscCall(KSPGetPC(ksp,&pc));
-    if (flg_superlu) PetscCall(PCSetType(pc,PCLU));
-    else if (flg_ilu) PetscCall(PCSetType(pc,PCILU));
+    PetscCall(KSPSetType(ksp, KSPPREONLY));
+    PetscCall(KSPGetPC(ksp, &pc));
+    if (flg_superlu) PetscCall(PCSetType(pc, PCLU));
+    else if (flg_ilu) PetscCall(PCSetType(pc, PCILU));
     if (size == 1) {
 #if !defined(PETSC_HAVE_SUPERLU)
-      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This test requires SUPERLU");
+      SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "This test requires SUPERLU");
 #else
-      PetscCall(PCFactorSetMatSolverType(pc,MATSOLVERSUPERLU));
+      PetscCall(PCFactorSetMatSolverType(pc, MATSOLVERSUPERLU));
 #endif
     } else {
 #if !defined(PETSC_HAVE_SUPERLU_DIST)
-      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This test requires SUPERLU_DIST");
+      SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "This test requires SUPERLU_DIST");
 #else
-      PetscCall(PCFactorSetMatSolverType(pc,MATSOLVERSUPERLU_DIST));
+      PetscCall(PCFactorSetMatSolverType(pc, MATSOLVERSUPERLU_DIST));
 #endif
     }
     PetscCall(PCFactorSetUpMatSolverType(pc)); /* call MatGetFactor() to create F */
-    PetscCall(PCFactorGetMatrix(pc,&F));
+    PetscCall(PCFactorGetMatrix(pc, &F));
 #if defined(PETSC_HAVE_SUPERLU)
-    if (size == 1) {
-      PetscCall(MatSuperluSetILUDropTol(F,1.e-8));
-    }
+    if (size == 1) { PetscCall(MatSuperluSetILUDropTol(F, 1.e-8)); }
 #endif
   }
 #endif
@@ -274,39 +287,39 @@ int main(int argc,char **args)
 #if defined(PETSC_HAVE_STRUMPACK)
   flg_ilu       = PETSC_FALSE;
   flg_strumpack = PETSC_FALSE;
-  PetscCall(PetscOptionsGetBool(NULL,NULL,"-use_strumpack_lu",&flg_strumpack,NULL));
-  PetscCall(PetscOptionsGetBool(NULL,NULL,"-use_strumpack_ilu",&flg_ilu,NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-use_strumpack_lu", &flg_strumpack, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-use_strumpack_ilu", &flg_ilu, NULL));
   if (flg_strumpack || flg_ilu) {
-    PetscCall(KSPSetType(ksp,KSPPREONLY));
-    PetscCall(KSPGetPC(ksp,&pc));
-    if (flg_strumpack) PetscCall(PCSetType(pc,PCLU));
-    else if (flg_ilu) PetscCall(PCSetType(pc,PCILU));
+    PetscCall(KSPSetType(ksp, KSPPREONLY));
+    PetscCall(KSPGetPC(ksp, &pc));
+    if (flg_strumpack) PetscCall(PCSetType(pc, PCLU));
+    else if (flg_ilu) PetscCall(PCSetType(pc, PCILU));
 #if !defined(PETSC_HAVE_STRUMPACK)
-    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This test requires STRUMPACK");
+    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "This test requires STRUMPACK");
 #endif
-    PetscCall(PCFactorSetMatSolverType(pc,MATSOLVERSTRUMPACK));
+    PetscCall(PCFactorSetMatSolverType(pc, MATSOLVERSTRUMPACK));
     PetscCall(PCFactorSetUpMatSolverType(pc)); /* call MatGetFactor() to create F */
-    PetscCall(PCFactorGetMatrix(pc,&F));
+    PetscCall(PCFactorGetMatrix(pc, &F));
 #if defined(PETSC_HAVE_STRUMPACK)
     /* Set the fill-reducing reordering.                              */
-    PetscCall(MatSTRUMPACKSetReordering(F,MAT_STRUMPACK_METIS));
+    PetscCall(MatSTRUMPACKSetReordering(F, MAT_STRUMPACK_METIS));
     /* Since this is a simple discretization, the diagonal is always  */
     /* nonzero, and there is no need for the extra MC64 permutation.  */
-    PetscCall(MatSTRUMPACKSetColPerm(F,PETSC_FALSE));
+    PetscCall(MatSTRUMPACKSetColPerm(F, PETSC_FALSE));
     /* The compression tolerance used when doing low-rank compression */
     /* in the preconditioner. This is problem specific!               */
-    PetscCall(MatSTRUMPACKSetHSSRelTol(F,1.e-3));
+    PetscCall(MatSTRUMPACKSetHSSRelTol(F, 1.e-3));
     /* Set minimum matrix size for HSS compression to 15 in order to  */
     /* demonstrate preconditioner on small problems. For performance  */
     /* a value of say 500 is better.                                  */
-    PetscCall(MatSTRUMPACKSetHSSMinSepSize(F,15));
+    PetscCall(MatSTRUMPACKSetHSSMinSepSize(F, 15));
     /* You can further limit the fill in the preconditioner by        */
     /* setting a maximum rank                                         */
-    PetscCall(MatSTRUMPACKSetHSSMaxRank(F,100));
+    PetscCall(MatSTRUMPACKSetHSSMaxRank(F, 100));
     /* Set the size of the diagonal blocks (the leafs) in the HSS     */
     /* approximation. The default value should be better for real     */
     /* problems. This is mostly for illustration on a small problem.  */
-    PetscCall(MatSTRUMPACKSetHSSLeafSize(F,4));
+    PetscCall(MatSTRUMPACKSetHSSLeafSize(F, 4));
 #endif
   }
 #endif
@@ -318,25 +331,25 @@ int main(int argc,char **args)
   flg     = PETSC_FALSE;
   flg_ilu = PETSC_FALSE;
   flg_ch  = PETSC_FALSE;
-  PetscCall(PetscOptionsGetBool(NULL,NULL,"-use_petsc_lu",&flg,NULL));
-  PetscCall(PetscOptionsGetBool(NULL,NULL,"-use_petsc_ilu",&flg_ilu,NULL));
-  PetscCall(PetscOptionsGetBool(NULL,NULL,"-use_petsc_ch",&flg_ch,NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-use_petsc_lu", &flg, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-use_petsc_ilu", &flg_ilu, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-use_petsc_ch", &flg_ch, NULL));
   if (flg || flg_ilu || flg_ch) {
     Vec diag;
 
-    PetscCall(KSPSetType(ksp,KSPPREONLY));
-    PetscCall(KSPGetPC(ksp,&pc));
-    if (flg) PetscCall(PCSetType(pc,PCLU));
-    else if (flg_ilu) PetscCall(PCSetType(pc,PCILU));
-    else if (flg_ch) PetscCall(PCSetType(pc,PCCHOLESKY));
-    PetscCall(PCFactorSetMatSolverType(pc,MATSOLVERPETSC));
+    PetscCall(KSPSetType(ksp, KSPPREONLY));
+    PetscCall(KSPGetPC(ksp, &pc));
+    if (flg) PetscCall(PCSetType(pc, PCLU));
+    else if (flg_ilu) PetscCall(PCSetType(pc, PCILU));
+    else if (flg_ch) PetscCall(PCSetType(pc, PCCHOLESKY));
+    PetscCall(PCFactorSetMatSolverType(pc, MATSOLVERPETSC));
     PetscCall(PCFactorSetUpMatSolverType(pc)); /* call MatGetFactor() to create F */
-    PetscCall(PCFactorGetMatrix(pc,&F));
+    PetscCall(PCFactorGetMatrix(pc, &F));
 
     /* Test MatGetDiagonal() */
     PetscCall(KSPSetUp(ksp));
-    PetscCall(VecDuplicate(x,&diag));
-    PetscCall(MatGetDiagonal(F,diag));
+    PetscCall(VecDuplicate(x, &diag));
+    PetscCall(MatGetDiagonal(F, diag));
     /* PetscCall(VecView(diag,PETSC_VIEWER_STDOUT_WORLD)); */
     PetscCall(VecDestroy(&diag));
   }
@@ -348,18 +361,18 @@ int main(int argc,char **args)
 
 #if defined(PETSC_HAVE_MUMPS)
   if (flg_mumps || flg_mumps_ch) {
-    PetscInt  icntl,infog34;
-    PetscReal cntl,rinfo12,rinfo13;
+    PetscInt  icntl, infog34;
+    PetscReal cntl, rinfo12, rinfo13;
     icntl = 3;
-    PetscCall(MatMumpsGetCntl(F,icntl,&cntl));
+    PetscCall(MatMumpsGetCntl(F, icntl, &cntl));
 
     /* compute determinant */
     if (rank == 0) {
-      PetscCall(MatMumpsGetInfog(F,34,&infog34));
-      PetscCall(MatMumpsGetRinfog(F,12,&rinfo12));
-      PetscCall(MatMumpsGetRinfog(F,13,&rinfo13));
-      PetscCall(PetscPrintf(PETSC_COMM_SELF,"  Mumps row pivot threshold = %g\n",cntl));
-      PetscCall(PetscPrintf(PETSC_COMM_SELF,"  Mumps determinant = (%g, %g) * 2^%" PetscInt_FMT " \n",(double)rinfo12,(double)rinfo13,infog34));
+      PetscCall(MatMumpsGetInfog(F, 34, &infog34));
+      PetscCall(MatMumpsGetRinfog(F, 12, &rinfo12));
+      PetscCall(MatMumpsGetRinfog(F, 13, &rinfo13));
+      PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Mumps row pivot threshold = %g\n", cntl));
+      PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Mumps determinant = (%g, %g) * 2^%" PetscInt_FMT " \n", (double)rinfo12, (double)rinfo13, infog34));
     }
   }
 #endif
@@ -367,14 +380,14 @@ int main(int argc,char **args)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                       Solve the linear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscCall(KSPSolve(ksp,b,x));
+  PetscCall(KSPSolve(ksp, b, x));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                       Check solution and clean up
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscCall(VecAXPY(x,-1.0,u));
-  PetscCall(VecNorm(x,NORM_2,&norm));
-  PetscCall(KSPGetIterationNumber(ksp,&its));
+  PetscCall(VecAXPY(x, -1.0, u));
+  PetscCall(VecNorm(x, NORM_2, &norm));
+  PetscCall(KSPGetIterationNumber(ksp, &its));
 
   /*
      Print convergence information.  PetscPrintf() produces a single
@@ -382,18 +395,20 @@ int main(int argc,char **args)
      An alternative is PetscFPrintf(), which prints to a file.
   */
   if (norm < 1.e-12) {
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of error < 1.e-12 iterations %" PetscInt_FMT "\n",its));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Norm of error < 1.e-12 iterations %" PetscInt_FMT "\n", its));
   } else {
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g iterations %" PetscInt_FMT "\n",(double)norm,its));
- }
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Norm of error %g iterations %" PetscInt_FMT "\n", (double)norm, its));
+  }
 
   /*
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
   PetscCall(KSPDestroy(&ksp));
-  PetscCall(VecDestroy(&u));  PetscCall(VecDestroy(&x));
-  PetscCall(VecDestroy(&b));  PetscCall(MatDestroy(&A));
+  PetscCall(VecDestroy(&u));
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&b));
+  PetscCall(MatDestroy(&A));
 
   /*
      Always call PetscFinalize() before exiting a program.  This routine

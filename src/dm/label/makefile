@@ -6,7 +6,7 @@ SOURCEH  =
 DIRS     = tutorials
 LIBBASE  = libpetscdm
 MANSEC   = DM
-SUBMANSEC= DMLABEL
+SUBMANSEC= DMLabel
 LOCDIR   = src/dm/label/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

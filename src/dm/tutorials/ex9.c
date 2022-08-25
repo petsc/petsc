@@ -5,14 +5,13 @@ static char help[] = "Demonstrates HDF5 vector input/ouput\n\n";
 #include <petscdmda.h>
 #include <petscviewerhdf5.h>
 
-int main(int argc,char **argv)
-{
-  PetscViewer    viewer;
-  DM             da;
-  Vec            global,local,global2;
-  PetscMPIInt    rank;
-  PetscBool      flg;
-  PetscInt       ndof;
+int main(int argc, char **argv) {
+  PetscViewer viewer;
+  DM          da;
+  Vec         global, local, global2;
+  PetscMPIInt rank;
+  PetscBool   flg;
+  PetscInt    ndof;
 
   /*
     Every PETSc routine should begin with the PetscInitialize() routine.
@@ -24,69 +23,65 @@ int main(int argc,char **argv)
                  additional help messages in this printout.
   */
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
   /* Get number of DOF's from command line */
-  PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"DMDA VecView/VecLoad example","");
+  PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "DMDA VecView/VecLoad example", "");
   {
     ndof = 1;
-    PetscOptionsBoundedInt("-ndof","Number of DOF's in DMDA","",ndof,&ndof,NULL,1);
+    PetscOptionsBoundedInt("-ndof", "Number of DOF's in DMDA", "", ndof, &ndof, NULL, 1);
   }
   PetscOptionsEnd();
 
   /* Create a DMDA and an associated vector */
-  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,100,90,PETSC_DECIDE,PETSC_DECIDE,ndof,1,NULL,NULL,&da));
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, 100, 90, PETSC_DECIDE, PETSC_DECIDE, ndof, 1, NULL, NULL, &da));
   PetscCall(DMSetFromOptions(da));
   PetscCall(DMSetUp(da));
-  PetscCall(DMCreateGlobalVector(da,&global));
-  PetscCall(DMCreateLocalVector(da,&local));
-  PetscCall(VecSet(global,-1.0));
-  PetscCall(DMGlobalToLocalBegin(da,global,INSERT_VALUES,local));
-  PetscCall(DMGlobalToLocalEnd(da,global,INSERT_VALUES,local));
-  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
-  PetscCall(VecScale(local,rank+1));
-  PetscCall(DMLocalToGlobalBegin(da,local,ADD_VALUES,global));
-  PetscCall(DMLocalToGlobalEnd(da,local,ADD_VALUES,global));
+  PetscCall(DMCreateGlobalVector(da, &global));
+  PetscCall(DMCreateLocalVector(da, &local));
+  PetscCall(VecSet(global, -1.0));
+  PetscCall(DMGlobalToLocalBegin(da, global, INSERT_VALUES, local));
+  PetscCall(DMGlobalToLocalEnd(da, global, INSERT_VALUES, local));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
+  PetscCall(VecScale(local, rank + 1));
+  PetscCall(DMLocalToGlobalBegin(da, local, ADD_VALUES, global));
+  PetscCall(DMLocalToGlobalEnd(da, local, ADD_VALUES, global));
 
   /* Create the HDF5 viewer for writing */
-  PetscCall(PetscViewerHDF5Open(PETSC_COMM_WORLD,"hdf5output.h5",FILE_MODE_WRITE,&viewer));
+  PetscCall(PetscViewerHDF5Open(PETSC_COMM_WORLD, "hdf5output.h5", FILE_MODE_WRITE, &viewer));
   PetscCall(PetscViewerSetFromOptions(viewer));
 
   /* Write the Vec without one extra dimension for BS */
   PetscCall(PetscViewerHDF5SetBaseDimension2(viewer, PETSC_FALSE));
-  PetscCall(PetscObjectSetName((PetscObject) global, "noBsDim"));
-  PetscCall(VecView(global,viewer));
+  PetscCall(PetscObjectSetName((PetscObject)global, "noBsDim"));
+  PetscCall(VecView(global, viewer));
 
   /* Write the Vec with one extra, 1-sized, dimension for BS */
   PetscCall(PetscViewerHDF5SetBaseDimension2(viewer, PETSC_TRUE));
-  PetscCall(PetscObjectSetName((PetscObject) global, "bsDim"));
-  PetscCall(VecView(global,viewer));
+  PetscCall(PetscObjectSetName((PetscObject)global, "bsDim"));
+  PetscCall(VecView(global, viewer));
 
   PetscCall(PetscViewerDestroy(&viewer));
   PetscCallMPI(MPI_Barrier(PETSC_COMM_WORLD));
-  PetscCall(VecDuplicate(global,&global2));
+  PetscCall(VecDuplicate(global, &global2));
 
   /* Create the HDF5 viewer for reading */
-  PetscCall(PetscViewerHDF5Open(PETSC_COMM_WORLD,"hdf5output.h5",FILE_MODE_READ,&viewer));
+  PetscCall(PetscViewerHDF5Open(PETSC_COMM_WORLD, "hdf5output.h5", FILE_MODE_READ, &viewer));
   PetscCall(PetscViewerSetFromOptions(viewer));
 
   /* Load the Vec without the BS dim and compare */
-  PetscCall(PetscObjectSetName((PetscObject) global2, "noBsDim"));
-  PetscCall(VecLoad(global2,viewer));
+  PetscCall(PetscObjectSetName((PetscObject)global2, "noBsDim"));
+  PetscCall(VecLoad(global2, viewer));
 
-  PetscCall(VecEqual(global,global2,&flg));
-  if (!flg) {
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Error: Vectors are not equal\n"));
-  }
+  PetscCall(VecEqual(global, global2, &flg));
+  if (!flg) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error: Vectors are not equal\n")); }
 
   /* Load the Vec with one extra, 1-sized, BS dim and compare */
-  PetscCall(PetscObjectSetName((PetscObject) global2, "bsDim"));
-  PetscCall(VecLoad(global2,viewer));
+  PetscCall(PetscObjectSetName((PetscObject)global2, "bsDim"));
+  PetscCall(VecLoad(global2, viewer));
   PetscCall(PetscViewerDestroy(&viewer));
 
-  PetscCall(VecEqual(global,global2,&flg));
-  if (!flg) {
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Error: Vectors are not equal\n"));
-  }
+  PetscCall(VecEqual(global, global2, &flg));
+  if (!flg) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error: Vectors are not equal\n")); }
 
   /* clean up and exit */
   PetscCall(VecDestroy(&local));

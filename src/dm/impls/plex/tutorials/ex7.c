@@ -2,14 +2,13 @@ static char help[] = "Create a Plex sphere from quads and create a P1 section\n\
 
 #include <petscdmplex.h>
 
-static PetscErrorCode SetupSection(DM dm)
-{
-  PetscSection   s;
-  PetscInt       vStart, vEnd, v;
+static PetscErrorCode SetupSection(DM dm) {
+  PetscSection s;
+  PetscInt     vStart, vEnd, v;
 
   PetscFunctionBeginUser;
   PetscCall(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
-  PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject) dm), &s));
+  PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)dm), &s));
   PetscCall(PetscSectionSetNumFields(s, 1));
   PetscCall(PetscSectionSetFieldComponents(s, 0, 1));
   PetscCall(PetscSectionSetChart(s, vStart, vEnd));
@@ -23,17 +22,16 @@ static PetscErrorCode SetupSection(DM dm)
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv)
-{
-  DM             dm;
-  Vec            u;
+int main(int argc, char **argv) {
+  DM  dm;
+  Vec u;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, NULL,help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(DMCreate(PETSC_COMM_WORLD, &dm));
   PetscCall(DMSetType(dm, DMPLEX));
   PetscCall(DMSetFromOptions(dm));
-  PetscCall(PetscObjectSetName((PetscObject) dm, "Sphere"));
+  PetscCall(PetscObjectSetName((PetscObject)dm, "Sphere"));
   PetscCall(DMViewFromOptions(dm, NULL, "-dm_view"));
 
   PetscCall(SetupSection(dm));

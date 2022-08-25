@@ -2,7 +2,7 @@
 ! Example usage of Fortran 2003/2008 classes (extended derived types) as
 ! user-defined contexts in PETSc. Example contributed by Glenn Hammond.
 !
-module Base_module
+module ex18f90base_module
 #include "petsc/finclude/petscsnes.h"
       implicit none
   private
@@ -21,10 +21,10 @@ subroutine BasePrint(this)
   print *, 'Base printout'
   print *
 end subroutine BasePrint
-end module Base_module
+end module ex18f90base_module
 
-module Extended_module
-  use Base_module
+module ex18f90extended_module
+  use ex18f90base_module
   implicit none
   private
   type, public, extends(base_type) :: extended_type
@@ -41,15 +41,15 @@ subroutine ExtendedPrint(this)
   print *, 'Extended printout'
   print *
 end subroutine ExtendedPrint
-end module Extended_module
+end module ex18f90extended_module
 
-module Function_module
+module ex18f90function_module
   use petscsnes
   implicit none
   public :: TestFunction
   contains
 subroutine TestFunction(snes,xx,r,ctx,ierr)
-  use Base_module
+  use ex18f90base_module
   implicit none
   SNES :: snes
   Vec :: xx
@@ -58,19 +58,19 @@ subroutine TestFunction(snes,xx,r,ctx,ierr)
   PetscErrorCode :: ierr  ! polymorphic extensions
   call ctx%Print()
 end subroutine TestFunction
-end module Function_module
+end module ex18f90function_module
 
 program ex18f90
 
-  use Base_module
-  use Extended_module
-  use Function_module
+  use ex18f90base_module
+  use ex18f90extended_module
+  use ex18f90function_module
   implicit none
 
 ! ifort on windows requires this interface definition
 interface
   subroutine SNESSetFunction(snes_base,x,TestFunction,base,ierr)
-    use Base_module
+    use ex18f90base_module
     use petscsnes
     SNES snes_base
     Vec x

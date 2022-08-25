@@ -2,7 +2,7 @@
 #if !defined(_MHYP_H)
 #define _MHYP_H
 
-#include <petscdmda.h>   /*I "petscdmda.h" I*/
+#include <petscdmda.h> /*I "petscdmda.h" I*/
 #include <HYPRE_struct_mv.h>
 #include <HYPRE_struct_ls.h>
 #include <_hypre_struct_mv.h>
@@ -16,14 +16,14 @@ typedef struct {
   HYPRE_StructGrid    hgrid;
   HYPRE_StructStencil hstencil;
   HYPRE_StructMatrix  hmat;
-  HYPRE_StructVector  hb,hx;
+  HYPRE_StructVector  hb, hx;
   hypre_Box           hbox;
 
   PetscBool needsinitialization;
 
   /* variables that are stored here so they need not be reloaded for each MatSetValuesLocal() or MatZeroRowsLocal() call */
   const PetscInt *gindices;
-  PetscInt       rstart,gnx,gnxgny,xs,ys,zs,nx,ny,nxny;
+  PetscInt        rstart, gnx, gnxgny, xs, ys, zs, nx, ny, nxny;
 } Mat_HYPREStruct;
 
 typedef struct {
@@ -44,7 +44,7 @@ typedef struct {
 
   /* variables that are stored here so they need not be reloaded for each MatSetValuesLocal() or MatZeroRowsLocal() call */
   const PetscInt *gindices;
-  PetscInt       rstart,gnx,gnxgny,gnxgnygnz,xs,ys,zs,nx,ny,nz,nxny,nxnynz;
+  PetscInt        rstart, gnx, gnxgny, gnxgnygnz, xs, ys, zs, nx, ny, nz, nxny, nxnynz;
 } Mat_HYPRESStruct;
 
 #endif

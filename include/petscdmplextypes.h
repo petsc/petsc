@@ -20,23 +20,37 @@ $ DM_SHAPE_DOUBLET     - The mesh of two cells of a specified type
 
 .seealso: `DMPlexGetCellRefiner()`, `DMPlexSetCellRefiner()`, `DMRefine()`, `DMPolytopeType`
 E*/
-typedef enum {DM_SHAPE_BOX, DM_SHAPE_BOX_SURFACE, DM_SHAPE_BALL, DM_SHAPE_SPHERE, DM_SHAPE_CYLINDER, DM_SHAPE_SCHWARZ_P, DM_SHAPE_GYROID, DM_SHAPE_DOUBLET, DM_SHAPE_UNKNOWN} DMPlexShape;
-PETSC_EXTERN const char * const DMPlexShapes[];
+typedef enum {
+  DM_SHAPE_BOX,
+  DM_SHAPE_BOX_SURFACE,
+  DM_SHAPE_BALL,
+  DM_SHAPE_SPHERE,
+  DM_SHAPE_CYLINDER,
+  DM_SHAPE_SCHWARZ_P,
+  DM_SHAPE_GYROID,
+  DM_SHAPE_DOUBLET,
+  DM_SHAPE_UNKNOWN
+} DMPlexShape;
+PETSC_EXTERN const char *const DMPlexShapes[];
 
 /*E
   DMPlexCSRAlgorithm - The algorithm for building the adjacency graph in CSR format, usually for a mesh partitioner
 
   Existing shapes include
-$ DM_PLEX_CSR_MAT     - Use MatPartition by first making a matrix
-$ DM_PLEX_CSR_GRAPH   - Use the original Plex and communicate along the boundary
-$ DM_PLEX_CSR_OVERLAP - Build an overlapped Plex and then locally compute
+$ DM_PLEX_CSR_MAT     - Use `MatPartitioning` by first making a matrix
+$ DM_PLEX_CSR_GRAPH   - Use the original `DMPLEX` and communicate along the boundary
+$ DM_PLEX_CSR_OVERLAP - Build an overlapped `DMPLEX` and then locally compute
 
   Level: beginner
 
 .seealso: `DMPlexCreatePartitionerGraph()`, `PetscPartitionerDMPlexPartition()`, `DMPlexDistribute()`
 E*/
-typedef enum {DM_PLEX_CSR_MAT, DM_PLEX_CSR_GRAPH, DM_PLEX_CSR_OVERLAP} DMPlexCSRAlgorithm;
-PETSC_EXTERN const char * const DMPlexCSRAlgorithms[];
+typedef enum {
+  DM_PLEX_CSR_MAT,
+  DM_PLEX_CSR_GRAPH,
+  DM_PLEX_CSR_OVERLAP
+} DMPlexCSRAlgorithm;
+PETSC_EXTERN const char *const DMPlexCSRAlgorithms[];
 
 typedef struct _p_DMPlexPointQueue *DMPlexPointQueue;
 struct _p_DMPlexPointQueue {

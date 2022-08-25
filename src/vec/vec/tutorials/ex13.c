@@ -10,16 +10,15 @@ static char help[] = "Demonstrates VecStrideSum().\n\n";
 
 #include <petscvec.h>
 
-int main(int argc,char **argv)
-{
-  Vec            x;               /* vectors */
-  PetscScalar    sum;
-  PetscInt       n = 20;
-  PetscScalar    one = 1.0;
+int main(int argc, char **argv) {
+  Vec         x; /* vectors */
+  PetscScalar sum;
+  PetscInt    n   = 20;
+  PetscScalar one = 1.0;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
-  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-n", &n, NULL));
 
   /*
      Create a vector, specifying only its global dimension.
@@ -41,25 +40,25 @@ int main(int argc,char **argv)
      particular type of vector to be formed.
 
   */
-  PetscCall(VecCreate(PETSC_COMM_WORLD,&x));
-  PetscCall(VecSetSizes(x,PETSC_DECIDE,n));
-  PetscCall(VecSetBlockSize(x,2));
+  PetscCall(VecCreate(PETSC_COMM_WORLD, &x));
+  PetscCall(VecSetSizes(x, PETSC_DECIDE, n));
+  PetscCall(VecSetBlockSize(x, 2));
   PetscCall(VecSetFromOptions(x));
 
   /*
      Set the subvector entries to a constant value.
   */
-  PetscCall(VecSet(x,one));
-  PetscCall(VecStrideScale(x,1,-2));
+  PetscCall(VecSet(x, one));
+  PetscCall(VecStrideScale(x, 1, -2));
 
-  PetscCall(VecSum(x,&sum));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Sum of entire vector: %g\n",(double)PetscRealPart(sum)));
+  PetscCall(VecSum(x, &sum));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Sum of entire vector: %g\n", (double)PetscRealPart(sum)));
 
-  PetscCall(VecStrideSum(x,0,&sum));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Sum of sub-vector 0: %g\n",(double)PetscRealPart(sum)));
+  PetscCall(VecStrideSum(x, 0, &sum));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Sum of sub-vector 0: %g\n", (double)PetscRealPart(sum)));
 
-  PetscCall(VecStrideSum(x,1,&sum));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Sum of sub-vector 1: %g\n",(double)PetscRealPart(sum)));
+  PetscCall(VecStrideSum(x, 1, &sum));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Sum of sub-vector 1: %g\n", (double)PetscRealPart(sum)));
 
   /*
      Free work space.  All PETSc objects should be destroyed when they

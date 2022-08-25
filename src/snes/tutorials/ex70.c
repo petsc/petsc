@@ -52,53 +52,50 @@ static char help[] = "Poiseuille flow problem. Viscous, laminar flow in a 2D cha
 
 typedef struct {
   PetscBool userPC, userKSP, matsymmetric; /* user defined preconditioner and matrix for the Schur complement */
-  PetscInt  nx, ny;  /* nb of cells in x- and y-direction */
-  PetscReal hx, hy;  /* mesh size in x- and y-direction */
-  Mat       A;       /* block matrix */
-  Mat       subA[4]; /* the four blocks */
-  Mat       myS;     /* the approximation of the Schur complement */
-  Vec       x, b, y; /* solution, rhs and temporary vector */
-  IS        isg[2];  /* index sets of split "0" and "1" */
+  PetscInt  nx, ny;                        /* nb of cells in x- and y-direction */
+  PetscReal hx, hy;                        /* mesh size in x- and y-direction */
+  Mat       A;                             /* block matrix */
+  Mat       subA[4];                       /* the four blocks */
+  Mat       myS;                           /* the approximation of the Schur complement */
+  Vec       x, b, y;                       /* solution, rhs and temporary vector */
+  IS        isg[2];                        /* index sets of split "0" and "1" */
 } Stokes;
 
-PetscErrorCode StokesSetupMatBlock00(Stokes*);  /* setup the block Q */
-PetscErrorCode StokesSetupMatBlock01(Stokes*);  /* setup the block G */
-PetscErrorCode StokesSetupMatBlock10(Stokes*);  /* setup the block D (equal to the transpose of G) */
-PetscErrorCode StokesSetupMatBlock11(Stokes*);  /* setup the block C (equal to zero) */
+PetscErrorCode StokesSetupMatBlock00(Stokes *); /* setup the block Q */
+PetscErrorCode StokesSetupMatBlock01(Stokes *); /* setup the block G */
+PetscErrorCode StokesSetupMatBlock10(Stokes *); /* setup the block D (equal to the transpose of G) */
+PetscErrorCode StokesSetupMatBlock11(Stokes *); /* setup the block C (equal to zero) */
 
-PetscErrorCode StokesGetPosition(Stokes*, PetscInt, PetscInt*, PetscInt*); /* row number j*nx+i corresponds to position (i,j) in grid */
+PetscErrorCode StokesGetPosition(Stokes *, PetscInt, PetscInt *, PetscInt *); /* row number j*nx+i corresponds to position (i,j) in grid */
 
-PetscErrorCode StokesStencilLaplacian(Stokes*, PetscInt, PetscInt, PetscInt*, PetscInt*, PetscScalar*);  /* stencil of the Laplacian operator */
-PetscErrorCode StokesStencilGradientX(Stokes*, PetscInt, PetscInt, PetscInt*, PetscInt*, PetscScalar*);  /* stencil of the Gradient operator (x-component) */
-PetscErrorCode StokesStencilGradientY(Stokes*, PetscInt, PetscInt, PetscInt*, PetscInt*, PetscScalar*);  /* stencil of the Gradient operator (y-component) */
+PetscErrorCode StokesStencilLaplacian(Stokes *, PetscInt, PetscInt, PetscInt *, PetscInt *, PetscScalar *); /* stencil of the Laplacian operator */
+PetscErrorCode StokesStencilGradientX(Stokes *, PetscInt, PetscInt, PetscInt *, PetscInt *, PetscScalar *); /* stencil of the Gradient operator (x-component) */
+PetscErrorCode StokesStencilGradientY(Stokes *, PetscInt, PetscInt, PetscInt *, PetscInt *, PetscScalar *); /* stencil of the Gradient operator (y-component) */
 
-PetscErrorCode StokesRhs(Stokes*);                                         /* rhs vector */
-PetscErrorCode StokesRhsMomX(Stokes*, PetscInt, PetscInt, PetscScalar*);   /* right hand side of velocity (x-component) */
-PetscErrorCode StokesRhsMomY(Stokes*, PetscInt, PetscInt, PetscScalar*);   /* right hand side of velocity (y-component) */
-PetscErrorCode StokesRhsMass(Stokes*, PetscInt, PetscInt, PetscScalar*);   /* right hand side of pressure */
+PetscErrorCode StokesRhs(Stokes *);                                        /* rhs vector */
+PetscErrorCode StokesRhsMomX(Stokes *, PetscInt, PetscInt, PetscScalar *); /* right hand side of velocity (x-component) */
+PetscErrorCode StokesRhsMomY(Stokes *, PetscInt, PetscInt, PetscScalar *); /* right hand side of velocity (y-component) */
+PetscErrorCode StokesRhsMass(Stokes *, PetscInt, PetscInt, PetscScalar *); /* right hand side of pressure */
 
-PetscErrorCode StokesSetupApproxSchur(Stokes*);  /* approximation of the Schur complement */
+PetscErrorCode StokesSetupApproxSchur(Stokes *); /* approximation of the Schur complement */
 
-PetscErrorCode StokesExactSolution(Stokes*); /* exact solution vector */
-PetscErrorCode StokesWriteSolution(Stokes*); /* write solution to file */
+PetscErrorCode StokesExactSolution(Stokes *); /* exact solution vector */
+PetscErrorCode StokesWriteSolution(Stokes *); /* write solution to file */
 
 /* exact solution for the velocity (x-component, y-component is zero) */
-PetscScalar StokesExactVelocityX(const PetscScalar y)
-{
-  return 4.0*y*(1.0-y);
+PetscScalar StokesExactVelocityX(const PetscScalar y) {
+  return 4.0 * y * (1.0 - y);
 }
 
 /* exact solution for the pressure */
-PetscScalar StokesExactPressure(const PetscScalar x)
-{
-  return 8.0*(2.0-x);
+PetscScalar StokesExactPressure(const PetscScalar x) {
+  return 8.0 * (2.0 - x);
 }
 
-PetscErrorCode StokesSetupPC(Stokes *s, KSP ksp)
-{
-  KSP            *subksp;
-  PC             pc;
-  PetscInt       n = 1;
+PetscErrorCode StokesSetupPC(Stokes *s, KSP ksp) {
+  KSP     *subksp;
+  PC       pc;
+  PetscInt n = 1;
 
   PetscFunctionBeginUser;
   PetscCall(KSPGetPC(ksp, &pc));
@@ -114,15 +111,14 @@ PetscErrorCode StokesSetupPC(Stokes *s, KSP ksp)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode StokesWriteSolution(Stokes *s)
-{
-  PetscMPIInt       size;
-  PetscInt          n,i,j;
+PetscErrorCode StokesWriteSolution(Stokes *s) {
+  PetscMPIInt        size;
+  PetscInt           n, i, j;
   const PetscScalar *array;
 
   PetscFunctionBeginUser;
   /* write data (*warning* only works sequential) */
-  PetscCallMPI(MPI_Comm_size(MPI_COMM_WORLD,&size));
+  PetscCallMPI(MPI_Comm_size(MPI_COMM_WORLD, &size));
   if (size == 1) {
     PetscViewer viewer;
     PetscCall(VecGetArrayRead(s->x, &array));
@@ -130,8 +126,8 @@ PetscErrorCode StokesWriteSolution(Stokes *s)
     PetscCall(PetscViewerASCIIPrintf(viewer, "# x, y, u, v, p\n"));
     for (j = 0; j < s->ny; j++) {
       for (i = 0; i < s->nx; i++) {
-        n    = j*s->nx+i;
-        PetscCall(PetscViewerASCIIPrintf(viewer, "%.12g %.12g %.12g %.12g %.12g\n", (double)(i*s->hx+s->hx/2),(double)(j*s->hy+s->hy/2), (double)PetscRealPart(array[n]), (double)PetscRealPart(array[n+s->nx*s->ny]),(double)PetscRealPart(array[n+2*s->nx*s->ny])));
+        n = j * s->nx + i;
+        PetscCall(PetscViewerASCIIPrintf(viewer, "%.12g %.12g %.12g %.12g %.12g\n", (double)(i * s->hx + s->hx / 2), (double)(j * s->hy + s->hy / 2), (double)PetscRealPart(array[n]), (double)PetscRealPart(array[n + s->nx * s->ny]), (double)PetscRealPart(array[n + 2 * s->nx * s->ny])));
       }
     }
     PetscCall(VecRestoreArrayRead(s->x, &array));
@@ -140,20 +136,18 @@ PetscErrorCode StokesWriteSolution(Stokes *s)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode StokesSetupIndexSets(Stokes *s)
-{
+PetscErrorCode StokesSetupIndexSets(Stokes *s) {
   PetscFunctionBeginUser;
   /* the two index sets */
   PetscCall(MatNestGetISs(s->A, s->isg, NULL));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode StokesSetupVectors(Stokes *s)
-{
+PetscErrorCode StokesSetupVectors(Stokes *s) {
   PetscFunctionBeginUser;
   /* solution vector x */
   PetscCall(VecCreate(PETSC_COMM_WORLD, &s->x));
-  PetscCall(VecSetSizes(s->x, PETSC_DECIDE, 3*s->nx*s->ny));
+  PetscCall(VecSetSizes(s->x, PETSC_DECIDE, 3 * s->nx * s->ny));
   PetscCall(VecSetType(s->x, VECMPI));
 
   /* exact solution y */
@@ -166,32 +160,30 @@ PetscErrorCode StokesSetupVectors(Stokes *s)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode StokesGetPosition(Stokes *s, PetscInt row, PetscInt *i, PetscInt *j)
-{
+PetscErrorCode StokesGetPosition(Stokes *s, PetscInt row, PetscInt *i, PetscInt *j) {
   PetscInt n;
 
   PetscFunctionBeginUser;
   /* cell number n=j*nx+i has position (i,j) in grid */
-  n  = row%(s->nx*s->ny);
-  *i = n%s->nx;
-  *j = (n-(*i))/s->nx;
+  n  = row % (s->nx * s->ny);
+  *i = n % s->nx;
+  *j = (n - (*i)) / s->nx;
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode StokesExactSolution(Stokes *s)
-{
-  PetscInt       row, start, end, i, j;
-  PetscScalar    val;
-  Vec            y0,y1;
+PetscErrorCode StokesExactSolution(Stokes *s) {
+  PetscInt    row, start, end, i, j;
+  PetscScalar val;
+  Vec         y0, y1;
 
   PetscFunctionBeginUser;
   /* velocity part */
   PetscCall(VecGetSubVector(s->y, s->isg[0], &y0));
   PetscCall(VecGetOwnershipRange(y0, &start, &end));
   for (row = start; row < end; row++) {
-    PetscCall(StokesGetPosition(s, row,&i,&j));
-    if (row < s->nx*s->ny) {
-      val = StokesExactVelocityX(j*s->hy+s->hy/2);
+    PetscCall(StokesGetPosition(s, row, &i, &j));
+    if (row < s->nx * s->ny) {
+      val = StokesExactVelocityX(j * s->hy + s->hy / 2);
     } else {
       val = 0;
     }
@@ -204,18 +196,17 @@ PetscErrorCode StokesExactSolution(Stokes *s)
   PetscCall(VecGetOwnershipRange(y1, &start, &end));
   for (row = start; row < end; row++) {
     PetscCall(StokesGetPosition(s, row, &i, &j));
-    val  = StokesExactPressure(i*s->hx+s->hx/2);
+    val = StokesExactPressure(i * s->hx + s->hx / 2);
     PetscCall(VecSetValue(y1, row, val, INSERT_VALUES));
   }
   PetscCall(VecRestoreSubVector(s->y, s->isg[1], &y1));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode StokesRhs(Stokes *s)
-{
-  PetscInt       row, start, end, i, j;
-  PetscScalar    val;
-  Vec            b0,b1;
+PetscErrorCode StokesRhs(Stokes *s) {
+  PetscInt    row, start, end, i, j;
+  PetscScalar val;
+  Vec         b0, b1;
 
   PetscFunctionBeginUser;
   /* velocity part */
@@ -223,7 +214,7 @@ PetscErrorCode StokesRhs(Stokes *s)
   PetscCall(VecGetOwnershipRange(b0, &start, &end));
   for (row = start; row < end; row++) {
     PetscCall(StokesGetPosition(s, row, &i, &j));
-    if (row < s->nx*s->ny) {
+    if (row < s->nx * s->ny) {
       PetscCall(StokesRhsMomX(s, i, j, &val));
     } else {
       PetscCall(StokesRhsMomY(s, i, j, &val));
@@ -238,28 +229,25 @@ PetscErrorCode StokesRhs(Stokes *s)
   for (row = start; row < end; row++) {
     PetscCall(StokesGetPosition(s, row, &i, &j));
     PetscCall(StokesRhsMass(s, i, j, &val));
-    if (s->matsymmetric) {
-      val = -1.0*val;
-    }
+    if (s->matsymmetric) { val = -1.0 * val; }
     PetscCall(VecSetValue(b1, row, val, INSERT_VALUES));
   }
   PetscCall(VecRestoreSubVector(s->b, s->isg[1], &b1));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode StokesSetupMatBlock00(Stokes *s)
-{
-  PetscInt       row, start, end, sz, i, j;
-  PetscInt       cols[5];
-  PetscScalar    vals[5];
+PetscErrorCode StokesSetupMatBlock00(Stokes *s) {
+  PetscInt    row, start, end, sz, i, j;
+  PetscInt    cols[5];
+  PetscScalar vals[5];
 
   PetscFunctionBeginUser;
   /* A[0] is 2N-by-2N */
-  PetscCall(MatCreate(PETSC_COMM_WORLD,&s->subA[0]));
-  PetscCall(MatSetOptionsPrefix(s->subA[0],"a00_"));
-  PetscCall(MatSetSizes(s->subA[0],PETSC_DECIDE,PETSC_DECIDE,2*s->nx*s->ny,2*s->nx*s->ny));
-  PetscCall(MatSetType(s->subA[0],MATMPIAIJ));
-  PetscCall(MatMPIAIJSetPreallocation(s->subA[0],5,NULL,5,NULL));
+  PetscCall(MatCreate(PETSC_COMM_WORLD, &s->subA[0]));
+  PetscCall(MatSetOptionsPrefix(s->subA[0], "a00_"));
+  PetscCall(MatSetSizes(s->subA[0], PETSC_DECIDE, PETSC_DECIDE, 2 * s->nx * s->ny, 2 * s->nx * s->ny));
+  PetscCall(MatSetType(s->subA[0], MATMPIAIJ));
+  PetscCall(MatMPIAIJSetPreallocation(s->subA[0], 5, NULL, 5, NULL));
   PetscCall(MatGetOwnershipRange(s->subA[0], &start, &end));
 
   for (row = start; row < end; row++) {
@@ -267,10 +255,10 @@ PetscErrorCode StokesSetupMatBlock00(Stokes *s)
     /* first part: rows 0 to (nx*ny-1) */
     PetscCall(StokesStencilLaplacian(s, i, j, &sz, cols, vals));
     /* second part: rows (nx*ny) to (2*nx*ny-1) */
-    if (row >= s->nx*s->ny) {
-      for (i = 0; i < sz; i++) cols[i] += s->nx*s->ny;
+    if (row >= s->nx * s->ny) {
+      for (i = 0; i < sz; i++) cols[i] += s->nx * s->ny;
     }
-    for (i = 0; i < sz; i++) vals[i] = -1.0*vals[i]; /* dynamic viscosity coef mu=-1 */
+    for (i = 0; i < sz; i++) vals[i] = -1.0 * vals[i]; /* dynamic viscosity coef mu=-1 */
     PetscCall(MatSetValues(s->subA[0], 1, &row, sz, cols, vals, INSERT_VALUES));
   }
   PetscCall(MatAssemblyBegin(s->subA[0], MAT_FINAL_ASSEMBLY));
@@ -278,29 +266,28 @@ PetscErrorCode StokesSetupMatBlock00(Stokes *s)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode StokesSetupMatBlock01(Stokes *s)
-{
-  PetscInt       row, start, end, sz, i, j;
-  PetscInt       cols[5];
-  PetscScalar    vals[5];
+PetscErrorCode StokesSetupMatBlock01(Stokes *s) {
+  PetscInt    row, start, end, sz, i, j;
+  PetscInt    cols[5];
+  PetscScalar vals[5];
 
   PetscFunctionBeginUser;
   /* A[1] is 2N-by-N */
   PetscCall(MatCreate(PETSC_COMM_WORLD, &s->subA[1]));
-  PetscCall(MatSetOptionsPrefix(s->subA[1],"a01_"));
-  PetscCall(MatSetSizes(s->subA[1],PETSC_DECIDE,PETSC_DECIDE,2*s->nx*s->ny,s->nx*s->ny));
-  PetscCall(MatSetType(s->subA[1],MATMPIAIJ));
-  PetscCall(MatMPIAIJSetPreallocation(s->subA[1],5,NULL,5,NULL));
-  PetscCall(MatGetOwnershipRange(s->subA[1],&start,&end));
+  PetscCall(MatSetOptionsPrefix(s->subA[1], "a01_"));
+  PetscCall(MatSetSizes(s->subA[1], PETSC_DECIDE, PETSC_DECIDE, 2 * s->nx * s->ny, s->nx * s->ny));
+  PetscCall(MatSetType(s->subA[1], MATMPIAIJ));
+  PetscCall(MatMPIAIJSetPreallocation(s->subA[1], 5, NULL, 5, NULL));
+  PetscCall(MatGetOwnershipRange(s->subA[1], &start, &end));
 
-  PetscCall(MatSetOption(s->subA[1],MAT_IGNORE_ZERO_ENTRIES,PETSC_TRUE));
+  PetscCall(MatSetOption(s->subA[1], MAT_IGNORE_ZERO_ENTRIES, PETSC_TRUE));
 
   for (row = start; row < end; row++) {
     PetscCall(StokesGetPosition(s, row, &i, &j));
     /* first part: rows 0 to (nx*ny-1) */
-    if (row < s->nx*s->ny) {
+    if (row < s->nx * s->ny) {
       PetscCall(StokesStencilGradientX(s, i, j, &sz, cols, vals));
-    } else {    /* second part: rows (nx*ny) to (2*nx*ny-1) */
+    } else { /* second part: rows (nx*ny) to (2*nx*ny-1) */
       PetscCall(StokesStencilGradientY(s, i, j, &sz, cols, vals));
     }
     PetscCall(MatSetValues(s->subA[1], 1, &row, sz, cols, vals, INSERT_VALUES));
@@ -310,25 +297,21 @@ PetscErrorCode StokesSetupMatBlock01(Stokes *s)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode StokesSetupMatBlock10(Stokes *s)
-{
+PetscErrorCode StokesSetupMatBlock10(Stokes *s) {
   PetscFunctionBeginUser;
   /* A[2] is minus transpose of A[1] */
   PetscCall(MatTranspose(s->subA[1], MAT_INITIAL_MATRIX, &s->subA[2]));
-  if (!s->matsymmetric) {
-    PetscCall(MatScale(s->subA[2], -1.0));
-  }
+  if (!s->matsymmetric) { PetscCall(MatScale(s->subA[2], -1.0)); }
   PetscCall(MatSetOptionsPrefix(s->subA[2], "a10_"));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode StokesSetupMatBlock11(Stokes *s)
-{
+PetscErrorCode StokesSetupMatBlock11(Stokes *s) {
   PetscFunctionBeginUser;
   /* A[3] is N-by-N null matrix */
   PetscCall(MatCreate(PETSC_COMM_WORLD, &s->subA[3]));
   PetscCall(MatSetOptionsPrefix(s->subA[3], "a11_"));
-  PetscCall(MatSetSizes(s->subA[3], PETSC_DECIDE, PETSC_DECIDE, s->nx*s->ny, s->nx*s->ny));
+  PetscCall(MatSetSizes(s->subA[3], PETSC_DECIDE, PETSC_DECIDE, s->nx * s->ny, s->nx * s->ny));
   PetscCall(MatSetType(s->subA[3], MATMPIAIJ));
   PetscCall(MatMPIAIJSetPreallocation(s->subA[3], 0, NULL, 0, NULL));
   PetscCall(MatAssemblyBegin(s->subA[3], MAT_FINAL_ASSEMBLY));
@@ -336,9 +319,8 @@ PetscErrorCode StokesSetupMatBlock11(Stokes *s)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode StokesSetupApproxSchur(Stokes *s)
-{
-  Vec            diag;
+PetscErrorCode StokesSetupApproxSchur(Stokes *s) {
+  Vec diag;
 
   PetscFunctionBeginUser;
   /* Schur complement approximation: myS = A11 - A10 inv(DIAGFORM(A00)) A01 */
@@ -347,26 +329,25 @@ PetscErrorCode StokesSetupApproxSchur(Stokes *s)
   /* i.e. without MatMatMult */
 
   /* inverse of diagonal of A00 */
-  PetscCall(VecCreate(PETSC_COMM_WORLD,&diag));
-  PetscCall(VecSetSizes(diag,PETSC_DECIDE,2*s->nx*s->ny));
-  PetscCall(VecSetType(diag,VECMPI));
-  PetscCall(MatGetDiagonal(s->subA[0],diag));
+  PetscCall(VecCreate(PETSC_COMM_WORLD, &diag));
+  PetscCall(VecSetSizes(diag, PETSC_DECIDE, 2 * s->nx * s->ny));
+  PetscCall(VecSetType(diag, VECMPI));
+  PetscCall(MatGetDiagonal(s->subA[0], diag));
   PetscCall(VecReciprocal(diag));
 
   /* compute: - A10 inv(DIAGFORM(A00)) A01 */
-  PetscCall(MatDiagonalScale(s->subA[1],diag,NULL)); /* (*warning* overwrites subA[1]) */
-  PetscCall(MatMatMult(s->subA[2],s->subA[1],MAT_INITIAL_MATRIX,PETSC_DEFAULT,&s->myS));
-  PetscCall(MatScale(s->myS,-1.0));
+  PetscCall(MatDiagonalScale(s->subA[1], diag, NULL)); /* (*warning* overwrites subA[1]) */
+  PetscCall(MatMatMult(s->subA[2], s->subA[1], MAT_INITIAL_MATRIX, PETSC_DEFAULT, &s->myS));
+  PetscCall(MatScale(s->myS, -1.0));
 
   /* restore A10 */
-  PetscCall(MatGetDiagonal(s->subA[0],diag));
-  PetscCall(MatDiagonalScale(s->subA[1],diag,NULL));
+  PetscCall(MatGetDiagonal(s->subA[0], diag));
+  PetscCall(MatDiagonalScale(s->subA[1], diag, NULL));
   PetscCall(VecDestroy(&diag));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode StokesSetupMatrix(Stokes *s)
-{
+PetscErrorCode StokesSetupMatrix(Stokes *s) {
   PetscFunctionBeginUser;
   PetscCall(StokesSetupMatBlock00(s));
   PetscCall(StokesSetupMatBlock01(s));
@@ -377,209 +358,277 @@ PetscErrorCode StokesSetupMatrix(Stokes *s)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode StokesStencilLaplacian(Stokes *s, PetscInt i, PetscInt j, PetscInt *sz, PetscInt *cols, PetscScalar *vals)
-{
-  PetscInt    p =j*s->nx+i, w=p-1, e=p+1, s2=p-s->nx, n=p+s->nx;
-  PetscScalar ae=s->hy/s->hx, aeb=0;
-  PetscScalar aw=s->hy/s->hx, awb=s->hy/(s->hx/2);
-  PetscScalar as=s->hx/s->hy, asb=s->hx/(s->hy/2);
-  PetscScalar an=s->hx/s->hy, anb=s->hx/(s->hy/2);
+PetscErrorCode StokesStencilLaplacian(Stokes *s, PetscInt i, PetscInt j, PetscInt *sz, PetscInt *cols, PetscScalar *vals) {
+  PetscInt    p = j * s->nx + i, w = p - 1, e = p + 1, s2 = p - s->nx, n = p + s->nx;
+  PetscScalar ae = s->hy / s->hx, aeb = 0;
+  PetscScalar aw = s->hy / s->hx, awb = s->hy / (s->hx / 2);
+  PetscScalar as = s->hx / s->hy, asb = s->hx / (s->hy / 2);
+  PetscScalar an = s->hx / s->hy, anb = s->hx / (s->hy / 2);
 
   PetscFunctionBeginUser;
-  if (i==0 && j==0) { /* south-west corner */
-    *sz  =3;
-    cols[0]=p; vals[0]=-(ae+awb+asb+an);
-    cols[1]=e; vals[1]=ae;
-    cols[2]=n; vals[2]=an;
-  } else if (i==0 && j==s->ny-1) { /* north-west corner */
-    *sz  =3;
-    cols[0]=s2; vals[0]=as;
-    cols[1]=p; vals[1]=-(ae+awb+as+anb);
-    cols[2]=e; vals[2]=ae;
-  } else if (i==s->nx-1 && j==0) { /* south-east corner */
-    *sz  =3;
-    cols[0]=w; vals[0]=aw;
-    cols[1]=p; vals[1]=-(aeb+aw+asb+an);
-    cols[2]=n; vals[2]=an;
-  } else if (i==s->nx-1 && j==s->ny-1) { /* north-east corner */
-    *sz  =3;
-    cols[0]=s2; vals[0]=as;
-    cols[1]=w; vals[1]=aw;
-    cols[2]=p; vals[2]=-(aeb+aw+as+anb);
-  } else if (i==0) { /* west boundary */
-    *sz  =4;
-    cols[0]=s2; vals[0]=as;
-    cols[1]=p; vals[1]=-(ae+awb+as+an);
-    cols[2]=e; vals[2]=ae;
-    cols[3]=n; vals[3]=an;
-  } else if (i==s->nx-1) { /* east boundary */
-    *sz  =4;
-    cols[0]=s2; vals[0]=as;
-    cols[1]=w; vals[1]=aw;
-    cols[2]=p; vals[2]=-(aeb+aw+as+an);
-    cols[3]=n; vals[3]=an;
-  } else if (j==0) { /* south boundary */
-    *sz  =4;
-    cols[0]=w; vals[0]=aw;
-    cols[1]=p; vals[1]=-(ae+aw+asb+an);
-    cols[2]=e; vals[2]=ae;
-    cols[3]=n; vals[3]=an;
-  } else if (j==s->ny-1) { /* north boundary */
-    *sz  =4;
-    cols[0]=s2; vals[0]=as;
-    cols[1]=w; vals[1]=aw;
-    cols[2]=p; vals[2]=-(ae+aw+as+anb);
-    cols[3]=e; vals[3]=ae;
+  if (i == 0 && j == 0) { /* south-west corner */
+    *sz     = 3;
+    cols[0] = p;
+    vals[0] = -(ae + awb + asb + an);
+    cols[1] = e;
+    vals[1] = ae;
+    cols[2] = n;
+    vals[2] = an;
+  } else if (i == 0 && j == s->ny - 1) { /* north-west corner */
+    *sz     = 3;
+    cols[0] = s2;
+    vals[0] = as;
+    cols[1] = p;
+    vals[1] = -(ae + awb + as + anb);
+    cols[2] = e;
+    vals[2] = ae;
+  } else if (i == s->nx - 1 && j == 0) { /* south-east corner */
+    *sz     = 3;
+    cols[0] = w;
+    vals[0] = aw;
+    cols[1] = p;
+    vals[1] = -(aeb + aw + asb + an);
+    cols[2] = n;
+    vals[2] = an;
+  } else if (i == s->nx - 1 && j == s->ny - 1) { /* north-east corner */
+    *sz     = 3;
+    cols[0] = s2;
+    vals[0] = as;
+    cols[1] = w;
+    vals[1] = aw;
+    cols[2] = p;
+    vals[2] = -(aeb + aw + as + anb);
+  } else if (i == 0) { /* west boundary */
+    *sz     = 4;
+    cols[0] = s2;
+    vals[0] = as;
+    cols[1] = p;
+    vals[1] = -(ae + awb + as + an);
+    cols[2] = e;
+    vals[2] = ae;
+    cols[3] = n;
+    vals[3] = an;
+  } else if (i == s->nx - 1) { /* east boundary */
+    *sz     = 4;
+    cols[0] = s2;
+    vals[0] = as;
+    cols[1] = w;
+    vals[1] = aw;
+    cols[2] = p;
+    vals[2] = -(aeb + aw + as + an);
+    cols[3] = n;
+    vals[3] = an;
+  } else if (j == 0) { /* south boundary */
+    *sz     = 4;
+    cols[0] = w;
+    vals[0] = aw;
+    cols[1] = p;
+    vals[1] = -(ae + aw + asb + an);
+    cols[2] = e;
+    vals[2] = ae;
+    cols[3] = n;
+    vals[3] = an;
+  } else if (j == s->ny - 1) { /* north boundary */
+    *sz     = 4;
+    cols[0] = s2;
+    vals[0] = as;
+    cols[1] = w;
+    vals[1] = aw;
+    cols[2] = p;
+    vals[2] = -(ae + aw + as + anb);
+    cols[3] = e;
+    vals[3] = ae;
   } else { /* interior */
-    *sz  =5;
-    cols[0]=s2; vals[0]=as;
-    cols[1]=w; vals[1]=aw;
-    cols[2]=p; vals[2]=-(ae+aw+as+an);
-    cols[3]=e; vals[3]=ae;
-    cols[4]=n; vals[4]=an;
+    *sz     = 5;
+    cols[0] = s2;
+    vals[0] = as;
+    cols[1] = w;
+    vals[1] = aw;
+    cols[2] = p;
+    vals[2] = -(ae + aw + as + an);
+    cols[3] = e;
+    vals[3] = ae;
+    cols[4] = n;
+    vals[4] = an;
   }
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode StokesStencilGradientX(Stokes *s, PetscInt i, PetscInt j, PetscInt *sz, PetscInt *cols, PetscScalar *vals)
-{
-  PetscInt    p =j*s->nx+i, w=p-1, e=p+1;
-  PetscScalar ae= s->hy/2, aeb=s->hy;
-  PetscScalar aw=-s->hy/2, awb=0;
+PetscErrorCode StokesStencilGradientX(Stokes *s, PetscInt i, PetscInt j, PetscInt *sz, PetscInt *cols, PetscScalar *vals) {
+  PetscInt    p = j * s->nx + i, w = p - 1, e = p + 1;
+  PetscScalar ae = s->hy / 2, aeb = s->hy;
+  PetscScalar aw = -s->hy / 2, awb = 0;
 
   PetscFunctionBeginUser;
-  if (i==0 && j==0) { /* south-west corner */
-    *sz  =2;
-    cols[0]=p; vals[0]=-(ae+awb);
-    cols[1]=e; vals[1]=ae;
-  } else if (i==0 && j==s->ny-1) { /* north-west corner */
-    *sz  =2;
-    cols[0]=p; vals[0]=-(ae+awb);
-    cols[1]=e; vals[1]=ae;
-  } else if (i==s->nx-1 && j==0) { /* south-east corner */
-    *sz  =2;
-    cols[0]=w; vals[0]=aw;
-    cols[1]=p; vals[1]=-(aeb+aw);
-  } else if (i==s->nx-1 && j==s->ny-1) { /* north-east corner */
-    *sz  =2;
-    cols[0]=w; vals[0]=aw;
-    cols[1]=p; vals[1]=-(aeb+aw);
-  } else if (i==0) { /* west boundary */
-    *sz  =2;
-    cols[0]=p; vals[0]=-(ae+awb);
-    cols[1]=e; vals[1]=ae;
-  } else if (i==s->nx-1) { /* east boundary */
-    *sz  =2;
-    cols[0]=w; vals[0]=aw;
-    cols[1]=p; vals[1]=-(aeb+aw);
-  } else if (j==0) { /* south boundary */
-    *sz  =3;
-    cols[0]=w; vals[0]=aw;
-    cols[1]=p; vals[1]=-(ae+aw);
-    cols[2]=e; vals[2]=ae;
-  } else if (j==s->ny-1) { /* north boundary */
-    *sz  =3;
-    cols[0]=w; vals[0]=aw;
-    cols[1]=p; vals[1]=-(ae+aw);
-    cols[2]=e; vals[2]=ae;
+  if (i == 0 && j == 0) { /* south-west corner */
+    *sz     = 2;
+    cols[0] = p;
+    vals[0] = -(ae + awb);
+    cols[1] = e;
+    vals[1] = ae;
+  } else if (i == 0 && j == s->ny - 1) { /* north-west corner */
+    *sz     = 2;
+    cols[0] = p;
+    vals[0] = -(ae + awb);
+    cols[1] = e;
+    vals[1] = ae;
+  } else if (i == s->nx - 1 && j == 0) { /* south-east corner */
+    *sz     = 2;
+    cols[0] = w;
+    vals[0] = aw;
+    cols[1] = p;
+    vals[1] = -(aeb + aw);
+  } else if (i == s->nx - 1 && j == s->ny - 1) { /* north-east corner */
+    *sz     = 2;
+    cols[0] = w;
+    vals[0] = aw;
+    cols[1] = p;
+    vals[1] = -(aeb + aw);
+  } else if (i == 0) { /* west boundary */
+    *sz     = 2;
+    cols[0] = p;
+    vals[0] = -(ae + awb);
+    cols[1] = e;
+    vals[1] = ae;
+  } else if (i == s->nx - 1) { /* east boundary */
+    *sz     = 2;
+    cols[0] = w;
+    vals[0] = aw;
+    cols[1] = p;
+    vals[1] = -(aeb + aw);
+  } else if (j == 0) { /* south boundary */
+    *sz     = 3;
+    cols[0] = w;
+    vals[0] = aw;
+    cols[1] = p;
+    vals[1] = -(ae + aw);
+    cols[2] = e;
+    vals[2] = ae;
+  } else if (j == s->ny - 1) { /* north boundary */
+    *sz     = 3;
+    cols[0] = w;
+    vals[0] = aw;
+    cols[1] = p;
+    vals[1] = -(ae + aw);
+    cols[2] = e;
+    vals[2] = ae;
   } else { /* interior */
-    *sz  =3;
-    cols[0]=w; vals[0]=aw;
-    cols[1]=p; vals[1]=-(ae+aw);
-    cols[2]=e; vals[2]=ae;
+    *sz     = 3;
+    cols[0] = w;
+    vals[0] = aw;
+    cols[1] = p;
+    vals[1] = -(ae + aw);
+    cols[2] = e;
+    vals[2] = ae;
   }
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode StokesStencilGradientY(Stokes *s, PetscInt i, PetscInt j, PetscInt *sz, PetscInt *cols, PetscScalar *vals)
-{
-  PetscInt    p =j*s->nx+i, s2=p-s->nx, n=p+s->nx;
-  PetscScalar as=-s->hx/2, asb=0;
-  PetscScalar an= s->hx/2, anb=0;
+PetscErrorCode StokesStencilGradientY(Stokes *s, PetscInt i, PetscInt j, PetscInt *sz, PetscInt *cols, PetscScalar *vals) {
+  PetscInt    p = j * s->nx + i, s2 = p - s->nx, n = p + s->nx;
+  PetscScalar as = -s->hx / 2, asb = 0;
+  PetscScalar an = s->hx / 2, anb = 0;
 
   PetscFunctionBeginUser;
-  if (i==0 && j==0) { /* south-west corner */
-    *sz  =2;
-    cols[0]=p; vals[0]=-(asb+an);
-    cols[1]=n; vals[1]=an;
-  } else if (i==0 && j==s->ny-1) { /* north-west corner */
-    *sz  =2;
-    cols[0]=s2; vals[0]=as;
-    cols[1]=p; vals[1]=-(as+anb);
-  } else if (i==s->nx-1 && j==0) { /* south-east corner */
-    *sz  =2;
-    cols[0]=p; vals[0]=-(asb+an);
-    cols[1]=n; vals[1]=an;
-  } else if (i==s->nx-1 && j==s->ny-1) { /* north-east corner */
-    *sz  =2;
-    cols[0]=s2; vals[0]=as;
-    cols[1]=p; vals[1]=-(as+anb);
-  } else if (i==0) { /* west boundary */
-    *sz  =3;
-    cols[0]=s2; vals[0]=as;
-    cols[1]=p; vals[1]=-(as+an);
-    cols[2]=n; vals[2]=an;
-  } else if (i==s->nx-1) { /* east boundary */
-    *sz  =3;
-    cols[0]=s2; vals[0]=as;
-    cols[1]=p; vals[1]=-(as+an);
-    cols[2]=n; vals[2]=an;
-  } else if (j==0) { /* south boundary */
-    *sz  =2;
-    cols[0]=p; vals[0]=-(asb+an);
-    cols[1]=n; vals[1]=an;
-  } else if (j==s->ny-1) { /* north boundary */
-    *sz  =2;
-    cols[0]=s2; vals[0]=as;
-    cols[1]=p; vals[1]=-(as+anb);
+  if (i == 0 && j == 0) { /* south-west corner */
+    *sz     = 2;
+    cols[0] = p;
+    vals[0] = -(asb + an);
+    cols[1] = n;
+    vals[1] = an;
+  } else if (i == 0 && j == s->ny - 1) { /* north-west corner */
+    *sz     = 2;
+    cols[0] = s2;
+    vals[0] = as;
+    cols[1] = p;
+    vals[1] = -(as + anb);
+  } else if (i == s->nx - 1 && j == 0) { /* south-east corner */
+    *sz     = 2;
+    cols[0] = p;
+    vals[0] = -(asb + an);
+    cols[1] = n;
+    vals[1] = an;
+  } else if (i == s->nx - 1 && j == s->ny - 1) { /* north-east corner */
+    *sz     = 2;
+    cols[0] = s2;
+    vals[0] = as;
+    cols[1] = p;
+    vals[1] = -(as + anb);
+  } else if (i == 0) { /* west boundary */
+    *sz     = 3;
+    cols[0] = s2;
+    vals[0] = as;
+    cols[1] = p;
+    vals[1] = -(as + an);
+    cols[2] = n;
+    vals[2] = an;
+  } else if (i == s->nx - 1) { /* east boundary */
+    *sz     = 3;
+    cols[0] = s2;
+    vals[0] = as;
+    cols[1] = p;
+    vals[1] = -(as + an);
+    cols[2] = n;
+    vals[2] = an;
+  } else if (j == 0) { /* south boundary */
+    *sz     = 2;
+    cols[0] = p;
+    vals[0] = -(asb + an);
+    cols[1] = n;
+    vals[1] = an;
+  } else if (j == s->ny - 1) { /* north boundary */
+    *sz     = 2;
+    cols[0] = s2;
+    vals[0] = as;
+    cols[1] = p;
+    vals[1] = -(as + anb);
   } else { /* interior */
-    *sz  =3;
-    cols[0]=s2; vals[0]=as;
-    cols[1]=p; vals[1]=-(as+an);
-    cols[2]=n; vals[2]=an;
+    *sz     = 3;
+    cols[0] = s2;
+    vals[0] = as;
+    cols[1] = p;
+    vals[1] = -(as + an);
+    cols[2] = n;
+    vals[2] = an;
   }
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode StokesRhsMomX(Stokes *s, PetscInt i, PetscInt j, PetscScalar *val)
-{
-  PetscScalar y   = j*s->hy+s->hy/2;
-  PetscScalar awb = s->hy/(s->hx/2);
+PetscErrorCode StokesRhsMomX(Stokes *s, PetscInt i, PetscInt j, PetscScalar *val) {
+  PetscScalar y   = j * s->hy + s->hy / 2;
+  PetscScalar awb = s->hy / (s->hx / 2);
 
   PetscFunctionBeginUser;
   if (i == 0) { /* west boundary */
-    *val = awb*StokesExactVelocityX(y);
+    *val = awb * StokesExactVelocityX(y);
   } else {
     *val = 0.0;
   }
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode StokesRhsMomY(Stokes *s, PetscInt i, PetscInt j, PetscScalar *val)
-{
+PetscErrorCode StokesRhsMomY(Stokes *s, PetscInt i, PetscInt j, PetscScalar *val) {
   PetscFunctionBeginUser;
   *val = 0.0;
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode StokesRhsMass(Stokes *s, PetscInt i, PetscInt j, PetscScalar *val)
-{
-  PetscScalar y   = j*s->hy+s->hy/2;
+PetscErrorCode StokesRhsMass(Stokes *s, PetscInt i, PetscInt j, PetscScalar *val) {
+  PetscScalar y   = j * s->hy + s->hy / 2;
   PetscScalar aeb = s->hy;
 
   PetscFunctionBeginUser;
   if (i == 0) { /* west boundary */
-    *val = aeb*StokesExactVelocityX(y);
+    *val = aeb * StokesExactVelocityX(y);
   } else {
     *val = 0.0;
   }
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode StokesCalcResidual(Stokes *s)
-{
-  PetscReal      val;
-  Vec            b0, b1;
+PetscErrorCode StokesCalcResidual(Stokes *s) {
+  PetscReal val;
+  Vec       b0, b1;
 
   PetscFunctionBeginUser;
   /* residual Ax-b (*warning* overwrites b) */
@@ -589,26 +638,25 @@ PetscErrorCode StokesCalcResidual(Stokes *s)
   /* residual velocity */
   PetscCall(VecGetSubVector(s->b, s->isg[0], &b0));
   PetscCall(VecNorm(b0, NORM_2, &val));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD," residual u = %g\n",(double)val));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, " residual u = %g\n", (double)val));
   PetscCall(VecRestoreSubVector(s->b, s->isg[0], &b0));
 
   /* residual pressure */
   PetscCall(VecGetSubVector(s->b, s->isg[1], &b1));
   PetscCall(VecNorm(b1, NORM_2, &val));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD," residual p = %g\n",(double)val));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, " residual p = %g\n", (double)val));
   PetscCall(VecRestoreSubVector(s->b, s->isg[1], &b1));
 
   /* total residual */
   PetscCall(VecNorm(s->b, NORM_2, &val));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD," residual [u,p] = %g\n", (double)val));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, " residual [u,p] = %g\n", (double)val));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode StokesCalcError(Stokes *s)
-{
-  PetscScalar    scale = PetscSqrtReal((double)s->nx*s->ny);
-  PetscReal      val;
-  Vec            y0, y1;
+PetscErrorCode StokesCalcError(Stokes *s) {
+  PetscScalar scale = PetscSqrtReal((double)s->nx * s->ny);
+  PetscReal   val;
+  Vec         y0, y1;
 
   PetscFunctionBeginUser;
   /* error y-x */
@@ -617,39 +665,38 @@ PetscErrorCode StokesCalcError(Stokes *s)
   /* error in velocity */
   PetscCall(VecGetSubVector(s->y, s->isg[0], &y0));
   PetscCall(VecNorm(y0, NORM_2, &val));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD," discretization error u = %g\n",(double)(PetscRealPart(val/scale))));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, " discretization error u = %g\n", (double)(PetscRealPart(val / scale))));
   PetscCall(VecRestoreSubVector(s->y, s->isg[0], &y0));
 
   /* error in pressure */
   PetscCall(VecGetSubVector(s->y, s->isg[1], &y1));
   PetscCall(VecNorm(y1, NORM_2, &val));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD," discretization error p = %g\n",(double)(PetscRealPart(val/scale))));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, " discretization error p = %g\n", (double)(PetscRealPart(val / scale))));
   PetscCall(VecRestoreSubVector(s->y, s->isg[1], &y1));
 
   /* total error */
   PetscCall(VecNorm(s->y, NORM_2, &val));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD," discretization error [u,p] = %g\n", (double)PetscRealPart((val/scale))));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, " discretization error [u,p] = %g\n", (double)PetscRealPart((val / scale))));
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv)
-{
-  Stokes         s;
-  KSP            ksp;
+int main(int argc, char **argv) {
+  Stokes s;
+  KSP    ksp;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, NULL,help));
-  s.nx           = 4;
-  s.ny           = 6;
-  PetscCall(PetscOptionsGetInt(NULL,NULL, "-nx", &s.nx, NULL));
-  PetscCall(PetscOptionsGetInt(NULL,NULL, "-ny", &s.ny, NULL));
-  s.hx           = 2.0/s.nx;
-  s.hy           = 1.0/s.ny;
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
+  s.nx = 4;
+  s.ny = 6;
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-nx", &s.nx, NULL));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-ny", &s.ny, NULL));
+  s.hx           = 2.0 / s.nx;
+  s.hy           = 1.0 / s.ny;
   s.matsymmetric = PETSC_FALSE;
-  PetscCall(PetscOptionsGetBool(NULL,NULL, "-mat_set_symmetric", &s.matsymmetric,NULL));
-  s.userPC       = s.userKSP = PETSC_FALSE;
-  PetscCall(PetscOptionsHasName(NULL,NULL, "-user_pc", &s.userPC));
-  PetscCall(PetscOptionsHasName(NULL,NULL, "-user_ksp", &s.userKSP));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-mat_set_symmetric", &s.matsymmetric, NULL));
+  s.userPC = s.userKSP = PETSC_FALSE;
+  PetscCall(PetscOptionsHasName(NULL, NULL, "-user_pc", &s.userPC));
+  PetscCall(PetscOptionsHasName(NULL, NULL, "-user_ksp", &s.userKSP));
 
   PetscCall(StokesSetupMatrix(&s));
   PetscCall(StokesSetupIndexSets(&s));

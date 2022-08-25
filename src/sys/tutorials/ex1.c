@@ -2,9 +2,8 @@
 static char help[] = "Introductory example that illustrates printing.\n\n";
 
 #include <petscsys.h>
-int main(int argc,char **argv)
-{
-  PetscMPIInt    rank,size;
+int main(int argc, char **argv) {
+  PetscMPIInt rank, size;
 
   /*
     Every PETSc program should begin with the PetscInitialize() routine.
@@ -16,14 +15,14 @@ int main(int argc,char **argv)
                  additional help messages in this printout.
   */
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
 
   /*
      The following MPI calls return the number of processes
      being used and the rank of this process in the group.
    */
-  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
-  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
 
   /*
      Here we would like to print only one message that represents
@@ -31,7 +30,7 @@ int main(int argc,char **argv)
      communicator PETSC_COMM_WORLD.  Thus, only one message is
      printed representng PETSC_COMM_WORLD, i.e., all the processors.
   */
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Number of processors = %d, rank = %d\n",size,rank));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Number of processors = %d, rank = %d\n", size, rank));
 
   /*
     Here a barrier is used to separate the two program states.
@@ -45,7 +44,7 @@ int main(int argc,char **argv)
     appear in any particular order.
   */
 
-  PetscCall(PetscPrintf(PETSC_COMM_SELF,"[%d] Jumbled Hello World\n",rank));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d] Jumbled Hello World\n", rank));
 
   /*
      Always call PetscFinalize() before exiting a program.  This routine

@@ -12,21 +12,21 @@
 
 typedef struct _n_PetscFEGeom {
   const PetscReal *xi;
-  PetscReal *v;           /* v[Nc*Np*dE]:           The first point in each each in real coordinates */
-  PetscReal *J;           /* J[Nc*Np*dE*dE]:        The Jacobian of the map from reference to real coordinates (if nonsquare it is completed with orthogonal columns) */
-  PetscReal *invJ;        /* invJ[Nc*Np*dE*dE]:     The inverse of the Jacobian of the map from reference to real coordinates (if nonsquare it is completed with orthogonal columns) */
-  PetscReal *detJ;        /* detJ[Nc*Np]:           The determinant of J, and if it is non-square its the volume change */
-  PetscReal *n;           /* n[Nc*Np*dE]:           For faces, the normal to the face in real coordinates, outward for the first supporting cell */
-  PetscInt  (*face)[2];   /* face[Nc][s]:           For faces, the local face number (cone index) for this face in each supporting cell s */
+  PetscReal       *v;     /* v[Nc*Np*dE]:           The first point in each each in real coordinates */
+  PetscReal       *J;     /* J[Nc*Np*dE*dE]:        The Jacobian of the map from reference to real coordinates (if nonsquare it is completed with orthogonal columns) */
+  PetscReal       *invJ;  /* invJ[Nc*Np*dE*dE]:     The inverse of the Jacobian of the map from reference to real coordinates (if nonsquare it is completed with orthogonal columns) */
+  PetscReal       *detJ;  /* detJ[Nc*Np]:           The determinant of J, and if it is non-square its the volume change */
+  PetscReal       *n;     /* n[Nc*Np*dE]:           For faces, the normal to the face in real coordinates, outward for the first supporting cell */
+  PetscInt (*face)[2];    /* face[Nc][s]:           For faces, the local face number (cone index) for this face in each supporting cell s */
   PetscReal *suppJ[2];    /* sJ[s][Nc*Np*dE*dE]:    For faces, the Jacobian for each supporting cell s */
   PetscReal *suppInvJ[2]; /* sInvJ[s][Nc*Np*dE*dE]: For faces, the inverse Jacobian for each supporting cell s */
   PetscReal *suppDetJ[2]; /* sInvJ[s][Nc*Np*dE*dE]: For faces, the Jacobian determinant for each supporting cell s */
-  PetscInt  dim;          /* dim: Topological dimension */
-  PetscInt  dimEmbed;     /* dE:  coordinate dimension */
-  PetscInt  numCells;     /* Nc:  Number of mesh points represented in the arrays */
-  PetscInt  numPoints;    /* Np:  Number of evaluation points represented in the arrays */
-  PetscBool isAffine;     /* Flag for affine transforms */
-  PetscBool isCohesive;   /* Flag for a cohesive cell */
+  PetscInt   dim;         /* dim: Topological dimension */
+  PetscInt   dimEmbed;    /* dE:  coordinate dimension */
+  PetscInt   numCells;    /* Nc:  Number of mesh points represented in the arrays */
+  PetscInt   numPoints;   /* Np:  Number of evaluation points represented in the arrays */
+  PetscBool  isAffine;    /* Flag for affine transforms */
+  PetscBool  isCohesive;  /* Flag for a cohesive cell */
 } PetscFEGeom;
 
 PETSC_EXTERN PetscErrorCode PetscFEInitializePackage(void);
@@ -40,7 +40,7 @@ PETSC_EXTERN PetscClassId PETSCSPACE_CLASSID;
 
 .seealso: `PetscSpaceSetType()`, `PetscSpace`
 J*/
-typedef const char* PetscSpaceType;
+typedef const char *PetscSpaceType;
 #define PETSCSPACEPOLYNOMIAL "poly"
 #define PETSCSPACEPTRIMMED   "ptrimmed"
 #define PETSCSPACETENSOR     "tensor"
@@ -50,16 +50,16 @@ typedef const char* PetscSpaceType;
 #define PETSCSPACEWXY        "wxy"
 
 PETSC_EXTERN PetscFunctionList PetscSpaceList;
-PETSC_EXTERN PetscErrorCode PetscSpaceCreate(MPI_Comm, PetscSpace *);
-PETSC_EXTERN PetscErrorCode PetscSpaceDestroy(PetscSpace *);
-PETSC_EXTERN PetscErrorCode PetscSpaceSetType(PetscSpace, PetscSpaceType);
-PETSC_EXTERN PetscErrorCode PetscSpaceGetType(PetscSpace, PetscSpaceType *);
-PETSC_EXTERN PetscErrorCode PetscSpaceSetUp(PetscSpace);
-PETSC_EXTERN PetscErrorCode PetscSpaceSetFromOptions(PetscSpace);
-PETSC_EXTERN PetscErrorCode PetscSpaceViewFromOptions(PetscSpace,PetscObject,const char[]);
+PETSC_EXTERN PetscErrorCode    PetscSpaceCreate(MPI_Comm, PetscSpace *);
+PETSC_EXTERN PetscErrorCode    PetscSpaceDestroy(PetscSpace *);
+PETSC_EXTERN PetscErrorCode    PetscSpaceSetType(PetscSpace, PetscSpaceType);
+PETSC_EXTERN PetscErrorCode    PetscSpaceGetType(PetscSpace, PetscSpaceType *);
+PETSC_EXTERN PetscErrorCode    PetscSpaceSetUp(PetscSpace);
+PETSC_EXTERN PetscErrorCode    PetscSpaceSetFromOptions(PetscSpace);
+PETSC_EXTERN PetscErrorCode    PetscSpaceViewFromOptions(PetscSpace, PetscObject, const char[]);
 
-PETSC_EXTERN PetscErrorCode PetscSpaceView(PetscSpace,PetscViewer);
-PETSC_EXTERN PetscErrorCode PetscSpaceRegister(const char [], PetscErrorCode (*)(PetscSpace));
+PETSC_EXTERN PetscErrorCode PetscSpaceView(PetscSpace, PetscViewer);
+PETSC_EXTERN PetscErrorCode PetscSpaceRegister(const char[], PetscErrorCode (*)(PetscSpace));
 PETSC_EXTERN PetscErrorCode PetscSpaceRegisterDestroy(void);
 
 PETSC_EXTERN PetscErrorCode PetscSpaceGetDimension(PetscSpace, PetscInt *);
@@ -72,12 +72,14 @@ PETSC_EXTERN PetscErrorCode PetscSpaceGetDegree(PetscSpace, PetscInt *, PetscInt
 PETSC_EXTERN PetscErrorCode PetscSpaceEvaluate(PetscSpace, PetscInt, const PetscReal[], PetscReal[], PetscReal[], PetscReal[]);
 PETSC_EXTERN PetscErrorCode PetscSpaceGetHeightSubspace(PetscSpace, PetscInt, PetscSpace *);
 
-static inline PETSC_DEPRECATED_FUNCTION("Property not used (since v3.17)") PetscErrorCode PetscSpacePolynomialSetSymmetric(PetscSpace sp, PetscBool s)
-{
-  PetscCheck(!s,PetscObjectComm((PetscObject)sp),PETSC_ERR_SUP,"PETSCSPACEPOLYNOMIAL does not support symmetric polynomials");
+static inline PETSC_DEPRECATED_FUNCTION("Property not used (since v3.17)") PetscErrorCode PetscSpacePolynomialSetSymmetric(PetscSpace sp, PetscBool s) {
+  PetscCheck(!s, PetscObjectComm((PetscObject)sp), PETSC_ERR_SUP, "PETSCSPACEPOLYNOMIAL does not support symmetric polynomials");
   return 0;
 }
-static inline PETSC_DEPRECATED_FUNCTION("Property not used (since v3.17)") PetscErrorCode PetscSpacePolynomialGetSymmetric(PETSC_UNUSED PetscSpace sp, PetscBool *s) {*s = PETSC_FALSE; return 0;}
+static inline PETSC_DEPRECATED_FUNCTION("Property not used (since v3.17)") PetscErrorCode PetscSpacePolynomialGetSymmetric(PETSC_UNUSED PetscSpace sp, PetscBool *s) {
+  *s = PETSC_FALSE;
+  return 0;
+}
 PETSC_EXTERN PetscErrorCode PetscSpacePolynomialSetTensor(PetscSpace, PetscBool);
 PETSC_EXTERN PetscErrorCode PetscSpacePolynomialGetTensor(PetscSpace, PetscBool *);
 
@@ -95,7 +97,7 @@ PETSC_EXTERN PetscErrorCode PetscSpaceSumSetSubspace(PetscSpace, PetscInt, Petsc
 PETSC_EXTERN PetscErrorCode PetscSpaceSumGetSubspace(PetscSpace, PetscInt, PetscSpace *);
 PETSC_EXTERN PetscErrorCode PetscSpaceSumSetConcatenate(PetscSpace, PetscBool);
 PETSC_EXTERN PetscErrorCode PetscSpaceSumGetConcatenate(PetscSpace, PetscBool *);
-PETSC_EXTERN PetscErrorCode PetscSpaceCreateSum(PetscInt numSubspaces,const PetscSpace subspaces[],PetscBool concatenate,PetscSpace *sumSpace);
+PETSC_EXTERN PetscErrorCode PetscSpaceCreateSum(PetscInt numSubspaces, const PetscSpace subspaces[], PetscBool concatenate, PetscSpace *sumSpace);
 
 PETSC_EXTERN PetscErrorCode PetscSpacePointGetPoints(PetscSpace, PetscQuadrature *);
 PETSC_EXTERN PetscErrorCode PetscSpacePointSetPoints(PetscSpace, PetscQuadrature);
@@ -118,33 +120,33 @@ typedef const char *PetscDualSpaceType;
 #define PETSCDUALSPACEBDM      "bdm"
 
 /*MC
-  PETSCDUALSPACEBDM = "bdm" - A PetscDualSpace object that encapsulates a dual space for Brezzi-Douglas-Marini elements
+  PETSCDUALSPACEBDM = "bdm" - A `PetscDualSpace` object that encapsulates a dual space for Brezzi-Douglas-Marini elements
 
   Level: intermediate
 
-  Note: This type is a constructor alias of PETSCDUALSPACELAGRANGE.  During
-  PetscDualSpaceSetUp(), the correct value of PetscDualSpaceSetFormDegree() is
+  Note: This type is a constructor alias of `PETSCDUALSPACELAGRANGE`.  During
+  `PetscDualSpaceSetUp()`, the correct value of `PetscDualSpaceSetFormDegree()` is
   set for H-div conforming spaces. The type of the dual space is then changed to
-  to PETSCDUALSPACELAGRANGE.
+  to `PETSCDUALSPACELAGRANGE`.
 
 .seealso: `PetscDualSpaceType`, `PetscDualSpaceCreate()`, `PetscDualSpaceSetType()`, `PETSCDUALSPACELAGRANGE`, `PetscDualSpaceSetFormDegree()`
 M*/
 
 PETSC_EXTERN PetscFunctionList PetscDualSpaceList;
-PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate(MPI_Comm, PetscDualSpace *);
-PETSC_EXTERN PetscErrorCode PetscDualSpaceDestroy(PetscDualSpace *);
-PETSC_EXTERN PetscErrorCode PetscDualSpaceDuplicate(PetscDualSpace, PetscDualSpace *);
-PETSC_EXTERN PetscErrorCode PetscDualSpaceSetType(PetscDualSpace, PetscDualSpaceType);
-PETSC_EXTERN PetscErrorCode PetscDualSpaceGetType(PetscDualSpace, PetscDualSpaceType *);
-PETSC_EXTERN PetscErrorCode PetscDualSpaceGetUniform(PetscDualSpace, PetscBool *);
-PETSC_EXTERN PetscErrorCode PetscDualSpaceGetNumDof(PetscDualSpace, const PetscInt **);
-PETSC_EXTERN PetscErrorCode PetscDualSpaceGetSection(PetscDualSpace, PetscSection *);
-PETSC_EXTERN PetscErrorCode PetscDualSpaceSetUp(PetscDualSpace);
-PETSC_EXTERN PetscErrorCode PetscDualSpaceSetFromOptions(PetscDualSpace);
-PETSC_EXTERN PetscErrorCode PetscDualSpaceViewFromOptions(PetscDualSpace,PetscObject,const char[]);
+PETSC_EXTERN PetscErrorCode    PetscDualSpaceCreate(MPI_Comm, PetscDualSpace *);
+PETSC_EXTERN PetscErrorCode    PetscDualSpaceDestroy(PetscDualSpace *);
+PETSC_EXTERN PetscErrorCode    PetscDualSpaceDuplicate(PetscDualSpace, PetscDualSpace *);
+PETSC_EXTERN PetscErrorCode    PetscDualSpaceSetType(PetscDualSpace, PetscDualSpaceType);
+PETSC_EXTERN PetscErrorCode    PetscDualSpaceGetType(PetscDualSpace, PetscDualSpaceType *);
+PETSC_EXTERN PetscErrorCode    PetscDualSpaceGetUniform(PetscDualSpace, PetscBool *);
+PETSC_EXTERN PetscErrorCode    PetscDualSpaceGetNumDof(PetscDualSpace, const PetscInt **);
+PETSC_EXTERN PetscErrorCode    PetscDualSpaceGetSection(PetscDualSpace, PetscSection *);
+PETSC_EXTERN PetscErrorCode    PetscDualSpaceSetUp(PetscDualSpace);
+PETSC_EXTERN PetscErrorCode    PetscDualSpaceSetFromOptions(PetscDualSpace);
+PETSC_EXTERN PetscErrorCode    PetscDualSpaceViewFromOptions(PetscDualSpace, PetscObject, const char[]);
 
-PETSC_EXTERN PetscErrorCode PetscDualSpaceView(PetscDualSpace,PetscViewer);
-PETSC_EXTERN PetscErrorCode PetscDualSpaceRegister(const char [], PetscErrorCode (*)(PetscDualSpace));
+PETSC_EXTERN PetscErrorCode PetscDualSpaceView(PetscDualSpace, PetscViewer);
+PETSC_EXTERN PetscErrorCode PetscDualSpaceRegister(const char[], PetscErrorCode (*)(PetscDualSpace));
 PETSC_EXTERN PetscErrorCode PetscDualSpaceRegisterDestroy(void);
 
 PETSC_EXTERN PetscErrorCode PetscDualSpaceGetDimension(PetscDualSpace, PetscInt *);
@@ -158,18 +160,18 @@ PETSC_EXTERN PetscErrorCode PetscDualSpaceGetDM(PetscDualSpace, DM *);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceGetFunctional(PetscDualSpace, PetscInt, PetscQuadrature *);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceGetSymmetries(PetscDualSpace, const PetscInt ****, const PetscScalar ****);
 
-PETSC_EXTERN PetscErrorCode PetscFEGeomCreate(PetscQuadrature,PetscInt,PetscInt,PetscBool,PetscFEGeom**);
-PETSC_EXTERN PetscErrorCode PetscFEGeomGetQuadrature(PetscFEGeom*,PetscQuadrature*);
-PETSC_EXTERN PetscErrorCode PetscFEGeomSetQuadrature(PetscFEGeom*,PetscQuadrature);
-PETSC_EXTERN PetscErrorCode PetscFEGeomGetChunk(PetscFEGeom*,PetscInt,PetscInt,PetscFEGeom**);
-PETSC_EXTERN PetscErrorCode PetscFEGeomRestoreChunk(PetscFEGeom*,PetscInt,PetscInt,PetscFEGeom**);
-PETSC_EXTERN PetscErrorCode PetscFEGeomGetPoint(PetscFEGeom*,PetscInt,PetscInt,const PetscReal[],PetscFEGeom*);
-PETSC_EXTERN PetscErrorCode PetscFEGeomGetCellPoint(PetscFEGeom*,PetscInt,PetscInt,PetscFEGeom*);
-PETSC_EXTERN PetscErrorCode PetscFEGeomComplete(PetscFEGeom*);
-PETSC_EXTERN PetscErrorCode PetscFEGeomDestroy(PetscFEGeom**);
+PETSC_EXTERN PetscErrorCode PetscFEGeomCreate(PetscQuadrature, PetscInt, PetscInt, PetscBool, PetscFEGeom **);
+PETSC_EXTERN PetscErrorCode PetscFEGeomGetQuadrature(PetscFEGeom *, PetscQuadrature *);
+PETSC_EXTERN PetscErrorCode PetscFEGeomSetQuadrature(PetscFEGeom *, PetscQuadrature);
+PETSC_EXTERN PetscErrorCode PetscFEGeomGetChunk(PetscFEGeom *, PetscInt, PetscInt, PetscFEGeom **);
+PETSC_EXTERN PetscErrorCode PetscFEGeomRestoreChunk(PetscFEGeom *, PetscInt, PetscInt, PetscFEGeom **);
+PETSC_EXTERN PetscErrorCode PetscFEGeomGetPoint(PetscFEGeom *, PetscInt, PetscInt, const PetscReal[], PetscFEGeom *);
+PETSC_EXTERN PetscErrorCode PetscFEGeomGetCellPoint(PetscFEGeom *, PetscInt, PetscInt, PetscFEGeom *);
+PETSC_EXTERN PetscErrorCode PetscFEGeomComplete(PetscFEGeom *);
+PETSC_EXTERN PetscErrorCode PetscFEGeomDestroy(PetscFEGeom **);
 
-PETSC_EXTERN PetscErrorCode PetscDualSpaceApply(PetscDualSpace, PetscInt, PetscReal, PetscFEGeom *, PetscInt, PetscErrorCode (*)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void *, PetscScalar *);
-PETSC_EXTERN PetscErrorCode PetscDualSpaceApplyDefault(PetscDualSpace, PetscInt, PetscReal, PetscFEGeom *, PetscInt, PetscErrorCode (*)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void *, PetscScalar *);
+PETSC_EXTERN PetscErrorCode PetscDualSpaceApply(PetscDualSpace, PetscInt, PetscReal, PetscFEGeom *, PetscInt, PetscErrorCode (*)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *), void *, PetscScalar *);
+PETSC_EXTERN PetscErrorCode PetscDualSpaceApplyDefault(PetscDualSpace, PetscInt, PetscReal, PetscFEGeom *, PetscInt, PetscErrorCode (*)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *), void *, PetscScalar *);
 
 PETSC_EXTERN PetscErrorCode PetscDualSpaceGetAllData(PetscDualSpace, PetscQuadrature *, Mat *);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceCreateAllDataDefault(PetscDualSpace, PetscQuadrature *, Mat *);
@@ -206,8 +208,8 @@ PETSC_EXTERN PetscErrorCode PetscDualSpaceLagrangeSetUseMoments(PetscDualSpace, 
 PETSC_EXTERN PetscErrorCode PetscDualSpaceLagrangeGetMomentOrder(PetscDualSpace, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceLagrangeSetMomentOrder(PetscDualSpace, PetscInt);
 
-PETSC_EXTERN PetscErrorCode PetscDualSpaceGetHeightSubspace(PetscDualSpace,PetscInt,PetscDualSpace *);
-PETSC_EXTERN PetscErrorCode PetscDualSpaceGetPointSubspace(PetscDualSpace,PetscInt,PetscDualSpace *);
+PETSC_EXTERN PetscErrorCode PetscDualSpaceGetHeightSubspace(PetscDualSpace, PetscInt, PetscDualSpace *);
+PETSC_EXTERN PetscErrorCode PetscDualSpaceGetPointSubspace(PetscDualSpace, PetscInt, PetscDualSpace *);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceSimpleSetDimension(PetscDualSpace, PetscInt);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceSimpleSetFunctional(PetscDualSpace, PetscInt, PetscQuadrature);
 
@@ -230,17 +232,17 @@ typedef const char *PetscFEType;
 #define PETSCFECOMPOSITE "composite"
 
 PETSC_EXTERN PetscFunctionList PetscFEList;
-PETSC_EXTERN PetscErrorCode PetscFECreate(MPI_Comm, PetscFE *);
-PETSC_EXTERN PetscErrorCode PetscFEDestroy(PetscFE *);
-PETSC_EXTERN PetscErrorCode PetscFESetType(PetscFE, PetscFEType);
-PETSC_EXTERN PetscErrorCode PetscFEGetType(PetscFE, PetscFEType *);
-PETSC_EXTERN PetscErrorCode PetscFESetUp(PetscFE);
-PETSC_EXTERN PetscErrorCode PetscFESetFromOptions(PetscFE);
-PETSC_EXTERN PetscErrorCode PetscFEViewFromOptions(PetscFE,PetscObject,const char[]);
-PETSC_EXTERN PetscErrorCode PetscFESetName(PetscFE, const char []);
+PETSC_EXTERN PetscErrorCode    PetscFECreate(MPI_Comm, PetscFE *);
+PETSC_EXTERN PetscErrorCode    PetscFEDestroy(PetscFE *);
+PETSC_EXTERN PetscErrorCode    PetscFESetType(PetscFE, PetscFEType);
+PETSC_EXTERN PetscErrorCode    PetscFEGetType(PetscFE, PetscFEType *);
+PETSC_EXTERN PetscErrorCode    PetscFESetUp(PetscFE);
+PETSC_EXTERN PetscErrorCode    PetscFESetFromOptions(PetscFE);
+PETSC_EXTERN PetscErrorCode    PetscFEViewFromOptions(PetscFE, PetscObject, const char[]);
+PETSC_EXTERN PetscErrorCode    PetscFESetName(PetscFE, const char[]);
 
-PETSC_EXTERN PetscErrorCode PetscFEView(PetscFE,PetscViewer);
-PETSC_EXTERN PetscErrorCode PetscFERegister(const char [], PetscErrorCode (*)(PetscFE));
+PETSC_EXTERN PetscErrorCode PetscFEView(PetscFE, PetscViewer);
+PETSC_EXTERN PetscErrorCode PetscFERegister(const char[], PetscErrorCode (*)(PetscFE));
 PETSC_EXTERN PetscErrorCode PetscFERegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode PetscFECreateDefault(MPI_Comm, PetscInt, PetscInt, PetscBool, const char[], PetscInt, PetscFE *);
 PETSC_EXTERN PetscErrorCode PetscFECreateByCell(MPI_Comm, PetscInt, PetscInt, DMPolytopeType, const char[], PetscInt, PetscFE *);
@@ -283,13 +285,7 @@ PETSC_EXTERN PetscErrorCode PetscFEPushforwardGradient(PetscFE, PetscFEGeom *, P
 PETSC_EXTERN PetscErrorCode PetscFEPushforwardHessian(PetscFE, PetscFEGeom *, PetscInt, PetscScalar[]);
 
 PETSC_EXTERN PetscErrorCode PetscFEIntegrate(PetscDS, PetscInt, PetscInt, PetscFEGeom *, const PetscScalar[], PetscDS, const PetscScalar[], PetscScalar[]);
-PETSC_EXTERN PetscErrorCode PetscFEIntegrateBd(PetscDS, PetscInt,
-                                               void (*)(PetscInt, PetscInt, PetscInt,
-                                                        const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
-                                                        const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
-                                                        PetscReal, const PetscReal[], const PetscReal[], PetscInt, const
-                                                        PetscScalar[], PetscScalar[]),
-                                               PetscInt, PetscFEGeom *, const PetscScalar[], PetscDS, const PetscScalar[], PetscScalar[]);
+PETSC_EXTERN PetscErrorCode PetscFEIntegrateBd(PetscDS, PetscInt, void (*)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), PetscInt, PetscFEGeom *, const PetscScalar[], PetscDS, const PetscScalar[], PetscScalar[]);
 PETSC_EXTERN PetscErrorCode PetscFEIntegrateResidual(PetscDS, PetscFormKey, PetscInt, PetscFEGeom *, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscReal, PetscScalar[]);
 PETSC_EXTERN PetscErrorCode PetscFEIntegrateBdResidual(PetscDS, PetscWeakForm, PetscFormKey, PetscInt, PetscFEGeom *, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscReal, PetscScalar[]);
 PETSC_EXTERN PetscErrorCode PetscFEIntegrateHybridResidual(PetscDS, PetscFormKey, PetscInt, PetscInt, PetscFEGeom *, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscReal, PetscScalar[]);

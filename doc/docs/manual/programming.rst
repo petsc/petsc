@@ -1,5 +1,7 @@
-Programming with PETSc/TAO
-==========================
+.. _part_solvers:
+
+The Solvers in PETSc/TAO
+========================
 
 .. toctree::
    :maxdepth: 2
@@ -9,10 +11,4 @@ Programming with PETSc/TAO
    ksp
    snes
    ts
-   sensitivity_analysis
    tao
-   high_level_mg
-   dmplex
-   dmstag
-   dt
-   fe

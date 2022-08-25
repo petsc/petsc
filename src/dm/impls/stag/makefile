@@ -6,7 +6,7 @@ SOURCEH  = ../../../../include/petscdmstag.h ../../../../include/petsc/private/d
 DIRS     = tests tutorials
 LIBBASE  = libpetscdm
 MANSEC   = DM
-SUBMANSEC= DMSTAG
+SUBMANSEC= DMStag
 LOCDIR   = src/dm/impls/stag/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

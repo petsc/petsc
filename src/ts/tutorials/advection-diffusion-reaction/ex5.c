@@ -40,53 +40,52 @@ F*/
 #include <petscdmda.h>
 
 /* ------------------------------------------------------------------- */
-PetscErrorCode InitialConditions(DM da,Vec U)
-{
-  PetscInt       i,j,xs,ys,xm,ym,Mx,My;
-  Field          **u;
-  PetscReal      hx,hy,x,y;
+PetscErrorCode InitialConditions(DM da, Vec U) {
+  PetscInt  i, j, xs, ys, xm, ym, Mx, My;
+  Field   **u;
+  PetscReal hx, hy, x, y;
 
   PetscFunctionBegin;
-  PetscCall(DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
+  PetscCall(DMDAGetInfo(da, PETSC_IGNORE, &Mx, &My, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE));
 
-  hx = 2.5/(PetscReal)(Mx);
-  hy = 2.5/(PetscReal)(My);
+  hx = 2.5 / (PetscReal)(Mx);
+  hy = 2.5 / (PetscReal)(My);
 
   /*
      Get pointers to actual vector data
   */
-  PetscCall(DMDAVecGetArray(da,U,&u));
+  PetscCall(DMDAVecGetArray(da, U, &u));
 
   /*
      Get local grid boundaries
   */
-  PetscCall(DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL));
+  PetscCall(DMDAGetCorners(da, &xs, &ys, NULL, &xm, &ym, NULL));
 
   /*
      Compute function over the locally owned part of the grid
   */
-  for (j=ys; j<ys+ym; j++) {
-    y = j*hy;
-    for (i=xs; i<xs+xm; i++) {
-      x = i*hx;
-      if (PetscApproximateGTE(x,1.0) && PetscApproximateLTE(x,1.5) && PetscApproximateGTE(y,1.0) && PetscApproximateLTE(y,1.5)) u[j][i].v = PetscPowReal(PetscSinReal(4.0*PETSC_PI*x),2.0)*PetscPowReal(PetscSinReal(4.0*PETSC_PI*y),2.0)/4.0;
+  for (j = ys; j < ys + ym; j++) {
+    y = j * hy;
+    for (i = xs; i < xs + xm; i++) {
+      x = i * hx;
+      if (PetscApproximateGTE(x, 1.0) && PetscApproximateLTE(x, 1.5) && PetscApproximateGTE(y, 1.0) && PetscApproximateLTE(y, 1.5))
+        u[j][i].v = PetscPowReal(PetscSinReal(4.0 * PETSC_PI * x), 2.0) * PetscPowReal(PetscSinReal(4.0 * PETSC_PI * y), 2.0) / 4.0;
       else u[j][i].v = 0.0;
 
-      u[j][i].u = 1.0 - 2.0*u[j][i].v;
+      u[j][i].u = 1.0 - 2.0 * u[j][i].v;
     }
   }
 
   /*
      Restore access to vector
   */
-  PetscCall(DMDAVecRestoreArray(da,U,&u));
+  PetscCall(DMDAVecRestoreArray(da, U, &u));
   PetscFunctionReturn(0);
 }
 
-int main(int argc,char **argv)
-{
-  TS     ts;                    /* ODE integrator */
-  Vec    x;                     /* solution */
+int main(int argc, char **argv) {
+  TS     ts; /* ODE integrator */
+  Vec    x;  /* solution */
   DM     da;
   AppCtx appctx;
 
@@ -94,7 +93,7 @@ int main(int argc,char **argv)
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
   PetscFunctionBeginUser;
   appctx.D1    = 8.0e-5;
   appctx.D2    = 4.0e-5;
@@ -105,46 +104,46 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscCall(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,DM_BOUNDARY_PERIODIC,DMDA_STENCIL_STAR,65,65,PETSC_DECIDE,PETSC_DECIDE,2,1,NULL,NULL,&da));
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_PERIODIC, DM_BOUNDARY_PERIODIC, DMDA_STENCIL_STAR, 65, 65, PETSC_DECIDE, PETSC_DECIDE, 2, 1, NULL, NULL, &da));
   PetscCall(DMSetFromOptions(da));
   PetscCall(DMSetUp(da));
-  PetscCall(DMDASetFieldName(da,0,"u"));
-  PetscCall(DMDASetFieldName(da,1,"v"));
+  PetscCall(DMDASetFieldName(da, 0, "u"));
+  PetscCall(DMDASetFieldName(da, 1, "v"));
 
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create global vector from DMDA; this will be used to store the solution
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscCall(DMCreateGlobalVector(da,&x));
+  PetscCall(DMCreateGlobalVector(da, &x));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscCall(TSCreate(PETSC_COMM_WORLD,&ts));
-  PetscCall(TSSetType(ts,TSARKIMEX));
-  PetscCall(TSARKIMEXSetFullyImplicit(ts,PETSC_TRUE));
-  PetscCall(TSSetDM(ts,da));
-  PetscCall(TSSetProblemType(ts,TS_NONLINEAR));
-  PetscCall(TSSetRHSFunction(ts,NULL,RHSFunction,&appctx));
-  PetscCall(TSSetRHSJacobian(ts,NULL,NULL,RHSJacobian,&appctx));
+  PetscCall(TSCreate(PETSC_COMM_WORLD, &ts));
+  PetscCall(TSSetType(ts, TSARKIMEX));
+  PetscCall(TSARKIMEXSetFullyImplicit(ts, PETSC_TRUE));
+  PetscCall(TSSetDM(ts, da));
+  PetscCall(TSSetProblemType(ts, TS_NONLINEAR));
+  PetscCall(TSSetRHSFunction(ts, NULL, RHSFunction, &appctx));
+  PetscCall(TSSetRHSJacobian(ts, NULL, NULL, RHSJacobian, &appctx));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscCall(InitialConditions(da,x));
-  PetscCall(TSSetSolution(ts,x));
+  PetscCall(InitialConditions(da, x));
+  PetscCall(TSSetSolution(ts, x));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set solver options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscCall(TSSetMaxTime(ts,2000.0));
-  PetscCall(TSSetTimeStep(ts,.0001));
-  PetscCall(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER));
+  PetscCall(TSSetMaxTime(ts, 2000.0));
+  PetscCall(TSSetTimeStep(ts, .0001));
+  PetscCall(TSSetExactFinalTime(ts, TS_EXACTFINALTIME_STEPOVER));
   PetscCall(TSSetFromOptions(ts));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve ODE system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscCall(TSSolve(ts,x));
+  PetscCall(TSSolve(ts, x));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.

@@ -28,4 +28,4 @@ typedef struct {
   PetscBool recycle;
 } TAO_BLMVM;
 
-#endif  /* if !defined(__TAO_BLMVM_H) */
+#endif /* if !defined(__TAO_BLMVM_H) */

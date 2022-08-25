@@ -2,129 +2,128 @@
 
 static char help[] = "Solves a linear system with a block of right-hand sides using KSPHPDDM.\n\n";
 
-int main(int argc,char **args)
-{
-  Mat                X,B;         /* computed solutions and RHS */
-  Vec                cx,cb;       /* columns of X and B */
-  Mat                A,KA = NULL; /* linear system matrix */
-  KSP                ksp;         /* linear solver context */
-  PC                 pc;          /* preconditioner context */
-  Mat                F;           /* factored matrix from the preconditioner context */
-  PetscScalar        *x,*S = NULL,*T = NULL;
-  PetscReal          norm,deflation = -1.0;
-  PetscInt           m,M,N = 5,i;
-  PetscMPIInt        rank,size;
-  const char         *deft = MATAIJ;
+int main(int argc, char **args) {
+  Mat                X, B;         /* computed solutions and RHS */
+  Vec                cx, cb;       /* columns of X and B */
+  Mat                A, KA = NULL; /* linear system matrix */
+  KSP                ksp;          /* linear solver context */
+  PC                 pc;           /* preconditioner context */
+  Mat                F;            /* factored matrix from the preconditioner context */
+  PetscScalar       *x, *S = NULL, *T = NULL;
+  PetscReal          norm, deflation = -1.0;
+  PetscInt           m, M, N = 5, i;
+  PetscMPIInt        rank, size;
+  const char        *deft = MATAIJ;
   PetscViewer        viewer;
-  char               name[PETSC_MAX_PATH_LEN],type[256];
-  PetscBool          breakdown = PETSC_FALSE,flg;
+  char               name[PETSC_MAX_PATH_LEN], type[256];
+  PetscBool          breakdown = PETSC_FALSE, flg;
   KSPConvergedReason reason;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&args,NULL,help));
-  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
-  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
-  PetscCall(PetscOptionsGetString(NULL,NULL,"-f",name,sizeof(name),&flg));
-  PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Must provide a binary file for the matrix");
-  PetscCall(PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL));
-  PetscCall(PetscOptionsGetBool(NULL,NULL,"-breakdown",&breakdown,NULL));
-  PetscCall(PetscOptionsGetReal(NULL,NULL,"-ksp_hpddm_deflation_tol",&deflation,NULL));
-  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
-  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
-  PetscCall(KSPSetOperators(ksp,A,A));
-  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,name,FILE_MODE_READ,&viewer));
-  PetscCall(MatLoad(A,viewer));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
+  PetscCall(PetscOptionsGetString(NULL, NULL, "-f", name, sizeof(name), &flg));
+  PetscCheck(flg, PETSC_COMM_WORLD, PETSC_ERR_SUP, "Must provide a binary file for the matrix");
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-N", &N, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-breakdown", &breakdown, NULL));
+  PetscCall(PetscOptionsGetReal(NULL, NULL, "-ksp_hpddm_deflation_tol", &deflation, NULL));
+  PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
+  PetscCall(KSPCreate(PETSC_COMM_WORLD, &ksp));
+  PetscCall(KSPSetOperators(ksp, A, A));
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, name, FILE_MODE_READ, &viewer));
+  PetscCall(MatLoad(A, viewer));
   PetscCall(PetscViewerDestroy(&viewer));
-  PetscOptionsBegin(PETSC_COMM_WORLD,"","","");
-  PetscCall(PetscOptionsFList("-mat_type","Matrix type","MatSetType",MatList,deft,type,256,&flg));
+  PetscOptionsBegin(PETSC_COMM_WORLD, "", "", "");
+  PetscCall(PetscOptionsFList("-mat_type", "Matrix type", "MatSetType", MatList, deft, type, 256, &flg));
   PetscOptionsEnd();
   if (flg) {
-    PetscCall(PetscStrcmp(type,MATKAIJ,&flg));
+    PetscCall(PetscStrcmp(type, MATKAIJ, &flg));
     if (!flg) {
-      PetscCall(MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE));
-      PetscCall(MatConvert(A,type,MAT_INPLACE_MATRIX,&A));
+      PetscCall(MatSetOption(A, MAT_SYMMETRIC, PETSC_TRUE));
+      PetscCall(MatConvert(A, type, MAT_INPLACE_MATRIX, &A));
     } else {
       if (size > 2) {
-        PetscCall(MatGetSize(A,&M,NULL));
-        PetscCall(MatCreate(PETSC_COMM_WORLD,&B));
-        if (rank > 1) PetscCall(MatSetSizes(B,0,0,M,M));
-        else PetscCall(MatSetSizes(B,rank?M-M/2:M/2,rank?M-M/2:M/2,M,M));
-        PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,name,FILE_MODE_READ,&viewer));
-        PetscCall(MatLoad(B,viewer));
+        PetscCall(MatGetSize(A, &M, NULL));
+        PetscCall(MatCreate(PETSC_COMM_WORLD, &B));
+        if (rank > 1) PetscCall(MatSetSizes(B, 0, 0, M, M));
+        else PetscCall(MatSetSizes(B, rank ? M - M / 2 : M / 2, rank ? M - M / 2 : M / 2, M, M));
+        PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, name, FILE_MODE_READ, &viewer));
+        PetscCall(MatLoad(B, viewer));
         PetscCall(PetscViewerDestroy(&viewer));
-        PetscCall(MatHeaderReplace(A,&B));
+        PetscCall(MatHeaderReplace(A, &B));
       }
-      PetscCall(PetscCalloc2(N*N,&S,N*N,&T));
-      for (i=0; i<N; i++) { /* really easy problem used for testing */
-        S[i*(N+1)] = 1e+6;
-        T[i*(N+1)] = 1e-2;
+      PetscCall(PetscCalloc2(N * N, &S, N * N, &T));
+      for (i = 0; i < N; i++) { /* really easy problem used for testing */
+        S[i * (N + 1)] = 1e+6;
+        T[i * (N + 1)] = 1e-2;
       }
-      PetscCall(MatCreateKAIJ(A,N,N,S,T,&KA));
+      PetscCall(MatCreateKAIJ(A, N, N, S, T, &KA));
     }
   }
   if (!flg) {
     if (size > 4) {
       Mat B;
-      PetscCall(MatGetSize(A,&M,NULL));
-      PetscCall(MatCreate(PETSC_COMM_WORLD,&B));
-      if (rank > 3) PetscCall(MatSetSizes(B,0,0,M,M));
-      else PetscCall(MatSetSizes(B,rank == 0?M-3*(M/4):M/4,rank == 0?M-3*(M/4):M/4,M,M));
-      PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,name,FILE_MODE_READ,&viewer));
-      PetscCall(MatLoad(B,viewer));
+      PetscCall(MatGetSize(A, &M, NULL));
+      PetscCall(MatCreate(PETSC_COMM_WORLD, &B));
+      if (rank > 3) PetscCall(MatSetSizes(B, 0, 0, M, M));
+      else PetscCall(MatSetSizes(B, rank == 0 ? M - 3 * (M / 4) : M / 4, rank == 0 ? M - 3 * (M / 4) : M / 4, M, M));
+      PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, name, FILE_MODE_READ, &viewer));
+      PetscCall(MatLoad(B, viewer));
       PetscCall(PetscViewerDestroy(&viewer));
-      PetscCall(MatHeaderReplace(A,&B));
+      PetscCall(MatHeaderReplace(A, &B));
     }
   }
-  PetscCall(MatGetLocalSize(A,&m,NULL));
-  PetscCall(MatCreateDense(PETSC_COMM_WORLD,m,PETSC_DECIDE,PETSC_DECIDE,N,NULL,&B));
-  PetscCall(MatCreateDense(PETSC_COMM_WORLD,m,PETSC_DECIDE,PETSC_DECIDE,N,NULL,&X));
-  if (!breakdown) PetscCall(MatSetRandom(B,NULL));
+  PetscCall(MatGetLocalSize(A, &m, NULL));
+  PetscCall(MatCreateDense(PETSC_COMM_WORLD, m, PETSC_DECIDE, PETSC_DECIDE, N, NULL, &B));
+  PetscCall(MatCreateDense(PETSC_COMM_WORLD, m, PETSC_DECIDE, PETSC_DECIDE, N, NULL, &X));
+  if (!breakdown) PetscCall(MatSetRandom(B, NULL));
   PetscCall(KSPSetFromOptions(ksp));
   if (!flg) {
     if (!breakdown) {
-      PetscCall(KSPMatSolve(ksp,B,X));
-      PetscCall(KSPGetMatSolveBatchSize(ksp,&M));
+      PetscCall(KSPMatSolve(ksp, B, X));
+      PetscCall(KSPGetMatSolveBatchSize(ksp, &M));
       if (M != PETSC_DECIDE) {
-        PetscCall(KSPSetMatSolveBatchSize(ksp,PETSC_DECIDE));
+        PetscCall(KSPSetMatSolveBatchSize(ksp, PETSC_DECIDE));
         PetscCall(MatZeroEntries(X));
-        PetscCall(KSPMatSolve(ksp,B,X));
+        PetscCall(KSPMatSolve(ksp, B, X));
       }
-      PetscCall(KSPGetPC(ksp,&pc));
-      PetscCall(PetscObjectTypeCompare((PetscObject)pc,PCLU,&flg));
+      PetscCall(KSPGetPC(ksp, &pc));
+      PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCLU, &flg));
       if (flg) {
-        PetscCall(PCFactorGetMatrix(pc,&F));
-        PetscCall(MatMatSolve(F,B,B));
-        PetscCall(MatAYPX(B,-1.0,X,SAME_NONZERO_PATTERN));
-        PetscCall(MatNorm(B,NORM_INFINITY,&norm));
-        PetscCheck(norm < 100*PETSC_MACHINE_EPSILON,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"KSPMatSolve() and MatMatSolve() difference has nonzero norm %g",(double)norm);
+        PetscCall(PCFactorGetMatrix(pc, &F));
+        PetscCall(MatMatSolve(F, B, B));
+        PetscCall(MatAYPX(B, -1.0, X, SAME_NONZERO_PATTERN));
+        PetscCall(MatNorm(B, NORM_INFINITY, &norm));
+        PetscCheck(norm < 100 * PETSC_MACHINE_EPSILON, PetscObjectComm((PetscObject)ksp), PETSC_ERR_PLIB, "KSPMatSolve() and MatMatSolve() difference has nonzero norm %g", (double)norm);
       }
     } else {
       PetscCall(MatZeroEntries(B));
-      PetscCall(KSPMatSolve(ksp,B,X));
-      PetscCall(KSPGetConvergedReason(ksp,&reason));
-      PetscCheck(reason == KSP_CONVERGED_HAPPY_BREAKDOWN,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"KSPConvergedReason() %s != KSP_CONVERGED_HAPPY_BREAKDOWN",KSPConvergedReasons[reason]);
-      PetscCall(MatDenseGetArrayWrite(B,&x));
-      for (i=0; i<m*N; ++i) x[i] = 1.0;
-      PetscCall(MatDenseRestoreArrayWrite(B,&x));
-      PetscCall(KSPMatSolve(ksp,B,X));
-      PetscCall(KSPGetConvergedReason(ksp,&reason));
-      PetscCheck(reason == KSP_DIVERGED_BREAKDOWN || deflation >= 0.0,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"KSPConvergedReason() %s != KSP_DIVERGED_BREAKDOWN",KSPConvergedReasons[reason]);
+      PetscCall(KSPMatSolve(ksp, B, X));
+      PetscCall(KSPGetConvergedReason(ksp, &reason));
+      PetscCheck(reason == KSP_CONVERGED_HAPPY_BREAKDOWN, PetscObjectComm((PetscObject)ksp), PETSC_ERR_PLIB, "KSPConvergedReason() %s != KSP_CONVERGED_HAPPY_BREAKDOWN", KSPConvergedReasons[reason]);
+      PetscCall(MatDenseGetArrayWrite(B, &x));
+      for (i = 0; i < m * N; ++i) x[i] = 1.0;
+      PetscCall(MatDenseRestoreArrayWrite(B, &x));
+      PetscCall(KSPMatSolve(ksp, B, X));
+      PetscCall(KSPGetConvergedReason(ksp, &reason));
+      PetscCheck(reason == KSP_DIVERGED_BREAKDOWN || deflation >= 0.0, PetscObjectComm((PetscObject)ksp), PETSC_ERR_PLIB, "KSPConvergedReason() %s != KSP_DIVERGED_BREAKDOWN", KSPConvergedReasons[reason]);
     }
   } else {
-    PetscCall(KSPSetOperators(ksp,KA,KA));
-    PetscCall(MatGetSize(KA,&M,NULL));
-    PetscCall(VecCreateMPI(PETSC_COMM_WORLD,m*N,M,&cb));
-    PetscCall(VecCreateMPI(PETSC_COMM_WORLD,m*N,M,&cx));
-    PetscCall(VecSetRandom(cb,NULL));
+    PetscCall(KSPSetOperators(ksp, KA, KA));
+    PetscCall(MatGetSize(KA, &M, NULL));
+    PetscCall(VecCreateMPI(PETSC_COMM_WORLD, m * N, M, &cb));
+    PetscCall(VecCreateMPI(PETSC_COMM_WORLD, m * N, M, &cx));
+    PetscCall(VecSetRandom(cb, NULL));
     /* solving with MatKAIJ is equivalent to block solving with row-major RHS and solutions */
     /* only applies if MatKAIJGetScaledIdentity() returns true                              */
-    PetscCall(KSPSolve(ksp,cb,cx));
+    PetscCall(KSPSolve(ksp, cb, cx));
     PetscCall(VecDestroy(&cx));
     PetscCall(VecDestroy(&cb));
   }
   PetscCall(MatDestroy(&X));
   PetscCall(MatDestroy(&B));
-  PetscCall(PetscFree2(S,T));
+  PetscCall(PetscFree2(S, T));
   PetscCall(MatDestroy(&KA));
   PetscCall(MatDestroy(&A));
   PetscCall(KSPDestroy(&ksp));

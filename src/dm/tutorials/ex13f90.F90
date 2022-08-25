@@ -21,7 +21,7 @@ program main
 !     Contributed by Aasmund Ervik (asmunder at pvv.org)
 !
 
-  use ex13f90aux
+  use ex13f90auxmodule
 
 #include <petsc/finclude/petscdmda.h>
   use petscdmda
@@ -97,7 +97,7 @@ program main
   ! We need a new DM for coordinate stuff since PETSc supports unstructured grid
   PetscCallA(DMGetCoordinateDM(SolScal,CoordDM,ierr))
   ! petsc_to_local and local_to_petsc are convenience functions, see
-  ! ex13f90aux.F90.
+  ! ex13f90auxmodule.F90.
   call petsc_to_local(CoordDM,coords,array,grid,ndim,stw)
   xmin=grid(1,1,1,1)
   ymin=grid(2,1,1,1)

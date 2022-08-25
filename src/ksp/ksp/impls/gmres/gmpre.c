@@ -1,5 +1,5 @@
 
-#include <../src/ksp/ksp/impls/gmres/gmresimpl.h>       /*I  "petscksp.h"  I*/
+#include <../src/ksp/ksp/impls/gmres/gmresimpl.h> /*I  "petscksp.h"  I*/
 
 /*@
     KSPGMRESSetPreAllocateVectors - Causes GMRES and FGMRES to preallocate all its
@@ -18,9 +18,8 @@
 
 .seealso: `KSPGMRESSetRestart()`, `KSPGMRESSetOrthogonalization()`, `KSPGMRESGetOrthogonalization()`
 @*/
-PetscErrorCode  KSPGMRESSetPreAllocateVectors(KSP ksp)
-{
+PetscErrorCode KSPGMRESSetPreAllocateVectors(KSP ksp) {
   PetscFunctionBegin;
-  PetscTryMethod(ksp,"KSPGMRESSetPreAllocateVectors_C",(KSP),(ksp));
+  PetscTryMethod(ksp, "KSPGMRESSetPreAllocateVectors_C", (KSP), (ksp));
   PetscFunctionReturn(0);
 }

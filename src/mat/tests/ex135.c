@@ -2,47 +2,45 @@ static const char help[] = "Test parallel assembly of SBAIJ matrices\n\n";
 
 #include <petscmat.h>
 
-PetscErrorCode Assemble(MPI_Comm comm,PetscInt n,MatType mtype)
-{
-  Mat            A;
-  PetscInt       first,last,i;
-  PetscMPIInt    rank,size;
+PetscErrorCode Assemble(MPI_Comm comm, PetscInt n, MatType mtype) {
+  Mat         A;
+  PetscInt    first, last, i;
+  PetscMPIInt rank, size;
 
   PetscFunctionBegin;
-  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
-  PetscCall(MatSetSizes(A, PETSC_DECIDE,PETSC_DECIDE,n,n));
-  PetscCall(MatSetType(A,MATMPISBAIJ));
+  PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
+  PetscCall(MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, n, n));
+  PetscCall(MatSetType(A, MATMPISBAIJ));
   PetscCall(MatSetFromOptions(A));
-  PetscCallMPI(MPI_Comm_size(comm,&size));
-  PetscCallMPI(MPI_Comm_rank(comm,&rank));
-  if (rank < size-1) {
-    PetscCall(MatMPISBAIJSetPreallocation(A,1,1,NULL,1,NULL));
+  PetscCallMPI(MPI_Comm_size(comm, &size));
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
+  if (rank < size - 1) {
+    PetscCall(MatMPISBAIJSetPreallocation(A, 1, 1, NULL, 1, NULL));
   } else {
-    PetscCall(MatMPISBAIJSetPreallocation(A,1,2,NULL,0,NULL));
+    PetscCall(MatMPISBAIJSetPreallocation(A, 1, 2, NULL, 0, NULL));
   }
-  PetscCall(MatGetOwnershipRange(A,&first,&last));
-  PetscCall(MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE));
+  PetscCall(MatGetOwnershipRange(A, &first, &last));
+  PetscCall(MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_TRUE));
   last--;
-  for (i=first; i<=last; i++) {
-    PetscCall(MatSetValue(A,i,i,2.,INSERT_VALUES));
-    if (i != n-1) PetscCall(MatSetValue(A,i,n-1,-1.,INSERT_VALUES));
+  for (i = first; i <= last; i++) {
+    PetscCall(MatSetValue(A, i, i, 2., INSERT_VALUES));
+    if (i != n - 1) PetscCall(MatSetValue(A, i, n - 1, -1., INSERT_VALUES));
   }
-  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatDestroy(&A));
   PetscFunctionReturn(0);
 }
 
-int main(int argc,char *argv[])
-{
-  MPI_Comm       comm;
-  PetscInt       n = 6;
+int main(int argc, char *argv[]) {
+  MPI_Comm comm;
+  PetscInt n = 6;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   comm = PETSC_COMM_WORLD;
-  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
-  PetscCall(Assemble(comm,n,MATMPISBAIJ));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-n", &n, NULL));
+  PetscCall(Assemble(comm, n, MATMPISBAIJ));
   PetscCall(PetscFinalize());
   return 0;
 }

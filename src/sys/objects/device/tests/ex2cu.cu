@@ -8,37 +8,36 @@ static char help[] = "Benchmarking cudaPointerGetAttributes() time\n";
 #include <petscsys.h>
 #include <petscdevice.h>
 
-int main(int argc,char **argv)
-{
-  PetscInt                     i,n=4000;
+int main(int argc, char **argv) {
+  PetscInt                     i, n = 4000;
   cudaError_t                  cerr;
-  PetscScalar                  **ptrs;
-  PetscLogDouble               tstart,tend,time;
+  PetscScalar                **ptrs;
+  PetscLogDouble               tstart, tend, time;
   struct cudaPointerAttributes attr;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
-  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-n", &n, NULL));
   PetscCallCUDA(cudaStreamSynchronize(NULL)); /* Initialize CUDA runtime to get more accurate timing below */
 
-  PetscCall(PetscMalloc1(n,&ptrs));
-  for (i=0; i<n; i++) {
-    if (i%2) PetscCall(PetscMalloc1(i+16,&ptrs[i]));
-    else PetscCallCUDA(cudaMalloc((void**)&ptrs[i],(i+16)*sizeof(PetscScalar)));
+  PetscCall(PetscMalloc1(n, &ptrs));
+  for (i = 0; i < n; i++) {
+    if (i % 2) PetscCall(PetscMalloc1(i + 16, &ptrs[i]));
+    else PetscCallCUDA(cudaMalloc((void **)&ptrs[i], (i + 16) * sizeof(PetscScalar)));
   }
 
   PetscCall(PetscTime(&tstart));
-  for (i=0; i<n; i++) {
-    cerr = cudaPointerGetAttributes(&attr,ptrs[i]);
+  for (i = 0; i < n; i++) {
+    cerr = cudaPointerGetAttributes(&attr, ptrs[i]);
     if (cerr) cerr = cudaGetLastError();
   }
   PetscCall(PetscTime(&tend));
-  time = (tend-tstart)*1e6/n;
+  time = (tend - tstart) * 1e6 / n;
 
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Average cudaPointerGetAttributes() time = %.2f microseconds\n",time));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Average cudaPointerGetAttributes() time = %.2f microseconds\n", time));
 
-  for (i=0; i<n; i++) {
-    if (i%2) PetscCall(PetscFree(ptrs[i]));
+  for (i = 0; i < n; i++) {
+    if (i % 2) PetscCall(PetscFree(ptrs[i]));
     else PetscCallCUDA(cudaFree(ptrs[i]));
   }
   PetscCall(PetscFree(ptrs));

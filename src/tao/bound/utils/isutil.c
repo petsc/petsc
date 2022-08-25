@@ -20,45 +20,44 @@
 
   Level: developer
 @*/
-PetscErrorCode TaoVecGetSubVec(Vec vfull, IS is, TaoSubsetType reduced_type, PetscReal maskvalue, Vec *vreduced)
-{
-  PetscInt       nfull,nreduced,nreduced_local,rlow,rhigh,flow,fhigh;
-  PetscInt       i,nlocal;
-  PetscReal      *fv,*rv;
+PetscErrorCode TaoVecGetSubVec(Vec vfull, IS is, TaoSubsetType reduced_type, PetscReal maskvalue, Vec *vreduced) {
+  PetscInt        nfull, nreduced, nreduced_local, rlow, rhigh, flow, fhigh;
+  PetscInt        i, nlocal;
+  PetscReal      *fv, *rv;
   const PetscInt *s;
-  IS             ident;
-  VecType        vtype;
-  VecScatter     scatter;
-  MPI_Comm       comm;
+  IS              ident;
+  VecType         vtype;
+  VecScatter      scatter;
+  MPI_Comm        comm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(vfull,VEC_CLASSID,1);
-  PetscValidHeaderSpecific(is,IS_CLASSID,2);
+  PetscValidHeaderSpecific(vfull, VEC_CLASSID, 1);
+  PetscValidHeaderSpecific(is, IS_CLASSID, 2);
 
   PetscCall(VecGetSize(vfull, &nfull));
   PetscCall(ISGetSize(is, &nreduced));
 
   if (nreduced == nfull) {
     PetscCall(VecDestroy(vreduced));
-    PetscCall(VecDuplicate(vfull,vreduced));
-    PetscCall(VecCopy(vfull,*vreduced));
+    PetscCall(VecDuplicate(vfull, vreduced));
+    PetscCall(VecCopy(vfull, *vreduced));
   } else {
     switch (reduced_type) {
     case TAO_SUBSET_SUBVEC:
-      PetscCall(VecGetType(vfull,&vtype));
-      PetscCall(VecGetOwnershipRange(vfull,&flow,&fhigh));
-      PetscCall(ISGetLocalSize(is,&nreduced_local));
-      PetscCall(PetscObjectGetComm((PetscObject)vfull,&comm));
+      PetscCall(VecGetType(vfull, &vtype));
+      PetscCall(VecGetOwnershipRange(vfull, &flow, &fhigh));
+      PetscCall(ISGetLocalSize(is, &nreduced_local));
+      PetscCall(PetscObjectGetComm((PetscObject)vfull, &comm));
       if (*vreduced) PetscCall(VecDestroy(vreduced));
-      PetscCall(VecCreate(comm,vreduced));
-      PetscCall(VecSetType(*vreduced,vtype));
+      PetscCall(VecCreate(comm, vreduced));
+      PetscCall(VecSetType(*vreduced, vtype));
 
-      PetscCall(VecSetSizes(*vreduced,nreduced_local,nreduced));
-      PetscCall(VecGetOwnershipRange(*vreduced,&rlow,&rhigh));
-      PetscCall(ISCreateStride(comm,nreduced_local,rlow,1,&ident));
-      PetscCall(VecScatterCreate(vfull,is,*vreduced,ident,&scatter));
-      PetscCall(VecScatterBegin(scatter,vfull,*vreduced,INSERT_VALUES,SCATTER_FORWARD));
-      PetscCall(VecScatterEnd(scatter,vfull,*vreduced,INSERT_VALUES,SCATTER_FORWARD));
+      PetscCall(VecSetSizes(*vreduced, nreduced_local, nreduced));
+      PetscCall(VecGetOwnershipRange(*vreduced, &rlow, &rhigh));
+      PetscCall(ISCreateStride(comm, nreduced_local, rlow, 1, &ident));
+      PetscCall(VecScatterCreate(vfull, is, *vreduced, ident, &scatter));
+      PetscCall(VecScatterBegin(scatter, vfull, *vreduced, INSERT_VALUES, SCATTER_FORWARD));
+      PetscCall(VecScatterEnd(scatter, vfull, *vreduced, INSERT_VALUES, SCATTER_FORWARD));
       PetscCall(VecScatterDestroy(&scatter));
       PetscCall(ISDestroy(&ident));
       break;
@@ -67,23 +66,19 @@ PetscErrorCode TaoVecGetSubVec(Vec vfull, IS is, TaoSubsetType reduced_type, Pet
     case TAO_SUBSET_MATRIXFREE:
       /* vr[i] = vf[i]   if i in is
        vr[i] = 0       otherwise */
-      if (!*vreduced) {
-        PetscCall(VecDuplicate(vfull,vreduced));
-      }
+      if (!*vreduced) { PetscCall(VecDuplicate(vfull, vreduced)); }
 
-      PetscCall(VecSet(*vreduced,maskvalue));
-      PetscCall(ISGetLocalSize(is,&nlocal));
-      PetscCall(VecGetOwnershipRange(vfull,&flow,&fhigh));
-      PetscCall(VecGetArray(vfull,&fv));
-      PetscCall(VecGetArray(*vreduced,&rv));
-      PetscCall(ISGetIndices(is,&s));
-      PetscCheck(nlocal <= (fhigh-flow),PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"IS local size %" PetscInt_FMT " > Vec local size %" PetscInt_FMT,nlocal,fhigh-flow);
-      for (i=0;i<nlocal;++i) {
-        rv[s[i]-flow] = fv[s[i]-flow];
-      }
-      PetscCall(ISRestoreIndices(is,&s));
-      PetscCall(VecRestoreArray(vfull,&fv));
-      PetscCall(VecRestoreArray(*vreduced,&rv));
+      PetscCall(VecSet(*vreduced, maskvalue));
+      PetscCall(ISGetLocalSize(is, &nlocal));
+      PetscCall(VecGetOwnershipRange(vfull, &flow, &fhigh));
+      PetscCall(VecGetArray(vfull, &fv));
+      PetscCall(VecGetArray(*vreduced, &rv));
+      PetscCall(ISGetIndices(is, &s));
+      PetscCheck(nlocal <= (fhigh - flow), PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "IS local size %" PetscInt_FMT " > Vec local size %" PetscInt_FMT, nlocal, fhigh - flow);
+      for (i = 0; i < nlocal; ++i) { rv[s[i] - flow] = fv[s[i] - flow]; }
+      PetscCall(ISRestoreIndices(is, &s));
+      PetscCall(VecRestoreArray(vfull, &fv));
+      PetscCall(VecRestoreArray(*vreduced, &rv));
       break;
     }
   }
@@ -104,19 +99,16 @@ PetscErrorCode TaoVecGetSubVec(Vec vfull, IS is, TaoSubsetType reduced_type, Pet
 
   Level: developer
 @*/
-PetscErrorCode TaoMatGetSubMat(Mat M, IS is, Vec v1, TaoSubsetType subset_type, Mat *Msub)
-{
-  IS             iscomp;
-  PetscBool      flg = PETSC_TRUE;
+PetscErrorCode TaoMatGetSubMat(Mat M, IS is, Vec v1, TaoSubsetType subset_type, Mat *Msub) {
+  IS        iscomp;
+  PetscBool flg = PETSC_TRUE;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(M,MAT_CLASSID,1);
-  PetscValidHeaderSpecific(is,IS_CLASSID,2);
+  PetscValidHeaderSpecific(M, MAT_CLASSID, 1);
+  PetscValidHeaderSpecific(is, IS_CLASSID, 2);
   PetscCall(MatDestroy(Msub));
   switch (subset_type) {
-  case TAO_SUBSET_SUBVEC:
-    PetscCall(MatCreateSubMatrix(M, is, is, MAT_INITIAL_MATRIX, Msub));
-    break;
+  case TAO_SUBSET_SUBVEC: PetscCall(MatCreateSubMatrix(M, is, is, MAT_INITIAL_MATRIX, Msub)); break;
 
   case TAO_SUBSET_MASK:
     /* Get Reduced Hessian
@@ -124,7 +116,7 @@ PetscErrorCode TaoMatGetSubMat(Mat M, IS is, Vec v1, TaoSubsetType subset_type, 
      Msub[i,j] = 0      if i!=j and i or j not in Free_Local
      */
     PetscObjectOptionsBegin((PetscObject)M);
-    PetscCall(PetscOptionsBool("-overwrite_hessian","modify the existing hessian matrix when computing submatrices","TaoSubsetType",flg,&flg,NULL));
+    PetscCall(PetscOptionsBool("-overwrite_hessian", "modify the existing hessian matrix when computing submatrices", "TaoSubsetType", flg, &flg, NULL));
     PetscOptionsEnd();
     if (flg) {
       PetscCall(MatDuplicate(M, MAT_COPY_VALUES, Msub));
@@ -134,19 +126,19 @@ PetscErrorCode TaoMatGetSubMat(Mat M, IS is, Vec v1, TaoSubsetType subset_type, 
       *Msub = M;
     }
     /* Save the diagonal to temporary vector */
-    PetscCall(MatGetDiagonal(*Msub,v1));
+    PetscCall(MatGetDiagonal(*Msub, v1));
 
     /* Zero out rows and columns */
-    PetscCall(ISComplementVec(is,v1,&iscomp));
+    PetscCall(ISComplementVec(is, v1, &iscomp));
 
     /* Use v1 instead of 0 here because of PETSc bug */
-    PetscCall(MatZeroRowsColumnsIS(*Msub,iscomp,1.0,v1,v1));
+    PetscCall(MatZeroRowsColumnsIS(*Msub, iscomp, 1.0, v1, v1));
 
     PetscCall(ISDestroy(&iscomp));
     break;
   case TAO_SUBSET_MATRIXFREE:
-    PetscCall(ISComplementVec(is,v1,&iscomp));
-    PetscCall(MatCreateSubMatrixFree(M,iscomp,iscomp,Msub));
+    PetscCall(ISComplementVec(is, v1, &iscomp));
+    PetscCall(MatCreateSubMatrixFree(M, iscomp, iscomp, Msub));
     PetscCall(ISDestroy(&iscomp));
     break;
   }
@@ -179,41 +171,39 @@ PetscErrorCode TaoMatGetSubMat(Mat M, IS is, Vec v1, TaoSubsetType subset_type, 
 
   Level: developer
 @*/
-PetscErrorCode TaoEstimateActiveBounds(Vec X, Vec XL, Vec XU, Vec G, Vec S, Vec W, PetscReal steplen, PetscReal *bound_tol,
-                                       IS *active_lower, IS *active_upper, IS *active_fixed, IS *active, IS *inactive)
-{
-  PetscReal                    wnorm;
-  PetscReal                    zero = PetscPowReal(PETSC_MACHINE_EPSILON, 2.0/3.0);
-  PetscInt                     i, n_isl=0, n_isu=0, n_isf=0, n_isa=0, n_isi=0;
-  PetscInt                     N_isl, N_isu, N_isf, N_isa, N_isi;
-  PetscInt                     n, low, high, nDiff;
-  PetscInt                     *isl=NULL, *isu=NULL, *isf=NULL, *isa=NULL, *isi=NULL;
-  const PetscScalar            *xl, *xu, *x, *g;
-  MPI_Comm                     comm = PetscObjectComm((PetscObject)X);
+PetscErrorCode TaoEstimateActiveBounds(Vec X, Vec XL, Vec XU, Vec G, Vec S, Vec W, PetscReal steplen, PetscReal *bound_tol, IS *active_lower, IS *active_upper, IS *active_fixed, IS *active, IS *inactive) {
+  PetscReal          wnorm;
+  PetscReal          zero = PetscPowReal(PETSC_MACHINE_EPSILON, 2.0 / 3.0);
+  PetscInt           i, n_isl = 0, n_isu = 0, n_isf = 0, n_isa = 0, n_isi = 0;
+  PetscInt           N_isl, N_isu, N_isf, N_isa, N_isi;
+  PetscInt           n, low, high, nDiff;
+  PetscInt          *isl = NULL, *isu = NULL, *isf = NULL, *isa = NULL, *isi = NULL;
+  const PetscScalar *xl, *xu, *x, *g;
+  MPI_Comm           comm = PetscObjectComm((PetscObject)X);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(X,VEC_CLASSID,1);
-  if (XL) PetscValidHeaderSpecific(XL,VEC_CLASSID,2);
-  if (XU) PetscValidHeaderSpecific(XU,VEC_CLASSID,3);
-  PetscValidHeaderSpecific(G,VEC_CLASSID,4);
-  PetscValidHeaderSpecific(S,VEC_CLASSID,5);
-  PetscValidHeaderSpecific(W,VEC_CLASSID,6);
+  PetscValidHeaderSpecific(X, VEC_CLASSID, 1);
+  if (XL) PetscValidHeaderSpecific(XL, VEC_CLASSID, 2);
+  if (XU) PetscValidHeaderSpecific(XU, VEC_CLASSID, 3);
+  PetscValidHeaderSpecific(G, VEC_CLASSID, 4);
+  PetscValidHeaderSpecific(S, VEC_CLASSID, 5);
+  PetscValidHeaderSpecific(W, VEC_CLASSID, 6);
 
-  if (XL) PetscCheckSameType(X,1,XL,2);
-  if (XU) PetscCheckSameType(X,1,XU,3);
-  PetscCheckSameType(X,1,G,4);
-  PetscCheckSameType(X,1,S,5);
-  PetscCheckSameType(X,1,W,6);
-  if (XL) PetscCheckSameComm(X,1,XL,2);
-  if (XU) PetscCheckSameComm(X,1,XU,3);
-  PetscCheckSameComm(X,1,G,4);
-  PetscCheckSameComm(X,1,S,5);
-  PetscCheckSameComm(X,1,W,6);
-  if (XL) VecCheckSameSize(X,1,XL,2);
-  if (XU) VecCheckSameSize(X,1,XU,3);
-  VecCheckSameSize(X,1,G,4);
-  VecCheckSameSize(X,1,S,5);
-  VecCheckSameSize(X,1,W,6);
+  if (XL) PetscCheckSameType(X, 1, XL, 2);
+  if (XU) PetscCheckSameType(X, 1, XU, 3);
+  PetscCheckSameType(X, 1, G, 4);
+  PetscCheckSameType(X, 1, S, 5);
+  PetscCheckSameType(X, 1, W, 6);
+  if (XL) PetscCheckSameComm(X, 1, XL, 2);
+  if (XU) PetscCheckSameComm(X, 1, XU, 3);
+  PetscCheckSameComm(X, 1, G, 4);
+  PetscCheckSameComm(X, 1, S, 5);
+  PetscCheckSameComm(X, 1, W, 6);
+  if (XL) VecCheckSameSize(X, 1, XL, 2);
+  if (XU) VecCheckSameSize(X, 1, XU, 3);
+  VecCheckSameSize(X, 1, G, 4);
+  VecCheckSameSize(X, 1, S, 5);
+  VecCheckSameSize(X, 1, W, 6);
 
   /* Update the tolerance for bound detection (this is based on Bertsekas' method) */
   PetscCall(VecCopy(X, W));
@@ -233,10 +223,10 @@ PetscErrorCode TaoEstimateActiveBounds(Vec X, Vec XL, Vec XU, Vec G, Vec S, Vec 
   PetscCall(VecGetOwnershipRange(X, &low, &high));
   PetscCall(VecGetLocalSize(X, &n));
   if (!XL && !XU) {
-    PetscCall(ISCreateStride(comm,n,low,1,inactive));
+    PetscCall(ISCreateStride(comm, n, low, 1, inactive));
     PetscFunctionReturn(0);
   }
-  if (n>0) {
+  if (n > 0) {
     PetscCall(VecGetArrayRead(X, &x));
     PetscCall(VecGetArrayRead(XL, &xl));
     PetscCall(VecGetArrayRead(XU, &xu));
@@ -248,22 +238,29 @@ PetscErrorCode TaoEstimateActiveBounds(Vec X, Vec XL, Vec XU, Vec G, Vec S, Vec 
     PetscCall(PetscMalloc1(n, &isf));
     PetscCall(PetscMalloc1(n, &isa));
     PetscCall(PetscMalloc1(n, &isi));
-    for (i=0; i<n; ++i) {
+    for (i = 0; i < n; ++i) {
       if (xl[i] == xu[i]) {
         /* Fixed variables */
-        isf[n_isf]=low+i; ++n_isf;
-        isa[n_isa]=low+i; ++n_isa;
+        isf[n_isf] = low + i;
+        ++n_isf;
+        isa[n_isa] = low + i;
+        ++n_isa;
       } else if (xl[i] > PETSC_NINFINITY && x[i] <= xl[i] + *bound_tol && g[i] > zero) {
         /* Lower bounded variables */
-        isl[n_isl]=low+i; ++n_isl;
-        isa[n_isa]=low+i; ++n_isa;
+        isl[n_isl] = low + i;
+        ++n_isl;
+        isa[n_isa] = low + i;
+        ++n_isa;
       } else if (xu[i] < PETSC_INFINITY && x[i] >= xu[i] - *bound_tol && g[i] < zero) {
         /* Upper bounded variables */
-        isu[n_isu]=low+i; ++n_isu;
-        isa[n_isa]=low+i; ++n_isa;
+        isu[n_isu] = low + i;
+        ++n_isu;
+        isa[n_isa] = low + i;
+        ++n_isa;
       } else {
         /* Inactive variables */
-        isi[n_isi]=low+i; ++n_isi;
+        isi[n_isi] = low + i;
+        ++n_isi;
       }
     }
 
@@ -331,12 +328,10 @@ PetscErrorCode TaoEstimateActiveBounds(Vec X, Vec XL, Vec XU, Vec G, Vec S, Vec 
 
   Level: developer
 @*/
-PetscErrorCode TaoBoundStep(Vec X, Vec XL, Vec XU, IS active_lower, IS active_upper, IS active_fixed, PetscReal scale, Vec S)
-{
-
-  Vec                          step_lower, step_upper, step_fixed;
-  Vec                          x_lower, x_upper;
-  Vec                          bound_lower, bound_upper;
+PetscErrorCode TaoBoundStep(Vec X, Vec XL, Vec XU, IS active_lower, IS active_upper, IS active_fixed, PetscReal scale, Vec S) {
+  Vec step_lower, step_upper, step_fixed;
+  Vec x_lower, x_upper;
+  Vec bound_lower, bound_upper;
 
   PetscFunctionBegin;
   /* Adjust step for variables at the estimated lower bound */
@@ -393,45 +388,46 @@ PetscErrorCode TaoBoundStep(Vec X, Vec XL, Vec XU, IS active_lower, IS active_up
 
 .seealso: `TAOBNCG`, `TAOBNTL`, `TAOBNTR`
 @*/
-PetscErrorCode TaoBoundSolution(Vec X, Vec XL, Vec XU, PetscReal bound_tol, PetscInt *nDiff, Vec Xout)
-{
-  PetscInt          i,n,low,high,nDiff_loc=0;
+PetscErrorCode TaoBoundSolution(Vec X, Vec XL, Vec XU, PetscReal bound_tol, PetscInt *nDiff, Vec Xout) {
+  PetscInt           i, n, low, high, nDiff_loc = 0;
   PetscScalar       *xout;
-  const PetscScalar *x,*xl,*xu;
+  const PetscScalar *x, *xl, *xu;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(X,VEC_CLASSID,1);
-  if (XL) PetscValidHeaderSpecific(XL,VEC_CLASSID,2);
-  if (XU) PetscValidHeaderSpecific(XU,VEC_CLASSID,3);
-  PetscValidHeaderSpecific(Xout,VEC_CLASSID,6);
+  PetscValidHeaderSpecific(X, VEC_CLASSID, 1);
+  if (XL) PetscValidHeaderSpecific(XL, VEC_CLASSID, 2);
+  if (XU) PetscValidHeaderSpecific(XU, VEC_CLASSID, 3);
+  PetscValidHeaderSpecific(Xout, VEC_CLASSID, 6);
   if (!XL && !XU) {
-    PetscCall(VecCopy(X,Xout));
+    PetscCall(VecCopy(X, Xout));
     *nDiff = 0.0;
     PetscFunctionReturn(0);
   }
-  PetscCheckSameType(X,1,XL,2);
-  PetscCheckSameType(X,1,XU,3);
-  PetscCheckSameType(X,1,Xout,6);
-  PetscCheckSameComm(X,1,XL,2);
-  PetscCheckSameComm(X,1,XU,3);
-  PetscCheckSameComm(X,1,Xout,6);
-  VecCheckSameSize(X,1,XL,2);
-  VecCheckSameSize(X,1,XU,3);
-  VecCheckSameSize(X,1,Xout,4);
+  PetscCheckSameType(X, 1, XL, 2);
+  PetscCheckSameType(X, 1, XU, 3);
+  PetscCheckSameType(X, 1, Xout, 6);
+  PetscCheckSameComm(X, 1, XL, 2);
+  PetscCheckSameComm(X, 1, XU, 3);
+  PetscCheckSameComm(X, 1, Xout, 6);
+  VecCheckSameSize(X, 1, XL, 2);
+  VecCheckSameSize(X, 1, XU, 3);
+  VecCheckSameSize(X, 1, Xout, 4);
 
-  PetscCall(VecGetOwnershipRange(X,&low,&high));
-  PetscCall(VecGetLocalSize(X,&n));
-  if (n>0) {
+  PetscCall(VecGetOwnershipRange(X, &low, &high));
+  PetscCall(VecGetLocalSize(X, &n));
+  if (n > 0) {
     PetscCall(VecGetArrayRead(X, &x));
     PetscCall(VecGetArrayRead(XL, &xl));
     PetscCall(VecGetArrayRead(XU, &xu));
     PetscCall(VecGetArray(Xout, &xout));
 
-    for (i=0;i<n;++i) {
+    for (i = 0; i < n; ++i) {
       if (xl[i] > PETSC_NINFINITY && x[i] <= xl[i] + bound_tol) {
-        xout[i] = xl[i]; ++nDiff_loc;
+        xout[i] = xl[i];
+        ++nDiff_loc;
       } else if (xu[i] < PETSC_INFINITY && x[i] >= xu[i] - bound_tol) {
-        xout[i] = xu[i]; ++nDiff_loc;
+        xout[i] = xu[i];
+        ++nDiff_loc;
       }
     }
 

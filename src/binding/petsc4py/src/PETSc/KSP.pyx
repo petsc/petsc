@@ -538,6 +538,11 @@ cdef class KSP(Object):
         py_type = str2bytes(py_type, &cval)
         CHKERR( KSPPythonSetType(self.ksp, cval) )
 
+    def getPythonType(self):
+        cdef const char *cval = NULL
+        CHKERR( KSPPythonGetType(self.ksp, &cval) )
+        return bytes2str(cval)
+
     # --- application context ---
 
     property appctx:

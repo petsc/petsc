@@ -18,17 +18,14 @@
   Output parameter:
   sparsity - matrix sparsity pattern, typically computed using an ADOL-C function such as jac_pat
 */
-PetscErrorCode PrintSparsity(MPI_Comm comm,PetscInt m,unsigned int **sparsity)
-{
+PetscErrorCode PrintSparsity(MPI_Comm comm, PetscInt m, unsigned int **sparsity) {
   PetscFunctionBegin;
-  PetscCall(PetscPrintf(comm,"Sparsity pattern:\n"));
-  for (PetscInt i=0; i<m ;i++) {
-    PetscCall(PetscPrintf(comm,"\n %2d: ",i));
-    for (PetscInt j=1; j<= (PetscInt) sparsity[i][0] ;j++) {
-      PetscCall(PetscPrintf(comm," %2d ",sparsity[i][j]));
-    }
+  PetscCall(PetscPrintf(comm, "Sparsity pattern:\n"));
+  for (PetscInt i = 0; i < m; i++) {
+    PetscCall(PetscPrintf(comm, "\n %2d: ", i));
+    for (PetscInt j = 1; j <= (PetscInt)sparsity[i][0]; j++) { PetscCall(PetscPrintf(comm, " %2d ", sparsity[i][j])); }
   }
-  PetscCall(PetscPrintf(comm,"\n\n"));
+  PetscCall(PetscPrintf(comm, "\n\n"));
   PetscFunctionReturn(0);
 }
 
@@ -47,21 +44,20 @@ PetscErrorCode PrintSparsity(MPI_Comm comm,PetscInt m,unsigned int **sparsity)
   rows equal to the matrix to be compressed and number of columns equal to the number of colors used
   in iscoloring.
 */
-PetscErrorCode GenerateSeedMatrix(ISColoring iscoloring,PetscScalar **S)
-{
+PetscErrorCode GenerateSeedMatrix(ISColoring iscoloring, PetscScalar **S) {
   IS             *is;
-  PetscInt       p,size;
+  PetscInt        p, size;
   const PetscInt *indices;
 
   PetscFunctionBegin;
-  PetscCall(ISColoringGetIS(iscoloring,PETSC_USE_POINTER,&p,&is));
-  for (PetscInt colour=0; colour<p; colour++) {
-    PetscCall(ISGetLocalSize(is[colour],&size));
-    PetscCall(ISGetIndices(is[colour],&indices));
-    for (PetscInt j=0; j<size; j++) S[indices[j]][colour] = 1.;
-    PetscCall(ISRestoreIndices(is[colour],&indices));
+  PetscCall(ISColoringGetIS(iscoloring, PETSC_USE_POINTER, &p, &is));
+  for (PetscInt colour = 0; colour < p; colour++) {
+    PetscCall(ISGetLocalSize(is[colour], &size));
+    PetscCall(ISGetIndices(is[colour], &indices));
+    for (PetscInt j = 0; j < size; j++) S[indices[j]][colour] = 1.;
+    PetscCall(ISRestoreIndices(is[colour], &indices));
   }
-  PetscCall(ISColoringRestoreIS(iscoloring,PETSC_USE_POINTER,&is));
+  PetscCall(ISColoringRestoreIS(iscoloring, PETSC_USE_POINTER, &is));
   PetscFunctionReturn(0);
 }
 
@@ -77,24 +73,23 @@ PetscErrorCode GenerateSeedMatrix(ISColoring iscoloring,PetscScalar **S)
   Output parameter:
   R        - the recovery vector to be used for de-compression
 */
-PetscErrorCode GenerateSeedMatrixPlusRecovery(ISColoring iscoloring,PetscScalar **S,PetscScalar *R)
-{
+PetscErrorCode GenerateSeedMatrixPlusRecovery(ISColoring iscoloring, PetscScalar **S, PetscScalar *R) {
   IS             *is;
-  PetscInt       p,size,colour,j;
+  PetscInt        p, size, colour, j;
   const PetscInt *indices;
 
   PetscFunctionBegin;
-  PetscCall(ISColoringGetIS(iscoloring,PETSC_USE_POINTER,&p,&is));
-  for (colour=0; colour<p; colour++) {
-    PetscCall(ISGetLocalSize(is[colour],&size));
-    PetscCall(ISGetIndices(is[colour],&indices));
-    for (j=0; j<size; j++) {
+  PetscCall(ISColoringGetIS(iscoloring, PETSC_USE_POINTER, &p, &is));
+  for (colour = 0; colour < p; colour++) {
+    PetscCall(ISGetLocalSize(is[colour], &size));
+    PetscCall(ISGetIndices(is[colour], &indices));
+    for (j = 0; j < size; j++) {
       S[indices[j]][colour] = 1.;
-      R[indices[j]] = colour;
+      R[indices[j]]         = colour;
     }
-    PetscCall(ISRestoreIndices(is[colour],&indices));
+    PetscCall(ISRestoreIndices(is[colour], &indices));
   }
-  PetscCall(ISColoringRestoreIS(iscoloring,PETSC_USE_POINTER,&is));
+  PetscCall(ISColoringRestoreIS(iscoloring, PETSC_USE_POINTER, &is));
   PetscFunctionReturn(0);
 }
 
@@ -112,16 +107,15 @@ PetscErrorCode GenerateSeedMatrixPlusRecovery(ISColoring iscoloring,PetscScalar 
   Output parameter:
   R        - the recovery matrix to be used for de-compression
 */
-PetscErrorCode GetRecoveryMatrix(PetscScalar **S,unsigned int **sparsity,PetscInt m,PetscInt p,PetscScalar **R)
-{
-  PetscInt i,j,k,colour;
+PetscErrorCode GetRecoveryMatrix(PetscScalar **S, unsigned int **sparsity, PetscInt m, PetscInt p, PetscScalar **R) {
+  PetscInt i, j, k, colour;
 
   PetscFunctionBegin;
-  for (i=0; i<m; i++) {
-    for (colour=0; colour<p; colour++) {
+  for (i = 0; i < m; i++) {
+    for (colour = 0; colour < p; colour++) {
       R[i][colour] = -1.;
-      for (k=1; k<=(PetscInt) sparsity[i][0]; k++) {
-        j = (PetscInt) sparsity[i][k];
+      for (k = 1; k <= (PetscInt)sparsity[i][0]; k++) {
+        j = (PetscInt)sparsity[i][k];
         if (S[j][colour] == 1.) {
           R[i][colour] = j;
           break;
@@ -146,15 +140,14 @@ PetscErrorCode GetRecoveryMatrix(PetscScalar **S,unsigned int **sparsity,PetscIn
   Output parameter:
   A    - Mat to be populated with values from compressed matrix
 */
-PetscErrorCode RecoverJacobian(Mat A,InsertMode mode,PetscInt m,PetscInt p,PetscScalar **R,PetscScalar **C,PetscReal *a)
-{
+PetscErrorCode RecoverJacobian(Mat A, InsertMode mode, PetscInt m, PetscInt p, PetscScalar **R, PetscScalar **C, PetscReal *a) {
   PetscFunctionBegin;
-  for (PetscInt i=0; i<m; i++) {
-    for (PetscInt colour=0; colour<p; colour++) {
-      PetscInt j = (PetscInt) R[i][colour];
+  for (PetscInt i = 0; i < m; i++) {
+    for (PetscInt colour = 0; colour < p; colour++) {
+      PetscInt j = (PetscInt)R[i][colour];
       if (j != -1) {
         if (a) C[i][colour] *= *a;
-        PetscCall(MatSetValues(A,1,&i,1,&j,&C[i][colour],mode));
+        PetscCall(MatSetValues(A, 1, &i, 1, &j, &C[i][colour], mode));
       }
     }
   }
@@ -176,15 +169,14 @@ PetscErrorCode RecoverJacobian(Mat A,InsertMode mode,PetscInt m,PetscInt p,Petsc
   Output parameter:
   A    - Mat to be populated with values from compressed matrix
 */
-PetscErrorCode RecoverJacobianLocal(Mat A,InsertMode mode,PetscInt m,PetscInt p,PetscScalar **R,PetscScalar **C,PetscReal *a)
-{
+PetscErrorCode RecoverJacobianLocal(Mat A, InsertMode mode, PetscInt m, PetscInt p, PetscScalar **R, PetscScalar **C, PetscReal *a) {
   PetscFunctionBegin;
-  for (PetscInt i=0; i<m; i++) {
-    for (PetscInt colour=0; colour<p; colour++) {
-      PetscInt j = (PetscInt) R[i][colour];
+  for (PetscInt i = 0; i < m; i++) {
+    for (PetscInt colour = 0; colour < p; colour++) {
+      PetscInt j = (PetscInt)R[i][colour];
       if (j != -1) {
         if (a) C[i][colour] *= *a;
-        PetscCall(MatSetValuesLocal(A,1,&i,1,&j,&C[i][colour],mode));
+        PetscCall(MatSetValuesLocal(A, 1, &i, 1, &j, &C[i][colour], mode));
       }
     }
   }
@@ -204,13 +196,12 @@ PetscErrorCode RecoverJacobianLocal(Mat A,InsertMode mode,PetscInt m,PetscInt p,
   Output parameter:
   diag - Vec to be populated with values from compressed matrix
 */
-PetscErrorCode RecoverDiagonal(Vec diag,InsertMode mode,PetscInt m,PetscScalar *R,PetscScalar **C,PetscReal *a)
-{
+PetscErrorCode RecoverDiagonal(Vec diag, InsertMode mode, PetscInt m, PetscScalar *R, PetscScalar **C, PetscReal *a) {
   PetscFunctionBegin;
-  for (PetscInt i=0; i<m; i++) {
+  for (PetscInt i = 0; i < m; i++) {
     PetscInt colour = (PetscInt)R[i];
     if (a) C[i][colour] *= *a;
-    PetscCall(VecSetValues(diag,1,&i,&C[i][colour],mode));
+    PetscCall(VecSetValues(diag, 1, &i, &C[i][colour], mode));
   }
   PetscFunctionReturn(0);
 }
@@ -228,13 +219,12 @@ PetscErrorCode RecoverDiagonal(Vec diag,InsertMode mode,PetscInt m,PetscScalar *
   Output parameter:
   diag - Vec to be populated with values from compressed matrix
 */
-PetscErrorCode RecoverDiagonalLocal(Vec diag,InsertMode mode,PetscInt m,PetscScalar *R,PetscScalar **C,PetscReal *a)
-{
+PetscErrorCode RecoverDiagonalLocal(Vec diag, InsertMode mode, PetscInt m, PetscScalar *R, PetscScalar **C, PetscReal *a) {
   PetscFunctionBegin;
-  for (PetscInt i=0; i<m; i++) {
+  for (PetscInt i = 0; i < m; i++) {
     PetscInt colour = (PetscInt)R[i];
     if (a) C[i][colour] *= *a;
-    PetscCall(VecSetValuesLocal(diag,1,&i,&C[i][colour],mode));
+    PetscCall(VecSetValuesLocal(diag, 1, &i, &C[i][colour], mode));
   }
   PetscFunctionReturn(0);
 }

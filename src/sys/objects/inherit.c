@@ -1,51 +1,49 @@
 /*
      Provides utility routines for manipulating any type of PETSc object.
 */
-#include <petsc/private/petscimpl.h>  /*I   "petscsys.h"    I*/
+#include <petsc/private/petscimpl.h> /*I   "petscsys.h"    I*/
 #include <petscviewer.h>
 
 #if defined(PETSC_USE_LOG)
 PETSC_INTERN PetscObject *PetscObjects;
-PETSC_INTERN PetscInt    PetscObjectsCounts;
-PETSC_INTERN PetscInt    PetscObjectsMaxCounts;
-PETSC_INTERN PetscBool   PetscObjectsLog;
+PETSC_INTERN PetscInt     PetscObjectsCounts;
+PETSC_INTERN PetscInt     PetscObjectsMaxCounts;
+PETSC_INTERN PetscBool    PetscObjectsLog;
 #endif
 
 #if defined(PETSC_USE_LOG)
-PetscObject *PetscObjects      = NULL;
-PetscInt    PetscObjectsCounts = 0, PetscObjectsMaxCounts = 0;
-PetscBool   PetscObjectsLog    = PETSC_FALSE;
+PetscObject *PetscObjects       = NULL;
+PetscInt     PetscObjectsCounts = 0, PetscObjectsMaxCounts = 0;
+PetscBool    PetscObjectsLog = PETSC_FALSE;
 #endif
 
-PETSC_EXTERN PetscErrorCode PetscObjectGetComm_Petsc(PetscObject,MPI_Comm*);
-PETSC_EXTERN PetscErrorCode PetscObjectCompose_Petsc(PetscObject,const char[],PetscObject);
-PETSC_EXTERN PetscErrorCode PetscObjectQuery_Petsc(PetscObject,const char[],PetscObject*);
-PETSC_EXTERN PetscErrorCode PetscObjectComposeFunction_Petsc(PetscObject,const char[],void (*)(void));
-PETSC_EXTERN PetscErrorCode PetscObjectQueryFunction_Petsc(PetscObject,const char[],void (**)(void));
+PETSC_EXTERN PetscErrorCode PetscObjectGetComm_Petsc(PetscObject, MPI_Comm *);
+PETSC_EXTERN PetscErrorCode PetscObjectCompose_Petsc(PetscObject, const char[], PetscObject);
+PETSC_EXTERN PetscErrorCode PetscObjectQuery_Petsc(PetscObject, const char[], PetscObject *);
+PETSC_EXTERN PetscErrorCode PetscObjectComposeFunction_Petsc(PetscObject, const char[], void (*)(void));
+PETSC_EXTERN PetscErrorCode PetscObjectQueryFunction_Petsc(PetscObject, const char[], void (**)(void));
 
 /*
    PetscHeaderCreate_Private - Creates a base PETSc object header and fills
    in the default values.  Called by the macro PetscHeaderCreate().
 */
-PetscErrorCode  PetscHeaderCreate_Private(PetscObject h,PetscClassId classid,const char class_name[],const char descr[],const char mansec[],
-                                          MPI_Comm comm,PetscObjectDestroyFunction destroy,PetscObjectViewFunction view)
-{
+PetscErrorCode PetscHeaderCreate_Private(PetscObject h, PetscClassId classid, const char class_name[], const char descr[], const char mansec[], MPI_Comm comm, PetscObjectDestroyFunction destroy, PetscObjectViewFunction view) {
   static PetscInt idcnt = 1;
 #if defined(PETSC_USE_LOG)
-  PetscObject     *newPetscObjects;
-  PetscInt         newPetscObjectsMaxCounts,i;
+  PetscObject *newPetscObjects;
+  PetscInt     newPetscObjectsMaxCounts, i;
 #endif
 
   PetscFunctionBegin;
-  h->classid               = classid;
-  h->type                  = 0;
-  h->class_name            = (char*)class_name;
-  h->description           = (char*)descr;
-  h->mansec                = (char*)mansec;
-  h->prefix                = NULL;
-  h->refct                 = 1;
+  h->classid     = classid;
+  h->type        = 0;
+  h->class_name  = (char *)class_name;
+  h->description = (char *)descr;
+  h->mansec      = (char *)mansec;
+  h->prefix      = NULL;
+  h->refct       = 1;
 #if defined(PETSC_HAVE_SAWS)
-  h->amsmem                = PETSC_FALSE;
+  h->amsmem = PETSC_FALSE;
 #endif
   h->id                    = idcnt++;
   h->parentid              = 0;
@@ -59,13 +57,13 @@ PetscErrorCode  PetscHeaderCreate_Private(PetscObject h,PetscClassId classid,con
   h->bops->composefunction = PetscObjectComposeFunction_Petsc;
   h->bops->queryfunction   = PetscObjectQueryFunction_Petsc;
 
-  PetscCall(PetscCommDuplicate(comm,&h->comm,&h->tag));
+  PetscCall(PetscCommDuplicate(comm, &h->comm, &h->tag));
 
 #if defined(PETSC_USE_LOG)
   /* Keep a record of object created */
   if (PetscObjectsLog) {
     PetscObjectsCounts++;
-    for (i=0; i<PetscObjectsMaxCounts; i++) {
+    for (i = 0; i < PetscObjectsMaxCounts; i++) {
       if (!PetscObjects[i]) {
         PetscObjects[i] = h;
         PetscFunctionReturn(0);
@@ -73,9 +71,9 @@ PetscErrorCode  PetscHeaderCreate_Private(PetscObject h,PetscClassId classid,con
     }
     /* Need to increase the space for storing PETSc objects */
     if (!PetscObjectsMaxCounts) newPetscObjectsMaxCounts = 100;
-    else                        newPetscObjectsMaxCounts = 2*PetscObjectsMaxCounts;
-    PetscCall(PetscCalloc1(newPetscObjectsMaxCounts,&newPetscObjects));
-    PetscCall(PetscArraycpy(newPetscObjects,PetscObjects,PetscObjectsMaxCounts));
+    else newPetscObjectsMaxCounts = 2 * PetscObjectsMaxCounts;
+    PetscCall(PetscCalloc1(newPetscObjectsMaxCounts, &newPetscObjects));
+    PetscCall(PetscArraycpy(newPetscObjects, PetscObjects, PetscObjectsMaxCounts));
     PetscCall(PetscFree(PetscObjects));
 
     PetscObjects                        = newPetscObjects;
@@ -93,10 +91,9 @@ PETSC_INTERN PetscLogDouble PetscMemoryMaximumUsage;
     PetscHeaderDestroy_Private - Destroys a base PETSc object header. Called by
     the macro PetscHeaderDestroy().
 */
-PetscErrorCode  PetscHeaderDestroy_Private(PetscObject h)
-{
+PetscErrorCode PetscHeaderDestroy_Private(PetscObject h) {
   PetscFunctionBegin;
-  PetscValidHeader(h,1);
+  PetscValidHeader(h, 1);
   PetscCall(PetscLogObjectDestroy(h));
   PetscCall(PetscComposedQuantitiesDestroy(h));
   if (PetscMemoryCollectMaximumUsage) {
@@ -106,10 +103,10 @@ PetscErrorCode  PetscHeaderDestroy_Private(PetscObject h)
   }
   /* first destroy things that could execute arbitrary code */
   if (h->python_destroy) {
-    void           *python_context = h->python_context;
-    PetscErrorCode (*python_destroy)(void*) = h->python_destroy;
-    h->python_context = NULL;
-    h->python_destroy = NULL;
+    void *python_context                     = h->python_context;
+    PetscErrorCode (*python_destroy)(void *) = h->python_destroy;
+    h->python_context                        = NULL;
+    h->python_destroy                        = NULL;
 
     PetscCall((*python_destroy)(python_context));
   }
@@ -132,7 +129,7 @@ PetscErrorCode  PetscHeaderDestroy_Private(PetscObject h)
   if (PetscObjectsLog) {
     PetscInt i;
     /* Record object removal from list of all objects */
-    for (i=0; i<PetscObjectsMaxCounts; i++) {
+    for (i = 0; i < PetscObjectsMaxCounts; i++) {
       if (PetscObjects[i] == h) {
         PetscObjects[i] = NULL;
         PetscObjectsCounts--;
@@ -162,26 +159,25 @@ PetscErrorCode  PetscHeaderDestroy_Private(PetscObject h)
    Note:
    Both objects must have the same class.
 @*/
-PetscErrorCode PetscObjectCopyFortranFunctionPointers(PetscObject src,PetscObject dest)
-{
-  PetscFortranCallbackId cbtype,numcb[PETSC_FORTRAN_CALLBACK_MAXTYPE];
+PetscErrorCode PetscObjectCopyFortranFunctionPointers(PetscObject src, PetscObject dest) {
+  PetscFortranCallbackId cbtype, numcb[PETSC_FORTRAN_CALLBACK_MAXTYPE];
 
   PetscFunctionBegin;
-  PetscValidHeader(src,1);
-  PetscValidHeader(dest,2);
-  PetscCheck(src->classid == dest->classid,src->comm,PETSC_ERR_ARG_INCOMP,"Objects must be of the same class");
+  PetscValidHeader(src, 1);
+  PetscValidHeader(dest, 2);
+  PetscCheck(src->classid == dest->classid, src->comm, PETSC_ERR_ARG_INCOMP, "Objects must be of the same class");
 
   PetscCall(PetscFree(dest->fortran_func_pointers));
-  PetscCall(PetscMalloc(src->num_fortran_func_pointers*sizeof(void(*)(void)),&dest->fortran_func_pointers));
-  PetscCall(PetscMemcpy(dest->fortran_func_pointers,src->fortran_func_pointers,src->num_fortran_func_pointers*sizeof(void(*)(void))));
+  PetscCall(PetscMalloc(src->num_fortran_func_pointers * sizeof(void (*)(void)), &dest->fortran_func_pointers));
+  PetscCall(PetscMemcpy(dest->fortran_func_pointers, src->fortran_func_pointers, src->num_fortran_func_pointers * sizeof(void (*)(void))));
 
   dest->num_fortran_func_pointers = src->num_fortran_func_pointers;
 
-  PetscCall(PetscFortranCallbackGetSizes(src->classid,&numcb[PETSC_FORTRAN_CALLBACK_CLASS],&numcb[PETSC_FORTRAN_CALLBACK_SUBTYPE]));
-  for (cbtype=PETSC_FORTRAN_CALLBACK_CLASS; cbtype<PETSC_FORTRAN_CALLBACK_MAXTYPE; cbtype++) {
+  PetscCall(PetscFortranCallbackGetSizes(src->classid, &numcb[PETSC_FORTRAN_CALLBACK_CLASS], &numcb[PETSC_FORTRAN_CALLBACK_SUBTYPE]));
+  for (cbtype = PETSC_FORTRAN_CALLBACK_CLASS; cbtype < PETSC_FORTRAN_CALLBACK_MAXTYPE; cbtype++) {
     PetscCall(PetscFree(dest->fortrancallback[cbtype]));
-    PetscCall(PetscCalloc1(numcb[cbtype],&dest->fortrancallback[cbtype]));
-    PetscCall(PetscMemcpy(dest->fortrancallback[cbtype],src->fortrancallback[cbtype],src->num_fortrancallback[cbtype]*sizeof(PetscFortranCallback)));
+    PetscCall(PetscCalloc1(numcb[cbtype], &dest->fortrancallback[cbtype]));
+    PetscCall(PetscMemcpy(dest->fortrancallback[cbtype], src->fortrancallback[cbtype], src->num_fortrancallback[cbtype] * sizeof(PetscFortranCallback)));
     dest->num_fortrancallback[cbtype] = src->num_fortrancallback[cbtype];
   }
   PetscFunctionReturn(0);
@@ -203,27 +199,26 @@ PetscErrorCode PetscObjectCopyFortranFunctionPointers(PetscObject src,PetscObjec
 
 .seealso: `PetscObjectGetFortranCallback()`
 @*/
-PetscErrorCode PetscObjectSetFortranCallback(PetscObject obj,PetscFortranCallbackType cbtype,PetscFortranCallbackId *cid,void (*func)(void),void *ctx)
-{
-  const char     *subtype = NULL;
+PetscErrorCode PetscObjectSetFortranCallback(PetscObject obj, PetscFortranCallbackType cbtype, PetscFortranCallbackId *cid, void (*func)(void), void *ctx) {
+  const char *subtype = NULL;
 
   PetscFunctionBegin;
-  PetscValidHeader(obj,1);
+  PetscValidHeader(obj, 1);
   if (cbtype == PETSC_FORTRAN_CALLBACK_SUBTYPE) subtype = obj->type_name;
-  if (!*cid) PetscCall(PetscFortranCallbackRegister(obj->classid,subtype,cid));
-  if (*cid >= PETSC_SMALLEST_FORTRAN_CALLBACK+obj->num_fortrancallback[cbtype]) {
+  if (!*cid) PetscCall(PetscFortranCallbackRegister(obj->classid, subtype, cid));
+  if (*cid >= PETSC_SMALLEST_FORTRAN_CALLBACK + obj->num_fortrancallback[cbtype]) {
     PetscFortranCallbackId oldnum = obj->num_fortrancallback[cbtype];
-    PetscFortranCallbackId newnum = PetscMax(*cid - PETSC_SMALLEST_FORTRAN_CALLBACK + 1, 2*oldnum);
-    PetscFortranCallback   *callback;
-    PetscCall(PetscMalloc1(newnum,&callback));
-    PetscCall(PetscMemcpy(callback,obj->fortrancallback[cbtype],oldnum*sizeof(*obj->fortrancallback[cbtype])));
+    PetscFortranCallbackId newnum = PetscMax(*cid - PETSC_SMALLEST_FORTRAN_CALLBACK + 1, 2 * oldnum);
+    PetscFortranCallback  *callback;
+    PetscCall(PetscMalloc1(newnum, &callback));
+    PetscCall(PetscMemcpy(callback, obj->fortrancallback[cbtype], oldnum * sizeof(*obj->fortrancallback[cbtype])));
     PetscCall(PetscFree(obj->fortrancallback[cbtype]));
 
-    obj->fortrancallback[cbtype] = callback;
+    obj->fortrancallback[cbtype]     = callback;
     obj->num_fortrancallback[cbtype] = newnum;
   }
-  obj->fortrancallback[cbtype][*cid-PETSC_SMALLEST_FORTRAN_CALLBACK].func = func;
-  obj->fortrancallback[cbtype][*cid-PETSC_SMALLEST_FORTRAN_CALLBACK].ctx = ctx;
+  obj->fortrancallback[cbtype][*cid - PETSC_SMALLEST_FORTRAN_CALLBACK].func = func;
+  obj->fortrancallback[cbtype][*cid - PETSC_SMALLEST_FORTRAN_CALLBACK].ctx  = ctx;
   PetscFunctionReturn(0);
 }
 
@@ -245,15 +240,14 @@ PetscErrorCode PetscObjectSetFortranCallback(PetscObject obj,PetscFortranCallbac
 
 .seealso: `PetscObjectSetFortranCallback()`
 @*/
-PetscErrorCode PetscObjectGetFortranCallback(PetscObject obj,PetscFortranCallbackType cbtype,PetscFortranCallbackId cid,void (**func)(void),void **ctx)
-{
+PetscErrorCode PetscObjectGetFortranCallback(PetscObject obj, PetscFortranCallbackType cbtype, PetscFortranCallbackId cid, void (**func)(void), void **ctx) {
   PetscFortranCallback *cb;
 
   PetscFunctionBegin;
-  PetscValidHeader(obj,1);
-  PetscCheck(cid >= PETSC_SMALLEST_FORTRAN_CALLBACK,obj->comm,PETSC_ERR_ARG_CORRUPT,"Fortran callback Id invalid");
-  PetscCheck(cid < PETSC_SMALLEST_FORTRAN_CALLBACK+obj->num_fortrancallback[cbtype],obj->comm,PETSC_ERR_ARG_CORRUPT,"Fortran callback not set on this object");
-  cb = &obj->fortrancallback[cbtype][cid-PETSC_SMALLEST_FORTRAN_CALLBACK];
+  PetscValidHeader(obj, 1);
+  PetscCheck(cid >= PETSC_SMALLEST_FORTRAN_CALLBACK, obj->comm, PETSC_ERR_ARG_CORRUPT, "Fortran callback Id invalid");
+  PetscCheck(cid < PETSC_SMALLEST_FORTRAN_CALLBACK + obj->num_fortrancallback[cbtype], obj->comm, PETSC_ERR_ARG_CORRUPT, "Fortran callback not set on this object");
+  cb = &obj->fortrancallback[cbtype][cid - PETSC_SMALLEST_FORTRAN_CALLBACK];
   if (func) *func = cb->func;
   if (ctx) *ctx = cb->ctx;
   PetscFunctionReturn(0);
@@ -275,53 +269,48 @@ PetscErrorCode PetscObjectGetFortranCallback(PetscObject obj,PetscFortranCallbac
    Level: advanced
 
 @*/
-PetscErrorCode  PetscObjectsDump(FILE *fd,PetscBool all)
-{
-  PetscInt       i;
+PetscErrorCode PetscObjectsDump(FILE *fd, PetscBool all) {
+  PetscInt i;
 #if defined(PETSC_USE_DEBUG)
-  PetscInt       j,k=0;
+  PetscInt j, k = 0;
 #endif
-  PetscObject    h;
+  PetscObject h;
 
   PetscFunctionBegin;
   if (PetscObjectsCounts) {
-    PetscCall(PetscFPrintf(PETSC_COMM_WORLD,fd,"The following objects were never freed\n"));
-    PetscCall(PetscFPrintf(PETSC_COMM_WORLD,fd,"-----------------------------------------\n"));
-    for (i=0; i<PetscObjectsMaxCounts; i++) {
+    PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fd, "The following objects were never freed\n"));
+    PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fd, "-----------------------------------------\n"));
+    for (i = 0; i < PetscObjectsMaxCounts; i++) {
       if ((h = PetscObjects[i])) {
         PetscCall(PetscObjectName(h));
         {
 #if defined(PETSC_USE_DEBUG)
-        PetscStack *stack = NULL;
-        char       *create,*rclass;
+          PetscStack *stack = NULL;
+          char       *create, *rclass;
 
-        /* if the PETSc function the user calls is not a create then this object was NOT directly created by them */
-        PetscCall(PetscMallocGetStack(h,&stack));
-        if (stack) {
-          k = stack->currentsize-2;
-          if (!all) {
-            k = 0;
-            while (!stack->petscroutine[k]) k++;
-            PetscCall(PetscStrstr(stack->function[k],"Create",&create));
-            if (!create) {
-              PetscCall(PetscStrstr(stack->function[k],"Get",&create));
+          /* if the PETSc function the user calls is not a create then this object was NOT directly created by them */
+          PetscCall(PetscMallocGetStack(h, &stack));
+          if (stack) {
+            k = stack->currentsize - 2;
+            if (!all) {
+              k = 0;
+              while (!stack->petscroutine[k]) k++;
+              PetscCall(PetscStrstr(stack->function[k], "Create", &create));
+              if (!create) { PetscCall(PetscStrstr(stack->function[k], "Get", &create)); }
+              PetscCall(PetscStrstr(stack->function[k], h->class_name, &rclass));
+              if (!create) continue;
+              if (!rclass) continue;
             }
-            PetscCall(PetscStrstr(stack->function[k],h->class_name,&rclass));
-            if (!create) continue;
-            if (!rclass) continue;
           }
-        }
 #endif
 
-        PetscCall(PetscFPrintf(PETSC_COMM_WORLD,fd,"[%d] %s %s %s\n",PetscGlobalRank,h->class_name,h->type_name,h->name));
+          PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fd, "[%d] %s %s %s\n", PetscGlobalRank, h->class_name, h->type_name, h->name));
 
 #if defined(PETSC_USE_DEBUG)
-        PetscCall(PetscMallocGetStack(h,&stack));
-        if (stack) {
-          for (j=k; j>=0; j--) {
-            fprintf(fd,"      [%d]  %s() in %s\n",PetscGlobalRank,stack->function[j],stack->file[j]);
+          PetscCall(PetscMallocGetStack(h, &stack));
+          if (stack) {
+            for (j = k; j >= 0; j--) { fprintf(fd, "      [%d]  %s() in %s\n", PetscGlobalRank, stack->function[j], stack->file[j]); }
           }
-        }
 #endif
         }
       }
@@ -344,17 +333,16 @@ PetscErrorCode  PetscObjectsDump(FILE *fd,PetscBool all)
    Level: advanced
 
 @*/
-PetscErrorCode  PetscObjectsView(PetscViewer viewer)
-{
-  PetscBool      isascii;
-  FILE           *fd;
+PetscErrorCode PetscObjectsView(PetscViewer viewer) {
+  PetscBool isascii;
+  FILE     *fd;
 
   PetscFunctionBegin;
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_WORLD;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii));
-  PetscCheck(isascii,PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Only supports ASCII viewer");
-  PetscCall(PetscViewerASCIIGetPointer(viewer,&fd));
-  PetscCall(PetscObjectsDump(fd,PETSC_TRUE));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  PetscCheck(isascii, PetscObjectComm((PetscObject)viewer), PETSC_ERR_SUP, "Only supports ASCII viewer");
+  PetscCall(PetscViewerASCIIGetPointer(viewer, &fd));
+  PetscCall(PetscObjectsDump(fd, PETSC_TRUE));
   PetscFunctionReturn(0);
 }
 
@@ -373,20 +361,19 @@ PetscErrorCode  PetscObjectsView(PetscViewer viewer)
    Level: advanced
 
 @*/
-PetscErrorCode  PetscObjectsGetObject(const char *name,PetscObject *obj,char **classname)
-{
+PetscErrorCode PetscObjectsGetObject(const char *name, PetscObject *obj, char **classname) {
   PetscInt    i;
   PetscObject h;
   PetscBool   flg;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(name,1);
-  PetscValidPointer(obj,2);
+  PetscValidCharPointer(name, 1);
+  PetscValidPointer(obj, 2);
   *obj = NULL;
-  for (i=0; i<PetscObjectsMaxCounts; i++) {
+  for (i = 0; i < PetscObjectsMaxCounts; i++) {
     if ((h = PetscObjects[i])) {
       PetscCall(PetscObjectName(h));
-      PetscCall(PetscStrcmp(h->name,name,&flg));
+      PetscCall(PetscStrcmp(h->name, name, &flg));
       if (flg) {
         *obj = h;
         if (classname) *classname = h->class_name;
@@ -412,10 +399,9 @@ PetscErrorCode  PetscObjectsGetObject(const char *name,PetscObject *obj,char **c
 
 .seealso: `PetscOptionsInsert()`
 @*/
-PetscErrorCode PetscObjectSetPrintedOptions(PetscObject obj)
-{
+PetscErrorCode PetscObjectSetPrintedOptions(PetscObject obj) {
   PetscFunctionBegin;
-  PetscValidPointer(obj,1);
+  PetscValidPointer(obj, 1);
   obj->optionsprinted = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -437,15 +423,14 @@ PetscErrorCode PetscObjectSetPrintedOptions(PetscObject obj)
 
 .seealso: `PetscOptionsInsert()`, `PetscObjectSetPrintedOptions()`
 @*/
-PetscErrorCode PetscObjectInheritPrintedOptions(PetscObject pobj,PetscObject obj)
-{
-  PetscMPIInt prank,size;
+PetscErrorCode PetscObjectInheritPrintedOptions(PetscObject pobj, PetscObject obj) {
+  PetscMPIInt prank, size;
 
   PetscFunctionBegin;
-  PetscValidHeader(pobj,1);
-  PetscValidHeader(obj,2);
-  PetscCallMPI(MPI_Comm_rank(pobj->comm,&prank));
-  PetscCallMPI(MPI_Comm_size(obj->comm,&size));
+  PetscValidHeader(pobj, 1);
+  PetscValidHeader(obj, 2);
+  PetscCallMPI(MPI_Comm_rank(pobj->comm, &prank));
+  PetscCallMPI(MPI_Comm_size(obj->comm, &size));
   if (size == 1 && prank > 0) obj->optionsprinted = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -466,11 +451,10 @@ PetscErrorCode PetscObjectInheritPrintedOptions(PetscObject pobj,PetscObject obj
 .seealso: `KSPSetFromOptions()`, `PCSetFromOptions()`, `SNESSetFromOptions()`, `PetscObjectProcessOptionsHandlers()`, `PetscObjectDestroyOptionsHandlers()`
 
 @*/
-PetscErrorCode PetscObjectAddOptionsHandler(PetscObject obj,PetscErrorCode (*handle)(PetscOptionItems*,PetscObject,void*),PetscErrorCode (*destroy)(PetscObject,void*),void *ctx)
-{
+PetscErrorCode PetscObjectAddOptionsHandler(PetscObject obj, PetscErrorCode (*handle)(PetscObject, PetscOptionItems *, void *), PetscErrorCode (*destroy)(PetscObject, void *), void *ctx) {
   PetscFunctionBegin;
-  PetscValidHeader(obj,1);
-  PetscCheck(obj->noptionhandler < PETSC_MAX_OPTIONS_HANDLER,obj->comm,PETSC_ERR_ARG_OUTOFRANGE,"To many options handlers added");
+  PetscValidHeader(obj, 1);
+  PetscCheck(obj->noptionhandler < PETSC_MAX_OPTIONS_HANDLER, obj->comm, PETSC_ERR_ARG_OUTOFRANGE, "To many options handlers added");
   obj->optionhandler[obj->noptionhandler] = handle;
   obj->optiondestroy[obj->noptionhandler] = destroy;
   obj->optionctx[obj->noptionhandler++]   = ctx;
@@ -482,19 +466,19 @@ PetscErrorCode PetscObjectAddOptionsHandler(PetscObject obj,PetscErrorCode (*han
 
     Not Collective
 
-    Input Parameter:
-.   obj - the PETSc object
+    Input Parameters:
++   obj - the PETSc object
+-   PetscOptionsObject - the options context
 
     Level: developer
 
 .seealso: `KSPSetFromOptions()`, `PCSetFromOptions()`, `SNESSetFromOptions()`, `PetscObjectAddOptionsHandler()`, `PetscObjectDestroyOptionsHandlers()`
 
 @*/
-PetscErrorCode  PetscObjectProcessOptionsHandlers(PetscOptionItems *PetscOptionsObject,PetscObject obj)
-{
+PetscErrorCode PetscObjectProcessOptionsHandlers(PetscObject obj, PetscOptionItems *PetscOptionsObject) {
   PetscFunctionBegin;
-  PetscValidHeader(obj,2);
-  for (PetscInt i=0; i<obj->noptionhandler; i++) PetscCall((*obj->optionhandler[i])(PetscOptionsObject,obj,obj->optionctx[i]));
+  PetscValidHeader(obj, 1);
+  for (PetscInt i = 0; i < obj->noptionhandler; i++) PetscCall((*obj->optionhandler[i])(obj, PetscOptionsObject, obj->optionctx[i]));
   PetscFunctionReturn(0);
 }
 
@@ -511,12 +495,11 @@ PetscErrorCode  PetscObjectProcessOptionsHandlers(PetscOptionItems *PetscOptions
 .seealso: `KSPSetFromOptions()`, `PCSetFromOptions()`, `SNESSetFromOptions()`, `PetscObjectAddOptionsHandler()`, `PetscObjectProcessOptionsHandlers()`
 
 @*/
-PetscErrorCode  PetscObjectDestroyOptionsHandlers(PetscObject obj)
-{
+PetscErrorCode PetscObjectDestroyOptionsHandlers(PetscObject obj) {
   PetscFunctionBegin;
-  PetscValidHeader(obj,1);
-  for (PetscInt i=0; i<obj->noptionhandler; i++) {
-    if (obj->optiondestroy[i]) PetscCall((*obj->optiondestroy[i])(obj,obj->optionctx[i]));
+  PetscValidHeader(obj, 1);
+  for (PetscInt i = 0; i < obj->noptionhandler; i++) {
+    if (obj->optiondestroy[i]) PetscCall((*obj->optiondestroy[i])(obj, obj->optionctx[i]));
   }
   obj->noptionhandler = 0;
   PetscFunctionReturn(0);
@@ -537,11 +520,10 @@ PetscErrorCode  PetscObjectDestroyOptionsHandlers(PetscObject obj)
 
 .seealso: `PetscObjectCompose()`, `PetscObjectDereference()`
 @*/
-PetscErrorCode  PetscObjectReference(PetscObject obj)
-{
+PetscErrorCode PetscObjectReference(PetscObject obj) {
   PetscFunctionBegin;
   if (!obj) PetscFunctionReturn(0);
-  PetscValidHeader(obj,1);
+  PetscValidHeader(obj, 1);
   obj->refct++;
   PetscFunctionReturn(0);
 }
@@ -563,11 +545,10 @@ PetscErrorCode  PetscObjectReference(PetscObject obj)
 
 .seealso: `PetscObjectCompose()`, `PetscObjectDereference()`, `PetscObjectReference()`
 @*/
-PetscErrorCode  PetscObjectGetReference(PetscObject obj,PetscInt *cnt)
-{
+PetscErrorCode PetscObjectGetReference(PetscObject obj, PetscInt *cnt) {
   PetscFunctionBegin;
-  PetscValidHeader(obj,1);
-  PetscValidIntPointer(cnt,2);
+  PetscValidHeader(obj, 1);
+  PetscValidIntPointer(cnt, 2);
   *cnt = obj->refct;
   PetscFunctionReturn(0);
 }
@@ -590,13 +571,12 @@ PetscErrorCode  PetscObjectGetReference(PetscObject obj,PetscInt *cnt)
 
 .seealso: `PetscObjectCompose()`, `PetscObjectReference()`, `PetscObjectDestroy()`
 @*/
-PetscErrorCode  PetscObjectDereference(PetscObject obj)
-{
+PetscErrorCode PetscObjectDereference(PetscObject obj) {
   PetscFunctionBegin;
   if (!obj) PetscFunctionReturn(0);
-  PetscValidHeader(obj,1);
+  PetscValidHeader(obj, 1);
   if (obj->bops->destroy) PetscCall((*obj->bops->destroy)(&obj));
-  else PetscCheck(--(obj->refct),PETSC_COMM_SELF,PETSC_ERR_SUP,"This PETSc object does not have a generic destroy routine");
+  else PetscCheck(--(obj->refct), PETSC_COMM_SELF, PETSC_ERR_SUP, "This PETSc object does not have a generic destroy routine");
   PetscFunctionReturn(0);
 }
 
@@ -605,58 +585,52 @@ PetscErrorCode  PetscObjectDereference(PetscObject obj)
      The following routines are the versions private to the PETSc object
      data structures.
 */
-PetscErrorCode PetscObjectGetComm_Petsc(PetscObject obj,MPI_Comm *comm)
-{
+PetscErrorCode PetscObjectGetComm_Petsc(PetscObject obj, MPI_Comm *comm) {
   PetscFunctionBegin;
-  PetscValidHeader(obj,1);
-  PetscValidPointer(comm,2);
+  PetscValidHeader(obj, 1);
+  PetscValidPointer(comm, 2);
   *comm = obj->comm;
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscObjectRemoveReference(PetscObject obj,const char name[])
-{
+PetscErrorCode PetscObjectRemoveReference(PetscObject obj, const char name[]) {
   PetscFunctionBegin;
-  PetscValidHeader(obj,1);
-  PetscCall(PetscObjectListRemoveReference(&obj->olist,name));
+  PetscValidHeader(obj, 1);
+  PetscCall(PetscObjectListRemoveReference(&obj->olist, name));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscObjectCompose_Petsc(PetscObject obj,const char name[],PetscObject ptr)
-{
+PetscErrorCode PetscObjectCompose_Petsc(PetscObject obj, const char name[], PetscObject ptr) {
   PetscFunctionBegin;
   if (ptr) {
-    char      *tname;
+    char     *tname;
     PetscBool skipreference;
 
-    PetscCall(PetscObjectListReverseFind(ptr->olist,obj,&tname,&skipreference));
-    if (tname) PetscCheck(skipreference,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"An object cannot be composed with an object that was composed with it");
+    PetscCall(PetscObjectListReverseFind(ptr->olist, obj, &tname, &skipreference));
+    if (tname) PetscCheck(skipreference, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "An object cannot be composed with an object that was composed with it");
   }
-  PetscCall(PetscObjectListAdd(&obj->olist,name,ptr));
+  PetscCall(PetscObjectListAdd(&obj->olist, name, ptr));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscObjectQuery_Petsc(PetscObject obj,const char name[],PetscObject *ptr)
-{
+PetscErrorCode PetscObjectQuery_Petsc(PetscObject obj, const char name[], PetscObject *ptr) {
   PetscFunctionBegin;
-  PetscValidHeader(obj,1);
-  PetscCall(PetscObjectListFind(obj->olist,name,ptr));
+  PetscValidHeader(obj, 1);
+  PetscCall(PetscObjectListFind(obj->olist, name, ptr));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscObjectComposeFunction_Petsc(PetscObject obj,const char name[],void (*ptr)(void))
-{
+PetscErrorCode PetscObjectComposeFunction_Petsc(PetscObject obj, const char name[], void (*ptr)(void)) {
   PetscFunctionBegin;
-  PetscValidHeader(obj,1);
-  PetscCall(PetscFunctionListAdd(&obj->qlist,name,ptr));
+  PetscValidHeader(obj, 1);
+  PetscCall(PetscFunctionListAdd(&obj->qlist, name, ptr));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscObjectQueryFunction_Petsc(PetscObject obj,const char name[],void (**ptr)(void))
-{
+PetscErrorCode PetscObjectQueryFunction_Petsc(PetscObject obj, const char name[], void (**ptr)(void)) {
   PetscFunctionBegin;
-  PetscValidHeader(obj,1);
-  PetscCall(PetscFunctionListFind(obj->qlist,name,ptr));
+  PetscValidHeader(obj, 1);
+  PetscCall(PetscFunctionListFind(obj->qlist, name, ptr));
   PetscFunctionReturn(0);
 }
 
@@ -692,14 +666,13 @@ PetscErrorCode PetscObjectQueryFunction_Petsc(PetscObject obj,const char name[],
 .seealso: `PetscObjectQuery()`, `PetscContainerCreate()`, `PetscObjectComposeFunction()`, `PetscObjectQueryFunction()`, `PetscContainer`,
           `PetscContainerSetPointer()`
 @*/
-PetscErrorCode  PetscObjectCompose(PetscObject obj,const char name[],PetscObject ptr)
-{
+PetscErrorCode PetscObjectCompose(PetscObject obj, const char name[], PetscObject ptr) {
   PetscFunctionBegin;
-  PetscValidHeader(obj,1);
-  PetscValidCharPointer(name,2);
-  if (ptr) PetscValidHeader(ptr,3);
-  PetscCheck(obj != ptr,PetscObjectComm((PetscObject)obj),PETSC_ERR_SUP,"Cannot compose object with itself");
-  PetscCall((*obj->bops->compose)(obj,name,ptr));
+  PetscValidHeader(obj, 1);
+  PetscValidCharPointer(name, 2);
+  if (ptr) PetscValidHeader(ptr, 3);
+  PetscCheck(obj != ptr, PetscObjectComm((PetscObject)obj), PETSC_ERR_SUP, "Cannot compose object with itself");
+  PetscCall((*obj->bops->compose)(obj, name, ptr));
   PetscFunctionReturn(0);
 }
 
@@ -724,13 +697,12 @@ PetscErrorCode  PetscObjectCompose(PetscObject obj,const char name[],PetscObject
 .seealso: `PetscObjectCompose()`, `PetscObjectComposeFunction()`, `PetscObjectQueryFunction()`, `PetscContainer`
           `PetscContainerGetPointer()`
 @*/
-PetscErrorCode  PetscObjectQuery(PetscObject obj,const char name[],PetscObject *ptr)
-{
+PetscErrorCode PetscObjectQuery(PetscObject obj, const char name[], PetscObject *ptr) {
   PetscFunctionBegin;
-  PetscValidHeader(obj,1);
-  PetscValidCharPointer(name,2);
-  PetscValidPointer(ptr,3);
-  PetscCall((*obj->bops->query)(obj,name,ptr));
+  PetscValidHeader(obj, 1);
+  PetscValidCharPointer(name, 2);
+  PetscValidPointer(ptr, 3);
+  PetscCall((*obj->bops->query)(obj, name, ptr));
   PetscFunctionReturn(0);
 }
 
@@ -753,20 +725,25 @@ PetscErrorCode  PetscObjectQuery(PetscObject obj,const char name[],PetscObject *
    Level: advanced
 
    Notes:
+   When the first argument of the function is the object within which it has been composed then `PetscTryMethod()` and `PetscUseMethod()`
+   can be used to call the function directly with error checking.
+
    To remove a registered routine, pass in NULL for fptr().
 
    PetscObjectComposeFunction() can be used with any PETSc object (such as
    `Mat`, `Vec`, `KSP`, `SNES`, etc.) or any user-provided object.
 
-.seealso: `PetscObjectQueryFunction()`, `PetscContainerCreate()` `PetscObjectCompose()`, `PetscObjectQuery()`
+   `PetscCallMethod()` is used to call a function that is stored in the objects obj->ops table.
+
+.seealso: `PetscObjectQueryFunction()`, `PetscContainerCreate()` `PetscObjectCompose()`, `PetscObjectQuery()`, `PetscTryMethod()`, `PetscUseMethod()`,
+          `PetscCallMethod()`
 M*/
 
-PetscErrorCode  PetscObjectComposeFunction_Private(PetscObject obj,const char name[],void (*fptr)(void))
-{
+PetscErrorCode PetscObjectComposeFunction_Private(PetscObject obj, const char name[], void (*fptr)(void)) {
   PetscFunctionBegin;
-  PetscValidHeader(obj,1);
-  PetscValidCharPointer(name,2);
-  PetscCall((*obj->bops->composefunction)(obj,name,fptr));
+  PetscValidHeader(obj, 1);
+  PetscValidCharPointer(name, 2);
+  PetscCall((*obj->bops->composefunction)(obj, name, fptr));
   PetscFunctionReturn(0);
 }
 
@@ -791,19 +768,18 @@ PetscErrorCode  PetscObjectComposeFunction_Private(PetscObject obj,const char na
 
 .seealso: `PetscObjectComposeFunction()`, `PetscFunctionListFind()`, `PetscObjectCompose()`, `PetscObjectQuery()`
 M*/
-PETSC_EXTERN PetscErrorCode PetscObjectQueryFunction_Private(PetscObject obj,const char name[],void (**ptr)(void))
-{
+PETSC_EXTERN PetscErrorCode PetscObjectQueryFunction_Private(PetscObject obj, const char name[], void (**ptr)(void)) {
   PetscFunctionBegin;
-  PetscValidHeader(obj,1);
-  PetscValidCharPointer(name,2);
-  PetscCall((*obj->bops->queryfunction)(obj,name,ptr));
+  PetscValidHeader(obj, 1);
+  PetscValidCharPointer(name, 2);
+  PetscCall((*obj->bops->queryfunction)(obj, name, ptr));
   PetscFunctionReturn(0);
 }
 
 struct _p_PetscContainer {
   PETSCHEADER(int);
-  void           *ptr;
-  PetscErrorCode (*userdestroy)(void*);
+  void *ptr;
+  PetscErrorCode (*userdestroy)(void *);
 };
 
 /*@C
@@ -819,8 +795,7 @@ struct _p_PetscContainer {
 
 .seealso: `PetscContainerDestroy()`, `PetscContainerSetUserDestroy()`
 @*/
-PetscErrorCode PetscContainerUserDestroyDefault(void* ctx)
-{
+PetscErrorCode PetscContainerUserDestroyDefault(void *ctx) {
   PetscFunctionBegin;
   PetscCall(PetscFree(ctx));
   PetscFunctionReturn(0);
@@ -842,11 +817,10 @@ PetscErrorCode PetscContainerUserDestroyDefault(void* ctx)
 .seealso: `PetscContainerCreate()`, `PetscContainerDestroy()`,
           `PetscContainerSetPointer()`
 @*/
-PetscErrorCode  PetscContainerGetPointer(PetscContainer obj,void **ptr)
-{
+PetscErrorCode PetscContainerGetPointer(PetscContainer obj, void **ptr) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(obj,PETSC_CONTAINER_CLASSID,1);
-  PetscValidPointer(ptr,2);
+  PetscValidHeaderSpecific(obj, PETSC_CONTAINER_CLASSID, 1);
+  PetscValidPointer(ptr, 2);
   *ptr = obj->ptr;
   PetscFunctionReturn(0);
 }
@@ -865,11 +839,10 @@ PetscErrorCode  PetscContainerGetPointer(PetscContainer obj,void **ptr)
 .seealso: `PetscContainerCreate()`, `PetscContainerDestroy()`, `PetscObjectCompose()`, `PetscObjectQuery()`,
           `PetscContainerGetPointer()`
 @*/
-PetscErrorCode  PetscContainerSetPointer(PetscContainer obj,void *ptr)
-{
+PetscErrorCode PetscContainerSetPointer(PetscContainer obj, void *ptr) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(obj,PETSC_CONTAINER_CLASSID,1);
-  if (ptr) PetscValidPointer(ptr,2);
+  PetscValidHeaderSpecific(obj, PETSC_CONTAINER_CLASSID, 1);
+  if (ptr) PetscValidPointer(ptr, 2);
   obj->ptr = ptr;
   PetscFunctionReturn(0);
 }
@@ -890,12 +863,14 @@ PetscErrorCode  PetscContainerSetPointer(PetscContainer obj,void *ptr)
 
 .seealso: `PetscContainerCreate()`, `PetscContainerSetUserDestroy()`
 @*/
-PetscErrorCode  PetscContainerDestroy(PetscContainer *obj)
-{
+PetscErrorCode PetscContainerDestroy(PetscContainer *obj) {
   PetscFunctionBegin;
   if (!*obj) PetscFunctionReturn(0);
-  PetscValidHeaderSpecific(*obj,PETSC_CONTAINER_CLASSID,1);
-  if (--((PetscObject)(*obj))->refct > 0) {*obj = NULL; PetscFunctionReturn(0);}
+  PetscValidHeaderSpecific(*obj, PETSC_CONTAINER_CLASSID, 1);
+  if (--((PetscObject)(*obj))->refct > 0) {
+    *obj = NULL;
+    PetscFunctionReturn(0);
+  }
   if ((*obj)->userdestroy) PetscCall((*(*obj)->userdestroy)((*obj)->ptr));
   PetscCall(PetscHeaderDestroy(obj));
   PetscFunctionReturn(0);
@@ -917,10 +892,9 @@ PetscErrorCode  PetscContainerDestroy(PetscContainer *obj)
 
 .seealso: `PetscContainerDestroy()`, `PetscContainerUserDestroyDefault()`, `PetscMalloc()`, `PetscMalloc1()`, `PetscCalloc()`, `PetscCalloc1()`
 @*/
-PetscErrorCode  PetscContainerSetUserDestroy(PetscContainer obj, PetscErrorCode (*des)(void*))
-{
+PetscErrorCode PetscContainerSetUserDestroy(PetscContainer obj, PetscErrorCode (*des)(void *)) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(obj,PETSC_CONTAINER_CLASSID,1);
+  PetscValidHeaderSpecific(obj, PETSC_CONTAINER_CLASSID, 1);
   obj->userdestroy = des;
   PetscFunctionReturn(0);
 }
@@ -946,12 +920,11 @@ PetscClassId PETSC_CONTAINER_CLASSID;
 .seealso: `PetscContainerDestroy()`, `PetscContainerSetPointer()`, `PetscContainerGetPointer()`, `PetscObjectCompose()`, `PetscObjectQuery()`,
           `PetscContainerSetUserDestroy()`
 @*/
-PetscErrorCode  PetscContainerCreate(MPI_Comm comm,PetscContainer *container)
-{
+PetscErrorCode PetscContainerCreate(MPI_Comm comm, PetscContainer *container) {
   PetscFunctionBegin;
-  PetscValidPointer(container,2);
+  PetscValidPointer(container, 2);
   PetscCall(PetscSysInitializePackage());
-  PetscCall(PetscHeaderCreate(*container,PETSC_CONTAINER_CLASSID,"PetscContainer","Container","Sys",comm,PetscContainerDestroy,NULL));
+  PetscCall(PetscHeaderCreate(*container, PETSC_CONTAINER_CLASSID, "PetscContainer", "Container", "Sys", comm, PetscContainerDestroy, NULL));
   PetscFunctionReturn(0);
 }
 
@@ -972,10 +945,9 @@ PetscErrorCode  PetscContainerCreate(MPI_Comm comm,PetscContainer *container)
 
 .seealso: `PetscObjectSetOptionsPrefix()`, `PetscObjectGetOptionsPrefix()`
 @*/
-PetscErrorCode  PetscObjectSetFromOptions(PetscObject obj)
-{
+PetscErrorCode PetscObjectSetFromOptions(PetscObject obj) {
   PetscFunctionBegin;
-  PetscValidHeader(obj,1);
+  PetscValidHeader(obj, 1);
   PetscFunctionReturn(0);
 }
 
@@ -994,9 +966,8 @@ PetscErrorCode  PetscObjectSetFromOptions(PetscObject obj)
 
 .seealso: `PetscObjectDestroy()`
 @*/
-PetscErrorCode  PetscObjectSetUp(PetscObject obj)
-{
+PetscErrorCode PetscObjectSetUp(PetscObject obj) {
   PetscFunctionBegin;
-  PetscValidHeader(obj,1);
+  PetscValidHeader(obj, 1);
   PetscFunctionReturn(0);
 }

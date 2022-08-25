@@ -13,7 +13,7 @@
 !    -bheight <ht>, where <ht> = height of the plate
 !
 
-      module mymodule
+      module plate2fmodule
 #include "petsc/finclude/petscdmda.h"
 #include "petsc/finclude/petsctao.h"
       use petscdmda
@@ -37,7 +37,7 @@
 !    Nx, Ny           number of processors in x- and y- directions
 !    mx, my           number of grid points in x,y directions
 !    N    global dimension of vector
-      use mymodule
+      use plate2fmodule
       implicit none
 
       PetscErrorCode   ierr          ! used to check for functions returning nonzeros
@@ -180,7 +180,7 @@
 !
 
       subroutine FormFunctionGradient(tao,X,fcn,G,dummy,ierr)
-      use mymodule
+      use plate2fmodule
       implicit none
 
 ! Input/output variables
@@ -429,7 +429,7 @@
 !           by calling MatSetValuesLocal()
 
       subroutine FormHessian(tao, X, Hessian, Hpc, dummy, ierr)
-      use mymodule
+      use plate2fmodule
       implicit none
 
       Tao     tao
@@ -656,7 +656,7 @@
 !*/
 
       subroutine MSA_BoundaryConditions(ierr)
-      use mymodule
+      use plate2fmodule
       implicit none
 
       PetscErrorCode   ierr
@@ -813,7 +813,7 @@
 !*/
 
       subroutine MSA_Plate(tao,xl,xu,dummy,ierr)
-      use mymodule
+      use plate2fmodule
       implicit none
 
       Tao        tao
@@ -878,7 +878,7 @@
 !*/
 
       subroutine MSA_InitialPoint(X, ierr)
-      use mymodule
+      use plate2fmodule
       implicit none
 
       Vec               X

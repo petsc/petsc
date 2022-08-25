@@ -1,7 +1,6 @@
 #include <../src/snes/impls/richardson/snesrichardsonimpl.h>
 
-PetscErrorCode SNESReset_NRichardson(SNES snes)
-{
+PetscErrorCode SNESReset_NRichardson(SNES snes) {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
@@ -14,8 +13,7 @@ PetscErrorCode SNESReset_NRichardson(SNES snes)
 
   Application Interface Routine: SNESDestroy()
 */
-PetscErrorCode SNESDestroy_NRichardson(SNES snes)
-{
+PetscErrorCode SNESDestroy_NRichardson(SNES snes) {
   PetscFunctionBegin;
   PetscCall(SNESReset_NRichardson(snes));
   PetscCall(PetscFree(snes->data));
@@ -32,10 +30,9 @@ PetscErrorCode SNESDestroy_NRichardson(SNES snes)
 
    Application Interface Routine: SNESSetUp()
  */
-PetscErrorCode SNESSetUp_NRichardson(SNES snes)
-{
+PetscErrorCode SNESSetUp_NRichardson(SNES snes) {
   PetscFunctionBegin;
-  PetscCheck(snes->npcside!= PC_RIGHT,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"NRichardson only supports left preconditioning");
+  PetscCheck(snes->npcside != PC_RIGHT, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "NRichardson only supports left preconditioning");
   if (snes->functype == SNES_FUNCTION_DEFAULT) snes->functype = SNES_FUNCTION_UNPRECONDITIONED;
   PetscFunctionReturn(0);
 }
@@ -48,10 +45,9 @@ PetscErrorCode SNESSetUp_NRichardson(SNES snes)
 
   Application Interface Routine: SNESSetFromOptions()
 */
-static PetscErrorCode SNESSetFromOptions_NRichardson(PetscOptionItems *PetscOptionsObject,SNES snes)
-{
+static PetscErrorCode SNESSetFromOptions_NRichardson(SNES snes, PetscOptionItems *PetscOptionsObject) {
   PetscFunctionBegin;
-  PetscOptionsHeadBegin(PetscOptionsObject,"SNES Richardson options");
+  PetscOptionsHeadBegin(PetscOptionsObject, "SNES Richardson options");
   PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
@@ -65,14 +61,12 @@ static PetscErrorCode SNESSetFromOptions_NRichardson(PetscOptionItems *PetscOpti
 
   Application Interface Routine: SNESView()
 */
-static PetscErrorCode SNESView_NRichardson(SNES snes, PetscViewer viewer)
-{
-  PetscBool      iascii;
+static PetscErrorCode SNESView_NRichardson(SNES snes, PetscViewer viewer) {
+  PetscBool iascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
-  }
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
+  if (iascii) { }
   PetscFunctionReturn(0);
 }
 
@@ -87,8 +81,7 @@ static PetscErrorCode SNESView_NRichardson(SNES snes, PetscViewer viewer)
 
   Application Interface Routine: SNESSolve()
 */
-PetscErrorCode SNESSolve_NRichardson(SNES snes)
-{
+PetscErrorCode SNESSolve_NRichardson(SNES snes) {
   Vec                  X, Y, F;
   PetscReal            xnorm, fnorm, ynorm;
   PetscInt             maxits, i;
@@ -96,7 +89,7 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
   SNESConvergedReason  reason;
 
   PetscFunctionBegin;
-  PetscCheck(!snes->xl && !snes->xu && !snes->ops->computevariablebounds,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
+  PetscCheck(!snes->xl && !snes->xu && !snes->ops->computevariablebounds, PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
 
   snes->reason = SNES_CONVERGED_ITERATING;
 
@@ -111,52 +104,52 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
   PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
 
   if (snes->npc && snes->functype == SNES_FUNCTION_PRECONDITIONED) {
-    PetscCall(SNESApplyNPC(snes,X,NULL,F));
-    PetscCall(SNESGetConvergedReason(snes->npc,&reason));
-    if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
+    PetscCall(SNESApplyNPC(snes, X, NULL, F));
+    PetscCall(SNESGetConvergedReason(snes->npc, &reason));
+    if (reason < 0 && reason != SNES_DIVERGED_MAX_IT) {
       snes->reason = SNES_DIVERGED_INNER;
       PetscFunctionReturn(0);
     }
-    PetscCall(VecNorm(F,NORM_2,&fnorm));
+    PetscCall(VecNorm(F, NORM_2, &fnorm));
   } else {
     if (!snes->vec_func_init_set) {
-      PetscCall(SNESComputeFunction(snes,X,F));
+      PetscCall(SNESComputeFunction(snes, X, F));
     } else snes->vec_func_init_set = PETSC_FALSE;
 
-    PetscCall(VecNorm(F,NORM_2,&fnorm));
-    SNESCheckFunctionNorm(snes,fnorm);
+    PetscCall(VecNorm(F, NORM_2, &fnorm));
+    SNESCheckFunctionNorm(snes, fnorm);
   }
   if (snes->npc && snes->functype == SNES_FUNCTION_UNPRECONDITIONED) {
-      PetscCall(SNESApplyNPC(snes,X,F,Y));
-      PetscCall(SNESGetConvergedReason(snes->npc,&reason));
-      if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
-        snes->reason = SNES_DIVERGED_INNER;
-        PetscFunctionReturn(0);
-      }
+    PetscCall(SNESApplyNPC(snes, X, F, Y));
+    PetscCall(SNESGetConvergedReason(snes->npc, &reason));
+    if (reason < 0 && reason != SNES_DIVERGED_MAX_IT) {
+      snes->reason = SNES_DIVERGED_INNER;
+      PetscFunctionReturn(0);
+    }
   } else {
-    PetscCall(VecCopy(F,Y));
+    PetscCall(VecCopy(F, Y));
   }
 
   PetscCall(PetscObjectSAWsTakeAccess((PetscObject)snes));
   snes->norm = fnorm;
   PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
-  PetscCall(SNESLogConvergenceHistory(snes,fnorm,0));
-  PetscCall(SNESMonitor(snes,0,fnorm));
+  PetscCall(SNESLogConvergenceHistory(snes, fnorm, 0));
+  PetscCall(SNESMonitor(snes, 0, fnorm));
 
   /* test convergence */
-  PetscCall((*snes->ops->converged)(snes,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP));
+  PetscUseTypeMethod(snes, converged, 0, 0.0, 0.0, fnorm, &snes->reason, snes->cnvP);
   if (snes->reason) PetscFunctionReturn(0);
 
   /* Call general purpose update function */
-  if (snes->ops->update) PetscCall((*snes->ops->update)(snes, snes->iter));
+  PetscTryTypeMethod(snes, update, snes->iter);
 
   /* set parameter for default relative tolerance convergence test */
-  snes->ttol = fnorm*snes->rtol;
+  snes->ttol = fnorm * snes->rtol;
   /* test convergence */
-  PetscCall((*snes->ops->converged)(snes,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP));
+  PetscUseTypeMethod(snes, converged, 0, 0.0, 0.0, fnorm, &snes->reason, snes->cnvP);
   if (snes->reason) PetscFunctionReturn(0);
 
-  for (i = 1; i < maxits+1; i++) {
+  for (i = 1; i < maxits + 1; i++) {
     PetscCall(SNESLineSearchApply(snes->linesearch, X, F, &fnorm, Y));
     PetscCall(SNESLineSearchGetReason(snes->linesearch, &lsresult));
     PetscCall(SNESLineSearchGetNorms(snes->linesearch, &xnorm, &fnorm, &ynorm));
@@ -173,38 +166,38 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
 
     /* Monitor convergence */
     PetscCall(PetscObjectSAWsTakeAccess((PetscObject)snes));
-    snes->iter = i;
-    snes->norm = fnorm;
+    snes->iter  = i;
+    snes->norm  = fnorm;
     snes->xnorm = xnorm;
     snes->ynorm = ynorm;
     PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
-    PetscCall(SNESLogConvergenceHistory(snes,snes->norm,0));
-    PetscCall(SNESMonitor(snes,snes->iter,snes->norm));
+    PetscCall(SNESLogConvergenceHistory(snes, snes->norm, 0));
+    PetscCall(SNESMonitor(snes, snes->iter, snes->norm));
     /* Test for convergence */
-    PetscCall((*snes->ops->converged)(snes,snes->iter,xnorm,ynorm,fnorm,&snes->reason,snes->cnvP));
+    PetscUseTypeMethod(snes, converged, snes->iter, xnorm, ynorm, fnorm, &snes->reason, snes->cnvP);
     if (snes->reason) break;
 
     /* Call general purpose update function */
-    if (snes->ops->update) PetscCall((*snes->ops->update)(snes, snes->iter));
+    PetscTryTypeMethod(snes, update, snes->iter);
 
     if (snes->npc) {
       if (snes->functype == SNES_FUNCTION_PRECONDITIONED) {
-        PetscCall(SNESApplyNPC(snes,X,NULL,Y));
-        PetscCall(VecNorm(F,NORM_2,&fnorm));
-        PetscCall(VecCopy(Y,F));
+        PetscCall(SNESApplyNPC(snes, X, NULL, Y));
+        PetscCall(VecNorm(F, NORM_2, &fnorm));
+        PetscCall(VecCopy(Y, F));
       } else {
-        PetscCall(SNESApplyNPC(snes,X,F,Y));
+        PetscCall(SNESApplyNPC(snes, X, F, Y));
       }
-      PetscCall(SNESGetConvergedReason(snes->npc,&reason));
-      if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
+      PetscCall(SNESGetConvergedReason(snes->npc, &reason));
+      if (reason < 0 && reason != SNES_DIVERGED_MAX_IT) {
         snes->reason = SNES_DIVERGED_INNER;
         PetscFunctionReturn(0);
       }
     } else {
-      PetscCall(VecCopy(F,Y));
+      PetscCall(VecCopy(F, Y));
     }
   }
-  if (i == maxits+1) {
+  if (i == maxits + 1) {
     PetscCall(PetscInfo(snes, "Maximum number of iterations has been reached: %" PetscInt_FMT "\n", maxits));
     if (!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
   }
@@ -236,10 +229,9 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
 
 .seealso: `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESNEWTONLS`, `SNESNEWTONTR`, `SNESNGMRES`, `SNESQN`, `SNESNCG`
 M*/
-PETSC_EXTERN PetscErrorCode SNESCreate_NRichardson(SNES snes)
-{
+PETSC_EXTERN PetscErrorCode SNESCreate_NRichardson(SNES snes) {
   SNES_NRichardson *neP;
-  SNESLineSearch   linesearch;
+  SNESLineSearch    linesearch;
 
   PetscFunctionBegin;
   snes->ops->destroy        = SNESDestroy_NRichardson;
@@ -252,17 +244,15 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NRichardson(SNES snes)
   snes->usesksp = PETSC_FALSE;
   snes->usesnpc = PETSC_TRUE;
 
-  snes->npcside= PC_LEFT;
+  snes->npcside = PC_LEFT;
 
   PetscCall(SNESGetLineSearch(snes, &linesearch));
-  if (!((PetscObject)linesearch)->type_name) {
-    PetscCall(SNESLineSearchSetType(linesearch, SNESLINESEARCHL2));
-  }
+  if (!((PetscObject)linesearch)->type_name) { PetscCall(SNESLineSearchSetType(linesearch, SNESLINESEARCHL2)); }
 
   snes->alwayscomputesfinalresidual = PETSC_TRUE;
 
-  PetscCall(PetscNewLog(snes,&neP));
-  snes->data = (void*) neP;
+  PetscCall(PetscNewLog(snes, &neP));
+  snes->data = (void *)neP;
 
   if (!snes->tolerancesset) {
     snes->max_funcs = 30000;

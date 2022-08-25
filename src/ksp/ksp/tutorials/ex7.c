@@ -22,27 +22,26 @@ linear solvers on the individual blocks.\n\n";
 */
 #include <petscksp.h>
 
-int main(int argc,char **args)
-{
-  Vec            x,b,u;      /* approx solution, RHS, exact solution */
-  Mat            A;            /* linear system matrix */
-  KSP            ksp;         /* KSP context */
-  KSP            *subksp;     /* array of local KSP contexts on this processor */
-  PC             pc;           /* PC context */
-  PC             subpc;        /* PC context for subdomain */
-  PetscReal      norm;         /* norm of solution error */
-  PetscInt       i,j,Ii,J,*blks,m = 4,n;
-  PetscMPIInt    rank,size;
-  PetscInt       its,nlocal,first,Istart,Iend;
-  PetscScalar    v,one = 1.0,none = -1.0;
-  PetscBool      isbjacobi;
+int main(int argc, char **args) {
+  Vec         x, b, u; /* approx solution, RHS, exact solution */
+  Mat         A;       /* linear system matrix */
+  KSP         ksp;     /* KSP context */
+  KSP        *subksp;  /* array of local KSP contexts on this processor */
+  PC          pc;      /* PC context */
+  PC          subpc;   /* PC context for subdomain */
+  PetscReal   norm;    /* norm of solution error */
+  PetscInt    i, j, Ii, J, *blks, m = 4, n;
+  PetscMPIInt rank, size;
+  PetscInt    its, nlocal, first, Istart, Iend;
+  PetscScalar v, one = 1.0, none = -1.0;
+  PetscBool   isbjacobi;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
-  PetscCall(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
-  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
-  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
-  n    = m+2;
+  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-m", &m, NULL));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
+  n = m + 2;
 
   /* -------------------------------------------------------------------
          Compute the matrix and right-hand-side vector that define
@@ -52,46 +51,61 @@ int main(int argc,char **args)
   /*
      Create and assemble parallel matrix
   */
-  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
-  PetscCall(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n));
+  PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
+  PetscCall(MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, m * n, m * n));
   PetscCall(MatSetFromOptions(A));
-  PetscCall(MatMPIAIJSetPreallocation(A,5,NULL,5,NULL));
-  PetscCall(MatSeqAIJSetPreallocation(A,5,NULL));
-  PetscCall(MatGetOwnershipRange(A,&Istart,&Iend));
-  for (Ii=Istart; Ii<Iend; Ii++) {
-    v = -1.0; i = Ii/n; j = Ii - i*n;
-    if (i>0)   {J = Ii - n; PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES));}
-    if (i<m-1) {J = Ii + n; PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES));}
-    if (j>0)   {J = Ii - 1; PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES));}
-    if (j<n-1) {J = Ii + 1; PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES));}
-    v = 4.0; PetscCall(MatSetValues(A,1,&Ii,1,&Ii,&v,ADD_VALUES));
+  PetscCall(MatMPIAIJSetPreallocation(A, 5, NULL, 5, NULL));
+  PetscCall(MatSeqAIJSetPreallocation(A, 5, NULL));
+  PetscCall(MatGetOwnershipRange(A, &Istart, &Iend));
+  for (Ii = Istart; Ii < Iend; Ii++) {
+    v = -1.0;
+    i = Ii / n;
+    j = Ii - i * n;
+    if (i > 0) {
+      J = Ii - n;
+      PetscCall(MatSetValues(A, 1, &Ii, 1, &J, &v, ADD_VALUES));
+    }
+    if (i < m - 1) {
+      J = Ii + n;
+      PetscCall(MatSetValues(A, 1, &Ii, 1, &J, &v, ADD_VALUES));
+    }
+    if (j > 0) {
+      J = Ii - 1;
+      PetscCall(MatSetValues(A, 1, &Ii, 1, &J, &v, ADD_VALUES));
+    }
+    if (j < n - 1) {
+      J = Ii + 1;
+      PetscCall(MatSetValues(A, 1, &Ii, 1, &J, &v, ADD_VALUES));
+    }
+    v = 4.0;
+    PetscCall(MatSetValues(A, 1, &Ii, 1, &Ii, &v, ADD_VALUES));
   }
-  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
-  PetscCall(MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE));
+  PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatSetOption(A, MAT_SYMMETRIC, PETSC_TRUE));
 
   /*
      Create parallel vectors
   */
-  PetscCall(MatCreateVecs(A,&u,&b));
-  PetscCall(VecDuplicate(u,&x));
+  PetscCall(MatCreateVecs(A, &u, &b));
+  PetscCall(VecDuplicate(u, &x));
 
   /*
      Set exact solution; then compute right-hand-side vector.
   */
-  PetscCall(VecSet(u,one));
-  PetscCall(MatMult(A,u,b));
+  PetscCall(VecSet(u, one));
+  PetscCall(MatMult(A, u, b));
 
   /*
      Create linear solver context
   */
-  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  PetscCall(KSPCreate(PETSC_COMM_WORLD, &ksp));
 
   /*
      Set operators. Here the matrix that defines the linear system
      also serves as the preconditioning matrix.
   */
-  PetscCall(KSPSetOperators(ksp,A,A));
+  PetscCall(KSPSetOperators(ksp, A, A));
 
   /*
      Set default preconditioner for this program to be block Jacobi.
@@ -106,8 +120,8 @@ int main(int argc,char **args)
      iterations on the inner solves is left at the default (which is 10,000)
      and the tolerance on the inner solves is set to be a tight value of around 10^-6.
   */
-  PetscCall(KSPGetPC(ksp,&pc));
-  PetscCall(PCSetType(pc,PCBJACOBI));
+  PetscCall(KSPGetPC(ksp, &pc));
+  PetscCall(PCSetType(pc, PCBJACOBI));
 
   /* -------------------------------------------------------------------
                    Define the problem decomposition
@@ -123,9 +137,9 @@ int main(int argc,char **args)
 
       Note: The default decomposition is 1 block per processor.
   */
-  PetscCall(PetscMalloc1(m,&blks));
-  for (i=0; i<m; i++) blks[i] = n;
-  PetscCall(PCBJacobiSetTotalBlocks(pc,m,blks));
+  PetscCall(PetscMalloc1(m, &blks));
+  for (i = 0; i < m; i++) blks[i] = n;
+  PetscCall(PCBJacobiSetTotalBlocks(pc, m, blks));
   PetscCall(PetscFree(blks));
 
   /*
@@ -158,7 +172,7 @@ int main(int argc,char **args)
      the individual blocks.  These choices are obviously not recommended
      for solving this particular problem.
   */
-  PetscCall(PetscObjectTypeCompare((PetscObject)pc,PCBJACOBI,&isbjacobi));
+  PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCBJACOBI, &isbjacobi));
   if (isbjacobi) {
     /*
        Call KSPSetUp() to set the block Jacobi data structures (including
@@ -171,26 +185,26 @@ int main(int argc,char **args)
     /*
        Extract the array of KSP contexts for the local blocks
     */
-    PetscCall(PCBJacobiGetSubKSP(pc,&nlocal,&first,&subksp));
+    PetscCall(PCBJacobiGetSubKSP(pc, &nlocal, &first, &subksp));
 
     /*
        Loop over the local blocks, setting various KSP options
        for each block.
     */
-    for (i=0; i<nlocal; i++) {
-      PetscCall(KSPGetPC(subksp[i],&subpc));
+    for (i = 0; i < nlocal; i++) {
+      PetscCall(KSPGetPC(subksp[i], &subpc));
       if (rank == 0) {
-        if (i%2) {
-          PetscCall(PCSetType(subpc,PCILU));
+        if (i % 2) {
+          PetscCall(PCSetType(subpc, PCILU));
         } else {
-          PetscCall(PCSetType(subpc,PCNONE));
-          PetscCall(KSPSetType(subksp[i],KSPBCGS));
-          PetscCall(KSPSetTolerances(subksp[i],1.e-6,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT));
+          PetscCall(PCSetType(subpc, PCNONE));
+          PetscCall(KSPSetType(subksp[i], KSPBCGS));
+          PetscCall(KSPSetTolerances(subksp[i], 1.e-6, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT));
         }
       } else {
-        PetscCall(PCSetType(subpc,PCJACOBI));
-        PetscCall(KSPSetType(subksp[i],KSPGMRES));
-        PetscCall(KSPSetTolerances(subksp[i],1.e-6,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT));
+        PetscCall(PCSetType(subpc, PCJACOBI));
+        PetscCall(KSPSetType(subksp[i], KSPGMRES));
+        PetscCall(KSPSetTolerances(subksp[i], 1.e-6, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT));
       }
     }
   }
@@ -202,7 +216,7 @@ int main(int argc,char **args)
   /*
      Solve the linear system
   */
-  PetscCall(KSPSolve(ksp,b,x));
+  PetscCall(KSPSolve(ksp, b, x));
 
   /* -------------------------------------------------------------------
                       Check solution and clean up
@@ -211,18 +225,20 @@ int main(int argc,char **args)
   /*
      Check the error
   */
-  PetscCall(VecAXPY(x,none,u));
-  PetscCall(VecNorm(x,NORM_2,&norm));
-  PetscCall(KSPGetIterationNumber(ksp,&its));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g iterations %" PetscInt_FMT "\n",(double)norm,its));
+  PetscCall(VecAXPY(x, none, u));
+  PetscCall(VecNorm(x, NORM_2, &norm));
+  PetscCall(KSPGetIterationNumber(ksp, &its));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Norm of error %g iterations %" PetscInt_FMT "\n", (double)norm, its));
 
   /*
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
   PetscCall(KSPDestroy(&ksp));
-  PetscCall(VecDestroy(&u));  PetscCall(VecDestroy(&x));
-  PetscCall(VecDestroy(&b));  PetscCall(MatDestroy(&A));
+  PetscCall(VecDestroy(&u));
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&b));
+  PetscCall(MatDestroy(&A));
   PetscCall(PetscFinalize());
   return 0;
 }

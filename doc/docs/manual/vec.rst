@@ -383,7 +383,7 @@ should be used instead.
 
    .. literalinclude:: /../src/snes/tutorials/ex1.c
       :name: snesex1
-      :start-at: PetscErrorCode FormFunction1(SNES snes,Vec x,Vec f,void *ctx)
+      :start-at: PetscErrorCode FormFunction1(SNES snes, Vec x, Vec f, void *ctx)
       :end-at: return 0;
 
 Minor differences exist in the Fortran interface for ``VecGetArray()``
@@ -405,7 +405,7 @@ can call, for example,
 
    .. literalinclude:: /../src/snes/tutorials/ex47cu.cu
       :name: snesex47
-      :start-at: PetscCall(VecCUDAGetArrayRead(xlocal,&xarray));
+      :start-at: PetscCall(VecCUDAGetArrayRead(xlocal, &xarray));
       :end-at:  }
 
 or
@@ -509,7 +509,7 @@ for a scalar problem in two dimensions one could use
 
    .. literalinclude:: /../src/snes/tutorials/ex3.c
       :name: snesex3
-      :start-at: PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *ctx)
+      :start-at: PetscErrorCode FormFunction(SNES snes, Vec x, Vec f, void *ctx)
       :end-at: PetscFunctionReturn(0);
 
 The recommended approach for multi-component PDEs is to declare a
@@ -548,7 +548,7 @@ that act on the local portion of ``DMDA`` vectors.
    :name: snes-ex3-kokkos
 
    .. literalinclude:: /../src/snes/tutorials/ex3k.kokkos.cxx
-      :start-at: PetscErrorCode KokkosFunction(SNES snes,Vec x,Vec r,void *ctx)
+      :start-at: PetscErrorCode KokkosFunction(SNES snes, Vec x, Vec r, void *ctx)
       :end-at: PetscFunctionReturn(0);
 
 The global indices of the lower left corner of the local portion of vectors obtained from ``DMDA``
@@ -588,7 +588,7 @@ like ``DMDA``; see the ``DMSTAG`` manual page for more information.
 
    .. literalinclude:: /../src/dm/impls/stag/tutorials/ex6.c
       :name: stagex6
-      :start-at: static PetscErrorCode UpdateVelocity_2d(const Ctx *ctx,Vec velocity,Vec stress, Vec buoyancy)
+      :start-at: static PetscErrorCode UpdateVelocity_2d(const Ctx *ctx, Vec velocity, Vec stress, Vec buoyancy)
       :end-at:       /* Update x-velocity */
 
 .. _sec_unstruct_set:

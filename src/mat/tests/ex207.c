@@ -2,14 +2,13 @@ static char help[] = "Test MatCreateRedundantMatrix for a BAIJ matrix.\n\
                       Contributed by Lawrence Mitchell, Feb. 21, 2017\n\n";
 
 #include <petscmat.h>
-int main(int argc,char **args)
-{
-  Mat               A,B;
-  Vec               diag;
-  PetscMPIInt       size,rank;
+int main(int argc, char **args) {
+  Mat         A, B;
+  Vec         diag;
+  PetscMPIInt size, rank;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
 
@@ -24,12 +23,10 @@ int main(int argc,char **args)
   PetscCall(MatDiagonalSet(A, diag, INSERT_VALUES));
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
-  PetscCall(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(MatView(A, PETSC_VIEWER_STDOUT_WORLD));
 
   PetscCall(MatCreateRedundantMatrix(A, size, MPI_COMM_NULL, MAT_INITIAL_MATRIX, &B));
-  if (rank == 0) {
-    PetscCall(MatView(B,PETSC_VIEWER_STDOUT_SELF));
-  }
+  if (rank == 0) { PetscCall(MatView(B, PETSC_VIEWER_STDOUT_SELF)); }
 
   PetscCall(MatDestroy(&A));
   PetscCall(MatDestroy(&B));

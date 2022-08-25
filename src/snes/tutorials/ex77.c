@@ -41,7 +41,10 @@ puts it into the Sieve ordering.
 #include <petscsnes.h>
 #include <petscds.h>
 
-typedef enum {RUN_FULL, RUN_TEST} RunType;
+typedef enum {
+  RUN_FULL,
+  RUN_TEST
+} RunType;
 
 typedef struct {
   RunType   runType; /* Whether to run tests, or solve the full problem */
@@ -56,11 +59,8 @@ static inline void Det2D(PetscReal *detJ, const PetscReal J[])
 }
 #endif
 
-static inline void Det3D(PetscReal *detJ, const PetscScalar J[])
-{
-  *detJ = PetscRealPart(J[0*3+0]*(J[1*3+1]*J[2*3+2] - J[1*3+2]*J[2*3+1]) +
-                        J[0*3+1]*(J[1*3+2]*J[2*3+0] - J[1*3+0]*J[2*3+2]) +
-                        J[0*3+2]*(J[1*3+0]*J[2*3+1] - J[1*3+1]*J[2*3+0]));
+static inline void Det3D(PetscReal *detJ, const PetscScalar J[]) {
+  *detJ = PetscRealPart(J[0 * 3 + 0] * (J[1 * 3 + 1] * J[2 * 3 + 2] - J[1 * 3 + 2] * J[2 * 3 + 1]) + J[0 * 3 + 1] * (J[1 * 3 + 2] * J[2 * 3 + 0] - J[1 * 3 + 0] * J[2 * 3 + 2]) + J[0 * 3 + 2] * (J[1 * 3 + 0] * J[2 * 3 + 1] - J[1 * 3 + 1] * J[2 * 3 + 0]));
 }
 
 #if 0
@@ -73,65 +73,55 @@ static inline void Cof2D(PetscReal C[], const PetscReal A[])
 }
 #endif
 
-static inline void Cof3D(PetscReal C[], const PetscScalar A[])
-{
-  C[0*3+0] = PetscRealPart(A[1*3+1]*A[2*3+2] - A[1*3+2]*A[2*3+1]);
-  C[0*3+1] = PetscRealPart(A[1*3+2]*A[2*3+0] - A[1*3+0]*A[2*3+2]);
-  C[0*3+2] = PetscRealPart(A[1*3+0]*A[2*3+1] - A[1*3+1]*A[2*3+0]);
-  C[1*3+0] = PetscRealPart(A[0*3+2]*A[2*3+1] - A[0*3+1]*A[2*3+2]);
-  C[1*3+1] = PetscRealPart(A[0*3+0]*A[2*3+2] - A[0*3+2]*A[2*3+0]);
-  C[1*3+2] = PetscRealPart(A[0*3+1]*A[2*3+0] - A[0*3+0]*A[2*3+1]);
-  C[2*3+0] = PetscRealPart(A[0*3+1]*A[1*3+2] - A[0*3+2]*A[1*3+1]);
-  C[2*3+1] = PetscRealPart(A[0*3+2]*A[1*3+0] - A[0*3+0]*A[1*3+2]);
-  C[2*3+2] = PetscRealPart(A[0*3+0]*A[1*3+1] - A[0*3+1]*A[1*3+0]);
+static inline void Cof3D(PetscReal C[], const PetscScalar A[]) {
+  C[0 * 3 + 0] = PetscRealPart(A[1 * 3 + 1] * A[2 * 3 + 2] - A[1 * 3 + 2] * A[2 * 3 + 1]);
+  C[0 * 3 + 1] = PetscRealPart(A[1 * 3 + 2] * A[2 * 3 + 0] - A[1 * 3 + 0] * A[2 * 3 + 2]);
+  C[0 * 3 + 2] = PetscRealPart(A[1 * 3 + 0] * A[2 * 3 + 1] - A[1 * 3 + 1] * A[2 * 3 + 0]);
+  C[1 * 3 + 0] = PetscRealPart(A[0 * 3 + 2] * A[2 * 3 + 1] - A[0 * 3 + 1] * A[2 * 3 + 2]);
+  C[1 * 3 + 1] = PetscRealPart(A[0 * 3 + 0] * A[2 * 3 + 2] - A[0 * 3 + 2] * A[2 * 3 + 0]);
+  C[1 * 3 + 2] = PetscRealPart(A[0 * 3 + 1] * A[2 * 3 + 0] - A[0 * 3 + 0] * A[2 * 3 + 1]);
+  C[2 * 3 + 0] = PetscRealPart(A[0 * 3 + 1] * A[1 * 3 + 2] - A[0 * 3 + 2] * A[1 * 3 + 1]);
+  C[2 * 3 + 1] = PetscRealPart(A[0 * 3 + 2] * A[1 * 3 + 0] - A[0 * 3 + 0] * A[1 * 3 + 2]);
+  C[2 * 3 + 2] = PetscRealPart(A[0 * 3 + 0] * A[1 * 3 + 1] - A[0 * 3 + 1] * A[1 * 3 + 0]);
 }
 
-PetscErrorCode zero_scalar(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
-{
+PetscErrorCode zero_scalar(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx) {
   u[0] = 0.0;
   return 0;
 }
 
-PetscErrorCode zero_vector(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
-{
+PetscErrorCode zero_vector(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx) {
   const PetscInt Ncomp = dim;
 
-  PetscInt       comp;
+  PetscInt comp;
   for (comp = 0; comp < Ncomp; ++comp) u[comp] = 0.0;
   return 0;
 }
 
-PetscErrorCode coordinates(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
-{
+PetscErrorCode coordinates(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx) {
   const PetscInt Ncomp = dim;
 
-  PetscInt       comp;
+  PetscInt comp;
   for (comp = 0; comp < Ncomp; ++comp) u[comp] = x[comp];
   return 0;
 }
 
-PetscErrorCode elasticityMaterial(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
-{
-  AppCtx *user = (AppCtx *) ctx;
-  u[0] = user->mu;
+PetscErrorCode elasticityMaterial(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx) {
+  AppCtx *user = (AppCtx *)ctx;
+  u[0]         = user->mu;
   return 0;
 }
 
-PetscErrorCode wallPressure(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
-{
-  AppCtx *user = (AppCtx *) ctx;
-  u[0] = user->p_wall;
+PetscErrorCode wallPressure(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx) {
+  AppCtx *user = (AppCtx *)ctx;
+  u[0]         = user->p_wall;
   return 0;
 }
 
-void f1_u_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-          const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-          const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-          PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[])
-{
+void f1_u_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[]) {
   const PetscInt  Ncomp = dim;
   const PetscReal mu = PetscRealPart(a[0]), kappa = 3.0;
-  PetscReal       cofu_x[9/*Ncomp*dim*/], detu_x, p = PetscRealPart(u[Ncomp]);
+  PetscReal       cofu_x[9 /*Ncomp*dim*/], detu_x, p = PetscRealPart(u[Ncomp]);
   PetscInt        comp, d;
 
   Cof3D(cofu_x, u_x);
@@ -140,27 +130,21 @@ void f1_u_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 
   /* f1 is the first Piola-Kirchhoff tensor */
   for (comp = 0; comp < Ncomp; ++comp) {
-    for (d = 0; d < dim; ++d) {
-      f1[comp*dim+d] = mu * u_x[comp*dim+d] + p * cofu_x[comp*dim+d];
-    }
+    for (d = 0; d < dim; ++d) { f1[comp * dim + d] = mu * u_x[comp * dim + d] + p * cofu_x[comp * dim + d]; }
   }
 }
 
-void g3_uu_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-          const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-          const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-          PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[])
-{
+void g3_uu_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[]) {
   const PetscInt  Ncomp = dim;
   const PetscReal mu = PetscRealPart(a[0]), kappa = 3.0;
-  PetscReal       cofu_x[9/*Ncomp*dim*/], detu_x, pp, pm, p = PetscRealPart(u[Ncomp]);
+  PetscReal       cofu_x[9 /*Ncomp*dim*/], detu_x, pp, pm, p = PetscRealPart(u[Ncomp]);
   PetscInt        compI, compJ, d1, d2;
 
   Cof3D(cofu_x, u_x);
   Det3D(&detu_x, u_x);
   p += kappa * (detu_x - 1.0);
-  pp = p/detu_x + kappa;
-  pm = p/detu_x;
+  pp = p / detu_x + kappa;
+  pm = p / detu_x;
 
   /* g3 is the first elasticity tensor, i.e. A_i^I_j^J = S^{IJ} g_{ij} + C^{KILJ} F^k_K F^l_L g_{kj} g_{li} */
   for (compI = 0; compI < Ncomp; ++compI) {
@@ -171,111 +155,88 @@ void g3_uu_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
         for (d2 = 0; d2 < dim; ++d2) {
           const PetscReal g = (d1 == d2) ? 1.0 : 0.0;
 
-          g3[((compI*Ncomp+compJ)*dim+d1)*dim+d2] = g * G * mu + pp * cofu_x[compI*dim+d1] * cofu_x[compJ*dim+d2] - pm * cofu_x[compI*dim+d2] * cofu_x[compJ*dim+d1];
+          g3[((compI * Ncomp + compJ) * dim + d1) * dim + d2] = g * G * mu + pp * cofu_x[compI * dim + d1] * cofu_x[compJ * dim + d2] - pm * cofu_x[compI * dim + d2] * cofu_x[compJ * dim + d1];
         }
       }
     }
   }
 }
 
-void f0_bd_u_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-    const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-    const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-    PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
-{
+void f0_bd_u_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[]) {
   const PetscInt    Ncomp = dim;
-  const PetscScalar p = a[aOff[1]];
-  PetscReal         cofu_x[9/*Ncomp*dim*/];
+  const PetscScalar p     = a[aOff[1]];
+  PetscReal         cofu_x[9 /*Ncomp*dim*/];
   PetscInt          comp, d;
 
   Cof3D(cofu_x, u_x);
   for (comp = 0; comp < Ncomp; ++comp) {
-    for (d = 0, f0[comp] = 0.0; d < dim; ++d) f0[comp] += cofu_x[comp*dim+d] * n[d];
+    for (d = 0, f0[comp] = 0.0; d < dim; ++d) f0[comp] += cofu_x[comp * dim + d] * n[d];
     f0[comp] *= p;
   }
 }
 
-void g1_bd_uu_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-    const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-    const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-    PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[])
-{
+void g1_bd_uu_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[]) {
   const PetscInt Ncomp = dim;
-  PetscScalar    p = a[aOff[1]];
-  PetscReal      cofu_x[9/*Ncomp*dim*/], m[3/*Ncomp*/], detu_x;
+  PetscScalar    p     = a[aOff[1]];
+  PetscReal      cofu_x[9 /*Ncomp*dim*/], m[3 /*Ncomp*/], detu_x;
   PetscInt       comp, compI, compJ, d;
 
   Cof3D(cofu_x, u_x);
   Det3D(&detu_x, u_x);
   p /= detu_x;
 
-  for (comp = 0; comp < Ncomp; ++comp) for (d = 0, m[comp] = 0.0; d < dim; ++d) m[comp] += cofu_x[comp*dim+d] * n[d];
+  for (comp = 0; comp < Ncomp; ++comp)
+    for (d = 0, m[comp] = 0.0; d < dim; ++d) m[comp] += cofu_x[comp * dim + d] * n[d];
   for (compI = 0; compI < Ncomp; ++compI) {
     for (compJ = 0; compJ < Ncomp; ++compJ) {
-      for (d = 0; d < dim; ++d) {
-        g1[(compI*Ncomp+compJ)*dim+d] = p * (m[compI] * cofu_x[compJ*dim+d] - cofu_x[compI*dim+d] * m[compJ]);
-      }
+      for (d = 0; d < dim; ++d) { g1[(compI * Ncomp + compJ) * dim + d] = p * (m[compI] * cofu_x[compJ * dim + d] - cofu_x[compI * dim + d] * m[compJ]); }
     }
   }
 }
 
-void f0_p_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-          const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-          const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-          PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
-{
+void f0_p_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[]) {
   PetscReal detu_x;
   Det3D(&detu_x, u_x);
   f0[0] = detu_x - 1.0;
 }
 
-void g1_pu_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-           const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-           const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-           PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[])
-{
-  PetscReal cofu_x[9/*Ncomp*dim*/];
+void g1_pu_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[]) {
+  PetscReal cofu_x[9 /*Ncomp*dim*/];
   PetscInt  compI, d;
 
   Cof3D(cofu_x, u_x);
   for (compI = 0; compI < dim; ++compI)
-    for (d = 0; d < dim; ++d) g1[compI*dim+d] = cofu_x[compI*dim+d];
+    for (d = 0; d < dim; ++d) g1[compI * dim + d] = cofu_x[compI * dim + d];
 }
 
-void g2_up_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-           const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-           const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-           PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g2[])
-{
-  PetscReal cofu_x[9/*Ncomp*dim*/];
+void g2_up_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g2[]) {
+  PetscReal cofu_x[9 /*Ncomp*dim*/];
   PetscInt  compI, d;
 
   Cof3D(cofu_x, u_x);
   for (compI = 0; compI < dim; ++compI)
-    for (d = 0; d < dim; ++d) g2[compI*dim+d] = cofu_x[compI*dim+d];
+    for (d = 0; d < dim; ++d) g2[compI * dim + d] = cofu_x[compI * dim + d];
 }
 
-PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
-{
-  const char    *runTypes[2] = {"full", "test"};
-  PetscInt       run;
+PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
+  const char *runTypes[2] = {"full", "test"};
+  PetscInt    run;
 
   PetscFunctionBeginUser;
-  options->runType      = RUN_FULL;
-  options->mu           = 1.0;
-  options->p_wall       = 0.4;
+  options->runType = RUN_FULL;
+  options->mu      = 1.0;
+  options->p_wall  = 0.4;
   PetscOptionsBegin(comm, "", "Nonlinear elasticity problem options", "DMPLEX");
-  run  = options->runType;
+  run = options->runType;
   PetscCall(PetscOptionsEList("-run_type", "The run type", "ex77.c", runTypes, 2, runTypes[options->runType], &run, NULL));
-  options->runType = (RunType) run;
+  options->runType = (RunType)run;
   PetscCall(PetscOptionsReal("-shear_modulus", "The shear modulus", "ex77.c", options->mu, &options->mu, NULL));
   PetscCall(PetscOptionsReal("-wall_pressure", "The wall pressure", "ex77.c", options->p_wall, &options->p_wall, NULL));
   PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
-{
+PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm) {
   PetscFunctionBeginUser;
   /* TODO The P1 coordinate space gives wrong results when compared to the affine version. Track this down */
   if (0) {
@@ -296,13 +257,13 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     PetscInt        csize;
     PetscScalar    *coords = NULL;
     PetscSection    cs;
-    Vec             coordinates ;
+    Vec             coordinates;
 
     PetscCall(DMGetDimension(*dm, &dim));
     PetscCall(DMCreateLabel(*dm, "boundary"));
     PetscCall(DMGetLabel(*dm, "boundary", &label));
     PetscCall(DMPlexMarkBoundaryFaces(*dm, 1, label));
-    PetscCall(DMGetStratumIS(*dm, "boundary", 1,  &is));
+    PetscCall(DMGetStratumIS(*dm, "boundary", 1, &is));
     if (is) {
       PetscReal faceCoord;
       PetscInt  v;
@@ -319,14 +280,12 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
         PetscCall(DMPlexVecGetClosure(cdm, cs, coordinates, faces[f], &csize, &coords));
         /* Calculate mean coordinate vector */
         for (d = 0; d < dim; ++d) {
-          const PetscInt Nv = csize/dim;
-          faceCoord = 0.0;
-          for (v = 0; v < Nv; ++v) faceCoord += PetscRealPart(coords[v*dim+d]);
+          const PetscInt Nv = csize / dim;
+          faceCoord         = 0.0;
+          for (v = 0; v < Nv; ++v) faceCoord += PetscRealPart(coords[v * dim + d]);
           faceCoord /= Nv;
           for (b = 0; b < 2; ++b) {
-            if (PetscAbs(faceCoord - b*1.0) < PETSC_SMALL) {
-              PetscCall(DMSetLabelValue(*dm, "Faces", faces[f], d*2+b+1));
-            }
+            if (PetscAbs(faceCoord - b * 1.0) < PETSC_SMALL) { PetscCall(DMSetLabelValue(*dm, "Faces", faces[f], d * 2 + b + 1)); }
           }
         }
         PetscCall(DMPlexVecRestoreClosure(cdm, cs, coordinates, faces[f], &csize, &coords));
@@ -339,20 +298,19 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SetupProblem(DM dm, PetscInt dim, AppCtx *user)
-{
-  PetscDS        ds;
-  PetscWeakForm  wf;
-  DMLabel        label;
-  PetscInt       bd;
+PetscErrorCode SetupProblem(DM dm, PetscInt dim, AppCtx *user) {
+  PetscDS       ds;
+  PetscWeakForm wf;
+  DMLabel       label;
+  PetscInt      bd;
 
   PetscFunctionBeginUser;
   PetscCall(DMGetDS(dm, &ds));
   PetscCall(PetscDSSetResidual(ds, 0, NULL, f1_u_3d));
   PetscCall(PetscDSSetResidual(ds, 1, f0_p_3d, NULL));
-  PetscCall(PetscDSSetJacobian(ds, 0, 0, NULL, NULL,  NULL,  g3_uu_3d));
-  PetscCall(PetscDSSetJacobian(ds, 0, 1, NULL, NULL,  g2_up_3d, NULL));
-  PetscCall(PetscDSSetJacobian(ds, 1, 0, NULL, g1_pu_3d, NULL,  NULL));
+  PetscCall(PetscDSSetJacobian(ds, 0, 0, NULL, NULL, NULL, g3_uu_3d));
+  PetscCall(PetscDSSetJacobian(ds, 0, 1, NULL, NULL, g2_up_3d, NULL));
+  PetscCall(PetscDSSetJacobian(ds, 1, 0, NULL, g1_pu_3d, NULL, NULL));
 
   PetscCall(DMGetLabel(dm, "Faces", &label));
   PetscCall(DMAddBoundary(dm, DM_BC_NATURAL, "pressure", label, 0, NULL, 0, 0, NULL, NULL, NULL, user, &bd));
@@ -360,18 +318,18 @@ PetscErrorCode SetupProblem(DM dm, PetscInt dim, AppCtx *user)
   PetscCall(PetscWeakFormSetIndexBdResidual(wf, label, 1, 0, 0, 0, f0_bd_u_3d, 0, NULL));
   PetscCall(PetscWeakFormSetIndexBdJacobian(wf, label, 1, 0, 0, 0, 0, NULL, 0, g1_bd_uu_3d, 0, NULL, 0, NULL));
 
-  PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "fixed", label, 0, NULL, 0, 0, NULL, (void (*)(void)) coordinates, NULL, user, NULL));
+  PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "fixed", label, 0, NULL, 0, 0, NULL, (void (*)(void))coordinates, NULL, user, NULL));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SetupMaterial(DM dm, DM dmAux, AppCtx *user)
-{
+PetscErrorCode SetupMaterial(DM dm, DM dmAux, AppCtx *user) {
   PetscErrorCode (*matFuncs[2])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx) = {elasticityMaterial, wallPressure};
-  Vec            A;
-  void          *ctxs[2];
+  Vec   A;
+  void *ctxs[2];
 
   PetscFunctionBegin;
-  ctxs[0] = user; ctxs[1] = user;
+  ctxs[0] = user;
+  ctxs[1] = user;
   PetscCall(DMCreateLocalVector(dmAux, &A));
   PetscCall(DMProjectFunctionLocal(dmAux, 0.0, matFuncs, ctxs, INSERT_ALL_VALUES, A));
   PetscCall(DMSetAuxiliaryVec(dm, NULL, 0, 0, A));
@@ -379,28 +337,26 @@ PetscErrorCode SetupMaterial(DM dm, DM dmAux, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SetupNearNullSpace(DM dm, AppCtx *user)
-{
+PetscErrorCode SetupNearNullSpace(DM dm, AppCtx *user) {
   /* Set up the near null space (a.k.a. rigid body modes) that will be used by the multigrid preconditioner */
-  DM             subdm;
-  MatNullSpace   nearNullSpace;
-  PetscInt       fields = 0;
-  PetscObject    deformation;
+  DM           subdm;
+  MatNullSpace nearNullSpace;
+  PetscInt     fields = 0;
+  PetscObject  deformation;
 
   PetscFunctionBeginUser;
   PetscCall(DMCreateSubDM(dm, 1, &fields, NULL, &subdm));
   PetscCall(DMPlexCreateRigidBody(subdm, 0, &nearNullSpace));
   PetscCall(DMGetField(dm, 0, NULL, &deformation));
-  PetscCall(PetscObjectCompose(deformation, "nearnullspace", (PetscObject) nearNullSpace));
+  PetscCall(PetscObjectCompose(deformation, "nearnullspace", (PetscObject)nearNullSpace));
   PetscCall(DMDestroy(&subdm));
   PetscCall(MatNullSpaceDestroy(&nearNullSpace));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SetupAuxDM(DM dm, PetscInt NfAux, PetscFE feAux[], AppCtx *user)
-{
-  DM             dmAux, coordDM;
-  PetscInt       f;
+static PetscErrorCode SetupAuxDM(DM dm, PetscInt NfAux, PetscFE feAux[], AppCtx *user) {
+  DM       dmAux, coordDM;
+  PetscInt f;
 
   PetscFunctionBegin;
   /* MUST call DMGetCoordinateDM() in order to get p4est setup if present */
@@ -408,44 +364,43 @@ static PetscErrorCode SetupAuxDM(DM dm, PetscInt NfAux, PetscFE feAux[], AppCtx 
   if (!feAux) PetscFunctionReturn(0);
   PetscCall(DMClone(dm, &dmAux));
   PetscCall(DMSetCoordinateDM(dmAux, coordDM));
-  for (f = 0; f < NfAux; ++f) PetscCall(DMSetField(dmAux, f, NULL, (PetscObject) feAux[f]));
+  for (f = 0; f < NfAux; ++f) PetscCall(DMSetField(dmAux, f, NULL, (PetscObject)feAux[f]));
   PetscCall(DMCreateDS(dmAux));
   PetscCall(SetupMaterial(dm, dmAux, user));
   PetscCall(DMDestroy(&dmAux));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
-{
-  DM              cdm = dm;
-  PetscFE         fe[2], feAux[2];
-  PetscBool       simplex;
-  PetscInt        dim;
-  MPI_Comm        comm;
+PetscErrorCode SetupDiscretization(DM dm, AppCtx *user) {
+  DM        cdm = dm;
+  PetscFE   fe[2], feAux[2];
+  PetscBool simplex;
+  PetscInt  dim;
+  MPI_Comm  comm;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscObjectGetComm((PetscObject) dm, &comm));
+  PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(DMPlexIsSimplex(dm, &simplex));
   /* Create finite element */
   PetscCall(PetscFECreateDefault(comm, dim, dim, simplex, "def_", PETSC_DEFAULT, &fe[0]));
-  PetscCall(PetscObjectSetName((PetscObject) fe[0], "deformation"));
+  PetscCall(PetscObjectSetName((PetscObject)fe[0], "deformation"));
   PetscCall(PetscFECreateDefault(comm, dim, 1, simplex, "pres_", PETSC_DEFAULT, &fe[1]));
   PetscCall(PetscFECopyQuadrature(fe[0], fe[1]));
 
-  PetscCall(PetscObjectSetName((PetscObject) fe[1], "pressure"));
+  PetscCall(PetscObjectSetName((PetscObject)fe[1], "pressure"));
 
   PetscCall(PetscFECreateDefault(comm, dim, 1, simplex, "elastMat_", PETSC_DEFAULT, &feAux[0]));
-  PetscCall(PetscObjectSetName((PetscObject) feAux[0], "elasticityMaterial"));
+  PetscCall(PetscObjectSetName((PetscObject)feAux[0], "elasticityMaterial"));
   PetscCall(PetscFECopyQuadrature(fe[0], feAux[0]));
   /* It is not yet possible to define a field on a submesh (e.g. a boundary), so we will use a normal finite element */
   PetscCall(PetscFECreateDefault(comm, dim, 1, simplex, "wall_pres_", PETSC_DEFAULT, &feAux[1]));
-  PetscCall(PetscObjectSetName((PetscObject) feAux[1], "wall_pressure"));
+  PetscCall(PetscObjectSetName((PetscObject)feAux[1], "wall_pressure"));
   PetscCall(PetscFECopyQuadrature(fe[0], feAux[1]));
 
   /* Set discretization and boundary conditions for each mesh */
-  PetscCall(DMSetField(dm, 0, NULL, (PetscObject) fe[0]));
-  PetscCall(DMSetField(dm, 1, NULL, (PetscObject) fe[1]));
+  PetscCall(DMSetField(dm, 0, NULL, (PetscObject)fe[0]));
+  PetscCall(DMSetField(dm, 1, NULL, (PetscObject)fe[1]));
   PetscCall(DMCreateDS(dm));
   PetscCall(SetupProblem(dm, dim, user));
   while (cdm) {
@@ -460,17 +415,16 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv)
-{
-  SNES           snes;                 /* nonlinear solver */
-  DM             dm;                   /* problem definition */
-  Vec            u,r;                  /* solution, residual vectors */
-  Mat            A,J;                  /* Jacobian matrix */
-  AppCtx         user;                 /* user-defined work context */
-  PetscInt       its;                  /* iterations for convergence */
+int main(int argc, char **argv) {
+  SNES     snes; /* nonlinear solver */
+  DM       dm;   /* problem definition */
+  Vec      u, r; /* solution, residual vectors */
+  Mat      A, J; /* Jacobian matrix */
+  AppCtx   user; /* user-defined work context */
+  PetscInt its;  /* iterations for convergence */
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, NULL,help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(ProcessOptions(PETSC_COMM_WORLD, &user));
   PetscCall(SNESCreate(PETSC_COMM_WORLD, &snes));
   PetscCall(CreateMesh(PETSC_COMM_WORLD, &user, &dm));
@@ -484,18 +438,19 @@ int main(int argc, char **argv)
   PetscCall(DMCreateGlobalVector(dm, &u));
   PetscCall(VecDuplicate(u, &r));
 
-  PetscCall(DMSetMatType(dm,MATAIJ));
+  PetscCall(DMSetMatType(dm, MATAIJ));
   PetscCall(DMCreateMatrix(dm, &J));
   A = J;
 
-  PetscCall(DMPlexSetSNESLocalFEM(dm,&user,&user,&user));
+  PetscCall(DMPlexSetSNESLocalFEM(dm, &user, &user, &user));
   PetscCall(SNESSetJacobian(snes, A, J, NULL, NULL));
 
   PetscCall(SNESSetFromOptions(snes));
 
   {
-    PetscErrorCode (*initialGuess[2])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void* ctx);
-    initialGuess[0] = coordinates; initialGuess[1] = zero_scalar;
+    PetscErrorCode (*initialGuess[2])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
+    initialGuess[0] = coordinates;
+    initialGuess[1] = zero_scalar;
     PetscCall(DMProjectFunction(dm, 0.0, initialGuess, NULL, INSERT_VALUES, u));
   }
 

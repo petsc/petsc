@@ -1,0 +1,26 @@
+DM Object: ex64_plex 1 MPI process
+  type: plex
+ex64_plex in 2 dimensions:
+  Number of 0-cells per rank: 49
+  Number of 1-cells per rank: 84
+  Number of 2-cells per rank: 36
+Labels:
+  celltype: 3 strata with value/size (0 (49), 4 (36), 1 (84))
+  depth: 3 strata with value/size (0 (49), 1 (84), 2 (36))
+  Cell Sets: 4 strata with value/size (1 (9), 2 (9), 3 (9), 5 (9))
+DM Object: ex64_plex 1 MPI process
+  type: plex
+ex64_plex in 2 dimensions:
+  Number of 0-cells per rank: 49
+  Number of 1-cells per rank: 84
+  Number of 2-cells per rank: 36
+Labels:
+  celltype: 3 strata with value/size (0 (49), 4 (36), 1 (84))
+  depth: 3 strata with value/size (0 (49), 1 (84), 2 (36))
+  Cell Sets: 4 strata with value/size (1 (9), 2 (9), 3 (9), 5 (9))
+Field U:
+  adjacency FEM
+Field Sigma:
+  adjacency FEM
+Field Alpha:
+  adjacency FEM

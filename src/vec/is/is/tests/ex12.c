@@ -4,18 +4,17 @@ static char help[] = "Tests HDF5 ISView() / ISLoad(), and ISSetLayout()\n\n";
 #include <petscis.h>
 #include <petscviewerhdf5.h>
 
-int main(int argc,char **argv)
-{
-  const char      filename[] = "ex12.h5";
-  const char      objname[]  = "is0";
-  IS              is0, is1;
-  PetscLayout     map;
-  PetscViewer     viewer;
-  PetscMPIInt     size, rank;
-  MPI_Comm        comm;
+int main(int argc, char **argv) {
+  const char  filename[] = "ex12.h5";
+  const char  objname[]  = "is0";
+  IS          is0, is1;
+  PetscLayout map;
+  PetscViewer viewer;
+  PetscMPIInt size, rank;
+  MPI_Comm    comm;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
   comm = PETSC_COMM_WORLD;
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
@@ -30,7 +29,7 @@ int main(int argc,char **argv)
     PetscCall(ISGetLayout(is0, &map));
     PetscCall(PetscLayoutGetRange(map, &start, &end));
     PetscCheck(end - start == n, PETSC_COMM_SELF, PETSC_ERR_PLIB, "end - start == n");
-    for (i=0; i<n; i++) idx[i] = i + start;
+    for (i = 0; i < n; i++) idx[i] = i + start;
   }
 
   PetscCall(PetscViewerHDF5Open(comm, filename, FILE_MODE_WRITE, &viewer));

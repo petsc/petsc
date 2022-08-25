@@ -2,8 +2,7 @@ static char help[] = "Tests for periodic mesh output\n\n";
 
 #include <petscdmplex.h>
 
-PetscErrorCode CheckMesh(DM dm)
-{
+PetscErrorCode CheckMesh(DM dm) {
   PetscReal detJ, J[9];
   PetscReal vol;
   PetscInt  dim, depth, cStart, cEnd, c;
@@ -14,17 +13,16 @@ PetscErrorCode CheckMesh(DM dm)
   PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
   for (c = cStart; c < cEnd; ++c) {
     PetscCall(DMPlexComputeCellGeometryFEM(dm, c, NULL, NULL, J, NULL, &detJ));
-    PetscCheck(detJ > 0.0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mesh cell %" PetscInt_FMT " is inverted, |J| = %g", c, (double)detJ);
+    PetscCheck(detJ > 0.0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mesh cell %" PetscInt_FMT " is inverted, |J| = %g", c, (double)detJ);
     if (depth > 1) {
       PetscCall(DMPlexComputeCellGeometryFVM(dm, c, &vol, NULL, NULL));
-      PetscCheck(vol > 0.0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mesh cell %" PetscInt_FMT " is inverted, vol = %g", c, (double)vol);
+      PetscCheck(vol > 0.0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mesh cell %" PetscInt_FMT " is inverted, vol = %g", c, (double)vol);
     }
   }
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm)
-{
+PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm) {
   PetscFunctionBegin;
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetType(*dm, DMPLEX));
@@ -33,12 +31,11 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm)
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv)
-{
-  DM             dm;
+int main(int argc, char **argv) {
+  DM dm;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, NULL,help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(CreateMesh(PETSC_COMM_WORLD, &dm));
   PetscCall(CheckMesh(dm));
   PetscCall(DMDestroy(&dm));

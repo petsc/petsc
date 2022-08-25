@@ -38,10 +38,10 @@ M*/
    See snesmfjdef.c for  a full set of comments on the routines below.
 */
 #include <petsc/private/matimpl.h>
-#include <../src/mat/impls/mffd/mffdimpl.h>   /*I  "petscmat.h"   I*/
+#include <../src/mat/impls/mffd/mffdimpl.h> /*I  "petscmat.h"   I*/
 
 typedef struct {
-  PetscReal normUfact;                    /* previous sqrt(1.0 + || U ||) */
+  PetscReal normUfact; /* previous sqrt(1.0 + || U ||) */
   PetscBool computenormU;
 } MatMFFD_WP;
 
@@ -58,24 +58,23 @@ typedef struct {
 .   h - the scale computed
 
 */
-static PetscErrorCode MatMFFDCompute_WP(MatMFFD ctx,Vec U,Vec a,PetscScalar *h,PetscBool  *zeroa)
-{
-  MatMFFD_WP     *hctx = (MatMFFD_WP*)ctx->hctx;
-  PetscReal      normU,norma;
+static PetscErrorCode MatMFFDCompute_WP(MatMFFD ctx, Vec U, Vec a, PetscScalar *h, PetscBool *zeroa) {
+  MatMFFD_WP *hctx = (MatMFFD_WP *)ctx->hctx;
+  PetscReal   normU, norma;
 
   PetscFunctionBegin;
   if (!(ctx->count % ctx->recomputeperiod)) {
     if (hctx->computenormU || !ctx->ncurrenth) {
-      PetscCall(VecNorm(U,NORM_2,&normU));
-      hctx->normUfact = PetscSqrtReal(1.0+normU);
+      PetscCall(VecNorm(U, NORM_2, &normU));
+      hctx->normUfact = PetscSqrtReal(1.0 + normU);
     }
-    PetscCall(VecNorm(a,NORM_2,&norma));
+    PetscCall(VecNorm(a, NORM_2, &norma));
     if (norma == 0.0) {
       *zeroa = PETSC_TRUE;
       PetscFunctionReturn(0);
     }
     *zeroa = PETSC_FALSE;
-    *h     = ctx->error_rel*hctx->normUfact/norma;
+    *h     = ctx->error_rel * hctx->normUfact / norma;
   } else {
     *h = ctx->currenth;
   }
@@ -93,18 +92,17 @@ static PetscErrorCode MatMFFDCompute_WP(MatMFFD ctx,Vec U,Vec a,PetscScalar *h,P
 -   viewer - the PETSc viewer
 
 */
-static PetscErrorCode MatMFFDView_WP(MatMFFD ctx,PetscViewer viewer)
-{
-  MatMFFD_WP     *hctx = (MatMFFD_WP*)ctx->hctx;
-  PetscBool      iascii;
+static PetscErrorCode MatMFFDView_WP(MatMFFD ctx, PetscViewer viewer) {
+  MatMFFD_WP *hctx = (MatMFFD_WP *)ctx->hctx;
+  PetscBool   iascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   if (iascii) {
     if (hctx->computenormU) {
-      PetscCall(PetscViewerASCIIPrintf(viewer,"    Computes normU\n"));
+      PetscCall(PetscViewerASCIIPrintf(viewer, "    Computes normU\n"));
     } else {
-      PetscCall(PetscViewerASCIIPrintf(viewer,"    Does not compute normU\n"));
+      PetscCall(PetscViewerASCIIPrintf(viewer, "    Does not compute normU\n"));
     }
   }
   PetscFunctionReturn(0);
@@ -118,13 +116,12 @@ static PetscErrorCode MatMFFDView_WP(MatMFFD ctx,PetscViewer viewer)
 .  ctx - the matrix free context
 
 */
-static PetscErrorCode MatMFFDSetFromOptions_WP(PetscOptionItems *PetscOptionsObject,MatMFFD ctx)
-{
-  MatMFFD_WP     *hctx = (MatMFFD_WP*)ctx->hctx;
+static PetscErrorCode MatMFFDSetFromOptions_WP(MatMFFD ctx, PetscOptionItems *PetscOptionsObject) {
+  MatMFFD_WP *hctx = (MatMFFD_WP *)ctx->hctx;
 
   PetscFunctionBegin;
-  PetscOptionsHeadBegin(PetscOptionsObject,"Walker-Pernice options");
-  PetscCall(PetscOptionsBool("-mat_mffd_compute_normu","Compute the norm of u","MatMFFDWPSetComputeNormU", hctx->computenormU,&hctx->computenormU,NULL));
+  PetscOptionsHeadBegin(PetscOptionsObject, "Walker-Pernice options");
+  PetscCall(PetscOptionsBool("-mat_mffd_compute_normu", "Compute the norm of u", "MatMFFDWPSetComputeNormU", hctx->computenormU, &hctx->computenormU, NULL));
   PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
@@ -140,18 +137,16 @@ static PetscErrorCode MatMFFDSetFromOptions_WP(PetscOptionItems *PetscOptionsObj
     does not free the ctx, that is handled by the calling routine
 
 */
-static PetscErrorCode MatMFFDDestroy_WP(MatMFFD ctx)
-{
+static PetscErrorCode MatMFFDDestroy_WP(MatMFFD ctx) {
   PetscFunctionBegin;
-  PetscCall(PetscObjectComposeFunction((PetscObject)ctx->mat,"MatMFFDWPSetComputeNormU_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ctx->mat, "MatMFFDWPSetComputeNormU_C", NULL));
   PetscCall(PetscFree(ctx->hctx));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode  MatMFFDWPSetComputeNormU_P(Mat mat,PetscBool flag)
-{
-  MatMFFD    ctx   = (MatMFFD)mat->data;
-  MatMFFD_WP *hctx = (MatMFFD_WP*)ctx->hctx;
+PetscErrorCode MatMFFDWPSetComputeNormU_P(Mat mat, PetscBool flag) {
+  MatMFFD     ctx  = (MatMFFD)mat->data;
+  MatMFFD_WP *hctx = (MatMFFD_WP *)ctx->hctx;
 
   PetscFunctionBegin;
   hctx->computenormU = flag;
@@ -180,11 +175,10 @@ PetscErrorCode  MatMFFDWPSetComputeNormU_P(Mat mat,PetscBool flag)
 .seealso: `MatMFFDSetFunctionError()`, `MatCreateSNESMF()`
 
 @*/
-PetscErrorCode  MatMFFDWPSetComputeNormU(Mat A,PetscBool flag)
-{
+PetscErrorCode MatMFFDWPSetComputeNormU(Mat A, PetscBool flag) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  PetscTryMethod(A,"MatMFFDWPSetComputeNormU_C",(Mat,PetscBool),(A,flag));
+  PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
+  PetscTryMethod(A, "MatMFFDWPSetComputeNormU_C", (Mat, PetscBool), (A, flag));
   PetscFunctionReturn(0);
 }
 
@@ -196,14 +190,13 @@ PetscErrorCode  MatMFFDWPSetComputeNormU(Mat A,PetscBool flag)
 .  ctx - the matrix free context created by MatCreateMFFD()
 
 */
-PETSC_EXTERN PetscErrorCode MatCreateMFFD_WP(MatMFFD ctx)
-{
-  MatMFFD_WP     *hctx;
+PETSC_EXTERN PetscErrorCode MatCreateMFFD_WP(MatMFFD ctx) {
+  MatMFFD_WP *hctx;
 
   PetscFunctionBegin;
   /* allocate my own private data structure */
-  PetscCall(PetscNewLog(ctx,&hctx));
-  ctx->hctx          = (void*)hctx;
+  PetscCall(PetscNewLog(ctx, &hctx));
+  ctx->hctx          = (void *)hctx;
   hctx->computenormU = PETSC_FALSE;
 
   /* set the functions I am providing */
@@ -212,6 +205,6 @@ PETSC_EXTERN PetscErrorCode MatCreateMFFD_WP(MatMFFD ctx)
   ctx->ops->view           = MatMFFDView_WP;
   ctx->ops->setfromoptions = MatMFFDSetFromOptions_WP;
 
-  PetscCall(PetscObjectComposeFunction((PetscObject)ctx->mat,"MatMFFDWPSetComputeNormU_C",MatMFFDWPSetComputeNormU_P));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ctx->mat, "MatMFFDWPSetComputeNormU_C", MatMFFDWPSetComputeNormU_P));
   PetscFunctionReturn(0);
 }

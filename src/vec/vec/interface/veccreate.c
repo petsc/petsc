@@ -1,5 +1,5 @@
 
-#include <petsc/private/vecimpl.h>           /*I  "petscvec.h"   I*/
+#include <petsc/private/vecimpl.h> /*I  "petscvec.h"   I*/
 
 /*@
   VecCreate - Creates an empty vector object. The type can then be set with VecSetType(),
@@ -21,29 +21,28 @@
 .seealso: `VecSetType()`, `VecSetSizes()`, `VecCreateMPIWithArray()`, `VecCreateMPI()`, `VecDuplicate()`,
           `VecDuplicateVecs()`, `VecCreateGhost()`, `VecCreateSeq()`, `VecPlaceArray()`
 @*/
-PetscErrorCode  VecCreate(MPI_Comm comm, Vec *vec)
-{
-  Vec            v;
+PetscErrorCode VecCreate(MPI_Comm comm, Vec *vec) {
+  Vec v;
 
   PetscFunctionBegin;
-  PetscValidPointer(vec,2);
+  PetscValidPointer(vec, 2);
   *vec = NULL;
   PetscCall(VecInitializePackage());
 
   PetscCall(PetscHeaderCreate(v, VEC_CLASSID, "Vec", "Vector", "Vec", comm, VecDestroy, VecView));
 
-  PetscCall(PetscLayoutCreate(comm,&v->map));
+  PetscCall(PetscLayoutCreate(comm, &v->map));
   v->array_gotten = PETSC_FALSE;
   v->petscnative  = PETSC_FALSE;
   v->offloadmask  = PETSC_OFFLOAD_UNALLOCATED;
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
   v->minimum_bytes_pinned_memory = 0;
-  v->pinned_memory = PETSC_FALSE;
+  v->pinned_memory               = PETSC_FALSE;
 #endif
 #if defined(PETSC_HAVE_DEVICE)
   v->boundtocpu = PETSC_TRUE;
 #endif
-  PetscCall(PetscStrallocpy(PETSCRANDER48,&v->defaultrandtype));
+  PetscCall(PetscStrallocpy(PETSCRANDER48, &v->defaultrandtype));
   *vec = v;
   PetscFunctionReturn(0);
 }

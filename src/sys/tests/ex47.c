@@ -3,28 +3,27 @@ static char help[] = "Example for PetscOptionsInsertFileYAML\n";
 #include <petscsys.h>
 #include <petscviewer.h>
 
-int main(int argc,char **argv)
-{
+int main(int argc, char **argv) {
   char      filename[PETSC_MAX_PATH_LEN];
   PetscBool flg;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
-  PetscCall(PetscOptionsGetString(NULL,NULL,"-f",filename,sizeof(filename),&flg));
-  if (flg) PetscCall(PetscOptionsInsertFileYAML(PETSC_COMM_WORLD,NULL,filename,PETSC_TRUE));
+  PetscCall(PetscOptionsGetString(NULL, NULL, "-f", filename, sizeof(filename), &flg));
+  if (flg) PetscCall(PetscOptionsInsertFileYAML(PETSC_COMM_WORLD, NULL, filename, PETSC_TRUE));
 
-  PetscCall(PetscOptionsGetString(NULL,NULL,"-yaml",filename,sizeof(filename),&flg));
+  PetscCall(PetscOptionsGetString(NULL, NULL, "-yaml", filename, sizeof(filename), &flg));
   if (flg) {
     PetscBool monitor = PETSC_FALSE;
 
-    PetscCall(PetscOptionsGetBool(NULL,NULL,"-monitor",&monitor,NULL));
-    if (monitor) PetscCall(PetscOptionsMonitorSet(PetscOptionsMonitorDefault,NULL,NULL));
+    PetscCall(PetscOptionsGetBool(NULL, NULL, "-monitor", &monitor, NULL));
+    if (monitor) PetscCall(PetscOptionsMonitorSet(PetscOptionsMonitorDefault, NULL, NULL));
     PetscCall(PetscOptionsClear(NULL));
-    PetscCall(PetscOptionsInsertFileYAML(PETSC_COMM_WORLD,NULL,filename,PETSC_TRUE));
+    PetscCall(PetscOptionsInsertFileYAML(PETSC_COMM_WORLD, NULL, filename, PETSC_TRUE));
   }
 
-  PetscCall(PetscOptionsView(NULL,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(PetscOptionsView(NULL, PETSC_VIEWER_STDOUT_WORLD));
   PetscCall(PetscOptionsClear(NULL));
   PetscCall(PetscFinalize());
   return 0;

@@ -1,4 +1,4 @@
-#include <petsc/private/partitionerimpl.h>        /*I "petscpartitioner.h" I*/
+#include <petsc/private/partitionerimpl.h> /*I "petscpartitioner.h" I*/
 
 /*@C
   PetscPartitionerSetType - Builds a particular PetscPartitioner
@@ -23,24 +23,23 @@ $ PETSCPARTITIONERGATHER   - Gathers all cells onto process 0
 
 .seealso: `PetscPartitionerGetType()`, `PetscPartitionerCreate()`
 @*/
-PetscErrorCode PetscPartitionerSetType(PetscPartitioner part, PetscPartitionerType name)
-{
+PetscErrorCode PetscPartitionerSetType(PetscPartitioner part, PetscPartitionerType name) {
   PetscErrorCode (*r)(PetscPartitioner);
-  PetscBool      match;
+  PetscBool match;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
-  PetscCall(PetscObjectTypeCompare((PetscObject) part, name, &match));
+  PetscCall(PetscObjectTypeCompare((PetscObject)part, name, &match));
   if (match) PetscFunctionReturn(0);
 
   PetscCall(PetscPartitionerRegisterAll());
   PetscCall(PetscFunctionListFind(PetscPartitionerList, name, &r));
-  PetscCheck(r,PetscObjectComm((PetscObject) part), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscPartitioner type: %s", name);
+  PetscCheck(r, PetscObjectComm((PetscObject)part), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscPartitioner type: %s", name);
 
-  if (part->ops->destroy) PetscCall((*part->ops->destroy)(part));
+  PetscTryTypeMethod(part, destroy);
   part->noGraph = PETSC_FALSE;
   PetscCall(PetscMemzero(part->ops, sizeof(*part->ops)));
-  PetscCall(PetscObjectChangeTypeName((PetscObject) part, name));
+  PetscCall(PetscObjectChangeTypeName((PetscObject)part, name));
   PetscCall((*r)(part));
   PetscFunctionReturn(0);
 }
@@ -60,12 +59,11 @@ PetscErrorCode PetscPartitionerSetType(PetscPartitioner part, PetscPartitionerTy
 
 .seealso: `PetscPartitionerSetType()`, `PetscPartitionerCreate()`
 @*/
-PetscErrorCode PetscPartitionerGetType(PetscPartitioner part, PetscPartitionerType *name)
-{
+PetscErrorCode PetscPartitionerGetType(PetscPartitioner part, PetscPartitionerType *name) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
   PetscValidPointer(name, 2);
-  *name = ((PetscObject) part)->type_name;
+  *name = ((PetscObject)part)->type_name;
   PetscFunctionReturn(0);
 }
 
@@ -82,11 +80,10 @@ PetscErrorCode PetscPartitionerGetType(PetscPartitioner part, PetscPartitionerTy
    Level: intermediate
 .seealso: `PetscPartitionerView()`, `PetscObjectViewFromOptions()`
 @*/
-PetscErrorCode PetscPartitionerViewFromOptions(PetscPartitioner A,PetscObject obj,const char name[])
-{
+PetscErrorCode PetscPartitionerViewFromOptions(PetscPartitioner A, PetscObject obj, const char name[]) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(A,PETSCPARTITIONER_CLASSID,1);
-  PetscCall(PetscObjectViewFromOptions((PetscObject)A,obj,name));
+  PetscValidHeaderSpecific(A, PETSCPARTITIONER_CLASSID, 1);
+  PetscCall(PetscObjectViewFromOptions((PetscObject)A, obj, name));
   PetscFunctionReturn(0);
 }
 
@@ -103,30 +100,28 @@ PetscErrorCode PetscPartitionerViewFromOptions(PetscPartitioner A,PetscObject ob
 
 .seealso: `PetscPartitionerDestroy()`
 @*/
-PetscErrorCode PetscPartitionerView(PetscPartitioner part, PetscViewer v)
-{
-  PetscMPIInt    size;
-  PetscBool      isascii;
+PetscErrorCode PetscPartitionerView(PetscPartitioner part, PetscViewer v) {
+  PetscMPIInt size;
+  PetscBool   isascii;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
-  if (!v) PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject) part), &v));
-  PetscCall(PetscObjectTypeCompare((PetscObject) v, PETSCVIEWERASCII, &isascii));
+  if (!v) PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)part), &v));
+  PetscCall(PetscObjectTypeCompare((PetscObject)v, PETSCVIEWERASCII, &isascii));
   if (isascii) {
-    PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject) part), &size));
+    PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)part), &size));
     PetscCall(PetscViewerASCIIPrintf(v, "Graph Partitioner: %d MPI Process%s\n", size, size > 1 ? "es" : ""));
     PetscCall(PetscViewerASCIIPrintf(v, "  type: %s\n", ((PetscObject)part)->type_name));
     PetscCall(PetscViewerASCIIPrintf(v, "  edge cut: %" PetscInt_FMT "\n", part->edgeCut));
     PetscCall(PetscViewerASCIIPrintf(v, "  balance: %.2g\n", (double)part->balance));
     PetscCall(PetscViewerASCIIPrintf(v, "  use vertex weights: %d\n", part->usevwgt));
   }
-  if (part->ops->view) PetscCall((*part->ops->view)(part, v));
+  PetscTryTypeMethod(part, view, v);
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscPartitionerGetDefaultType(MPI_Comm comm, const char **defaultType)
-{
-  PetscMPIInt    size;
+static PetscErrorCode PetscPartitionerGetDefaultType(MPI_Comm comm, const char **defaultType) {
+  PetscMPIInt size;
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_size(comm, &size));
@@ -163,26 +158,25 @@ static PetscErrorCode PetscPartitionerGetDefaultType(MPI_Comm comm, const char *
 
 .seealso: `PetscPartitionerView()`, `PetscPartitionerSetType()`, `PetscPartitionerPartition()`
 @*/
-PetscErrorCode PetscPartitionerSetFromOptions(PetscPartitioner part)
-{
-  const char    *currentType = NULL;
-  char           name[256];
-  PetscBool      flg;
+PetscErrorCode PetscPartitionerSetFromOptions(PetscPartitioner part) {
+  const char *currentType = NULL;
+  char        name[256];
+  PetscBool   flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
-  PetscObjectOptionsBegin((PetscObject) part);
+  PetscObjectOptionsBegin((PetscObject)part);
   PetscCall(PetscPartitionerGetType(part, &currentType));
   PetscCall(PetscOptionsFList("-petscpartitioner_type", "Graph partitioner", "PetscPartitionerSetType", PetscPartitionerList, currentType, name, sizeof(name), &flg));
   if (flg) PetscCall(PetscPartitionerSetType(part, name));
-  PetscCall(PetscOptionsBool("-petscpartitioner_use_vertex_weights","Use vertex weights","",part->usevwgt,&part->usevwgt,NULL));
-  if (part->ops->setfromoptions) PetscCall((*part->ops->setfromoptions)(PetscOptionsObject,part));
+  PetscCall(PetscOptionsBool("-petscpartitioner_use_vertex_weights", "Use vertex weights", "", part->usevwgt, &part->usevwgt, NULL));
+  PetscTryTypeMethod(part, setfromoptions, PetscOptionsObject);
   PetscCall(PetscViewerDestroy(&part->viewer));
   PetscCall(PetscViewerDestroy(&part->viewerGraph));
-  PetscCall(PetscOptionsGetViewer(((PetscObject) part)->comm, ((PetscObject) part)->options, ((PetscObject) part)->prefix, "-petscpartitioner_view", &part->viewer, NULL, NULL));
-  PetscCall(PetscOptionsGetViewer(((PetscObject) part)->comm, ((PetscObject) part)->options, ((PetscObject) part)->prefix, "-petscpartitioner_view_graph", &part->viewerGraph, NULL, &part->viewGraph));
+  PetscCall(PetscOptionsGetViewer(((PetscObject)part)->comm, ((PetscObject)part)->options, ((PetscObject)part)->prefix, "-petscpartitioner_view", &part->viewer, NULL, NULL));
+  PetscCall(PetscOptionsGetViewer(((PetscObject)part)->comm, ((PetscObject)part)->options, ((PetscObject)part)->prefix, "-petscpartitioner_view_graph", &part->viewerGraph, NULL, &part->viewGraph));
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
-  PetscCall(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject) part));
+  PetscCall(PetscObjectProcessOptionsHandlers((PetscObject)part, PetscOptionsObject));
   PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
@@ -199,11 +193,10 @@ PetscErrorCode PetscPartitionerSetFromOptions(PetscPartitioner part)
 
 .seealso: `PetscPartitionerView()`, `PetscPartitionerDestroy()`
 @*/
-PetscErrorCode PetscPartitionerSetUp(PetscPartitioner part)
-{
+PetscErrorCode PetscPartitionerSetUp(PetscPartitioner part) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
-  if (part->ops->setup) PetscCall((*part->ops->setup)(part));
+  PetscTryTypeMethod(part, setup);
   PetscFunctionReturn(0);
 }
 
@@ -219,11 +212,10 @@ PetscErrorCode PetscPartitionerSetUp(PetscPartitioner part)
 
 .seealso: `PetscPartitionerSetUp()`, `PetscPartitionerDestroy()`
 @*/
-PetscErrorCode PetscPartitionerReset(PetscPartitioner part)
-{
+PetscErrorCode PetscPartitionerReset(PetscPartitioner part) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
-  if (part->ops->reset) PetscCall((*part->ops->reset)(part));
+  PetscTryTypeMethod(part, reset);
   PetscFunctionReturn(0);
 }
 
@@ -239,20 +231,22 @@ PetscErrorCode PetscPartitionerReset(PetscPartitioner part)
 
 .seealso: `PetscPartitionerView()`
 @*/
-PetscErrorCode PetscPartitionerDestroy(PetscPartitioner *part)
-{
+PetscErrorCode PetscPartitionerDestroy(PetscPartitioner *part) {
   PetscFunctionBegin;
   if (!*part) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*part), PETSCPARTITIONER_CLASSID, 1);
 
-  if (--((PetscObject)(*part))->refct > 0) {*part = NULL; PetscFunctionReturn(0);}
-  ((PetscObject) (*part))->refct = 0;
+  if (--((PetscObject)(*part))->refct > 0) {
+    *part = NULL;
+    PetscFunctionReturn(0);
+  }
+  ((PetscObject)(*part))->refct = 0;
 
   PetscCall(PetscPartitionerReset(*part));
 
   PetscCall(PetscViewerDestroy(&(*part)->viewer));
   PetscCall(PetscViewerDestroy(&(*part)->viewerGraph));
-  if ((*part)->ops->destroy) PetscCall((*(*part)->ops->destroy)(*part));
+  PetscTryTypeMethod((*part), destroy);
   PetscCall(PetscHeaderDestroy(part));
   PetscFunctionReturn(0);
 }
@@ -287,31 +281,30 @@ PetscErrorCode PetscPartitionerDestroy(PetscPartitioner *part)
 
 .seealso `PetscPartitionerCreate()`, `PetscPartitionerSetType()`, `PetscSectionCreate()`, `PetscSectionSetChart()`, `PetscSectionSetDof()`
 @*/
-PetscErrorCode PetscPartitionerPartition(PetscPartitioner part, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection vertexSection, PetscSection targetSection, PetscSection partSection, IS *partition)
-{
+PetscErrorCode PetscPartitionerPartition(PetscPartitioner part, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection vertexSection, PetscSection targetSection, PetscSection partSection, IS *partition) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
   PetscValidLogicalCollectiveInt(part, nparts, 2);
-  PetscCheck(nparts > 0,PetscObjectComm((PetscObject) part), PETSC_ERR_ARG_OUTOFRANGE, "Number of parts must be positive");
-  PetscCheck(numVertices >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of vertices must be non-negative");
+  PetscCheck(nparts > 0, PetscObjectComm((PetscObject)part), PETSC_ERR_ARG_OUTOFRANGE, "Number of parts must be positive");
+  PetscCheck(numVertices >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of vertices must be non-negative");
   if (numVertices && !part->noGraph) {
     PetscValidIntPointer(start, 4);
     PetscValidIntPointer(start + numVertices, 4);
     if (start[numVertices]) PetscValidIntPointer(adjacency, 5);
   }
   if (vertexSection) {
-    PetscInt s,e;
+    PetscInt s, e;
 
     PetscValidHeaderSpecific(vertexSection, PETSC_SECTION_CLASSID, 6);
     PetscCall(PetscSectionGetChart(vertexSection, &s, &e));
-    PetscCheck(s <= 0 && e >= numVertices,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid vertexSection chart [%" PetscInt_FMT ",%" PetscInt_FMT ")",s,e);
+    PetscCheck(s <= 0 && e >= numVertices, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid vertexSection chart [%" PetscInt_FMT ",%" PetscInt_FMT ")", s, e);
   }
   if (targetSection) {
-    PetscInt s,e;
+    PetscInt s, e;
 
     PetscValidHeaderSpecific(targetSection, PETSC_SECTION_CLASSID, 7);
     PetscCall(PetscSectionGetChart(targetSection, &s, &e));
-    PetscCheck(s <= 0 && e >= nparts,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid targetSection chart [%" PetscInt_FMT ",%" PetscInt_FMT ")",s,e);
+    PetscCheck(s <= 0 && e >= nparts, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid targetSection chart [%" PetscInt_FMT ",%" PetscInt_FMT ")", s, e);
   }
   PetscValidHeaderSpecific(partSection, PETSC_SECTION_CLASSID, 8);
   PetscValidPointer(partition, 9);
@@ -320,11 +313,8 @@ PetscErrorCode PetscPartitionerPartition(PetscPartitioner part, PetscInt nparts,
   PetscCall(PetscSectionSetChart(partSection, 0, nparts));
   if (nparts == 1) { /* quick */
     PetscCall(PetscSectionSetDof(partSection, 0, numVertices));
-    PetscCall(ISCreateStride(PetscObjectComm((PetscObject)part),numVertices,0,1,partition));
-  } else {
-    PetscCheck(part->ops->partition,PetscObjectComm((PetscObject) part), PETSC_ERR_SUP, "PetscPartitioner %s has no partitioning method", ((PetscObject)part)->type_name);
-    PetscCall((*part->ops->partition)(part, nparts, numVertices, start, adjacency, vertexSection, targetSection, partSection, partition));
-  }
+    PetscCall(ISCreateStride(PetscObjectComm((PetscObject)part), numVertices, 0, 1, partition));
+  } else PetscUseTypeMethod(part, partition, nparts, numVertices, start, adjacency, vertexSection, targetSection, partSection, partition);
   PetscCall(PetscSectionSetUp(partSection));
   if (part->viewerGraph) {
     PetscViewer viewer = part->viewerGraph;
@@ -332,14 +322,14 @@ PetscErrorCode PetscPartitionerPartition(PetscPartitioner part, PetscInt nparts,
     PetscInt    v, i;
     PetscMPIInt rank;
 
-    PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject) viewer), &rank));
-    PetscCall(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &isascii));
+    PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)viewer), &rank));
+    PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
     if (isascii) {
       PetscCall(PetscViewerASCIIPushSynchronized(viewer));
       PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d]Nv: %" PetscInt_FMT "\n", rank, numVertices));
       for (v = 0; v < numVertices; ++v) {
         const PetscInt s = start[v];
-        const PetscInt e = start[v+1];
+        const PetscInt e = start[v + 1];
 
         PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d]  ", rank));
         for (i = s; i < e; ++i) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "%" PetscInt_FMT " ", adjacency[i]));
@@ -349,7 +339,7 @@ PetscErrorCode PetscPartitionerPartition(PetscPartitioner part, PetscInt nparts,
       PetscCall(PetscViewerASCIIPopSynchronized(viewer));
     }
   }
-  if (part->viewer) PetscCall(PetscPartitionerView(part,part->viewer));
+  if (part->viewer) PetscCall(PetscPartitionerView(part, part->viewer));
   PetscFunctionReturn(0);
 }
 
@@ -368,10 +358,9 @@ PetscErrorCode PetscPartitionerPartition(PetscPartitioner part, PetscInt nparts,
 
 .seealso: `PetscPartitionerSetType()`, `PetscPartitionerDestroy()`
 @*/
-PetscErrorCode PetscPartitionerCreate(MPI_Comm comm, PetscPartitioner *part)
-{
+PetscErrorCode PetscPartitionerCreate(MPI_Comm comm, PetscPartitioner *part) {
   PetscPartitioner p;
-  const char       *partitionerType = NULL;
+  const char      *partitionerType = NULL;
 
   PetscFunctionBegin;
   PetscValidPointer(part, 2);

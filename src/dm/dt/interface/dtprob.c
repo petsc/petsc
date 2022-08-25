@@ -4,7 +4,7 @@
 #include <petscdraw.h>
 #include <petsc/private/petscimpl.h>
 
-const char * const DTProbDensityTypes[] = {"constant", "gaussian", "maxwell_boltzmann", "DTProb Density", "DTPROB_DENSITY_", NULL};
+const char *const DTProbDensityTypes[] = {"constant", "gaussian", "maxwell_boltzmann", "DTProb Density", "DTPROB_DENSITY_", NULL};
 
 /*@
   PetscPDFMaxwellBoltzmann1D - PDF for the Maxwell-Boltzmann distribution in 1D
@@ -21,8 +21,7 @@ const char * const DTProbDensityTypes[] = {"constant", "gaussian", "maxwell_bolt
 
 .seealso: `PetscCDFMaxwellBoltzmann1D`
 @*/
-PetscErrorCode PetscPDFMaxwellBoltzmann1D(const PetscReal x[], const PetscReal dummy[], PetscReal p[])
-{
+PetscErrorCode PetscPDFMaxwellBoltzmann1D(const PetscReal x[], const PetscReal dummy[], PetscReal p[]) {
   p[0] = PetscSqrtReal(2. / PETSC_PI) * PetscExpReal(-0.5 * PetscSqr(x[0]));
   return 0;
 }
@@ -42,8 +41,7 @@ PetscErrorCode PetscPDFMaxwellBoltzmann1D(const PetscReal x[], const PetscReal d
 
 .seealso: `PetscPDFMaxwellBoltzmann1D`
 @*/
-PetscErrorCode PetscCDFMaxwellBoltzmann1D(const PetscReal x[], const PetscReal dummy[], PetscReal p[])
-{
+PetscErrorCode PetscCDFMaxwellBoltzmann1D(const PetscReal x[], const PetscReal dummy[], PetscReal p[]) {
   p[0] = PetscErfReal(x[0] / PETSC_SQRT2);
   return 0;
 }
@@ -63,8 +61,7 @@ PetscErrorCode PetscCDFMaxwellBoltzmann1D(const PetscReal x[], const PetscReal d
 
 .seealso: `PetscCDFMaxwellBoltzmann2D`
 @*/
-PetscErrorCode PetscPDFMaxwellBoltzmann2D(const PetscReal x[], const PetscReal dummy[], PetscReal p[])
-{
+PetscErrorCode PetscPDFMaxwellBoltzmann2D(const PetscReal x[], const PetscReal dummy[], PetscReal p[]) {
   p[0] = x[0] * PetscExpReal(-0.5 * PetscSqr(x[0]));
   return 0;
 }
@@ -84,8 +81,7 @@ PetscErrorCode PetscPDFMaxwellBoltzmann2D(const PetscReal x[], const PetscReal d
 
 .seealso: `PetscPDFMaxwellBoltzmann2D`
 @*/
-PetscErrorCode PetscCDFMaxwellBoltzmann2D(const PetscReal x[], const PetscReal dummy[], PetscReal p[])
-{
+PetscErrorCode PetscCDFMaxwellBoltzmann2D(const PetscReal x[], const PetscReal dummy[], PetscReal p[]) {
   p[0] = 1. - PetscExpReal(-0.5 * PetscSqr(x[0]));
   return 0;
 }
@@ -105,8 +101,7 @@ PetscErrorCode PetscCDFMaxwellBoltzmann2D(const PetscReal x[], const PetscReal d
 
 .seealso: `PetscCDFMaxwellBoltzmann3D`
 @*/
-PetscErrorCode PetscPDFMaxwellBoltzmann3D(const PetscReal x[], const PetscReal dummy[], PetscReal p[])
-{
+PetscErrorCode PetscPDFMaxwellBoltzmann3D(const PetscReal x[], const PetscReal dummy[], PetscReal p[]) {
   p[0] = PetscSqrtReal(2. / PETSC_PI) * PetscSqr(x[0]) * PetscExpReal(-0.5 * PetscSqr(x[0]));
   return 0;
 }
@@ -126,8 +121,7 @@ PetscErrorCode PetscPDFMaxwellBoltzmann3D(const PetscReal x[], const PetscReal d
 
 .seealso: `PetscPDFMaxwellBoltzmann3D`
 @*/
-PetscErrorCode PetscCDFMaxwellBoltzmann3D(const PetscReal x[], const PetscReal dummy[], PetscReal p[])
-{
+PetscErrorCode PetscCDFMaxwellBoltzmann3D(const PetscReal x[], const PetscReal dummy[], PetscReal p[]) {
   p[0] = PetscErfReal(x[0] / PETSC_SQRT2) - PetscSqrtReal(2. / PETSC_PI) * x[0] * PetscExpReal(-0.5 * PetscSqr(x[0]));
   return 0;
 }
@@ -147,17 +141,15 @@ PetscErrorCode PetscCDFMaxwellBoltzmann3D(const PetscReal x[], const PetscReal d
 
 .seealso: `PetscPDFMaxwellBoltzmann3D`
 @*/
-PetscErrorCode PetscPDFGaussian1D(const PetscReal x[], const PetscReal scale[], PetscReal p[])
-{
+PetscErrorCode PetscPDFGaussian1D(const PetscReal x[], const PetscReal scale[], PetscReal p[]) {
   const PetscReal sigma = scale ? scale[0] : 1.;
-  p[0] = PetscSqrtReal(1. / (2.*PETSC_PI)) * PetscExpReal(-0.5 * PetscSqr(x[0] / sigma)) / sigma;
+  p[0]                  = PetscSqrtReal(1. / (2. * PETSC_PI)) * PetscExpReal(-0.5 * PetscSqr(x[0] / sigma)) / sigma;
   return 0;
 }
 
-PetscErrorCode PetscCDFGaussian1D(const PetscReal x[], const PetscReal scale[], PetscReal p[])
-{
+PetscErrorCode PetscCDFGaussian1D(const PetscReal x[], const PetscReal scale[], PetscReal p[]) {
   const PetscReal sigma = scale ? scale[0] : 1.;
-  p[0] = 0.5 * (1. + PetscErfReal(x[0] / PETSC_SQRT2 / sigma));
+  p[0]                  = 0.5 * (1. + PetscErfReal(x[0] / PETSC_SQRT2 / sigma));
   return 0;
 }
 
@@ -178,9 +170,8 @@ PetscErrorCode PetscCDFGaussian1D(const PetscReal x[], const PetscReal scale[], 
   Note: http://www.mimirgames.com/articles/programming/approximations-of-the-inverse-error-function/
   https://stackoverflow.com/questions/27229371/inverse-error-function-in-c
 @*/
-PetscErrorCode PetscPDFSampleGaussian1D(const PetscReal p[], const PetscReal dummy[], PetscReal x[])
-{
-  const PetscReal q = 2*p[0] - 1.;
+PetscErrorCode PetscPDFSampleGaussian1D(const PetscReal p[], const PetscReal dummy[], PetscReal x[]) {
+  const PetscReal q       = 2 * p[0] - 1.;
   const PetscInt  maxIter = 100;
   PetscReal       ck[100], r = 0.;
   PetscInt        k, m;
@@ -189,16 +180,16 @@ PetscErrorCode PetscPDFSampleGaussian1D(const PetscReal p[], const PetscReal dum
   /* Transform input to [-1, 1] since the code below computes the inverse error function */
   for (k = 0; k < maxIter; ++k) ck[k] = 0.;
   ck[0] = 1;
-  r = ck[0]* (PetscSqrtReal(PETSC_PI) / 2.) * q;
+  r     = ck[0] * (PetscSqrtReal(PETSC_PI) / 2.) * q;
   for (k = 1; k < maxIter; ++k) {
-    const PetscReal temp = 2.*k + 1.;
+    const PetscReal temp = 2. * k + 1.;
 
-    for (m = 0; m <= k-1; ++m) {
-      PetscReal denom = (m + 1.)*(2.*m + 1.);
+    for (m = 0; m <= k - 1; ++m) {
+      PetscReal denom = (m + 1.) * (2. * m + 1.);
 
-      ck[k] += (ck[m]*ck[k-1-m])/denom;
+      ck[k] += (ck[m] * ck[k - 1 - m]) / denom;
     }
-    r += (ck[k]/temp) * PetscPowReal((PetscSqrtReal(PETSC_PI)/2.) * q, 2.*k+1.);
+    r += (ck[k] / temp) * PetscPowReal((PetscSqrtReal(PETSC_PI) / 2.) * q, 2. * k + 1.);
   }
   /* Scale erfinv() by \sqrt{\pi/2} */
   x[0] = PetscSqrtReal(PETSC_PI * 0.5) * r;
@@ -221,8 +212,7 @@ PetscErrorCode PetscPDFSampleGaussian1D(const PetscReal p[], const PetscReal dum
 
 .seealso: `PetscPDFSampleGaussian2D()`, `PetscPDFMaxwellBoltzmann3D()`
 @*/
-PetscErrorCode PetscPDFGaussian2D(const PetscReal x[], const PetscReal dummy[], PetscReal p[])
-{
+PetscErrorCode PetscPDFGaussian2D(const PetscReal x[], const PetscReal dummy[], PetscReal p[]) {
   p[0] = (1. / PETSC_PI) * PetscExpReal(-0.5 * (PetscSqr(x[0]) + PetscSqr(x[1])));
   return 0;
 }
@@ -245,11 +235,10 @@ PetscErrorCode PetscPDFGaussian2D(const PetscReal x[], const PetscReal dummy[], 
 
 .seealso: `PetscPDFGaussian2D()`, `PetscPDFMaxwellBoltzmann3D()`
 @*/
-PetscErrorCode PetscPDFSampleGaussian2D(const PetscReal p[], const PetscReal dummy[], PetscReal x[])
-{
+PetscErrorCode PetscPDFSampleGaussian2D(const PetscReal p[], const PetscReal dummy[], PetscReal x[]) {
   const PetscReal mag = PetscSqrtReal(-2.0 * PetscLogReal(p[0]));
-  x[0] = mag * PetscCosReal(2.0 * PETSC_PI * p[1]);
-  x[1] = mag * PetscSinReal(2.0 * PETSC_PI * p[1]);
+  x[0]                = mag * PetscCosReal(2.0 * PETSC_PI * p[1]);
+  x[1]                = mag * PetscSinReal(2.0 * PETSC_PI * p[1]);
   return 0;
 }
 
@@ -269,9 +258,8 @@ PetscErrorCode PetscPDFSampleGaussian2D(const PetscReal p[], const PetscReal dum
 
 .seealso: `PetscPDFSampleGaussian3D()`, `PetscPDFMaxwellBoltzmann3D()`
 @*/
-PetscErrorCode PetscPDFGaussian3D(const PetscReal x[], const PetscReal dummy[], PetscReal p[])
-{
-  p[0] = (1. / PETSC_PI*PetscSqrtReal(PETSC_PI)) * PetscExpReal(-0.5 * (PetscSqr(x[0]) + PetscSqr(x[1]) + PetscSqr(x[2])));
+PetscErrorCode PetscPDFGaussian3D(const PetscReal x[], const PetscReal dummy[], PetscReal p[]) {
+  p[0] = (1. / PETSC_PI * PetscSqrtReal(PETSC_PI)) * PetscExpReal(-0.5 * (PetscSqr(x[0]) + PetscSqr(x[1]) + PetscSqr(x[2])));
   return 0;
 }
 
@@ -293,8 +281,7 @@ PetscErrorCode PetscPDFGaussian3D(const PetscReal x[], const PetscReal dummy[], 
 
 .seealso: `PetscPDFGaussian3D()`, `PetscPDFMaxwellBoltzmann3D()`
 @*/
-PetscErrorCode PetscPDFSampleGaussian3D(const PetscReal p[], const PetscReal dummy[], PetscReal x[])
-{
+PetscErrorCode PetscPDFSampleGaussian3D(const PetscReal p[], const PetscReal dummy[], PetscReal x[]) {
   PetscCall(PetscPDFSampleGaussian1D(p, dummy, x));
   PetscCall(PetscPDFSampleGaussian2D(&p[1], dummy, &x[1]));
   return 0;
@@ -315,8 +302,7 @@ PetscErrorCode PetscPDFSampleGaussian3D(const PetscReal p[], const PetscReal dum
 
 .seealso: `PetscCDFConstant1D()`, `PetscPDFSampleConstant1D()`, `PetscPDFConstant2D()`, `PetscPDFConstant3D()`
 @*/
-PetscErrorCode PetscPDFConstant1D(const PetscReal x[], const PetscReal dummy[], PetscReal p[])
-{
+PetscErrorCode PetscPDFConstant1D(const PetscReal x[], const PetscReal dummy[], PetscReal p[]) {
   p[0] = x[0] > -1. && x[0] <= 1. ? 0.5 : 0.;
   return 0;
 }
@@ -336,9 +322,8 @@ PetscErrorCode PetscPDFConstant1D(const PetscReal x[], const PetscReal dummy[], 
 
 .seealso: `PetscPDFConstant1D()`, `PetscPDFSampleConstant1D()`, `PetscCDFConstant2D()`, `PetscCDFConstant3D()`
 @*/
-PetscErrorCode PetscCDFConstant1D(const PetscReal x[], const PetscReal dummy[], PetscReal p[])
-{
-  p[0] = x[0] <= -1. ? 0. : (x[0] > 1. ? 1. : 0.5*(x[0] + 1.));
+PetscErrorCode PetscCDFConstant1D(const PetscReal x[], const PetscReal dummy[], PetscReal p[]) {
+  p[0] = x[0] <= -1. ? 0. : (x[0] > 1. ? 1. : 0.5 * (x[0] + 1.));
   return 0;
 }
 
@@ -357,9 +342,8 @@ PetscErrorCode PetscCDFConstant1D(const PetscReal x[], const PetscReal dummy[], 
 
 .seealso: `PetscPDFConstant1D()`, `PetscCDFConstant1D()`, `PetscPDFSampleConstant2D()`, `PetscPDFSampleConstant3D()`
 @*/
-PetscErrorCode PetscPDFSampleConstant1D(const PetscReal p[], const PetscReal dummy[], PetscReal x[])
-{
-  x[0] = 2.*p[0] - 1.;
+PetscErrorCode PetscPDFSampleConstant1D(const PetscReal p[], const PetscReal dummy[], PetscReal x[]) {
+  x[0] = 2. * p[0] - 1.;
   return 0;
 }
 
@@ -378,8 +362,7 @@ PetscErrorCode PetscPDFSampleConstant1D(const PetscReal p[], const PetscReal dum
 
 .seealso: `PetscCDFConstant2D()`, `PetscPDFSampleConstant2D()`, `PetscPDFConstant1D()`, `PetscPDFConstant3D()`
 @*/
-PetscErrorCode PetscPDFConstant2D(const PetscReal x[], const PetscReal dummy[], PetscReal p[])
-{
+PetscErrorCode PetscPDFConstant2D(const PetscReal x[], const PetscReal dummy[], PetscReal p[]) {
   p[0] = x[0] > -1. && x[0] <= 1. && x[1] > -1. && x[1] <= 1. ? 0.25 : 0.;
   return 0;
 }
@@ -399,9 +382,8 @@ PetscErrorCode PetscPDFConstant2D(const PetscReal x[], const PetscReal dummy[], 
 
 .seealso: `PetscPDFConstant2D()`, `PetscPDFSampleConstant2D()`, `PetscCDFConstant1D()`, `PetscCDFConstant3D()`
 @*/
-PetscErrorCode PetscCDFConstant2D(const PetscReal x[], const PetscReal dummy[], PetscReal p[])
-{
-  p[0] = x[0] <= -1. || x[1] <= -1. ? 0. : (x[0] > 1. ? 1. : 0.5*(x[0] + 1.))*(x[1] > 1. ? 1. : 0.5*(x[1] + 1.));
+PetscErrorCode PetscCDFConstant2D(const PetscReal x[], const PetscReal dummy[], PetscReal p[]) {
+  p[0] = x[0] <= -1. || x[1] <= -1. ? 0. : (x[0] > 1. ? 1. : 0.5 * (x[0] + 1.)) * (x[1] > 1. ? 1. : 0.5 * (x[1] + 1.));
   return 0;
 }
 
@@ -420,10 +402,9 @@ PetscErrorCode PetscCDFConstant2D(const PetscReal x[], const PetscReal dummy[], 
 
 .seealso: `PetscPDFConstant2D()`, `PetscCDFConstant2D()`, `PetscPDFSampleConstant1D()`, `PetscPDFSampleConstant3D()`
 @*/
-PetscErrorCode PetscPDFSampleConstant2D(const PetscReal p[], const PetscReal dummy[], PetscReal x[])
-{
-  x[0] = 2.*p[0] - 1.;
-  x[1] = 2.*p[1] - 1.;
+PetscErrorCode PetscPDFSampleConstant2D(const PetscReal p[], const PetscReal dummy[], PetscReal x[]) {
+  x[0] = 2. * p[0] - 1.;
+  x[1] = 2. * p[1] - 1.;
   return 0;
 }
 
@@ -442,8 +423,7 @@ PetscErrorCode PetscPDFSampleConstant2D(const PetscReal p[], const PetscReal dum
 
 .seealso: `PetscCDFConstant3D()`, `PetscPDFSampleConstant3D()`, `PetscPDFSampleConstant1D()`, `PetscPDFSampleConstant2D()`
 @*/
-PetscErrorCode PetscPDFConstant3D(const PetscReal x[], const PetscReal dummy[], PetscReal p[])
-{
+PetscErrorCode PetscPDFConstant3D(const PetscReal x[], const PetscReal dummy[], PetscReal p[]) {
   p[0] = x[0] > -1. && x[0] <= 1. && x[1] > -1. && x[1] <= 1. && x[2] > -1. && x[2] <= 1. ? 0.125 : 0.;
   return 0;
 }
@@ -463,9 +443,8 @@ PetscErrorCode PetscPDFConstant3D(const PetscReal x[], const PetscReal dummy[], 
 
 .seealso: `PetscPDFConstant3D()`, `PetscPDFSampleConstant3D()`, `PetscCDFConstant1D()`, `PetscCDFConstant2D()`
 @*/
-PetscErrorCode PetscCDFConstant3D(const PetscReal x[], const PetscReal dummy[], PetscReal p[])
-{
-  p[0] = x[0] <= -1. || x[1] <= -1. || x[2] <= -1. ? 0. : (x[0] > 1. ? 1. : 0.5*(x[0] + 1.))*(x[1] > 1. ? 1. : 0.5*(x[1] + 1.))*(x[2] > 1. ? 1. : 0.5*(x[2] + 1.));
+PetscErrorCode PetscCDFConstant3D(const PetscReal x[], const PetscReal dummy[], PetscReal p[]) {
+  p[0] = x[0] <= -1. || x[1] <= -1. || x[2] <= -1. ? 0. : (x[0] > 1. ? 1. : 0.5 * (x[0] + 1.)) * (x[1] > 1. ? 1. : 0.5 * (x[1] + 1.)) * (x[2] > 1. ? 1. : 0.5 * (x[2] + 1.));
   return 0;
 }
 
@@ -484,11 +463,10 @@ PetscErrorCode PetscCDFConstant3D(const PetscReal x[], const PetscReal dummy[], 
 
 .seealso: `PetscPDFConstant3D()`, `PetscCDFConstant3D()`, `PetscPDFSampleConstant1D()`, `PetscPDFSampleConstant2D()`
 @*/
-PetscErrorCode PetscPDFSampleConstant3D(const PetscReal p[], const PetscReal dummy[], PetscReal x[])
-{
-  x[0] = 2.*p[0] - 1.;
-  x[1] = 2.*p[1] - 1.;
-  x[2] = 2.*p[2] - 1.;
+PetscErrorCode PetscPDFSampleConstant3D(const PetscReal p[], const PetscReal dummy[], PetscReal x[]) {
+  x[0] = 2. * p[0] - 1.;
+  x[1] = 2. * p[1] - 1.;
+  x[2] = 2. * p[2] - 1.;
   return 0;
 }
 
@@ -511,75 +489,83 @@ PetscErrorCode PetscPDFSampleConstant3D(const PetscReal p[], const PetscReal dum
 
 .seealso: `PetscPDFMaxwellBoltzmann1D()`, `PetscPDFGaussian1D()`, `PetscPDFConstant1D()`
 @*/
-PetscErrorCode PetscProbCreateFromOptions(PetscInt dim, const char prefix[], const char name[], PetscProbFunc *pdf, PetscProbFunc *cdf, PetscProbFunc *sampler)
-{
+PetscErrorCode PetscProbCreateFromOptions(PetscInt dim, const char prefix[], const char name[], PetscProbFunc *pdf, PetscProbFunc *cdf, PetscProbFunc *sampler) {
   DTProbDensityType den = DTPROB_DENSITY_GAUSSIAN;
 
   PetscFunctionBegin;
   PetscOptionsBegin(PETSC_COMM_SELF, prefix, "PetscProb Options", "DT");
-  PetscCall(PetscOptionsEnum(name, "Method to compute PDF <constant, gaussian>", "", DTProbDensityTypes, (PetscEnum) den, (PetscEnum *) &den, NULL));
+  PetscCall(PetscOptionsEnum(name, "Method to compute PDF <constant, gaussian>", "", DTProbDensityTypes, (PetscEnum)den, (PetscEnum *)&den, NULL));
   PetscOptionsEnd();
 
-  if (pdf) {PetscValidPointer(pdf, 4); *pdf = NULL;}
-  if (cdf) {PetscValidPointer(cdf, 5); *cdf = NULL;}
-  if (sampler) {PetscValidPointer(sampler, 6); *sampler = NULL;}
+  if (pdf) {
+    PetscValidPointer(pdf, 4);
+    *pdf = NULL;
+  }
+  if (cdf) {
+    PetscValidPointer(cdf, 5);
+    *cdf = NULL;
+  }
+  if (sampler) {
+    PetscValidPointer(sampler, 6);
+    *sampler = NULL;
+  }
   switch (den) {
-    case DTPROB_DENSITY_CONSTANT:
-      switch (dim) {
-        case 1:
-          if (pdf) *pdf = PetscPDFConstant1D;
-          if (cdf) *cdf = PetscCDFConstant1D;
-          if (sampler) *sampler = PetscPDFSampleConstant1D;
-          break;
-        case 2:
-          if (pdf) *pdf = PetscPDFConstant2D;
-          if (cdf) *cdf = PetscCDFConstant2D;
-          if (sampler) *sampler = PetscPDFSampleConstant2D;
-          break;
-        case 3:
-          if (pdf) *pdf = PetscPDFConstant3D;
-          if (cdf) *cdf = PetscCDFConstant3D;
-          if (sampler) *sampler = PetscPDFSampleConstant3D;
-          break;
-        default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Dimension %" PetscInt_FMT " not supported for density type %s", dim, DTProbDensityTypes[den]);
-      }
+  case DTPROB_DENSITY_CONSTANT:
+    switch (dim) {
+    case 1:
+      if (pdf) *pdf = PetscPDFConstant1D;
+      if (cdf) *cdf = PetscCDFConstant1D;
+      if (sampler) *sampler = PetscPDFSampleConstant1D;
       break;
-    case DTPROB_DENSITY_GAUSSIAN:
-      switch (dim) {
-        case 1:
-          if (pdf) *pdf = PetscPDFGaussian1D;
-          if (cdf) *cdf = PetscCDFGaussian1D;
-          if (sampler) *sampler = PetscPDFSampleGaussian1D;
-          break;
-        case 2:
-          if (pdf) *pdf = PetscPDFGaussian2D;
-          if (sampler) *sampler = PetscPDFSampleGaussian2D;
-          break;
-        case 3:
-          if (pdf) *pdf = PetscPDFGaussian3D;
-          if (sampler) *sampler = PetscPDFSampleGaussian3D;
-          break;
-        default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Dimension %" PetscInt_FMT " not supported for density type %s", dim, DTProbDensityTypes[den]);
-      }
+    case 2:
+      if (pdf) *pdf = PetscPDFConstant2D;
+      if (cdf) *cdf = PetscCDFConstant2D;
+      if (sampler) *sampler = PetscPDFSampleConstant2D;
       break;
-    case DTPROB_DENSITY_MAXWELL_BOLTZMANN:
-      switch (dim) {
-        case 1:
-          if (pdf) *pdf = PetscPDFMaxwellBoltzmann1D;
-          if (cdf) *cdf = PetscCDFMaxwellBoltzmann1D;
-          break;
-        case 2:
-          if (pdf) *pdf = PetscPDFMaxwellBoltzmann2D;
-          if (cdf) *cdf = PetscCDFMaxwellBoltzmann2D;
-          break;
-        case 3:
-          if (pdf) *pdf = PetscPDFMaxwellBoltzmann3D;
-          if (cdf) *cdf = PetscCDFMaxwellBoltzmann3D;
-          break;
-        default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Dimension %" PetscInt_FMT " not supported for density type %s", dim, DTProbDensityTypes[den]);
-      }
+    case 3:
+      if (pdf) *pdf = PetscPDFConstant3D;
+      if (cdf) *cdf = PetscCDFConstant3D;
+      if (sampler) *sampler = PetscPDFSampleConstant3D;
       break;
-    default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Density type %s is not supported", DTProbDensityTypes[PetscMax(0, PetscMin(den, DTPROB_NUM_DENSITY))]);
+    default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Dimension %" PetscInt_FMT " not supported for density type %s", dim, DTProbDensityTypes[den]);
+    }
+    break;
+  case DTPROB_DENSITY_GAUSSIAN:
+    switch (dim) {
+    case 1:
+      if (pdf) *pdf = PetscPDFGaussian1D;
+      if (cdf) *cdf = PetscCDFGaussian1D;
+      if (sampler) *sampler = PetscPDFSampleGaussian1D;
+      break;
+    case 2:
+      if (pdf) *pdf = PetscPDFGaussian2D;
+      if (sampler) *sampler = PetscPDFSampleGaussian2D;
+      break;
+    case 3:
+      if (pdf) *pdf = PetscPDFGaussian3D;
+      if (sampler) *sampler = PetscPDFSampleGaussian3D;
+      break;
+    default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Dimension %" PetscInt_FMT " not supported for density type %s", dim, DTProbDensityTypes[den]);
+    }
+    break;
+  case DTPROB_DENSITY_MAXWELL_BOLTZMANN:
+    switch (dim) {
+    case 1:
+      if (pdf) *pdf = PetscPDFMaxwellBoltzmann1D;
+      if (cdf) *cdf = PetscCDFMaxwellBoltzmann1D;
+      break;
+    case 2:
+      if (pdf) *pdf = PetscPDFMaxwellBoltzmann2D;
+      if (cdf) *cdf = PetscCDFMaxwellBoltzmann2D;
+      break;
+    case 3:
+      if (pdf) *pdf = PetscPDFMaxwellBoltzmann3D;
+      if (cdf) *cdf = PetscCDFMaxwellBoltzmann3D;
+      break;
+    default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Dimension %" PetscInt_FMT " not supported for density type %s", dim, DTProbDensityTypes[den]);
+    }
+    break;
+  default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Density type %s is not supported", DTProbDensityTypes[PetscMax(0, PetscMin(den, DTPROB_NUM_DENSITY))]);
   }
   PetscFunctionReturn(0);
 }
@@ -619,10 +605,9 @@ the largest absolute difference between the two distribution functions across al
 
 .seealso: `PetscProbFunc`
 @*/
-PetscErrorCode PetscProbComputeKSStatistic(Vec v, PetscProbFunc cdf, PetscReal *alpha)
-{
+PetscErrorCode PetscProbComputeKSStatistic(Vec v, PetscProbFunc cdf, PetscReal *alpha) {
 #if !defined(PETSC_HAVE_KS)
-  SETERRQ(PetscObjectComm((PetscObject) v), PETSC_ERR_SUP, "No support for Kolmogorov-Smirnov test.\nReconfigure using --download-ks");
+  SETERRQ(PetscObjectComm((PetscObject)v), PETSC_ERR_SUP, "No support for Kolmogorov-Smirnov test.\nReconfigure using --download-ks");
 #else
   PetscViewer        viewer = NULL;
   PetscViewerFormat  format;
@@ -641,13 +626,13 @@ PetscErrorCode PetscProbComputeKSStatistic(Vec v, PetscProbFunc cdf, PetscReal *
   MPI_Comm           comm;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectGetComm((PetscObject) v, &comm));
-  PetscCall(PetscObjectGetOptionsPrefix((PetscObject) v, &prefix));
-  PetscCall(PetscObjectGetOptions((PetscObject) v, &options));
+  PetscCall(PetscObjectGetComm((PetscObject)v, &comm));
+  PetscCall(PetscObjectGetOptionsPrefix((PetscObject)v, &prefix));
+  PetscCall(PetscObjectGetOptions((PetscObject)v, &options));
   PetscCall(PetscOptionsGetViewer(comm, options, prefix, "-ks_monitor", &viewer, &format, &flg));
   if (flg) {
-    PetscCall(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &isascii));
-    PetscCall(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERDRAW,  &isdraw));
+    PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+    PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERDRAW, &isdraw));
   }
   if (isascii) {
     PetscCall(PetscViewerPushFormat(viewer, format));
@@ -658,10 +643,10 @@ PetscErrorCode PetscProbComputeKSStatistic(Vec v, PetscProbFunc cdf, PetscReal *
     PetscCall(PetscDrawLGSetLegend(lg, names));
   }
 
-  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject) v), &size));
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)v), &size));
   PetscCall(VecGetLocalSize(v, &n));
   PetscCall(VecGetBlockSize(v, &dim));
-  n   /= dim;
+  n /= dim;
   /* TODO Parallel algorithm is harder */
   if (size == 1) {
     PetscCall(PetscMalloc1(n, &speed));
@@ -669,30 +654,38 @@ PetscErrorCode PetscProbComputeKSStatistic(Vec v, PetscProbFunc cdf, PetscReal *
     for (p = 0; p < n; ++p) {
       PetscReal mag = 0.;
 
-      for (d = 0; d < dim; ++d) mag += PetscSqr(PetscRealPart(a[p*dim+d]));
+      for (d = 0; d < dim; ++d) mag += PetscSqr(PetscRealPart(a[p * dim + d]));
       speed[p] = PetscSqrtReal(mag);
     }
     PetscCall(PetscSortReal(n, speed));
     PetscCall(VecRestoreArrayRead(v, &a));
     for (p = 0; p < n; ++p) {
-      const PetscReal x = speed[p], Fn = ((PetscReal) p) / n;
+      const PetscReal x = speed[p], Fn = ((PetscReal)p) / n;
       PetscReal       F, vals[2];
 
       PetscCall(cdf(&x, NULL, &F));
       Dn = PetscMax(PetscAbsReal(Fn - F), Dn);
       if (isascii) PetscCall(PetscViewerASCIIPrintf(viewer, "x: %g F: %g Fn: %g Dn: %.2g\n", x, F, Fn, Dn));
-      if (isdraw)  {vals[0] = F; vals[1] = Fn; PetscCall(PetscDrawLGAddCommonPoint(lg, x, vals));}
+      if (isdraw) {
+        vals[0] = F;
+        vals[1] = Fn;
+        PetscCall(PetscDrawLGAddCommonPoint(lg, x, vals));
+      }
     }
-    if (speed[n-1] < 6.) {
-      const PetscReal k = (PetscInt) (6. - speed[n-1]) + 1, dx = (6. - speed[n-1])/k;
+    if (speed[n - 1] < 6.) {
+      const PetscReal k = (PetscInt)(6. - speed[n - 1]) + 1, dx = (6. - speed[n - 1]) / k;
       for (p = 0; p <= k; ++p) {
-        const PetscReal x = speed[n-1] + p*dx, Fn = 1.0;
+        const PetscReal x = speed[n - 1] + p * dx, Fn = 1.0;
         PetscReal       F, vals[2];
 
         PetscCall(cdf(&x, NULL, &F));
         Dn = PetscMax(PetscAbsReal(Fn - F), Dn);
         if (isascii) PetscCall(PetscViewerASCIIPrintf(viewer, "x: %g F: %g Fn: %g Dn: %.2g\n", x, F, Fn, Dn));
-        if (isdraw)  {vals[0] = F; vals[1] = Fn; PetscCall(PetscDrawLGAddCommonPoint(lg, x, vals));}
+        if (isdraw) {
+          vals[0] = F;
+          vals[1] = Fn;
+          PetscCall(PetscDrawLGAddCommonPoint(lg, x, vals));
+        }
       }
     }
     PetscCall(PetscFree(speed));
@@ -709,7 +702,7 @@ PetscErrorCode PetscProbComputeKSStatistic(Vec v, PetscProbFunc cdf, PetscReal *
     PetscCall(PetscViewerPopFormat(viewer));
     PetscCall(PetscViewerDestroy(&viewer));
   }
-  *alpha = KSfbar((int) n, (double) Dn);
+  *alpha = KSfbar((int)n, (double)Dn);
   PetscFunctionReturn(0);
 #endif
 }

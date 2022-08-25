@@ -1,5 +1,5 @@
 
-      module UserModule
+      module ex13f90module
 #include <petsc/finclude/petscksp.h>
         use petscksp
         type User
@@ -13,7 +13,7 @@
       end module
 
       program main
-      use UserModule
+      use ex13f90module
       implicit none
 
 !    User-defined context that contains all the data structures used
@@ -144,7 +144,7 @@
 
 ! ----------------------------------------------------------------
       subroutine UserInitializeLinearSolver(m,n,userctx,ierr)
-      use UserModule
+      use ex13f90module
       implicit none
 
       PetscInt m,n
@@ -204,7 +204,7 @@
 !   style by columns. userb is a standard one-dimensional array.
 
       subroutine UserDoLinearSolver(rho,userctx,userb,userx,ierr)
-      use UserModule
+      use ex13f90module
       implicit none
 
       PetscErrorCode ierr
@@ -329,7 +329,7 @@
 ! ------------------------------------------------------------------------
 
       subroutine UserFinalizeLinearSolver(userctx,ierr)
-      use UserModule
+      use ex13f90module
       implicit none
 
       PetscErrorCode ierr

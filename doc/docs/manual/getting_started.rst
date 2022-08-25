@@ -10,26 +10,26 @@ The important PETSc classes include
 -  index sets (``IS``),  for indexing into
    vectors, renumbering, permuting, etc;
 
--  vectors (``Vec``);
+-  vectors (``Vec``); :any:`chapter_vectors`
 
--  matrices (``Mat``) (generally sparse);
+-  matrices (``Mat``) (generally sparse); :any:`chapter_matrices`
 
--  Krylov subspace methods (``KSP``);
+-  Krylov subspace methods (``KSP``); :any:`chapter_ksp`
 
 -  preconditioners, including multigrid, block solvers, patch solvers, and
    sparse direct solvers (``PC``);
 
--  nonlinear solvers (``SNES``);
+-  nonlinear solvers (``SNES``); :any:`chapter_snes`
 
 -  timesteppers for solving time-dependent (nonlinear) PDEs, including
    support for differential algebraic equations, and the computation of
-   adjoints (sensitivities/gradients of the solutions) (``TS``);
+   adjoints (sensitivities/gradients of the solutions) (``TS``); :any:`chapter_ts`
+
+-  scalable optimization algorithms including a rich set of gradient-based optimizers,
+   Newton-based optimizers and optimization with constraints (``Tao``). :any:`chapter_tao`
 
 -  code for managing interactions between mesh data structures and vectors,
-   matrices, and solvers (``DM``);
-
--  scalable optimization algorithms (``Tao``).
-
+   matrices, and solvers (``DM``); :any:`chapter_dmbase`
 
 Each class consist of an abstract interface (simply a set of calling
 sequences; an abstract base class in C++) and an implementation for each algorithm and data structure.
@@ -60,11 +60,13 @@ appropriate for a particular problem.
 Suggested Reading
 ~~~~~~~~~~~~~~~~~
 
-The manual is divided into three parts:
+The manual is divided into four parts:
 
 -  :doc:`introduction`
 
 -  :doc:`programming`
+
+-  :doc:`dm`
 
 -  :doc:`additional`
 
@@ -74,9 +76,10 @@ section conveys the typical style used throughout the library and
 enables the application programmer to begin using the software
 immediately.
 
-:doc:`programming` explains in detail the use of the various PETSc libraries, such
-as vectors, matrices, index sets, linear and nonlinear solvers, and
-graphics. :doc:`additional` describes a variety of useful information, including
+:doc:`programming` explains in detail the use of the various PETSc algebraic objects, such
+as vectors, matrices, index sets and the PETSc solvers including linear and nonlinear solvers, time integrators,
+and optimization support. :doc:`dm` details how a user's models and discretizations can easily be interfaced with the
+solvers by using the `DM` construct. The :doc:`additional` describes a variety of useful information, including
 profiling, the options database, viewers, error handling, and some
 details of PETSc design.
 
@@ -546,9 +549,9 @@ Parallel and GPU Programming
 
 Numerical computing today has multiple levels of parallelism (concurrency).
 
-- Low-level, single instruction multiple data (SIMD) parallelism or, somewhat similar, GPU parallelism,
+- Low-level, single instruction multiple data (SIMD) parallelism or, somewhat similar, on-GPU parallelism,
 
-- Medium-level, multiple instruction shared memory parallelism, and
+- Medium-level, multiple instruction shared memory parallelism (thread parallelism), and
 
 - High-level, distributed memory parallelism
 
@@ -633,20 +636,38 @@ OpenMP parallelism is thread parallelism. Multiple threads (independent streams 
 parts of memory that is
 shared (accessible) to all of the threads. The OpenMP model is most-often based on inserting pragmas into code indicating that a series of instructions
 (often within a loop) can be run in parallel. This is also called a fork-join model of parallelism, since much of the code remains sequential and only the
-computationally expensive parts in the 'parallel region' are parallel. OpenMP also makes it relatively easy to add some degree of
-parallelism to a conventional sequential code.
+computationally expensive parts in the 'parallel region' are parallel. OpenMP thus makes it relatively easy to add some degree of
+parallelism to a conventional sequential code in a shared memory environment.
+
+POSIX threads (pthreads) is a library that may be called from C/C++. The library contains routines to create, join, and remove threads plus manage communications and
+synchronizations between threads. Pthreads is rarely used directly in numerical libraries and applications. Sometimes OpenMP is implemented on top of pthreads.
 
 If one adds
 OpenMP parallelism to an MPI code one must make sure not to over-subscribe the hardware resources. For example, if MPI already has one rank per hardware core then
-using four OpenMP threads per MPI rank will slow the code down since now one core will need to switch back and forth for four OpenMP ranks.
-The PETSc programming model frowns on using both MPI and OpenMP since there are limited practical advantages to it, but it is possible.
+using four OpenMP threads per MPI rank will slow the code down since now one core will need to switch back and forth between four OpenMP threads.
+There are limited practical advantages to a combined MPI and OpenMP model in PETSc, but it is possible.
 
-For a user's sequential (non-MPI) code that uses certain external packages including BLAS/LAPACK, SuperLU_DIST, MUMPS, MKL, and SuiteSparse one can build PETSc and these
-packages to take advantage of OpenMP by using the configure option `--with-openmp'.  The number of OpenMP threads used in the application can be controlled with
-the PETSc command line option `-omp_num_threads <num>' or the environmental variable `OMP_NUM_THREADS`. Running a PETSc program with `-omp_view` will display the
-number of threads being used. The default number is often absurdly high for the given hardware so we recommend always setting it appropriately. Users can
-also put OpenMP pragmas into their own code. However since PETSc is not thread-safe, they should not call PETSc routines inside the parallel regions.
+For application codes that uses certain external packages including BLAS/LAPACK, SuperLU_DIST, MUMPS, MKL, and SuiteSparse one can build PETSc and these
+packages to take advantage of OpenMP by using the configure option ``--with-openmp``.  The number of OpenMP threads used in the application can be controlled with
+the PETSc command line option ``-omp_num_threads <num>`` or the environmental variable ``OMP_NUM_THREADS``. Running a PETSc program with ``-omp_view`` will display the
+number of threads being used. The default number is often absurdly high for the given hardware so we recommend always setting it appropriately.
+Users can also put OpenMP pragmas into their own code. However since standard PETSc is not thread-safe, they should not, in general,
+call PETSc routines from inside the parallel regions.
 
+PETSc MPI based linear solvers may be accessed from a sequential or OpenMP program with the ``PCMPI`` solver wrapper, see :any:`sec_pcmpi`.
+
+
+There is an OpenMP thread-safe subset of PETSc that may be configured for using ``--with-threadsafety --with-log=0 [--with-openmp or
+--download-concurrencykit]``. `KSP Tutorial ex61f <../../src/ksp/ksp/tutorials/ex61f.F90.html>`__ demonstrates
+how this may be used with OpenMP. In this mode one may have individual OpenMP threads that each manage their own
+(sequential) PETSc objects (each thread can interact only with its own objects). This
+is useful when one has many small systems (or sets of ODEs) that must be integrated in an
+"embarrassingly parallel" fashion on multicore systems.
+
+.. seealso::
+
+   Edward A. Lee, `The Problem with Threads <https://digitalassets.lib.berkeley.edu/techreports/ucb/text/EECS-2006-1.pdf>`__,  Technical Report No. UCB/EECS-2006-1 January `[DOI] <https://doi.org/10.1109/MC.2006.180>`__
+   10, 2006
 
 .. _sec_gpu_kernels:
 

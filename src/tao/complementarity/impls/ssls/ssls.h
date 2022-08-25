@@ -53,18 +53,18 @@
 #include <petsc/private/taoimpl.h>
 
 typedef struct {
-  Vec ff;       /* fischer function */
-  Vec dpsi;     /* gradient of psi */
+  Vec ff;   /* fischer function */
+  Vec dpsi; /* gradient of psi */
 
-  Vec da;       /* work vector for subdifferential calculation (diag pert) */
-  Vec db;       /* work vector for subdifferential calculation (row scale) */
-  Vec dm;   /* work vector for subdifferential calculation (mu vector) */
+  Vec da; /* work vector for subdifferential calculation (diag pert) */
+  Vec db; /* work vector for subdifferential calculation (row scale) */
+  Vec dm; /* work vector for subdifferential calculation (mu vector) */
   Vec dxfree;
 
-  Vec t1;       /* work vector */
-  Vec t2;       /* work vector */
+  Vec t1; /* work vector */
+  Vec t2; /* work vector */
 
-  Vec r1,r2,r3,w; /* work vectors */
+  Vec r1, r2, r3, w; /* work vectors */
 
   PetscReal merit; /* merit function value (norm(fischer)) */
   PetscReal merit_eqn;
@@ -73,7 +73,7 @@ typedef struct {
   PetscReal delta;
   PetscReal rho;
 
-  PetscReal rtol;       /* Solution tolerances */
+  PetscReal rtol; /* Solution tolerances */
   PetscReal atol;
 
   PetscReal identifier; /* Active-set identification */
@@ -87,17 +87,16 @@ typedef struct {
   PetscReal g_mucon; /* gradient of merit function with respect to mu */
 
   Mat J_sub, Jpre_sub; /* subset of jacobian */
-  Vec f;        /* constraint function */
+  Vec f;               /* constraint function */
 
   IS fixed;
   IS free;
 } TAO_SSLS;
 
-PetscErrorCode TaoSetFromOptions_SSLS(PetscOptionItems *,Tao);
-PetscErrorCode TaoView_SSLS(Tao,PetscViewer);
+PetscErrorCode TaoSetFromOptions_SSLS(Tao, PetscOptionItems *);
+PetscErrorCode TaoView_SSLS(Tao, PetscViewer);
 
 PetscErrorCode Tao_SSLS_Function(TaoLineSearch, Vec, PetscReal *, void *);
 PetscErrorCode Tao_SSLS_FunctionGradient(TaoLineSearch, Vec, PetscReal *, Vec, void *);
 
 #endif
-

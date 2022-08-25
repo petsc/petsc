@@ -109,7 +109,7 @@ def getlibraryinfo():
     arch = PETSc.__arch__
     return ("PETSc %d.%d.%d %s (conf: '%s')"
             % (major, minor, micro, release, arch) )
-    
+
 def getpythoninfo():
     x, y = sys.version_info[:2]
     return ("Python %d.%d (%s)" % (x, y, sys.executable))

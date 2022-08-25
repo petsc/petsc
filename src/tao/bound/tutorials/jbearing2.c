@@ -8,8 +8,7 @@
 #include <petsctao.h>
 #include <petscdmda.h>
 
-static  char help[]=
-"This example demonstrates use of the TAO package to \n\
+static char help[] = "This example demonstrates use of the TAO package to \n\
 solve a bound constrained minimization problem.  This example is based on \n\
 the problem DPJB from the MINPACK-2 test suite.  This pressure journal \n\
 bearing problem is an example of elliptic variational problem defined over \n\
@@ -28,64 +27,67 @@ The command line options are:\n\
 */
 typedef struct {
   /* problem parameters */
-  PetscReal      ecc;          /* test problem parameter */
-  PetscReal      b;            /* A dimension of journal bearing */
-  PetscInt       nx,ny;        /* discretization in x, y directions */
+  PetscReal ecc;    /* test problem parameter */
+  PetscReal b;      /* A dimension of journal bearing */
+  PetscInt  nx, ny; /* discretization in x, y directions */
 
   /* Working space */
-  DM          dm;           /* distributed array data structure */
-  Mat         A;            /* Quadratic Objective term */
-  Vec         B;            /* Linear Objective term */
+  DM  dm; /* distributed array data structure */
+  Mat A;  /* Quadratic Objective term */
+  Vec B;  /* Linear Objective term */
 } AppCtx;
 
 /* User-defined routines */
-static PetscReal p(PetscReal xi, PetscReal ecc);
-static PetscErrorCode FormFunctionGradient(Tao, Vec, PetscReal *,Vec,void *);
-static PetscErrorCode FormHessian(Tao,Vec,Mat, Mat, void *);
-static PetscErrorCode ComputeB(AppCtx*);
-static PetscErrorCode Monitor(Tao, void*);
-static PetscErrorCode ConvergenceTest(Tao, void*);
+static PetscReal      p(PetscReal xi, PetscReal ecc);
+static PetscErrorCode FormFunctionGradient(Tao, Vec, PetscReal *, Vec, void *);
+static PetscErrorCode FormHessian(Tao, Vec, Mat, Mat, void *);
+static PetscErrorCode ComputeB(AppCtx *);
+static PetscErrorCode Monitor(Tao, void *);
+static PetscErrorCode ConvergenceTest(Tao, void *);
 
-int main(int argc, char **argv)
-{
-  PetscInt           Nx, Ny;          /* number of processors in x- and y- directions */
-  PetscInt           m;               /* number of local elements in vectors */
-  Vec                x;               /* variables vector */
-  Vec                xl,xu;           /* bounds vectors */
-  PetscReal          d1000 = 1000;
-  PetscBool          flg,testgetdiag; /* A return variable when checking for user options */
-  Tao                tao;             /* Tao solver context */
-  KSP                ksp;
-  AppCtx             user;            /* user-defined work context */
-  PetscReal          zero = 0.0;      /* lower bound on all variables */
+int main(int argc, char **argv) {
+  PetscInt  Nx, Ny; /* number of processors in x- and y- directions */
+  PetscInt  m;      /* number of local elements in vectors */
+  Vec       x;      /* variables vector */
+  Vec       xl, xu; /* bounds vectors */
+  PetscReal d1000 = 1000;
+  PetscBool flg, testgetdiag; /* A return variable when checking for user options */
+  Tao       tao;              /* Tao solver context */
+  KSP       ksp;
+  AppCtx    user;       /* user-defined work context */
+  PetscReal zero = 0.0; /* lower bound on all variables */
 
   /* Initialize PETSC and TAO */
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv,(char *)0,help));
+  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
 
   /* Set the default values for the problem parameters */
-  user.nx = 50; user.ny = 50; user.ecc = 0.1; user.b = 10.0;
+  user.nx     = 50;
+  user.ny     = 50;
+  user.ecc    = 0.1;
+  user.b      = 10.0;
   testgetdiag = PETSC_FALSE;
 
   /* Check for any command line arguments that override defaults */
-  PetscCall(PetscOptionsGetInt(NULL,NULL,"-mx",&user.nx,&flg));
-  PetscCall(PetscOptionsGetInt(NULL,NULL,"-my",&user.ny,&flg));
-  PetscCall(PetscOptionsGetReal(NULL,NULL,"-ecc",&user.ecc,&flg));
-  PetscCall(PetscOptionsGetReal(NULL,NULL,"-b",&user.b,&flg));
-  PetscCall(PetscOptionsGetBool(NULL,NULL,"-test_getdiagonal",&testgetdiag,NULL));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-mx", &user.nx, &flg));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-my", &user.ny, &flg));
+  PetscCall(PetscOptionsGetReal(NULL, NULL, "-ecc", &user.ecc, &flg));
+  PetscCall(PetscOptionsGetReal(NULL, NULL, "-b", &user.b, &flg));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_getdiagonal", &testgetdiag, NULL));
 
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\n---- Journal Bearing Problem SHB-----\n"));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"mx: %" PetscInt_FMT ",  my: %" PetscInt_FMT ",  ecc: %g \n\n",user.nx,user.ny,(double)user.ecc));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n---- Journal Bearing Problem SHB-----\n"));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "mx: %" PetscInt_FMT ",  my: %" PetscInt_FMT ",  ecc: %g \n\n", user.nx, user.ny, (double)user.ecc));
 
   /* Let Petsc determine the grid division */
-  Nx = PETSC_DECIDE; Ny = PETSC_DECIDE;
+  Nx = PETSC_DECIDE;
+  Ny = PETSC_DECIDE;
 
   /*
      A two dimensional distributed array will help define this problem,
      which derives from an elliptic PDE on two dimensional domain.  From
      the distributed array, Create the vectors.
   */
-  PetscCall(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.nx,user.ny,Nx,Ny,1,1,NULL,NULL,&user.dm));
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_STAR, user.nx, user.ny, Nx, Ny, 1, 1, NULL, NULL, &user.dm));
   PetscCall(DMSetFromOptions(user.dm));
   PetscCall(DMSetUp(user.dm));
 
@@ -95,14 +97,14 @@ int main(int argc, char **argv)
      gradient, and Hessian.  Duplicate for remaining vectors that are
      the same types.
   */
-  PetscCall(DMCreateGlobalVector(user.dm,&x)); /* Solution */
-  PetscCall(VecDuplicate(x,&user.B)); /* Linear objective */
+  PetscCall(DMCreateGlobalVector(user.dm, &x)); /* Solution */
+  PetscCall(VecDuplicate(x, &user.B));          /* Linear objective */
 
   /*  Create matrix user.A to store quadratic, Create a local ordering scheme. */
-  PetscCall(VecGetLocalSize(x,&m));
-  PetscCall(DMCreateMatrix(user.dm,&user.A));
+  PetscCall(VecGetLocalSize(x, &m));
+  PetscCall(DMCreateMatrix(user.dm, &user.A));
 
-  if (testgetdiag) PetscCall(MatSetOperation(user.A,MATOP_GET_DIAGONAL,NULL));
+  if (testgetdiag) PetscCall(MatSetOperation(user.A, MATOP_GET_DIAGONAL, NULL));
 
   /* User defined function -- compute linear term of quadratic */
   PetscCall(ComputeB(&user));
@@ -113,36 +115,32 @@ int main(int argc, char **argv)
      Create the optimization solver
      Suitable methods: TAOGPCG, TAOBQPIP, TAOTRON, TAOBLMVM
   */
-  PetscCall(TaoCreate(PETSC_COMM_WORLD,&tao));
-  PetscCall(TaoSetType(tao,TAOBLMVM));
+  PetscCall(TaoCreate(PETSC_COMM_WORLD, &tao));
+  PetscCall(TaoSetType(tao, TAOBLMVM));
 
   /* Set the initial vector */
   PetscCall(VecSet(x, zero));
-  PetscCall(TaoSetSolution(tao,x));
+  PetscCall(TaoSetSolution(tao, x));
 
   /* Set the user function, gradient, hessian evaluation routines and data structures */
-  PetscCall(TaoSetObjectiveAndGradient(tao,NULL,FormFunctionGradient,(void*) &user));
+  PetscCall(TaoSetObjectiveAndGradient(tao, NULL, FormFunctionGradient, (void *)&user));
 
-  PetscCall(TaoSetHessian(tao,user.A,user.A,FormHessian,(void*)&user));
+  PetscCall(TaoSetHessian(tao, user.A, user.A, FormHessian, (void *)&user));
 
   /* Set a routine that defines the bounds */
-  PetscCall(VecDuplicate(x,&xl));
-  PetscCall(VecDuplicate(x,&xu));
+  PetscCall(VecDuplicate(x, &xl));
+  PetscCall(VecDuplicate(x, &xu));
   PetscCall(VecSet(xl, zero));
   PetscCall(VecSet(xu, d1000));
-  PetscCall(TaoSetVariableBounds(tao,xl,xu));
+  PetscCall(TaoSetVariableBounds(tao, xl, xu));
 
-  PetscCall(TaoGetKSP(tao,&ksp));
-  if (ksp) PetscCall(KSPSetType(ksp,KSPCG));
+  PetscCall(TaoGetKSP(tao, &ksp));
+  if (ksp) PetscCall(KSPSetType(ksp, KSPCG));
 
-  PetscCall(PetscOptionsHasName(NULL,NULL,"-testmonitor",&flg));
-  if (flg) {
-    PetscCall(TaoSetMonitor(tao,Monitor,&user,NULL));
-  }
-  PetscCall(PetscOptionsHasName(NULL,NULL,"-testconvergence",&flg));
-  if (flg) {
-    PetscCall(TaoSetConvergenceTest(tao,ConvergenceTest,&user));
-  }
+  PetscCall(PetscOptionsHasName(NULL, NULL, "-testmonitor", &flg));
+  if (flg) { PetscCall(TaoSetMonitor(tao, Monitor, &user, NULL)); }
+  PetscCall(PetscOptionsHasName(NULL, NULL, "-testconvergence", &flg));
+  if (flg) { PetscCall(TaoSetConvergenceTest(tao, ConvergenceTest, &user)); }
 
   /* Check for any tao command line options */
   PetscCall(TaoSetFromOptions(tao));
@@ -164,148 +162,153 @@ int main(int argc, char **argv)
   return 0;
 }
 
-static PetscReal p(PetscReal xi, PetscReal ecc)
-{
-  PetscReal t=1.0+ecc*PetscCosScalar(xi);
-  return (t*t*t);
+static PetscReal p(PetscReal xi, PetscReal ecc) {
+  PetscReal t = 1.0 + ecc * PetscCosScalar(xi);
+  return (t * t * t);
 }
 
-PetscErrorCode ComputeB(AppCtx* user)
-{
-  PetscInt       i,j,k;
-  PetscInt       nx,ny,xs,xm,gxs,gxm,ys,ym,gys,gym;
-  PetscReal      two=2.0, pi=4.0*atan(1.0);
-  PetscReal      hx,hy,ehxhy;
-  PetscReal      temp,*b;
-  PetscReal      ecc=user->ecc;
+PetscErrorCode ComputeB(AppCtx *user) {
+  PetscInt  i, j, k;
+  PetscInt  nx, ny, xs, xm, gxs, gxm, ys, ym, gys, gym;
+  PetscReal two = 2.0, pi = 4.0 * atan(1.0);
+  PetscReal hx, hy, ehxhy;
+  PetscReal temp, *b;
+  PetscReal ecc = user->ecc;
 
   PetscFunctionBegin;
-  nx=user->nx;
-  ny=user->ny;
-  hx=two*pi/(nx+1.0);
-  hy=two*user->b/(ny+1.0);
-  ehxhy = ecc*hx*hy;
+  nx    = user->nx;
+  ny    = user->ny;
+  hx    = two * pi / (nx + 1.0);
+  hy    = two * user->b / (ny + 1.0);
+  ehxhy = ecc * hx * hy;
 
   /*
      Get local grid boundaries
   */
-  PetscCall(DMDAGetCorners(user->dm,&xs,&ys,NULL,&xm,&ym,NULL));
-  PetscCall(DMDAGetGhostCorners(user->dm,&gxs,&gys,NULL,&gxm,&gym,NULL));
+  PetscCall(DMDAGetCorners(user->dm, &xs, &ys, NULL, &xm, &ym, NULL));
+  PetscCall(DMDAGetGhostCorners(user->dm, &gxs, &gys, NULL, &gxm, &gym, NULL));
 
   /* Compute the linear term in the objective function */
-  PetscCall(VecGetArray(user->B,&b));
-  for (i=xs; i<xs+xm; i++) {
-    temp=PetscSinScalar((i+1)*hx);
-    for (j=ys; j<ys+ym; j++) {
-      k=xm*(j-ys)+(i-xs);
-      b[k]=  - ehxhy*temp;
+  PetscCall(VecGetArray(user->B, &b));
+  for (i = xs; i < xs + xm; i++) {
+    temp = PetscSinScalar((i + 1) * hx);
+    for (j = ys; j < ys + ym; j++) {
+      k    = xm * (j - ys) + (i - xs);
+      b[k] = -ehxhy * temp;
     }
   }
-  PetscCall(VecRestoreArray(user->B,&b));
-  PetscCall(PetscLogFlops(5.0*xm*ym+3.0*xm));
+  PetscCall(VecRestoreArray(user->B, &b));
+  PetscCall(PetscLogFlops(5.0 * xm * ym + 3.0 * xm));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *fcn,Vec G,void *ptr)
-{
-  AppCtx*        user=(AppCtx*)ptr;
-  PetscInt       i,j,k,kk;
-  PetscInt       col[5],row,nx,ny,xs,xm,gxs,gxm,ys,ym,gys,gym;
-  PetscReal      one=1.0, two=2.0, six=6.0,pi=4.0*atan(1.0);
-  PetscReal      hx,hy,hxhy,hxhx,hyhy;
-  PetscReal      xi,v[5];
-  PetscReal      ecc=user->ecc, trule1,trule2,trule3,trule4,trule5,trule6;
-  PetscReal      vmiddle, vup, vdown, vleft, vright;
-  PetscReal      tt,f1,f2;
-  PetscReal      *x,*g,zero=0.0;
-  Vec            localX;
+PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *fcn, Vec G, void *ptr) {
+  AppCtx    *user = (AppCtx *)ptr;
+  PetscInt   i, j, k, kk;
+  PetscInt   col[5], row, nx, ny, xs, xm, gxs, gxm, ys, ym, gys, gym;
+  PetscReal  one = 1.0, two = 2.0, six = 6.0, pi = 4.0 * atan(1.0);
+  PetscReal  hx, hy, hxhy, hxhx, hyhy;
+  PetscReal  xi, v[5];
+  PetscReal  ecc = user->ecc, trule1, trule2, trule3, trule4, trule5, trule6;
+  PetscReal  vmiddle, vup, vdown, vleft, vright;
+  PetscReal  tt, f1, f2;
+  PetscReal *x, *g, zero = 0.0;
+  Vec        localX;
 
   PetscFunctionBegin;
-  nx=user->nx;
-  ny=user->ny;
-  hx=two*pi/(nx+1.0);
-  hy=two*user->b/(ny+1.0);
-  hxhy=hx*hy;
-  hxhx=one/(hx*hx);
-  hyhy=one/(hy*hy);
+  nx   = user->nx;
+  ny   = user->ny;
+  hx   = two * pi / (nx + 1.0);
+  hy   = two * user->b / (ny + 1.0);
+  hxhy = hx * hy;
+  hxhx = one / (hx * hx);
+  hyhy = one / (hy * hy);
 
-  PetscCall(DMGetLocalVector(user->dm,&localX));
+  PetscCall(DMGetLocalVector(user->dm, &localX));
 
-  PetscCall(DMGlobalToLocalBegin(user->dm,X,INSERT_VALUES,localX));
-  PetscCall(DMGlobalToLocalEnd(user->dm,X,INSERT_VALUES,localX));
+  PetscCall(DMGlobalToLocalBegin(user->dm, X, INSERT_VALUES, localX));
+  PetscCall(DMGlobalToLocalEnd(user->dm, X, INSERT_VALUES, localX));
 
   PetscCall(VecSet(G, zero));
   /*
     Get local grid boundaries
   */
-  PetscCall(DMDAGetCorners(user->dm,&xs,&ys,NULL,&xm,&ym,NULL));
-  PetscCall(DMDAGetGhostCorners(user->dm,&gxs,&gys,NULL,&gxm,&gym,NULL));
+  PetscCall(DMDAGetCorners(user->dm, &xs, &ys, NULL, &xm, &ym, NULL));
+  PetscCall(DMDAGetGhostCorners(user->dm, &gxs, &gys, NULL, &gxm, &gym, NULL));
 
-  PetscCall(VecGetArray(localX,&x));
-  PetscCall(VecGetArray(G,&g));
+  PetscCall(VecGetArray(localX, &x));
+  PetscCall(VecGetArray(G, &g));
 
-  for (i=xs; i< xs+xm; i++) {
-    xi=(i+1)*hx;
-    trule1=hxhy*(p(xi,ecc) + p(xi+hx,ecc) + p(xi,ecc)) / six; /* L(i,j) */
-    trule2=hxhy*(p(xi,ecc) + p(xi-hx,ecc) + p(xi,ecc)) / six; /* U(i,j) */
-    trule3=hxhy*(p(xi,ecc) + p(xi+hx,ecc) + p(xi+hx,ecc)) / six; /* U(i+1,j) */
-    trule4=hxhy*(p(xi,ecc) + p(xi-hx,ecc) + p(xi-hx,ecc)) / six; /* L(i-1,j) */
-    trule5=trule1; /* L(i,j-1) */
-    trule6=trule2; /* U(i,j+1) */
+  for (i = xs; i < xs + xm; i++) {
+    xi     = (i + 1) * hx;
+    trule1 = hxhy * (p(xi, ecc) + p(xi + hx, ecc) + p(xi, ecc)) / six;      /* L(i,j) */
+    trule2 = hxhy * (p(xi, ecc) + p(xi - hx, ecc) + p(xi, ecc)) / six;      /* U(i,j) */
+    trule3 = hxhy * (p(xi, ecc) + p(xi + hx, ecc) + p(xi + hx, ecc)) / six; /* U(i+1,j) */
+    trule4 = hxhy * (p(xi, ecc) + p(xi - hx, ecc) + p(xi - hx, ecc)) / six; /* L(i-1,j) */
+    trule5 = trule1;                                                        /* L(i,j-1) */
+    trule6 = trule2;                                                        /* U(i,j+1) */
 
-    vdown=-(trule5+trule2)*hyhy;
-    vleft=-hxhx*(trule2+trule4);
-    vright= -hxhx*(trule1+trule3);
-    vup=-hyhy*(trule1+trule6);
-    vmiddle=(hxhx)*(trule1+trule2+trule3+trule4)+hyhy*(trule1+trule2+trule5+trule6);
+    vdown   = -(trule5 + trule2) * hyhy;
+    vleft   = -hxhx * (trule2 + trule4);
+    vright  = -hxhx * (trule1 + trule3);
+    vup     = -hyhy * (trule1 + trule6);
+    vmiddle = (hxhx) * (trule1 + trule2 + trule3 + trule4) + hyhy * (trule1 + trule2 + trule5 + trule6);
 
-    for (j=ys; j<ys+ym; j++) {
+    for (j = ys; j < ys + ym; j++) {
+      row  = (j - gys) * gxm + (i - gxs);
+      v[0] = 0;
+      v[1] = 0;
+      v[2] = 0;
+      v[3] = 0;
+      v[4] = 0;
 
-      row=(j-gys)*gxm + (i-gxs);
-       v[0]=0; v[1]=0; v[2]=0; v[3]=0; v[4]=0;
+      k = 0;
+      if (j > gys) {
+        v[k]   = vdown;
+        col[k] = row - gxm;
+        k++;
+      }
 
-       k=0;
-       if (j>gys) {
-         v[k]=vdown; col[k]=row - gxm; k++;
-       }
+      if (i > gxs) {
+        v[k]   = vleft;
+        col[k] = row - 1;
+        k++;
+      }
 
-       if (i>gxs) {
-         v[k]= vleft; col[k]=row - 1; k++;
-       }
+      v[k]   = vmiddle;
+      col[k] = row;
+      k++;
 
-       v[k]= vmiddle; col[k]=row; k++;
+      if (i + 1 < gxs + gxm) {
+        v[k]   = vright;
+        col[k] = row + 1;
+        k++;
+      }
 
-       if (i+1 < gxs+gxm) {
-         v[k]= vright; col[k]=row+1; k++;
-       }
-
-       if (j+1 <gys+gym) {
-         v[k]= vup; col[k] = row+gxm; k++;
-       }
-       tt=0;
-       for (kk=0;kk<k;kk++) {
-         tt+=v[kk]*x[col[kk]];
-       }
-       row=(j-ys)*xm + (i-xs);
-       g[row]=tt;
-
-     }
-
+      if (j + 1 < gys + gym) {
+        v[k]   = vup;
+        col[k] = row + gxm;
+        k++;
+      }
+      tt = 0;
+      for (kk = 0; kk < k; kk++) { tt += v[kk] * x[col[kk]]; }
+      row    = (j - ys) * xm + (i - xs);
+      g[row] = tt;
+    }
   }
 
-  PetscCall(VecRestoreArray(localX,&x));
-  PetscCall(VecRestoreArray(G,&g));
+  PetscCall(VecRestoreArray(localX, &x));
+  PetscCall(VecRestoreArray(G, &g));
 
-  PetscCall(DMRestoreLocalVector(user->dm,&localX));
+  PetscCall(DMRestoreLocalVector(user->dm, &localX));
 
-  PetscCall(VecDot(X,G,&f1));
-  PetscCall(VecDot(user->B,X,&f2));
+  PetscCall(VecDot(X, G, &f1));
+  PetscCall(VecDot(user->B, X, &f2));
   PetscCall(VecAXPY(G, one, user->B));
-  *fcn = f1/2.0 + f2;
+  *fcn = f1 / 2.0 + f2;
 
-  PetscCall(PetscLogFlops((91 + 10.0*ym) * xm));
+  PetscCall(PetscLogFlops((91 + 10.0 * ym) * xm));
   PetscFunctionReturn(0);
-
 }
 
 /*
@@ -313,76 +316,87 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *fcn,Vec G,void *p
    Notice that the objective function in this problem is quadratic (therefore a constant
    hessian).  If using a nonquadratic solver, then you might want to reconsider this function
 */
-PetscErrorCode FormHessian(Tao tao,Vec X,Mat hes, Mat Hpre, void *ptr)
-{
-  AppCtx*        user=(AppCtx*)ptr;
-  PetscInt       i,j,k;
-  PetscInt       col[5],row,nx,ny,xs,xm,gxs,gxm,ys,ym,gys,gym;
-  PetscReal      one=1.0, two=2.0, six=6.0,pi=4.0*atan(1.0);
-  PetscReal      hx,hy,hxhy,hxhx,hyhy;
-  PetscReal      xi,v[5];
-  PetscReal      ecc=user->ecc, trule1,trule2,trule3,trule4,trule5,trule6;
-  PetscReal      vmiddle, vup, vdown, vleft, vright;
-  PetscBool      assembled;
+PetscErrorCode FormHessian(Tao tao, Vec X, Mat hes, Mat Hpre, void *ptr) {
+  AppCtx   *user = (AppCtx *)ptr;
+  PetscInt  i, j, k;
+  PetscInt  col[5], row, nx, ny, xs, xm, gxs, gxm, ys, ym, gys, gym;
+  PetscReal one = 1.0, two = 2.0, six = 6.0, pi = 4.0 * atan(1.0);
+  PetscReal hx, hy, hxhy, hxhx, hyhy;
+  PetscReal xi, v[5];
+  PetscReal ecc = user->ecc, trule1, trule2, trule3, trule4, trule5, trule6;
+  PetscReal vmiddle, vup, vdown, vleft, vright;
+  PetscBool assembled;
 
   PetscFunctionBegin;
-  nx=user->nx;
-  ny=user->ny;
-  hx=two*pi/(nx+1.0);
-  hy=two*user->b/(ny+1.0);
-  hxhy=hx*hy;
-  hxhx=one/(hx*hx);
-  hyhy=one/(hy*hy);
+  nx   = user->nx;
+  ny   = user->ny;
+  hx   = two * pi / (nx + 1.0);
+  hy   = two * user->b / (ny + 1.0);
+  hxhy = hx * hy;
+  hxhx = one / (hx * hx);
+  hyhy = one / (hy * hy);
 
   /*
     Get local grid boundaries
   */
-  PetscCall(DMDAGetCorners(user->dm,&xs,&ys,NULL,&xm,&ym,NULL));
-  PetscCall(DMDAGetGhostCorners(user->dm,&gxs,&gys,NULL,&gxm,&gym,NULL));
-  PetscCall(MatAssembled(hes,&assembled));
+  PetscCall(DMDAGetCorners(user->dm, &xs, &ys, NULL, &xm, &ym, NULL));
+  PetscCall(DMDAGetGhostCorners(user->dm, &gxs, &gys, NULL, &gxm, &gym, NULL));
+  PetscCall(MatAssembled(hes, &assembled));
   if (assembled) PetscCall(MatZeroEntries(hes));
 
-  for (i=xs; i< xs+xm; i++) {
-    xi=(i+1)*hx;
-    trule1=hxhy*(p(xi,ecc) + p(xi+hx,ecc) + p(xi,ecc)) / six; /* L(i,j) */
-    trule2=hxhy*(p(xi,ecc) + p(xi-hx,ecc) + p(xi,ecc)) / six; /* U(i,j) */
-    trule3=hxhy*(p(xi,ecc) + p(xi+hx,ecc) + p(xi+hx,ecc)) / six; /* U(i+1,j) */
-    trule4=hxhy*(p(xi,ecc) + p(xi-hx,ecc) + p(xi-hx,ecc)) / six; /* L(i-1,j) */
-    trule5=trule1; /* L(i,j-1) */
-    trule6=trule2; /* U(i,j+1) */
+  for (i = xs; i < xs + xm; i++) {
+    xi     = (i + 1) * hx;
+    trule1 = hxhy * (p(xi, ecc) + p(xi + hx, ecc) + p(xi, ecc)) / six;      /* L(i,j) */
+    trule2 = hxhy * (p(xi, ecc) + p(xi - hx, ecc) + p(xi, ecc)) / six;      /* U(i,j) */
+    trule3 = hxhy * (p(xi, ecc) + p(xi + hx, ecc) + p(xi + hx, ecc)) / six; /* U(i+1,j) */
+    trule4 = hxhy * (p(xi, ecc) + p(xi - hx, ecc) + p(xi - hx, ecc)) / six; /* L(i-1,j) */
+    trule5 = trule1;                                                        /* L(i,j-1) */
+    trule6 = trule2;                                                        /* U(i,j+1) */
 
-    vdown=-(trule5+trule2)*hyhy;
-    vleft=-hxhx*(trule2+trule4);
-    vright= -hxhx*(trule1+trule3);
-    vup=-hyhy*(trule1+trule6);
-    vmiddle=(hxhx)*(trule1+trule2+trule3+trule4)+hyhy*(trule1+trule2+trule5+trule6);
-    v[0]=0; v[1]=0; v[2]=0; v[3]=0; v[4]=0;
+    vdown   = -(trule5 + trule2) * hyhy;
+    vleft   = -hxhx * (trule2 + trule4);
+    vright  = -hxhx * (trule1 + trule3);
+    vup     = -hyhy * (trule1 + trule6);
+    vmiddle = (hxhx) * (trule1 + trule2 + trule3 + trule4) + hyhy * (trule1 + trule2 + trule5 + trule6);
+    v[0]    = 0;
+    v[1]    = 0;
+    v[2]    = 0;
+    v[3]    = 0;
+    v[4]    = 0;
 
-    for (j=ys; j<ys+ym; j++) {
-      row=(j-gys)*gxm + (i-gxs);
+    for (j = ys; j < ys + ym; j++) {
+      row = (j - gys) * gxm + (i - gxs);
 
-      k=0;
-      if (j>gys) {
-        v[k]=vdown; col[k]=row - gxm; k++;
+      k = 0;
+      if (j > gys) {
+        v[k]   = vdown;
+        col[k] = row - gxm;
+        k++;
       }
 
-      if (i>gxs) {
-        v[k]= vleft; col[k]=row - 1; k++;
+      if (i > gxs) {
+        v[k]   = vleft;
+        col[k] = row - 1;
+        k++;
       }
 
-      v[k]= vmiddle; col[k]=row; k++;
+      v[k]   = vmiddle;
+      col[k] = row;
+      k++;
 
-      if (i+1 < gxs+gxm) {
-        v[k]= vright; col[k]=row+1; k++;
+      if (i + 1 < gxs + gxm) {
+        v[k]   = vright;
+        col[k] = row + 1;
+        k++;
       }
 
-      if (j+1 <gys+gym) {
-        v[k]= vup; col[k] = row+gxm; k++;
+      if (j + 1 < gys + gym) {
+        v[k]   = vup;
+        col[k] = row + gxm;
+        k++;
       }
-      PetscCall(MatSetValuesLocal(hes,1,&row,k,col,v,INSERT_VALUES));
-
+      PetscCall(MatSetValuesLocal(hes, 1, &row, k, col, v, INSERT_VALUES));
     }
-
   }
 
   /*
@@ -391,47 +405,40 @@ PetscErrorCode FormHessian(Tao tao,Vec X,Mat hes, Mat Hpre, void *ptr)
      By placing code between these two statements, computations can be
      done while messages are in transition.
   */
-  PetscCall(MatAssemblyBegin(hes,MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(hes,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(hes, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(hes, MAT_FINAL_ASSEMBLY));
 
   /*
     Tell the matrix we will never add a new nonzero location to the
     matrix. If we do it will generate an error.
   */
-  PetscCall(MatSetOption(hes,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE));
-  PetscCall(MatSetOption(hes,MAT_SYMMETRIC,PETSC_TRUE));
+  PetscCall(MatSetOption(hes, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE));
+  PetscCall(MatSetOption(hes, MAT_SYMMETRIC, PETSC_TRUE));
 
-  PetscCall(PetscLogFlops(9.0*xm*ym+49.0*xm));
+  PetscCall(PetscLogFlops(9.0 * xm * ym + 49.0 * xm));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode Monitor(Tao tao, void *ctx)
-{
+PetscErrorCode Monitor(Tao tao, void *ctx) {
   PetscInt           its;
-  PetscReal          f,gnorm,cnorm,xdiff;
+  PetscReal          f, gnorm, cnorm, xdiff;
   TaoConvergedReason reason;
 
   PetscFunctionBegin;
   PetscCall(TaoGetSolutionStatus(tao, &its, &f, &gnorm, &cnorm, &xdiff, &reason));
-  if (!(its%5)) {
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"iteration=%" PetscInt_FMT "\tf=%g\n",its,(double)f));
-  }
+  if (!(its % 5)) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "iteration=%" PetscInt_FMT "\tf=%g\n", its, (double)f)); }
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode ConvergenceTest(Tao tao, void *ctx)
-{
+PetscErrorCode ConvergenceTest(Tao tao, void *ctx) {
   PetscInt           its;
-  PetscReal          f,gnorm,cnorm,xdiff;
+  PetscReal          f, gnorm, cnorm, xdiff;
   TaoConvergedReason reason;
 
   PetscFunctionBegin;
   PetscCall(TaoGetSolutionStatus(tao, &its, &f, &gnorm, &cnorm, &xdiff, &reason));
-  if (its == 100) {
-    PetscCall(TaoSetConvergedReason(tao,TAO_DIVERGED_MAXITS));
-  }
+  if (its == 100) { PetscCall(TaoSetConvergedReason(tao, TAO_DIVERGED_MAXITS)); }
   PetscFunctionReturn(0);
-
 }
 
 /*TEST

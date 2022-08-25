@@ -1,4 +1,4 @@
-#include <petsc/private/petscfeimpl.h>     /*I  "petscfe.h"  I*/
+#include <petsc/private/petscfeimpl.h> /*I  "petscfe.h"  I*/
 #include <petscdmshell.h>
 
 PetscClassId PETSCSPACE_CLASSID = 0;
@@ -39,8 +39,7 @@ PetscBool         PetscSpaceRegisterAllCalled = PETSC_FALSE;
 .seealso: `PetscSpaceRegisterAll()`, `PetscSpaceRegisterDestroy()`
 
 @*/
-PetscErrorCode PetscSpaceRegister(const char sname[], PetscErrorCode (*function)(PetscSpace))
-{
+PetscErrorCode PetscSpaceRegister(const char sname[], PetscErrorCode (*function)(PetscSpace)) {
   PetscFunctionBegin;
   PetscCall(PetscFunctionListAdd(&PetscSpaceList, sname, function));
   PetscFunctionReturn(0);
@@ -62,27 +61,25 @@ PetscErrorCode PetscSpaceRegister(const char sname[], PetscErrorCode (*function)
 
 .seealso: `PetscSpaceGetType()`, `PetscSpaceCreate()`
 @*/
-PetscErrorCode PetscSpaceSetType(PetscSpace sp, PetscSpaceType name)
-{
+PetscErrorCode PetscSpaceSetType(PetscSpace sp, PetscSpaceType name) {
   PetscErrorCode (*r)(PetscSpace);
-  PetscBool      match;
+  PetscBool match;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  PetscCall(PetscObjectTypeCompare((PetscObject) sp, name, &match));
+  PetscCall(PetscObjectTypeCompare((PetscObject)sp, name, &match));
   if (match) PetscFunctionReturn(0);
 
   PetscCall(PetscSpaceRegisterAll());
   PetscCall(PetscFunctionListFind(PetscSpaceList, name, &r));
-  PetscCheck(r,PetscObjectComm((PetscObject) sp), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscSpace type: %s", name);
+  PetscCheck(r, PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscSpace type: %s", name);
 
-  if (sp->ops->destroy) {
-    PetscCall((*sp->ops->destroy)(sp));
-    sp->ops->destroy = NULL;
-  }
+  PetscTryTypeMethod(sp, destroy);
+  sp->ops->destroy = NULL;
+
   sp->dim = PETSC_DETERMINE;
   PetscCall((*r)(sp));
-  PetscCall(PetscObjectChangeTypeName((PetscObject) sp, name));
+  PetscCall(PetscObjectChangeTypeName((PetscObject)sp, name));
   PetscFunctionReturn(0);
 }
 
@@ -101,15 +98,12 @@ PetscErrorCode PetscSpaceSetType(PetscSpace sp, PetscSpaceType name)
 
 .seealso: `PetscSpaceSetType()`, `PetscSpaceCreate()`
 @*/
-PetscErrorCode PetscSpaceGetType(PetscSpace sp, PetscSpaceType *name)
-{
+PetscErrorCode PetscSpaceGetType(PetscSpace sp, PetscSpaceType *name) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
   PetscValidPointer(name, 2);
-  if (!PetscSpaceRegisterAllCalled) {
-    PetscCall(PetscSpaceRegisterAll());
-  }
-  *name = ((PetscObject) sp)->type_name;
+  if (!PetscSpaceRegisterAllCalled) { PetscCall(PetscSpaceRegisterAll()); }
+  *name = ((PetscObject)sp)->type_name;
   PetscFunctionReturn(0);
 }
 
@@ -126,11 +120,10 @@ PetscErrorCode PetscSpaceGetType(PetscSpace sp, PetscSpaceType *name)
    Level: intermediate
 .seealso: `PetscSpace`, `PetscSpaceView`, `PetscObjectViewFromOptions()`, `PetscSpaceCreate()`
 @*/
-PetscErrorCode  PetscSpaceViewFromOptions(PetscSpace A,PetscObject obj,const char name[])
-{
+PetscErrorCode PetscSpaceViewFromOptions(PetscSpace A, PetscObject obj, const char name[]) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(A,PETSCSPACE_CLASSID,1);
-  PetscCall(PetscObjectViewFromOptions((PetscObject)A,obj,name));
+  PetscValidHeaderSpecific(A, PETSCSPACE_CLASSID, 1);
+  PetscCall(PetscObjectViewFromOptions((PetscObject)A, obj, name));
   PetscFunctionReturn(0);
 }
 
@@ -147,21 +140,20 @@ PetscErrorCode  PetscSpaceViewFromOptions(PetscSpace A,PetscObject obj,const cha
 
 .seealso `PetscSpaceDestroy()`
 @*/
-PetscErrorCode PetscSpaceView(PetscSpace sp, PetscViewer v)
-{
-  PetscInt       pdim;
-  PetscBool      iascii;
+PetscErrorCode PetscSpaceView(PetscSpace sp, PetscViewer v) {
+  PetscInt  pdim;
+  PetscBool iascii;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
   if (v) PetscValidHeaderSpecific(v, PETSC_VIEWER_CLASSID, 2);
-  if (!v) PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject) sp), &v));
+  if (!v) PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)sp), &v));
   PetscCall(PetscSpaceGetDimension(sp, &pdim));
-  PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)sp,v));
-  PetscCall(PetscObjectTypeCompare((PetscObject) v, PETSCVIEWERASCII, &iascii));
+  PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)sp, v));
+  PetscCall(PetscObjectTypeCompare((PetscObject)v, PETSCVIEWERASCII, &iascii));
   PetscCall(PetscViewerASCIIPushTab(v));
   if (iascii) PetscCall(PetscViewerASCIIPrintf(v, "Space in %" PetscInt_FMT " variables with %" PetscInt_FMT " components, size %" PetscInt_FMT "\n", sp->Nv, sp->Nc, pdim));
-  if (sp->ops->view) PetscCall((*sp->ops->view)(sp, v));
+  PetscTryTypeMethod(sp, view, v);
   PetscCall(PetscViewerASCIIPopTab(v));
   PetscFunctionReturn(0);
 }
@@ -183,38 +175,37 @@ PetscErrorCode PetscSpaceView(PetscSpace sp, PetscViewer v)
 
 .seealso `PetscSpaceView()`
 @*/
-PetscErrorCode PetscSpaceSetFromOptions(PetscSpace sp)
-{
-  const char    *defaultType;
-  char           name[256];
-  PetscBool      flg;
+PetscErrorCode PetscSpaceSetFromOptions(PetscSpace sp) {
+  const char *defaultType;
+  char        name[256];
+  PetscBool   flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  if (!((PetscObject) sp)->type_name) {
+  if (!((PetscObject)sp)->type_name) {
     defaultType = PETSCSPACEPOLYNOMIAL;
   } else {
-    defaultType = ((PetscObject) sp)->type_name;
+    defaultType = ((PetscObject)sp)->type_name;
   }
   if (!PetscSpaceRegisterAllCalled) PetscCall(PetscSpaceRegisterAll());
 
-  PetscObjectOptionsBegin((PetscObject) sp);
+  PetscObjectOptionsBegin((PetscObject)sp);
   PetscCall(PetscOptionsFList("-petscspace_type", "Linear space", "PetscSpaceSetType", PetscSpaceList, defaultType, name, 256, &flg));
   if (flg) {
     PetscCall(PetscSpaceSetType(sp, name));
-  } else if (!((PetscObject) sp)->type_name) {
+  } else if (!((PetscObject)sp)->type_name) {
     PetscCall(PetscSpaceSetType(sp, defaultType));
   }
   {
-    PetscCall(PetscOptionsDeprecated("-petscspace_order","-petscspace_degree","3.11",NULL));
-    PetscCall(PetscOptionsBoundedInt("-petscspace_order", "DEPRECATED: The approximation order", "PetscSpaceSetDegree", sp->degree, &sp->degree, NULL,0));
+    PetscCall(PetscOptionsDeprecated("-petscspace_order", "-petscspace_degree", "3.11", NULL));
+    PetscCall(PetscOptionsBoundedInt("-petscspace_order", "DEPRECATED: The approximation order", "PetscSpaceSetDegree", sp->degree, &sp->degree, NULL, 0));
   }
-  PetscCall(PetscOptionsBoundedInt("-petscspace_degree", "The (maximally included) polynomial degree", "PetscSpaceSetDegree", sp->degree, &sp->degree, NULL,0));
-  PetscCall(PetscOptionsBoundedInt("-petscspace_variables", "The number of different variables, e.g. x and y", "PetscSpaceSetNumVariables", sp->Nv, &sp->Nv, NULL,0));
-  PetscCall(PetscOptionsBoundedInt("-petscspace_components", "The number of components", "PetscSpaceSetNumComponents", sp->Nc, &sp->Nc, NULL,0));
-  if (sp->ops->setfromoptions) PetscCall((*sp->ops->setfromoptions)(PetscOptionsObject,sp));
+  PetscCall(PetscOptionsBoundedInt("-petscspace_degree", "The (maximally included) polynomial degree", "PetscSpaceSetDegree", sp->degree, &sp->degree, NULL, 0));
+  PetscCall(PetscOptionsBoundedInt("-petscspace_variables", "The number of different variables, e.g. x and y", "PetscSpaceSetNumVariables", sp->Nv, &sp->Nv, NULL, 0));
+  PetscCall(PetscOptionsBoundedInt("-petscspace_components", "The number of components", "PetscSpaceSetNumComponents", sp->Nc, &sp->Nc, NULL, 0));
+  PetscTryTypeMethod(sp, setfromoptions, PetscOptionsObject);
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
-  PetscCall(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject) sp));
+  PetscCall(PetscObjectProcessOptionsHandlers((PetscObject)sp, PetscOptionsObject));
   PetscOptionsEnd();
   PetscCall(PetscSpaceViewFromOptions(sp, NULL, "-petscspace_view"));
   PetscFunctionReturn(0);
@@ -232,11 +223,10 @@ PetscErrorCode PetscSpaceSetFromOptions(PetscSpace sp)
 
 .seealso `PetscSpaceView()`, `PetscSpaceDestroy()`
 @*/
-PetscErrorCode PetscSpaceSetUp(PetscSpace sp)
-{
+PetscErrorCode PetscSpaceSetUp(PetscSpace sp) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  if (sp->ops->setup) PetscCall((*sp->ops->setup)(sp));
+  PetscTryTypeMethod(sp, setup);
   PetscFunctionReturn(0);
 }
 
@@ -252,14 +242,16 @@ PetscErrorCode PetscSpaceSetUp(PetscSpace sp)
 
 .seealso `PetscSpaceView()`
 @*/
-PetscErrorCode PetscSpaceDestroy(PetscSpace *sp)
-{
+PetscErrorCode PetscSpaceDestroy(PetscSpace *sp) {
   PetscFunctionBegin;
   if (!*sp) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*sp), PETSCSPACE_CLASSID, 1);
 
-  if (--((PetscObject)(*sp))->refct > 0) {*sp = NULL; PetscFunctionReturn(0);}
-  ((PetscObject) (*sp))->refct = 0;
+  if (--((PetscObject)(*sp))->refct > 0) {
+    *sp = NULL;
+    PetscFunctionReturn(0);
+  }
+  ((PetscObject)(*sp))->refct = 0;
   PetscCall(DMDestroy(&(*sp)->dm));
 
   PetscCall((*(*sp)->ops->destroy)(*sp));
@@ -282,14 +274,13 @@ PetscErrorCode PetscSpaceDestroy(PetscSpace *sp)
 
 .seealso: `PetscSpaceSetType()`, `PETSCSPACEPOLYNOMIAL`
 @*/
-PetscErrorCode PetscSpaceCreate(MPI_Comm comm, PetscSpace *sp)
-{
-  PetscSpace     s;
+PetscErrorCode PetscSpaceCreate(MPI_Comm comm, PetscSpace *sp) {
+  PetscSpace s;
 
   PetscFunctionBegin;
   PetscValidPointer(sp, 2);
-  PetscCall(PetscCitationsRegister(FECitation,&FEcite));
-  *sp  = NULL;
+  PetscCall(PetscCitationsRegister(FECitation, &FEcite));
+  *sp = NULL;
   PetscCall(PetscFEInitializePackage());
 
   PetscCall(PetscHeaderCreate(s, PETSCSPACE_CLASSID, "PetscSpace", "Linear Space", "PetscSpace", comm, PetscSpaceDestroy, PetscSpaceView));
@@ -319,14 +310,11 @@ PetscErrorCode PetscSpaceCreate(MPI_Comm comm, PetscSpace *sp)
 
 .seealso: `PetscSpaceGetDegree()`, `PetscSpaceCreate()`, `PetscSpace`
 @*/
-PetscErrorCode PetscSpaceGetDimension(PetscSpace sp, PetscInt *dim)
-{
+PetscErrorCode PetscSpaceGetDimension(PetscSpace sp, PetscInt *dim) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
   PetscValidIntPointer(dim, 2);
-  if (sp->dim == PETSC_DETERMINE) {
-    if (sp->ops->getdimension) PetscCall((*sp->ops->getdimension)(sp, &sp->dim));
-  }
+  if (sp->dim == PETSC_DETERMINE) { PetscTryTypeMethod(sp, getdimension, &sp->dim); }
   *dim = sp->dim;
   PetscFunctionReturn(0);
 }
@@ -345,8 +333,7 @@ PetscErrorCode PetscSpaceGetDimension(PetscSpace sp, PetscInt *dim)
 
 .seealso: `PetscSpaceSetDegree()`, `PetscSpaceGetDimension()`, `PetscSpaceCreate()`, `PetscSpace`
 @*/
-PetscErrorCode PetscSpaceGetDegree(PetscSpace sp, PetscInt *minDegree, PetscInt *maxDegree)
-{
+PetscErrorCode PetscSpaceGetDegree(PetscSpace sp, PetscInt *minDegree, PetscInt *maxDegree) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
   if (minDegree) PetscValidIntPointer(minDegree, 2);
@@ -368,11 +355,10 @@ PetscErrorCode PetscSpaceGetDegree(PetscSpace sp, PetscInt *minDegree, PetscInt 
 
 .seealso: `PetscSpaceGetDegree()`, `PetscSpaceCreate()`, `PetscSpace`
 @*/
-PetscErrorCode PetscSpaceSetDegree(PetscSpace sp, PetscInt degree, PetscInt maxDegree)
-{
+PetscErrorCode PetscSpaceSetDegree(PetscSpace sp, PetscInt degree, PetscInt maxDegree) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  sp->degree = degree;
+  sp->degree    = degree;
   sp->maxDegree = maxDegree;
   PetscFunctionReturn(0);
 }
@@ -392,8 +378,7 @@ PetscErrorCode PetscSpaceSetDegree(PetscSpace sp, PetscInt degree, PetscInt maxD
 
 .seealso: `PetscSpaceSetNumComponents()`, `PetscSpaceGetNumVariables()`, `PetscSpaceGetDimension()`, `PetscSpaceCreate()`, `PetscSpace`
 @*/
-PetscErrorCode PetscSpaceGetNumComponents(PetscSpace sp, PetscInt *Nc)
-{
+PetscErrorCode PetscSpaceGetNumComponents(PetscSpace sp, PetscInt *Nc) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
   PetscValidIntPointer(Nc, 2);
@@ -412,8 +397,7 @@ PetscErrorCode PetscSpaceGetNumComponents(PetscSpace sp, PetscInt *Nc)
 
 .seealso: `PetscSpaceGetNumComponents()`, `PetscSpaceSetNumVariables()`, `PetscSpaceCreate()`, `PetscSpace`
 @*/
-PetscErrorCode PetscSpaceSetNumComponents(PetscSpace sp, PetscInt Nc)
-{
+PetscErrorCode PetscSpaceSetNumComponents(PetscSpace sp, PetscInt Nc) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
   sp->Nc = Nc;
@@ -431,8 +415,7 @@ PetscErrorCode PetscSpaceSetNumComponents(PetscSpace sp, PetscInt Nc)
 
 .seealso: `PetscSpaceGetNumVariables()`, `PetscSpaceSetNumComponents()`, `PetscSpaceCreate()`, `PetscSpace`
 @*/
-PetscErrorCode PetscSpaceSetNumVariables(PetscSpace sp, PetscInt n)
-{
+PetscErrorCode PetscSpaceSetNumVariables(PetscSpace sp, PetscInt n) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
   sp->Nv = n;
@@ -452,8 +435,7 @@ PetscErrorCode PetscSpaceSetNumVariables(PetscSpace sp, PetscInt n)
 
 .seealso: `PetscSpaceSetNumVariables()`, `PetscSpaceGetNumComponents()`, `PetscSpaceGetDimension()`, `PetscSpaceCreate()`, `PetscSpace`
 @*/
-PetscErrorCode PetscSpaceGetNumVariables(PetscSpace sp, PetscInt *n)
-{
+PetscErrorCode PetscSpaceGetNumVariables(PetscSpace sp, PetscInt *n) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
   PetscValidIntPointer(n, 2);
@@ -481,8 +463,7 @@ PetscErrorCode PetscSpaceGetNumVariables(PetscSpace sp, PetscInt *n)
 
 .seealso: `PetscFECreateTabulation()`, `PetscFEGetCellTabulation()`, `PetscSpaceCreate()`
 @*/
-PetscErrorCode PetscSpaceEvaluate(PetscSpace sp, PetscInt npoints, const PetscReal points[], PetscReal B[], PetscReal D[], PetscReal H[])
-{
+PetscErrorCode PetscSpaceEvaluate(PetscSpace sp, PetscInt npoints, const PetscReal points[], PetscReal B[], PetscReal D[], PetscReal H[]) {
   PetscFunctionBegin;
   if (!npoints) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
@@ -490,7 +471,7 @@ PetscErrorCode PetscSpaceEvaluate(PetscSpace sp, PetscInt npoints, const PetscRe
   if (B) PetscValidRealPointer(B, 4);
   if (D) PetscValidRealPointer(D, 5);
   if (H) PetscValidRealPointer(H, 6);
-  if (sp->ops->evaluate) PetscCall((*sp->ops->evaluate)(sp, npoints, points, B, D, H));
+  PetscTryTypeMethod(sp, evaluate, npoints, points, B, D, H);
   PetscFunctionReturn(0);
 }
 
@@ -516,12 +497,11 @@ PetscErrorCode PetscSpaceEvaluate(PetscSpace sp, PetscInt npoints, const PetscRe
 
 .seealso: `PetscDualSpaceGetHeightSubspace()`, `PetscSpace`
 @*/
-PetscErrorCode PetscSpaceGetHeightSubspace(PetscSpace sp, PetscInt height, PetscSpace *subsp)
-{
+PetscErrorCode PetscSpaceGetHeightSubspace(PetscSpace sp, PetscInt height, PetscSpace *subsp) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
   PetscValidPointer(subsp, 3);
   *subsp = NULL;
-  if (sp->ops->getheightsubspace) PetscCall((*sp->ops->getheightsubspace)(sp, height, subsp));
+  PetscTryTypeMethod(sp, getheightsubspace, height, subsp);
   PetscFunctionReturn(0);
 }

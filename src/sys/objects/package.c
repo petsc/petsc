@@ -1,5 +1,5 @@
 
-#include <petsc/private/petscimpl.h>        /*I    "petscsys.h"   I*/
+#include <petsc/private/petscimpl.h> /*I    "petscsys.h"   I*/
 
 /*@C
    PetscHasExternalPackage - Determine whether PETSc has been configured with the given package
@@ -24,16 +24,15 @@
 
 .seealso: `PetscViewerType`, `MatPartitioningType`, `MatSolverType`
 @*/
-PetscErrorCode  PetscHasExternalPackage(const char pkg[], PetscBool *has)
-{
+PetscErrorCode PetscHasExternalPackage(const char pkg[], PetscBool *has) {
   char   pkgstr[128], *loc;
   size_t cnt;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(pkg,1);
-  PetscValidBoolPointer(has,2);
-  PetscCall(PetscSNPrintfCount(pkgstr,sizeof(pkgstr),":%s:",&cnt,pkg));
-  PetscCheck(cnt < sizeof(pkgstr),PETSC_COMM_SELF, PETSC_ERR_SUP, "Package name is too long: \"%s\"", pkg);
+  PetscValidCharPointer(pkg, 1);
+  PetscValidBoolPointer(has, 2);
+  PetscCall(PetscSNPrintfCount(pkgstr, sizeof(pkgstr), ":%s:", &cnt, pkg));
+  PetscCheck(cnt < sizeof(pkgstr), PETSC_COMM_SELF, PETSC_ERR_SUP, "Package name is too long: \"%s\"", pkg);
   PetscCall(PetscStrtolower(pkgstr));
 #if defined(PETSC_HAVE_PACKAGES)
   PetscCall(PetscStrstr(PETSC_HAVE_PACKAGES, pkgstr, &loc));

@@ -1,5 +1,5 @@
 
-#include <petsc/private/randomimpl.h>         /*I "petscsys.h" I*/
+#include <petsc/private/randomimpl.h> /*I "petscsys.h" I*/
 
 PetscFunctionList PetscRandomList              = NULL;
 PetscBool         PetscRandomRegisterAllCalled = PETSC_FALSE;
@@ -25,24 +25,21 @@ PetscBool         PetscRandomRegisterAllCalled = PETSC_FALSE;
 .seealso: `PetscRandomGetType()`, `PetscRandomCreate()`
 @*/
 
-PetscErrorCode  PetscRandomSetType(PetscRandom rnd, PetscRandomType type)
-{
+PetscErrorCode PetscRandomSetType(PetscRandom rnd, PetscRandomType type) {
   PetscErrorCode (*r)(PetscRandom);
-  PetscBool      match;
+  PetscBool match;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(rnd, PETSC_RANDOM_CLASSID,1);
+  PetscValidHeaderSpecific(rnd, PETSC_RANDOM_CLASSID, 1);
   PetscCall(PetscObjectTypeCompare((PetscObject)rnd, type, &match));
   if (match) PetscFunctionReturn(0);
 
-  PetscCall(PetscFunctionListFind(PetscRandomList,type,&r));
-  PetscCheck(r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown random type: %s", type);
+  PetscCall(PetscFunctionListFind(PetscRandomList, type, &r));
+  PetscCheck(r, PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown random type: %s", type);
 
-  if (rnd->ops->destroy) {
-    PetscCall((*rnd->ops->destroy)(rnd));
+  PetscTryTypeMethod(rnd, destroy);
+  rnd->ops->destroy = NULL;
 
-    rnd->ops->destroy = NULL;
-  }
   PetscCall((*r)(rnd));
   PetscCall(PetscRandomSeed(rnd));
 
@@ -65,11 +62,10 @@ PetscErrorCode  PetscRandomSetType(PetscRandom rnd, PetscRandomType type)
 
 .seealso: `PetscRandomSetType()`, `PetscRandomCreate()`
 @*/
-PetscErrorCode  PetscRandomGetType(PetscRandom rnd, PetscRandomType *type)
-{
+PetscErrorCode PetscRandomGetType(PetscRandom rnd, PetscRandomType *type) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(rnd, PETSC_RANDOM_CLASSID,1);
-  PetscValidPointer(type,2);
+  PetscValidHeaderSpecific(rnd, PETSC_RANDOM_CLASSID, 1);
+  PetscValidPointer(type, 2);
   *type = ((PetscObject)rnd)->type_name;
   PetscFunctionReturn(0);
 }
@@ -109,11 +105,10 @@ PetscErrorCode  PetscRandomGetType(PetscRandom rnd, PetscRandomType *type)
 
 .seealso: `PetscRandomRegisterAll()`, `PetscRandomRegisterDestroy()`, `PetscRandomRegister()`
 @*/
-PetscErrorCode  PetscRandomRegister(const char sname[], PetscErrorCode (*function)(PetscRandom))
-{
+PetscErrorCode PetscRandomRegister(const char sname[], PetscErrorCode (*function)(PetscRandom)) {
   PetscFunctionBegin;
   PetscCall(PetscRandomInitializePackage());
-  PetscCall(PetscFunctionListAdd(&PetscRandomList,sname,function));
+  PetscCall(PetscFunctionListAdd(&PetscRandomList, sname, function));
   PetscFunctionReturn(0);
 }
 
@@ -143,26 +138,25 @@ PETSC_EXTERN PetscErrorCode PetscRandomCreate_CURAND(PetscRandom);
 
 .seealso: `PetscRandomRegister()`, `PetscRandomRegisterDestroy()`
 @*/
-PetscErrorCode  PetscRandomRegisterAll(void)
-{
+PetscErrorCode PetscRandomRegisterAll(void) {
   PetscFunctionBegin;
   if (PetscRandomRegisterAllCalled) PetscFunctionReturn(0);
   PetscRandomRegisterAllCalled = PETSC_TRUE;
 #if defined(PETSC_HAVE_RAND)
-  PetscCall(PetscRandomRegister(PETSCRAND,PetscRandomCreate_Rand));
+  PetscCall(PetscRandomRegister(PETSCRAND, PetscRandomCreate_Rand));
 #endif
 #if defined(PETSC_HAVE_DRAND48)
-  PetscCall(PetscRandomRegister(PETSCRAND48,PetscRandomCreate_Rand48));
+  PetscCall(PetscRandomRegister(PETSCRAND48, PetscRandomCreate_Rand48));
 #endif
 #if defined(PETSC_HAVE_SPRNG)
-  PetscCall(PetscRandomRegister(PETSCSPRNG,PetscRandomCreate_Sprng));
+  PetscCall(PetscRandomRegister(PETSCSPRNG, PetscRandomCreate_Sprng));
 #endif
-  PetscCall(PetscRandomRegister(PETSCRANDER48,PetscRandomCreate_Rander48));
+  PetscCall(PetscRandomRegister(PETSCRANDER48, PetscRandomCreate_Rander48));
 #if defined(PETSC_HAVE_RANDOM123)
-  PetscCall(PetscRandomRegister(PETSCRANDOM123,PetscRandomCreate_Random123));
+  PetscCall(PetscRandomRegister(PETSCRANDOM123, PetscRandomCreate_Random123));
 #endif
 #if defined(PETSC_HAVE_CUDA)
-  PetscCall(PetscRandomRegister(PETSCCURAND,PetscRandomCreate_CURAND));
+  PetscCall(PetscRandomRegister(PETSCCURAND, PetscRandomCreate_CURAND));
 #endif
   PetscFunctionReturn(0);
 }

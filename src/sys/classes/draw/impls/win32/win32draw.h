@@ -23,20 +23,20 @@ struct _p_MouseNode {
 typedef struct _p_WindowNode *WindowNode;
 struct _p_WindowNode {
   HWND       hWnd;
-  WindowNode wnext,wprev;
+  WindowNode wnext, wprev;
   HANDLE     event;
   MouseNode  MouseListHead;
   MouseNode  MouseListTail;
   BOOL       IsGetMouseOn;
   PetscBool  DoubleBuffered;
-  HDC        Buffer,DoubleBuffer;
-  HBITMAP    BufferBit,DoubleBufferBit;
-  HGDIOBJ    store,dbstore;
-  int        bitwidth,bitheight;
+  HDC        Buffer, DoubleBuffer;
+  HBITMAP    BufferBit, DoubleBufferBit;
+  HGDIOBJ    store, dbstore;
+  int        bitwidth, bitheight;
 };
 
 /* Nodes that hold all information about a windows device context */
-typedef struct  {
+typedef struct {
   HDC        hdc;
   HWND       hWnd;
   int        linewidth;
@@ -47,9 +47,9 @@ typedef struct  {
   int        pause;
   PetscBool  haveresized;
   HANDLE     hReadyEvent;
-  int        x,y,w,h;  /* Size and location of window */
-  WindowNode node; /* so we can grab windownode info if needed */
-  DWORD      popup,caption,overlapped;
+  int        x, y, w, h; /* Size and location of window */
+  WindowNode node;       /* so we can grab windownode info if needed */
+  DWORD      popup, caption, overlapped;
 
 } PetscDraw_Win32;
 

@@ -4,15 +4,14 @@ static char help[] = "Tests adaptive refinement using DMForest, and uses HDF5.\n
 #include <petscdmplex.h>
 #include <petscviewerhdf5.h>
 
-int main (int argc, char **argv)
-{
-  DM             base, forest, plex;
-  PetscSection   s;
-  PetscViewer    viewer;
-  Vec            g = NULL, g2 = NULL;
-  PetscReal      nrm;
-  PetscBool      adapt = PETSC_FALSE, userSection = PETSC_FALSE;
-  PetscInt       vStart, vEnd, v, i;
+int main(int argc, char **argv) {
+  DM           base, forest, plex;
+  PetscSection s;
+  PetscViewer  viewer;
+  Vec          g = NULL, g2 = NULL;
+  PetscReal    nrm;
+  PetscBool    adapt = PETSC_FALSE, userSection = PETSC_FALSE;
+  PetscInt     vStart, vEnd, v, i;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
@@ -59,9 +58,7 @@ int main (int argc, char **argv)
       PetscCall(DMLabelCreate(PETSC_COMM_SELF, "adapt", &adaptLabel));
 
       PetscCall(DMForestGetCellChart(forest, &cStart, &cEnd));
-      for (c = cStart; c < cEnd; ++c) {
-        PetscCall(DMLabelSetValue(adaptLabel, c, DM_ADAPT_REFINE));
-      }
+      for (c = cStart; c < cEnd; ++c) { PetscCall(DMLabelSetValue(adaptLabel, c, DM_ADAPT_REFINE)); }
 
       PetscCall(DMForestTemplate(forest, PETSC_COMM_WORLD, &postforest));
       PetscCall(DMForestSetAdaptivityLabel(postforest, adaptLabel));
@@ -80,7 +77,7 @@ int main (int argc, char **argv)
     PetscCall(DMPlexGetDepthStratum(plex, 0, &vStart, &vEnd));
     PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "Vertices [%" PetscInt_FMT ", %" PetscInt_FMT ")\n", vStart, vEnd));
     PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD, NULL));
-    PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject) forest), &s));
+    PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)forest), &s));
     PetscCall(PetscSectionSetNumFields(s, 1));
     PetscCall(PetscSectionSetChart(s, vStart, vEnd));
     for (v = vStart; v < vEnd; ++v) {
@@ -89,7 +86,7 @@ int main (int argc, char **argv)
     }
     PetscCall(PetscSectionSetUp(s));
     PetscCall(DMSetLocalSection(forest, s));
-    PetscCall(PetscObjectViewFromOptions((PetscObject) s, NULL, "-my_section_view"));
+    PetscCall(PetscObjectViewFromOptions((PetscObject)s, NULL, "-my_section_view"));
     PetscCall(PetscSectionDestroy(&s));
     PetscCall(DMDestroy(&plex));
   } else {
@@ -98,14 +95,14 @@ int main (int argc, char **argv)
 
     PetscCall(DMGetDimension(forest, &dim));
     PetscCall(PetscFECreateLagrange(PETSC_COMM_SELF, dim, 1, PETSC_FALSE, 1, PETSC_DETERMINE, &fe));
-    PetscCall(DMAddField(forest, NULL, (PetscObject) fe));
+    PetscCall(DMAddField(forest, NULL, (PetscObject)fe));
     PetscCall(PetscFEDestroy(&fe));
     PetscCall(DMCreateDS(forest));
   }
 
   /* Create the global vector*/
   PetscCall(DMCreateGlobalVector(forest, &g));
-  PetscCall(PetscObjectSetName((PetscObject) g, "g"));
+  PetscCall(PetscObjectSetName((PetscObject)g, "g"));
   PetscCall(VecSet(g, 1.0));
 
   /* Test global to local*/
@@ -124,7 +121,7 @@ int main (int argc, char **argv)
 
   /* Load another vector to load into*/
   PetscCall(DMCreateGlobalVector(forest, &g2));
-  PetscCall(PetscObjectSetName((PetscObject) g2, "g"));
+  PetscCall(PetscObjectSetName((PetscObject)g2, "g"));
   PetscCall(VecZeroEntries(g2));
 
   /*  Load a vector*/
@@ -135,7 +132,7 @@ int main (int argc, char **argv)
   /*  Check if the data is the same*/
   PetscCall(VecAXPY(g2, -1.0, g));
   PetscCall(VecNorm(g2, NORM_INFINITY, &nrm));
-  PetscCheck(PetscAbsReal(nrm) <= PETSC_SMALL,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Invalid difference norm %g", (double) nrm);
+  PetscCheck(PetscAbsReal(nrm) <= PETSC_SMALL, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Invalid difference norm %g", (double)nrm);
 
   PetscCall(VecDestroy(&g));
   PetscCall(VecDestroy(&g2));

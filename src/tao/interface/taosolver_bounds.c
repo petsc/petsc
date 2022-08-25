@@ -14,18 +14,17 @@
 
 .seealso: `Tao`, `TaoSetObjective()`, `TaoSetHessian()`, `TaoSetObjectiveAndGradient()`, `TaoGetVariableBounds()`
 @*/
-PetscErrorCode TaoSetVariableBounds(Tao tao, Vec XL, Vec XU)
-{
+PetscErrorCode TaoSetVariableBounds(Tao tao, Vec XL, Vec XU) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
-  if (XL) PetscValidHeaderSpecific(XL,VEC_CLASSID,2);
-  if (XU) PetscValidHeaderSpecific(XU,VEC_CLASSID,3);
+  PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
+  if (XL) PetscValidHeaderSpecific(XL, VEC_CLASSID, 2);
+  if (XU) PetscValidHeaderSpecific(XU, VEC_CLASSID, 3);
   PetscCall(PetscObjectReference((PetscObject)XL));
   PetscCall(PetscObjectReference((PetscObject)XU));
   PetscCall(VecDestroy(&tao->XL));
   PetscCall(VecDestroy(&tao->XU));
-  tao->XL = XL;
-  tao->XU = XU;
+  tao->XL      = XL;
+  tao->XU      = XU;
   tao->bounded = (PetscBool)(XL || XU);
   PetscFunctionReturn(0);
 }
@@ -56,13 +55,12 @@ $      func (Tao tao, Vec xl, Vec xu);
 .seealso: `Tao`, `TaoSetObjective()`, `TaoSetHessian()`, `TaoSetObjectiveAndGradient()`, `TaoSetVariableBounds()`
 
 @*/
-PetscErrorCode TaoSetVariableBoundsRoutine(Tao tao, PetscErrorCode (*func)(Tao, Vec, Vec, void*), void *ctx)
-{
+PetscErrorCode TaoSetVariableBoundsRoutine(Tao tao, PetscErrorCode (*func)(Tao, Vec, Vec, void *), void *ctx) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
-  tao->user_boundsP = ctx;
+  PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
+  tao->user_boundsP       = ctx;
   tao->ops->computebounds = func;
-  tao->bounded = func ? PETSC_TRUE : PETSC_FALSE;
+  tao->bounded            = func ? PETSC_TRUE : PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -82,10 +80,9 @@ PetscErrorCode TaoSetVariableBoundsRoutine(Tao tao, PetscErrorCode (*func)(Tao, 
 
 .seealso: `Tao`, `TaoSetObjective()`, `TaoSetHessian()`, `TaoSetObjectiveAndGradient()`, `TaoSetVariableBounds()`
 @*/
-PetscErrorCode TaoGetVariableBounds(Tao tao, Vec *XL, Vec *XU)
-{
+PetscErrorCode TaoGetVariableBounds(Tao tao, Vec *XL, Vec *XU) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
+  PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   if (XL) *XL = tao->XL;
   if (XU) *XU = tao->XU;
   PetscFunctionReturn(0);
@@ -105,10 +102,9 @@ PetscErrorCode TaoGetVariableBounds(Tao tao, Vec *XL, Vec *XU)
 .seealso: `Tao`, `TaoSetVariableBoundsRoutine()`, `TaoSetVariableBounds()`
 @*/
 
-PetscErrorCode TaoComputeVariableBounds(Tao tao)
-{
+PetscErrorCode TaoComputeVariableBounds(Tao tao) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
+  PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   if (tao->ops->computebounds) {
     if (!tao->XL) {
       PetscCall(VecDuplicate(tao->solution, &tao->XL));
@@ -118,7 +114,7 @@ PetscErrorCode TaoComputeVariableBounds(Tao tao)
       PetscCall(VecDuplicate(tao->solution, &tao->XU));
       PetscCall(VecSet(tao->XU, PETSC_INFINITY));
     }
-    PetscCallBack("Tao callback variable bounds",(*tao->ops->computebounds)(tao,tao->XL,tao->XU,tao->user_boundsP));
+    PetscCallBack("Tao callback variable bounds", (*tao->ops->computebounds)(tao, tao->XL, tao->XU, tao->user_boundsP));
   }
   PetscFunctionReturn(0);
 }
@@ -137,18 +133,17 @@ PetscErrorCode TaoComputeVariableBounds(Tao tao)
 
 .seealso: `Tao`, `TaoSetObjective()`, `TaoSetHessian()`, `TaoSetObjectiveAndGradient()`, `TaoGetInequalityBounds()`
 @*/
-PetscErrorCode TaoSetInequalityBounds(Tao tao, Vec IL, Vec IU)
-{
+PetscErrorCode TaoSetInequalityBounds(Tao tao, Vec IL, Vec IU) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
-  if (IL) PetscValidHeaderSpecific(IL,VEC_CLASSID,2);
-  if (IU) PetscValidHeaderSpecific(IU,VEC_CLASSID,3);
+  PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
+  if (IL) PetscValidHeaderSpecific(IL, VEC_CLASSID, 2);
+  if (IU) PetscValidHeaderSpecific(IU, VEC_CLASSID, 3);
   PetscCall(PetscObjectReference((PetscObject)IL));
   PetscCall(PetscObjectReference((PetscObject)IU));
   PetscCall(VecDestroy(&tao->IL));
   PetscCall(VecDestroy(&tao->IU));
-  tao->IL = IL;
-  tao->IU = IU;
+  tao->IL               = IL;
+  tao->IU               = IU;
   tao->ineq_doublesided = (PetscBool)(IL || IU);
   PetscFunctionReturn(0);
 }
@@ -169,10 +164,9 @@ PetscErrorCode TaoSetInequalityBounds(Tao tao, Vec IL, Vec IU)
 
 .seealso: `TaoSetObjective()`, `TaoSetHessian()`, `TaoSetObjectiveAndGradient()`, `TaoSetInequalityBounds()`
 @*/
-PetscErrorCode TaoGetInequalityBounds(Tao tao, Vec *IL, Vec *IU)
-{
+PetscErrorCode TaoGetInequalityBounds(Tao tao, Vec *IL, Vec *IU) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
+  PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   if (IL) *IL = tao->IL;
   if (IU) *IU = tao->IU;
   PetscFunctionReturn(0);
@@ -192,18 +186,16 @@ PetscErrorCode TaoGetInequalityBounds(Tao tao, Vec *IL, Vec *IU)
 .seealso: `Tao`, `TaoSetConstraintsRoutine()`, `TaoComputeJacobian()`
 @*/
 
-PetscErrorCode TaoComputeConstraints(Tao tao, Vec X, Vec C)
-{
+PetscErrorCode TaoComputeConstraints(Tao tao, Vec X, Vec C) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
-  PetscValidHeaderSpecific(X,VEC_CLASSID,2);
-  PetscValidHeaderSpecific(C,VEC_CLASSID,3);
-  PetscCheckSameComm(tao,1,X,2);
-  PetscCheckSameComm(tao,1,C,3);
-  PetscCheck(tao->ops->computeconstraints,PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_WRONGSTATE,"TaoSetConstraintsRoutine() has not been called");
-  PetscCall(PetscLogEventBegin(TAO_ConstraintsEval,tao,X,C,NULL));
-  PetscCallBack("Tao callback constraints",(*tao->ops->computeconstraints)(tao,X,C,tao->user_conP));
-  PetscCall(PetscLogEventEnd(TAO_ConstraintsEval,tao,X,C,NULL));
+  PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
+  PetscValidHeaderSpecific(X, VEC_CLASSID, 2);
+  PetscValidHeaderSpecific(C, VEC_CLASSID, 3);
+  PetscCheckSameComm(tao, 1, X, 2);
+  PetscCheckSameComm(tao, 1, C, 3);
+  PetscCall(PetscLogEventBegin(TAO_ConstraintsEval, tao, X, C, NULL));
+  PetscCallBack("Tao callback constraints", (*tao->ops->computeconstraints)(tao, X, C, tao->user_conP));
+  PetscCall(PetscLogEventEnd(TAO_ConstraintsEval, tao, X, C, NULL));
   tao->nconstraints++;
   PetscFunctionReturn(0);
 }
@@ -232,16 +224,15 @@ $      func (Tao tao, Vec x, Vec c, void *ctx);
 .seealso: `Tao`, `TaoSetObjective()`, `TaoSetHessian()`, `TaoSetObjectiveAndGradient()`, `TaoSetVariablevBounds()`
 
 @*/
-PetscErrorCode TaoSetConstraintsRoutine(Tao tao, Vec c, PetscErrorCode (*func)(Tao, Vec, Vec, void*), void *ctx)
-{
+PetscErrorCode TaoSetConstraintsRoutine(Tao tao, Vec c, PetscErrorCode (*func)(Tao, Vec, Vec, void *), void *ctx) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
-  if (c) PetscValidHeaderSpecific(c,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
+  if (c) PetscValidHeaderSpecific(c, VEC_CLASSID, 2);
   PetscCall(PetscObjectReference((PetscObject)c));
   PetscCall(VecDestroy(&tao->constraints));
-  tao->constrained = func ? PETSC_TRUE : PETSC_FALSE;
-  tao->constraints = c;
-  tao->user_conP = ctx;
+  tao->constrained             = func ? PETSC_TRUE : PETSC_FALSE;
+  tao->constraints             = c;
+  tao->user_conP               = ctx;
   tao->ops->computeconstraints = func;
   PetscFunctionReturn(0);
 }
@@ -270,19 +261,18 @@ PetscErrorCode TaoSetConstraintsRoutine(Tao tao, Vec c, PetscErrorCode (*func)(T
 
  .seealso: `Tao`, `TaoComputeObjective()`, `TaoSetVariableBounds()`
 @*/
-PetscErrorCode TaoComputeDualVariables(Tao tao, Vec DL, Vec DU)
-{
+PetscErrorCode TaoComputeDualVariables(Tao tao, Vec DL, Vec DU) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
-  PetscValidHeaderSpecific(DL,VEC_CLASSID,2);
-  PetscValidHeaderSpecific(DU,VEC_CLASSID,3);
-  PetscCheckSameComm(tao,1,DL,2);
-  PetscCheckSameComm(tao,1,DU,3);
+  PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
+  PetscValidHeaderSpecific(DL, VEC_CLASSID, 2);
+  PetscValidHeaderSpecific(DU, VEC_CLASSID, 3);
+  PetscCheckSameComm(tao, 1, DL, 2);
+  PetscCheckSameComm(tao, 1, DU, 3);
   if (tao->ops->computedual) {
-    PetscCall((*tao->ops->computedual)(tao,DL,DU));
+    PetscUseTypeMethod(tao, computedual, DL, DU);
   } else {
-    PetscCall(VecSet(DL,0.0));
-    PetscCall(VecSet(DU,0.0));
+    PetscCall(VecSet(DL, 0.0));
+    PetscCall(VecSet(DU, 0.0));
   }
   PetscFunctionReturn(0);
 }
@@ -303,10 +293,9 @@ PetscErrorCode TaoComputeDualVariables(Tao tao, Vec DL, Vec DU)
 
 .seealso: `Tao`, `TaoComputeDualVariables()`
 @*/
-PetscErrorCode TaoGetDualVariables(Tao tao, Vec *DE, Vec *DI)
-{
+PetscErrorCode TaoGetDualVariables(Tao tao, Vec *DE, Vec *DI) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
+  PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   if (DE) *DE = tao->DE;
   if (DI) *DI = tao->DI;
   PetscFunctionReturn(0);
@@ -336,16 +325,15 @@ $      func (Tao tao, Vec x, Vec ce, void *ctx);
 .seealso: `Tao`, `TaoSetObjective()`, `TaoSetHessian()`, `TaoSetObjectiveAndGradient()`, `TaoSetVariableBounds()`
 
 @*/
-PetscErrorCode TaoSetEqualityConstraintsRoutine(Tao tao, Vec ce, PetscErrorCode (*func)(Tao, Vec, Vec, void*), void *ctx)
-{
+PetscErrorCode TaoSetEqualityConstraintsRoutine(Tao tao, Vec ce, PetscErrorCode (*func)(Tao, Vec, Vec, void *), void *ctx) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
-  if (ce) PetscValidHeaderSpecific(ce,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
+  if (ce) PetscValidHeaderSpecific(ce, VEC_CLASSID, 2);
   PetscCall(PetscObjectReference((PetscObject)ce));
   PetscCall(VecDestroy(&tao->constraints_equality));
-  tao->eq_constrained = func ? PETSC_TRUE : PETSC_FALSE;
-  tao->constraints_equality = ce;
-  tao->user_con_equalityP = ctx;
+  tao->eq_constrained                  = func ? PETSC_TRUE : PETSC_FALSE;
+  tao->constraints_equality            = ce;
+  tao->user_con_equalityP              = ctx;
   tao->ops->computeequalityconstraints = func;
   PetscFunctionReturn(0);
 }
@@ -374,16 +362,15 @@ $      func (Tao tao, Vec x, Vec ci, void *ctx);
  .seealso: `Tao, `TaoSetObjective()`, `TaoSetHessian()`, `TaoSetObjectiveAndGradient()`, `TaoSetVariableBounds()`
 
 @*/
-PetscErrorCode TaoSetInequalityConstraintsRoutine(Tao tao, Vec ci, PetscErrorCode (*func)(Tao, Vec, Vec, void*), void *ctx)
-{
+PetscErrorCode TaoSetInequalityConstraintsRoutine(Tao tao, Vec ci, PetscErrorCode (*func)(Tao, Vec, Vec, void *), void *ctx) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
-  if (ci) PetscValidHeaderSpecific(ci,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
+  if (ci) PetscValidHeaderSpecific(ci, VEC_CLASSID, 2);
   PetscCall(PetscObjectReference((PetscObject)ci));
   PetscCall(VecDestroy(&tao->constraints_inequality));
-  tao->constraints_inequality = ci;
-  tao->ineq_constrained = func ? PETSC_TRUE : PETSC_FALSE;
-  tao->user_con_inequalityP = ctx;
+  tao->constraints_inequality            = ci;
+  tao->ineq_constrained                  = func ? PETSC_TRUE : PETSC_FALSE;
+  tao->user_con_inequalityP              = ctx;
   tao->ops->computeinequalityconstraints = func;
   PetscFunctionReturn(0);
 }
@@ -406,18 +393,16 @@ PetscErrorCode TaoSetInequalityConstraintsRoutine(Tao tao, Vec ci, PetscErrorCod
 .seealso: `Tao`, `TaoSetEqualityConstraintsRoutine()`, `TaoComputeJacobianEquality()`, `TaoComputeInequalityConstraints()`
 @*/
 
-PetscErrorCode TaoComputeEqualityConstraints(Tao tao, Vec X, Vec CE)
-{
+PetscErrorCode TaoComputeEqualityConstraints(Tao tao, Vec X, Vec CE) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
-  PetscValidHeaderSpecific(X,VEC_CLASSID,2);
-  PetscValidHeaderSpecific(CE,VEC_CLASSID,3);
-  PetscCheckSameComm(tao,1,X,2);
-  PetscCheckSameComm(tao,1,CE,3);
-  PetscCheck(tao->ops->computeequalityconstraints,PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_WRONGSTATE,"TaoSetEqualityConstraintsRoutine() has not been called");
-  PetscCall(PetscLogEventBegin(TAO_ConstraintsEval,tao,X,CE,NULL));
-  PetscCallBack("Tao callback equality constraints",(*tao->ops->computeequalityconstraints)(tao,X,CE,tao->user_con_equalityP));
-  PetscCall(PetscLogEventEnd(TAO_ConstraintsEval,tao,X,CE,NULL));
+  PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
+  PetscValidHeaderSpecific(X, VEC_CLASSID, 2);
+  PetscValidHeaderSpecific(CE, VEC_CLASSID, 3);
+  PetscCheckSameComm(tao, 1, X, 2);
+  PetscCheckSameComm(tao, 1, CE, 3);
+  PetscCall(PetscLogEventBegin(TAO_ConstraintsEval, tao, X, CE, NULL));
+  PetscCallBack("Tao callback equality constraints", (*tao->ops->computeequalityconstraints)(tao, X, CE, tao->user_con_equalityP));
+  PetscCall(PetscLogEventEnd(TAO_ConstraintsEval, tao, X, CE, NULL));
   tao->nconstraints++;
   PetscFunctionReturn(0);
 }
@@ -440,18 +425,16 @@ PetscErrorCode TaoComputeEqualityConstraints(Tao tao, Vec X, Vec CE)
 .seealso: `Tao`, `TaoSetInequalityConstraintsRoutine()`, `TaoComputeJacobianInequality()`, `TaoComputeEqualityConstraints()`
 @*/
 
-PetscErrorCode TaoComputeInequalityConstraints(Tao tao, Vec X, Vec CI)
-{
+PetscErrorCode TaoComputeInequalityConstraints(Tao tao, Vec X, Vec CI) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
-  PetscValidHeaderSpecific(X,VEC_CLASSID,2);
-  PetscValidHeaderSpecific(CI,VEC_CLASSID,3);
-  PetscCheckSameComm(tao,1,X,2);
-  PetscCheckSameComm(tao,1,CI,3);
-  PetscCheck(tao->ops->computeinequalityconstraints,PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_WRONGSTATE,"TaoSetInequalityConstraintsRoutine() has not been called");
-  PetscCall(PetscLogEventBegin(TAO_ConstraintsEval,tao,X,CI,NULL));
-  PetscCallBack("Tao callback inequality constraints",(*tao->ops->computeinequalityconstraints)(tao,X,CI,tao->user_con_inequalityP));
-  PetscCall(PetscLogEventEnd(TAO_ConstraintsEval,tao,X,CI,NULL));
+  PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
+  PetscValidHeaderSpecific(X, VEC_CLASSID, 2);
+  PetscValidHeaderSpecific(CI, VEC_CLASSID, 3);
+  PetscCheckSameComm(tao, 1, X, 2);
+  PetscCheckSameComm(tao, 1, CI, 3);
+  PetscCall(PetscLogEventBegin(TAO_ConstraintsEval, tao, X, CI, NULL));
+  PetscCallBack("Tao callback inequality constraints", (*tao->ops->computeinequalityconstraints)(tao, X, CI, tao->user_con_inequalityP));
+  PetscCall(PetscLogEventEnd(TAO_ConstraintsEval, tao, X, CI, NULL));
   tao->nconstraints++;
   PetscFunctionReturn(0);
 }

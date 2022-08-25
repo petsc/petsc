@@ -7,12 +7,12 @@
 typedef struct _p_DMPlexTransformOps *DMPlexTransformOps;
 struct _p_DMPlexTransformOps {
   PetscErrorCode (*view)(DMPlexTransform, PetscViewer);
-  PetscErrorCode (*setfromoptions)(PetscOptionItems *, DMPlexTransform);
+  PetscErrorCode (*setfromoptions)(DMPlexTransform, PetscOptionItems *);
   PetscErrorCode (*setup)(DMPlexTransform);
   PetscErrorCode (*destroy)(DMPlexTransform);
-  PetscErrorCode (*setdimensions)(DMPlexTransform,DM,DM);
-  PetscErrorCode (*celltransform)(DMPlexTransform,DMPolytopeType,PetscInt,PetscInt*,PetscInt*,DMPolytopeType*[],PetscInt*[],PetscInt*[],PetscInt*[]);
-  PetscErrorCode (*getsubcellorientation)(DMPlexTransform,DMPolytopeType,PetscInt,PetscInt,DMPolytopeType,PetscInt,PetscInt,PetscInt*,PetscInt*);
+  PetscErrorCode (*setdimensions)(DMPlexTransform, DM, DM);
+  PetscErrorCode (*celltransform)(DMPlexTransform, DMPolytopeType, PetscInt, PetscInt *, PetscInt *, DMPolytopeType *[], PetscInt *[], PetscInt *[], PetscInt *[]);
+  PetscErrorCode (*getsubcellorientation)(DMPlexTransform, DMPolytopeType, PetscInt, PetscInt, DMPolytopeType, PetscInt, PetscInt, PetscInt *, PetscInt *);
   PetscErrorCode (*mapcoordinates)(DMPlexTransform, DMPolytopeType, DMPolytopeType, PetscInt, PetscInt, PetscInt, PetscInt, const PetscScalar[], PetscScalar[]);
 };
 
@@ -44,25 +44,25 @@ typedef struct {
 
 typedef struct {
   /* Inputs */
-  PetscInt   dimEx;         /* The dimension of the extruded mesh */
-  PetscInt   cdim;          /* The coordinate dimension of the input mesh */
-  PetscInt   cdimEx;        /* The coordinate dimension of the extruded mesh */
-  PetscInt   layers;        /* The number of extruded layers */
-  PetscReal  thickness;     /* The total thickness of the extruded layers */
-  PetscInt   Nth;           /* The number of specified thicknesses */
-  PetscReal *thicknesses;   /* The input layer thicknesses */
-  PetscBool  useTensor;     /* Flag to create tensor cells */
-  PetscBool  useNormal;     /* Use input normal instead of calculating it */
-  PetscReal  normal[3];     /* Surface normal from input */
-  PetscSimplePointFunc normalFunc; /* A function returning the normal at a given point */
-  PetscBool  symmetric;     /* Extrude layers symmetrically about the surface */
+  PetscInt             dimEx;       /* The dimension of the extruded mesh */
+  PetscInt             cdim;        /* The coordinate dimension of the input mesh */
+  PetscInt             cdimEx;      /* The coordinate dimension of the extruded mesh */
+  PetscInt             layers;      /* The number of extruded layers */
+  PetscReal            thickness;   /* The total thickness of the extruded layers */
+  PetscInt             Nth;         /* The number of specified thicknesses */
+  PetscReal           *thicknesses; /* The input layer thicknesses */
+  PetscBool            useTensor;   /* Flag to create tensor cells */
+  PetscBool            useNormal;   /* Use input normal instead of calculating it */
+  PetscReal            normal[3];   /* Surface normal from input */
+  PetscSimplePointFunc normalFunc;  /* A function returning the normal at a given point */
+  PetscBool            symmetric;   /* Extrude layers symmetrically about the surface */
   /* Calculated quantities */
-  PetscReal      *layerPos; /* The position of each layer relative to the original surface, along the local normal direction */
-  PetscInt       *Nt;       /* The array of the number of target types */
-  DMPolytopeType **target;  /* The array of target types */
-  PetscInt       **size;    /* The array of the number of each target type */
-  PetscInt       **cone;    /* The array of cones for each target cell */
-  PetscInt       **ornt;    /* The array of orientation for each target cell */
+  PetscReal           *layerPos; /* The position of each layer relative to the original surface, along the local normal direction */
+  PetscInt            *Nt;       /* The array of the number of target types */
+  DMPolytopeType     **target;   /* The array of target types */
+  PetscInt           **size;     /* The array of the number of each target type */
+  PetscInt           **cone;     /* The array of cones for each target cell */
+  PetscInt           **ornt;     /* The array of orientation for each target cell */
 } DMPlexTransform_Extrude;
 
 typedef struct {
@@ -88,14 +88,14 @@ typedef struct {
 } DMPlexRefine_1D;
 
 typedef struct {
-  PetscInt       n;         /* The number of divisions to produce, so n = 1 gives 2 new cells */
-  PetscReal      r;         /* The factor increase for cell height */
-  PetscScalar    *h;        /* The computed cell heights, based on r */
-  PetscInt       *Nt;       /* The array of the number of target types */
-  DMPolytopeType **target;  /* The array of target types */
-  PetscInt       **size;    /* The array of the number of each target type */
-  PetscInt       **cone;    /* The array of cones for each target cell */
-  PetscInt       **ornt;    /* The array of orientation for each target cell */
+  PetscInt         n;      /* The number of divisions to produce, so n = 1 gives 2 new cells */
+  PetscReal        r;      /* The factor increase for cell height */
+  PetscScalar     *h;      /* The computed cell heights, based on r */
+  PetscInt        *Nt;     /* The array of the number of target types */
+  DMPolytopeType **target; /* The array of target types */
+  PetscInt       **size;   /* The array of the number of each target type */
+  PetscInt       **cone;   /* The array of cones for each target cell */
+  PetscInt       **ornt;   /* The array of orientation for each target cell */
 } DMPlexRefine_BL;
 
 PetscErrorCode DMPlexTransformMapCoordinatesBarycenter_Internal(DMPlexTransform, DMPolytopeType, DMPolytopeType, PetscInt, PetscInt, PetscInt, PetscInt, const PetscScalar[], PetscScalar[]);

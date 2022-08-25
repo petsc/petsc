@@ -9,14 +9,13 @@ static PetscBool TSPackageInitialized = PETSC_FALSE;
 
 .seealso: `PetscFinalize()`
 @*/
-PetscErrorCode  TSFinalizePackage(void)
-{
-  PetscFunctionBegin;
-  PetscCall(PetscFunctionListDestroy(&TSList));
-  PetscCall(PetscFunctionListDestroy(&TSTrajectoryList));
-  TSPackageInitialized = PETSC_FALSE;
-  TSRegisterAllCalled  = PETSC_FALSE;
-  PetscFunctionReturn(0);
+PetscErrorCode   TSFinalizePackage(void) {
+    PetscFunctionBegin;
+    PetscCall(PetscFunctionListDestroy(&TSList));
+    PetscCall(PetscFunctionListDestroy(&TSTrajectoryList));
+    TSPackageInitialized = PETSC_FALSE;
+    TSRegisterAllCalled  = PETSC_FALSE;
+    PetscFunctionReturn(0);
 }
 
 /*@C
@@ -28,10 +27,9 @@ PetscErrorCode  TSFinalizePackage(void)
 
 .seealso: `PetscInitialize()`
 @*/
-PetscErrorCode  TSInitializePackage(void)
-{
-  char           logList[256];
-  PetscBool      opt,pkg,cls;
+PetscErrorCode TSInitializePackage(void) {
+  char      logList[256];
+  PetscBool opt, pkg, cls;
 
   PetscFunctionBegin;
   if (TSPackageInitialized) PetscFunctionReturn(0);
@@ -47,29 +45,29 @@ PetscErrorCode  TSInitializePackage(void)
   PetscCall(TSGLLEAdaptInitializePackage());
   PetscCall(TSBasicSymplecticInitializePackage());
   /* Register Classes */
-  PetscCall(PetscClassIdRegister("TS",&TS_CLASSID));
-  PetscCall(PetscClassIdRegister("DMTS",&DMTS_CLASSID));
-  PetscCall(PetscClassIdRegister("TSTrajectory",&TSTRAJECTORY_CLASSID));
+  PetscCall(PetscClassIdRegister("TS", &TS_CLASSID));
+  PetscCall(PetscClassIdRegister("DMTS", &DMTS_CLASSID));
+  PetscCall(PetscClassIdRegister("TSTrajectory", &TSTRAJECTORY_CLASSID));
 
   /* Register Constructors */
   PetscCall(TSRegisterAll());
   PetscCall(TSTrajectoryRegisterAll());
   /* Register Events */
-  PetscCall(PetscLogEventRegister("TSStep",          TS_CLASSID,&TS_Step));
-  PetscCall(PetscLogEventRegister("TSFunctionEval",  TS_CLASSID,&TS_FunctionEval));
-  PetscCall(PetscLogEventRegister("TSJacobianEval",  TS_CLASSID,&TS_JacobianEval));
-  PetscCall(PetscLogEventRegister("TSForwardStep",   TS_CLASSID,&TS_ForwardStep));
-  PetscCall(PetscLogEventRegister("TSAdjointStep",   TS_CLASSID,&TS_AdjointStep));
-  PetscCall(PetscLogEventRegister("TSTrajectorySet", TSTRAJECTORY_CLASSID,&TSTrajectory_Set));
-  PetscCall(PetscLogEventRegister("TSTrajectoryGet", TSTRAJECTORY_CLASSID,&TSTrajectory_Get));
-  PetscCall(PetscLogEventRegister("TSTrajGetVecs",   TSTRAJECTORY_CLASSID,&TSTrajectory_GetVecs));
-  PetscCall(PetscLogEventRegister("TSTrajSetUp", TSTRAJECTORY_CLASSID,&TSTrajectory_SetUp));
-  PetscCall(PetscLogEventRegister("TSTrajDiskWrite", TSTRAJECTORY_CLASSID,&TSTrajectory_DiskWrite));
-  PetscCall(PetscLogEventRegister("TSTrajDiskRead",  TSTRAJECTORY_CLASSID,&TSTrajectory_DiskRead));
-  PetscCall(PetscLogEventRegister("TSPseudoCmptTStp",TS_CLASSID,&TS_PseudoComputeTimeStep));
+  PetscCall(PetscLogEventRegister("TSStep", TS_CLASSID, &TS_Step));
+  PetscCall(PetscLogEventRegister("TSFunctionEval", TS_CLASSID, &TS_FunctionEval));
+  PetscCall(PetscLogEventRegister("TSJacobianEval", TS_CLASSID, &TS_JacobianEval));
+  PetscCall(PetscLogEventRegister("TSForwardStep", TS_CLASSID, &TS_ForwardStep));
+  PetscCall(PetscLogEventRegister("TSAdjointStep", TS_CLASSID, &TS_AdjointStep));
+  PetscCall(PetscLogEventRegister("TSTrajectorySet", TSTRAJECTORY_CLASSID, &TSTrajectory_Set));
+  PetscCall(PetscLogEventRegister("TSTrajectoryGet", TSTRAJECTORY_CLASSID, &TSTrajectory_Get));
+  PetscCall(PetscLogEventRegister("TSTrajGetVecs", TSTRAJECTORY_CLASSID, &TSTrajectory_GetVecs));
+  PetscCall(PetscLogEventRegister("TSTrajSetUp", TSTRAJECTORY_CLASSID, &TSTrajectory_SetUp));
+  PetscCall(PetscLogEventRegister("TSTrajDiskWrite", TSTRAJECTORY_CLASSID, &TSTrajectory_DiskWrite));
+  PetscCall(PetscLogEventRegister("TSTrajDiskRead", TSTRAJECTORY_CLASSID, &TSTrajectory_DiskRead));
+  PetscCall(PetscLogEventRegister("TSPseudoCmptTStp", TS_CLASSID, &TS_PseudoComputeTimeStep));
   /* Process Info */
   {
-    PetscClassId  classids[4];
+    PetscClassId classids[4];
 
     classids[0] = TS_CLASSID;
     classids[1] = DMTS_CLASSID;
@@ -81,15 +79,15 @@ PetscErrorCode  TSInitializePackage(void)
     PetscCall(PetscInfoProcessClass("tstrajectory", 1, &classids[3]));
   }
   /* Process summary exclusions */
-  PetscCall(PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt));
+  PetscCall(PetscOptionsGetString(NULL, NULL, "-log_exclude", logList, sizeof(logList), &opt));
   if (opt) {
-    PetscCall(PetscStrInList("ts",logList,',',&pkg));
+    PetscCall(PetscStrInList("ts", logList, ',', &pkg));
     if (pkg) PetscCall(PetscLogEventExcludeClass(TS_CLASSID));
-    PetscCall(PetscStrInList("dm",logList,',',&cls));
+    PetscCall(PetscStrInList("dm", logList, ',', &cls));
     if (pkg || cls) PetscCall(PetscLogEventExcludeClass(DMTS_CLASSID));
-    PetscCall(PetscStrInList("tsadapt",logList,',',&cls));
+    PetscCall(PetscStrInList("tsadapt", logList, ',', &cls));
     if (pkg || cls) PetscCall(PetscLogEventExcludeClass(TSADAPT_CLASSID));
-    PetscCall(PetscStrInList("tstrajectory",logList,',',&cls));
+    PetscCall(PetscStrInList("tstrajectory", logList, ',', &cls));
     if (pkg || cls) PetscCall(PetscLogEventExcludeClass(TSTRAJECTORY_CLASSID));
   }
   /* Register package finalizer */
@@ -105,8 +103,7 @@ PetscErrorCode  TSInitializePackage(void)
 
  */
 PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscts(void); /*prototype*/
-PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscts(void)
-{
+PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscts(void) {
   PetscFunctionBegin;
   PetscCall(TSInitializePackage());
   PetscFunctionReturn(0);

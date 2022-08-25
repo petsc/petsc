@@ -19,51 +19,50 @@ static const char help[] = "Time-dependent Brusselator reaction-diffusion PDE in
 #include <petscdmmoab.h>
 
 typedef struct {
-  PetscScalar u,v;
+  PetscScalar u, v;
 } Field;
 
 struct pUserCtx {
-  PetscReal A,B;        /* Reaction coefficients */
-  PetscReal alpha;      /* Diffusion coefficient */
-  Field leftbc;         /* Dirichlet boundary conditions at left boundary */
-  Field rightbc;        /* Dirichlet boundary conditions at right boundary */
-  PetscInt  n,npts;       /* Number of mesh points */
-  PetscInt  ntsteps;    /* Number of time steps */
-  PetscInt nvars;       /* Number of variables in the equation system */
+  PetscReal A, B;    /* Reaction coefficients */
+  PetscReal alpha;   /* Diffusion coefficient */
+  Field     leftbc;  /* Dirichlet boundary conditions at left boundary */
+  Field     rightbc; /* Dirichlet boundary conditions at right boundary */
+  PetscInt  n, npts; /* Number of mesh points */
+  PetscInt  ntsteps; /* Number of time steps */
+  PetscInt  nvars;   /* Number of variables in the equation system */
   PetscBool io;
 };
-typedef pUserCtx* UserCtx;
+typedef pUserCtx *UserCtx;
 
-PetscErrorCode Initialize_AppContext(UserCtx *puser)
-{
-  UserCtx           user;
+PetscErrorCode Initialize_AppContext(UserCtx *puser) {
+  UserCtx user;
 
   PetscFunctionBegin;
   PetscCall(PetscNew(&user));
-  PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Advection-reaction options","ex35.cxx");
+  PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "Advection-reaction options", "ex35.cxx");
   {
-    user->nvars  = 2;
-    user->A      = 1;
-    user->B      = 3;
-    user->alpha  = 0.02;
+    user->nvars     = 2;
+    user->A         = 1;
+    user->B         = 3;
+    user->alpha     = 0.02;
     user->leftbc.u  = 1;
     user->rightbc.u = 1;
     user->leftbc.v  = 3;
     user->rightbc.v = 3;
-    user->n      = 10;
-    user->ntsteps = 10000;
-    user->io = PETSC_FALSE;
-    PetscCall(PetscOptionsReal("-A","Reaction rate","ex35.cxx",user->A,&user->A,NULL));
-    PetscCall(PetscOptionsReal("-B","Reaction rate","ex35.cxx",user->B,&user->B,NULL));
-    PetscCall(PetscOptionsReal("-alpha","Diffusion coefficient","ex35.cxx",user->alpha,&user->alpha,NULL));
-    PetscCall(PetscOptionsScalar("-uleft","Dirichlet boundary condition","ex35.cxx",user->leftbc.u,&user->leftbc.u,NULL));
-    PetscCall(PetscOptionsScalar("-uright","Dirichlet boundary condition","ex35.cxx",user->rightbc.u,&user->rightbc.u,NULL));
-    PetscCall(PetscOptionsScalar("-vleft","Dirichlet boundary condition","ex35.cxx",user->leftbc.v,&user->leftbc.v,NULL));
-    PetscCall(PetscOptionsScalar("-vright","Dirichlet boundary condition","ex35.cxx",user->rightbc.v,&user->rightbc.v,NULL));
-    PetscCall(PetscOptionsInt("-n","Number of 1-D elements","ex35.cxx",user->n,&user->n,NULL));
-    PetscCall(PetscOptionsInt("-ndt","Number of time steps","ex35.cxx",user->ntsteps,&user->ntsteps,NULL));
-    PetscCall(PetscOptionsBool("-io","Write the mesh and solution output to a file.","ex35.cxx",user->io,&user->io,NULL));
-    user->npts   = user->n+1;
+    user->n         = 10;
+    user->ntsteps   = 10000;
+    user->io        = PETSC_FALSE;
+    PetscCall(PetscOptionsReal("-A", "Reaction rate", "ex35.cxx", user->A, &user->A, NULL));
+    PetscCall(PetscOptionsReal("-B", "Reaction rate", "ex35.cxx", user->B, &user->B, NULL));
+    PetscCall(PetscOptionsReal("-alpha", "Diffusion coefficient", "ex35.cxx", user->alpha, &user->alpha, NULL));
+    PetscCall(PetscOptionsScalar("-uleft", "Dirichlet boundary condition", "ex35.cxx", user->leftbc.u, &user->leftbc.u, NULL));
+    PetscCall(PetscOptionsScalar("-uright", "Dirichlet boundary condition", "ex35.cxx", user->rightbc.u, &user->rightbc.u, NULL));
+    PetscCall(PetscOptionsScalar("-vleft", "Dirichlet boundary condition", "ex35.cxx", user->leftbc.v, &user->leftbc.v, NULL));
+    PetscCall(PetscOptionsScalar("-vright", "Dirichlet boundary condition", "ex35.cxx", user->rightbc.v, &user->rightbc.v, NULL));
+    PetscCall(PetscOptionsInt("-n", "Number of 1-D elements", "ex35.cxx", user->n, &user->n, NULL));
+    PetscCall(PetscOptionsInt("-ndt", "Number of time steps", "ex35.cxx", user->ntsteps, &user->ntsteps, NULL));
+    PetscCall(PetscOptionsBool("-io", "Write the mesh and solution output to a file.", "ex35.cxx", user->io, &user->io, NULL));
+    user->npts = user->n + 1;
   }
   PetscOptionsEnd();
 
@@ -71,37 +70,35 @@ PetscErrorCode Initialize_AppContext(UserCtx *puser)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode Destroy_AppContext(UserCtx *user)
-{
+PetscErrorCode Destroy_AppContext(UserCtx *user) {
   PetscFunctionBegin;
   PetscCall(PetscFree(*user));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode FormInitialSolution(TS,Vec,void*);
-static PetscErrorCode FormRHSFunction(TS,PetscReal,Vec,Vec,void*);
-static PetscErrorCode FormIFunction(TS,PetscReal,Vec,Vec,Vec,void*);
-static PetscErrorCode FormIJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat,Mat,void*);
+static PetscErrorCode FormInitialSolution(TS, Vec, void *);
+static PetscErrorCode FormRHSFunction(TS, PetscReal, Vec, Vec, void *);
+static PetscErrorCode FormIFunction(TS, PetscReal, Vec, Vec, Vec, void *);
+static PetscErrorCode FormIJacobian(TS, PetscReal, Vec, Vec, PetscReal, Mat, Mat, void *);
 
 /****************
  *              *
  *     MAIN     *
  *              *
  ****************/
-int main(int argc,char **argv)
-{
-  TS                ts;         /* nonlinear solver */
-  Vec               X;          /* solution, residual vectors */
-  Mat               J;          /* Jacobian matrix */
-  PetscInt          steps,mx;
-  PetscReal         hx,dt,ftime;
-  UserCtx           user;       /* user-defined work context */
+int main(int argc, char **argv) {
+  TS                ts; /* nonlinear solver */
+  Vec               X;  /* solution, residual vectors */
+  Mat               J;  /* Jacobian matrix */
+  PetscInt          steps, mx;
+  PetscReal         hx, dt, ftime;
+  UserCtx           user; /* user-defined work context */
   TSConvergedReason reason;
   DM                dm;
-  const char        *fields[2] = {"U","V"};
+  const char       *fields[2] = {"U", "V"};
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&argv,(char *)0,help));
+  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
 
   /* Initialize the user context struct */
   PetscCall(Initialize_AppContext(&user));
@@ -116,33 +113,33 @@ int main(int argc,char **argv)
   PetscCall(DMSetUp(dm));
 
   /*  Create timestepping solver context */
-  PetscCall(TSCreate(PETSC_COMM_WORLD,&ts));
+  PetscCall(TSCreate(PETSC_COMM_WORLD, &ts));
   PetscCall(TSSetDM(ts, dm));
-  PetscCall(TSSetType(ts,TSARKIMEX));
-  PetscCall(TSSetEquationType(ts,TS_EQ_DAE_IMPLICIT_INDEX1));
-  PetscCall(DMSetMatType(dm,MATBAIJ));
-  PetscCall(DMCreateMatrix(dm,&J));
+  PetscCall(TSSetType(ts, TSARKIMEX));
+  PetscCall(TSSetEquationType(ts, TS_EQ_DAE_IMPLICIT_INDEX1));
+  PetscCall(DMSetMatType(dm, MATBAIJ));
+  PetscCall(DMCreateMatrix(dm, &J));
 
-  PetscCall(TSSetRHSFunction(ts,NULL,FormRHSFunction,user));
-  PetscCall(TSSetIFunction(ts,NULL,FormIFunction,user));
-  PetscCall(TSSetIJacobian(ts,J,J,FormIJacobian,user));
+  PetscCall(TSSetRHSFunction(ts, NULL, FormRHSFunction, user));
+  PetscCall(TSSetIFunction(ts, NULL, FormIFunction, user));
+  PetscCall(TSSetIJacobian(ts, J, J, FormIJacobian, user));
 
   ftime = 10.0;
-  PetscCall(TSSetMaxSteps(ts,user->ntsteps));
-  PetscCall(TSSetMaxTime(ts,ftime));
-  PetscCall(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER));
+  PetscCall(TSSetMaxSteps(ts, user->ntsteps));
+  PetscCall(TSSetMaxTime(ts, ftime));
+  PetscCall(TSSetExactFinalTime(ts, TS_EXACTFINALTIME_STEPOVER));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create the solution vector and set the initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscCall(DMCreateGlobalVector(dm, &X));
 
-  PetscCall(FormInitialSolution(ts,X,user));
-  PetscCall(TSSetSolution(ts,X));
-  PetscCall(VecGetSize(X,&mx));
-  hx = 1.0/(PetscReal)(mx/2-1);
+  PetscCall(FormInitialSolution(ts, X, user));
+  PetscCall(TSSetSolution(ts, X));
+  PetscCall(VecGetSize(X, &mx));
+  hx = 1.0 / (PetscReal)(mx / 2 - 1);
   dt = 0.4 * PetscSqr(hx) / user->alpha; /* Diffusive stability limit */
-  PetscCall(TSSetTimeStep(ts,dt));
+  PetscCall(TSSetTimeStep(ts, dt));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set runtime options
@@ -152,15 +149,15 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscCall(TSSolve(ts,X));
-  PetscCall(TSGetSolveTime(ts,&ftime));
-  PetscCall(TSGetStepNumber(ts,&steps));
-  PetscCall(TSGetConvergedReason(ts,&reason));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%s at time %g after %" PetscInt_FMT " steps\n",TSConvergedReasons[reason],(double)ftime,steps));
+  PetscCall(TSSolve(ts, X));
+  PetscCall(TSGetSolveTime(ts, &ftime));
+  PetscCall(TSGetStepNumber(ts, &steps));
+  PetscCall(TSGetConvergedReason(ts, &reason));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%s at time %g after %" PetscInt_FMT " steps\n", TSConvergedReasons[reason], (double)ftime, steps));
 
   if (user->io) {
     /* Print the numerical solution to screen and then dump to file */
-    PetscCall(VecView(X,PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(VecView(X, PETSC_VIEWER_STDOUT_WORLD));
 
     /* Write out the solution along with the mesh */
     PetscCall(DMMoabSetGlobalFieldVector(dm, X));
@@ -192,14 +189,13 @@ int main(int argc,char **argv)
 /*
   IJacobian - Compute IJacobian = dF/dU + a dF/dUdot
 */
-PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat J,Mat Jpre,void *ptr)
-{
-  UserCtx             user = (UserCtx)ptr;
-  PetscInt            dof;
-  PetscReal           hx;
-  DM                  dm;
-  const moab::Range   *vlocal;
-  PetscBool           vonboundary;
+PetscErrorCode FormIJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, Mat J, Mat Jpre, void *ptr) {
+  UserCtx            user = (UserCtx)ptr;
+  PetscInt           dof;
+  PetscReal          hx;
+  DM                 dm;
+  const moab::Range *vlocal;
+  PetscBool          vonboundary;
 
   PetscFunctionBegin;
   PetscCall(TSGetDM(ts, &dm));
@@ -208,7 +204,7 @@ PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat J,
   PetscCall(DMMoabGetLocalVertices(dm, &vlocal, NULL));
 
   /* compute local element sizes - structured grid */
-  hx = 1.0/user->n;
+  hx = 1.0 / user->n;
 
   /* Compute function over the locally owned part of the grid
      Assemble the operator by looping over edges and computing
@@ -219,46 +215,49 @@ PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat J,
     PetscCall(DMMoabGetDofsBlocked(dm, 1, &vhandle, &dof));
 
     /* check if vertex is on the boundary */
-    PetscCall(DMMoabIsEntityOnBoundary(dm,vhandle,&vonboundary));
+    PetscCall(DMMoabIsEntityOnBoundary(dm, vhandle, &vonboundary));
 
     if (vonboundary) {
-      const PetscScalar bcvals[2][2] = {{hx,0},{0,hx}};
-      PetscCall(MatSetValuesBlocked(Jpre,1,&dof,1,&dof,&bcvals[0][0],INSERT_VALUES));
-    }
-    else {
-      const PetscInt    row           = dof,col[] = {dof-1,dof,dof+1};
-      const PetscScalar dxxL          = -user->alpha/hx,dxx0 = 2.*user->alpha/hx,dxxR = -user->alpha/hx;
-      const PetscScalar vals[2][3][2] = {{{dxxL,0},{a *hx+dxx0,0},{dxxR,0}},
-                                         {{0,dxxL},{0,a*hx+dxx0},{0,dxxR}}};
-      PetscCall(MatSetValuesBlocked(Jpre,1,&row,3,col,&vals[0][0][0],INSERT_VALUES));
+      const PetscScalar bcvals[2][2] = {
+        {hx, 0 },
+        {0,  hx}
+      };
+      PetscCall(MatSetValuesBlocked(Jpre, 1, &dof, 1, &dof, &bcvals[0][0], INSERT_VALUES));
+    } else {
+      const PetscInt    row = dof, col[] = {dof - 1, dof, dof + 1};
+      const PetscScalar dxxL = -user->alpha / hx, dxx0 = 2. * user->alpha / hx, dxxR = -user->alpha / hx;
+      const PetscScalar vals[2][3][2] = {
+        {{dxxL, 0}, {a * hx + dxx0, 0}, {dxxR, 0}},
+        {{0, dxxL}, {0, a * hx + dxx0}, {0, dxxR}}
+      };
+      PetscCall(MatSetValuesBlocked(Jpre, 1, &row, 3, col, &vals[0][0][0], INSERT_VALUES));
     }
   }
 
-  PetscCall(MatAssemblyBegin(Jpre,MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(Jpre,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(Jpre, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(Jpre, MAT_FINAL_ASSEMBLY));
   if (J != Jpre) {
-    PetscCall(MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY));
-    PetscCall(MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyBegin(J, MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(J, MAT_FINAL_ASSEMBLY));
   }
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode FormRHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
-{
-  UserCtx           user = (UserCtx)ptr;
-  DM                dm;
-  PetscReal         hx;
+static PetscErrorCode FormRHSFunction(TS ts, PetscReal t, Vec X, Vec F, void *ptr) {
+  UserCtx            user = (UserCtx)ptr;
+  DM                 dm;
+  PetscReal          hx;
   const Field       *x;
   Field             *f;
-  PetscInt          dof;
+  PetscInt           dof;
   const moab::Range *ownedvtx;
 
   PetscFunctionBegin;
-  hx = 1.0/user->n;
-  PetscCall(TSGetDM(ts,&dm));
+  hx = 1.0 / user->n;
+  PetscCall(TSGetDM(ts, &dm));
 
   /* Get pointers to vector data */
-  PetscCall(VecSet(F,0.0));
+  PetscCall(VecSet(F, 0.0));
 
   PetscCall(DMMoabVecGetArrayRead(dm, X, &x));
   PetscCall(DMMoabVecGetArray(dm, F, &f));
@@ -270,9 +269,9 @@ static PetscErrorCode FormRHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
     const moab::EntityHandle vhandle = *iter;
     PetscCall(DMMoabGetDofsBlockedLocal(dm, 1, &vhandle, &dof));
 
-    PetscScalar u = x[dof].u,v = x[dof].v;
-    f[dof].u = hx*(user->A + u*u*v - (user->B+1)*u);
-    f[dof].v = hx*(user->B*u - u*u*v);
+    PetscScalar u = x[dof].u, v = x[dof].v;
+    f[dof].u = hx * (user->A + u * u * v - (user->B + 1) * u);
+    f[dof].v = hx * (user->B * u - u * u * v);
   }
 
   /* Restore vectors */
@@ -281,30 +280,29 @@ static PetscErrorCode FormRHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx)
-{
-  UserCtx         user = (UserCtx)ctx;
-  DM              dm;
-  Field           *x,*xdot,*f;
-  PetscReal       hx;
-  Vec             Xloc;
-  PetscInt        i,bcindx;
-  PetscBool       elem_on_boundary;
-  const moab::Range   *vlocal;
+static PetscErrorCode FormIFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, void *ctx) {
+  UserCtx            user = (UserCtx)ctx;
+  DM                 dm;
+  Field             *x, *xdot, *f;
+  PetscReal          hx;
+  Vec                Xloc;
+  PetscInt           i, bcindx;
+  PetscBool          elem_on_boundary;
+  const moab::Range *vlocal;
 
   PetscFunctionBegin;
-  hx = 1.0/user->n;
+  hx = 1.0 / user->n;
   PetscCall(TSGetDM(ts, &dm));
 
   /* get the essential MOAB mesh related quantities needed for FEM assembly */
   PetscCall(DMMoabGetLocalVertices(dm, &vlocal, NULL));
 
   /* reset the residual vector */
-  PetscCall(VecSet(F,0.0));
+  PetscCall(VecSet(F, 0.0));
 
-  PetscCall(DMGetLocalVector(dm,&Xloc));
-  PetscCall(DMGlobalToLocalBegin(dm,X,INSERT_VALUES,Xloc));
-  PetscCall(DMGlobalToLocalEnd(dm,X,INSERT_VALUES,Xloc));
+  PetscCall(DMGetLocalVector(dm, &Xloc));
+  PetscCall(DMGlobalToLocalBegin(dm, X, INSERT_VALUES, Xloc));
+  PetscCall(DMGlobalToLocalEnd(dm, X, INSERT_VALUES, Xloc));
 
   /* get the local representation of the arrays from Vectors */
   PetscCall(DMMoabVecGetArrayRead(dm, Xloc, &x));
@@ -315,24 +313,23 @@ static PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void 
   for (moab::Range::iterator iter = vlocal->begin(); iter != vlocal->end(); iter++) {
     const moab::EntityHandle vhandle = *iter;
 
-    PetscCall(DMMoabGetDofsBlockedLocal(dm,1,&vhandle,&i));
+    PetscCall(DMMoabGetDofsBlockedLocal(dm, 1, &vhandle, &i));
 
     /* check if vertex is on the boundary */
-    PetscCall(DMMoabIsEntityOnBoundary(dm,vhandle,&elem_on_boundary));
+    PetscCall(DMMoabIsEntityOnBoundary(dm, vhandle, &elem_on_boundary));
 
     if (elem_on_boundary) {
       PetscCall(DMMoabGetDofsBlocked(dm, 1, &vhandle, &bcindx));
-      if (bcindx == 0) {  /* Apply left BC */
+      if (bcindx == 0) { /* Apply left BC */
         f[i].u = hx * (x[i].u - user->leftbc.u);
         f[i].v = hx * (x[i].v - user->leftbc.v);
-      } else {       /* Apply right BC */
+      } else { /* Apply right BC */
         f[i].u = hx * (x[i].u - user->rightbc.u);
         f[i].v = hx * (x[i].v - user->rightbc.v);
       }
-    }
-    else {
-      f[i].u = hx * xdot[i].u - user->alpha * (x[i-1].u - 2.*x[i].u + x[i+1].u) / hx;
-      f[i].v = hx * xdot[i].v - user->alpha * (x[i-1].v - 2.*x[i].v + x[i+1].v) / hx;
+    } else {
+      f[i].u = hx * xdot[i].u - user->alpha * (x[i - 1].u - 2. * x[i].u + x[i + 1].u) / hx;
+      f[i].v = hx * xdot[i].v - user->alpha * (x[i - 1].v - 2. * x[i].v + x[i + 1].v) / hx;
     }
   }
 
@@ -344,14 +341,13 @@ static PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode FormInitialSolution(TS ts,Vec X,void *ctx)
-{
-  UserCtx           user = (UserCtx)ctx;
-  PetscReal         vpos[3];
-  DM                dm;
-  Field             *x;
-  const moab::Range *vowned;
-  PetscInt          dof;
+PetscErrorCode FormInitialSolution(TS ts, Vec X, void *ctx) {
+  UserCtx               user = (UserCtx)ctx;
+  PetscReal             vpos[3];
+  DM                    dm;
+  Field                *x;
+  const moab::Range    *vowned;
+  PetscInt              dof;
   moab::Range::iterator iter;
 
   PetscFunctionBegin;
@@ -371,11 +367,11 @@ PetscErrorCode FormInitialSolution(TS ts,Vec X,void *ctx)
     PetscCall(DMMoabGetDofsBlockedLocal(dm, 1, &vhandle, &dof));
 
     /* compute the mid-point of the element and use a 1-point lumped quadrature */
-    PetscCall(DMMoabGetVertexCoordinates(dm,1,&vhandle,vpos));
+    PetscCall(DMMoabGetVertexCoordinates(dm, 1, &vhandle, vpos));
 
     PetscReal xi = vpos[0];
-    x[dof].u = user->leftbc.u*(1.-xi) + user->rightbc.u*xi + PetscSinReal(2.*PETSC_PI*xi);
-    x[dof].v = user->leftbc.v*(1.-xi) + user->rightbc.v*xi;
+    x[dof].u     = user->leftbc.u * (1. - xi) + user->rightbc.u * xi + PetscSinReal(2. * PETSC_PI * xi);
+    x[dof].v     = user->leftbc.v * (1. - xi) + user->rightbc.v * xi;
   }
 
   /* Restore vectors */

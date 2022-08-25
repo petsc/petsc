@@ -16,24 +16,21 @@ Test 2:
   solution: u_1 = b_3, u_2 = b_2, u_3 = b_1 - b_3
 */
 
-PetscErrorCode ComputeFunctionLinear(SNES snes, Vec x, Vec f, void *ctx)
-{
-  Mat            A = (Mat) ctx;
+PetscErrorCode ComputeFunctionLinear(SNES snes, Vec x, Vec f, void *ctx) {
+  Mat A = (Mat)ctx;
 
   PetscFunctionBeginUser;
   PetscCall(MatMult(A, x, f));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode ComputeJacobianLinear(SNES snes, Vec x, Mat A, Mat J, void *ctx)
-{
+PetscErrorCode ComputeJacobianLinear(SNES snes, Vec x, Mat A, Mat J, void *ctx) {
   PetscFunctionBeginUser;
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode ConstructProblem1(Mat A, Vec b)
-{
-  PetscInt       rStart, rEnd, row;
+PetscErrorCode ConstructProblem1(Mat A, Vec b) {
+  PetscInt rStart, rEnd, row;
 
   PetscFunctionBeginUser;
   PetscCall(VecSet(b, -3.0));
@@ -48,25 +45,23 @@ PetscErrorCode ConstructProblem1(Mat A, Vec b)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode CheckProblem1(Mat A, Vec b, Vec u)
-{
-  Vec            errorVec;
-  PetscReal      norm, error;
+PetscErrorCode CheckProblem1(Mat A, Vec b, Vec u) {
+  Vec       errorVec;
+  PetscReal norm, error;
 
   PetscFunctionBeginUser;
   PetscCall(VecDuplicate(b, &errorVec));
   PetscCall(VecWAXPY(errorVec, -1.0, b, u));
   PetscCall(VecNorm(errorVec, NORM_2, &error));
   PetscCall(VecNorm(b, NORM_2, &norm));
-  PetscCheck(error/norm <= 1000.*PETSC_MACHINE_EPSILON,PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Relative error %g is too large", (double)(error/norm));
+  PetscCheck(error / norm <= 1000. * PETSC_MACHINE_EPSILON, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Relative error %g is too large", (double)(error / norm));
   PetscCall(VecDestroy(&errorVec));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode ConstructProblem2(Mat A, Vec b)
-{
-  PetscInt       N = 10, constraintSize = 4;
-  PetscInt       row;
+PetscErrorCode ConstructProblem2(Mat A, Vec b) {
+  PetscInt N = 10, constraintSize = 4;
+  PetscInt row;
 
   PetscFunctionBeginUser;
   PetscCall(VecSet(b, -3.0));
@@ -74,7 +69,8 @@ PetscErrorCode ConstructProblem2(Mat A, Vec b)
     PetscScalar vals[2] = {1.0, 1.0};
     PetscInt    cols[2];
 
-    cols[0] = row; cols[1] = row + N - constraintSize;
+    cols[0] = row;
+    cols[1] = row + N - constraintSize;
     PetscCall(MatSetValues(A, 1, &row, 2, cols, vals, INSERT_VALUES));
   }
   for (row = constraintSize; row < N - constraintSize; ++row) {
@@ -93,10 +89,9 @@ PetscErrorCode ConstructProblem2(Mat A, Vec b)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode CheckProblem2(Mat A, Vec b, Vec u)
-{
-  PetscInt          N = 10, constraintSize = 4, r;
-  PetscReal         norm, error;
+PetscErrorCode CheckProblem2(Mat A, Vec b, Vec u) {
+  PetscInt           N = 10, constraintSize = 4, r;
+  PetscReal          norm, error;
   const PetscScalar *uArray, *bArray;
 
   PetscFunctionBeginUser;
@@ -104,34 +99,33 @@ PetscErrorCode CheckProblem2(Mat A, Vec b, Vec u)
   PetscCall(VecGetArrayRead(u, &uArray));
   PetscCall(VecGetArrayRead(b, &bArray));
   error = 0.0;
-  for (r = 0; r < constraintSize; ++r) error += PetscRealPart(PetscSqr(uArray[r] - bArray[r + N-constraintSize]));
+  for (r = 0; r < constraintSize; ++r) error += PetscRealPart(PetscSqr(uArray[r] - bArray[r + N - constraintSize]));
 
-  PetscCheck(error/norm <= 10000*PETSC_MACHINE_EPSILON,PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Relative error %g is too large", (double)(error/norm));
+  PetscCheck(error / norm <= 10000 * PETSC_MACHINE_EPSILON, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Relative error %g is too large", (double)(error / norm));
   error = 0.0;
   for (r = constraintSize; r < N - constraintSize; ++r) error += PetscRealPart(PetscSqr(uArray[r] - bArray[r]));
 
-  PetscCheck(error/norm <= 10000*PETSC_MACHINE_EPSILON,PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Relative error %g is too large", (double)(error/norm));
+  PetscCheck(error / norm <= 10000 * PETSC_MACHINE_EPSILON, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Relative error %g is too large", (double)(error / norm));
   error = 0.0;
-  for (r = N - constraintSize; r < N; ++r) error += PetscRealPart(PetscSqr(uArray[r] - (bArray[r - (N-constraintSize)] - bArray[r])));
+  for (r = N - constraintSize; r < N; ++r) error += PetscRealPart(PetscSqr(uArray[r] - (bArray[r - (N - constraintSize)] - bArray[r])));
 
-  PetscCheck(error/norm <= 10000*PETSC_MACHINE_EPSILON,PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Relative error %g is too large", (double)(error/norm));
+  PetscCheck(error / norm <= 10000 * PETSC_MACHINE_EPSILON, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Relative error %g is too large", (double)(error / norm));
   PetscCall(VecRestoreArrayRead(u, &uArray));
   PetscCall(VecRestoreArrayRead(b, &bArray));
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv)
-{
-  MPI_Comm       comm;
-  SNES           snes;                 /* nonlinear solver */
-  Vec            u,r,b;                /* solution, residual, and rhs vectors */
-  Mat            A,J;                  /* Jacobian matrix */
-  PetscInt       problem = 1, N = 10;
+int main(int argc, char **argv) {
+  MPI_Comm comm;
+  SNES     snes;    /* nonlinear solver */
+  Vec      u, r, b; /* solution, residual, and rhs vectors */
+  Mat      A, J;    /* Jacobian matrix */
+  PetscInt problem = 1, N = 10;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, NULL,help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   comm = PETSC_COMM_WORLD;
-  PetscCall(PetscOptionsGetInt(NULL,NULL, "-problem", &problem, NULL));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-problem", &problem, NULL));
   PetscCall(VecCreate(comm, &u));
   PetscCall(VecSetSizes(u, PETSC_DETERMINE, N));
   PetscCall(VecSetFromOptions(u));
@@ -142,17 +136,12 @@ int main(int argc, char **argv)
   PetscCall(MatSetSizes(A, PETSC_DETERMINE, PETSC_DETERMINE, N, N));
   PetscCall(MatSetFromOptions(A));
   PetscCall(MatSeqAIJSetPreallocation(A, 5, NULL));
-  J    = A;
+  J = A;
 
   switch (problem) {
-  case 1:
-    PetscCall(ConstructProblem1(A, b));
-    break;
-  case 2:
-    PetscCall(ConstructProblem2(A, b));
-    break;
-  default:
-    SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Invalid problem number %" PetscInt_FMT, problem);
+  case 1: PetscCall(ConstructProblem1(A, b)); break;
+  case 2: PetscCall(ConstructProblem2(A, b)); break;
+  default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Invalid problem number %" PetscInt_FMT, problem);
   }
 
   PetscCall(SNESCreate(PETSC_COMM_WORLD, &snes));
@@ -164,19 +153,12 @@ int main(int argc, char **argv)
   PetscCall(VecView(u, NULL));
 
   switch (problem) {
-  case 1:
-    PetscCall(CheckProblem1(A, b, u));
-    break;
-  case 2:
-    PetscCall(CheckProblem2(A, b, u));
-    break;
-  default:
-    SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Invalid problem number %" PetscInt_FMT, problem);
+  case 1: PetscCall(CheckProblem1(A, b, u)); break;
+  case 2: PetscCall(CheckProblem2(A, b, u)); break;
+  default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Invalid problem number %" PetscInt_FMT, problem);
   }
 
-  if (A != J) {
-    PetscCall(MatDestroy(&A));
-  }
+  if (A != J) { PetscCall(MatDestroy(&A)); }
   PetscCall(MatDestroy(&J));
   PetscCall(VecDestroy(&u));
   PetscCall(VecDestroy(&r));

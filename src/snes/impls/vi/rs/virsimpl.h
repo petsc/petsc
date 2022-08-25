@@ -9,12 +9,11 @@
 #define __SNES_VIRS_H
 
 typedef struct {
-  PetscErrorCode (*checkredundancy)(SNES,IS,IS*,void*);
+  PetscErrorCode (*checkredundancy)(SNES, IS, IS *, void *);
 
-  void *ctxP;           /* user defined check redundancy context */
-  IS   IS_inact_prev;
-  IS   IS_inact;
+  void *ctxP; /* user defined check redundancy context */
+  IS    IS_inact_prev;
+  IS    IS_inact;
 } SNES_VINEWTONRSLS;
 
 #endif
-

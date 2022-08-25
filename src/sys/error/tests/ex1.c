@@ -9,23 +9,21 @@ typedef struct _handlerCtx {
   int signum;
 } HandlerCtx;
 
-int handleSignal(int signum, void *ctx)
-{
-  HandlerCtx *user = (HandlerCtx*) ctx;
+int handleSignal(int signum, void *ctx) {
+  HandlerCtx *user = (HandlerCtx *)ctx;
 
   user->signum = signum;
   if (signum == SIGHUP) user->exitHandler = 1;
   return 0;
 }
 
-int main(int argc, char *args[])
-{
-  HandlerCtx     user;
+int main(int argc, char *args[]) {
+  HandlerCtx user;
 
   user.exitHandler = 0;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char*) 0, help));
+  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
   PetscCall(PetscPushSignalHandler(handleSignal, &user));
   while (!user.exitHandler) {
     if (user.signum > 0) {

@@ -33,40 +33,39 @@ Without -user_set_subdomains, the general PCGASM options are meaningful:\n\
 */
 #include <petscksp.h>
 
-PetscErrorCode AssembleMatrix(Mat,PetscInt m,PetscInt n);
+PetscErrorCode AssembleMatrix(Mat, PetscInt m, PetscInt n);
 
-int main(int argc,char **args)
-{
-  Vec            x,b,u;                  /* approx solution, RHS, exact solution */
-  Mat            A;                      /* linear system matrix */
-  KSP            ksp;                    /* linear solver context */
-  PC             pc;                     /* PC context */
-  IS             *inneris,*outeris;      /* array of index sets that define the subdomains */
-  PetscInt       overlap;                /* width of subdomain overlap */
-  PetscInt       Nsub;                   /* number of subdomains */
-  PetscInt       m,n;                    /* mesh dimensions in x- and y- directions */
-  PetscInt       M,N;                    /* number of subdomains in x- and y- directions */
-  PetscMPIInt    size;
-  PetscBool      flg=PETSC_FALSE;
-  PetscBool      user_set_subdomains=PETSC_FALSE;
-  PetscReal      one,e;
+int main(int argc, char **args) {
+  Vec         x, b, u;           /* approx solution, RHS, exact solution */
+  Mat         A;                 /* linear system matrix */
+  KSP         ksp;               /* linear solver context */
+  PC          pc;                /* PC context */
+  IS         *inneris, *outeris; /* array of index sets that define the subdomains */
+  PetscInt    overlap;           /* width of subdomain overlap */
+  PetscInt    Nsub;              /* number of subdomains */
+  PetscInt    m, n;              /* mesh dimensions in x- and y- directions */
+  PetscInt    M, N;              /* number of subdomains in x- and y- directions */
+  PetscMPIInt size;
+  PetscBool   flg                 = PETSC_FALSE;
+  PetscBool   user_set_subdomains = PETSC_FALSE;
+  PetscReal   one, e;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
-  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
-  PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"ex62","PCGASM");
+  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
+  PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "ex62", "PCGASM");
   m = 15;
-  PetscCall(PetscOptionsInt("-M", "Number of mesh points in the x-direction","PCGASMCreateSubdomains2D",m,&m,NULL));
+  PetscCall(PetscOptionsInt("-M", "Number of mesh points in the x-direction", "PCGASMCreateSubdomains2D", m, &m, NULL));
   n = 17;
-  PetscCall(PetscOptionsInt("-N","Number of mesh points in the y-direction","PCGASMCreateSubdomains2D",n,&n,NULL));
+  PetscCall(PetscOptionsInt("-N", "Number of mesh points in the y-direction", "PCGASMCreateSubdomains2D", n, &n, NULL));
   user_set_subdomains = PETSC_FALSE;
-  PetscCall(PetscOptionsBool("-user_set_subdomains","Use the user-specified 2D tiling of mesh by subdomains","PCGASMCreateSubdomains2D",user_set_subdomains,&user_set_subdomains,NULL));
+  PetscCall(PetscOptionsBool("-user_set_subdomains", "Use the user-specified 2D tiling of mesh by subdomains", "PCGASMCreateSubdomains2D", user_set_subdomains, &user_set_subdomains, NULL));
   M = 2;
-  PetscCall(PetscOptionsInt("-Mdomains","Number of subdomain tiles in the x-direction","PCGASMSetSubdomains2D",M,&M,NULL));
+  PetscCall(PetscOptionsInt("-Mdomains", "Number of subdomain tiles in the x-direction", "PCGASMSetSubdomains2D", M, &M, NULL));
   N = 1;
-  PetscCall(PetscOptionsInt("-Ndomains","Number of subdomain tiles in the y-direction","PCGASMSetSubdomains2D",N,&N,NULL));
+  PetscCall(PetscOptionsInt("-Ndomains", "Number of subdomain tiles in the y-direction", "PCGASMSetSubdomains2D", N, &N, NULL));
   overlap = 1;
-  PetscCall(PetscOptionsInt("-overlap","Size of tile overlap.","PCGASMSetSubdomains2D",overlap,&overlap,NULL));
+  PetscCall(PetscOptionsInt("-overlap", "Size of tile overlap.", "PCGASMSetSubdomains2D", overlap, &overlap, NULL));
   PetscOptionsEnd();
 
   /* -------------------------------------------------------------------
@@ -77,42 +76,42 @@ int main(int argc,char **args)
   /*
      Assemble the matrix for the five point stencil, YET AGAIN
   */
-  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
-  PetscCall(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n));
+  PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
+  PetscCall(MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, m * n, m * n));
   PetscCall(MatSetFromOptions(A));
   PetscCall(MatSetUp(A));
-  PetscCall(MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_FALSE));
+  PetscCall(MatSetOption(A, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_FALSE));
   PetscCall(MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE));
-  PetscCall(AssembleMatrix(A,m,n));
+  PetscCall(AssembleMatrix(A, m, n));
 
   /*
      Create and set vectors
   */
-  PetscCall(VecCreate(PETSC_COMM_WORLD,&b));
-  PetscCall(VecSetSizes(b,PETSC_DECIDE,m*n));
+  PetscCall(VecCreate(PETSC_COMM_WORLD, &b));
+  PetscCall(VecSetSizes(b, PETSC_DECIDE, m * n));
   PetscCall(VecSetFromOptions(b));
-  PetscCall(VecDuplicate(b,&u));
-  PetscCall(VecDuplicate(b,&x));
-  one  = 1.0;
-  PetscCall(VecSet(u,one));
-  PetscCall(MatMult(A,u,b));
+  PetscCall(VecDuplicate(b, &u));
+  PetscCall(VecDuplicate(b, &x));
+  one = 1.0;
+  PetscCall(VecSet(u, one));
+  PetscCall(MatMult(A, u, b));
 
   /*
      Create linear solver context
   */
-  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  PetscCall(KSPCreate(PETSC_COMM_WORLD, &ksp));
 
   /*
      Set operators. Here the matrix that defines the linear system
      also serves as the preconditioning matrix.
   */
-  PetscCall(KSPSetOperators(ksp,A,A));
+  PetscCall(KSPSetOperators(ksp, A, A));
 
   /*
      Set the default preconditioner for this program to be GASM
   */
-  PetscCall(KSPGetPC(ksp,&pc));
-  PetscCall(PCSetType(pc,PCGASM));
+  PetscCall(KSPGetPC(ksp, &pc));
+  PetscCall(PCSetType(pc, PCGASM));
 
   /* -------------------------------------------------------------------
                   Define the problem decomposition
@@ -147,23 +146,23 @@ int main(int argc,char **args)
   */
 
   if (user_set_subdomains) { /* user-control version */
-    PetscCall(PCGASMCreateSubdomains2D(pc, m,n,M,N,1,overlap,&Nsub,&inneris,&outeris));
-    PetscCall(PCGASMSetSubdomains(pc,Nsub,inneris,outeris));
-    PetscCall(PCGASMDestroySubdomains(Nsub,&inneris,&outeris));
-    flg  = PETSC_FALSE;
-    PetscCall(PetscOptionsGetBool(NULL,NULL,"-subdomain_view",&flg,NULL));
+    PetscCall(PCGASMCreateSubdomains2D(pc, m, n, M, N, 1, overlap, &Nsub, &inneris, &outeris));
+    PetscCall(PCGASMSetSubdomains(pc, Nsub, inneris, outeris));
+    PetscCall(PCGASMDestroySubdomains(Nsub, &inneris, &outeris));
+    flg = PETSC_FALSE;
+    PetscCall(PetscOptionsGetBool(NULL, NULL, "-subdomain_view", &flg, NULL));
     if (flg) {
       PetscInt i;
-      PetscCall(PetscPrintf(PETSC_COMM_SELF,"Nmesh points: %" PetscInt_FMT " x %" PetscInt_FMT "; subdomain partition: %" PetscInt_FMT " x %" PetscInt_FMT "; overlap: %" PetscInt_FMT "; Nsub: %" PetscInt_FMT "\n",m,n,M,N,overlap,Nsub));
-      PetscCall(PetscPrintf(PETSC_COMM_SELF,"Outer IS:\n"));
-      for (i=0; i<Nsub; i++) {
-        PetscCall(PetscPrintf(PETSC_COMM_SELF,"  outer IS[%" PetscInt_FMT "]\n",i));
-        PetscCall(ISView(outeris[i],PETSC_VIEWER_STDOUT_SELF));
+      PetscCall(PetscPrintf(PETSC_COMM_SELF, "Nmesh points: %" PetscInt_FMT " x %" PetscInt_FMT "; subdomain partition: %" PetscInt_FMT " x %" PetscInt_FMT "; overlap: %" PetscInt_FMT "; Nsub: %" PetscInt_FMT "\n", m, n, M, N, overlap, Nsub));
+      PetscCall(PetscPrintf(PETSC_COMM_SELF, "Outer IS:\n"));
+      for (i = 0; i < Nsub; i++) {
+        PetscCall(PetscPrintf(PETSC_COMM_SELF, "  outer IS[%" PetscInt_FMT "]\n", i));
+        PetscCall(ISView(outeris[i], PETSC_VIEWER_STDOUT_SELF));
       }
-      PetscCall(PetscPrintf(PETSC_COMM_SELF,"Inner IS:\n"));
-      for (i=0; i<Nsub; i++) {
-        PetscCall(PetscPrintf(PETSC_COMM_SELF,"  inner IS[%" PetscInt_FMT "]\n",i));
-        PetscCall(ISView(inneris[i],PETSC_VIEWER_STDOUT_SELF));
+      PetscCall(PetscPrintf(PETSC_COMM_SELF, "Inner IS:\n"));
+      for (i = 0; i < Nsub; i++) {
+        PetscCall(PetscPrintf(PETSC_COMM_SELF, "  inner IS[%" PetscInt_FMT "]\n", i));
+        PetscCall(ISView(inneris[i], PETSC_VIEWER_STDOUT_SELF));
       }
     }
   } else { /* basic setup */
@@ -198,15 +197,15 @@ int main(int argc,char **args)
        equivalent to the GASM method with zero overlap).
   */
 
-  flg  = PETSC_FALSE;
-  PetscCall(PetscOptionsGetBool(NULL,NULL,"-user_set_subdomain_solvers",&flg,NULL));
+  flg = PETSC_FALSE;
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-user_set_subdomain_solvers", &flg, NULL));
   if (flg) {
-    KSP       *subksp;        /* array of KSP contexts for local subblocks */
-    PetscInt  i,nlocal,first;   /* number of local subblocks, first local subblock */
-    PC        subpc;          /* PC context for subblock */
+    KSP      *subksp;           /* array of KSP contexts for local subblocks */
+    PetscInt  i, nlocal, first; /* number of local subblocks, first local subblock */
+    PC        subpc;            /* PC context for subblock */
     PetscBool isasm;
 
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"User explicitly sets subdomain solvers.\n"));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "User explicitly sets subdomain solvers.\n"));
 
     /*
        Set runtime options
@@ -216,8 +215,8 @@ int main(int argc,char **args)
     /*
        Flag an error if PCTYPE is changed from the runtime options
      */
-    PetscCall(PetscObjectTypeCompare((PetscObject)pc,PCGASM,&isasm));
-    PetscCheck(isasm,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Cannot Change the PCTYPE when manually changing the subdomain solver settings");
+    PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCGASM, &isasm));
+    PetscCheck(isasm, PETSC_COMM_WORLD, PETSC_ERR_SUP, "Cannot Change the PCTYPE when manually changing the subdomain solver settings");
 
     /*
        Call KSPSetUp() to set the block Jacobi data structures (including
@@ -230,17 +229,17 @@ int main(int argc,char **args)
     /*
        Extract the array of KSP contexts for the local blocks
     */
-    PetscCall(PCGASMGetSubKSP(pc,&nlocal,&first,&subksp));
+    PetscCall(PCGASMGetSubKSP(pc, &nlocal, &first, &subksp));
 
     /*
        Loop over the local blocks, setting various KSP options
        for each block.
     */
-    for (i=0; i<nlocal; i++) {
-      PetscCall(KSPGetPC(subksp[i],&subpc));
-      PetscCall(PCSetType(subpc,PCILU));
-      PetscCall(KSPSetType(subksp[i],KSPGMRES));
-      PetscCall(KSPSetTolerances(subksp[i],1.e-7,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT));
+    for (i = 0; i < nlocal; i++) {
+      PetscCall(KSPGetPC(subksp[i], &subpc));
+      PetscCall(PCSetType(subpc, PCILU));
+      PetscCall(KSPSetType(subksp[i], KSPGMRES));
+      PetscCall(KSPSetTolerances(subksp[i], 1.e-7, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT));
     }
   } else {
     /*
@@ -253,26 +252,24 @@ int main(int argc,char **args)
                       Solve the linear system
      ------------------------------------------------------------------- */
 
-  PetscCall(KSPSolve(ksp,b,x));
+  PetscCall(KSPSolve(ksp, b, x));
 
   /* -------------------------------------------------------------------
         Assemble the matrix again to test repeated setup and solves.
      ------------------------------------------------------------------- */
 
-  PetscCall(AssembleMatrix(A,m,n));
-  PetscCall(KSPSolve(ksp,b,x));
+  PetscCall(AssembleMatrix(A, m, n));
+  PetscCall(KSPSolve(ksp, b, x));
 
   /* -------------------------------------------------------------------
                       Compare result to the exact solution
      ------------------------------------------------------------------- */
-  PetscCall(VecAXPY(x,-1.0,u));
-  PetscCall(VecNorm(x,NORM_INFINITY, &e));
+  PetscCall(VecAXPY(x, -1.0, u));
+  PetscCall(VecNorm(x, NORM_INFINITY, &e));
 
-  flg  = PETSC_FALSE;
-  PetscCall(PetscOptionsGetBool(NULL,NULL,"-print_error",&flg,NULL));
-  if (flg) {
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Infinity norm of the error: %g\n", (double)e));
-  }
+  flg = PETSC_FALSE;
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-print_error", &flg, NULL));
+  if (flg) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Infinity norm of the error: %g\n", (double)e)); }
 
   /*
      Free work space.  All PETSc objects should be destroyed when they
@@ -288,23 +285,37 @@ int main(int argc,char **args)
   return 0;
 }
 
-PetscErrorCode AssembleMatrix(Mat A,PetscInt m,PetscInt n)
-{
-  PetscInt       i,j,Ii,J,Istart,Iend;
-  PetscScalar    v;
+PetscErrorCode AssembleMatrix(Mat A, PetscInt m, PetscInt n) {
+  PetscInt    i, j, Ii, J, Istart, Iend;
+  PetscScalar v;
 
   PetscFunctionBegin;
-  PetscCall(MatGetOwnershipRange(A,&Istart,&Iend));
-  for (Ii=Istart; Ii<Iend; Ii++) {
-    v = -1.0; i = Ii/n; j = Ii - i*n;
-    if (i>0)   {J = Ii - n; PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
-    if (i<m-1) {J = Ii + n; PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
-    if (j>0)   {J = Ii - 1; PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
-    if (j<n-1) {J = Ii + 1; PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
-    v = 4.0; PetscCall(MatSetValues(A,1,&Ii,1,&Ii,&v,INSERT_VALUES));
+  PetscCall(MatGetOwnershipRange(A, &Istart, &Iend));
+  for (Ii = Istart; Ii < Iend; Ii++) {
+    v = -1.0;
+    i = Ii / n;
+    j = Ii - i * n;
+    if (i > 0) {
+      J = Ii - n;
+      PetscCall(MatSetValues(A, 1, &Ii, 1, &J, &v, INSERT_VALUES));
+    }
+    if (i < m - 1) {
+      J = Ii + n;
+      PetscCall(MatSetValues(A, 1, &Ii, 1, &J, &v, INSERT_VALUES));
+    }
+    if (j > 0) {
+      J = Ii - 1;
+      PetscCall(MatSetValues(A, 1, &Ii, 1, &J, &v, INSERT_VALUES));
+    }
+    if (j < n - 1) {
+      J = Ii + 1;
+      PetscCall(MatSetValues(A, 1, &Ii, 1, &J, &v, INSERT_VALUES));
+    }
+    v = 4.0;
+    PetscCall(MatSetValues(A, 1, &Ii, 1, &Ii, &v, INSERT_VALUES));
   }
-  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
 
   PetscFunctionReturn(0);
 }

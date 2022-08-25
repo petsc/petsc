@@ -15,65 +15,68 @@ static char help[] = "Test file for the PCFactorSetShiftType()\n";
 
 #include <petscksp.h>
 
-int main(int argc,char **argv)
-{
+int main(int argc, char **argv) {
   KSP                ksp;
   PC                 pc;
-  Mat                A,M;
-  Vec                X,B,D;
+  Mat                A, M;
+  Vec                X, B, D;
   MPI_Comm           comm;
   PetscScalar        v;
   KSPConvergedReason reason;
-  PetscInt           i,j,its;
+  PetscInt           i, j, its;
 
   PetscFunctionBegin;
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&argv,0,help));
+  PetscCall(PetscInitialize(&argc, &argv, 0, help));
   comm = MPI_COMM_SELF;
 
   /*
    * Construct the Kershaw matrix
    * and a suitable rhs / initial guess
    */
-  PetscCall(MatCreateSeqAIJ(comm,4,4,4,0,&A));
-  PetscCall(VecCreateSeq(comm,4,&B));
-  PetscCall(VecDuplicate(B,&X));
-  for (i=0; i<4; i++) {
-    v    = 3;
-    PetscCall(MatSetValues(A,1,&i,1,&i,&v,INSERT_VALUES));
-    v    = 1;
-    PetscCall(VecSetValues(B,1,&i,&v,INSERT_VALUES));
-    PetscCall(VecSetValues(X,1,&i,&v,INSERT_VALUES));
+  PetscCall(MatCreateSeqAIJ(comm, 4, 4, 4, 0, &A));
+  PetscCall(VecCreateSeq(comm, 4, &B));
+  PetscCall(VecDuplicate(B, &X));
+  for (i = 0; i < 4; i++) {
+    v = 3;
+    PetscCall(MatSetValues(A, 1, &i, 1, &i, &v, INSERT_VALUES));
+    v = 1;
+    PetscCall(VecSetValues(B, 1, &i, &v, INSERT_VALUES));
+    PetscCall(VecSetValues(X, 1, &i, &v, INSERT_VALUES));
   }
 
-  i    =0; v=0;
-  PetscCall(VecSetValues(X,1,&i,&v,INSERT_VALUES));
+  i = 0;
+  v = 0;
+  PetscCall(VecSetValues(X, 1, &i, &v, INSERT_VALUES));
 
-  for (i=0; i<3; i++) {
-    v    = -2; j=i+1;
-    PetscCall(MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES));
-    PetscCall(MatSetValues(A,1,&j,1,&i,&v,INSERT_VALUES));
+  for (i = 0; i < 3; i++) {
+    v = -2;
+    j = i + 1;
+    PetscCall(MatSetValues(A, 1, &i, 1, &j, &v, INSERT_VALUES));
+    PetscCall(MatSetValues(A, 1, &j, 1, &i, &v, INSERT_VALUES));
   }
-  i=0; j=3; v=2;
+  i = 0;
+  j = 3;
+  v = 2;
 
-  PetscCall(MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES));
-  PetscCall(MatSetValues(A,1,&j,1,&i,&v,INSERT_VALUES));
-  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatSetValues(A, 1, &i, 1, &j, &v, INSERT_VALUES));
+  PetscCall(MatSetValues(A, 1, &j, 1, &i, &v, INSERT_VALUES));
+  PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
   PetscCall(VecAssemblyBegin(B));
   PetscCall(VecAssemblyEnd(B));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\nThe Kershaw matrix:\n\n"));
-  PetscCall(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\nThe Kershaw matrix:\n\n"));
+  PetscCall(MatView(A, PETSC_VIEWER_STDOUT_WORLD));
 
   /*
    * A Conjugate Gradient method
    * with ILU(0) preconditioning
    */
-  PetscCall(KSPCreate(comm,&ksp));
-  PetscCall(KSPSetOperators(ksp,A,A));
+  PetscCall(KSPCreate(comm, &ksp));
+  PetscCall(KSPSetOperators(ksp, A, A));
 
-  PetscCall(KSPSetType(ksp,KSPCG));
-  PetscCall(KSPSetInitialGuessNonzero(ksp,PETSC_TRUE));
+  PetscCall(KSPSetType(ksp, KSPCG));
+  PetscCall(KSPSetInitialGuessNonzero(ksp, PETSC_TRUE));
 
   /*
    * ILU preconditioner;
@@ -84,8 +87,8 @@ int main(int argc,char **argv)
    * command line option, and see that the pivots are all positive and
    * the method converges.
    */
-  PetscCall(KSPGetPC(ksp,&pc));
-  PetscCall(PCSetType(pc,PCICC));
+  PetscCall(KSPGetPC(ksp, &pc));
+  PetscCall(PCSetType(pc, PCICC));
   /* PetscCall(PCFactorSetShiftType(prec,MAT_SHIFT_POSITIVE_DEFINITE)); */
 
   PetscCall(KSPSetFromOptions(ksp));
@@ -96,29 +99,29 @@ int main(int argc,char **argv)
    * note that the last one is negative. This in itself is not an error,
    * but it will make the iterative method diverge.
    */
-  PetscCall(PCFactorGetMatrix(pc,&M));
-  PetscCall(VecDuplicate(B,&D));
-  PetscCall(MatGetDiagonal(M,D));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\nPivots:\n\n"));
-  PetscCall(VecView(D,0));
+  PetscCall(PCFactorGetMatrix(pc, &M));
+  PetscCall(VecDuplicate(B, &D));
+  PetscCall(MatGetDiagonal(M, D));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\nPivots:\n\n"));
+  PetscCall(VecView(D, 0));
 
   /*
    * Solve the system;
    * without the shift this will diverge with
    * an indefinite preconditioner
    */
-  PetscCall(KSPSolve(ksp,B,X));
-  PetscCall(KSPGetConvergedReason(ksp,&reason));
-  if (reason==KSP_DIVERGED_INDEFINITE_PC) {
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\nDivergence because of indefinite preconditioner;\n"));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Run the executable again but with -pc_factor_shift_positive_definite option.\n"));
-  } else if (reason<0) {
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\nOther kind of divergence: this should not happen.\n"));
+  PetscCall(KSPSolve(ksp, B, X));
+  PetscCall(KSPGetConvergedReason(ksp, &reason));
+  if (reason == KSP_DIVERGED_INDEFINITE_PC) {
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\nDivergence because of indefinite preconditioner;\n"));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Run the executable again but with -pc_factor_shift_positive_definite option.\n"));
+  } else if (reason < 0) {
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\nOther kind of divergence: this should not happen.\n"));
   } else {
-    PetscCall(KSPGetIterationNumber(ksp,&its));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\nConvergence in %d iterations.\n",(int)its));
+    PetscCall(KSPGetIterationNumber(ksp, &its));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\nConvergence in %d iterations.\n", (int)its));
   }
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\n"));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n"));
 
   PetscCall(KSPDestroy(&ksp));
   PetscCall(MatDestroy(&A));

@@ -67,44 +67,9 @@ that the code is uniform and easily maintained.
 C Formatting
 ~~~~~~~~~~~~
 
-#. *No* tabs are allowed in *any* of the source code.
+The white space and basic layout is controlled by the ``.clang-format`` file in the root directory. You can run the formatter in a single directory or in the entire repository with ``make clangformat``. All merge requests must be properly formatted; this is automatically checked for merge requests with ``make checkclangformat``.
 
-#. All PETSc function bodies are indented two characters.
-
-#. Each additional level of loops, ``if`` statements, and so on is
-   indented two more characters.
-
-#. Wrapping lines should be avoided whenever possible.
-
-#. Source code lines do not have a hard length limit; generally, we like
-   them less than 150 characters wide.
-
-#. The local variable declarations should be aligned. For example, use
-   the style
-
-   ::
-
-       PetscScalar a;
-       PetscInt    i,j;
-
-   instead of
-
-   ::
-
-       PetscScalar a;
-       PetscInt i,j; /* Incorrect */
-
-#. Assignment and comparison operations, for example, ``x = 22.0`` or
-   ``x < 22.0``, should have single spaces around the operator. This
-   convention is true even when assignments are given directly in a line
-   that declares the variable, such as ``PetscReal r = 22.3``. The
-   exception is when these symbols are used in a ``for`` loop; then,
-   there should be no spaces, for example, ``for (i=0; i<m; i++)``.
-   Comparisons in ``while()`` constructs should have the spaces.
-
-#. When declaring variables there should be no space between multiple
-   variables, for example, ``PetscReal a,b,c``, not
-   ``PetscReal a, b, c``.
+Even with the use of ``clang-format`` there are still many decisions about code formatting that must be constantly made. A subset of these are automatically checked for merge requests with ``make checkbadSource``.
 
 #. The prototypes for functions should not include the names of the
    variables
@@ -128,30 +93,21 @@ C Formatting
       // Incorrect
       PetscInt a,b,c,*d,*e,**f;
 
-#. Equal signs should be aligned in regions where possible, but are allowed to not be
-   aligned across comments, empty lines, or preprocessor directives.
+#. Local variables should be initialized when declared when possible
 
    ::
 
       // Correct
-      bob   = 1;
-      alice = 2;
-
-      // Correct, broken by an allowed delimiter
-      bob = 1;
-
-      alice = 2;
-
-      bob = 1;
-      // a very instructive comment
-      alice = 2;
+      PetscInt a,b,c = 11;
 
       // Incorrect
-      bob = 1;
-      alice = 2;
+      PetscInt a,b,c;
 
-#. There *must* be a single blank line between the local variable
-   declarations and the body of the function.
+      PetscFunctionBegin;
+      c = 11;
+
+#. All PETSc subroutine code blocks *must* start with a single blank line between the local variable
+   declarations followed by ``PetscFunctionBegin``.
 
    ::
 
@@ -163,6 +119,14 @@ C Formatting
       // Incorrect
       PetscInt x;
       PetscFunctionBegin;
+
+      // Incorrect
+      PetscInt x;
+      y = 11;
+
+#. Functions in PETSc examples including ``main()`` should have  ``PetscFunctionBeginUser`` as the very first line after the local variable declarations.
+
+#. PETSc functions should return with ``PetscFunctionReturn(0)`` not ``return 0``.
 
 #. All PETSc functions must have their return value checked for errors using the
    ``PetscCall()`` macro. This should be wrapped around the function in question.
@@ -187,173 +151,101 @@ C Formatting
    As a rule, always try to wrap the function first, if this fails to compile you do
    not need to add the error checking.
 
-#. Indentation for ``if`` statements *must* be done as follows.
+   Calls to external package functions are generally made with ```PetscCallExternal()`` or its variants that are specialized for particular packages, for example ```PetscCallBLAS()``
+
+#. Single operation ``if`` and ``else`` commands should not be wrapped in braces. They should be done as follows,
 
    ::
 
-       if ( ) {
-         ....
-       } else {
-         ....
-       }
+       if ( ) XXXX;
+       else YYY;
 
-#. *Never* have
+   not
 
    ::
 
-       if ( )
-         a single indented line /* Incorrect */
-
-   or
-
-   ::
-
-       for ( )
-         a single indented line /* Incorrect */
-
-   Instead, use either
-
-   ::
-
-       if ( ) a single statement
-
-   or
-
-   ::
-
-       if ( ) {
-         a single indented line
-       }
-
-   Note that error checking is a complete statement, so should be put inline with the
-   ``if`` statement
-
-   ::
-
-       if ( ) {
-         PetscCall(XXX()); /* Incorrect */
-       }
-
-       if ( ) PetscCall(XXX()); /* Correct */
-
-#. Always have a space between ``if`` or ``for`` and the following
-   ``()``.
-
-#. The open brace should be on the same line
-   as the ``if ( )`` test, ``for ( )``, and so forth, not on its own
-   line, for example,
-
-   ::
-
-        } else {
-
-   instead of
-
-   ::
-
-        }
-        else { /* Incorrect */
-
-   See the next item for an exception. The closing
-   brace should *always* be on its own line.
-
-#. In function declarations, the opening brace should be on the *next* line, not on the
-   same line as the function name and arguments. This is an exception to the previous
-   item.
-
-   ::
-
-      // Correct
-      PetscErrorCode Foo(...)
-      {
-
-      }
-
-      // Incorrect
-      PetscErrorCode Foo(...) {
-
-      }
+       if ( ) {XXXX;}
+       else {YYY;}
 
 #. Do not leave sections of commented-out code in the source files.
 
-#. Use classic block comments (``/* Comment */``) for multi-line comments, and ``//
-   Comment`` for single-line comments in source files.
+#. Use classic block comments (``/* There must be a space before the first word in the comment and a space at the end */``,
+   (``/*Do not do this*/``) for multi-line comments, and ``// Comment`` for single-line comments in source files. Use appropriate grammar and spelling
+   in the comments.
 
 #. All variables must be declared at the beginning of the code block (C89
    style), never mixed in with code. When variables are only used in a limited
-   scope, it is encouraged to declare them in that scope. For example::
+   scope, it is encouraged to declare them in that scope. For example:
 
-     if (cond) {
-       PetscScalar *tmp;
+   ::
 
-       PetscCall(PetscMalloc1(10,&tmp));
-       // use tmp
-       PetscCall(PetscFree(tmp));
-     }
+       if (cond) {
+         PetscScalar *tmp;
+
+         PetscCall(PetscMalloc1(10,&tmp));
+         // use tmp
+         PetscCall(PetscFree(tmp));
+       }
 
    The only exception to this variables used exclusively within a ``for`` loop, which must
-   be declared inside the loop initializer::
-
-     // Correct
-     for (PetscInt i=0; i<n; ++i) {
-       // loop body
-     }
-
-     // Correct, variable used outside of loop
-     PetscInt i;
-
-     for (i=0; i<n; ++i) {
-       // loop body
-     }
-     j = i;
-
-     // Incorrect
-     PetscInt i;
-     ...
-     for (i=0; i<n; ++i) {
-       // loop body
-     }
-
-#. Do not include a space after a ``(`` or before a ``)``. Do not write
+   be declared inside the loop initializer:
 
    ::
 
-       PetscCall(PetscMalloc1( 10,&a )); /* Incorrect */
-
-   but instead write
-
-   ::
-
-       PetscCall(PetscMalloc1(10,&a));
-
-#. Do not use a space after the ``)`` in a cast or between the type and
-   the ``*`` in a cast.
+       // Correct
+       for (PetscInt i=0; i<n; ++i) {
+         // loop body
+       }
 
    ::
 
-      // Correct
-      (PetscInt)x;
-      (PetscInt*)y;
-
-      // Incorrect
-      (PetscInt) x;
-      (PetscInt *)y;
-
-#. Do not include a space before or after a comma in lists. That is, do
-   not write
+       // Correct, variable used outside of loop
+       PetscInt i;
 
    ::
 
-       PetscCall(func(a, 22.0)); /* Incorrect */
-
-   but instead write
+       for (i=0; i<n; ++i) {
+         // loop body
+       }
+       j = i;
 
    ::
 
-       PetscCall(func(a,22.0));
+       // Incorrect
+       PetscInt i;
+       ...
+       for (i=0; i<n; ++i) {
+         // loop body
+       }
+
+#. Developers are allowed to use // to split very long lines when it improves code readability. For example
+
+   ::
+
+       f[j][i].omega = xdot[j][i].omega + uxx + uyy //
+                     + (vxp * (u - x[j][i - 1].omega) + vxm * (x[j][i + 1].omega - u)) * hy //
+                     + (vyp * (u - x[j - 1][i].omega) + vym * (x[j + 1][i].omega - u)) * hx //
+                     - .5 * grashof * (x[j][i + 1].temp - x[j][i - 1].temp) * hy;
+
+#. The use of clang-format off is allowed in the source code but should only be used when absolutely necessary. It should not
+   be used when trailing // to split lines works.
+
+   ::
+
+       // clang-format off
+       f ...
+       // clang-format on
+
+#. `size` and `rank` should be used exclusively for the results of `MPI_Comm_size()` and `MPI_Comm_rank()` and other variable names for these values should be avoided unless necessary.
 
 C Usage
 ~~~~~~~
+
+#. Do not use language features that are not in the intersection of C99, C++11, and MSVC
+   v1900+ (Visual Studio 2015).  Examples of such features include variable-length arrays.
+   Note that variable-length arrays (including VLA-pointers) are not supported in C++ and
+   were made optional in C11. You may use designated initializers via the
+   ``PetscDesignatedInitializer()`` macro.
 
 #. Array and pointer arguments where the array values are not changed
    should be labeled as ``const`` arguments.
@@ -362,22 +254,20 @@ C Usage
    ``const``.
 
 #. Subroutines that would normally have a ``void**`` argument to return
-   a pointer to some data should actually be prototyped as ``void*``.
+   a pointer to some data should be prototyped as ``void*``.
    This prevents the caller from having to put a ``(void**)`` cast in
    each function call. See, for example, ``DMDAVecGetArray()``.
 
 #. Do not use the ``register`` directive.
 
-#. Do not use ``if (v == NULL)`` or
-   ``if (flg == PETSC_TRUE)`` or ``if (flg == PETSC_FALSE)``. Instead, use
-   ``if (!v)`` or ``if (flg)`` or ``if (!flg)``.
+#. Use ``if (v == NULL)`` or  ``if (flg == PETSC_TRUE)``, instead of using ``if (!v)`` or ``if (flg)`` or ``if (!flg)``.
 
-#. Do not use ``#ifdef`` or ``#ifndef``. Rather, use ``#if defined(...`` or ``#if
+#. Avoid ``#ifdef`` or ``#ifndef`` when possible. Rather, use ``#if defined(...`` or ``#if
    !defined(...``.  Better, use ``PetscDefined()`` (see below). The only exception to this
    rule is for header guards, where the ``#ifndef`` form is preferred (see below).
 
 #. Header guard macros should include the full name and end in ``_FILE_EXTENSION`` of the
-   file and be formed using ``#ifndef``. For example::
+   file and be formed using ``#ifndef``. For example:
 
      // my_petsc_header_file.h
      #ifndef MY_PETSC_HEADER_FILE_H
@@ -391,17 +281,13 @@ C Usage
    use ``PetscRandom`` which produces the exact same results regardless
    of system it is used on.
 
+#. Never use system math functions or string functions in PETSc source code or examples, instead use the PETSc versions.
+
 #. Variadic macros may be used in PETSc, but must work with MSVC v1900+ (Visual Studio
    2015). Most compilers have conforming implementations of the C99/C++11 rules for
    ``__VA_ARGS__``, but MSVC's implementation is not conforming and may need workarounds.
    See ``PetscDefined()`` for an example of how to work around MSVC's limitations to write
    a macro that is usable in both.
-
-#. Do not use language features that are not in the intersection of C99, C++11, and MSVC
-   v1900+ (Visual Studio 2015).  Examples of such features include variable-length arrays.
-   Note that variable-length arrays (including VLA-pointers) are not supported in C++ and
-   were made optional in C11. You may use designated initializers via the
-   ``PetscDesignatedInitializer()`` macro.
 
 .. _usage_of_petsc_functions_and_macros:
 
@@ -412,38 +298,42 @@ Usage of PETSc Functions and Macros
    directives with a comment containing (or explaining) either the boolean condition or
    the name of the macro if the first directive is testing whether one is defined. One
    should be able to read any part of the macro block and be able to find or deduce the
-   initial ``#if``. That is::
+   initial ``#if``. That is:
 
-     #if defined(MY_MACRO)
-     // many lines of code
-     #else // MY_MACRO (use name of macro)
-     // many more lines of code
-     #endif // MY_MACRO
+   ::
 
-     #if MY_MACRO > 10
-     // code
-     #else // MY_MACRO < 10
-     // more code
-     #endif // MY_MACRO > 10
+       #if defined(MY_MACRO)
+       // many lines of code
+       #else // MY_MACRO (use name of macro)
+       // many more lines of code
+       #endif // MY_MACRO
+
+       #if MY_MACRO > 10
+       // code
+       #else // MY_MACRO < 10
+       // more code
+       #endif // MY_MACRO > 10
 
 #. Nested preprocessor blocks should be indent the text (*not* the ``#``) following the
-   normal indentation rules outlined above. For example::
+   normal indentation rules outlined above. For example:
 
-     // Right
-     #if MY_VARIABLE > 10
-     #  if MY_OTHER_VARIABLE > 15
-     #    define BIG_VARIABLE 1
+   ::
+
+       // Right
+       #if MY_VARIABLE > 10
+       #  if MY_OTHER_VARIABLE > 15
+       #    define BIG_VARIABLE 1
 
 
-     // Wrong
-     #if MY_VARIABLE > 10
+       // Wrong
+       #if MY_VARIABLE > 10
+         #if MY_OTHER_VARIABLE > 15
+           #define BIG_VARIABLE 1
+
+       // Wrong
+       #if MY_VARIABLE > 10
        #if MY_OTHER_VARIABLE > 15
-         #define BIG_VARIABLE 1
-
-     // Wrong
-     #if MY_VARIABLE > 10
-     #if MY_OTHER_VARIABLE > 15
-     #define BIG_VARIABLE 1
+       #define BIG_VARIABLE 1
 
 #. Public PETSc include files, ``petsc*.h``, should not reference
    private PETSc ``petsc/private/*impl.h`` include files.
@@ -457,29 +347,33 @@ Usage of PETSc Functions and Macros
 
    ::
 
-     PetscErrorCode PetscPublicFunction(Vec v, PetscScalar *array, PetscInt collectiveInt)
-     {
-       PetscFunctionBegin;
-       PetscValidHeaderSpecific(v,VEC_CLASSID,1);
-       PetscValidScalarPointer(array,2);
-       PetscValidLogicalCollectiveInt(v,collectiveInt,3);
-       ...
-       PetscFunctionReturn(0);
-     }
+       PetscErrorCode PetscPublicFunction(Vec v, PetscScalar *array, PetscInt collectiveInt)
+       {
+         PetscFunctionBegin;
+         PetscValidHeaderSpecific(v,VEC_CLASSID,1);
+         PetscValidScalarPointer(array,2);
+         PetscValidLogicalCollectiveInt(v,collectiveInt,3);
+         ...
+         PetscFunctionReturn(0);
+       }
 
    See ``include/petsc/private/petscimpl.h`` and search for "PetscValid" to see all
    available checker macros.
 
 #. When possible, use ``PetscDefined()`` instead of preprocessor conditionals.
-   For example use::
+   For example use:
 
-     if (PetscDefined(USE_DEBUG)) { ... }
+   ::
 
-   instead of::
+       if (PetscDefined(USE_DEBUG)) { ... }
 
-     #if defined(PETSC_USE_DEBUG)
-       ...
-     #endif
+   instead of:
+
+   ::
+
+       #if defined(PETSC_USE_DEBUG)
+         ...
+       #endif
 
    The former usage allows syntax and type checking in all configurations of
    PETSc, where as the latter needs to be compiled with and without debugging
@@ -522,7 +416,6 @@ Usage of PETSc Functions and Macros
    should not be used in PETSc without appropriate ``configure``
    checks and ``#if PetscDefined()`` checks. Code should also be provided
    that works if the MPI feature is not available, for example,
-
 
    ::
 
@@ -584,6 +477,7 @@ Usage of PETSc Functions and Macros
        } MyEnum;
 
    Note that after compiler preprocessing, the enum above would be transformed to something like
+
    ::
 
        typedef enum {
@@ -627,6 +521,9 @@ see the documentation for ``doctext``.
 
 -  | ``/*S``
    | a formatted comment for a data type such as ``KSP``. Note that each of these needs to be listed in ``lib/petsc/conf/bfort-petsc.txt`` as a ``nativeptr``.
+
+-  | ``/*J``
+   | a formatted comment for a string type such as ``KSPType``.
 
 -  | ``/*MC``
    | a formatted comment of a CPP macro or enum value for documentation.
@@ -682,15 +579,15 @@ where noted, add a newline after the section headings.
    list of options database keys in an ``Options Database Key(s):``
    section.
 
-#. (Optional) a ``Notes:`` section containing in-depth discussion,
+#. (Optional) a ``Note(s):`` section containing in-depth discussion,
    technical caveats, special cases, and so on. If it is ambiguous
    whether returned pointers/objects need to be freed/destroyed by the
    user or not, this information should be mentioned here.
 
-#. (If applicable) a ``Fortran Notes:`` section detailing any relevant
+#. (If applicable) a ``Fortran Note(s):`` section detailing any relevant
    differences in calling or using the item from Fortran.
 
-#. (If applicable) a ``Developer Notes:`` section detailing any relevant
+#. (If applicable) a ``Developer Note(s):`` section detailing any relevant
    information about the code for developers, for example, why a
    particular algorithm was implemented.
 
@@ -701,13 +598,15 @@ where noted, add a newline after the section headings.
    pages. These manual pages should usually also point back to this
    manual page in their ``seealso:`` sections.
 
+#. All PETSc functions that appear in a manual page (except the one in the header at the top) should end with a ``()`` and be enclosed in single back tick marks. All PETSc enum types and macros etc should also be enclosed in single back tick marks. This includes everything listed in the .seealso lines.
+
 .. [1]
    Type also refers to the string name of the subclass.
 
 Spelling and Capitalization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-#. Proper nouns, including Unix, Linux, X Windows, and Microsoft Windows should be capitalized. This includes all operating systems.
+#. Proper nouns, including Unix, Linux, X Windows, and Microsoft Windows should be fully written out and capitalized. This includes all operating systems.
 
 #. Company names and product names should be capitalized.
 
@@ -718,6 +617,8 @@ Spelling and Capitalization
 #. Microsoft Windows should always be written out with two words. That is it should not be shortened to Windows.
 
 #. CMake should be capitalized as shown.
+
+#. BLAS and LAPACK are written in full capitalization
 
 
 References

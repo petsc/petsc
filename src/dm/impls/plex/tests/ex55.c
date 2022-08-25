@@ -5,28 +5,27 @@ static char help[] = "Load and save the mesh and fields to HDF5 and ExodusII\n\n
 #include <petscsf.h>
 
 typedef struct {
-  PetscBool compare;                      /* Compare the meshes using DMPlexEqual() */
-  PetscBool compare_labels;               /* Compare labels in the meshes using DMCompareLabels() */
-  PetscBool distribute;                   /* Distribute the mesh */
-  PetscBool interpolate;                  /* Generate intermediate mesh elements */
-  char      filename[PETSC_MAX_PATH_LEN]; /* Mesh filename */
-  char      meshname[PETSC_MAX_PATH_LEN]; /* Mesh name */
-  PetscViewerFormat format;               /* Format to write and read */
-  PetscBool second_write_read;            /* Write and read for the 2nd time */
-  PetscBool use_low_level_functions;      /* Use low level functions for viewing and loading */
+  PetscBool         compare;                      /* Compare the meshes using DMPlexEqual() */
+  PetscBool         compare_labels;               /* Compare labels in the meshes using DMCompareLabels() */
+  PetscBool         distribute;                   /* Distribute the mesh */
+  PetscBool         interpolate;                  /* Generate intermediate mesh elements */
+  char              filename[PETSC_MAX_PATH_LEN]; /* Mesh filename */
+  char              meshname[PETSC_MAX_PATH_LEN]; /* Mesh name */
+  PetscViewerFormat format;                       /* Format to write and read */
+  PetscBool         second_write_read;            /* Write and read for the 2nd time */
+  PetscBool         use_low_level_functions;      /* Use low level functions for viewing and loading */
 } AppCtx;
 
-static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
-{
+static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   PetscFunctionBeginUser;
-  options->compare = PETSC_FALSE;
-  options->compare_labels = PETSC_FALSE;
-  options->distribute = PETSC_TRUE;
-  options->interpolate = PETSC_FALSE;
-  options->filename[0] = '\0';
-  options->meshname[0] = '\0';
-  options->format = PETSC_VIEWER_DEFAULT;
-  options->second_write_read = PETSC_FALSE;
+  options->compare                 = PETSC_FALSE;
+  options->compare_labels          = PETSC_FALSE;
+  options->distribute              = PETSC_TRUE;
+  options->interpolate             = PETSC_FALSE;
+  options->filename[0]             = '\0';
+  options->meshname[0]             = '\0';
+  options->format                  = PETSC_VIEWER_DEFAULT;
+  options->second_write_read       = PETSC_FALSE;
   options->use_low_level_functions = PETSC_FALSE;
 
   PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");
@@ -36,24 +35,23 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "ex55.c", options->interpolate, &options->interpolate, NULL));
   PetscCall(PetscOptionsString("-filename", "The mesh file", "ex55.c", options->filename, options->filename, sizeof(options->filename), NULL));
   PetscCall(PetscOptionsString("-meshname", "The mesh file", "ex55.c", options->meshname, options->meshname, sizeof(options->meshname), NULL));
-  PetscCall(PetscOptionsEnum("-format", "Format to write and read", "ex55.c", PetscViewerFormats, (PetscEnum)options->format, (PetscEnum*)&options->format, NULL));
+  PetscCall(PetscOptionsEnum("-format", "Format to write and read", "ex55.c", PetscViewerFormats, (PetscEnum)options->format, (PetscEnum *)&options->format, NULL));
   PetscCall(PetscOptionsBool("-second_write_read", "Write and read for the 2nd time", "ex55.c", options->second_write_read, &options->second_write_read, NULL));
   PetscCall(PetscOptionsBool("-use_low_level_functions", "Use low level functions for viewing and loading", "ex55.c", options->use_low_level_functions, &options->use_low_level_functions, NULL));
   PetscOptionsEnd();
   PetscFunctionReturn(0);
 };
 
-static PetscErrorCode DMPlexWriteAndReadHDF5(DM dm, const char filename[], const char prefix[], AppCtx user, DM *dm_new)
-{
-  DM             dmnew;
-  const char     savedName[]  = "Mesh";
-  const char     loadedName[] = "Mesh_new";
-  PetscViewer    v;
+static PetscErrorCode DMPlexWriteAndReadHDF5(DM dm, const char filename[], const char prefix[], AppCtx user, DM *dm_new) {
+  DM          dmnew;
+  const char  savedName[]  = "Mesh";
+  const char  loadedName[] = "Mesh_new";
+  PetscViewer v;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscViewerHDF5Open(PetscObjectComm((PetscObject) dm), filename, FILE_MODE_WRITE, &v));
+  PetscCall(PetscViewerHDF5Open(PetscObjectComm((PetscObject)dm), filename, FILE_MODE_WRITE, &v));
   PetscCall(PetscViewerPushFormat(v, user.format));
-  PetscCall(PetscObjectSetName((PetscObject) dm, savedName));
+  PetscCall(PetscObjectSetName((PetscObject)dm, savedName));
   if (user.use_low_level_functions) {
     PetscCall(DMPlexTopologyView(dm, v));
     PetscCall(DMPlexCoordinatesView(dm, v));
@@ -65,10 +63,10 @@ static PetscErrorCode DMPlexWriteAndReadHDF5(DM dm, const char filename[], const
   PetscCall(PetscViewerFileSetMode(v, FILE_MODE_READ));
   PetscCall(DMCreate(PETSC_COMM_WORLD, &dmnew));
   PetscCall(DMSetType(dmnew, DMPLEX));
-  PetscCall(PetscObjectSetName((PetscObject) dmnew, savedName));
+  PetscCall(PetscObjectSetName((PetscObject)dmnew, savedName));
   PetscCall(DMSetOptionsPrefix(dmnew, prefix));
   if (user.use_low_level_functions) {
-    PetscSF  sfXC;
+    PetscSF sfXC;
 
     PetscCall(DMPlexTopologyLoad(dmnew, v, &sfXC));
     PetscCall(DMPlexCoordinatesLoad(dmnew, v, sfXC));
@@ -77,7 +75,7 @@ static PetscErrorCode DMPlexWriteAndReadHDF5(DM dm, const char filename[], const
   } else {
     PetscCall(DMLoad(dmnew, v));
   }
-  PetscCall(PetscObjectSetName((PetscObject)dmnew,loadedName));
+  PetscCall(PetscObjectSetName((PetscObject)dmnew, loadedName));
 
   PetscCall(PetscViewerPopFormat(v));
   PetscCall(PetscViewerDestroy(&v));
@@ -85,18 +83,17 @@ static PetscErrorCode DMPlexWriteAndReadHDF5(DM dm, const char filename[], const
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv)
-{
-  DM             dm, dmnew;
+int main(int argc, char **argv) {
+  DM               dm, dmnew;
   PetscPartitioner part;
-  AppCtx         user;
-  PetscBool      flg;
+  AppCtx           user;
+  PetscBool        flg;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, NULL,help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(ProcessOptions(PETSC_COMM_WORLD, &user));
   PetscCall(DMPlexCreateFromFile(PETSC_COMM_WORLD, user.filename, user.meshname, user.interpolate, &dm));
-  PetscCall(DMSetOptionsPrefix(dm,"orig_"));
+  PetscCall(DMSetOptionsPrefix(dm, "orig_"));
   PetscCall(DMViewFromOptions(dm, NULL, "-dm_view"));
 
   if (user.distribute) {
@@ -107,11 +104,11 @@ int main(int argc, char **argv)
     PetscCall(DMPlexDistribute(dm, 0, NULL, &dmdist));
     if (dmdist) {
       PetscCall(DMDestroy(&dm));
-      dm   = dmdist;
+      dm = dmdist;
     }
   }
 
-  PetscCall(DMSetOptionsPrefix(dm,NULL));
+  PetscCall(DMSetOptionsPrefix(dm, NULL));
   PetscCall(DMPlexDistributeSetDefault(dm, PETSC_FALSE));
   PetscCall(DMSetFromOptions(dm));
   PetscCall(DMViewFromOptions(dm, NULL, "-dm_view"));
@@ -131,12 +128,12 @@ int main(int argc, char **argv)
   /* This currently makes sense only for sequential meshes. */
   if (user.compare) {
     PetscCall(DMPlexEqual(dmnew, dm, &flg));
-    PetscCheck(flg,PETSC_COMM_WORLD, PETSC_ERR_ARG_INCOMP, "DMs are not equal");
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"DMs equal\n"));
+    PetscCheck(flg, PETSC_COMM_WORLD, PETSC_ERR_ARG_INCOMP, "DMs are not equal");
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "DMs equal\n"));
   }
   if (user.compare_labels) {
     PetscCall(DMCompareLabels(dmnew, dm, NULL, NULL));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"DMLabels equal\n"));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "DMLabels equal\n"));
   }
 
   PetscCall(DMDestroy(&dm));

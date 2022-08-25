@@ -666,6 +666,11 @@ cdef class Mat(Object):
         py_type = str2bytes(py_type, &cval)
         CHKERR( MatPythonSetType(self.mat, cval) )
 
+    def getPythonType(self):
+        cdef const char *cval = NULL
+        CHKERR( MatPythonGetType(self.mat, &cval) )
+        return bytes2str(cval)
+
     #
 
     def setOptionsPrefix(self, prefix):

@@ -1,24 +1,21 @@
 
-#include <petsc/private/matimpl.h>          /*I "petscmat.h" I*/
+#include <petsc/private/matimpl.h> /*I "petscmat.h" I*/
 
-PetscErrorCode MatMult_Centering(Mat A,Vec xx,Vec yy)
-{
+PetscErrorCode MatMult_Centering(Mat A, Vec xx, Vec yy) {
   PetscScalar       *y;
   const PetscScalar *x;
-  PetscScalar       sum,mean;
-  PetscInt          i,m=A->rmap->n,size;
+  PetscScalar        sum, mean;
+  PetscInt           i, m = A->rmap->n, size;
 
   PetscFunctionBegin;
-  PetscCall(VecSum(xx,&sum));
-  PetscCall(VecGetSize(xx,&size));
+  PetscCall(VecSum(xx, &sum));
+  PetscCall(VecGetSize(xx, &size));
   mean = sum / (PetscScalar)size;
-  PetscCall(VecGetArrayRead(xx,&x));
-  PetscCall(VecGetArray(yy,&y));
-  for (i=0; i<m; i++) {
-    y[i] = x[i] - mean;
-  }
-  PetscCall(VecRestoreArrayRead(xx,&x));
-  PetscCall(VecRestoreArray(yy,&y));
+  PetscCall(VecGetArrayRead(xx, &x));
+  PetscCall(VecGetArray(yy, &y));
+  for (i = 0; i < m; i++) { y[i] = x[i] - mean; }
+  PetscCall(VecRestoreArrayRead(xx, &x));
+  PetscCall(VecRestoreArray(yy, &y));
   PetscFunctionReturn(0);
 }
 
@@ -49,22 +46,21 @@ PetscErrorCode MatMult_Centering(Mat A,Vec xx,Vec yy)
 
 .seealso: `MatCreateLRC()`, `MatCreateComposite()`
 @*/
-PetscErrorCode MatCreateCentering(MPI_Comm comm,PetscInt n,PetscInt N,Mat *C)
-{
-  PetscMPIInt    size;
+PetscErrorCode MatCreateCentering(MPI_Comm comm, PetscInt n, PetscInt N, Mat *C) {
+  PetscMPIInt size;
 
   PetscFunctionBegin;
-  PetscCall(MatCreate(comm,C));
-  PetscCall(MatSetSizes(*C,n,n,N,N));
-  PetscCallMPI(MPI_Comm_size(comm,&size));
-  PetscCall(PetscObjectChangeTypeName((PetscObject)*C,MATCENTERING));
+  PetscCall(MatCreate(comm, C));
+  PetscCall(MatSetSizes(*C, n, n, N, N));
+  PetscCallMPI(MPI_Comm_size(comm, &size));
+  PetscCall(PetscObjectChangeTypeName((PetscObject)*C, MATCENTERING));
 
-  (*C)->ops->mult                    = MatMult_Centering;
-  (*C)->assembled                    = PETSC_TRUE;
-  (*C)->preallocated                 = PETSC_TRUE;
-  (*C)->symmetric                    = PETSC_BOOL3_TRUE;
-  (*C)->symmetry_eternal             = PETSC_TRUE;
-  (*C)->structural_symmetry_eternal  = PETSC_TRUE;
+  (*C)->ops->mult                   = MatMult_Centering;
+  (*C)->assembled                   = PETSC_TRUE;
+  (*C)->preallocated                = PETSC_TRUE;
+  (*C)->symmetric                   = PETSC_BOOL3_TRUE;
+  (*C)->symmetry_eternal            = PETSC_TRUE;
+  (*C)->structural_symmetry_eternal = PETSC_TRUE;
   PetscCall(MatSetUp(*C));
   PetscFunctionReturn(0);
 }

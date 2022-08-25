@@ -1,7 +1,7 @@
 /*
        Provides the calling sequences for all the basic PetscDraw routines.
 */
-#include <petsc/private/drawimpl.h>  /*I "petscdraw.h" I*/
+#include <petsc/private/drawimpl.h> /*I "petscdraw.h" I*/
 
 /*@
    PetscDrawFlush - Flushes graphical output.
@@ -15,11 +15,10 @@
 
 .seealso: `PetscDrawClear()`
 @*/
-PetscErrorCode  PetscDrawFlush(PetscDraw draw)
-{
+PetscErrorCode PetscDrawFlush(PetscDraw draw) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  if (draw->ops->flush) PetscCall((*draw->ops->flush)(draw));
+  PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
+  PetscTryTypeMethod(draw, flush);
   if (draw->saveonflush) PetscCall(PetscDrawSave(draw));
   PetscFunctionReturn(0);
 }

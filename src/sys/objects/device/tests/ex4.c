@@ -3,60 +3,57 @@ static const char help[] = "Tests PetscDeviceContextFork/Join.\n\n";
 #include <petsc/private/deviceimpl.h>
 #include "petscdevicetestcommon.h"
 
-static PetscErrorCode TestNestedPetscDeviceContextForkJoin(PetscDeviceContext parCtx, PetscDeviceContext *sub)
-{
+static PetscErrorCode TestNestedPetscDeviceContextForkJoin(PetscDeviceContext parCtx, PetscDeviceContext *sub) {
   const PetscInt      nsub = 4;
   PetscDeviceContext *subsub;
 
   PetscFunctionBegin;
-  PetscValidDeviceContext(parCtx,1);
-  PetscValidPointer(sub,2);
-  PetscCall(AssertPetscDeviceContextsValidAndEqual(parCtx,sub[0],"Current global context does not match expected global context"));
+  PetscValidDeviceContext(parCtx, 1);
+  PetscValidPointer(sub, 2);
+  PetscCall(AssertPetscDeviceContextsValidAndEqual(parCtx, sub[0], "Current global context does not match expected global context"));
   /* create some children from an active child */
-  PetscCall(PetscDeviceContextFork(sub[1],nsub,&subsub));
+  PetscCall(PetscDeviceContextFork(sub[1], nsub, &subsub));
   /* join on a sibling to the parent */
-  PetscCall(PetscDeviceContextJoin(sub[2],nsub-2,PETSC_DEVICE_CONTEXT_JOIN_SYNC,&subsub));
+  PetscCall(PetscDeviceContextJoin(sub[2], nsub - 2, PETSC_DEVICE_CONTEXT_JOIN_SYNC, &subsub));
   /* join on the grandparent */
-  PetscCall(PetscDeviceContextJoin(parCtx,nsub-2,PETSC_DEVICE_CONTEXT_JOIN_NO_SYNC,&subsub));
-  PetscCall(PetscDeviceContextJoin(sub[1],nsub,PETSC_DEVICE_CONTEXT_JOIN_DESTROY,&subsub));
+  PetscCall(PetscDeviceContextJoin(parCtx, nsub - 2, PETSC_DEVICE_CONTEXT_JOIN_NO_SYNC, &subsub));
+  PetscCall(PetscDeviceContextJoin(sub[1], nsub, PETSC_DEVICE_CONTEXT_JOIN_DESTROY, &subsub));
   PetscFunctionReturn(0);
 }
 
 /* test fork-join */
-static PetscErrorCode TestPetscDeviceContextForkJoin(PetscDeviceContext dctx)
-{
+static PetscErrorCode TestPetscDeviceContextForkJoin(PetscDeviceContext dctx) {
   PetscDeviceContext *sub;
   const PetscInt      n = 10;
 
   PetscFunctionBegin;
-  PetscValidDeviceContext(dctx,1);
+  PetscValidDeviceContext(dctx, 1);
   /* mostly for valgrind to catch errors */
-  PetscCall(PetscDeviceContextFork(dctx,n,&sub));
-  PetscCall(PetscDeviceContextJoin(dctx,n,PETSC_DEVICE_CONTEXT_JOIN_DESTROY,&sub));
+  PetscCall(PetscDeviceContextFork(dctx, n, &sub));
+  PetscCall(PetscDeviceContextJoin(dctx, n, PETSC_DEVICE_CONTEXT_JOIN_DESTROY, &sub));
   /* do it twice */
-  PetscCall(PetscDeviceContextFork(dctx,n,&sub));
-  PetscCall(PetscDeviceContextJoin(dctx,n,PETSC_DEVICE_CONTEXT_JOIN_DESTROY,&sub));
+  PetscCall(PetscDeviceContextFork(dctx, n, &sub));
+  PetscCall(PetscDeviceContextJoin(dctx, n, PETSC_DEVICE_CONTEXT_JOIN_DESTROY, &sub));
 
   /* create some children */
-  PetscCall(PetscDeviceContextFork(dctx,n+1,&sub));
+  PetscCall(PetscDeviceContextFork(dctx, n + 1, &sub));
   /* test forking within nested function */
-  PetscCall(TestNestedPetscDeviceContextForkJoin(sub[0],sub));
+  PetscCall(TestNestedPetscDeviceContextForkJoin(sub[0], sub));
   /* join a subset */
-  PetscCall(PetscDeviceContextJoin(dctx,n-1,PETSC_DEVICE_CONTEXT_JOIN_NO_SYNC,&sub));
+  PetscCall(PetscDeviceContextJoin(dctx, n - 1, PETSC_DEVICE_CONTEXT_JOIN_NO_SYNC, &sub));
   /* back to the ether from whence they came */
-  PetscCall(PetscDeviceContextJoin(dctx,n+1,PETSC_DEVICE_CONTEXT_JOIN_DESTROY,&sub));
+  PetscCall(PetscDeviceContextJoin(dctx, n + 1, PETSC_DEVICE_CONTEXT_JOIN_DESTROY, &sub));
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
   PetscDeviceContext dctx;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   PetscCall(PetscDeviceContextCreate(&dctx));
-  PetscCall(PetscDeviceContextSetFromOptions(PETSC_COMM_WORLD,"local_",dctx));
+  PetscCall(PetscDeviceContextSetFromOptions(PETSC_COMM_WORLD, "local_", dctx));
   PetscCall(PetscDeviceContextSetUp(dctx));
   PetscCall(TestPetscDeviceContextForkJoin(dctx));
   PetscCall(PetscDeviceContextDestroy(&dctx));
@@ -64,7 +61,7 @@ int main(int argc, char *argv[])
   PetscCall(PetscDeviceContextGetCurrentContext(&dctx));
   PetscCall(TestPetscDeviceContextForkJoin(dctx));
 
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"EXIT_SUCCESS\n"));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "EXIT_SUCCESS\n"));
   PetscCall(PetscFinalize());
   return 0;
 }

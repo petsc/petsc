@@ -12,54 +12,53 @@ using the aijcusparse class. Input parameters are:\n\
 
 #include <petscksp.h>
 
-int main(int argc,char **argv)
-{
-  KSP                ksp;
-  Mat                A;
-  Vec                X,B;
-  PetscInt           m, its;
-  PetscReal          norm;
-  char               file[PETSC_MAX_PATH_LEN];
-  PetscBool          flg;
-  PetscViewer        fd;
+int main(int argc, char **argv) {
+  KSP         ksp;
+  Mat         A;
+  Vec         X, B;
+  PetscInt    m, its;
+  PetscReal   norm;
+  char        file[PETSC_MAX_PATH_LEN];
+  PetscBool   flg;
+  PetscViewer fd;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&argv,0,help));
+  PetscCall(PetscInitialize(&argc, &argv, 0, help));
   /* Load the data from a file */
-  PetscCall(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg));
-  PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_USER_INPUT,"Must indicate binary file with the -f option");
-  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd));
+  PetscCall(PetscOptionsGetString(NULL, NULL, "-f", file, sizeof(file), &flg));
+  PetscCheck(flg, PETSC_COMM_WORLD, PETSC_ERR_USER_INPUT, "Must indicate binary file with the -f option");
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, file, FILE_MODE_READ, &fd));
 
   /* Build the matrix */
-  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
   PetscCall(MatSetFromOptions(A));
-  PetscCall(MatLoad(A,fd));
+  PetscCall(MatLoad(A, fd));
 
   /* Build the vectors */
-  PetscCall(MatGetLocalSize(A,&m,NULL));
-  PetscCall(VecCreate(PETSC_COMM_WORLD,&B));
-  PetscCall(VecSetSizes(B,m,PETSC_DECIDE));
-  PetscCall(VecCreate(PETSC_COMM_WORLD,&X));
-  PetscCall(VecSetSizes(X,m,PETSC_DECIDE));
+  PetscCall(MatGetLocalSize(A, &m, NULL));
+  PetscCall(VecCreate(PETSC_COMM_WORLD, &B));
+  PetscCall(VecSetSizes(B, m, PETSC_DECIDE));
+  PetscCall(VecCreate(PETSC_COMM_WORLD, &X));
+  PetscCall(VecSetSizes(X, m, PETSC_DECIDE));
   PetscCall(VecSetFromOptions(B));
   PetscCall(VecSetFromOptions(X));
-  PetscCall(VecSet(B,1.0));
+  PetscCall(VecSet(B, 1.0));
 
   /* Build the KSP */
-  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
-  PetscCall(KSPSetOperators(ksp,A,A));
-  PetscCall(KSPSetType(ksp,KSPGMRES));
-  PetscCall(KSPSetTolerances(ksp,1.0e-12,PETSC_DEFAULT,PETSC_DEFAULT,100));
+  PetscCall(KSPCreate(PETSC_COMM_WORLD, &ksp));
+  PetscCall(KSPSetOperators(ksp, A, A));
+  PetscCall(KSPSetType(ksp, KSPGMRES));
+  PetscCall(KSPSetTolerances(ksp, 1.0e-12, PETSC_DEFAULT, PETSC_DEFAULT, 100));
   PetscCall(KSPSetFromOptions(ksp));
 
   /* Solve */
-  PetscCall(KSPSolve(ksp,B,X));
+  PetscCall(KSPSolve(ksp, B, X));
 
   /* print out norm and the number of iterations */
-  PetscCall(KSPGetIterationNumber(ksp,&its));
-  PetscCall(KSPGetResidualNorm(ksp,&norm));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3" PetscInt_FMT "\n",its));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Residual norm %1.5g\n",(double)norm));
+  PetscCall(KSPGetIterationNumber(ksp, &its));
+  PetscCall(KSPGetResidualNorm(ksp, &norm));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Number of iterations = %3" PetscInt_FMT "\n", its));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Residual norm %1.5g\n", (double)norm));
 
   /* Cleanup */
   PetscCall(VecDestroy(&X));

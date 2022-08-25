@@ -5,14 +5,21 @@
 /* SUBMANSEC = DMLabel */
 
 /*S
-  DMLabel - Object which encapsulates a subset of the mesh from this DM
+  DMLabel - Object which encapsulates a subset of the mesh from a `DM`
 
   Level: developer
 
-.seealso: `DM`, `DMPlexCreate()`, `DMPlexCreateLabel()`
+  Note:
+  A label consists of a set of points on a `DM`
+
+.seealso: `DM`, `DMPlexCreate()`, `DMLabelCreate()`, `DMLabelView()`, `DMLabelDestroy()`, `DMPlexCreateLabel()`,
+          `DMLabelGetDefaultValue()`, `DMLabelSetDefaultValue()`, `DMLabelDuplicate()`, `DMLabelGetValue()`, `DMLabelSetValue()`,
+          `DMLabelAddStratum()`, `DMLabelAddStrata()`, `DMLabelInsertIS()`, `DMLabelGetNumValues()`, `DMLabelGetValueIS()`,
+          `DMLabelGetStratumSize()`, `DMLabelComputeIndex()`, `DMLabelDestroyIndex()`, `DMLabelDistribute()`, `DMLabelConvertToSection()`
 S*/
 typedef struct _p_DMLabel *DMLabel;
-PETSC_EXTERN PetscErrorCode DMLabelCreate(MPI_Comm, const char [], DMLabel *);
+
+PETSC_EXTERN PetscErrorCode DMLabelCreate(MPI_Comm, const char[], DMLabel *);
 PETSC_EXTERN PetscErrorCode DMLabelView(DMLabel, PetscViewer);
 PETSC_EXTERN PetscErrorCode DMLabelReset(DMLabel);
 PETSC_EXTERN PetscErrorCode DMLabelDestroy(DMLabel *);
@@ -60,9 +67,9 @@ PETSC_EXTERN PetscErrorCode DMLabelPropagateEnd(DMLabel, PetscSF);
 PETSC_EXTERN PetscErrorCode PetscSectionCreateGlobalSectionLabel(PetscSection, PetscSF, PetscBool, DMLabel, PetscInt, PetscSection *);
 
 #define PETSCSECTIONSYMLABEL "label"
-PETSC_EXTERN PetscErrorCode PetscSectionSymCreateLabel(MPI_Comm,DMLabel,PetscSectionSym *);
-PETSC_EXTERN PetscErrorCode PetscSectionSymLabelSetLabel(PetscSectionSym,DMLabel);
-PETSC_EXTERN PetscErrorCode PetscSectionSymLabelGetStratum(PetscSectionSym, PetscInt, PetscInt*, PetscInt*, PetscInt*, const PetscInt ***, const PetscScalar ***);
+PETSC_EXTERN PetscErrorCode PetscSectionSymCreateLabel(MPI_Comm, DMLabel, PetscSectionSym *);
+PETSC_EXTERN PetscErrorCode PetscSectionSymLabelSetLabel(PetscSectionSym, DMLabel);
+PETSC_EXTERN PetscErrorCode PetscSectionSymLabelGetStratum(PetscSectionSym, PetscInt, PetscInt *, PetscInt *, PetscInt *, const PetscInt ***, const PetscScalar ***);
 PETSC_EXTERN PetscErrorCode PetscSectionSymLabelSetStratum(PetscSectionSym, PetscInt, PetscInt, PetscInt, PetscInt, PetscCopyMode, const PetscInt **, const PetscScalar **);
 
 #endif

@@ -67,6 +67,7 @@ In addition to the changes above
 
 .. rubric:: Sys:
 
+-  Change calling sequence of ``PetscObjectProcessOptionsHandler()`` to flip the role of the first two arguments
 -  Change -log_view to no longer print out the amount of memory associated with different types of objects. That data was often incorrect
 -  Change ``PetscCall()`` from Fortran so that ``call PetscFunction(args,ierr);CHKERRQ(ierr);`` can be replaced with ``PetscCall(PetscFunction(args,ierr))``
 -  Add ``PetscCallA()`` from Fortran so that ``call PetscFunction(args,ierr);CHKERRA(ierr);`` can be replaced with ``PetscCallA(PetscFunction(args,ierr))``
@@ -76,6 +77,15 @@ In addition to the changes above
 -  Change ``PetscStackCall()`` to ``PetscStackCallExternalVoid()``
 -  Change ``PetscStackCallXXX()`` to ``PetscCallXXX()``
 -  Add ``PetscCallBack()' for calling all PETSc callbacks (usually to user code) to replace the use of ``PetscStackPush()`` and ``PetscStackPop``
+-  Add ``PetscTryTypeMethod()`` and ``PetscUseTypeMethod()`` to replace direct calls of the form ``(\*obj->ops->op)(obj,...)``.
+
+.. rubric:: Event Logging:
+
+Add NVIDIA NVTX sections to ``Default`` event logging. This tags code
+sections, like stages, with nvtxRangePushA(char name[]) and
+nvtxRangePop(), which can be visualized after the run with the NVIDIA Nsight GUI tool. To
+generate a data file, run code with ``nsys profile -f true -o file-name
+exec-name``.
 
 .. rubric:: PetscViewer:
 
@@ -124,6 +134,8 @@ In addition to the changes above
 - Change the coordinate array parameters in ``MatSetPreallocationCOO`` from const to non-const
 - Add enforcement of the previously unenforced rule that ``MAT_REUSE_MATRIX`` with ``MatTranspose()`` can only be used after a call to ``MatTranspose()`` with ``MAT_INITIAL_MATRIX``. Add ``MatTransposeSetPrecursor()`` to allow using ``MAT_REUSE_MATRIX`` with ``MatTranspose()`` without the initial call to ``MatTranspose()``.
 - Add ``MatTransposeSymbolic()``
+- Add ``MatShellSetContextDestroy()`` and add internal refrence counting for user defined ``MatShell`` context data
+- Add ``MatShellSetContextDestroy()`` and add internal reference counting for user defined ``MatShell`` context data
 
 .. rubric:: MatCoarsen:
 
@@ -133,6 +145,7 @@ In addition to the changes above
 
 - Add PC type of mpi which can be used in conjunction with -mpi_linear_solver_server to use MPI parallelism to solve a system created on a single MPI rank
 - Add ``PCHYPREAMSSetInteriorNodes()`` to set interior nodes for HYPRE AMS
+- Add ``PCAMGX``, a PC interface for NVIDIA's AMGx AMG solver
 
 .. rubric:: KSP:
 
@@ -144,6 +157,7 @@ In addition to the changes above
 - Add ``DMDASNESSetFunctionLocalVec()``, ``DMDASNESSetJacobianLocalVec()`` and ``DMDASNESSetObjectiveLocalVec()``, and associate types ``DMDASNESFunctionVec``, ``DMDASNESJacobianVec`` and ``DMDASNESObjectiveVec``,
   which accept Vec parameters instead of void pointers in contrast to versions without the Vec suffix
 - Add ``SNESLINESEARCHNONE`` as alias for ``SNESLINESEARCHBASIC``
+- Add ``DMSNESSetFunctionContextDestroy()`` and ``DMSNESSetJacobianContextDestroy()`` and use ``PetscContainter`` for user context to facilitate automatic destruction of user set context
 
 .. rubric:: SNESLineSearch:
 
@@ -151,6 +165,7 @@ In addition to the changes above
 
 - Add ``TSSetTimeSpan()``, ``TSGetTimeSpan()`` and ``TSGetTimeSpanSolutions()`` to support time span
 - Add ``DMTSGetIFunctionLocal()``, ``DMTSGetIJacobianLocal()``, and ``DMTSGetRHSFunctionLocal()``
+- Add ``DMTSSetIFunctionContextDestroy()``, ``DMTSSetIJacobianContextDestroy()``, ``DMTSSetRHSFunctionContextDestroy()``,  ``DMTSSetRHSJacobianContextDestroy()``, ``DMTSSetI2FunctionContextDestroy()``, and ``DMTSSetI2JacobianContextDestroy()`` and use ``PetscContainter`` for user context to facilitate automatic destruction of user set context
 
 .. rubric:: TAO:
 
@@ -189,6 +204,7 @@ In addition to the changes above
 - Add ``DMGetCellCoordinateDM()``, ``DMSetCellCoordinateDM()``, ``DMGetCellCoordinateSection()``, ``DMSetCellCoordinateSection()``, ``DMGetCellCoordinates()``, ``DMSetCellCoordinates()``, ``DMGetCellCoordinatesLocalSetUp()``, ``DMGetCellCoordinatesLocal()``, ``DMGetCellCoordinatesLocalNoncollective()``, and ``DMSetCellCoordinatesLocal()`` to provide an independent discontinuous representation of coordinates
 - Change ``DMGetPeriodicity()`` and ``DMSetPeriodicity()`` to get rid of the flag and boundary type. Since we have an independent representation, we can tell if periodicity was imposed, and boundary types were never used, so they can be inferred from the given L. We also add Lstart to allow tori that do not start at 0.
 - Add ``DMPlexGetCellCoordinates()`` and ``DMPlexRestoreCellCoordinates()`` for clean interface for periodicity
+- Add ``DMPlexDistributionSetName()`` and ``DMPlexDistributionGetName()`` to set/get the name of the specific parallel distribution of the DMPlex
 
 .. rubric:: FE/FV:
 

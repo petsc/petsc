@@ -405,6 +405,10 @@ class TestMatrix(unittest.TestCase):
 
         del AA.multTranspose
 
+    def testGetType(self):
+        ctx = self.A.getPythonContext()
+        pytype = "{0}.{1}".format(ctx.__module__, type(ctx).__name__)
+        self.assertTrue(self.A.getPythonType() == pytype)
 
 class TestScaledIdentity(TestMatrix):
 

@@ -1,8 +1,8 @@
-#include <petsc/private/matimpl.h>      /*I "petscmat.h"  I*/
+#include <petsc/private/matimpl.h> /*I "petscmat.h"  I*/
 
 PetscFunctionList MatColoringList              = NULL;
 PetscBool         MatColoringRegisterAllCalled = PETSC_FALSE;
-const char *const MatColoringWeightTypes[] = {"RANDOM","LEXICAL","LF","SL","MatColoringWeightType","MAT_COLORING_WEIGHT_",NULL};
+const char *const MatColoringWeightTypes[]     = {"RANDOM", "LEXICAL", "LF", "SL", "MatColoringWeightType", "MAT_COLORING_WEIGHT_", NULL};
 
 /*@C
    MatColoringRegister - Adds a new sparse matrix coloring to the  matrix package.
@@ -27,11 +27,10 @@ $     -mat_coloring_type my_color
 
 .seealso: `MatColoringRegisterDestroy()`, `MatColoringRegisterAll()`
 @*/
-PetscErrorCode  MatColoringRegister(const char sname[],PetscErrorCode (*function)(MatColoring))
-{
+PetscErrorCode MatColoringRegister(const char sname[], PetscErrorCode (*function)(MatColoring)) {
   PetscFunctionBegin;
   PetscCall(MatInitializePackage());
-  PetscCall(PetscFunctionListAdd(&MatColoringList,sname,function));
+  PetscCall(PetscFunctionListAdd(&MatColoringList, sname, function));
   PetscFunctionReturn(0);
 }
 
@@ -67,26 +66,25 @@ PetscErrorCode  MatColoringRegister(const char sname[],PetscErrorCode (*function
 
 .seealso: `MatColoring`, `MatColoringApply()`, `MatFDColoringCreate()`, `DMCreateColoring()`, `MatColoringType`
 @*/
-PetscErrorCode MatColoringCreate(Mat m,MatColoring *mcptr)
-{
-  MatColoring    mc;
+PetscErrorCode MatColoringCreate(Mat m, MatColoring *mcptr) {
+  MatColoring mc;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(m,MAT_CLASSID,1);
-  PetscValidPointer(mcptr,2);
+  PetscValidHeaderSpecific(m, MAT_CLASSID, 1);
+  PetscValidPointer(mcptr, 2);
   *mcptr = NULL;
 
   PetscCall(MatInitializePackage());
-  PetscCall(PetscHeaderCreate(mc, MAT_COLORING_CLASSID,"MatColoring","Matrix coloring", "MatColoring",PetscObjectComm((PetscObject)m),MatColoringDestroy, MatColoringView));
+  PetscCall(PetscHeaderCreate(mc, MAT_COLORING_CLASSID, "MatColoring", "Matrix coloring", "MatColoring", PetscObjectComm((PetscObject)m), MatColoringDestroy, MatColoringView));
   PetscCall(PetscObjectReference((PetscObject)m));
-  mc->mat       = m;
-  mc->dist      = 2; /* default to Jacobian computation case */
-  mc->maxcolors = IS_COLORING_MAX;
-  *mcptr        = mc;
-  mc->valid     = PETSC_FALSE;
-  mc->weight_type = MAT_COLORING_WEIGHT_RANDOM;
+  mc->mat          = m;
+  mc->dist         = 2; /* default to Jacobian computation case */
+  mc->maxcolors    = IS_COLORING_MAX;
+  *mcptr           = mc;
+  mc->valid        = PETSC_FALSE;
+  mc->weight_type  = MAT_COLORING_WEIGHT_RANDOM;
   mc->user_weights = NULL;
-  mc->user_lperm = NULL;
+  mc->user_lperm   = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -102,10 +100,12 @@ PetscErrorCode MatColoringCreate(Mat m,MatColoring *mcptr)
 
 .seealso: `MatColoringCreate()`, `MatColoringApply()`
 @*/
-PetscErrorCode MatColoringDestroy(MatColoring *mc)
-{
+PetscErrorCode MatColoringDestroy(MatColoring *mc) {
   PetscFunctionBegin;
-  if (--((PetscObject)(*mc))->refct > 0) {*mc = NULL; PetscFunctionReturn(0);}
+  if (--((PetscObject)(*mc))->refct > 0) {
+    *mc = NULL;
+    PetscFunctionReturn(0);
+  }
   PetscCall(MatDestroy(&(*mc)->mat));
   if ((*mc)->ops->destroy) PetscCall((*((*mc)->ops->destroy))(*mc));
   if ((*mc)->user_weights) PetscCall(PetscFree((*mc)->user_weights));
@@ -132,28 +132,27 @@ PetscErrorCode MatColoringDestroy(MatColoring *mc)
 
 .seealso: `MatColoringType`, `MatColoringCreate()`, `MatColoringApply()`
 @*/
-PetscErrorCode MatColoringSetType(MatColoring mc,MatColoringType type)
-{
-  PetscBool      match;
+PetscErrorCode MatColoringSetType(MatColoring mc, MatColoringType type) {
+  PetscBool match;
   PetscErrorCode (*r)(MatColoring);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mc,MAT_COLORING_CLASSID,1);
-  PetscValidCharPointer(type,2);
-  PetscCall(PetscObjectTypeCompare((PetscObject)mc,type,&match));
+  PetscValidHeaderSpecific(mc, MAT_COLORING_CLASSID, 1);
+  PetscValidCharPointer(type, 2);
+  PetscCall(PetscObjectTypeCompare((PetscObject)mc, type, &match));
   if (match) PetscFunctionReturn(0);
-  PetscCall(PetscFunctionListFind(MatColoringList,type,&r));
-  PetscCheck(r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested MatColoring type %s",type);
+  PetscCall(PetscFunctionListFind(MatColoringList, type, &r));
+  PetscCheck(r, PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unable to find requested MatColoring type %s", type);
   if (mc->ops->destroy) {
     PetscCall((*(mc)->ops->destroy)(mc));
     mc->ops->destroy = NULL;
   }
-  mc->ops->apply            = NULL;
-  mc->ops->view             = NULL;
-  mc->ops->setfromoptions   = NULL;
-  mc->ops->destroy          = NULL;
+  mc->ops->apply          = NULL;
+  mc->ops->view           = NULL;
+  mc->ops->setfromoptions = NULL;
+  mc->ops->destroy        = NULL;
 
-  PetscCall(PetscObjectChangeTypeName((PetscObject)mc,type));
+  PetscCall(PetscObjectChangeTypeName((PetscObject)mc, type));
   PetscCall((*r)(mc));
   PetscFunctionReturn(0);
 }
@@ -178,37 +177,36 @@ PetscErrorCode MatColoringSetType(MatColoring mc,MatColoringType type)
 
 .seealso: `MatColoring`, `MatColoringApply()`, `MatColoringSetDistance()`, `SNESComputeJacobianDefaultColor()`, `MatColoringType`
 @*/
-PetscErrorCode MatColoringSetFromOptions(MatColoring mc)
-{
-  PetscBool      flg;
+PetscErrorCode MatColoringSetFromOptions(MatColoring mc) {
+  PetscBool       flg;
   MatColoringType deft = MATCOLORINGSL;
-  char           type[256];
-  PetscInt       dist,maxcolors;
+  char            type[256];
+  PetscInt        dist, maxcolors;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mc,MAT_COLORING_CLASSID,1);
-  PetscCall(MatColoringGetDistance(mc,&dist));
+  PetscValidHeaderSpecific(mc, MAT_COLORING_CLASSID, 1);
+  PetscCall(MatColoringGetDistance(mc, &dist));
   if (dist == 2) deft = MATCOLORINGSL;
-  else           deft = MATCOLORINGGREEDY;
-  PetscCall(MatColoringGetMaxColors(mc,&maxcolors));
+  else deft = MATCOLORINGGREEDY;
+  PetscCall(MatColoringGetMaxColors(mc, &maxcolors));
   PetscCall(MatColoringRegisterAll());
   PetscObjectOptionsBegin((PetscObject)mc);
   if (((PetscObject)mc)->type_name) deft = ((PetscObject)mc)->type_name;
-  PetscCall(PetscOptionsFList("-mat_coloring_type","The coloring method used","MatColoringSetType",MatColoringList,deft,type,256,&flg));
+  PetscCall(PetscOptionsFList("-mat_coloring_type", "The coloring method used", "MatColoringSetType", MatColoringList, deft, type, 256, &flg));
   if (flg) {
-    PetscCall(MatColoringSetType(mc,type));
+    PetscCall(MatColoringSetType(mc, type));
   } else if (!((PetscObject)mc)->type_name) {
-    PetscCall(MatColoringSetType(mc,deft));
+    PetscCall(MatColoringSetType(mc, deft));
   }
-  PetscCall(PetscOptionsInt("-mat_coloring_distance","Distance of the coloring","MatColoringSetDistance",dist,&dist,&flg));
-  if (flg) PetscCall(MatColoringSetDistance(mc,dist));
-  PetscCall(PetscOptionsInt("-mat_coloring_maxcolors","Maximum colors returned at the end. 1 returns an independent set","MatColoringSetMaxColors",maxcolors,&maxcolors,&flg));
-  if (flg) PetscCall(MatColoringSetMaxColors(mc,maxcolors));
-  if (mc->ops->setfromoptions) PetscCall((*mc->ops->setfromoptions)(PetscOptionsObject,mc));
-  PetscCall(PetscOptionsBool("-mat_coloring_test","Check that a valid coloring has been produced","",mc->valid,&mc->valid,NULL));
-  PetscCall(PetscOptionsBool("-mat_is_coloring_test","Check that a valid iscoloring has been produced","",mc->valid_iscoloring,&mc->valid_iscoloring,NULL));
-  PetscCall(PetscOptionsEnum("-mat_coloring_weight_type","Sets the type of vertex weighting used","MatColoringSetWeightType",MatColoringWeightTypes,(PetscEnum)mc->weight_type,(PetscEnum*)&mc->weight_type,NULL));
-  PetscCall(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)mc));
+  PetscCall(PetscOptionsInt("-mat_coloring_distance", "Distance of the coloring", "MatColoringSetDistance", dist, &dist, &flg));
+  if (flg) PetscCall(MatColoringSetDistance(mc, dist));
+  PetscCall(PetscOptionsInt("-mat_coloring_maxcolors", "Maximum colors returned at the end. 1 returns an independent set", "MatColoringSetMaxColors", maxcolors, &maxcolors, &flg));
+  if (flg) PetscCall(MatColoringSetMaxColors(mc, maxcolors));
+  PetscTryTypeMethod(mc, setfromoptions, PetscOptionsObject);
+  PetscCall(PetscOptionsBool("-mat_coloring_test", "Check that a valid coloring has been produced", "", mc->valid, &mc->valid, NULL));
+  PetscCall(PetscOptionsBool("-mat_is_coloring_test", "Check that a valid iscoloring has been produced", "", mc->valid_iscoloring, &mc->valid_iscoloring, NULL));
+  PetscCall(PetscOptionsEnum("-mat_coloring_weight_type", "Sets the type of vertex weighting used", "MatColoringSetWeightType", MatColoringWeightTypes, (PetscEnum)mc->weight_type, (PetscEnum *)&mc->weight_type, NULL));
+  PetscCall(PetscObjectProcessOptionsHandlers((PetscObject)mc, PetscOptionsObject));
   PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
@@ -233,10 +231,9 @@ PetscErrorCode MatColoringSetFromOptions(MatColoring mc)
 
 .seealso: `MatColoringGetDistance()`, `MatColoringApply()`
 @*/
-PetscErrorCode MatColoringSetDistance(MatColoring mc,PetscInt dist)
-{
+PetscErrorCode MatColoringSetDistance(MatColoring mc, PetscInt dist) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mc,MAT_COLORING_CLASSID,1);
+  PetscValidHeaderSpecific(mc, MAT_COLORING_CLASSID, 1);
   mc->dist = dist;
   PetscFunctionReturn(0);
 }
@@ -256,10 +253,9 @@ PetscErrorCode MatColoringSetDistance(MatColoring mc,PetscInt dist)
 
 .seealso: `MatColoringSetDistance()`, `MatColoringApply()`
 @*/
-PetscErrorCode MatColoringGetDistance(MatColoring mc,PetscInt *dist)
-{
+PetscErrorCode MatColoringGetDistance(MatColoring mc, PetscInt *dist) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mc,MAT_COLORING_CLASSID,1);
+  PetscValidHeaderSpecific(mc, MAT_COLORING_CLASSID, 1);
   if (dist) *dist = mc->dist;
   PetscFunctionReturn(0);
 }
@@ -284,10 +280,9 @@ PetscErrorCode MatColoringGetDistance(MatColoring mc,PetscInt *dist)
 
 .seealso: `MatColoringGetMaxColors()`, `MatColoringApply()`
 @*/
-PetscErrorCode MatColoringSetMaxColors(MatColoring mc,PetscInt maxcolors)
-{
+PetscErrorCode MatColoringSetMaxColors(MatColoring mc, PetscInt maxcolors) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mc,MAT_COLORING_CLASSID,1);
+  PetscValidHeaderSpecific(mc, MAT_COLORING_CLASSID, 1);
   mc->maxcolors = maxcolors;
   PetscFunctionReturn(0);
 }
@@ -307,10 +302,9 @@ PetscErrorCode MatColoringSetMaxColors(MatColoring mc,PetscInt maxcolors)
 
 .seealso: `MatColoringSetMaxColors()`, `MatColoringApply()`
 @*/
-PetscErrorCode MatColoringGetMaxColors(MatColoring mc,PetscInt *maxcolors)
-{
+PetscErrorCode MatColoringGetMaxColors(MatColoring mc, PetscInt *maxcolors) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mc,MAT_COLORING_CLASSID,1);
+  PetscValidHeaderSpecific(mc, MAT_COLORING_CLASSID, 1);
   if (maxcolors) *maxcolors = mc->maxcolors;
   PetscFunctionReturn(0);
 }
@@ -332,34 +326,33 @@ PetscErrorCode MatColoringGetMaxColors(MatColoring mc,PetscInt *maxcolors)
 
 .seealso: `MatColoring`, `MatColoringCreate()`
 @*/
-PetscErrorCode MatColoringApply(MatColoring mc,ISColoring *coloring)
-{
+PetscErrorCode MatColoringApply(MatColoring mc, ISColoring *coloring) {
   PetscBool         flg;
   PetscViewerFormat format;
   PetscViewer       viewer;
-  PetscInt          nc,ncolors;
+  PetscInt          nc, ncolors;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mc,MAT_COLORING_CLASSID,1);
-  PetscValidPointer(coloring,2);
-  PetscCall(PetscLogEventBegin(MATCOLORING_Apply,mc,0,0,0));
-  PetscCall((*mc->ops->apply)(mc,coloring));
-  PetscCall(PetscLogEventEnd(MATCOLORING_Apply,mc,0,0,0));
+  PetscValidHeaderSpecific(mc, MAT_COLORING_CLASSID, 1);
+  PetscValidPointer(coloring, 2);
+  PetscCall(PetscLogEventBegin(MATCOLORING_Apply, mc, 0, 0, 0));
+  PetscUseTypeMethod(mc, apply, coloring);
+  PetscCall(PetscLogEventEnd(MATCOLORING_Apply, mc, 0, 0, 0));
 
   /* valid */
-  if (mc->valid) PetscCall(MatColoringTest(mc,*coloring));
-  if (mc->valid_iscoloring) PetscCall(MatISColoringTest(mc->mat,*coloring));
+  if (mc->valid) PetscCall(MatColoringTest(mc, *coloring));
+  if (mc->valid_iscoloring) PetscCall(MatISColoringTest(mc->mat, *coloring));
 
   /* view */
-  PetscCall(PetscOptionsGetViewer(PetscObjectComm((PetscObject)mc),((PetscObject)mc)->options,((PetscObject)mc)->prefix,"-mat_coloring_view",&viewer,&format,&flg));
+  PetscCall(PetscOptionsGetViewer(PetscObjectComm((PetscObject)mc), ((PetscObject)mc)->options, ((PetscObject)mc)->prefix, "-mat_coloring_view", &viewer, &format, &flg));
   if (flg && !PetscPreLoadingOn) {
-    PetscCall(PetscViewerPushFormat(viewer,format));
-    PetscCall(MatColoringView(mc,viewer));
-    PetscCall(MatGetSize(mc->mat,NULL,&nc));
-    PetscCall(ISColoringGetIS(*coloring,PETSC_USE_POINTER,&ncolors,NULL));
-    PetscCall(PetscViewerASCIIPrintf(viewer,"  Number of colors %" PetscInt_FMT "\n",ncolors));
-    PetscCall(PetscViewerASCIIPrintf(viewer,"  Number of total columns %" PetscInt_FMT "\n",nc));
-    if (nc <= 1000) PetscCall(ISColoringView(*coloring,viewer));
+    PetscCall(PetscViewerPushFormat(viewer, format));
+    PetscCall(MatColoringView(mc, viewer));
+    PetscCall(MatGetSize(mc->mat, NULL, &nc));
+    PetscCall(ISColoringGetIS(*coloring, PETSC_USE_POINTER, &ncolors, NULL));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "  Number of colors %" PetscInt_FMT "\n", ncolors));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "  Number of total columns %" PetscInt_FMT "\n", nc));
+    if (nc <= 1000) PetscCall(ISColoringView(*coloring, viewer));
     PetscCall(PetscViewerPopFormat(viewer));
     PetscCall(PetscViewerDestroy(&viewer));
   }
@@ -379,26 +372,23 @@ PetscErrorCode MatColoringApply(MatColoring mc,ISColoring *coloring)
 
 .seealso: `MatColoring`, `MatColoringApply()`
 @*/
-PetscErrorCode MatColoringView(MatColoring mc,PetscViewer viewer)
-{
-  PetscBool      iascii;
+PetscErrorCode MatColoringView(MatColoring mc, PetscViewer viewer) {
+  PetscBool iascii;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mc,MAT_COLORING_CLASSID,1);
-  if (!viewer) {
-    PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)mc),&viewer));
-  }
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
-  PetscCheckSameComm(mc,1,viewer,2);
+  PetscValidHeaderSpecific(mc, MAT_COLORING_CLASSID, 1);
+  if (!viewer) { PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)mc), &viewer)); }
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
+  PetscCheckSameComm(mc, 1, viewer, 2);
 
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   if (iascii) {
-    PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)mc,viewer));
-    PetscCall(PetscViewerASCIIPrintf(viewer,"  Weight type: %s\n",MatColoringWeightTypes[mc->weight_type]));
+    PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)mc, viewer));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "  Weight type: %s\n", MatColoringWeightTypes[mc->weight_type]));
     if (mc->maxcolors > 0) {
-      PetscCall(PetscViewerASCIIPrintf(viewer,"  Distance %" PetscInt_FMT ", Max. Colors %" PetscInt_FMT "\n",mc->dist,mc->maxcolors));
+      PetscCall(PetscViewerASCIIPrintf(viewer, "  Distance %" PetscInt_FMT ", Max. Colors %" PetscInt_FMT "\n", mc->dist, mc->maxcolors));
     } else {
-      PetscCall(PetscViewerASCIIPrintf(viewer,"  Distance %" PetscInt_FMT "\n",mc->dist));
+      PetscCall(PetscViewerASCIIPrintf(viewer, "  Distance %" PetscInt_FMT "\n", mc->dist));
     }
   }
   PetscFunctionReturn(0);
@@ -417,10 +407,8 @@ PetscErrorCode MatColoringView(MatColoring mc,PetscViewer viewer)
 
 .seealso: `MatColoring`, `MatColoringWeightType`
 @*/
-PetscErrorCode MatColoringSetWeightType(MatColoring mc,MatColoringWeightType wt)
-{
+PetscErrorCode MatColoringSetWeightType(MatColoring mc, MatColoringWeightType wt) {
   PetscFunctionBegin;
   mc->weight_type = wt;
   PetscFunctionReturn(0);
-
 }

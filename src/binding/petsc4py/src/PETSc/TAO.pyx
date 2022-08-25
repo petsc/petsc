@@ -761,6 +761,11 @@ cdef class TAO(Object):
         py_type = str2bytes(py_type, &cval)
         CHKERR( TaoPythonSetType(self.tao, cval) )
 
+    def getPythonType(self):
+        cdef const char *cval = NULL
+        CHKERR( TaoPythonGetType(self.tao, &cval) )
+        return bytes2str(cval)
+
     # --- backward compatibility ---
 
     setInitial = setSolution

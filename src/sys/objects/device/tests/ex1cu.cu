@@ -9,35 +9,34 @@ static char help[] = "Benchmarking CUDA kernel launch time\n";
 #include <petscsys.h>
 #include <petscdevice.h>
 
-__global__ void NullKernel(){}
+__global__ void NullKernel() { }
 
-int main(int argc,char **argv)
-{
-  PetscInt       i,n=100000;
-  PetscLogDouble tstart,tend,time;
+int main(int argc, char **argv) {
+  PetscInt       i, n = 100000;
+  PetscLogDouble tstart, tend, time;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
-  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-n", &n, NULL));
   PetscCallCUDA(cudaStreamSynchronize(NULL)); /* Initialize CUDA runtime to get more accurate timing below */
 
   /* Launch a sequence of kernels asynchronously. Previous launched kernels do not need to be completed before launching a new one */
   PetscCall(PetscTime(&tstart));
-  for (i=0; i<n; i++) {NullKernel<<<1,1,0,NULL>>>();}
+  for (i = 0; i < n; i++) { NullKernel<<<1, 1, 0, NULL>>>(); }
   PetscCall(PetscTime(&tend));
   PetscCallCUDA(cudaStreamSynchronize(NULL)); /* Sync after tend since we don't want to count kernel execution time */
-  time = (tend-tstart)*1e6/n;
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Average asynchronous CUDA kernel launch time = %.2f microseconds\n",time));
+  time = (tend - tstart) * 1e6 / n;
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Average asynchronous CUDA kernel launch time = %.2f microseconds\n", time));
 
   /* Launch a sequence of kernels synchronously. Only launch a new kernel after the one before it has been completed */
   PetscCall(PetscTime(&tstart));
-  for (i=0; i<n; i++) {
-    NullKernel<<<1,1,0,NULL>>>();
+  for (i = 0; i < n; i++) {
+    NullKernel<<<1, 1, 0, NULL>>>();
     PetscCallCUDA(cudaStreamSynchronize(NULL));
   }
   PetscCall(PetscTime(&tend));
-  time = (tend-tstart)*1e6/n;
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Average synchronous  CUDA kernel launch time = %.2f microseconds\n",time));
+  time = (tend - tstart) * 1e6 / n;
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Average synchronous  CUDA kernel launch time = %.2f microseconds\n", time));
 
   PetscCall(PetscFinalize());
   return 0;

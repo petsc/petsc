@@ -11,7 +11,28 @@
 !
 ! ----------------------------------------------------------------------
 !
-#include "chwirut2f.h"
+      module chwirut2fmodule
+      use petscmpi              ! or mpi or mpi_f08
+      use petsctao
+#include <petsc/finclude/petsctao.h>
+      PetscReal t(0:213)
+      PetscReal y(0:213)
+      PetscInt  m,n
+      PetscMPIInt  nn
+      PetscMPIInt  rank
+      PetscMPIInt  size
+      PetscMPIInt  idle_tag, die_tag
+      PetscMPIInt  zero,one
+      parameter (m=214)
+      parameter (n=3)
+      parameter (nn=n)
+      parameter (idle_tag=2000)
+      parameter (die_tag=3000)
+      parameter (zero=0,one=1)
+      end module chwirut2fmodule
+
+      program main
+      use chwirut2fmodule
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
@@ -87,7 +108,7 @@
 !  f - function vector
 
       subroutine FormFunction(tao, x, f, dummy, ierr)
-#include "chwirut2f.h"
+      use chwirut2fmodule
 
       Tao        tao
       Vec              x,f
@@ -153,7 +174,7 @@
       end
 
       subroutine FormStartingPoint(x)
-#include "chwirut2f.h"
+      use chwirut2fmodule
 
       Vec             x
       PetscReal       x_v(0:1)
@@ -169,7 +190,7 @@
       end
 
       subroutine InitializeData()
-#include "chwirut2f.h"
+      use chwirut2fmodule
 
       PetscInt i
       i=0
@@ -392,7 +413,7 @@
       end
 
       subroutine TaskWorker(ierr)
-#include "chwirut2f.h"
+      use chwirut2fmodule
 
       PetscErrorCode ierr
       PetscReal x(n),f(1)
@@ -423,7 +444,7 @@
       end
 
       subroutine RunSimulation(x,i,f,ierr)
-#include "chwirut2f.h"
+      use chwirut2fmodule
 
       PetscReal x(n),f
       PetscInt i
@@ -434,7 +455,7 @@
       end
 
       subroutine StopWorkers(ierr)
-#include "chwirut2f.h"
+      use chwirut2fmodule
 
       integer checkedin
       PetscMPIInt status(MPI_STATUS_SIZE)

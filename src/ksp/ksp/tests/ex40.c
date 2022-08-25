@@ -16,23 +16,22 @@ Input parameters include:\n\
 */
 #include <petscksp.h>
 
-int main(int argc,char **args)
-{
-  Vec            x,b,u;  /* approx solution, RHS, exact solution */
-  Mat            A;        /* linear system matrix */
-  KSP            ksp;     /* linear solver context */
-  PetscRandom    rctx;     /* random number generator context */
-  PetscReal      norm;     /* norm of solution error */
-  PetscInt       i,j,Ii,J,m = 8,n = 7,its;
-  PetscBool      flg = PETSC_FALSE;
-  PetscScalar    v;
-  PetscMPIInt    rank;
+int main(int argc, char **args) {
+  Vec         x, b, u; /* approx solution, RHS, exact solution */
+  Mat         A;       /* linear system matrix */
+  KSP         ksp;     /* linear solver context */
+  PetscRandom rctx;    /* random number generator context */
+  PetscReal   norm;    /* norm of solution error */
+  PetscInt    i, j, Ii, J, m = 8, n = 7, its;
+  PetscBool   flg = PETSC_FALSE;
+  PetscScalar v;
+  PetscMPIInt rank;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
-  PetscCall(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
-  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
-  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-m", &m, NULL));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-n", &n, NULL));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
          Compute the matrix and right-hand-side vector that define
          the linear system, Ax = b.
@@ -47,25 +46,40 @@ int main(int argc,char **args)
      preallocation of matrix memory is crucial for attaining good
      performance. See the matrix chapter of the users manual for details.
   */
-  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
-  PetscCall(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n));
-  PetscCall(MatSetType(A,MATELEMENTAL));
+  PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
+  PetscCall(MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, m * n, m * n));
+  PetscCall(MatSetType(A, MATELEMENTAL));
   PetscCall(MatSetFromOptions(A));
   PetscCall(MatSetUp(A));
-  if (rank==0) {
-    PetscInt M,N;
-    PetscCall(MatGetSize(A,&M,&N));
-    for (Ii=0; Ii<M; Ii++) {
-      v = -1.0; i = Ii/n; j = Ii - i*n;
-      if (i>0)   {J = Ii - n; PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES));}
-      if (i<m-1) {J = Ii + n; PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES));}
-      if (j>0)   {J = Ii - 1; PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES));}
-      if (j<n-1) {J = Ii + 1; PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES));}
-      v = 4.0; PetscCall(MatSetValues(A,1,&Ii,1,&Ii,&v,ADD_VALUES));
+  if (rank == 0) {
+    PetscInt M, N;
+    PetscCall(MatGetSize(A, &M, &N));
+    for (Ii = 0; Ii < M; Ii++) {
+      v = -1.0;
+      i = Ii / n;
+      j = Ii - i * n;
+      if (i > 0) {
+        J = Ii - n;
+        PetscCall(MatSetValues(A, 1, &Ii, 1, &J, &v, ADD_VALUES));
+      }
+      if (i < m - 1) {
+        J = Ii + n;
+        PetscCall(MatSetValues(A, 1, &Ii, 1, &J, &v, ADD_VALUES));
+      }
+      if (j > 0) {
+        J = Ii - 1;
+        PetscCall(MatSetValues(A, 1, &Ii, 1, &J, &v, ADD_VALUES));
+      }
+      if (j < n - 1) {
+        J = Ii + 1;
+        PetscCall(MatSetValues(A, 1, &Ii, 1, &J, &v, ADD_VALUES));
+      }
+      v = 4.0;
+      PetscCall(MatSetValues(A, 1, &Ii, 1, &Ii, &v, ADD_VALUES));
     }
   }
-  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
 
   /* PetscCall(MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE)); */
 
@@ -85,11 +99,11 @@ int main(int argc,char **args)
         (replacing the PETSC_DECIDE argument in the VecSetSizes() statement
         below).
   */
-  PetscCall(VecCreate(PETSC_COMM_WORLD,&u));
-  PetscCall(VecSetSizes(u,PETSC_DECIDE,m*n));
+  PetscCall(VecCreate(PETSC_COMM_WORLD, &u));
+  PetscCall(VecSetSizes(u, PETSC_DECIDE, m * n));
   PetscCall(VecSetFromOptions(u));
-  PetscCall(VecDuplicate(u,&b));
-  PetscCall(VecDuplicate(b,&x));
+  PetscCall(VecDuplicate(u, &b));
+  PetscCall(VecDuplicate(b, &x));
 
   /*
      Set exact solution; then compute right-hand-side vector.
@@ -97,23 +111,23 @@ int main(int argc,char **args)
      elements of 1.0;  Alternatively, using the runtime option
      -random_sol forms a solution vector with random components.
   */
-  PetscCall(PetscOptionsGetBool(NULL,NULL,"-random_exact_sol",&flg,NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-random_exact_sol", &flg, NULL));
   if (flg) {
-    PetscCall(PetscRandomCreate(PETSC_COMM_WORLD,&rctx));
+    PetscCall(PetscRandomCreate(PETSC_COMM_WORLD, &rctx));
     PetscCall(PetscRandomSetFromOptions(rctx));
-    PetscCall(VecSetRandom(u,rctx));
+    PetscCall(VecSetRandom(u, rctx));
     PetscCall(PetscRandomDestroy(&rctx));
   } else {
-    PetscCall(VecSet(u,1.0));
+    PetscCall(VecSet(u, 1.0));
   }
-  PetscCall(MatMult(A,u,b));
+  PetscCall(MatMult(A, u, b));
 
   /*
      View the exact solution vector if desired
   */
-  flg  = PETSC_FALSE;
-  PetscCall(PetscOptionsGetBool(NULL,NULL,"-view_exact_sol",&flg,NULL));
-  if (flg) PetscCall(VecView(u,PETSC_VIEWER_STDOUT_WORLD));
+  flg = PETSC_FALSE;
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-view_exact_sol", &flg, NULL));
+  if (flg) PetscCall(VecView(u, PETSC_VIEWER_STDOUT_WORLD));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                 Create the linear solver and set various options
@@ -122,13 +136,13 @@ int main(int argc,char **args)
   /*
      Create linear solver context
   */
-  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  PetscCall(KSPCreate(PETSC_COMM_WORLD, &ksp));
 
   /*
      Set operators. Here the matrix that defines the linear system
      also serves as the preconditioning matrix.
   */
-  PetscCall(KSPSetOperators(ksp,A,A));
+  PetscCall(KSPSetOperators(ksp, A, A));
 
   /*
      Set linear solver defaults for this problem (optional).
@@ -140,7 +154,7 @@ int main(int argc,char **args)
        KSPSetFromOptions().  All of these defaults can be
        overridden at runtime, as indicated below.
   */
-  PetscCall(KSPSetTolerances(ksp,1.e-2/((m+1)*(n+1)),PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT));
+  PetscCall(KSPSetTolerances(ksp, 1.e-2 / ((m + 1) * (n + 1)), PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT));
 
   /*
     Set runtime options, e.g.,
@@ -155,7 +169,7 @@ int main(int argc,char **args)
                       Solve the linear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  PetscCall(KSPSolve(ksp,b,x));
+  PetscCall(KSPSolve(ksp, b, x));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                       Check solution and clean up
@@ -164,24 +178,26 @@ int main(int argc,char **args)
   /*
      Check the error
   */
-  PetscCall(VecAXPY(x,-1.0,u));
-  PetscCall(VecNorm(x,NORM_2,&norm));
-  PetscCall(KSPGetIterationNumber(ksp,&its));
+  PetscCall(VecAXPY(x, -1.0, u));
+  PetscCall(VecNorm(x, NORM_2, &norm));
+  PetscCall(KSPGetIterationNumber(ksp, &its));
 
   /*
      Print convergence information.  PetscPrintf() produces a single
      print statement from all processes that share a communicator.
      An alternative is PetscFPrintf(), which prints to a file.
   */
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g iterations %" PetscInt_FMT "\n",(double)norm,its));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Norm of error %g iterations %" PetscInt_FMT "\n", (double)norm, its));
 
   /*
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
   PetscCall(KSPDestroy(&ksp));
-  PetscCall(VecDestroy(&u));  PetscCall(VecDestroy(&x));
-  PetscCall(VecDestroy(&b));  PetscCall(MatDestroy(&A));
+  PetscCall(VecDestroy(&u));
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&b));
+  PetscCall(MatDestroy(&A));
 
   /*
      Always call PetscFinalize() before exiting a program.  This routine

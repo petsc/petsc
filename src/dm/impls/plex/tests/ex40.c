@@ -5,11 +5,10 @@ static const char help[] = "Tests for Plex transforms, including regular refinem
 
 #include <petsc/private/dmpleximpl.h>
 
-static PetscErrorCode LabelPoints(DM dm)
-{
-  DMLabel        label;
-  PetscInt       pStart, pEnd, p;
-  PetscBool      flg = PETSC_FALSE;
+static PetscErrorCode LabelPoints(DM dm) {
+  DMLabel   label;
+  PetscInt  pStart, pEnd, p;
+  PetscBool flg = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-label_mesh", &flg, NULL));
@@ -17,29 +16,25 @@ static PetscErrorCode LabelPoints(DM dm)
   PetscCall(DMCreateLabel(dm, "test"));
   PetscCall(DMGetLabel(dm, "test", &label));
   PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
-  for (p = pStart; p < pEnd; ++p) {
-    PetscCall(DMLabelSetValue(label, p, p));
-  }
+  for (p = pStart; p < pEnd; ++p) { PetscCall(DMLabelSetValue(label, p, p)); }
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm)
-{
+static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm) {
   PetscFunctionBegin;
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetType(*dm, DMPLEX));
   PetscCall(DMSetFromOptions(*dm));
   PetscCall(LabelPoints(*dm));
-  PetscCall(PetscObjectSetOptionsPrefix((PetscObject) *dm, "post_label_"));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)*dm, "post_label_"));
   PetscCall(DMSetFromOptions(*dm));
-  PetscCall(PetscObjectSetOptionsPrefix((PetscObject) *dm, NULL));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)*dm, NULL));
   PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv)
-{
-  DM             dm;
+int main(int argc, char **argv) {
+  DM dm;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
@@ -60,9 +55,9 @@ int main(int argc, char **argv)
 
   test:
     suffix: box_tri
-    requires: triangle
+    requires: triangle parmetis
     nsize: {{1 3 5}}
-    args: -dm_plex_box_faces 3,3 -dm_refine 2 -dm_plex_check_all
+    args: -dm_plex_box_faces 3,3 -dm_refine 2 -dm_plex_check_all -petscpartitioner_type parmetis
 
   test:
     suffix: ref_quad
@@ -71,7 +66,8 @@ int main(int argc, char **argv)
   test:
     suffix: box_quad
     nsize: {{1 3 5}}
-    args: -dm_plex_box_faces 3,3 -dm_plex_simplex 0 -dm_refine 2 -dm_plex_check_all
+    requires: parmetis
+    args: -dm_plex_box_faces 3,3 -dm_plex_simplex 0 -dm_refine 2 -dm_plex_check_all -petscpartitioner_type parmetis
 
   test:
     suffix: ref_tet
@@ -79,9 +75,9 @@ int main(int argc, char **argv)
 
   test:
     suffix: box_tet
-    requires: ctetgen
+    requires: ctetgen parmetis
     nsize: {{1 3 5}}
-    args: -dm_plex_dim 3 -dm_plex_box_faces 3,3,3 -dm_refine 2 -dm_plex_check_all
+    args: -dm_plex_dim 3 -dm_plex_box_faces 3,3,3 -dm_refine 2 -dm_plex_check_all -petscpartitioner_type parmetis
 
   test:
     suffix: ref_hex
@@ -89,8 +85,9 @@ int main(int argc, char **argv)
 
   test:
     suffix: box_hex
+    requires: parmetis
     nsize: {{1 3 5}}
-    args: -dm_plex_dim 3 -dm_plex_box_faces 3,3,3 -dm_plex_simplex 0 -dm_refine 2 -dm_plex_check_all
+    args: -dm_plex_dim 3 -dm_plex_box_faces 3,3,3 -dm_plex_simplex 0 -dm_refine 2 -dm_plex_check_all -petscpartitioner_type parmetis
 
   test:
     suffix: ref_trip
@@ -121,9 +118,9 @@ int main(int argc, char **argv)
 
     test:
       suffix: box_tri_tobox
-      requires: triangle
+      requires: triangle parmetis
       nsize: {{1 3 5}}
-      args: -dm_plex_box_faces 3,3 -dm_refine 2
+      args: -dm_plex_box_faces 3,3 -dm_refine 2 -petscpartitioner_type parmetis
 
     test:
       suffix: ref_tet_tobox
@@ -131,9 +128,9 @@ int main(int argc, char **argv)
 
     test:
       suffix: box_tet_tobox
-      requires: ctetgen
+      requires: ctetgen parmetis
       nsize: {{1 3 5}}
-      args: -dm_plex_dim 3 -dm_plex_box_faces 3,3,3 -dm_refine 2
+      args: -dm_plex_dim 3 -dm_plex_box_faces 3,3,3 -dm_refine 2 -petscpartitioner_type parmetis
 
     test:
       suffix: ref_trip_tobox

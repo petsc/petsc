@@ -190,14 +190,21 @@ checksource:
   extends: .test-basic
   stage: .pre
   tags:
-    - gce-stage1
+    - gce-u22-stage1
   script:
     - python3 ./configure --with-mpi=0 --with-fc=0 --with-cxx=0
     - vermin --version
     - make vermin
+    - make checkclangformat SHELL=bash
     - make checkbadSource SHELL=bash
     - make -f gmakefile check_output SHELL=bash
     - make check_petsc4py_rst
+  artifacts:
+    name: "$CI_JOB_NAME"
+    when: always
+    paths:
+    - arch-*/lib/petsc/conf/*.diff
+    expire_in: 4 days
 
 pause-for-approval:
   extends: .test
@@ -934,6 +941,7 @@ osx-cxx-cmplx-pkgs-dbg:
     - os:macos
   variables:
     TEST_ARCH: arch-ci-osx-cxx-cmplx-pkgs-dbg
+    INIT_SCRIPT: /Users/glci/bin/py3.sh
 
 osx-cxx-pkgs-opt:
   extends:

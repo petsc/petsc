@@ -1,0 +1,35 @@
+DM Object: box 3 MPI processes
+  type: plex
+box in 2 dimensions:
+  Number of 0-cells per rank: 185 187 180
+  Number of 1-cells per rank: 340 346 333
+  Number of 2-cells per rank: 156 160 154
+Labels:
+  depth: 3 strata with value/size (0 (185), 1 (340), 2 (156))
+  marker: 1 strata with value/size (1 (71))
+  Face Sets: 3 strata with value/size (1 (7), 2 (20), 3 (8))
+  celltype: 3 strata with value/size (0 (185), 1 (340), 4 (156))
+DM Object: Submesh (sub_) 3 MPI processes
+  type: plex
+Submesh in 2 dimensions:
+  Number of 0-cells per rank: 115 146 102
+  Number of 1-cells per rank: 203 250 181
+  Number of 2-cells per rank: 89 105 80
+Labels:
+  celltype: 3 strata with value/size (0 (115), 1 (203), 4 (89))
+  depth: 3 strata with value/size (0 (115), 1 (203), 2 (89))
+  marker: 1 strata with value/size (1 (37))
+  Face Sets: 2 strata with value/size (1 (7), 2 (11))
+  cells: 1 strata with value/size (1 (407))
+DM Object: Submesh (sub_) 3 MPI processes
+  type: plex
+Submesh in 2 dimensions:
+  Number of 0-cells per rank: 122 113 132
+  Number of 1-cells per rank: 212 198 225
+  Number of 2-cells per rank: 91 86 94
+Labels:
+  celltype: 3 strata with value/size (0 (122), 1 (212), 4 (91))
+  depth: 3 strata with value/size (0 (122), 1 (212), 2 (91))
+  marker: 1 strata with value/size (1 (40))
+  Face Sets: 3 strata with value/size (1 (2), 2 (9), 3 (8))
+  cells: 1 strata with value/size (1 (425))

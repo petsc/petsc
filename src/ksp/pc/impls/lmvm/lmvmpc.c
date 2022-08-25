@@ -3,13 +3,13 @@
    methods as preconditioner applications in KSP solves.
 */
 
-#include <petsc/private/pcimpl.h>        /*I "petscpc.h" I*/
+#include <petsc/private/pcimpl.h> /*I "petscpc.h" I*/
 #include <petsc/private/matimpl.h>
 
 typedef struct {
-  Vec  xwork, ywork;
-  IS   inactive;
-  Mat  B;
+  Vec       xwork, ywork;
+  IS        inactive;
+  Mat       B;
   PetscBool allocated;
 } PC_LMVM;
 
@@ -23,18 +23,17 @@ typedef struct {
 
    Level: intermediate
 @*/
-PetscErrorCode PCLMVMSetMatLMVM(PC pc, Mat B)
-{
-  PC_LMVM          *ctx = (PC_LMVM*)pc->data;
-  PetscBool        same;
+PetscErrorCode PCLMVMSetMatLMVM(PC pc, Mat B) {
+  PC_LMVM  *ctx = (PC_LMVM *)pc->data;
+  PetscBool same;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidHeaderSpecific(B, MAT_CLASSID, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCLMVM, &same));
-  PetscCheck(same,PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "PC must be a PCLMVM type.");
+  PetscCheck(same, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "PC must be a PCLMVM type.");
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)B, MATLMVM, &same));
-  PetscCheck(same,PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "Matrix must be an LMVM-type.");
+  PetscCheck(same, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "Matrix must be an LMVM-type.");
   PetscCall(MatDestroy(&ctx->B));
   PetscCall(PetscObjectReference((PetscObject)B));
   ctx->B = B;
@@ -52,15 +51,14 @@ PetscErrorCode PCLMVMSetMatLMVM(PC pc, Mat B)
 
    Level: intermediate
 @*/
-PetscErrorCode PCLMVMGetMatLMVM(PC pc, Mat *B)
-{
-  PC_LMVM          *ctx = (PC_LMVM*)pc->data;
-  PetscBool        same;
+PetscErrorCode PCLMVMGetMatLMVM(PC pc, Mat *B) {
+  PC_LMVM  *ctx = (PC_LMVM *)pc->data;
+  PetscBool same;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCLMVM, &same));
-  PetscCheck(same,PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "PC must be a PCLMVM type.");
+  PetscCheck(same, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "PC must be a PCLMVM type.");
   *B = ctx->B;
   PetscFunctionReturn(0);
 }
@@ -76,16 +74,15 @@ PetscErrorCode PCLMVMGetMatLMVM(PC pc, Mat *B)
 
 .seealso: `MatLMVMUpdate()`
 @*/
-PetscErrorCode PCLMVMSetIS(PC pc, IS inactive)
-{
-  PC_LMVM          *ctx = (PC_LMVM*)pc->data;
-  PetscBool        same;
+PetscErrorCode PCLMVMSetIS(PC pc, IS inactive) {
+  PC_LMVM  *ctx = (PC_LMVM *)pc->data;
+  PetscBool same;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidHeaderSpecific(inactive, IS_CLASSID, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCLMVM, &same));
-  PetscCheck(same,PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "PC must be a PCLMVM type.");
+  PetscCheck(same, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "PC must be a PCLMVM type.");
   PetscCall(PCLMVMClearIS(pc));
   PetscCall(PetscObjectReference((PetscObject)inactive));
   ctx->inactive = inactive;
@@ -102,25 +99,21 @@ PetscErrorCode PCLMVMSetIS(PC pc, IS inactive)
 
 .seealso: `MatLMVMUpdate()`
 @*/
-PetscErrorCode PCLMVMClearIS(PC pc)
-{
-  PC_LMVM          *ctx = (PC_LMVM*)pc->data;
-  PetscBool        same;
+PetscErrorCode PCLMVMClearIS(PC pc) {
+  PC_LMVM  *ctx = (PC_LMVM *)pc->data;
+  PetscBool same;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCLMVM, &same));
-  PetscCheck(same,PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "PC must be a PCLMVM type.");
-  if (ctx->inactive) {
-    PetscCall(ISDestroy(&ctx->inactive));
-  }
+  PetscCheck(same, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "PC must be a PCLMVM type.");
+  if (ctx->inactive) { PetscCall(ISDestroy(&ctx->inactive)); }
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCApply_LMVM(PC pc,Vec x,Vec y)
-{
-  PC_LMVM          *ctx = (PC_LMVM*)pc->data;
-  Vec              xsub, ysub;
+static PetscErrorCode PCApply_LMVM(PC pc, Vec x, Vec y) {
+  PC_LMVM *ctx = (PC_LMVM *)pc->data;
+  Vec      xsub, ysub;
 
   PetscFunctionBegin;
   if (ctx->inactive) {
@@ -142,26 +135,20 @@ static PetscErrorCode PCApply_LMVM(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCReset_LMVM(PC pc)
-{
-  PC_LMVM        *ctx = (PC_LMVM*)pc->data;
+static PetscErrorCode PCReset_LMVM(PC pc) {
+  PC_LMVM *ctx = (PC_LMVM *)pc->data;
 
   PetscFunctionBegin;
-  if (ctx->xwork) {
-    PetscCall(VecDestroy(&ctx->xwork));
-  }
-  if (ctx->ywork) {
-    PetscCall(VecDestroy(&ctx->ywork));
-  }
+  if (ctx->xwork) { PetscCall(VecDestroy(&ctx->xwork)); }
+  if (ctx->ywork) { PetscCall(VecDestroy(&ctx->ywork)); }
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCSetUp_LMVM(PC pc)
-{
-  PC_LMVM        *ctx = (PC_LMVM*)pc->data;
-  PetscInt       n, N;
-  PetscBool      allocated;
-  const char     *prefix;
+static PetscErrorCode PCSetUp_LMVM(PC pc) {
+  PC_LMVM    *ctx = (PC_LMVM *)pc->data;
+  PetscInt    n, N;
+  PetscBool   allocated;
+  const char *prefix;
 
   PetscFunctionBegin;
   PetscCall(MatLMVMIsAllocated(ctx->B, &allocated));
@@ -180,13 +167,12 @@ static PetscErrorCode PCSetUp_LMVM(PC pc)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCView_LMVM(PC pc,PetscViewer viewer)
-{
-  PC_LMVM        *ctx = (PC_LMVM*)pc->data;
-  PetscBool      iascii;
+static PetscErrorCode PCView_LMVM(PC pc, PetscViewer viewer) {
+  PC_LMVM  *ctx = (PC_LMVM *)pc->data;
+  PetscBool iascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   if (iascii && ctx->B->assembled) {
     PetscCall(PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_INFO));
     PetscCall(MatView(ctx->B, viewer));
@@ -195,10 +181,9 @@ static PetscErrorCode PCView_LMVM(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCSetFromOptions_LMVM(PetscOptionItems* PetscOptionsObject, PC pc)
-{
-  PC_LMVM        *ctx = (PC_LMVM*)pc->data;
-  const char     *prefix;
+static PetscErrorCode PCSetFromOptions_LMVM(PC pc, PetscOptionItems *PetscOptionsObject) {
+  PC_LMVM    *ctx = (PC_LMVM *)pc->data;
+  const char *prefix;
 
   PetscFunctionBegin;
   PetscCall(PCGetOptionsPrefix(pc, &prefix));
@@ -208,14 +193,11 @@ static PetscErrorCode PCSetFromOptions_LMVM(PetscOptionItems* PetscOptionsObject
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCDestroy_LMVM(PC pc)
-{
-  PC_LMVM        *ctx = (PC_LMVM*)pc->data;
+static PetscErrorCode PCDestroy_LMVM(PC pc) {
+  PC_LMVM *ctx = (PC_LMVM *)pc->data;
 
   PetscFunctionBegin;
-  if (ctx->inactive) {
-    PetscCall(ISDestroy(&ctx->inactive));
-  }
+  if (ctx->inactive) { PetscCall(ISDestroy(&ctx->inactive)); }
   if (pc->setupcalled) {
     PetscCall(VecDestroy(&ctx->xwork));
     PetscCall(VecDestroy(&ctx->ywork));
@@ -234,26 +216,25 @@ static PetscErrorCode PCDestroy_LMVM(PC pc)
 .seealso: `PCCreate()`, `PCSetType()`, `PCType`,
           `PC`, `MATLMVM`, `PCLMVMUpdate()`, `PCLMVMSetMatLMVM()`, `PCLMVMGetMatLMVM()`
 M*/
-PETSC_EXTERN PetscErrorCode PCCreate_LMVM(PC pc)
-{
-  PC_LMVM        *ctx;
+PETSC_EXTERN PetscErrorCode PCCreate_LMVM(PC pc) {
+  PC_LMVM *ctx;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(pc,&ctx));
-  pc->data = (void*)ctx;
+  PetscCall(PetscNewLog(pc, &ctx));
+  pc->data = (void *)ctx;
 
-  pc->ops->reset           = PCReset_LMVM;
-  pc->ops->setup           = PCSetUp_LMVM;
-  pc->ops->destroy         = PCDestroy_LMVM;
-  pc->ops->view            = PCView_LMVM;
-  pc->ops->apply           = PCApply_LMVM;
-  pc->ops->setfromoptions  = PCSetFromOptions_LMVM;
+  pc->ops->reset               = PCReset_LMVM;
+  pc->ops->setup               = PCSetUp_LMVM;
+  pc->ops->destroy             = PCDestroy_LMVM;
+  pc->ops->view                = PCView_LMVM;
+  pc->ops->apply               = PCApply_LMVM;
+  pc->ops->setfromoptions      = PCSetFromOptions_LMVM;
   pc->ops->applysymmetricleft  = NULL;
   pc->ops->applysymmetricright = NULL;
-  pc->ops->applytranspose  = NULL;
-  pc->ops->applyrichardson = NULL;
-  pc->ops->presolve        = NULL;
-  pc->ops->postsolve       = NULL;
+  pc->ops->applytranspose      = NULL;
+  pc->ops->applyrichardson     = NULL;
+  pc->ops->presolve            = NULL;
+  pc->ops->postsolve           = NULL;
 
   PetscCall(PCSetReusePreconditioner(pc, PETSC_TRUE));
 

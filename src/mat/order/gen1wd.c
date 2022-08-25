@@ -28,8 +28,7 @@
 /*    PROGRAM SUBROUTINES -*/
 /*       FN1WD, REVRSE, ROOTLS.*/
 /****************************************************************/
-PetscErrorCode SPARSEPACKgen1wd(const PetscInt *neqns,const PetscInt *xadj,const PetscInt *adjncy,PetscInt *mask, PetscInt *nblks, PetscInt *xblk, PetscInt *perm, PetscInt *xls, PetscInt *ls)
-{
+PetscErrorCode SPARSEPACKgen1wd(const PetscInt *neqns, const PetscInt *xadj, const PetscInt *adjncy, PetscInt *mask, PetscInt *nblks, PetscInt *xblk, PetscInt *perm, PetscInt *xls, PetscInt *ls) {
   /* System generated locals */
   PetscInt i__1, i__2, i__3;
 
@@ -55,17 +54,17 @@ PetscErrorCode SPARSEPACKgen1wd(const PetscInt *neqns,const PetscInt *xadj,const
   i__1   = *neqns;
   for (i = 1; i <= i__1; ++i) {
     if (!mask[i]) goto L400;
-/*             FIND A ONE-WAY DISSECTOR FOR EACH COMPONENT.*/
+    /*             FIND A ONE-WAY DISSECTOR FOR EACH COMPONENT.*/
     root = i;
     SPARSEPACKfn1wd(&root, &xadj[1], &adjncy[1], &mask[1], &nsep, &perm[num + 1], &nlvl, &xls[1], &ls[1]);
     num += nsep;
     ++(*nblks);
     xblk[*nblks] = *neqns - num + 1;
     ccsize       = xls[nlvl + 1] - 1;
-/*             NUMBER THE REMAINING NODES IN THE COMPONENT.*/
-/*             EACH COMPONENT IN THE REMAINING SUBGRAPH FORMS*/
-/*             A NEW BLOCK IN THE PARTITIONING.*/
-    i__2 = ccsize;
+    /*             NUMBER THE REMAINING NODES IN THE COMPONENT.*/
+    /*             EACH COMPONENT IN THE REMAINING SUBGRAPH FORMS*/
+    /*             A NEW BLOCK IN THE PARTITIONING.*/
+    i__2         = ccsize;
     for (j = 1; j <= i__2; ++j) {
       node = ls[j];
       if (!mask[node]) goto L300;
@@ -80,11 +79,9 @@ PetscErrorCode SPARSEPACKgen1wd(const PetscInt *neqns,const PetscInt *xadj,const
         mask[node] = 0;
       }
       if (num > *neqns) goto L500;
-L300:
-      ;
+    L300:;
     }
-L400:
-    ;
+  L400:;
   }
 /*       SINCE DISSECTORS FOUND FIRST SHOULD BE ORDERED LAST,*/
 /*       ROUTINE REVRSE IS CALLED TO ADJUST THE ORDERING*/

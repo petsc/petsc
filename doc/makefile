@@ -14,10 +14,13 @@ help:
 
 .PHONY: help makefile checklinks
 
-checklinks:
+checklinks_rule:
 	@$(SPHINXBUILD) -b linkcheck "$(SOURCEDIR)" "$(LINKCHECKDIR)" $(SPHINXOPTS)
 	@echo
 	@echo "Check finished. Report is in $(LINKCHECKDIR)."
+
+checklinks:
+	cd .. ; python3 -m venv petsc-doc-env ; source petsc-doc-env/bin/activate ; python3 -m pip install -r doc/requirements.txt ; cd doc ; make checklinks_rule; deactivate
 
 clean-classic-docs:
 	./build_classic_docs.py --clean

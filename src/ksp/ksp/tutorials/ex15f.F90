@@ -10,14 +10,14 @@
 !
 !     Module contains diag needed by shell preconditioner
 !
-      module mymoduleex15f
+      module ex15fmodule
 #include <petsc/finclude/petscksp.h>
       use petscksp
       Vec    diag
       end module
 
       program main
-      use mymoduleex15f
+      use ex15fmodule
       implicit none
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -261,7 +261,7 @@
 !   used within the routine SampleShellPCApply().
 !
       subroutine SampleShellPCSetUp(pc,ierr)
-      use mymoduleex15f
+      use ex15fmodule
       use petscksp
       implicit none
 
@@ -295,7 +295,7 @@
 !   is already provided within PETSc.
 !
       subroutine SampleShellPCApply(pc,x,y,ierr)
-      use mymoduleex15f
+      use ex15fmodule
       implicit none
 
       PC      pc
@@ -322,7 +322,7 @@
 !
 
       subroutine SampleShellPCDestroy(pc,ierr)
-      use mymoduleex15f
+      use ex15fmodule
       implicit none
 
       PC      pc

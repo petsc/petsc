@@ -1,4 +1,4 @@
-#include <../src/snes/impls/gs/gsimpl.h>      /*I "petscsnes.h"  I*/
+#include <../src/snes/impls/gs/gsimpl.h> /*I "petscsnes.h"  I*/
 
 /*@
    SNESNGSSetTolerances - Sets various parameters used in convergence tests.
@@ -22,27 +22,26 @@
 
 .seealso: `SNESSetTrustRegionTolerance()`
 @*/
-PetscErrorCode  SNESNGSSetTolerances(SNES snes,PetscReal abstol,PetscReal rtol,PetscReal stol,PetscInt maxit)
-{
-  SNES_NGS *gs = (SNES_NGS*)snes->data;
+PetscErrorCode SNESNGSSetTolerances(SNES snes, PetscReal abstol, PetscReal rtol, PetscReal stol, PetscInt maxit) {
+  SNES_NGS *gs = (SNES_NGS *)snes->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
 
   if (abstol != PETSC_DEFAULT) {
-    PetscCheck(abstol >= 0.0,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_OUTOFRANGE,"Absolute tolerance %g must be non-negative",(double)abstol);
+    PetscCheck(abstol >= 0.0, PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_OUTOFRANGE, "Absolute tolerance %g must be non-negative", (double)abstol);
     gs->abstol = abstol;
   }
   if (rtol != PETSC_DEFAULT) {
-    PetscCheck(rtol >= 0.0 && rtol < 1.0,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_OUTOFRANGE,"Relative tolerance %g must be non-negative and less than 1.0",(double)rtol);
+    PetscCheck(rtol >= 0.0 && rtol < 1.0, PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_OUTOFRANGE, "Relative tolerance %g must be non-negative and less than 1.0", (double)rtol);
     gs->rtol = rtol;
   }
   if (stol != PETSC_DEFAULT) {
-    PetscCheck(stol >= 0.0,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_OUTOFRANGE,"Step tolerance %g must be non-negative",(double)stol);
+    PetscCheck(stol >= 0.0, PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_OUTOFRANGE, "Step tolerance %g must be non-negative", (double)stol);
     gs->stol = stol;
   }
   if (maxit != PETSC_DEFAULT) {
-    PetscCheck(maxit >= 0,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_OUTOFRANGE,"Maximum number of iterations %" PetscInt_FMT " must be non-negative",maxit);
+    PetscCheck(maxit >= 0, PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_OUTOFRANGE, "Maximum number of iterations %" PetscInt_FMT " must be non-negative", maxit);
     gs->max_its = maxit;
   }
   PetscFunctionReturn(0);
@@ -68,12 +67,11 @@ PetscErrorCode  SNESNGSSetTolerances(SNES snes,PetscReal abstol,PetscReal rtol,P
 
 .seealso: `SNESSetTolerances()`
 @*/
-PetscErrorCode  SNESNGSGetTolerances(SNES snes,PetscReal *atol,PetscReal *rtol,PetscReal *stol,PetscInt *maxit)
-{
-  SNES_NGS *gs = (SNES_NGS*)snes->data;
+PetscErrorCode SNESNGSGetTolerances(SNES snes, PetscReal *atol, PetscReal *rtol, PetscReal *stol, PetscInt *maxit) {
+  SNES_NGS *gs = (SNES_NGS *)snes->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   if (atol) *atol = gs->abstol;
   if (rtol) *rtol = gs->rtol;
   if (stol) *stol = gs->stol;
@@ -93,12 +91,11 @@ PetscErrorCode  SNESNGSGetTolerances(SNES snes,PetscReal *atol,PetscReal *rtol,P
 .seealso: `SNESSetNGS()`, `SNESGetNGS()`, `SNESSetNPC()`, `SNESNGSGetSweeps()`
 @*/
 
-PetscErrorCode SNESNGSSetSweeps(SNES snes, PetscInt sweeps)
-{
-  SNES_NGS *gs = (SNES_NGS*)snes->data;
+PetscErrorCode SNESNGSSetSweeps(SNES snes, PetscInt sweeps) {
+  SNES_NGS *gs = (SNES_NGS *)snes->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   gs->sweeps = sweeps;
   PetscFunctionReturn(0);
 }
@@ -116,96 +113,83 @@ PetscErrorCode SNESNGSSetSweeps(SNES snes, PetscInt sweeps)
 
 .seealso: `SNESSetNGS()`, `SNESGetNGS()`, `SNESSetNPC()`, `SNESNGSSetSweeps()`
 @*/
-PetscErrorCode SNESNGSGetSweeps(SNES snes, PetscInt * sweeps)
-{
-  SNES_NGS *gs = (SNES_NGS*)snes->data;
+PetscErrorCode SNESNGSGetSweeps(SNES snes, PetscInt *sweeps) {
+  SNES_NGS *gs = (SNES_NGS *)snes->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   *sweeps = gs->sweeps;
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SNESReset_NGS(SNES snes)
-{
-  SNES_NGS       *gs = (SNES_NGS*)snes->data;
+PetscErrorCode SNESReset_NGS(SNES snes) {
+  SNES_NGS *gs = (SNES_NGS *)snes->data;
 
   PetscFunctionBegin;
   PetscCall(ISColoringDestroy(&gs->coloring));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SNESDestroy_NGS(SNES snes)
-{
+PetscErrorCode SNESDestroy_NGS(SNES snes) {
   PetscFunctionBegin;
   PetscCall(SNESReset_NGS(snes));
   PetscCall(PetscFree(snes->data));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SNESSetUp_NGS(SNES snes)
-{
-  PetscErrorCode (*f)(SNES,Vec,Vec,void*);
+PetscErrorCode SNESSetUp_NGS(SNES snes) {
+  PetscErrorCode (*f)(SNES, Vec, Vec, void *);
 
   PetscFunctionBegin;
-  PetscCall(SNESGetNGS(snes,&f,NULL));
-  if (!f) {
-    PetscCall(SNESSetNGS(snes,SNESComputeNGSDefaultSecant,NULL));
-  }
+  PetscCall(SNESGetNGS(snes, &f, NULL));
+  if (!f) { PetscCall(SNESSetNGS(snes, SNESComputeNGSDefaultSecant, NULL)); }
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SNESSetFromOptions_NGS(PetscOptionItems *PetscOptionsObject,SNES snes)
-{
-  SNES_NGS       *gs = (SNES_NGS*)snes->data;
-  PetscInt       sweeps,max_its=PETSC_DEFAULT;
-  PetscReal      rtol=PETSC_DEFAULT,atol=PETSC_DEFAULT,stol=PETSC_DEFAULT;
-  PetscBool      flg,flg1,flg2,flg3;
+PetscErrorCode SNESSetFromOptions_NGS(SNES snes, PetscOptionItems *PetscOptionsObject) {
+  SNES_NGS *gs = (SNES_NGS *)snes->data;
+  PetscInt  sweeps, max_its = PETSC_DEFAULT;
+  PetscReal rtol = PETSC_DEFAULT, atol = PETSC_DEFAULT, stol = PETSC_DEFAULT;
+  PetscBool flg, flg1, flg2, flg3;
 
   PetscFunctionBegin;
-  PetscOptionsHeadBegin(PetscOptionsObject,"SNES GS options");
+  PetscOptionsHeadBegin(PetscOptionsObject, "SNES GS options");
   /* GS Options */
-  PetscCall(PetscOptionsInt("-snes_ngs_sweeps","Number of sweeps of GS to apply","SNESComputeGS",gs->sweeps,&sweeps,&flg));
-  if (flg) PetscCall(SNESNGSSetSweeps(snes,sweeps));
-  PetscCall(PetscOptionsReal("-snes_ngs_atol","Absolute residual tolerance for GS iteration","SNESComputeGS",gs->abstol,&atol,&flg));
-  PetscCall(PetscOptionsReal("-snes_ngs_rtol","Relative residual tolerance for GS iteration","SNESComputeGS",gs->rtol,&rtol,&flg1));
-  PetscCall(PetscOptionsReal("-snes_ngs_stol","Absolute update tolerance for GS iteration","SNESComputeGS",gs->stol,&stol,&flg2));
-  PetscCall(PetscOptionsInt("-snes_ngs_max_it","Maximum number of sweeps of GS to apply","SNESComputeGS",gs->max_its,&max_its,&flg3));
-  if (flg || flg1 || flg2 || flg3) {
-    PetscCall(SNESNGSSetTolerances(snes,atol,rtol,stol,max_its));
-  }
-  flg  = PETSC_FALSE;
-  PetscCall(PetscOptionsBool("-snes_ngs_secant","Use finite difference secant approximation with coloring","",flg,&flg,NULL));
+  PetscCall(PetscOptionsInt("-snes_ngs_sweeps", "Number of sweeps of GS to apply", "SNESComputeGS", gs->sweeps, &sweeps, &flg));
+  if (flg) PetscCall(SNESNGSSetSweeps(snes, sweeps));
+  PetscCall(PetscOptionsReal("-snes_ngs_atol", "Absolute residual tolerance for GS iteration", "SNESComputeGS", gs->abstol, &atol, &flg));
+  PetscCall(PetscOptionsReal("-snes_ngs_rtol", "Relative residual tolerance for GS iteration", "SNESComputeGS", gs->rtol, &rtol, &flg1));
+  PetscCall(PetscOptionsReal("-snes_ngs_stol", "Absolute update tolerance for GS iteration", "SNESComputeGS", gs->stol, &stol, &flg2));
+  PetscCall(PetscOptionsInt("-snes_ngs_max_it", "Maximum number of sweeps of GS to apply", "SNESComputeGS", gs->max_its, &max_its, &flg3));
+  if (flg || flg1 || flg2 || flg3) { PetscCall(SNESNGSSetTolerances(snes, atol, rtol, stol, max_its)); }
+  flg = PETSC_FALSE;
+  PetscCall(PetscOptionsBool("-snes_ngs_secant", "Use finite difference secant approximation with coloring", "", flg, &flg, NULL));
   if (flg) {
-    PetscCall(SNESSetNGS(snes,SNESComputeNGSDefaultSecant,NULL));
-    PetscCall(PetscInfo(snes,"Setting default finite difference secant approximation with coloring\n"));
+    PetscCall(SNESSetNGS(snes, SNESComputeNGSDefaultSecant, NULL));
+    PetscCall(PetscInfo(snes, "Setting default finite difference secant approximation with coloring\n"));
   }
-  PetscCall(PetscOptionsReal("-snes_ngs_secant_h","Differencing parameter for secant search","",gs->h,&gs->h,NULL));
-  PetscCall(PetscOptionsBool("-snes_ngs_secant_mat_coloring","Use the graph coloring of the Jacobian for the secant GS","",gs->secant_mat,&gs->secant_mat,&flg));
+  PetscCall(PetscOptionsReal("-snes_ngs_secant_h", "Differencing parameter for secant search", "", gs->h, &gs->h, NULL));
+  PetscCall(PetscOptionsBool("-snes_ngs_secant_mat_coloring", "Use the graph coloring of the Jacobian for the secant GS", "", gs->secant_mat, &gs->secant_mat, &flg));
 
   PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SNESView_NGS(SNES snes, PetscViewer viewer)
-{
-  PetscErrorCode (*f)(SNES,Vec,Vec,void*);
-  SNES_NGS       *gs = (SNES_NGS*)snes->data;
-  PetscBool      iascii;
+PetscErrorCode SNESView_NGS(SNES snes, PetscViewer viewer) {
+  PetscErrorCode (*f)(SNES, Vec, Vec, void *);
+  SNES_NGS *gs = (SNES_NGS *)snes->data;
+  PetscBool iascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   if (iascii) {
-    PetscCall(DMSNESGetNGS(snes->dm,&f,NULL));
-    if (f == SNESComputeNGSDefaultSecant) {
-      PetscCall(PetscViewerASCIIPrintf(viewer,"  Use finite difference secant approximation with coloring with h = %g \n",(double)gs->h));
-    }
+    PetscCall(DMSNESGetNGS(snes->dm, &f, NULL));
+    if (f == SNESComputeNGSDefaultSecant) { PetscCall(PetscViewerASCIIPrintf(viewer, "  Use finite difference secant approximation with coloring with h = %g \n", (double)gs->h)); }
   }
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SNESSolve_NGS(SNES snes)
-{
+PetscErrorCode SNESSolve_NGS(SNES snes) {
   Vec              F;
   Vec              X;
   Vec              B;
@@ -215,16 +199,16 @@ PetscErrorCode SNESSolve_NGS(SNES snes)
 
   PetscFunctionBegin;
 
-  PetscCheck(!snes->xl && !snes->xu && !snes->ops->computevariablebounds,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
+  PetscCheck(!snes->xl && !snes->xu && !snes->ops->computevariablebounds, PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
 
-  PetscCall(PetscCitationsRegister(SNESCitation,&SNEScite));
+  PetscCall(PetscCitationsRegister(SNESCitation, &SNEScite));
   X = snes->vec_sol;
   F = snes->vec_func;
   B = snes->vec_rhs;
 
   PetscCall(PetscObjectSAWsTakeAccess((PetscObject)snes));
-  snes->iter   = 0;
-  snes->norm   = 0.;
+  snes->iter = 0;
+  snes->norm = 0.;
   PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
   snes->reason = SNES_CONVERGED_ITERATING;
 
@@ -232,53 +216,53 @@ PetscErrorCode SNESSolve_NGS(SNES snes)
   if (normschedule == SNES_NORM_ALWAYS || normschedule == SNES_NORM_INITIAL_ONLY || normschedule == SNES_NORM_INITIAL_FINAL_ONLY) {
     /* compute the initial function and preconditioned update delX */
     if (!snes->vec_func_init_set) {
-      PetscCall(SNESComputeFunction(snes,X,F));
+      PetscCall(SNESComputeFunction(snes, X, F));
     } else snes->vec_func_init_set = PETSC_FALSE;
 
     PetscCall(VecNorm(F, NORM_2, &fnorm)); /* fnorm <- ||F||  */
-    SNESCheckFunctionNorm(snes,fnorm);
+    SNESCheckFunctionNorm(snes, fnorm);
     PetscCall(PetscObjectSAWsTakeAccess((PetscObject)snes));
     snes->iter = 0;
     snes->norm = fnorm;
     PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
-    PetscCall(SNESLogConvergenceHistory(snes,snes->norm,0));
-    PetscCall(SNESMonitor(snes,0,snes->norm));
+    PetscCall(SNESLogConvergenceHistory(snes, snes->norm, 0));
+    PetscCall(SNESMonitor(snes, 0, snes->norm));
 
     /* test convergence */
-    PetscCall((*snes->ops->converged)(snes,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP));
+    PetscUseTypeMethod(snes, converged, 0, 0.0, 0.0, fnorm, &snes->reason, snes->cnvP);
     if (snes->reason) PetscFunctionReturn(0);
   } else {
     PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
-    PetscCall(SNESLogConvergenceHistory(snes,snes->norm,0));
+    PetscCall(SNESLogConvergenceHistory(snes, snes->norm, 0));
   }
 
   /* Call general purpose update function */
-  if (snes->ops->update) PetscCall((*snes->ops->update)(snes, snes->iter));
+  PetscTryTypeMethod(snes, update, snes->iter);
 
   for (i = 0; i < snes->max_its; i++) {
     PetscCall(SNESComputeNGS(snes, B, X));
     /* only compute norms if requested or about to exit due to maximum iterations */
     if (normschedule == SNES_NORM_ALWAYS || ((i == snes->max_its - 1) && (normschedule == SNES_NORM_INITIAL_FINAL_ONLY || normschedule == SNES_NORM_FINAL_ONLY))) {
-      PetscCall(SNESComputeFunction(snes,X,F));
+      PetscCall(SNESComputeFunction(snes, X, F));
       PetscCall(VecNorm(F, NORM_2, &fnorm)); /* fnorm <- ||F||  */
-      SNESCheckFunctionNorm(snes,fnorm);
+      SNESCheckFunctionNorm(snes, fnorm);
       /* Monitor convergence */
       PetscCall(PetscObjectSAWsTakeAccess((PetscObject)snes));
-      snes->iter = i+1;
+      snes->iter = i + 1;
       snes->norm = fnorm;
       PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
-      PetscCall(SNESLogConvergenceHistory(snes,snes->norm,0));
-      PetscCall(SNESMonitor(snes,snes->iter,snes->norm));
+      PetscCall(SNESLogConvergenceHistory(snes, snes->norm, 0));
+      PetscCall(SNESMonitor(snes, snes->iter, snes->norm));
     }
     /* Test for convergence */
-    if (normschedule == SNES_NORM_ALWAYS) PetscCall((*snes->ops->converged)(snes,snes->iter,0.0,0.0,fnorm,&snes->reason,snes->cnvP));
+    if (normschedule == SNES_NORM_ALWAYS) PetscUseTypeMethod(snes, converged, snes->iter, 0.0, 0.0, fnorm, &snes->reason, snes->cnvP);
     if (snes->reason) PetscFunctionReturn(0);
     /* Call general purpose update function */
-    if (snes->ops->update) PetscCall((*snes->ops->update)(snes, snes->iter));
+    PetscTryTypeMethod(snes, update, snes->iter);
   }
   if (normschedule == SNES_NORM_ALWAYS) {
     if (i == snes->max_its) {
-      PetscCall(PetscInfo(snes,"Maximum number of iterations has been reached: %" PetscInt_FMT "\n",snes->max_its));
+      PetscCall(PetscInfo(snes, "Maximum number of iterations has been reached: %" PetscInt_FMT "\n", snes->max_its));
       if (!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
     }
   } else if (!snes->reason) snes->reason = SNES_CONVERGED_ITS; /* GS is meant to be used as a preconditioner */
@@ -317,9 +301,8 @@ PetscErrorCode SNESSolve_NGS(SNES snes)
           `SNESSetNormSchedule()`
 M*/
 
-PETSC_EXTERN PetscErrorCode SNESCreate_NGS(SNES snes)
-{
-  SNES_NGS        *gs;
+PETSC_EXTERN PetscErrorCode SNESCreate_NGS(SNES snes) {
+  SNES_NGS *gs;
 
   PetscFunctionBegin;
   snes->ops->destroy        = SNESDestroy_NGS;
@@ -339,15 +322,15 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NGS(SNES snes)
     snes->max_funcs = 10000;
   }
 
-  PetscCall(PetscNewLog(snes,&gs));
+  PetscCall(PetscNewLog(snes, &gs));
 
   gs->sweeps  = 1;
   gs->rtol    = 1e-5;
   gs->abstol  = PETSC_MACHINE_EPSILON;
-  gs->stol    = 1000*PETSC_MACHINE_EPSILON;
+  gs->stol    = 1000 * PETSC_MACHINE_EPSILON;
   gs->max_its = 50;
   gs->h       = PETSC_SQRT_MACHINE_EPSILON;
 
-  snes->data = (void*) gs;
+  snes->data = (void *)gs;
   PetscFunctionReturn(0);
 }

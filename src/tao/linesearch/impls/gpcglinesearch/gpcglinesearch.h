@@ -4,11 +4,10 @@
 #include <petscvec.h>
 
 typedef struct {
-
-/* --------------- Parameters used by line search method ----------------- */
-  PetscReal maxstep;         /* maximum step size */
-  PetscInt    bracket;
-  PetscInt    infoc;
+  /* --------------- Parameters used by line search method ----------------- */
+  PetscReal maxstep; /* maximum step size */
+  PetscInt  bracket;
+  PetscInt  infoc;
 
   Vec x;
   Vec W1;

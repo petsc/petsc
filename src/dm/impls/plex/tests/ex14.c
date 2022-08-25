@@ -3,11 +3,10 @@ static char help[] = "Tests for coarsening\n\n";
 #include <petscdmplex.h>
 
 typedef struct {
-  PetscBool uninterpolate;  /* Uninterpolate the mesh at the end */
+  PetscBool uninterpolate; /* Uninterpolate the mesh at the end */
 } AppCtx;
 
-PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
-{
+PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   PetscFunctionBegin;
   options->uninterpolate = PETSC_FALSE;
 
@@ -17,8 +16,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
-{
+PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm) {
   PetscFunctionBegin;
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetType(*dm, DMPLEX));
@@ -29,17 +27,16 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
     PetscCall(DMPlexUninterpolate(*dm, &udm));
     PetscCall(DMDestroy(dm));
-    *dm  = udm;
+    *dm = udm;
     PetscCall(DMViewFromOptions(*dm, NULL, "-un_dm_view"));
   }
   PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv)
-{
-  DM             dm;
-  AppCtx         user;
+int main(int argc, char **argv) {
+  DM     dm;
+  AppCtx user;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));

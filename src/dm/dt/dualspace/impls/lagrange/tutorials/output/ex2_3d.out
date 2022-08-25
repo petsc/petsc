@@ -1,0 +1,140 @@
+DM Object: 1 MPI process
+  type: plex
+  Number of 0-cells per rank: 8
+  Number of 1-cells per rank: 12
+  Number of 2-cells per rank: 6
+  Number of 3-cells per rank: 1
+Labels:
+  marker: 1 strata with value/size (1 (26))
+  Face Sets: 6 strata with value/size (6 (1), 5 (1), 3 (1), 4 (1), 1 (1), 2 (1))
+  depth: 4 strata with value/size (0 (8), 1 (12), 2 (6), 3 (1))
+  celltype: 4 strata with value/size (7 (1), 0 (8), 4 (6), 1 (12))
+Field Q4:
+  adjacency FEM
+Vec Object: 1 MPI process
+  type: seq
+-1.
+0.
+1.
+-1.
+0.
+1.
+-1.
+0.
+1.
+-1.
+0.
+1.
+-1.
+0.
+1.
+-1.
+0.
+1.
+-1.
+0.
+1.
+-1.
+0.
+1.
+-1.
+0.
+1.
+-2.
+2.
+-2.
+2.
+-2.
+2.
+-2.
+2.
+-2.
+-2.
+-2.
+-2.
+-2.
+-2.
+-2.
+-2.
+-2.
+2.
+2.
+2.
+2.
+2.
+2.
+2.
+2.
+2.
+-1.
+0.
+1.
+-1.
+0.
+1.
+-1.
+0.
+1.
+-1.
+0.
+1.
+-1.
+0.
+1.
+-1.
+0.
+1.
+-1.
+0.
+1.
+-1.
+0.
+1.
+-1.
+0.
+1.
+-1.
+0.
+1.
+-1.
+0.
+1.
+-1.
+0.
+1.
+-1.
+0.
+1.
+-1.
+0.
+1.
+-1.
+0.
+1.
+-1.
+0.
+1.
+-2.
+-2.
+-2.
+2.
+2.
+2.
+-2.
+-2.
+-2.
+2.
+2.
+2.
+-2.
+-2.
+-2.
+2.
+2.
+2.
+-2.
+-2.
+-2.
+2.
+2.
+2.

@@ -13,12 +13,9 @@ static PetscBool PetscSysPackageInitialized = PETSC_FALSE;
 
 .seealso: `PetscFinalize()`
 @*/
-PetscErrorCode  PetscSysFinalizePackage(void)
-{
+PetscErrorCode PetscSysFinalizePackage(void) {
   PetscFunctionBegin;
-  if (Petsc_Seq_keyval != MPI_KEYVAL_INVALID) {
-    PetscCallMPI(MPI_Comm_free_keyval(&Petsc_Seq_keyval));
-  }
+  if (Petsc_Seq_keyval != MPI_KEYVAL_INVALID) { PetscCallMPI(MPI_Comm_free_keyval(&Petsc_Seq_keyval)); }
   PetscSysPackageInitialized = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -32,33 +29,32 @@ PetscErrorCode  PetscSysFinalizePackage(void)
 
 .seealso: `PetscInitialize()`
 @*/
-PetscErrorCode  PetscSysInitializePackage(void)
-{
-  char           logList[256];
-  PetscBool      opt,pkg;
+PetscErrorCode PetscSysInitializePackage(void) {
+  char      logList[256];
+  PetscBool opt, pkg;
 
   PetscFunctionBegin;
   if (PetscSysPackageInitialized) PetscFunctionReturn(0);
   PetscSysPackageInitialized = PETSC_TRUE;
   /* Register Classes */
-  PetscCall(PetscClassIdRegister("Object",&PETSC_OBJECT_CLASSID));
-  PetscCall(PetscClassIdRegister("Container",&PETSC_CONTAINER_CLASSID));
+  PetscCall(PetscClassIdRegister("Object", &PETSC_OBJECT_CLASSID));
+  PetscCall(PetscClassIdRegister("Container", &PETSC_CONTAINER_CLASSID));
 
   /* Register Events */
-  PetscCall(PetscLogEventRegister("PetscBarrier", PETSC_SMALLEST_CLASSID,&PETSC_Barrier));
-  PetscCall(PetscLogEventRegister("BuildTwoSided",PETSC_SMALLEST_CLASSID,&PETSC_BuildTwoSided));
-  PetscCall(PetscLogEventRegister("BuildTwoSidedF",PETSC_SMALLEST_CLASSID,&PETSC_BuildTwoSidedF));
+  PetscCall(PetscLogEventRegister("PetscBarrier", PETSC_SMALLEST_CLASSID, &PETSC_Barrier));
+  PetscCall(PetscLogEventRegister("BuildTwoSided", PETSC_SMALLEST_CLASSID, &PETSC_BuildTwoSided));
+  PetscCall(PetscLogEventRegister("BuildTwoSidedF", PETSC_SMALLEST_CLASSID, &PETSC_BuildTwoSidedF));
   /* Process Info */
   {
-    PetscClassId  classids[1];
+    PetscClassId classids[1];
 
     classids[0] = PETSC_SMALLEST_CLASSID;
     PetscCall(PetscInfoProcessClass("sys", 1, classids));
   }
   /* Process summary exclusions */
-  PetscCall(PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt));
+  PetscCall(PetscOptionsGetString(NULL, NULL, "-log_exclude", logList, sizeof(logList), &opt));
   if (opt) {
-    PetscCall(PetscStrInList("null",logList,',',&pkg));
+    PetscCall(PetscStrInList("null", logList, ',', &pkg));
     if (pkg) PetscCall(PetscLogEventExcludeClass(PETSC_SMALLEST_CLASSID));
   }
   PetscCall(PetscRegisterFinalize(PetscSysFinalizePackage));
@@ -107,4 +103,4 @@ PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscsys(void)
 #endif
   PetscFunctionReturn(0);
 }
-#endif  /* PETSC_HAVE_DYNAMIC_LIBRARIES */
+#endif /* PETSC_HAVE_DYNAMIC_LIBRARIES */

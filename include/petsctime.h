@@ -9,7 +9,7 @@
 
 /* SUBMANSEC = Sys */
 
-PETSC_EXTERN PetscErrorCode PetscGetCPUTime(PetscLogDouble*);
+PETSC_EXTERN PetscErrorCode PetscGetCPUTime(PetscLogDouble *);
 
 /* Global counters */
 PETSC_EXTERN PetscLogDouble petsc_BaseTime;
@@ -101,20 +101,17 @@ M*/
 
 M*/
 
-static inline PetscErrorCode PetscTime(PetscLogDouble *v)
-{
+static inline PetscErrorCode PetscTime(PetscLogDouble *v) {
   *v = MPI_Wtime();
   return 0;
 }
 
-static inline PetscErrorCode PetscTimeSubtract(PetscLogDouble *v)
-{
+static inline PetscErrorCode PetscTimeSubtract(PetscLogDouble *v) {
   *v -= MPI_Wtime();
   return 0;
 }
 
-static inline PetscErrorCode PetscTimeAdd(PetscLogDouble *v)
-{
+static inline PetscErrorCode PetscTimeAdd(PetscLogDouble *v) {
   *v += MPI_Wtime();
   return 0;
 }

@@ -37,11 +37,11 @@ int main(int argc, char **argv) {
   PetscCallMPI(MPI_Comm_size(comm, &size));
   /* Create local-to-global map */
   globalIdx[0] = rank;
-  globalIdx[1] = rank+1;
+  globalIdx[1] = rank + 1;
   PetscCall(ISLocalToGlobalMappingCreate(comm, 1, overlapSize, globalIdx, PETSC_COPY_VALUES, &map));
   /* Create matrix */
-  PetscCall(MatCreateIS(comm, 1, PETSC_DECIDE, PETSC_DECIDE, size+1, size+1, map, map, &A));
-  PetscCall(PetscObjectSetName((PetscObject) A, "A"));
+  PetscCall(MatCreateIS(comm, 1, PETSC_DECIDE, PETSC_DECIDE, size + 1, size + 1, map, map, &A));
+  PetscCall(PetscObjectSetName((PetscObject)A, "A"));
   PetscCall(ISLocalToGlobalMappingDestroy(&map));
   PetscCall(MatISSetPreallocation(A, overlapSize, NULL, overlapSize, NULL));
   PetscCall(MatSetValues(A, 2, globalIdx, 2, globalIdx, elemMat, ADD_VALUES));
@@ -50,13 +50,13 @@ int main(int argc, char **argv) {
   /* Check that the constant vector is in the nullspace */
   PetscCall(MatCreateVecs(A, &x, &y));
   PetscCall(VecSet(x, 1.0));
-  PetscCall(PetscObjectSetName((PetscObject) x, "x"));
+  PetscCall(PetscObjectSetName((PetscObject)x, "x"));
   PetscCall(VecViewFromOptions(x, NULL, "-x_view"));
   PetscCall(MatMult(A, x, y));
-  PetscCall(PetscObjectSetName((PetscObject) y, "y"));
+  PetscCall(PetscObjectSetName((PetscObject)y, "y"));
   PetscCall(VecViewFromOptions(y, NULL, "-y_view"));
   PetscCall(VecNorm(y, NORM_2, &error));
-  PetscCheck(error <= PETSC_SMALL,comm, PETSC_ERR_ARG_WRONG, "Invalid output, x should be in the nullspace of A");
+  PetscCheck(error <= PETSC_SMALL, comm, PETSC_ERR_ARG_WRONG, "Invalid output, x should be in the nullspace of A");
   /* Check that an interior unit vector gets mapped to something of 1-norm 4 */
   if (size > 1) {
     PetscCall(VecSet(x, 0.0));
@@ -65,7 +65,7 @@ int main(int argc, char **argv) {
     PetscCall(VecAssemblyEnd(x));
     PetscCall(MatMult(A, x, y));
     PetscCall(VecNorm(y, NORM_1, &error));
-    PetscCheck(PetscAbsReal(error - 4) <= PETSC_SMALL,comm, PETSC_ERR_ARG_WRONG, "Invalid output for matrix multiply");
+    PetscCheck(PetscAbsReal(error - 4) <= PETSC_SMALL, comm, PETSC_ERR_ARG_WRONG, "Invalid output for matrix multiply");
   }
   /* Cleanup */
   PetscCall(MatDestroy(&A));

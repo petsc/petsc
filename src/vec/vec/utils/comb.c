@@ -19,45 +19,43 @@
            insure that the user calls the routines in the correct order
 */
 
-#include <petsc/private/vecimpl.h>    /*I   "petscvec.h"    I*/
+#include <petsc/private/vecimpl.h> /*I   "petscvec.h"    I*/
 
-static PetscErrorCode MPIPetsc_Iallreduce(void *sendbuf,void *recvbuf,PetscMPIInt count,MPI_Datatype datatype,MPI_Op op,MPI_Comm comm,MPI_Request *request)
-{
+static PetscErrorCode MPIPetsc_Iallreduce(void *sendbuf, void *recvbuf, PetscMPIInt count, MPI_Datatype datatype, MPI_Op op, MPI_Comm comm, MPI_Request *request) {
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_MPI_NONBLOCKING_COLLECTIVES)
-  PetscCallMPI(MPI_Iallreduce(sendbuf,recvbuf,count,datatype,op,comm,request));
+  PetscCallMPI(MPI_Iallreduce(sendbuf, recvbuf, count, datatype, op, comm, request));
 #else
-  PetscCall(MPIU_Allreduce(sendbuf,recvbuf,count,datatype,op,comm));
+  PetscCall(MPIU_Allreduce(sendbuf, recvbuf, count, datatype, op, comm));
   *request = MPI_REQUEST_NULL;
 #endif
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSplitReductionApply(PetscSplitReduction*);
+static PetscErrorCode PetscSplitReductionApply(PetscSplitReduction *);
 
 /*
    PetscSplitReductionCreate - Creates a data structure to contain the queued information.
 */
-static PetscErrorCode  PetscSplitReductionCreate(MPI_Comm comm,PetscSplitReduction **sr)
-{
+static PetscErrorCode PetscSplitReductionCreate(MPI_Comm comm, PetscSplitReduction **sr) {
   PetscFunctionBegin;
   PetscCall(PetscNew(sr));
   (*sr)->numopsbegin = 0;
   (*sr)->numopsend   = 0;
   (*sr)->state       = STATE_BEGIN;
 #define MAXOPS 32
-  (*sr)->maxops      = MAXOPS;
-  PetscCall(PetscMalloc6(MAXOPS,&(*sr)->lvalues,MAXOPS,&(*sr)->gvalues,MAXOPS,&(*sr)->invecs,MAXOPS,&(*sr)->reducetype,MAXOPS,&(*sr)->lvalues_mix,MAXOPS,&(*sr)->gvalues_mix));
+  (*sr)->maxops = MAXOPS;
+  PetscCall(PetscMalloc6(MAXOPS, &(*sr)->lvalues, MAXOPS, &(*sr)->gvalues, MAXOPS, &(*sr)->invecs, MAXOPS, &(*sr)->reducetype, MAXOPS, &(*sr)->lvalues_mix, MAXOPS, &(*sr)->gvalues_mix));
 #undef MAXOPS
-  (*sr)->comm        = comm;
-  (*sr)->request     = MPI_REQUEST_NULL;
-  (*sr)->mix         = PETSC_FALSE;
-  (*sr)->async       = PETSC_FALSE;
+  (*sr)->comm    = comm;
+  (*sr)->request = MPI_REQUEST_NULL;
+  (*sr)->mix     = PETSC_FALSE;
+  (*sr)->async   = PETSC_FALSE;
 #if defined(PETSC_HAVE_MPI_NONBLOCKING_COLLECTIVES)
-  (*sr)->async = PETSC_TRUE;    /* Enable by default */
+  (*sr)->async = PETSC_TRUE; /* Enable by default */
 #endif
   /* always check for option; so that tests that run on systems without support don't warn about unhandled options */
-  PetscCall(PetscOptionsGetBool(NULL,NULL,"-splitreduction_async",&(*sr)->async,NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-splitreduction_async", &(*sr)->async, NULL));
   PetscFunctionReturn(0);
 }
 
@@ -69,25 +67,27 @@ static PetscErrorCode  PetscSplitReductionCreate(MPI_Comm comm,PetscSplitReducti
 */
 MPI_Op PetscSplitReduction_Op = 0;
 
-PETSC_EXTERN void MPIAPI PetscSplitReduction_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
-{
-  struct PetscScalarInt { PetscScalar v; PetscInt i; };
-  struct PetscScalarInt *xin = (struct PetscScalarInt*)in;
-  struct PetscScalarInt *xout = (struct PetscScalarInt*)out;
-  PetscInt              i,count = (PetscInt)*cnt;
+PETSC_EXTERN void MPIAPI PetscSplitReduction_Local(void *in, void *out, PetscMPIInt *cnt, MPI_Datatype *datatype) {
+  struct PetscScalarInt {
+    PetscScalar v;
+    PetscInt    i;
+  };
+  struct PetscScalarInt *xin  = (struct PetscScalarInt *)in;
+  struct PetscScalarInt *xout = (struct PetscScalarInt *)out;
+  PetscInt               i, count = (PetscInt)*cnt;
 
   PetscFunctionBegin;
   if (*datatype != MPIU_SCALAR_INT) {
     (*PetscErrorPrintf)("Can only handle MPIU_SCALAR_INT data types");
-    PETSCABORT(MPI_COMM_SELF,PETSC_ERR_ARG_WRONG);
+    PETSCABORT(MPI_COMM_SELF, PETSC_ERR_ARG_WRONG);
   }
-  for (i=0; i<count; i++) {
-    if      (xin[i].i == PETSC_SR_REDUCE_SUM) xout[i].v += xin[i].v;
-    else if (xin[i].i == PETSC_SR_REDUCE_MAX) xout[i].v = PetscMax(PetscRealPart(xout[i].v),PetscRealPart(xin[i].v));
-    else if (xin[i].i == PETSC_SR_REDUCE_MIN) xout[i].v = PetscMin(PetscRealPart(xout[i].v),PetscRealPart(xin[i].v));
+  for (i = 0; i < count; i++) {
+    if (xin[i].i == PETSC_SR_REDUCE_SUM) xout[i].v += xin[i].v;
+    else if (xin[i].i == PETSC_SR_REDUCE_MAX) xout[i].v = PetscMax(PetscRealPart(xout[i].v), PetscRealPart(xin[i].v));
+    else if (xin[i].i == PETSC_SR_REDUCE_MIN) xout[i].v = PetscMin(PetscRealPart(xout[i].v), PetscRealPart(xin[i].v));
     else {
       (*PetscErrorPrintf)("Reduction type input is not PETSC_SR_REDUCE_SUM, PETSC_SR_REDUCE_MAX, or PETSC_SR_REDUCE_MIN");
-      PETSCABORT(MPI_COMM_SELF,PETSC_ERR_ARG_WRONG);
+      PETSCABORT(MPI_COMM_SELF, PETSC_ERR_ARG_WRONG);
     }
   }
   PetscFunctionReturnVoid();
@@ -109,76 +109,73 @@ PETSC_EXTERN void MPIAPI PetscSplitReduction_Local(void *in,void *out,PetscMPIIn
 
 .seealso: `VecNormBegin()`, `VecNormEnd()`, `VecDotBegin()`, `VecDotEnd()`, `VecTDotBegin()`, `VecTDotEnd()`, `VecMDotBegin()`, `VecMDotEnd()`, `VecMTDotBegin()`, `VecMTDotEnd()`
 @*/
-PetscErrorCode PetscCommSplitReductionBegin(MPI_Comm comm)
-{
+PetscErrorCode PetscCommSplitReductionBegin(MPI_Comm comm) {
   PetscSplitReduction *sr;
 
   PetscFunctionBegin;
-  PetscCall(PetscSplitReductionGet(comm,&sr));
-  PetscCheck(sr->numopsend <= 0,PETSC_COMM_SELF,PETSC_ERR_ORDER,"Cannot call this after VecxxxEnd() has been called");
-  if (sr->async) {              /* Bad reuse, setup code copied from PetscSplitReductionApply(). */
-    PetscInt    i,numops = sr->numopsbegin,*reducetype = sr->reducetype;
-    PetscScalar *lvalues = sr->lvalues,*gvalues = sr->gvalues;
-    PetscInt    sum_flg = 0,max_flg = 0, min_flg = 0;
-    MPI_Comm    comm = sr->comm;
-    PetscMPIInt size,cmul = sizeof(PetscScalar)/sizeof(PetscReal);
+  PetscCall(PetscSplitReductionGet(comm, &sr));
+  PetscCheck(sr->numopsend <= 0, PETSC_COMM_SELF, PETSC_ERR_ORDER, "Cannot call this after VecxxxEnd() has been called");
+  if (sr->async) { /* Bad reuse, setup code copied from PetscSplitReductionApply(). */
+    PetscInt     i, numops = sr->numopsbegin, *reducetype = sr->reducetype;
+    PetscScalar *lvalues = sr->lvalues, *gvalues = sr->gvalues;
+    PetscInt     sum_flg = 0, max_flg = 0, min_flg = 0;
+    MPI_Comm     comm = sr->comm;
+    PetscMPIInt  size, cmul = sizeof(PetscScalar) / sizeof(PetscReal);
 
-    PetscCall(PetscLogEventBegin(VEC_ReduceBegin,0,0,0,0));
-    PetscCallMPI(MPI_Comm_size(sr->comm,&size));
+    PetscCall(PetscLogEventBegin(VEC_ReduceBegin, 0, 0, 0, 0));
+    PetscCallMPI(MPI_Comm_size(sr->comm, &size));
     if (size == 1) {
-      PetscCall(PetscArraycpy(gvalues,lvalues,numops));
+      PetscCall(PetscArraycpy(gvalues, lvalues, numops));
     } else {
       /* determine if all reductions are sum, max, or min */
-      for (i=0; i<numops; i++) {
-        if      (reducetype[i] == PETSC_SR_REDUCE_MAX) max_flg = 1;
+      for (i = 0; i < numops; i++) {
+        if (reducetype[i] == PETSC_SR_REDUCE_MAX) max_flg = 1;
         else if (reducetype[i] == PETSC_SR_REDUCE_SUM) sum_flg = 1;
         else if (reducetype[i] == PETSC_SR_REDUCE_MIN) min_flg = 1;
-        else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in PetscSplitReduction() data structure, probably memory corruption");
+        else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Error in PetscSplitReduction() data structure, probably memory corruption");
       }
-      PetscCheck(sum_flg + max_flg + min_flg <= 1 || !sr->mix,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in PetscSplitReduction() data structure, probably memory corruption");
+      PetscCheck(sum_flg + max_flg + min_flg <= 1 || !sr->mix, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Error in PetscSplitReduction() data structure, probably memory corruption");
       if (sum_flg + max_flg + min_flg > 1) {
         sr->mix = PETSC_TRUE;
-        for (i=0; i<numops; i++) { sr->lvalues_mix[i].v = lvalues[i]; sr->lvalues_mix[i].i = reducetype[i]; }
-        PetscCall(MPIPetsc_Iallreduce(sr->lvalues_mix,sr->gvalues_mix,numops,MPIU_SCALAR_INT,PetscSplitReduction_Op,comm,&sr->request));
-      } else if (max_flg) {   /* Compute max of real and imag parts separately, presumably only the real part is used */
-        PetscCall(MPIPetsc_Iallreduce((PetscReal*)lvalues,(PetscReal*)gvalues,cmul*numops,MPIU_REAL,MPIU_MAX,comm,&sr->request));
+        for (i = 0; i < numops; i++) {
+          sr->lvalues_mix[i].v = lvalues[i];
+          sr->lvalues_mix[i].i = reducetype[i];
+        }
+        PetscCall(MPIPetsc_Iallreduce(sr->lvalues_mix, sr->gvalues_mix, numops, MPIU_SCALAR_INT, PetscSplitReduction_Op, comm, &sr->request));
+      } else if (max_flg) { /* Compute max of real and imag parts separately, presumably only the real part is used */
+        PetscCall(MPIPetsc_Iallreduce((PetscReal *)lvalues, (PetscReal *)gvalues, cmul * numops, MPIU_REAL, MPIU_MAX, comm, &sr->request));
       } else if (min_flg) {
-        PetscCall(MPIPetsc_Iallreduce((PetscReal*)lvalues,(PetscReal*)gvalues,cmul*numops,MPIU_REAL,MPIU_MIN,comm,&sr->request));
+        PetscCall(MPIPetsc_Iallreduce((PetscReal *)lvalues, (PetscReal *)gvalues, cmul * numops, MPIU_REAL, MPIU_MIN, comm, &sr->request));
       } else {
-        PetscCall(MPIPetsc_Iallreduce(lvalues,gvalues,numops,MPIU_SCALAR,MPIU_SUM,comm,&sr->request));
+        PetscCall(MPIPetsc_Iallreduce(lvalues, gvalues, numops, MPIU_SCALAR, MPIU_SUM, comm, &sr->request));
       }
     }
     sr->state     = STATE_PENDING;
     sr->numopsend = 0;
-    PetscCall(PetscLogEventEnd(VEC_ReduceBegin,0,0,0,0));
+    PetscCall(PetscLogEventEnd(VEC_ReduceBegin, 0, 0, 0, 0));
   } else {
     PetscCall(PetscSplitReductionApply(sr));
   }
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscSplitReductionEnd(PetscSplitReduction *sr)
-{
+PetscErrorCode PetscSplitReductionEnd(PetscSplitReduction *sr) {
   PetscFunctionBegin;
   switch (sr->state) {
-  case STATE_BEGIN: /* We are doing synchronous communication and this is the first call to VecXxxEnd() so do the communication */
-    PetscCall(PetscSplitReductionApply(sr));
-    break;
+  case STATE_BEGIN: /* We are doing synchronous communication and this is the first call to VecXxxEnd() so do the communication */ PetscCall(PetscSplitReductionApply(sr)); break;
   case STATE_PENDING:
     /* We are doing asynchronous-mode communication and this is the first VecXxxEnd() so wait for comm to complete */
-    PetscCall(PetscLogEventBegin(VEC_ReduceEnd,0,0,0,0));
-    if (sr->request != MPI_REQUEST_NULL) {
-      PetscCallMPI(MPI_Wait(&sr->request,MPI_STATUS_IGNORE));
-    }
+    PetscCall(PetscLogEventBegin(VEC_ReduceEnd, 0, 0, 0, 0));
+    if (sr->request != MPI_REQUEST_NULL) { PetscCallMPI(MPI_Wait(&sr->request, MPI_STATUS_IGNORE)); }
     sr->state = STATE_END;
     if (sr->mix) {
       PetscInt i;
-      for (i=0; i<sr->numopsbegin; i++) { sr->gvalues[i] = sr->gvalues_mix[i].v; }
+      for (i = 0; i < sr->numopsbegin; i++) { sr->gvalues[i] = sr->gvalues_mix[i].v; }
       sr->mix = PETSC_FALSE;
     }
-    PetscCall(PetscLogEventEnd(VEC_ReduceEnd,0,0,0,0));
+    PetscCall(PetscLogEventEnd(VEC_ReduceEnd, 0, 0, 0, 0));
     break;
-  default: break;            /* everything is already done */
+  default: break; /* everything is already done */
   }
   PetscFunctionReturn(0);
 }
@@ -186,76 +183,79 @@ PetscErrorCode PetscSplitReductionEnd(PetscSplitReduction *sr)
 /*
    PetscSplitReductionApply - Actually do the communication required for a split phase reduction
 */
-static PetscErrorCode PetscSplitReductionApply(PetscSplitReduction *sr)
-{
-  PetscInt       i,numops = sr->numopsbegin,*reducetype = sr->reducetype;
-  PetscScalar    *lvalues = sr->lvalues,*gvalues = sr->gvalues;
-  PetscInt       sum_flg  = 0,max_flg = 0, min_flg = 0;
-  MPI_Comm       comm     = sr->comm;
-  PetscMPIInt    size,cmul = sizeof(PetscScalar)/sizeof(PetscReal);
+static PetscErrorCode PetscSplitReductionApply(PetscSplitReduction *sr) {
+  PetscInt     i, numops = sr->numopsbegin, *reducetype = sr->reducetype;
+  PetscScalar *lvalues = sr->lvalues, *gvalues = sr->gvalues;
+  PetscInt     sum_flg = 0, max_flg = 0, min_flg = 0;
+  MPI_Comm     comm = sr->comm;
+  PetscMPIInt  size, cmul = sizeof(PetscScalar) / sizeof(PetscReal);
 
   PetscFunctionBegin;
-  PetscCheck(sr->numopsend <= 0,PETSC_COMM_SELF,PETSC_ERR_ORDER,"Cannot call this after VecxxxEnd() has been called");
-  PetscCall(PetscLogEventBegin(VEC_ReduceCommunication,0,0,0,0));
-  PetscCallMPI(MPI_Comm_size(sr->comm,&size));
+  PetscCheck(sr->numopsend <= 0, PETSC_COMM_SELF, PETSC_ERR_ORDER, "Cannot call this after VecxxxEnd() has been called");
+  PetscCall(PetscLogEventBegin(VEC_ReduceCommunication, 0, 0, 0, 0));
+  PetscCallMPI(MPI_Comm_size(sr->comm, &size));
   if (size == 1) {
-    PetscCall(PetscArraycpy(gvalues,lvalues,numops));
+    PetscCall(PetscArraycpy(gvalues, lvalues, numops));
   } else {
     /* determine if all reductions are sum, max, or min */
-    for (i=0; i<numops; i++) {
-      if      (reducetype[i] == PETSC_SR_REDUCE_MAX) max_flg = 1;
+    for (i = 0; i < numops; i++) {
+      if (reducetype[i] == PETSC_SR_REDUCE_MAX) max_flg = 1;
       else if (reducetype[i] == PETSC_SR_REDUCE_SUM) sum_flg = 1;
       else if (reducetype[i] == PETSC_SR_REDUCE_MIN) min_flg = 1;
-      else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in PetscSplitReduction() data structure, probably memory corruption");
+      else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Error in PetscSplitReduction() data structure, probably memory corruption");
     }
     if (sum_flg + max_flg + min_flg > 1) {
-      PetscCheck(!sr->mix,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in PetscSplitReduction() data structure, probably memory corruption");
-      for (i=0; i<numops; i++) { sr->lvalues_mix[i].v = lvalues[i]; sr->lvalues_mix[i].i = reducetype[i]; }
-      PetscCall(MPIU_Allreduce(sr->lvalues_mix,sr->gvalues_mix,numops,MPIU_SCALAR_INT,PetscSplitReduction_Op,comm));
-      for (i=0; i<numops; i++) { sr->gvalues[i] = sr->gvalues_mix[i].v; }
-    } else if (max_flg) {     /* Compute max of real and imag parts separately, presumably only the real part is used */
-      PetscCall(MPIU_Allreduce((PetscReal*)lvalues,(PetscReal*)gvalues,cmul*numops,MPIU_REAL,MPIU_MAX,comm));
+      PetscCheck(!sr->mix, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Error in PetscSplitReduction() data structure, probably memory corruption");
+      for (i = 0; i < numops; i++) {
+        sr->lvalues_mix[i].v = lvalues[i];
+        sr->lvalues_mix[i].i = reducetype[i];
+      }
+      PetscCall(MPIU_Allreduce(sr->lvalues_mix, sr->gvalues_mix, numops, MPIU_SCALAR_INT, PetscSplitReduction_Op, comm));
+      for (i = 0; i < numops; i++) { sr->gvalues[i] = sr->gvalues_mix[i].v; }
+    } else if (max_flg) { /* Compute max of real and imag parts separately, presumably only the real part is used */
+      PetscCall(MPIU_Allreduce((PetscReal *)lvalues, (PetscReal *)gvalues, cmul * numops, MPIU_REAL, MPIU_MAX, comm));
     } else if (min_flg) {
-      PetscCall(MPIU_Allreduce((PetscReal*)lvalues,(PetscReal*)gvalues,cmul*numops,MPIU_REAL,MPIU_MIN,comm));
+      PetscCall(MPIU_Allreduce((PetscReal *)lvalues, (PetscReal *)gvalues, cmul * numops, MPIU_REAL, MPIU_MIN, comm));
     } else {
-      PetscCall(MPIU_Allreduce(lvalues,gvalues,numops,MPIU_SCALAR,MPIU_SUM,comm));
+      PetscCall(MPIU_Allreduce(lvalues, gvalues, numops, MPIU_SCALAR, MPIU_SUM, comm));
     }
   }
   sr->state     = STATE_END;
   sr->numopsend = 0;
-  PetscCall(PetscLogEventEnd(VEC_ReduceCommunication,0,0,0,0));
+  PetscCall(PetscLogEventEnd(VEC_ReduceCommunication, 0, 0, 0, 0));
   PetscFunctionReturn(0);
 }
 
 /*
    PetscSplitReductionExtend - Double the amount of space (slots) allocated for a split reduction object.
 */
-PetscErrorCode  PetscSplitReductionExtend(PetscSplitReduction *sr)
-{
-  struct PetscScalarInt { PetscScalar v; PetscInt i; };
-  PetscInt              maxops   = sr->maxops,*reducetype = sr->reducetype;
-  PetscScalar           *lvalues = sr->lvalues,*gvalues = sr->gvalues;
-  struct PetscScalarInt *lvalues_mix = (struct PetscScalarInt*)sr->lvalues_mix;
-  struct PetscScalarInt *gvalues_mix = (struct PetscScalarInt*)sr->gvalues_mix;
-  void                  **invecs = sr->invecs;
+PetscErrorCode PetscSplitReductionExtend(PetscSplitReduction *sr) {
+  struct PetscScalarInt {
+    PetscScalar v;
+    PetscInt    i;
+  };
+  PetscInt               maxops = sr->maxops, *reducetype = sr->reducetype;
+  PetscScalar           *lvalues = sr->lvalues, *gvalues = sr->gvalues;
+  struct PetscScalarInt *lvalues_mix = (struct PetscScalarInt *)sr->lvalues_mix;
+  struct PetscScalarInt *gvalues_mix = (struct PetscScalarInt *)sr->gvalues_mix;
+  void                 **invecs      = sr->invecs;
 
   PetscFunctionBegin;
-  sr->maxops = 2*maxops;
-  PetscCall(PetscMalloc6(2*maxops,&sr->lvalues,2*maxops,&sr->gvalues,2*maxops,&sr->reducetype,2*maxops,&sr->invecs,2*maxops,&sr->lvalues_mix,2*maxops,&sr->gvalues_mix));
-  PetscCall(PetscArraycpy(sr->lvalues,lvalues,maxops));
-  PetscCall(PetscArraycpy(sr->gvalues,gvalues,maxops));
-  PetscCall(PetscArraycpy(sr->reducetype,reducetype,maxops));
-  PetscCall(PetscArraycpy(sr->invecs,invecs,maxops));
-  PetscCall(PetscArraycpy(sr->lvalues_mix,lvalues_mix,maxops));
-  PetscCall(PetscArraycpy(sr->gvalues_mix,gvalues_mix,maxops));
-  PetscCall(PetscFree6(lvalues,gvalues,reducetype,invecs,lvalues_mix,gvalues_mix));
+  sr->maxops = 2 * maxops;
+  PetscCall(PetscMalloc6(2 * maxops, &sr->lvalues, 2 * maxops, &sr->gvalues, 2 * maxops, &sr->reducetype, 2 * maxops, &sr->invecs, 2 * maxops, &sr->lvalues_mix, 2 * maxops, &sr->gvalues_mix));
+  PetscCall(PetscArraycpy(sr->lvalues, lvalues, maxops));
+  PetscCall(PetscArraycpy(sr->gvalues, gvalues, maxops));
+  PetscCall(PetscArraycpy(sr->reducetype, reducetype, maxops));
+  PetscCall(PetscArraycpy(sr->invecs, invecs, maxops));
+  PetscCall(PetscArraycpy(sr->lvalues_mix, lvalues_mix, maxops));
+  PetscCall(PetscArraycpy(sr->gvalues_mix, gvalues_mix, maxops));
+  PetscCall(PetscFree6(lvalues, gvalues, reducetype, invecs, lvalues_mix, gvalues_mix));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode  PetscSplitReductionDestroy(PetscSplitReduction *sr)
-{
+PetscErrorCode PetscSplitReductionDestroy(PetscSplitReduction *sr) {
   PetscFunctionBegin;
-  PetscCall(PetscFree6(sr->lvalues,sr->gvalues,sr->reducetype,sr->invecs,sr->lvalues_mix,sr->gvalues_mix));
+  PetscCall(PetscFree6(sr->lvalues, sr->gvalues, sr->reducetype, sr->invecs, sr->lvalues_mix, sr->gvalues_mix));
   PetscCall(PetscFree(sr));
   PetscFunctionReturn(0);
 }
@@ -269,11 +269,10 @@ PetscMPIInt Petsc_Reduction_keyval = MPI_KEYVAL_INVALID;
   The binding for the first argument changed from MPI 1.0 to 1.1; in 1.0
   it was MPI_Comm *comm.
 */
-PETSC_EXTERN int MPIAPI Petsc_DelReduction(MPI_Comm comm,int keyval,void* attr_val,void* extra_state)
-{
+PETSC_EXTERN int MPIAPI Petsc_DelReduction(MPI_Comm comm, int keyval, void *attr_val, void *extra_state) {
   PetscFunctionBegin;
-  PetscCallMPI(PetscInfo(0,"Deleting reduction data in an MPI_Comm %ld\n",(long)comm));
-  PetscCallMPI(PetscSplitReductionDestroy((PetscSplitReduction*)attr_val));
+  PetscCallMPI(PetscInfo(0, "Deleting reduction data in an MPI_Comm %ld\n", (long)comm));
+  PetscCallMPI(PetscSplitReductionDestroy((PetscSplitReduction *)attr_val));
   PetscFunctionReturn(0);
 }
 
@@ -282,9 +281,8 @@ PETSC_EXTERN int MPIAPI Petsc_DelReduction(MPI_Comm comm,int keyval,void* attr_v
         PETSc vector, creates if it does not exit.
 
 */
-PetscErrorCode PetscSplitReductionGet(MPI_Comm comm,PetscSplitReduction **sr)
-{
-  PetscMPIInt    flag;
+PetscErrorCode PetscSplitReductionGet(MPI_Comm comm, PetscSplitReduction **sr) {
+  PetscMPIInt flag;
 
   PetscFunctionBegin;
   if (Petsc_Reduction_keyval == MPI_KEYVAL_INVALID) {
@@ -295,13 +293,13 @@ PetscErrorCode PetscSplitReductionGet(MPI_Comm comm,PetscSplitReduction **sr)
        the older version you will get a warning message about the next line;
        it is only a warning message and should do no harm.
     */
-    PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN,Petsc_DelReduction,&Petsc_Reduction_keyval,NULL));
+    PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, Petsc_DelReduction, &Petsc_Reduction_keyval, NULL));
   }
-  PetscCallMPI(MPI_Comm_get_attr(comm,Petsc_Reduction_keyval,(void**)sr,&flag));
-  if (!flag) {  /* doesn't exist yet so create it and put it in */
-    PetscCall(PetscSplitReductionCreate(comm,sr));
-    PetscCallMPI(MPI_Comm_set_attr(comm,Petsc_Reduction_keyval,*sr));
-    PetscCall(PetscInfo(0,"Putting reduction data in an MPI_Comm %ld\n",(long)comm));
+  PetscCallMPI(MPI_Comm_get_attr(comm, Petsc_Reduction_keyval, (void **)sr, &flag));
+  if (!flag) { /* doesn't exist yet so create it and put it in */
+    PetscCall(PetscSplitReductionCreate(comm, sr));
+    PetscCallMPI(MPI_Comm_set_attr(comm, Petsc_Reduction_keyval, *sr));
+    PetscCall(PetscInfo(0, "Putting reduction data in an MPI_Comm %ld\n", (long)comm));
   }
   PetscFunctionReturn(0);
 }
@@ -324,26 +322,22 @@ PetscErrorCode PetscSplitReductionGet(MPI_Comm comm,PetscSplitReduction **sr)
 seealso: VecDotEnd(), VecNormBegin(), VecNormEnd(), VecNorm(), VecDot(), VecMDot(),
          VecTDotBegin(), VecTDotEnd(), PetscCommSplitReductionBegin()
 @*/
-PetscErrorCode  VecDotBegin(Vec x,Vec y,PetscScalar *result)
-{
+PetscErrorCode VecDotBegin(Vec x, Vec y, PetscScalar *result) {
   PetscSplitReduction *sr;
-  MPI_Comm            comm;
+  MPI_Comm             comm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
-  PetscValidHeaderSpecific(y,VEC_CLASSID,2);
-  PetscCall(PetscObjectGetComm((PetscObject)x,&comm));
-  PetscCall(PetscSplitReductionGet(comm,&sr));
-  PetscCheck(sr->state == STATE_BEGIN,PETSC_COMM_SELF,PETSC_ERR_ORDER,"Called before all VecxxxEnd() called");
-  if (sr->numopsbegin >= sr->maxops) {
-    PetscCall(PetscSplitReductionExtend(sr));
-  }
+  PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
+  PetscValidHeaderSpecific(y, VEC_CLASSID, 2);
+  PetscCall(PetscObjectGetComm((PetscObject)x, &comm));
+  PetscCall(PetscSplitReductionGet(comm, &sr));
+  PetscCheck(sr->state == STATE_BEGIN, PETSC_COMM_SELF, PETSC_ERR_ORDER, "Called before all VecxxxEnd() called");
+  if (sr->numopsbegin >= sr->maxops) { PetscCall(PetscSplitReductionExtend(sr)); }
   sr->reducetype[sr->numopsbegin] = PETSC_SR_REDUCE_SUM;
-  sr->invecs[sr->numopsbegin]     = (void*)x;
-  PetscCheck(x->ops->dot_local,PETSC_COMM_SELF,PETSC_ERR_SUP,"Vector does not support local dots");
-  PetscCall(PetscLogEventBegin(VEC_ReduceArithmetic,0,0,0,0));
-  PetscCall((*x->ops->dot_local)(x,y,sr->lvalues+sr->numopsbegin++));
-  PetscCall(PetscLogEventEnd(VEC_ReduceArithmetic,0,0,0,0));
+  sr->invecs[sr->numopsbegin]     = (void *)x;
+  PetscCall(PetscLogEventBegin(VEC_ReduceArithmetic, 0, 0, 0, 0));
+  PetscCall((*x->ops->dot_local)(x, y, sr->lvalues + sr->numopsbegin++));
+  PetscCall(PetscLogEventEnd(VEC_ReduceArithmetic, 0, 0, 0, 0));
   PetscFunctionReturn(0);
 }
 
@@ -364,19 +358,18 @@ PetscErrorCode  VecDotBegin(Vec x,Vec y,PetscScalar *result)
           `VecTDotBegin()`, `VecTDotEnd()`, `PetscCommSplitReductionBegin()`
 
 @*/
-PetscErrorCode  VecDotEnd(Vec x,Vec y,PetscScalar *result)
-{
+PetscErrorCode VecDotEnd(Vec x, Vec y, PetscScalar *result) {
   PetscSplitReduction *sr;
-  MPI_Comm            comm;
+  MPI_Comm             comm;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectGetComm((PetscObject)x,&comm));
-  PetscCall(PetscSplitReductionGet(comm,&sr));
+  PetscCall(PetscObjectGetComm((PetscObject)x, &comm));
+  PetscCall(PetscSplitReductionGet(comm, &sr));
   PetscCall(PetscSplitReductionEnd(sr));
 
-  PetscCheck(sr->numopsend < sr->numopsbegin,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Called VecxxxEnd() more times then VecxxxBegin()");
-  PetscCheck(!x || (void*)x == sr->invecs[sr->numopsend],PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Called VecxxxEnd() in a different order or with a different vector than VecxxxBegin()");
-  PetscCheck(sr->reducetype[sr->numopsend] == PETSC_SR_REDUCE_SUM,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Called VecDotEnd() on a reduction started with VecNormBegin()");
+  PetscCheck(sr->numopsend < sr->numopsbegin, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Called VecxxxEnd() more times then VecxxxBegin()");
+  PetscCheck(!x || (void *)x == sr->invecs[sr->numopsend], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Called VecxxxEnd() in a different order or with a different vector than VecxxxBegin()");
+  PetscCheck(sr->reducetype[sr->numopsend] == PETSC_SR_REDUCE_SUM, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Called VecDotEnd() on a reduction started with VecNormBegin()");
   *result = sr->gvalues[sr->numopsend++];
 
   /*
@@ -408,24 +401,20 @@ PetscErrorCode  VecDotEnd(Vec x,Vec y,PetscScalar *result)
           `VecDotBegin()`, `VecDotEnd()`, `PetscCommSplitReductionBegin()`
 
 @*/
-PetscErrorCode  VecTDotBegin(Vec x,Vec y,PetscScalar *result)
-{
+PetscErrorCode VecTDotBegin(Vec x, Vec y, PetscScalar *result) {
   PetscSplitReduction *sr;
-  MPI_Comm            comm;
+  MPI_Comm             comm;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectGetComm((PetscObject)x,&comm));
-  PetscCall(PetscSplitReductionGet(comm,&sr));
-  PetscCheck(sr->state == STATE_BEGIN,PETSC_COMM_SELF,PETSC_ERR_ORDER,"Called before all VecxxxEnd() called");
-  if (sr->numopsbegin >= sr->maxops) {
-    PetscCall(PetscSplitReductionExtend(sr));
-  }
+  PetscCall(PetscObjectGetComm((PetscObject)x, &comm));
+  PetscCall(PetscSplitReductionGet(comm, &sr));
+  PetscCheck(sr->state == STATE_BEGIN, PETSC_COMM_SELF, PETSC_ERR_ORDER, "Called before all VecxxxEnd() called");
+  if (sr->numopsbegin >= sr->maxops) { PetscCall(PetscSplitReductionExtend(sr)); }
   sr->reducetype[sr->numopsbegin] = PETSC_SR_REDUCE_SUM;
-  sr->invecs[sr->numopsbegin]     = (void*)x;
-  PetscCheck(x->ops->tdot_local,PETSC_COMM_SELF,PETSC_ERR_SUP,"Vector does not support local dots");
-  PetscCall(PetscLogEventBegin(VEC_ReduceArithmetic,0,0,0,0));
-  PetscCall((*x->ops->tdot_local)(x,y,sr->lvalues+sr->numopsbegin++));
-  PetscCall(PetscLogEventEnd(VEC_ReduceArithmetic,0,0,0,0));
+  sr->invecs[sr->numopsbegin]     = (void *)x;
+  PetscCall(PetscLogEventBegin(VEC_ReduceArithmetic, 0, 0, 0, 0));
+  PetscCall((*x->ops->tdot_local)(x, y, sr->lvalues + sr->numopsbegin++));
+  PetscCall(PetscLogEventEnd(VEC_ReduceArithmetic, 0, 0, 0, 0));
   PetscFunctionReturn(0);
 }
 
@@ -445,13 +434,12 @@ PetscErrorCode  VecTDotBegin(Vec x,Vec y,PetscScalar *result)
 seealso: VecTDotBegin(), VecNormBegin(), VecNormEnd(), VecNorm(), VecDot(), VecMDot(),
          VecDotBegin(), VecDotEnd()
 @*/
-PetscErrorCode  VecTDotEnd(Vec x,Vec y,PetscScalar *result)
-{
+PetscErrorCode VecTDotEnd(Vec x, Vec y, PetscScalar *result) {
   PetscFunctionBegin;
   /*
       TDotEnd() is the same as DotEnd() so reuse the code
   */
-  PetscCall(VecDotEnd(x,y,result));
+  PetscCall(VecDotEnd(x, y, result));
   PetscFunctionReturn(0);
 }
 
@@ -473,30 +461,26 @@ PetscErrorCode  VecTDotEnd(Vec x,Vec y,PetscScalar *result)
 .seealso: `VecNormEnd()`, `VecNorm()`, `VecDot()`, `VecMDot()`, `VecDotBegin()`, `VecDotEnd()`, `PetscCommSplitReductionBegin()`
 
 @*/
-PetscErrorCode  VecNormBegin(Vec x,NormType ntype,PetscReal *result)
-{
+PetscErrorCode VecNormBegin(Vec x, NormType ntype, PetscReal *result) {
   PetscSplitReduction *sr;
-  PetscReal           lresult[2];
-  MPI_Comm            comm;
+  PetscReal            lresult[2];
+  MPI_Comm             comm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
-  PetscCall(PetscObjectGetComm((PetscObject)x,&comm));
-  PetscCall(PetscSplitReductionGet(comm,&sr));
-  PetscCheck(sr->state == STATE_BEGIN,PETSC_COMM_SELF,PETSC_ERR_ORDER,"Called before all VecxxxEnd() called");
-  if (sr->numopsbegin >= sr->maxops || (sr->numopsbegin == sr->maxops-1 && ntype == NORM_1_AND_2)) {
-    PetscCall(PetscSplitReductionExtend(sr));
-  }
+  PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
+  PetscCall(PetscObjectGetComm((PetscObject)x, &comm));
+  PetscCall(PetscSplitReductionGet(comm, &sr));
+  PetscCheck(sr->state == STATE_BEGIN, PETSC_COMM_SELF, PETSC_ERR_ORDER, "Called before all VecxxxEnd() called");
+  if (sr->numopsbegin >= sr->maxops || (sr->numopsbegin == sr->maxops - 1 && ntype == NORM_1_AND_2)) { PetscCall(PetscSplitReductionExtend(sr)); }
 
-  sr->invecs[sr->numopsbegin] = (void*)x;
-  PetscCheck(x->ops->norm_local,PETSC_COMM_SELF,PETSC_ERR_SUP,"Vector does not support local norms");
-  PetscCall(PetscLogEventBegin(VEC_ReduceArithmetic,0,0,0,0));
-  PetscCall((*x->ops->norm_local)(x,ntype,lresult));
-  PetscCall(PetscLogEventEnd(VEC_ReduceArithmetic,0,0,0,0));
-  if (ntype == NORM_2)         lresult[0]                = lresult[0]*lresult[0];
-  if (ntype == NORM_1_AND_2)   lresult[1]                = lresult[1]*lresult[1];
+  sr->invecs[sr->numopsbegin] = (void *)x;
+  PetscCall(PetscLogEventBegin(VEC_ReduceArithmetic, 0, 0, 0, 0));
+  PetscUseTypeMethod(x, norm_local, ntype, lresult);
+  PetscCall(PetscLogEventEnd(VEC_ReduceArithmetic, 0, 0, 0, 0));
+  if (ntype == NORM_2) lresult[0] = lresult[0] * lresult[0];
+  if (ntype == NORM_1_AND_2) lresult[1] = lresult[1] * lresult[1];
   if (ntype == NORM_MAX) sr->reducetype[sr->numopsbegin] = PETSC_SR_REDUCE_MAX;
-  else                   sr->reducetype[sr->numopsbegin] = PETSC_SR_REDUCE_SUM;
+  else sr->reducetype[sr->numopsbegin] = PETSC_SR_REDUCE_SUM;
   sr->lvalues[sr->numopsbegin++] = lresult[0];
   if (ntype == NORM_1_AND_2) {
     sr->reducetype[sr->numopsbegin] = PETSC_SR_REDUCE_SUM;
@@ -523,20 +507,19 @@ PetscErrorCode  VecNormBegin(Vec x,NormType ntype,PetscReal *result)
 .seealso: `VecNormBegin()`, `VecNorm()`, `VecDot()`, `VecMDot()`, `VecDotBegin()`, `VecDotEnd()`, `PetscCommSplitReductionBegin()`
 
 @*/
-PetscErrorCode  VecNormEnd(Vec x,NormType ntype,PetscReal *result)
-{
+PetscErrorCode VecNormEnd(Vec x, NormType ntype, PetscReal *result) {
   PetscSplitReduction *sr;
-  MPI_Comm            comm;
+  MPI_Comm             comm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
-  PetscCall(PetscObjectGetComm((PetscObject)x,&comm));
-  PetscCall(PetscSplitReductionGet(comm,&sr));
+  PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
+  PetscCall(PetscObjectGetComm((PetscObject)x, &comm));
+  PetscCall(PetscSplitReductionGet(comm, &sr));
   PetscCall(PetscSplitReductionEnd(sr));
 
-  PetscCheck(sr->numopsend < sr->numopsbegin,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Called VecxxxEnd() more times then VecxxxBegin()");
-  PetscCheck((void*)x == sr->invecs[sr->numopsend],PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Called VecxxxEnd() in a different order or with a different vector than VecxxxBegin()");
-  PetscCheck(sr->reducetype[sr->numopsend] == PETSC_SR_REDUCE_MAX || ntype != NORM_MAX,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Called VecNormEnd(,NORM_MAX,) on a reduction started with VecDotBegin() or NORM_1 or NORM_2");
+  PetscCheck(sr->numopsend < sr->numopsbegin, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Called VecxxxEnd() more times then VecxxxBegin()");
+  PetscCheck((void *)x == sr->invecs[sr->numopsend], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Called VecxxxEnd() in a different order or with a different vector than VecxxxBegin()");
+  PetscCheck(sr->reducetype[sr->numopsend] == PETSC_SR_REDUCE_MAX || ntype != NORM_MAX, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Called VecNormEnd(,NORM_MAX,) on a reduction started with VecDotBegin() or NORM_1 or NORM_2");
   result[0] = PetscRealPart(sr->gvalues[sr->numopsend++]);
 
   if (ntype == NORM_2) result[0] = PetscSqrtReal(result[0]);
@@ -544,9 +527,7 @@ PetscErrorCode  VecNormEnd(Vec x,NormType ntype,PetscReal *result)
     result[1] = PetscRealPart(sr->gvalues[sr->numopsend++]);
     result[1] = PetscSqrtReal(result[1]);
   }
-  if (ntype!=NORM_1_AND_2) {
-    PetscCall(PetscObjectComposedDataSetReal((PetscObject)x,NormIds[ntype],result[0]));
-  }
+  if (ntype != NORM_1_AND_2) { PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[ntype], result[0])); }
 
   if (sr->numopsend == sr->numopsbegin) {
     sr->state       = STATE_BEGIN;
@@ -582,27 +563,23 @@ PetscErrorCode  VecNormEnd(Vec x,NormType ntype,PetscReal *result)
 .seealso: `VecMDotEnd()`, `VecNormBegin()`, `VecNormEnd()`, `VecNorm()`, `VecDot()`, `VecMDot()`,
           `VecTDotBegin()`, `VecTDotEnd()`, `VecMTDotBegin()`, `VecMTDotEnd()`, `PetscCommSplitReductionBegin()`
 @*/
-PetscErrorCode  VecMDotBegin(Vec x,PetscInt nv,const Vec y[],PetscScalar result[])
-{
+PetscErrorCode VecMDotBegin(Vec x, PetscInt nv, const Vec y[], PetscScalar result[]) {
   PetscSplitReduction *sr;
-  MPI_Comm            comm;
-  int                 i;
+  MPI_Comm             comm;
+  int                  i;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectGetComm((PetscObject)x,&comm));
-  PetscCall(PetscSplitReductionGet(comm,&sr));
-  PetscCheck(sr->state == STATE_BEGIN,PETSC_COMM_SELF,PETSC_ERR_ORDER,"Called before all VecxxxEnd() called");
-  for (i=0; i<nv; i++) {
-    if (sr->numopsbegin+i >= sr->maxops) {
-      PetscCall(PetscSplitReductionExtend(sr));
-    }
-    sr->reducetype[sr->numopsbegin+i] = PETSC_SR_REDUCE_SUM;
-    sr->invecs[sr->numopsbegin+i]     = (void*)x;
+  PetscCall(PetscObjectGetComm((PetscObject)x, &comm));
+  PetscCall(PetscSplitReductionGet(comm, &sr));
+  PetscCheck(sr->state == STATE_BEGIN, PETSC_COMM_SELF, PETSC_ERR_ORDER, "Called before all VecxxxEnd() called");
+  for (i = 0; i < nv; i++) {
+    if (sr->numopsbegin + i >= sr->maxops) { PetscCall(PetscSplitReductionExtend(sr)); }
+    sr->reducetype[sr->numopsbegin + i] = PETSC_SR_REDUCE_SUM;
+    sr->invecs[sr->numopsbegin + i]     = (void *)x;
   }
-  PetscCheck(x->ops->mdot_local,PETSC_COMM_SELF,PETSC_ERR_SUP,"Vector does not support local mdots");
-  PetscCall(PetscLogEventBegin(VEC_ReduceArithmetic,0,0,0,0));
-  PetscCall((*x->ops->mdot_local)(x,nv,y,sr->lvalues+sr->numopsbegin));
-  PetscCall(PetscLogEventEnd(VEC_ReduceArithmetic,0,0,0,0));
+  PetscCall(PetscLogEventBegin(VEC_ReduceArithmetic, 0, 0, 0, 0));
+  PetscCall((*x->ops->mdot_local)(x, nv, y, sr->lvalues + sr->numopsbegin));
+  PetscCall(PetscLogEventEnd(VEC_ReduceArithmetic, 0, 0, 0, 0));
   sr->numopsbegin += nv;
   PetscFunctionReturn(0);
 }
@@ -627,21 +604,20 @@ PetscErrorCode  VecMDotBegin(Vec x,PetscInt nv,const Vec y[],PetscScalar result[
           `VecTDotBegin()`, `VecTDotEnd()`, `VecMTDotBegin()`, `VecMTDotEnd()`, `PetscCommSplitReductionBegin()`
 
 @*/
-PetscErrorCode  VecMDotEnd(Vec x,PetscInt nv,const Vec y[],PetscScalar result[])
-{
+PetscErrorCode VecMDotEnd(Vec x, PetscInt nv, const Vec y[], PetscScalar result[]) {
   PetscSplitReduction *sr;
-  MPI_Comm            comm;
-  int                 i;
+  MPI_Comm             comm;
+  int                  i;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectGetComm((PetscObject)x,&comm));
-  PetscCall(PetscSplitReductionGet(comm,&sr));
+  PetscCall(PetscObjectGetComm((PetscObject)x, &comm));
+  PetscCall(PetscSplitReductionGet(comm, &sr));
   PetscCall(PetscSplitReductionEnd(sr));
 
-  PetscCheck(sr->numopsend < sr->numopsbegin,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Called VecxxxEnd() more times then VecxxxBegin()");
-  PetscCheck(!x || (void*)x == sr->invecs[sr->numopsend],PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Called VecxxxEnd() in a different order or with a different vector than VecxxxBegin()");
-  PetscCheck(sr->reducetype[sr->numopsend] == PETSC_SR_REDUCE_SUM,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Called VecDotEnd() on a reduction started with VecNormBegin()");
-  for (i=0;i<nv;i++) result[i] = sr->gvalues[sr->numopsend++];
+  PetscCheck(sr->numopsend < sr->numopsbegin, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Called VecxxxEnd() more times then VecxxxBegin()");
+  PetscCheck(!x || (void *)x == sr->invecs[sr->numopsend], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Called VecxxxEnd() in a different order or with a different vector than VecxxxBegin()");
+  PetscCheck(sr->reducetype[sr->numopsend] == PETSC_SR_REDUCE_SUM, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Called VecDotEnd() on a reduction started with VecNormBegin()");
+  for (i = 0; i < nv; i++) result[i] = sr->gvalues[sr->numopsend++];
 
   /*
      We are finished getting all the results so reset to no outstanding requests
@@ -672,27 +648,23 @@ PetscErrorCode  VecMDotEnd(Vec x,PetscInt nv,const Vec y[],PetscScalar result[])
           `VecDotBegin()`, `VecDotEnd()`, `VecMDotBegin()`, `VecMDotEnd()`, `PetscCommSplitReductionBegin()`
 
 @*/
-PetscErrorCode  VecMTDotBegin(Vec x,PetscInt nv,const Vec y[],PetscScalar result[])
-{
+PetscErrorCode VecMTDotBegin(Vec x, PetscInt nv, const Vec y[], PetscScalar result[]) {
   PetscSplitReduction *sr;
-  MPI_Comm            comm;
-  int                 i;
+  MPI_Comm             comm;
+  int                  i;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectGetComm((PetscObject)x,&comm));
-  PetscCall(PetscSplitReductionGet(comm,&sr));
-  PetscCheck(sr->state == STATE_BEGIN,PETSC_COMM_SELF,PETSC_ERR_ORDER,"Called before all VecxxxEnd() called");
-  for (i=0; i<nv; i++) {
-    if (sr->numopsbegin+i >= sr->maxops) {
-      PetscCall(PetscSplitReductionExtend(sr));
-    }
-    sr->reducetype[sr->numopsbegin+i] = PETSC_SR_REDUCE_SUM;
-    sr->invecs[sr->numopsbegin+i]     = (void*)x;
+  PetscCall(PetscObjectGetComm((PetscObject)x, &comm));
+  PetscCall(PetscSplitReductionGet(comm, &sr));
+  PetscCheck(sr->state == STATE_BEGIN, PETSC_COMM_SELF, PETSC_ERR_ORDER, "Called before all VecxxxEnd() called");
+  for (i = 0; i < nv; i++) {
+    if (sr->numopsbegin + i >= sr->maxops) { PetscCall(PetscSplitReductionExtend(sr)); }
+    sr->reducetype[sr->numopsbegin + i] = PETSC_SR_REDUCE_SUM;
+    sr->invecs[sr->numopsbegin + i]     = (void *)x;
   }
-  PetscCheck(x->ops->mtdot_local,PETSC_COMM_SELF,PETSC_ERR_SUP,"Vector does not support local mdots");
-  PetscCall(PetscLogEventBegin(VEC_ReduceArithmetic,0,0,0,0));
-  PetscCall((*x->ops->mtdot_local)(x,nv,y,sr->lvalues+sr->numopsbegin));
-  PetscCall(PetscLogEventEnd(VEC_ReduceArithmetic,0,0,0,0));
+  PetscCall(PetscLogEventBegin(VEC_ReduceArithmetic, 0, 0, 0, 0));
+  PetscCall((*x->ops->mtdot_local)(x, nv, y, sr->lvalues + sr->numopsbegin));
+  PetscCall(PetscLogEventEnd(VEC_ReduceArithmetic, 0, 0, 0, 0));
   sr->numopsbegin += nv;
   PetscFunctionReturn(0);
 }
@@ -716,12 +688,11 @@ PetscErrorCode  VecMTDotBegin(Vec x,PetscInt nv,const Vec y[],PetscScalar result
 .seealso: `VecMTDotBegin()`, `VecNormBegin()`, `VecNormEnd()`, `VecNorm()`, `VecDot()`, `VecMDot()`,
           `VecDotBegin()`, `VecDotEnd()`, `VecMDotBegin()`, `VecMDotEnd()`, `PetscCommSplitReductionBegin()`
 @*/
-PetscErrorCode  VecMTDotEnd(Vec x,PetscInt nv,const Vec y[],PetscScalar result[])
-{
+PetscErrorCode VecMTDotEnd(Vec x, PetscInt nv, const Vec y[], PetscScalar result[]) {
   PetscFunctionBegin;
   /*
       MTDotEnd() is the same as MDotEnd() so reuse the code
   */
-  PetscCall(VecMDotEnd(x,nv,y,result));
+  PetscCall(VecMDotEnd(x, nv, y, result));
   PetscFunctionReturn(0);
 }

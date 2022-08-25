@@ -16,10 +16,10 @@
 #if defined(PETSC_NEEDS_UTYPE_TYPEDEFS)
 /* Some systems have inconsistent include files that use but don't
    ensure that the following definitions are made */
-typedef unsigned char   u_char;
-typedef unsigned short  u_short;
-typedef unsigned int    u_int;
-typedef unsigned long   u_long;
+typedef unsigned char  u_char;
+typedef unsigned short u_short;
+typedef unsigned int   u_int;
+typedef unsigned long  u_long;
 #endif
 
 #include <errno.h>
@@ -60,8 +60,16 @@ typedef unsigned long   u_long;
 #include <../src/sys/classes/viewer/impls/socket/socket.h>
 #include <mex.h>
 
-#define PETSC_MEX_ERROR(a) {mexErrMsgTxt(a); return;}
-#define PETSC_MEX_ERRORQ(a) {mexErrMsgTxt(a); return -1;}
+#define PETSC_MEX_ERROR(a) \
+  { \
+    mexErrMsgTxt(a); \
+    return; \
+  }
+#define PETSC_MEX_ERRORQ(a) \
+  { \
+    mexErrMsgTxt(a); \
+    return -1; \
+  }
 
 /*-----------------------------------------------------------------*/
 /* The listenport variable is an ugly hack. If the user hits a         */
@@ -73,51 +81,49 @@ typedef unsigned long   u_long;
 static int listenport;
 /*-----------------------------------------------------------------*/
 extern int establish(u_short);
-int SOCKConnect_Private(int portnumber)
-{
-  struct sockaddr_in isa;
+int        SOCKConnect_Private(int portnumber) {
+         struct sockaddr_in isa;
 #if defined(PETSC_HAVE_ACCEPT_SIZE_T)
-  size_t             i;
+  size_t i;
 #else
-  int                i;
+  int i;
 #endif
-  int                t;
+  int t;
 
-/* open port*/
-  listenport = establish((u_short) portnumber);
+  /* open port*/
+  listenport = establish((u_short)portnumber);
   if (listenport == -1) PETSC_MEX_ERRORQ("RECEIVE: unable to establish port\n");
 
-/* wait for someone to try to connect */
+  /* wait for someone to try to connect */
   i = sizeof(struct sockaddr_in);
-  if ((t = accept(listenport,(struct sockaddr*)&isa,(socklen_t*)&i)) < 0) PETSC_MEX_ERRORQ("RECEIVE: error from accept\n");
+  if ((t = accept(listenport, (struct sockaddr *)&isa, (socklen_t *)&i)) < 0) PETSC_MEX_ERRORQ("RECEIVE: error from accept\n");
   close(listenport);
-  return(t);
+  return (t);
 }
 /*-----------------------------------------------------------------*/
 #define MAXHOSTNAME 100
-int establish(u_short portnum)
-{
-  char               myname[MAXHOSTNAME+1];
+int establish(u_short portnum) {
+  char               myname[MAXHOSTNAME + 1];
   int                s;
   struct sockaddr_in sa;
-  struct hostent     *hp;
+  struct hostent    *hp;
 #if defined(PETSC_HAVE_UNAME)
-  struct utsname     utname;
+  struct utsname utname;
 #elif defined(PETSC_HAVE_GETCOMPUTERNAME)
-  int                namelen=MAXHOSTNAME;
+  int namelen = MAXHOSTNAME;
 #endif
 
   /* Note we do not use gethostname since that is not POSIX */
 #if defined(PETSC_HAVE_GETCOMPUTERNAME)
-  GetComputerName((LPTSTR)myname,(LPDWORD)&namelen);
+  GetComputerName((LPTSTR)myname, (LPDWORD)&namelen);
 #elif defined(PETSC_HAVE_UNAME)
   uname(&utname);
-  strncpy(myname,utname.nodename,MAXHOSTNAME);
+  strncpy(myname, utname.nodename, MAXHOSTNAME);
 #endif
 #if defined(PETSC_HAVE_BZERO)
-  bzero(&sa,sizeof(struct sockaddr_in));
+  bzero(&sa, sizeof(struct sockaddr_in));
 #else
-  memset(&sa,0,sizeof(struct sockaddr_in));
+  memset(&sa, 0, sizeof(struct sockaddr_in));
 #endif
   hp = gethostbyname(myname);
   if (!hp) PETSC_MEX_ERRORQ("RECEIVE: error from gethostbyname\n");
@@ -125,16 +131,16 @@ int establish(u_short portnum)
   sa.sin_family = hp->h_addrtype;
   sa.sin_port   = htons(portnum);
 
-  if ((s = socket(AF_INET,SOCK_STREAM,0)) < 0) PETSC_MEX_ERRORQ("RECEIVE: error from socket\n");
+  if ((s = socket(AF_INET, SOCK_STREAM, 0)) < 0) PETSC_MEX_ERRORQ("RECEIVE: error from socket\n");
 
   {
-  int optval = 1; /* Turn on the option */
-  (void) setsockopt(s,SOL_SOCKET,SO_REUSEADDR,(char*)&optval,sizeof(optval));
+    int optval = 1; /* Turn on the option */
+    (void)setsockopt(s, SOL_SOCKET, SO_REUSEADDR, (char *)&optval, sizeof(optval));
   }
 
-  while (bind(s,(struct sockaddr*)&sa,sizeof(sa)) < 0) {
+  while (bind(s, (struct sockaddr *)&sa, sizeof(sa)) < 0) {
 #if defined(PETSC_HAVE_WSAGETLASTERROR)
-    PetscErrorCode     ierr;
+    PetscErrorCode ierr;
     ierr = WSAGetLastError();
     if (ierr != WSAEADDRINUSE) {
 #else
@@ -142,20 +148,19 @@ int establish(u_short portnum)
 #endif
       close(s);
       PETSC_MEX_ERRORQ("RECEIVE: error from bind\n");
-      return(-1);
+      return (-1);
     }
     close(listenport);
   }
-  listen(s,0);
-  return(s);
+  listen(s, 0);
+  return (s);
 }
 
 /*-----------------------------------------------------------------*/
 /*                                                                 */
 /*-----------------------------------------------------------------*/
-PETSC_EXTERN void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
-{
-  int t,portnumber;
+PETSC_EXTERN void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
+  int t, portnumber;
 
   /* check output parameters */
   if (nlhs != 1) PETSC_MEX_ERROR("Open requires one output argument.");
@@ -169,16 +174,15 @@ PETSC_EXTERN void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *p
   } else portnumber = (int)*mxGetPr(prhs[0]);
 
   /* open connection */
-  t = SOCKConnect_Private(portnumber); if (t == -1) PETSC_MEX_ERROR("opening socket");
+  t = SOCKConnect_Private(portnumber);
+  if (t == -1) PETSC_MEX_ERROR("opening socket");
 
-  plhs[0] = mxCreateDoubleMatrix(1,1,mxREAL);
+  plhs[0] = mxCreateDoubleMatrix(1, 1, mxREAL);
 
   *mxGetPr(plhs[0]) = t;
   return;
 }
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
   return 0;
 }
-

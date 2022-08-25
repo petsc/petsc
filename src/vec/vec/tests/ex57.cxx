@@ -3,31 +3,30 @@
 #include <viennacl/vector.hpp>
 typedef viennacl::vector<PetscScalar> ViennaclVector;
 
-int main(int argc,char *argv[])
-{
-  Vec            x,y;
-  PetscInt       n = 5;
+int main(int argc, char *argv[]) {
+  Vec             x, y;
+  PetscInt        n = 5;
   ViennaclVector *x_vcl;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&argv,(char*)0,NULL));
-  PetscCall(VecCreate(PETSC_COMM_WORLD,&x));
-  PetscCall(VecSetSizes(x,n,PETSC_DECIDE));
-  PetscCall(VecSetType(x,VECVIENNACL));
-  PetscCall(VecSet(x,42.0));
+  PetscCall(PetscInitialize(&argc, &argv, (char *)0, NULL));
+  PetscCall(VecCreate(PETSC_COMM_WORLD, &x));
+  PetscCall(VecSetSizes(x, n, PETSC_DECIDE));
+  PetscCall(VecSetType(x, VECVIENNACL));
+  PetscCall(VecSet(x, 42.0));
 
-  PetscCall(VecViennaCLGetArray(x,&x_vcl));
+  PetscCall(VecViennaCLGetArray(x, &x_vcl));
 
-  PetscCall(VecCreateSeqViennaCLWithArray(PETSC_COMM_WORLD,1,n,(const ViennaclVector *)x_vcl,&y));
+  PetscCall(VecCreateSeqViennaCLWithArray(PETSC_COMM_WORLD, 1, n, (const ViennaclVector *)x_vcl, &y));
 
   // Operated on 'y', but 'x' would also be changed since both
   // 'x' and 'y' share the same viennacl vector.
-  PetscCall(VecScale(y,2.0));
+  PetscCall(VecScale(y, 2.0));
 
-  PetscCall(VecViennaCLRestoreArray(x,&x_vcl));
+  PetscCall(VecViennaCLRestoreArray(x, &x_vcl));
 
   // Expected output: 'x' is a 5-vector with all entries as '84'.
-  PetscCall(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecView(x, PETSC_VIEWER_STDOUT_WORLD));
   PetscCall(VecDestroy(&y));
   PetscCall(VecDestroy(&x));
 

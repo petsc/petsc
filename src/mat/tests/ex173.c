@@ -10,24 +10,23 @@ static char help[] = "Test MatrixMarket outputting.\n\n";
 
 #include <petscmat.h>
 
-int main(int argc,char **args)
-{
-  Mat            A;
-  PetscViewer    fd;                        /* viewer */
-  char           file[PETSC_MAX_PATH_LEN];  /* input file name */
-  PetscBool      flg;
+int main(int argc, char **args) {
+  Mat         A;
+  PetscViewer fd;                       /* viewer */
+  char        file[PETSC_MAX_PATH_LEN]; /* input file name */
+  PetscBool   flg;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
-  PetscCall(PetscOptionsGetString(NULL,NULL,"-f0",file,sizeof(file),&flg));
-  PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -f0 option");
-  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd));
-  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
-  PetscCall(MatLoad(A,fd));
+  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscOptionsGetString(NULL, NULL, "-f0", file, sizeof(file), &flg));
+  PetscCheck(flg, PETSC_COMM_WORLD, PETSC_ERR_USER, "Must indicate binary file with the -f0 option");
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, file, FILE_MODE_READ, &fd));
+  PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
+  PetscCall(MatLoad(A, fd));
   PetscCall(PetscViewerDestroy(&fd));
 
-  PetscCall(PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_MATRIXMARKET));
-  PetscCall(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD, PETSC_VIEWER_ASCII_MATRIXMARKET));
+  PetscCall(MatView(A, PETSC_VIEWER_STDOUT_WORLD));
   PetscCall(PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD));
   PetscCall(MatDestroy(&A));
   PetscCall(PetscFinalize());

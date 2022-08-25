@@ -3,19 +3,18 @@ static char help[] = "Tests PetscSynchronizedPrintf() and PetscSynchronizedFPrin
 
 #include <petscsys.h>
 
-int main(int argc,char **argv)
-{
-  PetscMPIInt    rank;
+int main(int argc, char **argv) {
+  PetscMPIInt rank;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
-  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
 
-  PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"Greetings from %d\n",rank));
-  PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
+  PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "Greetings from %d\n", rank));
+  PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD, PETSC_STDOUT));
 
-  PetscCall(PetscSynchronizedFPrintf(PETSC_COMM_WORLD,PETSC_STDOUT,"Greetings again from %d\n",rank));
-  PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
+  PetscCall(PetscSynchronizedFPrintf(PETSC_COMM_WORLD, PETSC_STDOUT, "Greetings again from %d\n", rank));
+  PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD, PETSC_STDOUT));
 
   PetscCall(PetscFinalize());
   return 0;

@@ -8,8 +8,8 @@
 
 typedef struct {
   PC_Factor hdr;
-  IS        row,col;                 /* row and column permutations for reordering */
-  void      *implctx;                 /* private implementation context */
+  IS        row, col; /* row and column permutations for reordering */
+  void     *implctx;  /* private implementation context */
   PetscBool nonzerosalongdiagonal;
   PetscReal nonzerosalongdiagonaltol;
 } PC_ILU;

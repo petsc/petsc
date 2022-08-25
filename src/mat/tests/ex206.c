@@ -1,32 +1,31 @@
 static char help[] = "Reads binary matrix - twice\n";
 
 #include <petscmat.h>
-int main(int argc,char **args)
-{
-  Mat               A;
-  PetscViewer       fd;                        /* viewer */
-  char              file[PETSC_MAX_PATH_LEN];  /* input file name */
-  PetscBool         flg;
+int main(int argc, char **args) {
+  Mat         A;
+  PetscViewer fd;                       /* viewer */
+  char        file[PETSC_MAX_PATH_LEN]; /* input file name */
+  PetscBool   flg;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  PetscInitialize(&argc, &args, (char *)0, help);
 
-  PetscCall(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg));
-  PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -f option");
+  PetscCall(PetscOptionsGetString(NULL, NULL, "-f", file, sizeof(file), &flg));
+  PetscCheck(flg, PETSC_COMM_WORLD, PETSC_ERR_USER, "Must indicate binary file with the -f option");
 
-  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
   PetscCall(MatSetFromOptions(A));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "First MatLoad! \n"));
-  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd));
-  PetscCall(MatLoad(A,fd));
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, file, FILE_MODE_READ, &fd));
+  PetscCall(MatLoad(A, fd));
   PetscCall(PetscViewerDestroy(&fd));
-  PetscCall(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(MatView(A, PETSC_VIEWER_STDOUT_WORLD));
 
-  PetscCall(PetscOptionsGetString(NULL,NULL,"-f2",file,sizeof(file),&flg));
+  PetscCall(PetscOptionsGetString(NULL, NULL, "-f2", file, sizeof(file), &flg));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Second MatLoad! \n"));
-  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd));
-  PetscCall(MatLoad(A,fd));
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, file, FILE_MODE_READ, &fd));
+  PetscCall(MatLoad(A, fd));
   PetscCall(PetscViewerDestroy(&fd));
-  PetscCall(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(MatView(A, PETSC_VIEWER_STDOUT_WORLD));
 
   PetscCall(MatDestroy(&A));
   PetscCall(PetscFinalize());

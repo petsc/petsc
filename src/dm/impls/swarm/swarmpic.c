@@ -1,5 +1,5 @@
 #define PETSCDM_DLL
-#include <petsc/private/dmswarmimpl.h>    /*I   "petscdmswarm.h"   I*/
+#include <petsc/private/dmswarmimpl.h> /*I   "petscdmswarm.h"   I*/
 #include <petscsf.h>
 #include <petscdmda.h>
 #include <petscdmplex.h>
@@ -13,9 +13,9 @@
 */
 #define DMSWARMPICVALID(dm) \
   do { \
-    DM_Swarm *_swarm = (DM_Swarm*)(dm)->data; \
-    PetscCheck(_swarm->swarm_type == DMSWARM_PIC,PetscObjectComm((PetscObject)(dm)),PETSC_ERR_SUP,"Valid only for DMSwarm-PIC. You must call DMSwarmSetType(dm,DMSWARM_PIC)"); \
-    PetscCheck(_swarm->dmcell,PetscObjectComm((PetscObject)(dm)),PETSC_ERR_SUP,"Valid only for DMSwarmPIC if the cell DM is set. You must call DMSwarmSetCellDM(dm,celldm)"); \
+    DM_Swarm *_swarm = (DM_Swarm *)(dm)->data; \
+    PetscCheck(_swarm->swarm_type == DMSWARM_PIC, PetscObjectComm((PetscObject)(dm)), PETSC_ERR_SUP, "Valid only for DMSwarm-PIC. You must call DMSwarmSetType(dm,DMSWARM_PIC)"); \
+    PetscCheck(_swarm->dmcell, PetscObjectComm((PetscObject)(dm)), PETSC_ERR_SUP, "Valid only for DMSwarmPIC if the cell DM is set. You must call DMSwarmSetCellDM(dm,celldm)"); \
   } while (0)
 
 /* Coordinate insertition/addition API */
@@ -40,42 +40,41 @@
 
 .seealso: `DMSwarmSetType()`, `DMSwarmSetCellDM()`, `DMSwarmType`
 @*/
-PETSC_EXTERN PetscErrorCode DMSwarmSetPointsUniformCoordinates(DM dm,PetscReal min[],PetscReal max[],PetscInt npoints[],InsertMode mode)
-{
-  PetscReal         gmin[] = {PETSC_MAX_REAL ,PETSC_MAX_REAL, PETSC_MAX_REAL};
-  PetscReal         gmax[] = {PETSC_MIN_REAL, PETSC_MIN_REAL, PETSC_MIN_REAL};
-  PetscInt          i,j,k,N,bs,b,n_estimate,n_curr,n_new_est,p,n_found;
-  Vec               coorlocal;
+PETSC_EXTERN PetscErrorCode DMSwarmSetPointsUniformCoordinates(DM dm, PetscReal min[], PetscReal max[], PetscInt npoints[], InsertMode mode) {
+  PetscReal          gmin[] = {PETSC_MAX_REAL, PETSC_MAX_REAL, PETSC_MAX_REAL};
+  PetscReal          gmax[] = {PETSC_MIN_REAL, PETSC_MIN_REAL, PETSC_MIN_REAL};
+  PetscInt           i, j, k, N, bs, b, n_estimate, n_curr, n_new_est, p, n_found;
+  Vec                coorlocal;
   const PetscScalar *_coor;
-  DM                celldm;
-  PetscReal         dx[3];
-  PetscInt          _npoints[] = { 0, 0, 1 };
-  Vec               pos;
+  DM                 celldm;
+  PetscReal          dx[3];
+  PetscInt           _npoints[] = {0, 0, 1};
+  Vec                pos;
   PetscScalar       *_pos;
   PetscReal         *swarm_coor;
   PetscInt          *swarm_cellid;
-  PetscSF           sfcell = NULL;
+  PetscSF            sfcell = NULL;
   const PetscSFNode *LA_sfcell;
 
   PetscFunctionBegin;
   DMSWARMPICVALID(dm);
-  PetscCall(DMSwarmGetCellDM(dm,&celldm));
-  PetscCall(DMGetCoordinatesLocal(celldm,&coorlocal));
-  PetscCall(VecGetSize(coorlocal,&N));
-  PetscCall(VecGetBlockSize(coorlocal,&bs));
+  PetscCall(DMSwarmGetCellDM(dm, &celldm));
+  PetscCall(DMGetCoordinatesLocal(celldm, &coorlocal));
+  PetscCall(VecGetSize(coorlocal, &N));
+  PetscCall(VecGetBlockSize(coorlocal, &bs));
   N = N / bs;
-  PetscCall(VecGetArrayRead(coorlocal,&_coor));
-  for (i=0; i<N; i++) {
-    for (b=0; b<bs; b++) {
-      gmin[b] = PetscMin(gmin[b],PetscRealPart(_coor[bs*i+b]));
-      gmax[b] = PetscMax(gmax[b],PetscRealPart(_coor[bs*i+b]));
+  PetscCall(VecGetArrayRead(coorlocal, &_coor));
+  for (i = 0; i < N; i++) {
+    for (b = 0; b < bs; b++) {
+      gmin[b] = PetscMin(gmin[b], PetscRealPart(_coor[bs * i + b]));
+      gmax[b] = PetscMax(gmax[b], PetscRealPart(_coor[bs * i + b]));
     }
   }
-  PetscCall(VecRestoreArrayRead(coorlocal,&_coor));
+  PetscCall(VecRestoreArrayRead(coorlocal, &_coor));
 
-  for (b=0; b<bs; b++) {
+  for (b = 0; b < bs; b++) {
     if (npoints[b] > 1) {
-      dx[b] = (max[b] - min[b])/((PetscReal)(npoints[b]-1));
+      dx[b] = (max[b] - min[b]) / ((PetscReal)(npoints[b] - 1));
     } else {
       dx[b] = 0.0;
     }
@@ -84,20 +83,18 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetPointsUniformCoordinates(DM dm,PetscReal m
 
   /* determine number of points living in the bounding box */
   n_estimate = 0;
-  for (k=0; k<_npoints[2]; k++) {
-    for (j=0; j<_npoints[1]; j++) {
-      for (i=0; i<_npoints[0]; i++) {
-        PetscReal xp[] = {0.0,0.0,0.0};
-        PetscInt ijk[3];
+  for (k = 0; k < _npoints[2]; k++) {
+    for (j = 0; j < _npoints[1]; j++) {
+      for (i = 0; i < _npoints[0]; i++) {
+        PetscReal xp[] = {0.0, 0.0, 0.0};
+        PetscInt  ijk[3];
         PetscBool point_inside = PETSC_TRUE;
 
         ijk[0] = i;
         ijk[1] = j;
         ijk[2] = k;
-        for (b=0; b<bs; b++) {
-          xp[b] = min[b] + ijk[b] * dx[b];
-        }
-        for (b=0; b<bs; b++) {
+        for (b = 0; b < bs; b++) { xp[b] = min[b] + ijk[b] * dx[b]; }
+        for (b = 0; b < bs; b++) {
           if (xp[b] < gmin[b]) { point_inside = PETSC_FALSE; }
           if (xp[b] > gmax[b]) { point_inside = PETSC_FALSE; }
         }
@@ -107,80 +104,72 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetPointsUniformCoordinates(DM dm,PetscReal m
   }
 
   /* create candidate list */
-  PetscCall(VecCreate(PETSC_COMM_SELF,&pos));
-  PetscCall(VecSetSizes(pos,bs*n_estimate,PETSC_DECIDE));
-  PetscCall(VecSetBlockSize(pos,bs));
+  PetscCall(VecCreate(PETSC_COMM_SELF, &pos));
+  PetscCall(VecSetSizes(pos, bs * n_estimate, PETSC_DECIDE));
+  PetscCall(VecSetBlockSize(pos, bs));
   PetscCall(VecSetFromOptions(pos));
-  PetscCall(VecGetArray(pos,&_pos));
+  PetscCall(VecGetArray(pos, &_pos));
 
   n_estimate = 0;
-  for (k=0; k<_npoints[2]; k++) {
-    for (j=0; j<_npoints[1]; j++) {
-      for (i=0; i<_npoints[0]; i++) {
-        PetscReal xp[] = {0.0,0.0,0.0};
+  for (k = 0; k < _npoints[2]; k++) {
+    for (j = 0; j < _npoints[1]; j++) {
+      for (i = 0; i < _npoints[0]; i++) {
+        PetscReal xp[] = {0.0, 0.0, 0.0};
         PetscInt  ijk[3];
         PetscBool point_inside = PETSC_TRUE;
 
         ijk[0] = i;
         ijk[1] = j;
         ijk[2] = k;
-        for (b=0; b<bs; b++) {
-          xp[b] = min[b] + ijk[b] * dx[b];
-        }
-        for (b=0; b<bs; b++) {
+        for (b = 0; b < bs; b++) { xp[b] = min[b] + ijk[b] * dx[b]; }
+        for (b = 0; b < bs; b++) {
           if (xp[b] < gmin[b]) { point_inside = PETSC_FALSE; }
           if (xp[b] > gmax[b]) { point_inside = PETSC_FALSE; }
         }
         if (point_inside) {
-          for (b=0; b<bs; b++) {
-            _pos[bs*n_estimate+b] = xp[b];
-          }
+          for (b = 0; b < bs; b++) { _pos[bs * n_estimate + b] = xp[b]; }
           n_estimate++;
         }
       }
     }
   }
-  PetscCall(VecRestoreArray(pos,&_pos));
+  PetscCall(VecRestoreArray(pos, &_pos));
 
   /* locate points */
-  PetscCall(DMLocatePoints(celldm,pos,DM_POINTLOCATION_NONE,&sfcell));
+  PetscCall(DMLocatePoints(celldm, pos, DM_POINTLOCATION_NONE, &sfcell));
   PetscCall(PetscSFGetGraph(sfcell, NULL, NULL, NULL, &LA_sfcell));
   n_found = 0;
-  for (p=0; p<n_estimate; p++) {
-    if (LA_sfcell[p].index != DMLOCATEPOINT_POINT_NOT_FOUND) {
-      n_found++;
-    }
+  for (p = 0; p < n_estimate; p++) {
+    if (LA_sfcell[p].index != DMLOCATEPOINT_POINT_NOT_FOUND) { n_found++; }
   }
 
   /* adjust size */
   if (mode == ADD_VALUES) {
-    PetscCall(DMSwarmGetLocalSize(dm,&n_curr));
+    PetscCall(DMSwarmGetLocalSize(dm, &n_curr));
     n_new_est = n_curr + n_found;
-    PetscCall(DMSwarmSetLocalSizes(dm,n_new_est,-1));
+    PetscCall(DMSwarmSetLocalSizes(dm, n_new_est, -1));
   }
   if (mode == INSERT_VALUES) {
-    n_curr = 0;
+    n_curr    = 0;
     n_new_est = n_found;
-    PetscCall(DMSwarmSetLocalSizes(dm,n_new_est,-1));
+    PetscCall(DMSwarmSetLocalSizes(dm, n_new_est, -1));
   }
 
   /* initialize new coords, cell owners, pid */
-  PetscCall(VecGetArrayRead(pos,&_coor));
-  PetscCall(DMSwarmGetField(dm,DMSwarmPICField_coor,NULL,NULL,(void**)&swarm_coor));
-  PetscCall(DMSwarmGetField(dm,DMSwarmPICField_cellid,NULL,NULL,(void**)&swarm_cellid));
+  PetscCall(VecGetArrayRead(pos, &_coor));
+  PetscCall(DMSwarmGetField(dm, DMSwarmPICField_coor, NULL, NULL, (void **)&swarm_coor));
+  PetscCall(DMSwarmGetField(dm, DMSwarmPICField_cellid, NULL, NULL, (void **)&swarm_cellid));
   n_found = 0;
-  for (p=0; p<n_estimate; p++) {
+  for (p = 0; p < n_estimate; p++) {
     if (LA_sfcell[p].index != DMLOCATEPOINT_POINT_NOT_FOUND) {
-      for (b=0; b<bs; b++) {
-        swarm_coor[bs*(n_curr + n_found) + b] = PetscRealPart(_coor[bs*p+b]);
-      }
+      for (b = 0; b < bs; b++) { swarm_coor[bs * (n_curr + n_found) + b] = PetscRealPart(_coor[bs * p + b]); }
       swarm_cellid[n_curr + n_found] = LA_sfcell[p].index;
       n_found++;
     }
   }
-  PetscCall(DMSwarmRestoreField(dm,DMSwarmPICField_cellid,NULL,NULL,(void**)&swarm_cellid));
-  PetscCall(DMSwarmRestoreField(dm,DMSwarmPICField_coor,NULL,NULL,(void**)&swarm_coor));
-  PetscCall(VecRestoreArrayRead(pos,&_coor));
+  PetscCall(DMSwarmRestoreField(dm, DMSwarmPICField_cellid, NULL, NULL, (void **)&swarm_cellid));
+  PetscCall(DMSwarmRestoreField(dm, DMSwarmPICField_coor, NULL, NULL, (void **)&swarm_coor));
+  PetscCall(VecRestoreArrayRead(pos, &_coor));
 
   PetscCall(PetscSFDestroy(&sfcell));
   PetscCall(VecDestroy(&pos));
@@ -208,149 +197,140 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetPointsUniformCoordinates(DM dm,PetscReal m
 
 .seealso: `DMSwarmSetType()`, `DMSwarmSetCellDM()`, `DMSwarmType`, `DMSwarmSetPointsUniformCoordinates()`
 @*/
-PETSC_EXTERN PetscErrorCode DMSwarmSetPointCoordinates(DM dm,PetscInt npoints,PetscReal coor[],PetscBool redundant,InsertMode mode)
-{
-  PetscReal         gmin[] = {PETSC_MAX_REAL ,PETSC_MAX_REAL, PETSC_MAX_REAL};
-  PetscReal         gmax[] = {PETSC_MIN_REAL, PETSC_MIN_REAL, PETSC_MIN_REAL};
-  PetscInt          i,N,bs,b,n_estimate,n_curr,n_new_est,p,n_found;
-  Vec               coorlocal;
+PETSC_EXTERN PetscErrorCode DMSwarmSetPointCoordinates(DM dm, PetscInt npoints, PetscReal coor[], PetscBool redundant, InsertMode mode) {
+  PetscReal          gmin[] = {PETSC_MAX_REAL, PETSC_MAX_REAL, PETSC_MAX_REAL};
+  PetscReal          gmax[] = {PETSC_MIN_REAL, PETSC_MIN_REAL, PETSC_MIN_REAL};
+  PetscInt           i, N, bs, b, n_estimate, n_curr, n_new_est, p, n_found;
+  Vec                coorlocal;
   const PetscScalar *_coor;
-  DM                celldm;
-  Vec               pos;
+  DM                 celldm;
+  Vec                pos;
   PetscScalar       *_pos;
   PetscReal         *swarm_coor;
   PetscInt          *swarm_cellid;
-  PetscSF           sfcell = NULL;
+  PetscSF            sfcell = NULL;
   const PetscSFNode *LA_sfcell;
   PetscReal         *my_coor;
-  PetscInt          my_npoints;
-  PetscMPIInt       rank;
-  MPI_Comm          comm;
+  PetscInt           my_npoints;
+  PetscMPIInt        rank;
+  MPI_Comm           comm;
 
   PetscFunctionBegin;
   DMSWARMPICVALID(dm);
-  PetscCall(PetscObjectGetComm((PetscObject)dm,&comm));
-  PetscCallMPI(MPI_Comm_rank(comm,&rank));
+  PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
 
-  PetscCall(DMSwarmGetCellDM(dm,&celldm));
-  PetscCall(DMGetCoordinatesLocal(celldm,&coorlocal));
-  PetscCall(VecGetSize(coorlocal,&N));
-  PetscCall(VecGetBlockSize(coorlocal,&bs));
+  PetscCall(DMSwarmGetCellDM(dm, &celldm));
+  PetscCall(DMGetCoordinatesLocal(celldm, &coorlocal));
+  PetscCall(VecGetSize(coorlocal, &N));
+  PetscCall(VecGetBlockSize(coorlocal, &bs));
   N = N / bs;
-  PetscCall(VecGetArrayRead(coorlocal,&_coor));
-  for (i=0; i<N; i++) {
-    for (b=0; b<bs; b++) {
-      gmin[b] = PetscMin(gmin[b],PetscRealPart(_coor[bs*i+b]));
-      gmax[b] = PetscMax(gmax[b],PetscRealPart(_coor[bs*i+b]));
+  PetscCall(VecGetArrayRead(coorlocal, &_coor));
+  for (i = 0; i < N; i++) {
+    for (b = 0; b < bs; b++) {
+      gmin[b] = PetscMin(gmin[b], PetscRealPart(_coor[bs * i + b]));
+      gmax[b] = PetscMax(gmax[b], PetscRealPart(_coor[bs * i + b]));
     }
   }
-  PetscCall(VecRestoreArrayRead(coorlocal,&_coor));
+  PetscCall(VecRestoreArrayRead(coorlocal, &_coor));
 
   /* broadcast points from rank 0 if requested */
   if (redundant) {
     my_npoints = npoints;
-    PetscCallMPI(MPI_Bcast(&my_npoints,1,MPIU_INT,0,comm));
+    PetscCallMPI(MPI_Bcast(&my_npoints, 1, MPIU_INT, 0, comm));
 
     if (rank > 0) { /* allocate space */
-      PetscCall(PetscMalloc1(bs*my_npoints,&my_coor));
+      PetscCall(PetscMalloc1(bs * my_npoints, &my_coor));
     } else {
       my_coor = coor;
     }
-    PetscCallMPI(MPI_Bcast(my_coor,bs*my_npoints,MPIU_REAL,0,comm));
+    PetscCallMPI(MPI_Bcast(my_coor, bs * my_npoints, MPIU_REAL, 0, comm));
   } else {
     my_npoints = npoints;
-    my_coor = coor;
+    my_coor    = coor;
   }
 
   /* determine the number of points living in the bounding box */
   n_estimate = 0;
-  for (i=0; i<my_npoints; i++) {
+  for (i = 0; i < my_npoints; i++) {
     PetscBool point_inside = PETSC_TRUE;
 
-    for (b=0; b<bs; b++) {
-      if (my_coor[bs*i+b] < gmin[b]) { point_inside = PETSC_FALSE; }
-      if (my_coor[bs*i+b] > gmax[b]) { point_inside = PETSC_FALSE; }
+    for (b = 0; b < bs; b++) {
+      if (my_coor[bs * i + b] < gmin[b]) { point_inside = PETSC_FALSE; }
+      if (my_coor[bs * i + b] > gmax[b]) { point_inside = PETSC_FALSE; }
     }
     if (point_inside) { n_estimate++; }
   }
 
   /* create candidate list */
-  PetscCall(VecCreate(PETSC_COMM_SELF,&pos));
-  PetscCall(VecSetSizes(pos,bs*n_estimate,PETSC_DECIDE));
-  PetscCall(VecSetBlockSize(pos,bs));
+  PetscCall(VecCreate(PETSC_COMM_SELF, &pos));
+  PetscCall(VecSetSizes(pos, bs * n_estimate, PETSC_DECIDE));
+  PetscCall(VecSetBlockSize(pos, bs));
   PetscCall(VecSetFromOptions(pos));
-  PetscCall(VecGetArray(pos,&_pos));
+  PetscCall(VecGetArray(pos, &_pos));
 
   n_estimate = 0;
-  for (i=0; i<my_npoints; i++) {
+  for (i = 0; i < my_npoints; i++) {
     PetscBool point_inside = PETSC_TRUE;
 
-    for (b=0; b<bs; b++) {
-      if (my_coor[bs*i+b] < gmin[b]) { point_inside = PETSC_FALSE; }
-      if (my_coor[bs*i+b] > gmax[b]) { point_inside = PETSC_FALSE; }
+    for (b = 0; b < bs; b++) {
+      if (my_coor[bs * i + b] < gmin[b]) { point_inside = PETSC_FALSE; }
+      if (my_coor[bs * i + b] > gmax[b]) { point_inside = PETSC_FALSE; }
     }
     if (point_inside) {
-      for (b=0; b<bs; b++) {
-        _pos[bs*n_estimate+b] = my_coor[bs*i+b];
-      }
+      for (b = 0; b < bs; b++) { _pos[bs * n_estimate + b] = my_coor[bs * i + b]; }
       n_estimate++;
     }
   }
-  PetscCall(VecRestoreArray(pos,&_pos));
+  PetscCall(VecRestoreArray(pos, &_pos));
 
   /* locate points */
-  PetscCall(DMLocatePoints(celldm,pos,DM_POINTLOCATION_NONE,&sfcell));
+  PetscCall(DMLocatePoints(celldm, pos, DM_POINTLOCATION_NONE, &sfcell));
 
   PetscCall(PetscSFGetGraph(sfcell, NULL, NULL, NULL, &LA_sfcell));
   n_found = 0;
-  for (p=0; p<n_estimate; p++) {
-    if (LA_sfcell[p].index != DMLOCATEPOINT_POINT_NOT_FOUND) {
-      n_found++;
-    }
+  for (p = 0; p < n_estimate; p++) {
+    if (LA_sfcell[p].index != DMLOCATEPOINT_POINT_NOT_FOUND) { n_found++; }
   }
 
   /* adjust size */
   if (mode == ADD_VALUES) {
-    PetscCall(DMSwarmGetLocalSize(dm,&n_curr));
+    PetscCall(DMSwarmGetLocalSize(dm, &n_curr));
     n_new_est = n_curr + n_found;
-    PetscCall(DMSwarmSetLocalSizes(dm,n_new_est,-1));
+    PetscCall(DMSwarmSetLocalSizes(dm, n_new_est, -1));
   }
   if (mode == INSERT_VALUES) {
-    n_curr = 0;
+    n_curr    = 0;
     n_new_est = n_found;
-    PetscCall(DMSwarmSetLocalSizes(dm,n_new_est,-1));
+    PetscCall(DMSwarmSetLocalSizes(dm, n_new_est, -1));
   }
 
   /* initialize new coords, cell owners, pid */
-  PetscCall(VecGetArrayRead(pos,&_coor));
-  PetscCall(DMSwarmGetField(dm,DMSwarmPICField_coor,NULL,NULL,(void**)&swarm_coor));
-  PetscCall(DMSwarmGetField(dm,DMSwarmPICField_cellid,NULL,NULL,(void**)&swarm_cellid));
+  PetscCall(VecGetArrayRead(pos, &_coor));
+  PetscCall(DMSwarmGetField(dm, DMSwarmPICField_coor, NULL, NULL, (void **)&swarm_coor));
+  PetscCall(DMSwarmGetField(dm, DMSwarmPICField_cellid, NULL, NULL, (void **)&swarm_cellid));
   n_found = 0;
-  for (p=0; p<n_estimate; p++) {
+  for (p = 0; p < n_estimate; p++) {
     if (LA_sfcell[p].index != DMLOCATEPOINT_POINT_NOT_FOUND) {
-      for (b=0; b<bs; b++) {
-        swarm_coor[bs*(n_curr + n_found) + b] = PetscRealPart(_coor[bs*p+b]);
-      }
+      for (b = 0; b < bs; b++) { swarm_coor[bs * (n_curr + n_found) + b] = PetscRealPart(_coor[bs * p + b]); }
       swarm_cellid[n_curr + n_found] = LA_sfcell[p].index;
       n_found++;
     }
   }
-  PetscCall(DMSwarmRestoreField(dm,DMSwarmPICField_cellid,NULL,NULL,(void**)&swarm_cellid));
-  PetscCall(DMSwarmRestoreField(dm,DMSwarmPICField_coor,NULL,NULL,(void**)&swarm_coor));
-  PetscCall(VecRestoreArrayRead(pos,&_coor));
+  PetscCall(DMSwarmRestoreField(dm, DMSwarmPICField_cellid, NULL, NULL, (void **)&swarm_cellid));
+  PetscCall(DMSwarmRestoreField(dm, DMSwarmPICField_coor, NULL, NULL, (void **)&swarm_coor));
+  PetscCall(VecRestoreArrayRead(pos, &_coor));
 
   if (redundant) {
-    if (rank > 0) {
-      PetscCall(PetscFree(my_coor));
-    }
+    if (rank > 0) { PetscCall(PetscFree(my_coor)); }
   }
   PetscCall(PetscSFDestroy(&sfcell));
   PetscCall(VecDestroy(&pos));
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_DA(DM,DM,DMSwarmPICLayoutType,PetscInt);
-extern PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX(DM,DM,DMSwarmPICLayoutType,PetscInt);
+extern PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_DA(DM, DM, DMSwarmPICLayoutType, PetscInt);
+extern PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX(DM, DM, DMSwarmPICLayoutType, PetscInt);
 
 /*@C
    DMSwarmInsertPointsUsingCellDM - Insert point coordinates within each cell
@@ -377,25 +357,24 @@ extern PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX(DM,DM,DMSwarmP
 
 .seealso: `DMSwarmPICLayoutType`, `DMSwarmSetType()`, `DMSwarmSetCellDM()`, `DMSwarmType`
 @*/
-PETSC_EXTERN PetscErrorCode DMSwarmInsertPointsUsingCellDM(DM dm,DMSwarmPICLayoutType layout_type,PetscInt fill_param)
-{
-  DM             celldm;
-  PetscBool      isDA,isPLEX;
+PETSC_EXTERN PetscErrorCode DMSwarmInsertPointsUsingCellDM(DM dm, DMSwarmPICLayoutType layout_type, PetscInt fill_param) {
+  DM        celldm;
+  PetscBool isDA, isPLEX;
 
   PetscFunctionBegin;
   DMSWARMPICVALID(dm);
-  PetscCall(DMSwarmGetCellDM(dm,&celldm));
-  PetscCall(PetscObjectTypeCompare((PetscObject)celldm,DMDA,&isDA));
-  PetscCall(PetscObjectTypeCompare((PetscObject)celldm,DMPLEX,&isPLEX));
+  PetscCall(DMSwarmGetCellDM(dm, &celldm));
+  PetscCall(PetscObjectTypeCompare((PetscObject)celldm, DMDA, &isDA));
+  PetscCall(PetscObjectTypeCompare((PetscObject)celldm, DMPLEX, &isPLEX));
   if (isDA) {
-    PetscCall(private_DMSwarmInsertPointsUsingCellDM_DA(dm,celldm,layout_type,fill_param));
+    PetscCall(private_DMSwarmInsertPointsUsingCellDM_DA(dm, celldm, layout_type, fill_param));
   } else if (isPLEX) {
-    PetscCall(private_DMSwarmInsertPointsUsingCellDM_PLEX(dm,celldm,layout_type,fill_param));
-  } else SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Only supported for cell DMs of type DMDA and DMPLEX");
+    PetscCall(private_DMSwarmInsertPointsUsingCellDM_PLEX(dm, celldm, layout_type, fill_param));
+  } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Only supported for cell DMs of type DMDA and DMPLEX");
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode private_DMSwarmSetPointCoordinatesCellwise_PLEX(DM,DM,PetscInt,PetscReal*);
+extern PetscErrorCode private_DMSwarmSetPointCoordinatesCellwise_PLEX(DM, DM, PetscInt, PetscReal *);
 
 /*@C
    DMSwarmSetPointCoordinatesCellwise - Insert point coordinates (defined over the reference cell) within each cell
@@ -422,26 +401,25 @@ $    DMSwarmRestoreField(dm,DMSwarmPICField_coor,NULL,NULL,(void**)&coor);
 
 .seealso: `DMSwarmSetCellDM()`, `DMSwarmInsertPointsUsingCellDM()`
 @*/
-PETSC_EXTERN PetscErrorCode DMSwarmSetPointCoordinatesCellwise(DM dm,PetscInt npoints,PetscReal xi[])
-{
-  DM             celldm;
-  PetscBool      isDA,isPLEX;
+PETSC_EXTERN PetscErrorCode DMSwarmSetPointCoordinatesCellwise(DM dm, PetscInt npoints, PetscReal xi[]) {
+  DM        celldm;
+  PetscBool isDA, isPLEX;
 
   PetscFunctionBegin;
   DMSWARMPICVALID(dm);
-  PetscCall(DMSwarmGetCellDM(dm,&celldm));
-  PetscCall(PetscObjectTypeCompare((PetscObject)celldm,DMDA,&isDA));
-  PetscCall(PetscObjectTypeCompare((PetscObject)celldm,DMPLEX,&isPLEX));
-  PetscCheck(!isDA,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Only supported for cell DMs of type DMPLEX. Recommended you use DMSwarmInsertPointsUsingCellDM()");
+  PetscCall(DMSwarmGetCellDM(dm, &celldm));
+  PetscCall(PetscObjectTypeCompare((PetscObject)celldm, DMDA, &isDA));
+  PetscCall(PetscObjectTypeCompare((PetscObject)celldm, DMPLEX, &isPLEX));
+  PetscCheck(!isDA, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Only supported for cell DMs of type DMPLEX. Recommended you use DMSwarmInsertPointsUsingCellDM()");
   if (isPLEX) {
-    PetscCall(private_DMSwarmSetPointCoordinatesCellwise_PLEX(dm,celldm,npoints,xi));
-  } else SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Only supported for cell DMs of type DMDA and DMPLEX");
+    PetscCall(private_DMSwarmSetPointCoordinatesCellwise_PLEX(dm, celldm, npoints, xi));
+  } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Only supported for cell DMs of type DMDA and DMPLEX");
   PetscFunctionReturn(0);
 }
 
 /* Field projection API */
-extern PetscErrorCode private_DMSwarmProjectFields_DA(DM swarm,DM celldm,PetscInt project_type,PetscInt nfields,DMSwarmDataField dfield[],Vec vecs[]);
-extern PetscErrorCode private_DMSwarmProjectFields_PLEX(DM swarm,DM celldm,PetscInt project_type,PetscInt nfields,DMSwarmDataField dfield[],Vec vecs[]);
+extern PetscErrorCode private_DMSwarmProjectFields_DA(DM swarm, DM celldm, PetscInt project_type, PetscInt nfields, DMSwarmDataField dfield[], Vec vecs[]);
+extern PetscErrorCode private_DMSwarmProjectFields_PLEX(DM swarm, DM celldm, PetscInt project_type, PetscInt nfields, DMSwarmDataField dfield[], Vec vecs[]);
 
 /*@C
    DMSwarmProjectFields - Project a set of swarm fields onto the cell DM
@@ -477,44 +455,43 @@ extern PetscErrorCode private_DMSwarmProjectFields_PLEX(DM swarm,DM celldm,Petsc
 
 .seealso: `DMSwarmSetType()`, `DMSwarmSetCellDM()`, `DMSwarmType`
 @*/
-PETSC_EXTERN PetscErrorCode DMSwarmProjectFields(DM dm,PetscInt nfields,const char *fieldnames[],Vec **fields,PetscBool reuse)
-{
-  DM_Swarm         *swarm = (DM_Swarm*)dm->data;
+PETSC_EXTERN PetscErrorCode DMSwarmProjectFields(DM dm, PetscInt nfields, const char *fieldnames[], Vec **fields, PetscBool reuse) {
+  DM_Swarm         *swarm = (DM_Swarm *)dm->data;
   DMSwarmDataField *gfield;
-  DM               celldm;
-  PetscBool        isDA,isPLEX;
+  DM                celldm;
+  PetscBool         isDA, isPLEX;
   Vec              *vecs;
-  PetscInt         f,nvecs;
-  PetscInt         project_type = 0;
+  PetscInt          f, nvecs;
+  PetscInt          project_type = 0;
 
   PetscFunctionBegin;
   DMSWARMPICVALID(dm);
-  PetscCall(DMSwarmGetCellDM(dm,&celldm));
-  PetscCall(PetscMalloc1(nfields,&gfield));
+  PetscCall(DMSwarmGetCellDM(dm, &celldm));
+  PetscCall(PetscMalloc1(nfields, &gfield));
   nvecs = 0;
-  for (f=0; f<nfields; f++) {
-    PetscCall(DMSwarmDataBucketGetDMSwarmDataFieldByName(swarm->db,fieldnames[f],&gfield[f]));
-    PetscCheck(gfield[f]->petsc_type == PETSC_REAL,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Projection only valid for fields using a data type = PETSC_REAL");
-    PetscCheck(gfield[f]->bs == 1,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Projection only valid for fields with block size = 1");
+  for (f = 0; f < nfields; f++) {
+    PetscCall(DMSwarmDataBucketGetDMSwarmDataFieldByName(swarm->db, fieldnames[f], &gfield[f]));
+    PetscCheck(gfield[f]->petsc_type == PETSC_REAL, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Projection only valid for fields using a data type = PETSC_REAL");
+    PetscCheck(gfield[f]->bs == 1, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Projection only valid for fields with block size = 1");
     nvecs += gfield[f]->bs;
   }
   if (!reuse) {
-    PetscCall(PetscMalloc1(nvecs,&vecs));
-    for (f=0; f<nvecs; f++) {
-      PetscCall(DMCreateGlobalVector(celldm,&vecs[f]));
-      PetscCall(PetscObjectSetName((PetscObject)vecs[f],gfield[f]->name));
+    PetscCall(PetscMalloc1(nvecs, &vecs));
+    for (f = 0; f < nvecs; f++) {
+      PetscCall(DMCreateGlobalVector(celldm, &vecs[f]));
+      PetscCall(PetscObjectSetName((PetscObject)vecs[f], gfield[f]->name));
     }
   } else {
     vecs = *fields;
   }
 
-  PetscCall(PetscObjectTypeCompare((PetscObject)celldm,DMDA,&isDA));
-  PetscCall(PetscObjectTypeCompare((PetscObject)celldm,DMPLEX,&isPLEX));
+  PetscCall(PetscObjectTypeCompare((PetscObject)celldm, DMDA, &isDA));
+  PetscCall(PetscObjectTypeCompare((PetscObject)celldm, DMPLEX, &isPLEX));
   if (isDA) {
-    PetscCall(private_DMSwarmProjectFields_DA(dm,celldm,project_type,nfields,gfield,vecs));
+    PetscCall(private_DMSwarmProjectFields_DA(dm, celldm, project_type, nfields, gfield, vecs));
   } else if (isPLEX) {
-    PetscCall(private_DMSwarmProjectFields_PLEX(dm,celldm,project_type,nfields,gfield,vecs));
-  } else SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Only supported for cell DMs of type DMDA and DMPLEX");
+    PetscCall(private_DMSwarmProjectFields_PLEX(dm, celldm, project_type, nfields, gfield, vecs));
+  } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Only supported for cell DMs of type DMDA and DMPLEX");
 
   PetscCall(PetscFree(gfield));
   if (!reuse) *fields = vecs;
@@ -540,69 +517,65 @@ PETSC_EXTERN PetscErrorCode DMSwarmProjectFields(DM dm,PetscInt nfields,const ch
 
 .seealso: `DMSwarmSetType()`, `DMSwarmSetCellDM()`, `DMSwarmType`
 @*/
-PETSC_EXTERN PetscErrorCode DMSwarmCreatePointPerCellCount(DM dm,PetscInt *ncells,PetscInt **count)
-{
-  PetscBool      isvalid;
-  PetscInt       nel;
-  PetscInt       *sum;
+PETSC_EXTERN PetscErrorCode DMSwarmCreatePointPerCellCount(DM dm, PetscInt *ncells, PetscInt **count) {
+  PetscBool isvalid;
+  PetscInt  nel;
+  PetscInt *sum;
 
   PetscFunctionBegin;
-  PetscCall(DMSwarmSortGetIsValid(dm,&isvalid));
+  PetscCall(DMSwarmSortGetIsValid(dm, &isvalid));
   nel = 0;
   if (isvalid) {
     PetscInt e;
 
-    PetscCall(DMSwarmSortGetSizes(dm,&nel,NULL));
+    PetscCall(DMSwarmSortGetSizes(dm, &nel, NULL));
 
-    PetscCall(PetscMalloc1(nel,&sum));
-    for (e=0; e<nel; e++) {
-      PetscCall(DMSwarmSortGetNumberOfPointsPerCell(dm,e,&sum[e]));
-    }
+    PetscCall(PetscMalloc1(nel, &sum));
+    for (e = 0; e < nel; e++) { PetscCall(DMSwarmSortGetNumberOfPointsPerCell(dm, e, &sum[e])); }
   } else {
     DM        celldm;
-    PetscBool isda,isplex,isshell;
-    PetscInt  p,npoints;
+    PetscBool isda, isplex, isshell;
+    PetscInt  p, npoints;
     PetscInt *swarm_cellid;
 
     /* get the number of cells */
-    PetscCall(DMSwarmGetCellDM(dm,&celldm));
-    PetscCall(PetscObjectTypeCompare((PetscObject)celldm,DMDA,&isda));
-    PetscCall(PetscObjectTypeCompare((PetscObject)celldm,DMPLEX,&isplex));
-    PetscCall(PetscObjectTypeCompare((PetscObject)celldm,DMSHELL,&isshell));
+    PetscCall(DMSwarmGetCellDM(dm, &celldm));
+    PetscCall(PetscObjectTypeCompare((PetscObject)celldm, DMDA, &isda));
+    PetscCall(PetscObjectTypeCompare((PetscObject)celldm, DMPLEX, &isplex));
+    PetscCall(PetscObjectTypeCompare((PetscObject)celldm, DMSHELL, &isshell));
     if (isda) {
-      PetscInt       _nel,_npe;
+      PetscInt        _nel, _npe;
       const PetscInt *_element;
 
-      PetscCall(DMDAGetElements(celldm,&_nel,&_npe,&_element));
+      PetscCall(DMDAGetElements(celldm, &_nel, &_npe, &_element));
       nel = _nel;
-      PetscCall(DMDARestoreElements(celldm,&_nel,&_npe,&_element));
+      PetscCall(DMDARestoreElements(celldm, &_nel, &_npe, &_element));
     } else if (isplex) {
-      PetscInt ps,pe;
+      PetscInt ps, pe;
 
-      PetscCall(DMPlexGetHeightStratum(celldm,0,&ps,&pe));
+      PetscCall(DMPlexGetHeightStratum(celldm, 0, &ps, &pe));
       nel = pe - ps;
     } else if (isshell) {
-      PetscErrorCode (*method_DMShellGetNumberOfCells)(DM,PetscInt*);
+      PetscErrorCode (*method_DMShellGetNumberOfCells)(DM, PetscInt *);
 
-      PetscCall(PetscObjectQueryFunction((PetscObject)celldm,"DMGetNumberOfCells_C",&method_DMShellGetNumberOfCells));
+      PetscCall(PetscObjectQueryFunction((PetscObject)celldm, "DMGetNumberOfCells_C", &method_DMShellGetNumberOfCells));
       if (method_DMShellGetNumberOfCells) {
-        PetscCall(method_DMShellGetNumberOfCells(celldm,&nel));
-      } else SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Cannot determine the number of cells for the DMSHELL object. User must provide a method via PetscObjectComposeFunction( (PetscObject)shelldm, \"DMGetNumberOfCells_C\", your_function_to_compute_number_of_cells);");
-    } else SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Cannot determine the number of cells for a DM not of type DA, PLEX or SHELL");
+        PetscCall(method_DMShellGetNumberOfCells(celldm, &nel));
+      } else
+        SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Cannot determine the number of cells for the DMSHELL object. User must provide a method via PetscObjectComposeFunction( (PetscObject)shelldm, \"DMGetNumberOfCells_C\", your_function_to_compute_number_of_cells);");
+    } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Cannot determine the number of cells for a DM not of type DA, PLEX or SHELL");
 
-    PetscCall(PetscMalloc1(nel,&sum));
-    PetscCall(PetscArrayzero(sum,nel));
-    PetscCall(DMSwarmGetLocalSize(dm,&npoints));
-    PetscCall(DMSwarmGetField(dm,DMSwarmPICField_cellid,NULL,NULL,(void**)&swarm_cellid));
-    for (p=0; p<npoints; p++) {
-      if (swarm_cellid[p] != DMLOCATEPOINT_POINT_NOT_FOUND) {
-        sum[ swarm_cellid[p] ]++;
-      }
+    PetscCall(PetscMalloc1(nel, &sum));
+    PetscCall(PetscArrayzero(sum, nel));
+    PetscCall(DMSwarmGetLocalSize(dm, &npoints));
+    PetscCall(DMSwarmGetField(dm, DMSwarmPICField_cellid, NULL, NULL, (void **)&swarm_cellid));
+    for (p = 0; p < npoints; p++) {
+      if (swarm_cellid[p] != DMLOCATEPOINT_POINT_NOT_FOUND) { sum[swarm_cellid[p]]++; }
     }
-    PetscCall(DMSwarmRestoreField(dm,DMSwarmPICField_cellid,NULL,NULL,(void**)&swarm_cellid));
+    PetscCall(DMSwarmRestoreField(dm, DMSwarmPICField_cellid, NULL, NULL, (void **)&swarm_cellid));
   }
   if (ncells) { *ncells = nel; }
-  *count  = sum;
+  *count = sum;
   PetscFunctionReturn(0);
 }
 
@@ -621,9 +594,8 @@ PETSC_EXTERN PetscErrorCode DMSwarmCreatePointPerCellCount(DM dm,PetscInt *ncell
 
 .seealso: `DMSwarmSetNumSpecies()`, `DMSwarmSetType()`, `DMSwarmType`
 @*/
-PetscErrorCode DMSwarmGetNumSpecies(DM sw, PetscInt *Ns)
-{
-  DM_Swarm *swarm = (DM_Swarm *) sw->data;
+PetscErrorCode DMSwarmGetNumSpecies(DM sw, PetscInt *Ns) {
+  DM_Swarm *swarm = (DM_Swarm *)sw->data;
 
   PetscFunctionBegin;
   *Ns = swarm->Ns;
@@ -643,12 +615,11 @@ PetscErrorCode DMSwarmGetNumSpecies(DM sw, PetscInt *Ns)
 
 .seealso: `DMSwarmGetNumSpecies()`, `DMSwarmSetType()`, `DMSwarmType`
 @*/
-PetscErrorCode DMSwarmSetNumSpecies(DM sw, PetscInt Ns)
-{
-  DM_Swarm *swarm = (DM_Swarm *) sw->data;
+PetscErrorCode DMSwarmSetNumSpecies(DM sw, PetscInt Ns) {
+  DM_Swarm *swarm = (DM_Swarm *)sw->data;
 
   PetscFunctionBegin;
-  swarm->Ns =  Ns;
+  swarm->Ns = Ns;
   PetscFunctionReturn(0);
 }
 
@@ -667,9 +638,8 @@ PetscErrorCode DMSwarmSetNumSpecies(DM sw, PetscInt Ns)
 
 .seealso: `DMSwarmSetCoordinateFunction()`, `DMSwarmGetVelocityFunction()`, `DMSwarmInitializeCoordinates()`
 @*/
-PetscErrorCode DMSwarmGetCoordinateFunction(DM sw, PetscSimplePointFunc *coordFunc)
-{
-  DM_Swarm *swarm = (DM_Swarm *) sw->data;
+PetscErrorCode DMSwarmGetCoordinateFunction(DM sw, PetscSimplePointFunc *coordFunc) {
+  DM_Swarm *swarm = (DM_Swarm *)sw->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sw, DM_CLASSID, 1);
@@ -691,9 +661,8 @@ PetscErrorCode DMSwarmGetCoordinateFunction(DM sw, PetscSimplePointFunc *coordFu
 
 .seealso: `DMSwarmGetCoordinateFunction()`, `DMSwarmSetVelocityFunction()`, `DMSwarmInitializeCoordinates()`
 @*/
-PetscErrorCode DMSwarmSetCoordinateFunction(DM sw, PetscSimplePointFunc coordFunc)
-{
-  DM_Swarm *swarm = (DM_Swarm *) sw->data;
+PetscErrorCode DMSwarmSetCoordinateFunction(DM sw, PetscSimplePointFunc coordFunc) {
+  DM_Swarm *swarm = (DM_Swarm *)sw->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sw, DM_CLASSID, 1);
@@ -717,9 +686,8 @@ PetscErrorCode DMSwarmSetCoordinateFunction(DM sw, PetscSimplePointFunc coordFun
 
 .seealso: `DMSwarmSetVelocityFunction()`, `DMSwarmGetCoordinateFunction()`, `DMSwarmInitializeVelocities()`
 @*/
-PetscErrorCode DMSwarmGetVelocityFunction(DM sw, PetscSimplePointFunc *velFunc)
-{
-  DM_Swarm *swarm = (DM_Swarm *) sw->data;
+PetscErrorCode DMSwarmGetVelocityFunction(DM sw, PetscSimplePointFunc *velFunc) {
+  DM_Swarm *swarm = (DM_Swarm *)sw->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sw, DM_CLASSID, 1);
@@ -741,9 +709,8 @@ PetscErrorCode DMSwarmGetVelocityFunction(DM sw, PetscSimplePointFunc *velFunc)
 
 .seealso: `DMSwarmGetVelocityFunction()`, `DMSwarmSetCoordinateFunction()`, `DMSwarmInitializeVelocities()`
 @*/
-PetscErrorCode DMSwarmSetVelocityFunction(DM sw, PetscSimplePointFunc velFunc)
-{
-  DM_Swarm *swarm = (DM_Swarm *) sw->data;
+PetscErrorCode DMSwarmSetVelocityFunction(DM sw, PetscSimplePointFunc velFunc) {
+  DM_Swarm *swarm = (DM_Swarm *)sw->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sw, DM_CLASSID, 1);
@@ -768,8 +735,7 @@ PetscErrorCode DMSwarmSetVelocityFunction(DM sw, PetscSimplePointFunc velFunc)
 
 .seealso: `DMSwarmComputeLocalSizeFromOptions()`
 @*/
-PetscErrorCode DMSwarmComputeLocalSize(DM sw, PetscInt N, PetscProbFunc density)
-{
+PetscErrorCode DMSwarmComputeLocalSize(DM sw, PetscInt N, PetscProbFunc density) {
   DM               dm;
   PetscQuadrature  quad;
   const PetscReal *xq, *wq;
@@ -786,36 +752,36 @@ PetscErrorCode DMSwarmComputeLocalSize(DM sw, PetscInt N, PetscProbFunc density)
   PetscCall(DMPlexIsSimplex(dm, &simplex));
   PetscCall(DMGetCoordinatesLocalSetUp(dm));
   if (simplex) PetscCall(PetscDTStroudConicalQuadrature(dim, 1, 5, -1.0, 1.0, &quad));
-  else         PetscCall(PetscDTGaussTensorQuadrature(dim, 1, 5, -1.0, 1.0, &quad));
+  else PetscCall(PetscDTGaussTensorQuadrature(dim, 1, 5, -1.0, 1.0, &quad));
   PetscCall(PetscQuadratureGetData(quad, NULL, NULL, &Nq, &xq, &wq));
-  PetscCall(PetscMalloc1(cEnd-cStart, &npc));
+  PetscCall(PetscMalloc1(cEnd - cStart, &npc));
   /* Integrate the density function to get the number of particles in each cell */
   for (d = 0; d < dim; ++d) xi0[d] = -1.0;
-  for (c = 0; c < cEnd-cStart; ++c) {
+  for (c = 0; c < cEnd - cStart; ++c) {
     const PetscInt cell = c + cStart;
-    PetscReal v0[3], J[9], invJ[9], detJ;
-    PetscReal n_int = 0.;
+    PetscReal      v0[3], J[9], invJ[9], detJ;
+    PetscReal      n_int = 0.;
 
     PetscCall(DMPlexComputeCellGeometryFEM(dm, cell, NULL, v0, J, invJ, &detJ));
     for (q = 0; q < Nq; ++q) {
       PetscReal xr[3], den[3];
 
-      CoordinatesRefToReal(dim, dim, xi0, v0, J, &xq[q*dim], xr);
+      CoordinatesRefToReal(dim, dim, xi0, v0, J, &xq[q * dim], xr);
       PetscCall(density(xr, NULL, den));
-      n_int += den[0]*wq[q];
+      n_int += den[0] * wq[q];
     }
-    npc[c]  = (PetscInt) (N*n_int);
+    npc[c] = (PetscInt)(N * n_int);
     npc[c] *= Ns;
-    Np     += npc[c];
+    Np += npc[c];
   }
   PetscCall(PetscQuadratureDestroy(&quad));
   PetscCall(DMSwarmSetLocalSizes(sw, Np, 0));
 
-  PetscCall(DMSwarmGetField(sw, DMSwarmPICField_cellid, NULL, NULL, (void **) &cellid));
-  for (c = 0, p = 0; c < cEnd-cStart; ++c) {
+  PetscCall(DMSwarmGetField(sw, DMSwarmPICField_cellid, NULL, NULL, (void **)&cellid));
+  for (c = 0, p = 0; c < cEnd - cStart; ++c) {
     for (q = 0; q < npc[c]; ++q, ++p) cellid[p] = c;
   }
-  PetscCall(DMSwarmRestoreField(sw, DMSwarmPICField_cellid, NULL, NULL, (void **) &cellid));
+  PetscCall(DMSwarmRestoreField(sw, DMSwarmPICField_cellid, NULL, NULL, (void **)&cellid));
   PetscCall(PetscFree(npc));
   PetscFunctionReturn(0);
 }
@@ -832,20 +798,19 @@ PetscErrorCode DMSwarmComputeLocalSize(DM sw, PetscInt N, PetscProbFunc density)
 
 .seealso: `DMSwarmComputeLocalSize()`
 @*/
-PetscErrorCode DMSwarmComputeLocalSizeFromOptions(DM sw)
-{
-  PetscProbFunc  pdf;
-  const char    *prefix;
-  char           funcname[PETSC_MAX_PATH_LEN];
-  PetscInt      *N, Ns, dim, n;
-  PetscBool      flg;
-  PetscMPIInt    size, rank;
+PetscErrorCode DMSwarmComputeLocalSizeFromOptions(DM sw) {
+  PetscProbFunc pdf;
+  const char   *prefix;
+  char          funcname[PETSC_MAX_PATH_LEN];
+  PetscInt     *N, Ns, dim, n;
+  PetscBool     flg;
+  PetscMPIInt   size, rank;
 
   PetscFunctionBegin;
-  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject) sw), &size));
-  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject) sw), &rank));
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)sw), &size));
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)sw), &rank));
   PetscCall(PetscCalloc1(size, &N));
-  PetscOptionsBegin(PetscObjectComm((PetscObject) sw), "", "DMSwarm Options", "DMSWARM");
+  PetscOptionsBegin(PetscObjectComm((PetscObject)sw), "", "DMSwarm Options", "DMSWARM");
   n = size;
   PetscCall(PetscOptionsIntArray("-dm_swarm_num_particles", "The target number of particles", "", N, &n, NULL));
   PetscCall(DMSwarmGetNumSpecies(sw, &Ns));
@@ -857,14 +822,14 @@ PetscErrorCode DMSwarmComputeLocalSizeFromOptions(DM sw)
     PetscSimplePointFunc coordFunc;
 
     PetscCall(DMSwarmGetNumSpecies(sw, &Ns));
-    PetscCall(PetscDLSym(NULL, funcname, (void **) &coordFunc));
-    PetscCheck(coordFunc, PetscObjectComm((PetscObject) sw), PETSC_ERR_ARG_WRONG, "Could not locate function %s", funcname);
+    PetscCall(PetscDLSym(NULL, funcname, (void **)&coordFunc));
+    PetscCheck(coordFunc, PetscObjectComm((PetscObject)sw), PETSC_ERR_ARG_WRONG, "Could not locate function %s", funcname);
     PetscCall(DMSwarmGetNumSpecies(sw, &Ns));
-    PetscCall(DMSwarmSetLocalSizes(sw, N[rank]*Ns, 0));
+    PetscCall(DMSwarmSetLocalSizes(sw, N[rank] * Ns, 0));
     PetscCall(DMSwarmSetCoordinateFunction(sw, coordFunc));
   } else {
     PetscCall(DMGetDimension(sw, &dim));
-    PetscCall(PetscObjectGetOptionsPrefix((PetscObject) sw, &prefix));
+    PetscCall(PetscObjectGetOptionsPrefix((PetscObject)sw, &prefix));
     PetscCall(PetscProbCreateFromOptions(dim, prefix, "-dm_swarm_coordinate_density", &pdf, NULL, NULL));
     PetscCall(DMSwarmComputeLocalSize(sw, N[rank], pdf));
   }
@@ -886,8 +851,7 @@ PetscErrorCode DMSwarmComputeLocalSizeFromOptions(DM sw)
 
 .seealso: `DMSwarmComputeLocalSize()`, `DMSwarmInitializeVelocities()`
 @*/
-PetscErrorCode DMSwarmInitializeCoordinates(DM sw)
-{
+PetscErrorCode DMSwarmInitializeCoordinates(DM sw) {
   PetscSimplePointFunc coordFunc;
   PetscScalar         *weight;
   PetscReal           *x;
@@ -903,16 +867,16 @@ PetscErrorCode DMSwarmInitializeCoordinates(DM sw)
   PetscCall(DMSwarmGetNumSpecies(sw, &Ns));
   PetscCall(DMSwarmGetCoordinateFunction(sw, &coordFunc));
 
-  PetscCall(DMSwarmGetField(sw, DMSwarmPICField_coor, &bs, &dtype, (void **) &x));
-  PetscCall(DMSwarmGetField(sw, "w_q", &bs, &dtype, (void **) &weight));
-  PetscCall(DMSwarmGetField(sw, "species", NULL, NULL, (void **) &species));
+  PetscCall(DMSwarmGetField(sw, DMSwarmPICField_coor, &bs, &dtype, (void **)&x));
+  PetscCall(DMSwarmGetField(sw, "w_q", &bs, &dtype, (void **)&weight));
+  PetscCall(DMSwarmGetField(sw, "species", NULL, NULL, (void **)&species));
   if (coordFunc) {
     PetscCall(DMGetApplicationContext(sw, &ctx));
     for (p = 0; p < Np; ++p) {
       PetscScalar X[3];
 
       PetscCall((*coordFunc)(dim, 0., NULL, p, X, ctx));
-      for (d = 0; d < dim; ++d) x[p*dim+d] = PetscRealPart(X[d]);
+      for (d = 0; d < dim; ++d) x[p * dim + d] = PetscRealPart(X[d]);
       weight[p]  = 1.0;
       species[p] = p % Ns;
     }
@@ -926,7 +890,7 @@ PetscErrorCode DMSwarmInitializeCoordinates(DM sw)
     PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
 
     /* Set particle position randomly in cell, set weights to 1 */
-    PetscCall(PetscRandomCreate(PetscObjectComm((PetscObject) dm), &rnd));
+    PetscCall(PetscRandomCreate(PetscObjectComm((PetscObject)dm), &rnd));
     PetscCall(PetscRandomSetInterval(rnd, -1.0, 1.0));
     PetscCall(PetscRandomSetFromOptions(rnd));
     PetscCall(DMSwarmSortGetAccess(sw));
@@ -942,7 +906,7 @@ PetscErrorCode DMSwarmInitializeCoordinates(DM sw)
         PetscReal      xref[3];
 
         for (d = 0; d < dim; ++d) PetscCall(PetscRandomGetValueReal(rnd, &xref[d]));
-        CoordinatesRefToReal(dim, dim, xi0, v0, J, xref, &x[p*dim]);
+        CoordinatesRefToReal(dim, dim, xi0, v0, J, xref, &x[p * dim]);
 
         weight[p]  = 1.0;
         species[p] = p % Ns;
@@ -952,9 +916,9 @@ PetscErrorCode DMSwarmInitializeCoordinates(DM sw)
     PetscCall(PetscRandomDestroy(&rnd));
     PetscCall(DMSwarmSortRestoreAccess(sw));
   }
-  PetscCall(DMSwarmRestoreField(sw, DMSwarmPICField_coor, NULL, NULL, (void **) &x));
-  PetscCall(DMSwarmRestoreField(sw, "w_q", NULL, NULL, (void **) &weight));
-  PetscCall(DMSwarmRestoreField(sw, "species", NULL, NULL, (void **) &species));
+  PetscCall(DMSwarmRestoreField(sw, DMSwarmPICField_coor, NULL, NULL, (void **)&x));
+  PetscCall(DMSwarmRestoreField(sw, "w_q", NULL, NULL, (void **)&weight));
+  PetscCall(DMSwarmRestoreField(sw, "species", NULL, NULL, (void **)&species));
 
   PetscCall(DMSwarmMigrate(sw, removePoints));
   PetscCall(DMLocalizeCoordinates(sw));
@@ -977,8 +941,7 @@ PetscErrorCode DMSwarmInitializeCoordinates(DM sw)
 
 .seealso: `DMSwarmComputeLocalSize()`, `DMSwarmInitializeCoordinates()`, `DMSwarmInitializeVelocitiesFromOptions()`
 @*/
-PetscErrorCode DMSwarmInitializeVelocities(DM sw, PetscProbFunc sampler, const PetscReal v0[])
-{
+PetscErrorCode DMSwarmInitializeVelocities(DM sw, PetscProbFunc sampler, const PetscReal v0[]) {
   PetscSimplePointFunc velFunc;
   PetscReal           *v;
   PetscInt            *species;
@@ -990,10 +953,10 @@ PetscErrorCode DMSwarmInitializeVelocities(DM sw, PetscProbFunc sampler, const P
 
   PetscCall(DMGetDimension(sw, &dim));
   PetscCall(DMSwarmGetLocalSize(sw, &Np));
-  PetscCall(DMSwarmGetField(sw, "velocity", NULL, NULL, (void **) &v));
-  PetscCall(DMSwarmGetField(sw, "species", NULL, NULL, (void **) &species));
+  PetscCall(DMSwarmGetField(sw, "velocity", NULL, NULL, (void **)&v));
+  PetscCall(DMSwarmGetField(sw, "species", NULL, NULL, (void **)&species));
   if (v0[0] == 0.) {
-    PetscCall(PetscArrayzero(v, Np*dim));
+    PetscCall(PetscArrayzero(v, Np * dim));
   } else if (velFunc) {
     PetscCall(DMGetApplicationContext(sw, &ctx));
     for (p = 0; p < Np; ++p) {
@@ -1001,12 +964,12 @@ PetscErrorCode DMSwarmInitializeVelocities(DM sw, PetscProbFunc sampler, const P
       PetscScalar vel[3];
 
       PetscCall((*velFunc)(dim, 0., NULL, p, vel, ctx));
-      for (d = 0; d < dim; ++d) v[p*dim+d] = (v0[s] / v0[0]) * PetscRealPart(vel[d]);
+      for (d = 0; d < dim; ++d) v[p * dim + d] = (v0[s] / v0[0]) * PetscRealPart(vel[d]);
     }
   } else {
-    PetscRandom  rnd;
+    PetscRandom rnd;
 
-    PetscCall(PetscRandomCreate(PetscObjectComm((PetscObject) sw), &rnd));
+    PetscCall(PetscRandomCreate(PetscObjectComm((PetscObject)sw), &rnd));
     PetscCall(PetscRandomSetInterval(rnd, 0, 1.));
     PetscCall(PetscRandomSetFromOptions(rnd));
 
@@ -1016,12 +979,12 @@ PetscErrorCode DMSwarmInitializeVelocities(DM sw, PetscProbFunc sampler, const P
 
       for (d = 0; d < dim; ++d) PetscCall(PetscRandomGetValueReal(rnd, &a[d]));
       PetscCall(sampler(a, NULL, vel));
-      for (d = 0; d < dim; ++d) {v[p*dim+d] = (v0[s] / v0[0]) * vel[d];}
+      for (d = 0; d < dim; ++d) { v[p * dim + d] = (v0[s] / v0[0]) * vel[d]; }
     }
     PetscCall(PetscRandomDestroy(&rnd));
   }
-  PetscCall(DMSwarmRestoreField(sw, "velocity", NULL, NULL, (void **) &v));
-  PetscCall(DMSwarmRestoreField(sw, "species", NULL, NULL, (void **) &species));
+  PetscCall(DMSwarmRestoreField(sw, "velocity", NULL, NULL, (void **)&v));
+  PetscCall(DMSwarmRestoreField(sw, "species", NULL, NULL, (void **)&species));
   PetscFunctionReturn(0);
 }
 
@@ -1038,27 +1001,26 @@ PetscErrorCode DMSwarmInitializeVelocities(DM sw, PetscProbFunc sampler, const P
 
 .seealso: `DMSwarmComputeLocalSize()`, `DMSwarmInitializeCoordinates()`, `DMSwarmInitializeVelocities()`
 @*/
-PetscErrorCode DMSwarmInitializeVelocitiesFromOptions(DM sw, const PetscReal v0[])
-{
-  PetscProbFunc  sampler;
-  PetscInt       dim;
-  const char    *prefix;
-  char           funcname[PETSC_MAX_PATH_LEN];
-  PetscBool      flg;
+PetscErrorCode DMSwarmInitializeVelocitiesFromOptions(DM sw, const PetscReal v0[]) {
+  PetscProbFunc sampler;
+  PetscInt      dim;
+  const char   *prefix;
+  char          funcname[PETSC_MAX_PATH_LEN];
+  PetscBool     flg;
 
   PetscFunctionBegin;
-  PetscOptionsBegin(PetscObjectComm((PetscObject) sw), "", "DMSwarm Options", "DMSWARM");
+  PetscOptionsBegin(PetscObjectComm((PetscObject)sw), "", "DMSwarm Options", "DMSWARM");
   PetscCall(PetscOptionsString("-dm_swarm_velocity_function", "Function to determine particle velocities", "DMSwarmSetVelocityFunction", funcname, funcname, sizeof(funcname), &flg));
   PetscOptionsEnd();
   if (flg) {
     PetscSimplePointFunc velFunc;
 
-    PetscCall(PetscDLSym(NULL, funcname, (void **) &velFunc));
-    PetscCheck(velFunc, PetscObjectComm((PetscObject) sw), PETSC_ERR_ARG_WRONG, "Could not locate function %s", funcname);
+    PetscCall(PetscDLSym(NULL, funcname, (void **)&velFunc));
+    PetscCheck(velFunc, PetscObjectComm((PetscObject)sw), PETSC_ERR_ARG_WRONG, "Could not locate function %s", funcname);
     PetscCall(DMSwarmSetVelocityFunction(sw, velFunc));
   }
   PetscCall(DMGetDimension(sw, &dim));
-  PetscCall(PetscObjectGetOptionsPrefix((PetscObject) sw, &prefix));
+  PetscCall(PetscObjectGetOptionsPrefix((PetscObject)sw, &prefix));
   PetscCall(PetscProbCreateFromOptions(dim, prefix, "-dm_swarm_velocity_density", NULL, NULL, &sampler));
   PetscCall(DMSwarmInitializeVelocities(sw, sampler, v0));
   PetscFunctionReturn(0);

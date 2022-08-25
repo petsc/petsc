@@ -1,0 +1,59 @@
+DM Object: cubit(SquareFaceSet.gen): 08/02/2022: 12:09:03 1 MPI process
+  type: plex
+cubit(SquareFaceSet.gen): 08/02/2022: 12:09:03 in 2 dimensions:
+  Number of 0-cells per rank: 9
+  Number of 1-cells per rank: 16
+  Number of 2-cells per rank: 8
+Labels:
+  celltype: 3 strata with value/size (0 (9), 3 (8), 1 (16))
+  depth: 3 strata with value/size (0 (9), 1 (16), 2 (8))
+  Cell Sets: 1 strata with value/size (1 (8))
+  Vertex Sets: 2 strata with value/size (10 (3), 11 (3))
+  Face Sets: 3 strata with value/size (20 (2), 21 (2), 22 (4))
+# Vertex set: 2
+set 0 size: 3
+	 point 11
+	 point 12
+	 point 14
+set 1 size: 3
+	 point 8
+	 point 15
+	 point 16
+PetscSection Object: 1 MPI process
+  type not yet set
+1 fields
+  field 0 with 2 components
+Process 0:
+  (   0) dim  0 offset   0
+  (   1) dim  0 offset   0
+  (   2) dim  0 offset   0
+  (   3) dim  0 offset   0
+  (   4) dim  0 offset   0
+  (   5) dim  0 offset   0
+  (   6) dim  0 offset   0
+  (   7) dim  0 offset   0
+  (   8) dim  2 offset   0 constrained 1
+  (   9) dim  2 offset   2
+  (  10) dim  2 offset   4
+  (  11) dim  2 offset   6 constrained 0
+  (  12) dim  2 offset   8 constrained 0
+  (  13) dim  2 offset  10
+  (  14) dim  2 offset  12 constrained 0
+  (  15) dim  2 offset  14 constrained 1
+  (  16) dim  2 offset  16 constrained 1
+  (  17) dim  0 offset  18
+  (  18) dim  0 offset  18
+  (  19) dim  0 offset  18
+  (  20) dim  0 offset  18
+  (  21) dim  0 offset  18
+  (  22) dim  0 offset  18
+  (  23) dim  0 offset  18
+  (  24) dim  0 offset  18
+  (  25) dim  0 offset  18
+  (  26) dim  0 offset  18
+  (  27) dim  0 offset  18
+  (  28) dim  0 offset  18
+  (  29) dim  0 offset  18
+  (  30) dim  0 offset  18
+  (  31) dim  0 offset  18
+  (  32) dim  0 offset  18

@@ -1,0 +1,26 @@
+DM Object: box 4 MPI processes
+  type: plex
+box in 2 dimensions:
+  Number of 0-cells per rank: 25 25 25 25
+  Number of 1-cells per rank: 40 40 40 40
+  Number of 2-cells per rank: 16 16 16 16
+Labels:
+  celltype: 3 strata with value/size (0 (25), 1 (40), 4 (16))
+  depth: 3 strata with value/size (0 (25), 1 (40), 2 (16))
+  marker: 1 strata with value/size (1 (17))
+  Face Sets: 2 strata with value/size (1 (7), 4 (7))
+The AMGX_initialize_plugins API call is deprecated and can be safely removed.
+    0 KSP Residual norm 9.295786691920e+00 
+    1 KSP Residual norm 2.069412016514e+00 
+    2 KSP Residual norm 1.071914348705e-01 
+    3 KSP Residual norm 6.539312312764e-03 
+    4 KSP Residual norm 5.348752144531e-04 
+    5 KSP Residual norm 3.324404608202e-05 
+  Linear solve converged due to CONVERGED_RTOL iterations 5
+    0 KSP Residual norm 9.295786691920e+00 
+    1 KSP Residual norm 2.069412016514e+00 
+    2 KSP Residual norm 1.071914348705e-01 
+    3 KSP Residual norm 6.539312312764e-03 
+    4 KSP Residual norm 5.348752144531e-04 
+    5 KSP Residual norm 3.324404608202e-05 
+  Linear solve converged due to CONVERGED_RTOL iterations 5

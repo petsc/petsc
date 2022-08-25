@@ -1,52 +1,50 @@
-#include <petsc/private/dmimpl.h>           /*I      "petscdm.h"          I*/
+#include <petsc/private/dmimpl.h> /*I      "petscdm.h"          I*/
 
 #include <petscdmplex.h> /* For DMProjectCoordinates() */
 #include <petscsf.h>     /* For DMLocatePoints() */
 
-PetscErrorCode DMRestrictHook_Coordinates(DM dm,DM dmc,void *ctx)
-{
-  DM dm_coord,dmc_coord;
-  Vec coords,ccoords;
+PetscErrorCode DMRestrictHook_Coordinates(DM dm, DM dmc, void *ctx) {
+  DM  dm_coord, dmc_coord;
+  Vec coords, ccoords;
   Mat inject;
   PetscFunctionBegin;
-  PetscCall(DMGetCoordinateDM(dm,&dm_coord));
-  PetscCall(DMGetCoordinateDM(dmc,&dmc_coord));
-  PetscCall(DMGetCoordinates(dm,&coords));
-  PetscCall(DMGetCoordinates(dmc,&ccoords));
+  PetscCall(DMGetCoordinateDM(dm, &dm_coord));
+  PetscCall(DMGetCoordinateDM(dmc, &dmc_coord));
+  PetscCall(DMGetCoordinates(dm, &coords));
+  PetscCall(DMGetCoordinates(dmc, &ccoords));
   if (coords && !ccoords) {
-    PetscCall(DMCreateGlobalVector(dmc_coord,&ccoords));
-    PetscCall(PetscObjectSetName((PetscObject)ccoords,"coordinates"));
-    PetscCall(DMCreateInjection(dmc_coord,dm_coord,&inject));
-    PetscCall(MatRestrict(inject,coords,ccoords));
+    PetscCall(DMCreateGlobalVector(dmc_coord, &ccoords));
+    PetscCall(PetscObjectSetName((PetscObject)ccoords, "coordinates"));
+    PetscCall(DMCreateInjection(dmc_coord, dm_coord, &inject));
+    PetscCall(MatRestrict(inject, coords, ccoords));
     PetscCall(MatDestroy(&inject));
-    PetscCall(DMSetCoordinates(dmc,ccoords));
+    PetscCall(DMSetCoordinates(dmc, ccoords));
     PetscCall(VecDestroy(&ccoords));
   }
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMSubDomainHook_Coordinates(DM dm,DM subdm,void *ctx)
-{
-  DM dm_coord,subdm_coord;
-  Vec coords,ccoords,clcoords;
-  VecScatter *scat_i,*scat_g;
+static PetscErrorCode DMSubDomainHook_Coordinates(DM dm, DM subdm, void *ctx) {
+  DM          dm_coord, subdm_coord;
+  Vec         coords, ccoords, clcoords;
+  VecScatter *scat_i, *scat_g;
   PetscFunctionBegin;
-  PetscCall(DMGetCoordinateDM(dm,&dm_coord));
-  PetscCall(DMGetCoordinateDM(subdm,&subdm_coord));
-  PetscCall(DMGetCoordinates(dm,&coords));
-  PetscCall(DMGetCoordinates(subdm,&ccoords));
+  PetscCall(DMGetCoordinateDM(dm, &dm_coord));
+  PetscCall(DMGetCoordinateDM(subdm, &subdm_coord));
+  PetscCall(DMGetCoordinates(dm, &coords));
+  PetscCall(DMGetCoordinates(subdm, &ccoords));
   if (coords && !ccoords) {
-    PetscCall(DMCreateGlobalVector(subdm_coord,&ccoords));
-    PetscCall(PetscObjectSetName((PetscObject)ccoords,"coordinates"));
-    PetscCall(DMCreateLocalVector(subdm_coord,&clcoords));
-    PetscCall(PetscObjectSetName((PetscObject)clcoords,"coordinates"));
-    PetscCall(DMCreateDomainDecompositionScatters(dm_coord,1,&subdm_coord,NULL,&scat_i,&scat_g));
-    PetscCall(VecScatterBegin(scat_i[0],coords,ccoords,INSERT_VALUES,SCATTER_FORWARD));
-    PetscCall(VecScatterEnd(scat_i[0],coords,ccoords,INSERT_VALUES,SCATTER_FORWARD));
-    PetscCall(VecScatterBegin(scat_g[0],coords,clcoords,INSERT_VALUES,SCATTER_FORWARD));
-    PetscCall(VecScatterEnd(scat_g[0],coords,clcoords,INSERT_VALUES,SCATTER_FORWARD));
-    PetscCall(DMSetCoordinates(subdm,ccoords));
-    PetscCall(DMSetCoordinatesLocal(subdm,clcoords));
+    PetscCall(DMCreateGlobalVector(subdm_coord, &ccoords));
+    PetscCall(PetscObjectSetName((PetscObject)ccoords, "coordinates"));
+    PetscCall(DMCreateLocalVector(subdm_coord, &clcoords));
+    PetscCall(PetscObjectSetName((PetscObject)clcoords, "coordinates"));
+    PetscCall(DMCreateDomainDecompositionScatters(dm_coord, 1, &subdm_coord, NULL, &scat_i, &scat_g));
+    PetscCall(VecScatterBegin(scat_i[0], coords, ccoords, INSERT_VALUES, SCATTER_FORWARD));
+    PetscCall(VecScatterEnd(scat_i[0], coords, ccoords, INSERT_VALUES, SCATTER_FORWARD));
+    PetscCall(VecScatterBegin(scat_g[0], coords, clcoords, INSERT_VALUES, SCATTER_FORWARD));
+    PetscCall(VecScatterEnd(scat_g[0], coords, clcoords, INSERT_VALUES, SCATTER_FORWARD));
+    PetscCall(DMSetCoordinates(subdm, ccoords));
+    PetscCall(DMSetCoordinatesLocal(subdm, clcoords));
     PetscCall(VecScatterDestroy(&scat_i[0]));
     PetscCall(VecScatterDestroy(&scat_g[0]));
     PetscCall(VecDestroy(&ccoords));
@@ -72,16 +70,14 @@ static PetscErrorCode DMSubDomainHook_Coordinates(DM dm,DM subdm,void *ctx)
 
 .seealso: `DMSetCoordinateDM()`, `DMSetCoordinates()`, `DMSetCoordinatesLocal()`, `DMGetCoordinates()`, `DMGetCoordinatesLocal()`
 @*/
-PetscErrorCode DMGetCoordinateDM(DM dm, DM *cdm)
-{
+PetscErrorCode DMGetCoordinateDM(DM dm, DM *cdm) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidPointer(cdm,2);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(cdm, 2);
   if (!dm->coordinates[0].dm) {
     DM cdm;
 
-    PetscCheck(dm->ops->createcoordinatedm,PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unable to create coordinates for this DM");
-    PetscCall((*dm->ops->createcoordinatedm)(dm, &cdm));
+    PetscUseTypeMethod(dm, createcoordinatedm, &cdm);
     PetscCall(PetscObjectSetName((PetscObject)cdm, "coordinateDM"));
     /* Just in case the DM sets the coordinate DM when creating it (DMP4est can do this, because it may not setup
      * until the call to CreateCoordinateDM) */
@@ -105,11 +101,10 @@ PetscErrorCode DMGetCoordinateDM(DM dm, DM *cdm)
 
 .seealso: `DMGetCoordinateDM()`, `DMSetCoordinates()`, `DMSetCoordinatesLocal()`, `DMGetCoordinates()`, `DMGetCoordinatesLocal()`
 @*/
-PetscErrorCode DMSetCoordinateDM(DM dm, DM cdm)
-{
+PetscErrorCode DMSetCoordinateDM(DM dm, DM cdm) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidHeaderSpecific(cdm,DM_CLASSID,2);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(cdm, DM_CLASSID, 2);
   PetscCall(PetscObjectReference((PetscObject)cdm));
   PetscCall(DMDestroy(&dm->coordinates[0].dm));
   dm->coordinates[0].dm = cdm;
@@ -134,11 +129,10 @@ PetscErrorCode DMSetCoordinateDM(DM dm, DM cdm)
 
 .seealso: `DMSetCellCoordinateDM()`, `DMSetCellCoordinates()`, `DMSetCellCoordinatesLocal()`, `DMGetCellCoordinates()`, `DMGetCellCoordinatesLocal()`, `DMLocalizeCoordinates()`
 @*/
-PetscErrorCode DMGetCellCoordinateDM(DM dm, DM *cdm)
-{
+PetscErrorCode DMGetCellCoordinateDM(DM dm, DM *cdm) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidPointer(cdm,2);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(cdm, 2);
   *cdm = dm->coordinates[1].dm;
   PetscFunctionReturn(0);
 }
@@ -156,18 +150,17 @@ PetscErrorCode DMGetCellCoordinateDM(DM dm, DM *cdm)
 
 .seealso: `DMGetCellCoordinateDM()`, `DMSetCellCoordinates()`, `DMSetCellCoordinatesLocal()`, `DMGetCellCoordinates()`, `DMGetCellCoordinatesLocal()`
 @*/
-PetscErrorCode DMSetCellCoordinateDM(DM dm, DM cdm)
-{
+PetscErrorCode DMSetCellCoordinateDM(DM dm, DM cdm) {
   PetscInt dim;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   if (cdm) {
-    PetscValidHeaderSpecific(cdm,DM_CLASSID,2);
+    PetscValidHeaderSpecific(cdm, DM_CLASSID, 2);
     PetscCall(DMGetCoordinateDim(dm, &dim));
     dm->coordinates[1].dim = dim;
   }
-  PetscCall(PetscObjectReference((PetscObject) cdm));
+  PetscCall(PetscObjectReference((PetscObject)cdm));
   PetscCall(DMDestroy(&dm->coordinates[1].dm));
   dm->coordinates[1].dm = cdm;
   PetscFunctionReturn(0);
@@ -188,8 +181,7 @@ PetscErrorCode DMSetCellCoordinateDM(DM dm, DM cdm)
 
 .seealso: `DMSetCoordinateDim()`, `DMGetCoordinateSection()`, `DMGetCoordinateDM()`, `DMGetLocalSection()`, `DMSetLocalSection()`
 @*/
-PetscErrorCode DMGetCoordinateDim(DM dm, PetscInt *dim)
-{
+PetscErrorCode DMGetCoordinateDim(DM dm, PetscInt *dim) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidIntPointer(dim, 2);
@@ -211,13 +203,12 @@ PetscErrorCode DMGetCoordinateDim(DM dm, PetscInt *dim)
 
 .seealso: `DMGetCoordinateDim()`, `DMSetCoordinateSection()`, `DMGetCoordinateSection()`, `DMGetLocalSection()`, `DMSetLocalSection()`
 @*/
-PetscErrorCode DMSetCoordinateDim(DM dm, PetscInt dim)
-{
+PetscErrorCode DMSetCoordinateDim(DM dm, PetscInt dim) {
   PetscDS  ds;
   PetscInt Nds, n;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   dm->coordinates[0].dim = dim;
   if (dm->dim >= 0) {
     PetscCall(DMGetNumDS(dm, &Nds));
@@ -244,8 +235,7 @@ PetscErrorCode DMSetCoordinateDim(DM dm, PetscInt dim)
 
 .seealso: `DMGetCoordinateDM()`, `DMGetLocalSection()`, `DMSetLocalSection()`
 @*/
-PetscErrorCode DMGetCoordinateSection(DM dm, PetscSection *section)
-{
+PetscErrorCode DMGetCoordinateSection(DM dm, PetscSection *section) {
   DM cdm;
 
   PetscFunctionBegin;
@@ -270,13 +260,12 @@ PetscErrorCode DMGetCoordinateSection(DM dm, PetscSection *section)
 
 .seealso: `DMGetCoordinateSection()`, `DMGetLocalSection()`, `DMSetLocalSection()`
 @*/
-PetscErrorCode DMSetCoordinateSection(DM dm, PetscInt dim, PetscSection section)
-{
+PetscErrorCode DMSetCoordinateSection(DM dm, PetscInt dim, PetscSection section) {
   DM cdm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidHeaderSpecific(section,PETSC_SECTION_CLASSID,3);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(section, PETSC_SECTION_CLASSID, 3);
   PetscCall(DMGetCoordinateDM(dm, &cdm));
   PetscCall(DMSetLocalSection(cdm, section));
   if (dim == PETSC_DETERMINE) {
@@ -289,7 +278,10 @@ PetscErrorCode DMSetCoordinateSection(DM dm, PetscInt dim, PetscSection section)
     pEnd   = PetscMin(vEnd, pEnd);
     for (v = pStart; v < pEnd; ++v) {
       PetscCall(PetscSectionGetDof(section, v, &dd));
-      if (dd) {d = dd; break;}
+      if (dd) {
+        d = dd;
+        break;
+      }
     }
     if (d >= 0) PetscCall(DMSetCoordinateDim(dm, d));
   }
@@ -311,8 +303,7 @@ PetscErrorCode DMSetCoordinateSection(DM dm, PetscInt dim, PetscSection section)
 
 .seealso: `DMGetCoordinateSection()`, `DMSetCellCoordinateSection()`, `DMGetCellCoordinateDM()`, `DMGetCoordinateDM()`, `DMGetLocalSection()`, `DMSetLocalSection()`
 @*/
-PetscErrorCode DMGetCellCoordinateSection(DM dm, PetscSection *section)
-{
+PetscErrorCode DMGetCellCoordinateSection(DM dm, PetscSection *section) {
   DM cdm;
 
   PetscFunctionBegin;
@@ -338,15 +329,14 @@ PetscErrorCode DMGetCellCoordinateSection(DM dm, PetscSection *section)
 
 .seealso: `DMSetCoordinateSection()`, `DMGetCellCoordinateSection()`, `DMGetCoordinateSection()`, `DMGetCellCoordinateDM()`, `DMGetLocalSection()`, `DMSetLocalSection()`
 @*/
-PetscErrorCode DMSetCellCoordinateSection(DM dm, PetscInt dim, PetscSection section)
-{
+PetscErrorCode DMSetCellCoordinateSection(DM dm, PetscInt dim, PetscSection section) {
   DM cdm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidHeaderSpecific(section,PETSC_SECTION_CLASSID,3);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(section, PETSC_SECTION_CLASSID, 3);
   PetscCall(DMGetCellCoordinateDM(dm, &cdm));
-  PetscCheck(cdm, PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONGSTATE, "No DM defined for cellwise coordinates");
+  PetscCheck(cdm, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "No DM defined for cellwise coordinates");
   PetscCall(DMSetLocalSection(cdm, section));
   if (dim == PETSC_DETERMINE) {
     PetscInt d = PETSC_DEFAULT;
@@ -358,7 +348,10 @@ PetscErrorCode DMSetCellCoordinateSection(DM dm, PetscInt dim, PetscSection sect
     pEnd   = PetscMin(vEnd, pEnd);
     for (v = pStart; v < pEnd; ++v) {
       PetscCall(PetscSectionGetDof(section, v, &dd));
-      if (dd) {d = dd; break;}
+      if (dd) {
+        d = dd;
+        break;
+      }
     }
     if (d >= 0) PetscCall(DMSetCoordinateDim(dm, d));
   }
@@ -389,17 +382,16 @@ PetscErrorCode DMSetCellCoordinateSection(DM dm, PetscInt dim, PetscSection sect
 
 .seealso: `DMSetCoordinates()`, `DMGetCoordinatesLocal()`, `DMGetCoordinateDM()`, `DMDASetUniformCoordinates()`
 @*/
-PetscErrorCode DMGetCoordinates(DM dm, Vec *c)
-{
+PetscErrorCode DMGetCoordinates(DM dm, Vec *c) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidPointer(c,2);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(c, 2);
   if (!dm->coordinates[0].x && dm->coordinates[0].xl) {
     DM cdm = NULL;
 
     PetscCall(DMGetCoordinateDM(dm, &cdm));
     PetscCall(DMCreateGlobalVector(cdm, &dm->coordinates[0].x));
-    PetscCall(PetscObjectSetName((PetscObject) dm->coordinates[0].x, "coordinates"));
+    PetscCall(PetscObjectSetName((PetscObject)dm->coordinates[0].x, "coordinates"));
     PetscCall(DMLocalToGlobalBegin(cdm, dm->coordinates[0].xl, INSERT_VALUES, dm->coordinates[0].x));
     PetscCall(DMLocalToGlobalEnd(cdm, dm->coordinates[0].xl, INSERT_VALUES, dm->coordinates[0].x));
   }
@@ -425,17 +417,16 @@ PetscErrorCode DMGetCoordinates(DM dm, Vec *c)
 
 .seealso: `DMSetCoordinatesLocal()`, `DMGetCoordinates()`, `DMGetCoordinatesLocal()`, `DMGetCoordinateDM()`, `DMDASetUniformCoordinates()`
 @*/
-PetscErrorCode DMSetCoordinates(DM dm, Vec c)
-{
+PetscErrorCode DMSetCoordinates(DM dm, Vec c) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  if (c) PetscValidHeaderSpecific(c,VEC_CLASSID,2);
-  PetscCall(PetscObjectReference((PetscObject) c));
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (c) PetscValidHeaderSpecific(c, VEC_CLASSID, 2);
+  PetscCall(PetscObjectReference((PetscObject)c));
   PetscCall(VecDestroy(&dm->coordinates[0].x));
   dm->coordinates[0].x = c;
   PetscCall(VecDestroy(&dm->coordinates[0].xl));
-  PetscCall(DMCoarsenHookAdd(dm,DMRestrictHook_Coordinates,NULL,NULL));
-  PetscCall(DMSubDomainHookAdd(dm,DMSubDomainHook_Coordinates,NULL,NULL));
+  PetscCall(DMCoarsenHookAdd(dm, DMRestrictHook_Coordinates, NULL, NULL));
+  PetscCall(DMSubDomainHookAdd(dm, DMSubDomainHook_Coordinates, NULL, NULL));
   PetscFunctionReturn(0);
 }
 
@@ -460,17 +451,16 @@ PetscErrorCode DMSetCoordinates(DM dm, Vec c)
 
 .seealso: `DMSetCellCoordinates()`, `DMGetCellCoordinatesLocal()`, `DMGetCellCoordinateDM()`
 @*/
-PetscErrorCode DMGetCellCoordinates(DM dm, Vec *c)
-{
+PetscErrorCode DMGetCellCoordinates(DM dm, Vec *c) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidPointer(c,2);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(c, 2);
   if (!dm->coordinates[1].x && dm->coordinates[1].xl) {
     DM cdm = NULL;
 
     PetscCall(DMGetCellCoordinateDM(dm, &cdm));
     PetscCall(DMCreateGlobalVector(cdm, &dm->coordinates[1].x));
-    PetscCall(PetscObjectSetName((PetscObject) dm->coordinates[1].x, "DG coordinates"));
+    PetscCall(PetscObjectSetName((PetscObject)dm->coordinates[1].x, "DG coordinates"));
     PetscCall(DMLocalToGlobalBegin(cdm, dm->coordinates[1].xl, INSERT_VALUES, dm->coordinates[1].x));
     PetscCall(DMLocalToGlobalEnd(cdm, dm->coordinates[1].xl, INSERT_VALUES, dm->coordinates[1].x));
   }
@@ -496,12 +486,11 @@ PetscErrorCode DMGetCellCoordinates(DM dm, Vec *c)
 
 .seealso: `DMSetCellCoordinatesLocal()`, `DMGetCellCoordinates()`, `DMGetCellCoordinatesLocal()`, `DMGetCellCoordinateDM()`
 @*/
-PetscErrorCode DMSetCellCoordinates(DM dm, Vec c)
-{
+PetscErrorCode DMSetCellCoordinates(DM dm, Vec c) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  if (c) PetscValidHeaderSpecific(c,VEC_CLASSID,2);
-  PetscCall(PetscObjectReference((PetscObject) c));
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (c) PetscValidHeaderSpecific(c, VEC_CLASSID, 2);
+  PetscCall(PetscObjectReference((PetscObject)c));
   PetscCall(VecDestroy(&dm->coordinates[1].x));
   dm->coordinates[1].x = c;
   PetscCall(VecDestroy(&dm->coordinates[1].xl));
@@ -520,16 +509,15 @@ PetscErrorCode DMSetCellCoordinates(DM dm, Vec c)
 
 .seealso: `DMGetCoordinatesLocalNoncollective()`
 @*/
-PetscErrorCode DMGetCoordinatesLocalSetUp(DM dm)
-{
+PetscErrorCode DMGetCoordinatesLocalSetUp(DM dm) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   if (!dm->coordinates[0].xl && dm->coordinates[0].x) {
     DM cdm = NULL;
 
     PetscCall(DMGetCoordinateDM(dm, &cdm));
     PetscCall(DMCreateLocalVector(cdm, &dm->coordinates[0].xl));
-    PetscCall(PetscObjectSetName((PetscObject) dm->coordinates[0].xl, "coordinates"));
+    PetscCall(PetscObjectSetName((PetscObject)dm->coordinates[0].xl, "coordinates"));
     PetscCall(DMGlobalToLocalBegin(cdm, dm->coordinates[0].x, INSERT_VALUES, dm->coordinates[0].xl));
     PetscCall(DMGlobalToLocalEnd(cdm, dm->coordinates[0].x, INSERT_VALUES, dm->coordinates[0].xl));
   }
@@ -559,11 +547,10 @@ PetscErrorCode DMGetCoordinatesLocalSetUp(DM dm)
 
 .seealso: `DMSetCoordinatesLocal()`, `DMGetCoordinates()`, `DMSetCoordinates()`, `DMGetCoordinateDM()`, `DMGetCoordinatesLocalNoncollective()`
 @*/
-PetscErrorCode DMGetCoordinatesLocal(DM dm, Vec *c)
-{
+PetscErrorCode DMGetCoordinatesLocal(DM dm, Vec *c) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidPointer(c,2);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(c, 2);
   PetscCall(DMGetCoordinatesLocalSetUp(dm));
   *c = dm->coordinates[0].xl;
   PetscFunctionReturn(0);
@@ -584,11 +571,10 @@ PetscErrorCode DMGetCoordinatesLocal(DM dm, Vec *c)
 
 .seealso: `DMGetCoordinatesLocalSetUp()`, `DMGetCoordinatesLocal()`, `DMSetCoordinatesLocal()`, `DMGetCoordinates()`, `DMSetCoordinates()`, `DMGetCoordinateDM()`
 @*/
-PetscErrorCode DMGetCoordinatesLocalNoncollective(DM dm, Vec *c)
-{
+PetscErrorCode DMGetCoordinatesLocalNoncollective(DM dm, Vec *c) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidPointer(c,2);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(c, 2);
   PetscCheck(dm->coordinates[0].xl || !dm->coordinates[0].x, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "DMGetCoordinatesLocalSetUp() has not been called");
   *c = dm->coordinates[0].xl;
   PetscFunctionReturn(0);
@@ -621,8 +607,7 @@ PetscErrorCode DMGetCoordinatesLocalNoncollective(DM dm, Vec *c)
 
 .seealso: `DMSetCoordinatesLocal()`, `DMGetCoordinatesLocal()`, `DMGetCoordinatesLocalNoncollective()`, `DMGetCoordinatesLocalSetUp()`, `DMGetCoordinates()`, `DMSetCoordinates()`, `DMGetCoordinateDM()`
 @*/
-PetscErrorCode DMGetCoordinatesLocalTuple(DM dm, IS p, PetscSection *pCoordSection, Vec *pCoord)
-{
+PetscErrorCode DMGetCoordinatesLocalTuple(DM dm, IS p, PetscSection *pCoordSection, Vec *pCoord) {
   DM                 cdm;
   PetscSection       cs, newcs;
   Vec                coords;
@@ -641,7 +626,7 @@ PetscErrorCode DMGetCoordinatesLocalTuple(DM dm, IS p, PetscSection *pCoordSecti
   PetscCheck(coords, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "DMGetCoordinatesLocalSetUp() has not been called or coordinates not set");
   PetscCheck(cdm && cs, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "DM not supported");
   PetscCall(VecGetArrayRead(coords, &arr));
-  PetscCall(PetscSectionExtractDofsFromArray(cs, MPIU_SCALAR, arr, p, &newcs, pCoord ? ((void**)&newarr) : NULL));
+  PetscCall(PetscSectionExtractDofsFromArray(cs, MPIU_SCALAR, arr, p, &newcs, pCoord ? ((void **)&newarr) : NULL));
   PetscCall(VecRestoreArrayRead(coords, &arr));
   if (pCoord) {
     PetscCall(PetscSectionGetStorageSize(newcs, &n));
@@ -651,8 +636,9 @@ PetscErrorCode DMGetCoordinatesLocalTuple(DM dm, IS p, PetscSection *pCoordSecti
   } else {
     PetscCall(PetscFree(newarr));
   }
-  if (pCoordSection) {*pCoordSection = newcs;}
-  else               PetscCall(PetscSectionDestroy(&newcs));
+  if (pCoordSection) {
+    *pCoordSection = newcs;
+  } else PetscCall(PetscSectionDestroy(&newcs));
   PetscFunctionReturn(0);
 }
 
@@ -676,12 +662,11 @@ PetscErrorCode DMGetCoordinatesLocalTuple(DM dm, IS p, PetscSection *pCoordSecti
 
 .seealso: `DMGetCoordinatesLocal()`, `DMSetCoordinates()`, `DMGetCoordinates()`, `DMGetCoordinateDM()`
 @*/
-PetscErrorCode DMSetCoordinatesLocal(DM dm, Vec c)
-{
+PetscErrorCode DMSetCoordinatesLocal(DM dm, Vec c) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  if (c) PetscValidHeaderSpecific(c,VEC_CLASSID,2);
-  PetscCall(PetscObjectReference((PetscObject) c));
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (c) PetscValidHeaderSpecific(c, VEC_CLASSID, 2);
+  PetscCall(PetscObjectReference((PetscObject)c));
   PetscCall(VecDestroy(&dm->coordinates[0].xl));
   dm->coordinates[0].xl = c;
   PetscCall(VecDestroy(&dm->coordinates[0].x));
@@ -700,16 +685,15 @@ PetscErrorCode DMSetCoordinatesLocal(DM dm, Vec c)
 
 .seealso: `DMGetCellCoordinatesLocalNoncollective()`
 @*/
-PetscErrorCode DMGetCellCoordinatesLocalSetUp(DM dm)
-{
+PetscErrorCode DMGetCellCoordinatesLocalSetUp(DM dm) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   if (!dm->coordinates[1].xl && dm->coordinates[1].x) {
     DM cdm = NULL;
 
     PetscCall(DMGetCellCoordinateDM(dm, &cdm));
     PetscCall(DMCreateLocalVector(cdm, &dm->coordinates[1].xl));
-    PetscCall(PetscObjectSetName((PetscObject) dm->coordinates[1].xl, "DG coordinates"));
+    PetscCall(PetscObjectSetName((PetscObject)dm->coordinates[1].xl, "DG coordinates"));
     PetscCall(DMGlobalToLocalBegin(cdm, dm->coordinates[1].x, INSERT_VALUES, dm->coordinates[1].xl));
     PetscCall(DMGlobalToLocalEnd(cdm, dm->coordinates[1].x, INSERT_VALUES, dm->coordinates[1].xl));
   }
@@ -736,11 +720,10 @@ PetscErrorCode DMGetCellCoordinatesLocalSetUp(DM dm)
 
 .seealso: `DMSetCellCoordinatesLocal()`, `DMGetCellCoordinates()`, `DMSetCellCoordinates()`, `DMGetCellCoordinateDM()`, `DMGetCellCoordinatesLocalNoncollective()`
 @*/
-PetscErrorCode DMGetCellCoordinatesLocal(DM dm, Vec *c)
-{
+PetscErrorCode DMGetCellCoordinatesLocal(DM dm, Vec *c) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidPointer(c,2);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(c, 2);
   PetscCall(DMGetCellCoordinatesLocalSetUp(dm));
   *c = dm->coordinates[1].xl;
   PetscFunctionReturn(0);
@@ -761,11 +744,10 @@ PetscErrorCode DMGetCellCoordinatesLocal(DM dm, Vec *c)
 
 .seealso: `DMGetCellCoordinatesLocalSetUp()`, `DMGetCellCoordinatesLocal()`, `DMSetCellCoordinatesLocal()`, `DMGetCellCoordinates()`, `DMSetCellCoordinates()`, `DMGetCellCoordinateDM()`
 @*/
-PetscErrorCode DMGetCellCoordinatesLocalNoncollective(DM dm, Vec *c)
-{
+PetscErrorCode DMGetCellCoordinatesLocalNoncollective(DM dm, Vec *c) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidPointer(c,2);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(c, 2);
   PetscCheck(dm->coordinates[1].xl || !dm->coordinates[1].x, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "DMGetCellCoordinatesLocalSetUp() has not been called");
   *c = dm->coordinates[1].xl;
   PetscFunctionReturn(0);
@@ -791,23 +773,21 @@ PetscErrorCode DMGetCellCoordinatesLocalNoncollective(DM dm, Vec *c)
 
 .seealso: `DMGetCellCoordinatesLocal()`, `DMSetCellCoordinates()`, `DMGetCellCoordinates()`, `DMGetCellCoordinateDM()`
 @*/
-PetscErrorCode DMSetCellCoordinatesLocal(DM dm, Vec c)
-{
+PetscErrorCode DMSetCellCoordinatesLocal(DM dm, Vec c) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  if (c) PetscValidHeaderSpecific(c,VEC_CLASSID,2);
-  PetscCall(PetscObjectReference((PetscObject) c));
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (c) PetscValidHeaderSpecific(c, VEC_CLASSID, 2);
+  PetscCall(PetscObjectReference((PetscObject)c));
   PetscCall(VecDestroy(&dm->coordinates[1].xl));
   dm->coordinates[1].xl = c;
   PetscCall(VecDestroy(&dm->coordinates[1].x));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMGetCoordinateField(DM dm, DMField *field)
-{
+PetscErrorCode DMGetCoordinateField(DM dm, DMField *field) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidPointer(field,2);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(field, 2);
   if (!dm->coordinates[0].field) {
     if (dm->ops->createcoordinatefield) PetscCall((*dm->ops->createcoordinatefield)(dm, &dm->coordinates[0].field));
   }
@@ -815,11 +795,10 @@ PetscErrorCode DMGetCoordinateField(DM dm, DMField *field)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMSetCoordinateField(DM dm, DMField field)
-{
+PetscErrorCode DMSetCoordinateField(DM dm, DMField field) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  if (field) PetscValidHeaderSpecific(field,DMFIELD_CLASSID,2);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (field) PetscValidHeaderSpecific(field, DMFIELD_CLASSID, 2);
   PetscCall(PetscObjectReference((PetscObject)field));
   PetscCall(DMFieldDestroy(&dm->coordinates[0].field));
   dm->coordinates[0].field = field;
@@ -844,8 +823,7 @@ PetscErrorCode DMSetCoordinateField(DM dm, DMField field)
 
 .seealso: `DMGetCoordinates()`, `DMGetCoordinatesLocal()`, `DMGetBoundingBox()`
 @*/
-PetscErrorCode DMGetLocalBoundingBox(DM dm, PetscReal lmin[], PetscReal lmax[])
-{
+PetscErrorCode DMGetLocalBoundingBox(DM dm, PetscReal lmin[], PetscReal lmax[]) {
   Vec                coords = NULL;
   PetscReal          min[3] = {PETSC_MAX_REAL, PETSC_MAX_REAL, PETSC_MAX_REAL};
   PetscReal          max[3] = {PETSC_MIN_REAL, PETSC_MIN_REAL, PETSC_MIN_REAL};
@@ -860,18 +838,18 @@ PetscErrorCode DMGetLocalBoundingBox(DM dm, PetscReal lmin[], PetscReal lmax[])
   if (coords) {
     PetscCall(VecGetArrayRead(coords, &local_coords));
     PetscCall(VecGetLocalSize(coords, &N));
-    Ni   = N/cdim;
+    Ni = N / cdim;
     for (i = 0; i < Ni; ++i) {
       for (j = 0; j < 3; ++j) {
-        min[j] = j < cdim ? PetscMin(min[j], PetscRealPart(local_coords[i*cdim+j])) : 0;
-        max[j] = j < cdim ? PetscMax(max[j], PetscRealPart(local_coords[i*cdim+j])) : 0;
+        min[j] = j < cdim ? PetscMin(min[j], PetscRealPart(local_coords[i * cdim + j])) : 0;
+        max[j] = j < cdim ? PetscMax(max[j], PetscRealPart(local_coords[i * cdim + j])) : 0;
       }
     }
     PetscCall(VecRestoreArrayRead(coords, &local_coords));
   } else {
     PetscBool isda;
 
-    PetscCall(PetscObjectTypeCompare((PetscObject) dm, DMDA, &isda));
+    PetscCall(PetscObjectTypeCompare((PetscObject)dm, DMDA, &isda));
     if (isda) PetscCall(DMGetLocalBoundingIndices_DMDA(dm, min, max));
   }
   if (lmin) PetscCall(PetscArraycpy(lmin, min, cdim));
@@ -895,19 +873,18 @@ PetscErrorCode DMGetLocalBoundingBox(DM dm, PetscReal lmin[], PetscReal lmax[])
 
 .seealso: `DMGetLocalBoundingBox()`, `DMGetCoordinates()`, `DMGetCoordinatesLocal()`
 @*/
-PetscErrorCode DMGetBoundingBox(DM dm, PetscReal gmin[], PetscReal gmax[])
-{
-  PetscReal      lmin[3], lmax[3];
-  PetscInt       cdim;
-  PetscMPIInt    count;
+PetscErrorCode DMGetBoundingBox(DM dm, PetscReal gmin[], PetscReal gmax[]) {
+  PetscReal   lmin[3], lmax[3];
+  PetscInt    cdim;
+  PetscMPIInt count;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscCall(DMGetCoordinateDim(dm, &cdim));
   PetscCall(PetscMPIIntCast(cdim, &count));
   PetscCall(DMGetLocalBoundingBox(dm, lmin, lmax));
-  if (gmin) PetscCall(MPIU_Allreduce(lmin, gmin, count, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject) dm)));
-  if (gmax) PetscCall(MPIU_Allreduce(lmax, gmax, count, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject) dm)));
+  if (gmin) PetscCall(MPIU_Allreduce(lmin, gmin, count, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)dm)));
+  if (gmax) PetscCall(MPIU_Allreduce(lmax, gmax, count, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)dm)));
   PetscFunctionReturn(0);
 }
 
@@ -922,22 +899,21 @@ PetscErrorCode DMGetBoundingBox(DM dm, PetscReal gmin[], PetscReal gmax[])
 
 .seealso: `DMGetCoordinateField()`
 @*/
-PetscErrorCode DMProjectCoordinates(DM dm, PetscFE disc)
-{
+PetscErrorCode DMProjectCoordinates(DM dm, PetscFE disc) {
   PetscFE      discOld;
   PetscClassId classid;
-  DM           cdmOld,cdmNew;
-  Vec          coordsOld,coordsNew;
+  DM           cdmOld, cdmNew;
+  Vec          coordsOld, coordsNew;
   Mat          matInterp;
   PetscBool    same_space = PETSC_TRUE;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  if (disc) PetscValidHeaderSpecific(disc,PETSCFE_CLASSID,2);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (disc) PetscValidHeaderSpecific(disc, PETSCFE_CLASSID, 2);
 
   PetscCall(DMGetCoordinateDM(dm, &cdmOld));
   /* Check current discretization is compatible */
-  PetscCall(DMGetField(cdmOld, 0, NULL, (PetscObject*)&discOld));
+  PetscCall(DMGetField(cdmOld, 0, NULL, (PetscObject *)&discOld));
   PetscCall(PetscObjectGetClassId((PetscObject)discOld, &classid));
   if (classid != PETSCFE_CLASSID) {
     if (classid == PETSC_CONTAINER_CLASSID) {
@@ -953,18 +929,17 @@ PetscErrorCode DMProjectCoordinates(DM dm, PetscFE disc)
       if (cEnd > cStart) {
         PetscCall(DMPlexGetCellType(dm, cStart, &ct));
         switch (ct) {
-          case DM_POLYTOPE_TRI_PRISM:
-          case DM_POLYTOPE_TRI_PRISM_TENSOR:
-            SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot autoamtically create coordinate space for prisms");
-          default: break;
+        case DM_POLYTOPE_TRI_PRISM:
+        case DM_POLYTOPE_TRI_PRISM_TENSOR: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot autoamtically create coordinate space for prisms");
+        default: break;
         }
       }
       PetscCall(DMPlexIsSimplex(dm, &simplex));
       PetscCall(PetscFECreateLagrange(PETSC_COMM_SELF, dim, dE, simplex, 1, -1, &feLinear));
-      PetscCall(DMSetField(cdmOld, 0, NULL, (PetscObject) feLinear));
+      PetscCall(DMSetField(cdmOld, 0, NULL, (PetscObject)feLinear));
       PetscCall(PetscFEDestroy(&feLinear));
       PetscCall(DMCreateDS(cdmOld));
-      PetscCall(DMGetField(cdmOld, 0, NULL, (PetscObject*)&discOld));
+      PetscCall(DMGetField(cdmOld, 0, NULL, (PetscObject *)&discOld));
     } else {
       const char *discname;
 
@@ -981,7 +956,7 @@ PetscErrorCode DMProjectCoordinates(DM dm, PetscFE disc)
   }
   /* Make a fresh clone of the coordinate DM */
   PetscCall(DMClone(cdmOld, &cdmNew));
-  PetscCall(DMSetField(cdmNew, 0, NULL, (PetscObject) disc));
+  PetscCall(DMSetField(cdmNew, 0, NULL, (PetscObject)disc));
   PetscCall(DMCreateDS(cdmNew));
   PetscCall(DMGetCoordinates(dm, &coordsOld));
   if (same_space) {
@@ -1038,24 +1013,22 @@ $    PetscSFGetGraph(cellSF,NULL,&nFound,&found,&cells);
 
 .seealso: `DMSetCoordinates()`, `DMSetCoordinatesLocal()`, `DMGetCoordinates()`, `DMGetCoordinatesLocal()`, `DMPointLocationType`
 @*/
-PetscErrorCode DMLocatePoints(DM dm, Vec v, DMPointLocationType ltype, PetscSF *cellSF)
-{
+PetscErrorCode DMLocatePoints(DM dm, Vec v, DMPointLocationType ltype, PetscSF *cellSF) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidHeaderSpecific(v,VEC_CLASSID,2);
-  PetscValidPointer(cellSF,4);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(v, VEC_CLASSID, 2);
+  PetscValidPointer(cellSF, 4);
   if (*cellSF) {
     PetscMPIInt result;
 
-    PetscValidHeaderSpecific(*cellSF,PETSCSF_CLASSID,4);
-    PetscCallMPI(MPI_Comm_compare(PetscObjectComm((PetscObject)v),PetscObjectComm((PetscObject)*cellSF),&result));
-    PetscCheck(result == MPI_IDENT || result == MPI_CONGRUENT,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"cellSF must have a communicator congruent to v's");
+    PetscValidHeaderSpecific(*cellSF, PETSCSF_CLASSID, 4);
+    PetscCallMPI(MPI_Comm_compare(PetscObjectComm((PetscObject)v), PetscObjectComm((PetscObject)*cellSF), &result));
+    PetscCheck(result == MPI_IDENT || result == MPI_CONGRUENT, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "cellSF must have a communicator congruent to v's");
   } else {
-    PetscCall(PetscSFCreate(PetscObjectComm((PetscObject)v),cellSF));
+    PetscCall(PetscSFCreate(PetscObjectComm((PetscObject)v), cellSF));
   }
-  PetscCheck(dm->ops->locatepoints,PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Point location not available for this DM");
-  PetscCall(PetscLogEventBegin(DM_LocatePoints,dm,0,0,0));
-  PetscCall((*dm->ops->locatepoints)(dm,v,ltype,*cellSF));
-  PetscCall(PetscLogEventEnd(DM_LocatePoints,dm,0,0,0));
+  PetscCall(PetscLogEventBegin(DM_LocatePoints, dm, 0, 0, 0));
+  PetscUseTypeMethod(dm, locatepoints, v, ltype, *cellSF);
+  PetscCall(PetscLogEventEnd(DM_LocatePoints, dm, 0, 0, 0));
   PetscFunctionReturn(0);
 }

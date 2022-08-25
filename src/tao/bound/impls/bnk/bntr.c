@@ -88,14 +88,13 @@
  end
 */
 
-PetscErrorCode TaoSolve_BNTR(Tao tao)
-{
-  TAO_BNK                      *bnk = (TAO_BNK *)tao->data;
-  KSPConvergedReason           ksp_reason;
+PetscErrorCode TaoSolve_BNTR(Tao tao) {
+  TAO_BNK           *bnk = (TAO_BNK *)tao->data;
+  KSPConvergedReason ksp_reason;
 
-  PetscReal                    oldTrust, prered, actred, steplen = 0.0, resnorm;
-  PetscBool                    cgTerminate, needH = PETSC_TRUE, stepAccepted, shift = PETSC_FALSE;
-  PetscInt                     stepType, nDiff;
+  PetscReal oldTrust, prered, actred, steplen = 0.0, resnorm;
+  PetscBool cgTerminate, needH = PETSC_TRUE, stepAccepted, shift = PETSC_FALSE;
+  PetscInt  stepType, nDiff;
 
   PetscFunctionBegin;
   /* Initialize the preconditioner, KSP solver and trust radius/line search */
@@ -107,7 +106,7 @@ PetscErrorCode TaoSolve_BNTR(Tao tao)
   while (tao->reason == TAO_CONTINUE_ITERATING) {
     /* Call general purpose update function */
     if (tao->ops->update) {
-      PetscCall((*tao->ops->update)(tao, tao->niter, tao->user_update));
+      PetscUseTypeMethod(tao, update, tao->niter, tao->user_update);
       PetscCall(TaoComputeObjectiveAndGradient(tao, tao->solution, &bnk->f, bnk->unprojected_gradient));
     }
 
@@ -132,14 +131,14 @@ PetscErrorCode TaoSolve_BNTR(Tao tao)
     /* Enter into trust region loops */
     stepAccepted = PETSC_FALSE;
     while (!stepAccepted && tao->reason == TAO_CONTINUE_ITERATING) {
-      tao->ksp_its=0;
+      tao->ksp_its = 0;
 
       /* Use the common BNK kernel to compute the Newton step (for inactive variables only) */
       PetscCall((*bnk->computestep)(tao, shift, &ksp_reason, &stepType));
 
       /* Temporarily accept the step and project it into the bounds */
       PetscCall(VecAXPY(tao->solution, 1.0, tao->stepdirection));
-      PetscCall(TaoBoundSolution(tao->solution, tao->XL,tao->XU, 0.0, &nDiff, tao->solution));
+      PetscCall(TaoBoundSolution(tao->solution, tao->XL, tao->XU, 0.0, &nDiff, tao->solution));
 
       /* Check if the projection changed the step direction */
       if (nDiff > 0) {
@@ -156,15 +155,15 @@ PetscErrorCode TaoSolve_BNTR(Tao tao)
 
       /* Compute the actual reduction and update the trust radius */
       PetscCall(TaoComputeObjective(tao, tao->solution, &bnk->f));
-      PetscCheck(!PetscIsInfOrNanReal(bnk->f),PetscObjectComm((PetscObject)tao),PETSC_ERR_USER, "User provided compute function generated Inf or NaN");
-      actred = bnk->fold - bnk->f;
+      PetscCheck(!PetscIsInfOrNanReal(bnk->f), PetscObjectComm((PetscObject)tao), PETSC_ERR_USER, "User provided compute function generated Inf or NaN");
+      actred   = bnk->fold - bnk->f;
       oldTrust = tao->trust;
       PetscCall(TaoBNKUpdateTrustRadius(tao, prered, actred, bnk->update_type, stepType, &stepAccepted));
 
       if (stepAccepted) {
         /* Step is good, evaluate the gradient and flip the need-Hessian switch */
         steplen = 1.0;
-        needH = PETSC_TRUE;
+        needH   = PETSC_TRUE;
         ++bnk->newt;
         PetscCall(TaoComputeGradient(tao, tao->solution, bnk->unprojected_gradient));
         PetscCall(TaoBNKEstimateActiveSet(tao, bnk->as_type));
@@ -174,8 +173,8 @@ PetscErrorCode TaoSolve_BNTR(Tao tao)
       } else {
         /* Step is bad, revert old solution and re-solve with new radius*/
         steplen = 0.0;
-        needH = PETSC_FALSE;
-        bnk->f = bnk->fold;
+        needH   = PETSC_FALSE;
+        bnk->f  = bnk->fold;
         PetscCall(VecCopy(bnk->Xold, tao->solution));
         PetscCall(VecCopy(bnk->Gold, tao->gradient));
         PetscCall(VecCopy(bnk->unprojected_gradient_old, bnk->unprojected_gradient));
@@ -188,37 +187,35 @@ PetscErrorCode TaoSolve_BNTR(Tao tao)
     /*  Check for termination */
     PetscCall(VecFischer(tao->solution, bnk->unprojected_gradient, tao->XL, tao->XU, bnk->W));
     PetscCall(VecNorm(bnk->W, NORM_2, &resnorm));
-    PetscCheck(!PetscIsInfOrNanReal(resnorm),PetscObjectComm((PetscObject)tao),PETSC_ERR_USER, "User provided compute function generated Inf or NaN");
+    PetscCheck(!PetscIsInfOrNanReal(resnorm), PetscObjectComm((PetscObject)tao), PETSC_ERR_USER, "User provided compute function generated Inf or NaN");
     ++tao->niter;
     PetscCall(TaoLogConvergenceHistory(tao, bnk->f, resnorm, 0.0, tao->ksp_its));
     PetscCall(TaoMonitor(tao, tao->niter, bnk->f, resnorm, 0.0, steplen));
-    PetscCall((*tao->ops->convergencetest)(tao, tao->cnvP));
+    PetscUseTypeMethod(tao, convergencetest, tao->cnvP);
   }
   PetscFunctionReturn(0);
 }
 
 /*------------------------------------------------------------*/
-static PetscErrorCode TaoSetUp_BNTR(Tao tao)
-{
+static PetscErrorCode TaoSetUp_BNTR(Tao tao) {
   KSP               ksp;
   PetscVoidFunction valid;
 
   PetscFunctionBegin;
   PetscCall(TaoSetUp_BNK(tao));
-  PetscCall(TaoGetKSP(tao,&ksp));
-  PetscCall(PetscObjectQueryFunction((PetscObject)ksp,"KSPCGSetRadius_C",&valid));
-  PetscCheck(valid,PetscObjectComm((PetscObject)tao),PETSC_ERR_SUP,"Not for KSP type %s. Must use a trust-region CG method for KSP (e.g. KSPNASH, KSPSTCG, KSPGLTR)",((PetscObject)ksp)->type_name);
+  PetscCall(TaoGetKSP(tao, &ksp));
+  PetscCall(PetscObjectQueryFunction((PetscObject)ksp, "KSPCGSetRadius_C", &valid));
+  PetscCheck(valid, PetscObjectComm((PetscObject)tao), PETSC_ERR_SUP, "Not for KSP type %s. Must use a trust-region CG method for KSP (e.g. KSPNASH, KSPSTCG, KSPGLTR)", ((PetscObject)ksp)->type_name);
   PetscFunctionReturn(0);
 }
 
 /*------------------------------------------------------------*/
 
-static PetscErrorCode TaoSetFromOptions_BNTR(PetscOptionItems *PetscOptionsObject,Tao tao)
-{
-  TAO_BNK        *bnk = (TAO_BNK *)tao->data;
+static PetscErrorCode TaoSetFromOptions_BNTR(Tao tao, PetscOptionItems *PetscOptionsObject) {
+  TAO_BNK *bnk = (TAO_BNK *)tao->data;
 
   PetscFunctionBegin;
-  PetscCall(TaoSetFromOptions_BNK(PetscOptionsObject, tao));
+  PetscCall(TaoSetFromOptions_BNK(tao, PetscOptionsObject));
   if (bnk->update_type == BNK_UPDATE_STEP) bnk->update_type = BNK_UPDATE_REDUCTION;
   PetscFunctionReturn(0);
 }
@@ -235,17 +232,16 @@ static PetscErrorCode TaoSetFromOptions_BNTR(PetscOptionItems *PetscOptionsObjec
 
   Level: beginner
 M*/
-PETSC_EXTERN PetscErrorCode TaoCreate_BNTR(Tao tao)
-{
-  TAO_BNK        *bnk;
+PETSC_EXTERN PetscErrorCode TaoCreate_BNTR(Tao tao) {
+  TAO_BNK *bnk;
 
   PetscFunctionBegin;
   PetscCall(TaoCreate_BNK(tao));
-  tao->ops->solve=TaoSolve_BNTR;
-  tao->ops->setup=TaoSetUp_BNTR;
-  tao->ops->setfromoptions=TaoSetFromOptions_BNTR;
+  tao->ops->solve          = TaoSolve_BNTR;
+  tao->ops->setup          = TaoSetUp_BNTR;
+  tao->ops->setfromoptions = TaoSetFromOptions_BNTR;
 
-  bnk = (TAO_BNK *)tao->data;
+  bnk              = (TAO_BNK *)tao->data;
   bnk->update_type = BNK_UPDATE_REDUCTION; /* trust region updates based on predicted/actual reduction */
   PetscFunctionReturn(0);
 }

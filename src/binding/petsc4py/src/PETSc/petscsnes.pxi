@@ -3,7 +3,7 @@ cdef extern from * nogil:
     ctypedef const char* PetscSNESType "SNESType"
     PetscSNESType SNESNEWTONLS
     PetscSNESType SNESNEWTONTR
-    #PetscSNESType SNESPYTHON
+    PetscSNESType SNESPYTHON
     PetscSNESType SNESNRICHARDSON
     PetscSNESType SNESKSPONLY
     PetscSNESType SNESKSPTRANSPOSEONLY
@@ -216,6 +216,9 @@ cdef extern from * nogil:
     int SNESPatchSetComputeFunction(PetscSNES, PetscPCPatchComputeFunction, void*)
     int SNESPatchSetConstructType(PetscSNES, PetscPCPatchConstructType, PetscPCPatchConstructOperator, void*)
 
+    int SNESPythonSetType(PetscSNES,char[])
+    int SNESPythonGetType(PetscSNES,char*[])
+
 cdef extern from "custom.h" nogil:
     int SNESSetUseMFFD(PetscSNES,PetscBool)
     int SNESGetUseMFFD(PetscSNES,PetscBool*)
@@ -250,10 +253,8 @@ cdef extern from "custom.h" nogil:
     int SNESLineSearchGetSNES(PetscSNESLineSearch,PetscSNES*)
 
 cdef extern from "libpetsc4py.h":
-    PetscSNESType SNESPYTHON
     int SNESPythonSetContext(PetscSNES,void*)
     int SNESPythonGetContext(PetscSNES,void**)
-    int SNESPythonSetType(PetscSNES,char[])
 
 # -----------------------------------------------------------------------------
 

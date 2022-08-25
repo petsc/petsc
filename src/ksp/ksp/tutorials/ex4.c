@@ -11,143 +11,144 @@ Input parameters include:\n\
 */
 #include <petscksp.h>
 
-int main(int argc,char **args)
-{
-  Vec            x,b,u;    /* approx solution, RHS, exact solution */
-  Mat            A;        /* linear system matrix */
-  KSP            ksp;      /* linear solver context */
-  PetscReal      norm;     /* norm of solution error */
-  PetscInt       i,j,Ii,J,Istart,Iend,m = 8,n = 7,its,bs=1,II,JJ,jj;
-  PetscBool      flg,test=PETSC_FALSE,reuse=PETSC_FALSE,viewexpl=PETSC_FALSE;
-  PetscScalar    v;
-  PC             pc;
+int main(int argc, char **args) {
+  Vec         x, b, u; /* approx solution, RHS, exact solution */
+  Mat         A;       /* linear system matrix */
+  KSP         ksp;     /* linear solver context */
+  PetscReal   norm;    /* norm of solution error */
+  PetscInt    i, j, Ii, J, Istart, Iend, m = 8, n = 7, its, bs = 1, II, JJ, jj;
+  PetscBool   flg, test = PETSC_FALSE, reuse = PETSC_FALSE, viewexpl = PETSC_FALSE;
+  PetscScalar v;
+  PC          pc;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
-  PetscCall(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
-  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
-  PetscCall(PetscOptionsGetInt(NULL,NULL,"-bs",&bs,NULL));
-  PetscCall(PetscOptionsGetBool(NULL,NULL,"-test_hmg_interface",&test,NULL));
-  PetscCall(PetscOptionsGetBool(NULL,NULL,"-test_reuse_interpolation",&reuse,NULL));
-  PetscCall(PetscOptionsGetBool(NULL,NULL,"-view_explicit_mat",&viewexpl,NULL));
+  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-m", &m, NULL));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-n", &n, NULL));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-bs", &bs, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_hmg_interface", &test, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_reuse_interpolation", &reuse, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-view_explicit_mat", &viewexpl, NULL));
 
-  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
-  PetscCall(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n*bs,m*n*bs));
-  PetscCall(MatSetBlockSize(A,bs));
+  PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
+  PetscCall(MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, m * n * bs, m * n * bs));
+  PetscCall(MatSetBlockSize(A, bs));
   PetscCall(MatSetFromOptions(A));
-  PetscCall(MatMPIAIJSetPreallocation(A,5,NULL,5,NULL));
-  PetscCall(MatSeqAIJSetPreallocation(A,5,NULL));
+  PetscCall(MatMPIAIJSetPreallocation(A, 5, NULL, 5, NULL));
+  PetscCall(MatSeqAIJSetPreallocation(A, 5, NULL));
 #if defined(PETSC_HAVE_HYPRE)
-  PetscCall(MatHYPRESetPreallocation(A,5,NULL,5,NULL));
+  PetscCall(MatHYPRESetPreallocation(A, 5, NULL, 5, NULL));
 #endif
 
-  PetscCall(MatGetOwnershipRange(A,&Istart,&Iend));
+  PetscCall(MatGetOwnershipRange(A, &Istart, &Iend));
 
-  for (Ii=Istart/bs; Ii<Iend/bs; Ii++) {
-    v = -1.0; i = Ii/n; j = Ii - i*n;
-    if (i>0) {
+  for (Ii = Istart / bs; Ii < Iend / bs; Ii++) {
+    v = -1.0;
+    i = Ii / n;
+    j = Ii - i * n;
+    if (i > 0) {
       J = Ii - n;
-      for (jj=0; jj<bs; jj++) {
-        II = Ii*bs + jj;
-        JJ = J*bs + jj;
-        PetscCall(MatSetValues(A,1,&II,1,&JJ,&v,ADD_VALUES));
+      for (jj = 0; jj < bs; jj++) {
+        II = Ii * bs + jj;
+        JJ = J * bs + jj;
+        PetscCall(MatSetValues(A, 1, &II, 1, &JJ, &v, ADD_VALUES));
       }
     }
-    if (i<m-1) {
+    if (i < m - 1) {
       J = Ii + n;
-      for (jj=0; jj<bs; jj++) {
-        II = Ii*bs + jj;
-        JJ = J*bs + jj;
-        PetscCall(MatSetValues(A,1,&II,1,&JJ,&v,ADD_VALUES));
+      for (jj = 0; jj < bs; jj++) {
+        II = Ii * bs + jj;
+        JJ = J * bs + jj;
+        PetscCall(MatSetValues(A, 1, &II, 1, &JJ, &v, ADD_VALUES));
       }
     }
-    if (j>0) {
+    if (j > 0) {
       J = Ii - 1;
-      for (jj=0; jj<bs; jj++) {
-        II = Ii*bs + jj;
-        JJ = J*bs + jj;
-        PetscCall(MatSetValues(A,1,&II,1,&JJ,&v,ADD_VALUES));
+      for (jj = 0; jj < bs; jj++) {
+        II = Ii * bs + jj;
+        JJ = J * bs + jj;
+        PetscCall(MatSetValues(A, 1, &II, 1, &JJ, &v, ADD_VALUES));
       }
     }
-    if (j<n-1) {
+    if (j < n - 1) {
       J = Ii + 1;
-      for (jj=0; jj<bs; jj++) {
-        II = Ii*bs + jj;
-        JJ = J*bs + jj;
-        PetscCall(MatSetValues(A,1,&II,1,&JJ,&v,ADD_VALUES));
+      for (jj = 0; jj < bs; jj++) {
+        II = Ii * bs + jj;
+        JJ = J * bs + jj;
+        PetscCall(MatSetValues(A, 1, &II, 1, &JJ, &v, ADD_VALUES));
       }
     }
     v = 4.0;
-    for (jj=0; jj<bs; jj++) {
-      II = Ii*bs + jj;
-      PetscCall(MatSetValues(A,1,&II,1,&II,&v,ADD_VALUES));
+    for (jj = 0; jj < bs; jj++) {
+      II = Ii * bs + jj;
+      PetscCall(MatSetValues(A, 1, &II, 1, &II, &v, ADD_VALUES));
     }
   }
 
-  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
   if (viewexpl) {
     Mat E;
-    PetscCall(MatComputeOperator(A,MATAIJ,&E));
-    PetscCall(MatView(E,NULL));
+    PetscCall(MatComputeOperator(A, MATAIJ, &E));
+    PetscCall(MatView(E, NULL));
     PetscCall(MatDestroy(&E));
   }
 
-  PetscCall(MatCreateVecs(A,&u,NULL));
+  PetscCall(MatCreateVecs(A, &u, NULL));
   PetscCall(VecSetFromOptions(u));
-  PetscCall(VecDuplicate(u,&b));
-  PetscCall(VecDuplicate(b,&x));
+  PetscCall(VecDuplicate(u, &b));
+  PetscCall(VecDuplicate(b, &x));
 
-  PetscCall(VecSet(u,1.0));
-  PetscCall(MatMult(A,u,b));
+  PetscCall(VecSet(u, 1.0));
+  PetscCall(MatMult(A, u, b));
 
-  flg  = PETSC_FALSE;
-  PetscCall(PetscOptionsGetBool(NULL,NULL,"-view_exact_sol",&flg,NULL));
-  if (flg) PetscCall(VecView(u,PETSC_VIEWER_STDOUT_WORLD));
+  flg = PETSC_FALSE;
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-view_exact_sol", &flg, NULL));
+  if (flg) PetscCall(VecView(u, PETSC_VIEWER_STDOUT_WORLD));
 
-  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
-  PetscCall(KSPSetOperators(ksp,A,A));
-  PetscCall(KSPSetTolerances(ksp,1.e-2/((m+1)*(n+1)),1.e-50,PETSC_DEFAULT,PETSC_DEFAULT));
+  PetscCall(KSPCreate(PETSC_COMM_WORLD, &ksp));
+  PetscCall(KSPSetOperators(ksp, A, A));
+  PetscCall(KSPSetTolerances(ksp, 1.e-2 / ((m + 1) * (n + 1)), 1.e-50, PETSC_DEFAULT, PETSC_DEFAULT));
 
   if (test) {
-    PetscCall(KSPGetPC(ksp,&pc));
-    PetscCall(PCSetType(pc,PCHMG));
-    PetscCall(PCHMGSetInnerPCType(pc,PCGAMG));
-    PetscCall(PCHMGSetReuseInterpolation(pc,PETSC_TRUE));
-    PetscCall(PCHMGSetUseSubspaceCoarsening(pc,PETSC_TRUE));
-    PetscCall(PCHMGUseMatMAIJ(pc,PETSC_FALSE));
-    PetscCall(PCHMGSetCoarseningComponent(pc,0));
+    PetscCall(KSPGetPC(ksp, &pc));
+    PetscCall(PCSetType(pc, PCHMG));
+    PetscCall(PCHMGSetInnerPCType(pc, PCGAMG));
+    PetscCall(PCHMGSetReuseInterpolation(pc, PETSC_TRUE));
+    PetscCall(PCHMGSetUseSubspaceCoarsening(pc, PETSC_TRUE));
+    PetscCall(PCHMGUseMatMAIJ(pc, PETSC_FALSE));
+    PetscCall(PCHMGSetCoarseningComponent(pc, 0));
   }
 
   PetscCall(KSPSetFromOptions(ksp));
-  PetscCall(KSPSolve(ksp,b,x));
+  PetscCall(KSPSolve(ksp, b, x));
 
   if (reuse) {
-    PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-    PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
-    PetscCall(KSPSolve(ksp,b,x));
-    PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-    PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
-    PetscCall(KSPSolve(ksp,b,x));
+    PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
+    PetscCall(KSPSolve(ksp, b, x));
+    PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
+    PetscCall(KSPSolve(ksp, b, x));
     /* Make sparsity pattern different and reuse interpolation */
-    PetscCall(MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE));
-    PetscCall(MatSetOption(A,MAT_IGNORE_ZERO_ENTRIES,PETSC_FALSE));
-    PetscCall(MatGetSize(A,&m,NULL));
+    PetscCall(MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE));
+    PetscCall(MatSetOption(A, MAT_IGNORE_ZERO_ENTRIES, PETSC_FALSE));
+    PetscCall(MatGetSize(A, &m, NULL));
     n = 0;
     v = 0;
     m--;
     /* Connect the last element to the first element */
-    PetscCall(MatSetValue(A,m,n,v,ADD_VALUES));
-    PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-    PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
-    PetscCall(KSPSolve(ksp,b,x));
+    PetscCall(MatSetValue(A, m, n, v, ADD_VALUES));
+    PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
+    PetscCall(KSPSolve(ksp, b, x));
   }
 
-  PetscCall(VecAXPY(x,-1.0,u));
-  PetscCall(VecNorm(x,NORM_2,&norm));
-  PetscCall(KSPGetIterationNumber(ksp,&its));
+  PetscCall(VecAXPY(x, -1.0, u));
+  PetscCall(VecNorm(x, NORM_2, &norm));
+  PetscCall(KSPGetIterationNumber(ksp, &its));
 
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g iterations %" PetscInt_FMT "\n",(double)norm,its));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Norm of error %g iterations %" PetscInt_FMT "\n", (double)norm, its));
 
   PetscCall(KSPDestroy(&ksp));
   PetscCall(VecDestroy(&u));

@@ -1,5 +1,5 @@
 
-#include <petsc/private/viewerimpl.h>  /*I "petscviewer.h" I*/
+#include <petsc/private/viewerimpl.h> /*I "petscviewer.h" I*/
 
 /*@C
    PetscViewerGetSubViewer - Creates a new PetscViewer (same type as the old)
@@ -43,14 +43,11 @@
 
 .seealso: `PetscViewerSocketOpen()`, `PetscViewerASCIIOpen()`, `PetscViewerDrawOpen()`, `PetscViewerRestoreSubViewer()`
 @*/
-PetscErrorCode  PetscViewerGetSubViewer(PetscViewer viewer,MPI_Comm comm,PetscViewer *outviewer)
-{
+PetscErrorCode PetscViewerGetSubViewer(PetscViewer viewer, MPI_Comm comm, PetscViewer *outviewer) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  PetscValidPointer(outviewer,3);
-  if (viewer->ops->getsubviewer) {
-    PetscCall((*viewer->ops->getsubviewer)(viewer,comm,outviewer));
-  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot get SubViewer PetscViewer for type %s",((PetscObject)viewer)->type_name);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
+  PetscValidPointer(outviewer, 3);
+  PetscUseTypeMethod(viewer, getsubviewer, comm, outviewer);
   PetscFunctionReturn(0);
 }
 
@@ -70,13 +67,10 @@ PetscErrorCode  PetscViewerGetSubViewer(PetscViewer viewer,MPI_Comm comm,PetscVi
 
 .seealso: `PetscViewerSocketOpen()`, `PetscViewerASCIIOpen()`, `PetscViewerDrawOpen()`, `PetscViewerGetSubViewer()`
 @*/
-PetscErrorCode  PetscViewerRestoreSubViewer(PetscViewer viewer,MPI_Comm comm,PetscViewer *outviewer)
-{
+PetscErrorCode PetscViewerRestoreSubViewer(PetscViewer viewer, MPI_Comm comm, PetscViewer *outviewer) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
 
-  if (viewer->ops->restoresubviewer) {
-    PetscCall((*viewer->ops->restoresubviewer)(viewer,comm,outviewer));
-  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot restore SubViewer PetscViewer for type %s",((PetscObject)viewer)->type_name);
+  PetscUseTypeMethod(viewer, restoresubviewer, comm, outviewer);
   PetscFunctionReturn(0);
 }

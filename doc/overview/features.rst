@@ -4,7 +4,7 @@
 Core Features and Functionality
 *******************************
 
-PETSc is a general parallel linear and non-linear solver framework, which provides these
+PETSc is a general parallel linear and non-linear solver, ODE integrator, and optimization framework, which provides these
 general classes of functionality:
 
 .. contents:: Table Of Contents
@@ -20,46 +20,6 @@ Supported Systems
 - :ref:`Linux <doc_config_faq>`
 - :ref:`MacOS <doc_config_faq>`
 - :ref:`Microsoft Windows <doc_windows>`
-
-General Features
-================
-
-- :ref:`Parallel vectors <chapter_vectors>`
-- :ref:`Vector code for communicating ghost points <sec_scatter>`
-- :ref:`Parallel matrices <chapter_matrices>`
-- Several sparse and dense matrix storage formats (see ``MatType``):
-
-  - AIJ/CSR (Yale sparse matrix format)
-  - LMVM (Limited Memory Variable Metric)
-  - Block
-  - Nested
-  - Dense
-
-- :ref:`Easy, efficient matrix assembly and interface <sec_matcreate>`
-- :ref:`Parallel unstructured mesh support <chapter_unstructured>`
-- :ref:`Powerful object introspection tools <sec_viewers>`
-- Support for a variety of IO options (see ``PetscViewerType``)
-- :ref:`Comprehensive performance testing <ch_performance>`
-
-Solver Features
-===============
-
-- :ref:`Parallel Krylov subspace methods <chapter_ksp>`
-- :ref:`Parallel nonlinear solvers <chapter_snes>`
-- Scalable parallel :ref:`linear <sec_ksppc>` and :ref:`nonlinear <sec_snespc>`
-  preconditioners
-- :ref:`Parallel timestepping (ODE) solvers <chapter_ts>`
-- Local and global error estimators
-- :ref:`Forward and adjoint sensitivity capabilities <chapter_sa>`
-- Robust optimization through ``Tao``
-
-.. seealso::
-
-   For full feature list and prerequisites see:
-
-   - :ref:`Linear solver table <doc_linsolve>`
-   - :ref:`Nonlinear solver table <doc_nonlinsolve>`
-   - :ref:`Tao solver table <doc_taosolve>`
 
 Accelerator/GPU Features
 ========================

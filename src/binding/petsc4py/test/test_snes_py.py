@@ -95,6 +95,11 @@ class TestSNESPython(BaseTestSNES, unittest.TestCase):
         super(TestSNESPython, self).setUp()
         self.snes.setPythonContext(MySNES())
 
+    def testGetType(self):
+        ctx = self.snes.getPythonContext()
+        pytype = "{0}.{1}".format(ctx.__module__, type(ctx).__name__)
+        self.assertTrue(self.snes.getPythonType() == pytype)
+
 # --------------------------------------------------------------------
 
 if __name__ == '__main__':

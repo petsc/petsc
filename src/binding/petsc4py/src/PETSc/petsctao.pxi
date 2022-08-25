@@ -33,6 +33,7 @@ cdef extern from * nogil:
     PetscTAOType TAOSHELL
     PetscTAOType TAOADMM
     PetscTAOType TAOALMM
+    PetscTAOType TAOPYTHON
 
     ctypedef enum PetscTAOConvergedReason "TaoConvergedReason":
         #iterating
@@ -184,11 +185,12 @@ cdef extern from * nogil:
     int TaoBRGNSetDictionaryMatrix(PetscTAO,PetscMat)
     int TaoBRGNGetDampingVector(PetscTAO,PetscVec*)
 
+    int TaoPythonSetType(PetscTAO,char[])
+    int TaoPythonGetType(PetscTAO,char*[])
+
 cdef extern from "libpetsc4py.h":
-    PetscTAOType TAOPYTHON
     int TaoPythonSetContext(PetscTAO,void*)
     int TaoPythonGetContext(PetscTAO,void**)
-    int TaoPythonSetType(PetscTAO,char[])
 
 # --------------------------------------------------------------------
 

@@ -31,7 +31,8 @@ class MyODE:
         if J != P: J.assemble()
         return False # same_nz
 
-class MyTS:
+class MyTS(object):
+
     def __init__(self):
         self.log = {}
 
@@ -86,6 +87,11 @@ class TestTSPython(unittest.TestCase):
         self.ts = None
         self.assertEqual(ctx.log['destroy'], 1)
         self.assertEqual(getrefcount(ctx),   2)
+
+    def testGetType(self):
+        ctx = self.ts.getPythonContext()
+        pytype = "{0}.{1}".format(ctx.__module__, type(ctx).__name__)
+        self.assertTrue(self.ts.getPythonType() == pytype)
 
     def testSolve(self):
         ts = self.ts

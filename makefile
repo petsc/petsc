@@ -249,6 +249,29 @@ check_usermakefile:
 	@cd src/snes/tutorials; ${RUN_TEST} clean-legacy
 	-@echo "Completed compile with user makefile"
 
+checkgitclean:
+	@clean=`git status -s --untracked-files=no | wc -l`;\
+          if [ $$clean != 0 ]; then \
+           echo "The repository has uncommited files, cannot run checkclangformat" ;\
+           git status -s --untracked-files=no ;\
+           false;\
+        fi;
+
+checkclangformatversion:
+	@version=`clang-format --version | cut -d" " -f3 | cut -d"." -f 1` ;\
+         if [ "$$version" == "version" ]; then version=`clang-format --version | cut -d" " -f4 | cut -d"." -f 1`; fi;\
+         if [ $$version -lt 14 ]; then echo "clang-format version is too old" ;false ; fi
+
+# Check that all the source code in the repository satisfies the .clang_format
+checkclangformat: checkclangformatversion checkgitclean clangformat
+	@clean=`git status -s --untracked-files=no | wc -l`;\
+          if [ "$$clean" != "0" ]; then \
+           git diff >  ${PETSC_ARCH}/lib/petsc/conf/checkclangformat.diff ;\
+           echo "The current commit has source code formatting problems, check ${PETSC_ARCH}/lib/petsc/conf/checkclangformat.diff" ;\
+           git status -s --untracked-files=no ;\
+           false;\
+          fi;
+
 # Compare ABI/API of two versions of PETSc library with the old one defined by PETSC_{DIR,ARCH}_ABI_OLD
 abitest:
 	@if [ "${PETSC_DIR_ABI_OLD}" = "" ] || [ "${PETSC_ARCH_ABI_OLD}" = "" ]; \
@@ -373,7 +396,7 @@ allmanpages: chk_loc deletemanualpages
 	-@sed -e s%man+../%man+manualpages/% ${LOC}/docs/manualpages/manualpages.cit > ${LOC}/docs/manualpages/htmlmap
 	-@cat ${PETSC_DIR}/doc/classic/mpi.www.index >> ${LOC}/docs/manualpages/htmlmap
 	cat ${PETSC_DIR}/${PETSC_ARCH}/manualpages.err
-	-a=`cat ${PETSC_DIR}/${PETSC_ARCH}/manualpages.err | wc -l`; test ! $$a -gt 0
+	a=`cat ${PETSC_DIR}/${PETSC_ARCH}/manualpages.err | wc -l`; test ! $$a -gt 0
 
 # Build just manual examples + prerequisites
 allmanexamples: chk_loc allmanpages

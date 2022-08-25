@@ -75,67 +75,69 @@ typedef struct {
   Vec         initialsolution;
 } AppCtx;
 
-PetscErrorCode IFunctionView(AppCtx *ctx,PetscViewer v)
-{
+PetscErrorCode IFunctionView(AppCtx *ctx, PetscViewer v) {
   PetscFunctionBegin;
-  PetscCall(PetscViewerBinaryWrite(v,&ctx->k,1,PETSC_SCALAR));
+  PetscCall(PetscViewerBinaryWrite(v, &ctx->k, 1, PETSC_SCALAR));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode IFunctionLoad(AppCtx **ctx,PetscViewer v)
-{
+PetscErrorCode IFunctionLoad(AppCtx **ctx, PetscViewer v) {
   PetscFunctionBegin;
   PetscCall(PetscNew(ctx));
-  PetscCall(PetscViewerBinaryRead(v,&(*ctx)->k,1,NULL,PETSC_SCALAR));
+  PetscCall(PetscViewerBinaryRead(v, &(*ctx)->k, 1, NULL, PETSC_SCALAR));
   PetscFunctionReturn(0);
 }
 
 /*
      Defines the ODE passed to the ODE solver
 */
-PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,AppCtx *ctx)
-{
+PetscErrorCode IFunction(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, AppCtx *ctx) {
   PetscScalar       *f;
-  const PetscScalar *u,*udot;
+  const PetscScalar *u, *udot;
 
   PetscFunctionBegin;
   /*  The next three lines allow us to access the entries of the vectors directly */
-  PetscCall(VecGetArrayRead(U,&u));
-  PetscCall(VecGetArrayRead(Udot,&udot));
-  PetscCall(VecGetArrayWrite(F,&f));
-  f[0] = udot[0] + ctx->k*u[0]*u[1];
-  f[1] = udot[1] + ctx->k*u[0]*u[1];
-  f[2] = udot[2] - ctx->k*u[0]*u[1];
-  PetscCall(VecRestoreArrayRead(U,&u));
-  PetscCall(VecRestoreArrayRead(Udot,&udot));
-  PetscCall(VecRestoreArrayWrite(F,&f));
+  PetscCall(VecGetArrayRead(U, &u));
+  PetscCall(VecGetArrayRead(Udot, &udot));
+  PetscCall(VecGetArrayWrite(F, &f));
+  f[0] = udot[0] + ctx->k * u[0] * u[1];
+  f[1] = udot[1] + ctx->k * u[0] * u[1];
+  f[2] = udot[2] - ctx->k * u[0] * u[1];
+  PetscCall(VecRestoreArrayRead(U, &u));
+  PetscCall(VecRestoreArrayRead(Udot, &udot));
+  PetscCall(VecRestoreArrayWrite(F, &f));
   PetscFunctionReturn(0);
 }
 
 /*
      Defines the Jacobian of the ODE passed to the ODE solver. See TSSetIJacobian() for the meaning of a and the Jacobian.
 */
-PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat A,Mat B,AppCtx *ctx)
-{
-  PetscInt          rowcol[] = {0,1,2};
-  PetscScalar       J[3][3];
-  const PetscScalar *u,*udot;
+PetscErrorCode IJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a, Mat A, Mat B, AppCtx *ctx) {
+  PetscInt           rowcol[] = {0, 1, 2};
+  PetscScalar        J[3][3];
+  const PetscScalar *u, *udot;
 
   PetscFunctionBegin;
-  PetscCall(VecGetArrayRead(U,&u));
-  PetscCall(VecGetArrayRead(Udot,&udot));
-  J[0][0] = a + ctx->k*u[1];   J[0][1] = ctx->k*u[0];       J[0][2] = 0.0;
-  J[1][0] = ctx->k*u[1];       J[1][1] = a + ctx->k*u[0];   J[1][2] = 0.0;
-  J[2][0] = -ctx->k*u[1];      J[2][1] = -ctx->k*u[0];      J[2][2] = a;
-  PetscCall(MatSetValues(B,3,rowcol,3,rowcol,&J[0][0],INSERT_VALUES));
-  PetscCall(VecRestoreArrayRead(U,&u));
-  PetscCall(VecRestoreArrayRead(Udot,&udot));
+  PetscCall(VecGetArrayRead(U, &u));
+  PetscCall(VecGetArrayRead(Udot, &udot));
+  J[0][0] = a + ctx->k * u[1];
+  J[0][1] = ctx->k * u[0];
+  J[0][2] = 0.0;
+  J[1][0] = ctx->k * u[1];
+  J[1][1] = a + ctx->k * u[0];
+  J[1][2] = 0.0;
+  J[2][0] = -ctx->k * u[1];
+  J[2][1] = -ctx->k * u[0];
+  J[2][2] = a;
+  PetscCall(MatSetValues(B, 3, rowcol, 3, rowcol, &J[0][0], INSERT_VALUES));
+  PetscCall(VecRestoreArrayRead(U, &u));
+  PetscCall(VecRestoreArrayRead(Udot, &udot));
 
-  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
   if (A != B) {
-    PetscCall(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
-    PetscCall(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
   }
   PetscFunctionReturn(0);
 }
@@ -143,109 +145,107 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat A,Mat 
 /*
      Defines the exact (analytic) solution to the ODE
 */
-static PetscErrorCode Solution(TS ts,PetscReal t,Vec U,AppCtx *ctx)
-{
+static PetscErrorCode Solution(TS ts, PetscReal t, Vec U, AppCtx *ctx) {
   const PetscScalar *uinit;
-  PetscScalar       *u,d0,q;
+  PetscScalar       *u, d0, q;
 
   PetscFunctionBegin;
-  PetscCall(VecGetArrayRead(ctx->initialsolution,&uinit));
-  PetscCall(VecGetArrayWrite(U,&u));
-  d0   = uinit[0] - uinit[1];
-  if (d0 == 0.0) q = ctx->k*t;
-  else q = (1.0 - PetscExpScalar(-ctx->k*t*d0))/d0;
-  u[0] = uinit[0]/(1.0 + uinit[1]*q);
+  PetscCall(VecGetArrayRead(ctx->initialsolution, &uinit));
+  PetscCall(VecGetArrayWrite(U, &u));
+  d0 = uinit[0] - uinit[1];
+  if (d0 == 0.0) q = ctx->k * t;
+  else q = (1.0 - PetscExpScalar(-ctx->k * t * d0)) / d0;
+  u[0] = uinit[0] / (1.0 + uinit[1] * q);
   u[1] = u[0] - d0;
   u[2] = uinit[1] + uinit[2] - u[1];
-  PetscCall(VecRestoreArrayWrite(U,&u));
-  PetscCall(VecRestoreArrayRead(ctx->initialsolution,&uinit));
+  PetscCall(VecRestoreArrayWrite(U, &u));
+  PetscCall(VecRestoreArrayRead(ctx->initialsolution, &uinit));
   PetscFunctionReturn(0);
 }
 
-int main(int argc,char **argv)
-{
-  TS             ts;            /* ODE integrator */
-  Vec            U;             /* solution will be stored here */
-  Mat            A;             /* Jacobian matrix */
-  PetscMPIInt    size;
-  PetscInt       n = 3;
-  AppCtx         ctx;
-  PetscScalar    *u;
-  const char     * const names[] = {"U1","U2","U3",NULL};
+int main(int argc, char **argv) {
+  TS                ts; /* ODE integrator */
+  Vec               U;  /* solution will be stored here */
+  Mat               A;  /* Jacobian matrix */
+  PetscMPIInt       size;
+  PetscInt          n = 3;
+  AppCtx            ctx;
+  PetscScalar      *u;
+  const char *const names[] = {"U1", "U2", "U3", NULL};
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
-  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
-  PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Only for sequential runs");
+  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
+  PetscCheck(size == 1, PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "Only for sequential runs");
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Create necessary matrix and vectors
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
-  PetscCall(MatSetSizes(A,n,n,PETSC_DETERMINE,PETSC_DETERMINE));
+  PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
+  PetscCall(MatSetSizes(A, n, n, PETSC_DETERMINE, PETSC_DETERMINE));
   PetscCall(MatSetFromOptions(A));
   PetscCall(MatSetUp(A));
 
-  PetscCall(MatCreateVecs(A,&U,NULL));
+  PetscCall(MatCreateVecs(A, &U, NULL));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Set runtime options
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ctx.k = .9;
-  PetscCall(PetscOptionsGetScalar(NULL,NULL,"-k",&ctx.k,NULL));
-  PetscCall(VecDuplicate(U,&ctx.initialsolution));
-  PetscCall(VecGetArrayWrite(ctx.initialsolution,&u));
-  u[0]  = 1;
-  u[1]  = .7;
-  u[2]  = 0;
-  PetscCall(VecRestoreArrayWrite(ctx.initialsolution,&u));
-  PetscCall(PetscOptionsGetVec(NULL,NULL,"-initial",ctx.initialsolution,NULL));
+  PetscCall(PetscOptionsGetScalar(NULL, NULL, "-k", &ctx.k, NULL));
+  PetscCall(VecDuplicate(U, &ctx.initialsolution));
+  PetscCall(VecGetArrayWrite(ctx.initialsolution, &u));
+  u[0] = 1;
+  u[1] = .7;
+  u[2] = 0;
+  PetscCall(VecRestoreArrayWrite(ctx.initialsolution, &u));
+  PetscCall(PetscOptionsGetVec(NULL, NULL, "-initial", ctx.initialsolution, NULL));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscCall(TSCreate(PETSC_COMM_WORLD,&ts));
-  PetscCall(TSSetProblemType(ts,TS_NONLINEAR));
-  PetscCall(TSSetType(ts,TSROSW));
-  PetscCall(TSSetIFunction(ts,NULL,(TSIFunction) IFunction,&ctx));
-  PetscCall(TSSetIJacobian(ts,A,A,(TSIJacobian)IJacobian,&ctx));
-  PetscCall(TSSetSolutionFunction(ts,(TSSolutionFunction)Solution,&ctx));
+  PetscCall(TSCreate(PETSC_COMM_WORLD, &ts));
+  PetscCall(TSSetProblemType(ts, TS_NONLINEAR));
+  PetscCall(TSSetType(ts, TSROSW));
+  PetscCall(TSSetIFunction(ts, NULL, (TSIFunction)IFunction, &ctx));
+  PetscCall(TSSetIJacobian(ts, A, A, (TSIJacobian)IJacobian, &ctx));
+  PetscCall(TSSetSolutionFunction(ts, (TSSolutionFunction)Solution, &ctx));
 
   {
-    DM   dm;
+    DM    dm;
     void *ptr;
-    PetscCall(TSGetDM(ts,&dm));
-    PetscCall(PetscDLSym(NULL,"IFunctionView",&ptr));
-    PetscCall(PetscDLSym(NULL,"IFunctionLoad",&ptr));
-    PetscCall(DMTSSetIFunctionSerialize(dm,(PetscErrorCode (*)(void*,PetscViewer))IFunctionView,(PetscErrorCode (*)(void**,PetscViewer))IFunctionLoad));
-    PetscCall(DMTSSetIJacobianSerialize(dm,(PetscErrorCode (*)(void*,PetscViewer))IFunctionView,(PetscErrorCode (*)(void**,PetscViewer))IFunctionLoad));
+    PetscCall(TSGetDM(ts, &dm));
+    PetscCall(PetscDLSym(NULL, "IFunctionView", &ptr));
+    PetscCall(PetscDLSym(NULL, "IFunctionLoad", &ptr));
+    PetscCall(DMTSSetIFunctionSerialize(dm, (PetscErrorCode(*)(void *, PetscViewer))IFunctionView, (PetscErrorCode(*)(void **, PetscViewer))IFunctionLoad));
+    PetscCall(DMTSSetIJacobianSerialize(dm, (PetscErrorCode(*)(void *, PetscViewer))IFunctionView, (PetscErrorCode(*)(void **, PetscViewer))IFunctionLoad));
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscCall(Solution(ts,0,U,&ctx));
-  PetscCall(TSSetSolution(ts,U));
+  PetscCall(Solution(ts, 0, U, &ctx));
+  PetscCall(TSSetSolution(ts, U));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set solver options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscCall(TSSetTimeStep(ts,.001));
-  PetscCall(TSSetMaxSteps(ts,1000));
-  PetscCall(TSSetMaxTime(ts,20.0));
-  PetscCall(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER));
+  PetscCall(TSSetTimeStep(ts, .001));
+  PetscCall(TSSetMaxSteps(ts, 1000));
+  PetscCall(TSSetMaxTime(ts, 20.0));
+  PetscCall(TSSetExactFinalTime(ts, TS_EXACTFINALTIME_STEPOVER));
   PetscCall(TSSetFromOptions(ts));
-  PetscCall(TSMonitorLGSetVariableNames(ts,names));
+  PetscCall(TSMonitorLGSetVariableNames(ts, names));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscCall(TSSolve(ts,U));
+  PetscCall(TSSolve(ts, U));
 
-  PetscCall(TSView(ts,PETSC_VIEWER_BINARY_WORLD));
+  PetscCall(TSView(ts, PETSC_VIEWER_BINARY_WORLD));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they are no longer needed.

@@ -40,97 +40,96 @@ The command line options include:\n\
 
    -----------------------------------------------------------------------*/
 
-#define MAX_ELEM      500  /* Maximum number of elements */
-#define MAX_VERT      100  /* Maximum number of vertices */
-#define MAX_VERT_ELEM   3  /* Vertices per element       */
+#define MAX_ELEM      500 /* Maximum number of elements */
+#define MAX_VERT      100 /* Maximum number of vertices */
+#define MAX_VERT_ELEM 3   /* Vertices per element       */
 
 /*
   Application-defined context for problem specific data
 */
 typedef struct {
-  PetscInt   Nvglobal,Nvlocal;              /* global and local number of vertices */
-  PetscInt   Neglobal,Nelocal;              /* global and local number of vertices */
-  PetscInt   AdjM[MAX_VERT][50];            /* adjacency list of a vertex */
-  PetscInt   itot[MAX_VERT];                /* total number of neighbors for a vertex */
-  PetscInt   icv[MAX_ELEM][MAX_VERT_ELEM];  /* vertices belonging to an element */
-  PetscInt   v2p[MAX_VERT];                 /* processor number for a vertex */
-  PetscInt   *locInd,*gloInd;               /* local and global orderings for a node */
-  Vec        localX,localF;                 /* local solution (u) and f(u) vectors */
-  PetscReal  non_lin_param;                 /* nonlinear parameter for the PDE */
-  PetscReal  lin_param;                     /* linear parameter for the PDE */
-  VecScatter scatter;                       /* scatter context for the local and
+  PetscInt   Nvglobal, Nvlocal;            /* global and local number of vertices */
+  PetscInt   Neglobal, Nelocal;            /* global and local number of vertices */
+  PetscInt   AdjM[MAX_VERT][50];           /* adjacency list of a vertex */
+  PetscInt   itot[MAX_VERT];               /* total number of neighbors for a vertex */
+  PetscInt   icv[MAX_ELEM][MAX_VERT_ELEM]; /* vertices belonging to an element */
+  PetscInt   v2p[MAX_VERT];                /* processor number for a vertex */
+  PetscInt  *locInd, *gloInd;              /* local and global orderings for a node */
+  Vec        localX, localF;               /* local solution (u) and f(u) vectors */
+  PetscReal  non_lin_param;                /* nonlinear parameter for the PDE */
+  PetscReal  lin_param;                    /* linear parameter for the PDE */
+  VecScatter scatter;                      /* scatter context for the local and
                                                distributed vectors */
 } AppCtx;
 
 /*
   User-defined routines
 */
-PetscErrorCode FormJacobian(SNES,Vec,Mat,Mat,void*);
-PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
-PetscErrorCode FormInitialGuess(AppCtx*,Vec);
+PetscErrorCode FormJacobian(SNES, Vec, Mat, Mat, void *);
+PetscErrorCode FormFunction(SNES, Vec, Vec, void *);
+PetscErrorCode FormInitialGuess(AppCtx *, Vec);
 
-int main(int argc,char **argv)
-{
-  SNES                   snes;                 /* SNES context */
-  SNESType               type = SNESNEWTONLS;  /* default nonlinear solution method */
-  Vec                    x,r;                  /* solution, residual vectors */
-  Mat                    Jac;                  /* Jacobian matrix */
-  AppCtx                 user;                 /* user-defined application context */
-  AO                     ao;                   /* Application Ordering object */
-  IS                     isglobal,islocal;     /* global and local index sets */
-  PetscMPIInt            rank,size;            /* rank of a process, number of processors */
-  PetscInt               rstart;               /* starting index of PETSc ordering for a processor */
-  PetscInt               nfails;               /* number of unsuccessful Newton steps */
-  PetscInt               bs = 1;               /* block size for multicomponent systems */
-  PetscInt               nvertices;            /* number of local plus ghost nodes of a processor */
-  PetscInt               *pordering;           /* PETSc ordering */
-  PetscInt               *vertices;            /* list of all vertices (incl. ghost ones) on a processor */
-  PetscInt               *verticesmask;
-  PetscInt               *tmp;
-  PetscInt               i,j,jstart,inode,nb,nbrs,Nvneighborstotal = 0;
-  PetscInt               its,N;
-  PetscScalar            *xx;
-  char                   str[256],form[256],part_name[256];
-  FILE                   *fptr,*fptr1;
+int main(int argc, char **argv) {
+  SNES                   snes;                /* SNES context */
+  SNESType               type = SNESNEWTONLS; /* default nonlinear solution method */
+  Vec                    x, r;                /* solution, residual vectors */
+  Mat                    Jac;                 /* Jacobian matrix */
+  AppCtx                 user;                /* user-defined application context */
+  AO                     ao;                  /* Application Ordering object */
+  IS                     isglobal, islocal;   /* global and local index sets */
+  PetscMPIInt            rank, size;          /* rank of a process, number of processors */
+  PetscInt               rstart;              /* starting index of PETSc ordering for a processor */
+  PetscInt               nfails;              /* number of unsuccessful Newton steps */
+  PetscInt               bs = 1;              /* block size for multicomponent systems */
+  PetscInt               nvertices;           /* number of local plus ghost nodes of a processor */
+  PetscInt              *pordering;           /* PETSc ordering */
+  PetscInt              *vertices;            /* list of all vertices (incl. ghost ones) on a processor */
+  PetscInt              *verticesmask;
+  PetscInt              *tmp;
+  PetscInt               i, j, jstart, inode, nb, nbrs, Nvneighborstotal = 0;
+  PetscInt               its, N;
+  PetscScalar           *xx;
+  char                   str[256], form[256], part_name[256];
+  FILE                  *fptr, *fptr1;
   ISLocalToGlobalMapping isl2g;
   int                    dtmp;
 #if defined(UNUSED_VARIABLES)
-  PetscDraw              draw;                 /* drawing context */
-  PetscScalar            *ff,*gg;
-  PetscReal              tiny = 1.0e-10,zero = 0.0,one = 1.0,big = 1.0e+10;
-  PetscInt               *tmp1,*tmp2;
+  PetscDraw    draw; /* drawing context */
+  PetscScalar *ff, *gg;
+  PetscReal    tiny = 1.0e-10, zero = 0.0, one = 1.0, big = 1.0e+10;
+  PetscInt    *tmp1, *tmp2;
 #endif
-  MatFDColoring          matfdcoloring = 0;
-  PetscBool              fd_jacobian_coloring = PETSC_FALSE;
+  MatFDColoring matfdcoloring        = 0;
+  PetscBool     fd_jacobian_coloring = PETSC_FALSE;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&argv,"options.inf",help));
-  PetscCallMPI(MPI_Comm_rank(MPI_COMM_WORLD,&rank));
-  PetscCallMPI(MPI_Comm_size(MPI_COMM_WORLD,&size));
+  PetscCall(PetscInitialize(&argc, &argv, "options.inf", help));
+  PetscCallMPI(MPI_Comm_rank(MPI_COMM_WORLD, &rank));
+  PetscCallMPI(MPI_Comm_size(MPI_COMM_WORLD, &size));
 
   /* The current input file options.inf is for 2 proc run only */
-  PetscCheck(size == 2,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This example currently runs on 2 procs only.");
+  PetscCheck(size == 2, PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "This example currently runs on 2 procs only.");
 
   /*
      Initialize problem parameters
   */
-  user.Nvglobal = 16;      /*Global # of vertices  */
-  user.Neglobal = 18;      /*Global # of elements  */
+  user.Nvglobal = 16; /*Global # of vertices  */
+  user.Neglobal = 18; /*Global # of elements  */
 
-  PetscCall(PetscOptionsGetInt(NULL,NULL,"-vert",&user.Nvglobal,NULL));
-  PetscCall(PetscOptionsGetInt(NULL,NULL,"-elem",&user.Neglobal,NULL));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-vert", &user.Nvglobal, NULL));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-elem", &user.Neglobal, NULL));
 
   user.non_lin_param = 0.06;
 
-  PetscCall(PetscOptionsGetReal(NULL,NULL,"-nl_par",&user.non_lin_param,NULL));
+  PetscCall(PetscOptionsGetReal(NULL, NULL, "-nl_par", &user.non_lin_param, NULL));
 
   user.lin_param = -1.0;
 
-  PetscCall(PetscOptionsGetReal(NULL,NULL,"-lin_par",&user.lin_param,NULL));
+  PetscCall(PetscOptionsGetReal(NULL, NULL, "-lin_par", &user.lin_param, NULL));
 
   user.Nvlocal = 0;
   user.Nelocal = 0;
@@ -154,48 +153,47 @@ int main(int argc,char **argv)
      dynamically by calling partitioning routines (at present, we have
      a  ready interface to ParMeTiS).
    */
-  fptr = fopen("adj.in","r");
-  PetscCheck(fptr,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Could not open adj.in");
+  fptr = fopen("adj.in", "r");
+  PetscCheck(fptr, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Could not open adj.in");
 
   /*
      Each processor writes to the file output.<rank> where rank is the
      processor's rank.
   */
-  sprintf(part_name,"output.%d",rank);
-  fptr1 = fopen(part_name,"w");
-  PetscCheck(fptr1,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Could no open output file");
-  PetscCall(PetscMalloc1(user.Nvglobal,&user.gloInd));
-  PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"Rank is %d\n",rank));
+  sprintf(part_name, "output.%d", rank);
+  fptr1 = fopen(part_name, "w");
+  PetscCheck(fptr1, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Could no open output file");
+  PetscCall(PetscMalloc1(user.Nvglobal, &user.gloInd));
+  PetscCall(PetscFPrintf(PETSC_COMM_SELF, fptr1, "Rank is %d\n", rank));
   for (inode = 0; inode < user.Nvglobal; inode++) {
-    PetscCheck(fgets(str,256,fptr),PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"fgets read failed");
-    sscanf(str,"%d",&dtmp);user.v2p[inode] = dtmp;
+    PetscCheck(fgets(str, 256, fptr), PETSC_COMM_SELF, PETSC_ERR_FILE_READ, "fgets read failed");
+    sscanf(str, "%d", &dtmp);
+    user.v2p[inode] = dtmp;
     if (user.v2p[inode] == rank) {
-      PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"Node %" PetscInt_FMT " belongs to processor %" PetscInt_FMT "\n",inode,user.v2p[inode]));
+      PetscCall(PetscFPrintf(PETSC_COMM_SELF, fptr1, "Node %" PetscInt_FMT " belongs to processor %" PetscInt_FMT "\n", inode, user.v2p[inode]));
 
       user.gloInd[user.Nvlocal] = inode;
-      sscanf(str,"%*d %d",&dtmp);
+      sscanf(str, "%*d %d", &dtmp);
       nbrs = dtmp;
-      PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"Number of neighbors for the vertex %" PetscInt_FMT " is %" PetscInt_FMT "\n",inode,nbrs));
+      PetscCall(PetscFPrintf(PETSC_COMM_SELF, fptr1, "Number of neighbors for the vertex %" PetscInt_FMT " is %" PetscInt_FMT "\n", inode, nbrs));
 
       user.itot[user.Nvlocal] = nbrs;
-      Nvneighborstotal       += nbrs;
+      Nvneighborstotal += nbrs;
       for (i = 0; i < user.itot[user.Nvlocal]; i++) {
-        form[0]='\0';
-        for (j=0; j < i+2; j++) {
-          PetscCall(PetscStrlcat(form,"%*d ",sizeof(form)));
-        }
-        PetscCall(PetscStrlcat(form,"%d",sizeof(form)));
+        form[0] = '\0';
+        for (j = 0; j < i + 2; j++) { PetscCall(PetscStrlcat(form, "%*d ", sizeof(form))); }
+        PetscCall(PetscStrlcat(form, "%d", sizeof(form)));
 
-        sscanf(str,form,&dtmp);
+        sscanf(str, form, &dtmp);
         user.AdjM[user.Nvlocal][i] = dtmp;
 
-        PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"%" PetscInt_FMT " ",user.AdjM[user.Nvlocal][i]));
+        PetscCall(PetscFPrintf(PETSC_COMM_SELF, fptr1, "%" PetscInt_FMT " ", user.AdjM[user.Nvlocal][i]));
       }
-      PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"\n"));
+      PetscCall(PetscFPrintf(PETSC_COMM_SELF, fptr1, "\n"));
       user.Nvlocal++;
     }
   }
-  PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"Total # of Local Vertices is %" PetscInt_FMT " \n",user.Nvlocal));
+  PetscCall(PetscFPrintf(PETSC_COMM_SELF, fptr1, "Total # of Local Vertices is %" PetscInt_FMT " \n", user.Nvlocal));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create different orderings
@@ -207,70 +205,68 @@ int main(int argc,char **argv)
     application-to-PETSc mappings. Each vertex also gets a local index (stored in the
     locInd array).
   */
-  PetscCallMPI(MPI_Scan(&user.Nvlocal,&rstart,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD));
+  PetscCallMPI(MPI_Scan(&user.Nvlocal, &rstart, 1, MPIU_INT, MPI_SUM, PETSC_COMM_WORLD));
   rstart -= user.Nvlocal;
-  PetscCall(PetscMalloc1(user.Nvlocal,&pordering));
+  PetscCall(PetscMalloc1(user.Nvlocal, &pordering));
 
-  for (i=0; i < user.Nvlocal; i++) pordering[i] = rstart + i;
+  for (i = 0; i < user.Nvlocal; i++) pordering[i] = rstart + i;
 
   /*
     Create the AO object
   */
-  PetscCall(AOCreateBasic(MPI_COMM_WORLD,user.Nvlocal,user.gloInd,pordering,&ao));
+  PetscCall(AOCreateBasic(MPI_COMM_WORLD, user.Nvlocal, user.gloInd, pordering, &ao));
   PetscCall(PetscFree(pordering));
 
   /*
     Keep the global indices for later use
   */
-  PetscCall(PetscMalloc1(user.Nvlocal,&user.locInd));
-  PetscCall(PetscMalloc1(Nvneighborstotal,&tmp));
+  PetscCall(PetscMalloc1(user.Nvlocal, &user.locInd));
+  PetscCall(PetscMalloc1(Nvneighborstotal, &tmp));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Demonstrate the use of AO functionality
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"Before AOApplicationToPetsc, local indices are : \n"));
-  for (i=0; i < user.Nvlocal; i++) {
-    PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1," %" PetscInt_FMT " ",user.gloInd[i]));
+  PetscCall(PetscFPrintf(PETSC_COMM_SELF, fptr1, "Before AOApplicationToPetsc, local indices are : \n"));
+  for (i = 0; i < user.Nvlocal; i++) {
+    PetscCall(PetscFPrintf(PETSC_COMM_SELF, fptr1, " %" PetscInt_FMT " ", user.gloInd[i]));
 
     user.locInd[i] = user.gloInd[i];
   }
-  PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"\n"));
+  PetscCall(PetscFPrintf(PETSC_COMM_SELF, fptr1, "\n"));
   jstart = 0;
-  for (i=0; i < user.Nvlocal; i++) {
-    PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"Neghbors of local vertex %" PetscInt_FMT " are : ",user.gloInd[i]));
-    for (j=0; j < user.itot[i]; j++) {
-      PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"%" PetscInt_FMT " ",user.AdjM[i][j]));
+  for (i = 0; i < user.Nvlocal; i++) {
+    PetscCall(PetscFPrintf(PETSC_COMM_SELF, fptr1, "Neghbors of local vertex %" PetscInt_FMT " are : ", user.gloInd[i]));
+    for (j = 0; j < user.itot[i]; j++) {
+      PetscCall(PetscFPrintf(PETSC_COMM_SELF, fptr1, "%" PetscInt_FMT " ", user.AdjM[i][j]));
 
       tmp[j + jstart] = user.AdjM[i][j];
     }
     jstart += user.itot[i];
-    PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"\n"));
+    PetscCall(PetscFPrintf(PETSC_COMM_SELF, fptr1, "\n"));
   }
 
   /*
     Now map the vlocal and neighbor lists to the PETSc ordering
   */
-  PetscCall(AOApplicationToPetsc(ao,user.Nvlocal,user.locInd));
-  PetscCall(AOApplicationToPetsc(ao,Nvneighborstotal,tmp));
+  PetscCall(AOApplicationToPetsc(ao, user.Nvlocal, user.locInd));
+  PetscCall(AOApplicationToPetsc(ao, Nvneighborstotal, tmp));
   PetscCall(AODestroy(&ao));
 
-  PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"After AOApplicationToPetsc, local indices are : \n"));
-  for (i=0; i < user.Nvlocal; i++) {
-    PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1," %" PetscInt_FMT " ",user.locInd[i]));
-  }
-  PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"\n"));
+  PetscCall(PetscFPrintf(PETSC_COMM_SELF, fptr1, "After AOApplicationToPetsc, local indices are : \n"));
+  for (i = 0; i < user.Nvlocal; i++) { PetscCall(PetscFPrintf(PETSC_COMM_SELF, fptr1, " %" PetscInt_FMT " ", user.locInd[i])); }
+  PetscCall(PetscFPrintf(PETSC_COMM_SELF, fptr1, "\n"));
 
   jstart = 0;
-  for (i=0; i < user.Nvlocal; i++) {
-    PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"Neghbors of local vertex %" PetscInt_FMT " are : ",user.locInd[i]));
-    for (j=0; j < user.itot[i]; j++) {
-      user.AdjM[i][j] = tmp[j+jstart];
+  for (i = 0; i < user.Nvlocal; i++) {
+    PetscCall(PetscFPrintf(PETSC_COMM_SELF, fptr1, "Neghbors of local vertex %" PetscInt_FMT " are : ", user.locInd[i]));
+    for (j = 0; j < user.itot[i]; j++) {
+      user.AdjM[i][j] = tmp[j + jstart];
 
-      PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"%" PetscInt_FMT " ",user.AdjM[i][j]));
+      PetscCall(PetscFPrintf(PETSC_COMM_SELF, fptr1, "%" PetscInt_FMT " ", user.AdjM[i][j]));
     }
     jstart += user.itot[i];
-    PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"\n"));
+    PetscCall(PetscFPrintf(PETSC_COMM_SELF, fptr1, "\n"));
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -292,14 +288,14 @@ int main(int argc,char **argv)
     number of processors. Importantly, it allows us to use NO SEARCHING
     in setting up the data structures.
   */
-  PetscCall(PetscMalloc1(user.Nvglobal,&vertices));
-  PetscCall(PetscCalloc1(user.Nvglobal,&verticesmask));
+  PetscCall(PetscMalloc1(user.Nvglobal, &vertices));
+  PetscCall(PetscCalloc1(user.Nvglobal, &verticesmask));
   nvertices = 0;
 
   /*
     First load "owned vertices" into list
   */
-  for (i=0; i < user.Nvlocal; i++) {
+  for (i = 0; i < user.Nvlocal; i++) {
     vertices[nvertices++]        = user.locInd[i];
     verticesmask[user.locInd[i]] = nvertices;
   }
@@ -307,8 +303,8 @@ int main(int argc,char **argv)
   /*
     Now load ghost vertices into list
   */
-  for (i=0; i < user.Nvlocal; i++) {
-    for (j=0; j < user.itot[i]; j++) {
+  for (i = 0; i < user.Nvlocal; i++) {
+    for (j = 0; j < user.itot[i]; j++) {
       nb = user.AdjM[i][j];
       if (!verticesmask[nb]) {
         vertices[nvertices++] = nb;
@@ -317,28 +313,26 @@ int main(int argc,char **argv)
     }
   }
 
-  PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"\n"));
-  PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"The array vertices is :\n"));
-  for (i=0; i < nvertices; i++) {
-    PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"%" PetscInt_FMT " ",vertices[i]));
-  }
-  PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"\n"));
+  PetscCall(PetscFPrintf(PETSC_COMM_SELF, fptr1, "\n"));
+  PetscCall(PetscFPrintf(PETSC_COMM_SELF, fptr1, "The array vertices is :\n"));
+  for (i = 0; i < nvertices; i++) { PetscCall(PetscFPrintf(PETSC_COMM_SELF, fptr1, "%" PetscInt_FMT " ", vertices[i])); }
+  PetscCall(PetscFPrintf(PETSC_COMM_SELF, fptr1, "\n"));
 
   /*
      Map the vertices listed in the neighbors to the local numbering from
     the global ordering that they contained initially.
   */
-  PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"\n"));
-  PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"After mapping neighbors in the local contiguous ordering\n"));
-  for (i=0; i<user.Nvlocal; i++) {
-    PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"Neghbors of local vertex %" PetscInt_FMT " are :\n",i));
+  PetscCall(PetscFPrintf(PETSC_COMM_SELF, fptr1, "\n"));
+  PetscCall(PetscFPrintf(PETSC_COMM_SELF, fptr1, "After mapping neighbors in the local contiguous ordering\n"));
+  for (i = 0; i < user.Nvlocal; i++) {
+    PetscCall(PetscFPrintf(PETSC_COMM_SELF, fptr1, "Neghbors of local vertex %" PetscInt_FMT " are :\n", i));
     for (j = 0; j < user.itot[i]; j++) {
       nb              = user.AdjM[i][j];
       user.AdjM[i][j] = verticesmask[nb] - 1;
 
-      PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"%" PetscInt_FMT " ",user.AdjM[i][j]));
+      PetscCall(PetscFPrintf(PETSC_COMM_SELF, fptr1, "%" PetscInt_FMT " ", user.AdjM[i][j]));
     }
-    PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"\n"));
+    PetscCall(PetscFPrintf(PETSC_COMM_SELF, fptr1, "\n"));
   }
 
   N = user.Nvglobal;
@@ -350,20 +344,20 @@ int main(int argc,char **argv)
   /*
     Create vector data structures
   */
-  PetscCall(VecCreate(MPI_COMM_WORLD,&x));
-  PetscCall(VecSetSizes(x,user.Nvlocal,N));
+  PetscCall(VecCreate(MPI_COMM_WORLD, &x));
+  PetscCall(VecSetSizes(x, user.Nvlocal, N));
   PetscCall(VecSetFromOptions(x));
-  PetscCall(VecDuplicate(x,&r));
-  PetscCall(VecCreateSeq(MPI_COMM_SELF,bs*nvertices,&user.localX));
-  PetscCall(VecDuplicate(user.localX,&user.localF));
+  PetscCall(VecDuplicate(x, &r));
+  PetscCall(VecCreateSeq(MPI_COMM_SELF, bs * nvertices, &user.localX));
+  PetscCall(VecDuplicate(user.localX, &user.localF));
 
   /*
     Create the scatter between the global representation and the
     local representation
   */
-  PetscCall(ISCreateStride(MPI_COMM_SELF,bs*nvertices,0,1,&islocal));
-  PetscCall(ISCreateBlock(MPI_COMM_SELF,bs,nvertices,vertices,PETSC_COPY_VALUES,&isglobal));
-  PetscCall(VecScatterCreate(x,isglobal,user.localX,islocal,&user.scatter));
+  PetscCall(ISCreateStride(MPI_COMM_SELF, bs * nvertices, 0, 1, &islocal));
+  PetscCall(ISCreateBlock(MPI_COMM_SELF, bs, nvertices, vertices, PETSC_COPY_VALUES, &isglobal));
+  PetscCall(VecScatterCreate(x, isglobal, user.localX, islocal, &user.scatter));
   PetscCall(ISDestroy(&isglobal));
   PetscCall(ISDestroy(&islocal));
 
@@ -372,50 +366,50 @@ int main(int argc,char **argv)
      preallocation of memory for the matrix. In real application code with big matrices,
      preallocation should always be done to expedite the matrix creation.
   */
-  PetscCall(MatCreate(MPI_COMM_WORLD,&Jac));
-  PetscCall(MatSetSizes(Jac,PETSC_DECIDE,PETSC_DECIDE,N,N));
+  PetscCall(MatCreate(MPI_COMM_WORLD, &Jac));
+  PetscCall(MatSetSizes(Jac, PETSC_DECIDE, PETSC_DECIDE, N, N));
   PetscCall(MatSetFromOptions(Jac));
   PetscCall(MatSetUp(Jac));
 
   /*
     The following routine allows us to set the matrix values in local ordering
   */
-  PetscCall(ISLocalToGlobalMappingCreate(MPI_COMM_SELF,bs,nvertices,vertices,PETSC_COPY_VALUES,&isl2g));
-  PetscCall(MatSetLocalToGlobalMapping(Jac,isl2g,isl2g));
+  PetscCall(ISLocalToGlobalMappingCreate(MPI_COMM_SELF, bs, nvertices, vertices, PETSC_COPY_VALUES, &isl2g));
+  PetscCall(MatSetLocalToGlobalMapping(Jac, isl2g, isl2g));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create nonlinear solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  PetscCall(SNESCreate(MPI_COMM_WORLD,&snes));
-  PetscCall(SNESSetType(snes,type));
+  PetscCall(SNESCreate(MPI_COMM_WORLD, &snes));
+  PetscCall(SNESSetType(snes, type));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Set routines for function and Jacobian evaluation
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscCall(SNESSetFunction(snes,r,FormFunction,(void*)&user));
+  PetscCall(SNESSetFunction(snes, r, FormFunction, (void *)&user));
 
-  PetscCall(PetscOptionsGetBool(NULL,NULL,"-fd_jacobian_coloring",&fd_jacobian_coloring,0));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-fd_jacobian_coloring", &fd_jacobian_coloring, 0));
   if (!fd_jacobian_coloring) {
-    PetscCall(SNESSetJacobian(snes,Jac,Jac,FormJacobian,(void*)&user));
-  } else {  /* Use matfdcoloring */
-    ISColoring   iscoloring;
-    MatColoring  mc;
+    PetscCall(SNESSetJacobian(snes, Jac, Jac, FormJacobian, (void *)&user));
+  } else { /* Use matfdcoloring */
+    ISColoring  iscoloring;
+    MatColoring mc;
 
     /* Get the data structure of Jac */
-    PetscCall(FormJacobian(snes,x,Jac,Jac,&user));
+    PetscCall(FormJacobian(snes, x, Jac, Jac, &user));
     /* Create coloring context */
-    PetscCall(MatColoringCreate(Jac,&mc));
-    PetscCall(MatColoringSetType(mc,MATCOLORINGSL));
+    PetscCall(MatColoringCreate(Jac, &mc));
+    PetscCall(MatColoringSetType(mc, MATCOLORINGSL));
     PetscCall(MatColoringSetFromOptions(mc));
-    PetscCall(MatColoringApply(mc,&iscoloring));
+    PetscCall(MatColoringApply(mc, &iscoloring));
     PetscCall(MatColoringDestroy(&mc));
-    PetscCall(MatFDColoringCreate(Jac,iscoloring,&matfdcoloring));
-    PetscCall(MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))FormFunction,&user));
+    PetscCall(MatFDColoringCreate(Jac, iscoloring, &matfdcoloring));
+    PetscCall(MatFDColoringSetFunction(matfdcoloring, (PetscErrorCode(*)(void))FormFunction, &user));
     PetscCall(MatFDColoringSetFromOptions(matfdcoloring));
-    PetscCall(MatFDColoringSetUp(Jac,iscoloring,matfdcoloring));
+    PetscCall(MatFDColoringSetUp(Jac, iscoloring, matfdcoloring));
     /* PetscCall(MatFDColoringView(matfdcoloring,PETSC_VIEWER_STDOUT_WORLD)); */
-    PetscCall(SNESSetJacobian(snes,Jac,Jac,SNESComputeJacobianDefaultColor,matfdcoloring));
+    PetscCall(SNESSetJacobian(snes, Jac, Jac, SNESComputeJacobianDefaultColor, matfdcoloring));
     PetscCall(ISColoringDestroy(&iscoloring));
   }
 
@@ -435,24 +429,22 @@ int main(int argc,char **argv)
      to employ an initial guess of zero, the user should explicitly set
      this vector to zero by calling VecSet().
   */
-  PetscCall(FormInitialGuess(&user,x));
+  PetscCall(FormInitialGuess(&user, x));
 
   /*
     Print the initial guess
   */
-  PetscCall(VecGetArray(x,&xx));
-  for (inode = 0; inode < user.Nvlocal; inode++) {
-    PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"Initial Solution at node %" PetscInt_FMT " is %f \n",inode,(double)PetscRealPart(xx[inode])));
-  }
-  PetscCall(VecRestoreArray(x,&xx));
+  PetscCall(VecGetArray(x, &xx));
+  for (inode = 0; inode < user.Nvlocal; inode++) { PetscCall(PetscFPrintf(PETSC_COMM_SELF, fptr1, "Initial Solution at node %" PetscInt_FMT " is %f \n", inode, (double)PetscRealPart(xx[inode]))); }
+  PetscCall(VecRestoreArray(x, &xx));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Now solve the nonlinear system
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  PetscCall(SNESSolve(snes,NULL,x));
-  PetscCall(SNESGetIterationNumber(snes,&its));
-  PetscCall(SNESGetNonlinearStepFailures(snes,&nfails));
+  PetscCall(SNESSolve(snes, NULL, x));
+  PetscCall(SNESGetIterationNumber(snes, &its));
+  PetscCall(SNESGetNonlinearStepFailures(snes, &nfails));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Print the output : solution vector and other information
@@ -460,14 +452,12 @@ int main(int argc,char **argv)
      processor's rank.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  PetscCall(VecGetArray(x,&xx));
-  for (inode = 0; inode < user.Nvlocal; inode++) {
-    PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"Solution at node %" PetscInt_FMT " is %f \n",inode,(double)PetscRealPart(xx[inode])));
-  }
-  PetscCall(VecRestoreArray(x,&xx));
+  PetscCall(VecGetArray(x, &xx));
+  for (inode = 0; inode < user.Nvlocal; inode++) { PetscCall(PetscFPrintf(PETSC_COMM_SELF, fptr1, "Solution at node %" PetscInt_FMT " is %f \n", inode, (double)PetscRealPart(xx[inode]))); }
+  PetscCall(VecRestoreArray(x, &xx));
   fclose(fptr1);
-  PetscCall(PetscPrintf(MPI_COMM_WORLD,"number of SNES iterations = %" PetscInt_FMT ", ",its));
-  PetscCall(PetscPrintf(MPI_COMM_WORLD,"number of unsuccessful steps = %" PetscInt_FMT "\n",nfails));
+  PetscCall(PetscPrintf(MPI_COMM_WORLD, "number of SNES iterations = %" PetscInt_FMT ", ", its));
+  PetscCall(PetscPrintf(MPI_COMM_WORLD, "number of unsuccessful steps = %" PetscInt_FMT "\n", nfails));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
@@ -503,15 +493,14 @@ int main(int argc,char **argv)
    Output Parameter:
    X - vector
  */
-PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
-{
-  PetscInt    i,Nvlocal;
+PetscErrorCode FormInitialGuess(AppCtx *user, Vec X) {
+  PetscInt     i, Nvlocal;
   PetscInt    *gloInd;
   PetscScalar *x;
 #if defined(UNUSED_VARIABLES)
-  PetscReal temp1,temp,hx,hy,hxdhy,hydhx,sc;
-  PetscInt  Neglobal,Nvglobal,j,row;
-  PetscReal alpha,lambda;
+  PetscReal temp1, temp, hx, hy, hxdhy, hydhx, sc;
+  PetscInt  Neglobal, Nvglobal, j, row;
+  PetscReal alpha, lambda;
 
   Nvglobal = user->Nvglobal;
   Neglobal = user->Neglobal;
@@ -529,17 +518,17 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
        - You MUST call VecRestoreArray() when you no longer need access to
          the array.
   */
-  PetscCall(VecGetArray(X,&x));
+  PetscCall(VecGetArray(X, &x));
 
   /*
      Compute initial guess over the locally owned part of the grid
   */
-  for (i=0; i < Nvlocal; i++) x[i] = (PetscReal)gloInd[i];
+  for (i = 0; i < Nvlocal; i++) x[i] = (PetscReal)gloInd[i];
 
   /*
      Restore vector
   */
-  PetscCall(VecRestoreArray(X,&x));
+  PetscCall(VecRestoreArray(X, &x));
   return 0;
 }
 /* --------------------  Evaluate Function F(x) --------------------- */
@@ -554,20 +543,19 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
    Output Parameter:
 .  F - function vector
  */
-PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
-{
-  AppCtx         *user = (AppCtx*)ptr;
-  PetscInt       i,j,Nvlocal;
-  PetscReal      alpha,lambda;
-  PetscScalar    *x,*f;
-  VecScatter     scatter;
-  Vec            localX = user->localX;
+PetscErrorCode FormFunction(SNES snes, Vec X, Vec F, void *ptr) {
+  AppCtx      *user = (AppCtx *)ptr;
+  PetscInt     i, j, Nvlocal;
+  PetscReal    alpha, lambda;
+  PetscScalar *x, *f;
+  VecScatter   scatter;
+  Vec          localX = user->localX;
 #if defined(UNUSED_VARIABLES)
-  PetscScalar ut,ub,ul,ur,u,*g,sc,uyy,uxx;
-  PetscReal   hx,hy,hxdhy,hydhx;
-  PetscReal   two = 2.0,one = 1.0;
-  PetscInt    Nvglobal,Neglobal,row;
-  PetscInt    *gloInd;
+  PetscScalar ut, ub, ul, ur, u, *g, sc, uyy, uxx;
+  PetscReal   hx, hy, hxdhy, hydhx;
+  PetscReal   two = 2.0, one = 1.0;
+  PetscInt    Nvglobal, Neglobal, row;
+  PetscInt   *gloInd;
 
   Nvglobal = user->Nvglobal;
   Neglobal = user->Neglobal;
@@ -588,14 +576,14 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
      VecScatterBegin() and VecScatterEnd() to overlap the communication with
      computation.
  */
-  PetscCall(VecScatterBegin(scatter,X,localX,INSERT_VALUES,SCATTER_FORWARD));
-  PetscCall(VecScatterEnd(scatter,X,localX,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterBegin(scatter, X, localX, INSERT_VALUES, SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(scatter, X, localX, INSERT_VALUES, SCATTER_FORWARD));
 
   /*
      Get pointers to vector data
   */
-  PetscCall(VecGetArray(localX,&x));
-  PetscCall(VecGetArray(F,&f));
+  PetscCall(VecGetArray(localX, &x));
+  PetscCall(VecGetArray(F, &f));
 
   /*
     Now compute the f(x). As mentioned earlier, the computed Laplacian is just an
@@ -603,16 +591,16 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
     is that this is a local (completly parallel) calculation. In practical application
     codes, function calculation time is a dominat portion of the overall execution time.
   */
-  for (i=0; i < Nvlocal; i++) {
-    f[i] = (user->itot[i] - alpha)*x[i] - lambda*x[i]*x[i];
+  for (i = 0; i < Nvlocal; i++) {
+    f[i] = (user->itot[i] - alpha) * x[i] - lambda * x[i] * x[i];
     for (j = 0; j < user->itot[i]; j++) f[i] -= x[user->AdjM[i][j]];
   }
 
   /*
      Restore vectors
   */
-  PetscCall(VecRestoreArray(localX,&x));
-  PetscCall(VecRestoreArray(F,&f));
+  PetscCall(VecRestoreArray(localX, &x));
+  PetscCall(VecRestoreArray(F, &f));
   /*PetscCall(VecView(F,PETSC_VIEWER_STDOUT_WORLD));*/
 
   return 0;
@@ -633,18 +621,17 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 .  flag - flag indicating matrix structure
 
 */
-PetscErrorCode FormJacobian(SNES snes,Vec X,Mat J,Mat jac,void *ptr)
-{
-  AppCtx      *user = (AppCtx*)ptr;
-  PetscInt    i,j,Nvlocal,col[50];
-  PetscScalar alpha,lambda,value[50];
-  Vec         localX = user->localX;
-  VecScatter  scatter;
+PetscErrorCode FormJacobian(SNES snes, Vec X, Mat J, Mat jac, void *ptr) {
+  AppCtx      *user = (AppCtx *)ptr;
+  PetscInt     i, j, Nvlocal, col[50];
+  PetscScalar  alpha, lambda, value[50];
+  Vec          localX = user->localX;
+  VecScatter   scatter;
   PetscScalar *x;
 #if defined(UNUSED_VARIABLES)
-  PetscScalar two = 2.0,one = 1.0;
-  PetscInt    row,Nvglobal,Neglobal;
-  PetscInt    *gloInd;
+  PetscScalar two = 2.0, one = 1.0;
+  PetscInt    row, Nvglobal, Neglobal;
+  PetscInt   *gloInd;
 
   Nvglobal = user->Nvglobal;
   Neglobal = user->Neglobal;
@@ -654,7 +641,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat J,Mat jac,void *ptr)
   /*printf("Entering into FormJacobian \n");*/
   Nvlocal = user->Nvlocal;
   lambda  = user->non_lin_param;
-  alpha   =  user->lin_param;
+  alpha   = user->lin_param;
   scatter = user->scatter;
 
   /*
@@ -666,20 +653,20 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat J,Mat jac,void *ptr)
      VecScatterBegin() and VecScatterEnd() to overlap the communication with
      computation.
   */
-  PetscCall(VecScatterBegin(scatter,X,localX,INSERT_VALUES,SCATTER_FORWARD));
-  PetscCall(VecScatterEnd(scatter,X,localX,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterBegin(scatter, X, localX, INSERT_VALUES, SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(scatter, X, localX, INSERT_VALUES, SCATTER_FORWARD));
 
   /*
      Get pointer to vector data
   */
-  PetscCall(VecGetArray(localX,&x));
+  PetscCall(VecGetArray(localX, &x));
 
-  for (i=0; i < Nvlocal; i++) {
+  for (i = 0; i < Nvlocal; i++) {
     col[0]   = i;
-    value[0] = user->itot[i] - 2.0*lambda*x[i] - alpha;
+    value[0] = user->itot[i] - 2.0 * lambda * x[i] - alpha;
     for (j = 0; j < user->itot[i]; j++) {
-      col[j+1]   = user->AdjM[i][j];
-      value[j+1] = -1.0;
+      col[j + 1]   = user->AdjM[i][j];
+      value[j + 1] = -1.0;
     }
 
     /*
@@ -687,7 +674,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat J,Mat jac,void *ptr)
       feature we must call the routine MatSetLocalToGlobalMapping() after the
       matrix has been created.
     */
-    PetscCall(MatSetValuesLocal(jac,1,&i,1+user->itot[i],col,value,INSERT_VALUES));
+    PetscCall(MatSetValuesLocal(jac, 1, &i, 1 + user->itot[i], col, value, INSERT_VALUES));
   }
 
   /*
@@ -696,15 +683,15 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat J,Mat jac,void *ptr)
      Between these two calls, the pointer to vector data has been restored to
      demonstrate the use of overlapping communicationn with computation.
   */
-  PetscCall(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY));
-  PetscCall(VecRestoreArray(localX,&x));
-  PetscCall(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(jac, MAT_FINAL_ASSEMBLY));
+  PetscCall(VecRestoreArray(localX, &x));
+  PetscCall(MatAssemblyEnd(jac, MAT_FINAL_ASSEMBLY));
 
   /*
      Tell the matrix we will never add a new nonzero location to the
      matrix. If we do, it will generate an error.
   */
-  PetscCall(MatSetOption(jac,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE));
+  PetscCall(MatSetOption(jac, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE));
   /* MatView(jac,PETSC_VIEWER_STDOUT_SELF); */
   return 0;
 }

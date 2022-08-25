@@ -3,7 +3,7 @@
   Code for manipulating distributed regular arrays in parallel.
 */
 
-#include <petsc/private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
+#include <petsc/private/dmdaimpl.h> /*I   "petscdmda.h"   I*/
 extern PetscErrorCode DMLocalToLocalCreate_DA(DM);
 
 /*@C
@@ -27,17 +27,14 @@ extern PetscErrorCode DMLocalToLocalCreate_DA(DM);
 
 .seealso: `DMGlobalToLocalBegin()`, `DMGlobalToLocalEnd()`, `DMLocalToGlobalBegin()`
 @*/
-PetscErrorCode  DMDAGetScatter(DM da,VecScatter *gtol,VecScatter *ltol)
-{
-  DM_DA          *dd = (DM_DA*)da->data;
+PetscErrorCode DMDAGetScatter(DM da, VecScatter *gtol, VecScatter *ltol) {
+  DM_DA *dd = (DM_DA *)da->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
+  PetscValidHeaderSpecificType(da, DM_CLASSID, 1, DMDA);
   if (gtol) *gtol = dd->gtol;
   if (ltol) {
-    if (!dd->ltol) {
-      PetscCall(DMLocalToLocalCreate_DA(da));
-    }
+    if (!dd->ltol) { PetscCall(DMLocalToLocalCreate_DA(da)); }
     *ltol = dd->ltol;
   }
   PetscFunctionReturn(0);

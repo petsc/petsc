@@ -129,7 +129,6 @@ class PC_PYTHON_CLASS(object):
 class TestPCPYTHON(unittest.TestCase):
 
     PC_TYPE = PETSc.PC.Type.PYTHON
-
     PC_PREFIX = 'test-'
 
     def setUp(self):
@@ -148,6 +147,11 @@ class TestPCPYTHON(unittest.TestCase):
         assert self._getCtx().log['setFromOptions'] == 1
         ctx = self._getCtx()
         self.assertEqual(getrefcount(ctx), 3)
+
+    def testGetType(self):
+        ctx = self.pc.getPythonContext()
+        pytype = "{0}.{1}".format(ctx.__module__, type(ctx).__name__)
+        self.assertTrue(self.pc.getPythonType() == pytype)
 
     def tearDown(self):
         ctx = self._getCtx()

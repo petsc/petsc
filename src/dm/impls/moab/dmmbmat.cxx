@@ -5,16 +5,15 @@
 #include <MBTagConventions.hpp>
 #include <moab/NestedRefine.hpp>
 
-PETSC_EXTERN PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM, PetscInt*, PetscInt*, PetscInt*, PetscInt*, PetscBool);
+PETSC_EXTERN PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscBool);
 
-PETSC_EXTERN PetscErrorCode DMCreateMatrix_Moab(DM dm, Mat *J)
-{
-  PetscInt        innz = 0, ionz = 0, nlsiz;
-  DM_Moab         *dmmoab = (DM_Moab*)dm->data;
-  PetscInt        *nnz = 0, *onz = 0;
-  char            *tmp = 0;
-  Mat             A;
-  MatType         mtype;
+PETSC_EXTERN PetscErrorCode DMCreateMatrix_Moab(DM dm, Mat *J) {
+  PetscInt  innz = 0, ionz = 0, nlsiz;
+  DM_Moab  *dmmoab = (DM_Moab *)dm->data;
+  PetscInt *nnz = 0, *onz = 0;
+  char     *tmp = 0;
+  Mat       A;
+  MatType   mtype;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -39,7 +38,7 @@ PETSC_EXTERN PetscErrorCode DMCreateMatrix_Moab(DM dm, Mat *J)
   PetscCall(MatSetDM(A, dm)); /* set DM reference */
   PetscCall(MatSetFromOptions(A));
 
-  PetscCheck(dmmoab->ltog_map,(((PetscObject)dm)->comm), PETSC_ERR_ORDER, "Cannot create a DMMoab Mat without calling DMSetUp first.");
+  PetscCheck(dmmoab->ltog_map, (((PetscObject)dm)->comm), PETSC_ERR_ORDER, "Cannot create a DMMoab Mat without calling DMSetUp first.");
   PetscCall(MatSetLocalToGlobalMapping(A, dmmoab->ltog_map, dmmoab->ltog_map));
 
   /* set preallocation based on different supported Mat types */
@@ -60,36 +59,36 @@ PETSC_EXTERN PetscErrorCode DMCreateMatrix_Moab(DM dm, Mat *J)
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM dm, PetscInt* innz, PetscInt* nnz, PetscInt* ionz, PetscInt* onz, PetscBool isbaij)
-{
-  PetscInt        i, f, nloc, vpere, bs, n_nnz, n_onz, ivtx = 0;
-  PetscInt        ibs, jbs, inbsize, iobsize, nfields, nlsiz;
-  DM_Moab         *dmmoab = (DM_Moab*)dm->data;
-  moab::Range     found;
+PETSC_EXTERN PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM dm, PetscInt *innz, PetscInt *nnz, PetscInt *ionz, PetscInt *onz, PetscBool isbaij) {
+  PetscInt                        i, f, nloc, vpere, bs, n_nnz, n_onz, ivtx = 0;
+  PetscInt                        ibs, jbs, inbsize, iobsize, nfields, nlsiz;
+  DM_Moab                        *dmmoab = (DM_Moab *)dm->data;
+  moab::Range                     found;
   std::vector<moab::EntityHandle> adjs, storage;
-  PetscBool isinterlaced;
-  moab::EntityHandle vtx;
-  moab::ErrorCode merr;
+  PetscBool                       isinterlaced;
+  moab::EntityHandle              vtx;
+  moab::ErrorCode                 merr;
 
   PetscFunctionBegin;
-  bs = dmmoab->bs;
-  nloc = dmmoab->nloc;
-  nfields = dmmoab->numFields;
+  bs           = dmmoab->bs;
+  nloc         = dmmoab->nloc;
+  nfields      = dmmoab->numFields;
   isinterlaced = (isbaij || bs == nfields ? PETSC_TRUE : PETSC_FALSE);
-  nlsiz = (isinterlaced ? nloc : nloc * nfields);
+  nlsiz        = (isinterlaced ? nloc : nloc * nfields);
 
   /* loop over the locally owned vertices and figure out the NNZ pattern using connectivity information */
   for (moab::Range::const_iterator iter = dmmoab->vowned->begin(); iter != dmmoab->vowned->end(); iter++, ivtx++) {
-
     vtx = *iter;
     /* Get adjacency information for current vertex - i.e., all elements of dimension (dim) that connects
        to the current vertex. We can then decipher if a vertex is ghosted or not and compute the
        non-zero pattern accordingly. */
     adjs.clear();
     if (dmmoab->hlevel && (dmmoab->pcomm->size() == 1)) {
-      merr = dmmoab->hierarchy->get_adjacencies(vtx, dmmoab->dim, adjs); MBERRNM(merr);
+      merr = dmmoab->hierarchy->get_adjacencies(vtx, dmmoab->dim, adjs);
+      MBERRNM(merr);
     } else {
-      merr = dmmoab->mbiface->get_adjacencies(&vtx, 1, dmmoab->dim, true, adjs, moab::Interface::UNION); MBERRNM(merr);
+      merr = dmmoab->mbiface->get_adjacencies(&vtx, 1, dmmoab->dim, true, adjs, moab::Interface::UNION);
+      MBERRNM(merr);
     }
 
     /* reset counters */
@@ -98,67 +97,58 @@ PETSC_EXTERN PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM dm, PetscInt
 
     /* loop over vertices and update the number of connectivity */
     for (unsigned jter = 0; jter < adjs.size(); ++jter) {
-
       /* Get connectivity information in canonical ordering for the local element */
-      const moab::EntityHandle *connect;
+      const moab::EntityHandle       *connect;
       std::vector<moab::EntityHandle> cconnect;
-      merr = dmmoab->mbiface->get_connectivity(adjs[jter], connect, vpere, false, &storage); MBERRNM(merr);
+      merr = dmmoab->mbiface->get_connectivity(adjs[jter], connect, vpere, false, &storage);
+      MBERRNM(merr);
 
       /* loop over each element connected to the adjacent vertex and update as needed */
       for (i = 0; i < vpere; ++i) {
         /* find the truly user-expected layer of ghosted entities to decipher NNZ pattern */
         if (connect[i] == vtx || found.find(connect[i]) != found.end()) continue; /* make sure we don't double count shared vertices */
-        if (dmmoab->vghost->find(connect[i]) != dmmoab->vghost->end()) n_onz++; /* update out-of-proc onz */
-        else n_nnz++; /* else local vertex */
+        if (dmmoab->vghost->find(connect[i]) != dmmoab->vghost->end()) n_onz++;   /* update out-of-proc onz */
+        else n_nnz++;                                                             /* else local vertex */
         found.insert(connect[i]);
       }
     }
     storage.clear();
 
     if (isbaij) {
-      nnz[ivtx] = n_nnz;  /* leave out self to avoid repeats -> node shared by multiple elements */
-      if (onz) {
-        onz[ivtx] = n_onz; /* add ghost non-owned nodes */
-      }
+      nnz[ivtx] = n_nnz; /* leave out self to avoid repeats -> node shared by multiple elements */
+      if (onz) { onz[ivtx] = n_onz; /* add ghost non-owned nodes */ }
     } else { /* AIJ matrices */
       if (!isinterlaced) {
         for (f = 0; f < nfields; f++) {
-          nnz[f * nloc + ivtx] = n_nnz; /* leave out self to avoid repeats -> node shared by multiple elements */
-          if (onz)
-            onz[f * nloc + ivtx] = n_onz; /* add ghost non-owned nodes */
+          nnz[f * nloc + ivtx] = n_nnz;          /* leave out self to avoid repeats -> node shared by multiple elements */
+          if (onz) onz[f * nloc + ivtx] = n_onz; /* add ghost non-owned nodes */
         }
       } else {
         for (f = 0; f < nfields; f++) {
-          nnz[nfields * ivtx + f] = n_nnz; /* leave out self to avoid repeats -> node shared by multiple elements */
-          if (onz)
-            onz[nfields * ivtx + f] = n_onz; /* add ghost non-owned nodes */
+          nnz[nfields * ivtx + f] = n_nnz;          /* leave out self to avoid repeats -> node shared by multiple elements */
+          if (onz) onz[nfields * ivtx + f] = n_onz; /* add ghost non-owned nodes */
         }
       }
     }
   }
 
-  for (i = 0; i < nlsiz; i++)
-    nnz[i] += 1; /* self count the node */
+  for (i = 0; i < nlsiz; i++) nnz[i] += 1; /* self count the node */
 
   for (ivtx = 0; ivtx < nloc; ivtx++) {
     if (!isbaij) {
       for (ibs = 0; ibs < nfields; ibs++) {
-        if (dmmoab->dfill) {  /* first address the diagonal block */
+        if (dmmoab->dfill) { /* first address the diagonal block */
           /* just add up the ints -- easier/faster rather than branching based on "1" */
-          for (jbs = 0, inbsize = 0; jbs < nfields; jbs++)
-            inbsize += dmmoab->dfill[ibs * nfields + jbs];
-        }
-        else inbsize = nfields; /* dense coupling since user didn't specify the component fill explicitly */
+          for (jbs = 0, inbsize = 0; jbs < nfields; jbs++) inbsize += dmmoab->dfill[ibs * nfields + jbs];
+        } else inbsize = nfields; /* dense coupling since user didn't specify the component fill explicitly */
         if (isinterlaced) nnz[ivtx * nfields + ibs] *= inbsize;
         else nnz[ibs * nloc + ivtx] *= inbsize;
 
         if (onz) {
-          if (dmmoab->ofill) {  /* next address the off-diagonal block */
+          if (dmmoab->ofill) { /* next address the off-diagonal block */
             /* just add up the ints -- easier/faster rather than branching based on "1" */
-            for (jbs = 0, iobsize = 0; jbs < nfields; jbs++)
-              iobsize += dmmoab->dfill[ibs * nfields + jbs];
-          }
-          else iobsize = nfields; /* dense coupling since user didn't specify the component fill explicitly */
+            for (jbs = 0, iobsize = 0; jbs < nfields; jbs++) iobsize += dmmoab->dfill[ibs * nfields + jbs];
+          } else iobsize = nfields; /* dense coupling since user didn't specify the component fill explicitly */
           if (isinterlaced) onz[ivtx * nfields + ibs] *= iobsize;
           else onz[ibs * nloc + ivtx] *= iobsize;
         }
@@ -181,16 +171,14 @@ PETSC_EXTERN PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM dm, PetscInt
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMMoabSetBlockFills_Private(PetscInt w, const PetscInt *fill, PetscInt **rfill)
-{
-  PetscInt       i, j, *ifill;
+static PetscErrorCode DMMoabSetBlockFills_Private(PetscInt w, const PetscInt *fill, PetscInt **rfill) {
+  PetscInt i, j, *ifill;
 
   PetscFunctionBegin;
   if (!fill) PetscFunctionReturn(0);
   PetscCall(PetscMalloc1(w * w, &ifill));
   for (i = 0; i < w; i++) {
-    for (j = 0; j < w; j++)
-      ifill[i * w + j] = fill[i * w + j];
+    for (j = 0; j < w; j++) ifill[i * w + j] = fill[i * w + j];
   }
 
   *rfill = ifill;
@@ -231,9 +219,8 @@ $                         0, 1, 1}
 .seealso `DMCreateMatrix()`, `DMDASetGetMatrix()`, `DMSetMatrixPreallocateOnly()`
 
 @*/
-PetscErrorCode  DMMoabSetBlockFills(DM dm, const PetscInt *dfill, const PetscInt *ofill)
-{
-  DM_Moab       *dmmoab = (DM_Moab*)dm->data;
+PetscErrorCode DMMoabSetBlockFills(DM dm, const PetscInt *dfill, const PetscInt *ofill) {
+  DM_Moab *dmmoab = (DM_Moab *)dm->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);

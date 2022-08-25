@@ -24,8 +24,8 @@
 
 PETSC_EXTERN PetscErrorCode PetscSSLInitializeContext(SSL_CTX **);
 PETSC_EXTERN PetscErrorCode PetscSSLDestroyContext(SSL_CTX *);
-PETSC_EXTERN PetscErrorCode PetscHTTPSRequest(const char[],const char[],const char[],const char[],const char[],SSL*,char[],size_t);
-PETSC_EXTERN PetscErrorCode PetscHTTPSConnect(const char[],int,SSL_CTX *,int *,SSL **);
+PETSC_EXTERN PetscErrorCode PetscHTTPSRequest(const char[], const char[], const char[], const char[], const char[], SSL *, char[], size_t);
+PETSC_EXTERN PetscErrorCode PetscHTTPSConnect(const char[], int, SSL_CTX *, int *, SSL **);
 
-PETSC_EXTERN PetscErrorCode PetscHTTPRequest(const char[],const char[],const char[],const char[],const char[],int,char[],size_t);
+PETSC_EXTERN PetscErrorCode PetscHTTPRequest(const char[], const char[], const char[], const char[], const char[], int, char[], size_t);
 #endif

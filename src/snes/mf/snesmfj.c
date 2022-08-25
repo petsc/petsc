@@ -1,6 +1,6 @@
 
-#include <petsc/private/snesimpl.h>  /*I  "petscsnes.h" I*/
-#include <petscdm.h>                 /*I  "petscdm.h"   I*/
+#include <petsc/private/snesimpl.h> /*I  "petscsnes.h" I*/
+#include <petscdm.h>                /*I  "petscdm.h"   I*/
 #include <../src/mat/impls/mffd/mffdimpl.h>
 #include <petsc/private/matimpl.h>
 
@@ -37,16 +37,15 @@
           `MatMFFDSetHHistory()`, `MatMFFDSetFunctionError()`, `MatCreateMFFD()`, `SNESSetJacobian()`
 
 @*/
-PetscErrorCode  MatMFFDComputeJacobian(SNES snes,Vec x,Mat jac,Mat B,void *dummy)
-{
+PetscErrorCode MatMFFDComputeJacobian(SNES snes, Vec x, Mat jac, Mat B, void *dummy) {
   PetscFunctionBegin;
-  PetscCall(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(jac, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(jac, MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode MatAssemblyEnd_MFFD(Mat,MatAssemblyType);
-PETSC_EXTERN PetscErrorCode MatMFFDSetBase_MFFD(Mat,Vec,Vec);
+PETSC_EXTERN PetscErrorCode MatAssemblyEnd_MFFD(Mat, MatAssemblyType);
+PETSC_EXTERN PetscErrorCode MatMFFDSetBase_MFFD(Mat, Vec, Vec);
 
 /*@
     MatSNESMFGetSNES - returns the SNES associated with a matrix created with MatCreateSNESMF()
@@ -63,12 +62,11 @@ PETSC_EXTERN PetscErrorCode MatMFFDSetBase_MFFD(Mat,Vec,Vec);
 
 .seealso: `MatCreateSNESMF()`
 @*/
-PetscErrorCode MatSNESMFGetSNES(Mat J,SNES *snes)
-{
-  MatMFFD        j;
+PetscErrorCode MatSNESMFGetSNES(Mat J, SNES *snes) {
+  MatMFFD j;
 
   PetscFunctionBegin;
-  PetscCall(MatShellGetContext(J,&j));
+  PetscCall(MatShellGetContext(J, &j));
   *snes = (SNES)j->ctx;
   PetscFunctionReturn(0);
 }
@@ -78,28 +76,27 @@ PetscErrorCode MatSNESMFGetSNES(Mat J,SNES *snes)
     base from the SNES context
 
 */
-static PetscErrorCode MatAssemblyEnd_SNESMF(Mat J,MatAssemblyType mt)
-{
-  MatMFFD        j;
-  SNES           snes;
-  Vec            u,f;
-  DM             dm;
-  DMSNES         dms;
+static PetscErrorCode MatAssemblyEnd_SNESMF(Mat J, MatAssemblyType mt) {
+  MatMFFD j;
+  SNES    snes;
+  Vec     u, f;
+  DM      dm;
+  DMSNES  dms;
 
   PetscFunctionBegin;
-  PetscCall(MatShellGetContext(J,&j));
+  PetscCall(MatShellGetContext(J, &j));
   snes = (SNES)j->ctx;
-  PetscCall(MatAssemblyEnd_MFFD(J,mt));
+  PetscCall(MatAssemblyEnd_MFFD(J, mt));
 
-  PetscCall(SNESGetSolution(snes,&u));
-  PetscCall(SNESGetDM(snes,&dm));
-  PetscCall(DMGetDMSNES(dm,&dms));
-  if ((j->func == (PetscErrorCode (*)(void*,Vec,Vec))SNESComputeFunction) && !dms->ops->computemffunction) {
-    PetscCall(SNESGetFunction(snes,&f,NULL,NULL));
-    PetscCall(MatMFFDSetBase_MFFD(J,u,f));
+  PetscCall(SNESGetSolution(snes, &u));
+  PetscCall(SNESGetDM(snes, &dm));
+  PetscCall(DMGetDMSNES(dm, &dms));
+  if ((j->func == (PetscErrorCode(*)(void *, Vec, Vec))SNESComputeFunction) && !dms->ops->computemffunction) {
+    PetscCall(SNESGetFunction(snes, &f, NULL, NULL));
+    PetscCall(MatMFFDSetBase_MFFD(J, u, f));
   } else {
     /* f value known by SNES is not correct for other differencing function */
-    PetscCall(MatMFFDSetBase_MFFD(J,u,NULL));
+    PetscCall(MatMFFDSetBase_MFFD(J, u, NULL));
   }
   PetscFunctionReturn(0);
 }
@@ -110,19 +107,18 @@ static PetscErrorCode MatAssemblyEnd_SNESMF(Mat J,MatAssemblyType mt)
     even if the func is not SNESComputeFunction. See: MatSNESMFUseBase()
 
 */
-static PetscErrorCode MatAssemblyEnd_SNESMF_UseBase(Mat J,MatAssemblyType mt)
-{
-  MatMFFD        j;
-  SNES           snes;
-  Vec            u,f;
+static PetscErrorCode MatAssemblyEnd_SNESMF_UseBase(Mat J, MatAssemblyType mt) {
+  MatMFFD j;
+  SNES    snes;
+  Vec     u, f;
 
   PetscFunctionBegin;
-  PetscCall(MatAssemblyEnd_MFFD(J,mt));
-  PetscCall(MatShellGetContext(J,&j));
+  PetscCall(MatAssemblyEnd_MFFD(J, mt));
+  PetscCall(MatShellGetContext(J, &j));
   snes = (SNES)j->ctx;
-  PetscCall(SNESGetSolution(snes,&u));
-  PetscCall(SNESGetFunction(snes,&f,NULL,NULL));
-  PetscCall(MatMFFDSetBase_MFFD(J,u,f));
+  PetscCall(SNESGetSolution(snes, &u));
+  PetscCall(SNESGetFunction(snes, &f, NULL, NULL));
+  PetscCall(MatMFFDSetBase_MFFD(J, u, f));
   PetscFunctionReturn(0);
 }
 
@@ -130,16 +126,14 @@ static PetscErrorCode MatAssemblyEnd_SNESMF_UseBase(Mat J,MatAssemblyType mt)
     This routine resets the MatAssemblyEnd() for the MatMFFD created from MatCreateSNESMF() so that it NO longer
   uses the solution in the SNES object to update the base. See the warning in MatCreateSNESMF().
 */
-static PetscErrorCode  MatMFFDSetBase_SNESMF(Mat J,Vec U,Vec F)
-{
+static PetscErrorCode MatMFFDSetBase_SNESMF(Mat J, Vec U, Vec F) {
   PetscFunctionBegin;
-  PetscCall(MatMFFDSetBase_MFFD(J,U,F));
+  PetscCall(MatMFFDSetBase_MFFD(J, U, F));
   J->ops->assemblyend = MatAssemblyEnd_MFFD;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode  MatSNESMFSetReuseBase_SNESMF(Mat J,PetscBool use)
-{
+static PetscErrorCode MatSNESMFSetReuseBase_SNESMF(Mat J, PetscBool use) {
   PetscFunctionBegin;
   if (use) {
     J->ops->assemblyend = MatAssemblyEnd_SNESMF_UseBase;
@@ -173,16 +167,14 @@ static PetscErrorCode  MatSNESMFSetReuseBase_SNESMF(Mat J,PetscBool use)
 
 .seealso: `MatCreateSNESMF()`, `MatSNESMFGetReuseBase()`
 @*/
-PetscErrorCode  MatSNESMFSetReuseBase(Mat J,PetscBool use)
-{
+PetscErrorCode MatSNESMFSetReuseBase(Mat J, PetscBool use) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(J,MAT_CLASSID,1);
-  PetscTryMethod(J,"MatSNESMFSetReuseBase_C",(Mat,PetscBool),(J,use));
+  PetscValidHeaderSpecific(J, MAT_CLASSID, 1);
+  PetscTryMethod(J, "MatSNESMFSetReuseBase_C", (Mat, PetscBool), (J, use));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode  MatSNESMFGetReuseBase_SNESMF(Mat J,PetscBool *use)
-{
+static PetscErrorCode MatSNESMFGetReuseBase_SNESMF(Mat J, PetscBool *use) {
   PetscFunctionBegin;
   if (J->ops->assemblyend == MatAssemblyEnd_SNESMF_UseBase) *use = PETSC_TRUE;
   else *use = PETSC_FALSE;
@@ -215,11 +207,10 @@ static PetscErrorCode  MatSNESMFGetReuseBase_SNESMF(Mat J,PetscBool *use)
 
 .seealso: `MatCreateSNESMF()`, `MatSNESMFSetReuseBase()`
 @*/
-PetscErrorCode  MatSNESMFGetReuseBase(Mat J,PetscBool *use)
-{
+PetscErrorCode MatSNESMFGetReuseBase(Mat J, PetscBool *use) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(J,MAT_CLASSID,1);
-  PetscUseMethod(J,"MatSNESMFGetReuseBase_C",(Mat,PetscBool*),(J,use));
+  PetscValidHeaderSpecific(J, MAT_CLASSID, 1);
+  PetscUseMethod(J, "MatSNESMFGetReuseBase_C", (Mat, PetscBool *), (J, use));
   PetscFunctionReturn(0);
 }
 
@@ -263,40 +254,39 @@ PetscErrorCode  MatSNESMFGetReuseBase(Mat J,PetscBool *use)
           `MatMFFDGetH()`, `MatMFFDRegister()`, `MatMFFDComputeJacobian()`, `MatSNESMFSetReuseBase()`, `MatSNESMFGetReuseBase()`
 
 @*/
-PetscErrorCode  MatCreateSNESMF(SNES snes,Mat *J)
-{
-  PetscInt       n,N;
-  MatMFFD        mf;
+PetscErrorCode MatCreateSNESMF(SNES snes, Mat *J) {
+  PetscInt n, N;
+  MatMFFD  mf;
 
   PetscFunctionBegin;
   if (snes->vec_func) {
-    PetscCall(VecGetLocalSize(snes->vec_func,&n));
-    PetscCall(VecGetSize(snes->vec_func,&N));
+    PetscCall(VecGetLocalSize(snes->vec_func, &n));
+    PetscCall(VecGetSize(snes->vec_func, &N));
   } else if (snes->dm) {
     Vec tmp;
-    PetscCall(DMGetGlobalVector(snes->dm,&tmp));
-    PetscCall(VecGetLocalSize(tmp,&n));
-    PetscCall(VecGetSize(tmp,&N));
-    PetscCall(DMRestoreGlobalVector(snes->dm,&tmp));
-  } else SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"Must call SNESSetFunction() or SNESSetDM() first");
-  PetscCall(MatCreateMFFD(PetscObjectComm((PetscObject)snes),n,n,N,N,J));
-  PetscCall(MatShellGetContext(*J,&mf));
+    PetscCall(DMGetGlobalVector(snes->dm, &tmp));
+    PetscCall(VecGetLocalSize(tmp, &n));
+    PetscCall(VecGetSize(tmp, &N));
+    PetscCall(DMRestoreGlobalVector(snes->dm, &tmp));
+  } else SETERRQ(PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_WRONGSTATE, "Must call SNESSetFunction() or SNESSetDM() first");
+  PetscCall(MatCreateMFFD(PetscObjectComm((PetscObject)snes), n, n, N, N, J));
+  PetscCall(MatShellGetContext(*J, &mf));
   mf->ctx = snes;
 
-  if (snes->npc && snes->npcside== PC_LEFT) {
-    PetscCall(MatMFFDSetFunction(*J,(PetscErrorCode (*)(void*,Vec,Vec))SNESComputeFunctionDefaultNPC,snes));
+  if (snes->npc && snes->npcside == PC_LEFT) {
+    PetscCall(MatMFFDSetFunction(*J, (PetscErrorCode(*)(void *, Vec, Vec))SNESComputeFunctionDefaultNPC, snes));
   } else {
     DM     dm;
     DMSNES dms;
 
-    PetscCall(SNESGetDM(snes,&dm));
-    PetscCall(DMGetDMSNES(dm,&dms));
-    PetscCall(MatMFFDSetFunction(*J,(PetscErrorCode (*)(void*,Vec,Vec))(dms->ops->computemffunction ? SNESComputeMFFunction : SNESComputeFunction),snes));
+    PetscCall(SNESGetDM(snes, &dm));
+    PetscCall(DMGetDMSNES(dm, &dms));
+    PetscCall(MatMFFDSetFunction(*J, (PetscErrorCode(*)(void *, Vec, Vec))(dms->ops->computemffunction ? SNESComputeMFFunction : SNESComputeFunction), snes));
   }
   (*J)->ops->assemblyend = MatAssemblyEnd_SNESMF;
 
-  PetscCall(PetscObjectComposeFunction((PetscObject)*J,"MatMFFDSetBase_C",MatMFFDSetBase_SNESMF));
-  PetscCall(PetscObjectComposeFunction((PetscObject)*J,"MatSNESMFSetReuseBase_C",MatSNESMFSetReuseBase_SNESMF));
-  PetscCall(PetscObjectComposeFunction((PetscObject)*J,"MatSNESMFGetReuseBase_C",MatSNESMFGetReuseBase_SNESMF));
+  PetscCall(PetscObjectComposeFunction((PetscObject)*J, "MatMFFDSetBase_C", MatMFFDSetBase_SNESMF));
+  PetscCall(PetscObjectComposeFunction((PetscObject)*J, "MatSNESMFSetReuseBase_C", MatSNESMFSetReuseBase_SNESMF));
+  PetscCall(PetscObjectComposeFunction((PetscObject)*J, "MatSNESMFGetReuseBase_C", MatSNESMFGetReuseBase_SNESMF));
   PetscFunctionReturn(0);
 }

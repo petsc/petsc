@@ -113,6 +113,8 @@ cdef extern from * nogil:
     #int DMPlexDistributeData(PetscDM,PetscSF,PetscSection,MPI_Datatype,void*,PetscSection,void**)
     int DMPlexIsDistributed(PetscDM,PetscBool*)
     int DMPlexIsSimplex(PetscDM,PetscBool*)
+    int DMPlexDistributionSetName(PetscDM,const char[])
+    int DMPlexDistributionGetName(PetscDM,const char*[])
 
     int DMPlexGetOrdering(PetscDM,PetscMatOrderingType,PetscDMLabel,PetscIS*)
     int DMPlexPermute(PetscDM,PetscIS,PetscDM*)

@@ -27,6 +27,7 @@
 #define dmremovelabel_               DMREMOVELABEL
 #define dmviewfromoptions_           DMVIEWFROMOPTIONS
 #define dmcreatesuperdm_             DMCREATESUPERDM
+#define dmcreatesubdm_               DMCREATESUBDM
 #define dmdestroy_                   DMDESTROY
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define dmcreateinterpolation_       dmcreateinterpolation
@@ -53,6 +54,7 @@
 #define dmremovelabel_               dmremovelabel
 #define dmviewfromoptions_           dmviewfromoptions
 #define dmcreatesuperdm_             dmreatesuperdm
+#define dmcreatesubdm_               dmreatesubdm
 #define dmdestroy_                   dmdestroy
 #endif
 
@@ -260,6 +262,12 @@ PETSC_EXTERN void dmcreateinterpolation_(DM *dmc,DM *dmf,Mat *mat,Vec *vec, int 
 PETSC_EXTERN void dmcreatesuperdm_(DM dms[], PetscInt *len, IS ***is, DM *superdm, int *ierr)
 {
   *ierr = DMCreateSuperDM(dms, *len, *is, superdm);
+}
+
+PETSC_EXTERN void dmcreatesubdm_(DM *dm, PetscInt *numFields, PetscInt fields[], IS *is, DM *subdm, int *ierr)
+{
+  CHKFORTRANNULLOBJECT(is);
+  *ierr = DMCreateSubDM(*dm, *numFields, fields, is, subdm);
 }
 
 PETSC_EXTERN void dmdestroy_(DM *x,int *ierr)

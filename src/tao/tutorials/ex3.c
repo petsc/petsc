@@ -39,28 +39,27 @@ F*/
 #include <petscviewerhdf5.h>
 
 typedef struct {
-  DM  dm;
-  Mat mass;
-  Vec data;
-  Vec state;
-  Vec tmp1;
-  Vec tmp2;
-  Vec adjoint;
-  Mat laplace;
-  KSP ksp_laplace;
-  PetscInt  num_bc_dofs;
-  PetscInt* bc_indices;
-  PetscScalar* bc_values;
-  PetscBool use_riesz;
+  DM           dm;
+  Mat          mass;
+  Vec          data;
+  Vec          state;
+  Vec          tmp1;
+  Vec          tmp2;
+  Vec          adjoint;
+  Mat          laplace;
+  KSP          ksp_laplace;
+  PetscInt     num_bc_dofs;
+  PetscInt    *bc_indices;
+  PetscScalar *bc_values;
+  PetscBool    use_riesz;
 } AppCtx;
 
-static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
-{
-  PetscBool      flg;
-  char           filename[2048];
+static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm) {
+  PetscBool flg;
+  char      filename[2048];
 
   PetscFunctionBeginUser;
-  filename[0] = '\0';
+  filename[0]     = '\0';
   user->use_riesz = PETSC_TRUE;
 
   PetscOptionsBegin(comm, "", "Poisson mother problem options", "DMPLEX");
@@ -80,9 +79,9 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     Vec            topology;
     PetscInt       dim = 2, numCells;
     PetscInt       numVertices;
-    PetscScalar*   coords;
-    PetscScalar*   topo_f;
-    PetscInt*      cells;
+    PetscScalar   *coords;
+    PetscScalar   *topo_f;
+    PetscInt      *cells;
     PetscInt       j;
     DMLabel        label;
 
@@ -113,10 +112,8 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     PetscCall(VecGetArray(coordinates, &coords));
     PetscCall(VecGetArray(topology, &topo_f));
     /* and now we have to convert the double representation to integers to pass over, argh */
-    PetscCall(PetscMalloc1(numCells*vertices_per_cell, &cells));
-    for (j = 0; j < numCells*vertices_per_cell; j++) {
-      cells[j] = (PetscInt) topo_f[j];
-    }
+    PetscCall(PetscMalloc1(numCells * vertices_per_cell, &cells));
+    for (j = 0; j < numCells * vertices_per_cell; j++) { cells[j] = (PetscInt)topo_f[j]; }
 
     /* Now create the DM */
     PetscCall(DMPlexCreateFromCellListPetsc(comm, dim, numCells, numVertices, vertices_per_cell, PETSC_TRUE, cells, dim, coords, dm));
@@ -128,7 +125,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       if (detJ < 0) {
         PetscCall(DMPlexOrientPoint(*dm, 0, -1));
         PetscCall(DMPlexComputeCellGeometryFEM(*dm, 0, NULL, v0, J, invJ, &detJ));
-        PetscCheck(detJ >= 0,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Something is wrong");
+        PetscCheck(detJ >= 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Something is wrong");
       }
     }
     PetscCall(DMPlexOrient(*dm));
@@ -144,7 +141,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     PetscCall(VecDestroy(&coordinates));
     PetscCall(VecDestroy(&topology));
 #else
-    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Reconfigure PETSc with --download-hdf5");
+    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Reconfigure PETSc with --download-hdf5");
 #endif
   }
   PetscCall(DMSetFromOptions(*dm));
@@ -152,59 +149,47 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscFunctionReturn(0);
 }
 
-void mass_kernel(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-           const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-           const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-           PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[])
-{
+void mass_kernel(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[]) {
   g0[0] = 1.0;
 }
 
-void laplace_kernel(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-           const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-           const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-           PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[])
-{
+void laplace_kernel(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[]) {
   PetscInt d;
-  for (d = 0; d < dim; ++d) g3[d*dim+d] = 1.0;
+  for (d = 0; d < dim; ++d) g3[d * dim + d] = 1.0;
 }
 
 /* data we seek to match */
-PetscErrorCode data_kernel(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *y, void *ctx)
-{
-  *y = 1.0/(2*PETSC_PI*PETSC_PI) * PetscSinReal(PETSC_PI*x[0]) * PetscSinReal(PETSC_PI*x[1]);
+PetscErrorCode data_kernel(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *y, void *ctx) {
+  *y = 1.0 / (2 * PETSC_PI * PETSC_PI) * PetscSinReal(PETSC_PI * x[0]) * PetscSinReal(PETSC_PI * x[1]);
   /* the associated control is sin(pi*x[0])*sin(pi*x[1]) */
   return 0;
 }
-PetscErrorCode zero(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
-{
+PetscErrorCode zero(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx) {
   *u = 0.0;
   return 0;
 }
 
-PetscErrorCode CreateCtx(DM dm, AppCtx* user)
-{
-
-  DM             dm_mass;
-  DM             dm_laplace;
-  PetscDS        prob_mass;
-  PetscDS        prob_laplace;
-  PetscFE        fe;
-  DMLabel        label;
-  PetscSection   section;
-  PetscInt       n, k, p, d;
-  PetscInt       dof, off;
-  IS             is;
-  const PetscInt* points;
-  const PetscInt dim = 2;
+PetscErrorCode CreateCtx(DM dm, AppCtx *user) {
+  DM              dm_mass;
+  DM              dm_laplace;
+  PetscDS         prob_mass;
+  PetscDS         prob_laplace;
+  PetscFE         fe;
+  DMLabel         label;
+  PetscSection    section;
+  PetscInt        n, k, p, d;
+  PetscInt        dof, off;
+  IS              is;
+  const PetscInt *points;
+  const PetscInt  dim = 2;
   PetscErrorCode (**wtf)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
 
   PetscFunctionBeginUser;
 
   /* make the data we seek to match */
-  PetscCall(PetscFECreateDefault(PetscObjectComm((PetscObject) dm), dim, 1, PETSC_TRUE, NULL, 4, &fe));
+  PetscCall(PetscFECreateDefault(PetscObjectComm((PetscObject)dm), dim, 1, PETSC_TRUE, NULL, 4, &fe));
 
-  PetscCall(DMSetField(dm, 0, NULL, (PetscObject) fe));
+  PetscCall(DMSetField(dm, 0, NULL, (PetscObject)fe));
   PetscCall(DMCreateDS(dm));
   PetscCall(DMCreateGlobalVector(dm, &user->data));
 
@@ -222,7 +207,7 @@ PetscErrorCode CreateCtx(DM dm, AppCtx* user)
   PetscCall(DMPlexCopyCoordinates(dm, dm_mass)); /* why do I have to do this separately? */
   PetscCall(DMGetDS(dm_mass, &prob_mass));
   PetscCall(PetscDSSetJacobian(prob_mass, 0, 0, mass_kernel, NULL, NULL, NULL));
-  PetscCall(PetscDSSetDiscretization(prob_mass, 0, (PetscObject) fe));
+  PetscCall(PetscDSSetDiscretization(prob_mass, 0, (PetscObject)fe));
   PetscCall(DMCreateMatrix(dm_mass, &user->mass));
   PetscCall(DMPlexSNESComputeJacobianFEM(dm_mass, user->data, user->mass, user->mass, NULL));
   PetscCall(MatSetOption(user->mass, MAT_SYMMETRIC, PETSC_TRUE));
@@ -235,7 +220,7 @@ PetscErrorCode CreateCtx(DM dm, AppCtx* user)
   PetscCall(DMPlexCopyCoordinates(dm, dm_laplace));
   PetscCall(DMGetDS(dm_laplace, &prob_laplace));
   PetscCall(PetscDSSetJacobian(prob_laplace, 0, 0, NULL, NULL, NULL, laplace_kernel));
-  PetscCall(PetscDSSetDiscretization(prob_laplace, 0, (PetscObject) fe));
+  PetscCall(PetscDSSetDiscretization(prob_laplace, 0, (PetscObject)fe));
   PetscCall(DMCreateMatrix(dm_laplace, &user->laplace));
   PetscCall(DMPlexSNESComputeJacobianFEM(dm_laplace, user->data, user->laplace, user->laplace, NULL));
 
@@ -253,7 +238,7 @@ PetscErrorCode CreateCtx(DM dm, AppCtx* user)
   for (p = 0, k = 0; p < n; ++p) {
     PetscCall(PetscSectionGetDof(section, points[p], &dof));
     PetscCall(PetscSectionGetOffset(section, points[p], &off));
-    for (d = 0; d < dof; ++d) user->bc_indices[k++] = off+d;
+    for (d = 0; d < dof; ++d) user->bc_indices[k++] = off + d;
   }
   PetscCall(ISRestoreIndices(is, &points));
   PetscCall(ISDestroy(&is));
@@ -283,8 +268,7 @@ PetscErrorCode CreateCtx(DM dm, AppCtx* user)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DestroyCtx(AppCtx* user)
-{
+PetscErrorCode DestroyCtx(AppCtx *user) {
   PetscFunctionBeginUser;
 
   PetscCall(MatDestroy(&user->mass));
@@ -301,20 +285,19 @@ PetscErrorCode DestroyCtx(AppCtx* user)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode ReducedFunctionGradient(Tao tao, Vec u, PetscReal* func, Vec g, void* userv)
-{
-  AppCtx* user = (AppCtx*) userv;
+PetscErrorCode ReducedFunctionGradient(Tao tao, Vec u, PetscReal *func, Vec g, void *userv) {
+  AppCtx         *user  = (AppCtx *)userv;
   const PetscReal alpha = 1.0e-6; /* regularisation parameter */
-  PetscReal inner;
+  PetscReal       inner;
 
   PetscFunctionBeginUser;
 
   PetscCall(MatMult(user->mass, u, user->tmp1));
-  PetscCall(VecDot(u, user->tmp1, &inner));               /* regularisation contribution to */
-  *func = alpha * 0.5 * inner;                                      /* the functional                 */
+  PetscCall(VecDot(u, user->tmp1, &inner)); /* regularisation contribution to */
+  *func = alpha * 0.5 * inner;              /* the functional                 */
 
   PetscCall(VecSet(g, 0.0));
-  PetscCall(VecAXPY(g, alpha, user->tmp1));               /* regularisation contribution to the gradient */
+  PetscCall(VecAXPY(g, alpha, user->tmp1)); /* regularisation contribution to the gradient */
 
   /* Now compute the forward state. */
   PetscCall(VecSetValues(user->tmp1, user->num_bc_dofs, user->bc_indices, user->bc_values, INSERT_VALUES));
@@ -326,8 +309,8 @@ PetscErrorCode ReducedFunctionGradient(Tao tao, Vec u, PetscReal* func, Vec g, v
   PetscCall(VecCopy(user->state, user->tmp1));
   PetscCall(VecAXPY(user->tmp1, -1.0, user->data));
   PetscCall(MatMult(user->mass, user->tmp1, user->tmp2));
-  PetscCall(VecDot(user->tmp1, user->tmp2, &inner));      /* misfit contribution to */
-  *func += 0.5 * inner;                                             /* the functional         */
+  PetscCall(VecDot(user->tmp1, user->tmp2, &inner)); /* misfit contribution to */
+  *func += 0.5 * inner;                              /* the functional         */
 
   PetscCall(VecSetValues(user->tmp2, user->num_bc_dofs, user->bc_indices, user->bc_values, INSERT_VALUES));
   PetscCall(VecAssemblyBegin(user->tmp2));
@@ -336,20 +319,19 @@ PetscErrorCode ReducedFunctionGradient(Tao tao, Vec u, PetscReal* func, Vec g, v
 
   /* And bring it home with the gradient. */
   PetscCall(MatMult(user->mass, user->adjoint, user->tmp1));
-  PetscCall(VecAXPY(g, 1.0, user->tmp1));                 /* adjoint contribution to the gradient */
+  PetscCall(VecAXPY(g, 1.0, user->tmp1)); /* adjoint contribution to the gradient */
 
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv)
-{
-  DM             dm;
-  Tao            tao;
-  Vec            u, lb, ub;
-  AppCtx         user;
+int main(int argc, char **argv) {
+  DM     dm;
+  Tao    tao;
+  Vec    u, lb, ub;
+  AppCtx user;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, NULL,help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(CreateMesh(PETSC_COMM_WORLD, &user, &dm));
   PetscCall(CreateCtx(dm, &user));
 
@@ -362,13 +344,13 @@ int main(int argc, char **argv)
 
   PetscCall(TaoCreate(PETSC_COMM_WORLD, &tao));
   PetscCall(TaoSetSolution(tao, u));
-  PetscCall(TaoSetObjectiveAndGradient(tao,NULL, ReducedFunctionGradient, &user));
+  PetscCall(TaoSetObjectiveAndGradient(tao, NULL, ReducedFunctionGradient, &user));
   PetscCall(TaoSetVariableBounds(tao, lb, ub));
   PetscCall(TaoSetType(tao, TAOBLMVM));
   PetscCall(TaoSetFromOptions(tao));
 
   if (user.use_riesz) {
-    PetscCall(TaoLMVMSetH0(tao, user.mass));       /* crucial for mesh independence */
+    PetscCall(TaoLMVMSetH0(tao, user.mass)); /* crucial for mesh independence */
     PetscCall(TaoSetGradientNorm(tao, user.mass));
   }
 

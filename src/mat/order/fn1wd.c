@@ -28,13 +28,10 @@
 /*    PROGRAM SUBROUTINE -                                       */
 /*       FNROOT.                                                 */
 /*****************************************************************/
-PetscErrorCode SPARSEPACKfn1wd(PetscInt *root,const PetscInt *inxadj,const PetscInt *adjncy,
-                               PetscInt *mask, PetscInt *nsep, PetscInt *sep, PetscInt *nlvl, PetscInt *
-                               xls, PetscInt *ls)
-{
-  PetscInt *xadj = (PetscInt*)inxadj;   /* Used as temporary and reset */
+PetscErrorCode SPARSEPACKfn1wd(PetscInt *root, const PetscInt *inxadj, const PetscInt *adjncy, PetscInt *mask, PetscInt *nsep, PetscInt *sep, PetscInt *nlvl, PetscInt *xls, PetscInt *ls) {
+  PetscInt *xadj = (PetscInt *)inxadj; /* Used as temporary and reset */
   /* System generated locals */
-  PetscInt i__1, i__2;
+  PetscInt  i__1, i__2;
 
   /* Local variables */
   PetscInt  node, i, j, k;
@@ -54,14 +51,14 @@ PetscErrorCode SPARSEPACKfn1wd(PetscInt *root,const PetscInt *inxadj,const Petsc
   --xadj;
 
   SPARSEPACKfnroot(root, &xadj[1], &adjncy[1], &mask[1], nlvl, &xls[1], &ls[1]);
-  fnlvl  = (PetscReal) (*nlvl);
+  fnlvl  = (PetscReal)(*nlvl);
   *nsep  = xls[*nlvl + 1] - 1;
-  width  = (PetscReal) (*nsep) / fnlvl;
+  width  = (PetscReal)(*nsep) / fnlvl;
   deltp1 = PetscSqrtReal((width * 3. + 13.) / 2.) + 1.;
   if (*nsep >= 50 && deltp1 <= fnlvl * .5f) goto L300;
 
-/*       THE COMPONENT IS TOO SMALL, OR THE LEVEL STRUCTURE */
-/*       IS VERY LONG AND NARROW. RETURN THE WHOLE COMPONENT.*/
+  /*       THE COMPONENT IS TOO SMALL, OR THE LEVEL STRUCTURE */
+  /*       IS VERY LONG AND NARROW. RETURN THE WHOLE COMPONENT.*/
   i__1 = *nsep;
   for (i = 1; i <= i__1; ++i) {
     node       = ls[i];
@@ -75,7 +72,7 @@ L300:
   i     = 0;
 L400:
   ++i;
-  lvl = (PetscInt)((PetscReal) i * deltp1 + .5f);
+  lvl = (PetscInt)((PetscReal)i * deltp1 + .5f);
   if (lvl >= *nlvl) PetscFunctionReturn(0);
   lvlbeg = xls[lvl];
   lp1beg = xls[lvl + 1];
@@ -86,9 +83,9 @@ L400:
     node       = ls[j];
     xadj[node] = -xadj[node];
   }
-/*          NODES IN LEVEL LVL ARE CHOSEN TO FORM DISSECTOR. */
-/*          INCLUDE ONLY THOSE WITH NEIGHBORS IN LVL+1 LEVEL. */
-/*          XADJ IS USED TEMPORARILY TO MARK NODES IN LVL+1.  */
+  /*          NODES IN LEVEL LVL ARE CHOSEN TO FORM DISSECTOR. */
+  /*          INCLUDE ONLY THOSE WITH NEIGHBORS IN LVL+1 LEVEL. */
+  /*          XADJ IS USED TEMPORARILY TO MARK NODES IN LVL+1.  */
   i__1 = lvlend;
   for (j = lvlbeg; j <= i__1; ++j) {
     node  = ls[j];
@@ -103,11 +100,9 @@ L400:
       sep[*nsep] = node;
       mask[node] = 0;
       goto L700;
-L600:
-      ;
+    L600:;
     }
-L700:
-    ;
+  L700:;
   }
   i__1 = lp1end;
   for (j = lp1beg; j <= i__1; ++j) {
@@ -116,4 +111,3 @@ L700:
   }
   goto L400;
 }
-

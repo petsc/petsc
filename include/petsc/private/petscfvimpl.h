@@ -4,8 +4,8 @@
 #include <petscfv.h>
 #include <petsc/private/petscimpl.h>
 
-PETSC_EXTERN PetscBool PetscLimiterRegisterAllCalled;
-PETSC_EXTERN PetscBool PetscFVRegisterAllCalled;
+PETSC_EXTERN PetscBool      PetscLimiterRegisterAllCalled;
+PETSC_EXTERN PetscBool      PetscFVRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode PetscLimiterRegisterAll(void);
 PETSC_EXTERN PetscErrorCode PetscFVRegisterAll(void);
 
@@ -13,14 +13,14 @@ typedef struct _PetscLimiterOps *PetscLimiterOps;
 struct _PetscLimiterOps {
   PetscErrorCode (*setfromoptions)(PetscLimiter);
   PetscErrorCode (*setup)(PetscLimiter);
-  PetscErrorCode (*view)(PetscLimiter,PetscViewer);
+  PetscErrorCode (*view)(PetscLimiter, PetscViewer);
   PetscErrorCode (*destroy)(PetscLimiter);
   PetscErrorCode (*limit)(PetscLimiter, PetscReal, PetscReal *);
 };
 
 struct _p_PetscLimiter {
   PETSCHEADER(struct _PetscLimiterOps);
-  void           *data;             /* Implementation object */
+  void *data; /* Implementation object */
 };
 
 typedef struct {
@@ -59,24 +59,24 @@ typedef struct _PetscFVOps *PetscFVOps;
 struct _PetscFVOps {
   PetscErrorCode (*setfromoptions)(PetscFV);
   PetscErrorCode (*setup)(PetscFV);
-  PetscErrorCode (*view)(PetscFV,PetscViewer);
+  PetscErrorCode (*view)(PetscFV, PetscViewer);
   PetscErrorCode (*destroy)(PetscFV);
-  PetscErrorCode (*computegradient)(PetscFV, PetscInt, const PetscScalar[], PetscScalar []);
+  PetscErrorCode (*computegradient)(PetscFV, PetscInt, const PetscScalar[], PetscScalar[]);
   PetscErrorCode (*integraterhsfunction)(PetscFV, PetscDS, PetscInt, PetscInt, PetscFVFaceGeom *, PetscReal *, PetscScalar[], PetscScalar[], PetscScalar[], PetscScalar[]);
 };
 
 struct _p_PetscFV {
   PETSCHEADER(struct _PetscFVOps);
-  void             *data;             /* Implementation object */
-  PetscLimiter      limiter;          /* The slope limiter */
-  PetscDualSpace    dualSpace;        /* The dual space P', usually simple */
-  PetscInt          numComponents;    /* The number of field components */
-  PetscInt          dim;              /* The spatial dimension */
-  PetscBool         computeGradients; /* Flag for gradient computation */
-  PetscScalar      *fluxWork;         /* The work array for flux calculation */
-  PetscQuadrature   quadrature;       /* Suitable quadrature on the volume */
+  void           *data;             /* Implementation object */
+  PetscLimiter    limiter;          /* The slope limiter */
+  PetscDualSpace  dualSpace;        /* The dual space P', usually simple */
+  PetscInt        numComponents;    /* The number of field components */
+  PetscInt        dim;              /* The spatial dimension */
+  PetscBool       computeGradients; /* Flag for gradient computation */
+  PetscScalar    *fluxWork;         /* The work array for flux calculation */
+  PetscQuadrature quadrature;       /* Suitable quadrature on the volume */
   PetscTabulation T;                /* Tabulation of pseudo-basis and derivatives at quadrature points */
-  char            **componentNames;   /* Names of the component fields */
+  char          **componentNames;   /* Names of the component fields */
 };
 
 typedef struct {
@@ -88,13 +88,12 @@ typedef struct {
   PetscScalar *B, *Binv, *tau, *work;
 } PetscFV_LeastSquares;
 
-static inline PetscErrorCode PetscFVInterpolate_Static(PetscFV fv, const PetscScalar x[], PetscInt q, PetscScalar interpolant[])
-{
+static inline PetscErrorCode PetscFVInterpolate_Static(PetscFV fv, const PetscScalar x[], PetscInt q, PetscScalar interpolant[]) {
   PetscInt Nc;
 
   PetscFunctionBeginHot;
   PetscCall(PetscFVGetNumComponents(fv, &Nc));
-  PetscCall(PetscArraycpy(interpolant,x,Nc));
+  PetscCall(PetscArraycpy(interpolant, x, Nc));
   PetscFunctionReturn(0);
 }
 

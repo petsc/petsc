@@ -2,26 +2,25 @@ static char help[] = "Spot test DMStag->DMDA routines in 3d\n\n";
 #include <petscdm.h>
 #include <petscdmstag.h>
 
-int main(int argc,char **argv)
-{
-  DM              dm;
-  Vec             vec;
+int main(int argc, char **argv) {
+  DM  dm;
+  Vec vec;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
-  PetscCall(DMStagCreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,4,4,4,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,3,3,3,3,DMSTAG_STENCIL_STAR,1,NULL,NULL,NULL,&dm));
+  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(DMStagCreate3d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, 4, 4, 4, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, 3, 3, 3, 3, DMSTAG_STENCIL_STAR, 1, NULL, NULL, NULL, &dm));
   PetscCall(DMSetFromOptions(dm));
   PetscCall(DMSetUp(dm));
-  PetscCall(DMStagSetUniformCoordinatesProduct(dm,0.0,10.0,0.0,10.0,0.0,10.0));
+  PetscCall(DMStagSetUniformCoordinatesProduct(dm, 0.0, 10.0, 0.0, 10.0, 0.0, 10.0));
 
-  PetscCall(DMCreateGlobalVector(dm,&vec));
-  PetscCall(VecSet(vec,1.234));
+  PetscCall(DMCreateGlobalVector(dm, &vec));
+  PetscCall(VecSet(vec, 1.234));
 
   /* All element values */
   {
     DM  da;
     Vec vecda;
-    PetscCall(DMStagVecSplitToDMDA(dm,vec,DMSTAG_ELEMENT,-3,&da,&vecda));
+    PetscCall(DMStagVecSplitToDMDA(dm, vec, DMSTAG_ELEMENT, -3, &da, &vecda));
     PetscCall(DMDestroy(&da));
     PetscCall(VecDestroy(&vecda));
   }
@@ -30,7 +29,7 @@ int main(int argc,char **argv)
   {
     DM  da;
     Vec vecda;
-    PetscCall(DMStagVecSplitToDMDA(dm,vec,DMSTAG_ELEMENT,-5,&da,&vecda));
+    PetscCall(DMStagVecSplitToDMDA(dm, vec, DMSTAG_ELEMENT, -5, &da, &vecda));
     PetscCall(DMDestroy(&da));
     PetscCall(VecDestroy(&vecda));
   }
@@ -39,7 +38,7 @@ int main(int argc,char **argv)
   {
     DM  da;
     Vec vecda;
-    PetscCall(DMStagVecSplitToDMDA(dm,vec,DMSTAG_ELEMENT,-2,&da,&vecda));
+    PetscCall(DMStagVecSplitToDMDA(dm, vec, DMSTAG_ELEMENT, -2, &da, &vecda));
     PetscCall(DMDestroy(&da));
     PetscCall(VecDestroy(&vecda));
   }
@@ -48,7 +47,7 @@ int main(int argc,char **argv)
   {
     DM  da;
     Vec vecda;
-    PetscCall(DMStagVecSplitToDMDA(dm,vec,DMSTAG_FRONT_DOWN_LEFT,2,&da,&vecda));
+    PetscCall(DMStagVecSplitToDMDA(dm, vec, DMSTAG_FRONT_DOWN_LEFT, 2, &da, &vecda));
     PetscCall(DMDestroy(&da));
     PetscCall(VecDestroy(&vecda));
   }
@@ -57,7 +56,7 @@ int main(int argc,char **argv)
   {
     DM  da;
     Vec vecda;
-    PetscCall(DMStagVecSplitToDMDA(dm,vec,DMSTAG_BACK_RIGHT,1,&da,&vecda));
+    PetscCall(DMStagVecSplitToDMDA(dm, vec, DMSTAG_BACK_RIGHT, 1, &da, &vecda));
     PetscCall(DMDestroy(&da));
     PetscCall(VecDestroy(&vecda));
   }
@@ -66,7 +65,7 @@ int main(int argc,char **argv)
   {
     DM  da;
     Vec vecda;
-    PetscCall(DMStagVecSplitToDMDA(dm,vec,DMSTAG_DOWN,0,&da,&vecda));
+    PetscCall(DMStagVecSplitToDMDA(dm, vec, DMSTAG_DOWN, 0, &da, &vecda));
     PetscCall(DMDestroy(&da));
     PetscCall(VecDestroy(&vecda));
   }

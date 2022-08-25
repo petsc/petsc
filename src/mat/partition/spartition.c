@@ -37,27 +37,26 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate_PTScotch(MatPartitioning);
 
 .seealso: `MatPartitioningRegister()`, `MatPartitioningRegisterDestroy()`
 @*/
-PetscErrorCode  MatPartitioningRegisterAll(void)
-{
+PetscErrorCode MatPartitioningRegisterAll(void) {
   PetscFunctionBegin;
   if (MatPartitioningRegisterAllCalled) PetscFunctionReturn(0);
   MatPartitioningRegisterAllCalled = PETSC_TRUE;
 
   PetscCall(MatPartitioningRegister(MATPARTITIONINGCURRENT, MatPartitioningCreate_Current));
   PetscCall(MatPartitioningRegister(MATPARTITIONINGAVERAGE, MatPartitioningCreate_Average));
-  PetscCall(MatPartitioningRegister(MATPARTITIONINGSQUARE,  MatPartitioningCreate_Square));
-  PetscCall(MatPartitioningRegister(MATPARTITIONINGHIERARCH,MatPartitioningCreate_Hierarchical));
+  PetscCall(MatPartitioningRegister(MATPARTITIONINGSQUARE, MatPartitioningCreate_Square));
+  PetscCall(MatPartitioningRegister(MATPARTITIONINGHIERARCH, MatPartitioningCreate_Hierarchical));
 #if defined(PETSC_HAVE_PARMETIS)
-  PetscCall(MatPartitioningRegister(MATPARTITIONINGPARMETIS,MatPartitioningCreate_Parmetis));
+  PetscCall(MatPartitioningRegister(MATPARTITIONINGPARMETIS, MatPartitioningCreate_Parmetis));
 #endif
 #if defined(PETSC_HAVE_CHACO)
-  PetscCall(MatPartitioningRegister(MATPARTITIONINGCHACO,   MatPartitioningCreate_Chaco));
+  PetscCall(MatPartitioningRegister(MATPARTITIONINGCHACO, MatPartitioningCreate_Chaco));
 #endif
 #if defined(PETSC_HAVE_PARTY)
-  PetscCall(MatPartitioningRegister(MATPARTITIONINGPARTY,   MatPartitioningCreate_Party));
+  PetscCall(MatPartitioningRegister(MATPARTITIONINGPARTY, MatPartitioningCreate_Party));
 #endif
 #if defined(PETSC_HAVE_PTSCOTCH)
-  PetscCall(MatPartitioningRegister(MATPARTITIONINGPTSCOTCH,MatPartitioningCreate_PTScotch));
+  PetscCall(MatPartitioningRegister(MATPARTITIONINGPTSCOTCH, MatPartitioningCreate_PTScotch));
 #endif
   PetscFunctionReturn(0);
 }

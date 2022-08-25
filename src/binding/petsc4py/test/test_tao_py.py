@@ -67,12 +67,17 @@ class TestTaoPython(unittest.TestCase):
 
     def tearDown(self):
         ctx = self.tao.getPythonContext()
-        self.assertEqual(getrefcount(ctx), 4)
+        self.assertEqual(getrefcount(ctx), 3)
         self.assertTrue('destroy' not in ctx.log)
         self.tao.destroy()
         self.tao = None
         self.assertEqual(ctx.log['destroy'], 1)
         self.assertEqual(getrefcount(ctx),   2)
+
+    def testGetType(self):
+        ctx = self.tao.getPythonContext()
+        pytype = "{0}.{1}".format(ctx.__module__, type(ctx).__name__)
+        self.assertTrue(self.tao.getPythonType() == pytype)
 
     def testSolve(self):
         tao = self.tao
@@ -119,6 +124,7 @@ class TestTaoPython(unittest.TestCase):
         self.assertTrue(ctx.log['setUp'] == 1)
         self.assertTrue(ctx.log['setFromOptions'] == 1)
         self.assertTrue(ctx.log['step'] == n)
+        tao.cancelMonitor()
 
 # --------------------------------------------------------------------
 

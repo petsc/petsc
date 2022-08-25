@@ -1,8 +1,7 @@
-#include "../mmgcommon.h"   /*I      "petscdmplex.h"   I*/
+#include "../mmgcommon.h" /*I      "petscdmplex.h"   I*/
 #include <mmg/libmmg.h>
 
-PETSC_EXTERN PetscErrorCode DMAdaptMetric_Mmg_Plex(DM dm, Vec vertexMetric, DMLabel bdLabel, DMLabel rgLabel, DM *dmNew)
-{
+PETSC_EXTERN PetscErrorCode DMAdaptMetric_Mmg_Plex(DM dm, Vec vertexMetric, DMLabel bdLabel, DMLabel rgLabel, DM *dmNew) {
   MPI_Comm           comm;
   const char        *bdName = "_boundary_";
   const char        *rgName = "_regions_";
@@ -19,26 +18,26 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Mmg_Plex(DM dm, Vec vertexMetric, DMLa
   PetscInt           cStart, cEnd, c, numCells, fStart, fEnd, numFaceTags, f, vStart, vEnd, v, numVertices;
   PetscInt           dim, off, coff, maxConeSize, bdSize, i, j, k, Neq, verbosity, pStart, pEnd;
   PetscInt           numCellsNew, numVerticesNew, numCornersNew, numFacesNew;
-  PetscBool          flg = PETSC_FALSE, noInsert, noSwap, noMove, noSurf, isotropic, uniform;
-  MMG5_pMesh         mmg_mesh = NULL;
+  PetscBool          flg        = PETSC_FALSE, noInsert, noSwap, noMove, noSurf, isotropic, uniform;
+  MMG5_pMesh         mmg_mesh   = NULL;
   MMG5_pSol          mmg_metric = NULL;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectGetComm((PetscObject) dm, &comm));
+  PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
   if (bdLabel) {
-    PetscCall(PetscObjectGetName((PetscObject) bdLabel, &bdLabelName));
+    PetscCall(PetscObjectGetName((PetscObject)bdLabel, &bdLabelName));
     PetscCall(PetscStrcmp(bdLabelName, bdName, &flg));
-    PetscCheck(!flg,comm, PETSC_ERR_ARG_WRONG, "\"%s\" cannot be used as label for boundary facets", bdLabelName);
+    PetscCheck(!flg, comm, PETSC_ERR_ARG_WRONG, "\"%s\" cannot be used as label for boundary facets", bdLabelName);
   }
   if (rgLabel) {
-    PetscCall(PetscObjectGetName((PetscObject) rgLabel, &rgLabelName));
+    PetscCall(PetscObjectGetName((PetscObject)rgLabel, &rgLabelName));
     PetscCall(PetscStrcmp(rgLabelName, rgName, &flg));
-    PetscCheck(!flg,comm, PETSC_ERR_ARG_WRONG, "\"%s\" cannot be used as label for element tags", rgLabelName);
+    PetscCheck(!flg, comm, PETSC_ERR_ARG_WRONG, "\"%s\" cannot be used as label for element tags", rgLabelName);
   }
 
   /* Get mesh information */
   PetscCall(DMGetDimension(dm, &dim));
-  Neq  = (dim*(dim+1))/2;
+  Neq = (dim * (dim + 1)) / 2;
   PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
   PetscCall(DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd));
   PetscCall(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
@@ -48,7 +47,7 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Mmg_Plex(DM dm, Vec vertexMetric, DMLa
   numVertices = vEnd - vStart;
 
   /* Get cell offsets */
-  PetscCall(PetscMalloc1(numCells*maxConeSize, &cells));
+  PetscCall(PetscMalloc1(numCells * maxConeSize, &cells));
   for (c = 0, coff = 0; c < numCells; ++c) {
     const PetscInt *cone;
     PetscInt        coneSize, cl;
@@ -63,10 +62,10 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Mmg_Plex(DM dm, Vec vertexMetric, DMLa
   PetscCall(DMGetLocalSection(cdm, &coordSection));
   PetscCall(DMGetCoordinatesLocal(dm, &coordinates));
   PetscCall(VecGetArrayRead(coordinates, &coords));
-  PetscCall(PetscMalloc2(numVertices*Neq, &metric, dim*numVertices, &vertices));
-  for (v = 0; v < vEnd-vStart; ++v) {
-    PetscCall(PetscSectionGetOffset(coordSection, v+vStart, &off));
-    for (i = 0; i < dim; ++i) vertices[dim*v+i] = PetscRealPart(coords[off+i]);
+  PetscCall(PetscMalloc2(numVertices * Neq, &metric, dim * numVertices, &vertices));
+  for (v = 0; v < vEnd - vStart; ++v) {
+    PetscCall(PetscSectionGetOffset(coordSection, v + vStart, &off));
+    for (i = 0; i < dim; ++i) vertices[dim * v + i] = PetscRealPart(coords[off + i]);
   }
   PetscCall(VecRestoreArrayRead(coordinates, &coords));
   PetscCall(DMDestroy(&udm));
@@ -87,7 +86,7 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Mmg_Plex(DM dm, Vec vertexMetric, DMLa
     numFaceTags++;
 
     PetscCall(DMPlexGetTransitiveClosure(dm, f, PETSC_TRUE, &closureSize, &closure));
-    for (cl = 0; cl < closureSize*2; cl += 2) {
+    for (cl = 0; cl < closureSize * 2; cl += 2) {
       if ((closure[cl] >= vStart) && (closure[cl] < vEnd)) ++bdSize;
     }
     PetscCall(DMPlexRestoreTransitiveClosure(dm, f, PETSC_TRUE, &closureSize, &closure));
@@ -101,7 +100,7 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Mmg_Plex(DM dm, Vec vertexMetric, DMLa
     if ((!hasPoint) || (f < fStart) || (f >= fEnd)) continue;
 
     PetscCall(DMPlexGetTransitiveClosure(dm, f, PETSC_TRUE, &closureSize, &closure));
-    for (cl = 0; cl < closureSize*2; cl += 2) {
+    for (cl = 0; cl < closureSize * 2; cl += 2) {
       if ((closure[cl] >= vStart) && (closure[cl] < vEnd)) bdFaces[bdSize++] = closure[cl] - vStart + 1;
     }
     PetscCall(DMPlexRestoreTransitiveClosure(dm, f, PETSC_TRUE, &closureSize, &closure));
@@ -120,16 +119,16 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Mmg_Plex(DM dm, Vec vertexMetric, DMLa
   PetscCall(VecGetArrayRead(vertexMetric, &met));
   PetscCall(DMPlexMetricIsIsotropic(dm, &isotropic));
   PetscCall(DMPlexMetricIsUniform(dm, &uniform));
-  for (v = 0; v < (vEnd-vStart); ++v) {
+  for (v = 0; v < (vEnd - vStart); ++v) {
     for (i = 0, k = 0; i < dim; ++i) {
       for (j = i; j < dim; ++j) {
         if (isotropic) {
           if (i == j) {
-            if (uniform) metric[Neq*v+k] = PetscRealPart(met[0]);
-            else metric[Neq*v+k] = PetscRealPart(met[v]);
-          } else metric[Neq*v+k] = 0.0;
+            if (uniform) metric[Neq * v + k] = PetscRealPart(met[0]);
+            else metric[Neq * v + k] = PetscRealPart(met[v]);
+          } else metric[Neq * v + k] = 0.0;
         } else {
-          metric[Neq*v+k] = PetscRealPart(met[dim*dim*v+dim*i+j]);
+          metric[Neq * v + k] = PetscRealPart(met[dim * dim * v + dim * i + j]);
         }
         k++;
       }
@@ -192,9 +191,9 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Mmg_Plex(DM dm, Vec vertexMetric, DMLa
   case 2:
     numCornersNew = 3;
     PetscCallMMG_NONSTANDARD(MMG2D_Get_meshSize(mmg_mesh, &numVerticesNew, &numCellsNew, 0, &numFacesNew));
-    PetscCall(PetscMalloc4(2*numVerticesNew, &verticesNew, numVerticesNew, &verTagsNew, numVerticesNew, &corners, numVerticesNew, &requiredVer));
-    PetscCall(PetscMalloc3(3*numCellsNew, &cellsNew, numCellsNew, &cellTagsNew, numCellsNew, &requiredCells));
-    PetscCall(PetscMalloc4(2*numFacesNew, &facesNew, numFacesNew, &faceTagsNew, numFacesNew, &ridges, numFacesNew, &requiredFaces));
+    PetscCall(PetscMalloc4(2 * numVerticesNew, &verticesNew, numVerticesNew, &verTagsNew, numVerticesNew, &corners, numVerticesNew, &requiredVer));
+    PetscCall(PetscMalloc3(3 * numCellsNew, &cellsNew, numCellsNew, &cellTagsNew, numCellsNew, &requiredCells));
+    PetscCall(PetscMalloc4(2 * numFacesNew, &facesNew, numFacesNew, &faceTagsNew, numFacesNew, &ridges, numFacesNew, &requiredFaces));
     PetscCallMMG_NONSTANDARD(MMG2D_Get_vertices(mmg_mesh, verticesNew, verTagsNew, corners, requiredVer));
     PetscCallMMG_NONSTANDARD(MMG2D_Get_triangles(mmg_mesh, cellsNew, cellTagsNew, requiredCells));
     PetscCallMMG_NONSTANDARD(MMG2D_Get_edges(mmg_mesh, facesNew, faceTagsNew, ridges, requiredFaces));
@@ -202,31 +201,27 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Mmg_Plex(DM dm, Vec vertexMetric, DMLa
   case 3:
     numCornersNew = 4;
     PetscCallMMG_NONSTANDARD(MMG3D_Get_meshSize(mmg_mesh, &numVerticesNew, &numCellsNew, 0, &numFacesNew, 0, 0));
-    PetscCall(PetscMalloc4(3*numVerticesNew, &verticesNew, numVerticesNew, &verTagsNew, numVerticesNew, &corners, numVerticesNew, &requiredVer));
-    PetscCall(PetscMalloc3(4*numCellsNew, &cellsNew, numCellsNew, &cellTagsNew, numCellsNew, &requiredCells));
-    PetscCall(PetscMalloc4(3*numFacesNew, &facesNew, numFacesNew, &faceTagsNew, numFacesNew, &ridges, numFacesNew, &requiredFaces));
+    PetscCall(PetscMalloc4(3 * numVerticesNew, &verticesNew, numVerticesNew, &verTagsNew, numVerticesNew, &corners, numVerticesNew, &requiredVer));
+    PetscCall(PetscMalloc3(4 * numCellsNew, &cellsNew, numCellsNew, &cellTagsNew, numCellsNew, &requiredCells));
+    PetscCall(PetscMalloc4(3 * numFacesNew, &facesNew, numFacesNew, &faceTagsNew, numFacesNew, &ridges, numFacesNew, &requiredFaces));
     PetscCallMMG_NONSTANDARD(MMG3D_Get_vertices(mmg_mesh, verticesNew, verTagsNew, corners, requiredVer));
     PetscCallMMG_NONSTANDARD(MMG3D_Get_tetrahedra(mmg_mesh, cellsNew, cellTagsNew, requiredCells));
     PetscCallMMG_NONSTANDARD(MMG3D_Get_triangles(mmg_mesh, facesNew, faceTagsNew, requiredFaces));
 
     /* Reorder for consistency with DMPlex */
-    for (i = 0; i < numCellsNew; ++i) PetscCall(DMPlexInvertCell(DM_POLYTOPE_TETRAHEDRON, &cellsNew[4*i]));
+    for (i = 0; i < numCellsNew; ++i) PetscCall(DMPlexInvertCell(DM_POLYTOPE_TETRAHEDRON, &cellsNew[4 * i]));
     break;
 
   default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No Mmg adaptation defined for dimension %" PetscInt_FMT, dim);
   }
 
   /* Create new Plex */
-  for (i = 0; i < (dim+1)*numCellsNew; i++) cellsNew[i] -= 1;
-  for (i = 0; i < dim*numFacesNew; i++) facesNew[i] -= 1;
+  for (i = 0; i < (dim + 1) * numCellsNew; i++) cellsNew[i] -= 1;
+  for (i = 0; i < dim * numFacesNew; i++) facesNew[i] -= 1;
   PetscCall(DMPlexCreateFromCellListParallelPetsc(comm, dim, numCellsNew, numVerticesNew, PETSC_DECIDE, numCornersNew, PETSC_TRUE, cellsNew, dim, verticesNew, NULL, NULL, dmNew));
   switch (dim) {
-  case 2:
-    PetscCallMMG_NONSTANDARD(MMG2D_Free_all(MMG5_ARG_start, MMG5_ARG_ppMesh, &mmg_mesh, MMG5_ARG_ppMet, &mmg_metric, MMG5_ARG_end));
-    break;
-  case 3:
-    PetscCallMMG_NONSTANDARD(MMG3D_Free_all(MMG5_ARG_start, MMG5_ARG_ppMesh, &mmg_mesh, MMG5_ARG_ppMet, &mmg_metric, MMG5_ARG_end));
-    break;
+  case 2: PetscCallMMG_NONSTANDARD(MMG2D_Free_all(MMG5_ARG_start, MMG5_ARG_ppMesh, &mmg_mesh, MMG5_ARG_ppMet, &mmg_metric, MMG5_ARG_end)); break;
+  case 3: PetscCallMMG_NONSTANDARD(MMG3D_Free_all(MMG5_ARG_start, MMG5_ARG_ppMesh, &mmg_mesh, MMG5_ARG_ppMet, &mmg_metric, MMG5_ARG_end)); break;
   default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No Mmg adaptation defined for dimension %" PetscInt_FMT, dim);
   }
   PetscCall(PetscFree4(verticesNew, verTagsNew, corners, requiredVer));
@@ -243,7 +238,7 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Mmg_Plex(DM dm, Vec vertexMetric, DMLa
     PetscInt        numCoveredPoints, numFaces = 0, facePoints[3];
     const PetscInt *coveredPoints = NULL;
 
-    for (j = 0; j < dim; ++j) facePoints[j] = facesNew[i*dim+j]+vStart;
+    for (j = 0; j < dim; ++j) facePoints[j] = facesNew[i * dim + j] + vStart;
     PetscCall(DMPlexGetFullJoin(*dmNew, dim, facePoints, &numCoveredPoints, &coveredPoints));
     for (j = 0; j < numCoveredPoints; ++j) {
       if (coveredPoints[j] >= fStart && coveredPoints[j] < fEnd) {
@@ -251,7 +246,7 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Mmg_Plex(DM dm, Vec vertexMetric, DMLa
         f = j;
       }
     }
-    PetscCheck(numFaces == 1,comm, PETSC_ERR_ARG_OUTOFRANGE, "%" PetscInt_FMT " vertices cannot define more than 1 facet (%" PetscInt_FMT ")", dim, numFaces);
+    PetscCheck(numFaces == 1, comm, PETSC_ERR_ARG_OUTOFRANGE, "%" PetscInt_FMT " vertices cannot define more than 1 facet (%" PetscInt_FMT ")", dim, numFaces);
     PetscCall(DMLabelSetValue(bdLabelNew, coveredPoints[f], faceTagsNew[i]));
     PetscCall(DMPlexRestoreJoin(*dmNew, dim, facePoints, &numCoveredPoints, &coveredPoints));
   }
@@ -260,7 +255,7 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Mmg_Plex(DM dm, Vec vertexMetric, DMLa
   /* Rebuild cell labels */
   PetscCall(DMCreateLabel(*dmNew, rgLabel ? rgLabelName : rgName));
   PetscCall(DMGetLabel(*dmNew, rgLabel ? rgLabelName : rgName, &rgLabelNew));
-  for (c = cStart; c < cEnd; ++c) PetscCall(DMLabelSetValue(rgLabelNew, c, cellTagsNew[c-cStart]));
+  for (c = cStart; c < cEnd; ++c) PetscCall(DMLabelSetValue(rgLabelNew, c, cellTagsNew[c - cStart]));
   PetscCall(PetscFree3(cellsNew, cellTagsNew, requiredCells));
 
   PetscFunctionReturn(0);

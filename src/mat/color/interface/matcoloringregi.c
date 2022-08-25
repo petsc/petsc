@@ -24,17 +24,16 @@ PETSC_EXTERN PetscErrorCode MatColoringCreate_LF(MatColoring);
 
  .seealso: `MatColoringRegister()`, `MatColoringRegisterDestroy()`
  @*/
-PetscErrorCode  MatColoringRegisterAll(void)
-{
+PetscErrorCode MatColoringRegisterAll(void) {
   PetscFunctionBegin;
   if (MatColoringRegisterAllCalled) PetscFunctionReturn(0);
   MatColoringRegisterAllCalled = PETSC_TRUE;
-  PetscCall(MatColoringRegister(MATCOLORINGJP,MatColoringCreate_JP));
-  PetscCall(MatColoringRegister(MATCOLORINGGREEDY,MatColoringCreate_Greedy));
-  PetscCall(MatColoringRegister(MATCOLORINGPOWER,MatColoringCreate_Power));
-  PetscCall(MatColoringRegister(MATCOLORINGNATURAL,MatColoringCreate_Natural));
-  PetscCall(MatColoringRegister(MATCOLORINGSL,MatColoringCreate_SL));
-  PetscCall(MatColoringRegister(MATCOLORINGID,MatColoringCreate_ID));
-  PetscCall(MatColoringRegister(MATCOLORINGLF,MatColoringCreate_LF));
+  PetscCall(MatColoringRegister(MATCOLORINGJP, MatColoringCreate_JP));
+  PetscCall(MatColoringRegister(MATCOLORINGGREEDY, MatColoringCreate_Greedy));
+  PetscCall(MatColoringRegister(MATCOLORINGPOWER, MatColoringCreate_Power));
+  PetscCall(MatColoringRegister(MATCOLORINGNATURAL, MatColoringCreate_Natural));
+  PetscCall(MatColoringRegister(MATCOLORINGSL, MatColoringCreate_SL));
+  PetscCall(MatColoringRegister(MATCOLORINGID, MatColoringCreate_ID));
+  PetscCall(MatColoringRegister(MATCOLORINGLF, MatColoringCreate_LF));
   PetscFunctionReturn(0);
 }

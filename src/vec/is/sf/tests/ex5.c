@@ -1,40 +1,39 @@
-static char help[]= "Test PetscSFFCompose when the ilocal arrays are not identity nor dense\n\n";
+static char help[] = "Test PetscSFFCompose when the ilocal arrays are not identity nor dense\n\n";
 
 #include <petsc.h>
 #include <petscsf.h>
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
   PetscSF      sfA, sfB, sfBA, sfAAm, sfBBm, sfAm, sfBm;
   PetscInt     nrootsA, nleavesA, nrootsB, nleavesB;
   PetscInt    *ilocalA, *ilocalB;
   PetscSFNode *iremoteA, *iremoteB;
-  PetscMPIInt  rank,size;
-  PetscInt     i,m,n,k,nl = 2,mA,mB,nldataA,nldataB;
-  PetscInt    *rdA,*rdB,*ldA,*ldB;
-  PetscBool    inverse    = PETSC_FALSE;
+  PetscMPIInt  rank, size;
+  PetscInt     i, m, n, k, nl = 2, mA, mB, nldataA, nldataB;
+  PetscInt    *rdA, *rdB, *ldA, *ldB;
+  PetscBool    inverse = PETSC_FALSE;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
-  PetscCall(PetscOptionsGetInt(NULL,NULL,"-nl",&nl,NULL));
-  PetscCall(PetscOptionsGetBool(NULL,NULL,"-explicit_inverse",&inverse,NULL));
-  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
-  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-nl", &nl, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-explicit_inverse", &inverse, NULL));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
 
   PetscCall(PetscSFCreate(PETSC_COMM_WORLD, &sfA));
   PetscCall(PetscSFCreate(PETSC_COMM_WORLD, &sfB));
   PetscCall(PetscSFSetFromOptions(sfA));
   PetscCall(PetscSFSetFromOptions(sfB));
 
-  n = 4*nl*size;
-  m = 2*nl;
+  n = 4 * nl * size;
+  m = 2 * nl;
   k = nl;
 
   nldataA = rank == 0 ? n : 0;
-  nldataB = 3*nl;
+  nldataB = 3 * nl;
 
   nrootsA  = m;
-  nleavesA = rank == 0 ? size*m : 0;
+  nleavesA = rank == 0 ? size * m : 0;
   nrootsB  = rank == 0 ? n : 0;
   nleavesB = k;
 
@@ -46,18 +45,18 @@ int main(int argc, char **argv)
   /* sf A bcast is equivalent to a sparse gather on process 0
      process 0 receives data in the middle [nl,3*nl] of the leaf data array for A */
   for (i = 0; i < nleavesA; i++) {
-    iremoteA[i].rank = i/m;
-    iremoteA[i].index = i%m;
-    ilocalA[i] = nl + i/m * 4*nl + i%m;
+    iremoteA[i].rank  = i / m;
+    iremoteA[i].index = i % m;
+    ilocalA[i]        = nl + i / m * 4 * nl + i % m;
   }
 
   /* sf B bcast is equivalent to a sparse scatter from process 0
      process 0 sends data from [nl,2*nl] of the leaf data array for A
      each process receives, in reverse order, in the middle [nl,2*nl] of the leaf data array for B */
   for (i = 0; i < nleavesB; i++) {
-    iremoteB[i].rank = 0;
-    iremoteB[i].index = rank * 4*nl + nl + i%m;
-    ilocalB[i] = 2*nl - i - 1;
+    iremoteB[i].rank  = 0;
+    iremoteB[i].index = rank * 4 * nl + nl + i % m;
+    ilocalB[i]        = 2 * nl - i - 1;
   }
   PetscCall(PetscSFSetGraph(sfA, nrootsA, nleavesA, ilocalA, PETSC_OWN_POINTER, iremoteA, PETSC_OWN_POINTER));
   PetscCall(PetscSFSetGraph(sfB, nrootsB, nleavesB, ilocalB, PETSC_OWN_POINTER, iremoteB, PETSC_OWN_POINTER));
@@ -72,19 +71,19 @@ int main(int argc, char **argv)
   PetscCall(PetscSFGetLeafRange(sfB, NULL, &mB));
   PetscCall(PetscMalloc2(nrootsA, &rdA, nldataA, &ldA));
   PetscCall(PetscMalloc2(nrootsB, &rdB, nldataB, &ldB));
-  for (i = 0; i < nrootsA; i++) rdA[i] = m*rank + i;
+  for (i = 0; i < nrootsA; i++) rdA[i] = m * rank + i;
   for (i = 0; i < nldataA; i++) ldA[i] = -1;
   for (i = 0; i < nldataB; i++) ldB[i] = -1;
 
   PetscCall(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "BcastB(BcastA)\n"));
   PetscCall(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "A: root data\n"));
   PetscCall(PetscIntView(nrootsA, rdA, PETSC_VIEWER_STDOUT_WORLD));
-  PetscCall(PetscSFBcastBegin(sfA, MPIU_INT, rdA, ldA,MPI_REPLACE));
-  PetscCall(PetscSFBcastEnd(sfA, MPIU_INT, rdA, ldA,MPI_REPLACE));
+  PetscCall(PetscSFBcastBegin(sfA, MPIU_INT, rdA, ldA, MPI_REPLACE));
+  PetscCall(PetscSFBcastEnd(sfA, MPIU_INT, rdA, ldA, MPI_REPLACE));
   PetscCall(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "A: leaf data (all)\n"));
   PetscCall(PetscIntView(nldataA, ldA, PETSC_VIEWER_STDOUT_WORLD));
-  PetscCall(PetscSFBcastBegin(sfB, MPIU_INT, ldA, ldB,MPI_REPLACE));
-  PetscCall(PetscSFBcastEnd(sfB, MPIU_INT, ldA, ldB,MPI_REPLACE));
+  PetscCall(PetscSFBcastBegin(sfB, MPIU_INT, ldA, ldB, MPI_REPLACE));
+  PetscCall(PetscSFBcastEnd(sfB, MPIU_INT, ldA, ldB, MPI_REPLACE));
   PetscCall(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "B: leaf data (all)\n"));
   PetscCall(PetscIntView(nldataB, ldB, PETSC_VIEWER_STDOUT_WORLD));
 
@@ -98,8 +97,8 @@ int main(int argc, char **argv)
   PetscCall(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "BcastBA\n"));
   PetscCall(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "BA: root data\n"));
   PetscCall(PetscIntView(nrootsA, rdA, PETSC_VIEWER_STDOUT_WORLD));
-  PetscCall(PetscSFBcastBegin(sfBA, MPIU_INT, rdA, ldB,MPI_REPLACE));
-  PetscCall(PetscSFBcastEnd(sfBA, MPIU_INT, rdA, ldB,MPI_REPLACE));
+  PetscCall(PetscSFBcastBegin(sfBA, MPIU_INT, rdA, ldB, MPI_REPLACE));
+  PetscCall(PetscSFBcastEnd(sfBA, MPIU_INT, rdA, ldB, MPI_REPLACE));
   PetscCall(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "BA: leaf data (all)\n"));
   PetscCall(PetscIntView(nldataB, ldB, PETSC_VIEWER_STDOUT_WORLD));
 

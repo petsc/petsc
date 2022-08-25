@@ -12,10 +12,9 @@
 
 #if defined(PETSC_USE_LOG)
 
-static int XMLSectionDepth            = 0;
+static int XMLSectionDepth = 0;
 
-PetscErrorCode PetscViewerXMLStartSection(PetscViewer viewer, const char *name, const char *desc)
-{
+PetscErrorCode PetscViewerXMLStartSection(PetscViewer viewer, const char *name, const char *desc) {
   PetscFunctionBegin;
   if (!desc) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "%*s<%s>\n", XMLSectionDepth, "", name));
@@ -27,40 +26,36 @@ PetscErrorCode PetscViewerXMLStartSection(PetscViewer viewer, const char *name, 
 }
 
 /* Initialize a viewer to XML, and initialize the XMLDepth static parameter */
-PetscErrorCode PetscViewerInitASCII_XML(PetscViewer viewer)
-{
-  MPI_Comm       comm;
-  char           PerfScript[PETSC_MAX_PATH_LEN+40];
+PetscErrorCode PetscViewerInitASCII_XML(PetscViewer viewer) {
+  MPI_Comm comm;
+  char     PerfScript[PETSC_MAX_PATH_LEN + 40];
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectGetComm((PetscObject)viewer,&comm));
+  PetscCall(PetscObjectGetComm((PetscObject)viewer, &comm));
   PetscCall(PetscViewerASCIIPrintf(viewer, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"));
-  PetscCall(PetscStrreplace(comm,"<?xml-stylesheet type=\"text/xsl\" href=\"performance_xml2html.xsl\"?>",PerfScript,sizeof(PerfScript)));
-  PetscCall(PetscViewerASCIIPrintf(viewer, "%s\n",PerfScript));
+  PetscCall(PetscStrreplace(comm, "<?xml-stylesheet type=\"text/xsl\" href=\"performance_xml2html.xsl\"?>", PerfScript, sizeof(PerfScript)));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "%s\n", PerfScript));
   XMLSectionDepth = 0;
   PetscCall(PetscViewerXMLStartSection(viewer, "root", NULL));
   PetscFunctionReturn(0);
 }
 
 /* Initialize a viewer to XML, and initialize the XMLDepth static parameter */
-PetscErrorCode PetscViewerFinalASCII_XML(PetscViewer viewer)
-{
+PetscErrorCode PetscViewerFinalASCII_XML(PetscViewer viewer) {
   PetscFunctionBegin;
   PetscCall(PetscViewerXMLEndSection(viewer, "root"));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscViewerXMLEndSection(PetscViewer viewer, const char *name)
-{
+PetscErrorCode PetscViewerXMLEndSection(PetscViewer viewer, const char *name) {
   PetscFunctionBegin;
   XMLSectionDepth -= 2;
-  if (XMLSectionDepth<0) XMLSectionDepth = 0;
+  if (XMLSectionDepth < 0) XMLSectionDepth = 0;
   PetscCall(PetscViewerASCIIPrintf(viewer, "%*s</%s>\n", XMLSectionDepth, "", name));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscViewerXMLPutString(PetscViewer viewer, const char *name, const char *desc, const char *value)
-{
+PetscErrorCode PetscViewerXMLPutString(PetscViewer viewer, const char *name, const char *desc, const char *value) {
   PetscFunctionBegin;
   if (!desc) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "%*s<%s>%s</%s>\n", XMLSectionDepth, "", name, value, name));
@@ -70,8 +65,7 @@ PetscErrorCode PetscViewerXMLPutString(PetscViewer viewer, const char *name, con
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscViewerXMLPutInt(PetscViewer viewer, const char *name, const char *desc, int value)
-{
+PetscErrorCode PetscViewerXMLPutInt(PetscViewer viewer, const char *name, const char *desc, int value) {
   PetscFunctionBegin;
   if (!desc) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "%*s<%s>%d</%s>\n", XMLSectionDepth, "", name, value, name));
@@ -81,15 +75,14 @@ PetscErrorCode PetscViewerXMLPutInt(PetscViewer viewer, const char *name, const 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscViewerXMLPutDouble(PetscViewer viewer, const char *name, const char *desc, PetscLogDouble value, const char *format)
-{
-  char           buffer[1024];
+PetscErrorCode PetscViewerXMLPutDouble(PetscViewer viewer, const char *name, const char *desc, PetscLogDouble value, const char *format) {
+  char buffer[1024];
 
   PetscFunctionBegin;
   if (!desc) {
-    PetscCall(PetscSNPrintf(buffer,sizeof(buffer), "%*s<%s>%s</%s>\n", XMLSectionDepth, "", name, format, name));
+    PetscCall(PetscSNPrintf(buffer, sizeof(buffer), "%*s<%s>%s</%s>\n", XMLSectionDepth, "", name, format, name));
   } else {
-    PetscCall(PetscSNPrintf(buffer,sizeof(buffer), "%*s<%s desc=\"%s\">%s</%s>\n", XMLSectionDepth, "", name, desc, format, name));
+    PetscCall(PetscSNPrintf(buffer, sizeof(buffer), "%*s<%s desc=\"%s\">%s</%s>\n", XMLSectionDepth, "", name, desc, format, name));
   }
   PetscCall(PetscViewerASCIIPrintf(viewer, buffer, value));
   PetscFunctionReturn(0);

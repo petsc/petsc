@@ -688,6 +688,8 @@ class Configure(config.base.Configure):
       return 0
     if self.argDB['download-mpich'] or self.argDB['download-openmpi']:
       return 0
+    if 'with-mpi-include' in self.argDB and self.argDB['with-mpi-include']:
+      return 0;
     if 'with-mpi' in self.argDB and self.argDB['with-mpi'] and self.argDB['with-mpi-compilers']:
       return 1
     return 0

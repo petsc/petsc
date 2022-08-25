@@ -1,24 +1,23 @@
 #include <petsc/private/linesearchimpl.h>
 #include <petscsnes.h>
 
-static PetscErrorCode  SNESLineSearchApply_L2(SNESLineSearch linesearch)
-{
-  PetscBool      changed_y, changed_w;
-  Vec            X;
-  Vec            F;
-  Vec            Y;
-  Vec            W;
-  SNES           snes;
-  PetscReal      gnorm;
-  PetscReal      ynorm;
-  PetscReal      xnorm;
-  PetscReal      steptol, maxstep, rtol, atol, ltol;
-  PetscViewer    monitor;
-  PetscReal      lambda, lambda_old, lambda_mid, lambda_update, delLambda;
-  PetscReal      fnrm, fnrm_old, fnrm_mid;
-  PetscReal      delFnrm, delFnrm_old, del2Fnrm;
-  PetscInt       i, max_its;
-  PetscErrorCode (*objective)(SNES,Vec,PetscReal*,void*);
+static PetscErrorCode SNESLineSearchApply_L2(SNESLineSearch linesearch) {
+  PetscBool   changed_y, changed_w;
+  Vec         X;
+  Vec         F;
+  Vec         Y;
+  Vec         W;
+  SNES        snes;
+  PetscReal   gnorm;
+  PetscReal   ynorm;
+  PetscReal   xnorm;
+  PetscReal   steptol, maxstep, rtol, atol, ltol;
+  PetscViewer monitor;
+  PetscReal   lambda, lambda_old, lambda_mid, lambda_update, delLambda;
+  PetscReal   fnrm, fnrm_old, fnrm_mid;
+  PetscReal   delFnrm, delFnrm_old, del2Fnrm;
+  PetscInt    i, max_its;
+  PetscErrorCode (*objective)(SNES, Vec, PetscReal *, void *);
 
   PetscFunctionBegin;
   PetscCall(SNESLineSearchGetVecs(linesearch, &X, &F, &Y, &W, NULL));
@@ -29,20 +28,19 @@ static PetscErrorCode  SNESLineSearchApply_L2(SNESLineSearch linesearch)
   PetscCall(SNESLineSearchGetTolerances(linesearch, &steptol, &maxstep, &rtol, &atol, &ltol, &max_its));
   PetscCall(SNESLineSearchGetDefaultMonitor(linesearch, &monitor));
 
-  PetscCall(SNESGetObjective(snes,&objective,NULL));
+  PetscCall(SNESGetObjective(snes, &objective, NULL));
 
   /* precheck */
-  PetscCall(SNESLineSearchPreCheck(linesearch,X,Y,&changed_y));
+  PetscCall(SNESLineSearchPreCheck(linesearch, X, Y, &changed_y));
   lambda_old = 0.0;
   if (!objective) {
-    fnrm_old = gnorm*gnorm;
+    fnrm_old = gnorm * gnorm;
   } else {
-    PetscCall(SNESComputeObjective(snes,X,&fnrm_old));
+    PetscCall(SNESComputeObjective(snes, X, &fnrm_old));
   }
-  lambda_mid = 0.5*(lambda + lambda_old);
+  lambda_mid = 0.5 * (lambda + lambda_old);
 
   for (i = 0; i < max_its; i++) {
-
     while (PETSC_TRUE) {
       PetscCall(VecWAXPY(W, -lambda_mid, Y, X));
       if (linesearch->ops->viproject) PetscCall((*linesearch->ops->viproject)(snes, W));
@@ -53,7 +51,7 @@ static PetscErrorCode  SNESLineSearchApply_L2(SNESLineSearch linesearch)
           fnrm_mid = gnorm;
           PetscCall((*linesearch->ops->vinorm)(snes, F, W, &fnrm_mid));
         } else {
-          PetscCall(VecNorm(F,NORM_2,&fnrm_mid));
+          PetscCall(VecNorm(F, NORM_2, &fnrm_mid));
         }
 
         /* compute the norm at the new endpoit */
@@ -64,49 +62,49 @@ static PetscErrorCode  SNESLineSearchApply_L2(SNESLineSearch linesearch)
           fnrm = gnorm;
           PetscCall((*linesearch->ops->vinorm)(snes, F, W, &fnrm));
         } else {
-          PetscCall(VecNorm(F,NORM_2,&fnrm));
+          PetscCall(VecNorm(F, NORM_2, &fnrm));
         }
-        fnrm_mid = fnrm_mid*fnrm_mid;
-        fnrm = fnrm*fnrm;
+        fnrm_mid = fnrm_mid * fnrm_mid;
+        fnrm     = fnrm * fnrm;
       } else {
         /* compute the objective at the midpoint */
         PetscCall(VecWAXPY(W, -lambda_mid, Y, X));
-        PetscCall(SNESComputeObjective(snes,W,&fnrm_mid));
+        PetscCall(SNESComputeObjective(snes, W, &fnrm_mid));
 
         /* compute the objective at the new endpoint */
         PetscCall(VecWAXPY(W, -lambda, Y, X));
-        PetscCall(SNESComputeObjective(snes,W,&fnrm));
+        PetscCall(SNESComputeObjective(snes, W, &fnrm));
       }
       if (!PetscIsInfOrNanReal(fnrm)) break;
       if (monitor) {
-        PetscCall(PetscViewerASCIIAddTab(monitor,((PetscObject)linesearch)->tablevel));
-        PetscCall(PetscViewerASCIIPrintf(monitor,"    Line search: objective function at lambdas = %g is Inf or Nan, cutting lambda\n",(double)lambda));
-        PetscCall(PetscViewerASCIISubtractTab(monitor,((PetscObject)linesearch)->tablevel));
+        PetscCall(PetscViewerASCIIAddTab(monitor, ((PetscObject)linesearch)->tablevel));
+        PetscCall(PetscViewerASCIIPrintf(monitor, "    Line search: objective function at lambdas = %g is Inf or Nan, cutting lambda\n", (double)lambda));
+        PetscCall(PetscViewerASCIISubtractTab(monitor, ((PetscObject)linesearch)->tablevel));
       }
       if (lambda <= steptol) {
         PetscCall(SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_REDUCT));
         PetscFunctionReturn(0);
       }
-      maxstep = .95*lambda; /* forbid the search from ever going back to the "failed" length that generates Nan or Inf */
-      lambda  = .5*(lambda + lambda_old);
-      lambda_mid = .5*(lambda + lambda_old);
+      maxstep    = .95 * lambda; /* forbid the search from ever going back to the "failed" length that generates Nan or Inf */
+      lambda     = .5 * (lambda + lambda_old);
+      lambda_mid = .5 * (lambda + lambda_old);
     }
 
     delLambda   = lambda - lambda_old;
     /* compute f'() at the end points using second order one sided differencing */
-    delFnrm     = (3.*fnrm - 4.*fnrm_mid + 1.*fnrm_old) / delLambda;
-    delFnrm_old = (-3.*fnrm_old + 4.*fnrm_mid -1.*fnrm) / delLambda;
+    delFnrm     = (3. * fnrm - 4. * fnrm_mid + 1. * fnrm_old) / delLambda;
+    delFnrm_old = (-3. * fnrm_old + 4. * fnrm_mid - 1. * fnrm) / delLambda;
     /* compute f''() at the midpoint using centered differencing */
     del2Fnrm    = (delFnrm - delFnrm_old) / delLambda;
 
     if (monitor) {
-      PetscCall(PetscViewerASCIIAddTab(monitor,((PetscObject)linesearch)->tablevel));
+      PetscCall(PetscViewerASCIIAddTab(monitor, ((PetscObject)linesearch)->tablevel));
       if (!objective) {
-        PetscCall(PetscViewerASCIIPrintf(monitor,"    Line search: lambdas = [%g, %g, %g], fnorms = [%g, %g, %g]\n",(double)lambda, (double)lambda_mid, (double)lambda_old, (double)PetscSqrtReal(fnrm), (double)PetscSqrtReal(fnrm_mid), (double)PetscSqrtReal(fnrm_old)));
+        PetscCall(PetscViewerASCIIPrintf(monitor, "    Line search: lambdas = [%g, %g, %g], fnorms = [%g, %g, %g]\n", (double)lambda, (double)lambda_mid, (double)lambda_old, (double)PetscSqrtReal(fnrm), (double)PetscSqrtReal(fnrm_mid), (double)PetscSqrtReal(fnrm_old)));
       } else {
-        PetscCall(PetscViewerASCIIPrintf(monitor,"    Line search: lambdas = [%g, %g, %g], obj = [%g, %g, %g]\n",(double)lambda, (double)lambda_mid, (double)lambda_old, (double)fnrm, (double)fnrm_mid, (double)fnrm_old));
+        PetscCall(PetscViewerASCIIPrintf(monitor, "    Line search: lambdas = [%g, %g, %g], obj = [%g, %g, %g]\n", (double)lambda, (double)lambda_mid, (double)lambda_old, (double)fnrm, (double)fnrm_mid, (double)fnrm_old));
       }
-      PetscCall(PetscViewerASCIISubtractTab(monitor,((PetscObject)linesearch)->tablevel));
+      PetscCall(PetscViewerASCIISubtractTab(monitor, ((PetscObject)linesearch)->tablevel));
     }
 
     /* compute the secant (Newton) update -- always go downhill */
@@ -114,7 +112,7 @@ static PetscErrorCode  SNESLineSearchApply_L2(SNESLineSearch linesearch)
     else if (del2Fnrm < 0.) lambda_update = lambda + delFnrm / del2Fnrm;
     else break;
 
-    if (lambda_update < steptol) lambda_update = 0.5*(lambda + lambda_old);
+    if (lambda_update < steptol) lambda_update = 0.5 * (lambda + lambda_old);
 
     if (PetscIsInfOrNanReal(lambda_update)) break;
 
@@ -124,34 +122,32 @@ static PetscErrorCode  SNESLineSearchApply_L2(SNESLineSearch linesearch)
     lambda_old = lambda;
     lambda     = lambda_update;
     fnrm_old   = fnrm;
-    lambda_mid = 0.5*(lambda + lambda_old);
+    lambda_mid = 0.5 * (lambda + lambda_old);
   }
   /* construct the solution */
   PetscCall(VecWAXPY(W, -lambda, Y, X));
   if (linesearch->ops->viproject) PetscCall((*linesearch->ops->viproject)(snes, W));
 
   /* postcheck */
-  PetscCall(SNESLineSearchPostCheck(linesearch,X,Y,W,&changed_y,&changed_w));
+  PetscCall(SNESLineSearchPostCheck(linesearch, X, Y, W, &changed_y, &changed_w));
   if (changed_y) {
     PetscCall(VecAXPY(X, -lambda, Y));
     if (linesearch->ops->viproject) PetscCall((*linesearch->ops->viproject)(snes, X));
   } else {
     PetscCall(VecCopy(W, X));
   }
-  PetscCall((*linesearch->ops->snesfunc)(snes,X,F));
+  PetscCall((*linesearch->ops->snesfunc)(snes, X, F));
 
   PetscCall(SNESLineSearchSetLambda(linesearch, lambda));
   PetscCall(SNESLineSearchComputeNorms(linesearch));
   PetscCall(SNESLineSearchGetNorms(linesearch, &xnorm, &gnorm, &ynorm));
 
   if (monitor) {
-    PetscCall(PetscViewerASCIIAddTab(monitor,((PetscObject)linesearch)->tablevel));
-    PetscCall(PetscViewerASCIIPrintf(monitor,"    Line search terminated: lambda = %g, fnorms = %g\n", (double)lambda, (double)gnorm));
-    PetscCall(PetscViewerASCIISubtractTab(monitor,((PetscObject)linesearch)->tablevel));
+    PetscCall(PetscViewerASCIIAddTab(monitor, ((PetscObject)linesearch)->tablevel));
+    PetscCall(PetscViewerASCIIPrintf(monitor, "    Line search terminated: lambda = %g, fnorms = %g\n", (double)lambda, (double)gnorm));
+    PetscCall(PetscViewerASCIISubtractTab(monitor, ((PetscObject)linesearch)->tablevel));
   }
-  if (lambda <= steptol) {
-    PetscCall(SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_REDUCT));
-  }
+  if (lambda <= steptol) { PetscCall(SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_REDUCT)); }
   PetscFunctionReturn(0);
 }
 
@@ -178,8 +174,7 @@ static PetscErrorCode  SNESLineSearchApply_L2(SNESLineSearch linesearch)
 
 .seealso: `SNESLINESEARCHBT`, `SNESLINESEARCHCP`, `SNESLineSearch`, `SNESLineSearchCreate()`, `SNESLineSearchSetType()`
 M*/
-PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_L2(SNESLineSearch linesearch)
-{
+PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_L2(SNESLineSearch linesearch) {
   PetscFunctionBegin;
   linesearch->ops->apply          = SNESLineSearchApply_L2;
   linesearch->ops->destroy        = NULL;

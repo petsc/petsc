@@ -22,15 +22,14 @@
 /*       NLVL - IS THE NUMBER OF LEVELS IN THE LEVEL STRUCTURE.*/
 /*       (XLS, LS) - ARRAY PAIR FOR THE ROOTED LEVEL STRUCTURE.*/
 /*****************************************************************/
-PetscErrorCode SPARSEPACKrootls(const PetscInt *root,const PetscInt *xadj,const PetscInt *adjncy,PetscInt *mask, PetscInt *nlvl, PetscInt *xls, PetscInt *ls)
-{
+PetscErrorCode SPARSEPACKrootls(const PetscInt *root, const PetscInt *xadj, const PetscInt *adjncy, PetscInt *mask, PetscInt *nlvl, PetscInt *xls, PetscInt *ls) {
   /* System generated locals */
   PetscInt i__1, i__2;
 
   /* Local variables */
   PetscInt node, i, j, jstop, jstrt, lbegin, ccsize, lvlend, lvsize, nbr;
 
-/*       INITIALIZATION ...*/
+  /*       INITIALIZATION ...*/
 
   PetscFunctionBegin;
   /* Parameter adjustments */
@@ -52,9 +51,9 @@ L200:
   lvlend = ccsize;
   ++(*nlvl);
   xls[*nlvl] = lbegin;
-/*       GENERATE THE NEXT LEVEL BY FINDING ALL THE MASKED */
-/*       NEIGHBORS OF NODES IN THE CURRENT LEVEL.*/
-  i__1 = lvlend;
+  /*       GENERATE THE NEXT LEVEL BY FINDING ALL THE MASKED */
+  /*       NEIGHBORS OF NODES IN THE CURRENT LEVEL.*/
+  i__1       = lvlend;
   for (i = lbegin; i <= i__1; ++i) {
     node  = ls[i];
     jstrt = xadj[node];
@@ -67,17 +66,15 @@ L200:
       ++ccsize;
       ls[ccsize] = nbr;
       mask[nbr]  = 0;
-L300:
-      ;
+    L300:;
     }
-L400:
-    ;
+  L400:;
   }
-/*       COMPUTE THE CURRENT LEVEL WIDTH.*/
-/*       IF IT IS NONZERO, GENERATE THE NEXT LEVEL.*/
+  /*       COMPUTE THE CURRENT LEVEL WIDTH.*/
+  /*       IF IT IS NONZERO, GENERATE THE NEXT LEVEL.*/
   lvsize = ccsize - lvlend;
   if (lvsize > 0) goto L200;
-/*       RESET MASK TO ONE FOR THE NODES IN THE LEVEL STRUCTURE.*/
+  /*       RESET MASK TO ONE FOR THE NODES IN THE LEVEL STRUCTURE.*/
   xls[*nlvl + 1] = lvlend + 1;
   i__1           = ccsize;
   for (i = 1; i <= i__1; ++i) {
@@ -86,4 +83,3 @@ L400:
   }
   PetscFunctionReturn(0);
 }
-

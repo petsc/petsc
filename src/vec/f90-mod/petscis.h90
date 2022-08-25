@@ -6,7 +6,7 @@
       Interface
         Subroutine PetscLayoutFindOwner(a,b,c,z)
           PetscLayout a
-          PetscMPIInt b
+          PetscInt    b
           PetscMPIInt c
           PetscErrorCode  z
         End Subroutine
@@ -132,6 +132,39 @@
           PetscInt, pointer :: a(:)
           PetscErrorCode  ierr
           PetscSection       s
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine PetscSectionGetFieldConstraintIndicesF90(s,p,f,a,ierr)
+          import tPetscSection
+          PetscSection      :: s
+          PetscInt          :: p
+          PetscInt          :: f
+          PetscInt, pointer :: a(:)
+          PetscErrorCode    :: ierr
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine PetscSectionRestoreFieldConstraintIndicesF90(s,p,f,a,ierr)
+          import tPetscSection
+          PetscSection      :: s
+          PetscInt          :: p
+          PetscInt          :: f
+          PetscInt, pointer :: a(:)
+          PetscErrorCode    :: ierr
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine PetscSectionSetFieldConstraintIndicesF90(s,p,f,a,ierr)
+          import tPetscSection
+          PetscSection      :: s
+          PetscInt          :: p
+          PetscInt          :: f
+          PetscInt, pointer :: a(:)
+          PetscErrorCode    :: ierr
         End Subroutine
       End Interface
 

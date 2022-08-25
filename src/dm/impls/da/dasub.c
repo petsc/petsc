@@ -3,7 +3,7 @@
   Code for manipulating distributed regular arrays in parallel.
 */
 
-#include <petsc/private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
+#include <petsc/private/dmdaimpl.h> /*I   "petscdmda.h"   I*/
 
 /*@
    DMDAGetLogicalCoordinate - Returns a the i,j,k logical coordinate for the closest mesh point to a x,y,z point in the coordinates of the DMDA
@@ -30,29 +30,28 @@
    All processors that share the DMDA must call this with the same coordinate value
 
 @*/
-PetscErrorCode  DMDAGetLogicalCoordinate(DM da,PetscScalar x,PetscScalar y,PetscScalar z,PetscInt *II,PetscInt *JJ,PetscInt *KK,PetscScalar *X,PetscScalar *Y,PetscScalar *Z)
-{
-  Vec            coors;
-  DM             dacoors;
-  DMDACoor2d     **c;
-  PetscInt       i,j,xs,xm,ys,ym;
-  PetscReal      d,D = PETSC_MAX_REAL,Dv;
-  PetscMPIInt    rank,root;
+PetscErrorCode DMDAGetLogicalCoordinate(DM da, PetscScalar x, PetscScalar y, PetscScalar z, PetscInt *II, PetscInt *JJ, PetscInt *KK, PetscScalar *X, PetscScalar *Y, PetscScalar *Z) {
+  Vec          coors;
+  DM           dacoors;
+  DMDACoor2d **c;
+  PetscInt     i, j, xs, xm, ys, ym;
+  PetscReal    d, D = PETSC_MAX_REAL, Dv;
+  PetscMPIInt  rank, root;
 
   PetscFunctionBegin;
-  PetscCheck(da->dim != 1,PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Cannot get point from 1d DMDA");
-  PetscCheck(da->dim != 3,PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Cannot get point from 3d DMDA");
+  PetscCheck(da->dim != 1, PetscObjectComm((PetscObject)da), PETSC_ERR_SUP, "Cannot get point from 1d DMDA");
+  PetscCheck(da->dim != 3, PetscObjectComm((PetscObject)da), PETSC_ERR_SUP, "Cannot get point from 3d DMDA");
 
   *II = -1;
   *JJ = -1;
 
-  PetscCall(DMGetCoordinateDM(da,&dacoors));
-  PetscCall(DMDAGetCorners(dacoors,&xs,&ys,NULL,&xm,&ym,NULL));
-  PetscCall(DMGetCoordinates(da,&coors));
-  PetscCall(DMDAVecGetArrayRead(dacoors,coors,&c));
-  for (j=ys; j<ys+ym; j++) {
-    for (i=xs; i<xs+xm; i++) {
-      d = PetscSqrtReal(PetscRealPart((c[j][i].x - x)*(c[j][i].x - x) + (c[j][i].y - y)*(c[j][i].y - y)));
+  PetscCall(DMGetCoordinateDM(da, &dacoors));
+  PetscCall(DMDAGetCorners(dacoors, &xs, &ys, NULL, &xm, &ym, NULL));
+  PetscCall(DMGetCoordinates(da, &coors));
+  PetscCall(DMDAVecGetArrayRead(dacoors, coors, &c));
+  for (j = ys; j < ys + ym; j++) {
+    for (i = xs; i < xs + xm; i++) {
+      d = PetscSqrtReal(PetscRealPart((c[j][i].x - x) * (c[j][i].x - x) + (c[j][i].y - y) * (c[j][i].y - y)));
       if (d < D) {
         D   = d;
         *II = i;
@@ -60,7 +59,7 @@ PetscErrorCode  DMDAGetLogicalCoordinate(DM da,PetscScalar x,PetscScalar y,Petsc
       }
     }
   }
-  PetscCall(MPIU_Allreduce(&D,&Dv,1,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)da)));
+  PetscCall(MPIU_Allreduce(&D, &Dv, 1, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)da)));
   if (D != Dv) {
     *II  = -1;
     *JJ  = -1;
@@ -68,14 +67,14 @@ PetscErrorCode  DMDAGetLogicalCoordinate(DM da,PetscScalar x,PetscScalar y,Petsc
   } else {
     *X = c[*JJ][*II].x;
     *Y = c[*JJ][*II].y;
-    PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)da),&rank));
+    PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)da), &rank));
     rank++;
   }
-  PetscCall(MPIU_Allreduce(&rank,&root,1,MPI_INT,MPI_SUM,PetscObjectComm((PetscObject)da)));
+  PetscCall(MPIU_Allreduce(&rank, &root, 1, MPI_INT, MPI_SUM, PetscObjectComm((PetscObject)da)));
   root--;
-  PetscCallMPI(MPI_Bcast(X,1,MPIU_SCALAR,root,PetscObjectComm((PetscObject)da)));
-  PetscCallMPI(MPI_Bcast(Y,1,MPIU_SCALAR,root,PetscObjectComm((PetscObject)da)));
-  PetscCall(DMDAVecRestoreArrayRead(dacoors,coors,&c));
+  PetscCallMPI(MPI_Bcast(X, 1, MPIU_SCALAR, root, PetscObjectComm((PetscObject)da)));
+  PetscCallMPI(MPI_Bcast(Y, 1, MPIU_SCALAR, root, PetscObjectComm((PetscObject)da)));
+  PetscCall(DMDAVecRestoreArrayRead(dacoors, coors, &c));
   PetscFunctionReturn(0);
 }
 
@@ -99,25 +98,24 @@ PetscErrorCode  DMDAGetLogicalCoordinate(DM da,PetscScalar x,PetscScalar y,Petsc
    All processors that share the DMDA must call this with the same gp value
 
 @*/
-PetscErrorCode  DMDAGetRay(DM da,DMDirection dir,PetscInt gp,Vec *newvec,VecScatter *scatter)
-{
-  PetscMPIInt    rank;
-  DM_DA          *dd = (DM_DA*)da->data;
-  IS             is;
-  AO             ao;
-  Vec            vec;
-  PetscInt       *indices,i,j;
+PetscErrorCode DMDAGetRay(DM da, DMDirection dir, PetscInt gp, Vec *newvec, VecScatter *scatter) {
+  PetscMPIInt rank;
+  DM_DA      *dd = (DM_DA *)da->data;
+  IS          is;
+  AO          ao;
+  Vec         vec;
+  PetscInt   *indices, i, j;
 
   PetscFunctionBegin;
-  PetscCheck(da->dim != 3,PetscObjectComm((PetscObject) da), PETSC_ERR_SUP, "Cannot get slice from 3d DMDA");
-  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject) da), &rank));
+  PetscCheck(da->dim != 3, PetscObjectComm((PetscObject)da), PETSC_ERR_SUP, "Cannot get slice from 3d DMDA");
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)da), &rank));
   PetscCall(DMDAGetAO(da, &ao));
   if (rank == 0) {
     if (da->dim == 1) {
       if (dir == DM_X) {
         PetscCall(PetscMalloc1(dd->w, &indices));
-        indices[0] = dd->w*gp;
-        for (i = 1; i < dd->w; ++i) indices[i] = indices[i-1] + 1;
+        indices[0] = dd->w * gp;
+        for (i = 1; i < dd->w; ++i) indices[i] = indices[i - 1] + 1;
         PetscCall(AOApplicationToPetsc(ao, dd->w, indices));
         PetscCall(VecCreate(PETSC_COMM_SELF, newvec));
         PetscCall(VecSetBlockSize(*newvec, dd->w));
@@ -125,36 +123,36 @@ PetscErrorCode  DMDAGetRay(DM da,DMDirection dir,PetscInt gp,Vec *newvec,VecScat
         PetscCall(VecSetType(*newvec, VECSEQ));
         PetscCall(ISCreateGeneral(PETSC_COMM_SELF, dd->w, indices, PETSC_OWN_POINTER, &is));
       } else {
-        PetscCheck(dir != DM_Y,PetscObjectComm((PetscObject) da), PETSC_ERR_SUP, "Cannot get Y slice from 1d DMDA");
-        SETERRQ(PetscObjectComm((PetscObject) da), PETSC_ERR_ARG_OUTOFRANGE, "Unknown DMDirection");
+        PetscCheck(dir != DM_Y, PetscObjectComm((PetscObject)da), PETSC_ERR_SUP, "Cannot get Y slice from 1d DMDA");
+        SETERRQ(PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_OUTOFRANGE, "Unknown DMDirection");
       }
     } else {
       if (dir == DM_Y) {
-        PetscCall(PetscMalloc1(dd->w*dd->M,&indices));
-        indices[0] = gp*dd->M*dd->w;
-        for (i=1; i<dd->M*dd->w; i++) indices[i] = indices[i-1] + 1;
+        PetscCall(PetscMalloc1(dd->w * dd->M, &indices));
+        indices[0] = gp * dd->M * dd->w;
+        for (i = 1; i < dd->M * dd->w; i++) indices[i] = indices[i - 1] + 1;
 
-        PetscCall(AOApplicationToPetsc(ao,dd->M*dd->w,indices));
-        PetscCall(VecCreate(PETSC_COMM_SELF,newvec));
-        PetscCall(VecSetBlockSize(*newvec,dd->w));
-        PetscCall(VecSetSizes(*newvec,dd->M*dd->w,PETSC_DETERMINE));
-        PetscCall(VecSetType(*newvec,VECSEQ));
-        PetscCall(ISCreateGeneral(PETSC_COMM_SELF,dd->w*dd->M,indices,PETSC_OWN_POINTER,&is));
+        PetscCall(AOApplicationToPetsc(ao, dd->M * dd->w, indices));
+        PetscCall(VecCreate(PETSC_COMM_SELF, newvec));
+        PetscCall(VecSetBlockSize(*newvec, dd->w));
+        PetscCall(VecSetSizes(*newvec, dd->M * dd->w, PETSC_DETERMINE));
+        PetscCall(VecSetType(*newvec, VECSEQ));
+        PetscCall(ISCreateGeneral(PETSC_COMM_SELF, dd->w * dd->M, indices, PETSC_OWN_POINTER, &is));
       } else if (dir == DM_X) {
-        PetscCall(PetscMalloc1(dd->w*dd->N,&indices));
-        indices[0] = dd->w*gp;
-        for (j=1; j<dd->w; j++) indices[j] = indices[j-1] + 1;
-        for (i=1; i<dd->N; i++) {
-          indices[i*dd->w] = indices[i*dd->w-1] + dd->w*dd->M - dd->w + 1;
-          for (j=1; j<dd->w; j++) indices[i*dd->w + j] = indices[i*dd->w + j - 1] + 1;
+        PetscCall(PetscMalloc1(dd->w * dd->N, &indices));
+        indices[0] = dd->w * gp;
+        for (j = 1; j < dd->w; j++) indices[j] = indices[j - 1] + 1;
+        for (i = 1; i < dd->N; i++) {
+          indices[i * dd->w] = indices[i * dd->w - 1] + dd->w * dd->M - dd->w + 1;
+          for (j = 1; j < dd->w; j++) indices[i * dd->w + j] = indices[i * dd->w + j - 1] + 1;
         }
-        PetscCall(AOApplicationToPetsc(ao,dd->w*dd->N,indices));
-        PetscCall(VecCreate(PETSC_COMM_SELF,newvec));
-        PetscCall(VecSetBlockSize(*newvec,dd->w));
-        PetscCall(VecSetSizes(*newvec,dd->N*dd->w,PETSC_DETERMINE));
-        PetscCall(VecSetType(*newvec,VECSEQ));
-        PetscCall(ISCreateGeneral(PETSC_COMM_SELF,dd->w*dd->N,indices,PETSC_OWN_POINTER,&is));
-      } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown DMDirection");
+        PetscCall(AOApplicationToPetsc(ao, dd->w * dd->N, indices));
+        PetscCall(VecCreate(PETSC_COMM_SELF, newvec));
+        PetscCall(VecSetBlockSize(*newvec, dd->w));
+        PetscCall(VecSetSizes(*newvec, dd->N * dd->w, PETSC_DETERMINE));
+        PetscCall(VecSetType(*newvec, VECSEQ));
+        PetscCall(ISCreateGeneral(PETSC_COMM_SELF, dd->w * dd->N, indices, PETSC_OWN_POINTER, &is));
+      } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Unknown DMDirection");
     }
   } else {
     PetscCall(VecCreateSeq(PETSC_COMM_SELF, 0, newvec));
@@ -196,48 +194,48 @@ PetscErrorCode  DMDAGetRay(DM da,DMDirection dir,PetscInt gp,Vec *newvec,VecScat
    Not supported from Fortran
 
 @*/
-PetscErrorCode  DMDAGetProcessorSubset(DM da,DMDirection dir,PetscInt gp,MPI_Comm *comm)
-{
-  MPI_Group      group,subgroup;
-  PetscInt       i,ict,flag,*owners,xs,xm,ys,ym,zs,zm;
-  PetscMPIInt    size,*ranks = NULL;
-  DM_DA          *dd = (DM_DA*)da->data;
+PetscErrorCode DMDAGetProcessorSubset(DM da, DMDirection dir, PetscInt gp, MPI_Comm *comm) {
+  MPI_Group   group, subgroup;
+  PetscInt    i, ict, flag, *owners, xs, xm, ys, ym, zs, zm;
+  PetscMPIInt size, *ranks = NULL;
+  DM_DA      *dd = (DM_DA *)da->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
+  PetscValidHeaderSpecificType(da, DM_CLASSID, 1, DMDA);
   flag = 0;
-  PetscCall(DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm));
-  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)da),&size));
+  PetscCall(DMDAGetCorners(da, &xs, &ys, &zs, &xm, &ym, &zm));
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)da), &size));
   if (dir == DM_Z) {
-    PetscCheck(da->dim >= 3,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"DM_Z invalid for DMDA dim < 3");
-    PetscCheck(gp >= 0 && gp <= dd->P,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"invalid grid point");
-    if (gp >= zs && gp < zs+zm) flag = 1;
+    PetscCheck(da->dim >= 3, PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_OUTOFRANGE, "DM_Z invalid for DMDA dim < 3");
+    PetscCheck(gp >= 0 && gp <= dd->P, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid grid point");
+    if (gp >= zs && gp < zs + zm) flag = 1;
   } else if (dir == DM_Y) {
-    PetscCheck(da->dim != 1,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"DM_Y invalid for DMDA dim = 1");
-    PetscCheck(gp >= 0 && gp <= dd->N,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"invalid grid point");
-    if (gp >= ys && gp < ys+ym) flag = 1;
+    PetscCheck(da->dim != 1, PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_OUTOFRANGE, "DM_Y invalid for DMDA dim = 1");
+    PetscCheck(gp >= 0 && gp <= dd->N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid grid point");
+    if (gp >= ys && gp < ys + ym) flag = 1;
   } else if (dir == DM_X) {
-    PetscCheck(gp >= 0 && gp <= dd->M,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"invalid grid point");
-    if (gp >= xs && gp < xs+xm) flag = 1;
-  } else SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"Invalid direction");
+    PetscCheck(gp >= 0 && gp <= dd->M, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid grid point");
+    if (gp >= xs && gp < xs + xm) flag = 1;
+  } else SETERRQ(PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_OUTOFRANGE, "Invalid direction");
 
-  PetscCall(PetscMalloc2(size,&owners,size,&ranks));
-  PetscCallMPI(MPI_Allgather(&flag,1,MPIU_INT,owners,1,MPIU_INT,PetscObjectComm((PetscObject)da)));
-  ict  = 0;
-  PetscCall(PetscInfo(da,"DMDAGetProcessorSubset: dim=%" PetscInt_FMT ", direction=%d, procs: ",da->dim,(int)dir));
-  for (i=0; i<size; i++) {
+  PetscCall(PetscMalloc2(size, &owners, size, &ranks));
+  PetscCallMPI(MPI_Allgather(&flag, 1, MPIU_INT, owners, 1, MPIU_INT, PetscObjectComm((PetscObject)da)));
+  ict = 0;
+  PetscCall(PetscInfo(da, "DMDAGetProcessorSubset: dim=%" PetscInt_FMT ", direction=%d, procs: ", da->dim, (int)dir));
+  for (i = 0; i < size; i++) {
     if (owners[i]) {
-      ranks[ict] = i; ict++;
-      PetscCall(PetscInfo(da,"%" PetscInt_FMT " ",i));
+      ranks[ict] = i;
+      ict++;
+      PetscCall(PetscInfo(da, "%" PetscInt_FMT " ", i));
     }
   }
-  PetscCall(PetscInfo(da,"\n"));
-  PetscCallMPI(MPI_Comm_group(PetscObjectComm((PetscObject)da),&group));
-  PetscCallMPI(MPI_Group_incl(group,ict,ranks,&subgroup));
-  PetscCallMPI(MPI_Comm_create(PetscObjectComm((PetscObject)da),subgroup,comm));
+  PetscCall(PetscInfo(da, "\n"));
+  PetscCallMPI(MPI_Comm_group(PetscObjectComm((PetscObject)da), &group));
+  PetscCallMPI(MPI_Group_incl(group, ict, ranks, &subgroup));
+  PetscCallMPI(MPI_Comm_create(PetscObjectComm((PetscObject)da), subgroup, comm));
   PetscCallMPI(MPI_Group_free(&subgroup));
   PetscCallMPI(MPI_Group_free(&group));
-  PetscCall(PetscFree2(owners,ranks));
+  PetscCall(PetscFree2(owners, ranks));
   PetscFunctionReturn(0);
 }
 
@@ -265,33 +263,32 @@ PetscErrorCode  DMDAGetProcessorSubset(DM da,DMDirection dir,PetscInt gp,MPI_Com
    Not supported from Fortran
 
 @*/
-PetscErrorCode  DMDAGetProcessorSubsets(DM da, DMDirection dir, MPI_Comm *subcomm)
-{
-  MPI_Comm       comm;
-  MPI_Group      group, subgroup;
-  PetscInt       subgroupSize = 0;
-  PetscInt       *firstPoints;
-  PetscMPIInt    size, *subgroupRanks = NULL;
-  PetscInt       xs, xm, ys, ym, zs, zm, firstPoint, p;
+PetscErrorCode DMDAGetProcessorSubsets(DM da, DMDirection dir, MPI_Comm *subcomm) {
+  MPI_Comm    comm;
+  MPI_Group   group, subgroup;
+  PetscInt    subgroupSize = 0;
+  PetscInt   *firstPoints;
+  PetscMPIInt size, *subgroupRanks = NULL;
+  PetscInt    xs, xm, ys, ym, zs, zm, firstPoint, p;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecificType(da, DM_CLASSID, 1,DMDA);
-  PetscCall(PetscObjectGetComm((PetscObject)da,&comm));
+  PetscValidHeaderSpecificType(da, DM_CLASSID, 1, DMDA);
+  PetscCall(PetscObjectGetComm((PetscObject)da, &comm));
   PetscCall(DMDAGetCorners(da, &xs, &ys, &zs, &xm, &ym, &zm));
   PetscCallMPI(MPI_Comm_size(comm, &size));
   if (dir == DM_Z) {
-    PetscCheck(da->dim >= 3,comm,PETSC_ERR_ARG_OUTOFRANGE,"DM_Z invalid for DMDA dim < 3");
+    PetscCheck(da->dim >= 3, comm, PETSC_ERR_ARG_OUTOFRANGE, "DM_Z invalid for DMDA dim < 3");
     firstPoint = zs;
   } else if (dir == DM_Y) {
-    PetscCheck(da->dim != 1,comm,PETSC_ERR_ARG_OUTOFRANGE,"DM_Y invalid for DMDA dim = 1");
+    PetscCheck(da->dim != 1, comm, PETSC_ERR_ARG_OUTOFRANGE, "DM_Y invalid for DMDA dim = 1");
     firstPoint = ys;
   } else if (dir == DM_X) {
     firstPoint = xs;
-  } else SETERRQ(comm,PETSC_ERR_ARG_OUTOFRANGE,"Invalid direction");
+  } else SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Invalid direction");
 
   PetscCall(PetscMalloc2(size, &firstPoints, size, &subgroupRanks));
   PetscCallMPI(MPI_Allgather(&firstPoint, 1, MPIU_INT, firstPoints, 1, MPIU_INT, comm));
-  PetscCall(PetscInfo(da,"DMDAGetProcessorSubset: dim=%" PetscInt_FMT ", direction=%d, procs: ",da->dim,(int)dir));
+  PetscCall(PetscInfo(da, "DMDAGetProcessorSubset: dim=%" PetscInt_FMT ", direction=%d, procs: ", da->dim, (int)dir));
   for (p = 0; p < size; ++p) {
     if (firstPoints[p] == firstPoint) {
       subgroupRanks[subgroupSize++] = p;

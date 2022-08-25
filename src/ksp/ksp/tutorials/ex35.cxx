@@ -86,7 +86,10 @@ static char help[] = "\
 
 #define LOCAL_ASSEMBLY
 
-typedef enum {DIRICHLET, NEUMANN} BCType;
+typedef enum {
+  DIRICHLET,
+  NEUMANN
+} BCType;
 
 typedef struct {
   PetscInt  dim, n, problem, nlevels;
@@ -97,36 +100,34 @@ typedef struct {
   PetscInt  VPERE;
   BCType    bcType;
   PetscBool use_extfile, io, error, usetri, usemg;
-  char filename[PETSC_MAX_PATH_LEN];
+  char      filename[PETSC_MAX_PATH_LEN];
 } UserContext;
 
-static PetscErrorCode ComputeMatrix(KSP, Mat, Mat, void*);
-static PetscErrorCode ComputeRHS(KSP, Vec, void*);
-static PetscErrorCode ComputeDiscreteL2Error(KSP, Vec, UserContext*);
-static PetscErrorCode InitializeOptions(UserContext*);
+static PetscErrorCode ComputeMatrix(KSP, Mat, Mat, void *);
+static PetscErrorCode ComputeRHS(KSP, Vec, void *);
+static PetscErrorCode ComputeDiscreteL2Error(KSP, Vec, UserContext *);
+static PetscErrorCode InitializeOptions(UserContext *);
 
-int main(int argc, char **argv)
-{
-  KSP             ksp;
-  PC              pc;
-  Mat             R;
-  DM              dm, dmref, *dmhierarchy;
+int main(int argc, char **argv) {
+  KSP ksp;
+  PC  pc;
+  Mat R;
+  DM  dm, dmref, *dmhierarchy;
 
-  UserContext     user;
-  const char      *fields[1] = {"T-Variable"};
-  PetscInt        k;
-  Vec             b, x, errv;
+  UserContext user;
+  const char *fields[1] = {"T-Variable"};
+  PetscInt    k;
+  Vec         b, x, errv;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char*)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
 
   PetscCall(InitializeOptions(&user));
 
   /* Create the DM object from either a mesh file or from in-memory structured grid */
   if (user.use_extfile) {
     PetscCall(DMMoabLoadFromFile(PETSC_COMM_WORLD, user.dim, 1, user.filename, "", &dm));
-  }
-  else {
+  } else {
     PetscCall(DMMoabCreateBoxMesh(PETSC_COMM_WORLD, user.dim, user.usetri, user.bounds, user.n, 1, &dm));
   }
   PetscCall(DMSetFromOptions(dm));
@@ -141,8 +142,7 @@ int main(int argc, char **argv)
   PetscCall(KSPSetComputeRHS(ksp, ComputeRHS, &user));
   PetscCall(KSPSetComputeOperators(ksp, ComputeMatrix, &user));
 
-  if (user.nlevels)
-  {
+  if (user.nlevels) {
     PetscCall(KSPGetPC(ksp, &pc));
     PetscCall(PetscMalloc(sizeof(DM) * (user.nlevels + 1), &dmhierarchy));
     for (k = 0; k <= user.nlevels; k++) dmhierarchy[k] = NULL;
@@ -151,15 +151,12 @@ int main(int argc, char **argv)
     PetscCall(DMMoabGenerateHierarchy(dm, user.nlevels, PETSC_NULL));
 
     /* coarsest grid = 0, finest grid = nlevels */
-    dmhierarchy[0] = dm;
+    dmhierarchy[0]         = dm;
     PetscBool usehierarchy = PETSC_FALSE;
     if (usehierarchy) {
       PetscCall(DMRefineHierarchy(dm, user.nlevels, &dmhierarchy[1]));
-    }
-    else {
-      for (k = 1; k <= user.nlevels; k++) {
-        PetscCall(DMRefine(dmhierarchy[k - 1], MPI_COMM_NULL, &dmhierarchy[k]));
-      }
+    } else {
+      for (k = 1; k <= user.nlevels; k++) { PetscCall(DMRefine(dmhierarchy[k - 1], MPI_COMM_NULL, &dmhierarchy[k])); }
     }
     dmref = dmhierarchy[user.nlevels];
     PetscObjectReference((PetscObject)dmref);
@@ -179,12 +176,9 @@ int main(int argc, char **argv)
       }
     }
 
-    for (k = 1; k <= user.nlevels; k++) {
-      PetscCall(DMDestroy(&dmhierarchy[k]));
-    }
+    for (k = 1; k <= user.nlevels; k++) { PetscCall(DMDestroy(&dmhierarchy[k])); }
     PetscCall(PetscFree(dmhierarchy));
-  }
-  else {
+  } else {
     dmref = dm;
     PetscObjectReference((PetscObject)dm);
   }
@@ -225,84 +219,69 @@ int main(int argc, char **argv)
   return 0;
 }
 
-PetscScalar ComputeDiffusionCoefficient(PetscReal coords[3], UserContext* user)
-{
+PetscScalar ComputeDiffusionCoefficient(PetscReal coords[3], UserContext *user) {
   switch (user->problem) {
   case 2:
     if ((coords[0] > user->bounds[1] / 3.0) && (coords[0] < 2.0 * user->bounds[1] / 3.0) && (coords[1] > user->bounds[3] / 3.0) && (coords[1] < 2.0 * user->bounds[3] / 3.0)) {
       return user->rho;
-    }
-    else {
+    } else {
       return 1.0;
     }
   case 1:
   case 3:
-  default:
-    return user->rho;
+  default: return user->rho;
   }
 }
 
-PetscScalar ExactSolution(PetscReal coords[3], UserContext* user)
-{
+PetscScalar ExactSolution(PetscReal coords[3], UserContext *user) {
   switch (user->problem) {
-  case 1:
-    return sin(PETSC_PI * coords[0] / user->bounds[1]) * sin(PETSC_PI * coords[1] / user->bounds[3]);
+  case 1: return sin(PETSC_PI * coords[0] / user->bounds[1]) * sin(PETSC_PI * coords[1] / user->bounds[3]);
   case 3:
   case 2:
-  default:
-    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Exact solution for -problem = [%" PetscInt_FMT "] is not available.", user->problem);
+  default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Exact solution for -problem = [%" PetscInt_FMT "] is not available.", user->problem);
   }
 }
 
-PetscScalar ComputeForcingFunction(PetscReal coords[3], UserContext* user)
-{
+PetscScalar ComputeForcingFunction(PetscReal coords[3], UserContext *user) {
   switch (user->problem) {
-  case 3:
-    return user->nu * sin(PETSC_PI * coords[0] / user->bounds[1]) * sin(PETSC_PI * coords[1] / user->bounds[3]);
-  case 2:
-    return PetscExpScalar(- ( (coords[0] - user->xref) * (coords[0] - user->xref) + (coords[1] - user->yref) * (coords[1] - user->yref)) / user->nu);
+  case 3: return user->nu * sin(PETSC_PI * coords[0] / user->bounds[1]) * sin(PETSC_PI * coords[1] / user->bounds[3]);
+  case 2: return PetscExpScalar(-((coords[0] - user->xref) * (coords[0] - user->xref) + (coords[1] - user->yref) * (coords[1] - user->yref)) / user->nu);
   case 1:
   default:
-    return PETSC_PI * PETSC_PI * ComputeDiffusionCoefficient(coords, user) *
-            (1.0 / user->bounds[1] / user->bounds[1] + 1.0 / user->bounds[3] / user->bounds[3]) * sin(PETSC_PI * coords[0] / user->bounds[1]) * sin(PETSC_PI * coords[1] / user->bounds[3]);
+    return PETSC_PI * PETSC_PI * ComputeDiffusionCoefficient(coords, user) * (1.0 / user->bounds[1] / user->bounds[1] + 1.0 / user->bounds[3] / user->bounds[3]) * sin(PETSC_PI * coords[0] / user->bounds[1]) * sin(PETSC_PI * coords[1] / user->bounds[3]);
   }
 }
 
-#define BCHECKEPS 1e-10
-#define BCHECK(coordxyz,truetrace) ((coordxyz < truetrace+BCHECKEPS && coordxyz > truetrace-BCHECKEPS))
+#define BCHECKEPS                   1e-10
+#define BCHECK(coordxyz, truetrace) ((coordxyz < truetrace + BCHECKEPS && coordxyz > truetrace - BCHECKEPS))
 
-PetscScalar EvaluateStrongDirichletCondition(PetscReal coords[3], UserContext* user)
-{
+PetscScalar EvaluateStrongDirichletCondition(PetscReal coords[3], UserContext *user) {
   switch (user->problem) {
   case 3:
-    if (BCHECK(coords[0], user->bounds[0]) || BCHECK(coords[0], user->bounds[1]) || BCHECK(coords[1], user->bounds[2]) || BCHECK(coords[1], user->bounds[3]))
-      return 0.0;
+    if (BCHECK(coords[0], user->bounds[0]) || BCHECK(coords[0], user->bounds[1]) || BCHECK(coords[1], user->bounds[2]) || BCHECK(coords[1], user->bounds[3])) return 0.0;
     else // ( coords[0]*coords[0] + coords[1]*coords[1] < 0.04 + BCHECKEPS)
       return 1.0;
-  case 2:
-    return ComputeForcingFunction(coords, user);
+  case 2: return ComputeForcingFunction(coords, user);
   case 1:
-  default:
-    return ExactSolution(coords, user);
+  default: return ExactSolution(coords, user);
   }
 }
 
-PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ptr)
-{
-  UserContext*      user = (UserContext*)ptr;
-  DM                dm;
-  PetscInt          dof_indices[4];
-  PetscBool         dbdry[4];
-  PetscReal         vpos[4 * 3];
-  PetscScalar       ff;
-  PetscInt          i, q, nconn, nc, npoints;
+PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ptr) {
+  UserContext              *user = (UserContext *)ptr;
+  DM                        dm;
+  PetscInt                  dof_indices[4];
+  PetscBool                 dbdry[4];
+  PetscReal                 vpos[4 * 3];
+  PetscScalar               ff;
+  PetscInt                  i, q, nconn, nc, npoints;
   const moab::EntityHandle *connect;
-  const moab::Range *elocal;
-  moab::Interface*  mbImpl;
-  PetscScalar       localv[4];
-  PetscReal         *phi, *phypts, *jxw;
-  PetscBool         elem_on_boundary;
-  PetscQuadrature   quadratureObj;
+  const moab::Range        *elocal;
+  moab::Interface          *mbImpl;
+  PetscScalar               localv[4];
+  PetscReal                *phi, *phypts, *jxw;
+  PetscBool                 elem_on_boundary;
+  PetscQuadrature           quadratureObj;
 
   PetscFunctionBegin;
   PetscCall(KSPGetDM(ksp, &dm));
@@ -310,7 +289,7 @@ PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ptr)
   /* reset the RHS */
   PetscCall(VecSet(b, 0.0));
 
-  PetscCall(DMMoabFEMCreateQuadratureDefault (2, user->VPERE, &quadratureObj));
+  PetscCall(DMMoabFEMCreateQuadratureDefault(2, user->VPERE, &quadratureObj));
   PetscCall(PetscQuadratureGetData(quadratureObj, NULL, &nc, &npoints, NULL, NULL));
   PetscCall(PetscMalloc3(user->VPERE * npoints, &phi, npoints * 3, &phypts, npoints, &jxw));
 
@@ -324,7 +303,7 @@ PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ptr)
 
     /* Get connectivity information: */
     PetscCall(DMMoabGetElementConnectivity(dm, ehandle, &nconn, &connect));
-    PetscCheck(nconn == 3 || nconn == 4,PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Only TRI3/QUAD4 element bases are supported in the current example. n(Connectivity)=%" PetscInt_FMT ".", nconn);
+    PetscCheck(nconn == 3 || nconn == 4, PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Only TRI3/QUAD4 element bases are supported in the current example. n(Connectivity)=%" PetscInt_FMT ".", nconn);
 
     PetscCall(PetscArrayzero(localv, nconn));
 
@@ -346,9 +325,7 @@ PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ptr)
     for (q = 0; q < npoints; ++q) {
       ff = ComputeForcingFunction(&phypts[3 * q], user);
 
-      for (i = 0; i < nconn; ++i) {
-        localv[i] += jxw[q] * phi[q * nconn + i] * ff;
-      }
+      for (i = 0; i < nconn; ++i) { localv[i] += jxw[q] * phi[q * nconn + i] * ff; }
     }
 
     /* check if element is on the boundary */
@@ -356,12 +333,11 @@ PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ptr)
 
     /* apply dirichlet boundary conditions */
     if (elem_on_boundary && user->bcType == DIRICHLET) {
-
       /* get the list of nodes on boundary so that we can enforce dirichlet conditions strongly */
       PetscCall(DMMoabCheckBoundaryVertices(dm, nconn, connect, dbdry));
 
       for (i = 0; i < nconn; ++i) {
-        if (dbdry[i]) {  /* dirichlet node */
+        if (dbdry[i]) { /* dirichlet node */
           /* think about strongly imposing dirichlet */
           localv[i] = EvaluateStrongDirichletCondition(&vpos[3 * i], user);
         }
@@ -393,21 +369,20 @@ PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ptr)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, void *ctx)
-{
-  UserContext       *user = (UserContext*)ctx;
-  DM                dm;
-  PetscInt          i, j, q, nconn, nglobale, nglobalv, nc, npoints, hlevel;
-  PetscInt          dof_indices[4];
-  PetscReal         vpos[4 * 3], rho;
-  PetscBool         dbdry[4];
+PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, void *ctx) {
+  UserContext              *user = (UserContext *)ctx;
+  DM                        dm;
+  PetscInt                  i, j, q, nconn, nglobale, nglobalv, nc, npoints, hlevel;
+  PetscInt                  dof_indices[4];
+  PetscReal                 vpos[4 * 3], rho;
+  PetscBool                 dbdry[4];
   const moab::EntityHandle *connect;
-  const moab::Range *elocal;
-  moab::Interface*  mbImpl;
-  PetscBool         elem_on_boundary;
-  PetscScalar       array[4 * 4];
-  PetscReal         *phi, *dphi[2], *phypts, *jxw;
-  PetscQuadrature   quadratureObj;
+  const moab::Range        *elocal;
+  moab::Interface          *mbImpl;
+  PetscBool                 elem_on_boundary;
+  PetscScalar               array[4 * 4];
+  PetscReal                *phi, *dphi[2], *phypts, *jxw;
+  PetscQuadrature           quadratureObj;
 
   PetscFunctionBeginUser;
   PetscCall(KSPGetDM(ksp, &dm));
@@ -419,7 +394,7 @@ PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, void *ctx)
   PetscCall(DMMoabGetHierarchyLevel(dm, &hlevel));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "ComputeMatrix: Level = %d, N(elements) = %d, N(vertices) = %d \n", hlevel, nglobale, nglobalv));
 
-  PetscCall(DMMoabFEMCreateQuadratureDefault ( 2, user->VPERE, &quadratureObj));
+  PetscCall(DMMoabFEMCreateQuadratureDefault(2, user->VPERE, &quadratureObj));
   PetscCall(PetscQuadratureGetData(quadratureObj, NULL, &nc, &npoints, NULL, NULL));
   PetscCall(PetscMalloc5(user->VPERE * npoints, &phi, user->VPERE * npoints, &dphi[0], user->VPERE * npoints, &dphi[1], npoints * 3, &phypts, npoints, &jxw));
 
@@ -429,7 +404,7 @@ PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, void *ctx)
 
     // Get connectivity information:
     PetscCall(DMMoabGetElementConnectivity(dm, ehandle, &nconn, &connect));
-    PetscCheck(nconn == 3 || nconn == 4,PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Only QUAD4 or TRI3 element bases are supported in the current example. Connectivity=%" PetscInt_FMT ".", nconn);
+    PetscCheck(nconn == 3 || nconn == 4, PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Only QUAD4 or TRI3 element bases are supported in the current example. Connectivity=%" PetscInt_FMT ".", nconn);
 
     /* compute the mid-point of the element and use a 1-point lumped quadrature */
     PetscCall(DMMoabGetVertexCoordinates(dm, nconn, connect, vpos));
@@ -455,10 +430,7 @@ PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, void *ctx)
       rho = ComputeDiffusionCoefficient(&phypts[q * 3], user);
 
       for (i = 0; i < nconn; ++i) {
-        for (j = 0; j < nconn; ++j) {
-          array[i * nconn + j] += jxw[q] * rho * ( dphi[0][q * nconn + i] * dphi[0][q * nconn + j] +
-                                                   dphi[1][q * nconn + i] * dphi[1][q * nconn + j]);
-        }
+        for (j = 0; j < nconn; ++j) { array[i * nconn + j] += jxw[q] * rho * (dphi[0][q * nconn + i] * dphi[0][q * nconn + j] + dphi[1][q * nconn + i] * dphi[1][q * nconn + j]); }
       }
     }
 
@@ -467,12 +439,11 @@ PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, void *ctx)
 
     /* apply dirichlet boundary conditions */
     if (elem_on_boundary && user->bcType == DIRICHLET) {
-
       /* get the list of nodes on boundary so that we can enforce dirichlet conditions strongly */
       PetscCall(DMMoabCheckBoundaryVertices(dm, nconn, connect, dbdry));
 
       for (i = 0; i < nconn; ++i) {
-        if (dbdry[i]) {  /* dirichlet node */
+        if (dbdry[i]) { /* dirichlet node */
           /* think about strongly imposing dirichlet */
           for (j = 0; j < nconn; ++j) {
             /* TODO: symmetrize the system - need the RHS */
@@ -506,15 +477,14 @@ PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, void *ctx)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode ComputeDiscreteL2Error(KSP ksp, Vec err, UserContext *user)
-{
-  DM                dm;
-  Vec               sol;
-  PetscScalar       vpos[3];
+PetscErrorCode ComputeDiscreteL2Error(KSP ksp, Vec err, UserContext *user) {
+  DM                 dm;
+  Vec                sol;
+  PetscScalar        vpos[3];
   const PetscScalar *x;
   PetscScalar       *e;
-  PetscReal         l2err = 0.0, linferr = 0.0, global_l2, global_linf;
-  PetscInt          dof_index, N;
+  PetscReal          l2err = 0.0, linferr = 0.0, global_l2, global_linf;
+  PetscInt           dof_index, N;
   const moab::Range *ownedvtx;
 
   PetscFunctionBegin;
@@ -552,8 +522,7 @@ PetscErrorCode ComputeDiscreteL2Error(KSP ksp, Vec err, UserContext *user)
     /* compute the discrete L2 error against the exact solution */
     const PetscScalar lerr = (ExactSolution(vpos, user) - x[dof_index]);
     l2err += lerr * lerr;
-    if (linferr < fabs(lerr))
-      linferr = fabs(lerr);
+    if (linferr < fabs(lerr)) linferr = fabs(lerr);
 
     if (err) { /* set the discrete L2 error against the exact solution */
       e[dof_index] = lerr;
@@ -566,34 +535,31 @@ PetscErrorCode ComputeDiscreteL2Error(KSP ksp, Vec err, UserContext *user)
 
   /* Restore vectors */
   PetscCall(VecRestoreArrayRead(sol, &x));
-  if (err) {
-    PetscCall(VecRestoreArray(err, &e));
-  }
+  if (err) { PetscCall(VecRestoreArray(err, &e)); }
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode InitializeOptions(UserContext* user)
-{
-  const char     *bcTypes[2] = {"dirichlet", "neumann"};
-  PetscInt       bc;
+PetscErrorCode InitializeOptions(UserContext *user) {
+  const char *bcTypes[2] = {"dirichlet", "neumann"};
+  PetscInt    bc;
 
   PetscFunctionBegin;
   /* set default parameters */
-  user->dim     = 2;
-  user->problem = 1;
-  user->n       = 2;
-  user->nlevels = 2;
-  user->rho    = 0.1;
+  user->dim       = 2;
+  user->problem   = 1;
+  user->n         = 2;
+  user->nlevels   = 2;
+  user->rho       = 0.1;
   user->bounds[0] = user->bounds[2] = user->bounds[4] = 0.0;
   user->bounds[1] = user->bounds[3] = user->bounds[5] = 1.0;
-  user->xref   = user->bounds[1] / 2;
-  user->yref   = user->bounds[3] / 2;
-  user->nu     = 0.05;
-  user->usemg  = PETSC_FALSE;
-  user->io     = PETSC_FALSE;
-  user->usetri = PETSC_FALSE;
-  user->error  = PETSC_FALSE;
-  bc           = (PetscInt)DIRICHLET;
+  user->xref                                          = user->bounds[1] / 2;
+  user->yref                                          = user->bounds[3] / 2;
+  user->nu                                            = 0.05;
+  user->usemg                                         = PETSC_FALSE;
+  user->io                                            = PETSC_FALSE;
+  user->usetri                                        = PETSC_FALSE;
+  user->error                                         = PETSC_FALSE;
+  bc                                                  = (PetscInt)DIRICHLET;
 
   PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for the inhomogeneous Poisson equation", "ex35.cxx");
   PetscCall(PetscOptionsInt("-problem", "The type of problem being solved (controls forcing function)", "ex35.cxx", user->problem, &user->problem, NULL));

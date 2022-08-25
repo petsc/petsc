@@ -189,7 +189,7 @@ Dealing with Parameters
 Like most physical problems, the Stokes problem has a parameter, the dynamic shear viscosity, which determines what solution regime we are in. To handle these parameters in PETSc, we first define a C struct to hold them,
 
 .. literalinclude:: /../src/snes/tutorials/ex62.c
-   :start-at: typedef struct {
+   :start-at: typedef struct
    :end-at: } Parameter;
 
 and then add a ``PetscBag`` object to our application context. We then setup the parameter object,

@@ -1,4 +1,4 @@
-#include <petsc/private/snesimpl.h>   /*I "petscsnes.h" I*/
+#include <petsc/private/snesimpl.h> /*I "petscsnes.h" I*/
 
 static SNESMSType SNESMSDefault = SNESMSM62;
 static PetscBool  SNESMSRegisterAllCalled;
@@ -7,12 +7,12 @@ static PetscBool  SNESMSPackageInitialized;
 typedef struct _SNESMSTableau *SNESMSTableau;
 struct _SNESMSTableau {
   char      *name;
-  PetscInt  nstages;            /* Number of stages */
-  PetscInt  nregisters;         /* Number of registers */
-  PetscReal stability;          /* Scaled stability region */
-  PetscReal *gamma;             /* Coefficients of 3S* method */
-  PetscReal *delta;             /* Coefficients of 3S* method */
-  PetscReal *betasub;           /* Subdiagonal of beta in Shu-Osher form */
+  PetscInt   nstages;    /* Number of stages */
+  PetscInt   nregisters; /* Number of registers */
+  PetscReal  stability;  /* Scaled stability region */
+  PetscReal *gamma;      /* Coefficients of 3S* method */
+  PetscReal *delta;      /* Coefficients of 3S* method */
+  PetscReal *betasub;    /* Subdiagonal of beta in Shu-Osher form */
 };
 
 typedef struct _SNESMSTableauLink *SNESMSTableauLink;
@@ -23,9 +23,9 @@ struct _SNESMSTableauLink {
 static SNESMSTableauLink SNESMSTableauList;
 
 typedef struct {
-  SNESMSTableau tableau;        /* Tableau in low-storage form */
-  PetscReal     damping;        /* Damping parameter, like length of (pseudo) time step */
-  PetscBool     norms;          /* Compute norms, usually only for monitoring purposes */
+  SNESMSTableau tableau; /* Tableau in low-storage form */
+  PetscReal     damping; /* Damping parameter, like length of (pseudo) time step */
+  PetscBool     norms;   /* Compute norms, usually only for monitoring purposes */
 } SNES_MS;
 
 /*@C
@@ -37,56 +37,55 @@ typedef struct {
 
 .seealso: `SNESMSRegisterDestroy()`
 @*/
-PetscErrorCode SNESMSRegisterAll(void)
-{
+PetscErrorCode SNESMSRegisterAll(void) {
   PetscFunctionBegin;
   if (SNESMSRegisterAllCalled) PetscFunctionReturn(0);
   SNESMSRegisterAllCalled = PETSC_TRUE;
 
   {
     PetscReal alpha[1] = {1.0};
-    PetscCall(SNESMSRegister(SNESMSEULER,1,1,1.0,NULL,NULL,alpha));
+    PetscCall(SNESMSRegister(SNESMSEULER, 1, 1, 1.0, NULL, NULL, alpha));
   }
 
   {
     PetscReal gamma[3][6] = {
-      {0.0000000000000000E+00, -7.0304722367110606E-01, -1.9836719667506464E-01, -1.6023843981863788E+00,  9.4483822882855284E-02, -1.4204296130641869E-01},
-      {1.0000000000000000E+00,  1.1111025767083920E+00,  5.6150921583923230E-01,  7.4151723494934041E-01,  3.1714538168600587E-01,  4.6479276238548706E-01},
-      {0.0000000000000000E+00,  0.0000000000000000E+00,  0.0000000000000000E+00,  6.7968174970583317E-01, -4.1755042846051737E-03, -1.9115668129923846E-01}
+      {0.0000000000000000E+00, -7.0304722367110606E-01, -1.9836719667506464E-01, -1.6023843981863788E+00, 9.4483822882855284E-02,  -1.4204296130641869E-01},
+      {1.0000000000000000E+00, 1.1111025767083920E+00,  5.6150921583923230E-01,  7.4151723494934041E-01,  3.1714538168600587E-01,  4.6479276238548706E-01 },
+      {0.0000000000000000E+00, 0.0000000000000000E+00,  0.0000000000000000E+00,  6.7968174970583317E-01,  -4.1755042846051737E-03, -1.9115668129923846E-01}
     };
     PetscReal delta[6]   = {1.0000000000000000E+00, 5.3275427433201750E-01, 6.0143544663985238E-01, 4.5874077053842177E-01, 2.7544386906104651E-01, 0.0000000000000000E+00};
     PetscReal betasub[6] = {8.4753115429481929E-01, 7.4018896368655618E-01, 6.5963574086583309E-03, 4.6747795645517759E-01, 1.3314545813643919E-01, 5.3260800028018784E-01};
-    PetscCall(SNESMSRegister(SNESMSM62,6,3,1.0,&gamma[0][0],delta,betasub));
+    PetscCall(SNESMSRegister(SNESMSM62, 6, 3, 1.0, &gamma[0][0], delta, betasub));
   }
 
   { /* Jameson (1983) */
     PetscReal alpha[4] = {0.25, 0.5, 0.55, 1.0};
-    PetscCall(SNESMSRegister(SNESMSJAMESON83,4,1,1.0,NULL,NULL,alpha));
+    PetscCall(SNESMSRegister(SNESMSJAMESON83, 4, 1, 1.0, NULL, NULL, alpha));
   }
 
   { /* Van Leer, Tai, and Powell (1989) 1 stage, order 1 */
-    PetscReal alpha[1]  = {1.0};
-    PetscCall(SNESMSRegister(SNESMSVLTP11,1,1,0.5,NULL,NULL,alpha));
+    PetscReal alpha[1] = {1.0};
+    PetscCall(SNESMSRegister(SNESMSVLTP11, 1, 1, 0.5, NULL, NULL, alpha));
   }
   { /* Van Leer, Tai, and Powell (1989) 2 stage, order 1 */
     PetscReal alpha[2] = {0.3333, 1.0};
-    PetscCall(SNESMSRegister(SNESMSVLTP21,2,1,1.0,NULL,NULL,alpha));
+    PetscCall(SNESMSRegister(SNESMSVLTP21, 2, 1, 1.0, NULL, NULL, alpha));
   }
   { /* Van Leer, Tai, and Powell (1989) 3 stage, order 1 */
     PetscReal alpha[3] = {0.1481, 0.4000, 1.0};
-    PetscCall(SNESMSRegister(SNESMSVLTP31,3,1,1.5,NULL,NULL,alpha));
+    PetscCall(SNESMSRegister(SNESMSVLTP31, 3, 1, 1.5, NULL, NULL, alpha));
   }
   { /* Van Leer, Tai, and Powell (1989) 4 stage, order 1 */
     PetscReal alpha[4] = {0.0833, 0.2069, 0.4265, 1.0};
-    PetscCall(SNESMSRegister(SNESMSVLTP41,4,1,2.0,NULL,NULL,alpha));
+    PetscCall(SNESMSRegister(SNESMSVLTP41, 4, 1, 2.0, NULL, NULL, alpha));
   }
   { /* Van Leer, Tai, and Powell (1989) 5 stage, order 1 */
-    PetscReal alpha[5] = {0.0533, 0.1263, 0.2375, 0.4414,1.0};
-    PetscCall(SNESMSRegister(SNESMSVLTP51,5,1,2.5,NULL,NULL,alpha));
+    PetscReal alpha[5] = {0.0533, 0.1263, 0.2375, 0.4414, 1.0};
+    PetscCall(SNESMSRegister(SNESMSVLTP51, 5, 1, 2.5, NULL, NULL, alpha));
   }
   { /* Van Leer, Tai, and Powell (1989) 6 stage, order 1 */
     PetscReal alpha[6] = {0.0370, 0.0851, 0.1521, 0.2562, 0.4512, 1.0};
-    PetscCall(SNESMSRegister(SNESMSVLTP61,6,1,3.0,NULL,NULL,alpha));
+    PetscCall(SNESMSRegister(SNESMSVLTP61, 6, 1, 3.0, NULL, NULL, alpha));
   }
   PetscFunctionReturn(0);
 }
@@ -100,13 +99,12 @@ PetscErrorCode SNESMSRegisterAll(void)
 
 .seealso: `SNESMSRegister()`, `SNESMSRegisterAll()`
 @*/
-PetscErrorCode SNESMSRegisterDestroy(void)
-{
+PetscErrorCode SNESMSRegisterDestroy(void) {
   SNESMSTableauLink link;
 
   PetscFunctionBegin;
   while ((link = SNESMSTableauList)) {
-    SNESMSTableau t = &link->tab;
+    SNESMSTableau t   = &link->tab;
     SNESMSTableauList = link->next;
 
     PetscCall(PetscFree(t->name));
@@ -127,8 +125,7 @@ PetscErrorCode SNESMSRegisterDestroy(void)
 
 .seealso: `PetscInitialize()`
 @*/
-PetscErrorCode SNESMSInitializePackage(void)
-{
+PetscErrorCode SNESMSInitializePackage(void) {
   PetscFunctionBegin;
   if (SNESMSPackageInitialized) PetscFunctionReturn(0);
   SNESMSPackageInitialized = PETSC_TRUE;
@@ -146,8 +143,7 @@ PetscErrorCode SNESMSInitializePackage(void)
 
 .seealso: `PetscFinalize()`
 @*/
-PetscErrorCode SNESMSFinalizePackage(void)
-{
+PetscErrorCode SNESMSFinalizePackage(void) {
   PetscFunctionBegin;
   SNESMSPackageInitialized = PETSC_FALSE;
 
@@ -185,39 +181,38 @@ PetscErrorCode SNESMSFinalizePackage(void)
 
 .seealso: `SNESMS`
 @*/
-PetscErrorCode SNESMSRegister(SNESMSType name,PetscInt nstages,PetscInt nregisters,PetscReal stability,const PetscReal gamma[],const PetscReal delta[],const PetscReal betasub[])
-{
+PetscErrorCode SNESMSRegister(SNESMSType name, PetscInt nstages, PetscInt nregisters, PetscReal stability, const PetscReal gamma[], const PetscReal delta[], const PetscReal betasub[]) {
   SNESMSTableauLink link;
   SNESMSTableau     t;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(name,1);
-  PetscCheck(nstages >= 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must have at least one stage");
+  PetscValidCharPointer(name, 1);
+  PetscCheck(nstages >= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Must have at least one stage");
   if (gamma || delta) {
-    PetscCheck(nregisters == 3,PETSC_COMM_SELF,PETSC_ERR_SUP,"Only support for methods written in 3-register form");
-    PetscValidRealPointer(gamma,5);
-    PetscValidRealPointer(delta,6);
+    PetscCheck(nregisters == 3, PETSC_COMM_SELF, PETSC_ERR_SUP, "Only support for methods written in 3-register form");
+    PetscValidRealPointer(gamma, 5);
+    PetscValidRealPointer(delta, 6);
   } else {
-    PetscCheck(nregisters == 1,PETSC_COMM_SELF,PETSC_ERR_SUP,"Only support for methods written in 1-register form");
+    PetscCheck(nregisters == 1, PETSC_COMM_SELF, PETSC_ERR_SUP, "Only support for methods written in 1-register form");
   }
-  PetscValidRealPointer(betasub,7);
+  PetscValidRealPointer(betasub, 7);
 
   PetscCall(SNESMSInitializePackage());
   PetscCall(PetscNew(&link));
-  t             = &link->tab;
-  PetscCall(PetscStrallocpy(name,&t->name));
+  t = &link->tab;
+  PetscCall(PetscStrallocpy(name, &t->name));
   t->nstages    = nstages;
   t->nregisters = nregisters;
   t->stability  = stability;
 
   if (gamma && delta) {
-    PetscCall(PetscMalloc1(nstages*nregisters,&t->gamma));
-    PetscCall(PetscMalloc1(nstages,&t->delta));
-    PetscCall(PetscArraycpy(t->gamma,gamma,nstages*nregisters));
-    PetscCall(PetscArraycpy(t->delta,delta,nstages));
+    PetscCall(PetscMalloc1(nstages * nregisters, &t->gamma));
+    PetscCall(PetscMalloc1(nstages, &t->delta));
+    PetscCall(PetscArraycpy(t->gamma, gamma, nstages * nregisters));
+    PetscCall(PetscArraycpy(t->delta, delta, nstages));
   }
-  PetscCall(PetscMalloc1(nstages,&t->betasub));
-  PetscCall(PetscArraycpy(t->betasub,betasub,nstages));
+  PetscCall(PetscMalloc1(nstages, &t->betasub));
+  PetscCall(PetscArraycpy(t->betasub, betasub, nstages));
 
   link->next        = SNESMSTableauList;
   SNESMSTableauList = link;
@@ -228,38 +223,38 @@ PetscErrorCode SNESMSRegister(SNESMSType name,PetscInt nstages,PetscInt nregiste
   X - initial state, updated in-place.
   F - residual, computed at the initial X on input
 */
-static PetscErrorCode SNESMSStep_3Sstar(SNES snes,Vec X,Vec F)
-{
-  SNES_MS         *ms    = (SNES_MS*)snes->data;
-  SNESMSTableau   t      = ms->tableau;
-  const PetscReal *gamma = t->gamma,*delta = t->delta,*betasub = t->betasub;
-  Vec             S1,S2,S3,Y;
-  PetscInt        i,nstages = t->nstages;
+static PetscErrorCode SNESMSStep_3Sstar(SNES snes, Vec X, Vec F) {
+  SNES_MS         *ms    = (SNES_MS *)snes->data;
+  SNESMSTableau    t     = ms->tableau;
+  const PetscReal *gamma = t->gamma, *delta = t->delta, *betasub = t->betasub;
+  Vec              S1, S2, S3, Y;
+  PetscInt         i, nstages = t->nstages;
 
   PetscFunctionBegin;
-  Y    = snes->work[0];
-  S1   = X;
-  S2   = snes->work[1];
-  S3   = snes->work[2];
+  Y  = snes->work[0];
+  S1 = X;
+  S2 = snes->work[1];
+  S3 = snes->work[2];
   PetscCall(VecZeroEntries(S2));
-  PetscCall(VecCopy(X,S3));
+  PetscCall(VecCopy(X, S3));
   for (i = 0; i < nstages; i++) {
     Vec         Ss[4];
     PetscScalar scoeff[4];
 
-    Ss[0] = S1; Ss[1] = S2; Ss[2] = S3; Ss[3] = Y;
+    Ss[0] = S1;
+    Ss[1] = S2;
+    Ss[2] = S3;
+    Ss[3] = Y;
 
-    scoeff[0] = gamma[0*nstages+i] - 1;
-    scoeff[1] = gamma[1*nstages+i];
-    scoeff[2] = gamma[2*nstages+i];
-    scoeff[3] = -betasub[i]*ms->damping;
+    scoeff[0] = gamma[0 * nstages + i] - 1;
+    scoeff[1] = gamma[1 * nstages + i];
+    scoeff[2] = gamma[2 * nstages + i];
+    scoeff[3] = -betasub[i] * ms->damping;
 
-    PetscCall(VecAXPY(S2,delta[i],S1));
-    if (i > 0) {
-      PetscCall(SNESComputeFunction(snes,S1,F));
-    }
-    PetscCall(KSPSolve(snes->ksp,F,Y));
-    PetscCall(VecMAXPY(S1,4,scoeff,Ss));
+    PetscCall(VecAXPY(S2, delta[i], S1));
+    if (i > 0) { PetscCall(SNESComputeFunction(snes, S1, F)); }
+    PetscCall(KSPSolve(snes->ksp, F, Y));
+    PetscCall(VecMAXPY(S1, 4, scoeff, Ss));
   }
   PetscFunctionReturn(0);
 }
@@ -268,58 +263,53 @@ static PetscErrorCode SNESMSStep_3Sstar(SNES snes,Vec X,Vec F)
   X - initial state, updated in-place.
   F - residual, computed at the initial X on input
 */
-static PetscErrorCode SNESMSStep_Basic(SNES snes,Vec X,Vec F)
-{
-  SNES_MS         *ms    = (SNES_MS*)snes->data;
-  SNESMSTableau   tab    = ms->tableau;
+static PetscErrorCode SNESMSStep_Basic(SNES snes, Vec X, Vec F) {
+  SNES_MS         *ms    = (SNES_MS *)snes->data;
+  SNESMSTableau    tab   = ms->tableau;
   const PetscReal *alpha = tab->betasub, h = ms->damping;
-  PetscInt        i,nstages = tab->nstages;
-  Vec             X0 = snes->work[0];
+  PetscInt         i, nstages              = tab->nstages;
+  Vec              X0 = snes->work[0];
 
   PetscFunctionBegin;
-  PetscCall(VecCopy(X,X0));
+  PetscCall(VecCopy(X, X0));
   for (i = 0; i < nstages; i++) {
-    if (i > 0) {
-      PetscCall(SNESComputeFunction(snes,X,F));
-    }
-    PetscCall(KSPSolve(snes->ksp,F,X));
-    PetscCall(VecAYPX(X,-alpha[i]*h,X0));
+    if (i > 0) { PetscCall(SNESComputeFunction(snes, X, F)); }
+    PetscCall(KSPSolve(snes->ksp, F, X));
+    PetscCall(VecAYPX(X, -alpha[i] * h, X0));
   }
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESMSStep_Step(SNES snes,Vec X,Vec F)
-{
-  SNES_MS        *ms = (SNES_MS*)snes->data;
-  SNESMSTableau  tab = ms->tableau;
+static PetscErrorCode SNESMSStep_Step(SNES snes, Vec X, Vec F) {
+  SNES_MS      *ms  = (SNES_MS *)snes->data;
+  SNESMSTableau tab = ms->tableau;
 
   PetscFunctionBegin;
   if (tab->gamma && tab->delta) {
-    PetscCall(SNESMSStep_3Sstar(snes,X,F));
+    PetscCall(SNESMSStep_3Sstar(snes, X, F));
   } else {
-    PetscCall(SNESMSStep_Basic(snes,X,F));
+    PetscCall(SNESMSStep_Basic(snes, X, F));
   }
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESMSStep_Norms(SNES snes,PetscInt iter,Vec F)
-{
-  SNES_MS        *ms = (SNES_MS*)snes->data;
-  PetscReal      fnorm;
+static PetscErrorCode SNESMSStep_Norms(SNES snes, PetscInt iter, Vec F) {
+  SNES_MS  *ms = (SNES_MS *)snes->data;
+  PetscReal fnorm;
 
   PetscFunctionBegin;
   if (ms->norms) {
-    PetscCall(VecNorm(F,NORM_2,&fnorm)); /* fnorm <- ||F||  */
-    SNESCheckFunctionNorm(snes,fnorm);
+    PetscCall(VecNorm(F, NORM_2, &fnorm)); /* fnorm <- ||F||  */
+    SNESCheckFunctionNorm(snes, fnorm);
     /* Monitor convergence */
     PetscCall(PetscObjectSAWsTakeAccess((PetscObject)snes));
     snes->iter = iter;
     snes->norm = fnorm;
     PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
-    PetscCall(SNESLogConvergenceHistory(snes,snes->norm,0));
-    PetscCall(SNESMonitor(snes,snes->iter,snes->norm));
+    PetscCall(SNESLogConvergenceHistory(snes, snes->norm, 0));
+    PetscCall(SNESMonitor(snes, snes->iter, snes->norm));
     /* Test for convergence */
-    PetscCall((*snes->ops->converged)(snes,snes->iter,0.0,0.0,fnorm,&snes->reason,snes->cnvP));
+    PetscUseTypeMethod(snes, converged, snes->iter, 0.0, 0.0, fnorm, &snes->reason, snes->cnvP);
   } else if (iter > 0) {
     PetscCall(PetscObjectSAWsTakeAccess((PetscObject)snes));
     snes->iter = iter;
@@ -328,159 +318,147 @@ static PetscErrorCode SNESMSStep_Norms(SNES snes,PetscInt iter,Vec F)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESSolve_MS(SNES snes)
-{
-  SNES_MS        *ms = (SNES_MS*)snes->data;
-  Vec            X   = snes->vec_sol,F = snes->vec_func;
-  PetscInt       i;
+static PetscErrorCode SNESSolve_MS(SNES snes) {
+  SNES_MS *ms = (SNES_MS *)snes->data;
+  Vec      X = snes->vec_sol, F = snes->vec_func;
+  PetscInt i;
 
   PetscFunctionBegin;
-  PetscCheck(!snes->xl && !snes->xu && !snes->ops->computevariablebounds,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
-  PetscCall(PetscCitationsRegister(SNESCitation,&SNEScite));
+  PetscCheck(!snes->xl && !snes->xu && !snes->ops->computevariablebounds, PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
+  PetscCall(PetscCitationsRegister(SNESCitation, &SNEScite));
 
   snes->reason = SNES_CONVERGED_ITERATING;
   PetscCall(PetscObjectSAWsTakeAccess((PetscObject)snes));
-  snes->iter   = 0;
-  snes->norm   = 0;
+  snes->iter = 0;
+  snes->norm = 0;
   PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
 
   if (!snes->vec_func_init_set) {
-    PetscCall(SNESComputeFunction(snes,X,F));
+    PetscCall(SNESComputeFunction(snes, X, F));
   } else snes->vec_func_init_set = PETSC_FALSE;
 
-  PetscCall(SNESMSStep_Norms(snes,0,F));
+  PetscCall(SNESMSStep_Norms(snes, 0, F));
   if (snes->reason) PetscFunctionReturn(0);
 
   for (i = 0; i < snes->max_its; i++) {
-
     /* Call general purpose update function */
-    if (snes->ops->update) PetscCall((*snes->ops->update)(snes,snes->iter));
+    PetscTryTypeMethod(snes, update, snes->iter);
 
     if (i == 0 && snes->jacobian) {
       /* This method does not require a Jacobian, but it is usually preconditioned by PBJacobi */
-      PetscCall(SNESComputeJacobian(snes,snes->vec_sol,snes->jacobian,snes->jacobian_pre));
+      PetscCall(SNESComputeJacobian(snes, snes->vec_sol, snes->jacobian, snes->jacobian_pre));
       SNESCheckJacobianDomainerror(snes);
-      PetscCall(KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre));
+      PetscCall(KSPSetOperators(snes->ksp, snes->jacobian, snes->jacobian_pre));
     }
 
-    PetscCall(SNESMSStep_Step(snes,X,F));
+    PetscCall(SNESMSStep_Step(snes, X, F));
 
-    if (i < snes->max_its-1 || ms->norms) {
-      PetscCall(SNESComputeFunction(snes,X,F));
-    }
+    if (i < snes->max_its - 1 || ms->norms) { PetscCall(SNESComputeFunction(snes, X, F)); }
 
-    PetscCall(SNESMSStep_Norms(snes,i+1,F));
+    PetscCall(SNESMSStep_Norms(snes, i + 1, F));
     if (snes->reason) PetscFunctionReturn(0);
   }
   if (!snes->reason) snes->reason = SNES_CONVERGED_ITS;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESSetUp_MS(SNES snes)
-{
-  SNES_MS        *ms   = (SNES_MS*)snes->data;
-  SNESMSTableau  tab   = ms->tableau;
-  PetscInt       nwork = tab->nregisters;
+static PetscErrorCode SNESSetUp_MS(SNES snes) {
+  SNES_MS      *ms    = (SNES_MS *)snes->data;
+  SNESMSTableau tab   = ms->tableau;
+  PetscInt      nwork = tab->nregisters;
 
   PetscFunctionBegin;
-  PetscCall(SNESSetWorkVecs(snes,nwork));
+  PetscCall(SNESSetWorkVecs(snes, nwork));
   PetscCall(SNESSetUpMatrices(snes));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESReset_MS(SNES snes)
-{
+static PetscErrorCode SNESReset_MS(SNES snes) {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESDestroy_MS(SNES snes)
-{
+static PetscErrorCode SNESDestroy_MS(SNES snes) {
   PetscFunctionBegin;
   PetscCall(SNESReset_MS(snes));
   PetscCall(PetscFree(snes->data));
-  PetscCall(PetscObjectComposeFunction((PetscObject)snes,"SNESMSGetType_C",NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)snes,"SNESMSSetType_C",NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)snes,"SNESMSGetDamping_C",NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)snes,"SNESMSSetDamping_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)snes, "SNESMSGetType_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)snes, "SNESMSSetType_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)snes, "SNESMSGetDamping_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)snes, "SNESMSSetDamping_C", NULL));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESView_MS(SNES snes,PetscViewer viewer)
-{
-  PetscBool      iascii;
-  SNES_MS        *ms = (SNES_MS*)snes->data;
-  SNESMSTableau  tab = ms->tableau;
+static PetscErrorCode SNESView_MS(SNES snes, PetscViewer viewer) {
+  PetscBool     iascii;
+  SNES_MS      *ms  = (SNES_MS *)snes->data;
+  SNESMSTableau tab = ms->tableau;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
-    PetscCall(PetscViewerASCIIPrintf(viewer,"  multi-stage method type: %s\n",tab->name));
-  }
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
+  if (iascii) { PetscCall(PetscViewerASCIIPrintf(viewer, "  multi-stage method type: %s\n", tab->name)); }
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESSetFromOptions_MS(PetscOptionItems *PetscOptionsObject,SNES snes)
-{
-  SNES_MS        *ms = (SNES_MS*)snes->data;
+static PetscErrorCode SNESSetFromOptions_MS(SNES snes, PetscOptionItems *PetscOptionsObject) {
+  SNES_MS *ms = (SNES_MS *)snes->data;
 
   PetscFunctionBegin;
-  PetscOptionsHeadBegin(PetscOptionsObject,"SNES MS options");
+  PetscOptionsHeadBegin(PetscOptionsObject, "SNES MS options");
   {
     SNESMSTableauLink link;
-    PetscInt          count,choice;
+    PetscInt          count, choice;
     PetscBool         flg;
-    const char        **namelist;
+    const char      **namelist;
     SNESMSType        mstype;
     PetscReal         damping;
 
-    PetscCall(SNESMSGetType(snes,&mstype));
-    for (link=SNESMSTableauList,count=0; link; link=link->next,count++) ;
-    PetscCall(PetscMalloc1(count,(char***)&namelist));
-    for (link=SNESMSTableauList,count=0; link; link=link->next,count++) namelist[count] = link->tab.name;
-    PetscCall(PetscOptionsEList("-snes_ms_type","Multistage smoother type","SNESMSSetType",(const char*const*)namelist,count,mstype,&choice,&flg));
-    if (flg) PetscCall(SNESMSSetType(snes,namelist[choice]));
+    PetscCall(SNESMSGetType(snes, &mstype));
+    for (link = SNESMSTableauList, count = 0; link; link = link->next, count++)
+      ;
+    PetscCall(PetscMalloc1(count, (char ***)&namelist));
+    for (link = SNESMSTableauList, count = 0; link; link = link->next, count++) namelist[count] = link->tab.name;
+    PetscCall(PetscOptionsEList("-snes_ms_type", "Multistage smoother type", "SNESMSSetType", (const char *const *)namelist, count, mstype, &choice, &flg));
+    if (flg) PetscCall(SNESMSSetType(snes, namelist[choice]));
     PetscCall(PetscFree(namelist));
-    PetscCall(SNESMSGetDamping(snes,&damping));
-    PetscCall(PetscOptionsReal("-snes_ms_damping","Damping for multistage method","SNESMSSetDamping",damping,&damping,&flg));
-    if (flg) PetscCall(SNESMSSetDamping(snes,damping));
-    PetscCall(PetscOptionsBool("-snes_ms_norms","Compute norms for monitoring","none",ms->norms,&ms->norms,NULL));
+    PetscCall(SNESMSGetDamping(snes, &damping));
+    PetscCall(PetscOptionsReal("-snes_ms_damping", "Damping for multistage method", "SNESMSSetDamping", damping, &damping, &flg));
+    if (flg) PetscCall(SNESMSSetDamping(snes, damping));
+    PetscCall(PetscOptionsBool("-snes_ms_norms", "Compute norms for monitoring", "none", ms->norms, &ms->norms, NULL));
   }
   PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESMSGetType_MS(SNES snes,SNESMSType *mstype)
-{
-  SNES_MS        *ms = (SNES_MS*)snes->data;
-  SNESMSTableau  tab = ms->tableau;
+static PetscErrorCode SNESMSGetType_MS(SNES snes, SNESMSType *mstype) {
+  SNES_MS      *ms  = (SNES_MS *)snes->data;
+  SNESMSTableau tab = ms->tableau;
 
   PetscFunctionBegin;
   *mstype = tab->name;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESMSSetType_MS(SNES snes,SNESMSType mstype)
-{
-  SNES_MS           *ms = (SNES_MS*)snes->data;
+static PetscErrorCode SNESMSSetType_MS(SNES snes, SNESMSType mstype) {
+  SNES_MS          *ms = (SNES_MS *)snes->data;
   SNESMSTableauLink link;
   PetscBool         match;
 
   PetscFunctionBegin;
   if (ms->tableau) {
-    PetscCall(PetscStrcmp(ms->tableau->name,mstype,&match));
+    PetscCall(PetscStrcmp(ms->tableau->name, mstype, &match));
     if (match) PetscFunctionReturn(0);
   }
-  for (link = SNESMSTableauList; link; link=link->next) {
-    PetscCall(PetscStrcmp(link->tab.name,mstype,&match));
+  for (link = SNESMSTableauList; link; link = link->next) {
+    PetscCall(PetscStrcmp(link->tab.name, mstype, &match));
     if (match) {
-      if (snes->setupcalled)  PetscCall(SNESReset_MS(snes));
+      if (snes->setupcalled) PetscCall(SNESReset_MS(snes));
       ms->tableau = &link->tab;
-      if (snes->setupcalled)  PetscCall(SNESSetUp_MS(snes));
+      if (snes->setupcalled) PetscCall(SNESSetUp_MS(snes));
       PetscFunctionReturn(0);
     }
   }
-  SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_UNKNOWN_TYPE,"Could not find '%s'",mstype);
+  SETERRQ(PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_UNKNOWN_TYPE, "Could not find '%s'", mstype);
 }
 
 /*@C
@@ -498,12 +476,11 @@ static PetscErrorCode SNESMSSetType_MS(SNES snes,SNESMSType mstype)
 
 .seealso: `SNESMSSetType()`, `SNESMSType`, `SNESMS`
 @*/
-PetscErrorCode SNESMSGetType(SNES snes,SNESMSType *mstype)
-{
+PetscErrorCode SNESMSGetType(SNES snes, SNESMSType *mstype) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  PetscValidPointer(mstype,2);
-  PetscUseMethod(snes,"SNESMSGetType_C",(SNES,SNESMSType*),(snes,mstype));
+  PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
+  PetscValidPointer(mstype, 2);
+  PetscUseMethod(snes, "SNESMSGetType_C", (SNES, SNESMSType *), (snes, mstype));
   PetscFunctionReturn(0);
 }
 
@@ -520,27 +497,24 @@ PetscErrorCode SNESMSGetType(SNES snes,SNESMSType *mstype)
 
 .seealso: `SNESMSGetType()`, `SNESMSType`, `SNESMS`
 @*/
-PetscErrorCode SNESMSSetType(SNES snes,SNESMSType mstype)
-{
+PetscErrorCode SNESMSSetType(SNES snes, SNESMSType mstype) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  PetscValidCharPointer(mstype,2);
-  PetscTryMethod(snes,"SNESMSSetType_C",(SNES,SNESMSType),(snes,mstype));
+  PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
+  PetscValidCharPointer(mstype, 2);
+  PetscTryMethod(snes, "SNESMSSetType_C", (SNES, SNESMSType), (snes, mstype));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESMSGetDamping_MS(SNES snes,PetscReal *damping)
-{
-  SNES_MS        *ms = (SNES_MS*)snes->data;
+static PetscErrorCode SNESMSGetDamping_MS(SNES snes, PetscReal *damping) {
+  SNES_MS *ms = (SNES_MS *)snes->data;
 
   PetscFunctionBegin;
   *damping = ms->damping;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESMSSetDamping_MS(SNES snes,PetscReal damping)
-{
-  SNES_MS           *ms = (SNES_MS*)snes->data;
+static PetscErrorCode SNESMSSetDamping_MS(SNES snes, PetscReal damping) {
+  SNES_MS *ms = (SNES_MS *)snes->data;
 
   PetscFunctionBegin;
   ms->damping = damping;
@@ -562,12 +536,11 @@ static PetscErrorCode SNESMSSetDamping_MS(SNES snes,PetscReal damping)
 
 .seealso: `SNESMSSetDamping()`, `SNESMS`
 @*/
-PetscErrorCode SNESMSGetDamping(SNES snes,PetscReal *damping)
-{
+PetscErrorCode SNESMSGetDamping(SNES snes, PetscReal *damping) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  PetscValidRealPointer(damping,2);
-  PetscUseMethod(snes,"SNESMSGetDamping_C",(SNES,PetscReal*),(snes,damping));
+  PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
+  PetscValidRealPointer(damping, 2);
+  PetscUseMethod(snes, "SNESMSGetDamping_C", (SNES, PetscReal *), (snes, damping));
   PetscFunctionReturn(0);
 }
 
@@ -584,12 +557,11 @@ PetscErrorCode SNESMSGetDamping(SNES snes,PetscReal *damping)
 
 .seealso: `SNESMSGetDamping()`, `SNESMS`
 @*/
-PetscErrorCode SNESMSSetDamping(SNES snes,PetscReal damping)
-{
+PetscErrorCode SNESMSSetDamping(SNES snes, PetscReal damping) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  PetscValidLogicalCollectiveReal(snes,damping,2);
-  PetscTryMethod(snes,"SNESMSSetDamping_C",(SNES,PetscReal),(snes,damping));
+  PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
+  PetscValidLogicalCollectiveReal(snes, damping, 2);
+  PetscTryMethod(snes, "SNESMSSetDamping_C", (SNES, PetscReal), (snes, damping));
   PetscFunctionReturn(0);
 }
 
@@ -621,9 +593,8 @@ PetscErrorCode SNESMSSetDamping(SNES snes,PetscReal damping)
 .seealso: `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESMS`, `SNESFAS`, `KSPCHEBYSHEV`
 
 M*/
-PETSC_EXTERN PetscErrorCode SNESCreate_MS(SNES snes)
-{
-  SNES_MS        *ms;
+PETSC_EXTERN PetscErrorCode SNESCreate_MS(SNES snes) {
+  SNES_MS *ms;
 
   PetscFunctionBegin;
   PetscCall(SNESMSInitializePackage());
@@ -640,16 +611,16 @@ PETSC_EXTERN PetscErrorCode SNESCreate_MS(SNES snes)
 
   snes->alwayscomputesfinalresidual = PETSC_FALSE;
 
-  PetscCall(PetscNewLog(snes,&ms));
-  snes->data  = (void*)ms;
+  PetscCall(PetscNewLog(snes, &ms));
+  snes->data  = (void *)ms;
   ms->damping = 0.9;
   ms->norms   = PETSC_FALSE;
 
-  PetscCall(PetscObjectComposeFunction((PetscObject)snes,"SNESMSGetType_C",SNESMSGetType_MS));
-  PetscCall(PetscObjectComposeFunction((PetscObject)snes,"SNESMSSetType_C",SNESMSSetType_MS));
-  PetscCall(PetscObjectComposeFunction((PetscObject)snes,"SNESMSGetDamping_C",SNESMSGetDamping_MS));
-  PetscCall(PetscObjectComposeFunction((PetscObject)snes,"SNESMSSetDamping_C",SNESMSSetDamping_MS));
+  PetscCall(PetscObjectComposeFunction((PetscObject)snes, "SNESMSGetType_C", SNESMSGetType_MS));
+  PetscCall(PetscObjectComposeFunction((PetscObject)snes, "SNESMSSetType_C", SNESMSSetType_MS));
+  PetscCall(PetscObjectComposeFunction((PetscObject)snes, "SNESMSGetDamping_C", SNESMSGetDamping_MS));
+  PetscCall(PetscObjectComposeFunction((PetscObject)snes, "SNESMSSetDamping_C", SNESMSSetDamping_MS));
 
-  PetscCall(SNESMSSetType(snes,SNESMSDefault));
+  PetscCall(SNESMSSetType(snes, SNESMSDefault));
   PetscFunctionReturn(0);
 }

@@ -10,13 +10,12 @@ static PetscBool PetscRandomPackageInitialized = PETSC_FALSE;
 
 .seealso: `PetscFinalize()`
 @*/
-PetscErrorCode  PetscRandomFinalizePackage(void)
-{
-  PetscFunctionBegin;
-  PetscCall(PetscFunctionListDestroy(&PetscRandomList));
-  PetscRandomPackageInitialized = PETSC_FALSE;
-  PetscRandomRegisterAllCalled  = PETSC_FALSE;
-  PetscFunctionReturn(0);
+PetscErrorCode   PetscRandomFinalizePackage(void) {
+    PetscFunctionBegin;
+    PetscCall(PetscFunctionListDestroy(&PetscRandomList));
+    PetscRandomPackageInitialized = PETSC_FALSE;
+    PetscRandomRegisterAllCalled  = PETSC_FALSE;
+    PetscFunctionReturn(0);
 }
 
 /*@C
@@ -28,29 +27,28 @@ PetscErrorCode  PetscRandomFinalizePackage(void)
 
 .seealso: `PetscInitialize()`
 @*/
-PetscErrorCode  PetscRandomInitializePackage(void)
-{
-  char           logList[256];
-  PetscBool      opt,pkg;
+PetscErrorCode PetscRandomInitializePackage(void) {
+  char      logList[256];
+  PetscBool opt, pkg;
 
   PetscFunctionBegin;
   if (PetscRandomPackageInitialized) PetscFunctionReturn(0);
   PetscRandomPackageInitialized = PETSC_TRUE;
   /* Register Class */
-  PetscCall(PetscClassIdRegister("PetscRandom",&PETSC_RANDOM_CLASSID));
+  PetscCall(PetscClassIdRegister("PetscRandom", &PETSC_RANDOM_CLASSID));
   /* Register Constructors */
   PetscCall(PetscRandomRegisterAll());
   /* Process Info */
   {
-    PetscClassId  classids[1];
+    PetscClassId classids[1];
 
     classids[0] = PETSC_RANDOM_CLASSID;
     PetscCall(PetscInfoProcessClass("random", 1, classids));
   }
   /* Process summary exclusions */
-  PetscCall(PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt));
+  PetscCall(PetscOptionsGetString(NULL, NULL, "-log_exclude", logList, sizeof(logList), &opt));
   if (opt) {
-    PetscCall(PetscStrInList("random",logList,',',&pkg));
+    PetscCall(PetscStrInList("random", logList, ',', &pkg));
     if (pkg) PetscCall(PetscLogEventExcludeClass(PETSC_RANDOM_CLASSID));
   }
   /* Register package finalizer */

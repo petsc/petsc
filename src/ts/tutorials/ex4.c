@@ -1,5 +1,5 @@
 
-static char help[] ="Solves a simple time-dependent linear PDE (the heat equation).\n\
+static char help[] = "Solves a simple time-dependent linear PDE (the heat equation).\n\
 Input parameters include:\n\
   -m <points>, where <points> = number of grid points\n\
   -time_dependent_rhs : Treat the problem as having a time-dependent right-hand side\n\
@@ -59,60 +59,59 @@ Input parameters include:\n\
    application-provided call-back routines.
 */
 typedef struct {
-  MPI_Comm    comm;              /* communicator */
-  DM          da;                /* distributed array data structure */
-  Vec         localwork;         /* local ghosted work vector */
-  Vec         u_local;           /* local ghosted approximate solution vector */
-  Vec         solution;          /* global exact solution vector */
-  PetscInt    m;                 /* total number of grid points */
-  PetscReal   h;                 /* mesh width h = 1/(m-1) */
-  PetscBool   debug;             /* flag (1 indicates activation of debugging printouts) */
-  PetscViewer viewer1,viewer2;  /* viewers for the solution and error */
-  PetscReal   norm_2,norm_max;  /* error norms */
+  MPI_Comm    comm;             /* communicator */
+  DM          da;               /* distributed array data structure */
+  Vec         localwork;        /* local ghosted work vector */
+  Vec         u_local;          /* local ghosted approximate solution vector */
+  Vec         solution;         /* global exact solution vector */
+  PetscInt    m;                /* total number of grid points */
+  PetscReal   h;                /* mesh width h = 1/(m-1) */
+  PetscBool   debug;            /* flag (1 indicates activation of debugging printouts) */
+  PetscViewer viewer1, viewer2; /* viewers for the solution and error */
+  PetscReal   norm_2, norm_max; /* error norms */
 } AppCtx;
 
 /*
    User-defined routines
 */
-extern PetscErrorCode InitialConditions(Vec,AppCtx*);
-extern PetscErrorCode RHSMatrixHeat(TS,PetscReal,Vec,Mat,Mat,void*);
-extern PetscErrorCode RHSFunctionHeat(TS,PetscReal,Vec,Vec,void*);
-extern PetscErrorCode Monitor(TS,PetscInt,PetscReal,Vec,void*);
-extern PetscErrorCode ExactSolution(PetscReal,Vec,AppCtx*);
+extern PetscErrorCode InitialConditions(Vec, AppCtx *);
+extern PetscErrorCode RHSMatrixHeat(TS, PetscReal, Vec, Mat, Mat, void *);
+extern PetscErrorCode RHSFunctionHeat(TS, PetscReal, Vec, Vec, void *);
+extern PetscErrorCode Monitor(TS, PetscInt, PetscReal, Vec, void *);
+extern PetscErrorCode ExactSolution(PetscReal, Vec, AppCtx *);
 
-int main(int argc,char **argv)
-{
-  AppCtx         appctx;                 /* user-defined application context */
-  TS             ts;                     /* timestepping context */
-  Mat            A;                      /* matrix data structure */
-  Vec            u;                      /* approximate solution vector */
-  PetscReal      time_total_max = 1.0;   /* default max total time */
-  PetscInt       time_steps_max = 100;   /* default max timesteps */
-  PetscDraw      draw;                   /* drawing context */
-  PetscInt       steps,m;
-  PetscMPIInt    size;
-  PetscReal      dt,ftime;
-  PetscBool      flg;
-  TSProblemType  tsproblem = TS_LINEAR;
+int main(int argc, char **argv) {
+  AppCtx        appctx;               /* user-defined application context */
+  TS            ts;                   /* timestepping context */
+  Mat           A;                    /* matrix data structure */
+  Vec           u;                    /* approximate solution vector */
+  PetscReal     time_total_max = 1.0; /* default max total time */
+  PetscInt      time_steps_max = 100; /* default max timesteps */
+  PetscDraw     draw;                 /* drawing context */
+  PetscInt      steps, m;
+  PetscMPIInt   size;
+  PetscReal     dt, ftime;
+  PetscBool     flg;
+  TSProblemType tsproblem = TS_LINEAR;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program and set problem parameters
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
   appctx.comm = PETSC_COMM_WORLD;
 
-  m               = 60;
-  PetscCall(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
-  PetscCall(PetscOptionsHasName(NULL,NULL,"-debug",&appctx.debug));
+  m = 60;
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-m", &m, NULL));
+  PetscCall(PetscOptionsHasName(NULL, NULL, "-debug", &appctx.debug));
   appctx.m        = m;
-  appctx.h        = 1.0/(m-1.0);
+  appctx.h        = 1.0 / (m - 1.0);
   appctx.norm_2   = 0.0;
   appctx.norm_max = 0.0;
 
-  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Solving a linear TS problem, number of processors = %d\n",size));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Solving a linear TS problem, number of processors = %d\n", size));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create vector data structures
@@ -123,7 +122,7 @@ int main(int argc,char **argv)
      total grid values spread equally among all the processors.
   */
 
-  PetscCall(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,m,1,1,NULL,&appctx.da));
+  PetscCall(DMDACreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, m, 1, 1, NULL, &appctx.da));
   PetscCall(DMSetFromOptions(appctx.da));
   PetscCall(DMSetUp(appctx.da));
 
@@ -132,62 +131,62 @@ int main(int argc,char **argv)
      approximate solution.  Then duplicate these for remaining vectors that
      have the same types.
   */
-  PetscCall(DMCreateGlobalVector(appctx.da,&u));
-  PetscCall(DMCreateLocalVector(appctx.da,&appctx.u_local));
+  PetscCall(DMCreateGlobalVector(appctx.da, &u));
+  PetscCall(DMCreateLocalVector(appctx.da, &appctx.u_local));
 
   /*
      Create local work vector for use in evaluating right-hand-side function;
      create global work vector for storing exact solution.
   */
-  PetscCall(VecDuplicate(appctx.u_local,&appctx.localwork));
-  PetscCall(VecDuplicate(u,&appctx.solution));
+  PetscCall(VecDuplicate(appctx.u_local, &appctx.localwork));
+  PetscCall(VecDuplicate(u, &appctx.solution));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set up displays to show graphs of the solution and error
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  PetscCall(PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",80,380,400,160,&appctx.viewer1));
-  PetscCall(PetscViewerDrawGetDraw(appctx.viewer1,0,&draw));
+  PetscCall(PetscViewerDrawOpen(PETSC_COMM_WORLD, 0, "", 80, 380, 400, 160, &appctx.viewer1));
+  PetscCall(PetscViewerDrawGetDraw(appctx.viewer1, 0, &draw));
   PetscCall(PetscDrawSetDoubleBuffer(draw));
-  PetscCall(PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",80,0,400,160,&appctx.viewer2));
-  PetscCall(PetscViewerDrawGetDraw(appctx.viewer2,0,&draw));
+  PetscCall(PetscViewerDrawOpen(PETSC_COMM_WORLD, 0, "", 80, 0, 400, 160, &appctx.viewer2));
+  PetscCall(PetscViewerDrawGetDraw(appctx.viewer2, 0, &draw));
   PetscCall(PetscDrawSetDoubleBuffer(draw));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  PetscCall(TSCreate(PETSC_COMM_WORLD,&ts));
+  PetscCall(TSCreate(PETSC_COMM_WORLD, &ts));
 
-  flg  = PETSC_FALSE;
-  PetscCall(PetscOptionsGetBool(NULL,NULL,"-nonlinear",&flg,NULL));
-  PetscCall(TSSetProblemType(ts,flg ? TS_NONLINEAR : TS_LINEAR));
+  flg = PETSC_FALSE;
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-nonlinear", &flg, NULL));
+  PetscCall(TSSetProblemType(ts, flg ? TS_NONLINEAR : TS_LINEAR));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set optional user-defined monitoring routine
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscCall(TSMonitorSet(ts,Monitor,&appctx,NULL));
+  PetscCall(TSMonitorSet(ts, Monitor, &appctx, NULL));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
      Create matrix data structure; set matrix evaluation routine.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
-  PetscCall(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m,m));
+  PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
+  PetscCall(MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, m, m));
   PetscCall(MatSetFromOptions(A));
   PetscCall(MatSetUp(A));
 
-  flg  = PETSC_FALSE;
-  PetscCall(PetscOptionsGetBool(NULL,NULL,"-time_dependent_rhs",&flg,NULL));
+  flg = PETSC_FALSE;
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-time_dependent_rhs", &flg, NULL));
   if (flg) {
     /*
        For linear problems with a time-dependent f(u,t) in the equation
        u_t = f(u,t), the user provides the discretized right-hand-side
        as a time-dependent matrix.
     */
-    PetscCall(TSSetRHSFunction(ts,NULL,TSComputeRHSFunctionLinear,&appctx));
-    PetscCall(TSSetRHSJacobian(ts,A,A,RHSMatrixHeat,&appctx));
+    PetscCall(TSSetRHSFunction(ts, NULL, TSComputeRHSFunctionLinear, &appctx));
+    PetscCall(TSSetRHSJacobian(ts, A, A, RHSMatrixHeat, &appctx));
   } else {
     /*
        For linear problems with a time-independent f(u) in the equation
@@ -195,25 +194,25 @@ int main(int argc,char **argv)
        as a matrix only once, and then sets a null matrix evaluation
        routine.
     */
-    PetscCall(RHSMatrixHeat(ts,0.0,u,A,A,&appctx));
-    PetscCall(TSSetRHSFunction(ts,NULL,TSComputeRHSFunctionLinear,&appctx));
-    PetscCall(TSSetRHSJacobian(ts,A,A,TSComputeRHSJacobianConstant,&appctx));
+    PetscCall(RHSMatrixHeat(ts, 0.0, u, A, A, &appctx));
+    PetscCall(TSSetRHSFunction(ts, NULL, TSComputeRHSFunctionLinear, &appctx));
+    PetscCall(TSSetRHSJacobian(ts, A, A, TSComputeRHSJacobianConstant, &appctx));
   }
 
   if (tsproblem == TS_NONLINEAR) {
     SNES snes;
-    PetscCall(TSSetRHSFunction(ts,NULL,RHSFunctionHeat,&appctx));
-    PetscCall(TSGetSNES(ts,&snes));
-    PetscCall(SNESSetJacobian(snes,NULL,NULL,SNESComputeJacobianDefault,NULL));
+    PetscCall(TSSetRHSFunction(ts, NULL, RHSFunctionHeat, &appctx));
+    PetscCall(TSGetSNES(ts, &snes));
+    PetscCall(SNESSetJacobian(snes, NULL, NULL, SNESComputeJacobianDefault, NULL));
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set solution vector and initial timestep
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  dt   = appctx.h*appctx.h/2.0;
-  PetscCall(TSSetTimeStep(ts,dt));
-  PetscCall(TSSetSolution(ts,u));
+  dt = appctx.h * appctx.h / 2.0;
+  PetscCall(TSSetTimeStep(ts, dt));
+  PetscCall(TSSetSolution(ts, u));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize timestepping solver:
@@ -225,9 +224,9 @@ int main(int argc,char **argv)
      to override the defaults set by TSSetMaxSteps()/TSSetMaxTime().
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  PetscCall(TSSetMaxSteps(ts,time_steps_max));
-  PetscCall(TSSetMaxTime(ts,time_total_max));
-  PetscCall(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER));
+  PetscCall(TSSetMaxSteps(ts, time_steps_max));
+  PetscCall(TSSetMaxTime(ts, time_total_max));
+  PetscCall(TSSetExactFinalTime(ts, TS_EXACTFINALTIME_STEPOVER));
   PetscCall(TSSetFromOptions(ts));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -237,20 +236,20 @@ int main(int argc,char **argv)
   /*
      Evaluate initial conditions
   */
-  PetscCall(InitialConditions(u,&appctx));
+  PetscCall(InitialConditions(u, &appctx));
 
   /*
      Run the timestepping solver
   */
-  PetscCall(TSSolve(ts,u));
-  PetscCall(TSGetSolveTime(ts,&ftime));
-  PetscCall(TSGetStepNumber(ts,&steps));
+  PetscCall(TSSolve(ts, u));
+  PetscCall(TSGetSolveTime(ts, &ftime));
+  PetscCall(TSGetStepNumber(ts, &steps));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      View timestepping solver info
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Total timesteps %" PetscInt_FMT ", Final time %g\n",steps,(double)ftime));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Avg. error (2 norm) = %g Avg. error (max norm) = %g\n",(double)(appctx.norm_2/steps),(double)(appctx.norm_max/steps)));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Total timesteps %" PetscInt_FMT ", Final time %g\n", steps, (double)ftime));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Avg. error (2 norm) = %g Avg. error (max norm) = %g\n", (double)(appctx.norm_2 / steps), (double)(appctx.norm_max / steps)));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
@@ -287,16 +286,15 @@ int main(int argc,char **argv)
    Output Parameter:
    u - vector with solution at initial time (global)
 */
-PetscErrorCode InitialConditions(Vec u,AppCtx *appctx)
-{
-  PetscScalar    *u_localptr,h = appctx->h;
-  PetscInt       i,mybase,myend;
+PetscErrorCode InitialConditions(Vec u, AppCtx *appctx) {
+  PetscScalar *u_localptr, h = appctx->h;
+  PetscInt     i, mybase, myend;
 
   /*
      Determine starting point of each processor's range of
      grid values.
   */
-  PetscCall(VecGetOwnershipRange(u,&mybase,&myend));
+  PetscCall(VecGetOwnershipRange(u, &mybase, &myend));
 
   /*
     Get a pointer to vector data.
@@ -307,26 +305,26 @@ PetscErrorCode InitialConditions(Vec u,AppCtx *appctx)
     - Note that the Fortran interface to VecGetArray() differs from the
       C version.  See the users manual for details.
   */
-  PetscCall(VecGetArray(u,&u_localptr));
+  PetscCall(VecGetArray(u, &u_localptr));
 
   /*
      We initialize the solution array by simply writing the solution
      directly into the array locations.  Alternatively, we could use
      VecSetValues() or VecSetValuesLocal().
   */
-  for (i=mybase; i<myend; i++) u_localptr[i-mybase] = PetscSinScalar(PETSC_PI*i*6.*h) + 3.*PetscSinScalar(PETSC_PI*i*2.*h);
+  for (i = mybase; i < myend; i++) u_localptr[i - mybase] = PetscSinScalar(PETSC_PI * i * 6. * h) + 3. * PetscSinScalar(PETSC_PI * i * 2. * h);
 
   /*
      Restore vector
   */
-  PetscCall(VecRestoreArray(u,&u_localptr));
+  PetscCall(VecRestoreArray(u, &u_localptr));
 
   /*
      Print debugging information if desired
   */
   if (appctx->debug) {
-    PetscCall(PetscPrintf(appctx->comm,"initial guess vector\n"));
-    PetscCall(VecView(u,PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(PetscPrintf(appctx->comm, "initial guess vector\n"));
+    PetscCall(VecView(u, PETSC_VIEWER_STDOUT_WORLD));
   }
 
   return 0;
@@ -343,34 +341,35 @@ PetscErrorCode InitialConditions(Vec u,AppCtx *appctx)
    Output Parameter:
    solution - vector with the newly computed exact solution
 */
-PetscErrorCode ExactSolution(PetscReal t,Vec solution,AppCtx *appctx)
-{
-  PetscScalar    *s_localptr,h = appctx->h,ex1,ex2,sc1,sc2;
-  PetscInt       i,mybase,myend;
+PetscErrorCode ExactSolution(PetscReal t, Vec solution, AppCtx *appctx) {
+  PetscScalar *s_localptr, h = appctx->h, ex1, ex2, sc1, sc2;
+  PetscInt     i, mybase, myend;
 
   /*
      Determine starting and ending points of each processor's
      range of grid values
   */
-  PetscCall(VecGetOwnershipRange(solution,&mybase,&myend));
+  PetscCall(VecGetOwnershipRange(solution, &mybase, &myend));
 
   /*
      Get a pointer to vector data.
   */
-  PetscCall(VecGetArray(solution,&s_localptr));
+  PetscCall(VecGetArray(solution, &s_localptr));
 
   /*
      Simply write the solution directly into the array locations.
      Alternatively, we culd use VecSetValues() or VecSetValuesLocal().
   */
-  ex1 = PetscExpReal(-36.*PETSC_PI*PETSC_PI*t); ex2 = PetscExpReal(-4.*PETSC_PI*PETSC_PI*t);
-  sc1 = PETSC_PI*6.*h;                 sc2 = PETSC_PI*2.*h;
-  for (i=mybase; i<myend; i++) s_localptr[i-mybase] = PetscSinScalar(sc1*(PetscReal)i)*ex1 + 3.*PetscSinScalar(sc2*(PetscReal)i)*ex2;
+  ex1 = PetscExpReal(-36. * PETSC_PI * PETSC_PI * t);
+  ex2 = PetscExpReal(-4. * PETSC_PI * PETSC_PI * t);
+  sc1 = PETSC_PI * 6. * h;
+  sc2 = PETSC_PI * 2. * h;
+  for (i = mybase; i < myend; i++) s_localptr[i - mybase] = PetscSinScalar(sc1 * (PetscReal)i) * ex1 + 3. * PetscSinScalar(sc2 * (PetscReal)i) * ex2;
 
   /*
      Restore vector
   */
-  PetscCall(VecRestoreArray(solution,&s_localptr));
+  PetscCall(VecRestoreArray(solution, &s_localptr));
   return 0;
 }
 /* --------------------------------------------------------------------- */
@@ -390,60 +389,59 @@ PetscErrorCode ExactSolution(PetscReal t,Vec solution,AppCtx *appctx)
             information about the problem size, workspace and the exact
             solution.
 */
-PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec u,void *ctx)
-{
-  AppCtx         *appctx = (AppCtx*) ctx;   /* user-defined application context */
-  PetscReal      norm_2,norm_max;
+PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal time, Vec u, void *ctx) {
+  AppCtx   *appctx = (AppCtx *)ctx; /* user-defined application context */
+  PetscReal norm_2, norm_max;
 
   /*
      View a graph of the current iterate
   */
-  PetscCall(VecView(u,appctx->viewer2));
+  PetscCall(VecView(u, appctx->viewer2));
 
   /*
      Compute the exact solution
   */
-  PetscCall(ExactSolution(time,appctx->solution,appctx));
+  PetscCall(ExactSolution(time, appctx->solution, appctx));
 
   /*
      Print debugging information if desired
   */
   if (appctx->debug) {
-    PetscCall(PetscPrintf(appctx->comm,"Computed solution vector\n"));
-    PetscCall(VecView(u,PETSC_VIEWER_STDOUT_WORLD));
-    PetscCall(PetscPrintf(appctx->comm,"Exact solution vector\n"));
-    PetscCall(VecView(appctx->solution,PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(PetscPrintf(appctx->comm, "Computed solution vector\n"));
+    PetscCall(VecView(u, PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(PetscPrintf(appctx->comm, "Exact solution vector\n"));
+    PetscCall(VecView(appctx->solution, PETSC_VIEWER_STDOUT_WORLD));
   }
 
   /*
      Compute the 2-norm and max-norm of the error
   */
-  PetscCall(VecAXPY(appctx->solution,-1.0,u));
-  PetscCall(VecNorm(appctx->solution,NORM_2,&norm_2));
-  norm_2 = PetscSqrtReal(appctx->h)*norm_2;
-  PetscCall(VecNorm(appctx->solution,NORM_MAX,&norm_max));
-  if (norm_2   < 1e-14) norm_2   = 0;
+  PetscCall(VecAXPY(appctx->solution, -1.0, u));
+  PetscCall(VecNorm(appctx->solution, NORM_2, &norm_2));
+  norm_2 = PetscSqrtReal(appctx->h) * norm_2;
+  PetscCall(VecNorm(appctx->solution, NORM_MAX, &norm_max));
+  if (norm_2 < 1e-14) norm_2 = 0;
   if (norm_max < 1e-14) norm_max = 0;
 
   /*
      PetscPrintf() causes only the first processor in this
      communicator to print the timestep information.
   */
-  PetscCall(PetscPrintf(appctx->comm,"Timestep %" PetscInt_FMT ": time = %g 2-norm error = %g max norm error = %g\n",step,(double)time,(double)norm_2,(double)norm_max));
-  appctx->norm_2   += norm_2;
+  PetscCall(PetscPrintf(appctx->comm, "Timestep %" PetscInt_FMT ": time = %g 2-norm error = %g max norm error = %g\n", step, (double)time, (double)norm_2, (double)norm_max));
+  appctx->norm_2 += norm_2;
   appctx->norm_max += norm_max;
 
   /*
      View a graph of the error
   */
-  PetscCall(VecView(appctx->solution,appctx->viewer1));
+  PetscCall(VecView(appctx->solution, appctx->viewer1));
 
   /*
      Print debugging information if desired
   */
   if (appctx->debug) {
-    PetscCall(PetscPrintf(appctx->comm,"Error vector\n"));
-    PetscCall(VecView(appctx->solution,PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(PetscPrintf(appctx->comm, "Error vector\n"));
+    PetscCall(VecView(appctx->solution, PETSC_VIEWER_STDOUT_WORLD));
   }
 
   return 0;
@@ -478,43 +476,46 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec u,void *ctx)
    - Note that MatSetValues() uses 0-based row and column numbers
      in Fortran as well as in C.
 */
-PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Vec X,Mat AA,Mat BB,void *ctx)
-{
-  Mat            A       = AA;              /* Jacobian matrix */
-  AppCtx         *appctx = (AppCtx*)ctx;     /* user-defined application context */
-  PetscInt       i,mstart,mend,idx[3];
-  PetscScalar    v[3],stwo = -2./(appctx->h*appctx->h),sone = -.5*stwo;
+PetscErrorCode RHSMatrixHeat(TS ts, PetscReal t, Vec X, Mat AA, Mat BB, void *ctx) {
+  Mat         A      = AA;            /* Jacobian matrix */
+  AppCtx     *appctx = (AppCtx *)ctx; /* user-defined application context */
+  PetscInt    i, mstart, mend, idx[3];
+  PetscScalar v[3], stwo = -2. / (appctx->h * appctx->h), sone = -.5 * stwo;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Compute entries for the locally owned part of the matrix
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  PetscCall(MatGetOwnershipRange(A,&mstart,&mend));
+  PetscCall(MatGetOwnershipRange(A, &mstart, &mend));
 
   /*
      Set matrix rows corresponding to boundary data
   */
 
-  if (mstart == 0) {  /* first processor only */
+  if (mstart == 0) { /* first processor only */
     v[0] = 1.0;
-    PetscCall(MatSetValues(A,1,&mstart,1,&mstart,v,INSERT_VALUES));
+    PetscCall(MatSetValues(A, 1, &mstart, 1, &mstart, v, INSERT_VALUES));
     mstart++;
   }
 
   if (mend == appctx->m) { /* last processor only */
     mend--;
     v[0] = 1.0;
-    PetscCall(MatSetValues(A,1,&mend,1,&mend,v,INSERT_VALUES));
+    PetscCall(MatSetValues(A, 1, &mend, 1, &mend, v, INSERT_VALUES));
   }
 
   /*
      Set matrix rows corresponding to interior data.  We construct the
      matrix one row at a time.
   */
-  v[0] = sone; v[1] = stwo; v[2] = sone;
-  for (i=mstart; i<mend; i++) {
-    idx[0] = i-1; idx[1] = i; idx[2] = i+1;
-    PetscCall(MatSetValues(A,1,&i,3,idx,v,INSERT_VALUES));
+  v[0] = sone;
+  v[1] = stwo;
+  v[2] = sone;
+  for (i = mstart; i < mend; i++) {
+    idx[0] = i - 1;
+    idx[1] = i;
+    idx[2] = i + 1;
+    PetscCall(MatSetValues(A, 1, &i, 3, idx, v, INSERT_VALUES));
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -526,27 +527,26 @@ PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Vec X,Mat AA,Mat BB,void *ctx)
      Computations can be done while messages are in transition
      by placing code between these two statements.
   */
-  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
 
   /*
      Set and option to indicate that we will never add a new nonzero location
      to the matrix. If we do, it will generate an error.
   */
-  PetscCall(MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE));
+  PetscCall(MatSetOption(A, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE));
 
   return 0;
 }
 
-PetscErrorCode RHSFunctionHeat(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ctx)
-{
-  Mat            A;
+PetscErrorCode RHSFunctionHeat(TS ts, PetscReal t, Vec globalin, Vec globalout, void *ctx) {
+  Mat A;
 
   PetscFunctionBeginUser;
-  PetscCall(TSGetRHSJacobian(ts,&A,NULL,NULL,&ctx));
-  PetscCall(RHSMatrixHeat(ts,t,globalin,A,NULL,ctx));
+  PetscCall(TSGetRHSJacobian(ts, &A, NULL, NULL, &ctx));
+  PetscCall(RHSMatrixHeat(ts, t, globalin, A, NULL, ctx));
   /* PetscCall(MatView(A,PETSC_VIEWER_STDOUT_WORLD)); */
-  PetscCall(MatMult(A,globalin,globalout));
+  PetscCall(MatMult(A, globalin, globalout));
   PetscFunctionReturn(0);
 }
 

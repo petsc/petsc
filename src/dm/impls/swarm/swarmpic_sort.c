@@ -4,10 +4,9 @@
 #include <petscdmswarm.h>
 #include <petsc/private/dmswarmimpl.h>
 
-int sort_CompareSwarmPoint(const void *dataA,const void *dataB)
-{
-  SwarmPoint *pointA = (SwarmPoint*)dataA;
-  SwarmPoint *pointB = (SwarmPoint*)dataB;
+int sort_CompareSwarmPoint(const void *dataA, const void *dataB) {
+  SwarmPoint *pointA = (SwarmPoint *)dataA;
+  SwarmPoint *pointB = (SwarmPoint *)dataB;
 
   if (pointA->cell_index < pointB->cell_index) {
     return -1;
@@ -18,84 +17,78 @@ int sort_CompareSwarmPoint(const void *dataA,const void *dataB)
   }
 }
 
-PetscErrorCode DMSwarmSortApplyCellIndexSort(DMSwarmSort ctx)
-{
+PetscErrorCode DMSwarmSortApplyCellIndexSort(DMSwarmSort ctx) {
   PetscFunctionBegin;
-  qsort(ctx->list,ctx->npoints,sizeof(SwarmPoint),sort_CompareSwarmPoint);
+  qsort(ctx->list, ctx->npoints, sizeof(SwarmPoint), sort_CompareSwarmPoint);
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMSwarmSortCreate(DMSwarmSort *_ctx)
-{
-  DMSwarmSort    ctx;
+PetscErrorCode DMSwarmSortCreate(DMSwarmSort *_ctx) {
+  DMSwarmSort ctx;
 
   PetscFunctionBegin;
   PetscCall(PetscNew(&ctx));
   ctx->isvalid = PETSC_FALSE;
   ctx->ncells  = 0;
   ctx->npoints = 0;
-  PetscCall(PetscMalloc1(1,&ctx->pcell_offsets));
-  PetscCall(PetscMalloc1(1,&ctx->list));
+  PetscCall(PetscMalloc1(1, &ctx->pcell_offsets));
+  PetscCall(PetscMalloc1(1, &ctx->list));
   *_ctx = ctx;
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMSwarmSortSetup(DMSwarmSort ctx,DM dm,PetscInt ncells)
-{
-  PetscInt        *swarm_cellid;
-  PetscInt        p,npoints;
-  PetscInt        tmp,c,count;
+PetscErrorCode DMSwarmSortSetup(DMSwarmSort ctx, DM dm, PetscInt ncells) {
+  PetscInt *swarm_cellid;
+  PetscInt  p, npoints;
+  PetscInt  tmp, c, count;
 
   PetscFunctionBegin;
   if (!ctx) PetscFunctionReturn(0);
   if (ctx->isvalid) PetscFunctionReturn(0);
 
-  PetscCall(PetscLogEventBegin(DMSWARM_Sort,0,0,0,0));
+  PetscCall(PetscLogEventBegin(DMSWARM_Sort, 0, 0, 0, 0));
   /* check the number of cells */
   if (ncells != ctx->ncells) {
-    PetscCall(PetscRealloc(sizeof(PetscInt)*(ncells + 1),&ctx->pcell_offsets));
+    PetscCall(PetscRealloc(sizeof(PetscInt) * (ncells + 1), &ctx->pcell_offsets));
     ctx->ncells = ncells;
   }
-  PetscCall(PetscArrayzero(ctx->pcell_offsets,ctx->ncells + 1));
+  PetscCall(PetscArrayzero(ctx->pcell_offsets, ctx->ncells + 1));
 
   /* get the number of points */
-  PetscCall(DMSwarmGetLocalSize(dm,&npoints));
+  PetscCall(DMSwarmGetLocalSize(dm, &npoints));
   if (npoints != ctx->npoints) {
-    PetscCall(PetscRealloc(sizeof(SwarmPoint)*npoints,&ctx->list));
+    PetscCall(PetscRealloc(sizeof(SwarmPoint) * npoints, &ctx->list));
     ctx->npoints = npoints;
   }
-  PetscCall(PetscArrayzero(ctx->list,npoints));
+  PetscCall(PetscArrayzero(ctx->list, npoints));
 
-  PetscCall(DMSwarmGetField(dm,DMSwarmPICField_cellid,NULL,NULL,(void**)&swarm_cellid));
-  for (p=0; p<ctx->npoints; p++) {
+  PetscCall(DMSwarmGetField(dm, DMSwarmPICField_cellid, NULL, NULL, (void **)&swarm_cellid));
+  for (p = 0; p < ctx->npoints; p++) {
     ctx->list[p].point_index = p;
     ctx->list[p].cell_index  = swarm_cellid[p];
   }
-  PetscCall(DMSwarmRestoreField(dm,DMSwarmPICField_cellid,NULL,NULL,(void**)&swarm_cellid));
+  PetscCall(DMSwarmRestoreField(dm, DMSwarmPICField_cellid, NULL, NULL, (void **)&swarm_cellid));
   PetscCall(DMSwarmSortApplyCellIndexSort(ctx));
 
   /* sum points per cell */
-  for (p=0; p<ctx->npoints; p++) {
-    ctx->pcell_offsets[ ctx->list[p].cell_index ]++;
-  }
+  for (p = 0; p < ctx->npoints; p++) { ctx->pcell_offsets[ctx->list[p].cell_index]++; }
 
   /* create offset list */
   count = 0;
-  for (c=0; c<ctx->ncells; c++) {
-    tmp = ctx->pcell_offsets[c];
+  for (c = 0; c < ctx->ncells; c++) {
+    tmp                   = ctx->pcell_offsets[c];
     ctx->pcell_offsets[c] = count;
-    count = count + tmp;
+    count                 = count + tmp;
   }
   ctx->pcell_offsets[c] = count;
 
   ctx->isvalid = PETSC_TRUE;
-  PetscCall(PetscLogEventEnd(DMSWARM_Sort,0,0,0,0));
+  PetscCall(PetscLogEventEnd(DMSWARM_Sort, 0, 0, 0, 0));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMSwarmSortDestroy(DMSwarmSort *_ctx)
-{
-  DMSwarmSort     ctx;
+PetscErrorCode DMSwarmSortDestroy(DMSwarmSort *_ctx) {
+  DMSwarmSort ctx;
 
   PetscFunctionBegin;
   if (!_ctx) PetscFunctionReturn(0);
@@ -125,20 +118,19 @@ PetscErrorCode DMSwarmSortDestroy(DMSwarmSort *_ctx)
 
 .seealso: `DMSwarmSetType()`, `DMSwarmSortGetAccess()`, `DMSwarmSortGetPointsPerCell()`
 @*/
-PetscErrorCode DMSwarmSortGetNumberOfPointsPerCell(DM dm,PetscInt e,PetscInt *npoints)
-{
-  DM_Swarm     *swarm = (DM_Swarm*)dm->data;
-  PetscInt     points_per_cell;
-  DMSwarmSort  ctx;
+PetscErrorCode DMSwarmSortGetNumberOfPointsPerCell(DM dm, PetscInt e, PetscInt *npoints) {
+  DM_Swarm   *swarm = (DM_Swarm *)dm->data;
+  PetscInt    points_per_cell;
+  DMSwarmSort ctx;
 
   PetscFunctionBegin;
   ctx = swarm->sort_context;
-  PetscCheck(ctx,PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"The DMSwarmSort context has not been created. Must call DMSwarmSortGetAccess() first");
-  PetscCheck(ctx->isvalid,PETSC_COMM_SELF,PETSC_ERR_USER,"SwarmPointSort container is not valid. Must call DMSwarmSortGetAccess() first");
-  PetscCheck(e < ctx->ncells,PETSC_COMM_SELF,PETSC_ERR_USER,"Cell index (%" PetscInt_FMT ") is greater than max number of local cells (%" PetscInt_FMT ")",e,ctx->ncells);
-  PetscCheck(e >= 0,PETSC_COMM_SELF,PETSC_ERR_USER,"Cell index (%" PetscInt_FMT ") cannot be negative",e);
-  points_per_cell = ctx->pcell_offsets[e+1] - ctx->pcell_offsets[e];
-  *npoints = points_per_cell;
+  PetscCheck(ctx, PetscObjectComm((PetscObject)dm), PETSC_ERR_USER, "The DMSwarmSort context has not been created. Must call DMSwarmSortGetAccess() first");
+  PetscCheck(ctx->isvalid, PETSC_COMM_SELF, PETSC_ERR_USER, "SwarmPointSort container is not valid. Must call DMSwarmSortGetAccess() first");
+  PetscCheck(e < ctx->ncells, PETSC_COMM_SELF, PETSC_ERR_USER, "Cell index (%" PetscInt_FMT ") is greater than max number of local cells (%" PetscInt_FMT ")", e, ctx->ncells);
+  PetscCheck(e >= 0, PETSC_COMM_SELF, PETSC_ERR_USER, "Cell index (%" PetscInt_FMT ") cannot be negative", e);
+  points_per_cell = ctx->pcell_offsets[e + 1] - ctx->pcell_offsets[e];
+  *npoints        = points_per_cell;
   PetscFunctionReturn(0);
 }
 
@@ -162,23 +154,22 @@ PetscErrorCode DMSwarmSortGetNumberOfPointsPerCell(DM dm,PetscInt e,PetscInt *np
 
 .seealso: `DMSwarmSetType()`, `DMSwarmSortGetAccess()`, `DMSwarmSortGetNumberOfPointsPerCell()`
 @*/
-PETSC_EXTERN PetscErrorCode DMSwarmSortGetPointsPerCell(DM dm,PetscInt e,PetscInt *npoints,PetscInt **pidlist)
-{
-  DM_Swarm       *swarm = (DM_Swarm*)dm->data;
-  PetscInt       points_per_cell;
-  PetscInt       p,pid,pid_unsorted;
-  PetscInt       *plist;
-  DMSwarmSort    ctx;
+PETSC_EXTERN PetscErrorCode DMSwarmSortGetPointsPerCell(DM dm, PetscInt e, PetscInt *npoints, PetscInt **pidlist) {
+  DM_Swarm   *swarm = (DM_Swarm *)dm->data;
+  PetscInt    points_per_cell;
+  PetscInt    p, pid, pid_unsorted;
+  PetscInt   *plist;
+  DMSwarmSort ctx;
 
   PetscFunctionBegin;
   ctx = swarm->sort_context;
-  PetscCheck(ctx,PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"The DMSwarmSort context has not been created. Must call DMSwarmSortGetAccess() first");
-  PetscCall(DMSwarmSortGetNumberOfPointsPerCell(dm,e,&points_per_cell));
-  PetscCall(PetscMalloc1(points_per_cell,&plist));
-  for (p=0; p<points_per_cell; p++) {
-    pid = ctx->pcell_offsets[e] + p;
+  PetscCheck(ctx, PetscObjectComm((PetscObject)dm), PETSC_ERR_USER, "The DMSwarmSort context has not been created. Must call DMSwarmSortGetAccess() first");
+  PetscCall(DMSwarmSortGetNumberOfPointsPerCell(dm, e, &points_per_cell));
+  PetscCall(PetscMalloc1(points_per_cell, &plist));
+  for (p = 0; p < points_per_cell; p++) {
+    pid          = ctx->pcell_offsets[e] + p;
     pid_unsorted = ctx->list[pid].point_index;
-    plist[p] = pid_unsorted;
+    plist[p]     = pid_unsorted;
   }
   *npoints = points_per_cell;
   *pidlist = plist;
@@ -225,47 +216,45 @@ PETSC_EXTERN PetscErrorCode DMSwarmSortGetPointsPerCell(DM dm,PetscInt e,PetscIn
 
 .seealso: `DMSwarmSetType()`, `DMSwarmSortRestoreAccess()`
 @*/
-PETSC_EXTERN PetscErrorCode DMSwarmSortGetAccess(DM dm)
-{
-  DM_Swarm       *swarm = (DM_Swarm*)dm->data;
-  PetscInt       ncells;
-  DM             celldm;
-  PetscBool      isda,isplex,isshell;
+PETSC_EXTERN PetscErrorCode DMSwarmSortGetAccess(DM dm) {
+  DM_Swarm *swarm = (DM_Swarm *)dm->data;
+  PetscInt  ncells;
+  DM        celldm;
+  PetscBool isda, isplex, isshell;
 
   PetscFunctionBegin;
-  if (!swarm->sort_context) {
-    PetscCall(DMSwarmSortCreate(&swarm->sort_context));
-  }
+  if (!swarm->sort_context) { PetscCall(DMSwarmSortCreate(&swarm->sort_context)); }
 
   /* get the number of cells */
-  PetscCall(DMSwarmGetCellDM(dm,&celldm));
-  PetscCall(PetscObjectTypeCompare((PetscObject)celldm,DMDA,&isda));
-  PetscCall(PetscObjectTypeCompare((PetscObject)celldm,DMPLEX,&isplex));
-  PetscCall(PetscObjectTypeCompare((PetscObject)celldm,DMSHELL,&isshell));
+  PetscCall(DMSwarmGetCellDM(dm, &celldm));
+  PetscCall(PetscObjectTypeCompare((PetscObject)celldm, DMDA, &isda));
+  PetscCall(PetscObjectTypeCompare((PetscObject)celldm, DMPLEX, &isplex));
+  PetscCall(PetscObjectTypeCompare((PetscObject)celldm, DMSHELL, &isshell));
   ncells = 0;
   if (isda) {
-    PetscInt       nel,npe;
+    PetscInt        nel, npe;
     const PetscInt *element;
 
-    PetscCall(DMDAGetElements(celldm,&nel,&npe,&element));
+    PetscCall(DMDAGetElements(celldm, &nel, &npe, &element));
     ncells = nel;
-    PetscCall(DMDARestoreElements(celldm,&nel,&npe,&element));
+    PetscCall(DMDARestoreElements(celldm, &nel, &npe, &element));
   } else if (isplex) {
-    PetscInt ps,pe;
+    PetscInt ps, pe;
 
-    PetscCall(DMPlexGetHeightStratum(celldm,0,&ps,&pe));
+    PetscCall(DMPlexGetHeightStratum(celldm, 0, &ps, &pe));
     ncells = pe - ps;
   } else if (isshell) {
-    PetscErrorCode (*method_DMShellGetNumberOfCells)(DM,PetscInt*);
+    PetscErrorCode (*method_DMShellGetNumberOfCells)(DM, PetscInt *);
 
-    PetscCall(PetscObjectQueryFunction((PetscObject)celldm,"DMGetNumberOfCells_C",&method_DMShellGetNumberOfCells));
+    PetscCall(PetscObjectQueryFunction((PetscObject)celldm, "DMGetNumberOfCells_C", &method_DMShellGetNumberOfCells));
     if (method_DMShellGetNumberOfCells) {
-      PetscCall(method_DMShellGetNumberOfCells(celldm,&ncells));
-    } else SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Cannot determine the number of cells for the DMSHELL object. User must provide a method via PetscObjectComposeFunction( (PetscObject)shelldm, \"DMGetNumberOfCells_C\", your_function_to_compute_number_of_cells);");
-  } else SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Cannot determine the number of cells for a DM not of type DA, PLEX or SHELL");
+      PetscCall(method_DMShellGetNumberOfCells(celldm, &ncells));
+    } else
+      SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Cannot determine the number of cells for the DMSHELL object. User must provide a method via PetscObjectComposeFunction( (PetscObject)shelldm, \"DMGetNumberOfCells_C\", your_function_to_compute_number_of_cells);");
+  } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Cannot determine the number of cells for a DM not of type DA, PLEX or SHELL");
 
   /* setup */
-  PetscCall(DMSwarmSortSetup(swarm->sort_context,dm,ncells));
+  PetscCall(DMSwarmSortSetup(swarm->sort_context, dm, ncells));
   PetscFunctionReturn(0);
 }
 
@@ -284,13 +273,12 @@ PETSC_EXTERN PetscErrorCode DMSwarmSortGetAccess(DM dm)
 
 .seealso: `DMSwarmSetType()`, `DMSwarmSortGetAccess()`
 @*/
-PETSC_EXTERN PetscErrorCode DMSwarmSortRestoreAccess(DM dm)
-{
-  DM_Swarm *swarm = (DM_Swarm*)dm->data;
+PETSC_EXTERN PetscErrorCode DMSwarmSortRestoreAccess(DM dm) {
+  DM_Swarm *swarm = (DM_Swarm *)dm->data;
 
   PetscFunctionBegin;
   if (!swarm->sort_context) PetscFunctionReturn(0);
-  PetscCheck(swarm->sort_context->isvalid,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"You must call DMSwarmSortGetAccess() before calling DMSwarmSortRestoreAccess()");
+  PetscCheck(swarm->sort_context->isvalid, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "You must call DMSwarmSortGetAccess() before calling DMSwarmSortRestoreAccess()");
   swarm->sort_context->isvalid = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -310,9 +298,8 @@ PETSC_EXTERN PetscErrorCode DMSwarmSortRestoreAccess(DM dm)
 
 .seealso: `DMSwarmSetType()`, `DMSwarmSortGetAccess()`
 @*/
-PETSC_EXTERN PetscErrorCode DMSwarmSortGetIsValid(DM dm,PetscBool *isvalid)
-{
-  DM_Swarm *swarm = (DM_Swarm*)dm->data;
+PETSC_EXTERN PetscErrorCode DMSwarmSortGetIsValid(DM dm, PetscBool *isvalid) {
+  DM_Swarm *swarm = (DM_Swarm *)dm->data;
 
   PetscFunctionBegin;
   if (!swarm->sort_context) {
@@ -339,17 +326,16 @@ PETSC_EXTERN PetscErrorCode DMSwarmSortGetIsValid(DM dm,PetscBool *isvalid)
 
 .seealso: `DMSwarmSetType()`, `DMSwarmSortGetAccess()`
 @*/
-PETSC_EXTERN PetscErrorCode DMSwarmSortGetSizes(DM dm,PetscInt *ncells,PetscInt *npoints)
-{
-  DM_Swarm *swarm = (DM_Swarm*)dm->data;
+PETSC_EXTERN PetscErrorCode DMSwarmSortGetSizes(DM dm, PetscInt *ncells, PetscInt *npoints) {
+  DM_Swarm *swarm = (DM_Swarm *)dm->data;
 
   PetscFunctionBegin;
   if (!swarm->sort_context) {
-    if (ncells)  *ncells  = 0;
+    if (ncells) *ncells = 0;
     if (npoints) *npoints = 0;
     PetscFunctionReturn(0);
   }
-  if (ncells)  *ncells = swarm->sort_context->ncells;
+  if (ncells) *ncells = swarm->sort_context->ncells;
   if (npoints) *npoints = swarm->sort_context->npoints;
   PetscFunctionReturn(0);
 }

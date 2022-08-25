@@ -3,22 +3,21 @@ const char help[] = "Set up a PetscSF for halo exchange between local vectors";
 #include <petscdmplex.h>
 #include <petscsf.h>
 
-int main(int argc, char **argv)
-{
-  DM             dm;
-  Vec            u;
-  PetscSection   section;
-  PetscInt       dim, numFields, numBC, i;
-  PetscMPIInt    rank;
-  PetscInt       numComp[2];
-  PetscInt       numDof[12];
-  PetscInt      *remoteOffsets;
-  PetscSF        pointSF;
-  PetscSF        sectionSF;
-  PetscScalar   *array;
+int main(int argc, char **argv) {
+  DM           dm;
+  Vec          u;
+  PetscSection section;
+  PetscInt     dim, numFields, numBC, i;
+  PetscMPIInt  rank;
+  PetscInt     numComp[2];
+  PetscInt     numDof[12];
+  PetscInt    *remoteOffsets;
+  PetscSF      pointSF;
+  PetscSF      sectionSF;
+  PetscScalar *array;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, NULL,help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   /* Create a mesh */
   PetscCall(DMCreate(PETSC_COMM_WORLD, &dm));
   PetscCall(DMSetType(dm, DMPLEX));
@@ -31,13 +30,13 @@ int main(int argc, char **argv)
   numFields  = 2;
   numComp[0] = 1;
   numComp[1] = dim;
-  for (i = 0; i < numFields*(dim+1); ++i) numDof[i] = 0;
+  for (i = 0; i < numFields * (dim + 1); ++i) numDof[i] = 0;
   /* Let u be defined on cells */
-  numDof[0*(dim+1)+dim] = 1;
+  numDof[0 * (dim + 1) + dim] = 1;
   /* Let v be defined on vertices */
-  numDof[1*(dim+1)+0]   = dim;
+  numDof[1 * (dim + 1) + 0]   = dim;
   /* No boundary conditions */
-  numBC = 0;
+  numBC                       = 0;
 
   /** Create a PetscSection to handle the layout of the discretized variables */
   PetscCall(DMSetNumFields(dm, numFields));
@@ -63,10 +62,10 @@ int main(int argc, char **argv)
   /** Demo of halo exchange */
   /* Create a Vec with this layout */
   PetscCall(DMCreateLocalVector(dm, &u));
-  PetscCall(PetscObjectSetName((PetscObject) u, "Local vector"));
+  PetscCall(PetscObjectSetName((PetscObject)u, "Local vector"));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
   /* Set all mesh values to the MPI rank */
-  PetscCall(VecSet(u, (PetscScalar) rank));
+  PetscCall(VecSet(u, (PetscScalar)rank));
   /* Get the raw array of values */
   PetscCall(VecGetArrayWrite(u, &array));
   /*** HALO EXCHANGE ***/

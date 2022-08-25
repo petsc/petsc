@@ -12,7 +12,7 @@
     one to reinitialize and set the seed.
  */
 
-#include <petsc/private/randomimpl.h>                              /*I "petscsys.h" I*/
+#include <petsc/private/randomimpl.h> /*I "petscsys.h" I*/
 #include <petscviewer.h>
 
 /* Logging support */
@@ -31,15 +31,15 @@ PetscClassId PETSC_RANDOM_CLASSID;
 
 .seealso: `PetscRandomGetValue()`, `PetscRandomCreate()`, `VecSetRandom()`
 @*/
-PetscErrorCode  PetscRandomDestroy(PetscRandom *r)
-{
+PetscErrorCode PetscRandomDestroy(PetscRandom *r) {
   PetscFunctionBegin;
   if (!*r) PetscFunctionReturn(0);
-  PetscValidHeaderSpecific(*r,PETSC_RANDOM_CLASSID,1);
-  if (--((PetscObject)(*r))->refct > 0) {*r = NULL; PetscFunctionReturn(0);}
-  if ((*r)->ops->destroy) {
-    PetscCall((*(*r)->ops->destroy)(*r));
+  PetscValidHeaderSpecific(*r, PETSC_RANDOM_CLASSID, 1);
+  if (--((PetscObject)(*r))->refct > 0) {
+    *r = NULL;
+    PetscFunctionReturn(0);
   }
+  if ((*r)->ops->destroy) { PetscCall((*(*r)->ops->destroy)(*r)); }
   PetscCall(PetscHeaderDestroy(r));
   PetscFunctionReturn(0);
 }
@@ -59,12 +59,11 @@ PetscErrorCode  PetscRandomDestroy(PetscRandom *r)
 
 .seealso: `PetscRandomCreate()`, `PetscRandomSetSeed()`, `PetscRandomSeed()`
 @*/
-PetscErrorCode  PetscRandomGetSeed(PetscRandom r,unsigned long *seed)
-{
+PetscErrorCode PetscRandomGetSeed(PetscRandom r, unsigned long *seed) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(r,PETSC_RANDOM_CLASSID,1);
+  PetscValidHeaderSpecific(r, PETSC_RANDOM_CLASSID, 1);
   if (seed) {
-    PetscValidPointer(seed,2);
+    PetscValidPointer(seed, 2);
     *seed = r->seed;
   }
   PetscFunctionReturn(0);
@@ -90,12 +89,11 @@ PetscErrorCode  PetscRandomGetSeed(PetscRandom r,unsigned long *seed)
 
 .seealso: `PetscRandomCreate()`, `PetscRandomGetSeed()`, `PetscRandomSeed()`
 @*/
-PetscErrorCode  PetscRandomSetSeed(PetscRandom r,unsigned long seed)
-{
+PetscErrorCode PetscRandomSetSeed(PetscRandom r, unsigned long seed) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(r,PETSC_RANDOM_CLASSID,1);
+  PetscValidHeaderSpecific(r, PETSC_RANDOM_CLASSID, 1);
   r->seed = seed;
-  PetscCall(PetscInfo(NULL,"Setting seed to %d\n",(int)seed));
+  PetscCall(PetscInfo(NULL, "Setting seed to %d\n", (int)seed));
   PetscFunctionReturn(0);
 }
 
@@ -112,11 +110,10 @@ PetscErrorCode  PetscRandomSetSeed(PetscRandom r,unsigned long seed)
 
 .seealso: `PetscRandomSetFromOptions()`, `PetscRandomSetType()`
 */
-static PetscErrorCode PetscRandomSetTypeFromOptions_Private(PetscOptionItems *PetscOptionsObject,PetscRandom rnd)
-{
-  PetscBool      opt;
-  const char     *defaultType;
-  char           typeName[256];
+static PetscErrorCode PetscRandomSetTypeFromOptions_Private(PetscRandom rnd, PetscOptionItems *PetscOptionsObject) {
+  PetscBool   opt;
+  const char *defaultType;
+  char        typeName[256];
 
   PetscFunctionBegin;
   if (((PetscObject)rnd)->type_name) {
@@ -126,7 +123,7 @@ static PetscErrorCode PetscRandomSetTypeFromOptions_Private(PetscOptionItems *Pe
   }
 
   PetscCall(PetscRandomRegisterAll());
-  PetscCall(PetscOptionsFList("-random_type","PetscRandom type","PetscRandomSetType",PetscRandomList,defaultType,typeName,256,&opt));
+  PetscCall(PetscOptionsFList("-random_type", "PetscRandom type", "PetscRandomSetType", PetscRandomList, defaultType, typeName, 256, &opt));
   if (opt) {
     PetscCall(PetscRandomSetType(rnd, typeName));
   } else {
@@ -156,40 +153,39 @@ static PetscErrorCode PetscRandomSetTypeFromOptions_Private(PetscOptionItems *Pe
 
 .seealso: `PetscRandomCreate()`, `PetscRandomSetType()`
 @*/
-PetscErrorCode  PetscRandomSetFromOptions(PetscRandom rnd)
-{
-  PetscBool      set,noimaginary = PETSC_FALSE;
-  PetscInt       seed;
+PetscErrorCode PetscRandomSetFromOptions(PetscRandom rnd) {
+  PetscBool set, noimaginary = PETSC_FALSE;
+  PetscInt  seed;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(rnd,PETSC_RANDOM_CLASSID,1);
+  PetscValidHeaderSpecific(rnd, PETSC_RANDOM_CLASSID, 1);
 
   PetscObjectOptionsBegin((PetscObject)rnd);
 
   /* Handle PetscRandom type options */
-  PetscCall(PetscRandomSetTypeFromOptions_Private(PetscOptionsObject,rnd));
+  PetscCall(PetscRandomSetTypeFromOptions_Private(rnd, PetscOptionsObject));
 
   /* Handle specific random generator's options */
-  if (rnd->ops->setfromoptions) PetscCall((*rnd->ops->setfromoptions)(PetscOptionsObject,rnd));
-  PetscCall(PetscOptionsInt("-random_seed","Seed to use to generate random numbers","PetscRandomSetSeed",0,&seed,&set));
+  PetscTryTypeMethod(rnd, setfromoptions, PetscOptionsObject);
+  PetscCall(PetscOptionsInt("-random_seed", "Seed to use to generate random numbers", "PetscRandomSetSeed", 0, &seed, &set));
   if (set) {
-    PetscCall(PetscRandomSetSeed(rnd,(unsigned long int)seed));
+    PetscCall(PetscRandomSetSeed(rnd, (unsigned long int)seed));
     PetscCall(PetscRandomSeed(rnd));
   }
-  PetscCall(PetscOptionsBool("-random_no_imaginary_part","The imaginary part of the random number will be zero","PetscRandomSetInterval",noimaginary,&noimaginary,&set));
+  PetscCall(PetscOptionsBool("-random_no_imaginary_part", "The imaginary part of the random number will be zero", "PetscRandomSetInterval", noimaginary, &noimaginary, &set));
 #if defined(PETSC_HAVE_COMPLEX)
   if (set) {
     if (noimaginary) {
-      PetscScalar low,high;
-      PetscCall(PetscRandomGetInterval(rnd,&low,&high));
+      PetscScalar low, high;
+      PetscCall(PetscRandomGetInterval(rnd, &low, &high));
       low  = low - PetscImaginaryPart(low);
       high = high - PetscImaginaryPart(high);
-      PetscCall(PetscRandomSetInterval(rnd,low,high));
+      PetscCall(PetscRandomSetInterval(rnd, low, high));
     }
   }
 #endif
   PetscOptionsEnd();
-  PetscCall(PetscRandomViewFromOptions(rnd,NULL, "-random_view"));
+  PetscCall(PetscRandomViewFromOptions(rnd, NULL, "-random_view"));
   PetscFunctionReturn(0);
 }
 
@@ -210,11 +206,10 @@ PetscErrorCode  PetscRandomSetFromOptions(PetscRandom rnd)
    Level: intermediate
 .seealso: `PetscRandom`, `PetscRandomView`, `PetscObjectViewFromOptions()`, `PetscRandomCreate()`
 @*/
-PetscErrorCode  PetscRandomViewFromOptions(PetscRandom A,PetscObject obj,const char name[])
-{
+PetscErrorCode PetscRandomViewFromOptions(PetscRandom A, PetscObject obj, const char name[]) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(A,PETSC_RANDOM_CLASSID,1);
-  PetscCall(PetscObjectViewFromOptions((PetscObject)A,obj,name));
+  PetscValidHeaderSpecific(A, PETSC_RANDOM_CLASSID, 1);
+  PetscCall(PetscObjectViewFromOptions((PetscObject)A, obj, name));
   PetscFunctionReturn(0);
 }
 
@@ -242,46 +237,43 @@ PetscErrorCode  PetscRandomViewFromOptions(PetscRandom A,PetscObject obj,const c
 
 .seealso: `PetscRealView()`, `PetscScalarView()`, `PetscIntView()`
 @*/
-PetscErrorCode  PetscRandomView(PetscRandom rnd,PetscViewer viewer)
-{
-  PetscBool      iascii;
+PetscErrorCode PetscRandomView(PetscRandom rnd, PetscViewer viewer) {
+  PetscBool iascii;
 #if defined(PETSC_HAVE_SAWS)
-  PetscBool      issaws;
+  PetscBool issaws;
 #endif
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(rnd,PETSC_RANDOM_CLASSID,1);
-  PetscValidType(rnd,1);
-  if (!viewer) {
-    PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)rnd),&viewer));
-  }
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
-  PetscCheckSameComm(rnd,1,viewer,2);
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
+  PetscValidHeaderSpecific(rnd, PETSC_RANDOM_CLASSID, 1);
+  PetscValidType(rnd, 1);
+  if (!viewer) { PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)rnd), &viewer)); }
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
+  PetscCheckSameComm(rnd, 1, viewer, 2);
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
 #if defined(PETSC_HAVE_SAWS)
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSAWS,&issaws));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSAWS, &issaws));
 #endif
   if (iascii) {
     PetscMPIInt rank;
-    PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)rnd,viewer));
-    PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)rnd),&rank));
+    PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)rnd, viewer));
+    PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)rnd), &rank));
     PetscCall(PetscViewerASCIIPushSynchronized(viewer));
-    PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Random type %s, seed %lu\n",rank,((PetscObject)rnd)->type_name,rnd->seed));
+    PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] Random type %s, seed %lu\n", rank, ((PetscObject)rnd)->type_name, rnd->seed));
     PetscCall(PetscViewerFlush(viewer));
     PetscCall(PetscViewerASCIIPopSynchronized(viewer));
 #if defined(PETSC_HAVE_SAWS)
   } else if (issaws) {
     PetscMPIInt rank;
-    const char  *name;
+    const char *name;
 
-    PetscCall(PetscObjectGetName((PetscObject)rnd,&name));
-    PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+    PetscCall(PetscObjectGetName((PetscObject)rnd, &name));
+    PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
     if (!((PetscObject)rnd)->amsmem && rank == 0) {
-      char       dir[1024];
+      char dir[1024];
 
-      PetscCall(PetscObjectViewSAWs((PetscObject)rnd,viewer));
-      PetscCall(PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/Low",name));
-      PetscCallSAWs(SAWs_Register,(dir,&rnd->low,1,SAWs_READ,SAWs_DOUBLE));
+      PetscCall(PetscObjectViewSAWs((PetscObject)rnd, viewer));
+      PetscCall(PetscSNPrintf(dir, 1024, "/PETSc/Objects/%s/Low", name));
+      PetscCallSAWs(SAWs_Register, (dir, &rnd->low, 1, SAWs_READ, SAWs_DOUBLE));
     }
 #endif
   }
@@ -329,26 +321,25 @@ PetscErrorCode  PetscRandomView(PetscRandom rnd,PetscViewer viewer)
           `PetscRandomDestroy()`, `VecSetRandom()`, `PetscRandomType`
 @*/
 
-PetscErrorCode  PetscRandomCreate(MPI_Comm comm,PetscRandom *r)
-{
-  PetscRandom    rr;
-  PetscMPIInt    rank;
+PetscErrorCode PetscRandomCreate(MPI_Comm comm, PetscRandom *r) {
+  PetscRandom rr;
+  PetscMPIInt rank;
 
   PetscFunctionBegin;
-  PetscValidPointer(r,2);
+  PetscValidPointer(r, 2);
   *r = NULL;
   PetscCall(PetscRandomInitializePackage());
 
-  PetscCall(PetscHeaderCreate(rr,PETSC_RANDOM_CLASSID,"PetscRandom","Random number generator","Sys",comm,PetscRandomDestroy,PetscRandomView));
+  PetscCall(PetscHeaderCreate(rr, PETSC_RANDOM_CLASSID, "PetscRandom", "Random number generator", "Sys", comm, PetscRandomDestroy, PetscRandomView));
 
-  PetscCallMPI(MPI_Comm_rank(comm,&rank));
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
 
   rr->data  = NULL;
   rr->low   = 0.0;
   rr->width = 1.0;
   rr->iset  = PETSC_FALSE;
-  rr->seed  = 0x12345678 + 76543*rank;
-  PetscCall(PetscRandomSetType(rr,PETSCRANDER48));
+  rr->seed  = 0x12345678 + 76543 * rank;
+  PetscCall(PetscRandomSetType(rr, PETSCRANDER48));
   *r = rr;
   PetscFunctionReturn(0);
 }
@@ -372,13 +363,12 @@ PetscErrorCode  PetscRandomCreate(MPI_Comm comm,PetscRandom *r)
 
 .seealso: `PetscRandomCreate()`, `PetscRandomGetSeed()`, `PetscRandomSetSeed()`
 @*/
-PetscErrorCode  PetscRandomSeed(PetscRandom r)
-{
+PetscErrorCode PetscRandomSeed(PetscRandom r) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(r,PETSC_RANDOM_CLASSID,1);
-  PetscValidType(r,1);
+  PetscValidHeaderSpecific(r, PETSC_RANDOM_CLASSID, 1);
+  PetscValidType(r, 1);
 
-  PetscCall((*r->ops->seed)(r));
+  PetscUseTypeMethod(r, seed);
   PetscCall(PetscObjectStateIncrease((PetscObject)r));
   PetscFunctionReturn(0);
 }

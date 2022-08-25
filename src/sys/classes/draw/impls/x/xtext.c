@@ -6,9 +6,9 @@
 
 #include <../src/sys/classes/draw/impls/x/ximpl.h>
 
-static PetscErrorCode PetscDrawXiInitFonts(PetscDraw_X*);
-static PetscErrorCode PetscDrawXiLoadFont(PetscDraw_X*,PetscDrawXiFont*);
-static PetscErrorCode PetscDrawXiMatchFontSize(PetscDrawXiFont*,int,int);
+static PetscErrorCode PetscDrawXiInitFonts(PetscDraw_X *);
+static PetscErrorCode PetscDrawXiLoadFont(PetscDraw_X *, PetscDrawXiFont *);
+static PetscErrorCode PetscDrawXiMatchFontSize(PetscDrawXiFont *, int, int);
 
 /*
     PetscDrawXiFontFixed - Return a pointer to the selected font.
@@ -17,15 +17,14 @@ static PetscErrorCode PetscDrawXiMatchFontSize(PetscDrawXiFont*,int,int);
    ok because there will never be many windows and the graphics
    are not intended to be high performance.
 */
-PetscErrorCode PetscDrawXiFontFixed(PetscDraw_X *XBWin,int w,int h,PetscDrawXiFont **outfont)
-{
-  static PetscDrawXiFont *curfont = NULL,*font;
+PetscErrorCode PetscDrawXiFontFixed(PetscDraw_X *XBWin, int w, int h, PetscDrawXiFont **outfont) {
+  static PetscDrawXiFont *curfont = NULL, *font;
 
   PetscFunctionBegin;
   if (!curfont) PetscCall(PetscDrawXiInitFonts(XBWin));
   PetscCall(PetscNew(&font));
-  PetscCall(PetscDrawXiMatchFontSize(font,w,h));
-  PetscCall(PetscDrawXiLoadFont(XBWin,font));
+  PetscCall(PetscDrawXiMatchFontSize(font, w, h));
+  PetscCall(PetscDrawXiLoadFont(XBWin, font));
 
   curfont  = font;
   *outfont = curfont;
@@ -34,9 +33,7 @@ PetscErrorCode PetscDrawXiFontFixed(PetscDraw_X *XBWin,int w,int h,PetscDrawXiFo
 
 /* this is set by XListFonts at startup */
 #define NFONTS 20
-static struct {
-  int w,h,descent;
-} nfonts[NFONTS];
+static struct { int w, h, descent; } nfonts[NFONTS];
 static int act_nfonts = 0;
 
 /*
@@ -44,43 +41,41 @@ static int act_nfonts = 0;
   and load it if necessary
 */
 
-static PetscErrorCode PetscDrawXiLoadFont(PetscDraw_X *XBWin,PetscDrawXiFont *font)
-{
-  char        font_name[100];
+static PetscErrorCode PetscDrawXiLoadFont(PetscDraw_X *XBWin, PetscDrawXiFont *font) {
+  char         font_name[100];
   XFontStruct *FontInfo;
-  XGCValues   values;
+  XGCValues    values;
 
   PetscFunctionBegin;
-  (void) sprintf(font_name,"%dx%d",font->font_w,font->font_h);
-  font->fnt = XLoadFont(XBWin->disp,font_name);
+  (void)sprintf(font_name, "%dx%d", font->font_w, font->font_h);
+  font->fnt = XLoadFont(XBWin->disp, font_name);
 
   /* The font->descent may not have been set correctly; get it now that
       the font has been loaded */
-  FontInfo           = XQueryFont(XBWin->disp,font->fnt);
+  FontInfo           = XQueryFont(XBWin->disp, font->fnt);
   font->font_descent = FontInfo->descent;
   font->font_w       = FontInfo->max_bounds.rbearing - FontInfo->min_bounds.lbearing;
   font->font_h       = FontInfo->max_bounds.ascent + FontInfo->max_bounds.descent;
 
-  XFreeFontInfo(NULL,FontInfo,1);
+  XFreeFontInfo(NULL, FontInfo, 1);
 
   /* Set the current font in the CG */
   values.font = font->fnt;
-  XChangeGC(XBWin->disp,XBWin->gc.set,GCFont,&values);
+  XChangeGC(XBWin->disp, XBWin->gc.set, GCFont, &values);
   PetscFunctionReturn(0);
 }
 
 /* Code to find fonts and their characteristics */
-static PetscErrorCode PetscDrawXiInitFonts(PetscDraw_X *XBWin)
-{
-  char        **names;
-  int         cnt,i,j;
+static PetscErrorCode PetscDrawXiInitFonts(PetscDraw_X *XBWin) {
+  char       **names;
+  int          cnt, i, j;
   XFontStruct *info;
 
   PetscFunctionBegin;
   /* This just gets the most basic fixed-width fonts */
-  names = XListFontsWithInfo(XBWin->disp,"?x??",NFONTS,&cnt,&info);
+  names = XListFontsWithInfo(XBWin->disp, "?x??", NFONTS, &cnt, &info);
   j     = 0;
-  for (i=0; i<cnt; i++) {
+  for (i = 0; i < cnt; i++) {
     names[i][1]       = '\0';
     nfonts[j].w       = info[i].max_bounds.width;
     nfonts[j].h       = info[i].ascent + info[i].descent;
@@ -90,17 +85,17 @@ static PetscErrorCode PetscDrawXiInitFonts(PetscDraw_X *XBWin)
     if (j >= NFONTS) break;
   }
   act_nfonts = j;
-  if (cnt > 0) XFreeFontInfo(names,info,cnt);
+  if (cnt > 0) XFreeFontInfo(names, info, cnt);
 
   /* If the above fails,try this: */
   if (!act_nfonts) {
     /* This just gets the most basic fixed-width fonts */
-    names = XListFontsWithInfo(XBWin->disp,"?x",NFONTS,&cnt,&info);
+    names = XListFontsWithInfo(XBWin->disp, "?x", NFONTS, &cnt, &info);
     j     = 0;
-    for (i=0; i<cnt; i++) {
-      size_t         len;
+    for (i = 0; i < cnt; i++) {
+      size_t len;
 
-      PetscCall(PetscStrlen(names[i],&len));
+      PetscCall(PetscStrlen(names[i], &len));
       if (len != 2) continue;
       names[i][1]       = '\0';
       nfonts[j].w       = info[i].max_bounds.width;
@@ -112,17 +107,16 @@ static PetscErrorCode PetscDrawXiInitFonts(PetscDraw_X *XBWin)
       if (j >= NFONTS) break;
     }
     act_nfonts = j;
-    XFreeFontInfo(names,info,cnt);
+    XFreeFontInfo(names, info, cnt);
   }
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscDrawXiMatchFontSize(PetscDrawXiFont *font,int w,int h)
-{
-  int i,max,imax,tmp;
+static PetscErrorCode PetscDrawXiMatchFontSize(PetscDrawXiFont *font, int w, int h) {
+  int i, max, imax, tmp;
 
   PetscFunctionBegin;
-  for (i=0; i<act_nfonts; i++) {
+  for (i = 0; i < act_nfonts; i++) {
     if (nfonts[i].w == w && nfonts[i].h == h) {
       font->font_w       = w;
       font->font_h       = h;
@@ -133,10 +127,13 @@ static PetscErrorCode PetscDrawXiMatchFontSize(PetscDrawXiFont *font,int w,int h
 
   /* determine closest fit,per max. norm */
   imax = 0;
-  max  = PetscMax(PetscAbsInt(nfonts[0].w - w),PetscAbsInt(nfonts[0].h - h));
-  for (i=1; i<act_nfonts; i++) {
-    tmp = PetscMax(PetscAbsInt(nfonts[i].w - w),PetscAbsInt(nfonts[i].h - h));
-    if (tmp < max) {max = tmp; imax = i;}
+  max  = PetscMax(PetscAbsInt(nfonts[0].w - w), PetscAbsInt(nfonts[0].h - h));
+  for (i = 1; i < act_nfonts; i++) {
+    tmp = PetscMax(PetscAbsInt(nfonts[i].w - w), PetscAbsInt(nfonts[i].h - h));
+    if (tmp < max) {
+      max  = tmp;
+      imax = i;
+    }
   }
 
   /* should use font with closest match */

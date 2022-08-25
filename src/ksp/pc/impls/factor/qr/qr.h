@@ -8,7 +8,7 @@
 
 typedef struct {
   PC_Factor hdr;
-  IS        col;            /* index sets used for reordering */
+  IS        col; /* index sets used for reordering */
 } PC_QR;
 
 #endif
