@@ -2337,3 +2337,60 @@ PetscErrorCode DMPlexIsDistributed(DM dm, PetscBool *distributed) {
   *distributed = count > 1 ? PETSC_TRUE : PETSC_FALSE;
   PetscFunctionReturn(0);
 }
+
+/*@C
+  DMPlexDistributionSetName - Set the name of the specific parallel distribution
+
+  Input Parameters:
++ dm   - The DM
+- name - The name of the specific parallel distribution
+
+  Note:
+  If distribution name is set when saving, DMPlexTopologyView() saves the plex's
+  parallel distribution (i.e., partition, ownership, and local ordering of points) under
+  this name. Conversely, if distribution name is set when loading, DMPlexTopologyLoad()
+  loads the parallel distribution stored in file under this name.
+
+  Level: developer
+
+.seealso: `DMPlexDistributionGetName()`, `DMPlexTopologyView()`, `DMPlexTopologyLoad()`
+@*/
+PetscErrorCode DMPlexDistributionSetName(DM dm, const char name[]) {
+  DM_Plex *mesh = (DM_Plex *)dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecificType(dm, DM_CLASSID, 1, DMPLEX);
+  if (name) PetscValidCharPointer(name, 2);
+  PetscCall(PetscFree(mesh->distributionName));
+  PetscCall(PetscStrallocpy(name, &mesh->distributionName));
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  DMPlexDistributionGetName - Retrieve the name of the specific parallel distribution
+
+  Input Parameter:
+. dm - The DM
+
+  Output Parameter:
+. name - The name of the specific parallel distribution
+
+  Note:
+  If distribution name is set when saving, DMPlexTopologyView() saves the plex's
+  parallel distribution (i.e., partition, ownership, and local ordering of points) under
+  this name. Conversely, if distribution name is set when loading, DMPlexTopologyLoad()
+  loads the parallel distribution stored in file under this name.
+
+  Level: developer
+
+.seealso: `DMPlexDistributionSetName()`, `DMPlexTopologyView()`, `DMPlexTopologyLoad()`
+@*/
+PetscErrorCode DMPlexDistributionGetName(DM dm, const char *name[]) {
+  DM_Plex *mesh = (DM_Plex *)dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecificType(dm, DM_CLASSID, 1, DMPLEX);
+  PetscValidPointer(name, 2);
+  *name = mesh->distributionName;
+  PetscFunctionReturn(0);
+}

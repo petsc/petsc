@@ -144,14 +144,15 @@ typedef struct {
   DMPlexReorderDefaultFlag reorderDefault; /* Reorder the DM by default */
 
   /* Distribution */
-  PetscBool distDefault;    /* Distribute the DM by default */
-  PetscInt  overlap;        /* Overlap of the partitions as passed to DMPlexDistribute() or DMPlexDistributeOverlap() */
-  PetscInt  numOvLabels;    /* The number of labels used for candidate overlap points */
-  DMLabel   ovLabels[16];   /* Labels used for candidate overlap points */
-  PetscInt  ovValues[16];   /* Label values used for candidate overlap points */
-  PetscInt  numOvExLabels;  /* The number of labels used for exclusion */
-  DMLabel   ovExLabels[16]; /* Labels used to exclude points from the overlap */
-  PetscInt  ovExValues[16]; /* Label values used to exclude points from the overlap */
+  PetscBool distDefault;      /* Distribute the DM by default */
+  PetscInt  overlap;          /* Overlap of the partitions as passed to DMPlexDistribute() or DMPlexDistributeOverlap() */
+  PetscInt  numOvLabels;      /* The number of labels used for candidate overlap points */
+  DMLabel   ovLabels[16];     /* Labels used for candidate overlap points */
+  PetscInt  ovValues[16];     /* Label values used for candidate overlap points */
+  PetscInt  numOvExLabels;    /* The number of labels used for exclusion */
+  DMLabel   ovExLabels[16];   /* Labels used to exclude points from the overlap */
+  PetscInt  ovExValues[16];   /* Label values used to exclude points from the overlap */
+  char     *distributionName; /* Name of the specific parallel distribution of the DM */
 
   /* Hierarchy */
   PetscBool regularRefinement; /* This flag signals that we are a regular refinement of coarseMesh */
@@ -228,6 +229,7 @@ typedef struct {
 } DM_Plex;
 
 PETSC_INTERN PetscErrorCode DMPlexCopy_Internal(DM, PetscBool, PetscBool, DM);
+PETSC_INTERN PetscErrorCode DMPlexReplace_Internal(DM, DM *);
 
 PETSC_EXTERN PetscErrorCode DMPlexVTKWriteAll_VTU(DM, PetscViewer);
 PETSC_EXTERN PetscErrorCode VecView_Plex_Local(Vec, PetscViewer);

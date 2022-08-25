@@ -414,6 +414,69 @@ PetscErrorCode VecLoad_Plex_HDF5_Native_Internal(Vec v, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode DMPlexDistributionView_HDF5_Static(DM dm, IS globalPointNumbers, PetscViewer viewer) {
+  MPI_Comm             comm;
+  PetscMPIInt          size, rank;
+  const char          *topologydm_name, *distribution_name;
+  const PetscInt      *gpoint;
+  PetscInt             pStart, pEnd, p;
+  DMPlexStorageVersion version;
+  PetscSF              pointSF;
+  PetscInt             nroots, nleaves;
+  const PetscInt      *ilocal;
+  const PetscSFNode   *iremote;
+  IS                   chartSizesIS, ownersIS, gpointsIS;
+  PetscInt            *chartSize, *owners, *gpoints;
+  char                 group[PETSC_MAX_PATH_LEN];
+
+  PetscFunctionBegin;
+  PetscCall(DMPlexStorageVersionSetUpWriting_Private(dm, viewer, &version));
+  if (version.major < 2) PetscFunctionReturn(0);
+  PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
+  PetscCallMPI(MPI_Comm_size(comm, &size));
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
+  PetscCall(DMPlexGetHDF5Name_Private(dm, &topologydm_name));
+  PetscCall(DMPlexDistributionGetName(dm, &distribution_name));
+  if (!distribution_name) PetscFunctionReturn(0);
+  PetscCall(PetscSNPrintf(group, sizeof(group), "topologies/%s/distributions/%s", topologydm_name, distribution_name));
+  PetscCall(PetscViewerHDF5PushGroup(viewer, group));
+  PetscCall(PetscViewerHDF5WriteAttribute(viewer, NULL, "comm_size", PETSC_INT, (void *)&size));
+  PetscCall(ISGetIndices(globalPointNumbers, &gpoint));
+  PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
+  PetscCall(PetscMalloc1(1, &chartSize));
+  *chartSize = pEnd - pStart;
+  PetscCall(PetscMalloc1(*chartSize, &owners));
+  PetscCall(PetscMalloc1(*chartSize, &gpoints));
+  PetscCall(DMGetPointSF(dm, &pointSF));
+  PetscCall(PetscSFGetGraph(pointSF, &nroots, &nleaves, &ilocal, &iremote));
+  for (p = pStart; p < pEnd; ++p) {
+    PetscInt gp = gpoint[p - pStart];
+
+    owners[p - pStart]  = rank;
+    gpoints[p - pStart] = (gp < 0 ? -(gp + 1) : gp);
+  }
+  for (p = 0; p < nleaves; ++p) {
+    PetscInt ilocalp = (ilocal ? ilocal[p] : p);
+
+    owners[ilocalp] = iremote[p].rank;
+  }
+  PetscCall(ISCreateGeneral(comm, 1, chartSize, PETSC_OWN_POINTER, &chartSizesIS));
+  PetscCall(ISCreateGeneral(comm, *chartSize, owners, PETSC_OWN_POINTER, &ownersIS));
+  PetscCall(ISCreateGeneral(comm, *chartSize, gpoints, PETSC_OWN_POINTER, &gpointsIS));
+  PetscCall(PetscObjectSetName((PetscObject)chartSizesIS, "chart_sizes"));
+  PetscCall(PetscObjectSetName((PetscObject)ownersIS, "owners"));
+  PetscCall(PetscObjectSetName((PetscObject)gpointsIS, "global_point_numbers"));
+  PetscCall(ISView(chartSizesIS, viewer));
+  PetscCall(ISView(ownersIS, viewer));
+  PetscCall(ISView(gpointsIS, viewer));
+  PetscCall(ISDestroy(&chartSizesIS));
+  PetscCall(ISDestroy(&ownersIS));
+  PetscCall(ISDestroy(&gpointsIS));
+  PetscCall(ISRestoreIndices(globalPointNumbers, &gpoint));
+  PetscCall(PetscViewerHDF5PopGroup(viewer));
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode DMPlexTopologyView_HDF5_Internal(DM dm, IS globalPointNumbers, PetscViewer viewer) {
   const char          *topologydm_name;
   const char          *pointsName, *coneSizesName, *conesName, *orientationsName;
@@ -498,6 +561,7 @@ PetscErrorCode DMPlexTopologyView_HDF5_Internal(DM dm, IS globalPointNumbers, Pe
     PetscCall(PetscViewerHDF5WriteAttribute(viewer, conesName, "cell_dim", PETSC_INT, (void *)&dim));
   }
   PetscCall(PetscViewerHDF5PopGroup(viewer));
+  PetscCall(DMPlexDistributionView_HDF5_Static(dm, globalPointNumbers, viewer));
   PetscFunctionReturn(0);
 }
 
@@ -1317,8 +1381,179 @@ PetscErrorCode DMPlexLabelsLoad_HDF5_Internal(DM dm, PetscViewer viewer, PetscSF
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode DMPlexDistributionLoad_HDF5_Static(DM dm, PetscViewer viewer, PetscSF sf, PetscSF *distsf, DM *distdm) {
+  MPI_Comm        comm;
+  PetscMPIInt     size, rank, dist_size;
+  const char     *topologydm_name, *distribution_name;
+  PetscInt        p, lsize;
+  IS              chartSizesIS, ownersIS, gpointsIS;
+  const PetscInt *chartSize, *owners, *gpoints;
+  PetscLayout     layout;
+  char            group[PETSC_MAX_PATH_LEN];
+  PetscBool       has;
+
+  PetscFunctionBegin;
+  *distsf = NULL;
+  *distdm = NULL;
+  PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
+  PetscCallMPI(MPI_Comm_size(comm, &size));
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
+  PetscCall(DMPlexGetHDF5Name_Private(dm, &topologydm_name));
+  PetscCall(DMPlexDistributionGetName(dm, &distribution_name));
+  if (!distribution_name) PetscFunctionReturn(0);
+  PetscCall(PetscSNPrintf(group, sizeof(group), "topologies/%s/distributions/%s", topologydm_name, distribution_name));
+  PetscCall(PetscViewerHDF5HasGroup(viewer, group, &has));
+  PetscCheck(has, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown distribution_name: %s not found in file", group);
+  PetscCall(PetscViewerHDF5PushGroup(viewer, group));
+  PetscCall(PetscViewerHDF5ReadAttribute(viewer, NULL, "comm_size", PETSC_INT, NULL, (void *)&dist_size));
+  PetscCheck(dist_size == size, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Mismatching comm sizes: comm size of this session (%" PetscInt_FMT ") != comm size used for %s (%" PetscInt_FMT ")", size, distribution_name, dist_size);
+  PetscCall(ISCreate(comm, &chartSizesIS));
+  PetscCall(PetscObjectSetName((PetscObject)chartSizesIS, "chart_sizes"));
+  PetscCall(ISCreate(comm, &ownersIS));
+  PetscCall(PetscObjectSetName((PetscObject)ownersIS, "owners"));
+  PetscCall(ISCreate(comm, &gpointsIS));
+  PetscCall(PetscObjectSetName((PetscObject)gpointsIS, "global_point_numbers"));
+  PetscCall(PetscLayoutSetLocalSize(chartSizesIS->map, 1));
+  PetscCall(ISLoad(chartSizesIS, viewer));
+  PetscCall(ISGetIndices(chartSizesIS, &chartSize));
+  PetscCall(PetscLayoutSetLocalSize(ownersIS->map, *chartSize));
+  PetscCall(PetscLayoutSetLocalSize(gpointsIS->map, *chartSize));
+  PetscCall(ISLoad(ownersIS, viewer));
+  PetscCall(ISLoad(gpointsIS, viewer));
+  PetscCall(ISGetIndices(ownersIS, &owners));
+  PetscCall(ISGetIndices(gpointsIS, &gpoints));
+  PetscCall(PetscSFCreate(comm, distsf));
+  PetscCall(PetscSFSetFromOptions(*distsf));
+  PetscCall(PetscLayoutCreate(comm, &layout));
+  PetscCall(PetscSFGetGraph(sf, &lsize, NULL, NULL, NULL));
+  PetscCall(PetscLayoutSetLocalSize(layout, lsize));
+  PetscCall(PetscLayoutSetBlockSize(layout, 1));
+  PetscCall(PetscLayoutSetUp(layout));
+  PetscCall(PetscSFSetGraphLayout(*distsf, layout, *chartSize, NULL, PETSC_OWN_POINTER, gpoints));
+  PetscCall(PetscLayoutDestroy(&layout));
+  /* Migrate DM */
+  {
+    PetscInt     pStart, pEnd;
+    PetscSFNode *buffer0, *buffer1, *buffer2;
+
+    PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
+    PetscCall(PetscMalloc2(pEnd - pStart, &buffer0, lsize, &buffer1));
+    PetscCall(PetscMalloc1(*chartSize, &buffer2));
+    {
+      PetscSF            workPointSF;
+      PetscInt           workNroots, workNleaves;
+      const PetscInt    *workIlocal;
+      const PetscSFNode *workIremote;
+
+      for (p = pStart; p < pEnd; ++p) {
+        buffer0[p - pStart].rank  = rank;
+        buffer0[p - pStart].index = p - pStart;
+      }
+      PetscCall(DMGetPointSF(dm, &workPointSF));
+      PetscCall(PetscSFGetGraph(workPointSF, &workNroots, &workNleaves, &workIlocal, &workIremote));
+      for (p = 0; p < workNleaves; ++p) {
+        PetscInt workIlocalp = (workIlocal ? workIlocal[p] : p);
+
+        buffer0[workIlocalp].rank = -1;
+      }
+    }
+    for (p = 0; p < lsize; ++p) { buffer1[p].rank = -1; }
+    for (p = 0; p < *chartSize; ++p) { buffer2[p].rank = -1; }
+    PetscCall(PetscSFReduceBegin(sf, MPIU_2INT, buffer0, buffer1, MPI_MAXLOC));
+    PetscCall(PetscSFReduceEnd(sf, MPIU_2INT, buffer0, buffer1, MPI_MAXLOC));
+    PetscCall(PetscSFBcastBegin(*distsf, MPIU_2INT, buffer1, buffer2, MPI_REPLACE));
+    PetscCall(PetscSFBcastEnd(*distsf, MPIU_2INT, buffer1, buffer2, MPI_REPLACE));
+    if (PetscDefined(USE_DEBUG)) {
+      for (p = 0; p < *chartSize; ++p) {
+        PetscCheck(buffer2[p].rank >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Found negative root rank %" PetscInt_FMT " at local point %" PetscInt_FMT " on rank %" PetscInt_FMT " when making migrationSF", buffer2[p].rank, p, rank);
+      }
+    }
+    PetscCall(PetscFree2(buffer0, buffer1));
+    PetscCall(DMCreate(comm, distdm));
+    PetscCall(DMSetType(*distdm, DMPLEX));
+    PetscCall(PetscObjectSetName((PetscObject)(*distdm), topologydm_name));
+    PetscCall(DMPlexDistributionSetName(*distdm, distribution_name));
+    {
+      PetscSF migrationSF;
+
+      PetscCall(PetscSFCreate(comm, &migrationSF));
+      PetscCall(PetscSFSetFromOptions(migrationSF));
+      PetscCall(PetscSFSetGraph(migrationSF, pEnd - pStart, *chartSize, NULL, PETSC_OWN_POINTER, buffer2, PETSC_OWN_POINTER));
+      PetscCall(PetscSFSetUp(migrationSF));
+      PetscCall(DMPlexMigrate(dm, migrationSF, *distdm));
+      PetscCall(PetscSFDestroy(&migrationSF));
+    }
+  }
+  /* Set pointSF */
+  {
+    PetscSF      pointSF;
+    PetscInt    *ilocal, nleaves, q;
+    PetscSFNode *iremote, *buffer0, *buffer1;
+
+    PetscCall(PetscMalloc2(*chartSize, &buffer0, lsize, &buffer1));
+    for (p = 0, nleaves = 0; p < *chartSize; ++p) {
+      if (owners[p] == rank) {
+        buffer0[p].rank = rank;
+      } else {
+        buffer0[p].rank = -1;
+        nleaves++;
+      }
+      buffer0[p].index = p;
+    }
+    for (p = 0; p < lsize; ++p) { buffer1[p].rank = -1; }
+    PetscCall(PetscSFReduceBegin(*distsf, MPIU_2INT, buffer0, buffer1, MPI_MAXLOC));
+    PetscCall(PetscSFReduceEnd(*distsf, MPIU_2INT, buffer0, buffer1, MPI_MAXLOC));
+    for (p = 0; p < *chartSize; ++p) { buffer0[p].rank = -1; }
+    PetscCall(PetscSFBcastBegin(*distsf, MPIU_2INT, buffer1, buffer0, MPI_REPLACE));
+    PetscCall(PetscSFBcastEnd(*distsf, MPIU_2INT, buffer1, buffer0, MPI_REPLACE));
+    if (PetscDefined(USE_DEBUG)) {
+      for (p = 0; p < *chartSize; ++p) {
+        PetscCheck(buffer0[p].rank >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Found negative root rank %" PetscInt_FMT " at local point %" PetscInt_FMT " on rank %" PetscInt_FMT " when making pointSF", buffer0[p].rank, p, rank);
+      }
+    }
+    PetscCall(PetscMalloc1(nleaves, &ilocal));
+    PetscCall(PetscMalloc1(nleaves, &iremote));
+    for (p = 0, q = 0; p < *chartSize; ++p) {
+      if (buffer0[p].rank != rank) {
+        ilocal[q]        = p;
+        iremote[q].rank  = buffer0[p].rank;
+        iremote[q].index = buffer0[p].index;
+        q++;
+      }
+    }
+    PetscCheck(q == nleaves, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Mismatching leaf sizes: %" PetscInt_FMT " != %" PetscInt_FMT, q, nleaves);
+    PetscCall(PetscFree2(buffer0, buffer1));
+    PetscCall(PetscSFCreate(comm, &pointSF));
+    PetscCall(PetscSFSetFromOptions(pointSF));
+    PetscCall(PetscSFSetGraph(pointSF, *chartSize, nleaves, ilocal, PETSC_OWN_POINTER, iremote, PETSC_OWN_POINTER));
+    PetscCall(DMSetPointSF(*distdm, pointSF));
+    {
+      DM cdm;
+
+      PetscCall(DMGetCoordinateDM(*distdm, &cdm));
+      PetscCall(DMSetPointSF(cdm, pointSF));
+    }
+    PetscCall(PetscSFDestroy(&pointSF));
+  }
+  PetscCall(ISRestoreIndices(chartSizesIS, &chartSize));
+  PetscCall(ISRestoreIndices(ownersIS, &owners));
+  PetscCall(ISRestoreIndices(gpointsIS, &gpoints));
+  PetscCall(ISDestroy(&chartSizesIS));
+  PetscCall(ISDestroy(&ownersIS));
+  PetscCall(ISDestroy(&gpointsIS));
+  /* Record that overlap has been manually created.               */
+  /* This is to pass `DMPlexCheckPointSF()`, which checks that    */
+  /* pointSF does not contain cells in the leaves if overlap = 0. */
+  PetscCall(DMPlexSetOverlap_Plex(*distdm, NULL, DMPLEX_OVERLAP_MANUAL));
+  PetscCall(DMPlexDistributeSetDefault(*distdm, PETSC_FALSE));
+  PetscCall(DMPlexReorderSetDefault(*distdm, DMPLEX_REORDER_DEFAULT_FALSE));
+  PetscCall(PetscViewerHDF5PopGroup(viewer));
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode DMPlexTopologyLoad_HDF5_Internal(DM dm, PetscViewer viewer, PetscSF *sf) {
   MPI_Comm             comm;
+  PetscSF              sfwork;
   const char          *topologydm_name;
   const char          *pointsName, *coneSizesName, *conesName, *orientationsName;
   IS                   pointsIS, coneSizesIS, conesIS, orientationsIS;
@@ -1398,7 +1633,7 @@ PetscErrorCode DMPlexTopologyLoad_HDF5_Internal(DM dm, PetscViewer viewer, Petsc
   }
   PetscCall(PetscFree2(cone, ornt));
   /* Create global section migration SF */
-  if (sf) {
+  {
     PetscLayout layout;
     PetscInt   *globalIndices;
 
@@ -1409,9 +1644,9 @@ PetscErrorCode DMPlexTopologyLoad_HDF5_Internal(DM dm, PetscViewer viewer, Petsc
     PetscCall(PetscLayoutSetSize(layout, Np));
     PetscCall(PetscLayoutSetBlockSize(layout, 1));
     PetscCall(PetscLayoutSetUp(layout));
-    PetscCall(PetscSFCreate(comm, sf));
-    PetscCall(PetscSFSetFromOptions(*sf));
-    PetscCall(PetscSFSetGraphLayout(*sf, layout, pEnd, NULL, PETSC_OWN_POINTER, globalIndices));
+    PetscCall(PetscSFCreate(comm, &sfwork));
+    PetscCall(PetscSFSetFromOptions(sfwork));
+    PetscCall(PetscSFSetGraphLayout(sfwork, layout, pEnd, NULL, PETSC_OWN_POINTER, globalIndices));
     PetscCall(PetscLayoutDestroy(&layout));
     PetscCall(PetscFree(globalIndices));
   }
@@ -1427,6 +1662,22 @@ PetscErrorCode DMPlexTopologyLoad_HDF5_Internal(DM dm, PetscViewer viewer, Petsc
   /* Fill in the rest of the topology structure */
   PetscCall(DMPlexSymmetrize(dm));
   PetscCall(DMPlexStratify(dm));
+  {
+    DM      distdm;
+    PetscSF distsf;
+
+    PetscCall(DMPlexDistributionLoad_HDF5_Static(dm, viewer, sfwork, &distsf, &distdm));
+    if (distdm) {
+      PetscCall(DMPlexReplace_Internal(dm, &distdm));
+      PetscCall(PetscSFDestroy(&sfwork));
+      sfwork = distsf;
+    }
+  }
+  if (sf) {
+    *sf = sfwork;
+  } else {
+    PetscCall(PetscSFDestroy(&sfwork));
+  }
   PetscFunctionReturn(0);
 }
 
