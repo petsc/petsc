@@ -1223,7 +1223,7 @@ $       call PetscInitialize(file,ierr)
 @*/
 PetscErrorCode PetscInitialize(int *argc, char ***args, const char file[], const char help[]) {
   PetscMPIInt flag;
-  const char *prog = "Unknown Name";
+  const char *prog = "Unknown Name", *mpienv;
 
   PetscFunctionBegin;
   if (PetscInitializeCalled) PetscFunctionReturn(0);
@@ -1239,6 +1239,16 @@ PetscErrorCode PetscInitialize(int *argc, char ***args, const char file[], const
 #else
     PetscCallMPI(MPI_Init(argc, args));
 #endif
+    if (PetscDefined(HAVE_MPIUNI)) {
+      mpienv = getenv("PMI_SIZE");
+      if (!mpienv) mpienv = getenv("OMPI_COMM_WORLD_SIZE");
+      if (mpienv) {
+        PetscInt isize;
+        PetscCall(PetscOptionsStringToInt(mpienv, &isize));
+        if (isize != 1) printf("You are using an MPI-uni (sequential) install of PETSc but trying to launch parallel jobs; you need full MPI version of PETSc\n");
+        PetscCheck(isize == 1, MPI_COMM_SELF, PETSC_ERR_MPI, "You are using an MPI-uni (sequential) install of PETSc but trying to launch parallel jobs; you need full MPI version of PETSc");
+      }
+    }
     PetscBeganMPI = PETSC_TRUE;
   }
 
