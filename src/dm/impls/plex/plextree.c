@@ -1594,9 +1594,11 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_FromReference(DM dm, PetscS
   {
     PetscInt        nRows, row, nnz;
     PetscBool       done;
+    PetscInt        secStart, secEnd;
     const PetscInt *ia, *ja;
     PetscScalar    *vals;
 
+    PetscCall(PetscSectionGetChart(section, &secStart, &secEnd));
     PetscCall(MatGetRowIJ(cMat, 0, PETSC_FALSE, PETSC_FALSE, &nRows, &ia, &ja, &done));
     PetscCheck(done, PetscObjectComm((PetscObject)cMat), PETSC_ERR_PLIB, "Could not get RowIJ of constraint matrix");
     nnz = ia[nRows];
@@ -1651,6 +1653,7 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_FromReference(DM dm, PetscS
           const PetscScalar *flip = flips ? flips[i] : NULL;
 
           qConDof = qConOff = 0;
+          if (q < secStart || q >= secEnd) continue;
           if (numFields) {
             PetscCall(PetscSectionGetFieldDof(section, q, f, &aDof));
             PetscCall(PetscSectionGetFieldOffset(section, q, f, &aOff));
