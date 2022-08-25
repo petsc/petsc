@@ -491,50 +491,64 @@ static PetscErrorCode RDGetQuadrature(RD rd, PetscReal hx, PetscInt *nq, PetscRe
   PetscFunctionBeginUser;
   switch (rd->quadrature) {
   case QUADRATURE_GAUSS1: {
-    static const PetscReal ww[1] =
-      {
-        1.
-    },
-                           ii[1][2] = {{0.5, 0.5}}, dd[1][2] = {{-1., 1.}};
+    static const PetscReal ww[1]    = {1.};
+    static const PetscReal ii[1][2] = {
+      {0.5, 0.5}
+    };
+    static const PetscReal dd[1][2] = {
+      {-1., 1.}
+    };
     *nq       = 1;
     refweight = ww;
     refinterp = ii;
     refderiv  = dd;
   } break;
   case QUADRATURE_GAUSS2: {
-    static const PetscReal ii[2][2] =
-      {
-        {0.78867513459481287, 0.21132486540518713},
-        {0.21132486540518713, 0.78867513459481287}
-    },
-                           dd[2][2] = {{-1., 1.}, {-1., 1.}}, ww[2] = {0.5, 0.5};
-    *nq       = 2;
-    refweight = ww;
-    refinterp = ii;
-    refderiv  = dd;
+    static const PetscReal ii[2][2] = {
+      {0.78867513459481287, 0.21132486540518713},
+      {0.21132486540518713, 0.78867513459481287}
+    };
+    static const PetscReal dd[2][2] = {
+      {-1., 1.},
+      {-1., 1.}
+    };
+    static const PetscReal ww[2] = {0.5, 0.5};
+    *nq                          = 2;
+    refweight                    = ww;
+    refinterp                    = ii;
+    refderiv                     = dd;
   } break;
   case QUADRATURE_GAUSS3: {
-    static const PetscReal ii[3][2] =
-      {
-        {0.8872983346207417, 0.1127016653792583},
-        {0.5,                0.5               },
-        {0.1127016653792583, 0.8872983346207417}
-    },
-                           dd[3][2] = {{-1, 1}, {-1, 1}, {-1, 1}}, ww[3] = {5. / 18, 8. / 18, 5. / 18};
-    *nq       = 3;
-    refweight = ww;
-    refinterp = ii;
-    refderiv  = dd;
+    static const PetscReal ii[3][2] = {
+      {0.8872983346207417, 0.1127016653792583},
+      {0.5,                0.5               },
+      {0.1127016653792583, 0.8872983346207417}
+    };
+    static const PetscReal dd[3][2] = {
+      {-1, 1},
+      {-1, 1},
+      {-1, 1}
+    };
+    static const PetscReal ww[3] = {5. / 18, 8. / 18, 5. / 18};
+    *nq                          = 3;
+    refweight                    = ww;
+    refinterp                    = ii;
+    refderiv                     = dd;
   } break;
   case QUADRATURE_GAUSS4: {
-    static const PetscReal ii[][2] =
-      {
-        {0.93056815579702623,  0.069431844202973658},
-        {0.66999052179242813,  0.33000947820757187 },
-        {0.33000947820757187,  0.66999052179242813 },
-        {0.069431844202973658, 0.93056815579702623 }
-    },
-                           dd[][2] = {{-1, 1}, {-1, 1}, {-1, 1}, {-1, 1}}, ww[] = {0.17392742256872692, 0.3260725774312731, 0.3260725774312731, 0.17392742256872692};
+    static const PetscReal ii[][2] = {
+      {0.93056815579702623,  0.069431844202973658},
+      {0.66999052179242813,  0.33000947820757187 },
+      {0.33000947820757187,  0.66999052179242813 },
+      {0.069431844202973658, 0.93056815579702623 }
+    };
+    static const PetscReal dd[][2] = {
+      {-1, 1},
+      {-1, 1},
+      {-1, 1},
+      {-1, 1}
+    };
+    static const PetscReal ww[] = {0.17392742256872692, 0.3260725774312731, 0.3260725774312731, 0.17392742256872692};
 
     *nq       = 4;
     refweight = ww;
@@ -542,29 +556,36 @@ static PetscErrorCode RDGetQuadrature(RD rd, PetscReal hx, PetscInt *nq, PetscRe
     refderiv  = dd;
   } break;
   case QUADRATURE_LOBATTO2: {
-    static const PetscReal ii[2][2] =
-      {
-        {1., 0.},
-        {0., 1.}
-    },
-                           dd[2][2] = {{-1., 1.}, {-1., 1.}}, ww[2] = {0.5, 0.5};
-    *nq       = 2;
-    refweight = ww;
-    refinterp = ii;
-    refderiv  = dd;
+    static const PetscReal ii[2][2] = {
+      {1., 0.},
+      {0., 1.}
+    };
+    static const PetscReal dd[2][2] = {
+      {-1., 1.},
+      {-1., 1.}
+    };
+    static const PetscReal ww[2] = {0.5, 0.5};
+    *nq                          = 2;
+    refweight                    = ww;
+    refinterp                    = ii;
+    refderiv                     = dd;
   } break;
   case QUADRATURE_LOBATTO3: {
-    static const PetscReal ii[3][2] =
-      {
-        {1,   0  },
-        {0.5, 0.5},
-        {0,   1  }
-    },
-                           dd[3][2] = {{-1, 1}, {-1, 1}, {-1, 1}}, ww[3] = {1. / 6, 4. / 6, 1. / 6};
-    *nq       = 3;
-    refweight = ww;
-    refinterp = ii;
-    refderiv  = dd;
+    static const PetscReal ii[3][2] = {
+      {1,   0  },
+      {0.5, 0.5},
+      {0,   1  }
+    };
+    static const PetscReal dd[3][2] = {
+      {-1, 1},
+      {-1, 1},
+      {-1, 1}
+    };
+    static const PetscReal ww[3] = {1. / 6, 4. / 6, 1. / 6};
+    *nq                          = 3;
+    refweight                    = ww;
+    refinterp                    = ii;
+    refderiv                     = dd;
   } break;
   default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unknown quadrature %d", (int)rd->quadrature);
   }
