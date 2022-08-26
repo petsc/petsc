@@ -222,7 +222,7 @@ int main(int argc, char **argv) {
       args: -dm_mat_type aijcusparse -dm_vec_type cuda
     test:
       suffix: kokkos
-      requires: !sycl kokkos_kernels
+      requires: sycl kokkos_kernels
       args: -dm_mat_type aijkokkos -dm_vec_type kokkos
     test:
       suffix: aijmkl_comp
