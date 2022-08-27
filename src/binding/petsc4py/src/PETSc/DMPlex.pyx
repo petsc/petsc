@@ -378,6 +378,18 @@ cdef class DMPlex(DM):
         finally:
             CHKERR( DMPlexRestoreJoin(self.dm, numPoints, ipoints, &numCoveringPoints, &coveringPoints) )
 
+    def getFullJoin(self, points):
+        cdef PetscInt  numPoints = 0
+        cdef PetscInt *ipoints = NULL
+        cdef PetscInt  numCoveringPoints = 0
+        cdef const PetscInt *coveringPoints = NULL
+        points = iarray_i(points, &numPoints, &ipoints)
+        CHKERR( DMPlexGetFullJoin(self.dm, numPoints, ipoints, &numCoveringPoints, &coveringPoints) )
+        try:
+            return array_i(numCoveringPoints, coveringPoints)
+        finally:
+            CHKERR( DMPlexRestoreJoin(self.dm, numPoints, ipoints, &numCoveringPoints, &coveringPoints) )
+
     def getTransitiveClosure(self, p, useCone=True):
         cdef PetscInt cp = asInt(p)
         cdef PetscInt pStart = 0, pEnd = 0
