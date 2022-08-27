@@ -126,7 +126,7 @@ PetscErrorCode DMCoarsen_SNESVI(DM dm1, MPI_Comm comm, DM *dm2) {
   PetscCall(ISGetIndices(dmsnesvi1->inactive, &index));
   PetscCall(ISGetLocalSize(dmsnesvi1->inactive, &n));
   PetscCall(VecSet(finemarked, 0.0));
-  for (k = 0; k < n; k++) { PetscCall(VecSetValue(finemarked, index[k], 1.0, INSERT_VALUES)); }
+  for (k = 0; k < n; k++) PetscCall(VecSetValue(finemarked, index[k], 1.0, INSERT_VALUES));
   PetscCall(VecAssemblyBegin(finemarked));
   PetscCall(VecAssemblyEnd(finemarked));
 
@@ -504,7 +504,7 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes) {
     }
     PetscCall(ISDestroy(&vi->IS_inact));
     PetscCall(MatDestroy(&jac_inact_inact));
-    if (snes->jacobian != snes->jacobian_pre) { PetscCall(MatDestroy(&prejac_inact_inact)); }
+    if (snes->jacobian != snes->jacobian_pre) PetscCall(MatDestroy(&prejac_inact_inact));
 
     PetscCall(KSPGetConvergedReason(snes->ksp, &kspreason));
     if (kspreason < 0) {
@@ -729,7 +729,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_VINEWTONRSLS(SNES snes) {
   snes->usesnpc = PETSC_FALSE;
 
   PetscCall(SNESGetLineSearch(snes, &linesearch));
-  if (!((PetscObject)linesearch)->type_name) { PetscCall(SNESLineSearchSetType(linesearch, SNESLINESEARCHBT)); }
+  if (!((PetscObject)linesearch)->type_name) PetscCall(SNESLineSearchSetType(linesearch, SNESLINESEARCHBT));
   PetscCall(SNESLineSearchBTSetAlpha(linesearch, 0.0));
 
   snes->alwayscomputesfinalresidual = PETSC_TRUE;

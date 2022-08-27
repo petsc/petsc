@@ -127,7 +127,7 @@ int main(int argc, char **argv) {
     PetscCall(MatSetUp(C));
     PetscCall(MatGetOwnershipRange(C, &rstart, &rend));
     v[0] = 1.0;
-    for (i = rstart; i < rend; i++) { PetscCall(MatSetValues(C, 1, &i, 1, &i, v, INSERT_VALUES)); }
+    for (i = rstart; i < rend; i++) PetscCall(MatSetValues(C, 1, &i, 1, &i, v, INSERT_VALUES));
     PetscCall(MatAssemblyBegin(C, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(C, MAT_FINAL_ASSEMBLY));
 

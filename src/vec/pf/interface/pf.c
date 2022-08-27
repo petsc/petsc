@@ -160,7 +160,7 @@ PetscErrorCode PFApplyVec(PF pf, Vec x, Vec y) {
     PetscCall(VecRestoreArray(x, &xx));
     PetscCall(VecRestoreArray(y, &yy));
   }
-  if (nox) { PetscCall(VecDestroy(&x)); }
+  if (nox) PetscCall(VecDestroy(&x));
   PetscFunctionReturn(0);
 }
 
@@ -246,7 +246,7 @@ PetscErrorCode PFView(PF pf, PetscViewer viewer) {
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pf, PF_CLASSID, 1);
-  if (!viewer) { PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)pf), &viewer)); }
+  if (!viewer) PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)pf), &viewer));
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscCheckSameComm(pf, 1, viewer, 2);
 

@@ -167,7 +167,7 @@ int main(int argc, char **args) {
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-check_symmetry", &flg, NULL));
   if (flg) {
     PetscCall(MatIsSymmetric(A, 0.0, &isSymmetric));
-    if (!isSymmetric) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Warning: A is non-symmetric \n")); }
+    if (!isSymmetric) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Warning: A is non-symmetric \n"));
   }
 
   /*
@@ -274,7 +274,7 @@ int main(int argc, char **args) {
     char      str[32];
 
     PetscCall(PetscOptionsGetString(NULL, NULL, "-ksp_type", str, sizeof(str), &lsqr));
-    if (lsqr) { PetscCall(PetscStrcmp("lsqr", str, &lsqr)); }
+    if (lsqr) PetscCall(PetscStrcmp("lsqr", str, &lsqr));
     if (lsqr) {
       Mat BtB;
       PetscCall(MatTransposeMatMult(A, A, MAT_INITIAL_MATRIX, 4, &BtB));

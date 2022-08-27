@@ -39,7 +39,7 @@ PetscErrorCode TaoTestGradient(Tao tao, Vec x, Vec g1) {
   PetscCall(PetscOptionsViewer("-tao_test_gradient_view", "View difference between hand-coded and finite difference Gradients element entries", "None", &mviewer, &format, &complete_print));
   PetscOptionsEnd();
   if (!test) {
-    if (complete_print) { PetscCall(PetscViewerDestroy(&mviewer)); }
+    if (complete_print) PetscCall(PetscViewerDestroy(&mviewer));
     PetscFunctionReturn(0);
   }
 
@@ -339,7 +339,7 @@ PetscErrorCode TaoSetResidualRoutine(Tao tao, Vec res, PetscErrorCode (*func)(Ta
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   PetscValidHeaderSpecific(res, VEC_CLASSID, 2);
   PetscCall(PetscObjectReference((PetscObject)res));
-  if (tao->ls_res) { PetscCall(VecDestroy(&tao->ls_res)); }
+  if (tao->ls_res) PetscCall(VecDestroy(&tao->ls_res));
   tao->ls_res               = res;
   tao->user_lsresP          = ctx;
   tao->ops->computeresidual = func;

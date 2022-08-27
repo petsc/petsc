@@ -142,7 +142,7 @@ PetscErrorCode PCSetUp_HMG(PC pc) {
     PA = submat;
   }
   PetscCall(PCSetOperators(hmg->innerpc, PA, PA));
-  if (hmg->subcoarsening) { PetscCall(MatDestroy(&PA)); }
+  if (hmg->subcoarsening) PetscCall(MatDestroy(&PA));
   /* Setup inner PC correctly. During this step, matrix will be coarsened */
   PetscCall(PCSetUseAmat(hmg->innerpc, PETSC_FALSE));
   PetscCall(PetscObjectGetOptionsPrefix((PetscObject)pc, &prefix));
@@ -154,7 +154,7 @@ PetscErrorCode PCSetUp_HMG(PC pc) {
   /* Obtain interpolations IN PLACE. For BoomerAMG, (I,J,data) is reused to avoid memory overhead */
   PetscCall(PCGetInterpolations(hmg->innerpc, &num_levels, &interpolations));
   /* We can reuse the coarse operators when we do the full space coarsening */
-  if (!hmg->subcoarsening) { PetscCall(PCGetCoarseOperators(hmg->innerpc, &num_levels, &operators)); }
+  if (!hmg->subcoarsening) PetscCall(PCGetCoarseOperators(hmg->innerpc, &num_levels, &operators));
 
   PetscCall(PCDestroy(&hmg->innerpc));
   hmg->innerpc = NULL;
@@ -196,7 +196,7 @@ PetscErrorCode PCSetUp_HMG(PC pc) {
     PetscCall(VecDestroy(&b));
   }
   PetscCall(PetscFree(interpolations));
-  if (!hmg->subcoarsening) { PetscCall(PetscFree(operators)); }
+  if (!hmg->subcoarsening) PetscCall(PetscFree(operators));
   /* Turn Galerkin off when we already have coarse operators */
   PetscCall(PCMGSetGalerkin(pc, hmg->subcoarsening ? PC_MG_GALERKIN_PMAT : PC_MG_GALERKIN_NONE));
   PetscCall(PCSetDM(pc, NULL));

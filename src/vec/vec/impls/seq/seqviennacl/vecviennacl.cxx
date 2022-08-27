@@ -137,15 +137,15 @@ PETSC_EXTERN PetscErrorCode PetscViennaCLInit() {
     /* Print selected backends */
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "ViennaCL backend  selected: "));
 #if defined(PETSC_HAVE_CUDA)
-    if (viennacl::backend::default_memory_type() == viennacl::CUDA_MEMORY) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "CUDA ")); }
+    if (viennacl::backend::default_memory_type() == viennacl::CUDA_MEMORY) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "CUDA "));
 #endif
 #if defined(PETSC_HAVE_OPENCL)
-    if (viennacl::backend::default_memory_type() == viennacl::OPENCL_MEMORY) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "OpenCL ")); }
+    if (viennacl::backend::default_memory_type() == viennacl::OPENCL_MEMORY) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "OpenCL "));
 #endif
 #if defined(PETSC_HAVE_OPENMP)
-    if (viennacl::backend::default_memory_type() == viennacl::MAIN_MEMORY) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "OpenMP ")); }
+    if (viennacl::backend::default_memory_type() == viennacl::MAIN_MEMORY) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "OpenMP "));
 #else
-    if (viennacl::backend::default_memory_type() == viennacl::MAIN_MEMORY) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "OpenMP (sequential - consider reconfiguration: --with-openmp=1) ")); }
+    if (viennacl::backend::default_memory_type() == viennacl::MAIN_MEMORY) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "OpenMP (sequential - consider reconfiguration: --with-openmp=1) "));
 #endif
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n"));
   }
@@ -436,7 +436,7 @@ PetscErrorCode VecDot_SeqViennaCL(Vec xin, Vec yin, PetscScalar *z) {
     } catch (std::exception const &ex) { SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "ViennaCL error: %s", ex.what()); }
     ViennaCLWaitForGPU();
     PetscCall(PetscLogGpuTimeEnd());
-    if (xin->map->n > 0) { PetscCall(PetscLogGpuFlops(2.0 * xin->map->n - 1)); }
+    if (xin->map->n > 0) PetscCall(PetscLogGpuFlops(2.0 * xin->map->n - 1));
     PetscCall(VecViennaCLRestoreArrayRead(xin, &xgpu));
     PetscCall(VecViennaCLRestoreArrayRead(yin, &ygpu));
   } else *z = 0.0;
@@ -465,7 +465,7 @@ PetscErrorCode VecMDot_SeqViennaCL(Vec xin, PetscInt nv, const Vec yin[], PetscS
     viennacl::vector_tuple<PetscScalar> y_tuple(ygpu_array);
     ViennaCLVector                      result = viennacl::linalg::inner_prod(*xgpu, y_tuple);
     viennacl::copy(result.begin(), result.end(), z);
-    for (i = 0; i < nv; i++) { PetscCall(VecViennaCLRestoreArrayRead(yyin[i], &ygpu)); }
+    for (i = 0; i < nv; i++) PetscCall(VecViennaCLRestoreArrayRead(yyin[i], &ygpu));
     ViennaCLWaitForGPU();
     PetscCall(PetscLogGpuTimeEnd());
     PetscCall(VecViennaCLRestoreArrayRead(xin, &xgpu));

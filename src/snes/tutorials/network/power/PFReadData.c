@@ -190,8 +190,8 @@ PetscErrorCode PFReadMatPowerData(PFDATA *pf, char *filename) {
   PetscCall(PetscMalloc1(pf->ngen, &newgen));
   PetscCall(PetscMalloc1(pf->nload, &newload));
   for (i = 0; i < pf->nbus; i++) {
-    for (j = 0; j < pf->bus[i].ngen; j++) { PetscCall(PetscMemcpy(&newgen[genj++], &pf->gen[pf->bus[i].gidx[j]], sizeof(struct _p_GEN))); }
-    for (j = 0; j < pf->bus[i].nload; j++) { PetscCall(PetscMemcpy(&newload[loadj++], &pf->load[pf->bus[i].lidx[j]], sizeof(struct _p_LOAD))); }
+    for (j = 0; j < pf->bus[i].ngen; j++) PetscCall(PetscMemcpy(&newgen[genj++], &pf->gen[pf->bus[i].gidx[j]], sizeof(struct _p_GEN)));
+    for (j = 0; j < pf->bus[i].nload; j++) PetscCall(PetscMemcpy(&newload[loadj++], &pf->load[pf->bus[i].lidx[j]], sizeof(struct _p_LOAD)));
   }
   PetscCall(PetscFree(pf->gen));
   PetscCall(PetscFree(pf->load));

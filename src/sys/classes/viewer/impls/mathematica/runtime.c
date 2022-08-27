@@ -71,7 +71,7 @@ static int processPacket(MLINK link, int indent) {
     isHead = 0;
     /* Process arguments */
     printf("  Arguments:\n");
-    for (arg = 0; arg < numArguments; arg++) { PetscCall(processPacket(link, indent + 4)); }
+    for (arg = 0; arg < numArguments; arg++) PetscCall(processPacket(link, indent + 4));
   } break;
   case MLTKSYM: {
     const char *symbol;

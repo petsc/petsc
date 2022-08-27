@@ -17,7 +17,7 @@ static PetscErrorCode MatColoringApply_Natural(MatColoring mc, ISColoring *iscol
   /* this is ugly way to get blocksize but cannot call MatGetBlockSize() because AIJ can have bs > 1 */
   PetscCall(PetscObjectTypeCompare((PetscObject)mat, MATSEQBAIJ, &flg1));
   PetscCall(PetscObjectTypeCompare((PetscObject)mat, MATMPIBAIJ, &flg2));
-  if (flg1 || flg2) { PetscCall(MatGetBlockSize(mat, &bs)); }
+  if (flg1 || flg2) PetscCall(MatGetBlockSize(mat, &bs));
 
   PetscCall(PetscObjectGetComm((PetscObject)mat, &comm));
   PetscCallMPI(MPI_Comm_size(comm, &size));

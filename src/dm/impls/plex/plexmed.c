@@ -312,7 +312,7 @@ PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm comm, const char filename[], Pet
           }
           if (verticesLocal) {
             PetscCall(DMPlexGetFullJoin(*dm, numFacetCorners, (const PetscInt *)vertices, &joinSize, &join));
-            if (joinSize == 1) { PetscCall(DMLabelSetValue(lblFaceSets, join[0], facetIDsRemote[(offset + f) / numFacetCorners])); }
+            if (joinSize == 1) PetscCall(DMLabelSetValue(lblFaceSets, join[0], facetIDsRemote[(offset + f) / numFacetCorners]));
             PetscCall(DMPlexRestoreJoin(*dm, numFacetCorners, (const PetscInt *)vertices, &joinSize, &join));
           }
         }

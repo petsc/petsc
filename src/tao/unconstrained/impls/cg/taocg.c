@@ -17,7 +17,7 @@ static PetscErrorCode TaoSolve_CG(Tao tao) {
   PetscReal                    gd_old, gnorm2_old, f_old;
 
   PetscFunctionBegin;
-  if (tao->XL || tao->XU || tao->ops->computebounds) { PetscCall(PetscInfo(tao, "WARNING: Variable bounds have been set but will be ignored by cg algorithm\n")); }
+  if (tao->XL || tao->XU || tao->ops->computebounds) PetscCall(PetscInfo(tao, "WARNING: Variable bounds have been set but will be ignored by cg algorithm\n"));
 
   /*  Check convergence criteria */
   PetscCall(TaoComputeObjectiveAndGradient(tao, tao->solution, &f, tao->gradient));

@@ -219,8 +219,8 @@ static PetscErrorCode VecAssemblyBegin_MPI_BTS(Vec X) {
   if (x->first_assembly_done) { /* this is not the first assembly */
     PetscMPIInt tag[4];
     for (i = 0; i < 4; i++) PetscCall(PetscCommGetNewTag(comm, &tag[i]));
-    for (i = 0; i < x->nsendranks; i++) { PetscCall(VecAssemblySend_MPI_Private(comm, tag, i, x->sendranks[i], x->sendhdr + i, x->sendreqs + 4 * i, X)); }
-    for (i = 0; i < x->nrecvranks; i++) { PetscCall(VecAssemblyRecv_MPI_Private(comm, tag, x->recvranks[i], x->recvhdr + i, x->recvreqs + 4 * i, X)); }
+    for (i = 0; i < x->nsendranks; i++) PetscCall(VecAssemblySend_MPI_Private(comm, tag, i, x->sendranks[i], x->sendhdr + i, x->sendreqs + 4 * i, X));
+    for (i = 0; i < x->nrecvranks; i++) PetscCall(VecAssemblyRecv_MPI_Private(comm, tag, x->recvranks[i], x->recvhdr + i, x->recvreqs + 4 * i, X));
     x->use_status = PETSC_TRUE;
   } else { /* First time assembly */
     PetscCall(PetscCommBuildTwoSidedFReq(comm, 3, MPIU_INT, x->nsendranks, x->sendranks, (PetscInt *)x->sendhdr, &x->nrecvranks, &x->recvranks, &x->recvhdr, 4, &x->sendreqs, &x->recvreqs, VecAssemblySend_MPI_Private, VecAssemblyRecv_MPI_Private, X));

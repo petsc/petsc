@@ -95,10 +95,10 @@ static PetscErrorCode DMView_DA_3d(DM da, PetscViewer viewer) {
       for (k = 0; k < dd->P; k++) {
         ymin = 0.0;
         ymax = (PetscReal)(dd->N - 1);
-        for (xmin = (PetscReal)(k * (dd->M + 1)); xmin < (PetscReal)(dd->M + (k * (dd->M + 1))); xmin++) { PetscCall(PetscDrawLine(draw, xmin, ymin, xmin, ymax, PETSC_DRAW_BLACK)); }
+        for (xmin = (PetscReal)(k * (dd->M + 1)); xmin < (PetscReal)(dd->M + (k * (dd->M + 1))); xmin++) PetscCall(PetscDrawLine(draw, xmin, ymin, xmin, ymax, PETSC_DRAW_BLACK));
         xmin = (PetscReal)(k * (dd->M + 1));
         xmax = xmin + (PetscReal)(dd->M - 1);
-        for (ymin = 0; ymin < (PetscReal)dd->N; ymin++) { PetscCall(PetscDrawLine(draw, xmin, ymin, xmax, ymin, PETSC_DRAW_BLACK)); }
+        for (ymin = 0; ymin < (PetscReal)dd->N; ymin++) PetscCall(PetscDrawLine(draw, xmin, ymin, xmax, ymin, PETSC_DRAW_BLACK));
       }
     }
     PetscDrawCollectiveEnd(draw);

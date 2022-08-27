@@ -139,7 +139,7 @@ PetscErrorCode KSPGuessView(KSPGuess guess, PetscViewer view) {
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(guess, KSPGUESS_CLASSID, 1);
-  if (!view) { PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)guess), &view)); }
+  if (!view) PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)guess), &view));
   PetscValidHeaderSpecific(view, PETSC_VIEWER_CLASSID, 2);
   PetscCheckSameComm(guess, 1, view, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)view, PETSCVIEWERASCII, &ascii));

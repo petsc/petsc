@@ -26,7 +26,7 @@ PetscErrorCode PetscRandomGetValuesReal_CURAND(PetscRandom r, PetscInt n, PetscR
 #else
   PetscCallCURAND(curandGenerateUniformDouble(curand->gen, val, nn));
 #endif
-  if (r->iset) { PetscCall(PetscRandomCurandScale_Private(r, nn, val, (PetscBool)(n < 0))); }
+  if (r->iset) PetscCall(PetscRandomCurandScale_Private(r, nn, val, (PetscBool)(n < 0)));
   PetscFunctionReturn(0);
 }
 

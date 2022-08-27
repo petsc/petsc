@@ -52,7 +52,7 @@ static PetscErrorCode Petsc1DNodeFamilyDestroy(Petsc1DNodeFamily *nf) {
     PetscFunctionReturn(0);
   }
   nc = (*nf)->nComputed;
-  for (i = 0; i < nc; i++) { PetscCall(PetscFree((*nf)->nodesets[i])); }
+  for (i = 0; i < nc; i++) PetscCall(PetscFree((*nf)->nodesets[i]));
   PetscCall(PetscFree((*nf)->nodesets));
   PetscCall(PetscFree(*nf));
   *nf = NULL;
@@ -829,7 +829,7 @@ static PetscErrorCode PetscDualSpaceDestroy_Lagrange(PetscDualSpace sp) {
     if (selfSyms) {
       PetscInt i, **allocated = &selfSyms[-lag->selfSymOff];
 
-      for (i = 0; i < lag->numSelfSym; i++) { PetscCall(PetscFree(allocated[i])); }
+      for (i = 0; i < lag->numSelfSym; i++) PetscCall(PetscFree(allocated[i]));
       PetscCall(PetscFree(allocated));
     }
     PetscCall(PetscFree(lag->symperms));
@@ -841,7 +841,7 @@ static PetscErrorCode PetscDualSpaceDestroy_Lagrange(PetscDualSpace sp) {
       PetscInt      i;
       PetscScalar **allocated = &selfSyms[-lag->selfSymOff];
 
-      for (i = 0; i < lag->numSelfSym; i++) { PetscCall(PetscFree(allocated[i])); }
+      for (i = 0; i < lag->numSelfSym; i++) PetscCall(PetscFree(allocated[i]));
       PetscCall(PetscFree(allocated));
     }
     PetscCall(PetscFree(lag->symflips));
@@ -910,7 +910,7 @@ static PetscErrorCode PetscDualSpaceSetFromOptions_Lagrange(PetscDualSpace sp, P
   PetscCall(PetscOptionsEnum("-petscdualspace_lagrange_node_type", "Lagrange node location type", "PetscDualSpaceLagrangeSetNodeType", PetscDTNodeTypes, (PetscEnum)nodeType, (PetscEnum *)&nodeType, &flg));
   PetscCall(PetscOptionsBool("-petscdualspace_lagrange_node_endpoints", "Flag for nodes that include endpoints", "PetscDualSpaceLagrangeSetNodeType", nodeEndpoints, &nodeEndpoints, &flg2));
   flg3 = PETSC_FALSE;
-  if (nodeType == PETSCDTNODES_GAUSSJACOBI) { PetscCall(PetscOptionsReal("-petscdualspace_lagrange_node_exponent", "Gauss-Jacobi weight function exponent", "PetscDualSpaceLagrangeSetNodeType", nodeExponent, &nodeExponent, &flg3)); }
+  if (nodeType == PETSCDTNODES_GAUSSJACOBI) PetscCall(PetscOptionsReal("-petscdualspace_lagrange_node_exponent", "Gauss-Jacobi weight function exponent", "PetscDualSpaceLagrangeSetNodeType", nodeExponent, &nodeExponent, &flg3));
   if (flg || flg2 || flg3) PetscCall(PetscDualSpaceLagrangeSetNodeType(sp, nodeType, nodeEndpoints, nodeExponent));
   PetscCall(PetscOptionsBool("-petscdualspace_lagrange_use_moments", "Use moments (where appropriate) for functionals", "PetscDualSpaceLagrangeSetUseMoments", useMoments, &useMoments, &flg));
   if (flg) PetscCall(PetscDualSpaceLagrangeSetUseMoments(sp, useMoments));
@@ -1114,9 +1114,9 @@ static PetscErrorCode MatTensorAltV(Mat trace, Mat fiber, PetscInt dimTrace, Pet
             vals = &work[0];
 #endif
           }
-          for (l = 0; l < Nk; l++) { PetscCall(MatSetValue(prod, i, col * Nk + l, vals[l], INSERT_VALUES)); } /* Nk */
-        }                                                                                                     /* jT */
-      }                                                                                                       /* jF */
+          for (l = 0; l < Nk; l++) PetscCall(MatSetValue(prod, i, col * Nk + l, vals[l], INSERT_VALUES)); /* Nk */
+        }                                                                                                 /* jT */
+      }                                                                                                   /* jF */
       PetscCall(MatRestoreRow(trace, iT, &ncolsT, &colsT, &valsT));
     } /* iT */
     PetscCall(MatRestoreRow(fiber, iF, &ncolsF, &colsF, &valsF));
@@ -1365,7 +1365,7 @@ static PetscErrorCode PetscDualSpaceLagrangeCreateSimplexNodeMat(Petsc1DNodeFami
     PetscInt a, aprev = j - rem;
     PetscInt anext = aprev + Nk;
 
-    for (a = aprev; a < anext; a++) { PetscCall(MatSetValue(intMat, j, a, (a == j) ? 1. : 0., INSERT_VALUES)); }
+    for (a = aprev; a < anext; a++) PetscCall(MatSetValue(intMat, j, a, (a == j) ? 1. : 0., INSERT_VALUES));
   }
   PetscCall(MatAssemblyBegin(intMat, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(intMat, MAT_FINAL_ASSEMBLY));
@@ -1607,7 +1607,7 @@ static PetscErrorCode PetscDualSpaceComputeFunctionalsFromAllData(PetscDualSpace
   PetscCall(PetscDTBinomialInt(dim, PetscAbsInt(k), &Nk));
   PetscCall(PetscDualSpaceGetAllData(sp, &allNodes, &allMat));
   nNodes = 0;
-  if (allNodes) { PetscCall(PetscQuadratureGetData(allNodes, NULL, NULL, &nNodes, &nodes, NULL)); }
+  if (allNodes) PetscCall(PetscQuadratureGetData(allNodes, NULL, NULL, &nNodes, &nodes, NULL));
   PetscCall(MatGetSize(allMat, &nDofs, NULL));
   PetscCall(PetscDualSpaceGetSection(sp, &section));
   PetscCall(PetscSectionGetStorageSize(section, &spdim));
@@ -2019,11 +2019,11 @@ static PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp) {
     dmint = dm;
   }
   tensorCell = PETSC_FALSE;
-  if (dim > 1) { PetscCall(DMPlexPointIsTensor(dmint, 0, &tensorCell, &tensorf, &tensorf2)); }
+  if (dim > 1) PetscCall(DMPlexPointIsTensor(dmint, 0, &tensorCell, &tensorf, &tensorf2));
   lag->tensorCell = tensorCell;
   if (dim < 2 || !lag->tensorCell) lag->tensorSpace = PETSC_FALSE;
   tensorSpace = lag->tensorSpace;
-  if (!lag->nodeFamily) { PetscCall(Petsc1DNodeFamilyCreate(lag->nodeType, lag->nodeExponent, lag->endNodes, &lag->nodeFamily)); }
+  if (!lag->nodeFamily) PetscCall(Petsc1DNodeFamilyCreate(lag->nodeType, lag->nodeExponent, lag->endNodes, &lag->nodeFamily));
   nodeFamily = lag->nodeFamily;
   PetscCheck(interpolated == DMPLEX_INTERPOLATED_FULL || !continuous || (PetscAbsInt(formDegree) <= 0 && order <= 1), PETSC_COMM_SELF, PETSC_ERR_PLIB, "Reference element won't support all boundary nodes");
 
@@ -2351,7 +2351,7 @@ static PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp) {
       PetscCall(PetscDualSpaceCreateEdgeSubspace_Lagrange(sp, order, fiberDegree, 1, PETSC_TRUE, &fiber));
       tracel = (PetscDualSpace_Lag *)trace->data;
       fiberl = (PetscDualSpace_Lag *)fiber->data;
-      if (!lag->vertIndices) { PetscCall(PetscLagNodeIndicesCreateTensorVertices(dm, tracel->vertIndices, &(lag->vertIndices))); }
+      if (!lag->vertIndices) PetscCall(PetscLagNodeIndicesCreateTensorVertices(dm, tracel->vertIndices, &(lag->vertIndices)));
       PetscCall(PetscDualSpaceGetInteriorData(trace, &intNodesTrace2, &intMatTrace));
       PetscCall(PetscDualSpaceGetInteriorData(fiber, &intNodesFiber2, &intMatFiber));
       if (intNodesTrace2 && intNodesFiber2) {
@@ -2412,7 +2412,7 @@ static PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp) {
     {
       PetscInt nDofs = 0;
 
-      if (intMat) { PetscCall(MatGetSize(intMat, &nDofs, NULL)); }
+      if (intMat) PetscCall(MatGetSize(intMat, &nDofs, NULL));
       PetscCall(PetscSectionSetDof(section, 0, nDofs));
     }
     PetscCall(PetscDualSpaceSectionSetUp_Internal(sp, section));

@@ -225,28 +225,28 @@ int main(int argc, char **argv) {
     PetscCall(VecAYPX(Y, -1.0, X));        /* Y <- X - Y      */
     PetscCall(VecCopy(Y, X));              /* X <- Y          */
     PetscCall(VecNorm(X, NORM_2, &xnorm)); /* xnorm = || X || */
-    if (!no_output) { PetscCall(PetscPrintf(comm, "   linear solve iterations = %" PetscInt_FMT ", xnorm=%g, ynorm=%g\n", lin_its, (double)xnorm, (double)ynorm)); }
+    if (!no_output) PetscCall(PetscPrintf(comm, "   linear solve iterations = %" PetscInt_FMT ", xnorm=%g, ynorm=%g\n", lin_its, (double)xnorm, (double)ynorm));
 
     /*
        Evaluate new nonlinear function
      */
     PetscCall(ComputeFunction(&user, X, F)); /* Compute F(X)    */
     PetscCall(VecNorm(F, NORM_2, &fnorm));   /* fnorm = || F || */
-    if (!no_output) { PetscCall(PetscPrintf(comm, "Iteration %" PetscInt_FMT ", function norm = %g\n", i + 1, (double)fnorm)); }
+    if (!no_output) PetscCall(PetscPrintf(comm, "Iteration %" PetscInt_FMT ", function norm = %g\n", i + 1, (double)fnorm));
 
     /*
        Test for convergence
      */
     if (fnorm <= ttol) {
-      if (!no_output) { PetscCall(PetscPrintf(comm, "Converged due to function norm %g < %g (relative tolerance)\n", (double)fnorm, (double)ttol)); }
+      if (!no_output) PetscCall(PetscPrintf(comm, "Converged due to function norm %g < %g (relative tolerance)\n", (double)fnorm, (double)ttol));
       break;
     }
     if (ynorm < xtol * (xnorm)) {
-      if (!no_output) { PetscCall(PetscPrintf(comm, "Converged due to small update length: %g < %g * %g\n", (double)ynorm, (double)xtol, (double)xnorm)); }
+      if (!no_output) PetscCall(PetscPrintf(comm, "Converged due to small update length: %g < %g * %g\n", (double)ynorm, (double)xtol, (double)xnorm));
       break;
     }
     if (i > max_functions) {
-      if (!no_output) { PetscCall(PetscPrintf(comm, "Exceeded maximum number of function evaluations: %" PetscInt_FMT " > %" PetscInt_FMT "\n", i, max_functions)); }
+      if (!no_output) PetscCall(PetscPrintf(comm, "Exceeded maximum number of function evaluations: %" PetscInt_FMT " > %" PetscInt_FMT "\n", i, max_functions));
       break;
     }
   }

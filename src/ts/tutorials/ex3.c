@@ -144,7 +144,7 @@ int main(int argc, char **argv) {
      Set optional user-defined monitoring routine
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  if (!flg_string) { PetscCall(TSMonitorSet(ts, Monitor, &appctx, NULL)); }
+  if (!flg_string) PetscCall(TSMonitorSet(ts, Monitor, &appctx, NULL));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 

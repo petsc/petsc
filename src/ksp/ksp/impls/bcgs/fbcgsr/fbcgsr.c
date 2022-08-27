@@ -62,7 +62,7 @@ static PetscErrorCode KSPSolve_FBCGSR(KSP ksp) {
   /* Only supports right preconditioning */
   PetscCheck(ksp->pc_side == PC_RIGHT, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "KSP fbcgsr does not support %s", PCSides[ksp->pc_side]);
   if (!ksp->guess_zero) {
-    if (!bcgs->guess) { PetscCall(VecDuplicate(X, &bcgs->guess)); }
+    if (!bcgs->guess) PetscCall(VecDuplicate(X, &bcgs->guess));
     PetscCall(VecCopy(X, bcgs->guess));
   } else {
     PetscCall(VecSet(X, 0.0));

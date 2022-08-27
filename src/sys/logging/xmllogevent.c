@@ -152,7 +152,7 @@ PetscErrorCode PetscLogNestedEnd(void) {
 
   PetscFunctionBegin;
   if (!nestedEvents) PetscFunctionReturn(0);
-  for (i = 0; i < nNestedEvents; i++) { PetscCall(PetscFree4(nestedEvents[i].dftParentsSorted, nestedEvents[i].dftEventsSorted, nestedEvents[i].dftParents, nestedEvents[i].dftEvents)); }
+  for (i = 0; i < nNestedEvents; i++) PetscCall(PetscFree4(nestedEvents[i].dftParentsSorted, nestedEvents[i].dftEventsSorted, nestedEvents[i].dftParents, nestedEvents[i].dftEvents));
   PetscCall(PetscFree(nestedEvents));
   nestedEvents           = NULL;
   nNestedEvents          = 0;
@@ -451,8 +451,8 @@ static PetscErrorCode PetscPrintExeSpecs(PetscViewer viewer) {
   PetscCall(PetscViewerXMLPutString(viewer, "date", "Started at", date));
   PetscCall(PetscViewerXMLPutString(viewer, "petscrelease", "Petsc Release", version));
 
-  if (PetscDefined(USE_DEBUG)) { PetscCall(PetscStrlcat(buildoptions, "Debug ", sizeof(buildoptions))); }
-  if (PetscDefined(USE_COMPLEX)) { PetscCall(PetscStrlcat(buildoptions, "Complex ", sizeof(buildoptions))); }
+  if (PetscDefined(USE_DEBUG)) PetscCall(PetscStrlcat(buildoptions, "Debug ", sizeof(buildoptions)));
+  if (PetscDefined(USE_COMPLEX)) PetscCall(PetscStrlcat(buildoptions, "Complex ", sizeof(buildoptions)));
   if (PetscDefined(USE_REAL_SINGLE)) {
     PetscCall(PetscStrlcat(buildoptions, "Single ", sizeof(buildoptions)));
   } else if (PetscDefined(USE_REAL___FLOAT128)) {
@@ -460,12 +460,12 @@ static PetscErrorCode PetscPrintExeSpecs(PetscViewer viewer) {
   } else if (PetscDefined(USE_REAL___FP16)) {
     PetscCall(PetscStrlcat(buildoptions, "Half ", sizeof(buildoptions)));
   }
-  if (PetscDefined(USE_64BIT_INDICES)) { PetscCall(PetscStrlcat(buildoptions, "Int64 ", sizeof(buildoptions))); }
+  if (PetscDefined(USE_64BIT_INDICES)) PetscCall(PetscStrlcat(buildoptions, "Int64 ", sizeof(buildoptions)));
 #if defined(__cplusplus)
   PetscCall(PetscStrlcat(buildoptions, "C++ ", sizeof(buildoptions)));
 #endif
   PetscCall(PetscStrlen(buildoptions, &len));
-  if (len) { PetscCall(PetscViewerXMLPutString(viewer, "petscbuildoptions", "Petsc build options", buildoptions)); }
+  if (len) PetscCall(PetscViewerXMLPutString(viewer, "petscbuildoptions", "Petsc build options", buildoptions));
   PetscCall(PetscViewerXMLEndSection(viewer, "runspecification"));
   PetscFunctionReturn(0);
 }
@@ -497,8 +497,8 @@ static PetscErrorCode PetscPrintXMLGlobalPerformanceElement(PetscViewer viewer, 
   PetscCall(PetscViewerXMLPutDouble(viewer, "max", NULL, max[0], "%e"));
   PetscCall(PetscViewerXMLPutInt(viewer, "maxrank", "rank at which max was found", (PetscMPIInt)max[1]));
   PetscCall(PetscViewerXMLPutDouble(viewer, "ratio", NULL, ratio, "%f"));
-  if (print_average) { PetscCall(PetscViewerXMLPutDouble(viewer, "average", NULL, avg, "%e")); }
-  if (print_total) { PetscCall(PetscViewerXMLPutDouble(viewer, "total", NULL, tot, "%e")); }
+  if (print_average) PetscCall(PetscViewerXMLPutDouble(viewer, "average", NULL, avg, "%e"));
+  if (print_total) PetscCall(PetscViewerXMLPutDouble(viewer, "total", NULL, tot, "%e"));
   PetscCall(PetscViewerXMLEndSection(viewer, name));
   PetscFunctionReturn(0);
 }
@@ -533,7 +533,7 @@ static PetscErrorCode PetscPrintGlobalPerformance(PetscViewer viewer, PetscLogDo
 
   /*   Memory */
   PetscCall(PetscMallocGetMaximumUsage(&mem));
-  if (mem > 0.0) { PetscCall(PetscPrintXMLGlobalPerformanceElement(viewer, "memory", "Memory (MiB)", mem / 1024.0 / 1024.0, print_average_yes, print_total_yes)); }
+  if (mem > 0.0) PetscCall(PetscPrintXMLGlobalPerformanceElement(viewer, "memory", "Memory (MiB)", mem / 1024.0 / 1024.0, print_average_yes, print_total_yes));
   /*   Messages */
   mess = 0.5 * (petsc_irecv_ct + petsc_isend_ct + petsc_recv_ct + petsc_send_ct);
   PetscCall(PetscPrintXMLGlobalPerformanceElement(viewer, "messagetransfers", "MPI Message Transfers", mess, print_average_yes, print_total_yes));
@@ -766,7 +766,7 @@ static PetscErrorCode PetscLogNestedTreeCreate(PetscViewer viewer, PetscNestedEv
 
     /* Determine the size of the complete tree (with own and not-own timers) and allocate the new tree */
     totalNTimers = nTimers + iextra;
-    if (!newTree) { PetscCall(PetscMalloc1(totalNTimers, &newTree)); }
+    if (!newTree) PetscCall(PetscMalloc1(totalNTimers, &newTree));
   }
   PetscCall(PetscFree(nstPath));
   PetscCall(PetscFree(nstMyPath));
@@ -787,7 +787,7 @@ static PetscErrorCode PetscLogNestedTreeDestroy(PetscNestedEventTree *tree, int 
   int i;
 
   PetscFunctionBegin;
-  for (i = 0; i < nTimers; i++) { PetscCall(PetscFree(tree[i].nstPath)); }
+  for (i = 0; i < nTimers; i++) PetscCall(PetscFree(tree[i].nstPath));
   PetscCall(PetscFree(tree));
   PetscFunctionReturn(0);
 }
@@ -1074,7 +1074,7 @@ static PetscErrorCode PetscLogNestedTreePrint(PetscViewer viewer, PetscNestedEve
         /* ignored: no output */
       } else if (children[i].id == -1) {
         PetscCall(PetscLogNestedTreePrintLine(viewer, selfPerfInfo, 1, parentCount, depth + 1, "self", totalTime, &childWasPrinted));
-        if (childWasPrinted) { PetscCall(PetscViewerXMLEndSection(viewer, "event")); }
+        if (childWasPrinted) PetscCall(PetscViewerXMLEndSection(viewer, "event"));
       } else if (children[i].id == -2) {
         size_t len;
         char  *otherName;
@@ -1084,7 +1084,7 @@ static PetscErrorCode PetscLogNestedTreePrint(PetscViewer viewer, PetscNestedEve
         PetscCall(PetscSNPrintf(otherName, len + 16, "%s: other-timed", name));
         PetscCall(PetscLogNestedTreePrintLine(viewer, otherPerfInfo, 1, 1, depth + 1, otherName, totalTime, &childWasPrinted));
         PetscCall(PetscFree(otherName));
-        if (childWasPrinted) { PetscCall(PetscViewerXMLEndSection(viewer, "event")); }
+        if (childWasPrinted) PetscCall(PetscViewerXMLEndSection(viewer, "event"));
       } else {
         /* Print the child with a recursive call to this function */
         PetscCall(PetscLogNestedTreePrint(viewer, tree, nTimers, children[i].id, totalTime));
@@ -1094,7 +1094,7 @@ static PetscErrorCode PetscLogNestedTreePrint(PetscViewer viewer, PetscNestedEve
     PetscCall(PetscFree(children));
   }
 
-  if (wasPrinted) { PetscCall(PetscViewerXMLEndSection(viewer, "event")); }
+  if (wasPrinted) PetscCall(PetscViewerXMLEndSection(viewer, "event"));
   PetscFunctionReturn(0);
 }
 
@@ -1287,7 +1287,7 @@ static PetscErrorCode PetscPrintSelfTime(PetscViewer viewer, const PetscSelfTime
       selfPerfInfo.numReductions = selftimes[nstEvent].numReductions;
 
       PetscCall(PetscLogNestedTreePrintLine(viewer, selfPerfInfo, dum_count, dum_parentcount, dum_depth, name, totalTime, &wasPrinted));
-      if (wasPrinted) { PetscCall(PetscViewerXMLEndSection(viewer, "event")); }
+      if (wasPrinted) PetscCall(PetscViewerXMLEndSection(viewer, "event"));
     }
   }
   PetscCall(PetscViewerXMLEndSection(viewer, "selftimertable"));
@@ -1397,7 +1397,7 @@ static PetscErrorCode PetscLogNestedTreePrintFlamegraph(PetscViewer viewer, Pets
 
   /* Add the current event to the parent stack and write the child events */
   PetscIntStackPush(eventStack, iStart);
-  for (i = 0; i < nChildren; i++) { PetscCall(PetscLogNestedTreePrintFlamegraph(viewer, tree, nTimers, children[i].id, totalTime, eventStack)); }
+  for (i = 0; i < nChildren; i++) PetscCall(PetscLogNestedTreePrintFlamegraph(viewer, tree, nTimers, children[i].id, totalTime, eventStack));
   /* Pop the top item from the stack and immediately discard it */
   {
     int tmp;
@@ -1436,7 +1436,7 @@ PetscErrorCode PetscLogView_Flamegraph(PetscViewer viewer) {
   /* Initialize the child events and write them recursively */
   PetscCall(PetscLogNestedTreeGetChildrenCount(tree, nTimers, -1, 0, &nChildren));
   PetscCall(PetscLogNestedTreeSetChildrenSortItems(viewer, tree, nTimers, -1, 0, nChildren, &children));
-  for (i = 0; i < nChildren; i++) { PetscCall(PetscLogNestedTreePrintFlamegraph(viewer, tree, nTimers, children[i].id, totalTime, eventStack)); }
+  for (i = 0; i < nChildren; i++) PetscCall(PetscLogNestedTreePrintFlamegraph(viewer, tree, nTimers, children[i].id, totalTime, eventStack));
 
   PetscCall(PetscLogNestedTreeDestroy(tree, nTimers));
   PetscCall(PetscIntStackDestroy(eventStack));

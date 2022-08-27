@@ -339,7 +339,7 @@ PetscErrorCode MatView_SeqSBAIJ_ASCII(Mat A, PetscViewer viewer) {
               PetscCall(PetscViewerASCIIPrintf(viewer, " (%" PetscInt_FMT ", %g) ", bs * a->j[k] + l, (double)PetscRealPart(a->a[bs2 * k + l * bs + j])));
             }
 #else
-            if (a->a[bs2 * k + l * bs + j] != 0.0) { PetscCall(PetscViewerASCIIPrintf(viewer, " (%" PetscInt_FMT ", %g) ", bs * a->j[k] + l, (double)a->a[bs2 * k + l * bs + j])); }
+            if (a->a[bs2 * k + l * bs + j] != 0.0) PetscCall(PetscViewerASCIIPrintf(viewer, " (%" PetscInt_FMT ", %g) ", bs * a->j[k] + l, (double)a->a[bs2 * k + l * bs + j]));
 #endif
           }
         }
@@ -596,7 +596,7 @@ PetscErrorCode MatPermute_SeqSBAIJ(Mat A, IS rowp, IS colp, Mat *B) {
   PetscCall(MatConvert(A, MATSEQBAIJ, MAT_INITIAL_MATRIX, &C));
   PetscCall(MatPermute(C, rowp, colp, B));
   PetscCall(MatDestroy(&C));
-  if (rowp == colp) { PetscCall(MatConvert(*B, MATSEQSBAIJ, MAT_INPLACE_MATRIX, B)); }
+  if (rowp == colp) PetscCall(MatConvert(*B, MATSEQSBAIJ, MAT_INPLACE_MATRIX, B));
   PetscFunctionReturn(0);
 }
 
@@ -1286,7 +1286,7 @@ PetscErrorCode MatShift_SeqSBAIJ(Mat Y, PetscScalar a) {
   Mat_SeqSBAIJ *aij = (Mat_SeqSBAIJ *)Y->data;
 
   PetscFunctionBegin;
-  if (!Y->preallocated || !aij->nz) { PetscCall(MatSeqSBAIJSetPreallocation(Y, Y->rmap->bs, 1, NULL)); }
+  if (!Y->preallocated || !aij->nz) PetscCall(MatSeqSBAIJSetPreallocation(Y, Y->rmap->bs, 1, NULL));
   PetscCall(MatShift_Basic(Y, a));
   PetscFunctionReturn(0);
 }
@@ -1452,7 +1452,7 @@ PetscErrorCode MatStoreValues_SeqSBAIJ(Mat mat) {
   PetscCheck(aij->nonew == 1, PETSC_COMM_SELF, PETSC_ERR_ORDER, "Must call MatSetOption(A,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);first");
 
   /* allocate space for values if not already there */
-  if (!aij->saved_values) { PetscCall(PetscMalloc1(nz + 1, &aij->saved_values)); }
+  if (!aij->saved_values) PetscCall(PetscMalloc1(nz + 1, &aij->saved_values));
 
   /* copy values over */
   PetscCall(PetscArraycpy(aij->saved_values, aij->a, nz));
@@ -1658,7 +1658,7 @@ PetscErrorCode MatSeqSBAIJSetPreallocationCSR_SeqSBAIJ(Mat B, PetscInt bs, const
   PetscCall(PetscFree(nnz));
 
   values = (PetscScalar *)V;
-  if (!values) { PetscCall(PetscCalloc1(bs * bs * nz_max, &values)); }
+  if (!values) PetscCall(PetscCalloc1(bs * bs * nz_max, &values));
   for (i = 0; i < m; i++) {
     PetscInt        ncols = ii[i + 1] - ii[i];
     const PetscInt *icols = jj + ii[i];
@@ -1888,7 +1888,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqSBAIJ(Mat B) {
 
   PetscOptionsBegin(PetscObjectComm((PetscObject)B), ((PetscObject)B)->prefix, "Options for SEQSBAIJ matrix", "Mat");
   PetscCall(PetscOptionsBool("-mat_no_unroll", "Do not optimize for inodes (slower)", NULL, no_unroll, &no_unroll, NULL));
-  if (no_unroll) { PetscCall(PetscInfo(B, "Not using Inode routines due to -mat_no_unroll\n")); }
+  if (no_unroll) PetscCall(PetscInfo(B, "Not using Inode routines due to -mat_no_unroll\n"));
   PetscCall(PetscOptionsBool("-mat_no_inode", "Do not optimize for inodes (slower)", NULL, no_inode, &no_inode, NULL));
   if (no_inode) PetscCall(PetscInfo(B, "Not using Inode routines due to -mat_no_inode\n"));
   PetscCall(PetscOptionsInt("-mat_inode_limit", "Do not use inodes larger then this value", NULL, b->inode.limit, &b->inode.limit, NULL));
@@ -2098,7 +2098,7 @@ PetscErrorCode MatDuplicate_SeqSBAIJ(Mat A, MatDuplicateOption cpvalues, Mat *B)
     c->free_ij      = PETSC_TRUE;
   }
   if (mbs > 0) {
-    if (cpvalues != MAT_SHARE_NONZERO_PATTERN) { PetscCall(PetscArraycpy(c->j, a->j, nz)); }
+    if (cpvalues != MAT_SHARE_NONZERO_PATTERN) PetscCall(PetscArraycpy(c->j, a->j, nz));
     if (cpvalues == MAT_COPY_VALUES) {
       PetscCall(PetscArraycpy(c->a, a->a, bs2 * nz));
     } else {

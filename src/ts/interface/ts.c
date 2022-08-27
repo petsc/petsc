@@ -822,7 +822,7 @@ static PetscErrorCode TSRecoverRHSJacobian(TS ts, Mat A, Mat B) {
   PetscCheck(B == ts->Brhs, PetscObjectComm((PetscObject)ts), PETSC_ERR_SUP, "Invalid Bmat");
 
   if (ts->rhsjacobian.shift) PetscCall(MatShift(A, -ts->rhsjacobian.shift));
-  if (ts->rhsjacobian.scale == -1.) { PetscCall(MatScale(A, -1)); }
+  if (ts->rhsjacobian.scale == -1.) PetscCall(MatScale(A, -1));
   if (B && B == ts->Brhs && A != B) {
     if (ts->rhsjacobian.shift) PetscCall(MatShift(B, -ts->rhsjacobian.shift));
     if (ts->rhsjacobian.scale == -1.) PetscCall(MatScale(B, -1));

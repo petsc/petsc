@@ -226,11 +226,11 @@ static PetscErrorCode DMPlexCreateAdjacencySection_Static(DM dm, PetscInt bs, Pe
       if ((padj < pStart) || (padj >= pEnd)) continue;
       PetscCall(PetscSectionGetDof(section, padj, &ndof));
       PetscCall(PetscSectionGetConstraintDof(section, padj, &ncdof));
-      for (d = off; d < off + dof; ++d) { PetscCall(PetscSectionAddDof(leafSectionAdj, d, ndof - ncdof)); }
+      for (d = off; d < off + dof; ++d) PetscCall(PetscSectionAddDof(leafSectionAdj, d, ndof - ncdof));
     }
     PetscCall(PetscSectionGetDof(anchorSectionAdj, p, &anDof));
     if (anDof) {
-      for (d = off; d < off + dof; ++d) { PetscCall(PetscSectionAddDof(leafSectionAdj, d, anDof)); }
+      for (d = off; d < off + dof; ++d) PetscCall(PetscSectionAddDof(leafSectionAdj, d, anDof));
     }
   }
   PetscCall(PetscSectionSetUp(leafSectionAdj));
@@ -265,11 +265,11 @@ static PetscErrorCode DMPlexCreateAdjacencySection_Static(DM dm, PetscInt bs, Pe
       if ((padj < pStart) || (padj >= pEnd)) continue;
       PetscCall(PetscSectionGetDof(section, padj, &ndof));
       PetscCall(PetscSectionGetConstraintDof(section, padj, &ncdof));
-      for (d = off; d < off + dof; ++d) { PetscCall(PetscSectionAddDof(rootSectionAdj, d, ndof - ncdof)); }
+      for (d = off; d < off + dof; ++d) PetscCall(PetscSectionAddDof(rootSectionAdj, d, ndof - ncdof));
     }
     PetscCall(PetscSectionGetDof(anchorSectionAdj, p, &anDof));
     if (anDof) {
-      for (d = off; d < off + dof; ++d) { PetscCall(PetscSectionAddDof(rootSectionAdj, d, anDof)); }
+      for (d = off; d < off + dof; ++d) PetscCall(PetscSectionAddDof(rootSectionAdj, d, anDof));
     }
   }
   PetscCall(PetscSectionSetUp(rootSectionAdj));
@@ -473,11 +473,11 @@ static PetscErrorCode DMPlexCreateAdjacencySection_Static(DM dm, PetscInt bs, Pe
       PetscCall(PetscSectionGetDof(section, padj, &ndof));
       PetscCall(PetscSectionGetConstraintDof(section, padj, &ncdof));
       PetscCall(PetscSectionGetOffset(section, padj, &noff));
-      for (d = goff; d < goff + dof - cdof; ++d) { PetscCall(PetscSectionAddDof(sectionAdj, d, ndof - ncdof)); }
+      for (d = goff; d < goff + dof - cdof; ++d) PetscCall(PetscSectionAddDof(sectionAdj, d, ndof - ncdof));
     }
     PetscCall(PetscSectionGetDof(anchorSectionAdj, p, &anDof));
     if (anDof) {
-      for (d = goff; d < goff + dof - cdof; ++d) { PetscCall(PetscSectionAddDof(sectionAdj, d, anDof)); }
+      for (d = goff; d < goff + dof - cdof; ++d) PetscCall(PetscSectionAddDof(sectionAdj, d, anDof));
     }
   }
   PetscCall(PetscSectionSetUp(sectionAdj));

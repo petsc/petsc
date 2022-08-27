@@ -64,7 +64,7 @@ PetscErrorCode VecFill(Vec x) {
 
   PetscFunctionBeginUser;
   PetscCall(VecGetOwnershipRange(x, &s, &e));
-  for (i = s; i < e; i++) { PetscCall(VecSetValue(x, i, (PetscScalar)test_values[i], INSERT_VALUES)); }
+  for (i = s; i < e; i++) PetscCall(VecSetValue(x, i, (PetscScalar)test_values[i], INSERT_VALUES));
   PetscCall(VecAssemblyBegin(x));
   PetscCall(VecAssemblyEnd(x));
   PetscFunctionReturn(0);
@@ -132,7 +132,7 @@ PetscErrorCode HeaderlessBinaryRead(const char name[]) {
       }
 #endif
     }
-    if (dataverified) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "Headerless read of data verified\n")); }
+    if (dataverified) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Headerless read of data verified\n"));
   }
   PetscFunctionReturn(0);
 }

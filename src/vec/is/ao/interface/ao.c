@@ -38,7 +38,7 @@ PetscLogEvent AO_PetscToApplication, AO_ApplicationToPetsc;
 PetscErrorCode AOView(AO ao, PetscViewer viewer) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao, AO_CLASSID, 1);
-  if (!viewer) { PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)ao), &viewer)); }
+  if (!viewer) PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)ao), &viewer));
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
 
   PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)ao, viewer));
@@ -91,7 +91,7 @@ PetscErrorCode AODestroy(AO *ao) {
   PetscCall(ISDestroy(&(*ao)->isapp));
   PetscCall(ISDestroy(&(*ao)->ispetsc));
   /* destroy the internal part */
-  if ((*ao)->ops->destroy) { PetscCall((*(*ao)->ops->destroy)(*ao)); }
+  if ((*ao)->ops->destroy) PetscCall((*(*ao)->ops->destroy)(*ao));
   PetscCall(PetscHeaderDestroy(ao));
   PetscFunctionReturn(0);
 }

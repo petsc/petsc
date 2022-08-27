@@ -210,7 +210,7 @@ int main(int argc, char **argv) {
     PC  pc, pc_faces;
     KSP ksp_faces;
 
-    if (ctx->n_levels < 2) { PetscCall(PetscPrintf(ctx->comm, "Warning: not using multiple levels!\n")); }
+    if (ctx->n_levels < 2) PetscCall(PetscPrintf(ctx->comm, "Warning: not using multiple levels!\n"));
 
     PetscCall(KSPGetPC(ksp, &pc));
     PetscCall(PCSetType(pc, PCFIELDSPLIT));
@@ -263,7 +263,7 @@ int main(int argc, char **argv) {
       PetscCall(PCMGGetSmoother(pc_faces, level, &ksp_level));
       PetscCall(KSPGetPC(ksp_level, &pc_level));
       PetscCall(KSPSetOperators(ksp_level, A_faces[level], A_faces[level]));
-      if (level > 0) { PetscCall(PCSetType(pc_level, PCJACOBI)); }
+      if (level > 0) PetscCall(PCSetType(pc_level, PCJACOBI));
 
       /* Transfer Operators */
       if (level > 0) {
@@ -298,11 +298,11 @@ int main(int argc, char **argv) {
   PetscCall(PetscFree(A));
   if (A_faces) {
     for (PetscInt level = 0; level < ctx->n_levels; ++level) {
-      if (A_faces[level]) { PetscCall(MatDestroy(&A_faces[level])); }
+      if (A_faces[level]) PetscCall(MatDestroy(&A_faces[level]));
     }
     PetscCall(PetscFree(A_faces));
   }
-  if (P) { PetscCall(MatDestroy(&P)); }
+  if (P) PetscCall(MatDestroy(&P));
   PetscCall(VecDestroy(&x));
   PetscCall(VecDestroy(&b));
   PetscCall(MatDestroy(&S_hat));
@@ -417,10 +417,10 @@ static PetscErrorCode LevelCtxDestroy(LevelCtx *p_level_ctx) {
 
   PetscFunctionBeginUser;
   level_ctx = *p_level_ctx;
-  if (level_ctx->dm_stokes) { PetscCall(DMDestroy(&level_ctx->dm_stokes)); }
-  if (level_ctx->dm_coefficients) { PetscCall(DMDestroy(&level_ctx->dm_coefficients)); }
-  if (level_ctx->dm_faces) { PetscCall(DMDestroy(&level_ctx->dm_faces)); }
-  if (level_ctx->coeff) { PetscCall(VecDestroy(&level_ctx->coeff)); }
+  if (level_ctx->dm_stokes) PetscCall(DMDestroy(&level_ctx->dm_stokes));
+  if (level_ctx->dm_coefficients) PetscCall(DMDestroy(&level_ctx->dm_coefficients));
+  if (level_ctx->dm_faces) PetscCall(DMDestroy(&level_ctx->dm_faces));
+  if (level_ctx->coeff) PetscCall(VecDestroy(&level_ctx->coeff));
   PetscCall(PetscFree(*p_level_ctx));
   PetscFunctionReturn(0);
 }
@@ -487,7 +487,7 @@ static PetscErrorCode CtxCreateAndSetFromOptions(Ctx *p_ctx) {
     PetscCall(PetscOptionsGetString(NULL, NULL, "-coefficients", mode, sizeof(mode), NULL));
     PetscCall(PetscStrncmp(mode, "layers", sizeof(mode), &is_layers));
     PetscCall(PetscStrncmp(mode, "sinker", sizeof(mode), &is_sinker_box));
-    if (!is_sinker_box) { PetscCall(PetscStrncmp(mode, "sinker_box", sizeof(mode), &is_sinker_box)); }
+    if (!is_sinker_box) PetscCall(PetscStrncmp(mode, "sinker_box", sizeof(mode), &is_sinker_box));
     PetscCall(PetscStrncmp(mode, "sinker_sphere", sizeof(mode), &is_sinker_sphere));
     PetscCall(PetscStrncmp(mode, "blob", sizeof(mode), &is_blob));
 
@@ -522,7 +522,7 @@ static PetscErrorCode CtxCreateAndSetFromOptions(Ctx *p_ctx) {
   ctx->n_levels = 1;
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-levels", &ctx->n_levels, NULL));
   PetscCall(PetscMalloc1(ctx->n_levels, &ctx->levels));
-  for (PetscInt i = 0; i < ctx->n_levels; ++i) { PetscCall(LevelCtxCreate(&ctx->levels[i])); }
+  for (PetscInt i = 0; i < ctx->n_levels; ++i) PetscCall(LevelCtxCreate(&ctx->levels[i]));
   PetscFunctionReturn(0);
 }
 
@@ -531,7 +531,7 @@ static PetscErrorCode CtxDestroy(Ctx *p_ctx) {
 
   PetscFunctionBeginUser;
   ctx = *p_ctx;
-  for (PetscInt i = 0; i < ctx->n_levels; ++i) { PetscCall(LevelCtxDestroy(&ctx->levels[i])); }
+  for (PetscInt i = 0; i < ctx->n_levels; ++i) PetscCall(LevelCtxDestroy(&ctx->levels[i]));
   PetscCall(PetscFree(ctx->levels));
   PetscCall(PetscFree(*p_ctx));
   PetscFunctionReturn(0);
@@ -613,7 +613,7 @@ static PetscErrorCode CreateSystem2d(SystemParameters parameters, Mat *pA, Vec *
         row.loc = DMSTAG_UP;
         row.c   = 0;
         PetscCall(DMStagMatSetValuesStencil(dm_main, A, 1, &row, 1, &row, &val_A, INSERT_VALUES));
-        if (build_rhs) { PetscCall(DMStagVecSetValuesStencil(dm_main, rhs, 1, &row, &val_rhs, INSERT_VALUES)); }
+        if (build_rhs) PetscCall(DMStagVecSetValuesStencil(dm_main, rhs, 1, &row, &val_rhs, INSERT_VALUES));
       }
 
       if (ey == 0) {
@@ -627,7 +627,7 @@ static PetscErrorCode CreateSystem2d(SystemParameters parameters, Mat *pA, Vec *
         row.loc = DMSTAG_DOWN;
         row.c   = 0;
         PetscCall(DMStagMatSetValuesStencil(dm_main, A, 1, &row, 1, &row, &val_A, INSERT_VALUES));
-        if (build_rhs) { PetscCall(DMStagVecSetValuesStencil(dm_main, rhs, 1, &row, &val_rhs, INSERT_VALUES)); }
+        if (build_rhs) PetscCall(DMStagVecSetValuesStencil(dm_main, rhs, 1, &row, &val_rhs, INSERT_VALUES));
       } else {
         /* Y-momentum equation : (u_xx + u_yy) - p_y = f^y
            includes non-zero forcing and free-slip boundary conditions */
@@ -755,7 +755,7 @@ static PetscErrorCode CreateSystem2d(SystemParameters parameters, Mat *pA, Vec *
         }
 
         PetscCall(DMStagMatSetValuesStencil(dm_main, A, 1, &row, count, col, val_A, INSERT_VALUES));
-        if (build_rhs) { PetscCall(DMStagVecSetValuesStencil(dm_main, rhs, 1, &row, &val_rhs, INSERT_VALUES)); }
+        if (build_rhs) PetscCall(DMStagVecSetValuesStencil(dm_main, rhs, 1, &row, &val_rhs, INSERT_VALUES));
       }
 
       if (ex == N[0] - 1) {
@@ -770,7 +770,7 @@ static PetscErrorCode CreateSystem2d(SystemParameters parameters, Mat *pA, Vec *
         row.loc = DMSTAG_RIGHT;
         row.c   = 0;
         PetscCall(DMStagMatSetValuesStencil(dm_main, A, 1, &row, 1, &row, &val_A, INSERT_VALUES));
-        if (build_rhs) { PetscCall(DMStagVecSetValuesStencil(dm_main, rhs, 1, &row, &val_rhs, INSERT_VALUES)); }
+        if (build_rhs) PetscCall(DMStagVecSetValuesStencil(dm_main, rhs, 1, &row, &val_rhs, INSERT_VALUES));
       }
       if (ex == 0) {
         /* Left velocity Dirichlet */
@@ -783,7 +783,7 @@ static PetscErrorCode CreateSystem2d(SystemParameters parameters, Mat *pA, Vec *
         row.loc = DMSTAG_LEFT;
         row.c   = 0;
         PetscCall(DMStagMatSetValuesStencil(dm_main, A, 1, &row, 1, &row, &val_A, INSERT_VALUES));
-        if (build_rhs) { PetscCall(DMStagVecSetValuesStencil(dm_main, rhs, 1, &row, &val_rhs, INSERT_VALUES)); }
+        if (build_rhs) PetscCall(DMStagVecSetValuesStencil(dm_main, rhs, 1, &row, &val_rhs, INSERT_VALUES));
       } else {
         /* X-momentum equation : (u_xx + u_yy) - p_x = f^x
           zero RHS, including free-slip boundary conditions */
@@ -897,7 +897,7 @@ static PetscErrorCode CreateSystem2d(SystemParameters parameters, Mat *pA, Vec *
         }
 
         PetscCall(DMStagMatSetValuesStencil(dm_main, A, 1, &row, count, col, val_A, INSERT_VALUES));
-        if (build_rhs) { PetscCall(DMStagVecSetValuesStencil(dm_main, rhs, 1, &row, &val_rhs, INSERT_VALUES)); }
+        if (build_rhs) PetscCall(DMStagVecSetValuesStencil(dm_main, rhs, 1, &row, &val_rhs, INSERT_VALUES));
       }
 
       /* P equation : u_x + v_y = 0
@@ -918,7 +918,7 @@ static PetscErrorCode CreateSystem2d(SystemParameters parameters, Mat *pA, Vec *
           row.loc = DMSTAG_ELEMENT;
           row.c   = 0;
           PetscCall(DMStagMatSetValuesStencil(dm_main, A, 1, &row, 1, &row, &val_A, INSERT_VALUES));
-          if (build_rhs) { PetscCall(DMStagVecSetValuesStencil(dm_main, rhs, 1, &row, &val_rhs, INSERT_VALUES)); }
+          if (build_rhs) PetscCall(DMStagVecSetValuesStencil(dm_main, rhs, 1, &row, &val_rhs, INSERT_VALUES));
         } else {
           DMStagStencil     row, col[5];
           PetscScalar       val_A[5];
@@ -951,7 +951,7 @@ static PetscErrorCode CreateSystem2d(SystemParameters parameters, Mat *pA, Vec *
           col[4]     = row;
           val_A[4]   = 0.0;
           PetscCall(DMStagMatSetValuesStencil(dm_main, A, 1, &row, 5, col, val_A, INSERT_VALUES));
-          if (build_rhs) { PetscCall(DMStagVecSetValuesStencil(dm_main, rhs, 1, &row, &val_rhs, INSERT_VALUES)); }
+          if (build_rhs) PetscCall(DMStagVecSetValuesStencil(dm_main, rhs, 1, &row, &val_rhs, INSERT_VALUES));
         }
       }
     }
@@ -1051,7 +1051,7 @@ static PetscErrorCode CreateSystem3d(SystemParameters parameters, Mat *pA, Vec *
           row.loc = DMSTAG_RIGHT;
           row.c   = 0;
           PetscCall(DMStagMatSetValuesStencil(dm_main, A, 1, &row, 1, &row, &val_A, INSERT_VALUES));
-          if (build_rhs) { PetscCall(DMStagVecSetValuesStencil(dm_main, rhs, 1, &row, &val_rhs, INSERT_VALUES)); }
+          if (build_rhs) PetscCall(DMStagVecSetValuesStencil(dm_main, rhs, 1, &row, &val_rhs, INSERT_VALUES));
         }
 
         /* X faces - left*/
@@ -1070,7 +1070,7 @@ static PetscErrorCode CreateSystem3d(SystemParameters parameters, Mat *pA, Vec *
             const PetscScalar val_A   = K_bound;
 
             PetscCall(DMStagMatSetValuesStencil(dm_main, A, 1, &row, 1, &row, &val_A, INSERT_VALUES));
-            if (build_rhs) { PetscCall(DMStagVecSetValuesStencil(dm_main, rhs, 1, &row, &val_rhs, INSERT_VALUES)); }
+            if (build_rhs) PetscCall(DMStagVecSetValuesStencil(dm_main, rhs, 1, &row, &val_rhs, INSERT_VALUES));
           } else {
             /* X-momentum equation */
             PetscInt          count;
@@ -1258,7 +1258,7 @@ static PetscErrorCode CreateSystem3d(SystemParameters parameters, Mat *pA, Vec *
             }
 
             PetscCall(DMStagMatSetValuesStencil(dm_main, A, 1, &row, count, col, val_A, INSERT_VALUES));
-            if (build_rhs) { PetscCall(DMStagVecSetValuesStencil(dm_main, rhs, 1, &row, &val_rhs, INSERT_VALUES)); }
+            if (build_rhs) PetscCall(DMStagVecSetValuesStencil(dm_main, rhs, 1, &row, &val_rhs, INSERT_VALUES));
           }
         }
 
@@ -1275,7 +1275,7 @@ static PetscErrorCode CreateSystem3d(SystemParameters parameters, Mat *pA, Vec *
           row.loc = DMSTAG_UP;
           row.c   = 0;
           PetscCall(DMStagMatSetValuesStencil(dm_main, A, 1, &row, 1, &row, &val_A, INSERT_VALUES));
-          if (build_rhs) { PetscCall(DMStagVecSetValuesStencil(dm_main, rhs, 1, &row, &val_rhs, INSERT_VALUES)); }
+          if (build_rhs) PetscCall(DMStagVecSetValuesStencil(dm_main, rhs, 1, &row, &val_rhs, INSERT_VALUES));
         }
 
         /* Y faces - down */
@@ -1294,7 +1294,7 @@ static PetscErrorCode CreateSystem3d(SystemParameters parameters, Mat *pA, Vec *
             const PetscScalar val_A   = K_bound;
 
             PetscCall(DMStagMatSetValuesStencil(dm_main, A, 1, &row, 1, &row, &val_A, INSERT_VALUES));
-            if (build_rhs) { PetscCall(DMStagVecSetValuesStencil(dm_main, rhs, 1, &row, &val_rhs, INSERT_VALUES)); }
+            if (build_rhs) PetscCall(DMStagVecSetValuesStencil(dm_main, rhs, 1, &row, &val_rhs, INSERT_VALUES));
           } else {
             /* Y-momentum equation (including non-zero forcing) */
             PetscInt      count;
@@ -1511,7 +1511,7 @@ static PetscErrorCode CreateSystem3d(SystemParameters parameters, Mat *pA, Vec *
             }
 
             PetscCall(DMStagMatSetValuesStencil(dm_main, A, 1, &row, count, col, val_A, INSERT_VALUES));
-            if (build_rhs) { PetscCall(DMStagVecSetValuesStencil(dm_main, rhs, 1, &row, &val_rhs, INSERT_VALUES)); }
+            if (build_rhs) PetscCall(DMStagVecSetValuesStencil(dm_main, rhs, 1, &row, &val_rhs, INSERT_VALUES));
           }
         }
 
@@ -1527,7 +1527,7 @@ static PetscErrorCode CreateSystem3d(SystemParameters parameters, Mat *pA, Vec *
           row.loc = DMSTAG_FRONT;
           row.c   = 0;
           PetscCall(DMStagMatSetValuesStencil(dm_main, A, 1, &row, 1, &row, &val_A, INSERT_VALUES));
-          if (build_rhs) { PetscCall(DMStagVecSetValuesStencil(dm_main, rhs, 1, &row, &val_rhs, INSERT_VALUES)); }
+          if (build_rhs) PetscCall(DMStagVecSetValuesStencil(dm_main, rhs, 1, &row, &val_rhs, INSERT_VALUES));
         }
 
         /* Z faces - back */
@@ -1546,7 +1546,7 @@ static PetscErrorCode CreateSystem3d(SystemParameters parameters, Mat *pA, Vec *
             const PetscScalar val_A   = K_bound;
 
             PetscCall(DMStagMatSetValuesStencil(dm_main, A, 1, &row, 1, &row, &val_A, INSERT_VALUES));
-            if (build_rhs) { PetscCall(DMStagVecSetValuesStencil(dm_main, rhs, 1, &row, &val_rhs, INSERT_VALUES)); }
+            if (build_rhs) PetscCall(DMStagVecSetValuesStencil(dm_main, rhs, 1, &row, &val_rhs, INSERT_VALUES));
           } else {
             /* Z-momentum equation */
             PetscInt          count;
@@ -1735,7 +1735,7 @@ static PetscErrorCode CreateSystem3d(SystemParameters parameters, Mat *pA, Vec *
             }
 
             PetscCall(DMStagMatSetValuesStencil(dm_main, A, 1, &row, count, col, val_A, INSERT_VALUES));
-            if (build_rhs) { PetscCall(DMStagVecSetValuesStencil(dm_main, rhs, 1, &row, &val_rhs, INSERT_VALUES)); }
+            if (build_rhs) PetscCall(DMStagVecSetValuesStencil(dm_main, rhs, 1, &row, &val_rhs, INSERT_VALUES));
           }
         }
 
@@ -1755,7 +1755,7 @@ static PetscErrorCode CreateSystem3d(SystemParameters parameters, Mat *pA, Vec *
             const PetscScalar val_rhs = 0.0;
 
             PetscCall(DMStagMatSetValuesStencil(dm_main, A, 1, &row, 1, &row, &val_A, INSERT_VALUES));
-            if (build_rhs) { PetscCall(DMStagVecSetValuesStencil(dm_main, rhs, 1, &row, &val_rhs, INSERT_VALUES)); }
+            if (build_rhs) PetscCall(DMStagVecSetValuesStencil(dm_main, rhs, 1, &row, &val_rhs, INSERT_VALUES));
           } else {
             /* Continuity equation */
             /* Note that this includes an explicit zero on the diagonal. This is only needed for
@@ -1804,7 +1804,7 @@ static PetscErrorCode CreateSystem3d(SystemParameters parameters, Mat *pA, Vec *
             col[6]     = row;
             val_A[6]   = 0.0;
             PetscCall(DMStagMatSetValuesStencil(dm_main, A, 1, &row, 7, col, val_A, INSERT_VALUES));
-            if (build_rhs) { PetscCall(DMStagVecSetValuesStencil(dm_main, rhs, 1, &row, &val_rhs, INSERT_VALUES)); }
+            if (build_rhs) PetscCall(DMStagVecSetValuesStencil(dm_main, rhs, 1, &row, &val_rhs, INSERT_VALUES));
           }
         }
       }

@@ -85,6 +85,6 @@ PetscErrorCode MatGetMultiProcBlock_MPIAIJ(Mat mat, MPI_Comm subComm, MatReuse s
   /* deallocate temporary data */
   PetscCall(PetscFree(commRankMap));
   PetscCall(PetscFree(garrayCMap));
-  if (scall == MAT_INITIAL_MATRIX) { PetscCall(PetscFree(nnz)); }
+  if (scall == MAT_INITIAL_MATRIX) PetscCall(PetscFree(nnz));
   PetscFunctionReturn(0);
 }

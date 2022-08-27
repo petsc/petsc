@@ -118,7 +118,7 @@ static PetscErrorCode MatMFFDView_DS(MatMFFD ctx, PetscViewer viewer) {
      make less sense
   */
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) { PetscCall(PetscViewerASCIIPrintf(viewer, "    umin=%g (minimum iterate parameter)\n", (double)hctx->umin)); }
+  if (iascii) PetscCall(PetscViewerASCIIPrintf(viewer, "    umin=%g (minimum iterate parameter)\n", (double)hctx->umin));
   PetscFunctionReturn(0);
 }
 

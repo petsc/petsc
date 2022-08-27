@@ -170,7 +170,7 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpo
     /* Set labels */
     PetscCall(DMUniversalLabelCreateLabels(universal, PETSC_TRUE, *dm));
     for (v = 0; v < numVertices; ++v) {
-      if (out.pointmarkerlist[v]) { PetscCall(DMUniversalLabelSetLabelValue(universal, *dm, PETSC_TRUE, v + numCells, out.pointmarkerlist[v])); }
+      if (out.pointmarkerlist[v]) PetscCall(DMUniversalLabelSetLabelValue(universal, *dm, PETSC_TRUE, v + numCells, out.pointmarkerlist[v]));
     }
     if (interpolate) {
       PetscInt e;
@@ -450,7 +450,7 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *d
     /* Set labels */
     PetscCall(DMUniversalLabelCreateLabels(universal, PETSC_TRUE, *dmRefined));
     for (v = 0; v < numVertices; ++v) {
-      if (out.pointmarkerlist[v]) { PetscCall(DMUniversalLabelSetLabelValue(universal, *dmRefined, PETSC_TRUE, v + numCells, out.pointmarkerlist[v])); }
+      if (out.pointmarkerlist[v]) PetscCall(DMUniversalLabelSetLabelValue(universal, *dmRefined, PETSC_TRUE, v + numCells, out.pointmarkerlist[v]));
     }
     if (interpolate) {
       PetscInt e, f;

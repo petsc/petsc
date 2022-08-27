@@ -37,7 +37,7 @@ PetscErrorCode Assemble(MPI_Comm comm, PetscInt bs, MatType mtype) {
   PetscCall(MatView(A, viewer));
 #if defined(PETSC_HAVE_MUMPS) || defined(PETSC_HAVE_MKL_CPARDISO)
   PetscCall(PetscStrcmp(mtype, MATMPISBAIJ, &issbaij));
-  if (!issbaij) { PetscCall(MatShift(A, 10)); }
+  if (!issbaij) PetscCall(MatShift(A, 10));
   PetscCall(PetscRandomCreate(PETSC_COMM_WORLD, &rdm));
   PetscCall(PetscRandomSetFromOptions(rdm));
   PetscCall(MatCreateVecs(A, &x, &y));
@@ -69,7 +69,7 @@ PetscErrorCode Assemble(MPI_Comm comm, PetscInt bs, MatType mtype) {
       PetscCall(MatMult(A, y, x));
       PetscCall(VecAXPY(x, -1.0, b));
       PetscCall(VecNorm(x, NORM_2, &norm2));
-      if (norm2 > tol) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error:MatSolve(), norm2: %g\n", (double)norm2)); }
+      if (norm2 > tol) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error:MatSolve(), norm2: %g\n", (double)norm2));
     }
     PetscCall(MatDestroy(&F));
   }

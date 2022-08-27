@@ -101,7 +101,7 @@ PetscErrorCode PCGAMGHashTableAdd(PCGAMGHashTable *a_tab, PetscInt a_key, PetscI
     PetscCall(PetscMalloc2(a_tab->size, &a_tab->table, a_tab->size, &a_tab->data));
     for (kk = 0; kk < a_tab->size; kk++) a_tab->table[kk] = -1;
     for (kk = 0; kk < oldsize; kk++) {
-      if (oldtable[kk] != -1) { PetscCall(PCGAMGHashTableAdd(a_tab, oldtable[kk], olddata[kk])); }
+      if (oldtable[kk] != -1) PetscCall(PCGAMGHashTableAdd(a_tab, oldtable[kk], olddata[kk]));
     }
     PetscCall(PetscFree2(oldtable, olddata));
     PetscCall(PCGAMGHashTableAdd(a_tab, a_key, a_data));

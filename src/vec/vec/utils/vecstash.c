@@ -271,7 +271,7 @@ PetscErrorCode VecStashScatterBegin_Private(VecStash *stash, PetscInt *owners) {
   for (i = 0; i < stash->n; i++) {
     j = owner[i];
     if (bs == 1) svalues[start[j]] = stash->array[i];
-    else { PetscCall(PetscMemcpy(svalues + bs * start[j], stash->array + bs * i, bs * sizeof(PetscScalar))); }
+    else PetscCall(PetscMemcpy(svalues + bs * start[j], stash->array + bs * i, bs * sizeof(PetscScalar)));
     sindices[start[j]] = stash->idx[i];
     start[j]++;
   }

@@ -24,7 +24,7 @@ PetscErrorCode VecView_Shell(Vec v, PetscViewer viewer) {
 
     PetscCall(VecGetLocalSize(v, &n));
     PetscCall(PetscObjectGetName((PetscObject)v, &name));
-    if (!PetscGlobalRank) { PetscCall(PetscViewerASCIIPrintf(viewer, "Hello from rank 0 -> vector name %s, size %" PetscInt_FMT "\n", name, n)); }
+    if (!PetscGlobalRank) PetscCall(PetscViewerASCIIPrintf(viewer, "Hello from rank 0 -> vector name %s, size %" PetscInt_FMT "\n", name, n));
   }
   PetscFunctionReturn(0);
 }

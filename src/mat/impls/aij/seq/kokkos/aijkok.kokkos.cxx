@@ -823,7 +823,7 @@ static PetscErrorCode MatProductSetFromOptions_SeqAIJKokkos(Mat mat) {
   PetscFunctionBegin;
   MatCheckProduct(mat, 1);
   PetscCall(PetscObjectTypeCompare((PetscObject)product->B, MATSEQAIJKOKKOS, &Biskok));
-  if (product->type == MATPRODUCT_ABC) { PetscCall(PetscObjectTypeCompare((PetscObject)product->C, MATSEQAIJKOKKOS, &Ciskok)); }
+  if (product->type == MATPRODUCT_ABC) PetscCall(PetscObjectTypeCompare((PetscObject)product->C, MATSEQAIJKOKKOS, &Ciskok));
   if (Biskok && Ciskok) {
     switch (product->type) {
     case MATPRODUCT_AB:
@@ -1810,7 +1810,7 @@ PETSC_INTERN PetscErrorCode PrintCsrMatrix(const KokkosCsrMatrix &csrmat) {
   PetscCall(PetscPrintf(PETSC_COMM_SELF, "%" PetscInt_FMT " x %" PetscInt_FMT " SeqAIJKokkos, with %" PetscInt_FMT " nonzeros\n", m, n, nnz));
   for (PetscInt k = 0; k < m; k++) {
     PetscCall(PetscPrintf(PETSC_COMM_SELF, "%" PetscInt_FMT ": ", k));
-    for (PetscInt p = i[k]; p < i[k + 1]; p++) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "%" PetscInt_FMT "(%.1f), ", j[p], (double)PetscRealPart(a[p]))); }
+    for (PetscInt p = i[k]; p < i[k + 1]; p++) PetscCall(PetscPrintf(PETSC_COMM_SELF, "%" PetscInt_FMT "(%.1f), ", j[p], (double)PetscRealPart(a[p])));
     PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n"));
   }
   PetscFunctionReturn(0);

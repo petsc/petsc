@@ -95,8 +95,8 @@ static PetscErrorCode PetscDrawTensorContour_Zoom(PetscDraw win, void *dctx) {
   PetscFunctionBegin;
   PetscCall(PetscDrawTensorContourPatch(win, ctx->m, ctx->n, ctx->x, ctx->y, ctx->min, ctx->max, ctx->v));
   if (ctx->showgrid) {
-    for (i = 0; i < ctx->m; i++) { PetscCall(PetscDrawLine(win, ctx->x[i], ctx->y[0], ctx->x[i], ctx->y[ctx->n - 1], PETSC_DRAW_BLACK)); }
-    for (i = 0; i < ctx->n; i++) { PetscCall(PetscDrawLine(win, ctx->x[0], ctx->y[i], ctx->x[ctx->m - 1], ctx->y[i], PETSC_DRAW_BLACK)); }
+    for (i = 0; i < ctx->m; i++) PetscCall(PetscDrawLine(win, ctx->x[i], ctx->y[0], ctx->x[i], ctx->y[ctx->n - 1], PETSC_DRAW_BLACK));
+    for (i = 0; i < ctx->n; i++) PetscCall(PetscDrawLine(win, ctx->x[0], ctx->y[i], ctx->x[ctx->m - 1], ctx->y[i], PETSC_DRAW_BLACK));
   }
   PetscFunctionReturn(0);
 }

@@ -51,7 +51,7 @@ int main(int argc, char **args) {
   for (i = rstart; i < rend; i++) {
     PetscCall(MatGetRow(C, i, &nz, &idx, &values));
     if (rank == 0) {
-      for (j = 0; j < nz; j++) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "%" PetscInt_FMT " %g ", idx[j], (double)PetscRealPart(values[j]))); }
+      for (j = 0; j < nz; j++) PetscCall(PetscPrintf(PETSC_COMM_SELF, "%" PetscInt_FMT " %g ", idx[j], (double)PetscRealPart(values[j])));
       PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n"));
     }
     PetscCall(MatRestoreRow(C, i, &nz, &idx, &values));

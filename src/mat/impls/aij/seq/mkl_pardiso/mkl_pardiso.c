@@ -295,7 +295,7 @@ PetscErrorCode MatFactorSetSchurIS_MKL_PARDISO(Mat F, IS is) {
   mpardiso->schur      = (PetscScalar *)arr;
   mpardiso->schur_size = size;
   PetscCall(MatDenseRestoreArrayRead(F->schur, &arr));
-  if (mpardiso->mtype == 2) { PetscCall(MatSetOption(F->schur, MAT_SPD, PETSC_TRUE)); }
+  if (mpardiso->mtype == 2) PetscCall(MatSetOption(F->schur, MAT_SPD, PETSC_TRUE));
 
   PetscCall(PetscFree(mpardiso->schur_idxs));
   PetscCall(PetscMalloc1(size, &mpardiso->schur_idxs));
@@ -325,7 +325,7 @@ PetscErrorCode MatDestroy_MKL_PARDISO(Mat A) {
   PetscCall(PetscFree(mat_mkl_pardiso->schur_idxs));
   if (mat_mkl_pardiso->freeaij) {
     PetscCall(PetscFree2(mat_mkl_pardiso->ia, mat_mkl_pardiso->ja));
-    if (mat_mkl_pardiso->iparm[34] == 1) { PetscCall(PetscFree(mat_mkl_pardiso->a)); }
+    if (mat_mkl_pardiso->iparm[34] == 1) PetscCall(PetscFree(mat_mkl_pardiso->a));
   }
   PetscCall(PetscFree(A->data));
 
@@ -381,7 +381,7 @@ PetscErrorCode MatSolve_MKL_PARDISO(Mat A, Vec b, Vec x) {
     mat_mkl_pardiso->iparm[6 - 1] = 1;
     MKL_PARDISO(mat_mkl_pardiso->pt, &mat_mkl_pardiso->maxfct, &mat_mkl_pardiso->mnum, &mat_mkl_pardiso->mtype, &mat_mkl_pardiso->phase, &mat_mkl_pardiso->n, mat_mkl_pardiso->a, mat_mkl_pardiso->ia, mat_mkl_pardiso->ja, NULL, &mat_mkl_pardiso->nrhs,
                 mat_mkl_pardiso->iparm, &mat_mkl_pardiso->msglvl, (void *)xarray, (void *)work, &mat_mkl_pardiso->err);
-    if (!mat_mkl_pardiso->schur_work) { PetscCall(PetscFree(work)); }
+    if (!mat_mkl_pardiso->schur_work) PetscCall(PetscFree(work));
   } else {
     mat_mkl_pardiso->iparm[6 - 1] = 0;
     MKL_PARDISO(mat_mkl_pardiso->pt, &mat_mkl_pardiso->maxfct, &mat_mkl_pardiso->mnum, &mat_mkl_pardiso->mtype, &mat_mkl_pardiso->phase, &mat_mkl_pardiso->n, mat_mkl_pardiso->a, mat_mkl_pardiso->ia, mat_mkl_pardiso->ja, mat_mkl_pardiso->perm,
@@ -526,7 +526,7 @@ PetscErrorCode MatFactorNumeric_MKL_PARDISO(Mat F, Mat A, const MatFactorInfo *i
   PetscCheck(mat_mkl_pardiso->err >= 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error reported by MKL_PARDISO: err=%d. Please check manual", mat_mkl_pardiso->err);
 
   /* report flops */
-  if (mat_mkl_pardiso->iparm[18] > 0) { PetscCall(PetscLogFlops(PetscPowRealInt(10., 6) * mat_mkl_pardiso->iparm[18])); }
+  if (mat_mkl_pardiso->iparm[18] > 0) PetscCall(PetscLogFlops(PetscPowRealInt(10., 6) * mat_mkl_pardiso->iparm[18]));
 
   if (F->schur) { /* schur output from pardiso is in row major format */
 #if defined(PETSC_HAVE_CUDA)
@@ -707,7 +707,7 @@ PetscErrorCode MatFactorSymbolic_AIJMKL_PARDISO_Private(Mat F, Mat A, const MatF
   /* throw away any previously computed structure */
   if (mat_mkl_pardiso->freeaij) {
     PetscCall(PetscFree2(mat_mkl_pardiso->ia, mat_mkl_pardiso->ja));
-    if (mat_mkl_pardiso->iparm[34] == 1) { PetscCall(PetscFree(mat_mkl_pardiso->a)); }
+    if (mat_mkl_pardiso->iparm[34] == 1) PetscCall(PetscFree(mat_mkl_pardiso->a));
   }
   PetscCall((*mat_mkl_pardiso->Convert)(A, mat_mkl_pardiso->needsym, MAT_INITIAL_MATRIX, &mat_mkl_pardiso->freeaij, &mat_mkl_pardiso->nz, &mat_mkl_pardiso->ia, &mat_mkl_pardiso->ja, (PetscScalar **)&mat_mkl_pardiso->a));
   if (mat_mkl_pardiso->iparm[34] == 1) mat_mkl_pardiso->n = A->rmap->N;
@@ -777,7 +777,7 @@ PetscErrorCode MatView_MKL_PARDISO(Mat A, PetscViewer viewer) {
     if (format == PETSC_VIEWER_ASCII_INFO) {
       PetscCall(PetscViewerASCIIPrintf(viewer, "MKL_PARDISO run parameters:\n"));
       PetscCall(PetscViewerASCIIPrintf(viewer, "MKL_PARDISO phase:             %d \n", mat_mkl_pardiso->phase));
-      for (i = 1; i <= 64; i++) { PetscCall(PetscViewerASCIIPrintf(viewer, "MKL_PARDISO iparm[%d]:     %d \n", i, mat_mkl_pardiso->iparm[i - 1])); }
+      for (i = 1; i <= 64; i++) PetscCall(PetscViewerASCIIPrintf(viewer, "MKL_PARDISO iparm[%d]:     %d \n", i, mat_mkl_pardiso->iparm[i - 1]));
       PetscCall(PetscViewerASCIIPrintf(viewer, "MKL_PARDISO maxfct:     %d \n", mat_mkl_pardiso->maxfct));
       PetscCall(PetscViewerASCIIPrintf(viewer, "MKL_PARDISO mnum:     %d \n", mat_mkl_pardiso->mnum));
       PetscCall(PetscViewerASCIIPrintf(viewer, "MKL_PARDISO mtype:     %d \n", mat_mkl_pardiso->mtype));

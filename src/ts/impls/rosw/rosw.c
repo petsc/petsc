@@ -971,7 +971,7 @@ static PetscErrorCode TSStep_RosW(TS ts) {
   PetscInt         lag;
 
   PetscFunctionBegin;
-  if (!ts->steprollback) { PetscCall(VecCopy(ts->vec_sol, ros->vec_sol_prev)); }
+  if (!ts->steprollback) PetscCall(VecCopy(ts->vec_sol, ros->vec_sol_prev));
 
   ros->status = TS_STEP_INCOMPLETE;
   while (!ts->reason && ros->status != TS_STEP_COMPLETE) {
@@ -1171,16 +1171,16 @@ static PetscErrorCode TSRosWGetVecs(TS ts, DM dm, Vec *Ydot, Vec *Zdot, Vec *Yst
 static PetscErrorCode TSRosWRestoreVecs(TS ts, DM dm, Vec *Ydot, Vec *Zdot, Vec *Ystage, Vec *Zstage) {
   PetscFunctionBegin;
   if (Ydot) {
-    if (dm && dm != ts->dm) { PetscCall(DMRestoreNamedGlobalVector(dm, "TSRosW_Ydot", Ydot)); }
+    if (dm && dm != ts->dm) PetscCall(DMRestoreNamedGlobalVector(dm, "TSRosW_Ydot", Ydot));
   }
   if (Zdot) {
-    if (dm && dm != ts->dm) { PetscCall(DMRestoreNamedGlobalVector(dm, "TSRosW_Zdot", Zdot)); }
+    if (dm && dm != ts->dm) PetscCall(DMRestoreNamedGlobalVector(dm, "TSRosW_Zdot", Zdot));
   }
   if (Ystage) {
-    if (dm && dm != ts->dm) { PetscCall(DMRestoreNamedGlobalVector(dm, "TSRosW_Ystage", Ystage)); }
+    if (dm && dm != ts->dm) PetscCall(DMRestoreNamedGlobalVector(dm, "TSRosW_Ystage", Ystage));
   }
   if (Zstage) {
-    if (dm && dm != ts->dm) { PetscCall(DMRestoreNamedGlobalVector(dm, "TSRosW_Zstage", Zstage)); }
+    if (dm && dm != ts->dm) PetscCall(DMRestoreNamedGlobalVector(dm, "TSRosW_Zstage", Zstage));
   }
   PetscFunctionReturn(0);
 }
@@ -1311,7 +1311,7 @@ static PetscErrorCode TSSetUp_RosW(TS ts) {
   PetscCall(DMSubDomainHookAdd(dm, DMSubDomainHook_TSRosW, DMSubDomainRestrictHook_TSRosW, ts));
   /* Rosenbrock methods are linearly implicit, so set that unless the user has specifically asked for something else */
   PetscCall(TSGetSNES(ts, &snes));
-  if (!((PetscObject)snes)->type_name) { PetscCall(SNESSetType(snes, SNESKSPONLY)); }
+  if (!((PetscObject)snes)->type_name) PetscCall(SNESSetType(snes, SNESKSPONLY));
   PetscCall(DMTSGetRHSJacobian(dm, &rhsjacobian, NULL));
   if (rhsjacobian == TSComputeRHSJacobianConstant) {
     Mat Amat, Pmat;
@@ -1363,7 +1363,7 @@ static PetscErrorCode TSSetFromOptions_RosW(TS ts, PetscOptionItems *PetscOption
   PetscOptionsHeadEnd();
   /* Rosenbrock methods are linearly implicit, so set that unless the user has specifically asked for something else */
   PetscCall(TSGetSNES(ts, &snes));
-  if (!((PetscObject)snes)->type_name) { PetscCall(SNESSetType(snes, SNESKSPONLY)); }
+  if (!((PetscObject)snes)->type_name) PetscCall(SNESSetType(snes, SNESKSPONLY));
   PetscFunctionReturn(0);
 }
 

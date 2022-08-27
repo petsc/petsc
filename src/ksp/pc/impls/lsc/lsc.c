@@ -24,7 +24,7 @@ static PetscErrorCode PCLSCAllocate_Private(PC pc) {
   PetscCall(MatSchurComplementGetSubMatrices(pc->mat, &A, NULL, NULL, NULL, NULL));
   PetscCall(MatCreateVecs(A, &lsc->x0, &lsc->y0));
   PetscCall(MatCreateVecs(pc->pmat, &lsc->x1, NULL));
-  if (lsc->scalediag) { PetscCall(VecDuplicate(lsc->x0, &lsc->scale)); }
+  if (lsc->scalediag) PetscCall(VecDuplicate(lsc->x0, &lsc->scale));
   lsc->allocated = PETSC_TRUE;
   PetscFunctionReturn(0);
 }

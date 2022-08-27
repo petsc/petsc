@@ -84,7 +84,7 @@ static PetscErrorCode PCISSetSubdomainScalingFactor_IS(PC pc, PetscScalar scal) 
 
   PetscFunctionBegin;
   pcis->scaling_factor = scal;
-  if (pcis->D) { PetscCall(VecSet(pcis->D, pcis->scaling_factor)); }
+  if (pcis->D) PetscCall(VecSet(pcis->D, pcis->scaling_factor));
   PetscFunctionReturn(0);
 }
 
@@ -147,7 +147,7 @@ PetscErrorCode PCISSetUp(PC pc, PetscBool computematrices, PetscBool computesolv
     /* Identifying interior and interface nodes, in local numbering */
     PetscCall(PetscBTCreate(pcis->n, &bt));
     for (i = 0; i < pcis->n_neigh; i++)
-      for (j = 0; j < pcis->n_shared[i]; j++) { PetscCall(PetscBTSet(bt, pcis->shared[i][j])); }
+      for (j = 0; j < pcis->n_shared[i]; j++) PetscCall(PetscBTSet(bt, pcis->shared[i][j]));
 
     /* Creating local and global index sets for interior and inteface nodes. */
     PetscCall(PetscMalloc1(pcis->n, &idx_I_local));
@@ -422,7 +422,7 @@ PetscErrorCode PCISDestroy(PC pc) {
   PetscCall(VecScatterDestroy(&pcis->N_to_D));
   PetscCall(VecScatterDestroy(&pcis->global_to_B));
   PetscCall(PetscFree(pcis->work_N));
-  if (pcis->n_neigh > -1) { PetscCall(ISLocalToGlobalMappingRestoreInfo(pcis->mapping, &(pcis->n_neigh), &(pcis->neigh), &(pcis->n_shared), &(pcis->shared))); }
+  if (pcis->n_neigh > -1) PetscCall(ISLocalToGlobalMappingRestoreInfo(pcis->mapping, &(pcis->n_neigh), &(pcis->neigh), &(pcis->n_shared), &(pcis->shared)));
   PetscCall(ISLocalToGlobalMappingDestroy(&pcis->mapping));
   PetscCall(ISLocalToGlobalMappingDestroy(&pcis->BtoNmap));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCISSetUseStiffnessScaling_C", NULL));

@@ -38,7 +38,7 @@ int main(int argc, char **args) {
   PetscCall(MatSetUp(B));
 
   PetscCall(MatGetOwnershipRange(B, &rstart, &rend));
-  for (i = rstart; i < rend; i++) { PetscCall(MatSetValues(B, 1, &i, 1, &i, &one, INSERT_VALUES)); }
+  for (i = rstart; i < rend; i++) PetscCall(MatSetValues(B, 1, &i, 1, &i, &one, INSERT_VALUES));
   PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
 

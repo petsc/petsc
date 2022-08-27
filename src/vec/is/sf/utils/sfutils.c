@@ -452,7 +452,7 @@ PetscErrorCode PetscSFCreateFromLayouts(PetscLayout rmap, PetscLayout lmap, Pets
   PetscCall(PetscLayoutGetRange(lmap, &lst, &len));
   PetscCall(PetscMalloc1(len - lst, &remote));
   for (i = lst; i < len && i < rN; i++) {
-    if (owner < -1 || i >= rmap->range[owner + 1]) { PetscCall(PetscLayoutFindOwner(rmap, i, &owner)); }
+    if (owner < -1 || i >= rmap->range[owner + 1]) PetscCall(PetscLayoutFindOwner(rmap, i, &owner));
     remote[nleaves].rank  = owner;
     remote[nleaves].index = i - rmap->range[owner];
     nleaves++;

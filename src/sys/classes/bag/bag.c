@@ -111,7 +111,7 @@ PetscErrorCode PetscBagRegisterIntArray(PetscBag bag, void *addr, PetscInt msize
   PetscCall(PetscOptionsHasHelp(NULL, &printhelp));
   if (printhelp) {
     PetscCall((*PetscHelpPrintf)(bag->bagcomm, "  -%s%s <", bag->bagprefix ? bag->bagprefix : "", name));
-    for (i = 0; i < msize; i++) { PetscCall((*PetscHelpPrintf)(bag->bagcomm, "%" PetscInt_FMT " ", *((PetscInt *)addr) + i)); }
+    for (i = 0; i < msize; i++) PetscCall((*PetscHelpPrintf)(bag->bagcomm, "%" PetscInt_FMT " ", *((PetscInt *)addr) + i));
     PetscCall((*PetscHelpPrintf)(bag->bagcomm, ">: %s \n", help));
   }
   PetscCall(PetscOptionsGetIntArray(NULL, bag->bagprefix, nname, (PetscInt *)addr, &tmp, NULL));
@@ -162,7 +162,7 @@ PetscErrorCode PetscBagRegisterRealArray(PetscBag bag, void *addr, PetscInt msiz
   PetscCall(PetscOptionsHasHelp(NULL, &printhelp));
   if (printhelp) {
     PetscCall((*PetscHelpPrintf)(bag->bagcomm, "  -%s%s <", bag->bagprefix ? bag->bagprefix : "", name));
-    for (i = 0; i < msize; i++) { PetscCall((*PetscHelpPrintf)(bag->bagcomm, "%g ", (double)*((PetscReal *)addr) + i)); }
+    for (i = 0; i < msize; i++) PetscCall((*PetscHelpPrintf)(bag->bagcomm, "%g ", (double)*((PetscReal *)addr) + i));
     PetscCall((*PetscHelpPrintf)(bag->bagcomm, ">: %s \n", help));
   }
   PetscCall(PetscOptionsGetRealArray(NULL, bag->bagprefix, nname, (PetscReal *)addr, &tmp, NULL));
@@ -210,7 +210,7 @@ PetscErrorCode PetscBagRegisterInt(PetscBag bag, void *addr, PetscInt mdefault, 
   nname[1] = 0;
   PetscCall(PetscStrlcat(nname, name, PETSC_BAG_NAME_LENGTH));
   PetscCall(PetscOptionsHasHelp(NULL, &printhelp));
-  if (printhelp) { PetscCall((*PetscHelpPrintf)(bag->bagcomm, "  -%s%s <%" PetscInt_FMT ">: %s \n", bag->bagprefix ? bag->bagprefix : "", name, mdefault, help)); }
+  if (printhelp) PetscCall((*PetscHelpPrintf)(bag->bagcomm, "  -%s%s <%" PetscInt_FMT ">: %s \n", bag->bagprefix ? bag->bagprefix : "", name, mdefault, help));
   PetscCall(PetscOptionsGetInt(NULL, bag->bagprefix, nname, &mdefault, NULL));
 
   PetscCall(PetscNew(&item));
@@ -255,7 +255,7 @@ PetscErrorCode PetscBagRegisterInt64(PetscBag bag, void *addr, PetscInt64 mdefau
   nname[1] = 0;
   PetscCall(PetscStrlcat(nname, name, PETSC_BAG_NAME_LENGTH));
   PetscCall(PetscOptionsHasHelp(NULL, &printhelp));
-  if (printhelp) { PetscCall((*PetscHelpPrintf)(bag->bagcomm, "  -%s%s <%" PetscInt_FMT ">: %s \n", bag->bagprefix ? bag->bagprefix : "", name, odefault, help)); }
+  if (printhelp) PetscCall((*PetscHelpPrintf)(bag->bagcomm, "  -%s%s <%" PetscInt_FMT ">: %s \n", bag->bagprefix ? bag->bagprefix : "", name, odefault, help));
   PetscCall(PetscOptionsGetInt(NULL, bag->bagprefix, nname, &odefault, &flg));
   if (flg) mdefault = (PetscInt64)odefault;
 
@@ -306,7 +306,7 @@ PetscErrorCode PetscBagRegisterBoolArray(PetscBag bag, void *addr, PetscInt msiz
   PetscCall(PetscOptionsHasHelp(NULL, &printhelp));
   if (printhelp) {
     PetscCall((*PetscHelpPrintf)(bag->bagcomm, "  -%s%s <", bag->bagprefix ? bag->bagprefix : "", name));
-    for (i = 0; i < msize; i++) { PetscCall((*PetscHelpPrintf)(bag->bagcomm, "%" PetscInt_FMT " ", *((PetscInt *)addr) + i)); }
+    for (i = 0; i < msize; i++) PetscCall((*PetscHelpPrintf)(bag->bagcomm, "%" PetscInt_FMT " ", *((PetscInt *)addr) + i));
     PetscCall((*PetscHelpPrintf)(bag->bagcomm, ">: %s \n", help));
   }
   PetscCall(PetscOptionsGetBoolArray(NULL, bag->bagprefix, nname, (PetscBool *)addr, &tmp, NULL));
@@ -358,7 +358,7 @@ PetscErrorCode PetscBagRegisterString(PetscBag bag, void *addr, PetscInt msize, 
   nname[1] = 0;
   PetscCall(PetscStrlcat(nname, name, PETSC_BAG_NAME_LENGTH));
   PetscCall(PetscOptionsHasHelp(NULL, &printhelp));
-  if (printhelp) { PetscCall((*PetscHelpPrintf)(bag->bagcomm, "  -%s%s <%s>: %s \n", bag->bagprefix ? bag->bagprefix : "", name, mdefault, help)); }
+  if (printhelp) PetscCall((*PetscHelpPrintf)(bag->bagcomm, "  -%s%s <%s>: %s \n", bag->bagprefix ? bag->bagprefix : "", name, mdefault, help));
 
   PetscCall(PetscNew(&item));
   item->dtype  = PETSC_CHAR;
@@ -366,7 +366,7 @@ PetscErrorCode PetscBagRegisterString(PetscBag bag, void *addr, PetscInt msize, 
   PetscCheck(item->offset <= bag->bagsize, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Registered item %s %s is not in bag memory space", name, help);
   item->next  = NULL;
   item->msize = msize;
-  if (mdefault != (char *)addr) { PetscCall(PetscStrncpy((char *)addr, mdefault, msize - 1)); }
+  if (mdefault != (char *)addr) PetscCall(PetscStrncpy((char *)addr, mdefault, msize - 1));
   PetscCall(PetscOptionsGetString(NULL, bag->bagprefix, nname, (char *)addr, msize, NULL));
   PetscCall(PetscBagRegister_Private(bag, item, name, help));
   PetscFunctionReturn(0);
@@ -405,7 +405,7 @@ PetscErrorCode PetscBagRegisterReal(PetscBag bag, void *addr, PetscReal mdefault
   nname[1] = 0;
   PetscCall(PetscStrlcat(nname, name, PETSC_BAG_NAME_LENGTH));
   PetscCall(PetscOptionsHasHelp(NULL, &printhelp));
-  if (printhelp) { PetscCall((*PetscHelpPrintf)(bag->bagcomm, "  -%s%s <%g>: %s \n", bag->bagprefix ? bag->bagprefix : "", name, (double)mdefault, help)); }
+  if (printhelp) PetscCall((*PetscHelpPrintf)(bag->bagcomm, "  -%s%s <%g>: %s \n", bag->bagprefix ? bag->bagprefix : "", name, (double)mdefault, help));
   PetscCall(PetscOptionsGetReal(NULL, bag->bagprefix, nname, &mdefault, NULL));
 
   PetscCall(PetscNew(&item));
@@ -452,7 +452,7 @@ PetscErrorCode PetscBagRegisterScalar(PetscBag bag, void *addr, PetscScalar mdef
   nname[1] = 0;
   PetscCall(PetscStrlcat(nname, name, PETSC_BAG_NAME_LENGTH));
   PetscCall(PetscOptionsHasHelp(NULL, &printhelp));
-  if (printhelp) { PetscCall((*PetscHelpPrintf)(bag->bagcomm, "  -%s%s <%g + %gi>: %s \n", bag->bagprefix ? bag->bagprefix : "", name, (double)PetscRealPart(mdefault), (double)PetscImaginaryPart(mdefault), help)); }
+  if (printhelp) PetscCall((*PetscHelpPrintf)(bag->bagcomm, "  -%s%s <%g + %gi>: %s \n", bag->bagprefix ? bag->bagprefix : "", name, (double)PetscRealPart(mdefault), (double)PetscImaginaryPart(mdefault), help));
   PetscCall(PetscOptionsGetScalar(NULL, bag->bagprefix, nname, &mdefault, NULL));
 
   PetscCall(PetscNew(&item));
@@ -501,7 +501,7 @@ PetscErrorCode PetscBagRegisterBool(PetscBag bag, void *addr, PetscBool mdefault
   nname[1] = 0;
   PetscCall(PetscStrlcat(nname, name, PETSC_BAG_NAME_LENGTH));
   PetscCall(PetscOptionsHasHelp(NULL, &printhelp));
-  if (printhelp) { PetscCall((*PetscHelpPrintf)(bag->bagcomm, "  -%s%s <%s>: %s \n", bag->bagprefix ? bag->bagprefix : "", name, PetscBools[mdefault], help)); }
+  if (printhelp) PetscCall((*PetscHelpPrintf)(bag->bagcomm, "  -%s%s <%s>: %s \n", bag->bagprefix ? bag->bagprefix : "", name, PetscBools[mdefault], help));
   PetscCall(PetscOptionsGetBool(NULL, bag->bagprefix, nname, &mdefault, NULL));
 
   PetscCall(PetscNew(&item));
@@ -668,7 +668,7 @@ PetscErrorCode PetscBagView(PetscBag bag, PetscViewer view) {
         PetscReal *value = (PetscReal *)(((char *)bag) + nitem->offset);
         PetscInt   i;
         PetscCall(PetscViewerASCIIPrintf(view, "  %s = ", nitem->name));
-        for (i = 0; i < nitem->msize; i++) { PetscCall(PetscViewerASCIIPrintf(view, "%g ", (double)value[i])); }
+        for (i = 0; i < nitem->msize; i++) PetscCall(PetscViewerASCIIPrintf(view, "%g ", (double)value[i]));
         PetscCall(PetscViewerASCIIPrintf(view, "; %s\n", nitem->help));
       } else if (nitem->dtype == PETSC_SCALAR) {
         PetscScalar value = *(PetscScalar *)(((char *)bag) + nitem->offset);
@@ -684,7 +684,7 @@ PetscErrorCode PetscBagView(PetscBag bag, PetscViewer view) {
       } else if (nitem->dtype == PETSC_INT) {
         PetscInt i, *value = (PetscInt *)(((char *)bag) + nitem->offset);
         PetscCall(PetscViewerASCIIPrintf(view, "  %s = ", nitem->name));
-        for (i = 0; i < nitem->msize; i++) { PetscCall(PetscViewerASCIIPrintf(view, "%" PetscInt_FMT " ", value[i])); }
+        for (i = 0; i < nitem->msize; i++) PetscCall(PetscViewerASCIIPrintf(view, "%" PetscInt_FMT " ", value[i]));
         PetscCall(PetscViewerASCIIPrintf(view, "; %s\n", nitem->help));
       } else if (nitem->dtype == PETSC_BOOL) {
         PetscBool *value = (PetscBool *)(((char *)bag) + nitem->offset);
@@ -727,7 +727,7 @@ PetscErrorCode PetscBagView(PetscBag bag, PetscViewer view) {
       if (dtype == PETSC_BOOL && ((*(int *)(((char *)bag) + nitem->offset) == -1))) *(int *)(((char *)bag) + nitem->offset) = PETSC_TRUE;
 
       PetscCall(PetscViewerBinaryWrite(view, (((char *)bag) + nitem->offset), nitem->msize, nitem->dtype));
-      if (dtype == PETSC_ENUM) { PetscCall(PetscViewerBinaryWriteStringArray(view, (const char *const *)nitem->list)); }
+      if (dtype == PETSC_ENUM) PetscCall(PetscViewerBinaryWriteStringArray(view, (const char *const *)nitem->list));
       nitem = nitem->next;
     }
     PetscCall(PetscViewerGetFormat(view, &format));

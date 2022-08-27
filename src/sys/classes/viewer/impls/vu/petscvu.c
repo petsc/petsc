@@ -22,7 +22,7 @@ static PetscErrorCode PetscViewerFileClose_VU(PetscViewer viewer) {
   PetscViewer_VU *vu = (PetscViewer_VU *)viewer->data;
 
   PetscFunctionBegin;
-  if (vu->vecSeen) { PetscCall(PetscViewerVUPrintDeferred(viewer, "};\n\n")); }
+  if (vu->vecSeen) PetscCall(PetscViewerVUPrintDeferred(viewer, "};\n\n"));
   PetscCall(PetscViewerVUFlushDeferred(viewer));
   PetscCall(PetscFClose(PetscObjectComm((PetscObject)viewer), vu->fd));
   vu->fd = NULL;
@@ -107,7 +107,7 @@ static PetscErrorCode PetscViewerFileSetName_VU(PetscViewer viewer, const char n
     */
     vu->fd = fopen(fname, "r+");
     if (!vu->fd) vu->fd = fopen(fname, "w+");
-    else { PetscCall(fseek(vu->fd, 0, SEEK_END)); }
+    else PetscCall(fseek(vu->fd, 0, SEEK_END));
     break;
   default: SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_SUP, "Unsupported file mode %s", PetscFileModes[vu->mode]);
   }

@@ -77,7 +77,7 @@ PetscErrorCode PetscOptionsHelpPrintedCheck(PetscOptionsHelpPrinted hp, const ch
   PetscCall(PetscStrcpy(both, pre));
   PetscCall(PetscStrcat(both, name));
   kh_put(HTPrinted, hp->printed, both, &newitem);
-  if (!newitem) { PetscCall(PetscSegBufferUnuse(hp->strings, l1 + l2 + 1)); }
+  if (!newitem) PetscCall(PetscSegBufferUnuse(hp->strings, l1 + l2 + 1));
   *found = newitem ? PETSC_FALSE : PETSC_TRUE;
 #else
   *found = PETSC_FALSE;
@@ -219,7 +219,7 @@ PetscErrorCode PetscOptionsGetViewer(MPI_Comm comm, PetscOptions options, const 
   if (hashelp) {
     PetscBool found;
 
-    if (!PetscOptionsHelpPrintedSingleton) { PetscCall(PetscOptionsHelpPrintedCreate(&PetscOptionsHelpPrintedSingleton)); }
+    if (!PetscOptionsHelpPrintedSingleton) PetscCall(PetscOptionsHelpPrintedCreate(&PetscOptionsHelpPrintedSingleton));
     PetscCall(PetscOptionsHelpPrintedCheck(PetscOptionsHelpPrintedSingleton, pre, name, &found));
     if (!found && viewer) {
       PetscCall((*PetscHelpPrintf)(comm, "----------------------------------------\nViewer (-%s%s) options:\n", pre ? pre : "", name + 1));
@@ -474,12 +474,12 @@ PetscErrorCode PetscViewerSetFromOptions(PetscViewer viewer) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
 
-  if (!PetscViewerList) { PetscCall(PetscViewerRegisterAll()); }
+  if (!PetscViewerList) PetscCall(PetscViewerRegisterAll());
   PetscObjectOptionsBegin((PetscObject)viewer);
   PetscCall(PetscOptionsFList("-viewer_type", "Type of PetscViewer", "None", PetscViewerList, (char *)(((PetscObject)viewer)->type_name ? ((PetscObject)viewer)->type_name : PETSCVIEWERASCII), vtype, 256, &flg));
   if (flg) PetscCall(PetscViewerSetType(viewer, vtype));
   /* type has not been set? */
-  if (!((PetscObject)viewer)->type_name) { PetscCall(PetscViewerSetType(viewer, PETSCVIEWERASCII)); }
+  if (!((PetscObject)viewer)->type_name) PetscCall(PetscViewerSetType(viewer, PETSCVIEWERASCII));
   PetscTryTypeMethod(viewer, setfromoptions, PetscOptionsObject);
 
   /* process any options handlers added with PetscObjectAddOptionsHandler() */

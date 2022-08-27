@@ -494,7 +494,7 @@ PetscErrorCode VecDestroy(Vec *v) {
 
   PetscCall(PetscObjectSAWsViewOff((PetscObject)*v));
   /* destroy the internal part */
-  if ((*v)->ops->destroy) { PetscCall((*(*v)->ops->destroy)(*v)); }
+  if ((*v)->ops->destroy) PetscCall((*(*v)->ops->destroy)(*v));
   PetscCall(PetscFree((*v)->defaultrandtype));
   /* destroy the external/common part */
   PetscCall(PetscLayoutDestroy(&(*v)->map));

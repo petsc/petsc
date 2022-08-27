@@ -26,13 +26,13 @@ PetscErrorCode DMSwarmMigrate_Push_Basic(DM dm, PetscBool remove_sent_points) {
   PetscCall(DMSwarmDataExTopologyInitialize(de));
   for (p = 0; p < npoints; ++p) {
     nrank = rankval[p];
-    if (nrank != rank) { PetscCall(DMSwarmDataExTopologyAddNeighbour(de, nrank)); }
+    if (nrank != rank) PetscCall(DMSwarmDataExTopologyAddNeighbour(de, nrank));
   }
   PetscCall(DMSwarmDataExTopologyFinalize(de));
   PetscCall(DMSwarmDataExInitializeSendCount(de));
   for (p = 0; p < npoints; p++) {
     nrank = rankval[p];
-    if (nrank != rank) { PetscCall(DMSwarmDataExAddToSendCount(de, nrank, 1)); }
+    if (nrank != rank) PetscCall(DMSwarmDataExAddToSendCount(de, nrank, 1));
   }
   PetscCall(DMSwarmDataExFinalizeSendCount(de));
   PetscCall(DMSwarmDataBucketCreatePackedArray(swarm->db, &sizeof_dmswarm_point, &point_buffer));
@@ -111,7 +111,7 @@ PetscErrorCode DMSwarmMigrate_DMNeighborScatter(DM dm, DM dmcell, PetscBool remo
   PetscCall(DMSwarmDataExTopologyInitialize(de));
   for (r = 0; r < nneighbors; r++) {
     _rank = neighbourranks[r];
-    if ((_rank != rank) && (_rank > 0)) { PetscCall(DMSwarmDataExTopologyAddNeighbour(de, _rank)); }
+    if ((_rank != rank) && (_rank > 0)) PetscCall(DMSwarmDataExTopologyAddNeighbour(de, _rank));
   }
   PetscCall(DMSwarmDataExTopologyFinalize(de));
   PetscCall(DMSwarmDataExTopologyGetNeighbours(de, &mynneigh, &myneigh));
@@ -219,7 +219,7 @@ PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm, PetscBool remove_sent_points)
   PetscCall(DMLocatePoints(dmcell, pos, DM_POINTLOCATION_NONE, &sfcell));
   PetscCall(DMSwarmDestroyLocalVectorFromField(dm, DMSwarmPICField_coor, &pos));
 
-  if (error_check) { PetscCall(DMSwarmGetSize(dm, &npointsg)); }
+  if (error_check) PetscCall(DMSwarmGetSize(dm, &npointsg));
   PetscCall(DMSwarmDataBucketGetSizes(swarm->db, &npoints, NULL, NULL));
   PetscCall(DMSwarmGetField(dm, DMSwarmField_rank, NULL, NULL, (void **)&rankval));
   PetscCall(PetscSFGetGraph(sfcell, NULL, NULL, NULL, &LA_sfcell));
@@ -483,12 +483,12 @@ PETSC_EXTERN PetscErrorCode DMSwarmCollect_DMDABoundingBox(DM dm, PetscInt *glob
   }
   PetscCall(DMSwarmDataExTopologyInitialize(de));
   for (p = 0; p < neighbour_cells; p++) {
-    if ((dmneighborranks[p] >= 0) && (dmneighborranks[p] != rank)) { PetscCall(DMSwarmDataExTopologyAddNeighbour(de, dmneighborranks[p])); }
+    if ((dmneighborranks[p] >= 0) && (dmneighborranks[p] != rank)) PetscCall(DMSwarmDataExTopologyAddNeighbour(de, dmneighborranks[p]));
   }
   PetscCall(DMSwarmDataExTopologyFinalize(de));
   PetscCall(DMSwarmDataExInitializeSendCount(de));
   for (p = 0; p < neighbour_cells; p++) {
-    if ((dmneighborranks[p] >= 0) && (dmneighborranks[p] != rank)) { PetscCall(DMSwarmDataExAddToSendCount(de, dmneighborranks[p], 1)); }
+    if ((dmneighborranks[p] >= 0) && (dmneighborranks[p] != rank)) PetscCall(DMSwarmDataExAddToSendCount(de, dmneighborranks[p], 1));
   }
   PetscCall(DMSwarmDataExFinalizeSendCount(de));
   /* send bounding boxes */
@@ -520,7 +520,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmCollect_DMDABoundingBox(DM dm, PetscInt *glob
     PetscCall(DMSwarmGetField(dm, "coory", NULL, NULL, (void **)&array_y));
     for (p = 0; p < npoints; p++) {
       if ((array_x[p] >= recv_bbox[pk].min[0]) && (array_x[p] <= recv_bbox[pk].max[0])) {
-        if ((array_y[p] >= recv_bbox[pk].min[1]) && (array_y[p] <= recv_bbox[pk].max[1])) { PetscCall(DMSwarmDataExAddToSendCount(de, recv_bbox[pk].owner_rank, 1)); }
+        if ((array_y[p] >= recv_bbox[pk].min[1]) && (array_y[p] <= recv_bbox[pk].max[1])) PetscCall(DMSwarmDataExAddToSendCount(de, recv_bbox[pk].owner_rank, 1));
       }
     }
     PetscCall(DMSwarmRestoreField(dm, "coory", NULL, NULL, (void **)&array_y));
@@ -613,13 +613,13 @@ PETSC_EXTERN PetscErrorCode DMSwarmCollect_General(DM dm, PetscErrorCode (*colle
   /* Define topology */
   PetscCall(DMSwarmDataExTopologyInitialize(de));
   for (r = 0; r < size; r++) {
-    if (n2collect[r] > 0) { PetscCall(DMSwarmDataExTopologyAddNeighbour(de, (PetscMPIInt)r)); }
+    if (n2collect[r] > 0) PetscCall(DMSwarmDataExTopologyAddNeighbour(de, (PetscMPIInt)r));
   }
   PetscCall(DMSwarmDataExTopologyFinalize(de));
   /* Define send counts */
   PetscCall(DMSwarmDataExInitializeSendCount(de));
   for (r = 0; r < size; r++) {
-    if (n2collect[r] > 0) { PetscCall(DMSwarmDataExAddToSendCount(de, r, n2collect[r])); }
+    if (n2collect[r] > 0) PetscCall(DMSwarmDataExAddToSendCount(de, r, n2collect[r]));
   }
   PetscCall(DMSwarmDataExFinalizeSendCount(de));
   /* Pack data */

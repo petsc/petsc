@@ -18,7 +18,7 @@ PETSC_INTERN PetscErrorCode MatShift_Basic(Mat Y, PetscScalar a) {
   PetscCall(MatSetOption(Y, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));
   PetscCall(MatGetOwnershipRange(Y, &start, &end));
   for (i = start; i < end; i++) {
-    if (i < Y->cmap->N) { PetscCall(MatSetValues(Y, 1, &i, 1, &i, &alpha, ADD_VALUES)); }
+    if (i < Y->cmap->N) PetscCall(MatSetValues(Y, 1, &i, 1, &i, &alpha, ADD_VALUES));
   }
   PetscCall(MatAssemblyBegin(Y, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(Y, MAT_FINAL_ASSEMBLY));
@@ -248,7 +248,7 @@ PetscErrorCode MatSetFromOptions(Mat B) {
    * This perhaps belongs in the options for the GPU Mat types, but MatBindToCPU() does nothing when called on non-GPU types,
    * and putting it here makes is more maintainable than duplicating this for all. */
   PetscCall(PetscOptionsInt("-mat_bind_below", "Set the size threshold (in local rows) below which the Mat is bound to the CPU", "MatBindToCPU", bind_below, &bind_below, &flg));
-  if (flg && B->rmap->n < bind_below) { PetscCall(MatBindToCPU(B, PETSC_TRUE)); }
+  if (flg && B->rmap->n < bind_below) PetscCall(MatBindToCPU(B, PETSC_TRUE));
 
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   PetscCall(PetscObjectProcessOptionsHandlers((PetscObject)B, PetscOptionsObject));
@@ -301,7 +301,7 @@ PetscErrorCode MatXAIJSetPreallocation(Mat A, PetscInt bs, const PetscInt dnnz[]
 #if defined(PETSC_HAVE_HYPRE)
   PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatHYPRESetPreallocation_C", &hyp));
 #endif
-  if (!aij && !is && !hyp) { PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatSeqAIJSetPreallocation_C", &aij)); }
+  if (!aij && !is && !hyp) PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatSeqAIJSetPreallocation_C", &aij));
   if (aij || is || hyp) {
     if (bs == cbs && bs == 1) {
       PetscCall(MatSeqAIJSetPreallocation(A, 0, dnnz));
@@ -505,8 +505,8 @@ PetscErrorCode MatSetValuesCOO_Basic(Mat A, const PetscScalar coo_v[], InsertMod
   PetscCheck(n_i == n_j, PETSC_COMM_SELF, PETSC_ERR_COR, "Wrong local size %" PetscInt_FMT " != %" PetscInt_FMT, n_i, n_j);
   PetscCall(ISGetIndices(is_coo_i, &coo_i));
   PetscCall(ISGetIndices(is_coo_j, &coo_j));
-  if (imode != ADD_VALUES) { PetscCall(MatZeroEntries(A)); }
-  for (n = 0; n < n_i; n++) { PetscCall(MatSetValue(A, coo_i[n], coo_j[n], coo_v ? coo_v[n] : zero, ADD_VALUES)); }
+  if (imode != ADD_VALUES) PetscCall(MatZeroEntries(A));
+  for (n = 0; n < n_i; n++) PetscCall(MatSetValue(A, coo_i[n], coo_j[n], coo_v ? coo_v[n] : zero, ADD_VALUES));
   PetscCall(ISRestoreIndices(is_coo_i, &coo_i));
   PetscCall(ISRestoreIndices(is_coo_j, &coo_j));
   PetscFunctionReturn(0);
@@ -525,7 +525,7 @@ PetscErrorCode MatSetPreallocationCOO_Basic(Mat A, PetscCount ncoo, const PetscI
   PetscCall(MatSetSizes(preallocator, A->rmap->n, A->cmap->n, A->rmap->N, A->cmap->N));
   PetscCall(MatSetLayouts(preallocator, A->rmap, A->cmap));
   PetscCall(MatSetUp(preallocator));
-  for (PetscCount n = 0; n < ncoo; n++) { PetscCall(MatSetValue(preallocator, coo_i[n], coo_j[n], zero, INSERT_VALUES)); }
+  for (PetscCount n = 0; n < ncoo; n++) PetscCall(MatSetValue(preallocator, coo_i[n], coo_j[n], zero, INSERT_VALUES));
   PetscCall(MatAssemblyBegin(preallocator, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(preallocator, MAT_FINAL_ASSEMBLY));
   PetscCall(MatPreallocatorPreallocate(preallocator, PETSC_TRUE, A));

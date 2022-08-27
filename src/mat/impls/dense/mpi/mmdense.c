@@ -31,7 +31,7 @@ PetscErrorCode MatCreateSubMatrices_MPIDense(Mat C, PetscInt ismax, const IS isr
 
   PetscFunctionBegin;
   /* Allocate memory to hold all the submatrices */
-  if (scall != MAT_REUSE_MATRIX) { PetscCall(PetscCalloc1(ismax + 1, submat)); }
+  if (scall != MAT_REUSE_MATRIX) PetscCall(PetscCalloc1(ismax + 1, submat));
   /* Determine the number of stages through which submatrices are done */
   nmax = 20 * 1000000 / (C->cmap->N * sizeof(PetscInt));
   if (!nmax) nmax = 1;
@@ -156,7 +156,7 @@ PetscErrorCode MatCreateSubMatrices_MPIDense_Local(Mat C, PetscInt ismax, const 
 
   /* Post the receives */
   PetscCall(PetscMalloc1(nrqr + 1, &r_waits1));
-  for (i = 0; i < nrqr; ++i) { PetscCallMPI(MPI_Irecv(rbuf1[i], bsz, MPIU_INT, MPI_ANY_SOURCE, tag0, comm, r_waits1 + i)); }
+  for (i = 0; i < nrqr; ++i) PetscCallMPI(MPI_Irecv(rbuf1[i], bsz, MPIU_INT, MPI_ANY_SOURCE, tag0, comm, r_waits1 + i));
 
   /* Allocate Memory for outgoing messages */
   PetscCall(PetscMalloc4(size, &sbuf1, size, &ptr, 2 * msz, &tmp, size, &ctr));
@@ -374,13 +374,13 @@ PetscErrorCode MatCreateSubMatrices_MPIDense_Local(Mat C, PetscInt ismax, const 
   PetscCall(PetscFree3(w1, w3, w4));
   PetscCall(PetscFree(pa));
 
-  for (i = 0; i < nrqs; ++i) { PetscCall(PetscFree(rbuf2[i])); }
+  for (i = 0; i < nrqs; ++i) PetscCall(PetscFree(rbuf2[i]));
   PetscCall(PetscFree(rbuf2));
   PetscCall(PetscFree4(sbuf1, ptr, tmp, ctr));
   PetscCall(PetscFree(rbuf1[0]));
   PetscCall(PetscFree(rbuf1));
 
-  for (i = 0; i < nrqr; ++i) { PetscCall(PetscFree(sbuf2[i])); }
+  for (i = 0; i < nrqr; ++i) PetscCall(PetscFree(sbuf2[i]));
 
   PetscCall(PetscFree(sbuf2));
   PetscCall(PetscFree(rmap[0]));

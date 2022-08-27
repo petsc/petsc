@@ -260,7 +260,7 @@ PetscErrorCode go(TS ts, Vec X, const PetscInt NUserV, const PetscInt a_Np, cons
     CHKERRQ(ierr);
     PetscCall(VecZeroEntries(X));
     PetscCall(DMCompositeGetAccessArray(pack, X, nDMs, NULL, globXArray));
-    if (b_target >= global_batch_id && b_target < global_batch_id + ctx->batch_sz) { PetscCall(PetscObjectSetName((PetscObject)globXArray[LAND_PACK_IDX(b_target % ctx->batch_sz, g_target)], "rho")); }
+    if (b_target >= global_batch_id && b_target < global_batch_id + ctx->batch_sz) PetscCall(PetscObjectSetName((PetscObject)globXArray[LAND_PACK_IDX(b_target % ctx->batch_sz, g_target)], "rho"));
     // create fake particles
     for (PetscInt b_id_0 = 0; b_id_0 < ctx->batch_sz; b_id_0 += numthreads) {
       PetscReal *xx_t[LANDAU_MAX_GRIDS][MAX_NUM_THRDS], *yy_t[LANDAU_MAX_GRIDS][MAX_NUM_THRDS], *zz_t[LANDAU_MAX_GRIDS][MAX_NUM_THRDS], *wp_t[LANDAU_MAX_GRIDS][MAX_NUM_THRDS];
@@ -373,7 +373,7 @@ PetscErrorCode go(TS ts, Vec X, const PetscInt NUserV, const PetscInt a_Np, cons
         } // active
       }
     } // Landau
-    if (b_target >= global_batch_id && b_target < global_batch_id + ctx->batch_sz) { PetscCall(VecViewFromOptions(globXArray[LAND_PACK_IDX(b_target % ctx->batch_sz, g_target)], NULL, "-ex30_vec_view")); }
+    if (b_target >= global_batch_id && b_target < global_batch_id + ctx->batch_sz) PetscCall(VecViewFromOptions(globXArray[LAND_PACK_IDX(b_target % ctx->batch_sz, g_target)], NULL, "-ex30_vec_view"));
     PetscCall(DMCompositeRestoreAccessArray(pack, X, nDMs, NULL, globXArray));
     PetscCall(DMPlexLandauPrintNorms(X, 0));
     // advance

@@ -209,8 +209,8 @@ PetscErrorCode KSPAGMRESComputeDeflationData(KSP ksp) {
       PetscCall(KSPAGMRESRodvec(ksp, KspSize + 1, &agmres->hes_origin[j * lC], TmpU[j]));
     }
     /* Now form MatEigR = TmpU^T*W where W is [VEC_V(1:max_k); U] */
-    for (j = 0; j < max_k; j++) { PetscCall(VecMDot(VEC_V(j), KspSize, TmpU, &MatEigR[j * N])); }
-    for (j = max_k; j < KspSize; j++) { PetscCall(VecMDot(U[j - max_k], KspSize, TmpU, &MatEigR[j * N])); }
+    for (j = 0; j < max_k; j++) PetscCall(VecMDot(VEC_V(j), KspSize, TmpU, &MatEigR[j * N]));
+    for (j = max_k; j < KspSize; j++) PetscCall(VecMDot(U[j - max_k], KspSize, TmpU, &MatEigR[j * N]));
   } else { /* Form H^T */
     for (j = 0; j < N; j++) {
       for (i = 0; i < N; i++) { MatEigR[j * N + i] = agmres->hes_origin[i * lC + j]; }

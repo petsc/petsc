@@ -1640,7 +1640,7 @@ PetscErrorCode PCView(PC pc, PetscViewer viewer) {
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  if (!viewer) { PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)pc), &viewer)); }
+  if (!viewer) PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)pc), &viewer));
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscCheckSameComm(pc, 1, viewer, 2);
 
@@ -1654,7 +1654,7 @@ PetscErrorCode PCView(PC pc, PetscViewer viewer) {
 
   if (iascii) {
     PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)pc, viewer));
-    if (!pc->setupcalled) { PetscCall(PetscViewerASCIIPrintf(viewer, "  PC has not been set up so information may be incomplete\n")); }
+    if (!pc->setupcalled) PetscCall(PetscViewerASCIIPrintf(viewer, "  PC has not been set up so information may be incomplete\n"));
     PetscCall(PetscViewerASCIIPushTab(viewer));
     PetscTryTypeMethod(pc, view, viewer);
     PetscCall(PetscViewerASCIIPopTab(viewer));
@@ -1723,7 +1723,7 @@ PetscErrorCode PCView(PC pc, PetscViewer viewer) {
 
     PetscCall(PetscObjectName((PetscObject)pc));
     PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
-    if (!((PetscObject)pc)->amsmem && rank == 0) { PetscCall(PetscObjectViewSAWs((PetscObject)pc, viewer)); }
+    if (!((PetscObject)pc)->amsmem && rank == 0) PetscCall(PetscObjectViewSAWs((PetscObject)pc, viewer));
     if (pc->mat) PetscCall(MatView(pc->mat, viewer));
     if (pc->pmat && pc->pmat != pc->mat) PetscCall(MatView(pc->pmat, viewer));
 #endif

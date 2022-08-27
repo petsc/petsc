@@ -223,7 +223,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmSortGetAccess(DM dm) {
   PetscBool isda, isplex, isshell;
 
   PetscFunctionBegin;
-  if (!swarm->sort_context) { PetscCall(DMSwarmSortCreate(&swarm->sort_context)); }
+  if (!swarm->sort_context) PetscCall(DMSwarmSortCreate(&swarm->sort_context));
 
   /* get the number of cells */
   PetscCall(DMSwarmGetCellDM(dm, &celldm));

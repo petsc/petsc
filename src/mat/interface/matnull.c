@@ -174,7 +174,7 @@ PetscErrorCode MatNullSpaceView(MatNullSpace sp, PetscViewer viewer) {
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, MAT_NULLSPACE_CLASSID, 1);
-  if (!viewer) { PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)sp), &viewer)); }
+  if (!viewer) PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)sp), &viewer));
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscCheckSameComm(sp, 1, viewer, 2);
 
@@ -188,7 +188,7 @@ PetscErrorCode MatNullSpaceView(MatNullSpace sp, PetscViewer viewer) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "Contains %" PetscInt_FMT " vector%s%s\n", sp->n, sp->n == 1 ? "" : "s", sp->has_cnst ? " and the constant" : ""));
     if (sp->remove) PetscCall(PetscViewerASCIIPrintf(viewer, "Has user-provided removal function\n"));
     if (!(format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL)) {
-      for (i = 0; i < sp->n; i++) { PetscCall(VecView(sp->vecs[i], viewer)); }
+      for (i = 0; i < sp->n; i++) PetscCall(VecView(sp->vecs[i], viewer));
     }
     PetscCall(PetscViewerASCIIPopTab(viewer));
   }
@@ -313,7 +313,7 @@ PetscErrorCode MatNullSpaceDestroy(MatNullSpace *sp) {
     PetscFunctionReturn(0);
   }
 
-  for (i = 0; i < (*sp)->n; i++) { PetscCall(VecLockReadPop((*sp)->vecs[i])); }
+  for (i = 0; i < (*sp)->n; i++) PetscCall(VecLockReadPop((*sp)->vecs[i]));
 
   PetscCall(VecDestroyVecs((*sp)->n, &(*sp)->vecs));
   PetscCall(PetscFree((*sp)->alpha));

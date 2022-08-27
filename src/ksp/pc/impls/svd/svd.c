@@ -111,7 +111,7 @@ static PetscErrorCode PCSetUp_SVD(PC pc) {
       PetscCall(PetscViewerASCIIPrintf(jac->monitor, "    SVD: singular values:\n"));
       for (i = 0; i < n; i++) {
         if (i % 5 == 0) {
-          if (i != 0) { PetscCall(PetscViewerASCIIPrintf(jac->monitor, "\n")); }
+          if (i != 0) PetscCall(PetscViewerASCIIPrintf(jac->monitor, "\n"));
           PetscCall(PetscViewerASCIIPrintf(jac->monitor, "        "));
         }
         PetscCall(PetscViewerASCIIPrintf(jac->monitor, " %14.12e", (double)PetscRealPart(d[i])));

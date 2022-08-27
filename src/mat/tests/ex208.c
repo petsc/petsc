@@ -22,7 +22,7 @@ int main(int argc, char **args) {
   PetscCall(MatSetUp(A));
 
   if (rank == 0) {
-    for (i = 0; i < size * PetscMin(m, n); i++) { PetscCall(MatSetValue(A, i, i, 1.0, INSERT_VALUES)); }
+    for (i = 0; i < size * PetscMin(m, n); i++) PetscCall(MatSetValue(A, i, i, 1.0, INSERT_VALUES));
   }
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
@@ -30,7 +30,7 @@ int main(int argc, char **args) {
 
   PetscCall(MatCreateRedundantMatrix(A, nsubcomm, MPI_COMM_NULL, MAT_INITIAL_MATRIX, &B));
   if (nsubcomm == size) { /* B is a sequential matrix */
-    if (rank == 0) { PetscCall(MatView(B, PETSC_VIEWER_STDOUT_SELF)); }
+    if (rank == 0) PetscCall(MatView(B, PETSC_VIEWER_STDOUT_SELF));
   } else {
     MPI_Comm comm;
     PetscCall(PetscObjectGetComm((PetscObject)B, &comm));

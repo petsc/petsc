@@ -162,15 +162,15 @@ PETSC_INTERN PetscErrorCode DMSetUpGLVisViewer_DMDA(PetscObject oda, PetscViewer
     switch (dim) {
     case 1:
       PetscCall(DMDACreate1d(PetscObjectComm((PetscObject)da), DM_BOUNDARY_NONE, M, dof, 1, lx, &daview));
-      if (!hashocoord) { PetscCall(DMDACreate1d(PetscObjectComm((PetscObject)da), DM_BOUNDARY_NONE, M, 1, 1, lx, &dacoord)); }
+      if (!hashocoord) PetscCall(DMDACreate1d(PetscObjectComm((PetscObject)da), DM_BOUNDARY_NONE, M, 1, 1, lx, &dacoord));
       break;
     case 2:
       PetscCall(DMDACreate2d(PetscObjectComm((PetscObject)da), DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, M, N, m, n, dof, 1, lx, ly, &daview));
-      if (!hashocoord) { PetscCall(DMDACreate2d(PetscObjectComm((PetscObject)da), DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, M, N, m, n, 2, 1, lx, ly, &dacoord)); }
+      if (!hashocoord) PetscCall(DMDACreate2d(PetscObjectComm((PetscObject)da), DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, M, N, m, n, 2, 1, lx, ly, &dacoord));
       break;
     case 3:
       PetscCall(DMDACreate3d(PetscObjectComm((PetscObject)da), DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, M, N, P, m, n, p, dof, 1, lx, ly, lz, &daview));
-      if (!hashocoord) { PetscCall(DMDACreate3d(PetscObjectComm((PetscObject)da), DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, M, N, P, m, n, p, 3, 1, lx, ly, lz, &dacoord)); }
+      if (!hashocoord) PetscCall(DMDACreate3d(PetscObjectComm((PetscObject)da), DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, M, N, P, m, n, p, 3, 1, lx, ly, lz, &dacoord));
       break;
     default: SETERRQ(PetscObjectComm((PetscObject)da), PETSC_ERR_SUP, "Unsupported dimension %" PetscInt_FMT, dim);
     }
@@ -469,7 +469,7 @@ static PetscErrorCode DMDAView_GLVis_ASCII(DM dm, PetscViewer viewer) {
           i = ke * gm * gn + je * gm + ie;
           for (c = 0; c < cdof / sdim; c++) {
             PetscInt d;
-            for (d = 0; d < sdim; d++) { PetscCall(PetscViewerASCIIPrintf(viewer, fmt, PetscRealPart(array[cdof * i + c * sdim + d]))); }
+            for (d = 0; d < sdim; d++) PetscCall(PetscViewerASCIIPrintf(viewer, fmt, PetscRealPart(array[cdof * i + c * sdim + d])));
             PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
           }
         }

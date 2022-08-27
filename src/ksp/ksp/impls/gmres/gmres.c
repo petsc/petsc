@@ -147,7 +147,7 @@ PetscErrorCode KSPGMRESCycle(PetscInt *itcount, KSP ksp) {
       PetscCall(KSPMonitor(ksp, ksp->its, res));
     }
     gmres->it = (it - 1);
-    if (gmres->vv_allocated <= it + VEC_OFFSET + 1) { PetscCall(KSPGMRESGetNewVectors(ksp, it + 1)); }
+    if (gmres->vv_allocated <= it + VEC_OFFSET + 1) PetscCall(KSPGMRESGetNewVectors(ksp, it + 1));
     PetscCall(KSP_PCApplyBAorAB(ksp, VEC_VV(it), VEC_VV(1 + it), VEC_TEMP_MATOP));
 
     /* update hessenberg matrix and do Gram-Schmidt */
@@ -240,7 +240,7 @@ PetscErrorCode KSPSolve_GMRES(KSP ksp) {
           PetscCall(VecDuplicateVecs(VEC_VV(0), N, &gmres->vecb));
         }
         PetscCall(PetscArraycpy(gmres->hes_ritz, gmres->hes_origin, N * N));
-        for (i = 0; i < gmres->max_k + 1; i++) { PetscCall(VecCopy(VEC_VV(i), gmres->vecb[i])); }
+        for (i = 0; i < gmres->max_k + 1; i++) PetscCall(VecCopy(VEC_VV(i), gmres->vecb[i]));
       }
     }
     itcount += its;
@@ -265,9 +265,9 @@ PetscErrorCode KSPReset_GMRES(KSP ksp) {
 
   /* free work vectors */
   PetscCall(PetscFree(gmres->vecs));
-  for (i = 0; i < gmres->nwork_alloc; i++) { PetscCall(VecDestroyVecs(gmres->mwork_alloc[i], &gmres->user_work[i])); }
+  for (i = 0; i < gmres->nwork_alloc; i++) PetscCall(VecDestroyVecs(gmres->mwork_alloc[i], &gmres->user_work[i]));
   gmres->nwork_alloc = 0;
-  if (gmres->vecb) { PetscCall(VecDestroyVecs(gmres->max_k + 1, &gmres->vecb)); }
+  if (gmres->vecb) PetscCall(VecDestroyVecs(gmres->max_k + 1, &gmres->vecb));
 
   PetscCall(PetscFree(gmres->user_work));
   PetscCall(PetscFree(gmres->mwork_alloc));
@@ -352,7 +352,7 @@ static PetscErrorCode KSPGMRESBuildSoln(PetscScalar *nrs, Vec vs, Vec vdest, KSP
 
   PetscCall(KSPUnwindPreconditioner(ksp, VEC_TEMP, VEC_TEMP_MATOP));
   /* add solution to previous solution */
-  if (vdest != vs) { PetscCall(VecCopy(vs, vdest)); }
+  if (vdest != vs) PetscCall(VecCopy(vs, vdest));
   PetscCall(VecAXPY(vdest, 1.0, VEC_TEMP));
   PetscFunctionReturn(0);
 }

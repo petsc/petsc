@@ -228,7 +228,7 @@ static PetscErrorCode PCSetUp_AMGX(PC pc) {
       PetscCall(MatMPIAIJGetLocalMat(Pmat, MAT_INITIAL_MATRIX, &amgx->localA));
     }
 
-    if (is_dev_ptrs) { PetscCall(MatConvert(amgx->localA, MATSEQAIJCUSPARSE, MAT_INPLACE_MATRIX, &amgx->localA)); }
+    if (is_dev_ptrs) PetscCall(MatConvert(amgx->localA, MATSEQAIJCUSPARSE, MAT_INPLACE_MATRIX, &amgx->localA));
   } else {
     amgx->localA = Pmat;
   }

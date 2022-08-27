@@ -169,7 +169,7 @@ PetscErrorCode PetscVSNPrintf(char *str, size_t len, const char *format, size_t 
 #else
 #error "vsnprintf not found"
 #endif
-  if (newLength > sizeof(formatbuf) - 1) { PetscCall(PetscFree(newformat)); }
+  if (newLength > sizeof(formatbuf) - 1) PetscCall(PetscFree(newformat));
   {
     PetscBool foundedot;
     size_t    cnt = 0, ncnt = 0, leng;
@@ -298,7 +298,7 @@ PetscErrorCode PetscVFPrintfDefault(FILE *fd, const char *format, va_list Argp) 
   }
   fprintf(fd, "%s", buff);
   fflush(fd);
-  if (buff != str) { PetscCall(PetscFree(buff)); }
+  if (buff != str) PetscCall(PetscFree(buff));
   PetscFunctionReturn(0);
 }
 

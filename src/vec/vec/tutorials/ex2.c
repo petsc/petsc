@@ -44,7 +44,7 @@ int main(int argc, char **argv) {
       - In this example, the flag ADD_VALUES indicates that all
         contributions will be added together.
   */
-  for (i = 0; i < N - rank; i++) { PetscCall(VecSetValues(x, 1, &i, &one, ADD_VALUES)); }
+  for (i = 0; i < N - rank; i++) PetscCall(VecSetValues(x, 1, &i, &one, ADD_VALUES));
 
   /*
      Assemble vector, using the 2-step process:

@@ -157,7 +157,7 @@ PetscErrorCode SNESVICheckResidual_Private(SNES snes, Mat A, Vec F, Vec X, Vec W
     PetscCall(MatMultTranspose(A, W1, W2));
     PetscCall(VecNorm(W1, NORM_2, &a1));
     PetscCall(VecNorm(W2, NORM_2, &a2));
-    if (a1 != 0.0) { PetscCall(PetscInfo(snes, "||J^T(F-Ax)||/||F-AX|| %g near zero implies inconsistent rhs\n", (double)(a2 / a1))); }
+    if (a1 != 0.0) PetscCall(PetscInfo(snes, "||J^T(F-Ax)||/||F-AX|| %g near zero implies inconsistent rhs\n", (double)(a2 / a1)));
   }
   PetscFunctionReturn(0);
 }

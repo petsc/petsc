@@ -384,7 +384,7 @@ static PetscErrorCode MatPartitioningApply_PTScotch_Private(MatPartitioning part
     PetscCall(ISDestroy(&ndis));
   }
 
-  if (!flg) { PetscCall(MatDestroy(&mat)); }
+  if (!flg) PetscCall(MatDestroy(&mat));
   PetscFunctionReturn(0);
 }
 

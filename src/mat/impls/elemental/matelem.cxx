@@ -387,7 +387,7 @@ PetscErrorCode MatProductSetFromOptions_Elemental_MPIDense(Mat C) {
   Mat_Product *product = C->product;
 
   PetscFunctionBegin;
-  if (product->type == MATPRODUCT_AB) { PetscCall(MatProductSetFromOptions_Elemental_MPIDense_AB(C)); }
+  if (product->type == MATPRODUCT_AB) PetscCall(MatProductSetFromOptions_Elemental_MPIDense_AB(C));
   PetscFunctionReturn(0);
 }
 /* --------------------------------------- */

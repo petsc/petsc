@@ -121,7 +121,7 @@ PetscErrorCode DMDASelectFields(DM da, PetscInt *outfields, PetscInt **fields) {
         displayfields[ndisplayfields++] = j;
       }
     }
-    for (k = 0; k < nfields; k++) { PetscCall(PetscFree(fields[k])); }
+    for (k = 0; k < nfields; k++) PetscCall(PetscFree(fields[k]));
     PetscCall(PetscFree(fields));
   }
   *fields    = displayfields;

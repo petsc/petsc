@@ -582,14 +582,14 @@ PETSC_INTERN PetscErrorCode PetscInitializeSAWs(const char help[]) {
       }
     }
     PetscCall(PetscOptionsGetString(NULL, NULL, "-saws_https", cert, sizeof(cert), &flg));
-    if (flg) { PetscCallSAWs(SAWs_Set_Use_HTTPS, (cert)); }
+    if (flg) PetscCallSAWs(SAWs_Set_Use_HTTPS, (cert));
     PetscCall(PetscOptionsGetBool(NULL, NULL, "-saws_port_auto_select", &selectport, NULL));
     if (selectport) {
       PetscCallSAWs(SAWs_Get_Available_Port, (&port));
       PetscCallSAWs(SAWs_Set_Port, (port));
     } else {
       PetscCall(PetscOptionsGetInt(NULL, NULL, "-saws_port", &port, &flg));
-      if (flg) { PetscCallSAWs(SAWs_Set_Port, (port)); }
+      if (flg) PetscCallSAWs(SAWs_Set_Port, (port));
     }
     PetscCall(PetscOptionsGetString(NULL, NULL, "-saws_root", root, sizeof(root), &flg));
     if (flg) {
@@ -1035,7 +1035,7 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
       PetscCall(PetscInfo(NULL, "Number of OpenMP theads %" PetscInt_FMT " (given by -omp_num_threads)\n", PetscNumOMPThreads));
       omp_set_num_threads((int)PetscNumOMPThreads);
     }
-    if (omp_view_flag) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "OpenMP: number of threads %" PetscInt_FMT "\n", PetscNumOMPThreads)); }
+    if (omp_view_flag) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "OpenMP: number of threads %" PetscInt_FMT "\n", PetscNumOMPThreads));
   }
 #endif
 
@@ -1355,7 +1355,7 @@ PetscErrorCode PetscFinalize(void) {
     FILE *fd = PETSC_STDOUT;
 
     PetscCall(PetscOptionsGetString(NULL, NULL, "-citations", filename, sizeof(filename), NULL));
-    if (filename[0]) { PetscCall(PetscFOpen(PETSC_COMM_WORLD, filename, "w", &fd)); }
+    if (filename[0]) PetscCall(PetscFOpen(PETSC_COMM_WORLD, filename, "w", &fd));
     PetscCall(PetscSegBufferGet(PetscCitationsList, 1, &cits));
     cits[0] = 0;
     PetscCall(PetscSegBufferExtractAlloc(PetscCitationsList, &cits));
@@ -1433,7 +1433,7 @@ PetscErrorCode PetscFinalize(void) {
     flg2 = PETSC_FALSE;
     PetscCall(PetscOptionsGetBool(NULL, NULL, "-memory_view", &flg2, NULL));
   }
-  if (flg2) { PetscCall(PetscMemoryView(PETSC_VIEWER_STDOUT_WORLD, "Summary of Memory Usage in PETSc\n")); }
+  if (flg2) PetscCall(PetscMemoryView(PETSC_VIEWER_STDOUT_WORLD, "Summary of Memory Usage in PETSc\n"));
 #endif
 
 #if defined(PETSC_USE_LOG)

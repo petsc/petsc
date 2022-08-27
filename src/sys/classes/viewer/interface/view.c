@@ -15,16 +15,16 @@ static PetscBool PetscViewerPackageInitialized = PETSC_FALSE;
 @*/
 PetscErrorCode   PetscViewerFinalizePackage(void) {
     PetscFunctionBegin;
-    if (Petsc_Viewer_keyval != MPI_KEYVAL_INVALID) { PetscCallMPI(MPI_Comm_free_keyval(&Petsc_Viewer_keyval)); }
-    if (Petsc_Viewer_Stdout_keyval != MPI_KEYVAL_INVALID) { PetscCallMPI(MPI_Comm_free_keyval(&Petsc_Viewer_Stdout_keyval)); }
-    if (Petsc_Viewer_Stderr_keyval != MPI_KEYVAL_INVALID) { PetscCallMPI(MPI_Comm_free_keyval(&Petsc_Viewer_Stderr_keyval)); }
-    if (Petsc_Viewer_Binary_keyval != MPI_KEYVAL_INVALID) { PetscCallMPI(MPI_Comm_free_keyval(&Petsc_Viewer_Binary_keyval)); }
-    if (Petsc_Viewer_Draw_keyval != MPI_KEYVAL_INVALID) { PetscCallMPI(MPI_Comm_free_keyval(&Petsc_Viewer_Draw_keyval)); }
+    if (Petsc_Viewer_keyval != MPI_KEYVAL_INVALID) PetscCallMPI(MPI_Comm_free_keyval(&Petsc_Viewer_keyval));
+  if (Petsc_Viewer_Stdout_keyval != MPI_KEYVAL_INVALID) PetscCallMPI(MPI_Comm_free_keyval(&Petsc_Viewer_Stdout_keyval));
+  if (Petsc_Viewer_Stderr_keyval != MPI_KEYVAL_INVALID) PetscCallMPI(MPI_Comm_free_keyval(&Petsc_Viewer_Stderr_keyval));
+  if (Petsc_Viewer_Binary_keyval != MPI_KEYVAL_INVALID) PetscCallMPI(MPI_Comm_free_keyval(&Petsc_Viewer_Binary_keyval));
+  if (Petsc_Viewer_Draw_keyval != MPI_KEYVAL_INVALID) PetscCallMPI(MPI_Comm_free_keyval(&Petsc_Viewer_Draw_keyval));
 #if defined(PETSC_HAVE_HDF5)
-  if (Petsc_Viewer_HDF5_keyval != MPI_KEYVAL_INVALID) { PetscCallMPI(MPI_Comm_free_keyval(&Petsc_Viewer_HDF5_keyval)); }
+  if (Petsc_Viewer_HDF5_keyval != MPI_KEYVAL_INVALID) PetscCallMPI(MPI_Comm_free_keyval(&Petsc_Viewer_HDF5_keyval));
 #endif
 #if defined(PETSC_USE_SOCKETVIEWER)
-  if (Petsc_Viewer_Socket_keyval != MPI_KEYVAL_INVALID) { PetscCallMPI(MPI_Comm_free_keyval(&Petsc_Viewer_Socket_keyval)); }
+  if (Petsc_Viewer_Socket_keyval != MPI_KEYVAL_INVALID) PetscCallMPI(MPI_Comm_free_keyval(&Petsc_Viewer_Socket_keyval));
 #endif
   PetscCall(PetscFunctionListDestroy(&PetscViewerList));
   PetscViewerPackageInitialized = PETSC_FALSE;
@@ -96,7 +96,7 @@ PetscErrorCode PetscViewerDestroy(PetscViewer *viewer) {
   }
 
   PetscCall(PetscObjectSAWsViewOff((PetscObject)*viewer));
-  if ((*viewer)->ops->destroy) { PetscCall((*(*viewer)->ops->destroy)(*viewer)); }
+  if ((*viewer)->ops->destroy) PetscCall((*(*viewer)->ops->destroy)(*viewer));
   PetscCall(PetscHeaderDestroy(viewer));
   PetscFunctionReturn(0);
 }
@@ -344,7 +344,7 @@ PetscErrorCode PetscViewerView(PetscViewer v, PetscViewer viewer) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, PETSC_VIEWER_CLASSID, 1);
   PetscValidType(v, 1);
-  if (!viewer) { PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)v), &viewer)); }
+  if (!viewer) PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)v), &viewer));
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscCheckSameComm(v, 1, viewer, 2);
 
@@ -356,7 +356,7 @@ PetscErrorCode PetscViewerView(PetscViewer v, PetscViewer viewer) {
     PetscCall(PetscViewerGetFormat(viewer, &format));
     PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)v, viewer));
     if (format == PETSC_VIEWER_DEFAULT || format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
-      if (v->format) { PetscCall(PetscViewerASCIIPrintf(viewer, "  Viewer format = %s\n", PetscViewerFormats[v->format])); }
+      if (v->format) PetscCall(PetscViewerASCIIPrintf(viewer, "  Viewer format = %s\n", PetscViewerFormats[v->format]));
       PetscCall(PetscViewerASCIIPushTab(viewer));
       PetscTryTypeMethod(v, view, viewer);
       PetscCall(PetscViewerASCIIPopTab(viewer));

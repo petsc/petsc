@@ -18,8 +18,8 @@ static PetscErrorCode ExchangeArrayByRank_Private(PetscObject obj, MPI_Datatype 
   PetscCall(PetscMalloc2(nrranks, &rreq, nsranks, &sreq));
   /* exchange array size */
   PetscCall(PetscObjectGetNewTag(obj, &tag));
-  for (r = 0; r < nrranks; r++) { PetscCallMPI(MPI_Irecv(&rsize[r], 1, MPIU_INT, rranks[r], tag, comm, &rreq[r])); }
-  for (r = 0; r < nsranks; r++) { PetscCallMPI(MPI_Isend(&ssize[r], 1, MPIU_INT, sranks[r], tag, comm, &sreq[r])); }
+  for (r = 0; r < nrranks; r++) PetscCallMPI(MPI_Irecv(&rsize[r], 1, MPIU_INT, rranks[r], tag, comm, &rreq[r]));
+  for (r = 0; r < nsranks; r++) PetscCallMPI(MPI_Isend(&ssize[r], 1, MPIU_INT, sranks[r], tag, comm, &sreq[r]));
   PetscCallMPI(MPI_Waitall(nrranks, rreq, MPI_STATUSES_IGNORE));
   PetscCallMPI(MPI_Waitall(nsranks, sreq, MPI_STATUSES_IGNORE));
   /* exchange array */
@@ -28,7 +28,7 @@ static PetscErrorCode ExchangeArrayByRank_Private(PetscObject obj, MPI_Datatype 
     PetscCall(PetscMalloc(rsize[r] * unitsize, &rarr[r]));
     PetscCallMPI(MPI_Irecv(rarr[r], rsize[r], dt, rranks[r], tag, comm, &rreq[r]));
   }
-  for (r = 0; r < nsranks; r++) { PetscCallMPI(MPI_Isend(sarr[r], ssize[r], dt, sranks[r], tag, comm, &sreq[r])); }
+  for (r = 0; r < nsranks; r++) PetscCallMPI(MPI_Isend(sarr[r], ssize[r], dt, sranks[r], tag, comm, &sreq[r]));
   PetscCallMPI(MPI_Waitall(nrranks, rreq, MPI_STATUSES_IGNORE));
   PetscCallMPI(MPI_Waitall(nsranks, sreq, MPI_STATUSES_IGNORE));
   PetscCall(PetscFree2(rreq, sreq));
@@ -60,7 +60,7 @@ static PetscErrorCode ExchangeVecByRank_Private(PetscObject obj, PetscInt nsrank
     PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF, 1, rsize[r], NULL, &rvecs_[r]));
     PetscCall(VecReplaceArray(rvecs_[r], rarr[r]));
   }
-  for (r = 0; r < nsranks; r++) { PetscCall(VecRestoreArrayRead(svecs[r], &sarr[r])); }
+  for (r = 0; r < nsranks; r++) PetscCall(VecRestoreArrayRead(svecs[r], &sarr[r]));
   PetscCall(PetscFree2(rsize, rarr));
   PetscCall(PetscFree4(ssize, sarr, rreq, sreq));
   *rvecs = rvecs_;
@@ -256,18 +256,18 @@ PetscErrorCode DMPlexCheckInterfaceCones(DM dm) {
   }
 
   /* destroy sent stuff */
-  for (r = 0; r < nranks; r++) { PetscCall(VecDestroy(&sntCoordinatesPerRank[r])); }
+  for (r = 0; r < nranks; r++) PetscCall(VecDestroy(&sntCoordinatesPerRank[r]));
   PetscCall(PetscFree(sntCoordinatesPerRank));
   PetscCall(PetscFree2(rmine1, rremote1));
   PetscCall(PetscSFDestroy(&imsf));
 
   /* destroy referenced stuff */
-  for (r = 0; r < niranks; r++) { PetscCall(VecDestroy(&refCoordinatesPerRank[r])); }
+  for (r = 0; r < niranks; r++) PetscCall(VecDestroy(&refCoordinatesPerRank[r]));
   PetscCall(PetscFree(refCoordinatesPerRank));
   PetscCall(PetscFree(mine_orig_numbering));
 
   /* destroy received stuff */
-  for (r = 0; r < niranks; r++) { PetscCall(VecDestroy(&recCoordinatesPerRank[r])); }
+  for (r = 0; r < niranks; r++) PetscCall(VecDestroy(&recCoordinatesPerRank[r]));
   PetscCall(PetscFree(recCoordinatesPerRank));
   PetscFunctionReturn(0);
 }

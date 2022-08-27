@@ -1458,7 +1458,7 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx, PetscInt my) {
         PetscCall(MatZeroRowsIS(B, vel, 0.0, NULL, NULL));
         PetscCall(ISDestroy(&vel));
         PetscCall(PCBDDCSetDivergenceMat(pc, B, PETSC_FALSE, NULL));
-        for (i = 0; i < nf; i++) { PetscCall(ISDestroy(&fields[i])); }
+        for (i = 0; i < nf; i++) PetscCall(ISDestroy(&fields[i]));
         PetscCall(PetscFree(fields));
       }
     }
@@ -1518,7 +1518,7 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx, PetscInt my) {
     PetscCall(VecView(X, viewer));
     PetscCall(PetscViewerDestroy(&viewer));
   }
-  if (output_gnuplot) { PetscCall(DMDAViewGnuplot2d(da_Stokes, X, "Velocity solution for Stokes eqn.", "X")); }
+  if (output_gnuplot) PetscCall(DMDAViewGnuplot2d(da_Stokes, X, "Velocity solution for Stokes eqn.", "X"));
 
   if (glvis) {
     PetscViewer view;
@@ -1549,7 +1549,7 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx, PetscInt my) {
     PetscCall(PetscOptionsGetInt(NULL, NULL, "-solcx_nz", &opts_nz, NULL));
 
     PetscCall(DMDACreateSolCx(opts_eta0, opts_eta1, opts_xc, opts_nz, mx, my, &da_Stokes_analytic, &X_analytic));
-    if (output_gnuplot) { PetscCall(DMDAViewGnuplot2d(da_Stokes_analytic, X_analytic, "Analytic solution for Stokes eqn.", "X_analytic")); }
+    if (output_gnuplot) PetscCall(DMDAViewGnuplot2d(da_Stokes_analytic, X_analytic, "Analytic solution for Stokes eqn.", "X_analytic"));
     PetscCall(DMDAIntegrateErrors(da_Stokes_analytic, X, X_analytic));
 
     PetscCall(VecAXPY(X_analytic, -1.0, X));

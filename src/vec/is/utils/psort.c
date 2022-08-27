@@ -185,7 +185,7 @@ static PetscErrorCode PetscParallelRedistribute(PetscLayout map, PetscInt n, Pet
   PetscCallMPI(MPI_Scan(&n, &nextOffset, 1, MPIU_INT, MPI_SUM, map->comm));
   myOffset = nextOffset - n;
   total    = map->range[rank + 1] - map->range[rank];
-  if (total > 0) { PetscCallMPI(MPI_Irecv(arrayout, total, MPIU_INT, MPI_ANY_SOURCE, firsttag, map->comm, &firstreqrcv)); }
+  if (total > 0) PetscCallMPI(MPI_Irecv(arrayout, total, MPIU_INT, MPI_ANY_SOURCE, firsttag, map->comm, &firstreqrcv));
   for (i = 0, nsecond = 0, nfirst = 0; i < size; i++) {
     PetscInt itotal;
     PetscInt overlap, oStart, oEnd;
@@ -325,7 +325,7 @@ PetscErrorCode PetscParallelSortInt(PetscLayout mapin, PetscLayout mapout, Petsc
   PetscCheck(mapin->N == mapout->N, mapin->comm, PETSC_ERR_ARG_SIZ, "Input and output layouts have different global sizes (%" PetscInt_FMT " != %" PetscInt_FMT ")", mapin->N, mapout->N);
   PetscCallMPI(MPI_Comm_size(mapin->comm, &size));
   if (size == 1) {
-    if (keysout != keysin) { PetscCall(PetscMemcpy(keysout, keysin, mapin->n * sizeof(PetscInt))); }
+    if (keysout != keysin) PetscCall(PetscMemcpy(keysout, keysin, mapin->n * sizeof(PetscInt)));
     PetscCall(PetscSortInt(mapout->n, keysout));
     if (size == 1) PetscFunctionReturn(0);
   }

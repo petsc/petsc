@@ -181,7 +181,7 @@ int main(int argc, char **argv) {
       Nvneighborstotal += nbrs;
       for (i = 0; i < user.itot[user.Nvlocal]; i++) {
         form[0] = '\0';
-        for (j = 0; j < i + 2; j++) { PetscCall(PetscStrlcat(form, "%*d ", sizeof(form))); }
+        for (j = 0; j < i + 2; j++) PetscCall(PetscStrlcat(form, "%*d ", sizeof(form)));
         PetscCall(PetscStrlcat(form, "%d", sizeof(form)));
 
         sscanf(str, form, &dtmp);
@@ -254,7 +254,7 @@ int main(int argc, char **argv) {
   PetscCall(AODestroy(&ao));
 
   PetscCall(PetscFPrintf(PETSC_COMM_SELF, fptr1, "After AOApplicationToPetsc, local indices are : \n"));
-  for (i = 0; i < user.Nvlocal; i++) { PetscCall(PetscFPrintf(PETSC_COMM_SELF, fptr1, " %" PetscInt_FMT " ", user.locInd[i])); }
+  for (i = 0; i < user.Nvlocal; i++) PetscCall(PetscFPrintf(PETSC_COMM_SELF, fptr1, " %" PetscInt_FMT " ", user.locInd[i]));
   PetscCall(PetscFPrintf(PETSC_COMM_SELF, fptr1, "\n"));
 
   jstart = 0;
@@ -315,7 +315,7 @@ int main(int argc, char **argv) {
 
   PetscCall(PetscFPrintf(PETSC_COMM_SELF, fptr1, "\n"));
   PetscCall(PetscFPrintf(PETSC_COMM_SELF, fptr1, "The array vertices is :\n"));
-  for (i = 0; i < nvertices; i++) { PetscCall(PetscFPrintf(PETSC_COMM_SELF, fptr1, "%" PetscInt_FMT " ", vertices[i])); }
+  for (i = 0; i < nvertices; i++) PetscCall(PetscFPrintf(PETSC_COMM_SELF, fptr1, "%" PetscInt_FMT " ", vertices[i]));
   PetscCall(PetscFPrintf(PETSC_COMM_SELF, fptr1, "\n"));
 
   /*
@@ -435,7 +435,7 @@ int main(int argc, char **argv) {
     Print the initial guess
   */
   PetscCall(VecGetArray(x, &xx));
-  for (inode = 0; inode < user.Nvlocal; inode++) { PetscCall(PetscFPrintf(PETSC_COMM_SELF, fptr1, "Initial Solution at node %" PetscInt_FMT " is %f \n", inode, (double)PetscRealPart(xx[inode]))); }
+  for (inode = 0; inode < user.Nvlocal; inode++) PetscCall(PetscFPrintf(PETSC_COMM_SELF, fptr1, "Initial Solution at node %" PetscInt_FMT " is %f \n", inode, (double)PetscRealPart(xx[inode])));
   PetscCall(VecRestoreArray(x, &xx));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -453,7 +453,7 @@ int main(int argc, char **argv) {
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   PetscCall(VecGetArray(x, &xx));
-  for (inode = 0; inode < user.Nvlocal; inode++) { PetscCall(PetscFPrintf(PETSC_COMM_SELF, fptr1, "Solution at node %" PetscInt_FMT " is %f \n", inode, (double)PetscRealPart(xx[inode]))); }
+  for (inode = 0; inode < user.Nvlocal; inode++) PetscCall(PetscFPrintf(PETSC_COMM_SELF, fptr1, "Solution at node %" PetscInt_FMT " is %f \n", inode, (double)PetscRealPart(xx[inode])));
   PetscCall(VecRestoreArray(x, &xx));
   fclose(fptr1);
   PetscCall(PetscPrintf(MPI_COMM_WORLD, "number of SNES iterations = %" PetscInt_FMT ", ", its));

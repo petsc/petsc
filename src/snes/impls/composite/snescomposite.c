@@ -53,7 +53,7 @@ static PetscErrorCode SNESCompositeApply_Multiplicative(SNES snes, Vec X, Vec B,
 
   PetscFunctionBegin;
   PetscCheck(next, PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_WRONGSTATE, "No composite SNESes supplied via SNESCompositeAddSNES() or -snes_composite_sneses");
-  if (snes->normschedule == SNES_NORM_ALWAYS) { PetscCall(SNESSetInitialFunction(next->snes, F)); }
+  if (snes->normschedule == SNES_NORM_ALWAYS) PetscCall(SNESSetInitialFunction(next->snes, F));
   PetscCall(SNESSolve(next->snes, B, X));
   PetscCall(SNESGetConvergedReason(next->snes, &reason));
   if (reason < 0 && reason != SNES_DIVERGED_MAX_IT) {
@@ -231,7 +231,7 @@ static PetscErrorCode SNESCompositeApply_AdditiveOptimal(SNES snes, Vec X, Vec B
 
   /* all the solutions are collected; combine optimally */
   for (i = 0; i < jac->n; i++) {
-    for (j = 0; j < i + 1; j++) { PetscCall(VecDotBegin(Fes[i], Fes[j], &jac->h[i + j * jac->n])); }
+    for (j = 0; j < i + 1; j++) PetscCall(VecDotBegin(Fes[i], Fes[j], &jac->h[i + j * jac->n]));
     PetscCall(VecDotBegin(Fes[i], F, &jac->g[i]));
   }
 
@@ -431,7 +431,7 @@ static PetscErrorCode SNESSetFromOptions_Composite(SNES snes, PetscOptionItems *
   }
   PetscCall(PetscOptionsRealArray("-snes_composite_damping", "Damping of the additive composite solvers", "SNESCompositeSetDamping", dmps, &nmax, &flg));
   if (flg) {
-    for (i = 0; i < nmax; i++) { PetscCall(SNESCompositeSetDamping(snes, i, dmps[i])); }
+    for (i = 0; i < nmax; i++) PetscCall(SNESCompositeSetDamping(snes, i, dmps[i]));
   }
   PetscCall(PetscOptionsReal("-snes_composite_stol", "Step tolerance for restart on the additive composite solvers", "", jac->stol, &jac->stol, NULL));
   PetscCall(PetscOptionsReal("-snes_composite_rtol", "Residual tolerance for the additive composite solvers", "", jac->rtol, &jac->rtol, NULL));

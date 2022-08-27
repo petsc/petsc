@@ -50,7 +50,7 @@ PetscErrorCode PetscClassRegLogDestroy(PetscClassRegLog classLog) {
   int c;
 
   PetscFunctionBegin;
-  for (c = 0; c < classLog->numClasses; c++) { PetscCall(PetscClassRegInfoDestroy(&classLog->classInfo[c])); }
+  for (c = 0; c < classLog->numClasses; c++) PetscCall(PetscClassRegInfoDestroy(&classLog->classInfo[c]));
   PetscCall(PetscFree(classLog->classInfo));
   PetscCall(PetscFree(classLog));
   PetscFunctionReturn(0);
@@ -168,7 +168,7 @@ PetscErrorCode PetscClassPerfLogEnsureSize(PetscClassPerfLog classLog, int size)
     classLog->classInfo = classInfo;
     classLog->maxClasses *= 2;
   }
-  while (classLog->numClasses < size) { PetscCall(PetscClassPerfInfoClear(&classLog->classInfo[classLog->numClasses++])); }
+  while (classLog->numClasses < size) PetscCall(PetscClassPerfInfoClear(&classLog->classInfo[classLog->numClasses++]));
   PetscFunctionReturn(0);
 }
 
@@ -368,7 +368,7 @@ PetscErrorCode PetscLogObjDestroyDefault(PetscObject obj) {
     petsc_numActions++;
   }
   if (petsc_logObjects) {
-    if (obj->name) { PetscCall(PetscStrncpy(petsc_objects[obj->id].name, obj->name, 64)); }
+    if (obj->name) PetscCall(PetscStrncpy(petsc_objects[obj->id].name, obj->name, 64));
     petsc_objects[obj->id].obj = NULL;
     petsc_objects[obj->id].mem = obj->mem;
   }

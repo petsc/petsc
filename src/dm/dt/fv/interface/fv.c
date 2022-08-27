@@ -1058,7 +1058,7 @@ PetscErrorCode PetscFVDestroy(PetscFV *fvm) {
   }
   ((PetscObject)(*fvm))->refct = 0;
 
-  for (i = 0; i < (*fvm)->numComponents; i++) { PetscCall(PetscFree((*fvm)->componentNames[i])); }
+  for (i = 0; i < (*fvm)->numComponents; i++) PetscCall(PetscFree((*fvm)->componentNames[i]));
   PetscCall(PetscFree((*fvm)->componentNames));
   PetscCall(PetscLimiterDestroy(&(*fvm)->limiter));
   PetscCall(PetscDualSpaceDestroy(&(*fvm)->dualSpace));
@@ -1173,7 +1173,7 @@ PetscErrorCode PetscFVSetNumComponents(PetscFV fvm, PetscInt comp) {
   if (fvm->numComponents != comp) {
     PetscInt i;
 
-    for (i = 0; i < fvm->numComponents; i++) { PetscCall(PetscFree(fvm->componentNames[i])); }
+    for (i = 0; i < fvm->numComponents; i++) PetscCall(PetscFree(fvm->componentNames[i]));
     PetscCall(PetscFree(fvm->componentNames));
     PetscCall(PetscCalloc1(comp, &fvm->componentNames));
   }
@@ -1547,7 +1547,7 @@ PetscErrorCode PetscFVCreateTabulation(PetscFV fvm, PetscInt nrepl, PetscInt npo
   (*T)->Nc   = Nc;
   (*T)->cdim = cdim;
   PetscCall(PetscMalloc1((*T)->K + 1, &(*T)->T));
-  for (k = 0; k <= (*T)->K; ++k) { PetscCall(PetscMalloc1(nrepl * npoints * pdim * Nc * PetscPowInt(cdim, k), &(*T)->T[k])); }
+  for (k = 0; k <= (*T)->K; ++k) PetscCall(PetscMalloc1(nrepl * npoints * pdim * Nc * PetscPowInt(cdim, k), &(*T)->T[k]));
   if (K >= 0) {
     for (p = 0; p < nrepl * npoints; ++p)
       for (d = 0; d < pdim; ++d)
@@ -1707,7 +1707,7 @@ static PetscErrorCode PetscFVView_Upwind_Ascii(PetscFV fv, PetscViewer viewer) {
   PetscCall(PetscViewerASCIIPrintf(viewer, "Upwind Finite Volume:\n"));
   PetscCall(PetscViewerASCIIPrintf(viewer, "  num components: %" PetscInt_FMT "\n", Nc));
   for (c = 0; c < Nc; c++) {
-    if (fv->componentNames[c]) { PetscCall(PetscViewerASCIIPrintf(viewer, "    component %" PetscInt_FMT ": %s\n", c, fv->componentNames[c])); }
+    if (fv->componentNames[c]) PetscCall(PetscViewerASCIIPrintf(viewer, "    component %" PetscInt_FMT ": %s\n", c, fv->componentNames[c]));
   }
   PetscFunctionReturn(0);
 }
@@ -1810,7 +1810,7 @@ static PetscErrorCode PetscFVView_LeastSquares_Ascii(PetscFV fv, PetscViewer vie
   PetscCall(PetscViewerASCIIPrintf(viewer, "Finite Volume with Least Squares Reconstruction:\n"));
   PetscCall(PetscViewerASCIIPrintf(viewer, "  num components: %" PetscInt_FMT "\n", Nc));
   for (c = 0; c < Nc; c++) {
-    if (fv->componentNames[c]) { PetscCall(PetscViewerASCIIPrintf(viewer, "    component %" PetscInt_FMT ": %s\n", c, fv->componentNames[c])); }
+    if (fv->componentNames[c]) PetscCall(PetscViewerASCIIPrintf(viewer, "    component %" PetscInt_FMT ": %s\n", c, fv->componentNames[c]));
   }
   PetscFunctionReturn(0);
 }

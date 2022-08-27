@@ -274,7 +274,7 @@ PetscErrorCode VecDot_SeqCUDA(Vec xin, Vec yin, PetscScalar *z) {
   PetscCall(PetscLogGpuTimeBegin());
   PetscCallCUBLAS(cublasXdot(cublasv2handle, bn, yarray, one, xarray, one, z));
   PetscCall(PetscLogGpuTimeEnd());
-  if (xin->map->n > 0) { PetscCall(PetscLogGpuFlops(2.0 * xin->map->n - 1)); }
+  if (xin->map->n > 0) PetscCall(PetscLogGpuFlops(2.0 * xin->map->n - 1));
   PetscCall(PetscLogGpuToCpuScalar(sizeof(PetscScalar)));
   PetscCall(VecCUDARestoreArrayRead(xin, &xarray));
   PetscCall(VecCUDARestoreArrayRead(yin, &yarray));
@@ -703,7 +703,7 @@ PetscErrorCode VecTDot_SeqCUDA(Vec xin, Vec yin, PetscScalar *z) {
   PetscCall(PetscLogGpuTimeBegin());
   PetscCallCUBLAS(cublasXdotu(cublasv2handle, bn, xarray, one, yarray, one, z));
   PetscCall(PetscLogGpuTimeEnd());
-  if (xin->map->n > 0) { PetscCall(PetscLogGpuFlops(2.0 * xin->map->n - 1)); }
+  if (xin->map->n > 0) PetscCall(PetscLogGpuFlops(2.0 * xin->map->n - 1));
   PetscCall(PetscLogGpuToCpuScalar(sizeof(PetscScalar)));
   PetscCall(VecCUDARestoreArrayRead(yin, &yarray));
   PetscCall(VecCUDARestoreArrayRead(xin, &xarray));
@@ -1023,7 +1023,7 @@ PetscErrorCode VecDestroy_SeqCUDA(Vec v) {
         PetscCallCUDA(cudaFree(veccuda->GPUarray_allocated));
       veccuda->GPUarray_allocated = NULL;
     }
-    if (veccuda->stream) { PetscCallCUDA(cudaStreamDestroy(veccuda->stream)); }
+    if (veccuda->stream) PetscCallCUDA(cudaStreamDestroy(veccuda->stream));
     PetscCall(VecResetPreallocationCOO_SeqCUDA(v));
   }
   PetscCall(VecDestroy_SeqCUDA_Private(v));
@@ -1068,7 +1068,7 @@ static inline PetscErrorCode VecGetLocalVectorK_SeqCUDA(Vec v, Vec w, PetscBool 
   PetscCall(PetscObjectTypeCompare((PetscObject)w, VECSEQCUDA, &wisseqcuda));
   if (w->data && wisseqcuda) {
     if (((Vec_Seq *)w->data)->array_allocated) {
-      if (w->pinned_memory) { PetscCall(PetscMallocSetCUDAHost()); }
+      if (w->pinned_memory) PetscCall(PetscMallocSetCUDAHost());
       PetscCall(PetscFree(((Vec_Seq *)w->data)->array_allocated));
       if (w->pinned_memory) {
         PetscCall(PetscMallocResetCUDAHost());
@@ -1083,7 +1083,7 @@ static inline PetscErrorCode VecGetLocalVectorK_SeqCUDA(Vec v, Vec w, PetscBool 
       PetscCallCUDA(cudaFree(((Vec_CUDA *)w->spptr)->GPUarray));
       ((Vec_CUDA *)w->spptr)->GPUarray = NULL;
     }
-    if (((Vec_CUDA *)w->spptr)->stream) { PetscCallCUDA(cudaStreamDestroy(((Vec_CUDA *)w->spptr)->stream)); }
+    if (((Vec_CUDA *)w->spptr)->stream) PetscCallCUDA(cudaStreamDestroy(((Vec_CUDA *)w->spptr)->stream));
     PetscCall(PetscFree(w->spptr));
   }
 
@@ -1101,7 +1101,7 @@ static inline PetscErrorCode VecGetLocalVectorK_SeqCUDA(Vec v, Vec w, PetscBool 
       PetscCall(VecGetArray(v, &((Vec_Seq *)w->data)->array));
     }
     w->offloadmask = PETSC_OFFLOAD_CPU;
-    if (wisseqcuda) { PetscCall(VecCUDAAllocateCheck(w)); }
+    if (wisseqcuda) PetscCall(VecCUDAAllocateCheck(w));
   }
   PetscFunctionReturn(0);
 }
@@ -1131,7 +1131,7 @@ static inline PetscErrorCode VecRestoreLocalVectorK_SeqCUDA(Vec v, Vec w, PetscB
     if ((Vec_CUDA *)w->spptr && wisseqcuda) {
       PetscCallCUDA(cudaFree(((Vec_CUDA *)w->spptr)->GPUarray));
       ((Vec_CUDA *)w->spptr)->GPUarray = NULL;
-      if (((Vec_CUDA *)v->spptr)->stream) { PetscCallCUDA(cudaStreamDestroy(((Vec_CUDA *)w->spptr)->stream)); }
+      if (((Vec_CUDA *)v->spptr)->stream) PetscCallCUDA(cudaStreamDestroy(((Vec_CUDA *)w->spptr)->stream));
       PetscCall(PetscFree(w->spptr));
     }
   }

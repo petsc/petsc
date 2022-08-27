@@ -123,7 +123,7 @@ PetscErrorCode PCDeflationGetSpaceWave(PC pc, Mat *W, PetscInt size, PetscInt nc
   PetscCall(MatCompositeSetType(defl, MAT_COMPOSITE_MULTIPLICATIVE));
   *W = defl;
 
-  for (i = 0; i < size; i++) { PetscCall(MatDestroy(&H[i])); }
+  for (i = 0; i < size; i++) PetscCall(MatDestroy(&H[i]));
   PetscCall(PetscFree(H));
   PetscFunctionReturn(0);
 }

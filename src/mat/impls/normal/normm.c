@@ -62,7 +62,7 @@ PetscErrorCode MatCreateSubMatrices_Normal(Mat mat, PetscInt n, const IS irow[],
 
   PetscFunctionBegin;
   PetscCheck(!a->left && !a->right && irow == icol, PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "Not implemented");
-  if (scall != MAT_REUSE_MATRIX) { PetscCall(PetscCalloc1(n, submat)); }
+  if (scall != MAT_REUSE_MATRIX) PetscCall(PetscCalloc1(n, submat));
   PetscCall(MatGetSize(B, &M, NULL));
   PetscCall(PetscMalloc1(n, &row));
   PetscCall(ISCreateStride(PETSC_COMM_SELF, M, 0, 1, &row[0]));
@@ -129,7 +129,7 @@ PetscErrorCode MatMult_Normal(Mat N, Vec x, Vec y) {
   PetscFunctionBegin;
   in = x;
   if (Na->right) {
-    if (!Na->rightwork) { PetscCall(VecDuplicate(Na->right, &Na->rightwork)); }
+    if (!Na->rightwork) PetscCall(VecDuplicate(Na->right, &Na->rightwork));
     PetscCall(VecPointwiseMult(Na->rightwork, Na->right, in));
     in = Na->rightwork;
   }
@@ -147,7 +147,7 @@ PetscErrorCode MatMultAdd_Normal(Mat N, Vec v1, Vec v2, Vec v3) {
   PetscFunctionBegin;
   in = v1;
   if (Na->right) {
-    if (!Na->rightwork) { PetscCall(VecDuplicate(Na->right, &Na->rightwork)); }
+    if (!Na->rightwork) PetscCall(VecDuplicate(Na->right, &Na->rightwork));
     PetscCall(VecPointwiseMult(Na->rightwork, Na->right, in));
     in = Na->rightwork;
   }
@@ -170,7 +170,7 @@ PetscErrorCode MatMultTranspose_Normal(Mat N, Vec x, Vec y) {
   PetscFunctionBegin;
   in = x;
   if (Na->left) {
-    if (!Na->leftwork) { PetscCall(VecDuplicate(Na->left, &Na->leftwork)); }
+    if (!Na->leftwork) PetscCall(VecDuplicate(Na->left, &Na->leftwork));
     PetscCall(VecPointwiseMult(Na->leftwork, Na->left, in));
     in = Na->leftwork;
   }
@@ -188,7 +188,7 @@ PetscErrorCode MatMultTransposeAdd_Normal(Mat N, Vec v1, Vec v2, Vec v3) {
   PetscFunctionBegin;
   in = v1;
   if (Na->left) {
-    if (!Na->leftwork) { PetscCall(VecDuplicate(Na->left, &Na->leftwork)); }
+    if (!Na->leftwork) PetscCall(VecDuplicate(Na->left, &Na->leftwork));
     PetscCall(VecPointwiseMult(Na->leftwork, Na->left, in));
     in = Na->leftwork;
   }
@@ -428,7 +428,7 @@ PetscErrorCode MatProductSetFromOptions_Normal_Dense(Mat C) {
   Mat_Product *product = C->product;
 
   PetscFunctionBegin;
-  if (product->type == MATPRODUCT_AB) { PetscCall(MatProductSetFromOptions_Normal_Dense_AB(C)); }
+  if (product->type == MATPRODUCT_AB) PetscCall(MatProductSetFromOptions_Normal_Dense_AB(C));
   PetscFunctionReturn(0);
 }
 

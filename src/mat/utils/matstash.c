@@ -254,7 +254,7 @@ PetscErrorCode MatStashValuesRow_Private(MatStash *stash, PetscInt row, PetscInt
 
   PetscFunctionBegin;
   /* Check and see if we have sufficient memory */
-  if (!space || space->local_remaining < n) { PetscCall(MatStashExpand_Private(stash, n)); }
+  if (!space || space->local_remaining < n) PetscCall(MatStashExpand_Private(stash, n));
   space = stash->space;
   k     = space->local_used;
   for (i = 0; i < n; i++) {
@@ -291,7 +291,7 @@ PetscErrorCode MatStashValuesCol_Private(MatStash *stash, PetscInt row, PetscInt
 
   PetscFunctionBegin;
   /* Check and see if we have sufficient memory */
-  if (!space || space->local_remaining < n) { PetscCall(MatStashExpand_Private(stash, n)); }
+  if (!space || space->local_remaining < n) PetscCall(MatStashExpand_Private(stash, n));
   space = stash->space;
   k     = space->local_used;
   for (i = 0; i < n; i++) {
@@ -333,7 +333,7 @@ PetscErrorCode MatStashValuesRowBlocked_Private(MatStash *stash, PetscInt row, P
   PetscMatStashSpace space = stash->space;
 
   PetscFunctionBegin;
-  if (!space || space->local_remaining < n) { PetscCall(MatStashExpand_Private(stash, n)); }
+  if (!space || space->local_remaining < n) PetscCall(MatStashExpand_Private(stash, n));
   space = stash->space;
   l     = space->local_used;
   bs2   = bs * bs;
@@ -383,7 +383,7 @@ PetscErrorCode MatStashValuesColBlocked_Private(MatStash *stash, PetscInt row, P
   PetscMatStashSpace space = stash->space;
 
   PetscFunctionBegin;
-  if (!space || space->local_remaining < n) { PetscCall(MatStashExpand_Private(stash, n)); }
+  if (!space || space->local_remaining < n) PetscCall(MatStashExpand_Private(stash, n));
   space = stash->space;
   l     = space->local_used;
   bs2   = bs * bs;
@@ -554,7 +554,7 @@ static PetscErrorCode MatStashScatterBegin_Ref(Mat mat, MatStash *stash, PetscIn
 #if defined(PETSC_USE_INFO)
   PetscCall(PetscInfo(NULL, "No of messages: %" PetscInt_FMT " \n", nsends));
   for (i = 0; i < size; i++) {
-    if (sizes[i]) { PetscCall(PetscInfo(NULL, "Mesg_to: %" PetscInt_FMT ": size: %zu bytes\n", i, (size_t)(nlengths[i] * (bs2 * sizeof(PetscScalar) + 2 * sizeof(PetscInt))))); }
+    if (sizes[i]) PetscCall(PetscInfo(NULL, "Mesg_to: %" PetscInt_FMT ": size: %zu bytes\n", i, (size_t)(nlengths[i] * (bs2 * sizeof(PetscScalar) + 2 * sizeof(PetscInt)))));
   }
 #endif
   PetscCall(PetscFree(nlengths));
@@ -881,8 +881,8 @@ static PetscErrorCode MatStashScatterBegin_BTS(Mat mat, MatStash *stash, PetscIn
   if (stash->first_assembly_done) {
     PetscMPIInt i, tag;
     PetscCall(PetscCommGetNewTag(stash->comm, &tag));
-    for (i = 0; i < stash->nrecvranks; i++) { PetscCall(MatStashBTSRecv_Private(stash->comm, &tag, stash->recvranks[i], &stash->recvhdr[i], &stash->recvreqs[i], stash)); }
-    for (i = 0; i < stash->nsendranks; i++) { PetscCall(MatStashBTSSend_Private(stash->comm, &tag, i, stash->sendranks[i], &stash->sendhdr[i], &stash->sendreqs[i], stash)); }
+    for (i = 0; i < stash->nrecvranks; i++) PetscCall(MatStashBTSRecv_Private(stash->comm, &tag, stash->recvranks[i], &stash->recvhdr[i], &stash->recvreqs[i], stash));
+    for (i = 0; i < stash->nsendranks; i++) PetscCall(MatStashBTSSend_Private(stash->comm, &tag, i, stash->sendranks[i], &stash->sendhdr[i], &stash->sendreqs[i], stash));
     stash->use_status = PETSC_TRUE; /* Use count from message status. */
   } else {
     PetscCall(PetscCommBuildTwoSidedFReq(stash->comm, 1, MPIU_INT, stash->nsendranks, stash->sendranks, (PetscInt *)stash->sendhdr, &stash->nrecvranks, &stash->recvranks, (PetscInt *)&stash->recvhdr, 1, &stash->sendreqs, &stash->recvreqs, MatStashBTSSend_Private, MatStashBTSRecv_Private, stash));
@@ -974,7 +974,7 @@ PetscErrorCode MatStashScatterDestroy_BTS(MatStash *stash) {
   PetscCall(PetscSegBufferDestroy(&stash->segrecvframe));
   stash->recvframes = NULL;
   PetscCall(PetscSegBufferDestroy(&stash->segrecvblocks));
-  if (stash->blocktype != MPI_DATATYPE_NULL) { PetscCallMPI(MPI_Type_free(&stash->blocktype)); }
+  if (stash->blocktype != MPI_DATATYPE_NULL) PetscCallMPI(MPI_Type_free(&stash->blocktype));
   stash->nsendranks = 0;
   stash->nrecvranks = 0;
   PetscCall(PetscFree3(stash->sendranks, stash->sendhdr, stash->sendframes));

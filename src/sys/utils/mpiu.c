@@ -14,9 +14,9 @@ PETSC_INTERN PetscErrorCode PetscSequentialPhaseBegin_Private(MPI_Comm comm, int
   PetscCallMPI(MPI_Comm_size(comm, &size));
   if (size == 1) PetscFunctionReturn(0);
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
-  if (rank) { PetscCallMPI(MPI_Recv(NULL, 0, MPI_INT, rank - 1, tag, comm, &status)); }
+  if (rank) PetscCallMPI(MPI_Recv(NULL, 0, MPI_INT, rank - 1, tag, comm, &status));
   /* Send to the next process in the group unless we are the last process */
-  if ((rank % ng) < ng - 1 && rank != size - 1) { PetscCallMPI(MPI_Send(NULL, 0, MPI_INT, rank + 1, tag, comm)); }
+  if ((rank % ng) < ng - 1 && rank != size - 1) PetscCallMPI(MPI_Send(NULL, 0, MPI_INT, rank + 1, tag, comm));
   PetscFunctionReturn(0);
 }
 
@@ -30,8 +30,8 @@ PETSC_INTERN PetscErrorCode PetscSequentialPhaseEnd_Private(MPI_Comm comm, int n
   if (size == 1) PetscFunctionReturn(0);
 
   /* Send to the first process in the next group */
-  if ((rank % ng) == ng - 1 || rank == size - 1) { PetscCallMPI(MPI_Send(NULL, 0, MPI_INT, (rank + 1) % size, tag, comm)); }
-  if (rank == 0) { PetscCallMPI(MPI_Recv(NULL, 0, MPI_INT, size - 1, tag, comm, &status)); }
+  if ((rank % ng) == ng - 1 || rank == size - 1) PetscCallMPI(MPI_Send(NULL, 0, MPI_INT, (rank + 1) % size, tag, comm));
+  if (rank == 0) PetscCallMPI(MPI_Recv(NULL, 0, MPI_INT, size - 1, tag, comm, &status));
   PetscFunctionReturn(0);
 }
 
@@ -84,7 +84,7 @@ PetscErrorCode PetscSequentialPhaseBegin(MPI_Comm comm, int ng) {
   if (size == 1) PetscFunctionReturn(0);
 
   /* Get the private communicator for the sequential operations */
-  if (Petsc_Seq_keyval == MPI_KEYVAL_INVALID) { PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, MPI_COMM_NULL_DELETE_FN, &Petsc_Seq_keyval, NULL)); }
+  if (Petsc_Seq_keyval == MPI_KEYVAL_INVALID) PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, MPI_COMM_NULL_DELETE_FN, &Petsc_Seq_keyval, NULL));
 
   PetscCallMPI(MPI_Comm_dup(comm, &local_comm));
   PetscCall(PetscMalloc1(1, &addr_local_comm));

@@ -36,7 +36,7 @@ PetscErrorCode TSEventDestroy(TSEvent *event) {
   PetscCall(PetscFree((*event)->events_zero));
   PetscCall(PetscFree((*event)->vtol));
 
-  for (i = 0; i < (*event)->recsize; i++) { PetscCall(PetscFree((*event)->recorder.eventidx[i])); }
+  for (i = 0; i < (*event)->recsize; i++) PetscCall(PetscFree((*event)->recorder.eventidx[i]));
   PetscCall(PetscFree((*event)->recorder.eventidx));
   PetscCall(PetscFree((*event)->recorder.nevents));
   PetscCall(PetscFree((*event)->recorder.stepnum));
@@ -225,7 +225,7 @@ PetscErrorCode TSSetEventHandler(TS ts, PetscInt nevents, PetscInt direction[], 
   PetscCall(PetscMalloc1(event->recsize, &event->recorder.stepnum));
   PetscCall(PetscMalloc1(event->recsize, &event->recorder.nevents));
   PetscCall(PetscMalloc1(event->recsize, &event->recorder.eventidx));
-  for (i = 0; i < event->recsize; i++) { PetscCall(PetscMalloc1(event->nevents, &event->recorder.eventidx[i])); }
+  for (i = 0; i < event->recsize; i++) PetscCall(PetscMalloc1(event->nevents, &event->recorder.eventidx[i]));
   /* Initialize the event recorder */
   event->recorder.ctr = 0;
 
@@ -256,16 +256,16 @@ static PetscErrorCode TSEventRecorderResize(TSEvent event) {
   PetscCall(PetscMalloc1(fact * event->recsize, &stepnum));
   PetscCall(PetscMalloc1(fact * event->recsize, &nevents));
   PetscCall(PetscMalloc1(fact * event->recsize, &eventidx));
-  for (i = 0; i < fact * event->recsize; i++) { PetscCall(PetscMalloc1(event->nevents, &eventidx[i])); }
+  for (i = 0; i < fact * event->recsize; i++) PetscCall(PetscMalloc1(event->nevents, &eventidx[i]));
 
   /* Copy over data */
   PetscCall(PetscArraycpy(time, event->recorder.time, event->recsize));
   PetscCall(PetscArraycpy(stepnum, event->recorder.stepnum, event->recsize));
   PetscCall(PetscArraycpy(nevents, event->recorder.nevents, event->recsize));
-  for (i = 0; i < event->recsize; i++) { PetscCall(PetscArraycpy(eventidx[i], event->recorder.eventidx[i], event->recorder.nevents[i])); }
+  for (i = 0; i < event->recsize; i++) PetscCall(PetscArraycpy(eventidx[i], event->recorder.eventidx[i], event->recorder.nevents[i]));
 
   /* Destroy old arrays */
-  for (i = 0; i < event->recsize; i++) { PetscCall(PetscFree(event->recorder.eventidx[i])); }
+  for (i = 0; i < event->recsize; i++) PetscCall(PetscFree(event->recorder.eventidx[i]));
   PetscCall(PetscFree(event->recorder.eventidx));
   PetscCall(PetscFree(event->recorder.nevents));
   PetscCall(PetscFree(event->recorder.stepnum));
@@ -329,7 +329,7 @@ static PetscErrorCode TSPostEvent(TS ts, PetscReal t, Vec U) {
   /* Record the event in the event recorder */
   PetscCall(TSGetStepNumber(ts, &stepnum));
   ctr = event->recorder.ctr;
-  if (ctr == event->recsize) { PetscCall(TSEventRecorderResize(event)); }
+  if (ctr == event->recsize) PetscCall(TSEventRecorderResize(event));
   event->recorder.time[ctr]    = t;
   event->recorder.stepnum[ctr] = stepnum;
   event->recorder.nevents[ctr] = event->nevents_zero;
@@ -381,7 +381,7 @@ static PetscErrorCode TSEventDetection(TS ts) {
     if (fvalueprev_sign != 0 && (fvalue_sign != fvalueprev_sign)) {
       if (!event->iterctr) event->zerocrossing[i] = PETSC_TRUE;
       event->status = TSEVENT_LOCATED_INTERVAL;
-      if (event->monitor) { PetscCall(PetscViewerASCIIPrintf(event->monitor, "TSEvent: iter %" PetscInt_FMT " - Event %" PetscInt_FMT " interval detected due to sign change [%g - %g]\n", event->iterctr, i, (double)event->ptime_prev, (double)t)); }
+      if (event->monitor) PetscCall(PetscViewerASCIIPrintf(event->monitor, "TSEvent: iter %" PetscInt_FMT " - Event %" PetscInt_FMT " interval detected due to sign change [%g - %g]\n", event->iterctr, i, (double)event->ptime_prev, (double)t));
     }
   }
   in = (PetscInt)event->status;
@@ -449,7 +449,7 @@ static PetscErrorCode TSEventLocation(TS ts, PetscReal *dt) {
       if (event->zerocrossing[i]) {
         if (PetscAbsScalar(event->fvalue[i]) < event->vtol[i] || *dt < event->timestep_min || PetscAbsReal((*dt) / ((event->ptime_right - event->ptime_prev) / 2)) < event->vtol[i]) { /* stopping criteria */
           event->events_zero[event->nevents_zero++] = i;
-          if (event->monitor) { PetscCall(PetscViewerASCIIPrintf(event->monitor, "TSEvent: iter %" PetscInt_FMT " - Event %" PetscInt_FMT " zero crossing located at time %g\n", event->iterctr, i, (double)t)); }
+          if (event->monitor) PetscCall(PetscViewerASCIIPrintf(event->monitor, "TSEvent: iter %" PetscInt_FMT " - Event %" PetscInt_FMT " zero crossing located at time %g\n", event->iterctr, i, (double)t));
           event->zerocrossing[i] = PETSC_FALSE;
         }
       }
@@ -531,7 +531,7 @@ PetscErrorCode TSEventHandler(TS ts) {
     }
     /* Have not found the zero crosing yet */
     if (event->status == TSEVENT_PROCESSING) {
-      if (event->monitor) { PetscCall(PetscViewerASCIIPrintf(event->monitor, "TSEvent: iter %" PetscInt_FMT " - Stepping forward as no event detected in interval [%g - %g]\n", event->iterctr, (double)event->ptime_prev, (double)t)); }
+      if (event->monitor) PetscCall(PetscViewerASCIIPrintf(event->monitor, "TSEvent: iter %" PetscInt_FMT " - Stepping forward as no event detected in interval [%g - %g]\n", event->iterctr, (double)event->ptime_prev, (double)t));
       event->iterctr++;
     }
   }

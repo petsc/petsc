@@ -297,7 +297,7 @@ int main(int argc, char **argv) {
   PetscOptionsEnd();
   for (PetscInt dim = 2; dim <= max_dim; dim++) {
     for (PetscInt deg = 1; deg <= max_deg; deg++) {
-      for (PetscInt form = -dim + 1; form <= dim; form++) { PetscCall(test(dim, deg, form, PetscMax(1, k), cond)); }
+      for (PetscInt form = -dim + 1; form <= dim; form++) PetscCall(test(dim, deg, form, PetscMax(1, k), cond));
     }
   }
   PetscCall(PetscFinalize());

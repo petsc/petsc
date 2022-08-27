@@ -32,7 +32,7 @@ static PetscErrorCode DMCreateMatrix_Redundant(DM dm, Mat *J) {
     vals[i] = 0.0;
   }
   PetscCall(MatGetOwnershipRange(*J, &rstart, &rend));
-  for (i = rstart; i < rend; i++) { PetscCall(MatSetValues(*J, 1, &i, red->N, cols, vals, INSERT_VALUES)); }
+  for (i = rstart; i < rend; i++) PetscCall(MatSetValues(*J, 1, &i, red->N, cols, vals, INSERT_VALUES));
   PetscCall(PetscFree2(cols, vals));
   PetscCall(MatAssemblyBegin(*J, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(*J, MAT_FINAL_ASSEMBLY));
@@ -157,7 +157,7 @@ static PetscErrorCode DMView_Redundant(DM dm, PetscViewer viewer) {
 
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) { PetscCall(PetscViewerASCIIPrintf(viewer, "redundant: rank=%d N=%" PetscInt_FMT "\n", red->rank, red->N)); }
+  if (iascii) PetscCall(PetscViewerASCIIPrintf(viewer, "redundant: rank=%d N=%" PetscInt_FMT "\n", red->rank, red->N));
   PetscFunctionReturn(0);
 }
 
@@ -184,7 +184,7 @@ static PetscErrorCode DMRefine_Redundant(DM dmc, MPI_Comm comm, DM *dmf) {
   DM_Redundant *redc = (DM_Redundant *)dmc->data;
 
   PetscFunctionBegin;
-  if (comm == MPI_COMM_NULL) { PetscCall(PetscObjectGetComm((PetscObject)dmc, &comm)); }
+  if (comm == MPI_COMM_NULL) PetscCall(PetscObjectGetComm((PetscObject)dmc, &comm));
   PetscCallMPI(MPI_Comm_compare(PetscObjectComm((PetscObject)dmc), comm, &flag));
   PetscCheck(flag == MPI_CONGRUENT || flag == MPI_IDENT, PetscObjectComm((PetscObject)dmc), PETSC_ERR_SUP, "cannot change communicators");
   PetscCall(DMRedundantCreate(comm, redc->rank, redc->N, dmf));
@@ -196,7 +196,7 @@ static PetscErrorCode DMCoarsen_Redundant(DM dmf, MPI_Comm comm, DM *dmc) {
   DM_Redundant *redf = (DM_Redundant *)dmf->data;
 
   PetscFunctionBegin;
-  if (comm == MPI_COMM_NULL) { PetscCall(PetscObjectGetComm((PetscObject)dmf, &comm)); }
+  if (comm == MPI_COMM_NULL) PetscCall(PetscObjectGetComm((PetscObject)dmf, &comm));
   PetscCallMPI(MPI_Comm_compare(PetscObjectComm((PetscObject)dmf), comm, &flag));
   PetscCheck(flag == MPI_CONGRUENT || flag == MPI_IDENT, PetscObjectComm((PetscObject)dmf), PETSC_ERR_SUP, "cannot change communicators");
   PetscCall(DMRedundantCreate(comm, redf->rank, redf->N, dmc));

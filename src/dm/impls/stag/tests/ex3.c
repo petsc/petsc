@@ -45,7 +45,7 @@ int main(int argc, char **argv) {
     PetscCheck(set && !compatible, PetscObjectComm((PetscObject)dms[i]), PETSC_ERR_PLIB, "DM %" PetscInt_FMT " not determined incompatible with DM %d", i, 0);
   }
 
-  for (i = 0; i < NDMS; ++i) { PetscCall(DMDestroy(&dms[i])); }
+  for (i = 0; i < NDMS; ++i) PetscCall(DMDestroy(&dms[i]));
   PetscCall(PetscFinalize());
   return 0;
 }

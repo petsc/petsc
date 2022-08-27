@@ -192,7 +192,7 @@ int main(int argc, char **argv) {
   PetscCall(TSSetIJacobian(ts, A, A, IJacobian, &user));
   PetscCall(TSSetMaxTime(ts, ftime));
   PetscCall(TSSetExactFinalTime(ts, TS_EXACTFINALTIME_STEPOVER));
-  if (monitor) { PetscCall(TSMonitorSet(ts, Monitor, &user, NULL)); }
+  if (monitor) PetscCall(TSMonitorSet(ts, Monitor, &user, NULL));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions

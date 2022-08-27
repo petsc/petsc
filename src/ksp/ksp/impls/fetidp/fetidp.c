@@ -541,7 +541,7 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp) {
 
       PetscCall(DMCreateFieldDecomposition(dm, &nf, NULL, &fields, NULL));
       PetscCall(PCBDDCSetDofsSplitting(fetidp->innerbddc, nf, fields));
-      for (i = 0; i < nf; i++) { PetscCall(ISDestroy(&fields[i])); }
+      for (i = 0; i < nf; i++) PetscCall(ISDestroy(&fields[i]));
       PetscCall(PetscFree(fields));
     } else if (c) {
       MatISLocalFields lf;
@@ -698,7 +698,7 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp) {
         PetscCall(MatCreateVecs(A, NULL, &fetidp->rhs_flip));
         PetscCall(VecSet(fetidp->rhs_flip, 1.));
         PetscCall(VecSetOption(fetidp->rhs_flip, VEC_IGNORE_OFF_PROC_ENTRIES, PETSC_TRUE));
-        for (i = 0; i < npl; i++) { PetscCall(VecSetValue(fetidp->rhs_flip, idxs[i], -1., INSERT_VALUES)); }
+        for (i = 0; i < npl; i++) PetscCall(VecSetValue(fetidp->rhs_flip, idxs[i], -1., INSERT_VALUES));
         PetscCall(VecAssemblyBegin(fetidp->rhs_flip));
         PetscCall(VecAssemblyEnd(fetidp->rhs_flip));
         PetscCall(PetscObjectCompose((PetscObject)fetidp->innerbddc, "__KSPFETIDP_flip", (PetscObject)fetidp->rhs_flip));
@@ -889,9 +889,9 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp) {
       PetscCall(PetscObjectCompose((PetscObject)fetidp->innerbddc, "__KSPFETIDP_lA", NULL));
     }
     PetscCall(MatGetNearNullSpace(Ap, &nnsp));
-    if (!nnsp) { PetscCall(MatGetNullSpace(Ap, &nnsp)); }
-    if (!nnsp) { PetscCall(MatGetNearNullSpace(A, &nnsp)); }
-    if (!nnsp) { PetscCall(MatGetNullSpace(A, &nnsp)); }
+    if (!nnsp) PetscCall(MatGetNullSpace(Ap, &nnsp));
+    if (!nnsp) PetscCall(MatGetNearNullSpace(A, &nnsp));
+    if (!nnsp) PetscCall(MatGetNullSpace(A, &nnsp));
     PetscCall(MatSetNearNullSpace(nA, nnsp));
     PetscCall(PCSetOperators(fetidp->innerbddc, nA, nA));
     PetscCall(MatDestroy(&nA));
@@ -1123,7 +1123,7 @@ static PetscErrorCode KSPSolve_FETIDP(KSP ksp) {
 
   PetscFunctionBegin;
   PetscCall(PetscCitationsRegister(citation, &cited));
-  if (fetidp->saddlepoint) { PetscCall(PetscCitationsRegister(citation2, &cited2)); }
+  if (fetidp->saddlepoint) PetscCall(PetscCitationsRegister(citation2, &cited2));
   PetscCall(KSPGetOperators(ksp, &A, NULL));
   PetscCall(KSPGetRhs(ksp, &B));
   PetscCall(KSPGetSolution(ksp, &X));
@@ -1214,7 +1214,7 @@ static PetscErrorCode KSPView_FETIDP(KSP ksp, PetscViewer viewer) {
   PetscCall(PetscViewerASCIIPushTab(viewer));
   PetscCall(KSPView(fetidp->innerksp, viewer));
   PetscCall(PetscViewerASCIIPopTab(viewer));
-  if (iascii) { PetscCall(PetscViewerASCIIPrintf(viewer, "Inner BDDC solver details\n")); }
+  if (iascii) PetscCall(PetscViewerASCIIPrintf(viewer, "Inner BDDC solver details\n"));
   PetscCall(PetscViewerASCIIPushTab(viewer));
   PetscCall(PCView(fetidp->innerbddc, viewer));
   PetscCall(PetscViewerASCIIPopTab(viewer));

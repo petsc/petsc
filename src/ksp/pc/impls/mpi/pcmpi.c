@@ -113,7 +113,7 @@ static PetscErrorCode PCMPICreate(PC pc) {
   }
   PetscCallMPI(MPI_Bcast(&len, 1, MPI_INT, 0, comm));
   if (len) {
-    if (!pc) { PetscCall(PetscMalloc1(len + 1, &prefix)); }
+    if (!pc) PetscCall(PetscMalloc1(len + 1, &prefix));
     PetscCallMPI(MPI_Bcast(prefix, len + 1, MPI_CHAR, 0, comm));
     PetscCall(KSPSetOptionsPrefix(ksp, prefix));
   }

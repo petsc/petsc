@@ -227,7 +227,7 @@ PetscErrorCode KSPLGMRESCycle(PetscInt *itcount, KSP ksp) {
   PetscCall(KSPLogResidualHistory(ksp, res));
 
   /* Monitor if we know that we will not return for a restart */
-  if (ksp->reason || ksp->its >= max_it) { PetscCall(KSPMonitor(ksp, ksp->its, res)); }
+  if (ksp->reason || ksp->its >= max_it) PetscCall(KSPMonitor(ksp, ksp->its, res));
 
   if (itcount) *itcount = loc_it;
 
@@ -352,7 +352,7 @@ PetscErrorCode KSPDestroy_LGMRES(KSP ksp) {
 
   PetscFunctionBegin;
   PetscCall(PetscFree(lgmres->augvecs));
-  if (lgmres->augwork_alloc) { PetscCall(VecDestroyVecs(lgmres->augwork_alloc, &lgmres->augvecs_user_work[0])); }
+  if (lgmres->augwork_alloc) PetscCall(VecDestroyVecs(lgmres->augwork_alloc, &lgmres->augvecs_user_work[0]));
   PetscCall(PetscFree(lgmres->augvecs_user_work));
   PetscCall(PetscFree(lgmres->aug_order));
   PetscCall(PetscFree(lgmres->hwork));
@@ -627,7 +627,7 @@ PetscErrorCode KSPView_LGMRES(KSP ksp, PetscViewer viewer) {
   if (iascii) {
     /*LGMRES_MOD */
     PetscCall(PetscViewerASCIIPrintf(viewer, "  aug. dimension=%" PetscInt_FMT "\n", lgmres->aug_dim));
-    if (lgmres->approx_constant) { PetscCall(PetscViewerASCIIPrintf(viewer, "  approx. space size was kept constant.\n")); }
+    if (lgmres->approx_constant) PetscCall(PetscViewerASCIIPrintf(viewer, "  approx. space size was kept constant.\n"));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  number of matvecs=%" PetscInt_FMT "\n", lgmres->matvecs));
   }
   PetscFunctionReturn(0);

@@ -58,7 +58,7 @@ static PetscErrorCode TaoSolve_NTR(Tao tao) {
   PetscInt i, j, N, n, its;
 
   PetscFunctionBegin;
-  if (tao->XL || tao->XU || tao->ops->computebounds) { PetscCall(PetscInfo(tao, "WARNING: Variable bounds have been set but will be ignored by ntr algorithm\n")); }
+  if (tao->XL || tao->XU || tao->ops->computebounds) PetscCall(PetscInfo(tao, "WARNING: Variable bounds have been set but will be ignored by ntr algorithm\n"));
 
   PetscCall(KSPGetType(tao->ksp, &ksp_type));
   PetscCall(PetscStrcmp(ksp_type, KSPNASH, &is_nash));
@@ -445,7 +445,7 @@ static PetscErrorCode TaoDestroy_NTR(Tao tao) {
   TAO_NTR *tr = (TAO_NTR *)tao->data;
 
   PetscFunctionBegin;
-  if (tao->setupcalled) { PetscCall(VecDestroy(&tr->W)); }
+  if (tao->setupcalled) PetscCall(VecDestroy(&tr->W));
   PetscCall(KSPDestroy(&tao->ksp));
   PetscCall(PetscFree(tao->data));
   PetscFunctionReturn(0);

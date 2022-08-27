@@ -324,11 +324,11 @@ static PetscErrorCode Test_3d_4x4x4_3x3x3(DM dmstag) {
         ++nerr;
         if (nerr <= maxErrPerRank) {
           PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d] Entry %" PetscInt_FMT " has value %g instead of the expected %g\n", rank, i, (double)PetscRealPart(arrLocal[i]), (double)PetscRealPart(arrLocalExpected[i])));
-          if (nerr == maxErrPerRank + 1) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d] Skipping additional errors on this rank\n", rank)); }
+          if (nerr == maxErrPerRank + 1) PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d] Skipping additional errors on this rank\n", rank));
         }
       }
     }
-    if (nerr > 0) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d] %" PetscInt_FMT " incorrect values on this rank\n", rank, nerr)); }
+    if (nerr > 0) PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d] %" PetscInt_FMT " incorrect values on this rank\n", rank, nerr));
     PetscCall(VecRestoreArrayRead(vecLocal, &arrLocal));
     PetscCall(PetscFree(arrLocalExpected));
   }

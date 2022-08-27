@@ -115,14 +115,14 @@ int main(int argc, char **args) {
     /* Check the error */
     PetscCall(MatAXPY(X, -1.0, C, SAME_NONZERO_PATTERN));
     PetscCall(MatNorm(X, NORM_FROBENIUS, &norm));
-    if (norm > tol) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "(1) MatMatSolve: Norm of error %g\n", norm)); }
+    if (norm > tol) PetscCall(PetscPrintf(PETSC_COMM_SELF, "(1) MatMatSolve: Norm of error %g\n", norm));
 
     /* Test X=RHS */
     PetscCall(MatMatSolve(F, RHS, RHS));
     /* Check the error */
     PetscCall(MatAXPY(RHS, -1.0, C, SAME_NONZERO_PATTERN));
     PetscCall(MatNorm(RHS, NORM_FROBENIUS, &norm));
-    if (norm > tol) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "(1.1) MatMatSolve: Norm of error %g\n", norm)); }
+    if (norm > tol) PetscCall(PetscPrintf(PETSC_COMM_SELF, "(1.1) MatMatSolve: Norm of error %g\n", norm));
 
     /* (2) Test MatMatSolve() for inv(A) with dense RHS:
      RHS = [e[0],...,e[nrhs-1]], dense X holds first nrhs columns of inv(A) */
@@ -145,7 +145,7 @@ int main(int argc, char **args) {
     PetscCall(MatMatMult(A, X, MAT_INITIAL_MATRIX, 2.0, &AX));
     PetscCall(MatAXPY(AX, -1.0, RHS, SAME_NONZERO_PATTERN));
     PetscCall(MatNorm(AX, NORM_INFINITY, &norm));
-    if (norm > tol) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "(2) MatMatSolve: Norm of residual %g\n", norm)); }
+    if (norm > tol) PetscCall(PetscPrintf(PETSC_COMM_SELF, "(2) MatMatSolve: Norm of residual %g\n", norm));
     PetscCall(MatZeroEntries(X));
 
     /* (3) Test MatMatTransposeSolve() for inv(A) with sparse RHS stored in the host:
@@ -165,7 +165,7 @@ int main(int argc, char **args) {
     PetscCall(MatSetUp(spRHST));
     if (rank == 0) {
       v = 1.0;
-      for (i = 0; i < nrhs; i++) { PetscCall(MatSetValues(spRHST, 1, &i, 1, &i, &v, INSERT_VALUES)); }
+      for (i = 0; i < nrhs; i++) PetscCall(MatSetValues(spRHST, 1, &i, 1, &i, &v, INSERT_VALUES));
     }
     PetscCall(MatAssemblyBegin(spRHST, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(spRHST, MAT_FINAL_ASSEMBLY));
@@ -182,7 +182,7 @@ int main(int argc, char **args) {
 
     PetscCall(MatAXPY(AX, -1.0, RHS, SAME_NONZERO_PATTERN));
     PetscCall(MatNorm(AX, NORM_INFINITY, &norm));
-    if (norm > tol) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "(3) MatMatSolve: Norm of residual %g\n", norm)); }
+    if (norm > tol) PetscCall(PetscPrintf(PETSC_COMM_SELF, "(3) MatMatSolve: Norm of residual %g\n", norm));
 
     /* (4) Test MatMatSolve() for inv(A) with selected entries:
      input: spRHS gives selected indices; output: spRHS holds selected entries of inv(A) */

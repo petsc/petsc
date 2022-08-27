@@ -25,7 +25,7 @@ PetscErrorCode CharacteristicView(Characteristic c, PetscViewer viewer) {
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(c, CHARACTERISTIC_CLASSID, 1);
-  if (!viewer) { PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)c), &viewer)); }
+  if (!viewer) PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)c), &viewer));
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscCheckSameComm(c, 1, viewer, 2);
 
@@ -40,7 +40,7 @@ PetscErrorCode CharacteristicDestroy(Characteristic *c) {
   PetscValidHeaderSpecific(*c, CHARACTERISTIC_CLASSID, 1);
   if (--((PetscObject)(*c))->refct > 0) PetscFunctionReturn(0);
 
-  if ((*c)->ops->destroy) { PetscCall((*(*c)->ops->destroy)((*c))); }
+  if ((*c)->ops->destroy) PetscCall((*(*c)->ops->destroy)((*c)));
   PetscCallMPI(MPI_Type_free(&(*c)->itemType));
   PetscCall(PetscFree((*c)->queue));
   PetscCall(PetscFree((*c)->queueLocal));
@@ -181,7 +181,7 @@ PetscErrorCode CharacteristicSetUp(Characteristic c) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(c, CHARACTERISTIC_CLASSID, 1);
 
-  if (!((PetscObject)c)->type_name) { PetscCall(CharacteristicSetType(c, CHARACTERISTICDA)); }
+  if (!((PetscObject)c)->type_name) PetscCall(CharacteristicSetType(c, CHARACTERISTICDA));
 
   if (c->setupcalled == 2) PetscFunctionReturn(0);
 
@@ -543,8 +543,8 @@ int CharacteristicSendCoordinatesBegin(Characteristic c) {
   PetscCall(PetscArrayzero(c->needCount, c->numNeighbors));
   for (i = 0; i < c->queueSize; i++) c->needCount[c->queue[i].proc]++;
   c->fillCount[0] = 0;
-  for (n = 1; n < c->numNeighbors; n++) { PetscCallMPI(MPI_Irecv(&(c->fillCount[n]), 1, MPIU_INT, c->neighbors[n], tag, PetscObjectComm((PetscObject)c), &(c->request[n - 1]))); }
-  for (n = 1; n < c->numNeighbors; n++) { PetscCallMPI(MPI_Send(&(c->needCount[n]), 1, MPIU_INT, c->neighbors[n], tag, PetscObjectComm((PetscObject)c))); }
+  for (n = 1; n < c->numNeighbors; n++) PetscCallMPI(MPI_Irecv(&(c->fillCount[n]), 1, MPIU_INT, c->neighbors[n], tag, PetscObjectComm((PetscObject)c), &(c->request[n - 1])));
+  for (n = 1; n < c->numNeighbors; n++) PetscCallMPI(MPI_Send(&(c->needCount[n]), 1, MPIU_INT, c->neighbors[n], tag, PetscObjectComm((PetscObject)c)));
   PetscCallMPI(MPI_Waitall(c->numNeighbors - 1, c->request, c->status));
   /* Initialize the remote queue */
   c->queueLocalMax = c->localOffsets[0] = 0;
@@ -599,8 +599,8 @@ PetscErrorCode CharacteristicGetValuesBegin(Characteristic c) {
 
   PetscFunctionBegin;
   /* SEND AND RECIEVE FILLED REQUESTS for velocities at t_n+1/2 */
-  for (n = 1; n < c->numNeighbors; n++) { PetscCallMPI(MPI_Irecv(&(c->queue[c->localOffsets[n]]), c->needCount[n], c->itemType, c->neighbors[n], tag, PetscObjectComm((PetscObject)c), &(c->request[n - 1]))); }
-  for (n = 1; n < c->numNeighbors; n++) { PetscCallMPI(MPI_Send(&(c->queueRemote[c->remoteOffsets[n]]), c->fillCount[n], c->itemType, c->neighbors[n], tag, PetscObjectComm((PetscObject)c))); }
+  for (n = 1; n < c->numNeighbors; n++) PetscCallMPI(MPI_Irecv(&(c->queue[c->localOffsets[n]]), c->needCount[n], c->itemType, c->neighbors[n], tag, PetscObjectComm((PetscObject)c), &(c->request[n - 1])));
+  for (n = 1; n < c->numNeighbors; n++) PetscCallMPI(MPI_Send(&(c->queueRemote[c->remoteOffsets[n]]), c->fillCount[n], c->itemType, c->neighbors[n], tag, PetscObjectComm((PetscObject)c)));
   PetscFunctionReturn(0);
 }
 
@@ -625,7 +625,7 @@ PetscErrorCode CharacteristicHeapSort(Characteristic c, Queue queue, PetscInt si
   PetscFunctionBegin;
   if (0) { /* Check the order of the queue before sorting */
     PetscCall(PetscInfo(NULL, "Before Heap sort\n"));
-    for (n = 0; n < size; n++) { PetscCall(PetscInfo(NULL, "%" PetscInt_FMT " %d\n", n, queue[n].proc)); }
+    for (n = 0; n < size; n++) PetscCall(PetscInfo(NULL, "%" PetscInt_FMT " %d\n", n, queue[n].proc));
   }
 
   /* SORTING PHASE */
@@ -638,7 +638,7 @@ PetscErrorCode CharacteristicHeapSort(Characteristic c, Queue queue, PetscInt si
   }
   if (0) { /* Check the order of the queue after sorting */
     PetscCall(PetscInfo(NULL, "Avter  Heap sort\n"));
-    for (n = 0; n < size; n++) { PetscCall(PetscInfo(NULL, "%" PetscInt_FMT " %d\n", n, queue[n].proc)); }
+    for (n = 0; n < size; n++) PetscCall(PetscInfo(NULL, "%" PetscInt_FMT " %d\n", n, queue[n].proc));
   }
   PetscFunctionReturn(0);
 }
@@ -725,7 +725,7 @@ PetscErrorCode DMDAGetNeighborsRank(DM da, PetscMPIInt neighbors[]) {
     if (pj == PJ - 1) neighbors[2] = neighbors[3] = neighbors[4] = neighbors[0];
   }
 
-  for (pj = 0; pj < PJ; pj++) { PetscCall(PetscFree(procs[pj])); }
+  for (pj = 0; pj < PJ; pj++) PetscCall(PetscFree(procs[pj]));
   PetscCall(PetscFree(procs));
   PetscFunctionReturn(0);
 }

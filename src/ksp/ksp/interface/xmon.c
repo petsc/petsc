@@ -76,7 +76,7 @@ PetscErrorCode KSPMonitorLGRange(KSP ksp, PetscInt n, PetscReal rnorm, void *mon
   PetscCall(PetscDrawSetTitle(draw, "(norm -oldnorm)/oldnorm*(% > .2 max)"));
   x = (PetscReal)n;
   y = (prev - rnorm) / (prev * per);
-  if (n > 5) { PetscCall(PetscDrawLGAddPoint(lg, &x, &y)); }
+  if (n > 5) PetscCall(PetscDrawLGAddPoint(lg, &x, &y));
   if (n < 20 || !(n % 5) || ksp->reason) {
     PetscCall(PetscDrawLGDraw(lg));
     PetscCall(PetscDrawLGSave(lg));

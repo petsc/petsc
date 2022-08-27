@@ -164,7 +164,7 @@ PetscErrorCode PetscDLLibraryOpen(MPI_Comm comm, const char path[], PetscDLLibra
   if (!basename) basename = libname;
   PetscCall(PetscStrncmp(basename, "lib", 3, &match));
   if (match) basename = basename + 3;
-  else { PetscCall(PetscInfo(NULL, "Dynamic library %s does not have lib prefix\n", libname)); }
+  else PetscCall(PetscInfo(NULL, "Dynamic library %s does not have lib prefix\n", libname));
   for (s = basename; *s; s++)
     if (*s == '-') *s = '_';
   PetscCall(PetscStrncpy(registername, "PetscDLLibraryRegister_", sizeof(registername)));
@@ -260,7 +260,7 @@ PetscErrorCode PetscDLLibrarySym(MPI_Comm comm, PetscDLLibrary *outlist, const c
 
   done:;
     PetscCall(PetscDLSym(nlist->handle, symbol, value));
-    if (*value) { PetscCall(PetscInfo(NULL, "Loading function %s from dynamic library %s\n", insymbol, path)); }
+    if (*value) PetscCall(PetscInfo(NULL, "Loading function %s from dynamic library %s\n", insymbol, path));
 
     /*
          Function name does not include library so search path
@@ -277,11 +277,11 @@ PetscErrorCode PetscDLLibrarySym(MPI_Comm comm, PetscDLLibrary *outlist, const c
     }
     if (!*value) {
       PetscCall(PetscDLSym(NULL, symbol, value));
-      if (*value) { PetscCall(PetscInfo(NULL, "Loading symbol %s from object code\n", symbol)); }
+      if (*value) PetscCall(PetscInfo(NULL, "Loading symbol %s from object code\n", symbol));
     }
   }
 
-  if (symbol != insymbol) { PetscCall(PetscFree(symbol)); }
+  if (symbol != insymbol) PetscCall(PetscFree(symbol));
   PetscFunctionReturn(0);
 }
 

@@ -306,7 +306,7 @@ PetscErrorCode MatDiagonalSet_Default(Mat Y, Vec D, InsertMode is) {
   PetscFunctionBegin;
   PetscCall(MatGetOwnershipRange(Y, &start, &end));
   PetscCall(VecGetArrayRead(D, &v));
-  for (i = start; i < end; i++) { PetscCall(MatSetValues(Y, 1, &i, 1, &i, v + i - start, is)); }
+  for (i = start; i < end; i++) PetscCall(MatSetValues(Y, 1, &i, 1, &i, v + i - start, is));
   PetscCall(VecRestoreArrayRead(D, &v));
   PetscCall(MatAssemblyBegin(Y, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(Y, MAT_FINAL_ASSEMBLY));

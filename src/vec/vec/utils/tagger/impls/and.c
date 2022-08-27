@@ -60,7 +60,7 @@ static PetscErrorCode VecTaggerComputeBoxes_And(VecTagger tagger, Vec vec, Petsc
     if (!sublisted) {
       PetscInt j;
 
-      for (j = 0; j < i; j++) { PetscCall(PetscFree(subBoxes[j])); }
+      for (j = 0; j < i; j++) PetscCall(PetscFree(subBoxes[j]));
       PetscCall(PetscFree2(numSubBoxes, subBoxes));
       *listed = PETSC_FALSE;
       PetscFunctionReturn(0);

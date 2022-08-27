@@ -199,8 +199,8 @@ static PetscErrorCode TaoSetup_BQPIP(Tao tao) {
   PetscCall(VecGetSize(tao->solution, &qp->n));
 
   /* Allocate some arrays */
-  if (!tao->gradient) { PetscCall(VecDuplicate(tao->solution, &tao->gradient)); }
-  if (!tao->stepdirection) { PetscCall(VecDuplicate(tao->solution, &tao->stepdirection)); }
+  if (!tao->gradient) PetscCall(VecDuplicate(tao->solution, &tao->gradient));
+  if (!tao->stepdirection) PetscCall(VecDuplicate(tao->solution, &tao->stepdirection));
 
   PetscCall(VecDuplicate(tao->solution, &qp->Work));
   PetscCall(VecDuplicate(tao->solution, &qp->XU));

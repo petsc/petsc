@@ -68,7 +68,7 @@ PetscErrorCode MatCoarsenApply_MIS_private(IS perm, Mat Gmat, PetscBool strict_a
 
   PetscCall(PetscMalloc1(nloc, &lid_cprowID));
   PetscCall(PetscMalloc1(nloc, &lid_removed)); /* explicit array needed */
-  if (strict_aggs) { PetscCall(PetscMalloc1(nloc, &lid_parent_gid)); }
+  if (strict_aggs) PetscCall(PetscMalloc1(nloc, &lid_parent_gid));
   PetscCall(PetscMalloc1(nloc, &lid_state));
 
   /* has ghost nodes for !strict and uses local indexing (yuck) */
@@ -162,7 +162,7 @@ PetscErrorCode MatCoarsenApply_MIS_private(IS perm, Mat Gmat, PetscBool strict_a
               for (j = 0; j < n; j++) {
                 cpid   = idx[j]; /* compressed row ID in B mat */
                 statej = cpcol_state[cpid];
-                if (statej == MIS_NOT_DONE) { PetscCall(PetscCDAppendID(agg_lists, lid, nloc + cpid)); }
+                if (statej == MIS_NOT_DONE) PetscCall(PetscCDAppendID(agg_lists, lid, nloc + cpid));
               }
             }
           }

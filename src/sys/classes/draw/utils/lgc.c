@@ -102,13 +102,13 @@ PetscErrorCode PetscDrawLGSPDraw(PetscDrawLG lg, PetscDrawSP spin) {
     for (i = 0; i < dim; i++) {
       for (j = 1; j < nopts; j++) {
         PetscCall(PetscDrawLine(draw, lg->x[(j - 1) * dim + i], lg->y[(j - 1) * dim + i], lg->x[j * dim + i], lg->y[j * dim + i], PETSC_DRAW_BLACK + i));
-        if (lg->use_markers) { PetscCall(PetscDrawMarker(draw, lg->x[j * dim + i], lg->y[j * dim + i], PETSC_DRAW_RED)); }
+        if (lg->use_markers) PetscCall(PetscDrawMarker(draw, lg->x[j * dim + i], lg->y[j * dim + i], PETSC_DRAW_RED));
       }
     }
     dim   = sp->dim;
     nopts = sp->nopts;
     for (i = 0; i < dim; i++) {
-      for (j = 0; j < nopts; j++) { PetscCall(PetscDrawMarker(draw, sp->x[j * dim + i], sp->y[j * dim + i], PETSC_DRAW_RED)); }
+      for (j = 0; j < nopts; j++) PetscCall(PetscDrawMarker(draw, sp->x[j * dim + i], sp->y[j * dim + i], PETSC_DRAW_RED));
     }
   }
   PetscDrawCollectiveEnd(draw);
@@ -228,12 +228,12 @@ PetscErrorCode PetscDrawLGSetLegend(PetscDrawLG lg, const char *const *names) {
   if (names) PetscValidPointer(names, 2);
 
   if (lg->legend) {
-    for (i = 0; i < lg->dim; i++) { PetscCall(PetscFree(lg->legend[i])); }
+    for (i = 0; i < lg->dim; i++) PetscCall(PetscFree(lg->legend[i]));
     PetscCall(PetscFree(lg->legend));
   }
   if (names) {
     PetscCall(PetscMalloc1(lg->dim, &lg->legend));
-    for (i = 0; i < lg->dim; i++) { PetscCall(PetscStrallocpy(names[i], &lg->legend[i])); }
+    for (i = 0; i < lg->dim; i++) PetscCall(PetscStrallocpy(names[i], &lg->legend[i]));
   }
   PetscFunctionReturn(0);
 }
@@ -285,7 +285,7 @@ PetscErrorCode PetscDrawLGSetDimension(PetscDrawLG lg, PetscInt dim) {
 
   PetscCall(PetscFree2(lg->x, lg->y));
   if (lg->legend) {
-    for (i = 0; i < lg->dim; i++) { PetscCall(PetscFree(lg->legend[i])); }
+    for (i = 0; i < lg->dim; i++) PetscCall(PetscFree(lg->legend[i]));
     PetscCall(PetscFree(lg->legend));
   }
   PetscCall(PetscFree(lg->colors));
@@ -371,7 +371,7 @@ PetscErrorCode PetscDrawLGDestroy(PetscDrawLG *lg) {
   }
 
   if ((*lg)->legend) {
-    for (i = 0; i < (*lg)->dim; i++) { PetscCall(PetscFree((*lg)->legend[i])); }
+    for (i = 0; i < (*lg)->dim; i++) PetscCall(PetscFree((*lg)->legend[i]));
     PetscCall(PetscFree((*lg)->legend));
   }
   PetscCall(PetscFree((*lg)->colors));
@@ -530,11 +530,11 @@ PetscErrorCode PetscDrawLGView(PetscDrawLG lg, PetscViewer viewer) {
   if (nopts < 1) PetscFunctionReturn(0);
   if (xmin > xmax || ymin > ymax) PetscFunctionReturn(0);
 
-  if (!viewer) { PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)lg), &viewer)); }
+  if (!viewer) PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)lg), &viewer));
   PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)lg, viewer));
   for (i = 0; i < dim; i++) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "Line %" PetscInt_FMT ">\n", i));
-    for (j = 0; j < nopts; j++) { PetscCall(PetscViewerASCIIPrintf(viewer, "  X: %g Y: %g\n", (double)lg->x[j * dim + i], (double)lg->y[j * dim + i])); }
+    for (j = 0; j < nopts; j++) PetscCall(PetscViewerASCIIPrintf(viewer, "  X: %g Y: %g\n", (double)lg->x[j * dim + i], (double)lg->y[j * dim + i]));
   }
   PetscFunctionReturn(0);
 }

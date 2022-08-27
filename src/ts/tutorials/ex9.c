@@ -1148,7 +1148,7 @@ static PetscErrorCode FVRHSFunction(TS ts, PetscReal time, Vec X, Vec F, void *v
     PetscReal dt, tnow;
     PetscCall(TSGetTimeStep(ts, &dt));
     PetscCall(TSGetTime(ts, &tnow));
-    if (dt > 0.5 / ctx->cfl_idt) { PetscCall(PetscPrintf(ctx->comm, "Stability constraint exceeded at t=%g, dt %g > %g\n", (double)tnow, (double)dt, (double)(0.5 / ctx->cfl_idt))); }
+    if (dt > 0.5 / ctx->cfl_idt) PetscCall(PetscPrintf(ctx->comm, "Stability constraint exceeded at t=%g, dt %g > %g\n", (double)tnow, (double)dt, (double)(0.5 / ctx->cfl_idt)));
   }
   PetscFunctionReturn(0);
 }
@@ -1360,7 +1360,7 @@ int main(int argc, char *argv[]) {
   PetscCall(DMSetUp(da));
   /* Inform the DMDA of the field names provided by the physics. */
   /* The names will be shown in the title bars when run with -ts_monitor_draw_solution */
-  for (i = 0; i < ctx.physics.dof; i++) { PetscCall(DMDASetFieldName(da, i, ctx.physics.fieldname[i])); }
+  for (i = 0; i < ctx.physics.dof; i++) PetscCall(DMDASetFieldName(da, i, ctx.physics.fieldname[i]));
   PetscCall(DMDAGetInfo(da, 0, &Mx, 0, 0, 0, 0, 0, &dof, 0, 0, 0, 0, 0));
   PetscCall(DMDAGetCorners(da, &xs, 0, 0, &xm, 0, 0));
 

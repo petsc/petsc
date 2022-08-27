@@ -133,7 +133,7 @@ PetscErrorCode MatLMVMSetJ0Diag(Mat B, Vec V) {
   VecCheckSameSize(V, 2, lmvm->Fprev, 3);
 
   PetscCall(MatLMVMClearJ0(B));
-  if (!lmvm->J0diag) { PetscCall(VecDuplicate(V, &lmvm->J0diag)); }
+  if (!lmvm->J0diag) PetscCall(VecDuplicate(V, &lmvm->J0diag));
   PetscCall(VecCopy(V, lmvm->J0diag));
   lmvm->user_scale = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -178,7 +178,7 @@ PetscErrorCode MatLMVMSetJ0(Mat B, Mat J0) {
   PetscCall(PetscObjectReference((PetscObject)J0));
   lmvm->J0 = J0;
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)lmvm->J0, MATLMVM, &same));
-  if (!same && lmvm->square) { PetscCall(KSPSetOperators(lmvm->J0ksp, lmvm->J0, lmvm->J0)); }
+  if (!same && lmvm->square) PetscCall(KSPSetOperators(lmvm->J0ksp, lmvm->J0, lmvm->J0));
   PetscFunctionReturn(0);
 }
 

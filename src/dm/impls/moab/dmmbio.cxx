@@ -16,10 +16,10 @@ static PetscErrorCode DMMoab_GetWriteOptions_Private(PetscInt fsetid, PetscInt n
   // do parallel read unless only one processor
   if (numproc > 1) {
     PetscCall(PetscSNPrintf(wopts_par, PETSC_MAX_PATH_LEN, "PARALLEL=%s;", MoabWriteModes[mode]));
-    if (fsetid >= 0) { PetscCall(PetscSNPrintf(wopts_parid, PETSC_MAX_PATH_LEN, "PARALLEL_COMM=%d;", fsetid)); }
+    if (fsetid >= 0) PetscCall(PetscSNPrintf(wopts_parid, PETSC_MAX_PATH_LEN, "PARALLEL_COMM=%d;", fsetid));
   }
 
-  if (dbglevel) { PetscCall(PetscSNPrintf(wopts_dbg, PETSC_MAX_PATH_LEN, "CPUTIME;DEBUG_IO=%d;", dbglevel)); }
+  if (dbglevel) PetscCall(PetscSNPrintf(wopts_dbg, PETSC_MAX_PATH_LEN, "CPUTIME;DEBUG_IO=%d;", dbglevel));
 
   PetscCall(PetscSNPrintf(wopts, PETSC_MAX_PATH_LEN, "%s%s%s%s%s", wopts_par, wopts_parid, wopts_dbg, (extra_opts ? extra_opts : ""), (dm_opts ? dm_opts : "")));
   *write_opts = wopts;

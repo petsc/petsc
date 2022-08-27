@@ -185,7 +185,7 @@ static PetscErrorCode DMPlexCreateCutVertexLabel_Private(DM dm, DMLabel cutLabel
         for (cl = 0; cl < closureSize * 2; cl += 2) {
           if ((closure[cl] >= vStart) && (closure[cl] < vEnd)) {
             PetscCall(DMLabelGetValue(cutLabel, closure[cl], &value));
-            if (value == 1) { PetscCall(DMLabelSetValue(*cutVertexLabel, closure[cl], 1)); }
+            if (value == 1) PetscCall(DMLabelSetValue(*cutVertexLabel, closure[cl], 1));
           }
         }
         PetscCall(DMPlexRestoreTransitiveClosure(dm, cutc[c], PETSC_TRUE, &closureSize, &closure));
@@ -325,7 +325,7 @@ PetscErrorCode VecView_Plex_Local_HDF5_Internal(Vec v, PetscViewer viewer) {
       PetscCall(PetscViewerHDF5PopGroup(viewer));
     }
   }
-  if (seqnum >= 0) { PetscCall(PetscViewerHDF5PopTimestepping(viewer)); }
+  if (seqnum >= 0) PetscCall(PetscViewerHDF5PopTimestepping(viewer));
   PetscCall(DMRestoreGlobalVector(dmBC, &gv));
   PetscFunctionReturn(0);
 }
@@ -388,7 +388,7 @@ PetscErrorCode VecLoad_Plex_HDF5_Internal(Vec v, PetscViewer viewer) {
     PetscCall(PetscViewerHDF5SetTimestep(viewer, seqnum));
   }
   PetscCall(VecLoad_Plex_Local(locv, viewer));
-  if (seqnum >= 0) { PetscCall(PetscViewerHDF5PopTimestepping(viewer)); }
+  if (seqnum >= 0) PetscCall(PetscViewerHDF5PopTimestepping(viewer));
   PetscCall(PetscViewerHDF5PopGroup(viewer));
   PetscCall(DMLocalToGlobalBegin(dm, locv, INSERT_VALUES, v));
   PetscCall(DMLocalToGlobalEnd(dm, locv, INSERT_VALUES, v));
@@ -409,7 +409,7 @@ PetscErrorCode VecLoad_Plex_HDF5_Native_Internal(Vec v, PetscViewer viewer) {
     PetscCall(PetscViewerHDF5SetTimestep(viewer, seqnum));
   }
   PetscCall(VecLoad_Default(v, viewer));
-  if (seqnum >= 0) { PetscCall(PetscViewerHDF5PopTimestepping(viewer)); }
+  if (seqnum >= 0) PetscCall(PetscViewerHDF5PopTimestepping(viewer));
   PetscCall(PetscViewerHDF5PopGroup(viewer));
   PetscFunctionReturn(0);
 }

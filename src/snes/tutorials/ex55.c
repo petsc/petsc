@@ -467,7 +467,7 @@ static PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx) {
   hydhx  = hy / hx;
 
   PetscCall(DMGetLocalVector(da, &localX));
-  if (B) { PetscCall(DMGetLocalVector(da, &localB)); }
+  if (B) PetscCall(DMGetLocalVector(da, &localB));
   for (l = 0; l < sweeps; l++) {
     PetscCall(DMGlobalToLocalBegin(da, X, INSERT_VALUES, localX));
     PetscCall(DMGlobalToLocalEnd(da, X, INSERT_VALUES, localX));

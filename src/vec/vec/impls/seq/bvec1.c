@@ -19,7 +19,7 @@ PetscErrorCode VecDot_Seq(Vec xin, Vec yin, PetscScalar *z) {
   PetscCallBLAS("BLASdot", *z = BLASdot_(&bn, ya, &one, xa, &one));
   PetscCall(VecRestoreArrayRead(xin, &xa));
   PetscCall(VecRestoreArrayRead(yin, &ya));
-  if (xin->map->n > 0) { PetscCall(PetscLogFlops(2.0 * xin->map->n - 1)); }
+  if (xin->map->n > 0) PetscCall(PetscLogFlops(2.0 * xin->map->n - 1));
   PetscFunctionReturn(0);
 }
 
@@ -34,7 +34,7 @@ PetscErrorCode VecTDot_Seq(Vec xin, Vec yin, PetscScalar *z) {
   PetscCallBLAS("BLASdot", *z = BLASdotu_(&bn, xa, &one, ya, &one));
   PetscCall(VecRestoreArrayRead(xin, &xa));
   PetscCall(VecRestoreArrayRead(yin, &ya));
-  if (xin->map->n > 0) { PetscCall(PetscLogFlops(2.0 * xin->map->n - 1)); }
+  if (xin->map->n > 0) PetscCall(PetscLogFlops(2.0 * xin->map->n - 1));
   PetscFunctionReturn(0);
 }
 

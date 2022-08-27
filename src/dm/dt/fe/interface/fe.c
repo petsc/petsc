@@ -149,7 +149,7 @@ PetscErrorCode PetscFEGetType(PetscFE fem, PetscFEType *name) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
   PetscValidPointer(name, 2);
-  if (!PetscFERegisterAllCalled) { PetscCall(PetscFERegisterAll()); }
+  if (!PetscFERegisterAllCalled) PetscCall(PetscFERegisterAll());
   *name = ((PetscObject)fem)->type_name;
   PetscFunctionReturn(0);
 }
@@ -924,7 +924,7 @@ PetscErrorCode PetscFECreateTabulation(PetscFE fem, PetscInt nrepl, PetscInt npo
   (*T)->Nc   = Nc;
   (*T)->cdim = cdim;
   PetscCall(PetscMalloc1((*T)->K + 1, &(*T)->T));
-  for (k = 0; k <= (*T)->K; ++k) { PetscCall(PetscMalloc1(nrepl * npoints * Nb * Nc * PetscPowInt(cdim, k), &(*T)->T[k])); }
+  for (k = 0; k <= (*T)->K; ++k) PetscCall(PetscMalloc1(nrepl * npoints * Nb * Nc * PetscPowInt(cdim, k), &(*T)->T[k]));
   PetscUseTypeMethod(fem, createtabulation, nrepl * npoints, points, K, *T);
   PetscFunctionReturn(0);
 }

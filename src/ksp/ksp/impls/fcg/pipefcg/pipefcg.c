@@ -76,7 +76,7 @@ static PetscErrorCode KSPSetUp_PIPEFCG(KSP ksp) {
   PetscCall(PetscMalloc3(pipefcg->mmax + 2, &(pipefcg->dots), pipefcg->mmax + 1, &(pipefcg->etas), pipefcg->mmax + 2, &(pipefcg->redux)));
 
   /* If the requested number of preallocated vectors is greater than mmax reduce nprealloc */
-  if (pipefcg->nprealloc > pipefcg->mmax + 1) { PetscCall(PetscInfo(NULL, "Requested nprealloc=%" PetscInt_FMT " is greater than m_max+1=%" PetscInt_FMT ". Resetting nprealloc = m_max+1.\n", pipefcg->nprealloc, pipefcg->mmax + 1)); }
+  if (pipefcg->nprealloc > pipefcg->mmax + 1) PetscCall(PetscInfo(NULL, "Requested nprealloc=%" PetscInt_FMT " is greater than m_max+1=%" PetscInt_FMT ". Resetting nprealloc = m_max+1.\n", pipefcg->nprealloc, pipefcg->mmax + 1));
 
   /* Preallocate additional work vectors */
   PetscCall(KSPAllocateVectors_PIPEFCG(ksp, pipefcg->nprealloc, pipefcg->nprealloc));

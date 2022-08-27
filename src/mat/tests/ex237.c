@@ -130,7 +130,7 @@ int main(int argc, char **argv) {
       descr.type = SPARSE_MATRIX_TYPE_GENERAL;
       descr.diag = SPARSE_DIAG_NON_UNIT;
 #endif
-      if (convert) { PetscCall(MatDestroy(&A)); }
+      if (convert) PetscCall(MatDestroy(&A));
       PetscCall(PetscStrstr(type[i], "mkl", &tmp));
       if (tmp) {
         size_t mlen, tlen;
@@ -247,7 +247,7 @@ int main(int argc, char **argv) {
               PetscCall(MatProductNumeric(D));
               PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Benchmarking MatProduct %s: with A %s %" PetscInt_FMT "x%" PetscInt_FMT " and B %s %" PetscInt_FMT "x%" PetscInt_FMT "\n", MatProductTypes[MATPRODUCT_AB], Atype, AM, AN, Ctype, CM, CN));
               PetscCall(PetscLogStagePush(stage));
-              for (t = 0; t < trial; ++t) { PetscCall(MatProductNumeric(D)); }
+              for (t = 0; t < trial; ++t) PetscCall(MatProductNumeric(D));
               PetscCall(PetscLogStagePop());
             } else {
               Mat                E, Ct, Dt;
@@ -266,7 +266,7 @@ int main(int argc, char **argv) {
               PetscCall(MatMult(E, cC, cD));
               PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Benchmarking MatMult: with A %s %" PetscInt_FMT "x%" PetscInt_FMT " and B %s %" PetscInt_FMT "x%" PetscInt_FMT "\n", MATMAIJ, AM, AN, VECMPI, AM * N[k], 1));
               PetscCall(PetscLogStagePush(stage));
-              for (t = 0; t < trial; ++t) { PetscCall(MatMult(E, cC, cD)); }
+              for (t = 0; t < trial; ++t) PetscCall(MatMult(E, cC, cD));
               PetscCall(PetscLogStagePop());
               PetscCall(VecDestroy(&cD));
               PetscCall(VecDestroy(&cC));
@@ -285,7 +285,7 @@ int main(int argc, char **argv) {
             PetscCallMKLSparse(mkl_sparse_d_mm, (SPARSE_OPERATION_NON_TRANSPOSE, 1.0, spr, descr, SPARSE_LAYOUT_COLUMN_MAJOR, c_ptr, CN, CM, 0.0, d_ptr, CM));
             PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Benchmarking mkl_sparse_d_mm (COLUMN_MAJOR): with A %s %" PetscInt_FMT "x%" PetscInt_FMT " and B %s %" PetscInt_FMT "x%" PetscInt_FMT "\n", Atype, AM, AN, Ctype, CM, CN));
             PetscCall(PetscLogStagePush(stage));
-            for (t = 0; t < trial; ++t) { PetscCallMKLSparse(mkl_sparse_d_mm, (SPARSE_OPERATION_NON_TRANSPOSE, 1.0, spr, descr, SPARSE_LAYOUT_COLUMN_MAJOR, c_ptr, CN, CM, 0.0, d_ptr, CM)); }
+            for (t = 0; t < trial; ++t) PetscCallMKLSparse(mkl_sparse_d_mm, (SPARSE_OPERATION_NON_TRANSPOSE, 1.0, spr, descr, SPARSE_LAYOUT_COLUMN_MAJOR, c_ptr, CN, CM, 0.0, d_ptr, CM));
             PetscCall(PetscLogStagePop());
             PetscCall(MatDenseRestoreArrayWrite(D, &d_ptr));
             PetscCall(MatDenseRestoreArrayRead(C, &c_ptr));
@@ -302,7 +302,7 @@ int main(int argc, char **argv) {
           PetscCall(MatMult(A, cC, cD));
           PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Benchmarking MatMult: with A %s %" PetscInt_FMT "x%" PetscInt_FMT "\n", Atype, AM, AN));
           PetscCall(PetscLogStagePush(stage));
-          for (t = 0; t < trial; ++t) { PetscCall(MatMult(A, cC, cD)); }
+          for (t = 0; t < trial; ++t) PetscCall(MatMult(A, cC, cD));
           PetscCall(PetscLogStagePop());
           PetscCall(MatDenseRestoreColumnVecRead(C, 0, &cC));
           PetscCall(MatDenseRestoreColumnVecWrite(D, 0, &cD));
@@ -315,7 +315,7 @@ int main(int argc, char **argv) {
           PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Benchmarking mkl_sparse_d_mv: with A %s %" PetscInt_FMT "x%" PetscInt_FMT "\n", Atype, AM, AN));
           PetscCallMKLSparse(mkl_sparse_d_mv, (SPARSE_OPERATION_NON_TRANSPOSE, 1.0, spr, descr, c_ptr, 0.0, d_ptr));
           PetscCall(PetscLogStagePush(stage));
-          for (t = 0; t < trial; ++t) { PetscCallMKLSparse(mkl_sparse_d_mv, (SPARSE_OPERATION_NON_TRANSPOSE, 1.0, spr, descr, c_ptr, 0.0, d_ptr)); }
+          for (t = 0; t < trial; ++t) PetscCallMKLSparse(mkl_sparse_d_mv, (SPARSE_OPERATION_NON_TRANSPOSE, 1.0, spr, descr, c_ptr, 0.0, d_ptr));
           PetscCall(PetscLogStagePop());
           PetscCall(MatDenseRestoreArrayWrite(D, &d_ptr));
           PetscCall(MatDenseRestoreArrayRead(C, &c_ptr));
@@ -346,7 +346,7 @@ int main(int argc, char **argv) {
               PetscCall(MatProductNumeric(D));
               PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Benchmarking MatProduct %s: with A %s %" PetscInt_FMT "x%" PetscInt_FMT " and Bt %s %" PetscInt_FMT "x%" PetscInt_FMT "\n", MatProductTypes[MATPRODUCT_ABt], Atype, AM, AN, Ctype, CM, CN));
               PetscCall(PetscLogStagePush(tstage));
-              for (t = 0; t < trial; ++t) { PetscCall(MatProductNumeric(D)); }
+              for (t = 0; t < trial; ++t) PetscCall(MatProductNumeric(D));
               PetscCall(PetscLogStagePop());
             } else {
               const PetscScalar *c_ptr;
@@ -359,7 +359,7 @@ int main(int argc, char **argv) {
               PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Benchmarking mkl_sparse_d_mm (ROW_MAJOR): with A %s %" PetscInt_FMT "x%" PetscInt_FMT " and B %s %" PetscInt_FMT "x%" PetscInt_FMT "\n", Atype, AM, AN, Ctype, CM, CN));
               PetscCallMKLSparse(mkl_sparse_d_mm, (SPARSE_OPERATION_NON_TRANSPOSE, 1.0, spr, descr, SPARSE_LAYOUT_ROW_MAJOR, c_ptr, CN, CM, 0.0, d_ptr, CM));
               PetscCall(PetscLogStagePush(stage));
-              for (t = 0; t < trial; ++t) { PetscCallMKLSparse(mkl_sparse_d_mm, (SPARSE_OPERATION_NON_TRANSPOSE, 1.0, spr, descr, SPARSE_LAYOUT_ROW_MAJOR, c_ptr, CN, CM, 0.0, d_ptr, CM)); }
+              for (t = 0; t < trial; ++t) PetscCallMKLSparse(mkl_sparse_d_mm, (SPARSE_OPERATION_NON_TRANSPOSE, 1.0, spr, descr, SPARSE_LAYOUT_ROW_MAJOR, c_ptr, CN, CM, 0.0, d_ptr, CM));
               PetscCall(PetscLogStagePop());
               PetscCall(MatDenseRestoreArrayWrite(D, &d_ptr));
               PetscCall(MatDenseRestoreArrayRead(C, &c_ptr));

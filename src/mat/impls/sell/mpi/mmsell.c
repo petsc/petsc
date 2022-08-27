@@ -58,7 +58,7 @@ PetscErrorCode MatDisAssemble_MPISELL(Mat A) {
   for (i = 0; i < totalslices; i++) {                           /* loop over slices */
     for (j = Bsell->sliidx[i], row = 0; j < Bsell->sliidx[i + 1]; j++, row = ((row + 1) & 0x07)) {
       isnonzero = (PetscBool)((j - Bsell->sliidx[i]) / 8 < Bsell->rlen[8 * i + row]);
-      if (isnonzero) { PetscCall(MatSetValue(Bnew, 8 * i + row, sell->garray[Bsell->colidx[j]], Bsell->val[j], B->insertmode)); }
+      if (isnonzero) PetscCall(MatSetValue(Bnew, 8 * i + row, sell->garray[Bsell->colidx[j]], Bsell->val[j], B->insertmode));
     }
   }
 
@@ -120,7 +120,7 @@ PetscErrorCode MatSetUpMultiply_MPISELL(Mat mat) {
   }
   PetscCall(PetscSortInt(ec, garray)); /* sort, and rebuild */
   PetscCall(PetscTableRemoveAll(gid1_lid1));
-  for (i = 0; i < ec; i++) { PetscCall(PetscTableAdd(gid1_lid1, garray[i] + 1, i + 1, INSERT_VALUES)); }
+  for (i = 0; i < ec; i++) PetscCall(PetscTableAdd(gid1_lid1, garray[i] + 1, i + 1, INSERT_VALUES));
 
   /* compact out the extra columns in B */
   for (i = 0; i < totalslices; i++) { /* loop over slices */
@@ -255,7 +255,7 @@ PetscErrorCode MatDiagonalScaleLocal_MPISELL(Mat A, Vec scale) {
   const PetscScalar *s;
 
   PetscFunctionBegin;
-  if (!auglyrmapd) { PetscCall(MatMPISELLDiagonalScaleLocalSetUp(A, scale)); }
+  if (!auglyrmapd) PetscCall(MatMPISELLDiagonalScaleLocalSetUp(A, scale));
   PetscCall(VecGetArrayRead(scale, &s));
   PetscCall(VecGetLocalSize(auglydd, &n));
   PetscCall(VecGetArray(auglydd, &d));

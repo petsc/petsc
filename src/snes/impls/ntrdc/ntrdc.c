@@ -22,7 +22,7 @@ static PetscErrorCode SNESTRDC_KSPConverged_Private(KSP ksp, PetscInt n, PetscRe
 
   PetscFunctionBegin;
   PetscCall((*ctx->convtest)(ksp, n, rnorm, reason, ctx->convctx));
-  if (*reason) { PetscCall(PetscInfo(snes, "Default or user provided convergence test KSP iterations=%" PetscInt_FMT ", rnorm=%g\n", n, (double)rnorm)); }
+  if (*reason) PetscCall(PetscInfo(snes, "Default or user provided convergence test KSP iterations=%" PetscInt_FMT ", rnorm=%g\n", n, (double)rnorm));
   /* Determine norm of solution */
   PetscCall(KSPBuildSolution(ksp, NULL, &x));
   PetscCall(VecNorm(x, NORM_2, &nrm));

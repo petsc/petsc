@@ -143,13 +143,13 @@ int main(int argc, char **args) {
 
   /* apply USFFT and FFTW FORWARD "preemptively", so the fftw_plans can be reused on different vectors */
   PetscCall(MatMult(A, x, z));
-  for (ii = 0; ii < 3; ++ii) { PetscCall(MatMult(AA, xxsplit[ii], zzsplit[ii])); }
+  for (ii = 0; ii < 3; ++ii) PetscCall(MatMult(AA, xxsplit[ii], zzsplit[ii]));
   /* Now apply USFFT and FFTW forward several (3) times */
   for (i = 0; i < 3; ++i) {
     PetscCall(MatMult(A, x, y));
-    for (ii = 0; ii < 3; ++ii) { PetscCall(MatMult(AA, xxsplit[ii], yysplit[ii])); }
+    for (ii = 0; ii < 3; ++ii) PetscCall(MatMult(AA, xxsplit[ii], yysplit[ii]));
     PetscCall(MatMultTranspose(A, y, z));
-    for (ii = 0; ii < 3; ++ii) { PetscCall(MatMult(AA, yysplit[ii], zzsplit[ii])); }
+    for (ii = 0; ii < 3; ++ii) PetscCall(MatMult(AA, yysplit[ii], zzsplit[ii]));
   }
   /* Unsplit yy */
   PetscCall(VecStrideScatterAll(yysplit, yy, INSERT_VALUES)); /*YES! 'Scatter' means 'collect' (or maybe 'gather'?)! */

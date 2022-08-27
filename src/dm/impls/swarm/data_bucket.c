@@ -86,9 +86,9 @@ PetscErrorCode DMSwarmDataBucketDestroy(DMSwarmDataBucket *DB) {
 
   PetscFunctionBegin;
   /* release fields */
-  for (f = 0; f < db->nfields; ++f) { PetscCall(DMSwarmDataFieldDestroy(&db->field[f])); }
+  for (f = 0; f < db->nfields; ++f) PetscCall(DMSwarmDataFieldDestroy(&db->field[f]));
   /* this will catch the initially allocated objects in the event that no fields are registered */
-  if (db->field != NULL) { PetscCall(PetscFree(db->field)); }
+  if (db->field != NULL) PetscCall(PetscFree(db->field));
   PetscCall(PetscFree(db));
   *DB = NULL;
   PetscFunctionReturn(0);
@@ -238,14 +238,14 @@ PetscErrorCode DMSwarmDataBucketSetSizes(DMSwarmDataBucket db, const PetscInt L,
   /* action */
   if (new_allocated > current_allocated) {
     /* increase size to new_used + new_buffer */
-    for (f = 0; f < db->nfields; f++) { PetscCall(DMSwarmDataFieldSetSize(db->field[f], new_allocated)); }
+    for (f = 0; f < db->nfields; f++) PetscCall(DMSwarmDataFieldSetSize(db->field[f], new_allocated));
     db->L         = new_used;
     db->buffer    = new_buffer;
     db->allocated = new_used + new_buffer;
   } else {
     if (new_unused > 2 * new_buffer) {
       /* shrink array to new_used + new_buffer */
-      for (f = 0; f < db->nfields; ++f) { PetscCall(DMSwarmDataFieldSetSize(db->field[f], new_allocated)); }
+      for (f = 0; f < db->nfields; ++f) PetscCall(DMSwarmDataFieldSetSize(db->field[f], new_allocated));
       db->L         = new_used;
       db->buffer    = new_buffer;
       db->allocated = new_used + new_buffer;
@@ -398,11 +398,11 @@ PetscErrorCode DMSwarmDataBucketCreateFromSubset(DMSwarmDataBucket DBIn, const P
   /* copy contents of DBIn */
   PetscCall(DMSwarmDataBucketGetDMSwarmDataFields(DBIn, &nfields, &fields));
   PetscCall(DMSwarmDataBucketGetSizes(DBIn, &L, &buffer, &allocated));
-  for (f = 0; f < nfields; ++f) { PetscCall(DMSwarmDataBucketRegisterField(*DB, "DMSwarmDataBucketCreateFromSubset", fields[f]->name, fields[f]->atomic_size, NULL)); }
+  for (f = 0; f < nfields; ++f) PetscCall(DMSwarmDataBucketRegisterField(*DB, "DMSwarmDataBucketCreateFromSubset", fields[f]->name, fields[f]->atomic_size, NULL));
   PetscCall(DMSwarmDataBucketFinalize(*DB));
   PetscCall(DMSwarmDataBucketSetSizes(*DB, L, buffer));
   /* now copy the desired guys from DBIn => DB */
-  for (p = 0; p < N; ++p) { PetscCall(DMSwarmDataBucketCopyPoint(DBIn, list[p], *DB, list[p])); }
+  for (p = 0; p < N; ++p) PetscCall(DMSwarmDataBucketCopyPoint(DBIn, list[p], *DB, list[p]));
   PetscFunctionReturn(0);
 }
 

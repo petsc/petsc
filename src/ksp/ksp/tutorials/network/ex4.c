@@ -74,7 +74,7 @@ int main(int argc, char **argv) {
        net[0].1 -> net[j].1, j=0,...,Nsubnet-1 */
   asvtx[0] = bsvtx[0] = 0;
   asvtx[1] = bsvtx[1] = 1;
-  for (j = Nsubnet - 1; j >= 1; j--) { PetscCall(DMNetworkAddSharedVertices(dmnetwork, 0, j, 2, asvtx, bsvtx)); }
+  for (j = Nsubnet - 1; j >= 1; j--) PetscCall(DMNetworkAddSharedVertices(dmnetwork, 0, j, 2, asvtx, bsvtx));
 
   /* Setup the network layout */
   PetscCall(DMNetworkLayoutSetUp(dmnetwork));

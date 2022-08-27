@@ -300,7 +300,7 @@ PetscErrorCode ComputeSolutionCoefficients(AppCtx *appctx) {
   PetscCall(PetscMalloc1(appctx->ncoeff, &appctx->solutioncoefficients));
   PetscCall(PetscRandomCreate(PETSC_COMM_WORLD, &rand));
   PetscCall(PetscRandomSetInterval(rand, .9, 1.0));
-  for (i = 0; i < appctx->ncoeff; i++) { PetscCall(PetscRandomGetValue(rand, &appctx->solutioncoefficients[i])); }
+  for (i = 0; i < appctx->ncoeff; i++) PetscCall(PetscRandomGetValue(rand, &appctx->solutioncoefficients[i]));
   PetscCall(PetscRandomDestroy(&rand));
   PetscFunctionReturn(0);
 }

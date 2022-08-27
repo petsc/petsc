@@ -63,7 +63,7 @@ PETSC_INTERN PetscErrorCode PetscSFGetVectorSF(PetscSF sf, PetscInt nv, PetscInt
     const PetscInt r  = iremote[i].rank;
     const PetscInt ii = iremote[i].index;
 
-    if (j < 0 || sranks[j] != r) { PetscCall(PetscFindMPIInt(r, nranks, sranks, &j)); }
+    if (j < 0 || sranks[j] != r) PetscCall(PetscFindMPIInt(r, nranks, sranks, &j));
     PetscCheck(j >= 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Unable to locate neighbor rank %" PetscInt_FMT, r);
     for (v = 0; v < nv; v++) {
       viremote[v * nl + i].rank  = r;
@@ -177,7 +177,7 @@ PETSC_INTERN PetscErrorCode VecSetDelta(Vec x, PetscInt i) {
 #endif
   {
     PetscCall(VecSet(x, 0.));
-    if (st <= i && i < en) { PetscCall(VecSetValue(x, i, 1.0, INSERT_VALUES)); }
+    if (st <= i && i < en) PetscCall(VecSetValue(x, i, 1.0, INSERT_VALUES));
     PetscCall(VecAssemblyBegin(x));
     PetscCall(VecAssemblyEnd(x));
   }

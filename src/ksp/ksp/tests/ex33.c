@@ -122,7 +122,7 @@ int main(int argc, char **args) {
   PetscCall(MatGetInertia(F, &nneg, &nzero, &npos));
 
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
-  if (rank == 0) { PetscCall(PetscPrintf(PETSC_COMM_SELF, " MatInertia: nneg: %" PetscInt_FMT ", nzero: %" PetscInt_FMT ", npos: %" PetscInt_FMT "\n", nneg, nzero, npos)); }
+  if (rank == 0) PetscCall(PetscPrintf(PETSC_COMM_SELF, " MatInertia: nneg: %" PetscInt_FMT ", nzero: %" PetscInt_FMT ", npos: %" PetscInt_FMT "\n", nneg, nzero, npos));
 
   /* Destroy */
   PetscCall(KSPDestroy(&ksp));

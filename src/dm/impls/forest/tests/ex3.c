@@ -58,7 +58,7 @@ int main(int argc, char **argv) {
       PetscCall(DMLabelCreate(PETSC_COMM_SELF, "adapt", &adaptLabel));
 
       PetscCall(DMForestGetCellChart(forest, &cStart, &cEnd));
-      for (c = cStart; c < cEnd; ++c) { PetscCall(DMLabelSetValue(adaptLabel, c, DM_ADAPT_REFINE)); }
+      for (c = cStart; c < cEnd; ++c) PetscCall(DMLabelSetValue(adaptLabel, c, DM_ADAPT_REFINE));
 
       PetscCall(DMForestTemplate(forest, PETSC_COMM_WORLD, &postforest));
       PetscCall(DMForestSetAdaptivityLabel(postforest, adaptLabel));

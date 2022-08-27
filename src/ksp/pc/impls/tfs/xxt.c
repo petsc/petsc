@@ -244,7 +244,7 @@ static PetscErrorCode xxt_generate(xxt_ADT xxt_handle) {
   for (i = 0, j = 0; i <= level; i++) j += nsep[i];
 
   m = j - xxt_handle->ns;
-  if (m != j) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "xxt_generate() :: null space exists %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT "\n", m, j, xxt_handle->ns)); }
+  if (m != j) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "xxt_generate() :: null space exists %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT "\n", m, j, xxt_handle->ns));
 
   /* get and initialize storage for x local         */
   /* note that x local is nxm and stored by columns */

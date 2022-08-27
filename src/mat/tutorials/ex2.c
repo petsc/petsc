@@ -105,7 +105,7 @@ int main(int argc, char **argv) {
   PetscCall(MatMultAdd(A21, X1, Z2, Z2));
   PetscCall(VecAXPY(Z, -1.0, Y));
   PetscCall(VecNorm(Z, NORM_2, &nrm));
-  if (nrm > 100.0 * PETSC_MACHINE_EPSILON) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Test1; error norm=%g\n", (double)nrm)); }
+  if (nrm > 100.0 * PETSC_MACHINE_EPSILON) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Test1; error norm=%g\n", (double)nrm));
 
   /*
    * Next test: change both matrices
@@ -135,7 +135,7 @@ int main(int argc, char **argv) {
   PetscCall(MatMultAdd(A21, X1, Z2, Z2));
   PetscCall(VecAXPY(Z, -1.0, Y));
   PetscCall(VecNorm(Z, NORM_2, &nrm));
-  if (nrm > 100.0 * PETSC_MACHINE_EPSILON) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Test2; error norm=%g\n", (double)nrm)); }
+  if (nrm > 100.0 * PETSC_MACHINE_EPSILON) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Test2; error norm=%g\n", (double)nrm));
 
   /*
    * Transpose product
@@ -147,7 +147,7 @@ int main(int argc, char **argv) {
   PetscCall(MatMultTransposeAdd(A12, X1, Z2, Z2));
   PetscCall(VecAXPY(Z, -1.0, Y));
   PetscCall(VecNorm(Z, NORM_2, &nrm));
-  if (nrm > 100.0 * PETSC_MACHINE_EPSILON) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Test3; error norm=%g\n", (double)nrm)); }
+  if (nrm > 100.0 * PETSC_MACHINE_EPSILON) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Test3; error norm=%g\n", (double)nrm));
   PetscCall(PetscFree(a));
   PetscCall(PetscFree(b));
   PetscCall(PetscFree(x));

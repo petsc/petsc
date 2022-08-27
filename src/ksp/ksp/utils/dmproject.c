@@ -85,7 +85,7 @@ PetscErrorCode DMGlobalToLocalSolve(DM dm, Vec x, Vec y) {
       PetscCall(DMPlexVecGetClosure(dm, NULL, mask, cStart, &numValues, NULL));
       PetscCall(PetscMalloc1(numValues, &ones));
       for (i = 0; i < numValues; i++) { ones[i] = 1.; }
-      for (c = cStart; c < cEnd; c++) { PetscCall(DMPlexVecSetClosure(dm, NULL, mask, c, ones, INSERT_VALUES)); }
+      for (c = cStart; c < cEnd; c++) PetscCall(DMPlexVecSetClosure(dm, NULL, mask, c, ones, INSERT_VALUES));
       PetscCall(PetscFree(ones));
     }
   } else {

@@ -23,7 +23,7 @@ PetscErrorCode PrintSparsity(MPI_Comm comm, PetscInt m, unsigned int **sparsity)
   PetscCall(PetscPrintf(comm, "Sparsity pattern:\n"));
   for (PetscInt i = 0; i < m; i++) {
     PetscCall(PetscPrintf(comm, "\n %2d: ", i));
-    for (PetscInt j = 1; j <= (PetscInt)sparsity[i][0]; j++) { PetscCall(PetscPrintf(comm, " %2d ", sparsity[i][j])); }
+    for (PetscInt j = 1; j <= (PetscInt)sparsity[i][0]; j++) PetscCall(PetscPrintf(comm, " %2d ", sparsity[i][j]));
   }
   PetscCall(PetscPrintf(comm, "\n\n"));
   PetscFunctionReturn(0);

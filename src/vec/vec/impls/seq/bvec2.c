@@ -292,7 +292,7 @@ PetscErrorCode VecView_Seq_ASCII(Vec xin, PetscViewer viewer) {
     int             doOutput = 0;
     PetscInt        bs, b;
 
-    if (stateId < 0) { PetscCall(PetscObjectComposedDataRegister(&stateId)); }
+    if (stateId < 0) PetscCall(PetscObjectComposedDataRegister(&stateId));
     PetscCall(PetscObjectComposedDataGetInt((PetscObject)viewer, stateId, outputState, hasState));
     if (!hasState) outputState = 0;
     PetscCall(PetscObjectGetName((PetscObject)xin, &name));
@@ -309,7 +309,7 @@ PetscErrorCode VecView_Seq_ASCII(Vec xin, PetscViewer viewer) {
       } else if (outputState == 3) doOutput = 0;
       else PetscCheck(outputState != 4, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Tried to output POINT_DATA again after intervening CELL_DATA");
 
-      if (doOutput) { PetscCall(PetscViewerASCIIPrintf(viewer, "POINT_DATA %" PetscInt_FMT "\n", n / bs)); }
+      if (doOutput) PetscCall(PetscViewerASCIIPrintf(viewer, "POINT_DATA %" PetscInt_FMT "\n", n / bs));
     } else {
       if (outputState == 0) {
         outputState = 2;
@@ -324,7 +324,7 @@ PetscErrorCode VecView_Seq_ASCII(Vec xin, PetscViewer viewer) {
         if (outputState == 4) doOutput = 0;
       }
 
-      if (doOutput) { PetscCall(PetscViewerASCIIPrintf(viewer, "CELL_DATA %" PetscInt_FMT "\n", n)); }
+      if (doOutput) PetscCall(PetscViewerASCIIPrintf(viewer, "CELL_DATA %" PetscInt_FMT "\n", n));
     }
     PetscCall(PetscObjectComposedDataSetInt((PetscObject)viewer, stateId, outputState));
     if (name) {
@@ -336,10 +336,10 @@ PetscErrorCode VecView_Seq_ASCII(Vec xin, PetscViewer viewer) {
     } else {
       PetscCall(PetscViewerASCIIPrintf(viewer, "SCALARS scalars double %" PetscInt_FMT "\n", bs));
     }
-    if (bs != 3) { PetscCall(PetscViewerASCIIPrintf(viewer, "LOOKUP_TABLE default\n")); }
+    if (bs != 3) PetscCall(PetscViewerASCIIPrintf(viewer, "LOOKUP_TABLE default\n"));
     for (i = 0; i < n / bs; i++) {
       for (b = 0; b < bs; b++) {
-        if (b > 0) { PetscCall(PetscViewerASCIIPrintf(viewer, " ")); }
+        if (b > 0) PetscCall(PetscViewerASCIIPrintf(viewer, " "));
 #if !defined(PETSC_USE_COMPLEX)
         PetscCall(PetscViewerASCIIPrintf(viewer, "%g", (double)xv[i * bs + b]));
 #endif
@@ -353,12 +353,12 @@ PetscErrorCode VecView_Seq_ASCII(Vec xin, PetscViewer viewer) {
     PetscCheck(bs >= 1 && bs <= 3, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "VTK can only handle 3D objects, but vector dimension is %" PetscInt_FMT, bs);
     for (i = 0; i < n / bs; i++) {
       for (b = 0; b < bs; b++) {
-        if (b > 0) { PetscCall(PetscViewerASCIIPrintf(viewer, " ")); }
+        if (b > 0) PetscCall(PetscViewerASCIIPrintf(viewer, " "));
 #if !defined(PETSC_USE_COMPLEX)
         PetscCall(PetscViewerASCIIPrintf(viewer, "%g", (double)xv[i * bs + b]));
 #endif
       }
-      for (b = bs; b < 3; b++) { PetscCall(PetscViewerASCIIPrintf(viewer, " 0.0")); }
+      for (b = bs; b < 3; b++) PetscCall(PetscViewerASCIIPrintf(viewer, " 0.0"));
       PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
     }
   } else if (format == PETSC_VIEWER_ASCII_PCICE) {
@@ -370,7 +370,7 @@ PetscErrorCode VecView_Seq_ASCII(Vec xin, PetscViewer viewer) {
     for (i = 0; i < n / bs; i++) {
       PetscCall(PetscViewerASCIIPrintf(viewer, "%7" PetscInt_FMT "   ", i + 1));
       for (b = 0; b < bs; b++) {
-        if (b > 0) { PetscCall(PetscViewerASCIIPrintf(viewer, " ")); }
+        if (b > 0) PetscCall(PetscViewerASCIIPrintf(viewer, " "));
 #if !defined(PETSC_USE_COMPLEX)
         PetscCall(PetscViewerASCIIPrintf(viewer, "% 12.5E", (double)xv[i * bs + b]));
 #endif
@@ -412,7 +412,7 @@ PetscErrorCode VecView_Seq_ASCII(Vec xin, PetscViewer viewer) {
     /* No info */
   } else {
     for (i = 0; i < n; i++) {
-      if (format == PETSC_VIEWER_ASCII_INDEX) { PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT ": ", i)); }
+      if (format == PETSC_VIEWER_ASCII_INDEX) PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT ": ", i));
 #if defined(PETSC_USE_COMPLEX)
       if (PetscImaginaryPart(xv[i]) > 0.0) {
         PetscCall(PetscViewerASCIIPrintf(viewer, "%g + %g i\n", (double)PetscRealPart(xv[i]), (double)PetscImaginaryPart(xv[i])));

@@ -453,7 +453,7 @@ PetscErrorCode Monitor(TS ts, PetscInt stepi, PetscReal time, Vec X, void *actx)
     }
   }
   rectx->idx = 0;
-  if (rectx->grid_view_idx != -1 || (reason && ctx->verbose > 3)) { PetscCall(DMCompositeRestoreAccessArray(pack, X, ctx->num_grids * ctx->batch_sz, NULL, globXArray)); }
+  if (rectx->grid_view_idx != -1 || (reason && ctx->verbose > 3)) PetscCall(DMCompositeRestoreAccessArray(pack, X, ctx->num_grids * ctx->batch_sz, NULL, globXArray));
   PetscFunctionReturn(0);
 }
 

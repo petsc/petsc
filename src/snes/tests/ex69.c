@@ -218,7 +218,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, Field **x, Field **f, void
   if ((fail++ > 7 && user->errorindomainmf) || (fail++ > 36 && user->errorindomain)) {
     PetscMPIInt rank;
     PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)user->snes), &rank));
-    if (rank == 0) { PetscCall(SNESSetFunctionDomainError(user->snes)); }
+    if (rank == 0) PetscCall(SNESSetFunctionDomainError(user->snes));
   }
   grashof = user->grashof;
   prandtl = user->prandtl;
@@ -387,7 +387,7 @@ PetscErrorCode SNESComputeJacobian_MyShell(SNES snes, Vec X, Mat A, Mat B, void 
 
   PetscFunctionBegin;
   PetscCall(SNESComputeJacobian_DMDA(snes, X, A, B, ctx));
-  if (fail++ > 0) { PetscCall(MatZeroEntries(A)); }
+  if (fail++ > 0) PetscCall(MatZeroEntries(A));
   PetscFunctionReturn(0);
 }
 

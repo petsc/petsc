@@ -342,7 +342,7 @@ PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool i
         }
       }
     }
-    for (c = 0; c < numCells; c++) { PetscCall(DMPlexSetCone(*dm, c, &(cellVertices[c * numCellVertices]))); }
+    for (c = 0; c < numCells; c++) PetscCall(DMPlexSetCone(*dm, c, &(cellVertices[c * numCellVertices])));
   }
   PetscCall(DMPlexSymmetrize(*dm));
   PetscCall(DMPlexStratify(*dm));

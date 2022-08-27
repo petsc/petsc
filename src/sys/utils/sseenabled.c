@@ -134,8 +134,8 @@ PetscErrorCode PetscSSEEnabledTest_FALSE(PetscBool *flag) {
 
         if (petsc_sse_local_is_untested) {
           PetscCall(PetscSSEHardwareTest(&petsc_sse_enabled_local));
-          if (petsc_sse_enabled_local) { PetscCall(PetscSSEOSEnabledTest(&petsc_sse_enabled_local)); }
-          petsc_sse_local_is_untested = PETSC_FALSE;
+          if (petsc_sse_enabled_local) PetscCall(PetscSSEOSEnabledTest(&petsc_sse_enabled_local));
+        petsc_sse_local_is_untested = PETSC_FALSE;
       }
 
         if (gflag && petsc_sse_global_is_untested) {

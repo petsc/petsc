@@ -215,7 +215,7 @@ static PetscErrorCode PCPatchCreateDefaultSF_Private(PC pc, PetscInt n, const Pe
       PetscCall(PetscSFSetUp(sf[i]));
       PetscCall(PetscSFGetRootRanks(sf[i], &nranks, &ranks, NULL, NULL, NULL));
       /* These are all the ranks who communicate with me. */
-      for (j = 0; j < nranks; ++j) { PetscCall(PetscHSetIAdd(ranksUniq, (PetscInt)ranks[j])); }
+      for (j = 0; j < nranks; ++j) PetscCall(PetscHSetIAdd(ranksUniq, (PetscInt)ranks[j]));
     }
     PetscCall(PetscHSetIGetSize(ranksUniq, &numRanks));
     PetscCall(PetscMalloc1(numRanks, &remote));
@@ -755,7 +755,7 @@ static PetscErrorCode PCPatchCompleteCellPatch(PC pc, PetscHSetI ht, PetscHSetI 
             PetscCall(DMPlexGetTransitiveClosure(dm, seenpoint, PETSC_FALSE, &fStarSize, &fStar));
             for (fsi = 0; fsi < fStarSize * 2; fsi += 2) {
               PetscCall(DMPlexGetTransitiveClosure(dm, fStar[fsi], PETSC_TRUE, &fClosureSize, &fClosure));
-              for (fci = 0; fci < fClosureSize * 2; fci += 2) { PetscCall(PetscHSetIAdd(cht, fClosure[fci])); }
+              for (fci = 0; fci < fClosureSize * 2; fci += 2) PetscCall(PetscHSetIAdd(cht, fClosure[fci]));
               PetscCall(DMPlexRestoreTransitiveClosure(dm, fStar[fsi], PETSC_TRUE, NULL, &fClosure));
             }
             PetscCall(DMPlexRestoreTransitiveClosure(dm, seenpoint, PETSC_FALSE, NULL, &fStar));
@@ -1476,11 +1476,11 @@ static PetscErrorCode PCPatchCreateCellPatchDiscretisationInfo(PC pc) {
             if (localDof >= 0) PetscCall(PetscHMapISet(ht, globalDof, localDof));
             if (patch->local_composition_type == PC_COMPOSITE_MULTIPLICATIVE) {
               const PetscInt localDofWithArtificial = dofsArrayWithArtificial[key];
-              if (localDofWithArtificial >= 0) { PetscCall(PetscHMapISet(htWithArtificial, globalDof, localDofWithArtificial)); }
+              if (localDofWithArtificial >= 0) PetscCall(PetscHMapISet(htWithArtificial, globalDof, localDofWithArtificial));
             }
             if (isNonlinear) {
               const PetscInt localDofWithAll = dofsArrayWithAll[key];
-              if (localDofWithAll >= 0) { PetscCall(PetscHMapISet(htWithAll, globalDof, localDofWithAll)); }
+              if (localDofWithAll >= 0) PetscCall(PetscHMapISet(htWithAll, globalDof, localDofWithAll));
             }
             key++;
           }
@@ -1592,7 +1592,7 @@ static PetscErrorCode PCPatchCreateCellPatchDiscretisationInfo(PC pc) {
   }
   if (1 == patch->nsubspaces) {
     PetscCall(PetscArraycpy(asmArray, dofsArray, numDofs));
-    if (patch->local_composition_type == PC_COMPOSITE_MULTIPLICATIVE) { PetscCall(PetscArraycpy(asmArrayWithArtificial, dofsArrayWithArtificial, numDofs)); }
+    if (patch->local_composition_type == PC_COMPOSITE_MULTIPLICATIVE) PetscCall(PetscArraycpy(asmArrayWithArtificial, dofsArrayWithArtificial, numDofs));
     if (isNonlinear) PetscCall(PetscArraycpy(asmArrayWithAll, dofsArrayWithAll, numDofs));
   }
 
@@ -1602,7 +1602,7 @@ static PetscErrorCode PCPatchCreateCellPatchDiscretisationInfo(PC pc) {
   PetscCall(ISRestoreIndices(cells, &cellsArray));
   PetscCall(ISRestoreIndices(points, &pointsArray));
   PetscCall(PetscFree(dofsArray));
-  if (patch->local_composition_type == PC_COMPOSITE_MULTIPLICATIVE) { PetscCall(PetscFree(dofsArrayWithArtificial)); }
+  if (patch->local_composition_type == PC_COMPOSITE_MULTIPLICATIVE) PetscCall(PetscFree(dofsArrayWithArtificial));
   if (isNonlinear) PetscCall(PetscFree(dofsArrayWithAll));
   /* Create placeholder section for map from points to patch dofs */
   PetscCall(PetscSectionCreate(PETSC_COMM_SELF, &patch->patchSection));
@@ -1784,7 +1784,7 @@ static PetscErrorCode PCPatchCreateMatrix_Private(PC pc, PetscInt point, Mat *ma
         PetscCall(MatSetValues(*mat, patch->totalDofsPerCell, idx, patch->totalDofsPerCell, idx, zeroes, INSERT_VALUES));
       }
       PetscCall(MatGetLocalSize(*mat, &rows, NULL));
-      for (i = 0; i < rows; ++i) { PetscCall(MatSetValues(*mat, 1, &i, 1, &i, zeroes, INSERT_VALUES)); }
+      for (i = 0; i < rows; ++i) PetscCall(MatSetValues(*mat, 1, &i, 1, &i, zeroes, INSERT_VALUES));
 
       if (patch->usercomputeopintfacet) {
         const PetscInt *intFacetsArray = NULL;
@@ -1996,7 +1996,7 @@ PetscErrorCode PCPatchComputeOperator_Internal(PC pc, Vec x, Mat mat, PetscInt p
   } else {
     PetscCall(ISGetIndices(patch->dofs, &dofsArray));
   }
-  if (isNonlinear) { PetscCall(ISGetIndices(patch->dofsWithAll, &dofsArrayWithAll)); }
+  if (isNonlinear) PetscCall(ISGetIndices(patch->dofsWithAll, &dofsArrayWithAll));
   PetscCall(ISGetIndices(patch->cells, &cellsArray));
   PetscCall(PetscSectionGetChart(patch->cellCounts, &pStart, &pEnd));
 
@@ -2053,7 +2053,7 @@ PetscErrorCode PCPatchComputeOperator_Internal(PC pc, Vec x, Mat mat, PetscInt p
       PetscCall(DMPlexGetHeightStratum(dm, 1, &fStart, NULL));
       /* FIXME: Pull this malloc out. */
       PetscCall(PetscMalloc1(2 * patch->totalDofsPerCell * numIntFacets, &facetDofs));
-      if (dofsArrayWithAll) { PetscCall(PetscMalloc1(2 * patch->totalDofsPerCell * numIntFacets, &facetDofsWithAll)); }
+      if (dofsArrayWithAll) PetscCall(PetscMalloc1(2 * patch->totalDofsPerCell * numIntFacets, &facetDofsWithAll));
       if (patch->precomputeElementTensors) {
         PetscInt           nFacetDof = 2 * patch->totalDofsPerCell;
         const PetscScalar *elementTensors;
@@ -2129,7 +2129,7 @@ PetscErrorCode PCPatchComputeOperator_Internal(PC pc, Vec x, Mat mat, PetscInt p
   } else {
     PetscCall(ISRestoreIndices(patch->dofs, &dofsArray));
   }
-  if (isNonlinear) { PetscCall(ISRestoreIndices(patch->dofsWithAll, &dofsArrayWithAll)); }
+  if (isNonlinear) PetscCall(ISRestoreIndices(patch->dofsWithAll, &dofsArrayWithAll));
   PetscCall(ISRestoreIndices(patch->cells, &cellsArray));
   if (patch->viewMatrix) {
     char name[PETSC_MAX_PATH_LEN];
@@ -2204,7 +2204,7 @@ static PetscErrorCode PCPatchPrecomputePatchTensors_Private(PC pc) {
       PetscCall(PetscSectionGetDof(patch->cellCounts, i, &ncell));
       PetscCall(PetscSectionGetOffset(patch->cellCounts, i, &offset));
       if (ncell <= 0) continue;
-      for (j = 0; j < ncell; j++) { PetscCall(PetscHSetIAdd(cells, cellsArray[offset + j])); }
+      for (j = 0; j < ncell; j++) PetscCall(PetscHSetIAdd(cells, cellsArray[offset + j]));
     }
     PetscCall(ISRestoreIndices(patch->cells, &cellsArray));
     PetscCall(PetscHSetIGetSize(cells, &ncell));
@@ -2261,7 +2261,7 @@ static PetscErrorCode PCPatchPrecomputePatchTensors_Private(PC pc) {
         PetscCall(PetscSectionGetDof(patch->intFacetCounts, i, &nIntFacets));
         PetscCall(PetscSectionGetOffset(patch->intFacetCounts, i, &offset));
         if (nIntFacets <= 0) continue;
-        for (j = 0; j < nIntFacets; j++) { PetscCall(PetscHSetIAdd(facets, intFacetsArray[offset + j])); }
+        for (j = 0; j < nIntFacets; j++) PetscCall(PetscHSetIAdd(facets, intFacetsArray[offset + j]));
       }
       PetscCall(ISRestoreIndices(patch->intFacets, &intFacetsArray));
       PetscCall(PetscHSetIGetSize(facets, &nIntFacets));
@@ -2494,7 +2494,7 @@ static PetscErrorCode PCSetUp_PATCH(PC pc) {
       }
 
       PetscCall(PCPatchSetDiscretisationInfoCombined(pc, dm, Nb, (const PetscInt **)cellDofs, numGlobalBcs, globalBcs, numGlobalBcs, globalBcs));
-      for (f = 0; f < Nf; ++f) { PetscCall(PetscFree(cellDofs[f])); }
+      for (f = 0; f < Nf; ++f) PetscCall(PetscFree(cellDofs[f]));
       PetscCall(PetscFree3(Nb, cellDofs, globalBcs));
       PetscCall(PCPatchSetComputeFunction(pc, PCPatchComputeFunction_DMPlex_Private, NULL));
       PetscCall(PCPatchSetComputeOperator(pc, PCPatchComputeOperator_DMPlex_Private, NULL));
@@ -2511,8 +2511,8 @@ static PetscErrorCode PCSetUp_PATCH(PC pc) {
     /* OK, now build the work vectors */
     PetscCall(PetscSectionGetChart(patch->gtolCounts, &pStart, &pEnd));
 
-    if (patch->local_composition_type == PC_COMPOSITE_MULTIPLICATIVE) { PetscCall(PetscMalloc1(patch->npatch, &patch->dofMappingWithoutToWithArtificial)); }
-    if (isNonlinear) { PetscCall(PetscMalloc1(patch->npatch, &patch->dofMappingWithoutToWithAll)); }
+    if (patch->local_composition_type == PC_COMPOSITE_MULTIPLICATIVE) PetscCall(PetscMalloc1(patch->npatch, &patch->dofMappingWithoutToWithArtificial));
+    if (isNonlinear) PetscCall(PetscMalloc1(patch->npatch, &patch->dofMappingWithoutToWithAll));
     for (p = pStart; p < pEnd; ++p) {
       PetscInt dof;
 
@@ -2603,7 +2603,7 @@ static PetscErrorCode PCSetUp_PATCH(PC pc) {
     PetscCall(VecSetUp(patch->patchUpdate));
     if (patch->save_operators) {
       PetscCall(PetscMalloc1(patch->npatch, &patch->mat));
-      for (i = 0; i < patch->npatch; ++i) { PetscCall(PCPatchCreateMatrix_Private(pc, i, &patch->mat[i], PETSC_FALSE)); }
+      for (i = 0; i < patch->npatch; ++i) PetscCall(PCPatchCreateMatrix_Private(pc, i, &patch->mat[i], PETSC_FALSE));
     }
     PetscCall(PetscLogEventEnd(PC_Patch_CreatePatches, pc, 0, 0, 0));
 
@@ -2648,7 +2648,7 @@ static PetscErrorCode PCSetUp_PATCH(PC pc) {
       PetscCall(VecRestoreArray(global, &input));
       PetscCall(VecDestroy(&global));
     }
-    if (patch->local_composition_type == PC_COMPOSITE_MULTIPLICATIVE && patch->save_operators && !patch->isNonlinear) { PetscCall(PetscMalloc1(patch->npatch, &patch->matWithArtificial)); }
+    if (patch->local_composition_type == PC_COMPOSITE_MULTIPLICATIVE && patch->save_operators && !patch->isNonlinear) PetscCall(PetscMalloc1(patch->npatch, &patch->matWithArtificial));
   }
   PetscCall((*patch->setupsolver)(pc));
   PetscFunctionReturn(0);
@@ -2677,7 +2677,7 @@ static PetscErrorCode PCApply_PATCH_Linear(PC pc, PetscInt i, Vec x, Vec y) {
     PetscCall(MatDestroy(&mat));
   }
   PetscCall(PetscLogEventBegin(PC_Patch_Solve, pc, 0, 0, 0));
-  if (!ksp->setfromoptionscalled) { PetscCall(KSPSetFromOptions(ksp)); }
+  if (!ksp->setfromoptionscalled) PetscCall(KSPSetFromOptions(ksp));
   /* Disgusting trick to reuse work vectors */
   PetscCall(KSPGetOperators(ksp, &op, NULL));
   PetscCall(MatGetLocalSize(op, &m, &n));
@@ -2729,7 +2729,7 @@ static PetscErrorCode PCUpdateMultiplicative_PATCH_Linear(PC pc, PetscInt i, Pet
   PetscCall(MatMult(multMat, patch->patchUpdate, patch->patchRHSWithArtificial));
   PetscCall(VecScale(patch->patchRHSWithArtificial, -1.0));
   PetscCall(PCPatch_ScatterLocal_Private(pc, i + pStart, patch->patchRHSWithArtificial, patch->localRHS, ADD_VALUES, SCATTER_REVERSE, SCATTER_WITHARTIFICIAL));
-  if (!patch->save_operators) { PetscCall(MatDestroy(&multMat)); }
+  if (!patch->save_operators) PetscCall(MatDestroy(&multMat));
   PetscFunctionReturn(0);
 }
 
@@ -2782,7 +2782,7 @@ static PetscErrorCode PCApply_PATCH(PC pc, Vec x, Vec y) {
       PetscCall(PCPatch_ScatterLocal_Private(pc, i + pStart, patch->localRHS, patch->patchRHS, INSERT_VALUES, SCATTER_FORWARD, SCATTER_INTERIOR));
       PetscCall((*patch->applysolver)(pc, i, patch->patchRHS, patch->patchUpdate));
       PetscCall(PCPatch_ScatterLocal_Private(pc, i + pStart, patch->patchUpdate, patch->localUpdate, ADD_VALUES, SCATTER_REVERSE, SCATTER_INTERIOR));
-      if (patch->local_composition_type == PC_COMPOSITE_MULTIPLICATIVE) { PetscCall((*patch->updatemultiplicative)(pc, i, pStart)); }
+      if (patch->local_composition_type == PC_COMPOSITE_MULTIPLICATIVE) PetscCall((*patch->updatemultiplicative)(pc, i, pStart));
     }
   }
   PetscCall(PetscLogEventEnd(PC_Patch_Solve, pc, 0, 0, 0));
@@ -2875,7 +2875,7 @@ static PetscErrorCode PCReset_PATCH(PC pc) {
 
   PetscCall((*patch->resetsolver)(pc));
 
-  if (patch->subspaces_to_exclude) { PetscCall(PetscHSetIDestroy(&patch->subspaces_to_exclude)); }
+  if (patch->subspaces_to_exclude) PetscCall(PetscHSetIDestroy(&patch->subspaces_to_exclude));
 
   PetscCall(VecDestroy(&patch->localRHS));
   PetscCall(VecDestroy(&patch->localUpdate));
@@ -3010,7 +3010,7 @@ static PetscErrorCode PCSetFromOptions_PATCH(PC pc, PetscOptionItems *PetscOptio
   PetscCheck(!flg || !(patchConstructionType == PC_PATCH_USER), comm, PETSC_ERR_ARG_INCOMP, "We cannot support excluding a subspace with user patches because we do not index patches with a mesh point");
   if (flg) {
     PetscCall(PetscHSetIClear(patch->subspaces_to_exclude));
-    for (k = 0; k < nfields; k++) { PetscCall(PetscHSetIAdd(patch->subspaces_to_exclude, ifields[k])); }
+    for (k = 0; k < nfields; k++) PetscCall(PetscHSetIAdd(patch->subspaces_to_exclude, ifields[k]));
   }
   PetscCall(PetscFree(ifields));
 
@@ -3048,7 +3048,7 @@ static PetscErrorCode PCSetUpOnBlocks_PATCH(PC pc) {
     PetscFunctionReturn(0);
   }
   for (i = 0; i < patch->npatch; ++i) {
-    if (!((KSP)patch->solver[i])->setfromoptionscalled) { PetscCall(KSPSetFromOptions((KSP)patch->solver[i])); }
+    if (!((KSP)patch->solver[i])->setfromoptionscalled) PetscCall(KSPSetFromOptions((KSP)patch->solver[i]));
     PetscCall(KSPSetUp((KSP)patch->solver[i]));
     PetscCall(KSPGetConvergedReason((KSP)patch->solver[i], &reason));
     if (reason == KSP_DIVERGED_PC_FAILED) pc->failedreason = PC_SUBPC_ERROR;
@@ -3135,7 +3135,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Patch(PC pc) {
   PetscFunctionBegin;
   PetscCall(PetscNewLog(pc, &patch));
 
-  if (patch->subspaces_to_exclude) { PetscCall(PetscHSetIDestroy(&patch->subspaces_to_exclude)); }
+  if (patch->subspaces_to_exclude) PetscCall(PetscHSetIDestroy(&patch->subspaces_to_exclude));
   PetscCall(PetscHSetICreate(&patch->subspaces_to_exclude));
 
   patch->classname   = "pc";

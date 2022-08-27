@@ -809,7 +809,7 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ptr) {
 
   PetscCall(SNESGetDM(snes, &da));
   PetscCall(DMGetLocalVector(da, &Xl));
-  if (B) { PetscCall(DMGetLocalVector(da, &Bl)); }
+  if (B) PetscCall(DMGetLocalVector(da, &Bl));
   PetscCall(DMGlobalToLocalBegin(da, X, INSERT_VALUES, Xl));
   PetscCall(DMGlobalToLocalEnd(da, X, INSERT_VALUES, Xl));
   if (B) {

@@ -1151,7 +1151,7 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_MPIAIJKokkos(Mat mat) {
 
   PetscFunctionBegin;
   MatCheckProduct(mat, 1);
-  if (!product->A->boundtocpu && !product->B->boundtocpu) { PetscCall(PetscObjectTypeCompare((PetscObject)product->B, ((PetscObject)product->A)->type_name, &match)); }
+  if (!product->A->boundtocpu && !product->B->boundtocpu) PetscCall(PetscObjectTypeCompare((PetscObject)product->B, ((PetscObject)product->A)->type_name, &match));
   if (match) { /* we can always fallback to the CPU if requested */
     switch (product->type) {
     case MATPRODUCT_AB:
@@ -1200,7 +1200,7 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_MPIAIJKokkos(Mat mat) {
     }
   }
   /* fallback to MPIAIJ ops */
-  if (!mat->ops->productsymbolic) { PetscCall(MatProductSetFromOptions_MPIAIJ(mat)); }
+  if (!mat->ops->productsymbolic) PetscCall(MatProductSetFromOptions_MPIAIJ(mat));
   PetscFunctionReturn(0);
 }
 
@@ -1447,7 +1447,7 @@ PetscErrorCode MatKokkosGetDeviceMatWrite(Mat A, PetscSplitCSRDataStructure *B) 
   }
   // act like MatSetValues because not called on host
   if (A->assembled) {
-    if (A->was_assembled) { PetscCall(PetscInfo(A, "Assemble more than once already\n")); }
+    if (A->was_assembled) PetscCall(PetscInfo(A, "Assemble more than once already\n"));
     A->was_assembled = PETSC_TRUE; // this is done (lazy) in MatAssemble but we are not calling it anymore - done in AIJ AssemblyEnd, need here?
   } else {
     PetscCall(PetscInfo(A, "Warning !assemble ??? assembled=%" PetscInt_FMT "\n", A->assembled));

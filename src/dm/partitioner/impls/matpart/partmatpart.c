@@ -141,7 +141,7 @@ static PetscErrorCode PetscPartitionerPartition_MatPartitioning(PetscPartitioner
     PetscInt v;
 
     PetscCall(PetscMalloc1(numVertices, &vwgt));
-    for (v = 0; v < numVertices; ++v) { PetscCall(PetscSectionGetDof(vertSection, v, &vwgt[v])); }
+    for (v = 0; v < numVertices; ++v) PetscCall(PetscSectionGetDof(vertSection, v, &vwgt[v]));
   }
   PetscCall(MatPartitioningSetVertexWeights(p->mp, vwgt));
 

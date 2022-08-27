@@ -176,7 +176,7 @@ PetscErrorCode DMPlexCreateCGNS_Internal(MPI_Comm comm, PetscInt cgid, PetscBool
         }
       }
     }
-    for (v = numCells; v < numCells + numVertices; ++v) { PetscCall(DMPlexSetCellType(*dm, v, DM_POLYTOPE_POINT)); }
+    for (v = numCells; v < numCells + numVertices; ++v) PetscCall(DMPlexSetCellType(*dm, v, DM_POLYTOPE_POINT));
   }
 
   PetscCall(DMSetUp(*dm));
@@ -329,10 +329,10 @@ PetscErrorCode DMPlexCreateCGNS_Internal(MPI_Comm comm, PetscInt cgid, PetscBool
         PetscCallCGNS(cg_boco_read(cgid, 1, z, bc, points, (void *)normals));
         if (pointtype == CGNS_ENUMV(ElementRange)) {
           /* Range of cells: assuming half-open interval since the documentation sucks */
-          for (c = points[0]; c < points[1]; ++c) { PetscCall(DMLabelSetValue(label, c - cellStart[z - 1], 1)); }
+          for (c = points[0]; c < points[1]; ++c) PetscCall(DMLabelSetValue(label, c - cellStart[z - 1], 1));
         } else if (pointtype == CGNS_ENUMV(ElementList)) {
           /* List of cells */
-          for (c = 0; c < npoints; ++c) { PetscCall(DMLabelSetValue(label, points[c] - cellStart[z - 1], 1)); }
+          for (c = 0; c < npoints; ++c) PetscCall(DMLabelSetValue(label, points[c] - cellStart[z - 1], 1));
         } else if (pointtype == CGNS_ENUMV(PointRange)) {
           CGNS_ENUMT(GridLocation_t) gridloc;
 

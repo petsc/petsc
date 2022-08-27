@@ -95,7 +95,7 @@ PetscErrorCode ISGetType(IS is, ISType *type) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
   PetscValidPointer(type, 2);
-  if (!ISRegisterAllCalled) { PetscCall(ISRegisterAll()); }
+  if (!ISRegisterAllCalled) PetscCall(ISRegisterAll());
   *type = ((PetscObject)is)->type_name;
   PetscFunctionReturn(0);
 }

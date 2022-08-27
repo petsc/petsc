@@ -8,7 +8,7 @@ PetscErrorCode PCFactorSetUpMatSolverType_Factor(PC pc) {
 
   PetscFunctionBegin;
   PetscCheck(pc->pmat, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONGSTATE, "You can only call this routine after the matrix object has been provided to the solver, for example with KSPSetOperators() or SNESSetJacobian()");
-  if (!pc->setupcalled && !((PC_Factor *)icc)->fact) { PetscCall(MatGetFactor(pc->pmat, ((PC_Factor *)icc)->solvertype, ((PC_Factor *)icc)->factortype, &((PC_Factor *)icc)->fact)); }
+  if (!pc->setupcalled && !((PC_Factor *)icc)->fact) PetscCall(MatGetFactor(pc->pmat, ((PC_Factor *)icc)->solvertype, ((PC_Factor *)icc)->factortype, &((PC_Factor *)icc)->fact));
   PetscFunctionReturn(0);
 }
 
@@ -297,7 +297,7 @@ PetscErrorCode PCView_Factor(PC pc, PetscViewer viewer) {
   } else if (isstring) {
     MatFactorType t;
     PetscCall(MatGetFactorType(factor->fact, &t));
-    if (t == MAT_FACTOR_ILU || t == MAT_FACTOR_ICC) { PetscCall(PetscViewerStringSPrintf(viewer, " lvls=%" PetscInt_FMT ",order=%s", (PetscInt)factor->info.levels, factor->ordering)); }
+    if (t == MAT_FACTOR_ILU || t == MAT_FACTOR_ICC) PetscCall(PetscViewerStringSPrintf(viewer, " lvls=%" PetscInt_FMT ",order=%s", (PetscInt)factor->info.levels, factor->ordering));
   }
   PetscFunctionReturn(0);
 }

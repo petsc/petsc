@@ -450,7 +450,7 @@ PetscErrorCode MatPartitioningDestroy(MatPartitioning *part) {
     PetscFunctionReturn(0);
   }
 
-  if ((*part)->ops->destroy) { PetscCall((*(*part)->ops->destroy)((*part))); }
+  if ((*part)->ops->destroy) PetscCall((*(*part)->ops->destroy)((*part)));
   PetscCall(PetscFree((*part)->vertex_weights));
   PetscCall(PetscFree((*part)->part_weights));
   PetscCall(PetscHeaderDestroy(part));
@@ -648,14 +648,14 @@ PetscErrorCode MatPartitioningView(MatPartitioning part, PetscViewer viewer) {
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, MAT_PARTITIONING_CLASSID, 1);
-  if (!viewer) { PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)part), &viewer)); }
+  if (!viewer) PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)part), &viewer));
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscCheckSameComm(part, 1, viewer, 2);
 
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   if (iascii) {
     PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)part, viewer));
-    if (part->vertex_weights) { PetscCall(PetscViewerASCIIPrintf(viewer, "  Using vertex weights\n")); }
+    if (part->vertex_weights) PetscCall(PetscViewerASCIIPrintf(viewer, "  Using vertex weights\n"));
   }
   PetscCall(PetscViewerASCIIPushTab(viewer));
   PetscTryTypeMethod(part, view, viewer);
@@ -764,7 +764,7 @@ PetscErrorCode MatPartitioningSetFromOptions(MatPartitioning part) {
   /*
     Set the type if it was never set.
   */
-  if (!((PetscObject)part)->type_name) { PetscCall(MatPartitioningSetType(part, def)); }
+  if (!((PetscObject)part)->type_name) PetscCall(MatPartitioningSetType(part, def));
 
   PetscTryTypeMethod(part, setfromoptions, PetscOptionsObject);
   PetscOptionsEnd();

@@ -15,7 +15,7 @@ PetscErrorCode TSMonitorLGCtxNetworkDestroy(TSMonitorLGCtxNetwork *ctx) {
   PetscInt i;
 
   PetscFunctionBegin;
-  for (i = 0; i < (*ctx)->nlg; i++) { PetscCall(PetscDrawLGDestroy(&(*ctx)->lg[i])); }
+  for (i = 0; i < (*ctx)->nlg; i++) PetscCall(PetscDrawLGDestroy(&(*ctx)->lg[i]));
   PetscCall(PetscFree((*ctx)->lg));
   PetscCall(PetscFree(*ctx));
   PetscFunctionReturn(0);

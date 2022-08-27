@@ -118,7 +118,7 @@ int main(int argc, char **args) {
   if (Test_MatDuplicate) {
     PetscCall(MatDuplicate(A, MAT_COPY_VALUES, &B));
     PetscCall(MatEqual(A, B, &flg));
-    if (!flg) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "  A != B \n")); }
+    if (!flg) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "  A != B \n"));
     PetscCall(MatDestroy(&B));
   }
 
@@ -260,7 +260,7 @@ int main(int argc, char **args) {
       PetscCall(VecGetSize(x, &n));
       PetscCall(VecDuplicate(x, &scale));
       PetscCall(VecGetOwnershipRange(scale, &start, &end));
-      for (j = start; j < end; j++) { PetscCall(VecSetValue(scale, j, ((PetscReal)(j + 1)) / ((PetscReal)n), INSERT_VALUES)); }
+      for (j = start; j < end; j++) PetscCall(VecSetValue(scale, j, ((PetscReal)(j + 1)) / ((PetscReal)n), INSERT_VALUES));
       PetscCall(VecAssemblyBegin(scale));
       PetscCall(VecAssemblyEnd(scale));
       PetscCall(PCSetDiagonalScale(pc, scale));
@@ -280,7 +280,7 @@ int main(int argc, char **args) {
       PetscInt num_rhs = 1;
       PetscCall(PetscOptionsGetInt(NULL, NULL, "-num_rhs", &num_rhs, NULL));
 
-      while (num_rhs--) { PetscCall(KSPSolve(ksp, b, x)); }
+      while (num_rhs--) PetscCall(KSPSolve(ksp, b, x));
       PetscCall(KSPGetIterationNumber(ksp, &its));
       if (ckrnorm) { /* Check residual for each rhs */
         if (trans) {

@@ -290,8 +290,8 @@ static PetscErrorCode PetscSFWindowSetInfo_Window(PetscSF sf, MPI_Info info) {
   PetscSF_Window *w = (PetscSF_Window *)sf->data;
 
   PetscFunctionBegin;
-  if (w->info != MPI_INFO_NULL) { PetscCallMPI(MPI_Info_free(&w->info)); }
-  if (info != MPI_INFO_NULL) { PetscCallMPI(MPI_Info_dup(info, &w->info)); }
+  if (w->info != MPI_INFO_NULL) PetscCallMPI(MPI_Info_free(&w->info));
+  if (info != MPI_INFO_NULL) PetscCallMPI(MPI_Info_dup(info, &w->info));
   PetscFunctionReturn(0);
 }
 
@@ -621,7 +621,7 @@ found:
     }
   }
   if (update) {
-    if (sync == PETSCSF_WINDOW_SYNC_LOCK) { PetscCallMPI(MPI_Win_fence(MPI_MODE_NOPUT | MPI_MODE_NOSUCCEED, *win)); }
+    if (sync == PETSCSF_WINDOW_SYNC_LOCK) PetscCallMPI(MPI_Win_fence(MPI_MODE_NOPUT | MPI_MODE_NOSUCCEED, *win));
     PetscCall(PetscMemcpy(array, laddr, sf->nroots * bytes));
   }
   link->epoch = PETSC_FALSE;
@@ -705,7 +705,7 @@ static PetscErrorCode PetscSFReset_Window(PetscSF sf) {
   }
   w->wins = NULL;
   PetscCall(PetscSFDestroy(&w->dynsf));
-  if (w->info != MPI_INFO_NULL) { PetscCallMPI(MPI_Info_free(&w->info)); }
+  if (w->info != MPI_INFO_NULL) PetscCallMPI(MPI_Info_free(&w->info));
   PetscFunctionReturn(0);
 }
 
@@ -813,7 +813,7 @@ PetscErrorCode PetscSFBcastEnd_Window(PetscSF sf, MPI_Datatype unit, const void 
     const PetscMPIInt *ranks;
 
     PetscCall(PetscSFGetRootRanks(sf, &nranks, &ranks, NULL, NULL, NULL));
-    for (i = 0; i < nranks; i++) { PetscCallMPI(MPI_Win_unlock(ranks[i], win)); }
+    for (i = 0; i < nranks; i++) PetscCallMPI(MPI_Win_unlock(ranks[i], win));
   }
   PetscCall(PetscSFRestoreWindow(sf, unit, (void *)rootdata, w->sync, PETSC_TRUE, MPI_MODE_NOSTORE | MPI_MODE_NOSUCCEED, PETSC_FALSE, &win));
   PetscFunctionReturn(0);

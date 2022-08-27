@@ -163,7 +163,7 @@ int main(int argc, char **args) {
   PetscCall(VecAXPY(final, -1.0, ini));
 
   PetscCall(VecNorm(final, NORM_1, &enorm));
-  if (enorm > 1.e-10) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "  Error norm of |x - z|  = %e\n", enorm)); }
+  if (enorm > 1.e-10) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "  Error norm of |x - z|  = %e\n", enorm));
 
   /* Execute fftw with function fftw_execute and destroy it after execution */
   fftw_destroy_plan(fplan);

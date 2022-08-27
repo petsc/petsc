@@ -60,7 +60,7 @@ static PetscErrorCode KSPSetUp_Chebyshev(KSP ksp) {
       const char *prefix;
       PetscCall(KSPGetOptionsPrefix(cheb->kspest, &prefix));
       PetscCall(PetscOptionsHasName(NULL, prefix, "-ksp_type", &flg));
-      if (!flg) { PetscCall(KSPSetType(cheb->kspest, KSPCG)); }
+      if (!flg) PetscCall(KSPSetType(cheb->kspest, KSPCG));
     }
     PetscCall(PetscObjectGetId((PetscObject)Amat, &amatid));
     PetscCall(PetscObjectGetId((PetscObject)Pmat, &pmatid));
@@ -365,7 +365,7 @@ static PetscErrorCode KSPSetFromOptions_Chebyshev(KSP ksp, PetscOptionItems *Pet
   }
 
   /* We need to estimate eigenvalues; need to set this here so that KSPSetFromOptions() is called on the estimator */
-  if ((cheb->emin == 0. || cheb->emax == 0.) && !cheb->kspest) { PetscCall(KSPChebyshevEstEigSet(ksp, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE)); }
+  if ((cheb->emin == 0. || cheb->emax == 0.) && !cheb->kspest) PetscCall(KSPChebyshevEstEigSet(ksp, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE));
 
   if (cheb->kspest) {
     PetscCall(PetscOptionsBool("-ksp_chebyshev_esteig_noisy", "Use noisy right hand side for estimate", "KSPChebyshevEstEigSetUseNoisy", cheb->usenoisy, &cheb->usenoisy, NULL));
@@ -526,8 +526,8 @@ static PetscErrorCode KSPSolve_Chebyshev(KSP ksp) {
 
   /* make sure solution is in vector x */
   ksp->vec_sol = sol_orig;
-  if (k) { PetscCall(VecCopy(p[k], sol_orig)); }
-  if (ksp->reason == KSP_CONVERGED_ITS) { PetscCall(KSPLogErrorHistory(ksp)); }
+  if (k) PetscCall(VecCopy(p[k], sol_orig));
+  if (ksp->reason == KSP_CONVERGED_ITS) PetscCall(KSPLogErrorHistory(ksp));
   PetscFunctionReturn(0);
 }
 
@@ -547,7 +547,7 @@ static PetscErrorCode KSPView_Chebyshev(KSP ksp, PetscViewer viewer) {
       PetscCall(PetscViewerASCIIPushTab(viewer));
       PetscCall(KSPView(cheb->kspest, viewer));
       PetscCall(PetscViewerASCIIPopTab(viewer));
-      if (cheb->usenoisy) { PetscCall(PetscViewerASCIIPrintf(viewer, "  estimating eigenvalues using noisy right hand side\n")); }
+      if (cheb->usenoisy) PetscCall(PetscViewerASCIIPrintf(viewer, "  estimating eigenvalues using noisy right hand side\n"));
     } else if (cheb->emax_provided != 0.) {
       PetscCall(PetscViewerASCIIPrintf(viewer, "  eigenvalues provided (min %g, max %g) with transform: [%g %g; %g %g]\n", (double)cheb->emin_provided, (double)cheb->emax_provided, (double)cheb->tform[0], (double)cheb->tform[1], (double)cheb->tform[2],
                                        (double)cheb->tform[3]));

@@ -190,7 +190,7 @@ int main(int argc, char **args) {
     PetscCall(MatSeqAIJSetPreallocation(P, nzp, NULL));
     PetscCall(MatMPIAIJSetPreallocation(P, nzp, NULL, nzp, NULL));
     PetscCall(MatGetOwnershipRange(P, &rstart, &rend));
-    for (i = 0; i < nzp; i++) { PetscCall(PetscRandomGetValue(rdm, &a[i])); }
+    for (i = 0; i < nzp; i++) PetscCall(PetscRandomGetValue(rdm, &a[i]));
     for (i = rstart; i < rend; i++) {
       for (j = 0; j < nzp; j++) {
         PetscCall(PetscRandomGetValue(rdm, &rval));
@@ -276,7 +276,7 @@ int main(int argc, char **args) {
     PetscCall(MatSetType(P, mattype));
     PetscCall(MatSeqAIJSetPreallocation(P, nzp, NULL));
     PetscCall(MatMPIAIJSetPreallocation(P, nzp, NULL, nzp, NULL));
-    for (i = 0; i < nzp; i++) { PetscCall(PetscRandomGetValue(rdm, &a[i])); }
+    for (i = 0; i < nzp; i++) PetscCall(PetscRandomGetValue(rdm, &a[i]));
     PetscCall(MatGetOwnershipRange(P, &rstart, &rend));
     for (i = rstart; i < rend; i++) {
       for (j = 0; j < nzp; j++) {

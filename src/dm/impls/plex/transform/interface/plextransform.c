@@ -251,11 +251,11 @@ static PetscErrorCode DMPlexTransformView_Ascii(DMPlexTransform tr, PetscViewer 
     }
     PetscCall(PetscViewerASCIIPrintf(v, "Offsets\n"));
     PetscCall(PetscViewerASCIIPrintf(v, "     "));
-    for (g = 0; g < cols; ++g) { PetscCall(PetscViewerASCIIPrintf(v, " %14s", DMPolytopeTypes[g])); }
+    for (g = 0; g < cols; ++g) PetscCall(PetscViewerASCIIPrintf(v, " %14s", DMPolytopeTypes[g]));
     PetscCall(PetscViewerASCIIPrintf(v, "\n"));
     for (f = 0; f < Nrt; ++f) {
       PetscCall(PetscViewerASCIIPrintf(v, "%2" PetscInt_FMT "  |", trTypes ? trTypes[f] : f));
-      for (g = 0; g < cols; ++g) { PetscCall(PetscViewerASCIIPrintf(v, " %14" PetscInt_FMT, tr->offset[f * DM_NUM_POLYTOPES + g])); }
+      for (g = 0; g < cols; ++g) PetscCall(PetscViewerASCIIPrintf(v, " %14" PetscInt_FMT, tr->offset[f * DM_NUM_POLYTOPES + g]));
       PetscCall(PetscViewerASCIIPrintf(v, " |\n"));
     }
     if (trTypes) {
@@ -351,7 +351,7 @@ PetscErrorCode DMPlexTransformDestroy(DMPlexTransform *tr) {
     PetscFunctionReturn(0);
   }
 
-  if ((*tr)->ops->destroy) { PetscCall((*(*tr)->ops->destroy)(*tr)); }
+  if ((*tr)->ops->destroy) PetscCall((*(*tr)->ops->destroy)(*tr));
   PetscCall(DMDestroy(&(*tr)->dm));
   PetscCall(DMLabelDestroy(&(*tr)->active));
   PetscCall(DMLabelDestroy(&(*tr)->trType));
@@ -1362,7 +1362,7 @@ static PetscErrorCode DMPlexTransformCreateCellVertices_Internal(DMPlexTransform
         PetscCall(PetscPrintf(PETSC_COMM_SELF, "%s: %s subvertices %" PetscInt_FMT "\n", DMPolytopeTypes[ct], DMPolytopeTypes[rct[n]], tr->trNv[ct]));
         for (r = 0; r < rsize[n]; ++r) {
           PetscCall(PetscPrintf(PETSC_COMM_SELF, "  "));
-          for (v = 0; v < DMPolytopeTypeGetNumVertices(rct[n]); ++v) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "%" PetscInt_FMT " ", tr->trSubVerts[ct][rct[n]][r][v])); }
+          for (v = 0; v < DMPolytopeTypeGetNumVertices(rct[n]); ++v) PetscCall(PetscPrintf(PETSC_COMM_SELF, "%" PetscInt_FMT " ", tr->trSubVerts[ct][rct[n]][r][v]));
           PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n"));
         }
       }
@@ -1621,7 +1621,7 @@ static PetscErrorCode DMPlexTransformCreateSF(DMPlexTransform tr, DM rdm) {
 
     PetscCall(DMPlexGetCellType(dm, p, &ct));
     PetscCall(DMPlexTransformCellTransform(tr, ct, p, NULL, &Nct, &rct, &rsize, &rcone, &rornt));
-    for (n = 0; n < Nct; ++n) { PetscCall(PetscSectionAddDof(s, p, rsize[n])); }
+    for (n = 0; n < Nct; ++n) PetscCall(PetscSectionAddDof(s, p, rsize[n]));
   }
   PetscCall(PetscSectionSetUp(s));
   PetscCall(PetscSectionGetStorageSize(s, &numPointsNew));
@@ -1731,7 +1731,7 @@ static PetscErrorCode DMPlexTransformMapLocalizedCoordinates(DMPlexTransform tr,
   PetscCall(DMPlexTransformGetCoordinateFE(tr, ct, &fe));
   PetscCall(DMPlexTransformGetSubcellVertices(tr, ct, rct, r, &subcellV));
   PetscCall(PetscFEGetNumComponents(fe, &cdim));
-  for (v = 0; v < DMPolytopeTypeGetNumVertices(rct); ++v) { PetscCall(PetscFEInterpolate_Static(fe, x, tr->refGeom[ct], subcellV[v], &xr[v * cdim])); }
+  for (v = 0; v < DMPolytopeTypeGetNumVertices(rct); ++v) PetscCall(PetscFEInterpolate_Static(fe, x, tr->refGeom[ct], subcellV[v], &xr[v * cdim]));
   PetscFunctionReturn(0);
 }
 

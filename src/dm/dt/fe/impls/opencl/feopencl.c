@@ -91,7 +91,7 @@ static PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **s
                                   "  const %s points[%d] = {\n",
                                   &count, numeric_str, N_q * dim));
   for (p = 0; p < N_q; ++p) {
-    for (d = 0; d < dim; ++d) { PetscCallSTR(PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "%g,\n", &count, points[p * dim + d])); }
+    for (d = 0; d < dim; ++d) PetscCallSTR(PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "%g,\n", &count, points[p * dim + d]));
   }
   PetscCallSTR(PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "};\n", &count));
   PetscCallSTR(PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
@@ -99,7 +99,7 @@ static PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **s
                                   "   - (v1,v2,...) */\n"
                                   "  const %s weights[%d] = {\n",
                                   &count, numeric_str, N_q));
-  for (p = 0; p < N_q; ++p) { PetscCallSTR(PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "%g,\n", &count, weights[p])); }
+  for (p = 0; p < N_q; ++p) PetscCallSTR(PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "%g,\n", &count, weights[p]));
   PetscCallSTR(PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "};\n", &count));
   /* Basis Functions */
   PetscCall(PetscFEGetCellTabulation(fem, 1, &T));
@@ -110,7 +110,7 @@ static PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **s
                                   &count, numeric_str, N_q * N_b * N_c));
   for (p = 0; p < N_q; ++p) {
     for (b = 0; b < N_b; ++b) {
-      for (c = 0; c < N_c; ++c) { PetscCallSTR(PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "%g,\n", &count, T->T[0][(p * N_b + b) * N_c + c])); }
+      for (c = 0; c < N_c; ++c) PetscCallSTR(PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "%g,\n", &count, T->T[0][(p * N_b + b) * N_c + c]));
     }
   }
   PetscCallSTR(PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "};\n", &count));
@@ -187,7 +187,7 @@ static PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **s
                                     "  __local %s         f_0[%d]; //[N_t*N_sqc];      // $f_0(u(x_q), \\nabla u(x_q)) |J(x_q)| w_q$\n",
                                     &count, numeric_str, N_t * N_q));
   }
-  if (useF1) { PetscCallSTR(PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "  __local %s%d       f_1[%d]; //[N_t*N_sqc];      // $f_1(u(x_q), \\nabla u(x_q)) |J(x_q)| w_q$\n", &count, numeric_str, dim, N_t * N_q)); }
+  if (useF1) PetscCallSTR(PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "  __local %s%d       f_1[%d]; //[N_t*N_sqc];      // $f_1(u(x_q), \\nabla u(x_q)) |J(x_q)| w_q$\n", &count, numeric_str, dim, N_t * N_q));
   /* TODO: If using elasticity, put in mu/lambda coefficients */
   PetscCallSTR(PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
                                   "  /* Output data */\n"
@@ -235,10 +235,10 @@ static PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **s
                                   "      const int cell          = c*N_bl*N_b + blqidx;\n"
                                   "      const int fidx          = (cell*N_q + qidx)*N_comp + cidx;\n",
                                   &count));
-  if (useField) { PetscCallSTR(PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "      %s  u[%d]; //[N_comp];     // $u(x_q)$, Value of the field at $x_q$\n", &count, numeric_str, N_c)); }
-  if (useFieldDer) { PetscCallSTR(PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "      %s%d   gradU[%d]; //[N_comp]; // $\\nabla u(x_q)$, Value of the field gradient at $x_q$\n", &count, numeric_str, dim, N_c)); }
-  if (useFieldAux) { PetscCallSTR(PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "      %s  a[%d]; //[1];     // $a(x_q)$, Value of the auxiliary fields at $x_q$\n", &count, numeric_str, 1)); }
-  if (useFieldDerAux) { PetscCallSTR(PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "      %s%d   gradA[%d]; //[1]; // $\\nabla a(x_q)$, Value of the auxiliary field gradient at $x_q$\n", &count, numeric_str, dim, 1)); }
+  if (useField) PetscCallSTR(PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "      %s  u[%d]; //[N_comp];     // $u(x_q)$, Value of the field at $x_q$\n", &count, numeric_str, N_c));
+  if (useFieldDer) PetscCallSTR(PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "      %s%d   gradU[%d]; //[N_comp]; // $\\nabla u(x_q)$, Value of the field gradient at $x_q$\n", &count, numeric_str, dim, N_c));
+  if (useFieldAux) PetscCallSTR(PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "      %s  a[%d]; //[1];     // $a(x_q)$, Value of the auxiliary fields at $x_q$\n", &count, numeric_str, 1));
+  if (useFieldDerAux) PetscCallSTR(PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "      %s%d   gradA[%d]; //[1]; // $\\nabla a(x_q)$, Value of the auxiliary field gradient at $x_q$\n", &count, numeric_str, dim, 1));
   PetscCallSTR(PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
                                   "\n"
                                   "      for (int comp = 0; comp < N_comp; ++comp) {\n",
@@ -252,7 +252,7 @@ static PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **s
     }
   }
   PetscCallSTR(PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "      }\n", &count));
-  if (useFieldAux) { PetscCallSTR(PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "      a[0] = 0.0;\n", &count)); }
+  if (useFieldAux) PetscCallSTR(PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "      a[0] = 0.0;\n", &count));
   if (useFieldDerAux) {
     switch (dim) {
     case 1: PetscCallSTR(PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "      gradA[0].x = 0.0;\n", &count)); break;
@@ -296,12 +296,12 @@ static PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **s
                                   "        }\n"
                                   "      }\n",
                                   &count));
-  if (useFieldAux) { PetscCallSTR(PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "          a[0] += a_i[cell];\n", &count)); }
+  if (useFieldAux) PetscCallSTR(PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "          a[0] += a_i[cell];\n", &count));
   /* Calculate residual at quadrature points: Should be generated by an weak form egine */
   PetscCallSTR(PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "      /* Process values at quadrature points */\n", &count));
   switch (op) {
   case LAPLACIAN:
-    if (useF0) { PetscCallSTR(PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "      f_0[fidx] = 4.0;\n", &count)); }
+    if (useF0) PetscCallSTR(PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "      f_0[fidx] = 4.0;\n", &count));
     if (useF1) {
       if (useAux) PetscCallSTR(PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "      f_1[fidx] = a[0]*gradU[cidx];\n", &count));
       else PetscCallSTR(PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "      f_1[fidx] = gradU[cidx];\n", &count));

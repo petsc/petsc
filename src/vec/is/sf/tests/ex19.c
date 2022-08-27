@@ -129,7 +129,7 @@ PetscErrorCode CreateSF1(AppCtx *ctx, PetscSF *sf1) {
 
   PetscFunctionBegin;
   ilocal = NULL;
-  if (!ctx->contiguousLeaves) { PetscCall(PetscCalloc1(nLeaves + 1, &ilocal)); }
+  if (!ctx->contiguousLeaves) PetscCall(PetscCalloc1(nLeaves + 1, &ilocal));
   PetscCall(PetscMalloc1(nLeaves, &iremote));
   PetscCall(PetscSFCreate(ctx->comm, &sf));
   for (r = 0, j = 0; r < ctx->size; r++) {

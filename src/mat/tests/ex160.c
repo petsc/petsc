@@ -22,7 +22,7 @@ int main(int argc, char **args) {
 
   v = 1.0;
   PetscCall(MatGetOwnershipRange(A, &rstart, &rend));
-  for (i = rstart; i < rend; i++) { PetscCall(MatSetValues(A, 1, &i, 1, &i, &v, INSERT_VALUES)); }
+  for (i = rstart; i < rend; i++) PetscCall(MatSetValues(A, 1, &i, 1, &i, &v, INSERT_VALUES));
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
 

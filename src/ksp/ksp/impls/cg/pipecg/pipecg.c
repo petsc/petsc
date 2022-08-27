@@ -93,7 +93,7 @@ static PetscErrorCode KSPSolve_PIPECG(KSP ksp) {
     } else if (i > 0 && ksp->normtype == KSP_NORM_PRECONDITIONED) {
       PetscCall(VecNormBegin(U, NORM_2, &dp));
     }
-    if (!(i == 0 && ksp->normtype == KSP_NORM_NATURAL)) { PetscCall(VecDotBegin(R, U, &gamma)); }
+    if (!(i == 0 && ksp->normtype == KSP_NORM_NATURAL)) PetscCall(VecDotBegin(R, U, &gamma));
     PetscCall(VecDotBegin(W, U, &delta));
     PetscCall(PetscCommSplitReductionBegin(PetscObjectComm((PetscObject)R)));
 
@@ -105,7 +105,7 @@ static PetscErrorCode KSPSolve_PIPECG(KSP ksp) {
     } else if (i > 0 && ksp->normtype == KSP_NORM_PRECONDITIONED) {
       PetscCall(VecNormEnd(U, NORM_2, &dp));
     }
-    if (!(i == 0 && ksp->normtype == KSP_NORM_NATURAL)) { PetscCall(VecDotEnd(R, U, &gamma)); }
+    if (!(i == 0 && ksp->normtype == KSP_NORM_NATURAL)) PetscCall(VecDotEnd(R, U, &gamma));
     PetscCall(VecDotEnd(W, U, &delta));
 
     if (i > 0) {

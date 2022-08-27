@@ -2787,12 +2787,12 @@ PetscErrorCode MatProductSetFromOptions_MPIAIJ_MPIMAIJ(Mat C) {
 
   /* Set the default algorithm */
   PetscCall(PetscStrcmp(C->product->alg, "default", &flg));
-  if (flg) { PetscCall(MatProductSetAlgorithm(C, (MatProductAlgorithm)algTypes[alg])); }
+  if (flg) PetscCall(MatProductSetAlgorithm(C, (MatProductAlgorithm)algTypes[alg]));
 
   /* Get runtime option */
   PetscOptionsBegin(PetscObjectComm((PetscObject)C), ((PetscObject)C)->prefix, "MatProduct_PtAP", "Mat");
   PetscCall(PetscOptionsEList("-mat_product_algorithm", "Algorithmic approach", "MatPtAP", algTypes, nalg, algTypes[alg], &alg, &flg));
-  if (flg) { PetscCall(MatProductSetAlgorithm(C, (MatProductAlgorithm)algTypes[alg])); }
+  if (flg) PetscCall(MatProductSetAlgorithm(C, (MatProductAlgorithm)algTypes[alg]));
   PetscOptionsEnd();
 
   PetscCall(PetscStrcmp(C->product->alg, "allatonce", &flg));
@@ -2894,7 +2894,7 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqMAIJ(Mat A, Mat PP, PetscReal fill, Mat
 
       /* If free space is not available, make more free space */
       /* Double the amount of total space in the list */
-      if (current_space->local_remaining < cnzi) { PetscCall(PetscFreeSpaceGet(PetscIntSumTruncate(cnzi, current_space->total_array_size), &current_space)); }
+      if (current_space->local_remaining < cnzi) PetscCall(PetscFreeSpaceGet(PetscIntSumTruncate(cnzi, current_space->total_array_size), &current_space));
 
       /* Copy data into free space, and zero out denserows */
       PetscCall(PetscArraycpy(current_space->array, sparserow, cnzi));
@@ -3441,7 +3441,7 @@ PetscErrorCode MatCreateMAIJ(Mat A, PetscInt dof, Mat *maij) {
       PetscBool flg;
       if (convert) {
         PetscCall(PetscObjectTypeCompareAny((PetscObject)A, &flg, MATSEQAIJCUSPARSE, MATMPIAIJCUSPARSE, MATAIJCUSPARSE, ""));
-        if (flg) { PetscCall(MatConvert(B, ((PetscObject)A)->type_name, MAT_INPLACE_MATRIX, &B)); }
+        if (flg) PetscCall(MatConvert(B, ((PetscObject)A)->type_name, MAT_INPLACE_MATRIX, &B));
       }
     }
 #endif

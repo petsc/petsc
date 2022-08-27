@@ -156,7 +156,7 @@ static PetscErrorCode ADMMUpdateConstraintResidualVector(Tao tao, Vec x, Vec z, 
   PetscCall(MatMult(reg->jacobian_equality, z, Bz));
 
   PetscCall(VecWAXPY(residual, 1., Bz, Ax));
-  if (am->constraint != NULL) { PetscCall(VecAXPY(residual, -1., am->constraint)); }
+  if (am->constraint != NULL) PetscCall(VecAXPY(residual, -1., am->constraint));
   PetscFunctionReturn(0);
 }
 
@@ -329,12 +329,12 @@ static PetscErrorCode TaoSolve_ADMM(Tao tao) {
   if (am->regswitch != TAO_ADMM_REGULARIZER_SOFT_THRESH) {
     PetscCheck(am->subsolverX->ops->computejacobianequality, PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_WRONGSTATE, "Must call TaoADMMSetMisfitConstraintJacobian() first");
     PetscCheck(am->subsolverZ->ops->computejacobianequality, PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_WRONGSTATE, "Must call TaoADMMSetRegularizerConstraintJacobian() first");
-    if (am->constraint != NULL) { PetscCall(VecNorm(am->constraint, NORM_2, &am->const_norm)); }
+    if (am->constraint != NULL) PetscCall(VecNorm(am->constraint, NORM_2, &am->const_norm));
   }
   tempL = am->workLeft;
   PetscCall(VecGetSize(tempL, &N));
 
-  if (am->Hx && am->ops->misfithess) { PetscCall(TaoSetHessian(am->subsolverX, am->Hx, am->Hx, SubHessianUpdate, tao)); }
+  if (am->Hx && am->ops->misfithess) PetscCall(TaoSetHessian(am->subsolverX, am->Hx, am->Hx, SubHessianUpdate, tao));
 
   if (!am->zJI) {
     /* Currently, B is assumed to be a linear system, i.e., not getting updated*/
@@ -357,7 +357,7 @@ static PetscErrorCode TaoSolve_ADMM(Tao tao) {
       break;
     }
     if (am->ops->regobjgrad) PetscCall(TaoSetObjectiveAndGradient(am->subsolverZ, NULL, RegObjGradUpdate, tao));
-    if (am->Hz && am->ops->reghess) { PetscCall(TaoSetHessian(am->subsolverZ, am->Hz, am->Hzpre, RegHessianUpdate, tao)); }
+    if (am->Hz && am->ops->reghess) PetscCall(TaoSetHessian(am->subsolverZ, am->Hz, am->Hzpre, RegHessianUpdate, tao));
   }
 
   switch (am->update) {
@@ -492,7 +492,7 @@ static PetscErrorCode TaoSetFromOptions_ADMM(Tao tao, PetscOptionItems *PetscOpt
   PetscCall(PetscOptionsEnum("-tao_admm_regularizer_type", "ADMM regularizer update rule", "TaoADMMRegularizerType", TaoADMMRegularizerTypes, (PetscEnum)am->regswitch, (PetscEnum *)&am->regswitch, NULL));
   PetscOptionsHeadEnd();
   PetscCall(TaoSetFromOptions(am->subsolverX));
-  if (am->regswitch != TAO_ADMM_REGULARIZER_SOFT_THRESH) { PetscCall(TaoSetFromOptions(am->subsolverZ)); }
+  if (am->regswitch != TAO_ADMM_REGULARIZER_SOFT_THRESH) PetscCall(TaoSetFromOptions(am->subsolverZ));
   PetscFunctionReturn(0);
 }
 
@@ -530,20 +530,20 @@ static PetscErrorCode TaoSetUp_ADMM(Tao tao) {
     am->JApre = am->JA;
   }
   PetscCall(MatCreateVecs(am->JA, NULL, &am->Ax));
-  if (!tao->gradient) { PetscCall(VecDuplicate(tao->solution, &tao->gradient)); }
+  if (!tao->gradient) PetscCall(VecDuplicate(tao->solution, &tao->gradient));
   PetscCall(TaoSetSolution(am->subsolverX, tao->solution));
   if (!am->z) {
     PetscCall(VecDuplicate(tao->solution, &am->z));
     PetscCall(VecSet(am->z, 0.0));
   }
   PetscCall(TaoSetSolution(am->subsolverZ, am->z));
-  if (!am->workLeft) { PetscCall(VecDuplicate(tao->solution, &am->workLeft)); }
-  if (!am->Axold) { PetscCall(VecDuplicate(am->Ax, &am->Axold)); }
-  if (!am->workJacobianRight) { PetscCall(VecDuplicate(am->Ax, &am->workJacobianRight)); }
-  if (!am->workJacobianRight2) { PetscCall(VecDuplicate(am->Ax, &am->workJacobianRight2)); }
-  if (!am->Bz) { PetscCall(VecDuplicate(am->Ax, &am->Bz)); }
-  if (!am->Bzold) { PetscCall(VecDuplicate(am->Ax, &am->Bzold)); }
-  if (!am->Bz0) { PetscCall(VecDuplicate(am->Ax, &am->Bz0)); }
+  if (!am->workLeft) PetscCall(VecDuplicate(tao->solution, &am->workLeft));
+  if (!am->Axold) PetscCall(VecDuplicate(am->Ax, &am->Axold));
+  if (!am->workJacobianRight) PetscCall(VecDuplicate(am->Ax, &am->workJacobianRight));
+  if (!am->workJacobianRight2) PetscCall(VecDuplicate(am->Ax, &am->workJacobianRight2));
+  if (!am->Bz) PetscCall(VecDuplicate(am->Ax, &am->Bz));
+  if (!am->Bzold) PetscCall(VecDuplicate(am->Ax, &am->Bzold));
+  if (!am->Bz0) PetscCall(VecDuplicate(am->Ax, &am->Bz0));
   if (!am->y) {
     PetscCall(VecDuplicate(am->Ax, &am->y));
     PetscCall(VecSet(am->y, 0.0));
@@ -608,8 +608,8 @@ static PetscErrorCode TaoDestroy_ADMM(Tao tao) {
 
   PetscCall(MatDestroy(&am->JA));
   PetscCall(MatDestroy(&am->JB));
-  if (!am->xJI) { PetscCall(MatDestroy(&am->JApre)); }
-  if (!am->zJI) { PetscCall(MatDestroy(&am->JBpre)); }
+  if (!am->xJI) PetscCall(MatDestroy(&am->JApre));
+  if (!am->zJI) PetscCall(MatDestroy(&am->JBpre));
   if (am->Hx) {
     PetscCall(MatDestroy(&am->Hx));
     PetscCall(MatDestroy(&am->Hxpre));

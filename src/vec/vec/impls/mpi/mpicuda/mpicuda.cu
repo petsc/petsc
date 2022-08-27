@@ -156,7 +156,7 @@ PetscErrorCode VecDestroy_MPICUDA(Vec v) {
       PetscCallCUDA(cudaFree(((Vec_CUDA *)v->spptr)->GPUarray_allocated));
       veccuda->GPUarray_allocated = NULL;
     }
-    if (veccuda->stream) { PetscCallCUDA(cudaStreamDestroy(((Vec_CUDA *)v->spptr)->stream)); }
+    if (veccuda->stream) PetscCallCUDA(cudaStreamDestroy(((Vec_CUDA *)v->spptr)->stream));
     if (v->pinned_memory) {
       PetscCall(PetscMallocSetCUDAHost());
       PetscCall(PetscFree(vecmpi->array_allocated));
@@ -224,10 +224,10 @@ PetscErrorCode VecMDot_MPICUDA(Vec xin, PetscInt nv, const Vec y[], PetscScalar 
   PetscScalar awork[128], *work = awork;
 
   PetscFunctionBegin;
-  if (nv > 128) { PetscCall(PetscMalloc1(nv, &work)); }
+  if (nv > 128) PetscCall(PetscMalloc1(nv, &work));
   PetscCall(VecMDot_SeqCUDA(xin, nv, y, work));
   PetscCall(MPIU_Allreduce(work, z, nv, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)xin)));
-  if (nv > 128) { PetscCall(PetscFree(work)); }
+  if (nv > 128) PetscCall(PetscFree(work));
   PetscFunctionReturn(0);
 }
 
@@ -262,7 +262,7 @@ PetscErrorCode VecDuplicate_MPICUDA(Vec win, Vec *v) {
     PetscCall(VecRestoreArray(*v, &array));
     PetscCall(PetscLogObjectParent((PetscObject)*v, (PetscObject)vw->localrep));
     vw->localupdate = w->localupdate;
-    if (vw->localupdate) { PetscCall(PetscObjectReference((PetscObject)vw->localupdate)); }
+    if (vw->localupdate) PetscCall(PetscObjectReference((PetscObject)vw->localupdate));
   }
 
   /* New vector should inherit stashing property of parent */

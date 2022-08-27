@@ -17,7 +17,7 @@ int main(int argc, char **args) {
 
     /* common data structures */
     PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, SIZE, SIZE, NULL, &A));
-    for (i = 0; i < SIZE; ++i) { PetscCall(MatSetValue(A, i, i, 1.0, INSERT_VALUES)); }
+    for (i = 0; i < SIZE; ++i) PetscCall(MatSetValue(A, i, i, 1.0, INSERT_VALUES));
     PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
 
@@ -66,7 +66,7 @@ int main(int argc, char **args) {
       PetscCall(KSPGetGuess(ksp, &guess));
       PetscCall(KSPGuessSetUp(guess));
 
-      for (i = 0; i < 15; ++i) { PetscCall(KSPGuessUpdate(guess, rhs, sol)); }
+      for (i = 0; i < 15; ++i) PetscCall(KSPGuessUpdate(guess, rhs, sol));
       PetscCall(KSPGuessFormGuess(guess, newrhs, newsol));
       PetscCall(VecView(newsol, PETSC_VIEWER_STDOUT_SELF));
 
@@ -86,7 +86,7 @@ int main(int argc, char **args) {
     Mat      A;
 
     PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, triangle_size, triangle_size, NULL, &A));
-    for (i = 0; i < triangle_size; ++i) { PetscCall(MatSetValue(A, i, i, 1.0, INSERT_VALUES)); }
+    for (i = 0; i < triangle_size; ++i) PetscCall(MatSetValue(A, i, i, 1.0, INSERT_VALUES));
     PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
 

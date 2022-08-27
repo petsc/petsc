@@ -155,7 +155,7 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin, PetscViewer viewer) {
       PetscBool       hasState;
       PetscInt        bs, b;
 
-      if (stateId < 0) { PetscCall(PetscObjectComposedDataRegister(&stateId)); }
+      if (stateId < 0) PetscCall(PetscObjectComposedDataRegister(&stateId));
       PetscCall(PetscObjectComposedDataGetInt((PetscObject)viewer, stateId, outputState, hasState));
       if (!hasState) outputState = 0;
 
@@ -174,7 +174,7 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin, PetscViewer viewer) {
         } else if (outputState == 3) doOutput = 0;
         else PetscCheck(outputState != 4, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Tried to output POINT_DATA again after intervening CELL_DATA");
 
-        if (doOutput) { PetscCall(PetscViewerASCIIPrintf(viewer, "POINT_DATA %" PetscInt_FMT "\n", xin->map->N / bs)); }
+        if (doOutput) PetscCall(PetscViewerASCIIPrintf(viewer, "POINT_DATA %" PetscInt_FMT "\n", xin->map->N / bs));
       } else {
         if (outputState == 0) {
           outputState = 2;
@@ -189,7 +189,7 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin, PetscViewer viewer) {
           if (outputState == 4) doOutput = 0;
         }
 
-        if (doOutput) { PetscCall(PetscViewerASCIIPrintf(viewer, "CELL_DATA %" PetscInt_FMT "\n", xin->map->N / bs)); }
+        if (doOutput) PetscCall(PetscViewerASCIIPrintf(viewer, "CELL_DATA %" PetscInt_FMT "\n", xin->map->N / bs));
       }
       PetscCall(PetscObjectComposedDataSetInt((PetscObject)viewer, stateId, outputState));
       if (name) {
@@ -201,10 +201,10 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin, PetscViewer viewer) {
       } else {
         PetscCall(PetscViewerASCIIPrintf(viewer, "SCALARS scalars double %" PetscInt_FMT "\n", bs));
       }
-      if (bs != 3) { PetscCall(PetscViewerASCIIPrintf(viewer, "LOOKUP_TABLE default\n")); }
+      if (bs != 3) PetscCall(PetscViewerASCIIPrintf(viewer, "LOOKUP_TABLE default\n"));
       for (i = 0; i < n / bs; i++) {
         for (b = 0; b < bs; b++) {
-          if (b > 0) { PetscCall(PetscViewerASCIIPrintf(viewer, " ")); }
+          if (b > 0) PetscCall(PetscViewerASCIIPrintf(viewer, " "));
           PetscCall(PetscViewerASCIIPrintf(viewer, "%g", (double)PetscRealPart(xarray[i * bs + b])));
         }
         PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
@@ -214,7 +214,7 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin, PetscViewer viewer) {
         PetscCallMPI(MPI_Get_count(&status, MPIU_SCALAR, &n));
         for (i = 0; i < n / bs; i++) {
           for (b = 0; b < bs; b++) {
-            if (b > 0) { PetscCall(PetscViewerASCIIPrintf(viewer, " ")); }
+            if (b > 0) PetscCall(PetscViewerASCIIPrintf(viewer, " "));
             PetscCall(PetscViewerASCIIPrintf(viewer, "%g", (double)PetscRealPart(values[i * bs + b])));
           }
           PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
@@ -230,10 +230,10 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin, PetscViewer viewer) {
 
       for (i = 0; i < n / bs; i++) {
         for (b = 0; b < bs; b++) {
-          if (b > 0) { PetscCall(PetscViewerASCIIPrintf(viewer, " ")); }
+          if (b > 0) PetscCall(PetscViewerASCIIPrintf(viewer, " "));
           PetscCall(PetscViewerASCIIPrintf(viewer, "%g", (double)PetscRealPart(xarray[i * bs + b])));
         }
-        for (b = bs; b < 3; b++) { PetscCall(PetscViewerASCIIPrintf(viewer, " 0.0")); }
+        for (b = bs; b < 3; b++) PetscCall(PetscViewerASCIIPrintf(viewer, " 0.0"));
         PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
       }
       for (j = 1; j < size; j++) {
@@ -241,10 +241,10 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin, PetscViewer viewer) {
         PetscCallMPI(MPI_Get_count(&status, MPIU_SCALAR, &n));
         for (i = 0; i < n / bs; i++) {
           for (b = 0; b < bs; b++) {
-            if (b > 0) { PetscCall(PetscViewerASCIIPrintf(viewer, " ")); }
+            if (b > 0) PetscCall(PetscViewerASCIIPrintf(viewer, " "));
             PetscCall(PetscViewerASCIIPrintf(viewer, "%g", (double)PetscRealPart(values[i * bs + b])));
           }
-          for (b = bs; b < 3; b++) { PetscCall(PetscViewerASCIIPrintf(viewer, " 0.0")); }
+          for (b = bs; b < 3; b++) PetscCall(PetscViewerASCIIPrintf(viewer, " 0.0"));
           PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
         }
       }
@@ -260,7 +260,7 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin, PetscViewer viewer) {
       for (i = 0; i < n / bs; i++) {
         PetscCall(PetscViewerASCIIPrintf(viewer, "%7" PetscInt_FMT "   ", vertexCount++));
         for (b = 0; b < bs; b++) {
-          if (b > 0) { PetscCall(PetscViewerASCIIPrintf(viewer, " ")); }
+          if (b > 0) PetscCall(PetscViewerASCIIPrintf(viewer, " "));
 #if !defined(PETSC_USE_COMPLEX)
           PetscCall(PetscViewerASCIIPrintf(viewer, "% 12.5E", (double)xarray[i * bs + b]));
 #endif
@@ -273,7 +273,7 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin, PetscViewer viewer) {
         for (i = 0; i < n / bs; i++) {
           PetscCall(PetscViewerASCIIPrintf(viewer, "%7" PetscInt_FMT "   ", vertexCount++));
           for (b = 0; b < bs; b++) {
-            if (b > 0) { PetscCall(PetscViewerASCIIPrintf(viewer, " ")); }
+            if (b > 0) PetscCall(PetscViewerASCIIPrintf(viewer, " "));
 #if !defined(PETSC_USE_COMPLEX)
             PetscCall(PetscViewerASCIIPrintf(viewer, "% 12.5E", (double)values[i * bs + b]));
 #endif
@@ -318,7 +318,7 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin, PetscViewer viewer) {
       if (format != PETSC_VIEWER_ASCII_COMMON) PetscCall(PetscViewerASCIIPrintf(viewer, "Process [%d]\n", rank));
       cnt = 0;
       for (i = 0; i < xin->map->n; i++) {
-        if (format == PETSC_VIEWER_ASCII_INDEX) { PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT ": ", cnt++)); }
+        if (format == PETSC_VIEWER_ASCII_INDEX) PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT ": ", cnt++));
 #if defined(PETSC_USE_COMPLEX)
         if (PetscImaginaryPart(xarray[i]) > 0.0) {
           PetscCall(PetscViewerASCIIPrintf(viewer, "%g + %g i\n", (double)PetscRealPart(xarray[i]), (double)PetscImaginaryPart(xarray[i])));
@@ -335,9 +335,9 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin, PetscViewer viewer) {
       for (j = 1; j < size; j++) {
         PetscCallMPI(MPI_Recv(values, (PetscMPIInt)len, MPIU_SCALAR, j, tag, PetscObjectComm((PetscObject)xin), &status));
         PetscCallMPI(MPI_Get_count(&status, MPIU_SCALAR, &n));
-        if (format != PETSC_VIEWER_ASCII_COMMON) { PetscCall(PetscViewerASCIIPrintf(viewer, "Process [%d]\n", j)); }
+        if (format != PETSC_VIEWER_ASCII_COMMON) PetscCall(PetscViewerASCIIPrintf(viewer, "Process [%d]\n", j));
         for (i = 0; i < n; i++) {
-          if (format == PETSC_VIEWER_ASCII_INDEX) { PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT ": ", cnt++)); }
+          if (format == PETSC_VIEWER_ASCII_INDEX) PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT ": ", cnt++));
 #if defined(PETSC_USE_COMPLEX)
           if (PetscImaginaryPart(values[i]) > 0.0) {
             PetscCall(PetscViewerASCIIPrintf(viewer, "%g + %g i\n", (double)PetscRealPart(values[i]), (double)PetscImaginaryPart(values[i])));
@@ -468,8 +468,8 @@ PetscErrorCode VecView_MPI_Draw(Vec xin, PetscViewer viewer) {
     PetscCallMPI(MPI_Recv(&tmp, 1, MPIU_REAL, rank - 1, tag, PetscObjectComm((PetscObject)xin), &status));
   }
   PetscDrawCollectiveBegin(draw);
-  if (rank) { PetscCall(PetscDrawLine(draw, (PetscReal)start - 1, tmp, (PetscReal)start, PetscRealPart(xarray[0]), PETSC_DRAW_RED)); }
-  for (i = 1; i < xin->map->n; i++) { PetscCall(PetscDrawLine(draw, (PetscReal)(i - 1 + start), PetscRealPart(xarray[i - 1]), (PetscReal)(i + start), PetscRealPart(xarray[i]), PETSC_DRAW_RED)); }
+  if (rank) PetscCall(PetscDrawLine(draw, (PetscReal)start - 1, tmp, (PetscReal)start, PetscRealPart(xarray[0]), PETSC_DRAW_RED));
+  for (i = 1; i < xin->map->n; i++) PetscCall(PetscDrawLine(draw, (PetscReal)(i - 1 + start), PetscRealPart(xarray[i - 1]), (PetscReal)(i + start), PetscRealPart(xarray[i]), PETSC_DRAW_RED));
   PetscDrawCollectiveEnd(draw);
   PetscCall(VecRestoreArrayRead(xin, &xarray));
 
@@ -566,7 +566,7 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer) {
   PetscFunctionBegin;
   PetscCall(PetscViewerHDF5OpenGroup(viewer, &file_id, &group));
   PetscCall(PetscViewerHDF5IsTimestepping(viewer, &timestepping));
-  if (timestepping) { PetscCall(PetscViewerHDF5GetTimestep(viewer, &timestep)); }
+  if (timestepping) PetscCall(PetscViewerHDF5GetTimestep(viewer, &timestep));
   PetscCall(PetscViewerHDF5GetBaseDimension2(viewer, &dim2));
   PetscCall(PetscViewerHDF5GetSPOutput(viewer, &spoutput));
 
@@ -724,7 +724,7 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer) {
     PetscCall(PetscViewerHDF5WriteObjectAttribute(viewer, (PetscObject)xin, "complex", PETSC_BOOL, &tru));
   }
 #endif
-  if (timestepping) { PetscCall(PetscViewerHDF5WriteObjectAttribute(viewer, (PetscObject)xin, "timestepping", PETSC_BOOL, &timestepping)); }
+  if (timestepping) PetscCall(PetscViewerHDF5WriteObjectAttribute(viewer, (PetscObject)xin, "timestepping", PETSC_BOOL, &timestepping));
   PetscCall(PetscInfo(xin, "Wrote Vec object with name %s\n", vecname));
   PetscFunctionReturn(0);
 }

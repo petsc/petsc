@@ -144,7 +144,7 @@ int main(int argc, char **argv) {
   /* Free PETSc data structures */
   PetscCall(VecDestroy(&x));
   PetscCall(MatDestroy(&user.H));
-  if (fdcoloring) { PetscCall(MatFDColoringDestroy(&matfdcoloring)); }
+  if (fdcoloring) PetscCall(MatFDColoringDestroy(&matfdcoloring));
   PetscCall(PetscFree(user.bottom));
   PetscCall(PetscFree(user.top));
   PetscCall(PetscFree(user.left));

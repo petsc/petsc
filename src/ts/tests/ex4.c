@@ -107,7 +107,7 @@ int main(int argc, char **argv) {
         PetscInt    rstart, rend, i;
         PetscScalar zero = 0.0;
         PetscCall(MatGetOwnershipRange(J, &rstart, &rend));
-        for (i = rstart; i < rend; i++) { PetscCall(MatSetValues(J, 1, &i, 1, &i, &zero, INSERT_VALUES)); }
+        for (i = rstart; i < rend; i++) PetscCall(MatSetValues(J, 1, &i, 1, &i, &zero, INSERT_VALUES));
         PetscCall(MatAssemblyBegin(J, MAT_FINAL_ASSEMBLY));
         PetscCall(MatAssemblyEnd(J, MAT_FINAL_ASSEMBLY));
       } else {

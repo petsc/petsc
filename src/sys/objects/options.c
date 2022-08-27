@@ -468,7 +468,7 @@ static PetscErrorCode PetscOptionsInsertFilePetsc(MPI_Comm comm, PetscOptions op
         } else if (!tokens[0][0]) { /* if token 0 is empty (string begins with spaces), redo */
           PetscCall(PetscTokenFind(token, &tokens[0]));
         }
-        for (i = 1; i < 4; i++) { PetscCall(PetscTokenFind(token, &tokens[i])); }
+        for (i = 1; i < 4; i++) PetscCall(PetscTokenFind(token, &tokens[i]));
         if (!tokens[0]) {
           goto destroy;
         } else if (tokens[0][0] == '-') {
@@ -541,7 +541,7 @@ static PetscErrorCode PetscOptionsInsertFilePetsc(MPI_Comm comm, PetscOptions op
   PetscCheck(!err, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in first MPI collective call, could be caused by using an incorrect mpiexec or a network problem, it can be caused by having VPN running: see https://petsc.org/release/faq/");
   acnt = counts[0];
   cnt  = counts[1];
-  if (rank) { PetscCall(PetscMalloc1(2 + acnt + cnt, &packed)); }
+  if (rank) PetscCall(PetscMalloc1(2 + acnt + cnt, &packed));
   if (acnt || cnt) {
     PetscCallMPI(MPI_Bcast(packed, 2 + acnt + cnt, MPI_CHAR, 0, comm));
     astring = packed;
@@ -707,7 +707,7 @@ static PetscErrorCode PetscOptionsProcessPrecedentFlags(PetscOptions options, in
   val = (const char **)cval;
 
   /* Look for options possibly set using PetscOptionsSetValue beforehand */
-  for (o = 0; o < n; o++) { PetscCall(PetscOptionsFindPair(options, NULL, opt[o], &val[o], &set[o])); }
+  for (o = 0; o < n; o++) PetscCall(PetscOptionsFindPair(options, NULL, opt[o], &val[o], &set[o]));
 
   /* Loop through all args to collect last occurring value of each option */
   for (a = 1; a < argc; a++) {
@@ -1855,7 +1855,7 @@ PetscErrorCode PetscOptionsLeft(PetscOptions options) {
       cnt++;
       toptions = toptions->previous;
     }
-    if (cnt) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Option left: You may have forgotten some calls to PetscOptionsPop(),\n             PetscOptionsPop() has been called %" PetscInt_FMT " less times than PetscOptionsPush()\n", cnt)); }
+    if (cnt) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Option left: You may have forgotten some calls to PetscOptionsPop(),\n             PetscOptionsPop() has been called %" PetscInt_FMT " less times than PetscOptionsPush()\n", cnt));
   }
   PetscFunctionReturn(0);
 }
@@ -2105,9 +2105,9 @@ PetscErrorCode PetscOptionsStringToInt(const char name[], PetscInt *a) {
   PetscCheck(len, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "character string of length zero has no numerical value");
 
   PetscCall(PetscStrcasecmp(name, "PETSC_DEFAULT", &tdefault));
-  if (!tdefault) { PetscCall(PetscStrcasecmp(name, "DEFAULT", &tdefault)); }
+  if (!tdefault) PetscCall(PetscStrcasecmp(name, "DEFAULT", &tdefault));
   PetscCall(PetscStrcasecmp(name, "PETSC_DECIDE", &decide));
-  if (!decide) { PetscCall(PetscStrcasecmp(name, "DECIDE", &decide)); }
+  if (!decide) PetscCall(PetscStrcasecmp(name, "DECIDE", &decide));
   PetscCall(PetscStrcasecmp(name, "mouse", &mouse));
 
   if (tdefault) *a = PETSC_DEFAULT;

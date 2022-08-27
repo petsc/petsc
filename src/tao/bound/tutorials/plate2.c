@@ -167,7 +167,7 @@ int main(int argc, char **argv) {
   PetscCall(VecDestroy(&user.Left));
   PetscCall(VecDestroy(&user.Right));
   PetscCall(DMDestroy(&user.dm));
-  if (flg) { PetscCall(MatDestroy(&H_shell)); }
+  if (flg) PetscCall(MatDestroy(&H_shell));
   PetscCall(PetscFinalize());
   return 0;
 }
@@ -786,7 +786,7 @@ static PetscErrorCode MSA_InitialPoint(AppCtx *user, Vec X) {
     PetscReal   np5 = -0.5;
 
     PetscCall(PetscRandomCreate(MPI_COMM_WORLD, &rctx));
-    for (i = 0; i < start; i++) { PetscCall(VecSetRandom(X, rctx)); }
+    for (i = 0; i < start; i++) PetscCall(VecSetRandom(X, rctx));
     PetscCall(PetscRandomDestroy(&rctx));
     PetscCall(VecShift(X, np5));
 

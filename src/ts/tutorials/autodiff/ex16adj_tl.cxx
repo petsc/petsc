@@ -101,7 +101,7 @@ static PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec X, Mat A, Mat B, void 
 
   /* Set matrix values */
   for (i = 0; i < user->adctx->m; i++) {
-    for (j = 0; j < user->adctx->n; j++) { PetscCall(MatSetValues(A, 1, &i, 1, &j, &J[i][j], INSERT_VALUES)); }
+    for (j = 0; j < user->adctx->n; j++) PetscCall(MatSetValues(A, 1, &i, 1, &j, &J[i][j], INSERT_VALUES));
   }
   PetscCall(PetscFree(J));
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
@@ -153,7 +153,7 @@ static PetscErrorCode RHSJacobianP(TS ts, PetscReal t, Vec X, Mat A, void *ctx) 
   J[1] = (PetscScalar *)f_a[1].getADValue();
 
   /* Set matrix values */
-  for (i = 0; i < user->adctx->m; i++) { PetscCall(MatSetValues(A, 1, &i, 1, &j, &J[i][user->adctx->n], INSERT_VALUES)); }
+  for (i = 0; i < user->adctx->m; i++) PetscCall(MatSetValues(A, 1, &i, 1, &j, &J[i][user->adctx->n], INSERT_VALUES));
   PetscCall(PetscFree(J));
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
@@ -251,7 +251,7 @@ int main(int argc, char **argv) {
   PetscCall(TSSetRHSJacobian(ts, A, A, RHSJacobian, &user));
   PetscCall(TSSetMaxTime(ts, ftime));
   PetscCall(TSSetExactFinalTime(ts, TS_EXACTFINALTIME_MATCHSTEP));
-  if (monitor) { PetscCall(TSMonitorSet(ts, Monitor, &user, NULL)); }
+  if (monitor) PetscCall(TSMonitorSet(ts, Monitor, &user, NULL));
   PetscCall(TSSetTimeStep(ts, .001));
 
   /*

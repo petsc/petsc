@@ -1094,7 +1094,7 @@ PetscErrorCode KSPMonitorDynamicTolerance(KSP ksp, PetscInt its, PetscReal fnorm
   if (flg) {
     PetscCall(PCBJacobiGetSubKSP(pc, &nksp, &first, &subksp));
     if (subksp) {
-      for (i = 0; i < nksp; i++) { PetscCall(KSPSetTolerances(subksp[i], inner_rtol, outer_abstol, outer_dtol, outer_maxits)); }
+      for (i = 0; i < nksp; i++) PetscCall(KSPSetTolerances(subksp[i], inner_rtol, outer_abstol, outer_dtol, outer_maxits));
       PetscFunctionReturn(0);
     }
   }
@@ -1577,7 +1577,7 @@ PetscErrorCode KSPCreateVecs(KSP ksp, PetscInt rightn, Vec **right, PetscInt lef
           PetscCall(MatCreateVecs(mat, &vecr, NULL));
         }
       }
-      if (!vecr && ksp->dm) { PetscCall(DMGetGlobalVector(ksp->dm, &vecr)); }
+      if (!vecr && ksp->dm) PetscCall(DMGetGlobalVector(ksp->dm, &vecr));
       PetscCheck(vecr, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_WRONGSTATE, "You requested a vector from a KSP that cannot provide one");
     }
     PetscCall(VecDuplicateVecs(vecr, rightn, right));

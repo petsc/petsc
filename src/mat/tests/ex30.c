@@ -159,7 +159,7 @@ int main(int argc, char **args) {
       PetscCall(MatBackwardSolve(A, ytmp, y));
       PetscCall(VecAXPY(y, -1.0, x));
       PetscCall(VecNorm(y, NORM_2, &norm2));
-      if (norm2 > tol) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "MatForwardSolve and BackwardSolve: Norm of error=%g\n", (double)norm2)); }
+      if (norm2 > tol) PetscCall(PetscPrintf(PETSC_COMM_SELF, "MatForwardSolve and BackwardSolve: Norm of error=%g\n", (double)norm2));
     }
   }
 
@@ -167,7 +167,7 @@ int main(int argc, char **args) {
   PetscCall(MatDestroy(&A));
   PetscCall(VecAXPY(y, -1.0, x));
   PetscCall(VecNorm(y, NORM_2, &norm2));
-  if (lf == -1 && norm2 > tol) { PetscCall(PetscPrintf(PETSC_COMM_SELF, " reordered SEQAIJ:   Cholesky/ICC levels %" PetscInt_FMT ", residual %g\n", lf, (double)norm2)); }
+  if (lf == -1 && norm2 > tol) PetscCall(PetscPrintf(PETSC_COMM_SELF, " reordered SEQAIJ:   Cholesky/ICC levels %" PetscInt_FMT ", residual %g\n", lf, (double)norm2));
 
   /* Test in-place ICC(0) and compare it with the out-place ICC(0) */
   if (!CHOLESKY && lf == 0 && !matordering) {

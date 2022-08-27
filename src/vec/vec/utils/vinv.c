@@ -706,7 +706,7 @@ PetscErrorCode VecStrideGatherAll(Vec v, Vec s[], InsertMode addv) {
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown insert type");
 
   PetscCall(VecRestoreArrayRead(v, &x));
-  for (i = 0; i < nv; i++) { PetscCall(VecRestoreArray(s[i], &y[i])); }
+  for (i = 0; i < nv; i++) PetscCall(VecRestoreArray(s[i], &y[i]));
 
   PetscCall(PetscFree2(y, bss));
   PetscFunctionReturn(0);
@@ -796,7 +796,7 @@ PetscErrorCode VecStrideScatterAll(Vec s[], Vec v, InsertMode addv) {
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown insert type");
 
   PetscCall(VecRestoreArray(v, &x));
-  for (i = 0; i < nv; i++) { PetscCall(VecRestoreArrayRead(s[i], &y[i])); }
+  for (i = 0; i < nv; i++) PetscCall(VecRestoreArrayRead(s[i], &y[i]));
   PetscCall(PetscFree2(*(PetscScalar ***)&y, bss));
   PetscFunctionReturn(0);
 }

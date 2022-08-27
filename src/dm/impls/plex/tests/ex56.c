@@ -189,7 +189,7 @@ static PetscErrorCode MarkBoundary(DM dm, const char name[], PetscInt value, Pet
       PetscInt       d;
 
       PetscCall(DMPlexGetPointDepth(dm, p, &d));
-      if (d != 0) { PetscCall(DMLabelClearValue(l, p, value)); }
+      if (d != 0) PetscCall(DMLabelClearValue(l, p, value));
     }
     PetscCall(ISRestoreIndices(points, &idx));
     PetscCall(ISDestroy(&points));

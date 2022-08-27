@@ -26,7 +26,7 @@ PetscErrorCode PrintVecWithGhosts(DM da, Vec v) {
   PetscCall(PetscSynchronizedPrintf(com, "begin rank %d portion (with ghosts, %" PetscInt_FMT " x %" PetscInt_FMT ")\n", rank, info.gxm, info.gym));
   PetscCall(DMDAVecGetArray(da, v, &p));
   for (i = info.gxs; i < info.gxs + info.gxm; i++) {
-    for (j = info.gys; j < info.gys + info.gym; j++) { PetscCall(PetscSynchronizedPrintf(com, "%g, ", (double)PetscRealPart(p[j][i]))); }
+    for (j = info.gys; j < info.gys + info.gym; j++) PetscCall(PetscSynchronizedPrintf(com, "%g, ", (double)PetscRealPart(p[j][i])));
     PetscCall(PetscSynchronizedPrintf(com, "\n"));
   }
   PetscCall(DMDAVecRestoreArray(da, v, &p));

@@ -63,7 +63,7 @@ static PetscErrorCode TaoSolve_IPM(Tao tao) {
     */
 
     PetscCall(VecCopy(ipmP->rd, ipmP->rhs_x));
-    if (ipmP->me > 0) { PetscCall(VecCopy(ipmP->rpe, ipmP->rhs_lamdae)); }
+    if (ipmP->me > 0) PetscCall(VecCopy(ipmP->rpe, ipmP->rhs_lamdae));
     if (ipmP->nb > 0) {
       PetscCall(VecCopy(ipmP->rpi, ipmP->rhs_lamdai));
       PetscCall(VecCopy(ipmP->complementarity, ipmP->rhs_s));
@@ -92,14 +92,14 @@ static PetscErrorCode TaoSolve_IPM(Tao tao) {
 
     /* x_aff = x + alpha*d */
     PetscCall(VecCopy(tao->solution, ipmP->save_x));
-    if (ipmP->me > 0) { PetscCall(VecCopy(ipmP->lamdae, ipmP->save_lamdae)); }
+    if (ipmP->me > 0) PetscCall(VecCopy(ipmP->lamdae, ipmP->save_lamdae));
     if (ipmP->nb > 0) {
       PetscCall(VecCopy(ipmP->lamdai, ipmP->save_lamdai));
       PetscCall(VecCopy(ipmP->s, ipmP->save_s));
     }
 
     PetscCall(VecAXPY(tao->solution, alpha, tao->stepdirection));
-    if (ipmP->me > 0) { PetscCall(VecAXPY(ipmP->lamdae, alpha, ipmP->dlamdae)); }
+    if (ipmP->me > 0) PetscCall(VecAXPY(ipmP->lamdae, alpha, ipmP->dlamdae));
     if (ipmP->nb > 0) {
       PetscCall(VecAXPY(ipmP->lamdai, alpha, ipmP->dlamdai));
       PetscCall(VecAXPY(ipmP->s, alpha, ipmP->ds));
@@ -117,7 +117,7 @@ static PetscErrorCode TaoSolve_IPM(Tao tao) {
 
     /* revert kkt info */
     PetscCall(VecCopy(ipmP->save_x, tao->solution));
-    if (ipmP->me > 0) { PetscCall(VecCopy(ipmP->save_lamdae, ipmP->lamdae)); }
+    if (ipmP->me > 0) PetscCall(VecCopy(ipmP->save_lamdae, ipmP->lamdae));
     if (ipmP->nb > 0) {
       PetscCall(VecCopy(ipmP->save_lamdai, ipmP->lamdai));
       PetscCall(VecCopy(ipmP->save_s, ipmP->s));
@@ -168,10 +168,10 @@ static PetscErrorCode TaoSolve_IPM(Tao tao) {
         PetscCall(VecAXPY(ipmP->s, alpha, ipmP->ds));
         PetscCall(VecAXPY(ipmP->lamdai, alpha, ipmP->dlamdai));
       }
-      if (ipmP->me > 0) { PetscCall(VecAXPY(ipmP->lamdae, alpha, ipmP->dlamdae)); }
+      if (ipmP->me > 0) PetscCall(VecAXPY(ipmP->lamdae, alpha, ipmP->dlamdae));
 
       /* update dual variables */
-      if (ipmP->me > 0) { PetscCall(VecCopy(ipmP->lamdae, tao->DE)); }
+      if (ipmP->me > 0) PetscCall(VecCopy(ipmP->lamdae, tao->DE));
 
       PetscCall(IPMEvaluate(tao));
       PetscCall(IPMComputeKKT(tao));
@@ -211,7 +211,7 @@ static PetscErrorCode TaoSetup_IPM(Tao tao) {
     PetscCall(VecDuplicate(tao->constraints_equality, &ipmP->rpe));
     PetscCall(VecDuplicate(tao->constraints_equality, &tao->DE));
   }
-  if (tao->constraints_inequality) { PetscCall(VecDuplicate(tao->constraints_inequality, &tao->DI)); }
+  if (tao->constraints_inequality) PetscCall(VecDuplicate(tao->constraints_inequality, &tao->DI));
   PetscFunctionReturn(0);
 }
 
@@ -636,7 +636,7 @@ PetscErrorCode IPMPushInitialPoint(Tao tao) {
   if (ipmP->nb > 0) {
     PetscCall(VecSet(ipmP->s, ipmP->pushs));
     PetscCall(VecSet(ipmP->lamdai, ipmP->pushnu));
-    if (ipmP->mi > 0) { PetscCall(VecSet(tao->DI, ipmP->pushnu)); }
+    if (ipmP->mi > 0) PetscCall(VecSet(tao->DI, ipmP->pushnu));
   }
   if (ipmP->me > 0) {
     PetscCall(VecSet(tao->DE, 1.0));
@@ -697,7 +697,7 @@ PetscErrorCode IPMUpdateAi(Tao tao) {
     PetscCall(MatSetFromOptions(ipmP->Ai));
     PetscCall(MatMPIAIJSetPreallocation(ipmP->Ai, ipmP->nb, NULL, ipmP->nb, NULL));
     PetscCall(MatSeqAIJSetPreallocation(ipmP->Ai, PETSC_DEFAULT, nonzeros));
-    if (size == 1) { PetscCall(PetscFree(nonzeros)); }
+    if (size == 1) PetscCall(PetscFree(nonzeros));
   }
 
   /* Copy values from user jacobian to Ai */
@@ -876,7 +876,7 @@ PetscErrorCode IPMUpdateK(Tao tao) {
   /* Copy H */
   for (i = hstart; i < hend; i++) {
     PetscCall(MatGetRow(tao->hessian, i, &ncols, &cols, &vals));
-    if (ncols > 0) { PetscCall(MatSetValues(ipmP->K, 1, &i, ncols, cols, vals, INSERT_VALUES)); }
+    if (ncols > 0) PetscCall(MatSetValues(ipmP->K, 1, &i, ncols, cols, vals, INSERT_VALUES));
     PetscCall(MatRestoreRow(tao->hessian, i, &ncols, &cols, &vals));
   }
 

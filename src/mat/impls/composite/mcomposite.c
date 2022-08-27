@@ -40,7 +40,7 @@ PetscErrorCode MatDestroy_Composite(Mat mat) {
   PetscFunctionBegin;
   while (next) {
     PetscCall(MatDestroy(&next->mat));
-    if (next->work && (!next->next || next->work != next->next->work)) { PetscCall(VecDestroy(&next->work)); }
+    if (next->work && (!next->next || next->work != next->next->work)) PetscCall(VecDestroy(&next->work));
     oldnext = next;
     next    = next->next;
     PetscCall(PetscFree(oldnext));
@@ -87,7 +87,7 @@ PetscErrorCode MatMult_Composite_Multiplicative(Mat A, Vec x, Vec y) {
   PetscCheck(next, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must provide at least one matrix with MatCompositeAddMat()");
   in = x;
   if (shell->right) {
-    if (!shell->rightwork) { PetscCall(VecDuplicate(shell->right, &shell->rightwork)); }
+    if (!shell->rightwork) PetscCall(VecDuplicate(shell->right, &shell->rightwork));
     PetscCall(VecPointwiseMult(shell->rightwork, shell->right, in));
     in = shell->rightwork;
   }
@@ -121,7 +121,7 @@ PetscErrorCode MatMultTranspose_Composite_Multiplicative(Mat A, Vec x, Vec y) {
   PetscCheck(tail, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must provide at least one matrix with MatCompositeAddMat()");
   in = x;
   if (shell->left) {
-    if (!shell->leftwork) { PetscCall(VecDuplicate(shell->left, &shell->leftwork)); }
+    if (!shell->leftwork) PetscCall(VecDuplicate(shell->left, &shell->leftwork));
     PetscCall(VecPointwiseMult(shell->leftwork, shell->left, in));
     in = shell->leftwork;
   }
@@ -160,7 +160,7 @@ PetscErrorCode MatMult_Composite(Mat mat, Vec x, Vec y) {
   PetscCheck(cur, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must provide at least one matrix with MatCompositeAddMat()");
   in = x;
   if (shell->right) {
-    if (!shell->rightwork) { PetscCall(VecDuplicate(shell->right, &shell->rightwork)); }
+    if (!shell->rightwork) PetscCall(VecDuplicate(shell->right, &shell->rightwork));
     PetscCall(VecPointwiseMult(shell->rightwork, shell->right, in));
     in = shell->rightwork;
   }
@@ -306,7 +306,7 @@ PetscErrorCode MatMultTranspose_Composite(Mat A, Vec x, Vec y) {
   PetscCheck(next, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must provide at least one matrix with MatCompositeAddMat()");
   in = x;
   if (shell->left) {
-    if (!shell->leftwork) { PetscCall(VecDuplicate(shell->left, &shell->leftwork)); }
+    if (!shell->leftwork) PetscCall(VecDuplicate(shell->left, &shell->leftwork));
     PetscCall(VecPointwiseMult(shell->leftwork, shell->left, in));
     in = shell->leftwork;
   }
@@ -338,7 +338,7 @@ PetscErrorCode MatMultAdd_Composite(Mat A, Vec x, Vec y, Vec z) {
     PetscCall(MatMult(A, x, z));
     PetscCall(VecAXPY(z, 1.0, y));
   } else {
-    if (!shell->leftwork) { PetscCall(VecDuplicate(z, &shell->leftwork)); }
+    if (!shell->leftwork) PetscCall(VecDuplicate(z, &shell->leftwork));
     PetscCall(MatMult(A, x, shell->leftwork));
     PetscCall(VecCopy(y, z));
     PetscCall(VecAXPY(z, 1.0, shell->leftwork));
@@ -354,7 +354,7 @@ PetscErrorCode MatMultTransposeAdd_Composite(Mat A, Vec x, Vec y, Vec z) {
     PetscCall(MatMultTranspose(A, x, z));
     PetscCall(VecAXPY(z, 1.0, y));
   } else {
-    if (!shell->rightwork) { PetscCall(VecDuplicate(z, &shell->rightwork)); }
+    if (!shell->rightwork) PetscCall(VecDuplicate(z, &shell->rightwork));
     PetscCall(MatMultTranspose(A, x, shell->rightwork));
     PetscCall(VecCopy(y, z));
     PetscCall(VecAXPY(z, 1.0, shell->rightwork));
@@ -374,7 +374,7 @@ PetscErrorCode MatGetDiagonal_Composite(Mat A, Vec v) {
   PetscCall(MatGetDiagonal(next->mat, v));
   if (shell->scalings) PetscCall(VecScale(v, shell->scalings[0]));
 
-  if (next->next && !shell->work) { PetscCall(VecDuplicate(v, &shell->work)); }
+  if (next->next && !shell->work) PetscCall(VecDuplicate(v, &shell->work));
   i = 1;
   while ((next = next->next)) {
     PetscCall(MatGetDiagonal(next->mat, shell->work));
@@ -485,7 +485,7 @@ PetscErrorCode MatCreateComposite(MPI_Comm comm, PetscInt nmat, const Mat *mats,
   PetscCall(MatCreate(comm, mat));
   PetscCall(MatSetSizes(*mat, m, n, M, N));
   PetscCall(MatSetType(*mat, MATCOMPOSITE));
-  for (i = 0; i < nmat; i++) { PetscCall(MatCompositeAddMat(*mat, mats[i])); }
+  for (i = 0; i < nmat; i++) PetscCall(MatCompositeAddMat(*mat, mats[i]));
   PetscCall(MatAssemblyBegin(*mat, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(*mat, MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
@@ -726,12 +726,12 @@ static PetscErrorCode MatCompositeMerge_Composite(Mat mat) {
       i = 0;
       PetscCall(MatDuplicate(next->mat, MAT_COPY_VALUES, &tmat));
       if (shell->scalings) PetscCall(MatScale(tmat, shell->scalings[i++]));
-      while ((next = next->next)) { PetscCall(MatAXPY(tmat, (shell->scalings ? shell->scalings[i++] : 1.0), next->mat, shell->structure)); }
+      while ((next = next->next)) PetscCall(MatAXPY(tmat, (shell->scalings ? shell->scalings[i++] : 1.0), next->mat, shell->structure));
     } else {
       i = shell->nmat - 1;
       PetscCall(MatDuplicate(prev->mat, MAT_COPY_VALUES, &tmat));
       if (shell->scalings) PetscCall(MatScale(tmat, shell->scalings[i--]));
-      while ((prev = prev->prev)) { PetscCall(MatAXPY(tmat, (shell->scalings ? shell->scalings[i--] : 1.0), prev->mat, shell->structure)); }
+      while ((prev = prev->prev)) PetscCall(MatAXPY(tmat, (shell->scalings ? shell->scalings[i--] : 1.0), prev->mat, shell->structure));
     }
   } else {
     if (shell->mergetype == MAT_COMPOSITE_MERGE_RIGHT) {

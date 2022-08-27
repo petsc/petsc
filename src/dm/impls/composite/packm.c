@@ -72,7 +72,7 @@ static PetscErrorCode DMCreateMatrix_Composite_AIJ(DM dm, Mat *J) {
     PetscCall(PetscMalloc2(mA, &values, mA, &indices));
     PetscCall(PetscArrayzero(values, mA));
     for (i = 0; i < mA; i++) indices[i] = i;
-    for (i = rstart; i < rend; i++) { PetscCall(MatSetValues(*J, 1, &i, mA, indices, values, INSERT_VALUES)); }
+    for (i = rstart; i < rend; i++) PetscCall(MatSetValues(*J, 1, &i, mA, indices, values, INSERT_VALUES));
     PetscCall(PetscFree2(values, indices));
     PetscCall(MatAssemblyBegin(*J, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(*J, MAT_FINAL_ASSEMBLY));

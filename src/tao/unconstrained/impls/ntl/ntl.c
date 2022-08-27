@@ -52,7 +52,7 @@ static PetscErrorCode TaoSolve_NTL(Tao tao) {
   PetscInt tr_reject;
 
   PetscFunctionBegin;
-  if (tao->XL || tao->XU || tao->ops->computebounds) { PetscCall(PetscInfo(tao, "WARNING: Variable bounds have been set but will be ignored by ntl algorithm\n")); }
+  if (tao->XL || tao->XU || tao->ops->computebounds) PetscCall(PetscInfo(tao, "WARNING: Variable bounds have been set but will be ignored by ntl algorithm\n"));
 
   PetscCall(KSPGetType(tao->ksp, &ksp_type));
   PetscCall(PetscStrcmp(ksp_type, KSPNASH, &is_nash));

@@ -54,7 +54,7 @@ PetscErrorCode VecHIPAllocateCheckHost(Vec v) {
     PetscCall(PetscLogObjectMemory((PetscObject)v, n * sizeof(PetscScalar)));
     s->array           = array;
     s->array_allocated = array;
-    if (n * sizeof(PetscScalar) > v->minimum_bytes_pinned_memory) { PetscCall(PetscMallocResetHIPHost()); }
+    if (n * sizeof(PetscScalar) > v->minimum_bytes_pinned_memory) PetscCall(PetscMallocResetHIPHost());
     if (v->offloadmask == PETSC_OFFLOAD_UNALLOCATED) { v->offloadmask = PETSC_OFFLOAD_CPU; }
   }
   PetscFunctionReturn(0);
@@ -98,7 +98,7 @@ PetscErrorCode VecDestroy_SeqHIP_Private(Vec v) {
 #endif
   if (vs) {
     if (vs->array_allocated) {
-      if (v->pinned_memory) { PetscCall(PetscMallocSetHIPHost()); }
+      if (v->pinned_memory) PetscCall(PetscMallocSetHIPHost());
       PetscCall(PetscFree(vs->array_allocated));
       if (v->pinned_memory) {
         PetscCall(PetscMallocResetHIPHost());
@@ -144,9 +144,9 @@ PetscErrorCode VecReplaceArray_SeqHIP(Vec vin, const PetscScalar *a) {
     PetscCall(VecHIPCopyFromGPU(vin));
   }
   if (vs->array_allocated) {
-    if (vin->pinned_memory) { PetscCall(PetscMallocSetHIPHost()); }
+    if (vin->pinned_memory) PetscCall(PetscMallocSetHIPHost());
     PetscCall(PetscFree(vs->array_allocated));
-    if (vin->pinned_memory) { PetscCall(PetscMallocResetHIPHost()); }
+    if (vin->pinned_memory) PetscCall(PetscMallocResetHIPHost());
   }
   vin->pinned_memory  = PETSC_FALSE;
   vs->array_allocated = vs->array = (PetscScalar *)a;

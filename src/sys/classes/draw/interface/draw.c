@@ -282,7 +282,7 @@ PetscErrorCode PetscDrawDestroy(PetscDraw *draw) {
 
   PetscCall(PetscDrawDestroy_Private(*draw));
 
-  if ((*draw)->ops->destroy) { PetscCall((*(*draw)->ops->destroy)(*draw)); }
+  if ((*draw)->ops->destroy) PetscCall((*(*draw)->ops->destroy)(*draw));
   PetscCall(PetscDrawDestroy(&(*draw)->popup));
   PetscCall(PetscFree((*draw)->title));
   PetscCall(PetscFree((*draw)->display));

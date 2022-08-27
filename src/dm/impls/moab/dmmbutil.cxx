@@ -781,7 +781,7 @@ PetscErrorCode DMMoab_GetReadOptions_Private(PetscBool by_rank, PetscInt numproc
   if (numproc > 1) {
     // PetscCall(PetscSNPrintf(ropts_par, PETSC_MAX_PATH_LEN, "PARALLEL=%s;PARTITION=PARALLEL_PARTITION;PARTITION_DISTRIBUTE;PARALLEL_RESOLVE_SHARED_ENTS;PARALLEL_GHOSTS=%d.0.1%s;",MoabReadModes[mode],dim,(by_rank ? ";PARTITION_BY_RANK":"")));
     PetscCall(PetscSNPrintf(ropts_par, PETSC_MAX_PATH_LEN, "PARALLEL=%s;PARTITION=PARALLEL_PARTITION;PARTITION_DISTRIBUTE;PARALLEL_RESOLVE_SHARED_ENTS;%s", MoabReadModes[mode], (by_rank ? "PARTITION_BY_RANK;" : "")));
-    if (nghost) { PetscCall(PetscSNPrintf(ropts_pargh, PETSC_MAX_PATH_LEN, "PARALLEL_GHOSTS=%" PetscInt_FMT ".0.%" PetscInt_FMT ";", dim, nghost)); }
+    if (nghost) PetscCall(PetscSNPrintf(ropts_pargh, PETSC_MAX_PATH_LEN, "PARALLEL_GHOSTS=%" PetscInt_FMT ".0.%" PetscInt_FMT ";", dim, nghost));
   }
 
   if (dbglevel) {

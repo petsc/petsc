@@ -441,7 +441,7 @@ PetscErrorCode FormHessian(Tao tao, Vec X, Mat H, Mat Hpre, void *ptr) {
 
     PetscCall(VecGetArray(user->y, &y));
     for (i = 0; i < ndim; i++) {
-      if (y[i] != zero) { PetscCall(MatSetValues(H, 1, &i, 1, &j, &y[i], ADD_VALUES)); }
+      if (y[i] != zero) PetscCall(MatSetValues(H, 1, &i, 1, &j, &y[i], ADD_VALUES));
     }
     PetscCall(VecRestoreArray(user->y, &y));
   }

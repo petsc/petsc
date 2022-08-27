@@ -111,7 +111,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da, PetscViewer viewer) {
       PetscCall(DMDAGetInfo(daCurr, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &bs, NULL, NULL, NULL, NULL, NULL));
       maxbs = PetscMax(maxbs, bs);
 
-      if (((PetscObject)X)->name || link != vtk->link) { PetscCall(PetscObjectGetName((PetscObject)X, &vecname)); }
+      if (((PetscObject)X)->name || link != vtk->link) PetscCall(PetscObjectGetName((PetscObject)X, &vecname));
 
       /* If any fields are named, add scalar fields. Otherwise, add a vector field */
       PetscCall(DMDAGetFieldsNamed(daCurr, &fieldsnamed));
@@ -320,7 +320,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da, PetscViewer viewer) {
       PetscCall(VecGetDM(X, &daCurr));
       PetscCall(DMDAGetInfo(daCurr, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &bs, NULL, NULL, NULL, NULL, NULL));
       maxbs = PetscMax(maxbs, bs);
-      if (((PetscObject)X)->name || link != vtk->link) { PetscCall(PetscObjectGetName((PetscObject)X, &vecname)); }
+      if (((PetscObject)X)->name || link != vtk->link) PetscCall(PetscObjectGetName((PetscObject)X, &vecname));
 
       /* If any fields are named, add scalar fields. Otherwise, add a vector field */
       PetscCall(DMDAGetFieldsNamed(daCurr, &fieldsnamed));

@@ -88,14 +88,14 @@ int main(int argc, char **args) {
   PetscCall(VecView(x, PETSC_VIEWER_STDOUT_SELF));
   PetscCall(VecAXPY(x, -1.0, u));
   PetscCall(VecNorm(x, NORM_2, &norm));
-  if (norm > tol) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "MatSolve: Norm of error %g\n", (double)norm)); }
+  if (norm > tol) PetscCall(PetscPrintf(PETSC_COMM_SELF, "MatSolve: Norm of error %g\n", (double)norm));
 
   /* Test MatSolveAdd */
   PetscCall(MatSolveAdd(C, b, y, x));
   PetscCall(VecAXPY(x, -1.0, y));
   PetscCall(VecAXPY(x, -1.0, u));
   PetscCall(VecNorm(x, NORM_2, &norm));
-  if (norm > tol) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "MatSolveAdd(): Norm of error %g\n", (double)norm)); }
+  if (norm > tol) PetscCall(PetscPrintf(PETSC_COMM_SELF, "MatSolveAdd(): Norm of error %g\n", (double)norm));
 
   PetscCall(ISDestroy(&perm));
   PetscCall(ISDestroy(&iperm));

@@ -127,7 +127,7 @@ int main(int argc, char **argv) {
     PetscReal integral;
 
     PetscCall(PetscDTTanhSinhIntegrateMPFR(funcs[f], bounds[f * 2 + 0], bounds[f * 2 + 1], digits, NULL, &integral));
-    if (PetscAbsReal(integral - analytic[f]) > PetscPowRealInt(10.0, -digits)) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "The integral of func%2d is wrong: %g (%g)\n", f + 1, (double)integral, (double)PetscAbsReal(integral - analytic[f]))); }
+    if (PetscAbsReal(integral - analytic[f]) > PetscPowRealInt(10.0, -digits)) PetscCall(PetscPrintf(PETSC_COMM_SELF, "The integral of func%2d is wrong: %g (%g)\n", f + 1, (double)integral, (double)PetscAbsReal(integral - analytic[f])));
   }
 #endif
   PetscCall(PetscFinalize());

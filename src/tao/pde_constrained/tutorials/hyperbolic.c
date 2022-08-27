@@ -930,7 +930,7 @@ PetscErrorCode HyperbolicInitialize(AppCtx *user) {
 
   /* RHS of forward problem */
   PetscCall(MatMult(user->M, bc, user->yiwork[0]));
-  for (i = 1; i < user->nt; i++) { PetscCall(VecSet(user->yiwork[i], 0.0)); }
+  for (i = 1; i < user->nt; i++) PetscCall(VecSet(user->yiwork[i], 0.0));
   PetscCall(Gather_yi(user->q, user->yiwork, user->yi_scatter, user->nt));
 
   /* Compute true velocity field utrue */

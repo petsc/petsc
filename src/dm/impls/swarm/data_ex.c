@@ -139,7 +139,7 @@ PetscErrorCode DMSwarmDataExView(DMSwarmDataEx d) {
   if (d->topology_status == DEOBJECT_FINALIZED) {
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "  Topology:\n"));
     PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "    [%d] neighbours: %d \n", d->rank, d->n_neighbour_procs));
-    for (p = 0; p < d->n_neighbour_procs; p++) { PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "    [%d]   neighbour[%d] = %d \n", d->rank, p, d->neighbour_procs[p])); }
+    for (p = 0; p < d->n_neighbour_procs; p++) PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "    [%d]   neighbour[%d] = %d \n", d->rank, p, d->neighbour_procs[p]));
     PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD, stdout));
   }
 
@@ -522,8 +522,8 @@ PetscErrorCode DMSwarmDataExPackFinalize(DMSwarmDataEx de) {
   /* init */
   for (i = 0; i < np; ++i) { de->messages_to_be_recvieved[i] = -1; }
   /* figure out the recv counts here */
-  for (i = 0; i < np; ++i) { PetscCallMPI(MPI_Isend(&de->messages_to_be_sent[i], 1, MPIU_INT, de->neighbour_procs[i], de->send_tags[i], de->comm, &de->_requests[i])); }
-  for (i = 0; i < np; ++i) { PetscCallMPI(MPI_Irecv(&de->messages_to_be_recvieved[i], 1, MPIU_INT, de->neighbour_procs[i], de->recv_tags[i], de->comm, &de->_requests[np + i])); }
+  for (i = 0; i < np; ++i) PetscCallMPI(MPI_Isend(&de->messages_to_be_sent[i], 1, MPIU_INT, de->neighbour_procs[i], de->send_tags[i], de->comm, &de->_requests[i]));
+  for (i = 0; i < np; ++i) PetscCallMPI(MPI_Irecv(&de->messages_to_be_recvieved[i], 1, MPIU_INT, de->neighbour_procs[i], de->recv_tags[i], de->comm, &de->_requests[np + i]));
   PetscCallMPI(MPI_Waitall(2 * np, de->_requests, de->_stats));
   /* create space for the data to be recvieved */
   total = 0;

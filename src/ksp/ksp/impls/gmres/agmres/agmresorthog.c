@@ -181,7 +181,7 @@ PetscErrorCode KSPAGMRESRoddec(KSP ksp, PetscInt nvec) {
         Qloc[k * nloc] = s * old + c * Qloc[k * nloc];
       }
       Qloc[d * nloc] = rho;
-      if (rank != Last) { PetscCallMPI(MPI_Send(&(wbufptr[d]), len, MPIU_SCALAR, rank + 1, agmres->tag, comm)); }
+      if (rank != Last) PetscCallMPI(MPI_Send(&(wbufptr[d]), len, MPIU_SCALAR, rank + 1, agmres->tag, comm));
       /* zero-out the d-th diagonal of Rloc ...*/
       for (j = d + 1; j < nvec; j++) {
         /* elimination of Rloc[i][j]*/

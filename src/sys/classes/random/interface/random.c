@@ -126,7 +126,7 @@ PetscErrorCode PetscRandomGetValues(PetscRandom r, PetscInt n, PetscScalar *val)
   PetscValidType(r, 1);
   if (!r->ops->getvalues) {
     PetscInt i;
-    for (i = 0; i < n; i++) { PetscCall((*r->ops->getvalue)(r, val + i)); }
+    for (i = 0; i < n; i++) PetscCall((*r->ops->getvalue)(r, val + i));
   } else PetscUseTypeMethod(r, getvalues, n, val);
   PetscCall(PetscObjectStateIncrease((PetscObject)r));
   PetscFunctionReturn(0);
@@ -158,7 +158,7 @@ PetscErrorCode PetscRandomGetValuesReal(PetscRandom r, PetscInt n, PetscReal *va
   PetscValidType(r, 1);
   if (!r->ops->getvaluesreal) {
     PetscInt i;
-    for (i = 0; i < n; i++) { PetscCall((*r->ops->getvaluereal)(r, val + i)); }
+    for (i = 0; i < n; i++) PetscCall((*r->ops->getvaluereal)(r, val + i));
   } else PetscUseTypeMethod(r, getvaluesreal, n, val);
   PetscCall(PetscObjectStateIncrease((PetscObject)r));
   PetscFunctionReturn(0);

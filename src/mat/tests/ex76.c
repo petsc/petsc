@@ -189,7 +189,7 @@ int main(int argc, char **args) {
   /*------------------------------------------*/
   /* Test aij matrix A */
   if (TestAIJ) {
-    if (displ) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "AIJ: \n")); }
+    if (displ) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "AIJ: \n"));
     i = 0;
     for (lvl = -1; lvl < 10; lvl++) {
       if (lvl == -1) { /* Cholesky factor */
@@ -214,13 +214,13 @@ int main(int argc, char **args) {
       PetscCall(VecAXPY(y, neg_one, x));
       PetscCall(VecNorm(y, NORM_2, &norm2));
 
-      if (displ) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "  lvl: %" PetscInt_FMT ", residual: %g\n", lvl, (double)norm2)); }
+      if (displ) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "  lvl: %" PetscInt_FMT ", residual: %g\n", lvl, (double)norm2));
     }
   }
 
   /* Test baij matrix A */
   if (TestBAIJ) {
-    if (displ) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "BAIJ: \n")); }
+    if (displ) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "BAIJ: \n"));
     i = 0;
     for (lvl = -1; lvl < 10; lvl++) {
       if (lvl == -1) { /* Cholesky factor */
@@ -244,12 +244,12 @@ int main(int argc, char **args) {
       /* Check the residual */
       PetscCall(VecAXPY(y, neg_one, x));
       PetscCall(VecNorm(y, NORM_2, &norm2));
-      if (displ) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "  lvl: %" PetscInt_FMT ", residual: %g\n", lvl, (double)norm2)); }
+      if (displ) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "  lvl: %" PetscInt_FMT ", residual: %g\n", lvl, (double)norm2));
     }
   }
 
   /* Test sbaij matrix sA */
-  if (displ) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "SBAIJ: \n")); }
+  if (displ) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "SBAIJ: \n"));
   i = 0;
   for (lvl = -1; lvl < 10; lvl++) {
     if (lvl == -1) { /* Cholesky factor */
@@ -296,7 +296,7 @@ int main(int argc, char **args) {
     /* Check the residual */
     PetscCall(VecAXPY(y, neg_one, x));
     PetscCall(VecNorm(y, NORM_2, &norm2));
-    if (displ) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "  lvl: %" PetscInt_FMT ", residual: %g\n", lvl, (double)norm2)); }
+    if (displ) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "  lvl: %" PetscInt_FMT ", residual: %g\n", lvl, (double)norm2));
   }
 
   PetscCall(ISDestroy(&perm));

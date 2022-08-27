@@ -37,7 +37,7 @@ PetscErrorCode PetscOptionsBegin_Private(PetscOptionItems *PetscOptionsObject, M
 
   PetscCall(PetscOptionsHasHelp(PetscOptionsObject->options, &PetscOptionsObject->printhelp));
   if (PetscOptionsObject->printhelp && PetscOptionsObject->count == 1) {
-    if (!PetscOptionsObject->alreadyprinted) { PetscCall((*PetscHelpPrintf)(comm, "----------------------------------------\n%s:\n", title)); }
+    if (!PetscOptionsObject->alreadyprinted) PetscCall((*PetscHelpPrintf)(comm, "----------------------------------------\n%s:\n", title));
   }
   PetscFunctionReturn(0);
 }
@@ -182,7 +182,7 @@ PetscErrorCode PetscOptionsGetFromTextInput(PetscOptionItems *PetscOptionsObject
       vald = (PetscInt *)next->data;
       for (i = 0; i < next->arraylength; i++) {
         PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%" PetscInt_FMT, vald[i]));
-        if (i < next->arraylength - 1) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, ",")); }
+        if (i < next->arraylength - 1) PetscCall(PetscPrintf(PETSC_COMM_WORLD, ","));
       }
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, ">: %s (%s) ", next->text, next->man));
       PetscCall(PetscScanString(PETSC_COMM_WORLD, 512, str));
@@ -237,7 +237,7 @@ PetscErrorCode PetscOptionsGetFromTextInput(PetscOptionItems *PetscOptionsObject
       valr = (PetscReal *)next->data;
       for (i = 0; i < next->arraylength; i++) {
         PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%g", (double)valr[i]));
-        if (i < next->arraylength - 1) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, ",")); }
+        if (i < next->arraylength - 1) PetscCall(PetscPrintf(PETSC_COMM_WORLD, ","));
       }
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, ">: %s (%s) ", next->text, next->man));
       PetscCall(PetscScanString(PETSC_COMM_WORLD, 512, str));
@@ -564,7 +564,7 @@ PetscErrorCode PetscOptionsEnd_Private(PetscOptionItems *PetscOptionsObject) {
       }
       PetscCall(PetscOptionsSetValue(PetscOptionsObject->options, option, value));
     }
-    if (PetscOptionsObject->next->type == OPTION_ELIST) { PetscCall(PetscStrNArrayDestroy(PetscOptionsObject->next->nlist, (char ***)&PetscOptionsObject->next->list)); }
+    if (PetscOptionsObject->next->type == OPTION_ELIST) PetscCall(PetscStrNArrayDestroy(PetscOptionsObject->next->nlist, (char ***)&PetscOptionsObject->next->list));
     PetscCall(PetscFree(PetscOptionsObject->next->text));
     PetscCall(PetscFree(PetscOptionsObject->next->option));
     PetscCall(PetscFree(PetscOptionsObject->next->man));
@@ -1214,7 +1214,7 @@ PetscErrorCode PetscOptionsEList_Private(PetscOptionItems *PetscOptionsObject, c
   if (set) *set = lset;
   if (PetscOptionsObject->printhelp && PetscOptionsObject->count == 1 && !PetscOptionsObject->alreadyprinted) {
     PetscCall((*PetscHelpPrintf)(PetscOptionsObject->comm, "  -%s%s <now %s : formerly %s> %s (choose one of)", PetscOptionsObject->prefix ? PetscOptionsObject->prefix : "", opt + 1, lset && value ? list[*value] : currentvalue, currentvalue, ltext));
-    for (i = 0; i < ntext; i++) { PetscCall((*PetscHelpPrintf)(PetscOptionsObject->comm, " %s", list[i])); }
+    for (i = 0; i < ntext; i++) PetscCall((*PetscHelpPrintf)(PetscOptionsObject->comm, " %s", list[i]));
     PetscCall((*PetscHelpPrintf)(PetscOptionsObject->comm, " (%s)\n", ManSection(man)));
   }
   PetscFunctionReturn(0);
@@ -1490,7 +1490,7 @@ PetscErrorCode PetscOptionsRealArray_Private(PetscOptionItems *PetscOptionsObjec
   PetscCall(PetscOptionsGetRealArray(PetscOptionsObject->options, PetscOptionsObject->prefix, opt, value, n, set));
   if (PetscOptionsObject->printhelp && PetscOptionsObject->count == 1 && !PetscOptionsObject->alreadyprinted) {
     PetscCall((*PetscHelpPrintf)(PetscOptionsObject->comm, "  -%s%s <%g", PetscOptionsObject->prefix ? PetscOptionsObject->prefix : "", opt + 1, (double)value[0]));
-    for (i = 1; i < *n; i++) { PetscCall((*PetscHelpPrintf)(PetscOptionsObject->comm, ",%g", (double)value[i])); }
+    for (i = 1; i < *n; i++) PetscCall((*PetscHelpPrintf)(PetscOptionsObject->comm, ",%g", (double)value[i]));
     PetscCall((*PetscHelpPrintf)(PetscOptionsObject->comm, ">: %s (%s)\n", text, ManSection(man)));
   }
   PetscFunctionReturn(0);
@@ -1550,7 +1550,7 @@ PetscErrorCode PetscOptionsScalarArray_Private(PetscOptionItems *PetscOptionsObj
   PetscCall(PetscOptionsGetScalarArray(PetscOptionsObject->options, PetscOptionsObject->prefix, opt, value, n, set));
   if (PetscOptionsObject->printhelp && PetscOptionsObject->count == 1 && !PetscOptionsObject->alreadyprinted) {
     PetscCall((*PetscHelpPrintf)(PetscOptionsObject->comm, "  -%s%s <%g+%gi", PetscOptionsObject->prefix ? PetscOptionsObject->prefix : "", opt + 1, (double)PetscRealPart(value[0]), (double)PetscImaginaryPart(value[0])));
-    for (i = 1; i < *n; i++) { PetscCall((*PetscHelpPrintf)(PetscOptionsObject->comm, ",%g+%gi", (double)PetscRealPart(value[i]), (double)PetscImaginaryPart(value[i]))); }
+    for (i = 1; i < *n; i++) PetscCall((*PetscHelpPrintf)(PetscOptionsObject->comm, ",%g+%gi", (double)PetscRealPart(value[i]), (double)PetscImaginaryPart(value[i])));
     PetscCall((*PetscHelpPrintf)(PetscOptionsObject->comm, ">: %s (%s)\n", text, ManSection(man)));
   }
   PetscFunctionReturn(0);
@@ -1615,7 +1615,7 @@ PetscErrorCode PetscOptionsIntArray_Private(PetscOptionItems *PetscOptionsObject
   PetscCall(PetscOptionsGetIntArray(PetscOptionsObject->options, PetscOptionsObject->prefix, opt, value, n, set));
   if (PetscOptionsObject->printhelp && PetscOptionsObject->count == 1 && !PetscOptionsObject->alreadyprinted) {
     PetscCall((*PetscHelpPrintf)(PetscOptionsObject->comm, "  -%s%s <%" PetscInt_FMT, PetscOptionsObject->prefix ? PetscOptionsObject->prefix : "", opt + 1, value[0]));
-    for (i = 1; i < *n; i++) { PetscCall((*PetscHelpPrintf)(PetscOptionsObject->comm, ",%" PetscInt_FMT, value[i])); }
+    for (i = 1; i < *n; i++) PetscCall((*PetscHelpPrintf)(PetscOptionsObject->comm, ",%" PetscInt_FMT, value[i]));
     PetscCall((*PetscHelpPrintf)(PetscOptionsObject->comm, ">: %s (%s)\n", text, ManSection(man)));
   }
   PetscFunctionReturn(0);
@@ -1733,7 +1733,7 @@ PetscErrorCode PetscOptionsBoolArray_Private(PetscOptionItems *PetscOptionsObjec
   PetscCall(PetscOptionsGetBoolArray(PetscOptionsObject->options, PetscOptionsObject->prefix, opt, value, n, set));
   if (PetscOptionsObject->printhelp && PetscOptionsObject->count == 1 && !PetscOptionsObject->alreadyprinted) {
     PetscCall((*PetscHelpPrintf)(PetscOptionsObject->comm, "  -%s%s <%d", PetscOptionsObject->prefix ? PetscOptionsObject->prefix : "", opt + 1, value[0]));
-    for (i = 1; i < *n; i++) { PetscCall((*PetscHelpPrintf)(PetscOptionsObject->comm, ",%d", value[i])); }
+    for (i = 1; i < *n; i++) PetscCall((*PetscHelpPrintf)(PetscOptionsObject->comm, ",%d", value[i]));
     PetscCall((*PetscHelpPrintf)(PetscOptionsObject->comm, ">: %s (%s)\n", text, ManSection(man)));
   }
   PetscFunctionReturn(0);

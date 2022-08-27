@@ -94,7 +94,7 @@ PetscErrorCode SNESComputeJacobianDefault(SNES snes, Vec x1, Mat J, Mat B, void 
   PetscOptionsEnd();
   if (flg && !value) use_wp = PETSC_FALSE;
 
-  if (use_wp) { PetscCall(VecNorm(x1, NORM_2, &unorm)); }
+  if (use_wp) PetscCall(VecNorm(x1, NORM_2, &unorm));
   /* Compute Jacobian approximation, 1 column at a time.
       x1 = current iterate, j1a = F(x1)
       x2 = perturbed iterate, j2a = F(x2)
@@ -134,7 +134,7 @@ PetscErrorCode SNESComputeJacobianDefault(SNES snes, Vec x1, Mat J, Mat B, void 
     amax *= 1.e-14;
     PetscCall(VecGetArray(j2a, &y));
     for (j = start; j < end; j++) {
-      if (PetscAbsScalar(y[j - start]) > amax || j == i) { PetscCall(MatSetValues(B, 1, &j, 1, &i, y + j - start, INSERT_VALUES)); }
+      if (PetscAbsScalar(y[j - start]) > amax || j == i) PetscCall(MatSetValues(B, 1, &j, 1, &i, y + j - start, INSERT_VALUES));
     }
     PetscCall(VecRestoreArray(j2a, &y));
   }

@@ -130,7 +130,7 @@ PetscErrorCode HeaderlessBinaryReadCheck(DM dm, const char name[]) {
         }
       }
     }
-    if (dataverified) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "Headerless read of data verified for: %s\n", name)); }
+    if (dataverified) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Headerless read of data verified for: %s\n", name));
   }
   PetscFunctionReturn(0);
 }

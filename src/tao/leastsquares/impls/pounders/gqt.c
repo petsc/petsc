@@ -47,7 +47,7 @@ static PetscErrorCode estsv(PetscInt n, PetscReal *r, PetscInt ldr, PetscReal *s
       if (s < sm) {
         temp = wm - w;
         w    = wm;
-        if (i < n - 1) { PetscCallBLAS("BLASaxpy", BLASaxpy_(&blasnmi, &temp, &r[i + ldr * (i + 1)], &blasldr, &z[i + 1], &blas1)); }
+        if (i < n - 1) PetscCallBLAS("BLASaxpy", BLASaxpy_(&blasnmi, &temp, &r[i + ldr * (i + 1)], &blasldr, &z[i + 1], &blas1));
       }
       z[i] = w;
     }

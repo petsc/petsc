@@ -146,7 +146,7 @@ PETSC_INTERN PetscErrorCode MatSeqAIJMKL_create_mkl_handle(Mat A) {
     PetscCallExternal(mkl_sparse_x_create_csr, &aijmkl->csrA, SPARSE_INDEX_BASE_ZERO, m, n, ai, ai + 1, aj, aa);
     PetscCallExternal(mkl_sparse_set_mv_hint, aijmkl->csrA, SPARSE_OPERATION_NON_TRANSPOSE, aijmkl->descr, 1000);
     PetscCallExternal(mkl_sparse_set_memory_hint, aijmkl->csrA, SPARSE_MEMORY_AGGRESSIVE);
-    if (!aijmkl->no_SpMV2) { PetscCallExternal(mkl_sparse_optimize, aijmkl->csrA); }
+    if (!aijmkl->no_SpMV2) PetscCallExternal(mkl_sparse_optimize, aijmkl->csrA);
     aijmkl->sparse_optimized = PETSC_TRUE;
     PetscCall(PetscObjectStateGet((PetscObject)A, &(aijmkl->state)));
   } else {

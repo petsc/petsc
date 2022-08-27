@@ -224,7 +224,7 @@ PetscErrorCode DMPlexGetAdjacency_Internal(DM dm, PetscInt p, PetscBool useCone,
       PetscInt p    = orig[i];
       PetscInt aDof = 0;
 
-      if (p >= aStart && p < aEnd) { PetscCall(PetscSectionGetDof(aSec, p, &aDof)); }
+      if (p >= aStart && p < aEnd) PetscCall(PetscSectionGetDof(aSec, p, &aDof));
       if (aDof) {
         PetscInt aOff;
         PetscInt s, q;

@@ -37,7 +37,7 @@ static PetscErrorCode KSPSolve_FBCGS(KSP ksp) {
   /* Only supports right preconditioning */
   PetscCheck(ksp->pc_side == PC_RIGHT, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "KSP fbcgs does not support %s", PCSides[ksp->pc_side]);
   if (!ksp->guess_zero) {
-    if (!bcgs->guess) { PetscCall(VecDuplicate(X, &bcgs->guess)); }
+    if (!bcgs->guess) PetscCall(VecDuplicate(X, &bcgs->guess));
     PetscCall(VecCopy(X, bcgs->guess));
   } else {
     PetscCall(VecSet(X, 0.0));
@@ -56,7 +56,7 @@ static PetscErrorCode KSPSolve_FBCGS(KSP ksp) {
   }
 
   /* Test for nothing to do */
-  if (ksp->normtype != KSP_NORM_NONE) { PetscCall(VecNorm(R, NORM_2, &dp)); }
+  if (ksp->normtype != KSP_NORM_NONE) PetscCall(VecNorm(R, NORM_2, &dp));
   PetscCall(PetscObjectSAWsTakeAccess((PetscObject)ksp));
   ksp->its   = 0;
   ksp->rnorm = dp;
@@ -121,7 +121,7 @@ static PetscErrorCode KSPSolve_FBCGS(KSP ksp) {
     PetscCall(VecAXPBYPCZ(X, alpha, omega, 1.0, P2, S2)); /* x <- alpha * p2 + omega * s2 + x */
 
     PetscCall(VecWAXPY(R, -omega, T, S)); /* r <- s - omega t */
-    if (ksp->normtype != KSP_NORM_NONE && ksp->chknorm < i + 2) { PetscCall(VecNorm(R, NORM_2, &dp)); }
+    if (ksp->normtype != KSP_NORM_NONE && ksp->chknorm < i + 2) PetscCall(VecNorm(R, NORM_2, &dp));
 
     rhoold   = rho;
     omegaold = omega;

@@ -44,7 +44,7 @@ int main(int argc, char **args) {
     ptrdiff_t     alloc_local, local_n0, local_0_start;
 
     DIM = 2;
-    if (rank == 0) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "Use FFTW without PETSc-FFTW interface, DIM %" PetscInt_FMT "\n", DIM)); }
+    if (rank == 0) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Use FFTW without PETSc-FFTW interface, DIM %" PetscInt_FMT "\n", DIM));
     fftw_mpi_init();
     N           = N0 * N1;
     alloc_local = fftw_mpi_local_size_2d(N0, N1, PETSC_COMM_WORLD, &local_n0, &local_0_start);
@@ -77,7 +77,7 @@ int main(int argc, char **args) {
     if (view) PetscCall(VecView(z, PETSC_VIEWER_STDOUT_WORLD));
     PetscCall(VecAXPY(z, -1.0, x));
     PetscCall(VecNorm(z, NORM_1, &enorm));
-    if (enorm > 1.e-11 && rank == 0) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Error norm of |x - z| %g\n", (double)enorm)); }
+    if (enorm > 1.e-11 && rank == 0) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Error norm of |x - z| %g\n", (double)enorm));
 
     /* Free spaces */
     fftw_destroy_plan(fplan);
@@ -131,7 +131,7 @@ int main(int argc, char **args) {
       if (view) PetscCall(VecView(z, PETSC_VIEWER_STDOUT_WORLD));
       PetscCall(VecAXPY(z, -1.0, x));
       PetscCall(VecNorm(z, NORM_1, &enorm));
-      if (enorm > 1.e-9 && rank == 0) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Error norm of |x - z| %e\n", enorm)); }
+      if (enorm > 1.e-9 && rank == 0) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Error norm of |x - z| %e\n", enorm));
 
       PetscCall(VecDestroy(&x));
       PetscCall(VecDestroy(&y));

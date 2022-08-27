@@ -434,8 +434,8 @@ PetscErrorCode        PCReset_ML(PC pc) {
 
          PetscFunctionBegin;
          if (dim) {
-           for (level = 0; level <= fine_level; level++) { PetscCall(VecDestroy(&pc_ml->gridctx[level].coords)); }
-           if (pc_ml->ml_object && pc_ml->ml_object->Grid) {
+           for (level = 0; level <= fine_level; level++) PetscCall(VecDestroy(&pc_ml->gridctx[level].coords));
+    if (pc_ml->ml_object && pc_ml->ml_object->Grid) {
              ML_Aggregate_Viz_Stats *grid_info = (ML_Aggregate_Viz_Stats *)pc_ml->ml_object->Grid[0].Grid;
              grid_info->x                      = 0; /* do this so ML doesn't try to free coordinates */
              grid_info->y                      = 0;
@@ -571,7 +571,7 @@ PetscErrorCode PCSetUp_ML(PC pc) {
       }
 
       for (level = 0; level < fine_level; level++) {
-        if (level > 0) { PetscCall(PCMGSetResidual(pc, level, PCMGResidualDefault, gridctx[level].A)); }
+        if (level > 0) PetscCall(PCMGSetResidual(pc, level, PCMGResidualDefault, gridctx[level].A));
         PetscCall(KSPSetOperators(gridctx[level].ksp, gridctx[level].A, gridctx[level].A));
       }
       PetscCall(PCMGSetResidual(pc, fine_level, PCMGResidualDefault, gridctx[fine_level].A));
@@ -847,7 +847,7 @@ PetscErrorCode PCSetUp_ML(PC pc) {
 
     PetscCall(PCMGSetInterpolation(pc, level1, gridctx[level].P));
     PetscCall(PCMGSetRestriction(pc, level1, gridctx[level].R));
-    if (level > 0) { PetscCall(PCMGSetResidual(pc, level, PCMGResidualDefault, gridctx[level].A)); }
+    if (level > 0) PetscCall(PCMGSetResidual(pc, level, PCMGResidualDefault, gridctx[level].A));
     PetscCall(KSPSetOperators(gridctx[level].ksp, gridctx[level].A, gridctx[level].A));
   }
   PetscCall(PCMGSetResidual(pc, fine_level, PCMGResidualDefault, gridctx[fine_level].A));
@@ -967,7 +967,7 @@ PetscErrorCode PCSetFromOptions_ML(PC pc, PetscOptionItems *PetscOptionsObject) 
   PetscCheck(pc_ml->EnergyMinimization >= -1 && pc_ml->EnergyMinimization <= 4, comm, PETSC_ERR_ARG_OUTOFRANGE, "EnergyMinimization must be in range -1..4");
   PetscCheck(pc_ml->EnergyMinimization != 4 || size == 1, comm, PETSC_ERR_SUP, "Energy minimization type 4 does not work in parallel");
   if (pc_ml->EnergyMinimization == 4) PetscCall(PetscInfo(pc, "Mandel's energy minimization scheme is experimental and broken in ML-6.2\n"));
-  if (pc_ml->EnergyMinimization) { PetscCall(PetscOptionsReal("-pc_ml_EnergyMinimizationDropTol", "Energy minimization drop tolerance", "None", pc_ml->EnergyMinimizationDropTol, &pc_ml->EnergyMinimizationDropTol, NULL)); }
+  if (pc_ml->EnergyMinimization) PetscCall(PetscOptionsReal("-pc_ml_EnergyMinimizationDropTol", "Energy minimization drop tolerance", "None", pc_ml->EnergyMinimizationDropTol, &pc_ml->EnergyMinimizationDropTol, NULL));
   if (pc_ml->EnergyMinimization == 2) {
     /* According to ml_MultiLevelPreconditioner.cpp, this option is only meaningful for norm type (2) */
     PetscCall(PetscOptionsBool("-pc_ml_EnergyMinimizationCheap", "Use cheaper variant of norm type 2", "None", pc_ml->EnergyMinimizationCheap, &pc_ml->EnergyMinimizationCheap, NULL));

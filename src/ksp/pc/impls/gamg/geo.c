@@ -386,7 +386,7 @@ static PetscErrorCode triangulateAndFormProl(IS selected_2, PetscInt data_stride
               if (PetscAbs(PetscRealPart(shp)) > 1.e-6) {
                 PetscInt cgid = crsGID[clids[idx]];
                 PetscInt jj = cgid * bs, ii = fgid * bs; /* need to gloalize */
-                for (tt = 0; tt < bs; tt++, ii++, jj++) { PetscCall(MatSetValues(a_Prol, 1, &ii, 1, &jj, &shp, INSERT_VALUES)); }
+                for (tt = 0; tt < bs; tt++, ii++, jj++) PetscCall(MatSetValues(a_Prol, 1, &ii, 1, &jj, &shp, INSERT_VALUES));
               }
             }
           }

@@ -174,7 +174,7 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_DA_Q1(DM dm, DM dmc, Petsc
 
   PetscCall(PetscFree(xi));
   PetscCall(PetscFree(elcoor));
-  for (q = 0; q < npoints_q; q++) { PetscCall(PetscFree(basis[q])); }
+  for (q = 0; q < npoints_q; q++) PetscCall(PetscFree(basis[q]));
   PetscCall(PetscFree(basis));
   PetscFunctionReturn(0);
 }

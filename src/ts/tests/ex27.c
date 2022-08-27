@@ -169,7 +169,7 @@ static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user) {
   /* From Section 4 in [1], \epsilon = 0.64 h^.98 */
   if (user->epsilon < 0.) user->epsilon = 0.64 * pow(user->h, 1.98);
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-param_view", &view, NULL));
-  if (view) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "N: %" PetscInt_FMT " L: %g h: %g eps: %g\n", user->N, (double)user->L, (double)user->h, (double)user->epsilon)); }
+  if (view) PetscCall(PetscPrintf(PETSC_COMM_SELF, "N: %" PetscInt_FMT " L: %g h: %g eps: %g\n", user->N, (double)user->L, (double)user->h, (double)user->epsilon));
   PetscCall(DMSwarmSetType(*sw, DMSWARM_PIC));
   PetscCall(DMSwarmSetCellDM(*sw, dm));
   PetscCall(DMSwarmRegisterPetscDatatypeField(*sw, "velocity", dim, PETSC_REAL));

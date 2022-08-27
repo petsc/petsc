@@ -5,7 +5,7 @@ static PetscErrorCode DMDestroy_Product(DM dm) {
   PetscInt    d;
 
   PetscFunctionBeginUser;
-  for (d = 0; d < DMPRODUCT_MAX_DIM; ++d) { PetscCall(DMDestroy(&product->dm[d])); }
+  for (d = 0; d < DMPRODUCT_MAX_DIM; ++d) PetscCall(DMDestroy(&product->dm[d]));
   PetscCall(PetscFree(product));
   PetscFunctionReturn(0);
 }

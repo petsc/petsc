@@ -166,7 +166,7 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX2D_SubDivide(DM dm, DM
   PetscCall(DMSwarmRestoreField(dm, DMSwarmPICField_coor, NULL, NULL, (void **)&swarm_coor));
 
   PetscCall(PetscFree(xi));
-  for (q = 0; q < npoints_q; q++) { PetscCall(PetscFree(basis[q])); }
+  for (q = 0; q < npoints_q; q++) PetscCall(PetscFree(basis[q]));
   PetscCall(PetscFree(basis));
   PetscFunctionReturn(0);
 }
@@ -316,7 +316,7 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX2D_Regular(DM dm, DM d
   PetscCall(DMSwarmRestoreField(dm, DMSwarmPICField_coor, NULL, NULL, (void **)&swarm_coor));
 
   PetscCall(PetscFree(xi));
-  for (q = 0; q < npoints_q; q++) { PetscCall(PetscFree(basis[q])); }
+  for (q = 0; q < npoints_q; q++) PetscCall(PetscFree(basis[q]));
   PetscCall(PetscFree(basis));
   PetscFunctionReturn(0);
 }

@@ -575,7 +575,7 @@ static PetscErrorCode THISetUpDM(THI thi, DM dm) {
 
   PetscFunctionBeginUser;
   PetscCall(DMDAGetInfo(dm, &dim, &Mz, &My, &Mx, 0, &my, &mx, 0, &s, 0, 0, 0, &st));
-  if (dim == 2) { PetscCall(DMDAGetInfo(dm, &dim, &My, &Mx, 0, &my, &mx, 0, 0, &s, 0, 0, 0, &st)); }
+  if (dim == 2) PetscCall(DMDAGetInfo(dm, &dim, &My, &Mx, 0, &my, &mx, 0, 0, &s, 0, 0, 0, &st));
   PetscCall(DMGetRefineLevel(dm, &refinelevel));
   PetscCall(DMGetCoarsenLevel(dm, &coarsenlevel));
   level = refinelevel - coarsenlevel;
@@ -1349,7 +1349,7 @@ static PetscErrorCode THIDAVecView_VTK_XML(THI thi, DM da, Vec X, const char fil
       PetscInt           i, j, k, xs, xm, ys, ym, zs, zm;
       const PetscScalar *ptr;
       MPI_Status         status;
-      if (r) { PetscCallMPI(MPI_Recv(range, 6, MPIU_INT, r, tag, comm, MPI_STATUS_IGNORE)); }
+      if (r) PetscCallMPI(MPI_Recv(range, 6, MPIU_INT, r, tag, comm, MPI_STATUS_IGNORE));
       zs = range[0];
       ys = range[1];
       xs = range[2];
@@ -1383,11 +1383,11 @@ static PetscErrorCode THIDAVecView_VTK_XML(THI thi, DM da, Vec X, const char fil
 
       PetscCall(PetscViewerASCIIPrintf(viewer, "      <PointData>\n"));
       PetscCall(PetscViewerASCIIPrintf(viewer, "        <DataArray type=\"Float32\" Name=\"velocity\" NumberOfComponents=\"3\" format=\"ascii\">\n"));
-      for (i = 0; i < nn; i += dof) { PetscCall(PetscViewerASCIIPrintf(viewer, "%f %f %f\n", (double)(PetscRealPart(ptr[i]) * units->year / units->meter), (double)(PetscRealPart(ptr[i + 1]) * units->year / units->meter), 0.0)); }
+      for (i = 0; i < nn; i += dof) PetscCall(PetscViewerASCIIPrintf(viewer, "%f %f %f\n", (double)(PetscRealPart(ptr[i]) * units->year / units->meter), (double)(PetscRealPart(ptr[i + 1]) * units->year / units->meter), 0.0));
       PetscCall(PetscViewerASCIIPrintf(viewer, "        </DataArray>\n"));
 
       PetscCall(PetscViewerASCIIPrintf(viewer, "        <DataArray type=\"Int32\" Name=\"rank\" NumberOfComponents=\"1\" format=\"ascii\">\n"));
-      for (i = 0; i < nn; i += dof) { PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT "\n", r)); }
+      for (i = 0; i < nn; i += dof) PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT "\n", r));
       PetscCall(PetscViewerASCIIPrintf(viewer, "        </DataArray>\n"));
       PetscCall(PetscViewerASCIIPrintf(viewer, "      </PointData>\n"));
 

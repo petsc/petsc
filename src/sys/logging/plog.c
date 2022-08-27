@@ -122,8 +122,8 @@ PETSC_INTERN PetscErrorCode PetscLogInitialize(void) {
   if (opt) petsc_logActions = PETSC_FALSE;
   PetscCall(PetscOptionsHasName(NULL, NULL, "-log_exclude_objects", &opt));
   if (opt) petsc_logObjects = PETSC_FALSE;
-  if (petsc_logActions) { PetscCall(PetscMalloc1(petsc_maxActions, &petsc_actions)); }
-  if (petsc_logObjects) { PetscCall(PetscMalloc1(petsc_maxObjects, &petsc_objects)); }
+  if (petsc_logActions) PetscCall(PetscMalloc1(petsc_maxActions, &petsc_actions));
+  if (petsc_logObjects) PetscCall(PetscMalloc1(petsc_maxObjects, &petsc_objects));
   PetscLogPHC = PetscLogObjCreateDefault;
   PetscLogPHD = PetscLogObjDestroyDefault;
   /* Setup default logging structures */
@@ -414,7 +414,7 @@ PetscErrorCode PetscLogStageRegister(const char sname[], PetscLogStage *stage) {
   PetscCall(PetscStageLogRegister(stageLog, sname, stage));
   /* Copy events already changed in the main stage, this sucks */
   PetscCall(PetscEventPerfLogEnsureSize(stageLog->stageInfo[*stage].eventLog, stageLog->eventLog->numEvents));
-  for (event = 0; event < stageLog->eventLog->numEvents; event++) { PetscCall(PetscEventPerfInfoCopy(&stageLog->stageInfo[0].eventLog->eventInfo[event], &stageLog->stageInfo[*stage].eventLog->eventInfo[event])); }
+  for (event = 0; event < stageLog->eventLog->numEvents; event++) PetscCall(PetscEventPerfInfoCopy(&stageLog->stageInfo[0].eventLog->eventInfo[event], &stageLog->stageInfo[*stage].eventLog->eventInfo[event]));
   PetscCall(PetscClassPerfLogEnsureSize(stageLog->stageInfo[*stage].classLog, stageLog->classLog->numClasses));
   PetscFunctionReturn(0);
 }
@@ -729,7 +729,7 @@ PetscErrorCode PetscLogEventIncludeClass(PetscClassId classid) {
 
   PetscFunctionBegin;
   PetscCall(PetscLogGetStageLog(&stageLog));
-  for (stage = 0; stage < stageLog->numStages; stage++) { PetscCall(PetscEventPerfLogActivateClass(stageLog->stageInfo[stage].eventLog, stageLog->eventLog, classid)); }
+  for (stage = 0; stage < stageLog->numStages; stage++) PetscCall(PetscEventPerfLogActivateClass(stageLog->stageInfo[stage].eventLog, stageLog->eventLog, classid));
   PetscFunctionReturn(0);
 }
 
@@ -751,7 +751,7 @@ PetscErrorCode PetscLogEventExcludeClass(PetscClassId classid) {
 
   PetscFunctionBegin;
   PetscCall(PetscLogGetStageLog(&stageLog));
-  for (stage = 0; stage < stageLog->numStages; stage++) { PetscCall(PetscEventPerfLogDeactivateClass(stageLog->stageInfo[stage].eventLog, stageLog->eventLog, classid)); }
+  for (stage = 0; stage < stageLog->numStages; stage++) PetscCall(PetscEventPerfLogDeactivateClass(stageLog->stageInfo[stage].eventLog, stageLog->eventLog, classid));
   PetscFunctionReturn(0);
 }
 
@@ -1278,7 +1278,7 @@ PetscErrorCode PetscLogView_Detailed(PetscViewer viewer) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "Stages[\"%s\"] = {}\n", stageLog->stageInfo[stage].name));
     PetscCall(PetscViewerASCIIPrintf(viewer, "Stages[\"%s\"][\"summary\"] = {}\n", stageLog->stageInfo[stage].name));
     PetscCallMPI(MPI_Allreduce(&stageLog->stageInfo[stage].eventLog->numEvents, &numEvents, 1, MPI_INT, MPI_MAX, comm));
-    for (event = 0; event < numEvents; event++) { PetscCall(PetscViewerASCIIPrintf(viewer, "Stages[\"%s\"][\"%s\"] = {}\n", stageLog->stageInfo[stage].name, stageLog->eventLog->eventInfo[event].name)); }
+    for (event = 0; event < numEvents; event++) PetscCall(PetscViewerASCIIPrintf(viewer, "Stages[\"%s\"][\"%s\"] = {}\n", stageLog->stageInfo[stage].name, stageLog->eventLog->eventInfo[event].name));
   }
   PetscCall(PetscMallocGetMaximumUsage(&maxMem));
   PetscCall(PetscViewerASCIIPushSynchronized(viewer));
@@ -1360,8 +1360,8 @@ PetscErrorCode PetscLogView_CSV(PetscViewer viewer) {
       if (eventInfo->dof[0] >= 0.) {
         PetscInt d, e;
 
-        for (d = 0; d < 8; ++d) { PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, ",%g", eventInfo->dof[d])); }
-        for (e = 0; e < 8; ++e) { PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, ",%g", eventInfo->errors[e])); }
+        for (d = 0; d < 8; ++d) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, ",%g", eventInfo->dof[d]));
+        for (e = 0; e < 8; ++e) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, ",%g", eventInfo->errors[e]));
       }
       PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "\n"));
     }
@@ -1714,19 +1714,19 @@ PetscErrorCode PetscLogView_Default(PetscViewer viewer) {
 
   /* Report events */
   PetscCall(PetscFPrintf(comm, fd, "Event                Count      Time (sec)     Flop                              --- Global ---  --- Stage ----  Total"));
-  if (PetscLogMemory) { PetscCall(PetscFPrintf(comm, fd, "  Malloc EMalloc MMalloc RMI")); }
+  if (PetscLogMemory) PetscCall(PetscFPrintf(comm, fd, "  Malloc EMalloc MMalloc RMI"));
 #if defined(PETSC_HAVE_DEVICE)
   PetscCall(PetscFPrintf(comm, fd, "   GPU    - CpuToGpu -   - GpuToCpu - GPU"));
 #endif
   PetscCall(PetscFPrintf(comm, fd, "\n"));
   PetscCall(PetscFPrintf(comm, fd, "                   Max Ratio  Max     Ratio   Max  Ratio  Mess   AvgLen  Reduct  %%T %%F %%M %%L %%R  %%T %%F %%M %%L %%R Mflop/s"));
-  if (PetscLogMemory) { PetscCall(PetscFPrintf(comm, fd, " Mbytes Mbytes Mbytes Mbytes")); }
+  if (PetscLogMemory) PetscCall(PetscFPrintf(comm, fd, " Mbytes Mbytes Mbytes Mbytes"));
 #if defined(PETSC_HAVE_DEVICE)
   PetscCall(PetscFPrintf(comm, fd, " Mflop/s Count   Size   Count   Size  %%F"));
 #endif
   PetscCall(PetscFPrintf(comm, fd, "\n"));
   PetscCall(PetscFPrintf(comm, fd, "------------------------------------------------------------------------------------------------------------------------"));
-  if (PetscLogMemory) { PetscCall(PetscFPrintf(comm, fd, "-----------------------------")); }
+  if (PetscLogMemory) PetscCall(PetscFPrintf(comm, fd, "-----------------------------"));
 #if defined(PETSC_HAVE_DEVICE)
   PetscCall(PetscFPrintf(comm, fd, "---------------------------------------"));
 #endif
@@ -1889,7 +1889,7 @@ PetscErrorCode PetscLogView_Default(PetscViewer viewer) {
         else flopr = 0.0;
         if (fracStageTime > 1.00) PetscCall(PetscFPrintf(comm, fd, "Warning -- total time of event greater than time of entire stage -- something is wrong with the timer\n"));
         PetscCall(PetscFPrintf(comm, fd, "%-16s %7d%4.1f %5.4e%4.1f %3.2e%4.1f %2.1e %2.1e %2.1e%3.0f%3.0f%3.0f%3.0f%3.0f %3.0f%3.0f%3.0f%3.0f%3.0f %5.0f", name, maxC, ratC, maxt, ratt, maxf, ratf, totm, totml, totr, 100.0 * fracTime, 100.0 * fracFlops, 100.0 * fracMess, 100.0 * fracMessLen, 100.0 * fracRed, 100.0 * fracStageTime, 100.0 * fracStageFlops, 100.0 * fracStageMess, 100.0 * fracStageMessLen, 100.0 * fracStageRed, PetscAbs(flopr) / 1.0e6));
-        if (PetscLogMemory) { PetscCall(PetscFPrintf(comm, fd, " %5.0f   %5.0f   %5.0f   %5.0f", mal / 1.0e6, emalmax / 1.0e6, malmax / 1.0e6, mem / 1.0e6)); }
+        if (PetscLogMemory) PetscCall(PetscFPrintf(comm, fd, " %5.0f   %5.0f   %5.0f   %5.0f", mal / 1.0e6, emalmax / 1.0e6, malmax / 1.0e6, mem / 1.0e6));
 #if defined(PETSC_HAVE_DEVICE)
         if (totf != 0.0) fracgflops = gflops / totf;
         else fracgflops = 0.0;
@@ -1904,7 +1904,7 @@ PetscErrorCode PetscLogView_Default(PetscViewer viewer) {
 
   /* Memory usage and object creation */
   PetscCall(PetscFPrintf(comm, fd, "------------------------------------------------------------------------------------------------------------------------"));
-  if (PetscLogMemory) { PetscCall(PetscFPrintf(comm, fd, "-----------------------------")); }
+  if (PetscLogMemory) PetscCall(PetscFPrintf(comm, fd, "-----------------------------"));
 #if defined(PETSC_HAVE_DEVICE)
   PetscCall(PetscFPrintf(comm, fd, "---------------------------------------"));
 #endif
@@ -2426,7 +2426,7 @@ PetscErrorCode PetscClassIdRegister(const char name[], PetscClassId *oclass) {
 #if defined(PETSC_USE_LOG)
   PetscCall(PetscLogGetStageLog(&stageLog));
   PetscCall(PetscClassRegLogRegister(stageLog->classLog, name, *oclass));
-  for (stage = 0; stage < stageLog->numStages; stage++) { PetscCall(PetscClassPerfLogEnsureSize(stageLog->stageInfo[stage].classLog, stageLog->classLog->numClasses)); }
+  for (stage = 0; stage < stageLog->numStages; stage++) PetscCall(PetscClassPerfLogEnsureSize(stageLog->stageInfo[stage].classLog, stageLog->classLog->numClasses));
 #endif
   PetscFunctionReturn(0);
 }

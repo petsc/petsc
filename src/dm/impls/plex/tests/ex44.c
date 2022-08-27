@@ -63,7 +63,7 @@ static PetscErrorCode CreateAdaptLabel(DM dm, AppCtx *ctx, DMLabel *adaptLabel) 
     if (!bdIS) continue;
     PetscCall(ISGetLocalSize(bdIS, &n));
     PetscCall(ISGetIndices(bdIS, &points));
-    for (i = 0; i < n; ++i) { PetscCall(DMLabelSetValue(*adaptLabel, points[i], DM_ADAPT_REFINE)); }
+    for (i = 0; i < n; ++i) PetscCall(DMLabelSetValue(*adaptLabel, points[i], DM_ADAPT_REFINE));
     PetscCall(ISRestoreIndices(bdIS, &points));
     PetscCall(ISDestroy(&bdIS));
   }

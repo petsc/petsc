@@ -298,9 +298,9 @@ static PetscErrorCode TSStep_IRK(TS ts) {
   PetscReal      next_time_step = ts->time_step;
 
   PetscFunctionBegin;
-  if (!ts->steprollback) { PetscCall(VecCopy(ts->vec_sol, irk->U0)); }
+  if (!ts->steprollback) PetscCall(VecCopy(ts->vec_sol, irk->U0));
   PetscCall(VecGetBlockSize(ts->vec_sol, &bs));
-  for (i = 0; i < nstages; i++) { PetscCall(VecStrideScatter(ts->vec_sol, i * bs, irk->Z, INSERT_VALUES)); }
+  for (i = 0; i < nstages; i++) PetscCall(VecStrideScatter(ts->vec_sol, i * bs, irk->Z, INSERT_VALUES));
 
   irk->status = TS_STEP_INCOMPLETE;
   while (!ts->reason && irk->status != TS_STEP_COMPLETE) {
@@ -314,7 +314,7 @@ static PetscErrorCode TSStep_IRK(TS ts) {
     PetscCall(VecStrideGatherAll(irk->Z, irk->Y, INSERT_VALUES));
     for (i = 0; i < nstages; i++) {
       PetscCall(VecZeroEntries(irk->YdotI[i]));
-      for (j = 0; j < nstages; j++) { PetscCall(VecAXPY(irk->YdotI[i], A_inv[i + j * nstages] / ts->time_step, irk->Y[j])); }
+      for (j = 0; j < nstages; j++) PetscCall(VecAXPY(irk->YdotI[i], A_inv[i + j * nstages] / ts->time_step, irk->Y[j]));
       PetscCall(VecAXPY(irk->YdotI[i], -A_inv_rowsum[i] / ts->time_step, irk->U));
     }
     irk->status = TS_STEP_INCOMPLETE;
@@ -418,7 +418,7 @@ static PetscErrorCode TSIRKGetVecs(TS ts, DM dm, Vec *U) {
 static PetscErrorCode TSIRKRestoreVecs(TS ts, DM dm, Vec *U) {
   PetscFunctionBegin;
   if (U) {
-    if (dm && dm != ts->dm) { PetscCall(DMRestoreNamedGlobalVector(dm, "TSIRK_U", U)); }
+    if (dm && dm != ts->dm) PetscCall(DMRestoreNamedGlobalVector(dm, "TSIRK_U", U));
   }
   PetscFunctionReturn(0);
 }
@@ -448,7 +448,7 @@ static PetscErrorCode SNESTSFormFunction_IRK(SNES snes, Vec ZC, Vec FC, TS ts) {
   ts->dm = dm;
   for (i = 0; i < nstages; i++) {
     PetscCall(VecZeroEntries(Ydot));
-    for (j = 0; j < nstages; j++) { PetscCall(VecAXPY(Ydot, A_inv[j * nstages + i] / h, Y[j])); }
+    for (j = 0; j < nstages; j++) PetscCall(VecAXPY(Ydot, A_inv[j * nstages + i] / h, Y[j]));
     PetscCall(VecAXPY(Ydot, -A_inv_rowsum[i] / h, U)); /* Ydot = (S \otimes In)*Z - (Se \otimes In) U */
     PetscCall(TSComputeIFunction(ts, ts->ptime + ts->time_step * c[i], Y[i], Ydot, YdotI[i], PETSC_FALSE));
   }
@@ -544,12 +544,12 @@ static PetscErrorCode TSSetUp_IRK(TS ts) {
   PetscInt       vsize, bs;
 
   PetscFunctionBegin;
-  if (!irk->work) { PetscCall(PetscMalloc1(irk->nstages, &irk->work)); }
-  if (!irk->Y) { PetscCall(VecDuplicateVecs(ts->vec_sol, irk->nstages, &irk->Y)); }
-  if (!irk->YdotI) { PetscCall(VecDuplicateVecs(ts->vec_sol, irk->nstages, &irk->YdotI)); }
-  if (!irk->Ydot) { PetscCall(VecDuplicate(ts->vec_sol, &irk->Ydot)); }
-  if (!irk->U) { PetscCall(VecDuplicate(ts->vec_sol, &irk->U)); }
-  if (!irk->U0) { PetscCall(VecDuplicate(ts->vec_sol, &irk->U0)); }
+  if (!irk->work) PetscCall(PetscMalloc1(irk->nstages, &irk->work));
+  if (!irk->Y) PetscCall(VecDuplicateVecs(ts->vec_sol, irk->nstages, &irk->Y));
+  if (!irk->YdotI) PetscCall(VecDuplicateVecs(ts->vec_sol, irk->nstages, &irk->YdotI));
+  if (!irk->Ydot) PetscCall(VecDuplicate(ts->vec_sol, &irk->Ydot));
+  if (!irk->U) PetscCall(VecDuplicate(ts->vec_sol, &irk->U));
+  if (!irk->U0) PetscCall(VecDuplicate(ts->vec_sol, &irk->U0));
   if (!irk->Z) {
     PetscCall(VecCreate(PetscObjectComm((PetscObject)ts->vec_sol), &irk->Z));
     PetscCall(VecGetSize(ts->vec_sol, &vsize));

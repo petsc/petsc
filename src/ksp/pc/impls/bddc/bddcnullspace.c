@@ -78,7 +78,7 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc, PetscBool isdir, PetscBo
   PetscCall(KSPGetOperators(local_ksp, &local_mat, &local_pmat));
   PetscCall(MatGetNearNullSpace(local_pmat, &NullSpace));
   if (!NullSpace) {
-    if (pcbddc->dbg_flag) { PetscCall(PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer, "Subdomain %04d doesn't have local (near) nullspace: no need for correction in %s solver \n", PetscGlobalRank, isdir ? "Dirichlet" : "Neumann")); }
+    if (pcbddc->dbg_flag) PetscCall(PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer, "Subdomain %04d doesn't have local (near) nullspace: no need for correction in %s solver \n", PetscGlobalRank, isdir ? "Dirichlet" : "Neumann"));
     PetscFunctionReturn(0);
   }
   PetscCall(PetscObjectQuery((PetscObject)NullSpace, "_PBDDC_Null_dmat", (PetscObject *)&dmat));
@@ -96,7 +96,7 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc, PetscBool isdir, PetscBo
 
   /* explicit construct (Phi^T K Phi)^-1 */
   PetscCall(PetscObjectTypeCompare((PetscObject)local_mat, MATSEQAIJCUSPARSE, &iscusp));
-  if (iscusp) { PetscCall(MatConvert(shell_ctx->basis_mat, MATSEQDENSECUDA, MAT_INPLACE_MATRIX, &shell_ctx->basis_mat)); }
+  if (iscusp) PetscCall(MatConvert(shell_ctx->basis_mat, MATSEQDENSECUDA, MAT_INPLACE_MATRIX, &shell_ctx->basis_mat));
   PetscCall(MatMatMult(local_mat, shell_ctx->basis_mat, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Kbasis_mat));
   PetscCall(MatTransposeMatMult(Kbasis_mat, shell_ctx->basis_mat, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &shell_ctx->inv_smat));
   PetscCall(MatDestroy(&Kbasis_mat));
@@ -108,7 +108,7 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc, PetscBool isdir, PetscBo
 
     PetscCall(ISGetLocalSize(zerorows, &nz));
     PetscCall(ISGetIndices(zerorows, &idxs));
-    for (i = 0; i < nz; i++) { PetscCall(MatSetValue(shell_ctx->inv_smat, idxs[i], idxs[i], 1.0, INSERT_VALUES)); }
+    for (i = 0; i < nz; i++) PetscCall(MatSetValue(shell_ctx->inv_smat, idxs[i], idxs[i], 1.0, INSERT_VALUES));
     PetscCall(ISRestoreIndices(zerorows, &idxs));
     PetscCall(MatAssemblyBegin(shell_ctx->inv_smat, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(shell_ctx->inv_smat, MAT_FINAL_ASSEMBLY));
@@ -121,7 +121,7 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc, PetscBool isdir, PetscBo
 
     PetscCall(ISGetLocalSize(zerorows, &nz));
     PetscCall(ISGetIndices(zerorows, &idxs));
-    for (i = 0; i < nz; i++) { PetscCall(MatSetValue(shell_ctx->inv_smat, idxs[i], idxs[i], 0.0, INSERT_VALUES)); }
+    for (i = 0; i < nz; i++) PetscCall(MatSetValue(shell_ctx->inv_smat, idxs[i], idxs[i], 0.0, INSERT_VALUES));
     PetscCall(ISRestoreIndices(zerorows, &idxs));
     PetscCall(MatAssemblyBegin(shell_ctx->inv_smat, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(shell_ctx->inv_smat, MAT_FINAL_ASSEMBLY));

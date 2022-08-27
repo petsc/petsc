@@ -1159,7 +1159,7 @@ PetscErrorCode EllipticDestroy(AppCtx *user) {
   } else {
     PetscCall(MatDestroy(&user->Diag));
   }
-  if (user->use_lrc) { PetscCall(MatDestroy(&user->Ones)); }
+  if (user->use_lrc) PetscCall(MatDestroy(&user->Ones));
 
   PetscCall(MatDestroy(&user->Grad));
   PetscCall(MatDestroy(&user->Av));

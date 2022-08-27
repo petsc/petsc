@@ -40,7 +40,7 @@ PETSC_INTERN PetscErrorCode MatTMatTMultSymbolic_SeqAIJ_SeqDense(Mat A, Mat B, P
     dofm = B->rmap->n;
   }
   PetscCall(PetscObjectTypeCompareAny((PetscObject)C, &cisdense, MATSEQDENSE, MATSEQDENSECUDA, ""));
-  if (!cisdense) { PetscCall(MatSetType(C, ((PetscObject)B)->type_name)); }
+  if (!cisdense) PetscCall(MatSetType(C, ((PetscObject)B)->type_name));
   PetscCall(MatSetUp(C));
 
   /* create additional data structure for the product */
@@ -115,7 +115,7 @@ PetscErrorCode MatTMatTMultNumeric_SeqAIJ_SeqDense(Mat A, Mat B, Mat C) {
     }
 
     PetscCall(MatMult(atb->mA, ct, bt));
-    if (blda == B->rmap->n) { PetscCall(VecResetArray(ct)); }
+    if (blda == B->rmap->n) PetscCall(VecResetArray(ct));
     PetscCall(VecGetArrayRead(bt, &btarray));
     for (j = 0; j < mdof; j++) {
       for (i = 0; i < m; i++) Carray[j * clda + i] = btarray[i * mdof + j];

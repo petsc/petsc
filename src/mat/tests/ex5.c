@@ -91,7 +91,7 @@ int main(int argc, char **args) {
   PetscCall(VecAXPY(x, one, z));
   PetscCall(VecAXPY(x, negone, w));
   PetscCall(VecNorm(x, NORM_2, &norm));
-  if (norm > tol) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Norm of error difference = %g\n", (double)norm)); }
+  if (norm > tol) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Norm of error difference = %g\n", (double)norm));
 
   /* ------- Test MatMultTranspose(), MatMultTransposeAdd() ------- */
 
@@ -110,7 +110,7 @@ int main(int argc, char **args) {
   PetscCall(VecAXPY(y, one, u));
   PetscCall(VecAXPY(y, negone, s));
   PetscCall(VecNorm(y, NORM_2, &norm));
-  if (norm > tol) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Norm of error difference = %g\n", (double)norm)); }
+  if (norm > tol) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Norm of error difference = %g\n", (double)norm));
 
   /* -------------------- Test MatGetDiagonal() ------------------ */
 

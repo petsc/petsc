@@ -35,7 +35,7 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc) {
 
   PetscCall(MatSetErrorIfFailure(pc->pmat, pc->erroriffailure));
   if (dir->hdr.inplace) {
-    if (dir->row && dir->col && (dir->row != dir->col)) { PetscCall(ISDestroy(&dir->row)); }
+    if (dir->row && dir->col && (dir->row != dir->col)) PetscCall(ISDestroy(&dir->row));
     PetscCall(ISDestroy(&dir->col));
     /* should only get reordering if the factor matrix uses it but cannot determine because MatGetFactor() not called */
     PetscCall(PCFactorSetDefaultOrdering_Factor(pc));

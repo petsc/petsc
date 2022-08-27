@@ -79,7 +79,7 @@ int main(int argc, char **args) {
   PetscCall(MatSetSizes(B, M, N, M, N));
   PetscCall(MatSetType(B, MATSEQDENSE));
   PetscCall(MatSeqDenseSetPreallocation(B, NULL));
-  for (i = 0; i < M; i++) { PetscCall(MatSetValues(B, 1, &i, 1, &i, &val, INSERT_VALUES)); }
+  for (i = 0; i < M; i++) PetscCall(MatSetValues(B, 1, &i, 1, &i, &val, INSERT_VALUES));
   PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
 

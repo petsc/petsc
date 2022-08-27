@@ -180,7 +180,7 @@ PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat A, Mat BB, void *ctx) 
       rowstencil.c = 0;
 
       PetscCall(MatSetValuesStencil(A, 1, &rowstencil, 6, stencil, entries, INSERT_VALUES));
-      if (appctx->aijpc) { PetscCall(MatSetValuesStencil(BB, 1, &rowstencil, 6, stencil, entries, INSERT_VALUES)); }
+      if (appctx->aijpc) PetscCall(MatSetValuesStencil(BB, 1, &rowstencil, 6, stencil, entries, INSERT_VALUES));
       stencil[0].c = 1;
       entries[0]   = appctx->D2 * sy;
       stencil[1].c = 1;
@@ -196,7 +196,7 @@ PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat A, Mat BB, void *ctx) 
       rowstencil.c = 1;
 
       PetscCall(MatSetValuesStencil(A, 1, &rowstencil, 6, stencil, entries, INSERT_VALUES));
-      if (appctx->aijpc) { PetscCall(MatSetValuesStencil(BB, 1, &rowstencil, 6, stencil, entries, INSERT_VALUES)); }
+      if (appctx->aijpc) PetscCall(MatSetValuesStencil(BB, 1, &rowstencil, 6, stencil, entries, INSERT_VALUES));
       /* f[j][i].v = appctx->D2*(vxx + vyy) + uc*vc*vc - (appctx->gamma + appctx->kappa)*vc; */
     }
   }
@@ -388,7 +388,7 @@ PetscErrorCode IJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a, Mat A
       rowstencil.c = 0;
 
       PetscCall(MatSetValuesStencil(A, 1, &rowstencil, 6, stencil, entries, INSERT_VALUES));
-      if (appctx->aijpc) { PetscCall(MatSetValuesStencil(BB, 1, &rowstencil, 6, stencil, entries, INSERT_VALUES)); }
+      if (appctx->aijpc) PetscCall(MatSetValuesStencil(BB, 1, &rowstencil, 6, stencil, entries, INSERT_VALUES));
       stencil[0].c = 1;
       entries[0]   = -appctx->D2 * sy;
       stencil[1].c = 1;
@@ -404,7 +404,7 @@ PetscErrorCode IJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a, Mat A
       rowstencil.c = 1;
 
       PetscCall(MatSetValuesStencil(A, 1, &rowstencil, 6, stencil, entries, INSERT_VALUES));
-      if (appctx->aijpc) { PetscCall(MatSetValuesStencil(BB, 1, &rowstencil, 6, stencil, entries, INSERT_VALUES)); }
+      if (appctx->aijpc) PetscCall(MatSetValuesStencil(BB, 1, &rowstencil, 6, stencil, entries, INSERT_VALUES));
       /* f[j][i].v = appctx->D2*(vxx + vyy) + uc*vc*vc - (appctx->gamma + appctx->kappa)*vc; */
     }
   }

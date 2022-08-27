@@ -634,7 +634,7 @@ static PetscErrorCode TSGLEEGetVecs(TS ts, DM dm, Vec *Ydot) {
 static PetscErrorCode TSGLEERestoreVecs(TS ts, DM dm, Vec *Ydot) {
   PetscFunctionBegin;
   if (Ydot) {
-    if (dm && dm != ts->dm) { PetscCall(DMRestoreNamedGlobalVector(dm, "TSGLEE_Ydot", Ydot)); }
+    if (dm && dm != ts->dm) PetscCall(DMRestoreNamedGlobalVector(dm, "TSGLEE_Ydot", Ydot));
   }
   PetscFunctionReturn(0);
 }
@@ -711,7 +711,7 @@ static PetscErrorCode TSSetUp_GLEE(TS ts) {
   DM          dm;
 
   PetscFunctionBegin;
-  if (!glee->tableau) { PetscCall(TSGLEESetType(ts, TSGLEEDefaultType)); }
+  if (!glee->tableau) PetscCall(TSGLEESetType(ts, TSGLEEDefaultType));
   tab = glee->tableau;
   s   = tab->s;
   r   = tab->r;
@@ -852,7 +852,7 @@ PetscErrorCode TSGLEEGetType_GLEE(TS ts, TSGLEEType *gleetype) {
   TS_GLEE *glee = (TS_GLEE *)ts->data;
 
   PetscFunctionBegin;
-  if (!glee->tableau) { PetscCall(TSGLEESetType(ts, TSGLEEDefaultType)); }
+  if (!glee->tableau) PetscCall(TSGLEESetType(ts, TSGLEEDefaultType));
   *gleetype = glee->tableau->name;
   PetscFunctionReturn(0);
 }

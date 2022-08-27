@@ -38,7 +38,7 @@ static PetscErrorCode PetscSpaceDestroy_Polynomial(PetscSpace sp) {
   if (poly->subspaces) {
     PetscInt d;
 
-    for (d = 0; d < sp->Nv; ++d) { PetscCall(PetscSpaceDestroy(&poly->subspaces[d])); }
+    for (d = 0; d < sp->Nv; ++d) PetscCall(PetscSpaceDestroy(&poly->subspaces[d]));
   }
   PetscCall(PetscFree(poly->subspaces));
   PetscCall(PetscFree(poly));
@@ -78,7 +78,7 @@ static PetscErrorCode PetscSpaceSetUp_Polynomial(PetscSpace sp) {
     PetscCall(PetscSpaceSetNumVariables(subsp, Nv));
     PetscCall(PetscSpacePolynomialSetTensor(subsp, tensor));
     PetscCall(PetscSpaceSetUp(subsp));
-    for (PetscInt i = 0; i < Nc; i++) { PetscCall(PetscSpaceSumSetSubspace(sp, i, subsp)); }
+    for (PetscInt i = 0; i < Nc; i++) PetscCall(PetscSpaceSumSetSubspace(sp, i, subsp));
     PetscCall(PetscSpaceDestroy(&subsp));
     PetscCall(PetscSpaceSetUp(sp));
     PetscFunctionReturn(0);

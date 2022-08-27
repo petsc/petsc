@@ -49,7 +49,7 @@ PetscErrorCode PetscFOpen(MPI_Comm comm, const char name[], const char mode[], F
       PetscCall(PetscStrreplace(PETSC_COMM_SELF, name, tname, PETSC_MAX_PATH_LEN));
       PetscCall(PetscFixFilename(tname, fname));
       PetscCall(PetscStrbeginswith(fname, "/dev/null", &devnull));
-      if (devnull) { PetscCall(PetscStrcpy(fname, "/dev/null")); }
+      if (devnull) PetscCall(PetscStrcpy(fname, "/dev/null"));
       PetscCall(PetscInfo(0, "Opening file %s\n", fname));
       fd = fopen(fname, mode);
       PetscCheck(fd, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to open file %s", fname);

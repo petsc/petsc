@@ -57,7 +57,7 @@ static PetscErrorCode MatColoringApply_SL(MatColoring mc, ISColoring *iscoloring
   /* this is ugly way to get blocksize but cannot call MatGetBlockSize() because AIJ can have bs > 1 */
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)mat, MATSEQBAIJ, &flg1));
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)mat, MATMPIBAIJ, &flg2));
-  if (flg1 || flg2) { PetscCall(MatGetBlockSize(mat, &bs)); }
+  if (flg1 || flg2) PetscCall(MatGetBlockSize(mat, &bs));
 
   PetscCall(PetscObjectGetComm((PetscObject)mat, &comm));
   PetscCallMPI(MPI_Comm_size(comm, &size));
@@ -159,7 +159,7 @@ static PetscErrorCode MatColoringApply_LF(MatColoring mc, ISColoring *iscoloring
   /* this is ugly way to get blocksize but cannot call MatGetBlockSize() because AIJ can have bs > 1 */
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)mat, MATSEQBAIJ, &flg1));
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)mat, MATMPIBAIJ, &flg2));
-  if (flg1 || flg2) { PetscCall(MatGetBlockSize(mat, &bs)); }
+  if (flg1 || flg2) PetscCall(MatGetBlockSize(mat, &bs));
 
   PetscCall(PetscObjectGetComm((PetscObject)mat, &comm));
   PetscCallMPI(MPI_Comm_size(comm, &size));
@@ -264,7 +264,7 @@ static PetscErrorCode MatColoringApply_ID(MatColoring mc, ISColoring *iscoloring
   /* this is ugly way to get blocksize but cannot call MatGetBlockSize() because AIJ can have bs > 1 */
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)mat, MATSEQBAIJ, &flg1));
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)mat, MATMPIBAIJ, &flg2));
-  if (flg1 || flg2) { PetscCall(MatGetBlockSize(mat, &bs)); }
+  if (flg1 || flg2) PetscCall(MatGetBlockSize(mat, &bs));
 
   PetscCall(PetscObjectGetComm((PetscObject)mat, &comm));
   PetscCallMPI(MPI_Comm_size(comm, &size));

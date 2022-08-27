@@ -127,7 +127,7 @@ int main(int argc, char **argv) {
   PetscCall(CreateSystem(dmSol, &A, &rhs, pinPressure));
 
   /* Attach a constant-pressure nullspace to the operator */
-  if (!pinPressure) { PetscCall(AttachNullspace(dmSol, A)); }
+  if (!pinPressure) PetscCall(AttachNullspace(dmSol, A));
 
   /* Solve */
   PetscCall(DMCreateGlobalVector(dmSol, &sol));

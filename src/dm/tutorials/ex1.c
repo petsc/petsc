@@ -53,7 +53,7 @@ int main(int argc, char **argv) {
   PetscCall(PetscViewerDrawOpen(PETSC_COMM_WORLD, 0, "", 300, 0, 300, 300, &viewer));
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
-  if (size == 1) { PetscCall(PetscViewerMatlabOpen(PETSC_COMM_WORLD, "tmp.mat", FILE_MODE_WRITE, &mviewer)); }
+  if (size == 1) PetscCall(PetscViewerMatlabOpen(PETSC_COMM_WORLD, "tmp.mat", FILE_MODE_WRITE, &mviewer));
 #endif
 
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-star_stencil", &flg, NULL));
@@ -93,7 +93,7 @@ int main(int argc, char **argv) {
 
   /* Free memory */
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-  if (size == 1) { PetscCall(PetscViewerDestroy(&mviewer)); }
+  if (size == 1) PetscCall(PetscViewerDestroy(&mviewer));
 #endif
   PetscCall(PetscViewerDestroy(&viewer));
   PetscCall(VecDestroy(&local));

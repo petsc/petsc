@@ -251,7 +251,7 @@ static PetscErrorCode PCSetData_AGG(PC pc, Mat a_A) {
   if (!mnull) {
     DM dm;
     PetscCall(PCGetDM(pc, &dm));
-    if (!dm) { PetscCall(MatGetDM(a_A, &dm)); }
+    if (!dm) PetscCall(MatGetDM(a_A, &dm));
     if (dm) {
       PetscObject deformation;
       PetscInt    Nf;
@@ -260,7 +260,7 @@ static PetscErrorCode PCSetData_AGG(PC pc, Mat a_A) {
       if (Nf) {
         PetscCall(DMGetField(dm, 0, NULL, &deformation));
         PetscCall(PetscObjectQuery((PetscObject)deformation, "nearnullspace", (PetscObject *)&mnull));
-        if (!mnull) { PetscCall(PetscObjectQuery((PetscObject)deformation, "nullspace", (PetscObject *)&mnull)); }
+        if (!mnull) PetscCall(PetscObjectQuery((PetscObject)deformation, "nullspace", (PetscObject *)&mnull));
       }
     }
   }
@@ -332,7 +332,7 @@ static PetscErrorCode formProl0(PetscCoarsenData *agg_llists, PetscInt bs, Petsc
   nghosts = data_stride / bs - nloc;
 
   PetscCall(PCGAMGHashTableCreate(2 * nghosts + 1, &fgid_flid));
-  for (kk = 0; kk < nghosts; kk++) { PetscCall(PCGAMGHashTableAdd(&fgid_flid, flid_fgid[nloc + kk], nloc + kk)); }
+  for (kk = 0; kk < nghosts; kk++) PetscCall(PCGAMGHashTableAdd(&fgid_flid, flid_fgid[nloc + kk], nloc + kk));
 
   /* count selected -- same as number of cols of P */
   for (nSelected = mm = 0; mm < nloc; mm++) {
@@ -720,7 +720,7 @@ static PetscErrorCode PCGAMGProlongator_AGG(PC pc, Mat Amat, Mat Gmat, PetscCoar
     pc_gamg->data_sz        = col_bs * col_bs * nLocalSelected;
   }
   PetscCall(PetscLogEventEnd(petsc_gamg_setup_events[GAMG_PROLB], 0, 0, 0, 0));
-  if (size > 1) { PetscCall(PetscFree(data_w_ghost)); }
+  if (size > 1) PetscCall(PetscFree(data_w_ghost));
   PetscCall(PetscFree(flid_fgid));
 
   *a_P_out = Prol; /* out */

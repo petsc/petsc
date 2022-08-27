@@ -16,7 +16,7 @@ static PetscErrorCode LabelPoints(DM dm) {
   PetscCall(DMCreateLabel(dm, "test"));
   PetscCall(DMGetLabel(dm, "test", &label));
   PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
-  for (p = pStart; p < pEnd; ++p) { PetscCall(DMLabelSetValue(label, p, p)); }
+  for (p = pStart; p < pEnd; ++p) PetscCall(DMLabelSetValue(label, p, p));
   PetscFunctionReturn(0);
 }
 

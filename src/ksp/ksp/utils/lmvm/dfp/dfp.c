@@ -177,7 +177,7 @@ static PetscErrorCode MatUpdate_LMVMDFP(Mat B, Vec X, Vec F) {
       ldfp->yty[lmvm->k] = PetscRealPart(ytytmp);
       ldfp->sts[lmvm->k] = PetscRealPart(ststmp);
       /* Compute the scalar scale if necessary */
-      if (ldfp->scale_type == MAT_LMVM_SYMBROYDEN_SCALE_SCALAR) { PetscCall(MatSymBrdnComputeJ0Scalar(B)); }
+      if (ldfp->scale_type == MAT_LMVM_SYMBROYDEN_SCALE_SCALAR) PetscCall(MatSymBrdnComputeJ0Scalar(B));
     } else {
       /* Update is bad, skip it */
       ++lmvm->nrejects;
@@ -197,11 +197,11 @@ static PetscErrorCode MatUpdate_LMVMDFP(Mat B, Vec X, Vec F) {
   }
 
   /* Update the scaling */
-  if (ldfp->scale_type == MAT_LMVM_SYMBROYDEN_SCALE_DIAGONAL) { PetscCall(MatLMVMUpdate(ldfp->D, X, F)); }
+  if (ldfp->scale_type == MAT_LMVM_SYMBROYDEN_SCALE_DIAGONAL) PetscCall(MatLMVMUpdate(ldfp->D, X, F));
 
   if (ldfp->watchdog > ldfp->max_seq_rejects) {
     PetscCall(MatLMVMReset(B, PETSC_FALSE));
-    if (ldfp->scale_type == MAT_LMVM_SYMBROYDEN_SCALE_DIAGONAL) { PetscCall(MatLMVMReset(ldfp->D, PETSC_FALSE)); }
+    if (ldfp->scale_type == MAT_LMVM_SYMBROYDEN_SCALE_DIAGONAL) PetscCall(MatLMVMReset(ldfp->D, PETSC_FALSE));
   }
 
   /* Save the solution and function to be used in the next update */
@@ -293,7 +293,7 @@ static PetscErrorCode MatAllocate_LMVMDFP(Mat B, Vec X, Vec F) {
   if (!ldfp->allocated) {
     PetscCall(VecDuplicate(X, &ldfp->work));
     PetscCall(PetscMalloc4(lmvm->m, &ldfp->ytq, lmvm->m, &ldfp->yts, lmvm->m, &ldfp->yty, lmvm->m, &ldfp->sts));
-    if (lmvm->m > 0) { PetscCall(VecDuplicateVecs(X, lmvm->m, &ldfp->Q)); }
+    if (lmvm->m > 0) PetscCall(VecDuplicateVecs(X, lmvm->m, &ldfp->Q));
     switch (ldfp->scale_type) {
     case MAT_LMVM_SYMBROYDEN_SCALE_DIAGONAL: PetscCall(MatLMVMAllocate(ldfp->D, X, F)); break;
     default: break;
@@ -334,7 +334,7 @@ static PetscErrorCode MatSetUp_LMVMDFP(Mat B) {
   if (!ldfp->allocated) {
     PetscCall(VecDuplicate(lmvm->Xprev, &ldfp->work));
     PetscCall(PetscMalloc4(lmvm->m, &ldfp->ytq, lmvm->m, &ldfp->yts, lmvm->m, &ldfp->yty, lmvm->m, &ldfp->sts));
-    if (lmvm->m > 0) { PetscCall(VecDuplicateVecs(lmvm->Xprev, lmvm->m, &ldfp->Q)); }
+    if (lmvm->m > 0) PetscCall(VecDuplicateVecs(lmvm->Xprev, lmvm->m, &ldfp->Q));
     switch (ldfp->scale_type) {
     case MAT_LMVM_SYMBROYDEN_SCALE_DIAGONAL:
       PetscCall(MatGetLocalSize(B, &n, &n));

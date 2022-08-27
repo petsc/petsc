@@ -34,11 +34,11 @@ PetscErrorCode DMDestroy_DA(DM da) {
   PetscCall(PetscFree(dd->refine_z_hier));
 
   if (dd->fieldname) {
-    for (i = 0; i < dd->w; i++) { PetscCall(PetscFree(dd->fieldname[i])); }
+    for (i = 0; i < dd->w; i++) PetscCall(PetscFree(dd->fieldname[i]));
     PetscCall(PetscFree(dd->fieldname));
   }
   if (dd->coordinatename) {
-    for (i = 0; i < da->dim; i++) { PetscCall(PetscFree(dd->coordinatename[i])); }
+    for (i = 0; i < da->dim; i++) PetscCall(PetscFree(dd->coordinatename[i]));
     PetscCall(PetscFree(dd->coordinatename));
   }
   PetscCall(ISColoringDestroy(&dd->localcoloring));

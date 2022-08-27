@@ -122,7 +122,7 @@ static PetscErrorCode DMPlexLabelComplete_Internal(DM dm, DMLabel label, PetscBo
         continue;
       }
       PetscCall(DMPlexGetTransitiveClosure(dm, q, PETSC_TRUE, &closureSize, &closure));
-      for (c = 0; c < closureSize * 2; c += 2) { PetscCall(DMLabelSetValue(label, closure[c], values[v])); }
+      for (c = 0; c < closureSize * 2; c += 2) PetscCall(DMLabelSetValue(label, closure[c], values[v]));
       PetscCall(DMPlexRestoreTransitiveClosure(dm, q, PETSC_TRUE, &closureSize, &closure));
     }
     PetscCall(ISRestoreIndices(pointIS, &points));
@@ -344,7 +344,7 @@ PetscErrorCode DMPlexLabelClearCells(DM dm, DMLabel label) {
     for (p = 0; p < numPoints; ++p) {
       PetscInt point = points[p];
 
-      if (point >= cStart && point < cEnd) { PetscCall(DMLabelClearValue(label, point, values[v])); }
+      if (point >= cStart && point < cEnd) PetscCall(DMLabelClearValue(label, point, values[v]));
     }
     PetscCall(ISRestoreIndices(pointIS, &points));
     PetscCall(ISDestroy(&pointIS));
@@ -688,13 +688,13 @@ static PetscErrorCode DMPlexCreateVTKLabel_Internal(DM dm, PetscBool createGhost
     PetscCall(DMGetLabel(dmNew, "ghost", &ghostLabel));
   }
   for (l = 0, c = cStart; l < numLeaves && c < cEnd; ++l, ++c) {
-    for (; c < leafLocal[l] && c < cEnd; ++c) { PetscCall(DMLabelSetValue(vtkLabel, c, 1)); }
+    for (; c < leafLocal[l] && c < cEnd; ++c) PetscCall(DMLabelSetValue(vtkLabel, c, 1));
     if (leafLocal[l] >= cEnd) break;
     if (leafRemote[l].rank == rank) {
       PetscCall(DMLabelSetValue(vtkLabel, c, 1));
     } else if (ghostLabel) PetscCall(DMLabelSetValue(ghostLabel, c, 2));
   }
-  for (; c < cEnd; ++c) { PetscCall(DMLabelSetValue(vtkLabel, c, 1)); }
+  for (; c < cEnd; ++c) PetscCall(DMLabelSetValue(vtkLabel, c, 1));
   if (ghostLabel) {
     PetscCall(DMPlexGetHeightStratum(dmNew, 1, &fStart, &fEnd));
     for (f = fStart; f < fEnd; ++f) {
@@ -824,7 +824,7 @@ static PetscErrorCode DMPlexConstructGhostCells_Internal(DM dm, DMLabel label, P
   PetscCall(DMPlexShiftSizes_Internal(dm, depthShift, gdm));
   /* Step 3: Set cone/support sizes for new points */
   PetscCall(DMPlexGetHeightStratum(dm, 0, NULL, &cEnd));
-  for (c = cEnd; c < cEnd + Ng; ++c) { PetscCall(DMPlexSetConeSize(gdm, c, 1)); }
+  for (c = cEnd; c < cEnd + Ng; ++c) PetscCall(DMPlexSetConeSize(gdm, c, 1));
   for (fs = 0; fs < numFS; ++fs) {
     IS              faceIS;
     const PetscInt *faces;
@@ -882,7 +882,7 @@ static PetscErrorCode DMPlexConstructGhostCells_Internal(DM dm, DMLabel label, P
   PetscCall(DMPlexCreateVTKLabel_Internal(dm, PETSC_TRUE, gdm));
   PetscCall(DMPlexShiftTree_Internal(dm, depthShift, gdm));
   PetscCall(PetscFree(depthShift));
-  for (c = cEnd; c < cEnd + Ng; ++c) { PetscCall(DMPlexSetCellType(gdm, c, DM_POLYTOPE_FV_GHOST)); }
+  for (c = cEnd; c < cEnd + Ng; ++c) PetscCall(DMPlexSetCellType(gdm, c, DM_POLYTOPE_FV_GHOST));
   /* Step 7: Periodicity */
   PetscCall(DMGetPeriodicity(dm, &maxCell, &Lstart, &L));
   PetscCall(DMSetPeriodicity(gdm, maxCell, Lstart, L));
@@ -948,7 +948,7 @@ static PetscErrorCode DivideCells_Private(DM dm, DMLabel label, DMPlexPointQueue
   PetscFunctionBegin;
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(PetscMalloc2(dim, &pStart, dim, &pEnd));
-  for (d = 0; d < dim; ++d) { PetscCall(DMPlexGetDepthStratum(dm, d, &pStart[d], &pEnd[d])); }
+  for (d = 0; d < dim; ++d) PetscCall(DMPlexGetDepthStratum(dm, d, &pStart[d], &pEnd[d]));
   while (!DMPlexPointQueueEmpty(queue)) {
     PetscInt  cell    = -1;
     PetscInt *closure = NULL;
@@ -1050,7 +1050,7 @@ static PetscErrorCode DMPlexLabelFaultHalo(DM dm, DMLabel faultLabel) {
   if (pointIS) {
     PetscCall(ISGetLocalSize(pointIS, &n));
     PetscCall(ISGetIndices(pointIS, &points));
-    for (i = 0; i < n; ++i) { PetscCall(DMPlexPointQueueEnqueue(queue, points[i])); }
+    for (i = 0; i < n; ++i) PetscCall(DMPlexPointQueueEnqueue(queue, points[i]));
     PetscCall(ISRestoreIndices(pointIS, &points));
     PetscCall(ISDestroy(&pointIS));
   }
@@ -1058,7 +1058,7 @@ static PetscErrorCode DMPlexLabelFaultHalo(DM dm, DMLabel faultLabel) {
   if (pointIS) {
     PetscCall(ISGetLocalSize(pointIS, &n));
     PetscCall(ISGetIndices(pointIS, &points));
-    for (i = 0; i < n; ++i) { PetscCall(DMPlexPointQueueEnqueue(queue, points[i])); }
+    for (i = 0; i < n; ++i) PetscCall(DMPlexPointQueueEnqueue(queue, points[i]));
     PetscCall(ISRestoreIndices(pointIS, &points));
     PetscCall(ISDestroy(&pointIS));
   }
@@ -1744,7 +1744,7 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
         if (isDepth) continue;
         PetscCall(DMGetLabel(sdm, lname, &mlabel));
         PetscCall(DMLabelGetValue(mlabel, newp, &val));
-        if (val >= 0) { PetscCall(DMLabelSetValue(mlabel, splitp, val)); }
+        if (val >= 0) PetscCall(DMLabelSetValue(mlabel, splitp, val));
       }
     }
   }
@@ -2279,7 +2279,7 @@ static PetscErrorCode DMPlexMarkSubmesh_Uninterpolated(DM dm, DMLabel vertexLabe
   PetscCall(DMGetDimension(dm, &dim));
   pSize = PetscMax(depth, dim) + 1;
   PetscCall(PetscMalloc2(pSize, &pStart, pSize, &pEnd));
-  for (d = 0; d <= depth; ++d) { PetscCall(DMPlexGetSimplexOrBoxCells(dm, depth - d, &pStart[d], &pEnd[d])); }
+  for (d = 0; d <= depth; ++d) PetscCall(DMPlexGetSimplexOrBoxCells(dm, depth - d, &pStart[d], &pEnd[d]));
   /* Loop over initial vertices and mark all faces in the collective star() */
   if (vertexLabel) PetscCall(DMLabelGetStratumIS(vertexLabel, value, &subvertexIS));
   if (subvertexIS) {
@@ -2323,16 +2323,16 @@ static PetscErrorCode DMPlexMarkSubmesh_Uninterpolated(DM dm, DMLabel vertexLabe
         PetscInt        numCells, nc;
 
         ++(*numFaces);
-        for (cl = 0; cl < faceSize; ++cl) { PetscCall(DMLabelSetValue(subpointMap, closure[cl], 0)); }
+        for (cl = 0; cl < faceSize; ++cl) PetscCall(DMLabelSetValue(subpointMap, closure[cl], 0));
         PetscCall(DMPlexGetJoin(dm, faceSize, closure, &numCells, &cells));
-        for (nc = 0; nc < numCells; ++nc) { PetscCall(DMLabelSetValue(subpointMap, cells[nc], 2)); }
+        for (nc = 0; nc < numCells; ++nc) PetscCall(DMLabelSetValue(subpointMap, cells[nc], 2));
         PetscCall(DMPlexRestoreJoin(dm, faceSize, closure, &numCells, &cells));
       }
       PetscCall(DMPlexRestoreTransitiveClosure(dm, cell, PETSC_TRUE, &closureSize, &closure));
     }
     PetscCall(DMPlexRestoreTransitiveClosure(dm, vertex, PETSC_FALSE, &starSize, &star));
   }
-  if (subvertexIS) { PetscCall(ISRestoreIndices(subvertexIS, &subvertices)); }
+  if (subvertexIS) PetscCall(ISRestoreIndices(subvertexIS, &subvertices));
   PetscCall(ISDestroy(&subvertexIS));
   PetscCall(PetscFree2(pStart, pEnd));
   PetscFunctionReturn(0);
@@ -2347,7 +2347,7 @@ static PetscErrorCode DMPlexMarkSubmesh_Interpolated(DM dm, DMLabel vertexLabel,
   PetscFunctionBegin;
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(PetscMalloc2(dim + 1, &pStart, dim + 1, &pEnd));
-  for (d = 0; d <= dim; ++d) { PetscCall(DMPlexGetSimplexOrBoxCells(dm, dim - d, &pStart[d], &pEnd[d])); }
+  for (d = 0; d <= dim; ++d) PetscCall(DMPlexGetSimplexOrBoxCells(dm, dim - d, &pStart[d], &pEnd[d]));
   /* Loop over initial vertices and mark all faces in the collective star() */
   if (vertexLabel) {
     PetscCall(DMLabelGetStratumIS(vertexLabel, value, &subvertexIS));
@@ -2409,7 +2409,7 @@ static PetscErrorCode DMPlexMarkSubmesh_Interpolated(DM dm, DMLabel vertexLabel,
         }
         PetscCall(DMPlexGetSupportSize(dm, face, &supportSize));
         PetscCall(DMPlexGetSupport(dm, face, &support));
-        for (s = 0; s < supportSize; ++s) { PetscCall(DMLabelSetValue(subpointMap, support[s], dim)); }
+        for (s = 0; s < supportSize; ++s) PetscCall(DMLabelSetValue(subpointMap, support[s], dim));
       }
       PetscCall(DMPlexRestoreTransitiveClosure(dm, face, PETSC_TRUE, &closureSize, &closure));
     }
@@ -2462,7 +2462,7 @@ static PetscErrorCode DMPlexMarkCohesiveSubmesh_Uninterpolated(DM dm, PetscBool 
       if (val != value) continue;
     }
     PetscCall(DMPlexGetCone(dm, c, &cone));
-    for (p = 0; p < *nFV; ++p) { PetscCall(DMLabelSetValue(subpointMap, cone[p], 0)); }
+    for (p = 0; p < *nFV; ++p) PetscCall(DMLabelSetValue(subpointMap, cone[p], 0));
     /* Negative face */
     PetscCall(DMPlexGetJoin(dm, *nFV, cone, &numCells, &cells));
     /* Not true in parallel
@@ -2521,7 +2521,7 @@ static PetscErrorCode DMPlexMarkCohesiveSubmesh_Interpolated(DM dm, DMLabel labe
       PetscCall(DMPlexGetSupportSize(dm, cone[cl], &supportSize));
       /* PetscCheck(supportSize == 2,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cohesive faces should separate two cells"); */
       PetscCall(DMPlexGetSupport(dm, cone[cl], &support));
-      for (s = 0; s < supportSize; ++s) { PetscCall(DMLabelSetValue(subpointMap, support[s], dim)); }
+      for (s = 0; s < supportSize; ++s) PetscCall(DMLabelSetValue(subpointMap, support[s], dim));
     }
   }
   PetscCall(PetscFree2(pStart, pEnd));
@@ -2990,8 +2990,8 @@ static PetscErrorCode DMPlexCreateSubmesh_Uninterpolated(DM dm, DMLabel vertexLa
   if (subvertexIS) PetscCall(ISGetIndices(subvertexIS, &subVertices));
   PetscCall(DMLabelGetStratumIS(subpointMap, 2, &subcellIS));
   if (subcellIS) PetscCall(ISGetIndices(subcellIS, &subCells));
-  for (c = 0; c < numSubCells; ++c) { PetscCall(DMPlexSetConeSize(subdm, c, 1)); }
-  for (f = firstSubFace; f < firstSubFace + numSubFaces; ++f) { PetscCall(DMPlexSetConeSize(subdm, f, nFV)); }
+  for (c = 0; c < numSubCells; ++c) PetscCall(DMPlexSetConeSize(subdm, c, 1));
+  for (f = firstSubFace; f < firstSubFace + numSubFaces; ++f) PetscCall(DMPlexSetConeSize(subdm, f, nFV));
   PetscCall(DMSetUp(subdm));
   /* Create face cones */
   PetscCall(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
@@ -3019,7 +3019,7 @@ static PetscErrorCode DMPlexCreateSubmesh_Uninterpolated(DM dm, DMLabel vertexLa
       }
     }
     PetscCheck(faceSize <= nFV, comm, PETSC_ERR_ARG_WRONG, "Invalid submesh: Too many vertices %" PetscInt_FMT " of an element on the surface", faceSize);
-    if (faceSize == nFV) { PetscCall(DMPlexInsertFace_Internal(dm, subdm, faceSize, closure, subface, numCorners, cell, subcell, firstSubFace, &newFacePoint)); }
+    if (faceSize == nFV) PetscCall(DMPlexInsertFace_Internal(dm, subdm, faceSize, closure, subface, numCorners, cell, subcell, firstSubFace, &newFacePoint));
     PetscCall(DMPlexRestoreTransitiveClosure(dm, cell, PETSC_TRUE, &closureSize, &closure));
   }
   PetscCall(DMRestoreWorkArray(subdm, maxConeSize, MPIU_INT, (void **)&subface));
@@ -3435,7 +3435,7 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
       PetscCall(PetscFree2(newLocalPoints, newOwners));
       PetscCall(PetscSFSetGraph(sfPointSub, numSubroots, sl, slocalPoints, PETSC_OWN_POINTER, sremotePoints, PETSC_OWN_POINTER));
     }
-    if (subpIS) { PetscCall(ISRestoreIndices(subpIS, &subpoints)); }
+    if (subpIS) PetscCall(ISRestoreIndices(subpIS, &subpoints));
   }
   /* Filter labels */
   PetscCall(DMPlexFilterLabels_Internal(dm, numSubPoints, subpoints, firstSubPoint, subdm));
@@ -3523,8 +3523,8 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Uninterpolated(DM dm, PetscBoo
   newFacePoint   = firstSubFace;
   PetscCall(DMLabelGetStratumIS(subpointMap, 0, &subvertexIS));
   if (subvertexIS) PetscCall(ISGetIndices(subvertexIS, &subVertices));
-  for (c = 0; c < numSubCells; ++c) { PetscCall(DMPlexSetConeSize(subdm, c, 1)); }
-  for (f = firstSubFace; f < firstSubFace + numSubFaces; ++f) { PetscCall(DMPlexSetConeSize(subdm, f, nFV)); }
+  for (c = 0; c < numSubCells; ++c) PetscCall(DMPlexSetConeSize(subdm, c, 1));
+  for (f = firstSubFace; f < firstSubFace + numSubFaces; ++f) PetscCall(DMPlexSetConeSize(subdm, f, nFV));
   PetscCall(DMSetUp(subdm));
   /* Create face cones */
   PetscCall(DMPlexGetMaxSizes(dm, &maxConeSize, NULL));

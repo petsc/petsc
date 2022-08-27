@@ -21,7 +21,7 @@ PetscErrorCode MatDestroySubMatrices_Dummy(PetscInt n, Mat *mat[]) {
 
       if (smat && !smat->singleis) {
         PetscInt i, nstages = smat->nstages;
-        for (i = 0; i < nstages; i++) { PetscCall(MatDestroy(&(*mat)[n + i])); }
+        for (i = 0; i < nstages; i++) PetscCall(MatDestroy(&(*mat)[n + i]));
       }
     }
   }

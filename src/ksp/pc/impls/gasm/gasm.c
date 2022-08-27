@@ -71,7 +71,7 @@ static PetscErrorCode PCGASMSubdomainView_Private(PC pc, PetscInt i, PetscViewer
   PetscCall(PetscViewerStringOpen(PETSC_COMM_SELF, cidx, len, &sviewer));
 #undef len
   PetscCall(ISGetIndices(osm->iis[i], &idx));
-  for (j = 0; j < nidx; ++j) { PetscCall(PetscViewerStringSPrintf(sviewer, "%" PetscInt_FMT " ", idx[j])); }
+  for (j = 0; j < nidx; ++j) PetscCall(PetscViewerStringSPrintf(sviewer, "%" PetscInt_FMT " ", idx[j]));
   PetscCall(ISRestoreIndices(osm->iis[i], &idx));
   PetscCall(PetscViewerDestroy(&sviewer));
   PetscCall(PetscViewerASCIIPrintf(viewer, "Inner subdomain:\n"));
@@ -96,7 +96,7 @@ static PetscErrorCode PCGASMSubdomainView_Private(PC pc, PetscInt i, PetscViewer
   PetscCall(PetscViewerStringOpen(PETSC_COMM_SELF, cidx, len, &sviewer));
 #undef len
   PetscCall(ISGetIndices(osm->ois[i], &idx));
-  for (j = 0; j < nidx; ++j) { PetscCall(PetscViewerStringSPrintf(sviewer, "%" PetscInt_FMT " ", idx[j])); }
+  for (j = 0; j < nidx; ++j) PetscCall(PetscViewerStringSPrintf(sviewer, "%" PetscInt_FMT " ", idx[j]));
   PetscCall(PetscViewerDestroy(&sviewer));
   PetscCall(ISRestoreIndices(osm->ois[i], &idx));
   PetscCall(PetscViewerASCIIPrintf(viewer, "Outer subdomain:\n"));
@@ -169,9 +169,9 @@ static PetscErrorCode PCView_GASM(PC pc, PetscViewer viewer) {
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)pc), &size));
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)pc), &rank));
 
-  if (osm->overlap >= 0) { PetscCall(PetscSNPrintf(overlap, sizeof(overlap), "requested amount of overlap = %" PetscInt_FMT, osm->overlap)); }
-  if (osm->N != PETSC_DETERMINE) { PetscCall(PetscSNPrintf(gsubdomains, sizeof(gsubdomains), "total number of subdomains = %" PetscInt_FMT, osm->N)); }
-  if (osm->nmax != PETSC_DETERMINE) { PetscCall(PetscSNPrintf(msubdomains, sizeof(msubdomains), "max number of local subdomains = %" PetscInt_FMT, osm->nmax)); }
+  if (osm->overlap >= 0) PetscCall(PetscSNPrintf(overlap, sizeof(overlap), "requested amount of overlap = %" PetscInt_FMT, osm->overlap));
+  if (osm->N != PETSC_DETERMINE) PetscCall(PetscSNPrintf(gsubdomains, sizeof(gsubdomains), "total number of subdomains = %" PetscInt_FMT, osm->N));
+  if (osm->nmax != PETSC_DETERMINE) PetscCall(PetscSNPrintf(msubdomains, sizeof(msubdomains), "max number of local subdomains = %" PetscInt_FMT, osm->nmax));
 
   PetscCall(PCGetOptionsPrefix(pc, &prefix));
   PetscCall(PetscOptionsGetBool(NULL, prefix, "-pc_gasm_view_subdomains", &view_subdomains, NULL));
@@ -571,7 +571,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc) {
     PetscCall(KSPSetOperators(osm->ksp[i], osm->pmat[i], osm->pmat[i]));
     PetscCall(KSPGetOptionsPrefix(osm->ksp[i], &prefix));
     PetscCall(MatSetOptionsPrefix(osm->pmat[i], prefix));
-    if (!pc->setupcalled) { PetscCall(KSPSetFromOptions(osm->ksp[i])); }
+    if (!pc->setupcalled) PetscCall(KSPSetFromOptions(osm->ksp[i]));
   }
   if (osm->pcmat) {
     PetscCall(MatDestroy(&pc->pmat));
@@ -586,7 +586,7 @@ static PetscErrorCode PCSetUpOnBlocks_GASM(PC pc) {
   PetscInt i;
 
   PetscFunctionBegin;
-  for (i = 0; i < osm->n; i++) { PetscCall(KSPSetUp(osm->ksp[i])); }
+  for (i = 0; i < osm->n; i++) PetscCall(KSPSetUp(osm->ksp[i]));
   PetscFunctionReturn(0);
 }
 
@@ -789,7 +789,7 @@ static PetscErrorCode PCReset_GASM(PC pc) {
 
   PetscFunctionBegin;
   if (osm->ksp) {
-    for (i = 0; i < osm->n; i++) { PetscCall(KSPReset(osm->ksp[i])); }
+    for (i = 0; i < osm->n; i++) PetscCall(KSPReset(osm->ksp[i]));
   }
   if (osm->pmat) {
     if (osm->n > 0) {
@@ -819,12 +819,12 @@ static PetscErrorCode PCReset_GASM(PC pc) {
     osm->N    = PETSC_DETERMINE;
     osm->nmax = PETSC_DETERMINE;
   }
-  if (osm->pctoouter) { PetscCall(VecScatterDestroy(&(osm->pctoouter))); }
-  if (osm->permutationIS) { PetscCall(ISDestroy(&(osm->permutationIS))); }
-  if (osm->pcx) { PetscCall(VecDestroy(&(osm->pcx))); }
-  if (osm->pcy) { PetscCall(VecDestroy(&(osm->pcy))); }
-  if (osm->permutationP) { PetscCall(MatDestroy(&(osm->permutationP))); }
-  if (osm->pcmat) { PetscCall(MatDestroy(&osm->pcmat)); }
+  if (osm->pctoouter) PetscCall(VecScatterDestroy(&(osm->pctoouter)));
+  if (osm->permutationIS) PetscCall(ISDestroy(&(osm->permutationIS)));
+  if (osm->pcx) PetscCall(VecDestroy(&(osm->pcx)));
+  if (osm->pcy) PetscCall(VecDestroy(&(osm->pcy)));
+  if (osm->permutationP) PetscCall(MatDestroy(&(osm->permutationP)));
+  if (osm->pcmat) PetscCall(MatDestroy(&osm->pcmat));
   PetscFunctionReturn(0);
 }
 
@@ -837,7 +837,7 @@ static PetscErrorCode PCDestroy_GASM(PC pc) {
   /* PCReset will not destroy subdomains, if user_subdomains is true. */
   PetscCall(PCGASMDestroySubdomains(osm->n, &osm->ois, &osm->iis));
   if (osm->ksp) {
-    for (i = 0; i < osm->n; i++) { PetscCall(KSPDestroy(&osm->ksp[i])); }
+    for (i = 0; i < osm->n; i++) PetscCall(KSPDestroy(&osm->ksp[i]));
     PetscCall(PetscFree(osm->ksp));
   }
   PetscCall(PetscFree(osm->x));
@@ -1313,7 +1313,7 @@ PetscErrorCode PCGASMCreateLocalSubdomains(Mat A, PetscInt nloc, IS *iis[]) {
 
   /* Get diagonal block from matrix if possible */
   PetscCall(MatHasOperation(A, MATOP_GET_DIAGONAL_BLOCK, &hasop));
-  if (hasop) { PetscCall(MatGetDiagonalBlock(A, &Ad)); }
+  if (hasop) PetscCall(MatGetDiagonalBlock(A, &Ad));
   if (Ad) {
     PetscCall(PetscObjectBaseTypeCompare((PetscObject)Ad, MATSEQBAIJ, &isbaij));
     if (!isbaij) PetscCall(PetscObjectBaseTypeCompare((PetscObject)Ad, MATSEQSBAIJ, &isbaij));
@@ -1325,7 +1325,7 @@ PetscErrorCode PCGASMCreateLocalSubdomains(Mat A, PetscInt nloc, IS *iis[]) {
     PetscCall(PetscObjectSetOptionsPrefix((PetscObject)mpart, prefix));
     PetscCall(MatPartitioningSetFromOptions(mpart));
     PetscCall(PetscObjectTypeCompare((PetscObject)mpart, MATPARTITIONINGCURRENT, &match));
-    if (!match) { PetscCall(PetscObjectTypeCompare((PetscObject)mpart, MATPARTITIONINGSQUARE, &match)); }
+    if (!match) PetscCall(PetscObjectTypeCompare((PetscObject)mpart, MATPARTITIONINGSQUARE, &match));
     if (!match) { /* assume a "good" partitioner is available */
       PetscInt        na;
       const PetscInt *ia, *ja;
@@ -1512,7 +1512,7 @@ PetscErrorCode PCGASMDestroySubdomains(PetscInt n, IS **iis, IS **ois) {
     PetscValidPointer(ois, 3);
     if (*ois) {
       PetscValidPointer(*ois, 3);
-      for (i = 0; i < n; i++) { PetscCall(ISDestroy(&(*ois)[i])); }
+      for (i = 0; i < n; i++) PetscCall(ISDestroy(&(*ois)[i]));
       PetscCall(PetscFree((*ois)));
     }
   }
@@ -1520,7 +1520,7 @@ PetscErrorCode PCGASMDestroySubdomains(PetscInt n, IS **iis, IS **ois) {
     PetscValidPointer(iis, 2);
     if (*iis) {
       PetscValidPointer(*iis, 2);
-      for (i = 0; i < n; i++) { PetscCall(ISDestroy(&(*iis)[i])); }
+      for (i = 0; i < n; i++) PetscCall(ISDestroy(&(*iis)[i]));
       PetscCall(PetscFree((*iis)));
     }
   }
@@ -1719,7 +1719,7 @@ PetscErrorCode PCGASMCreateSubdomains2D(PC pc, PetscInt M, PetscInt N, PetscInt 
             }
           }
           PetscCall(ISCreateGeneral(subcomm, nidx, idx, PETSC_OWN_POINTER, (*xis) + s));
-          if (split) { PetscCallMPI(MPI_Comm_free(&subcomm)); }
+          if (split) PetscCallMPI(MPI_Comm_free(&subcomm));
         } /* if (n[0]) */
       }   /* for (q = 0; q < 2; ++q) */
       if (n[0]) ++s;

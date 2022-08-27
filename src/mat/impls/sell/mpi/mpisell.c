@@ -49,7 +49,7 @@ PetscErrorCode MatCreateColmap_MPISELL_Private(Mat mat) {
   PetscCheck(sell->garray, PETSC_COMM_SELF, PETSC_ERR_PLIB, "MPISELL Matrix was assembled but is missing garray");
 #if defined(PETSC_USE_CTABLE)
   PetscCall(PetscTableCreate(n, mat->cmap->N + 1, &sell->colmap));
-  for (i = 0; i < n; i++) { PetscCall(PetscTableAdd(sell->colmap, sell->garray[i] + 1, i + 1, INSERT_VALUES)); }
+  for (i = 0; i < n; i++) PetscCall(PetscTableAdd(sell->colmap, sell->garray[i] + 1, i + 1, INSERT_VALUES));
 #else
   PetscCall(PetscCalloc1(mat->cmap->N + 1, &sell->colmap));
   PetscCall(PetscLogObjectMemory((PetscObject)mat, (mat->cmap->N + 1) * sizeof(PetscInt)));
@@ -195,7 +195,7 @@ PetscErrorCode MatSetValues_MPISELL(Mat mat, PetscInt m, const PetscInt im[], Pe
         } else {
           PetscCheck(in[j] < mat->cmap->N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Column too large: col %" PetscInt_FMT " max %" PetscInt_FMT, in[j], mat->cmap->N - 1);
           if (mat->was_assembled) {
-            if (!sell->colmap) { PetscCall(MatCreateColmap_MPISELL_Private(mat)); }
+            if (!sell->colmap) PetscCall(MatCreateColmap_MPISELL_Private(mat));
 #if defined(PETSC_USE_CTABLE)
             PetscCall(PetscTableFind(sell->colmap, in[j] + 1, &col));
             col--;
@@ -254,7 +254,7 @@ PetscErrorCode MatGetValues_MPISELL(Mat mat, PetscInt m, const PetscInt idxm[], 
           col = idxn[j] - cstart;
           PetscCall(MatGetValues(sell->A, 1, &row, 1, &col, v + i * n + j));
         } else {
-          if (!sell->colmap) { PetscCall(MatCreateColmap_MPISELL_Private(mat)); }
+          if (!sell->colmap) PetscCall(MatCreateColmap_MPISELL_Private(mat));
 #if defined(PETSC_USE_CTABLE)
           PetscCall(PetscTableFind(sell->colmap, idxn[j] + 1, &col));
           col--;
@@ -262,7 +262,7 @@ PetscErrorCode MatGetValues_MPISELL(Mat mat, PetscInt m, const PetscInt idxm[], 
           col = sell->colmap[idxn[j]] - 1;
 #endif
           if ((col < 0) || (sell->garray[col] != idxn[j])) *(v + i * n + j) = 0.0;
-          else { PetscCall(MatGetValues(sell->B, 1, &row, 1, &col, v + i * n + j)); }
+          else PetscCall(MatGetValues(sell->B, 1, &row, 1, &col, v + i * n + j));
         }
       }
     } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only local values currently supported");
@@ -320,7 +320,7 @@ PetscErrorCode MatAssemblyEnd_MPISELL(Mat mat, MatAssemblyType mode) {
     PetscCall(MPIU_Allreduce(&mat->was_assembled, &other_disassembled, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)mat)));
     PetscCheck(!mat->was_assembled || other_disassembled, PETSC_COMM_SELF, PETSC_ERR_SUP, "MatDisAssemble not implemented yet");
   }
-  if (!mat->was_assembled && mode == MAT_FINAL_ASSEMBLY) { PetscCall(MatSetUpMultiply_MPISELL(mat)); }
+  if (!mat->was_assembled && mode == MAT_FINAL_ASSEMBLY) PetscCall(MatSetUpMultiply_MPISELL(mat));
   /*
   PetscCall(MatSetOption(sell->B,MAT_USE_INODES,PETSC_FALSE));
   */
@@ -649,7 +649,7 @@ PetscErrorCode MatView_MPISELL(Mat mat, PetscViewer viewer) {
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERDRAW, &isdraw));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERBINARY, &isbinary));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSOCKET, &issocket));
-  if (iascii || isdraw || isbinary || issocket) { PetscCall(MatView_MPISELL_ASCIIorDraworSocket(mat, viewer)); }
+  if (iascii || isdraw || isbinary || issocket) PetscCall(MatView_MPISELL_ASCIIorDraworSocket(mat, viewer));
   PetscFunctionReturn(0);
 }
 
@@ -815,7 +815,7 @@ PetscErrorCode MatEqual_MPISELL(Mat A, Mat B, PetscBool *flag) {
   d = matB->B;
 
   PetscCall(MatEqual(a, c, &flg));
-  if (flg) { PetscCall(MatEqual(b, d, &flg)); }
+  if (flg) PetscCall(MatEqual(b, d, &flg));
   PetscCall(MPIU_Allreduce(&flg, flag, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)A)));
   PetscFunctionReturn(0);
 }
@@ -1600,8 +1600,8 @@ PetscErrorCode MatMPISELLGetLocalMatCondensed(Mat A, MatReuse scall, IS *row, IS
   PetscCall(MatCreateSubMatrices(A, 1, &isrowa, &iscola, scall, &aloc));
   *A_loc = aloc[0];
   PetscCall(PetscFree(aloc));
-  if (!row) { PetscCall(ISDestroy(&isrowa)); }
-  if (!col) { PetscCall(ISDestroy(&iscola)); }
+  if (!row) PetscCall(ISDestroy(&isrowa));
+  if (!col) PetscCall(ISDestroy(&iscola));
   PetscCall(PetscLogEventEnd(MAT_Getlocalmatcondensed, A, 0, 0, 0));
   PetscFunctionReturn(0);
 }
@@ -1704,7 +1704,7 @@ PetscErrorCode MatSOR_MPISELL(Mat matin, Vec bb, PetscReal omega, MatSORType fla
     PetscFunctionReturn(0);
   }
 
-  if (its > 1 || ~flag & SOR_ZERO_INITIAL_GUESS || flag & SOR_EISENSTAT) { PetscCall(VecDuplicate(bb, &bb1)); }
+  if (its > 1 || ~flag & SOR_ZERO_INITIAL_GUESS || flag & SOR_EISENSTAT) PetscCall(VecDuplicate(bb, &bb1));
 
   if ((flag & SOR_LOCAL_SYMMETRIC_SWEEP) == SOR_LOCAL_SYMMETRIC_SWEEP) {
     if (flag & SOR_ZERO_INITIAL_GUESS) {

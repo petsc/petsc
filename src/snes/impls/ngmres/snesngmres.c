@@ -77,7 +77,7 @@ PetscErrorCode SNESSetUp_NGMRES(SNES snes) {
   if (ngmres->select_type == SNES_NGMRES_SELECT_LINESEARCH) {
     PetscCall(SNESLineSearchCreate(PetscObjectComm((PetscObject)snes), &ngmres->additive_linesearch));
     PetscCall(SNESLineSearchSetSNES(ngmres->additive_linesearch, snes));
-    if (!((PetscObject)ngmres->additive_linesearch)->type_name) { PetscCall(SNESLineSearchSetType(ngmres->additive_linesearch, SNESLINESEARCHL2)); }
+    if (!((PetscObject)ngmres->additive_linesearch)->type_name) PetscCall(SNESLineSearchSetType(ngmres->additive_linesearch, SNESLINESEARCHL2));
     PetscCall(SNESLineSearchAppendOptionsPrefix(ngmres->additive_linesearch, "additive_"));
     PetscCall(SNESLineSearchAppendOptionsPrefix(ngmres->additive_linesearch, optionsprefix));
     PetscCall(SNESLineSearchSetFromOptions(ngmres->additive_linesearch));
@@ -277,7 +277,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes) {
 
     /* restart after restart conditions have persisted for a fixed number of iterations */
     if (restart_count >= ngmres->restart_it) {
-      if (ngmres->monitor) { PetscCall(PetscViewerASCIIPrintf(ngmres->monitor, "Restarted at iteration %" PetscInt_FMT "\n", k_restart)); }
+      if (ngmres->monitor) PetscCall(PetscViewerASCIIPrintf(ngmres->monitor, "Restarted at iteration %" PetscInt_FMT "\n", k_restart));
       restart_count = 0;
       k_restart     = 1;
       l             = 1;
@@ -510,7 +510,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NGMRES(SNES snes) {
   ngmres->candidate = PETSC_FALSE;
 
   PetscCall(SNESGetLineSearch(snes, &linesearch));
-  if (!((PetscObject)linesearch)->type_name) { PetscCall(SNESLineSearchSetType(linesearch, SNESLINESEARCHBASIC)); }
+  if (!((PetscObject)linesearch)->type_name) PetscCall(SNESLineSearchSetType(linesearch, SNESLINESEARCHBASIC));
 
   ngmres->additive_linesearch = NULL;
   ngmres->approxfunc          = PETSC_FALSE;

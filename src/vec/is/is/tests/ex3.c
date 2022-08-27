@@ -30,7 +30,7 @@ int main(int argc, char **argv) {
   */
   PetscCall(ISAllGather(is, &newis));
 
-  if (rank == 0) { PetscCall(ISView(newis, PETSC_VIEWER_STDOUT_SELF)); }
+  if (rank == 0) PetscCall(ISView(newis, PETSC_VIEWER_STDOUT_SELF));
 
   PetscCall(ISDestroy(&newis));
   PetscCall(ISDestroy(&is));

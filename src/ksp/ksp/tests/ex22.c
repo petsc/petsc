@@ -42,7 +42,7 @@ PetscErrorCode test_solve(void) {
   PetscCall(MatMPIAIJSetPreallocation(A12, np, NULL, np, NULL));
 
   for (i = 0; i < n; i++) {
-    for (j = 0; j < np; j++) { PetscCall(MatSetValue(A12, i, j, (PetscScalar)(i + j * n), INSERT_VALUES)); }
+    for (j = 0; j < np; j++) PetscCall(MatSetValue(A12, i, j, (PetscScalar)(i + j * n), INSERT_VALUES));
   }
   PetscCall(MatSetValue(A12, 2, 1, (PetscScalar)(4), INSERT_VALUES));
   PetscCall(MatAssemblyBegin(A12, MAT_FINAL_ASSEMBLY));
@@ -66,7 +66,7 @@ PetscErrorCode test_solve(void) {
 
   /* Tests MatMissingDiagonal_Nest */
   PetscCall(MatMissingDiagonal(A, &flg, NULL));
-  if (!flg) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Unexpected %s\n", flg ? "true" : "false")); }
+  if (!flg) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Unexpected %s\n", flg ? "true" : "false"));
 
   /* Create vectors */
   PetscCall(MatCreateVecs(A12, &h, &f));
@@ -157,7 +157,7 @@ PetscErrorCode test_solve_matgetvecs(void) {
   PetscCall(MatMPIAIJSetPreallocation(A12, np, NULL, np, NULL));
 
   for (i = 0; i < n; i++) {
-    for (j = 0; j < np; j++) { PetscCall(MatSetValue(A12, i, j, (PetscScalar)(i + j * n), INSERT_VALUES)); }
+    for (j = 0; j < np; j++) PetscCall(MatSetValue(A12, i, j, (PetscScalar)(i + j * n), INSERT_VALUES));
   }
   PetscCall(MatSetValue(A12, 2, 1, (PetscScalar)(4), INSERT_VALUES));
   PetscCall(MatAssemblyBegin(A12, MAT_FINAL_ASSEMBLY));

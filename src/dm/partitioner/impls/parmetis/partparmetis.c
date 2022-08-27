@@ -139,7 +139,7 @@ static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, 
   /* Weight cells */
   if (vertSection) {
     PetscCall(PetscMalloc1(nvtxs, &vwgt));
-    for (v = 0; v < nvtxs; ++v) { PetscCall(PetscSectionGetDof(vertSection, v, &vwgt[v])); }
+    for (v = 0; v < nvtxs; ++v) PetscCall(PetscSectionGetDof(vertSection, v, &vwgt[v]));
     wgtflag |= 2; /* have weights on graph vertices */
   }
 
@@ -196,7 +196,7 @@ static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, 
       PetscStackPop;
       PetscCheck(err == METIS_OK, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error %d in ParMETIS_V3_PartKway()", err);
     }
-    if (hasempty) { PetscCallMPI(MPI_Comm_free(&pcomm)); }
+    if (hasempty) PetscCallMPI(MPI_Comm_free(&pcomm));
   }
 
   /* Convert to PetscSection+IS */

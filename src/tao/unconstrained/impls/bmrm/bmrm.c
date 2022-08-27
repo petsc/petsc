@@ -278,7 +278,7 @@ PetscErrorCode init_df_solver(TAO_DF *df) {
   PetscCall(PetscMalloc1(n, &df->x));
   PetscCall(PetscMalloc1(n, &df->Q));
 
-  for (i = 0; i < n; i++) { PetscCall(PetscMalloc1(n, &df->Q[i])); }
+  for (i = 0; i < n; i++) PetscCall(PetscMalloc1(n, &df->Q[i]));
 
   PetscCall(PetscMalloc1(n, &df->g));
   PetscCall(PetscMalloc1(n, &df->y));
@@ -398,7 +398,7 @@ PetscErrorCode destroy_df_solver(TAO_DF *df) {
   PetscCall(PetscFree(df->u));
   PetscCall(PetscFree(df->x));
 
-  for (i = 0; i < df->cur_num_cp; i++) { PetscCall(PetscFree(df->Q[i])); }
+  for (i = 0; i < df->cur_num_cp; i++) PetscCall(PetscFree(df->Q[i]));
   PetscCall(PetscFree(df->Q));
   PetscCall(PetscFree(df->ipt));
   PetscCall(PetscFree(df->ipt2));
@@ -556,7 +556,7 @@ PetscInt project(PetscInt n, PetscReal *a, PetscReal b, PetscReal *c, PetscReal 
   }
 
   *lam_ext = lambda;
-  if (innerIter >= df->maxProjIter) { PetscCall(PetscInfo(NULL, "WARNING: DaiFletcher max iterations\n")); }
+  if (innerIter >= df->maxProjIter) PetscCall(PetscInfo(NULL, "WARNING: DaiFletcher max iterations\n"));
   return innerIter;
 }
 

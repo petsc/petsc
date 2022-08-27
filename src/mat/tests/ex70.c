@@ -318,7 +318,7 @@ int main(int argc, char **args) {
     PetscCall(MatConvert(B, MATDENSECUDA, MAT_INPLACE_MATRIX, &B));
     PetscCall(MatConvert(Bt, MATDENSECUDA, MAT_INPLACE_MATRIX, &Bt));
   }
-  if (xgpu) { PetscCall(MatConvert(X, MATDENSECUDA, MAT_INPLACE_MATRIX, &X)); }
+  if (xgpu) PetscCall(MatConvert(X, MATDENSECUDA, MAT_INPLACE_MATRIX, &X));
   PetscCall(CheckLocal(B, X, aB, aX));
 
   /* Test MatDenseGetSubMatrix */
@@ -514,9 +514,9 @@ int main(int argc, char **args) {
   PetscCall(MatAXPY(A, 4.5, T, SAME_NONZERO_PATTERN));
   PetscCall(MatAXPY(T2, 4.5, T, DIFFERENT_NONZERO_PATTERN));
   PetscCall(MatMultEqual(T2, A, 10, &flg));
-  if (!flg) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error with MATSHELL (MatMult)\n")); }
+  if (!flg) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error with MATSHELL (MatMult)\n"));
   PetscCall(MatMultTransposeEqual(T2, A, 10, &flg));
-  if (!flg) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error with MATSHELL (MatMultTranspose)\n")); }
+  if (!flg) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error with MATSHELL (MatMultTranspose)\n"));
   PetscCall(MatDestroy(&T));
   PetscCall(VecDestroy(&ls));
   PetscCall(VecDestroy(&rs));
@@ -554,7 +554,7 @@ int main(int argc, char **args) {
   }
   if (testproj) {
     PetscCall(MatPtAPMultEqual(T2, B, PtAP, 10, &flg));
-    if (!flg) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error with PtAP (MATSHELL)\n")); }
+    if (!flg) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error with PtAP (MATSHELL)\n"));
     if (testshellops) { /* projections fail if the product operations are not specified */
       PetscCall(MatPtAP(T2, B, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &T));
       PetscCall(MatPtAP(T2, B, MAT_REUSE_MATRIX, PETSC_DEFAULT, &T));
@@ -574,7 +574,7 @@ int main(int argc, char **args) {
     }
     if (RARt) {
       PetscCall(MatRARtMultEqual(T2, R, RARt, 10, &flg));
-      if (!flg) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error with RARt (MATSHELL)\n")); }
+      if (!flg) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error with RARt (MATSHELL)\n"));
     }
     if (testshellops) {
       PetscCall(MatRARt(T2, R, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &T));

@@ -56,7 +56,7 @@ static PetscErrorCode SNESLineSearchApply_NCGLinear(SNESLineSearch linesearch) {
   xnorm = &linesearch->xnorm;
   ynorm = &linesearch->ynorm;
 
-  if (!snes->jacobian) { PetscCall(SNESSetUpMatrices(snes)); }
+  if (!snes->jacobian) PetscCall(SNESSetUpMatrices(snes));
 
   /*
 
@@ -152,7 +152,7 @@ static PetscErrorCode SNESView_NCG(SNES snes, PetscViewer viewer) {
 
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) { PetscCall(PetscViewerASCIIPrintf(viewer, "  type: %s\n", SNESNCGTypes[ncg->type])); }
+  if (iascii) PetscCall(PetscViewerASCIIPrintf(viewer, "  type: %s\n", SNESNCGTypes[ncg->type]));
   PetscFunctionReturn(0);
 }
 
@@ -315,7 +315,7 @@ static PetscErrorCode SNESSolve_NCG(SNES snes) {
 
   for (i = 1; i < maxits + 1; i++) {
     /* some update types require the old update direction or conjugate direction */
-    if (ncg->type != SNES_NCG_FR) { PetscCall(VecCopy(dX, dXold)); }
+    if (ncg->type != SNES_NCG_FR) PetscCall(VecCopy(dX, dXold));
     PetscCall(SNESLineSearchApply(linesearch, X, F, &fnorm, lX));
     PetscCall(SNESLineSearchGetReason(linesearch, &lsresult));
     PetscCall(SNESLineSearchGetNorms(linesearch, &xnorm, &fnorm, &ynorm));
@@ -410,7 +410,7 @@ static PetscErrorCode SNESSolve_NCG(SNES snes) {
       beta = PetscRealPart(dXdotdX / lXdotdXold);
       break;
     }
-    if (ncg->monitor) { PetscCall(PetscViewerASCIIPrintf(ncg->monitor, "beta = %e\n", (double)beta)); }
+    if (ncg->monitor) PetscCall(PetscViewerASCIIPrintf(ncg->monitor, "beta = %e\n", (double)beta));
     PetscCall(VecAYPX(lX, beta, dX));
   }
   PetscCall(PetscInfo(snes, "Maximum number of iterations has been reached: %" PetscInt_FMT "\n", maxits));

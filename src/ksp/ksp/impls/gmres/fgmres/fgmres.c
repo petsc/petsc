@@ -217,7 +217,7 @@ PetscErrorCode KSPFGMRESCycle(PetscInt *itcount, KSP ksp) {
 
   /*
      Monitor if we know that we will not return for a restart */
-  if (loc_it && (ksp->reason || ksp->its >= ksp->max_it)) { PetscCall(KSPMonitor(ksp, ksp->its, res_norm)); }
+  if (loc_it && (ksp->reason || ksp->its >= ksp->max_it)) PetscCall(KSPMonitor(ksp, ksp->its, res_norm));
 
   if (itcount) *itcount = loc_it;
 
@@ -266,7 +266,7 @@ PetscErrorCode KSPSolve_FGMRES(KSP ksp) {
     PetscCall(VecCopy(ksp->vec_rhs, VEC_VV(0)));
   }
   /* This may be true only on a subset of MPI ranks; setting it here so it will be detected by the first norm computaion in the Krylov method */
-  if (ksp->reason == KSP_DIVERGED_PC_FAILED) { PetscCall(VecSetInf(VEC_VV(0))); }
+  if (ksp->reason == KSP_DIVERGED_PC_FAILED) PetscCall(VecSetInf(VEC_VV(0)));
 
   /* now the residual is in VEC_VV(0) - which is what
      KSPFGMRESCycle expects... */
@@ -550,7 +550,7 @@ PetscErrorCode KSPReset_FGMRES(KSP ksp) {
     i = 0;
     /* In the first allocation we allocated VEC_OFFSET fewer vectors in prevecs */
     PetscCall(VecDestroyVecs(fgmres->mwork_alloc[i] - VEC_OFFSET, &fgmres->prevecs_user_work[i]));
-    for (i = 1; i < fgmres->nwork_alloc; i++) { PetscCall(VecDestroyVecs(fgmres->mwork_alloc[i], &fgmres->prevecs_user_work[i])); }
+    for (i = 1; i < fgmres->nwork_alloc; i++) PetscCall(VecDestroyVecs(fgmres->mwork_alloc[i], &fgmres->prevecs_user_work[i]));
   }
   PetscCall(PetscFree(fgmres->prevecs_user_work));
   if (fgmres->modifydestroy) PetscCall((*fgmres->modifydestroy)(fgmres->modifyctx));

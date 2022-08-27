@@ -568,7 +568,7 @@ static PetscErrorCode MatDuplicate_ScaLAPACK(Mat A, MatDuplicateOption op, Mat *
   b->csrc = a->csrc;
   PetscCall(MatSetUp(Bs));
   *B = Bs;
-  if (op == MAT_COPY_VALUES) { PetscCall(PetscArraycpy(b->loc, a->loc, a->lld * a->locc)); }
+  if (op == MAT_COPY_VALUES) PetscCall(PetscArraycpy(b->loc, a->loc, a->lld * a->locc));
   Bs->assembled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -1520,7 +1520,7 @@ static PetscErrorCode MatStashScatterBegin_ScaLAPACK(Mat mat, MatStash *stash, P
 #if defined(PETSC_USE_INFO)
   PetscCall(PetscInfo(NULL, "No of messages: %" PetscInt_FMT "\n", nsends));
   for (i = 0; i < size; i++) {
-    if (sizes[i]) { PetscCall(PetscInfo(NULL, "Mesg_to: %" PetscInt_FMT ": size: %zu bytes\n", i, (size_t)(nlengths[i] * (bs2 * sizeof(PetscScalar) + 2 * sizeof(PetscInt))))); }
+    if (sizes[i]) PetscCall(PetscInfo(NULL, "Mesg_to: %" PetscInt_FMT ": size: %zu bytes\n", i, (size_t)(nlengths[i] * (bs2 * sizeof(PetscScalar) + 2 * sizeof(PetscInt)))));
   }
 #endif
   PetscCall(PetscFree(nlengths));

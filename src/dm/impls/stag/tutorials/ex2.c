@@ -102,7 +102,7 @@ int main(int argc, char **argv) {
   /* Attach a constant-pressure nullspace to the operator
   (logically, this should be in CreateSystem, but we separate it here to highlight
    the features of DMStag exposed, in particular DMStagMigrateVec()) */
-  if (!pinPressure) { PetscCall(AttachNullspace(dmSol, A)); }
+  if (!pinPressure) PetscCall(AttachNullspace(dmSol, A));
 
   /* Solve, using the default FieldSplit (Approximate Block Factorization) Preconditioner
      This is not intended to be an example of a good solver!  */

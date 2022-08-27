@@ -125,7 +125,7 @@ static PetscErrorCode TaoSolve_NM(Tao tao) {
   nm->noutcontract = 0;
   nm->nexpand      = 0;
 
-  if (tao->XL || tao->XU || tao->ops->computebounds) { PetscCall(PetscInfo(tao, "WARNING: Variable bounds have been set but will be ignored by NelderMead algorithm\n")); }
+  if (tao->XL || tao->XU || tao->ops->computebounds) PetscCall(PetscInfo(tao, "WARNING: Variable bounds have been set but will be ignored by NelderMead algorithm\n"));
 
   PetscCall(VecCopy(tao->solution, nm->simplex[0]));
   PetscCall(TaoComputeObjective(tao, nm->simplex[0], &nm->f_values[0]));
@@ -146,7 +146,7 @@ static PetscErrorCode TaoSolve_NM(Tao tao) {
   /*  Xbar  = (Sum of all simplex vectors - worst vector)/N */
   PetscCall(NelderMeadSort(nm));
   PetscCall(VecSet(Xbar, 0.0));
-  for (i = 0; i < nm->N; i++) { PetscCall(VecAXPY(Xbar, 1.0, nm->simplex[nm->indices[i]])); }
+  for (i = 0; i < nm->N; i++) PetscCall(VecAXPY(Xbar, 1.0, nm->simplex[nm->indices[i]]));
   PetscCall(VecScale(Xbar, nm->oneOverN));
   tao->reason = TAO_CONTINUE_ITERATING;
   while (1) {

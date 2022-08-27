@@ -44,7 +44,7 @@ int main(int argc, char **argv) {
   }
 
   PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "%d: Setting values...\n", rank));
-  for (i = 0; i < m; i++) { PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "%d: idx[%" PetscInt_FMT "] == %" PetscInt_FMT "; val[%" PetscInt_FMT "] == %f\n", rank, i, indices[i], i, (double)PetscRealPart(values[i]))); }
+  for (i = 0; i < m; i++) PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "%d: idx[%" PetscInt_FMT "] == %" PetscInt_FMT "; val[%" PetscInt_FMT "] == %f\n", rank, i, indices[i], i, (double)PetscRealPart(values[i])));
   PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD, PETSC_STDOUT));
 
   PetscCall(VecSetValues(x, m, indices, values, INSERT_VALUES));
@@ -67,13 +67,13 @@ int main(int argc, char **argv) {
   }
 
   PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "%d: Fetching these values from vector...\n", rank));
-  for (i = 0; i < m; i++) { PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "%d: idx[%" PetscInt_FMT "] == %" PetscInt_FMT "\n", rank, i, indices[i])); }
+  for (i = 0; i < m; i++) PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "%d: idx[%" PetscInt_FMT "] == %" PetscInt_FMT "\n", rank, i, indices[i]));
   PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD, PETSC_STDOUT));
 
   PetscCall(VecGetValues(x, m, indices, values));
 
   PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "%d: Fetched values:\n", rank));
-  for (i = 0; i < m; i++) { PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "%d: idx[%" PetscInt_FMT "] == %" PetscInt_FMT "; val[%" PetscInt_FMT "] == %f\n", rank, i, indices[i], i, (double)PetscRealPart(values[i]))); }
+  for (i = 0; i < m; i++) PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "%d: idx[%" PetscInt_FMT "] == %" PetscInt_FMT "; val[%" PetscInt_FMT "] == %f\n", rank, i, indices[i], i, (double)PetscRealPart(values[i])));
   PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD, PETSC_STDOUT));
 
   /*

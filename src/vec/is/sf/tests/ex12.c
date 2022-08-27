@@ -64,7 +64,7 @@ int main(int argc, char **argv) {
 
   /* Test reverse vecscatter */
   PetscCall(VecScale(y, -1.0));
-  if (rank) { PetscCall(VecScale(y, 1.0 / (size - 1))); }
+  if (rank) PetscCall(VecScale(y, 1.0 / (size - 1)));
 
   PetscCall(VecScatterBegin(ctx, y, x, ADD_VALUES, SCATTER_REVERSE));
   PetscCall(VecScatterEnd(ctx, y, x, ADD_VALUES, SCATTER_REVERSE));

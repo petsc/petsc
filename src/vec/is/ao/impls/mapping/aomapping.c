@@ -297,7 +297,7 @@ PetscErrorCode AOCreateMapping(MPI_Comm comm, PetscInt napp, const PetscInt myap
     for (i = 0; i < N; i++) { PetscCheck(i == aomap->appPerm[aomap->petscPerm[i]], PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid ordering"); }
   }
   /* Cleanup */
-  if (!mypetsc) { PetscCall(PetscFree(petsc)); }
+  if (!mypetsc) PetscCall(PetscFree(petsc));
   PetscCall(PetscFree4(allapp, appPerm, allpetsc, petscPerm));
 
   PetscCall(AOViewFromOptions(ao, NULL, "-ao_view"));
@@ -348,6 +348,6 @@ PetscErrorCode AOCreateMappingIS(IS isapp, IS ispetsc, AO *aoout) {
   PetscCall(AOCreateMapping(comm, napp, myapp, mypetsc, aoout));
 
   PetscCall(ISRestoreIndices(isapp, &myapp));
-  if (ispetsc) { PetscCall(ISRestoreIndices(ispetsc, &mypetsc)); }
+  if (ispetsc) PetscCall(ISRestoreIndices(ispetsc, &mypetsc));
   PetscFunctionReturn(0);
 }

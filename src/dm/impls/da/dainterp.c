@@ -76,7 +76,7 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q1(DM dac, DM daf, Mat *A) {
      Temporary hack: Since the MAIJ matrix must be converted to AIJ before being used by the GPU
      we don't want the original unconverted matrix copied to the GPU
    */
-  if (dof > 1) { PetscCall(MatBindToCPU(mat, PETSC_TRUE)); }
+  if (dof > 1) PetscCall(MatBindToCPU(mat, PETSC_TRUE));
 #endif
   PetscCall(MatSetSizes(mat, m_f, m_c, mx, Mx));
   PetscCall(ConvertToAIJ(dac->mattype, &mattype));
@@ -214,7 +214,7 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q0(DM dac, DM daf, Mat *A) {
      Temporary hack: Since the MAIJ matrix must be converted to AIJ before being used by the GPU
      we don't want the original unconverted matrix copied to the GPU
    */
-  if (dof > 1) { PetscCall(MatBindToCPU(mat, PETSC_TRUE)); }
+  if (dof > 1) PetscCall(MatBindToCPU(mat, PETSC_TRUE));
 #endif
   PetscCall(MatSetSizes(mat, m_f, m_c, mx, Mx));
   PetscCall(ConvertToAIJ(dac->mattype, &mattype));
@@ -358,7 +358,7 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q1(DM dac, DM daf, Mat *A) {
      Temporary hack: Since the MAIJ matrix must be converted to AIJ before being used by the GPU
      we don't want the original unconverted matrix copied to the GPU
   */
-  if (dof > 1) { PetscCall(MatBindToCPU(mat, PETSC_TRUE)); }
+  if (dof > 1) PetscCall(MatBindToCPU(mat, PETSC_TRUE));
 #endif
   PetscCall(MatSetSizes(mat, m_f * n_f, col_scale * m_c * n_c, mx * my, col_scale * Mx * My));
   PetscCall(ConvertToAIJ(dac->mattype, &mattype));
@@ -573,7 +573,7 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q0(DM dac, DM daf, Mat *A) {
      Temporary hack: Since the MAIJ matrix must be converted to AIJ before being used by the GPU
      we don't want the original unconverted matrix copied to the GPU
   */
-  if (dof > 1) { PetscCall(MatBindToCPU(mat, PETSC_TRUE)); }
+  if (dof > 1) PetscCall(MatBindToCPU(mat, PETSC_TRUE));
 #endif
   PetscCall(MatSetSizes(mat, m_f * n_f, col_scale * m_c * n_c, mx * my, col_scale * Mx * My));
   PetscCall(ConvertToAIJ(dac->mattype, &mattype));
@@ -707,7 +707,7 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q0(DM dac, DM daf, Mat *A) {
      Temporary hack: Since the MAIJ matrix must be converted to AIJ before being used by the GPU
      we don't want the original unconverted matrix copied to the GPU
   */
-  if (dof > 1) { PetscCall(MatBindToCPU(mat, PETSC_TRUE)); }
+  if (dof > 1) PetscCall(MatBindToCPU(mat, PETSC_TRUE));
 #endif
   PetscCall(MatSetSizes(mat, m_f * n_f * p_f, col_scale * m_c * n_c * p_c, mx * my * mz, col_scale * Mx * My * Mz));
   PetscCall(ConvertToAIJ(dac->mattype, &mattype));
@@ -853,7 +853,7 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q1(DM dac, DM daf, Mat *A) {
      Temporary hack: Since the MAIJ matrix must be converted to AIJ before being used by the GPU
      we don't want the original unconverted matrix copied to the GPU
   */
-  if (dof > 1) { PetscCall(MatBindToCPU(mat, PETSC_TRUE)); }
+  if (dof > 1) PetscCall(MatBindToCPU(mat, PETSC_TRUE));
 #endif
   PetscCall(MatSetSizes(mat, m_f * n_f * p_f, m_c * n_c * p_c, mx * my * mz, Mx * My * Mz));
   PetscCall(ConvertToAIJ(dac->mattype, &mattype));

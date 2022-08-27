@@ -391,7 +391,7 @@ static PetscErrorCode PCRedundantGetKSP_Redundant(PC pc, KSP *innerksp) {
     PetscCall(KSPSetType(red->ksp, KSPPREONLY));
     PetscCall(KSPGetPC(red->ksp, &red->pc));
     PetscCall(PetscObjectTypeCompare((PetscObject)pc->pmat, MATSEQSBAIJ, &issbaij));
-    if (!issbaij) { PetscCall(PetscObjectTypeCompare((PetscObject)pc->pmat, MATMPISBAIJ, &issbaij)); }
+    if (!issbaij) PetscCall(PetscObjectTypeCompare((PetscObject)pc->pmat, MATMPISBAIJ, &issbaij));
     if (!issbaij) {
       PetscCall(PCSetType(red->pc, PCLU));
     } else {

@@ -100,7 +100,7 @@ int main(int argc, char **argv) {
     }
     PetscCall(KSPSolve(ksp, fine_ctx.b, fine_ctx.x));
     PetscCall(KSPGetIterationNumber(ksp, &its));
-    if (its > 6) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Warning: Number of iterations = %" PetscInt_FMT " greater than expected\n", its)); }
+    if (its > 6) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Warning: Number of iterations = %" PetscInt_FMT " greater than expected\n", its));
   }
 
   /* free data structures */

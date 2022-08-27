@@ -601,7 +601,7 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJCUSPARSE(Mat B, MatType mtyp
   if (a->B) PetscCall(MatSetType(a->B, MATSEQAIJCUSPARSE));
   if (a->lvec) PetscCall(VecSetType(a->lvec, VECSEQCUDA));
 
-  if (reuse != MAT_REUSE_MATRIX && !a->spptr) { PetscCallCXX(a->spptr = new Mat_MPIAIJCUSPARSE); }
+  if (reuse != MAT_REUSE_MATRIX && !a->spptr) PetscCallCXX(a->spptr = new Mat_MPIAIJCUSPARSE);
 
   A->ops->assemblyend           = MatAssemblyEnd_MPIAIJCUSPARSE;
   A->ops->mult                  = MatMult_MPIAIJCUSPARSE;

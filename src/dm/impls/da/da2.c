@@ -76,10 +76,10 @@ static PetscErrorCode DMView_DA_2d(DM da, PetscViewer viewer) {
     if (rank == 0) {
       ymin = 0.0;
       ymax = dd->N - 1;
-      for (xmin = 0; xmin < dd->M; xmin++) { PetscCall(PetscDrawLine(draw, xmin, ymin, xmin, ymax, PETSC_DRAW_BLACK)); }
+      for (xmin = 0; xmin < dd->M; xmin++) PetscCall(PetscDrawLine(draw, xmin, ymin, xmin, ymax, PETSC_DRAW_BLACK));
       xmin = 0.0;
       xmax = dd->M - 1;
-      for (ymin = 0; ymin < dd->N; ymin++) { PetscCall(PetscDrawLine(draw, xmin, ymin, xmax, ymin, PETSC_DRAW_BLACK)); }
+      for (ymin = 0; ymin < dd->N; ymin++) PetscCall(PetscDrawLine(draw, xmin, ymin, xmax, ymin, PETSC_DRAW_BLACK));
     }
     PetscDrawCollectiveEnd(draw);
     PetscCall(PetscDrawFlush(draw));

@@ -143,7 +143,7 @@ int main(int argc, char **argv) {
   PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
   PetscCall(PetscSectionSetChart(section, pStart, pEnd));
   PetscCall(PetscMalloc2(sdim + 1, &pStartDepth, sdim + 1, &pEndDepth));
-  for (d = 0; d <= sdim; ++d) { PetscCall(DMPlexGetDepthStratum(dm, d, &pStartDepth[d], &pEndDepth[d])); }
+  for (d = 0; d <= sdim; ++d) PetscCall(DMPlexGetDepthStratum(dm, d, &pStartDepth[d], &pEndDepth[d]));
   /* Vector field U, Scalar field Alpha, Tensor field Sigma */
   PetscCall(PetscSectionSetFieldComponents(section, fieldU, sdim));
   PetscCall(PetscSectionSetFieldComponents(section, fieldA, 1));
@@ -152,7 +152,7 @@ int main(int argc, char **argv) {
   /* Going through cell sets then cells, and setting up storage for the sections */
   PetscCall(DMGetLabelSize(dm, "Cell Sets", &numCS));
   PetscCall(DMGetLabelIdIS(dm, "Cell Sets", &csIS));
-  if (csIS) { PetscCall(ISGetIndices(csIS, &csID)); }
+  if (csIS) PetscCall(ISGetIndices(csIS, &csID));
   for (set = 0; set < numCS; set++) {
     IS              cellIS;
     const PetscInt *cellID;
@@ -254,7 +254,7 @@ int main(int argc, char **argv) {
       PetscCall(ISDestroy(&cellIS));
     }
   }
-  if (csIS) { PetscCall(ISRestoreIndices(csIS, &csID)); }
+  if (csIS) PetscCall(ISRestoreIndices(csIS, &csID));
   PetscCall(ISDestroy(&csIS));
   PetscCall(PetscSectionSetUp(section));
   PetscCall(DMSetLocalSection(dm, section));

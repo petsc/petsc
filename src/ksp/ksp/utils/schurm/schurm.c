@@ -523,7 +523,7 @@ PetscErrorCode MatGetSchurComplement_Basic(Mat mat, IS isrow0, IS iscol0, IS isr
   case MAT_REUSE_MATRIX: PetscCall(MatSchurComplementUpdateSubMatrices(*S, A, A, B, C, D)); break;
   default: PetscCheck(mreuse == MAT_IGNORE_MATRIX, PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "Unrecognized value of mreuse %d", (int)mreuse);
   }
-  if (preuse != MAT_IGNORE_MATRIX) { PetscCall(MatCreateSchurComplementPmat(A, B, C, D, ainvtype, preuse, Sp)); }
+  if (preuse != MAT_IGNORE_MATRIX) PetscCall(MatCreateSchurComplementPmat(A, B, C, D, ainvtype, preuse, Sp));
   PetscCall(MatDestroy(&A));
   PetscCall(MatDestroy(&B));
   PetscCall(MatDestroy(&C));

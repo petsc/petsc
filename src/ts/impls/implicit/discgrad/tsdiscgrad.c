@@ -125,7 +125,7 @@ static PetscErrorCode TSView_DiscGrad(TS ts, PetscViewer viewer) {
 
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) { PetscCall(PetscViewerASCIIPrintf(viewer, "  Discrete Gradients\n")); }
+  if (iascii) PetscCall(PetscViewerASCIIPrintf(viewer, "  Discrete Gradients\n"));
   PetscFunctionReturn(0);
 }
 

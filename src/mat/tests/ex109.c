@@ -90,7 +90,7 @@ int main(int argc, char **argv) {
   PetscCall(MatProductSetFill(D, fill));
   PetscCall(MatProductSetFromOptions(D));
   PetscCall(MatProductSymbolic(D));
-  for (i = 0; i < 2; i++) { PetscCall(MatProductNumeric(D)); }
+  for (i = 0; i < 2; i++) PetscCall(MatProductNumeric(D));
   PetscCall(MatEqual(C, D, &equal));
   PetscCheck(equal, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "C != D");
   PetscCall(MatDestroy(&D));

@@ -162,9 +162,9 @@ PetscErrorCode MatCoarsenDestroy(MatCoarsen *agg) {
     PetscFunctionReturn(0);
   }
 
-  if ((*agg)->ops->destroy) { PetscCall((*(*agg)->ops->destroy)((*agg))); }
+  if ((*agg)->ops->destroy) PetscCall((*(*agg)->ops->destroy)((*agg)));
 
-  if ((*agg)->agg_lists) { PetscCall(PetscCDDestroy((*agg)->agg_lists)); }
+  if ((*agg)->agg_lists) PetscCall(PetscCDDestroy((*agg)->agg_lists));
 
   PetscCall(PetscHeaderDestroy(agg));
   PetscFunctionReturn(0);
@@ -249,7 +249,7 @@ PetscErrorCode MatCoarsenView(MatCoarsen agg, PetscViewer viewer) {
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(agg, MAT_COARSEN_CLASSID, 1);
-  if (!viewer) { PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)agg), &viewer)); }
+  if (!viewer) PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)agg), &viewer));
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscCheckSameComm(agg, 1, viewer, 2);
 
@@ -388,7 +388,7 @@ PetscErrorCode MatCoarsenSetFromOptions(MatCoarsen coarser) {
   /*
    Set the type if it was never set.
    */
-  if (!((PetscObject)coarser)->type_name) { PetscCall(MatCoarsenSetType(coarser, def)); }
+  if (!((PetscObject)coarser)->type_name) PetscCall(MatCoarsenSetType(coarser, def));
 
   PetscTryTypeMethod(coarser, setfromoptions, PetscOptionsObject);
   PetscOptionsEnd();

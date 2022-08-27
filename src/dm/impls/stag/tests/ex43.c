@@ -135,9 +135,9 @@ int main(int argc, char **argv) {
     PetscCall(DMStagCreateISFromStencils(dm, 10, stencil_not_element, &is[0]));
     PetscCall(DMStagCreateISFromStencils(dm, 1, stencil_element, &is[1]));
 
-    for (PetscInt i = 0; i < 2; ++i) { PetscCall(PCFieldSplitSetIS(pc, name[i], is[i])); }
+    for (PetscInt i = 0; i < 2; ++i) PetscCall(PCFieldSplitSetIS(pc, name[i], is[i]));
 
-    for (PetscInt i = 0; i < 2; ++i) { PetscCall(ISDestroy(&is[i])); }
+    for (PetscInt i = 0; i < 2; ++i) PetscCall(ISDestroy(&is[i]));
   }
 
   /* Logic below modifies the PC directly, so this is the last chance to change the solver
@@ -198,9 +198,9 @@ int main(int argc, char **argv) {
         PetscCall(DMStagCreateISFromStencils(dm_not_element, 3, stencil_vertex_first_three, &is[0]));
         PetscCall(DMStagCreateISFromStencils(dm_not_element, 7, stencil_not_vertex_first_three, &is[1]));
 
-        for (PetscInt i = 0; i < 2; ++i) { PetscCall(PCFieldSplitSetIS(pc_not_element, name[i], is[i])); }
+        for (PetscInt i = 0; i < 2; ++i) PetscCall(PCFieldSplitSetIS(pc_not_element, name[i], is[i]));
 
-        for (PetscInt i = 0; i < 2; ++i) { PetscCall(ISDestroy(&is[i])); }
+        for (PetscInt i = 0; i < 2; ++i) PetscCall(ISDestroy(&is[i]));
         PetscCall(DMDestroy(&dm_not_element));
       }
 
@@ -243,9 +243,9 @@ int main(int argc, char **argv) {
         PetscCall(DMStagCreateISFromStencils(dm_not_vertex_first_three, 1, stencil_vertex_fourth, &is[0]));
         PetscCall(DMStagCreateISFromStencils(dm_not_vertex_first_three, 6, stencil_face_and_edge, &is[1]));
 
-        for (PetscInt i = 0; i < 2; ++i) { PetscCall(PCFieldSplitSetIS(pc_not_vertex_first_three, name[i], is[i])); }
+        for (PetscInt i = 0; i < 2; ++i) PetscCall(PCFieldSplitSetIS(pc_not_vertex_first_three, name[i], is[i]));
 
-        for (PetscInt i = 0; i < 2; ++i) { PetscCall(ISDestroy(&is[i])); }
+        for (PetscInt i = 0; i < 2; ++i) PetscCall(ISDestroy(&is[i]));
         PetscCall(DMDestroy(&dm_not_vertex_first_three));
       }
 
@@ -286,9 +286,9 @@ int main(int argc, char **argv) {
         PetscCall(DMStagCreateISFromStencils(dm_face_and_edge, 3, stencil_face, &is[0]));
         PetscCall(DMStagCreateISFromStencils(dm_face_and_edge, 3, stencil_edge, &is[1]));
 
-        for (PetscInt i = 0; i < 2; ++i) { PetscCall(PCFieldSplitSetIS(pc_face_and_edge, name[i], is[i])); }
+        for (PetscInt i = 0; i < 2; ++i) PetscCall(PCFieldSplitSetIS(pc_face_and_edge, name[i], is[i]));
 
-        for (PetscInt i = 0; i < 2; ++i) { PetscCall(ISDestroy(&is[i])); }
+        for (PetscInt i = 0; i < 2; ++i) PetscCall(ISDestroy(&is[i]));
         PetscCall(DMDestroy(&dm_face_and_edge));
       }
     }

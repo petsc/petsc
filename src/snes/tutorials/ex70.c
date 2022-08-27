@@ -301,7 +301,7 @@ PetscErrorCode StokesSetupMatBlock10(Stokes *s) {
   PetscFunctionBeginUser;
   /* A[2] is minus transpose of A[1] */
   PetscCall(MatTranspose(s->subA[1], MAT_INITIAL_MATRIX, &s->subA[2]));
-  if (!s->matsymmetric) { PetscCall(MatScale(s->subA[2], -1.0)); }
+  if (!s->matsymmetric) PetscCall(MatScale(s->subA[2], -1.0));
   PetscCall(MatSetOptionsPrefix(s->subA[2], "a10_"));
   PetscFunctionReturn(0);
 }

@@ -156,7 +156,7 @@ static PetscErrorCode ISView_Block(IS is, PetscViewer viewer) {
       PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "Block size %" PetscInt_FMT "\n", bs));
       PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "Number of block indices in set %" PetscInt_FMT "\n", n));
       PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "The first indices of each block are\n"));
-      for (i = 0; i < n; i++) { PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "Block %" PetscInt_FMT " Index %" PetscInt_FMT "\n", i, idx[i])); }
+      for (i = 0; i < n; i++) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "Block %" PetscInt_FMT " Index %" PetscInt_FMT "\n", i, idx[i]));
       PetscCall(PetscViewerFlush(viewer));
       PetscCall(PetscViewerASCIIPopSynchronized(viewer));
     }

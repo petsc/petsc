@@ -699,7 +699,7 @@ PetscErrorCode ConstructCellBoundary(DM dm, User user) {
       PetscCall(DMGetLabelValue(dm, name, neighbors[1], &regionB));
       PetscCheck(regionA >= 0, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Invalid label %s: Cell %d has no value", name, neighbors[0]);
       PetscCheck(regionB >= 0, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Invalid label %s: Cell %d has no value", name, neighbors[1]);
-      if (regionA != regionB) { PetscCall(DMSetLabelValue(dm, bdname, faces[f], 1)); }
+      if (regionA != regionB) PetscCall(DMSetLabelValue(dm, bdname, faces[f], 1));
     }
   }
   PetscCall(ISRestoreIndices(innerIS, &cells));
@@ -935,7 +935,7 @@ PetscErrorCode CreatePartitionVec(DM dm, DM *dmCell, Vec *partition) {
   PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)dm), &sectionCell));
   PetscCall(DMPlexGetHeightStratum(*dmCell, 0, &cStart, &cEnd));
   PetscCall(PetscSectionSetChart(sectionCell, cStart, cEnd));
-  for (c = cStart; c < cEnd; ++c) { PetscCall(PetscSectionSetDof(sectionCell, c, 1)); }
+  for (c = cStart; c < cEnd; ++c) PetscCall(PetscSectionSetDof(sectionCell, c, 1));
   PetscCall(PetscSectionSetUp(sectionCell));
   PetscCall(DMSetLocalSection(*dmCell, sectionCell));
   PetscCall(PetscSectionDestroy(&sectionCell));
@@ -1044,10 +1044,10 @@ PetscErrorCode SetUpLocalSpace(DM dm, User user) {
   }
   PetscCall(PetscSectionSetChart(stateSection, cStart, cEnd));
   for (c = cStart; c < cEnd; ++c) {
-    for (i = 0; i < phys->nfields; i++) { PetscCall(PetscSectionSetFieldDof(stateSection, c, i, phys->field_desc[i].dof)); }
+    for (i = 0; i < phys->nfields; i++) PetscCall(PetscSectionSetFieldDof(stateSection, c, i, phys->field_desc[i].dof));
     PetscCall(PetscSectionSetDof(stateSection, c, dof));
   }
-  for (c = cEndInterior; c < cEnd; ++c) { PetscCall(PetscSectionSetConstraintDof(stateSection, c, dof)); }
+  for (c = cEndInterior; c < cEnd; ++c) PetscCall(PetscSectionSetConstraintDof(stateSection, c, dof));
   PetscCall(PetscSectionSetUp(stateSection));
   PetscCall(PetscMalloc1(dof, &cind));
   for (d = 0; d < dof; ++d) cind[d] = d;
@@ -1059,7 +1059,7 @@ PetscErrorCode SetUpLocalSpace(DM dm, User user) {
     if (val < 0) PetscCall(PetscSectionSetConstraintIndices(stateSection, c, cind));
   }
 #endif
-  for (c = cEndInterior; c < cEnd; ++c) { PetscCall(PetscSectionSetConstraintIndices(stateSection, c, cind)); }
+  for (c = cEndInterior; c < cEnd; ++c) PetscCall(PetscSectionSetConstraintIndices(stateSection, c, cind));
   PetscCall(PetscFree(cind));
   PetscCall(PetscSectionGetStorageSize(stateSection, &stateSize));
   PetscCall(DMSetLocalSection(dm, stateSection));

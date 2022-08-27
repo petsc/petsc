@@ -1178,7 +1178,7 @@ static PetscErrorCode GmshReadElements(GmshFile *gmsh, GmshMesh *mesh) {
     for (e = 0; e < mesh->numElems; ++e) {
       GmshElement *elem = mesh->elements + e;
       if (elem->dim == dim && dim > 0) mesh->numCells++;
-      for (v = 0; v < elem->numVerts; v++) { PetscCall(PetscBTSet(vtx, elem->nodes[v])); }
+      for (v = 0; v < elem->numVerts; v++) PetscCall(PetscBTSet(vtx, elem->nodes[v]));
     }
 
     /* Compute numbering for vertices */
@@ -1529,7 +1529,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
     }
   }
 
-  if (parentviewer) { PetscCall(PetscViewerRestoreSubViewer(parentviewer, PETSC_COMM_SELF, &viewer)); }
+  if (parentviewer) PetscCall(PetscViewerRestoreSubViewer(parentviewer, PETSC_COMM_SELF, &viewer));
 
   {
     int buf[6];
@@ -1566,7 +1566,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
     PetscCall(DMPlexSetConeSize(*dm, cell, elem->numVerts));
     PetscCall(DMPlexSetCellType(*dm, cell, ctype));
   }
-  for (v = numCells; v < numCells + numVerts; ++v) { PetscCall(DMPlexSetCellType(*dm, v, DM_POLYTOPE_POINT)); }
+  for (v = numCells; v < numCells + numVerts; ++v) PetscCall(DMPlexSetCellType(*dm, v, DM_POLYTOPE_POINT));
   PetscCall(DMSetUp(*dm));
 
   /* Add cell-vertex connections */

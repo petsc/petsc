@@ -54,7 +54,7 @@ static PetscErrorCode KSPSetUp_FCG(KSP ksp) {
   PetscCall(PetscLogObjectMemory((PetscObject)ksp, 2 * (fcg->mmax + 1) * sizeof(Vec *) + 2 * (fcg->mmax + 1) * sizeof(Vec **) + (fcg->mmax + 2) * sizeof(PetscInt)));
 
   /* If the requested number of preallocated vectors is greater than mmax reduce nprealloc */
-  if (fcg->nprealloc > fcg->mmax + 1) { PetscCall(PetscInfo(NULL, "Requested nprealloc=%" PetscInt_FMT " is greater than m_max+1=%" PetscInt_FMT ". Resetting nprealloc = m_max+1.\n", fcg->nprealloc, fcg->mmax + 1)); }
+  if (fcg->nprealloc > fcg->mmax + 1) PetscCall(PetscInfo(NULL, "Requested nprealloc=%" PetscInt_FMT " is greater than m_max+1=%" PetscInt_FMT ". Resetting nprealloc = m_max+1.\n", fcg->nprealloc, fcg->mmax + 1));
 
   /* Preallocate additional work vectors */
   PetscCall(KSPAllocateVectors_FCG(ksp, fcg->nprealloc, fcg->nprealloc));

@@ -119,7 +119,7 @@ int main(int argc, char **argv) {
 
         PetscCall(PetscDTEnumPerm(N, k, perm, &isOdd));
         PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT ":", k));
-        for (j = 0; j < N; j++) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, " %" PetscInt_FMT, perm[j])); }
+        for (j = 0; j < N; j++) PetscCall(PetscPrintf(PETSC_COMM_WORLD, " %" PetscInt_FMT, perm[j]));
         PetscCall(PetscPrintf(PETSC_COMM_WORLD, ", %s\n", isOdd ? "odd" : "even"));
         PetscCall(PetscDTPermIndex(N, perm, &kCheck, &isOddCheck));
         PetscCheck(kCheck == k && isOddCheck == isOdd, PETSC_COMM_SELF, PETSC_ERR_PLIB, "PetscDTEnumPerm / PetscDTPermIndex mismatch for (%" PetscInt_FMT ", %" PetscInt_FMT ")", N, k);
@@ -151,9 +151,9 @@ int main(int argc, char **argv) {
           PetscInt l;
 
           PetscCall(PetscViewerASCIIPrintf(viewer, "subset %" PetscInt_FMT ":", j));
-          for (l = 0; l < k; l++) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, " %" PetscInt_FMT, subset[l])); }
+          for (l = 0; l < k; l++) PetscCall(PetscPrintf(PETSC_COMM_WORLD, " %" PetscInt_FMT, subset[l]));
           PetscCall(PetscPrintf(PETSC_COMM_WORLD, " |"));
-          for (l = k; l < N; l++) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, " %" PetscInt_FMT, subset[l])); }
+          for (l = k; l < N; l++) PetscCall(PetscPrintf(PETSC_COMM_WORLD, " %" PetscInt_FMT, subset[l]));
           PetscCall(PetscPrintf(PETSC_COMM_WORLD, ", %s\n", isOdd ? "odd" : "even"));
         }
         PetscCall(PetscDTSubsetIndex(N, k, subset, &jCheck));

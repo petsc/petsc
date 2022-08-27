@@ -39,7 +39,7 @@ PetscErrorCode PetscCDDestroy(PetscCoarsenData *ail) {
   }
   if (ail->pool_list.array) PetscCall(PetscFree(ail->pool_list.array));
   PetscCall(PetscFree(ail->array));
-  if (ail->mat) { PetscCall(MatDestroy(&ail->mat)); }
+  if (ail->mat) PetscCall(MatDestroy(&ail->mat));
   /* delete this (+agg+pool array) */
   PetscCall(PetscFree(ail));
   PetscFunctionReturn(0);
@@ -955,7 +955,7 @@ static PetscErrorCode MatCoarsenApply_HEM_private(IS perm, Mat a_Gmat, PetscCoar
     PetscCall(VecDestroy(&locMaxEdge));
     PetscCall(VecDestroy(&locMaxPE));
 
-    if (mpimat) { PetscCall(VecRestoreArray(mpimat->lvec, &cpcol_gid)); }
+    if (mpimat) PetscCall(VecRestoreArray(mpimat->lvec, &cpcol_gid));
 
     /* create next G if needed */
     if (iter == n_iter) { /* hard wired test - need to look at full surrounded nodes or something */
@@ -969,7 +969,7 @@ static PetscErrorCode MatCoarsenApply_HEM_private(IS perm, Mat a_Gmat, PetscCoar
         if (!lid_matched[kk]) {
           gid = kk + my0;
           PetscCall(MatGetRow(cMat, gid, &n, NULL, NULL));
-          if (n > 1) { PetscCall(MatSetValues(P, 1, &gid, 1, &gid, &one, INSERT_VALUES)); }
+          if (n > 1) PetscCall(MatSetValues(P, 1, &gid, 1, &gid, &one, INSERT_VALUES));
           PetscCall(MatRestoreRow(cMat, gid, &n, NULL, NULL));
         }
       }
@@ -1013,7 +1013,7 @@ static PetscErrorCode MatCoarsenApply_HEM_private(IS perm, Mat a_Gmat, PetscCoar
         PetscCall(PetscCDIntNdGetID(pos, &gid1));
         PetscCall(PetscCDGetNextPos(agg_llists, kk, &pos));
 
-        if (gid1 < my0 || gid1 >= my0 + nloc) { PetscCall(MatSetValues(mat, 1, &gid, 1, &gid1, &one, ADD_VALUES)); }
+        if (gid1 < my0 || gid1 >= my0 + nloc) PetscCall(MatSetValues(mat, 1, &gid, 1, &gid1, &one, ADD_VALUES));
       }
     }
     PetscCall(MatAssemblyBegin(mat, MAT_FINAL_ASSEMBLY));

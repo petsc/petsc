@@ -188,7 +188,7 @@ PetscErrorCode TaoTestHessian(Tao tao) {
             cncols += 1;
           }
         }
-        if (cncols) { PetscCall(MatSetValues(C, 1, &row, cncols, ccols, cvals, INSERT_VALUES)); }
+        if (cncols) PetscCall(MatSetValues(C, 1, &row, cncols, ccols, cvals, INSERT_VALUES));
         PetscCall(MatRestoreRow(B, row, &bncols, &bcols, &bvals));
         PetscCall(PetscFree2(ccols, cvals));
       }

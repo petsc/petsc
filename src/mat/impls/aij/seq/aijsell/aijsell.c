@@ -21,7 +21,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJSELL_SeqAIJ(Mat A, MatType type, Ma
   Mat_SeqAIJSELL *aijsell = (Mat_SeqAIJSELL *)A->spptr;
 
   PetscFunctionBegin;
-  if (reuse == MAT_INITIAL_MATRIX) { PetscCall(MatDuplicate(A, MAT_COPY_VALUES, &B)); }
+  if (reuse == MAT_INITIAL_MATRIX) PetscCall(MatDuplicate(A, MAT_COPY_VALUES, &B));
 
   /* Reset the original function pointers. */
   B->ops->duplicate        = MatDuplicate_SeqAIJ;
@@ -199,7 +199,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJSELL(Mat A, MatType type, Ma
   PetscBool       sametype;
 
   PetscFunctionBegin;
-  if (reuse == MAT_INITIAL_MATRIX) { PetscCall(MatDuplicate(A, MAT_COPY_VALUES, &B)); }
+  if (reuse == MAT_INITIAL_MATRIX) PetscCall(MatDuplicate(A, MAT_COPY_VALUES, &B));
 
   PetscCall(PetscObjectTypeCompare((PetscObject)A, type, &sametype));
   if (sametype) PetscFunctionReturn(0);
@@ -228,7 +228,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJSELL(Mat A, MatType type, Ma
   PetscOptionsEnd();
 
   /* If A has already been assembled and eager shadowing is specified, build the shadow matrix. */
-  if (A->assembled && aijsell->eager_shadow) { PetscCall(MatSeqAIJSELL_build_shadow(A)); }
+  if (A->assembled && aijsell->eager_shadow) PetscCall(MatSeqAIJSELL_build_shadow(A));
 
   B->ops->mult             = MatMult_SeqAIJSELL;
   B->ops->multtranspose    = MatMultTranspose_SeqAIJSELL;

@@ -370,7 +370,7 @@ static PetscErrorCode MatConvert_HYPRE_IS(Mat A, MatType mtype, MatReuse reuse, 
   }
   PetscCall(MatAssemblyBegin(*B, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(*B, MAT_FINAL_ASSEMBLY));
-  if (reuse == MAT_INPLACE_MATRIX) { PetscCall(MatHeaderReplace(A, B)); }
+  if (reuse == MAT_INPLACE_MATRIX) PetscCall(MatHeaderReplace(A, B));
   PetscFunctionReturn(0);
 }
 
@@ -399,7 +399,7 @@ PETSC_INTERN PetscErrorCode MatConvert_AIJ_HYPRE(Mat A, MatType type, MatReuse r
   PetscCall(MatSetOption(*B, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));
   PetscCall(MatHYPRE_CreateFromMat(A, hB));
   PetscCall(MatHYPRE_IJMatrixCopy(A, hB->ij));
-  if (reuse == MAT_INPLACE_MATRIX) { PetscCall(MatHeaderReplace(A, &M)); }
+  if (reuse == MAT_INPLACE_MATRIX) PetscCall(MatHeaderReplace(A, &M));
   (*B)->preallocated = PETSC_TRUE;
   PetscCall(MatAssemblyBegin(*B, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(*B, MAT_FINAL_ASSEMBLY));
@@ -1124,14 +1124,14 @@ static PetscErrorCode MatMult_HYPRE(Mat A, Vec x, Vec y) {
 
 static PetscErrorCode MatMultAdd_HYPRE(Mat A, Vec x, Vec y, Vec z) {
   PetscFunctionBegin;
-  if (y != z) { PetscCall(VecCopy(y, z)); }
+  if (y != z) PetscCall(VecCopy(y, z));
   PetscCall(MatHYPRE_MultKernel_Private(A, 1.0, x, 1.0, z, PETSC_FALSE));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode MatMultTransposeAdd_HYPRE(Mat A, Vec x, Vec y, Vec z) {
   PetscFunctionBegin;
-  if (y != z) { PetscCall(VecCopy(y, z)); }
+  if (y != z) PetscCall(VecCopy(y, z));
   PetscCall(MatHYPRE_MultKernel_Private(A, 1.0, x, 1.0, z, PETSC_TRUE));
   PetscFunctionReturn(0);
 }
@@ -1455,8 +1455,8 @@ static PetscErrorCode MatHYPRESetPreallocation_HYPRE(Mat A, PetscInt dnz, const 
 #else
   PetscCallExternal(HYPRE_IJMatrixInitialize_v2, hA->ij, HYPRE_MEMORY_HOST);
 #endif
-  if (!dnnz) { PetscCall(PetscFree(hdnnz)); }
-  if (!onnz && honnz) { PetscCall(PetscFree(honnz)); }
+  if (!dnnz) PetscCall(PetscFree(hdnnz));
+  if (!onnz && honnz) PetscCall(PetscFree(honnz));
   /* Match AIJ logic */
   A->preallocated = PETSC_TRUE;
   A->assembled    = PETSC_FALSE;
@@ -1598,7 +1598,7 @@ PETSC_EXTERN PetscErrorCode MatCreateFromParCSR(hypre_ParCSRMatrix *parcsr, MatT
     PetscMPIInt myid = 0;
 
     /* make sure we always have row_starts and col_starts available */
-    if (HYPRE_AssumedPartitionCheck()) { PetscCallMPI(MPI_Comm_rank(comm, &myid)); }
+    if (HYPRE_AssumedPartitionCheck()) PetscCallMPI(MPI_Comm_rank(comm, &myid));
 #if defined(hypre_ParCSRMatrixOwnsRowStarts)
     if (!hypre_ParCSRMatrixOwnsColStarts(parcsr)) {
       PetscLayout map;
@@ -1913,7 +1913,7 @@ static PetscErrorCode MatSetOption_HYPRE(Mat A, MatOption op, PetscBool flg) {
   PetscFunctionBegin;
   switch (op) {
   case MAT_NO_OFF_PROC_ENTRIES:
-    if (flg) { PetscCallExternal(HYPRE_IJMatrixSetMaxOffProcElmts, hA->ij, 0); }
+    if (flg) PetscCallExternal(HYPRE_IJMatrixSetMaxOffProcElmts, hA->ij, 0);
     break;
   case MAT_SORTED_FULL: hA->sorted_full = flg; break;
   default: break;

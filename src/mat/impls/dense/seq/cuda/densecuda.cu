@@ -276,7 +276,7 @@ static PetscErrorCode MatDenseCUDAGetArrayWrite_SeqDenseCUDA(Mat A, PetscScalar 
   Mat_SeqDenseCUDA *dA = (Mat_SeqDenseCUDA *)A->spptr;
 
   PetscFunctionBegin;
-  if (!dA->d_v) { PetscCall(MatSeqDenseCUDASetPreallocation(A, NULL)); }
+  if (!dA->d_v) PetscCall(MatSeqDenseCUDASetPreallocation(A, NULL));
   *a = dA->d_v;
   PetscFunctionReturn(0);
 }
@@ -401,7 +401,7 @@ static PetscErrorCode MatSolve_SeqDenseCUDA_Internal(Mat A, Vec xx, Vec yy, Pets
       PetscCall(VecGetArrayRead(xx, &x));
     }
     if (k < m || !yiscuda) {
-      if (!dA->workvec) { PetscCall(VecCreateSeqCUDA(PetscObjectComm((PetscObject)A), m, &(dA->workvec))); }
+      if (!dA->workvec) PetscCall(VecCreateSeqCUDA(PetscObjectComm((PetscObject)A), m, &(dA->workvec)));
       PetscCall(VecCUDAGetArrayWrite(dA->workvec, &y));
     } else {
       PetscCall(VecCUDAGetArrayWrite(yy, &y));
@@ -409,9 +409,9 @@ static PetscErrorCode MatSolve_SeqDenseCUDA_Internal(Mat A, Vec xx, Vec yy, Pets
     PetscCallCUDA(cudaMemcpy(y, x, m * sizeof(PetscScalar), xishost ? cudaMemcpyHostToDevice : cudaMemcpyDeviceToDevice));
   }
   PetscCall(PetscObjectTypeCompare((PetscObject)A, MATSEQDENSECUDA, &aiscuda));
-  if (!aiscuda) { PetscCall(MatConvert(A, MATSEQDENSECUDA, MAT_INPLACE_MATRIX, &A)); }
+  if (!aiscuda) PetscCall(MatConvert(A, MATSEQDENSECUDA, MAT_INPLACE_MATRIX, &A));
   PetscCall((*matsolve)(A, y, m, m, 1, k, transpose));
-  if (!aiscuda) { PetscCall(MatConvert(A, MATSEQDENSE, MAT_INPLACE_MATRIX, &A)); }
+  if (!aiscuda) PetscCall(MatConvert(A, MATSEQDENSE, MAT_INPLACE_MATRIX, &A));
   if (k < m || !yiscuda) {
     PetscScalar *yv;
 
@@ -491,9 +491,9 @@ static PetscErrorCode MatMatSolve_SeqDenseCUDA_Internal(Mat A, Mat B, Mat X, Pet
     }
   }
   PetscCall(PetscObjectTypeCompare((PetscObject)A, MATSEQDENSECUDA, &aiscuda));
-  if (!aiscuda) { PetscCall(MatConvert(A, MATSEQDENSECUDA, MAT_INPLACE_MATRIX, &A)); }
+  if (!aiscuda) PetscCall(MatConvert(A, MATSEQDENSECUDA, MAT_INPLACE_MATRIX, &A));
   PetscCall((*matsolve)(A, y, ldy, m, nrhs, k, transpose));
-  if (!aiscuda) { PetscCall(MatConvert(A, MATSEQDENSECUDA, MAT_INPLACE_MATRIX, &A)); }
+  if (!aiscuda) PetscCall(MatConvert(A, MATSEQDENSECUDA, MAT_INPLACE_MATRIX, &A));
   if (ldx < m || !xiscuda) {
     PetscScalar *x;
 
@@ -708,12 +708,12 @@ static PetscErrorCode MatLUFactor_SeqDenseCUDA(Mat A, IS rperm, IS cperm, const 
   PetscCall(PetscCuBLASIntCast(A->rmap->n, &m));
   PetscCall(PetscCuBLASIntCast(a->lda, &lda));
   PetscCall(PetscInfo(A, "LU factor %d x %d on backend\n", m, n));
-  if (!dA->d_fact_ipiv) { PetscCallCUDA(cudaMalloc((void **)&dA->d_fact_ipiv, n * sizeof(*dA->d_fact_ipiv))); }
+  if (!dA->d_fact_ipiv) PetscCallCUDA(cudaMalloc((void **)&dA->d_fact_ipiv, n * sizeof(*dA->d_fact_ipiv)));
   if (!dA->fact_lwork) {
     PetscCallCUSOLVER(cusolverDnXgetrf_bufferSize(handle, m, n, da, lda, &dA->fact_lwork));
     PetscCallCUDA(cudaMalloc((void **)&dA->d_fact_work, dA->fact_lwork * sizeof(*dA->d_fact_work)));
   }
-  if (!dA->d_fact_info) { PetscCallCUDA(cudaMalloc((void **)&dA->d_fact_info, sizeof(*dA->d_fact_info))); }
+  if (!dA->d_fact_info) PetscCallCUDA(cudaMalloc((void **)&dA->d_fact_info, sizeof(*dA->d_fact_info)));
   PetscCall(PetscLogGpuTimeBegin());
   PetscCallCUSOLVER(cusolverDnXgetrf(handle, m, n, da, lda, dA->d_fact_work, dA->d_fact_ipiv, dA->d_fact_info));
   PetscCall(PetscLogGpuTimeEnd());
@@ -758,7 +758,7 @@ static PetscErrorCode MatCholeskyFactor_SeqDenseCUDA(Mat A, IS perm, const MatFa
       PetscCallCUSOLVER(cusolverDnXpotrf_bufferSize(handle, CUBLAS_FILL_MODE_LOWER, n, da, lda, &dA->fact_lwork));
       PetscCallCUDA(cudaMalloc((void **)&dA->d_fact_work, dA->fact_lwork * sizeof(*dA->d_fact_work)));
     }
-    if (!dA->d_fact_info) { PetscCallCUDA(cudaMalloc((void **)&dA->d_fact_info, sizeof(*dA->d_fact_info))); }
+    if (!dA->d_fact_info) PetscCallCUDA(cudaMalloc((void **)&dA->d_fact_info, sizeof(*dA->d_fact_info)));
     PetscCall(PetscLogGpuTimeBegin());
     PetscCallCUSOLVER(cusolverDnXpotrf(handle, CUBLAS_FILL_MODE_LOWER, n, da, lda, dA->d_fact_work, dA->fact_lwork, dA->d_fact_info));
     PetscCall(PetscLogGpuTimeEnd());
@@ -1113,7 +1113,7 @@ PetscErrorCode MatAXPY_SeqDenseCUDA(Mat Y, PetscScalar alpha, Mat X, MatStructur
   PetscCall(PetscInfo(Y, "Performing AXPY %" PetscInt_FMT " x %" PetscInt_FMT " on backend\n", Y->rmap->n, Y->cmap->n));
   PetscCall(PetscLogGpuTimeBegin());
   if (ldax > m || lday > m) {
-    for (j = 0; j < X->cmap->n; j++) { PetscCallCUBLAS(cublasXaxpy(cublasv2handle, m, &alpha, dx + j * ldax, one, dy + j * lday, one)); }
+    for (j = 0; j < X->cmap->n; j++) PetscCallCUBLAS(cublasXaxpy(cublasv2handle, m, &alpha, dx + j * ldax, one, dy + j * lday, one));
   } else PetscCallCUBLAS(cublasXaxpy(cublasv2handle, N, &alpha, dx, one, dy, one));
   PetscCall(PetscLogGpuTimeEnd());
   PetscCall(PetscLogGpuFlops(PetscMax(2. * N - 1, 0)));
@@ -1159,10 +1159,10 @@ PetscErrorCode MatDuplicate_SeqDenseCUDA(Mat A, MatDuplicateOption cpvalues, Mat
   PetscCall(MatSetSizes(*B, A->rmap->n, A->cmap->n, A->rmap->n, A->cmap->n));
   PetscCall(MatSetType(*B, ((PetscObject)A)->type_name));
   PetscCall(MatDuplicateNoCreate_SeqDense(*B, A, hcpvalues));
-  if (cpvalues == MAT_COPY_VALUES && hcpvalues != MAT_COPY_VALUES) { PetscCall(MatCopy_SeqDenseCUDA(A, *B, SAME_NONZERO_PATTERN)); }
+  if (cpvalues == MAT_COPY_VALUES && hcpvalues != MAT_COPY_VALUES) PetscCall(MatCopy_SeqDenseCUDA(A, *B, SAME_NONZERO_PATTERN));
   if (cpvalues != MAT_COPY_VALUES) { /* allocate memory if needed */
     Mat_SeqDenseCUDA *dB = (Mat_SeqDenseCUDA *)(*B)->spptr;
-    if (!dB->d_v) { PetscCall(MatSeqDenseCUDASetPreallocation(*B, NULL)); }
+    if (!dB->d_v) PetscCall(MatSeqDenseCUDASetPreallocation(*B, NULL));
   }
   PetscFunctionReturn(0);
 }
@@ -1390,9 +1390,9 @@ static PetscErrorCode MatBindToCPU_SeqDenseCUDA(Mat A, PetscBool flg) {
     PetscBool iscuda;
 
     PetscCall(PetscObjectTypeCompare((PetscObject)a->cvec, VECSEQCUDA, &iscuda));
-    if (!iscuda) { PetscCall(VecDestroy(&a->cvec)); }
+    if (!iscuda) PetscCall(VecDestroy(&a->cvec));
     PetscCall(PetscObjectTypeCompare((PetscObject)a->cmat, MATSEQDENSECUDA, &iscuda));
-    if (!iscuda) { PetscCall(MatDestroy(&a->cmat)); }
+    if (!iscuda) PetscCall(MatDestroy(&a->cmat));
     PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatDenseGetArray_C", MatDenseGetArray_SeqDenseCUDA));
     PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatDenseGetArrayRead_C", MatDenseGetArrayRead_SeqDenseCUDA));
     PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatDenseGetArrayWrite_C", MatDenseGetArrayWrite_SeqDenseCUDA));
@@ -1462,7 +1462,7 @@ static PetscErrorCode MatBindToCPU_SeqDenseCUDA(Mat A, PetscBool flg) {
     A->ops->zeroentries             = MatZeroEntries_SeqDense;
     A->ops->setup                   = MatSetUp_SeqDense;
   }
-  if (a->cmat) { PetscCall(MatBindToCPU(a->cmat, flg)); }
+  if (a->cmat) PetscCall(MatBindToCPU(a->cmat, flg));
   PetscFunctionReturn(0);
 }
 

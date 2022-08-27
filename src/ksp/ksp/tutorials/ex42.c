@@ -1736,7 +1736,7 @@ static PetscErrorCode PCMGSetupViaCoarsen(PC pc, DM da_fine) {
   }
 
   /* tidy up */
-  for (k = 0; k < nlevels; k++) { PetscCall(DMDestroy(&da_list[k])); }
+  for (k = 0; k < nlevels; k++) PetscCall(DMDestroy(&da_list[k]));
   PetscCall(PetscFree(da_list));
   PetscCall(PetscFree(daclist));
   PetscFunctionReturn(0);
@@ -2066,9 +2066,9 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx, PetscInt my, PetscInt
     Vec X_analytic;
 
     PetscCall(DMDACreateManufacturedSolution(mx, my, mz, &da_Stokes_analytic, &X_analytic));
-    if (write_output) { PetscCall(DAView3DPVTS(da_Stokes_analytic, X_analytic, "ms")); }
+    if (write_output) PetscCall(DAView3DPVTS(da_Stokes_analytic, X_analytic, "ms"));
     PetscCall(DMDAIntegrateErrors3D(da_Stokes_analytic, X, X_analytic));
-    if (write_output) { PetscCall(DAView3DPVTS(da_Stokes, X, "up2")); }
+    if (write_output) PetscCall(DAView3DPVTS(da_Stokes, X, "up2"));
     PetscCall(DMDestroy(&da_Stokes_analytic));
     PetscCall(VecDestroy(&X_analytic));
   }

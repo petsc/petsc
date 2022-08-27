@@ -629,7 +629,7 @@ PetscErrorCode spbas_apply_reordering_rows(spbas_matrix *matrix_A, const PetscIn
   PetscFunctionBegin;
   PetscCheck(matrix_A->col_idx_type == SPBAS_DIAGONAL_OFFSETS, PETSC_COMM_SELF, PETSC_ERR_SUP_SYS, "must have diagonal offsets in pattern");
 
-  if (do_values) { PetscCall(PetscMalloc1(nrows, &vals)); }
+  if (do_values) PetscCall(PetscMalloc1(nrows, &vals));
   PetscCall(PetscMalloc1(nrows, &row_nnz));
   PetscCall(PetscMalloc1(nrows, &icols));
 

@@ -97,7 +97,7 @@ static inline PetscErrorCode PetscBTView(PetscInt m, const PetscBT bt, PetscView
   if (m < 1) PetscFunctionReturn(0);
   if (!viewer) PetscCall(PetscViewerASCIIGetStdout(PETSC_COMM_SELF, &viewer));
   PetscCall(PetscViewerASCIIPushSynchronized(viewer));
-  for (PetscInt i = 0; i < m; ++i) { PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "%" PetscInt_FMT " %d\n", i, (int)PetscBTLookup(bt, i))); }
+  for (PetscInt i = 0; i < m; ++i) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "%" PetscInt_FMT " %d\n", i, (int)PetscBTLookup(bt, i)));
   PetscCall(PetscViewerFlush(viewer));
   PetscCall(PetscViewerASCIIPopSynchronized(viewer));
   PetscFunctionReturn(0);

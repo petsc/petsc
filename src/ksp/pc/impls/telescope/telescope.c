@@ -58,10 +58,10 @@ PetscErrorCode PCTelescopeTestValidSubcomm(MPI_Comm comm_f, MPI_Comm comm_c, Pet
   PetscCheck(comm_f != MPI_COMM_NULL, PETSC_COMM_SELF, PETSC_ERR_SUP, "comm_f cannot be MPI_COMM_NULL");
 
   PetscCallMPI(MPI_Comm_group(comm_f, &group_f));
-  if (comm_c != MPI_COMM_NULL) { PetscCallMPI(MPI_Comm_group(comm_c, &group_c)); }
+  if (comm_c != MPI_COMM_NULL) PetscCallMPI(MPI_Comm_group(comm_c, &group_c));
 
   PetscCallMPI(MPI_Comm_size(comm_f, &size_f));
-  if (comm_c != MPI_COMM_NULL) { PetscCallMPI(MPI_Comm_size(comm_c, &size_c)); }
+  if (comm_c != MPI_COMM_NULL) PetscCallMPI(MPI_Comm_size(comm_c, &size_c));
 
   /* check not all comm_c's are NULL */
   size_c_sum = size_c;
@@ -97,7 +97,7 @@ PetscErrorCode PCTelescopeTestValidSubcomm(MPI_Comm comm_f, MPI_Comm comm_c, Pet
   PetscCall(PetscFree(ranks_f));
   PetscCall(PetscFree(ranks_c));
   PetscCallMPI(MPI_Group_free(&group_f));
-  if (comm_c != MPI_COMM_NULL) { PetscCallMPI(MPI_Group_free(&group_c)); }
+  if (comm_c != MPI_COMM_NULL) PetscCallMPI(MPI_Group_free(&group_c));
   PetscFunctionReturn(0);
 }
 
@@ -151,7 +151,7 @@ PetscErrorCode PCTelescopeSetUp_default(PC pc, PC_Telescope sred) {
   }
 
   yred = NULL;
-  if (PCTelescope_isActiveRank(sred)) { PetscCall(VecDuplicate(xred, &yred)); }
+  if (PCTelescope_isActiveRank(sred)) PetscCall(VecDuplicate(xred, &yred));
 
   PetscCall(VecCreate(comm, &xtmp));
   PetscCall(VecSetSizes(xtmp, m, PETSC_DECIDE));
@@ -227,7 +227,7 @@ static PetscErrorCode PCTelescopeSubNullSpaceCreate_Telescope(PC pc, PC_Telescop
   PetscCall(MatNullSpaceGetVecs(nullspace, &has_const, &n, &vecs));
 
   if (PCTelescope_isActiveRank(sred)) {
-    if (n) { PetscCall(VecDuplicateVecs(sred->xred, n, &sub_vecs)); }
+    if (n) PetscCall(VecDuplicateVecs(sred->xred, n, &sub_vecs));
   }
 
   /* copy entries */
@@ -342,8 +342,8 @@ static PetscErrorCode PCView_Telescope(PC pc, PetscViewer viewer) {
       if (PCTelescope_isActiveRank(sred)) {
         PetscCall(PetscViewerASCIIPushTab(subviewer));
 
-        if (dm && sred->ignore_dm) { PetscCall(PetscViewerASCIIPrintf(subviewer, "ignoring DM\n")); }
-        if (sred->ignore_kspcomputeoperators) { PetscCall(PetscViewerASCIIPrintf(subviewer, "ignoring KSPComputeOperators\n")); }
+        if (dm && sred->ignore_dm) PetscCall(PetscViewerASCIIPrintf(subviewer, "ignoring DM\n"));
+        if (sred->ignore_kspcomputeoperators) PetscCall(PetscViewerASCIIPrintf(subviewer, "ignoring KSPComputeOperators\n"));
         switch (sred->sr_type) {
         case TELESCOPE_DEFAULT: PetscCall(PetscViewerASCIIPrintf(subviewer, "setup type: default\n")); break;
         case TELESCOPE_DMDA:
@@ -520,19 +520,19 @@ static PetscErrorCode PCSetUp_Telescope(PC pc) {
   }
 
   /* setup */
-  if (!pc->setupcalled && sred->pctelescope_setup_type) { PetscCall(sred->pctelescope_setup_type(pc, sred)); }
+  if (!pc->setupcalled && sred->pctelescope_setup_type) PetscCall(sred->pctelescope_setup_type(pc, sred));
   /* update */
   if (!pc->setupcalled) {
-    if (sred->pctelescope_matcreate_type) { PetscCall(sred->pctelescope_matcreate_type(pc, sred, MAT_INITIAL_MATRIX, &sred->Bred)); }
+    if (sred->pctelescope_matcreate_type) PetscCall(sred->pctelescope_matcreate_type(pc, sred, MAT_INITIAL_MATRIX, &sred->Bred));
     if (sred->pctelescope_matnullspacecreate_type) PetscCall(sred->pctelescope_matnullspacecreate_type(pc, sred, sred->Bred));
   } else {
-    if (sred->pctelescope_matcreate_type) { PetscCall(sred->pctelescope_matcreate_type(pc, sred, MAT_REUSE_MATRIX, &sred->Bred)); }
+    if (sred->pctelescope_matcreate_type) PetscCall(sred->pctelescope_matcreate_type(pc, sred, MAT_REUSE_MATRIX, &sred->Bred));
   }
 
   /* common - no construction */
   if (PCTelescope_isActiveRank(sred)) {
     PetscCall(KSPSetOperators(sred->ksp, sred->Bred, sred->Bred));
-    if (pc->setfromoptionscalled && !pc->setupcalled) { PetscCall(KSPSetFromOptions(sred->ksp)); }
+    if (pc->setfromoptionscalled && !pc->setupcalled) PetscCall(KSPSetFromOptions(sred->ksp));
   }
   PetscFunctionReturn(0);
 }
@@ -628,7 +628,7 @@ static PetscErrorCode PCApplyRichardson_Telescope(PC pc, Vec x, Vec y, Vec w, Pe
 
   PetscCall(PCApply_Telescope(pc, x, y));
 
-  if (PCTelescope_isActiveRank(sred)) { PetscCall(KSPSetInitialGuessNonzero(sred->ksp, default_init_guess_value)); }
+  if (PCTelescope_isActiveRank(sred)) PetscCall(KSPSetInitialGuessNonzero(sred->ksp, default_init_guess_value));
 
   if (!*reason) *reason = PCRICHARDSON_CONVERGED_ITS;
   *outits = 1;

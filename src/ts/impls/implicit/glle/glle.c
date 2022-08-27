@@ -48,10 +48,10 @@ static PetscErrorCode TSGLLEGetVecs(TS ts, DM dm, Vec *Z, Vec *Ydotstage) {
 static PetscErrorCode TSGLLERestoreVecs(TS ts, DM dm, Vec *Z, Vec *Ydotstage) {
   PetscFunctionBegin;
   if (Z) {
-    if (dm && dm != ts->dm) { PetscCall(DMRestoreNamedGlobalVector(dm, "TSGLLE_Z", Z)); }
+    if (dm && dm != ts->dm) PetscCall(DMRestoreNamedGlobalVector(dm, "TSGLLE_Z", Z));
   }
   if (Ydotstage) {
-    if (dm && dm != ts->dm) { PetscCall(DMRestoreNamedGlobalVector(dm, "TSGLLE_Ydot", Ydotstage)); }
+    if (dm && dm != ts->dm) PetscCall(DMRestoreNamedGlobalVector(dm, "TSGLLE_Ydot", Ydotstage));
   }
   PetscFunctionReturn(0);
 }
@@ -307,7 +307,7 @@ static PetscErrorCode TSGLLEViewTable_Private(PetscViewer viewer, PetscInt m, Pe
     for (i = 0; i < m; i++) {
       if (i) PetscCall(PetscViewerASCIIPrintf(viewer, "%30s   [", ""));
       PetscCall(PetscViewerASCIIUseTabs(viewer, PETSC_FALSE));
-      for (j = 0; j < n; j++) { PetscCall(PetscViewerASCIIPrintf(viewer, " %12.8g", (double)PetscRealPart(a[i * n + j]))); }
+      for (j = 0; j < n; j++) PetscCall(PetscViewerASCIIPrintf(viewer, " %12.8g", (double)PetscRealPart(a[i * n + j])));
       PetscCall(PetscViewerASCIIPrintf(viewer, "]\n"));
       PetscCall(PetscViewerASCIIUseTabs(viewer, PETSC_TRUE));
     }
@@ -815,7 +815,7 @@ static PetscErrorCode TSSolve_GLLE(TS ts) {
 
   PetscCall(TSGLLEGetMaxSizes(ts, &max_r, &max_s));
   PetscCall(VecCopy(ts->vec_sol, gl->X[0]));
-  for (i = 1; i < max_r; i++) { PetscCall(VecZeroEntries(gl->X[i])); }
+  for (i = 1; i < max_r; i++) PetscCall(VecZeroEntries(gl->X[i]));
   PetscCall(TSGLLEUpdateWRMS(ts));
 
   if (0) {
@@ -884,8 +884,8 @@ static PetscErrorCode TSSolve_GLLE(TS ts) {
         * Then y'_i = z + 1/(h a_ii) y_i
         */
         PetscCall(VecZeroEntries(gl->Z));
-        for (j = 0; j < r; j++) { PetscCall(VecAXPY(gl->Z, -shift * u[i * r + j], X[j])); }
-        for (j = 0; j < i; j++) { PetscCall(VecAXPY(gl->Z, -shift * h * a[i * s + j], Ydot[j])); }
+        for (j = 0; j < r; j++) PetscCall(VecAXPY(gl->Z, -shift * u[i * r + j], X[j]));
+        for (j = 0; j < i; j++) PetscCall(VecAXPY(gl->Z, -shift * h * a[i * s + j], Ydot[j]));
         /* Note: Z is used within function evaluation, Ydot = Z + shift*Y */
 
         /* Compute an estimate of Y to start Newton iteration */
@@ -919,7 +919,7 @@ static PetscErrorCode TSSolve_GLLE(TS ts) {
 
       PetscCall((*gl->EstimateHigherMoments)(scheme, h, Ydot, gl->X, gl->himom));
       /* hmnorm[i] = h^{p+i}x^{(p+i)} with i=0,1,2; hmnorm[3] = h^{p+2}(dx'/dx) x^{(p+1)} */
-      for (i = 0; i < 3; i++) { PetscCall(TSGLLEVecNormWRMS(ts, gl->himom[i], &hmnorm[i + 1])); }
+      for (i = 0; i < 3; i++) PetscCall(TSGLLEVecNormWRMS(ts, gl->himom[i], &hmnorm[i + 1]));
       enorm[0] = PetscRealPart(scheme->alpha[0]) * hmnorm[1];
       enorm[1] = PetscRealPart(scheme->beta[0]) * hmnorm[2];
       enorm[2] = PetscRealPart(scheme->gamma[0]) * hmnorm[3];
@@ -937,7 +937,7 @@ static PetscErrorCode TSSolve_GLLE(TS ts) {
         the correct "next" step size.  It is unclear to me whether the present ad-hoc method of rescaling X is stable.
       */
       h *= 0.5;
-      for (i = 1; i < scheme->r; i++) { PetscCall(VecScale(X[i], PetscPowRealInt(0.5, i))); }
+      for (i = 1; i < scheme->r; i++) PetscCall(VecScale(X[i], PetscPowRealInt(0.5, i)));
     }
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_CONV_FAILED, "Time step %" PetscInt_FMT " (t=%g) not accepted after %" PetscInt_FMT " failures", k, (double)gl->stage_time, rejections);
 
@@ -1099,7 +1099,7 @@ static PetscErrorCode TSSetFromOptions_GLLE(TS ts, PetscOptionItems *PetscOption
   {
     PetscBool flg;
     PetscCall(PetscOptionsFList("-ts_gl_type", "Type of GL method", "TSGLLESetType", TSGLLEList, gl->type_name[0] ? gl->type_name : tname, tname, sizeof(tname), &flg));
-    if (flg || !gl->type_name[0]) { PetscCall(TSGLLESetType(ts, tname)); }
+    if (flg || !gl->type_name[0]) PetscCall(TSGLLESetType(ts, tname));
     PetscCall(PetscOptionsInt("-ts_gl_max_step_rejections", "Maximum number of times to attempt a step", "None", gl->max_step_rejections, &gl->max_step_rejections, NULL));
     PetscCall(PetscOptionsInt("-ts_gl_max_order", "Maximum order to try", "TSGLLESetMaxOrder", gl->max_order, &gl->max_order, NULL));
     PetscCall(PetscOptionsInt("-ts_gl_min_order", "Minimum order to try", "TSGLLESetMinOrder", gl->min_order, &gl->min_order, NULL));
@@ -1120,7 +1120,7 @@ static PetscErrorCode TSSetFromOptions_GLLE(TS ts, PetscOptionItems *PetscOption
     {
       char type[256] = TSGLLEACCEPT_ALWAYS;
       PetscCall(PetscOptionsFList("-ts_gl_accept_type", "Method to use for determining whether to accept a step", "TSGLLESetAcceptType", TSGLLEAcceptList, gl->accept_name[0] ? gl->accept_name : type, type, sizeof(type), &flg));
-      if (flg || !gl->accept_name[0]) { PetscCall(TSGLLESetAcceptType(ts, type)); }
+      if (flg || !gl->accept_name[0]) PetscCall(TSGLLESetAcceptType(ts, type));
     }
     {
       TSGLLEAdapt adapt;
@@ -1152,7 +1152,7 @@ static PetscErrorCode TSView_GLLE(TS ts, PetscViewer viewer) {
     details = PETSC_FALSE;
     PetscCall(PetscOptionsGetBool(((PetscObject)ts)->options, ((PetscObject)ts)->prefix, "-ts_gl_view_detailed", &details, NULL));
     PetscCall(PetscViewerASCIIPushTab(viewer));
-    for (i = 0; i < gl->nschemes; i++) { PetscCall(TSGLLESchemeView(gl->schemes[i], details, viewer)); }
+    for (i = 0; i < gl->nschemes; i++) PetscCall(TSGLLESchemeView(gl->schemes[i], details, viewer));
     if (gl->View) PetscCall((*gl->View)(gl, viewer));
     PetscCall(PetscViewerASCIIPopTab(viewer));
   }

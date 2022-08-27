@@ -18,7 +18,7 @@ int main(int argc, char **argv) {
   PetscCall(PetscOptionsRealArray("-rarray", "Input a real array", "ex14.c", rarray, &n, NULL));
   if (n) {
     PetscCall(PetscPrintf(PETSC_COMM_SELF, "Real rarray of length %" PetscInt_FMT "\n", n));
-    for (i = 0; i < n; i++) { PetscCall(PetscPrintf(PETSC_COMM_SELF, " %g,\n", (double)rarray[i])); }
+    for (i = 0; i < n; i++) PetscCall(PetscPrintf(PETSC_COMM_SELF, " %g,\n", (double)rarray[i]));
   }
 
   n = 10; /* max num of input values */

@@ -278,7 +278,7 @@ PetscErrorCode MatAXPY_SeqDense(Mat Y, PetscScalar alpha, Mat X, MatStructure st
   if (ldax > m || lday > m) {
     PetscInt j;
 
-    for (j = 0; j < X->cmap->n; j++) { PetscCallBLAS("BLASaxpy", BLASaxpy_(&m, &alpha, xv + j * ldax, &one, yv + j * lday, &one)); }
+    for (j = 0; j < X->cmap->n; j++) PetscCallBLAS("BLASaxpy", BLASaxpy_(&m, &alpha, xv + j * ldax, &one, yv + j * lday, &one));
   } else {
     PetscCallBLAS("BLASaxpy", BLASaxpy_(&N, &alpha, xv, &one, yv, &one));
   }
@@ -315,7 +315,7 @@ PetscErrorCode MatScale_SeqDense(Mat A, PetscScalar alpha) {
   PetscCall(PetscBLASIntCast(a->lda, &lda));
   if (lda > A->rmap->n) {
     PetscCall(PetscBLASIntCast(A->rmap->n, &nz));
-    for (j = 0; j < A->cmap->n; j++) { PetscCallBLAS("BLASscal", BLASscal_(&nz, &alpha, v + j * lda, &one)); }
+    for (j = 0; j < A->cmap->n; j++) PetscCallBLAS("BLASscal", BLASscal_(&nz, &alpha, v + j * lda, &one));
   } else {
     PetscCall(PetscBLASIntCast(A->rmap->n * A->cmap->n, &nz));
     PetscCallBLAS("BLASscal", BLASscal_(&nz, &alpha, v, &one));
@@ -401,7 +401,7 @@ PetscErrorCode MatDuplicateNoCreate_SeqDense(Mat newi, Mat A, MatDuplicateOption
     PetscCall(MatDenseGetLDA(newi, &nlda));
     m = A->rmap->n;
     if (lda > m || nlda > m) {
-      for (j = 0; j < A->cmap->n; j++) { PetscCall(PetscArraycpy(v + j * nlda, av + j * lda, m)); }
+      for (j = 0; j < A->cmap->n; j++) PetscCall(PetscArraycpy(v + j * nlda, av + j * lda, m));
     } else {
       PetscCall(PetscArraycpy(v, av, A->rmap->n * A->cmap->n));
     }
@@ -672,7 +672,7 @@ static PetscErrorCode MatMatSolve_SeqDense_SetUp(Mat A, Mat B, Mat X, PetscScala
     if (ldb == m) {
       PetscCall(PetscArraycpy(y, b, ldb * nrhs));
     } else {
-      for (PetscInt j = 0; j < nrhs; j++) { PetscCall(PetscArraycpy(&y[j * m], &b[j * ldb], m)); }
+      for (PetscInt j = 0; j < nrhs; j++) PetscCall(PetscArraycpy(&y[j * m], &b[j * ldb], m));
     }
     ldy = m;
     PetscCall(MatDenseRestoreArrayRead(B, &b));
@@ -683,7 +683,7 @@ static PetscErrorCode MatMatSolve_SeqDense_SetUp(Mat A, Mat B, Mat X, PetscScala
     } else {
       PetscCall(MatDenseGetArray(X, &y));
       PetscCall(MatDenseGetArrayRead(B, &b));
-      for (PetscInt j = 0; j < nrhs; j++) { PetscCall(PetscArraycpy(&y[j * ldx], &b[j * ldb], m)); }
+      for (PetscInt j = 0; j < nrhs; j++) PetscCall(PetscArraycpy(&y[j * ldx], &b[j * ldb], m));
       PetscCall(MatDenseRestoreArrayRead(B, &b));
     }
     ldy = ldx;
@@ -712,7 +712,7 @@ static PetscErrorCode MatMatSolve_SeqDense_TearDown(Mat A, Mat B, Mat X, PetscSc
   if (ldx != ldy) {
     PetscScalar *xv;
     PetscCall(MatDenseGetArray(X, &xv));
-    for (PetscInt j = 0; j < nrhs; j++) { PetscCall(PetscArraycpy(&xv[j * ldx], &y[j * ldy], k)); }
+    for (PetscInt j = 0; j < nrhs; j++) PetscCall(PetscArraycpy(&xv[j * ldx], &y[j * ldy], k));
     PetscCall(MatDenseRestoreArray(X, &xv));
     PetscCall(PetscFree(y));
   } else {
@@ -943,7 +943,7 @@ PetscErrorCode MatQRFactor_SeqDense(Mat A, IS col, const MatFactorInfo *minfo) {
     PetscCall(PetscMalloc1(n, &mat->pivots));
     PetscCall(PetscLogObjectMemory((PetscObject)A, n * sizeof(PetscScalar)));
   }
-  if (!mat->qrrhs) { PetscCall(MatCreateVecs(A, NULL, &(mat->qrrhs))); }
+  if (!mat->qrrhs) PetscCall(MatCreateVecs(A, NULL, &(mat->qrrhs)));
   if (!A->rmap->n || !A->cmap->n) PetscFunctionReturn(0);
   if (!mat->fwork) {
     PetscScalar dummy;
@@ -1474,7 +1474,7 @@ static PetscErrorCode MatView_SeqDense_ASCII(Mat A, PetscViewer viewer) {
           PetscCall(PetscViewerASCIIPrintf(viewer, " (%" PetscInt_FMT ", %g) ", j, (double)PetscRealPart(*v)));
         }
 #else
-        if (*v) { PetscCall(PetscViewerASCIIPrintf(viewer, " (%" PetscInt_FMT ", %g) ", j, (double)*v)); }
+        if (*v) PetscCall(PetscViewerASCIIPrintf(viewer, " (%" PetscInt_FMT ", %g) ", j, (double)*v));
 #endif
         v += a->lda;
       }
@@ -1518,7 +1518,7 @@ static PetscErrorCode MatView_SeqDense_ASCII(Mat A, PetscViewer viewer) {
       }
       PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
     }
-    if (format == PETSC_VIEWER_ASCII_MATLAB) { PetscCall(PetscViewerASCIIPrintf(viewer, "];\n")); }
+    if (format == PETSC_VIEWER_ASCII_MATLAB) PetscCall(PetscViewerASCIIPrintf(viewer, "];\n"));
     PetscCall(PetscViewerASCIIUseTabs(viewer, PETSC_TRUE));
   }
   PetscCall(MatDenseRestoreArrayRead(A, (const PetscScalar **)&av));
@@ -1997,7 +1997,7 @@ PetscErrorCode MatZeroEntries_SeqDense(Mat A) {
   PetscFunctionBegin;
   PetscCall(MatDenseGetArrayWrite(A, &v));
   if (lda > m) {
-    for (j = 0; j < n; j++) { PetscCall(PetscArrayzero(v + j * lda, m)); }
+    for (j = 0; j < n; j++) PetscCall(PetscArrayzero(v + j * lda, m));
   } else {
     PetscCall(PetscArrayzero(v, PetscInt64Mult(m, n)));
   }
@@ -2310,9 +2310,9 @@ static PetscErrorCode MatCreateSubMatrices_SeqDense(Mat A, PetscInt n, const IS 
   PetscInt i;
 
   PetscFunctionBegin;
-  if (scall == MAT_INITIAL_MATRIX) { PetscCall(PetscCalloc1(n, B)); }
+  if (scall == MAT_INITIAL_MATRIX) PetscCall(PetscCalloc1(n, B));
 
-  for (i = 0; i < n; i++) { PetscCall(MatCreateSubMatrix_SeqDense(A, irow[i], icol[i], scall, &(*B)[i])); }
+  for (i = 0; i < n; i++) PetscCall(MatCreateSubMatrix_SeqDense(A, irow[i], icol[i], scall, &(*B)[i]));
   PetscFunctionReturn(0);
 }
 
@@ -2342,7 +2342,7 @@ PetscErrorCode MatCopy_SeqDense(Mat A, Mat B, MatStructure str) {
   PetscCall(MatDenseGetArrayRead(A, &va));
   PetscCall(MatDenseGetArray(B, &vb));
   if (lda1 > m || lda2 > m) {
-    for (j = 0; j < n; j++) { PetscCall(PetscArraycpy(vb + j * lda2, va + j * lda1, m)); }
+    for (j = 0; j < n; j++) PetscCall(PetscArraycpy(vb + j * lda2, va + j * lda1, m));
   } else {
     PetscCall(PetscArraycpy(vb, va, A->rmap->n * A->cmap->n));
   }
@@ -2357,7 +2357,7 @@ PetscErrorCode MatSetUp_SeqDense(Mat A) {
   PetscFunctionBegin;
   PetscCall(PetscLayoutSetUp(A->rmap));
   PetscCall(PetscLayoutSetUp(A->cmap));
-  if (!A->preallocated) { PetscCall(MatSeqDenseSetPreallocation(A, NULL)); }
+  if (!A->preallocated) PetscCall(MatSeqDenseSetPreallocation(A, NULL));
   PetscFunctionReturn(0);
 }
 
@@ -2716,7 +2716,7 @@ static PetscErrorCode MatSetRandom_SeqDense(Mat x, PetscRandom rctx) {
   PetscCall(MatDenseGetLDA(x, &lda));
   PetscCall(MatDenseGetArray(x, &a));
   for (j = 0; j < n; j++) {
-    for (i = 0; i < m; i++) { PetscCall(PetscRandomGetValue(rctx, a + j * lda + i)); }
+    for (i = 0; i < m; i++) PetscCall(PetscRandomGetValue(rctx, a + j * lda + i));
   }
   PetscCall(MatDenseRestoreArray(x, &a));
   PetscFunctionReturn(0);

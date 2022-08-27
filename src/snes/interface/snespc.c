@@ -50,7 +50,7 @@ PetscErrorCode SNESComputeFunctionDefaultNPC(SNES snes, Vec X, Vec F) {
   if (snes->npc) {
     PetscCall(SNESApplyNPC(snes, X, NULL, F));
     PetscCall(SNESGetConvergedReason(snes->npc, &reason));
-    if (reason < 0 && reason != SNES_DIVERGED_MAX_IT) { PetscCall(SNESSetFunctionDomainError(snes)); }
+    if (reason < 0 && reason != SNES_DIVERGED_MAX_IT) PetscCall(SNESSetFunctionDomainError(snes));
   } else {
     PetscCall(SNESComputeFunction(snes, X, F));
   }

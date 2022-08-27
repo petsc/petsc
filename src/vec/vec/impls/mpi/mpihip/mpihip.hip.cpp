@@ -30,7 +30,7 @@ PetscErrorCode VecDestroy_MPIHIP(Vec v) {
       PetscCallHIP(hipFree(vechip->GPUarray_allocated));
       vechip->GPUarray_allocated = NULL;
     }
-    if (vechip->stream) { PetscCallHIP(hipStreamDestroy(vechip->stream)); }
+    if (vechip->stream) PetscCallHIP(hipStreamDestroy(vechip->stream));
     if (v->pinned_memory) {
       PetscCall(PetscMallocSetHIPHost());
       PetscCall(PetscFree(vecmpi->array_allocated));
@@ -97,10 +97,10 @@ PetscErrorCode VecMDot_MPIHIP(Vec xin, PetscInt nv, const Vec y[], PetscScalar *
   PetscScalar awork[128], *work = awork;
 
   PetscFunctionBegin;
-  if (nv > 128) { PetscCall(PetscMalloc1(nv, &work)); }
+  if (nv > 128) PetscCall(PetscMalloc1(nv, &work));
   PetscCall(VecMDot_SeqHIP(xin, nv, y, work));
   PetscCall(MPIU_Allreduce(work, z, nv, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)xin)));
-  if (nv > 128) { PetscCall(PetscFree(work)); }
+  if (nv > 128) PetscCall(PetscFree(work));
   PetscFunctionReturn(0);
 }
 
@@ -135,7 +135,7 @@ PetscErrorCode VecDuplicate_MPIHIP(Vec win, Vec *v) {
     PetscCall(VecRestoreArray(*v, &array));
     PetscCall(PetscLogObjectParent((PetscObject)*v, (PetscObject)vw->localrep));
     vw->localupdate = w->localupdate;
-    if (vw->localupdate) { PetscCall(PetscObjectReference((PetscObject)vw->localupdate)); }
+    if (vw->localupdate) PetscCall(PetscObjectReference((PetscObject)vw->localupdate));
   }
 
   /* New vector should inherit stashing property of parent */

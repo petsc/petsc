@@ -153,7 +153,7 @@ static PetscErrorCode DMPlexTransformSetUp_SBR(DMPlexTransform tr) {
   PetscCall(DMPlexGetDepthStratum(dm, 1, &eStart, &eEnd));
   PetscCall(PetscSectionCreate(PETSC_COMM_SELF, &sbr->secEdgeLen));
   PetscCall(PetscSectionSetChart(sbr->secEdgeLen, eStart, eEnd));
-  for (e = eStart; e < eEnd; ++e) { PetscCall(PetscSectionSetDof(sbr->secEdgeLen, e, 1)); }
+  for (e = eStart; e < eEnd; ++e) PetscCall(PetscSectionSetDof(sbr->secEdgeLen, e, 1));
   PetscCall(PetscSectionSetUp(sbr->secEdgeLen));
   PetscCall(PetscSectionGetStorageSize(sbr->secEdgeLen, &edgeLenSize));
   PetscCall(PetscCalloc1(edgeLenSize, &sbr->edgeLen));
@@ -548,7 +548,7 @@ static PetscErrorCode DMPlexTransformView_SBR(DMPlexTransform tr, PetscViewer vi
     PetscCall(PetscObjectGetName((PetscObject)tr, &name));
     PetscCall(PetscViewerASCIIPrintf(viewer, "SBR refinement %s\n", name ? name : ""));
     PetscCall(PetscViewerGetFormat(viewer, &format));
-    if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) { PetscCall(DMLabelView(tr->trType, viewer)); }
+    if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) PetscCall(DMLabelView(tr->trType, viewer));
   } else {
     SETERRQ(PetscObjectComm((PetscObject)tr), PETSC_ERR_SUP, "Viewer type %s not yet supported for DMPlexTransform writing", ((PetscObject)viewer)->type_name);
   }

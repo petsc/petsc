@@ -119,7 +119,7 @@ int main(int argc, char **argv) {
   for (tensor = 0; tensor < 2; tensor++) {
     for (dim = 1; dim <= 3; dim++) {
       if (dim == 1 && tensor) continue;
-      for (order = 0; order <= (tensor ? 5 : 6); order++) { PetscCall(CheckSymmetry(dim, order, tensor ? PETSC_TRUE : PETSC_FALSE)); }
+      for (order = 0; order <= (tensor ? 5 : 6); order++) PetscCall(CheckSymmetry(dim, order, tensor ? PETSC_TRUE : PETSC_FALSE));
     }
   }
   PetscCall(PetscFinalize());

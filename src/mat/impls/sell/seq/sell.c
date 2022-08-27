@@ -182,7 +182,7 @@ PetscErrorCode MatGetRow_SeqSELL(Mat A, PetscInt row, PetscInt *nz, PetscInt **i
   PetscCheck(row >= 0 && row < A->rmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Row %" PetscInt_FMT " out of range", row);
   if (nz) *nz = a->rlen[row];
   shift = a->sliidx[row >> 3] + (row & 0x07);
-  if (!a->getrowcols) { PetscCall(PetscMalloc2(a->rlenmax, &a->getrowcols, a->rlenmax, &a->getrowvals)); }
+  if (!a->getrowcols) PetscCall(PetscMalloc2(a->rlenmax, &a->getrowcols, a->rlenmax, &a->getrowvals));
   if (idx) {
     PetscInt j;
     for (j = 0; j < a->rlen[row]; j++) a->getrowcols[j] = a->colidx[shift + 8 * j];
@@ -1586,7 +1586,7 @@ PetscErrorCode MatShift_SeqSELL(Mat Y, PetscScalar a) {
   Mat_SeqSELL *y = (Mat_SeqSELL *)Y->data;
 
   PetscFunctionBegin;
-  if (!Y->preallocated || !y->nz) { PetscCall(MatSeqSELLSetPreallocation(Y, 1, NULL)); }
+  if (!Y->preallocated || !y->nz) PetscCall(MatSeqSELLSetPreallocation(Y, 1, NULL));
   PetscCall(MatShift_Basic(Y, a));
   PetscFunctionReturn(0);
 }
@@ -2013,7 +2013,7 @@ PetscErrorCode MatDuplicate_SeqSELL(Mat A, MatDuplicateOption cpvalues, Mat *B) 
   PetscFunctionBegin;
   PetscCall(MatCreate(PetscObjectComm((PetscObject)A), B));
   PetscCall(MatSetSizes(*B, A->rmap->n, A->cmap->n, A->rmap->n, A->cmap->n));
-  if (!(A->rmap->n % A->rmap->bs) && !(A->cmap->n % A->cmap->bs)) { PetscCall(MatSetBlockSizesFromMats(*B, A, A)); }
+  if (!(A->rmap->n % A->rmap->bs) && !(A->cmap->n % A->cmap->bs)) PetscCall(MatSetBlockSizesFromMats(*B, A, A));
   PetscCall(MatSetType(*B, ((PetscObject)A)->type_name));
   PetscCall(MatDuplicateNoCreate_SeqSELL(*B, A, cpvalues, PETSC_TRUE));
   PetscFunctionReturn(0);

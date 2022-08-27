@@ -386,7 +386,7 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[]) 
   if (flg1) PetscCall(PetscPushErrorHandler(PetscMPIAbortErrorHandler, NULL));
   flg1 = PETSC_FALSE;
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-mpi_return_on_error", &flg1, NULL));
-  if (flg1) { PetscCallMPI(MPI_Comm_set_errhandler(comm, MPI_ERRORS_RETURN)); }
+  if (flg1) PetscCallMPI(MPI_Comm_set_errhandler(comm, MPI_ERRORS_RETURN));
   flg1 = PETSC_FALSE;
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-no_signal_handler", &flg1, NULL));
   if (!flg1) PetscCall(PetscPushSignalHandler(PetscSignalHandlerDefault, (void *)0));
@@ -423,10 +423,10 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[]) 
       PetscMPIInt dummy = 0;
       MPI_Status  status;
       for (i = 0; i < size; i++) {
-        if (rank != i) { PetscCallMPI(MPI_Send(&dummy, 1, MPI_INT, i, 109, comm)); }
+        if (rank != i) PetscCallMPI(MPI_Send(&dummy, 1, MPI_INT, i, 109, comm));
       }
       for (i = 0; i < size; i++) {
-        if (rank != i) { PetscCallMPI(MPI_Recv(&dummy, 1, MPI_INT, i, 109, comm, &status)); }
+        if (rank != i) PetscCallMPI(MPI_Recv(&dummy, 1, MPI_INT, i, 109, comm, &status));
       }
     }
     /* check if this processor node should be in debugger */

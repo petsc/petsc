@@ -16,7 +16,7 @@ static PetscErrorCode DMPlexApplyLimiter_Internal(DM dm, DM dmCell, PetscLimiter
     for (c = 0; c < numChildren; c++) {
       PetscInt childFace = children[c];
 
-      if (childFace >= fStart && childFace < fEnd) { PetscCall(DMPlexApplyLimiter_Internal(dm, dmCell, lim, dim, dof, cell, field, childFace, fStart, fEnd, cellPhi, x, cellgeom, cg, cx, cgrad)); }
+      if (childFace >= fStart && childFace < fEnd) PetscCall(DMPlexApplyLimiter_Internal(dm, dmCell, lim, dim, dof, cell, field, childFace, fStart, fEnd, cellPhi, x, cellgeom, cg, cx, cgrad));
     }
   } else {
     PetscScalar     *ncx;
@@ -128,7 +128,7 @@ PetscErrorCode DMPlexReconstructGradients_Internal(DM dm, PetscFV fvm, PetscInt 
     if (!cgrad) continue; /* Unowned overlap cell, we do not compute */
     /* Limiter will be minimum value over all neighbors */
     for (d = 0; d < dof; ++d) cellPhi[d] = PETSC_MAX_REAL;
-    for (f = 0; f < coneSize; ++f) { PetscCall(DMPlexApplyLimiter_Internal(dm, dmCell, lim, dim, dof, cell, nFields > 1 ? field : -1, faces[f], fStart, fEnd, cellPhi, x, cellgeom, cg, cx, cgrad)); }
+    for (f = 0; f < coneSize; ++f) PetscCall(DMPlexApplyLimiter_Internal(dm, dmCell, lim, dim, dof, cell, nFields > 1 ? field : -1, faces[f], fStart, fEnd, cellPhi, x, cellgeom, cg, cx, cgrad));
     /* Apply limiter to gradient */
     for (pd = 0; pd < dof; ++pd) /* Scalar limiter applied to each component separately */
       for (d = 0; d < dim; ++d) cgrad[pd * dim + d] *= cellPhi[pd];

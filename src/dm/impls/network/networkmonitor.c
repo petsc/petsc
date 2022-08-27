@@ -49,7 +49,7 @@ PetscErrorCode DMNetworkMonitorCreate(DM network, DMNetworkMonitor *monitorptr) 
 @*/
 PetscErrorCode DMNetworkMonitorDestroy(DMNetworkMonitor *monitor) {
   PetscFunctionBegin;
-  while ((*monitor)->firstnode) { PetscCall(DMNetworkMonitorPop(*monitor)); }
+  while ((*monitor)->firstnode) PetscCall(DMNetworkMonitorPop(*monitor));
 
   PetscCall(PetscFree(*monitor));
   PetscFunctionReturn(0);

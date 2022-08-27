@@ -396,7 +396,7 @@ static PetscErrorCode TSSetUp_BDF(TS ts) {
   bdf->k = bdf->n = 0;
   for (i = 0; i < n; i++) {
     PetscCall(VecDuplicate(ts->vec_sol, &bdf->work[i]));
-    if (i && bdf->transientvar) { PetscCall(VecDuplicate(ts->vec_sol, &bdf->tvwork[i])); }
+    if (i && bdf->transientvar) PetscCall(VecDuplicate(ts->vec_sol, &bdf->tvwork[i]));
   }
   PetscCall(VecDuplicate(ts->vec_sol, &bdf->vec_dot));
   PetscCall(VecDuplicate(ts->vec_sol, &bdf->vec_wrk));
@@ -433,7 +433,7 @@ static PetscErrorCode TSView_BDF(TS ts, PetscViewer viewer) {
 
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) { PetscCall(PetscViewerASCIIPrintf(viewer, "  Order=%" PetscInt_FMT "\n", bdf->order)); }
+  if (iascii) PetscCall(PetscViewerASCIIPrintf(viewer, "  Order=%" PetscInt_FMT "\n", bdf->order));
   PetscFunctionReturn(0);
 }
 

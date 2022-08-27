@@ -247,8 +247,8 @@ PetscErrorCode VecWhichBetween(Vec VecLow, Vec V, Vec VecHigh, IS *S) {
     }
 
     PetscCall(VecRestoreArrayRead(VecLow, &v1));
-    if (VecLow != VecHigh) { PetscCall(VecRestoreArrayRead(VecHigh, &v2)); }
-    if (V != VecLow && V != VecHigh) { PetscCall(VecRestoreArrayRead(V, &vmiddle)); }
+    if (VecLow != VecHigh) PetscCall(VecRestoreArrayRead(VecHigh, &v2));
+    if (V != VecLow && V != VecHigh) PetscCall(VecRestoreArrayRead(V, &vmiddle));
   }
   PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)V), n_vm, vm, PETSC_OWN_POINTER, S));
   PetscFunctionReturn(0);
@@ -313,8 +313,8 @@ PetscErrorCode VecWhichBetweenOrEqual(Vec VecLow, Vec V, Vec VecHigh, IS *S) {
     }
 
     PetscCall(VecRestoreArrayRead(VecLow, &v1));
-    if (VecLow != VecHigh) { PetscCall(VecRestoreArrayRead(VecHigh, &v2)); }
-    if (V != VecLow && V != VecHigh) { PetscCall(VecRestoreArrayRead(V, &vmiddle)); }
+    if (VecLow != VecHigh) PetscCall(VecRestoreArrayRead(VecHigh, &v2));
+    if (V != VecLow && V != VecHigh) PetscCall(VecRestoreArrayRead(V, &vmiddle));
   }
   PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)V), n_vm, vm, PETSC_OWN_POINTER, S));
   PetscFunctionReturn(0);
@@ -422,9 +422,9 @@ PetscErrorCode VecWhichInactive(Vec VecLow, Vec V, Vec D, Vec VecHigh, PetscBool
     }
 
     PetscCall(VecRestoreArrayRead(VecLow, &v1));
-    if (VecLow != VecHigh) { PetscCall(VecRestoreArrayRead(VecHigh, &v2)); }
-    if (V != VecLow && V != VecHigh) { PetscCall(VecRestoreArrayRead(V, &v)); }
-    if (D != VecLow && D != VecHigh && D != V) { PetscCall(VecRestoreArrayRead(D, &d)); }
+    if (VecLow != VecHigh) PetscCall(VecRestoreArrayRead(VecHigh, &v2));
+    if (V != VecLow && V != VecHigh) PetscCall(VecRestoreArrayRead(V, &v));
+    if (D != VecLow && D != VecHigh && D != V) PetscCall(VecRestoreArrayRead(D, &d));
   }
   PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)V), n_vm, vm, PETSC_OWN_POINTER, S));
   PetscFunctionReturn(0);
@@ -1016,9 +1016,9 @@ PetscErrorCode VecMedian(Vec Vec1, Vec Vec2, Vec Vec3, Vec VMedian) {
     for (i = 0; i < n; ++i) { vmed[i] = PetscMax(PetscMax(PetscMin(PetscRealPart(v1[i]), PetscRealPart(v2[i])), PetscMin(PetscRealPart(v1[i]), PetscRealPart(v3[i]))), PetscMin(PetscRealPart(v2[i]), PetscRealPart(v3[i]))); }
 
     PetscCall(VecRestoreArray(VMedian, &vmed));
-    if (VMedian != Vec1) { PetscCall(VecRestoreArrayRead(Vec1, &v1)); }
-    if (VMedian != Vec2) { PetscCall(VecRestoreArrayRead(Vec2, &v2)); }
-    if (VMedian != Vec3) { PetscCall(VecRestoreArrayRead(Vec3, &v3)); }
+    if (VMedian != Vec1) PetscCall(VecRestoreArrayRead(Vec1, &v1));
+    if (VMedian != Vec2) PetscCall(VecRestoreArrayRead(Vec2, &v2));
+    if (VMedian != Vec3) PetscCall(VecRestoreArrayRead(Vec3, &v3));
   }
   PetscFunctionReturn(0);
 }

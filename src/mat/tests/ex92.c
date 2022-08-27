@@ -176,7 +176,7 @@ int main(int argc, char **args) {
   /* Test MatCreateSubmatrices */
   if (TestSubMat) {
     if (test_sorted) {
-      for (i = 0; i < nd; ++i) { PetscCall(ISSort(is1[i])); }
+      for (i = 0; i < nd; ++i) PetscCall(ISSort(is1[i]));
     }
     PetscCall(MatCreateSubMatrices(A, nd, is1, is1, MAT_INITIAL_MATRIX, &submatA));
     PetscCall(MatCreateSubMatrices(sA, nd, is1, is1, MAT_INITIAL_MATRIX, &submatsA));

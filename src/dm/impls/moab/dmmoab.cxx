@@ -150,7 +150,7 @@ PetscErrorCode DMMoabCreateMoab(MPI_Comm comm, moab::Interface *mbiface, moab::T
   MBERRNM(merr);
 
   /* set the local range of entities (vertices) of interest */
-  if (range) { PetscCall(DMMoabSetLocalVertices(dmmb, range)); }
+  if (range) PetscCall(DMMoabSetLocalVertices(dmmb, range));
   *dmb = dmmb;
   PetscFunctionReturn(0);
 }
@@ -704,7 +704,7 @@ PetscErrorCode DMMoabRestoreVertexConnectivity(DM dm, moab::EntityHandle ehandle
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(conn, 4);
 
-  if (conn) { PetscCall(PetscFree(*conn)); }
+  if (conn) PetscCall(PetscFree(*conn));
   if (nconn) *nconn = 0;
   PetscFunctionReturn(0);
 }
@@ -874,7 +874,7 @@ PETSC_EXTERN PetscErrorCode DMDestroy_Moab(DM dm) {
     PetscCall(PetscFree(dmmoab->ofill));
     PetscCall(PetscFree(dmmoab->materials));
     if (dmmoab->fieldNames) {
-      for (i = 0; i < dmmoab->numFields; i++) { PetscCall(PetscFree(dmmoab->fieldNames[i])); }
+      for (i = 0; i < dmmoab->numFields; i++) PetscCall(PetscFree(dmmoab->fieldNames[i]));
       PetscCall(PetscFree(dmmoab->fieldNames));
     }
 
@@ -1355,7 +1355,7 @@ PETSC_EXTERN PetscErrorCode DMMoabView_Ascii(DM dm, PetscViewer viewer) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "Fields: %" PetscInt_FMT " components\n", dmmoab->numFields));
     {
       PetscCall(PetscViewerASCIIPushTab(viewer));
-      for (int i = 0; i < dmmoab->numFields; ++i) { PetscCall(PetscViewerASCIIPrintf(viewer, "[%" PetscInt_FMT "] - %s\n", i, dmmoab->fieldNames[i])); }
+      for (int i = 0; i < dmmoab->numFields; ++i) PetscCall(PetscViewerASCIIPrintf(viewer, "[%" PetscInt_FMT "] - %s\n", i, dmmoab->fieldNames[i]));
       PetscCall(PetscViewerASCIIPopTab(viewer));
     }
     PetscCall(PetscViewerASCIIPopTab(viewer));

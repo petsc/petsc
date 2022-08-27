@@ -103,7 +103,7 @@ static PetscErrorCode KSPPIPEFGMRESCycle(PetscInt *itcount, KSP ksp) {
 
   /* Allocate memory for orthogonalization work (freed in the GMRES Destroy routine)*/
   /* Note that we add an extra value here to allow for a single reduction */
-  if (!pipefgmres->orthogwork) { PetscCall(PetscMalloc1(pipefgmres->max_k + 2, &pipefgmres->orthogwork)); }
+  if (!pipefgmres->orthogwork) PetscCall(PetscMalloc1(pipefgmres->max_k + 2, &pipefgmres->orthogwork));
   lhh = pipefgmres->orthogwork;
 
   /* Number of pseudo iterations since last restart is the number
@@ -314,7 +314,7 @@ static PetscErrorCode KSPPIPEFGMRESCycle(PetscInt *itcount, KSP ksp) {
 
   /*
      Monitor if we know that we will not return for a restart */
-  if (loc_it && (ksp->reason || ksp->its >= ksp->max_it)) { PetscCall(KSPMonitor(ksp, ksp->its, ksp->rnorm)); }
+  if (loc_it && (ksp->reason || ksp->its >= ksp->max_it)) PetscCall(KSPMonitor(ksp, ksp->its, ksp->rnorm));
 
   if (itcount) *itcount = loc_it;
 

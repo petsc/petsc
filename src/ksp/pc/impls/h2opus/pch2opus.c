@@ -553,7 +553,7 @@ static PetscErrorCode PCSetUp_H2OPUS(PC pc) {
   if (norm == NORM_1 || norm == NORM_2 || norm == NORM_INFINITY) PetscCall(MatNorm(pch2opus->T, norm, &initerr));
   if (PetscIsInfOrNanReal(initerr)) pc->failedreason = PC_SETUP_ERROR;
   err = initerr;
-  if (pch2opus->monitor) { PetscCall(PetscPrintf(PetscObjectComm((PetscObject)pc), "%" PetscInt_FMT ": ||M*A - I|| NORM%s abs %g rel %g\n", 0, NormTypes[norm], (double)err, (double)(err / initerr))); }
+  if (pch2opus->monitor) PetscCall(PetscPrintf(PetscObjectComm((PetscObject)pc), "%" PetscInt_FMT ": ||M*A - I|| NORM%s abs %g rel %g\n", 0, NormTypes[norm], (double)err, (double)(err / initerr)));
   if (initerr > pch2opus->atol && !pc->failedreason) {
     PetscInt i;
 
@@ -573,7 +573,7 @@ static PetscErrorCode PCSetUp_H2OPUS(PC pc) {
       PetscCall(MatDestroy(&pch2opus->M));
       pch2opus->M = M;
       if (norm == NORM_1 || norm == NORM_2 || norm == NORM_INFINITY) PetscCall(MatNorm(pch2opus->T, norm, &err));
-      if (pch2opus->monitor) { PetscCall(PetscPrintf(PetscObjectComm((PetscObject)pc), "%" PetscInt_FMT ": ||M*A - I|| NORM%s abs %g rel %g\n", i + 1, NormTypes[norm], (double)err, (double)(err / initerr))); }
+      if (pch2opus->monitor) PetscCall(PetscPrintf(PetscObjectComm((PetscObject)pc), "%" PetscInt_FMT ": ||M*A - I|| NORM%s abs %g rel %g\n", i + 1, NormTypes[norm], (double)err, (double)(err / initerr)));
       if (PetscIsInfOrNanReal(err)) pc->failedreason = PC_SETUP_ERROR;
       if (err < pch2opus->atol || err < pch2opus->rtol * initerr || pc->failedreason) break;
     }

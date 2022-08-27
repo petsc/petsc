@@ -95,7 +95,7 @@ PetscErrorCode GetElasticityMatrix(PetscInt m, Mat *newmat) {
 
   /* Form stiffness for element */
   PetscCall(PetscMalloc1(81, &K));
-  for (i = 0; i < 81; i++) { PetscCall(PetscMalloc1(81, &K[i])); }
+  for (i = 0; i < 81; i++) PetscCall(PetscMalloc1(81, &K[i]));
   PetscCall(Elastic20Stiff(K));
 
   /* Loop over elements and add contribution to stiffness */
@@ -129,7 +129,7 @@ PetscErrorCode GetElasticityMatrix(PetscInt m, Mat *newmat) {
     }
   }
 
-  for (i = 0; i < 81; i++) { PetscCall(PetscFree(K[i])); }
+  for (i = 0; i < 81; i++) PetscCall(PetscFree(K[i]));
   PetscCall(PetscFree(K));
 
   PetscCall(MatAssemblyBegin(mat, MAT_FINAL_ASSEMBLY));

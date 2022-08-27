@@ -22,7 +22,7 @@ typedef struct {
 
 #define IndexSpaceRestore(buf, nrow, ncol, irowm, icolm) \
   do { \
-    if (nrow + ncol > (PetscInt)PETSC_STATIC_ARRAY_LENGTH(buf)) { PetscCall(PetscFree2(irowm, icolm)); } \
+    if (nrow + ncol > (PetscInt)PETSC_STATIC_ARRAY_LENGTH(buf)) PetscCall(PetscFree2(irowm, icolm)); \
   } while (0)
 
 static void BlockIndicesExpand(PetscInt n, const PetscInt idx[], PetscInt bs, PetscInt idxm[]) {

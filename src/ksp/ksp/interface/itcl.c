@@ -337,7 +337,7 @@ PetscErrorCode KSPSetFromOptions(KSP ksp) {
   /*
     Set the type if it was never set.
   */
-  if (!((PetscObject)ksp)->type_name) { PetscCall(KSPSetType(ksp, KSPGMRES)); }
+  if (!((PetscObject)ksp)->type_name) PetscCall(KSPSetType(ksp, KSPGMRES));
 
   PetscCall(KSPResetViewers(ksp));
 
@@ -366,7 +366,7 @@ PetscErrorCode KSPSetFromOptions(KSP ksp) {
     PetscCall(PetscOptionsGetViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view", &ksp->viewer, &ksp->format, &ksp->view));
     flg = PETSC_FALSE;
     PetscCall(PetscOptionsBool("-ksp_converged_reason_view_cancel", "Cancel all the converged reason view functions set using KSPConvergedReasonViewSet", "KSPConvergedReasonViewCancel", PETSC_FALSE, &flg, &set));
-    if (set && flg) { PetscCall(KSPConvergedReasonViewCancel(ksp)); }
+    if (set && flg) PetscCall(KSPConvergedReasonViewCancel(ksp));
     PetscCall(PetscOptionsGetViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_mat", &ksp->viewerMat, &ksp->formatMat, &ksp->viewMat));
     PetscCall(PetscOptionsGetViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_pmat", &ksp->viewerPMat, &ksp->formatPMat, &ksp->viewPMat));
     PetscCall(PetscOptionsGetViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_rhs", &ksp->viewerRhs, &ksp->formatRhs, &ksp->viewRhs));
@@ -514,7 +514,7 @@ PetscErrorCode KSPSetFromOptions(KSP ksp) {
 
   flg = PETSC_FALSE;
   PetscCall(PetscOptionsBool("-ksp_converged_reason_view_cancel", "Cancel all the converged reason view functions set using KSPConvergedReasonViewSet", "KSPConvergedReasonViewCancel", PETSC_FALSE, &flg, &set));
-  if (set && flg) { PetscCall(KSPConvergedReasonViewCancel(ksp)); }
+  if (set && flg) PetscCall(KSPConvergedReasonViewCancel(ksp));
   PetscCall(PetscOptionsGetViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_converged_rate", &ksp->viewerRate, &ksp->formatRate, &ksp->viewRate));
   PetscCall(PetscOptionsGetViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_mat", &ksp->viewerMat, &ksp->formatMat, &ksp->viewMat));
   PetscCall(PetscOptionsGetViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_pmat", &ksp->viewerPMat, &ksp->formatPMat, &ksp->viewPMat));
@@ -591,7 +591,7 @@ PetscErrorCode KSPSetFromOptions(KSP ksp) {
   PetscCall(PetscOptionsEnum("-ksp_pc_side", "KSP preconditioner side", "KSPSetPCSide", PCSides, (PetscEnum)pcside, (PetscEnum *)&pcside, &flg));
   if (flg) PetscCall(KSPSetPCSide(ksp, pcside));
 
-  if (ksp->viewSV || ksp->viewEV) { PetscCall(KSPSetComputeSingularValues(ksp, PETSC_TRUE)); }
+  if (ksp->viewSV || ksp->viewEV) PetscCall(KSPSetComputeSingularValues(ksp, PETSC_TRUE));
 
 #if defined(PETSC_HAVE_SAWS)
   {

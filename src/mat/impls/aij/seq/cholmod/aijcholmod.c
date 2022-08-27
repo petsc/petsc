@@ -30,7 +30,7 @@ static PetscErrorCode MatWrapCholmod_seqaij(Mat A, PetscBool values, cholmod_spa
   ci[i]     = k;
   *aijalloc = PETSC_TRUE;
   *valloc   = vain;
-  if (values) { PetscCall(MatSeqAIJRestoreArrayRead(A, &aa)); }
+  if (values) PetscCall(MatSeqAIJRestoreArrayRead(A, &aa));
 
   PetscCall(PetscMemzero(C, sizeof(*C)));
 

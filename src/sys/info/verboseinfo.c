@@ -271,17 +271,17 @@ PetscErrorCode PetscInfoProcessClass(const char classname[], PetscInt numClassID
   if (opt) {
     PetscCall(PetscStrInList(classname, logList, ',', &pkg));
     if (pkg) {
-      for (i = 0; i < numClassID; ++i) { PetscCall(PetscInfoDeactivateClass(classIDs[i])); }
+      for (i = 0; i < numClassID; ++i) PetscCall(PetscInfoDeactivateClass(classIDs[i]));
     }
   }
   PetscCall(PetscInfoGetClass(classname, &found));
   if ((found && exclude) || (!found && !exclude)) {
     if (PetscInfoNumClasses > 0) {
       /* Check if -info was called empty */
-      for (i = 0; i < numClassID; ++i) { PetscCall(PetscInfoDeactivateClass(classIDs[i])); }
+      for (i = 0; i < numClassID; ++i) PetscCall(PetscInfoDeactivateClass(classIDs[i]));
     }
   } else {
-    for (i = 0; i < numClassID; ++i) { PetscCall(PetscInfoActivateClass(classIDs[i])); }
+    for (i = 0; i < numClassID; ++i) PetscCall(PetscInfoActivateClass(classIDs[i]));
   }
   PetscFunctionReturn(0);
 }

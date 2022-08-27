@@ -64,10 +64,10 @@ int main(int argc, char **argv) {
   /* Function evaluation */
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-useLaxWendroff", &useLaxWendroff, NULL));
   if (useLaxWendroff) {
-    if (rank == 0) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "... Use Lax-Wendroff finite volume\n")); }
+    if (rank == 0) PetscCall(PetscPrintf(PETSC_COMM_SELF, "... Use Lax-Wendroff finite volume\n"));
     PetscCall(TSSetIFunction(ts, NULL, IFunction_LaxWendroff, &appctx));
   } else {
-    if (rank == 0) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "... Use Lax-LaxFriedrichs finite difference\n")); }
+    if (rank == 0) PetscCall(PetscPrintf(PETSC_COMM_SELF, "... Use Lax-LaxFriedrichs finite difference\n"));
     PetscCall(TSSetIFunction(ts, NULL, IFunction_LaxFriedrichs, &appctx));
   }
 

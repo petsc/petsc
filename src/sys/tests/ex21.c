@@ -18,16 +18,16 @@ int main(int argc, char **argv) {
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(PetscProcessTree(n, mask, parentId, &Nlevels, &Level, &Levelcnt, &Idbylevel, &Column));
   for (i = 0; i < n; i++) {
-    if (!mask[i]) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, " %" PetscInt_FMT " ", Level[i])); }
+    if (!mask[i]) PetscCall(PetscPrintf(PETSC_COMM_WORLD, " %" PetscInt_FMT " ", Level[i]));
   }
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\nNumber of levels %" PetscInt_FMT "\n", Nlevels));
   for (i = 0; i < Nlevels; i++) {
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\nLevel %" PetscInt_FMT " ", i));
-    for (j = 0; j < Levelcnt[i]; j++) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%" PetscInt_FMT " ", Idbylevel[cnt++])); }
+    for (j = 0; j < Levelcnt[i]; j++) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%" PetscInt_FMT " ", Idbylevel[cnt++]));
   }
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\nColumn of each node"));
   for (i = 0; i < n; i++) {
-    if (!mask[i]) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, " %" PetscInt_FMT " ", Column[i])); }
+    if (!mask[i]) PetscCall(PetscPrintf(PETSC_COMM_WORLD, " %" PetscInt_FMT " ", Column[i]));
   }
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n"));
   PetscCall(PetscFree(Level));
