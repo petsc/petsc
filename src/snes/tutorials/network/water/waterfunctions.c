@@ -164,12 +164,12 @@ PetscErrorCode GetListofEdges_Water(WATERDATA *water, PetscInt *edgelist) {
       pipe  = &water->edge[i].pipe;
       node1 = pipe->node1;
       node2 = pipe->node2;
-      if (netview) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "edge %" PetscInt_FMT ", pipe v[%" PetscInt_FMT "] -> v[%" PetscInt_FMT "]\n", i, node1, node2)); }
+      if (netview) PetscCall(PetscPrintf(PETSC_COMM_SELF, "edge %" PetscInt_FMT ", pipe v[%" PetscInt_FMT "] -> v[%" PetscInt_FMT "]\n", i, node1, node2));
     } else {
       pump  = &water->edge[i].pump;
       node1 = pump->node1;
       node2 = pump->node2;
-      if (netview) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "edge %" PetscInt_FMT ", pump v[%" PetscInt_FMT "] -> v[%" PetscInt_FMT "]\n", i, node1, node2)); }
+      if (netview) PetscCall(PetscPrintf(PETSC_COMM_SELF, "edge %" PetscInt_FMT ", pump v[%" PetscInt_FMT "] -> v[%" PetscInt_FMT "]\n", i, node1, node2));
     }
 
     for (j = 0; j < water->nvertex; j++) {

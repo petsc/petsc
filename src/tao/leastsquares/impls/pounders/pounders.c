@@ -450,7 +450,7 @@ static PetscErrorCode addpoint(Tao tao, TAO_POUNDERS *mfqP, PetscInt index) {
   PetscCall(VecAYPX(mfqP->Xhist[mfqP->nHist], mfqP->delta, mfqP->Xhist[mfqP->minindex]));
 
   /* Project into feasible region */
-  if (tao->XU && tao->XL) { PetscCall(VecMedian(mfqP->Xhist[mfqP->nHist], tao->XL, tao->XU, mfqP->Xhist[mfqP->nHist])); }
+  if (tao->XU && tao->XL) PetscCall(VecMedian(mfqP->Xhist[mfqP->nHist], tao->XL, tao->XU, mfqP->Xhist[mfqP->nHist]));
 
   /* Compute value of new vector */
   PetscCall(VecDuplicate(mfqP->Fhist[0], &mfqP->Fhist[mfqP->nHist]));
@@ -495,9 +495,9 @@ static PetscErrorCode modelimprove(Tao tao, TAO_POUNDERS *mfqP, PetscInt addallp
       minindex = i;
       minvalue = mfqP->work[i];
     }
-    if (addallpoints != 0) { PetscCall(addpoint(tao, mfqP, i)); }
+    if (addallpoints != 0) PetscCall(addpoint(tao, mfqP, i));
   }
-  if (!addallpoints) { PetscCall(addpoint(tao, mfqP, minindex)); }
+  if (!addallpoints) PetscCall(addpoint(tao, mfqP, minindex));
   PetscFunctionReturn(0);
 }
 

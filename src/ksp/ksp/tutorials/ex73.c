@@ -86,7 +86,7 @@ PetscErrorCode CommHierarchyCreate(MPI_Comm comm, PetscInt n, PetscInt number[],
   PetscCall(CommCoarsen(comm, number[n - 1], &pscommlist[n - 1]));
   for (k = n - 2; k >= 0; k--) {
     MPI_Comm comm_k = PetscSubcommChild(pscommlist[k + 1]);
-    if (pscommlist[k + 1]->color == 0) { PetscCall(CommCoarsen(comm_k, number[k], &pscommlist[k])); }
+    if (pscommlist[k + 1]->color == 0) PetscCall(CommCoarsen(comm_k, number[k], &pscommlist[k]));
   }
 
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-view_hierarchy", &view_hierarchy, NULL));
@@ -404,7 +404,7 @@ PetscErrorCode DMShellDASetUp_TelescopeDMScatter(DM dmf_shell, DM dmc_shell) {
 
   PetscFunctionBeginUser;
   PetscCall(DMShellGetContext(dmf_shell, &dmf));
-  if (dmc_shell) { PetscCall(DMShellGetContext(dmc_shell, &dmc)); }
+  if (dmc_shell) PetscCall(DMShellGetContext(dmc_shell, &dmc));
   PetscCall(DMDACreatePermutation_2d(dmc, dmf, &P));
   PetscCall(PetscObjectCompose((PetscObject)dmf, "P", (PetscObject)P));
   PetscCall(PCTelescopeSetUp_dmda_scatters(dmf, dmc));
@@ -489,7 +489,7 @@ PetscErrorCode DMFieldScatter_ShellDA(DM dmf_shell, Vec x, ScatterMode mode, DM 
 
   PetscFunctionBeginUser;
   PetscCall(DMShellGetContext(dmf_shell, &dmf));
-  if (dmc_shell) { PetscCall(DMShellGetContext(dmc_shell, &dmc)); }
+  if (dmc_shell) PetscCall(DMShellGetContext(dmc_shell, &dmc));
   if (mode == SCATTER_FORWARD) {
     PetscCall(DMShellDAFieldScatter_Forward(dmf, x, dmc, xc));
   } else if (mode == SCATTER_REVERSE) {
@@ -502,7 +502,7 @@ PetscErrorCode DMStateScatter_ShellDA(DM dmf_shell, ScatterMode mode, DM dmc_she
   PetscMPIInt size_f = 0, size_c = 0;
   PetscFunctionBeginUser;
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)dmf_shell), &size_f));
-  if (dmc_shell) { PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)dmc_shell), &size_c)); }
+  if (dmc_shell) PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)dmc_shell), &size_c));
   if (mode == SCATTER_FORWARD) {
     PetscCall(PetscPrintf(PetscObjectComm((PetscObject)dmf_shell), "User supplied state scatter (fine [size %d]-> coarse [size %d])\n", (int)size_f, (int)size_c));
   } else if (mode == SCATTER_REVERSE) {
@@ -640,13 +640,13 @@ PetscErrorCode HierarchyCreate(PetscInt *_nd, PetscInt *_nref, MPI_Comm **_cl, D
   for (k = 0; k < ncoarsen; k++) {
     if (pscommlist[k]) {
       MPI_Comm comm_k = PetscSubcommChild(pscommlist[k]);
-      if (pscommlist[k]->color == 0) { PetscCall(PetscCommDuplicate(comm_k, &commlist[k], NULL)); }
+      if (pscommlist[k]->color == 0) PetscCall(PetscCommDuplicate(comm_k, &commlist[k], NULL));
     }
   }
   PetscCall(PetscCommDuplicate(PETSC_COMM_WORLD, &commlist[ndecomps - 1], NULL));
 
   for (k = 0; k < ncoarsen; k++) {
-    if (pscommlist[k]) { PetscCall(PetscSubcommDestroy(&pscommlist[k])); }
+    if (pscommlist[k]) PetscCall(PetscSubcommDestroy(&pscommlist[k]));
   }
 
   nx = 17;
@@ -716,7 +716,7 @@ PetscErrorCode HierarchyCreate(PetscInt *_nd, PetscInt *_nref, MPI_Comm **_cl, D
   }
 
   PetscCall(PetscFree(number));
-  for (k = 0; k < ncoarsen; k++) { PetscCall(PetscSubcommDestroy(&pscommlist[k])); }
+  for (k = 0; k < ncoarsen; k++) PetscCall(PetscSubcommDestroy(&pscommlist[k]));
   PetscCall(PetscFree(pscommlist));
 
   if (_nd) { *_nd = ndecomps; }
@@ -725,7 +725,7 @@ PetscErrorCode HierarchyCreate(PetscInt *_nd, PetscInt *_nref, MPI_Comm **_cl, D
     *_cl = commlist;
   } else {
     for (k = 0; k < ndecomps; k++) {
-      if (commlist[k] != MPI_COMM_NULL) { PetscCall(PetscCommDestroy(&commlist[k])); }
+      if (commlist[k] != MPI_COMM_NULL) PetscCall(PetscCommDestroy(&commlist[k]));
     }
     PetscCall(PetscFree(commlist));
   }
@@ -770,13 +770,13 @@ PetscErrorCode test_hierarchy(void) {
 
   /* destroy DMs */
   for (k = 0; k < nd * nref; k++) {
-    if (dms[k]) { PetscCall(DMDestroyShellDMDA(&dms[k])); }
+    if (dms[k]) PetscCall(DMDestroyShellDMDA(&dms[k]));
   }
   PetscCall(PetscFree(dms));
 
   /* destroy communicators */
   for (k = 0; k < nd; k++) {
-    if (comms[k] != MPI_COMM_NULL) { PetscCall(PetscCommDestroy(&comms[k])); }
+    if (comms[k] != MPI_COMM_NULL) PetscCall(PetscCommDestroy(&comms[k]));
   }
   PetscCall(PetscFree(comms));
   PetscFunctionReturn(0);
@@ -811,7 +811,7 @@ PetscErrorCode test_basic(void) {
 
   PetscCall(KSPSolve(ksp, b, x));
 
-  if (dmC) { PetscCall(DMDestroyShellDMDA(&dmC)); }
+  if (dmC) PetscCall(DMDestroyShellDMDA(&dmC));
   PetscCall(DMDestroyShellDMDA(&dmF));
   PetscCall(KSPDestroy(&ksp));
   PetscCall(MatDestroy(&A));
@@ -868,7 +868,7 @@ PetscErrorCode test_mg(void) {
   }
 
   for (k = 0; k < nd * nref; k++) {
-    if (dms[k]) { PetscCall(DMDestroyShellDMDA(&dms[k])); }
+    if (dms[k]) PetscCall(DMDestroyShellDMDA(&dms[k]));
   }
   PetscCall(PetscFree(dms));
 
@@ -878,7 +878,7 @@ PetscErrorCode test_mg(void) {
   PetscCall(VecDestroy(&x));
 
   for (k = 0; k < nd; k++) {
-    if (comms[k] != MPI_COMM_NULL) { PetscCall(PetscCommDestroy(&comms[k])); }
+    if (comms[k] != MPI_COMM_NULL) PetscCall(PetscCommDestroy(&comms[k]));
   }
   PetscCall(PetscFree(comms));
   PetscFunctionReturn(0);

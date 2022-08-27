@@ -116,7 +116,7 @@ PetscErrorCode KSPView(KSP ksp, PetscViewer viewer) {
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  if (!viewer) { PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)ksp), &viewer)); }
+  if (!viewer) PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)ksp), &viewer));
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscCheckSameComm(ksp, 1, viewer, 2);
 
@@ -203,7 +203,7 @@ PetscErrorCode KSPView(KSP ksp, PetscViewer viewer) {
       PetscCall(PetscObjectViewSAWs((PetscObject)ksp, viewer));
       PetscCall(PetscSNPrintf(dir, 1024, "/PETSc/Objects/%s/its", name));
       PetscCallSAWs(SAWs_Register, (dir, &ksp->its, 1, SAWs_READ, SAWs_INT));
-      if (!ksp->res_hist) { PetscCall(KSPSetResidualHistory(ksp, NULL, PETSC_DECIDE, PETSC_TRUE)); }
+      if (!ksp->res_hist) PetscCall(KSPSetResidualHistory(ksp, NULL, PETSC_DECIDE, PETSC_TRUE));
       PetscCall(PetscSNPrintf(dir, 1024, "/PETSc/Objects/%s/res_hist", name));
       PetscCallSAWs(SAWs_Register, (dir, ksp->res_hist, 10, SAWs_READ, SAWs_DOUBLE));
     }

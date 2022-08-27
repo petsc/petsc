@@ -114,7 +114,7 @@ PetscErrorCode PetscShmCommGet(MPI_Comm globcomm, PetscShmComm *pshmcomm) {
   PetscCallMPI(MPI_Group_free(&globgroup));
   PetscCallMPI(MPI_Group_free(&shmgroup));
 
-  for (i = 0; i < (*pshmcomm)->shmsize; i++) { PetscCall(PetscInfo(NULL, "Shared memory rank %d global rank %d\n", i, (*pshmcomm)->globranks[i])); }
+  for (i = 0; i < (*pshmcomm)->shmsize; i++) PetscCall(PetscInfo(NULL, "Shared memory rank %d global rank %d\n", i, (*pshmcomm)->globranks[i]));
   PetscCallMPI(MPI_Comm_set_attr(globcomm, Petsc_ShmComm_keyval, *pshmcomm));
   PetscFunctionReturn(0);
 #else

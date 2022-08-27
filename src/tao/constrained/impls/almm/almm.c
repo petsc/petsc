@@ -39,7 +39,7 @@ static PetscErrorCode TaoSolve_ALMM(Tao tao) {
   case TAO_ALMM_CLASSIC: auglag->mu = auglag->mu0; break;
   case TAO_ALMM_PHR:
     auglag->cenorm = 0.0;
-    if (tao->eq_constrained) { PetscCall(VecDot(auglag->Ce, auglag->Ce, &auglag->cenorm)); }
+    if (tao->eq_constrained) PetscCall(VecDot(auglag->Ce, auglag->Ce, &auglag->cenorm));
     auglag->cinorm = 0.0;
     if (tao->ineq_constrained) {
       PetscCall(VecCopy(auglag->Ci, auglag->Ciwork));
@@ -65,7 +65,7 @@ static PetscErrorCode TaoSolve_ALMM(Tao tao) {
     PetscCall(TaoSolve(auglag->subsolver));
     PetscCall(TaoGetConvergedReason(auglag->subsolver, &reason));
     tao->ksp_its += auglag->subsolver->ksp_its;
-    if (reason != TAO_CONVERGED_GATOL) { PetscCall(PetscInfo(tao, "Subsolver failed to converge, reason: %s\n", TaoConvergedReasons[reason])); }
+    if (reason != TAO_CONVERGED_GATOL) PetscCall(PetscInfo(tao, "Subsolver failed to converge, reason: %s\n", TaoConvergedReasons[reason]));
     /* evaluate solution and test convergence */
     PetscCall((*auglag->sub_obj)(tao));
     PetscCall(TaoALMMComputeOptimalityNorms_Private(tao));
@@ -155,7 +155,7 @@ static PetscErrorCode TaoSetUp_ALMM(Tao tao) {
     if (!auglag->Ye) { /* equality multipliers */
       PetscCall(VecDuplicate(auglag->Ce, &auglag->Ye));
     }
-    if (!auglag->Cework) { PetscCall(VecDuplicate(auglag->Ce, &auglag->Cework)); }
+    if (!auglag->Cework) PetscCall(VecDuplicate(auglag->Ce, &auglag->Cework));
   }
   if (tao->ineq_constrained) {
     auglag->Ci = tao->constraints_inequality;
@@ -163,7 +163,7 @@ static PetscErrorCode TaoSetUp_ALMM(Tao tao) {
     if (!auglag->Yi) { /* inequality multipliers */
       PetscCall(VecDuplicate(auglag->Ci, &auglag->Yi));
     }
-    if (!auglag->Ciwork) { PetscCall(VecDuplicate(auglag->Ci, &auglag->Ciwork)); }
+    if (!auglag->Ciwork) PetscCall(VecDuplicate(auglag->Ci, &auglag->Ciwork));
     if (!auglag->Cizero) {
       PetscCall(VecDuplicate(auglag->Ci, &auglag->Cizero));
       PetscCall(VecZeroEntries(auglag->Cizero));
@@ -195,7 +195,7 @@ static PetscErrorCode TaoSetUp_ALMM(Tao tao) {
         PetscCall(VecScatterCreate(auglag->Y, auglag->Yis[0], auglag->Ye, NULL, &auglag->Yscatter[0]));
         PetscCall(VecScatterCreate(auglag->Y, auglag->Yis[1], auglag->Yi, NULL, &auglag->Yscatter[1]));
       }
-      if (!auglag->C) { PetscCall(VecDuplicate(auglag->Y, &auglag->C)); }
+      if (!auglag->C) PetscCall(VecDuplicate(auglag->Y, &auglag->C));
     } else {
       if (!auglag->C) { auglag->C = auglag->Ci; }
       if (!auglag->Y) { auglag->Y = auglag->Yi; }
@@ -240,8 +240,8 @@ static PetscErrorCode TaoSetUp_ALMM(Tao tao) {
       PetscCall(PetscInfo(tao, "TAOLMVM detected for bound-constrained problem, switching to TAOBQNLS instead."));
     }
     /* create lower and upper bound clone vectors for subsolver */
-    if (!auglag->PL) { PetscCall(VecDuplicate(auglag->P, &auglag->PL)); }
-    if (!auglag->PU) { PetscCall(VecDuplicate(auglag->P, &auglag->PU)); }
+    if (!auglag->PL) PetscCall(VecDuplicate(auglag->P, &auglag->PL));
+    if (!auglag->PU) PetscCall(VecDuplicate(auglag->P, &auglag->PU));
     if (tao->ineq_constrained) {
       /* create lower and upper bounds for slack, set lower to 0 */
       PetscCall(VecDuplicate(auglag->Ci, &SL));
@@ -522,7 +522,7 @@ static PetscErrorCode TaoALMMComputeOptimalityNorms_Private(Tao tao) {
   if (auglag->type == TAO_ALMM_PHR) {
     PetscCall(VecNorm(auglag->LgradX, NORM_INFINITY, &auglag->gnorm));
     auglag->cenorm = 0.0;
-    if (tao->eq_constrained) { PetscCall(VecNorm(auglag->Ce, NORM_INFINITY, &auglag->cenorm)); }
+    if (tao->eq_constrained) PetscCall(VecNorm(auglag->Ce, NORM_INFINITY, &auglag->cenorm));
     auglag->cinorm = 0.0;
     if (tao->ineq_constrained) {
       PetscCall(VecCopy(auglag->Yi, auglag->Ciwork));

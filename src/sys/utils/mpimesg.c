@@ -101,7 +101,7 @@ PetscErrorCode PetscGatherMessageLengths(MPI_Comm comm, PetscMPIInt nsends, Pets
 
   /* Post the Irecv to get the message length-info */
   PetscCall(PetscMalloc1(nrecvs, olengths));
-  for (i = 0; i < nrecvs; i++) { PetscCallMPI(MPI_Irecv((*olengths) + i, 1, MPI_INT, MPI_ANY_SOURCE, tag, comm, r_waits + i)); }
+  for (i = 0; i < nrecvs; i++) PetscCallMPI(MPI_Irecv((*olengths) + i, 1, MPI_INT, MPI_ANY_SOURCE, tag, comm, r_waits + i));
 
   /* Post the Isends with the message length-info */
   for (i = 0, j = 0; i < size; ++i) {
@@ -177,7 +177,7 @@ PetscErrorCode PetscGatherMessageLengths_Private(MPI_Comm comm, PetscMPIInt nsen
 
   /* Post the Irecv to get the message length-info */
   PetscCall(PetscMalloc1(nrecvs, olengths));
-  for (i = 0; i < nrecvs; i++) { PetscCallMPI(MPI_Irecv((*olengths) + i, 1, MPIU_INT, MPI_ANY_SOURCE, tag, comm, r_waits + i)); }
+  for (i = 0; i < nrecvs; i++) PetscCallMPI(MPI_Irecv((*olengths) + i, 1, MPIU_INT, MPI_ANY_SOURCE, tag, comm, r_waits + i));
 
   /* Post the Isends with the message length-info */
   for (i = 0, j = 0; i < size; ++i) {
@@ -301,7 +301,7 @@ PetscErrorCode PetscPostIrecvInt(MPI_Comm comm, PetscMPIInt tag, PetscMPIInt nre
 
   /* Post the receives */
   PetscCall(PetscMalloc1(nrecvs, &r_waits_t));
-  for (i = 0; i < nrecvs; ++i) { PetscCallMPI(MPI_Irecv(rbuf_t[i], olengths[i], MPIU_INT, onodes[i], tag, comm, r_waits_t + i)); }
+  for (i = 0; i < nrecvs; ++i) PetscCallMPI(MPI_Irecv(rbuf_t[i], olengths[i], MPIU_INT, onodes[i], tag, comm, r_waits_t + i));
 
   *rbuf    = rbuf_t;
   *r_waits = r_waits_t;
@@ -325,7 +325,7 @@ PetscErrorCode PetscPostIrecvScalar(MPI_Comm comm, PetscMPIInt tag, PetscMPIInt 
 
   /* Post the receives */
   PetscCall(PetscMalloc1(nrecvs, &r_waits_t));
-  for (i = 0; i < nrecvs; ++i) { PetscCallMPI(MPI_Irecv(rbuf_t[i], olengths[i], MPIU_SCALAR, onodes[i], tag, comm, r_waits_t + i)); }
+  for (i = 0; i < nrecvs; ++i) PetscCallMPI(MPI_Irecv(rbuf_t[i], olengths[i], MPIU_SCALAR, onodes[i], tag, comm, r_waits_t + i));
 
   *rbuf    = rbuf_t;
   *r_waits = r_waits_t;

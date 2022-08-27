@@ -96,7 +96,7 @@ static PetscErrorCode CreateSimplex_2D(MPI_Comm comm, DM *newdm) {
   PetscCall(DMSetType(dm, DMPLEX));
   PetscCall(DMSetDimension(dm, dim));
   PetscCall(DMPlexCreateFromDAG(dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords));
-  for (p = 0; p < 4; ++p) { PetscCall(DMSetLabelValue(dm, "marker", markerPoints[p * 2], markerPoints[p * 2 + 1])); }
+  for (p = 0; p < 4; ++p) PetscCall(DMSetLabelValue(dm, "marker", markerPoints[p * 2], markerPoints[p * 2 + 1]));
   *newdm = dm;
   PetscFunctionReturn(0);
 }
@@ -117,7 +117,7 @@ static PetscErrorCode CreateSimplex_3D(MPI_Comm comm, DM *newdm) {
   PetscCall(DMSetType(dm, DMPLEX));
   PetscCall(DMSetDimension(dm, dim));
   PetscCall(DMPlexCreateFromDAG(dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords));
-  for (p = 0; p < 5; ++p) { PetscCall(DMSetLabelValue(dm, "marker", markerPoints[p * 2], markerPoints[p * 2 + 1])); }
+  for (p = 0; p < 5; ++p) PetscCall(DMSetLabelValue(dm, "marker", markerPoints[p * 2], markerPoints[p * 2 + 1]));
   *newdm = dm;
   PetscFunctionReturn(0);
 }
@@ -138,7 +138,7 @@ static PetscErrorCode CreateQuad_2D(MPI_Comm comm, DM *newdm) {
   PetscCall(DMSetType(dm, DMPLEX));
   PetscCall(DMSetDimension(dm, dim));
   PetscCall(DMPlexCreateFromDAG(dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords));
-  for (p = 0; p < 6; ++p) { PetscCall(DMSetLabelValue(dm, "marker", markerPoints[p * 2], markerPoints[p * 2 + 1])); }
+  for (p = 0; p < 6; ++p) PetscCall(DMSetLabelValue(dm, "marker", markerPoints[p * 2], markerPoints[p * 2 + 1]));
   *newdm = dm;
   PetscFunctionReturn(0);
 }
@@ -159,7 +159,7 @@ static PetscErrorCode CreateHex_3D(MPI_Comm comm, DM *newdm) {
   PetscCall(DMSetType(dm, DMPLEX));
   PetscCall(DMSetDimension(dm, dim));
   PetscCall(DMPlexCreateFromDAG(dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords));
-  for (p = 0; p < 12; ++p) { PetscCall(DMSetLabelValue(dm, "marker", markerPoints[p * 2], markerPoints[p * 2 + 1])); }
+  for (p = 0; p < 12; ++p) PetscCall(DMSetLabelValue(dm, "marker", markerPoints[p * 2], markerPoints[p * 2 + 1]));
   *newdm = dm;
   PetscFunctionReturn(0);
 }

@@ -238,7 +238,7 @@ PetscErrorCode PetscLayoutSetUp(PetscLayout map) {
   PetscCall(PetscSplitOwnership(map->comm, &map->n, &map->N));
   map->n = map->n * PetscAbs(map->bs);
   map->N = map->N * PetscAbs(map->bs);
-  if (!map->range) { PetscCall(PetscMalloc1(map->size + 1, &map->range)); }
+  if (!map->range) PetscCall(PetscMalloc1(map->size + 1, &map->range));
   PetscCallMPI(MPI_Allgather(&map->n, 1, MPIU_INT, map->range + 1, 1, MPIU_INT, map->comm));
 
   map->range[0] = 0;
@@ -474,7 +474,7 @@ PetscErrorCode PetscLayoutSetBlockSize(PetscLayout map, PetscInt bs) {
     PetscInt obs;
 
     PetscCall(ISLocalToGlobalMappingGetBlockSize(map->mapping, &obs));
-    if (obs > 1) { PetscCall(ISLocalToGlobalMappingSetBlockSize(map->mapping, bs)); }
+    if (obs > 1) PetscCall(ISLocalToGlobalMappingSetBlockSize(map->mapping, bs));
   }
   map->bs = bs;
   PetscFunctionReturn(0);
@@ -584,6 +584,6 @@ PetscErrorCode PetscLayoutGetRanges(PetscLayout map, const PetscInt *range[]) {
 PetscErrorCode PetscLayoutCompare(PetscLayout mapa, PetscLayout mapb, PetscBool *congruent) {
   PetscFunctionBegin;
   *congruent = PETSC_FALSE;
-  if (mapa->N == mapb->N && mapa->range && mapb->range && mapa->size == mapb->size) { PetscCall(PetscArraycmp(mapa->range, mapb->range, mapa->size + 1, congruent)); }
+  if (mapa->N == mapb->N && mapa->range && mapb->range && mapa->size == mapb->size) PetscCall(PetscArraycmp(mapa->range, mapb->range, mapa->size + 1, congruent));
   PetscFunctionReturn(0);
 }

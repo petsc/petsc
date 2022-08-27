@@ -68,7 +68,7 @@ int main(int argc, char **argv) {
   PetscCall(VecScatterBegin(ctx, x, y, ADD_VALUES, SCATTER_REVERSE));
   PetscCall(VecScatterEnd(ctx, x, y, ADD_VALUES, SCATTER_REVERSE));
   PetscCall(PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD, PETSC_COMM_SELF, &sviewer));
-  if (rank == 1) { PetscCall(VecView(y, sviewer)); }
+  if (rank == 1) PetscCall(VecView(y, sviewer));
   PetscCall(PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD, PETSC_COMM_SELF, &sviewer));
 
   /* Free spaces */

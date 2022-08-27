@@ -74,7 +74,7 @@ PetscErrorCode DMMoabGenerateHierarchy(DM dm, PetscInt nlevels, PetscInt *ldegre
   }
 
   hsets.clear();
-  if (!ldegrees) { PetscCall(PetscFree(pdegrees)); }
+  if (!ldegrees) PetscCall(PetscFree(pdegrees));
   PetscFunctionReturn(0);
 }
 
@@ -100,7 +100,7 @@ PETSC_EXTERN PetscErrorCode DMRefineHierarchy_Moab(DM dm, PetscInt nlevels, DM d
   PetscFunctionBegin;
 
   PetscCall(DMRefine(dm, PetscObjectComm((PetscObject)dm), &dmf[0]));
-  for (i = 1; i < nlevels; i++) { PetscCall(DMRefine(dmf[i - 1], PetscObjectComm((PetscObject)dm), &dmf[i])); }
+  for (i = 1; i < nlevels; i++) PetscCall(DMRefine(dmf[i - 1], PetscObjectComm((PetscObject)dm), &dmf[i]));
   PetscFunctionReturn(0);
 }
 
@@ -126,7 +126,7 @@ PETSC_EXTERN PetscErrorCode DMCoarsenHierarchy_Moab(DM dm, PetscInt nlevels, DM 
   PetscFunctionBegin;
 
   PetscCall(DMCoarsen(dm, PetscObjectComm((PetscObject)dm), &dmc[0]));
-  for (i = 1; i < nlevels; i++) { PetscCall(DMCoarsen(dmc[i - 1], PetscObjectComm((PetscObject)dm), &dmc[i])); }
+  for (i = 1; i < nlevels; i++) PetscCall(DMCoarsen(dmc[i - 1], PetscObjectComm((PetscObject)dm), &dmc[i]));
   PetscFunctionReturn(0);
 }
 
@@ -472,7 +472,7 @@ static PetscErrorCode DMMoab_UMR_Private(DM dm, MPI_Comm comm, PetscBool refine,
   PetscCall(DMSetMatType(dm2, dm->mattype));
   PetscCall(DMSetVecType(dm2, dm->vectype));
   dd2->numFields = dmb->numFields;
-  if (dmb->numFields) { PetscCall(DMMoabSetFieldNames(dm2, dmb->numFields, dmb->fieldNames)); }
+  if (dmb->numFields) PetscCall(DMMoabSetFieldNames(dm2, dmb->numFields, dmb->fieldNames));
 
   PetscCall(DMSetFromOptions(dm2));
 

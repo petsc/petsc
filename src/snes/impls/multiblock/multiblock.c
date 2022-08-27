@@ -440,7 +440,7 @@ static PetscErrorCode SNESView_Multiblock(SNES snes, PetscViewer viewer) {
         PetscCall(PetscViewerASCIIPrintf(viewer, "  Block %s Fields ", blocks->name));
         PetscCall(PetscViewerASCIIUseTabs(viewer, PETSC_FALSE));
         for (j = 0; j < blocks->nfields; ++j) {
-          if (j > 0) { PetscCall(PetscViewerASCIIPrintf(viewer, ",")); }
+          if (j > 0) PetscCall(PetscViewerASCIIPrintf(viewer, ","));
           PetscCall(PetscViewerASCIIPrintf(viewer, " %" PetscInt_FMT, blocks->fields[j]));
         }
         PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));

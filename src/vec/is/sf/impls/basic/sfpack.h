@@ -333,7 +333,7 @@ static inline PetscErrorCode PetscSFLinkSyncStreamBeforeCallMPI(PetscSF sf, Pets
     buflen = sf->leafbuflen[PETSCSF_REMOTE];
   }
 
-  if (PetscMemTypeDevice(mtype) && buflen) { PetscCall((*link->SyncStream)(link)); }
+  if (PetscMemTypeDevice(mtype) && buflen) PetscCall((*link->SyncStream)(link));
   PetscFunctionReturn(0);
 }
 #else /* Host only */

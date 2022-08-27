@@ -484,7 +484,7 @@ PetscErrorCode DMFieldCreateFEGeom(DMField field, IS pointIS, PetscQuadrature qu
   PetscCall(PetscFEGeomComplete(g));
   PetscCall(DMFieldGetDegree(field, pointIS, NULL, &maxDegree));
   g->isAffine = (maxDegree <= 1) ? PETSC_TRUE : PETSC_FALSE;
-  if (faceData) { PetscCall((*field->ops->computeFaceData)(field, pointIS, quad, g)); }
+  if (faceData) PetscCall((*field->ops->computeFaceData)(field, pointIS, quad, g));
   *geom = g;
   PetscFunctionReturn(0);
 }

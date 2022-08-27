@@ -560,7 +560,7 @@ static PetscErrorCode PetscDrawRestoreSingleton_X(PetscDraw draw, PetscDraw *sdr
     if (!isdrawx) goto finally;
     PetscCall(PetscObjectTypeCompare((PetscObject)(*sdraw)->popup, PETSC_DRAW_X, &isdrawx));
     if (!isdrawx) goto finally;
-    if (sXwin->win == pXwin->win) { PetscCall(PetscDrawRestoreSingleton(draw->popup, &(*sdraw)->popup)); }
+    if (sXwin->win == pXwin->win) PetscCall(PetscDrawRestoreSingleton(draw->popup, &(*sdraw)->popup));
   }
 finally:
   PetscCall(PetscDrawDestroy(sdraw));

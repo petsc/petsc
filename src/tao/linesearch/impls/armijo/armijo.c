@@ -53,8 +53,8 @@ static PetscErrorCode TaoLineSearchView_Armijo(TaoLineSearch ls, PetscViewer pv)
   PetscCall(PetscObjectTypeCompare((PetscObject)pv, PETSCVIEWERASCII, &isascii));
   if (isascii) {
     PetscCall(PetscViewerASCIIPrintf(pv, "  Armijo linesearch"));
-    if (armP->nondescending) { PetscCall(PetscViewerASCIIPrintf(pv, " (nondescending)")); }
-    if (ls->bounded) { PetscCall(PetscViewerASCIIPrintf(pv, " (projected)")); }
+    if (armP->nondescending) PetscCall(PetscViewerASCIIPrintf(pv, " (nondescending)"));
+    if (ls->bounded) PetscCall(PetscViewerASCIIPrintf(pv, " (projected)"));
     PetscCall(PetscViewerASCIIPrintf(pv, ": alpha=%g beta=%g ", (double)armP->alpha, (double)armP->beta));
     PetscCall(PetscViewerASCIIPrintf(pv, "sigma=%g ", (double)armP->sigma));
     PetscCall(PetscViewerASCIIPrintf(pv, "memsize=%" PetscInt_FMT "\n", armP->memorySize));
@@ -137,7 +137,7 @@ static PetscErrorCode TaoLineSearchApply_Armijo(TaoLineSearch ls, Vec x, PetscRe
   /* Check to see of the memory has been allocated.  If not, allocate
      the historical array and populate it with the initial function
      values. */
-  if (!armP->memory) { PetscCall(PetscMalloc1(armP->memorySize, &armP->memory)); }
+  if (!armP->memory) PetscCall(PetscMalloc1(armP->memorySize, &armP->memory));
 
   if (!armP->memorySetup) {
     for (i = 0; i < armP->memorySize; i++) { armP->memory[i] = armP->alpha * (*f); }
@@ -243,7 +243,7 @@ static PetscErrorCode TaoLineSearchApply_Armijo(TaoLineSearch ls, Vec x, PetscRe
 
   /* Update iterate and compute gradient */
   PetscCall(VecCopy(armP->work, x));
-  if (!g_computed) { PetscCall(TaoLineSearchComputeGradient(ls, x, g)); }
+  if (!g_computed) PetscCall(TaoLineSearchComputeGradient(ls, x, g));
   PetscCall(PetscInfo(ls, "%" PetscInt_FMT " function evals in line search, step = %g\n", ls->nfeval, (double)ls->step));
   PetscFunctionReturn(0);
 }

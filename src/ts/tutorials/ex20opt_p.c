@@ -419,7 +419,7 @@ int main(int argc, char **argv) {
   PetscCall(TSSetMaxTime(user.ts, user.ftime));
   PetscCall(TSSetExactFinalTime(user.ts, TS_EXACTFINALTIME_MATCHSTEP));
 
-  if (monitor) { PetscCall(TSMonitorSet(user.ts, Monitor, &user, NULL)); }
+  if (monitor) PetscCall(TSMonitorSet(user.ts, Monitor, &user, NULL));
 
   /* Set ODE initial conditions */
   PetscCall(VecGetArray(user.U, &x_ptr));

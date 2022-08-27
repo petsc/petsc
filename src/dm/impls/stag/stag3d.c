@@ -173,7 +173,7 @@ PETSC_INTERN PetscErrorCode DMStagSetUniformCoordinatesExplicit_3d(DM dm, PetscR
   }
   PetscCall(DMCreateLocalVector(dmCoord, &coordLocal));
   PetscCall(DMStagVecGetArray(dmCoord, coordLocal, &arr));
-  if (stagCoord->dof[0]) { PetscCall(DMStagGetLocationSlot(dmCoord, DMSTAG_BACK_DOWN_LEFT, 0, &ibackdownleft)); }
+  if (stagCoord->dof[0]) PetscCall(DMStagGetLocationSlot(dmCoord, DMSTAG_BACK_DOWN_LEFT, 0, &ibackdownleft));
   if (stagCoord->dof[1]) {
     PetscCall(DMStagGetLocationSlot(dmCoord, DMSTAG_BACK_DOWN, 0, &ibackdown));
     PetscCall(DMStagGetLocationSlot(dmCoord, DMSTAG_BACK_LEFT, 0, &ibackleft));
@@ -184,7 +184,7 @@ PETSC_INTERN PetscErrorCode DMStagSetUniformCoordinatesExplicit_3d(DM dm, PetscR
     PetscCall(DMStagGetLocationSlot(dmCoord, DMSTAG_DOWN, 0, &idown));
     PetscCall(DMStagGetLocationSlot(dmCoord, DMSTAG_LEFT, 0, &ileft));
   }
-  if (stagCoord->dof[3]) { PetscCall(DMStagGetLocationSlot(dmCoord, DMSTAG_ELEMENT, 0, &ielement)); }
+  if (stagCoord->dof[3]) PetscCall(DMStagGetLocationSlot(dmCoord, DMSTAG_ELEMENT, 0, &ielement));
   PetscCall(DMStagGetGhostCorners(dmCoord, &start_ghost[0], &start_ghost[1], &start_ghost[2], &n_ghost[0], &n_ghost[1], &n_ghost[2]));
   min[0] = xmin;
   min[1] = ymin;

@@ -106,7 +106,7 @@ static PetscErrorCode VecView_Network_MPI(DM networkdm, Vec X, PetscViewer viewe
   PetscCallMPI(MPI_Allreduce(&len_loc, &len, 1, MPIU_INT, MPI_MAX, comm));
   PetscCall(PetscCalloc1(len, &values));
 
-  if (rank == 0) { PetscCall(PetscViewerASCIIPrintf(viewer, "Process [%d]\n", rank)); }
+  if (rank == 0) PetscCall(PetscViewerASCIIPrintf(viewer, "Process [%d]\n", rank));
 
   /* iterate over edges */
   k = 2;

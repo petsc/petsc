@@ -32,7 +32,7 @@ PETSC_INTERN PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIDense(Mat A, M
   /* create output dense matrix C = A^T*B */
   PetscCall(MatSetSizes(C, A->cmap->n, B->cmap->n, A->cmap->N, B->cmap->N));
   PetscCall(PetscObjectTypeCompareAny((PetscObject)C, &cisdense, MATMPIDENSE, MATMPIDENSECUDA, ""));
-  if (!cisdense) { PetscCall(MatSetType(C, ((PetscObject)B)->type_name)); }
+  if (!cisdense) PetscCall(MatSetType(C, ((PetscObject)B)->type_name));
   PetscCall(MatSetUp(C));
 
   /* create additional data structure for the product */

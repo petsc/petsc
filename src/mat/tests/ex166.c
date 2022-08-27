@@ -43,7 +43,7 @@ int main(int argc, char **argv) {
   PetscCall(MatGetOwnershipRange(A, &rstart, &rend));
   PetscCall(MatGetOwnershipRangeColumn(A, &cstart, &cend));
 
-  for (i = 0; i < (PetscInt)PETSC_STATIC_ARRAY_LENGTH(entries); i++) { PetscCall(MatSetValue(A, entries[i].i, entries[i].j, entries[i].v, INSERT_VALUES)); }
+  for (i = 0; i < (PetscInt)PETSC_STATIC_ARRAY_LENGTH(entries); i++) PetscCall(MatSetValue(A, entries[i].i, entries[i].j, entries[i].v, INSERT_VALUES));
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
 
@@ -56,14 +56,14 @@ int main(int argc, char **argv) {
   PetscCall(PetscViewerASCIIGetStdout(PETSC_COMM_WORLD, &viewer));
   view_sparse = PETSC_FALSE;
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-view_sparse", &view_sparse, NULL));
-  if (!view_sparse) { PetscCall(PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_DENSE)); }
+  if (!view_sparse) PetscCall(PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_DENSE));
   PetscCall(PetscViewerASCIIPrintf(viewer, "Original matrix\n"));
   PetscCall(MatView(A, viewer));
 
   PetscCall(MatPermute(A, isrow, iscol, &B));
   PetscCall(PetscViewerASCIIPrintf(viewer, "Permuted matrix\n"));
   PetscCall(MatView(B, viewer));
-  if (!view_sparse) { PetscCall(PetscViewerPopFormat(viewer)); }
+  if (!view_sparse) PetscCall(PetscViewerPopFormat(viewer));
 
   PetscCall(PetscViewerASCIIPrintf(viewer, "Row permutation\n"));
   PetscCall(ISView(isrow, viewer));

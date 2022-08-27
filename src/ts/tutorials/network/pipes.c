@@ -366,7 +366,7 @@ PetscErrorCode PipesView(DM networkdm, PetscInt KeyPipe, Vec X) {
   PetscCall(VecView(Xto, PETSC_VIEWER_STDOUT_WORLD));
 
   /* 7. Free spaces */
-  for (i = 0; i < numkeys; i++) { PetscCall(PetscFree(selectedvariables[i])); }
+  for (i = 0; i < numkeys; i++) PetscCall(PetscFree(selectedvariables[i]));
   PetscCall(PetscFree3(blocksize, numselectedvariable, selectedvariables));
   PetscCall(VecDestroy(&Xto));
   PetscFunctionReturn(0);
@@ -405,7 +405,7 @@ PetscErrorCode WashNetworkCleanUp(Wash wash) {
   PetscCallMPI(MPI_Comm_rank(wash->comm, &rank));
   PetscCall(PetscFree(wash->edgelist));
   PetscCall(PetscFree(wash->vtype));
-  if (rank == 0) { PetscCall(PetscFree2(wash->junction, wash->pipe)); }
+  if (rank == 0) PetscCall(PetscFree2(wash->junction, wash->pipe));
   PetscFunctionReturn(0);
 }
 
@@ -634,7 +634,7 @@ int main(int argc, char **argv) {
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   PetscCallMPI(MPI_Comm_size(comm, &size));
 
-  if (size == 1 && monipipes) { PetscCall(DMNetworkMonitorCreate(networkdm, &monitor)); }
+  if (size == 1 && monipipes) PetscCall(DMNetworkMonitorCreate(networkdm, &monitor));
 
   /* Register the components in the network */
   PetscCall(DMNetworkRegisterComponent(networkdm, "junctionstruct", sizeof(struct _p_Junction), &KeyJunction));
@@ -676,7 +676,7 @@ int main(int argc, char **argv) {
   }
 
   /* Add Junction component and number of variables to all local vertices */
-  for (v = vStart; v < vEnd; v++) { PetscCall(DMNetworkAddComponent(networkdm, v, KeyJunction, &junctions[v - vStart], 2)); }
+  for (v = vStart; v < vEnd; v++) PetscCall(DMNetworkAddComponent(networkdm, v, KeyJunction, &junctions[v - vStart], 2));
 
   if (size > 1) { /* must be called before DMSetUp()???. Other partitioners do not work yet??? -- cause crash in proc[0]! */
     DM               plexdm;
@@ -822,7 +822,7 @@ int main(int argc, char **argv) {
     }
   }
 
-  if (size == 1 && monipipes) { PetscCall(DMNetworkMonitorDestroy(&monitor)); }
+  if (size == 1 && monipipes) PetscCall(DMNetworkMonitorDestroy(&monitor));
   PetscCall(DMDestroy(&networkdm));
   PetscCall(PetscFree(wash));
 

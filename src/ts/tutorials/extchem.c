@@ -134,7 +134,7 @@ int main(int argc, char **argv) {
   PetscCall(TSSetRHSJacobian(ts, J, J, FormRHSJacobian, &user));
 
   if (flg) PetscCall(TSMonitorSet(ts, MonitorMassConservation, NULL, NULL));
-  if (tflg) { PetscCall(TSMonitorSet(ts, MonitorTempature, &user, NULL)); }
+  if (tflg) PetscCall(TSMonitorSet(ts, MonitorTempature, &user, NULL));
 
   ftime = 1.0;
   PetscCall(TSSetMaxTime(ts, ftime));
@@ -297,7 +297,7 @@ PetscErrorCode FormInitialSolution(TS ts, Vec X, void *ctx) {
     PetscCall(PetscPrintf(PETSC_COMM_SELF, "Species %" PetscInt_FMT ": %s %g\n", i, names[i], (double)molefracs[i]));
     x[1 + ispec] = molefracs[i];
   }
-  for (i = 0; i < smax; i++) { PetscCall(PetscFree(names[i])); }
+  for (i = 0; i < smax; i++) PetscCall(PetscFree(names[i]));
   PetscCall(VecRestoreArray(X, &x));
   /* PetscCall(PrintSpecies((User)ctx,X)); */
   PetscCall(MoleFractionToMassFraction((User)ctx, X, &y));
@@ -384,7 +384,7 @@ PETSC_UNUSED PetscErrorCode PrintSpecies(User user, Vec molef) {
   for (i = 0; i < n; i++) idx[i] = i;
   PetscCall(VecGetArrayRead(molef, &mof));
   PetscCall(PetscSortRealWithPermutation(n, mof, idx));
-  for (i = 0; i < n; i++) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "%6s %g\n", user->snames[idx[n - i - 1]], (double)PetscRealPart(mof[idx[n - i - 1]]))); }
+  for (i = 0; i < n; i++) PetscCall(PetscPrintf(PETSC_COMM_SELF, "%6s %g\n", user->snames[idx[n - i - 1]], (double)PetscRealPart(mof[idx[n - i - 1]])));
   PetscCall(PetscFree(idx));
   PetscCall(VecRestoreArrayRead(molef, &mof));
   PetscFunctionReturn(0);

@@ -425,7 +425,7 @@ PetscErrorCode PetscDrawHGView(PetscDrawHG hist, PetscViewer viewer) {
   if ((hist->xmin > hist->xmax) || (hist->ymin >= hist->ymax)) PetscFunctionReturn(0);
   if (hist->numValues < 1) PetscFunctionReturn(0);
 
-  if (!viewer) { PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)hist), &viewer)); }
+  if (!viewer) PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)hist), &viewer));
   PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)hist, viewer));
   xmax      = hist->xmax;
   xmin      = hist->xmin;

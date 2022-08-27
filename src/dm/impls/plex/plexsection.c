@@ -338,7 +338,7 @@ static PetscErrorCode DMPlexCreateSectionBCIndicesField(DM dm, PetscInt numBC, c
       PetscCall(PetscSectionGetDof(aSec, a, &dof));
       if (dof) {
         /* if there are point-to-point constraints, then all dofs are constrained */
-        for (f = 0; f < Nf; f++) { PetscCall(PetscSectionSetFieldConstraintIndices(section, a, f, indices)); }
+        for (f = 0; f < Nf; f++) PetscCall(PetscSectionSetFieldConstraintIndices(section, a, f, indices));
       }
     }
   }

@@ -259,7 +259,7 @@ PetscErrorCode KSPMonitorSNESResidualDrawLGCreate(PetscViewer viewer, PetscViewe
 
 PetscErrorCode SNESMonitorDefaultSetUp(SNES snes, PetscViewerAndFormat *vf) {
   PetscFunctionBegin;
-  if (vf->format == PETSC_VIEWER_DRAW_LG) { PetscCall(KSPMonitorLGCreate(PetscObjectComm((PetscObject)vf->viewer), NULL, NULL, "Log Residual Norm", 1, NULL, PETSC_DECIDE, PETSC_DECIDE, 400, 300, &vf->lg)); }
+  if (vf->format == PETSC_VIEWER_DRAW_LG) PetscCall(KSPMonitorLGCreate(PetscObjectComm((PetscObject)vf->viewer), NULL, NULL, "Log Residual Norm", 1, NULL, PETSC_DECIDE, PETSC_DECIDE, 400, 300, &vf->lg));
   PetscFunctionReturn(0);
 }
 
@@ -404,7 +404,7 @@ PetscErrorCode SNESMonitorJacUpdateSpectrum(SNES snes, PetscInt it, PetscReal fn
     PetscCheck(!lierr, PETSC_COMM_SELF, PETSC_ERR_LIB, "geev() error %" PetscBLASInt_FMT, lierr);
     PetscCall(PetscFPTrapPop());
     PetscCall(PetscPrintf(PetscObjectComm((PetscObject)snes), "Eigenvalues of J_%" PetscInt_FMT " - J_%" PetscInt_FMT ":\n", it, it - 1));
-    for (i = 0; i < n; i++) { PetscCall(PetscPrintf(PetscObjectComm((PetscObject)snes), "%5" PetscInt_FMT ": %20.5g + %20.5gi\n", i, (double)eigr[i], (double)eigi[i])); }
+    for (i = 0; i < n; i++) PetscCall(PetscPrintf(PetscObjectComm((PetscObject)snes), "%5" PetscInt_FMT ": %20.5g + %20.5gi\n", i, (double)eigr[i], (double)eigi[i]));
   }
   PetscCall(MatDenseRestoreArray(dJdense, &a));
   PetscCall(MatDestroy(&dJ));
@@ -543,7 +543,7 @@ PetscErrorCode SNESMonitorRatioSetUp(SNES snes, PetscViewerAndFormat *vf) {
 
   PetscFunctionBegin;
   PetscCall(SNESGetConvergenceHistory(snes, &history, NULL, NULL));
-  if (!history) { PetscCall(SNESSetConvergenceHistory(snes, NULL, NULL, 100, PETSC_TRUE)); }
+  if (!history) PetscCall(SNESSetConvergenceHistory(snes, NULL, NULL, 100, PETSC_TRUE));
   PetscFunctionReturn(0);
 }
 

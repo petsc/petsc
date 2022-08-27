@@ -224,7 +224,7 @@ static PetscErrorCode CheckCell(DM dm, PetscInt cell, PetscBool transform, Petsc
     if (faceCentroidEx) {
       PetscCall(DMPlexGetConeSize(dm, cell, &coneSize));
       PetscCall(DMPlexGetCone(dm, cell, &cone));
-      for (c = 0; c < coneSize; ++c) { PetscCall(CheckFVMGeometry(dm, cone[c], dim, &faceCentroidEx[c * dim], &faceNormalEx[c * dim], faceVolEx[c])); }
+      for (c = 0; c < coneSize; ++c) PetscCall(CheckFVMGeometry(dm, cone[c], dim, &faceCentroidEx[c * dim], &faceNormalEx[c * dim], faceVolEx[c]));
     }
   }
   if (transform) {
@@ -265,7 +265,7 @@ static PetscErrorCode CheckCell(DM dm, PetscInt cell, PetscBool transform, Petsc
       PetscCall(PetscRandomGetValueReal(r, &scale));
       PetscCall(PetscRandomGetValueReal(ang, &phi));
       PetscCall(PetscRandomGetValueReal(ang2, &theta));
-      for (d = 0; d < cdim; ++d) { PetscCall(PetscRandomGetValue(r, &trans[d])); }
+      for (d = 0; d < cdim; ++d) PetscCall(PetscRandomGetValue(r, &trans[d]));
       switch (cdim) {
       case 2:
         R[0] = PetscCosReal(phi);

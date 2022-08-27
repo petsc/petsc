@@ -679,7 +679,7 @@ PetscErrorCode TSAdaptSetFromOptions(TSAdapt adapt, PetscOptionItems *PetscOptio
    * function can only be called from inside TSSetFromOptions()  */
   PetscOptionsHeadBegin(PetscOptionsObject, "TS Adaptivity options");
   PetscCall(PetscOptionsFList("-ts_adapt_type", "Algorithm to use for adaptivity", "TSAdaptSetType", TSAdaptList, ((PetscObject)adapt)->type_name ? ((PetscObject)adapt)->type_name : type, type, sizeof(type), &flg));
-  if (flg || !((PetscObject)adapt)->type_name) { PetscCall(TSAdaptSetType(adapt, type)); }
+  if (flg || !((PetscObject)adapt)->type_name) PetscCall(TSAdaptSetType(adapt, type));
 
   PetscCall(PetscOptionsBool("-ts_adapt_always_accept", "Always accept the step", "TSAdaptSetAlwaysAccept", adapt->always_accept, &flg, &set));
   if (set) PetscCall(TSAdaptSetAlwaysAccept(adapt, flg));

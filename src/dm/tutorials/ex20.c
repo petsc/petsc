@@ -20,8 +20,8 @@ PetscErrorCode pic_insert_DMDA(PetscInt dim) {
   /* Create the background cell DM */
   dof           = 1;
   stencil_width = 1;
-  if (dim == 2) { PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, 25, 13, PETSC_DECIDE, PETSC_DECIDE, dof, stencil_width, NULL, NULL, &celldm)); }
-  if (dim == 3) { PetscCall(DMDACreate3d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, 25, 13, 19, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, dof, stencil_width, NULL, NULL, NULL, &celldm)); }
+  if (dim == 2) PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, 25, 13, PETSC_DECIDE, PETSC_DECIDE, dof, stencil_width, NULL, NULL, &celldm));
+  if (dim == 3) PetscCall(DMDACreate3d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, 25, 13, 19, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, dof, stencil_width, NULL, NULL, NULL, &celldm));
 
   PetscCall(DMDASetElementType(celldm, DMDA_ELEMENT_Q1));
   PetscCall(DMSetFromOptions(celldm));

@@ -62,7 +62,7 @@ static PetscErrorCode PetscViewerHDF5ReadSizes_Private(PetscViewer viewer, HDF5R
   PetscLayout       map;
 
   PetscFunctionBegin;
-  if (!(*map_)) { PetscCall(PetscLayoutCreate(PetscObjectComm((PetscObject)viewer), map_)); }
+  if (!(*map_)) PetscCall(PetscLayoutCreate(PetscObjectComm((PetscObject)viewer), map_));
   map = *map_;
 
   /* Get actual number of dimensions in dataset */

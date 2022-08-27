@@ -252,7 +252,7 @@ static PetscErrorCode SNESMSStep_3Sstar(SNES snes, Vec X, Vec F) {
     scoeff[3] = -betasub[i] * ms->damping;
 
     PetscCall(VecAXPY(S2, delta[i], S1));
-    if (i > 0) { PetscCall(SNESComputeFunction(snes, S1, F)); }
+    if (i > 0) PetscCall(SNESComputeFunction(snes, S1, F));
     PetscCall(KSPSolve(snes->ksp, F, Y));
     PetscCall(VecMAXPY(S1, 4, scoeff, Ss));
   }
@@ -273,7 +273,7 @@ static PetscErrorCode SNESMSStep_Basic(SNES snes, Vec X, Vec F) {
   PetscFunctionBegin;
   PetscCall(VecCopy(X, X0));
   for (i = 0; i < nstages; i++) {
-    if (i > 0) { PetscCall(SNESComputeFunction(snes, X, F)); }
+    if (i > 0) PetscCall(SNESComputeFunction(snes, X, F));
     PetscCall(KSPSolve(snes->ksp, F, X));
     PetscCall(VecAYPX(X, -alpha[i] * h, X0));
   }
@@ -353,7 +353,7 @@ static PetscErrorCode SNESSolve_MS(SNES snes) {
 
     PetscCall(SNESMSStep_Step(snes, X, F));
 
-    if (i < snes->max_its - 1 || ms->norms) { PetscCall(SNESComputeFunction(snes, X, F)); }
+    if (i < snes->max_its - 1 || ms->norms) PetscCall(SNESComputeFunction(snes, X, F));
 
     PetscCall(SNESMSStep_Norms(snes, i + 1, F));
     if (snes->reason) PetscFunctionReturn(0);
@@ -396,7 +396,7 @@ static PetscErrorCode SNESView_MS(SNES snes, PetscViewer viewer) {
 
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) { PetscCall(PetscViewerASCIIPrintf(viewer, "  multi-stage method type: %s\n", tab->name)); }
+  if (iascii) PetscCall(PetscViewerASCIIPrintf(viewer, "  multi-stage method type: %s\n", tab->name));
   PetscFunctionReturn(0);
 }
 

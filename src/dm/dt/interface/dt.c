@@ -787,7 +787,7 @@ PetscErrorCode PetscDTJacobiEvalJet(PetscReal alpha, PetscReal beta, PetscInt np
   if (degree == 0) {
     PetscInt zero = 0;
 
-    for (i = 0; i <= k; i++) { PetscCall(PetscDTJacobiEval_Internal(npoints, alpha, beta, i, points, 1, &zero, &p[i * npoints])); }
+    for (i = 0; i <= k; i++) PetscCall(PetscDTJacobiEval_Internal(npoints, alpha, beta, i, points, 1, &zero, &p[i * npoints]));
     PetscFunctionReturn(0);
   }
   PetscCall(PetscMalloc1(degree + 1, &degrees));
@@ -1659,7 +1659,7 @@ static PetscErrorCode PetscDTGaussLobattoJacobiQuadrature_Internal(PetscInt npoi
 
   x[0]           = -1.;
   x[npoints - 1] = 1.;
-  if (npoints > 2) { PetscCall(PetscDTGaussJacobiQuadrature_Internal(npoints - 2, alpha + 1., beta + 1., &x[1], &w[1], newton)); }
+  if (npoints > 2) PetscCall(PetscDTGaussJacobiQuadrature_Internal(npoints - 2, alpha + 1., beta + 1., &x[1], &w[1], newton));
   for (i = 1; i < npoints - 1; i++) { w[i] /= (1. - x[i] * x[i]); }
   PetscCall(PetscDTGaussLobattoJacobiEndweights_Internal(npoints, alpha, beta, &w[0], &w[npoints - 1]));
   PetscFunctionReturn(0);

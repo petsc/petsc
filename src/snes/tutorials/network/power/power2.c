@@ -506,15 +506,15 @@ int main(int argc, char **argv) {
       /* ADD VARIABLES AND COMPONENTS FOR THE FIRST SUBNETWORK */
       PetscCall(DMNetworkGetSubnetwork(networkdm, 0, &nv, &ne, &vtx, &edges));
 
-      for (i = 0; i < ne; i++) { PetscCall(DMNetworkAddComponent(networkdm, edges[i], componentkey[0], &pfdata1->branch[i], 0)); }
+      for (i = 0; i < ne; i++) PetscCall(DMNetworkAddComponent(networkdm, edges[i], componentkey[0], &pfdata1->branch[i], 0));
 
       for (i = 0; i < nv; i++) {
         PetscCall(DMNetworkAddComponent(networkdm, vtx[i], componentkey[1], &pfdata1->bus[i], 2));
         if (pfdata1->bus[i].ngen) {
-          for (j = 0; j < pfdata1->bus[i].ngen; j++) { PetscCall(DMNetworkAddComponent(networkdm, vtx[i], componentkey[2], &pfdata1->gen[genj++], 0)); }
+          for (j = 0; j < pfdata1->bus[i].ngen; j++) PetscCall(DMNetworkAddComponent(networkdm, vtx[i], componentkey[2], &pfdata1->gen[genj++], 0));
         }
         if (pfdata1->bus[i].nload) {
-          for (j = 0; j < pfdata1->bus[i].nload; j++) { PetscCall(DMNetworkAddComponent(networkdm, vtx[i], componentkey[3], &pfdata1->load[loadj++], 0)); }
+          for (j = 0; j < pfdata1->bus[i].nload; j++) PetscCall(DMNetworkAddComponent(networkdm, vtx[i], componentkey[3], &pfdata1->load[loadj++], 0));
         }
       }
 
@@ -524,15 +524,15 @@ int main(int argc, char **argv) {
       /* ADD VARIABLES AND COMPONENTS FOR THE SECOND SUBNETWORK */
       PetscCall(DMNetworkGetSubnetwork(networkdm, 1, &nv, &ne, &vtx, &edges));
 
-      for (i = 0; i < ne; i++) { PetscCall(DMNetworkAddComponent(networkdm, edges[i], componentkey[0], &pfdata2->branch[i], 0)); }
+      for (i = 0; i < ne; i++) PetscCall(DMNetworkAddComponent(networkdm, edges[i], componentkey[0], &pfdata2->branch[i], 0));
 
       for (i = 0; i < nv; i++) {
         PetscCall(DMNetworkAddComponent(networkdm, vtx[i], componentkey[1], &pfdata2->bus[i], 2));
         if (pfdata2->bus[i].ngen) {
-          for (j = 0; j < pfdata2->bus[i].ngen; j++) { PetscCall(DMNetworkAddComponent(networkdm, vtx[i], componentkey[2], &pfdata2->gen[genj++], 0)); }
+          for (j = 0; j < pfdata2->bus[i].ngen; j++) PetscCall(DMNetworkAddComponent(networkdm, vtx[i], componentkey[2], &pfdata2->gen[genj++], 0));
         }
         if (pfdata2->bus[i].nload) {
-          for (j = 0; j < pfdata2->bus[i].nload; j++) { PetscCall(DMNetworkAddComponent(networkdm, vtx[i], componentkey[3], &pfdata2->load[loadj++], 0)); }
+          for (j = 0; j < pfdata2->bus[i].nload; j++) PetscCall(DMNetworkAddComponent(networkdm, vtx[i], componentkey[3], &pfdata2->load[loadj++], 0));
         }
       }
     }

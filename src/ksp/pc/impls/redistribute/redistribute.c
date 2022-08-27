@@ -173,7 +173,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc) {
       for (i = 1; i < size; i++) starts[i] = starts[i - 1] + sizes[i - 1];
       count = 0;
       for (i = 0; i < size; i++) {
-        if (sizes[i]) { PetscCallMPI(MPI_Isend(svalues + starts[i], sizes[i], MPIU_INT, i, tag, comm, send_waits + count++)); }
+        if (sizes[i]) PetscCallMPI(MPI_Isend(svalues + starts[i], sizes[i], MPIU_INT, i, tag, comm, send_waits + count++));
       }
 
       /*  wait on receives */
@@ -240,7 +240,7 @@ static PetscErrorCode PCApply_Redistribute(PC pc, Vec b, Vec x) {
   const PetscScalar *bwork, *diag = red->diag;
 
   PetscFunctionBegin;
-  if (!red->work) { PetscCall(VecDuplicate(b, &red->work)); }
+  if (!red->work) PetscCall(VecDuplicate(b, &red->work));
   /* compute the rows of solution that have diagonal entries only */
   PetscCall(VecSet(x, 0.0)); /* x = diag(A)^{-1} b */
   PetscCall(VecGetArray(x, &xwork));

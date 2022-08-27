@@ -47,7 +47,7 @@ PetscErrorCode MatCreateSubMatrices_NormalHermitian(Mat mat, PetscInt n, const I
 
   PetscFunctionBegin;
   PetscCheck(!a->left && !a->right && irow == icol, PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "Not implemented");
-  if (scall != MAT_REUSE_MATRIX) { PetscCall(PetscCalloc1(n, submat)); }
+  if (scall != MAT_REUSE_MATRIX) PetscCall(PetscCalloc1(n, submat));
   PetscCall(MatGetSize(B, &M, NULL));
   PetscCall(PetscMalloc1(n, &row));
   PetscCall(ISCreateStride(PETSC_COMM_SELF, M, 0, 1, &row[0]));
@@ -114,7 +114,7 @@ PetscErrorCode MatMult_NormalHermitian(Mat N, Vec x, Vec y) {
   PetscFunctionBegin;
   in = x;
   if (Na->right) {
-    if (!Na->rightwork) { PetscCall(VecDuplicate(Na->right, &Na->rightwork)); }
+    if (!Na->rightwork) PetscCall(VecDuplicate(Na->right, &Na->rightwork));
     PetscCall(VecPointwiseMult(Na->rightwork, Na->right, in));
     in = Na->rightwork;
   }
@@ -132,7 +132,7 @@ PetscErrorCode MatMultHermitianAdd_Normal(Mat N, Vec v1, Vec v2, Vec v3) {
   PetscFunctionBegin;
   in = v1;
   if (Na->right) {
-    if (!Na->rightwork) { PetscCall(VecDuplicate(Na->right, &Na->rightwork)); }
+    if (!Na->rightwork) PetscCall(VecDuplicate(Na->right, &Na->rightwork));
     PetscCall(VecPointwiseMult(Na->rightwork, Na->right, in));
     in = Na->rightwork;
   }
@@ -155,7 +155,7 @@ PetscErrorCode MatMultHermitianTranspose_Normal(Mat N, Vec x, Vec y) {
   PetscFunctionBegin;
   in = x;
   if (Na->left) {
-    if (!Na->leftwork) { PetscCall(VecDuplicate(Na->left, &Na->leftwork)); }
+    if (!Na->leftwork) PetscCall(VecDuplicate(Na->left, &Na->leftwork));
     PetscCall(VecPointwiseMult(Na->leftwork, Na->left, in));
     in = Na->leftwork;
   }
@@ -173,7 +173,7 @@ PetscErrorCode MatMultHermitianTransposeAdd_Normal(Mat N, Vec v1, Vec v2, Vec v3
   PetscFunctionBegin;
   in = v1;
   if (Na->left) {
-    if (!Na->leftwork) { PetscCall(VecDuplicate(Na->left, &Na->leftwork)); }
+    if (!Na->leftwork) PetscCall(VecDuplicate(Na->left, &Na->leftwork));
     PetscCall(VecPointwiseMult(Na->leftwork, Na->left, in));
     in = Na->leftwork;
   }

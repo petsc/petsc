@@ -111,7 +111,7 @@ int main(int argc, char **args) {
     /* create stiffness matrix */
     PetscCall(MatCreate(comm, &Amat));
     PetscCall(MatSetSizes(Amat, m, m, M, M));
-    if (!test_late_bs) { PetscCall(MatSetBlockSize(Amat, 3)); }
+    if (!test_late_bs) PetscCall(MatSetBlockSize(Amat, 3));
     PetscCall(MatSetType(Amat, MATAIJ));
     PetscCall(MatSetOption(Amat, MAT_SPD, PETSC_TRUE));
     PetscCall(MatSetOption(Amat, MAT_SPD_ETERNAL, PETSC_TRUE));

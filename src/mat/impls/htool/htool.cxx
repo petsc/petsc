@@ -153,13 +153,13 @@ static PetscErrorCode MatCreateSubMatrices_Htool(Mat A, PetscInt n, const IS iro
   PetscBool          flg;
 
   PetscFunctionBegin;
-  if (scall != MAT_REUSE_MATRIX) { PetscCall(PetscCalloc1(n, submat)); }
+  if (scall != MAT_REUSE_MATRIX) PetscCall(PetscCalloc1(n, submat));
   for (i = 0; i < n; ++i) {
     PetscCall(ISGetLocalSize(irow[i], &nrow));
     PetscCall(ISGetLocalSize(icol[i], &m));
     PetscCall(ISGetIndices(irow[i], &idxr));
     PetscCall(ISGetIndices(icol[i], &idxc));
-    if (scall != MAT_REUSE_MATRIX) { PetscCall(MatCreateDense(PETSC_COMM_SELF, nrow, m, nrow, m, NULL, (*submat) + i)); }
+    if (scall != MAT_REUSE_MATRIX) PetscCall(MatCreateDense(PETSC_COMM_SELF, nrow, m, nrow, m, NULL, (*submat) + i));
     PetscCall(MatDenseGetArrayWrite((*submat)[i], &ptr));
     if (irow[i] == icol[i]) { /* same row and column IS? */
       PetscCall(MatHasCongruentLayouts(A, &flg));
@@ -265,7 +265,7 @@ static PetscErrorCode MatDestroy_Htool(Mat A) {
     PetscCall(PetscContainerDestroy(&container));
     PetscCall(PetscObjectCompose((PetscObject)A, "KernelTranspose", NULL));
   }
-  if (a->gcoords_source != a->gcoords_target) { PetscCall(PetscFree(a->gcoords_source)); }
+  if (a->gcoords_source != a->gcoords_target) PetscCall(PetscFree(a->gcoords_source));
   PetscCall(PetscFree(a->gcoords_target));
   PetscCall(PetscFree2(a->work_source, a->work_target));
   delete a->wrapper;
@@ -337,15 +337,15 @@ static PetscErrorCode MatGetRow_Htool(Mat A, PetscInt row, PetscInt *nz, PetscIn
     PetscCall(PetscBLASIntCast(A->cmap->N, &bn));
     PetscCallBLAS("BLASscal", BLASscal_(&bn, &a->s, *v, &one));
   }
-  if (!idx) { PetscCall(PetscFree(idxc)); }
+  if (!idx) PetscCall(PetscFree(idxc));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode MatRestoreRow_Htool(Mat A, PetscInt row, PetscInt *nz, PetscInt **idx, PetscScalar **v) {
   PetscFunctionBegin;
   if (nz) *nz = 0;
-  if (idx) { PetscCall(PetscFree(*idx)); }
-  if (v) { PetscCall(PetscFree(*v)); }
+  if (idx) PetscCall(PetscFree(*idx));
+  if (v) PetscCall(PetscFree(*v));
   PetscFunctionReturn(0);
 }
 
@@ -476,10 +476,10 @@ static PetscErrorCode MatProductSymbolic_Htool(Mat C) {
   PetscCheck(flg, PetscObjectComm((PetscObject)B), PETSC_ERR_SUP, "MatProduct_AB not supported for %s", ((PetscObject)product->B)->type_name);
   switch (product->type) {
   case MATPRODUCT_AB:
-    if (C->rmap->n == PETSC_DECIDE || C->cmap->n == PETSC_DECIDE || C->rmap->N == PETSC_DECIDE || C->cmap->N == PETSC_DECIDE) { PetscCall(MatSetSizes(C, A->rmap->n, B->cmap->n, A->rmap->N, B->cmap->N)); }
+    if (C->rmap->n == PETSC_DECIDE || C->cmap->n == PETSC_DECIDE || C->rmap->N == PETSC_DECIDE || C->cmap->N == PETSC_DECIDE) PetscCall(MatSetSizes(C, A->rmap->n, B->cmap->n, A->rmap->N, B->cmap->N));
     break;
   case MATPRODUCT_AtB:
-    if (C->rmap->n == PETSC_DECIDE || C->cmap->n == PETSC_DECIDE || C->rmap->N == PETSC_DECIDE || C->cmap->N == PETSC_DECIDE) { PetscCall(MatSetSizes(C, A->cmap->n, B->cmap->n, A->cmap->N, B->cmap->N)); }
+    if (C->rmap->n == PETSC_DECIDE || C->cmap->n == PETSC_DECIDE || C->rmap->N == PETSC_DECIDE || C->cmap->N == PETSC_DECIDE) PetscCall(MatSetSizes(C, A->cmap->n, B->cmap->n, A->cmap->N, B->cmap->N));
     break;
   default: SETERRQ(PetscObjectComm((PetscObject)B), PETSC_ERR_SUP, "ProductType %s is not supported", MatProductTypes[product->type]);
   }

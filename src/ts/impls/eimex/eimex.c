@@ -114,7 +114,7 @@ static PetscErrorCode TSStep_EIMEX(TS ts) {
         /*T table need to be recycled*/
         PetscCall(VecDuplicateVecs(ts->vec_sol, (1 + ext->nstages) * ext->nstages / 2, &ext->T));
         for (i = 0; i < ext->nstages - 1; i++) {
-          for (j = 0; j <= i; j++) { PetscCall(VecCopy(T[Map(i, j, ext->nstages - 1)], ext->T[Map(i, j, ext->nstages)])); }
+          for (j = 0; j <= i; j++) PetscCall(VecCopy(T[Map(i, j, ext->nstages - 1)], ext->T[Map(i, j, ext->nstages)]));
         }
         PetscCall(VecDestroyVecs(ext->nstages * (ext->nstages - 1) / 2, &T));
         T = ext->T; /*reset the pointer*/
@@ -132,7 +132,7 @@ static PetscErrorCode TSStep_EIMEX(TS ts) {
       } /*end if !accept*/
     }   /*end while*/
 
-    if (ext->nstages == ext->max_rows) { PetscCall(PetscInfo(ts, "Max number of rows has been used\n")); }
+    if (ext->nstages == ext->max_rows) PetscCall(PetscInfo(ts, "Max number of rows has been used\n"));
   } /*end if ext->ord_adapt*/
   ts->ptime += ts->time_step;
   ext->status = TS_STEP_COMPLETE;
@@ -223,16 +223,16 @@ static PetscErrorCode TSEIMEXGetVecs(TS ts, DM dm, Vec *Z, Vec *Ydot, Vec *YdotI
 static PetscErrorCode TSEIMEXRestoreVecs(TS ts, DM dm, Vec *Z, Vec *Ydot, Vec *YdotI, Vec *YdotRHS) {
   PetscFunctionBegin;
   if (Z) {
-    if (dm && dm != ts->dm) { PetscCall(DMRestoreNamedGlobalVector(dm, "TSEIMEX_Z", Z)); }
+    if (dm && dm != ts->dm) PetscCall(DMRestoreNamedGlobalVector(dm, "TSEIMEX_Z", Z));
   }
   if (Ydot) {
-    if (dm && dm != ts->dm) { PetscCall(DMRestoreNamedGlobalVector(dm, "TSEIMEX_Ydot", Ydot)); }
+    if (dm && dm != ts->dm) PetscCall(DMRestoreNamedGlobalVector(dm, "TSEIMEX_Ydot", Ydot));
   }
   if (YdotI) {
-    if (dm && dm != ts->dm) { PetscCall(DMRestoreNamedGlobalVector(dm, "TSEIMEX_YdotI", YdotI)); }
+    if (dm && dm != ts->dm) PetscCall(DMRestoreNamedGlobalVector(dm, "TSEIMEX_YdotI", YdotI));
   }
   if (YdotRHS) {
-    if (dm && dm != ts->dm) { PetscCall(DMRestoreNamedGlobalVector(dm, "TSEIMEX_YdotRHS", YdotRHS)); }
+    if (dm && dm != ts->dm) PetscCall(DMRestoreNamedGlobalVector(dm, "TSEIMEX_YdotRHS", YdotRHS));
   }
   PetscFunctionReturn(0);
 }
@@ -315,7 +315,7 @@ static PetscErrorCode TSSetUp_EIMEX(TS ts) {
   if (-1 == ext->row_ind && -1 == ext->col_ind) {
     PetscCall(TSEIMEXSetRowCol(ts, ext->max_rows, ext->max_rows));
   } else { /* ext->row_ind and col_ind already set */
-    if (ext->ord_adapt) { PetscCall(PetscInfo(ts, "Order adaptivity is enabled and TSEIMEXSetRowCol or -ts_eimex_row_col option will take no effect\n")); }
+    if (ext->ord_adapt) PetscCall(PetscInfo(ts, "Order adaptivity is enabled and TSEIMEXSetRowCol or -ts_eimex_row_col option will take no effect\n"));
   }
 
   if (ext->ord_adapt) {
@@ -353,7 +353,7 @@ static PetscErrorCode TSSetFromOptions_EIMEX(TS ts, PetscOptionItems *PetscOptio
     PetscCall(PetscOptionsInt("-ts_eimex_max_rows", "Define the maximum number of rows used", "TSEIMEXSetMaxRows", nrows, &nrows, &flg)); /* default value 3 */
     if (flg) PetscCall(TSEIMEXSetMaxRows(ts, nrows));
     PetscCall(PetscOptionsIntArray("-ts_eimex_row_col", "Return the specific term in the T table", "TSEIMEXSetRowCol", tindex, &np, &flg));
-    if (flg) { PetscCall(TSEIMEXSetRowCol(ts, tindex[0], tindex[1])); }
+    if (flg) PetscCall(TSEIMEXSetRowCol(ts, tindex[0], tindex[1]));
     PetscCall(PetscOptionsBool("-ts_eimex_order_adapt", "Solve the problem with adaptive order", "TSEIMEXSetOrdAdapt", ext->ord_adapt, &ext->ord_adapt, NULL));
   }
   PetscOptionsHeadEnd();

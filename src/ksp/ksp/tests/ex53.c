@@ -22,7 +22,7 @@ int main(int argc, char *argv[]) {
   PetscCall(PetscOptionsGetInt(PETSC_NULL, PETSC_NULL, "-method", &method, PETSC_NULL));
   PetscCall(PetscOptionsGetInt(PETSC_NULL, PETSC_NULL, "-block_size", &block_size, PETSC_NULL));
 
-  if (rank == 0) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "  matrix size = %" PetscInt_FMT ", block size = %" PetscInt_FMT "\n", mat_size, block_size)); }
+  if (rank == 0) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  matrix size = %" PetscInt_FMT ", block size = %" PetscInt_FMT "\n", mat_size, block_size));
 
   PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
   PetscCall(MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, mat_size, mat_size));
@@ -33,8 +33,8 @@ int main(int argc, char *argv[]) {
 
   for (i = Istart; i < Iend; ++i) {
     PetscCall(MatSetValue(A, i, i, 2, INSERT_VALUES));
-    if (i < mat_size - 1) { PetscCall(MatSetValue(A, i, i + 1, -1, INSERT_VALUES)); }
-    if (i > 0) { PetscCall(MatSetValue(A, i, i - 1, -1, INSERT_VALUES)); }
+    if (i < mat_size - 1) PetscCall(MatSetValue(A, i, i + 1, -1, INSERT_VALUES));
+    if (i > 0) PetscCall(MatSetValue(A, i, i - 1, -1, INSERT_VALUES));
   }
 
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));

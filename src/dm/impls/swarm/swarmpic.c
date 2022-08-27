@@ -322,7 +322,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetPointCoordinates(DM dm, PetscInt npoints, 
   PetscCall(VecRestoreArrayRead(pos, &_coor));
 
   if (redundant) {
-    if (rank > 0) { PetscCall(PetscFree(my_coor)); }
+    if (rank > 0) PetscCall(PetscFree(my_coor));
   }
   PetscCall(PetscSFDestroy(&sfcell));
   PetscCall(VecDestroy(&pos));
@@ -531,7 +531,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmCreatePointPerCellCount(DM dm, PetscInt *ncel
     PetscCall(DMSwarmSortGetSizes(dm, &nel, NULL));
 
     PetscCall(PetscMalloc1(nel, &sum));
-    for (e = 0; e < nel; e++) { PetscCall(DMSwarmSortGetNumberOfPointsPerCell(dm, e, &sum[e])); }
+    for (e = 0; e < nel; e++) PetscCall(DMSwarmSortGetNumberOfPointsPerCell(dm, e, &sum[e]));
   } else {
     DM        celldm;
     PetscBool isda, isplex, isshell;

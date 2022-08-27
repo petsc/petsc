@@ -58,7 +58,7 @@ int main(int argc, char **args) {
   PetscCall(VecScale(output, fac));
   PetscCall(VecAXPY(output, -1.0, input));
   PetscCall(VecNorm(output, NORM_1, &enorm));
-  if (enorm > 1.e-11 && rank == 0) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Error norm of |x - z| %e\n", enorm)); }
+  if (enorm > 1.e-11 && rank == 0) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Error norm of |x - z| %e\n", enorm));
 
   /* Free spaces */
   PetscCall(PetscRandomDestroy(&rdm));

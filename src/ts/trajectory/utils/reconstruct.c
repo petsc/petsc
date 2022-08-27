@@ -57,7 +57,7 @@ PetscErrorCode TSTrajectoryReconstruct_Private(TSTrajectory tj, TS ts, PetscReal
     PetscReal tf = tshn ? tshhist[tshn - 1] : 0.0;
     SETERRQ(PetscObjectComm((PetscObject)tj), PETSC_ERR_PLIB, "Requested time %g is outside the history interval [%g, %g] (%" PetscInt_FMT ")", (double)t, (double)t0, (double)tf, tshn);
   }
-  if (tj->monitor) { PetscCall(PetscViewerASCIIPrintf(tj->monitor, "Reconstructing at time %g, order %" PetscInt_FMT "\n", (double)t, tj->lag.order)); }
+  if (tj->monitor) PetscCall(PetscViewerASCIIPrintf(tj->monitor, "Reconstructing at time %g, order %" PetscInt_FMT "\n", (double)t, tj->lag.order));
   if (!tj->lag.T) {
     PetscInt o = tj->lag.order + 1;
     PetscCall(PetscMalloc5(o, &tj->lag.L, o, &tj->lag.T, o, &tj->lag.WW, 2 * o, &tj->lag.TT, o, &tj->lag.TW));
@@ -79,7 +79,7 @@ PetscErrorCode TSTrajectoryReconstruct_Private(TSTrajectory tj, TS ts, PetscReal
       PetscReal t   = tshhist[s];
       PetscInt  tid = LagrangeGetId(t, tj->lag.order + 1, tj->lag.T, tj->lag.TT);
       if (tid < 0) continue;
-      if (tj->monitor) { PetscCall(PetscViewerASCIIPrintf(tj->monitor, "Reusing snapshot %" PetscInt_FMT ", step %" PetscInt_FMT ", time %g\n", tid, tshhist_id[s], (double)t)); }
+      if (tj->monitor) PetscCall(PetscViewerASCIIPrintf(tj->monitor, "Reusing snapshot %" PetscInt_FMT ", step %" PetscInt_FMT ", time %g\n", tid, tshhist_id[s], (double)t));
       tj->lag.TT[tid]                         = PETSC_TRUE;
       tj->lag.WW[cnt]                         = tj->lag.W[tid];
       tj->lag.TW[cnt]                         = t;
@@ -146,7 +146,7 @@ PetscErrorCode TSTrajectoryReconstruct_Private(TSTrajectory tj, TS ts, PetscReal
     if (tj->monitor) PetscCall(PetscViewerASCIIPopTab(tj->monitor));
   }
   if (id < 0 && U) {
-    if (tj->monitor) { PetscCall(PetscViewerASCIIPrintf(tj->monitor, "Interpolating solution with %" PetscInt_FMT " snapshots\n", cnt)); }
+    if (tj->monitor) PetscCall(PetscViewerASCIIPrintf(tj->monitor, "Interpolating solution with %" PetscInt_FMT " snapshots\n", cnt));
     LagrangeBasisVals(cnt, t, tj->lag.TW, tj->lag.L);
     PetscCall(VecZeroEntries(U));
     PetscCall(VecMAXPY(U, cnt, tj->lag.L, tj->lag.WW));
@@ -156,7 +156,7 @@ PetscErrorCode TSTrajectoryReconstruct_Private(TSTrajectory tj, TS ts, PetscReal
     tj->lag.Ucached.step = PETSC_MIN_INT;
   }
   if (Udot) {
-    if (tj->monitor) { PetscCall(PetscViewerASCIIPrintf(tj->monitor, "Interpolating derivative with %" PetscInt_FMT " snapshots\n", cnt)); }
+    if (tj->monitor) PetscCall(PetscViewerASCIIPrintf(tj->monitor, "Interpolating derivative with %" PetscInt_FMT " snapshots\n", cnt));
     LagrangeBasisDers(cnt, t, tj->lag.TW, tj->lag.L);
     PetscCall(VecZeroEntries(Udot));
     PetscCall(VecMAXPY(Udot, cnt, tj->lag.L, tj->lag.WW));

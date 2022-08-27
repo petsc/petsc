@@ -262,7 +262,7 @@ static PetscErrorCode MatSetValues_BlockMat(Mat A, PetscInt m, const PetscInt im
       a->nz++;
       A->nonzerostate++;
     noinsert1:;
-      if (!*(ap + i)) { PetscCall(MatCreateSeqAIJ(PETSC_COMM_SELF, bs, bs, 0, NULL, ap + i)); }
+      if (!*(ap + i)) PetscCall(MatCreateSeqAIJ(PETSC_COMM_SELF, bs, bs, 0, NULL, ap + i));
       PetscCall(MatSetValues(ap[i], 1, &ridx, 1, &cidx, &value, is));
       low = i;
     }
@@ -325,7 +325,7 @@ static PetscErrorCode MatLoad_BlockMat(Mat newmat, PetscViewer viewer) {
     }
   }
 
-  if (newmat->rmap->n < 0 && newmat->rmap->N < 0 && newmat->cmap->n < 0 && newmat->cmap->N < 0) { PetscCall(MatSetSizes(newmat, m, n, PETSC_DETERMINE, PETSC_DETERMINE)); }
+  if (newmat->rmap->n < 0 && newmat->rmap->N < 0 && newmat->cmap->n < 0 && newmat->cmap->N < 0) PetscCall(MatSetSizes(newmat, m, n, PETSC_DETERMINE, PETSC_DETERMINE));
   PetscCall(MatBlockMatSetPreallocation(newmat, bs, 0, lens));
   if (flg) PetscCall(MatSetOption(newmat, MAT_SYMMETRIC, PETSC_TRUE));
   amat = (Mat_BlockMat *)(newmat)->data;
@@ -409,10 +409,10 @@ static PetscErrorCode MatDestroy_BlockMat(Mat mat) {
   PetscCall(VecDestroy(&bmat->middle));
   PetscCall(VecDestroy(&bmat->workb));
   if (bmat->diags) {
-    for (i = 0; i < mat->rmap->n / mat->rmap->bs; i++) { PetscCall(MatDestroy(&bmat->diags[i])); }
+    for (i = 0; i < mat->rmap->n / mat->rmap->bs; i++) PetscCall(MatDestroy(&bmat->diags[i]));
   }
   if (bmat->a) {
-    for (i = 0; i < bmat->nz; i++) { PetscCall(MatDestroy(&bmat->a[i])); }
+    for (i = 0; i < bmat->nz; i++) PetscCall(MatDestroy(&bmat->a[i]));
   }
   PetscCall(MatSeqXAIJFreeAIJ(mat, (PetscScalar **)&bmat->a, &bmat->j, &bmat->i));
   PetscCall(PetscFree(mat->data));
@@ -524,7 +524,7 @@ static PetscErrorCode MatMarkDiagonal_BlockMat(Mat A) {
   PetscInt      i, j, mbs = A->rmap->n / A->rmap->bs;
 
   PetscFunctionBegin;
-  if (!a->diag) { PetscCall(PetscMalloc1(mbs, &a->diag)); }
+  if (!a->diag) PetscCall(PetscMalloc1(mbs, &a->diag));
   for (i = 0; i < mbs; i++) {
     a->diag[i] = a->i[i + 1];
     for (j = a->i[i]; j < a->i[i + 1]; j++) {

@@ -218,7 +218,7 @@ static PetscErrorCode MatMult_SeqBAIJMKL_SpMV2(Mat A, Vec xx, Vec yy) {
   /* In some cases, we get to this point without mkl_sparse_optimize() having been called, so we check and then call
    * it if needed. Eventually, when everything in PETSc is properly updating the matrix state, we should probably
    * take a "lazy" approach to creation/updating of the MKL matrix handle and plan to always do it here (when needed). */
-  if (!baijmkl->sparse_optimized) { PetscCall(MatSeqBAIJMKL_create_mkl_handle(A)); }
+  if (!baijmkl->sparse_optimized) PetscCall(MatSeqBAIJMKL_create_mkl_handle(A));
 
   /* Call MKL SpMV2 executor routine to do the MatMult. */
   PetscCallMKL(mkl_sparse_x_mv(SPARSE_OPERATION_NON_TRANSPOSE, 1.0, baijmkl->bsrA, baijmkl->descr, x, 0.0, y));
@@ -248,7 +248,7 @@ static PetscErrorCode MatMultTranspose_SeqBAIJMKL_SpMV2(Mat A, Vec xx, Vec yy) {
   /* In some cases, we get to this point without mkl_sparse_optimize() having been called, so we check and then call
    * it if needed. Eventually, when everything in PETSc is properly updating the matrix state, we should probably
    * take a "lazy" approach to creation/updating of the MKL matrix handle and plan to always do it here (when needed). */
-  if (!baijmkl->sparse_optimized) { PetscCall(MatSeqBAIJMKL_create_mkl_handle(A)); }
+  if (!baijmkl->sparse_optimized) PetscCall(MatSeqBAIJMKL_create_mkl_handle(A));
 
   /* Call MKL SpMV2 executor routine to do the MatMultTranspose. */
   PetscCallMKL(mkl_sparse_x_mv(SPARSE_OPERATION_TRANSPOSE, 1.0, baijmkl->bsrA, baijmkl->descr, x, 0.0, y));
@@ -280,7 +280,7 @@ static PetscErrorCode MatMultAdd_SeqBAIJMKL_SpMV2(Mat A, Vec xx, Vec yy, Vec zz)
   /* In some cases, we get to this point without mkl_sparse_optimize() having been called, so we check and then call
    * it if needed. Eventually, when everything in PETSc is properly updating the matrix state, we should probably
    * take a "lazy" approach to creation/updating of the MKL matrix handle and plan to always do it here (when needed). */
-  if (!baijmkl->sparse_optimized) { PetscCall(MatSeqBAIJMKL_create_mkl_handle(A)); }
+  if (!baijmkl->sparse_optimized) PetscCall(MatSeqBAIJMKL_create_mkl_handle(A));
 
   /* Call MKL sparse BLAS routine to do the MatMult. */
   if (zz == yy) {
@@ -322,7 +322,7 @@ static PetscErrorCode MatMultTransposeAdd_SeqBAIJMKL_SpMV2(Mat A, Vec xx, Vec yy
   /* In some cases, we get to this point without mkl_sparse_optimize() having been called, so we check and then call
    * it if needed. Eventually, when everything in PETSc is properly updating the matrix state, we should probably
    * take a "lazy" approach to creation/updating of the MKL matrix handle and plan to always do it here (when needed). */
-  if (!baijmkl->sparse_optimized) { PetscCall(MatSeqBAIJMKL_create_mkl_handle(A)); }
+  if (!baijmkl->sparse_optimized) PetscCall(MatSeqBAIJMKL_create_mkl_handle(A));
 
   /* Call MKL sparse BLAS routine to do the MatMult. */
   if (zz == yy) {

@@ -449,7 +449,7 @@ static PetscErrorCode DMPlexTransformDestroy_Extrude(DMPlexTransform tr) {
   PetscInt                 ct;
 
   PetscFunctionBegin;
-  for (ct = 0; ct < DM_NUM_POLYTOPES; ++ct) { PetscCall(PetscFree4(ex->target[ct], ex->size[ct], ex->cone[ct], ex->ornt[ct])); }
+  for (ct = 0; ct < DM_NUM_POLYTOPES; ++ct) PetscCall(PetscFree4(ex->target[ct], ex->size[ct], ex->cone[ct], ex->ornt[ct]));
   PetscCall(PetscFree5(ex->Nt, ex->target, ex->size, ex->cone, ex->ornt));
   PetscCall(PetscFree(ex->layerPos));
   PetscCall(PetscFree(ex));

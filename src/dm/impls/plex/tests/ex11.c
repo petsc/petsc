@@ -11,7 +11,7 @@ static PetscErrorCode TestInsertion() {
   PetscFunctionBegin;
   PetscCall(DMLabelCreate(PETSC_COMM_SELF, "Test Label", &label));
   PetscCall(DMLabelSetDefaultValue(label, -100));
-  for (i = 0; i < N; ++i) { PetscCall(DMLabelSetValue(label, i, values[i % 5])); }
+  for (i = 0; i < N; ++i) PetscCall(DMLabelSetValue(label, i, values[i % 5]));
   /* Test get in hash mode */
   for (i = 0; i < N; ++i) {
     PetscInt val;
@@ -195,7 +195,7 @@ static PetscErrorCode TestDistribution(MPI_Comm comm) {
   PetscCall(DMCreateLabel(dm, name));
   PetscCall(DMGetLabel(dm, name, &label));
   PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
-  for (c = cStart; c < cEnd; ++c) { PetscCall(DMLabelSetValue(label, c, c)); }
+  for (c = cStart; c < cEnd; ++c) PetscCall(DMLabelSetValue(label, c, c));
   PetscCall(DMLabelView(label, PETSC_VIEWER_STDOUT_WORLD));
   PetscCall(DMPlexGetPartitioner(dm, &part));
   PetscCall(PetscPartitionerSetFromOptions(part));

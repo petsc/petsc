@@ -13,7 +13,7 @@ int main(int argc, char **argv) {
   PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
 
   PetscCall(PetscOptionsGetString(NULL, NULL, "-expl_type", expltype, sizeof(expltype), &flg));
-  if (flg) { PetscCall(PetscStrallocpy(expltype, &etype)); }
+  if (flg) PetscCall(PetscStrallocpy(expltype, &etype));
   PetscCall(PetscOptionsGetString(NULL, NULL, "-f", filename, sizeof(filename), &flg));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-bs", &bs, NULL));
   if (!flg) {
@@ -50,7 +50,7 @@ int main(int argc, char **argv) {
     PetscCall(MatConvert(A, etype, MAT_INITIAL_MATRIX, &A2));
     PetscCall(MatAXPY(A2, -1.0, Ae, DIFFERENT_NONZERO_PATTERN));
     PetscCall(MatNorm(A2, NORM_FROBENIUS, &err));
-    if (err > tol) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error %g > %g (type %s)\n", (double)err, (double)tol, etype)); }
+    if (err > tol) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error %g > %g (type %s)\n", (double)err, (double)tol, etype));
     PetscCall(MatDestroy(&A2));
   }
 

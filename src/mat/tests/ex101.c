@@ -45,7 +45,7 @@ int main(int argc, char **argv) {
   PetscCall(MatSetValues(A, 3, aij[0], 3, aij[0], pa, ADD_VALUES));
   PetscCall(MatSetValues(A, 3, aij[1], 3, aij[1], pa, ADD_VALUES));
   PetscCall(MatSetValues(A, 3, aij[2], 3, aij[2], pa, ADD_VALUES));
-  for (i = 0; i < 9; i++) { PetscCall(MatSetValue(A, i, i, one, ADD_VALUES)); }
+  for (i = 0; i < 9; i++) PetscCall(MatSetValue(A, i, i, one, ADD_VALUES));
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
 

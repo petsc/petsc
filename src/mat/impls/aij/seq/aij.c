@@ -560,7 +560,7 @@ PetscErrorCode MatSetValues_SeqAIJ_SortedFull(Mat A, PetscInt m, const PetscInt 
     PetscCheck(n <= a->imax[row], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Preallocation for row %" PetscInt_FMT " does not match number of columns provided", n);
     rp = aj + ai[row];
     ap = aa + ai[row];
-    if (!A->was_assembled) { PetscCall(PetscMemcpy(rp, in, n * sizeof(PetscInt))); }
+    if (!A->was_assembled) PetscCall(PetscMemcpy(rp, in, n * sizeof(PetscInt)));
     if (!A->structure_only) {
       if (v) {
         PetscCall(PetscMemcpy(ap, v, n * sizeof(PetscScalar)));
@@ -669,7 +669,7 @@ static PetscErrorCode MatView_SeqAIJ_ASCII_structonly(Mat A, PetscViewer viewer)
   PetscCall(PetscViewerASCIIUseTabs(viewer, PETSC_FALSE));
   for (i = 0; i < m; i++) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "row %" PetscInt_FMT ":", i));
-    for (k = a->i[i]; k < a->i[i + 1]; k++) { PetscCall(PetscViewerASCIIPrintf(viewer, " (%" PetscInt_FMT ") ", a->j[k])); }
+    for (k = a->i[i]; k < a->i[i + 1]; k++) PetscCall(PetscViewerASCIIPrintf(viewer, " (%" PetscInt_FMT ") ", a->j[k]));
     PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
   }
   PetscCall(PetscViewerASCIIUseTabs(viewer, PETSC_TRUE));
@@ -798,7 +798,7 @@ PetscErrorCode MatView_SeqAIJ_ASCII(Mat A, PetscViewer viewer) {
       for (j = a->i[i]; j < a->i[i + 1]; j++) {
         if (a->j[j] >= i) {
 #if defined(PETSC_USE_COMPLEX)
-          if (PetscImaginaryPart(a->a[j]) != 0.0 || PetscRealPart(a->a[j]) != 0.0) { PetscCall(PetscViewerASCIIPrintf(viewer, " %18.16e %18.16e ", (double)PetscRealPart(a->a[j]), (double)PetscImaginaryPart(a->a[j]))); }
+          if (PetscImaginaryPart(a->a[j]) != 0.0 || PetscRealPart(a->a[j]) != 0.0) PetscCall(PetscViewerASCIIPrintf(viewer, " %18.16e %18.16e ", (double)PetscRealPart(a->a[j]), (double)PetscImaginaryPart(a->a[j])));
 #else
           if (a->a[j] != 0.0) PetscCall(PetscViewerASCIIPrintf(viewer, " %18.16e ", (double)a->a[j]));
 #endif
@@ -1091,7 +1091,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat A, MatAssemblyType mode) {
       ap = aa + ai[i];
       N  = ailen[i];
       PetscCall(PetscArraymove(ip - fshift, ip, N));
-      if (!A->structure_only) { PetscCall(PetscArraymove(ap - fshift, ap, N)); }
+      if (!A->structure_only) PetscCall(PetscArraymove(ap - fshift, ap, N));
     }
     ai[i] = ai[i - 1] + ailen[i - 1];
   }
@@ -1124,7 +1124,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat A, MatAssemblyType mode) {
   A->info.nz_unneeded = (PetscReal)fshift;
   a->rmax             = rmax;
 
-  if (!A->structure_only) { PetscCall(MatCheckCompressedRow(A, a->nonzerorowcnt, &a->compressedrow, a->i, m, ratio)); }
+  if (!A->structure_only) PetscCall(MatCheckCompressedRow(A, a->nonzerorowcnt, &a->compressedrow, a->i, m, ratio));
   PetscCall(MatAssemblyEnd_SeqAIJ_Inode(A, mode));
   PetscFunctionReturn(0);
 }
@@ -1523,7 +1523,7 @@ PetscErrorCode MatMultAddMax_SeqAIJ(Mat A, Vec xx, Vec yy, Vec zz) {
   PetscCall(VecGetArrayRead(xx, &x));
   PetscCall(VecGetArrayPair(yy, zz, &y, &z));
   if (usecprow) { /* use compressed row format */
-    if (zz != yy) { PetscCall(PetscArraycpy(z, y, m)); }
+    if (zz != yy) PetscCall(PetscArraycpy(z, y, m));
     m    = a->compressedrow.nrows;
     ii   = a->compressedrow.i;
     ridx = a->compressedrow.rindex;
@@ -1573,7 +1573,7 @@ PetscErrorCode MatMultAdd_SeqAIJ(Mat A, Vec xx, Vec yy, Vec zz) {
   PetscCall(VecGetArrayRead(xx, &x));
   PetscCall(VecGetArrayPair(yy, zz, &y, &z));
   if (usecprow) { /* use compressed row format */
-    if (zz != yy) { PetscCall(PetscArraycpy(z, y, m)); }
+    if (zz != yy) PetscCall(PetscArraycpy(z, y, m));
     m    = a->compressedrow.nrows;
     ii   = a->compressedrow.i;
     ridx = a->compressedrow.rindex;
@@ -1683,7 +1683,7 @@ PetscErrorCode MatShift_SeqAIJ(Mat A, PetscScalar v) {
     /* copy old values into new matrix data structure */
     for (i = 0; i < A->rmap->n; i++) {
       PetscCall(MatSetValues(A, 1, &i, a->imax[i] - mdiag[i], &oldj[oldi[i]], &olda[oldi[i]], ADD_VALUES));
-      if (i < A->cmap->n) { PetscCall(MatSetValue(A, i, i, v, ADD_VALUES)); }
+      if (i < A->cmap->n) PetscCall(MatSetValue(A, i, i, v, ADD_VALUES));
     }
     PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
@@ -1748,7 +1748,7 @@ PetscErrorCode MatInvertVariableBlockDiagonal_SeqAIJ(Mat A, PetscInt nblocks, co
   PetscCheck(ncnt == n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Total blocksizes %" PetscInt_FMT " doesn't match number matrix rows %" PetscInt_FMT, ncnt, n);
   for (i = 0; i < nblocks; i++) { bsizemax = PetscMax(bsizemax, bsizes[i]); }
   PetscCall(PetscMalloc1(bsizemax, &indx));
-  if (bsizemax > 7) { PetscCall(PetscMalloc2(bsizemax, &v_work, bsizemax, &v_pivots)); }
+  if (bsizemax > 7) PetscCall(PetscMalloc2(bsizemax, &v_work, bsizemax, &v_pivots));
   ncnt = 0;
   for (i = 0; i < nblocks; i++) {
     for (j = 0; j < bsizes[i]; j++) indx[j] = ncnt + j;
@@ -1793,7 +1793,7 @@ PetscErrorCode MatInvertVariableBlockDiagonal_SeqAIJ(Mat A, PetscInt nblocks, co
     ncnt += bsizes[i];
     diag += bsizes[i] * bsizes[i];
   }
-  if (bsizemax > 7) { PetscCall(PetscFree2(v_work, v_pivots)); }
+  if (bsizemax > 7) PetscCall(PetscFree2(v_work, v_pivots));
   PetscCall(PetscFree(indx));
   PetscFunctionReturn(0);
 }
@@ -2639,7 +2639,7 @@ PetscErrorCode MatDestroySubMatrix_Private(Mat_SubSppt *submatj) {
   if (!submatj->id) { /* delete data that are linked only to submats[id=0] */
     PetscCall(PetscFree4(submatj->sbuf1, submatj->ptr, submatj->tmp, submatj->ctr));
 
-    for (i = 0; i < submatj->nrqr; ++i) { PetscCall(PetscFree(submatj->sbuf2[i])); }
+    for (i = 0; i < submatj->nrqr; ++i) PetscCall(PetscFree(submatj->sbuf2[i]));
     PetscCall(PetscFree3(submatj->sbuf2, submatj->req_size, submatj->req_source1));
 
     if (submatj->rbuf1) {
@@ -2647,7 +2647,7 @@ PetscErrorCode MatDestroySubMatrix_Private(Mat_SubSppt *submatj) {
       PetscCall(PetscFree(submatj->rbuf1));
     }
 
-    for (i = 0; i < submatj->nrqs; ++i) { PetscCall(PetscFree(submatj->rbuf3[i])); }
+    for (i = 0; i < submatj->nrqs; ++i) PetscCall(PetscFree(submatj->rbuf3[i]));
     PetscCall(PetscFree3(submatj->req_source2, submatj->rbuf2, submatj->rbuf3));
     PetscCall(PetscFree(submatj->pa));
   }
@@ -2721,9 +2721,9 @@ PetscErrorCode MatCreateSubMatrices_SeqAIJ(Mat A, PetscInt n, const IS irow[], c
   PetscInt i;
 
   PetscFunctionBegin;
-  if (scall == MAT_INITIAL_MATRIX) { PetscCall(PetscCalloc1(n + 1, B)); }
+  if (scall == MAT_INITIAL_MATRIX) PetscCall(PetscCalloc1(n + 1, B));
 
-  for (i = 0; i < n; i++) { PetscCall(MatCreateSubMatrix_SeqAIJ(A, irow[i], icol[i], PETSC_DECIDE, scall, &(*B)[i])); }
+  for (i = 0; i < n; i++) PetscCall(MatCreateSubMatrix_SeqAIJ(A, irow[i], icol[i], PETSC_DECIDE, scall, &(*B)[i]));
   PetscFunctionReturn(0);
 }
 
@@ -2826,7 +2826,7 @@ PetscErrorCode MatPermute_SeqAIJ(Mat A, IS rowp, IS colp, Mat *B) {
   PetscCall(ISRestoreIndices(icolp, &col));
   PetscCall(ISDestroy(&irowp));
   PetscCall(ISDestroy(&icolp));
-  if (rowp == colp) { PetscCall(MatPropagateSymmetryOptions(A, *B)); }
+  if (rowp == colp) PetscCall(MatPropagateSymmetryOptions(A, *B));
   PetscFunctionReturn(0);
 }
 
@@ -3539,7 +3539,7 @@ PetscErrorCode MatSeqAIJCompactOutExtraColumns_SeqAIJ(Mat mat, ISLocalToGlobalMa
   }
   PetscCall(PetscSortInt(ec, garray)); /* sort, and rebuild */
   PetscCall(PetscTableRemoveAll(gid1_lid1));
-  for (i = 0; i < ec; i++) { PetscCall(PetscTableAdd(gid1_lid1, garray[i] + 1, i + 1, INSERT_VALUES)); }
+  for (i = 0; i < ec; i++) PetscCall(PetscTableAdd(gid1_lid1, garray[i] + 1, i + 1, INSERT_VALUES));
   /* compact out the extra columns in B */
   for (i = 0; i < nz; i++) {
     PetscInt gid1 = jj[i] + 1;
@@ -4003,7 +4003,7 @@ PetscErrorCode MatSeqAIJSetPreallocationCSR_SeqAIJ(Mat B, const PetscInt Ii[], c
   PetscCall(MatSeqAIJSetPreallocation(B, 0, nnz));
   PetscCall(PetscFree(nnz));
 
-  for (i = 0; i < m; i++) { PetscCall(MatSetValues_SeqAIJ(B, 1, &i, Ii[i + 1] - Ii[i], J + Ii[i], v ? v + Ii[i] : NULL, INSERT_VALUES)); }
+  for (i = 0; i < m; i++) PetscCall(MatSetValues_SeqAIJ(B, 1, &i, Ii[i + 1] - Ii[i], J + Ii[i], v ? v + Ii[i] : NULL, INSERT_VALUES));
 
   PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
@@ -4157,7 +4157,7 @@ PetscErrorCode MatMatMultSymbolic_SeqDense_SeqAIJ(Mat A, Mat B, PetscReal fill, 
   PetscCall(MatSetSizes(C, m, n, m, n));
   PetscCall(MatSetBlockSizesFromMats(C, A, B));
   PetscCall(PetscObjectTypeCompareAny((PetscObject)C, &cisdense, MATSEQDENSE, MATSEQDENSECUDA, ""));
-  if (!cisdense) { PetscCall(MatSetType(C, MATDENSE)); }
+  if (!cisdense) PetscCall(MatSetType(C, MATDENSE));
   PetscCall(MatSetUp(C));
 
   C->ops->matmultnumeric = MatMatMultNumeric_SeqDense_SeqAIJ;
@@ -4789,7 +4789,7 @@ PetscErrorCode MatDuplicate_SeqAIJ(Mat A, MatDuplicateOption cpvalues, Mat *B) {
   PetscFunctionBegin;
   PetscCall(MatCreate(PetscObjectComm((PetscObject)A), B));
   PetscCall(MatSetSizes(*B, A->rmap->n, A->cmap->n, A->rmap->n, A->cmap->n));
-  if (!(A->rmap->n % A->rmap->bs) && !(A->cmap->n % A->cmap->bs)) { PetscCall(MatSetBlockSizesFromMats(*B, A, A)); }
+  if (!(A->rmap->n % A->rmap->bs) && !(A->cmap->n % A->cmap->bs)) PetscCall(MatSetBlockSizesFromMats(*B, A, A));
   PetscCall(MatSetType(*B, ((PetscObject)A)->type_name));
   PetscCall(MatDuplicateNoCreate_SeqAIJ(*B, A, cpvalues, PETSC_TRUE));
   PetscFunctionReturn(0);
@@ -5124,12 +5124,12 @@ PetscErrorCode MatSetSeqMat_SeqAIJ(Mat C, IS rowemb, IS colemb, MatStructure pat
     PetscCall(MatSeqAIJSetPreallocation(C, 0, nz));
     PetscCall(PetscFree(nz));
   }
-  if (pattern == SUBSET_NONZERO_PATTERN) { PetscCall(MatZeroEntries(C)); }
+  if (pattern == SUBSET_NONZERO_PATTERN) PetscCall(MatZeroEntries(C));
   count      = 0;
   rowindices = NULL;
   colindices = NULL;
-  if (rowemb) { PetscCall(ISGetIndices(rowemb, &rowindices)); }
-  if (colemb) { PetscCall(ISGetIndices(colemb, &colindices)); }
+  if (rowemb) PetscCall(ISGetIndices(rowemb, &rowindices));
+  if (colemb) PetscCall(ISGetIndices(colemb, &colindices));
   for (i = 0; i < B->rmap->n; i++) {
     PetscInt row;
     row = i;

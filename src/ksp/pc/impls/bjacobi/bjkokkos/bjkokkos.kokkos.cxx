@@ -880,7 +880,7 @@ static PetscErrorCode PCApply_BJKOKKOS(PC pc, Vec bin, Vec xout) {
         for (PetscInt f = 0, idx = head; f < jac->dm_Nf[dmIdx]; f++, s++, idx++) {
 #if PCBJKOKKOS_VERBOSE_LEVEL >= 4
           PetscCall(PetscPrintf(PetscObjectComm((PetscObject)A), "%2D:", s));
-          for (int bid = 0; bid < batch_sz; bid++) { PetscCall(PetscPrintf(PetscObjectComm((PetscObject)A), "%3D ", handle.get_iteration_host(idx + bid * jac->dm_Nf[dmIdx]))); }
+          for (int bid = 0; bid < batch_sz; bid++) PetscCall(PetscPrintf(PetscObjectComm((PetscObject)A), "%3D ", handle.get_iteration_host(idx + bid * jac->dm_Nf[dmIdx])));
           PetscCall(PetscPrintf(PetscObjectComm((PetscObject)A), "\n"));
 #else
           int count = 0, ii;
@@ -921,7 +921,7 @@ static PetscErrorCode PCApply_BJKOKKOS(PC pc, Vec bin, Vec xout) {
             jac->max_nits = count = handle.get_iteration_host(blkID);
             mbid                  = blkID;
           }
-          if (!handle.is_converged_host(blkID)) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "ERROR species %d, batch %d did not converge with %d iterations\n", (int)(blkID / batch_sz), (int)blkID % batch_sz, handle.get_iteration_host(blkID))); }
+          if (!handle.is_converged_host(blkID)) PetscCall(PetscPrintf(PETSC_COMM_SELF, "ERROR species %d, batch %d did not converge with %d iterations\n", (int)(blkID / batch_sz), (int)blkID % batch_sz, handle.get_iteration_host(blkID)));
         }
       }
       if (jac->batch_target == -1 && jac->reason) {
@@ -1020,7 +1020,7 @@ static PetscErrorCode PCApply_BJKOKKOS(PC pc, Vec bin, Vec xout) {
         for (PetscInt f = 0, idx = head; f < jac->dm_Nf[dmIdx]; f++, s++, idx++) {
 #if PCBJKOKKOS_VERBOSE_LEVEL >= 4
           PetscCall(PetscPrintf(PetscObjectComm((PetscObject)A), "%2" PetscInt_FMT ":", s));
-          for (int bid = 0; bid < batch_sz; bid++) { PetscCall(PetscPrintf(PetscObjectComm((PetscObject)A), "%3" PetscInt_FMT " ", h_metadata[idx + bid * jac->dm_Nf[dmIdx]].its)); }
+          for (int bid = 0; bid < batch_sz; bid++) PetscCall(PetscPrintf(PetscObjectComm((PetscObject)A), "%3" PetscInt_FMT " ", h_metadata[idx + bid * jac->dm_Nf[dmIdx]].its));
           PetscCall(PetscPrintf(PetscObjectComm((PetscObject)A), "\n"));
 #else
           PetscInt count = 0;

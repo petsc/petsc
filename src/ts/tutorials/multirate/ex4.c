@@ -1206,7 +1206,7 @@ int main(int argc, char *argv[]) {
   PetscCall(DMSetUp(da));
   /* Inform the DMDA of the field names provided by the physics. */
   /* The names will be shown in the title bars when run with -ts_monitor_draw_solution */
-  for (i = 0; i < ctx.physics2.dof; i++) { PetscCall(DMDASetFieldName(da, i, ctx.physics2.fieldname[i])); }
+  for (i = 0; i < ctx.physics2.dof; i++) PetscCall(DMDASetFieldName(da, i, ctx.physics2.fieldname[i]));
   PetscCall(DMDAGetInfo(da, 0, &Mx, 0, 0, 0, 0, 0, &dof, 0, 0, 0, 0, 0));
   PetscCall(DMDAGetCorners(da, &xs, 0, 0, &xm, 0, 0));
 

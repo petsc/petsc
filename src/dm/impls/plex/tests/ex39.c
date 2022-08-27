@@ -297,7 +297,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, UserCtx *user, DM *mesh) {
   PetscCall(DMSetFromOptions(*mesh));
 
   /* Perform any mesh transformations if specified by user */
-  if (user->mesh_transform != NONE) { PetscCall(TransformMesh(user, mesh)); }
+  if (user->mesh_transform != NONE) PetscCall(TransformMesh(user, mesh));
 
   /* Get any other mesh options from the command line */
   PetscCall(DMSetApplicationContext(*mesh, user));
@@ -447,7 +447,7 @@ int main(int argc, char **argv) {
   /* Tear down */
   PetscCall(VecDestroy(&divErr));
   PetscCall(VecDestroy(&computed));
-  for (i = 0; i < 3; ++i) { PetscCall(ISDestroy(&fieldIS[i])); }
+  for (i = 0; i < 3; ++i) PetscCall(ISDestroy(&fieldIS[i]));
   PetscCall(PetscFree(fieldIS));
   PetscCall(SNESDestroy(&snes));
   PetscCall(DMDestroy(&mesh));

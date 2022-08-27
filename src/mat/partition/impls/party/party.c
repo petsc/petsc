@@ -113,7 +113,7 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part, IS *parti
   close(fd_stdout);
   close(fd_pipe[0]);
   close(fd_pipe[1]);
-  if (party->verbose) { PetscCall(PetscPrintf(PetscObjectComm((PetscObject)mat), "%s", mesg_log)); }
+  if (party->verbose) PetscCall(PetscPrintf(PetscObjectComm((PetscObject)mat), "%s", mesg_log));
   PetscCall(PetscFree(mesg_log));
 #endif
   PetscCheck(!perr, PETSC_COMM_SELF, PETSC_ERR_LIB, "Party failed");

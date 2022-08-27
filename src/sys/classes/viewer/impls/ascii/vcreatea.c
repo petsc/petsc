@@ -34,7 +34,7 @@ PetscErrorCode PetscViewerASCIIGetStdout(MPI_Comm comm, PetscViewer *viewer) {
   PetscFunctionBegin;
   PetscCall(PetscSpinlockLock(&PetscViewerASCIISpinLockStdout));
   PetscCall(PetscCommDuplicate(comm, &ncomm, NULL));
-  if (Petsc_Viewer_Stdout_keyval == MPI_KEYVAL_INVALID) { PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, MPI_COMM_NULL_DELETE_FN, &Petsc_Viewer_Stdout_keyval, NULL)); }
+  if (Petsc_Viewer_Stdout_keyval == MPI_KEYVAL_INVALID) PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, MPI_COMM_NULL_DELETE_FN, &Petsc_Viewer_Stdout_keyval, NULL));
   PetscCallMPI(MPI_Comm_get_attr(ncomm, Petsc_Viewer_Stdout_keyval, (void **)viewer, (PetscMPIInt *)&flg));
   if (!flg) { /* PetscViewer not yet created */
     PetscCall(PetscViewerASCIIOpen(ncomm, "stdout", viewer));
@@ -112,7 +112,7 @@ PetscErrorCode PetscViewerASCIIGetStderr(MPI_Comm comm, PetscViewer *viewer) {
   PetscFunctionBegin;
   PetscCall(PetscSpinlockLock(&PetscViewerASCIISpinLockStderr));
   PetscCall(PetscCommDuplicate(comm, &ncomm, NULL));
-  if (Petsc_Viewer_Stderr_keyval == MPI_KEYVAL_INVALID) { PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, MPI_COMM_NULL_DELETE_FN, &Petsc_Viewer_Stderr_keyval, NULL)); }
+  if (Petsc_Viewer_Stderr_keyval == MPI_KEYVAL_INVALID) PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, MPI_COMM_NULL_DELETE_FN, &Petsc_Viewer_Stderr_keyval, NULL));
   PetscCallMPI(MPI_Comm_get_attr(ncomm, Petsc_Viewer_Stderr_keyval, (void **)viewer, (PetscMPIInt *)&flg));
   if (!flg) { /* PetscViewer not yet created */
     PetscCall(PetscViewerASCIIOpen(ncomm, "stderr", viewer));
@@ -220,7 +220,7 @@ PetscErrorCode PetscViewerASCIIOpen(MPI_Comm comm, const char name[], PetscViewe
     PetscFunctionReturn(0);
   }
   PetscCall(PetscSpinlockLock(&PetscViewerASCIISpinLockOpen));
-  if (Petsc_Viewer_keyval == MPI_KEYVAL_INVALID) { PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, Petsc_DelViewer, &Petsc_Viewer_keyval, (void *)0)); }
+  if (Petsc_Viewer_keyval == MPI_KEYVAL_INVALID) PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, Petsc_DelViewer, &Petsc_Viewer_keyval, (void *)0));
   /*
        It would be better to move this code to PetscFileSetName() but since it must return a preexiting communicator
      we cannot do that, since PetscFileSetName() takes a communicator that already exists.

@@ -96,9 +96,9 @@ PetscErrorCode DMTSView(DMTS kdm, PetscViewer viewer) {
     const char *fname;
 
     PetscCall(PetscFPTFind(kdm->ops->ifunction, &fname));
-    if (fname) { PetscCall(PetscViewerASCIIPrintf(viewer, "  IFunction used by TS: %s\n", fname)); }
+    if (fname) PetscCall(PetscViewerASCIIPrintf(viewer, "  IFunction used by TS: %s\n", fname));
     PetscCall(PetscFPTFind(kdm->ops->ijacobian, &fname));
-    if (fname) { PetscCall(PetscViewerASCIIPrintf(viewer, "  IJacobian function used by TS: %s\n", fname)); }
+    if (fname) PetscCall(PetscViewerASCIIPrintf(viewer, "  IJacobian function used by TS: %s\n", fname));
 #endif
   } else if (isbinary) {
     struct {

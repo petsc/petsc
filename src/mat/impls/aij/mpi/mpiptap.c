@@ -450,14 +450,14 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat A, Mat P, PetscReal fi
   PetscCall(ISLocalToGlobalMappingApply(ptap->ltog, c_loc->i[ptap->C_loc->rmap->n], c_loc->j, c_loc->j));
 
   /* receives coj are complete */
-  for (i = 0; i < nrecv; i++) { PetscCallMPI(MPI_Waitany(nrecv, rwaits, &icompleted, &rstatus)); }
+  for (i = 0; i < nrecv; i++) PetscCallMPI(MPI_Waitany(nrecv, rwaits, &icompleted, &rstatus));
   PetscCall(PetscFree(rwaits));
   if (nsend) PetscCallMPI(MPI_Waitall(nsend, swaits, sstatus));
 
   /* add received column indices into ta to update Crmax */
   for (k = 0; k < nrecv; k++) { /* k-th received message */
     Jptr = buf_rj[k];
-    for (j = 0; j < len_r[k]; j++) { PetscCall(PetscTableAdd(ta, *(Jptr + j) + 1, 1, INSERT_VALUES)); }
+    for (j = 0; j < len_r[k]; j++) PetscCall(PetscTableAdd(ta, *(Jptr + j) + 1, 1, INSERT_VALUES));
   }
   PetscCall(PetscTableGetCount(ta, &Crmax));
   PetscCall(PetscTableDestroy(&ta));
@@ -491,7 +491,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat A, Mat P, PetscReal fi
     k++;
     buf_si += len_si[proc];
   }
-  for (i = 0; i < nrecv; i++) { PetscCallMPI(MPI_Waitany(nrecv, rwaits, &icompleted, &rstatus)); }
+  for (i = 0; i < nrecv; i++) PetscCallMPI(MPI_Waitany(nrecv, rwaits, &icompleted, &rstatus));
   PetscCall(PetscFree(rwaits));
   if (nsend) PetscCallMPI(MPI_Waitall(nsend, swaits, sstatus));
 
@@ -598,7 +598,7 @@ static inline PetscErrorCode MatPtAPSymbolicComputeOneRowOfAP_private(Mat A, Mat
     row /= dof;
     nzpi = pd->i[row + 1] - pd->i[row];
     pj   = pd->j + pd->i[row];
-    for (k = 0; k < nzpi; k++) { PetscCall(PetscHSetIAdd(dht, pj[k] * dof + offset + pcstart)); }
+    for (k = 0; k < nzpi; k++) PetscCall(PetscHSetIAdd(dht, pj[k] * dof + offset + pcstart));
   }
   /* off diag P */
   for (j = 0; j < nzi; j++) {
@@ -607,7 +607,7 @@ static inline PetscErrorCode MatPtAPSymbolicComputeOneRowOfAP_private(Mat A, Mat
     row /= dof;
     nzpi = po->i[row + 1] - po->i[row];
     pj   = po->j + po->i[row];
-    for (k = 0; k < nzpi; k++) { PetscCall(PetscHSetIAdd(oht, p->garray[pj[k]] * dof + offset)); }
+    for (k = 0; k < nzpi; k++) PetscCall(PetscHSetIAdd(oht, p->garray[pj[k]] * dof + offset));
   }
 
   /* off diagonal part: Ao[i, :]*P_oth */
@@ -658,7 +658,7 @@ static inline PetscErrorCode MatPtAPNumericComputeOneRowOfAP_private(Mat A, Mat 
     nzpi = pd->i[row + 1] - pd->i[row];
     pj   = pd->j + pd->i[row];
     pa   = pd->a + pd->i[row];
-    for (k = 0; k < nzpi; k++) { PetscCall(PetscHMapIVAddValue(hmap, pj[k] * dof + offset + pcstart, ra * pa[k])); }
+    for (k = 0; k < nzpi; k++) PetscCall(PetscHMapIVAddValue(hmap, pj[k] * dof + offset + pcstart, ra * pa[k]));
     PetscCall(PetscLogFlops(2.0 * nzpi));
   }
   for (j = 0; j < nzi; j++) {
@@ -669,7 +669,7 @@ static inline PetscErrorCode MatPtAPNumericComputeOneRowOfAP_private(Mat A, Mat 
     nzpi = po->i[row + 1] - po->i[row];
     pj   = po->j + po->i[row];
     pa   = po->a + po->i[row];
-    for (k = 0; k < nzpi; k++) { PetscCall(PetscHMapIVAddValue(hmap, p->garray[pj[k]] * dof + offset, ra * pa[k])); }
+    for (k = 0; k < nzpi; k++) PetscCall(PetscHMapIVAddValue(hmap, p->garray[pj[k]] * dof + offset, ra * pa[k]));
     PetscCall(PetscLogFlops(2.0 * nzpi));
   }
 
@@ -688,7 +688,7 @@ static inline PetscErrorCode MatPtAPNumericComputeOneRowOfAP_private(Mat A, Mat 
       pnz       = pi[row + 1] - pi[row];
       p_othcols = p_oth->j + pi[row];
       pa        = p_oth->a + pi[row];
-      for (col = 0; col < pnz; col++) { PetscCall(PetscHMapIVAddValue(hmap, p_othcols[col] * dof + offset, ra * pa[col])); }
+      for (col = 0; col < pnz; col++) PetscCall(PetscHMapIVAddValue(hmap, p_othcols[col] * dof + offset, ra * pa[col]));
       PetscCall(PetscLogFlops(2.0 * pnz));
     }
   } /* end if (ao) */
@@ -1034,7 +1034,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIXAIJ_allatonce(Mat A, Mat P, PetscInt d
   /* The number of columns we will send to remote ranks */
   PetscCall(PetscMalloc1(pon, &c_rmtc));
   PetscCall(PetscMalloc1(pon, &hta));
-  for (i = 0; i < pon; i++) { PetscCall(PetscHSetICreate(&hta[i])); }
+  for (i = 0; i < pon; i++) PetscCall(PetscHSetICreate(&hta[i]));
   PetscCall(MatGetLocalSize(A, &am, NULL));
   PetscCall(MatGetOwnershipRange(A, &arstart, &arend));
   /* Create hash table to merge all columns for C(i, :) */
@@ -1058,7 +1058,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIXAIJ_allatonce(Mat A, Mat P, PetscInt d
     if (!htsize) continue;
     /* Form C(ii, :) */
     poj = po->j + po->i[ii];
-    for (j = 0; j < nzi; j++) { PetscCall(PetscHSetIUpdate(hta[poj[j] * dof + offset], ht)); }
+    for (j = 0; j < nzi; j++) PetscCall(PetscHSetIUpdate(hta[poj[j] * dof + offset], ht));
   }
 
   for (i = 0; i < pon; i++) {
@@ -1294,7 +1294,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIXAIJ_allatonce_merged(Mat A, Mat P, Pet
   /* The number of columns we will send to remote ranks */
   PetscCall(PetscMalloc1(pon, &c_rmtc));
   PetscCall(PetscMalloc1(pon, &hta));
-  for (i = 0; i < pon; i++) { PetscCall(PetscHSetICreate(&hta[i])); }
+  for (i = 0; i < pon; i++) PetscCall(PetscHSetICreate(&hta[i]));
   PetscCall(MatGetLocalSize(A, &am, NULL));
   PetscCall(MatGetOwnershipRange(A, &arstart, &arend));
   /* Create hash table to merge all columns for C(i, :) */
@@ -1734,14 +1734,14 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A, Mat P, PetscReal fill, Mat C
   c_loc = (Mat_SeqAIJ *)ptap->C_loc->data;
 
   /* receives coj are complete */
-  for (i = 0; i < nrecv; i++) { PetscCallMPI(MPI_Waitany(nrecv, rwaits, &icompleted, &rstatus)); }
+  for (i = 0; i < nrecv; i++) PetscCallMPI(MPI_Waitany(nrecv, rwaits, &icompleted, &rstatus));
   PetscCall(PetscFree(rwaits));
   if (nsend) PetscCallMPI(MPI_Waitall(nsend, swaits, sstatus));
 
   /* add received column indices into ta to update Crmax */
   for (k = 0; k < nrecv; k++) { /* k-th received message */
     Jptr = buf_rj[k];
-    for (j = 0; j < len_r[k]; j++) { PetscCall(PetscTableAdd(ta, *(Jptr + j) + 1, 1, INSERT_VALUES)); }
+    for (j = 0; j < len_r[k]; j++) PetscCall(PetscTableAdd(ta, *(Jptr + j) + 1, 1, INSERT_VALUES));
   }
   PetscCall(PetscTableGetCount(ta, &Crmax));
   PetscCall(PetscTableDestroy(&ta));
@@ -1775,7 +1775,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A, Mat P, PetscReal fill, Mat C
     k++;
     buf_si += len_si[proc];
   }
-  for (i = 0; i < nrecv; i++) { PetscCallMPI(MPI_Waitany(nrecv, rwaits, &icompleted, &rstatus)); }
+  for (i = 0; i < nrecv; i++) PetscCallMPI(MPI_Waitany(nrecv, rwaits, &icompleted, &rstatus));
   PetscCall(PetscFree(rwaits));
   if (nsend) PetscCallMPI(MPI_Waitall(nsend, swaits, sstatus));
 

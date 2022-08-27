@@ -115,7 +115,7 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
   } else {
     PetscCheck(!ctx->gpu_assembly, ctx->comm, PETSC_ERR_ARG_WRONG, "No maps but GPU assembly");
     for (PetscInt tid = 0; tid < ctx->batch_sz; tid++) {
-      for (PetscInt grid = 0; grid < ctx->num_grids; grid++) { PetscCall(DMCreateMatrix(ctx->plex[grid], &subJ[LAND_PACK_IDX(tid, grid)])); }
+      for (PetscInt grid = 0; grid < ctx->num_grids; grid++) PetscCall(DMCreateMatrix(ctx->plex[grid], &subJ[LAND_PACK_IDX(tid, grid)]));
     }
     maps = NULL;
   }
@@ -599,7 +599,7 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
   PetscCall(MatAssemblyEnd(JacP, MAT_FINAL_ASSEMBLY));
   /* clean up */
   if (cellClosure) PetscCall(PetscFree(cellClosure));
-  if (xdata) { PetscCall(VecRestoreArrayReadAndMemType(a_X, &xdata)); }
+  if (xdata) PetscCall(VecRestoreArrayReadAndMemType(a_X, &xdata));
   PetscFunctionReturn(0);
 }
 
@@ -895,7 +895,7 @@ static PetscErrorCode LandauDMCreateVMeshes(MPI_Comm comm_self, const PetscInt d
             PetscCall(PetscObjectSetOptionsPrefix((PetscObject)dmforest, prefix));
             PetscCall(DMIsForest(dmforest, &isForest));
             if (isForest) {
-              if (ctx->sphere && ctx->inflate) { PetscCall(DMForestSetBaseCoordinateMapping(dmforest, GeometryDMLandau, ctx)); }
+              if (ctx->sphere && ctx->inflate) PetscCall(DMForestSetBaseCoordinateMapping(dmforest, GeometryDMLandau, ctx));
               PetscCall(DMDestroy(&ctx->plex[grid]));
               ctx->plex[grid] = dmforest; // Forest for adaptivity
             } else SETERRQ(ctx->comm, PETSC_ERR_PLIB, "Converted to non Forest?");
@@ -1077,7 +1077,7 @@ static PetscErrorCode adaptToleranceFEM(PetscFE fem, Vec sol, PetscInt type, Pet
   PetscCheck(Nq <= LANDAU_MAX_NQ, ctx->comm, PETSC_ERR_ARG_WRONG, "Order too high. Nq = %" PetscInt_FMT " > LANDAU_MAX_NQ (%d)", Nq, LANDAU_MAX_NQ);
   PetscCall(PetscDSGetDimensions(prob, &Nb));
   if (type == 4) {
-    for (c = cStart; c < cEnd; c++) { PetscCall(DMLabelSetValue(adaptLabel, c, DM_ADAPT_REFINE)); }
+    for (c = cStart; c < cEnd; c++) PetscCall(DMLabelSetValue(adaptLabel, c, DM_ADAPT_REFINE));
     PetscCall(PetscInfo(sol, "Phase:%s: Uniform refinement\n", "adaptToleranceFEM"));
   } else if (type == 2) {
     PetscInt  rCellIdx[8], eCellIdx[64], iCellIdx[64], eMaxIdx = -1, iMaxIdx = -1, nr = 0, nrmax = (dim == 3) ? 8 : 2;
@@ -1125,7 +1125,7 @@ static PetscErrorCode adaptToleranceFEM(PetscFE fem, Vec sol, PetscInt type, Pet
         }
       }
     }
-    for (k = 0; k < nr; k++) { PetscCall(DMLabelSetValue(adaptLabel, rCellIdx[k], DM_ADAPT_REFINE)); }
+    for (k = 0; k < nr; k++) PetscCall(DMLabelSetValue(adaptLabel, rCellIdx[k], DM_ADAPT_REFINE));
     if (ctx->sphere) {
       for (c = 0; c < eMaxIdx; c++) {
         PetscCall(DMLabelSetValue(adaptLabel, eCellIdx[c], DM_ADAPT_REFINE));
@@ -1160,7 +1160,7 @@ static PetscErrorCode adaptToleranceFEM(PetscFE fem, Vec sol, PetscInt type, Pet
         if (x < PETSC_MACHINE_EPSILON * 10.) nz++;
       }
       PetscCall(DMPlexVecRestoreClosure(cdm, cs, coords, c, &csize, &coef));
-      if (doit || (outside < Nv && nz)) { PetscCall(DMLabelSetValue(adaptLabel, c, DM_ADAPT_REFINE)); }
+      if (doit || (outside < Nv && nz)) PetscCall(DMLabelSetValue(adaptLabel, c, DM_ADAPT_REFINE));
     }
     PetscCall(PetscInfo(sol, "Phase:%s: RE refinement\n", "adaptToleranceFEM"));
   }
@@ -1541,7 +1541,7 @@ static PetscErrorCode CreateStaticGPUData(PetscInt dim, IS grid_batch_is_inv[], 
     ctx->SData_d.coo_max_fullnb = 0;
     for (PetscInt grid = 0, glb_elem_idx = 0; grid < ctx->num_grids; grid++) {
       PetscInt cStart, cEnd, Nfloc = Nf[grid], totDim = Nfloc * Nq;
-      if (grid_batch_is_inv[grid]) { PetscCall(ISGetIndices(grid_batch_is_inv[grid], &plex_batch)); }
+      if (grid_batch_is_inv[grid]) PetscCall(ISGetIndices(grid_batch_is_inv[grid], &plex_batch));
       PetscCall(DMPlexGetHeightStratum(ctx->plex[grid], 0, &cStart, &cEnd));
       // make maps
       maps[grid].d_self       = NULL;
@@ -1646,7 +1646,7 @@ static PetscErrorCode CreateStaticGPUData(PetscInt dim, IS grid_batch_is_inv[], 
       }                                                                      // else could be CUDA
 #endif
 #if defined(PETSC_HAVE_CUDA)
-      if (ctx->deviceType == LANDAU_CUDA) { PetscCall(LandauCUDACreateMatMaps(maps, pointMaps, Nf, Nq, grid)); }
+      if (ctx->deviceType == LANDAU_CUDA) PetscCall(LandauCUDACreateMatMaps(maps, pointMaps, Nf, Nq, grid));
 #endif
       if (plex_batch) {
         PetscCall(ISRestoreIndices(grid_batch_is_inv[grid], &plex_batch));
@@ -1750,7 +1750,7 @@ static PetscErrorCode CreateStaticGPUData(PetscInt dim, IS grid_batch_is_inv[], 
                             ctx->num_species, Nb, dim, N));
     }
     PetscCall(PetscMalloc4(nip_glb, &ww, nip_glb, &xx, nip_glb, &yy, nip_glb * dim * dim, &invJ_a));
-    if (dim == 3) { PetscCall(PetscMalloc1(nip_glb, &zz)); }
+    if (dim == 3) PetscCall(PetscMalloc1(nip_glb, &zz));
     if (ctx->use_energy_tensor_trick) {
       PetscCall(PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, PETSC_FALSE, NULL, PETSC_DECIDE, &fe));
       PetscCall(PetscObjectSetName((PetscObject)fe, "energy"));
@@ -1792,7 +1792,7 @@ static PetscErrorCode CreateStaticGPUData(PetscInt dim, IS grid_batch_is_inv[], 
         PetscReal    vj[LANDAU_MAX_NQ * LANDAU_DIM], detJj[LANDAU_MAX_NQ], Jdummy[LANDAU_MAX_NQ * LANDAU_DIM * LANDAU_DIM], c0 = C_0(ctx->v_0), c02 = PetscSqr(c0);
         invJe = invJ_a + outer_ej * Nq * dim * dim;
         PetscCall(DMPlexComputeCellGeometryFEM(ctx->plex[grid], ej + cStart, quad, vj, Jdummy, invJe, detJj));
-        if (ctx->use_energy_tensor_trick) { PetscCall(DMPlexVecGetClosure(dmEnergy, e_section, v2_2, ej + cStart, NULL, &coefs)); }
+        if (ctx->use_energy_tensor_trick) PetscCall(DMPlexVecGetClosure(dmEnergy, e_section, v2_2, ej + cStart, NULL, &coefs));
         /* create static point data */
         for (PetscInt qj = 0; qj < Nq; qj++, outer_ipidx++) {
           const PetscInt   gidx = outer_ipidx;
@@ -1839,14 +1839,14 @@ static PetscErrorCode CreateStaticGPUData(PetscInt dim, IS grid_batch_is_inv[], 
             if (dim == 3) zz[gidx] = vj[qj * dim + 2];
           }
         } /* q */
-        if (ctx->use_energy_tensor_trick) { PetscCall(DMPlexVecRestoreClosure(dmEnergy, e_section, v2_2, ej + cStart, NULL, &coefs)); }
+        if (ctx->use_energy_tensor_trick) PetscCall(DMPlexVecRestoreClosure(dmEnergy, e_section, v2_2, ej + cStart, NULL, &coefs));
       } /* ej */
       if (ctx->use_energy_tensor_trick) {
         PetscCall(DMRestoreLocalVector(dmEnergy, &v2_2));
         PetscCall(DMDestroy(&dmEnergy));
       }
     } /* grid */
-    if (ctx->use_energy_tensor_trick) { PetscCall(PetscFEDestroy(&fe)); }
+    if (ctx->use_energy_tensor_trick) PetscCall(PetscFEDestroy(&fe));
     /* cache static data */
     if (ctx->deviceType == LANDAU_CUDA || ctx->deviceType == LANDAU_KOKKOS) {
 #if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_KOKKOS_KERNELS)
@@ -1924,7 +1924,7 @@ static PetscErrorCode LandauCreateJacobianMatrix(MPI_Comm comm, Vec X, IS grid_b
     PetscFunctionReturn(0);
   }
   // get the RCM for this grid to separate out species into blocks -- create 'idxs' & 'ctx->batch_is'
-  if (ctx->gpu_assembly && ctx->jacobian_field_major_order) { PetscCall(PetscMalloc1(ctx->mat_offset[ctx->num_grids] * ctx->batch_sz, &idxs)); }
+  if (ctx->gpu_assembly && ctx->jacobian_field_major_order) PetscCall(PetscMalloc1(ctx->mat_offset[ctx->num_grids] * ctx->batch_sz, &idxs));
   for (PetscInt grid = 0; grid < ctx->num_grids; grid++) {
     const PetscInt *values, n = ctx->mat_offset[grid + 1] - ctx->mat_offset[grid];
     Mat             gMat;
@@ -1936,7 +1936,7 @@ static PetscErrorCode LandauCreateJacobianMatrix(MPI_Comm comm, Vec X, IS grid_b
     PetscCall(DMCopyFields(ctx->plex[grid], massDM));
     PetscCall(DMCreateDS(massDM));
     PetscCall(DMGetDS(massDM, &prob));
-    for (int ix = 0, ii = ctx->species_offset[grid]; ii < ctx->species_offset[grid + 1]; ii++, ix++) { PetscCall(PetscDSSetJacobian(prob, ix, ix, g0_fake, NULL, NULL, NULL)); }
+    for (int ix = 0, ii = ctx->species_offset[grid]; ii < ctx->species_offset[grid + 1]; ii++, ix++) PetscCall(PetscDSSetJacobian(prob, ix, ix, g0_fake, NULL, NULL, NULL));
     PetscCall(PetscOptionsInsertString(NULL, "-dm_preallocate_only")); // this trick is need to both sparsify the matrix and avoid runtime error
     PetscCall(DMCreateMatrix(massDM, &gMat));
     PetscCall(PetscOptionsInsertString(NULL, "-dm_preallocate_only false"));
@@ -1968,7 +1968,7 @@ static PetscErrorCode LandauCreateJacobianMatrix(MPI_Comm comm, Vec X, IS grid_b
       PetscCall(ISDestroy(&isicol));
     }
   }
-  if (ctx->gpu_assembly && ctx->jacobian_field_major_order) { PetscCall(ISCreateGeneral(comm, ctx->mat_offset[ctx->num_grids] * ctx->batch_sz, idxs, PETSC_OWN_POINTER, &ctx->batch_is)); }
+  if (ctx->gpu_assembly && ctx->jacobian_field_major_order) PetscCall(ISCreateGeneral(comm, ctx->mat_offset[ctx->num_grids] * ctx->batch_sz, idxs, PETSC_OWN_POINTER, &ctx->batch_is));
   // get a block matrix
   for (PetscInt grid = 0; grid < ctx->num_grids; grid++) {
     Mat      B = subM[grid];
@@ -1996,7 +1996,7 @@ static PetscErrorCode LandauCreateJacobianMatrix(MPI_Comm comm, Vec X, IS grid_b
     }
     PetscCall(PetscFree(colbuf));
   }
-  for (PetscInt grid = 0; grid < ctx->num_grids; grid++) { PetscCall(MatDestroy(&subM[grid])); }
+  for (PetscInt grid = 0; grid < ctx->num_grids; grid++) PetscCall(MatDestroy(&subM[grid]));
   PetscCall(MatAssemblyBegin(ctx->J, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(ctx->J, MAT_FINAL_ASSEMBLY));
 
@@ -2084,7 +2084,7 @@ PetscErrorCode DMPlexLandauCreateVelocitySpace(MPI_Comm comm, PetscInt dim, cons
 #if !defined(LANDAU_SPECIES_MAJOR)
   // stack the batched DMs, could do it all here!!! b_id=0
   for (PetscInt b_id = 1; b_id < ctx->batch_sz; b_id++) {
-    for (PetscInt grid = 0; grid < ctx->num_grids; grid++) { PetscCall(DMCompositeAddDM(*pack, ctx->plex[grid])); }
+    for (PetscInt grid = 0; grid < ctx->num_grids; grid++) PetscCall(DMCompositeAddDM(*pack, ctx->plex[grid]));
   }
 #endif
   // create ctx->mat_offset
@@ -2112,12 +2112,12 @@ PetscErrorCode DMPlexLandauCreateVelocitySpace(MPI_Comm comm, PetscInt dim, cons
       const PetscInt     moffset = LAND_MOFFSET(b_id, grid, ctx->batch_sz, ctx->num_grids, ctx->mat_offset);
       PetscCall(LandauSetInitialCondition(ctx->plex[grid], Xsub[grid], grid, b_id, ctx->batch_sz, ctx));
       PetscCall(VecGetArrayRead(Xsub[grid], &values));
-      for (int i = 0, idx = moffset; i < n; i++, idx++) { PetscCall(VecSetValue(*X, idx, values[i], INSERT_VALUES)); }
+      for (int i = 0, idx = moffset; i < n; i++, idx++) PetscCall(VecSetValue(*X, idx, values[i], INSERT_VALUES));
       PetscCall(VecRestoreArrayRead(Xsub[grid], &values));
     }
   }
   // cleanup
-  for (PetscInt grid = 0; grid < ctx->num_grids; grid++) { PetscCall(VecDestroy(&Xsub[grid])); }
+  for (PetscInt grid = 0; grid < ctx->num_grids; grid++) PetscCall(VecDestroy(&Xsub[grid]));
   /* check for correct matrix type */
   if (ctx->gpu_assembly) { /* we need GPU object with GPU assembly */
     PetscBool flg;
@@ -2299,7 +2299,7 @@ PetscErrorCode DMPlexLandauDestroyVelocitySpace(DM *dm) {
     PetscCall(PetscPrintf(ctx->comm, "MatLUFactorNum        X 1.0 %10.3e\n", ctx->times[KSP_FACTOR]));
     PetscCall(PetscPrintf(ctx->comm, "MatSolve              X 1.0 %10.3e\n", ctx->times[KSP_SOLVE]));
   }
-  for (PetscInt grid = 0; grid < ctx->num_grids; grid++) { PetscCall(DMDestroy(&ctx->plex[grid])); }
+  for (PetscInt grid = 0; grid < ctx->num_grids; grid++) PetscCall(DMDestroy(&ctx->plex[grid]));
   PetscFree(ctx);
   PetscCall(DMDestroy(dm));
   PetscFunctionReturn(0);
@@ -2577,7 +2577,7 @@ PetscErrorCode DMPlexLandauCreateMassMatrix(DM pack, Mat *Amat) {
 #if !defined(LANDAU_SPECIES_MAJOR)
   // stack the batched DMs
   for (PetscInt b_id = 1; b_id < ctx->batch_sz; b_id++) {
-    for (PetscInt grid = 0; grid < ctx->num_grids; grid++) { PetscCall(DMCompositeAddDM(mass_pack, massDM[grid])); }
+    for (PetscInt grid = 0; grid < ctx->num_grids; grid++) PetscCall(DMCompositeAddDM(mass_pack, massDM[grid]));
   }
 #endif
   PetscCall(PetscOptionsInsertString(NULL, "-dm_preallocate_only"));
@@ -2627,7 +2627,7 @@ PetscErrorCode DMPlexLandauCreateMassMatrix(DM pack, Mat *Amat) {
     PetscCall(PetscFree(colbuf));
   }
   // cleanup
-  for (PetscInt grid = 0; grid < ctx->num_grids; grid++) { PetscCall(MatDestroy(&subM[grid])); }
+  for (PetscInt grid = 0; grid < ctx->num_grids; grid++) PetscCall(MatDestroy(&subM[grid]));
   PetscCall(MatAssemblyBegin(packM, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(packM, MAT_FINAL_ASSEMBLY));
   PetscCall(PetscObjectSetName((PetscObject)packM, "mass"));

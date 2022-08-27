@@ -54,7 +54,7 @@ PetscErrorCode VecCUDAAllocateCheckHost(Vec v) {
     PetscCall(PetscLogObjectMemory((PetscObject)v, n * sizeof(PetscScalar)));
     s->array           = array;
     s->array_allocated = array;
-    if (n * sizeof(PetscScalar) > v->minimum_bytes_pinned_memory) { PetscCall(PetscMallocResetCUDAHost()); }
+    if (n * sizeof(PetscScalar) > v->minimum_bytes_pinned_memory) PetscCall(PetscMallocResetCUDAHost());
     if (v->offloadmask == PETSC_OFFLOAD_UNALLOCATED) { v->offloadmask = PETSC_OFFLOAD_CPU; }
   }
   PetscFunctionReturn(0);

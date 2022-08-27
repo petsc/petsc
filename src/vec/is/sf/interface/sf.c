@@ -850,7 +850,7 @@ PetscErrorCode PetscSFView(PetscSF sf, PetscViewer viewer) {
       PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)sf), &rank));
       PetscCall(PetscViewerASCIIPushSynchronized(viewer));
       PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] Number of roots=%" PetscInt_FMT ", leaves=%" PetscInt_FMT ", remote ranks=%" PetscInt_FMT "\n", rank, sf->nroots, sf->nleaves, sf->nranks));
-      for (i = 0; i < sf->nleaves; i++) { PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] %" PetscInt_FMT " <- (%" PetscInt_FMT ",%" PetscInt_FMT ")\n", rank, sf->mine ? sf->mine[i] : i, sf->remote[i].rank, sf->remote[i].index)); }
+      for (i = 0; i < sf->nleaves; i++) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] %" PetscInt_FMT " <- (%" PetscInt_FMT ",%" PetscInt_FMT ")\n", rank, sf->mine ? sf->mine[i] : i, sf->remote[i].rank, sf->remote[i].index));
       PetscCall(PetscViewerFlush(viewer));
       PetscCall(PetscViewerGetFormat(viewer, &format));
       if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
@@ -863,7 +863,7 @@ PetscErrorCode PetscSFView(PetscSF sf, PetscViewer viewer) {
         for (ii = 0; ii < sf->nranks; ii++) {
           i = perm[ii];
           PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] %d: %" PetscInt_FMT " edges\n", rank, sf->ranks[i], sf->roffset[i + 1] - sf->roffset[i]));
-          for (j = sf->roffset[i]; j < sf->roffset[i + 1]; j++) { PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d]    %" PetscInt_FMT " <- %" PetscInt_FMT "\n", rank, sf->rmine[j], sf->rremote[j])); }
+          for (j = sf->roffset[i]; j < sf->roffset[i + 1]; j++) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d]    %" PetscInt_FMT " <- %" PetscInt_FMT "\n", rank, sf->rmine[j], sf->rremote[j]));
         }
         PetscCall(PetscFree2(tmpranks, perm));
       }

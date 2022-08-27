@@ -420,7 +420,7 @@ PetscErrorCode PetscIntView(PetscInt N, const PetscInt idx[], PetscViewer viewer
       } else {
         PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "%" PetscInt_FMT ":", 20 * i));
       }
-      for (j = 0; j < 20; j++) { PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %" PetscInt_FMT, idx[i * 20 + j])); }
+      for (j = 0; j < 20; j++) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %" PetscInt_FMT, idx[i * 20 + j]));
       PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "\n"));
     }
     if (p) {
@@ -518,7 +518,7 @@ PetscErrorCode PetscRealView(PetscInt N, const PetscReal idx[], PetscViewer view
         PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "%2" PetscInt_FMT ":", 5 * i));
       }
       PetscCall(PetscViewerASCIISetTab(viewer, 0));
-      for (j = 0; j < 5; j++) { PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %12.4e", (double)idx[i * 5 + j])); }
+      for (j = 0; j < 5; j++) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %12.4e", (double)idx[i * 5 + j]));
       PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "\n"));
     }
     if (p) {

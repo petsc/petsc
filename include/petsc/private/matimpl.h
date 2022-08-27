@@ -1388,7 +1388,7 @@ static inline PetscErrorCode PetscLLCondensedClean(PetscInt lnk_max, PetscInt ni
 static inline PetscErrorCode PetscLLCondensedView(PetscInt *lnk) {
   PetscFunctionBegin;
   PetscCall(PetscPrintf(PETSC_COMM_SELF, "LLCondensed of size %" PetscInt_FMT ", (val,  next)\n", lnk[0]));
-  for (PetscInt k = 2; k < lnk[0] + 2; ++k) { PetscCall(PetscPrintf(PETSC_COMM_SELF, " %" PetscInt_FMT ": (%" PetscInt_FMT ", %" PetscInt_FMT ")\n", 2 * k, lnk[2 * k], lnk[2 * k + 1])); }
+  for (PetscInt k = 2; k < lnk[0] + 2; ++k) PetscCall(PetscPrintf(PETSC_COMM_SELF, " %" PetscInt_FMT ": (%" PetscInt_FMT ", %" PetscInt_FMT ")\n", 2 * k, lnk[2 * k], lnk[2 * k + 1]));
   PetscFunctionReturn(0);
 }
 

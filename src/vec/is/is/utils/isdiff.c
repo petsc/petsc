@@ -634,7 +634,7 @@ PetscErrorCode ISPairToList(IS xis, IS yis, PetscInt *listlen, IS **islist) {
   if (low <= high) {
     if (lcount > 0) {
       *listlen = lcount;
-      if (!*islist) { PetscCall(PetscMalloc1(lcount, islist)); }
+      if (!*islist) PetscCall(PetscMalloc1(lcount, islist));
     }
     /*
      Traverse all possible global colors, and participate in the subcommunicators

@@ -963,7 +963,7 @@ static PetscErrorCode PetscWeakFormView_Ascii(PetscWeakForm wf, PetscViewer view
   PetscCall(PetscViewerGetFormat(viewer, &format));
   PetscCall(PetscViewerASCIIPrintf(viewer, "Weak Form System with %" PetscInt_FMT " fields\n", wf->Nf));
   PetscCall(PetscViewerASCIIPushTab(viewer));
-  for (f = 0; f < PETSC_NUM_WF; ++f) { PetscCall(PetscWeakFormViewTable_Ascii(wf, viewer, PETSC_TRUE, PetscWeakFormKinds[f], wf->form[f])); }
+  for (f = 0; f < PETSC_NUM_WF; ++f) PetscCall(PetscWeakFormViewTable_Ascii(wf, viewer, PETSC_TRUE, PetscWeakFormKinds[f], wf->form[f]));
   PetscCall(PetscViewerASCIIPopTab(viewer));
   PetscFunctionReturn(0);
 }

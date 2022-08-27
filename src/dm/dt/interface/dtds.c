@@ -545,7 +545,7 @@ PetscErrorCode PetscDSDestroy(PetscDS *ds) {
   }
   PetscCall(PetscFree((*ds)->subprobs));
   PetscCall(PetscDSDestroyStructs_Static(*ds));
-  for (f = 0; f < (*ds)->Nf; ++f) { PetscCall(PetscObjectDereference((*ds)->disc[f])); }
+  for (f = 0; f < (*ds)->Nf; ++f) PetscCall(PetscObjectDereference((*ds)->disc[f]));
   PetscCall(PetscFree4((*ds)->disc, (*ds)->implicit, (*ds)->cohesive, (*ds)->jetDegree));
   PetscCall(PetscWeakFormDestroy(&(*ds)->wf));
   PetscCall(PetscFree2((*ds)->update, (*ds)->ctx));

@@ -82,7 +82,7 @@ PetscErrorCode MatCreateColmap_MPIBAIJ_Private(Mat mat) {
   PetscFunctionBegin;
 #if defined(PETSC_USE_CTABLE)
   PetscCall(PetscTableCreate(baij->nbs, baij->Nbs + 1, &baij->colmap));
-  for (i = 0; i < nbs; i++) { PetscCall(PetscTableAdd(baij->colmap, baij->garray[i] + 1, i * bs + 1, INSERT_VALUES)); }
+  for (i = 0; i < nbs; i++) PetscCall(PetscTableAdd(baij->colmap, baij->garray[i] + 1, i * bs + 1, INSERT_VALUES));
 #else
   PetscCall(PetscCalloc1(baij->Nbs + 1, &baij->colmap));
   PetscCall(PetscLogObjectMemory((PetscObject)mat, baij->Nbs * sizeof(PetscInt)));
@@ -212,7 +212,7 @@ PetscErrorCode MatSetValues_MPIBAIJ(Mat mat, PetscInt m, const PetscInt im[], Pe
         } else {
           PetscCheck(in[j] < mat->cmap->N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Column too large: col %" PetscInt_FMT " max %" PetscInt_FMT, in[j], mat->cmap->N - 1);
           if (mat->was_assembled) {
-            if (!baij->colmap) { PetscCall(MatCreateColmap_MPIBAIJ_Private(mat)); }
+            if (!baij->colmap) PetscCall(MatCreateColmap_MPIBAIJ_Private(mat));
 #if defined(PETSC_USE_CTABLE)
             PetscCall(PetscTableFind(baij->colmap, in[j] / bs + 1, &col));
             col = col - 1;
@@ -386,7 +386,7 @@ PetscErrorCode MatSetValuesBlocked_MPIBAIJ(Mat mat, PetscInt m, const PetscInt i
         } else {
           PetscCheck(in[j] < baij->Nbs, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Block indexed column too large %" PetscInt_FMT " max %" PetscInt_FMT, in[j], baij->Nbs - 1);
           if (mat->was_assembled) {
-            if (!baij->colmap) { PetscCall(MatCreateColmap_MPIBAIJ_Private(mat)); }
+            if (!baij->colmap) PetscCall(MatCreateColmap_MPIBAIJ_Private(mat));
 
 #if defined(PETSC_USE_DEBUG)
 #if defined(PETSC_USE_CTABLE)
@@ -615,7 +615,7 @@ PetscErrorCode MatGetValues_MPIBAIJ(Mat mat, PetscInt m, const PetscInt idxm[], 
           col = idxn[j] - bscstart;
           PetscCall(MatGetValues_SeqBAIJ(baij->A, 1, &row, 1, &col, v + i * n + j));
         } else {
-          if (!baij->colmap) { PetscCall(MatCreateColmap_MPIBAIJ_Private(mat)); }
+          if (!baij->colmap) PetscCall(MatCreateColmap_MPIBAIJ_Private(mat));
 #if defined(PETSC_USE_CTABLE)
           PetscCall(PetscTableFind(baij->colmap, idxn[j] / bs + 1, &data));
           data--;
@@ -913,10 +913,10 @@ PetscErrorCode MatAssemblyEnd_MPIBAIJ(Mat mat, MatAssemblyType mode) {
   */
   if (!((Mat_SeqBAIJ *)baij->B->data)->nonew) {
     PetscCall(MPIU_Allreduce(&mat->was_assembled, &other_disassembled, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)mat)));
-    if (mat->was_assembled && !other_disassembled) { PetscCall(MatDisAssemble_MPIBAIJ(mat)); }
+    if (mat->was_assembled && !other_disassembled) PetscCall(MatDisAssemble_MPIBAIJ(mat));
   }
 
-  if (!mat->was_assembled && mode == MAT_FINAL_ASSEMBLY) { PetscCall(MatSetUpMultiply_MPIBAIJ(mat)); }
+  if (!mat->was_assembled && mode == MAT_FINAL_ASSEMBLY) PetscCall(MatSetUpMultiply_MPIBAIJ(mat));
   PetscCall(MatAssemblyBegin(baij->B, mode));
   PetscCall(MatAssemblyEnd(baij->B, mode));
 
@@ -1535,7 +1535,7 @@ PetscErrorCode MatTranspose_MPIBAIJ(Mat A, MatReuse reuse, Mat *matout) {
   PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
 
   if (reuse == MAT_INITIAL_MATRIX || reuse == MAT_REUSE_MATRIX) *matout = B;
-  else { PetscCall(MatHeaderMerge(A, &B)); }
+  else PetscCall(MatHeaderMerge(A, &B));
   PetscFunctionReturn(0);
 }
 
@@ -1742,7 +1742,7 @@ PetscErrorCode MatEqual_MPIBAIJ(Mat A, Mat B, PetscBool *flag) {
   d = matB->B;
 
   PetscCall(MatEqual(a, c, &flg));
-  if (flg) { PetscCall(MatEqual(b, d, &flg)); }
+  if (flg) PetscCall(MatEqual(b, d, &flg));
   PetscCall(MPIU_Allreduce(&flg, flag, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)A)));
   PetscFunctionReturn(0);
 }
@@ -2034,8 +2034,8 @@ PetscErrorCode MatPermute_MPIBAIJ(Mat A, IS rowp, IS colp, Mat *B) {
   PetscCall(MatGetLocalSize(A, NULL, &clocal_size));
   PetscCall(MatCreateSubMatrix_MPIBAIJ_Private(A, crowp, lcolp, clocal_size, MAT_INITIAL_MATRIX, B));
   /* clean up */
-  if (pcomm != comm) { PetscCall(ISDestroy(&crowp)); }
-  if (size > 1) { PetscCall(ISDestroy(&lcolp)); }
+  if (pcomm != comm) PetscCall(ISDestroy(&crowp));
+  if (size > 1) PetscCall(ISDestroy(&lcolp));
   PetscFunctionReturn(0);
 }
 
@@ -2148,7 +2148,7 @@ PetscErrorCode MatSOR_MPIBAIJ(Mat matin, Vec bb, PetscReal omega, MatSORType fla
     PetscFunctionReturn(0);
   }
 
-  if (its > 1 || ~flag & SOR_ZERO_INITIAL_GUESS) { PetscCall(VecDuplicate(bb, &bb1)); }
+  if (its > 1 || ~flag & SOR_ZERO_INITIAL_GUESS) PetscCall(VecDuplicate(bb, &bb1));
 
   if ((flag & SOR_LOCAL_SYMMETRIC_SWEEP) == SOR_LOCAL_SYMMETRIC_SWEEP) {
     if (flag & SOR_ZERO_INITIAL_GUESS) {
@@ -2563,7 +2563,7 @@ PetscErrorCode MatMPIBAIJSetPreallocationCSR_MPIBAIJ(Mat B, PetscInt bs, const P
   PetscCall(PetscFree2(d_nnz, o_nnz));
 
   values = (PetscScalar *)V;
-  if (!values) { PetscCall(PetscCalloc1(bs * bs * nz_max, &values)); }
+  if (!values) PetscCall(PetscCalloc1(bs * bs * nz_max, &values));
   for (i = 0; i < m; i++) {
     PetscInt        row   = i + rstart;
     PetscInt        ncols = ii[i + 1] - ii[i];
@@ -3420,7 +3420,7 @@ PetscErrorCode matmpibaijsetvaluesblocked_(Mat *matin, PetscInt *min, const Pets
         } else {
           PetscCheck(in[j] < baij->Nbs, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Column too large, col %" PetscInt_FMT " max %" PetscInt_FMT, in[j], baij->Nbs - 1);
           if (mat->was_assembled) {
-            if (!baij->colmap) { PetscCall(MatCreateColmap_MPIBAIJ_Private(mat)); }
+            if (!baij->colmap) PetscCall(MatCreateColmap_MPIBAIJ_Private(mat));
 
 #if defined(PETSC_USE_DEBUG)
 #if defined(PETSC_USE_CTABLE)
@@ -3533,7 +3533,7 @@ PetscErrorCode MatCreateMPIMatConcatenateSeqMat_MPIBAIJ(MPI_Comm comm, Mat inmat
     PetscCall(MatGetBlockSizes(inmat, &bs, &cbs));
     mbs = m / bs;
     Nbs = N / cbs;
-    if (n == PETSC_DECIDE) { PetscCall(PetscSplitOwnershipBlock(comm, cbs, &n, &N)); }
+    if (n == PETSC_DECIDE) PetscCall(PetscSplitOwnershipBlock(comm, cbs, &n, &N));
     nbs = n / cbs;
 
     PetscCall(PetscMalloc1(rmax, &bindx));

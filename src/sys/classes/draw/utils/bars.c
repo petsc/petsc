@@ -90,7 +90,7 @@ PetscErrorCode PetscDrawBarSetData(PetscDrawBar bar, PetscInt bins, const PetscR
   }
   PetscCall(PetscArraycpy(bar->values, data, bins));
   bar->numBins = bins;
-  if (labels) { PetscCall(PetscStrArrayallocpy(labels, &bar->labels)); }
+  if (labels) PetscCall(PetscStrArrayallocpy(labels, &bar->labels));
   PetscFunctionReturn(0);
 }
 

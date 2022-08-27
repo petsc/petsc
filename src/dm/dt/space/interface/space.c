@@ -102,7 +102,7 @@ PetscErrorCode PetscSpaceGetType(PetscSpace sp, PetscSpaceType *name) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
   PetscValidPointer(name, 2);
-  if (!PetscSpaceRegisterAllCalled) { PetscCall(PetscSpaceRegisterAll()); }
+  if (!PetscSpaceRegisterAllCalled) PetscCall(PetscSpaceRegisterAll());
   *name = ((PetscObject)sp)->type_name;
   PetscFunctionReturn(0);
 }

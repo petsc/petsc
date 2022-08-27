@@ -142,7 +142,7 @@ PetscErrorCode SNESSetUp_NGS(SNES snes) {
 
   PetscFunctionBegin;
   PetscCall(SNESGetNGS(snes, &f, NULL));
-  if (!f) { PetscCall(SNESSetNGS(snes, SNESComputeNGSDefaultSecant, NULL)); }
+  if (!f) PetscCall(SNESSetNGS(snes, SNESComputeNGSDefaultSecant, NULL));
   PetscFunctionReturn(0);
 }
 
@@ -161,7 +161,7 @@ PetscErrorCode SNESSetFromOptions_NGS(SNES snes, PetscOptionItems *PetscOptionsO
   PetscCall(PetscOptionsReal("-snes_ngs_rtol", "Relative residual tolerance for GS iteration", "SNESComputeGS", gs->rtol, &rtol, &flg1));
   PetscCall(PetscOptionsReal("-snes_ngs_stol", "Absolute update tolerance for GS iteration", "SNESComputeGS", gs->stol, &stol, &flg2));
   PetscCall(PetscOptionsInt("-snes_ngs_max_it", "Maximum number of sweeps of GS to apply", "SNESComputeGS", gs->max_its, &max_its, &flg3));
-  if (flg || flg1 || flg2 || flg3) { PetscCall(SNESNGSSetTolerances(snes, atol, rtol, stol, max_its)); }
+  if (flg || flg1 || flg2 || flg3) PetscCall(SNESNGSSetTolerances(snes, atol, rtol, stol, max_its));
   flg = PETSC_FALSE;
   PetscCall(PetscOptionsBool("-snes_ngs_secant", "Use finite difference secant approximation with coloring", "", flg, &flg, NULL));
   if (flg) {
@@ -184,7 +184,7 @@ PetscErrorCode SNESView_NGS(SNES snes, PetscViewer viewer) {
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   if (iascii) {
     PetscCall(DMSNESGetNGS(snes->dm, &f, NULL));
-    if (f == SNESComputeNGSDefaultSecant) { PetscCall(PetscViewerASCIIPrintf(viewer, "  Use finite difference secant approximation with coloring with h = %g \n", (double)gs->h)); }
+    if (f == SNESComputeNGSDefaultSecant) PetscCall(PetscViewerASCIIPrintf(viewer, "  Use finite difference secant approximation with coloring with h = %g \n", (double)gs->h));
   }
   PetscFunctionReturn(0);
 }

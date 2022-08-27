@@ -1262,7 +1262,7 @@ PetscErrorCode DMSNESComputeResidual(DM dm, Vec X, Vec F, void *user) {
         Nk += Nkm;
       }
       PetscCall(PetscMalloc1(Nk, &reskeys));
-      for (m = 0; m < Nm; ++m) { PetscCall(PetscHMapFormGetKeys(ds->wf->form[resmap[m]], &off, reskeys)); }
+      for (m = 0; m < Nm; ++m) PetscCall(PetscHMapFormGetKeys(ds->wf->form[resmap[m]], &off, reskeys));
       PetscCheck(off == Nk, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Number of keys %" PetscInt_FMT " should be %" PetscInt_FMT, off, Nk);
       PetscCall(PetscFormKeySort(Nk, reskeys));
       for (k = 0, kp = 1; kp < Nk; ++kp) {
@@ -1370,7 +1370,7 @@ PetscErrorCode DMSNESComputeJacobianAction(DM dm, Vec X, Vec Y, Vec F, void *use
         Nk += Nkm;
       }
       PetscCall(PetscMalloc1(Nk, &jackeys));
-      for (m = 0; m < Nm; ++m) { PetscCall(PetscHMapFormGetKeys(ds->wf->form[jacmap[m]], &off, jackeys)); }
+      for (m = 0; m < Nm; ++m) PetscCall(PetscHMapFormGetKeys(ds->wf->form[jacmap[m]], &off, jackeys));
       PetscCheck(off == Nk, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Number of keys %" PetscInt_FMT " should be %" PetscInt_FMT, off, Nk);
       PetscCall(PetscFormKeySort(Nk, jackeys));
       for (k = 0, kp = 1; kp < Nk; ++kp) {

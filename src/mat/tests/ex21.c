@@ -59,7 +59,7 @@ int main(int argc, char **args) {
   for (i = rstart; i < rend; i++) {
     PetscCall(MatGetRow(C, i, &nz, &idx, &values));
     PetscCall(PetscSynchronizedFPrintf(PETSC_COMM_WORLD, stdout, "[%d] get row %" PetscInt_FMT ": ", rank, i));
-    for (j = 0; j < nz; j++) { PetscCall(PetscSynchronizedFPrintf(PETSC_COMM_WORLD, stdout, "%" PetscInt_FMT " %g  ", idx[j], (double)PetscRealPart(values[j]))); }
+    for (j = 0; j < nz; j++) PetscCall(PetscSynchronizedFPrintf(PETSC_COMM_WORLD, stdout, "%" PetscInt_FMT " %g  ", idx[j], (double)PetscRealPart(values[j])));
     PetscCall(PetscSynchronizedFPrintf(PETSC_COMM_WORLD, stdout, "\n"));
     PetscCall(MatRestoreRow(C, i, &nz, &idx, &values));
   }

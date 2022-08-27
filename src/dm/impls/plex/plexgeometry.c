@@ -941,7 +941,7 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
     }
   }
   PetscCall(VecRestoreArray(v, &a));
-  if (!reuse) { PetscCall(PetscSFSetGraph(cellSF, cEnd - cStart, numFound, found, PETSC_OWN_POINTER, cells, PETSC_OWN_POINTER)); }
+  if (!reuse) PetscCall(PetscSFSetGraph(cellSF, cEnd - cStart, numFound, found, PETSC_OWN_POINTER, cells, PETSC_OWN_POINTER));
   PetscCall(PetscTime(&t1));
   if (hash) {
     PetscCall(PetscInfo(dm, "[DMLocatePoints_Plex] terminating_query_type : %" PetscInt_FMT " [outside domain] : %" PetscInt_FMT " [inside initial cell] : %" PetscInt_FMT " [hash]\n", terminating_query_type[0], terminating_query_type[1], terminating_query_type[2]));
@@ -1865,7 +1865,7 @@ static PetscErrorCode DMPlexComputeCellGeometryFEM_Implicit(DM dm, PetscInt cell
   PetscCall(DMPlexGetConeSize(dm, cell, &coneSize));
   PetscCall(DMPlexGetDepthLabel(dm, &depthLabel));
   PetscCall(DMLabelGetValue(depthLabel, cell, &dim));
-  if (depth == 1 && dim == 1) { PetscCall(DMGetDimension(dm, &dim)); }
+  if (depth == 1 && dim == 1) PetscCall(DMGetDimension(dm, &dim));
   PetscCall(DMGetCoordinateDim(dm, &coordDim));
   PetscCheck(coordDim <= 3, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unsupported coordinate dimension %" PetscInt_FMT " > 3", coordDim);
   if (quad) PetscCall(PetscQuadratureGetData(quad, NULL, NULL, &Nq, &points, NULL));
@@ -2736,7 +2736,7 @@ static PetscErrorCode BuildGradientReconstruction_Internal_Tree(DM dm, PetscFV f
       for (c = 0; c < 2; c++) {
         PetscInt cell = fcells[c];
 
-        if (cell >= cStart && cell < cEndInterior) { PetscCall(PetscSectionAddDof(neighSec, cell, 1)); }
+        if (cell >= cStart && cell < cEndInterior) PetscCall(PetscSectionAddDof(neighSec, cell, 1));
       }
     }
   }

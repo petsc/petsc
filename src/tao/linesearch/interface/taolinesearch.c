@@ -59,7 +59,7 @@ PetscErrorCode TaoLineSearchView(TaoLineSearch ls, PetscViewer viewer) {
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ls, TAOLINESEARCH_CLASSID, 1);
-  if (!viewer) { PetscCall(PetscViewerASCIIGetStdout(((PetscObject)ls)->comm, &viewer)); }
+  if (!viewer) PetscCall(PetscViewerASCIIGetStdout(((PetscObject)ls)->comm, &viewer));
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscCheckSameComm(ls, 1, viewer, 2);
 
@@ -77,7 +77,7 @@ PetscErrorCode TaoLineSearchView(TaoLineSearch ls, PetscViewer viewer) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "total number of gradient evaluations=%" PetscInt_FMT "\n", ls->ngeval));
     PetscCall(PetscViewerASCIIPrintf(viewer, "total number of function/gradient evaluations=%" PetscInt_FMT "\n", ls->nfgeval));
 
-    if (ls->bounded) { PetscCall(PetscViewerASCIIPrintf(viewer, "using variable bounds\n")); }
+    if (ls->bounded) PetscCall(PetscViewerASCIIPrintf(viewer, "using variable bounds\n"));
     PetscCall(PetscViewerASCIIPrintf(viewer, "Termination reason: %d\n", (int)ls->reason));
     PetscCall(PetscViewerASCIIPopTab(viewer));
   } else if (isstring) {
@@ -163,7 +163,7 @@ PetscErrorCode TaoLineSearchSetUp(TaoLineSearch ls) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ls, TAOLINESEARCH_CLASSID, 1);
   if (ls->setupcalled) PetscFunctionReturn(0);
-  if (!((PetscObject)ls)->type_name) { PetscCall(TaoLineSearchSetType(ls, default_type)); }
+  if (!((PetscObject)ls)->type_name) PetscCall(TaoLineSearchSetType(ls, default_type));
   PetscTryTypeMethod(ls, setup);
   if (ls->usetaoroutines) {
     PetscCall(TaoIsObjectiveDefined(ls->tao, &flg));
@@ -239,8 +239,8 @@ PetscErrorCode TaoLineSearchDestroy(TaoLineSearch *ls) {
   PetscCall(VecDestroy(&(*ls)->start_x));
   PetscCall(VecDestroy(&(*ls)->upper));
   PetscCall(VecDestroy(&(*ls)->lower));
-  if ((*ls)->ops->destroy) { PetscCall((*(*ls)->ops->destroy)(*ls)); }
-  if ((*ls)->usemonitor) { PetscCall(PetscViewerDestroy(&(*ls)->viewer)); }
+  if ((*ls)->ops->destroy) PetscCall((*(*ls)->ops->destroy)(*ls));
+  if ((*ls)->usemonitor) PetscCall(PetscViewerDestroy(&(*ls)->viewer));
   PetscCall(PetscHeaderDestroy(ls));
   PetscFunctionReturn(0);
 }
@@ -915,7 +915,7 @@ PetscErrorCode TaoLineSearchComputeGradient(TaoLineSearch ls, Vec x, Vec g) {
   } else {
     PetscCall(PetscLogEventBegin(TAOLINESEARCH_Eval, ls, 0, 0, 0));
     if (ls->ops->computegradient) PetscCallBack("TaoLineSearch callback gradient", (*ls->ops->computegradient)(ls, x, g, ls->userctx_grad));
-    else { PetscCallBack("TaoLineSearch callback gradient", (*ls->ops->computeobjectiveandgradient)(ls, x, &fdummy, g, ls->userctx_funcgrad)); }
+    else PetscCallBack("TaoLineSearch callback gradient", (*ls->ops->computeobjectiveandgradient)(ls, x, &fdummy, g, ls->userctx_funcgrad));
     PetscCall(PetscLogEventEnd(TAOLINESEARCH_Eval, ls, 0, 0, 0));
   }
   ls->ngeval++;

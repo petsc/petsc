@@ -203,7 +203,7 @@ static PetscErrorCode MatLUFactorNumeric_SeqAIJCUSPARSE(Mat B, Mat A, const MatF
   B->ops->matsolvetranspose = NULL;
 
   /* get the triangular factors */
-  if (!cusparsestruct->use_cpu_solve) { PetscCall(MatSeqAIJCUSPARSEILUAnalysisAndCopyToGPU(B)); }
+  if (!cusparsestruct->use_cpu_solve) PetscCall(MatSeqAIJCUSPARSEILUAnalysisAndCopyToGPU(B));
   PetscFunctionReturn(0);
 }
 
@@ -353,7 +353,7 @@ static PetscErrorCode MatSeqAIJCUSPARSEBuildILULowerTriMatrix(Mat A) {
         PetscCallCUDA(cudaFreeHost(AjLo));
         PetscCall(PetscLogCpuToGpu((n + 1 + nzLower) * sizeof(int) + nzLower * sizeof(PetscScalar)));
       } else { /* update values only */
-        if (!loTriFactor->AA_h) { PetscCallCUDA(cudaMallocHost((void **)&loTriFactor->AA_h, nzLower * sizeof(PetscScalar))); }
+        if (!loTriFactor->AA_h) PetscCallCUDA(cudaMallocHost((void **)&loTriFactor->AA_h, nzLower * sizeof(PetscScalar)));
         /* Fill the lower triangular matrix */
         loTriFactor->AA_h[0] = 1.0;
         v                    = aa;
@@ -483,7 +483,7 @@ static PetscErrorCode MatSeqAIJCUSPARSEBuildILUUpperTriMatrix(Mat A) {
         PetscCallCUDA(cudaFreeHost(AjUp));
         PetscCall(PetscLogCpuToGpu((n + 1 + nzUpper) * sizeof(int) + nzUpper * sizeof(PetscScalar)));
       } else {
-        if (!upTriFactor->AA_h) { PetscCallCUDA(cudaMallocHost((void **)&upTriFactor->AA_h, nzUpper * sizeof(PetscScalar))); }
+        if (!upTriFactor->AA_h) PetscCallCUDA(cudaMallocHost((void **)&upTriFactor->AA_h, nzUpper * sizeof(PetscScalar)));
         /* Fill the upper triangular matrix */
         offset = nzUpper;
         for (i = n - 1; i >= 0; i--) {
@@ -998,7 +998,7 @@ static PetscErrorCode MatSeqAIJCUSPARSEFormExplicitTranspose(Mat A) {
   if (A->transupdated) PetscFunctionReturn(0);
   PetscCall(PetscLogEventBegin(MAT_CUSPARSEGenerateTranspose, A, 0, 0, 0));
   PetscCall(PetscLogGpuTimeBegin());
-  if (cusparsestruct->format != MAT_CUSPARSE_CSR) { PetscCall(MatSeqAIJCUSPARSEInvalidateTranspose(A, PETSC_TRUE)); }
+  if (cusparsestruct->format != MAT_CUSPARSE_CSR) PetscCall(MatSeqAIJCUSPARSEInvalidateTranspose(A, PETSC_TRUE));
   if (!cusparsestruct->matTranspose) { /* create cusparse matrix */
     matstructT = new Mat_SeqAIJCUSPARSEMultStruct;
     PetscCallCUSPARSE(cusparseCreateMatDescr(&matstructT->descr));
@@ -2532,8 +2532,8 @@ static PetscErrorCode MatProductNumeric_SeqAIJCUSPARSE_SeqDENSECUDA(Mat C) {
   } else {
     PetscCall(MatDenseCUDARestoreArrayWrite(C, &carray));
   }
-  if (mmdata->cisdense) { PetscCall(MatConvert(C, MATSEQDENSE, MAT_INPLACE_MATRIX, &C)); }
-  if (!biscuda) { PetscCall(MatConvert(B, MATSEQDENSE, MAT_INPLACE_MATRIX, &B)); }
+  if (mmdata->cisdense) PetscCall(MatConvert(C, MATSEQDENSE, MAT_INPLACE_MATRIX, &C));
+  if (!biscuda) PetscCall(MatConvert(B, MATSEQDENSE, MAT_INPLACE_MATRIX, &B));
   PetscFunctionReturn(0);
 }
 
@@ -2587,7 +2587,7 @@ static PetscErrorCode MatProductSymbolic_SeqAIJCUSPARSE_SeqDENSECUDA(Mat C) {
   mmdata->cisdense = cisdense;
 #if PETSC_PKG_CUDA_VERSION_LT(11, 0, 0)
   /* cusparseXcsrmm does not support transpose on B, so we allocate buffer to store B^T */
-  if (product->type == MATPRODUCT_ABt || product->type == MATPRODUCT_RARt) { PetscCallCUDA(cudaMalloc((void **)&mmdata->Bt, (size_t)B->rmap->n * (size_t)B->cmap->n * sizeof(PetscScalar))); }
+  if (product->type == MATPRODUCT_ABt || product->type == MATPRODUCT_RARt) PetscCallCUDA(cudaMalloc((void **)&mmdata->Bt, (size_t)B->rmap->n * (size_t)B->cmap->n * sizeof(PetscScalar)));
 #endif
   /* for these products we need intermediate storage */
   if (product->type == MATPRODUCT_RARt || product->type == MATPRODUCT_PtAP) {
@@ -3107,10 +3107,10 @@ static PetscErrorCode MatProductSetFromOptions_SeqAIJCUSPARSE(Mat mat) {
   PetscFunctionBegin;
   MatCheckProduct(mat, 1);
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)product->B, MATSEQDENSE, &isdense));
-  if (!product->A->boundtocpu && !product->B->boundtocpu) { PetscCall(PetscObjectTypeCompare((PetscObject)product->B, MATSEQAIJCUSPARSE, &Biscusp)); }
+  if (!product->A->boundtocpu && !product->B->boundtocpu) PetscCall(PetscObjectTypeCompare((PetscObject)product->B, MATSEQAIJCUSPARSE, &Biscusp));
   if (product->type == MATPRODUCT_ABC) {
     Ciscusp = PETSC_FALSE;
-    if (!product->C->boundtocpu) { PetscCall(PetscObjectTypeCompare((PetscObject)product->C, MATSEQAIJCUSPARSE, &Ciscusp)); }
+    if (!product->C->boundtocpu) PetscCall(PetscObjectTypeCompare((PetscObject)product->C, MATSEQAIJCUSPARSE, &Ciscusp));
   }
   if (Biscusp && Ciscusp) { /* we can always select the CPU backend */
     PetscBool usecpu = PETSC_FALSE;
@@ -3960,7 +3960,7 @@ static PetscErrorCode MatSeqAIJCUSPARSETriFactors_Destroy(Mat_SeqAIJCUSPARSETriF
   PetscFunctionBegin;
   if (*trifactors) {
     PetscCall(MatSeqAIJCUSPARSETriFactors_Reset(trifactors));
-    if (handle = (*trifactors)->handle) { PetscCallCUSPARSE(cusparseDestroy(handle)); }
+    if (handle = (*trifactors)->handle) PetscCallCUSPARSE(cusparseDestroy(handle));
     PetscCall(PetscFree(*trifactors));
   }
   PetscFunctionReturn(0);
@@ -4874,7 +4874,7 @@ static PetscErrorCode MatSeqAIJCopySubArray_SeqAIJCUSPARSE(Mat A, PetscInt n, co
     auto zibit = thrust::make_zip_iterator(thrust::make_tuple(thrust::make_permutation_iterator(dav, widx.begin()), dv));
     auto zieit = thrust::make_zip_iterator(thrust::make_tuple(thrust::make_permutation_iterator(dav, widx.end()), dv + n));
     thrust::for_each(zibit, zieit, VecCUDAEquals());
-    if (w) { PetscCallCUDA(cudaMemcpy(v, w->data().get(), n * sizeof(PetscScalar), cudaMemcpyDeviceToHost)); }
+    if (w) PetscCallCUDA(cudaMemcpy(v, w->data().get(), n * sizeof(PetscScalar), cudaMemcpyDeviceToHost));
     delete w;
   } else {
     PetscCallCUDA(cudaMemcpy(v, av, n * sizeof(PetscScalar), dmem ? cudaMemcpyDeviceToDevice : cudaMemcpyDeviceToHost));

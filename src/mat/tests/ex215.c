@@ -165,7 +165,7 @@ int main(int argc, char **args) {
   /* Check the error */
   PetscCall(MatAXPY(X, -1.0, C, SAME_NONZERO_PATTERN));
   PetscCall(MatNorm(X, NORM_FROBENIUS, &norm));
-  if (norm > tol) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "MatMatSolve: Norm of error %g\n", (double)norm)); }
+  if (norm > tol) PetscCall(PetscPrintf(PETSC_COMM_SELF, "MatMatSolve: Norm of error %g\n", (double)norm));
 
   /* Free data structures */
   PetscCall(MatDestroy(&A));

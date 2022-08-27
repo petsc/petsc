@@ -216,7 +216,7 @@ static PetscErrorCode DMFieldEvaluateFE_DS(DMField field, IS pointIS, PetscQuadr
     }
     PetscCall(PetscTabulationDestroy(&T));
   } else SETERRQ(PetscObjectComm((PetscObject)field), PETSC_ERR_SUP, "Not implemented");
-  if (!isStride) { PetscCall(ISRestoreIndices(pointIS, &points)); }
+  if (!isStride) PetscCall(ISRestoreIndices(pointIS, &points));
   PetscFunctionReturn(0);
 }
 
@@ -470,7 +470,7 @@ static PetscErrorCode DMFieldEvaluateFV_DS(DMField field, IS pointIS, PetscDataT
   PetscCheck(id == PETSCFE_CLASSID, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Discretization not supported");
   PetscCall(DMGetCoordinateField(field->dm, &coordField));
   PetscCall(DMFieldGetDegree(coordField, pointIS, NULL, &maxDegree));
-  if (maxDegree <= 1) { PetscCall(DMFieldCreateDefaultQuadrature(coordField, pointIS, &quad)); }
+  if (maxDegree <= 1) PetscCall(DMFieldCreateDefaultQuadrature(coordField, pointIS, &quad));
   if (!quad) PetscCall(DMFieldCreateDefaultQuadrature(field, pointIS, &quad));
   PetscCheck(quad, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Could not determine quadrature for cell averages");
   PetscCall(DMFieldCreateFEGeom(coordField, pointIS, quad, PETSC_FALSE, &geom));
@@ -1019,7 +1019,7 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
       }
     }
     for (o = 0; o < numOrient; o++) {
-      if (orients[o]) { PetscCall(PetscFree(orientPoints[o])); }
+      if (orients[o]) PetscCall(PetscFree(orientPoints[o]));
     }
     PetscCall(PetscFree2(orients, orientPoints));
     PetscCall(PetscQuadratureDestroy(&cellQuad));

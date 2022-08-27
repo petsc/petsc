@@ -62,7 +62,7 @@ PetscErrorCode CreateSimpleStarGraph(MPI_Comm comm, PetscInt numdofvert, PetscIn
   PetscCall(DMNetworkCreate(comm, &dm));
   PetscCall(DMNetworkSetNumSubNetworks(dm, PETSC_DECIDE, 1));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
-  if (rank == 0) { PetscCall(CreateStarGraphEdgeList(k, directin, &ne, &edgelist)); }
+  if (rank == 0) PetscCall(CreateStarGraphEdgeList(k, directin, &ne, &edgelist));
   PetscCall(DMNetworkAddSubnetwork(dm, "Main", ne, edgelist, NULL));
   PetscCall(DMNetworkRegisterComponent(dm, "dummy", sizeof(PetscInt), &compkey));
   PetscCall(DMNetworkLayoutSetUp(dm));
@@ -105,7 +105,7 @@ int main(int argc, char **argv) {
   PetscCall(DMNetworkGetEdgeRange(dm, &eStart, &eEnd));
 
   /* check if cloning changed any componenent */
-  if (eStart < eEnd) { PetscCall(DMNetworkGetComponent(dm, eStart, 0, NULL, (void **)&compprev, &ndofsprev)); }
+  if (eStart < eEnd) PetscCall(DMNetworkGetComponent(dm, eStart, 0, NULL, (void **)&compprev, &ndofsprev));
   PetscCall(DMClone(dm, &dmclone));
   if (eStart < eEnd) {
     PetscCall(DMNetworkGetComponent(dm, eStart, 0, NULL, (void **)&comp, &ndofs));

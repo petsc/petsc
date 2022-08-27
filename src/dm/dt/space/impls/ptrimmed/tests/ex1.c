@@ -59,7 +59,7 @@ int main(int argc, char *argv[]) {
     for (PetscInt formDegree = -dim; formDegree <= dim; formDegree++) {
       for (PetscInt degree = 0; degree <= 4; degree++) {
         if (formDegree == 0 && degree == 0) continue;
-        for (PetscInt nCopies = 1; nCopies <= PetscMax(2, dim); nCopies++) { PetscCall(test(dim, formDegree, degree, nCopies)); }
+        for (PetscInt nCopies = 1; nCopies <= PetscMax(2, dim); nCopies++) PetscCall(test(dim, formDegree, degree, nCopies));
       }
     }
   }

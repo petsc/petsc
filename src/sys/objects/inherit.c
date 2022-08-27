@@ -296,7 +296,7 @@ PetscErrorCode PetscObjectsDump(FILE *fd, PetscBool all) {
               k = 0;
               while (!stack->petscroutine[k]) k++;
               PetscCall(PetscStrstr(stack->function[k], "Create", &create));
-              if (!create) { PetscCall(PetscStrstr(stack->function[k], "Get", &create)); }
+              if (!create) PetscCall(PetscStrstr(stack->function[k], "Get", &create));
               PetscCall(PetscStrstr(stack->function[k], h->class_name, &rclass));
               if (!create) continue;
               if (!rclass) continue;

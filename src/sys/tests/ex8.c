@@ -100,7 +100,7 @@ int main(int argc, char **argv) {
     todata[n].ok[2] = 0;
   }
   if (verbose) {
-    for (i = 0; i < nto; i++) { PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "[%d] TO %d: {%" PetscInt_FMT ", %g, \"%s\"}\n", rank, toranks[i], todata[i].rank, (double)PetscRealPart(todata[i].value), todata[i].ok)); }
+    for (i = 0; i < nto; i++) PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "[%d] TO %d: {%" PetscInt_FMT ", %g, \"%s\"}\n", rank, toranks[i], todata[i].rank, (double)PetscRealPart(todata[i].value), todata[i].ok));
     PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD, PETSC_STDOUT));
   }
 

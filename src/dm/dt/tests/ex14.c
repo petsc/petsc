@@ -32,7 +32,7 @@ static PetscErrorCode TestDistributions() {
   const char   *name[] = {"Maxwell-Boltzmann 1D", "Maxwell-Boltzmann 2D", "Maxwell-Boltzmann 3D", "Gaussian"};
 
   PetscFunctionBeginUser;
-  for (PetscInt i = 0; i < (PetscInt)(sizeof(pdf) / sizeof(PetscProbFunc)); ++i) { PetscCall(VerifyDistribution(name[i], pos[i], pdf[i], cdf[i])); }
+  for (PetscInt i = 0; i < (PetscInt)(sizeof(pdf) / sizeof(PetscProbFunc)); ++i) PetscCall(VerifyDistribution(name[i], pos[i], pdf[i], cdf[i]));
   PetscFunctionReturn(0);
 }
 

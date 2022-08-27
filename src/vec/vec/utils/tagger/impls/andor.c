@@ -6,8 +6,8 @@ static PetscErrorCode VecTaggerDestroy_AndOr(VecTagger tagger) {
   PetscInt         i;
 
   PetscFunctionBegin;
-  for (i = 0; i < andOr->nsubs; i++) { PetscCall(VecTaggerDestroy(&andOr->subs[i])); }
-  if (andOr->mode == PETSC_OWN_POINTER) { PetscCall(PetscFree(andOr->subs)); }
+  for (i = 0; i < andOr->nsubs; i++) PetscCall(VecTaggerDestroy(&andOr->subs[i]));
+  if (andOr->mode == PETSC_OWN_POINTER) PetscCall(PetscFree(andOr->subs));
   PetscCall(PetscFree(tagger->data));
   PetscFunctionReturn(0);
 }
@@ -37,10 +37,10 @@ PetscErrorCode VecTaggerSetSubs_AndOr(VecTagger tagger, PetscInt nsubs, VecTagge
   if (subs) PetscValidPointer(subs, 3);
   if (nsubs == andOr->nsubs && subs == andOr->subs && mode != PETSC_COPY_VALUES) PetscFunctionReturn(0);
   if (subs) {
-    for (i = 0; i < nsubs; i++) { PetscCall(PetscObjectReference((PetscObject)subs[i])); }
+    for (i = 0; i < nsubs; i++) PetscCall(PetscObjectReference((PetscObject)subs[i]));
   }
-  for (i = 0; i < andOr->nsubs; i++) { PetscCall(VecTaggerDestroy(&(andOr->subs[i]))); }
-  if (andOr->mode == PETSC_OWN_POINTER && andOr->subs != subs) { PetscCall(PetscFree(andOr->subs)); }
+  for (i = 0; i < andOr->nsubs; i++) PetscCall(VecTaggerDestroy(&(andOr->subs[i])));
+  if (andOr->mode == PETSC_OWN_POINTER && andOr->subs != subs) PetscCall(PetscFree(andOr->subs));
   andOr->nsubs = nsubs;
   if (subs) {
     if (mode == PETSC_COPY_VALUES) {
@@ -50,7 +50,7 @@ PetscErrorCode VecTaggerSetSubs_AndOr(VecTagger tagger, PetscInt nsubs, VecTagge
     } else {
       andOr->subs = subs;
       andOr->mode = mode;
-      for (i = 0; i < nsubs; i++) { PetscCall(PetscObjectDereference((PetscObject)subs[i])); }
+      for (i = 0; i < nsubs; i++) PetscCall(PetscObjectDereference((PetscObject)subs[i]));
     }
   } else {
     MPI_Comm    comm = PetscObjectComm((PetscObject)tagger);
@@ -97,7 +97,7 @@ static PetscErrorCode VecTaggerSetFromOptions_AndOr(VecTagger tagger, PetscOptio
   if (nsubs != nsubsOrig) {
     PetscCall(VecTaggerSetSubs_AndOr(tagger, nsubs, NULL, PETSC_OWN_POINTER));
     PetscCall(VecTaggerGetSubs_AndOr(tagger, NULL, &subs));
-    for (i = 0; i < nsubs; i++) { PetscCall(VecTaggerSetFromOptions(subs[i])); }
+    for (i = 0; i < nsubs; i++) PetscCall(VecTaggerSetFromOptions(subs[i]));
   }
   PetscFunctionReturn(0);
 }
@@ -109,7 +109,7 @@ static PetscErrorCode VecTaggerSetUp_AndOr(VecTagger tagger) {
   PetscFunctionBegin;
   PetscCall(VecTaggerGetSubs_AndOr(tagger, &nsubs, &subs));
   PetscCheck(nsubs, PetscObjectComm((PetscObject)tagger), PETSC_ERR_ARG_WRONGSTATE, "Must set sub taggers before calling setup.");
-  for (i = 0; i < nsubs; i++) { PetscCall(VecTaggerSetUp(subs[i])); }
+  for (i = 0; i < nsubs; i++) PetscCall(VecTaggerSetUp(subs[i]));
   PetscFunctionReturn(0);
 }
 
@@ -127,7 +127,7 @@ static PetscErrorCode VecTaggerView_AndOr(VecTagger tagger, PetscViewer viewer) 
     PetscCall(PetscObjectGetType((PetscObject)tagger, &name));
     PetscCall(PetscViewerASCIIPrintf(viewer, " %s of %" PetscInt_FMT " subtags:\n", name, nsubs));
     PetscCall(PetscViewerASCIIPushTab(viewer));
-    for (i = 0; i < nsubs; i++) { PetscCall(VecTaggerView(subs[i], viewer)); }
+    for (i = 0; i < nsubs; i++) PetscCall(VecTaggerView(subs[i], viewer));
     PetscCall(PetscViewerASCIIPopTab(viewer));
   }
   PetscFunctionReturn(0);

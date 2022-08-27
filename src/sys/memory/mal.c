@@ -402,7 +402,7 @@ PetscErrorCode PetscMallocA(int n, PetscBool clear, int lineno, const char *func
       }
     }
   } else {
-    for (i = 0; i < n; i++) { PetscCall((*PetscTrMalloc)(bytes[i], clear, lineno, function, filename, (void **)ptr[i])); }
+    for (i = 0; i < n; i++) PetscCall((*PetscTrMalloc)(bytes[i], clear, lineno, function, filename, (void **)ptr[i]));
   }
   PetscFunctionReturn(0);
 }

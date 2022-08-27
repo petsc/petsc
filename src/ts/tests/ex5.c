@@ -283,7 +283,7 @@ int main(int argc, char **argv) {
 
   /* Define what to print for ts_monitor option */
   PetscCall(PetscOptionsHasName(NULL, NULL, "-monitor_off", &monitor_off));
-  if (!monitor_off) { PetscCall(TSMonitorSet(ts, Monitor, &usermonitor, NULL)); }
+  if (!monitor_off) PetscCall(TSMonitorSet(ts, Monitor, &usermonitor, NULL));
   PetscCall(FormInitialSolution(da, T, &user));
   dt    = TIMESTEP; /* initial time step */
   ftime = TIMESTEP * time;
@@ -310,7 +310,7 @@ int main(int argc, char **argv) {
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Solution T after %g hours %" PetscInt_FMT " steps\n", (double)(ftime / 3600), steps));
 
   if (matfdcoloring) PetscCall(MatFDColoringDestroy(&matfdcoloring));
-  if (usermonitor.drawcontours) { PetscCall(PetscViewerDestroy(&usermonitor.drawviewer)); }
+  if (usermonitor.drawcontours) PetscCall(PetscViewerDestroy(&usermonitor.drawviewer));
   PetscCall(MatDestroy(&J));
   PetscCall(VecDestroy(&T));
   PetscCall(VecDestroy(&rhs));

@@ -46,7 +46,7 @@ PetscErrorCode PetscViewerDestroy_ASCII(PetscViewer viewer) {
   PetscCall(PetscFree(vascii));
 
   /* remove the viewer from the list in the MPI Communicator */
-  if (Petsc_Viewer_keyval == MPI_KEYVAL_INVALID) { PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, Petsc_DelViewer, &Petsc_Viewer_keyval, (void *)0)); }
+  if (Petsc_Viewer_keyval == MPI_KEYVAL_INVALID) PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, Petsc_DelViewer, &Petsc_Viewer_keyval, (void *)0));
 
   PetscCallMPI(MPI_Comm_get_attr(PetscObjectComm((PetscObject)viewer), Petsc_Viewer_keyval, (void **)&vlink, (PetscMPIInt *)&flg));
   if (flg) {
@@ -72,12 +72,12 @@ PetscErrorCode PetscViewerDestroy_ASCII(PetscViewer viewer) {
   if (Petsc_Viewer_Stdout_keyval != MPI_KEYVAL_INVALID) {
     PetscViewer aviewer;
     PetscCallMPI(MPI_Comm_get_attr(PetscObjectComm((PetscObject)viewer), Petsc_Viewer_Stdout_keyval, (void **)&aviewer, (PetscMPIInt *)&flg));
-    if (flg && aviewer == viewer) { PetscCallMPI(MPI_Comm_delete_attr(PetscObjectComm((PetscObject)viewer), Petsc_Viewer_Stdout_keyval)); }
+    if (flg && aviewer == viewer) PetscCallMPI(MPI_Comm_delete_attr(PetscObjectComm((PetscObject)viewer), Petsc_Viewer_Stdout_keyval));
   }
   if (Petsc_Viewer_Stderr_keyval != MPI_KEYVAL_INVALID) {
     PetscViewer aviewer;
     PetscCallMPI(MPI_Comm_get_attr(PetscObjectComm((PetscObject)viewer), Petsc_Viewer_Stderr_keyval, (void **)&aviewer, (PetscMPIInt *)&flg));
-    if (flg && aviewer == viewer) { PetscCallMPI(MPI_Comm_delete_attr(PetscObjectComm((PetscObject)viewer), Petsc_Viewer_Stderr_keyval)); }
+    if (flg && aviewer == viewer) PetscCallMPI(MPI_Comm_delete_attr(PetscObjectComm((PetscObject)viewer), Petsc_Viewer_Stderr_keyval));
   }
   PetscCall(PetscObjectComposeFunction((PetscObject)viewer, "PetscViewerFileSetName_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)viewer, "PetscViewerFileGetName_C", NULL));
@@ -566,7 +566,7 @@ PetscErrorCode PetscViewerASCIIPrintf(PetscViewer viewer, const char format[], .
     ascii->petsc_printfqueue       = NULL;
     ascii->petsc_printfqueuelength = 0;
     tab                            = intab;
-    while (tab--) { PetscCall(PetscFPrintf(PETSC_COMM_SELF, fd, "  ")); }
+    while (tab--) PetscCall(PetscFPrintf(PETSC_COMM_SELF, fd, "  "));
 
     va_start(Argp, format);
     PetscCall((*PetscVFPrintf)(fd, format, Argp));
@@ -575,7 +575,7 @@ PetscErrorCode PetscViewerASCIIPrintf(PetscViewer viewer, const char format[], .
     if (petsc_history) {
       va_start(Argp, format);
       tab = intab;
-      while (tab--) { PetscCall(PetscFPrintf(PETSC_COMM_SELF, petsc_history, "  ")); }
+      while (tab--) PetscCall(PetscFPrintf(PETSC_COMM_SELF, petsc_history, "  "));
       PetscCall((*PetscVFPrintf)(petsc_history, format, Argp));
       err = fflush(petsc_history);
       PetscCheck(!err, PETSC_COMM_SELF, PETSC_ERR_SYS, "fflush() failed on file");
@@ -691,7 +691,7 @@ PetscErrorCode PetscViewerFileSetName_ASCII(PetscViewer viewer, const char name[
         */
         vascii->fd = fopen(fname, "r+");
         if (!vascii->fd) vascii->fd = fopen(fname, "w+");
-        else { PetscCall(fseek(vascii->fd, 0, SEEK_END)); }
+        else PetscCall(fseek(vascii->fd, 0, SEEK_END));
         break;
       default: SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_SUP, "Unsupported file mode %s", PetscFileModes[vascii->mode]);
       }
@@ -753,7 +753,7 @@ PetscErrorCode PetscViewerView_ASCII(PetscViewer v, PetscViewer viewer) {
   PetscViewer_ASCII *ascii = (PetscViewer_ASCII *)v->data;
 
   PetscFunctionBegin;
-  if (ascii->filename) { PetscCall(PetscViewerASCIIPrintf(viewer, "Filename: %s\n", ascii->filename)); }
+  if (ascii->filename) PetscCall(PetscViewerASCIIPrintf(viewer, "Filename: %s\n", ascii->filename));
   PetscFunctionReturn(0);
 }
 
@@ -882,7 +882,7 @@ PetscErrorCode PetscViewerASCIISynchronizedPrintf(PetscViewer viewer, const char
     vascii->petsc_printfqueue       = NULL;
     vascii->petsc_printfqueuelength = 0;
 
-    while (tab--) { PetscCall(PetscFPrintf(PETSC_COMM_SELF, fp, "  ")); }
+    while (tab--) PetscCall(PetscFPrintf(PETSC_COMM_SELF, fp, "  "));
 
     va_start(Argp, format);
     PetscCall((*PetscVFPrintf)(fp, format, Argp));

@@ -33,7 +33,7 @@ int main(int argc, char **args) {
   /* Test MatGetOwnershipRange() */
   PetscCall(MatGetOwnershipRange(A, &Ii, &J));
   PetscCall(MatGetOwnershipRange(sA, &i, &j));
-  if (i - Ii || j - J) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error: MatGetOwnershipRange() in MatSBAIJ format\n")); }
+  if (i - Ii || j - J) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error: MatGetOwnershipRange() in MatSBAIJ format\n"));
 
   /* Assemble matrix */
   if (bs == 1) {
@@ -154,26 +154,26 @@ int main(int argc, char **args) {
   PetscCall(MatNorm(A, NORM_FROBENIUS, &norm1));
   PetscCall(MatNorm(sA, NORM_FROBENIUS, &norm2));
   norm1 -= norm2;
-  if (norm1 < -tol || norm1 > tol) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error: MatNorm(), fnorm1-fnorm2=%16.14e\n", (double)norm1)); }
+  if (norm1 < -tol || norm1 > tol) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error: MatNorm(), fnorm1-fnorm2=%16.14e\n", (double)norm1));
   PetscCall(MatNorm(A, NORM_INFINITY, &norm1));
   PetscCall(MatNorm(sA, NORM_INFINITY, &norm2));
   norm1 -= norm2;
-  if (norm1 < -tol || norm1 > tol) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error: MatNorm(), inf_norm1-inf_norm2=%16.14e\n", (double)norm1)); }
+  if (norm1 < -tol || norm1 > tol) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error: MatNorm(), inf_norm1-inf_norm2=%16.14e\n", (double)norm1));
 
   /* Test MatGetInfo(), MatGetSize(), MatGetBlockSize() */
   PetscCall(MatGetInfo(A, MAT_LOCAL, &minfo1));
   PetscCall(MatGetInfo(sA, MAT_LOCAL, &minfo2));
   i = (int)(minfo1.nz_used - minfo2.nz_used);
   j = (int)(minfo1.nz_allocated - minfo2.nz_allocated);
-  if (i < 0 || j < 0) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error: MatGetInfo()\n")); }
+  if (i < 0 || j < 0) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error: MatGetInfo()\n"));
 
   PetscCall(MatGetSize(A, &Ii, &J));
   PetscCall(MatGetSize(sA, &i, &j));
-  if (i - Ii || j - J) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error: MatGetSize()\n")); }
+  if (i - Ii || j - J) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error: MatGetSize()\n"));
 
   PetscCall(MatGetBlockSize(A, &Ii));
   PetscCall(MatGetBlockSize(sA, &i));
-  if (i - Ii) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error: MatGetBlockSize()\n")); }
+  if (i - Ii) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error: MatGetBlockSize()\n"));
 
   /* Test MatDiagonalScale(), MatGetDiagonal(), MatScale() */
   PetscCall(PetscRandomCreate(PETSC_COMM_SELF, &rdm));
@@ -194,7 +194,7 @@ int main(int argc, char **args) {
   PetscCall(VecNorm(s1, NORM_1, &norm1));
   PetscCall(VecNorm(s2, NORM_1, &norm2));
   norm1 -= norm2;
-  if (norm1 < -tol || norm1 > tol) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error:MatGetDiagonal() \n")); }
+  if (norm1 < -tol || norm1 > tol) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error:MatGetDiagonal() \n"));
 
   PetscCall(MatScale(A, alpha));
   PetscCall(MatScale(sA, alpha));
@@ -207,7 +207,7 @@ int main(int argc, char **args) {
     PetscCall(VecNorm(s1, NORM_1, &norm1));
     PetscCall(VecNorm(s2, NORM_1, &norm2));
     norm1 -= norm2;
-    if (norm1 < -tol || norm1 > tol) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error: MatMult(), MatDiagonalScale() or MatScale()\n")); }
+    if (norm1 < -tol || norm1 > tol) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error: MatMult(), MatDiagonalScale() or MatScale()\n"));
   }
 
   for (i = 0; i < 40; i++) {
@@ -218,7 +218,7 @@ int main(int argc, char **args) {
     PetscCall(VecNorm(s1, NORM_1, &norm1));
     PetscCall(VecNorm(s2, NORM_1, &norm2));
     norm1 -= norm2;
-    if (norm1 < -tol || norm1 > tol) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error:MatMultAdd(), MatDiagonalScale() or MatScale() \n")); }
+    if (norm1 < -tol || norm1 > tol) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error:MatMultAdd(), MatDiagonalScale() or MatScale() \n"));
   }
 
   /* Test MatReordering() */

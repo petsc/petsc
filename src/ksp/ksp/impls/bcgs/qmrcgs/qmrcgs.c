@@ -48,7 +48,7 @@ static PetscErrorCode KSPSolve_QMRCGS(KSP ksp) {
   /*  Only supports right preconditioning */
   PetscCheck(ksp->pc_side == PC_RIGHT, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "KSP qmrcgs does not support %s", PCSides[ksp->pc_side]);
   if (!ksp->guess_zero) {
-    if (!bcgs->guess) { PetscCall(VecDuplicate(X, &bcgs->guess)); }
+    if (!bcgs->guess) PetscCall(VecDuplicate(X, &bcgs->guess));
     PetscCall(VecCopy(X, bcgs->guess));
   } else {
     PetscCall(VecSet(X, 0.0));
@@ -67,7 +67,7 @@ static PetscErrorCode KSPSolve_QMRCGS(KSP ksp) {
   }
 
   /* Test for nothing to do */
-  if (ksp->normtype != KSP_NORM_NONE) { PetscCall(VecNorm(R, NORM_2, &dp)); }
+  if (ksp->normtype != KSP_NORM_NONE) PetscCall(VecNorm(R, NORM_2, &dp));
   PetscCall(PetscObjectSAWsTakeAccess((PetscObject)ksp));
   ksp->its   = 0;
   ksp->rnorm = dp;
@@ -165,7 +165,7 @@ static PetscErrorCode KSPSolve_QMRCGS(KSP ksp) {
     PetscCall(VecWAXPY(R, -omega, T, S)); /* r <- s - omega t */
 
     /* Second quasi-minimization step */
-    if (ksp->normtype != KSP_NORM_NONE && ksp->chknorm < i + 2) { PetscCall(VecNorm(R, NORM_2, &dp)); }
+    if (ksp->normtype != KSP_NORM_NONE && ksp->chknorm < i + 2) PetscCall(VecNorm(R, NORM_2, &dp));
 
     if (tau2 == 0) {
       PetscCheck(!ksp->errorifnotconverged, PetscObjectComm((PetscObject)ksp), PETSC_ERR_NOT_CONVERGED, "KSPSolve has not converged due to division by zero");

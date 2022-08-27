@@ -128,7 +128,7 @@ static PetscErrorCode KSPSolve_CG(KSP ksp) {
     PetscCall(VecCopy(B, R)); /*    r <- b (x is 0)                   */
   }
   /* This may be true only on a subset of MPI ranks; setting it here so it will be detected by the first norm computation below */
-  if (ksp->reason == KSP_DIVERGED_PC_FAILED) { PetscCall(VecSetInf(R)); }
+  if (ksp->reason == KSP_DIVERGED_PC_FAILED) PetscCall(VecSetInf(R));
 
   switch (ksp->normtype) {
   case KSP_NORM_PRECONDITIONED:
@@ -447,7 +447,7 @@ PetscErrorCode KSPView_CG(KSP ksp, PetscViewer viewer) {
 #if defined(PETSC_USE_COMPLEX)
     PetscCall(PetscViewerASCIIPrintf(viewer, "  variant %s\n", KSPCGTypes[cg->type]));
 #endif
-    if (cg->singlereduction) { PetscCall(PetscViewerASCIIPrintf(viewer, "  using single-reduction variant\n")); }
+    if (cg->singlereduction) PetscCall(PetscViewerASCIIPrintf(viewer, "  using single-reduction variant\n"));
   }
   PetscFunctionReturn(0);
 }

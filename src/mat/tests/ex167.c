@@ -111,8 +111,8 @@ int main(int argc, char **args) {
       PetscCall(PetscObjectReference((PetscObject)rowis[l]));
       colis[l] = rowis[l];
     }
-    if (sort_rows) { PetscCall(ISSort(rowis[l])); }
-    if (sort_cols) { PetscCall(ISSort(colis[l])); }
+    if (sort_rows) PetscCall(ISSort(rowis[l]));
+    if (sort_cols) PetscCall(ISSort(colis[l]));
   }
 
   PetscCall(MatCreateSubMatrices(A, nsub, rowis, colis, MAT_INITIAL_MATRIX, &S));

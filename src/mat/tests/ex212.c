@@ -54,7 +54,7 @@ int main(int argc, char **argv) {
     PetscCall(MatCreateSubMatrix(C, rows[i], NULL, MAT_INITIAL_MATRIX, &submat));
     PetscCall(MatView(submat, NULL));
     PetscCall(MatNestGetISs(submat, NULL, cols));
-    for (j = 0; j < 3; j++) { PetscCall(ISView(cols[j], NULL)); }
+    for (j = 0; j < 3; j++) PetscCall(ISView(cols[j], NULL));
     PetscCall(MatDestroy(&submat));
   }
   PetscCall(MatDestroy(&C));

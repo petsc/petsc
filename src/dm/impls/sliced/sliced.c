@@ -30,7 +30,7 @@ PetscErrorCode DMCreateMatrix_Sliced(DM dm, Mat *J) {
   /* In general, we have to do extra work to preallocate for scalar (AIJ) matrices so we check whether it will do any
   * good before going on with it. */
   PetscCall(PetscObjectQueryFunction((PetscObject)*J, "MatMPIAIJSetPreallocation_C", &aij));
-  if (!aij) { PetscCall(PetscObjectQueryFunction((PetscObject)*J, "MatSeqAIJSetPreallocation_C", &aij)); }
+  if (!aij) PetscCall(PetscObjectQueryFunction((PetscObject)*J, "MatSeqAIJSetPreallocation_C", &aij));
   if (aij) {
     if (bs == 1) {
       PetscCall(MatSeqAIJSetPreallocation(*J, slice->d_nz, slice->d_nnz));

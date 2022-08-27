@@ -179,7 +179,7 @@ PetscErrorCode PetscOptionsInsertStringYAML(PetscOptions options, const char in_
     err = !yaml_parser_load(&parser, &doc);
     PetscCheck(!err, comm, PETSC_ERR_LIB, "YAML parser loading error");
     root = yaml_document_get_root_node(&doc);
-    if (root) { PetscCall(PetscParseLayerYAML(options, &doc, root)); }
+    if (root) PetscCall(PetscParseLayerYAML(options, &doc, root));
     yaml_document_delete(&doc);
   } while (root);
   yaml_parser_delete(&parser);

@@ -287,7 +287,7 @@ static PetscErrorCode DMFieldEvaluateFE_DA(DMField field, IS cellIS, PetscQuadra
     }
     MultilinearEvaluate(dim, cellCoordRange, nc, cellCoeffs, dafield->work, nq, qs, datatype, cB, cD, cH);
   }
-  if (!isStride) { PetscCall(ISRestoreIndices(cellIS, &cells)); }
+  if (!isStride) PetscCall(ISRestoreIndices(cellIS, &cells));
   PetscCall(DMRestoreWorkArray(dm, (1 << dim) * nc, MPIU_SCALAR, &cellCoeffs));
 #if defined(PETSC_USE_COMPLEX)
   PetscCall(DMRestoreWorkArray(dm, nq * dim, MPIU_SCALAR, &qs));
@@ -342,7 +342,7 @@ static PetscErrorCode DMFieldEvaluateFV_DA(DMField field, IS cellIS, PetscDataTy
       points[dim * c + i] = (ijk[i] + first[i] + 0.5) * stepPer[i];
     }
   }
-  if (!isStride) { PetscCall(ISRestoreIndices(cellIS, &cells)); }
+  if (!isStride) PetscCall(ISRestoreIndices(cellIS, &cells));
   MultilinearEvaluate(dim, dafield->coordRange, nc, dafield->cornerCoeffs, dafield->work, numCells, points, datatype, B, D, H);
   PetscCall(DMRestoreWorkArray(dm, dim * numCells, MPIU_SCALAR, &points));
   PetscFunctionReturn(0);
@@ -384,7 +384,7 @@ static PetscErrorCode DMFieldCreateDefaultQuadrature_DA(DMField field, IS cellIS
     if (imin >= hStart && imax < hEnd) break;
   }
   dim -= h;
-  if (dim > 0) { PetscCall(PetscDTGaussTensorQuadrature(dim, 1, 1, -1.0, 1.0, quad)); }
+  if (dim > 0) PetscCall(PetscDTGaussTensorQuadrature(dim, 1, 1, -1.0, 1.0, quad));
 
   PetscFunctionReturn(0);
 }

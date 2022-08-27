@@ -134,7 +134,7 @@ static PetscErrorCode DMProjectPoint_Func_Private(DM dm, PetscDS ds, DM dmIn, Pe
           for (d = 0; d < spDim; d++, v++) values[v] = values[v - spDim];
         }
       } else {
-        for (d = 0; d < spDim; ++d, ++v) { PetscCall(PetscDualSpaceApplyFVM(sp[f], d, time, fvgeom, Nc[f], funcs[f], ctx, &values[v])); }
+        for (d = 0; d < spDim; ++d, ++v) PetscCall(PetscDualSpaceApplyFVM(sp[f], d, time, fvgeom, Nc[f], funcs[f], ctx, &values[v]));
       }
     } else {
       for (d = 0; d < spDim; d++, v++) values[v] = 0.;
@@ -818,7 +818,7 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
         PetscCall(ISGetLocalSize(isectIS, &n));
         PetscCall(ISGetIndices(isectIS, &points));
         PetscCall(DMFieldGetDegree(coordField, isectIS, NULL, &maxDegree));
-        if (maxDegree <= 1) { PetscCall(DMFieldCreateDefaultQuadrature(coordField, isectIS, &quad)); }
+        if (maxDegree <= 1) PetscCall(DMFieldCreateDefaultQuadrature(coordField, isectIS, &quad));
         if (!quad) {
           if (!h && allPoints) {
             quad      = allPoints;
@@ -851,7 +851,7 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
 
       PetscCall(ISCreateStride(PETSC_COMM_SELF, pEnd - pStart, pStart, 1, &pointIS));
       PetscCall(DMFieldGetDegree(coordField, pointIS, NULL, &maxDegree));
-      if (maxDegree <= 1) { PetscCall(DMFieldCreateDefaultQuadrature(coordField, pointIS, &quad)); }
+      if (maxDegree <= 1) PetscCall(DMFieldCreateDefaultQuadrature(coordField, pointIS, &quad));
       if (!quad) {
         if (!h && allPoints) {
           quad      = allPoints;

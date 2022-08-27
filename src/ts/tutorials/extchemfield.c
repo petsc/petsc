@@ -173,7 +173,7 @@ int main(int argc, char **argv) {
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   if (showsolutions) {
     PetscCall(DMDAGetCorners(user.dm, &xs, NULL, NULL, &xm, NULL, NULL));
-    for (i = xs; i < xs + xm; i++) { PetscCall(MonitorCell(ts, &user, i)); }
+    for (i = xs; i < xs + xm; i++) PetscCall(MonitorCell(ts, &user, i));
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

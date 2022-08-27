@@ -247,7 +247,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NRichardson(SNES snes) {
   snes->npcside = PC_LEFT;
 
   PetscCall(SNESGetLineSearch(snes, &linesearch));
-  if (!((PetscObject)linesearch)->type_name) { PetscCall(SNESLineSearchSetType(linesearch, SNESLINESEARCHL2)); }
+  if (!((PetscObject)linesearch)->type_name) PetscCall(SNESLineSearchSetType(linesearch, SNESLINESEARCHL2));
 
   snes->alwayscomputesfinalresidual = PETSC_TRUE;
 

@@ -122,7 +122,7 @@ static PetscErrorCode CreateSpectralPlanes(DM dm, PetscInt numPlanes, const Pets
       PetscInt off;
 
       PetscCall(PetscSectionGetOffset(coordSection, v, &off));
-      if (PetscAbsReal(planeCoord[p] - PetscRealPart(coords[off + planeDir[p]])) < PETSC_SMALL) { PetscCall(DMLabelSetValue(label, v, 1)); }
+      if (PetscAbsReal(planeCoord[p] - PetscRealPart(coords[off + planeDir[p]])) < PETSC_SMALL) PetscCall(DMLabelSetValue(label, v, 1));
     }
   }
   PetscCall(VecRestoreArrayRead(coordinates, &coords));

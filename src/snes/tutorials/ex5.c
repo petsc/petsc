@@ -507,7 +507,7 @@ static PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx) {
   hydhx  = hy / hx;
 
   PetscCall(DMGetLocalVector(da, &localX));
-  if (B) { PetscCall(DMGetLocalVector(da, &localB)); }
+  if (B) PetscCall(DMGetLocalVector(da, &localB));
   for (l = 0; l < sweeps; l++) {
     PetscCall(DMGlobalToLocalBegin(da, X, INSERT_VALUES, localX));
     PetscCall(DMGlobalToLocalEnd(da, X, INSERT_VALUES, localX));
@@ -665,10 +665,10 @@ int main(int argc, char **argv) {
   }
   PetscCall(DMDASNESSetFunctionLocal(da, INSERT_VALUES, (DMDASNESFunction)FormFunctionLocal, &user));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-fd", &flg, NULL));
-  if (!flg) { PetscCall(DMDASNESSetJacobianLocal(da, (DMDASNESJacobian)FormJacobianLocal, &user)); }
+  if (!flg) PetscCall(DMDASNESSetJacobianLocal(da, (DMDASNESJacobian)FormJacobianLocal, &user));
 
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-obj", &flg, NULL));
-  if (flg) { PetscCall(DMDASNESSetObjectiveLocal(da, (DMDASNESObjective)FormObjectiveLocal, &user)); }
+  if (flg) PetscCall(DMDASNESSetObjectiveLocal(da, (DMDASNESObjective)FormObjectiveLocal, &user));
 
   if (PetscDefined(HAVE_MATLAB_ENGINE)) {
     PetscBool matlab_function = PETSC_FALSE;

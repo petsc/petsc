@@ -97,11 +97,11 @@ int main(int argc, char **args) {
     PetscCall(MatMult(A[k], x, u));
     PetscCall(VecAXPY(u, -1.0, b));
     PetscCall(VecNorm(u, NORM_INFINITY, &norm));
-    if (norm > tol) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%" PetscInt_FMT "-the %s numfact and solve: residual %g\n", k, factortype, (double)norm)); }
+    if (norm > tol) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%" PetscInt_FMT "-the %s numfact and solve: residual %g\n", k, factortype, (double)norm));
   }
 
   /* Free data structures */
-  for (k = 0; k < num_numfac; k++) { PetscCall(MatDestroy(&A[k])); }
+  for (k = 0; k < num_numfac; k++) PetscCall(MatDestroy(&A[k]));
   PetscCall(MatDestroy(&F));
   PetscCall(ISDestroy(&perm));
   PetscCall(ISDestroy(&iperm));

@@ -69,7 +69,7 @@ int main(int argc, char **args) {
 
     PetscCall(MatCreateDense(PETSC_COMM_WORLD, n, n, PETSC_DECIDE, PETSC_DECIDE, NULL, &Ad));
     for (i = 0; i < n; i++) {
-      for (j = 0; j < n; j++) { PetscCall(MatSetValue(Ad, i, j, RBF(sdim, coords + i * sdim, coords + j * sdim, &fctx), INSERT_VALUES)); }
+      for (j = 0; j < n; j++) PetscCall(MatSetValue(Ad, i, j, RBF(sdim, coords + i * sdim, coords + j * sdim, &fctx), INSERT_VALUES));
     }
     PetscCall(MatAssemblyBegin(Ad, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(Ad, MAT_FINAL_ASSEMBLY));

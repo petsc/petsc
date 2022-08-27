@@ -58,7 +58,7 @@ PetscErrorCode DMCreateLocalVector_DA(DM da, Vec *g) {
   }
   PetscCall(VecSetDM(*g, da));
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-  if (dd->w == 1 && da->dim == 2) { PetscCall(PetscObjectComposeFunction((PetscObject)*g, "PetscMatlabEnginePut_C", VecMatlabEnginePut_DA2d)); }
+  if (dd->w == 1 && da->dim == 2) PetscCall(PetscObjectComposeFunction((PetscObject)*g, "PetscMatlabEnginePut_C", VecMatlabEnginePut_DA2d));
 #endif
   PetscFunctionReturn(0);
 }
@@ -358,7 +358,7 @@ PetscErrorCode DMDASetVertexCoordinates(DM dm, PetscReal xl, PetscReal xu, Petsc
   PetscCall(PetscSectionSetNumFields(section, 1));
   PetscCall(PetscSectionSetFieldComponents(section, 0, dim));
   PetscCall(PetscSectionSetChart(section, vStart, vEnd));
-  for (v = vStart; v < vEnd; ++v) { PetscCall(PetscSectionSetDof(section, v, dim)); }
+  for (v = vStart; v < vEnd; ++v) PetscCall(PetscSectionSetDof(section, v, dim));
   PetscCall(PetscSectionSetUp(section));
   PetscCall(PetscSectionGetStorageSize(section, &size));
   PetscCall(VecCreateSeq(PETSC_COMM_SELF, size, &coordinates));

@@ -82,7 +82,7 @@ PetscErrorCode PCView_Kaczmarz(PC pc, PetscViewer viewer) {
 
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) { PetscCall(PetscViewerASCIIPrintf(viewer, "  lambda = %g\n", (double)jac->lambda)); }
+  if (iascii) PetscCall(PetscViewerASCIIPrintf(viewer, "  lambda = %g\n", (double)jac->lambda));
   PetscFunctionReturn(0);
 }
 

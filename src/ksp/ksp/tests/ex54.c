@@ -88,7 +88,7 @@ int main(int argc, char **argv) {
   PetscCall(VecViewFromOptions(a, NULL, "-rhs_view"));
   PetscCall(KSPSolve(QRsolver, v, a));
   PetscCall(KSPLSQRGetStandardErrorVec(QRsolver, &se));
-  if (se) { PetscCall(VecViewFromOptions(se, NULL, "-se_view")); }
+  if (se) PetscCall(VecViewFromOptions(se, NULL, "-se_view"));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-exact", &exact, NULL));
   if (exact) {
     PetscCall(KSPDestroy(&QRsolver));

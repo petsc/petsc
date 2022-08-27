@@ -131,13 +131,13 @@ int main(int argc, char **argv) {
     PetscCall(MatSolve(F, b, y));
     PetscCall(VecAXPY(y, -1.0, x));
     PetscCall(VecNorm(y, NORM_2, &norm));
-    if (norm > tol) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Warning: Norm of error for in-place Cholesky %g\n", (double)norm)); }
+    if (norm > tol) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Warning: Norm of error for in-place Cholesky %g\n", (double)norm));
 
     PetscCall(MatMatSolve(F, RHS, SOLU));
     PetscCall(MatMatMult(mat, SOLU, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &RHS2));
     PetscCall(MatAXPY(RHS, -1.0, RHS2, SAME_NONZERO_PATTERN));
     PetscCall(MatNorm(RHS, NORM_FROBENIUS, &norm));
-    if (norm > tol) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error: Norm of residual for in-place Cholesky (MatMatSolve) %g\n", (double)norm)); }
+    if (norm > tol) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error: Norm of residual for in-place Cholesky (MatMatSolve) %g\n", (double)norm));
     PetscCall(MatDestroy(&F));
     PetscCall(MatDestroy(&RHS2));
   }
@@ -150,7 +150,7 @@ int main(int argc, char **argv) {
   PetscCall(MatSolve(F, b, y));
   PetscCall(VecAXPY(y, -1.0, x));
   PetscCall(VecNorm(y, NORM_2, &norm));
-  if (norm > tol) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Warning: Norm of error for out-of-place Cholesky %g\n", (double)norm)); }
+  if (norm > tol) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Warning: Norm of error for out-of-place Cholesky %g\n", (double)norm));
   PetscCall(MatDestroy(&F));
 
   /* LU factorization - perms and factinfo are ignored by LAPACK */
@@ -167,12 +167,12 @@ int main(int argc, char **argv) {
     PetscCall(MatSolve(F, b, y));
     PetscCall(VecAXPY(y, -1.0, x));
     PetscCall(VecNorm(y, NORM_2, &norm));
-    if (norm > tol) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Warning: Norm of error for in-place LU %g\n", (double)norm)); }
+    if (norm > tol) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Warning: Norm of error for in-place LU %g\n", (double)norm));
     PetscCall(MatMatSolve(F, RHS, SOLU));
     PetscCall(MatMatMult(mat, SOLU, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &RHS2));
     PetscCall(MatAXPY(RHS, -1.0, RHS2, SAME_NONZERO_PATTERN));
     PetscCall(MatNorm(RHS, NORM_FROBENIUS, &norm));
-    if (norm > tol) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error: Norm of residual for in-place LU (MatMatSolve) %g\n", (double)norm)); }
+    if (norm > tol) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error: Norm of residual for in-place LU (MatMatSolve) %g\n", (double)norm));
     PetscCall(MatDestroy(&F));
     PetscCall(MatDestroy(&RHS2));
   }
@@ -184,7 +184,7 @@ int main(int argc, char **argv) {
   PetscCall(MatSolve(F, b, y));
   PetscCall(VecAXPY(y, -1.0, x));
   PetscCall(VecNorm(y, NORM_2, &norm));
-  if (norm > tol) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Warning: Norm of error for out-of-place LU %g\n", (double)norm)); }
+  if (norm > tol) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Warning: Norm of error for out-of-place LU %g\n", (double)norm));
 
   /* free space */
   PetscCall(ISDestroy(&perm));
@@ -214,13 +214,13 @@ int main(int argc, char **argv) {
       PetscCall(MatSolve(F, b, y));
       PetscCall(VecAXPY(y, -1.0, x));
       PetscCall(VecNorm(y, NORM_2, &norm));
-      if (norm > tol) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Warning: Norm of error for in-place QR %g\n", (double)norm)); }
+      if (norm > tol) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Warning: Norm of error for in-place QR %g\n", (double)norm));
       PetscCall(MatMatMult(mat, SOLU, MAT_REUSE_MATRIX, PETSC_DEFAULT, &RHS));
       PetscCall(MatDuplicate(SOLU, MAT_DO_NOT_COPY_VALUES, &SOLU2));
       PetscCall(MatMatSolve(F, RHS, SOLU2));
       PetscCall(MatAXPY(SOLU2, -1.0, SOLU, SAME_NONZERO_PATTERN));
       PetscCall(MatNorm(SOLU2, NORM_FROBENIUS, &norm));
-      if (norm > tol) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error: Norm of error for in-place QR (MatMatSolve) %g\n", (double)norm)); }
+      if (norm > tol) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error: Norm of error for in-place QR (MatMatSolve) %g\n", (double)norm));
       PetscCall(MatDestroy(&F));
       PetscCall(MatDestroy(&SOLU2));
     }
@@ -232,7 +232,7 @@ int main(int argc, char **argv) {
     PetscCall(MatSolve(F, b, y));
     PetscCall(VecAXPY(y, -1.0, x));
     PetscCall(VecNorm(y, NORM_2, &norm));
-    if (norm > tol) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Warning: Norm of error for out-of-place QR %g\n", (double)norm)); }
+    if (norm > tol) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Warning: Norm of error for out-of-place QR %g\n", (double)norm));
 
     if (m == n) {
       /* out-of-place MatSolveTranspose */
@@ -240,7 +240,7 @@ int main(int argc, char **argv) {
       PetscCall(MatSolveTranspose(F, b, y));
       PetscCall(VecAXPY(y, -1.0, x));
       PetscCall(VecNorm(y, NORM_2, &norm));
-      if (norm > tol) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Warning: Norm of error for out-of-place QR %g\n", (double)norm)); }
+      if (norm > tol) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Warning: Norm of error for out-of-place QR %g\n", (double)norm));
     }
 
     /* free space */

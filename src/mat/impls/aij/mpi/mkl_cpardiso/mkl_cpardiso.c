@@ -333,7 +333,7 @@ PetscErrorCode MatDestroy_MKL_CPARDISO(Mat A) {
                           mat_mkl_cpardiso->iparm, &mat_mkl_cpardiso->msglvl, NULL, NULL, &mat_mkl_cpardiso->comm_mkl_cpardiso, (PetscInt *)&mat_mkl_cpardiso->err);
   }
 
-  if (mat_mkl_cpardiso->ConvertToTriples != MatCopy_seqaij_seqaij_MKL_CPARDISO) { PetscCall(PetscFree3(mat_mkl_cpardiso->ia, mat_mkl_cpardiso->ja, mat_mkl_cpardiso->a)); }
+  if (mat_mkl_cpardiso->ConvertToTriples != MatCopy_seqaij_seqaij_MKL_CPARDISO) PetscCall(PetscFree3(mat_mkl_cpardiso->ia, mat_mkl_cpardiso->ja, mat_mkl_cpardiso->a));
   comm = MPI_Comm_f2c(mat_mkl_cpardiso->comm_mkl_cpardiso);
   PetscCallMPI(MPI_Comm_free(&comm));
   PetscCall(PetscFree(A->data));
@@ -665,7 +665,7 @@ PetscErrorCode MatView_MKL_CPARDISO(Mat A, PetscViewer viewer) {
     if (format == PETSC_VIEWER_ASCII_INFO) {
       PetscCall(PetscViewerASCIIPrintf(viewer, "MKL_CPARDISO run parameters:\n"));
       PetscCall(PetscViewerASCIIPrintf(viewer, "MKL_CPARDISO phase:             %d \n", mat_mkl_cpardiso->phase));
-      for (i = 1; i <= 64; i++) { PetscCall(PetscViewerASCIIPrintf(viewer, "MKL_CPARDISO iparm[%d]:     %d \n", i, mat_mkl_cpardiso->iparm[i - 1])); }
+      for (i = 1; i <= 64; i++) PetscCall(PetscViewerASCIIPrintf(viewer, "MKL_CPARDISO iparm[%d]:     %d \n", i, mat_mkl_cpardiso->iparm[i - 1]));
       PetscCall(PetscViewerASCIIPrintf(viewer, "MKL_CPARDISO maxfct:     %d \n", mat_mkl_cpardiso->maxfct));
       PetscCall(PetscViewerASCIIPrintf(viewer, "MKL_CPARDISO mnum:     %d \n", mat_mkl_cpardiso->mnum));
       PetscCall(PetscViewerASCIIPrintf(viewer, "MKL_CPARDISO mtype:     %d \n", mat_mkl_cpardiso->mtype));

@@ -373,8 +373,8 @@ PetscErrorCode PetscPushJSONValue(char buff[], const char key[], const char valu
 
   PetscFunctionBegin;
   PetscCall(PetscStrcmp(value, "null", &special));
-  if (!special) { PetscCall(PetscStrcmp(value, "true", &special)); }
-  if (!special) { PetscCall(PetscStrcmp(value, "false", &special)); }
+  if (!special) PetscCall(PetscStrcmp(value, "true", &special));
+  if (!special) PetscCall(PetscStrcmp(value, "false", &special));
   if (!special) {
     PetscInt i;
 
@@ -391,8 +391,8 @@ PetscErrorCode PetscPushJSONValue(char buff[], const char key[], const char valu
   PetscCall(PetscStrcat(buff, "\""));
   PetscCall(PetscStrcat(buff, key));
   PetscCall(PetscStrcat(buff, "\":"));
-  if (!special) { PetscCall(PetscStrcat(buff, "\"")); }
+  if (!special) PetscCall(PetscStrcat(buff, "\""));
   PetscCall(PetscStrcat(buff, value));
-  if (!special) { PetscCall(PetscStrcat(buff, "\"")); }
+  if (!special) PetscCall(PetscStrcat(buff, "\""));
   PetscFunctionReturn(0);
 }

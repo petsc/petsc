@@ -543,19 +543,19 @@ PetscErrorCode DMDASetOwnershipRanges(DM da, const PetscInt lx[], const PetscInt
   if (lx) {
     PetscCheck(dd->m >= 0, PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_WRONGSTATE, "Cannot set ownership ranges before setting number of procs");
     PetscCall(DMDACheckOwnershipRanges_Private(da, dd->M, dd->m, lx));
-    if (!dd->lx) { PetscCall(PetscMalloc1(dd->m, &dd->lx)); }
+    if (!dd->lx) PetscCall(PetscMalloc1(dd->m, &dd->lx));
     PetscCall(PetscArraycpy(dd->lx, lx, dd->m));
   }
   if (ly) {
     PetscCheck(dd->n >= 0, PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_WRONGSTATE, "Cannot set ownership ranges before setting number of procs");
     PetscCall(DMDACheckOwnershipRanges_Private(da, dd->N, dd->n, ly));
-    if (!dd->ly) { PetscCall(PetscMalloc1(dd->n, &dd->ly)); }
+    if (!dd->ly) PetscCall(PetscMalloc1(dd->n, &dd->ly));
     PetscCall(PetscArraycpy(dd->ly, ly, dd->n));
   }
   if (lz) {
     PetscCheck(dd->p >= 0, PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_WRONGSTATE, "Cannot set ownership ranges before setting number of procs");
     PetscCall(DMDACheckOwnershipRanges_Private(da, dd->P, dd->p, lz));
-    if (!dd->lz) { PetscCall(PetscMalloc1(dd->p, &dd->lz)); }
+    if (!dd->lz) PetscCall(PetscMalloc1(dd->p, &dd->lz));
     PetscCall(PetscArraycpy(dd->lz, lz, dd->p));
   }
   PetscFunctionReturn(0);
@@ -1232,7 +1232,7 @@ PetscErrorCode DMRefineHierarchy_DA(DM da, PetscInt nlevels, DM daf[]) {
 
   /* Get refinement factors, defaults taken from the coarse DMDA */
   PetscCall(PetscMalloc3(nlevels, &refx, nlevels, &refy, nlevels, &refz));
-  for (i = 0; i < nlevels; i++) { PetscCall(DMDAGetRefinementFactor(da, &refx[i], &refy[i], &refz[i])); }
+  for (i = 0; i < nlevels; i++) PetscCall(DMDAGetRefinementFactor(da, &refx[i], &refy[i], &refz[i]));
   n = nlevels;
   PetscCall(PetscOptionsGetIntArray(((PetscObject)da)->options, ((PetscObject)da)->prefix, "-da_refine_hierarchy_x", refx, &n, NULL));
   n = nlevels;
@@ -1259,7 +1259,7 @@ PetscErrorCode DMCoarsenHierarchy_DA(DM da, PetscInt nlevels, DM dac[]) {
   if (nlevels == 0) PetscFunctionReturn(0);
   PetscValidPointer(dac, 3);
   PetscCall(DMCoarsen(da, PetscObjectComm((PetscObject)da), &dac[0]));
-  for (i = 1; i < nlevels; i++) { PetscCall(DMCoarsen(dac[i - 1], PetscObjectComm((PetscObject)da), &dac[i])); }
+  for (i = 1; i < nlevels; i++) PetscCall(DMCoarsen(dac[i - 1], PetscObjectComm((PetscObject)da), &dac[i]));
   PetscFunctionReturn(0);
 }
 

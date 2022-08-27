@@ -28,7 +28,7 @@ static PetscErrorCode redistribute_vec(DM dist_dm, PetscSF sf, Vec *v) {
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank));
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)dm), &size));
   for (p = 0; p < size; ++p) {
-    if (p == rank) { PetscCall(PetscObjectViewFromOptions((PetscObject)*v, NULL, "-rd_vec_view")); }
+    if (p == rank) PetscCall(PetscObjectViewFromOptions((PetscObject)*v, NULL, "-rd_vec_view"));
     PetscCall(PetscBarrier((PetscObject)dm));
     PetscCall(PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD));
   }

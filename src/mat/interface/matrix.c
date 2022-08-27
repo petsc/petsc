@@ -1071,7 +1071,7 @@ PetscErrorCode MatView(Mat mat, PetscViewer viewer) {
 
     PetscCall(PetscObjectName((PetscObject)mat));
     PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
-    if (!((PetscObject)mat)->amsmem && rank == 0) { PetscCall(PetscObjectViewSAWs((PetscObject)mat, viewer)); }
+    if (!((PetscObject)mat)->amsmem && rank == 0) PetscCall(PetscObjectViewSAWs((PetscObject)mat, viewer));
 #endif
   } else if (isstring) {
     const char *type;
@@ -1090,7 +1090,7 @@ PetscErrorCode MatView(Mat mat, PetscViewer viewer) {
   }
   if (isascii) {
     PetscCall(PetscViewerGetFormat(viewer, &format));
-    if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) { PetscCall(PetscViewerASCIIPopTab(viewer)); }
+    if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) PetscCall(PetscViewerASCIIPopTab(viewer));
   }
   PetscCall(PetscLogEventEnd(MAT_View, mat, viewer, 0, 0));
   PetscFunctionReturn(0);
@@ -3502,8 +3502,8 @@ static PetscErrorCode MatMatSolve_Basic(Mat A, Mat B, Mat X, PetscBool trans) {
     PetscCall(PetscObjectTypeCompareAny((PetscObject)B, &Bneedconv, MATSEQDENSE, MATMPIDENSE, ""));
     PetscCall(PetscObjectTypeCompareAny((PetscObject)X, &Xneedconv, MATSEQDENSE, MATMPIDENSE, ""));
   }
-  if (Bneedconv) { PetscCall(MatConvert(B, MATDENSECUDA, MAT_INPLACE_MATRIX, &B)); }
-  if (Xneedconv) { PetscCall(MatConvert(X, MATDENSECUDA, MAT_INPLACE_MATRIX, &X)); }
+  if (Bneedconv) PetscCall(MatConvert(B, MATDENSECUDA, MAT_INPLACE_MATRIX, &B));
+  if (Xneedconv) PetscCall(MatConvert(X, MATDENSECUDA, MAT_INPLACE_MATRIX, &X));
   PetscCall(MatGetSize(B, NULL, &N));
   for (i = 0; i < N; i++) {
     PetscCall(MatDenseGetColumnVecRead(B, i, &b));
@@ -3512,8 +3512,8 @@ static PetscErrorCode MatMatSolve_Basic(Mat A, Mat B, Mat X, PetscBool trans) {
     PetscCall(MatDenseRestoreColumnVecWrite(X, i, &x));
     PetscCall(MatDenseRestoreColumnVecRead(B, i, &b));
   }
-  if (Bneedconv) { PetscCall(MatConvert(B, MATDENSE, MAT_INPLACE_MATRIX, &B)); }
-  if (Xneedconv) { PetscCall(MatConvert(X, MATDENSE, MAT_INPLACE_MATRIX, &X)); }
+  if (Bneedconv) PetscCall(MatConvert(B, MATDENSE, MAT_INPLACE_MATRIX, &B));
+  if (Xneedconv) PetscCall(MatConvert(X, MATDENSE, MAT_INPLACE_MATRIX, &X));
   PetscFunctionReturn(0);
 }
 
@@ -4741,7 +4741,7 @@ PetscErrorCode MatDuplicate(Mat mat, MatDuplicateOption op, Mat *M) {
   B->nooffprocentries  = mat->nooffprocentries;
 
   PetscCall(PetscObjectQuery((PetscObject)mat, "__PETSc_dm", &dm));
-  if (dm) { PetscCall(PetscObjectCompose((PetscObject)B, "__PETSc_dm", dm)); }
+  if (dm) PetscCall(PetscObjectCompose((PetscObject)B, "__PETSc_dm", dm));
   PetscCall(PetscObjectStateIncrease((PetscObject)B));
   PetscFunctionReturn(0);
 }
@@ -5612,7 +5612,7 @@ PetscErrorCode MatAssemblyEnd(Mat mat, MatAssemblyType type) {
         PetscCall(PetscPrintf(PetscObjectComm((PetscObject)mat), "Matrix is not symmetric (tolerance %g)\n", (double)mat->checksymmetrytol));
       }
     }
-    if (mat->nullsp && mat->checknullspaceonassembly) { PetscCall(MatNullSpaceTest(mat->nullsp, mat, NULL)); }
+    if (mat->nullsp && mat->checknullspaceonassembly) PetscCall(MatNullSpaceTest(mat->nullsp, mat, NULL));
   }
   inassm--;
   PetscFunctionReturn(0);
@@ -6081,7 +6081,7 @@ PetscErrorCode MatZeroRowsIS(Mat mat, IS is, PetscScalar diag, Vec x, Vec b) {
     PetscCall(ISGetIndices(is, &rows));
   }
   PetscCall(MatZeroRows(mat, numRows, rows, diag, x, b));
-  if (is) { PetscCall(ISRestoreIndices(is, &rows)); }
+  if (is) PetscCall(ISRestoreIndices(is, &rows));
   PetscFunctionReturn(0);
 }
 
@@ -6835,7 +6835,7 @@ PetscErrorCode MatCreateSubMatrices(Mat mat, PetscInt n, const IS irow[], const 
   for (i = 0; i < n; i++) {
     (*submat)[i]->factortype = MAT_FACTOR_NONE; /* in case in place factorization was previously done on submatrix */
     PetscCall(ISEqualUnsorted(irow[i], icol[i], &eq));
-    if (eq) { PetscCall(MatPropagateSymmetryOptions(mat, (*submat)[i])); }
+    if (eq) PetscCall(MatPropagateSymmetryOptions(mat, (*submat)[i]));
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
     if (mat->boundtocpu && mat->bindingpropagates) {
       PetscCall(MatBindToCPU((*submat)[i], PETSC_TRUE));
@@ -6891,7 +6891,7 @@ PetscErrorCode MatCreateSubMatricesMPI(Mat mat, PetscInt n, const IS irow[], con
   PetscCall(PetscLogEventEnd(MAT_CreateSubMats, mat, 0, 0, 0));
   for (i = 0; i < n; i++) {
     PetscCall(ISEqualUnsorted(irow[i], icol[i], &eq));
-    if (eq) { PetscCall(MatPropagateSymmetryOptions(mat, (*submat)[i])); }
+    if (eq) PetscCall(MatPropagateSymmetryOptions(mat, (*submat)[i]));
   }
   PetscFunctionReturn(0);
 }
@@ -6921,7 +6921,7 @@ PetscErrorCode MatDestroyMatrices(PetscInt n, Mat *mat[]) {
   PetscCheck(n >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Trying to destroy negative number of matrices %" PetscInt_FMT, n);
   PetscValidPointer(mat, 2);
 
-  for (i = 0; i < n; i++) { PetscCall(MatDestroy(&(*mat)[i])); }
+  for (i = 0; i < n; i++) PetscCall(MatDestroy(&(*mat)[i]));
 
   /* memory is allocated even if n = 0 */
   PetscCall(PetscFree(*mat));
@@ -7062,7 +7062,7 @@ PetscErrorCode MatIncreaseOverlap(Mat mat, PetscInt n, IS is[], PetscInt ov) {
   PetscCall(PetscLogEventEnd(MAT_IncreaseOverlap, mat, 0, 0, 0));
   PetscCall(MatGetBlockSizes(mat, &bs, &cbs));
   if (bs == cbs) {
-    for (i = 0; i < n; i++) { PetscCall(ISSetBlockSize(is[i], bs)); }
+    for (i = 0; i < n; i++) PetscCall(ISSetBlockSize(is[i], bs));
   }
   PetscFunctionReturn(0);
 }
@@ -7105,7 +7105,7 @@ PetscErrorCode MatIncreaseOverlapSplit(Mat mat, PetscInt n, IS is[], PetscInt ov
   MatCheckPreallocated(mat, 1);
   if (!ov) PetscFunctionReturn(0);
   PetscCall(PetscLogEventBegin(MAT_IncreaseOverlap, mat, 0, 0, 0));
-  for (i = 0; i < n; i++) { PetscCall(MatIncreaseOverlapSplit_Single(mat, &is[i], ov)); }
+  for (i = 0; i < n; i++) PetscCall(MatIncreaseOverlapSplit_Single(mat, &is[i], ov));
   PetscCall(PetscLogEventEnd(MAT_IncreaseOverlap, mat, 0, 0, 0));
   PetscFunctionReturn(0);
 }
@@ -7207,7 +7207,7 @@ typedef struct {
 } EnvelopeData;
 
 static PetscErrorCode EnvelopeDataDestroy(EnvelopeData *edata) {
-  for (PetscInt i = 0; i < edata->n; i++) { PetscCall(ISDestroy(&edata->is[i])); }
+  for (PetscInt i = 0; i < edata->n; i++) PetscCall(ISDestroy(&edata->is[i]));
   PetscCall(PetscFree(edata->is));
   PetscCall(PetscFree(edata));
   return 0;
@@ -7285,7 +7285,7 @@ static PetscErrorCode MatComputeVariableBlockEnvelope(Mat mat) {
   }
 
   PetscCall(MatRestoreRowIJ(A, 0, PETSC_FALSE, PETSC_FALSE, &n, &ia, &ja, &done));
-  if (!set || !flag) { PetscCall(MatDestroy(&AA)); }
+  if (!set || !flag) PetscCall(MatDestroy(&AA));
   PetscCall(MatDestroy(&A));
 
   PetscCall(PetscNew(&edata));
@@ -7293,7 +7293,7 @@ static PetscErrorCode MatComputeVariableBlockEnvelope(Mat mat) {
   edata->n = lblocks;
   /* create IS needed for extracting blocks from the original matrix */
   PetscCall(PetscMalloc1(lblocks, &edata->is));
-  for (PetscInt i = 0; i < lblocks; i++) { PetscCall(ISCreateStride(PETSC_COMM_SELF, sizes[i], starts[i], 1, &edata->is[i])); }
+  for (PetscInt i = 0; i < lblocks; i++) PetscCall(ISCreateStride(PETSC_COMM_SELF, sizes[i], starts[i], 1, &edata->is[i]));
 
   /* Create the resulting inverse matrix structure with preallocation information */
   PetscCall(MatCreate(PetscObjectComm((PetscObject)mat), &edata->C));
@@ -7518,7 +7518,7 @@ PetscErrorCode MatSetBlockSizes(Mat mat, PetscInt rbs, PetscInt cbs) {
     PetscLayout            nmap = NULL;
 
     PetscCall(PetscLayoutDuplicate(mat->rmap, &nmap));
-    if (mat->rmap->mapping) { PetscCall(ISLocalToGlobalMappingDuplicate(mat->rmap->mapping, &l2g)); }
+    if (mat->rmap->mapping) PetscCall(ISLocalToGlobalMappingDuplicate(mat->rmap->mapping, &l2g));
     PetscCall(PetscLayoutDestroy(&mat->rmap));
     mat->rmap          = nmap;
     mat->rmap->mapping = l2g;
@@ -7528,7 +7528,7 @@ PetscErrorCode MatSetBlockSizes(Mat mat, PetscInt rbs, PetscInt cbs) {
     PetscLayout            nmap = NULL;
 
     PetscCall(PetscLayoutDuplicate(mat->cmap, &nmap));
-    if (mat->cmap->mapping) { PetscCall(ISLocalToGlobalMappingDuplicate(mat->cmap->mapping, &l2g)); }
+    if (mat->cmap->mapping) PetscCall(ISLocalToGlobalMappingDuplicate(mat->cmap->mapping, &l2g));
     PetscCall(PetscLayoutDestroy(&mat->cmap));
     mat->cmap          = nmap;
     mat->cmap->mapping = l2g;
@@ -8529,7 +8529,7 @@ PetscErrorCode MatSetNullSpace(Mat mat, MatNullSpace nullsp) {
   if (nullsp) PetscCall(PetscObjectReference((PetscObject)nullsp));
   PetscCall(MatNullSpaceDestroy(&mat->nullsp));
   mat->nullsp = nullsp;
-  if (mat->symmetric == PETSC_BOOL3_TRUE) { PetscCall(MatSetTransposeNullSpace(mat, nullsp)); }
+  if (mat->symmetric == PETSC_BOOL3_TRUE) PetscCall(MatSetTransposeNullSpace(mat, nullsp));
   PetscFunctionReturn(0);
 }
 
@@ -9543,7 +9543,7 @@ PetscErrorCode MatRARt(Mat A, Mat R, MatReuse scall, PetscReal fill, Mat *C) {
   }
 
   PetscCall(MatProductNumeric(*C));
-  if (A->symmetric == PETSC_BOOL3_TRUE) { PetscCall(MatSetOption(*C, MAT_SYMMETRIC, PETSC_TRUE)); }
+  if (A->symmetric == PETSC_BOOL3_TRUE) PetscCall(MatSetOption(*C, MAT_SYMMETRIC, PETSC_TRUE));
   PetscFunctionReturn(0);
 }
 
@@ -9678,7 +9678,7 @@ PetscErrorCode MatMatMult(Mat A, Mat B, MatReuse scall, PetscReal fill, Mat *C) 
 PetscErrorCode MatMatTransposeMult(Mat A, Mat B, MatReuse scall, PetscReal fill, Mat *C) {
   PetscFunctionBegin;
   PetscCall(MatProduct_Private(A, B, scall, fill, MATPRODUCT_ABt, C));
-  if (A == B) { PetscCall(MatSetOption(*C, MAT_SYMMETRIC, PETSC_TRUE)); }
+  if (A == B) PetscCall(MatSetOption(*C, MAT_SYMMETRIC, PETSC_TRUE));
   PetscFunctionReturn(0);
 }
 
@@ -10189,7 +10189,7 @@ PetscErrorCode MatInvertBlockDiagonalMat(Mat A, Mat C) {
   PetscCall(PetscFree(dnnz));
   PetscCall(MatGetOwnershipRange(C, &rstart, &rend));
   PetscCall(MatSetOption(C, MAT_ROW_ORIENTED, PETSC_FALSE));
-  for (i = rstart / bs; i < rend / bs; i++) { PetscCall(MatSetValuesBlocked(C, 1, &i, 1, &i, &vals[(i - rstart / bs) * bs * bs], INSERT_VALUES)); }
+  for (i = rstart / bs; i < rend / bs; i++) PetscCall(MatSetValuesBlocked(C, 1, &i, 1, &i, &vals[(i - rstart / bs) * bs * bs], INSERT_VALUES));
   PetscCall(MatAssemblyBegin(C, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(C, MAT_FINAL_ASSEMBLY));
   PetscCall(MatSetOption(C, MAT_ROW_ORIENTED, PETSC_TRUE));
@@ -10618,7 +10618,7 @@ PetscErrorCode MatHasOperation(Mat mat, MatOperation op, PetscBool *has) {
         PetscMPIInt size;
 
         PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)mat), &size));
-        if (size == 1) { PetscCall(MatHasOperation(mat, MATOP_CREATE_SUBMATRICES, has)); }
+        if (size == 1) PetscCall(MatHasOperation(mat, MATOP_CREATE_SUBMATRICES, has));
       }
     }
   }
@@ -10719,6 +10719,6 @@ PETSC_EXTERN PetscErrorCode MatFilter(Mat G, PetscReal value, Mat *F) {
   PetscValidHeaderSpecific(G, MAT_CLASSID, 1);
   PetscValidType(G, 1);
   PetscValidPointer(F, 3);
-  if (value >= 0.0) { PetscCall((G->ops->filter)(G, value, F)); }
+  if (value >= 0.0) PetscCall((G->ops->filter)(G, value, F));
   PetscFunctionReturn(0);
 }

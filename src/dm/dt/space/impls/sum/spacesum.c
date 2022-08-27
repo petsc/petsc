@@ -138,7 +138,7 @@ static PetscErrorCode PetscSpaceSumSetNumSubspaces_Sum(PetscSpace space, PetscIn
   if (numSumSpaces == Ns) PetscFunctionReturn(0);
   if (Ns >= 0) {
     PetscInt s;
-    for (s = 0; s < Ns; ++s) { PetscCall(PetscSpaceDestroy(&sum->sumspaces[s])); }
+    for (s = 0; s < Ns; ++s) PetscCall(PetscSpaceDestroy(&sum->sumspaces[s]));
     PetscCall(PetscFree(sum->sumspaces));
   }
 
@@ -212,7 +212,7 @@ static PetscErrorCode PetscSpaceSetFromOptions_Sum(PetscSpace sp, PetscOptionIte
   PetscOptionsHeadEnd();
 
   PetscCheck(Ns >= 0 && (Nv <= 0 || Ns != 0), PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_OUTOFRANGE, "Cannot have a sum space of %" PetscInt_FMT " spaces", Ns);
-  if (Ns != sum->numSumSpaces) { PetscCall(PetscSpaceSumSetNumSubspaces(sp, Ns)); }
+  if (Ns != sum->numSumSpaces) PetscCall(PetscSpaceSumSetNumSubspaces(sp, Ns));
   PetscCall(PetscObjectGetOptionsPrefix((PetscObject)sp, &prefix));
   for (i = 0; i < Ns; ++i) {
     PetscInt   sNv;
@@ -332,14 +332,14 @@ static PetscErrorCode PetscSpaceDestroy_Sum(PetscSpace sp) {
   PetscInt        i, Ns = sum->numSumSpaces;
 
   PetscFunctionBegin;
-  for (i = 0; i < Ns; ++i) { PetscCall(PetscSpaceDestroy(&sum->sumspaces[i])); }
+  for (i = 0; i < Ns; ++i) PetscCall(PetscSpaceDestroy(&sum->sumspaces[i]));
   PetscCall(PetscFree(sum->sumspaces));
   if (sum->heightsubspaces) {
     PetscInt d;
 
     /* sp->Nv is the spatial dimension, so it is equal to the number
      * of subspaces on higher co-dimension points */
-    for (d = 0; d < sp->Nv; ++d) { PetscCall(PetscSpaceDestroy(&sum->heightsubspaces[d])); }
+    for (d = 0; d < sp->Nv; ++d) PetscCall(PetscSpaceDestroy(&sum->heightsubspaces[d]));
   }
   PetscCall(PetscFree(sum->heightsubspaces));
   PetscCall(PetscObjectComposeFunction((PetscObject)sp, "PetscSpaceSumSetSubspace_C", NULL));
@@ -392,9 +392,9 @@ static PetscErrorCode PetscSpaceEvaluate_Sum(PetscSpace sp, PetscInt npoints, co
   numelB = npoints * pdimfull * Nc;
   numelD = numelB * Nv;
   numelH = numelD * Nv;
-  if (B || D || H) { PetscCall(DMGetWorkArray(dm, numelB, MPIU_REAL, &sB)); }
-  if (D || H) { PetscCall(DMGetWorkArray(dm, numelD, MPIU_REAL, &sD)); }
-  if (H) { PetscCall(DMGetWorkArray(dm, numelH, MPIU_REAL, &sH)); }
+  if (B || D || H) PetscCall(DMGetWorkArray(dm, numelB, MPIU_REAL, &sB));
+  if (D || H) PetscCall(DMGetWorkArray(dm, numelD, MPIU_REAL, &sD));
+  if (H) PetscCall(DMGetWorkArray(dm, numelH, MPIU_REAL, &sH));
   if (B)
     for (i = 0; i < numelB; ++i) B[i] = 0.;
   if (D)
@@ -409,7 +409,7 @@ static PetscErrorCode PetscSpaceEvaluate_Sum(PetscSpace sp, PetscInt npoints, co
     PetscCall(PetscSpaceGetNumComponents(sum->sumspaces[s], &sNc));
     PetscCall(PetscSpaceGetDimension(sum->sumspaces[s], &spdim));
     PetscCheck(offset + spdim <= pdimfull, PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_OUTOFRANGE, "Subspace dimensions exceed target space dimension.");
-    if (s == 0 || !sum->uniform) { PetscCall(PetscSpaceEvaluate(sum->sumspaces[s], npoints, points, sB, sD, sH)); }
+    if (s == 0 || !sum->uniform) PetscCall(PetscSpaceEvaluate(sum->sumspaces[s], npoints, points, sB, sD, sH));
     if (B || D || H) {
       for (p = 0; p < npoints; ++p) {
         PetscInt j;
@@ -454,9 +454,9 @@ static PetscErrorCode PetscSpaceEvaluate_Sum(PetscSpace sp, PetscInt npoints, co
     ncoffset += sNc;
   }
 
-  if (H) { PetscCall(DMRestoreWorkArray(dm, numelH, MPIU_REAL, &sH)); }
-  if (D || H) { PetscCall(DMRestoreWorkArray(dm, numelD, MPIU_REAL, &sD)); }
-  if (B || D || H) { PetscCall(DMRestoreWorkArray(dm, numelB, MPIU_REAL, &sB)); }
+  if (H) PetscCall(DMRestoreWorkArray(dm, numelH, MPIU_REAL, &sH));
+  if (D || H) PetscCall(DMRestoreWorkArray(dm, numelD, MPIU_REAL, &sD));
+  if (B || D || H) PetscCall(DMRestoreWorkArray(dm, numelB, MPIU_REAL, &sB));
   PetscFunctionReturn(0);
 }
 

@@ -36,7 +36,7 @@ int main(int argc, char **argv) {
   /* check the mapping */
   PetscCall(AOPetscToApplication(ao, n, ispetsc));
   for (i = 0; i < n; i++) {
-    if (ispetsc[i] != isapp[i]) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[%d] Problem with mapping %" PetscInt_FMT " to %" PetscInt_FMT "\n", rank, i, ispetsc[i])); }
+    if (ispetsc[i] != isapp[i]) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[%d] Problem with mapping %" PetscInt_FMT " to %" PetscInt_FMT "\n", rank, i, ispetsc[i]));
   }
   PetscCall(PetscFree2(ispetsc, isapp));
 

@@ -166,7 +166,7 @@ PetscErrorCode PetscSplitReductionEnd(PetscSplitReduction *sr) {
   case STATE_PENDING:
     /* We are doing asynchronous-mode communication and this is the first VecXxxEnd() so wait for comm to complete */
     PetscCall(PetscLogEventBegin(VEC_ReduceEnd, 0, 0, 0, 0));
-    if (sr->request != MPI_REQUEST_NULL) { PetscCallMPI(MPI_Wait(&sr->request, MPI_STATUS_IGNORE)); }
+    if (sr->request != MPI_REQUEST_NULL) PetscCallMPI(MPI_Wait(&sr->request, MPI_STATUS_IGNORE));
     sr->state = STATE_END;
     if (sr->mix) {
       PetscInt i;
@@ -332,7 +332,7 @@ PetscErrorCode VecDotBegin(Vec x, Vec y, PetscScalar *result) {
   PetscCall(PetscObjectGetComm((PetscObject)x, &comm));
   PetscCall(PetscSplitReductionGet(comm, &sr));
   PetscCheck(sr->state == STATE_BEGIN, PETSC_COMM_SELF, PETSC_ERR_ORDER, "Called before all VecxxxEnd() called");
-  if (sr->numopsbegin >= sr->maxops) { PetscCall(PetscSplitReductionExtend(sr)); }
+  if (sr->numopsbegin >= sr->maxops) PetscCall(PetscSplitReductionExtend(sr));
   sr->reducetype[sr->numopsbegin] = PETSC_SR_REDUCE_SUM;
   sr->invecs[sr->numopsbegin]     = (void *)x;
   PetscCall(PetscLogEventBegin(VEC_ReduceArithmetic, 0, 0, 0, 0));
@@ -409,7 +409,7 @@ PetscErrorCode VecTDotBegin(Vec x, Vec y, PetscScalar *result) {
   PetscCall(PetscObjectGetComm((PetscObject)x, &comm));
   PetscCall(PetscSplitReductionGet(comm, &sr));
   PetscCheck(sr->state == STATE_BEGIN, PETSC_COMM_SELF, PETSC_ERR_ORDER, "Called before all VecxxxEnd() called");
-  if (sr->numopsbegin >= sr->maxops) { PetscCall(PetscSplitReductionExtend(sr)); }
+  if (sr->numopsbegin >= sr->maxops) PetscCall(PetscSplitReductionExtend(sr));
   sr->reducetype[sr->numopsbegin] = PETSC_SR_REDUCE_SUM;
   sr->invecs[sr->numopsbegin]     = (void *)x;
   PetscCall(PetscLogEventBegin(VEC_ReduceArithmetic, 0, 0, 0, 0));
@@ -471,7 +471,7 @@ PetscErrorCode VecNormBegin(Vec x, NormType ntype, PetscReal *result) {
   PetscCall(PetscObjectGetComm((PetscObject)x, &comm));
   PetscCall(PetscSplitReductionGet(comm, &sr));
   PetscCheck(sr->state == STATE_BEGIN, PETSC_COMM_SELF, PETSC_ERR_ORDER, "Called before all VecxxxEnd() called");
-  if (sr->numopsbegin >= sr->maxops || (sr->numopsbegin == sr->maxops - 1 && ntype == NORM_1_AND_2)) { PetscCall(PetscSplitReductionExtend(sr)); }
+  if (sr->numopsbegin >= sr->maxops || (sr->numopsbegin == sr->maxops - 1 && ntype == NORM_1_AND_2)) PetscCall(PetscSplitReductionExtend(sr));
 
   sr->invecs[sr->numopsbegin] = (void *)x;
   PetscCall(PetscLogEventBegin(VEC_ReduceArithmetic, 0, 0, 0, 0));
@@ -527,7 +527,7 @@ PetscErrorCode VecNormEnd(Vec x, NormType ntype, PetscReal *result) {
     result[1] = PetscRealPart(sr->gvalues[sr->numopsend++]);
     result[1] = PetscSqrtReal(result[1]);
   }
-  if (ntype != NORM_1_AND_2) { PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[ntype], result[0])); }
+  if (ntype != NORM_1_AND_2) PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[ntype], result[0]));
 
   if (sr->numopsend == sr->numopsbegin) {
     sr->state       = STATE_BEGIN;
@@ -573,7 +573,7 @@ PetscErrorCode VecMDotBegin(Vec x, PetscInt nv, const Vec y[], PetscScalar resul
   PetscCall(PetscSplitReductionGet(comm, &sr));
   PetscCheck(sr->state == STATE_BEGIN, PETSC_COMM_SELF, PETSC_ERR_ORDER, "Called before all VecxxxEnd() called");
   for (i = 0; i < nv; i++) {
-    if (sr->numopsbegin + i >= sr->maxops) { PetscCall(PetscSplitReductionExtend(sr)); }
+    if (sr->numopsbegin + i >= sr->maxops) PetscCall(PetscSplitReductionExtend(sr));
     sr->reducetype[sr->numopsbegin + i] = PETSC_SR_REDUCE_SUM;
     sr->invecs[sr->numopsbegin + i]     = (void *)x;
   }
@@ -658,7 +658,7 @@ PetscErrorCode VecMTDotBegin(Vec x, PetscInt nv, const Vec y[], PetscScalar resu
   PetscCall(PetscSplitReductionGet(comm, &sr));
   PetscCheck(sr->state == STATE_BEGIN, PETSC_COMM_SELF, PETSC_ERR_ORDER, "Called before all VecxxxEnd() called");
   for (i = 0; i < nv; i++) {
-    if (sr->numopsbegin + i >= sr->maxops) { PetscCall(PetscSplitReductionExtend(sr)); }
+    if (sr->numopsbegin + i >= sr->maxops) PetscCall(PetscSplitReductionExtend(sr));
     sr->reducetype[sr->numopsbegin + i] = PETSC_SR_REDUCE_SUM;
     sr->invecs[sr->numopsbegin + i]     = (void *)x;
   }

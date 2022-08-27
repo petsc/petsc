@@ -233,7 +233,7 @@ static PetscErrorCode PetscSectionLoad_HDF5_SingleField(PetscSection s, PetscVie
     PetscCall(PetscLayoutSetLocalSize(map, n));
     PetscCall(ISLoad(cdofIS, viewer));
     PetscCall(ISGetIndices(cdofIS, &cdofs));
-    for (p = pStart, n = 0; p < pEnd; ++p, ++n) { PetscCall(PetscSectionSetConstraintDof(s, p, cdofs[n])); }
+    for (p = pStart, n = 0; p < pEnd; ++p, ++n) PetscCall(PetscSectionSetConstraintDof(s, p, cdofs[n]));
     PetscCall(ISRestoreIndices(cdofIS, &cdofs));
     PetscCall(ISDestroy(&cdofIS));
     PetscCall(ISCreate(comm, &coffIS));

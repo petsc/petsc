@@ -83,10 +83,10 @@ PetscErrorCode VecMDot_MPIViennaCL(Vec xin, PetscInt nv, const Vec y[], PetscSca
   PetscScalar awork[128], *work = awork;
 
   PetscFunctionBegin;
-  if (nv > 128) { PetscCall(PetscMalloc1(nv, &work)); }
+  if (nv > 128) PetscCall(PetscMalloc1(nv, &work));
   PetscCall(VecMDot_SeqViennaCL(xin, nv, y, work));
   PetscCall(MPIU_Allreduce(work, z, nv, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)xin)));
-  if (nv > 128) { PetscCall(PetscFree(work)); }
+  if (nv > 128) PetscCall(PetscFree(work));
   PetscFunctionReturn(0);
 }
 
@@ -121,7 +121,7 @@ PetscErrorCode VecDuplicate_MPIViennaCL(Vec win, Vec *v) {
     PetscCall(VecRestoreArray(*v, &array));
     PetscCall(PetscLogObjectParent((PetscObject)*v, (PetscObject)vw->localrep));
     vw->localupdate = w->localupdate;
-    if (vw->localupdate) { PetscCall(PetscObjectReference((PetscObject)vw->localupdate)); }
+    if (vw->localupdate) PetscCall(PetscObjectReference((PetscObject)vw->localupdate));
   }
 
   /* New vector should inherit stashing property of parent */

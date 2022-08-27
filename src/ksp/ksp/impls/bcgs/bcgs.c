@@ -36,7 +36,7 @@ PetscErrorCode KSPSolve_BCGS(KSP ksp) {
 
   /* with right preconditioning need to save initial guess to add to final solution */
   if (ksp->pc_side == PC_RIGHT && !ksp->guess_zero) {
-    if (!bcgs->guess) { PetscCall(VecDuplicate(X, &bcgs->guess)); }
+    if (!bcgs->guess) PetscCall(VecDuplicate(X, &bcgs->guess));
     PetscCall(VecCopy(X, bcgs->guess));
     PetscCall(VecSet(X, 0.0));
   }

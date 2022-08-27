@@ -32,9 +32,9 @@ int main(int argc, char **args) {
   PetscCall(PetscMalloc1(nmat + 3, &A));
   PetscCall(PetscRandomCreate(PETSC_COMM_WORLD, &rctx));
   PetscCall(MatCreateAIJ(PETSC_COMM_WORLD, PETSC_DECIDE, PETSC_DECIDE, n, n / 2, 3, NULL, 3, NULL, &A[0]));
-  for (i = 1; i < nmat + 1; i++) { PetscCall(MatCreateAIJ(PETSC_COMM_WORLD, PETSC_DECIDE, PETSC_DECIDE, n, n, 3, NULL, 3, NULL, &A[i])); }
+  for (i = 1; i < nmat + 1; i++) PetscCall(MatCreateAIJ(PETSC_COMM_WORLD, PETSC_DECIDE, PETSC_DECIDE, n, n, 3, NULL, 3, NULL, &A[i]));
   PetscCall(MatCreateAIJ(PETSC_COMM_WORLD, PETSC_DECIDE, PETSC_DECIDE, n / 2, n, 3, NULL, 3, NULL, &A[nmat + 1]));
-  for (i = 0; i < nmat + 2; i++) { PetscCall(MatSetRandom(A[i], rctx)); }
+  for (i = 0; i < nmat + 2; i++) PetscCall(MatSetRandom(A[i], rctx));
 
   PetscCall(MatCreateVecs(A[1], &x, &y));
   PetscCall(VecDuplicate(y, &z));
@@ -63,7 +63,7 @@ int main(int argc, char **args) {
   /* Diff y and z */
   PetscCall(VecAXPY(y, -1.0, z));
   PetscCall(VecNorm(y, NORM_2, &rnorm));
-  if (rnorm > 10000.0 * PETSC_MACHINE_EPSILON) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error with composite add %g\n", (double)rnorm)); }
+  if (rnorm > 10000.0 * PETSC_MACHINE_EPSILON) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error with composite add %g\n", (double)rnorm));
 
   /* Test MatCompositeMerge on ADDITIVE MatComposite */
   PetscCall(MatCompositeSetMatStructure(B, DIFFERENT_NONZERO_PATTERN)); /* default */
@@ -72,7 +72,7 @@ int main(int argc, char **args) {
   PetscCall(MatDestroy(&B));
   PetscCall(VecAXPY(y, -1.0, z));
   PetscCall(VecNorm(y, NORM_2, &rnorm));
-  if (rnorm > 10000.0 * PETSC_MACHINE_EPSILON) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error with composite add after merge %g\n", (double)rnorm)); }
+  if (rnorm > 10000.0 * PETSC_MACHINE_EPSILON) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error with composite add after merge %g\n", (double)rnorm));
 
   /*
      Test n x n/2 multiplicative composite B made up of A[0],A[1],A[2] with separate scalings
@@ -102,7 +102,7 @@ int main(int argc, char **args) {
   /* Diff y and z */
   PetscCall(VecAXPY(y, -1.0, z));
   PetscCall(VecNorm(y, NORM_2, &rnorm));
-  if (rnorm > 10000.0 * PETSC_MACHINE_EPSILON) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error with composite multiplicative %g\n", (double)rnorm)); }
+  if (rnorm > 10000.0 * PETSC_MACHINE_EPSILON) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error with composite multiplicative %g\n", (double)rnorm));
 
   /*
      Test n/2 x n multiplicative composite B made up of A[2], A[3], A[4] without separate scalings
@@ -125,18 +125,18 @@ int main(int argc, char **args) {
 
   PetscCall(VecAXPY(v2, -1.0, v));
   PetscCall(VecNorm(v2, NORM_2, &rnorm));
-  if (rnorm > 10000.0 * PETSC_MACHINE_EPSILON) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error with composite multiplicative %g\n", (double)rnorm)); }
+  if (rnorm > 10000.0 * PETSC_MACHINE_EPSILON) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error with composite multiplicative %g\n", (double)rnorm));
 
   /*
      Test get functions
   */
   PetscCall(MatCreateComposite(PETSC_COMM_WORLD, nmat, A, &B));
   PetscCall(MatCompositeGetNumberMat(B, &n));
-  if (nmat != n) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error with GetNumberMat %" PetscInt_FMT " != %" PetscInt_FMT "\n", nmat, n)); }
+  if (nmat != n) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error with GetNumberMat %" PetscInt_FMT " != %" PetscInt_FMT "\n", nmat, n));
   PetscCall(MatCompositeGetMat(B, 0, &A[nmat + 2]));
-  if (A[0] != A[nmat + 2]) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error with GetMat\n")); }
+  if (A[0] != A[nmat + 2]) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error with GetMat\n"));
   PetscCall(MatCompositeGetType(B, &type));
-  if (type != MAT_COMPOSITE_ADDITIVE) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error with GetType\n")); }
+  if (type != MAT_COMPOSITE_ADDITIVE) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error with GetType\n"));
   PetscCall(MatDestroy(&B));
 
   /*
@@ -150,7 +150,7 @@ int main(int argc, char **args) {
   PetscCall(VecDestroy(&z));
   PetscCall(VecDestroy(&z2));
   PetscCall(PetscRandomDestroy(&rctx));
-  for (i = 0; i < nmat + 2; i++) { PetscCall(MatDestroy(&A[i])); }
+  for (i = 0; i < nmat + 2; i++) PetscCall(MatDestroy(&A[i]));
   PetscCall(PetscFree(A));
 
   PetscCall(PetscFinalize());

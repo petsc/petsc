@@ -39,7 +39,7 @@ PetscErrorCode PetscRandomDestroy(PetscRandom *r) {
     *r = NULL;
     PetscFunctionReturn(0);
   }
-  if ((*r)->ops->destroy) { PetscCall((*(*r)->ops->destroy)(*r)); }
+  if ((*r)->ops->destroy) PetscCall((*(*r)->ops->destroy)(*r));
   PetscCall(PetscHeaderDestroy(r));
   PetscFunctionReturn(0);
 }
@@ -246,7 +246,7 @@ PetscErrorCode PetscRandomView(PetscRandom rnd, PetscViewer viewer) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(rnd, PETSC_RANDOM_CLASSID, 1);
   PetscValidType(rnd, 1);
-  if (!viewer) { PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)rnd), &viewer)); }
+  if (!viewer) PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)rnd), &viewer));
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscCheckSameComm(rnd, 1, viewer, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));

@@ -189,7 +189,7 @@ int main(int argc, char **argv) {
       norm_tmp /= norm_tmp1;
       if (norm_tmp > norm) norm = norm_tmp;
     }
-    if (norm >= tol && rank == 0) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error: MatMatMult(), |v1 - v2|/|v2|: %g\n", (double)norm)); }
+    if (norm >= tol && rank == 0) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error: MatMatMult(), |v1 - v2|/|v2|: %g\n", (double)norm));
 
     PetscCall(VecDestroy(&x));
     PetscCall(MatDestroy(&C));
@@ -246,7 +246,7 @@ int main(int argc, char **argv) {
       norm_tmp /= norm_tmp1;
       if (norm_tmp > norm) norm = norm_tmp;
     }
-    if (norm >= tol && rank == 0) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error: MatPtAP(), |v3 - v4|/|v3|: %g\n", (double)norm)); }
+    if (norm >= tol && rank == 0) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error: MatPtAP(), |v3 - v4|/|v3|: %g\n", (double)norm));
     PetscCall(MatDestroy(&C));
     PetscCall(VecDestroy(&v3));
     PetscCall(VecDestroy(&v4));

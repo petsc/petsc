@@ -62,7 +62,7 @@ int main(int argc, char **args) {
       PetscCall(VecAXPY(u, -1.0, b));
       PetscCall(VecNorm(u, NORM_INFINITY, &norm));
       /* if (norm > tol) { */
-      if (rank == 0) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "MatSolve: rel residual %g/%g = %g, LU numfact %d\n", norm, Anorm, norm / Anorm, nfact)); }
+      if (rank == 0) PetscCall(PetscPrintf(PETSC_COMM_SELF, "MatSolve: rel residual %g/%g = %g, LU numfact %d\n", norm, Anorm, norm / Anorm, nfact));
       /*} */
     }
   }

@@ -187,7 +187,7 @@ int main(int argc, char **argv) {
   PetscCall(TSSetRHSJacobian(ts, user.A, user.A, RHSJacobian, &user));
   PetscCall(TSSetMaxTime(ts, user.ftime));
   PetscCall(TSSetExactFinalTime(ts, TS_EXACTFINALTIME_MATCHSTEP));
-  if (monitor) { PetscCall(TSMonitorSet(ts, Monitor, &user, NULL)); }
+  if (monitor) PetscCall(TSMonitorSet(ts, Monitor, &user, NULL));
 
   PetscCall(TSSetTime(ts, 0.0));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "mu %g, steps %" PetscInt_FMT ", ftime %g\n", (double)user.mu, user.steps, (double)(user.ftime)));

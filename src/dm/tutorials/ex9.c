@@ -73,7 +73,7 @@ int main(int argc, char **argv) {
   PetscCall(VecLoad(global2, viewer));
 
   PetscCall(VecEqual(global, global2, &flg));
-  if (!flg) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error: Vectors are not equal\n")); }
+  if (!flg) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error: Vectors are not equal\n"));
 
   /* Load the Vec with one extra, 1-sized, BS dim and compare */
   PetscCall(PetscObjectSetName((PetscObject)global2, "bsDim"));
@@ -81,7 +81,7 @@ int main(int argc, char **argv) {
   PetscCall(PetscViewerDestroy(&viewer));
 
   PetscCall(VecEqual(global, global2, &flg));
-  if (!flg) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error: Vectors are not equal\n")); }
+  if (!flg) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error: Vectors are not equal\n"));
 
   /* clean up and exit */
   PetscCall(VecDestroy(&local));

@@ -280,8 +280,8 @@ static PetscErrorCode MatProductNumeric_X_Dense(Mat C) {
 
     PetscCall(MatGetVecType(A, &vtype));
     PetscCall(PetscStrcmp(vtype, VECCUDA, &iscuda));
-    if (!iscuda) { PetscCall(PetscStrcmp(vtype, VECSEQCUDA, &iscuda)); }
-    if (!iscuda) { PetscCall(PetscStrcmp(vtype, VECMPICUDA, &iscuda)); }
+    if (!iscuda) PetscCall(PetscStrcmp(vtype, VECSEQCUDA, &iscuda));
+    if (!iscuda) PetscCall(PetscStrcmp(vtype, VECMPICUDA, &iscuda));
     if (iscuda) { /* Make sure we have up-to-date data on the GPU */
       PetscCall(PetscStrallocpy(((PetscObject)B)->type_name, &Btype));
       PetscCall(PetscStrallocpy(((PetscObject)C)->type_name, &Ctype));
@@ -473,7 +473,7 @@ static PetscErrorCode MatProductSetFromOptions_Private(Mat mat) {
       mat->ops->productsymbolic = MatProductSymbolic_Unsafe;
     }
   }
-  if (!mat->ops->productsymbolic) { PetscCall(PetscInfo(mat, "  symbolic product is not supported\n")); }
+  if (!mat->ops->productsymbolic) PetscCall(PetscInfo(mat, "  symbolic product is not supported\n"));
   PetscFunctionReturn(0);
 }
 

@@ -386,13 +386,13 @@ int main(int argc, char **args) {
       PetscCall(MatDuplicate(B, MAT_COPY_VALUES, &mats[i + nr * nc]));
     }
   }
-  for (i = 0; i < nr; i++) { PetscCall(ISCreateStride(PETSC_COMM_WORLD, ren - rst, i + rst, nr, &rows[i])); }
-  for (i = 0; i < nc; i++) { PetscCall(ISCreateStride(PETSC_COMM_WORLD, cen - cst, i + cst, nc, &cols[i])); }
+  for (i = 0; i < nr; i++) PetscCall(ISCreateStride(PETSC_COMM_WORLD, ren - rst, i + rst, nr, &rows[i]));
+  for (i = 0; i < nc; i++) PetscCall(ISCreateStride(PETSC_COMM_WORLD, cen - cst, i + cst, nc, &cols[i]));
   PetscCall(MatCreateNest(PETSC_COMM_WORLD, nr, rows, nc, cols, mats, &A2));
   PetscCall(MatCreateNest(PETSC_COMM_WORLD, nr, rows, nc, cols, mats + nr * nc, &B2));
-  for (i = 0; i < nr; i++) { PetscCall(ISDestroy(&rows[i])); }
-  for (i = 0; i < nc; i++) { PetscCall(ISDestroy(&cols[i])); }
-  for (i = 0; i < 2 * nr * nc; i++) { PetscCall(MatDestroy(&mats[i])); }
+  for (i = 0; i < nr; i++) PetscCall(ISDestroy(&rows[i]));
+  for (i = 0; i < nc; i++) PetscCall(ISDestroy(&cols[i]));
+  for (i = 0; i < 2 * nr * nc; i++) PetscCall(MatDestroy(&mats[i]));
   PetscCall(PetscFree3(rows, cols, mats));
   PetscCall(MatConvert(B2, MATAIJ, MAT_INITIAL_MATRIX, &T));
   PetscCall(MatDestroy(&B2));

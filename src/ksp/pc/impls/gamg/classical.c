@@ -765,7 +765,7 @@ PetscErrorCode PCGAMGProlongator_Classical_Standard(PC pc, Mat A, Mat G, PetscCo
         }
       }
       ci = gidx[i];
-      if (pncols > 0) { PetscCall(MatSetValues(*P, 1, &ci, pncols, picol, pvcol, INSERT_VALUES)); }
+      if (pncols > 0) PetscCall(MatSetValues(*P, 1, &ci, pncols, picol, pvcol, INSERT_VALUES));
     }
   }
   PetscCall(ISRestoreIndices(lis, &gidx));

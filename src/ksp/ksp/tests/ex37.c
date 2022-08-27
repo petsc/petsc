@@ -171,7 +171,7 @@ int main(int argc, char **args) {
   PetscCall(VecDestroy(&subu));
   PetscCall(KSPDestroy(&subksp));
   PetscCall(PetscSubcommDestroy(&psubcomm));
-  if (size > 1) { PetscCallMPI(MPI_Comm_free(&subcomm)); }
+  if (size > 1) PetscCallMPI(MPI_Comm_free(&subcomm));
   PetscCall(MatDestroy(&A));
   PetscCall(VecDestroy(&b));
   PetscCall(VecDestroy(&u));

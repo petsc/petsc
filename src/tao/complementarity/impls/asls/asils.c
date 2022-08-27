@@ -219,7 +219,7 @@ static PetscErrorCode TaoSolve_ASILS(Tao tao) {
     PetscCall(VecAXPY(asls->r2, -1.0, asls->r3));
 
     /* Calculate the reduced problem matrix and the direction */
-    if (!asls->w && (tao->subset_type == TAO_SUBSET_MASK || tao->subset_type == TAO_SUBSET_MATRIXFREE)) { PetscCall(VecDuplicate(tao->solution, &asls->w)); }
+    if (!asls->w && (tao->subset_type == TAO_SUBSET_MASK || tao->subset_type == TAO_SUBSET_MATRIXFREE)) PetscCall(VecDuplicate(tao->solution, &asls->w));
     PetscCall(TaoMatGetSubMat(tao->jacobian, asls->free, asls->w, tao->subset_type, &asls->J_sub));
     if (tao->jacobian != tao->jacobian_pre) {
       PetscCall(TaoMatGetSubMat(tao->jacobian_pre, asls->free, asls->w, tao->subset_type, &asls->Jpre_sub));

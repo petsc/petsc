@@ -446,8 +446,8 @@ static PetscErrorCode PCSetUp_Deflation(PC pc) {
   if (pc->setupcalled) PetscFunctionReturn(0);
   PetscCall(PetscObjectGetComm((PetscObject)pc, &comm));
   PetscCall(PCGetOperators(pc, NULL, &Amat));
-  if (!def->lvl && !def->prefix) { PetscCall(PCGetOptionsPrefix(pc, &def->prefix)); }
-  if (def->lvl) { PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "%d_", (int)def->lvl)); }
+  if (!def->lvl && !def->prefix) PetscCall(PCGetOptionsPrefix(pc, &def->prefix));
+  if (def->lvl) PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "%d_", (int)def->lvl));
 
   /* compute a deflation space */
   if (def->W || def->Wt) {
@@ -476,7 +476,7 @@ static PetscErrorCode PCSetUp_Deflation(PC pc) {
     if (!transp) {
       if (def->lvl < def->maxlvl) {
         PetscCall(PetscMalloc1(size, &mats));
-        for (i = 0; i < size; i++) { PetscCall(MatCompositeGetMat(def->W, i, &mats[i])); }
+        for (i = 0; i < size; i++) PetscCall(MatCompositeGetMat(def->W, i, &mats[i]));
         size -= 1;
         PetscCall(MatDestroy(&def->W));
         def->W = mats[size];
@@ -497,7 +497,7 @@ static PetscErrorCode PCSetUp_Deflation(PC pc) {
     } else {
       if (def->lvl < def->maxlvl) {
         PetscCall(PetscMalloc1(size, &mats));
-        for (i = 0; i < size; i++) { PetscCall(MatCompositeGetMat(def->Wt, i, &mats[i])); }
+        for (i = 0; i < size; i++) PetscCall(MatCompositeGetMat(def->Wt, i, &mats[i]));
         size -= 1;
         PetscCall(MatDestroy(&def->Wt));
         def->Wt = mats[0];
@@ -689,8 +689,8 @@ static PetscErrorCode PCView_Deflation(PC pc, PetscViewer viewer) {
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   if (iascii) {
-    if (def->correct) { PetscCall(PetscViewerASCIIPrintf(viewer, "using CP correction, factor = %g+%gi\n", (double)PetscRealPart(def->correctfact), (double)PetscImaginaryPart(def->correctfact))); }
-    if (!def->lvl) { PetscCall(PetscViewerASCIIPrintf(viewer, "deflation space type: %s\n", PCDeflationSpaceTypes[def->spacetype])); }
+    if (def->correct) PetscCall(PetscViewerASCIIPrintf(viewer, "using CP correction, factor = %g+%gi\n", (double)PetscRealPart(def->correctfact), (double)PetscImaginaryPart(def->correctfact)));
+    if (!def->lvl) PetscCall(PetscViewerASCIIPrintf(viewer, "deflation space type: %s\n", PCDeflationSpaceTypes[def->spacetype]));
 
     PetscCall(PetscViewerASCIIPrintf(viewer, "--- Additional PC:\n"));
     PetscCall(PetscViewerASCIIPushTab(viewer));

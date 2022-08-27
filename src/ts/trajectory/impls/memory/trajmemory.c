@@ -170,12 +170,12 @@ static PetscErrorCode ElementCreate(TS ts, CheckpointType cptype, Stack *stack, 
       PetscCall(TSGetSolution(ts, &X));
       PetscCall(VecDuplicate(X, &(*e)->X));
     }
-    if (cptype == 1 && (*e)->X) { PetscCall(VecDestroy(&(*e)->X)); }
+    if (cptype == 1 && (*e)->X) PetscCall(VecDestroy(&(*e)->X));
     if (HaveStages(cptype) && !(*e)->Y) {
       PetscCall(TSGetStages(ts, &stack->numY, &Y));
-      if (stack->numY) { PetscCall(VecDuplicateVecs(Y[0], stack->numY, &(*e)->Y)); }
+      if (stack->numY) PetscCall(VecDuplicateVecs(Y[0], stack->numY, &(*e)->Y));
     }
-    if (cptype == 0 && (*e)->Y) { PetscCall(VecDestroyVecs(stack->numY, &(*e)->Y)); }
+    if (cptype == 0 && (*e)->Y) PetscCall(VecDestroyVecs(stack->numY, &(*e)->Y));
     (*e)->cptype = cptype;
     PetscFunctionReturn(0);
   }
@@ -187,7 +187,7 @@ static PetscErrorCode ElementCreate(TS ts, CheckpointType cptype, Stack *stack, 
   }
   if (HaveStages(cptype)) {
     PetscCall(TSGetStages(ts, &stack->numY, &Y));
-    if (stack->numY) { PetscCall(VecDuplicateVecs(Y[0], stack->numY, &(*e)->Y)); }
+    if (stack->numY) PetscCall(VecDuplicateVecs(Y[0], stack->numY, &(*e)->Y));
   }
   if (stack->use_dram) PetscCall(PetscMallocResetDRAM());
   stack->nallocated++;
@@ -201,10 +201,10 @@ static PetscErrorCode ElementSet(TS ts, Stack *stack, StackElement *e, PetscInt 
   PetscReal timeprev;
 
   PetscFunctionBegin;
-  if (HaveSolution((*e)->cptype)) { PetscCall(VecCopy(X, (*e)->X)); }
+  if (HaveSolution((*e)->cptype)) PetscCall(VecCopy(X, (*e)->X));
   if (HaveStages((*e)->cptype)) {
     PetscCall(TSGetStages(ts, &stack->numY, &Y));
-    for (i = 0; i < stack->numY; i++) { PetscCall(VecCopy(Y[i], (*e)->Y[i])); }
+    for (i = 0; i < stack->numY; i++) PetscCall(VecCopy(Y[i], (*e)->Y[i]));
   }
   (*e)->stepnum = stepnum;
   (*e)->time    = time;
@@ -222,7 +222,7 @@ static PetscErrorCode ElementDestroy(Stack *stack, StackElement e) {
   PetscFunctionBegin;
   if (stack->use_dram) PetscCall(PetscMallocSetDRAM());
   PetscCall(VecDestroy(&e->X));
-  if (e->Y) { PetscCall(VecDestroyVecs(stack->numY, &e->Y)); }
+  if (e->Y) PetscCall(VecDestroyVecs(stack->numY, &e->Y));
   PetscCall(PetscFree(e));
   if (stack->use_dram) PetscCall(PetscMallocResetDRAM());
   stack->nallocated--;
@@ -268,7 +268,7 @@ static PetscErrorCode StackInit(Stack *stack, PetscInt size, PetscInt ny) {
   stack->top  = -1;
   stack->numY = ny;
 
-  if (!stack->container) { PetscCall(PetscCalloc1(size, &stack->container)); }
+  if (!stack->container) PetscCall(PetscCalloc1(size, &stack->container));
   PetscFunctionReturn(0);
 }
 
@@ -507,11 +507,11 @@ static PetscErrorCode UpdateTS(TS ts, Stack *stack, StackElement e, PetscInt ste
 
   PetscFunctionBegin;
   /* In adjoint mode we do not need to copy solution if the stepnum is the same */
-  if (!adjoint_mode || (HaveSolution(e->cptype) && e->stepnum != stepnum)) { PetscCall(VecCopy(e->X, ts->vec_sol)); }
+  if (!adjoint_mode || (HaveSolution(e->cptype) && e->stepnum != stepnum)) PetscCall(VecCopy(e->X, ts->vec_sol));
   if (HaveStages(e->cptype)) {
     PetscCall(TSGetStages(ts, &stack->numY, &Y));
     if (e->stepnum && e->stepnum == stepnum) {
-      for (i = 0; i < stack->numY; i++) { PetscCall(VecCopy(e->Y[i], Y[i])); }
+      for (i = 0; i < stack->numY; i++) PetscCall(VecCopy(e->Y[i], Y[i]));
     } else if (ts->stifflyaccurate) {
       PetscCall(VecCopy(e->Y[stack->numY - 1], ts->vec_sol));
     }
@@ -545,7 +545,7 @@ static PetscErrorCode ReCompute(TS ts, TJScheduler *tjsch, PetscInt stepnumbegin
       PetscCall(TSTrajectorySet_Memory(ts->trajectory, ts, ts->steps, ts->ptime, ts->vec_sol));
     }
     PetscCall(TSEventHandler(ts));
-    if (!ts->steprollback) { PetscCall(TSPostStep(ts)); }
+    if (!ts->steprollback) PetscCall(TSPostStep(ts));
   }
   PetscCall(TurnBackward(ts));
   ts->trajectory->recomps += stepnumend - stepnumbegin; /* recomputation counter */
@@ -619,7 +619,7 @@ static PetscErrorCode TSTrajectoryMemorySet_N(TS ts, TJScheduler *tjsch, PetscIn
   if (!stack->solution_only && stepnum == 0) PetscFunctionReturn(0);
 
   /* resize the stack */
-  if (stack->top + 1 == stack->stacksize) { PetscCall(StackResize(stack, 2 * stack->stacksize)); }
+  if (stack->top + 1 == stack->stacksize) PetscCall(StackResize(stack, 2 * stack->stacksize));
   /* update timenext for the previous step; necessary for step adaptivity */
   if (stack->top > -1) {
     PetscCall(StackTop(stack, &e));
@@ -639,7 +639,7 @@ static PetscErrorCode TSTrajectoryMemorySet_N_2(TS ts, TJScheduler *tjsch, Petsc
   CheckpointType cptype;
 
   PetscFunctionBegin;
-  if (stack->top + 1 == stack->stacksize) { PetscCall(StackResize(stack, 2 * stack->stacksize)); }
+  if (stack->top + 1 == stack->stacksize) PetscCall(StackResize(stack, 2 * stack->stacksize));
   /* update timenext for the previous step; necessary for step adaptivity */
   if (stack->top > -1) {
     PetscCall(StackTop(stack, &e));
@@ -967,7 +967,7 @@ static PetscErrorCode TSTrajectoryMemoryGet_ROF(TSTrajectory tj, TS ts, TJSchedu
     PetscCall(TurnForward(ts));
     PetscCall(ReCompute(ts, tjsch, e->stepnum, stepnum));
   }
-  if ((stack->solution_only && e->stepnum + 1 == stepnum) || (!stack->solution_only && e->stepnum == stepnum)) { PetscCall(StackPop(stack, &e)); }
+  if ((stack->solution_only && e->stepnum + 1 == stepnum) || (!stack->solution_only && e->stepnum == stepnum)) PetscCall(StackPop(stack, &e));
   tjsch->rctx->reverseonestep = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -991,10 +991,10 @@ static PetscErrorCode TSTrajectoryMemorySet_RON(TSTrajectory tj, TS ts, TJSchedu
   if (store == 1) {
     if (rctx->check != stack->top + 1) { /* overwrite some non-top checkpoint in the stack */
       PetscCall(StackFind(stack, &e, rctx->check));
-      if (HaveSolution(e->cptype)) { PetscCall(VecCopy(X, e->X)); }
+      if (HaveSolution(e->cptype)) PetscCall(VecCopy(X, e->X));
       if (HaveStages(e->cptype)) {
         PetscCall(TSGetStages(ts, &stack->numY, &Y));
-        for (i = 0; i < stack->numY; i++) { PetscCall(VecCopy(Y[i], e->Y[i])); }
+        for (i = 0; i < stack->numY; i++) PetscCall(VecCopy(Y[i], e->Y[i]));
       }
       e->stepnum = stepnum;
       e->time    = time;
@@ -1152,7 +1152,7 @@ static PetscErrorCode TSTrajectoryMemoryGet_TLR(TSTrajectory tj, TS ts, TJSchedu
     PetscCall(printwhattodo(tj->monitor, whattodo, tjsch->rctx, shift));
     PetscCall(TurnForward(ts));
     PetscCall(ReCompute(ts, tjsch, e->stepnum, stepnum));
-    if (e->stepnum + 1 == stepnum) { PetscCall(StackPop(stack, &e)); }
+    if (e->stepnum + 1 == stepnum) PetscCall(StackPop(stack, &e));
   } else {
     /* fill stack with info */
     if (localstepnum == 0 && tjsch->total_steps - stepnum >= laststridesize) {
@@ -1196,7 +1196,7 @@ static PetscErrorCode TSTrajectoryMemoryGet_TLR(TSTrajectory tj, TS ts, TJSchedu
       PetscCall(TurnForward(ts));
       PetscCall(ReCompute(ts, tjsch, e->stepnum, stepnum));
     }
-    if (e->stepnum == stepnum) { PetscCall(StackPop(stack, &e)); }
+    if (e->stepnum == stepnum) PetscCall(StackPop(stack, &e));
   }
   tjsch->rctx->reverseonestep = PETSC_FALSE;
   PetscFunctionReturn(0);
@@ -1221,13 +1221,13 @@ static PetscErrorCode TSTrajectoryMemorySet_TLTR(TSTrajectory tj, TS ts, TJSched
     PetscCall(PetscRevolveIntCast((tjsch->total_steps + tjsch->stride - 1) / tjsch->stride, &rtotal_steps));
     PetscCall(PetscRevolveIntCast(stridenum, &rstepnum));
     PetscCall(ApplyRevolve(tj->monitor, tjsch->stype, tjsch->rctx2, rtotal_steps, rstepnum, rstepnum, PETSC_TRUE, &tjsch->store_stride));
-    if (laststridesize < tjsch->stride && stepnum == tjsch->total_steps - laststridesize) { PetscCall(InitRevolve(laststridesize, tjsch->max_cps_ram, tjsch->rctx)); }
+    if (laststridesize < tjsch->stride && stepnum == tjsch->total_steps - laststridesize) PetscCall(InitRevolve(laststridesize, tjsch->max_cps_ram, tjsch->rctx));
   }
   if (!stack->solution_only && localstepnum == 1 && !tjsch->rctx2->reverseonestep) {
     PetscCall(PetscRevolveIntCast((tjsch->total_steps + tjsch->stride - 1) / tjsch->stride, &rtotal_steps));
     PetscCall(PetscRevolveIntCast(stridenum, &rstepnum));
     PetscCall(ApplyRevolve(tj->monitor, tjsch->stype, tjsch->rctx2, rtotal_steps, rstepnum, rstepnum, PETSC_TRUE, &tjsch->store_stride));
-    if (laststridesize < tjsch->stride && stepnum == tjsch->total_steps - laststridesize + 1) { PetscCall(InitRevolve(laststridesize, tjsch->max_cps_ram, tjsch->rctx)); }
+    if (laststridesize < tjsch->stride && stepnum == tjsch->total_steps - laststridesize + 1) PetscCall(InitRevolve(laststridesize, tjsch->max_cps_ram, tjsch->rctx));
   }
   if (tjsch->store_stride) {
     PetscCall(TopLevelStore(tj, ts, tjsch, stepnum, localstepnum, laststridesize, &done));
@@ -1387,7 +1387,7 @@ static PetscErrorCode TSTrajectoryMemoryGet_TLTR(TSTrajectory tj, TS ts, TJSched
     PetscCall(printwhattodo(tj->monitor, whattodo, tjsch->rctx, shift));
     PetscCall(TurnForward(ts));
     PetscCall(ReCompute(ts, tjsch, e->stepnum, stepnum));
-    if (e->stepnum + 1 == stepnum) { PetscCall(StackPop(stack, &e)); }
+    if (e->stepnum + 1 == stepnum) PetscCall(StackPop(stack, &e));
   } else {
     PetscRevolveInt rlocalstepnum;
     /* restore a checkpoint */
@@ -1408,7 +1408,7 @@ static PetscErrorCode TSTrajectoryMemoryGet_TLTR(TSTrajectory tj, TS ts, TJSched
       PetscCall(TurnForward(ts));
       PetscCall(ReCompute(ts, tjsch, e->stepnum, stepnum));
     }
-    if (e->stepnum == stepnum) { PetscCall(StackPop(stack, &e)); }
+    if (e->stepnum == stepnum) PetscCall(StackPop(stack, &e));
   }
   tjsch->rctx->reverseonestep = PETSC_FALSE;
   PetscFunctionReturn(0);
@@ -1488,7 +1488,7 @@ static PetscErrorCode TSTrajectoryMemoryGet_RMS(TSTrajectory tj, TS ts, TJSchedu
     PetscCall(TurnForward(ts));
     PetscCall(ReCompute(ts, tjsch, restart, stepnum));
   }
-  if (!ondisk && ((stack->solution_only && e->stepnum + 1 == stepnum) || (!stack->solution_only && e->stepnum == stepnum))) { PetscCall(StackPop(stack, &e)); }
+  if (!ondisk && ((stack->solution_only && e->stepnum + 1 == stepnum) || (!stack->solution_only && e->stepnum == stepnum))) PetscCall(StackPop(stack, &e));
   tjsch->rctx->reverseonestep = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -1518,17 +1518,17 @@ static PetscErrorCode TSTrajectoryMemorySet_AOF(TSTrajectory tj, TS ts, TJSchedu
     PetscCheck(stepnum >= stack->top, PetscObjectComm((PetscObject)ts), PETSC_ERR_MEMC, "Illegal modification of a non-top stack element");
 
     if (tjsch->actx->nextcheckpointtype == 2) { /* solution + stage values */
-      if (tj->monitor) { PetscCall(PetscViewerASCIIPrintf(tj->monitor, "Store in checkpoint number %" PetscInt_FMT " with stage values and solution (located in RAM)\n", stepnum)); }
+      if (tj->monitor) PetscCall(PetscViewerASCIIPrintf(tj->monitor, "Store in checkpoint number %" PetscInt_FMT " with stage values and solution (located in RAM)\n", stepnum));
       PetscCall(ElementCreate(ts, SOLUTION_STAGES, stack, &e));
       PetscCall(ElementSet(ts, stack, &e, stepnum, time, X));
     }
     if (tjsch->actx->nextcheckpointtype == 1) {
-      if (tj->monitor) { PetscCall(PetscViewerASCIIPrintf(tj->monitor, "Store in checkpoint number %" PetscInt_FMT " with stage values (located in RAM)\n", stepnum)); }
+      if (tj->monitor) PetscCall(PetscViewerASCIIPrintf(tj->monitor, "Store in checkpoint number %" PetscInt_FMT " with stage values (located in RAM)\n", stepnum));
       PetscCall(ElementCreate(ts, STAGESONLY, stack, &e));
       PetscCall(ElementSet(ts, stack, &e, stepnum, time, X));
     }
     if (tjsch->actx->nextcheckpointtype == 0) { /* solution only */
-      if (tj->monitor) { PetscCall(PetscViewerASCIIPrintf(tj->monitor, "Store in checkpoint number %" PetscInt_FMT " (located in RAM)\n", stepnum)); }
+      if (tj->monitor) PetscCall(PetscViewerASCIIPrintf(tj->monitor, "Store in checkpoint number %" PetscInt_FMT " (located in RAM)\n", stepnum));
       PetscCall(ElementCreate(ts, SOLUTIONONLY, stack, &e));
       PetscCall(ElementSet(ts, stack, &e, stepnum, time, X));
     }
@@ -1570,11 +1570,11 @@ static PetscErrorCode TSTrajectoryMemoryGet_AOF(TSTrajectory tj, TS ts, TJSchedu
   }
   /* Update TS with stage values if an adjoint step can be taken immediately */
   if (HaveStages(e->cptype)) {
-    if (tj->monitor) { PetscCall(PetscViewerASCIIPrintf(tj->monitor, "Restore in checkpoint number %" PetscInt_FMT " with stage values (located in RAM)\n", e->stepnum)); }
+    if (tj->monitor) PetscCall(PetscViewerASCIIPrintf(tj->monitor, "Restore in checkpoint number %" PetscInt_FMT " with stage values (located in RAM)\n", e->stepnum));
     if (e->cptype == STAGESONLY) tjsch->actx->num_units_avail += tjsch->actx->num_stages;
     if (e->cptype == SOLUTION_STAGES) tjsch->actx->num_units_avail += tjsch->actx->num_stages + 1;
   } else {
-    if (tj->monitor) { PetscCall(PetscViewerASCIIPrintf(tj->monitor, "Restore in checkpoint number %" PetscInt_FMT " (located in RAM)\n", e->stepnum)); }
+    if (tj->monitor) PetscCall(PetscViewerASCIIPrintf(tj->monitor, "Restore in checkpoint number %" PetscInt_FMT " (located in RAM)\n", e->stepnum));
     tjsch->actx->num_units_avail++;
   }
   PetscCall(UpdateTS(ts, stack, e, stepnum, PETSC_TRUE));

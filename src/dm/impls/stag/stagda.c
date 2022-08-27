@@ -114,7 +114,7 @@ static PetscErrorCode DMStagCreateCompatibleDMDA(DM dm, DMStagStencilLocation lo
     break;
   default: SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "not implemented for dim %" PetscInt_FMT, dim);
   }
-  for (i = 0; i < dim; ++i) { PetscCall(PetscFree(l[i])); }
+  for (i = 0; i < dim; ++i) PetscCall(PetscFree(l[i]));
   PetscFunctionReturn(0);
 }
 

@@ -606,7 +606,7 @@ PetscErrorCode DMSwarmPICInsertPointsCellwise(DM dm, DM dmc, PetscInt e, PetscIn
     PetscCall(DMSwarmRestoreField(dm, DMSwarmPICField_coor, NULL, NULL, (void **)&swarm_coor));
 
     /* copies the nearest neighbour (nnlist[q]) into the new slot (ncurr+q) */
-    for (q = 0; q < npoints; q++) { PetscCall(DMSwarmCopyPoint(dm, nnlist[q], ncurr + q)); }
+    for (q = 0; q < npoints; q++) PetscCall(DMSwarmCopyPoint(dm, nnlist[q], ncurr + q));
     PetscCall(DMSwarmGetField(dm, DMSwarmPICField_coor, NULL, NULL, (void **)&swarm_coor));
     PetscCall(DMSwarmGetField(dm, DMSwarmPICField_cellid, NULL, NULL, (void **)&swarm_cellid));
     for (q = 0; q < npoints; q++) {
@@ -635,7 +635,7 @@ PetscErrorCode DMSwarmPICInsertPointsCellwise(DM dm, DM dmc, PetscInt e, PetscIn
 
   PetscCall(PetscFree(xp));
   PetscCall(PetscFree(elcoor));
-  for (q = 0; q < npoints; q++) { PetscCall(PetscFree(basis[q])); }
+  for (q = 0; q < npoints; q++) PetscCall(PetscFree(basis[q]));
   PetscCall(PetscFree(basis));
   PetscFunctionReturn(0);
 }
@@ -671,7 +671,7 @@ PetscErrorCode MaterialPoint_PopulateCell(DM dm_vp, DM dm_mpoint) {
     }
   }
   PetscCallMPI(MPI_Allreduce(&cnt, &cnt_g, 1, MPIU_INT, MPI_SUM, PETSC_COMM_WORLD));
-  if (cnt_g > 0) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, ".... ....pop cont: adjusted %" PetscInt_FMT " cells\n", cnt_g)); }
+  if (cnt_g > 0) PetscCall(PetscPrintf(PETSC_COMM_WORLD, ".... ....pop cont: adjusted %" PetscInt_FMT " cells\n", cnt_g));
 
   PetscCall(DMSwarmSortRestoreAccess(dm_mpoint));
   PetscCall(PetscQuadratureDestroy(&quadrature));
@@ -1051,7 +1051,7 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx, PetscInt my) {
   if (randomize_coords) PetscCall(DMSwarmMigrate(dms_mpoint, PETSC_TRUE));
 
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-no_view", &no_view, NULL));
-  if (!no_view) { PetscCall(DMSwarmViewXDMF(dms_mpoint, "ic_coeff_dms.xmf")); }
+  if (!no_view) PetscCall(DMSwarmViewXDMF(dms_mpoint, "ic_coeff_dms.xmf"));
 
   /* project the swarm properties */
   PetscCall(DMSwarmProjectFields(dms_mpoint, 2, fieldnames, &pfields, PETSC_FALSE));

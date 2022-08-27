@@ -63,7 +63,7 @@ int main(int argc, char **args) {
 
   PetscCall(VecAXPY(output, -1.0, input));
   PetscCall(VecNorm(output, NORM_1, &enorm));
-  if (enorm > 1.e-14) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Error norm of |x - z| %e\n", enorm)); }
+  if (enorm > 1.e-14) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Error norm of |x - z| %e\n", enorm));
 
   PetscCall(VecDestroy(&x));
   PetscCall(VecDestroy(&y));

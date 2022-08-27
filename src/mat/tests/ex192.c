@@ -155,7 +155,7 @@ int main(int argc, char **args) {
 
     if (!nfact) {
       PetscCall(VecSetRandom(x, rand));
-      if (symm && herm) { PetscCall(VecAbs(x)); }
+      if (symm && herm) PetscCall(VecAbs(x));
       PetscCall(MatDiagonalSet(A, x, ADD_VALUES));
     }
     if (use_lu) {
@@ -170,9 +170,9 @@ int main(int argc, char **args) {
       PetscCall(MatFactorRestoreSchurComplement(F, &S, MAT_FACTOR_SCHUR_UNFACTORED));
     }
     PetscCall(MatFactorCreateSchurComplement(F, &S, NULL));
-    if (!cuda) { PetscCall(MatCreateVecs(S, &xschur, &bschur)); }
+    if (!cuda) PetscCall(MatCreateVecs(S, &xschur, &bschur));
     PetscCall(VecDuplicate(xschur, &uschur));
-    if (nfact == 1 && (!cuda || (herm && symm))) { PetscCall(MatFactorInvertSchurComplement(F)); }
+    if (nfact == 1 && (!cuda || (herm && symm))) PetscCall(MatFactorInvertSchurComplement(F));
     for (nsolve = 0; nsolve < 2; nsolve++) {
       PetscCall(VecSetRandom(x, rand));
       PetscCall(VecCopy(x, u));
@@ -243,7 +243,7 @@ int main(int argc, char **args) {
       /* Check the error */
       PetscCall(MatAXPY(X, -1.0, C, SAME_NONZERO_PATTERN));
       PetscCall(MatNorm(X, NORM_FROBENIUS, &norm));
-      if (norm > tol) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "(f %" PetscInt_FMT ", s %" PetscInt_FMT ") MatMatSolve: Norm of error %g\n", nfact, nsolve, (double)norm)); }
+      if (norm > tol) PetscCall(PetscPrintf(PETSC_COMM_SELF, "(f %" PetscInt_FMT ", s %" PetscInt_FMT ") MatMatSolve: Norm of error %g\n", nfact, nsolve, (double)norm));
     }
     if (isolver == 0) {
       Mat spRHS, spRHST, RHST;
@@ -257,7 +257,7 @@ int main(int argc, char **args) {
         /* Check the error */
         PetscCall(MatAXPY(X, -1.0, C, SAME_NONZERO_PATTERN));
         PetscCall(MatNorm(X, NORM_FROBENIUS, &norm));
-        if (norm > tol) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "(f %" PetscInt_FMT ", s %" PetscInt_FMT ") sparse MatMatSolve: Norm of error %g\n", nfact, nsolve, (double)norm)); }
+        if (norm > tol) PetscCall(PetscPrintf(PETSC_COMM_SELF, "(f %" PetscInt_FMT ", s %" PetscInt_FMT ") sparse MatMatSolve: Norm of error %g\n", nfact, nsolve, (double)norm));
       }
       PetscCall(MatDestroy(&spRHST));
       PetscCall(MatDestroy(&spRHS));

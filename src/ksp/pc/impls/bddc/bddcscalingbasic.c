@@ -255,7 +255,7 @@ PetscErrorCode PCBDDCScalingSetUp(PC pc) {
   PetscCall(VecPointwiseDivide(pcis->D, pcis->D, pcis->vec1_B));
   /* now setup */
   if (pcbddc->use_deluxe_scaling) {
-    if (!pcbddc->deluxe_ctx) { PetscCall(PCBDDCScalingCreate_Deluxe(pc)); }
+    if (!pcbddc->deluxe_ctx) PetscCall(PCBDDCScalingCreate_Deluxe(pc));
     PetscCall(PCBDDCScalingSetUp_Deluxe(pc));
     PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCBDDCScalingRestriction_C", PCBDDCScalingRestriction_Deluxe));
     PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCBDDCScalingExtension_C", PCBDDCScalingExtension_Deluxe));
@@ -394,9 +394,9 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe(PC pc) {
   if (sub_schurs->is_vertices || sub_schurs->is_dir) {
     PetscInt n_com, n_dir;
     n_com = 0;
-    if (sub_schurs->is_vertices) { PetscCall(ISGetLocalSize(sub_schurs->is_vertices, &n_com)); }
+    if (sub_schurs->is_vertices) PetscCall(ISGetLocalSize(sub_schurs->is_vertices, &n_com));
     n_dir = 0;
-    if (sub_schurs->is_dir) { PetscCall(ISGetLocalSize(sub_schurs->is_dir, &n_dir)); }
+    if (sub_schurs->is_dir) PetscCall(ISGetLocalSize(sub_schurs->is_dir, &n_dir));
     if (!deluxe_ctx->n_simple) {
       deluxe_ctx->n_simple = n_dir + n_com;
       PetscCall(PetscMalloc1(deluxe_ctx->n_simple, &deluxe_ctx->idx_simple_B));
@@ -460,7 +460,7 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Private(PC pc) {
     PetscCall(ISGetLocalSize(sub_schurs->is_subs[i], &subset_size));
     max_subset_size = PetscMax(subset_size, max_subset_size);
   }
-  if (newsetup) { PetscCall(PetscMalloc1(2 * max_subset_size, &deluxe_ctx->workspace)); }
+  if (newsetup) PetscCall(PetscMalloc1(2 * max_subset_size, &deluxe_ctx->workspace));
   cum = cum2 = 0;
   PetscCall(ISGetIndices(sub_schurs->is_Ej_all, &idxs));
   PetscCall(MatSeqAIJGetArray(sub_schurs->S_Ej_all, &matdata));

@@ -93,7 +93,7 @@ int main(int argc, char **argv) {
     PetscCheck(flg, comm, PETSC_ERR_PLIB, "is[%02" PetscInt_FMT "] differs from is[0]", i);
     if (verbose) PetscCall(PetscPrintf(comm, "is[%02" PetscInt_FMT "] identical to is[0]\n", i));
   }
-  for (i = 0; i < j; i++) { PetscCall(ISDestroy(&is[i])); }
+  for (i = 0; i < j; i++) PetscCall(ISDestroy(&is[i]));
   PetscCall(PetscFinalize());
   return 0;
 }

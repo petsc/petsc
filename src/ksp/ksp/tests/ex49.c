@@ -70,7 +70,7 @@ int main(int argc, char **args) {
   }
 
   A2 = NULL;
-  if (convert) { PetscCall(MatConvert(A, MATAIJ, MAT_INITIAL_MATRIX, &A2)); }
+  if (convert) PetscCall(MatConvert(A, MATAIJ, MAT_INITIAL_MATRIX, &A2));
 
   PetscCall(VecCreate(PETSC_COMM_SELF, &u));
   PetscCall(VecSetSizes(u, PETSC_DECIDE, n * bs));
@@ -119,7 +119,7 @@ int main(int argc, char **args) {
      print statement from all processes that share a communicator.
      An alternative is PetscFPrintf(), which prints to a file.
   */
-  if (norm > 100 * PETSC_SMALL) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "Norm of residual %g iterations %" PetscInt_FMT " bs %" PetscInt_FMT "\n", (double)norm, its, bs)); }
+  if (norm > 100 * PETSC_SMALL) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Norm of residual %g iterations %" PetscInt_FMT " bs %" PetscInt_FMT "\n", (double)norm, its, bs));
 
   /*
      Free work space.  All PETSc objects should be destroyed when they

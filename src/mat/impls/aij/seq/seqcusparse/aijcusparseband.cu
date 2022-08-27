@@ -328,7 +328,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJCUSPARSEBAND(Mat B, Mat A, IS isrow, IS
     PetscCall(PetscInfo(A, "Empty matrix\n"));
   }
 #endif
-  if (a->inode.size) { PetscCall(PetscInfo(A, "Warning: using inodes in band solver.\n")); }
+  if (a->inode.size) PetscCall(PetscInfo(A, "Warning: using inodes in band solver.\n"));
   PetscCall(MatSeqAIJCheckInode_FactorLU(B));
   B->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJCUSPARSEBAND;
   B->offloadmask          = PETSC_OFFLOAD_GPU;

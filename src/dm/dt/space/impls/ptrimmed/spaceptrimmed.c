@@ -41,7 +41,7 @@ static PetscErrorCode PetscSpaceDestroy_Ptrimmed(PetscSpace sp) {
   if (pt->subspaces) {
     PetscInt d;
 
-    for (d = 0; d < sp->Nv; ++d) { PetscCall(PetscSpaceDestroy(&pt->subspaces[d])); }
+    for (d = 0; d < sp->Nv; ++d) PetscCall(PetscSpaceDestroy(&pt->subspaces[d]));
   }
   PetscCall(PetscFree(pt->subspaces));
   PetscCall(PetscFree(pt));
@@ -87,7 +87,7 @@ static PetscErrorCode PetscSpaceSetUp_Ptrimmed(PetscSpace sp) {
     PetscCall(PetscSpaceSetDegree(subsp, deg, maxDeg));
     PetscCall(PetscSpacePTrimmedSetFormDegree(subsp, formDegree));
     PetscCall(PetscSpaceSetUp(subsp));
-    for (PetscInt i = 0; i < nCopies; i++) { PetscCall(PetscSpaceSumSetSubspace(sp, i, subsp)); }
+    for (PetscInt i = 0; i < nCopies; i++) PetscCall(PetscSpaceSumSetSubspace(sp, i, subsp));
     PetscCall(PetscSpaceDestroy(&subsp));
     PetscCall(PetscSpaceSetUp(sp));
     PetscFunctionReturn(0);

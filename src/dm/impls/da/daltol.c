@@ -90,7 +90,7 @@ PetscErrorCode DMLocalToLocalBegin_DA(DM da, Vec g, InsertMode mode, Vec l) {
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da, DM_CLASSID, 1);
-  if (!dd->ltol) { PetscCall(DMLocalToLocalCreate_DA(da)); }
+  if (!dd->ltol) PetscCall(DMLocalToLocalCreate_DA(da));
   PetscCall(VecScatterBegin(dd->ltol, g, l, mode, SCATTER_FORWARD));
   PetscFunctionReturn(0);
 }

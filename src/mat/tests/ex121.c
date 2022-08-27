@@ -116,7 +116,7 @@ int main(int argc, char **args) {
     if (view) PetscCall(VecView(z2, PETSC_VIEWER_DRAW_WORLD));
     PetscCall(VecAXPY(z1, -1.0, z2));
     PetscCall(VecNorm(z1, NORM_1, &enorm));
-    if (enorm > 1.e-11) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Error norm of |z1 - z2| %g\n", (double)enorm)); }
+    if (enorm > 1.e-11) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Error norm of |z1 - z2| %g\n", (double)enorm));
 
     /* free spaces */
     PetscCall(VecDestroy(&x));

@@ -232,9 +232,9 @@ PetscErrorCode testLagrange(PetscHashLag lagTable, DM K, PetscInt dim, PetscInt 
       PetscCall(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF, "All node indices:\n"));
       for (i = 0; i < spdim; i++) {
         PetscCall(PetscPrintf(PETSC_COMM_SELF, "("));
-        for (j = 0; j < nodeIdxDim; j++) { PetscCall(PetscPrintf(PETSC_COMM_SELF, " %" PetscInt_FMT ",", nodeIdx[i * nodeIdxDim + j])); }
+        for (j = 0; j < nodeIdxDim; j++) PetscCall(PetscPrintf(PETSC_COMM_SELF, " %" PetscInt_FMT ",", nodeIdx[i * nodeIdxDim + j]));
         PetscCall(PetscPrintf(PETSC_COMM_SELF, "): ["));
-        for (j = 0; j < nodeVecDim; j++) { PetscCall(PetscPrintf(PETSC_COMM_SELF, " %g,", (double)nodeVec[i * nodeVecDim + j])); }
+        for (j = 0; j < nodeVecDim; j++) PetscCall(PetscPrintf(PETSC_COMM_SELF, " %g,", (double)nodeVec[i * nodeVecDim + j]));
         PetscCall(PetscPrintf(PETSC_COMM_SELF, "]\n"));
       }
 
@@ -330,7 +330,7 @@ int main(int argc, char **argv) {
     for (formDegree = PetscMin(0, -dim + 1); formDegree <= dim; formDegree++) {
       PetscInt nCopies;
 
-      for (nCopies = 1; nCopies <= 3; nCopies++) { PetscCall(testLagrange(lagTable, dm, dim, order, formDegree, trimmed, (PetscBool)tensorCell, continuous, nCopies)); }
+      for (nCopies = 1; nCopies <= 3; nCopies++) PetscCall(testLagrange(lagTable, dm, dim, order, formDegree, trimmed, (PetscBool)tensorCell, continuous, nCopies));
     }
   }
   PetscCall(DMDestroy(&dm));

@@ -57,7 +57,7 @@ PetscErrorCode PetscEventRegLogDestroy(PetscEventRegLog eventLog) {
   int e;
 
   PetscFunctionBegin;
-  for (e = 0; e < eventLog->numEvents; e++) { PetscCall(PetscFree(eventLog->eventInfo[e].name)); }
+  for (e = 0; e < eventLog->numEvents; e++) PetscCall(PetscFree(eventLog->eventInfo[e].name));
   PetscCall(PetscFree(eventLog->eventInfo));
   PetscCall(PetscFree(eventLog));
   PetscFunctionReturn(0);
@@ -210,7 +210,7 @@ PetscErrorCode PetscEventPerfLogEnsureSize(PetscEventPerfLog eventLog, int size)
     eventLog->eventInfo = eventInfo;
     eventLog->maxEvents *= 2;
   }
-  while (eventLog->numEvents < size) { PetscCall(PetscEventPerfInfoClear(&eventLog->eventInfo[eventLog->numEvents++])); }
+  while (eventLog->numEvents < size) PetscCall(PetscEventPerfInfoClear(&eventLog->eventInfo[eventLog->numEvents++]));
   PetscFunctionReturn(0);
 }
 

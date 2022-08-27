@@ -29,7 +29,7 @@ int main(int argc, char **args) {
     PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, name, FILE_MODE_READ, &viewer));
     PetscCall(MatLoad(A, viewer));
     PetscCall(PetscViewerDestroy(&viewer));
-    if (i == 0) { PetscCall(MatCreateVecs(A, &x, &b)); }
+    if (i == 0) PetscCall(MatCreateVecs(A, &x, &b));
     PetscCall(PetscSNPrintf(name, sizeof(name), "%s/rhs_%" PetscInt_FMT ".dat", dir, j));
     PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, name, FILE_MODE_READ, &viewer));
     PetscCall(VecLoad(b, viewer));

@@ -545,7 +545,7 @@ PetscErrorCode MatAssemblyEnd_MPIAdj(Mat A, MatAssemblyType type) {
   for (i = m; i > 0; i--) { rowstarts[i] = rowstarts[i - 1]; }
   rowstarts[0] = 0;
 
-  for (PetscInt i = 0; i < m; i++) { PetscCall(PetscSortInt(rowstarts[i + 1] - rowstarts[i], &col[rowstarts[i]])); }
+  for (PetscInt i = 0; i < m; i++) PetscCall(PetscSortInt(rowstarts[i + 1] - rowstarts[i], &col[rowstarts[i]]));
 
   adj->i       = rowstarts;
   adj->j       = col;

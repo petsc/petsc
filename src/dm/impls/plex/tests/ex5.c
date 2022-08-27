@@ -538,8 +538,8 @@ static PetscErrorCode CreateSimplex_3D(MPI_Comm comm, AppCtx *user, DM dm) {
       PetscInt    faultPoints[3]       = {3, 4, 5};
 
       PetscCall(DMPlexCreateFromDAG(dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords));
-      for (p = 0; p < 10; ++p) { PetscCall(DMSetLabelValue(dm, "marker", markerPoints[p * 2], markerPoints[p * 2 + 1])); }
-      for (p = 0; p < 3; ++p) { PetscCall(DMSetLabelValue(dm, "fault", faultPoints[p], 1)); }
+      for (p = 0; p < 10; ++p) PetscCall(DMSetLabelValue(dm, "marker", markerPoints[p * 2], markerPoints[p * 2 + 1]));
+      for (p = 0; p < 3; ++p) PetscCall(DMSetLabelValue(dm, "fault", faultPoints[p], 1));
       PetscCall(DMSetLabelValue(dm, "material", 0, 1));
       PetscCall(DMSetLabelValue(dm, "material", 1, 2));
     } break;
@@ -555,8 +555,8 @@ static PetscErrorCode CreateSimplex_3D(MPI_Comm comm, AppCtx *user, DM dm) {
       PetscInt    faultPoints[4]       = {5, 6, 7, 8};
 
       PetscCall(DMPlexCreateFromDAG(dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords));
-      for (p = 0; p < 7; ++p) { PetscCall(DMSetLabelValue(dm, "marker", markerPoints[p * 2], markerPoints[p * 2 + 1])); }
-      for (p = 0; p < 4; ++p) { PetscCall(DMSetLabelValue(dm, "fault", faultPoints[p], 1)); }
+      for (p = 0; p < 7; ++p) PetscCall(DMSetLabelValue(dm, "marker", markerPoints[p * 2], markerPoints[p * 2 + 1]));
+      for (p = 0; p < 4; ++p) PetscCall(DMSetLabelValue(dm, "fault", faultPoints[p], 1));
       PetscCall(DMSetLabelValue(dm, "material", 0, 1));
       PetscCall(DMSetLabelValue(dm, "material", 1, 2));
     } break;

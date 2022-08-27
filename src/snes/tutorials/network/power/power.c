@@ -125,22 +125,22 @@ int main(int argc, char **argv) {
     /* Set up the network layout */
     PetscCall(DMNetworkLayoutSetUp(networkdm));
 
-    if (!crank) { PetscCall(PetscFree(edges)); }
+    if (!crank) PetscCall(PetscFree(edges));
 
     /* Add network components only process 0 has any data to add */
     if (!crank) {
       genj  = 0;
       loadj = 0;
       PetscCall(DMNetworkGetEdgeRange(networkdm, &eStart, &eEnd));
-      for (i = eStart; i < eEnd; i++) { PetscCall(DMNetworkAddComponent(networkdm, i, User.compkey_branch, &pfdata->branch[i - eStart], 0)); }
+      for (i = eStart; i < eEnd; i++) PetscCall(DMNetworkAddComponent(networkdm, i, User.compkey_branch, &pfdata->branch[i - eStart], 0));
       PetscCall(DMNetworkGetVertexRange(networkdm, &vStart, &vEnd));
       for (i = vStart; i < vEnd; i++) {
         PetscCall(DMNetworkAddComponent(networkdm, i, User.compkey_bus, &pfdata->bus[i - vStart], 2));
         if (pfdata->bus[i - vStart].ngen) {
-          for (j = 0; j < pfdata->bus[i - vStart].ngen; j++) { PetscCall(DMNetworkAddComponent(networkdm, i, User.compkey_gen, &pfdata->gen[genj++], 0)); }
+          for (j = 0; j < pfdata->bus[i - vStart].ngen; j++) PetscCall(DMNetworkAddComponent(networkdm, i, User.compkey_gen, &pfdata->gen[genj++], 0));
         }
         if (pfdata->bus[i - vStart].nload) {
-          for (j = 0; j < pfdata->bus[i - vStart].nload; j++) { PetscCall(DMNetworkAddComponent(networkdm, i, User.compkey_load, &pfdata->load[loadj++], 0)); }
+          for (j = 0; j < pfdata->bus[i - vStart].nload; j++) PetscCall(DMNetworkAddComponent(networkdm, i, User.compkey_load, &pfdata->load[loadj++], 0));
         }
       }
     }

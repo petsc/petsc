@@ -199,7 +199,7 @@ static PetscErrorCode MatDestroy_MFFD(Mat mat) {
   PetscCall(MatShellGetContext(mat, &ctx));
   PetscCall(VecDestroy(&ctx->w));
   PetscCall(VecDestroy(&ctx->current_u));
-  if (ctx->current_f_allocated) { PetscCall(VecDestroy(&ctx->current_f)); }
+  if (ctx->current_f_allocated) PetscCall(VecDestroy(&ctx->current_f));
   PetscTryTypeMethod(ctx, destroy);
   PetscCall(PetscHeaderDestroy(&ctx));
 
@@ -241,7 +241,7 @@ static PetscErrorCode MatView_MFFD(Mat J, PetscViewer viewer) {
       PetscCall(PetscViewerASCIIPrintf(viewer, "Using %s compute h routine\n", ((PetscObject)ctx)->type_name));
     }
 #if defined(PETSC_USE_COMPLEX)
-    if (ctx->usecomplex) { PetscCall(PetscViewerASCIIPrintf(viewer, "Using Lyness complex number trick to compute the matrix-vector product\n")); }
+    if (ctx->usecomplex) PetscCall(PetscViewerASCIIPrintf(viewer, "Using Lyness complex number trick to compute the matrix-vector product\n"));
 #endif
     PetscTryTypeMethod(ctx, view, viewer);
     PetscCall(PetscObjectGetOptionsPrefix((PetscObject)J, &prefix));
@@ -321,7 +321,7 @@ static PetscErrorCode MatMult_MFFD(Mat mat, Vec a, Vec y) {
   }
 
   PetscCheck(!mat->erroriffailure || !PetscIsInfOrNanScalar(h), PETSC_COMM_SELF, PETSC_ERR_PLIB, "Computed Nan differencing parameter h");
-  if (ctx->checkh) { PetscCall((*ctx->checkh)(ctx->checkhctx, U, a, &h)); }
+  if (ctx->checkh) PetscCall((*ctx->checkh)(ctx->checkhctx, U, a, &h));
 
   /* keep a record of the current differencing parameter h */
   ctx->currenth = h;
@@ -341,7 +341,7 @@ static PetscErrorCode MatMult_MFFD(Mat mat, Vec a, Vec y) {
   PetscCall(VecWAXPY(w, h, a, U));
 
   /* compute func(U) as base for differencing; only needed first time in and not when provided by user */
-  if (ctx->ncurrenth == 1 && ctx->current_f_allocated) { PetscCall((*ctx->func)(ctx->funcctx, U, F)); }
+  if (ctx->ncurrenth == 1 && ctx->current_f_allocated) PetscCall((*ctx->func)(ctx->funcctx, U, F));
   PetscCall((*ctx->func)(ctx->funcctx, w, y));
 
 #if defined(PETSC_USE_COMPLEX)
@@ -430,7 +430,7 @@ PETSC_EXTERN PetscErrorCode MatMFFDSetBase_MFFD(Mat J, Vec U, Vec F) {
     PetscCall(MatCreateVecs(J, NULL, &ctx->current_f));
     ctx->current_f_allocated = PETSC_TRUE;
   }
-  if (!ctx->w) { PetscCall(VecDuplicate(ctx->current_u, &ctx->w)); }
+  if (!ctx->w) PetscCall(VecDuplicate(ctx->current_u, &ctx->w));
   J->assembled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }

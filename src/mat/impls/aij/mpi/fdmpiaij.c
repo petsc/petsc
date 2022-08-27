@@ -66,7 +66,7 @@ PetscErrorCode MatFDColoringApply_BAIJ(Mat J, MatFDColoring coloring, Vec x1, vo
   w3 = coloring->w3;
 
   PetscCall(VecGetOwnershipRange(x1, &cstart, &cend)); /* used by ghosted vscale */
-  if (vscale) { PetscCall(VecGetArray(vscale, &vscale_array)); }
+  if (vscale) PetscCall(VecGetArray(vscale, &vscale_array));
   nz = 0;
   for (k = 0; k < ncolors; k++) {
     coloring->currentcolor = k;
@@ -146,7 +146,7 @@ PetscErrorCode MatFDColoringApply_BAIJ(Mat J, MatFDColoring coloring, Vec x1, vo
   }
   PetscCall(MatAssemblyBegin(J, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(J, MAT_FINAL_ASSEMBLY));
-  if (vscale) { PetscCall(VecRestoreArray(vscale, &vscale_array)); }
+  if (vscale) PetscCall(VecRestoreArray(vscale, &vscale_array));
 
   coloring->currentcolor = -1;
   PetscCall(VecBindToCPU(x1, PETSC_FALSE));
@@ -217,7 +217,7 @@ PetscErrorCode MatFDColoringApply_AIJ(Mat J, MatFDColoring coloring, Vec x1, voi
   w3 = coloring->w3;
 
   PetscCall(VecGetOwnershipRange(x1, &cstart, &cend)); /* used by ghosted vscale */
-  if (vscale) { PetscCall(VecGetArray(vscale, &vscale_array)); }
+  if (vscale) PetscCall(VecGetArray(vscale, &vscale_array));
   nz = 0;
 
   if (coloring->bcols > 1) { /* use blocked insertion of Jentry */
@@ -373,7 +373,7 @@ PetscErrorCode MatFDColoringApply_AIJ(Mat J, MatFDColoring coloring, Vec x1, voi
 #endif
   PetscCall(MatAssemblyBegin(J, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(J, MAT_FINAL_ASSEMBLY));
-  if (vscale) { PetscCall(VecRestoreArray(vscale, &vscale_array)); }
+  if (vscale) PetscCall(VecRestoreArray(vscale, &vscale_array));
   coloring->currentcolor = -1;
   if (!alreadyboundtocpu) PetscCall(VecBindToCPU(x1, PETSC_FALSE));
   PetscFunctionReturn(0);
@@ -417,7 +417,7 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat, ISColoring iscoloring, MatFDC
     spB   = (Mat_SeqBAIJ *)B->data;
     B_val = spB->a;
     nz    = spA->nz + spB->nz; /* total nonzero entries of mat */
-    if (!baij->colmap) { PetscCall(MatCreateColmap_MPIBAIJ_Private(mat)); }
+    if (!baij->colmap) PetscCall(MatCreateColmap_MPIBAIJ_Private(mat));
     colmap = baij->colmap;
     PetscCall(MatGetColumnIJ_SeqBAIJ_Color(A, 0, PETSC_FALSE, PETSC_FALSE, &ncols, &A_ci, &A_cj, &spidxA, NULL));
     PetscCall(MatGetColumnIJ_SeqBAIJ_Color(B, 0, PETSC_FALSE, PETSC_FALSE, &ncols, &B_ci, &B_cj, &spidxB, NULL));
@@ -525,7 +525,7 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat, ISColoring iscoloring, MatFDC
       PetscCallMPI(MPI_Allgather(&nn, 1, MPI_INT, ncolsonproc, 1, MPI_INT, PetscObjectComm((PetscObject)mat)));
       nctot = 0;
       for (j = 0; j < size; j++) nctot += ncolsonproc[j];
-      if (!nctot) { PetscCall(PetscInfo(mat, "Coloring of matrix has some unneeded colors with no corresponding rows\n")); }
+      if (!nctot) PetscCall(PetscInfo(mat, "Coloring of matrix has some unneeded colors with no corresponding rows\n"));
 
       disp[0] = 0;
       for (j = 1; j < size; j++) { disp[j] = disp[j - 1] + ncolsonproc[j - 1]; }
@@ -607,9 +607,9 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat, ISColoring iscoloring, MatFDC
         }
       }
     }
-    if (ctype == IS_COLORING_GLOBAL) { PetscCall(PetscFree(cols)); }
+    if (ctype == IS_COLORING_GLOBAL) PetscCall(PetscFree(cols));
   }
-  if (ctype == IS_COLORING_GLOBAL) { PetscCall(PetscFree2(ncolsonproc, disp)); }
+  if (ctype == IS_COLORING_GLOBAL) PetscCall(PetscFree2(ncolsonproc, disp));
 
   if (bcols > 1) { /* reorder Jentry for faster MatFDColoringApply() */
     PetscCall(MatFDColoringSetUpBlocked_AIJ_Private(mat, c, nz));
@@ -630,7 +630,7 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat, ISColoring iscoloring, MatFDC
   PetscCall(ISColoringRestoreIS(iscoloring, PETSC_OWN_POINTER, &c->isa));
   PetscCall(PetscFree2(rowhit, valaddrhit));
 
-  if (ctype == IS_COLORING_LOCAL) { PetscCall(ISLocalToGlobalMappingRestoreIndices(map, &ltog)); }
+  if (ctype == IS_COLORING_LOCAL) PetscCall(ISLocalToGlobalMappingRestoreIndices(map, &ltog));
   PetscCall(PetscInfo(c, "ncolors %" PetscInt_FMT ", brows %" PetscInt_FMT " and bcols %" PetscInt_FMT " are used.\n", c->ncolors, c->brows, c->bcols));
   PetscFunctionReturn(0);
 }

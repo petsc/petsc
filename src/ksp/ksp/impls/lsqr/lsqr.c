@@ -46,9 +46,9 @@ static PetscErrorCode KSPSetUp_LSQR(KSP ksp) {
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)ksp->pc, PCNONE, &nopreconditioner));
 
-  if (lsqr->vwork_m) { PetscCall(VecDestroyVecs(lsqr->nwork_m, &lsqr->vwork_m)); }
+  if (lsqr->vwork_m) PetscCall(VecDestroyVecs(lsqr->nwork_m, &lsqr->vwork_m));
 
-  if (lsqr->vwork_n) { PetscCall(VecDestroyVecs(lsqr->nwork_n, &lsqr->vwork_n)); }
+  if (lsqr->vwork_n) PetscCall(VecDestroyVecs(lsqr->nwork_n, &lsqr->vwork_n));
 
   lsqr->nwork_m = 2;
   if (nopreconditioner) lsqr->nwork_n = 4;
@@ -237,8 +237,8 @@ PetscErrorCode KSPDestroy_LSQR(KSP ksp) {
 
   PetscFunctionBegin;
   /* Free work vectors */
-  if (lsqr->vwork_n) { PetscCall(VecDestroyVecs(lsqr->nwork_n, &lsqr->vwork_n)); }
-  if (lsqr->vwork_m) { PetscCall(VecDestroyVecs(lsqr->nwork_m, &lsqr->vwork_m)); }
+  if (lsqr->vwork_n) PetscCall(VecDestroyVecs(lsqr->nwork_n, &lsqr->vwork_n));
+  if (lsqr->vwork_m) PetscCall(VecDestroyVecs(lsqr->nwork_m, &lsqr->vwork_m));
   PetscCall(VecDestroy(&lsqr->se));
   /* Revert convergence test */
   PetscCall(KSPSetConvergenceTest(ksp, lsqr->converged, lsqr->cnvP, lsqr->convergeddestroy));

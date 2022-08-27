@@ -904,7 +904,7 @@ PetscErrorCode CreatePartitionVec(DM dm, DM *dmCell, Vec *partition) {
   PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)dm), &sectionCell));
   PetscCall(DMPlexGetHeightStratum(*dmCell, 0, &cStart, &cEnd));
   PetscCall(PetscSectionSetChart(sectionCell, cStart, cEnd));
-  for (c = cStart; c < cEnd; ++c) { PetscCall(PetscSectionSetDof(sectionCell, c, 1)); }
+  for (c = cStart; c < cEnd; ++c) PetscCall(PetscSectionSetDof(sectionCell, c, 1));
   PetscCall(PetscSectionSetUp(sectionCell));
   PetscCall(DMSetLocalSection(*dmCell, sectionCell));
   PetscCall(PetscSectionDestroy(&sectionCell));

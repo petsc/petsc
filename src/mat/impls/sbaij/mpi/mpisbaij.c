@@ -44,7 +44,7 @@ static PetscErrorCode MatPreallocateWithMats_Private(Mat B, PetscInt nm, Mat X[]
     for (i = 0; i < nm; i++) {
       PetscCall(MatGetRow(X[i], r, &ncols, &row, &vals));
       PetscCall(MatSetValues(preallocator, 1, &r, ncols, row, vals, INSERT_VALUES));
-      if (symm && symm[i]) { PetscCall(MatSetValues(preallocator, ncols, row, 1, &r, vals, INSERT_VALUES)); }
+      if (symm && symm[i]) PetscCall(MatSetValues(preallocator, ncols, row, 1, &r, vals, INSERT_VALUES));
       PetscCall(MatRestoreRow(X[i], r, &ncols, &row, &vals));
     }
   }
@@ -95,7 +95,7 @@ PETSC_INTERN PetscErrorCode MatConvert_MPISBAIJ_Basic(Mat A, MatType newtype, Ma
 #if defined(PETSC_USE_COMPLEX)
     if (A->hermitian == PETSC_BOOL3_TRUE) {
       PetscInt i;
-      for (i = 0; i < ncols; i++) { PetscCall(MatSetValue(B, row[i], r, PetscConj(vals[i]), INSERT_VALUES)); }
+      for (i = 0; i < ncols; i++) PetscCall(MatSetValue(B, row[i], r, PetscConj(vals[i]), INSERT_VALUES));
     } else {
       PetscCall(MatSetValues(B, ncols, row, 1, &r, vals, INSERT_VALUES));
     }
@@ -287,7 +287,7 @@ PetscErrorCode MatSetValues_MPISBAIJ(Mat mat, PetscInt m, const PetscInt im[], P
           PetscCheck(in[j] < mat->cmap->N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Column too large: col %" PetscInt_FMT " max %" PetscInt_FMT, in[j], mat->cmap->N - 1);
           /* off-diag entry (B) */
           if (mat->was_assembled) {
-            if (!baij->colmap) { PetscCall(MatCreateColmap_MPIBAIJ_Private(mat)); }
+            if (!baij->colmap) PetscCall(MatCreateColmap_MPIBAIJ_Private(mat));
 #if defined(PETSC_USE_CTABLE)
             PetscCall(PetscTableFind(baij->colmap, in[j] / bs + 1, &col));
             col = col - 1;
@@ -552,7 +552,7 @@ PetscErrorCode MatSetValuesBlocked_MPISBAIJ(Mat mat, PetscInt m, const PetscInt 
         } else {
           PetscCheck(in[j] < baij->Nbs, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Block indexed column too large %" PetscInt_FMT " max %" PetscInt_FMT, in[j], baij->Nbs - 1);
           if (mat->was_assembled) {
-            if (!baij->colmap) { PetscCall(MatCreateColmap_MPIBAIJ_Private(mat)); }
+            if (!baij->colmap) PetscCall(MatCreateColmap_MPIBAIJ_Private(mat));
 
 #if defined(PETSC_USE_DEBUG)
 #if defined(PETSC_USE_CTABLE)
@@ -611,7 +611,7 @@ PetscErrorCode MatGetValues_MPISBAIJ(Mat mat, PetscInt m, const PetscInt idxm[],
           col = idxn[j] - bscstart;
           PetscCall(MatGetValues_SeqSBAIJ(baij->A, 1, &row, 1, &col, v + i * n + j));
         } else {
-          if (!baij->colmap) { PetscCall(MatCreateColmap_MPIBAIJ_Private(mat)); }
+          if (!baij->colmap) PetscCall(MatCreateColmap_MPIBAIJ_Private(mat));
 #if defined(PETSC_USE_CTABLE)
           PetscCall(PetscTableFind(baij->colmap, idxn[j] / bs + 1, &data));
           data--;
@@ -802,7 +802,7 @@ PetscErrorCode MatAssemblyEnd_MPISBAIJ(Mat mat, MatAssemblyType mode) {
   */
   if (!((Mat_SeqBAIJ *)baij->B->data)->nonew) {
     PetscCall(MPIU_Allreduce(&mat->was_assembled, &other_disassembled, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)mat)));
-    if (mat->was_assembled && !other_disassembled) { PetscCall(MatDisAssemble_MPISBAIJ(mat)); }
+    if (mat->was_assembled && !other_disassembled) PetscCall(MatDisAssemble_MPISBAIJ(mat));
   }
 
   if (!mat->was_assembled && mode == MAT_FINAL_ASSEMBLY) { PetscCall(MatSetUpMultiply_MPISBAIJ(mat)); /* setup Mvctx and sMvctx */ }
@@ -1567,7 +1567,7 @@ PetscErrorCode MatEqual_MPISBAIJ(Mat A, Mat B, PetscBool *flag) {
   d = matB->B;
 
   PetscCall(MatEqual(a, c, &flg));
-  if (flg) { PetscCall(MatEqual(b, d, &flg)); }
+  if (flg) PetscCall(MatEqual(b, d, &flg));
   PetscCall(MPIU_Allreduce(&flg, flag, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)A)));
   PetscFunctionReturn(0);
 }
@@ -1656,7 +1656,7 @@ PetscErrorCode MatCreateSubMatrices_MPISBAIJ(Mat A, PetscInt n, const IS irow[],
   PetscCall(MatCreateSubMatrices_MPIBAIJ(A, n, irow, icol, scall, B)); /* B[] are sbaij matrices */
   for (i = 0; i < n; i++) {
     PetscCall(ISEqual(irow[i], icol[i], &flg));
-    if (!flg) { PetscCall(MatSeqSBAIJZeroOps_Private(*B[i])); }
+    if (!flg) PetscCall(MatSeqSBAIJZeroOps_Private(*B[i]));
   }
   PetscFunctionReturn(0);
 }
@@ -1968,7 +1968,7 @@ PetscErrorCode MatMPISBAIJSetPreallocationCSR_MPISBAIJ(Mat B, PetscInt bs, const
   PetscCall(PetscFree2(d_nnz, o_nnz));
 
   values = (PetscScalar *)V;
-  if (!values) { PetscCall(PetscCalloc1(bs * bs * nz_max, &values)); }
+  if (!values) PetscCall(PetscCalloc1(bs * bs * nz_max, &values));
   for (i = 0; i < m; i++) {
     PetscInt        row   = i + rstart;
     PetscInt        ncols = ii[i + 1] - ii[i];
@@ -2776,7 +2776,7 @@ PetscErrorCode MatCreateMPIMatConcatenateSeqMat_MPISBAIJ(MPI_Comm comm, Mat inma
     PetscCall(MatGetBlockSizes(inmat, &bs, &cbs));
     mbs = m / bs;
     Nbs = N / cbs;
-    if (n == PETSC_DECIDE) { PetscCall(PetscSplitOwnershipBlock(comm, cbs, &n, &N)); }
+    if (n == PETSC_DECIDE) PetscCall(PetscSplitOwnershipBlock(comm, cbs, &n, &N));
     nbs = n / cbs;
 
     PetscCall(PetscMalloc1(rmax, &bindx));

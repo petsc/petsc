@@ -415,7 +415,7 @@ int main(int argc, char **args) {
     /* test BCs */
     PetscCall(VecZeroEntries(xx));
     if (test_nonzero_cols) {
-      if (rank == 0) { PetscCall(VecSetValue(xx, 0, 1.0, INSERT_VALUES)); }
+      if (rank == 0) PetscCall(VecSetValue(xx, 0, 1.0, INSERT_VALUES));
       PetscCall(VecAssemblyBegin(xx));
       PetscCall(VecAssemblyEnd(xx));
     }

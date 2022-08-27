@@ -26,7 +26,7 @@ static PetscErrorCode PetscLoadDynamicLibrary(const char *name, PetscBool *found
     PetscCall(PetscStrncpy(libs, "${PETSC_DIR}/${PETSC_ARCH}/lib/libpetsc", sizeof(libs)));
     PetscCall(PetscStrlcat(libs, name, sizeof(libs)));
     PetscCall(PetscDLLibraryRetrieve(PETSC_COMM_WORLD, libs, dlib, 1024, found));
-    if (*found) { PetscCall(PetscDLLibraryAppend(PETSC_COMM_WORLD, &PetscDLLibrariesLoaded, dlib)); }
+    if (*found) PetscCall(PetscDLLibraryAppend(PETSC_COMM_WORLD, &PetscDLLibrariesLoaded, dlib));
   }
   PetscFunctionReturn(0);
 }

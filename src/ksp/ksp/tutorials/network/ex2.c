@@ -309,10 +309,10 @@ int main(int argc, char **argv) {
   /* Add network components (physical parameters of nodes and branches) and num of variables */
   if (rank == 0) {
     PetscCall(DMNetworkGetEdgeRange(networkdm, &eStart, &eEnd));
-    for (i = eStart; i < eEnd; i++) { PetscCall(DMNetworkAddComponent(networkdm, i, componentkey[1], &branch[i - eStart], 1)); }
+    for (i = eStart; i < eEnd; i++) PetscCall(DMNetworkAddComponent(networkdm, i, componentkey[1], &branch[i - eStart], 1));
 
     PetscCall(DMNetworkGetVertexRange(networkdm, &vStart, &vEnd));
-    for (i = vStart; i < vEnd; i++) { PetscCall(DMNetworkAddComponent(networkdm, i, componentkey[0], &node[i - vStart], 1)); }
+    for (i = vStart; i < vEnd; i++) PetscCall(DMNetworkAddComponent(networkdm, i, componentkey[0], &node[i - vStart], 1));
   }
 
   /* Network partitioning and distribution of data */

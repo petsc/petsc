@@ -328,7 +328,7 @@ static PetscErrorCode PetscViewerSetFromOptions_Socket(PetscViewer v, PetscOptio
 
   PetscCall(PetscOptionsString("-viewer_socket_machine", "Machine to use for socket", "PetscViewerSocketSetConnection", sdef, NULL, sizeof(sdef), NULL));
   PetscCall(PetscOptionsGetenv(PetscObjectComm((PetscObject)v), "PETSC_VIEWER_SOCKET_MACHINE", sdef, sizeof(sdef), &tflg));
-  if (!tflg) { PetscCall(PetscGetHostName(sdef, sizeof(sdef))); }
+  if (!tflg) PetscCall(PetscGetHostName(sdef, sizeof(sdef)));
   PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
@@ -424,7 +424,7 @@ PetscErrorCode PetscViewerSocketSetConnection(PetscViewer v, const char machine[
   }
   if (!machine) {
     PetscCall(PetscOptionsGetenv(PetscObjectComm((PetscObject)v), "PETSC_VIEWER_SOCKET_MACHINE", mach, sizeof(mach), &tflg));
-    if (!tflg) { PetscCall(PetscGetHostName(mach, sizeof(mach))); }
+    if (!tflg) PetscCall(PetscGetHostName(mach, sizeof(mach)));
   } else {
     PetscCall(PetscStrncpy(mach, machine, sizeof(mach)));
   }

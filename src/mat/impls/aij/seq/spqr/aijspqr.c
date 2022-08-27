@@ -23,7 +23,7 @@ static PetscErrorCode MatWrapCholmod_SPQR_seqaij(Mat A, PetscBool values, cholmo
     PetscCall(MatNormalHermitianGetMat(A, &A));
   } else if (!PetscDefined(USE_COMPLEX)) {
     PetscCall(PetscObjectTypeCompare((PetscObject)A, MATNORMAL, &flg));
-    if (flg) { PetscCall(MatNormalGetMat(A, &A)); }
+    if (flg) PetscCall(MatNormalGetMat(A, &A));
   }
   /* cholmod_sparse is compressed sparse column */
   PetscCall(MatIsSymmetric(A, 0.0, &flg));
@@ -53,7 +53,7 @@ static PetscErrorCode MatWrapCholmod_SPQR_seqaij(Mat A, PetscBool values, cholmo
   cj[j]     = k;
   *aijalloc = PETSC_TRUE;
   *valloc   = vain;
-  if (values) { PetscCall(MatSeqAIJRestoreArrayRead(AT, &aa)); }
+  if (values) PetscCall(MatSeqAIJRestoreArrayRead(AT, &aa));
 
   PetscCall(PetscMemzero(C, sizeof(*C)));
 
@@ -137,7 +137,7 @@ static PetscErrorCode MatMatSolve_SPQR(Mat F, Mat B, Mat X) {
   if ((size_t)lda == Y_handle->d) {
     PetscCall(PetscArraycpy(v, (PetscScalar *)(Y_handle->x), lda * Y_handle->ncol));
   } else {
-    for (size_t j = 0; j < Y_handle->ncol; j++) { PetscCall(PetscArraycpy(&v[j * lda], &(((PetscScalar *)Y_handle->x)[j * Y_handle->d]), Y_handle->nrow)); }
+    for (size_t j = 0; j < Y_handle->ncol; j++) PetscCall(PetscArraycpy(&v[j * lda], &(((PetscScalar *)Y_handle->x)[j * Y_handle->d]), Y_handle->nrow));
   }
   PetscCall(MatDenseRestoreArrayWrite(X, &v));
   PetscCall(!cholmod_l_free_dense(&Y_handle, chol->common));
@@ -191,7 +191,7 @@ static PetscErrorCode MatMatSolveTranspose_SPQR(Mat F, Mat B, Mat X) {
   if ((size_t)lda == Y_handle->d) {
     PetscCall(PetscArraycpy(v, (PetscScalar *)Y_handle->x, lda * Y_handle->ncol));
   } else {
-    for (size_t j = 0; j < Y_handle->ncol; j++) { PetscCall(PetscArraycpy(&v[j * lda], &(((PetscScalar *)Y_handle->x)[j * Y_handle->d]), Y_handle->nrow)); }
+    for (size_t j = 0; j < Y_handle->ncol; j++) PetscCall(PetscArraycpy(&v[j * lda], &(((PetscScalar *)Y_handle->x)[j * Y_handle->d]), Y_handle->nrow));
   }
   PetscCall(MatDenseRestoreArrayWrite(X, &v));
   PetscCall(!cholmod_l_free_dense(&Y_handle, chol->common));
@@ -207,7 +207,7 @@ static PetscErrorCode MatQRFactorNumeric_SPQR(Mat F, Mat A, const MatFactorInfo 
 
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)A, MATNORMALHERMITIAN, &chol->normal));
-  if (!chol->normal && !PetscDefined(USE_COMPLEX)) { PetscCall(PetscObjectTypeCompare((PetscObject)A, MATNORMAL, &chol->normal)); }
+  if (!chol->normal && !PetscDefined(USE_COMPLEX)) PetscCall(PetscObjectTypeCompare((PetscObject)A, MATNORMAL, &chol->normal));
   PetscCall((*chol->Wrap)(A, PETSC_TRUE, &cholA, &aijalloc, &valloc));
   err = !SuiteSparseQR_C_numeric(PETSC_SMALL, &cholA, chol->spqrfact, chol->common);
   PetscCheck(!err, PetscObjectComm((PetscObject)F), PETSC_ERR_LIB, "SPQR factorization failed with status %d", chol->common->status);
@@ -234,10 +234,10 @@ PETSC_INTERN PetscErrorCode MatQRFactorSymbolic_SPQR(Mat F, Mat A, IS perm, cons
 
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)A, MATNORMALHERMITIAN, &chol->normal));
-  if (!chol->normal && !PetscDefined(USE_COMPLEX)) { PetscCall(PetscObjectTypeCompare((PetscObject)A, MATNORMAL, &chol->normal)); }
+  if (!chol->normal && !PetscDefined(USE_COMPLEX)) PetscCall(PetscObjectTypeCompare((PetscObject)A, MATNORMAL, &chol->normal));
   PetscCall((*chol->Wrap)(A, PETSC_TRUE, &cholA, &aijalloc, &valloc));
-  if (PetscDefined(USE_DEBUG)) { PetscCall(!cholmod_l_check_sparse(&cholA, chol->common)); }
-  if (chol->spqrfact) { PetscCall(!SuiteSparseQR_C_free(&chol->spqrfact, chol->common)); }
+  if (PetscDefined(USE_DEBUG)) PetscCall(!cholmod_l_check_sparse(&cholA, chol->common));
+  if (chol->spqrfact) PetscCall(!SuiteSparseQR_C_free(&chol->spqrfact, chol->common));
   chol->spqrfact = SuiteSparseQR_C_symbolic(SPQR_ORDERING_DEFAULT, 1, &cholA, chol->common);
   PetscCheck(chol->spqrfact, PetscObjectComm((PetscObject)F), PETSC_ERR_LIB, "CHOLMOD analysis failed using internal ordering with status %d", chol->common->status);
 

@@ -544,7 +544,7 @@ PetscErrorCode DMCreateDomainDecomposition_DA(DM dm, PetscInt *len, char ***name
   PetscCall(DMDASubDomainIS_Private(dm, n, sdm, iis, ois));
   if (subdm) *subdm = sdm;
   else {
-    for (i = 0; i < n; i++) { PetscCall(DMDestroy(&sdm[i])); }
+    for (i = 0; i < n; i++) PetscCall(DMDestroy(&sdm[i]));
   }
   if (len) *len = n;
   PetscFunctionReturn(0);

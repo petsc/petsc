@@ -1133,7 +1133,7 @@ PetscErrorCode DMForestGetCellChart(DM dm, PetscInt *cStart, PetscInt *cEnd) {
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidIntPointer(cStart, 2);
   PetscValidIntPointer(cEnd, 3);
-  if (((forest->cStart == PETSC_DETERMINE) || (forest->cEnd == PETSC_DETERMINE)) && forest->createcellchart) { PetscCall(forest->createcellchart(dm, &forest->cStart, &forest->cEnd)); }
+  if (((forest->cStart == PETSC_DETERMINE) || (forest->cEnd == PETSC_DETERMINE)) && forest->createcellchart) PetscCall(forest->createcellchart(dm, &forest->cStart, &forest->cEnd));
   *cStart = forest->cStart;
   *cEnd   = forest->cEnd;
   PetscFunctionReturn(0);
@@ -1160,7 +1160,7 @@ PetscErrorCode DMForestGetCellSF(DM dm, PetscSF *cellSF) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(cellSF, 2);
-  if ((!forest->cellSF) && forest->createcellsf) { PetscCall(forest->createcellsf(dm, &forest->cellSF)); }
+  if ((!forest->cellSF) && forest->createcellsf) PetscCall(forest->createcellsf(dm, &forest->cellSF));
   *cellSF = forest->cellSF;
   PetscFunctionReturn(0);
 }
@@ -1246,12 +1246,12 @@ PetscErrorCode DMForestSetCellWeights(DM dm, PetscReal weights[], PetscCopyMode 
   PetscCall(DMForestGetCellChart(dm, &cStart, &cEnd));
   PetscCheck(cEnd >= cStart, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "cell chart [%" PetscInt_FMT ",%" PetscInt_FMT ") is not valid", cStart, cEnd);
   if (copyMode == PETSC_COPY_VALUES) {
-    if (forest->cellWeightsCopyMode != PETSC_OWN_POINTER || forest->cellWeights == weights) { PetscCall(PetscMalloc1(cEnd - cStart, &forest->cellWeights)); }
+    if (forest->cellWeightsCopyMode != PETSC_OWN_POINTER || forest->cellWeights == weights) PetscCall(PetscMalloc1(cEnd - cStart, &forest->cellWeights));
     PetscCall(PetscArraycpy(forest->cellWeights, weights, cEnd - cStart));
     forest->cellWeightsCopyMode = PETSC_OWN_POINTER;
     PetscFunctionReturn(0);
   }
-  if (forest->cellWeightsCopyMode == PETSC_OWN_POINTER) { PetscCall(PetscFree(forest->cellWeights)); }
+  if (forest->cellWeightsCopyMode == PETSC_OWN_POINTER) PetscCall(PetscFree(forest->cellWeights));
   forest->cellWeights         = weights;
   forest->cellWeightsCopyMode = copyMode;
   PetscFunctionReturn(0);

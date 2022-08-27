@@ -148,7 +148,7 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part, IS *parti
   close(fd_stdout);
   close(fd_pipe[0]);
   close(fd_pipe[1]);
-  if (chaco->verbose) { PetscCall(PetscPrintf(PetscObjectComm((PetscObject)mat), "%s", mesg_log)); }
+  if (chaco->verbose) PetscCall(PetscPrintf(PetscObjectComm((PetscObject)mat), "%s", mesg_log));
   PetscCall(PetscFree(mesg_log));
 #endif
   PetscCheck(!cerr, PETSC_COMM_SELF, PETSC_ERR_LIB, "Chaco failed");

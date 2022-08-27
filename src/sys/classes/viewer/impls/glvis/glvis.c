@@ -222,7 +222,7 @@ PetscErrorCode PetscViewerGLVisPause_Private(PetscViewer viewer) {
   PetscViewerGLVis socket = (PetscViewerGLVis)viewer->data;
 
   PetscFunctionBegin;
-  if (socket->type == PETSC_VIEWER_GLVIS_SOCKET && socket->pause > 0) { PetscCall(PetscSleep(socket->pause)); }
+  if (socket->type == PETSC_VIEWER_GLVIS_SOCKET && socket->pause > 0) PetscCall(PetscSleep(socket->pause));
   PetscFunctionReturn(0);
 }
 
@@ -383,7 +383,7 @@ PetscErrorCode PetscViewerGLVisGetWindow_Private(PetscViewer viewer, PetscInt wi
     } else {
       PetscCall(PetscViewerGLVisGetNewWindow_Private(viewer, &socket->window[wid]));
     }
-    if (socket->window[wid]) { PetscCall(PetscViewerPushFormat(socket->window[wid], PETSC_VIEWER_ASCII_GLVIS)); }
+    if (socket->window[wid]) PetscCall(PetscViewerPushFormat(socket->window[wid], PETSC_VIEWER_ASCII_GLVIS));
     *view = socket->window[wid];
     break;
   case PETSCVIEWERGLVIS_CONNECTED: *view = socket->window[wid]; break;
@@ -435,8 +435,8 @@ PetscErrorCode PetscViewerGLVisInitWindow_Private(PetscViewer viewer, PetscBool 
   if (info->init) PetscFunctionReturn(0);
 
   /* Configure window */
-  if (info->size[0] > 0) { PetscCall(PetscViewerASCIIPrintf(viewer, "window_size %" PetscInt_FMT " %" PetscInt_FMT "\n", info->size[0], info->size[1])); }
-  if (name) { PetscCall(PetscViewerASCIIPrintf(viewer, "window_title '%s'\n", name)); }
+  if (info->size[0] > 0) PetscCall(PetscViewerASCIIPrintf(viewer, "window_size %" PetscInt_FMT " %" PetscInt_FMT "\n", info->size[0], info->size[1]));
+  if (name) PetscCall(PetscViewerASCIIPrintf(viewer, "window_title '%s'\n", name));
 
   /* Configure default view */
   if (mesh) {
@@ -475,8 +475,8 @@ PetscErrorCode PetscViewerGLVisInitWindow_Private(PetscViewer viewer, PetscBool 
   }
 
   /* Pause visualization */
-  if (!mesh && info->pause == -1) { PetscCall(PetscViewerASCIIPrintf(viewer, "autopause 1\n")); }
-  if (!mesh && info->pause == 0) { PetscCall(PetscViewerASCIIPrintf(viewer, "pause\n")); }
+  if (!mesh && info->pause == -1) PetscCall(PetscViewerASCIIPrintf(viewer, "autopause 1\n"));
+  if (!mesh && info->pause == 0) PetscCall(PetscViewerASCIIPrintf(viewer, "pause\n"));
 
   info->init = PETSC_TRUE;
   PetscFunctionReturn(0);

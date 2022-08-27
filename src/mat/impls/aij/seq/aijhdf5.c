@@ -131,7 +131,7 @@ PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer) {
   PetscCall(VecGetArrayRead(vec_a, &a));
 
   /* populate matrix */
-  if (!((PetscObject)mat)->type_name) { PetscCall(MatSetType(mat, MATAIJ)); }
+  if (!((PetscObject)mat)->type_name) PetscCall(MatSetType(mat, MATAIJ));
   PetscCall(MatSeqAIJSetPreallocationCSR(mat, i, j, a));
   PetscCall(MatMPIAIJSetPreallocationCSR(mat, i, j, a));
   /*

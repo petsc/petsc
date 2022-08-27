@@ -294,7 +294,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm, PetscViewer viewer) {
             for (j = 0; j < fbs; j++) {
               const char *compName = NULL;
               char        finalname[256];
-              if (fv) { PetscCall(PetscFVGetComponentName(fv, j, &compName)); }
+              if (fv) PetscCall(PetscFVGetComponentName(fv, j, &compName));
               if (compName) {
                 PetscCall(PetscSNPrintf(finalname, 255, "%s%s.%s", vecname, fieldname, compName));
               } else if (fbs > 1) {
@@ -773,10 +773,10 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm, PetscViewer viewer) {
             if (j < fbs) vector = PETSC_FALSE;
           }
           if (vector) {
-            for (l = 0; l < loops_per_scalar; l++) { PetscCall(TransferWrite(comm, viewer, fp, r, 0, NULL, buffer, gpiece[r].ncells * 3, MPIU_VTUREAL, tag)); }
+            for (l = 0; l < loops_per_scalar; l++) PetscCall(TransferWrite(comm, viewer, fp, r, 0, NULL, buffer, gpiece[r].ncells * 3, MPIU_VTUREAL, tag));
           } else {
             for (i = 0; i < fbs; i++) {
-              for (l = 0; l < loops_per_scalar; l++) { PetscCall(TransferWrite(comm, viewer, fp, r, 0, NULL, buffer, gpiece[r].ncells, MPIU_VTUREAL, tag)); }
+              for (l = 0; l < loops_per_scalar; l++) PetscCall(TransferWrite(comm, viewer, fp, r, 0, NULL, buffer, gpiece[r].ncells, MPIU_VTUREAL, tag));
             }
           }
         }
@@ -806,10 +806,10 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm, PetscViewer viewer) {
             PetscCall(PetscSectionGetFieldDof(section, vStart, field, &fbs));
           } else fbs = bs; /* Say we have one field with 'bs' components */
           if (link->ft == PETSC_VTK_POINT_VECTOR_FIELD) {
-            for (l = 0; l < loops_per_scalar; l++) { PetscCall(TransferWrite(comm, viewer, fp, r, 0, NULL, buffer, gpiece[r].nvertices * 3, MPIU_VTUREAL, tag)); }
+            for (l = 0; l < loops_per_scalar; l++) PetscCall(TransferWrite(comm, viewer, fp, r, 0, NULL, buffer, gpiece[r].nvertices * 3, MPIU_VTUREAL, tag));
           } else {
             for (i = 0; i < fbs; i++) {
-              for (l = 0; l < loops_per_scalar; l++) { PetscCall(TransferWrite(comm, viewer, fp, r, 0, NULL, buffer, gpiece[r].nvertices, MPIU_VTUREAL, tag)); }
+              for (l = 0; l < loops_per_scalar; l++) PetscCall(TransferWrite(comm, viewer, fp, r, 0, NULL, buffer, gpiece[r].nvertices, MPIU_VTUREAL, tag));
             }
           }
         }

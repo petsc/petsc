@@ -440,7 +440,7 @@ PetscErrorCode PetscBinaryWrite(int fd, const void *p, PetscInt n, PetscDataType
 
   if (type == PETSC_FUNCTION) { free(fname); }
 #if defined(PETSC_USE_REAL___FLOAT128)
-  if ((type == PETSC_SCALAR || type == PETSC_REAL || type == PETSC_COMPLEX) && writedouble) { PetscCall(PetscFree(ppp)); }
+  if ((type == PETSC_SCALAR || type == PETSC_REAL || type == PETSC_COMPLEX) && writedouble) PetscCall(PetscFree(ppp));
 #endif
   PetscFunctionReturn(0);
 }
@@ -652,7 +652,7 @@ PetscErrorCode PetscBinarySynchronizedWrite(MPI_Comm comm, int fd, const void *p
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
-  if (rank == 0) { PetscCall(PetscBinaryWrite(fd, p, n, type)); }
+  if (rank == 0) PetscCall(PetscBinaryWrite(fd, p, n, type));
   PetscFunctionReturn(0);
 }
 
@@ -686,7 +686,7 @@ PetscErrorCode PetscBinarySynchronizedSeek(MPI_Comm comm, int fd, off_t off, Pet
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
-  if (rank == 0) { PetscCall(PetscBinarySeek(fd, off, whence, offset)); }
+  if (rank == 0) PetscCall(PetscBinarySeek(fd, off, whence, offset));
   PetscFunctionReturn(0);
 }
 

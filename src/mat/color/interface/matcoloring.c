@@ -377,7 +377,7 @@ PetscErrorCode MatColoringView(MatColoring mc, PetscViewer viewer) {
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mc, MAT_COLORING_CLASSID, 1);
-  if (!viewer) { PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)mc), &viewer)); }
+  if (!viewer) PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)mc), &viewer));
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscCheckSameComm(mc, 1, viewer, 2);
 

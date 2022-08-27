@@ -418,7 +418,7 @@ PetscErrorCode CheckError(Vec u, Vec x, Vec b, PetscInt its, PetscReal tol, Pets
   PetscCall(VecCopy(x, b));
   PetscCall(VecAXPY(b, none, u));
   PetscCall(VecNorm(b, NORM_2, &norm));
-  if (norm > tol) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Norm of error %g, Iterations %" PetscInt_FMT "\n", (double)norm, its)); }
+  if (norm > tol) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Norm of error %g, Iterations %" PetscInt_FMT "\n", (double)norm, its));
   PetscCall(PetscLogEventEnd(CHECK_ERROR, u, x, b, 0));
   return 0;
 }

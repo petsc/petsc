@@ -78,7 +78,7 @@ static PetscErrorCode MatShellPreZeroRight(Mat A, Vec x, Vec *xx) {
     PetscCall(VecPointwiseMult(shell->zvals_w, shell->zvals_w, shell->zvals));
   }
   if (shell->zcols) {
-    if (!shell->right_work) { PetscCall(MatCreateVecs(A, &shell->right_work, NULL)); }
+    if (!shell->right_work) PetscCall(MatCreateVecs(A, &shell->right_work, NULL));
     PetscCall(VecCopy(x, shell->right_work));
     PetscCall(VecISSet(shell->right_work, shell->zcols, 0.0));
     *xx = shell->right_work;
@@ -110,7 +110,7 @@ static PetscErrorCode MatShellPreZeroLeft(Mat A, Vec x, Vec *xx) {
   if (!shell->zrows) {
     *xx = x;
   } else {
-    if (!shell->left_work) { PetscCall(MatCreateVecs(A, NULL, &shell->left_work)); }
+    if (!shell->left_work) PetscCall(MatCreateVecs(A, NULL, &shell->left_work));
     PetscCall(VecCopy(x, shell->left_work));
     PetscCall(VecSet(shell->zvals_w, 0.0));
     PetscCall(VecScatterBegin(shell->zvals_sct_r, shell->zvals_w, shell->left_work, INSERT_VALUES, SCATTER_REVERSE));
@@ -267,8 +267,8 @@ static PetscErrorCode MatZeroRowsColumns_Local_Shell(Mat mat, PetscInt nr, Petsc
   PetscInt        cum, rst, cst, i;
 
   PetscFunctionBegin;
-  if (!shell->zvals) { PetscCall(MatCreateVecs(mat, NULL, &shell->zvals)); }
-  if (!shell->zvals_w) { PetscCall(VecDuplicate(shell->zvals, &shell->zvals_w)); }
+  if (!shell->zvals) PetscCall(MatCreateVecs(mat, NULL, &shell->zvals));
+  if (!shell->zvals_w) PetscCall(VecDuplicate(shell->zvals, &shell->zvals_w));
   PetscCall(MatGetOwnershipRange(mat, &rst, NULL));
   PetscCall(MatGetOwnershipRangeColumn(mat, &cst, NULL));
 
@@ -435,7 +435,7 @@ static PetscErrorCode MatZeroRowsColumns_Shell(Mat mat, PetscInt n, const PetscI
     PetscCall(PetscFree(t));
   }
   PetscCall(MatZeroRowsColumns_Local_Shell(mat, nr, lrows, nc, lcols, diag, PETSC_TRUE));
-  if (!congruent) { PetscCall(PetscFree(lcols)); }
+  if (!congruent) PetscCall(PetscFree(lcols));
   PetscCall(PetscFree(lrows));
   if (shell->axpy) PetscCall(MatZeroRowsColumns(shell->axpy, n, rowscols, 0.0, NULL, NULL));
   PetscFunctionReturn(0);
@@ -712,7 +712,7 @@ static PetscErrorCode MatProductSymbolic_Shell_X(Mat D) {
   /* respect users who passed in a matrix for which resultname is the base type */
   if (matmat->resultname) {
     PetscCall(PetscObjectBaseTypeCompare((PetscObject)D, matmat->resultname, &flg));
-    if (!flg) { PetscCall(MatSetType(D, matmat->resultname)); }
+    if (!flg) PetscCall(MatSetType(D, matmat->resultname));
   }
   /* If matrix type was not set or different, we need to reset this pointers */
   D->ops->productsymbolic = MatProductSymbolic_Shell_X;
@@ -902,19 +902,19 @@ static PetscErrorCode MatCopy_Shell(Mat A, Mat B, MatStructure str) {
   shellB->vscale = shellA->vscale;
   shellB->vshift = shellA->vshift;
   if (shellA->dshift) {
-    if (!shellB->dshift) { PetscCall(VecDuplicate(shellA->dshift, &shellB->dshift)); }
+    if (!shellB->dshift) PetscCall(VecDuplicate(shellA->dshift, &shellB->dshift));
     PetscCall(VecCopy(shellA->dshift, shellB->dshift));
   } else {
     PetscCall(VecDestroy(&shellB->dshift));
   }
   if (shellA->left) {
-    if (!shellB->left) { PetscCall(VecDuplicate(shellA->left, &shellB->left)); }
+    if (!shellB->left) PetscCall(VecDuplicate(shellA->left, &shellB->left));
     PetscCall(VecCopy(shellA->left, shellB->left));
   } else {
     PetscCall(VecDestroy(&shellB->left));
   }
   if (shellA->right) {
-    if (!shellB->right) { PetscCall(VecDuplicate(shellA->right, &shellB->right)); }
+    if (!shellB->right) PetscCall(VecDuplicate(shellA->right, &shellB->right));
     PetscCall(VecCopy(shellA->right, shellB->right));
   } else {
     PetscCall(VecDestroy(&shellB->right));
@@ -930,7 +930,7 @@ static PetscErrorCode MatCopy_Shell(Mat A, Mat B, MatStructure str) {
   }
   if (shellA->zrows) {
     PetscCall(ISDuplicate(shellA->zrows, &shellB->zrows));
-    if (shellA->zcols) { PetscCall(ISDuplicate(shellA->zcols, &shellB->zcols)); }
+    if (shellA->zcols) PetscCall(ISDuplicate(shellA->zcols, &shellB->zcols));
     PetscCall(VecDuplicate(shellA->zvals, &shellB->zvals));
     PetscCall(VecCopy(shellA->zvals, shellB->zvals));
     PetscCall(VecDuplicate(shellA->zvals_w, &shellB->zvals_w));
@@ -956,7 +956,7 @@ static PetscErrorCode MatDuplicate_Shell(Mat mat, MatDuplicateOption op, Mat *M)
   ((Mat_Shell *)(*M)->data)->ctxcontainer = ((Mat_Shell *)mat->data)->ctxcontainer;
   PetscCall(PetscObjectCompose((PetscObject)(*M), "MatShell ctx", (PetscObject)((Mat_Shell *)(*M)->data)->ctxcontainer));
   PetscCall(PetscObjectChangeTypeName((PetscObject)(*M), ((PetscObject)mat)->type_name));
-  if (op != MAT_DO_NOT_COPY_VALUES) { PetscCall(MatCopy(mat, *M, SAME_NONZERO_PATTERN)); }
+  if (op != MAT_DO_NOT_COPY_VALUES) PetscCall(MatCopy(mat, *M, SAME_NONZERO_PATTERN));
   PetscFunctionReturn(0);
 }
 
@@ -1192,7 +1192,7 @@ static PetscErrorCode MatDiagonalScale_Shell(Mat Y, Vec left, Vec right) {
       PetscCall(VecPointwiseMult(shell->right, shell->right, right));
     }
     if (shell->zrows) {
-      if (!shell->left_work) { PetscCall(MatCreateVecs(Y, NULL, &shell->left_work)); }
+      if (!shell->left_work) PetscCall(MatCreateVecs(Y, NULL, &shell->left_work));
       PetscCall(VecSet(shell->zvals_w, 1.0));
       PetscCall(VecScatterBegin(shell->zvals_sct_c, right, shell->zvals_w, INSERT_VALUES, SCATTER_FORWARD));
       PetscCall(VecScatterEnd(shell->zvals_sct_c, right, shell->zvals_w, INSERT_VALUES, SCATTER_FORWARD));

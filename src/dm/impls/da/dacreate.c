@@ -234,12 +234,12 @@ PetscErrorCode DMCreateFieldDecomposition_DA(DM dm, PetscInt *len, char ***namel
     PetscCall(VecGetLocalSize(v, &n));
     PetscCall(DMRestoreGlobalVector(dm, &v));
     PetscCall(PetscMalloc1(dof, islist));
-    for (i = 0; i < dof; i++) { PetscCall(ISCreateStride(PetscObjectComm((PetscObject)dm), n / dof, rstart + i, dof, &(*islist)[i])); }
+    for (i = 0; i < dof; i++) PetscCall(ISCreateStride(PetscObjectComm((PetscObject)dm), n / dof, rstart + i, dof, &(*islist)[i]));
   }
   if (namelist) {
     PetscCall(PetscMalloc1(dof, namelist));
     if (dd->fieldname) {
-      for (i = 0; i < dof; i++) { PetscCall(PetscStrallocpy(dd->fieldname[i], &(*namelist)[i])); }
+      for (i = 0; i < dof; i++) PetscCall(PetscStrallocpy(dd->fieldname[i], &(*namelist)[i]));
     } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Currently DMDA must have fieldnames");
   }
   if (dmlist) {

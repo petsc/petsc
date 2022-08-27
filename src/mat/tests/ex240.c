@@ -60,7 +60,7 @@ int main(int argc, char **argv) {
   /* print compressed matrix */
   PetscCall(PetscSynchronizedPrintf(MPI_COMM_WORLD, "[%d] Compressed matrix \n", rank));
   for (i = 0; i < nrow; i++) {
-    for (j = 0; j < nc; j++) { PetscCall(PetscSynchronizedPrintf(MPI_COMM_WORLD, "%12.4e  ", (double)PetscAbsScalar(cm[i + nrow * j]))); }
+    for (j = 0; j < nc; j++) PetscCall(PetscSynchronizedPrintf(MPI_COMM_WORLD, "%12.4e  ", (double)PetscAbsScalar(cm[i + nrow * j])));
     PetscCall(PetscSynchronizedPrintf(MPI_COMM_WORLD, "\n"));
   }
   PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD, stdout));
@@ -84,7 +84,7 @@ int main(int argc, char **argv) {
   PetscCall(MatAXPY(A, -1.0, B, SAME_NONZERO_PATTERN));
   PetscCall(MatView(A, NULL));
   PetscCall(MatNorm(A, NORM_FROBENIUS, &norm));
-  if (norm > PETSC_MACHINE_EPSILON) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Matrix is not identical, problem with MatFDColoringSetValues()\n")); }
+  if (norm > PETSC_MACHINE_EPSILON) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Matrix is not identical, problem with MatFDColoringSetValues()\n"));
   PetscCall(PetscFree(colors));
   PetscCall(PetscFree(cm));
   PetscCall(ISColoringDestroy(&iscoloring));

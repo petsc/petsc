@@ -237,7 +237,7 @@ PetscErrorCode CkEigenSolutions(PetscInt cklvl, Mat A, PetscInt il, PetscInt iu,
       norm = PetscAbsScalar(norm);
       if (norm > norm_max) norm_max = norm;
       /* sniff, and bark if necessary */
-      if (norm > tols[0]) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "  residual violation: %" PetscInt_FMT ", resi: %g\n", i, (double)norm)); }
+      if (norm > tols[0]) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  residual violation: %" PetscInt_FMT ", resi: %g\n", i, (double)norm));
     }
     PetscCall(PetscPrintf(PETSC_COMM_SELF, "    max_resi:                    %g\n", (double)norm_max));
     break;

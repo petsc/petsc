@@ -60,7 +60,7 @@ PetscErrorCode TestMPIDerivedDataType() {
     PetscCallMPI(MPI_Type_commit(&rtype2));
     PetscCallMPI(MPI_Recv(buffer, 6, rtype2, 0, 123, MPI_COMM_WORLD, &status));
     for (i = 0; i < 4; i++) {
-      for (j = 0; j < 6; j++) { PetscCall(PetscPrintf(MPI_COMM_SELF, "  %g", (double)PetscRealPart(buffer[i + j * 4]))); }
+      for (j = 0; j < 6; j++) PetscCall(PetscPrintf(MPI_COMM_SELF, "  %g", (double)PetscRealPart(buffer[i + j * 4])));
       PetscCall(PetscPrintf(MPI_COMM_SELF, "\n"));
     }
   }

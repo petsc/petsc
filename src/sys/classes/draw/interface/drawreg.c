@@ -47,7 +47,7 @@ PetscErrorCode PetscDrawView(PetscDraw indraw, PetscViewer viewer) {
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(indraw, PETSC_DRAW_CLASSID, 1);
-  if (!viewer) { PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)indraw), &viewer)); }
+  if (!viewer) PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)indraw), &viewer));
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscCheckSameComm(indraw, 1, viewer, 2);
 
@@ -74,7 +74,7 @@ PetscErrorCode PetscDrawView(PetscDraw indraw, PetscViewer viewer) {
 
     PetscCall(PetscObjectName((PetscObject)indraw));
     PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
-    if (!((PetscObject)indraw)->amsmem && rank == 0) { PetscCall(PetscObjectViewSAWs((PetscObject)indraw, viewer)); }
+    if (!((PetscObject)indraw)->amsmem && rank == 0) PetscCall(PetscObjectViewSAWs((PetscObject)indraw, viewer));
 #endif
   } else PetscTryTypeMethod(indraw, view, viewer);
   PetscFunctionReturn(0);

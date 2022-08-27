@@ -141,7 +141,7 @@ static PetscErrorCode GNComputeHessian(Tao tao, Vec X, Mat H, Mat Hpre, void *pt
 
   PetscFunctionBegin;
   PetscCall(TaoComputeResidualJacobian(tao, X, tao->ls_jac, tao->ls_jac_pre));
-  if (gn->mat_explicit) { PetscCall(MatTransposeMatMult(tao->ls_jac, tao->ls_jac, MAT_REUSE_MATRIX, PETSC_DEFAULT, &gn->H)); }
+  if (gn->mat_explicit) PetscCall(MatTransposeMatMult(tao->ls_jac, tao->ls_jac, MAT_REUSE_MATRIX, PETSC_DEFAULT, &gn->H));
 
   switch (gn->reg_type) {
   case BRGN_REGULARIZATION_USER:
@@ -292,9 +292,9 @@ static PetscErrorCode TaoSetUp_BRGN(Tao tao) {
   PetscCall(PetscObjectTypeCompare((PetscObject)gn->subsolver, TAOBNTR, &is_bntr));
   PetscCall(PetscObjectTypeCompare((PetscObject)gn->subsolver, TAOBNTL, &is_bntl));
   PetscCheck((!is_bnls && !is_bntr && !is_bntl) || tao->ls_jac, PetscObjectComm((PetscObject)tao), PETSC_ERR_ORDER, "TaoSetResidualJacobianRoutine() must be called before setup!");
-  if (!tao->gradient) { PetscCall(VecDuplicate(tao->solution, &tao->gradient)); }
-  if (!gn->x_work) { PetscCall(VecDuplicate(tao->solution, &gn->x_work)); }
-  if (!gn->r_work) { PetscCall(VecDuplicate(tao->ls_res, &gn->r_work)); }
+  if (!tao->gradient) PetscCall(VecDuplicate(tao->solution, &tao->gradient));
+  if (!gn->x_work) PetscCall(VecDuplicate(tao->solution, &gn->x_work));
+  if (!gn->r_work) PetscCall(VecDuplicate(tao->ls_res, &gn->r_work));
   if (!gn->x_old) {
     PetscCall(VecDuplicate(tao->solution, &gn->x_old));
     PetscCall(VecSet(gn->x_old, 0.0));
@@ -310,15 +310,15 @@ static PetscErrorCode TaoSetUp_BRGN(Tao tao) {
       }
       PetscCall(VecSet(gn->y, 0.0));
     }
-    if (!gn->y_work) { PetscCall(VecDuplicate(gn->y, &gn->y_work)); }
+    if (!gn->y_work) PetscCall(VecDuplicate(gn->y, &gn->y_work));
     if (!gn->diag) {
       PetscCall(VecDuplicate(gn->y, &gn->diag));
       PetscCall(VecSet(gn->diag, 0.0));
     }
   }
   if (BRGN_REGULARIZATION_LM == gn->reg_type) {
-    if (!gn->diag) { PetscCall(MatCreateVecs(tao->ls_jac, &gn->diag, NULL)); }
-    if (!gn->damping) { PetscCall(MatCreateVecs(tao->ls_jac, &gn->damping, NULL)); }
+    if (!gn->diag) PetscCall(MatCreateVecs(tao->ls_jac, &gn->diag, NULL));
+    if (!gn->damping) PetscCall(MatCreateVecs(tao->ls_jac, &gn->damping, NULL));
   }
 
   if (!tao->setupcalled) {

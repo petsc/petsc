@@ -926,7 +926,7 @@ PetscErrorCode MatSetUp_MPIDense(Mat A) {
   PetscFunctionBegin;
   PetscCall(PetscLayoutSetUp(A->rmap));
   PetscCall(PetscLayoutSetUp(A->cmap));
-  if (!A->preallocated) { PetscCall(MatMPIDenseSetPreallocation(A, NULL)); }
+  if (!A->preallocated) PetscCall(MatMPIDenseSetPreallocation(A, NULL));
   PetscFunctionReturn(0);
 }
 
@@ -1216,9 +1216,9 @@ static PetscErrorCode MatBindToCPU_MPIDenseCUDA(Mat mat, PetscBool bind) {
     PetscBool iscuda;
 
     PetscCall(PetscObjectTypeCompare((PetscObject)d->cvec, VECMPICUDA, &iscuda));
-    if (!iscuda) { PetscCall(VecDestroy(&d->cvec)); }
+    if (!iscuda) PetscCall(VecDestroy(&d->cvec));
     PetscCall(PetscObjectTypeCompare((PetscObject)d->cmat, MATMPIDENSECUDA, &iscuda));
-    if (!iscuda) { PetscCall(MatDestroy(&d->cmat)); }
+    if (!iscuda) PetscCall(MatDestroy(&d->cmat));
     PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDenseGetColumnVec_C", MatDenseGetColumnVec_MPIDenseCUDA));
     PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDenseRestoreColumnVec_C", MatDenseRestoreColumnVec_MPIDenseCUDA));
     PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDenseGetColumnVecRead_C", MatDenseGetColumnVecRead_MPIDenseCUDA));
@@ -1557,7 +1557,7 @@ PetscErrorCode MatCreateMPIMatConcatenateSeqMat_MPIDense(MPI_Comm comm, Mat inma
   if (scall == MAT_INITIAL_MATRIX) { /* symbolic phase */
     PetscInt sum;
 
-    if (n == PETSC_DECIDE) { PetscCall(PetscSplitOwnership(comm, &n, &N)); }
+    if (n == PETSC_DECIDE) PetscCall(PetscSplitOwnership(comm, &n, &N));
     /* Check sum(n) = N */
     PetscCall(MPIU_Allreduce(&n, &sum, 1, MPIU_INT, MPI_SUM, comm));
     PetscCheck(sum == N, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Sum of local columns %" PetscInt_FMT " != global columns %" PetscInt_FMT, sum, N);
@@ -1604,7 +1604,7 @@ PetscErrorCode MatConvert_MPIDenseCUDA_MPIDense(Mat M, MatType type, MatReuse re
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatDenseCUDAResetArray_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatDenseCUDAReplaceArray_C", NULL));
   m = (Mat_MPIDense *)(B)->data;
-  if (m->A) { PetscCall(MatConvert(m->A, MATSEQDENSE, MAT_INPLACE_MATRIX, &m->A)); }
+  if (m->A) PetscCall(MatConvert(m->A, MATSEQDENSE, MAT_INPLACE_MATRIX, &m->A));
   B->ops->bindtocpu = NULL;
   B->offloadmask    = PETSC_OFFLOAD_CPU;
   PetscFunctionReturn(0);
@@ -1660,7 +1660,7 @@ PetscErrorCode MatDenseGetColumnVec_MPIDense(Mat A, PetscInt col, Vec *v) {
   PetscFunctionBegin;
   PetscCheck(!a->vecinuse, PetscObjectComm((PetscObject)A), PETSC_ERR_ORDER, "Need to call MatDenseRestoreColumnVec() first");
   PetscCheck(!a->matinuse, PetscObjectComm((PetscObject)A), PETSC_ERR_ORDER, "Need to call MatDenseRestoreSubMatrix() first");
-  if (!a->cvec) { PetscCall(VecCreateMPIWithArray(PetscObjectComm((PetscObject)A), A->rmap->bs, A->rmap->n, A->rmap->N, NULL, &a->cvec)); }
+  if (!a->cvec) PetscCall(VecCreateMPIWithArray(PetscObjectComm((PetscObject)A), A->rmap->bs, A->rmap->n, A->rmap->N, NULL, &a->cvec));
   a->vecinuse = col + 1;
   PetscCall(MatDenseGetLDA(a->A, &lda));
   PetscCall(MatDenseGetArray(a->A, (PetscScalar **)&a->ptrinuse));
@@ -1689,7 +1689,7 @@ PetscErrorCode MatDenseGetColumnVecRead_MPIDense(Mat A, PetscInt col, Vec *v) {
   PetscFunctionBegin;
   PetscCheck(!a->vecinuse, PetscObjectComm((PetscObject)A), PETSC_ERR_ORDER, "Need to call MatDenseRestoreColumnVec() first");
   PetscCheck(!a->matinuse, PetscObjectComm((PetscObject)A), PETSC_ERR_ORDER, "Need to call MatDenseRestoreSubMatrix() first");
-  if (!a->cvec) { PetscCall(VecCreateMPIWithArray(PetscObjectComm((PetscObject)A), A->rmap->bs, A->rmap->n, A->rmap->N, NULL, &a->cvec)); }
+  if (!a->cvec) PetscCall(VecCreateMPIWithArray(PetscObjectComm((PetscObject)A), A->rmap->bs, A->rmap->n, A->rmap->N, NULL, &a->cvec));
   a->vecinuse = col + 1;
   PetscCall(MatDenseGetLDA(a->A, &lda));
   PetscCall(MatDenseGetArrayRead(a->A, &a->ptrinuse));
@@ -1720,7 +1720,7 @@ PetscErrorCode MatDenseGetColumnVecWrite_MPIDense(Mat A, PetscInt col, Vec *v) {
   PetscFunctionBegin;
   PetscCheck(!a->vecinuse, PetscObjectComm((PetscObject)A), PETSC_ERR_ORDER, "Need to call MatDenseRestoreColumnVec() first");
   PetscCheck(!a->matinuse, PetscObjectComm((PetscObject)A), PETSC_ERR_ORDER, "Need to call MatDenseRestoreSubMatrix() first");
-  if (!a->cvec) { PetscCall(VecCreateMPIWithArray(PetscObjectComm((PetscObject)A), A->rmap->bs, A->rmap->n, A->rmap->N, NULL, &a->cvec)); }
+  if (!a->cvec) PetscCall(VecCreateMPIWithArray(PetscObjectComm((PetscObject)A), A->rmap->bs, A->rmap->n, A->rmap->N, NULL, &a->cvec));
   a->vecinuse = col + 1;
   PetscCall(MatDenseGetLDA(a->A, &lda));
   PetscCall(MatDenseGetArrayWrite(a->A, (PetscScalar **)&a->ptrinuse));
@@ -2509,7 +2509,7 @@ static PetscErrorCode MatTransposeMatMultSymbolic_MPIDense_MPIDense(Mat A, Mat B
   /* create matrix product C */
   PetscCall(MatSetSizes(C, cm, B->cmap->n, A->cmap->N, B->cmap->N));
   PetscCall(PetscObjectTypeCompareAny((PetscObject)C, &cisdense, MATMPIDENSE, MATMPIDENSECUDA, ""));
-  if (!cisdense) { PetscCall(MatSetType(C, ((PetscObject)A)->type_name)); }
+  if (!cisdense) PetscCall(MatSetType(C, ((PetscObject)A)->type_name));
   PetscCall(MatSetUp(C));
 
   /* create data structure for reuse C */
@@ -2822,7 +2822,7 @@ static PetscErrorCode MatProductSetFromOptions_MPIDense_ABt(Mat C) {
   /* Set default algorithm */
   alg = 0; /* default is allgatherv */
   PetscCall(PetscStrcmp(product->alg, "default", &flg));
-  if (flg) { PetscCall(MatProductSetAlgorithm(C, (MatProductAlgorithm)algTypes[alg])); }
+  if (flg) PetscCall(MatProductSetAlgorithm(C, (MatProductAlgorithm)algTypes[alg]));
 
   /* Get runtime option */
   if (product->api_user) {
@@ -2834,7 +2834,7 @@ static PetscErrorCode MatProductSetFromOptions_MPIDense_ABt(Mat C) {
     PetscCall(PetscOptionsEList("-mat_product_algorithm", "Algorithmic approach", "MatProduct_ABt", algTypes, nalg, algTypes[alg], &alg, &flg));
     PetscOptionsEnd();
   }
-  if (flg) { PetscCall(MatProductSetAlgorithm(C, (MatProductAlgorithm)algTypes[alg])); }
+  if (flg) PetscCall(MatProductSetAlgorithm(C, (MatProductAlgorithm)algTypes[alg]));
 
   C->ops->mattransposemultsymbolic = MatMatTransposeMultSymbolic_MPIDense_MPIDense;
   C->ops->productsymbolic          = MatProductSymbolic_ABt;

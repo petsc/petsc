@@ -58,11 +58,11 @@ static PetscErrorCode MatPtAPNumeric_IS_XAIJ(Mat A, Mat P, Mat C) {
 
     PetscCall(MatTranspose(ptap->lP[1], MAT_INITIAL_MATRIX, &lPt));
     PetscCall(MatMatMatMult(lPt, lA, ptap->lP[0], reuse, ptap->fill, &lC));
-    if (matis->storel2l) { PetscCall(PetscObjectCompose((PetscObject)(A), "_MatIS_PtAP_l2l", (PetscObject)lPt)); }
+    if (matis->storel2l) PetscCall(PetscObjectCompose((PetscObject)(A), "_MatIS_PtAP_l2l", (PetscObject)lPt));
     PetscCall(MatDestroy(&lPt));
   } else {
     PetscCall(MatPtAP(lA, ptap->lP[0], reuse, ptap->fill, &lC));
-    if (matis->storel2l) { PetscCall(PetscObjectCompose((PetscObject)C, "_MatIS_PtAP_l2l", (PetscObject)ptap->lP[0])); }
+    if (matis->storel2l) PetscCall(PetscObjectCompose((PetscObject)C, "_MatIS_PtAP_l2l", (PetscObject)ptap->lP[0]));
   }
   if (reuse == MAT_INITIAL_MATRIX) {
     PetscCall(MatISSetLocalMat(C, lC));
@@ -106,7 +106,7 @@ static PetscErrorCode MatGetNonzeroColumnsLocal_Private(Mat PT, IS *cis) {
   /* We use a tolerance comparison since it may happen that, with geometric multigrid,
      some of the columns are not really zero, but very close to */
   zo = zd = NULL;
-  if (Po) { PetscCall(MatFindNonzeroRowsOrCols_Basic(Po, PETSC_TRUE, PETSC_SMALL, &zo)); }
+  if (Po) PetscCall(MatFindNonzeroRowsOrCols_Basic(Po, PETSC_TRUE, PETSC_SMALL, &zo));
   PetscCall(MatFindNonzeroRowsOrCols_Basic(Pd, PETSC_TRUE, PETSC_SMALL, &zd));
 
   PetscCall(MatGetLocalSize(PT, NULL, &dc));
@@ -258,7 +258,7 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_IS_XAIJ(Mat C) {
   Mat_Product *product = C->product;
 
   PetscFunctionBegin;
-  if (product->type == MATPRODUCT_PtAP) { PetscCall(MatProductSetFromOptions_IS_XAIJ_PtAP(C)); }
+  if (product->type == MATPRODUCT_PtAP) PetscCall(MatProductSetFromOptions_IS_XAIJ_PtAP(C));
   PetscFunctionReturn(0);
 }
 
@@ -268,8 +268,8 @@ static PetscErrorCode MatISContainerDestroyFields_Private(void *ptr) {
   PetscInt         i;
 
   PetscFunctionBegin;
-  for (i = 0; i < lf->nr; i++) { PetscCall(ISDestroy(&lf->rf[i])); }
-  for (i = 0; i < lf->nc; i++) { PetscCall(ISDestroy(&lf->cf[i])); }
+  for (i = 0; i < lf->nr; i++) PetscCall(ISDestroy(&lf->rf[i]));
+  for (i = 0; i < lf->nc; i++) PetscCall(ISDestroy(&lf->cf[i]));
   PetscCall(PetscFree2(lf->rf, lf->cf));
   PetscCall(PetscFree(lf));
   PetscFunctionReturn(0);
@@ -329,7 +329,7 @@ static PetscErrorCode MatConvert_SeqXAIJ_IS(Mat A, MatType type, MatReuse reuse,
   PetscCall(MatDestroy(&lB));
   PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
-  if (reuse == MAT_INPLACE_MATRIX) { PetscCall(MatHeaderReplace(A, &B)); }
+  if (reuse == MAT_INPLACE_MATRIX) PetscCall(MatHeaderReplace(A, &B));
   PetscFunctionReturn(0);
 }
 
@@ -452,9 +452,9 @@ static PetscErrorCode MatMPIXAIJComputeLocalToGlobalMapping_Private(Mat A, ISLoc
       /* compute adjacency of isolated separators node */
       PetscCall(PetscMalloc1(gcnt, &workis));
       for (i = 0, cnt = 0; i < A->rmap->n; i++) {
-        if (ndmapi[i] < 0 && ndmapc[i] < 2) { PetscCall(ISCreateStride(comm, 1, i + A->rmap->rstart, 1, &workis[cnt++])); }
+        if (ndmapi[i] < 0 && ndmapc[i] < 2) PetscCall(ISCreateStride(comm, 1, i + A->rmap->rstart, 1, &workis[cnt++]));
       }
-      for (i = cnt; i < gcnt; i++) { PetscCall(ISCreateStride(comm, 0, 0, 1, &workis[i])); }
+      for (i = cnt; i < gcnt; i++) PetscCall(ISCreateStride(comm, 0, 0, 1, &workis[i]));
       for (i = 0; i < gcnt; i++) {
         PetscCall(PetscObjectSetName((PetscObject)workis[i], "ISOLATED"));
         PetscCall(ISViewFromOptions(workis[i], NULL, "-view_isolated_separators"));
@@ -544,7 +544,7 @@ static PetscErrorCode MatMPIXAIJComputeLocalToGlobalMapping_Private(Mat A, ISLoc
       PetscCall(MatDestroy(&A3));
       PetscCall(PetscFree(lndmapi));
       MatPreallocateEnd(dnz, onz);
-      for (i = 0; i < gcnt; i++) { PetscCall(ISDestroy(&workis[i])); }
+      for (i = 0; i < gcnt; i++) PetscCall(ISDestroy(&workis[i]));
       PetscCall(PetscFree(workis));
     }
     PetscCall(ISRestoreIndices(ndmap, &ndmapi));
@@ -1024,7 +1024,7 @@ PETSC_INTERN PetscErrorCode MatConvert_Nest_IS(Mat A, MatType type, MatReuse reu
     PetscCall(MatCreateNest(PETSC_COMM_SELF, nr, islrow, nc, islcol, snest, &lA));
     PetscCall(MatNestSetVecType(lA, VECNEST));
     for (i = 0; i < nr * nc; i++) {
-      if (istrans[i]) { PetscCall(MatDestroy(&snest[i])); }
+      if (istrans[i]) PetscCall(MatDestroy(&snest[i]));
     }
     PetscCall(MatISSetLocalMat(B, lA));
     PetscCall(MatDestroy(&lA));
@@ -1048,7 +1048,7 @@ PETSC_INTERN PetscErrorCode MatConvert_Nest_IS(Mat A, MatType type, MatReuse reu
         for (j = 0; j < nc; j++) {
           if (snest[i * nc + j]) {
             PetscCall(MatNestSetSubMat(lA, i, j, snest[i * nc + j]));
-            if (istrans[i * nc + j]) { PetscCall(MatDestroy(&snest[i * nc + j])); }
+            if (istrans[i * nc + j]) PetscCall(MatDestroy(&snest[i * nc + j]));
           }
         }
       }
@@ -1064,7 +1064,7 @@ PETSC_INTERN PetscErrorCode MatConvert_Nest_IS(Mat A, MatType type, MatReuse reu
       }
       PetscCall(MatCreateNest(PETSC_COMM_SELF, nr, islrow, nc, islcol, snest, &lA));
       for (i = 0; i < nr * nc; i++) {
-        if (istrans[i]) { PetscCall(MatDestroy(&snest[i])); }
+        if (istrans[i]) PetscCall(MatDestroy(&snest[i]));
       }
       PetscCall(MatISSetLocalMat(*newmat, lA));
       PetscCall(MatDestroy(&lA));
@@ -1113,8 +1113,8 @@ PETSC_INTERN PetscErrorCode MatConvert_Nest_IS(Mat A, MatType type, MatReuse reu
   }
 
   /* Free workspace */
-  for (i = 0; i < nr; i++) { PetscCall(ISDestroy(&islrow[i])); }
-  for (i = 0; i < nc; i++) { PetscCall(ISDestroy(&islcol[i])); }
+  for (i = 0; i < nr; i++) PetscCall(ISDestroy(&islrow[i]));
+  for (i = 0; i < nc; i++) PetscCall(ISDestroy(&islcol[i]));
   PetscCall(PetscFree6(isrow, iscol, islrow, islcol, snest, istrans));
   PetscCall(PetscFree2(lr, lc));
   PetscFunctionReturn(0);
@@ -1313,7 +1313,7 @@ static PetscErrorCode MatCreateSubMatrix_IS(Mat mat, IS irow, IS icol, MatReuse 
     PetscCall(MatCreateVecs(mat, &ltest, &rtest));
     PetscCall(ISGetLocalSize(irow, &n));
     PetscCall(ISGetIndices(irow, &idxs));
-    for (i = 0; i < n; i++) { PetscCall(VecSetValue(rtest, idxs[i], 1.0, ADD_VALUES)); }
+    for (i = 0; i < n; i++) PetscCall(VecSetValue(rtest, idxs[i], 1.0, ADD_VALUES));
     PetscCall(VecAssemblyBegin(rtest));
     PetscCall(VecAssemblyEnd(rtest));
     PetscCall(VecGetLocalSize(rtest, &n));
@@ -1324,7 +1324,7 @@ static PetscErrorCode MatCreateSubMatrix_IS(Mat mat, IS irow, IS icol, MatReuse 
     PetscCall(ISRestoreIndices(irow, &idxs));
     PetscCall(ISGetLocalSize(icol, &n));
     PetscCall(ISGetIndices(icol, &idxs));
-    for (i = 0; i < n; i++) { PetscCall(VecSetValue(ltest, idxs[i], 1.0, ADD_VALUES)); }
+    for (i = 0; i < n; i++) PetscCall(VecSetValue(ltest, idxs[i], 1.0, ADD_VALUES));
     PetscCall(VecAssemblyBegin(ltest));
     PetscCall(VecAssemblyEnd(ltest));
     PetscCall(VecGetLocalSize(ltest, &n));
@@ -1532,7 +1532,7 @@ static PetscErrorCode MatISStoreL2L_IS(Mat A, PetscBool store) {
 
   PetscFunctionBegin;
   matis->storel2l = store;
-  if (!store) { PetscCall(PetscObjectCompose((PetscObject)(A), "_MatIS_PtAP_l2l", NULL)); }
+  if (!store) PetscCall(PetscObjectCompose((PetscObject)(A), "_MatIS_PtAP_l2l", NULL));
   PetscFunctionReturn(0);
 }
 
@@ -1765,7 +1765,7 @@ PETSC_EXTERN PetscErrorCode MatISSetMPIXAIJPreallocation_Private(Mat A, Mat B, P
       PetscCall(MatRestoreRow(matis->A, i, &ncols, &cols, NULL));
     }
   }
-  if (global_indices_c != global_indices_r) { PetscCall(ISLocalToGlobalMappingRestoreIndices(matis->cmapping, &global_indices_c)); }
+  if (global_indices_c != global_indices_r) PetscCall(ISLocalToGlobalMappingRestoreIndices(matis->cmapping, &global_indices_c));
   PetscCall(ISLocalToGlobalMappingRestoreIndices(matis->rmapping, &global_indices_r));
   PetscCall(PetscFree(row_ownership));
 
@@ -1985,10 +1985,10 @@ general_assembly:
           r += blocks[i];
         }
       } else {
-        for (i = 0; i < nvtxs; i++) { PetscCall(MatSetValuesLocal(MT, 1, &i, xadj[i + 1] - xadj[i], adjncy + xadj[i], sarray + xadj[i], ADD_VALUES)); }
+        for (i = 0; i < nvtxs; i++) PetscCall(MatSetValuesLocal(MT, 1, &i, xadj[i + 1] - xadj[i], adjncy + xadj[i], sarray + xadj[i], ADD_VALUES));
       }
     } else {
-      for (i = 0; i < nvtxs; i++) { PetscCall(MatSetValuesLocal(MT, 1, &i, xadj[i + 1] - xadj[i], adjncy + xadj[i], sarray + xadj[i], ADD_VALUES)); }
+      for (i = 0; i < nvtxs; i++) PetscCall(MatSetValuesLocal(MT, 1, &i, xadj[i + 1] - xadj[i], adjncy + xadj[i], sarray + xadj[i], ADD_VALUES));
     }
     PetscCall(MatRestoreRowIJ(local_mat, 0, PETSC_FALSE, PETSC_FALSE, &nvtxs, (const PetscInt **)&xadj, (const PetscInt **)&adjncy, &done));
     PetscCheck(done, PetscObjectComm((PetscObject)local_mat), PETSC_ERR_PLIB, "Error in MatRestoreRowIJ");
@@ -2262,7 +2262,7 @@ static PetscErrorCode MatInvertBlockDiagonal_IS(Mat mat, const PetscScalar **val
   PetscCall(MatGetBlockSize(mat, &bs));
   PetscCall(MatSetBlockSize(is->A, bs));
   PetscCall(MatInvertBlockDiagonal(is->A, &lv));
-  if (!is->bdiag) { PetscCall(PetscMalloc1(bs * mat->rmap->n, &is->bdiag)); }
+  if (!is->bdiag) PetscCall(PetscMalloc1(bs * mat->rmap->n, &is->bdiag));
   PetscCallMPI(MPI_Type_contiguous(bs, MPIU_SCALAR, &nodeType));
   PetscCallMPI(MPI_Type_commit(&nodeType));
   PetscCall(PetscSFReduceBegin(is->sf, nodeType, lv, is->bdiag, MPI_REPLACE));
@@ -2511,7 +2511,7 @@ static PetscErrorCode MatSetUp_IS(Mat A) {
 
   PetscFunctionBegin;
   PetscCall(MatGetLocalToGlobalMapping(A, &rmap, &cmap));
-  if (!rmap && !cmap) { PetscCall(MatSetLocalToGlobalMapping(A, NULL, NULL)); }
+  if (!rmap && !cmap) PetscCall(MatSetLocalToGlobalMapping(A, NULL, NULL));
   PetscFunctionReturn(0);
 }
 
@@ -2587,7 +2587,7 @@ static PetscErrorCode MatISZeroRowsColumnsLocal_Private(Mat A, PetscInt n, const
     if (diag != 0.) {
       const PetscScalar *array;
       PetscCall(VecGetArrayRead(is->counter, &array));
-      for (i = 0; i < n; i++) { PetscCall(MatSetValue(is->A, rows[i], rows[i], diag / (array[rows[i]]), INSERT_VALUES)); }
+      for (i = 0; i < n; i++) PetscCall(MatSetValue(is->A, rows[i], rows[i], diag / (array[rows[i]]), INSERT_VALUES));
       PetscCall(VecRestoreArrayRead(is->counter, &array));
     }
     PetscCall(MatAssemblyBegin(is->A, MAT_FINAL_ASSEMBLY));
@@ -2678,9 +2678,9 @@ static PetscErrorCode MatAssemblyEnd_IS(Mat A, MatAssemblyType type) {
 
     PetscCall(MatGetSize(is->A, &nr, &nc));
     PetscCall(MatFindNonzeroRowsOrCols_Basic(is->A, PETSC_FALSE, PETSC_SMALL, &nzr));
-    if (!nzr) { PetscCall(ISCreateStride(PetscObjectComm((PetscObject)is->A), nr, 0, 1, &nzr)); }
+    if (!nzr) PetscCall(ISCreateStride(PetscObjectComm((PetscObject)is->A), nr, 0, 1, &nzr));
     PetscCall(MatFindNonzeroRowsOrCols_Basic(is->A, PETSC_TRUE, PETSC_SMALL, &nzc));
-    if (!nzc) { PetscCall(ISCreateStride(PetscObjectComm((PetscObject)is->A), nc, 0, 1, &nzc)); }
+    if (!nzc) PetscCall(ISCreateStride(PetscObjectComm((PetscObject)is->A), nc, 0, 1, &nzc));
     PetscCall(ISGetSize(nzr, &nnzr));
     PetscCall(ISGetSize(nzc, &nnzc));
     if (nnzr != nr || nnzc != nc) { /* need new global l2g map */
@@ -2858,7 +2858,7 @@ static PetscErrorCode MatISSetLocalMat_IS(Mat mat, Mat local) {
   is->A = local;
   PetscCall(MatGetType(is->A, &mtype));
   PetscCall(MatISSetLocalMatType(mat, mtype));
-  if (!sametype && !is->islocalref) { PetscCall(MatISSetUpScatters_Private(mat)); }
+  if (!sametype && !is->islocalref) PetscCall(MatISSetUpScatters_Private(mat));
   PetscFunctionReturn(0);
 }
 
@@ -3065,7 +3065,7 @@ PetscErrorCode MatCreateIS(MPI_Comm comm, PetscInt bs, PetscInt m, PetscInt n, P
   PetscFunctionBegin;
   PetscCall(MatCreate(comm, A));
   PetscCall(MatSetSizes(*A, m, n, M, N));
-  if (bs > 0) { PetscCall(MatSetBlockSize(*A, bs)); }
+  if (bs > 0) PetscCall(MatSetBlockSize(*A, bs));
   PetscCall(MatSetType(*A, MATIS));
   PetscCall(MatSetLocalToGlobalMapping(*A, rmap, cmap));
   PetscFunctionReturn(0);

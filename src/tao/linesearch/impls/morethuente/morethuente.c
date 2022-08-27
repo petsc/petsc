@@ -257,7 +257,7 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
 
   /* Set new solution vector and compute gradient if needed */
   PetscCall(VecCopy(mt->work, x));
-  if (!g_computed) { PetscCall(TaoLineSearchComputeGradient(ls, mt->work, g)); }
+  if (!g_computed) PetscCall(TaoLineSearchComputeGradient(ls, mt->work, g));
   PetscFunctionReturn(0);
 }
 

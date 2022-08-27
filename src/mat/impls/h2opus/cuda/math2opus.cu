@@ -387,7 +387,7 @@ static PetscErrorCode MatMultNKernel_H2OPUS(Mat A, PetscBool transA, Mat B, Mat 
 
     /* If not of type seqdensecuda, convert on the fly (i.e. allocate GPU memory) */
     PetscCall(PetscObjectTypeCompareAny((PetscObject)B, &biscuda, MATSEQDENSECUDA, MATMPIDENSECUDA, ""));
-    if (!biscuda) { PetscCall(MatConvert(B, MATDENSECUDA, MAT_INPLACE_MATRIX, &B)); }
+    if (!biscuda) PetscCall(MatConvert(B, MATDENSECUDA, MAT_INPLACE_MATRIX, &B));
     PetscCall(PetscObjectTypeCompareAny((PetscObject)C, &ciscuda, MATSEQDENSECUDA, MATMPIDENSECUDA, ""));
     if (!ciscuda) {
       C->assembled = PETSC_TRUE;
@@ -422,8 +422,8 @@ static PetscErrorCode MatMultNKernel_H2OPUS(Mat A, PetscBool transA, Mat B, Mat 
       PetscCall(PetscSFReduceEnd(csf, MPIU_SCALAR, uyy, yy, MPI_REPLACE));
     }
     PetscCall(MatDenseCUDARestoreArrayWrite(C, &yy));
-    if (!biscuda) { PetscCall(MatConvert(B, MATDENSE, MAT_INPLACE_MATRIX, &B)); }
-    if (!ciscuda) { PetscCall(MatConvert(C, MATDENSE, MAT_INPLACE_MATRIX, &C)); }
+    if (!biscuda) PetscCall(MatConvert(B, MATDENSE, MAT_INPLACE_MATRIX, &B));
+    if (!ciscuda) PetscCall(MatConvert(C, MATDENSE, MAT_INPLACE_MATRIX, &C));
 #endif
   }
   { /* log flops */
@@ -776,7 +776,7 @@ static PetscErrorCode MatSetUpMultiply_H2OPUS(Mat A) {
     PetscCall(ISGetIndices(a->h2opus_indexmap, (const PetscInt **)&idx));
     rid = (PetscBool)(n == A->rmap->n);
     PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &rid, 1, MPIU_BOOL, MPI_LAND, comm));
-    if (rid) { PetscCall(ISIdentity(a->h2opus_indexmap, &rid)); }
+    if (rid) PetscCall(ISIdentity(a->h2opus_indexmap, &rid));
     if (!rid) {
       if (size > 1) { /* Parallel distribution may be different, save it here for fast path in MatMult (see MatH2OpusSetNativeMult) */
         PetscCall(PetscLayoutCreate(comm, &a->h2opus_rmap));
@@ -1650,14 +1650,14 @@ PetscErrorCode MatCreateH2OpusFromMat(Mat B, PetscInt spacedim, const PetscReal 
     PetscCall(PetscStrcmp(vtype, VECCUDA, &iscuda));
     if (!iscuda) {
       PetscCall(PetscStrcmp(vtype, VECSEQCUDA, &iscuda));
-      if (!iscuda) { PetscCall(PetscStrcmp(vtype, VECMPICUDA, &iscuda)); }
+      if (!iscuda) PetscCall(PetscStrcmp(vtype, VECMPICUDA, &iscuda));
     }
     if (iscuda && !B->boundtocpu) boundtocpu = PETSC_FALSE;
   }
 #endif
   PetscCall(MatSetType(A, MATH2OPUS));
   PetscCall(MatBindToCPU(A, boundtocpu));
-  if (spacedim) { PetscCall(MatH2OpusSetCoords_H2OPUS(A, spacedim, coords, cdist, NULL, NULL)); }
+  if (spacedim) PetscCall(MatH2OpusSetCoords_H2OPUS(A, spacedim, coords, cdist, NULL, NULL));
   PetscCall(MatPropagateSymmetryOptions(B, A));
   /* PetscCheck(A->symmetric,comm,PETSC_ERR_SUP,"Unsymmetric sampling does not work"); */
 

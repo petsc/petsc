@@ -235,7 +235,7 @@ PetscErrorCode PCApply_Telescope_CoarseDM(PC pc, Vec x, Vec y) {
   PetscCall(ctx->fp_dm_field_scatter(ctx->dm_fine, x, SCATTER_FORWARD, ctx->dm_coarse, xred));
 
   /* solve */
-  if (PCTelescope_isActiveRank(sred)) { PetscCall(KSPSolve(sred->ksp, xred, yred)); }
+  if (PCTelescope_isActiveRank(sred)) PetscCall(KSPSolve(sred->ksp, xred, yred));
 
   PetscCall(ctx->fp_dm_field_scatter(ctx->dm_fine, y, SCATTER_REVERSE, ctx->dm_coarse, yred));
   PetscFunctionReturn(0);
@@ -256,11 +256,11 @@ PetscErrorCode PCTelescopeSubNullSpaceCreate_CoarseDM(PC pc, PC_Telescope sred, 
 
   if (PCTelescope_isActiveRank(sred)) {
     /* create new vectors */
-    if (n) { PetscCall(VecDuplicateVecs(sred->xred, n, &sub_vecs)); }
+    if (n) PetscCall(VecDuplicateVecs(sred->xred, n, &sub_vecs));
   }
 
   /* copy entries */
-  for (k = 0; k < n; k++) { PetscCall(ctx->fp_dm_field_scatter(ctx->dm_fine, vecs[k], SCATTER_FORWARD, ctx->dm_coarse, sub_vecs[k])); }
+  for (k = 0; k < n; k++) PetscCall(ctx->fp_dm_field_scatter(ctx->dm_fine, vecs[k], SCATTER_FORWARD, ctx->dm_coarse, sub_vecs[k]));
 
   if (PCTelescope_isActiveRank(sred)) {
     /* create new (near) nullspace for redundant object */
@@ -381,7 +381,7 @@ PetscErrorCode PCApplyRichardson_Telescope_CoarseDM(PC pc, Vec x, Vec y, Vec w, 
 
   PetscCall(PCApply_Telescope_CoarseDM(pc, x, y));
 
-  if (PCTelescope_isActiveRank(sred)) { PetscCall(KSPSetInitialGuessNonzero(sred->ksp, default_init_guess_value)); }
+  if (PCTelescope_isActiveRank(sred)) PetscCall(KSPSetInitialGuessNonzero(sred->ksp, default_init_guess_value));
 
   if (!*reason) *reason = PCRICHARDSON_CONVERGED_ITS;
   *outits = 1;

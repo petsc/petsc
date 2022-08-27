@@ -156,7 +156,7 @@ int main(int argc, char **argv) {
     if (usehierarchy) {
       PetscCall(DMRefineHierarchy(dm, user.nlevels, &dmhierarchy[1]));
     } else {
-      for (k = 1; k <= user.nlevels; k++) { PetscCall(DMRefine(dmhierarchy[k - 1], MPI_COMM_NULL, &dmhierarchy[k])); }
+      for (k = 1; k <= user.nlevels; k++) PetscCall(DMRefine(dmhierarchy[k - 1], MPI_COMM_NULL, &dmhierarchy[k]));
     }
     dmref = dmhierarchy[user.nlevels];
     PetscObjectReference((PetscObject)dmref);
@@ -176,7 +176,7 @@ int main(int argc, char **argv) {
       }
     }
 
-    for (k = 1; k <= user.nlevels; k++) { PetscCall(DMDestroy(&dmhierarchy[k])); }
+    for (k = 1; k <= user.nlevels; k++) PetscCall(DMDestroy(&dmhierarchy[k]));
     PetscCall(PetscFree(dmhierarchy));
   } else {
     dmref = dm;
@@ -535,7 +535,7 @@ PetscErrorCode ComputeDiscreteL2Error(KSP ksp, Vec err, UserContext *user) {
 
   /* Restore vectors */
   PetscCall(VecRestoreArrayRead(sol, &x));
-  if (err) { PetscCall(VecRestoreArray(err, &e)); }
+  if (err) PetscCall(VecRestoreArray(err, &e));
   PetscFunctionReturn(0);
 }
 

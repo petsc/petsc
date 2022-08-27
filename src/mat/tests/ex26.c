@@ -12,14 +12,14 @@ PetscErrorCode DumpCSR(Mat A, PetscInt shift, PetscBool symmetric, PetscBool com
   PetscFunctionBeginUser;
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATSEQBAIJ, &isseqbaij));
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATSEQSBAIJ, &isseqsbaij));
-  if (isseqbaij || isseqsbaij) { PetscCall(MatGetBlockSize(A, &bs)); }
+  if (isseqbaij || isseqsbaij) PetscCall(MatGetBlockSize(A, &bs));
   PetscCall(MatGetType(A, &type));
   PetscCall(MatGetRowIJ(A, shift, symmetric, compressed, &nr, &ia, &ja, &done));
   PetscCall(PetscPrintf(PETSC_COMM_SELF, "===========================================================\n"));
   PetscCall(PetscPrintf(PETSC_COMM_SELF, "CSR for %s: shift %" PetscInt_FMT " symmetric %" PetscInt_FMT " compressed %" PetscInt_FMT "\n", type, shift, (PetscInt)symmetric, (PetscInt)compressed));
   for (i = 0; i < nr; i++) {
     PetscCall(PetscPrintf(PETSC_COMM_SELF, "%" PetscInt_FMT ":", i + shift));
-    for (j = ia[i]; j < ia[i + 1]; j++) { PetscCall(PetscPrintf(PETSC_COMM_SELF, " %" PetscInt_FMT, ja[j - shift])); }
+    for (j = ia[i]; j < ia[i + 1]; j++) PetscCall(PetscPrintf(PETSC_COMM_SELF, " %" PetscInt_FMT, ja[j - shift]));
     PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n"));
   }
   PetscCall(MatRestoreRowIJ(A, shift, symmetric, compressed, &nr, &ia, &ja, &done));

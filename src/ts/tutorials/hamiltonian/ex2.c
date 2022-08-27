@@ -403,7 +403,7 @@ int main(int argc, char **argv) {
     PetscCall(TSRHSSplitSetRHSFunction(ts, "position", NULL, RHSFunction1, &user));
     PetscCall(TSRHSSplitSetRHSFunction(ts, "momentum", NULL, RHSFunction2, &user));
     PetscCall(TSSetTime(ts, step * user.stepSize));
-    if (step == 0) { PetscCall(TSSetFromOptions(ts)); }
+    if (step == 0) PetscCall(TSSetFromOptions(ts));
     /* Compose vector from array for TS solve with all kinematic variables */
     PetscCall(VecCreate(comm, &probVec));
     PetscCall(VecSetBlockSize(probVec, 1));
@@ -418,7 +418,7 @@ int main(int argc, char **argv) {
     PetscCall(DMSwarmDestroyGlobalVectorFromField(sw, "kinematics", &kinVec));
     PetscCall(DMSwarmDestroyGlobalVectorFromField(sw, DMSwarmPICField_coor, &coorVec));
     PetscCall(TSMonitor(ts, step, ts->ptime, ts->vec_sol));
-    if (!ts->steprollback) { PetscCall(TSPreStep(ts)); }
+    if (!ts->steprollback) PetscCall(TSPreStep(ts));
     PetscCall(TSStep(ts));
     if (ts->steprollback) PetscCall(TSPostEvaluate(ts));
     if (!ts->steprollback) {

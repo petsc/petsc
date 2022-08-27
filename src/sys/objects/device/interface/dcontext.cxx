@@ -735,7 +735,7 @@ PetscErrorCode PetscDeviceContextSetFromOptions(MPI_Comm comm, const char prefix
   PetscCall(PetscOptionsEList("-device_context_stream_type", "PetscDeviceContext PetscStreamType", "PetscDeviceContextSetStreamType", PetscStreamTypes, PETSC_STREAM_MAX, PetscStreamTypes[dctx->streamType], &stype, &flag));
   if (flag) PetscCall(PetscDeviceContextSetStreamType(dctx, static_cast<PetscStreamType>(stype)));
   PetscCall(PetscOptionsEList("-device_context_device_type", "Underlying PetscDevice", "PetscDeviceContextSetDevice", PetscDeviceTypes + 1, PETSC_DEVICE_MAX - 1, dctx->device ? PetscDeviceTypes[dctx->device->type] : PetscDeviceTypes[PETSC_DEVICE_CONTEXT_DEFAULT_DEVICE], &dtype, &flag));
-  if (flag) { PetscCall(PetscDeviceContextSetDefaultDeviceForType_Internal(dctx, static_cast<PetscDeviceType>(dtype + 1))); }
+  if (flag) PetscCall(PetscDeviceContextSetDefaultDeviceForType_Internal(dctx, static_cast<PetscDeviceType>(dtype + 1)));
   PetscOptionsEnd();
   PetscFunctionReturn(0);
 }

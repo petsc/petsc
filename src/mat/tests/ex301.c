@@ -31,12 +31,12 @@ int main(int argc, char **args) {
     switch (i) {
     case 0: PetscCall(MatDiagonalSet(A, x, INSERT_VALUES)); break;
     case 1:
-      for (j = rstart; j < rend; j++) { PetscCall(MatSetValue(A, j, j, one, INSERT_VALUES)); }
+      for (j = rstart; j < rend; j++) PetscCall(MatSetValue(A, j, j, one, INSERT_VALUES));
       PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
       PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
       break;
     case 2:
-      for (j = rstart; j < rend; j++) { PetscCall(MatSetValuesRow(A, j, &one)); }
+      for (j = rstart; j < rend; j++) PetscCall(MatSetValuesRow(A, j, &one));
       PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
       PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
     default: break;
@@ -46,7 +46,7 @@ int main(int argc, char **args) {
     PetscCall(MatMult(A, x, y));
     PetscCall(VecAXPY(y, negativeone, x));
     PetscCall(VecNorm(y, NORM_2, &norm));
-    if (norm > PETSC_SQRT_MACHINE_EPSILON) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Test %" PetscInt_FMT ": Norm of error is %g, but should be near 0.\n", i, (double)norm)); }
+    if (norm > PETSC_SQRT_MACHINE_EPSILON) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Test %" PetscInt_FMT ": Norm of error is %g, but should be near 0.\n", i, (double)norm));
 
     PetscCall(MatDestroy(&A));
     PetscCall(VecDestroy(&x));

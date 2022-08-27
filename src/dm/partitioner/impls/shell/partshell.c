@@ -166,7 +166,7 @@ PetscErrorCode PetscPartitionerShellSetPartition(PetscPartitioner part, PetscInt
   PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)part), &p->section));
   PetscCall(PetscSectionSetChart(p->section, 0, size));
   if (sizes) {
-    for (proc = 0; proc < size; ++proc) { PetscCall(PetscSectionSetDof(p->section, proc, sizes[proc])); }
+    for (proc = 0; proc < size; ++proc) PetscCall(PetscSectionSetDof(p->section, proc, sizes[proc]));
   }
   PetscCall(PetscSectionSetUp(p->section));
   PetscCall(PetscSectionGetStorageSize(p->section, &numPoints));

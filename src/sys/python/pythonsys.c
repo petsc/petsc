@@ -13,7 +13,7 @@ static PetscErrorCode PetscPythonFindExecutable(char pythonexe[], size_t len) {
   /* get the path for the Python interpreter executable */
   PetscCall(PetscStrncpy(pythonexe, PETSC_PYTHON_EXE, len));
   PetscCall(PetscOptionsGetString(NULL, NULL, "-python", pythonexe, len, &flag));
-  if (!flag || pythonexe[0] == 0) { PetscCall(PetscStrncpy(pythonexe, PETSC_PYTHON_EXE, len)); }
+  if (!flag || pythonexe[0] == 0) PetscCall(PetscStrncpy(pythonexe, PETSC_PYTHON_EXE, len));
   PetscFunctionReturn(0);
 }
 
@@ -60,10 +60,10 @@ static PetscErrorCode PetscPythonFindLibrary(const char pythonexe[], char python
 #endif
 
   PetscCall(PetscPythonFindLibraryName(pythonexe, cmdline1, pythonlib, pl, &found));
-  if (!found) { PetscCall(PetscPythonFindLibraryName(pythonexe, cmdline2, pythonlib, pl, &found)); }
-  if (!found) { PetscCall(PetscPythonFindLibraryName(pythonexe, cmdline3, pythonlib, pl, &found)); }
-  if (!found) { PetscCall(PetscPythonFindLibraryName(pythonexe, cmdline4, pythonlib, pl, &found)); }
-  if (!found) { PetscCall(PetscPythonFindLibraryName(pythonexe, cmdline5, pythonlib, pl, &found)); }
+  if (!found) PetscCall(PetscPythonFindLibraryName(pythonexe, cmdline2, pythonlib, pl, &found));
+  if (!found) PetscCall(PetscPythonFindLibraryName(pythonexe, cmdline3, pythonlib, pl, &found));
+  if (!found) PetscCall(PetscPythonFindLibraryName(pythonexe, cmdline4, pythonlib, pl, &found));
+  if (!found) PetscCall(PetscPythonFindLibraryName(pythonexe, cmdline5, pythonlib, pl, &found));
   PetscCall(PetscInfo(NULL, "Python library  %s found %d\n", pythonlib, found));
   PetscFunctionReturn(0);
 }

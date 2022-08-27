@@ -22,7 +22,7 @@ int main(int argc, char **argv) {
   PetscCheck(size < 4, PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "Example only works with up to three processes");
 
   PetscCall(PetscCalloc1(size * n, &izero));
-  for (i = 0; i < 3; i++) { PetscCall(ISCreateGeneral(PETSC_COMM_WORLD, n, ix[i][rank], PETSC_COPY_VALUES, &isx[i])); }
+  for (i = 0; i < 3; i++) PetscCall(ISCreateGeneral(PETSC_COMM_WORLD, n, ix[i][rank], PETSC_COPY_VALUES, &isx[i]));
 
   for (j = 0; j < 3; j++) {
     PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, "testfile", FILE_MODE_WRITE, &vx));
@@ -66,7 +66,7 @@ int main(int argc, char **argv) {
   for (j = 0; j < 3; j++) {
     PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, "testfile_noheader", FILE_MODE_WRITE, &vx));
     PetscCall(PetscViewerBinarySetSkipHeader(vx, PETSC_TRUE));
-    for (i = 0; i < 3; i++) { PetscCall(ISView(isx[i], vx)); }
+    for (i = 0; i < 3; i++) PetscCall(ISView(isx[i], vx));
     PetscCall(PetscViewerDestroy(&vx));
 
     PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, "testfile_noheader", FILE_MODE_READ, &vl));
@@ -81,7 +81,7 @@ int main(int argc, char **argv) {
     PetscCall(PetscViewerDestroy(&vl));
   }
 
-  for (i = 0; i < 3; i++) { PetscCall(ISDestroy(&isx[i])); }
+  for (i = 0; i < 3; i++) PetscCall(ISDestroy(&isx[i]));
 
   for (j = 0; j < 2; j++) {
     const char *filename  = (j == 0) ? "testfile_isstride" : "testfile_isblock";
@@ -106,7 +106,7 @@ int main(int argc, char **argv) {
       PetscCall(ISDestroy(&il));
     }
     PetscCall(PetscViewerDestroy(&vl));
-    for (i = 0; i < 3; i++) { PetscCall(ISDestroy(&isx[i])); }
+    for (i = 0; i < 3; i++) PetscCall(ISDestroy(&isx[i]));
   }
   PetscCall(PetscFree(izero));
 

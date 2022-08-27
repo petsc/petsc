@@ -381,7 +381,7 @@ static PetscErrorCode PetscConvEstGetConvRateSNES_Private(PetscConvEst ce, Petsc
     PetscCall(VecDestroy(&u));
     PetscCall(PetscLogStagePop());
   }
-  for (r = 1; r <= Nr; ++r) { PetscCall(DMDestroy(&dm[r])); }
+  for (r = 1; r <= Nr; ++r) PetscCall(DMDestroy(&dm[r]));
   /* Fit convergence rate */
   PetscCall(PetscMalloc2(Nr + 1, &x, Nr + 1, &y));
   for (f = 0; f < ce->Nf; ++f) {

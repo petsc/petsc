@@ -288,7 +288,7 @@ static PetscErrorCode DMPlexCreatePartitionerGraph_Native(DM dm, PetscInt height
     PetscCall(PetscSectionSetUp(section));
     PetscCall(PetscSectionGetStorageSize(section, &size));
     PetscCall(PetscMalloc1(*numVertices + 1, &vOffsets));
-    for (idx = 0, p = 0; p < *numVertices; p++) { PetscCall(PetscSectionGetOffset(section, p, &(vOffsets[idx++]))); }
+    for (idx = 0, p = 0; p < *numVertices; p++) PetscCall(PetscSectionGetOffset(section, p, &(vOffsets[idx++])));
     vOffsets[*numVertices] = size;
     PetscCall(PetscSegBufferExtractAlloc(adjBuffer, &graph));
   } else {
@@ -781,7 +781,7 @@ PetscErrorCode PetscPartitionerDMPlexPartition(PetscPartitioner part, DM dm, Pet
       /* We do this only if the local section has been set */
       if (section) {
         PetscCall(PetscSectionGetClosureIndex(section, (PetscObject)dm, &clSection, NULL));
-        if (!clSection) { PetscCall(DMPlexCreateClosureIndex(dm, NULL)); }
+        if (!clSection) PetscCall(DMPlexCreateClosureIndex(dm, NULL));
         PetscCall(PetscSectionGetClosureIndex(section, (PetscObject)dm, &clSection, &clPoints));
         PetscCall(ISGetIndices(clPoints, &clIdx));
       }
@@ -814,8 +814,8 @@ PetscErrorCode PetscPartitionerDMPlexPartition(PetscPartitioner part, DM dm, Pet
         PetscCall(PetscSectionSetDof(vertSection, v, dof));
         v++;
       }
-      if (globalNumbering) { PetscCall(ISRestoreIndices(globalNumbering, &gid)); }
-      if (clPoints) { PetscCall(ISRestoreIndices(clPoints, &clIdx)); }
+      if (globalNumbering) PetscCall(ISRestoreIndices(globalNumbering, &gid));
+      if (clPoints) PetscCall(ISRestoreIndices(clPoints, &clIdx));
       PetscCall(PetscSectionSetUp(vertSection));
     }
     PetscCall(PetscPartitionerPartition(part, size, numVertices, start, adjacency, vertSection, targetSection, partSection, partition));
@@ -915,7 +915,7 @@ static PetscErrorCode DMPlexAddClosure_Private(DM dm, PetscHSetI ht, PetscInt po
   if (missing) {
     PetscCall(DMPlexGetCone(dm, point, &cone));
     PetscCall(DMPlexGetConeSize(dm, point, &coneSize));
-    for (c = 0; c < coneSize; c++) { PetscCall(DMPlexAddClosure_Private(dm, ht, cone[c])); }
+    for (c = 0; c < coneSize; c++) PetscCall(DMPlexAddClosure_Private(dm, ht, cone[c]));
   }
   PetscFunctionReturn(0);
 }
@@ -986,7 +986,7 @@ static PetscErrorCode DMPlexAddClosureTree_Down_Private(DM dm, PetscHSetI ht, Pe
 
   PetscFunctionBeginHot;
   PetscCall(DMPlexGetTreeChildren(dm, point, &numChildren, &children));
-  for (i = 0; i < numChildren; i++) { PetscCall(PetscHSetIAdd(ht, children[i])); }
+  for (i = 0; i < numChildren; i++) PetscCall(PetscHSetIAdd(ht, children[i]));
   PetscFunctionReturn(0);
 }
 
@@ -1000,7 +1000,7 @@ static PetscErrorCode DMPlexAddClosureTree_Private(DM dm, PetscHSetI ht, PetscIn
   PetscCall(DMPlexAddClosureTree_Down_Private(dm, ht, point));
   PetscCall(DMPlexGetCone(dm, point, &cone));
   PetscCall(DMPlexGetConeSize(dm, point, &coneSize));
-  for (c = 0; c < coneSize; c++) { PetscCall(DMPlexAddClosureTree_Private(dm, ht, cone[c])); }
+  for (c = 0; c < coneSize; c++) PetscCall(DMPlexAddClosureTree_Private(dm, ht, cone[c]));
   PetscFunctionReturn(0);
 }
 
@@ -1014,10 +1014,10 @@ PetscErrorCode DMPlexClosurePoints_Private(DM dm, PetscInt numPoints, const Pets
   PetscCall(PetscHSetICreate(&ht));
   PetscCall(PetscHSetIResize(ht, numPoints * 16));
   if (!hasTree) {
-    for (p = 0; p < numPoints; ++p) { PetscCall(DMPlexAddClosure_Private(dm, ht, points[p])); }
+    for (p = 0; p < numPoints; ++p) PetscCall(DMPlexAddClosure_Private(dm, ht, points[p]));
   } else {
 #if 1
-    for (p = 0; p < numPoints; ++p) { PetscCall(DMPlexAddClosureTree_Private(dm, ht, points[p])); }
+    for (p = 0; p < numPoints; ++p) PetscCall(DMPlexAddClosureTree_Private(dm, ht, points[p]));
 #else
     PetscInt *closure = NULL, closureSize, c;
     for (p = 0; p < numPoints; ++p) {
@@ -1310,7 +1310,7 @@ PetscErrorCode DMPlexPartitionLabelInvert(DM dm, DMLabel rootLabel, PetscSF proc
     PetscCall(PetscSFDestroy(&procSF));
   }
 
-  for (p = 0; p < leafSize; p++) { PetscCall(DMLabelSetValue(leafLabel, leafPoints[p].index, leafPoints[p].rank)); }
+  for (p = 0; p < leafSize; p++) PetscCall(DMLabelSetValue(leafLabel, leafPoints[p].index, leafPoints[p].rank));
 
   PetscCall(ISRestoreIndices(valueIS, &neighbors));
   PetscCall(ISDestroy(&valueIS));
@@ -1882,8 +1882,8 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
     PetscCall(PetscLogEventBegin(DMPLEX_RebalScatterPart, 0, 0, 0, 0));
     PetscCall(PetscMalloc1(size, &counts));
     PetscCall(PetscMalloc1(size + 1, &mpiCumSumVertices));
-    for (i = 0; i < size; i++) { PetscCall(PetscMPIIntCast(cumSumVertices[i + 1] - cumSumVertices[i], &(counts[i]))); }
-    for (i = 0; i <= size; i++) { PetscCall(PetscMPIIntCast(cumSumVertices[i], &(mpiCumSumVertices[i]))); }
+    for (i = 0; i < size; i++) PetscCall(PetscMPIIntCast(cumSumVertices[i + 1] - cumSumVertices[i], &(counts[i])));
+    for (i = 0; i <= size; i++) PetscCall(PetscMPIIntCast(cumSumVertices[i], &(mpiCumSumVertices[i])));
     PetscCallMPI(MPI_Scatterv(partGlobal, counts, mpiCumSumVertices, MPIU_INT, part, counts[rank], MPIU_INT, 0, comm));
     PetscCall(PetscFree(counts));
     PetscCall(PetscFree(mpiCumSumVertices));

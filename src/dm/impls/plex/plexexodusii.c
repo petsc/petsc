@@ -74,7 +74,7 @@ static PetscErrorCode PetscViewerDestroy_ExodusII(PetscViewer viewer) {
   PetscViewer_ExodusII *exo = (PetscViewer_ExodusII *)viewer->data;
 
   PetscFunctionBegin;
-  if (exo->exoid >= 0) { PetscCallExternal(ex_close, exo->exoid); }
+  if (exo->exoid >= 0) PetscCallExternal(ex_close, exo->exoid);
   PetscCall(PetscFree(exo->filename));
   PetscCall(PetscFree(exo));
   PetscCall(PetscObjectComposeFunction((PetscObject)viewer, "PetscViewerFileSetName_C", NULL));
@@ -451,7 +451,7 @@ PetscErrorCode DMView_PlexExodusII(DM dm, PetscViewer viewer) {
       PetscCall(ISRestoreIndices(stratumIS, &cells));
       PetscCall(ISDestroy(&stratumIS));
     }
-    if (num_cs > 0) { PetscCallExternal(ex_put_init, exo->exoid, dmName, dim, numNodes, numCells, num_cs, num_vs, num_fs); }
+    if (num_cs > 0) PetscCallExternal(ex_put_init, exo->exoid, dmName, dim, numNodes, numCells, num_cs, num_vs, num_fs);
     /* --- Connectivity --- */
     for (cs = 0; cs < num_cs; ++cs) {
       IS              stratumIS;
@@ -595,7 +595,7 @@ PetscErrorCode DMView_PlexExodusII(DM dm, PetscViewer viewer) {
     if (num_cs) {
       for (d = 0; d < depth; ++d) {
         PetscCall(DMPlexGetDepthStratum(dm, d, &pStart, &pEnd));
-        for (p = pStart; p < pEnd; ++p) { PetscCall(PetscSectionSetDof(coordSection, p, nodes[0][d] > 0)); }
+        for (p = pStart; p < pEnd; ++p) PetscCall(PetscSectionSetDof(coordSection, p, nodes[0][d] > 0));
       }
     }
     for (cs = 0; cs < num_cs; ++cs) {
@@ -606,7 +606,7 @@ PetscErrorCode DMView_PlexExodusII(DM dm, PetscViewer viewer) {
       PetscCall(DMLabelGetStratumIS(csLabel, csIdx[cs], &stratumIS));
       PetscCall(ISGetIndices(stratumIS, &cells));
       PetscCall(ISGetSize(stratumIS, &csSize));
-      for (c = 0; c < csSize; ++c) { PetscCall(PetscSectionSetDof(coordSection, cells[c], nodes[cs][3] > 0)); }
+      for (c = 0; c < csSize; ++c) PetscCall(PetscSectionSetDof(coordSection, cells[c], nodes[cs][3] > 0));
       PetscCall(ISRestoreIndices(stratumIS, &cells));
       PetscCall(ISDestroy(&stratumIS));
     }
@@ -747,7 +747,7 @@ PetscErrorCode DMView_PlexExodusII(DM dm, PetscViewer viewer) {
       PetscCall(ISDestroy(&fsIS));
 
       /* Put side sets */
-      for (fs = 0; fs < num_fs; ++fs) { PetscCallExternal(ex_put_set, exo->exoid, EX_SIDE_SET, fsIdx[fs], &elem_list[elem_ind[fs]], &side_list[elem_ind[fs]]); }
+      for (fs = 0; fs < num_fs; ++fs) PetscCallExternal(ex_put_set, exo->exoid, EX_SIDE_SET, fsIdx[fs], &elem_list[elem_ind[fs]], &side_list[elem_ind[fs]]);
       PetscCall(PetscFree3(elem_ind, elem_list, side_list));
     }
     /*
@@ -1338,7 +1338,7 @@ PetscErrorCode DMPlexCreateExodusFromFile(MPI_Comm comm, const char filename[], 
     PetscCheck(exoid > 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "ex_open(\"%s\",...) did not return a valid file ID", filename);
   }
   PetscCall(DMPlexCreateExodus(comm, exoid, interpolate, dm));
-  if (rank == 0) { PetscCallExternal(ex_close, exoid); }
+  if (rank == 0) PetscCallExternal(ex_close, exoid);
   PetscFunctionReturn(0);
 #else
   SETERRQ(comm, PETSC_ERR_SUP, "This method requires ExodusII support. Reconfigure using --download-exodusii");
@@ -1571,7 +1571,7 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
       PetscCallExternal(ex_get_set_param, exoid, EX_NODE_SET, vs_id[vs], &num_vertex_in_set, NULL);
       PetscCall(PetscMalloc1(num_vertex_in_set, &vs_vertex_list));
       PetscCallExternal(ex_get_set, exoid, EX_NODE_SET, vs_id[vs], vs_vertex_list, NULL);
-      for (v = 0; v < num_vertex_in_set; ++v) { PetscCall(DMSetLabelValue_Fast(*dm, &vertSets, "Vertex Sets", vs_vertex_list[v] + numCells - 1, vs_id[vs])); }
+      for (v = 0; v < num_vertex_in_set; ++v) PetscCall(DMSetLabelValue_Fast(*dm, &vertSets, "Vertex Sets", vs_vertex_list[v] + numCells - 1, vs_id[vs]));
       PetscCall(PetscFree(vs_vertex_list));
     }
     PetscCall(PetscFree(vs_id));

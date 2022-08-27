@@ -167,9 +167,9 @@ static PetscErrorCode PetscPartitionerPartition_Simple(PetscPartitioner part, Pe
   PetscCall(ISCreateStride(PETSC_COMM_SELF, numVertices, 0, 1, partition));
   if (size == 1) {
     if (tpwgts) {
-      for (np = 0; np < nparts; ++np) { PetscCall(PetscSectionSetDof(partSection, np, tpwgts[np])); }
+      for (np = 0; np < nparts; ++np) PetscCall(PetscSectionSetDof(partSection, np, tpwgts[np]));
     } else {
-      for (np = 0; np < nparts; ++np) { PetscCall(PetscSectionSetDof(partSection, np, numVertices / nparts + ((numVertices % nparts) > np))); }
+      for (np = 0; np < nparts; ++np) PetscCall(PetscSectionSetDof(partSection, np, numVertices / nparts + ((numVertices % nparts) > np)));
     }
   } else {
     if (tpwgts) {
@@ -184,14 +184,14 @@ static PetscErrorCode PetscPartitionerPartition_Simple(PetscPartitioner part, Pe
       PetscCallMPI(MPI_Comm_rank(comm, &rank));
       for (np = 0, st = 0; np < nparts; ++np) {
         if (rank == np || (rank == size - 1 && size < nparts && np >= size)) {
-          for (j = 0; j < tpwgts[np]; j++) { PetscCall(VecSetValue(v, st + j, np, INSERT_VALUES)); }
+          for (j = 0; j < tpwgts[np]; j++) PetscCall(VecSetValue(v, st + j, np, INSERT_VALUES));
         }
         st += tpwgts[np];
       }
       PetscCall(VecAssemblyBegin(v));
       PetscCall(VecAssemblyEnd(v));
       PetscCall(VecGetArray(v, &array));
-      for (j = 0; j < numVertices; ++j) { PetscCall(PetscSectionAddDof(partSection, PetscRealPart(array[j]), 1)); }
+      for (j = 0; j < numVertices; ++j) PetscCall(PetscSectionAddDof(partSection, PetscRealPart(array[j]), 1));
       PetscCall(VecRestoreArray(v, &array));
       PetscCall(VecDestroy(&v));
     } else {

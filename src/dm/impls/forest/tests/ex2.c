@@ -108,14 +108,14 @@ static PetscErrorCode IdentifyBadPoints(DM dm, Vec vec, PetscReal tol) {
     for (cl = 0; cl < closureSize; cl++) {
       PetscInt cp = closure[2 * cl];
       PetscCall(DMPlexGetTreeParent(dmplex, cp, &parent, &childID));
-      if (parent != cp) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Closure point %" PetscInt_FMT " (%" PetscInt_FMT ") child of %" PetscInt_FMT " (ID %" PetscInt_FMT ")\n", cl, cp, parent, childID)); }
+      if (parent != cp) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Closure point %" PetscInt_FMT " (%" PetscInt_FMT ") child of %" PetscInt_FMT " (ID %" PetscInt_FMT ")\n", cl, cp, parent, childID));
       PetscCall(DMPlexGetTreeChildren(dmplex, cp, &numChildren, NULL));
-      if (numChildren) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Closure point %" PetscInt_FMT " (%" PetscInt_FMT ") is parent\n", cl, cp)); }
+      if (numChildren) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Closure point %" PetscInt_FMT " (%" PetscInt_FMT ") is parent\n", cl, cp));
     }
     PetscCall(DMPlexRestoreTransitiveClosure(dmplex, p, PETSC_TRUE, &closureSize, &closure));
     for (c = 0; c < cSize; c++) {
       PetscReal absDiff = PetscAbsScalar(values[c]);
-      if (absDiff > tol) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Bad dof %" PetscInt_FMT "\n", c)); }
+      if (absDiff > tol) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Bad dof %" PetscInt_FMT "\n", c));
     }
   }
   PetscCall(DMDestroy(&dmplex));
@@ -262,7 +262,7 @@ int main(int argc, char **argv) {
   }
 
   for (step = 0; step < adaptSteps; ++step) {
-    if (!transfer_from_base[1]) { PetscCall(PetscObjectGetReference((PetscObject)preForest, &preCount)); }
+    if (!transfer_from_base[1]) PetscCall(PetscObjectGetReference((PetscObject)preForest, &preCount));
 
     /* adapt */
     PetscCall(CreateAdaptivityLabel(preForest, &adaptLabel));

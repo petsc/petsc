@@ -60,7 +60,7 @@ static PetscErrorCode VecTaggerComputeBoxes_Or(VecTagger tagger, Vec vec, PetscI
     if (!boxlisted) { /* no support, clean up and exit */
       PetscInt j;
 
-      for (j = 0; j < i; j++) { PetscCall(PetscFree(subBoxes[j])); }
+      for (j = 0; j < i; j++) PetscCall(PetscFree(subBoxes[j]));
       PetscCall(PetscFree2(numSubBoxes, subBoxes));
       if (listed) *listed = PETSC_FALSE;
     }

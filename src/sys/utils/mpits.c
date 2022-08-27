@@ -82,7 +82,7 @@ static PetscErrorCode PetscCommBuildTwoSided_Ibarrier(MPI_Comm comm, PetscMPIInt
   PetscCheck(lb == 0, comm, PETSC_ERR_SUP, "Datatype with nonzero lower bound %ld", (long)lb);
   tdata = (char *)todata;
   PetscCall(PetscMalloc1(nto, &sendreqs));
-  for (i = 0; i < nto; i++) { PetscCallMPI(MPI_Issend((void *)(tdata + count * unitbytes * i), count, dtype, toranks[i], tag, comm, sendreqs + i)); }
+  for (i = 0; i < nto; i++) PetscCallMPI(MPI_Issend((void *)(tdata + count * unitbytes * i), count, dtype, toranks[i], tag, comm, sendreqs + i));
   PetscCall(PetscSegBufferCreate(sizeof(PetscMPIInt), 4, &segrank));
   PetscCall(PetscSegBufferCreate(unitbytes, 4 * count, &segdata));
 
@@ -157,8 +157,8 @@ static PetscErrorCode PetscCommBuildTwoSided_Allreduce(MPI_Comm comm, PetscMPIIn
   tdata = (char *)todata;
   PetscCall(PetscMalloc2(nto + nrecvs, &reqs, nto + nrecvs, &statuses));
   sendreqs = reqs + nrecvs;
-  for (i = 0; i < nrecvs; i++) { PetscCallMPI(MPI_Irecv((void *)(fdata + count * unitbytes * i), count, dtype, MPI_ANY_SOURCE, tag, comm, reqs + i)); }
-  for (i = 0; i < nto; i++) { PetscCallMPI(MPI_Isend((void *)(tdata + count * unitbytes * i), count, dtype, toranks[i], tag, comm, sendreqs + i)); }
+  for (i = 0; i < nrecvs; i++) PetscCallMPI(MPI_Irecv((void *)(fdata + count * unitbytes * i), count, dtype, MPI_ANY_SOURCE, tag, comm, reqs + i));
+  for (i = 0; i < nto; i++) PetscCallMPI(MPI_Isend((void *)(tdata + count * unitbytes * i), count, dtype, toranks[i], tag, comm, sendreqs + i));
   PetscCallMPI(MPI_Waitall(nto + nrecvs, reqs, statuses));
   PetscCall(PetscMalloc1(nrecvs, &franks));
   for (i = 0; i < nrecvs; i++) franks[i] = statuses[i].MPI_SOURCE;
@@ -200,8 +200,8 @@ static PetscErrorCode PetscCommBuildTwoSided_RedScatter(MPI_Comm comm, PetscMPII
   tdata = (char *)todata;
   PetscCall(PetscMalloc2(nto + nrecvs, &reqs, nto + nrecvs, &statuses));
   sendreqs = reqs + nrecvs;
-  for (i = 0; i < nrecvs; i++) { PetscCallMPI(MPI_Irecv((void *)(fdata + count * unitbytes * i), count, dtype, MPI_ANY_SOURCE, tag, comm, reqs + i)); }
-  for (i = 0; i < nto; i++) { PetscCallMPI(MPI_Isend((void *)(tdata + count * unitbytes * i), count, dtype, toranks[i], tag, comm, sendreqs + i)); }
+  for (i = 0; i < nrecvs; i++) PetscCallMPI(MPI_Irecv((void *)(fdata + count * unitbytes * i), count, dtype, MPI_ANY_SOURCE, tag, comm, reqs + i));
+  for (i = 0; i < nto; i++) PetscCallMPI(MPI_Isend((void *)(tdata + count * unitbytes * i), count, dtype, toranks[i], tag, comm, sendreqs + i));
   PetscCallMPI(MPI_Waitall(nto + nrecvs, reqs, statuses));
   PetscCall(PetscMalloc1(nrecvs, &franks));
   for (i = 0; i < nrecvs; i++) franks[i] = statuses[i].MPI_SOURCE;
@@ -287,8 +287,8 @@ static PetscErrorCode PetscCommBuildTwoSidedFReq_Reference(MPI_Comm comm, PetscM
 
   PetscFunctionBegin;
   PetscCall(PetscMalloc1(ntags, &tag));
-  if (ntags > 0) { PetscCall(PetscCommDuplicate(comm, &comm, &tag[0])); }
-  for (i = 1; i < ntags; i++) { PetscCall(PetscCommGetNewTag(comm, &tag[i])); }
+  if (ntags > 0) PetscCall(PetscCommDuplicate(comm, &comm, &tag[0]));
+  for (i = 1; i < ntags; i++) PetscCall(PetscCommGetNewTag(comm, &tag[i]));
 
   /* Perform complete initial rendezvous */
   PetscCall(PetscCommBuildTwoSided(comm, count, dtype, nto, toranks, todata, nfrom, fromranks, fromdata));
@@ -329,14 +329,14 @@ static PetscErrorCode PetscCommBuildTwoSidedFReq_Ibarrier(MPI_Comm comm, PetscMP
   PetscFunctionBegin;
   PetscCall(PetscCommDuplicate(comm, &comm, &tag));
   PetscCall(PetscMalloc1(ntags, &tags));
-  for (i = 0; i < ntags; i++) { PetscCall(PetscCommGetNewTag(comm, &tags[i])); }
+  for (i = 0; i < ntags; i++) PetscCall(PetscCommGetNewTag(comm, &tags[i]));
   PetscCallMPI(MPI_Type_get_extent(dtype, &lb, &unitbytes));
   PetscCheck(lb == 0, comm, PETSC_ERR_SUP, "Datatype with nonzero lower bound %ld", (long)lb);
   tdata = (char *)todata;
   PetscCall(PetscMalloc1(nto, &sendreqs));
   PetscCall(PetscMalloc1(nto * ntags, &usendreqs));
   /* Post synchronous sends */
-  for (i = 0; i < nto; i++) { PetscCallMPI(MPI_Issend((void *)(tdata + count * unitbytes * i), count, dtype, toranks[i], tag, comm, sendreqs + i)); }
+  for (i = 0; i < nto; i++) PetscCallMPI(MPI_Issend((void *)(tdata + count * unitbytes * i), count, dtype, toranks[i], tag, comm, sendreqs + i));
   /* Post actual payloads.  These are typically larger messages.  Hopefully sending these later does not slow down the
    * synchronous messages above. */
   for (i = 0; i < nto; i++) {

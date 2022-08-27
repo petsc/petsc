@@ -16,7 +16,7 @@ static PetscErrorCode ViewOffsets(DM dm, Vec X) {
   for (PetscInt c = 0; c < num_elem; c++) {
     PetscCall(PetscIntView(elem_size, &elem_restr_offsets[c * elem_size], PETSC_VIEWER_STDOUT_SELF));
     if (x) {
-      for (PetscInt i = 0; i < elem_size; i++) { PetscCall(PetscScalarView(num_comp, &x[elem_restr_offsets[c * elem_size + i]], PETSC_VIEWER_STDERR_SELF)); }
+      for (PetscInt i = 0; i < elem_size; i++) PetscCall(PetscScalarView(num_comp, &x[elem_restr_offsets[c * elem_size + i]], PETSC_VIEWER_STDERR_SELF));
     }
   }
   if (X) PetscCall(VecRestoreArrayRead(X, &x));

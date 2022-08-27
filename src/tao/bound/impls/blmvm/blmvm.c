@@ -122,8 +122,8 @@ static PetscErrorCode TaoSetup_BLMVM(Tao tao) {
   PetscCall(VecDuplicate(tao->solution, &blmP->Xold));
   PetscCall(VecDuplicate(tao->solution, &blmP->Gold));
   PetscCall(VecDuplicate(tao->solution, &blmP->unprojected_gradient));
-  if (!tao->stepdirection) { PetscCall(VecDuplicate(tao->solution, &tao->stepdirection)); }
-  if (!tao->gradient) { PetscCall(VecDuplicate(tao->solution, &tao->gradient)); }
+  if (!tao->stepdirection) PetscCall(VecDuplicate(tao->solution, &tao->stepdirection));
+  if (!tao->gradient) PetscCall(VecDuplicate(tao->solution, &tao->gradient));
   /* Allocate matrix for the limited memory approximation */
   PetscCall(MatLMVMAllocate(blmP->M, tao->solution, blmP->unprojected_gradient));
 

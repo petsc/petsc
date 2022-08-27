@@ -132,12 +132,12 @@ PETSC_INTERN PetscErrorCode DMStagSetUniformCoordinatesExplicit_2d(DM dm, PetscR
   PetscCall(DMCreateLocalVector(dmCoord, &coordLocal));
 
   PetscCall(DMStagVecGetArray(dmCoord, coordLocal, &arr));
-  if (stagCoord->dof[0]) { PetscCall(DMStagGetLocationSlot(dmCoord, DMSTAG_DOWN_LEFT, 0, &idownleft)); }
+  if (stagCoord->dof[0]) PetscCall(DMStagGetLocationSlot(dmCoord, DMSTAG_DOWN_LEFT, 0, &idownleft));
   if (stagCoord->dof[1]) {
     PetscCall(DMStagGetLocationSlot(dmCoord, DMSTAG_DOWN, 0, &idown));
     PetscCall(DMStagGetLocationSlot(dmCoord, DMSTAG_LEFT, 0, &ileft));
   }
-  if (stagCoord->dof[2]) { PetscCall(DMStagGetLocationSlot(dmCoord, DMSTAG_ELEMENT, 0, &ielement)); }
+  if (stagCoord->dof[2]) PetscCall(DMStagGetLocationSlot(dmCoord, DMSTAG_ELEMENT, 0, &ielement));
   PetscCall(DMStagGetGhostCorners(dmCoord, &start_ghost[0], &start_ghost[1], NULL, &n_ghost[0], &n_ghost[1], NULL));
 
   min[0] = xmin;
@@ -954,7 +954,7 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_2d(DM dm) {
   }
 
   /* In special cases, create a dedicated injective local-to-global map */
-  if ((stag->boundaryType[0] == DM_BOUNDARY_PERIODIC && stag->nRanks[0] == 1) || (stag->boundaryType[1] == DM_BOUNDARY_PERIODIC && stag->nRanks[1] == 1)) { PetscCall(DMStagPopulateLocalToGlobalInjective(dm)); }
+  if ((stag->boundaryType[0] == DM_BOUNDARY_PERIODIC && stag->nRanks[0] == 1) || (stag->boundaryType[1] == DM_BOUNDARY_PERIODIC && stag->nRanks[1] == 1)) PetscCall(DMStagPopulateLocalToGlobalInjective(dm));
 
   /* Free global offsets */
   PetscCall(PetscFree(globalOffsets));

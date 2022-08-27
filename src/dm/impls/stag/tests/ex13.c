@@ -128,8 +128,8 @@ static PetscErrorCode Test2_1d(DM dm) {
   PetscCall(DMStagGetCorners(dm, &startx, NULL, NULL, &nx, NULL, NULL, &nExtrax, NULL, NULL));
   PetscCall(DMStagGetDOF(dm, &dof0, &dof1, NULL, NULL));
   PetscCall(DMStagVecGetArray(dm, vecLocal, &arr));
-  if (dof0 > 0) { PetscCall(DMStagGetLocationSlot(dm, DMSTAG_LEFT, 0, &idxLeft)); }
-  if (dof1 > 0) { PetscCall(DMStagGetLocationSlot(dm, DMSTAG_ELEMENT, 0, &idxElement)); }
+  if (dof0 > 0) PetscCall(DMStagGetLocationSlot(dm, DMSTAG_LEFT, 0, &idxLeft));
+  if (dof1 > 0) PetscCall(DMStagGetLocationSlot(dm, DMSTAG_ELEMENT, 0, &idxElement));
   for (i = startx; i < startx + nx + nExtrax; ++i) {
     for (c = 0; c < dof0; ++c) {
       const PetscScalar valRef = TEST_FUNCTION(i, 0, 0, idxLeft, c);
@@ -188,12 +188,12 @@ static PetscErrorCode Test2_2d(DM dm) {
   PetscCall(DMStagGetCorners(dm, &startx, &starty, NULL, &nx, &ny, NULL, &nExtrax, &nExtray, NULL));
   PetscCall(DMStagGetDOF(dm, &dof0, &dof1, &dof2, NULL));
   PetscCall(DMStagVecGetArray(dm, vecLocal, &arr));
-  if (dof0 > 0) { PetscCall(DMStagGetLocationSlot(dm, DMSTAG_DOWN_LEFT, 0, &idxDownLeft)); }
+  if (dof0 > 0) PetscCall(DMStagGetLocationSlot(dm, DMSTAG_DOWN_LEFT, 0, &idxDownLeft));
   if (dof1 > 0) {
     PetscCall(DMStagGetLocationSlot(dm, DMSTAG_LEFT, 0, &idxLeft));
     PetscCall(DMStagGetLocationSlot(dm, DMSTAG_DOWN, 0, &idxDown));
   }
-  if (dof2 > 0) { PetscCall(DMStagGetLocationSlot(dm, DMSTAG_ELEMENT, 0, &idxElement)); }
+  if (dof2 > 0) PetscCall(DMStagGetLocationSlot(dm, DMSTAG_ELEMENT, 0, &idxElement));
   for (j = starty; j < starty + ny + nExtray; ++j) {
     for (i = startx; i < startx + nx + nExtrax; ++i) {
       for (c = 0; c < dof0; ++c) {
@@ -293,7 +293,7 @@ static PetscErrorCode Test2_3d(DM dm) {
   PetscCall(DMStagGetCorners(dm, &startx, &starty, &startz, &nx, &ny, &nz, &nExtrax, &nExtray, &nExtraz));
   PetscCall(DMStagGetDOF(dm, &dof0, &dof1, &dof2, &dof3));
   PetscCall(DMStagVecGetArray(dm, vecLocal, &arr));
-  if (dof0 > 0) { PetscCall(DMStagGetLocationSlot(dm, DMSTAG_BACK_DOWN_LEFT, 0, &idxBackDownLeft)); }
+  if (dof0 > 0) PetscCall(DMStagGetLocationSlot(dm, DMSTAG_BACK_DOWN_LEFT, 0, &idxBackDownLeft));
   if (dof1 > 0) {
     PetscCall(DMStagGetLocationSlot(dm, DMSTAG_BACK_LEFT, 0, &idxBackLeft));
     PetscCall(DMStagGetLocationSlot(dm, DMSTAG_BACK_DOWN, 0, &idxBackDown));
@@ -304,7 +304,7 @@ static PetscErrorCode Test2_3d(DM dm) {
     PetscCall(DMStagGetLocationSlot(dm, DMSTAG_DOWN, 0, &idxDown));
     PetscCall(DMStagGetLocationSlot(dm, DMSTAG_BACK, 0, &idxBack));
   }
-  if (dof3 > 0) { PetscCall(DMStagGetLocationSlot(dm, DMSTAG_ELEMENT, 0, &idxElement)); }
+  if (dof3 > 0) PetscCall(DMStagGetLocationSlot(dm, DMSTAG_ELEMENT, 0, &idxElement));
   for (k = startz; k < startz + nz + nExtraz; ++k) {
     for (j = starty; j < starty + ny + nExtray; ++j) {
       for (i = startx; i < startx + nx + nExtrax; ++i) {

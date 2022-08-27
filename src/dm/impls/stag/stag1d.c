@@ -118,8 +118,8 @@ PETSC_INTERN PetscErrorCode DMStagSetUniformCoordinatesExplicit_1d(DM dm, PetscR
   PetscCall(DMCreateLocalVector(dmCoord, &coordLocal));
 
   PetscCall(DMStagVecGetArray(dmCoord, coordLocal, &arr));
-  if (stagCoord->dof[0]) { PetscCall(DMStagGetLocationSlot(dmCoord, DMSTAG_LEFT, 0, &ileft)); }
-  if (stagCoord->dof[1]) { PetscCall(DMStagGetLocationSlot(dmCoord, DMSTAG_ELEMENT, 0, &ielement)); }
+  if (stagCoord->dof[0]) PetscCall(DMStagGetLocationSlot(dmCoord, DMSTAG_LEFT, 0, &ileft));
+  if (stagCoord->dof[1]) PetscCall(DMStagGetLocationSlot(dmCoord, DMSTAG_ELEMENT, 0, &ielement));
   PetscCall(DMStagGetGhostCorners(dmCoord, &start_ghost, NULL, NULL, &n_ghost, NULL, NULL));
 
   min = xmin;
@@ -418,7 +418,7 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_1d(DM dm) {
     }
 
     /* In special cases, create a dedicated injective local-to-global map */
-    if (stag->boundaryType[0] == DM_BOUNDARY_PERIODIC && stag->nRanks[0] == 1) { PetscCall(DMStagPopulateLocalToGlobalInjective(dm)); }
+    if (stag->boundaryType[0] == DM_BOUNDARY_PERIODIC && stag->nRanks[0] == 1) PetscCall(DMStagPopulateLocalToGlobalInjective(dm));
 
     /* Destroy ISs */
     PetscCall(ISDestroy(&isLocal));

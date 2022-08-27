@@ -4365,7 +4365,7 @@ PetscErrorCode MatSeqAIJCheckInode_FactorLU(Mat A) {
 
   m = A->rmap->n;
   if (a->inode.size) ns = a->inode.size;
-  else { PetscCall(PetscMalloc1(m + 1, &ns)); }
+  else PetscCall(PetscMalloc1(m + 1, &ns));
 
   i          = 0;
   node_count = 0;

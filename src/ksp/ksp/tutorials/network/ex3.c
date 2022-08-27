@@ -179,7 +179,7 @@ int main(int argc, char **argv) {
       PetscCall(DMNetworkIsSharedVertex(dmnetwork, vtx[i], &sharedv));
 
       PetscCall(DMNetworkGetNumComponents(dmnetwork, vtx[i], &ncomp));
-      if (sharedv || ghost) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "  [%d] v %" PetscInt_FMT " is shared %d, is ghost %d, ncomp %" PetscInt_FMT "\n", rank, vtx[i], sharedv, ghost, ncomp)); }
+      if (sharedv || ghost) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  [%d] v %" PetscInt_FMT " is shared %d, is ghost %d, ncomp %" PetscInt_FMT "\n", rank, vtx[i], sharedv, ghost, ncomp));
 
       for (j = 0; j < ncomp; j++) {
         void *component;

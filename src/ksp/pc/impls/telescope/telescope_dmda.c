@@ -124,7 +124,7 @@ static PetscErrorCode PCTelescopeSetUp_dmda_repart_coors2d(PC_Telescope sred, DM
   PetscFunctionBegin;
   PetscCall(DMGetCoordinates(dm, &coor));
   if (!coor) return (0);
-  if (PCTelescope_isActiveRank(sred)) { PetscCall(DMDASetUniformCoordinates(subdm, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0)); }
+  if (PCTelescope_isActiveRank(sred)) PetscCall(DMDASetUniformCoordinates(subdm, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0));
   /* Get the coordinate vector from the distributed array */
   PetscCall(DMGetCoordinateDM(dm, &cdm));
   PetscCall(DMDACreateNaturalVector(cdm, &coor_natural));
@@ -215,7 +215,7 @@ static PetscErrorCode PCTelescopeSetUp_dmda_repart_coors3d(PC_Telescope sred, DM
   PetscCall(DMGetCoordinates(dm, &coor));
   if (!coor) PetscFunctionReturn(0);
 
-  if (PCTelescope_isActiveRank(sred)) { PetscCall(DMDASetUniformCoordinates(subdm, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0)); }
+  if (PCTelescope_isActiveRank(sred)) PetscCall(DMDASetUniformCoordinates(subdm, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0));
 
   /* Get the coordinate vector from the distributed array */
   PetscCall(DMGetCoordinateDM(dm, &cdm));
@@ -762,7 +762,7 @@ PetscErrorCode PCTelescopeSubNullSpaceCreate_dmda_Telescope(PC pc, PC_Telescope 
 
   if (PCTelescope_isActiveRank(sred)) {
     /* create new vectors */
-    if (n) { PetscCall(VecDuplicateVecs(sred->xred, n, &sub_vecs)); }
+    if (n) PetscCall(VecDuplicateVecs(sred->xred, n, &sub_vecs));
   }
 
   /* copy entries */
@@ -944,7 +944,7 @@ PetscErrorCode PCApplyRichardson_Telescope_dmda(PC pc, Vec x, Vec y, Vec w, Pets
 
   PetscCall(PCApply_Telescope_dmda(pc, x, y));
 
-  if (PCTelescope_isActiveRank(sred)) { PetscCall(KSPSetInitialGuessNonzero(sred->ksp, default_init_guess_value)); }
+  if (PCTelescope_isActiveRank(sred)) PetscCall(KSPSetInitialGuessNonzero(sred->ksp, default_init_guess_value));
 
   if (!*reason) *reason = PCRICHARDSON_CONVERGED_ITS;
   *outits = 1;

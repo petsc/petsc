@@ -89,7 +89,7 @@ static PetscErrorCode CreateMatrix(UserCtx ctx) {
   PetscCall(MatAssemblyEnd(ctx->F, MAT_FINAL_ASSEMBLY));
   PetscCall(PetscLogStagePop());
   /* Stencil matrix is symmetric. Setting symmetric flag for ICC/Cholesky preconditioner */
-  if (!(ctx->matops)) { PetscCall(MatSetOption(ctx->F, MAT_SYMMETRIC, PETSC_TRUE)); }
+  if (!(ctx->matops)) PetscCall(MatSetOption(ctx->F, MAT_SYMMETRIC, PETSC_TRUE));
   PetscCall(MatTransposeMatMult(ctx->F, ctx->F, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &(ctx->W)));
   /* Setup Hessian Workspace in same shape as W */
   PetscCall(MatDuplicate(ctx->W, MAT_DO_NOT_COPY_VALUES, &(ctx->Hm)));
@@ -102,8 +102,8 @@ static PetscErrorCode SetupWorkspace(UserCtx ctx) {
 
   PetscFunctionBegin;
   PetscCall(MatCreateVecs(ctx->F, &ctx->workLeft[0], &ctx->workRight[0]));
-  for (i = 1; i < NWORKLEFT; i++) { PetscCall(VecDuplicate(ctx->workLeft[0], &(ctx->workLeft[i]))); }
-  for (i = 1; i < NWORKRIGHT; i++) { PetscCall(VecDuplicate(ctx->workRight[0], &(ctx->workRight[i]))); }
+  for (i = 1; i < NWORKLEFT; i++) PetscCall(VecDuplicate(ctx->workLeft[0], &(ctx->workLeft[i])));
+  for (i = 1; i < NWORKRIGHT; i++) PetscCall(VecDuplicate(ctx->workRight[0], &(ctx->workRight[i])));
   PetscFunctionReturn(0);
 }
 
@@ -159,8 +159,8 @@ static PetscErrorCode DestroyContext(UserCtx *ctx) {
   PetscCall(MatDestroy(&((*ctx)->Hm)));
   PetscCall(MatDestroy(&((*ctx)->Hr)));
   PetscCall(VecDestroy(&((*ctx)->d)));
-  for (i = 0; i < NWORKLEFT; i++) { PetscCall(VecDestroy(&((*ctx)->workLeft[i]))); }
-  for (i = 0; i < NWORKRIGHT; i++) { PetscCall(VecDestroy(&((*ctx)->workRight[i]))); }
+  for (i = 0; i < NWORKLEFT; i++) PetscCall(VecDestroy(&((*ctx)->workLeft[i])));
+  for (i = 0; i < NWORKRIGHT; i++) PetscCall(VecDestroy(&((*ctx)->workRight[i])));
   PetscCall(PetscRandomDestroy(&((*ctx)->rctx)));
   PetscCall(PetscFree(*ctx));
   PetscFunctionReturn(0);
@@ -256,7 +256,7 @@ static PetscErrorCode HessianMisfitADMM(Tao tao, Vec x, Mat H, Mat Hpre, void *_
   PetscFunctionBegin;
   PetscCall(MatCopy(ctx->W, H, DIFFERENT_NONZERO_PATTERN));
   PetscCall(MatShift(H, ctx->mu));
-  if (Hpre != H) { PetscCall(MatCopy(H, Hpre, DIFFERENT_NONZERO_PATTERN)); }
+  if (Hpre != H) PetscCall(MatCopy(H, Hpre, DIFFERENT_NONZERO_PATTERN));
   PetscFunctionReturn(0);
 }
 
@@ -442,7 +442,7 @@ static PetscErrorCode HessianComplete(Tao tao, Vec x, Mat H, Mat Hpre, void *ctx
   PetscCall(HessianMisfit(tao, x, H, H, ctx));
   PetscCall(HessianRegularization(tao, x, tempH, tempH, ctx));
   PetscCall(MatAXPY(H, 1., tempH, DIFFERENT_NONZERO_PATTERN));
-  if (Hpre != H) { PetscCall(MatCopy(H, Hpre, DIFFERENT_NONZERO_PATTERN)); }
+  if (Hpre != H) PetscCall(MatCopy(H, Hpre, DIFFERENT_NONZERO_PATTERN));
   PetscCall(MatDestroy(&tempH));
   PetscFunctionReturn(0);
 }

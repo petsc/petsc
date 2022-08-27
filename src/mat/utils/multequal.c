@@ -542,7 +542,7 @@ PetscErrorCode MatIsLinear(Mat A, PetscInt n, PetscBool *flg) {
   for (k = 0; k < n; k++) {
     PetscCall(VecSetRandom(x, rctx));
     PetscCall(VecSetRandom(y, rctx));
-    if (rank == 0) { PetscCall(PetscRandomGetValue(rctx, &a)); }
+    if (rank == 0) PetscCall(PetscRandomGetValue(rctx, &a));
     PetscCallMPI(MPI_Bcast(&a, 1, MPIU_SCALAR, 0, comm));
 
     /* s2 = a*A*x + A*y */

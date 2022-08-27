@@ -216,7 +216,7 @@ static PetscErrorCode PCSetUp_Jacobi(PC pc) {
     }
     PetscCall(VecRestoreArray(diagsqrt, &x));
   }
-  if (zeroflag) { PetscCall(PetscInfo(pc, "Zero detected in diagonal of matrix, using 1 at those locations\n")); }
+  if (zeroflag) PetscCall(PetscInfo(pc, "Zero detected in diagonal of matrix, using 1 at those locations\n"));
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
@@ -272,7 +272,7 @@ static PetscErrorCode PCApply_Jacobi(PC pc, Vec x, Vec y) {
   PC_Jacobi *jac = (PC_Jacobi *)pc->data;
 
   PetscFunctionBegin;
-  if (!jac->diag) { PetscCall(PCSetUp_Jacobi_NonSymmetric(pc)); }
+  if (!jac->diag) PetscCall(PCSetUp_Jacobi_NonSymmetric(pc));
   PetscCall(VecPointwiseMult(y, x, jac->diag));
   PetscFunctionReturn(0);
 }
@@ -294,7 +294,7 @@ static PetscErrorCode PCApplySymmetricLeftOrRight_Jacobi(PC pc, Vec x, Vec y) {
   PC_Jacobi *jac = (PC_Jacobi *)pc->data;
 
   PetscFunctionBegin;
-  if (!jac->diagsqrt) { PetscCall(PCSetUp_Jacobi_Symmetric(pc)); }
+  if (!jac->diagsqrt) PetscCall(PCSetUp_Jacobi_Symmetric(pc));
   PetscCall(VecPointwiseMult(y, x, jac->diagsqrt));
   PetscFunctionReturn(0);
 }
@@ -367,7 +367,7 @@ static PetscErrorCode PCView_Jacobi(PC pc, PetscViewer viewer) {
     PetscCall(PCJacobiGetFixDiagonal(pc, &fixdiag));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  type %s%s%s\n", PCJacobiTypes[type], useAbs ? ", using absolute value of entries" : "", !fixdiag ? ", not checking null diagonal entries" : ""));
     PetscCall(PetscViewerGetFormat(viewer, &format));
-    if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) { PetscCall(VecView(jac->diag, viewer)); }
+    if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) PetscCall(VecView(jac->diag, viewer));
   }
   PetscFunctionReturn(0);
 }

@@ -23,7 +23,7 @@ PETSC_EXTERN PetscErrorCode SNESComputeNGSDefaultSecant(SNES snes, Vec X, Vec B,
   const PetscScalar *fa, *ga;
 
   PetscFunctionBegin;
-  if (snes->nwork < 3) { PetscCall(SNESSetWorkVecs(snes, 3)); }
+  if (snes->nwork < 3) PetscCall(SNESSetWorkVecs(snes, 3));
   W = snes->work[0];
   G = snes->work[1];
   F = snes->work[2];

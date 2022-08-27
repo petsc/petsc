@@ -70,7 +70,7 @@ int main(int argc, char **args) {
     PetscCall(VecAssemblyEnd(diag));
 
     PetscCall(MatDiagonalSet(B, diag, INSERT_VALUES));
-    if (test == 1) { PetscCall(MatView(B, PETSC_VIEWER_STDOUT_WORLD)); }
+    if (test == 1) PetscCall(MatView(B, PETSC_VIEWER_STDOUT_WORLD));
     PetscCall(MatDestroy(&B));
     PetscCall(VecDestroy(&diag));
   }

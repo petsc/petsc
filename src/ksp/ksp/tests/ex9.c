@@ -60,7 +60,7 @@ int main(int argc, char *argv[]) {
   /* Tests MatMissingDiagonal_Nest */
   PetscCall(MatMissingDiagonal(M, &missM, NULL));
   PetscCall(MatMissingDiagonal(A, &missA, NULL));
-  if (missM != missA) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Unexpected %s != %s\n", missM ? "true" : "false", missA ? "true" : "false")); }
+  if (missM != missA) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Unexpected %s != %s\n", missM ? "true" : "false", missA ? "true" : "false"));
 
   PetscCall(MatDestroy(&M));
 

@@ -34,7 +34,7 @@ static PetscErrorCode PCSetUp_CP(PC pc) {
   }
 
   /* convert to column format */
-  if (!cp->a) { PetscCall(PetscMalloc3(aij->nz, &cp->a, cp->n + 1, &cp->i, aij->nz, &cp->j)); }
+  if (!cp->a) PetscCall(PetscMalloc3(aij->nz, &cp->a, cp->n + 1, &cp->i, aij->nz, &cp->j));
   PetscCall(PetscCalloc1(cp->n, &colcnt));
 
   for (i = 0; i < aij->nz; i++) colcnt[aij->j[i]]++;

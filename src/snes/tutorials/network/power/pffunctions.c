@@ -14,7 +14,7 @@ PetscErrorCode GetListofEdges_Power(PFDATA *pfdata, PetscInt *edgelist) {
     tbus                = branch[i].internal_j;
     edgelist[2 * i]     = fbus;
     edgelist[2 * i + 1] = tbus;
-    if (netview) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "branch %" PetscInt_FMT ", bus[%" PetscInt_FMT "] -> bus[%" PetscInt_FMT "]\n", i, fbus, tbus)); }
+    if (netview) PetscCall(PetscPrintf(PETSC_COMM_SELF, "branch %" PetscInt_FMT ", bus[%" PetscInt_FMT "] -> bus[%" PetscInt_FMT "]\n", i, fbus, tbus));
   }
   if (netview) {
     for (i = 0; i < pfdata->nbus; i++) {

@@ -178,7 +178,7 @@ int main(int argc, char **args) {
   PetscCall(MatShellSetOperation(S, MATOP_MULT_TRANSPOSE, (void (*)(void))MatMultTranspose_User));
   PetscCall(MatShellSetOperation(S, MATOP_GET_DIAGONAL, (void (*)(void))MatGetDiagonal_User));
 
-  for (i = 0; i < 4; i++) { PetscCall(MatCreateSeqDense(PETSC_COMM_WORLD, 1, 1, &avals[i], &D[i])); }
+  for (i = 0; i < 4; i++) PetscCall(MatCreateSeqDense(PETSC_COMM_WORLD, 1, 1, &avals[i], &D[i]));
   PetscCall(MatCreateNest(PETSC_COMM_WORLD, 2, NULL, 2, NULL, D, &N));
   PetscCall(MatSetUp(N));
 

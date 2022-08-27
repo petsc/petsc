@@ -104,7 +104,7 @@ static PetscErrorCode SNESSolve_Anderson(SNES snes) {
         PetscFunctionReturn(0);
       }
       PetscCall(SNESGetNPCFunction(snes, FM, &fMnorm));
-      if (ngmres->andersonBeta != 1.0) { PetscCall(VecAXPBY(XM, (1.0 - ngmres->andersonBeta), ngmres->andersonBeta, X)); }
+      if (ngmres->andersonBeta != 1.0) PetscCall(VecAXPBY(XM, (1.0 - ngmres->andersonBeta), ngmres->andersonBeta, X));
     } else {
       PetscCall(VecCopy(F, FM));
       PetscCall(VecCopy(X, XM));
@@ -131,7 +131,7 @@ static PetscErrorCode SNESSolve_Anderson(SNES snes) {
     }
     /* restart after restart conditions have persisted for a fixed number of iterations */
     if (restart_count >= ngmres->restart_it) {
-      if (ngmres->monitor) { PetscCall(PetscViewerASCIIPrintf(ngmres->monitor, "Restarted at iteration %" PetscInt_FMT "\n", k_restart)); }
+      if (ngmres->monitor) PetscCall(PetscViewerASCIIPrintf(ngmres->monitor, "Restarted at iteration %" PetscInt_FMT "\n", k_restart));
       restart_count = 0;
       k_restart     = 0;
       l             = 0;
@@ -220,7 +220,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Anderson(SNES snes) {
   }
 
   PetscCall(SNESGetLineSearch(snes, &linesearch));
-  if (!((PetscObject)linesearch)->type_name) { PetscCall(SNESLineSearchSetType(linesearch, SNESLINESEARCHBASIC)); }
+  if (!((PetscObject)linesearch)->type_name) PetscCall(SNESLineSearchSetType(linesearch, SNESLINESEARCHBASIC));
 
   ngmres->additive_linesearch = NULL;
   ngmres->approxfunc          = PETSC_FALSE;

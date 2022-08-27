@@ -107,7 +107,7 @@ PetscErrorCode PCLMVMClearIS(PC pc) {
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCLMVM, &same));
   PetscCheck(same, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "PC must be a PCLMVM type.");
-  if (ctx->inactive) { PetscCall(ISDestroy(&ctx->inactive)); }
+  if (ctx->inactive) PetscCall(ISDestroy(&ctx->inactive));
   PetscFunctionReturn(0);
 }
 
@@ -139,8 +139,8 @@ static PetscErrorCode PCReset_LMVM(PC pc) {
   PC_LMVM *ctx = (PC_LMVM *)pc->data;
 
   PetscFunctionBegin;
-  if (ctx->xwork) { PetscCall(VecDestroy(&ctx->xwork)); }
-  if (ctx->ywork) { PetscCall(VecDestroy(&ctx->ywork)); }
+  if (ctx->xwork) PetscCall(VecDestroy(&ctx->xwork));
+  if (ctx->ywork) PetscCall(VecDestroy(&ctx->ywork));
   PetscFunctionReturn(0);
 }
 
@@ -197,7 +197,7 @@ static PetscErrorCode PCDestroy_LMVM(PC pc) {
   PC_LMVM *ctx = (PC_LMVM *)pc->data;
 
   PetscFunctionBegin;
-  if (ctx->inactive) { PetscCall(ISDestroy(&ctx->inactive)); }
+  if (ctx->inactive) PetscCall(ISDestroy(&ctx->inactive));
   if (pc->setupcalled) {
     PetscCall(VecDestroy(&ctx->xwork));
     PetscCall(VecDestroy(&ctx->ywork));

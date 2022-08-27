@@ -13,7 +13,7 @@ static PetscErrorCode TaoSolve_LMVM(Tao tao) {
 
   PetscFunctionBegin;
 
-  if (tao->XL || tao->XU || tao->ops->computebounds) { PetscCall(PetscInfo(tao, "WARNING: Variable bounds have been set but will be ignored by lmvm algorithm\n")); }
+  if (tao->XL || tao->XU || tao->ops->computebounds) PetscCall(PetscInfo(tao, "WARNING: Variable bounds have been set but will be ignored by lmvm algorithm\n"));
 
   /*  Check convergence criteria */
   PetscCall(TaoComputeObjectiveAndGradient(tao, tao->solution, &f, tao->gradient));

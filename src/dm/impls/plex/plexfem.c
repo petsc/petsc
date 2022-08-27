@@ -1995,7 +1995,7 @@ static PetscErrorCode DMPlexComputeIntegral_Internal(DM dm, Vec X, PetscInt cSta
   PetscCall(DMFieldGetDegree(coordField, cellIS, NULL, &maxDegree));
   if (maxDegree <= 1) {
     PetscCall(DMFieldCreateDefaultQuadrature(coordField, cellIS, &affineQuad));
-    if (affineQuad) { PetscCall(DMFieldCreateFEGeom(coordField, cellIS, affineQuad, PETSC_FALSE, &cgeomFEM)); }
+    if (affineQuad) PetscCall(DMFieldCreateFEGeom(coordField, cellIS, affineQuad, PETSC_FALSE, &cgeomFEM));
   }
   if (useFVM) {
     PetscFV   fv = NULL;
@@ -2072,13 +2072,13 @@ static PetscErrorCode DMPlexComputeIntegral_Internal(DM dm, Vec X, PetscInt cSta
       Ne        = numChunks * numBatches * batchSize;
       Nr        = numCells % (numBatches * batchSize);
       offset    = numCells - Nr;
-      if (!affineQuad) { PetscCall(DMFieldCreateFEGeom(coordField, cellIS, q, PETSC_FALSE, &cgeomFEM)); }
+      if (!affineQuad) PetscCall(DMFieldCreateFEGeom(coordField, cellIS, q, PETSC_FALSE, &cgeomFEM));
       PetscCall(PetscFEGeomGetChunk(cgeomFEM, 0, offset, &chunkGeom));
       PetscCall(PetscFEIntegrate(prob, f, Ne, chunkGeom, u, probAux, a, cintegral));
       PetscCall(PetscFEGeomGetChunk(cgeomFEM, offset, numCells, &chunkGeom));
       PetscCall(PetscFEIntegrate(prob, f, Nr, chunkGeom, &u[offset * totDim], probAux, &a[offset * totDimAux], &cintegral[offset * Nf]));
       PetscCall(PetscFEGeomRestoreChunk(cgeomFEM, offset, numCells, &chunkGeom));
-      if (!affineQuad) { PetscCall(PetscFEGeomDestroy(&cgeomFEM)); }
+      if (!affineQuad) PetscCall(PetscFEGeomDestroy(&cgeomFEM));
     } else if (id == PETSCFV_CLASSID) {
       PetscInt       foff;
       PetscPointFunc obj_func;
@@ -2109,7 +2109,7 @@ static PetscErrorCode DMPlexComputeIntegral_Internal(DM dm, Vec X, PetscInt cSta
   if (dmAux) PetscCall(PetscFree(a));
   PetscCall(PetscFree(u));
   /* Cleanup */
-  if (affineQuad) { PetscCall(PetscFEGeomDestroy(&cgeomFEM)); }
+  if (affineQuad) PetscCall(PetscFEGeomDestroy(&cgeomFEM));
   PetscCall(PetscQuadratureDestroy(&affineQuad));
   PetscCall(ISDestroy(&cellIS));
   PetscCall(DMRestoreLocalVector(dm, &locX));
@@ -3568,7 +3568,7 @@ PetscErrorCode DMPlexGetFaceFields(DM dm, PetscInt fStart, PetscInt fEnd, Vec lo
   PetscCall(VecRestoreArrayRead(locX, &x));
   PetscCall(VecRestoreArrayRead(faceGeometry, &facegeom));
   PetscCall(VecRestoreArrayRead(cellGeometry, &cellgeom));
-  if (locGrad) { PetscCall(VecRestoreArrayRead(locGrad, &lgrad)); }
+  if (locGrad) PetscCall(VecRestoreArrayRead(locGrad, &lgrad));
   PetscCall(PetscFree(isFE));
   PetscFunctionReturn(0);
 }
@@ -3778,7 +3778,7 @@ PetscErrorCode DMPlexComputeResidual_Patch_Internal(DM dm, PetscSection section,
     PetscCall(DMFieldGetDegree(coordField, cellIS, NULL, &maxDegree));
     if (maxDegree <= 1) {
       PetscCall(DMFieldCreateDefaultQuadrature(coordField, cellIS, &affineQuad));
-      if (affineQuad) { PetscCall(DMSNESGetFEGeom(coordField, cellIS, affineQuad, PETSC_FALSE, &affineGeom)); }
+      if (affineQuad) PetscCall(DMSNESGetFEGeom(coordField, cellIS, affineQuad, PETSC_FALSE, &affineGeom));
     } else {
       PetscCall(PetscCalloc2(Nf, &quads, Nf, &geoms));
       for (f = 0; f < Nf; ++f) {
@@ -4275,7 +4275,7 @@ static PetscErrorCode DMPlexComputeBdResidual_Single_Internal(DM dm, PetscReal t
     PetscCall(ISGetIndices(pointIS, &points));
     PetscCall(PetscMalloc4(numFaces * totDim, &u, locX_t ? numFaces * totDim : 0, &u_t, numFaces * totDim, &elemVec, locA ? numFaces * totDimAux : 0, &a));
     PetscCall(DMFieldGetDegree(coordField, pointIS, NULL, &maxDegree));
-    if (maxDegree <= 1) { PetscCall(DMFieldCreateDefaultQuadrature(coordField, pointIS, &qGeom)); }
+    if (maxDegree <= 1) PetscCall(DMFieldCreateDefaultQuadrature(coordField, pointIS, &qGeom));
     if (!qGeom) {
       PetscFE fe;
 
@@ -4489,7 +4489,7 @@ PetscErrorCode DMPlexComputeResidual_Internal(DM dm, PetscFormKey key, IS cellIS
     PetscCall(DMFieldGetDegree(coordField, cellIS, NULL, &maxDegree));
     if (maxDegree <= 1) {
       PetscCall(DMFieldCreateDefaultQuadrature(coordField, cellIS, &affineQuad));
-      if (affineQuad) { PetscCall(DMSNESGetFEGeom(coordField, cellIS, affineQuad, PETSC_FALSE, &affineGeom)); }
+      if (affineQuad) PetscCall(DMSNESGetFEGeom(coordField, cellIS, affineQuad, PETSC_FALSE, &affineGeom));
     } else {
       PetscCall(PetscCalloc2(Nf, &quads, Nf, &geoms));
       for (f = 0; f < Nf; ++f) {
@@ -4773,7 +4773,7 @@ PetscErrorCode DMPlexComputeResidual_Internal(DM dm, PetscFormKey key, IS cellIS
     PetscCall(PetscSectionGetChart(section, &pStart, &pEnd));
     PetscCall(PetscSectionGetMaxDof(section, &maxDof));
     PetscCall(PetscCalloc1(maxDof, &zeroes));
-    for (p = pStart; p < pEnd; p++) { PetscCall(VecSetValuesSection(locFbc, section, p, zeroes, INSERT_BC_VALUES)); }
+    for (p = pStart; p < pEnd; p++) PetscCall(VecSetValuesSection(locFbc, section, p, zeroes, INSERT_BC_VALUES));
     PetscCall(PetscFree(zeroes));
     PetscCall(DMPrintLocalVec(dm, name, mesh->printTol, locFbc));
     PetscCall(VecDestroy(&locFbc));
@@ -5040,7 +5040,7 @@ PetscErrorCode DMPlexComputeBdJacobian_Single_Internal(DM dm, PetscReal t, Petsc
     PetscCall(ISGetIndices(pointIS, &points));
     PetscCall(PetscMalloc4(numFaces * totDim, &u, locX_t ? numFaces * totDim : 0, &u_t, numFaces * totDim * totDim, &elemMat, locA ? numFaces * totDimAux : 0, &a));
     PetscCall(DMFieldGetDegree(coordField, pointIS, NULL, &maxDegree));
-    if (maxDegree <= 1) { PetscCall(DMFieldCreateDefaultQuadrature(coordField, pointIS, &qGeom)); }
+    if (maxDegree <= 1) PetscCall(DMFieldCreateDefaultQuadrature(coordField, pointIS, &qGeom));
     if (!qGeom) {
       PetscFE fe;
 
@@ -5266,7 +5266,7 @@ PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, PetscFormKey key, IS cellIS
     PetscCall(PetscFEGetDimension(fe, &Nb));
     PetscCall(PetscFEGetTileSizes(fe, NULL, &numBlocks, NULL, &numBatches));
     PetscCall(DMFieldGetDegree(coordField, cellIS, NULL, &maxDegree));
-    if (maxDegree <= 1) { PetscCall(DMFieldCreateDefaultQuadrature(coordField, cellIS, &qGeom)); }
+    if (maxDegree <= 1) PetscCall(DMFieldCreateDefaultQuadrature(coordField, cellIS, &qGeom));
     if (!qGeom) {
       PetscCall(PetscFEGetQuadrature(fe, &qGeom));
       PetscCall(PetscObjectReference((PetscObject)qGeom));

@@ -413,7 +413,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   PetscCall(PetscOptionsBool("-quiet", "Don't print any vecs", "ex12.c", options->quiet, &options->quiet, NULL));
   PetscCall(PetscOptionsBool("-nonzero_initial_guess", "nonzero initial guess", "ex12.c", options->nonzInit, &options->nonzInit, NULL));
   PetscCall(PetscOptionsBool("-bd_integral", "Compute the integral of the solution on the boundary", "ex12.c", options->bdIntegral, &options->bdIntegral, NULL));
-  if (options->runType == RUN_TEST) { PetscCall(PetscOptionsBool("-run_test_check_ksp", "Check solution of KSP", "ex12.c", options->checkksp, &options->checkksp, NULL)); }
+  if (options->runType == RUN_TEST) PetscCall(PetscOptionsBool("-run_test_check_ksp", "Check solution of KSP", "ex12.c", options->checkksp, &options->checkksp, NULL));
   PetscCall(PetscOptionsInt("-div", "The number of division for the checkerboard coefficient", "ex12.c", options->div, &options->div, NULL));
   PetscCall(PetscOptionsInt("-k", "The exponent for the checkerboard coefficient", "ex12.c", options->k, &options->k, NULL));
   PetscCall(PetscOptionsBool("-k_random", "Assign random k values to checkerboard", "ex12.c", options->rand, &options->rand, NULL));
@@ -786,7 +786,7 @@ int main(int argc, char **argv) {
     PetscErrorCode (*initialGuess[1])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar u[], void *ctx) = {zero};
 
     if (user.nonzInit) initialGuess[0] = ecks;
-    if (user.runType == RUN_FULL) { PetscCall(DMProjectFunction(dm, 0.0, initialGuess, NULL, INSERT_VALUES, u)); }
+    if (user.runType == RUN_FULL) PetscCall(DMProjectFunction(dm, 0.0, initialGuess, NULL, INSERT_VALUES, u));
     PetscCall(VecViewFromOptions(u, NULL, "-guess_vec_view"));
     PetscCall(SNESSolve(snes, NULL, u));
     PetscCall(SNESGetSolution(snes, &u));

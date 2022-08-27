@@ -138,7 +138,7 @@ int main(int argc, char **args) {
     if (view) PetscCall(VecView(z, PETSC_VIEWER_DRAW_WORLD));
     PetscCall(VecAXPY(z, -1.0, x));
     PetscCall(VecNorm(z, NORM_1, &enorm));
-    if (enorm > 1.e-11) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Error norm of |x - z| %g\n", (double)enorm)); }
+    if (enorm > 1.e-11) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Error norm of |x - z| %g\n", (double)enorm));
 
     /* free spaces */
     fftw_destroy_plan(fplan);

@@ -109,7 +109,7 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJSELL(Mat A, MatType type, Ma
   Mat B = *newmat;
 
   PetscFunctionBegin;
-  if (reuse == MAT_INITIAL_MATRIX) { PetscCall(MatDuplicate(A, MAT_COPY_VALUES, &B)); }
+  if (reuse == MAT_INITIAL_MATRIX) PetscCall(MatDuplicate(A, MAT_COPY_VALUES, &B));
 
   PetscCall(PetscObjectChangeTypeName((PetscObject)B, MATMPIAIJSELL));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatMPIAIJSetPreallocation_C", MatMPIAIJSetPreallocation_MPIAIJSELL));

@@ -57,7 +57,7 @@ static PetscErrorCode PetscViewerView_HDF5(PetscViewer v, PetscViewer viewer) {
   PetscBool         flg;
 
   PetscFunctionBegin;
-  if (hdf5->filename) { PetscCall(PetscViewerASCIIPrintf(viewer, "Filename: %s\n", hdf5->filename)); }
+  if (hdf5->filename) PetscCall(PetscViewerASCIIPrintf(viewer, "Filename: %s\n", hdf5->filename));
   PetscCall(PetscViewerASCIIPrintf(viewer, "Vectors with blocksize 1 saved as 2D datasets: %s\n", PetscBools[hdf5->basedimension2]));
   PetscCall(PetscViewerASCIIPrintf(viewer, "Enforce single precision storage: %s\n", PetscBools[hdf5->spoutput]));
   PetscCall(PetscViewerHDF5GetCollective(v, &flg));

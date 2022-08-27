@@ -253,9 +253,9 @@ PetscErrorCode MatCreateSubMatrices_SeqBAIJ(Mat A, PetscInt n, const IS irow[], 
   PetscInt i;
 
   PetscFunctionBegin;
-  if (scall == MAT_INITIAL_MATRIX) { PetscCall(PetscCalloc1(n + 1, B)); }
+  if (scall == MAT_INITIAL_MATRIX) PetscCall(PetscCalloc1(n + 1, B));
 
-  for (i = 0; i < n; i++) { PetscCall(MatCreateSubMatrix_SeqBAIJ(A, irow[i], icol[i], scall, &(*B)[i])); }
+  for (i = 0; i < n; i++) PetscCall(MatCreateSubMatrix_SeqBAIJ(A, irow[i], icol[i], scall, &(*B)[i]));
   PetscFunctionReturn(0);
 }
 
@@ -1020,7 +1020,7 @@ PetscErrorCode MatMultAdd_SeqBAIJ_12_ver1(Mat A, Vec xx, Vec yy, Vec zz) {
 
   v = a->a;
   if (usecprow) {
-    if (zz != yy) { PetscCall(PetscArraycpy(zarray, yarray, 12 * mbs)); }
+    if (zz != yy) PetscCall(PetscArraycpy(zarray, yarray, 12 * mbs));
     mbs  = a->compressedrow.nrows;
     ii   = a->compressedrow.i;
     ridx = a->compressedrow.rindex;
@@ -1223,7 +1223,7 @@ PetscErrorCode MatMultAdd_SeqBAIJ_12_ver2(Mat A, Vec xx, Vec yy, Vec zz) {
 
   v = a->a;
   if (usecprow) {
-    if (zz != yy) { PetscCall(PetscArraycpy(zarray, yarray, 12 * mbs)); }
+    if (zz != yy) PetscCall(PetscArraycpy(zarray, yarray, 12 * mbs));
     mbs  = a->compressedrow.nrows;
     ii   = a->compressedrow.i;
     ridx = a->compressedrow.rindex;
@@ -2058,7 +2058,7 @@ PetscErrorCode MatMultAdd_SeqBAIJ_1(Mat A, Vec xx, Vec yy, Vec zz) {
   idx = a->j;
   v   = a->a;
   if (usecprow) {
-    if (zz != yy) { PetscCall(PetscArraycpy(z, y, mbs)); }
+    if (zz != yy) PetscCall(PetscArraycpy(z, y, mbs));
     mbs  = a->compressedrow.nrows;
     ii   = a->compressedrow.i;
     ridx = a->compressedrow.rindex;
@@ -2108,7 +2108,7 @@ PetscErrorCode MatMultAdd_SeqBAIJ_2(Mat A, Vec xx, Vec yy, Vec zz) {
   idx = a->j;
   v   = a->a;
   if (usecprow) {
-    if (zz != yy) { PetscCall(PetscArraycpy(zarray, yarray, 2 * mbs)); }
+    if (zz != yy) PetscCall(PetscArraycpy(zarray, yarray, 2 * mbs));
     mbs  = a->compressedrow.nrows;
     ii   = a->compressedrow.i;
     ridx = a->compressedrow.rindex;
@@ -2167,7 +2167,7 @@ PetscErrorCode MatMultAdd_SeqBAIJ_3(Mat A, Vec xx, Vec yy, Vec zz) {
   idx = a->j;
   v   = a->a;
   if (usecprow) {
-    if (zz != yy) { PetscCall(PetscArraycpy(zarray, yarray, 3 * mbs)); }
+    if (zz != yy) PetscCall(PetscArraycpy(zarray, yarray, 3 * mbs));
     mbs  = a->compressedrow.nrows;
     ii   = a->compressedrow.i;
     ridx = a->compressedrow.rindex;
@@ -2229,7 +2229,7 @@ PetscErrorCode MatMultAdd_SeqBAIJ_4(Mat A, Vec xx, Vec yy, Vec zz) {
   idx = a->j;
   v   = a->a;
   if (usecprow) {
-    if (zz != yy) { PetscCall(PetscArraycpy(zarray, yarray, 4 * mbs)); }
+    if (zz != yy) PetscCall(PetscArraycpy(zarray, yarray, 4 * mbs));
     mbs  = a->compressedrow.nrows;
     ii   = a->compressedrow.i;
     ridx = a->compressedrow.rindex;
@@ -2296,7 +2296,7 @@ PetscErrorCode MatMultAdd_SeqBAIJ_5(Mat A, Vec xx, Vec yy, Vec zz) {
   idx = a->j;
   v   = a->a;
   if (usecprow) {
-    if (zz != yy) { PetscCall(PetscArraycpy(zarray, yarray, 5 * mbs)); }
+    if (zz != yy) PetscCall(PetscArraycpy(zarray, yarray, 5 * mbs));
     mbs  = a->compressedrow.nrows;
     ii   = a->compressedrow.i;
     ridx = a->compressedrow.rindex;
@@ -2367,7 +2367,7 @@ PetscErrorCode MatMultAdd_SeqBAIJ_6(Mat A, Vec xx, Vec yy, Vec zz) {
   idx = a->j;
   v   = a->a;
   if (usecprow) {
-    if (zz != yy) { PetscCall(PetscArraycpy(zarray, yarray, 6 * mbs)); }
+    if (zz != yy) PetscCall(PetscArraycpy(zarray, yarray, 6 * mbs));
     mbs  = a->compressedrow.nrows;
     ii   = a->compressedrow.i;
     ridx = a->compressedrow.rindex;
@@ -2442,7 +2442,7 @@ PetscErrorCode MatMultAdd_SeqBAIJ_7(Mat A, Vec xx, Vec yy, Vec zz) {
   idx = a->j;
   v   = a->a;
   if (usecprow) {
-    if (zz != yy) { PetscCall(PetscArraycpy(zarray, yarray, 7 * mbs)); }
+    if (zz != yy) PetscCall(PetscArraycpy(zarray, yarray, 7 * mbs));
     mbs  = a->compressedrow.nrows;
     ii   = a->compressedrow.i;
     ridx = a->compressedrow.rindex;
@@ -2672,7 +2672,7 @@ PetscErrorCode MatMultAdd_SeqBAIJ_11(Mat A, Vec xx, Vec yy, Vec zz) {
   idx = a->j;
   v   = a->a;
   if (usecprow) {
-    if (zz != yy) { PetscCall(PetscArraycpy(zarray, yarray, 7 * mbs)); }
+    if (zz != yy) PetscCall(PetscArraycpy(zarray, yarray, 7 * mbs));
     mbs  = a->compressedrow.nrows;
     ii   = a->compressedrow.i;
     ridx = a->compressedrow.rindex;
@@ -3654,7 +3654,7 @@ PetscErrorCode MatMatMultNumeric_SeqBAIJ_SeqDense(Mat A, Mat B, Mat C) {
   PetscCheck(A->rmap->n == C->rmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Number rows in C %" PetscInt_FMT " not equal rows in A %" PetscInt_FMT, C->rmap->n, A->rmap->n);
   PetscCheck(B->cmap->n == C->cmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Number columns in B %" PetscInt_FMT " not equal columns in C %" PetscInt_FMT, B->cmap->n, C->cmap->n);
   b = bd->v;
-  if (a->nonzerorowcnt != A->rmap->n) { PetscCall(MatZeroEntries(C)); }
+  if (a->nonzerorowcnt != A->rmap->n) PetscCall(MatZeroEntries(C));
   PetscCall(MatDenseGetArray(C, &c));
   switch (bs) {
   case 1: PetscCall(MatMatMult_SeqBAIJ_1_Private(A, b, bm, c, cm, cn)); break;

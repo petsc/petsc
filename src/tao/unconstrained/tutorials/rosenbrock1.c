@@ -74,7 +74,7 @@ int main(int argc, char **argv) {
   PetscCall(TaoSetHessian(tao, H, H, FormHessian, &user));
 
   /* Test the LMVM matrix */
-  if (test_lmvm) { PetscCall(PetscOptionsSetValue(NULL, "-tao_type", "bqnktr")); }
+  if (test_lmvm) PetscCall(PetscOptionsSetValue(NULL, "-tao_type", "bqnktr"));
 
   /* Check for TAO command line options */
   PetscCall(TaoSetFromOptions(tao));

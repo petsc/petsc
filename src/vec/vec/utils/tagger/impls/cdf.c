@@ -111,7 +111,7 @@ static PetscErrorCode VecTaggerComputeBoxes_CDF_Gather(VecTagger tagger, Vec vec
   PetscCall(VecScatterEnd(vScat, vec, gVec, INSERT_VALUES, SCATTER_FORWARD));
   PetscCall(VecScatterDestroy(&vScat));
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)vec), &rank));
-  if (rank == 0) { PetscCall(VecTaggerComputeBoxes_CDF_Serial(tagger, gVec, bs, boxes)); }
+  if (rank == 0) PetscCall(VecTaggerComputeBoxes_CDF_Serial(tagger, gVec, bs, boxes));
   PetscCallMPI(MPI_Bcast((PetscScalar *)boxes, 2 * bs, MPIU_SCALAR, 0, PetscObjectComm((PetscObject)vec)));
   PetscCall(VecDestroy(&gVec));
   PetscFunctionReturn(0);
@@ -196,7 +196,7 @@ static PetscErrorCode VecTaggerComputeBox_CDF_SortedArray_Iterative(VecTagger ta
     PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, stats, 3, statType, statReduce, comm));
     M = (PetscInt)stats[2].moment[0];
     /* use those initial statistics to get the initial (globally agreed-upon) choices for the absolute box bounds */
-    for (i = 0; i < 2; i++) { PetscCall(CDFUtilInverseEstimate(&stats[i], i ? cdfBox->max : cdfBox->min, (i ? &absBox->max : &absBox->min))); }
+    for (i = 0; i < 2; i++) PetscCall(CDFUtilInverseEstimate(&stats[i], i ? cdfBox->max : cdfBox->min, (i ? &absBox->max : &absBox->min)));
   }
   /* refine the estimates by computing how close they come to the desired box and refining */
   for (k = 0; k < maxit; k++) {

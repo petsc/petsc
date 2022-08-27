@@ -494,7 +494,7 @@ static PetscErrorCode DMPlexTransformView_BL(DMPlexTransform tr, PetscViewer vie
     PetscCall(PetscObjectGetName((PetscObject)tr, &name));
     PetscCall(PetscViewerASCIIPrintf(viewer, "Boundary Layer refinement %s\n", name ? name : ""));
     PetscCall(PetscViewerGetFormat(viewer, &format));
-    if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) { PetscCall(DMLabelView(tr->trType, viewer)); }
+    if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) PetscCall(DMLabelView(tr->trType, viewer));
   } else {
     SETERRQ(PetscObjectComm((PetscObject)tr), PETSC_ERR_SUP, "Viewer type %s not yet supported for DMPlexTransform writing", ((PetscObject)viewer)->type_name);
   }
@@ -506,7 +506,7 @@ static PetscErrorCode DMPlexTransformDestroy_BL(DMPlexTransform tr) {
   PetscInt         ict;
 
   PetscFunctionBegin;
-  for (ict = 0; ict < DM_NUM_POLYTOPES; ++ict) { PetscCall(PetscFree4(bl->target[ict], bl->size[ict], bl->cone[ict], bl->ornt[ict])); }
+  for (ict = 0; ict < DM_NUM_POLYTOPES; ++ict) PetscCall(PetscFree4(bl->target[ict], bl->size[ict], bl->cone[ict], bl->ornt[ict]));
   PetscCall(PetscFree5(bl->Nt, bl->target, bl->size, bl->cone, bl->ornt));
   PetscCall(PetscFree(bl->h));
   PetscCall(PetscFree(tr->data));

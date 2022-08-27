@@ -48,7 +48,7 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat) {
     }
     PetscCall(PetscSortInt(ec, garray)); /* sort, and rebuild */
     PetscCall(PetscTableRemoveAll(gid1_lid1));
-    for (i = 0; i < ec; i++) { PetscCall(PetscTableAdd(gid1_lid1, garray[i] + 1, i + 1, INSERT_VALUES)); }
+    for (i = 0; i < ec; i++) PetscCall(PetscTableAdd(gid1_lid1, garray[i] + 1, i + 1, INSERT_VALUES));
     /* compact out the extra columns in B */
     for (i = 0; i < aij->B->rmap->n; i++) {
       for (j = 0; j < B->ilen[i]; j++) {
@@ -263,7 +263,7 @@ PetscErrorCode MatDiagonalScaleLocal_MPIAIJ(Mat A, Vec scale) {
   const PetscScalar *s;
 
   PetscFunctionBegin;
-  if (!auglyrmapd) { PetscCall(MatMPIAIJDiagonalScaleLocalSetUp(A, scale)); }
+  if (!auglyrmapd) PetscCall(MatMPIAIJDiagonalScaleLocalSetUp(A, scale));
 
   PetscCall(VecGetArrayRead(scale, &s));
 

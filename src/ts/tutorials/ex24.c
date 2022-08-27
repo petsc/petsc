@@ -223,7 +223,7 @@ static PetscErrorCode FormIJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscRe
     v[1][1]   = 200. * (a * a11 + a1 * a1);
     PetscCall(MatSetValues(B, 2, rowcol, 2, rowcol, &v[0][0], ADD_VALUES));
   }
-  for (i = 0; i < ctx->n; i++) { PetscCall(MatSetValue(B, i, i, (PetscScalar)shift, ADD_VALUES)); }
+  for (i = 0; i < ctx->n; i++) PetscCall(MatSetValue(B, i, i, (PetscScalar)shift, ADD_VALUES));
 
   PetscCall(VecRestoreArrayRead(X, &x));
 

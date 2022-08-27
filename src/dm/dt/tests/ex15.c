@@ -47,7 +47,7 @@ int main(int argc, char **argv) {
     for (PetscInt deg = 0; deg <= dimdeg[dim]; deg++) {
       const PetscDTSimplexQuadratureType types[] = {PETSCDTSIMPLEXQUAD_DEFAULT, PETSCDTSIMPLEXQUAD_CONIC, PETSCDTSIMPLEXQUAD_MINSYM};
 
-      for (PetscInt t = 0; t < 3; t++) { PetscCall(testQuadrature(dim, deg, types[t])); }
+      for (PetscInt t = 0; t < 3; t++) PetscCall(testQuadrature(dim, deg, types[t]));
     }
   }
   PetscCall(PetscFinalize());

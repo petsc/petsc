@@ -76,7 +76,7 @@ PetscErrorCode main(int argc, char **argv) {
   PetscCall(TaoSetVariableBounds(tao, user.xl, user.xu)); /* sets lower upper bounds from given solution */
   PetscCall(TaoSetObjectiveAndGradient(tao, NULL, FormFunctionGradient, (void *)&user));
 
-  if (!user.noeqflag) { PetscCall(TaoSetEqualityConstraintsRoutine(tao, user.ce, FormEqualityConstraints, (void *)&user)); }
+  if (!user.noeqflag) PetscCall(TaoSetEqualityConstraintsRoutine(tao, user.ce, FormEqualityConstraints, (void *)&user));
   PetscCall(TaoSetInequalityConstraintsRoutine(tao, user.ci, FormInequalityConstraints, (void *)&user));
   if (!user.noeqflag) { PetscCall(TaoSetJacobianEqualityRoutine(tao, user.Ae, user.Ae, FormEqualityJacobian, (void *)&user)); /* equality jacobian */ }
   PetscCall(TaoSetJacobianInequalityRoutine(tao, user.Ai, user.Ai, FormInequalityJacobian, (void *)&user)); /* inequality jacobian */
@@ -222,12 +222,12 @@ PetscErrorCode InitializeProblem(AppCtx *user) {
 
 PetscErrorCode DestroyProblem(AppCtx *user) {
   PetscFunctionBegin;
-  if (!user->noeqflag) { PetscCall(MatDestroy(&user->Ae)); }
+  if (!user->noeqflag) PetscCall(MatDestroy(&user->Ae));
   PetscCall(MatDestroy(&user->Ai));
   PetscCall(MatDestroy(&user->H));
 
   PetscCall(VecDestroy(&user->x));
-  if (!user->noeqflag) { PetscCall(VecDestroy(&user->ce)); }
+  if (!user->noeqflag) PetscCall(VecDestroy(&user->ce));
   PetscCall(VecDestroy(&user->ci));
   PetscCall(VecDestroy(&user->xl));
   PetscCall(VecDestroy(&user->xu));

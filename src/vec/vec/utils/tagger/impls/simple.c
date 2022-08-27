@@ -59,7 +59,7 @@ PetscErrorCode VecTaggerView_Simple(VecTagger tagger, PetscViewer viewer) {
     PetscCall(VecTaggerGetBlockSize(tagger, &bs));
     PetscCall(PetscViewerASCIIPrintf(viewer, " %s box=[", name));
     for (i = 0; i < bs; i++) {
-      if (i) { PetscCall(PetscViewerASCIIPrintf(viewer, "; ")); }
+      if (i) PetscCall(PetscViewerASCIIPrintf(viewer, "; "));
 #if !defined(PETSC_USE_COMPLEX)
       PetscCall(PetscViewerASCIIPrintf(viewer, "%g,%g", (double)smpl->box[i].min, (double)smpl->box[i].max));
 #else

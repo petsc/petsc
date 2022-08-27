@@ -238,14 +238,14 @@ PetscErrorCode TaoDestroy(Tao *tao) {
     PetscFunctionReturn(0);
   }
 
-  if ((*tao)->ops->destroy) { PetscCall((*((*tao))->ops->destroy)(*tao)); }
+  if ((*tao)->ops->destroy) PetscCall((*((*tao))->ops->destroy)(*tao));
   PetscCall(KSPDestroy(&(*tao)->ksp));
   PetscCall(SNESDestroy(&(*tao)->snes_ewdummy));
   PetscCall(TaoLineSearchDestroy(&(*tao)->linesearch));
 
   if ((*tao)->ops->convergencedestroy) {
     PetscCall((*(*tao)->ops->convergencedestroy)((*tao)->cnvP));
-    if ((*tao)->jacobian_state_inv) { PetscCall(MatDestroy(&(*tao)->jacobian_state_inv)); }
+    if ((*tao)->jacobian_state_inv) PetscCall(MatDestroy(&(*tao)->jacobian_state_inv));
   }
   PetscCall(VecDestroy(&(*tao)->solution));
   PetscCall(VecDestroy(&(*tao)->gradient));
@@ -284,7 +284,7 @@ PetscErrorCode TaoDestroy(Tao *tao) {
   PetscCall(ISDestroy(&(*tao)->design_is));
   PetscCall(VecDestroy(&(*tao)->res_weights_v));
   PetscCall(TaoCancelMonitors(*tao));
-  if ((*tao)->hist_malloc) { PetscCall(PetscFree4((*tao)->hist_obj, (*tao)->hist_resid, (*tao)->hist_cnorm, (*tao)->hist_lits)); }
+  if ((*tao)->hist_malloc) PetscCall(PetscFree4((*tao)->hist_obj, (*tao)->hist_resid, (*tao)->hist_cnorm, (*tao)->hist_lits));
   if ((*tao)->res_weights_n) {
     PetscCall(PetscFree((*tao)->res_weights_rows));
     PetscCall(PetscFree((*tao)->res_weights_cols));
@@ -576,7 +576,7 @@ PetscErrorCode TaoView(Tao tao, PetscViewer viewer) {
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
-  if (!viewer) { PetscCall(PetscViewerASCIIGetStdout(((PetscObject)tao)->comm, &viewer)); }
+  if (!viewer) PetscCall(PetscViewerASCIIGetStdout(((PetscObject)tao)->comm, &viewer));
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscCheckSameComm(tao, 1, viewer, 2);
 
@@ -604,7 +604,7 @@ PetscErrorCode TaoView(Tao tao, PetscViewer viewer) {
 
     PetscCall(PetscViewerASCIIPushTab(viewer));
 
-    if (tao->XL || tao->XU) { PetscCall(PetscViewerASCIIPrintf(viewer, "Active Set subset type: %s\n", TaoSubSetTypes[tao->subset_type])); }
+    if (tao->XL || tao->XU) PetscCall(PetscViewerASCIIPrintf(viewer, "Active Set subset type: %s\n", TaoSubSetTypes[tao->subset_type]));
 
     PetscCall(PetscViewerASCIIPrintf(viewer, "convergence tolerances: gatol=%g,", (double)tao->gatol));
     PetscCall(PetscViewerASCIIPrintf(viewer, " steptol=%g,", (double)tao->steptol));
@@ -623,7 +623,7 @@ PetscErrorCode TaoView(Tao tao, PetscViewer viewer) {
       PetscCall(PetscViewerASCIIPrintf(viewer, "Final trust region radius:=%g\n", (double)tao->trust));
     }
 
-    if (tao->fmin > -1.e25) { PetscCall(PetscViewerASCIIPrintf(viewer, "convergence tolerances: function minimum=%g\n", (double)tao->fmin)); }
+    if (tao->fmin > -1.e25) PetscCall(PetscViewerASCIIPrintf(viewer, "convergence tolerances: function minimum=%g\n", (double)tao->fmin));
     PetscCall(PetscViewerASCIIPrintf(viewer, "Objective value=%g\n", (double)tao->fc));
 
     PetscCall(PetscViewerASCIIPrintf(viewer, "total number of iterations=%" PetscInt_FMT ",          ", tao->niter));
@@ -641,9 +641,9 @@ PetscErrorCode TaoView(Tao tao, PetscViewer viewer) {
       PetscCall(PetscViewerASCIIPrintf(viewer, "total number of function/gradient evaluations=%" PetscInt_FMT ",", tao->nfuncgrads));
       PetscCall(PetscViewerASCIIPrintf(viewer, "    (max: %" PetscInt_FMT ")\n", tao->max_funcs));
     }
-    if (tao->nhess > 0) { PetscCall(PetscViewerASCIIPrintf(viewer, "total number of Hessian evaluations=%" PetscInt_FMT "\n", tao->nhess)); }
-    if (tao->nconstraints > 0) { PetscCall(PetscViewerASCIIPrintf(viewer, "total number of constraint function evaluations=%" PetscInt_FMT "\n", tao->nconstraints)); }
-    if (tao->njac > 0) { PetscCall(PetscViewerASCIIPrintf(viewer, "total number of Jacobian evaluations=%" PetscInt_FMT "\n", tao->njac)); }
+    if (tao->nhess > 0) PetscCall(PetscViewerASCIIPrintf(viewer, "total number of Hessian evaluations=%" PetscInt_FMT "\n", tao->nhess));
+    if (tao->nconstraints > 0) PetscCall(PetscViewerASCIIPrintf(viewer, "total number of constraint function evaluations=%" PetscInt_FMT "\n", tao->nconstraints));
+    if (tao->njac > 0) PetscCall(PetscViewerASCIIPrintf(viewer, "total number of Jacobian evaluations=%" PetscInt_FMT "\n", tao->njac));
 
     if (tao->reason > 0) {
       PetscCall(PetscViewerASCIIPrintf(viewer, "Solution converged: "));
@@ -1476,7 +1476,7 @@ PetscErrorCode TaoCancelMonitors(Tao tao) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   for (i = 0; i < tao->numbermonitors; i++) {
-    if (tao->monitordestroy[i]) { PetscCall((*tao->monitordestroy[i])(&tao->monitorcontext[i])); }
+    if (tao->monitordestroy[i]) PetscCall((*tao->monitordestroy[i])(&tao->monitorcontext[i]));
   }
   tao->numbermonitors = 0;
   PetscFunctionReturn(0);
@@ -2450,7 +2450,7 @@ PetscErrorCode TaoMonitor(Tao tao, PetscInt its, PetscReal f, PetscReal res, Pet
     tao->gnorm0 = res;
   }
   PetscCheck(!PetscIsInfOrNanReal(f) && !PetscIsInfOrNanReal(res), PetscObjectComm((PetscObject)tao), PETSC_ERR_USER, "User provided compute function generated Inf or NaN");
-  for (i = 0; i < tao->numbermonitors; i++) { PetscCall((*tao->monitor[i])(tao, tao->monitorcontext[i])); }
+  for (i = 0; i < tao->numbermonitors; i++) PetscCall((*tao->monitor[i])(tao, tao->monitorcontext[i]));
   PetscFunctionReturn(0);
 }
 

@@ -21,7 +21,7 @@ static PetscErrorCode TaoLineSearchView_GPCG(TaoLineSearch ls, PetscViewer viewe
 
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
-  if (isascii) { PetscCall(PetscViewerASCIIPrintf(viewer, " GPCG Line search")); }
+  if (isascii) PetscCall(PetscViewerASCIIPrintf(viewer, " GPCG Line search"));
   PetscFunctionReturn(0);
 }
 
@@ -172,7 +172,7 @@ static PetscErrorCode TaoLineSearchApply_GPCG(TaoLineSearch ls, Vec x, PetscReal
   /* set new solution vector and compute gradient if necessary */
   PetscCall(VecCopy(neP->W2, x));
   if (ls->reason == TAOLINESEARCH_CONTINUE_ITERATING) { ls->reason = TAOLINESEARCH_SUCCESS; }
-  if (!g_computed) { PetscCall(TaoLineSearchComputeGradient(ls, x, g)); }
+  if (!g_computed) PetscCall(TaoLineSearchComputeGradient(ls, x, g));
   PetscFunctionReturn(0);
 }
 

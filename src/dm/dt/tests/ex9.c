@@ -64,7 +64,7 @@ static PetscErrorCode testDerivativesLegendre(PetscInt dim, PetscInt deg, PetscI
 
   /* create a random coefficient vector */
   PetscCall(PetscMalloc2(Np, &lgndre_coeffs, Np, &pkd_coeffs));
-  for (i = 0; i < Np; i++) { PetscCall(PetscRandomGetValueReal(rand, &lgndre_coeffs[i])); }
+  for (i = 0; i < Np; i++) PetscCall(PetscRandomGetValueReal(rand, &lgndre_coeffs[i]));
 
   PetscCall(PetscMalloc2(dim, &degtup, dim, &ktup));
   PetscCall(PetscMalloc1(deg + 1, &degrees));
@@ -94,12 +94,12 @@ static PetscErrorCode testDerivativesLegendre(PetscInt dim, PetscInt deg, PetscI
     }
     for (j = 0; j < Np; j++) { pkd_coeffs[j] += proj[j * npoints + i] * val; }
   }
-  for (i = 0; i < dim; i++) { PetscCall(PetscFree(B[i])); }
+  for (i = 0; i < dim; i++) PetscCall(PetscFree(B[i]));
   PetscCall(PetscFree(B));
 
   /* create a random point in the biunit simplex */
   PetscCall(PetscMalloc1(dim, &point));
-  for (i = 0; i < dim; i++) { PetscCall(PetscRandomGetValueReal(rand, &point[i])); }
+  for (i = 0; i < dim; i++) PetscCall(PetscRandomGetValueReal(rand, &point[i]));
   for (i = dim - 1; i > 0; i--) {
     PetscReal val = point[i];
     PetscInt  j;
@@ -136,7 +136,7 @@ static PetscErrorCode testDerivativesLegendre(PetscInt dim, PetscInt deg, PetscI
       lgndre_jet[j] += mul * val;
     }
   }
-  for (i = 0; i < dim; i++) { PetscCall(PetscFree(D[i])); }
+  for (i = 0; i < dim; i++) PetscCall(PetscFree(D[i]));
   PetscCall(PetscFree(D));
 
   for (i = 0; i < Nk; i++) {

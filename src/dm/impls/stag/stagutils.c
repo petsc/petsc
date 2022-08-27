@@ -1224,7 +1224,7 @@ PetscErrorCode DMStagSetOwnershipRanges(DM dm, PetscInt const *lx, PetscInt cons
   for (d = 0; d < dim; ++d) {
     if (lin[d]) {
       PetscCheck(stag->nRanks[d] >= 0, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "Cannot set ownership ranges before setting number of ranks");
-      if (!stag->l[d]) { PetscCall(PetscMalloc1(stag->nRanks[d], &stag->l[d])); }
+      if (!stag->l[d]) PetscCall(PetscMalloc1(stag->nRanks[d], &stag->l[d]));
       PetscCall(PetscArraycpy(stag->l[d], lin[d], stag->nRanks[d]));
     }
   }

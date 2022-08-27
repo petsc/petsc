@@ -253,7 +253,7 @@ static PetscErrorCode xyt_generate(xyt_ADT xyt_handle) {
   for (i = 0, j = 0; i <= level; i++) j += nsep[i];
 
   m = j - xyt_handle->ns;
-  if (m != j) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "xyt_generate() :: null space exists %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT "\n", m, j, xyt_handle->ns)); }
+  if (m != j) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "xyt_generate() :: null space exists %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT "\n", m, j, xyt_handle->ns));
 
   PetscCall(PetscInfo(0, "xyt_generate() :: X(%" PetscInt_FMT ",%" PetscInt_FMT ")\n", n, m));
 

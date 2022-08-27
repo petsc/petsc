@@ -213,7 +213,7 @@ static PetscErrorCode MatView_Info_KLU(Mat A, PetscViewer viewer) {
   /* BTF preordering */
   PetscCall(PetscViewerASCIIPrintf(viewer, "  BTF preordering enabled: %" PetscInt_FMT "\n", (PetscInt)(lu->Common.btf)));
   /* mat ordering */
-  if (!lu->PetscMatOrdering) { PetscCall(PetscViewerASCIIPrintf(viewer, "  Ordering: %s (not using the PETSc ordering)\n", KluOrderingTypes[(int)lu->Common.ordering])); }
+  if (!lu->PetscMatOrdering) PetscCall(PetscViewerASCIIPrintf(viewer, "  Ordering: %s (not using the PETSc ordering)\n", KluOrderingTypes[(int)lu->Common.ordering]));
   /* matrix row scaling */
   PetscCall(PetscViewerASCIIPrintf(viewer, "  Matrix row scaling: %s\n", scale[(int)lu->Common.scale]));
   PetscFunctionReturn(0);
@@ -227,7 +227,7 @@ static PetscErrorCode MatView_KLU(Mat A, PetscViewer viewer) {
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   if (iascii) {
     PetscCall(PetscViewerGetFormat(viewer, &format));
-    if (format == PETSC_VIEWER_ASCII_INFO) { PetscCall(MatView_Info_KLU(A, viewer)); }
+    if (format == PETSC_VIEWER_ASCII_INFO) PetscCall(MatView_Info_KLU(A, viewer));
   }
   PetscFunctionReturn(0);
 }

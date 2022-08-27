@@ -100,7 +100,7 @@ PetscErrorCode MatFDColoringView(MatFDColoring c, PetscViewer viewer) {
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(c, MAT_FDCOLORING_CLASSID, 1);
-  if (!viewer) { PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)c), &viewer)); }
+  if (!viewer) PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)c), &viewer));
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscCheckSameComm(c, 1, viewer, 2);
 
@@ -121,7 +121,7 @@ PetscErrorCode MatFDColoringView(MatFDColoring c, PetscViewer viewer) {
       for (i = 0; i < c->ncolors; i++) {
         PetscCall(PetscViewerASCIIPrintf(viewer, "  Information for color %" PetscInt_FMT "\n", i));
         PetscCall(PetscViewerASCIIPrintf(viewer, "    Number of columns %" PetscInt_FMT "\n", c->ncolumns[i]));
-        for (j = 0; j < c->ncolumns[i]; j++) { PetscCall(PetscViewerASCIIPrintf(viewer, "      %" PetscInt_FMT "\n", c->columns[i][j])); }
+        for (j = 0; j < c->ncolumns[i]; j++) PetscCall(PetscViewerASCIIPrintf(viewer, "      %" PetscInt_FMT "\n", c->columns[i][j]));
         PetscCall(PetscViewerASCIIPrintf(viewer, "    Number of rows %" PetscInt_FMT "\n", c->nrows[i]));
         if (c->matentry) {
           for (j = 0; j < c->nrows[i]; j++) {
@@ -493,7 +493,7 @@ PetscErrorCode MatFDColoringDestroy(MatFDColoring *c) {
   }
 
   /* we do not free the column arrays since their entries are owned by the ISs in color->isa */
-  for (i = 0; i < color->ncolors; i++) { PetscCall(ISDestroy(&color->isa[i])); }
+  for (i = 0; i < color->ncolors; i++) PetscCall(ISDestroy(&color->isa[i]));
   PetscCall(PetscFree(color->isa));
   PetscCall(PetscFree2(color->ncolumns, color->columns));
   PetscCall(PetscFree(color->nrows));

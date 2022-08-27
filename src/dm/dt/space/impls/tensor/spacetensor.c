@@ -222,7 +222,7 @@ static PetscErrorCode PetscSpaceSetUp_Tensor(PetscSpace sp) {
       PetscCall(PetscSpaceSetUp(subsp));
       PetscCall(PetscSpaceSetType(sp, PETSCSPACESUM));
       PetscCall(PetscSpaceSumSetNumSubspaces(sp, Ncopies));
-      for (PetscInt i = 0; i < Ncopies; i++) { PetscCall(PetscSpaceSumSetSubspace(sp, i, subsp)); }
+      for (PetscInt i = 0; i < Ncopies; i++) PetscCall(PetscSpaceSumSetSubspace(sp, i, subsp));
       PetscCall(PetscSpaceDestroy(&subsp));
       PetscCall(PetscSpaceSetUp(sp));
       PetscFunctionReturn(0);
@@ -257,7 +257,7 @@ static PetscErrorCode PetscSpaceDestroy_Tensor(PetscSpace sp) {
 
     /* sp->Nv is the spatial dimension, so it is equal to the number
      * of subspaces on higher co-dimension points */
-    for (d = 0; d < sp->Nv; ++d) { PetscCall(PetscSpaceDestroy(&tens->heightsubspaces[d])); }
+    for (d = 0; d < sp->Nv; ++d) PetscCall(PetscSpaceDestroy(&tens->heightsubspaces[d]));
   }
   PetscCall(PetscFree(tens->heightsubspaces));
   for (i = 0; i < Ns; i++) PetscCall(PetscSpaceDestroy(&tens->tensspaces[i]));
@@ -568,7 +568,7 @@ static PetscErrorCode PetscSpaceGetHeightSubspace_Tensor(PetscSpace sp, PetscInt
       PetscCall(PetscSpaceSetDegree(sub, order, PETSC_DETERMINE));
       PetscCall(PetscSpaceSetNumVariables(sub, dim - height));
       PetscCall(PetscSpaceTensorSetNumSubspaces(sub, dim - height));
-      for (i = 0; i < dim - height; i++) { PetscCall(PetscSpaceTensorSetSubspace(sub, i, bsp)); }
+      for (i = 0; i < dim - height; i++) PetscCall(PetscSpaceTensorSetSubspace(sub, i, bsp));
       PetscCall(PetscSpaceSetUp(sub));
       tens->heightsubspaces[height - 1] = sub;
     }

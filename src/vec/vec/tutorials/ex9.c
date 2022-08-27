@@ -108,7 +108,7 @@ int main(int argc, char **argv) {
      Print out each vector, including the ghost padding region.
   */
   PetscCall(VecGetArray(lx, &array));
-  for (i = 0; i < nlocal + nghost; i++) { PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "%" PetscInt_FMT " %g\n", i, (double)PetscRealPart(array[i]))); }
+  for (i = 0; i < nlocal + nghost; i++) PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "%" PetscInt_FMT " %g\n", i, (double)PetscRealPart(array[i])));
   PetscCall(VecRestoreArray(lx, &array));
   PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD, PETSC_STDOUT));
   PetscCall(VecGhostRestoreLocalForm(gx, &lx));
@@ -128,7 +128,7 @@ int main(int argc, char **argv) {
     PetscCall(VecGhostGetLocalForm(gx, &lx));
     PetscCall(VecGetArray(lx, &array));
 
-    for (i = 0; i < nlocal + nghost; i++) { PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "%" PetscInt_FMT " %g\n", i, (double)PetscRealPart(array[i]))); }
+    for (i = 0; i < nlocal + nghost; i++) PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "%" PetscInt_FMT " %g\n", i, (double)PetscRealPart(array[i])));
     PetscCall(VecRestoreArray(lx, &array));
     PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD, PETSC_STDOUT));
     PetscCall(VecGhostRestoreLocalForm(gx, &lx));

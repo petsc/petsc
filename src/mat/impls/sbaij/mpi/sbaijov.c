@@ -31,7 +31,7 @@ PetscErrorCode MatIncreaseOverlap_MPISBAIJ(Mat C, PetscInt is_max, IS is[], Pets
   PetscCall(PetscOptionsHasName(NULL, NULL, "-IncreaseOverlap_old", &flg));
   if (flg) { /* previous non-scalable implementation */
     printf("use previous non-scalable implementation...\n");
-    for (i = 0; i < ov; ++i) { PetscCall(MatIncreaseOverlap_MPISBAIJ_Once(C, is_max, is_new)); }
+    for (i = 0; i < ov; ++i) PetscCall(MatIncreaseOverlap_MPISBAIJ_Once(C, is_max, is_new));
   } else { /* implementation using modified BAIJ routines */
 
     PetscCall(PetscMalloc1(Mbs + 1, &nidx));
@@ -102,7 +102,7 @@ PetscErrorCode MatIncreaseOverlap_MPISBAIJ(Mat C, PetscInt is_max, IS is[], Pets
       }
 
       /* Free tmp spaces */
-      for (i = 0; i < is_max; i++) { PetscCall(MatDestroy(&submats[i])); }
+      for (i = 0; i < is_max; i++) PetscCall(MatDestroy(&submats[i]));
     }
 
     PetscCall(PetscBTDestroy(&table));
@@ -283,7 +283,7 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C, PetscInt is_max, I
     }
   }
 
-  for (i = 0; i < is_max; i++) { PetscCall(ISDestroy(&is[i])); }
+  for (i = 0; i < is_max; i++) PetscCall(ISDestroy(&is[i]));
   PetscCall(PetscFree(n));
   PetscCall(PetscFree(ctable));
 
@@ -428,7 +428,7 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C, PetscInt is_max, I
     data_i = data + 1 + is_max + Mbs * i;
     PetscCall(ISCreateGeneral(PETSC_COMM_SELF, data[1 + i], data_i, PETSC_COPY_VALUES, is + i));
   }
-  for (k = 0; k <= nodata2; k++) { PetscCall(PetscFree(odata2_ptr[k])); }
+  for (k = 0; k <= nodata2; k++) PetscCall(PetscFree(odata2_ptr[k]));
   PetscCall(PetscFree(odata2_ptr));
   PetscFunctionReturn(0);
 }

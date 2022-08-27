@@ -65,7 +65,7 @@ PetscErrorCode PetscGetTmp(MPI_Comm comm, char dir[], size_t len) {
 
   PetscFunctionBegin;
   PetscCall(PetscOptionsGetenv(comm, "PETSC_TMP", dir, len, &flg));
-  if (!flg) { PetscCall(PetscStrncpy(dir, "/tmp", len)); }
+  if (!flg) PetscCall(PetscStrncpy(dir, "/tmp", len));
   PetscFunctionReturn(0);
 }
 
@@ -136,7 +136,7 @@ PetscErrorCode PetscSharedTmp(MPI_Comm comm, PetscBool *shared) {
     PetscFunctionReturn(0);
   }
 
-  if (Petsc_Tmp_keyval == MPI_KEYVAL_INVALID) { PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, Petsc_DelTmpShared, &Petsc_Tmp_keyval, NULL)); }
+  if (Petsc_Tmp_keyval == MPI_KEYVAL_INVALID) PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, Petsc_DelTmpShared, &Petsc_Tmp_keyval, NULL));
 
   PetscCallMPI(MPI_Comm_get_attr(comm, Petsc_Tmp_keyval, (void **)&tagvalp, (int *)&iflg));
   if (!iflg) {
@@ -248,7 +248,7 @@ PetscErrorCode PetscSharedWorkingDirectory(MPI_Comm comm, PetscBool *shared) {
     PetscFunctionReturn(0);
   }
 
-  if (Petsc_WD_keyval == MPI_KEYVAL_INVALID) { PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, Petsc_DelTmpShared, &Petsc_WD_keyval, NULL)); }
+  if (Petsc_WD_keyval == MPI_KEYVAL_INVALID) PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, Petsc_DelTmpShared, &Petsc_WD_keyval, NULL));
 
   PetscCallMPI(MPI_Comm_get_attr(comm, Petsc_WD_keyval, (void **)&tagvalp, (int *)&iflg));
   if (!iflg) {

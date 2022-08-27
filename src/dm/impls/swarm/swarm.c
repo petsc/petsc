@@ -776,7 +776,7 @@ PetscErrorCode DMSwarmFinalizeFieldRegister(DM dm) {
   DM_Swarm *swarm = (DM_Swarm *)dm->data;
 
   PetscFunctionBegin;
-  if (!swarm->field_registration_finalized) { PetscCall(DMSwarmDataBucketFinalize(swarm->db)); }
+  if (!swarm->field_registration_finalized) PetscCall(DMSwarmDataBucketFinalize(swarm->db));
   swarm->field_registration_finalized = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -1408,7 +1408,7 @@ PetscErrorCode DMSwarmSetType(DM dm, DMSwarmType stype) {
 
   PetscFunctionBegin;
   swarm->swarm_type = stype;
-  if (swarm->swarm_type == DMSWARM_PIC) { PetscCall(DMSwarmSetUpPIC(dm)); }
+  if (swarm->swarm_type == DMSWARM_PIC) PetscCall(DMSwarmSetUpPIC(dm));
   PetscFunctionReturn(0);
 }
 
@@ -1469,7 +1469,7 @@ PetscErrorCode DMDestroy_Swarm(DM dm) {
   PetscFunctionBegin;
   if (--swarm->refct > 0) PetscFunctionReturn(0);
   PetscCall(DMSwarmDataBucketDestroy(&swarm->db));
-  if (swarm->sort_context) { PetscCall(DMSwarmSortDestroy(&swarm->sort_context)); }
+  if (swarm->sort_context) PetscCall(DMSwarmSortDestroy(&swarm->sort_context));
   PetscCall(PetscFree(swarm));
   PetscFunctionReturn(0);
 }
@@ -1578,9 +1578,9 @@ PetscErrorCode DMView_Swarm(DM dm, PetscViewer viewer) {
     }
   } else {
 #if defined(PETSC_HAVE_HDF5)
-    if (ishdf5) { PetscCall(DMSwarmView_HDF5(dm, viewer)); }
+    if (ishdf5) PetscCall(DMSwarmView_HDF5(dm, viewer));
 #endif
-    if (isdraw) { PetscCall(DMSwarmView_Draw(dm, viewer)); }
+    if (isdraw) PetscCall(DMSwarmView_Draw(dm, viewer));
   }
   PetscFunctionReturn(0);
 }
@@ -1663,7 +1663,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmRestoreCellSwarm(DM sw, PetscInt cellID, DM c
   PetscCall(DMSwarmSortGetPointsPerCell(sw, cellID, &particles, &pids));
   PetscCall(DMSwarmSortRestoreAccess(sw));
   /* Pointwise copy of each particle based on pid. The parent swarm may not be altered during this process. */
-  for (p = 0; p < particles; ++p) { PetscCall(DMSwarmDataBucketCopyPoint(((DM_Swarm *)cellswarm->data)->db, pids[p], ((DM_Swarm *)sw->data)->db, pids[p])); }
+  for (p = 0; p < particles; ++p) PetscCall(DMSwarmDataBucketCopyPoint(((DM_Swarm *)cellswarm->data)->db, pids[p], ((DM_Swarm *)sw->data)->db, pids[p]));
   /* Free memory, destroy cell dm */
   PetscCall(DMSwarmGetCellDM(cellswarm, &dmc));
   PetscCall(DMDestroy(&dmc));

@@ -1589,7 +1589,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ_ilu0(Mat fact, Mat A, IS isrow, IS is
   }
   bdiag = b->diag;
 
-  if (n > 0) { PetscCall(PetscArrayzero(b->a, ai[n])); }
+  if (n > 0) PetscCall(PetscArrayzero(b->a, ai[n]));
 
   /* set bi and bj with new data structure */
   bi = b->i;
@@ -1761,7 +1761,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat fact, Mat A, IS isrow, IS iscol, 
     PetscCall(PetscInfo(A, "Run with -[sub_]pc_factor_fill %g or use \n", (double)af));
     PetscCall(PetscInfo(A, "PCFactorSetFill([sub]pc,%g);\n", (double)af));
     PetscCall(PetscInfo(A, "for best performance.\n"));
-    if (diagonal_fill) { PetscCall(PetscInfo(A, "Detected and replaced %" PetscInt_FMT " missing diagonals\n", dcount)); }
+    if (diagonal_fill) PetscCall(PetscInfo(A, "Detected and replaced %" PetscInt_FMT " missing diagonals\n", dcount));
   }
 #endif
   /* put together the new matrix */
@@ -1949,7 +1949,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ_inplace(Mat fact, Mat A, IS isrow, IS
     PetscCall(PetscInfo(A, "Run with -[sub_]pc_factor_fill %g or use \n", (double)af));
     PetscCall(PetscInfo(A, "PCFactorSetFill([sub]pc,%g);\n", (double)af));
     PetscCall(PetscInfo(A, "for best performance.\n"));
-    if (diagonal_fill) { PetscCall(PetscInfo(A, "Detected and replaced %" PetscInt_FMT " missing diagonals\n", dcount)); }
+    if (diagonal_fill) PetscCall(PetscInfo(A, "Detected and replaced %" PetscInt_FMT " missing diagonals\n", dcount));
   }
 #endif
 

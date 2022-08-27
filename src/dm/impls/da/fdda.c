@@ -681,18 +681,18 @@ PetscErrorCode DMCreateMatrix_DA(DM da, Mat *J) {
    details of the matrix, not the type itself.
   */
   PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatMPIAIJSetPreallocation_C", &aij));
-  if (!aij) { PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatSeqAIJSetPreallocation_C", &aij)); }
+  if (!aij) PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatSeqAIJSetPreallocation_C", &aij));
   if (!aij) {
     PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatMPIBAIJSetPreallocation_C", &baij));
-    if (!baij) { PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatSeqBAIJSetPreallocation_C", &baij)); }
+    if (!baij) PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatSeqBAIJSetPreallocation_C", &baij));
     if (!baij) {
       PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatMPISBAIJSetPreallocation_C", &sbaij));
-      if (!sbaij) { PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatSeqSBAIJSetPreallocation_C", &sbaij)); }
+      if (!sbaij) PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatSeqSBAIJSetPreallocation_C", &sbaij));
       if (!sbaij) {
         PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatMPISELLSetPreallocation_C", &sell));
-        if (!sell) { PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatSeqSELLSetPreallocation_C", &sell)); }
+        if (!sell) PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatSeqSELLSetPreallocation_C", &sell));
       }
-      if (!sell) { PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatISSetPreallocation_C", &is)); }
+      if (!sell) PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatISSetPreallocation_C", &is));
     }
   }
   if (aij) {
@@ -817,7 +817,7 @@ PetscErrorCode DMCreateMatrix_DA_IS(DM dm, Mat J) {
     PetscCall(MatSetSizes(P, n, n, N, N));
     PetscCall(MatSetBlockSize(P, dof));
     PetscCall(MatSetUp(P));
-    for (i = 0; i < nel; i++) { PetscCall(MatSetValuesBlockedLocal(P, nen, e_loc + i * nen, nen, e_loc + i * nen, NULL, INSERT_VALUES)); }
+    for (i = 0; i < nel; i++) PetscCall(MatSetValuesBlockedLocal(P, nen, e_loc + i * nen, nen, e_loc + i * nen, NULL, INSERT_VALUES));
     PetscCall(MatPreallocatorPreallocate(P, (PetscBool)!da->prealloc_only, lJ));
     PetscCall(MatISRestoreLocalMat(J, &lJ));
     PetscCall(DMDARestoreElements(dm, &nel, &nen, &e_loc));
@@ -1295,7 +1295,7 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ(DM da, Mat J) {
 
   */
   PetscCall(DMDAGetInfo(da, &dim, &m, &n, &p, &M, &N, &P, &nc, &s, &bx, &by, &bz, &st));
-  if (bx == DM_BOUNDARY_NONE && by == DM_BOUNDARY_NONE && bz == DM_BOUNDARY_NONE) { PetscCall(MatSetOption(J, MAT_SORTED_FULL, PETSC_TRUE)); }
+  if (bx == DM_BOUNDARY_NONE && by == DM_BOUNDARY_NONE && bz == DM_BOUNDARY_NONE) PetscCall(MatSetOption(J, MAT_SORTED_FULL, PETSC_TRUE));
   col = 2 * s + 1;
 
   /*
@@ -1351,7 +1351,7 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ(DM da, Mat J) {
   PetscCall(MatMPIAIJSetPreallocation(J, 0, dnz, 0, onz));
   MatPreallocateEnd(dnz, onz);
   PetscCall(MatGetLocalToGlobalMapping(J, &mltog, NULL));
-  if (!mltog) { PetscCall(MatSetLocalToGlobalMapping(J, ltog, ltog)); }
+  if (!mltog) PetscCall(MatSetLocalToGlobalMapping(J, ltog, ltog));
 
   /*
     For each node in the grid: we get the neighbors in the local (on processor ordering
@@ -1395,7 +1395,7 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ(DM da, Mat J) {
     PetscCall(MatBindToCPU(J, PETSC_TRUE));
     PetscCall(MatAssemblyBegin(J, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(J, MAT_FINAL_ASSEMBLY));
-    if (bx == DM_BOUNDARY_NONE && by == DM_BOUNDARY_NONE && bz == DM_BOUNDARY_NONE) { PetscCall(MatSetOption(J, MAT_SORTED_FULL, PETSC_FALSE)); }
+    if (bx == DM_BOUNDARY_NONE && by == DM_BOUNDARY_NONE && bz == DM_BOUNDARY_NONE) PetscCall(MatSetOption(J, MAT_SORTED_FULL, PETSC_FALSE));
     PetscCall(MatBindToCPU(J, PETSC_FALSE));
     PetscCall(MatSetOption(J, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE));
   }
@@ -1581,7 +1581,7 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ(DM da, Mat J) {
 
   */
   PetscCall(DMDAGetInfo(da, &dim, &m, NULL, NULL, NULL, NULL, NULL, &nc, &s, &bx, NULL, NULL, NULL));
-  if (bx == DM_BOUNDARY_NONE) { PetscCall(MatSetOption(J, MAT_SORTED_FULL, PETSC_TRUE)); }
+  if (bx == DM_BOUNDARY_NONE) PetscCall(MatSetOption(J, MAT_SORTED_FULL, PETSC_TRUE));
   col = 2 * s + 1;
 
   PetscCall(DMDAGetCorners(da, &xs, NULL, NULL, &nx, NULL, NULL));
@@ -1593,7 +1593,7 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ(DM da, Mat J) {
 
   PetscCall(DMGetLocalToGlobalMapping(da, &ltog));
   PetscCall(MatGetLocalToGlobalMapping(J, &mltog, NULL));
-  if (!mltog) { PetscCall(MatSetLocalToGlobalMapping(J, ltog, ltog)); }
+  if (!mltog) PetscCall(MatSetLocalToGlobalMapping(J, ltog, ltog));
 
   /*
     For each node in the grid: we get the neighbors in the local (on processor ordering
@@ -1623,7 +1623,7 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ(DM da, Mat J) {
     PetscCall(MatBindToCPU(J, PETSC_TRUE));
     PetscCall(MatAssemblyBegin(J, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(J, MAT_FINAL_ASSEMBLY));
-    if (bx == DM_BOUNDARY_NONE) { PetscCall(MatSetOption(J, MAT_SORTED_FULL, PETSC_FALSE)); }
+    if (bx == DM_BOUNDARY_NONE) PetscCall(MatSetOption(J, MAT_SORTED_FULL, PETSC_FALSE));
     PetscCall(MatBindToCPU(J, PETSC_FALSE));
     PetscCall(MatSetOption(J, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE));
     PetscCall(PetscFree2(rows, cols));
@@ -1656,7 +1656,7 @@ PetscErrorCode DMCreateMatrix_DA_1d_SeqAIJ_NoPreallocation(DM da, Mat J) {
 
   PetscCall(DMGetLocalToGlobalMapping(da, &ltog));
   PetscCall(MatGetLocalToGlobalMapping(J, &mltog, NULL));
-  if (!mltog) { PetscCall(MatSetLocalToGlobalMapping(J, ltog, ltog)); }
+  if (!mltog) PetscCall(MatSetLocalToGlobalMapping(J, ltog, ltog));
 
   /*
     For each node in the grid: we get the neighbors in the local (on processor ordering
@@ -1686,7 +1686,7 @@ PetscErrorCode DMCreateMatrix_DA_1d_SeqAIJ_NoPreallocation(DM da, Mat J) {
     PetscCall(MatBindToCPU(J, PETSC_TRUE));
     PetscCall(MatAssemblyBegin(J, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(J, MAT_FINAL_ASSEMBLY));
-    if (bx == DM_BOUNDARY_NONE) { PetscCall(MatSetOption(J, MAT_SORTED_FULL, PETSC_FALSE)); }
+    if (bx == DM_BOUNDARY_NONE) PetscCall(MatSetOption(J, MAT_SORTED_FULL, PETSC_FALSE));
     PetscCall(MatBindToCPU(J, PETSC_FALSE));
     PetscCall(MatSetOption(J, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE));
     PetscCall(PetscFree2(rows, cols));

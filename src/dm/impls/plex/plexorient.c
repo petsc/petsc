@@ -227,7 +227,7 @@ PetscErrorCode DMPlexOrient(DM dm) {
       PetscCall(PetscBTSet(seenCells, cell - cStart));
     }
     /* Consider each face in FIFO */
-    while (fTop < fBottom) { PetscCall(DMPlexCheckFace_Internal(dm, faceFIFO, &fTop, &fBottom, cStart, fStart, fEnd, seenCells, flippedCells, seenFaces)); }
+    while (fTop < fBottom) PetscCall(DMPlexCheckFace_Internal(dm, faceFIFO, &fTop, &fBottom, cStart, fStart, fEnd, seenCells, flippedCells, seenFaces));
     /* Set component for cells and faces */
     for (cell = 0; cell < cEnd - cStart; ++cell) {
       if (PetscBTLookup(seenCells, cell)) cellComp[cell] = comp;
@@ -380,7 +380,7 @@ PetscErrorCode DMPlexOrient(DM dm) {
         for (p = 0, off = 0; p < size; ++p) {
           for (c = 0; c < Nc[p]; ++c) {
             PetscCall(PetscPrintf(PETSC_COMM_SELF, "Proc %d Comp %" PetscInt_FMT ":\n", p, c));
-            for (n = 0; n < N[Noff[p] + c]; ++n, ++off) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "  edge (%" PetscInt_FMT ", %" PetscInt_FMT ") (%s):\n", adj[off].rank, adj[off].index, PetscBools[val[off]])); }
+            for (n = 0; n < N[Noff[p] + c]; ++n, ++off) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  edge (%" PetscInt_FMT ", %" PetscInt_FMT ") (%s):\n", adj[off].rank, adj[off].index, PetscBools[val[off]]));
           }
         }
       }
@@ -488,7 +488,7 @@ PetscErrorCode DMPlexOrient(DM dm) {
   }
   /* Reverse flipped cells in the mesh */
   for (c = cStart; c < cEnd; ++c) {
-    if (PetscBTLookup(flippedCells, c - cStart)) { PetscCall(DMPlexOrientPoint(dm, c, -1)); }
+    if (PetscBTLookup(flippedCells, c - cStart)) PetscCall(DMPlexOrientPoint(dm, c, -1));
   }
   PetscCall(PetscBTDestroy(&seenCells));
   PetscCall(PetscBTDestroy(&flippedCells));

@@ -88,7 +88,7 @@ int main(int argc, char **argv) {
 
       PetscCall(PetscLogStageRegister("Solve only", &stage));
       PetscCall(PetscLogStagePush(stage));
-      for (i = 0; i < n; i++) { PetscCall(KSPSolve(ksp, b, x)); }
+      for (i = 0; i < n; i++) PetscCall(KSPSolve(ksp, b, x));
       PetscCall(PetscLogStagePop());
     }
   }

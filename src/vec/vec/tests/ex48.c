@@ -113,7 +113,7 @@ static inline PetscErrorCode isRoot(const char path[], PetscBool *flg) {
   PetscFunctionBegin;
   PetscCall(PetscStrlen(path, &len));
   *flg = PetscNot(len);
-  if (!*flg) { PetscCall(PetscStrcmp(path, "/", flg)); }
+  if (!*flg) PetscCall(PetscStrcmp(path, "/", flg));
   PetscFunctionReturn(0);
 }
 
@@ -282,7 +282,7 @@ static PetscErrorCode CapsuleReadAndCompareAttributes(Capsule c, PetscViewer v, 
     PetscCall(PetscViewerHDF5HasAttribute(v, parent, attribute, &hasAttr));
     if (verbose) {
       PetscCall(PetscPrintf(comm, "    %-24s = ", attribute));
-      if (!hasAttr) { PetscCall(PetscPrintf(comm, "---")); }
+      if (!hasAttr) PetscCall(PetscPrintf(comm, "---"));
     }
     PetscCheck(gd || !hasAttr, comm, PETSC_ERR_PLIB, "Attribute %s/%s/%s exists while its parent %s/%s doesn't exist", group, parent, attribute, group, parent);
     PetscCheck(flg == hasAttr, comm, PETSC_ERR_PLIB, "Attribute %s/%s should exist? %s Exists? %s", parent, attribute, PetscBools[flg], PetscBools[hasAttr]);
@@ -306,7 +306,7 @@ static PetscErrorCode CapsuleReadAndCompareAttributes(Capsule c, PetscViewer v, 
       PetscCall(compare(c->types[t], ptr0, c->vals[t], &flg));
       PetscCheck(flg, comm, PETSC_ERR_PLIB, "Value of attribute %s/%s/%s is not equal to the original value", group, parent, attribute);
       if (verbose) PetscCall(PetscPrintf(comm, " (=)"));
-      if (c->types[t] == PETSC_STRING) { PetscCall(PetscFree(str)); }
+      if (c->types[t] == PETSC_STRING) PetscCall(PetscFree(str));
     }
     if (verbose && gd) PetscCall(PetscPrintf(comm, "\n"));
   }
@@ -318,7 +318,7 @@ static PetscErrorCode CapsuleDestroy(Capsule *c) {
 
   PetscFunctionBegin;
   if (!*c) PetscFunctionReturn(0);
-  for (t = 0; t < (*c)->ntypes; t++) { PetscCall(PetscFree((*c)->vals[t])); }
+  for (t = 0; t < (*c)->ntypes; t++) PetscCall(PetscFree((*c)->vals[t]));
   PetscCall(PetscFree(*c));
   PetscFunctionReturn(0);
 }
@@ -353,7 +353,7 @@ static PetscErrorCode testGroupsDatasets(PetscViewer viewer) {
     } else {
       PetscCall(PetscViewerHDF5PushGroup(viewer, paths[p]));
     }
-    if (verbose) { PetscCall(PetscPrintf(comm, "%-32s => %4s => %-32s  should exist? %s\n", paths[p], flg ? "pop" : "push", apaths[paths2apaths[p]], PetscBools[flg2])); }
+    if (verbose) PetscCall(PetscPrintf(comm, "%-32s => %4s => %-32s  should exist? %s\n", paths[p], flg ? "pop" : "push", apaths[paths2apaths[p]], PetscBools[flg2]));
     if (flg || flg1 || !flg2) continue;
 
     for (s = 0; s < ns; s++) {
@@ -397,7 +397,7 @@ static PetscErrorCode testGroupsDatasets(PetscViewer viewer) {
     PetscCall(PetscViewerHDF5GetGroup(viewer, &group));
     PetscCall(PetscViewerHDF5HasGroup(viewer, NULL, &flg1));
     if (!group) group = "/"; /* "/" is stored as NULL */
-    if (verbose) { PetscCall(PetscPrintf(comm, "%-32s => %4s => %-32s  exists? %s\n", paths[p], flg ? "pop" : "push", group, PetscBools[flg1])); }
+    if (verbose) PetscCall(PetscPrintf(comm, "%-32s => %4s => %-32s  exists? %s\n", paths[p], flg ? "pop" : "push", group, PetscBools[flg1]));
     PetscCall(PetscStrcmp(group, expected, &flg2));
     PetscCheck(flg2, comm, PETSC_ERR_PLIB, "Current group %s not equal to expected %s", group, expected);
     PetscCall(shouldExist(group, PETSC_TRUE, &flg2));
@@ -447,7 +447,7 @@ static PetscErrorCode testGroupsDatasets(PetscViewer viewer) {
   }
   PetscCall(PetscViewerFlush(viewer));
   for (p = 0; p < nap; p++)
-    for (s = 0; s < ns; s++) { PetscCall(VecDestroy(&vecs[p][s])); }
+    for (s = 0; s < ns; s++) PetscCall(VecDestroy(&vecs[p][s]));
   if (verbose) PetscCall(PetscPrintf(comm, "# END  testGroupsDatasets\n\n"));
   PetscFunctionReturn(0);
 }
@@ -555,7 +555,7 @@ static PetscErrorCode testAttributesAbsolutePath(PetscViewer viewer, const char 
   if (prefix) PetscCall(PetscViewerHDF5PopGroup(viewer));
   PetscCall(PetscViewerFlush(viewer));
   for (p = 0; p < nap; p++)
-    for (s = 0; s < ns; s++) { PetscCall(CapsuleDestroy(&capsules[p][s])); }
+    for (s = 0; s < ns; s++) PetscCall(CapsuleDestroy(&capsules[p][s]));
   if (verbose) PetscCall(PetscPrintf(comm, "# END  testAttributesAbsolutePath\n\n"));
   PetscFunctionReturn(0);
 }
@@ -631,7 +631,7 @@ static PetscErrorCode testAttributesPushedPath(PetscViewer viewer) {
   }
   PetscCall(PetscViewerFlush(viewer));
   for (p = 0; p < nap; p++)
-    for (s = 0; s < ns; s++) { PetscCall(CapsuleDestroy(&capsules[p][s])); }
+    for (s = 0; s < ns; s++) PetscCall(CapsuleDestroy(&capsules[p][s]));
   if (verbose) PetscCall(PetscPrintf(comm, "# END  testAttributesPushedPath\n\n"));
   PetscFunctionReturn(0);
 }
@@ -723,7 +723,7 @@ static PetscErrorCode testObjectAttributes(PetscViewer viewer) {
   }
   PetscCall(PetscViewerFlush(viewer));
   for (p = 0; p < nap; p++)
-    for (s = 0; s < ns; s++) { PetscCall(CapsuleDestroy(&capsules[p][s])); }
+    for (s = 0; s < ns; s++) PetscCall(CapsuleDestroy(&capsules[p][s]));
   if (verbose) PetscCall(PetscPrintf(comm, "# END  testObjectAttributes\n\n"));
   PetscFunctionReturn(0);
 }
@@ -740,7 +740,7 @@ static PetscErrorCode testAttributesDefaultValue(PetscViewer viewer) {
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)viewer, &comm));
-  if (verbose) { PetscCall(PetscPrintf(comm, "# TEST testAttributesDefaultValue\n")); }
+  if (verbose) PetscCall(PetscPrintf(comm, "# TEST testAttributesDefaultValue\n"));
 
   PetscCall(PetscViewerHDF5ReadAttribute(viewer, "/", "attr_0_bool", PETSC_BOOL, NULL, &bools[0]));
   bools[1] = PetscNot(bools[0]);
@@ -774,10 +774,10 @@ static PetscErrorCode testAttributesDefaultValue(PetscViewer viewer) {
   PetscCheck(flg, comm, PETSC_ERR_PLIB, "%s = strings[2] != strings[0] = %s", strings[2], strings[0]);
   PetscCall(PetscStrcmp(strings[3], strings[1], &flg));
   PetscCheck(flg, comm, PETSC_ERR_PLIB, "%s = strings[3] != strings[1] = %s", strings[3], strings[1]);
-  for (i = 0; i < nv; i++) { PetscCall(PetscFree(strings[i])); }
+  for (i = 0; i < nv; i++) PetscCall(PetscFree(strings[i]));
 
   PetscCall(PetscViewerFlush(viewer));
-  if (verbose) { PetscCall(PetscPrintf(comm, "# END  testAttributesDefaultValue\n")); }
+  if (verbose) PetscCall(PetscPrintf(comm, "# END  testAttributesDefaultValue\n"));
 #undef nv
   PetscFunctionReturn(0);
 }
@@ -796,7 +796,7 @@ int main(int argc, char **argv) {
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-n", &n, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-verbose", &verbose, NULL));
   PetscCall(PetscOptionsGetString(NULL, NULL, "-filename", filename, sizeof(filename), NULL));
-  if (verbose) { PetscCall(PetscPrintf(comm, "np ns " PetscStringize(np) " " PetscStringize(ns) "\n")); }
+  if (verbose) PetscCall(PetscPrintf(comm, "np ns " PetscStringize(np) " " PetscStringize(ns) "\n"));
 
   PetscCall(PetscViewerHDF5Open(comm, filename, FILE_MODE_WRITE, &viewer));
   PetscCall(testGroupsDatasets(viewer));

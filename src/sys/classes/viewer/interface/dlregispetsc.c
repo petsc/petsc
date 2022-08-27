@@ -15,7 +15,7 @@ static PetscBool PetscSysPackageInitialized = PETSC_FALSE;
 @*/
 PetscErrorCode PetscSysFinalizePackage(void) {
   PetscFunctionBegin;
-  if (Petsc_Seq_keyval != MPI_KEYVAL_INVALID) { PetscCallMPI(MPI_Comm_free_keyval(&Petsc_Seq_keyval)); }
+  if (Petsc_Seq_keyval != MPI_KEYVAL_INVALID) PetscCallMPI(MPI_Comm_free_keyval(&Petsc_Seq_keyval));
   PetscSysPackageInitialized = PETSC_FALSE;
   PetscFunctionReturn(0);
 }

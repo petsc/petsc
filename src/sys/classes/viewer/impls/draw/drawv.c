@@ -89,7 +89,7 @@ PetscErrorCode PetscViewerDrawGetDraw(PetscViewer viewer, PetscInt windownumber,
     }
     PetscCall(PetscDrawCreate(PetscObjectComm((PetscObject)viewer), vdraw->display, title, PETSC_DECIDE, PETSC_DECIDE, vdraw->w, vdraw->h, &vdraw->draw[windownumber]));
     PetscCall(PetscLogObjectParent((PetscObject)viewer, (PetscObject)vdraw->draw[windownumber]));
-    if (vdraw->drawtype) { PetscCall(PetscDrawSetType(vdraw->draw[windownumber], vdraw->drawtype)); }
+    if (vdraw->drawtype) PetscCall(PetscDrawSetType(vdraw->draw[windownumber], vdraw->drawtype));
     PetscCall(PetscDrawSetPause(vdraw->draw[windownumber], vdraw->pause));
     PetscCall(PetscDrawSetOptionsPrefix(vdraw->draw[windownumber], ((PetscObject)viewer)->prefix));
     PetscCall(PetscDrawSetFromOptions(vdraw->draw[windownumber]));
@@ -188,7 +188,7 @@ PetscErrorCode PetscViewerDrawGetDrawLG(PetscViewer viewer, PetscInt windownumbe
   PetscCheck(windownumber >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Window number cannot be negative");
   vdraw = (PetscViewer_Draw *)viewer->data;
 
-  if (windownumber + vdraw->draw_base >= vdraw->draw_max || !vdraw->draw[windownumber + vdraw->draw_base]) { PetscCall(PetscViewerDrawGetDraw(viewer, windownumber, NULL)); }
+  if (windownumber + vdraw->draw_base >= vdraw->draw_max || !vdraw->draw[windownumber + vdraw->draw_base]) PetscCall(PetscViewerDrawGetDraw(viewer, windownumber, NULL));
   if (!vdraw->drawlg[windownumber + vdraw->draw_base]) {
     PetscCall(PetscDrawLGCreate(vdraw->draw[windownumber + vdraw->draw_base], 1, &vdraw->drawlg[windownumber + vdraw->draw_base]));
     PetscCall(PetscLogObjectParent((PetscObject)viewer, (PetscObject)vdraw->drawlg[windownumber + vdraw->draw_base]));
@@ -229,7 +229,7 @@ PetscErrorCode PetscViewerDrawGetDrawAxis(PetscViewer viewer, PetscInt windownum
   PetscCheck(windownumber >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Window number cannot be negative");
   vdraw = (PetscViewer_Draw *)viewer->data;
 
-  if (windownumber + vdraw->draw_base >= vdraw->draw_max || !vdraw->draw[windownumber + vdraw->draw_base]) { PetscCall(PetscViewerDrawGetDraw(viewer, windownumber, NULL)); }
+  if (windownumber + vdraw->draw_base >= vdraw->draw_max || !vdraw->draw[windownumber + vdraw->draw_base]) PetscCall(PetscViewerDrawGetDraw(viewer, windownumber, NULL));
   if (!vdraw->drawaxis[windownumber + vdraw->draw_base]) {
     PetscCall(PetscDrawAxisCreate(vdraw->draw[windownumber + vdraw->draw_base], &vdraw->drawaxis[windownumber + vdraw->draw_base]));
     PetscCall(PetscLogObjectParent((PetscObject)viewer, (PetscObject)vdraw->drawaxis[windownumber + vdraw->draw_base]));
@@ -444,7 +444,7 @@ PetscErrorCode PetscViewerRestoreSubViewer_Draw(PetscViewer viewer, MPI_Comm com
     }
     svdraw = (PetscViewer_Draw *)(*sviewer)->data;
     for (i = 0; i < vdraw->draw_max; i++) {
-      if (vdraw->draw[i] && svdraw->draw[i]) { PetscCall(PetscDrawRestoreSingleton(vdraw->draw[i], &svdraw->draw[i])); }
+      if (vdraw->draw[i] && svdraw->draw[i]) PetscCall(PetscDrawRestoreSingleton(vdraw->draw[i], &svdraw->draw[i]));
     }
     PetscCall(PetscFree3(svdraw->draw, svdraw->drawlg, svdraw->drawaxis));
     PetscCall(PetscFree((*sviewer)->data));
@@ -453,7 +453,7 @@ PetscErrorCode PetscViewerRestoreSubViewer_Draw(PetscViewer viewer, MPI_Comm com
     PetscDraw draw;
 
     PetscCall(PetscViewerDrawGetDraw(viewer, 0, &draw));
-    if (draw->savefilename) { PetscCallMPI(MPI_Bcast(&draw->savefilecount, 1, MPIU_INT, 0, PetscObjectComm((PetscObject)draw))); }
+    if (draw->savefilename) PetscCallMPI(MPI_Bcast(&draw->savefilecount, 1, MPIU_INT, 0, PetscObjectComm((PetscObject)draw)));
   }
 
   vdraw->singleton_made = PETSC_FALSE;
@@ -468,7 +468,7 @@ PetscErrorCode PetscViewerSetFromOptions_Draw(PetscViewer v, PetscOptionItems *P
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "Draw PetscViewer Options");
   PetscCall(PetscOptionsRealArray("-draw_bounds", "Bounds to put on plots axis", "PetscViewerDrawSetBounds", bounds, &nbounds, &flg));
-  if (flg) { PetscCall(PetscViewerDrawSetBounds(v, nbounds / 2, bounds)); }
+  if (flg) PetscCall(PetscViewerDrawSetBounds(v, nbounds / 2, bounds));
   PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }

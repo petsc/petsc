@@ -49,7 +49,7 @@ static PetscErrorCode PetscViewerBinarySyncMPIIO(PetscViewer viewer) {
 
   PetscFunctionBegin;
   if (vbinary->filemode == FILE_MODE_READ) PetscFunctionReturn(0);
-  if (vbinary->mfsub != MPI_FILE_NULL) { PetscCallMPI(MPI_File_sync(vbinary->mfsub)); }
+  if (vbinary->mfsub != MPI_FILE_NULL) PetscCallMPI(MPI_File_sync(vbinary->mfsub));
   if (vbinary->mfdes != MPI_FILE_NULL) {
     PetscCallMPI(MPI_Barrier(PetscObjectComm((PetscObject)viewer)));
     PetscCallMPI(MPI_File_sync(vbinary->mfdes));
@@ -724,8 +724,8 @@ static PetscErrorCode PetscViewerFileClose_BinaryMPIIO(PetscViewer v) {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary *)v->data;
 
   PetscFunctionBegin;
-  if (vbinary->mfdes != MPI_FILE_NULL) { PetscCallMPI(MPI_File_close(&vbinary->mfdes)); }
-  if (vbinary->mfsub != MPI_FILE_NULL) { PetscCallMPI(MPI_File_close(&vbinary->mfsub)); }
+  if (vbinary->mfdes != MPI_FILE_NULL) PetscCallMPI(MPI_File_close(&vbinary->mfdes));
+  if (vbinary->mfsub != MPI_FILE_NULL) PetscCallMPI(MPI_File_close(&vbinary->mfsub));
   vbinary->moff = 0;
   PetscFunctionReturn(0);
 }
@@ -863,7 +863,7 @@ static PetscErrorCode PetscViewerBinaryWriteReadMPIIO(PetscViewer viewer, void *
   PetscCall(PetscMPIIntCast(num, &cnt));
   PetscCall(PetscDataTypeToMPIDataType(dtype, &mdtype));
   if (write) {
-    if (rank == 0) { PetscCall(MPIU_File_write_at(mfdes, vbinary->moff, data, cnt, mdtype, &status)); }
+    if (rank == 0) PetscCall(MPIU_File_write_at(mfdes, vbinary->moff, data, cnt, mdtype, &status));
   } else {
     if (rank == 0) {
       PetscCall(MPIU_File_read_at(mfdes, vbinary->moff, data, cnt, mdtype, &status));
@@ -1135,7 +1135,7 @@ PetscErrorCode PetscViewerBinaryWriteStringArray(PetscViewer viewer, const char 
     sizes[i + 1] = (PetscInt)len + 1; /* size includes space for the null terminator */
   }
   PetscCall(PetscViewerBinaryWrite(viewer, sizes, n + 1, PETSC_INT));
-  for (i = 0; i < n; i++) { PetscCall(PetscViewerBinaryWrite(viewer, (void *)data[i], sizes[i + 1], PETSC_CHAR)); }
+  for (i = 0; i < n; i++) PetscCall(PetscViewerBinaryWrite(viewer, (void *)data[i], sizes[i + 1], PETSC_CHAR));
   PetscCall(PetscFree(sizes));
   PetscFunctionReturn(0);
 }

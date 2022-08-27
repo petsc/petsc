@@ -66,7 +66,7 @@ PetscErrorCode TaoVecGetSubVec(Vec vfull, IS is, TaoSubsetType reduced_type, Pet
     case TAO_SUBSET_MATRIXFREE:
       /* vr[i] = vf[i]   if i in is
        vr[i] = 0       otherwise */
-      if (!*vreduced) { PetscCall(VecDuplicate(vfull, vreduced)); }
+      if (!*vreduced) PetscCall(VecDuplicate(vfull, vreduced));
 
       PetscCall(VecSet(*vreduced, maskvalue));
       PetscCall(ISGetLocalSize(is, &nlocal));

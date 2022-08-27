@@ -146,7 +146,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJCRL(Mat A, MatType type, Mat
   PetscBool   sametype;
 
   PetscFunctionBegin;
-  if (reuse == MAT_INITIAL_MATRIX) { PetscCall(MatDuplicate(A, MAT_COPY_VALUES, &B)); }
+  if (reuse == MAT_INITIAL_MATRIX) PetscCall(MatDuplicate(A, MAT_COPY_VALUES, &B));
   PetscCall(PetscObjectTypeCompare((PetscObject)A, type, &sametype));
   if (sametype) PetscFunctionReturn(0);
 

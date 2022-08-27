@@ -148,7 +148,7 @@ int main(int argc, char **args) {
   for (i = 0; i < its_max; i++) {
     PetscCall(MatGetFactor(C, MATSOLVERPETSC, MAT_FACTOR_LU, &F));
     PetscCall(MatLUFactorSymbolic(F, C, perm, iperm, &factinfo));
-    for (j = 0; j < 1; j++) { PetscCall(MatLUFactorNumeric(F, C, &factinfo)); }
+    for (j = 0; j < 1; j++) PetscCall(MatLUFactorNumeric(F, C, &factinfo));
     PetscCall(MatSolve(F, b, x));
     PetscCall(MatDestroy(&F));
   }

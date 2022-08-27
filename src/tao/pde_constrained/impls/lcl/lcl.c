@@ -304,7 +304,7 @@ static PetscErrorCode TaoSolve_LCL(Tao tao) {
 
     if (rWU < adec) {
       PetscCall(PetscInfo(tao, "Newton direction not descent for constraint, feasibility phase required\n"));
-      if (lclP->verbose) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Newton direction not descent for constraint: %g -- using steepest descent\n", (double)descent)); }
+      if (lclP->verbose) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Newton direction not descent for constraint: %g -- using steepest descent\n", (double)descent));
 
       PetscCall(PetscInfo(tao, "Using steepest descent direction instead.\n"));
       PetscCall(VecSet(lclP->r, 0.0));
@@ -330,14 +330,14 @@ static PetscErrorCode TaoSolve_LCL(Tao tao) {
     PetscCall(VecDot(lclP->r, lclP->GL_U, &rGL_U));
     aldescent = rGL_U - lclP->rho * rWU;
     if (aldescent > -adec) {
-      if (lclP->verbose) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, " Newton direction not descent for augmented Lagrangian: %g", (double)aldescent)); }
+      if (lclP->verbose) PetscCall(PetscPrintf(PETSC_COMM_WORLD, " Newton direction not descent for augmented Lagrangian: %g", (double)aldescent));
       PetscCall(PetscInfo(tao, "Newton direction not descent for augmented Lagrangian: %g\n", (double)aldescent));
       lclP->rho = (rGL_U - adec) / rWU;
       if (lclP->rho > lclP->rhomax) {
         lclP->rho = lclP->rhomax;
         SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "rho=%g > rhomax, case not implemented.  Increase rhomax (-tao_lcl_rhomax)", (double)lclP->rho);
       }
-      if (lclP->verbose) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "  Increasing penalty parameter to %g\n", (double)lclP->rho)); }
+      if (lclP->verbose) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "  Increasing penalty parameter to %g\n", (double)lclP->rho));
       PetscCall(PetscInfo(tao, "  Increasing penalty parameter to %g\n", (double)lclP->rho));
     }
 
@@ -358,7 +358,7 @@ static PetscErrorCode TaoSolve_LCL(Tao tao) {
     PetscCall(TaoLineSearchSetType(tao->linesearch, TAOLINESEARCHMT));
     PetscCall(TaoLineSearchSetFromOptions(tao->linesearch));
     PetscCall(TaoLineSearchApply(tao->linesearch, tao->solution, &lclP->aug, lclP->GAugL, tao->stepdirection, &step, &ls_reason));
-    if (lclP->verbose) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Steplength = %g\n", (double)step)); }
+    if (lclP->verbose) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Steplength = %g\n", (double)step));
 
     PetscCall(LCLScatter(lclP, tao->solution, lclP->U, lclP->V));
     PetscCall(TaoComputeObjectiveAndGradient(tao, tao->solution, &f, tao->gradient));
@@ -430,7 +430,7 @@ static PetscErrorCode TaoSolve_LCL(Tao tao) {
         PetscCall(MatSolve(lclP->R, lclP->g1, lclP->s));
         PetscCall(VecDot(lclP->s, lclP->g1, &descent));
         if (descent <= 0) {
-          if (lclP->verbose) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Reduced-space direction not descent: %g\n", (double)descent)); }
+          if (lclP->verbose) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Reduced-space direction not descent: %g\n", (double)descent));
           PetscCall(VecCopy(lclP->g1, lclP->s));
         }
       } else {
@@ -461,7 +461,7 @@ static PetscErrorCode TaoSolve_LCL(Tao tao) {
       PetscCall(TaoLineSearchSetType(tao->linesearch, TAOLINESEARCHMT));
       PetscCall(TaoLineSearchSetFromOptions(tao->linesearch));
       PetscCall(TaoLineSearchApply(tao->linesearch, tao->solution, &lclP->aug, lclP->GAugL, tao->stepdirection, &step, &ls_reason));
-      if (lclP->verbose) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Reduced-space steplength =  %g\n", (double)step)); }
+      if (lclP->verbose) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Reduced-space steplength =  %g\n", (double)step));
 
       PetscCall(LCLScatter(lclP, tao->solution, lclP->U, lclP->V));
       PetscCall(LCLScatter(lclP, lclP->GL, lclP->GL_U, lclP->GL_V));

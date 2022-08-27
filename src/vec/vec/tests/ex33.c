@@ -47,7 +47,7 @@ int main(int argc, char **argv) {
   PetscCall(VecScatterBegin(tozero, x, z, INSERT_VALUES, SCATTER_FORWARD));
   PetscCall(VecScatterEnd(tozero, x, z, INSERT_VALUES, SCATTER_FORWARD));
   PetscCall(VecScatterDestroy(&tozero));
-  if (rank == 0) { PetscCall(VecView(z, PETSC_VIEWER_STDOUT_SELF)); }
+  if (rank == 0) PetscCall(VecView(z, PETSC_VIEWER_STDOUT_SELF));
   PetscCall(VecDestroy(&z));
 
   PetscCall(VecScatterCreateToZero(x, &tozero, &z));

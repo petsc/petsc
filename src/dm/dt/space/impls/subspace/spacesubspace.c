@@ -53,27 +53,27 @@ static PetscErrorCode PetscSpaceView_Subspace(PetscSpace sp, PetscViewer viewer)
     PetscCall(PetscSpaceGetNumComponents(sp, &subNc));
     if (subsp->x) {
       PetscCall(PetscViewerASCIIPrintf(viewer, "Subspace-to-space domain shift:\n\n"));
-      for (o = 0; o < origDim; o++) { PetscCall(PetscViewerASCIIPrintf(viewer, " %g\n", (double)subsp->x[o])); }
+      for (o = 0; o < origDim; o++) PetscCall(PetscViewerASCIIPrintf(viewer, " %g\n", (double)subsp->x[o]));
     }
     if (subsp->Jx) {
       PetscCall(PetscViewerASCIIPrintf(viewer, "Subspace-to-space domain transform:\n\n"));
       for (o = 0; o < origDim; o++) {
         PetscCall(PetscViewerASCIIPrintf(viewer, " %g", (double)subsp->Jx[o * subDim + 0]));
         PetscCall(PetscViewerASCIIUseTabs(viewer, PETSC_FALSE));
-        for (s = 1; s < subDim; s++) { PetscCall(PetscViewerASCIIPrintf(viewer, " %g", (double)subsp->Jx[o * subDim + s])); }
+        for (s = 1; s < subDim; s++) PetscCall(PetscViewerASCIIPrintf(viewer, " %g", (double)subsp->Jx[o * subDim + s]));
         PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
         PetscCall(PetscViewerASCIIUseTabs(viewer, PETSC_TRUE));
       }
     }
     if (subsp->u) {
       PetscCall(PetscViewerASCIIPrintf(viewer, "Space-to-subspace range shift:\n\n"));
-      for (o = 0; o < origNc; o++) { PetscCall(PetscViewerASCIIPrintf(viewer, " %g\n", (double)subsp->u[o])); }
+      for (o = 0; o < origNc; o++) PetscCall(PetscViewerASCIIPrintf(viewer, " %g\n", (double)subsp->u[o]));
     }
     if (subsp->Ju) {
       PetscCall(PetscViewerASCIIPrintf(viewer, "Space-to-subsace domain transform:\n"));
       for (o = 0; o < origNc; o++) {
         PetscCall(PetscViewerASCIIUseTabs(viewer, PETSC_FALSE));
-        for (s = 0; s < subNc; s++) { PetscCall(PetscViewerASCIIPrintf(viewer, " %g", (double)subsp->Ju[o * subNc + s])); }
+        for (s = 0; s < subNc; s++) PetscCall(PetscViewerASCIIPrintf(viewer, " %g", (double)subsp->Ju[o * subNc + s]));
         PetscCall(PetscViewerASCIIUseTabs(viewer, PETSC_TRUE));
       }
       PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
@@ -115,9 +115,9 @@ static PetscErrorCode PetscSpaceEvaluate_Subspace(PetscSpace sp, PetscInt npoint
       for (j = 0; j < PetscMin(subDim, origDim); j++) { inpoints[i * origDim + j] += points[i * subDim + j]; }
     }
   }
-  if (B) { PetscCall(DMGetWorkArray(sp->dm, npoints * origNb * origNc, MPIU_REAL, &inB)); }
-  if (D) { PetscCall(DMGetWorkArray(sp->dm, npoints * origNb * origNc * origDim, MPIU_REAL, &inD)); }
-  if (H) { PetscCall(DMGetWorkArray(sp->dm, npoints * origNb * origNc * origDim * origDim, MPIU_REAL, &inH)); }
+  if (B) PetscCall(DMGetWorkArray(sp->dm, npoints * origNb * origNc, MPIU_REAL, &inB));
+  if (D) PetscCall(DMGetWorkArray(sp->dm, npoints * origNb * origNc * origDim, MPIU_REAL, &inD));
+  if (H) PetscCall(DMGetWorkArray(sp->dm, npoints * origNb * origNc * origDim * origDim, MPIU_REAL, &inH));
   PetscCall(PetscSpaceEvaluate(origsp, npoints, inpoints, inB, inD, inH));
   if (H) {
     PetscReal *phi, *psi;

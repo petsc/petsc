@@ -137,7 +137,7 @@ PetscErrorCode PetscStageLogDestroy(PetscStageLog stageLog) {
   PetscCall(PetscIntStackDestroy(stageLog->stack));
   PetscCall(PetscEventRegLogDestroy(stageLog->eventLog));
   PetscCall(PetscClassRegLogDestroy(stageLog->classLog));
-  for (stage = 0; stage < stageLog->numStages; stage++) { PetscCall(PetscStageInfoDestroy(&stageLog->stageInfo[stage])); }
+  for (stage = 0; stage < stageLog->numStages; stage++) PetscCall(PetscStageInfoDestroy(&stageLog->stageInfo[stage]));
   PetscCall(PetscFree(stageLog->stageInfo));
   PetscCall(PetscFree(stageLog));
   PetscFunctionReturn(0);

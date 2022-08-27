@@ -385,7 +385,7 @@ PetscErrorCode MatConvertToTriples_seqsell_seqaij(Mat A, PetscInt shift, MatReus
     nz = a->sliidx[a->totalslices];
     PetscCall(PetscMalloc2(nz, &row, nz, &col));
     for (i = k = 0; i < a->totalslices; i++) {
-      for (j = a->sliidx[i], r = 0; j < a->sliidx[i + 1]; j++, r = ((r + 1) & 0x07)) { PetscCall(PetscMUMPSIntCast(8 * i + r + shift, &row[k++])); }
+      for (j = a->sliidx[i], r = 0; j < a->sliidx[i + 1]; j++, r = ((r + 1) & 0x07)) PetscCall(PetscMUMPSIntCast(8 * i + r + shift, &row[k++]));
     }
     for (i = 0; i < nz; i++) PetscCall(PetscMUMPSIntCast(a->colidx[i] + shift, &col[i]));
     mumps->irn = row;
@@ -1632,7 +1632,7 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F, Mat A, const MatFactorInfo *info) {
 
   PetscFunctionBegin;
   if (mumps->id.INFOG(1) < 0 && !(mumps->id.INFOG(1) == -16 && mumps->id.INFOG(1) == 0)) {
-    if (mumps->id.INFOG(1) == -6) { PetscCall(PetscInfo(A, "MatFactorNumeric is called with singular matrix structure, INFOG(1)=%d, INFO(2)=%d\n", mumps->id.INFOG(1), mumps->id.INFO(2))); }
+    if (mumps->id.INFOG(1) == -6) PetscCall(PetscInfo(A, "MatFactorNumeric is called with singular matrix structure, INFOG(1)=%d, INFO(2)=%d\n", mumps->id.INFOG(1), mumps->id.INFO(2)));
     PetscCall(PetscInfo(A, "MatFactorNumeric is called after analysis phase fails, INFOG(1)=%d, INFO(2)=%d\n", mumps->id.INFOG(1), mumps->id.INFO(2)));
     PetscFunctionReturn(0);
   }
@@ -2299,7 +2299,7 @@ PetscErrorCode MatFactorSetSchurIS_MUMPS(Mat F, IS is) {
   mumps->id.size_schur = size;
   mumps->id.schur_lld  = size;
   PetscCall(MatDenseRestoreArrayRead(F->schur, &arr));
-  if (mumps->sym == 1) { PetscCall(MatSetOption(F->schur, MAT_SPD, PETSC_TRUE)); }
+  if (mumps->sym == 1) PetscCall(MatSetOption(F->schur, MAT_SPD, PETSC_TRUE));
 
   /* MUMPS expects Fortran style indices */
   PetscCall(PetscFree(mumps->id.listvar_schur));

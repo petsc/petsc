@@ -81,7 +81,7 @@ PETSC_EXTERN PetscErrorCode MatColoringTest(MatColoring mc, ISColoring coloring)
       }
     }
     for (k = 0; k < nindices; k++) {
-      if (statespread[indices[k] - s] != indices[k]) { PetscCall(PetscPrintf(PetscObjectComm((PetscObject)mc), "%" PetscInt_FMT " of color %" PetscInt_FMT " conflicts with %" PetscInt_FMT "\n", indices[k], l, statespread[indices[k] - s])); }
+      if (statespread[indices[k] - s] != indices[k]) PetscCall(PetscPrintf(PetscObjectComm((PetscObject)mc), "%" PetscInt_FMT " of color %" PetscInt_FMT " conflicts with %" PetscInt_FMT "\n", indices[k], l, statespread[indices[k] - s]));
     }
     PetscCall(ISRestoreIndices(colors[l], &indices));
   }

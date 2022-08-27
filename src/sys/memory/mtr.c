@@ -251,7 +251,7 @@ PetscErrorCode PetscTrMallocDefault(size_t a, PetscBool clear, int lineno, const
     PetscLogMallocFile[PetscLogMalloc]       = filename;
     PetscLogMallocFunction[PetscLogMalloc++] = function;
   }
-  if (PetscLogMallocTrace > -1 && a >= PetscLogMallocTraceThreshold) { PetscCall(PetscViewerASCIIPrintf(PetscLogMallocTraceViewer, "Alloc %zu %s:%d (%s)\n", a, filename ? filename : "null", lineno, function ? function : "null")); }
+  if (PetscLogMallocTrace > -1 && a >= PetscLogMallocTraceThreshold) PetscCall(PetscViewerASCIIPrintf(PetscLogMallocTraceViewer, "Alloc %zu %s:%d (%s)\n", a, filename ? filename : "null", lineno, function ? function : "null"));
   *result = (void *)inew;
   PetscFunctionReturn(0);
 }

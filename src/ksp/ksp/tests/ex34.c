@@ -30,7 +30,7 @@ int main(int argc, char **args) {
   if (no_inodes) PetscCall(MatSetOption(B, MAT_USE_INODES, PETSC_FALSE));
   PetscCall(MatProductNumeric(B));
   PetscCall(MatTransposeMatMultEqual(A, A, B, 10, &flg));
-  if (!flg) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Wrong MatTransposeMat")); }
+  if (!flg) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Wrong MatTransposeMat"));
   PetscCall(KSPCreate(PETSC_COMM_WORLD, &ksp));
   PetscCall(KSPSetOperators(ksp, B, B));
   PetscCall(KSPGetPC(ksp, &pc));

@@ -985,7 +985,7 @@ PetscErrorCode ParabolicInitialize(AppCtx *user) {
 
   /* Assemble RHS of forward problem */
   PetscCall(VecCopy(bc, user->yiwork[0]));
-  for (i = 1; i < user->nt; i++) { PetscCall(VecSet(user->yiwork[i], 0.0)); }
+  for (i = 1; i < user->nt; i++) PetscCall(VecSet(user->yiwork[i], 0.0));
   PetscCall(Gather_i(user->q, user->yiwork, user->yi_scatter, user->nt));
   PetscCall(VecDestroy(&bc));
 
@@ -1215,8 +1215,8 @@ PetscErrorCode ParabolicDestroy(AppCtx *user) {
   PetscCall(ISDestroy(&user->d_is));
   PetscCall(VecScatterDestroy(&user->state_scatter));
   PetscCall(VecScatterDestroy(&user->design_scatter));
-  for (i = 0; i < user->nt; i++) { PetscCall(VecScatterDestroy(&user->yi_scatter[i])); }
-  for (i = 0; i < user->ns; i++) { PetscCall(VecScatterDestroy(&user->di_scatter[i])); }
+  for (i = 0; i < user->nt; i++) PetscCall(VecScatterDestroy(&user->yi_scatter[i]));
+  for (i = 0; i < user->ns; i++) PetscCall(VecScatterDestroy(&user->di_scatter[i]));
   PetscCall(PetscFree(user->yi_scatter));
   PetscCall(PetscFree(user->di_scatter));
   PetscCall(PetscFree(user->sample_times));

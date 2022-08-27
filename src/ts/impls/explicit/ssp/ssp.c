@@ -21,7 +21,7 @@ static PetscErrorCode TSSSPGetWorkVectors(TS ts, PetscInt n, Vec **work) {
   PetscFunctionBegin;
   PetscCheck(!ssp->workout, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Work vectors already gotten");
   if (ssp->nwork < n) {
-    if (ssp->nwork > 0) { PetscCall(VecDestroyVecs(ssp->nwork, &ssp->work)); }
+    if (ssp->nwork > 0) PetscCall(VecDestroyVecs(ssp->nwork, &ssp->work));
     PetscCall(VecDuplicateVecs(ts->vec_sol, n, &ssp->work));
     ssp->nwork = n;
   }

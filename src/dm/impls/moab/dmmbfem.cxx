@@ -110,7 +110,7 @@ PetscErrorCode Compute_Lagrange_Basis_1D_Internal(const PetscInt nverts, const P
   PetscValidPointer(jacobian, 9);
   PetscValidPointer(ijacobian, 10);
   PetscValidPointer(volume, 11);
-  if (phypts) { PetscCall(PetscArrayzero(phypts, npts * 3)); }
+  if (phypts) PetscCall(PetscArrayzero(phypts, npts * 3));
   if (dphidx) { /* Reset arrays. */
     PetscCall(PetscArrayzero(dphidx, npts * nverts));
   }
@@ -221,7 +221,7 @@ PetscErrorCode Compute_Lagrange_Basis_2D_Internal(const PetscInt nverts, const P
   PetscValidPointer(ijacobian, 11);
   PetscValidPointer(volume, 12);
   PetscCall(PetscArrayzero(phi, npts));
-  if (phypts) { PetscCall(PetscArrayzero(phypts, npts * 3)); }
+  if (phypts) PetscCall(PetscArrayzero(phypts, npts * 3));
   if (dphidx) { /* Reset arrays. */
     PetscCall(PetscArrayzero(dphidx, npts * nverts));
     PetscCall(PetscArrayzero(dphidy, npts * nverts));
@@ -378,7 +378,7 @@ PetscErrorCode Compute_Lagrange_Basis_3D_Internal(const PetscInt nverts, const P
   PetscValidPointer(volume, 13);
 
   PetscCall(PetscArrayzero(phi, npts));
-  if (phypts) { PetscCall(PetscArrayzero(phypts, npts * 3)); }
+  if (phypts) PetscCall(PetscArrayzero(phypts, npts * 3));
   if (dphidx) {
     PetscCall(PetscArrayzero(dphidx, npts * nverts));
     PetscCall(PetscArrayzero(dphidy, npts * nverts));
@@ -561,7 +561,7 @@ PetscErrorCode DMMoabFEMComputeBasis(const PetscInt dim, const PetscInt nverts, 
   /* Get the quadrature points and weights for the given quadrature rule */
   PetscCall(PetscQuadratureGetData(quadrature, &idim, NULL, &npoints, &quadpts, &quadwts));
   PetscCheck(idim == dim, PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Dimension mismatch: provided (%" PetscInt_FMT ") vs quadrature (%" PetscInt_FMT ")", idim, dim);
-  if (jacobian_quadrature_weight_product) { PetscCall(PetscArraycpy(jacobian_quadrature_weight_product, quadwts, npoints)); }
+  if (jacobian_quadrature_weight_product) PetscCall(PetscArraycpy(jacobian_quadrature_weight_product, quadwts, npoints));
 
   switch (dim) {
   case 1: PetscCall(Compute_Lagrange_Basis_1D_Internal(nverts, coordinates, npoints, quadpts, phypts, jacobian_quadrature_weight_product, fe_basis, (compute_der ? fe_basis_derivatives[0] : NULL), jacobian, ijacobian, &volume)); break;
@@ -672,8 +672,8 @@ PetscErrorCode ComputeJacobian_Internal(const PetscInt dim, const PetscInt nvert
   PetscValidPointer(quad, 4);
   PetscValidPointer(jacobian, 5);
   PetscCall(PetscArrayzero(jacobian, dim * dim));
-  if (ijacobian) { PetscCall(PetscArrayzero(ijacobian, dim * dim)); }
-  if (phypts) { PetscCall(PetscArrayzero(phypts, /*npts=1 * */ 3)); }
+  if (ijacobian) PetscCall(PetscArrayzero(ijacobian, dim * dim));
+  if (phypts) PetscCall(PetscArrayzero(phypts, /*npts=1 * */ 3));
 
   if (dim == 1) {
     const PetscReal &r = quad[0];
@@ -723,7 +723,7 @@ PetscErrorCode ComputeJacobian_Internal(const PetscInt dim, const PetscInt nvert
     } else SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "The number of 2-D entity vertices are invalid. Currently only support QUAD4 and TRI3 basis evaluations in 2-D : %" PetscInt_FMT, nverts);
 
     /* invert the jacobian */
-    if (ijacobian) { PetscCall(DMatrix_Invert_2x2_Internal(jacobian, ijacobian, &volume)); }
+    if (ijacobian) PetscCall(DMatrix_Invert_2x2_Internal(jacobian, ijacobian, &volume));
   } else {
     if (nverts == 8) { /* Linear Hexahedra */
       const PetscReal &r          = quad[0];
@@ -867,6 +867,6 @@ PetscErrorCode DMMoabPToRMapping(const PetscInt dim, const PetscInt nverts, cons
       break;
     }
   }
-  if (phi) { PetscCall(PetscArraycpy(phi, phibasis, nverts)); }
+  if (phi) PetscCall(PetscArraycpy(phi, phibasis, nverts));
   PetscFunctionReturn(0);
 }

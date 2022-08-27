@@ -308,7 +308,7 @@ PetscErrorCode PetscViewerVTKFWrite(PetscViewer viewer, FILE *fp, const void *da
     count = fwrite(data, dsize, (size_t)n, fp);
     PetscCheck((PetscInt)count == n, PETSC_COMM_SELF, PETSC_ERR_FILE_WRITE, "Wrote %" PetscInt_FMT "/%" PetscInt_FMT " array members of size %d", (PetscInt)count, n, dsize);
 #if defined(PETSC_USE_REAL___FLOAT128)
-    if (dtype == MPIU___FLOAT128) { PetscCall(PetscFree(tmp)); }
+    if (dtype == MPIU___FLOAT128) PetscCall(PetscFree(tmp));
 #endif
   }
   PetscFunctionReturn(0);

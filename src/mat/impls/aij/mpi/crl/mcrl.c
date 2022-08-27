@@ -111,7 +111,7 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJCRL(Mat A, MatType type, Mat
   Mat_AIJCRL *aijcrl;
 
   PetscFunctionBegin;
-  if (reuse == MAT_INITIAL_MATRIX) { PetscCall(MatDuplicate(A, MAT_COPY_VALUES, &B)); }
+  if (reuse == MAT_INITIAL_MATRIX) PetscCall(MatDuplicate(A, MAT_COPY_VALUES, &B));
 
   PetscCall(PetscNewLog(B, &aijcrl));
   B->spptr = (void *)aijcrl;

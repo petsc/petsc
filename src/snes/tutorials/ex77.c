@@ -285,7 +285,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm) {
           for (v = 0; v < Nv; ++v) faceCoord += PetscRealPart(coords[v * dim + d]);
           faceCoord /= Nv;
           for (b = 0; b < 2; ++b) {
-            if (PetscAbs(faceCoord - b * 1.0) < PETSC_SMALL) { PetscCall(DMSetLabelValue(*dm, "Faces", faces[f], d * 2 + b + 1)); }
+            if (PetscAbs(faceCoord - b * 1.0) < PETSC_SMALL) PetscCall(DMSetLabelValue(*dm, "Faces", faces[f], d * 2 + b + 1));
           }
         }
         PetscCall(DMPlexVecRestoreClosure(cdm, cs, coordinates, faces[f], &csize, &coords));

@@ -910,9 +910,9 @@ PetscErrorCode PetscMergeIntArrayPair(PetscInt an, const PetscInt aI[], const Pe
   PetscValidPointer(J, 9);
   n_ = an + bn;
   *n = n_;
-  if (!*L) { PetscCall(PetscMalloc1(n_, L)); }
+  if (!*L) PetscCall(PetscMalloc1(n_, L));
   L_ = *L;
-  if (!*J) { PetscCall(PetscMalloc1(n_, J)); }
+  if (!*J) PetscCall(PetscMalloc1(n_, J));
   J_ = *J;
   k = ak = bk = 0;
   while (ak < an && bk < bn) {

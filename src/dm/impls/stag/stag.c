@@ -31,8 +31,8 @@ static PetscErrorCode DMCreateFieldDecomposition_Stag(DM dm, PetscInt *len, char
 
   PetscCall(PetscCalloc1(f0 * dof0, &stencil0));
   PetscCall(PetscCalloc1(f1 * dof1, &stencil1));
-  if (dim >= 2) { PetscCall(PetscCalloc1(f2 * dof2, &stencil2)); }
-  if (dim >= 3) { PetscCall(PetscCalloc1(f3 * dof3, &stencil3)); }
+  if (dim >= 2) PetscCall(PetscCalloc1(f2 * dof2, &stencil2));
+  if (dim >= 3) PetscCall(PetscCalloc1(f3 * dof3, &stencil3));
   for (k = 0; k < f0; ++k) {
     for (d = 0; d < dof0; ++d) {
       stencil0[dof0 * k + d].i = 0;
@@ -241,8 +241,8 @@ static PetscErrorCode DMCreateFieldDecomposition_Stag(DM dm, PetscInt *len, char
   }
   PetscCall(PetscFree(stencil0));
   PetscCall(PetscFree(stencil1));
-  if (dim >= 2) { PetscCall(PetscFree(stencil2)); }
-  if (dim >= 3) { PetscCall(PetscFree(stencil3)); }
+  if (dim >= 2) PetscCall(PetscFree(stencil2));
+  if (dim >= 3) PetscCall(PetscFree(stencil3));
   PetscFunctionReturn(0);
 }
 
@@ -276,7 +276,7 @@ static PetscErrorCode DMCoarsen_Stag(DM dm, MPI_Comm comm, DM *dmc) {
       }
     }
     PetscCall(DMStagSetOwnershipRanges(*dmc, l[0], l[1], l[2]));
-    for (d = 0; d < dim; ++d) { PetscCall(PetscFree(l[d])); }
+    for (d = 0; d < dim; ++d) PetscCall(PetscFree(l[d]));
   }
   PetscCall(DMSetUp(*dmc));
 
@@ -325,7 +325,7 @@ static PetscErrorCode DMRefine_Stag(DM dm, MPI_Comm comm, DM *dmc) {
       for (i = 0; i < stag->nRanks[d]; ++i) { l[d][i] = stag->l[d][i] * 2; /* Just double everything */ }
     }
     PetscCall(DMStagSetOwnershipRanges(*dmc, l[0], l[1], l[2]));
-    for (d = 0; d < dim; ++d) { PetscCall(PetscFree(l[d])); }
+    for (d = 0; d < dim; ++d) PetscCall(PetscFree(l[d]));
   }
   PetscCall(DMSetUp(*dmc));
   /* Note: For now, we do not refine coordinates */
@@ -338,7 +338,7 @@ static PetscErrorCode DMDestroy_Stag(DM dm) {
 
   PetscFunctionBegin;
   stag = (DM_Stag *)dm->data;
-  for (i = 0; i < DMSTAG_MAX_DIM; ++i) { PetscCall(PetscFree(stag->l[i])); }
+  for (i = 0; i < DMSTAG_MAX_DIM; ++i) PetscCall(PetscFree(stag->l[i]));
   PetscCall(VecScatterDestroy(&stag->gtol));
   PetscCall(VecScatterDestroy(&stag->ltog_injective));
   PetscCall(PetscFree(stag->neighbors));
@@ -741,7 +741,7 @@ static PetscErrorCode DMView_Stag(DM dm, PetscViewer viewer) {
     default: SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "not implemented for dim==%" PetscInt_FMT, dim);
     }
     PetscCall(PetscViewerASCIIPrintf(viewer, "Boundary ghosting:"));
-    for (i = 0; i < dim; ++i) { PetscCall(PetscViewerASCIIPrintf(viewer, " %s", DMBoundaryTypes[stag->boundaryType[i]])); }
+    for (i = 0; i < dim; ++i) PetscCall(PetscViewerASCIIPrintf(viewer, " %s", DMBoundaryTypes[stag->boundaryType[i]]));
     PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
     PetscCall(PetscViewerASCIIPrintf(viewer, "Elementwise ghost stencil: %s", DMStagStencilTypes[stag->stencilType]));
     if (stag->stencilType != DMSTAG_STENCIL_NONE) {
@@ -750,10 +750,10 @@ static PetscErrorCode DMView_Stag(DM dm, PetscViewer viewer) {
       PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
     }
     PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT " DOF per vertex (0D)\n", stag->dof[0]));
-    if (dim == 3) { PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT " DOF per edge (1D)\n", stag->dof[1])); }
-    if (dim > 1) { PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT " DOF per face (%" PetscInt_FMT "D)\n", stag->dof[dim - 1], dim - 1)); }
+    if (dim == 3) PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT " DOF per edge (1D)\n", stag->dof[1]));
+    if (dim > 1) PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT " DOF per face (%" PetscInt_FMT "D)\n", stag->dof[dim - 1], dim - 1));
     PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT " DOF per element (%" PetscInt_FMT "D)\n", stag->dof[dim], dim));
-    if (dm->coordinates[0].dm) { PetscCall(PetscViewerASCIIPrintf(viewer, "Has coordinate DM\n")); }
+    if (dm->coordinates[0].dm) PetscCall(PetscViewerASCIIPrintf(viewer, "Has coordinate DM\n"));
     maxRanksToView = 16;
     viewAllRanks   = (PetscBool)(size <= maxRanksToView);
     if (viewAllRanks) {

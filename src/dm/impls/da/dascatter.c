@@ -34,7 +34,7 @@ PetscErrorCode DMDAGetScatter(DM da, VecScatter *gtol, VecScatter *ltol) {
   PetscValidHeaderSpecificType(da, DM_CLASSID, 1, DMDA);
   if (gtol) *gtol = dd->gtol;
   if (ltol) {
-    if (!dd->ltol) { PetscCall(DMLocalToLocalCreate_DA(da)); }
+    if (!dd->ltol) PetscCall(DMLocalToLocalCreate_DA(da));
     *ltol = dd->ltol;
   }
   PetscFunctionReturn(0);
