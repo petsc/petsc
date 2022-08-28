@@ -197,6 +197,7 @@ checksource:
     - make vermin
     - make checkclangformat SHELL=bash
     - make checkbadSource SHELL=bash
+    - make checkbadFileChange SHELL=bash
     - make -f gmakefile check_output SHELL=bash
     - make check_petsc4py_rst
   artifacts:
