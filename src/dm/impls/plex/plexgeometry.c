@@ -763,7 +763,9 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
   DM_Plex        *mesh  = (DM_Plex *)dm->data;
   PetscBool       hash = mesh->useHashLocation, reuse = PETSC_FALSE;
   PetscInt        bs, numPoints, p, numFound, *found = NULL;
-  PetscInt        dim, cStart, cEnd, numCells, c, d;
+  PetscInt        dim, Nl = 0, cStart, cEnd, numCells, c, d;
+  PetscSF         sf;
+  const PetscInt *leaves;
   const PetscInt *boxCells;
   PetscSFNode    *cells;
   PetscScalar    *a;
@@ -783,6 +785,9 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
   PetscCheck(bs == dim, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Block size for point vector %" PetscInt_FMT " must be the mesh coordinate dimension %" PetscInt_FMT, bs, dim);
   PetscCall(DMGetCoordinatesLocalSetUp(dm));
   PetscCall(DMPlexGetSimplexOrBoxCells(dm, 0, &cStart, &cEnd));
+  PetscCall(DMGetPointSF(dm, &sf));
+  if (sf) PetscCall(PetscSFGetGraph(sf, NULL, &Nl, &leaves, NULL));
+  Nl = PetscMax(Nl, 0);
   PetscCall(VecGetLocalSize(v, &numPoints));
   PetscCall(VecGetArray(v, &a));
   numPoints /= bs;
@@ -888,6 +893,10 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
       }
     } else {
       for (c = cStart; c < cEnd; ++c) {
+        PetscInt idx;
+
+        PetscCall(PetscFindInt(c, Nl, leaves, &idx));
+        if (idx >= 0) continue;
         PetscCall(DMPlexLocatePoint_Internal(dm, dim, point, c, &cell));
         if (cell >= 0) {
           cells[p].rank  = 0;
@@ -941,7 +950,7 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
     }
   }
   PetscCall(VecRestoreArray(v, &a));
-  if (!reuse) { PetscCall(PetscSFSetGraph(cellSF, cEnd - cStart, numFound, found, PETSC_OWN_POINTER, cells, PETSC_OWN_POINTER)); }
+  if (!reuse) PetscCall(PetscSFSetGraph(cellSF, cEnd - cStart, numFound, found, PETSC_OWN_POINTER, cells, PETSC_OWN_POINTER));
   PetscCall(PetscTime(&t1));
   if (hash) {
     PetscCall(PetscInfo(dm, "[DMLocatePoints_Plex] terminating_query_type : %" PetscInt_FMT " [outside domain] : %" PetscInt_FMT " [inside initial cell] : %" PetscInt_FMT " [hash]\n", terminating_query_type[0], terminating_query_type[1], terminating_query_type[2]));
