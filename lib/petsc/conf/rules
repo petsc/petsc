@@ -582,7 +582,7 @@ simplehtml: chk_c2html
               sed -E -e "/PetscCallBack|PetscCallBLAS|PetscCallExternal|PetscCallP4est|PetscCallP4estReturn|PetscCallHDF5|PetscCallHDF5Return|PetscCallParmetis|PetscCallMKLSparse/!s/PetscCall[A-Za-z_]*\((.*)\)\;/\1;/g" \
                      -e "s/\;ierr\;/;/g" \
                      -e "/\s*PetscFunctionBegin\;/d" \
-                     -e "s/PetscFunctionReturn\((\w+)\)/return \1/g" \
+                     -e "s/PetscFunctionReturn\(([-a-zA-Z_0-9]+)\)/return \1/g" \
                      -e "s/PetscFunctionReturnVoid\(\)/return/g" \
                      -e "s/ierr\s+=\s+//g" \
                      -e "s/PETSC[A-Z]*_DLLEXPORT//g" $$i | ${C2HTML} -n | \
@@ -615,7 +615,7 @@ html: chk_c2html
               sed -E -e "/PetscCallBack|PetscCallBLAS|PetscCallExternal|PetscCallP4est|PetscCallHDF5|PetscCallParmetis|PetscCallMKLSparse/!s/PetscCall[A-Za-z_]*\((.*)\)\;/\1;/g" \
                      -e "s/\;ierr\;/;/g" \
                      -e "/\s*PetscFunctionBegin\;/d" \
-                     -e "s/PetscFunctionReturn\((\w+)\)/return \1/g" \
+                     -e "s/PetscFunctionReturn\(([-a-zA-Z_0-9]+)\)/return \1/g" \
                      -e "s/PetscFunctionReturnVoid\(\)/return/g" \
                      -e "s/ierr\s+=\s+//g" \
                      -e "s/PETSC[A-Z]*_DLLEXPORT//g" $$i | ${C2HTML} -n | \
