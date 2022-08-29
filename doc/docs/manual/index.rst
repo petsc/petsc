@@ -25,9 +25,10 @@ Prepared by
 **L. Dalcin** :sup:`4`,
 **A. Dener** :sup:`1`,
 **V. Eijkhout** :sup:`6`,
-**W. D. Gropp** :sup:`1`,
+**W. D. Gropp** :sup:`1,18`,
 **V. Hapla** :sup:`8`,
-**T. Isaac** :sup:`14`,
+**T. Isaac** :sup:`1,14`,
+**J. Faibussowitsch** :sup:`1,18`,
 **P. Jolivet** :sup:`12`,
 **D. Karpeev** :sup:`1`,
 **D. Kaushik** :sup:`1`,
@@ -40,10 +41,10 @@ Prepared by
 **L. Mitchell** :sup:`13`,
 **T. Munson** :sup:`1`,
 **J. E. Roman** :sup:`16`,
-**K. Rupp** :sup:`1`,
+**K. Rupp** :sup:`1,19`,
 **P. Sanan** :sup:`1,8`,
 **J. Sarich** :sup:`1`,
-**B. F. Smith** :sup:`17`,
+**B. F. Smith** :sup:`1,17`,
 **S. Zampini** :sup:`4`,
 **H. Zhang** :sup:`1,5`,
 **H. Zhang** :sup:`1`, and
@@ -66,6 +67,8 @@ Prepared by
 | :sup:`15`\ Tech-X Corporation
 | :sup:`16`\ DSIC, Universitat Politècnica de València
 | :sup:`17`\ Flatiron Institute, Simons Foundation
+| :sup:`18`\ University of Illinois, Urbana-Champaign
+| :sup:`19`\ Institute for Microelectronics, TU Wien
 
 --------------
 
