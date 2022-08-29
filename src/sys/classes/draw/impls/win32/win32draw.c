@@ -419,8 +419,8 @@ static PetscErrorCode PetscDrawCheckResizedWindow_Win32(PetscDraw draw) {
   PetscDraw_Win32 *windraw = (PetscDraw_Win32 *)draw->data;
 
   PetscFunctionBegin;
-  if (windraw->haveresized == 1) PetscFunctionReturn(1);
-  else PetscFunctionReturn(0);
+  PetscCheck(windraw->haveresized != 1, PETSC_COMM_SELF, PETSC_ERR_SUP, "No support for resizing windows on Microsoft Windows");
+  PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PetscDrawSetTitle_Win32(PetscDraw draw, const char title[]) {

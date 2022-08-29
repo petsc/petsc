@@ -49,15 +49,17 @@ PetscErrorCode (*IFunction)(TS, PetscReal, Vec, Vec, Vec, void *);
 PetscErrorCode (*IJacobian)(TS, PetscReal, Vec, Vec, PetscReal, Mat, Mat, void *);
 
 /* Returns the size of the system of equations depending on problem specification */
-PetscInt GetSize(const char *p) {
+PetscErrorCode GetSize(const char *p, PetscInt *sz) {
   PetscFunctionBeginUser;
-  if ((!strcmp(p, "hull1972a1")) || (!strcmp(p, "hull1972a2")) || (!strcmp(p, "hull1972a3")) || (!strcmp(p, "hull1972a4")) || (!strcmp(p, "hull1972a5"))) PetscFunctionReturn(1);
-  else if (!strcmp(p, "hull1972b1")) PetscFunctionReturn(2);
-  else if ((!strcmp(p, "hull1972b2")) || (!strcmp(p, "hull1972b3")) || (!strcmp(p, "hull1972b4")) || (!strcmp(p, "hull1972b5"))) PetscFunctionReturn(3);
-  else if ((!strcmp(p, "kulik2013i"))) PetscFunctionReturn(4);
-  else if ((!strcmp(p, "hull1972c1")) || (!strcmp(p, "hull1972c2")) || (!strcmp(p, "hull1972c3"))) PetscFunctionReturn(10);
-  else if (!strcmp(p, "hull1972c4")) PetscFunctionReturn(51);
-  else PetscFunctionReturn(-1);
+
+  if (!strcmp(p, "hull1972a1") || !strcmp(p, "hull1972a2") || !strcmp(p, "hull1972a3") || !strcmp(p, "hull1972a4") || !strcmp(p, "hull1972a5")) *sz = 1;
+  else if (!strcmp(p, "hull1972b1")) *sz = 2;
+  else if (!strcmp(p, "hull1972b2") || !strcmp(p, "hull1972b3") || !strcmp(p, "hull1972b4") || !strcmp(p, "hull1972b5")) *sz = 3;
+  else if (!strcmp(p, "kulik2013i")) *sz = 4;
+  else if (!strcmp(p, "hull1972c1") || !strcmp(p, "hull1972c2") || !strcmp(p, "hull1972c3")) *sz = 10;
+  else if (!strcmp(p, "hull1972c4")) *sz = 52;
+  else SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Incorrect problem name %s", p);
+  PetscFunctionReturn(0);
 }
 
 /****************************************************************/
@@ -971,10 +973,11 @@ PetscErrorCode Initialize(Vec Y, void *s) {
   char        *p = (char *)s;
   PetscScalar *y;
   PetscReal    t0;
-  PetscInt     N = GetSize((const char *)s);
+  PetscInt     N;
   PetscBool    flg;
 
   PetscFunctionBeginUser;
+  PetscCall(GetSize((const char *)s, &N));
   VecZeroEntries(Y);
   PetscCall(VecGetArray(Y, &y));
   if (!strcmp(p, "hull1972a1")) {
@@ -1061,14 +1064,13 @@ PetscErrorCode Initialize(Vec Y, void *s) {
     RHSFunction = RHSFunction_Hull1972C2;
     IFunction   = IFunction_Hull1972C2;
     IJacobian   = IJacobian_Hull1972C2;
-  } else if ((!strcmp(p, "hull1972c3")) || (!strcmp(p, "hull1972c4"))) {
+  } else if (!strcmp(p, "hull1972c3") || !strcmp(p, "hull1972c4")) {
     y[0]        = 1.0;
     RHSFunction = RHSFunction_Hull1972C34;
     IFunction   = IFunction_Hull1972C34;
     IJacobian   = IJacobian_Hull1972C34;
   }
   PetscCall(PetscOptionsGetScalarArray(NULL, NULL, "-yinit", y, &N, &flg));
-  PetscCheck((N == GetSize((const char *)s)) || !flg, PETSC_COMM_WORLD, PETSC_ERR_ARG_SIZ, "Number of initial values %" PetscInt_FMT " does not match problem size %" PetscInt_FMT ".", N, GetSize((const char *)s));
   PetscCall(VecRestoreArray(Y, &y));
   PetscFunctionReturn(0);
 }
@@ -1127,7 +1129,7 @@ PetscErrorCode SolveODE(char *ptype, PetscReal dt, PetscReal tfinal, PetscInt ma
   PetscReal final_time;  /* Actual final time from the integrator  */
 
   PetscFunctionBeginUser;
-  N = GetSize((const char *)&ptype[0]);
+  PetscCall(GetSize((const char *)&ptype[0], &N));
   PetscCheck(N >= 0, PETSC_COMM_WORLD, PETSC_ERR_ARG_SIZ, "Illegal problem specification.");
   PetscCall(VecCreate(PETSC_COMM_WORLD, &Y));
   PetscCall(VecSetSizes(Y, N, PETSC_DECIDE));
@@ -1215,10 +1217,11 @@ int main(int argc, char **argv) {
   PetscReal  *error;            /* Array to store the errors for convergence analysis   */
   PetscMPIInt size;             /* No of processors                                     */
   PetscBool   flag;             /* Flag denoting availability of exact solution         */
-  PetscInt    r;
+  PetscInt    r, N;
 
   /* Initialize program */
   PetscFunctionBeginUser;
+  PetscCall(GetSize(&ptype[0], &N));
   PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
 
   /* Check if running with only 1 proc */
@@ -1238,7 +1241,7 @@ int main(int argc, char **argv) {
     error[r] = 0;
     if (r > 0) dt /= refine_fac;
 
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Solving ODE \"%s\" with dt %f, final time %f and system size %" PetscInt_FMT ".\n", ptype, (double)dt, (double)tfinal, GetSize(&ptype[0])));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Solving ODE \"%s\" with dt %f, final time %f and system size %" PetscInt_FMT ".\n", ptype, (double)dt, (double)tfinal, N));
     PetscCall(SolveODE(&ptype[0], dt, tfinal, maxiter, &error[r], &flag));
     if (flag) {
       /* If exact solution available for the specified ODE */

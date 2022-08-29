@@ -296,5 +296,5 @@ static int checktick(void)
     minDelta = MIN(minDelta, MAX(Delta,0));
   }
 
-  return(minDelta);
+  return minDelta;
 }

@@ -92,9 +92,9 @@ PetscErrorCode PetscDrawXiInit(PetscDraw_X *XiWin, const char display[]) {
 }
 
 /*
-    This routine waits until the window is actually created or destroyed
-    Returns 0 if window is mapped; 1 if window is destroyed.
- */
+    This routine waits until the window is actually created. If the window was
+    never mapped it generates an error
+*/
 static PetscErrorCode PetscDrawXiWaitMap(PetscDraw_X *XiWin) {
   XEvent event;
 
@@ -109,7 +109,7 @@ static PetscErrorCode PetscDrawXiWaitMap(PetscDraw_X *XiWin) {
         XiWin->w = event.xconfigure.width - 2 * event.xconfigure.border_width;
         XiWin->h = event.xconfigure.height - 2 * event.xconfigure.border_width;
         break;
-      case DestroyNotify: PetscFunctionReturn(1);
+      case DestroyNotify: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Window was not properly created");
       case Expose:
         PetscFunctionReturn(0);
         /* else ignore event */

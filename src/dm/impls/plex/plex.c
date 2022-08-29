@@ -6429,17 +6429,17 @@ PetscErrorCode DMPlexVecSetClosure(DM dm, PetscSection section, Vec v, PetscInt 
 }
 
 /* Check whether the given point is in the label. If not, update the offset to skip this point */
-static inline PetscErrorCode CheckPoint_Private(DMLabel label, PetscInt labelId, PetscSection section, PetscInt point, PetscInt f, PetscInt *offset) {
+static inline PetscErrorCode CheckPoint_Private(DMLabel label, PetscInt labelId, PetscSection section, PetscInt point, PetscInt f, PetscInt *offset, PetscBool *contains) {
   PetscFunctionBegin;
+  *contains = PETSC_TRUE;
   if (label) {
-    PetscBool contains;
-    PetscInt  fdof;
+    PetscInt fdof;
 
-    PetscCall(DMLabelStratumHasPoint(label, labelId, point, &contains));
-    if (!contains) {
+    PetscCall(DMLabelStratumHasPoint(label, labelId, point, contains));
+    if (!*contains) {
       PetscCall(PetscSectionGetFieldDof(section, point, f, &fdof));
       *offset += fdof;
-      PetscFunctionReturn(1);
+      PetscFunctionReturn(0);
     }
   }
   PetscFunctionReturn(0);
@@ -6469,6 +6469,7 @@ PetscErrorCode DMPlexVecSetFieldClosure_Internal(DM dm, PetscSection section, Ve
   for (f = 0; f < numFields; ++f) {
     const PetscInt    **perms = NULL;
     const PetscScalar **flips = NULL;
+    PetscBool           contains;
 
     if (!fieldActive[f]) {
       for (p = 0; p < numPoints * 2; p += 2) {
@@ -6485,7 +6486,8 @@ PetscErrorCode DMPlexVecSetFieldClosure_Internal(DM dm, PetscSection section, Ve
         const PetscInt     point = points[2 * p];
         const PetscInt    *perm  = perms ? perms[p] : NULL;
         const PetscScalar *flip  = flips ? flips[p] : NULL;
-        if (CheckPoint_Private(label, labelId, section, point, f, &offset)) continue;
+        PetscCall(CheckPoint_Private(label, labelId, section, point, f, &offset, &contains));
+        if (!contains) continue;
         PetscCall(updatePointFields_private(section, point, perm, flip, f, insert, PETSC_FALSE, NULL, values, &offset, array));
       }
       break;
@@ -6494,7 +6496,8 @@ PetscErrorCode DMPlexVecSetFieldClosure_Internal(DM dm, PetscSection section, Ve
         const PetscInt     point = points[2 * p];
         const PetscInt    *perm  = perms ? perms[p] : NULL;
         const PetscScalar *flip  = flips ? flips[p] : NULL;
-        if (CheckPoint_Private(label, labelId, section, point, f, &offset)) continue;
+        PetscCall(CheckPoint_Private(label, labelId, section, point, f, &offset, &contains));
+        if (!contains) continue;
         PetscCall(updatePointFields_private(section, point, perm, flip, f, insert, PETSC_TRUE, NULL, values, &offset, array));
       }
       break;
@@ -6503,7 +6506,8 @@ PetscErrorCode DMPlexVecSetFieldClosure_Internal(DM dm, PetscSection section, Ve
         const PetscInt     point = points[2 * p];
         const PetscInt    *perm  = perms ? perms[p] : NULL;
         const PetscScalar *flip  = flips ? flips[p] : NULL;
-        if (CheckPoint_Private(label, labelId, section, point, f, &offset)) continue;
+        PetscCall(CheckPoint_Private(label, labelId, section, point, f, &offset, &contains));
+        if (!contains) continue;
         PetscCall(updatePointFieldsBC_private(section, point, perm, flip, f, Ncc, comps, insert, NULL, values, &offset, array));
       }
       break;
@@ -6512,7 +6516,8 @@ PetscErrorCode DMPlexVecSetFieldClosure_Internal(DM dm, PetscSection section, Ve
         const PetscInt     point = points[2 * p];
         const PetscInt    *perm  = perms ? perms[p] : NULL;
         const PetscScalar *flip  = flips ? flips[p] : NULL;
-        if (CheckPoint_Private(label, labelId, section, point, f, &offset)) continue;
+        PetscCall(CheckPoint_Private(label, labelId, section, point, f, &offset, &contains));
+        if (!contains) continue;
         PetscCall(updatePointFields_private(section, point, perm, flip, f, add, PETSC_FALSE, NULL, values, &offset, array));
       }
       break;
@@ -6521,7 +6526,8 @@ PetscErrorCode DMPlexVecSetFieldClosure_Internal(DM dm, PetscSection section, Ve
         const PetscInt     point = points[2 * p];
         const PetscInt    *perm  = perms ? perms[p] : NULL;
         const PetscScalar *flip  = flips ? flips[p] : NULL;
-        if (CheckPoint_Private(label, labelId, section, point, f, &offset)) continue;
+        PetscCall(CheckPoint_Private(label, labelId, section, point, f, &offset, &contains));
+        if (!contains) continue;
         PetscCall(updatePointFields_private(section, point, perm, flip, f, add, PETSC_TRUE, NULL, values, &offset, array));
       }
       break;

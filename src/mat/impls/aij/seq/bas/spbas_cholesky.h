@@ -6,12 +6,10 @@
       row, so garbage collection and/or re-allocation may be done.
 */
 PetscBool spbas_cholesky_row_alloc(spbas_matrix retval, PetscInt k, PetscInt r_nnz, PetscInt *n_alloc_used) {
-  PetscFunctionBegin;
   retval.icols[k]  = &retval.alloc_icol[*n_alloc_used];
   retval.values[k] = &retval.alloc_val[*n_alloc_used];
   *n_alloc_used += r_nnz;
-  if (*n_alloc_used > retval.n_alloc_icol) PetscFunctionReturn(PETSC_FALSE);
-  PetscFunctionReturn(PETSC_TRUE);
+  return (*n_alloc_used > retval.n_alloc_icol) ? PETSC_FALSE : PETSC_TRUE;
 }
 
 /*

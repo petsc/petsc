@@ -192,7 +192,7 @@ PetscErrorCode PetscWaitOnError() {
    Level: advanced
 
    Developer Notes:
-    Since this can be called by the error handler should it be calling SETERRQ() and PetscCall()?
+    Since this can be called by the error handler should it be calling PetscCall()?
 
 .seealso: `PetscSetDebugger()`, `PetscSetDefaultDebugger()`, `PetscSetDebugTerminal()`, `PetscAttachDebuggerErrorHandler()`, `PetscStopForDebugger()`
 @*/
@@ -203,7 +203,6 @@ PetscErrorCode PetscAttachDebugger(void) {
   char      program[PETSC_MAX_PATH_LEN], display[256], hostname[64];
 #endif
 
-  PetscFunctionBegin;
 #if defined(PETSC_CANNOT_START_DEBUGGER) || !defined(PETSC_HAVE_FORK)
   (*PetscErrorPrintf)("System cannot start debugger\n");
   (*PetscErrorPrintf)("On Cray run program in Totalview debugger\n");
@@ -212,20 +211,20 @@ PetscErrorCode PetscAttachDebugger(void) {
 #else
   if (PetscUnlikely(PetscGetDisplay(display, sizeof(display)))) {
     (*PetscErrorPrintf)("Cannot determine display\n");
-    PetscFunctionReturn(PETSC_ERR_SYS);
+    return PETSC_ERR_SYS;
   }
   if (PetscUnlikely(PetscGetProgramName(program, sizeof(program)))) {
-    (*PetscErrorPrintf)("Cannot determine program name\n");
-    PetscFunctionReturn(PETSC_ERR_SYS);
+    (*PetscErrorPrintf)("Cannot determine program name needed to attach debugger\n");
+    return PETSC_ERR_SYS;
   }
   if (PetscUnlikely(!program[0])) {
-    (*PetscErrorPrintf)("Cannot determine program name\n");
-    PetscFunctionReturn(PETSC_ERR_SYS);
+    (*PetscErrorPrintf)("Cannot determine program name needed to attach debugger\n");
+    return PETSC_ERR_SYS;
   }
   child = (int)fork();
   if (PetscUnlikely(child < 0)) {
     (*PetscErrorPrintf)("Error in fork() prior to attaching debugger\n");
-    PetscFunctionReturn(PETSC_ERR_SYS);
+    return PETSC_ERR_SYS;
   }
   petscindebugger = PETSC_TRUE;
 
@@ -439,7 +438,7 @@ PetscErrorCode PetscAttachDebugger(void) {
 #endif
   }
 #endif
-  PetscFunctionReturn(0);
+  return 0;
 }
 
 /*@C
@@ -489,7 +488,6 @@ $    PetscAbortErrorHandler()
           `PetscAbortErrorHandler()`, `PetscMPIAbortErrorHandler()`, `PetscEmacsClientErrorHandler()`, `PetscReturnErrorHandler()`, `PetscSetDebugTermainal()`
 @*/
 PetscErrorCode PetscAttachDebuggerErrorHandler(MPI_Comm comm, int line, const char *fun, const char *file, PetscErrorCode num, PetscErrorType p, const char *mess, void *ctx) {
-  PetscFunctionBegin;
   if (!mess) mess = " ";
 
   if (fun) (*PetscErrorPrintf)("%s() at %s:%d %s\n", fun, file, line, mess);
@@ -497,7 +495,7 @@ PetscErrorCode PetscAttachDebuggerErrorHandler(MPI_Comm comm, int line, const ch
 
   PetscAttachDebugger();
   abort(); /* call abort because don't want to kill other MPI processes that may successfully attach to debugger */
-  PetscFunctionReturn(0);
+  return 0;
 }
 
 /*@C
