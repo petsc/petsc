@@ -197,14 +197,14 @@ static PetscErrorCode TaoSetUp_ALMM(Tao tao) {
       }
       if (!auglag->C) PetscCall(VecDuplicate(auglag->Y, &auglag->C));
     } else {
-      if (!auglag->C) { auglag->C = auglag->Ci; }
-      if (!auglag->Y) { auglag->Y = auglag->Yi; }
+      if (!auglag->C) auglag->C = auglag->Ci;
+      if (!auglag->Y) auglag->Y = auglag->Yi;
     }
   } else {
-    if (!auglag->P) { auglag->P = auglag->Px; }
-    if (!auglag->G) { auglag->G = auglag->LgradX; }
-    if (!auglag->C) { auglag->C = auglag->Ce; }
-    if (!auglag->Y) { auglag->Y = auglag->Ye; }
+    if (!auglag->P) auglag->P = auglag->Px;
+    if (!auglag->G) auglag->G = auglag->LgradX;
+    if (!auglag->C) auglag->C = auglag->Ce;
+    if (!auglag->Y) auglag->Y = auglag->Ye;
   }
   /* initialize parameters */
   if (auglag->type == TAO_ALMM_PHR) {
@@ -345,7 +345,7 @@ static PetscErrorCode TaoSetFromOptions_ALMM(Tao tao, PetscOptionItems *PetscOpt
   for (i = 0; i < tao->numbermonitors; i++) {
     PetscCall(PetscObjectReference((PetscObject)tao->monitorcontext[i]));
     PetscCall(TaoSetMonitor(auglag->subsolver, tao->monitor[i], tao->monitorcontext[i], tao->monitordestroy[i]));
-    if (tao->monitor[i] == TaoMonitorDefault || tao->monitor[i] == TaoDefaultCMonitor || tao->monitor[i] == TaoDefaultGMonitor || tao->monitor[i] == TaoDefaultSMonitor) { auglag->info = PETSC_TRUE; }
+    if (tao->monitor[i] == TaoMonitorDefault || tao->monitor[i] == TaoDefaultCMonitor || tao->monitor[i] == TaoDefaultGMonitor || tao->monitor[i] == TaoDefaultSMonitor) auglag->info = PETSC_TRUE;
   }
   PetscFunctionReturn(0);
 }

@@ -377,7 +377,7 @@ PetscErrorCode DMDASetVertexCoordinates(DM dm, PetscReal xl, PetscReal xu, Petsc
 
         PetscCall(PetscSectionGetOffset(section, vertex, &off));
         ind[0] = i + da->xs;
-        for (d = 0; d < dim; ++d) { coords[off + d] = h[d] * ind[d]; }
+        for (d = 0; d < dim; ++d) coords[off + d] = h[d] * ind[d];
       }
     }
   }
@@ -482,7 +482,7 @@ PetscErrorCode DMDAGetArray(DM da, PetscBool ghosted, void *vptr) {
     bptr = (void **)(iarray_start + xm * ym * zm * sizeof(PetscScalar) + zm * sizeof(void **));
     for (i = zs; i < zs + zm; i++) ptr[i] = bptr + ((i - zs) * ym - ys);
     for (i = zs; i < zs + zm; i++) {
-      for (j = ys; j < ys + ym; j++) { ptr[i][j] = iarray_start + sizeof(PetscScalar) * (xm * ym * (i - zs) + xm * (j - ys) - xs); }
+      for (j = ys; j < ys + ym; j++) ptr[i][j] = iarray_start + sizeof(PetscScalar) * (xm * ym * (i - zs) + xm * (j - ys) - xs);
     }
     *iptr = (void *)ptr;
     break;

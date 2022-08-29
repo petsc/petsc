@@ -246,7 +246,7 @@ static inline PetscErrorCode PetscTimSortMergeLo_Private(char *arr, char *tarr, 
       }
     }
   }
-  if (i < llen) { Petsc_memcpy(arr + (k * size), tarr + (i * size), (llen - i) * size); }
+  if (i < llen) Petsc_memcpy(arr + (k * size), tarr + (i * size), (llen - i) * size);
   PetscFunctionReturn(0);
 }
 
@@ -307,7 +307,7 @@ static inline PetscErrorCode PetscTimSortMergeLoWithArray_Private(char *arr, cha
       }
     }
   }
-  if (i < llen) { Petsc_memcpy2(arr + (k * asize), atarr + (i * asize), (llen - i) * asize, barr + (k * bsize), btarr + (i * bsize), (llen - i) * bsize); }
+  if (i < llen) Petsc_memcpy2(arr + (k * asize), atarr + (i * asize), (llen - i) * asize, barr + (k * bsize), btarr + (i * bsize), (llen - i) * bsize);
   PetscFunctionReturn(0);
 }
 
@@ -371,7 +371,7 @@ static inline PetscErrorCode PetscTimSortMergeHi_Private(char *arr, char *tarr, 
       }
     }
   }
-  if (i >= 0) { Petsc_memcpy((arr) + left * size, tarr, (i + 1) * size); }
+  if (i >= 0) Petsc_memcpy((arr) + left * size, tarr, (i + 1) * size);
   PetscFunctionReturn(0);
 }
 
@@ -432,7 +432,7 @@ static inline PetscErrorCode PetscTimSortMergeHiWithArray_Private(char *arr, cha
       }
     }
   }
-  if (i >= 0) { Petsc_memcpy2((arr) + left * asize, atarr, (i + 1) * asize, (barr) + left * bsize, btarr, (i + 1) * bsize); }
+  if (i >= 0) Petsc_memcpy2((arr) + left * asize, atarr, (i + 1) * asize, (barr) + left * bsize, btarr, (i + 1) * bsize);
   PetscFunctionReturn(0);
 }
 
@@ -792,7 +792,7 @@ static inline PetscErrorCode PetscTimSortBuildRun_Private(char *arr, char *tarr,
     }
     {
       PetscInt lo = runstart, hi = ri;
-      for (; lo < hi; ++lo, --hi) { COPYSWAPPY(arr + lo * size, arr + hi * size, tarr, size); }
+      for (; lo < hi; ++lo, --hi) COPYSWAPPY(arr + lo * size, arr + hi * size, tarr, size);
     }
   } else {
     ++ri;
@@ -833,7 +833,7 @@ static inline PetscErrorCode PetscTimSortBuildRunWithArray_Private(char *arr, ch
     }
     {
       PetscInt lo = runstart, hi = ri;
-      for (; lo < hi; ++lo, --hi) { COPYSWAPPY2(arr + lo * asize, arr + hi * asize, asize, barr + lo * bsize, barr + hi * bsize, bsize, atarr); }
+      for (; lo < hi; ++lo, --hi) COPYSWAPPY2(arr + lo * asize, arr + hi * asize, asize, barr + lo * bsize, barr + hi * bsize, bsize, atarr);
     }
   } else {
     ++ri;

@@ -33,7 +33,7 @@ PetscErrorCode PadMatrix(Mat A, Vec v, PetscScalar c, Mat *B) {
     PetscCall(MatRestoreRow(A, i, &nc, NULL, NULL));
   }
   cnt[n] = 1;
-  for (i = 0; i < n; i++) { cnt[n] += (vv[i] != 0.0); }
+  for (i = 0; i < n; i++) cnt[n] += (vv[i] != 0.0);
   PetscCall(MatCreateSeqAIJ(PETSC_COMM_SELF, n + 1, n + 1, 0, cnt, B));
   PetscCall(MatSetOption(*B, MAT_IGNORE_ZERO_ENTRIES, PETSC_TRUE));
 

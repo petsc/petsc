@@ -56,7 +56,7 @@ static PetscErrorCode PetscSpaceSetUp_Ptrimmed(PetscSpace sp) {
   if (pt->setupCalled) PetscFunctionReturn(0);
   PetscCheck(pt->formDegree >= -sp->Nv && pt->formDegree <= sp->Nv, PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_OUTOFRANGE, "Form degree %" PetscInt_FMT " not in valid range [%" PetscInt_FMT ",%" PetscInt_FMT "]", pt->formDegree, sp->Nv, sp->Nv);
   PetscCall(PetscDTBinomialInt(sp->Nv, PetscAbsInt(pt->formDegree), &Nf));
-  if (sp->Nc == PETSC_DETERMINE) { sp->Nc = Nf; }
+  if (sp->Nc == PETSC_DETERMINE) sp->Nc = Nf;
   PetscCheck(sp->Nc % Nf == 0, PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_INCOMP, "Number of components %" PetscInt_FMT " is not a multiple of form dimension %" PetscInt_FMT, sp->Nc, Nf);
   if (sp->Nc != Nf) {
     PetscSpace  subsp;
@@ -171,7 +171,7 @@ static PetscErrorCode PetscSpaceEvaluate_Ptrimmed(PetscSpace sp, PetscInt npoint
 
     for (PetscInt v = 0; v < Nf; v++) {
       for (PetscInt b = 0; b < Nb; b++) {
-        for (PetscInt p = 0; p < npoints; p++) { B[p * p_strl + b * b_strl + v * v_strl] = eval[b * b_strr + v * v_strr + p * p_strr]; }
+        for (PetscInt p = 0; p < npoints; p++) B[p * p_strl + b * b_strl + v * v_strl] = eval[b * b_strr + v * v_strr + p * p_strr];
       }
     }
   }
@@ -189,7 +189,7 @@ static PetscErrorCode PetscSpaceEvaluate_Ptrimmed(PetscSpace sp, PetscInt npoint
     for (PetscInt v = 0; v < Nf; v++) {
       for (PetscInt d = 0; d < dim; d++) {
         for (PetscInt b = 0; b < Nb; b++) {
-          for (PetscInt p = 0; p < npoints; p++) { D[p * p_strl + b * b_strl + v * v_strl + d * d_strl] = eval[b * b_strr + v * v_strr + (1 + d) * d_strr + p * p_strr]; }
+          for (PetscInt p = 0; p < npoints; p++) D[p * p_strl + b * b_strl + v * v_strl + d * d_strl] = eval[b * b_strr + v * v_strr + (1 + d) * d_strr + p * p_strr];
         }
       }
     }
@@ -218,7 +218,7 @@ static PetscErrorCode PetscSpaceEvaluate_Ptrimmed(PetscSpace sp, PetscInt npoint
         derivs[d2]--;
         for (PetscInt v = 0; v < Nf; v++) {
           for (PetscInt b = 0; b < Nb; b++) {
-            for (PetscInt p = 0; p < npoints; p++) { H[p * p_strl + b * b_strl + v * v_strl + d1 * d1_strl + d2 * d2_strl] = eval[b * b_strr + v * v_strr + j * j_strr + p * p_strr]; }
+            for (PetscInt p = 0; p < npoints; p++) H[p * p_strl + b * b_strl + v * v_strl + d1 * d1_strl + d2 * d2_strl] = eval[b * b_strr + v * v_strr + j * j_strr + p * p_strr];
           }
         }
       }

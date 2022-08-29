@@ -107,7 +107,7 @@ static PetscErrorCode BuildCSRGraph(DomainData dd, PetscInt **xadj, PetscInt **a
         }
         for (kk = kstart_csr; kk < kend_csr; kk++) {
           for (jj = jstart_csr; jj < jend_csr; jj++) {
-            for (ii = istart_csr; ii < iend_csr; ii++) { count_adj = count_adj + 1; }
+            for (ii = istart_csr; ii < iend_csr; ii++) count_adj = count_adj + 1;
           }
         }
       }

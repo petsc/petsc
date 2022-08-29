@@ -155,7 +155,7 @@ static PetscErrorCode SNESLineSearchApply_BT(SNESLineSearch linesearch) {
       PetscCall(PetscViewerASCIIPrintf(monitor, "    Line search: objective function at lambdas = %g is Inf or Nan, cutting lambda\n", (double)lambda));
       PetscCall(PetscViewerASCIISubtractTab(monitor, ((PetscObject)linesearch)->tablevel));
     }
-    if (lambda <= minlambda) { SNESCheckFunctionNorm(snes, g); }
+    if (lambda <= minlambda) SNESCheckFunctionNorm(snes, g);
     lambda = .5 * lambda;
   }
 

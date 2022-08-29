@@ -307,7 +307,7 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx) {
     /* communications */
     PetscCall(VecGetArrayRead(pcis->vec1_N, (const PetscScalar **)&array));
     for (i = 1; i < pcis->n_neigh; i++) {
-      for (j = 0; j < pcis->n_shared[i]; j++) { send_buffer[ptrs_buffer[i - 1] + j] = array[pcis->shared[i][j]]; }
+      for (j = 0; j < pcis->n_shared[i]; j++) send_buffer[ptrs_buffer[i - 1] + j] = array[pcis->shared[i][j]];
       PetscCall(PetscMPIIntCast(ptrs_buffer[i] - ptrs_buffer[i - 1], &buf_size));
       PetscCall(PetscMPIIntCast(pcis->neigh[i], &neigh));
       PetscCallMPI(MPI_Isend(&send_buffer[ptrs_buffer[i - 1]], buf_size, MPIU_SCALAR, neigh, 0, comm, &send_reqs[i - 1]));
@@ -320,7 +320,7 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx) {
       for (j = 0; j < pcis->n_shared[i]; j++) {
         k              = pcis->shared[i][j];
         neigh_position = 0;
-        while (mat_graph->neighbours_set[k][neigh_position] != pcis->neigh[i]) { neigh_position++; }
+        while (mat_graph->neighbours_set[k][neigh_position] != pcis->neigh[i]) neigh_position++;
         all_factors[k][neigh_position] = recv_buffer[ptrs_buffer[i - 1] + j];
       }
     }
@@ -350,10 +350,10 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx) {
     n_global_lambda = aux_global_numbering[cum];
     j               = mat_graph->count[aux_local_numbering_1[i]];
     aux_sums[0]     = 0;
-    for (s = 1; s < j; s++) { aux_sums[s] = aux_sums[s - 1] + j - s + 1; }
+    for (s = 1; s < j; s++) aux_sums[s] = aux_sums[s - 1] + j - s + 1;
     if (all_factors) array = all_factors[aux_local_numbering_1[i]];
     n_neg_values = 0;
-    while (n_neg_values < j && mat_graph->neighbours_set[aux_local_numbering_1[i]][n_neg_values] < rank) { n_neg_values++; }
+    while (n_neg_values < j && mat_graph->neighbours_set[aux_local_numbering_1[i]][n_neg_values] < rank) n_neg_values++;
     n_pos_values = j - n_neg_values;
     if (fully_redundant) {
       for (s = 0; s < n_neg_values; s++) {

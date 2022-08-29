@@ -69,9 +69,9 @@ static PetscErrorCode DMFieldDSGetHeightDisc(DMField field, PetscInt height, Pet
   do { \
     PetscInt _i, _j, _k; \
     for (_i = 0; _i < (m); _i++) { \
-      for (_k = 0; _k < (c); _k++) { (y)[_i * (c) + _k] = 0.; } \
+      for (_k = 0; _k < (c); _k++) (y)[_i * (c) + _k] = 0.; \
       for (_j = 0; _j < (n); _j++) { \
-        for (_k = 0; _k < (c); _k++) { (y)[_i * (c) + _k] += (A)[(_i * (n) + _j) * (c) + _k] * cast((b)[_j]); } \
+        for (_k = 0; _k < (c); _k++) (y)[_i * (c) + _k] += (A)[(_i * (n) + _j) * (c) + _k] * cast((b)[_j]); \
       } \
     } \
   } while (0)
@@ -252,7 +252,7 @@ static PetscErrorCode DMFieldEvaluate_DS(DMField field, Vec points, PetscDataTyp
   PetscCall(DMGetDimension(field->dm, &dimR));
   PetscCall(DMLocatePoints(field->dm, points, DM_POINTLOCATION_NONE, &cellSF));
   PetscCall(PetscSFGetGraph(cellSF, &numCells, &nFound, NULL, &cells));
-  for (c = 0; c < nFound; c++) { PetscCheck(cells[c].index >= 0, PetscObjectComm((PetscObject)points), PETSC_ERR_ARG_WRONG, "Point %" PetscInt_FMT " could not be located", c); }
+  for (c = 0; c < nFound; c++) PetscCheck(cells[c].index >= 0, PetscObjectComm((PetscObject)points), PETSC_ERR_ARG_WRONG, "Point %" PetscInt_FMT " could not be located", c);
   PetscCall(PetscSFComputeDegreeBegin(cellSF, &cellDegrees));
   PetscCall(PetscSFComputeDegreeEnd(cellSF, &cellDegrees));
   for (c = 0, gatherSize = 0, gatherMax = 0; c < numCells; c++) {
@@ -315,9 +315,9 @@ static PetscErrorCode DMFieldEvaluate_DS(DMField field, Vec points, PetscDataTyp
 
               for (d = 0; d < dimR; d++) {
                 vs[d] = 0.;
-                for (e = 0; e < dimR; e++) { vs[d] += invJ[dimR * dimR * p + e * dimR + d] * cD[(nc * p + g) * dimR + e]; }
+                for (e = 0; e < dimR; e++) vs[d] += invJ[dimR * dimR * p + e * dimR + d] * cD[(nc * p + g) * dimR + e];
               }
-              for (d = 0; d < dimR; d++) { cD[(nc * p + g) * dimR + d] = vs[d]; }
+              for (d = 0; d < dimR; d++) cD[(nc * p + g) * dimR + d] = vs[d];
             }
           }
         } else {
@@ -328,9 +328,9 @@ static PetscErrorCode DMFieldEvaluate_DS(DMField field, Vec points, PetscDataTyp
             for (g = 0; g < nc; g++) {
               for (d = 0; d < dimR; d++) {
                 v[d] = 0.;
-                for (e = 0; e < dimR; e++) { v[d] += invJ[dimR * dimR * p + e * dimR + d] * cD[(nc * p + g) * dimR + e]; }
+                for (e = 0; e < dimR; e++) v[d] += invJ[dimR * dimR * p + e * dimR + d] * cD[(nc * p + g) * dimR + e];
               }
-              for (d = 0; d < dimR; d++) { cD[(nc * p + g) * dimR + d] = v[d]; }
+              for (d = 0; d < dimR; d++) cD[(nc * p + g) * dimR + d] = v[d];
             }
           }
         }
@@ -346,9 +346,9 @@ static PetscErrorCode DMFieldEvaluate_DS(DMField field, Vec points, PetscDataTyp
 
               for (d = 0; d < dimR; d++) {
                 vs[d] = 0.;
-                for (e = 0; e < dimR; e++) { vs[d] += invJ[dimR * dimR * p + e * dimR + d] * cH[(nc * dimR * p + g) * dimR + e]; }
+                for (e = 0; e < dimR; e++) vs[d] += invJ[dimR * dimR * p + e * dimR + d] * cH[(nc * dimR * p + g) * dimR + e];
               }
-              for (d = 0; d < dimR; d++) { cH[(nc * dimR * p + g) * dimR + d] = vs[d]; }
+              for (d = 0; d < dimR; d++) cH[(nc * dimR * p + g) * dimR + d] = vs[d];
             }
             for (g = 0; g < nc; g++) {
               for (f = 0; f < dimR; f++) {
@@ -356,9 +356,9 @@ static PetscErrorCode DMFieldEvaluate_DS(DMField field, Vec points, PetscDataTyp
 
                 for (d = 0; d < dimR; d++) {
                   vs[d] = 0.;
-                  for (e = 0; e < dimR; e++) { vs[d] += invJ[dimR * dimR * p + e * dimR + d] * cH[((nc * p + g) * dimR + e) * dimR + f]; }
+                  for (e = 0; e < dimR; e++) vs[d] += invJ[dimR * dimR * p + e * dimR + d] * cH[((nc * p + g) * dimR + e) * dimR + f];
                 }
-                for (d = 0; d < dimR; d++) { cH[((nc * p + g) * dimR + d) * dimR + f] = vs[d]; }
+                for (d = 0; d < dimR; d++) cH[((nc * p + g) * dimR + d) * dimR + f] = vs[d];
               }
             }
           }
@@ -370,17 +370,17 @@ static PetscErrorCode DMFieldEvaluate_DS(DMField field, Vec points, PetscDataTyp
             for (g = 0; g < nc * dimR; g++) {
               for (d = 0; d < dimR; d++) {
                 v[d] = 0.;
-                for (e = 0; e < dimR; e++) { v[d] += invJ[dimR * dimR * p + e * dimR + d] * cH[(nc * dimR * p + g) * dimR + e]; }
+                for (e = 0; e < dimR; e++) v[d] += invJ[dimR * dimR * p + e * dimR + d] * cH[(nc * dimR * p + g) * dimR + e];
               }
-              for (d = 0; d < dimR; d++) { cH[(nc * dimR * p + g) * dimR + d] = v[d]; }
+              for (d = 0; d < dimR; d++) cH[(nc * dimR * p + g) * dimR + d] = v[d];
             }
             for (g = 0; g < nc; g++) {
               for (f = 0; f < dimR; f++) {
                 for (d = 0; d < dimR; d++) {
                   v[d] = 0.;
-                  for (e = 0; e < dimR; e++) { v[d] += invJ[dimR * dimR * p + e * dimR + d] * cH[((nc * p + g) * dimR + e) * dimR + f]; }
+                  for (e = 0; e < dimR; e++) v[d] += invJ[dimR * dimR * p + e * dimR + d] * cH[((nc * p + g) * dimR + e) * dimR + f];
                 }
-                for (d = 0; d < dimR; d++) { cH[((nc * p + g) * dimR + d) * dimR + f] = v[d]; }
+                for (d = 0; d < dimR; d++) cH[((nc * p + g) * dimR + d) * dimR + f] = v[d];
               }
             }
           }
@@ -491,10 +491,10 @@ static PetscErrorCode DMFieldEvaluateFV_DS(DMField field, IS pointIS, PetscDataT
       for (i = 0; i < numPoints; i++) {
         PetscReal vol = 0.;
 
-        for (j = 0; j < Nc; j++) { sB[i * Nc + j] = 0.; }
+        for (j = 0; j < Nc; j++) sB[i * Nc + j] = 0.;
         for (k = 0; k < Nq; k++) {
           vol += geom->detJ[i * Nq + k] * weights[k];
-          for (j = 0; j < Nc; j++) { sB[i * Nc + j] += geom->detJ[i * Nq + k] * weights[k] * sqB[(i * Nq + k) * Nc + j]; }
+          for (j = 0; j < Nc; j++) sB[i * Nc + j] += geom->detJ[i * Nq + k] * weights[k] * sqB[(i * Nq + k) * Nc + j];
         }
         for (k = 0; k < Nc; k++) sB[i * Nc + k] /= vol;
       }
@@ -505,10 +505,10 @@ static PetscErrorCode DMFieldEvaluateFV_DS(DMField field, IS pointIS, PetscDataT
       for (i = 0; i < numPoints; i++) {
         PetscReal vol = 0.;
 
-        for (j = 0; j < Nc; j++) { rB[i * Nc + j] = 0.; }
+        for (j = 0; j < Nc; j++) rB[i * Nc + j] = 0.;
         for (k = 0; k < Nq; k++) {
           vol += geom->detJ[i * Nq + k] * weights[k];
-          for (j = 0; j < Nc; j++) { rB[i * Nc + j] += weights[k] * rqB[(i * Nq + k) * Nc + j]; }
+          for (j = 0; j < Nc; j++) rB[i * Nc + j] += weights[k] * rqB[(i * Nq + k) * Nc + j];
         }
         for (k = 0; k < Nc; k++) rB[i * Nc + k] /= vol;
       }
@@ -524,16 +524,16 @@ static PetscErrorCode DMFieldEvaluateFV_DS(DMField field, IS pointIS, PetscDataT
       for (i = 0; i < numPoints; i++) {
         PetscReal vol = 0.;
 
-        for (j = 0; j < Nc * dimC; j++) { sD[i * Nc * dimC + j] = 0.; }
+        for (j = 0; j < Nc * dimC; j++) sD[i * Nc * dimC + j] = 0.;
         for (k = 0; k < Nq; k++) {
           vol += geom->detJ[i * Nq + k] * weights[k];
           for (j = 0; j < Nc; j++) {
             PetscScalar pD[3] = {0., 0., 0.};
 
             for (l = 0; l < dimC; l++) {
-              for (m = 0; m < dim; m++) { pD[l] += geom->invJ[((i * Nq + k) * dimC + m) * dimC + l] * sqD[((i * Nq + k) * Nc + j) * dim + m]; }
+              for (m = 0; m < dim; m++) pD[l] += geom->invJ[((i * Nq + k) * dimC + m) * dimC + l] * sqD[((i * Nq + k) * Nc + j) * dim + m];
             }
-            for (l = 0; l < dimC; l++) { sD[(i * Nc + j) * dimC + l] += geom->detJ[i * Nq + k] * weights[k] * pD[l]; }
+            for (l = 0; l < dimC; l++) sD[(i * Nc + j) * dimC + l] += geom->detJ[i * Nq + k] * weights[k] * pD[l];
           }
         }
         for (k = 0; k < Nc * dimC; k++) sD[i * Nc * dimC + k] /= vol;
@@ -545,16 +545,16 @@ static PetscErrorCode DMFieldEvaluateFV_DS(DMField field, IS pointIS, PetscDataT
       for (i = 0; i < numPoints; i++) {
         PetscReal vol = 0.;
 
-        for (j = 0; j < Nc * dimC; j++) { rD[i * Nc * dimC + j] = 0.; }
+        for (j = 0; j < Nc * dimC; j++) rD[i * Nc * dimC + j] = 0.;
         for (k = 0; k < Nq; k++) {
           vol += geom->detJ[i * Nq + k] * weights[k];
           for (j = 0; j < Nc; j++) {
             PetscReal pD[3] = {0., 0., 0.};
 
             for (l = 0; l < dimC; l++) {
-              for (m = 0; m < dim; m++) { pD[l] += geom->invJ[((i * Nq + k) * dimC + m) * dimC + l] * rqD[((i * Nq + k) * Nc + j) * dim + m]; }
+              for (m = 0; m < dim; m++) pD[l] += geom->invJ[((i * Nq + k) * dimC + m) * dimC + l] * rqD[((i * Nq + k) * Nc + j) * dim + m];
             }
-            for (l = 0; l < dimC; l++) { rD[(i * Nc + j) * dimC + l] += geom->detJ[i * Nq + k] * weights[k] * pD[l]; }
+            for (l = 0; l < dimC; l++) rD[(i * Nc + j) * dimC + l] += geom->detJ[i * Nq + k] * weights[k] * pD[l];
           }
         }
         for (k = 0; k < Nc * dimC; k++) rD[i * Nc * dimC + k] /= vol;
@@ -571,7 +571,7 @@ static PetscErrorCode DMFieldEvaluateFV_DS(DMField field, IS pointIS, PetscDataT
       for (i = 0; i < numPoints; i++) {
         PetscReal vol = 0.;
 
-        for (j = 0; j < Nc * dimC * dimC; j++) { sH[i * Nc * dimC * dimC + j] = 0.; }
+        for (j = 0; j < Nc * dimC * dimC; j++) sH[i * Nc * dimC * dimC + j] = 0.;
         for (k = 0; k < Nq; k++) {
           const PetscReal *invJ = &geom->invJ[(i * Nq + k) * dimC * dimC];
 
@@ -587,12 +587,12 @@ static PetscErrorCode DMFieldEvaluateFV_DS(DMField field, IS pointIS, PetscDataT
             for (l = 0; l < dimC; l++) {
               for (m = 0; m < dimC; m++) {
                 for (q = 0; q < dim; q++) {
-                  for (r = 0; r < dim; r++) { pH[l][m] += invJ[q * dimC + l] * invJ[r * dimC + m] * spH[q * dim + r]; }
+                  for (r = 0; r < dim; r++) pH[l][m] += invJ[q * dimC + l] * invJ[r * dimC + m] * spH[q * dim + r];
                 }
               }
             }
             for (l = 0; l < dimC; l++) {
-              for (m = 0; m < dimC; m++) { sH[(i * Nc + j) * dimC * dimC + l * dimC + m] += geom->detJ[i * Nq + k] * weights[k] * pH[l][m]; }
+              for (m = 0; m < dimC; m++) sH[(i * Nc + j) * dimC * dimC + l * dimC + m] += geom->detJ[i * Nq + k] * weights[k] * pH[l][m];
             }
           }
         }
@@ -605,7 +605,7 @@ static PetscErrorCode DMFieldEvaluateFV_DS(DMField field, IS pointIS, PetscDataT
       for (i = 0; i < numPoints; i++) {
         PetscReal vol = 0.;
 
-        for (j = 0; j < Nc * dimC * dimC; j++) { rH[i * Nc * dimC * dimC + j] = 0.; }
+        for (j = 0; j < Nc * dimC * dimC; j++) rH[i * Nc * dimC * dimC + j] = 0.;
         for (k = 0; k < Nq; k++) {
           const PetscReal *invJ = &geom->invJ[(i * Nq + k) * dimC * dimC];
 
@@ -621,12 +621,12 @@ static PetscErrorCode DMFieldEvaluateFV_DS(DMField field, IS pointIS, PetscDataT
             for (l = 0; l < dimC; l++) {
               for (m = 0; m < dimC; m++) {
                 for (q = 0; q < dim; q++) {
-                  for (r = 0; r < dim; r++) { pH[l][m] += invJ[q * dimC + l] * invJ[r * dimC + m] * rpH[q * dim + r]; }
+                  for (r = 0; r < dim; r++) pH[l][m] += invJ[q * dimC + l] * invJ[r * dimC + m] * rpH[q * dim + r];
                 }
               }
             }
             for (l = 0; l < dimC; l++) {
-              for (m = 0; m < dimC; m++) { rH[(i * Nc + j) * dimC * dimC + l * dimC + m] += geom->detJ[i * Nq + k] * weights[k] * pH[l][m]; }
+              for (m = 0; m < dimC; m++) rH[(i * Nc + j) * dimC * dimC + l * dimC + m] += geom->detJ[i * Nq + k] * weights[k] * pH[l][m];
             }
           }
         }
@@ -798,7 +798,7 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
 
       PetscCall(DMPlexGetSupportSize(dm, point, &numSupp));
       PetscCall(DMPlexGetSupport(dm, point, &supp));
-      for (s = 0; s < numSupp; s++, offset++) { cells[offset] = supp[s]; }
+      for (s = 0; s < numSupp; s++, offset++) cells[offset] = supp[s];
     }
     PetscCall(ISCreateGeneral(PETSC_COMM_SELF, numCells, cells, PETSC_USE_POINTER, &suppIS));
     PetscCall(DMFieldCreateFEGeom(field, suppIS, quad, PETSC_FALSE, &cellGeom));
@@ -915,9 +915,9 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
         case DM_POLYTOPE_POINT: break;
         case DM_POLYTOPE_SEGMENT:
           if (orient == -2 || orient == 1) {
-            for (q = 0; q < Nq; q++) { orientPoints[o][q] = -geom->xi[q]; }
+            for (q = 0; q < Nq; q++) orientPoints[o][q] = -geom->xi[q];
           } else {
-            for (q = 0; q < Nq; q++) { orientPoints[o][q] = geom->xi[q]; }
+            for (q = 0; q < Nq; q++) orientPoints[o][q] = geom->xi[q];
           }
           break;
         case DM_POLYTOPE_TRIANGLE:
@@ -930,9 +930,9 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
             lambda[1] = (geom->xi[2 * q] + 1.) / 2.;
             lambda[2] = (geom->xi[2 * q + 1] + 1.) / 2.;
             if (orient >= 0) {
-              for (i = 0; i < 3; i++) { lambdao[i] = lambda[(orient + i) % 3]; }
+              for (i = 0; i < 3; i++) lambdao[i] = lambda[(orient + i) % 3];
             } else {
-              for (i = 0; i < 3; i++) { lambdao[i] = lambda[(-(orient + i) + 3) % 3]; }
+              for (i = 0; i < 3; i++) lambdao[i] = lambda[(-(orient + i) + 3) % 3];
             }
             /* convert to coordinates */
             orientPoints[o][2 * q + 0] = -(lambdao[0] + lambdao[2]) + lambdao[1];
@@ -959,7 +959,7 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
               xio[1] = xi[1];
               break;
             }
-            if (orient < 0) { xio[0] = -xio[0]; }
+            if (orient < 0) xio[0] = -xio[0];
             orientPoints[o][2 * q + 0] = xio[0];
             orientPoints[o][2 * q + 1] = xio[1];
           }
@@ -996,7 +996,7 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
         PetscCall(PetscMalloc1(numCells, &cells));
         for (p = 0, offset = 0; p < numFaces; p++) {
           for (s = 0; s < 2; s++) {
-            if (co[p][s][0] == f && co[p][s][1] == o + minOrient) { cells[offset++] = co[p][s][2]; }
+            if (co[p][s][0] == f && co[p][s][1] == o + minOrient) cells[offset++] = co[p][s][2];
           }
         }
         PetscCall(ISCreateGeneral(PETSC_COMM_SELF, numCells, cells, PETSC_USE_POINTER, &suppIS));

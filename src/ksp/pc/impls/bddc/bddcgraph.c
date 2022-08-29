@@ -133,7 +133,7 @@ PetscErrorCode PCBDDCGraphASCIIView(PCBDDCGraph graph, PetscInt verbosity_level,
     for (j = 0; j < graph->count[node_num]; j++) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %" PetscInt_FMT, graph->neighbours_set[node_num][j]));
     if (verbosity_level > 1) {
       PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "):"));
-      if (verbosity_level > 2 || graph->twodim || graph->count[node_num] > 1 || (graph->count[node_num] == 1 && graph->special_dof[node_num] == PCBDDCGRAPH_NEUMANN_MARK)) { printcc = PETSC_TRUE; }
+      if (verbosity_level > 2 || graph->twodim || graph->count[node_num] > 1 || (graph->count[node_num] == 1 && graph->special_dof[node_num] == PCBDDCGRAPH_NEUMANN_MARK)) printcc = PETSC_TRUE;
       if (printcc) {
         for (j = graph->cptr[i]; j < graph->cptr[i + 1]; j++) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %" PetscInt_FMT " (%" PetscInt_FMT ")", graph->queue[j], queue_in_global_numbering[j]));
       }
@@ -487,7 +487,7 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph) {
 
     /* exchange with my neighbours the number of my connected components on the subset of interface */
     sum_requests = 0;
-    for (i = 0; i < graph->n_subsets; i++) { send_buffer_bool[i] = (PetscBool)(graph->subset_ncc[i] > 1 || subset_has_corn[i]); }
+    for (i = 0; i < graph->n_subsets; i++) send_buffer_bool[i] = (PetscBool)(graph->subset_ncc[i] > 1 || subset_has_corn[i]);
     for (i = 0; i < graph->n_subsets; i++) {
       PetscMPIInt neigh, tag;
       PetscInt    count, *neighs;
@@ -766,7 +766,7 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponentsLocal(PCBDDCGraph graph) {
   PetscFunctionBegin;
   PetscCheck(graph->setupcalled, PetscObjectComm((PetscObject)graph->l2gmap), PETSC_ERR_ORDER, "PCBDDCGraphSetUp should be called first");
   /* quiet return if there isn't any local info */
-  if (!graph->xadj && !graph->n_local_subs) { PetscFunctionReturn(0); }
+  if (!graph->xadj && !graph->n_local_subs) PetscFunctionReturn(0);
 
   /* reset any previous search of connected components */
   PetscCall(PetscBTMemzero(graph->nvtxs, graph->touched));
@@ -909,7 +909,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
         PetscCall(PetscFindInt(graph->mirrors_set[i][0], graph->nvtxs, global_indices, &k));
         j = global_indices[k];
         while (k > 0 && global_indices[k - 1] == j) k--;
-        for (j = 0; j < graph->mirrors[i]; j++) { graph->mirrors_set[i][j] = local_indices[k + j]; }
+        for (j = 0; j < graph->mirrors[i]; j++) graph->mirrors_set[i][j] = local_indices[k + j];
         PetscCall(PetscSortInt(graph->mirrors[i], graph->mirrors_set[i]));
       }
     }
@@ -924,7 +924,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
   k = 0;
   for (i = 1; i < n_neigh; i++) {
     k += n_shared[i];
-    for (j = 0; j < n_shared[i]; j++) { graph->count[shared[i][j]] += 1; }
+    for (j = 0; j < n_shared[i]; j++) graph->count[shared[i][j]] += 1;
   }
   /* Allocate space for storing the set of neighbours for each node */
   if (graph->nvtxs) PetscCall(PetscMalloc1(k, &graph->neighbours_set[0]));
@@ -1068,7 +1068,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
   /* init graph structure and compute default subsets */
   nodes_touched = 0;
   for (i = 0; i < graph->nvtxs; i++) {
-    if (PetscBTLookup(graph->touched, i)) { nodes_touched++; }
+    if (PetscBTLookup(graph->touched, i)) nodes_touched++;
   }
   i            = 0;
   graph->ncc   = 0;
@@ -1098,7 +1098,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
         /* check for same set of sharing subdomains */
         same_set = PETSC_TRUE;
         for (k = 0; k < graph->count[j]; k++) {
-          if (graph->neighbours_set[i][k] != graph->neighbours_set[j][k]) { same_set = PETSC_FALSE; }
+          if (graph->neighbours_set[i][k] != graph->neighbours_set[j][k]) same_set = PETSC_FALSE;
         }
         /* I have found a friend of mine */
         if (same_set) {
@@ -1115,7 +1115,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
   /* set default number of subsets (at this point no info on csr and/or local_subs has been taken into account, so n_subsets = ncc */
   graph->n_subsets = graph->ncc;
   PetscCall(PetscMalloc1(graph->n_subsets, &graph->subset_ncc));
-  for (i = 0; i < graph->n_subsets; i++) { graph->subset_ncc[i] = 1; }
+  for (i = 0; i < graph->n_subsets; i++) graph->subset_ncc[i] = 1;
   /* final pointer */
   graph->cptr[graph->ncc] = total_counts;
 
@@ -1243,7 +1243,7 @@ PetscErrorCode PCBDDCGraphInit(PCBDDCGraph graph, ISLocalToGlobalMapping l2gmap,
   for (n = 0; n < graph->nvtxs; n++) graph->which_dof[n] = -1;
   PetscCall(PetscArrayzero(graph->special_dof, graph->nvtxs));
   /* zeroes first pointer to neighbour set */
-  if (graph->nvtxs) { graph->neighbours_set[0] = NULL; }
+  if (graph->nvtxs) graph->neighbours_set[0] = NULL;
   /* zeroes workspace for values of ncc */
   graph->subset_ncc      = NULL;
   graph->subset_ref_node = NULL;

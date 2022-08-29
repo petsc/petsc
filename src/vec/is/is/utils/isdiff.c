@@ -405,7 +405,7 @@ PetscErrorCode ISIntersect(IS is1, IS is2, IS *isout) {
 
     PetscCall(ISLocate(is1sorted, key, &loc));
     if (loc >= 0) {
-      if (!nout || iout[nout - 1] < key) { iout[nout++] = key; }
+      if (!nout || iout[nout - 1] < key) iout[nout++] = key;
     }
   }
   PetscCall(PetscRealloc(nout * sizeof(PetscInt), &iout));

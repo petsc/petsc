@@ -369,21 +369,21 @@ static inline PetscErrorCode MatSetValuesBlocked_SeqSBAIJ_Inlined(Mat A, PetscIn
       if (roworiented) {
         if (is == ADD_VALUES) {
           for (ii = 0; ii < bs; ii++) {
-            for (jj = ii; jj < bs2; jj += bs) { bap[jj] += *value++; }
+            for (jj = ii; jj < bs2; jj += bs) bap[jj] += *value++;
           }
         } else {
           for (ii = 0; ii < bs; ii++) {
-            for (jj = ii; jj < bs2; jj += bs) { bap[jj] = *value++; }
+            for (jj = ii; jj < bs2; jj += bs) bap[jj] = *value++;
           }
         }
       } else {
         if (is == ADD_VALUES) {
           for (ii = 0; ii < bs; ii++) {
-            for (jj = 0; jj < bs; jj++) { *bap++ += *value++; }
+            for (jj = 0; jj < bs; jj++) *bap++ += *value++;
           }
         } else {
           for (ii = 0; ii < bs; ii++) {
-            for (jj = 0; jj < bs; jj++) { *bap++ = *value++; }
+            for (jj = 0; jj < bs; jj++) *bap++ = *value++;
           }
         }
       }
@@ -402,11 +402,11 @@ static inline PetscErrorCode MatSetValuesBlocked_SeqSBAIJ_Inlined(Mat A, PetscIn
   bap   = ap + bs2 * i;
   if (roworiented) {
     for (ii = 0; ii < bs; ii++) {
-      for (jj = ii; jj < bs2; jj += bs) { bap[jj] = *value++; }
+      for (jj = ii; jj < bs2; jj += bs) bap[jj] = *value++;
     }
   } else {
     for (ii = 0; ii < bs; ii++) {
-      for (jj = 0; jj < bs; jj++) { *bap++ = *value++; }
+      for (jj = 0; jj < bs; jj++) *bap++ = *value++;
     }
   }
 noinsert2:;
@@ -446,22 +446,22 @@ static inline PetscErrorCode MatSetValuesBlocked_SeqBAIJ_Inlined(Mat A, PetscInt
       if (roworiented) {
         if (is == ADD_VALUES) {
           for (ii = 0; ii < bs; ii++) {
-            for (jj = ii; jj < bs2; jj += bs) { bap[jj] += *value++; }
+            for (jj = ii; jj < bs2; jj += bs) bap[jj] += *value++;
           }
         } else {
           for (ii = 0; ii < bs; ii++) {
-            for (jj = ii; jj < bs2; jj += bs) { bap[jj] = *value++; }
+            for (jj = ii; jj < bs2; jj += bs) bap[jj] = *value++;
           }
         }
       } else {
         if (is == ADD_VALUES) {
           for (ii = 0; ii < bs; ii++, value += bs) {
-            for (jj = 0; jj < bs; jj++) { bap[jj] += value[jj]; }
+            for (jj = 0; jj < bs; jj++) bap[jj] += value[jj];
             bap += bs;
           }
         } else {
           for (ii = 0; ii < bs; ii++, value += bs) {
-            for (jj = 0; jj < bs; jj++) { bap[jj] = value[jj]; }
+            for (jj = 0; jj < bs; jj++) bap[jj] = value[jj];
             bap += bs;
           }
         }
@@ -481,11 +481,11 @@ static inline PetscErrorCode MatSetValuesBlocked_SeqBAIJ_Inlined(Mat A, PetscInt
   bap   = ap + bs2 * i;
   if (roworiented) {
     for (ii = 0; ii < bs; ii++) {
-      for (jj = ii; jj < bs2; jj += bs) { bap[jj] = *value++; }
+      for (jj = ii; jj < bs2; jj += bs) bap[jj] = *value++;
     }
   } else {
     for (ii = 0; ii < bs; ii++) {
-      for (jj = 0; jj < bs; jj++) { *bap++ = *value++; }
+      for (jj = 0; jj < bs; jj++) *bap++ = *value++;
     }
   }
 noinsert2:;
@@ -539,7 +539,7 @@ PetscErrorCode MatSetValuesBlocked_MPISBAIJ(Mat mat, PetscInt m, const PetscInt 
             value = v + j * (stepval + bs) * bs + i * bs;
           }
           for (ii = 0; ii < bs; ii++, value += stepval) {
-            for (jj = 0; jj < bs; jj++) { *barray++ = *value++; }
+            for (jj = 0; jj < bs; jj++) *barray++ = *value++;
           }
           barray -= bs2;
         }
@@ -1219,7 +1219,7 @@ PetscErrorCode MatGetRow_MPISBAIJ(Mat matin, PetscInt row, PetscInt *nz, PetscIn
       if (idx) {
         *idx = idx_p = mat->rowindices;
         if (imark > -1) {
-          for (i = 0; i < imark; i++) { idx_p[i] = cmap[cworkB[i] / bs] * bs + cworkB[i] % bs; }
+          for (i = 0; i < imark; i++) idx_p[i] = cmap[cworkB[i] / bs] * bs + cworkB[i] % bs;
         } else {
           for (i = 0; i < nzB; i++) {
             if (cmap[cworkB[i] / bs] < cstart) idx_p[i] = cmap[cworkB[i] / bs] * bs + cworkB[i] % bs;
@@ -1874,7 +1874,7 @@ PetscErrorCode MatMPISBAIJSetPreallocation_MPISBAIJ(Mat B, PetscInt bs, PetscInt
   b->nbs      = B->cmap->n / bs;
   b->Nbs      = B->cmap->N / bs;
 
-  for (i = 0; i <= b->size; i++) { b->rangebs[i] = B->rmap->range[i] / bs; }
+  for (i = 0; i <= b->size; i++) b->rangebs[i] = B->rmap->range[i] / bs;
   b->rstartbs = B->rmap->rstart / bs;
   b->rendbs   = B->rmap->rend / bs;
 

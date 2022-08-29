@@ -1095,7 +1095,7 @@ PetscErrorCode PetscSectionSetUp(PetscSection s) {
       }
     }
     /* Disable point offsets since these are unused */
-    for (p = 0; p < s->pEnd - s->pStart; ++p) { s->atlasOff[p] = -1; }
+    for (p = 0; p < s->pEnd - s->pStart; ++p) s->atlasOff[p] = -1;
   }
   if (s->perm) PetscCall(ISRestoreIndices(s->perm, &pind));
   /* Setup BC sections */
@@ -1136,7 +1136,7 @@ PetscErrorCode PetscSectionGetMaxDof(PetscSection s, PetscInt *maxDof) {
   PetscValidIntPointer(maxDof, 2);
   if (s->maxDof == PETSC_MIN_INT) {
     s->maxDof = 0;
-    for (p = 0; p < s->pEnd - s->pStart; ++p) { s->maxDof = PetscMax(s->maxDof, s->atlasDof[p]); }
+    for (p = 0; p < s->pEnd - s->pStart; ++p) s->maxDof = PetscMax(s->maxDof, s->atlasDof[p]);
   }
   *maxDof = s->maxDof;
   PetscFunctionReturn(0);
@@ -1520,7 +1520,7 @@ PetscErrorCode PetscSectionGetOffset(PetscSection s, PetscInt point, PetscInt *o
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   PetscValidIntPointer(offset, 3);
-  if (PetscDefined(USE_DEBUG)) { PetscCheck(!(point < s->pStart) && !(point >= s->pEnd), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section point %" PetscInt_FMT " should be in [%" PetscInt_FMT ", %" PetscInt_FMT ")", point, s->pStart, s->pEnd); }
+  if (PetscDefined(USE_DEBUG)) PetscCheck(!(point < s->pStart) && !(point >= s->pEnd), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section point %" PetscInt_FMT " should be in [%" PetscInt_FMT ", %" PetscInt_FMT ")", point, s->pStart, s->pEnd);
   *offset = s->atlasOff[point - s->pStart];
   PetscFunctionReturn(0);
 }
@@ -2409,7 +2409,7 @@ PetscErrorCode PetscSectionSetConstraintIndices(PetscSection s, PetscInt point, 
     const PetscInt cdof = s->bc->atlasDof[point];
     PetscInt       d;
 
-    for (d = 0; d < cdof; ++d) { PetscCheck(indices[d] < dof, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %" PetscInt_FMT " dof %" PetscInt_FMT ", invalid constraint index[%" PetscInt_FMT "]: %" PetscInt_FMT, point, dof, d, indices[d]); }
+    for (d = 0; d < cdof; ++d) PetscCheck(indices[d] < dof, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %" PetscInt_FMT " dof %" PetscInt_FMT ", invalid constraint index[%" PetscInt_FMT "]: %" PetscInt_FMT, point, dof, d, indices[d]);
     PetscCall(VecIntSetValuesSection(s->bcIndices, s->bc, point, indices, INSERT_VALUES));
   }
   PetscFunctionReturn(0);

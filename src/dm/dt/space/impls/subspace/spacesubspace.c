@@ -109,10 +109,10 @@ static PetscErrorCode PetscSpaceEvaluate_Subspace(PetscSpace sp, PetscInt npoint
     }
     if (subsp->Jx) {
       for (j = 0; j < origDim; j++) {
-        for (k = 0; k < subDim; k++) { inpoints[i * origDim + j] += subsp->Jx[j * subDim + k] * points[i * subDim + k]; }
+        for (k = 0; k < subDim; k++) inpoints[i * origDim + j] += subsp->Jx[j * subDim + k] * points[i * subDim + k];
       }
     } else {
-      for (j = 0; j < PetscMin(subDim, origDim); j++) { inpoints[i * origDim + j] += points[i * subDim + j]; }
+      for (j = 0; j < PetscMin(subDim, origDim); j++) inpoints[i * origDim + j] += points[i * subDim + j];
     }
   }
   if (B) PetscCall(DMGetWorkArray(sp->dm, npoints * origNb * origNc, MPIU_REAL, &inB));
@@ -132,14 +132,14 @@ static PetscErrorCode PetscSpaceEvaluate_Subspace(PetscSpace sp, PetscInt npoint
         for (k = 0; k < origNc * origDim; k++) phi[k] = 0.;
         for (k = 0; k < origNc * subDim; k++) psi[k] = 0.;
         for (k = 0; k < origNb; k++) {
-          for (l = 0; l < origNc * origDim * origDim; l++) { phi[l] += inH[(j * origNb + k) * origNc * origDim * origDim + l] * subq[k]; }
+          for (l = 0; l < origNc * origDim * origDim; l++) phi[l] += inH[(j * origNb + k) * origNc * origDim * origDim + l] * subq[k];
         }
         if (subsp->Jx) {
           for (k = 0; k < subNc; k++) {
             for (l = 0; l < subDim; l++) {
               for (m = 0; m < origDim; m++) {
                 for (n = 0; n < subDim; n++) {
-                  for (o = 0; o < origDim; o++) { psi[(k * subDim + l) * subDim + n] += subsp->Jx[m * subDim + l] * subsp->Jx[o * subDim + n] * phi[(k * origDim + m) * origDim + o]; }
+                  for (o = 0; o < origDim; o++) psi[(k * subDim + l) * subDim + n] += subsp->Jx[m * subDim + l] * subsp->Jx[o * subDim + n] * phi[(k * origDim + m) * origDim + o];
                 }
               }
             }
@@ -147,19 +147,19 @@ static PetscErrorCode PetscSpaceEvaluate_Subspace(PetscSpace sp, PetscInt npoint
         } else {
           for (k = 0; k < subNc; k++) {
             for (l = 0; l < PetscMin(subDim, origDim); l++) {
-              for (m = 0; m < PetscMin(subDim, origDim); m++) { psi[(k * subDim + l) * subDim + m] += phi[(k * origDim + l) * origDim + m]; }
+              for (m = 0; m < PetscMin(subDim, origDim); m++) psi[(k * subDim + l) * subDim + m] += phi[(k * origDim + l) * origDim + m];
             }
           }
         }
         if (subsp->Ju) {
           for (k = 0; k < subNc; k++) {
             for (l = 0; l < origNc; l++) {
-              for (m = 0; m < subDim * subDim; m++) { H[((j * subNb + i) * subNc + k) * subDim * subDim + m] += subsp->Ju[k * origNc + l] * psi[l * subDim * subDim + m]; }
+              for (m = 0; m < subDim * subDim; m++) H[((j * subNb + i) * subNc + k) * subDim * subDim + m] += subsp->Ju[k * origNc + l] * psi[l * subDim * subDim + m];
             }
           }
         } else {
           for (k = 0; k < PetscMin(subNc, origNc); k++) {
-            for (l = 0; l < subDim * subDim; l++) { H[((j * subNb + i) * subNc + k) * subDim * subDim + l] += psi[k * subDim * subDim + l]; }
+            for (l = 0; l < subDim * subDim; l++) H[((j * subNb + i) * subNc + k) * subDim * subDim + l] += psi[k * subDim * subDim + l];
           }
         }
       }
@@ -181,28 +181,28 @@ static PetscErrorCode PetscSpaceEvaluate_Subspace(PetscSpace sp, PetscInt npoint
         for (k = 0; k < origNc * origDim; k++) phi[k] = 0.;
         for (k = 0; k < origNc * subDim; k++) psi[k] = 0.;
         for (k = 0; k < origNb; k++) {
-          for (l = 0; l < origNc * origDim; l++) { phi[l] += inD[(j * origNb + k) * origNc * origDim + l] * subq[k]; }
+          for (l = 0; l < origNc * origDim; l++) phi[l] += inD[(j * origNb + k) * origNc * origDim + l] * subq[k];
         }
         if (subsp->Jx) {
           for (k = 0; k < subNc; k++) {
             for (l = 0; l < subDim; l++) {
-              for (m = 0; m < origDim; m++) { psi[k * subDim + l] += subsp->Jx[m * subDim + l] * phi[k * origDim + m]; }
+              for (m = 0; m < origDim; m++) psi[k * subDim + l] += subsp->Jx[m * subDim + l] * phi[k * origDim + m];
             }
           }
         } else {
           for (k = 0; k < subNc; k++) {
-            for (l = 0; l < PetscMin(subDim, origDim); l++) { psi[k * subDim + l] += phi[k * origDim + l]; }
+            for (l = 0; l < PetscMin(subDim, origDim); l++) psi[k * subDim + l] += phi[k * origDim + l];
           }
         }
         if (subsp->Ju) {
           for (k = 0; k < subNc; k++) {
             for (l = 0; l < origNc; l++) {
-              for (m = 0; m < subDim; m++) { D[((j * subNb + i) * subNc + k) * subDim + m] += subsp->Ju[k * origNc + l] * psi[l * subDim + m]; }
+              for (m = 0; m < subDim; m++) D[((j * subNb + i) * subNc + k) * subDim + m] += subsp->Ju[k * origNc + l] * psi[l * subDim + m];
             }
           }
         } else {
           for (k = 0; k < PetscMin(subNc, origNc); k++) {
-            for (l = 0; l < subDim; l++) { D[((j * subNb + i) * subNc + k) * subDim + l] += psi[k * subDim + l]; }
+            for (l = 0; l < subDim; l++) D[((j * subNb + i) * subNc + k) * subDim + l] += psi[k * subDim + l];
           }
         }
       }
@@ -228,14 +228,14 @@ static PetscErrorCode PetscSpaceEvaluate_Subspace(PetscSpace sp, PetscInt npoint
       for (j = 0; j < npoints; j++) {
         for (k = 0; k < origNc; k++) phi[k] = 0.;
         for (k = 0; k < origNb; k++) {
-          for (l = 0; l < origNc; l++) { phi[l] += inB[(j * origNb + k) * origNc + l] * subq[k]; }
+          for (l = 0; l < origNc; l++) phi[l] += inB[(j * origNb + k) * origNc + l] * subq[k];
         }
         if (subsp->Ju) {
           for (k = 0; k < subNc; k++) {
-            for (l = 0; l < origNc; l++) { B[(j * subNb + i) * subNc + k] += subsp->Ju[k * origNc + l] * phi[l]; }
+            for (l = 0; l < origNc; l++) B[(j * subNb + i) * subNc + k] += subsp->Ju[k * origNc + l] * phi[l];
           }
         } else {
-          for (k = 0; k < PetscMin(subNc, origNc); k++) { B[(j * subNb + i) * subNc + k] += phi[k]; }
+          for (k = 0; k < PetscMin(subNc, origNc); k++) B[(j * subNb + i) * subNc + k] += phi[k];
         }
       }
     }
@@ -318,7 +318,7 @@ static PetscErrorCode PetscSpaceSetUp_Subspace(PetscSpace sp) {
       }
       if (Jx) {
         for (i = 0; i < origDim; i++) {
-          for (j = 0; j < subDim; j++) { allPoints[origDim * offset + i] += Jx[i * subDim + j] * qp[j]; }
+          for (j = 0; j < subDim; j++) allPoints[origDim * offset + i] += Jx[i * subDim + j] * qp[j];
         }
       } else {
         for (i = 0; i < PetscMin(subDim, origDim); i++) allPoints[origDim * offset + i] += qp[i];
@@ -326,7 +326,7 @@ static PetscErrorCode PetscSpaceSetUp_Subspace(PetscSpace sp) {
       for (i = 0; i < origNc; i++) allWeights[origNc * offset + i] = 0.0;
       if (Ju) {
         for (i = 0; i < origNc; i++) {
-          for (j = 0; j < subNc; j++) { allWeights[offset * origNc + i] += qw[j] * Ju[j * origNc + i]; }
+          for (j = 0; j < subNc; j++) allWeights[offset * origNc + i] += qw[j] * Ju[j * origNc + i];
         }
       } else {
         for (i = 0; i < PetscMin(subNc, origNc); i++) allWeights[offset * origNc + i] += qw[i];
@@ -343,14 +343,14 @@ static PetscErrorCode PetscSpaceSetUp_Subspace(PetscSpace sp) {
     PetscCall(PetscQuadratureGetData(q, NULL, NULL, &qNp, NULL, &qw));
     if (u) {
       for (b = 0; b < origNb; b++) {
-        for (s = 0; s < subNc; s++) { V[f * origNb + b] += qw[s] * u[s]; }
+        for (s = 0; s < subNc; s++) V[f * origNb + b] += qw[s] * u[s];
       }
     } else {
       for (b = 0; b < origNb; b++) V[f * origNb + b] = 0.0;
     }
     for (p = 0; p < qNp; p++, offset++) {
       for (b = 0; b < origNb; b++) {
-        for (s = 0; s < origNc; s++) { V[f * origNb + b] += B[(offset * origNb + b) * origNc + s] * allWeights[offset * origNc + s]; }
+        for (s = 0; s < origNc; s++) V[f * origNb + b] += B[(offset * origNb + b) * origNc + s] * allWeights[offset * origNc + s];
       }
     }
   }

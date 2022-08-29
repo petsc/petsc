@@ -106,7 +106,7 @@ PetscErrorCode spbas_allocate_data(spbas_matrix *result) {
     PetscCall(PetscMalloc1(nnz, &result->alloc_icol));
 
     result->icols[0] = result->alloc_icol;
-    for (i = 1; i < nrows; i++) { result->icols[i] = result->icols[i - 1] + result->row_nnz[i - 1]; }
+    for (i = 1; i < nrows; i++) result->icols[i] = result->icols[i - 1] + result->row_nnz[i - 1];
 
     /* Allocate the value array and point to it */
     if (do_values) {
@@ -115,7 +115,7 @@ PetscErrorCode spbas_allocate_data(spbas_matrix *result) {
       PetscCall(PetscMalloc1(nnz, &result->alloc_val));
 
       result->values[0] = result->alloc_val;
-      for (i = 1; i < nrows; i++) { result->values[i] = result->values[i - 1] + result->row_nnz[i - 1]; }
+      for (i = 1; i < nrows; i++) result->values[i] = result->values[i - 1] + result->row_nnz[i - 1];
     }
   } else {
     for (i = 0; i < nrows; i++) {
@@ -288,7 +288,7 @@ PetscErrorCode spbas_compress_pattern(PetscInt *irow_in, PetscInt *icol_in, Pets
 
   /* Replace identical rows with the first one in the list */
   for (i = 1; i < nrows; i++) {
-    if (spbas_row_order_icol(isort[i - 1], isort[i], irow_in, icol_in, col_idx_type) == 0) { ipoint[isort[i]] = ipoint[isort[i - 1]]; }
+    if (spbas_row_order_icol(isort[i - 1], isort[i], irow_in, icol_in, col_idx_type) == 0) ipoint[isort[i]] = ipoint[isort[i - 1]];
   }
 
   /* Collect the rows which are used*/
@@ -309,18 +309,18 @@ PetscErrorCode spbas_compress_pattern(PetscInt *irow_in, PetscInt *icol_in, Pets
       icols       = &icol_in[irow_in[i]];
       row_nnz     = B->row_nnz[i];
       if (col_idx_type == SPBAS_COLUMN_NUMBERS) {
-        for (j = 0; j < row_nnz; j++) { B->icols[i][j] = icols[j]; }
+        for (j = 0; j < row_nnz; j++) B->icols[i][j] = icols[j];
       } else if (col_idx_type == SPBAS_DIAGONAL_OFFSETS) {
-        for (j = 0; j < row_nnz; j++) { B->icols[i][j] = icols[j] - i; }
+        for (j = 0; j < row_nnz; j++) B->icols[i][j] = icols[j] - i;
       } else if (col_idx_type == SPBAS_OFFSET_ARRAY) {
-        for (j = 0; j < row_nnz; j++) { B->icols[i][j] = icols[j] - icols[0]; }
+        for (j = 0; j < row_nnz; j++) B->icols[i][j] = icols[j] - icols[0];
       }
       ptr += B->row_nnz[i];
     }
   }
 
   /* Point to the right places for all data */
-  for (i = 0; i < nrows; i++) { B->icols[i] = B->icols[ipoint[i]]; }
+  for (i = 0; i < nrows; i++) B->icols[i] = B->icols[ipoint[i]];
   PetscCall(PetscInfo(NULL, "Row patterns have been compressed\n"));
   PetscCall(PetscInfo(NULL, "         (%g nonzeros per row)\n", (double)((PetscReal)nnz / (PetscReal)nrows)));
 
@@ -671,7 +671,7 @@ PetscErrorCode spbas_apply_reordering_cols(spbas_matrix *matrix_A, const PetscIn
     row_nnz = matrix_A->row_nnz[i];
     if (do_values) vals = matrix_A->values[i];
 
-    for (j = 0; j < row_nnz; j++) { icols[j] = permutation[i + icols[j]] - i; }
+    for (j = 0; j < row_nnz; j++) icols[j] = permutation[i + icols[j]] - i;
     PetscCall(spbas_mergesort(row_nnz, icols, vals));
   }
   PetscFunctionReturn(0);
@@ -710,7 +710,7 @@ PetscErrorCode spbas_pattern_only(PetscInt nrows, PetscInt ncols, PetscInt *ai, 
     i0    = ai[i];
     r_nnz = ai[i + 1] - i0;
 
-    for (j = 0; j < r_nnz; j++) { retval.icols[i][j] = aj[i0 + j] - i; }
+    for (j = 0; j < r_nnz; j++) retval.icols[i][j] = aj[i0 + j] - i;
   }
   *result = retval;
   PetscFunctionReturn(0);
@@ -837,17 +837,17 @@ PetscErrorCode spbas_keep_upper(spbas_matrix *inout_matrix) {
   for (i = 0; i < inout_matrix->nrows; i++) {
     for (jstart = 0; (jstart < inout_matrix->row_nnz[i]) && (inout_matrix->icols[i][jstart] < 0); jstart++) { }
     if (jstart > 0) {
-      for (j = 0; j < inout_matrix->row_nnz[i] - jstart; j++) { inout_matrix->icols[i][j] = inout_matrix->icols[i][j + jstart]; }
+      for (j = 0; j < inout_matrix->row_nnz[i] - jstart; j++) inout_matrix->icols[i][j] = inout_matrix->icols[i][j + jstart];
 
       if (inout_matrix->values) {
-        for (j = 0; j < inout_matrix->row_nnz[i] - jstart; j++) { inout_matrix->values[i][j] = inout_matrix->values[i][j + jstart]; }
+        for (j = 0; j < inout_matrix->row_nnz[i] - jstart; j++) inout_matrix->values[i][j] = inout_matrix->values[i][j + jstart];
       }
 
       inout_matrix->row_nnz[i] -= jstart;
 
       inout_matrix->icols[i] = (PetscInt *)realloc((void *)inout_matrix->icols[i], inout_matrix->row_nnz[i] * sizeof(PetscInt));
 
-      if (inout_matrix->values) { inout_matrix->values[i] = (PetscScalar *)realloc((void *)inout_matrix->values[i], inout_matrix->row_nnz[i] * sizeof(PetscScalar)); }
+      if (inout_matrix->values) inout_matrix->values[i] = (PetscScalar *)realloc((void *)inout_matrix->values[i], inout_matrix->row_nnz[i] * sizeof(PetscScalar));
       inout_matrix->nnz -= jstart;
     }
   }

@@ -70,7 +70,7 @@ int main(int argc, char **argv) {
   for (k = zs; k < zs + zm; k++) {
     for (j = ys; j < ys + ym; j++) {
       for (i = xs; i < xs + xm; i++) {
-        for (d = 0; d < dof; d++) { array[k][j][i][d] -= PetscCosScalar(2 * PETSC_PI * (((PetscReal)i + 0.5) * Hx)) * PetscCosScalar(2 * PETSC_PI * (((PetscReal)j + 0.5) * Hy)) * PetscCosScalar(2 * PETSC_PI * (((PetscReal)k + 0.5) * Hz)); }
+        for (d = 0; d < dof; d++) array[k][j][i][d] -= PetscCosScalar(2 * PETSC_PI * (((PetscReal)i + 0.5) * Hx)) * PetscCosScalar(2 * PETSC_PI * (((PetscReal)j + 0.5) * Hy)) * PetscCosScalar(2 * PETSC_PI * (((PetscReal)k + 0.5) * Hz));
       }
     }
   }

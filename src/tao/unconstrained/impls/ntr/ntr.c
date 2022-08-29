@@ -200,7 +200,7 @@ static PetscErrorCode TaoSolve_NTR(Tao tao) {
         PetscCall(TaoLogConvergenceHistory(tao, f, gnorm, 0.0, tao->ksp_its));
         PetscCall(TaoMonitor(tao, tao->niter, f, gnorm, 0.0, 1.0));
         PetscUseTypeMethod(tao, convergencetest, tao->cnvP);
-        if (tao->reason != TAO_CONTINUE_ITERATING) { PetscFunctionReturn(0); }
+        if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
       }
     }
     tao->trust = PetscMax(tao->trust, max_radius);

@@ -181,7 +181,7 @@ static PetscErrorCode TSBDF_PreSolve(TS ts) {
   PetscFunctionBegin;
   PetscCall(TSBDF_GetVecs(ts, NULL, &V, &V0));
   LagrangeBasisDers(n, bdf->time[0], bdf->time, alpha);
-  for (i = 1; i < n; i++) { vecs[i] = bdf->transientvar ? bdf->tvwork[i] : bdf->work[i]; }
+  for (i = 1; i < n; i++) vecs[i] = bdf->transientvar ? bdf->tvwork[i] : bdf->work[i];
   PetscCall(VecZeroEntries(V0));
   PetscCall(VecMAXPY(V0, n - 1, alpha + 1, vecs + 1));
   bdf->shift = PetscRealPart(alpha[0]);

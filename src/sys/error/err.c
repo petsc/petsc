@@ -372,7 +372,7 @@ PetscErrorCode PetscError(MPI_Comm comm, int line, const char *func, const char 
     }
   }
 #if defined(PETSC_CLANGUAGE_CXX)
-  if (p == PETSC_ERROR_IN_CXX) { PetscCxxErrorThrow(); }
+  if (p == PETSC_ERROR_IN_CXX) PetscCxxErrorThrow();
 #endif
   return ierr;
 }

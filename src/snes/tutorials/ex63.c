@@ -128,7 +128,7 @@ void g3_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], con
   PetscInt       compI, d;
 
   for (compI = 0; compI < Ncomp; ++compI) {
-    for (d = 0; d < dim; ++d) { g3[((compI * Ncomp + compI) * dim + d) * dim + d] = 1.0; }
+    for (d = 0; d < dim; ++d) g3[((compI * Ncomp + compI) * dim + d) * dim + d] = 1.0;
   }
 }
 

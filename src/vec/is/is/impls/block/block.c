@@ -55,7 +55,7 @@ static PetscErrorCode ISLocate_Block(IS is, PetscInt key, PetscInt *location) {
       }
     }
   }
-  if (*location >= 0) { *location = *location * bs + mkey; }
+  if (*location >= 0) *location = *location * bs + mkey;
   PetscFunctionReturn(0);
 }
 

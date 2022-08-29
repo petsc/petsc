@@ -24,7 +24,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_N_inplace(Mat A, Vec bb, Vec xx) {
 
   /* copy the b into temp work space according to permutation */
   for (i = 0; i < n; i++) {
-    for (j = 0; j < bs; j++) { t[i * bs + j] = b[c[i] * bs + j]; }
+    for (j = 0; j < bs; j++) t[i * bs + j] = b[c[i] * bs + j];
   }
 
   /* forward solve the upper triangular transpose */
@@ -54,7 +54,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_N_inplace(Mat A, Vec bb, Vec xx) {
 
   /* copy t into x according to permutation */
   for (i = 0; i < n; i++) {
-    for (j = 0; j < bs; j++) { x[bs * r[i] + j] = t[bs * i + j]; }
+    for (j = 0; j < bs; j++) x[bs * r[i] + j] = t[bs * i + j];
   }
 
   PetscCall(ISRestoreIndices(isrow, &rout));
@@ -88,7 +88,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_N(Mat A, Vec bb, Vec xx) {
 
   /* copy the b into temp work space according to permutation */
   for (i = 0; i < n; i++) {
-    for (j = 0; j < bs; j++) { t[i * bs + j] = b[c[i] * bs + j]; }
+    for (j = 0; j < bs; j++) t[i * bs + j] = b[c[i] * bs + j];
   }
 
   /* forward solve the upper triangular transpose */
@@ -118,7 +118,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_N(Mat A, Vec bb, Vec xx) {
 
   /* copy t into x according to permutation */
   for (i = 0; i < n; i++) {
-    for (j = 0; j < bs; j++) { x[bs * r[i] + j] = t[bs * i + j]; }
+    for (j = 0; j < bs; j++) x[bs * r[i] + j] = t[bs * i + j];
   }
 
   PetscCall(ISRestoreIndices(isrow, &rout));

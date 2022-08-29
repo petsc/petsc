@@ -188,7 +188,7 @@ PetscErrorCode DMNetworkMonitorView(DMNetworkMonitor monitor, Vec x) {
     PetscCall(DMNetworkGetGlobalVecOffset(monitor->network, node->element, ALL_COMPONENTS, &varoffset));
     PetscCall(VecGetArray(node->v, &vv));
     start = varoffset + node->start;
-    for (i = 0; i < node->nodes; i++) { vv[i] = xx[start + i * node->blocksize]; }
+    for (i = 0; i < node->nodes; i++) vv[i] = xx[start + i * node->blocksize];
     PetscCall(VecRestoreArray(node->v, &vv));
     PetscCall(VecView(node->v, node->viewer));
   }

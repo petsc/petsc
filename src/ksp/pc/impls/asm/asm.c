@@ -416,7 +416,7 @@ static PetscErrorCode PCSetUpOnBlocks_ASM(PC pc) {
   for (i = 0; i < osm->n_local_true; i++) {
     PetscCall(KSPSetUp(osm->ksp[i]));
     PetscCall(KSPGetConvergedReason(osm->ksp[i], &reason));
-    if (reason == KSP_DIVERGED_PC_FAILED) { pc->failedreason = PC_SUBPC_ERROR; }
+    if (reason == KSP_DIVERGED_PC_FAILED) pc->failedreason = PC_SUBPC_ERROR;
   }
   PetscFunctionReturn(0);
 }
@@ -436,7 +436,7 @@ static PetscErrorCode PCApply_ASM(PC pc, Vec x, Vec y) {
     /* have to zero the work RHS since scatter may leave some slots empty */
     PetscCall(VecSet(osm->lx, 0.0));
   }
-  if (!(osm->type & PC_ASM_INTERPOLATE)) { reverse = SCATTER_REVERSE_LOCAL; }
+  if (!(osm->type & PC_ASM_INTERPOLATE)) reverse = SCATTER_REVERSE_LOCAL;
 
   if (osm->loctype == PC_COMPOSITE_MULTIPLICATIVE || osm->loctype == PC_COMPOSITE_ADDITIVE) {
     /* zero the global and the local solutions */
@@ -504,7 +504,7 @@ static PetscErrorCode PCMatApply_ASM(PC pc, Mat X, Mat Y) {
     /* have to zero the work RHS since scatter may leave some slots empty */
     PetscCall(VecSet(osm->lx, 0.0));
   }
-  if (!(osm->type & PC_ASM_INTERPOLATE)) { reverse = SCATTER_REVERSE_LOCAL; }
+  if (!(osm->type & PC_ASM_INTERPOLATE)) reverse = SCATTER_REVERSE_LOCAL;
   PetscCall(VecGetLocalSize(osm->x[0], &m));
   PetscCall(MatGetSize(X, NULL, &N));
   PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, m, N, NULL, &Z));
@@ -1565,7 +1565,7 @@ PetscErrorCode PCASMCreateSubdomains2D(PetscInt m, PetscInt n, PetscInt M, Petsc
         (*is_local)[loc_outer] = (*is)[loc_outer];
       } else {
         for (loc = 0, ii = ystart; ii < ystart + height; ii++) {
-          for (jj = xstart; jj < xstart + width; jj++) { idx[loc++] = m * ii + jj; }
+          for (jj = xstart; jj < xstart + width; jj++) idx[loc++] = m * ii + jj;
         }
         PetscCall(ISCreateGeneral(PETSC_COMM_SELF, loc, idx, PETSC_COPY_VALUES, *is_local + loc_outer));
       }
@@ -1692,7 +1692,7 @@ PetscErrorCode PCASMSetDMSubdomains(PC pc, PetscBool flg) {
   PetscValidLogicalCollectiveBool(pc, flg, 2);
   PetscCheck(!pc->setupcalled, ((PetscObject)pc)->comm, PETSC_ERR_ARG_WRONGSTATE, "Not for a setup PC.");
   PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCASM, &match));
-  if (match) { osm->dm_subdomains = flg; }
+  if (match) osm->dm_subdomains = flg;
   PetscFunctionReturn(0);
 }
 

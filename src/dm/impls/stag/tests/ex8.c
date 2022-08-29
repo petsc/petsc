@@ -143,33 +143,33 @@ PetscErrorCode ApplyOperator(Mat A, Vec in, Vec out) {
   /* Set "pressures" on ghost boundaries by copying neighboring values*/
   if (isFirstx) {
     for (ez = startz; ez < startz + nz + nExtraz; ++ez) {
-      for (ey = starty; ey < starty + ny + nExtray; ++ey) { arrIn[ez][ey][-1][idxP] = arrIn[ez][ey][0][idxP]; }
+      for (ey = starty; ey < starty + ny + nExtray; ++ey) arrIn[ez][ey][-1][idxP] = arrIn[ez][ey][0][idxP];
     }
   }
   if (isLastx) {
     for (ez = startz; ez < startz + nz + nExtraz; ++ez) {
-      for (ey = starty; ey < starty + ny + nExtray; ++ey) { arrIn[ez][ey][startx + nx][idxP] = arrIn[ez][ey][startx + nx - 1][idxP]; }
+      for (ey = starty; ey < starty + ny + nExtray; ++ey) arrIn[ez][ey][startx + nx][idxP] = arrIn[ez][ey][startx + nx - 1][idxP];
     }
   }
   if (isFirsty) {
     for (ez = startz; ez < startz + nz + nExtraz; ++ez) {
-      for (ex = startx; ex < startx + nx + nExtrax; ++ex) { arrIn[ez][-1][ex][idxP] = arrIn[ez][0][ex][idxP]; }
+      for (ex = startx; ex < startx + nx + nExtrax; ++ex) arrIn[ez][-1][ex][idxP] = arrIn[ez][0][ex][idxP];
     }
   }
   if (isLasty) {
     for (ez = startz; ez < startz + nz + nExtraz; ++ez) {
-      for (ex = startx; ex < startx + nx + nExtrax; ++ex) { arrIn[ez][starty + ny][ex][idxP] = arrIn[ez][starty + ny - 1][ex][idxP]; }
+      for (ex = startx; ex < startx + nx + nExtrax; ++ex) arrIn[ez][starty + ny][ex][idxP] = arrIn[ez][starty + ny - 1][ex][idxP];
     }
   }
 
   if (isFirstz) {
     for (ey = starty; ey < starty + ny + nExtray; ++ey) {
-      for (ex = startx; ex < startx + nx + nExtrax; ++ex) { arrIn[-1][ey][ex][idxP] = arrIn[0][ey][ex][idxP]; }
+      for (ex = startx; ex < startx + nx + nExtrax; ++ex) arrIn[-1][ey][ex][idxP] = arrIn[0][ey][ex][idxP];
     }
   }
   if (isLastz) {
     for (ey = starty; ey < starty + ny + nExtray; ++ey) {
-      for (ex = startx; ex < startx + nx + nExtrax; ++ex) { arrIn[startz + nz][ey][ex][idxP] = arrIn[startz + nz - 1][ey][ex][idxP]; }
+      for (ex = startx; ex < startx + nx + nExtrax; ++ex) arrIn[startz + nz][ey][ex][idxP] = arrIn[startz + nz - 1][ey][ex][idxP];
     }
   }
 

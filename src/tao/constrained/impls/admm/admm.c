@@ -104,8 +104,8 @@ static PetscErrorCode AdaptiveADMMPenaltyUpdate(Tao tao) {
   } else if (gflag) {
     am->mu = b_k;
   }
-  if (am->mu > am->muold) { am->mu = am->muold; }
-  if (am->mu < am->mumin) { am->mu = am->mumin; }
+  if (am->mu > am->muold) am->mu = am->muold;
+  if (am->mu < am->mumin) am->mu = am->mumin;
   PetscFunctionReturn(0);
 }
 
@@ -576,8 +576,8 @@ static PetscErrorCode TaoSetUp_ADMM(Tao tao) {
   }
 
   /* Save changed tao tolerance for adaptive tolerance */
-  if (tao->gatol_changed) { am->gatol_admm = tao->gatol; }
-  if (tao->catol_changed) { am->catol_admm = tao->catol; }
+  if (tao->gatol_changed) am->gatol_admm = tao->gatol;
+  if (tao->catol_changed) am->catol_admm = tao->catol;
 
   /*Update spectral and dual elements to X subsolver */
   PetscCall(TaoSetObjectiveAndGradient(am->subsolverX, NULL, SubObjGradUpdate, tao));
@@ -1082,8 +1082,8 @@ PetscErrorCode TaoADMMSetMisfitHessianRoutine(Tao tao, Mat H, Mat Hpre, PetscErr
     PetscValidHeaderSpecific(Hpre, MAT_CLASSID, 3);
     PetscCheckSameComm(tao, 1, Hpre, 3);
   }
-  if (ctx) { am->misfithessP = ctx; }
-  if (func) { am->ops->misfithess = func; }
+  if (ctx) am->misfithessP = ctx;
+  if (func) am->ops->misfithess = func;
   if (H) {
     PetscCall(PetscObjectReference((PetscObject)H));
     PetscCall(MatDestroy(&am->Hx));
@@ -1153,8 +1153,8 @@ PetscErrorCode TaoADMMSetRegularizerHessianRoutine(Tao tao, Mat H, Mat Hpre, Pet
     PetscValidHeaderSpecific(Hpre, MAT_CLASSID, 3);
     PetscCheckSameComm(tao, 1, Hpre, 3);
   }
-  if (ctx) { am->reghessP = ctx; }
-  if (func) { am->ops->reghess = func; }
+  if (ctx) am->reghessP = ctx;
+  if (func) am->ops->reghess = func;
   if (H) {
     PetscCall(PetscObjectReference((PetscObject)H));
     PetscCall(MatDestroy(&am->Hz));

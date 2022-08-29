@@ -155,7 +155,7 @@ static PetscErrorCode MatADAComputeDiagonal(Mat mat) {
   for (i = 0; i < n; i++) PetscCall(VecDotEnd(ctx->D1, ctx->W, dtemp + i));
 
   PetscCall(VecGetArray(ctx->ADADiag, &dptr));
-  for (i = low; i < high; i++) { dptr[i - low] = dtemp[i]; }
+  for (i = low; i < high; i++) dptr[i - low] = dtemp[i];
   PetscCall(VecRestoreArray(ctx->ADADiag, &dptr));
   PetscCall(PetscFree(dtemp));
   PetscFunctionReturn(0);

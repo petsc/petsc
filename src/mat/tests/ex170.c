@@ -160,7 +160,7 @@ int main(int argc, char **argv) {
   PetscCall(MatCreateVecs(A, &c, NULL));
   PetscCall(MatGetOwnershipRange(A, &vStart, &vEnd));
   PetscCall(VecGetArray(c, &carray));
-  for (v = vStart; v < vEnd; ++v) { carray[v - vStart] = v; }
+  for (v = vStart; v < vEnd; ++v) carray[v - vStart] = v;
   PetscCall(VecRestoreArray(c, &carray));
   /* Preprocess in parallel to find local components */
   /* Multiply until c does not change */

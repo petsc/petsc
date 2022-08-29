@@ -188,7 +188,7 @@ PetscErrorCode PetscDataTypeFromString(const char *name, PetscDataType *ptype, P
       *ptype = PETSC_SCALAR;
     } else {
       PetscCall(PetscStrcmp(formatted, "real", found));
-      if (*found) { *ptype = PETSC_REAL; }
+      if (*found) *ptype = PETSC_REAL;
     }
   }
   PetscFunctionReturn(0);

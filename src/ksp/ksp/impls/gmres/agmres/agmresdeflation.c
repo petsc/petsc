@@ -158,7 +158,7 @@ static PetscErrorCode KSPAGMRESSchurForm(KSP ksp, PetscBLASInt KspSize, PetscSca
   /* Extract the Schur vectors associated to the r smallest eigenvalues */
   PetscCall(PetscArrayzero(Sr, (N + 1) * r));
   for (j = 0; j < r; j++) {
-    for (i = 0; i < KspSize; i++) { Sr[j * (N + 1) + i] = Z[j * N + i]; }
+    for (i = 0; i < KspSize; i++) Sr[j * (N + 1) + i] = Z[j * N + i];
   }
 
   /* Broadcast Sr to all other processes to have consistent data;
@@ -213,7 +213,7 @@ PetscErrorCode KSPAGMRESComputeDeflationData(KSP ksp) {
     for (j = max_k; j < KspSize; j++) PetscCall(VecMDot(U[j - max_k], KspSize, TmpU, &MatEigR[j * N]));
   } else { /* Form H^T */
     for (j = 0; j < N; j++) {
-      for (i = 0; i < N; i++) { MatEigR[j * N + i] = agmres->hes_origin[i * lC + j]; }
+      for (i = 0; i < N; i++) MatEigR[j * N + i] = agmres->hes_origin[i * lC + j];
     }
   }
   /* Obtain the Schur form of  the generalized eigenvalue problem MatEigL*y = \lambda*MatEigR*y */

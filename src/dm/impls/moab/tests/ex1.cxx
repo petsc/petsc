@@ -66,7 +66,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm) {
     moab::Range tmp_range;
     merr = iface->get_entities_by_handle(0, tmp_range);
     MBERRNM(merr);
-    if (tmp_range.empty()) { MBERRNM(moab::MB_FAILURE); }
+    if (tmp_range.empty()) MBERRNM(moab::MB_FAILURE);
     user->dim = iface->dimension_from_handle(*tmp_range.rbegin());
   }
   merr = iface->get_entities_by_dimension(0, user->dim, range);

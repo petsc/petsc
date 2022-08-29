@@ -371,21 +371,21 @@ PetscErrorCode DMDASubDomainDA_Private(DM dm, PetscInt *nlocal, DM **sdm) {
             xsize += xo;
             xo = 0;
           }
-          if (xo + xsize > info.mx - 1) { xsize -= xo + xsize - info.mx; }
+          if (xo + xsize > info.mx - 1) xsize -= xo + xsize - info.mx;
         }
         if (info.by != DM_BOUNDARY_PERIODIC) {
           if (yo < 0) {
             ysize += yo;
             yo = 0;
           }
-          if (yo + ysize > info.my - 1) { ysize -= yo + ysize - info.my; }
+          if (yo + ysize > info.my - 1) ysize -= yo + ysize - info.my;
         }
         if (info.bz != DM_BOUNDARY_PERIODIC) {
           if (zo < 0) {
             zsize += zo;
             zo = 0;
           }
-          if (zo + zsize > info.mz - 1) { zsize -= zo + zsize - info.mz; }
+          if (zo + zsize > info.mz - 1) zsize -= zo + zsize - info.mz;
         }
 
         PetscCall(DMDASetSizes(da[idx], xsize, ysize, zsize));

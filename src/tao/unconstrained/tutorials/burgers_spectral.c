@@ -302,7 +302,7 @@ PetscErrorCode InitialConditions(Vec u, AppCtx *appctx) {
   PetscCall(DMDAVecGetArray(appctx->da, u, &s));
   PetscCall(DMDAVecGetArrayRead(appctx->da, appctx->SEMop.grid, (void *)&xg));
   PetscCall(DMDAGetCorners(appctx->da, &xs, NULL, NULL, &xn, NULL, NULL));
-  for (i = xs; i < xs + xn; i++) { s[i] = 2.0 * appctx->param.mu * PETSC_PI * PetscSinScalar(PETSC_PI * xg[i]) / (2.0 + PetscCosScalar(PETSC_PI * xg[i])) + 0.25 * PetscExpReal(-4.0 * PetscPowReal(xg[i] - 2.0, 2.0)); }
+  for (i = xs; i < xs + xn; i++) s[i] = 2.0 * appctx->param.mu * PETSC_PI * PetscSinScalar(PETSC_PI * xg[i]) / (2.0 + PetscCosScalar(PETSC_PI * xg[i])) + 0.25 * PetscExpReal(-4.0 * PetscPowReal(xg[i] - 2.0, 2.0));
   PetscCall(DMDAVecRestoreArray(appctx->da, u, &s));
   PetscCall(DMDAVecRestoreArrayRead(appctx->da, appctx->SEMop.grid, (void *)&xg));
   PetscFunctionReturn(0);
@@ -329,7 +329,7 @@ PetscErrorCode TrueSolution(Vec u, AppCtx *appctx) {
   PetscCall(DMDAVecGetArray(appctx->da, u, &s));
   PetscCall(DMDAVecGetArrayRead(appctx->da, appctx->SEMop.grid, (void *)&xg));
   PetscCall(DMDAGetCorners(appctx->da, &xs, NULL, NULL, &xn, NULL, NULL));
-  for (i = xs; i < xs + xn; i++) { s[i] = 2.0 * appctx->param.mu * PETSC_PI * PetscSinScalar(PETSC_PI * xg[i]) / (2.0 + PetscCosScalar(PETSC_PI * xg[i])); }
+  for (i = xs; i < xs + xn; i++) s[i] = 2.0 * appctx->param.mu * PETSC_PI * PetscSinScalar(PETSC_PI * xg[i]) / (2.0 + PetscCosScalar(PETSC_PI * xg[i]));
   PetscCall(DMDAVecRestoreArray(appctx->da, u, &s));
   PetscCall(DMDAVecRestoreArrayRead(appctx->da, appctx->SEMop.grid, (void *)&xg));
   PetscFunctionReturn(0);
@@ -452,7 +452,7 @@ PetscErrorCode RHSMatrixLaplaciangllDM(TS ts, PetscReal t, Vec X, Mat A, Mat BB,
    loop over local elements
    */
   for (j = xs; j < xs + xn; j++) {
-    for (l = 0; l < appctx->param.N; l++) { rowsDM[l] = 1 + (j - xs) * (appctx->param.N - 1) + l; }
+    for (l = 0; l < appctx->param.N; l++) rowsDM[l] = 1 + (j - xs) * (appctx->param.N - 1) + l;
     PetscCall(MatSetValuesLocal(A, appctx->param.N, rowsDM, appctx->param.N, rowsDM, &temp[0][0], ADD_VALUES));
   }
   PetscCall(PetscFree(rowsDM));
@@ -502,7 +502,7 @@ PetscErrorCode RHSMatrixAdvectiongllDM(TS ts, PetscReal t, Vec X, Mat A, Mat BB,
 
   PetscCall(PetscMalloc1(appctx->param.N, &rowsDM));
   for (j = xs; j < xs + xn; j++) {
-    for (l = 0; l < appctx->param.N; l++) { rowsDM[l] = 1 + (j - xs) * (appctx->param.N - 1) + l; }
+    for (l = 0; l < appctx->param.N; l++) rowsDM[l] = 1 + (j - xs) * (appctx->param.N - 1) + l;
     PetscCall(MatSetValuesLocal(A, appctx->param.N, rowsDM, appctx->param.N, rowsDM, &temp[0][0], ADD_VALUES));
   }
   PetscCall(PetscFree(rowsDM));

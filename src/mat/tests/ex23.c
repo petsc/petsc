@@ -691,7 +691,7 @@ int main(int argc, char **args) {
             PetscInt b1, b2;
 
             for (b1 = 0; b1 < bs; b1++) {
-              for (b2 = 0; b2 < bs; b2++) { vals[b1 * bs + b2] = i * bs * bs + b1 * bs + b2 + 1 + (b1 == b2 ? 1.0 : 0); }
+              for (b2 = 0; b2 < bs; b2++) vals[b1 * bs + b2] = i * bs * bs + b1 * bs + b2 + 1 + (b1 == b2 ? 1.0 : 0);
             }
             PetscCall(MatSetValuesBlockedLocal(Abd, 1, &i, 1, &i, vals, INSERT_VALUES));
           }

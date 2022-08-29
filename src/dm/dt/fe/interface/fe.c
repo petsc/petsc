@@ -1036,7 +1036,7 @@ PETSC_EXTERN PetscErrorCode PetscFECreatePointTrace(PetscFE fe, PetscInt refPoin
   PetscCall(DMPlexComputeCellGeometryFEM(dm, refPoint, origin, v, J, NULL, &detJ));
   /* CellGeometryFEM computes the expanded Jacobian, we want the true jacobian */
   for (i = 1; i < dim; i++) {
-    for (j = 0; j < depth; j++) { J[i * depth + j] = J[i * dim + j]; }
+    for (j = 0; j < depth; j++) J[i * depth + j] = J[i * dim + j];
   }
   PetscCall(PetscQuadratureDestroy(&origin));
   PetscCall(PetscDualSpaceGetPointSubspace(dsp, refPoint, &dsubsp));
@@ -2172,9 +2172,9 @@ PetscErrorCode PetscFEEvaluateFaceFields_Internal(PetscDS prob, PetscInt field, 
     const PetscInt   Nb        = Tc->Nb;
     const PetscInt   Nc        = Tc->Nc;
 
-    for (c = 0; c < Nc; ++c) { u[c] = 0.0; }
+    for (c = 0; c < Nc; ++c) u[c] = 0.0;
     for (b = 0; b < Nb; ++b) {
-      for (c = 0; c < Nc; ++c) { u[c] += coefficients[b] * faceBasis[(faceLoc * Nb + b) * Nc + c]; }
+      for (c = 0; c < Nc; ++c) u[c] += coefficients[b] * faceBasis[(faceLoc * Nb + b) * Nc + c];
     }
   }
   return 0;
@@ -2298,7 +2298,7 @@ PetscErrorCode PetscFEUpdateElementMat_Internal(PetscFE feI, PetscFE feJ, PetscI
           for (df = 0; df < dE; ++df) {
             elemMat[fOff] += tmpBasisI[fidx] * g1[(fc * NcJ + gc) * dE + df] * tmpBasisDerJ[gidx * dE + df];
             elemMat[fOff] += tmpBasisDerI[fidx * dE + df] * g2[(fc * NcJ + gc) * dE + df] * tmpBasisJ[gidx];
-            for (dg = 0; dg < dE; ++dg) { elemMat[fOff] += tmpBasisDerI[fidx * dE + df] * g3[((fc * NcJ + gc) * dE + df) * dE + dg] * tmpBasisDerJ[gidx * dE + dg]; }
+            for (dg = 0; dg < dE; ++dg) elemMat[fOff] += tmpBasisDerI[fidx * dE + df] * g3[((fc * NcJ + gc) * dE + df) * dE + dg] * tmpBasisDerJ[gidx * dE + dg];
           }
         }
       }
@@ -2357,7 +2357,7 @@ PetscErrorCode PetscFEUpdateElementMat_Hybrid_Internal(PetscFE feI, PetscBool is
           for (df = 0; df < dE; ++df) {
             elemMat[fOff] += tmpBasisI[fidx] * g1[(fc * NcJ + gc) * dE + df] * tmpBasisDerJ[gidx * dE + df];
             elemMat[fOff] += tmpBasisDerI[fidx * dE + df] * g2[(fc * NcJ + gc) * dE + df] * tmpBasisJ[gidx];
-            for (dg = 0; dg < dE; ++dg) { elemMat[fOff] += tmpBasisDerI[fidx * dE + df] * g3[((fc * NcJ + gc) * dE + df) * dE + dg] * tmpBasisDerJ[gidx * dE + dg]; }
+            for (dg = 0; dg < dE; ++dg) elemMat[fOff] += tmpBasisDerI[fidx * dE + df] * g3[((fc * NcJ + gc) * dE + df) * dE + dg] * tmpBasisDerJ[gidx * dE + dg];
           }
         }
       }

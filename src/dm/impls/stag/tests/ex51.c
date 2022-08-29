@@ -27,7 +27,7 @@ int main(int argc, char **argv) {
   PetscCall(DMStagVecGetArray(dm, x, &x_array));
   for (PetscInt k = start_z; k < start_z + n_z + n_extra_z; ++k) {
     for (PetscInt j = start_y; j < start_y + n_y + n_extra_y; ++j) {
-      for (PetscInt i = start_x; i < start_x + n_x + n_extra_x; ++i) { x_array[k][j][i][slot_vertex_2] = 2.0; }
+      for (PetscInt i = start_x; i < start_x + n_x + n_extra_x; ++i) x_array[k][j][i][slot_vertex_2] = 2.0;
     }
   }
   PetscCall(DMStagVecRestoreArray(dm, x, &x_array));

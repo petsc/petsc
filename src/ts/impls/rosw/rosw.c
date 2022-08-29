@@ -733,20 +733,20 @@ PetscErrorCode TSRosWRegister(TSRosWType name, PetscInt order, PetscInt s, const
   for (i = 0; i < s; i++) {
     for (k = 0; k < i + 1; k++) {
       t->GammaExplicitCorr[i * s + k] = (t->GammaExplicitCorr[i * s + k]) * (t->GammaInv[k * s + k]);
-      for (j = k + 1; j < i + 1; j++) { t->GammaExplicitCorr[i * s + k] += (t->GammaExplicitCorr[i * s + j]) * (t->GammaInv[j * s + k]); }
+      for (j = k + 1; j < i + 1; j++) t->GammaExplicitCorr[i * s + k] += (t->GammaExplicitCorr[i * s + j]) * (t->GammaInv[j * s + k]);
     }
   }
 
   for (i = 0; i < s; i++) {
     for (j = 0; j < s; j++) {
       t->At[i * s + j] = 0;
-      for (k = 0; k < s; k++) { t->At[i * s + j] += t->A[i * s + k] * t->GammaInv[k * s + j]; }
+      for (k = 0; k < s; k++) t->At[i * s + j] += t->A[i * s + k] * t->GammaInv[k * s + j];
     }
     t->bt[i] = 0;
-    for (j = 0; j < s; j++) { t->bt[i] += t->b[j] * t->GammaInv[j * s + i]; }
+    for (j = 0; j < s; j++) t->bt[i] += t->b[j] * t->GammaInv[j * s + i];
     if (bembed) {
       t->bembedt[i] = 0;
-      for (j = 0; j < s; j++) { t->bembedt[i] += t->bembed[j] * t->GammaInv[j * s + i]; }
+      for (j = 0; j < s; j++) t->bembedt[i] += t->bembed[j] * t->GammaInv[j * s + i];
     }
   }
   t->ccfl = 1.0; /* Fix this */
@@ -1096,7 +1096,7 @@ static PetscErrorCode TSInterpolate_RosW(TS ts, PetscReal itime, Vec U) {
   PetscCall(PetscMalloc1(s, &bt));
   for (i = 0; i < s; i++) bt[i] = 0;
   for (j = 0, tt = t; j < pinterp; j++, tt *= t) {
-    for (i = 0; i < s; i++) { bt[i] += Bt[i * pinterp + j] * tt; }
+    for (i = 0; i < s; i++) bt[i] += Bt[i * pinterp + j] * tt;
   }
 
   /* y(t+tt*h) = y(t) + Sum bt(tt) * GammaInv * Ydot */
@@ -1105,7 +1105,7 @@ static PetscErrorCode TSInterpolate_RosW(TS ts, PetscReal itime, Vec U) {
   /* U <- Sum bt_i * GammaInv(i,1:i) * Y(1:i) */
   for (j = 0; j < s; j++) w[j] = 0;
   for (j = 0; j < s; j++) {
-    for (i = j; i < s; i++) { w[j] += bt[i] * GammaInv[i * s + j]; }
+    for (i = j; i < s; i++) w[j] += bt[i] * GammaInv[i * s + j];
   }
   PetscCall(VecMAXPY(U, i, w, Y));
   /* U <- y(t) + U */

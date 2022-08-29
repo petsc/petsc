@@ -99,7 +99,7 @@ int main(int argc, char **args) {
     for (i = 1; i < 5; i++) {
       DIM = i;
       PetscCall(PetscMalloc1(i, &dim));
-      for (k = 0; k < i; k++) { dim[k] = 30; }
+      for (k = 0; k < i; k++) dim[k] = 30;
       N *= dim[i - 1];
 
       /* Create FFTW object */

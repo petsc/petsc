@@ -61,7 +61,7 @@ int main(int argc, char **argv) {
     PetscCall(ISCreateStride(PETSC_COMM_SELF, 0, 0, 0, &to));
   }
   PetscCall(PetscMalloc1(xm, &ifrom));
-  for (i = x; i < x + xm; i++) { ifrom[i - x] = M * i; }
+  for (i = x; i < x + xm; i++) ifrom[i - x] = M * i;
   PetscCall(DMDAGetAO(da, &ao));
   PetscCall(AOApplicationToPetsc(ao, xm, ifrom));
   if (!y) {
@@ -81,7 +81,7 @@ int main(int argc, char **argv) {
     PetscCall(ISCreateStride(PETSC_COMM_SELF, 0, 0, 0, &to));
   }
   PetscCall(PetscMalloc1(ym, &ifrom));
-  for (i = y; i < y + ym; i++) { ifrom[i - y] = i; }
+  for (i = y; i < y + ym; i++) ifrom[i - y] = i;
   PetscCall(DMDAGetAO(da, &ao));
   PetscCall(AOApplicationToPetsc(ao, ym, ifrom));
   if (!x) {
@@ -101,7 +101,7 @@ int main(int argc, char **argv) {
   PetscCall(DMDACreateNaturalVector(da, &natural));
   PetscCall(VecGetOwnershipRange(natural, &start, &end));
   PetscCall(VecGetArray(natural, &xnatural));
-  for (i = start; i < end; i++) { xnatural[i - start] = i; }
+  for (i = start; i < end; i++) xnatural[i - start] = i;
   PetscCall(VecRestoreArray(natural, &xnatural));
   PetscCall(DMDANaturalToGlobalBegin(da, natural, INSERT_VALUES, global));
   PetscCall(DMDANaturalToGlobalEnd(da, natural, INSERT_VALUES, global));

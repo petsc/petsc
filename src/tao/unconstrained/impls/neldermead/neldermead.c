@@ -13,7 +13,7 @@ static PetscErrorCode NelderMeadSort(TAO_NelderMead *nm) {
   for (i = 1; i < dim; i++) {
     index = indices[i];
     val   = values[index];
-    for (j = i - 1; j >= 0 && values[indices[j]] > val; j--) { indices[j + 1] = indices[j]; }
+    for (j = i - 1; j >= 0 && values[indices[j]] > val; j--) indices[j + 1] = indices[j];
     indices[j + 1] = index;
   }
   PetscFunctionReturn(0);

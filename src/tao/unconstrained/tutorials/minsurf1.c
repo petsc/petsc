@@ -172,8 +172,8 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *fcn, Vec G, void 
         xt = x[row + mx];
       }
 
-      if (i > 0 && j + 1 < my) { xlt = x[row - 1 + mx]; }
-      if (j > 0 && i + 1 < mx) { xrb = x[row + 1 - mx]; }
+      if (i > 0 && j + 1 < my) xlt = x[row - 1 + mx];
+      if (j > 0 && i + 1 < mx) xrb = x[row + 1 - mx];
 
       d1 = (xc - xl);
       d2 = (xc - xr);
@@ -356,8 +356,8 @@ PetscErrorCode QuadraticH(AppCtx *user, Vec X, Mat Hessian) {
         xt = x[row + mx];
       }
 
-      if (i > 0 && j + 1 < my) { xlt = x[row - 1 + mx]; }
-      if (j > 0 && i + 1 < mx) { xrb = x[row + 1 - mx]; }
+      if (i > 0 && j + 1 < my) xlt = x[row - 1 + mx];
+      if (j > 0 && i + 1 < mx) xrb = x[row + 1 - mx];
 
       d1 = (xc - xl) * rhx;
       d2 = (xc - xr) * rhx;

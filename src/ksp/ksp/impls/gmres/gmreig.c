@@ -145,7 +145,7 @@ PetscErrorCode KSPComputeRitz_GMRES(KSP ksp, PetscBool ritz, PetscBool small, Pe
     /* Transpose the Hessenberg matrix => Ht */
     PetscCall(PetscMalloc1(bn * bn, &Ht));
     for (i = 0; i < bn; i++) {
-      for (j = 0; j < bn; j++) { Ht[i * bn + j] = PetscConj(H[j * bN + i]); }
+      for (j = 0; j < bn; j++) Ht[i * bn + j] = PetscConj(H[j * bN + i]);
     }
     /* Solve the system H^T*t = h^2_{m+1,m}e_m */
     PetscCall(PetscCalloc1(bn, &t));

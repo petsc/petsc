@@ -1068,7 +1068,7 @@ PetscErrorCode PetscProcessTree(PetscInt n, const PetscBool mask[], const PetscI
   PetscCall(PetscMalloc1(n, &column));
   cnt = 0;
   for (j = 0; j < nlevels; j++) {
-    for (i = 0; i < levelcnt[j]; i++) { column[idbylevel[cnt++]] = i; }
+    for (i = 0; i < levelcnt[j]; i++) column[idbylevel[cnt++]] = i;
   }
 
   *Nlevels   = nlevels;

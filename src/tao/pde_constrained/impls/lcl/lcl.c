@@ -372,7 +372,7 @@ static PetscErrorCode TaoSolve_LCL(Tao tao) {
     PetscCall(TaoLogConvergenceHistory(tao, f, mnorm, cnorm, tao->ksp_its));
     PetscCall(TaoMonitor(tao, tao->niter, f, mnorm, cnorm, step));
     PetscUseTypeMethod(tao, convergencetest, tao->cnvP);
-    if (tao->reason != TAO_CONTINUE_ITERATING) { break; }
+    if (tao->reason != TAO_CONTINUE_ITERATING) break;
 
     /* TODO: use a heuristic to choose how many iterations should be performed within phase 2 */
     for (phase2_iter = 0; phase2_iter < lclP->phase2_niter; phase2_iter++) {

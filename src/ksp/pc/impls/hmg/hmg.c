@@ -77,7 +77,7 @@ static PetscErrorCode PCHMGExpandInterpolation_Private(Mat subinterp, Mat *inter
     PetscCall(MatGetRow(subinterp, subrow, &nz, &idx, &values));
     for (i = 0; i < blocksize; i++) {
       row = subrow * blocksize + i;
-      for (j = 0; j < nz; j++) { indices[j] = idx[j] * blocksize + i; }
+      for (j = 0; j < nz; j++) indices[j] = idx[j] * blocksize + i;
       PetscCall(MatSetValues(*interp, 1, &row, nz, indices, values, INSERT_VALUES));
     }
     PetscCall(MatRestoreRow(subinterp, subrow, &nz, &idx, &values));

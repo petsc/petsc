@@ -177,7 +177,7 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C, PetscInt is_max, I
              table[0] - mark incideces of is[] when whose=OTHER */
   len = PetscMax(is_max, size);
   PetscCall(PetscMalloc2(len, &table, (Mbs / PETSC_BITS_PER_BYTE + 1) * len, &t_p));
-  for (i = 0; i < len; i++) { table[i] = t_p + (Mbs / PETSC_BITS_PER_BYTE + 1) * i; }
+  for (i = 0; i < len; i++) table[i] = t_p + (Mbs / PETSC_BITS_PER_BYTE + 1) * i;
 
   PetscCall(MPIU_Allreduce(&is_max, &ois_max, 1, MPIU_INT, MPI_MAX, comm));
 

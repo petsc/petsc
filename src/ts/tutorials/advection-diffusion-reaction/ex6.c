@@ -173,7 +173,7 @@ PetscErrorCode Solution(TS ts, PetscReal t, Vec U, AppCtx *appctx) {
   /* u[i] = sin(6*PI*(x[i] - a*t)) + 3 * sin(2*PI*(x[i] - a*t)) */
   PI6 = PETSC_PI * 6.;
   PI2 = PETSC_PI * 2.;
-  for (i = mstart; i < mend; i++) { u[i] = PetscSinReal(PI6 * (i * h - a * t)) + 3. * PetscSinReal(PI2 * (i * h - a * t)); }
+  for (i = mstart; i < mend; i++) u[i] = PetscSinReal(PI6 * (i * h - a * t)) + 3. * PetscSinReal(PI2 * (i * h - a * t));
 
   /* Restore vector */
   PetscCall(DMDAVecRestoreArray(da, U, &u));

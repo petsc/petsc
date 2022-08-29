@@ -238,7 +238,7 @@ static PetscErrorCode SNESSetUp_QN(SNES snes) {
   PetscCall(SNESSetWorkVecs(snes, 4));
 
   if (qn->scale_type == SNES_QN_SCALE_JACOBIAN) PetscCall(SNESSetUpMatrices(snes));
-  if (snes->npcside == PC_LEFT && snes->functype == SNES_FUNCTION_DEFAULT) { snes->functype = SNES_FUNCTION_UNPRECONDITIONED; }
+  if (snes->npcside == PC_LEFT && snes->functype == SNES_FUNCTION_DEFAULT) snes->functype = SNES_FUNCTION_UNPRECONDITIONED;
 
   /* set method defaults */
   if (qn->scale_type == SNES_QN_SCALE_DEFAULT) {

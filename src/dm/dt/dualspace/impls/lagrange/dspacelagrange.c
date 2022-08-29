@@ -158,12 +158,12 @@ static PetscErrorCode Petsc1DNodeFamilyComputeSimplexNodes(Petsc1DNodeFamily f, 
 
     /* turn thm into tuples of length dim + 1 with sum equal to degree (barycentric indice) */
     tup[0] = degree;
-    for (i = 0; i < dim; i++) { tup[0] -= tup[i + 1]; }
+    for (i = 0; i < dim; i++) tup[0] -= tup[i + 1];
     switch (f->nodeFamily) {
     case PETSCDTNODES_EQUISPACED:
       /* compute equispaces nodes on the unit reference triangle */
       if (f->endpoints) {
-        for (i = 0; i < dim; i++) { points[dim * k + i] = (PetscReal)tup[i + 1] / (PetscReal)degree; }
+        for (i = 0; i < dim; i++) points[dim * k + i] = (PetscReal)tup[i + 1] / (PetscReal)degree;
       } else {
         for (i = 0; i < dim; i++) {
           /* these nodes are at the centroids of the small simplices created by the equispaced nodes that include
@@ -408,7 +408,7 @@ static PetscErrorCode PetscLagNodeIndicesComputeVertexOrder(DM dm, PetscLagNodeI
       }
     }
     for (v = 0; v < nVerts; v++) {
-      for (d = 0; d < nodeIdxDim; d++) { newNodeIdx[v * ni->nodeIdxDim + d] = ni->nodeIdx[idxOrder[v] * nodeIdxDim + d]; }
+      for (d = 0; d < nodeIdxDim; d++) newNodeIdx[v * ni->nodeIdxDim + d] = ni->nodeIdx[idxOrder[v] * nodeIdxDim + d];
     }
     PetscCall(PetscFree(ni->nodeIdx));
     ni->nodeIdx = newNodeIdx;
@@ -444,7 +444,7 @@ static PetscErrorCode PetscLagNodeIndicesComputeVertexOrder(DM dm, PetscLagNodeI
   PetscCall(PetscMalloc1(ni->nodeIdxDim * nVerts, &newNodeIdx));
   /* reorder nodeIdx to be in closure order */
   for (v = 0; v < nVerts; v++) {
-    for (d = 0; d < ni->nodeIdxDim; d++) { newNodeIdx[revlexOrder[v] * ni->nodeIdxDim + d] = ni->nodeIdx[v * ni->nodeIdxDim + d]; }
+    for (d = 0; d < ni->nodeIdxDim; d++) newNodeIdx[revlexOrder[v] * ni->nodeIdxDim + d] = ni->nodeIdx[v * ni->nodeIdxDim + d];
   }
   PetscCall(PetscFree(ni->nodeIdx));
   ni->nodeIdx = newNodeIdx;
@@ -495,7 +495,7 @@ static PetscErrorCode PetscLagNodeIndicesCreateTensorVertices(DM dm, PetscLagNod
   PetscCall(PetscCalloc1(nodeIdxDim * nVerts, &(ni->nodeIdx)));
   for (f = 0, d = 0; d < 2; d++) {
     for (e = 0; e < nSubVerts; e++, f++) {
-      for (g = 0; g < subNodeIdxDim; g++) { ni->nodeIdx[f * nodeIdxDim + g] = facetni->nodeIdx[e * subNodeIdxDim + g]; }
+      for (g = 0; g < subNodeIdxDim; g++) ni->nodeIdx[f * nodeIdxDim + g] = facetni->nodeIdx[e * subNodeIdxDim + g];
       ni->nodeIdx[f * nodeIdxDim + subNodeIdxDim]     = (1 - d);
       ni->nodeIdx[f * nodeIdxDim + subNodeIdxDim + 1] = d;
     }
@@ -594,7 +594,7 @@ static PetscErrorCode PetscLagNodeIndicesPushForward(DM dm, PetscLagNodeIndices 
     PetscCall(VecGetArrayRead(coordVec, &oldCoords));
     for (v = 0; v < nSubVert; v++) {
       PetscInt d;
-      for (d = 0; d < dim; d++) { newCoords[(closure2[2 * (c + v)] - vStart) * dim + d] = oldCoords[closureVerts[v] * dim + d]; }
+      for (d = 0; d < dim; d++) newCoords[(closure2[2 * (c + v)] - vStart) * dim + d] = oldCoords[closureVerts[v] * dim + d];
     }
     PetscCall(VecRestoreArrayRead(coordVec, &oldCoords));
     PetscCall(DMPlexRestoreTransitiveClosure(dm, p, PETSC_TRUE, &closureSize2, &closure2));
@@ -1159,7 +1159,7 @@ static PetscErrorCode PetscQuadraturePointsMerge(PetscQuadrature quadA, PetscQua
         break;
       }
     }
-    if (bToJ[i] == -1) { bToJ[i] = nJoint++; }
+    if (bToJ[i] == -1) bToJ[i] = nJoint++;
   }
   *aToJoint = aToJ;
   *bToJoint = bToJ;
@@ -1328,7 +1328,7 @@ static PetscErrorCode PetscDualSpaceLagrangeCreateSimplexNodeMat(Petsc1DNodeFami
       PetscCall(PetscDTIndexToBary(dim + 1, sum, k, tup));
       for (j = 0; j < dim + 1; j++) tup[j] += numNodeSkip;
       for (c = 0; c < Nk; c++) {
-        for (j = 0; j < dim + 1; j++) { ni->nodeIdx[(k * Nk + c) * (dim + 1) + j] = tup[j] + 1; }
+        for (j = 0; j < dim + 1; j++) ni->nodeIdx[(k * Nk + c) * (dim + 1) + j] = tup[j] + 1;
       }
       PetscCall(PetscDTBaryToIndex(dim + 1, extraSum, tup, &index));
       for (j = 0; j < dim; j++) nodeCoords[k * dim + j] = extraNodeCoords[index * dim + j];
@@ -1532,7 +1532,7 @@ static PetscErrorCode PetscDualSpaceCreateAllDataFromInteriorData(PetscDualSpace
 
         for (d = 0; d < dim; d++) {
           nodes[countNodes * dim + d] = v0[d];
-          for (e = 0; e < pdim; e++) { nodes[countNodes * dim + d] += J[d * pdim + e] * (nodesp[j * pdim + e] - pv0[e]); }
+          for (e = 0; e < pdim; e++) nodes[countNodes * dim + d] += J[d * pdim + e] * (nodesp[j * pdim + e] - pv0[e]);
         }
       }
     }
@@ -1554,9 +1554,9 @@ static PetscErrorCode PetscDualSpaceCreateAllDataFromInteriorData(PetscDualSpace
         for (l = 0; l < ncols / pNk; l++) {
           PetscInt blockcol;
 
-          for (d = 0; d < pNk; d++) { PetscCheck((cols[l * pNk + d] % pNk) == d, PETSC_COMM_SELF, PETSC_ERR_PLIB, "interior matrix is not laid out as blocks of k-forms"); }
+          for (d = 0; d < pNk; d++) PetscCheck((cols[l * pNk + d] % pNk) == d, PETSC_COMM_SELF, PETSC_ERR_PLIB, "interior matrix is not laid out as blocks of k-forms");
           blockcol = cols[l * pNk] / pNk;
-          for (d = 0; d < Nk; d++) { iwork[l * Nk + d] = (blockcol + countNodesIn) * Nk + d; }
+          for (d = 0; d < Nk; d++) iwork[l * Nk + d] = (blockcol + countNodesIn) * Nk + d;
           for (d = 0; d < Nk; d++) work[l * Nk + d] = 0.;
           for (d = 0; d < Nk; d++) {
             for (e = 0; e < pNk; e++) {
@@ -1661,8 +1661,8 @@ static PetscErrorCode PetscDualSpaceComputeFunctionalsFromAllData(PetscDualSpace
       if (!c || ((cols[c] / Nc) != (cols[c - 1] / Nc))) {
         PetscInt d;
 
-        for (d = 0; d < Nc; d++) { weightsf[countNodes * Nc + d] = 0.; }
-        for (d = 0; d < dim; d++) { nodesf[countNodes * dim + d] = nodes[(cols[c] / Nc) * dim + d]; }
+        for (d = 0; d < Nc; d++) weightsf[countNodes * Nc + d] = 0.;
+        for (d = 0; d < dim; d++) nodesf[countNodes * dim + d] = nodes[(cols[c] / Nc) * dim + d];
         countNodes++;
       }
       weightsf[(countNodes - 1) * Nc + (cols[c] % Nc)] = PetscRealPart(vals[c]);
@@ -1875,14 +1875,14 @@ static PetscErrorCode BiunitSimplexSymmetricFormTransformation(PetscInt dim, Pet
   for (PetscInt i = 0; i < dim; i++) {
     biToEq[i * dim + i] = PetscSqrtReal(((PetscReal)i + 2.) / (2. * ((PetscReal)i + 1.)));
     fact += 4 * (i + 1);
-    for (PetscInt j = i + 1; j < dim; j++) { biToEq[i * dim + j] = PetscSqrtReal(1. / (PetscReal)fact); }
+    for (PetscInt j = i + 1; j < dim; j++) biToEq[i * dim + j] = PetscSqrtReal(1. / (PetscReal)fact);
   }
   /* fill in eqToBi: Jacobian of the transformation from the equilateral simplex to the biunit simplex */
   fact = 0;
   for (PetscInt j = 0; j < dim; j++) {
     eqToBi[j * dim + j] = PetscSqrtReal(2. * ((PetscReal)j + 1.) / ((PetscReal)j + 2));
     fact += j + 1;
-    for (PetscInt i = 0; i < j; i++) { eqToBi[i * dim + j] = -PetscSqrtReal(1. / (PetscReal)fact); }
+    for (PetscInt i = 0; i < j; i++) eqToBi[i * dim + j] = -PetscSqrtReal(1. / (PetscReal)fact);
   }
   PetscCall(PetscDTAltVPullbackMatrix(dim, dim, biToEq, kd, biToEqStar));
   PetscCall(PetscDTAltVPullbackMatrix(dim, dim, eqToBi, k, eqToBiStar));
@@ -2263,7 +2263,7 @@ static PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp) {
                 PetscScalar       *w = &work[b];
                 for (PetscInt j = 0; j < Nk; j++) {
                   w[j] = 0.;
-                  for (PetscInt i = 0; i < Nk; i++) { w[j] += v[i] * T[i * Nk + j]; }
+                  for (PetscInt i = 0; i < Nk; i++) w[j] += v[i] * T[i * Nk + j];
                 }
               }
               PetscCall(MatSetValuesBlocked(intMatT, 1, &row, nrCols, rCols, work, INSERT_VALUES));
@@ -2286,7 +2286,7 @@ static PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp) {
 
                 for (PetscInt j = 0; j < Nk; j++) {
                   w[j] = 0.;
-                  for (PetscInt i = 0; i < Nk; i++) { w[j] += v[i] * T[i * Nk + j]; }
+                  for (PetscInt i = 0; i < Nk; i++) w[j] += v[i] * T[i * Nk + j];
                 }
               }
             }
@@ -2576,12 +2576,12 @@ PetscErrorCode PetscDualSpaceCreateInteriorSymmetryMatrix_Lagrange(PetscDualSpac
         for (m = n; m < nEnd; m++) {
           PetscInt d;
 
-          for (d = 0; d < nodeVecDim; d++) { W[(m - n) * nodeVecDim + d] = ni->nodeVec[permOrnt[m] * nodeVecDim + d]; }
+          for (d = 0; d < nodeVecDim; d++) W[(m - n) * nodeVecDim + d] = ni->nodeVec[permOrnt[m] * nodeVecDim + d];
         }
         res = 0.;
         for (PetscInt i = 0; i < groupSize; i++) {
           for (PetscInt j = 0; j < nodeVecDim; j++) {
-            for (PetscInt k = 0; k < groupSize; k++) { W[i * nodeVecDim + j] -= V[i * groupSize + k] * intNodeIndices->nodeVec[perm[n + k] * nodeVecDim + j]; }
+            for (PetscInt k = 0; k < groupSize; k++) W[i * nodeVecDim + j] -= V[i * groupSize + k] * intNodeIndices->nodeVec[perm[n + k] * nodeVecDim + j];
             res += PetscAbsScalar(W[i * nodeVecDim + j]);
           }
         }
@@ -2686,11 +2686,11 @@ static PetscErrorCode PetscDualSpaceGetSymmetries_Lagrange(PetscDualSpace sp, co
               PetscCheck(PetscAbsReal(PetscAbsScalar(vals[j]) - PetscRealConstant(1.)) <= PETSC_SMALL, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "This dual space has symmetries that can't be described as a permutation + sign flips");
               PetscCheck(PetscAbsReal(PetscImaginaryPart(vals[j])) <= PETSC_SMALL, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "This dual space has symmetries that can't be described as a permutation + sign flips");
               PetscCheck(perm[cols[j] * nCopies] < 0, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "This dual space has symmetries that can't be described as a permutation + sign flips");
-              for (k = 0; k < nCopies; k++) { perm[cols[j] * nCopies + k] = i * nCopies + k; }
+              for (k = 0; k < nCopies; k++) perm[cols[j] * nCopies + k] = i * nCopies + k;
               if (PetscRealPart(vals[j]) < 0.) {
-                for (k = 0; k < nCopies; k++) { flips[i * nCopies + k] = -1.; }
+                for (k = 0; k < nCopies; k++) flips[i * nCopies + k] = -1.;
               } else {
-                for (k = 0; k < nCopies; k++) { flips[i * nCopies + k] = 1.; }
+                for (k = 0; k < nCopies; k++) flips[i * nCopies + k] = 1.;
               }
             }
           }

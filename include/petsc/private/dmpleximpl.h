@@ -471,7 +471,7 @@ static inline void DMPlex_MultTransposeReal_Internal(const PetscReal A[], PetscI
   for (j = 0; j < n; ++j) {
     const PetscInt l = j * ldx;
     y[l]             = 0;
-    for (i = 0; i < m; ++i) { y[l] += A[j * n + i] * z[i]; }
+    for (i = 0; i < m; ++i) y[l] += A[j * n + i] * z[i];
   }
   (void)PetscLogFlops(2 * m * n);
 }
@@ -558,7 +558,7 @@ static inline void DMPlex_PTAP2DReal_Internal(const PetscReal P[], const PetscSc
     for (j = 0; j < 2; ++j) {
       out[i * 2 + j] = 0.;
       for (k = 0; k < 2; ++k) {
-        for (l = 0; l < 2; ++l) { out[i * 2 + j] += P[k * 2 + i] * A[k * 2 + l] * P[l * 2 + j]; }
+        for (l = 0; l < 2; ++l) out[i * 2 + j] += P[k * 2 + i] * A[k * 2 + l] * P[l * 2 + j];
       }
     }
   }
@@ -572,7 +572,7 @@ static inline void DMPlex_PTAP3DReal_Internal(const PetscReal P[], const PetscSc
     for (j = 0; j < 3; ++j) {
       out[i * 3 + j] = 0.;
       for (k = 0; k < 3; ++k) {
-        for (l = 0; l < 3; ++l) { out[i * 3 + j] += P[k * 3 + i] * A[k * 3 + l] * P[l * 3 + j]; }
+        for (l = 0; l < 3; ++l) out[i * 3 + j] += P[k * 3 + i] * A[k * 3 + l] * P[l * 3 + j];
       }
     }
   }
@@ -586,7 +586,7 @@ static inline void DMPlex_PTAPReal_Internal(const PetscReal P[], PetscInt m, Pet
     for (j = 0; j < n; ++j) {
       C[i * n + j] = 0.;
       for (k = 0; k < m; ++k) {
-        for (l = 0; l < m; ++l) { C[i * n + j] += P[k * n + i] * A[k * m + l] * P[l * n + j]; }
+        for (l = 0; l < m; ++l) C[i * n + j] += P[k * n + i] * A[k * m + l] * P[l * n + j];
       }
     }
   }

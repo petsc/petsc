@@ -200,7 +200,7 @@ PetscErrorCode DMNetworkAddSubnetwork(DM dm, const char *name, PetscInt ne, Pets
   PetscBT     table;
 
   PetscFunctionBegin;
-  for (i = 0; i < ne; i++) { PetscCheck(edgelist[2 * i] != edgelist[2 * i + 1], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Edge %" PetscInt_FMT " has the same vertex %" PetscInt_FMT " at each endpoint", i, edgelist[2 * i]); }
+  for (i = 0; i < ne; i++) PetscCheck(edgelist[2 * i] != edgelist[2 * i + 1], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Edge %" PetscInt_FMT " has the same vertex %" PetscInt_FMT " at each endpoint", i, edgelist[2 * i]);
 
   i = 0;
   if (ne) nvtx_min = nvtx_max = edgelist[0];
@@ -1464,7 +1464,7 @@ static PetscErrorCode DMNetworkSetSubMap_private(PetscInt pstart, PetscInt pend,
   PetscFunctionBegin;
   /* Create index sets to map from "points" to "subpoints" */
   PetscCall(PetscMalloc1(pend - pstart, &subpoints));
-  for (i = pstart; i < pend; i++) { subpoints[i - pstart] = i; }
+  for (i = pstart; i < pend; i++) subpoints[i - pstart] = i;
   PetscCall(ISLocalToGlobalMappingCreate(PETSC_COMM_WORLD, 1, pend - pstart, subpoints, PETSC_COPY_VALUES, map));
   PetscCall(PetscFree(subpoints));
   PetscFunctionReturn(0);
@@ -2768,7 +2768,7 @@ PetscErrorCode DMNetworkSetVertexLocalToGlobalOrdering(DM dm) {
   i         = nroots - nleaves; /* local number of vertices, excluding ghosts */
   vrange[0] = 0;
   PetscCallMPI(MPI_Allgatherv(&i, 1, MPIU_INT, vrange + 1, recvcounts, displs, MPIU_INT, comm));
-  for (i = 2; i < size + 1; i++) { vrange[i] += vrange[i - 1]; }
+  for (i = 2; i < size + 1; i++) vrange[i] += vrange[i - 1];
 
   PetscCall(PetscMalloc1(nroots, &vltog));
   network->cloneshared->vltog = vltog;

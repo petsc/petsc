@@ -74,15 +74,15 @@ PetscErrorCode MatSetUpMultiply_MPIBAIJ(Mat mat) {
   PetscCall(PetscMalloc1(ec, &garray));
   ec = 0;
   for (i = 0; i < Nbs; i++) {
-    if (indices[i]) { garray[ec++] = i; }
+    if (indices[i]) garray[ec++] = i;
   }
 
   /* make indices now point into garray */
-  for (i = 0; i < ec; i++) { indices[garray[i]] = i; }
+  for (i = 0; i < ec; i++) indices[garray[i]] = i;
 
   /* compact out the extra columns in B */
   for (i = 0; i < B->mbs; i++) {
-    for (j = 0; j < B->ilen[i]; j++) { aj[B->i[i] + j] = indices[aj[B->i[i] + j]]; }
+    for (j = 0; j < B->ilen[i]; j++) aj[B->i[i] + j] = indices[aj[B->i[i] + j]];
   }
   B->nbs = ec;
   PetscCall(PetscLayoutDestroy(&baij->B->cmap));
@@ -160,7 +160,7 @@ PetscErrorCode MatDisAssemble_MPIBAIJ(Mat A) {
 
   /* invent new B and copy stuff over */
   PetscCall(PetscMalloc1(mbs, &nz));
-  for (i = 0; i < mbs; i++) { nz[i] = Bbaij->i[i + 1] - Bbaij->i[i]; }
+  for (i = 0; i < mbs; i++) nz[i] = Bbaij->i[i + 1] - Bbaij->i[i];
   PetscCall(MatCreate(PetscObjectComm((PetscObject)B), &Bnew));
   PetscCall(MatSetSizes(Bnew, m, n, m, n));
   PetscCall(MatSetType(Bnew, ((PetscObject)B)->type_name));
@@ -223,14 +223,14 @@ PetscErrorCode MatMPIBAIJDiagonalScaleLocalSetUp(Mat inA, Vec scale) {
   PetscCall(PetscMalloc1(n + 1, &uglyrmapd));
   for (i = 0; i < inA->rmap->mapping->n; i++) {
     if (r_rmapd[i]) {
-      for (j = 0; j < bs; j++) { uglyrmapd[(r_rmapd[i] - 1) * bs + j - cstart] = i * bs + j; }
+      for (j = 0; j < bs; j++) uglyrmapd[(r_rmapd[i] - 1) * bs + j - cstart] = i * bs + j;
     }
   }
   PetscCall(PetscFree(r_rmapd));
   PetscCall(VecCreateSeq(PETSC_COMM_SELF, n, &uglydd));
 
   PetscCall(PetscCalloc1(ina->Nbs + 1, &lindices));
-  for (i = 0; i < B->nbs; i++) { lindices[garray[i]] = i + 1; }
+  for (i = 0; i < B->nbs; i++) lindices[garray[i]] = i + 1;
   no = inA->rmap->mapping->n - nt;
   PetscCall(PetscCalloc1(inA->rmap->mapping->n + 1, &r_rmapo));
   nt = 0;
@@ -245,7 +245,7 @@ PetscErrorCode MatMPIBAIJDiagonalScaleLocalSetUp(Mat inA, Vec scale) {
   PetscCall(PetscMalloc1(nt * bs + 1, &uglyrmapo));
   for (i = 0; i < inA->rmap->mapping->n; i++) {
     if (r_rmapo[i]) {
-      for (j = 0; j < bs; j++) { uglyrmapo[(r_rmapo[i] - 1) * bs + j] = i * bs + j; }
+      for (j = 0; j < bs; j++) uglyrmapo[(r_rmapo[i] - 1) * bs + j] = i * bs + j;
     }
   }
   PetscCall(PetscFree(r_rmapo));

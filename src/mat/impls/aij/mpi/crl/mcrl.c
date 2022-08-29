@@ -44,7 +44,7 @@ PetscErrorCode MatMPIAIJCRL_create_aijcrl(Mat A) {
 
   PetscFunctionBegin;
   /* determine the row with the most columns */
-  for (i = 0; i < m; i++) { rmax = PetscMax(rmax, ailen[i] + bilen[i]); }
+  for (i = 0; i < m; i++) rmax = PetscMax(rmax, ailen[i] + bilen[i]);
   aijcrl->nz   = Aij->nz + Bij->nz;
   aijcrl->m    = A->rmap->n;
   aijcrl->rmax = rmax;

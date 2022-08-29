@@ -2089,7 +2089,7 @@ PetscErrorCode MatSolve_SeqSBAIJ_1_NaturalOrdering_inplace(Mat A, Vec bb, Vec xx
     vj = aj + ai[k] + 1;
     xk = x[k];
     nz = ai[k + 1] - ai[k] - 1;
-    while (nz--) { xk += (*v++) * x[*vj++]; }
+    while (nz--) xk += (*v++) * x[*vj++];
     x[k] = xk;
   }
 

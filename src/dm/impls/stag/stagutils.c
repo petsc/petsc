@@ -78,7 +78,7 @@ static PetscErrorCode DMStagGetProductCoordinateArrays_Private(DM dm, void *arrX
       for (s = 0; s < DMSTAG_MAX_STRATA; ++s) dofCheck[s] = dof[s];
       checkDof = PETSC_TRUE;
     } else {
-      for (s = 0; s < DMSTAG_MAX_STRATA; ++s) { PetscCheck(dofCheck[s] == dof[s], PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "Coordinate sub-DMs have different dofs"); }
+      for (s = 0; s < DMSTAG_MAX_STRATA; ++s) PetscCheck(dofCheck[s] == dof[s], PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "Coordinate sub-DMs have different dofs");
     }
     PetscCall(DMGetCoordinatesLocal(subDM, &coord1d_local));
     if (read) {
@@ -209,7 +209,7 @@ PETSC_EXTERN PetscErrorCode DMStagGetProductCoordinateLocationSlot(DM dm, DMStag
       for (s = 0; s < DMSTAG_MAX_STRATA; ++s) dofCheck[s] = dof[s];
       PetscCall(DMStagGetLocationSlot(subDM, loc, component, slot));
     } else {
-      for (s = 0; s < DMSTAG_MAX_STRATA; ++s) { PetscCheck(dofCheck[s] == dof[s], PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "Coordinate sub-DMs have different dofs"); }
+      for (s = 0; s < DMSTAG_MAX_STRATA; ++s) PetscCheck(dofCheck[s] == dof[s], PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "Coordinate sub-DMs have different dofs");
     }
   }
   PetscFunctionReturn(0);

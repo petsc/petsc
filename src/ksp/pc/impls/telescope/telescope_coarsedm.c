@@ -118,7 +118,7 @@ PetscErrorCode PCTelescopeSetUp_CoarseDM(PC pc, PC_Telescope sred) {
     void *dmfine_shellctx = NULL, *dmcoarse_shellctx = NULL;
 
     PetscCall(DMKSPGetComputeOperators(dm, &dmfine_kspfunc, &dmfine_kspctx));
-    if (dmfine_kspfunc) { has_kspcomputeoperators = PETSC_TRUE; }
+    if (dmfine_kspfunc) has_kspcomputeoperators = PETSC_TRUE;
 
     PetscCall(DMGetApplicationContext(ctx->dm_fine, &dmfine_appctx));
     PetscCall(DMShellGetContext(ctx->dm_fine, &dmfine_shellctx));

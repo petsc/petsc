@@ -439,7 +439,7 @@ static PetscErrorCode DMMoab_UMR_Private(DM dm, MPI_Comm comm, PetscBool refine,
   dd2->hierarchy = dmb->hierarchy;
   dd2->nhlevels  = dmb->nhlevels;
   PetscCall(PetscMalloc1(dd2->nhlevels + 1, &dd2->hsets));
-  for (i = 0; i <= dd2->nhlevels; i++) { dd2->hsets[i] = dmb->hsets[i]; }
+  for (i = 0; i <= dd2->nhlevels; i++) dd2->hsets[i] = dmb->hsets[i];
   dd2->fileset = dd2->hsets[dd2->hlevel];
 
   /* do the remaining initializations for DMMoab */

@@ -280,14 +280,14 @@ PetscErrorCode Elastic20Stiff(PetscReal **Ke) {
 
   /* copy the stiffness from K into format used by Ke */
   for (i = 0; i < 81; i++) {
-    for (j = 0; j < 81; j++) { Ke[i][j] = 0.0; }
+    for (j = 0; j < 81; j++) Ke[i][j] = 0.0;
   }
   Ii = 0;
   for (i = 0; i < 20; i++) {
     J = 0;
     for (j = 0; j < 20; j++) {
       for (k = 0; k < 3; k++) {
-        for (l = 0; l < 3; l++) { Ke[3 * rmap[i] + k][3 * rmap[j] + l] = K[Ii + k][J + l]; }
+        for (l = 0; l < 3; l++) Ke[3 * rmap[i] + k][3 * rmap[j] + l] = K[Ii + k][J + l];
       }
       J += 3;
     }
@@ -296,7 +296,7 @@ PetscErrorCode Elastic20Stiff(PetscReal **Ke) {
 
   /* force the matrix to be exactly symmetric */
   for (i = 0; i < 81; i++) {
-    for (j = 0; j < i; j++) { Ke[i][j] = (Ke[i][j] + Ke[j][i]) / 2.0; }
+    for (j = 0; j < i; j++) Ke[i][j] = (Ke[i][j] + Ke[j][i]) / 2.0;
   }
   return 0;
 }
@@ -401,7 +401,7 @@ PetscErrorCode paulintegrate20(PetscReal K[60][60]) {
 
   /* Zero out K, since we will accumulate the result here */
   for (i = 0; i < 60; i++) {
-    for (j = 0; j < 60; j++) { K[i][j] = 0.0; }
+    for (j = 0; j < 60; j++) K[i][j] = 0.0;
   }
 
   /* Loop over integration points ... */
@@ -410,7 +410,7 @@ PetscErrorCode paulintegrate20(PetscReal K[60][60]) {
     for (i = 0; i < 3; i++) {
       for (j = 0; j < 3; j++) {
         jac[i][j] = 0;
-        for (k = 0; k < 20; k++) { jac[i][j] += part_N[i][k][step] * xyz[k][j]; }
+        for (k = 0; k < 20; k++) jac[i][j] += part_N[i][k][step] * xyz[k][j];
       }
     }
     det_jac       = jac[0][0] * (jac[1][1] * jac[2][2] - jac[1][2] * jac[2][1]) + jac[0][1] * (jac[1][2] * jac[2][0] - jac[1][0] * jac[2][2]) + jac[0][2] * (jac[1][0] * jac[2][1] - jac[1][1] * jac[2][0]);
@@ -428,11 +428,11 @@ PetscErrorCode paulintegrate20(PetscReal K[60][60]) {
     for (i = 0; i < 3; i++) {
       for (j = 0; j < 20; j++) {
         B_temp[i][j] = 0.0;
-        for (k = 0; k < 3; k++) { B_temp[i][j] += inv_jac[i][k] * part_N[k][j][step]; }
+        for (k = 0; k < 3; k++) B_temp[i][j] += inv_jac[i][k] * part_N[k][j][step];
       }
     }
     for (i = 0; i < 6; i++) {
-      for (j = 0; j < 60; j++) { B[i][j] = 0.0; }
+      for (j = 0; j < 60; j++) B[i][j] = 0.0;
     }
 
     /* Put values in correct places in B. */
@@ -450,7 +450,7 @@ PetscErrorCode paulintegrate20(PetscReal K[60][60]) {
 
     /* Construct the C matrix, uses the constants "nu" and "E". */
     for (i = 0; i < 6; i++) {
-      for (j = 0; j < 6; j++) { C[i][j] = 0.0; }
+      for (j = 0; j < 6; j++) C[i][j] = 0.0;
     }
     temp    = (1.0 + nu) * (1.0 - 2.0 * nu);
     temp    = E / temp;
@@ -470,7 +470,7 @@ PetscErrorCode paulintegrate20(PetscReal K[60][60]) {
     for (i = 0; i < 6; i++) {
       for (j = 0; j < 60; j++) {
         B_temp[i][j] = 0.0;
-        for (k = 0; k < 6; k++) { B_temp[i][j] += C[i][k] * B[k][j]; }
+        for (k = 0; k < 6; k++) B_temp[i][j] += C[i][k] * B[k][j];
         B_temp[i][j] *= det_jac;
       }
     }
@@ -479,7 +479,7 @@ PetscErrorCode paulintegrate20(PetscReal K[60][60]) {
     for (i = 0; i < 60; i++) {
       for (j = 0; j < 60; j++) {
         temp = 0.0;
-        for (k = 0; k < 6; k++) { temp += B[k][i] * B_temp[k][j]; }
+        for (k = 0; k < 6; k++) temp += B[k][i] * B_temp[k][j];
         K[i][j] += temp * weight[step];
       }
     }

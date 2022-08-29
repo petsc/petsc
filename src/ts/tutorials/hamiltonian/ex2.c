@@ -75,12 +75,12 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *user) {
 
 static void laplacian_f1(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[]) {
   PetscInt d;
-  for (d = 0; d < dim; ++d) { f1[d] = u_x[d]; }
+  for (d = 0; d < dim; ++d) f1[d] = u_x[d];
 }
 
 static void laplacian(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[]) {
   PetscInt d;
-  for (d = 0; d < dim; ++d) { g3[d * dim + d] = 1.0; }
+  for (d = 0; d < dim; ++d) g3[d * dim + d] = 1.0;
 }
 
 static PetscErrorCode CreateFEM(DM dm, AppCtx *user) {
@@ -208,7 +208,7 @@ static PetscErrorCode RHSFunction1(TS ts, PetscReal t, Vec V, Vec Posres, void *
   PetscCall(DMGetDimension(dm, &dim));
   Np /= dim;
   for (p = 0; p < Np; ++p) {
-    for (d = 0; d < dim; ++d) { posres[p * dim + d] = v[p * dim + d]; }
+    for (d = 0; d < dim; ++d) posres[p * dim + d] = v[p * dim + d];
   }
   PetscCall(VecRestoreArrayRead(V, &v));
   PetscCall(VecRestoreArray(Posres, &posres));
@@ -292,7 +292,7 @@ static PetscErrorCode RHSFunction2(TS ts, PetscReal t, Vec X, Vec Vres, void *ct
     PetscCall(DMGetWorkArray(dm, Ncp * cdim, MPIU_REAL, &pcoord));
     PetscCall(DMGetWorkArray(dm, Ncp * cdim, MPIU_REAL, &refcoord));
     for (cp = 0; cp < Ncp; ++cp) {
-      for (d = 0; d < cdim; ++d) { pcoord[cp * cdim + d] = coords[points[cp] * cdim + d]; }
+      for (d = 0; d < cdim; ++d) pcoord[cp * cdim + d] = coords[points[cp] * cdim + d];
     }
     PetscCall(DMPlexCoordinatesToReference(plex, cell, Ncp, pcoord, refcoord));
     PetscCall(PetscFECreateTabulation(fe, 1, Ncp, refcoord, 1, &tab));
@@ -305,7 +305,7 @@ static PetscErrorCode RHSFunction2(TS ts, PetscReal t, Vec X, Vec Vres, void *ct
       const PetscReal *basisDer = tab->T[1];
 
       PetscCall(PetscFEFreeInterpolateGradient_Static(fe, basisDer, ph, cdim, invJ, NULL, cp, gradPhi));
-      for (d = 0; d < cdim; ++d) { vres[p * cdim + d] = d == 0 ? gradPhi[d] : 0.; }
+      for (d = 0; d < cdim; ++d) vres[p * cdim + d] = d == 0 ? gradPhi[d] : 0.;
     }
     PetscCall(DMPlexVecRestoreClosure(plex, NULL, locPhi, cell, NULL, &ph));
     PetscCall(PetscTabulationDestroy(&tab));

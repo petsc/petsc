@@ -18,11 +18,11 @@ PetscErrorCode MatSeqDenseSymmetrize_Private(Mat A, PetscBool hermitian) {
   PetscCall(MatDenseGetArray(A, &v));
   if (!hermitian) {
     for (k = 0; k < n; k++) {
-      for (j = k; j < n; j++) { v[j * mat->lda + k] = v[k * mat->lda + j]; }
+      for (j = k; j < n; j++) v[j * mat->lda + k] = v[k * mat->lda + j];
     }
   } else {
     for (k = 0; k < n; k++) {
-      for (j = k; j < n; j++) { v[j * mat->lda + k] = PetscConj(v[k * mat->lda + j]); }
+      for (j = k; j < n; j++) v[j * mat->lda + k] = PetscConj(v[k * mat->lda + j]);
     }
   }
   PetscCall(MatDenseRestoreArray(A, &v));
@@ -350,7 +350,7 @@ static PetscErrorCode MatIsHermitian_SeqDense(Mat A, PetscReal rtol, PetscBool *
   PetscCall(MatDenseGetArrayRead(A, &v));
   for (i = 0; i < m; i++) {
     for (j = i; j < m; j++) {
-      if (PetscAbsScalar(v[i + j * N] - PetscConj(v[j + i * N])) > rtol) { goto restore; }
+      if (PetscAbsScalar(v[i + j * N] - PetscConj(v[j + i * N])) > rtol) goto restore;
     }
   }
   *fl = PETSC_TRUE;
@@ -370,7 +370,7 @@ static PetscErrorCode MatIsSymmetric_SeqDense(Mat A, PetscReal rtol, PetscBool *
   PetscCall(MatDenseGetArrayRead(A, &v));
   for (i = 0; i < m; i++) {
     for (j = i; j < m; j++) {
-      if (PetscAbsScalar(v[i + j * N] - v[j + i * N]) > rtol) { goto restore; }
+      if (PetscAbsScalar(v[i + j * N] - v[j + i * N]) > rtol) goto restore;
     }
   }
   *fl = PETSC_TRUE;
@@ -498,7 +498,7 @@ static PetscErrorCode MatSolve_SeqDense_Internal_QR(Mat A, PetscScalar *x, Petsc
   PetscCall(PetscFPTrapPop());
   PetscCheck(!info, PETSC_COMM_SELF, PETSC_ERR_LIB, "TRTRS - Bad triangular solve %d", (int)info);
   for (PetscInt j = 0; j < nrhs; j++) {
-    for (PetscInt i = mat->rank; i < k; i++) { x[j * ldx + i] = 0.; }
+    for (PetscInt i = mat->rank; i < k; i++) x[j * ldx + i] = 0.;
   }
   PetscCall(PetscLogFlops(nrhs * (4.0 * m * mat->rank - PetscSqr(mat->rank))));
   PetscFunctionReturn(0);
@@ -1854,7 +1854,7 @@ static PetscErrorCode MatGetDiagonal_SeqDense(Mat A, Vec v) {
   len = PetscMin(A->rmap->n, A->cmap->n);
   PetscCall(MatDenseGetArrayRead(A, &vv));
   PetscCheck(n == A->rmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Nonconforming mat and vec");
-  for (i = 0; i < len; i++) { x[i] = vv[i * mat->lda + i]; }
+  for (i = 0; i < len; i++) x[i] = vv[i * mat->lda + i];
   PetscCall(MatDenseRestoreArrayRead(A, &vv));
   PetscCall(VecRestoreArray(v, &x));
   PetscFunctionReturn(0);
@@ -2674,27 +2674,27 @@ PETSC_INTERN PetscErrorCode MatGetColumnReductions_SeqDense(Mat A, PetscInt type
   PetscCall(MatDenseGetArrayRead(A, &a));
   if (type == NORM_2) {
     for (i = 0; i < n; i++) {
-      for (j = 0; j < m; j++) { reductions[i] += PetscAbsScalar(a[j] * a[j]); }
+      for (j = 0; j < m; j++) reductions[i] += PetscAbsScalar(a[j] * a[j]);
       a += m;
     }
   } else if (type == NORM_1) {
     for (i = 0; i < n; i++) {
-      for (j = 0; j < m; j++) { reductions[i] += PetscAbsScalar(a[j]); }
+      for (j = 0; j < m; j++) reductions[i] += PetscAbsScalar(a[j]);
       a += m;
     }
   } else if (type == NORM_INFINITY) {
     for (i = 0; i < n; i++) {
-      for (j = 0; j < m; j++) { reductions[i] = PetscMax(PetscAbsScalar(a[j]), reductions[i]); }
+      for (j = 0; j < m; j++) reductions[i] = PetscMax(PetscAbsScalar(a[j]), reductions[i]);
       a += m;
     }
   } else if (type == REDUCTION_SUM_REALPART || type == REDUCTION_MEAN_REALPART) {
     for (i = 0; i < n; i++) {
-      for (j = 0; j < m; j++) { reductions[i] += PetscRealPart(a[j]); }
+      for (j = 0; j < m; j++) reductions[i] += PetscRealPart(a[j]);
       a += m;
     }
   } else if (type == REDUCTION_SUM_IMAGINARYPART || type == REDUCTION_MEAN_IMAGINARYPART) {
     for (i = 0; i < n; i++) {
-      for (j = 0; j < m; j++) { reductions[i] += PetscImaginaryPart(a[j]); }
+      for (j = 0; j < m; j++) reductions[i] += PetscImaginaryPart(a[j]);
       a += m;
     }
   } else SETERRQ(PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Unknown reduction type");
@@ -3002,9 +3002,9 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqDense_Elemental(Mat A, MatType newtype
   k = 0;
   for (j = 0; j < N; j++) {
     cols[j] = j;
-    for (i = 0; i < M; i++) { v_colwise[j * M + i] = array[k++]; }
+    for (i = 0; i < M; i++) v_colwise[j * M + i] = array[k++];
   }
-  for (i = 0; i < M; i++) { rows[i] = i; }
+  for (i = 0; i < M; i++) rows[i] = i;
   PetscCall(MatDenseRestoreArrayRead(A, &array));
 
   PetscCall(MatCreate(PetscObjectComm((PetscObject)A), &mat_elemental));
@@ -3573,7 +3573,7 @@ PetscErrorCode MatSeqDenseInvert(Mat A) {
     PetscScalar *v_work;
 
     PetscCall(PetscMalloc3(bs, &v_work, bs, &v_pivots, bs, &IJ));
-    for (j = 0; j < bs; j++) { IJ[j] = j; }
+    for (j = 0; j < bs; j++) IJ[j] = j;
     PetscCall(PetscKernel_A_gets_inverse_A(bs, values, v_pivots, v_work, allowzeropivot, &zeropivotdetected));
     if (zeropivotdetected) A->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
     PetscCall(PetscFree3(v_work, v_pivots, IJ));

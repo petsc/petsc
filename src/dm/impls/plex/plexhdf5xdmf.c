@@ -128,7 +128,7 @@ PetscErrorCode DMPlexLoad_HDF5_Xdmf_Internal(DM dm, PetscViewer viewer) {
       PetscCall(PetscMalloc1(numVertices * spatialDim, &coordinates_arr_real));
       for (i = 0; i < numVertices * spatialDim; ++i) {
         coordinates_arr_real[i] = PetscRealPart(coordinates_arr[i]);
-        if (PetscUnlikelyDebug(PetscImaginaryPart(coordinates_arr[i]))) { SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Vector of coordinates contains complex numbers but only real vectors are currently supported."); }
+        PetscAssert(PetscImaginaryPart(coordinates_arr[i]) == 0.0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Vector of coordinates contains complex numbers but only real vectors are currently supported.");
       }
     } else coordinates_arr_real = (PetscReal *)coordinates_arr;
 

@@ -33,10 +33,10 @@ PETSC_EXTERN PetscErrorCode MatColoringTest(MatColoring mc, ISColoring coloring)
 
   for (l = 0; l < ncolors; l++) {
     if (l > maxcolors) break;
-    for (k = 0; k < ncols; k++) { statecol[k] = -1; }
+    for (k = 0; k < ncols; k++) statecol[k] = -1;
     PetscCall(ISGetLocalSize(colors[l], &nindices));
     PetscCall(ISGetIndices(colors[l], &indices));
-    for (k = 0; k < nindices; k++) { statecol[indices[k] - s] = indices[k]; }
+    for (k = 0; k < nindices; k++) statecol[indices[k] - s] = indices[k];
     PetscCall(ISRestoreIndices(colors[l], &indices));
     statespread = statecol;
     for (k = 0; k < dist; k++) {
@@ -44,7 +44,7 @@ PETSC_EXTERN PetscErrorCode MatColoringTest(MatColoring mc, ISColoring coloring)
         PetscCall(PetscSFComputeDegreeBegin(etor, &degrees));
         PetscCall(PetscSFComputeDegreeEnd(etor, &degrees));
         nentries = 0;
-        for (i = 0; i < nrows; i++) { nentries += degrees[i]; }
+        for (i = 0; i < nrows; i++) nentries += degrees[i];
         idx = 0;
         for (i = 0; i < nrows; i++) {
           for (j = 0; j < degrees[i]; j++) {
@@ -63,7 +63,7 @@ PETSC_EXTERN PetscErrorCode MatColoringTest(MatColoring mc, ISColoring coloring)
         PetscCall(PetscSFComputeDegreeBegin(etoc, &degrees));
         PetscCall(PetscSFComputeDegreeEnd(etoc, &degrees));
         nentries = 0;
-        for (i = 0; i < ncols; i++) { nentries += degrees[i]; }
+        for (i = 0; i < ncols; i++) nentries += degrees[i];
         idx = 0;
         for (i = 0; i < ncols; i++) {
           for (j = 0; j < degrees[i]; j++) {

@@ -48,7 +48,7 @@ PetscErrorCode SNESNGMRESFormCombinedSolution_Private(SNES snes, PetscInt ivec, 
 
   /* construct h */
   for (j = 0; j < l; j++) {
-    for (i = 0; i < l; i++) { H(i, j) = Q(i, j) - xi[i] - xi[j] + nu; }
+    for (i = 0; i < l; i++) H(i, j) = Q(i, j) - xi[i] - xi[j] + nu;
   }
   if (l == 1) {
     /* simply set alpha[0] = beta[0] / H[0, 0] */
@@ -69,7 +69,7 @@ PetscErrorCode SNESNGMRESFormCombinedSolution_Private(SNES snes, PetscInt ivec, 
     PetscCheck(ngmres->info >= 0, PetscObjectComm((PetscObject)snes), PETSC_ERR_LIB, "Bad argument to GELSS");
     PetscCheck(ngmres->info <= 0, PetscObjectComm((PetscObject)snes), PETSC_ERR_LIB, "SVD failed to converge");
   }
-  for (i = 0; i < l; i++) { PetscCheck(!PetscIsInfOrNanScalar(beta[i]), PetscObjectComm((PetscObject)snes), PETSC_ERR_LIB, "SVD generated inconsistent output"); }
+  for (i = 0; i < l; i++) PetscCheck(!PetscIsInfOrNanScalar(beta[i]), PetscObjectComm((PetscObject)snes), PETSC_ERR_LIB, "SVD generated inconsistent output");
   alph_total = 0.;
   for (i = 0; i < l; i++) alph_total += beta[i];
 

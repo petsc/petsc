@@ -415,9 +415,9 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da, PetscViewer viewer) {
         }
         PetscCall(VecRestoreArrayRead(Coords, &coords));
       } else { /* Fabricate some coordinates using grid index */
-        for (i = 0; i < xm; i++) { array[i] = xs + i; }
-        for (j = 0; j < ym; j++) { array[j + xm] = ys + j; }
-        for (k = 0; k < zm; k++) { array[k + xm + ym] = zs + k; }
+        for (i = 0; i < xm; i++) array[i] = xs + i;
+        for (j = 0; j < ym; j++) array[j + xm] = ys + j;
+        for (k = 0; k < zm; k++) array[k + xm + ym] = zs + k;
       }
       if (rank == 0) {
         PetscCall(PetscViewerVTKFWrite(viewer, fp, &(array[0]), xm, MPIU_SCALAR));

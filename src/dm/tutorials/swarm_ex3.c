@@ -44,7 +44,7 @@ PetscErrorCode _DMLocatePoints_DMDARegular_IS(DM dm, Vec pos, IS *iscell) {
     cellidx[p] = DMLOCATEPOINT_POINT_NOT_FOUND;
 
     if ((mj >= sj) && (mj < sj + mjlocal)) {
-      if ((mi >= si) && (mi < si + milocal)) { cellidx[p] = (mi - si) + (mj - sj) * milocal; }
+      if ((mi >= si) && (mi < si + milocal)) cellidx[p] = (mi - si) + (mj - sj) * milocal;
     }
     if (coorx < -1.0) cellidx[p] = DMLOCATEPOINT_POINT_NOT_FOUND;
     if (coorx > 1.0) cellidx[p] = DMLOCATEPOINT_POINT_NOT_FOUND;
@@ -109,7 +109,7 @@ PetscErrorCode SwarmViewGP(DM dms, const char prefix[]) {
   PetscCall(DMSwarmGetLocalSize(dms, &npoints));
   PetscCall(DMSwarmGetField(dms, DMSwarmPICField_coor, &bs, NULL, (void **)&array));
   PetscCall(DMSwarmGetField(dms, "itag", NULL, NULL, (void **)&iarray));
-  for (p = 0; p < npoints; p++) { fprintf(fp, "%+1.4e %+1.4e %1.4e\n", array[2 * p], array[2 * p + 1], (double)iarray[p]); }
+  for (p = 0; p < npoints; p++) fprintf(fp, "%+1.4e %+1.4e %1.4e\n", array[2 * p], array[2 * p + 1], (double)iarray[p]);
   PetscCall(DMSwarmRestoreField(dms, "itag", NULL, NULL, (void **)&iarray));
   PetscCall(DMSwarmRestoreField(dms, DMSwarmPICField_coor, &bs, NULL, (void **)&array));
   fclose(fp);
@@ -197,7 +197,7 @@ PetscErrorCode ex3_1(void) {
 
     PetscCall(DMSwarmGetLocalSize(dms, &nlocal));
     PetscCall(DMSwarmGetField(dms, "itag", &bs, NULL, (void **)&iarray));
-    for (p = 0; p < nlocal; p++) { iarray[p] = (PetscInt)rank; }
+    for (p = 0; p < nlocal; p++) iarray[p] = (PetscInt)rank;
     PetscCall(DMSwarmRestoreField(dms, "itag", &bs, NULL, (void **)&iarray));
   }
 

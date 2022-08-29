@@ -167,7 +167,7 @@ int main(int argc, char **argv) {
   PetscCall(AddIdentityLabel(base));
   PetscCall(DMGetDimension(base, &dim));
 
-  if (linear) { funcs[0] = LinearFunction; }
+  if (linear) funcs[0] = LinearFunction;
   if (coords) {
     funcs[0] = CoordsFunction;
     Nf       = dim;

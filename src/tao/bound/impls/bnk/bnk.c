@@ -652,7 +652,7 @@ PetscErrorCode TaoBNKSafeguardStep(Tao tao, KSPConvergedReason ksp_reason, Petsc
       default:
         /* Newton step computation is good; decrease perturbation */
         bnk->pert = PetscMin(bnk->psfac * bnk->pert, bnk->pmsfac * bnk->gnorm);
-        if (bnk->pert < bnk->pmin) { bnk->pert = 0.0; }
+        if (bnk->pert < bnk->pmin) bnk->pert = 0.0;
         break;
       }
       *stepType = BNK_NEWTON;

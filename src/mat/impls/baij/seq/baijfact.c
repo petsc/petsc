@@ -1643,7 +1643,7 @@ PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A, IS isrow, IS iscol, const MatFactor
         pj = bj + bdiag[row + 1] + 1; /* point to 1st entry of U(row,:) */
         pv = ba + bs2 * (bdiag[row + 1] + 1);
         nz = bdiag[row] - bdiag[row + 1] - 1; /* num of entries in U(row,:), excluding diagonal */
-        for (j = 0; j < nz; j++) { PetscKernel_A_gets_A_minus_B_times_C(bs, rtmp + bs2 * pj[j], pc, pv + bs2 * j); }
+        for (j = 0; j < nz; j++) PetscKernel_A_gets_A_minus_B_times_C(bs, rtmp + bs2 * pj[j], pc, pv + bs2 * j);
         /* PetscCall(PetscLogFlops(bslog*(nz+1.0)-bs)); */
       }
       row = *bjtmp++;

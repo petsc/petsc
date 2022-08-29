@@ -636,7 +636,7 @@ static PetscErrorCode THIFixGhosts(THI thi, DM da3, DM da2, Vec X3, Vec X2) {
   PetscCall(DMDAVecGetArray(da2, X2, &x2));
   for (i = info.gzs; i < info.gzs + info.gzm; i++) {
     if (i > -1 && i < info.mz) continue;
-    for (j = info.gys; j < info.gys + info.gym; j++) { x2[i][j].b += PetscSinReal(thi->alpha) * thi->Lx * (i < 0 ? 1.0 : -1.0); }
+    for (j = info.gys; j < info.gys + info.gym; j++) x2[i][j].b += PetscSinReal(thi->alpha) * thi->Lx * (i < 0 ? 1.0 : -1.0);
   }
   PetscCall(DMDAVecRestoreArray(da2, X2, &x2));
   /* PetscCall(VecView(X2,PETSC_VIEWER_STDOUT_WORLD)); */

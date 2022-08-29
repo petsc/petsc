@@ -73,7 +73,7 @@ PetscErrorCode TaoDefaultComputeGradient(Tao tao, Vec Xin, Vec G, void *dummy) {
     PetscCall(VecSetValue(X, i, -h, ADD_VALUES));
     PetscCall(VecAssemblyBegin(X));
     PetscCall(VecAssemblyEnd(X));
-    if (i >= low && i < high) { g[i - low] = (f2 - f) / (2.0 * h); }
+    if (i >= low && i < high) g[i - low] = (f2 - f) / (2.0 * h);
   }
   PetscCall(VecRestoreArray(G, &g));
   PetscCall(VecDestroy(&X));

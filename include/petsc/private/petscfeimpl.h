@@ -253,7 +253,7 @@ static inline void CoordinatesRefToReal(PetscInt dimReal, PetscInt dimRef, const
 
   for (d = 0; d < dimReal; ++d) {
     x[d] = v0[d];
-    for (e = 0; e < dimRef; ++e) { x[d] += J[d * dimReal + e] * (xi[e] - xi0[e]); }
+    for (e = 0; e < dimRef; ++e) x[d] += J[d * dimReal + e] * (xi[e] - xi0[e]);
   }
 }
 
@@ -262,7 +262,7 @@ static inline void CoordinatesRealToRef(PetscInt dimReal, PetscInt dimRef, const
 
   for (d = 0; d < dimRef; ++d) {
     xi[d] = xi0[d];
-    for (e = 0; e < dimReal; ++e) { xi[d] += invJ[d * dimReal + e] * (x[e] - v0[e]); }
+    for (e = 0; e < dimReal; ++e) xi[d] += invJ[d * dimReal + e] * (x[e] - v0[e]);
   }
 }
 
@@ -301,7 +301,7 @@ static inline PetscErrorCode PetscFEInterpolateGradient_Static(PetscFE fe, Petsc
     for (fc = 0; fc < Nc; ++fc) {
       for (d = 0; d < cdim; ++d) interpolant[fc * cdim + d] = 0.0;
       for (f = 0; f < Nb; ++f) {
-        for (d = 0; d < cdim; ++d) { interpolant[fc * cdim + d] += x[f] * basisDer[((q * Nb + f) * Nc + fc) * cdim + d]; }
+        for (d = 0; d < cdim; ++d) interpolant[fc * cdim + d] += x[f] * basisDer[((q * Nb + f) * Nc + fc) * cdim + d];
       }
     }
     if (k > 1) {
@@ -334,7 +334,7 @@ static inline PetscErrorCode PetscFEFreeInterpolateGradient_Static(PetscFE fe, c
     for (d = 0; d < dim; ++d) {
       for (d = 0; d < dim; ++d) {
         realSpaceDer[d] = 0.0;
-        for (g = 0; g < dim; ++g) { realSpaceDer[d] += invJ[g * dim + d] * basisDer[((q * Nb + f) * Nc + fc) * dim + g]; }
+        for (g = 0; g < dim; ++g) realSpaceDer[d] += invJ[g * dim + d] * basisDer[((q * Nb + f) * Nc + fc) * dim + g];
         compGradient[d] += x[f] * realSpaceDer[d];
       }
     }

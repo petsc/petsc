@@ -476,13 +476,13 @@ static PetscErrorCode DMPlexShiftPoints_Internal(DM dm, PetscInt depthShift[], D
     PetscCall(DMPlexGetConeSize(dm, p, &size));
     PetscCall(DMPlexGetCone(dm, p, &points));
     PetscCall(DMPlexGetConeOrientation(dm, p, &orientations));
-    for (i = 0; i < size; ++i) { newpoints[i] = DMPlexShiftPoint_Internal(points[i], depth, depthShift); }
+    for (i = 0; i < size; ++i) newpoints[i] = DMPlexShiftPoint_Internal(points[i], depth, depthShift);
     PetscCall(DMPlexSetCone(dmNew, newp, newpoints));
     PetscCall(DMPlexSetConeOrientation(dmNew, newp, orientations));
     PetscCall(DMPlexGetSupportSize(dm, p, &size));
     PetscCall(DMPlexGetSupportSize(dmNew, newp, &sizeNew));
     PetscCall(DMPlexGetSupport(dm, p, &points));
-    for (i = 0; i < size; ++i) { newpoints[i] = DMPlexShiftPoint_Internal(points[i], depth, depthShift); }
+    for (i = 0; i < size; ++i) newpoints[i] = DMPlexShiftPoint_Internal(points[i], depth, depthShift);
     for (i = size; i < sizeNew; ++i) newpoints[i] = 0;
     PetscCall(DMPlexSetSupport(dmNew, newp, newpoints));
   }
@@ -1457,7 +1457,7 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
           PetscInt val;
 
           PetscCall(DMLabelGetValue(label, support[e], &val));
-          if ((val == 1) || (val == (shift + 1))) { supportNew[qn++] = DMPlexShiftPoint_Internal(support[e], depth, depthShift) /*support[e] + depthOffset[dep+1]*/; }
+          if ((val == 1) || (val == (shift + 1))) supportNew[qn++] = DMPlexShiftPoint_Internal(support[e], depth, depthShift) /*support[e] + depthOffset[dep+1]*/;
         }
         supportNew[qn] = hybedge;
         PetscCall(DMPlexSetSupport(sdm, newp, supportNew));
@@ -1583,7 +1583,7 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
         for (s = 0, q = 0; s < supportSize; ++s) {
           supportNew[q++] = DMPlexShiftPoint_Internal(support[s], depth, depthShift) /*support[s] + depthOffset[dep+1]*/;
           PetscCall(PetscFindInt(support[s], numSplitPoints[dep + 1], splitPoints[dep + 1], &e));
-          if (e >= 0) { supportNew[q++] = e + pMaxNew[dep + 1]; }
+          if (e >= 0) supportNew[q++] = e + pMaxNew[dep + 1];
         }
         supportNew[q++] = hybedge;
         supportNew[q++] = hybedge;
@@ -3207,8 +3207,8 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
   /* Set cone sizes */
   firstSubPoint[dim] = 0;
   firstSubPoint[0]   = firstSubPoint[dim] + numSubPoints[dim];
-  if (dim > 1) { firstSubPoint[dim - 1] = firstSubPoint[0] + numSubPoints[0]; }
-  if (dim > 2) { firstSubPoint[dim - 2] = firstSubPoint[dim - 1] + numSubPoints[dim - 1]; }
+  if (dim > 1) firstSubPoint[dim - 1] = firstSubPoint[0] + numSubPoints[0];
+  if (dim > 2) firstSubPoint[dim - 2] = firstSubPoint[dim - 1] + numSubPoints[dim - 1];
   for (d = 0; d <= dim; ++d) {
     PetscCall(DMLabelGetStratumIS(subpointMap, d, &subpointIS[d]));
     if (subpointIS[d]) PetscCall(ISGetIndices(subpointIS[d], &subpoints[d]));
@@ -3848,7 +3848,7 @@ static PetscErrorCode DMPlexCreateSubpointIS_Internal(DM dm, IS *subpointIS) {
     PetscCall(DMGetWorkArray(dm, depth + 1, MPIU_INT, &depths));
     depths[0] = depth;
     depths[1] = 0;
-    for (d = 2; d <= depth; ++d) { depths[d] = depth + 1 - d; }
+    for (d = 2; d <= depth; ++d) depths[d] = depth + 1 - d;
     for (d = 0, off = 0; d <= depth; ++d) {
       const PetscInt dep = depths[d];
       PetscInt       depStart, depEnd, n;

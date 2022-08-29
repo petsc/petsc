@@ -451,7 +451,7 @@ PetscErrorCode MatZeroRowsLocal_HYPRESStruct_3d(Mat mat, PetscInt nrow, const Pe
 
   PetscCall(PetscMalloc1(nvars, &values));
   PetscCall(PetscMalloc1(7 * nvars * nvars, &values[0]));
-  for (i = 1; i < nvars; i++) { values[i] = values[i - 1] + nvars * 7; }
+  for (i = 1; i < nvars; i++) values[i] = values[i - 1] + nvars * 7;
 
   for (i = 0; i < nvars; i++) {
     PetscCall(PetscArrayzero(values[i], nvars * 7 * sizeof(HYPRE_Complex)));

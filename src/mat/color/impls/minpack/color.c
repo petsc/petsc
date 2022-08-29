@@ -88,7 +88,7 @@ static PetscErrorCode MatColoringApply_SL(MatColoring mc, ISColoring *iscoloring
   PetscCheck(ncolors <= IS_COLORING_MAX - 1, PETSC_COMM_SELF, PETSC_ERR_SUP, "Maximum color size exceeded");
   {
     ISColoringValue *s = (ISColoringValue *)coloring;
-    for (i = 0; i < n; i++) { s[i] = (ISColoringValue)(coloring[i] - 1); }
+    for (i = 0; i < n; i++) s[i] = (ISColoringValue)(coloring[i] - 1);
     PetscCall(MatColoringPatch(mat_seq, ncolors, n, s, iscoloring));
   }
 
@@ -103,7 +103,7 @@ static PetscErrorCode MatColoringApply_SL(MatColoring mc, ISColoring *iscoloring
 
     /* get local colors for each local node */
     PetscCall(PetscMalloc1(N_loc + 1, &colors_loc));
-    for (i = rstart; i < rend; i++) { colors_loc[i - rstart] = iscoloring_seq->colors[i]; }
+    for (i = rstart; i < rend; i++) colors_loc[i - rstart] = iscoloring_seq->colors[i];
     /* create a parallel iscoloring */
     nc = iscoloring_seq->n;
     PetscCall(ISColoringCreate(comm, nc, N_loc, colors_loc, PETSC_OWN_POINTER, iscoloring));
@@ -296,7 +296,7 @@ static PetscErrorCode MatColoringApply_ID(MatColoring mc, ISColoring *iscoloring
   PetscCheck(ncolors <= IS_COLORING_MAX - 1, PETSC_COMM_SELF, PETSC_ERR_SUP, "Maximum color size exceeded");
   {
     ISColoringValue *s = (ISColoringValue *)coloring;
-    for (i = 0; i < n; i++) { s[i] = (ISColoringValue)(coloring[i] - 1); }
+    for (i = 0; i < n; i++) s[i] = (ISColoringValue)(coloring[i] - 1);
     PetscCall(MatColoringPatch(mat_seq, ncolors, n, s, iscoloring));
   }
 
@@ -311,7 +311,7 @@ static PetscErrorCode MatColoringApply_ID(MatColoring mc, ISColoring *iscoloring
 
     /* get local colors for each local node */
     PetscCall(PetscMalloc1(N_loc + 1, &colors_loc));
-    for (i = rstart; i < rend; i++) { colors_loc[i - rstart] = iscoloring_seq->colors[i]; }
+    for (i = rstart; i < rend; i++) colors_loc[i - rstart] = iscoloring_seq->colors[i];
     /* create a parallel iscoloring */
     nc = iscoloring_seq->n;
     PetscCall(ISColoringCreate(comm, nc, N_loc, colors_loc, PETSC_OWN_POINTER, iscoloring));

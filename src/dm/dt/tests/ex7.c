@@ -48,7 +48,7 @@ static PetscErrorCode CheckPullback(PetscInt N, PetscInt M, const PetscReal *L, 
   normMat = 0.;
   for (i = 0; i < Nk; i++) {
     PetscReal sum = 0.;
-    for (j = 0; j < Mk; j++) { sum += Lstar[i * Mk + j] * w[j]; }
+    for (j = 0; j < Mk; j++) sum += Lstar[i * Mk + j] * w[j];
     Lstarwcheck[i] = sum;
     diffMat += PetscSqr(PetscAbsReal(Lstarwcheck[i] - Lstarw[i]));
     normMat += PetscSqr(Lstarwcheck[i]) + PetscSqr(Lstarw[i]);
@@ -303,7 +303,7 @@ int main(int argc, char **argv) {
 
           PetscCall(PetscDTEnumSplit(j + k, j, l, split, &isOdd));
           for (m = 0; m < j + k; m++) {
-            for (p = 0; p < N; p++) { xsplit[m * N + p] = x[split[m] * N + p]; }
+            for (p = 0; p < N; p++) xsplit[m * N + p] = x[split[m] * N + p];
           }
           PetscCall(PetscDTAltVApply(N, j, u, xsplit, &ux));
           PetscCall(PetscDTAltVApply(N, k, w, &xsplit[j * N], &wx));

@@ -755,12 +755,12 @@ PetscErrorCode MatSymBrdnComputeJ0Scalar(Mat B) {
     start  = PetscMax(0, lmvm->k - lsb->sigma_hist + 1);
     signew = 0.0;
     if (lsb->alpha == 1.0) {
-      for (i = start; i <= lmvm->k; ++i) { signew += lsb->yts[i] / lsb->yty[i]; }
+      for (i = start; i <= lmvm->k; ++i) signew += lsb->yts[i] / lsb->yty[i];
     } else if (lsb->alpha == 0.5) {
-      for (i = start; i <= lmvm->k; ++i) { signew += lsb->sts[i] / lsb->yty[i]; }
+      for (i = start; i <= lmvm->k; ++i) signew += lsb->sts[i] / lsb->yty[i];
       signew = PetscSqrtReal(signew);
     } else if (lsb->alpha == 0.0) {
-      for (i = start; i <= lmvm->k; ++i) { signew += lsb->sts[i] / lsb->yts[i]; }
+      for (i = start; i <= lmvm->k; ++i) signew += lsb->sts[i] / lsb->yts[i];
     } else {
       /* compute coefficients of the quadratic */
       a = b = c = 0.0;

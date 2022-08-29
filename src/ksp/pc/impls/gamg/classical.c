@@ -104,7 +104,7 @@ PetscErrorCode PCGAMGGraph_Classical(PC pc, Mat A, Mat *G) {
     rmax = 0.;
     PetscCall(MatGetRow(A, r, &ncols, &rcol, &rval));
     for (c = 0; c < ncols; c++) {
-      if (PetscRealPart(-rval[c]) > rmax && rcol[c] != r) { rmax = PetscRealPart(-rval[c]); }
+      if (PetscRealPart(-rval[c]) > rmax && rcol[c] != r) rmax = PetscRealPart(-rval[c]);
     }
     Amax[r - s] = rmax;
     if (ncols > cmax) cmax = ncols;
@@ -217,7 +217,7 @@ PetscErrorCode PCGAMGProlongator_Classical_Direct(PC pc, Mat A, Mat G, PetscCoar
     /* filter out singletons */
     PetscCall(PetscCDEmptyAt(agg_lists, i, &iscoarse));
     lcid[i] = -1;
-    if (!iscoarse) { cn++; }
+    if (!iscoarse) cn++;
   }
 
   /* create the coarse vector */
@@ -267,7 +267,7 @@ PetscErrorCode PCGAMGProlongator_Classical_Direct(PC pc, Mat A, Mat G, PetscCoar
       PetscCall(MatGetRow(lA, i, &ncols, &rcol, &rval));
       for (j = 0; j < ncols; j++) {
         col = rcol[j];
-        if (lcid[col] >= 0 && (PetscRealPart(rval[j]) > gamg->threshold[0] * Amax_pos[i] || PetscRealPart(-rval[j]) > gamg->threshold[0] * Amax_neg[i])) { lsparse[i] += 1; }
+        if (lcid[col] >= 0 && (PetscRealPart(rval[j]) > gamg->threshold[0] * Amax_pos[i] || PetscRealPart(-rval[j]) > gamg->threshold[0] * Amax_neg[i])) lsparse[i] += 1;
       }
       PetscCall(MatRestoreRow(lA, i, &ncols, &rcol, &rval));
       /* off */
@@ -275,7 +275,7 @@ PetscErrorCode PCGAMGProlongator_Classical_Direct(PC pc, Mat A, Mat G, PetscCoar
         PetscCall(MatGetRow(gA, i, &ncols, &rcol, &rval));
         for (j = 0; j < ncols; j++) {
           col = rcol[j];
-          if (gcid[col] >= 0 && (PetscRealPart(rval[j]) > gamg->threshold[0] * Amax_pos[i] || PetscRealPart(-rval[j]) > gamg->threshold[0] * Amax_neg[i])) { gsparse[i] += 1; }
+          if (gcid[col] >= 0 && (PetscRealPart(rval[j]) > gamg->threshold[0] * Amax_pos[i] || PetscRealPart(-rval[j]) > gamg->threshold[0] * Amax_neg[i])) gsparse[i] += 1;
         }
         PetscCall(MatRestoreRow(gA, i, &ncols, &rcol, &rval));
       }
@@ -454,7 +454,7 @@ PetscErrorCode PCGAMGTruncateProlongator_Private(PC pc, Mat *P) {
     lsparse[i - ps] = 0;
     gsparse[i - ps] = 0;
     PetscCall(MatGetRow(*P, i, &ncols, &pcol, &pval));
-    if (ncols > cmax) { cmax = ncols; }
+    if (ncols > cmax) cmax = ncols;
     pmax_pos = 0.;
     pmax_neg = 0.;
     for (j = 0; j < ncols; j++) {
@@ -587,7 +587,7 @@ PetscErrorCode PCGAMGProlongator_Classical_Standard(PC pc, Mat A, Mat G, PetscCo
   cn = 0;
   for (i = 0; i < fn; i++) {
     PetscCall(PetscCDEmptyAt(agg_lists, i, &iscoarse));
-    if (!iscoarse) { cn++; }
+    if (!iscoarse) cn++;
   }
   PetscCall(PetscMalloc1(fn, &gcid));
   PetscCall(VecCreateMPI(PetscObjectComm((PetscObject)A), cn, PETSC_DECIDE, &cv));
@@ -632,7 +632,7 @@ PetscErrorCode PCGAMGProlongator_Classical_Standard(PC pc, Mat A, Mat G, PetscCo
             PetscCall(MatRestoreRow(lA, i, &ncols, &icol, NULL));
             PetscCall(MatGetRow(lA, ci, &ncols, &icol, NULL));
             for (k = 0; k < ncols; k++) {
-              if (lcid[icol[k]] >= 0) { pcontrib[icol[k]] = 1.; }
+              if (lcid[icol[k]] >= 0) pcontrib[icol[k]] = 1.;
             }
             PetscCall(MatRestoreRow(lA, ci, &ncols, &icol, NULL));
             PetscCall(MatGetRow(lA, i, &ncols, &icol, NULL));
@@ -703,7 +703,7 @@ PetscErrorCode PCGAMGProlongator_Classical_Standard(PC pc, Mat A, Mat G, PetscCo
             jwttotal = 0.;
             jdiag    = 0.;
             for (k = 0; k < ncols; k++) {
-              if (ci == icol[k]) { jdiag = PetscRealPart(vcol[k]); }
+              if (ci == icol[k]) jdiag = PetscRealPart(vcol[k]);
             }
             for (k = 0; k < ncols; k++) {
               if (lcid[icol[k]] >= 0 && jdiag * PetscRealPart(vcol[k]) < 0.) {

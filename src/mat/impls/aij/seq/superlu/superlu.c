@@ -301,7 +301,7 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F, Mat A, const MatFactorIn
       SETERRQ(PETSC_COMM_SELF, PETSC_ERR_MAT_LU_ZRPVT, "Zero pivot in row %" PetscInt_FMT, sinfo);
     } else {
       if (sinfo <= lu->A.ncol) {
-        if (lu->options.ILU_FillTol == 0.0) { F->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT; }
+        if (lu->options.ILU_FillTol == 0.0) F->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
         PetscCall(PetscInfo(F, "Number of zero pivots %" PetscInt_FMT ", ILU_FillTol %g\n", sinfo, lu->options.ILU_FillTol));
       } else if (sinfo == lu->A.ncol + 1) {
         /*

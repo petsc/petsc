@@ -71,7 +71,7 @@ PetscErrorCode DMSwarmSortSetup(DMSwarmSort ctx, DM dm, PetscInt ncells) {
   PetscCall(DMSwarmSortApplyCellIndexSort(ctx));
 
   /* sum points per cell */
-  for (p = 0; p < ctx->npoints; p++) { ctx->pcell_offsets[ctx->list[p].cell_index]++; }
+  for (p = 0; p < ctx->npoints; p++) ctx->pcell_offsets[ctx->list[p].cell_index]++;
 
   /* create offset list */
   count = 0;

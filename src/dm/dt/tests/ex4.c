@@ -71,7 +71,7 @@ static PetscErrorCode CheckSymmetry(PetscInt dim, PetscInt order, PetscBool tens
         PetscInt kLocal = perm ? perm[k] : k;
 
         idsCopy[kLocal] = ids[offset + k];
-        for (l = 0; l < dim; l++) { valsCopy[kLocal * dim + l] = vals[(offset + k) * dim + l] * (flip ? flip[kLocal] : 1.); }
+        for (l = 0; l < dim; l++) valsCopy[kLocal * dim + l] = vals[(offset + k) * dim + l] * (flip ? flip[kLocal] : 1.);
       }
       if (!printed && numDofs[depth] > 1) {
         IS   is;
@@ -93,7 +93,7 @@ static PetscErrorCode CheckSymmetry(PetscInt dim, PetscInt order, PetscBool tens
         PetscInt kLocal = perm ? perm[k] : k;
 
         idsCopy2[offset + k] = idsCopy[kLocal];
-        for (l = 0; l < dim; l++) { valsCopy2[(offset + k) * dim + l] = valsCopy[kLocal * dim + l] * (flip ? PetscConj(flip[kLocal]) : 1.); }
+        for (l = 0; l < dim; l++) valsCopy2[(offset + k) * dim + l] = valsCopy[kLocal * dim + l] * (flip ? PetscConj(flip[kLocal]) : 1.);
       }
       for (k = 0; k < nFunc; k++) {
         PetscCheck(idsCopy2[k] == ids[k], PETSC_COMM_SELF, PETSC_ERR_PLIB, "Symmetry failure: %" PetscInt_FMT "D, %s, point %" PetscInt_FMT ", symmetry %" PetscInt_FMT ", order %" PetscInt_FMT ", functional %" PetscInt_FMT ": (%" PetscInt_FMT " != %" PetscInt_FMT ")", dim, tensor ? "Tensor" : "Simplex", point, j, order, k, ids[k], k);

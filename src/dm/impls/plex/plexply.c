@@ -98,11 +98,11 @@ PetscErrorCode DMPlexCreatePLYFromFile(MPI_Comm comm, const char filename[], Pet
           }
         }
         PetscCall(PetscStrncmp(name, "x", 16, &matchB));
-        if (matchB) { xi = Nvp; }
+        if (matchB) xi = Nvp;
         PetscCall(PetscStrncmp(name, "y", 16, &matchB));
-        if (matchB) { yi = Nvp; }
+        if (matchB) yi = Nvp;
         PetscCall(PetscStrncmp(name, "z", 16, &matchB));
-        if (matchB) { zi = Nvp; }
+        if (matchB) zi = Nvp;
         ++Nvp;
       }
     }

@@ -505,7 +505,7 @@ PetscInt project(PetscInt n, PetscReal *a, PetscReal b, PetscReal *c, PetscReal 
 
   PetscCheck(PetscAbsReal(dlambda) <= BMRM_INFTY, PETSC_COMM_SELF, PETSC_ERR_PLIB, "L2N2_DaiFletcherPGM detected Infeasible QP problem!");
 
-  if (ru == 0) { return innerIter; }
+  if (ru == 0) return innerIter;
 
   /* Secant Phase */
   s       = 1.0 - rl / ru;
@@ -601,10 +601,10 @@ PetscErrorCode solve(TAO_DF *df) {
     tempQ = Q[ipt[i]];
     for (j = 0; j < dim; j++) t[j] += (tempQ[j] * x[ipt[i]]);
   }
-  for (i = 0; i < dim; i++) { g[i] = t[i] + f[i]; }
+  for (i = 0; i < dim; i++) g[i] = t[i] + f[i];
 
   /* y = -(x_{k} - g_{k}) */
-  for (i = 0; i < dim; i++) { y[i] = g[i] - x[i]; }
+  for (i = 0; i < dim; i++) y[i] = g[i] - x[i];
 
   /* Project x_{k} - g_{k} */
   project(dim, a, b, y, l, u, tempv, &lam_ext, df);
@@ -616,7 +616,7 @@ PetscErrorCode solve(TAO_DF *df) {
     if (PetscAbsReal(y[i]) > max) max = PetscAbsReal(y[i]);
   }
 
-  if (max < tol * 1e-3) { return 0; }
+  if (max < tol * 1e-3) return 0;
 
   alpha = 1.0 / max;
 

@@ -74,14 +74,14 @@ static void f0_jz_sum(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt 
 static void f0_n(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar *f0) {
   PetscInt ii = (PetscInt)PetscRealPart(constants[0]);
   if (dim == 2) f0[0] = 2. * PETSC_PI * x[0] * u[ii];
-  else { f0[0] = u[ii]; }
+  else f0[0] = u[ii];
 }
 
 /* < v, n_e v_|| > */
 static void f0_vz(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar *f0) {
   PetscInt ii = (PetscInt)PetscRealPart(constants[0]);
   if (dim == 2) f0[0] = u[ii] * 2. * PETSC_PI * x[0] * x[1]; /* n r v_|| */
-  else { f0[0] = u[ii] * x[2]; /* n v_|| */ }
+  else f0[0] = u[ii] * x[2];                                 /* n v_|| */
 }
 
 /* < v, n_e (v-shift) > */

@@ -309,7 +309,7 @@ PetscErrorCode PetscObjectsDump(FILE *fd, PetscBool all) {
 #if defined(PETSC_USE_DEBUG)
           PetscCall(PetscMallocGetStack(h, &stack));
           if (stack) {
-            for (j = k; j >= 0; j--) { fprintf(fd, "      [%d]  %s() in %s\n", PetscGlobalRank, stack->function[j], stack->file[j]); }
+            for (j = k; j >= 0; j--) fprintf(fd, "      [%d]  %s() in %s\n", PetscGlobalRank, stack->function[j], stack->file[j]);
           }
 #endif
         }

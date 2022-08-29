@@ -182,7 +182,7 @@ static PetscErrorCode PCSetCoordinates_AGG(PC pc, PetscInt ndm, PetscInt a_nloc,
   else if (coords) {
     PetscCheck(ndm <= ndf, PETSC_COMM_SELF, PETSC_ERR_PLIB, "degrees of motion %" PetscInt_FMT " > block size %" PetscInt_FMT, ndm, ndf);
     pc_gamg->data_cell_cols = (ndm == 2 ? 3 : 6); /* displacement elasticity */
-    if (ndm != ndf) { PetscCheck(pc_gamg->data_cell_cols == ndf, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Don't know how to create null space for ndm=%" PetscInt_FMT ", ndf=%" PetscInt_FMT ".  Use MatSetNearNullSpace().", ndm, ndf); }
+    if (ndm != ndf) PetscCheck(pc_gamg->data_cell_cols == ndf, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Don't know how to create null space for ndm=%" PetscInt_FMT ", ndf=%" PetscInt_FMT ".  Use MatSetNearNullSpace().", ndm, ndf);
   } else pc_gamg->data_cell_cols = ndf; /* no data, force SA with constant null space vectors */
   pc_gamg->data_cell_rows = ndatarows = ndf;
   PetscCheck(pc_gamg->data_cell_cols > 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "pc_gamg->data_cell_cols %" PetscInt_FMT " <= 0", pc_gamg->data_cell_cols);
@@ -397,7 +397,7 @@ static PetscErrorCode formProl0(PetscCoarsenData *agg_llists, PetscInt bs, Petsc
 
       /* pad with zeros */
       for (ii = asz * bs; ii < Mdata; ii++) {
-        for (jj = 0; jj < N; jj++, kk++) { qqc[jj * Mdata + ii] = .0; }
+        for (jj = 0; jj < N; jj++, kk++) qqc[jj * Mdata + ii] = .0;
       }
 
       /* QR */
@@ -422,7 +422,7 @@ static PetscErrorCode formProl0(PetscCoarsenData *agg_llists, PetscInt bs, Petsc
       PetscCheck(INFO == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "xORGQR error arg %" PetscBLASInt_FMT, -INFO);
 
       for (ii = 0; ii < M; ii++) {
-        for (jj = 0; jj < N; jj++) { qqr[N * ii + jj] = qqc[jj * Mdata + ii]; }
+        for (jj = 0; jj < N; jj++) qqr[N * ii + jj] = qqc[jj * Mdata + ii];
       }
 
       /* add diagonal block of P0 */

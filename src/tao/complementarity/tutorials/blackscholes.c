@@ -189,7 +189,7 @@ int main(int argc, char **argv) {
     user.c[i]   = (user.delta - user.rate) * sval;
     user.d[i]   = -0.5 * user.sigma * user.sigma * PetscPowReal(sval, user.alpha);
   }
-  if (gxs + gxm == user.ms) { user.Vt1[gxm - 1] = 0; }
+  if (gxs + gxm == user.ms) user.Vt1[gxm - 1] = 0;
   PetscCall(VecDuplicate(x, &c));
 
   /*
@@ -231,7 +231,7 @@ int main(int argc, char **argv) {
     PetscCall(DMGlobalToLocalBegin(user.dm, x, INSERT_VALUES, localX));
     PetscCall(DMGlobalToLocalEnd(user.dm, x, INSERT_VALUES, localX));
     PetscCall(VecGetArray(localX, &x_array));
-    for (j = 0; j < gxm; j++) { user.Vt1[j] = x_array[j]; }
+    for (j = 0; j < gxm; j++) user.Vt1[j] = x_array[j];
     PetscCall(VecRestoreArray(x, &x_array));
     PetscCall(DMRestoreLocalVector(user.dm, &localX));
   }

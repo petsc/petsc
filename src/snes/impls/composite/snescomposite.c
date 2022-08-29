@@ -246,11 +246,11 @@ static PetscErrorCode SNESCompositeApply_AdditiveOptimal(SNES snes, Vec X, Vec B
   ftf = (*fnorm) * (*fnorm);
 
   for (i = 0; i < jac->n; i++) {
-    for (j = i + 1; j < jac->n; j++) { jac->h[i + j * jac->n] = jac->h[j + i * jac->n]; }
+    for (j = i + 1; j < jac->n; j++) jac->h[i + j * jac->n] = jac->h[j + i * jac->n];
   }
 
   for (i = 0; i < jac->n; i++) {
-    for (j = 0; j < jac->n; j++) { jac->h[i + j * jac->n] = jac->h[i + j * jac->n] - jac->g[j] - jac->g[i] + ftf; }
+    for (j = 0; j < jac->n; j++) jac->h[i + j * jac->n] = jac->h[i + j * jac->n] - jac->g[j] - jac->g[i] + ftf;
     jac->beta[i] = ftf - jac->g[i];
   }
 

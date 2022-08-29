@@ -37,7 +37,7 @@ static PetscErrorCode DMPlexCreateCellTypeOrder_Internal(PetscInt dim, PetscInt 
     ctO[off++] = c;
   }
   PetscCheck(off == DM_NUM_POLYTOPES + 1, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid offset %" PetscInt_FMT " for cell type order", off);
-  for (c = 0; c <= DM_NUM_POLYTOPES; ++c) { ctOInv[ctO[c]] = c; }
+  for (c = 0; c <= DM_NUM_POLYTOPES; ++c) ctOInv[ctO[c]] = c;
   *ctOrder    = ctO;
   *ctOrderInv = ctOInv;
   PetscFunctionReturn(0);
@@ -1605,7 +1605,7 @@ static PetscErrorCode DMPlexTransformCreateSF(DMPlexTransform tr, DM rdm) {
 
     PetscCall(DMPlexGetCellType(dm, p, &ct));
     PetscCall(DMPlexTransformCellTransform(tr, ct, p, NULL, &Nct, &rct, &rsize, &rcone, &rornt));
-    for (n = 0; n < Nct; ++n) { numLeavesNew += rsize[n]; }
+    for (n = 0; n < Nct; ++n) numLeavesNew += rsize[n];
   }
   /* Send new root point numbers
        It is possible to optimize for regular transforms by sending only the cell type offsets, but it seems a needless complication

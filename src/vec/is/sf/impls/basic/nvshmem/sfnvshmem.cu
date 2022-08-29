@@ -573,7 +573,7 @@ __global__ static void PutDataEnd(PetscInt nsrcranks, PetscInt ndstranks, PetscM
   /* According to Akhil@NVIDIA, IB is orderred, so no fence is needed for remote PEs.
      For local PEs, we already called nvshmemx_quiet_on_stream(). Therefore, we are good to send signals to all dst ranks now.
   */
-  for (int i = 0; i < ndstranks; i++) { nvshmemx_uint64_signal(dstsig + dstsigdisp[i], 1, dstranks[i]); } /* set sig to 1 */
+  for (int i = 0; i < ndstranks; i++) nvshmemx_uint64_signal(dstsig + dstsigdisp[i], 1, dstranks[i]); /* set sig to 1 */
 
   /* 2. Wait for signals from src ranks (if any) */
   if (nsrcranks) {

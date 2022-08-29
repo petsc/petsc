@@ -230,7 +230,7 @@ PetscErrorCode VecNorm_Seq(Vec xin, NormType type, PetscReal *z) {
     PetscCall(VecGetArrayRead(xin, &xx));
 #if defined(PETSC_USE_COMPLEX)
     /* BLASasum() returns the nonstandard 1 norm of the 1 norm of the complex entries so we provide a custom loop instead */
-    for (i = 0; i < n; i++) { tmp += PetscAbsScalar(xx[i]); }
+    for (i = 0; i < n; i++) tmp += PetscAbsScalar(xx[i]);
     *z = tmp;
 #else
     PetscCallBLAS("BLASasum", *z = BLASasum_(&bn, xx, &one));

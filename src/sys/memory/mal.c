@@ -394,7 +394,7 @@ PetscErrorCode PetscMallocA(int n, PetscBool clear, int lineno, const char *func
     char *p;
     PetscCall((*PetscTrMalloc)(sumbytes, clear, lineno, function, filename, (void **)&p));
     if (p == NULL) {
-      for (i = 0; i < n; i++) { *ptr[i] = NULL; }
+      for (i = 0; i < n; i++) *ptr[i] = NULL;
     } else {
       for (i = 0; i < n; i++) {
         *ptr[i] = bytes[i] ? p : NULL;
@@ -437,13 +437,13 @@ PetscErrorCode PetscFreeA(int n, int lineno, const char *function, const char *f
   PetscCheck(n <= 8, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Attempt to allocate %d objects but only up to 8 supported", n);
   ptr[0] = (void **)ptr0;
   va_start(Argp, ptr0);
-  for (i = 1; i < n; i++) { ptr[i] = va_arg(Argp, void **); }
+  for (i = 1; i < n; i++) ptr[i] = va_arg(Argp, void **);
   va_end(Argp);
   if (petscmalloccoalesce) {
     for (i = 0; i < n; i++) { /* Find first nonempty allocation */
       if (*ptr[i]) break;
     }
-    while (--n > i) { *ptr[n] = NULL; }
+    while (--n > i) *ptr[n] = NULL;
     PetscCall((*PetscTrFree)(*ptr[n], lineno, function, filename));
     *ptr[n] = NULL;
   } else {

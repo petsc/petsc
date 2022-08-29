@@ -58,7 +58,7 @@ static PetscErrorCode DMFieldView_DA(DMField field, PetscViewer viewer) {
     PetscInt _k, _l; \
     for (_k = 0; _k < (c); _k++) (y)[_k] = 0.; \
     for (_l = 0; _l < (m); _l++) { \
-      for (_k = 0; _k < (c); _k++) { (y)[_k] += cast((A)[(c)*_l + _k]) * (x)[_l]; } \
+      for (_k = 0; _k < (c); _k++) (y)[_k] += cast((A)[(c)*_l + _k]) * (x)[_l]; \
     } \
   } while (0)
 
@@ -97,13 +97,13 @@ static void MultilinearEvaluate(PetscInt dim, PetscReal (*coordRange)[2], PetscI
 
       e       = (PetscRealPart(point[j]) - coordRange[j][0]) / coordRange[j][1];
       deta[j] = d = 1. / coordRange[j][1];
-      for (k = 0; k < whol; k++) { work[k] = etaB[k]; }
+      for (k = 0; k < whol; k++) work[k] = etaB[k];
       for (k = 0; k < half; k++) {
         etaB[k]        = work[2 * k] * e;
         etaB[k + half] = work[2 * k + 1];
       }
       if (H) {
-        for (k = 0; k < whol; k++) { work[k] = etaD[k]; }
+        for (k = 0; k < whol; k++) work[k] = etaD[k];
         for (k = 0; k < half; k++) {
           etaD[k + half] = work[2 * k];
           etaD[k]        = work[2 * k + 1] * d;
@@ -134,8 +134,8 @@ static void MultilinearEvaluate(PetscInt dim, PetscReal (*coordRange)[2], PetscI
       for (j = 0; j < dim; j++) {
         PetscReal d = deta[j];
 
-        for (k = 0; k < whol * nc; k++) { cfWork[k] = cf[k]; }
-        for (k = 0; k < whol; k++) { work[k] = etaB[k]; }
+        for (k = 0; k < whol * nc; k++) cfWork[k] = cf[k];
+        for (k = 0; k < whol; k++) work[k] = etaB[k];
         for (k = 0; k < half; k++) {
           PetscReal e;
 
@@ -149,11 +149,11 @@ static void MultilinearEvaluate(PetscInt dim, PetscReal (*coordRange)[2], PetscI
           if (datatype == PETSC_SCALAR) {
             PetscScalar *out = &((PetscScalar *)D)[nc * dim * i];
 
-            for (l = 0; l < nc; l++) { out[l * dim + j] += d * e * cf[k * nc + l]; }
+            for (l = 0; l < nc; l++) out[l * dim + j] += d * e * cf[k * nc + l];
           } else {
             PetscReal *out = &((PetscReal *)D)[nc * dim * i];
 
-            for (l = 0; l < nc; l++) { out[l * dim + j] += d * e * PetscRealPart(cf[k * nc + l]); }
+            for (l = 0; l < nc; l++) out[l * dim + j] += d * e * PetscRealPart(cf[k * nc + l]);
           }
         }
       }
@@ -269,7 +269,7 @@ static PetscErrorCode DMFieldEvaluateFE_DA(DMField field, IS cellIS, PetscQuadra
       cH = H ? &((PetscReal *)H)[nc * nq * dim * dim * c] : NULL;
     }
     PetscCheck(cell >= cStart && cell < cEnd, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %" PetscInt_FMT " not a cell [%" PetscInt_FMT ",%" PetscInt_FMT "), not implemented yet", cell, cStart, cEnd);
-    for (i = 0; i < nc * whol; i++) { work[i] = dafield->cornerCoeffs[i]; }
+    for (i = 0; i < nc * whol; i++) work[i] = dafield->cornerCoeffs[i];
     for (j = 0; j < dim; j++) {
       PetscReal e, d;
       ijk[j] = (rem % cellsPer[j]);
@@ -283,7 +283,7 @@ static PetscErrorCode DMFieldEvaluateFE_DA(DMField field, IS cellIS, PetscQuadra
           cellCoeffs[(i + half) * nc + k] = work[2 * i * nc + k] * e + work[(2 * i + 1) * nc + k];
         }
       }
-      for (i = 0; i < whol * nc; i++) { work[i] = cellCoeffs[i]; }
+      for (i = 0; i < whol * nc; i++) work[i] = cellCoeffs[i];
     }
     MultilinearEvaluate(dim, cellCoordRange, nc, cellCoeffs, dafield->work, nq, qs, datatype, cB, cD, cH);
   }
@@ -428,7 +428,7 @@ static PetscErrorCode DMFieldInitialize_DA(DMField field) {
     }
     PetscCall(VecRestoreArrayRead(coords, &array));
     PetscCall(MPIU_Allreduce((PetscReal *)mins, &(dafield->coordRange[0][0]), 2 * dim, MPIU_REAL, MPI_MIN, PetscObjectComm((PetscObject)dm)));
-    for (j = 0; j < dim; j++) { dafield->coordRange[j][1] = -dafield->coordRange[j][1]; }
+    for (j = 0; j < dim; j++) dafield->coordRange[j][1] = -dafield->coordRange[j][1];
   } else {
     for (j = 0; j < dim; j++) {
       dafield->coordRange[j][0] = 0.;
@@ -480,13 +480,13 @@ PetscErrorCode DMFieldCreateDA(DM dm, PetscInt nc, const PetscScalar *cornerValu
 
     w = work;
     for (j = 0; j < half; j++) {
-      for (k = 0; k < nc; k++) { w[j * nc + k] = 0.5 * (cf[(2 * j + 1) * nc + k] - cf[(2 * j) * nc + k]); }
+      for (k = 0; k < nc; k++) w[j * nc + k] = 0.5 * (cf[(2 * j + 1) * nc + k] - cf[(2 * j) * nc + k]);
     }
     w = &work[j * nc];
     for (j = 0; j < half; j++) {
-      for (k = 0; k < nc; k++) { w[j * nc + k] = 0.5 * (cf[(2 * j) * nc + k] + cf[(2 * j + 1) * nc + k]); }
+      for (k = 0; k < nc; k++) w[j * nc + k] = 0.5 * (cf[(2 * j) * nc + k] + cf[(2 * j + 1) * nc + k]);
     }
-    for (j = 0; j < nv; j++) { cf[j] = work[j]; }
+    for (j = 0; j < nv; j++) cf[j] = work[j];
   }
   *field = b;
   PetscFunctionReturn(0);

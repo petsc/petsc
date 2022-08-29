@@ -1154,7 +1154,7 @@ static PetscErrorCode ModelFunctionalSetFromOptions(Model mod, PetscOptions *Pet
   for (link = mod->functionalRegistry; link; link = link->next) {
     for (i = 0; i < mod->numCall; i++) {
       FunctionalLink call = mod->functionalCall[i];
-      if (link->func == call->func && link->ctx == call->ctx) { mod->maxComputed = PetscMax(mod->maxComputed, link->offset); }
+      if (link->func == call->func && link->ctx == call->ctx) mod->maxComputed = PetscMax(mod->maxComputed, link->offset);
     }
   }
   PetscFunctionReturn(0);

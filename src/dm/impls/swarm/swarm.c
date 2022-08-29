@@ -355,7 +355,7 @@ static PetscErrorCode DMSwarmComputeMassMatrix_Private(DM dmc, DM dmf, Mat mass,
       PetscCall(DMPlexComputeCellGeometryFEM(dmf, cell, NULL, v0, J, invJ, &detJ));
       PetscCall(DMPlexGetClosureIndices(dmf, fsection, globalFSection, cell, PETSC_FALSE, &numFIndices, &findices, NULL, NULL));
       PetscCall(DMSwarmSortGetPointsPerCell(dmc, cell, &numCIndices, &cindices));
-      for (p = 0; p < numCIndices; ++p) { CoordinatesRealToRef(dim, dim, v0ref, v0, invJ, &coords[cindices[p] * dim], &xi[p * dim]); }
+      for (p = 0; p < numCIndices; ++p) CoordinatesRealToRef(dim, dim, v0ref, v0, invJ, &coords[cindices[p] * dim], &xi[p * dim]);
       PetscCall(PetscFECreateTabulation((PetscFE)obj, 1, numCIndices, xi, 0, &Tcoarse));
       /* Get elemMat entries by multiplying by weight */
       PetscCall(PetscArrayzero(elemMat, numCIndices * totDim));
@@ -486,7 +486,7 @@ static PetscErrorCode DMSwarmComputeMassMatrixSquare_Private(DM dmc, DM dmf, Mat
     PetscCall(DMSwarmSortGetPointsPerCell(dmc, cell, &numCIndices, &cindices));
     maxC = PetscMax(maxC, numCIndices);
     /* Diagonal block */
-    for (i = 0; i < numCIndices; ++i) { dnz[cindices[i]] += numCIndices; }
+    for (i = 0; i < numCIndices; ++i) dnz[cindices[i]] += numCIndices;
 #if 0
     /* Off-diagonal blocks */
     PetscCall(DMPlexGetAdjacency(dmf, cell, &adjSize, &adj));
@@ -554,7 +554,7 @@ static PetscErrorCode DMSwarmComputeMassMatrixSquare_Private(DM dmc, DM dmf, Mat
       PetscCall(DMPlexComputeCellGeometryFEM(dmf, cell, NULL, v0, J, invJ, &detJ));
       PetscCall(DMPlexGetClosureIndices(dmf, fsection, globalFSection, cell, PETSC_FALSE, &numFIndices, &findices, NULL, NULL));
       PetscCall(DMSwarmSortGetPointsPerCell(dmc, cell, &numCIndices, &cindices));
-      for (p = 0; p < numCIndices; ++p) { CoordinatesRealToRef(cdim, cdim, v0ref, v0, invJ, &coords[cindices[p] * cdim], &xi[p * cdim]); }
+      for (p = 0; p < numCIndices; ++p) CoordinatesRealToRef(cdim, cdim, v0ref, v0, invJ, &coords[cindices[p] * cdim], &xi[p * cdim]);
       PetscCall(PetscFECreateTabulation((PetscFE)obj, 1, numCIndices, xi, 0, &Tcoarse));
       /* Get elemMat entries by multiplying by weight */
       PetscCall(PetscArrayzero(elemMat, numCIndices * totDim));
@@ -1038,8 +1038,8 @@ PetscErrorCode DMSwarmGetField(DM dm, const char fieldname[], PetscInt *blocksiz
   PetscCall(DMSwarmDataBucketGetDMSwarmDataFieldByName(swarm->db, fieldname, &gfield));
   PetscCall(DMSwarmDataFieldGetAccess(gfield));
   PetscCall(DMSwarmDataFieldGetEntries(gfield, data));
-  if (blocksize) { *blocksize = gfield->bs; }
-  if (type) { *type = gfield->petsc_type; }
+  if (blocksize) *blocksize = gfield->bs;
+  if (type) *type = gfield->petsc_type;
   PetscFunctionReturn(0);
 }
 
@@ -1456,7 +1456,7 @@ PetscErrorCode DMSetup_Swarm(DM dm) {
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank));
   PetscCall(DMSwarmDataBucketGetSizes(swarm->db, &npoints, NULL, NULL));
   PetscCall(DMSwarmGetField(dm, DMSwarmField_rank, NULL, NULL, (void **)&rankval));
-  for (p = 0; p < npoints; p++) { rankval[p] = (PetscInt)rank; }
+  for (p = 0; p < npoints; p++) rankval[p] = (PetscInt)rank;
   PetscCall(DMSwarmRestoreField(dm, DMSwarmField_rank, NULL, NULL, (void **)&rankval));
   PetscFunctionReturn(0);
 }

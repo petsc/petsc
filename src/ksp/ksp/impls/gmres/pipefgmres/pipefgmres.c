@@ -48,7 +48,7 @@ static PetscErrorCode KSPSetUp_PIPEFGMRES(KSP ksp) {
 
   PetscCall(KSPCreateVecs(ksp, pipefgmres->vv_allocated, &pipefgmres->prevecs_user_work[0], 0, NULL));
   PetscCall(PetscLogObjectParents(ksp, pipefgmres->vv_allocated, pipefgmres->prevecs_user_work[0]));
-  for (k = 0; k < pipefgmres->vv_allocated; k++) { pipefgmres->prevecs[k] = pipefgmres->prevecs_user_work[0][k]; }
+  for (k = 0; k < pipefgmres->vv_allocated; k++) pipefgmres->prevecs[k] = pipefgmres->prevecs_user_work[0][k];
 
   PetscCall(PetscMalloc1((VEC_OFFSET + max_k), &pipefgmres->zvecs));
   PetscCall(PetscMalloc1((VEC_OFFSET + max_k), &pipefgmres->zvecs_user_work));
@@ -59,7 +59,7 @@ static PetscErrorCode KSPSetUp_PIPEFGMRES(KSP ksp) {
 
   PetscCall(KSPCreateVecs(ksp, pipefgmres->vv_allocated, &pipefgmres->zvecs_user_work[0], 0, NULL));
   PetscCall(PetscLogObjectParents(ksp, pipefgmres->vv_allocated, pipefgmres->zvecs_user_work[0]));
-  for (k = 0; k < pipefgmres->vv_allocated; k++) { pipefgmres->zvecs[k] = pipefgmres->zvecs_user_work[0][k]; }
+  for (k = 0; k < pipefgmres->vv_allocated; k++) pipefgmres->zvecs[k] = pipefgmres->zvecs_user_work[0][k];
 
   PetscFunctionReturn(0);
 }
@@ -170,7 +170,7 @@ static PetscErrorCode KSPPIPEFGMRESCycle(PetscInt *itcount, KSP ksp) {
        coefficients we use in the orthogonalization process,because of the shift */
 
     /* Do some local twiddling to allow for a single reduction */
-    for (i = 0; i < loc_it + 1; i++) { redux[i] = VEC_VV(i); }
+    for (i = 0; i < loc_it + 1; i++) redux[i] = VEC_VV(i);
     redux[loc_it + 1] = ZVEC(loc_it);
 
     /* note the extra dot product which ends up in lh[loc_it+1], which computes ||z||^2 */
@@ -707,7 +707,7 @@ static PetscErrorCode KSPPIPEFGMRESGetNewVectors(KSP ksp, PetscInt it) {
 
   /* Adjust the number to allocate to make sure that we don't exceed the
      number of available slots (pipefgmres->vecs_allocated)*/
-  if (it + VEC_OFFSET + nalloc >= pipefgmres->vecs_allocated) { nalloc = pipefgmres->vecs_allocated - it - VEC_OFFSET; }
+  if (it + VEC_OFFSET + nalloc >= pipefgmres->vecs_allocated) nalloc = pipefgmres->vecs_allocated - it - VEC_OFFSET;
   if (!nalloc) PetscFunctionReturn(0);
 
   pipefgmres->vv_allocated += nalloc; /* vv_allocated is the number of vectors allocated */
@@ -715,18 +715,18 @@ static PetscErrorCode KSPPIPEFGMRESGetNewVectors(KSP ksp, PetscInt it) {
   /* work vectors */
   PetscCall(KSPCreateVecs(ksp, nalloc, &pipefgmres->user_work[nwork], 0, NULL));
   PetscCall(PetscLogObjectParents(ksp, nalloc, pipefgmres->user_work[nwork]));
-  for (k = 0; k < nalloc; k++) { pipefgmres->vecs[it + VEC_OFFSET + k] = pipefgmres->user_work[nwork][k]; }
+  for (k = 0; k < nalloc; k++) pipefgmres->vecs[it + VEC_OFFSET + k] = pipefgmres->user_work[nwork][k];
   /* specify size of chunk allocated */
   pipefgmres->mwork_alloc[nwork] = nalloc;
 
   /* preconditioned vectors (note we don't use VEC_OFFSET) */
   PetscCall(KSPCreateVecs(ksp, nalloc, &pipefgmres->prevecs_user_work[nwork], 0, NULL));
   PetscCall(PetscLogObjectParents(ksp, nalloc, pipefgmres->prevecs_user_work[nwork]));
-  for (k = 0; k < nalloc; k++) { pipefgmres->prevecs[it + k] = pipefgmres->prevecs_user_work[nwork][k]; }
+  for (k = 0; k < nalloc; k++) pipefgmres->prevecs[it + k] = pipefgmres->prevecs_user_work[nwork][k];
 
   PetscCall(KSPCreateVecs(ksp, nalloc, &pipefgmres->zvecs_user_work[nwork], 0, NULL));
   PetscCall(PetscLogObjectParents(ksp, nalloc, pipefgmres->zvecs_user_work[nwork]));
-  for (k = 0; k < nalloc; k++) { pipefgmres->zvecs[it + k] = pipefgmres->zvecs_user_work[nwork][k]; }
+  for (k = 0; k < nalloc; k++) pipefgmres->zvecs[it + k] = pipefgmres->zvecs_user_work[nwork][k];
 
   /* increment the number of work vector chunks */
   pipefgmres->nwork_alloc++;

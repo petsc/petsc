@@ -31,9 +31,9 @@ static PetscErrorCode PetscParallelSortInt_Bitonic_Merge(MPI_Comm comm, PetscMPI
 
     PetscCallMPI(MPI_Sendrecv(keys, n, MPIU_INT, partner, tag, buffer, n, MPIU_INT, partner, tag, comm, MPI_STATUS_IGNORE));
     if ((rank < partner) == (forward == PETSC_TRUE)) {
-      for (i = 0; i < n; i++) { keys[i] = (keys[i] <= buffer[i]) ? keys[i] : buffer[i]; }
+      for (i = 0; i < n; i++) keys[i] = (keys[i] <= buffer[i]) ? keys[i] : buffer[i];
     } else {
-      for (i = 0; i < n; i++) { keys[i] = (keys[i] > buffer[i]) ? keys[i] : buffer[i]; }
+      for (i = 0; i < n; i++) keys[i] = (keys[i] > buffer[i]) ? keys[i] : buffer[i];
     }
   }
   /* divide and conquer */
@@ -140,7 +140,7 @@ static PetscErrorCode PetscParallelSampleSelect(PetscLayout mapin, PetscLayout m
       size_t sample_rank = sample / (size - 1);
 
       keys_per[sample_rank]++;
-      if (my_first < 0 && (PetscMPIInt)sample_rank == rank) { my_first = (PetscInt)(sample - sample_rank * (size - 1)); }
+      if (my_first < 0 && (PetscMPIInt)sample_rank == rank) my_first = (PetscInt)(sample - sample_rank * (size - 1));
     }
   }
   for (i = 0, max_keys_per = 0; i < size; i++) max_keys_per = PetscMax(keys_per[i], max_keys_per);
@@ -154,7 +154,7 @@ static PetscErrorCode PetscParallelSampleSelect(PetscLayout mapin, PetscLayout m
     PetscInt j;
 
     for (j = 0; j < max_keys_per; j++) {
-      if (j < keys_per[i]) { finalpivots[count++] = finalpivots[i * max_keys_per + j]; }
+      if (j < keys_per[i]) finalpivots[count++] = finalpivots[i * max_keys_per + j];
     }
   }
   *outpivots = finalpivots;
@@ -256,7 +256,7 @@ static PetscErrorCode PetscParallelSortInt_Samplesort(PetscLayout mapin, PetscLa
   /* get the incoming sizes */
   PetscCallMPI(MPI_Alltoall(keys_per_snd, 1, MPI_INT, keys_per_rcv, 1, MPI_INT, mapin->comm));
   offsets_rcv[0] = 0;
-  for (i = 0; i < size; i++) { offsets_rcv[i + 1] = offsets_rcv[i] + keys_per_rcv[i]; }
+  for (i = 0; i < size; i++) offsets_rcv[i + 1] = offsets_rcv[i] + keys_per_rcv[i];
   nrecv = offsets_rcv[size];
   /* all to all exchange */
   PetscCall(PetscMalloc1(nrecv, &buffer));

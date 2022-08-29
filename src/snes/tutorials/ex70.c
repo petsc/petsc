@@ -229,7 +229,7 @@ PetscErrorCode StokesRhs(Stokes *s) {
   for (row = start; row < end; row++) {
     PetscCall(StokesGetPosition(s, row, &i, &j));
     PetscCall(StokesRhsMass(s, i, j, &val));
-    if (s->matsymmetric) { val = -1.0 * val; }
+    if (s->matsymmetric) val = -1.0 * val;
     PetscCall(VecSetValue(b1, row, val, INSERT_VALUES));
   }
   PetscCall(VecRestoreSubVector(s->b, s->isg[1], &b1));

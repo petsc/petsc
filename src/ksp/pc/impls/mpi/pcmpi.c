@@ -185,7 +185,7 @@ static PetscErrorCode PCMPISetMat(PC pc) {
     PetscCall(MatRestoreRowIJ(sA, 0, PETSC_FALSE, PETSC_FALSE, NULL, &IA, &JA, NULL));
   }
 
-  for (j = 1; j < n + 1; j++) { ia[j] -= ia[0]; }
+  for (j = 1; j < n + 1; j++) ia[j] -= ia[0];
   ia[0] = 0;
   PetscCall(MatCreateMPIAIJWithArrays(comm, n, n, N[0], N[0], ia, ja, a, &A));
   PetscCall(MatSetOptionsPrefix(A, "mpi_"));

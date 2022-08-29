@@ -47,7 +47,7 @@ int main(int argc, char **argv) {
   PetscCall(PetscMalloc1(oi[5], &ooj));
   PetscCall(PetscArraycpy(ooj, oj, oi[5]));
   /* modify the column entries in the non-diagonal portion back to global numbering */
-  for (i = 0; i < oi[5]; i++) { ooj[i] = garray[ooj[i]]; }
+  for (i = 0; i < oi[5]; i++) ooj[i] = garray[ooj[i]];
 
   PetscCall(MatCreateMPIAIJWithSplitArrays(PETSC_COMM_WORLD, 5, 5, PETSC_DETERMINE, PETSC_DETERMINE, di, dj, da, oi, ooj, oa, &B));
   PetscCall(MatSetUp(B));

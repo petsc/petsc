@@ -636,7 +636,7 @@ PetscErrorCode PetscOptionsEnum_Private(PetscOptionItems *PetscOptionsObject, co
   PetscBool tflg;
 
   PetscFunctionBegin;
-  while (list[ntext++]) { PetscCheck(ntext <= 50, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "List argument appears to be wrong or have more than 50 entries"); }
+  while (list[ntext++]) PetscCheck(ntext <= 50, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "List argument appears to be wrong or have more than 50 entries");
   PetscCheck(ntext >= 3, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "List argument must have at least two entries: typename and type prefix");
   ntext -= 3;
   PetscCall(PetscOptionsEList_Private(PetscOptionsObject, opt, text, man, list, ntext, list[currentvalue], &tval, &tflg));
@@ -856,7 +856,7 @@ PetscErrorCode PetscOptionsInt_Private(PetscOptionItems *PetscOptionsObject, con
     *(PetscInt *)amsopt->data = currentvalue;
 
     PetscCall(PetscOptionsGetInt(PetscOptionsObject->options, PetscOptionsObject->prefix, opt, &currentvalue, &wasset));
-    if (wasset) { *(PetscInt *)amsopt->data = currentvalue; }
+    if (wasset) *(PetscInt *)amsopt->data = currentvalue;
   }
   PetscCall(PetscOptionsGetInt(PetscOptionsObject->options, PetscOptionsObject->prefix, opt, value, &wasset));
   PetscCheck(!wasset || *value >= lb, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Newly set value %" PetscInt_FMT " less than allowed bound %" PetscInt_FMT, *value, lb);

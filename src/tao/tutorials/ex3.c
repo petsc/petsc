@@ -113,7 +113,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm) {
     PetscCall(VecGetArray(topology, &topo_f));
     /* and now we have to convert the double representation to integers to pass over, argh */
     PetscCall(PetscMalloc1(numCells * vertices_per_cell, &cells));
-    for (j = 0; j < numCells * vertices_per_cell; j++) { cells[j] = (PetscInt)topo_f[j]; }
+    for (j = 0; j < numCells * vertices_per_cell; j++) cells[j] = (PetscInt)topo_f[j];
 
     /* Now create the DM */
     PetscCall(DMPlexCreateFromCellListPetsc(comm, dim, numCells, numVertices, vertices_per_cell, PETSC_TRUE, cells, dim, coords, dm));

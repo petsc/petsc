@@ -144,7 +144,7 @@ L600:
     search = invp[inode];
   L700:;
   }
-  if (nhdsze > 0) { SPARSEPACKqmdqt(&node, &xadj[1], &adjncy[1], &marker[1], &rchsze, &rchset[1], &nbrhd[1]); }
+  if (nhdsze > 0) SPARSEPACKqmdqt(&node, &xadj[1], &adjncy[1], &marker[1], &rchsze, &rchset[1], &nbrhd[1]);
 L800:
   if (num < *neqns) goto L300;
   PetscFunctionReturn(0);

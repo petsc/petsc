@@ -257,7 +257,7 @@ static PetscErrorCode FormDiffusionFunction(TS ts, PetscReal t, Vec X, Vec F, vo
 
   idx = 1.0 * user->diffus / user->dx;
   for (i = xs; i < xs + xm; i++) {
-    for (j = 0; j < dof; j++) { f[i][j] += idx * (x[i + 1][j] - 2.0 * x[i][j] + x[i - 1][j]); }
+    for (j = 0; j < dof; j++) f[i][j] += idx * (x[i + 1][j] - 2.0 * x[i][j] + x[i - 1][j]);
   }
   PetscCall(DMDAVecRestoreArrayDOFRead(dm, Xlocal, &x));
   PetscCall(DMDAVecRestoreArrayDOF(dm, F, &f));
@@ -429,7 +429,7 @@ static PetscErrorCode FormMoleFraction(UserLGCtx *ctx, Vec massf, Vec *molef) {
   PetscCall(VecGetArray(*molef, &mof));
   mof[0] = maf[ctx->cell][0]; /* copy over temperature */
   for (i = 1; i < n; i++) tM += maf[ctx->cell][i] / M[i - 1];
-  for (i = 1; i < n; i++) { mof[i] = maf[ctx->cell][i] / (M[i - 1] * tM); }
+  for (i = 1; i < n; i++) mof[i] = maf[ctx->cell][i] / (M[i - 1] * tM);
   PetscCall(DMDAVecRestoreArrayDOFRead(user->dm, massf, &maf));
   PetscCall(VecRestoreArray(*molef, &mof));
   PetscCall(PetscFree(M));

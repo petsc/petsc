@@ -419,7 +419,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao) {
       default:
         /* Newton step computation is good; decrease perturbation */
         pert = PetscMin(nlsP->psfac * pert, nlsP->pmsfac * gnorm);
-        if (pert < nlsP->pmin) { pert = 0.0; }
+        if (pert < nlsP->pmin) pert = 0.0;
         break;
       }
 

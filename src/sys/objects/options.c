@@ -459,7 +459,7 @@ static PetscErrorCode PetscOptionsInsertFilePetsc(MPI_Comm comm, PetscOptions op
         PetscCall(PetscStrlen(string, &len));
         /* replace tabs, ^M, \n with " " */
         for (i = 0; i < len; i++) {
-          if (string[i] == '\t' || string[i] == '\r' || string[i] == '\n') { string[i] = ' '; }
+          if (string[i] == '\t' || string[i] == '\r' || string[i] == '\n') string[i] = ' ';
         }
         PetscCall(PetscTokenCreate(string, ' ', &token));
         PetscCall(PetscTokenFind(token, &tokens[0]));
@@ -1897,7 +1897,7 @@ PetscErrorCode PetscOptionsLeftGet(PetscOptions options, PetscInt *N, char **nam
     if (PetscCIOption(options->names[i])) continue;
     if (!options->used[i]) n++;
   }
-  if (N) { *N = n; }
+  if (N) *N = n;
   if (names) PetscCall(PetscMalloc1(n, names));
   if (values) PetscCall(PetscMalloc1(n, values));
 
@@ -1934,7 +1934,7 @@ PetscErrorCode PetscOptionsLeftRestore(PetscOptions options, PetscInt *N, char *
   if (N) PetscValidIntPointer(N, 2);
   if (names) PetscValidPointer(names, 3);
   if (values) PetscValidPointer(values, 4);
-  if (N) { *N = 0; }
+  if (N) *N = 0;
   if (names) PetscCall(PetscFree(*names));
   if (values) PetscCall(PetscFree(*values));
   PetscFunctionReturn(0);
@@ -2398,7 +2398,7 @@ PetscErrorCode PetscOptionsGetEnum(PetscOptions options, const char pre[], const
 
   PetscFunctionBegin;
   PetscValidCharPointer(opt, 3);
-  while (list[ntext++]) { PetscCheck(ntext <= 50, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "List argument appears to be wrong or have more than 50 entries"); }
+  while (list[ntext++]) PetscCheck(ntext <= 50, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "List argument appears to be wrong or have more than 50 entries");
   PetscCheck(ntext >= 3, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "List argument must have at least two entries: typename and type prefix");
   ntext -= 3;
   PetscCall(PetscOptionsGetEList(options, pre, opt, list, ntext, &tval, &fset));

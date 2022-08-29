@@ -96,10 +96,10 @@ PETSC_INTERN PetscErrorCode DMStagRestrictSimple_2d(DM dmf, Vec xf_local, DM dmc
   PetscCall(DMStagGetLocationSlot(dmc, DMSTAG_ELEMENT, 0, &slot_element_coarse));
   for (j = start[1]; j < start[1] + n[1] + nextra[1]; j++) {
     for (i = start[0]; i < start[0] + n[0] + nextra[0]; i++) {
-      for (d = 0; d < dof[0]; ++d) { LA_xc[j][i][slot_down_left_coarse + d] = LA_xf[2 * j][2 * i][slot_down_left_fine + d]; }
+      for (d = 0; d < dof[0]; ++d) LA_xc[j][i][slot_down_left_coarse + d] = LA_xf[2 * j][2 * i][slot_down_left_fine + d];
       for (d = 0; d < dof[1]; ++d) {
-        if (j < N[1]) { LA_xc[j][i][slot_left_coarse + d] = 0.5 * (LA_xf[2 * j][2 * i][slot_left_fine + d] + LA_xf[2 * j + 1][2 * i][slot_left_fine + d]); }
-        if (i < N[0]) { LA_xc[j][i][slot_down_coarse + d] = 0.5 * (LA_xf[2 * j][2 * i][slot_down_fine + d] + LA_xf[2 * j][2 * i + 1][slot_down_fine + d]); }
+        if (j < N[1]) LA_xc[j][i][slot_left_coarse + d] = 0.5 * (LA_xf[2 * j][2 * i][slot_left_fine + d] + LA_xf[2 * j + 1][2 * i][slot_left_fine + d]);
+        if (i < N[0]) LA_xc[j][i][slot_down_coarse + d] = 0.5 * (LA_xf[2 * j][2 * i][slot_down_fine + d] + LA_xf[2 * j][2 * i + 1][slot_down_fine + d]);
       }
       for (d = 0; d < dof[2]; ++d) {
         if (i < N[0] && j < N[1]) {
@@ -149,19 +149,19 @@ PETSC_INTERN PetscErrorCode DMStagSetUniformCoordinatesExplicit_2d(DM dm, PetscR
     for (ind[0] = start_ghost[0]; ind[0] < start_ghost[0] + n_ghost[0]; ++ind[0]) {
       if (stagCoord->dof[0]) {
         const PetscReal offs[2] = {0.0, 0.0};
-        for (c = 0; c < 2; ++c) { arr[ind[1]][ind[0]][idownleft + c] = min[c] + ((PetscReal)ind[c] + offs[c]) * h[c]; }
+        for (c = 0; c < 2; ++c) arr[ind[1]][ind[0]][idownleft + c] = min[c] + ((PetscReal)ind[c] + offs[c]) * h[c];
       }
       if (stagCoord->dof[1]) {
         const PetscReal offs[2] = {0.5, 0.0};
-        for (c = 0; c < 2; ++c) { arr[ind[1]][ind[0]][idown + c] = min[c] + ((PetscReal)ind[c] + offs[c]) * h[c]; }
+        for (c = 0; c < 2; ++c) arr[ind[1]][ind[0]][idown + c] = min[c] + ((PetscReal)ind[c] + offs[c]) * h[c];
       }
       if (stagCoord->dof[1]) {
         const PetscReal offs[2] = {0.0, 0.5};
-        for (c = 0; c < 2; ++c) { arr[ind[1]][ind[0]][ileft + c] = min[c] + ((PetscReal)ind[c] + offs[c]) * h[c]; }
+        for (c = 0; c < 2; ++c) arr[ind[1]][ind[0]][ileft + c] = min[c] + ((PetscReal)ind[c] + offs[c]) * h[c];
       }
       if (stagCoord->dof[2]) {
         const PetscReal offs[2] = {0.5, 0.5};
-        for (c = 0; c < 2; ++c) { arr[ind[1]][ind[0]][ielement + c] = min[c] + ((PetscReal)ind[c] + offs[c]) * h[c]; }
+        for (c = 0; c < 2; ++c) arr[ind[1]][ind[0]][ielement + c] = min[c] + ((PetscReal)ind[c] + offs[c]) * h[c];
       }
     }
   }
@@ -214,7 +214,7 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_2d(DM dm) {
     if (!stag->l[i]) {
       const PetscInt Ni = stag->N[i], nRanksi = stag->nRanks[i];
       PetscCall(PetscMalloc1(stag->nRanks[i], &stag->l[i]));
-      for (j = 0; j < stag->nRanks[i]; ++j) { stag->l[i][j] = Ni / nRanksi + ((Ni % nRanksi) > j); }
+      for (j = 0; j < stag->nRanks[i]; ++j) stag->l[i][j] = Ni / nRanksi + ((Ni % nRanksi) > j);
     }
   }
 
@@ -232,7 +232,7 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_2d(DM dm) {
   /* Compute starting elements */
   for (i = 0; i < dim; ++i) {
     stag->start[i] = 0;
-    for (j = 0; j < stag->rank[i]; ++j) { stag->start[i] += stag->l[i][j]; }
+    for (j = 0; j < stag->rank[i]; ++j) stag->start[i] += stag->l[i][j];
   }
 
   /* Determine ranks of neighbors, using DMDA's convention
@@ -701,12 +701,12 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_2d(DM dm) {
           const PetscInt j = nNeighbor[1] - ghostOffsetStart[1] + jghost; /* Note: this is actually the same value for the whole row of ranks below, so recomputing it for the next two ranks is redundant, and one could even get rid of jghost entirely if desired */
           const PetscInt eprNeighbor = nNeighbor[0] * stag->entriesPerElement;
           for (i = nNeighbor[0] - ghostOffsetStart[0]; i < nNeighbor[0]; ++i) {
-            for (d = 0; d < stag->entriesPerElement; ++d, ++countAll) { idxGlobalAll[countAll] = globalOffset + j * eprNeighbor + i * stag->entriesPerElement + d; }
+            for (d = 0; d < stag->entriesPerElement; ++d, ++countAll) idxGlobalAll[countAll] = globalOffset + j * eprNeighbor + i * stag->entriesPerElement + d;
           }
         } else {
           /* Down Left dummies */
           for (ighost = 0; ighost < ghostOffsetStart[0]; ++ighost) {
-            for (d = 0; d < stag->entriesPerElement; ++d, ++countAll) { idxGlobalAll[countAll] = -1; }
+            for (d = 0; d < stag->entriesPerElement; ++d, ++countAll) idxGlobalAll[countAll] = -1;
           }
         }
 
@@ -718,7 +718,7 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_2d(DM dm) {
           const PetscInt        j            = nNeighbor[1] - ghostOffsetStart[1] + jghost;
           const PetscInt        eprNeighbor  = entriesPerElementRow; /* same as here */
           for (i = 0; i < nNeighbor[0]; ++i) {
-            for (d = 0; d < stag->entriesPerElement; ++d, ++countAll) { idxGlobalAll[countAll] = globalOffset + j * eprNeighbor + i * stag->entriesPerElement + d; }
+            for (d = 0; d < stag->entriesPerElement; ++d, ++countAll) idxGlobalAll[countAll] = globalOffset + j * eprNeighbor + i * stag->entriesPerElement + d;
           }
         }
 
@@ -730,7 +730,7 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_2d(DM dm) {
           const PetscInt        j            = nNeighbor[1] - ghostOffsetStart[1] + jghost;
           const PetscInt        eprNeighbor  = nNeighbor[0] * stag->entriesPerElement + (nextToDummyEnd[0] ? entriesPerFace : 0);
           for (i = 0; i < ghostOffsetEnd[0]; ++i) {
-            for (d = 0; d < stag->entriesPerElement; ++d, ++countAll) { idxGlobalAll[countAll] = globalOffset + j * eprNeighbor + i * stag->entriesPerElement + d; }
+            for (d = 0; d < stag->entriesPerElement; ++d, ++countAll) idxGlobalAll[countAll] = globalOffset + j * eprNeighbor + i * stag->entriesPerElement + d;
           }
         } else if (dummyEnd[0]) {
           /* Down right partial dummy elements, living on the *down* rank */
@@ -741,18 +741,18 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_2d(DM dm) {
           const PetscInt        eprNeighbor  = entriesPerElementRow; /* same as here */
           PetscInt              dGlobal;
           i = nNeighbor[0];
-          for (d = 0, dGlobal = 0; d < stag->dof[0]; ++d, ++dGlobal, ++countAll) { idxGlobalAll[countAll] = globalOffset + j * eprNeighbor + i * stag->entriesPerElement + dGlobal; }
+          for (d = 0, dGlobal = 0; d < stag->dof[0]; ++d, ++dGlobal, ++countAll) idxGlobalAll[countAll] = globalOffset + j * eprNeighbor + i * stag->entriesPerElement + dGlobal;
           for (; d < stag->dof[0] + stag->dof[1]; ++d, ++countAll) { idxGlobalAll[countAll] = -1; /* dummy down face point */ }
-          for (; d < stag->dof[0] + 2 * stag->dof[1]; ++d, ++dGlobal, ++countAll) { idxGlobalAll[countAll] = globalOffset + j * eprNeighbor + i * stag->entriesPerElement + dGlobal; }
+          for (; d < stag->dof[0] + 2 * stag->dof[1]; ++d, ++dGlobal, ++countAll) idxGlobalAll[countAll] = globalOffset + j * eprNeighbor + i * stag->entriesPerElement + dGlobal;
           for (; d < stag->entriesPerElement; ++d, ++countAll) { idxGlobalAll[countAll] = -1; /* dummy element point */ }
           ++i;
           for (; i < nNeighbor[0] + ghostOffsetEnd[0]; ++i) {
-            for (d = 0; d < stag->entriesPerElement; ++d, ++countAll) { idxGlobalAll[countAll] = -1; }
+            for (d = 0; d < stag->entriesPerElement; ++d, ++countAll) idxGlobalAll[countAll] = -1;
           }
         } else {
           /* Down Right dummies */
           for (ighost = 0; ighost < ghostOffsetEnd[0]; ++ighost) {
-            for (d = 0; d < stag->entriesPerElement; ++d, ++countAll) { idxGlobalAll[countAll] = -1; }
+            for (d = 0; d < stag->entriesPerElement; ++d, ++countAll) idxGlobalAll[countAll] = -1;
           }
         }
       }
@@ -760,7 +760,7 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_2d(DM dm) {
       /* Down dummies row */
       for (jghost = 0; jghost < ghostOffsetStart[1]; ++jghost) {
         for (ighost = 0; ighost < stag->nGhost[0]; ++ighost) {
-          for (d = 0; d < stag->entriesPerElement; ++d, ++countAll) { idxGlobalAll[countAll] = -1; }
+          for (d = 0; d < stag->entriesPerElement; ++d, ++countAll) idxGlobalAll[countAll] = -1;
         }
       }
     }
@@ -774,12 +774,12 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_2d(DM dm) {
         const PetscInt *const nNeighbor    = nNeighbors[neighbor];
         const PetscInt        eprNeighbor  = nNeighbor[0] * stag->entriesPerElement;
         for (i = nNeighbor[0] - ghostOffsetStart[0]; i < nNeighbor[0]; ++i) {
-          for (d = 0; d < stag->entriesPerElement; ++d, ++countAll) { idxGlobalAll[countAll] = globalOffset + j * eprNeighbor + i * stag->entriesPerElement + d; }
+          for (d = 0; d < stag->entriesPerElement; ++d, ++countAll) idxGlobalAll[countAll] = globalOffset + j * eprNeighbor + i * stag->entriesPerElement + d;
         }
       } else {
         /* (Middle) Left dummies */
         for (ighost = 0; ighost < ghostOffsetStart[0]; ++ighost) {
-          for (d = 0; d < stag->entriesPerElement; ++d, ++countAll) { idxGlobalAll[countAll] = -1; }
+          for (d = 0; d < stag->entriesPerElement; ++d, ++countAll) idxGlobalAll[countAll] = -1;
         }
       }
 
@@ -789,7 +789,7 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_2d(DM dm) {
         const PetscInt globalOffset = globalOffsets[stag->neighbors[neighbor]];
         const PetscInt eprNeighbor  = entriesPerElementRow; /* same as here (obviously) */
         for (i = 0; i < stag->n[0]; ++i) {
-          for (d = 0; d < stag->entriesPerElement; ++d, ++countAll) { idxGlobalAll[countAll] = globalOffset + j * eprNeighbor + i * stag->entriesPerElement + d; }
+          for (d = 0; d < stag->entriesPerElement; ++d, ++countAll) idxGlobalAll[countAll] = globalOffset + j * eprNeighbor + i * stag->entriesPerElement + d;
         }
       }
 
@@ -800,7 +800,7 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_2d(DM dm) {
         const PetscInt *const nNeighbor    = nNeighbors[neighbor];
         const PetscInt        eprNeighbor  = nNeighbor[0] * stag->entriesPerElement + (nextToDummyEnd[0] ? entriesPerFace : 0);
         for (i = 0; i < ghostOffsetEnd[0]; ++i) {
-          for (d = 0; d < stag->entriesPerElement; ++d, ++countAll) { idxGlobalAll[countAll] = globalOffset + j * eprNeighbor + i * stag->entriesPerElement + d; }
+          for (d = 0; d < stag->entriesPerElement; ++d, ++countAll) idxGlobalAll[countAll] = globalOffset + j * eprNeighbor + i * stag->entriesPerElement + d;
         }
       } else {
         /* -1's for right layer of partial dummies, living on *this* rank */
@@ -810,13 +810,13 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_2d(DM dm) {
         const PetscInt        eprNeighbor  = entriesPerElementRow; /* same as here (obviously) */
         PetscInt              dGlobal;
         i = nNeighbor[0];
-        for (d = 0, dGlobal = 0; d < stag->dof[0]; ++d, ++dGlobal, ++countAll) { idxGlobalAll[countAll] = globalOffset + j * eprNeighbor + i * stag->entriesPerElement + dGlobal; }
+        for (d = 0, dGlobal = 0; d < stag->dof[0]; ++d, ++dGlobal, ++countAll) idxGlobalAll[countAll] = globalOffset + j * eprNeighbor + i * stag->entriesPerElement + dGlobal;
         for (; d < stag->dof[0] + stag->dof[1]; ++d, ++countAll) { idxGlobalAll[countAll] = -1; /* dummy down face point */ }
-        for (; d < stag->dof[0] + 2 * stag->dof[1]; ++d, ++dGlobal, ++countAll) { idxGlobalAll[countAll] = globalOffset + j * eprNeighbor + i * stag->entriesPerElement + dGlobal; }
+        for (; d < stag->dof[0] + 2 * stag->dof[1]; ++d, ++dGlobal, ++countAll) idxGlobalAll[countAll] = globalOffset + j * eprNeighbor + i * stag->entriesPerElement + dGlobal;
         for (; d < stag->entriesPerElement; ++d, ++countAll) { idxGlobalAll[countAll] = -1; /* dummy element point */ }
         ++i;
         for (; i < nNeighbor[0] + ghostOffsetEnd[0]; ++i) {
-          for (d = 0; d < stag->entriesPerElement; ++d, ++countAll) { idxGlobalAll[countAll] = -1; }
+          for (d = 0; d < stag->entriesPerElement; ++d, ++countAll) idxGlobalAll[countAll] = -1;
         }
       }
     }
@@ -831,12 +831,12 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_2d(DM dm) {
           const PetscInt *const nNeighbor    = nNeighbors[neighbor];
           const PetscInt        eprNeighbor  = nNeighbor[0] * stag->entriesPerElement;
           for (i = nNeighbor[0] - ghostOffsetStart[0]; i < nNeighbor[0]; ++i) {
-            for (d = 0; d < stag->entriesPerElement; ++d, ++countAll) { idxGlobalAll[countAll] = globalOffset + j * eprNeighbor + i * stag->entriesPerElement + d; }
+            for (d = 0; d < stag->entriesPerElement; ++d, ++countAll) idxGlobalAll[countAll] = globalOffset + j * eprNeighbor + i * stag->entriesPerElement + d;
           }
         } else {
           /* Up Left dummies */
           for (ighost = 0; ighost < ghostOffsetStart[0]; ++ighost) {
-            for (d = 0; d < stag->entriesPerElement; ++d, ++countAll) { idxGlobalAll[countAll] = -1; }
+            for (d = 0; d < stag->entriesPerElement; ++d, ++countAll) idxGlobalAll[countAll] = -1;
           }
         }
 
@@ -847,7 +847,7 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_2d(DM dm) {
           const PetscInt *const nNeighbor    = nNeighbors[neighbor];
           const PetscInt        eprNeighbor  = entriesPerElementRow; /* Same as here */
           for (i = 0; i < nNeighbor[0]; ++i) {
-            for (d = 0; d < stag->entriesPerElement; ++d, ++countAll) { idxGlobalAll[countAll] = globalOffset + j * eprNeighbor + i * stag->entriesPerElement + d; }
+            for (d = 0; d < stag->entriesPerElement; ++d, ++countAll) idxGlobalAll[countAll] = globalOffset + j * eprNeighbor + i * stag->entriesPerElement + d;
           }
         }
 
@@ -858,7 +858,7 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_2d(DM dm) {
           const PetscInt *const nNeighbor    = nNeighbors[neighbor];
           const PetscInt        eprNeighbor  = nNeighbor[0] * stag->entriesPerElement + (nextToDummyEnd[0] ? entriesPerFace : 0);
           for (i = 0; i < ghostOffsetEnd[0]; ++i) {
-            for (d = 0; d < stag->entriesPerElement; ++d, ++countAll) { idxGlobalAll[countAll] = globalOffset + j * eprNeighbor + i * stag->entriesPerElement + d; }
+            for (d = 0; d < stag->entriesPerElement; ++d, ++countAll) idxGlobalAll[countAll] = globalOffset + j * eprNeighbor + i * stag->entriesPerElement + d;
           }
         } else if (dummyEnd[0]) {
           /* -1's for right layer of partial dummies, living on rank above */
@@ -868,18 +868,18 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_2d(DM dm) {
           const PetscInt        eprNeighbor  = entriesPerElementRow; /* Same as here */
           PetscInt              dGlobal;
           i = nNeighbor[0];
-          for (d = 0, dGlobal = 0; d < stag->dof[0]; ++d, ++dGlobal, ++countAll) { idxGlobalAll[countAll] = globalOffset + j * eprNeighbor + i * stag->entriesPerElement + dGlobal; }
+          for (d = 0, dGlobal = 0; d < stag->dof[0]; ++d, ++dGlobal, ++countAll) idxGlobalAll[countAll] = globalOffset + j * eprNeighbor + i * stag->entriesPerElement + dGlobal;
           for (; d < stag->dof[0] + stag->dof[1]; ++d, ++countAll) { idxGlobalAll[countAll] = -1; /* dummy down face point */ }
-          for (; d < stag->dof[0] + 2 * stag->dof[1]; ++d, ++dGlobal, ++countAll) { idxGlobalAll[countAll] = globalOffset + j * eprNeighbor + i * stag->entriesPerElement + dGlobal; }
+          for (; d < stag->dof[0] + 2 * stag->dof[1]; ++d, ++dGlobal, ++countAll) idxGlobalAll[countAll] = globalOffset + j * eprNeighbor + i * stag->entriesPerElement + dGlobal;
           for (; d < stag->entriesPerElement; ++d, ++countAll) { idxGlobalAll[countAll] = -1; /* dummy element point */ }
           ++i;
           for (; i < nNeighbor[0] + ghostOffsetEnd[0]; ++i) {
-            for (d = 0; d < stag->entriesPerElement; ++d, ++countAll) { idxGlobalAll[countAll] = -1; }
+            for (d = 0; d < stag->entriesPerElement; ++d, ++countAll) idxGlobalAll[countAll] = -1;
           }
         } else {
           /* Up Right dummies */
           for (ighost = 0; ighost < ghostOffsetEnd[0]; ++ighost) {
-            for (d = 0; d < stag->entriesPerElement; ++d, ++countAll) { idxGlobalAll[countAll] = -1; }
+            for (d = 0; d < stag->entriesPerElement; ++d, ++countAll) idxGlobalAll[countAll] = -1;
           }
         }
       }
@@ -899,7 +899,7 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_2d(DM dm) {
         }
       } else {
         for (ighost = 0; ighost < ghostOffsetStart[0]; ++ighost) {
-          for (d = 0; d < stag->entriesPerElement; ++d, ++countAll) { idxGlobalAll[countAll] = -1; }
+          for (d = 0; d < stag->entriesPerElement; ++d, ++countAll) idxGlobalAll[countAll] = -1;
         }
       }
 
@@ -936,14 +936,14 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_2d(DM dm) {
         for (; d < stag->entriesPerElement; ++d, ++countAll) { idxGlobalAll[countAll] = -1; /* dummy bottom face, left face and element points */ }
         ++i;
         for (; i < stag->n[0] + ghostOffsetEnd[0]; ++i) {
-          for (d = 0; d < stag->entriesPerElement; ++d, ++countAll) { idxGlobalAll[countAll] = -1; }
+          for (d = 0; d < stag->entriesPerElement; ++d, ++countAll) idxGlobalAll[countAll] = -1;
         }
       }
       ++j;
       /* Additional top dummy layers */
       for (; j < stag->n[1] + ghostOffsetEnd[1]; ++j) {
         for (ighost = 0; ighost < stag->nGhost[0]; ++ighost) {
-          for (d = 0; d < stag->entriesPerElement; ++d, ++countAll) { idxGlobalAll[countAll] = -1; }
+          for (d = 0; d < stag->entriesPerElement; ++d, ++countAll) idxGlobalAll[countAll] = -1;
         }
       }
     }

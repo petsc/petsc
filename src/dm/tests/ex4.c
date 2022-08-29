@@ -61,11 +61,11 @@ int main(int argc, char **argv) {
   if (flg) {
     PetscCheck(m != PETSC_DECIDE, PETSC_COMM_WORLD, PETSC_ERR_USER_INPUT, "Must set -m option with -distribute option");
     PetscCall(PetscMalloc1(m, &lx));
-    for (i = 0; i < m - 1; i++) { lx[i] = 4; }
+    for (i = 0; i < m - 1; i++) lx[i] = 4;
     lx[m - 1] = M - 4 * (m - 1);
     PetscCheck(n != PETSC_DECIDE, PETSC_COMM_WORLD, PETSC_ERR_USER_INPUT, "Must set -n option with -distribute option");
     PetscCall(PetscMalloc1(n, &ly));
-    for (i = 0; i < n - 1; i++) { ly[i] = 2; }
+    for (i = 0; i < n - 1; i++) ly[i] = 2;
     ly[n - 1] = N - 2 * (n - 1);
   }
 
@@ -134,7 +134,7 @@ int main(int argc, char **argv) {
     for (j = Ys; j < Ys + Ym; j++) {
       for (i = Xs; i < Xs + Xm; i++) {
         iloc = w * ((j - Ys) * Xm + i - Xs);
-        for (l = 0; l < w; l++) { iglobal[kk++] = ltog[iloc + l]; }
+        for (l = 0; l < w; l++) iglobal[kk++] = ltog[iloc + l];
       }
     }
 

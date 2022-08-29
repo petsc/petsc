@@ -151,7 +151,7 @@ static PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *total
       for (c = 0; c < numCorners;) {
         PetscInt nC = remoteVertices[c++];
 
-        for (v = 0; v < nC; ++v, ++c) { vertices[v] = remoteVertices[c]; }
+        for (v = 0; v < nC; ++v, ++c) vertices[v] = remoteVertices[c];
         PetscCall(PetscFPrintf(comm, fp, "%" PetscInt_FMT " ", nC));
         for (v = 0; v < nC; ++v) PetscCall(PetscFPrintf(comm, fp, " %" PetscInt_FMT, vertices[v]));
         PetscCall(PetscFPrintf(comm, fp, "\n"));
@@ -180,7 +180,7 @@ static PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *total
       }
       corners[numCells++] = nC;
       localVertices[k++]  = nC;
-      for (v = 0; v < nC; ++v, ++k) { localVertices[k] = closure[v]; }
+      for (v = 0; v < nC; ++v, ++k) localVertices[k] = closure[v];
       PetscCall(DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure));
       PetscCall(DMPlexReorderCell(dm, c, localVertices + k - nC));
     }
@@ -385,7 +385,7 @@ static PetscErrorCode DMPlexVTKWriteSection_ASCII(DM dm, PetscSection section, P
       PetscCall(PetscSectionGetOffset(section, p, &off));
       PetscCall(PetscSectionGetOffset(globalSection, p, &goff));
       if (goff >= 0) {
-        for (d = 0; d < dof; ++d) { localValues[k++] = array[off + d]; }
+        for (d = 0; d < dof; ++d) localValues[k++] = array[off + d];
       }
     }
     PetscCallMPI(MPI_Send(&k, 1, MPIU_INT, 0, tag, comm));

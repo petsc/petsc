@@ -576,7 +576,7 @@ static PetscErrorCode TaoSNESFunction_PDIPM_residual(SNES snes, Vec X, Vec F, vo
 
       if (pdipm->Nci) {
         PetscCall(VecGetArrayWrite(pdipm->z, &tmparr));
-        for (i = 0; i < pdipm->nci; i++) { tmparr[i] /= Xarr[pdipm->off_z + i]; }
+        for (i = 0; i < pdipm->nci; i++) tmparr[i] /= Xarr[pdipm->off_z + i];
         PetscCall(VecRestoreArrayWrite(pdipm->z, &tmparr));
       }
       PetscCall(VecResetArray(pdipm->z));

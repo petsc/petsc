@@ -31,7 +31,7 @@ int main(int argc, char **args) {
   PetscCall(MatSetUp(A));
   PetscCall(MatGetLocalSize(A, &m, NULL));
   PetscCall(PetscMalloc1(m / bs, &dnnz));
-  for (j = 0; j < m / bs; j++) { dnnz[j] = 1; }
+  for (j = 0; j < m / bs; j++) dnnz[j] = 1;
   PetscCall(MatXAIJSetPreallocation(A, bs, dnnz, NULL, NULL, NULL));
   PetscCall(PetscFree(dnnz));
 

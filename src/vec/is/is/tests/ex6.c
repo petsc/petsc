@@ -27,7 +27,7 @@ int main(int argc, char **argv) {
 
     PetscCall(PetscCalloc1(rend - rstart, &mask));
     for (i = 0; i < 3; i++) {
-      for (j = 0; j < size; j++) { mask[i * (size + 2) + j] = PETSC_TRUE; }
+      for (j = 0; j < size; j++) mask[i * (size + 2) + j] = PETSC_TRUE;
     }
     PetscCall(ISGeneralSetIndicesFromMask(is[0], rstart, rend, mask));
     PetscCall(PetscFree(mask));

@@ -18,7 +18,7 @@ PetscErrorCode KSPComputeEigenvalues_CG(KSP ksp, PetscInt nmax, PetscReal *r, Pe
   *neig = n;
 
   PetscCall(PetscArrayzero(c, nmax));
-  if (!n) { PetscFunctionReturn(0); }
+  if (!n) PetscFunctionReturn(0);
   d  = cgP->d;
   e  = cgP->e;
   ee = cgP->ee;

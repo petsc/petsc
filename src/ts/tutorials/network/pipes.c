@@ -32,7 +32,7 @@ PetscErrorCode WashNetworkDistribute(MPI_Comm comm, Wash wash) {
   /* (1) all processes get global and local number of edges */
   PetscCallMPI(MPI_Bcast(&numEdges, 1, MPIU_INT, 0, comm));
   nedges = numEdges / size; /* local nedges */
-  if (rank == 0) { nedges += numEdges - size * (numEdges / size); }
+  if (rank == 0) nedges += numEdges - size * (numEdges / size);
   wash->Nedge = numEdges;
   wash->nedge = nedges;
   /* PetscCall(PetscPrintf(PETSC_COMM_SELF,"[%d] nedges %d, numEdges %d\n",rank,nedges,numEdges)); */
@@ -40,7 +40,7 @@ PetscErrorCode WashNetworkDistribute(MPI_Comm comm, Wash wash) {
   PetscCall(PetscCalloc3(size + 1, &eowners, size, &nvtx, numVertices, &vtxDone));
   PetscCallMPI(MPI_Allgather(&nedges, 1, MPIU_INT, eowners + 1, 1, MPIU_INT, PETSC_COMM_WORLD));
   eowners[0] = 0;
-  for (i = 2; i <= size; i++) { eowners[i] += eowners[i - 1]; }
+  for (i = 2; i <= size; i++) eowners[i] += eowners[i - 1];
 
   estart = eowners[rank];
   eend   = eowners[rank + 1];
@@ -249,7 +249,7 @@ PetscErrorCode WASHSetInitialSolution(DM networkdm, Vec X, Wash wash) {
 
     PetscCall(VecGetArrayRead(pipe->x, &xarray));
     /* copy pipe->x to xarray */
-    for (k = 0; k < nx; k++) { (xarr + varoffset)[k] = xarray[k]; }
+    for (k = 0; k < nx; k++) (xarr + varoffset)[k] = xarray[k];
 
     /* set boundary values into vfrom and vto */
     PetscCall(DMNetworkGetConnectedVertices(networkdm, e, &cone));

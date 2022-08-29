@@ -322,7 +322,7 @@ static PetscErrorCode MatTranspose_Nest(Mat A, MatReuse reuse, Mat *B) {
     PetscCall(MatNestGetISs(A, is_row, is_col));
     if (reuse == MAT_INPLACE_MATRIX) {
       for (i = 0; i < nr; i++) {
-        for (j = 0; j < nc; j++) { subs[i + nr * j] = bA->m[i][j]; }
+        for (j = 0; j < nc; j++) subs[i + nr * j] = bA->m[i][j];
       }
     }
 

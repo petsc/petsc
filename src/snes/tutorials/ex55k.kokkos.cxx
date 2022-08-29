@@ -255,13 +255,13 @@ PetscErrorCode FormJacobianLocalVec(DMDALocalInfo *info, Vec x, Mat jac, Mat jac
         coo_v(p + 2) = 2.0 * (hydhx + hxdhy);
       } else {
         /* interior grid points */
-        if (j - 1 != 0) { coo_v(p + 0) = -hxdhy; }
-        if (i - 1 != 0) { coo_v(p + 1) = -hydhx; }
+        if (j - 1 != 0) coo_v(p + 0) = -hxdhy;
+        if (i - 1 != 0) coo_v(p + 1) = -hydhx;
 
         coo_v(p + 2) = 2.0 * (hydhx + hxdhy) - sc * PetscExpScalar(xv(j, i));
 
-        if (i + 1 != mx - 1) { coo_v(p + 3) = -hydhx; }
-        if (j + 1 != mx - 1) { coo_v(p + 4) = -hxdhy; }
+        if (i + 1 != mx - 1) coo_v(p + 3) = -hydhx;
+        if (j + 1 != mx - 1) coo_v(p + 4) = -hxdhy;
       }
     }));
   PetscCall(MatSetValuesCOO(jacpre, coo_v.data(), INSERT_VALUES));

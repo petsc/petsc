@@ -289,6 +289,6 @@ static inline int GmshLexOrder_PRI(int p, int lex[], int node) {
 
 static inline int GmshLexOrder_PYR(int p, int lex[], int node) {
   int i, m = GmshNumNodes_PYR(p);
-  for (i = 0; i < m; ++i) { lex[i] = node++; } /* TODO */
+  for (i = 0; i < m; ++i) lex[i] = node++; /* TODO */
   return node;
 }

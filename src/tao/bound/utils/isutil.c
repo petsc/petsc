@@ -75,7 +75,7 @@ PetscErrorCode TaoVecGetSubVec(Vec vfull, IS is, TaoSubsetType reduced_type, Pet
       PetscCall(VecGetArray(*vreduced, &rv));
       PetscCall(ISGetIndices(is, &s));
       PetscCheck(nlocal <= (fhigh - flow), PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "IS local size %" PetscInt_FMT " > Vec local size %" PetscInt_FMT, nlocal, fhigh - flow);
-      for (i = 0; i < nlocal; ++i) { rv[s[i] - flow] = fv[s[i] - flow]; }
+      for (i = 0; i < nlocal; ++i) rv[s[i] - flow] = fv[s[i] - flow];
       PetscCall(ISRestoreIndices(is, &s));
       PetscCall(VecRestoreArray(vfull, &fv));
       PetscCall(VecRestoreArray(*vreduced, &rv));

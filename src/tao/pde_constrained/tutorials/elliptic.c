@@ -977,7 +977,7 @@ PetscErrorCode EllipticInitialize(AppCtx *user) {
     v = PetscSqrtReal(1.0 / user->ndesign);
     PetscCall(PetscMalloc1(user->ndesign, &user->ones));
 
-    for (i = 0; i < user->ndesign; i++) { user->ones[i] = v; }
+    for (i = 0; i < user->ndesign; i++) user->ones[i] = v;
     PetscCall(MatCreateDense(PETSC_COMM_WORLD, ysubnlocal, PETSC_DECIDE, user->ndesign, 1, user->ones, &user->Ones));
     PetscCall(MatCreateLRC(user->DSG, user->Ones, NULL, user->Ones, &user->JsBlock));
     PetscCall(MatSetUp(user->JsBlock));

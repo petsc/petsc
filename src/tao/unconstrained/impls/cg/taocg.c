@@ -139,7 +139,7 @@ static PetscErrorCode TaoSolve_CG(Tao tao) {
     PetscCall(TaoLogConvergenceHistory(tao, f, gnorm, 0.0, tao->ksp_its));
     PetscCall(TaoMonitor(tao, tao->niter, f, gnorm, 0.0, step));
     PetscUseTypeMethod(tao, convergencetest, tao->cnvP);
-    if (tao->reason != TAO_CONTINUE_ITERATING) { break; }
+    if (tao->reason != TAO_CONTINUE_ITERATING) break;
 
     /*  Check for restart condition */
     PetscCall(VecDot(tao->gradient, cgP->G_old, &ginner));

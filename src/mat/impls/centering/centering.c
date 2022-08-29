@@ -13,7 +13,7 @@ PetscErrorCode MatMult_Centering(Mat A, Vec xx, Vec yy) {
   mean = sum / (PetscScalar)size;
   PetscCall(VecGetArrayRead(xx, &x));
   PetscCall(VecGetArray(yy, &y));
-  for (i = 0; i < m; i++) { y[i] = x[i] - mean; }
+  for (i = 0; i < m; i++) y[i] = x[i] - mean;
   PetscCall(VecRestoreArrayRead(xx, &x));
   PetscCall(VecRestoreArray(yy, &y));
   PetscFunctionReturn(0);

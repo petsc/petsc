@@ -433,7 +433,7 @@ static PetscErrorCode TaoSolve_BQPIP(Tao tao) {
     qp->pobj = d1 / 2.0 + d2 + qp->d;
     qp->gap  = gap[0] + gap[1];
     qp->dobj = qp->pobj - qp->gap;
-    if (qp->m > 0) { qp->mu = qp->gap / (qp->m); }
+    if (qp->m > 0) qp->mu = qp->gap / (qp->m);
     qp->rgap = qp->gap / (PetscAbsReal(qp->dobj) + PetscAbsReal(qp->pobj) + 1.0);
   } /* END MAIN LOOP  */
   PetscFunctionReturn(0);

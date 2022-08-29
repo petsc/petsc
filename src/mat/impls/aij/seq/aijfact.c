@@ -274,7 +274,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ_inplace(Mat B, Mat A, IS isrow, IS isc
     (B)->info.fill_ratio_needed = 0.0;
   }
   (B)->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_inplace;
-  if (a->inode.size) { (B)->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_Inode_inplace; }
+  if (a->inode.size) (B)->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_Inode_inplace;
   PetscFunctionReturn(0);
 }
 
@@ -421,7 +421,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat B, Mat A, IS isrow, IS iscol, cons
   }
 #endif
   B->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ;
-  if (a->inode.size) { B->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_Inode; }
+  if (a->inode.size) B->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_Inode;
   PetscCall(MatSeqAIJCheckInode_FactorLU(B));
   PetscFunctionReturn(0);
 }
@@ -507,7 +507,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat B, Mat A, const MatFactorInfo *info
       nz    = ai[r[i] + 1] - ai[r[i]];
       ajtmp = aj + ai[r[i]];
       v     = aa + ai[r[i]];
-      for (j = 0; j < nz; j++) { rtmp[ics[ajtmp[j]]] = v[j]; }
+      for (j = 0; j < nz; j++) rtmp[ics[ajtmp[j]]] = v[j];
       /* ZeropivotApply() */
       rtmp[i] += sctx.shift_amount; /* shift the diagonal of the matrix */
 
@@ -666,7 +666,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_inplace(Mat B, Mat A, const MatFactorIn
       nz    = ai[r[i] + 1] - ai[r[i]];
       ajtmp = aj + ai[r[i]];
       v     = aa + ai[r[i]];
-      for (j = 0; j < nz; j++) { rtmp[ics[ajtmp[j]]] = v[j]; }
+      for (j = 0; j < nz; j++) rtmp[ics[ajtmp[j]]] = v[j];
       rtmp[ics[r[i]]] += sctx.shift_amount; /* shift the diagonal of the matrix */
 
       row = *bjtmp++;
@@ -716,7 +716,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_inplace(Mat B, Mat A, const MatFactorIn
   } while (sctx.newshift);
 
   /* invert diagonal entries for simpler triangular solves */
-  for (i = 0; i < n; i++) { b->a[diag_offset[i]] = 1.0 / b->a[diag_offset[i]]; }
+  for (i = 0; i < n; i++) b->a[diag_offset[i]] = 1.0 / b->a[diag_offset[i]];
   PetscCall(PetscFree(rtmp));
   PetscCall(ISRestoreIndices(isicol, &ic));
   PetscCall(ISRestoreIndices(isrow, &r));
@@ -899,7 +899,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_InplaceWithPerm(Mat B, Mat A, const Mat
   } while (sctx.newshift);
 
   /* invert diagonal entries for simpler triangular solves */
-  for (i = 0; i < n; i++) { a->a[diag[r[i]]] = 1.0 / a->a[diag[r[i]]]; }
+  for (i = 0; i < n; i++) a->a[diag[r[i]]] = 1.0 / a->a[diag[r[i]]];
 
   PetscCall(PetscFree(rtmp));
   PetscCall(ISRestoreIndices(isicol, &ic));
@@ -1601,7 +1601,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ_ilu0(Mat fact, Mat A, IS isrow, IS is
     nz        = adiag[i] - ai[i];
     bi[i + 1] = bi[i] + nz;
     aj        = a->j + ai[i];
-    for (j = 0; j < nz; j++) { bj[k++] = aj[j]; }
+    for (j = 0; j < nz; j++) bj[k++] = aj[j];
   }
 
   /* U part */
@@ -1609,7 +1609,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ_ilu0(Mat fact, Mat A, IS isrow, IS is
   for (i = n - 1; i >= 0; i--) {
     nz = ai[i + 1] - adiag[i] - 1;
     aj = a->j + adiag[i] + 1;
-    for (j = 0; j < nz; j++) { bj[k++] = aj[j]; }
+    for (j = 0; j < nz; j++) bj[k++] = aj[j];
     /* diag[i] */
     bj[k++]  = i;
     bdiag[i] = bdiag[i + 1] + nz + 1;
@@ -1659,7 +1659,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat fact, Mat A, IS isrow, IS iscol, 
   if (!levels && row_identity && col_identity) {
     /* special case: ilu(0) with natural ordering */
     PetscCall(MatILUFactorSymbolic_SeqAIJ_ilu0(fact, A, isrow, iscol, info));
-    if (a->inode.size) { fact->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_Inode; }
+    if (a->inode.size) fact->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_Inode;
     PetscFunctionReturn(0);
   }
 
@@ -1796,7 +1796,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat fact, Mat A, IS isrow, IS iscol, 
   (fact)->info.fill_ratio_given  = f;
   (fact)->info.fill_ratio_needed = ((PetscReal)(bdiag[0] + 1)) / ((PetscReal)ai[n]);
   (fact)->ops->lufactornumeric   = MatLUFactorNumeric_SeqAIJ;
-  if (a->inode.size) { (fact)->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_Inode; }
+  if (a->inode.size) (fact)->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_Inode;
   PetscCall(MatSeqAIJCheckInode_FactorLU(fact));
   PetscFunctionReturn(0);
 }
@@ -1835,7 +1835,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ_inplace(Mat fact, Mat A, IS isrow, IS
     PetscCall(MatDuplicateNoCreate_SeqAIJ(fact, A, MAT_DO_NOT_COPY_VALUES, PETSC_TRUE));
 
     (fact)->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_inplace;
-    if (a->inode.size) { (fact)->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_Inode_inplace; }
+    if (a->inode.size) (fact)->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_Inode_inplace;
     fact->factortype               = MAT_FACTOR_ILU;
     (fact)->info.factor_mallocs    = 0;
     (fact)->info.fill_ratio_given  = info->fill;
@@ -1984,7 +1984,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ_inplace(Mat fact, Mat A, IS isrow, IS
   (fact)->info.fill_ratio_given  = f;
   (fact)->info.fill_ratio_needed = ((PetscReal)bi[n]) / ((PetscReal)ai[n]);
   (fact)->ops->lufactornumeric   = MatLUFactorNumeric_SeqAIJ_inplace;
-  if (a->inode.size) { (fact)->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_Inode_inplace; }
+  if (a->inode.size) (fact)->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_Inode_inplace;
   PetscFunctionReturn(0);
 }
 
@@ -2250,7 +2250,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_inplace(Mat B, Mat A, const MatFa
       jmin = bi[k] + 1;
       nz   = bi[k + 1] - jmin;
       bcol = bj + jmin;
-      for (j = 0; j < nz; j++) { rs += PetscAbsScalar(rtmp[bcol[j]]); }
+      for (j = 0; j < nz; j++) rs += PetscAbsScalar(rtmp[bcol[j]]);
 
       sctx.rs = rs;
       sctx.pv = dk;
@@ -3271,7 +3271,7 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A, IS isrow, IS iscol, const MatFactorI
 
     /* load in initial (unfactored row) */
     aatmp = a->a + ai[r[i]];
-    for (j = 0; j < nzi; j++) { rtmp[ics[*ajtmp++]] = *aatmp++; }
+    for (j = 0; j < nzi; j++) rtmp[ics[*ajtmp++]] = *aatmp++;
 
     /* add pivot rows into linked list */
     row = lnk[n];
@@ -3356,7 +3356,7 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A, IS isrow, IS iscol, const MatFactorI
     batmp                = ba + bdiag[i];
     *bjtmp               = i;
     *batmp               = diag_tmp; /* rtmp[i]; */
-    if (*batmp == 0.0) { *batmp = dt + shift; }
+    if (*batmp == 0.0) *batmp = dt + shift;
     *batmp = 1.0 / (*batmp); /* invert diagonal entries for simpler triangular solves */
 
     bjtmp = bj + bdiag[i + 1] + 1;
@@ -3448,7 +3448,7 @@ PetscErrorCode MatILUDTFactorNumeric_SeqAIJ(Mat fact, Mat A, const MatFactorInfo
     nz    = ai[r[i] + 1] - ai[r[i]];
     ajtmp = aj + ai[r[i]];
     v     = aa + ai[r[i]];
-    for (j = 0; j < nz; j++) { rtmp[ics[*ajtmp++]] = v[j]; }
+    for (j = 0; j < nz; j++) rtmp[ics[*ajtmp++]] = v[j];
 
     /* numerical factorization */
     bjtmp = bj + bi[i];        /* point to 1st entry of L(i,:) */
@@ -3475,7 +3475,7 @@ PetscErrorCode MatILUDTFactorNumeric_SeqAIJ(Mat fact, Mat A, const MatFactorInfo
     pv  = b->a + bi[i];
     pj  = bj + bi[i];
     nzl = bi[i + 1] - bi[i];
-    for (j = 0; j < nzl; j++) { pv[j] = rtmp[pj[j]]; }
+    for (j = 0; j < nzl; j++) pv[j] = rtmp[pj[j]];
 
     /* diagonal: invert diagonal entries for simpler triangular solves */
     if (rtmp[i] == 0.0) rtmp[i] = dt + shift;
@@ -3485,7 +3485,7 @@ PetscErrorCode MatILUDTFactorNumeric_SeqAIJ(Mat fact, Mat A, const MatFactorInfo
     pv  = b->a + bdiag[i + 1] + 1;
     pj  = bj + bdiag[i + 1] + 1;
     nzu = bdiag[i] - bdiag[i + 1] - 1;
-    for (j = 0; j < nzu; j++) { pv[j] = rtmp[pj[j]]; }
+    for (j = 0; j < nzu; j++) pv[j] = rtmp[pj[j]];
   }
 
   PetscCall(PetscFree(rtmp));

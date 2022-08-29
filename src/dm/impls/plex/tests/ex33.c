@@ -88,7 +88,7 @@ static void f0_flare(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt u
   const PetscInt cf = (PetscInt)PetscRealPart(constants[0]);
   PetscInt       c;
 
-  for (c = 0; c < Nc; ++c) { coords[c] = u[c] * (c == cf ? 1.0 : constants[c + 1] * u[cf]); }
+  for (c = 0; c < Nc; ++c) coords[c] = u[c] * (c == cf ? 1.0 : constants[c + 1] * u[cf]);
 }
 
 /*

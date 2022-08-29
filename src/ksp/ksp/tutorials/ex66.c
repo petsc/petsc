@@ -79,7 +79,7 @@ PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ctx) {
   PetscCall(DMDAGetCorners(da, &xs, &ys, 0, &xm, &ym, 0)); /* Fine grid */
   PetscCall(DMDAVecGetArray(da, b, &array));
   for (j = ys; j < ys + ym; j++) {
-    for (i = xs; i < xs + xm; i++) { array[j][i] = -PetscCosScalar(uu * pi * ((PetscReal)i + 0.5) * Hx) * PetscCosScalar(tt * pi * ((PetscReal)j + 0.5) * Hy) * Hx * Hy; }
+    for (i = xs; i < xs + xm; i++) array[j][i] = -PetscCosScalar(uu * pi * ((PetscReal)i + 0.5) * Hx) * PetscCosScalar(tt * pi * ((PetscReal)j + 0.5) * Hy) * Hx * Hy;
   }
   PetscCall(DMDAVecRestoreArray(da, b, &array));
   PetscCall(VecAssemblyBegin(b));

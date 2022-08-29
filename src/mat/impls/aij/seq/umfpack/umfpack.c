@@ -170,7 +170,7 @@ static PetscErrorCode MatLUFactorNumeric_UMFPACK(Mat F, Mat A, const MatFactorIn
   /* numeric factorization of A' */
   /* ----------------------------*/
 
-  if (lu->flg == SAME_NONZERO_PATTERN && lu->Numeric) { umfpack_UMF_free_numeric(&lu->Numeric); }
+  if (lu->flg == SAME_NONZERO_PATTERN && lu->Numeric) umfpack_UMF_free_numeric(&lu->Numeric);
 #if defined(PETSC_USE_COMPLEX)
   status = umfpack_UMF_numeric(ai, aj, (double *)av, NULL, lu->Symbolic, &lu->Numeric, lu->Control, lu->Info);
 #else

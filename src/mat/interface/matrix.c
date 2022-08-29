@@ -1932,11 +1932,11 @@ PetscErrorCode MatSetValuesBlocked(Mat mat, PetscInt m, const PetscInt idxm[], P
       iidxn = bufc;
     }
     for (i = 0; i < m; i++) {
-      for (j = 0; j < bs; j++) { iidxm[i * bs + j] = bs * idxm[i] + j; }
+      for (j = 0; j < bs; j++) iidxm[i * bs + j] = bs * idxm[i] + j;
     }
     if (m != n || bs != cbs || idxm != idxn) {
       for (i = 0; i < n; i++) {
-        for (j = 0; j < cbs; j++) { iidxn[i * cbs + j] = cbs * idxn[i] + j; }
+        for (j = 0; j < cbs; j++) iidxn[i * cbs + j] = cbs * idxn[i] + j;
       }
     } else iidxn = iidxm;
     PetscCall(MatSetValues(mat, m * bs, iidxm, n * cbs, iidxn, v, addv));
@@ -5590,7 +5590,7 @@ PetscErrorCode MatAssemblyEnd(Mat mat, MatAssemblyType type) {
         mat->symmetric = PETSC_BOOL3_UNKNOWN;
         mat->hermitian = PETSC_BOOL3_UNKNOWN;
       }
-      if (!mat->structural_symmetry_eternal && mat->ass_nonzerostate != mat->nonzerostate) { mat->structurally_symmetric = PETSC_BOOL3_UNKNOWN; }
+      if (!mat->structural_symmetry_eternal && mat->ass_nonzerostate != mat->nonzerostate) mat->structurally_symmetric = PETSC_BOOL3_UNKNOWN;
       if (!mat->spd_eternal) mat->spd = PETSC_BOOL3_UNKNOWN;
     }
     mat->num_ass++;
@@ -6155,7 +6155,7 @@ PetscErrorCode MatZeroRowsStencil(Mat mat, PetscInt numRows, const MatStencil ro
     /* Skip component slot if necessary */
     if (mat->stencil.noc) dxm++;
     /* Local row number */
-    if (tmp >= 0) { jdxm[numNewRows++] = tmp; }
+    if (tmp >= 0) jdxm[numNewRows++] = tmp;
   }
   PetscCall(MatZeroRowsLocal(mat, numNewRows, jdxm, diag, x, b));
   PetscCall(PetscFree(jdxm));
@@ -6232,7 +6232,7 @@ PetscErrorCode MatZeroRowsColumnsStencil(Mat mat, PetscInt numRows, const MatSte
     /* Skip component slot if necessary */
     if (mat->stencil.noc) dxm++;
     /* Local row number */
-    if (tmp >= 0) { jdxm[numNewRows++] = tmp; }
+    if (tmp >= 0) jdxm[numNewRows++] = tmp;
   }
   PetscCall(MatZeroRowsColumnsLocal(mat, numNewRows, jdxm, diag, x, b));
   PetscCall(PetscFree(jdxm));
@@ -8100,7 +8100,7 @@ PetscErrorCode MatCreateSubMatrix(Mat mat, IS isrow, IS iscol, MatReuse cll, Mat
         PetscCall(MatGetOwnershipRange(mat, &rstart, &rend));
         if (rstart == first) {
           PetscCall(ISGetLocalSize(isrow, &n));
-          if (n == rend - rstart) { grabentirematrix = 1; }
+          if (n == rend - rstart) grabentirematrix = 1;
         }
       }
     }
@@ -10012,7 +10012,7 @@ PetscErrorCode MatRestoreLocalSubMatrix(Mat mat, IS isrow, IS iscol, Mat *submat
   PetscValidHeaderSpecific(iscol, IS_CLASSID, 3);
   PetscCheckSameComm(isrow, 2, iscol, 3);
   PetscValidPointer(submat, 4);
-  if (*submat) { PetscValidHeaderSpecific(*submat, MAT_CLASSID, 4); }
+  if (*submat) PetscValidHeaderSpecific(*submat, MAT_CLASSID, 4);
 
   if (mat->ops->restorelocalsubmatrix) {
     PetscUseTypeMethod(mat, restorelocalsubmatrix, isrow, iscol, submat);
@@ -10541,7 +10541,7 @@ $       MatMult(Mat,Vec,Vec) -> usermult(Mat,Vec,Vec)
 PetscErrorCode MatSetOperation(Mat mat, MatOperation op, void (*f)(void)) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
-  if (op == MATOP_VIEW && !mat->ops->viewnative && f != (void (*)(void))(mat->ops->view)) { mat->ops->viewnative = mat->ops->view; }
+  if (op == MATOP_VIEW && !mat->ops->viewnative && f != (void (*)(void))(mat->ops->view)) mat->ops->viewnative = mat->ops->view;
   (((void (**)(void))mat->ops)[op]) = f;
   PetscFunctionReturn(0);
 }

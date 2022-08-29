@@ -65,13 +65,13 @@ static PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring mc, Pet
   if (mo) {
     PetscCall(VecGetSize(aij->lvec, &no));
     PetscCall(PetscMalloc2(no, &ocolors, no, &owts));
-    for (i = 0; i < no; i++) { ocolors[i] = maxcolors; }
+    for (i = 0; i < no; i++) ocolors[i] = maxcolors;
   }
 
   PetscCall(PetscMalloc1(masksize, &mask));
   PetscCall(PetscMalloc1(n, &lcolors));
-  for (i = 0; i < n; i++) { lcolors[i] = maxcolors; }
-  for (i = 0; i < masksize; i++) { mask[i] = -1; }
+  for (i = 0; i < n; i++) lcolors[i] = maxcolors;
+  for (i = 0; i < masksize; i++) mask[i] = -1;
   if (mo) {
     /* transfer neighbor weights */
     PetscCall(PetscSFCreate(PetscObjectComm((PetscObject)m), &sf));
@@ -95,8 +95,8 @@ static PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring mc, Pet
             if (ccol >= masksize) {
               PetscInt *newmask;
               PetscCall(PetscMalloc1(masksize * 2, &newmask));
-              for (k = 0; k < 2 * masksize; k++) { newmask[k] = -1; }
-              for (k = 0; k < masksize; k++) { newmask[k] = mask[k]; }
+              for (k = 0; k < 2 * masksize; k++) newmask[k] = -1;
+              for (k = 0; k < masksize; k++) newmask[k] = mask[k];
               PetscCall(PetscFree(mask));
               mask = newmask;
               masksize *= 2;
@@ -113,8 +113,8 @@ static PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring mc, Pet
               if (ccol >= masksize) {
                 PetscInt *newmask;
                 PetscCall(PetscMalloc1(masksize * 2, &newmask));
-                for (k = 0; k < 2 * masksize; k++) { newmask[k] = -1; }
-                for (k = 0; k < masksize; k++) { newmask[k] = mask[k]; }
+                for (k = 0; k < 2 * masksize; k++) newmask[k] = -1;
+                for (k = 0; k < masksize; k++) newmask[k] = mask[k];
                 PetscCall(PetscFree(mask));
                 mask = newmask;
                 masksize *= 2;
@@ -124,7 +124,7 @@ static PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring mc, Pet
           }
         }
         for (j = 0; j < masksize; j++) {
-          if (mask[j] != idx) { break; }
+          if (mask[j] != idx) break;
         }
         pcol = j;
         if (pcol > maxcolors) pcol = maxcolors;
@@ -153,7 +153,7 @@ static PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring mc, Pet
     }
     PetscCall(MPIU_Allreduce(&nd, &nd_global, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)mc)));
   }
-  for (i = 0; i < n; i++) { colors[i] = (ISColoringValue)lcolors[i]; }
+  for (i = 0; i < n; i++) colors[i] = (ISColoringValue)lcolors[i];
   PetscCall(PetscFree(mask));
   PetscCall(PetscFree(lcolors));
   if (mo) {
@@ -242,17 +242,17 @@ static PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc, Pet
   PetscCall(PetscMalloc1(masksize, &mask));
   PetscCall(PetscMalloc4(n, &d1cols, n, &dcolors, n, &conf, n, &bad));
   PetscCall(PetscMalloc2(badsize, &badidx, badsize, &badnext));
-  for (i = 0; i < masksize; i++) { mask[i] = -1; }
+  for (i = 0; i < masksize; i++) mask[i] = -1;
   for (i = 0; i < n; i++) {
     dcolors[i] = maxcolors;
     bad[i]     = -1;
   }
-  for (i = 0; i < badsize; i++) { badnext[i] = -1; }
+  for (i = 0; i < badsize; i++) badnext[i] = -1;
   if (mo) {
     PetscCall(PetscMalloc3(no, &owts, no, &oconf, no, &ocolors));
     PetscCall(PetscSFBcastBegin(sf, MPIU_REAL, wts, owts, MPI_REPLACE));
     PetscCall(PetscSFBcastEnd(sf, MPIU_REAL, wts, owts, MPI_REPLACE));
-    for (i = 0; i < no; i++) { ocolors[i] = maxcolors; }
+    for (i = 0; i < no; i++) ocolors[i] = maxcolors;
   } else { /* Appease overzealous -Wmaybe-initialized */
     owts    = NULL;
     oconf   = NULL;
@@ -274,8 +274,8 @@ static PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc, Pet
           if (ccol >= masksize) {
             PetscInt *newmask;
             PetscCall(PetscMalloc1(masksize * 2, &newmask));
-            for (k = 0; k < 2 * masksize; k++) { newmask[k] = -1; }
-            for (k = 0; k < masksize; k++) { newmask[k] = mask[k]; }
+            for (k = 0; k < 2 * masksize; k++) newmask[k] = -1;
+            for (k = 0; k < masksize; k++) newmask[k] = mask[k];
             PetscCall(PetscFree(mask));
             mask = newmask;
             masksize *= 2;
@@ -295,8 +295,8 @@ static PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc, Pet
             if (ccol >= masksize) {
               PetscInt *newmask;
               PetscCall(PetscMalloc1(masksize * 2, &newmask));
-              for (k = 0; k < 2 * masksize; k++) { newmask[k] = -1; }
-              for (k = 0; k < masksize; k++) { newmask[k] = mask[k]; }
+              for (k = 0; k < 2 * masksize; k++) newmask[k] = -1;
+              for (k = 0; k < masksize; k++) newmask[k] = mask[k];
               PetscCall(PetscFree(mask));
               mask = newmask;
               masksize *= 2;
@@ -314,8 +314,8 @@ static PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc, Pet
               if (ccol >= masksize) {
                 PetscInt *newmask;
                 PetscCall(PetscMalloc1(masksize * 2, &newmask));
-                for (k = 0; k < 2 * masksize; k++) { newmask[k] = -1; }
-                for (k = 0; k < masksize; k++) { newmask[k] = mask[k]; }
+                for (k = 0; k < 2 * masksize; k++) newmask[k] = -1;
+                for (k = 0; k < masksize; k++) newmask[k] = mask[k];
                 PetscCall(PetscFree(mask));
                 mask = newmask;
                 masksize *= 2;
@@ -334,8 +334,8 @@ static PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc, Pet
               if (ccol >= masksize) {
                 PetscInt *newmask;
                 PetscCall(PetscMalloc1(masksize * 2, &newmask));
-                for (k = 0; k < 2 * masksize; k++) { newmask[k] = -1; }
-                for (k = 0; k < masksize; k++) { newmask[k] = mask[k]; }
+                for (k = 0; k < 2 * masksize; k++) newmask[k] = -1;
+                for (k = 0; k < masksize; k++) newmask[k] = mask[k];
                 PetscCall(PetscFree(mask));
                 mask = newmask;
                 masksize *= 2;
@@ -355,8 +355,8 @@ static PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc, Pet
                 if (ccol >= masksize) {
                   PetscInt *newmask;
                   PetscCall(PetscMalloc1(masksize * 2, &newmask));
-                  for (k = 0; k < 2 * masksize; k++) { newmask[k] = -1; }
-                  for (k = 0; k < masksize; k++) { newmask[k] = mask[k]; }
+                  for (k = 0; k < 2 * masksize; k++) newmask[k] = -1;
+                  for (k = 0; k < masksize; k++) newmask[k] = mask[k];
                   PetscCall(PetscFree(mask));
                   mask = newmask;
                   masksize *= 2;
@@ -368,7 +368,7 @@ static PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc, Pet
         }
         /* assign this one the lowest color possible by seeing if there's a gap in the sequence of sorted neighbor colors */
         for (j = 0; j < masksize; j++) {
-          if (mask[j] != idx) { break; }
+          if (mask[j] != idx) break;
         }
         pcol = j;
         if (pcol > maxcolors) pcol = maxcolors;
@@ -385,20 +385,20 @@ static PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc, Pet
       PetscCall(MPIU_Allreduce(&mcol, &mcol_global, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)mc)));
       PetscCall(PetscMalloc1(mcol_global + 1, &colorweights));
       /* check for conflicts */
-      for (i = 0; i < n; i++) { conf[i] = PETSC_FALSE; }
-      for (i = 0; i < no; i++) { oconf[i] = PETSC_FALSE; }
+      for (i = 0; i < n; i++) conf[i] = PETSC_FALSE;
+      for (i = 0; i < no; i++) oconf[i] = PETSC_FALSE;
       for (i = 0; i < n; i++) {
         ncols = mo_i[i + 1] - mo_i[i];
         cidx  = &(mo_j[mo_i[i]]);
         if (ncols > 0) {
           /* fill in the mask */
-          for (j = 0; j < mcol_global + 1; j++) { colorweights[j] = 0; }
+          for (j = 0; j < mcol_global + 1; j++) colorweights[j] = 0;
           colorweights[dcolors[i]] = wts[i];
           /* fill in the off-diagonal part of the mask */
           for (j = 0; j < ncols; j++) {
             ccol = ocolors[cidx[j]];
             if (ccol < maxcolors) {
-              if (colorweights[ccol] < owts[cidx[j]]) { colorweights[ccol] = owts[cidx[j]]; }
+              if (colorweights[ccol] < owts[cidx[j]]) colorweights[ccol] = owts[cidx[j]];
             }
           }
           /* fill in the on-diagonal part of the mask */
@@ -407,7 +407,7 @@ static PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc, Pet
           for (j = 0; j < ncols; j++) {
             ccol = dcolors[cidx[j]];
             if (ccol < maxcolors) {
-              if (colorweights[ccol] < wts[cidx[j]]) { colorweights[ccol] = wts[cidx[j]]; }
+              if (colorweights[ccol] < wts[cidx[j]]) colorweights[ccol] = wts[cidx[j]];
             }
           }
           /* go back through and set up on and off-diagonal conflict vectors */
@@ -416,7 +416,7 @@ static PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc, Pet
           for (j = 0; j < ncols; j++) {
             ccol = dcolors[cidx[j]];
             if (ccol < maxcolors) {
-              if (colorweights[ccol] > wts[cidx[j]]) { conf[cidx[j]] = PETSC_TRUE; }
+              if (colorweights[ccol] > wts[cidx[j]]) conf[cidx[j]] = PETSC_TRUE;
             }
           }
           ncols = mo_i[i + 1] - mo_i[i];
@@ -424,7 +424,7 @@ static PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc, Pet
           for (j = 0; j < ncols; j++) {
             ccol = ocolors[cidx[j]];
             if (ccol < maxcolors) {
-              if (colorweights[ccol] > owts[cidx[j]]) { oconf[cidx[j]] = PETSC_TRUE; }
+              if (colorweights[ccol] > owts[cidx[j]]) oconf[cidx[j]] = PETSC_TRUE;
             }
           }
         }
@@ -447,7 +447,7 @@ static PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc, Pet
             PetscInt        *newbadnext;
             ISColoringValue *newbadidx;
             PetscCall(PetscMalloc2(badsize * 2, &newbadidx, badsize * 2, &newbadnext));
-            for (k = 0; k < 2 * badsize; k++) { newbadnext[k] = -1; }
+            for (k = 0; k < 2 * badsize; k++) newbadnext[k] = -1;
             for (k = 0; k < badsize; k++) {
               newbadidx[k]  = badidx[k];
               newbadnext[k] = badnext[k];
@@ -468,7 +468,7 @@ static PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc, Pet
     PetscCall(PetscSFDestroy(&sf));
     PetscCall(PetscFree3(owts, oconf, ocolors));
   }
-  for (i = 0; i < n; i++) { colors[i] = dcolors[i]; }
+  for (i = 0; i < n; i++) colors[i] = dcolors[i];
   PetscCall(PetscFree(mask));
   PetscCall(PetscFree4(d1cols, dcolors, conf, bad));
   PetscCall(PetscFree2(badidx, badnext));

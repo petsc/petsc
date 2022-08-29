@@ -204,7 +204,7 @@ PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm, PetscBool remove_sent_points)
     for (p = 0; p < npoints_curr; p++) {
       sf_cells[p].rank  = 0;
       sf_cells[p].index = p_cellid[p];
-      if (p_cellid[p] > range) { range = p_cellid[p]; }
+      if (p_cellid[p] > range) range = p_cellid[p];
     }
     PetscCall(DMSwarmRestoreField(dm, DMSwarmPICField_cellid, NULL, NULL, (void **)&p_cellid));
     PetscCall(DMSwarmRestoreField(dm, DMSwarmField_rank, NULL, NULL, (void **)&rankval));
@@ -223,7 +223,7 @@ PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm, PetscBool remove_sent_points)
   PetscCall(DMSwarmDataBucketGetSizes(swarm->db, &npoints, NULL, NULL));
   PetscCall(DMSwarmGetField(dm, DMSwarmField_rank, NULL, NULL, (void **)&rankval));
   PetscCall(PetscSFGetGraph(sfcell, NULL, NULL, NULL, &LA_sfcell));
-  for (p = 0; p < npoints; p++) { rankval[p] = LA_sfcell[p].index; }
+  for (p = 0; p < npoints; p++) rankval[p] = LA_sfcell[p].index;
   PetscCall(DMSwarmRestoreField(dm, DMSwarmField_rank, NULL, NULL, (void **)&rankval));
   PetscCall(PetscSFDestroy(&sfcell));
 
@@ -308,7 +308,7 @@ PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm, PetscBool remove_sent_points)
 
     PetscCall(PetscSFGetGraph(sfcell, NULL, NULL, NULL, &LA_sfcell));
     PetscCall(DMSwarmGetField(dm, DMSwarmField_rank, NULL, NULL, (void **)&rankval));
-    for (p = 0; p < npoints_from_neighbours; p++) { rankval[npoints_prior_migration + p] = LA_sfcell[p].index; }
+    for (p = 0; p < npoints_from_neighbours; p++) rankval[npoints_prior_migration + p] = LA_sfcell[p].index;
     PetscCall(DMSwarmRestoreField(dm, DMSwarmField_rank, NULL, NULL, (void **)&rankval));
     PetscCall(PetscSFDestroy(&sfcell));
 
@@ -334,7 +334,7 @@ PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm, PetscBool remove_sent_points)
     PetscCall(DMSwarmDataBucketGetSizes(swarm->db, &npoints2, NULL, NULL));
     PetscCall(DMSwarmGetField(dm, DMSwarmField_rank, NULL, NULL, (void **)&rankval));
     PetscCall(DMSwarmGetField(dm, DMSwarmPICField_cellid, NULL, NULL, (void **)&p_cellid));
-    for (p = 0; p < npoints2; p++) { p_cellid[p] = rankval[p]; }
+    for (p = 0; p < npoints2; p++) p_cellid[p] = rankval[p];
     PetscCall(DMSwarmRestoreField(dm, DMSwarmPICField_cellid, NULL, NULL, (void **)&p_cellid));
     PetscCall(DMSwarmRestoreField(dm, DMSwarmField_rank, NULL, NULL, (void **)&rankval));
   }

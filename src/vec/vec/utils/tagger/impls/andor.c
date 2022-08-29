@@ -46,7 +46,7 @@ PetscErrorCode VecTaggerSetSubs_AndOr(VecTagger tagger, PetscInt nsubs, VecTagge
     if (mode == PETSC_COPY_VALUES) {
       andOr->mode = PETSC_OWN_POINTER;
       PetscCall(PetscMalloc1(nsubs, &(andOr->subs)));
-      for (i = 0; i < nsubs; i++) { andOr->subs[i] = subs[i]; }
+      for (i = 0; i < nsubs; i++) andOr->subs[i] = subs[i];
     } else {
       andOr->subs = subs;
       andOr->mode = mode;

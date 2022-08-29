@@ -17,7 +17,7 @@ static PetscScalar RBF(PetscInt sdim, PetscReal x[], PetscReal y[], void *ctx) {
   PetscReal *l      = rbfctx->l;
   PetscReal  lambda = rbfctx->lambda;
 
-  for (d = 0; d < sdim; d++) { diff += (x[d] - y[d]) * (x[d] - y[d]) / (l[d] * l[d]); }
+  for (d = 0; d < sdim; d++) diff += (x[d] - y[d]) * (x[d] - y[d]) / (l[d] * l[d]);
   return s * s * PetscExpReal(-0.5 * diff) + (diff != 0.0 ? 0.0 : lambda);
 }
 

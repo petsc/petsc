@@ -298,7 +298,7 @@ PetscErrorCode ComputeRHS_MOAB(KSP ksp, Vec b, void *ptr) {
       const double   ff     = ForcingFunction(&phypts[3 * q], user);
       const PetscInt offset = q * nconn;
 
-      for (i = 0; i < nconn; ++i) { localv[i] += jxw[q] * phi[offset + i] * ff; }
+      for (i = 0; i < nconn; ++i) localv[i] += jxw[q] * phi[offset + i] * ff;
     }
 
     /* check if element is on the boundary */

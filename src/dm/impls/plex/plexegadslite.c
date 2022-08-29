@@ -316,7 +316,7 @@ static PetscErrorCode DMPlexCreateEGADSLite_Internal(MPI_Comm comm, ego context,
           }
         }
         PetscCheck(nc == 2 * Ner, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Number of corners %" PetscInt_FMT " != %" PetscInt_FMT, nc, 2 * Ner);
-        if (Ner == 4) { cone[nc++] = numVertices - newVertices + numEdges + numQuads++; }
+        if (Ner == 4) cone[nc++] = numVertices - newVertices + numEdges + numQuads++;
         PetscCheck(nc <= maxCorners, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Number of corners %" PetscInt_FMT " > %" PetscInt_FMT " max", nc, maxCorners);
         /* Triangulate the loop */
         switch (Ner) {

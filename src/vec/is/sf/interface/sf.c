@@ -1161,7 +1161,7 @@ PetscErrorCode PetscSFGetMultiSF(PetscSF sf, PetscSF *multi) {
     PetscCall(PetscSFFetchAndOpEnd(sf, MPIU_INT, inoffset, outones, outoffset, MPI_SUM));
     for (i = 0; i < sf->nroots; i++) inoffset[i] -= indegree[i]; /* Undo the increment */
     if (PetscDefined(USE_DEBUG)) {                               /* Check that the expected number of increments occurred */
-      for (i = 0; i < sf->nroots; i++) { PetscCheck(inoffset[i] + indegree[i] == inoffset[i + 1], PETSC_COMM_SELF, PETSC_ERR_PLIB, "Incorrect result after PetscSFFetchAndOp"); }
+      for (i = 0; i < sf->nroots; i++) PetscCheck(inoffset[i] + indegree[i] == inoffset[i + 1], PETSC_COMM_SELF, PETSC_ERR_PLIB, "Incorrect result after PetscSFFetchAndOp");
     }
     PetscCall(PetscMalloc1(sf->nleaves, &remote));
     for (i = 0; i < sf->nleaves; i++) {
@@ -1745,7 +1745,7 @@ PetscErrorCode PetscSFComputeMultiRootOriginalNumbering(PetscSF sf, const PetscI
   PetscCall(PetscMalloc1(nmroots, multiRootsOrigNumbering));
   for (i = 0, j = 0, k = 0; i < nroots; i++) {
     if (!degree[i]) continue;
-    for (j = 0; j < degree[i]; j++, k++) { (*multiRootsOrigNumbering)[k] = i; }
+    for (j = 0; j < degree[i]; j++, k++) (*multiRootsOrigNumbering)[k] = i;
   }
   PetscCheck(k == nmroots, PETSC_COMM_SELF, PETSC_ERR_PLIB, "sanity check fail");
   if (nMultiRoots) *nMultiRoots = nmroots;

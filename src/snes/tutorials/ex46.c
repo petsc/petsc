@@ -211,7 +211,7 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info, PetscScalar **x, Mat jac, 
         v[4]     = -D * hxdhy + K * A * hx * hy / (2.0 * normGradZ);
         col[4].j = j + 1;
         col[4].i = i;
-        for (k = 0; k < 5; ++k) { PetscCheck(!PetscIsInfOrNanScalar(v[k]), PETSC_COMM_SELF, PETSC_ERR_FP, "Invalid residual: %g", (double)PetscRealPart(v[k])); }
+        for (k = 0; k < 5; ++k) PetscCheck(!PetscIsInfOrNanScalar(v[k]), PETSC_COMM_SELF, PETSC_ERR_FP, "Invalid residual: %g", (double)PetscRealPart(v[k]));
         PetscCall(MatSetValuesStencil(jac, 1, &row, 5, col, v, INSERT_VALUES));
       }
     }

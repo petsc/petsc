@@ -1642,7 +1642,7 @@ PETSC_EXTERN PetscErrorCode MatISSetPreallocation_IS(Mat B, PetscInt d_nz, const
     PetscInt b;
 
     matis->sf_leafdata[i] = matis->sf_leafdata[i * bs] / bs;
-    for (b = 1; b < bs; b++) { matis->sf_leafdata[i] = PetscMax(matis->sf_leafdata[i], matis->sf_leafdata[i * bs + b] / bs); }
+    for (b = 1; b < bs; b++) matis->sf_leafdata[i] = PetscMax(matis->sf_leafdata[i], matis->sf_leafdata[i * bs + b] / bs);
   }
   PetscCall(MatSeqBAIJSetPreallocation(matis->A, bs, 0, matis->sf_leafdata));
 

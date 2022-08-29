@@ -54,8 +54,8 @@ static PetscErrorCode DMDAGetElements_2D(DM dm, PetscInt *nel, PetscInt *nen, co
     }
     nn = da->nen;
 
-    if (da->elementtype == DMDA_ELEMENT_P1) { ns = 2; }
-    if (da->elementtype == DMDA_ELEMENT_Q1) { ns = 1; }
+    if (da->elementtype == DMDA_ELEMENT_P1) ns = 2;
+    if (da->elementtype == DMDA_ELEMENT_Q1) ns = 1;
     PetscCall(DMDAGetCorners(dm, &xs, &ys, NULL, &xe, &ye, NULL));
     PetscCall(DMDAGetGhostCorners(dm, &Xs, &Ys, NULL, &Xe, &Ye, NULL));
     xe += xs;
@@ -114,8 +114,8 @@ static PetscErrorCode DMDAGetElements_3D(DM dm, PetscInt *nel, PetscInt *nen, co
     }
     nn = da->nen;
 
-    if (da->elementtype == DMDA_ELEMENT_P1) { ns = 6; }
-    if (da->elementtype == DMDA_ELEMENT_Q1) { ns = 1; }
+    if (da->elementtype == DMDA_ELEMENT_P1) ns = 6;
+    if (da->elementtype == DMDA_ELEMENT_Q1) ns = 1;
     PetscCall(DMDAGetCorners(dm, &xs, &ys, &zs, &xe, &ye, &ze));
     PetscCall(DMDAGetGhostCorners(dm, &Xs, &Ys, &Zs, &Xe, &Ye, &Ze));
     xe += xs;

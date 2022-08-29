@@ -62,7 +62,7 @@ PETSC_EXTERN PetscErrorCode SNESComputeNGSDefaultSecant(SNES snes, Vec X, Vec B,
     PetscCall(ISGetLocalSize(coloris[i], &size));
     PetscCall(VecCopy(X, W));
     PetscCall(VecGetArray(W, &wa));
-    for (j = 0; j < size; j++) { wa[idx[j] - s] += h; }
+    for (j = 0; j < size; j++) wa[idx[j] - s] += h;
     PetscCall(VecRestoreArray(W, &wa));
     PetscCall(PetscLogEventBegin(SNES_NGSFuncEval, snes, X, B, 0));
     PetscCall((*func)(snes, W, G, fctx));

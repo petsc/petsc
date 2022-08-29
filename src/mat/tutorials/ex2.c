@@ -39,7 +39,7 @@ int main(int argc, char **argv) {
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
 
   PetscCall(PetscMalloc1(size, &x));
-  for (i = 0; i < size; i++) { x[i] = one; }
+  for (i = 0; i < size; i++) x[i] = one;
   PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF, 1, size, x, &X));
   PetscCall(VecAssemblyBegin(X));
   PetscCall(VecAssemblyEnd(X));

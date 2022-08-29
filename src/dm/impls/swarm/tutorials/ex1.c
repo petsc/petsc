@@ -112,7 +112,7 @@ int main(int argc, char **argv) {
   /* compute energy */
   PetscCall(DMSwarmGetField(sw, "w_q", &bs, &dtype, (void **)&wq));
   PetscCall(DMSwarmGetField(sw, "DMSwarmPIC_coor", &bs, &dtype, (void **)&coords));
-  for (p = 0, energy_1 = 0; p < Np; p++) { energy_1 += wq[p] * (PetscSqr(coords[p * 2 + 0]) + PetscSqr(coords[p * 2 + 1])); }
+  for (p = 0, energy_1 = 0; p < Np; p++) energy_1 += wq[p] * (PetscSqr(coords[p * 2 + 0]) + PetscSqr(coords[p * 2 + 1]));
   PetscCall(DMSwarmRestoreField(sw, "DMSwarmPIC_coor", &bs, &dtype, (void **)&coords));
   PetscCall(DMSwarmRestoreField(sw, "w_q", &bs, &dtype, (void **)&wq));
   PetscCall(PetscPrintf(PETSC_COMM_SELF, "Total number = %20.12e. energy = %20.12e error = %20.12e\n", (double)norm, (double)energy_0, (double)((energy_1 - energy_0) / energy_0)));

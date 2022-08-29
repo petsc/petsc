@@ -481,7 +481,7 @@ PetscErrorCode DMSetUp_DA_3D(DM da) {
     count  = 0;
     for (i = down; i < up; i++) {
       for (j = bottom; j < top; j++) {
-        for (k = left; k < right; k++) { idx[count++] = (i * (Ye - Ys) + j) * (Xe - Xs) + k; }
+        for (k = left; k < right; k++) idx[count++] = (i * (Ye - Ys) + j) * (Xe - Xs) + k;
       }
     }
     PetscCall(ISCreateBlock(comm, dof, count, idx, PETSC_OWN_POINTER, &to));

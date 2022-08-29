@@ -78,7 +78,7 @@ int main(int argc, char **argv) {
         break;
       }
     }
-    if (cnt < N) { blocksizes[nblocks - 1] = N - cnt; }
+    if (cnt < N) blocksizes[nblocks - 1] = N - cnt;
 
     PetscCall(BuildMatrix(parts, nblocks, blocksizes, &A));
     PetscCall(PetscFree(blocksizes));

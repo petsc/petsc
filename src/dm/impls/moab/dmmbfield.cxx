@@ -103,7 +103,7 @@ PetscErrorCode DMMoabSetGlobalFieldVector(DM dm, Vec fvec) {
       merr = dmmoab->mbiface->tag_get_handle(dmmoab->fieldNames[ifield], 1, moab::MB_TYPE_DOUBLE, ntag, moab::MB_TAG_DENSE | moab::MB_TAG_CREAT);
       MBERRNM(merr);
 
-      for (i = 0; i < dmmoab->nloc; i++) { farray[i] = (dmmoab->bs == 1 ? rarray[ifield * dmmoab->nloc + i] : rarray[i * dmmoab->numFields + ifield]); }
+      for (i = 0; i < dmmoab->nloc; i++) farray[i] = (dmmoab->bs == 1 ? rarray[ifield * dmmoab->nloc + i] : rarray[i * dmmoab->numFields + ifield]);
 
       /* use the entity handle and the Dof index to set the right value */
       merr = dmmoab->mbiface->tag_set_data(ntag, *dmmoab->vowned, (const void *)farray);
@@ -122,7 +122,7 @@ PetscErrorCode DMMoabSetGlobalFieldVector(DM dm, Vec fvec) {
       MBERRNM(merr);
 
       /* we are using a MOAB Vec - directly copy the tag data to new one */
-      for (i = 0; i < dmmoab->nloc; i++) { farray[i] = (dmmoab->bs == 1 ? varray[ifield * dmmoab->nloc + i] : varray[i * dmmoab->numFields + ifield]); }
+      for (i = 0; i < dmmoab->nloc; i++) farray[i] = (dmmoab->bs == 1 ? varray[ifield * dmmoab->nloc + i] : varray[i * dmmoab->numFields + ifield]);
 
       merr = dmmoab->mbiface->tag_set_data(ntag, *dmmoab->vowned, (const void *)farray);
       MBERRNM(merr);
@@ -454,7 +454,7 @@ PetscErrorCode DMMoabGetDofsBlocked(DM dm, PetscInt npoints, const moab::EntityH
 
   if (!dof) PetscCall(PetscMalloc1(npoints, &dof));
 
-  for (i = 0; i < npoints; ++i) { dof[i] = dmmoab->gidmap[(PetscInt)points[i] - dmmoab->seqstart]; }
+  for (i = 0; i < npoints; ++i) dof[i] = dmmoab->gidmap[(PetscInt)points[i] - dmmoab->seqstart];
   PetscFunctionReturn(0);
 }
 

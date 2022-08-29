@@ -1197,7 +1197,7 @@ PETSC_INTERN PetscErrorCode MatSetSeqAIJKokkosWithCSRMatrix(Mat A, Mat_SeqAIJKok
 
   PetscCall(PetscMalloc1(m, &aseq->imax));
   PetscCall(PetscMalloc1(m, &aseq->ilen));
-  for (i = 0; i < m; i++) { aseq->ilen[i] = aseq->imax[i] = aseq->i[i + 1] - aseq->i[i]; }
+  for (i = 0; i < m; i++) aseq->ilen[i] = aseq->imax[i] = aseq->i[i + 1] - aseq->i[i];
 
   /* It is critical to set the nonzerostate, as we use it to check if sparsity pattern (hence data) has changed on host in MatAssemblyEnd */
   akok->nonzerostate = A->nonzerostate;

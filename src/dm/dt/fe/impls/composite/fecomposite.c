@@ -79,7 +79,7 @@ static PetscErrorCode PetscFESetUp_Composite(PetscFE fem) {
       for (k = 0; k < spdim; ++k) {
         /* n_j \cdot \phi_k */
         invVscalar[(s * spdim + j) * spdim + k] = 0.0;
-        for (q = 0; q < Nq; ++q) { invVscalar[(s * spdim + j) * spdim + k] += Bf[q * spdim + k] * weights[q]; }
+        for (q = 0; q < Nq; ++q) invVscalar[(s * spdim + j) * spdim + k] += Bf[q * spdim + k] * weights[q];
       }
       PetscCall(PetscFree(Bf));
     }
@@ -156,7 +156,7 @@ static PetscErrorCode PetscFECreateTabulation_Composite(PetscFE fem, PetscInt np
         const PetscInt i = (p * pdim + cmp->embedding[s * spdim + j]) * comp;
 
         B[i] = 0.0;
-        for (k = 0; k < spdim; ++k) { B[i] += fem->invV[(s * spdim + k) * spdim + j] * tmpB[p * spdim + k]; }
+        for (k = 0; k < spdim; ++k) B[i] += fem->invV[(s * spdim + k) * spdim + j] * tmpB[p * spdim + k];
       }
     }
     if (D) {
@@ -166,7 +166,7 @@ static PetscErrorCode PetscFECreateTabulation_Composite(PetscFE fem, PetscInt np
           const PetscInt i = ((p * pdim + cmp->embedding[s * spdim + j]) * comp + 0) * dim + d;
 
           D[i] = 0.0;
-          for (k = 0; k < spdim; ++k) { D[i] += fem->invV[(s * spdim + k) * spdim + j] * tmpD[(p * spdim + k) * dim + d]; }
+          for (k = 0; k < spdim; ++k) D[i] += fem->invV[(s * spdim + k) * spdim + j] * tmpD[(p * spdim + k) * dim + d];
         }
       }
     }
@@ -177,7 +177,7 @@ static PetscErrorCode PetscFECreateTabulation_Composite(PetscFE fem, PetscInt np
           const PetscInt i = ((p * pdim + cmp->embedding[s * spdim + j]) * comp + 0) * dim * dim + d;
 
           H[i] = 0.0;
-          for (k = 0; k < spdim; ++k) { H[i] += fem->invV[(s * spdim + k) * spdim + j] * tmpH[(p * spdim + k) * dim * dim + d]; }
+          for (k = 0; k < spdim; ++k) H[i] += fem->invV[(s * spdim + k) * spdim + j] * tmpH[(p * spdim + k) * dim * dim + d];
         }
       }
     }

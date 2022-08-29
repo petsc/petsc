@@ -1209,7 +1209,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_inplace(Mat C, Mat A, const M
     PetscCall(PetscMalloc1(nz, &aa));
     a2anew = a->a2anew;
     bval   = a->a;
-    for (j = 0; j < nz; j++) { aa[a2anew[j]] = *(bval++); }
+    for (j = 0; j < nz; j++) aa[a2anew[j]] = *(bval++);
   }
 
   /* initialization */

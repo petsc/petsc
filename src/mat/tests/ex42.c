@@ -56,7 +56,7 @@ int main(int argc, char **args) {
   PetscCall(PetscMalloc1(nd, &is1));
   PetscCall(PetscMalloc1(nd, &is2));
   PetscCall(PetscMalloc1(m, &idx));
-  for (i = 0; i < m; i++) { idx[i] = i; }
+  for (i = 0; i < m; i++) idx[i] = i;
 
   /* Create the random Index Sets */
   for (i = 0; i < nd; i++) {

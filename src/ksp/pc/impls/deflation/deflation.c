@@ -111,7 +111,7 @@ static PetscErrorCode PCDeflationSetCorrectionFactor_Deflation(PC pc, PetscScala
   /* TODO PETSC_DETERMINE -> compute max eigenvalue with power method */
   def->correct     = PETSC_TRUE;
   def->correctfact = fact;
-  if (def->correct == 0.0) { def->correct = PETSC_FALSE; }
+  if (def->correct == 0.0) def->correct = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -549,7 +549,7 @@ static PetscErrorCode PCSetUp_Deflation(PC pc) {
 
         PetscCall(PetscMalloc1(m, &norms));
         PetscCall(MatGetColumnNorms(def->WtAW, NORM_INFINITY, norms));
-        for (i = 0; i < m; i++) { PetscCheck(norms[i] > 100 * PETSC_MACHINE_EPSILON, PetscObjectComm((PetscObject)def->WtAW), PETSC_ERR_SUP, "Column %" PetscInt_FMT " of W is in kernel of A.", i); }
+        for (i = 0; i < m; i++) PetscCheck(norms[i] > 100 * PETSC_MACHINE_EPSILON, PetscObjectComm((PetscObject)def->WtAW), PETSC_ERR_SUP, "Column %" PetscInt_FMT " of W is in kernel of A.", i);
         PetscCall(PetscFree(norms));
       }
     } else PetscCall(MatIsSPDKnown(def->WtAW, &isset, &flgspd));

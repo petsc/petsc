@@ -218,7 +218,7 @@ PetscErrorCode MatCreateSubMatrix_SeqSBAIJ(Mat A, IS isrow, IS iscol, MatReuse s
   PetscCall(PetscMalloc2(maxmnbs, &vary, maxmnbs, &iary));
   PetscCall(PetscArrayzero(vary, a->mbs));
   for (i = 0; i < nrows; i++) vary[irow[i] / bs]++;
-  for (i = 0; i < a->mbs; i++) { PetscCheck(vary[i] == 0 || vary[i] == bs, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Index set does not match blocks"); }
+  for (i = 0; i < a->mbs; i++) PetscCheck(vary[i] == 0 || vary[i] == bs, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Index set does not match blocks");
   count = 0;
   for (i = 0; i < nrows; i++) {
     PetscInt j = irow[i] / bs;
@@ -228,7 +228,7 @@ PetscErrorCode MatCreateSubMatrix_SeqSBAIJ(Mat A, IS isrow, IS iscol, MatReuse s
 
   PetscCall(PetscArrayzero(vary, a->nbs));
   for (i = 0; i < ncols; i++) vary[icol[i] / bs]++;
-  for (i = 0; i < a->nbs; i++) { PetscCheck(vary[i] == 0 || vary[i] == bs, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Internal error in PETSc"); }
+  for (i = 0; i < a->nbs; i++) PetscCheck(vary[i] == 0 || vary[i] == bs, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Internal error in PETSc");
   count = 0;
   for (i = 0; i < ncols; i++) {
     PetscInt j = icol[i] / bs;

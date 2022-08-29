@@ -1087,7 +1087,7 @@ PetscErrorCode DMGetLocalToGlobalMapping(DM dm, ISLocalToGlobalMapping *ltog) {
         PetscCall(PetscSectionGetOffset(sectionGlobal, p, &off));
         /* If you have dofs, and constraints, and they are unequal, we set the blocksize to 1 */
         bdof = cdof && (dof - cdof) ? 1 : dof;
-        if (dof) { bs = bs < 0 ? bdof : PetscGCD(bs, bdof); }
+        if (dof) bs = bs < 0 ? bdof : PetscGCD(bs, bdof);
 
         for (c = 0, cind = 0; c < dof; ++c, ++l) {
           if (cind < cdof && c == cdofs[cind]) {
@@ -1867,7 +1867,7 @@ PetscErrorCode DMCreateFieldIS(DM dm, PetscInt *numFields, char ***fieldNames, I
 
           PetscCall(PetscSectionGetFieldDof(section, p, f, &fdof));
           PetscCall(PetscSectionGetFieldConstraintDof(section, p, f, &fcdof));
-          for (fc = 0; fc < fdof - fcdof; ++fc, ++fieldSizes[f]) { fieldIndices[f][fieldSizes[f]] = goff++; }
+          for (fc = 0; fc < fdof - fcdof; ++fc, ++fieldSizes[f]) fieldIndices[f][fieldSizes[f]] = goff++;
         }
       }
     }
@@ -2042,7 +2042,7 @@ PetscErrorCode DMCreateSuperDM(DM dms[], PetscInt n, IS **is, DM *superdm) {
 
   PetscFunctionBegin;
   PetscValidPointer(dms, 1);
-  for (i = 0; i < n; ++i) { PetscValidHeaderSpecific(dms[i], DM_CLASSID, 1); }
+  for (i = 0; i < n; ++i) PetscValidHeaderSpecific(dms[i], DM_CLASSID, 1);
   if (is) PetscValidPointer(is, 3);
   PetscValidPointer(superdm, 4);
   PetscCheck(n >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of DMs must be nonnegative: %" PetscInt_FMT, n);
@@ -2856,7 +2856,7 @@ static PetscErrorCode DMLocalToGlobalHook_Constraints(DM dm, Vec l, InsertMode m
         PetscCall(VecSetValuesSection(cVec, cSec, p, vals, mode));
         /* for this to be the true transpose, we have to zero the values that
          * we just extracted */
-        for (d = 0; d < dof; d++) { vals[d] = 0.; }
+        for (d = 0; d < dof; d++) vals[d] = 0.;
       }
     }
     PetscCall(MatMultTransposeAdd(cMat, cVec, l, l));
@@ -3766,7 +3766,7 @@ PetscErrorCode DMHasCreateInjection(DM dm, PetscBool *flg) {
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidBoolPointer(flg, 2);
   if (dm->ops->hascreateinjection) PetscUseTypeMethod(dm, hascreateinjection, flg);
-  else { *flg = (dm->ops->createinjection) ? PETSC_TRUE : PETSC_FALSE; }
+  else *flg = (dm->ops->createinjection) ? PETSC_TRUE : PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -5479,7 +5479,7 @@ PetscErrorCode DMSetRegionNumDS(DM dm, PetscInt num, DMLabel label, IS fields, P
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (label) { PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 3); }
+  if (label) PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 3);
   PetscCall(DMGetNumDS(dm, &Nds));
   PetscCheck((num >= 0) && (num < Nds), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Region number %" PetscInt_FMT " is not in [0, %" PetscInt_FMT ")", num, Nds);
   PetscCall(PetscObjectReference((PetscObject)label));
@@ -7308,7 +7308,7 @@ PetscErrorCode DMUniversalLabelCreate(DM dm, DMUniversalLabel *universal) {
     PetscCall(DMLabelGetNumValues(label, &nv));
     PetscCall(DMLabelGetValueIS(label, &valueIS));
     PetscCall(ISGetIndices(valueIS, &varr));
-    for (v = 0; v < nv; ++v) { ul->values[ul->offsets[m] + v] = varr[v]; }
+    for (v = 0; v < nv; ++v) ul->values[ul->offsets[m] + v] = varr[v];
     PetscCall(ISRestoreIndices(valueIS, &varr));
     PetscCall(ISDestroy(&valueIS));
     PetscCall(PetscSortInt(nv, &ul->values[ul->offsets[m]]));
@@ -8600,7 +8600,7 @@ PetscErrorCode DMComputeError(DM dm, Vec sol, PetscReal errors[], Vec *errorVec)
     }
     if (fieldIS) PetscCall(ISRestoreIndices(fieldIS, &fields));
   }
-  for (f = 0; f < Nf; ++f) { PetscCheck(exactSol[f], PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "DS must contain exact solution functions in order to calculate error, missing for field %" PetscInt_FMT, f); }
+  for (f = 0; f < Nf; ++f) PetscCheck(exactSol[f], PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "DS must contain exact solution functions in order to calculate error, missing for field %" PetscInt_FMT, f);
   PetscCall(DMGetOutputSequenceNumber(dm, NULL, &time));
   if (errors) PetscCall(DMComputeL2FieldDiff(dm, time, exactSol, ctxs, sol, errors));
   if (errorVec) {

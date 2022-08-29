@@ -286,7 +286,7 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[]) 
     if (flg2) PetscCall(PetscMallocLogRequestedSizeSet(flg1));
 
     PetscCall(PetscOptionsHasName(NULL, NULL, "-malloc_view", &mlog));
-    if (mlog) { mdebug = PETSC_TRUE; }
+    if (mlog) mdebug = PETSC_TRUE;
     /* the next line is deprecated */
     PetscCall(PetscOptionsGetBool(NULL, NULL, "-malloc", &mdebug, NULL));
     PetscCall(PetscOptionsGetBool(NULL, NULL, "-malloc_dump", &mdebug, NULL));

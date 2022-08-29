@@ -167,7 +167,7 @@ PetscErrorCode ComputeRHSMatrix(PetscInt m, PetscInt nrhs, Mat *C) {
   }
   if (nrhs > 1) {
     for (k = 1; k < nrhs; k++) {
-      for (i = 0; i < m; i++) { array[m * k + i] = array[i]; }
+      for (i = 0; i < m; i++) array[m * k + i] = array[i];
     }
   }
   PetscCall(MatDenseRestoreArray(RHS, &array));

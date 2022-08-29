@@ -279,7 +279,7 @@ static PetscErrorCode PetscLogEventBeginNested(NestedEventId nstEvent, int t, Pe
 
     /* Clear space in nestedEvents for new nested event */
     nNestedEvents++;
-    for (i = nNestedEvents - 1; i > entry; i--) { nestedEvents[i] = nestedEvents[i - 1]; }
+    for (i = nNestedEvents - 1; i > entry; i--) nestedEvents[i] = nestedEvents[i - 1];
 
     /* Create event in nestedEvents */
     nestedEvents[entry].nstEvent = nstEvent;
@@ -740,7 +740,7 @@ static PetscErrorCode PetscLogNestedTreeCreate(PetscViewer viewer, PetscNestedEv
 
         /* check whether the next path is the same as this process's next path */
         same = PETSC_TRUE;
-        for (j = 0; same && j < depth; j++) { same = (same && nstMyPath[j] == nstPath[j]) ? PETSC_TRUE : PETSC_FALSE; }
+        for (j = 0; same && j < depth; j++) same = (same && nstMyPath[j] == nstPath[j]) ? PETSC_TRUE : PETSC_FALSE;
 
         if (same) {
           /* Register 'own path' */
@@ -753,7 +753,7 @@ static PetscErrorCode PetscLogNestedTreeCreate(PetscViewer viewer, PetscNestedEv
             newTree[i + iextra].own      = PETSC_FALSE;
             newTree[i + iextra].depth    = depth;
             PetscCall(PetscMalloc1(depth, &newTree[i + iextra].nstPath));
-            for (j = 0; j < depth; j++) { newTree[i + iextra].nstPath[j] = nstPath[j]; }
+            for (j = 0; j < depth; j++) newTree[i + iextra].nstPath[j] = nstPath[j];
 
             newTree[i + iextra].dftEvent  = 0;
             newTree[i + iextra].dftParent = 0;
@@ -939,13 +939,13 @@ static PetscErrorCode PetscLogNestedTreeSetChildrenSortItems(const PetscViewer v
 
     /* Calculate the children's maximum times, to see whether children will be ignored or printed */
     PetscCall(PetscMalloc1(nChildren, &times));
-    for (int i = 0; i < nChildren; i++) { times[i] = (*children)[i].val; }
+    for (int i = 0; i < nChildren; i++) times[i] = (*children)[i].val;
 
     PetscCall(PetscMalloc1(nChildren, &maxTimes));
     PetscCall(MPIU_Allreduce(times, maxTimes, nChildren, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm));
     PetscCall(PetscFree(times));
 
-    for (int i = 0; i < nChildren; i++) { (*children)[i].val = maxTimes[i]; }
+    for (int i = 0; i < nChildren; i++) (*children)[i].val = maxTimes[i];
     PetscCall(PetscFree(maxTimes));
   }
   PetscFunctionReturn(0);
@@ -1168,7 +1168,7 @@ static PetscErrorCode PetscCalcSelfTime(PetscViewer viewer, PetscSelfTimer **p_s
     for (j = 0; j < nParents; j++) maxDefaultTimer = PetscMax(dftEvents[j], maxDefaultTimer);
   }
   PetscCall(PetscMalloc1(maxDefaultTimer + 1, &nstEvents));
-  for (dft = 0; dft < maxDefaultTimer; dft++) { nstEvents[dft] = 0; }
+  for (dft = 0; dft < maxDefaultTimer; dft++) nstEvents[dft] = 0;
   for (i = 0; i < nNestedEvents; i++) {
     int            nParents  = nestedEvents[i].nParents;
     NestedEventId  nstEvent  = nestedEvents[i].nstEvent;
@@ -1210,7 +1210,7 @@ static PetscErrorCode PetscCalcSelfTime(PetscViewer viewer, PetscSelfTimer **p_s
   }
 
   /* Initialize: self-times := totaltimes */
-  for (nst = 0; nst <= nstMax; nst++) { selftimes[nst] = totaltimes[nst]; }
+  for (nst = 0; nst <= nstMax; nst++) selftimes[nst] = totaltimes[nst];
 
   /* Subtract timed subprocesses from self-times */
   for (i = 0; i < nNestedEvents; i++) {
@@ -1257,7 +1257,7 @@ static PetscErrorCode PetscPrintSelfTime(PetscViewer viewer, const PetscSelfTime
 
   PetscCall(PetscMalloc1(nstMax + 1, &times));
   PetscCall(PetscMalloc1(nstMax + 1, &maxTimes));
-  for (nst = 0; nst <= nstMax; nst++) { times[nst] = selftimes[nst].time; }
+  for (nst = 0; nst <= nstMax; nst++) times[nst] = selftimes[nst].time;
   PetscCall(MPIU_Allreduce(times, maxTimes, nstMax + 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm));
   PetscCall(PetscFree(times));
 

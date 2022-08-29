@@ -1456,7 +1456,7 @@ static PetscErrorCode MatShellSetOperation_Shell(Mat mat, MatOperation op, void 
   switch (op) {
   case MATOP_DESTROY: shell->ops->destroy = (PetscErrorCode(*)(Mat))f; break;
   case MATOP_VIEW:
-    if (!mat->ops->viewnative) { mat->ops->viewnative = mat->ops->view; }
+    if (!mat->ops->viewnative) mat->ops->viewnative = mat->ops->view;
     mat->ops->view = (PetscErrorCode(*)(Mat, PetscViewer))f;
     break;
   case MATOP_COPY: shell->ops->copy = (PetscErrorCode(*)(Mat, Mat, MatStructure))f; break;

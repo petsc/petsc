@@ -1564,7 +1564,7 @@ static inline PetscErrorCode PetscLLCondensedClean_fast(PetscInt nidx, PetscInt 
   _nlnk = lnk[0];
   cnt   = 0;
   for (_k = 0; _k < _nlnk; _k++) {
-    for (j = 0; j < lnk[_next + 1]; j++) { indices[cnt++] = lnk[_next] + j; }
+    for (j = 0; j < lnk[_next + 1]; j++) indices[cnt++] = lnk[_next] + j;
     _next = lnk[_next + 2];
   }
   lnk[0] = 0;                 /* nlnk: number of links */

@@ -83,7 +83,7 @@ int main(int argc, char **argv) {
 
     /* Update Locally - Make array of new values */
     /* Note: I don't do anything for the first and last entry */
-    for (i = 1; i < localsize - 1; i++) { globalptr[i - 1] = .5 * (localptr[i + 1] + localptr[i - 1]) - (k / (2.0 * a * h)) * (localptr[i + 1] - localptr[i - 1]); }
+    for (i = 1; i < localsize - 1; i++) globalptr[i - 1] = .5 * (localptr[i + 1] + localptr[i - 1]) - (k / (2.0 * a * h)) * (localptr[i + 1] - localptr[i - 1]);
     PetscCall(VecRestoreArray(global, &globalptr));
     PetscCall(VecRestoreArray(local, &localptr));
 

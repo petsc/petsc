@@ -70,8 +70,8 @@ static PetscErrorCode MatPartitioningApply_Square(MatPartitioning part, IS *part
   PetscCheck(n % p == 0, PETSC_COMM_SELF, PETSC_ERR_SUP, "Square partitioning requires p to divide n");
   PetscCall(MatGetOwnershipRange(part->adj, &rstart, &rend));
   PetscCall(PetscMalloc1(rend - rstart, &color));
-  /* for (int cell=rstart; cell<rend; cell++) { color[cell-rstart] = ((cell%n) < (n/2)) + 2 * ((cell/n) < (n/2)); } */
-  for (cell = rstart; cell < rend; cell++) { color[cell - rstart] = ((cell % n) / (n / p)) + p * ((cell / n) / (n / p)); }
+  /* for (int cell=rstart; cell<rend; cell++) color[cell-rstart] = ((cell%n) < (n/2)) + 2 * ((cell/n) < (n/2)); */
+  for (cell = rstart; cell < rend; cell++) color[cell - rstart] = ((cell % n) / (n / p)) + p * ((cell / n) / (n / p));
   PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)part), rend - rstart, color, PETSC_OWN_POINTER, partitioning));
   PetscFunctionReturn(0);
 }
@@ -390,7 +390,7 @@ PetscErrorCode MatPartitioningViewImbalance(MatPartitioning matp, IS partitionin
   PetscCall(PetscCalloc2(nparts, &subdomainsizes, nparts, &subdomainsizes_tmp));
   PetscCall(ISGetLocalSize(partitioning, &nlocal));
   PetscCall(ISGetIndices(partitioning, &indices));
-  for (i = 0; i < nlocal; i++) { subdomainsizes_tmp[indices[i]] += matp->vertex_weights ? matp->vertex_weights[i] : 1; }
+  for (i = 0; i < nlocal; i++) subdomainsizes_tmp[indices[i]] += matp->vertex_weights ? matp->vertex_weights[i] : 1;
   PetscCallMPI(MPI_Allreduce(subdomainsizes_tmp, subdomainsizes, nparts, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)matp)));
   PetscCall(ISRestoreIndices(partitioning, &indices));
   minsub = PETSC_MAX_INT, maxsub = PETSC_MIN_INT, avgsub = 0;

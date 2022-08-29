@@ -60,7 +60,7 @@ int main(int argc, char *argv[]) {
 
   nlocblocks = (rend - rstart) / top_bs + 2;
   PetscCall(PetscMalloc1(nlocblocks, &idx));
-  for (i = 0; i < nlocblocks; i++) { idx[i] = (rstart / top_bs + i - 1 + m / top_bs) % (m / top_bs); }
+  for (i = 0; i < nlocblocks; i++) idx[i] = (rstart / top_bs + i - 1 + m / top_bs) % (m / top_bs);
   PetscCall(ISLocalToGlobalMappingCreate(comm, top_bs, nlocblocks, idx, PETSC_OWN_POINTER, &brmap));
   PetscCall(PetscPrintf(comm, "Block ISLocalToGlobalMapping:\n"));
   PetscCall(ISLocalToGlobalMappingView(brmap, PETSC_VIEWER_STDOUT_WORLD));
@@ -93,7 +93,7 @@ int main(int argc, char *argv[]) {
   for (i = 0; i < nrowblocks; i++) {
     for (j = 0; j < ncolblocks; j++) {
       for (k = 0; k < row_bs; k++) {
-        for (l = 0; l < col_bs; l++) { vals[k * col_bs + l] = i * 100000 + j * 1000 + k * 10 + l; }
+        for (l = 0; l < col_bs; l++) vals[k * col_bs + l] = i * 100000 + j * 1000 + k * 10 + l;
         irow[k] = i * row_bs + k;
       }
       for (l = 0; l < col_bs; l++) icol[l] = j * col_bs + l;

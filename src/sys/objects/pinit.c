@@ -290,7 +290,7 @@ PETSC_EXTERN void MPIAPI PetscMax_Local(void *in, void *out, PetscMPIInt *cnt, M
 #if defined(PETSC_HAVE_COMPLEX)
   else if (*datatype == MPIU_COMPLEX) {
     PetscComplex *xin = (PetscComplex *)in, *xout = (PetscComplex *)out;
-    for (i = 0; i < count; i++) { xout[i] = PetscRealPartComplex(xout[i]) < PetscRealPartComplex(xin[i]) ? xin[i] : xout[i]; }
+    for (i = 0; i < count; i++) xout[i] = PetscRealPartComplex(xout[i]) < PetscRealPartComplex(xin[i]) ? xin[i] : xout[i];
   }
 #endif
   else {
@@ -311,7 +311,7 @@ PETSC_EXTERN void MPIAPI PetscMin_Local(void *in, void *out, PetscMPIInt *cnt, M
 #if defined(PETSC_HAVE_COMPLEX)
   else if (*datatype == MPIU_COMPLEX) {
     PetscComplex *xin = (PetscComplex *)in, *xout = (PetscComplex *)out;
-    for (i = 0; i < count; i++) { xout[i] = PetscRealPartComplex(xout[i]) > PetscRealPartComplex(xin[i]) ? xin[i] : xout[i]; }
+    for (i = 0; i < count; i++) xout[i] = PetscRealPartComplex(xout[i]) > PetscRealPartComplex(xin[i]) ? xin[i] : xout[i];
   }
 #endif
   else {

@@ -235,8 +235,8 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *fcn, Vec G, void 
         xt = x[j + 1][i];
       }
 
-      if (i > gxs && j + 1 < gys + gym) { xlt = x[j + 1][i - 1]; }
-      if (j > gys && i + 1 < gxs + gxm) { xrb = x[j - 1][i + 1]; }
+      if (i > gxs && j + 1 < gys + gym) xlt = x[j + 1][i - 1];
+      if (j > gys && i + 1 < gxs + gxm) xrb = x[j - 1][i + 1];
 
       d1 = (xc - xl);
       d2 = (xc - xr);
@@ -442,8 +442,8 @@ PetscErrorCode QuadraticH(AppCtx *user, Vec X, Mat Hessian) {
         xt = x[j + 1][i];
       }
 
-      if (i > 0 && j + 1 < my) { xlt = x[j + 1][i - 1]; }
-      if (j > 0 && i + 1 < mx) { xrb = x[j - 1][i + 1]; }
+      if (i > 0 && j + 1 < my) xlt = x[j + 1][i - 1];
+      if (j > 0 && i + 1 < mx) xrb = x[j - 1][i + 1];
 
       d1 = (xc - xl) / hx;
       d2 = (xc - xr) / hx;
@@ -710,7 +710,7 @@ static PetscErrorCode MSA_InitialPoint(AppCtx *user, Vec X) {
 
     /* Perform local computations */
     for (j = ys; j < ys + ym; j++) {
-      for (i = xs; i < xs + xm; i++) { x[j][i] = (((j + 1) * user->bottom[i - xs + 1] + (my - j + 1) * user->top[i - xs + 1]) / (my + 2) + ((i + 1) * user->left[j - ys + 1] + (mx - i + 1) * user->right[j - ys + 1]) / (mx + 2)) / 2.0; }
+      for (i = xs; i < xs + xm; i++) x[j][i] = (((j + 1) * user->bottom[i - xs + 1] + (my - j + 1) * user->top[i - xs + 1]) / (my + 2) + ((i + 1) * user->left[j - ys + 1] + (mx - i + 1) * user->right[j - ys + 1]) / (mx + 2)) / 2.0;
     }
     PetscCall(DMDAVecRestoreArray(user->dm, X, (void **)&x));
     PetscCall(PetscLogFlops(9.0 * xm * ym));

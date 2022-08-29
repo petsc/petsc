@@ -21,7 +21,7 @@ static void f1_bd_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uO
   const PetscInt Ncomp = dim;
   PetscInt       comp, d;
   for (comp = 0; comp < Ncomp; ++comp) {
-    for (d = 0; d < dim; ++d) { f1[comp * dim + d] = 0.0; }
+    for (d = 0; d < dim; ++d) f1[comp * dim + d] = 0.0;
   }
 }
 
@@ -38,9 +38,9 @@ static void f1_u_3d_alpha(PetscInt dim, PetscInt Nf, PetscInt NfAux, const Petsc
     mu *= s_soft_alpha;
     lambda *= s_soft_alpha; /* we could keep the bulk the same like rubberish */
   }
-  for (i = 0, trace = 0; i < dim; ++i) { trace += PetscRealPart(u_x[i * dim + i]); }
+  for (i = 0, trace = 0; i < dim; ++i) trace += PetscRealPart(u_x[i * dim + i]);
   for (i = 0; i < dim; ++i) {
-    for (j = 0; j < dim; ++j) { f1[i * dim + j] = mu * (u_x[i * dim + j] + u_x[j * dim + i]); }
+    for (j = 0; j < dim; ++j) f1[i * dim + j] = mu * (u_x[i * dim + j] + u_x[j * dim + i]);
     f1[i * dim + i] += lambda * trace;
   }
 }
@@ -49,9 +49,9 @@ static void f1_u_3d_alpha(PetscInt dim, PetscInt Nf, PetscInt NfAux, const Petsc
 static void f1_u_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[]) {
   PetscReal trace, mu = s_mu, lambda = s_lambda;
   PetscInt  i, j;
-  for (i = 0, trace = 0; i < dim; ++i) { trace += PetscRealPart(u_x[i * dim + i]); }
+  for (i = 0, trace = 0; i < dim; ++i) trace += PetscRealPart(u_x[i * dim + i]);
   for (i = 0; i < dim; ++i) {
-    for (j = 0; j < dim; ++j) { f1[i * dim + j] = mu * (u_x[i * dim + j] + u_x[j * dim + i]); }
+    for (j = 0; j < dim; ++j) f1[i * dim + j] = mu * (u_x[i * dim + j] + u_x[j * dim + i]);
     f1[i * dim + i] += lambda * trace;
   }
 }
@@ -271,7 +271,7 @@ int main(int argc, char **args) {
     for (i = 0; i < nCoords; i += dimEmbed) {
       PetscInt     j;
       PetscScalar *coord = &coords[i];
-      for (j = 0; j < dimEmbed; j++) { coord[j] = bounds[2 * j] + coord[j] * (bounds[2 * j + 1] - bounds[2 * j]); }
+      for (j = 0; j < dimEmbed; j++) coord[j] = bounds[2 * j] + coord[j] * (bounds[2 * j + 1] - bounds[2 * j]);
     }
     PetscCall(VecRestoreArray(coordinates, &coords));
     PetscCall(DMSetCoordinatesLocal(dm, coordinates));

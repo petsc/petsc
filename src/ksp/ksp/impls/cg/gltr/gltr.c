@@ -775,7 +775,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp) {
       cg->alloced = cg->init_alloc;
     }
 
-    while (t_size > cg->alloced) { cg->alloced += cg->init_alloc; }
+    while (t_size > cg->alloced) cg->alloced += cg->init_alloc;
 
     cg->alloced = PetscMin(cg->alloced, t_size);
     PetscCall(PetscMalloc2(10 * cg->alloced, &cg->rwork, 5 * cg->alloced, &cg->iwork));
@@ -916,20 +916,20 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp) {
       /* Compute objective value for (t_soln + root1 * e_vect)               */
       /***********************************************************************/
 
-      for (i = 0; i < t_size; ++i) { e_rwrk[i] = t_soln[i] + root1 * e_vect[i]; }
+      for (i = 0; i < t_size; ++i) e_rwrk[i] = t_soln[i] + root1 * e_vect[i];
 
       obj1 = e_rwrk[0] * (0.5 * (cg->diag[0] * e_rwrk[0] + cg->offd[1] * e_rwrk[1]) + cg->norm_r[0]);
-      for (i = 1; i < t_size - 1; ++i) { obj1 += 0.5 * e_rwrk[i] * (cg->offd[i] * e_rwrk[i - 1] + cg->diag[i] * e_rwrk[i] + cg->offd[i + 1] * e_rwrk[i + 1]); }
+      for (i = 1; i < t_size - 1; ++i) obj1 += 0.5 * e_rwrk[i] * (cg->offd[i] * e_rwrk[i - 1] + cg->diag[i] * e_rwrk[i] + cg->offd[i + 1] * e_rwrk[i + 1]);
       obj1 += 0.5 * e_rwrk[i] * (cg->offd[i] * e_rwrk[i - 1] + cg->diag[i] * e_rwrk[i]);
 
       /***********************************************************************/
       /* Compute objective value for (t_soln + root2 * e_vect)               */
       /***********************************************************************/
 
-      for (i = 0; i < t_size; ++i) { e_rwrk[i] = t_soln[i] + root2 * e_vect[i]; }
+      for (i = 0; i < t_size; ++i) e_rwrk[i] = t_soln[i] + root2 * e_vect[i];
 
       obj2 = e_rwrk[0] * (0.5 * (cg->diag[0] * e_rwrk[0] + cg->offd[1] * e_rwrk[1]) + cg->norm_r[0]);
-      for (i = 1; i < t_size - 1; ++i) { obj2 += 0.5 * e_rwrk[i] * (cg->offd[i] * e_rwrk[i - 1] + cg->diag[i] * e_rwrk[i] + cg->offd[i + 1] * e_rwrk[i + 1]); }
+      for (i = 1; i < t_size - 1; ++i) obj2 += 0.5 * e_rwrk[i] * (cg->offd[i] * e_rwrk[i - 1] + cg->diag[i] * e_rwrk[i] + cg->offd[i + 1] * e_rwrk[i + 1]);
       obj2 += 0.5 * e_rwrk[i] * (cg->offd[i] * e_rwrk[i - 1] + cg->diag[i] * e_rwrk[i]);
 
       /***********************************************************************/
@@ -937,9 +937,9 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp) {
       /***********************************************************************/
 
       if (obj1 <= obj2) {
-        for (i = 0; i < t_size; ++i) { t_soln[i] += root1 * e_vect[i]; }
+        for (i = 0; i < t_size; ++i) t_soln[i] += root1 * e_vect[i];
       } else {
-        for (i = 0; i < t_size; ++i) { t_soln[i] += root2 * e_vect[i]; }
+        for (i = 0; i < t_size; ++i) t_soln[i] += root2 * e_vect[i];
       }
     } else {
       /***********************************************************************/
@@ -1057,7 +1057,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp) {
   cg->norm_d = norm_t;
 
   cg->o_fcn = t_soln[0] * (0.5 * (cg->diag[0] * t_soln[0] + cg->offd[1] * t_soln[1]) + cg->norm_r[0]);
-  for (i = 1; i < t_size - 1; ++i) { cg->o_fcn += 0.5 * t_soln[i] * (cg->offd[i] * t_soln[i - 1] + cg->diag[i] * t_soln[i] + cg->offd[i + 1] * t_soln[i + 1]); }
+  for (i = 1; i < t_size - 1; ++i) cg->o_fcn += 0.5 * t_soln[i] * (cg->offd[i] * t_soln[i - 1] + cg->diag[i] * t_soln[i] + cg->offd[i + 1] * t_soln[i + 1]);
   cg->o_fcn += 0.5 * t_soln[i] * (cg->offd[i] * t_soln[i - 1] + cg->diag[i] * t_soln[i]);
 
   /***************************************************************************/

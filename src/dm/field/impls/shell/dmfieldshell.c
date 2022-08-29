@@ -60,7 +60,7 @@ PetscErrorCode DMFieldShellEvaluateFEDefault(DMField field, IS pointIS, PetscQua
           for (i = 0; i < dimC; i++) d[i] = sD[(p * Nc + q) * dimC + i];
           for (i = 0; i < dimC; i++) sD[(p * Nc + q) * dimC + i] = 0.;
           for (i = 0; i < dimC; i++) {
-            for (j = 0; j < dimC; j++) { sD[(p * Nc + q) * dimC + i] += geom->J[(p * dimC + j) * dimC + i] * d[j]; }
+            for (j = 0; j < dimC; j++) sD[(p * Nc + q) * dimC + i] += geom->J[(p * dimC + j) * dimC + i] * d[j];
           }
         }
       }
@@ -77,7 +77,7 @@ PetscErrorCode DMFieldShellEvaluateFEDefault(DMField field, IS pointIS, PetscQua
           for (i = 0; i < dimC; i++) d[i] = rD[(p * Nc + q) * dimC + i];
           for (i = 0; i < dimC; i++) rD[(p * Nc + q) * dimC + i] = 0.;
           for (i = 0; i < dimC; i++) {
-            for (j = 0; j < dimC; j++) { rD[(p * Nc + q) * dimC + i] += geom->J[(p * dimC + j) * dimC + i] * d[j]; }
+            for (j = 0; j < dimC; j++) rD[(p * Nc + q) * dimC + i] += geom->J[(p * dimC + j) * dimC + i] * d[j];
           }
         }
       }
@@ -101,7 +101,7 @@ PetscErrorCode DMFieldShellEvaluateFEDefault(DMField field, IS pointIS, PetscQua
           for (i = 0; i < dimC; i++) {
             for (j = 0; j < dimC; j++) {
               for (k = 0; k < dimC; k++) {
-                for (l = 0; l < dimC; l++) { sH[((p * Nc + q) * dimC + i) * dimC + j] += geom->J[(p * dimC + k) * dimC + i] * geom->J[(p * dimC + l) * dimC + j] * d[k][l]; }
+                for (l = 0; l < dimC; l++) sH[((p * Nc + q) * dimC + i) * dimC + j] += geom->J[(p * dimC + k) * dimC + i] * geom->J[(p * dimC + l) * dimC + j] * d[k][l];
               }
             }
           }
@@ -124,7 +124,7 @@ PetscErrorCode DMFieldShellEvaluateFEDefault(DMField field, IS pointIS, PetscQua
           for (i = 0; i < dimC; i++) {
             for (j = 0; j < dimC; j++) {
               for (k = 0; k < dimC; k++) {
-                for (l = 0; l < dimC; l++) { rH[((p * Nc + q) * dimC + i) * dimC + j] += geom->J[(p * dimC + k) * dimC + i] * geom->J[(p * dimC + l) * dimC + j] * d[k][l]; }
+                for (l = 0; l < dimC; l++) rH[((p * Nc + q) * dimC + i) * dimC + j] += geom->J[(p * dimC + k) * dimC + i] * geom->J[(p * dimC + l) * dimC + j] * d[k][l];
               }
             }
           }

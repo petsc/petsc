@@ -402,7 +402,7 @@ PetscErrorCode PetscBinaryWrite(int fd, const void *p, PetscInt n, PetscDataType
     wtype = PETSC_DOUBLE;
     PetscCall(PetscMalloc1(n, &ppp));
     pv = (PetscReal *)pp;
-    for (i = 0; i < n; i++) { ppp[i] = (double)pv[i]; }
+    for (i = 0; i < n; i++) ppp[i] = (double)pv[i];
     pp   = (char *)ppp;
     ptmp = (char *)ppp;
   }
@@ -438,7 +438,7 @@ PetscErrorCode PetscBinaryWrite(int fd, const void *p, PetscInt n, PetscDataType
 
   if (!PetscBinaryBigEndian()) PetscCall(PetscByteSwap((void *)ptmp, wtype, n));
 
-  if (type == PETSC_FUNCTION) { free(fname); }
+  if (type == PETSC_FUNCTION) free(fname);
 #if defined(PETSC_USE_REAL___FLOAT128)
   if ((type == PETSC_SCALAR || type == PETSC_REAL || type == PETSC_COMPLEX) && writedouble) PetscCall(PetscFree(ppp));
 #endif
@@ -594,7 +594,7 @@ PetscErrorCode PetscBinarySynchronizedRead(MPI_Comm comm, int fd, void *data, Pe
 
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   PetscCallMPI(MPI_Comm_size(comm, &size));
-  if (rank == 0) { ibuf[0] = PetscBinaryRead(fd, data, num, count ? &ibuf[1] : NULL, type); }
+  if (rank == 0) ibuf[0] = PetscBinaryRead(fd, data, num, count ? &ibuf[1] : NULL, type);
   PetscCallMPI(MPI_Bcast(ibuf, 2, MPIU_INT, 0, comm));
   PetscCall((PetscErrorCode)ibuf[0]);
 

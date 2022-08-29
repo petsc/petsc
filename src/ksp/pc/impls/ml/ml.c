@@ -273,7 +273,7 @@ static PetscErrorCode MatWrapML_SeqAIJ(ML_Operator *mlmat, MatReuse reuse, Mat *
     PetscCall(MatSetBlockSize(*newmat, mlmat->num_PDEs));
 
     PetscCall(PetscMalloc1(m, &nnz));
-    for (i = 0; i < m; i++) { PetscStackCallExternalVoid("ML_Operator_Getrow", ML_Operator_Getrow(mlmat, 1, &i, nz_max, aj, aa, &nnz[i])); }
+    for (i = 0; i < m; i++) PetscStackCallExternalVoid("ML_Operator_Getrow", ML_Operator_Getrow(mlmat, 1, &i, nz_max, aj, aa, &nnz[i]));
     PetscCall(MatSeqAIJSetPreallocation(*newmat, 0, nnz));
   }
   for (i = 0; i < m; i++) {
@@ -415,11 +415,11 @@ static PetscErrorCode PCSetCoordinates_ML(PC pc, PetscInt ndm, PetscInt a_nloc, 
   /* copy data in - column oriented */
   if (nloc == a_nloc) {
     for (kk = 0; kk < nloc; kk++) {
-      for (ii = 0; ii < ndm; ii++) { pc_ml->coords[ii * nloc + kk] = coords[kk * ndm + ii]; }
+      for (ii = 0; ii < ndm; ii++) pc_ml->coords[ii * nloc + kk] = coords[kk * ndm + ii];
     }
   } else { /* assumes the coordinates are blocked */
     for (kk = 0; kk < nloc; kk++) {
-      for (ii = 0; ii < ndm; ii++) { pc_ml->coords[ii * nloc + kk] = coords[bs * kk * ndm + ii]; }
+      for (ii = 0; ii < ndm; ii++) pc_ml->coords[ii * nloc + kk] = coords[bs * kk * ndm + ii];
     }
   }
   PetscFunctionReturn(0);
@@ -617,11 +617,11 @@ PetscErrorCode PCSetUp_ML(PC pc) {
     PetscCall(PetscMalloc1(dim * nlocghost, &ghostedcoords));
     for (i = 0; i < dim; i++) {
       /* copy coordinate values into first component of pwork */
-      for (j = 0; j < nloc; j++) { PetscMLdata->pwork[bs * j] = pc_ml->coords[nloc * i + j]; }
+      for (j = 0; j < nloc; j++) PetscMLdata->pwork[bs * j] = pc_ml->coords[nloc * i + j];
       /* get the ghost values */
       PetscCall(PetscML_comm(PetscMLdata->pwork, PetscMLdata));
       /* write into the vector */
-      for (j = 0; j < nlocghost; j++) { ghostedcoords[i * nlocghost + j] = PetscMLdata->pwork[bs * j]; }
+      for (j = 0; j < nlocghost; j++) ghostedcoords[i * nlocghost + j] = PetscMLdata->pwork[bs * j];
     }
     /* replace the original coords with the ghosted coords, because these are
      * what ML needs */
@@ -691,7 +691,7 @@ PetscErrorCode PCSetUp_ML(PC pc) {
   }
   PetscStackCallExternalVoid("ML_Aggregate_Set_Threshold", ML_Aggregate_Set_Threshold(agg_object, pc_ml->Threshold));
   PetscStackCallExternalVoid("ML_Aggregate_Set_DampingFactor", ML_Aggregate_Set_DampingFactor(agg_object, pc_ml->DampingFactor));
-  if (pc_ml->SpectralNormScheme_Anorm) { PetscStackCallExternalVoid("ML_Set_SpectralNormScheme_Anorm", ML_Set_SpectralNormScheme_Anorm(ml_object)); }
+  if (pc_ml->SpectralNormScheme_Anorm) PetscStackCallExternalVoid("ML_Set_SpectralNormScheme_Anorm", ML_Set_SpectralNormScheme_Anorm(ml_object));
   agg_object->keep_agg_information      = (int)pc_ml->KeepAggInfo;
   agg_object->keep_P_tentative          = (int)pc_ml->Reusable;
   agg_object->block_scaled_SA           = (int)pc_ml->BlockScaling;

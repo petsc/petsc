@@ -301,7 +301,7 @@ static PetscErrorCode MatCreateSubMatrix_MPIDense(Mat A, IS isrow, IS iscol, Mat
   PetscCall(MatDenseGetLDA(mat->A, &lda));
   for (i = 0; i < Ncols; i++) {
     const PetscScalar *av = v + lda * icol[i];
-    for (j = 0; j < nrows; j++) { *bv++ = av[irow[j] - rstart]; }
+    for (j = 0; j < nrows; j++) *bv++ = av[irow[j] - rstart];
   }
   PetscCall(MatDenseRestoreArrayRead(mat->A, &v));
   PetscCall(MatDenseRestoreArray(newmatd->A, &bv));
@@ -521,7 +521,7 @@ PetscErrorCode MatGetDiagonal_MPIDense(Mat A, Vec v) {
   radd = A->rmap->rstart * m;
   PetscCall(MatDenseGetArrayRead(a->A, &av));
   PetscCall(MatDenseGetLDA(a->A, &lda));
-  for (i = 0; i < len; i++) { x[i] = av[radd + i * lda + i]; }
+  for (i = 0; i < len; i++) x[i] = av[radd + i * lda + i];
   PetscCall(MatDenseRestoreArrayRead(a->A, &av));
   PetscCall(VecRestoreArray(v, &x));
   PetscFunctionReturn(0);
@@ -2612,7 +2612,7 @@ static PetscErrorCode MatMatTransposeMultNumeric_MPIDense_MPIDense_Cyclic(Mat A,
   } else {
     sendbuf = abt->buf[0];
     for (k = 0, i = 0; i < cK; i++) {
-      for (j = 0; j < bn; j++, k++) { sendbuf[k] = bv[i * blda + j]; }
+      for (j = 0; j < bn; j++, k++) sendbuf[k] = bv[i * blda + j];
     }
   }
   if (size > 1) {
@@ -2688,7 +2688,7 @@ static PetscErrorCode MatMatTransposeMultNumeric_MPIDense_MPIDense_Allgatherv(Ma
   sendbuf = abt->buf[0];
   recvbuf = abt->buf[1];
   for (k = 0, j = 0; j < bn; j++) {
-    for (i = 0; i < cK; i++, k++) { sendbuf[k] = bv[i * blda + j]; }
+    for (i = 0; i < cK; i++, k++) sendbuf[k] = bv[i * blda + j];
   }
   PetscCall(MatDenseRestoreArrayRead(b->A, &bv));
   PetscCallMPI(MPI_Allgatherv(sendbuf, bn * cK, MPIU_SCALAR, recvbuf, abt->recvcounts, abt->recvdispls, MPIU_SCALAR, comm));

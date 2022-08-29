@@ -1071,7 +1071,7 @@ PetscErrorCode PetscDualSpaceApplyDefault(PetscDualSpace sp, PetscInt f, PetscRe
     } else {
       PetscCall((*func)(dE, time, &cgeom->v[dE * q], Nc, val, ctx));
     }
-    for (c = 0; c < Nc; ++c) { *value += val[c] * weights[q * Nc + c]; }
+    for (c = 0; c < Nc; ++c) *value += val[c] * weights[q * Nc + c];
   }
   PetscCall(DMRestoreWorkArray(dm, Nc, MPIU_SCALAR, &val));
   PetscFunctionReturn(0);
@@ -1235,7 +1235,7 @@ PetscErrorCode PetscDualSpaceCreateAllDataDefault(PetscDualSpace sp, PetscQuadra
     PetscCall(PetscDualSpaceGetFunctional(sp, f, &q));
     PetscCall(PetscQuadratureGetData(q, NULL, &fnc, &Np, &p, &w));
     PetscCheck(fnc == Nc, PETSC_COMM_SELF, PETSC_ERR_PLIB, "functional component mismatch");
-    for (i = 0; i < Np * dim; i++) { points[offset * dim + i] = p[i]; }
+    for (i = 0; i < Np * dim; i++) points[offset * dim + i] = p[i];
     for (i = 0; i < Np * Nc; i++) PetscCall(MatSetValue(A, f, offset * Nc, w[i], INSERT_VALUES));
     offset += Np;
   }
@@ -1363,7 +1363,7 @@ PetscErrorCode PetscDualSpaceCreateInteriorDataDefault(PetscDualSpace sp, PetscQ
 
       PetscCall(PetscDualSpaceGetFunctional(sp, off, &q));
       PetscCall(PetscQuadratureGetData(q, NULL, NULL, &Np, &p, &w));
-      for (i = 0; i < Np * dim; i++) { points[offset + i] = p[i]; }
+      for (i = 0; i < Np * dim; i++) points[offset + i] = p[i];
       for (i = 0; i < Np * Nc; i++) PetscCall(MatSetValue(imat, f, matoffset + i, w[i], INSERT_VALUES));
       offset += Np * dim;
       matoffset += Np * Nc;
@@ -1404,15 +1404,15 @@ PetscErrorCode PetscDualSpaceEqual(PetscDualSpace A, PetscDualSpace B, PetscBool
   *equal = PETSC_FALSE;
   PetscCall(PetscDualSpaceGetDimension(A, &sizeA));
   PetscCall(PetscDualSpaceGetDimension(B, &sizeB));
-  if (sizeB != sizeA) { PetscFunctionReturn(0); }
+  if (sizeB != sizeA) PetscFunctionReturn(0);
   PetscCall(DMGetDimension(A->dm, &dimA));
   PetscCall(DMGetDimension(B->dm, &dimB));
-  if (dimA != dimB) { PetscFunctionReturn(0); }
+  if (dimA != dimB) PetscFunctionReturn(0);
 
   PetscCall(PetscDualSpaceGetNumDof(A, &dofA));
   PetscCall(PetscDualSpaceGetNumDof(B, &dofB));
   for (PetscInt d = 0; d < dimA; d++) {
-    if (dofA[d] != dofB[d]) { PetscFunctionReturn(0); }
+    if (dofA[d] != dofB[d]) PetscFunctionReturn(0);
   }
 
   PetscCall(PetscDualSpaceGetInteriorData(A, &quadA, &matA));
@@ -1478,7 +1478,7 @@ PetscErrorCode PetscDualSpaceApplyFVM(PetscDualSpace sp, PetscInt f, PetscReal t
   *value = 0.;
   for (q = 0; q < Nq; ++q) {
     PetscCall((*func)(dimEmbed, time, cgeom->centroid, Nc, val, ctx));
-    for (c = 0; c < Nc; ++c) { *value += val[c] * weights[q * Nc + c]; }
+    for (c = 0; c < Nc; ++c) *value += val[c] * weights[q * Nc + c];
   }
   PetscCall(DMRestoreWorkArray(dm, Nc, MPIU_SCALAR, &val));
   PetscFunctionReturn(0);
@@ -1838,7 +1838,7 @@ PetscErrorCode PetscDualSpaceTransformGradient(PetscDualSpace dsp, PetscDualSpac
     }
   } else {
     for (v = 0; v < Nv; ++v) {
-      for (c = 0; c < Nc; ++c) { DMPlex_MultTransposeReal_Internal(fegeom->invJ, dim, dE, 1, &vals[(v * Nc + c) * dE], &vals[(v * Nc + c) * dE]); }
+      for (c = 0; c < Nc; ++c) DMPlex_MultTransposeReal_Internal(fegeom->invJ, dim, dE, 1, &vals[(v * Nc + c) * dE], &vals[(v * Nc + c) * dE]);
     }
   }
   /* Assume its a vector, otherwise assume its a bunch of scalars */
@@ -1943,7 +1943,7 @@ PetscErrorCode PetscDualSpaceTransformHessian(PetscDualSpace dsp, PetscDualSpace
     }
   } else {
     for (v = 0; v < Nv; ++v) {
-      for (c = 0; c < Nc; ++c) { DMPlex_PTAPReal_Internal(fegeom->invJ, dim, dE, &vals[(v * Nc + c) * dE * dE], &vals[(v * Nc + c) * dE * dE]); }
+      for (c = 0; c < Nc; ++c) DMPlex_PTAPReal_Internal(fegeom->invJ, dim, dE, &vals[(v * Nc + c) * dE * dE], &vals[(v * Nc + c) * dE * dE]);
     }
   }
   /* Assume its a vector, otherwise assume its a bunch of scalars */

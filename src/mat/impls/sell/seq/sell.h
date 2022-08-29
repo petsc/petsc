@@ -80,7 +80,7 @@ static inline PetscErrorCode MatSeqXSELLFreeSELL(Mat AA, MatScalar **val, PetscI
     PetscCall(PetscArraycpy(new_val + SIDX[SID + 1] + 8, VAL + SIDX[SID + 1], SIDX[AM >> 3] - SIDX[SID + 1])); \
     PetscCall(PetscArraycpy(new_colidx + SIDX[SID + 1] + 8, COLIDX + SIDX[SID + 1], SIDX[AM >> 3] - SIDX[SID + 1])); \
     /* update slice_idx */ \
-    for (ii = SID + 1; ii <= AM >> 3; ii++) { SIDX[ii] += 8; } \
+    for (ii = SID + 1; ii <= AM >> 3; ii++) SIDX[ii] += 8; \
     /* update pointers. Notice that they point to the FIRST postion of the row */ \
     CP = new_colidx + SIDX[SID] + (ROW & 0x07); \
     VP = new_val + SIDX[SID] + (ROW & 0x07); \

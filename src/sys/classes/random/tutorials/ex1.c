@@ -54,7 +54,7 @@ int main(int argc, char **argv) {
   PetscCall(PetscSortInt(n, values));
   PetscCall(PetscLogEventEnd(event, 0, 0, 0, 0));
 
-  for (i = 1; i < n; i++) { PetscCheck(values[i] >= values[i - 1], PETSC_COMM_SELF, PETSC_ERR_PLIB, "Values not sorted"); }
+  for (i = 1; i < n; i++) PetscCheck(values[i] >= values[i - 1], PETSC_COMM_SELF, PETSC_ERR_PLIB, "Values not sorted");
   PetscCall(PetscFree(values));
   PetscCall(PetscRandomDestroy(&rnd));
 

@@ -1049,7 +1049,7 @@ static PetscErrorCode TSInterpolate_RK(TS ts, PetscReal itime, Vec X) {
   PetscCall(PetscMalloc1(s, &b));
   for (i = 0; i < s; i++) b[i] = 0;
   for (j = 0, tt = t; j < p; j++, tt *= t) {
-    for (i = 0; i < s; i++) { b[i] += h * B[i * p + j] * tt; }
+    for (i = 0; i < s; i++) b[i] += h * B[i * p + j] * tt;
   }
   PetscCall(VecCopy(rk->Y[0], X));
   PetscCall(VecMAXPY(X, s, b, rk->YdotRHS));

@@ -119,7 +119,7 @@ int main(int argc, char **args) {
       nboundary_nodes = size > m ? nlocal : m - size + nlocal;
       PetscCall(PetscMalloc1(nboundary_nodes, &boundary_nodes));
       k = 0;
-      for (i = size; i < m; i++, k++) { boundary_nodes[k] = n * i; };
+      for (i = size; i < m; i++, k++) boundary_nodes[k] = n * i;
     } else if (rank < m) {
       nboundary_nodes = nlocal + 1;
       PetscCall(PetscMalloc1(nboundary_nodes, &boundary_nodes));
@@ -130,7 +130,7 @@ int main(int argc, char **args) {
       PetscCall(PetscMalloc1(nboundary_nodes, &boundary_nodes));
       k = 0;
     }
-    for (j = nlocal * rank; j < nlocal * (rank + 1); j++, k++) { boundary_nodes[k] = j; };
+    for (j = nlocal * rank; j < nlocal * (rank + 1); j++, k++) boundary_nodes[k] = j;
   } else {
     /*version where boundary conditions are set by the node owners only */
     PetscCall(PetscMalloc1(m * n, &boundary_nodes));

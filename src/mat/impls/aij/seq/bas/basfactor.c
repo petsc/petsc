@@ -28,7 +28,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ_Bas(Mat fact, Mat A, IS perm, const M
     PetscCall(PetscMalloc1(am + 1, &ui));
     ui[0] = 0;
 
-    for (i = 0; i < am; i++) { ui[i + 1] = ui[i] + ai[i + 1] - a->diag[i]; }
+    for (i = 0; i < am; i++) ui[i + 1] = ui[i] + ai[i + 1] - a->diag[i];
     PetscCall(PetscMalloc1(ui[am] + 1, &uj));
     cols = uj;
     for (i = 0; i < am; i++) {

@@ -22,7 +22,7 @@ int main(int argc, char **argv) {
 
   /* Launch a sequence of kernels asynchronously. Previous launched kernels do not need to be completed before launching a new one */
   PetscCall(PetscTime(&tstart));
-  for (i = 0; i < n; i++) { NullKernel<<<1, 1, 0, NULL>>>(); }
+  for (i = 0; i < n; i++) NullKernel<<<1, 1, 0, NULL>>>();
   PetscCall(PetscTime(&tend));
   PetscCallCUDA(cudaStreamSynchronize(NULL)); /* Sync after tend since we don't want to count kernel execution time */
   time = (tend - tstart) * 1e6 / n;

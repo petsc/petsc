@@ -285,7 +285,7 @@ static PetscErrorCode VecView_Plex_Local_Draw_2D(Vec v, PetscViewer viewer) {
     PetscCall(PetscSectionGetFieldName(s, f, &fname));
 
     if (v->hdr.prefix) PetscCall(PetscStrncpy(prefix, v->hdr.prefix, sizeof(prefix)));
-    else { prefix[0] = '\0'; }
+    else prefix[0] = '\0';
     if (Nf > 1) {
       PetscCall(DMCreateSubDM(dm, 1, &f, &fis, &fdm));
       PetscCall(VecGetSubVector(v, fis, &fv));
@@ -1215,9 +1215,9 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer) {
           tcoords[1]    = tcoords[2];
           tcoords[2]    = -tmp;
         }
-        for (d = 0; d < dim; ++d) { ccoords[d] += tcoords[d]; }
+        for (d = 0; d < dim; ++d) ccoords[d] += tcoords[d];
       }
-      for (d = 0; d < cdim; ++d) { ccoords[d] /= (numCoords / cdim); }
+      for (d = 0; d < cdim; ++d) ccoords[d] /= (numCoords / cdim);
       PetscCall(DMPlexRestoreCellCoordinates(dm, c, &isDG, &numCoords, &array, &cellCoords));
       for (d = 0; d < cdim; ++d) {
         if (d > 0) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, ","));
@@ -2566,7 +2566,7 @@ PetscErrorCode DMCreateMatrix_Plex(DM dm, Mat *J) {
       for (PetscInt i = 0; i < localSize; i += PetscMax(1, pblocks[i])) {
         if (pblocks[i] == 0) continue;
         pblocks[nblocks++] = pblocks[i]; // nblocks always <= i
-        for (PetscInt j = 1; j < pblocks[i]; j++) { PetscCheck(pblocks[i + j] == pblocks[i], PETSC_COMM_SELF, PETSC_ERR_PLIB, "Block of size %" PetscInt_FMT " mismatches entry %" PetscInt_FMT, pblocks[i], pblocks[i + j]); }
+        for (PetscInt j = 1; j < pblocks[i]; j++) PetscCheck(pblocks[i + j] == pblocks[i], PETSC_COMM_SELF, PETSC_ERR_PLIB, "Block of size %" PetscInt_FMT " mismatches entry %" PetscInt_FMT, pblocks[i], pblocks[i + j]);
       }
       PetscCall(MatSetVariableBlockSizes(*J, nblocks, pblocks));
     }
@@ -3729,7 +3729,7 @@ PetscErrorCode DMCreateSubDM_Plex(DM dm, PetscInt numFields, const PetscInt fiel
   PetscFunctionBegin;
   if (subdm) PetscCall(DMClone(dm, subdm));
   PetscCall(DMCreateSectionSubDM(dm, numFields, fields, is, subdm));
-  if (subdm) { (*subdm)->useNatural = dm->useNatural; }
+  if (subdm) (*subdm)->useNatural = dm->useNatural;
   if (dm->useNatural && dm->sfMigration) {
     PetscSF sfNatural;
 
@@ -4142,7 +4142,7 @@ PetscErrorCode DMPlexGetJoin(DM dm, PetscInt numPoints, const PetscInt points[],
   /* Copy in support of first point */
   PetscCall(PetscSectionGetDof(mesh->supportSection, points[0], &dof));
   PetscCall(PetscSectionGetOffset(mesh->supportSection, points[0], &off));
-  for (joinSize = 0; joinSize < dof; ++joinSize) { join[i][joinSize] = mesh->supports[off + joinSize]; }
+  for (joinSize = 0; joinSize < dof; ++joinSize) join[i][joinSize] = mesh->supports[off + joinSize];
   /* Check each successive support */
   for (p = 1; p < numPoints; ++p) {
     PetscInt newJoinSize = 0;
@@ -4272,7 +4272,7 @@ PetscErrorCode DMPlexGetFullJoin(DM dm, PetscInt numPoints, const PetscInt point
 
     /* Copy in support of first point */
     dof = offsets[d + 1] - offsets[d];
-    for (joinSize = 0; joinSize < dof; ++joinSize) { join[i][joinSize] = closures[0][(offsets[d] + joinSize) * 2]; }
+    for (joinSize = 0; joinSize < dof; ++joinSize) join[i][joinSize] = closures[0][(offsets[d] + joinSize) * 2];
     /* Check each successive cone */
     for (p = 1; p < numPoints && joinSize; ++p) {
       PetscInt newJoinSize = 0;
@@ -4346,7 +4346,7 @@ PetscErrorCode DMPlexGetMeet(DM dm, PetscInt numPoints, const PetscInt points[],
   /* Copy in cone of first point */
   PetscCall(PetscSectionGetDof(mesh->coneSection, points[0], &dof));
   PetscCall(PetscSectionGetOffset(mesh->coneSection, points[0], &off));
-  for (meetSize = 0; meetSize < dof; ++meetSize) { meet[i][meetSize] = mesh->cones[off + meetSize]; }
+  for (meetSize = 0; meetSize < dof; ++meetSize) meet[i][meetSize] = mesh->cones[off + meetSize];
   /* Check each successive cone */
   for (p = 1; p < numPoints; ++p) {
     PetscInt newMeetSize = 0;
@@ -4476,7 +4476,7 @@ PetscErrorCode DMPlexGetFullMeet(DM dm, PetscInt numPoints, const PetscInt point
 
     /* Copy in cone of first point */
     dof = offsets[h + 1] - offsets[h];
-    for (meetSize = 0; meetSize < dof; ++meetSize) { meet[i][meetSize] = closures[0][(offsets[h] + meetSize) * 2]; }
+    for (meetSize = 0; meetSize < dof; ++meetSize) meet[i][meetSize] = closures[0][(offsets[h] + meetSize) * 2];
     /* Check each successive cone */
     for (p = 1; p < numPoints && meetSize; ++p) {
       PetscInt newMeetSize = 0;
@@ -5487,7 +5487,7 @@ static inline PetscErrorCode DMPlexVecGetClosure_Depth1_Static(DM dm, PetscSecti
     PetscCall(PetscSectionGetDof(section, point, &dof));
     PetscCall(PetscSectionGetOffset(section, point, &off));
     varr = &vArray[off];
-    for (d = 0; d < dof; ++d, ++offset) { array[offset] = varr[d]; }
+    for (d = 0; d < dof; ++d, ++offset) array[offset] = varr[d];
     size += dof;
   }
   for (p = 0; p < numPoints; ++p) {
@@ -5501,9 +5501,9 @@ static inline PetscErrorCode DMPlexVecGetClosure_Depth1_Static(DM dm, PetscSecti
     PetscCall(PetscSectionGetOffset(section, cp, &off));
     varr = &vArray[off];
     if (o >= 0) {
-      for (d = 0; d < dof; ++d, ++offset) { array[offset] = varr[d]; }
+      for (d = 0; d < dof; ++d, ++offset) array[offset] = varr[d];
     } else {
-      for (d = dof - 1; d >= 0; --d, ++offset) { array[offset] = varr[d]; }
+      for (d = dof - 1; d >= 0; --d, ++offset) array[offset] = varr[d];
     }
     size += dof;
   }
@@ -5643,21 +5643,21 @@ static inline PetscErrorCode DMPlexVecGetClosure_Fields_Static(DM dm, PetscSecti
       varr = &vArray[foff];
       if (clperm) {
         if (perm) {
-          for (b = 0; b < fdof; b++) { array[clperm[offset + perm[b]]] = varr[b]; }
+          for (b = 0; b < fdof; b++) array[clperm[offset + perm[b]]] = varr[b];
         } else {
-          for (b = 0; b < fdof; b++) { array[clperm[offset + b]] = varr[b]; }
+          for (b = 0; b < fdof; b++) array[clperm[offset + b]] = varr[b];
         }
         if (flip) {
-          for (b = 0; b < fdof; b++) { array[clperm[offset + b]] *= flip[b]; }
+          for (b = 0; b < fdof; b++) array[clperm[offset + b]] *= flip[b];
         }
       } else {
         if (perm) {
-          for (b = 0; b < fdof; b++) { array[offset + perm[b]] = varr[b]; }
+          for (b = 0; b < fdof; b++) array[offset + perm[b]] = varr[b];
         } else {
-          for (b = 0; b < fdof; b++) { array[offset + b] = varr[b]; }
+          for (b = 0; b < fdof; b++) array[offset + b] = varr[b];
         }
         if (flip) {
-          for (b = 0; b < fdof; b++) { array[offset + b] *= flip[b]; }
+          for (b = 0; b < fdof; b++) array[offset + b] *= flip[b];
         }
       }
       offset += fdof;
@@ -5898,15 +5898,15 @@ static inline PetscErrorCode updatePoint_private(PetscSection section, PetscInt 
   if (!cdof || setBC) {
     if (clperm) {
       if (perm) {
-        for (k = 0; k < dof; ++k) { fuse(&a[k], values[clperm[offset + perm[k]]] * (flip ? flip[perm[k]] : 1.)); }
+        for (k = 0; k < dof; ++k) fuse(&a[k], values[clperm[offset + perm[k]]] * (flip ? flip[perm[k]] : 1.));
       } else {
-        for (k = 0; k < dof; ++k) { fuse(&a[k], values[clperm[offset + k]] * (flip ? flip[k] : 1.)); }
+        for (k = 0; k < dof; ++k) fuse(&a[k], values[clperm[offset + k]] * (flip ? flip[k] : 1.));
       }
     } else {
       if (perm) {
-        for (k = 0; k < dof; ++k) { fuse(&a[k], values[offset + perm[k]] * (flip ? flip[perm[k]] : 1.)); }
+        for (k = 0; k < dof; ++k) fuse(&a[k], values[offset + perm[k]] * (flip ? flip[perm[k]] : 1.));
       } else {
-        for (k = 0; k < dof; ++k) { fuse(&a[k], values[offset + k] * (flip ? flip[k] : 1.)); }
+        for (k = 0; k < dof; ++k) fuse(&a[k], values[offset + k] * (flip ? flip[k] : 1.));
       }
     }
   } else {
@@ -6015,15 +6015,15 @@ static inline PetscErrorCode updatePointFields_private(PetscSection section, Pet
   if (!fcdof || setBC) {
     if (clperm) {
       if (perm) {
-        for (b = 0; b < fdof; b++) { fuse(&a[b], values[clperm[foffset + perm[b]]] * (flip ? flip[perm[b]] : 1.)); }
+        for (b = 0; b < fdof; b++) fuse(&a[b], values[clperm[foffset + perm[b]]] * (flip ? flip[perm[b]] : 1.));
       } else {
-        for (b = 0; b < fdof; b++) { fuse(&a[b], values[clperm[foffset + b]] * (flip ? flip[b] : 1.)); }
+        for (b = 0; b < fdof; b++) fuse(&a[b], values[clperm[foffset + b]] * (flip ? flip[b] : 1.));
       }
     } else {
       if (perm) {
-        for (b = 0; b < fdof; b++) { fuse(&a[b], values[foffset + perm[b]] * (flip ? flip[perm[b]] : 1.)); }
+        for (b = 0; b < fdof; b++) fuse(&a[b], values[foffset + perm[b]] * (flip ? flip[perm[b]] : 1.));
       } else {
-        for (b = 0; b < fdof; b++) { fuse(&a[b], values[foffset + b] * (flip ? flip[b] : 1.)); }
+        for (b = 0; b < fdof; b++) fuse(&a[b], values[foffset + b] * (flip ? flip[b] : 1.));
       }
     }
   } else {
@@ -6099,7 +6099,7 @@ static inline PetscErrorCode updatePointFieldsBC_private(PetscSection section, P
               ++cind;
               fcSet = PETSC_TRUE;
             }
-            if (ncSet && fcSet) { fuse(&a[b], values[clperm[foffset + perm[b]]] * (flip ? flip[perm[b]] : 1.)); }
+            if (ncSet && fcSet) fuse(&a[b], values[clperm[foffset + perm[b]]] * (flip ? flip[perm[b]] : 1.));
           }
         } else {
           for (b = 0; b < fdof; b++) {
@@ -6121,7 +6121,7 @@ static inline PetscErrorCode updatePointFieldsBC_private(PetscSection section, P
               ++cind;
               fcSet = PETSC_TRUE;
             }
-            if (ncSet && fcSet) { fuse(&a[b], values[clperm[foffset + b]] * (flip ? flip[b] : 1.)); }
+            if (ncSet && fcSet) fuse(&a[b], values[clperm[foffset + b]] * (flip ? flip[b] : 1.));
           }
         } else {
           for (b = 0; b < fdof; b++) {
@@ -6145,7 +6145,7 @@ static inline PetscErrorCode updatePointFieldsBC_private(PetscSection section, P
               ++cind;
               fcSet = PETSC_TRUE;
             }
-            if (ncSet && fcSet) { fuse(&a[b], values[foffset + perm[b]] * (flip ? flip[perm[b]] : 1.)); }
+            if (ncSet && fcSet) fuse(&a[b], values[foffset + perm[b]] * (flip ? flip[perm[b]] : 1.));
           }
         } else {
           for (b = 0; b < fdof; b++) {
@@ -6167,7 +6167,7 @@ static inline PetscErrorCode updatePointFieldsBC_private(PetscSection section, P
               ++cind;
               fcSet = PETSC_TRUE;
             }
-            if (ncSet && fcSet) { fuse(&a[b], values[foffset + b] * (flip ? flip[b] : 1.)); }
+            if (ncSet && fcSet) fuse(&a[b], values[foffset + b] * (flip ? flip[b] : 1.));
           }
         } else {
           for (b = 0; b < fdof; b++) {
@@ -6215,9 +6215,9 @@ static inline PetscErrorCode DMPlexVecSetClosure_Depth1_Static(DM dm, PetscSecti
       a = &array[coff];
       if (!cdof) {
         if (o >= 0) {
-          for (k = 0; k < dof; ++k) { a[k] += values[off + k]; }
+          for (k = 0; k < dof; ++k) a[k] += values[off + k];
         } else {
-          for (k = 0; k < dof; ++k) { a[k] += values[off + dof - k - 1]; }
+          for (k = 0; k < dof; ++k) a[k] += values[off + dof - k - 1];
         }
       } else {
         PetscCall(PetscSectionGetConstraintIndices(section, cp, &cdofs));
@@ -6782,7 +6782,7 @@ PetscErrorCode DMPlexAnchorsModifyMat(DM dm, PetscSection section, PetscInt numP
       PetscInt bDof = 0, bSecDof;
 
       PetscCall(PetscSectionGetDof(section, b, &bSecDof));
-      if (!bSecDof) { continue; }
+      if (!bSecDof) continue;
       if (b >= aStart && b < aEnd) PetscCall(PetscSectionGetDof(aSec, b, &bDof));
       if (bDof) {
         /* this point is constrained */
@@ -6834,7 +6834,7 @@ PetscErrorCode DMPlexAnchorsModifyMat(DM dm, PetscSection section, PetscInt numP
 
   if (!outPoints && !outValues) {
     if (offsets) {
-      for (f = 0; f <= numFields; f++) { offsets[f] = newOffsets[f]; }
+      for (f = 0; f <= numFields; f++) offsets[f] = newOffsets[f];
     }
     if (aSec) PetscCall(ISRestoreIndices(aIS, &anchors));
     PetscFunctionReturn(0);
@@ -6962,7 +6962,7 @@ PetscErrorCode DMPlexAnchorsModifyMat(DM dm, PetscSection section, PetscInt numP
       PetscInt bDof = 0, bSecDof;
 
       PetscCall(PetscSectionGetDof(section, b, &bSecDof));
-      if (!bSecDof) { continue; }
+      if (!bSecDof) continue;
       if (b >= aStart && b < aEnd) PetscCall(PetscSectionGetDof(aSec, b, &bDof));
       if (bDof) {
         PetscInt fStart[32], fEnd[32], fAnchorStart[32], fAnchorEnd[32], bOff, q;
@@ -7016,7 +7016,7 @@ PetscErrorCode DMPlexAnchorsModifyMat(DM dm, PetscSection section, PetscInt numP
       PetscInt bDof = 0, bSecDof;
 
       PetscCall(PetscSectionGetDof(section, b, &bSecDof));
-      if (!bSecDof) { continue; }
+      if (!bSecDof) continue;
       if (b >= aStart && b < aEnd) PetscCall(PetscSectionGetDof(aSec, b, &bDof));
       if (bDof) {
         PetscInt bEnd = 0, bAnchorEnd = 0, bOff;
@@ -7062,20 +7062,20 @@ PetscErrorCode DMPlexAnchorsModifyMat(DM dm, PetscSection section, PetscInt numP
           PetscInt dof;
 
           PetscCall(PetscSectionGetFieldDof(section, b, f, &dof));
-          if (!dof) { continue; }
+          if (!dof) continue;
           if (pointMatOffsets[f][p] < pointMatOffsets[f][p + 1]) {
             PetscInt           nCols = newPointOffsets[f][p + 1] - cStart;
             const PetscScalar *mat   = pointMat[f] + pointMatOffsets[f][p];
 
             for (r = 0; r < numIndices; r++) {
               for (c = 0; c < nCols; c++) {
-                for (k = 0; k < dof; k++) { tmpValues[r * newNumIndices + cStart + c] += values[r * numIndices + oldOff + k] * mat[k * nCols + c]; }
+                for (k = 0; k < dof; k++) tmpValues[r * newNumIndices + cStart + c] += values[r * numIndices + oldOff + k] * mat[k * nCols + c];
               }
             }
           } else {
             /* copy this column as is */
             for (r = 0; r < numIndices; r++) {
-              for (c = 0; c < dof; c++) { tmpValues[r * newNumIndices + cStart + c] = values[r * numIndices + oldOff + c]; }
+              for (c = 0; c < dof; c++) tmpValues[r * newNumIndices + cStart + c] = values[r * numIndices + oldOff + c];
             }
           }
           oldOff += dof;
@@ -7090,20 +7090,20 @@ PetscErrorCode DMPlexAnchorsModifyMat(DM dm, PetscSection section, PetscInt numP
         PetscInt dof;
 
         PetscCall(PetscSectionGetDof(section, b, &dof));
-        if (!dof) { continue; }
+        if (!dof) continue;
         if (pointMatOffsets[0][p] < pointMatOffsets[0][p + 1]) {
           PetscInt           nCols = newPointOffsets[0][p + 1] - cStart;
           const PetscScalar *mat   = pointMat[0] + pointMatOffsets[0][p];
 
           for (r = 0; r < numIndices; r++) {
             for (c = 0; c < nCols; c++) {
-              for (k = 0; k < dof; k++) { tmpValues[r * newNumIndices + cStart + c] += mat[k * nCols + c] * values[r * numIndices + oldOff + k]; }
+              for (k = 0; k < dof; k++) tmpValues[r * newNumIndices + cStart + c] += mat[k * nCols + c] * values[r * numIndices + oldOff + k];
             }
           }
         } else {
           /* copy this column as is */
           for (r = 0; r < numIndices; r++) {
-            for (c = 0; c < dof; c++) { tmpValues[r * newNumIndices + cStart + c] = values[r * numIndices + oldOff + c]; }
+            for (c = 0; c < dof; c++) tmpValues[r * newNumIndices + cStart + c] = values[r * numIndices + oldOff + c];
           }
         }
         oldOff += dof;
@@ -7131,13 +7131,13 @@ PetscErrorCode DMPlexAnchorsModifyMat(DM dm, PetscSection section, PetscInt numP
 
               for (r = 0; r < nRows; r++) {
                 for (c = 0; c < newNumIndices; c++) {
-                  for (k = 0; k < dof; k++) { newValues[(rStart + r) * newNumIndices + c] += mat[k * nRows + r] * tmpValues[(oldOff + k) * newNumIndices + c]; }
+                  for (k = 0; k < dof; k++) newValues[(rStart + r) * newNumIndices + c] += mat[k * nRows + r] * tmpValues[(oldOff + k) * newNumIndices + c];
                 }
               }
             } else {
               /* copy this row as is */
               for (r = 0; r < dof; r++) {
-                for (c = 0; c < newNumIndices; c++) { newValues[(rStart + r) * newNumIndices + c] = tmpValues[(oldOff + r) * newNumIndices + c]; }
+                for (c = 0; c < newNumIndices; c++) newValues[(rStart + r) * newNumIndices + c] = tmpValues[(oldOff + r) * newNumIndices + c];
               }
             }
             oldOff += dof;
@@ -7159,13 +7159,13 @@ PetscErrorCode DMPlexAnchorsModifyMat(DM dm, PetscSection section, PetscInt numP
 
             for (r = 0; r < nRows; r++) {
               for (c = 0; c < newNumIndices; c++) {
-                for (k = 0; k < dof; k++) { newValues[(rStart + r) * newNumIndices + c] += mat[k * nRows + r] * tmpValues[(oldOff + k) * newNumIndices + c]; }
+                for (k = 0; k < dof; k++) newValues[(rStart + r) * newNumIndices + c] += mat[k * nRows + r] * tmpValues[(oldOff + k) * newNumIndices + c];
               }
             }
           } else {
             /* copy this row as is */
             for (r = 0; r < dof; r++) {
-              for (c = 0; c < newNumIndices; c++) { newValues[(rStart + r) * newNumIndices + c] = tmpValues[(oldOff + r) * newNumIndices + c]; }
+              for (c = 0; c < newNumIndices; c++) newValues[(rStart + r) * newNumIndices + c] = tmpValues[(oldOff + r) * newNumIndices + c];
             }
           }
           oldOff += dof;
@@ -7201,8 +7201,8 @@ PetscErrorCode DMPlexAnchorsModifyMat(DM dm, PetscSection section, PetscInt numP
   } else {
     PetscCall(DMRestoreWorkArray(dm, 2 * newNumPoints, MPIU_INT, &newPoints));
   }
-  if (outValues) { *outValues = newValues; }
-  for (f = 0; f <= numFields; f++) { offsets[f] = newOffsets[f]; }
+  if (outValues) *outValues = newValues;
+  for (f = 0; f <= numFields; f++) offsets[f] = newOffsets[f];
   PetscFunctionReturn(0);
 }
 
@@ -8101,11 +8101,11 @@ PetscErrorCode DMPlexCreatePointNumbering(DM dm, IS *globalPointNumbers) {
 
     depths[d] = depth - d;
     PetscCall(DMPlexGetDepthStratum(dm, depths[d], &starts[d], &end));
-    if (!(starts[d] - end)) { starts[d] = depths[d] = -1; }
+    if (!(starts[d] - end)) starts[d] = depths[d] = -1;
   }
   PetscCall(PetscSortIntWithArray(depth + 1, starts, depths));
   PetscCall(MPIU_Allreduce(depths, gdepths, depth + 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
-  for (d = 0; d <= depth; ++d) { PetscCheck(starts[d] < 0 || depths[d] == gdepths[d], PETSC_COMM_SELF, PETSC_ERR_PLIB, "Expected depth %" PetscInt_FMT ", found %" PetscInt_FMT, depths[d], gdepths[d]); }
+  for (d = 0; d <= depth; ++d) PetscCheck(starts[d] < 0 || depths[d] == gdepths[d], PETSC_COMM_SELF, PETSC_ERR_PLIB, "Expected depth %" PetscInt_FMT ", found %" PetscInt_FMT, depths[d], gdepths[d]);
   for (d = 0; d <= depth; ++d) {
     PetscInt pStart, pEnd, gsize;
 
@@ -8917,7 +8917,7 @@ PetscErrorCode DMPlexComputeOrthogonalQuality(DM dm, PetscFV fv, PetscReal atol,
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (fv) { PetscValidHeaderSpecific(fv, PETSCFV_CLASSID, 2); }
+  if (fv) PetscValidHeaderSpecific(fv, PETSCFV_CLASSID, 2);
   PetscValidPointer(OrthQual, 4);
   PetscCheck(atol >= 0.0 && atol <= 1.0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Absolute tolerance %g not in [0,1]", (double)atol);
   PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
@@ -9015,8 +9015,8 @@ PetscErrorCode DMPlexComputeOrthogonalQuality(DM dm, PetscFV fv, PetscReal atol,
         cArr[cellneighiter] += PetscAbs(Ai[i] * ci[i]);
         fArr[cellneighiter] += PetscAbs(Ai[i] * fi[i]);
       }
-      if (PetscRealPart(cArr[cellneighiter]) < minvalc) { minvalc = PetscRealPart(cArr[cellneighiter]); }
-      if (PetscRealPart(fArr[cellneighiter]) < minvalf) { minvalf = PetscRealPart(fArr[cellneighiter]); }
+      if (PetscRealPart(cArr[cellneighiter]) < minvalc) minvalc = PetscRealPart(cArr[cellneighiter]);
+      if (PetscRealPart(fArr[cellneighiter]) < minvalf) minvalf = PetscRealPart(fArr[cellneighiter]);
     }
     PetscCall(PetscFree(adj));
     PetscCall(PetscFree2(cArr, fArr));
@@ -9518,7 +9518,7 @@ static PetscErrorCode DMPlexCreateConstraintMatrix_Anchors(DM dm, PetscSection s
         }
         PetscCall(PetscSectionGetFieldDof(cSec, p, f, &dof));
         PetscCall(PetscSectionGetFieldOffset(cSec, p, f, &off));
-        for (q = 0; q < dof; q++) { i[off + q + 1] = i[off + q] + annz; }
+        for (q = 0; q < dof; q++) i[off + q + 1] = i[off + q] + annz;
       }
     } else {
       annz = 0;
@@ -9531,7 +9531,7 @@ static PetscErrorCode DMPlexCreateConstraintMatrix_Anchors(DM dm, PetscSection s
       }
       PetscCall(PetscSectionGetDof(cSec, p, &dof));
       PetscCall(PetscSectionGetOffset(cSec, p, &off));
-      for (q = 0; q < dof; q++) { i[off + q + 1] = i[off + q] + annz; }
+      for (q = 0; q < dof; q++) i[off + q + 1] = i[off + q] + annz;
     }
   }
   nnz = i[m];
@@ -9552,7 +9552,7 @@ static PetscErrorCode DMPlexCreateConstraintMatrix_Anchors(DM dm, PetscSection s
             if (a < sStart || a >= sEnd) continue;
             PetscCall(PetscSectionGetFieldDof(section, a, f, &aDof));
             PetscCall(PetscSectionGetFieldOffset(section, a, f, &aOff));
-            for (s = 0; s < aDof; s++) { j[offset++] = aOff + s; }
+            for (s = 0; s < aDof; s++) j[offset++] = aOff + s;
           }
         }
       }
@@ -9569,7 +9569,7 @@ static PetscErrorCode DMPlexCreateConstraintMatrix_Anchors(DM dm, PetscSection s
           if (a < sStart || a >= sEnd) continue;
           PetscCall(PetscSectionGetDof(section, a, &aDof));
           PetscCall(PetscSectionGetOffset(section, a, &aOff));
-          for (s = 0; s < aDof; s++) { j[offset++] = aOff + s; }
+          for (s = 0; s < aDof; s++) j[offset++] = aOff + s;
         }
       }
     }
@@ -9687,7 +9687,7 @@ PetscErrorCode DMCreateSubDomainDM_Plex(DM dm, DMLabel label, PetscInt value, IS
           }
           PetscCall(PetscSectionGetFieldDof(section, p, f, &fdof));
           PetscCall(PetscSectionGetFieldConstraintDof(section, p, f, &fcdof));
-          for (fc = 0; fc < fdof - fcdof; ++fc, ++subOff) { subIndices[subOff] = goff + poff + fc; }
+          for (fc = 0; fc < fdof - fcdof; ++fc, ++subOff) subIndices[subOff] = goff + poff + fc;
         }
       }
     }

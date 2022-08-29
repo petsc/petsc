@@ -37,7 +37,7 @@ int main(int argc, char **argv) {
   for (i = 0; i < n; i++) indices[i] = rank + i;
   PetscCall(ISCreateGeneral(PETSC_COMM_SELF, n, indices, PETSC_COPY_VALUES, &is));
   PetscCall(ISGetIndices(is, &ii));
-  for (i = 0; i < n; i++) { PetscCheck(ii[i] == indices[i], PETSC_COMM_SELF, PETSC_ERR_PLIB, "ISGetIndices"); }
+  for (i = 0; i < n; i++) PetscCheck(ii[i] == indices[i], PETSC_COMM_SELF, PETSC_ERR_PLIB, "ISGetIndices");
   PetscCall(ISRestoreIndices(is, &ii));
 
   /*
@@ -103,7 +103,7 @@ int main(int argc, char **argv) {
   PetscCall(ISSetPermutation(is));
   PetscCall(ISInvertPermutation(is, PETSC_DECIDE, &newis));
   PetscCall(ISGetIndices(newis, &ii));
-  for (i = 0; i < n; i++) { PetscCheck(ii[i] == n - i - 1, PETSC_COMM_SELF, PETSC_ERR_PLIB, "ISInvertPermutation"); }
+  for (i = 0; i < n; i++) PetscCheck(ii[i] == n - i - 1, PETSC_COMM_SELF, PETSC_ERR_PLIB, "ISInvertPermutation");
   PetscCall(ISRestoreIndices(newis, &ii));
   PetscCall(ISDestroy(&newis));
   PetscCall(ISDestroy(&is));

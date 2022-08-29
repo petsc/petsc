@@ -222,7 +222,7 @@ static void BForm_Div(PetscScalar De[], PetscScalar coords[]) {
   nc_g = P_DOFS * NODES_PER_EL;
 
   for (i = 0; i < nr_g; i++) {
-    for (j = 0; j < nc_g; j++) { De[nr_g * j + i] = Ge[nc_g * i + j]; }
+    for (j = 0; j < nc_g; j++) De[nr_g * j + i] = Ge[nc_g * i + j];
   }
 }
 
@@ -243,7 +243,7 @@ static void BForm_Stabilisation(PetscScalar Ke[], PetscScalar coords[], PetscSca
     fac = gp_weight[p] * J_p;
 
     for (i = 0; i < NODES_PER_EL; i++) {
-      for (j = 0; j < NODES_PER_EL; j++) { Ke[NODES_PER_EL * i + j] -= fac * (Ni_p[i] * Ni_p[j] - 0.0625); }
+      for (j = 0; j < NODES_PER_EL; j++) Ke[NODES_PER_EL * i + j] -= fac * (Ni_p[i] * Ni_p[j] - 0.0625);
     }
   }
 
@@ -253,7 +253,7 @@ static void BForm_Stabilisation(PetscScalar Ke[], PetscScalar coords[], PetscSca
   eta_avg = (1.0 / ((PetscScalar)ngp)) * eta_avg;
   fac     = 1.0 / eta_avg;
   for (i = 0; i < NODES_PER_EL; i++) {
-    for (j = 0; j < NODES_PER_EL; j++) { Ke[NODES_PER_EL * i + j] = fac * Ke[NODES_PER_EL * i + j]; }
+    for (j = 0; j < NODES_PER_EL; j++) Ke[NODES_PER_EL * i + j] = fac * Ke[NODES_PER_EL * i + j];
   }
 }
 
@@ -274,7 +274,7 @@ static void BForm_ScaledMassMatrix(PetscScalar Ke[], PetscScalar coords[], Petsc
     fac = gp_weight[p] * J_p;
 
     for (i = 0; i < NODES_PER_EL; i++) {
-      for (j = 0; j < NODES_PER_EL; j++) { Ke[NODES_PER_EL * i + j] -= fac * Ni_p[i] * Ni_p[j]; }
+      for (j = 0; j < NODES_PER_EL; j++) Ke[NODES_PER_EL * i + j] -= fac * Ni_p[i] * Ni_p[j];
     }
   }
 
@@ -284,7 +284,7 @@ static void BForm_ScaledMassMatrix(PetscScalar Ke[], PetscScalar coords[], Petsc
   eta_avg = (1.0 / ((PetscScalar)ngp)) * eta_avg;
   fac     = 1.0 / eta_avg;
   for (i = 0; i < NODES_PER_EL; i++) {
-    for (j = 0; j < NODES_PER_EL; j++) { Ke[NODES_PER_EL * i + j] *= fac; }
+    for (j = 0; j < NODES_PER_EL; j++) Ke[NODES_PER_EL * i + j] *= fac;
   }
 }
 
@@ -316,7 +316,7 @@ static PetscErrorCode GetElementCoords(const PetscScalar _coords[], const PetscI
   PetscFunctionBeginUser;
   /* get coords for the element */
   for (i = 0; i < 4; i++) {
-    for (d = 0; d < NSD; d++) { el_coords[NSD * i + d] = _coords[NSD * e2n[i] + d]; }
+    for (d = 0; d < NSD; d++) el_coords[NSD * i + d] = _coords[NSD * e2n[i] + d];
   }
   PetscFunctionReturn(0);
 }
@@ -495,7 +495,7 @@ static PetscErrorCode AssembleStokes_RHS(Vec F, DM stokes_da, DM quadrature) {
     /* insert element matrix into global matrix */
     PetscCall(DMDAGetElementEqnums_up(element, u_eqn, p_eqn));
 
-    for (i = 0; i < NODES_PER_EL * U_DOFS; i++) { LA_F[u_eqn[i]] += Fe[i]; }
+    for (i = 0; i < NODES_PER_EL * U_DOFS; i++) LA_F[u_eqn[i]] += Fe[i];
   }
   PetscCall(DMSwarmRestoreField(quadrature, "rho_q", NULL, NULL, (void **)&q_rhs));
   PetscCall(VecRestoreArrayRead(coords, &_coords));
@@ -559,12 +559,12 @@ PetscErrorCode DMSwarmPICInsertPointsCellwise(DM dm, DM dmc, PetscInt e, PetscIn
     const PetscInt *element = &element_list[npe * e];
 
     for (k = 0; k < npe; k++) {
-      for (d = 0; d < dim; d++) { elcoor[dim * k + d] = PetscRealPart(_coor[dim * element[k] + d]); }
+      for (d = 0; d < dim; d++) elcoor[dim * k + d] = PetscRealPart(_coor[dim * element[k] + d]);
     }
     for (q = 0; q < npoints; q++) {
-      for (d = 0; d < dim; d++) { xp[dim * q + d] = 0.0; }
+      for (d = 0; d < dim; d++) xp[dim * q + d] = 0.0;
       for (k = 0; k < npe; k++) {
-        for (d = 0; d < dim; d++) { xp[dim * q + d] += basis[q][k] * elcoor[dim * k + d]; }
+        for (d = 0; d < dim; d++) xp[dim * q + d] += basis[q][k] * elcoor[dim * k + d];
       }
     }
   }
@@ -593,7 +593,7 @@ PetscErrorCode DMSwarmPICInsertPointsCellwise(DM dm, DM dmc, PetscInt e, PetscIn
       for (qn = 0; qn < npoints_e; qn++) {
         coor_qn = &swarm_coor[dim * plist_e[qn]];
         sep     = 0.0;
-        for (d = 0; d < dim; d++) { sep += (coor_q[d] - coor_qn[d]) * (coor_q[d] - coor_qn[d]); }
+        for (d = 0; d < dim; d++) sep += (coor_q[d] - coor_qn[d]) * (coor_q[d] - coor_qn[d]);
         if (sep < min_sep) {
           nearest_neighour = plist_e[qn];
           min_sep          = sep;
@@ -611,7 +611,7 @@ PetscErrorCode DMSwarmPICInsertPointsCellwise(DM dm, DM dmc, PetscInt e, PetscIn
     PetscCall(DMSwarmGetField(dm, DMSwarmPICField_cellid, NULL, NULL, (void **)&swarm_cellid));
     for (q = 0; q < npoints; q++) {
       /* set the coordinates */
-      for (d = 0; d < dim; d++) { swarm_coor[dim * (ncurr + q) + d] = xp[dim * q + d]; }
+      for (d = 0; d < dim; d++) swarm_coor[dim * (ncurr + q) + d] = xp[dim * q + d];
       /* set the cell index */
       swarm_cellid[ncurr + q] = e;
     }
@@ -625,7 +625,7 @@ PetscErrorCode DMSwarmPICInsertPointsCellwise(DM dm, DM dmc, PetscInt e, PetscIn
     PetscCall(DMSwarmGetField(dm, DMSwarmPICField_cellid, NULL, NULL, (void **)&swarm_cellid));
     for (q = 0; q < npoints; q++) {
       /* set the coordinates */
-      for (d = 0; d < dim; d++) { swarm_coor[dim * (ncurr + q) + d] = xp[dim * q + d]; }
+      for (d = 0; d < dim; d++) swarm_coor[dim * (ncurr + q) + d] = xp[dim * q + d];
       /* set the cell index */
       swarm_cellid[ncurr + q] = e;
     }
@@ -773,7 +773,7 @@ PetscErrorCode MaterialPoint_Interpolate(DM dm, Vec eta_v, Vec rho_v, DM dm_quad
   PetscFunctionBeginUser;
   /* define quadrature rule */
   CreateGaussQuadrature(&nqp, qp_xi, qp_weight);
-  for (q = 0; q < nqp; q++) { EvaluateBasis_Q1(qp_xi[q], Ni[q]); }
+  for (q = 0; q < nqp; q++) EvaluateBasis_Q1(qp_xi[q], Ni[q]);
 
   PetscCall(DMGetLocalVector(dm, &eta_l));
   PetscCall(DMGetLocalVector(dm, &rho_l));
@@ -1244,7 +1244,7 @@ int main(int argc, char **args) {
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-mx", &mx, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-my", &my, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-mxy", &mx, &set));
-  if (set) { my = mx; }
+  if (set) my = mx;
   PetscCall(SolveTimeDepStokes(mx, my));
   PetscCall(PetscFinalize());
   return 0;

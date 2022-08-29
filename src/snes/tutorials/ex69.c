@@ -61,7 +61,7 @@ static void stokes_momentum_kx(PetscInt dim, PetscInt Nf, PetscInt NfAux, const 
   PetscInt        c, d;
 
   for (c = 0; c < dim; ++c) {
-    for (d = 0; d < dim; ++d) { f1[c * dim + d] = mu * (u_x[c * dim + d] + u_x[d * dim + c]); }
+    for (d = 0; d < dim; ++d) f1[c * dim + d] = mu * (u_x[c * dim + d] + u_x[d * dim + c]);
     f1[c * dim + c] -= u[dim];
   }
 }
@@ -71,7 +71,7 @@ static void stokes_momentum_cx(PetscInt dim, PetscInt Nf, PetscInt NfAux, const 
   PetscInt        c, d;
 
   for (c = 0; c < dim; ++c) {
-    for (d = 0; d < dim; ++d) { f1[c * dim + d] = mu * (u_x[c * dim + d] + u_x[d * dim + c]); }
+    for (d = 0; d < dim; ++d) f1[c * dim + d] = mu * (u_x[c * dim + d] + u_x[d * dim + c]);
     f1[c * dim + c] -= u[dim];
   }
 }
@@ -620,12 +620,12 @@ static PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt
   /* sum7 += rho; */
 
   /* Output */
-  if (mu) { *mu = Z; }
+  if (mu) *mu = Z;
   if (vel) {
     vel[0] = sum1;
     vel[1] = sum2;
   }
-  if (p) { (*p) = sum5; }
+  if (p) (*p) = sum5;
   if (s) {
     s[0] = sum3;
     s[1] = sum4;
@@ -2920,12 +2920,12 @@ static PetscErrorCode SolCxSolution(const PetscReal pos[], PetscReal m, PetscInt
   sum4 += u4;
 
   /* Output */
-  if (mu) { *mu = Z; }
+  if (mu) *mu = Z;
   if (vel) {
     vel[0] = sum1;
     vel[1] = sum2;
   }
-  if (p) { (*p) = sum5; }
+  if (p) (*p) = sum5;
   if (s) {
     s[0] = sum3;
     s[1] = sum4;

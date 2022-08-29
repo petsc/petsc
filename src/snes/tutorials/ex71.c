@@ -126,7 +126,7 @@ static void f0_bd_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uO
   PetscReal       X     = PetscCosReal(alpha) * x[0] + PetscSinReal(alpha) * x[1];
   PetscInt        d;
 
-  for (d = 0; d < dim; ++d) { f0[d] = -Delta * X * n[d]; }
+  for (d = 0; d < dim; ++d) f0[d] = -Delta * X * n[d];
 }
 
 /* < q, \nabla\cdot u >
@@ -151,7 +151,7 @@ void g3_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], con
   PetscInt        c, d;
 
   for (c = 0; c < Nc; ++c) {
-    for (d = 0; d < dim; ++d) { g3[((c * Nc + c) * dim + d) * dim + d] = nu; }
+    for (d = 0; d < dim; ++d) g3[((c * Nc + c) * dim + d) * dim + d] = nu;
   }
 }
 

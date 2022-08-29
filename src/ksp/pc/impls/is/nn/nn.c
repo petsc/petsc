@@ -236,7 +236,7 @@ PetscErrorCode PCNNCreateCoarseMatrix(PC pc) {
   /* First, set the auxiliary array pcis->work_N. */
   PetscCall(PCISScatterArrayNToVecB(pcis->work_N, pcis->D, INSERT_VALUES, SCATTER_REVERSE, pc));
   for (i = 1; i < n_neigh; i++) {
-    for (j = 0; j < n_shared[i]; j++) { DZ_OUT[i][j] = pcis->work_N[shared[i][j]]; }
+    for (j = 0; j < n_shared[i]; j++) DZ_OUT[i][j] = pcis->work_N[shared[i][j]];
   }
 
   /* Non-blocking send/receive the common-interface chunks of scaled nullspaces */

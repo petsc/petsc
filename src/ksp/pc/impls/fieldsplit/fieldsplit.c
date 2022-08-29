@@ -1378,11 +1378,11 @@ static PetscErrorCode PCApply_FieldSplit_GKB(PC pc, Vec x, Vec y) {
     /* Compute Lower Bound estimate */
     if (iterGKB > jac->gkbdelay) {
       lowbnd = 0.0;
-      for (j = 0; j < jac->gkbdelay; j++) { lowbnd += PetscAbsScalar(vecz[j] * vecz[j]); }
+      for (j = 0; j < jac->gkbdelay; j++) lowbnd += PetscAbsScalar(vecz[j] * vecz[j]);
       lowbnd = PetscSqrtReal(lowbnd / PetscAbsScalar(nrmz2));
     }
 
-    for (j = 0; j < jac->gkbdelay - 1; j++) { vecz[jac->gkbdelay - j - 1] = vecz[jac->gkbdelay - j - 2]; }
+    for (j = 0; j < jac->gkbdelay - 1; j++) vecz[jac->gkbdelay - j - 1] = vecz[jac->gkbdelay - j - 2];
     if (jac->gkbmonitor) PetscCall(PetscViewerASCIIPrintf(jac->gkbviewer, "%3" PetscInt_FMT " GKB Lower bound estimate %14.12e\n", iterGKB, (double)lowbnd));
   }
 
@@ -1651,7 +1651,7 @@ static PetscErrorCode PCFieldSplitSetFields_FieldSplit(PC pc, const char splitna
     jac->head       = ilink;
     ilink->previous = NULL;
   } else {
-    while (next->next) { next = next->next; }
+    while (next->next) next = next->next;
     next->next      = ilink;
     ilink->previous = next;
   }
@@ -1824,7 +1824,7 @@ static PetscErrorCode PCFieldSplitSetIS_FieldSplit(PC pc, const char splitname[]
     jac->head       = ilink;
     ilink->previous = NULL;
   } else {
-    while (next->next) { next = next->next; }
+    while (next->next) next = next->next;
     next->next      = ilink;
     ilink->previous = next;
   }
@@ -2715,7 +2715,7 @@ static PetscErrorCode PCSetCoordinates_FieldSplit(PC pc, PetscInt dim, PetscInt 
     // Allocate coordinates vector and set it directly
     PetscCall(PetscMalloc1(ndofs_block * dim, &(ilink_current->coords)));
     for (PetscInt dof = 0; dof < ndofs_block; ++dof) {
-      for (PetscInt d = 0; d < dim; ++d) { (ilink_current->coords)[dim * dof + d] = coords[dim * block_dofs_enumeration[dof] + d]; }
+      for (PetscInt d = 0; d < dim; ++d) (ilink_current->coords)[dim * dof + d] = coords[dim * block_dofs_enumeration[dof] + d];
     }
     ilink_current->dim   = dim;
     ilink_current->ndofs = ndofs_block;
@@ -2801,7 +2801,7 @@ PetscErrorCode PCFieldSplitSetDMSplits(PC pc, PetscBool flg) {
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidLogicalCollectiveBool(pc, flg, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCFIELDSPLIT, &isfs));
-  if (isfs) { jac->dm_splits = flg; }
+  if (isfs) jac->dm_splits = flg;
   PetscFunctionReturn(0);
 }
 

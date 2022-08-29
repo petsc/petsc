@@ -47,7 +47,7 @@ int main(int argc, char **argv) {
        then approx equals 1/pi sum_i w_i h( sqrt(2) sigma x_i + mu)
     */
     g = 0;
-    for (s = 0; s < n; s++) { g += weights[s] * PetscPowRealInt(sqrt(2) * sigma * zeros[s] + mu, moment); }
+    for (s = 0; s < n; s++) g += weights[s] * PetscPowRealInt(sqrt(2) * sigma * zeros[s] + mu, moment);
     g /= sqrt(PETSC_PI);
     /* results confirmed with https://en.wikipedia.org/wiki/Normal_distribution#Moments sigma^p * (p-1)!!*/
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Moment %" PetscInt_FMT " %g \n", moment, (double)g));

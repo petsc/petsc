@@ -34,7 +34,7 @@ static PetscErrorCode DMGlobalToLocalSolve_project1(PetscInt dim, PetscReal time
   PetscInt f;
 
   PetscFunctionBegin;
-  for (f = 0; f < Nf; f++) { u[f] = 1.; }
+  for (f = 0; f < Nf; f++) u[f] = 1.;
   PetscFunctionReturn(0);
 }
 
@@ -84,7 +84,7 @@ PetscErrorCode DMGlobalToLocalSolve(DM dm, Vec x, Vec y) {
 
       PetscCall(DMPlexVecGetClosure(dm, NULL, mask, cStart, &numValues, NULL));
       PetscCall(PetscMalloc1(numValues, &ones));
-      for (i = 0; i < numValues; i++) { ones[i] = 1.; }
+      for (i = 0; i < numValues; i++) ones[i] = 1.;
       for (c = cStart; c < cEnd; c++) PetscCall(DMPlexVecSetClosure(dm, NULL, mask, c, ones, INSERT_VALUES));
       PetscCall(PetscFree(ones));
     }

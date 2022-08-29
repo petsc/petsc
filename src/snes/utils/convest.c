@@ -164,7 +164,7 @@ PetscErrorCode PetscConvEstSetUp(PetscConvEst ce) {
     }
     if (fieldIS) PetscCall(ISRestoreIndices(fieldIS, &fields));
   }
-  for (f = 0; f < Nf; ++f) { PetscCheck(ce->exactSol[f], PetscObjectComm((PetscObject)ce), PETSC_ERR_ARG_WRONG, "DS must contain exact solution functions in order to estimate convergence, missing for field %" PetscInt_FMT, f); }
+  for (f = 0; f < Nf; ++f) PetscCheck(ce->exactSol[f], PetscObjectComm((PetscObject)ce), PETSC_ERR_ARG_WRONG, "DS must contain exact solution functions in order to estimate convergence, missing for field %" PetscInt_FMT, f);
   PetscFunctionReturn(0);
 }
 

@@ -426,7 +426,7 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat, ISColoring iscoloring, MatFDC
       PetscInt *garray;
       PetscCall(PetscMalloc1(B->cmap->n, &garray));
       for (i = 0; i < baij->B->cmap->n / bs; i++) {
-        for (j = 0; j < bs; j++) { garray[i * bs + j] = bs * baij->garray[i] + j; }
+        for (j = 0; j < bs; j++) garray[i * bs + j] = bs * baij->garray[i] + j;
       }
       PetscCall(VecCreateGhost(PetscObjectComm((PetscObject)mat), mat->cmap->n, PETSC_DETERMINE, B->cmap->n, garray, &c->vscale));
       PetscCall(VecBindToCPU(c->vscale, PETSC_TRUE));
@@ -528,7 +528,7 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat, ISColoring iscoloring, MatFDC
       if (!nctot) PetscCall(PetscInfo(mat, "Coloring of matrix has some unneeded colors with no corresponding rows\n"));
 
       disp[0] = 0;
-      for (j = 1; j < size; j++) { disp[j] = disp[j - 1] + ncolsonproc[j - 1]; }
+      for (j = 1; j < size; j++) disp[j] = disp[j - 1] + ncolsonproc[j - 1];
 
       /* Get cols, the complete list of columns for this color on each process */
       PetscCall(PetscMalloc1(nctot + 1, &cols));

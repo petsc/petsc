@@ -720,7 +720,7 @@ PETSC_INTERN PetscErrorCode TaoBNCGStepDirectionUpdate(Tao tao, PetscReal gnorm2
             if (gkp1_yk < 0 && cg->neg_xi) gamma = -1.0 * gd / dk_yk;
             /* This seems to be very effective when there's no tau_k scaling.
                This guarantees a large descent step every iteration, going through DK 2015 Lemma 3.1's proof but allowing for negative xi */
-            else { gamma = cg->xi * gd / dk_yk; }
+            else gamma = cg->xi * gd / dk_yk;
           }
           /* d <- -t*g + beta*t*d + t*tmp*yk */
           PetscCall(VecAXPBYPCZ(tao->stepdirection, -tau_k, gamma * tau_k, beta, tao->gradient, cg->yk));
@@ -744,7 +744,7 @@ PETSC_INTERN PetscErrorCode TaoBNCGStepDirectionUpdate(Tao tao, PetscReal gnorm2
           if (cg->neg_xi) {
             /* modified KD implementation */
             if (gkp1D_yk / dk_yk < 0) gamma = -1.0 * gd / dk_yk;
-            else { gamma = cg->xi * gd / dk_yk; }
+            else gamma = cg->xi * gd / dk_yk;
             if (beta < cg->zeta * tmp / (dnorm * dnorm)) {
               beta  = cg->zeta * tmp / (dnorm * dnorm);
               gamma = 0.0;
@@ -753,9 +753,7 @@ PETSC_INTERN PetscErrorCode TaoBNCGStepDirectionUpdate(Tao tao, PetscReal gnorm2
             if (beta < cg->zeta * tmp / (dnorm * dnorm)) {
               beta  = cg->zeta * tmp / (dnorm * dnorm);
               gamma = 0.0;
-            } else {
-              gamma = cg->xi * gd / dk_yk;
-            }
+            } else gamma = cg->xi * gd / dk_yk;
           }
           /* Do the update in two steps */
           PetscCall(VecAXPBY(tao->stepdirection, -1.0, beta, cg->g_work));

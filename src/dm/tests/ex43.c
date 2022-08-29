@@ -43,7 +43,7 @@ PetscErrorCode VecSetOwned(DM da, Vec v, PetscScalar value) {
   PetscCall(DMDAGetCorners(da, &xs, &ys, 0, &xm, &ym, 0));
   PetscCall(DMDAVecGetArray(da, v, &p));
   for (i = xs; i < xs + xm; i++) {
-    for (j = ys; j < ys + ym; j++) { p[j][i] = value; }
+    for (j = ys; j < ys + ym; j++) p[j][i] = value;
   }
   PetscCall(DMDAVecRestoreArray(da, v, &p));
   return 0;

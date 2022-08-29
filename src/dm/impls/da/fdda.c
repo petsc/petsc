@@ -74,7 +74,7 @@ static PetscErrorCode DMDASetBlockFills_Private2(DM_DA *dd) {
     for (k = dd->ofill[i]; k < dd->ofill[i + 1]; k++) dd->ofillcols[dd->ofill[k]] = 1;
   }
   for (i = 0; i < dd->w; i++) {
-    if (dd->ofillcols[i]) { dd->ofillcols[i] = cnt++; }
+    if (dd->ofillcols[i]) dd->ofillcols[i] = cnt++;
   }
   PetscFunctionReturn(0);
 }
@@ -288,7 +288,7 @@ PetscErrorCode DMCreateColoring_DA_2d_MPIAIJ(DM da, ISColoringType ctype, ISColo
         ii = 0;
         for (j = ys; j < ys + ny; j++) {
           for (i = xs; i < xs + nx; i++) {
-            for (k = 0; k < nc; k++) { colors[ii++] = k + nc * ((i % col) + col * (j % col)); }
+            for (k = 0; k < nc; k++) colors[ii++] = k + nc * ((i % col) + col * (j % col));
           }
         }
         ncolors = nc + nc * (col - 1 + col * (col - 1));
@@ -351,7 +351,7 @@ PetscErrorCode DMCreateColoring_DA_3d_MPIAIJ(DM da, ISColoringType ctype, ISColo
       for (k = zs; k < zs + nz; k++) {
         for (j = ys; j < ys + ny; j++) {
           for (i = xs; i < xs + nx; i++) {
-            for (l = 0; l < nc; l++) { colors[ii++] = l + nc * ((i % col) + col * (j % col) + col * col * (k % col)); }
+            for (l = 0; l < nc; l++) colors[ii++] = l + nc * ((i % col) + col * (j % col) + col * col * (k % col));
           }
         }
       }
@@ -426,7 +426,7 @@ PetscErrorCode DMCreateColoring_DA_1d_MPIAIJ(DM da, ISColoringType ctype, ISColo
       } else {
         i1 = 0;
         for (i = xs; i < xs + nx; i++) {
-          for (l = 0; l < nc; l++) { colors[i1++] = l + nc * (i % col); }
+          for (l = 0; l < nc; l++) colors[i1++] = l + nc * (i % col);
         }
         ncolors = nc + nc * (col - 1);
       }
@@ -478,7 +478,7 @@ PetscErrorCode DMCreateColoring_DA_2d_5pt_MPIAIJ(DM da, ISColoringType ctype, IS
       ii = 0;
       for (j = ys; j < ys + ny; j++) {
         for (i = xs; i < xs + nx; i++) {
-          for (k = 0; k < nc; k++) { colors[ii++] = k + nc * ((3 * j + i) % 5); }
+          for (k = 0; k < nc; k++) colors[ii++] = k + nc * ((3 * j + i) % 5);
         }
       }
       ncolors = 5 * nc;
@@ -491,7 +491,7 @@ PetscErrorCode DMCreateColoring_DA_2d_5pt_MPIAIJ(DM da, ISColoringType ctype, IS
       ii = 0;
       for (j = gys; j < gys + gny; j++) {
         for (i = gxs; i < gxs + gnx; i++) {
-          for (k = 0; k < nc; k++) { colors[ii++] = k + nc * ((3 * SetInRange(j, n) + SetInRange(i, m)) % 5); }
+          for (k = 0; k < nc; k++) colors[ii++] = k + nc * ((3 * SetInRange(j, n) + SetInRange(i, m)) % 5);
         }
       }
       ncolors = 5 * nc;
@@ -1499,9 +1499,9 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ_Fill(DM da, Mat J) {
           }
         }
         if (dfill) {
-          for (k = dfill[j]; k < dfill[j + 1]; k++) { cols[cnt++] = i * nc + dfill[k]; }
+          for (k = dfill[j]; k < dfill[j + 1]; k++) cols[cnt++] = i * nc + dfill[k];
         } else {
-          for (k = 0; k < nc; k++) { cols[cnt++] = i * nc + k; }
+          for (k = 0; k < nc; k++) cols[cnt++] = i * nc + k;
         }
         for (l = 0; l < s; l++) {
           for (k = ofill[j]; k < ofill[j + 1]; k++) cols[cnt++] = (i + s - l) * nc + ofill[k];
@@ -1517,9 +1517,9 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ_Fill(DM da, Mat J) {
           for (k = ofill[j]; k < ofill[j + 1]; k++) cols[cnt++] = (i - s + l) * nc + ofill[k];
         }
         if (dfill) {
-          for (k = dfill[j]; k < dfill[j + 1]; k++) { cols[cnt++] = i * nc + dfill[k]; }
+          for (k = dfill[j]; k < dfill[j + 1]; k++) cols[cnt++] = i * nc + dfill[k];
         } else {
-          for (k = 0; k < nc; k++) { cols[cnt++] = i * nc + k; }
+          for (k = 0; k < nc; k++) cols[cnt++] = i * nc + k;
         }
         for (l = 0; l < s; l++) {
           for (k = ofill[j]; k < ofill[j + 1]; k++) cols[cnt++] = (i + s - l) * nc + ofill[k];
@@ -1536,9 +1536,9 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ_Fill(DM da, Mat J) {
           for (k = ofill[j]; k < ofill[j + 1]; k++) cols[cnt++] = (i - s + l) * nc + ofill[k];
         }
         if (dfill) {
-          for (k = dfill[j]; k < dfill[j + 1]; k++) { cols[cnt++] = i * nc + dfill[k]; }
+          for (k = dfill[j]; k < dfill[j + 1]; k++) cols[cnt++] = i * nc + dfill[k];
         } else {
-          for (k = 0; k < nc; k++) { cols[cnt++] = i * nc + k; }
+          for (k = 0; k < nc; k++) cols[cnt++] = i * nc + k;
         }
         if (rank < size - 1) {
           for (l = 0; l < s; l++) {
@@ -1950,7 +1950,7 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPISBAIJ(DM da, Mat J) {
       cnt = 0;
       for (ii = istart; ii < iend + 1; ii++) {
         for (jj = jstart; jj < jend + 1; jj++) {
-          if (st == DMDA_STENCIL_BOX || !ii || !jj) { cols[cnt++] = slot + ii + gnx * jj; }
+          if (st == DMDA_STENCIL_BOX || !ii || !jj) cols[cnt++] = slot + ii + gnx * jj;
         }
       }
       PetscCall(L2GFilterUpperTriangular(ltog, &slot, &cnt, cols));
@@ -1982,7 +1982,7 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPISBAIJ(DM da, Mat J) {
         cnt = 0;
         for (ii = istart; ii < iend + 1; ii++) {
           for (jj = jstart; jj < jend + 1; jj++) {
-            if (st == DMDA_STENCIL_BOX || !ii || !jj) { cols[cnt++] = slot + ii + gnx * jj; }
+            if (st == DMDA_STENCIL_BOX || !ii || !jj) cols[cnt++] = slot + ii + gnx * jj;
           }
         }
         PetscCall(L2GFilterUpperTriangular(ltog, &slot, &cnt, cols));
@@ -2047,7 +2047,7 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPISBAIJ(DM da, Mat J) {
         for (ii = istart; ii < iend + 1; ii++) {
           for (jj = jstart; jj < jend + 1; jj++) {
             for (kk = kstart; kk < kend + 1; kk++) {
-              if ((st == DMDA_STENCIL_BOX) || (!ii && !jj) || (!jj && !kk) || (!ii && !kk)) { cols[cnt++] = slot + ii + gnx * jj + gnx * gny * kk; }
+              if ((st == DMDA_STENCIL_BOX) || (!ii && !jj) || (!jj && !kk) || (!ii && !kk)) cols[cnt++] = slot + ii + gnx * jj + gnx * gny * kk;
             }
           }
         }
@@ -2085,7 +2085,7 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPISBAIJ(DM da, Mat J) {
           for (ii = istart; ii < iend + 1; ii++) {
             for (jj = jstart; jj < jend + 1; jj++) {
               for (kk = kstart; kk < kend + 1; kk++) {
-                if ((st == DMDA_STENCIL_BOX) || (!ii && !jj) || (!jj && !kk) || (!ii && !kk)) { cols[cnt++] = slot + ii + gnx * jj + gnx * gny * kk; }
+                if ((st == DMDA_STENCIL_BOX) || (!ii && !jj) || (!jj && !kk) || (!ii && !kk)) cols[cnt++] = slot + ii + gnx * jj + gnx * gny * kk;
               }
             }
           }

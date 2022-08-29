@@ -120,7 +120,7 @@ static PetscErrorCode SNESSetFromOptions_NCG(SNES snes, PetscOptionItems *PetscO
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "SNES NCG options");
   PetscCall(PetscOptionsBool("-snes_ncg_monitor", "Monitor the beta values used in the NCG iterations", "SNES", ncg->monitor ? PETSC_TRUE : PETSC_FALSE, &debug, NULL));
-  if (debug) { ncg->monitor = PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)snes)); }
+  if (debug) ncg->monitor = PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)snes));
   PetscCall(PetscOptionsEnum("-snes_ncg_type", "NCG Beta type used", "SNESNCGSetType", SNESNCGTypes, (PetscEnum)ncg->type, (PetscEnum *)&ncgtype, NULL));
   PetscCall(SNESNCGSetType(snes, ncgtype));
   PetscOptionsHeadEnd();

@@ -352,7 +352,7 @@ static PetscErrorCode VecGetHDF5ChunkSize(DM_DA *da, Vec xin, PetscInt dimension
       }
     }
     dim = 0;
-    if (timestep >= 0) { ++dim; }
+    if (timestep >= 0) ++dim;
     /* prefer to split z-axis, even down to planar slices */
     if (dimension == 3) {
       chunkDims[dim++] = (hsize_t)da->P / zslices;
@@ -368,7 +368,7 @@ static PetscErrorCode VecGetHDF5ChunkSize(DM_DA *da, Vec xin, PetscInt dimension
     if (target_size < chunk_size) {
       /* only change the defaults if target_size < chunk_size */
       dim = 0;
-      if (timestep >= 0) { ++dim; }
+      if (timestep >= 0) ++dim;
       /* prefer to split z-axis, even down to planar slices */
       if (dimension == 3) {
         /* try splitting the z-axis to core-size bits, i.e. divide chunk size by # comm_size in z-direction */
@@ -556,7 +556,7 @@ PetscErrorCode VecView_MPI_HDF5_DA(Vec xin, PetscViewer viewer) {
   if (timestepping) PetscCall(PetscViewerHDF5WriteObjectAttribute(viewer, (PetscObject)xin, "timestepping", PETSC_BOOL, &timestepping));
 
   /* Close/release resources */
-  if (group != file_id) { PetscCallHDF5(H5Gclose, (group)); }
+  if (group != file_id) PetscCallHDF5(H5Gclose, (group));
   PetscCallHDF5(H5Sclose, (filespace));
   PetscCallHDF5(H5Sclose, (memspace));
   PetscCallHDF5(H5Dclose, (dset_id));
@@ -860,7 +860,7 @@ PetscErrorCode VecLoad_HDF5_DA(Vec xin, PetscViewer viewer) {
   PetscCall(VecRestoreArray(xin, &x));
 
   /* Close/release resources */
-  if (group != file_id) { PetscCallHDF5(H5Gclose, (group)); }
+  if (group != file_id) PetscCallHDF5(H5Gclose, (group));
   PetscCallHDF5(H5Sclose, (filespace));
   PetscCallHDF5(H5Sclose, (memspace));
   PetscCallHDF5(H5Dclose, (dset_id));

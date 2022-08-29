@@ -1081,8 +1081,8 @@ static PetscErrorCode PCPatchCreateCellPatches(PC pc) {
         }
       }
       PetscCall(PCPatchGetGlobalDofs(pc, patch->dofSection, -1, patch->combined, point, &pdof, NULL));
-      if (pdof) { pointsArray[off + n++] = point; }
-      if (point >= cStart && point < cEnd) { cellsArray[coff + cn++] = point; }
+      if (pdof) pointsArray[off + n++] = point;
+      if (point >= cStart && point < cEnd) cellsArray[coff + cn++] = point;
       PetscHashIterNext(cht, hi);
     }
     PetscCheck(ifn == ifdof, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Number of interior facets in patch %" PetscInt_FMT " is %" PetscInt_FMT ", but should be %" PetscInt_FMT, v, ifn, ifdof);
@@ -2094,7 +2094,7 @@ PetscErrorCode PCPatchComputeOperator_Internal(PC pc, Vec x, Mat mat, PetscInt p
             const PetscInt cell = facetCells[2 * (intFacetOffset + i) + c];
             for (d = 0; d < patch->totalDofsPerCell; d++) {
               facetDofs[idx] = dofsArray[(offset + cell) * patch->totalDofsPerCell + d];
-              if (dofsArrayWithAll) { facetDofsWithAll[idx] = dofsArrayWithAll[(offset + cell) * patch->totalDofsPerCell + d]; }
+              if (dofsArrayWithAll) facetDofsWithAll[idx] = dofsArrayWithAll[(offset + cell) * patch->totalDofsPerCell + d];
               idx++;
             }
           }

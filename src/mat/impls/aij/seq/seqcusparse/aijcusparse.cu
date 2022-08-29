@@ -519,7 +519,7 @@ static PetscErrorCode MatSeqAIJCUSPARSEILUAnalysisAndCopyToGPU(Mat A) {
   PetscCall(MatSeqAIJCUSPARSEBuildILULowerTriMatrix(A));
   PetscCall(MatSeqAIJCUSPARSEBuildILUUpperTriMatrix(A));
 
-  if (!cusparseTriFactors->workVector) { cusparseTriFactors->workVector = new THRUSTARRAY(n); }
+  if (!cusparseTriFactors->workVector) cusparseTriFactors->workVector = new THRUSTARRAY(n);
   cusparseTriFactors->nnz = a->nz;
 
   A->offloadmask = PETSC_OFFLOAD_BOTH;
@@ -761,7 +761,7 @@ static PetscErrorCode MatSeqAIJCUSPARSEICCAnalysisAndCopyToGPU(Mat A) {
   PetscFunctionBegin;
   PetscCheck(cusparseTriFactors, PETSC_COMM_SELF, PETSC_ERR_COR, "Missing cusparseTriFactors");
   PetscCall(MatSeqAIJCUSPARSEBuildICCTriMatrices(A));
-  if (!cusparseTriFactors->workVector) { cusparseTriFactors->workVector = new THRUSTARRAY(n); }
+  if (!cusparseTriFactors->workVector) cusparseTriFactors->workVector = new THRUSTARRAY(n);
   cusparseTriFactors->nnz = (a->nz - n) * 2 + n;
 
   A->offloadmask = PETSC_OFFLOAD_BOTH;
@@ -1024,7 +1024,7 @@ static PetscErrorCode MatSeqAIJCUSPARSEFormExplicitTranspose(Mat A) {
       matrixT->column_indices = new THRUSTINTARRAY32(a->nz);
       matrixT->values         = new THRUSTARRAY(a->nz);
 
-      if (!cusparsestruct->rowoffsets_gpu) { cusparsestruct->rowoffsets_gpu = new THRUSTINTARRAY32(A->rmap->n + 1); }
+      if (!cusparsestruct->rowoffsets_gpu) cusparsestruct->rowoffsets_gpu = new THRUSTINTARRAY32(A->rmap->n + 1);
       cusparsestruct->rowoffsets_gpu->assign(a->i, a->i + A->rmap->n + 1);
 
 #if PETSC_PKG_CUDA_VERSION_GE(11, 0, 0)
@@ -3538,7 +3538,7 @@ static PetscErrorCode MatAXPY_SeqAIJCUSPARSE(Mat Y, PetscScalar a, Mat X, MatStr
   /* see if we can turn this into a cublas axpy */
   if (str != SAME_NONZERO_PATTERN && x->nz == y->nz && !x->compressedrow.use && !y->compressedrow.use) {
     bool eq = thrust::equal(thrust::device, csry->row_offsets->begin(), csry->row_offsets->end(), csrx->row_offsets->begin());
-    if (eq) { eq = thrust::equal(thrust::device, csry->column_indices->begin(), csry->column_indices->end(), csrx->column_indices->begin()); }
+    if (eq) eq = thrust::equal(thrust::device, csry->column_indices->begin(), csry->column_indices->end(), csrx->column_indices->begin());
     if (eq) str = SAME_NONZERO_PATTERN;
   }
   /* spgeam is buggy with one column */
@@ -3632,7 +3632,7 @@ static PetscErrorCode MatZeroEntries_SeqAIJCUSPARSE(Mat A) {
     }
     if (spptr->matTranspose) {
       CsrMatrix *matrix = (CsrMatrix *)spptr->matTranspose->mat;
-      if (matrix->values) { thrust::fill(thrust::device, matrix->values->begin(), matrix->values->end(), 0.); }
+      if (matrix->values) thrust::fill(thrust::device, matrix->values->begin(), matrix->values->end(), 0.);
     }
   }
   PetscCall(PetscArrayzero(a->a, a->i[A->rmap->n]));
@@ -4129,8 +4129,8 @@ PetscErrorCode MatSetPreallocationCOO_SeqAIJCUSPARSE_Basic(Mat A, PetscCount n, 
 
     THRUSTINTARRAY ii(A->rmap->n);
 
-    if (!cusp->cooPerm) { cusp->cooPerm = new THRUSTINTARRAY(n); }
-    if (!cusp->cooPerm_a) { cusp->cooPerm_a = new THRUSTINTARRAY(n); }
+    if (!cusp->cooPerm) cusp->cooPerm = new THRUSTINTARRAY(n);
+    if (!cusp->cooPerm_a) cusp->cooPerm_a = new THRUSTINTARRAY(n);
 
     /* Ex.
       n = 6

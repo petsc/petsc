@@ -44,9 +44,9 @@ PetscErrorCode DMSetPeriodicity(DM dm, const PetscReal maxCell[], const PetscRea
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (maxCell) { PetscValidRealPointer(maxCell, 2); }
-  if (Lstart) { PetscValidRealPointer(Lstart, 3); }
-  if (L) { PetscValidRealPointer(L, 4); }
+  if (maxCell) PetscValidRealPointer(maxCell, 2);
+  if (Lstart) PetscValidRealPointer(Lstart, 3);
+  if (L) PetscValidRealPointer(L, 4);
   PetscCall(DMGetDimension(dm, &dim));
   if (maxCell) {
     if (!dm->maxCell) PetscCall(PetscMalloc1(dim, &dm->maxCell));
@@ -105,7 +105,7 @@ PetscErrorCode DMLocalizeCoordinate(DM dm, const PetscScalar in[], PetscBool end
         }
       }
     } else {
-      for (d = 0; d < dim; ++d) { out[d] = in[d] - dm->L[d] * PetscFloorReal(PetscRealPart(in[d]) / dm->L[d]); }
+      for (d = 0; d < dim; ++d) out[d] = in[d] - dm->L[d] * PetscFloorReal(PetscRealPart(in[d]) / dm->L[d]);
     }
   }
   PetscFunctionReturn(0);

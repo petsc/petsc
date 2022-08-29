@@ -58,7 +58,7 @@ int main(int argc, char **argv) {
 
   PetscCall(VecGetArray(localall, &vlocal));
   for (j = 0; j < N; j++) {
-    for (i = 0; i < M; i++) { *vlocal++ += i + j * M; }
+    for (i = 0; i < M; i++) *vlocal++ += i + j * M;
   }
   PetscCall(VecRestoreArray(localall, &vlocal));
 

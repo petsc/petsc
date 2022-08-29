@@ -29,7 +29,7 @@ static PetscErrorCode TestInsertion() {
     PetscCheck(stratum, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Stratum %" PetscInt_FMT " is empty!", v);
     PetscCall(ISGetIndices(stratum, &points));
     PetscCall(ISGetLocalSize(stratum, &n));
-    for (i = 0; i < n; ++i) { PetscCheck(points[i] == i * 5 + v, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %" PetscInt_FMT " should be %" PetscInt_FMT, points[i], i * 5 + v); }
+    for (i = 0; i < n; ++i) PetscCheck(points[i] == i * 5 + v, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %" PetscInt_FMT " should be %" PetscInt_FMT, points[i], i * 5 + v);
     PetscCall(ISRestoreIndices(stratum, &points));
     PetscCall(ISDestroy(&stratum));
   }

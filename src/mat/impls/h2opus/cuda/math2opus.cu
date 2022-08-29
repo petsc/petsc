@@ -489,7 +489,7 @@ static PetscErrorCode MatProductSymbolic_H2OPUS(Mat C) {
 static PetscErrorCode MatProductSetFromOptions_H2OPUS(Mat C) {
   PetscFunctionBegin;
   MatCheckProduct(C, 1);
-  if (C->product->type == MATPRODUCT_AB || C->product->type == MATPRODUCT_AtB) { C->ops->productsymbolic = MatProductSymbolic_H2OPUS; }
+  if (C->product->type == MATPRODUCT_AB || C->product->type == MATPRODUCT_AtB) C->ops->productsymbolic = MatProductSymbolic_H2OPUS;
   PetscFunctionReturn(0);
 }
 
@@ -888,7 +888,7 @@ static PetscErrorCode MatAssemblyEnd_H2OPUS(Mat A, MatAssemblyType assemblytype)
       verbose = a->hara_verbose;
       PetscCall(MatApproximateNorm_Private(a->sampler->GetSamplingMat(), NORM_2, a->norm_max_samples, &Anorm));
       if (a->hara_verbose) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Sampling uses max rank %d, tol %g (%g*%g), %s samples %d\n", a->max_rank, a->rtol * Anorm, a->rtol, Anorm, boundtocpu ? "CPU" : "GPU", a->bs));
-      if (a->sf && !a->nativemult) { a->sampler->SetIndexMap(a->hmatrix->u_basis_tree.index_map.size(), a->hmatrix->u_basis_tree.index_map.data()); }
+      if (a->sf && !a->nativemult) a->sampler->SetIndexMap(a->hmatrix->u_basis_tree.index_map.size(), a->hmatrix->u_basis_tree.index_map.data());
       a->sampler->SetStream(handle->getMainStream());
       if (boundtocpu) {
         a->sampler->SetGPUSampling(false);
@@ -1017,9 +1017,9 @@ static PetscErrorCode MatDuplicate_H2OPUS(Mat B, MatDuplicateOption op, Mat *nA)
   if (op == MAT_COPY_VALUES && b->kernel) a->kernel = new PetscFunctionGenerator<PetscScalar>(*b->kernel);
 
 #if defined(H2OPUS_USE_MPI)
-  if (b->dist_hmatrix) { a->dist_hmatrix = new DistributedHMatrix(*b->dist_hmatrix); }
+  if (b->dist_hmatrix) a->dist_hmatrix = new DistributedHMatrix(*b->dist_hmatrix);
 #if defined(PETSC_H2OPUS_USE_GPU)
-  if (b->dist_hmatrix_gpu) { a->dist_hmatrix_gpu = new DistributedHMatrix_GPU(*b->dist_hmatrix_gpu); }
+  if (b->dist_hmatrix_gpu) a->dist_hmatrix_gpu = new DistributedHMatrix_GPU(*b->dist_hmatrix_gpu);
 #endif
 #endif
   if (b->hmatrix) {

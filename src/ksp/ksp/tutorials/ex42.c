@@ -636,14 +636,14 @@ static void FormStressOperatorQ13D(PetscScalar Ke[], PetscScalar coords[], Petsc
      */
     for (i = 0; i < nvdof; i++) {
       for (j = i; j < nvdof; j++) {
-        for (k = 0; k < 6; k++) { Ke[i * nvdof + j] += B[k][i] * tildeD[k] * B[k][j]; }
+        for (k = 0; k < 6; k++) Ke[i * nvdof + j] += B[k][i] * tildeD[k] * B[k][j];
       }
     }
   }
   /* fill lower triangular part */
 #if defined(ASSEMBLE_LOWER_TRIANGULAR)
   for (i = 0; i < nvdof; i++) {
-    for (j = i; j < nvdof; j++) { Ke[j * nvdof + i] = Ke[i * nvdof + j]; }
+    for (j = i; j < nvdof; j++) Ke[j * nvdof + i] = Ke[i * nvdof + j];
   }
 #endif
 }
@@ -692,7 +692,7 @@ static void FormDivergenceOperatorQ13D(PetscScalar De[], PetscScalar coords[]) {
   nc_g = P_DOFS * NODES_PER_EL;
 
   for (i = 0; i < nr_g; i++) {
-    for (j = 0; j < nc_g; j++) { De[nr_g * j + i] = Ge[nc_g * i + j]; }
+    for (j = 0; j < nc_g; j++) De[nr_g * j + i] = Ge[nc_g * i + j];
   }
 }
 
@@ -723,7 +723,7 @@ static void FormStabilisationOperatorQ13D(PetscScalar Ke[], PetscScalar coords[]
      */
 
     for (i = 0; i < NODES_PER_EL; i++) {
-      for (j = 0; j < NODES_PER_EL; j++) { Ke[NODES_PER_EL * i + j] -= fac * (Ni_p[i] * Ni_p[j] - 0.015625); }
+      for (j = 0; j < NODES_PER_EL; j++) Ke[NODES_PER_EL * i + j] -= fac * (Ni_p[i] * Ni_p[j] - 0.015625);
     }
   }
 
@@ -745,7 +745,7 @@ static void FormStabilisationOperatorQ13D(PetscScalar Ke[], PetscScalar coords[]
    */
 
   for (i = 0; i < NODES_PER_EL; i++) {
-    for (j = 0; j < NODES_PER_EL; j++) { Ke[NODES_PER_EL * i + j] = fac * Ke[NODES_PER_EL * i + j]; }
+    for (j = 0; j < NODES_PER_EL; j++) Ke[NODES_PER_EL * i + j] = fac * Ke[NODES_PER_EL * i + j];
   }
 }
 
@@ -777,7 +777,7 @@ static void FormScaledMassMatrixOperatorQ13D(PetscScalar Ke[], PetscScalar coord
      */
 
     for (i = 0; i < NODES_PER_EL; i++) {
-      for (j = 0; j < NODES_PER_EL; j++) { Ke[NODES_PER_EL * i + j] = Ke[NODES_PER_EL * i + j] - fac * Ni_p[i] * Ni_p[j]; }
+      for (j = 0; j < NODES_PER_EL; j++) Ke[NODES_PER_EL * i + j] = Ke[NODES_PER_EL * i + j] - fac * Ni_p[i] * Ni_p[j];
     }
   }
 
@@ -798,7 +798,7 @@ static void FormScaledMassMatrixOperatorQ13D(PetscScalar Ke[], PetscScalar coord
    */
 
   for (i = 0; i < NODES_PER_EL; i++) {
-    for (j = 0; j < NODES_PER_EL; j++) { Ke[NODES_PER_EL * i + j] = fac * Ke[NODES_PER_EL * i + j]; }
+    for (j = 0; j < NODES_PER_EL; j++) Ke[NODES_PER_EL * i + j] = fac * Ke[NODES_PER_EL * i + j];
   }
 }
 

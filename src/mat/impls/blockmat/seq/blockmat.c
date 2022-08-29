@@ -340,7 +340,7 @@ static PetscErrorCode MatLoad_BlockMat(Mat newmat, PetscViewer viewer) {
 
     currentcol = 1000000000;
     for (j = 0; j < bs; j++) { /* loop over rows in block finding first nonzero block */
-      if (ilens[j] > 0) { currentcol = PetscMin(currentcol, ii[j][0] / bs); }
+      if (ilens[j] > 0) currentcol = PetscMin(currentcol, ii[j][0] / bs);
     }
 
     while (PETSC_TRUE) { /* loops over blocks in block row */
@@ -625,7 +625,7 @@ static PetscErrorCode MatAssemblyEnd_BlockMat(Mat A, MatAssemblyType mode) {
     ai[m] = ai[m - 1] + ailen[m - 1];
   }
   /* reset ilen and imax for each row */
-  for (i = 0; i < m; i++) { ailen[i] = imax[i] = ai[i + 1] - ai[i]; }
+  for (i = 0; i < m; i++) ailen[i] = imax[i] = ai[i + 1] - ai[i];
   a->nz = ai[m];
   for (i = 0; i < a->nz; i++) {
     PetscAssert(aa[i], PETSC_COMM_SELF, PETSC_ERR_PLIB, "Null matrix at location %" PetscInt_FMT " column %" PetscInt_FMT " nz %" PetscInt_FMT, i, aj[i], a->nz);
@@ -886,7 +886,7 @@ static PetscErrorCode MatBlockMatSetPreallocation_BlockMat(Mat A, PetscInt bs, P
   PetscCall(PetscMalloc3(nz, &bmat->a, nz, &bmat->j, A->rmap->n + 1, &bmat->i));
   PetscCall(PetscLogObjectMemory((PetscObject)A, (A->rmap->n + 1) * sizeof(PetscInt) + nz * (sizeof(PetscScalar) + sizeof(PetscInt))));
   bmat->i[0] = 0;
-  for (i = 1; i < bmat->mbs + 1; i++) { bmat->i[i] = bmat->i[i - 1] + bmat->imax[i - 1]; }
+  for (i = 1; i < bmat->mbs + 1; i++) bmat->i[i] = bmat->i[i - 1] + bmat->imax[i - 1];
   bmat->singlemalloc = PETSC_TRUE;
   bmat->free_a       = PETSC_TRUE;
   bmat->free_ij      = PETSC_TRUE;

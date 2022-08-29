@@ -574,11 +574,11 @@ static PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscDS prob, PetscFormKey
       PetscCall(PetscMalloc4(Ne * N_bt, &f_coeff, Ne, &f_coeffAux, Ne * dim * dim, &f_invJ, Ne, &f_detJ));
       for (c = 0; c < Ne; ++c) {
         f_detJ[c] = (float)cgeom->detJ[c];
-        for (d = 0; d < dim * dim; ++d) { f_invJ[c * dim * dim + d] = (float)cgeom->invJ[c * dim * dim + d]; }
-        for (b = 0; b < N_bt; ++b) { f_coeff[c * N_bt + b] = (float)coefficients[c * N_bt + b]; }
+        for (d = 0; d < dim * dim; ++d) f_invJ[c * dim * dim + d] = (float)cgeom->invJ[c * dim * dim + d];
+        for (b = 0; b < N_bt; ++b) f_coeff[c * N_bt + b] = (float)coefficients[c * N_bt + b];
       }
       if (coefficientsAux) { /* Assume P0 */
-        for (c = 0; c < Ne; ++c) { f_coeffAux[c] = (float)coefficientsAux[c]; }
+        for (c = 0; c < Ne; ++c) f_coeffAux[c] = (float)coefficientsAux[c];
       }
       oclCoeff = (void *)f_coeff;
       if (coefficientsAux) {
@@ -595,11 +595,11 @@ static PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscDS prob, PetscFormKey
       PetscCall(PetscMalloc4(Ne * N_bt, &d_coeff, Ne, &d_coeffAux, Ne * dim * dim, &d_invJ, Ne, &d_detJ));
       for (c = 0; c < Ne; ++c) {
         d_detJ[c] = (double)cgeom->detJ[c];
-        for (d = 0; d < dim * dim; ++d) { d_invJ[c * dim * dim + d] = (double)cgeom->invJ[c * dim * dim + d]; }
-        for (b = 0; b < N_bt; ++b) { d_coeff[c * N_bt + b] = (double)coefficients[c * N_bt + b]; }
+        for (d = 0; d < dim * dim; ++d) d_invJ[c * dim * dim + d] = (double)cgeom->invJ[c * dim * dim + d];
+        for (b = 0; b < N_bt; ++b) d_coeff[c * N_bt + b] = (double)coefficients[c * N_bt + b];
       }
       if (coefficientsAux) { /* Assume P0 */
-        for (c = 0; c < Ne; ++c) { d_coeffAux[c] = (double)coefficientsAux[c]; }
+        for (c = 0; c < Ne; ++c) d_coeffAux[c] = (double)coefficientsAux[c];
       }
       oclCoeff = (void *)d_coeff;
       if (coefficientsAux) {
@@ -618,7 +618,7 @@ static PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscDS prob, PetscFormKey
     PetscCall(PetscMalloc2(Ne * dim * dim, &r_invJ, Ne, &r_detJ));
     for (c = 0; c < Ne; ++c) {
       r_detJ[c] = cgeom->detJ[c];
-      for (d = 0; d < dim * dim; ++d) { r_invJ[c * dim * dim + d] = cgeom->invJ[c * dim * dim + d]; }
+      for (d = 0; d < dim * dim; ++d) r_invJ[c * dim * dim + d] = cgeom->invJ[c * dim * dim + d];
     }
     oclCoeff    = (void *)coefficients;
     oclCoeffAux = (void *)coefficientsAux;
@@ -653,7 +653,7 @@ static PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscDS prob, PetscFormKey
       PetscCall(PetscMalloc1(Ne * N_bt, &elem));
       PetscCall(clEnqueueReadBuffer(ocl->queue_id, o_elemVec, CL_TRUE, 0, Ne * N_bt * realSize, elem, 0, NULL, NULL));
       for (c = 0; c < Ne; ++c) {
-        for (b = 0; b < N_bt; ++b) { elemVec[c * N_bt + b] = (PetscScalar)elem[c * N_bt + b]; }
+        for (b = 0; b < N_bt; ++b) elemVec[c * N_bt + b] = (PetscScalar)elem[c * N_bt + b];
       }
       PetscCall(PetscFree(elem));
     } break;
@@ -665,7 +665,7 @@ static PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscDS prob, PetscFormKey
       PetscCall(PetscMalloc1(Ne * N_bt, &elem));
       PetscCall(clEnqueueReadBuffer(ocl->queue_id, o_elemVec, CL_TRUE, 0, Ne * N_bt * realSize, elem, 0, NULL, NULL));
       for (c = 0; c < Ne; ++c) {
-        for (b = 0; b < N_bt; ++b) { elemVec[c * N_bt + b] = (PetscScalar)elem[c * N_bt + b]; }
+        for (b = 0; b < N_bt; ++b) elemVec[c * N_bt + b] = (PetscScalar)elem[c * N_bt + b];
       }
       PetscCall(PetscFree(elem));
     } break;

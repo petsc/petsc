@@ -171,7 +171,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N(Mat B, Mat A, const MatFactorInfo *i
         pj = b->j + bdiag[row + 1] + 1;                  /* beginning of U(row,:) */
         pv = b->a + bs2 * (bdiag[row + 1] + 1);
         nz = bdiag[row] - bdiag[row + 1] - 1; /* num of entries inU(row,:), excluding diag */
-        for (j = 0; j < nz; j++) { PetscKernel_A_gets_A_minus_B_times_C(bs, rtmp + bs2 * pj[j], pc, pv + bs2 * j); }
+        for (j = 0; j < nz; j++) PetscKernel_A_gets_A_minus_B_times_C(bs, rtmp + bs2 * pj[j], pc, pv + bs2 * j);
         PetscCall(PetscLogFlops(2.0 * bs2 * bs * (nz + 1) - bs2)); /* flops = 2*bs^3*nz + 2*bs^3 - bs2) */
       }
     }

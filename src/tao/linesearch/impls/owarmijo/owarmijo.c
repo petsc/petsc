@@ -171,7 +171,7 @@ static PetscErrorCode TaoLineSearchApply_OWArmijo(TaoLineSearch ls, Vec x, Petsc
   if (!armP->memory) PetscCall(PetscMalloc1(armP->memorySize, &armP->memory));
 
   if (!armP->memorySetup) {
-    for (i = 0; i < armP->memorySize; i++) { armP->memory[i] = armP->alpha * (*f); }
+    for (i = 0; i < armP->memorySize; i++) armP->memory[i] = armP->alpha * (*f);
     armP->current       = 0;
     armP->lastReference = armP->memory[0];
     armP->memorySetup   = PETSC_TRUE;
@@ -190,14 +190,14 @@ static PetscErrorCode TaoLineSearchApply_OWArmijo(TaoLineSearch ls, Vec x, Petsc
 
   if (armP->referencePolicy == REFERENCE_AVE) {
     ref = 0;
-    for (i = 0; i < armP->memorySize; i++) { ref += armP->memory[i]; }
+    for (i = 0; i < armP->memorySize; i++) ref += armP->memory[i];
     ref = ref / armP->memorySize;
     ref = PetscMax(ref, armP->memory[armP->current]);
   } else if (armP->referencePolicy == REFERENCE_MEAN) {
     ref = PetscMin(ref, 0.5 * (armP->lastReference + armP->memory[armP->current]));
   }
 
-  if (armP->nondescending) { fact = armP->sigma; }
+  if (armP->nondescending) fact = armP->sigma;
 
   PetscCall(VecDuplicate(g, &g_old));
   PetscCall(VecCopy(g, g_old));
@@ -230,7 +230,7 @@ static PetscErrorCode TaoLineSearchApply_OWArmijo(TaoLineSearch ls, Vec x, Petsc
 
     PetscCall(TaoLineSearchMonitor(ls, its, *f, ls->step));
 
-    if (ls->step == ls->initstep) { ls->f_fullstep = *f; }
+    if (ls->step == ls->initstep) ls->f_fullstep = *f;
 
     if (PetscIsInfOrNanReal(*f)) {
       ls->step *= armP->beta_inf;
@@ -261,7 +261,7 @@ static PetscErrorCode TaoLineSearchApply_OWArmijo(TaoLineSearch ls, Vec x, Petsc
   armP->lastReference = ref;
   if (armP->replacementPolicy == REPLACE_FIFO) {
     armP->memory[armP->current++] = *f;
-    if (armP->current >= armP->memorySize) { armP->current = 0; }
+    if (armP->current >= armP->memorySize) armP->current = 0;
   } else {
     armP->current     = idx;
     armP->memory[idx] = *f;

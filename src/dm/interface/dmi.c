@@ -172,7 +172,7 @@ PetscErrorCode DMCreateSectionSubDM(DM dm, PetscInt numFields, const PetscInt fi
           }
           PetscCall(PetscSectionGetFieldDof(section, p, fields[f], &fdof));
           PetscCall(PetscSectionGetFieldConstraintDof(section, p, fields[f], &fcdof));
-          for (fc = 0; fc < fdof - fcdof; ++fc, ++subOff) { subIndices[subOff] = goff + poff + fc; }
+          for (fc = 0; fc < fdof - fcdof; ++fc, ++subOff) subIndices[subOff] = goff + poff + fc;
         }
       }
     }

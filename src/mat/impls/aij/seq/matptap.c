@@ -251,7 +251,7 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ_SparseAxpy(Mat A, Mat P, Mat C) {
       /* Perform sparse axpy operation.  Note cjj includes apj. */
       for (k = 0; nextap < apnzj; k++) {
         PetscAssert(k < ci[crow + 1] - ci[crow], PETSC_COMM_SELF, PETSC_ERR_PLIB, "k too large k %" PetscInt_FMT ", crow %" PetscInt_FMT, k, crow);
-        if (cjj[k] == apj[nextap]) { caj[k] += (*pA) * apa[apj[nextap++]]; }
+        if (cjj[k] == apj[nextap]) caj[k] += (*pA) * apa[apj[nextap++]];
       }
       PetscCall(PetscLogFlops(2.0 * apnzj));
       pA++;

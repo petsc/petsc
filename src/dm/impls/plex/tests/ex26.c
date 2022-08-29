@@ -333,7 +333,7 @@ int main(int argc, char **argv) {
         cval[offUA + sdim] = 0.;
         for (i = 0; i < sdim; ++i) {
           cval[offUA + i] = 0;
-          for (j = 0; j < clSize / sdim; ++j) { cval[offUA + i] += xyz[j * sdim + i]; }
+          for (j = 0; j < clSize / sdim; ++j) cval[offUA + i] += xyz[j * sdim + i];
           cval[offUA + i] = cval[offUA + i] * sdim / clSize;
           cval[offUA + sdim] += PetscSqr(cval[offUA + i]);
         }

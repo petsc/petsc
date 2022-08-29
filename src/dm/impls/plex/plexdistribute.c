@@ -229,7 +229,7 @@ PetscErrorCode DMPlexGetAdjacency_Internal(DM dm, PetscInt p, PetscBool useCone,
         PetscInt aOff;
         PetscInt s, q;
 
-        for (j = i + 1; j < numAdj; j++) { orig[j - 1] = orig[j]; }
+        for (j = i + 1; j < numAdj; j++) orig[j - 1] = orig[j];
         origSize--;
         numAdj--;
         PetscCall(PetscSectionGetOffset(aSec, p, &aOff));
@@ -316,8 +316,8 @@ PetscErrorCode DMPlexCreateTwoSidedProcessSF(DM dm, PetscSF sfPoint, PetscSectio
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(sfPoint, PETSCSF_CLASSID, 2);
-  if (processRanks) { PetscValidPointer(processRanks, 7); }
-  if (sfProcess) { PetscValidPointer(sfProcess, 8); }
+  if (processRanks) PetscValidPointer(processRanks, 7);
+  if (sfProcess) PetscValidPointer(sfProcess, 8);
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)dm), &size));
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank));
   PetscCall(PetscSFGetGraph(sfPoint, NULL, &numLeaves, NULL, &remotePoints));
@@ -346,7 +346,7 @@ PetscErrorCode DMPlexCreateTwoSidedProcessSF(DM dm, PetscSF sfPoint, PetscSectio
   }
   PetscCall(ISRestoreIndices(leafRanks, &nranks));
   /* Compute leaf-to-root process connectivity */
-  for (l = 0; l < numLeaves; ++l) { PetscBTSet(neighbors, remotePoints[l].rank); }
+  for (l = 0; l < numLeaves; ++l) PetscBTSet(neighbors, remotePoints[l].rank);
   /* Calculate edges */
   PetscBTClear(neighbors, rank);
   for (proc = 0, numNeighbors = 0; proc < size; ++proc) {
@@ -1628,7 +1628,7 @@ PetscErrorCode DMPlexCreatePointSF(DM dm, PetscSF migrationSF, PetscBool ownersh
     }
     for (p = 0; p < nleaves; p++) {
       /* Write new local id into old location */
-      if (roots[p].rank == rank) { rootNodes[roots[p].index].index = leaves ? leaves[p] : p; }
+      if (roots[p].rank == rank) rootNodes[roots[p].index].index = leaves ? leaves[p] : p;
     }
   }
   PetscCall(PetscSFBcastBegin(migrationSF, MPIU_2INT, rootNodes, leafNodes, MPI_REPLACE));

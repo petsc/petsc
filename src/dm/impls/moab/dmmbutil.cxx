@@ -398,7 +398,7 @@ PetscErrorCode DMMBUtil_InitializeOptions(DMMoabMeshGeneratorCtx &genCtx, PetscI
     }
   }
 
-  if (!genCtx.usrrefgrid) { genCtx.A = genCtx.B = genCtx.C = 1; }
+  if (!genCtx.usrrefgrid) genCtx.A = genCtx.B = genCtx.C = 1;
 
   /* more default values */
   genCtx.nex = genCtx.ney = genCtx.nez = 0;

@@ -92,7 +92,7 @@ PetscErrorCode CreateReferenceSF(AppCtx *ctx, PetscSF *refSF) {
   for (i = 0, j = 0; i < ctx->nsfs; i++) {
     for (r = 0; r < ctx->size; r++) {
       for (k = 0; k < ctx->nLeavesPerRank; k++, j++) {
-        if (ctx->sparseLeaves) { ilocal[j + 1] = ilocal[j] + ctx->leaveStep; }
+        if (ctx->sparseLeaves) ilocal[j + 1] = ilocal[j] + ctx->leaveStep;
         iremote[j].rank  = r;
         iremote[j].index = k + i * ctx->nLeavesPerRank;
       }
@@ -123,7 +123,7 @@ PetscErrorCode CreateSFs(AppCtx *ctx, PetscSF *newSFs[], PetscInt *leafOffsets[]
     PetscCall(PetscMalloc1(nLeaves, &iremote));
     for (r = 0, j = 0; r < ctx->size; r++) {
       for (k = 0; k < ctx->nLeavesPerRank; k++, j++) {
-        if (ctx->sparseLeaves) { ilocal[j + 1] = ilocal[j] + ctx->leaveStep; }
+        if (ctx->sparseLeaves) ilocal[j + 1] = ilocal[j] + ctx->leaveStep;
         iremote[j].rank  = r;
         iremote[j].index = ctx->shareRoots ? k + i * ctx->nLeavesPerRank : k;
       }

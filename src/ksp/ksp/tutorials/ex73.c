@@ -79,7 +79,7 @@ PetscErrorCode CommHierarchyCreate(MPI_Comm comm, PetscInt n, PetscInt number[],
   PetscBool view_hierarchy = PETSC_FALSE;
 
   PetscFunctionBeginUser;
-  for (k = 0; k < n; k++) { pscommlist[k] = NULL; }
+  for (k = 0; k < n; k++) pscommlist[k] = NULL;
 
   if (n < 1) PetscFunctionReturn(0);
 
@@ -152,7 +152,7 @@ static PetscErrorCode _DMDADetermineGlobalS0_2d(PetscMPIInt rank_re, PetscInt Mp
   for (j = 0; j < Np_re; j++) {
     for (i = 0; i < Mp_re; i++) {
       rank_ij = (PetscMPIInt)(i + j * Mp_re);
-      if (rank_ij < rank_re) { start_IJ += range_i_re[i] * range_j_re[j]; }
+      if (rank_ij < rank_re) start_IJ += range_i_re[i] * range_j_re[j];
     }
   }
   *s0 = start_IJ;
@@ -443,7 +443,7 @@ PetscErrorCode DMShellDAFieldScatter_Forward(DM dmf, Vec x, DM dmc, Vec xc) {
     PetscCall(VecGetOwnershipRange(xc, &st, &ed));
 
     PetscCall(VecGetArray(xc, &LA_xred));
-    for (i = 0; i < ed - st; i++) { LA_xred[i] = x_array[i]; }
+    for (i = 0; i < ed - st; i++) LA_xred[i] = x_array[i];
     PetscCall(VecRestoreArray(xc, &LA_xred));
   }
   PetscCall(VecRestoreArrayRead(xtmp, &x_array));
@@ -474,7 +474,7 @@ PetscErrorCode DMShellDAFieldScatter_Reverse(DM dmf, Vec y, DM dmc, Vec yc) {
     const PetscScalar *LA_yred;
     PetscCall(VecGetOwnershipRange(yc, &st, &ed));
     PetscCall(VecGetArrayRead(yc, &LA_yred));
-    for (i = 0; i < ed - st; i++) { array[i] = LA_yred[i]; }
+    for (i = 0; i < ed - st; i++) array[i] = LA_yred[i];
     PetscCall(VecRestoreArrayRead(yc, &LA_yred));
   }
   PetscCall(VecRestoreArray(xtmp, &array));
@@ -618,17 +618,17 @@ PetscErrorCode HierarchyCreate(PetscInt *_nd, PetscInt *_nref, MPI_Comm **_cl, D
   levelrefs = 2;
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-level_nrefs", &levelrefs, NULL));
   PetscCall(PetscMalloc1(ncoarsen + 1, &number));
-  for (k = 0; k < ncoarsen + 1; k++) { number[k] = 2; }
+  for (k = 0; k < ncoarsen + 1; k++) number[k] = 2;
   found = ncoarsen;
   set   = PETSC_FALSE;
   PetscCall(PetscOptionsGetIntArray(NULL, NULL, "-level_comm_red_factor", number, &found, &set));
-  if (set) { PetscCheck(found == ncoarsen, PETSC_COMM_WORLD, PETSC_ERR_USER, "Expected %" PetscInt_FMT " values for -level_comm_red_factor. Found %" PetscInt_FMT, ncoarsen, found); }
+  if (set) PetscCheck(found == ncoarsen, PETSC_COMM_WORLD, PETSC_ERR_USER, "Expected %" PetscInt_FMT " values for -level_comm_red_factor. Found %" PetscInt_FMT, ncoarsen, found);
 
   PetscCall(PetscMalloc1(ncoarsen + 1, &pscommlist));
-  for (k = 0; k < ncoarsen + 1; k++) { pscommlist[k] = NULL; }
+  for (k = 0; k < ncoarsen + 1; k++) pscommlist[k] = NULL;
 
   PetscCall(PetscMalloc1(ndecomps, &commlist));
-  for (k = 0; k < ndecomps; k++) { commlist[k] = MPI_COMM_NULL; }
+  for (k = 0; k < ndecomps; k++) commlist[k] = MPI_COMM_NULL;
   PetscCall(PetscMalloc1(ndecomps * levelrefs, &dalist));
   PetscCall(PetscMalloc1(ndecomps * levelrefs, &dmlist));
   for (k = 0; k < ndecomps * levelrefs; k++) {
@@ -719,8 +719,8 @@ PetscErrorCode HierarchyCreate(PetscInt *_nd, PetscInt *_nref, MPI_Comm **_cl, D
   for (k = 0; k < ncoarsen; k++) PetscCall(PetscSubcommDestroy(&pscommlist[k]));
   PetscCall(PetscFree(pscommlist));
 
-  if (_nd) { *_nd = ndecomps; }
-  if (_nref) { *_nref = levelrefs; }
+  if (_nd) *_nd = ndecomps;
+  if (_nref) *_nref = levelrefs;
   if (_cl) {
     *_cl = commlist;
   } else {
@@ -916,7 +916,7 @@ PetscErrorCode ComputeRHS_DMDA(DM da, Vec b, void *ctx) {
   PetscCall(DMDAGetCorners(da, &xs, &ys, NULL, &xm, &ym, NULL));
   PetscCall(DMDAVecGetArray(da, b, &array));
   for (j = ys; j < ys + ym; j++) {
-    for (i = xs; i < xs + xm; i++) { array[j][i] = PetscExpScalar(-((PetscReal)i * Hx) * ((PetscReal)i * Hx) / user->nu) * PetscExpScalar(-((PetscReal)j * Hy) * ((PetscReal)j * Hy) / user->nu) * Hx * Hy; }
+    for (i = xs; i < xs + xm; i++) array[j][i] = PetscExpScalar(-((PetscReal)i * Hx) * ((PetscReal)i * Hx) / user->nu) * PetscExpScalar(-((PetscReal)j * Hy) * ((PetscReal)j * Hy) / user->nu) * Hx * Hy;
   }
   PetscCall(DMDAVecRestoreArray(da, b, &array));
   PetscCall(VecAssemblyBegin(b));

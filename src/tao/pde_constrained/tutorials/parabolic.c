@@ -675,7 +675,7 @@ PetscErrorCode ParabolicInitialize(AppCtx *user) {
 
   stime = (PetscReal)user->nt / user->ns;
   PetscCall(PetscMalloc1(user->ns, &user->sample_times));
-  for (i = 0; i < user->ns; i++) { user->sample_times[i] = (PetscInt)(stime * ((PetscReal)i + 1.0) - 0.5); }
+  for (i = 0; i < user->ns; i++) user->sample_times[i] = (PetscInt)(stime * ((PetscReal)i + 1.0) - 0.5);
 
   PetscCall(VecCreate(PETSC_COMM_WORLD, &XX));
   PetscCall(VecCreate(PETSC_COMM_WORLD, &user->q));

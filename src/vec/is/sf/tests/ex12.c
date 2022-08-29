@@ -30,7 +30,7 @@ int main(int argc, char **argv) {
 
   PetscCall(VecGetOwnershipRange(x, &low, NULL));
   PetscCall(VecGetArray(x, &array));
-  for (i = 0; i < n; i++) { array[i] = (PetscScalar)(i + low); }
+  for (i = 0; i < n; i++) array[i] = (PetscScalar)(i + low);
   PetscCall(VecRestoreArray(x, &array));
 
   /* Create a sequential vector y */

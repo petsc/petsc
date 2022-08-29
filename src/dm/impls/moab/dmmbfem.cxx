@@ -129,7 +129,7 @@ PetscErrorCode Compute_Lagrange_Basis_1D_Internal(const PetscInt nverts, const P
       for (i = 0; i < nverts; ++i) {
         const PetscReal *vertices = coords + i * 3;
         jacobian[0] += dNi_dxi[i] * vertices[0];
-        if (phypts) { phypts[3 * j + 0] += phi[i + offset] * vertices[0]; }
+        if (phypts) phypts[3 * j + 0] += phi[i + offset] * vertices[0];
       }
 
       /* invert the jacobian */
@@ -158,7 +158,7 @@ PetscErrorCode Compute_Lagrange_Basis_1D_Internal(const PetscInt nverts, const P
       for (i = 0; i < nverts; ++i) {
         const PetscReal *vertices = coords + i * 3;
         jacobian[0] += dNi_dxi[i] * vertices[0];
-        if (phypts) { phypts[3 * j + 0] += phi[i + offset] * vertices[0]; }
+        if (phypts) phypts[3 * j + 0] += phi[i + offset] * vertices[0];
       }
 
       /* invert the jacobian */
