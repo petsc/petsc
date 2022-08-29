@@ -2499,7 +2499,7 @@ static PetscErrorCode MatTransposeMatMultSymbolic_MPIDense_MPIDense(Mat A, Mat B
   const PetscInt        *ranges;
 
   PetscFunctionBegin;
-  MatCheckProduct(C, 3);
+  MatCheckProduct(C, 4);
   PetscCheck(!C->product->data, PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "Product data not empty");
   PetscCall(PetscObjectGetComm((PetscObject)A, &comm));
   if (A->rmap->rstart != B->rmap->rstart || A->rmap->rend != B->rmap->rend) {
