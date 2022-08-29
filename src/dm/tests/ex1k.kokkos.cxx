@@ -58,7 +58,7 @@ int main(int argc, char **argv) {
   PetscCall(DMDAVecGetArrayDOFWrite(da, g, &garray));
   for (PetscInt j = ys; j < ys + ym; j++) { /* run on host */
     for (PetscInt i = xs; i < xs + xm; i++) {
-      for (PetscInt c = 0; c < dof; c++) { garray[j][i][c] = 100 * j + 10 * (i + 1) + c; }
+      for (PetscInt c = 0; c < dof; c++) garray[j][i][c] = 100 * j + 10 * (i + 1) + c;
     }
   }
   PetscCall(DMDAVecRestoreArrayDOFWrite(da, g, &garray));
@@ -80,7 +80,7 @@ int main(int argc, char **argv) {
   PetscCall(DMDAVecGetArrayDOFRead(da, l, &larray));
   for (PetscInt j = ys; j < ys + ym; j++) {
     for (PetscInt i = xs; i < xs + xm; i++) {
-      for (PetscInt c = 0; c < dof; c++) { garray[j][i][c] = (larray[j][i - 1][c] + larray[j][i + 1][c] + larray[j - 1][i][c] + larray[j + 1][i][c]) / 4.0; }
+      for (PetscInt c = 0; c < dof; c++) garray[j][i][c] = (larray[j][i - 1][c] + larray[j][i + 1][c] + larray[j - 1][i][c] + larray[j + 1][i][c]) / 4.0;
     }
   }
   PetscCall(DMDAVecRestoreArrayDOFWrite(da, g, &garray));

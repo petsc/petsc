@@ -109,7 +109,7 @@ PetscErrorCode FormFunction_Dummy(DM networkdm, Vec localX, Vec localF, PetscInt
 
     PetscCall(DMNetworkGetLocalVecOffset(networkdm, vtx[i], ALL_COMPONENTS, &offset));
     PetscCall(DMNetworkGetComponent(networkdm, vtx[i], ALL_COMPONENTS, NULL, NULL, &nvar));
-    for (j = 0; j < nvar; j++) { farr[offset + j] = xarr[offset + j] - xoldarr[offset + j]; }
+    for (j = 0; j < nvar; j++) farr[offset + j] = xarr[offset + j] - xoldarr[offset + j];
   }
 
   PetscCall(VecRestoreArrayRead(localX, &xarr));
@@ -191,7 +191,7 @@ PetscErrorCode FormFunction(SNES snes, Vec X, Vec F, void *appctx) {
       PetscCall(DMNetworkGetNumComponents(networkdm, e, &ncomp));
       /* printf("\n  [%d] connected edge[%" PetscInt_FMT "]=%" PetscInt_FMT " has ncomp %" PetscInt_FMT "\n",rank,k,e,ncomp); */
       PetscCall(DMNetworkGetComponent(networkdm, e, 0, &keye, &component, NULL));
-      if (keye != appctx_water.compkey_edge) { PetscCheck(keye == appctx_power.compkey_branch, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Not a power branch"); }
+      if (keye != appctx_water.compkey_edge) PetscCheck(keye == appctx_power.compkey_branch, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Not a power branch");
     }
   }
 

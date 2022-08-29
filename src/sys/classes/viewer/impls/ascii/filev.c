@@ -913,7 +913,7 @@ PetscErrorCode PetscViewerASCIISynchronizedPrintf(PetscViewer viewer, const char
     PetscCall(PetscCalloc1(next->size, &next->string));
     string = next->string;
     tab *= 2;
-    while (tab--) { *string++ = ' '; }
+    while (tab--) *string++ = ' ';
     va_start(Argp, format);
     PetscCall(PetscVSNPrintf(string, next->size - 2 * vascii->tab, format, &fullLength, Argp));
     va_end(Argp);
@@ -923,7 +923,7 @@ PetscErrorCode PetscViewerASCIISynchronizedPrintf(PetscViewer viewer, const char
       PetscCall(PetscCalloc1(next->size, &next->string));
       string = next->string;
       tab    = 2 * vascii->tab;
-      while (tab--) { *string++ = ' '; }
+      while (tab--) *string++ = ' ';
       va_start(Argp, format);
       PetscCall(PetscVSNPrintf(string, next->size - 2 * vascii->tab, format, NULL, Argp));
       va_end(Argp);

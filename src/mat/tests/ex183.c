@@ -58,7 +58,7 @@ int main(int argc, char **args) {
   PetscCall(MatGetOwnershipRange(A, &rstart, &rend));
   for (j = 0; j < N; ++j) cols[j] = j;
   for (i = rstart; i < rend; i++) {
-    for (j = 0; j < N; ++j) { vals[j] = i * 10000 + j; }
+    for (j = 0; j < N; ++j) vals[j] = i * 10000 + j;
     PetscCall(MatSetValues(A, 1, &i, N, cols, vals, INSERT_VALUES));
   }
   PetscCall(PetscFree2(cols, vals));

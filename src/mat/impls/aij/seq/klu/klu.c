@@ -154,7 +154,7 @@ static PetscErrorCode MatLUFactorNumeric_KLU(Mat F, Mat A, const MatFactorInfo *
   /* numeric factorization of A' */
   /* ----------------------------*/
 
-  if (lu->flg == SAME_NONZERO_PATTERN && lu->Numeric) { klu_K_free_numeric(&lu->Numeric, &lu->Common); }
+  if (lu->flg == SAME_NONZERO_PATTERN && lu->Numeric) klu_K_free_numeric(&lu->Numeric, &lu->Common);
   lu->Numeric = klu_K_factor(ai, aj, (PetscReal *)av, lu->Symbolic, &lu->Common);
   PetscCheck(lu->Numeric, PETSC_COMM_SELF, PETSC_ERR_LIB, "KLU Numeric factorization failed");
 

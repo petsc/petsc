@@ -308,10 +308,10 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
               for (b = 0; b < Nb; ++b) {
                 const PetscInt cidx = b;
                 ff[idx] += Bq[cidx] * PetscRealPart(coef[f * Nb + cidx]);
-                for (int d = 0; d < dim; ++d) { refSpaceDer[d] += Dq[cidx * dim + d] * PetscRealPart(coef[f * Nb + cidx]); }
+                for (int d = 0; d < dim; ++d) refSpaceDer[d] += Dq[cidx * dim + d] * PetscRealPart(coef[f * Nb + cidx]);
               }
               for (int d = 0; d < LANDAU_DIM; ++d) {
-                for (e = 0, u_x[d] = 0.0; e < LANDAU_DIM; ++e) { u_x[d] += invJ[e * dim + d] * refSpaceDer[e]; }
+                for (e = 0, u_x[d] = 0.0; e < LANDAU_DIM; ++e) u_x[d] += invJ[e * dim + d] * refSpaceDer[e];
               }
               dudx[idx] = u_x[0];
               dudy[idx] = u_x[1];
@@ -425,11 +425,11 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
             for (PetscInt fieldA = 0, f_off = ctx->species_offset[grid]; fieldA < loc_Nf; ++fieldA) {
               for (d2 = 0; d2 < LANDAU_DIM; d2++) {
                 gg2[fieldA][d2] = gg2_temp[d2] * nu_alpha[fieldA + f_off];
-                for (d3 = 0; d3 < LANDAU_DIM; d3++) { gg3[fieldA][d2][d3] = -gg3_temp[d2][d3] * nu_alpha[fieldA + f_off] * invMass[fieldA + f_off]; }
+                for (d3 = 0; d3 < LANDAU_DIM; d3++) gg3[fieldA][d2][d3] = -gg3_temp[d2][d3] * nu_alpha[fieldA + f_off] * invMass[fieldA + f_off];
               }
             }
             /* add electric field term once per IP */
-            for (PetscInt fieldA = 0, f_off = ctx->species_offset[grid]; fieldA < loc_Nf; ++fieldA) { gg2[fieldA][LANDAU_DIM - 1] += Eq_m[fieldA + f_off]; }
+            for (PetscInt fieldA = 0, f_off = ctx->species_offset[grid]; fieldA < loc_Nf; ++fieldA) gg2[fieldA][LANDAU_DIM - 1] += Eq_m[fieldA + f_off];
             /* Jacobian transform - g2, g3 */
             for (PetscInt fieldA = 0; fieldA < loc_Nf; ++fieldA) {
               for (d = 0; d < dim; ++d) {
@@ -438,7 +438,7 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
                   g2[fieldA][d] += invJj[d * dim + d2] * gg2[fieldA][d2];
                   g3[fieldA][d][d2] = 0.0;
                   for (d3 = 0; d3 < dim; ++d3) {
-                    for (dp = 0; dp < dim; ++dp) { g3[fieldA][d][d2] += invJj[d * dim + d3] * gg3[fieldA][d3][dp] * invJj[d2 * dim + dp]; }
+                    for (dp = 0; dp < dim; ++dp) g3[fieldA][d][d2] += invJj[d * dim + d3] * gg3[fieldA][d3][dp] * invJj[d2 * dim + dp];
                   }
                   g3[fieldA][d][d2] *= wj;
                 }
@@ -470,7 +470,7 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
                   if (shift == 0.0) {
                     for (d = 0; d < dim; ++d) {
                       elemMat[fOff] += DIq[f * dim + d] * g2[fieldA][d] * BJq[g];
-                      for (d2 = 0; d2 < dim; ++d2) { elemMat[fOff] += DIq[f * dim + d] * g3[fieldA][d][d2] * DIq[g * dim + d2]; }
+                      for (d2 = 0; d2 < dim; ++d2) elemMat[fOff] += DIq[f * dim + d] * g3[fieldA][d][d2] * DIq[g * dim + d2];
                     }
                   } else { // mass
                     elemMat[fOff] += BJq[f] * g0[fieldA] * BJq[g];
@@ -539,13 +539,13 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
                   const int fullNb = coo_elem_fullNb[glb_elem_idx], fullNb2 = fullNb * fullNb;
                   const int idx0 = b_id * coo_elem_offsets[elem_offset[num_grids]] + coo_elem_offsets[glb_elem_idx] + fieldA * fullNb2 + fullNb * coo_elem_point_offsets[glb_elem_idx][f] + nr * coo_elem_point_offsets[glb_elem_idx][g];
                   for (int q = 0, idx2 = idx0; q < nr; q++) {
-                    for (int d = 0; d < nc; d++, idx2++) { coo_vals[idx2] = row_scale[q] * col_scale[d] * Aij; }
+                    for (int d = 0; d < nc; d++, idx2++) coo_vals[idx2] = row_scale[q] * col_scale[d] * Aij;
                   }
                 } else {
                   for (q = 0; q < nr; q++) rows[q] = rows0[q] + moffset;
                   for (d = 0; d < nc; d++) cols[d] = cols0[d] + moffset;
                   for (q = 0; q < nr; q++) {
-                    for (d = 0; d < nc; d++) { vals[q * nc + d] = row_scale[q] * col_scale[d] * Aij; }
+                    for (d = 0; d < nc; d++) vals[q * nc + d] = row_scale[q] * col_scale[d] * Aij;
                   }
                   PetscCall(MatSetValues(JacP, nr, rows, nc, cols, vals, ADD_VALUES));
                 }
@@ -1082,7 +1082,7 @@ static PetscErrorCode adaptToleranceFEM(PetscFE fem, Vec sol, PetscInt type, Pet
   } else if (type == 2) {
     PetscInt  rCellIdx[8], eCellIdx[64], iCellIdx[64], eMaxIdx = -1, iMaxIdx = -1, nr = 0, nrmax = (dim == 3) ? 8 : 2;
     PetscReal minRad = PETSC_INFINITY, r, eMinRad = PETSC_INFINITY, iMinRad = PETSC_INFINITY;
-    for (c = 0; c < 64; c++) { eCellIdx[c] = iCellIdx[c] = -1; }
+    for (c = 0; c < 64; c++) eCellIdx[c] = iCellIdx[c] = -1;
     for (c = cStart; c < cEnd; c++) {
       PetscReal tt, v0[LANDAU_MAX_NQ * 3], detJ[LANDAU_MAX_NQ];
       PetscCall(DMPlexComputeCellGeometryFEM(plex, c, quad, v0, NULL, NULL, detJ));
@@ -1399,7 +1399,7 @@ static PetscErrorCode ProcessOptions(LandauCtx *ctx, const char prefix[]) {
   PetscCall(PetscOptionsBool("-dm_landau_inflate", "With sphere, inflate for curved edges", "plexland.c", ctx->inflate, &ctx->inflate, &flg));
   PetscCall(PetscOptionsReal("-dm_landau_e_radius", "Electron thermal velocity, used for circular meshes", "plexland.c", ctx->e_radius, &ctx->e_radius, &flg));
   if (flg && !sph_flg) ctx->sphere = PETSC_TRUE; /* you gave me an e radius but did not set sphere, user error really */
-  if (!flg) { ctx->e_radius = 1.5 * PetscSqrtReal(8 * ctx->k * ctx->thermal_temps[0] / ctx->masses[0] / PETSC_PI) / ctx->v_0; }
+  if (!flg) ctx->e_radius = 1.5 * PetscSqrtReal(8 * ctx->k * ctx->thermal_temps[0] / ctx->masses[0] / PETSC_PI) / ctx->v_0;
   nt = LANDAU_MAX_GRIDS;
   PetscCall(PetscOptionsRealArray("-dm_landau_i_radius", "Ion thermal velocity, used for circular meshes", "plexland.c", ctx->i_radius, &nt, &flg));
   if (flg && !sph_flg) ctx->sphere = PETSC_TRUE;
@@ -1609,7 +1609,7 @@ static PetscErrorCode CreateStaticGPUData(PetscInt dim, IS grid_batch_is_inv[], 
                     PetscCall(PetscPrintf(PETSC_COMM_SELF, "\t\t%d.%d.%d) ERROR total I = %22.16e (LANDAU_MAX_Q_FACE=%d, #face=%d)\n", eidx, q, fieldA, (double)sum, LANDAU_MAX_Q_FACE, maps[grid].num_face));
                     for (d = 0, tmp = 0; d < numindices; ++d) {
                       if (tmp != 0 && PetscAbs(tmp - 1.0) > 10 * PETSC_MACHINE_EPSILON) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%3d) %3" PetscInt_FMT ": ", d, indices[d]));
-                      for (f = 0; f < numindices; ++f) { tmp += PetscRealPart(elMat[d * numindices + f]); }
+                      for (f = 0; f < numindices; ++f) tmp += PetscRealPart(elMat[d * numindices + f]);
                       if (tmp != 0) PetscCall(PetscPrintf(ctx->comm, " | %22.16e\n", (double)tmp));
                     }
                   }
@@ -1699,14 +1699,14 @@ static PetscErrorCode CreateStaticGPUData(PetscInt dim, IS grid_batch_is_inv[], 
                 if (nr == 1) rows[0] = Idxs[f];
                 else {
                   const int idx = -Idxs[f] - 1;
-                  for (int q = 0; q < nr; q++) { rows[q] = maps[grid].c_maps[idx][q].gid; }
+                  for (int q = 0; q < nr; q++) rows[q] = maps[grid].c_maps[idx][q].gid;
                 }
                 for (int g = 0; g < Nb; ++g) {
                   const int nc = coo_elem_point_offsets[glb_elem_idx][g + 1] - coo_elem_point_offsets[glb_elem_idx][g];
                   if (nc == 1) cols[0] = Idxs[g];
                   else {
                     const int idx = -Idxs[g] - 1;
-                    for (int q = 0; q < nc; q++) { cols[q] = maps[grid].c_maps[idx][q].gid; }
+                    for (int q = 0; q < nc; q++) cols[q] = maps[grid].c_maps[idx][q].gid;
                   }
                   const int idx0 = b_id * coo_elem_offsets[ncellsTot] + coo_elem_offsets[glb_elem_idx] + fieldA * fullNb2 + fullNb * coo_elem_point_offsets[glb_elem_idx][f] + nr * coo_elem_point_offsets[glb_elem_idx][g];
                   for (int q = 0, idx = idx0; q < nr; q++) {
@@ -1827,7 +1827,7 @@ static PetscErrorCode CreateStaticGPUData(PetscInt dim, IS grid_batch_is_inv[], 
             }
             if (xx[gidx] == 1e10) {
               for (int d = 0; d < dim; ++d) {
-                for (int e = 0; e < dim; ++e) { eGradPhi[d] += invJ[e * dim + d] * refSpaceDer[e]; }
+                for (int e = 0; e < dim; ++e) eGradPhi[d] += invJ[e * dim + d] * refSpaceDer[e];
               }
               xx[gidx] = eGradPhi[0];
               yy[gidx] = eGradPhi[1];

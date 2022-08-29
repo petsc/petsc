@@ -491,7 +491,7 @@ PetscErrorCode TaoLineSearchSetFromOptions(TaoLineSearch ls) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ls, TAOLINESEARCH_CLASSID, 1);
   PetscObjectOptionsBegin((PetscObject)ls);
-  if (((PetscObject)ls)->type_name) { default_type = ((PetscObject)ls)->type_name; }
+  if (((PetscObject)ls)->type_name) default_type = ((PetscObject)ls)->type_name;
   /* Check for type from options */
   PetscCall(PetscOptionsFList("-tao_ls_type", "Tao Line Search type", "TaoLineSearchSetType", TaoLineSearchList, default_type, type, 256, &flg));
   if (flg) {

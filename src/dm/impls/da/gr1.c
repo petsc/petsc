@@ -46,7 +46,7 @@ PetscErrorCode DMDASetUniformCoordinates(DM da, PetscReal xmin, PetscReal xmax, 
     if (bx == DM_BOUNDARY_PERIODIC) hx = (xmax - xmin) / M;
     else hx = (xmax - xmin) / (M - 1);
     PetscCall(VecGetArray(xcoor, &coors));
-    for (i = 0; i < isize; i++) { coors[i] = xmin + hx * (i + istart); }
+    for (i = 0; i < isize; i++) coors[i] = xmin + hx * (i + istart);
     PetscCall(VecRestoreArray(xcoor, &coors));
   } else if (dim == 2) {
     if (bx == DM_BOUNDARY_PERIODIC) hx = (xmax - xmin) / (M);
@@ -114,7 +114,7 @@ PetscErrorCode DMDASelectFields(DM da, PetscInt *outfields, PetscInt **fields) {
         for (j = 0; j < step; j++) {
           PetscCall(DMDAGetFieldName(da, j, &fieldname));
           PetscCall(PetscStrcmp(fieldname, fields[k], &flg));
-          if (flg) { goto found; }
+          if (flg) goto found;
         }
         SETERRQ(PetscObjectComm((PetscObject)da), PETSC_ERR_USER, "Unknown fieldname %s", fields[k]);
       found:

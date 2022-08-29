@@ -55,7 +55,7 @@ static PetscErrorCode ComputeDamping(TAO_BRGN *gn) {
   PetscCall(VecGetArray(gn->damping, &damping_ary));
   PetscCall(VecGetArrayRead(gn->diag, &diag_ary));
   PetscCall(VecGetLocalSize(gn->damping, &n));
-  for (i = 0; i < n; i++) { damping_ary[i] = PetscClipInterval(diag_ary[i], PETSC_SQRT_MACHINE_EPSILON, PetscSqrtReal(PETSC_MAX_REAL)); }
+  for (i = 0; i < n; i++) damping_ary[i] = PetscClipInterval(diag_ary[i], PETSC_SQRT_MACHINE_EPSILON, PetscSqrtReal(PETSC_MAX_REAL));
   PetscCall(VecScale(gn->damping, gn->lambda));
   PetscCall(VecRestoreArray(gn->damping, &damping_ary));
   PetscCall(VecRestoreArrayRead(gn->diag, &diag_ary));
@@ -177,7 +177,7 @@ static PetscErrorCode GNComputeHessian(Tao tao, Vec X, Mat H, Mat Hpre, void *pt
     PetscCall(MatGetColumnNorms(gn->parent->ls_jac, NORM_2, cnorms));
     PetscCall(MatGetOwnershipRangeColumn(gn->parent->ls_jac, &cstart, &cend));
     PetscCall(VecGetArray(gn->diag, &diag_ary));
-    for (i = 0; i < cend - cstart; i++) { diag_ary[i] = cnorms[cstart + i] * cnorms[cstart + i]; }
+    for (i = 0; i < cend - cstart; i++) diag_ary[i] = cnorms[cstart + i] * cnorms[cstart + i];
     PetscCall(VecRestoreArray(gn->diag, &diag_ary));
     PetscCall(PetscFree(cnorms));
     PetscCall(ComputeDamping(gn));
@@ -526,8 +526,8 @@ PetscErrorCode TaoBRGNSetRegularizerObjectiveAndGradientRoutine(Tao tao, PetscEr
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
-  if (ctx) { gn->reg_obj_ctx = ctx; }
-  if (func) { gn->regularizerobjandgrad = func; }
+  if (ctx) gn->reg_obj_ctx = ctx;
+  if (func) gn->regularizerobjandgrad = func;
   PetscFunctionReturn(0);
 }
 
@@ -552,8 +552,8 @@ PetscErrorCode TaoBRGNSetRegularizerHessianRoutine(Tao tao, Mat Hreg, PetscError
     PetscValidHeaderSpecific(Hreg, MAT_CLASSID, 2);
     PetscCheckSameComm(tao, 1, Hreg, 2);
   } else SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_WRONG, "NULL Hessian detected! User must provide valid Hessian for the regularizer.");
-  if (ctx) { gn->reg_hess_ctx = ctx; }
-  if (func) { gn->regularizerhessian = func; }
+  if (ctx) gn->reg_hess_ctx = ctx;
+  if (func) gn->regularizerhessian = func;
   if (Hreg) {
     PetscCall(PetscObjectReference((PetscObject)Hreg));
     PetscCall(MatDestroy(&gn->Hreg));

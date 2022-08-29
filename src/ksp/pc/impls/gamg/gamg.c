@@ -543,7 +543,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc) {
           /* matrix structure can change from repartitioning or process reduction but don't know if we have process reduction here. Should fix */
           PetscCall(KSPGetOperators(mglevels[level]->smoothd, NULL, &B));
           if (B->product) {
-            if (B->product->A == dB && B->product->B == mglevels[level + 1]->interpolate) { reuse = MAT_REUSE_MATRIX; }
+            if (B->product->A == dB && B->product->B == mglevels[level + 1]->interpolate) reuse = MAT_REUSE_MATRIX;
           }
           if (reuse == MAT_INITIAL_MATRIX) PetscCall(MatDestroy(&mglevels[level]->A));
           if (reuse == MAT_REUSE_MATRIX) {

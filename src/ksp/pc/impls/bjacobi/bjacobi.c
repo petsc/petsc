@@ -586,7 +586,7 @@ static PetscErrorCode PCSetUpOnBlocks_BJacobi_Singleblock(PC pc) {
   PetscFunctionBegin;
   PetscCall(KSPSetUp(subksp));
   PetscCall(KSPGetConvergedReason(subksp, &reason));
-  if (reason == KSP_DIVERGED_PC_FAILED) { pc->failedreason = PC_SUBPC_ERROR; }
+  if (reason == KSP_DIVERGED_PC_FAILED) pc->failedreason = PC_SUBPC_ERROR;
   PetscFunctionReturn(0);
 }
 
@@ -837,7 +837,7 @@ static PetscErrorCode PCSetUpOnBlocks_BJacobi_Multiblock(PC pc) {
   for (i = 0; i < n_local; i++) {
     PetscCall(KSPSetUp(jac->ksp[i]));
     PetscCall(KSPGetConvergedReason(jac->ksp[i], &reason));
-    if (reason == KSP_DIVERGED_PC_FAILED) { pc->failedreason = PC_SUBPC_ERROR; }
+    if (reason == KSP_DIVERGED_PC_FAILED) pc->failedreason = PC_SUBPC_ERROR;
   }
   PetscFunctionReturn(0);
 }
@@ -1049,7 +1049,7 @@ static PetscErrorCode PCSetUpOnBlocks_BJacobi_Multiproc(PC pc) {
   PetscFunctionBegin;
   PetscCall(KSPSetUp(subksp));
   PetscCall(KSPGetConvergedReason(subksp, &reason));
-  if (reason == KSP_DIVERGED_PC_FAILED) { pc->failedreason = PC_SUBPC_ERROR; }
+  if (reason == KSP_DIVERGED_PC_FAILED) pc->failedreason = PC_SUBPC_ERROR;
   PetscFunctionReturn(0);
 }
 
@@ -1100,7 +1100,7 @@ static PetscErrorCode PCApply_BJacobi_Multiproc(PC pc, Vec x, Vec y) {
   PetscCall(KSPCheckSolve(jac->ksp[0], pc, mpjac->ysub));
   PetscCall(PetscLogEventEnd(PC_ApplyOnBlocks, jac->ksp[0], mpjac->xsub, mpjac->ysub, 0));
   PetscCall(KSPGetConvergedReason(jac->ksp[0], &reason));
-  if (reason == KSP_DIVERGED_PC_FAILED) { pc->failedreason = PC_SUBPC_ERROR; }
+  if (reason == KSP_DIVERGED_PC_FAILED) pc->failedreason = PC_SUBPC_ERROR;
 
   PetscCall(VecResetArray(mpjac->xsub));
   PetscCall(VecResetArray(mpjac->ysub));
@@ -1138,7 +1138,7 @@ static PetscErrorCode PCMatApply_BJacobi_Multiproc(PC pc, Mat X, Mat Y) {
   PetscCall(MatDenseRestoreArrayWrite(Y, &y));
   PetscCall(MatDenseRestoreArrayRead(X, &x));
   PetscCall(KSPGetConvergedReason(jac->ksp[0], &reason));
-  if (reason == KSP_DIVERGED_PC_FAILED) { pc->failedreason = PC_SUBPC_ERROR; }
+  if (reason == KSP_DIVERGED_PC_FAILED) pc->failedreason = PC_SUBPC_ERROR;
   PetscFunctionReturn(0);
 }
 

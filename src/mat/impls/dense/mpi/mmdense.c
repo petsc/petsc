@@ -320,7 +320,7 @@ PetscErrorCode MatCreateSubMatrices_MPIDense_Local(Mat C, PetscInt ismax, const 
     rmap_i = rmap[i];
     irow_i = irow[i];
     jmax   = nrow[i];
-    for (j = 0; j < jmax; j++) { rmap_i[irow_i[j]] = j; }
+    for (j = 0; j < jmax; j++) rmap_i[irow_i[j]] = j;
   }
 
   /* Now Receive the row_values and assemble the rest of the matrix */

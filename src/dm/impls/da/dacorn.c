@@ -24,7 +24,7 @@ PetscErrorCode DMCreateCoordinateField_DA(DM dm, DMField *field) {
   /* TODO: this is wrong if coordinates are not rectilinear */
   PetscCall(DMGetBoundingBox(dm, gmin, gmax));
   for (i = 0; i < (1 << dim); i++) {
-    for (j = 0; j < dim; j++) { corners[i * dim + j] = (i & (1 << j)) ? gmax[j] : gmin[j]; }
+    for (j = 0; j < dim; j++) corners[i * dim + j] = (i & (1 << j)) ? gmax[j] : gmin[j];
   }
   PetscCall(DMClone(dm, &cdm));
   PetscCall(DMFieldCreateDA(cdm, dim, corners, field));

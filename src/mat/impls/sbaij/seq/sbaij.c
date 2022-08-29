@@ -90,14 +90,14 @@ static PetscErrorCode MatGetRowIJ_SeqSBAIJ(Mat A, PetscInt oshift, PetscBool sym
     PetscCall(PetscMalloc1((n + 1) * bs, ia));
     if (n) {
       (*ia)[0] = oshift;
-      for (j = 1; j < bs; j++) { (*ia)[j] = (tia[1] - tia[0]) * bs + (*ia)[j - 1]; }
+      for (j = 1; j < bs; j++) (*ia)[j] = (tia[1] - tia[0]) * bs + (*ia)[j - 1];
     }
 
     for (i = 1; i < n; i++) {
       (*ia)[i * bs] = (tia[i] - tia[i - 1]) * bs + (*ia)[i * bs - 1];
-      for (j = 1; j < bs; j++) { (*ia)[i * bs + j] = (tia[i + 1] - tia[i]) * bs + (*ia)[i * bs + j - 1]; }
+      for (j = 1; j < bs; j++) (*ia)[i * bs + j] = (tia[i + 1] - tia[i]) * bs + (*ia)[i * bs + j - 1];
     }
-    if (n) { (*ia)[n * bs] = (tia[n] - tia[n - 1]) * bs + (*ia)[n * bs - 1]; }
+    if (n) (*ia)[n * bs] = (tia[n] - tia[n - 1]) * bs + (*ia)[n * bs - 1];
 
     if (inja) {
       PetscCall(PetscMalloc1(nz * bs * bs, ja));
@@ -105,7 +105,7 @@ static PetscErrorCode MatGetRowIJ_SeqSBAIJ(Mat A, PetscInt oshift, PetscBool sym
       for (i = 0; i < n; i++) {
         for (j = 0; j < bs; j++) {
           for (k = tia[i]; k < tia[i + 1]; k++) {
-            for (l = 0; l < bs; l++) { (*ja)[cnt++] = bs * tja[k] + l; }
+            for (l = 0; l < bs; l++) (*ja)[cnt++] = bs * tja[k] + l;
           }
         }
       }
@@ -650,21 +650,21 @@ PetscErrorCode MatSetValuesBlocked_SeqSBAIJ(Mat A, PetscInt m, const PetscInt im
           if (roworiented) {
             if (is == ADD_VALUES) {
               for (ii = 0; ii < bs; ii++, value += stepval) {
-                for (jj = ii; jj < bs2; jj += bs) { bap[jj] += *value++; }
+                for (jj = ii; jj < bs2; jj += bs) bap[jj] += *value++;
               }
             } else {
               for (ii = 0; ii < bs; ii++, value += stepval) {
-                for (jj = ii; jj < bs2; jj += bs) { bap[jj] = *value++; }
+                for (jj = ii; jj < bs2; jj += bs) bap[jj] = *value++;
               }
             }
           } else {
             if (is == ADD_VALUES) {
               for (ii = 0; ii < bs; ii++, value += stepval) {
-                for (jj = 0; jj < bs; jj++) { *bap++ += *value++; }
+                for (jj = 0; jj < bs; jj++) *bap++ += *value++;
               }
             } else {
               for (ii = 0; ii < bs; ii++, value += stepval) {
-                for (jj = 0; jj < bs; jj++) { *bap++ = *value++; }
+                for (jj = 0; jj < bs; jj++) *bap++ = *value++;
               }
             }
           }
@@ -684,11 +684,11 @@ PetscErrorCode MatSetValuesBlocked_SeqSBAIJ(Mat A, PetscInt m, const PetscInt im
       bap   = ap + bs2 * i;
       if (roworiented) {
         for (ii = 0; ii < bs; ii++, value += stepval) {
-          for (jj = ii; jj < bs2; jj += bs) { bap[jj] = *value++; }
+          for (jj = ii; jj < bs2; jj += bs) bap[jj] = *value++;
         }
       } else {
         for (ii = 0; ii < bs; ii++, value += stepval) {
-          for (jj = 0; jj < bs; jj++) { *bap++ = *value++; }
+          for (jj = 0; jj < bs; jj++) *bap++ = *value++;
         }
       }
     noinsert2:;
@@ -799,7 +799,7 @@ PetscErrorCode MatAssemblyEnd_SeqSBAIJ(Mat A, MatAssemblyType mode) {
     ai[mbs] = ai[mbs - 1] + ailen[mbs - 1];
   }
   /* reset ilen and imax for each row */
-  for (i = 0; i < mbs; i++) { ailen[i] = imax[i] = ai[i + 1] - ai[i]; }
+  for (i = 0; i < mbs; i++) ailen[i] = imax[i] = ai[i + 1] - ai[i];
   a->nz = ai[mbs];
 
   /* diagonals may have moved, reset it */
@@ -952,7 +952,7 @@ PetscErrorCode MatSetValues_SeqSBAIJ(Mat A, PetscInt m, const PetscInt im[], Pet
         rp[i]                          = bcol;
         ap[bs2 * i + bs * cidx + ridx] = value;
         /* for diag block, add/insert its symmetric element a(cidx,ridx) */
-        if (brow == bcol && ridx < cidx) { ap[bs2 * i + bs * ridx + cidx] = value; }
+        if (brow == bcol && ridx < cidx) ap[bs2 * i + bs * ridx + cidx] = value;
         A->nonzerostate++;
       noinsert1:;
         low = i;

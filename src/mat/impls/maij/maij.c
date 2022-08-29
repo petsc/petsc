@@ -2603,7 +2603,7 @@ PetscErrorCode MatMult_SeqMAIJ_N(Mat A, Vec xx, Vec yy) {
     n    = ii[i + 1] - jrow;
     sums = y + dof * i;
     for (j = 0; j < n; j++) {
-      for (k = 0; k < dof; k++) { sums[k] += v[jrow] * x[dof * idx[jrow] + k]; }
+      for (k = 0; k < dof; k++) sums[k] += v[jrow] * x[dof * idx[jrow] + k];
       jrow++;
     }
   }
@@ -2635,7 +2635,7 @@ PetscErrorCode MatMultAdd_SeqMAIJ_N(Mat A, Vec xx, Vec yy, Vec zz) {
     n    = ii[i + 1] - jrow;
     sums = y + dof * i;
     for (j = 0; j < n; j++) {
-      for (k = 0; k < dof; k++) { sums[k] += v[jrow] * x[dof * idx[jrow] + k]; }
+      for (k = 0; k < dof; k++) sums[k] += v[jrow] * x[dof * idx[jrow] + k];
       jrow++;
     }
   }
@@ -2664,7 +2664,7 @@ PetscErrorCode MatMultTranspose_SeqMAIJ_N(Mat A, Vec xx, Vec yy) {
     n     = a->i[i + 1] - a->i[i];
     alpha = x + dof * i;
     while (n-- > 0) {
-      for (k = 0; k < dof; k++) { y[dof * (*idx) + k] += alpha[k] * (*v); }
+      for (k = 0; k < dof; k++) y[dof * (*idx) + k] += alpha[k] * (*v);
       idx++;
       v++;
     }
@@ -2693,7 +2693,7 @@ PetscErrorCode MatMultTransposeAdd_SeqMAIJ_N(Mat A, Vec xx, Vec yy, Vec zz) {
     n     = a->i[i + 1] - a->i[i];
     alpha = x + dof * i;
     while (n-- > 0) {
-      for (k = 0; k < dof; k++) { y[dof * (*idx) + k] += alpha[k] * (*v); }
+      for (k = 0; k < dof; k++) y[dof * (*idx) + k] += alpha[k] * (*v);
       idx++;
       v++;
     }
@@ -3195,8 +3195,8 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIMAIJ_MPIAIJ(Mat A, MatType newtype, Ma
     PetscCall(MatGetRow_SeqAIJ(MatAIJ, i, &ncols, &cols, &vals));
     PetscCall(MatGetRow_SeqAIJ(MatOAIJ, i, &oncols, &ocols, &ovals));
     for (j = 0; j < dof; j++) {
-      for (k = 0; k < ncols; k++) { icols[k] = cstart + dof * cols[k] + j; }
-      for (k = 0; k < oncols; k++) { oicols[k] = dof * garray[ocols[k]] + j; }
+      for (k = 0; k < ncols; k++) icols[k] = cstart + dof * cols[k] + j;
+      for (k = 0; k < oncols; k++) oicols[k] = dof * garray[ocols[k]] + j;
       PetscCall(MatSetValues_MPIAIJ(B, 1, &ii, ncols, icols, vals, INSERT_VALUES));
       PetscCall(MatSetValues_MPIAIJ(B, 1, &ii, oncols, oicols, ovals, INSERT_VALUES));
       ii++;

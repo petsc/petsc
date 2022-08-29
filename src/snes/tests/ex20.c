@@ -115,7 +115,7 @@ PetscErrorCode FormInitialGuess(SNES snes, Vec X, void *ctx) {
   /* Compute initial guess */
   for (k = zs; k < zs + zm; k++) {
     for (j = ys; j < ys + ym; j++) {
-      for (i = xs; i < xs + xm; i++) { x[k][j][i] = user->tleft; }
+      for (i = xs; i < xs + xm; i++) x[k][j][i] = user->tleft;
     }
   }
   PetscCall(DMDAVecRestoreArray(da, X, &x));

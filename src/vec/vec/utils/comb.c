@@ -170,7 +170,7 @@ PetscErrorCode PetscSplitReductionEnd(PetscSplitReduction *sr) {
     sr->state = STATE_END;
     if (sr->mix) {
       PetscInt i;
-      for (i = 0; i < sr->numopsbegin; i++) { sr->gvalues[i] = sr->gvalues_mix[i].v; }
+      for (i = 0; i < sr->numopsbegin; i++) sr->gvalues[i] = sr->gvalues_mix[i].v;
       sr->mix = PETSC_FALSE;
     }
     PetscCall(PetscLogEventEnd(VEC_ReduceEnd, 0, 0, 0, 0));
@@ -211,7 +211,7 @@ static PetscErrorCode PetscSplitReductionApply(PetscSplitReduction *sr) {
         sr->lvalues_mix[i].i = reducetype[i];
       }
       PetscCall(MPIU_Allreduce(sr->lvalues_mix, sr->gvalues_mix, numops, MPIU_SCALAR_INT, PetscSplitReduction_Op, comm));
-      for (i = 0; i < numops; i++) { sr->gvalues[i] = sr->gvalues_mix[i].v; }
+      for (i = 0; i < numops; i++) sr->gvalues[i] = sr->gvalues_mix[i].v;
     } else if (max_flg) { /* Compute max of real and imag parts separately, presumably only the real part is used */
       PetscCall(MPIU_Allreduce((PetscReal *)lvalues, (PetscReal *)gvalues, cmul * numops, MPIU_REAL, MPIU_MAX, comm));
     } else if (min_flg) {

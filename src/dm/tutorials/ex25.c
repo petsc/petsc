@@ -59,7 +59,7 @@ int main(int argc, char **argv) {
     PetscCall(DMDAVecGetArray(sda, sxy, &vars));
     /* Loop over the patch of the entire domain */
     for (j = info.ys; j < info.ys + info.ym; j++) {
-      for (i = info.xs; i < info.xs + info.xm; i++) { sum += vars[j][i].x; }
+      for (i = info.xs; i < info.xs + info.xm; i++) sum += vars[j][i].x;
     }
     PetscCall(PetscPrintf(PETSC_COMM_SELF, "The sum of the x coordinates is %g\n", (double)PetscRealPart(sum)));
     PetscCall(DMDAVecRestoreArray(sda, sxy, &vars));

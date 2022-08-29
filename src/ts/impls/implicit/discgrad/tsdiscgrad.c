@@ -30,11 +30,11 @@ static PetscErrorCode TSDiscGradGetX0AndXdot(TS ts, DM dm, Vec *X0, Vec *Xdot) {
   PetscFunctionBegin;
   if (X0) {
     if (dm && dm != ts->dm) PetscCall(DMGetNamedGlobalVector(dm, "TSDiscGrad_X0", X0));
-    else { *X0 = ts->vec_sol; }
+    else *X0 = ts->vec_sol;
   }
   if (Xdot) {
     if (dm && dm != ts->dm) PetscCall(DMGetNamedGlobalVector(dm, "TSDiscGrad_Xdot", Xdot));
-    else { *Xdot = dg->Xdot; }
+    else *Xdot = dg->Xdot;
   }
   PetscFunctionReturn(0);
 }

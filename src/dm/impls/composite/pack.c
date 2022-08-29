@@ -1473,7 +1473,7 @@ PetscErrorCode DMCreateColoring_Composite(DM dm, ISColoringType ctype, ISColorin
 
   PetscCall(PetscOptionsGetBool(((PetscObject)dm)->options, ((PetscObject)dm)->prefix, "-dmcomposite_dense_jacobian", &dense, NULL));
   if (dense) {
-    for (i = 0; i < n; i++) { colors[i] = (ISColoringValue)(com->rstart + i); }
+    for (i = 0; i < n; i++) colors[i] = (ISColoringValue)(com->rstart + i);
     maxcol = com->N;
   } else {
     struct DMCompositeLink *next = com->next;
@@ -1485,7 +1485,7 @@ PetscErrorCode DMCreateColoring_Composite(DM dm, ISColoringType ctype, ISColorin
       ISColoring lcoloring;
 
       PetscCall(DMCreateColoring(next->dm, IS_COLORING_GLOBAL, &lcoloring));
-      for (i = 0; i < lcoloring->N; i++) { colors[cnt++] = maxcol + lcoloring->colors[i]; }
+      for (i = 0; i < lcoloring->N; i++) colors[cnt++] = maxcol + lcoloring->colors[i];
       maxcol += lcoloring->n;
       PetscCall(ISColoringDestroy(&lcoloring));
       next = next->next;

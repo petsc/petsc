@@ -160,7 +160,7 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp) {
     KSPCheckNorm(ksp, beta);
     if (beta > 0.0) {
       PetscCall(VecScale(U1, 1.0 / beta)); /* beta*U1 = Amat*V - alpha*U */
-      if (!lsqr->exact_norm) { lsqr->anorm = PetscSqrtReal(PetscSqr(lsqr->anorm) + PetscSqr(alpha) + PetscSqr(beta)); }
+      if (!lsqr->exact_norm) lsqr->anorm = PetscSqrtReal(PetscSqr(lsqr->anorm) + PetscSqr(alpha) + PetscSqr(beta));
     }
 
     PetscCall(KSP_MatMultHermitianTranspose(ksp, Amat, U1, V1));

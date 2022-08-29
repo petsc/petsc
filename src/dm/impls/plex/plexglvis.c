@@ -685,7 +685,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer) {
         PetscCall(DMPlexVecGetClosure(dm, coordSection, coordinates, p, &csize, &vals));
         PetscCheck(csize == vpc * sdim || csize == vpc * sdim * 2, PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported closure size %" PetscInt_FMT " (vpc %" PetscInt_FMT ", sdim %" PetscInt_FMT ")", csize, vpc, sdim);
         for (v = 0; v < vpc; v++) {
-          for (d = 0; d < sdim; d++) { ptr[sdim * dof[v] + d] = vals[sdim * vids[v] + d]; }
+          for (d = 0; d < sdim; d++) ptr[sdim * dof[v] + d] = vals[sdim * vids[v] + d];
         }
         ptr += vpc * sdim;
         PetscCall(DMPlexVecRestoreClosure(dm, coordSection, coordinates, p, &csize, &vals));
@@ -934,7 +934,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer) {
         PetscCall(DMPlexGetSupport(dm, p, &support));
         if (pown) {
           for (c = 0; c < supportSize; c++) {
-            if (PetscLikely(PetscBTLookup(pown, support[c] - cStart))) { fcells[nc++] = support[c]; }
+            if (PetscLikely(PetscBTLookup(pown, support[c] - cStart))) fcells[nc++] = support[c];
           }
         } else
           for (c = 0; c < supportSize; c++) fcells[nc++] = support[c];

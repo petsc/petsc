@@ -295,7 +295,7 @@ static void g3_vlap_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt
   PetscInt       c, d;
 
   for (c = 0; c < Nc; ++c) {
-    for (d = 0; d < dim; ++d) { g3[((c * Nc + c) * dim + d) * dim + d] = 1.0; }
+    for (d = 0; d < dim; ++d) g3[((c * Nc + c) * dim + d) * dim + d] = 1.0;
   }
 }
 

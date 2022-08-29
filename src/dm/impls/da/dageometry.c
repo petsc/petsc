@@ -87,20 +87,20 @@ PetscErrorCode private_DMDALocatePointsIS_2D_Regular(DM dmregular, Vec pos, IS *
 
     cellidx[p] = DMLOCATEPOINT_POINT_NOT_FOUND;
 
-    if (coor_p[0] < gmin_l[0]) { continue; }
-    if (coor_p[0] > gmax_l[0]) { continue; }
-    if (coor_p[1] < gmin_l[1]) { continue; }
-    if (coor_p[1] > gmax_l[1]) { continue; }
+    if (coor_p[0] < gmin_l[0]) continue;
+    if (coor_p[0] > gmax_l[0]) continue;
+    if (coor_p[1] < gmin_l[1]) continue;
+    if (coor_p[1] > gmax_l[1]) continue;
 
-    for (d = 0; d < 2; d++) { mi[d] = (PetscInt)((coor_p[d] - gmin[d]) / dx[d]); }
+    for (d = 0; d < 2; d++) mi[d] = (PetscInt)((coor_p[d] - gmin[d]) / dx[d]);
 
-    if (mi[0] < xs) { continue; }
-    if (mi[0] > (xe - 1)) { continue; }
-    if (mi[1] < ys) { continue; }
-    if (mi[1] > (ye - 1)) { continue; }
+    if (mi[0] < xs) continue;
+    if (mi[0] > (xe - 1)) continue;
+    if (mi[1] < ys) continue;
+    if (mi[1] > (ye - 1)) continue;
 
-    if (mi[0] == (xe - 1)) { mi[0]--; }
-    if (mi[1] == (ye - 1)) { mi[1]--; }
+    if (mi[0] == (xe - 1)) mi[0]--;
+    if (mi[1] == (ye - 1)) mi[1]--;
 
     cellidx[p] = (mi[0] - xs) + (mi[1] - ys) * mxlocal;
   }
@@ -175,25 +175,25 @@ PetscErrorCode private_DMDALocatePointsIS_3D_Regular(DM dmregular, Vec pos, IS *
 
     cellidx[p] = DMLOCATEPOINT_POINT_NOT_FOUND;
 
-    if (coor_p[0] < gmin_l[0]) { continue; }
-    if (coor_p[0] > gmax_l[0]) { continue; }
-    if (coor_p[1] < gmin_l[1]) { continue; }
-    if (coor_p[1] > gmax_l[1]) { continue; }
-    if (coor_p[2] < gmin_l[2]) { continue; }
-    if (coor_p[2] > gmax_l[2]) { continue; }
+    if (coor_p[0] < gmin_l[0]) continue;
+    if (coor_p[0] > gmax_l[0]) continue;
+    if (coor_p[1] < gmin_l[1]) continue;
+    if (coor_p[1] > gmax_l[1]) continue;
+    if (coor_p[2] < gmin_l[2]) continue;
+    if (coor_p[2] > gmax_l[2]) continue;
 
-    for (d = 0; d < 3; d++) { mi[d] = (PetscInt)((coor_p[d] - gmin[d]) / dx[d]); }
+    for (d = 0; d < 3; d++) mi[d] = (PetscInt)((coor_p[d] - gmin[d]) / dx[d]);
 
-    if (mi[0] < xs) { continue; }
-    if (mi[0] > (xe - 1)) { continue; }
-    if (mi[1] < ys) { continue; }
-    if (mi[1] > (ye - 1)) { continue; }
-    if (mi[2] < zs) { continue; }
-    if (mi[2] > (ze - 1)) { continue; }
+    if (mi[0] < xs) continue;
+    if (mi[0] > (xe - 1)) continue;
+    if (mi[1] < ys) continue;
+    if (mi[1] > (ye - 1)) continue;
+    if (mi[2] < zs) continue;
+    if (mi[2] > (ze - 1)) continue;
 
-    if (mi[0] == (xe - 1)) { mi[0]--; }
-    if (mi[1] == (ye - 1)) { mi[1]--; }
-    if (mi[2] == (ze - 1)) { mi[2]--; }
+    if (mi[0] == (xe - 1)) mi[0]--;
+    if (mi[1] == (ye - 1)) mi[1]--;
+    if (mi[2] == (ze - 1)) mi[2]--;
 
     cellidx[p] = (mi[0] - xs) + (mi[1] - ys) * mxlocal + (mi[2] - zs) * mxlocal * mylocal;
   }

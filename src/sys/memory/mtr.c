@@ -227,7 +227,7 @@ PetscErrorCode PetscTrMallocDefault(size_t a, PetscBool clear, int lineno, const
 #else
     PetscInt64 nas = 0x7FF0000000000002;
 #endif
-    for (i = 0; i < n; i++) { memcpy(s + i, &nas, sizeof(PetscReal)); }
+    for (i = 0; i < n; i++) memcpy(s + i, &nas, sizeof(PetscReal));
   }
 #endif
 #endif
@@ -902,7 +902,7 @@ PetscErrorCode PetscMallocView(FILE *fp) {
   PetscCall(PetscSortStrWithPermutation(n, (const char **)shortfunction, perm));
 
   (void)fprintf(fp, "[%d] Memory usage sorted by function\n", rank);
-  for (i = 0; i < n; i++) { (void)fprintf(fp, "[%d] %d %.0f %s()\n", rank, shortcount[perm[i]], (PetscLogDouble)shortlength[perm[i]], shortfunction[perm[i]]); }
+  for (i = 0; i < n; i++) (void)fprintf(fp, "[%d] %d %.0f %s()\n", rank, shortcount[perm[i]], (PetscLogDouble)shortlength[perm[i]], shortfunction[perm[i]]);
   free(perm);
   free(shortlength);
   free(shortcount);

@@ -12,7 +12,7 @@ static PetscErrorCode SNESSetFromOptions_Anderson(SNES snes, PetscOptionItems *P
   PetscCall(PetscOptionsInt("-snes_anderson_restart_it", "Tolerance iterations before restart", "SNES", ngmres->restart_it, &ngmres->restart_it, NULL));
   PetscCall(PetscOptionsEnum("-snes_anderson_restart_type", "Restart type", "SNESNGMRESSetRestartType", SNESNGMRESRestartTypes, (PetscEnum)ngmres->restart_type, (PetscEnum *)&ngmres->restart_type, NULL));
   PetscCall(PetscOptionsBool("-snes_anderson_monitor", "Monitor steps of Anderson Mixing", "SNES", ngmres->monitor ? PETSC_TRUE : PETSC_FALSE, &monitor, NULL));
-  if (monitor) { ngmres->monitor = PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)snes)); }
+  if (monitor) ngmres->monitor = PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)snes));
   PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }

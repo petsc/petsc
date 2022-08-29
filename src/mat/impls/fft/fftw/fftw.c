@@ -362,7 +362,7 @@ PetscErrorCode MatDestroy_FFTW(Mat A) {
   PetscFunctionBegin;
   fftw_destroy_plan(fftw->p_forward);
   fftw_destroy_plan(fftw->p_backward);
-  if (fftw->iodims) { free(fftw->iodims); }
+  if (fftw->iodims) free(fftw->iodims);
   PetscCall(PetscFree(fftw->dim_fftw));
   PetscCall(PetscFree(fft->data));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatCreateVecsFFTW_C", NULL));

@@ -76,7 +76,7 @@ PetscErrorCode SPARSEPACKqmdupd(const PetscInt *xadj, const PetscInt *adjncy, co
   }
   /*       MERGE INDISTINGUISHABLE NODES IN THE LIST BY*/
   /*       CALLING THE SUBROUTINE QMDMRG.*/
-  if (nhdsze > 0) { SPARSEPACKqmdmrg(&xadj[1], &adjncy[1], &deg[1], &qsize[1], &qlink[1], &marker[1], &deg0, &nhdsze, &nbrhd[1], &rchset[1], &nbrhd[nhdsze + 1]); }
+  if (nhdsze > 0) SPARSEPACKqmdmrg(&xadj[1], &adjncy[1], &deg[1], &qsize[1], &qlink[1], &marker[1], &deg0, &nhdsze, &nbrhd[1], &rchset[1], &nbrhd[nhdsze + 1]);
   /*       FIND THE NEW DEGREES OF THE NODES THAT HAVE NOT BEEN*/
   /*       MERGED.*/
   i__1 = *nlist;

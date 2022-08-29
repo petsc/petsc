@@ -92,7 +92,7 @@ int main(int argc, char **args) {
   for (i = start; i < end; i++) {
     indx = 0;
     for (k = 0; k < (p + 1); ++k) {
-      for (j = 0; j < (p + 1); ++j) { idx[indx++] = p * (p * m + 1) * (i / m) + p * (i % m) + k * (p * m + 1) + j; }
+      for (j = 0; j < (p + 1); ++j) idx[indx++] = p * (p * m + 1) * (i / m) + p * (i % m) + k * (p * m + 1) + j;
     }
     PetscCall(MatSetValues(A, num2Dnodes, idx, num2Dnodes, idx, Ke2D, ADD_VALUES));
     PetscCall(MatSetValues(Mass, num2Dnodes, idx, num2Dnodes, idx, Me2D, ADD_VALUES));
@@ -127,7 +127,7 @@ int main(int argc, char **args) {
     y    = h * (i / m);
     indx = 0;
     for (k = 0; k < (p + 1); ++k) {
-      for (j = 0; j < (p + 1); ++j) { idx[indx++] = p * (p * m + 1) * (i / m) + p * (i % m) + k * (p * m + 1) + j; }
+      for (j = 0; j < (p + 1); ++j) idx[indx++] = p * (p * m + 1) * (i / m) + p * (i % m) + k * (p * m + 1) + j;
     }
     PetscCall(FormNodalRhs(p, x, y, h, gllNode, r));
     PetscCall(FormNodalSoln(p, x, y, h, gllNode, ue));
@@ -231,7 +231,7 @@ static PetscErrorCode Form1DElementMass(PetscReal H, PetscInt P, PetscReal *gqn,
     for (i = 0; i < (P + 1); ++i) {
       indx       = j * (P + 1) + i;
       Me1D[indx] = 0.0;
-      for (k = 0; k < (P + 1); ++k) { Me1D[indx] += H * gqw[k] * polyBasisFunc(P, i, gqn, gqn[k]) * polyBasisFunc(P, j, gqn, gqn[k]); }
+      for (k = 0; k < (P + 1); ++k) Me1D[indx] += H * gqw[k] * polyBasisFunc(P, i, gqn, gqn[k]) * polyBasisFunc(P, j, gqn, gqn[k]);
     }
   }
   PetscFunctionReturn(0);
@@ -249,7 +249,7 @@ static PetscErrorCode Form1DElementStiffness(PetscReal H, PetscInt P, PetscReal 
     for (i = 0; i < (P + 1); ++i) {
       indx       = j * (P + 1) + i;
       Ke1D[indx] = 0.0;
-      for (k = 0; k < (P + 1); ++k) { Ke1D[indx] += (1. / H) * gqw[k] * derivPolyBasisFunc(P, i, gqn, gqn[k]) * derivPolyBasisFunc(P, j, gqn, gqn[k]); }
+      for (k = 0; k < (P + 1); ++k) Ke1D[indx] += (1. / H) * gqw[k] * derivPolyBasisFunc(P, i, gqn, gqn[k]) * derivPolyBasisFunc(P, j, gqn, gqn[k]);
     }
   }
   PetscFunctionReturn(0);

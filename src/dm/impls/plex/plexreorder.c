@@ -121,7 +121,7 @@ PetscErrorCode DMPlexGetOrdering(DM dm, MatOrderingType otype, DMLabel label, IS
       PetscCheck(vloc >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Value %" PetscInt_FMT " not present label", val);
       sperm[voff[vloc + 1]++] = oldc;
     }
-    for (v = 0; v < numValues; ++v) { PetscCheck(voff[v + 1] - voff[v] == vsize[v], PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of %" PetscInt_FMT " values found is %" PetscInt_FMT " != %" PetscInt_FMT, values[v], voff[v + 1] - voff[v], vsize[v]); }
+    for (v = 0; v < numValues; ++v) PetscCheck(voff[v + 1] - voff[v] == vsize[v], PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of %" PetscInt_FMT " values found is %" PetscInt_FMT " != %" PetscInt_FMT, values[v], voff[v + 1] - voff[v], vsize[v]);
     PetscCall(PetscArraycpy(cperm, sperm, numCells));
     PetscCall(PetscFree4(sperm, values, vsize, voff));
   }
@@ -327,7 +327,7 @@ PetscErrorCode DMPlexPermute(DM dm, IS perm, DM *pdm) {
       PetscCall(PetscSectionGetDof(plexNew->supportSection, pperm[p], &dof));
       PetscCall(PetscSectionGetOffset(plex->supportSection, p, &off));
       PetscCall(PetscSectionGetOffset(plexNew->supportSection, pperm[p], &offNew));
-      for (d = 0; d < dof; ++d) { plexNew->supports[offNew + d] = pperm[plex->supports[off + d]]; }
+      for (d = 0; d < dof; ++d) plexNew->supports[offNew + d] = pperm[plex->supports[off + d]];
     }
     PetscCall(ISRestoreIndices(perm, &pperm));
   }

@@ -521,7 +521,7 @@ static PetscErrorCode InterpolateGradient(DM dm, Vec locX, Vec locC) {
       }
       PetscCall(DMPlexVecRestoreClosure(dm, NULL, locX, cell, NULL, &x));
       for (fc = 0; fc < numComponents; ++fc) {
-        for (d = 0; d < coordDim; ++d) { gradsum[fc * coordDim + d] += grad[fc * coordDim + d]; }
+        for (d = 0; d < coordDim; ++d) gradsum[fc * coordDim + d] += grad[fc * coordDim + d];
       }
       if (debug) {
         PetscCall(PetscPrintf(PETSC_COMM_SELF, "Cell %" PetscInt_FMT " gradient: [", cell));

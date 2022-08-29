@@ -360,7 +360,7 @@ PetscErrorCode DMPlexOrient(DM dm) {
     if (rank == 0) PetscCallMPI(MPI_Comm_size(comm, &size));
     PetscCall(PetscCalloc4(size, &recvcounts, size + 1, &displs, size, &Nc, size + 1, &Noff));
     PetscCallMPI(MPI_Gather(&numComponents, 1, MPI_INT, Nc, 1, MPI_INT, 0, comm));
-    for (p = 0; p < size; ++p) { displs[p + 1] = displs[p] + Nc[p]; }
+    for (p = 0; p < size; ++p) displs[p + 1] = displs[p] + Nc[p];
     if (rank == 0) PetscCall(PetscMalloc1(displs[size], &N));
     PetscCallMPI(MPI_Gatherv(numNeighbors, numComponents, MPIU_INT, N, Nc, displs, MPIU_INT, 0, comm));
     for (p = 0, o = 0; p < size; ++p) {
@@ -373,7 +373,7 @@ PetscErrorCode DMPlexOrient(DM dm) {
     PetscCallMPI(MPI_Gatherv(match, totNeighbors, MPIU_BOOL, val, recvcounts, displs, MPIU_BOOL, 0, comm));
     PetscCall(PetscFree2(numNeighbors, neighbors));
     if (rank == 0) {
-      for (p = 1; p <= size; ++p) { Noff[p] = Noff[p - 1] + Nc[p - 1]; }
+      for (p = 1; p <= size; ++p) Noff[p] = Noff[p - 1] + Nc[p - 1];
       if (flg) {
         PetscInt n;
 
@@ -460,7 +460,7 @@ PetscErrorCode DMPlexOrient(DM dm) {
           flips[p] = PetscBTLookup(flippedProcs, p) ? PETSC_TRUE : PETSC_FALSE;
           if (flg && flips[p]) PetscCall(PetscPrintf(comm, "Flipping Proc+Comp %d:\n", p));
         }
-        for (p = 0; p < size; ++p) { displs[p + 1] = displs[p] + Nc[p]; }
+        for (p = 0; p < size; ++p) displs[p + 1] = displs[p] + Nc[p];
       }
       PetscCallMPI(MPI_Scatterv(flips, Nc, displs, MPIU_BOOL, flipped, numComponents, MPIU_BOOL, 0, comm));
       PetscCall(PetscFree(flips));

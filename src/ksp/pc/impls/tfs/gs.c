@@ -935,7 +935,7 @@ PetscErrorCode PCTFS_gs_free(PCTFS_gs_id *gs) {
     if (gs->pw_elm_list) free((void *)gs->pw_elm_list);
     if (gs->node_list) {
       for (i = 0; i < gs->num_pairs; i++) {
-        if (gs->node_list[i]) { free((void *)gs->node_list[i]); }
+        if (gs->node_list[i]) free((void *)gs->node_list[i]);
       }
       free((void *)gs->node_list);
     }

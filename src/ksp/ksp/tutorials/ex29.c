@@ -114,7 +114,7 @@ PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ctx) {
   PetscCall(DMDAGetCorners(da, &xs, &ys, 0, &xm, &ym, 0));
   PetscCall(DMDAVecGetArray(da, b, &array));
   for (j = ys; j < ys + ym; j++) {
-    for (i = xs; i < xs + xm; i++) { array[j][i] = PetscExpScalar(-((PetscReal)i * Hx) * ((PetscReal)i * Hx) / user->nu) * PetscExpScalar(-((PetscReal)j * Hy) * ((PetscReal)j * Hy) / user->nu) * Hx * Hy; }
+    for (i = xs; i < xs + xm; i++) array[j][i] = PetscExpScalar(-((PetscReal)i * Hx) * ((PetscReal)i * Hx) / user->nu) * PetscExpScalar(-((PetscReal)j * Hy) * ((PetscReal)j * Hy) / user->nu) * Hx * Hy;
   }
   PetscCall(DMDAVecRestoreArray(da, b, &array));
   PetscCall(VecAssemblyBegin(b));

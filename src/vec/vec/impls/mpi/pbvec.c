@@ -658,8 +658,8 @@ PetscErrorCode VecCreateGhostWithArray(MPI_Comm comm, PetscInt n, PetscInt N, Pe
   /* set local to global mapping for ghosted vector */
   PetscCall(PetscMalloc1(n + nghost, &indices));
   PetscCall(VecGetOwnershipRange(*vv, &rstart, NULL));
-  for (i = 0; i < n; i++) { indices[i] = rstart + i; }
-  for (i = 0; i < nghost; i++) { indices[n + i] = ghosts[i]; }
+  for (i = 0; i < n; i++) indices[i] = rstart + i;
+  for (i = 0; i < nghost; i++) indices[n + i] = ghosts[i];
   PetscCall(ISLocalToGlobalMappingCreate(comm, 1, n + nghost, indices, PETSC_OWN_POINTER, &ltog));
   PetscCall(VecSetLocalToGlobalMapping(*vv, ltog));
   PetscCall(ISLocalToGlobalMappingDestroy(&ltog));

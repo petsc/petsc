@@ -47,7 +47,7 @@ PetscErrorCode KSPSetUp_FGMRES(KSP ksp) {
      term for this first allocation of vectors holding preconditioned directions */
   PetscCall(KSPCreateVecs(ksp, fgmres->vv_allocated - VEC_OFFSET, &fgmres->prevecs_user_work[0], 0, NULL));
   PetscCall(PetscLogObjectParents(ksp, fgmres->vv_allocated - VEC_OFFSET, fgmres->prevecs_user_work[0]));
-  for (k = 0; k < fgmres->vv_allocated - VEC_OFFSET; k++) { fgmres->prevecs[k] = fgmres->prevecs_user_work[0][k]; }
+  for (k = 0; k < fgmres->vv_allocated - VEC_OFFSET; k++) fgmres->prevecs[k] = fgmres->prevecs_user_work[0][k];
   PetscFunctionReturn(0);
 }
 
@@ -455,7 +455,7 @@ static PetscErrorCode KSPFGMRESGetNewVectors(KSP ksp, PetscInt it) {
 
   /* Adjust the number to allocate to make sure that we don't exceed the
      number of available slots (fgmres->vecs_allocated)*/
-  if (it + VEC_OFFSET + nalloc >= fgmres->vecs_allocated) { nalloc = fgmres->vecs_allocated - it - VEC_OFFSET; }
+  if (it + VEC_OFFSET + nalloc >= fgmres->vecs_allocated) nalloc = fgmres->vecs_allocated - it - VEC_OFFSET;
   if (!nalloc) PetscFunctionReturn(0);
 
   fgmres->vv_allocated += nalloc; /* vv_allocated is the number of vectors allocated */
@@ -463,14 +463,14 @@ static PetscErrorCode KSPFGMRESGetNewVectors(KSP ksp, PetscInt it) {
   /* work vectors */
   PetscCall(KSPCreateVecs(ksp, nalloc, &fgmres->user_work[nwork], 0, NULL));
   PetscCall(PetscLogObjectParents(ksp, nalloc, fgmres->user_work[nwork]));
-  for (k = 0; k < nalloc; k++) { fgmres->vecs[it + VEC_OFFSET + k] = fgmres->user_work[nwork][k]; }
+  for (k = 0; k < nalloc; k++) fgmres->vecs[it + VEC_OFFSET + k] = fgmres->user_work[nwork][k];
   /* specify size of chunk allocated */
   fgmres->mwork_alloc[nwork] = nalloc;
 
   /* preconditioned vectors */
   PetscCall(KSPCreateVecs(ksp, nalloc, &fgmres->prevecs_user_work[nwork], 0, NULL));
   PetscCall(PetscLogObjectParents(ksp, nalloc, fgmres->prevecs_user_work[nwork]));
-  for (k = 0; k < nalloc; k++) { fgmres->prevecs[it + k] = fgmres->prevecs_user_work[nwork][k]; }
+  for (k = 0; k < nalloc; k++) fgmres->prevecs[it + k] = fgmres->prevecs_user_work[nwork][k];
 
   /* increment the number of work vector chunks */
   fgmres->nwork_alloc++;

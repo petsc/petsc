@@ -54,7 +54,7 @@ static PetscErrorCode KSPAllocateVectors_PIPEGCR(KSP ksp, PetscInt nvecsneeded, 
       pipegcr->qvecs[nvecsprev + i] = pipegcr->pqvecs[pipegcr->nchunks][i];
       pipegcr->pvecs[nvecsprev + i] = pipegcr->ppvecs[pipegcr->nchunks][i];
       pipegcr->svecs[nvecsprev + i] = pipegcr->psvecs[pipegcr->nchunks][i];
-      if (pipegcr->unroll_w) { pipegcr->tvecs[nvecsprev + i] = pipegcr->ptvecs[pipegcr->nchunks][i]; }
+      if (pipegcr->unroll_w) pipegcr->tvecs[nvecsprev + i] = pipegcr->ptvecs[pipegcr->nchunks][i];
     }
     pipegcr->chunksizes[pipegcr->nchunks] = nnewvecs;
     pipegcr->nchunks++;
@@ -145,7 +145,7 @@ static PetscErrorCode KSPSolve_PIPEGCR_cycle(KSP ksp) {
     p   = pipegcr->pvecs[idx];
     s   = pipegcr->svecs[idx];
     q   = pipegcr->qvecs[idx];
-    if (pipegcr->unroll_w) { t = pipegcr->tvecs[idx]; }
+    if (pipegcr->unroll_w) t = pipegcr->tvecs[idx];
     eta = pipegcr->etas + idx;
 
     /* number of old directions to orthogonalize against */
@@ -161,7 +161,7 @@ static PetscErrorCode KSPSolve_PIPEGCR_cycle(KSP ksp) {
       pipegcr->pold[j] = pipegcr->pvecs[kdx];
       pipegcr->sold[j] = pipegcr->svecs[kdx];
       pipegcr->qold[j] = pipegcr->qvecs[kdx];
-      if (pipegcr->unroll_w) { pipegcr->told[j] = pipegcr->tvecs[kdx]; }
+      if (pipegcr->unroll_w) pipegcr->told[j] = pipegcr->tvecs[kdx];
       redux[j] = pipegcr->svecs[kdx];
     }
     /* If the above loop is not run redux contains only r and w => all beta_k = 0, only gamma, delta != 0 */

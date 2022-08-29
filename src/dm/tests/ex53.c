@@ -72,14 +72,14 @@ int main(int argc, char **argv) {
     PetscCall(DMDAVecGetArray(da, vec_full, &vecdata3d));
     for (k = izs; k < izs + izm; k++) {
       for (j = iys; j < iys + iym; j++) {
-        for (i = ixs; i < ixs + ixm; i++) { vecdata3d[k][j][i] = ((i - mx / 2) * (j + mx / 2)) + k * 100; }
+        for (i = ixs; i < ixs + ixm; i++) vecdata3d[k][j][i] = ((i - mx / 2) * (j + mx / 2)) + k * 100;
       }
     }
     PetscCall(DMDAVecRestoreArray(da, vec_full, &vecdata3d));
   } else {
     PetscCall(DMDAVecGetArray(da, vec_full, &vecdata2d));
     for (j = iys; j < iys + iym; j++) {
-      for (i = ixs; i < ixs + ixm; i++) { vecdata2d[j][i] = ((i - mx / 2) * (j + mx / 2)); }
+      for (i = ixs; i < ixs + ixm; i++) vecdata2d[j][i] = ((i - mx / 2) * (j + mx / 2));
     }
     PetscCall(DMDAVecRestoreArray(da, vec_full, &vecdata2d));
   }

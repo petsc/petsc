@@ -1308,7 +1308,7 @@ PETSC_EXTERN void matsetvaluesblocked4_(Mat *AA, PetscInt *mm, const PetscInt im
         if (rp[i] == col) {
           bap = ap + 16 * i;
           for (ii = 0; ii < 4; ii++, value += stepval) {
-            for (jj = ii; jj < 16; jj += 4) { bap[jj] += *value++; }
+            for (jj = ii; jj < 16; jj += 4) bap[jj] += *value++;
           }
           goto noinsert2;
         }
@@ -1324,7 +1324,7 @@ PETSC_EXTERN void matsetvaluesblocked4_(Mat *AA, PetscInt *mm, const PetscInt im
       rp[i] = col;
       bap   = ap + 16 * i;
       for (ii = 0; ii < 4; ii++, value += stepval) {
-        for (jj = ii; jj < 16; jj += 4) { bap[jj] = *value++; }
+        for (jj = ii; jj < 16; jj += 4) bap[jj] = *value++;
       }
     noinsert2:;
       low = i;
@@ -1470,14 +1470,14 @@ static PetscErrorCode MatGetRowIJ_SeqBAIJ(Mat A, PetscInt oshift, PetscBool symm
     PetscCall(PetscMalloc1((n + 1) * bs, ia));
     if (n) {
       (*ia)[0] = oshift;
-      for (j = 1; j < bs; j++) { (*ia)[j] = (tia[1] - tia[0]) * bs + (*ia)[j - 1]; }
+      for (j = 1; j < bs; j++) (*ia)[j] = (tia[1] - tia[0]) * bs + (*ia)[j - 1];
     }
 
     for (i = 1; i < n; i++) {
       (*ia)[i * bs] = (tia[i] - tia[i - 1]) * bs + (*ia)[i * bs - 1];
-      for (j = 1; j < bs; j++) { (*ia)[i * bs + j] = (tia[i + 1] - tia[i]) * bs + (*ia)[i * bs + j - 1]; }
+      for (j = 1; j < bs; j++) (*ia)[i * bs + j] = (tia[i + 1] - tia[i]) * bs + (*ia)[i * bs + j - 1];
     }
-    if (n) { (*ia)[n * bs] = (tia[n] - tia[n - 1]) * bs + (*ia)[n * bs - 1]; }
+    if (n) (*ia)[n * bs] = (tia[n] - tia[n - 1]) * bs + (*ia)[n * bs - 1];
 
     if (inja) {
       PetscCall(PetscMalloc1(nz * bs * bs, ja));
@@ -1485,7 +1485,7 @@ static PetscErrorCode MatGetRowIJ_SeqBAIJ(Mat A, PetscInt oshift, PetscBool symm
       for (i = 0; i < n; i++) {
         for (j = 0; j < bs; j++) {
           for (k = tia[i]; k < tia[i + 1]; k++) {
-            for (l = 0; l < bs; l++) { (*ja)[cnt++] = bs * tja[k] + l; }
+            for (l = 0; l < bs; l++) (*ja)[cnt++] = bs * tja[k] + l;
           }
         }
       }
@@ -1705,7 +1705,7 @@ PetscErrorCode MatTranspose_SeqBAIJ(Mat A, MatReuse reuse, Mat *B) {
     for (j = 0; j < anzj; j++) {
       atj[atfill[*aj]] = i;
       for (kr = 0; kr < bs; kr++) {
-        for (k = 0; k < bs; k++) { ata[bs2 * atfill[*aj] + k * bs + kr] = *aa++; }
+        for (k = 0; k < bs; k++) ata[bs2 * atfill[*aj] + k * bs + kr] = *aa++;
       }
       atfill[*aj++] += 1;
     }
@@ -2137,22 +2137,22 @@ PetscErrorCode MatSetValuesBlocked_SeqBAIJ(Mat A, PetscInt m, const PetscInt im[
           if (roworiented) {
             if (is == ADD_VALUES) {
               for (ii = 0; ii < bs; ii++, value += stepval) {
-                for (jj = ii; jj < bs2; jj += bs) { bap[jj] += *value++; }
+                for (jj = ii; jj < bs2; jj += bs) bap[jj] += *value++;
               }
             } else {
               for (ii = 0; ii < bs; ii++, value += stepval) {
-                for (jj = ii; jj < bs2; jj += bs) { bap[jj] = *value++; }
+                for (jj = ii; jj < bs2; jj += bs) bap[jj] = *value++;
               }
             }
           } else {
             if (is == ADD_VALUES) {
               for (ii = 0; ii < bs; ii++, value += bs + stepval) {
-                for (jj = 0; jj < bs; jj++) { bap[jj] += value[jj]; }
+                for (jj = 0; jj < bs; jj++) bap[jj] += value[jj];
                 bap += bs;
               }
             } else {
               for (ii = 0; ii < bs; ii++, value += bs + stepval) {
-                for (jj = 0; jj < bs; jj++) { bap[jj] = value[jj]; }
+                for (jj = 0; jj < bs; jj++) bap[jj] = value[jj];
                 bap += bs;
               }
             }
@@ -2177,11 +2177,11 @@ PetscErrorCode MatSetValuesBlocked_SeqBAIJ(Mat A, PetscInt m, const PetscInt im[
         bap = ap + bs2 * i;
         if (roworiented) {
           for (ii = 0; ii < bs; ii++, value += stepval) {
-            for (jj = ii; jj < bs2; jj += bs) { bap[jj] = *value++; }
+            for (jj = ii; jj < bs2; jj += bs) bap[jj] = *value++;
           }
         } else {
           for (ii = 0; ii < bs; ii++, value += stepval) {
-            for (jj = 0; jj < bs; jj++) { *bap++ = *value++; }
+            for (jj = 0; jj < bs; jj++) *bap++ = *value++;
           }
         }
       }
@@ -2310,7 +2310,7 @@ PetscErrorCode MatZeroRows_SeqBAIJ(Mat A, PetscInt is_n, const PetscInt is_idx[]
   if (x && b) {
     PetscCall(VecGetArrayRead(x, &xx));
     PetscCall(VecGetArray(b, &bb));
-    for (i = 0; i < is_n; i++) { bb[is_idx[i]] = diag * xx[is_idx[i]]; }
+    for (i = 0; i < is_n; i++) bb[is_idx[i]] = diag * xx[is_idx[i]];
     PetscCall(VecRestoreArrayRead(x, &xx));
     PetscCall(VecRestoreArray(b, &bb));
   }
@@ -2551,9 +2551,9 @@ PetscErrorCode MatSeqBAIJSetColumnIndices_SeqBAIJ(Mat mat, PetscInt *indices) {
   PetscFunctionBegin;
   nz  = baij->maxnz;
   mbs = baij->mbs;
-  for (i = 0; i < nz; i++) { baij->j[i] = indices[i]; }
+  for (i = 0; i < nz; i++) baij->j[i] = indices[i];
   baij->nz = nz;
-  for (i = 0; i < mbs; i++) { baij->ilen[i] = baij->imax[i]; }
+  for (i = 0; i < mbs; i++) baij->ilen[i] = baij->imax[i];
   PetscFunctionReturn(0);
 }
 
@@ -2773,9 +2773,9 @@ PetscErrorCode MatGetColumnIJ_SeqBAIJ(Mat A, PetscInt oshift, PetscBool symmetri
   PetscCall(PetscMalloc1(n + 1, &cia));
   PetscCall(PetscMalloc1(nz, &cja));
   jj = a->j;
-  for (i = 0; i < nz; i++) { collengths[jj[i]]++; }
+  for (i = 0; i < nz; i++) collengths[jj[i]]++;
   cia[0] = oshift;
-  for (i = 0; i < n; i++) { cia[i + 1] = cia[i] + collengths[i]; }
+  for (i = 0; i < n; i++) cia[i + 1] = cia[i] + collengths[i];
   PetscCall(PetscArrayzero(collengths, n));
   jj = a->j;
   for (row = 0; row < m; row++) {
@@ -2820,9 +2820,9 @@ PetscErrorCode MatGetColumnIJ_SeqBAIJ_Color(Mat A, PetscInt oshift, PetscBool sy
   PetscCall(PetscMalloc1(nz, &cja));
   PetscCall(PetscMalloc1(nz, &cspidx));
   jj = a->j;
-  for (i = 0; i < nz; i++) { collengths[jj[i]]++; }
+  for (i = 0; i < nz; i++) collengths[jj[i]]++;
   cia[0] = oshift;
-  for (i = 0; i < n; i++) { cia[i + 1] = cia[i] + collengths[i]; }
+  for (i = 0; i < n; i++) cia[i + 1] = cia[i] + collengths[i];
   PetscCall(PetscArrayzero(collengths, n));
   jj = a->j;
   for (row = 0; row < m; row++) {
@@ -3253,7 +3253,7 @@ PetscErrorCode MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B, PetscInt bs, PetscInt n
     b->free_ij = PETSC_TRUE;
 
     b->i[0] = 0;
-    for (i = 1; i < mbs + 1; i++) { b->i[i] = b->i[i - 1] + b->imax[i - 1]; }
+    for (i = 1; i < mbs + 1; i++) b->i[i] = b->i[i - 1] + b->imax[i - 1];
 
   } else {
     b->free_a  = PETSC_FALSE;

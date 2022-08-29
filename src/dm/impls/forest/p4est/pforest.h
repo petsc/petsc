@@ -939,7 +939,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm) {
             }
           }
         }
-        if (ctx.anyChange) { break; }
+        if (ctx.anyChange) break;
       }
     }
     {
@@ -1160,7 +1160,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm) {
         PetscInt aoverlap;
 
         PetscCall(DMForestGetPartitionOverlap(adaptFrom, &aoverlap));
-        if (aoverlap != overlap) { ctx.anyChange = PETSC_TRUE; }
+        if (aoverlap != overlap) ctx.anyChange = PETSC_TRUE;
       }
 
       if (overlap > 0) {
@@ -3467,7 +3467,7 @@ static PetscErrorCode DMPforestLabelsFinalize(DM dm, DM plex) {
       PetscCall(PetscSFReduceEnd(pointSF, MPIU_INT, values, values, MPI_MAX));
       PetscCall(PetscSFBcastBegin(pointSF, MPIU_INT, values, values, MPI_REPLACE));
       PetscCall(PetscSFBcastEnd(pointSF, MPIU_INT, values, values, MPI_REPLACE));
-      for (p = pStart; p < pEnd; p++) { PetscCheck(values[p - pStart] != -2, PETSC_COMM_SELF, PETSC_ERR_PLIB, "uncovered point %" PetscInt_FMT, p); }
+      for (p = pStart; p < pEnd; p++) PetscCheck(values[p - pStart] != -2, PETSC_COMM_SELF, PETSC_ERR_PLIB, "uncovered point %" PetscInt_FMT, p);
     }
     while (next) {
       DMLabel     nextLabel = next->label;
@@ -3816,14 +3816,14 @@ static PetscErrorCode PforestCheckLocalizeCell(DM plex, PetscInt cDim, Vec cVecO
       double         vert_coords[3];
       PetscInt       corner = PetscVertToP4estVert[c];
 
-      for (PetscInt d = 0; d < PetscMin(cDim, 3); d++) { vert_coords[d] = PetscRealPart(values[c * cDim + d]); }
+      for (PetscInt d = 0; d < PetscMin(cDim, 3); d++) vert_coords[d] = PetscRealPart(values[c * cDim + d]);
 
       quad_coords[0] = quad->x;
       quad_coords[1] = quad->y;
 #ifdef P4_TO_P8
       quad_coords[2] = quad->z;
 #endif
-      for (int d = 0; d < 3; d++) { quad_coords[d] += (corner & (1 << d)) ? h : 0; }
+      for (int d = 0; d < 3; d++) quad_coords[d] += (corner & (1 << d)) ? h : 0;
 #ifndef P4_TO_P8
       PetscCallP4est(p4est_qcoord_to_vertex, (pforest->forest->connectivity, coarsePoint, quad_coords[0], quad_coords[1], corner_coords));
 #else
@@ -3867,14 +3867,14 @@ static PetscErrorCode PforestLocalizeCell(DM plex, PetscInt cDim, DM_Forest_pfor
 #ifdef P4_TO_P8
     quad_coords[2] = quad->z;
 #endif
-    for (int d = 0; d < 3; d++) { quad_coords[d] += (corner & (1 << d)) ? h : 0; }
+    for (int d = 0; d < 3; d++) quad_coords[d] += (corner & (1 << d)) ? h : 0;
 #ifndef P4_TO_P8
     PetscCallP4est(p4est_qcoord_to_vertex, (pforest->forest->connectivity, coarsePoint, quad_coords[0], quad_coords[1], corner_coords));
 #else
     PetscCallP4est(p4est_qcoord_to_vertex, (pforest->forest->connectivity, coarsePoint, quad_coords[0], quad_coords[1], quad_coords[2], corner_coords));
 #endif
-    for (PetscInt d = 0; d < PetscMin(cDim, 3); d++) { coords[pos++] = corner_coords[d]; }
-    for (PetscInt d = PetscMin(cDim, 3); d < cDim; d++) { coords[pos++] = 0.; }
+    for (PetscInt d = 0; d < PetscMin(cDim, 3); d++) coords[pos++] = corner_coords[d];
+    for (PetscInt d = PetscMin(cDim, 3); d < cDim; d++) coords[pos++] = 0.;
   }
   PetscFunctionReturn(0);
 }

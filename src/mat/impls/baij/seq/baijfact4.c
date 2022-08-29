@@ -50,7 +50,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N_inplace(Mat C, Mat A, const MatFacto
         PetscKernel_A_gets_A_times_B(bs, pc, pv, multiplier);
         nz = bi[row + 1] - diag_offset[row] - 1;
         pv += bs2;
-        for (j = 0; j < nz; j++) { PetscKernel_A_gets_A_minus_B_times_C(bs, rtmp + bs2 * pj[j], pc, pv + bs2 * j); }
+        for (j = 0; j < nz; j++) PetscKernel_A_gets_A_minus_B_times_C(bs, rtmp + bs2 * pj[j], pc, pv + bs2 * j);
         PetscCall(PetscLogFlops(2.0 * bs * bs2 * (nz + 1.0) - bs));
       }
       row = *ajtmp++;

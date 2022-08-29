@@ -138,7 +138,7 @@ PetscErrorCode WaterReadData(WATERDATA *water, char *filename) {
 
   /* Read file and get line numbers for different data segments */
   while (fgets(line, MAXLINE, fp)) {
-    if (strstr(line, "[TITLE]")) { GetDataSegment(fp, line, &title_start_pos, &ntitle); }
+    if (strstr(line, "[TITLE]")) GetDataSegment(fp, line, &title_start_pos, &ntitle);
 
     if (strstr(line, "[JUNCTIONS]")) {
       GetDataSegment(fp, line, &junc_start_pos, &nlines);
@@ -170,7 +170,7 @@ PetscErrorCode WaterReadData(WATERDATA *water, char *filename) {
       water->npump = nlines;
     }
 
-    if (strstr(line, "[CURVES]")) { GetDataSegment(fp, line, &curve_start_pos, &ncurve); }
+    if (strstr(line, "[CURVES]")) GetDataSegment(fp, line, &curve_start_pos, &ncurve);
   }
 
   /* Allocate vertex and edge data structs */

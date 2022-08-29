@@ -116,7 +116,7 @@ static PetscErrorCode TaoLineSearchApply_GPCG(TaoLineSearch ls, Vec x, PetscReal
 
     PetscCall(TaoLineSearchMonitor(ls, i + 1, *f, ls->step));
 
-    if (0 == i) { ls->f_fullstep = *f; }
+    if (0 == i) ls->f_fullstep = *f;
 
     actred = *f - finit;
     PetscCall(VecWAXPY(neP->W1, -1.0, x, neP->W2)); /* W1 = W2 - X */
@@ -171,7 +171,7 @@ static PetscErrorCode TaoLineSearchApply_GPCG(TaoLineSearch ls, Vec x, PetscReal
   PetscCall(PetscInfo(ls, "%" PetscInt_FMT " function evals in line search, step = %g\n", ls->nfeval + ls->nfgeval, (double)ls->step));
   /* set new solution vector and compute gradient if necessary */
   PetscCall(VecCopy(neP->W2, x));
-  if (ls->reason == TAOLINESEARCH_CONTINUE_ITERATING) { ls->reason = TAOLINESEARCH_SUCCESS; }
+  if (ls->reason == TAOLINESEARCH_CONTINUE_ITERATING) ls->reason = TAOLINESEARCH_SUCCESS;
   if (!g_computed) PetscCall(TaoLineSearchComputeGradient(ls, x, g));
   PetscFunctionReturn(0);
 }

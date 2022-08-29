@@ -128,7 +128,7 @@ static PetscErrorCode ChangeCoordinates(DM dm, PetscInt spaceDim, PetscScalar ve
     PetscInt off;
 
     PetscCall(PetscSectionGetOffset(coordSection, v, &off));
-    for (d = 0; d < spaceDim; ++d) { coords[off + d] = vertexCoords[(v - vStart) * spaceDim + d]; }
+    for (d = 0; d < spaceDim; ++d) coords[off + d] = vertexCoords[(v - vStart) * spaceDim + d];
   }
   PetscCall(VecRestoreArray(coordinates, &coords));
   PetscCall(DMSetCoordinateDim(dm, spaceDim));
@@ -311,24 +311,24 @@ static PetscErrorCode CheckCell(DM dm, PetscInt cell, PetscBool transform, Petsc
         }
         /* Do scaling and translation before rotation, so that we can leave out the normal dimension for lower dimensional manifolds */
         for (d = 0; d < cdim; ++d) {
-          for (e = 0, rot[d] = 0.0; e < cdim; ++e) { rot[d] += R[d * cdim + e] * v0ExT[e]; }
+          for (e = 0, rot[d] = 0.0; e < cdim; ++e) rot[d] += R[d * cdim + e] * v0ExT[e];
         }
         for (d = 0; d < cdim; ++d) v0ExT[d] = rot[d];
         for (d = 0; d < cdim; ++d) {
           for (e = 0; e < cdim; ++e) {
-            for (f = 0, rotM[d * cdim + e] = 0.0; f < cdim; ++f) { rotM[d * cdim + e] += R[d * cdim + f] * JExT[f * cdim + e]; }
+            for (f = 0, rotM[d * cdim + e] = 0.0; f < cdim; ++f) rotM[d * cdim + e] += R[d * cdim + f] * JExT[f * cdim + e];
           }
         }
         for (d = 0; d < cdim; ++d) {
-          for (e = 0; e < cdim; ++e) { JExT[d * cdim + e] = rotM[d * cdim + e]; }
+          for (e = 0; e < cdim; ++e) JExT[d * cdim + e] = rotM[d * cdim + e];
         }
         for (d = 0; d < cdim; ++d) {
           for (e = 0; e < cdim; ++e) {
-            for (f = 0, rotM[d * cdim + e] = 0.0; f < cdim; ++f) { rotM[d * cdim + e] += invJExT[d * cdim + f] * R[e * cdim + f]; }
+            for (f = 0, rotM[d * cdim + e] = 0.0; f < cdim; ++f) rotM[d * cdim + e] += invJExT[d * cdim + f] * R[e * cdim + f];
           }
         }
         for (d = 0; d < cdim; ++d) {
-          for (e = 0; e < cdim; ++e) { invJExT[d * cdim + e] = rotM[d * cdim + e]; }
+          for (e = 0; e < cdim; ++e) invJExT[d * cdim + e] = rotM[d * cdim + e];
         }
       }
       if (centroidEx) {
@@ -346,11 +346,11 @@ static PetscErrorCode CheckCell(DM dm, PetscInt cell, PetscBool transform, Petsc
         }
         /* Do scaling and translation before rotation, so that we can leave out the normal dimension for lower dimensional manifolds */
         for (d = 0; d < cdim; ++d) {
-          for (e = 0, rot[d] = 0.0; e < cdim; ++e) { rot[d] += R[d * cdim + e] * centroidExT[e]; }
+          for (e = 0, rot[d] = 0.0; e < cdim; ++e) rot[d] += R[d * cdim + e] * centroidExT[e];
         }
         for (d = 0; d < cdim; ++d) centroidExT[d] = rot[d];
         for (d = 0; d < cdim; ++d) {
-          for (e = 0, rot[d] = 0.0; e < cdim; ++e) { rot[d] += R[d * cdim + e] * normalExT[e]; }
+          for (e = 0, rot[d] = 0.0; e < cdim; ++e) rot[d] += R[d * cdim + e] * normalExT[e];
         }
         for (d = 0; d < cdim; ++d) normalExT[d] = rot[d];
         for (d = 0, norm = 0.0; d < cdim; ++d) norm += PetscSqr(normalExT[d]);
@@ -366,7 +366,7 @@ static PetscErrorCode CheckCell(DM dm, PetscInt cell, PetscBool transform, Petsc
       }
       for (p = 0; p < numCorners; ++p) {
         for (d = 0; d < cdim; ++d) {
-          for (e = 0, rot[d] = 0.0; e < cdim; ++e) { rot[d] += R[d * cdim + e] * PetscRealPart(newCoords[p * cdim + e]); }
+          for (e = 0, rot[d] = 0.0; e < cdim; ++e) rot[d] += R[d * cdim + e] * PetscRealPart(newCoords[p * cdim + e]);
         }
         for (d = 0; d < cdim; ++d) newCoords[p * cdim + d] = rot[d];
       }
@@ -392,14 +392,14 @@ static PetscErrorCode CheckCell(DM dm, PetscInt cell, PetscBool transform, Petsc
               faceCentroidExT[d] += PetscRealPart(trans[d]);
               faceNormalExT[d] /= scale;
               /* Only scale dimensions in the manifold */
-              if (d < dim - 1) { faceVolExT *= scale; }
+              if (d < dim - 1) faceVolExT *= scale;
             }
             for (d = 0; d < cdim; ++d) {
-              for (e = 0, rot[d] = 0.0; e < cdim; ++e) { rot[d] += R[d * cdim + e] * faceCentroidExT[e]; }
+              for (e = 0, rot[d] = 0.0; e < cdim; ++e) rot[d] += R[d * cdim + e] * faceCentroidExT[e];
             }
             for (d = 0; d < cdim; ++d) faceCentroidExT[d] = rot[d];
             for (d = 0; d < cdim; ++d) {
-              for (e = 0, rot[d] = 0.0; e < cdim; ++e) { rot[d] += R[d * cdim + e] * faceNormalExT[e]; }
+              for (e = 0, rot[d] = 0.0; e < cdim; ++e) rot[d] += R[d * cdim + e] * faceNormalExT[e];
             }
             for (d = 0; d < cdim; ++d) faceNormalExT[d] = rot[d];
             for (d = 0, norm = 0.0; d < cdim; ++d) norm += PetscSqr(faceNormalExT[d]);

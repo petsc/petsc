@@ -263,7 +263,7 @@ static PetscErrorCode DMCoarsen_Stag(DM dm, MPI_Comm comm, DM *dmc) {
   PetscCall(DMStagDuplicateWithoutSetup(dm, comm, dmc));
   PetscCall(DMSetOptionsPrefix(*dmc, ((PetscObject)dm)->prefix));
   PetscCall(DMGetDimension(dm, &dim));
-  for (d = 0; d < dim; ++d) { PetscCheck(stag->N[d] % 2 == 0, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "coarsening not supported except for even numbers of elements in each dimension "); }
+  for (d = 0; d < dim; ++d) PetscCheck(stag->N[d] % 2 == 0, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "coarsening not supported except for even numbers of elements in each dimension ");
   PetscCall(DMStagSetGlobalSizes(*dmc, stag->N[0] / 2, stag->N[1] / 2, stag->N[2] / 2));
   {
     PetscInt *l[DMSTAG_MAX_DIM];

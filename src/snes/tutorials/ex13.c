@@ -282,7 +282,7 @@ static PetscErrorCode ComputeSpectral(DM dm, Vec u, PetscInt numPlanes, const Pe
     if (rank == 0) {
       /* Sort point along ray */
       PetscCall(PetscMalloc2(N, &perm, N, &nperm));
-      for (i = 0; i < N; ++i) { perm[i] = i; }
+      for (i = 0; i < N; ++i) perm[i] = i;
       PetscCall(PetscSortRealWithPermutation(N, gray, perm));
       /* Count duplicates and squish mapping */
       nperm[0] = perm[0];

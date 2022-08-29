@@ -76,7 +76,7 @@ static PetscErrorCode PetscSpaceEvaluate_Point(PetscSpace sp, PetscInt npoints, 
   /* Replicate for other components */
   for (c = 1; c < sp->Nc; ++c) {
     for (p = 0; p < npoints; ++p) {
-      for (i = 0; i < pdim; ++i) { B[(c * npoints + p) * pdim + i] = B[p * pdim + i]; }
+      for (i = 0; i < pdim; ++i) B[(c * npoints + p) * pdim + i] = B[p * pdim + i];
     }
   }
   if (D) PetscCall(PetscArrayzero(D, npoints * pdim * dim));

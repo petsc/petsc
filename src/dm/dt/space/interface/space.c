@@ -314,7 +314,7 @@ PetscErrorCode PetscSpaceGetDimension(PetscSpace sp, PetscInt *dim) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
   PetscValidIntPointer(dim, 2);
-  if (sp->dim == PETSC_DETERMINE) { PetscTryTypeMethod(sp, getdimension, &sp->dim); }
+  if (sp->dim == PETSC_DETERMINE) PetscTryTypeMethod(sp, getdimension, &sp->dim);
   *dim = sp->dim;
   PetscFunctionReturn(0);
 }

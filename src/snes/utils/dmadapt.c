@@ -416,7 +416,7 @@ static PetscErrorCode DMAdaptorSimpleErrorIndicator_Private(DMAdaptor adaptor, P
 
   PetscFunctionBeginHot;
   for (c = 0; c < Nc; c++) {
-    for (d = 0; d < dim; ++d) { err += PetscSqr(PetscRealPart(gradient[c * dim + d])); }
+    for (d = 0; d < dim; ++d) err += PetscSqr(PetscRealPart(gradient[c * dim + d]));
   }
   *errInd = cg->volume * err;
   PetscFunctionReturn(0);
@@ -506,7 +506,7 @@ static void identityFunc(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscI
   PetscInt i, j;
 
   for (i = 0; i < dim; ++i) {
-    for (j = 0; j < dim; ++j) { f[i + dim * j] = u[i + dim * j]; }
+    for (j = 0; j < dim; ++j) f[i + dim * j] = u[i + dim * j];
   }
 }
 

@@ -138,7 +138,7 @@ static void ChebyshevEval(PetscInt N, const PetscScalar *Tf, PetscReal x, PetscR
     table[0][i % 3] = 2 * x * table[0][(i - 1) % 3] - table[0][(i - 2) % 3]; /* T_n(x) = 2xT_{n-1}(x) - T_{n-2}(x) */
     /* Differentiate Chebyshev polynomials with the recurrence relation */
     for (int j = 1; j < 4; j++) { table[j][i % 3] = i * (2 * table[j - 1][(i - 1) % 3] + table[j][(i - 2) % 3] / (i - 2)); /* T'_{n}(x)/n = 2T_{n-1}(x) + T'_{n-2}(x)/n-2 */ }
-    for (int j = 0; j < 4; j++) { f[j] += table[j][i % 3] * Tf[i]; }
+    for (int j = 0; j < 4; j++) f[j] += table[j][i % 3] * Tf[i];
   }
   for (int i = 1; i < 4; i++) {
     for (int j = 0; j < i; j++) f[i] *= dx_deta; /* Here happens the physics of the problem */

@@ -89,7 +89,7 @@ PetscErrorCode PCSetFromOptions_BDDC(PC pc, PetscOptionItems *PetscOptionsObject
   /* Change of basis */
   PetscCall(PetscOptionsBool("-pc_bddc_use_change_of_basis", "Use or not internal change of basis on local edge nodes", "none", pcbddc->use_change_of_basis, &pcbddc->use_change_of_basis, NULL));
   PetscCall(PetscOptionsBool("-pc_bddc_use_change_on_faces", "Use or not internal change of basis on local face nodes", "none", pcbddc->use_change_on_faces, &pcbddc->use_change_on_faces, NULL));
-  if (!pcbddc->use_change_of_basis) { pcbddc->use_change_on_faces = PETSC_FALSE; }
+  if (!pcbddc->use_change_of_basis) pcbddc->use_change_on_faces = PETSC_FALSE;
   /* Switch between M_2 (default) and M_3 preconditioners (as defined by C. Dohrmann in the ref. article) */
   PetscCall(PetscOptionsBool("-pc_bddc_switch_static", "Switch on static condensation ops around the interface preconditioner", "none", pcbddc->switch_static, &pcbddc->switch_static, NULL));
   PetscCall(PetscOptionsInt("-pc_bddc_coarse_eqs_per_proc", "Target number of equations per process for coarse problem redistribution (significant only at the coarsest level)", "none", pcbddc->coarse_eqs_per_proc, &pcbddc->coarse_eqs_per_proc, NULL));
@@ -1073,7 +1073,7 @@ static PetscErrorCode PCBDDCSetDofsSplittingLocal_BDDC(PC pc, PetscInt n_is, IS 
   pcbddc->n_ISForDofs = 0;
   /* allocate space then set */
   if (n_is) PetscCall(PetscMalloc1(n_is, &pcbddc->ISForDofsLocal));
-  for (i = 0; i < n_is; i++) { pcbddc->ISForDofsLocal[i] = ISForDofs[i]; }
+  for (i = 0; i < n_is; i++) pcbddc->ISForDofsLocal[i] = ISForDofs[i];
   pcbddc->n_ISForDofsLocal = n_is;
   if (n_is) pcbddc->user_provided_isfordofs = PETSC_TRUE;
   if (!isequal) pcbddc->recompute_topography = PETSC_TRUE;
@@ -1135,7 +1135,7 @@ static PetscErrorCode PCBDDCSetDofsSplitting_BDDC(PC pc, PetscInt n_is, IS ISFor
   pcbddc->n_ISForDofsLocal = 0;
   /* allocate space then set */
   if (n_is) PetscCall(PetscMalloc1(n_is, &pcbddc->ISForDofs));
-  for (i = 0; i < n_is; i++) { pcbddc->ISForDofs[i] = ISForDofs[i]; }
+  for (i = 0; i < n_is; i++) pcbddc->ISForDofs[i] = ISForDofs[i];
   pcbddc->n_ISForDofs = n_is;
   if (n_is) pcbddc->user_provided_isfordofs = PETSC_TRUE;
   if (!isequal) pcbddc->recompute_topography = PETSC_TRUE;
@@ -1467,7 +1467,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc) {
 
   /* Get stdout for dbg */
   if (pcbddc->dbg_flag) {
-    if (!pcbddc->dbg_viewer) { pcbddc->dbg_viewer = PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)pc)); }
+    if (!pcbddc->dbg_viewer) pcbddc->dbg_viewer = PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)pc));
     PetscCall(PetscViewerASCIIPushSynchronized(pcbddc->dbg_viewer));
     PetscCall(PetscViewerASCIIAddTab(pcbddc->dbg_viewer, 2 * pcbddc->current_level));
   }

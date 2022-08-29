@@ -444,8 +444,8 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *d
 
     PetscCall(DMPlexInvertCells_Tetgen(numCells, numCorners, cells));
     PetscCall(DMPlexCreateFromCellListPetsc(comm, dim, numCells, numVertices, numCorners, interpolate, cells, dim, meshCoords, dmRefined));
-    if (sizeof(PetscReal) != sizeof(out.pointlist[0])) { delete[] meshCoords; }
-    if (sizeof(PetscInt) != sizeof(out.tetrahedronlist[0])) { delete[] cells; }
+    if (sizeof(PetscReal) != sizeof(out.pointlist[0])) delete[] meshCoords;
+    if (sizeof(PetscInt) != sizeof(out.tetrahedronlist[0])) delete[] cells;
 
     /* Set labels */
     PetscCall(DMUniversalLabelCreateLabels(universal, PETSC_TRUE, *dmRefined));

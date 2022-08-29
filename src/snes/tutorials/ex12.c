@@ -305,7 +305,7 @@ void g3_analytic_nonlinear_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const P
   for (d = 0; d < dim; ++d) nu += u_x[d] * u_x[d];
   for (d = 0; d < dim; ++d) {
     g3[d * dim + d] = 0.5 * nu;
-    for (e = 0; e < dim; ++e) { g3[d * dim + e] += u_x[d] * u_x[e]; }
+    for (e = 0; e < dim; ++e) g3[d * dim + e] += u_x[d] * u_x[e];
   }
 }
 
@@ -610,7 +610,7 @@ static PetscErrorCode SetupMaterial(DM dm, DM dmAux, AppCtx *user) {
 
   PetscFunctionBegin;
   ctx[0] = user;
-  if (user->variableCoefficient == COEFF_CHECKERBOARD_0) { matFuncs[0] = checkerboardCoeff; }
+  if (user->variableCoefficient == COEFF_CHECKERBOARD_0) matFuncs[0] = checkerboardCoeff;
   PetscCall(DMCreateLocalVector(dmAux, &nu));
   PetscCall(PetscObjectSetName((PetscObject)nu, "Coefficient"));
   PetscCall(DMProjectFunctionLocal(dmAux, 0.0, matFuncs, ctx, INSERT_ALL_VALUES, nu));

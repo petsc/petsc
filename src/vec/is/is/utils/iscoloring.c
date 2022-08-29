@@ -225,7 +225,7 @@ PetscErrorCode ISColoringGetIS(ISColoring iscoloring, PetscCopyMode mode, PetscI
       IS              *is;
 
       if (PetscDefined(USE_DEBUG)) {
-        for (i = 0; i < n; i++) { PetscCheck(((PetscInt)colors[i]) < nc, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Coloring is our of range index %d value %d number colors %d", (int)i, (int)colors[i], (int)nc); }
+        for (i = 0; i < n; i++) PetscCheck(((PetscInt)colors[i]) < nc, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Coloring is our of range index %d value %d number colors %d", (int)i, (int)colors[i], (int)nc);
       }
 
       /* generate the lists of nodes for each color */

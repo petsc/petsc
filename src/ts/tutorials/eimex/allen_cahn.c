@@ -115,7 +115,7 @@ static PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec X, Vec F, void *ptr) {
   PetscCall(VecGetArrayRead(X, &x));
   PetscCall(VecGetArray(F, &f));
   f[0] = 2. * eps * (x[1] - x[0]) / (hx * hx); /*boundary*/
-  for (i = 1; i < mx - 1; i++) { f[i] = eps * (x[i + 1] - 2. * x[i] + x[i - 1]) / (hx * hx); }
+  for (i = 1; i < mx - 1; i++) f[i] = eps * (x[i + 1] - 2. * x[i] + x[i - 1]) / (hx * hx);
   f[mx - 1] = 2. * eps * (x[mx - 2] - x[mx - 1]) / (hx * hx); /*boundary*/
   PetscCall(VecRestoreArrayRead(X, &x));
   PetscCall(VecRestoreArray(F, &f));
@@ -134,7 +134,7 @@ static PetscErrorCode FormIFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, 
   PetscCall(VecGetArrayRead(Xdot, &xdot));
   PetscCall(VecGetArray(F, &f));
 
-  for (i = 0; i < mx; i++) { f[i] = xdot[i] - x[i] * (1. - x[i] * x[i]); }
+  for (i = 0; i < mx; i++) f[i] = xdot[i] - x[i] * (1. - x[i] * x[i]);
 
   PetscCall(VecRestoreArrayRead(X, &x));
   PetscCall(VecRestoreArrayRead(Xdot, &xdot));

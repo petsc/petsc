@@ -597,14 +597,14 @@ PetscErrorCode MatConvertToTriples_seqaij_seqsbaij(Mat A, PetscInt shift, MatReu
         } else {
           rnz = ai[i + 1] - adiag[i];
           v1  = av + adiag[i];
-          for (j = 0; j < rnz; j++) { val[nz++] = v1[j]; }
+          for (j = 0; j < rnz; j++) val[nz++] = v1[j];
         }
       }
     } else {
       for (i = 0; i < M; i++) {
         rnz = ai[i + 1] - adiag[i];
         v1  = av + adiag[i];
-        for (j = 0; j < rnz; j++) { val[nz++] = v1[j]; }
+        for (j = 0; j < rnz; j++) val[nz++] = v1[j];
       }
     }
   }
@@ -1644,7 +1644,7 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F, Mat A, const MatFactorInfo *info) {
   /*-------------------------------*/
   mumps->id.job = JOB_FACTNUMERIC;
   if (!mumps->id.ICNTL(18)) { /* A is centralized */
-    if (!mumps->myid) { mumps->id.a = (MumpsScalar *)mumps->val; }
+    if (!mumps->myid) mumps->id.a = (MumpsScalar *)mumps->val;
   } else {
     mumps->id.a_loc = (MumpsScalar *)mumps->val;
   }
@@ -2029,14 +2029,14 @@ PetscErrorCode MatLUFactorSymbolic_BAIJMUMPS(Mat F, Mat A, IS r, IS c, const Mat
       mumps->id.nnz = mumps->nnz;
       mumps->id.irn = mumps->irn;
       mumps->id.jcn = mumps->jcn;
-      if (mumps->id.ICNTL(6) > 1) { mumps->id.a = (MumpsScalar *)mumps->val; }
+      if (mumps->id.ICNTL(6) > 1) mumps->id.a = (MumpsScalar *)mumps->val;
     }
     break;
   case 3: /* distributed assembled matrix input (size>1) */
     mumps->id.nnz_loc = mumps->nnz;
     mumps->id.irn_loc = mumps->irn;
     mumps->id.jcn_loc = mumps->jcn;
-    if (mumps->id.ICNTL(6) > 1) { mumps->id.a_loc = (MumpsScalar *)mumps->val; }
+    if (mumps->id.ICNTL(6) > 1) mumps->id.a_loc = (MumpsScalar *)mumps->val;
     if (mumps->ICNTL20 == 0) { /* Centralized rhs. Create scatter scat_rhs for repeated use in MatSolve() */
       PetscCall(MatCreateVecs(A, NULL, &b));
       PetscCall(VecScatterCreateToZero(b, &mumps->scat_rhs, &mumps->b_seq));
@@ -2084,14 +2084,14 @@ PetscErrorCode MatCholeskyFactorSymbolic_MUMPS(Mat F, Mat A, IS r, const MatFact
       mumps->id.nnz = mumps->nnz;
       mumps->id.irn = mumps->irn;
       mumps->id.jcn = mumps->jcn;
-      if (mumps->id.ICNTL(6) > 1) { mumps->id.a = (MumpsScalar *)mumps->val; }
+      if (mumps->id.ICNTL(6) > 1) mumps->id.a = (MumpsScalar *)mumps->val;
     }
     break;
   case 3: /* distributed assembled matrix input (size>1) */
     mumps->id.nnz_loc = mumps->nnz;
     mumps->id.irn_loc = mumps->irn;
     mumps->id.jcn_loc = mumps->jcn;
-    if (mumps->id.ICNTL(6) > 1) { mumps->id.a_loc = (MumpsScalar *)mumps->val; }
+    if (mumps->id.ICNTL(6) > 1) mumps->id.a_loc = (MumpsScalar *)mumps->val;
     if (mumps->ICNTL20 == 0) { /* Centralized rhs. Create scatter scat_rhs for repeated use in MatSolve() */
       PetscCall(MatCreateVecs(A, NULL, &b));
       PetscCall(VecScatterCreateToZero(b, &mumps->scat_rhs, &mumps->b_seq));

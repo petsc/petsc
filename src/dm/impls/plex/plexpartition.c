@@ -85,7 +85,7 @@ static PetscErrorCode DMPlexCreatePartitionerGraph_Overlap(DM dm, PetscInt heigh
     PetscCall(DMPlexGetAdjacency(ovdm, c, &adjSize, &adj));
     for (a = 0; a < adjSize; ++a) {
       const PetscInt point = adj[a];
-      if (point != c && cStart <= point && point < cEnd) { vAdj[off++] = DMPlex_GlobalID(cellNum[point - cStart]); }
+      if (point != c && cStart <= point && point < cEnd) vAdj[off++] = DMPlex_GlobalID(cellNum[point - cStart]);
     }
     PetscCheck(off == vOffsets[v + 1], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Offsets %" PetscInt_FMT " should be %" PetscInt_FMT, off, vOffsets[v + 1]);
     /* Sort adjacencies (not strictly necessary) */
@@ -837,7 +837,7 @@ PetscErrorCode PetscPartitionerDMPlexPartition(PetscPartitioner part, DM dm, Pet
       for (i = cStart, offset = 0; i < cEnd; i++) {
         if (globalNum[i - cStart] >= 0) map[offset++] = i;
       }
-      for (i = 0; i < localSize; i++) { adjusted[i] = map[partIdx[i]]; }
+      for (i = 0; i < localSize; i++) adjusted[i] = map[partIdx[i]];
       PetscCall(PetscFree(map));
       PetscCall(ISRestoreIndices(*partition, &partIdx));
       PetscCall(ISRestoreIndices(globalNumbering, &globalNum));
@@ -1237,7 +1237,7 @@ PetscErrorCode DMPlexPartitionLabelInvert(DM dm, DMLabel rootLabel, PetscSF proc
     PetscCall(ISGetIndices(pointIS, &points));
     for (p = 0; p < numPoints; ++p) {
       if (local) PetscCall(PetscFindInt(points[p], nleaves, local, &l));
-      else { l = -1; }
+      else l = -1;
       if (l >= 0) {
         rootPoints[off + p] = remote[l];
       } else {
@@ -1445,18 +1445,18 @@ static PetscErrorCode DMPlexRewriteSF(DM dm, PetscInt n, PetscInt *pointsToRewri
   PetscCall(DMGetPointSF(dm, &sf));
   PetscCall(PetscSFGetGraph(sf, &nroots, &nleafs, &ilocal, &iremote));
   PetscCall(PetscMalloc1(pEnd - pStart, &isLeaf));
-  for (i = 0; i < pEnd - pStart; i++) { isLeaf[i] = PETSC_FALSE; }
-  for (i = 0; i < nleafs; i++) { isLeaf[ilocal[i] - pStart] = PETSC_TRUE; }
+  for (i = 0; i < pEnd - pStart; i++) isLeaf[i] = PETSC_FALSE;
+  for (i = 0; i < nleafs; i++) isLeaf[ilocal[i] - pStart] = PETSC_TRUE;
 
   PetscCall(PetscMalloc1(pEnd - pStart + 1, &cumSumDegrees));
   cumSumDegrees[0] = 0;
-  for (i = 1; i <= pEnd - pStart; i++) { cumSumDegrees[i] = cumSumDegrees[i - 1] + degrees[i - 1]; }
+  for (i = 1; i <= pEnd - pStart; i++) cumSumDegrees[i] = cumSumDegrees[i - 1] + degrees[i - 1];
   sumDegrees = cumSumDegrees[pEnd - pStart];
   /* get the location of my leafs (we have sumDegrees many leafs pointing at our roots) */
 
   PetscCall(PetscMalloc1(sumDegrees, &locationsOfLeafs));
   PetscCall(PetscMalloc1(pEnd - pStart, &rankOnLeafs));
-  for (i = 0; i < pEnd - pStart; i++) { rankOnLeafs[i] = rank; }
+  for (i = 0; i < pEnd - pStart; i++) rankOnLeafs[i] = rank;
   PetscCall(PetscSFGatherBegin(sf, MPIU_INT, rankOnLeafs, locationsOfLeafs));
   PetscCall(PetscSFGatherEnd(sf, MPIU_INT, rankOnLeafs, locationsOfLeafs));
   PetscCall(PetscFree(rankOnLeafs));
@@ -1464,7 +1464,7 @@ static PetscErrorCode DMPlexRewriteSF(DM dm, PetscInt n, PetscInt *pointsToRewri
   /* get the remote local points of my leaves */
   PetscCall(PetscMalloc1(sumDegrees, &remoteLocalPointOfLeafs));
   PetscCall(PetscMalloc1(pEnd - pStart, &points));
-  for (i = 0; i < pEnd - pStart; i++) { points[i] = pStart + i; }
+  for (i = 0; i < pEnd - pStart; i++) points[i] = pStart + i;
   PetscCall(PetscSFGatherBegin(sf, MPIU_INT, points, remoteLocalPointOfLeafs));
   PetscCall(PetscSFGatherEnd(sf, MPIU_INT, points, remoteLocalPointOfLeafs));
   PetscCall(PetscFree(points));
@@ -1511,9 +1511,9 @@ static PetscErrorCode DMPlexRewriteSF(DM dm, PetscInt n, PetscInt *pointsToRewri
   leafCounter = 0;
   for (i = 0; i < pEnd - pStart; i++) {
     if (newOwners[i] >= 0) {
-      if (newOwners[i] != rank) { leafCounter++; }
+      if (newOwners[i] != rank) leafCounter++;
     } else {
-      if (isLeaf[i]) { leafCounter++; }
+      if (isLeaf[i]) leafCounter++;
     }
   }
 
@@ -1539,7 +1539,7 @@ static PetscErrorCode DMPlexRewriteSF(DM dm, PetscInt n, PetscInt *pointsToRewri
         leafCounter++;
       }
     }
-    if (isLeaf[i]) { counter++; }
+    if (isLeaf[i]) counter++;
   }
 
   PetscCall(PetscSFSetGraph(sf, nroots, leafCounter, leafsNew, PETSC_OWN_POINTER, leafLocationsNew, PETSC_OWN_POINTER));
@@ -1664,7 +1664,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
   PetscCall(DMPlexGetDepthStratum(dm, entityDepth, &eBegin, &eEnd));
   PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
   PetscCall(PetscMalloc1(pEnd - pStart, &toBalance));
-  for (i = 0; i < pEnd - pStart; i++) { toBalance[i] = (PetscBool)(i >= eBegin && i < eEnd); }
+  for (i = 0; i < pEnd - pStart; i++) toBalance[i] = (PetscBool)(i >= eBegin && i < eEnd);
 
   /* There are three types of points:
    * exclusivelyOwned: points that are owned by this process and only seen by this process
@@ -1683,7 +1683,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
   }
 
   /* mark all the leafs */
-  for (i = 0; i < nleafs; i++) { isLeaf[ilocal[i] - pStart] = PETSC_TRUE; }
+  for (i = 0; i < nleafs; i++) isLeaf[ilocal[i] - pStart] = PETSC_TRUE;
 
   /* for an owned point, we can figure out whether another processor sees it or
    * not by calculating its degree */
@@ -1713,7 +1713,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
   PetscCall(PetscLayoutSetUp(layout));
   PetscCall(PetscLayoutGetRanges(layout, &cumSumVertices));
   PetscCall(PetscMalloc1(pEnd - pStart, &globalNumbersOfLocalOwnedVertices));
-  for (i = 0; i < pEnd - pStart; i++) { globalNumbersOfLocalOwnedVertices[i] = pStart - 1; }
+  for (i = 0; i < pEnd - pStart; i++) globalNumbersOfLocalOwnedVertices[i] = pStart - 1;
   offset  = cumSumVertices[rank];
   counter = 0;
   for (i = 0; i < pEnd - pStart; i++) {
@@ -1755,7 +1755,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
   nparts = size;
   ncon   = 1;
   PetscCall(PetscMalloc1(ncon * nparts, &tpwgts));
-  for (i = 0; i < ncon * nparts; i++) { tpwgts[i] = 1. / (nparts); }
+  for (i = 0; i < ncon * nparts; i++) tpwgts[i] = 1. / (nparts);
   PetscCall(PetscMalloc1(ncon, &ubvec));
   ubvec[0] = 1.05;
   ubvec[1] = 1.05;
@@ -1775,7 +1775,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
     ms -= size;
     base      = PetscMax(base, ms);
     vtxwgt[0] = base + numExclusivelyOwned;
-    for (i = 0; i < numNonExclusivelyOwned; i++) { vtxwgt[i + 1] = 1; }
+    for (i = 0; i < numNonExclusivelyOwned; i++) vtxwgt[i + 1] = 1;
   }
 
   if (viewer) {
@@ -1897,8 +1897,8 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
   PetscCall(PetscMalloc2(size, &firstVertices, size, &renumbering));
   firstVertices[rank] = part[0];
   PetscCallMPI(MPI_Allgather(MPI_IN_PLACE, 0, MPI_DATATYPE_NULL, firstVertices, 1, MPIU_INT, comm));
-  for (i = 0; i < size; i++) { renumbering[firstVertices[i]] = i; }
-  for (i = 0; i < cumSumVertices[rank + 1] - cumSumVertices[rank]; i++) { part[i] = renumbering[part[i]]; }
+  for (i = 0; i < size; i++) renumbering[firstVertices[i]] = i;
+  for (i = 0; i < cumSumVertices[rank + 1] - cumSumVertices[rank]; i++) part[i] = renumbering[part[i]];
   PetscCall(PetscFree2(firstVertices, renumbering));
 
   /* Check if the renumbering worked (this can fail when ParMETIS gives fewer partitions than there are processes) */
@@ -1938,7 +1938,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
     PetscInt loc = 0;
     PetscCall(PetscFindInt(cumSumVertices[part[i]], xadj[i + 1] - xadj[i], &adjncy[xadj[i]], &loc));
     /* If not, then just set the owner to the original owner (hopefully a rare event, it means that a vertex has been isolated) */
-    if (loc < 0) { part[i] = rank; }
+    if (loc < 0) part[i] = rank;
   }
   PetscCall(MatRestoreRowIJ(A, PETSC_FALSE, PETSC_FALSE, PETSC_FALSE, &numRows, (const PetscInt **)&xadj, (const PetscInt **)&adjncy, &done));
   PetscCall(MatDestroy(&A));

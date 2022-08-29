@@ -233,7 +233,7 @@ static PetscErrorCode KSPGuessFormGuess_Fischer_3(KSPGuess guess, Vec b, Vec x) 
 #endif
     PetscCall(VecMDot(b, itg->curl, itg->btilde, itg->last_b_coefs));
     for (j = 0; j < m; ++j) {
-      for (i = 0; i < m; ++i) { corr[m * j + i] = itg->corr[(itg->maxl) * j + i]; }
+      for (i = 0; i < m; ++i) corr[m * j + i] = itg->corr[(itg->maxl) * j + i];
     }
     PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
     PetscReal max_s_value = 0.0;
@@ -248,7 +248,7 @@ static PetscErrorCode KSPGuessFormGuess_Fischer_3(KSPGuess guess, Vec b, Vec x) 
       for (j = 0; j < m; ++j) {
         if (s_values[j] < 0.0) {
           s_values[j] = PetscAbsReal(s_values[j]);
-          for (i = 0; i < m; ++i) { corr[m * j + i] *= -1.0; }
+          for (i = 0; i < m; ++i) corr[m * j + i] *= -1.0;
         }
         max_s_value = PetscMax(max_s_value, s_values[j]);
       }
@@ -304,17 +304,17 @@ static PetscErrorCode KSPGuessUpdate_Fischer_3(KSPGuess guess, Vec b, Vec x) {
   if (rotate) {
     /* we have the maximum number of vectors so rotate: oldest vector is at index 0 */
     oldest = itg->xtilde[0];
-    for (i = 1; i < itg->curl; ++i) { itg->xtilde[i - 1] = itg->xtilde[i]; }
+    for (i = 1; i < itg->curl; ++i) itg->xtilde[i - 1] = itg->xtilde[i];
     itg->xtilde[itg->curl - 1] = oldest;
     PetscCall(VecCopy(x, itg->xtilde[itg->curl - 1]));
 
     oldest = itg->btilde[0];
-    for (i = 1; i < itg->curl; ++i) { itg->btilde[i - 1] = itg->btilde[i]; }
+    for (i = 1; i < itg->curl; ++i) itg->btilde[i - 1] = itg->btilde[i];
     itg->btilde[itg->curl - 1] = oldest;
     PetscCall(VecCopy(b, itg->btilde[itg->curl - 1]));
     /* shift correlation matrix up and left */
     for (j = 1; j < itg->maxl; ++j) {
-      for (i = 1; i < itg->maxl; ++i) { itg->corr[(j - 1) * itg->maxl + i - 1] = itg->corr[j * itg->maxl + i]; }
+      for (i = 1; i < itg->maxl; ++i) itg->corr[(j - 1) * itg->maxl + i - 1] = itg->corr[j * itg->maxl + i];
     }
   } else {
     /* append new vectors */
@@ -333,14 +333,14 @@ static PetscErrorCode KSPGuessUpdate_Fischer_3(KSPGuess guess, Vec b, Vec x) {
   PetscCall(PetscObjectStateGet((PetscObject)b, &b_state));
   if (b_state == itg->last_b_state && b == itg->last_b) {
     if (rotate) {
-      for (i = 1; i < itg->maxl; ++i) { itg->last_b_coefs[i - 1] = itg->last_b_coefs[i]; }
+      for (i = 1; i < itg->maxl; ++i) itg->last_b_coefs[i - 1] = itg->last_b_coefs[i];
     }
     PetscCall(VecDot(b, b, &itg->last_b_coefs[itg->curl - 1]));
     PetscCall(PetscArraycpy(last_column, itg->last_b_coefs, itg->curl));
   } else {
     PetscCall(VecMDot(b, itg->curl, itg->btilde, last_column));
   }
-  for (i = 0; i < itg->curl; ++i) { itg->corr[i * itg->maxl + itg->curl - 1] = last_column[i]; }
+  for (i = 0; i < itg->curl; ++i) itg->corr[i * itg->maxl + itg->curl - 1] = last_column[i];
   PetscFunctionReturn(0);
 }
 

@@ -53,7 +53,7 @@ PetscErrorCode KSPSetUp_LGMRES(KSP ksp) {
   PetscCall(KSPCreateVecs(ksp, lgmres->aug_vv_allocated, &lgmres->augvecs_user_work[0], 0, NULL));
   PetscCall(PetscMalloc1(max_k + 1, &lgmres->hwork));
   PetscCall(PetscLogObjectParents(ksp, lgmres->aug_vv_allocated, lgmres->augvecs_user_work[0]));
-  for (k = 0; k < lgmres->aug_vv_allocated; k++) { lgmres->augvecs[k] = lgmres->augvecs_user_work[0][k]; }
+  for (k = 0; k < lgmres->aug_vv_allocated; k++) lgmres->augvecs[k] = lgmres->augvecs_user_work[0][k];
   PetscFunctionReturn(0);
 }
 
@@ -279,7 +279,7 @@ PetscErrorCode KSPLGMRESCycle(PetscInt *itcount, KSP ksp) {
     avec = lgmres->hwork;
     PetscCall(PetscArrayzero(avec, it_total + 1));
     for (ii = 0; ii < it_total + 1; ii++) {
-      for (jj = 0; jj <= ii + 1 && jj < it_total + 1; jj++) { avec[jj] += *HES(jj, ii) * *GRS(ii); }
+      for (jj = 0; jj <= ii + 1 && jj < it_total + 1; jj++) avec[jj] += *HES(jj, ii) * *GRS(ii);
     }
 
     /*now multiply result by V+ */
@@ -560,7 +560,7 @@ static PetscErrorCode KSPLGMRESGetNewVectors(KSP ksp, PetscInt it) {
 
   /* Adjust the number to allocate to make sure that we don't exceed the
      number of available slots (lgmres->vecs_allocated)*/
-  if (it + VEC_OFFSET + nalloc >= lgmres->vecs_allocated) { nalloc = lgmres->vecs_allocated - it - VEC_OFFSET; }
+  if (it + VEC_OFFSET + nalloc >= lgmres->vecs_allocated) nalloc = lgmres->vecs_allocated - it - VEC_OFFSET;
   if (!nalloc) PetscFunctionReturn(0);
 
   lgmres->vv_allocated += nalloc; /* vv_allocated is the number of vectors allocated */
@@ -571,7 +571,7 @@ static PetscErrorCode KSPLGMRESGetNewVectors(KSP ksp, PetscInt it) {
   /* specify size of chunk allocated */
   lgmres->mwork_alloc[nwork] = nalloc;
 
-  for (k = 0; k < nalloc; k++) { lgmres->vecs[it + VEC_OFFSET + k] = lgmres->user_work[nwork][k]; }
+  for (k = 0; k < nalloc; k++) lgmres->vecs[it + VEC_OFFSET + k] = lgmres->user_work[nwork][k];
 
   /* LGMRES_MOD - for now we are preallocating the augmentation vectors */
 

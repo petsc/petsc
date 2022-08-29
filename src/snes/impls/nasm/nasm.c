@@ -364,16 +364,16 @@ static PetscErrorCode SNESNASMSetSubdomains_NASM(SNES snes, PetscInt n, SNES sub
   }
   if (iscatter) {
     PetscCall(PetscMalloc1(n, &nasm->iscatter));
-    for (i = 0; i < n; i++) { nasm->iscatter[i] = iscatter[i]; }
+    for (i = 0; i < n; i++) nasm->iscatter[i] = iscatter[i];
   }
   if (gscatter) {
     PetscCall(PetscMalloc1(n, &nasm->gscatter));
-    for (i = 0; i < n; i++) { nasm->gscatter[i] = gscatter[i]; }
+    for (i = 0; i < n; i++) nasm->gscatter[i] = gscatter[i];
   }
 
   if (subsnes) {
     PetscCall(PetscMalloc1(n, &nasm->subsnes));
-    for (i = 0; i < n; i++) { nasm->subsnes[i] = subsnes[i]; }
+    for (i = 0; i < n; i++) nasm->subsnes[i] = subsnes[i];
   }
   PetscFunctionReturn(0);
 }

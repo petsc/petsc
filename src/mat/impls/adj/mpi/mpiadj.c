@@ -39,7 +39,7 @@ static PetscErrorCode MatCreateSubMatrix_MPIAdj_data(Mat adj, IS irows, IS icols
   PetscCall(MatGetRowIJ(adj, 0, PETSC_FALSE, PETSC_FALSE, &nlrows_mat, &xadj, &adjncy, &done));
   PetscCall(PetscCalloc4(nlrows_mat, &ncols_send, nlrows_is, &xadj_recv, nlrows_is + 1, &ncols_recv_offsets, nlrows_is, &ncols_recv));
   nroots = nlrows_mat;
-  for (i = 0; i < nlrows_mat; i++) { ncols_send[i] = xadj[i + 1] - xadj[i]; }
+  for (i = 0; i < nlrows_mat; i++) ncols_send[i] = xadj[i + 1] - xadj[i];
   PetscCall(PetscSFCreate(comm, &sf));
   PetscCall(PetscSFSetGraph(sf, nroots, nleaves, NULL, PETSC_OWN_POINTER, iremote, PETSC_OWN_POINTER));
   PetscCall(PetscSFSetType(sf, PETSCSFBASIC));
@@ -55,7 +55,7 @@ static PetscErrorCode MatCreateSubMatrix_MPIAdj_data(Mat adj, IS irows, IS icols
     ncols_recv_offsets[i + 1] = ncols_recv[i] + ncols_recv_offsets[i];
   }
   Ncols_send = 0;
-  for (i = 0; i < nlrows_mat; i++) { Ncols_send += ncols_send[i]; }
+  for (i = 0; i < nlrows_mat; i++) Ncols_send += ncols_send[i];
   PetscCall(PetscCalloc1(Ncols_recv, &iremote));
   PetscCall(PetscCalloc1(Ncols_recv, &adjncy_recv));
   nleaves    = Ncols_recv;
@@ -111,7 +111,7 @@ static PetscErrorCode MatCreateSubMatrix_MPIAdj_data(Mat adj, IS irows, IS icols
       rnclos++;
     }
   }
-  for (i = 0; i < nlrows_is; i++) { sxadj[i + 1] = sxadj[i] + ncols_recv[i]; }
+  for (i = 0; i < nlrows_is; i++) sxadj[i + 1] = sxadj[i] + ncols_recv[i];
   if (sadj_xadj) {
     *sadj_xadj = sxadj;
   } else PetscCall(PetscFree(sxadj));
@@ -320,7 +320,7 @@ static PetscErrorCode MatGetRow_MPIAdj(Mat A, PetscInt row, PetscInt *nz, PetscI
       a->rowvalues_alloc = PetscMax(a->rowvalues_alloc * 2, *nz);
       PetscCall(PetscMalloc1(a->rowvalues_alloc, &a->rowvalues));
     }
-    for (j = 0; j < *nz; j++) { a->rowvalues[j] = a->values ? a->values[a->i[row] + j] : 1.0; }
+    for (j = 0; j < *nz; j++) a->rowvalues[j] = a->values ? a->values[a->i[row] + j] : 1.0;
     *v = (*nz) ? a->rowvalues : NULL;
   }
   if (idx) *idx = (*nz) ? a->j + a->i[row] : NULL;
@@ -338,7 +338,7 @@ static PetscErrorCode MatEqual_MPIAdj(Mat A, Mat B, PetscBool *flg) {
 
   PetscFunctionBegin;
   /* If the  matrix dimensions are not equal,or no of nonzeros */
-  if ((A->rmap->n != B->rmap->n) || (a->nz != b->nz)) { flag = PETSC_FALSE; }
+  if ((A->rmap->n != B->rmap->n) || (a->nz != b->nz)) flag = PETSC_FALSE;
 
   /* if the a->i are the same */
   PetscCall(PetscArraycmp(a->i, b->i, A->rmap->n + 1, &flag));
@@ -361,7 +361,7 @@ static PetscErrorCode MatGetRowIJ_MPIAdj(Mat A, PetscInt oshift, PetscBool symme
   *ja   = a->j;
   *done = PETSC_TRUE;
   if (oshift) {
-    for (i = 0; i < (*ia)[*m]; i++) { (*ja)[i]++; }
+    for (i = 0; i < (*ia)[*m]; i++) (*ja)[i]++;
     for (i = 0; i <= (*m); i++) (*ia)[i]++;
   }
   PetscFunctionReturn(0);
@@ -379,7 +379,7 @@ static PetscErrorCode MatRestoreRowIJ_MPIAdj(Mat A, PetscInt oshift, PetscBool s
     PetscCheck(ia, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONGSTATE, "If oshift then you must passed in inia[] argument");
     PetscCheck(ja, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONGSTATE, "If oshift then you must passed in inja[] argument");
     for (i = 0; i <= (*m); i++) (*ia)[i]--;
-    for (i = 0; i < (*ia)[*m]; i++) { (*ja)[i]--; }
+    for (i = 0; i < (*ia)[*m]; i++) (*ja)[i]--;
   }
   PetscFunctionReturn(0);
 }
@@ -531,7 +531,7 @@ PetscErrorCode MatAssemblyEnd_MPIAdj(Mat A, MatAssemblyType type) {
     rowstarts[key.i - rstart + 1]++;
     PetscHashIterNext(ht, hi);
   }
-  for (i = 1; i < m + 1; i++) { rowstarts[i] = rowstarts[i - 1] + rowstarts[i]; }
+  for (i = 1; i < m + 1; i++) rowstarts[i] = rowstarts[i - 1] + rowstarts[i];
 
   PetscCall(PetscHSetIJGetSize(ht, &nz));
   PetscCall(PetscMalloc1(nz, &col));
@@ -542,7 +542,7 @@ PetscErrorCode MatAssemblyEnd_MPIAdj(Mat A, MatAssemblyType type) {
     PetscHashIterNext(ht, hi);
   }
   PetscCall(PetscHSetIJDestroy(&ht));
-  for (i = m; i > 0; i--) { rowstarts[i] = rowstarts[i - 1]; }
+  for (i = m; i > 0; i--) rowstarts[i] = rowstarts[i - 1];
   rowstarts[0] = 0;
 
   for (PetscInt i = 0; i < m; i++) PetscCall(PetscSortInt(rowstarts[i + 1] - rowstarts[i], &col[rowstarts[i]]));
@@ -726,7 +726,7 @@ static PetscErrorCode MatMPIAdjSetPreallocation_MPIAdj(Mat B, PetscInt *i, Petsc
     for (ii = 1; ii < B->rmap->n; ii++) {
       PetscCheck(i[ii] >= 0 && i[ii] >= i[ii - 1], PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "i[%" PetscInt_FMT "]=%" PetscInt_FMT " index is out of range: i[%" PetscInt_FMT "]=%" PetscInt_FMT, ii, i[ii], ii - 1, i[ii - 1]);
     }
-    for (ii = 0; ii < i[B->rmap->n]; ii++) { PetscCheck(j[ii] >= 0 && j[ii] < B->cmap->N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Column index %" PetscInt_FMT " out of range %" PetscInt_FMT, ii, j[ii]); }
+    for (ii = 0; ii < i[B->rmap->n]; ii++) PetscCheck(j[ii] >= 0 && j[ii] < B->cmap->N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Column index %" PetscInt_FMT " out of range %" PetscInt_FMT, ii, j[ii]);
   }
   b->j      = j;
   b->i      = i;

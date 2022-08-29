@@ -33,7 +33,7 @@ int main(int argc, char **args) {
   PetscCheck(size == 1, PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "This is a uniprocessor example only!");
 
   PetscCall(PetscOptionsHasName(NULL, NULL, "-test_syev", &flg));
-  if (flg) { TestSYEVX = PETSC_FALSE; }
+  if (flg) TestSYEVX = PETSC_FALSE;
 
   /* Determine files from which we read the two matrices */
   PetscCall(PetscOptionsGetString(NULL, NULL, "-f", file[0], sizeof(file[0]), &flg));

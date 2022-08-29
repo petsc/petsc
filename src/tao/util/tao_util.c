@@ -4,7 +4,7 @@
 
 static inline PetscReal Fischer(PetscReal a, PetscReal b) {
   /* Method suggested by Bob Vanderbei */
-  if (a + b <= 0) { return PetscSqrtReal(a * a + b * b) - (a + b); }
+  if (a + b <= 0) return PetscSqrtReal(a * a + b * b) - (a + b);
   return -2.0 * a * b / (PetscSqrtReal(a * a + b * b) + (a + b));
 }
 
@@ -63,7 +63,7 @@ PetscErrorCode VecFischer(Vec X, Vec F, Vec L, Vec U, Vec FB) {
   PetscCall(VecGetOwnershipRange(U, low + 3, high + 3));
   PetscCall(VecGetOwnershipRange(FB, low + 4, high + 4));
 
-  for (i = 1; i < 4; ++i) { PetscCheck(low[0] == low[i] && high[0] == high[i], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Vectors must be identically loaded over processors"); }
+  for (i = 1; i < 4; ++i) PetscCheck(low[0] == low[i] && high[0] == high[i], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Vectors must be identically loaded over processors");
 
   PetscCall(VecGetArrayRead(X, &x));
   PetscCall(VecGetArrayRead(F, &f));
@@ -103,7 +103,7 @@ PetscErrorCode VecFischer(Vec X, Vec F, Vec L, Vec U, Vec FB) {
 
 static inline PetscReal SFischer(PetscReal a, PetscReal b, PetscReal c) {
   /* Method suggested by Bob Vanderbei */
-  if (a + b <= 0) { return PetscSqrtReal(a * a + b * b + 2.0 * c * c) - (a + b); }
+  if (a + b <= 0) return PetscSqrtReal(a * a + b * b + 2.0 * c * c) - (a + b);
   return 2.0 * (c * c - a * b) / (PetscSqrtReal(a * a + b * b + 2.0 * c * c) + (a + b));
 }
 
@@ -159,7 +159,7 @@ PetscErrorCode VecSFischer(Vec X, Vec F, Vec L, Vec U, PetscReal mu, Vec FB) {
   PetscCall(VecGetOwnershipRange(U, low + 3, high + 3));
   PetscCall(VecGetOwnershipRange(FB, low + 4, high + 4));
 
-  for (i = 1; i < 4; ++i) { PetscCheck(low[0] == low[i] && high[0] == high[i], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Vectors must be identically loaded over processors"); }
+  for (i = 1; i < 4; ++i) PetscCheck(low[0] == low[i] && high[0] == high[i], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Vectors must be identically loaded over processors");
 
   PetscCall(VecGetArrayRead(X, &x));
   PetscCall(VecGetArrayRead(F, &f));

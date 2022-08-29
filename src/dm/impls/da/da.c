@@ -1013,22 +1013,22 @@ PetscErrorCode DMRefine_DA(DM da, MPI_Comm comm, DM *daref) {
   dd2->coarsen_z = dd2->refine_z = dd->refine_z;
 
   if (dd->refine_z_hier) {
-    if (da->levelup - da->leveldown + 1 > -1 && da->levelup - da->leveldown + 1 < dd->refine_z_hier_n) { dd2->refine_z = dd->refine_z_hier[da->levelup - da->leveldown + 1]; }
-    if (da->levelup - da->leveldown > -1 && da->levelup - da->leveldown < dd->refine_z_hier_n) { dd2->coarsen_z = dd->refine_z_hier[da->levelup - da->leveldown]; }
+    if (da->levelup - da->leveldown + 1 > -1 && da->levelup - da->leveldown + 1 < dd->refine_z_hier_n) dd2->refine_z = dd->refine_z_hier[da->levelup - da->leveldown + 1];
+    if (da->levelup - da->leveldown > -1 && da->levelup - da->leveldown < dd->refine_z_hier_n) dd2->coarsen_z = dd->refine_z_hier[da->levelup - da->leveldown];
     dd2->refine_z_hier_n = dd->refine_z_hier_n;
     PetscCall(PetscMalloc1(dd2->refine_z_hier_n, &dd2->refine_z_hier));
     PetscCall(PetscArraycpy(dd2->refine_z_hier, dd->refine_z_hier, dd2->refine_z_hier_n));
   }
   if (dd->refine_y_hier) {
-    if (da->levelup - da->leveldown + 1 > -1 && da->levelup - da->leveldown + 1 < dd->refine_y_hier_n) { dd2->refine_y = dd->refine_y_hier[da->levelup - da->leveldown + 1]; }
-    if (da->levelup - da->leveldown > -1 && da->levelup - da->leveldown < dd->refine_y_hier_n) { dd2->coarsen_y = dd->refine_y_hier[da->levelup - da->leveldown]; }
+    if (da->levelup - da->leveldown + 1 > -1 && da->levelup - da->leveldown + 1 < dd->refine_y_hier_n) dd2->refine_y = dd->refine_y_hier[da->levelup - da->leveldown + 1];
+    if (da->levelup - da->leveldown > -1 && da->levelup - da->leveldown < dd->refine_y_hier_n) dd2->coarsen_y = dd->refine_y_hier[da->levelup - da->leveldown];
     dd2->refine_y_hier_n = dd->refine_y_hier_n;
     PetscCall(PetscMalloc1(dd2->refine_y_hier_n, &dd2->refine_y_hier));
     PetscCall(PetscArraycpy(dd2->refine_y_hier, dd->refine_y_hier, dd2->refine_y_hier_n));
   }
   if (dd->refine_x_hier) {
-    if (da->levelup - da->leveldown + 1 > -1 && da->levelup - da->leveldown + 1 < dd->refine_x_hier_n) { dd2->refine_x = dd->refine_x_hier[da->levelup - da->leveldown + 1]; }
-    if (da->levelup - da->leveldown > -1 && da->levelup - da->leveldown < dd->refine_x_hier_n) { dd2->coarsen_x = dd->refine_x_hier[da->levelup - da->leveldown]; }
+    if (da->levelup - da->leveldown + 1 > -1 && da->levelup - da->leveldown + 1 < dd->refine_x_hier_n) dd2->refine_x = dd->refine_x_hier[da->levelup - da->leveldown + 1];
+    if (da->levelup - da->leveldown > -1 && da->levelup - da->leveldown < dd->refine_x_hier_n) dd2->coarsen_x = dd->refine_x_hier[da->levelup - da->leveldown];
     dd2->refine_x_hier_n = dd->refine_x_hier_n;
     PetscCall(PetscMalloc1(dd2->refine_x_hier_n, &dd2->refine_x_hier));
     PetscCall(PetscArraycpy(dd2->refine_x_hier, dd->refine_x_hier, dd2->refine_x_hier_n));
@@ -1159,22 +1159,22 @@ PetscErrorCode DMCoarsen_DA(DM dmf, MPI_Comm comm, DM *dmc) {
   dd2->coarsen_z = dd2->refine_z = dd->coarsen_z;
 
   if (dd->refine_z_hier) {
-    if (dmf->levelup - dmf->leveldown - 1 > -1 && dmf->levelup - dmf->leveldown - 1 < dd->refine_z_hier_n) { dd2->refine_z = dd->refine_z_hier[dmf->levelup - dmf->leveldown - 1]; }
-    if (dmf->levelup - dmf->leveldown - 2 > -1 && dmf->levelup - dmf->leveldown - 2 < dd->refine_z_hier_n) { dd2->coarsen_z = dd->refine_z_hier[dmf->levelup - dmf->leveldown - 2]; }
+    if (dmf->levelup - dmf->leveldown - 1 > -1 && dmf->levelup - dmf->leveldown - 1 < dd->refine_z_hier_n) dd2->refine_z = dd->refine_z_hier[dmf->levelup - dmf->leveldown - 1];
+    if (dmf->levelup - dmf->leveldown - 2 > -1 && dmf->levelup - dmf->leveldown - 2 < dd->refine_z_hier_n) dd2->coarsen_z = dd->refine_z_hier[dmf->levelup - dmf->leveldown - 2];
     dd2->refine_z_hier_n = dd->refine_z_hier_n;
     PetscCall(PetscMalloc1(dd2->refine_z_hier_n, &dd2->refine_z_hier));
     PetscCall(PetscArraycpy(dd2->refine_z_hier, dd->refine_z_hier, dd2->refine_z_hier_n));
   }
   if (dd->refine_y_hier) {
-    if (dmf->levelup - dmf->leveldown - 1 > -1 && dmf->levelup - dmf->leveldown - 1 < dd->refine_y_hier_n) { dd2->refine_y = dd->refine_y_hier[dmf->levelup - dmf->leveldown - 1]; }
-    if (dmf->levelup - dmf->leveldown - 2 > -1 && dmf->levelup - dmf->leveldown - 2 < dd->refine_y_hier_n) { dd2->coarsen_y = dd->refine_y_hier[dmf->levelup - dmf->leveldown - 2]; }
+    if (dmf->levelup - dmf->leveldown - 1 > -1 && dmf->levelup - dmf->leveldown - 1 < dd->refine_y_hier_n) dd2->refine_y = dd->refine_y_hier[dmf->levelup - dmf->leveldown - 1];
+    if (dmf->levelup - dmf->leveldown - 2 > -1 && dmf->levelup - dmf->leveldown - 2 < dd->refine_y_hier_n) dd2->coarsen_y = dd->refine_y_hier[dmf->levelup - dmf->leveldown - 2];
     dd2->refine_y_hier_n = dd->refine_y_hier_n;
     PetscCall(PetscMalloc1(dd2->refine_y_hier_n, &dd2->refine_y_hier));
     PetscCall(PetscArraycpy(dd2->refine_y_hier, dd->refine_y_hier, dd2->refine_y_hier_n));
   }
   if (dd->refine_x_hier) {
-    if (dmf->levelup - dmf->leveldown - 1 > -1 && dmf->levelup - dmf->leveldown - 1 < dd->refine_x_hier_n) { dd2->refine_x = dd->refine_x_hier[dmf->levelup - dmf->leveldown - 1]; }
-    if (dmf->levelup - dmf->leveldown - 2 > -1 && dmf->levelup - dmf->leveldown - 2 < dd->refine_x_hier_n) { dd2->coarsen_x = dd->refine_x_hier[dmf->levelup - dmf->leveldown - 2]; }
+    if (dmf->levelup - dmf->leveldown - 1 > -1 && dmf->levelup - dmf->leveldown - 1 < dd->refine_x_hier_n) dd2->refine_x = dd->refine_x_hier[dmf->levelup - dmf->leveldown - 1];
+    if (dmf->levelup - dmf->leveldown - 2 > -1 && dmf->levelup - dmf->leveldown - 2 < dd->refine_x_hier_n) dd2->coarsen_x = dd->refine_x_hier[dmf->levelup - dmf->leveldown - 2];
     dd2->refine_x_hier_n = dd->refine_x_hier_n;
     PetscCall(PetscMalloc1(dd2->refine_x_hier_n, &dd2->refine_x_hier));
     PetscCall(PetscArraycpy(dd2->refine_x_hier, dd->refine_x_hier, dd2->refine_x_hier_n));
@@ -1287,7 +1287,7 @@ PetscErrorCode DMDASetGLLCoordinates_1d(DM dm, PetscInt n, PetscReal *nodes) {
       /*
        Except for the first process, each process starts on the second GLL point of the first element on that process
        */
-      for (i = (j == xs && xs > 0) ? 1 : 0; i < n; i++) { xx[j * (n - 1) + i] = -1.0 + h * j + h * (nodes[i] + 1.0) / 2.; }
+      for (i = (j == xs && xs > 0) ? 1 : 0; i < n; i++) xx[j * (n - 1) + i] = -1.0 + h * j + h * (nodes[i] + 1.0) / 2.;
     }
     PetscCall(DMDAVecRestoreArray(dm, x, &xx));
   } else SETERRQ(PetscObjectComm((PetscObject)da), PETSC_ERR_SUP, "Not yet implemented for periodic");
@@ -1347,10 +1347,10 @@ PETSC_INTERN PetscErrorCode DMGetCompatibility_DA(DM da1, DM dm2, PetscBool *com
       for (i = 0; i < dd1->m; ++i) { compatibleLocal = (PetscBool)(compatibleLocal && (dd1->lx[i] == dd2->lx[i])); /* Local size     */ }
     }
     if (compatibleLocal && da1->dim > 1) {
-      for (i = 0; i < dd1->n; ++i) { compatibleLocal = (PetscBool)(compatibleLocal && (dd1->ly[i] == dd2->ly[i])); }
+      for (i = 0; i < dd1->n; ++i) compatibleLocal = (PetscBool)(compatibleLocal && (dd1->ly[i] == dd2->ly[i]));
     }
     if (compatibleLocal && da1->dim > 2) {
-      for (i = 0; i < dd1->p; ++i) { compatibleLocal = (PetscBool)(compatibleLocal && (dd1->lz[i] == dd2->lz[i])); }
+      for (i = 0; i < dd1->p; ++i) compatibleLocal = (PetscBool)(compatibleLocal && (dd1->lz[i] == dd2->lz[i]));
     }
     *compatible = compatibleLocal;
     *set        = PETSC_TRUE;

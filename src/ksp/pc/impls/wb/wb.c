@@ -317,7 +317,7 @@ PetscErrorCode DMDAGetWireBasketInterpolation(PC pc, DM da, PC_Exotic *exotic, M
     PetscCall(VecSet(x, 1.0));
     PetscCall(MatMult(*P, x, y));
     PetscCall(VecGetArray(y, &yy));
-    for (i = 0; i < Ng; i++) { PetscCheck(PetscAbsScalar(yy[i] - 1.0) <= 1.e-10, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Wrong p interpolation at i %" PetscInt_FMT " value %g", i, (double)PetscAbsScalar(yy[i])); }
+    for (i = 0; i < Ng; i++) PetscCheck(PetscAbsScalar(yy[i] - 1.0) <= 1.e-10, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Wrong p interpolation at i %" PetscInt_FMT " value %g", i, (double)PetscAbsScalar(yy[i]));
     PetscCall(VecRestoreArray(y, &yy));
     PetscCall(VecDestroy(x));
     PetscCall(VecDestroy(y));
@@ -590,7 +590,7 @@ PetscCall(PetscFree2(IIint, IIsurf));
   PetscCall(VecSet(x, 1.0));
   PetscCall(MatMult(*P, x, y));
   PetscCall(VecGetArray(y, &yy));
-  for (i = 0; i < Ng; i++) { PetscCheck(PetscAbsScalar(yy[i] - 1.0) <= 1.e-10, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Wrong p interpolation at i %" PetscInt_FMT " value %g", i, (double)PetscAbsScalar(yy[i])); }
+  for (i = 0; i < Ng; i++) PetscCheck(PetscAbsScalar(yy[i] - 1.0) <= 1.e-10, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Wrong p interpolation at i %" PetscInt_FMT " value %g", i, (double)PetscAbsScalar(yy[i]));
   PetscCall(VecRestoreArray(y, &yy));
   PetscCall(VecDestroy(x));
   PetscCall(VecDestroy(y));

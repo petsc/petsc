@@ -23,14 +23,14 @@ struct array_type {
   array_type() {
     for (int j = 0; j < LANDAU_DIM; j++) {
       gg2[j] = 0;
-      for (int k = 0; k < LANDAU_DIM; k++) { gg3[j][k] = 0; }
+      for (int k = 0; k < LANDAU_DIM; k++) gg3[j][k] = 0;
     }
   }
   KOKKOS_INLINE_FUNCTION // Copy Constructor
   array_type(const array_type &rhs) {
     for (int j = 0; j < LANDAU_DIM; j++) {
       gg2[j] = rhs.gg2[j];
-      for (int k = 0; k < LANDAU_DIM; k++) { gg3[j][k] = rhs.gg3[j][k]; }
+      for (int k = 0; k < LANDAU_DIM; k++) gg3[j][k] = rhs.gg3[j][k];
     }
   }
   KOKKOS_INLINE_FUNCTION // add operator
@@ -38,7 +38,7 @@ struct array_type {
     operator+=(const array_type &src) {
     for (int j = 0; j < LANDAU_DIM; j++) {
       gg2[j] += src.gg2[j];
-      for (int k = 0; k < LANDAU_DIM; k++) { gg3[j][k] += src.gg3[j][k]; }
+      for (int k = 0; k < LANDAU_DIM; k++) gg3[j][k] += src.gg3[j][k];
     }
     return *this;
   }
@@ -47,7 +47,7 @@ struct array_type {
     operator+=(const volatile array_type &src) volatile {
     for (int j = 0; j < LANDAU_DIM; j++) {
       gg2[j] += src.gg2[j];
-      for (int k = 0; k < LANDAU_DIM; k++) { gg3[j][k] += src.gg3[j][k]; }
+      for (int k = 0; k < LANDAU_DIM; k++) gg3[j][k] += src.gg3[j][k];
     }
   }
 };
@@ -333,7 +333,7 @@ PetscErrorCode landau_mat_assemble(PetscSplitCSRDataStructure d_mat, PetscScalar
     }
     const int idx0 = bid_coo_sz_batch + coo_elem_offsets[glb_elem_idx] + fieldA * fullNb2 + fullNb * coo_elem_point_offsets[glb_elem_idx][f] + nr * coo_elem_point_offsets[glb_elem_idx][g];
     for (int q = 0, idx2 = idx0; q < nr; q++) {
-      for (int d = 0; d < nc; d++, idx2++) { coo_vals[idx2] = row_scale[q] * col_scale[d] * Aij; }
+      for (int d = 0; d < nc; d++, idx2++) coo_vals[idx2] = row_scale[q] * col_scale[d] * Aij;
     }
   } else {
     PetscScalar vals[LANDAU_MAX_Q_FACE * LANDAU_MAX_Q_FACE] = {0};
@@ -368,7 +368,7 @@ PetscErrorCode landau_mat_assemble(PetscSplitCSRDataStructure d_mat, PetscScalar
     for (q = 0; q < nr; q++) rows[q] = rows[q] + moffset;
     for (q = 0; q < nc; q++) cols[q] = cols[q] + moffset;
     for (q = 0; q < nr; q++) {
-      for (d = 0; d < nc; d++) { vals[q * nc + d] = row_scale[q] * col_scale[d] * Aij; }
+      for (d = 0; d < nc; d++) vals[q * nc + d] = row_scale[q] * col_scale[d] * Aij;
     }
     MatSetValuesDevice(d_mat, nr, rows, nc, cols, vals, ADD_VALUES);
   }
@@ -567,7 +567,7 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
                   for (d = 0; d < dim; ++d) refSpaceDer[d] += Dq[b * dim + d] * PetscRealPart(coef[f * Nb + b]);
                 }
                 for (d = 0; d < dim; ++d) {
-                  for (e = 0, d_fdf_k(b_id, d + 1, idx) = 0.0; e < dim; ++e) { d_fdf_k(b_id, d + 1, idx) += invJ[e * dim + d] * refSpaceDer[e]; }
+                  for (e = 0, d_fdf_k(b_id, d + 1, idx) = 0.0; e < dim; ++e) d_fdf_k(b_id, d + 1, idx) += invJ[e * dim + d] * refSpaceDer[e];
                 }
               }); // f
             });   // myQi
@@ -679,7 +679,7 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
             PetscInt d2, d3;
             for (d2 = 0; d2 < dim; d2++) {
               gg2(d2, fieldA, myQi) = gg_temp.gg2[d2] * d_alpha[fieldA + f_off];
-              for (d3 = 0; d3 < dim; d3++) { gg3(d2, d3, fieldA, myQi) = -gg_temp.gg3[d2][d3] * d_alpha[fieldA + f_off] * d_invMass[fieldA + f_off]; }
+              for (d3 = 0; d3 < dim; d3++) gg3(d2, d3, fieldA, myQi) = -gg_temp.gg3[d2][d3] * d_alpha[fieldA + f_off] * d_invMass[fieldA + f_off];
             }
           });
           /* add electric field term once per IP */
@@ -693,7 +693,7 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
                 g2(d, fieldA, myQi) += invJ[d * dim + d2] * gg2(d2, fieldA, myQi);
                 g3(d, d2, fieldA, myQi) = 0;
                 for (d3 = 0; d3 < dim; ++d3) {
-                  for (dp = 0; dp < dim; ++dp) { g3(d, d2, fieldA, myQi) += invJ[d * dim + d3] * gg3(d3, dp, fieldA, myQi) * invJ[d2 * dim + dp]; }
+                  for (dp = 0; dp < dim; ++dp) g3(d, d2, fieldA, myQi) += invJ[d * dim + d3] * gg3(d3, dp, fieldA, myQi) * invJ[d2 * dim + dp];
                 }
                 g3(d, d2, fieldA, myQi) *= wj;
               }
@@ -712,7 +712,7 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
                   const PetscReal *BJq = &d_BB[qj * Nb], *DIq = &d_DD[qj * Nb * dim];
                   for (int d = 0; d < dim; ++d) {
                     t += DIq[f * dim + d] * g2(d, fieldA, qj) * BJq[g];
-                    for (int d2 = 0; d2 < dim; ++d2) { t += DIq[f * dim + d] * g3(d, d2, fieldA, qj) * DIq[g * dim + d2]; }
+                    for (int d2 = 0; d2 < dim; ++d2) t += DIq[f * dim + d] * g3(d, d2, fieldA, qj) * DIq[g * dim + d2];
                   }
                 }
                 if (elem_mat_num_cells_max_grid) { // CPU assembly

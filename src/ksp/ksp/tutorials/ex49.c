@@ -448,7 +448,7 @@ static void FormStressOperatorQ1(PetscScalar Ke[], PetscScalar coords[], PetscSc
     constit_D[2][1] = 0.0;
     constit_D[2][2] = 0.5 * (1.0 - 2.0 * prop_nu);
     for (i = 0; i < 3; i++) {
-      for (j = 0; j < 3; j++) { constit_D[i][j] = factor * constit_D[i][j] * gp_weight[p] * J_p; }
+      for (j = 0; j < 3; j++) constit_D[i][j] = factor * constit_D[i][j] * gp_weight[p] * J_p;
     }
 
     /* form Bt tildeD B */
@@ -459,7 +459,7 @@ static void FormStressOperatorQ1(PetscScalar Ke[], PetscScalar coords[], PetscSc
     for (i = 0; i < 8; i++) {
       for (j = 0; j < 8; j++) {
         for (k = 0; k < 3; k++) {
-          for (l = 0; l < 3; l++) { Ke[8 * i + j] = Ke[8 * i + j] + B[k][i] * constit_D[k][l] * B[l][j]; }
+          for (l = 0; l < 3; l++) Ke[8 * i + j] = Ke[8 * i + j] + B[k][i] * constit_D[k][l] * B[l][j];
         }
       }
     }

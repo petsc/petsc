@@ -219,7 +219,7 @@ PetscErrorCode SNESSetUp_Multiblock(SNES snes) {
 
           PetscCall(PetscMalloc1(nfields * nslots, &ii));
           for (j = 0; j < nslots; ++j) {
-            for (k = 0; k < nfields; ++k) { ii[nfields * j + k] = rstart + bs * j + fields[k]; }
+            for (k = 0; k < nfields; ++k) ii[nfields * j + k] = rstart + bs * j + fields[k];
           }
           PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)snes), nslots * nfields, ii, PETSC_OWN_POINTER, &blocks->is));
         } else {
@@ -603,7 +603,7 @@ PetscErrorCode SNESMultiblockSetFields_Default(SNES snes, const char name[], Pet
     mb->blocks         = newblock;
     newblock->previous = NULL;
   } else {
-    while (next->next) { next = next->next; }
+    while (next->next) next = next->next;
     next->next         = newblock;
     newblock->previous = next;
   }
@@ -647,7 +647,7 @@ PetscErrorCode SNESMultiblockSetIS_Default(SNES snes, const char name[], IS is) 
     mb->blocks         = newblock;
     newblock->previous = NULL;
   } else {
-    while (next->next) { next = next->next; }
+    while (next->next) next = next->next;
     next->next         = newblock;
     newblock->previous = next;
   }

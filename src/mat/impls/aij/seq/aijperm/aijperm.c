@@ -196,7 +196,7 @@ PetscErrorCode MatSeqAIJPERM_create_perm(Mat A) {
   PetscCall(PetscMalloc1(PetscMax(maxnz, m) + 1, &rows_in_bucket));
   PetscCall(PetscMalloc1(PetscMax(maxnz, m) + 1, &ipnz));
 
-  for (i = 0; i <= maxnz; i++) { rows_in_bucket[i] = 0; }
+  for (i = 0; i <= maxnz; i++) rows_in_bucket[i] = 0;
   for (i = 0; i < m; i++) {
     nz = nz_in_row[i];
     rows_in_bucket[nz]++;
@@ -231,7 +231,7 @@ PetscErrorCode MatSeqAIJPERM_create_perm(Mat A) {
 
   /* Now fill in the permutation vector iperm. */
   ipnz[0] = 0;
-  for (i = 0; i < maxnz; i++) { ipnz[i + 1] = ipnz[i] + rows_in_bucket[i]; }
+  for (i = 0; i < maxnz; i++) ipnz[i + 1] = ipnz[i] + rows_in_bucket[i];
 
   for (i = 0; i < m; i++) {
     nz                   = nz_in_row[i];
@@ -332,7 +332,7 @@ PetscErrorCode MatMult_SeqAIJPERM(Mat A, Vec xx, Vec yy) {
     /* Handle the special cases where the number of nonzeros per row
      * in the group is either 0 or 1. */
     if (nz == 0) {
-      for (i = jstart; i <= jend; i++) { y[iperm[i]] = 0.0; }
+      for (i = jstart; i <= jend; i++) y[iperm[i]] = 0.0;
     } else if (nz == 1) {
       for (i = jstart; i <= jend; i++) {
         iold    = iperm[i];
@@ -439,7 +439,7 @@ PetscErrorCode MatMult_SeqAIJPERM(Mat A, Vec xx, Vec yy) {
 #pragma _CRI ivdep
 #endif
         /* Put results from yp[] into non-permuted result vector y. */
-        for (i = 0; i < isize; i++) { y[iperm[istart + i]] = yp[i]; }
+        for (i = 0; i < isize; i++) y[iperm[istart + i]] = yp[i];
       } /* End processing chunk of isize rows of a group. */
     }   /* End handling matvec for chunk with nz > 1. */
   }     /* End loop over igroup. */
@@ -587,7 +587,7 @@ PetscErrorCode MatMultAdd_SeqAIJPERM(Mat A, Vec xx, Vec ww, Vec yy) {
 #pragma _CRI ivdep
 #endif
         /* Put results from yp[] into non-permuted result vector y. */
-        for (i = 0; i < isize; i++) { y[iperm[istart + i]] = yp[i]; }
+        for (i = 0; i < isize; i++) y[iperm[istart + i]] = yp[i];
       } /* End processing chunk of isize rows of a group. */
 
     } /* End handling matvec for chunk with nz > 1. */

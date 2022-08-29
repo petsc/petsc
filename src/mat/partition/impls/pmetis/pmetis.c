@@ -75,7 +75,7 @@ static PetscErrorCode MatPartitioningApply_Parmetis_Private(MatPartitioning part
       PetscInt rstart;
       PetscCall(MatGetOwnershipRange(pmat, &rstart, NULL));
       for (i = 0; i < pmat->rmap->n; i++) {
-        for (j = xadj[i]; j < xadj[i + 1]; j++) { PetscCheck(adjncy[j] != i + rstart, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Row %" PetscInt_FMT " has diagonal entry; Parmetis forbids diagonal entry", i + rstart); }
+        for (j = xadj[i]; j < xadj[i + 1]; j++) PetscCheck(adjncy[j] != i + rstart, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Row %" PetscInt_FMT " has diagonal entry; Parmetis forbids diagonal entry", i + rstart);
       }
     }
 
@@ -170,7 +170,7 @@ static PetscErrorCode MatPartitioningApply_Parmetis_Private(MatPartitioning part
       PetscInt i, j, *newlocals;
       PetscCall(PetscMalloc1(bs * pmat->rmap->n, &newlocals));
       for (i = 0; i < pmat->rmap->n; i++) {
-        for (j = 0; j < bs; j++) { newlocals[bs * i + j] = locals[i]; }
+        for (j = 0; j < bs; j++) newlocals[bs * i + j] = locals[i];
       }
       PetscCall(PetscFree(locals));
       PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)part), bs * pmat->rmap->n, newlocals, PETSC_OWN_POINTER, partitioning));

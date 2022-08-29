@@ -30,7 +30,7 @@ PetscErrorCode CharacteristicView(Characteristic c, PetscViewer viewer) {
   PetscCheckSameComm(c, 1, viewer, 2);
 
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (!iascii) { PetscTryTypeMethod(c, view, viewer); }
+  if (!iascii) PetscTryTypeMethod(c, view, viewer);
   PetscFunctionReturn(0);
 }
 
@@ -186,7 +186,7 @@ PetscErrorCode CharacteristicSetUp(Characteristic c) {
   if (c->setupcalled == 2) PetscFunctionReturn(0);
 
   PetscCall(PetscLogEventBegin(CHARACTERISTIC_SetUp, c, NULL, NULL, NULL));
-  if (!c->setupcalled) { PetscUseTypeMethod(c, setup); }
+  if (!c->setupcalled) PetscUseTypeMethod(c, setup);
   PetscCall(PetscLogEventEnd(CHARACTERISTIC_SetUp, c, NULL, NULL, NULL));
   c->setupcalled = 2;
   PetscFunctionReturn(0);

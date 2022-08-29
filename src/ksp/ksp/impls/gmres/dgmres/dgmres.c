@@ -422,7 +422,7 @@ static PetscErrorCode KSPDGMRESGetNewVectors(KSP ksp, PetscInt it) {
   nalloc = PetscMin(ksp->max_it, dgmres->delta_allocate);
   /* Adjust the number to allocate to make sure that we don't exceed the
    number of available slots */
-  if (it + VEC_OFFSET + nalloc >= dgmres->vecs_allocated) { nalloc = dgmres->vecs_allocated - it - VEC_OFFSET; }
+  if (it + VEC_OFFSET + nalloc >= dgmres->vecs_allocated) nalloc = dgmres->vecs_allocated - it - VEC_OFFSET;
   if (!nalloc) PetscFunctionReturn(0);
 
   dgmres->vv_allocated += nalloc;
@@ -431,7 +431,7 @@ static PetscErrorCode KSPDGMRESGetNewVectors(KSP ksp, PetscInt it) {
   PetscCall(PetscLogObjectParents(ksp, nalloc, dgmres->user_work[nwork]));
 
   dgmres->mwork_alloc[nwork] = nalloc;
-  for (k = 0; k < nalloc; k++) { dgmres->vecs[it + VEC_OFFSET + k] = dgmres->user_work[nwork][k]; }
+  for (k = 0; k < nalloc; k++) dgmres->vecs[it + VEC_OFFSET + k] = dgmres->user_work[nwork][k];
   dgmres->nwork_alloc++;
   PetscFunctionReturn(0);
 }
@@ -694,7 +694,7 @@ PetscErrorCode KSPDGMRESComputeSchurForm_DGMRES(KSP ksp, PetscInt *neig) {
     /* Transpose the Hessenberg matrix */
     PetscCall(PetscMalloc1(bn * bn, &Ht));
     for (i = 0; i < bn; i++) {
-      for (j = 0; j < bn; j++) { Ht[i * bn + j] = dgmres->hes_origin[j * ldA + i]; }
+      for (j = 0; j < bn; j++) Ht[i * bn + j] = dgmres->hes_origin[j * ldA + i];
     }
 
     /* Solve the system H^T*t = h_{m+1,m}e_m */

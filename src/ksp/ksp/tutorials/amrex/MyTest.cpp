@@ -50,7 +50,7 @@ void MyTest::solve() {
 
   mleb.setDomainBC(mlmg_lobc, mlmg_hibc);
 
-  for (int ilev = 0; ilev <= max_level; ++ilev) { mleb.setLevelBC(ilev, &phi[ilev]); }
+  for (int ilev = 0; ilev <= max_level; ++ilev) mleb.setLevelBC(ilev, &phi[ilev]);
 
   mleb.setScalars(scalars[0], scalars[1]);
 
@@ -60,7 +60,7 @@ void MyTest::solve() {
   }
 
   if (eb_is_dirichlet) {
-    for (int ilev = 0; ilev <= max_level; ++ilev) { mleb.setEBDirichlet(ilev, phi[ilev], bcoef_eb[ilev]); }
+    for (int ilev = 0; ilev <= max_level; ++ilev) mleb.setEBDirichlet(ilev, phi[ilev], bcoef_eb[ilev]);
   }
 
   MLMG mlmg(mleb);
@@ -168,7 +168,7 @@ void MyTest::initData() {
     phi[ilev].define(grids[ilev], dmap[ilev], 1, 1, MFInfo(), *factory[ilev]);
     rhs[ilev].define(grids[ilev], dmap[ilev], 1, 0, MFInfo(), *factory[ilev]);
     acoef[ilev].define(grids[ilev], dmap[ilev], 1, 0, MFInfo(), *factory[ilev]);
-    for (int idim = 0; idim < AMREX_SPACEDIM; ++idim) { bcoef[ilev][idim].define(amrex::convert(grids[ilev], IntVect::TheDimensionVector(idim)), dmap[ilev], 1, 0, MFInfo(), *factory[ilev]); }
+    for (int idim = 0; idim < AMREX_SPACEDIM; ++idim) bcoef[ilev][idim].define(amrex::convert(grids[ilev], IntVect::TheDimensionVector(idim)), dmap[ilev], 1, 0, MFInfo(), *factory[ilev]);
     if (eb_is_dirichlet) {
       bcoef_eb[ilev].define(grids[ilev], dmap[ilev], 1, 0, MFInfo(), *factory[ilev]);
       bcoef_eb[ilev].setVal(1.0);
@@ -177,7 +177,7 @@ void MyTest::initData() {
     phi[ilev].setVal(0.0);
     rhs[ilev].setVal(0.0);
     acoef[ilev].setVal(1.0);
-    for (int idim = 0; idim < AMREX_SPACEDIM; ++idim) { bcoef[ilev][idim].setVal(1.0); }
+    for (int idim = 0; idim < AMREX_SPACEDIM; ++idim) bcoef[ilev][idim].setVal(1.0);
 
     const auto dx = geom[ilev].CellSizeArray();
 

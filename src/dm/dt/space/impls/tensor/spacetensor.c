@@ -330,7 +330,7 @@ static PetscErrorCode PetscSpaceEvaluate_Tensor(PetscSpace sp, PetscInt npoints,
     vskip = pdim / (vstep * spdim);
     cskip = Nc / (cstep * sNc);
     for (PetscInt p = 0; p < npoints; ++p) {
-      for (PetscInt i = 0; i < sNv; i++) { lpoints[p * sNv + i] = points[p * Nv + d + i]; }
+      for (PetscInt i = 0; i < sNv; i++) lpoints[p * sNv + i] = points[p * Nv + d + i];
     }
     PetscCall(PetscSpaceEvaluate(tens->tensspaces[s], npoints, lpoints, sB, sD, sH));
     if (B) {
@@ -344,7 +344,7 @@ static PetscErrorCode PetscSpaceEvaluate_Tensor(PetscSpace sp, PetscInt npoints,
                 for (PetscInt m = 0; m < cstep; m++) {
                   PetscInt c = (l * sNc + sc) * cstep + m;
 
-                  for (PetscInt p = 0; p < npoints; p++) { B[(pdim * p + i) * Nc + c] *= sB[(spdim * p + si) * sNc + sc]; }
+                  for (PetscInt p = 0; p < npoints; p++) B[(pdim * p + i) * Nc + c] *= sB[(spdim * p + si) * sNc + sc];
                 }
               }
             }
@@ -365,9 +365,9 @@ static PetscErrorCode PetscSpaceEvaluate_Tensor(PetscSpace sp, PetscInt npoints,
 
                   for (PetscInt der = 0; der < Nv; der++) {
                     if (der >= d && der < d + sNv) {
-                      for (PetscInt p = 0; p < npoints; p++) { D[((pdim * p + i) * Nc + c) * Nv + der] *= sD[((spdim * p + si) * sNc + sc) * sNv + der - d]; }
+                      for (PetscInt p = 0; p < npoints; p++) D[((pdim * p + i) * Nc + c) * Nv + der] *= sD[((spdim * p + si) * sNc + sc) * sNv + der - d];
                     } else {
-                      for (PetscInt p = 0; p < npoints; p++) { D[((pdim * p + i) * Nc + c) * Nv + der] *= sB[(spdim * p + si) * sNc + sc]; }
+                      for (PetscInt p = 0; p < npoints; p++) D[((pdim * p + i) * Nc + c) * Nv + der] *= sB[(spdim * p + si) * sNc + sc];
                     }
                   }
                 }
@@ -391,13 +391,13 @@ static PetscErrorCode PetscSpaceEvaluate_Tensor(PetscSpace sp, PetscInt npoints,
                   for (PetscInt der = 0; der < Nv; der++) {
                     for (PetscInt der2 = 0; der2 < Nv; der2++) {
                       if (der >= d && der < d + sNv && der2 >= d && der2 < d + sNv) {
-                        for (PetscInt p = 0; p < npoints; p++) { H[(((pdim * p + i) * Nc + c) * Nv + der) * Nv + der2] *= sH[(((spdim * p + si) * sNc + sc) * sNv + der - d) * sNv + der2 - d]; }
+                        for (PetscInt p = 0; p < npoints; p++) H[(((pdim * p + i) * Nc + c) * Nv + der) * Nv + der2] *= sH[(((spdim * p + si) * sNc + sc) * sNv + der - d) * sNv + der2 - d];
                       } else if (der >= d && der < d + sNv) {
-                        for (PetscInt p = 0; p < npoints; p++) { H[(((pdim * p + i) * Nc + c) * Nv + der) * Nv + der2] *= sD[((spdim * p + si) * sNc + sc) * sNv + der - d]; }
+                        for (PetscInt p = 0; p < npoints; p++) H[(((pdim * p + i) * Nc + c) * Nv + der) * Nv + der2] *= sD[((spdim * p + si) * sNc + sc) * sNv + der - d];
                       } else if (der2 >= d && der2 < d + sNv) {
-                        for (PetscInt p = 0; p < npoints; p++) { H[(((pdim * p + i) * Nc + c) * Nv + der) * Nv + der2] *= sD[((spdim * p + si) * sNc + sc) * sNv + der2 - d]; }
+                        for (PetscInt p = 0; p < npoints; p++) H[(((pdim * p + i) * Nc + c) * Nv + der) * Nv + der2] *= sD[((spdim * p + si) * sNc + sc) * sNv + der2 - d];
                       } else {
-                        for (PetscInt p = 0; p < npoints; p++) { H[(((pdim * p + i) * Nc + c) * Nv + der) * Nv + der2] *= sB[(spdim * p + si) * sNc + sc]; }
+                        for (PetscInt p = 0; p < npoints; p++) H[(((pdim * p + i) * Nc + c) * Nv + der) * Nv + der2] *= sB[(spdim * p + si) * sNc + sc];
                       }
                     }
                   }

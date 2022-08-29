@@ -63,7 +63,7 @@ int main(int argc, char **args) {
     } else if (function == TANH) {
       PetscScalar *a;
       PetscCall(VecGetArray(x, &a));
-      for (i = 0; i < N; ++i) { a[i] = tanh((i - N / 2.0) * (10.0 / N)); }
+      for (i = 0; i < N; ++i) a[i] = tanh((i - N / 2.0) * (10.0 / N));
       PetscCall(VecRestoreArray(x, &a));
     }
     if (view) PetscCall(VecView(x, PETSC_VIEWER_DRAW_WORLD));

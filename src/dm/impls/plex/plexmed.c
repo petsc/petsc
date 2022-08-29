@@ -182,7 +182,7 @@ PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm comm, const char filename[], Pet
 
       PetscCall(PetscMalloc1(numFacetsLocal, &medFacetIDs));
       PetscCallExternal(MEDmeshEntityAttributeAdvancedRd, fileID, meshname, MED_FAMILY_NUMBER, MED_NO_DT, MED_NO_IT, MED_CELL, geotype[facetID], &fidfilter, medFacetIDs);
-      for (i = 0; i < numFacetsLocal; i++) { facetIDs[i] = (PetscInt)medFacetIDs[i]; }
+      for (i = 0; i < numFacetsLocal; i++) facetIDs[i] = (PetscInt)medFacetIDs[i];
       PetscCall(PetscFree(medFacetIDs));
     }
 

@@ -117,8 +117,8 @@ PetscErrorCode MatMKLPardiso_Convert_seqsbaij(Mat A, PetscBool sym, MatReuse reu
     PetscInt  m = A->rmap->n, nz = aa->nz;
     PetscInt *row, *col;
     PetscCall(PetscMalloc2(m + 1, &row, nz, &col));
-    for (i = 0; i < m + 1; i++) { row[i] = aa->i[i] + 1; }
-    for (i = 0; i < nz; i++) { col[i] = aa->j[i] + 1; }
+    for (i = 0; i < m + 1; i++) row[i] = aa->i[i] + 1;
+    for (i = 0; i < nz; i++) col[i] = aa->j[i] + 1;
     *r    = (INT_TYPE *)row;
     *c    = (INT_TYPE *)col;
     *nnz  = (INT_TYPE)nz;
@@ -145,8 +145,8 @@ PetscErrorCode MatMKLPardiso_Convert_seqbaij(Mat A, PetscBool sym, MatReuse reus
       PetscInt  m = A->rmap->n, nz = aa->nz;
       PetscInt *row, *col;
       PetscCall(PetscMalloc2(m + 1, &row, nz, &col));
-      for (i = 0; i < m + 1; i++) { row[i] = aa->i[i] + 1; }
-      for (i = 0; i < nz; i++) { col[i] = aa->j[i] + 1; }
+      for (i = 0; i < m + 1; i++) row[i] = aa->i[i] + 1;
+      for (i = 0; i < nz; i++) col[i] = aa->j[i] + 1;
       *r   = (INT_TYPE *)row;
       *c   = (INT_TYPE *)col;
       *nnz = (INT_TYPE)nz;
@@ -342,7 +342,7 @@ static PetscErrorCode MatMKLPardisoScatterSchur_Private(Mat_MKL_PARDISO *mpardis
     PetscInt i, m = 0, p = 0;
     for (i = 0; i < mpardiso->nrhs; i++) {
       PetscInt j;
-      for (j = 0; j < mpardiso->schur_size; j++) { schur[p + j] = whole[m + mpardiso->schur_idxs[j]]; }
+      for (j = 0; j < mpardiso->schur_size; j++) schur[p + j] = whole[m + mpardiso->schur_idxs[j]];
       m += mpardiso->n;
       p += mpardiso->schur_size;
     }
@@ -350,7 +350,7 @@ static PetscErrorCode MatMKLPardisoScatterSchur_Private(Mat_MKL_PARDISO *mpardis
     PetscInt i, m = 0, p = 0;
     for (i = 0; i < mpardiso->nrhs; i++) {
       PetscInt j;
-      for (j = 0; j < mpardiso->schur_size; j++) { whole[m + mpardiso->schur_idxs[j]] = schur[p + j]; }
+      for (j = 0; j < mpardiso->schur_size; j++) whole[m + mpardiso->schur_idxs[j]] = schur[p + j];
       m += mpardiso->n;
       p += mpardiso->schur_size;
     }
@@ -405,7 +405,7 @@ PetscErrorCode MatSolve_MKL_PARDISO(Mat A, Vec b, Vec x) {
       PetscCall(MatMKLPardisoScatterSchur_Private(mat_mkl_pardiso, xarray, mat_mkl_pardiso->schur_work + shift, PETSC_FALSE));
     } else { /* if we are solving for the interior problem, any value in barray[schur] forward-substituted to xarray[schur] will be neglected */
       PetscInt i;
-      for (i = 0; i < mat_mkl_pardiso->schur_size; i++) { xarray[mat_mkl_pardiso->schur_idxs[i]] = 0.; }
+      for (i = 0; i < mat_mkl_pardiso->schur_size; i++) xarray[mat_mkl_pardiso->schur_idxs[i]] = 0.;
     }
 
     /* expansion phase */
@@ -489,7 +489,7 @@ PetscErrorCode MatMatSolve_MKL_PARDISO(Mat A, Mat B, Mat X) {
       } else { /* if we are solving for the interior problem, any value in barray[schur,n] forward-substituted to xarray[schur,n] will be neglected */
         PetscInt i, n, m = 0;
         for (n = 0; n < mat_mkl_pardiso->nrhs; n++) {
-          for (i = 0; i < mat_mkl_pardiso->schur_size; i++) { xarray[mat_mkl_pardiso->schur_idxs[i] + m] = 0.; }
+          for (i = 0; i < mat_mkl_pardiso->schur_size; i++) xarray[mat_mkl_pardiso->schur_idxs[i] + m] = 0.;
           m += mat_mkl_pardiso->n;
         }
       }

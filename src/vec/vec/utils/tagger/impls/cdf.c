@@ -131,7 +131,7 @@ static void MPIAPI VecTaggerCDFStatsReduce(void *a, void *b, int *len, MPI_Datat
   for (i = 0; i < N; i++) {
     B[i].min = PetscMin(A[i].min, B[i].min);
     B[i].max = PetscMax(A[i].max, B[i].max);
-    for (j = 0; j < 3; j++) { B[i].moment[j] += A[i].moment[j]; }
+    for (j = 0; j < 3; j++) B[i].moment[j] += A[i].moment[j];
   }
 }
 
@@ -182,7 +182,7 @@ static PetscErrorCode VecTaggerComputeBox_CDF_SortedArray_Iterative(VecTagger ta
     }
     stats[2].min = PETSC_MAX_REAL;
     stats[2].max = PETSC_MAX_REAL;
-    for (i = 0; i < 3; i++) { stats[2].moment[i] = 0.; }
+    for (i = 0; i < 3; i++) stats[2].moment[i] = 0.;
     for (i = 0; i < m; i++) {
       PetscReal val = cArray[i];
 
@@ -208,7 +208,7 @@ static PetscErrorCode VecTaggerComputeBox_CDF_SortedArray_Iterative(VecTagger ta
       for (j = 0; j < 2; j++) {
         stats[i][j].min = PETSC_MAX_REAL;
         stats[i][j].max = PETSC_MIN_REAL;
-        for (l = 0; l < 3; l++) { stats[i][j].moment[l] = 0.; }
+        for (l = 0; l < 3; l++) stats[i][j].moment[l] = 0.;
         newBounds[i][j][0] = PetscMax(bounds[i][0], bounds[i][1]);
         newBounds[i][j][1] = PetscMin(bounds[i][0], bounds[i][1]);
       }
@@ -250,13 +250,13 @@ static PetscErrorCode VecTaggerComputeBox_CDF_SortedArray_Iterative(VecTagger ta
         section    = 1;
         offsets[i] = totalLessThan;
       }
-      for (j = 0; j < 2; j++) { bounds[i][j] = newBounds[i][section][j]; }
+      for (j = 0; j < 2; j++) bounds[i][j] = newBounds[i][section][j];
       PetscCall(CDFUtilInverseEstimate(&stats[i][section], ((i ? cdfBox->max : cdfBox->min) - ((PetscReal)offsets[i] / (PetscReal)M)) / stats[i][section].moment[0], (i ? &absBox->max : &absBox->min)));
       diff    = PetscAbs(cdfOfAbs - (i ? cdfBox->max : cdfBox->min));
       maxDiff = PetscMax(maxDiff, diff);
     }
     if (!maxDiff) PetscFunctionReturn(0);
-    if ((atol || rtol) && ((!atol) || (maxDiff <= atol)) && ((!rtol) || (maxDiff <= rtol * intervalLen))) { break; }
+    if ((atol || rtol) && ((!atol) || (maxDiff <= atol)) && ((!rtol) || (maxDiff <= rtol * intervalLen))) break;
   }
   PetscFunctionReturn(0);
 }

@@ -1454,7 +1454,7 @@ PetscErrorCode ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping, Pet
     for (i = 0; i < *nproc; i++) {
       PetscCall(PetscMalloc1(bs * bnumprocs[i], &(*indices)[i]));
       for (j = 0; j < bnumprocs[i]; j++) {
-        for (k = 0; k < bs; k++) { (*indices)[i][j * bs + k] = bs * bindices[i][j] + k; }
+        for (k = 0; k < bs; k++) (*indices)[i][j * bs + k] = bs * bindices[i][j] + k;
       }
       (*numprocs)[i] = bnumprocs[i] * bs;
     }
@@ -1522,7 +1522,7 @@ PetscErrorCode ISLocalToGlobalMappingGetNodeInfo(ISLocalToGlobalMapping mapping,
 
     PetscCall(PetscMalloc2(n + 1, &mapping->info_nodec, n, &mapping->info_nodei));
     PetscCall(ISLocalToGlobalMappingGetInfo(mapping, &n_neigh, &neigh, &n_shared, &shared));
-    for (i = 0; i < n; i++) { mapping->info_nodec[i] = 1; }
+    for (i = 0; i < n; i++) mapping->info_nodec[i] = 1;
     m                      = n;
     mapping->info_nodec[n] = 0;
     for (i = 1; i < n_neigh; i++) {

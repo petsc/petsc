@@ -86,7 +86,7 @@ int main(int argc, char **argv) {
       PetscCall(PetscFECreateTabulation(fe, 1, 1, testFull, 0, &Tfull));
       for (i = 0; i < Nc; i++) {
         outSub[i] = 0.0;
-        for (j = 0; j < nSub; j++) { outSub[i] += Tsub->T[0][j * Nc + i] * arraySub[j]; }
+        for (j = 0; j < nSub; j++) outSub[i] += Tsub->T[0][j * Nc + i] * arraySub[j];
       }
       PetscCall(VecGetArray(vecFull, &arrayFull));
       err = 0.0;
@@ -94,7 +94,7 @@ int main(int argc, char **argv) {
         PetscScalar diff;
 
         outFull[i] = 0.0;
-        for (j = 0; j < nFull; j++) { outFull[i] += Tfull->T[0][j * Nc + i] * arrayFull[j]; }
+        for (j = 0; j < nFull; j++) outFull[i] += Tfull->T[0][j * Nc + i] * arrayFull[j];
         diff = outFull[i] - outSub[i];
         err += PetscRealPart(PetscConj(diff) * diff);
       }

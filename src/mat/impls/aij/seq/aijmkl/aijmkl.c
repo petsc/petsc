@@ -509,7 +509,7 @@ PetscErrorCode MatMultAdd_SeqAIJMKL(Mat A, Vec xx, Vec yy, Vec zz) {
      * MKL sparse BLAS does not have a MatMultAdd equivalent. */
     beta = 0.0;
     mkl_xcsrmv(&transa, &m, &n, &alpha, matdescra, aa, aj, ai, ai + 1, x, &beta, z);
-    for (i = 0; i < m; i++) { z[i] += y[i]; }
+    for (i = 0; i < m; i++) z[i] += y[i];
   }
 
   PetscCall(PetscLogFlops(2.0 * a->nz));
@@ -606,7 +606,7 @@ PetscErrorCode MatMultTransposeAdd_SeqAIJMKL(Mat A, Vec xx, Vec yy, Vec zz) {
      * MKL sparse BLAS does not have a MatMultAdd equivalent. */
     beta = 0.0;
     mkl_xcsrmv(&transa, &m, &n, &alpha, matdescra, aa, aj, ai, ai + 1, x, &beta, z);
-    for (i = 0; i < n; i++) { z[i] += y[i]; }
+    for (i = 0; i < n; i++) z[i] += y[i];
   }
 
   PetscCall(PetscLogFlops(2.0 * a->nz));

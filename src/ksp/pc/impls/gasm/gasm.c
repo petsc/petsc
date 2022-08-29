@@ -453,7 +453,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc) {
       in = 0;
       for (i = 0; i < osm->n; i++) {
         PetscCall(ISGetLocalSize(osm->iis[i], &ini));
-        for (k = 0; k < ini; ++k) { array[in + k] = numbering[i]; }
+        for (k = 0; k < ini; ++k) array[in + k] = numbering[i];
         in += ini;
       }
       PetscCall(VecRestoreArray(y, &array));
@@ -967,7 +967,7 @@ static PetscErrorCode PCGASMSetSubdomains_GASM(PC pc, PetscInt n, IS iis[], IS o
       PetscCall(ISRestoreIndices(osm->iis[i], &indices));
     }
     /* check if we miss any indices */
-    for (i = rstart; i < rend; i++) { PetscCheck(covered[i - rstart], PETSC_COMM_SELF, PETSC_ERR_ARG_NULL, "local entity %" PetscInt_FMT " was not covered by inner subdomains", i); }
+    for (i = rstart; i < rend; i++) PetscCheck(covered[i - rstart], PETSC_COMM_SELF, PETSC_ERR_ARG_NULL, "local entity %" PetscInt_FMT " was not covered by inner subdomains", i);
     PetscCall(PetscFree(covered));
   }
   if (iis) osm->user_subdomains = PETSC_TRUE;
@@ -1714,7 +1714,7 @@ PetscErrorCode PCGASMCreateSubdomains2D(PC pc, PetscInt M, PetscInt N, PetscInt 
               PetscInt x1 = (jj == yhigh_loc - 1) ? xright_loc : xright;
               kk          = dof * (M * jj + x0);
               for (ii = x0; ii < x1; ++ii) {
-                for (d = 0; d < dof; ++d) { idx[k++] = kk++; }
+                for (d = 0; d < dof; ++d) idx[k++] = kk++;
               }
             }
           }
@@ -1844,7 +1844,7 @@ PetscErrorCode PCGASMSetUseDMSubdomains(PC pc, PetscBool flg) {
   PetscCheck(!pc->setupcalled, ((PetscObject)pc)->comm, PETSC_ERR_ARG_WRONGSTATE, "Not for a setup PC.");
   PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCGASM, &match));
   if (match) {
-    if (!osm->user_subdomains && osm->N == PETSC_DETERMINE && osm->overlap < 0) { osm->dm_subdomains = flg; }
+    if (!osm->user_subdomains && osm->N == PETSC_DETERMINE && osm->overlap < 0) osm->dm_subdomains = flg;
   }
   PetscFunctionReturn(0);
 }

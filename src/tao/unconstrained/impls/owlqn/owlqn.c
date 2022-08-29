@@ -17,7 +17,7 @@ static PetscErrorCode ProjDirect_OWLQN(Vec d, Vec g) {
   PetscCall(VecGetArrayRead(g, &gptr));
   PetscCall(VecGetArray(d, &dptr));
   for (i = 0; i < high - low; i++) {
-    if (dptr[i] * gptr[i] <= 0.0) { dptr[i] = 0.0; }
+    if (dptr[i] * gptr[i] <= 0.0) dptr[i] = 0.0;
   }
   PetscCall(VecRestoreArray(d, &dptr));
   PetscCall(VecRestoreArrayRead(g, &gptr));

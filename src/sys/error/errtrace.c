@@ -212,7 +212,7 @@ PetscErrorCode PetscTraceBackErrorHandler(MPI_Comm comm, int line, const char *f
     if (fun) {
       PetscStrncmp(fun, "main", 4, &ismain);
       if (ismain) {
-        if ((n <= PETSC_ERR_MIN_VALUE) || (n >= PETSC_ERR_MAX_VALUE)) { (*PetscErrorPrintf)("Reached the main program with an out-of-range error code %d. This should never happen\n", n); }
+        if ((n <= PETSC_ERR_MIN_VALUE) || (n >= PETSC_ERR_MAX_VALUE)) (*PetscErrorPrintf)("Reached the main program with an out-of-range error code %d. This should never happen\n", n);
         PetscOptionsViewError();
         PetscErrorPrintfHilight();
         (*PetscErrorPrintf)("----------------End of Error Message -------send entire error message to petsc-maint@mcs.anl.gov----------\n");

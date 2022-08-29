@@ -206,20 +206,20 @@ PetscErrorCode MatGetColumnReductions_MPIAIJ(Mat A, PetscInt type, PetscReal *re
   PetscCall(MatSeqAIJGetArrayRead(aij->B, &dummy));
   PetscCall(MatSeqAIJRestoreArrayRead(aij->B, &dummy));
   if (type == NORM_2) {
-    for (i = 0; i < a_aij->i[aij->A->rmap->n]; i++) { work[A->cmap->rstart + a_aij->j[i]] += PetscAbsScalar(a_aij->a[i] * a_aij->a[i]); }
-    for (i = 0; i < b_aij->i[aij->B->rmap->n]; i++) { work[garray[b_aij->j[i]]] += PetscAbsScalar(b_aij->a[i] * b_aij->a[i]); }
+    for (i = 0; i < a_aij->i[aij->A->rmap->n]; i++) work[A->cmap->rstart + a_aij->j[i]] += PetscAbsScalar(a_aij->a[i] * a_aij->a[i]);
+    for (i = 0; i < b_aij->i[aij->B->rmap->n]; i++) work[garray[b_aij->j[i]]] += PetscAbsScalar(b_aij->a[i] * b_aij->a[i]);
   } else if (type == NORM_1) {
-    for (i = 0; i < a_aij->i[aij->A->rmap->n]; i++) { work[A->cmap->rstart + a_aij->j[i]] += PetscAbsScalar(a_aij->a[i]); }
-    for (i = 0; i < b_aij->i[aij->B->rmap->n]; i++) { work[garray[b_aij->j[i]]] += PetscAbsScalar(b_aij->a[i]); }
+    for (i = 0; i < a_aij->i[aij->A->rmap->n]; i++) work[A->cmap->rstart + a_aij->j[i]] += PetscAbsScalar(a_aij->a[i]);
+    for (i = 0; i < b_aij->i[aij->B->rmap->n]; i++) work[garray[b_aij->j[i]]] += PetscAbsScalar(b_aij->a[i]);
   } else if (type == NORM_INFINITY) {
-    for (i = 0; i < a_aij->i[aij->A->rmap->n]; i++) { work[A->cmap->rstart + a_aij->j[i]] = PetscMax(PetscAbsScalar(a_aij->a[i]), work[A->cmap->rstart + a_aij->j[i]]); }
-    for (i = 0; i < b_aij->i[aij->B->rmap->n]; i++) { work[garray[b_aij->j[i]]] = PetscMax(PetscAbsScalar(b_aij->a[i]), work[garray[b_aij->j[i]]]); }
+    for (i = 0; i < a_aij->i[aij->A->rmap->n]; i++) work[A->cmap->rstart + a_aij->j[i]] = PetscMax(PetscAbsScalar(a_aij->a[i]), work[A->cmap->rstart + a_aij->j[i]]);
+    for (i = 0; i < b_aij->i[aij->B->rmap->n]; i++) work[garray[b_aij->j[i]]] = PetscMax(PetscAbsScalar(b_aij->a[i]), work[garray[b_aij->j[i]]]);
   } else if (type == REDUCTION_SUM_REALPART || type == REDUCTION_MEAN_REALPART) {
-    for (i = 0; i < a_aij->i[aij->A->rmap->n]; i++) { work[A->cmap->rstart + a_aij->j[i]] += PetscRealPart(a_aij->a[i]); }
-    for (i = 0; i < b_aij->i[aij->B->rmap->n]; i++) { work[garray[b_aij->j[i]]] += PetscRealPart(b_aij->a[i]); }
+    for (i = 0; i < a_aij->i[aij->A->rmap->n]; i++) work[A->cmap->rstart + a_aij->j[i]] += PetscRealPart(a_aij->a[i]);
+    for (i = 0; i < b_aij->i[aij->B->rmap->n]; i++) work[garray[b_aij->j[i]]] += PetscRealPart(b_aij->a[i]);
   } else if (type == REDUCTION_SUM_IMAGINARYPART || type == REDUCTION_MEAN_IMAGINARYPART) {
-    for (i = 0; i < a_aij->i[aij->A->rmap->n]; i++) { work[A->cmap->rstart + a_aij->j[i]] += PetscImaginaryPart(a_aij->a[i]); }
-    for (i = 0; i < b_aij->i[aij->B->rmap->n]; i++) { work[garray[b_aij->j[i]]] += PetscImaginaryPart(b_aij->a[i]); }
+    for (i = 0; i < a_aij->i[aij->A->rmap->n]; i++) work[A->cmap->rstart + a_aij->j[i]] += PetscImaginaryPart(a_aij->a[i]);
+    for (i = 0; i < b_aij->i[aij->B->rmap->n]; i++) work[garray[b_aij->j[i]]] += PetscImaginaryPart(b_aij->a[i]);
   } else SETERRQ(PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Unknown reduction type");
   if (type == NORM_INFINITY) {
     PetscCall(MPIU_Allreduce(work, reductions, n, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)A)));
@@ -1743,7 +1743,7 @@ PetscErrorCode MatGetRow_MPIAIJ(Mat matin, PetscInt row, PetscInt *nz, PetscInt 
       if (idx) {
         *idx = idx_p = mat->rowindices;
         if (imark > -1) {
-          for (i = 0; i < imark; i++) { idx_p[i] = cmap[cworkB[i]]; }
+          for (i = 0; i < imark; i++) idx_p[i] = cmap[cworkB[i]];
         } else {
           for (i = 0; i < nzB; i++) {
             if (cmap[cworkB[i]] < cstart) idx_p[i] = cmap[cworkB[i]];
@@ -1910,7 +1910,7 @@ PetscErrorCode MatTranspose_MPIAIJ(Mat A, MatReuse reuse, Mat *matout) {
   B_diag_i    = sub_B_diag->i;
 
   /* Set ilen for diagonal of B */
-  for (i = 0; i < A_diag_ncol; i++) { B_diag_ilen[i] = B_diag_i[i + 1] - B_diag_i[i]; }
+  for (i = 0; i < A_diag_ncol; i++) B_diag_ilen[i] = B_diag_i[i + 1] - B_diag_i[i];
 
   /* Transpose the diagonal part of the matrix. In contrast to the offdiagonal part, this can be done
   very quickly (=without using MatSetValues), because all writes are local. */
@@ -3291,7 +3291,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ(Mat mat, IS isrow, IS iscol, MatReuse c
     } else {
       PetscCall(ISGetMinMax(isrow, &i, &j));
       PetscCall(MatGetOwnershipRange(mat, &start, &end));
-      if (i >= start && j < end) { sameDist[0] = PETSC_TRUE; }
+      if (i >= start && j < end) sameDist[0] = PETSC_TRUE;
     }
 
     /* Check if iscol has same processor distribution as mat */
@@ -3855,7 +3855,7 @@ PetscErrorCode MatMPIAIJSetPreallocationCSR_MPIAIJ(Mat B, const PetscInt Ii[], c
   for (i = 0; i < m; i++) {
     nnz = Ii[i + 1] - Ii[i];
     j   = 0;
-    while (j < nnz && J[j] < cstart) { j++; }
+    while (j < nnz && J[j] < cstart) j++;
     ld[i] = j;
     J += nnz;
   }
@@ -5099,7 +5099,7 @@ PetscErrorCode MatMPIAIJGetLocalMat(Mat A, MatReuse scall, Mat *A_loc) {
   if (scall == MAT_INITIAL_MATRIX) {
     PetscCall(PetscMalloc1(1 + am, &ci));
     ci[0] = 0;
-    for (i = 0; i < am; i++) { ci[i + 1] = ci[i] + (ai[i + 1] - ai[i]) + (bi[i + 1] - bi[i]); }
+    for (i = 0; i < am; i++) ci[i + 1] = ci[i] + (ai[i + 1] - ai[i]) + (bi[i + 1] - bi[i]);
     PetscCall(PetscMalloc1(1 + ci[am], &cj));
     PetscCall(PetscMalloc1(1 + ci[am], &ca));
     k = 0;
@@ -5823,7 +5823,7 @@ PetscErrorCode MatGetBrowsOfAoCols_MPIAIJ(Mat A, Mat B, MatReuse scall, PetscInt
         row = srow[k++] + B->rmap->range[rank]; /* global row idx */
         for (ll = 0; ll < sbs; ll++) {
           PetscCall(MatGetRow_MPIAIJ(B, row + ll, &ncols, &cols, NULL));
-          for (l = 0; l < ncols; l++) { *bufJ++ = cols[l]; }
+          for (l = 0; l < ncols; l++) *bufJ++ = cols[l];
           PetscCall(MatRestoreRow_MPIAIJ(B, row + ll, &ncols, &cols, NULL));
         }
       }
@@ -5857,7 +5857,7 @@ PetscErrorCode MatGetBrowsOfAoCols_MPIAIJ(Mat A, Mat B, MatReuse scall, PetscInt
       row = srow[k++] + B->rmap->range[rank]; /* global row idx */
       for (ll = 0; ll < sbs; ll++) {
         PetscCall(MatGetRow_MPIAIJ(B, row + ll, &ncols, NULL, &vals));
-        for (l = 0; l < ncols; l++) { *bufA++ = vals[l]; }
+        for (l = 0; l < ncols; l++) *bufA++ = vals[l];
         PetscCall(MatRestoreRow_MPIAIJ(B, row + ll, &ncols, NULL, &vals));
       }
     }

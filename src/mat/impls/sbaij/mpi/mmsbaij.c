@@ -233,7 +233,7 @@ PetscErrorCode MatDisAssemble_MPISBAIJ(Mat A) {
 
   /* invent new B and copy stuff over */
   PetscCall(PetscMalloc1(mbs, &nz));
-  for (i = 0; i < mbs; i++) { nz[i] = Bbaij->i[i + 1] - Bbaij->i[i]; }
+  for (i = 0; i < mbs; i++) nz[i] = Bbaij->i[i + 1] - Bbaij->i[i];
   PetscCall(MatCreate(PETSC_COMM_SELF, &Bnew));
   PetscCall(MatSetSizes(Bnew, m, n, m, n));
   PetscCall(MatSetType(Bnew, ((PetscObject)B)->type_name));

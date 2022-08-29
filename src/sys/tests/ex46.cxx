@@ -58,11 +58,11 @@ int main(int argc, char **argv) {
   // Equivalent to MPI_Comm_rank resp. MPI_Comm_size.
   const int myRank = comm->getRank();
   const int size   = comm->getSize();
-  if (myRank == 0) { cout << "Total number of processes: " << size << endl; }
+  if (myRank == 0) cout << "Total number of processes: " << size << endl;
   // Do something with the new communicator.
   exampleRoutine(comm);
   // This tells the Trilinos test framework that the test passed.
-  if (myRank == 0) { cout << "End Result: TEST PASSED" << endl; }
+  if (myRank == 0) cout << "End Result: TEST PASSED" << endl;
   // GlobalMPISession calls MPI_Finalize() in its destructor, if
   // appropriate.  You don't have to do anything here!  Just return
   // from main().  Isn't that helpful?

@@ -173,7 +173,7 @@ static PetscErrorCode MatDestroy_SuperLU_DIST(Mat A) {
   if (lu->CleanUpSuperLU_Dist) {
     /* Deallocate SuperLU_DIST storage */
     PetscStackCallExternalVoid("SuperLU_DIST:Destroy_CompRowLoc_Matrix_dist", Destroy_CompRowLoc_Matrix_dist(&lu->A_sup));
-    if (lu->options.SolveInitialized) { PetscStackCallExternalVoid("SuperLU_DIST:SolveFinalize", SolveFinalize(&lu->options, &lu->SOLVEstruct)); }
+    if (lu->options.SolveInitialized) PetscStackCallExternalVoid("SuperLU_DIST:SolveFinalize", SolveFinalize(&lu->options, &lu->SOLVEstruct));
 #if PETSC_PKG_SUPERLU_DIST_VERSION_GE(7, 2, 0)
     if (lu->use3d) {
       if (lu->grid3d.zscp.Iam == 0) {

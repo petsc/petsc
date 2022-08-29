@@ -33,12 +33,12 @@ PetscErrorCode DMPlexCreateProcessSF(DM dm, PetscSF sfPoint, IS *processRanks, P
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(sfPoint, PETSCSF_CLASSID, 2);
-  if (processRanks) { PetscValidPointer(processRanks, 3); }
-  if (sfProcess) { PetscValidPointer(sfProcess, 4); }
+  if (processRanks) PetscValidPointer(processRanks, 3);
+  if (sfProcess) PetscValidPointer(sfProcess, 4);
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)dm), &size));
   PetscCall(PetscSFGetGraph(sfPoint, &numRoots, &numLeaves, &localPoints, &remotePoints));
   PetscCall(PetscMalloc1(numLeaves, &ranks));
-  for (l = 0; l < numLeaves; ++l) { ranks[l] = remotePoints[l].rank; }
+  for (l = 0; l < numLeaves; ++l) ranks[l] = remotePoints[l].rank;
   PetscCall(PetscSortRemoveDupsInt(&numLeaves, ranks));
   PetscCall(PetscMalloc1(numLeaves, &ranksNew));
   PetscCall(PetscMalloc1(numLeaves, &localPointsNew));

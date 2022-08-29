@@ -944,7 +944,7 @@ static PetscErrorCode DMPlexExpandedVerticesToFaces_Private(DM dm, IS boundary_e
 }
 
 #define CHKERRQI(incall, ierr) \
-  if (ierr) { incall = PETSC_FALSE; }
+  if (ierr) incall = PETSC_FALSE;
 
 static PetscErrorCode DMLabelViewFromOptionsOnComm_Private(DMLabel label, const char optionname[], MPI_Comm comm) {
   PetscViewer       viewer;

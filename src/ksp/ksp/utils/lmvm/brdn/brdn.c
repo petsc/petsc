@@ -123,7 +123,7 @@ static PetscErrorCode MatUpdate_LMVMBrdn(Mat B, Vec X, Vec F) {
     PetscCall(MatUpdateKernel_LMVM(B, lmvm->Xprev, lmvm->Fprev));
     /* If we hit the memory limit, shift the sts array */
     if (old_k == lmvm->k) {
-      for (i = 0; i <= lmvm->k - 1; ++i) { lbrdn->sts[i] = lbrdn->sts[i + 1]; }
+      for (i = 0; i <= lmvm->k - 1; ++i) lbrdn->sts[i] = lbrdn->sts[i + 1];
     }
     PetscCall(VecDot(lmvm->S[lmvm->k], lmvm->S[lmvm->k], &sts));
     lbrdn->sts[lmvm->k] = PetscRealPart(sts);

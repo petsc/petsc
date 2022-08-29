@@ -136,16 +136,16 @@ PetscErrorCode ApplyOperator(Mat A, Vec in, Vec out) {
 
   /* Set "pressures" on ghost boundaries by copying neighboring values*/
   if (isFirstx) {
-    for (ey = starty; ey < starty + ny + nExtray; ++ey) { arrIn[ey][-1][idxP] = arrIn[ey][0][idxP]; }
+    for (ey = starty; ey < starty + ny + nExtray; ++ey) arrIn[ey][-1][idxP] = arrIn[ey][0][idxP];
   }
   if (isLastx) {
-    for (ey = starty; ey < starty + ny + nExtray; ++ey) { arrIn[ey][startx + nx][idxP] = arrIn[ey][startx + nx - 1][idxP]; }
+    for (ey = starty; ey < starty + ny + nExtray; ++ey) arrIn[ey][startx + nx][idxP] = arrIn[ey][startx + nx - 1][idxP];
   }
   if (isFirsty) {
-    for (ex = startx; ex < startx + nx + nExtrax; ++ex) { arrIn[-1][ex][idxP] = arrIn[0][ex][idxP]; }
+    for (ex = startx; ex < startx + nx + nExtrax; ++ex) arrIn[-1][ex][idxP] = arrIn[0][ex][idxP];
   }
   if (isLasty) {
-    for (ex = startx; ex < startx + nx + nExtrax; ++ex) { arrIn[starty + ny][ex][idxP] = arrIn[starty + ny - 1][ex][idxP]; }
+    for (ex = startx; ex < startx + nx + nExtrax; ++ex) arrIn[starty + ny][ex][idxP] = arrIn[starty + ny - 1][ex][idxP];
   }
 
   /* Apply operator on physical points */

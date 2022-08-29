@@ -650,7 +650,7 @@ PetscErrorCode MatMultAdd_SeqKAIJ(Mat A, Vec xx, Vec yy, Vec zz) {
       n    = ii[i + 1] - jrow;
       sums = y + p * i;
       for (j = 0; j < n; j++) {
-        for (k = 0; k < p; k++) { sums[k] += v[jrow + j] * x[q * idx[jrow + j] + k]; }
+        for (k = 0; k < p; k++) sums[k] += v[jrow + j] * x[q * idx[jrow + j] + k];
       }
     }
     PetscCall(PetscLogFlops(3.0 * (a->nz) * p));
@@ -661,7 +661,7 @@ PetscErrorCode MatMultAdd_SeqKAIJ(Mat A, Vec xx, Vec yy, Vec zz) {
       sums = y + p * i;
       for (j = 0; j < n; j++) {
         for (k = 0; k < p; k++) {
-          for (l = 0; l < q; l++) { sums[k] += v[jrow + j] * t[k + l * p] * x[q * idx[jrow + j] + l]; }
+          for (l = 0; l < q; l++) sums[k] += v[jrow + j] * t[k + l * p] * x[q * idx[jrow + j] + l];
         }
       }
     }
@@ -677,7 +677,7 @@ PetscErrorCode MatMultAdd_SeqKAIJ(Mat A, Vec xx, Vec yy, Vec zz) {
       bx   = x + q * i;
       if (i < b->AIJ->cmap->n) {
         for (j = 0; j < q; j++) {
-          for (k = 0; k < p; k++) { sums[k] += s[k + j * p] * bx[j]; }
+          for (k = 0; k < p; k++) sums[k] += s[k + j * p] * bx[j];
         }
       }
     }

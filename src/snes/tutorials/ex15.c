@@ -777,7 +777,7 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx) {
               y = F / J;
               u -= y;
               tot_its++;
-              if (atol > PetscAbsReal(PetscRealPart(F)) || rtol * PetscAbsReal(PetscRealPart(F0)) > PetscAbsReal(PetscRealPart(F)) || stol * PetscAbsReal(PetscRealPart(u)) > PetscAbsReal(PetscRealPart(y))) { break; }
+              if (atol > PetscAbsReal(PetscRealPart(F)) || rtol * PetscAbsReal(PetscRealPart(F0)) > PetscAbsReal(PetscRealPart(F)) || stol * PetscAbsReal(PetscRealPart(u)) > PetscAbsReal(PetscRealPart(y))) break;
             }
             x[j][i] = u;
           }

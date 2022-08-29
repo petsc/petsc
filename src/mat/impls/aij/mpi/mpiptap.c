@@ -730,7 +730,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIXAIJ_allatonce(Mat A, Mat P, PetscInt do
   PetscCall(PetscCalloc2(ptap->c_rmti[pon], &c_rmtj, ptap->c_rmti[pon], &c_rmta));
   PetscCall(MatGetLocalSize(A, &am, NULL));
   cmaxr = 0;
-  for (i = 0; i < pon; i++) { cmaxr = PetscMax(cmaxr, ptap->c_rmti[i + 1] - ptap->c_rmti[i]); }
+  for (i = 0; i < pon; i++) cmaxr = PetscMax(cmaxr, ptap->c_rmti[i + 1] - ptap->c_rmti[i]);
   PetscCall(PetscCalloc4(cmaxr, &apindices, cmaxr, &apvalues, cmaxr, &apvaluestmp, pon, &c_rmtc));
   PetscCall(PetscHMapIVCreate(&hmap));
   PetscCall(PetscHMapIVResize(hmap, cmaxr));
@@ -798,7 +798,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIXAIJ_allatonce(Mat A, Mat P, PetscInt do
   co      = (Mat_SeqAIJ *)(c->B)->data;
 
   cmaxr = 0;
-  for (i = 0; i < pn; i++) { cmaxr = PetscMax(cmaxr, (cd->i[i + 1] - cd->i[i]) + (co->i[i + 1] - co->i[i])); }
+  for (i = 0; i < pn; i++) cmaxr = PetscMax(cmaxr, (cd->i[i + 1] - cd->i[i]) + (co->i[i + 1] - co->i[i]));
   PetscCall(PetscCalloc5(cmaxr, &apindices, cmaxr, &apvalues, cmaxr, &apvaluestmp, pn, &dcc, pn, &occ));
   PetscCall(PetscHMapIVCreate(&hmap));
   PetscCall(PetscHMapIVResize(hmap, cmaxr));
@@ -817,7 +817,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIXAIJ_allatonce(Mat A, Mat P, PetscInt do
     pda = pd->a + pd->i[ii];
     for (j = 0; j < nzi; j++) {
       row = pcstart + pdj[j] * dof + offset;
-      for (jj = 0; jj < voff; jj++) { apvaluestmp[jj] = apvalues[jj] * pda[j]; }
+      for (jj = 0; jj < voff; jj++) apvaluestmp[jj] = apvalues[jj] * pda[j];
       PetscCall(PetscLogFlops(voff));
       PetscCall(MatSetValues(C, 1, &row, voff, apindices, apvaluestmp, ADD_VALUES));
     }
@@ -888,10 +888,10 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIXAIJ_allatonce_merged(Mat A, Mat P, Pets
   pcstart *= dof;
   pcend *= dof;
   cmaxr = 0;
-  for (i = 0; i < pon; i++) { cmaxr = PetscMax(cmaxr, ptap->c_rmti[i + 1] - ptap->c_rmti[i]); }
+  for (i = 0; i < pon; i++) cmaxr = PetscMax(cmaxr, ptap->c_rmti[i + 1] - ptap->c_rmti[i]);
   cd = (Mat_SeqAIJ *)(c->A)->data;
   co = (Mat_SeqAIJ *)(c->B)->data;
-  for (i = 0; i < pn; i++) { cmaxr = PetscMax(cmaxr, (cd->i[i + 1] - cd->i[i]) + (co->i[i + 1] - co->i[i])); }
+  for (i = 0; i < pn; i++) cmaxr = PetscMax(cmaxr, (cd->i[i + 1] - cd->i[i]) + (co->i[i + 1] - co->i[i]));
   PetscCall(PetscCalloc4(cmaxr, &apindices, cmaxr, &apvalues, cmaxr, &apvaluestmp, pon, &c_rmtc));
   PetscCall(PetscHMapIVCreate(&hmap));
   PetscCall(PetscHMapIVResize(hmap, cmaxr));
@@ -948,7 +948,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIXAIJ_allatonce_merged(Mat A, Mat P, Pets
     pda = pd->a + pd->i[ii];
     for (j = 0; j < dnzi; j++) {
       row = pcstart + pdj[j] * dof + offset;
-      for (jj = 0; jj < voff; jj++) { apvaluestmp[jj] = apvalues[jj] * pda[j]; } /* End kk */
+      for (jj = 0; jj < voff; jj++) apvaluestmp[jj] = apvalues[jj] * pda[j]; /* End kk */
       PetscCall(PetscLogFlops(voff));
       PetscCall(MatSetValues(C, 1, &row, voff, apindices, apvaluestmp, ADD_VALUES));
     } /* End j */
@@ -1097,7 +1097,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIXAIJ_allatonce(Mat A, Mat P, PetscInt d
   PetscCall(PetscSFComputeDegreeBegin(sf, &rootdegrees));
   PetscCall(PetscSFComputeDegreeEnd(sf, &rootdegrees));
   rootspacesize = 0;
-  for (i = 0; i < pn; i++) { rootspacesize += rootdegrees[i]; }
+  for (i = 0; i < pn; i++) rootspacesize += rootdegrees[i];
   PetscCall(PetscMalloc1(rootspacesize, &rootspace));
   PetscCall(PetscMalloc1(rootspacesize + 1, &rootspaceoffsets));
   /* Get information from leaves
@@ -1382,7 +1382,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIXAIJ_allatonce_merged(Mat A, Mat P, Pet
   PetscCall(PetscSFComputeDegreeBegin(sf, &rootdegrees));
   PetscCall(PetscSFComputeDegreeEnd(sf, &rootdegrees));
   rootspacesize = 0;
-  for (i = 0; i < pn; i++) { rootspacesize += rootdegrees[i]; }
+  for (i = 0; i < pn; i++) rootspacesize += rootdegrees[i];
   PetscCall(PetscMalloc1(rootspacesize, &rootspace));
   PetscCall(PetscMalloc1(rootspacesize + 1, &rootspaceoffsets));
   /* Get information from leaves
@@ -1897,7 +1897,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A, Mat P, Mat C) {
   /* ---------------------------------------------- */
   /* get data from symbolic products */
   p_loc = (Mat_SeqAIJ *)(ptap->P_loc)->data;
-  if (ptap->P_oth) { p_oth = (Mat_SeqAIJ *)(ptap->P_oth)->data; }
+  if (ptap->P_oth) p_oth = (Mat_SeqAIJ *)(ptap->P_oth)->data;
   apa = ptap->apa;
   api = ap->i;
   apj = ap->j;

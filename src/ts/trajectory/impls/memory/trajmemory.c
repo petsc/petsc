@@ -235,7 +235,7 @@ static PetscErrorCode StackResize(Stack *stack, PetscInt newsize) {
 
   PetscFunctionBegin;
   PetscCall(PetscCalloc1(newsize * sizeof(StackElement), &newcontainer));
-  for (i = 0; i < stack->stacksize; i++) { newcontainer[i] = stack->container[i]; }
+  for (i = 0; i < stack->stacksize; i++) newcontainer[i] = stack->container[i];
   PetscCall(PetscFree(stack->container));
   stack->container = newcontainer;
   stack->stacksize = newsize;

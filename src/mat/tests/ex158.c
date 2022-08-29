@@ -97,7 +97,7 @@ int main(int argc, char **args) {
     for (i = 2; i < 3; i++) { /* (i=3,4: -- error in VecScatterPetscToFFTW(A,input,x); */
       DIM = i;
       PetscCall(PetscMalloc1(i, &dim));
-      for (k = 0; k < i; k++) { dim[k] = 30; }
+      for (k = 0; k < i; k++) dim[k] = 30;
       N *= dim[i - 1];
 
       /* Create FFTW object */

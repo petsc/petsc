@@ -78,7 +78,7 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin, PetscViewer viewer) {
   /* determine maximum message to arrive */
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)xin), &rank));
   PetscCallMPI(MPI_Reduce(&work, &len, 1, MPIU_INT, MPI_MAX, 0, PetscObjectComm((PetscObject)xin)));
-  if (format == PETSC_VIEWER_ASCII_GLVIS) { rank = 0, len = 0; } /* no parallel distributed write support from GLVis */
+  if (format == PETSC_VIEWER_ASCII_GLVIS) rank = 0, len = 0; /* no parallel distributed write support from GLVis */
   if (rank == 0) {
     PetscCall(PetscMalloc1(len, &values));
     /*
@@ -610,8 +610,8 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer) {
   /* hdf5 chunks must be less than 4GB */
   if (chunksize > PETSC_HDF5_MAX_CHUNKSIZE / 64) {
     if (bs > 1 || dim2) {
-      if (chunkDims[dim - 2] > (PetscInt)PetscSqrtReal((PetscReal)(PETSC_HDF5_MAX_CHUNKSIZE / 128))) { chunkDims[dim - 2] = (PetscInt)PetscSqrtReal((PetscReal)(PETSC_HDF5_MAX_CHUNKSIZE / 128)); }
-      if (chunkDims[dim - 1] > (PetscInt)PetscSqrtReal((PetscReal)(PETSC_HDF5_MAX_CHUNKSIZE / 128))) { chunkDims[dim - 1] = (PetscInt)PetscSqrtReal((PetscReal)(PETSC_HDF5_MAX_CHUNKSIZE / 128)); }
+      if (chunkDims[dim - 2] > (PetscInt)PetscSqrtReal((PetscReal)(PETSC_HDF5_MAX_CHUNKSIZE / 128))) chunkDims[dim - 2] = (PetscInt)PetscSqrtReal((PetscReal)(PETSC_HDF5_MAX_CHUNKSIZE / 128));
+      if (chunkDims[dim - 1] > (PetscInt)PetscSqrtReal((PetscReal)(PETSC_HDF5_MAX_CHUNKSIZE / 128))) chunkDims[dim - 1] = (PetscInt)PetscSqrtReal((PetscReal)(PETSC_HDF5_MAX_CHUNKSIZE / 128));
     } else {
       chunkDims[dim - 1] = PETSC_HDF5_MAX_CHUNKSIZE / 128;
     }
@@ -621,8 +621,8 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer) {
   /* hdf5 chunks must be less than 4GB */
   if (chunksize > PETSC_HDF5_MAX_CHUNKSIZE / 64) {
     if (bs > 1 || dim2) {
-      if (chunkDims[dim - 2] > (PetscInt)PetscSqrtReal((PetscReal)(PETSC_HDF5_MAX_CHUNKSIZE / 64))) { chunkDims[dim - 2] = (PetscInt)PetscSqrtReal((PetscReal)(PETSC_HDF5_MAX_CHUNKSIZE / 64)); }
-      if (chunkDims[dim - 1] > (PetscInt)PetscSqrtReal((PetscReal)(PETSC_HDF5_MAX_CHUNKSIZE / 64))) { chunkDims[dim - 1] = (PetscInt)PetscSqrtReal((PetscReal)(PETSC_HDF5_MAX_CHUNKSIZE / 64)); }
+      if (chunkDims[dim - 2] > (PetscInt)PetscSqrtReal((PetscReal)(PETSC_HDF5_MAX_CHUNKSIZE / 64))) chunkDims[dim - 2] = (PetscInt)PetscSqrtReal((PetscReal)(PETSC_HDF5_MAX_CHUNKSIZE / 64));
+      if (chunkDims[dim - 1] > (PetscInt)PetscSqrtReal((PetscReal)(PETSC_HDF5_MAX_CHUNKSIZE / 64))) chunkDims[dim - 1] = (PetscInt)PetscSqrtReal((PetscReal)(PETSC_HDF5_MAX_CHUNKSIZE / 64));
     } else {
       chunkDims[dim - 1] = PETSC_HDF5_MAX_CHUNKSIZE / 64;
     }

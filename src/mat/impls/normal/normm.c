@@ -242,7 +242,7 @@ PetscErrorCode MatGetDiagonal_Normal(Mat N, Vec v) {
   PetscCall(MatGetOwnershipRange(A, &rstart, &rend));
   for (i = rstart; i < rend; i++) {
     PetscCall(MatGetRow(A, i, &nnz, &cols, &mvalues));
-    for (j = 0; j < nnz; j++) { work[cols[j]] += mvalues[j] * mvalues[j]; }
+    for (j = 0; j < nnz; j++) work[cols[j]] += mvalues[j] * mvalues[j];
     PetscCall(MatRestoreRow(A, i, &nnz, &cols, &mvalues));
   }
   PetscCall(MPIU_Allreduce(work, diag, A->cmap->N, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)N)));

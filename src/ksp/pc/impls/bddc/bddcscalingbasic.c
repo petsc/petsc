@@ -70,7 +70,7 @@ static PetscErrorCode PCBDDCScalingExtension_Deluxe(PC pc, Vec x, Vec y) {
     PetscCall(VecGetArrayRead(x, &array_x));
     PetscCall(VecGetArrayRead(pcis->D, &array_D));
     PetscCall(VecGetArray(pcbddc->work_scaling, &array));
-    for (i = 0; i < deluxe_ctx->n_simple; i++) { array[deluxe_ctx->idx_simple_B[i]] = array_x[deluxe_ctx->idx_simple_B[i]] * array_D[deluxe_ctx->idx_simple_B[i]]; }
+    for (i = 0; i < deluxe_ctx->n_simple; i++) array[deluxe_ctx->idx_simple_B[i]] = array_x[deluxe_ctx->idx_simple_B[i]] * array_D[deluxe_ctx->idx_simple_B[i]];
     PetscCall(VecRestoreArray(pcbddc->work_scaling, &array));
     PetscCall(VecRestoreArrayRead(pcis->D, &array_D));
     PetscCall(VecRestoreArrayRead(x, &array_x));
@@ -161,7 +161,7 @@ static PetscErrorCode PCBDDCScalingRestriction_Deluxe(PC pc, Vec x, Vec y) {
     const PetscScalar *array_D;
     PetscCall(VecGetArray(y, &array_y));
     PetscCall(VecGetArrayRead(pcis->D, &array_D));
-    for (i = 0; i < deluxe_ctx->n_simple; i++) { array_y[deluxe_ctx->idx_simple_B[i]] *= array_D[deluxe_ctx->idx_simple_B[i]]; }
+    for (i = 0; i < deluxe_ctx->n_simple; i++) array_y[deluxe_ctx->idx_simple_B[i]] *= array_D[deluxe_ctx->idx_simple_B[i]];
     PetscCall(VecRestoreArrayRead(pcis->D, &array_D));
     PetscCall(VecRestoreArray(y, &array_y));
   }

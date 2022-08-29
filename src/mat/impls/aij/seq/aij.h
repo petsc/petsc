@@ -171,8 +171,8 @@ static inline PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA, MatScalar **a, PetscInt *
     PetscCall(PetscMalloc3(BS2 *new_nz, &new_a, new_nz, &new_j, AM + 1, &new_i)); \
 \
     /* copy over old data into new slots */ \
-    for (ii = 0; ii < ROW + 1; ii++) { new_i[ii] = AI[ii]; } \
-    for (ii = ROW + 1; ii < AM + 1; ii++) { new_i[ii] = AI[ii] + CHUNKSIZE; } \
+    for (ii = 0; ii < ROW + 1; ii++) new_i[ii] = AI[ii]; \
+    for (ii = ROW + 1; ii < AM + 1; ii++) new_i[ii] = AI[ii] + CHUNKSIZE; \
     PetscCall(PetscArraycpy(new_j, AJ, AI[ROW] + NROW)); \
     len = (new_nz - CHUNKSIZE - AI[ROW] - NROW); \
     PetscCall(PetscArraycpy(new_j + AI[ROW] + NROW + CHUNKSIZE, AJ + AI[ROW] + NROW, len)); \
@@ -206,8 +206,8 @@ static inline PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA, MatScalar **a, PetscInt *
     PetscCall(PetscMalloc1(AM + 1, &new_i)); \
 \
     /* copy over old data into new slots */ \
-    for (ii = 0; ii < ROW + 1; ii++) { new_i[ii] = AI[ii]; } \
-    for (ii = ROW + 1; ii < AM + 1; ii++) { new_i[ii] = AI[ii] + CHUNKSIZE; } \
+    for (ii = 0; ii < ROW + 1; ii++) new_i[ii] = AI[ii]; \
+    for (ii = ROW + 1; ii < AM + 1; ii++) new_i[ii] = AI[ii] + CHUNKSIZE; \
     PetscCall(PetscArraycpy(new_j, AJ, AI[ROW] + NROW)); \
     len = (new_nz - CHUNKSIZE - AI[ROW] - NROW); \
     PetscCall(PetscArraycpy(new_j + AI[ROW] + NROW + CHUNKSIZE, AJ + AI[ROW] + NROW, len)); \

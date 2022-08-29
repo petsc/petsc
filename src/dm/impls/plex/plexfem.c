@@ -1076,9 +1076,9 @@ PetscErrorCode DMPlexInsertBoundaryValues(DM dm, PetscBool insertEssential, Vec 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(locX, VEC_CLASSID, 3);
-  if (faceGeomFVM) { PetscValidHeaderSpecific(faceGeomFVM, VEC_CLASSID, 5); }
-  if (cellGeomFVM) { PetscValidHeaderSpecific(cellGeomFVM, VEC_CLASSID, 6); }
-  if (gradFVM) { PetscValidHeaderSpecific(gradFVM, VEC_CLASSID, 7); }
+  if (faceGeomFVM) PetscValidHeaderSpecific(faceGeomFVM, VEC_CLASSID, 5);
+  if (cellGeomFVM) PetscValidHeaderSpecific(cellGeomFVM, VEC_CLASSID, 6);
+  if (gradFVM) PetscValidHeaderSpecific(gradFVM, VEC_CLASSID, 7);
   PetscTryMethod(dm, "DMPlexInsertBoundaryValues_C", (DM, PetscBool, Vec, PetscReal, Vec, Vec, Vec), (dm, insertEssential, locX, time, faceGeomFVM, cellGeomFVM, gradFVM));
   PetscFunctionReturn(0);
 }
@@ -1104,10 +1104,10 @@ PetscErrorCode DMPlexInsertBoundaryValues(DM dm, PetscBool insertEssential, Vec 
 PetscErrorCode DMPlexInsertTimeDerivativeBoundaryValues(DM dm, PetscBool insertEssential, Vec locX_t, PetscReal time, Vec faceGeomFVM, Vec cellGeomFVM, Vec gradFVM) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (locX_t) { PetscValidHeaderSpecific(locX_t, VEC_CLASSID, 3); }
-  if (faceGeomFVM) { PetscValidHeaderSpecific(faceGeomFVM, VEC_CLASSID, 5); }
-  if (cellGeomFVM) { PetscValidHeaderSpecific(cellGeomFVM, VEC_CLASSID, 6); }
-  if (gradFVM) { PetscValidHeaderSpecific(gradFVM, VEC_CLASSID, 7); }
+  if (locX_t) PetscValidHeaderSpecific(locX_t, VEC_CLASSID, 3);
+  if (faceGeomFVM) PetscValidHeaderSpecific(faceGeomFVM, VEC_CLASSID, 5);
+  if (cellGeomFVM) PetscValidHeaderSpecific(cellGeomFVM, VEC_CLASSID, 6);
+  if (gradFVM) PetscValidHeaderSpecific(gradFVM, VEC_CLASSID, 7);
   PetscTryMethod(dm, "DMPlexInsertTimeDerviativeBoundaryValues_C", (DM, PetscBool, Vec, PetscReal, Vec, Vec, Vec), (dm, insertEssential, locX_t, time, faceGeomFVM, cellGeomFVM, gradFVM));
   PetscFunctionReturn(0);
 }
@@ -1905,7 +1905,7 @@ PetscErrorCode DMPlexComputeGradientClementInterpolant(DM dm, Vec locX, Vec locC
       }
       PetscCall(DMPlexVecRestoreClosure(dm, NULL, locX, cell, NULL, &x));
       for (fc = 0; fc < numComponents; ++fc) {
-        for (d = 0; d < coordDim; ++d) { gradsum[fc * coordDim + d] += grad[fc * coordDim + d]; }
+        for (d = 0; d < coordDim; ++d) gradsum[fc * coordDim + d] += grad[fc * coordDim + d];
       }
       volsum += vol;
       if (debug) {
@@ -3260,8 +3260,8 @@ PetscErrorCode DMPlexGetCellFields(DM dm, IS cellIS, Vec locX, Vec locX_t, Vec l
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(locX, VEC_CLASSID, 3);
-  if (locX_t) { PetscValidHeaderSpecific(locX_t, VEC_CLASSID, 4); }
-  if (locA) { PetscValidHeaderSpecific(locA, VEC_CLASSID, 5); }
+  if (locX_t) PetscValidHeaderSpecific(locX_t, VEC_CLASSID, 4);
+  if (locA) PetscValidHeaderSpecific(locA, VEC_CLASSID, 5);
   PetscValidPointer(u, 6);
   PetscValidPointer(u_t, 7);
   PetscValidPointer(a, 8);
@@ -3284,9 +3284,9 @@ PetscErrorCode DMPlexGetCellFields(DM dm, IS cellIS, Vec locX, Vec locX_t, Vec l
   numCells = cEnd - cStart;
   PetscCall(DMGetWorkArray(dm, numCells * totDim, MPIU_SCALAR, u));
   if (locX_t) PetscCall(DMGetWorkArray(dm, numCells * totDim, MPIU_SCALAR, u_t));
-  else { *u_t = NULL; }
+  else *u_t = NULL;
   if (locA) PetscCall(DMGetWorkArray(dm, numCells * totDimAux, MPIU_SCALAR, a));
-  else { *a = NULL; }
+  else *a = NULL;
   for (c = cStart; c < cEnd; ++c) {
     const PetscInt cell = cells ? cells[c] : c;
     const PetscInt cind = c - cStart;
@@ -3444,10 +3444,10 @@ PetscErrorCode DMPlexGetFaceFields(DM dm, PetscInt fStart, PetscInt fEnd, Vec lo
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(locX, VEC_CLASSID, 4);
-  if (locX_t) { PetscValidHeaderSpecific(locX_t, VEC_CLASSID, 5); }
+  if (locX_t) PetscValidHeaderSpecific(locX_t, VEC_CLASSID, 5);
   PetscValidHeaderSpecific(faceGeometry, VEC_CLASSID, 6);
   PetscValidHeaderSpecific(cellGeometry, VEC_CLASSID, 7);
-  if (locGrad) { PetscValidHeaderSpecific(locGrad, VEC_CLASSID, 8); }
+  if (locGrad) PetscValidHeaderSpecific(locGrad, VEC_CLASSID, 8);
   PetscValidPointer(uL, 10);
   PetscValidPointer(uR, 11);
   PetscCall(DMGetDimension(dm, &dim));
@@ -3770,7 +3770,7 @@ PetscErrorCode DMPlexComputeResidual_Patch_Internal(DM dm, PetscSection section,
     if (isImplicit != fimp) continue;
     PetscCall(PetscDSGetDiscretization(prob, f, &obj));
     PetscCall(PetscObjectGetClassId(obj, &id));
-    if (id == PETSCFE_CLASSID) { useFEM = PETSC_TRUE; }
+    if (id == PETSCFE_CLASSID) useFEM = PETSC_TRUE;
     PetscCheck(id != PETSCFV_CLASSID, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Use of FVM with PCPATCH not yet implemented");
   }
   if (useFEM) {
@@ -4100,8 +4100,8 @@ PetscErrorCode DMPlexComputeJacobian_Patch_Internal(DM dm, PetscSection section,
         for (c = 0; c < chunkSize; ++c, eOffset += totDim * totDim) {
           for (fc = 0; fc < Nc; ++fc) {
             const PetscInt i = foff + fc;
-            if (hasJac) { elemMat[eOffset + i * totDim + i] = 1.0; }
-            if (hasPrec) { elemMatP[eOffset + i * totDim + i] = 1.0; }
+            if (hasJac) elemMat[eOffset + i * totDim + i] = 1.0;
+            if (hasPrec) elemMatP[eOffset + i * totDim + i] = 1.0;
           }
         }
       }
@@ -4478,7 +4478,7 @@ PetscErrorCode DMPlexComputeResidual_Internal(DM dm, PetscFormKey key, IS cellIS
     if (isImplicit != fimp) continue;
     PetscCall(PetscDSGetDiscretization(ds, f, &obj));
     PetscCall(PetscObjectGetClassId(obj, &id));
-    if (id == PETSCFE_CLASSID) { useFEM = PETSC_TRUE; }
+    if (id == PETSCFE_CLASSID) useFEM = PETSC_TRUE;
     if (id == PETSCFV_CLASSID) {
       useFVM = PETSC_TRUE;
       fvm    = (PetscFV)obj;
@@ -4854,7 +4854,7 @@ PetscErrorCode DMPlexComputeResidual_Hybrid_Internal(DM dm, PetscFormKey key[], 
         else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %" PetscInt_FMT " does not have cell %" PetscInt_FMT " in its support", cone[c], cellStart);
         PetscCall(DMGetAuxiliaryVec(dm, key[c].label, key[c].value, key[c].part, &locA[c]));
         if (locA[c]) PetscCall(VecGetDM(locA[c], &dmAux[c]));
-        else { dmAux[c] = dmAux[2]; }
+        else dmAux[c] = dmAux[2];
         PetscCall(DMGetCellDS(dmAux[c], support[s], &dsAux[c]));
         PetscCall(PetscDSGetTotalDimension(dsAux[c], &totDimAux[c]));
       }
@@ -5325,7 +5325,7 @@ PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, PetscFormKey key, IS cellIS
           for (f = 0; f < NbI; ++f) {
             const PetscInt i = offsetI + f * NcI + fc;
             if (hasPrec) {
-              if (hasJac) { elemMat[eOffset + i * totDim + i] = 1.0; }
+              if (hasJac) elemMat[eOffset + i * totDim + i] = 1.0;
               elemMatP[eOffset + i * totDim + i] = 1.0;
             } else {
               elemMat[eOffset + i * totDim + i] = 1.0;
@@ -5453,7 +5453,7 @@ PetscErrorCode DMPlexComputeJacobian_Hybrid_Internal(DM dm, PetscFormKey key[], 
         else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %" PetscInt_FMT " does not have cell %" PetscInt_FMT " in its support", cone[c], cellStart);
         PetscCall(DMGetAuxiliaryVec(dm, key[c].label, key[c].value, key[c].part, &locA[c]));
         if (locA[c]) PetscCall(VecGetDM(locA[c], &dmAux[c]));
-        else { dmAux[c] = dmAux[2]; }
+        else dmAux[c] = dmAux[2];
         PetscCall(DMGetCellDS(dmAux[c], support[s], &dsAux[c]));
         PetscCall(PetscDSGetTotalDimension(dsAux[c], &totDimAux[c]));
       }

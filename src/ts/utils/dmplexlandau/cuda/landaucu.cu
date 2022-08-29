@@ -211,7 +211,7 @@ __global__ void landau_form_fdf(const PetscInt dim, const PetscInt Nb, const Pet
         for (d = 0; d < dim; ++d) refSpaceDer[d] += Dq[cidx * dim + d] * PetscRealPart(coef[f * Nb + cidx]);
       }
       for (d = 0; d < dim; ++d) {
-        for (e = 0, u_x[d] = 0.0; e < dim; ++e) { u_x[d] += invJ[e * dim + d] * refSpaceDer[e]; }
+        for (e = 0, u_x[d] = 0.0; e < dim; ++e) u_x[d] += invJ[e * dim + d] * refSpaceDer[e];
       }
       d_dfdx[idx] = u_x[0];
       d_dfdy[idx] = u_x[1];
@@ -254,7 +254,7 @@ __device__ void landau_jac_kernel(const PetscInt num_grids, const PetscInt jpidx
   for (d2 = 0; d2 < dim; d2++) {
     gg2_temp[d2] = 0;
 #pragma unroll
-    for (d3 = 0; d3 < dim; d3++) { gg3_temp[d2][d3] = 0; }
+    for (d3 = 0; d3 < dim; d3++) gg3_temp[d2][d3] = 0;
   }
   if (threadIdx.y == 0) {
     // copy species into shared memory
@@ -345,7 +345,7 @@ __device__ void landau_jac_kernel(const PetscInt num_grids, const PetscInt jpidx
     for (d2 = 0; d2 < dim; d2++) {
       gg2_temp[d2] += __shfl_xor_sync(0xffffffff, gg2_temp[d2], delta, blockDim.x);
 #pragma unroll
-      for (d3 = 0; d3 < dim; d3++) { gg3_temp[d2][d3] += __shfl_xor_sync(0xffffffff, gg3_temp[d2][d3], delta, blockDim.x); }
+      for (d3 = 0; d3 < dim; d3++) gg3_temp[d2][d3] += __shfl_xor_sync(0xffffffff, gg3_temp[d2][d3], delta, blockDim.x);
     }
   }
   // add alpha and put in gg2/3
@@ -354,12 +354,12 @@ __device__ void landau_jac_kernel(const PetscInt num_grids, const PetscInt jpidx
     for (d2 = 0; d2 < dim; d2++) {
       s_gg2[d2][myQi][fieldA] += gg2_temp[d2] * s_nu_alpha[fieldA + f_off];
 #pragma unroll
-      for (d3 = 0; d3 < dim; d3++) { s_gg3[d2][d3][myQi][fieldA] -= gg3_temp[d2][d3] * s_nu_alpha[fieldA + f_off] * s_invMass[fieldA + f_off]; }
+      for (d3 = 0; d3 < dim; d3++) s_gg3[d2][d3][myQi][fieldA] -= gg3_temp[d2][d3] * s_nu_alpha[fieldA + f_off] * s_invMass[fieldA + f_off];
     }
   }
   __syncthreads();
   /* add electric field term once per IP */
-  for (fieldA = threadIdx.x; fieldA < loc_Nf; fieldA += blockDim.x) { s_gg2[dim - 1][myQi][fieldA] += Eq_m[fieldA + f_off]; }
+  for (fieldA = threadIdx.x; fieldA < loc_Nf; fieldA += blockDim.x) s_gg2[dim - 1][myQi][fieldA] += Eq_m[fieldA + f_off];
   __syncthreads();
   /* Jacobian transform - g2 */
   for (fieldA = threadIdx.x; fieldA < loc_Nf; fieldA += blockDim.x) {
@@ -370,7 +370,7 @@ __device__ void landau_jac_kernel(const PetscInt num_grids, const PetscInt jpidx
         s_g2[d][myQi][fieldA] += invJj[d * dim + d2] * s_gg2[d2][myQi][fieldA];
         s_g3[d][d2][myQi][fieldA] = 0.0;
         for (d3 = 0; d3 < dim; ++d3) {
-          for (dp = 0; dp < dim; ++dp) { s_g3[d][d2][myQi][fieldA] += invJj[d * dim + d3] * s_gg3[d3][dp][myQi][fieldA] * invJj[d2 * dim + dp]; }
+          for (dp = 0; dp < dim; ++dp) s_g3[d][d2][myQi][fieldA] += invJj[d * dim + d3] * s_gg3[d3][dp][myQi][fieldA] * invJj[d2 * dim + dp];
         }
         s_g3[d][d2][myQi][fieldA] *= wj;
       }
@@ -390,7 +390,7 @@ __device__ void landau_jac_kernel(const PetscInt num_grids, const PetscInt jpidx
             const PetscReal *BJq = &BB[qj * Nb], *DIq = &DD[qj * Nb * dim];
             for (d = 0; d < dim; ++d) {
               t += DIq[f * dim + d] * s_g2[d][qj][fieldA] * BJq[g];
-              for (d2 = 0; d2 < dim; ++d2) { t += DIq[f * dim + d] * s_g3[d][d2][qj][fieldA] * DIq[g * dim + d2]; }
+              for (d2 = 0; d2 < dim; ++d2) t += DIq[f * dim + d] * s_g3[d][d2][qj][fieldA] * DIq[g * dim + d2];
             }
           }
           if (elemMat) {
@@ -436,7 +436,7 @@ __device__ void landau_jac_kernel(const PetscInt num_grids, const PetscInt jpidx
               nc = d_maps[grid]->num_face;
             }
             for (q = 0; q < nr; q++) {
-              for (d = 0; d < nc; d++) { vals[q * nc + d] = s_scale[f][q] * s_scale[g][d] * s_fieldMats[f][g]; }
+              for (d = 0; d < nc; d++) vals[q * nc + d] = s_scale[f][q] * s_scale[g][d] * s_fieldMats[f][g];
             }
             MatSetValuesDevice(d_mat, nr, s_idx[f], nc, s_idx[g], vals, ADD_VALUES);
           }
@@ -626,7 +626,7 @@ __global__ void __launch_bounds__(256, 4) landau_mass(const PetscInt dim, const 
               nc = d_maps[grid]->num_face;
             }
             for (q = 0; q < nr; q++) {
-              for (d = 0; d < nc; d++) { vals[q * nc + d] = (*s_scale)[f][q] * (*s_scale)[g][d] * (*s_fieldMats)[f][g]; }
+              for (d = 0; d < nc; d++) vals[q * nc + d] = (*s_scale)[f][q] * (*s_scale)[g][d] * (*s_fieldMats)[f][g];
             }
             MatSetValuesDevice(d_mat, nr, (*s_idx)[f], nc, (*s_idx)[g], vals, ADD_VALUES);
           }

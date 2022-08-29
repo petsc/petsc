@@ -582,7 +582,7 @@ PetscErrorCode ComputeInitialGuess(SNES snes, Vec X, void *dummy) {
   PetscCall(DMDAVecGetArray(da, X, &x));
   /* Perform local computations */
   for (j = ys; j < ys + ym; j++) {
-    for (i = xs; i < xs + xm; i++) { x[j][i] = (((j + 1.0) * user->bottom[i + 1] + (my - j + 1.0) * user->top[i + 1]) / (my + 2.0) + ((i + 1.0) * user->left[j + 1] + (mx - i + 1.0) * user->right[j + 1]) / (mx + 2.0)) / 2.0; }
+    for (i = xs; i < xs + xm; i++) x[j][i] = (((j + 1.0) * user->bottom[i + 1] + (my - j + 1.0) * user->top[i + 1]) / (my + 2.0) + ((i + 1.0) * user->left[j + 1] + (mx - i + 1.0) * user->right[j + 1]) / (mx + 2.0)) / 2.0;
   }
   /* Restore vectors */
   PetscCall(DMDAVecRestoreArray(da, X, &x));

@@ -136,7 +136,7 @@ PetscErrorCode MatSeqSELLSetPreallocation_SeqSELL(Mat B, PetscInt maxallocrow, c
       b->sliidx[0] = 0;
       for (i = 1; i < totalslices; i++) {
         b->sliidx[i] = 0;
-        for (j = 0; j < 8; j++) { b->sliidx[i] = PetscMax(b->sliidx[i], rlen[8 * (i - 1) + j]); }
+        for (j = 0; j < 8; j++) b->sliidx[i] = PetscMax(b->sliidx[i], rlen[8 * (i - 1) + j]);
         maxallocrow = PetscMax(b->sliidx[i], maxallocrow);
         PetscCall(PetscIntSumError(b->sliidx[i - 1], 8 * b->sliidx[i], &b->sliidx[i]));
       }
@@ -254,7 +254,7 @@ PetscErrorCode MatConvert_SeqAIJ_SeqSELL(Mat A, MatType newtype, MatReuse reuse,
   } else {
     if (PetscDefined(USE_DEBUG) || !a->ilen) {
       PetscCall(PetscMalloc1(m, &rowlengths));
-      for (i = 0; i < m; i++) { rowlengths[i] = ai[i + 1] - ai[i]; }
+      for (i = 0; i < m; i++) rowlengths[i] = ai[i + 1] - ai[i];
     }
     if (PetscDefined(USE_DEBUG) && a->ilen) {
       PetscBool eq;
@@ -950,7 +950,7 @@ PetscErrorCode MatDiagonalScale_SeqSELL(Mat A, Vec ll, Vec rr) {
           if (row < (A->rmap->n & 0x07)) a->val[j] *= l[8 * i + row];
         }
       } else {
-        for (j = a->sliidx[i], row = 0; j < a->sliidx[i + 1]; j++, row = ((row + 1) & 0x07)) { a->val[j] *= l[8 * i + row]; }
+        for (j = a->sliidx[i], row = 0; j < a->sliidx[i + 1]; j++, row = ((row + 1) & 0x07)) a->val[j] *= l[8 * i + row];
       }
     }
     PetscCall(VecRestoreArrayRead(ll, &l));
@@ -966,7 +966,7 @@ PetscErrorCode MatDiagonalScale_SeqSELL(Mat A, Vec ll, Vec rr) {
           if (row < (A->rmap->n & 0x07)) a->val[j] *= r[a->colidx[j]];
         }
       } else {
-        for (j = a->sliidx[i]; j < a->sliidx[i + 1]; j++) { a->val[j] *= r[a->colidx[j]]; }
+        for (j = a->sliidx[i]; j < a->sliidx[i + 1]; j++) a->val[j] *= r[a->colidx[j]];
       }
     }
     PetscCall(VecRestoreArrayRead(rr, &r));
@@ -1985,7 +1985,7 @@ PetscErrorCode MatDuplicateNoCreate_SeqSELL(Mat C, Mat A, MatDuplicateOption cpv
   if (a->diag) {
     PetscCall(PetscMalloc1(m, &c->diag));
     PetscCall(PetscLogObjectMemory((PetscObject)C, m * sizeof(PetscInt)));
-    for (i = 0; i < m; i++) { c->diag[i] = a->diag[i]; }
+    for (i = 0; i < m; i++) c->diag[i] = a->diag[i];
   } else c->diag = NULL;
 
   c->solve_work         = NULL;
@@ -2161,7 +2161,7 @@ PetscErrorCode MatConjugate_SeqSELL(Mat A) {
   PetscScalar *val = a->val;
 
   PetscFunctionBegin;
-  for (i = 0; i < a->sliidx[a->totalslices]; i++) { val[i] = PetscConj(val[i]); }
+  for (i = 0; i < a->sliidx[a->totalslices]; i++) val[i] = PetscConj(val[i]);
 #else
   PetscFunctionBegin;
 #endif

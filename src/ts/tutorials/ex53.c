@@ -112,7 +112,7 @@ static PetscErrorCode zero(PetscInt dim, PetscReal time, const PetscReal x[], Pe
 static PetscErrorCode quadratic_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx) {
   PetscInt d;
 
-  for (d = 0; d < dim; ++d) { u[d] = PetscSqr(x[d]) - (d > 0 ? 2.0 * x[d - 1] * x[d] : 0.0); }
+  for (d = 0; d < dim; ++d) u[d] = PetscSqr(x[d]) - (d > 0 ? 2.0 * x[d - 1] * x[d] : 0.0);
   return 0;
 }
 
@@ -148,7 +148,7 @@ static void f0_quadratic_linear_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, con
   const PetscReal lambda = K_d - (2.0 * G) / 3.0;
   PetscInt        d;
 
-  for (d = 0; d < dim - 1; ++d) { f0[d] -= 2.0 * G - alpha * t; }
+  for (d = 0; d < dim - 1; ++d) f0[d] -= 2.0 * G - alpha * t;
   f0[dim - 1] -= 2.0 * lambda + 4.0 * G - alpha * t;
 }
 
@@ -226,7 +226,7 @@ static void f0_quadratic_trig_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const
   const PetscReal lambda = K_d - (2.0 * G) / 3.0;
   PetscInt        d;
 
-  for (d = 0; d < dim - 1; ++d) { f0[d] -= 2.0 * G - alpha * PetscCosReal(t); }
+  for (d = 0; d < dim - 1; ++d) f0[d] -= 2.0 * G - alpha * PetscCosReal(t);
   f0[dim - 1] -= 2.0 * lambda + 4.0 * G - alpha * PetscCosReal(t);
 }
 
@@ -293,7 +293,7 @@ div \sigma = \partial_i \lambda \delta_{ij} \varepsilon_{kk} + \partial_i 2\mu\v
 static PetscErrorCode trig_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx) {
   PetscInt d;
 
-  for (d = 0; d < dim; ++d) { u[d] = PetscSinReal(2. * PETSC_PI * x[d]) - (d > 0 ? 2.0 * x[d - 1] * x[d] : 0.0); }
+  for (d = 0; d < dim; ++d) u[d] = PetscSinReal(2. * PETSC_PI * x[d]) - (d > 0 ? 2.0 * x[d - 1] * x[d] : 0.0);
   return 0;
 }
 
@@ -333,7 +333,7 @@ static void f0_trig_linear_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const Pe
   const PetscReal lambda = K_d - (2.0 * G) / 3.0;
   PetscInt        d;
 
-  for (d = 0; d < dim - 1; ++d) { f0[d] += PetscSqr(2. * PETSC_PI) * PetscSinReal(2. * PETSC_PI * x[d]) * (2. * G + lambda) + 2.0 * (G + lambda) - 2. * PETSC_PI * alpha * PetscSinReal(2. * PETSC_PI * x[d]) * t; }
+  for (d = 0; d < dim - 1; ++d) f0[d] += PetscSqr(2. * PETSC_PI) * PetscSinReal(2. * PETSC_PI * x[d]) * (2. * G + lambda) + 2.0 * (G + lambda) - 2. * PETSC_PI * alpha * PetscSinReal(2. * PETSC_PI * x[d]) * t;
   f0[dim - 1] += PetscSqr(2. * PETSC_PI) * PetscSinReal(2. * PETSC_PI * x[dim - 1]) * (2. * G + lambda) - 2. * PETSC_PI * alpha * PetscSinReal(2. * PETSC_PI * x[dim - 1]) * t;
 }
 
@@ -438,7 +438,7 @@ static PetscErrorCode terzaghi_2d_u(PetscInt dim, PetscReal time, const PetscRea
     PetscScalar F2    = 0.0;
 
     for (m = 1; m < 2 * N + 1; ++m) {
-      if (m % 2 == 1) { F2 += (8.0 / PetscSqr(m * PETSC_PI)) * PetscCosReal(0.5 * m * PETSC_PI * zstar) * (1.0 - PetscExpReal(-PetscSqr(m * PETSC_PI) * tstar)); }
+      if (m % 2 == 1) F2 += (8.0 / PetscSqr(m * PETSC_PI)) * PetscCosReal(0.5 * m * PETSC_PI * zstar) * (1.0 - PetscExpReal(-PetscSqr(m * PETSC_PI) * tstar));
     }
     u[0] = 0.0;
     u[1] = ((P_0 * L * (1.0 - 2.0 * nu_u)) / (2.0 * G * (1.0 - nu_u))) * (1.0 - zstar) + ((P_0 * L * (nu_u - nu)) / (2.0 * G * (1.0 - nu_u) * (1.0 - nu))) * F2; /* m */
@@ -474,7 +474,7 @@ static PetscErrorCode terzaghi_2d_eps(PetscInt dim, PetscReal time, const PetscR
     PetscScalar F2_z  = 0.0;
 
     for (m = 1; m < 2 * N + 1; ++m) {
-      if (m % 2 == 1) { F2_z += (-4.0 / (m * PETSC_PI * L)) * PetscSinReal(0.5 * m * PETSC_PI * zstar) * (1.0 - PetscExpReal(-PetscSqr(m * PETSC_PI) * tstar)); }
+      if (m % 2 == 1) F2_z += (-4.0 / (m * PETSC_PI * L)) * PetscSinReal(0.5 * m * PETSC_PI * zstar) * (1.0 - PetscExpReal(-PetscSqr(m * PETSC_PI) * tstar));
     }
     u[0] = -((P_0 * L * (1.0 - 2.0 * nu_u)) / (2.0 * G * (1.0 - nu_u) * L)) + ((P_0 * L * (nu_u - nu)) / (2.0 * G * (1.0 - nu_u) * (1.0 - nu))) * F2_z; /* - */
   }
@@ -511,7 +511,7 @@ static PetscErrorCode terzaghi_2d_p(PetscInt dim, PetscReal time, const PetscRea
     PetscCheck(PetscAbsScalar((1 / M + (alpha * eta) / G) - S) <= 1.0e-10, PETSC_COMM_SELF, PETSC_ERR_PLIB, "S %g != check %g", (double)PetscAbsScalar(S), (double)PetscAbsScalar(1 / M + (alpha * eta) / G));
 
     for (m = 1; m < 2 * N + 1; ++m) {
-      if (m % 2 == 1) { F1 += (4.0 / (m * PETSC_PI)) * PetscSinReal(0.5 * m * PETSC_PI * zstar) * PetscExpReal(-PetscSqr(m * PETSC_PI) * tstar); }
+      if (m % 2 == 1) F1 += (4.0 / (m * PETSC_PI)) * PetscSinReal(0.5 * m * PETSC_PI * zstar) * PetscExpReal(-PetscSqr(m * PETSC_PI) * tstar);
     }
     u[0] = ((P_0 * eta) / (G * S)) * F1; /* Pa */
   }
@@ -547,7 +547,7 @@ static PetscErrorCode terzaghi_2d_u_t(PetscInt dim, PetscReal time, const PetscR
     PetscScalar F2_t  = 0.0;
 
     for (m = 1; m < 2 * N + 1; ++m) {
-      if (m % 2 == 1) { F2_t += (2.0 * c / PetscSqr(L)) * PetscCosReal(0.5 * m * PETSC_PI * zstar) * PetscExpReal(-PetscSqr(m * PETSC_PI) * tstar); }
+      if (m % 2 == 1) F2_t += (2.0 * c / PetscSqr(L)) * PetscCosReal(0.5 * m * PETSC_PI * zstar) * PetscExpReal(-PetscSqr(m * PETSC_PI) * tstar);
     }
     u[0] = 0.0;
     u[1] = ((P_0 * L * (nu_u - nu)) / (2.0 * G * (1.0 - nu_u) * (1.0 - nu))) * F2_t; /* m / s */
@@ -583,7 +583,7 @@ static PetscErrorCode terzaghi_2d_eps_t(PetscInt dim, PetscReal time, const Pets
     PetscScalar F2_zt = 0.0;
 
     for (m = 1; m < 2 * N + 1; ++m) {
-      if (m % 2 == 1) { F2_zt += ((-m * PETSC_PI * c) / (L * L * L)) * PetscSinReal(0.5 * m * PETSC_PI * zstar) * PetscExpReal(-PetscSqr(m * PETSC_PI) * tstar); }
+      if (m % 2 == 1) F2_zt += ((-m * PETSC_PI * c) / (L * L * L)) * PetscSinReal(0.5 * m * PETSC_PI * zstar) * PetscExpReal(-PetscSqr(m * PETSC_PI) * tstar);
     }
     u[0] = ((P_0 * L * (nu_u - nu)) / (2.0 * G * (1.0 - nu_u) * (1.0 - nu))) * F2_zt; /* 1 / s */
   }
@@ -632,7 +632,7 @@ static PetscErrorCode terzaghi_2d_p_t(PetscInt dim, PetscReal time, const PetscR
     PetscCheck(PetscAbsScalar((1 / M + (alpha * eta) / G) - S) <= 1.0e-10, PETSC_COMM_SELF, PETSC_ERR_PLIB, "S %g != check %g", (double)PetscAbsScalar(S), (double)PetscAbsScalar(1 / M + (alpha * eta) / G));
 
     for (m = 1; m < 2 * N + 1; ++m) {
-      if (m % 2 == 1) { F1_t += ((-m * PETSC_PI * c) / PetscSqr(L)) * PetscSinReal(0.5 * m * PETSC_PI * zstar) * PetscExpReal(-PetscSqr(m * PETSC_PI) * tstar); }
+      if (m % 2 == 1) F1_t += ((-m * PETSC_PI * c) / PetscSqr(L)) * PetscSinReal(0.5 * m * PETSC_PI * zstar) * PetscExpReal(-PetscSqr(m * PETSC_PI) * tstar);
     }
     u[0] = ((P_0 * eta) / (G * S)) * F1_t; /* Pa / s */
   }
@@ -1320,7 +1320,7 @@ static void f0_cryer_bd_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const Petsc
 static void f0_epsilon(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[]) {
   PetscInt d;
 
-  for (d = 0; d < dim; ++d) { f0[0] += u_x[d * dim + d]; }
+  for (d = 0; d < dim; ++d) f0[0] += u_x[d * dim + d];
   f0[0] -= u[uOff[1]];
 }
 
@@ -1346,7 +1346,7 @@ static void f1_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[
   PetscInt        c, d;
 
   for (c = 0; c < Nc; ++c) {
-    for (d = 0; d < dim; ++d) { f1[c * dim + d] -= G * (u_x[c * dim + d] + u_x[d * dim + c]); }
+    for (d = 0; d < dim; ++d) f1[c * dim + d] -= G * (u_x[c * dim + d] + u_x[d * dim + c]);
     f1[c * dim + c] -= lambda * u[uOff[1]];
     f1[c * dim + c] += alpha * u[uOff[2]];
   }
@@ -1357,7 +1357,7 @@ static void f1_p(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[
   const PetscReal kappa = PetscRealPart(constants[4]);
   PetscInt        d;
 
-  for (d = 0; d < dim; ++d) { f1[d] += kappa * u_x[uOff_x[2] + d]; }
+  for (d = 0; d < dim; ++d) f1[d] += kappa * u_x[uOff_x[2] + d];
 }
 
 /*
@@ -1403,14 +1403,14 @@ static void g2_ue(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff
   const PetscReal lambda = K_d - (2.0 * G) / 3.0;
   PetscInt        d;
 
-  for (d = 0; d < dim; ++d) { g2[d * dim + d] -= lambda; }
+  for (d = 0; d < dim; ++d) g2[d * dim + d] -= lambda;
 }
 /* g2_up */
 static void g2_up(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g2[]) {
   const PetscReal alpha = PetscRealPart(constants[2]);
   PetscInt        d;
 
-  for (d = 0; d < dim; ++d) { g2[d * dim + d] += alpha; }
+  for (d = 0; d < dim; ++d) g2[d * dim + d] += alpha;
 }
 
 /* g3_uu */
@@ -1493,7 +1493,7 @@ static PetscErrorCode mandelZeros(MPI_Comm comm, AppCtx *ctx, Parameter *param) 
       } else {
         a2 = am;
       }
-      if (PetscAbsReal(y2) < EPS) { am = a2; }
+      if (PetscAbsReal(y2) < EPS) am = a2;
     }
     ctx->zeroArray[i - 1] = am;
   }

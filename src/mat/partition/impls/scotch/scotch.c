@@ -364,7 +364,7 @@ static PetscErrorCode MatPartitioningApply_PTScotch_Private(MatPartitioning part
     PetscInt *newlocals;
     PetscCall(PetscMalloc1(bs * mat->rmap->n, &newlocals));
     for (i = 0; i < mat->rmap->n; i++) {
-      for (j = 0; j < bs; j++) { newlocals[bs * i + j] = locals[i]; }
+      for (j = 0; j < bs; j++) newlocals[bs * i + j] = locals[i];
     }
     PetscCall(PetscFree(locals));
     PetscCall(ISCreateGeneral(pcomm, bs * mat->rmap->n, newlocals, PETSC_OWN_POINTER, partitioning));

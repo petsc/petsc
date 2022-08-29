@@ -75,7 +75,7 @@ int main(int argc, char **argv) {
   PetscCall(PetscSFGetLeafRange(sfB, NULL, &maxleafB));
   PetscCall(VecCreateSeq(PETSC_COMM_WORLD, maxleafB + 1, &ba));
   PetscCall(VecGetArray(a, &arrayW));
-  for (i = 0; i < nrootsA; i++) { arrayW[i] = (PetscScalar)i; }
+  for (i = 0; i < nrootsA; i++) arrayW[i] = (PetscScalar)i;
   PetscCall(VecRestoreArray(a, &arrayW));
 
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Initial Vec A\n"));

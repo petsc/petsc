@@ -257,7 +257,7 @@ PetscErrorCode EXOGetVarIndex_Internal(int exoid, ex_entity_type obj_type, const
       PetscCall(PetscStrncpy(ext_name, name, MAX_STR_LENGTH));
       PetscCall(PetscStrlcat(ext_name, suffix[j], MAX_STR_LENGTH));
       PetscCall(PetscStrcasecmp(ext_name, var_name, &flg));
-      if (flg) { *varIndex = i + 1; }
+      if (flg) *varIndex = i + 1;
     }
   }
   PetscFunctionReturn(0);
@@ -396,7 +396,7 @@ PetscErrorCode DMView_PlexExodusII(DM dm, PetscViewer viewer) {
     numNodes = numVertices;
 
     PetscCall(PetscViewerExodusIIGetOrder(viewer, &degree));
-    if (degree == 2) { numNodes += numEdges; }
+    if (degree == 2) numNodes += numEdges;
     cellsNotInConnectivity = numCells;
     for (cs = 0; cs < num_cs; ++cs) {
       IS              stratumIS;
@@ -425,7 +425,7 @@ PetscErrorCode DMView_PlexExodusII(DM dm, PetscViewer viewer) {
         break;
       default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Dimension %" PetscInt_FMT " not handled by ExodusII viewer", dim);
       }
-      if ((degree == 2) && (type[cs] == QUAD)) { numNodes += csSize; }
+      if ((degree == 2) && (type[cs] == QUAD)) numNodes += csSize;
       if ((degree == 2) && (type[cs] == HEX)) {
         numNodes += csSize;
         numNodes += numFaces;
@@ -661,7 +661,7 @@ PetscErrorCode DMView_PlexExodusII(DM dm, PetscViewer viewer) {
         PetscCall(ISGetIndices(stratumIS, &vertices));
         PetscCall(ISGetSize(stratumIS, &vsSize));
         PetscCall(PetscMalloc1(vsSize, &nodeList));
-        for (i = 0; i < vsSize; ++i) { nodeList[i] = vertices[i] - skipCells + 1; }
+        for (i = 0; i < vsSize; ++i) nodeList[i] = vertices[i] - skipCells + 1;
         PetscCallExternal(ex_put_set_param, exo->exoid, EX_NODE_SET, vsIdx[vs], vsSize, 0);
         PetscCallExternal(ex_put_set, exo->exoid, EX_NODE_SET, vsIdx[vs], nodeList, NULL);
         PetscCall(ISRestoreIndices(stratumIS, &vertices));
@@ -701,7 +701,7 @@ PetscErrorCode DMView_PlexExodusII(DM dm, PetscViewer viewer) {
         /* Set Parameters */
         PetscCallExternal(ex_put_set_param, exo->exoid, EX_SIDE_SET, fsIdx[fs], fsSize, 0);
         /* Indices */
-        if (fs < num_fs - 1) { elem_ind[fs + 1] = elem_ind[fs] + fsSize; }
+        if (fs < num_fs - 1) elem_ind[fs + 1] = elem_ind[fs] + fsSize;
 
         for (i = 0; i < fsSize; ++i) {
           /* Element List */
@@ -714,7 +714,7 @@ PetscErrorCode DMView_PlexExodusII(DM dm, PetscViewer viewer) {
           points = NULL;
           PetscCall(DMPlexGetTransitiveClosure(dm, elem_list[elem_ind[fs] + i] - 1, PETSC_TRUE, &numPoints, &points));
           for (j = 1; j < numPoints; ++j) {
-            if (points[j * 2] == faces[i]) { break; }
+            if (points[j * 2] == faces[i]) break;
           }
           /* Convert HEX sides */
           if (numPoints == 27) {
@@ -735,7 +735,7 @@ PetscErrorCode DMView_PlexExodusII(DM dm, PetscViewer viewer) {
           /* Convert TET sides */
           if (numPoints == 15) {
             --j;
-            if (j == 0) { j = 4; }
+            if (j == 0) j = 4;
           }
           side_list[elem_ind[fs] + i] = j;
           PetscCall(DMPlexRestoreTransitiveClosure(dm, elem_list[elem_ind[fs] + i] - 1, PETSC_TRUE, &numPoints, &points));
@@ -977,7 +977,7 @@ PetscErrorCode VecLoadPlex_ExodusII_Nodal_Internal(Vec v, int exoid, int step, i
   PetscCall(DMGetUseNatural(dm, &useNatural));
   useNatural = useNatural && size > 1 ? PETSC_TRUE : PETSC_FALSE;
   if (useNatural) PetscCall(DMPlexCreateNaturalVector(dm, &vNatural));
-  else { vNatural = v; }
+  else vNatural = v;
 
   /* Read local chunk from the file */
   PetscCall(VecGetOwnershipRange(vNatural, &xs, &xe));
@@ -1145,7 +1145,7 @@ PetscErrorCode VecLoadPlex_ExodusII_Zonal_Internal(Vec v, int exoid, int step, i
   PetscCall(DMGetUseNatural(dm, &useNatural));
   useNatural = useNatural && size > 1 ? PETSC_TRUE : PETSC_FALSE;
   if (useNatural) PetscCall(DMPlexCreateNaturalVector(dm, &vNatural));
-  else { vNatural = v; }
+  else vNatural = v;
 
   /* Read local chunk of the result in the exodus file
      exodus stores each component of a vector-valued field as a separate variable.
@@ -1525,7 +1525,7 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
       for (c_loc = 0, v = 0; c_loc < num_cell_in_set; ++c_loc, ++c) {
         DMPolytopeType ct;
 
-        for (v_loc = 0; v_loc < num_vertex_per_cell; ++v_loc, ++v) { cone[v_loc] = cs_connect[v] + numCells - 1; }
+        for (v_loc = 0; v_loc < num_vertex_per_cell; ++v_loc, ++v) cone[v_loc] = cs_connect[v] + numCells - 1;
         PetscCall(DMPlexGetCellType(*dm, c, &ct));
         PetscCall(DMPlexInvertCell(ct, cone));
         PetscCall(DMPlexSetCone(*dm, c, cone));
@@ -1645,7 +1645,7 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
         PetscInt        faceVertices[4], v;
 
         PetscCheck(faceSize <= 4, comm, PETSC_ERR_ARG_WRONG, "ExodusII side cannot have %" PetscInt_FMT " > 4 vertices", faceSize);
-        for (v = 0; v < faceSize; ++v, ++voff) { faceVertices[v] = fs_vertex_list[voff] + numCells - 1; }
+        for (v = 0; v < faceSize; ++v, ++voff) faceVertices[v] = fs_vertex_list[voff] + numCells - 1;
         PetscCall(DMPlexGetFullJoin(*dm, faceSize, faceVertices, &numFaces, &faces));
         PetscCheck(numFaces == 1, comm, PETSC_ERR_ARG_WRONG, "Invalid ExodusII side %d in set %d maps to %" PetscInt_FMT " faces", f, fs, numFaces);
         PetscCall(DMSetLabelValue_Fast(*dm, &faceSets, "Face Sets", faces[0], fs_id[fs]));

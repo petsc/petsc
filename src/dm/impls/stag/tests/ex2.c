@@ -51,7 +51,7 @@ static PetscErrorCode Test_3d_4x4x4_3x3x3(DM dmstag) {
   PetscCall(VecGetOwnershipRange(vecGlobal, &low, &high));
   n = high - low;
   PetscCall(VecGetArray(vecGlobal, &arr));
-  for (i = 0; i < n; ++i) { arr[i] = (PetscScalar)(i + low); }
+  for (i = 0; i < n; ++i) arr[i] = (PetscScalar)(i + low);
   PetscCall(VecRestoreArray(vecGlobal, &arr));
 
   /* Populate a local vector initially with -1, then glocal->local scatter */

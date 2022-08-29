@@ -1099,7 +1099,7 @@ static PetscErrorCode DMPlexMetricModify_Private(PetscInt dim, PetscReal h_min, 
   for (i = 0; i < dim; ++i) {
     for (j = 0; j < dim; ++j) {
       Mp[i * dim + j] = 0.0;
-      for (k = 0; k < dim; ++k) { Mp[i * dim + j] += Mpos[k * dim + i] * eigs[k] * Mpos[k * dim + j]; }
+      for (k = 0; k < dim; ++k) Mp[i * dim + j] += Mpos[k * dim + i] * eigs[k] * Mpos[k * dim + j];
     }
   }
   PetscCall(PetscFree2(Mpos, eigs));
@@ -1368,7 +1368,7 @@ PetscErrorCode DMPlexMetricAverage(DM dm, PetscInt numMetrics, PetscReal weights
   if (!weights) {
     PetscCall(PetscMalloc1(numMetrics, &weights));
     haveWeights = PETSC_FALSE;
-    for (i = 0; i < numMetrics; ++i) { weights[i] = 1.0 / numMetrics; }
+    for (i = 0; i < numMetrics; ++i) weights[i] = 1.0 / numMetrics;
   }
 
   /* Check weights sum to unity */
@@ -1448,7 +1448,7 @@ static PetscErrorCode DMPlexMetricIntersection_Private(PetscInt dim, PetscScalar
   /* Anisotropic case */
   PetscCall(PetscMalloc4(dim * dim, &evecs, dim * dim, &sqrtM1, dim * dim, &isqrtM1, dim, &evals));
   for (i = 0; i < dim; ++i) {
-    for (j = 0; j < dim; ++j) { evecs[i * dim + j] = M1[i * dim + j]; }
+    for (j = 0; j < dim; ++j) evecs[i * dim + j] = M1[i * dim + j];
   }
   {
     PetscScalar *work;
@@ -1497,7 +1497,7 @@ static PetscErrorCode DMPlexMetricIntersection_Private(PetscInt dim, PetscScalar
         for (l = 0; l < dim; ++l) {
           evecs[i * dim + l] = 0.0;
           for (j = 0; j < dim; ++j) {
-            for (k = 0; k < dim; ++k) { evecs[i * dim + l] += isqrtM1[j * dim + i] * M2[j * dim + k] * isqrtM1[k * dim + l]; }
+            for (k = 0; k < dim; ++k) evecs[i * dim + l] += isqrtM1[j * dim + i] * M2[j * dim + k] * isqrtM1[k * dim + l];
           }
         }
       }
@@ -1519,7 +1519,7 @@ static PetscErrorCode DMPlexMetricIntersection_Private(PetscInt dim, PetscScalar
           for (l = 0; l < dim; ++l) {
             evecs[i * dim + l] = 0.0;
             for (j = 0; j < dim; ++j) {
-              for (k = 0; k < dim; ++k) { evecs[i * dim + l] += isqrtM1[j * dim + i] * M2[j * dim + k] * isqrtM1[k * dim + l]; }
+              for (k = 0; k < dim; ++k) evecs[i * dim + l] += isqrtM1[j * dim + i] * M2[j * dim + k] * isqrtM1[k * dim + l];
             }
           }
         }
@@ -1537,7 +1537,7 @@ static PetscErrorCode DMPlexMetricIntersection_Private(PetscInt dim, PetscScalar
           M2[i * dim + m] = 0.0;
           for (j = 0; j < dim; ++j) {
             for (k = 0; k < dim; ++k) {
-              for (l = 0; l < dim; ++l) { M2[i * dim + m] += sqrtM1[j * dim + i] * evecs[j * dim + k] * evals[k] * evecs[l * dim + k] * sqrtM1[l * dim + m]; }
+              for (l = 0; l < dim; ++l) M2[i * dim + m] += sqrtM1[j * dim + i] * evecs[j * dim + k] * evals[k] * evecs[l * dim + k] * sqrtM1[l * dim + m];
             }
           }
         }

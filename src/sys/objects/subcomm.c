@@ -203,7 +203,7 @@ PetscErrorCode PetscSubcommSetTypeGeneral(PetscSubcomm psubcomm, PetscMPIInt col
   PetscCallMPI(MPI_Allgather(sendbuf, 2, MPI_INT, recvbuf, 2, MPI_INT, comm));
 
   PetscCall(PetscCalloc1(nsubcomm, &subsize));
-  for (i = 0; i < 2 * size; i += 2) { subsize[recvbuf[i]] = recvbuf[i + 1]; }
+  for (i = 0; i < 2 * size; i += 2) subsize[recvbuf[i]] = recvbuf[i + 1];
   PetscCall(PetscFree(recvbuf));
 
   duprank = 0;

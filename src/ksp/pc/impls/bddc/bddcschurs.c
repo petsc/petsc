@@ -404,7 +404,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
 
   PetscCall(PetscObjectReference((PetscObject)Sin));
   sub_schurs->S = Sin;
-  if (sub_schurs->schur_explicit) { sub_schurs->schur_explicit = (PetscBool)(!!sub_schurs->A); }
+  if (sub_schurs->schur_explicit) sub_schurs->schur_explicit = (PetscBool)(!!sub_schurs->A);
 
   /* preliminary checks */
   PetscCheck(sub_schurs->schur_explicit || !compute_Stilda, PetscObjectComm((PetscObject)sub_schurs->l2gmap), PETSC_ERR_SUP, "Adaptive selection of constraints requires MUMPS and/or MKL_PARDISO");
@@ -804,7 +804,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
       PetscCall(PCBDDCComputeExplicitSchur(S_Ej, sub_schurs->is_symmetric, MAT_REUSE_MATRIX, &S_Ej_expl));
       PetscCall(PetscObjectTypeCompare((PetscObject)S_Ej_expl, MATSEQDENSE, &Sdense));
       if (Sdense) {
-        for (j = 0; j < subset_size; j++) { dummy_idx[j] = local_size + j; }
+        for (j = 0; j < subset_size; j++) dummy_idx[j] = local_size + j;
         PetscCall(MatSetValues(sub_schurs->S_Ej_all, subset_size, dummy_idx, subset_size, dummy_idx, work, INSERT_VALUES));
       } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Not yet implemented for sparse matrices");
       PetscCall(MatDestroy(&S_Ej));
@@ -1174,7 +1174,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
         if (!S_lower_triangular) { /* I need to expand the upper triangular data (column oriented) */
           PetscInt k, j;
           for (k = 0; k < size_schur; k++) {
-            for (j = k; j < size_schur; j++) { S_data[j * size_schur + k] = PetscConj(S_data[k * size_schur + j]); }
+            for (j = k; j < size_schur; j++) S_data[j * size_schur + k] = PetscConj(S_data[k * size_schur + j]);
           }
         }
 
@@ -1358,7 +1358,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
         } else { /* just copy to workspace */
           PetscInt k;
           for (k = 0; k < subset_size; k++) {
-            for (j = 0; j < subset_size; j++) { work[k * subset_size + j] = rS_data[cum2 + k * size_schur + j]; }
+            for (j = 0; j < subset_size; j++) work[k * subset_size + j] = rS_data[cum2 + k * size_schur + j];
           }
         }
       }
@@ -1636,13 +1636,13 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
                 }
               } else {
                 for (k = 0; k < subset_size; k++) {
-                  for (j = k; j < subset_size; j++) { work[k * subset_size + j] = rS_data[cum2 + k * size_schur + j]; }
+                  for (j = k; j < subset_size; j++) work[k * subset_size + j] = rS_data[cum2 + k * size_schur + j];
                 }
               }
             } else {
               PetscInt k;
               for (k = 0; k < subset_size; k++) {
-                for (j = 0; j < subset_size; j++) { work[k * subset_size + j] = rS_data[cum2 + k * size_schur + j]; }
+                for (j = 0; j < subset_size; j++) work[k * subset_size + j] = rS_data[cum2 + k * size_schur + j];
               }
             }
           }
@@ -1710,11 +1710,11 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
           }
           if (sub_schurs->is_dir) {
             PetscCall(ISGetLocalSize(sub_schurs->is_dir, &nd));
-            for (i = 0; i < nd; i++) { data[(i + size_active_schur) * (size_schur + 1)] = schur_factor[cum + i]; }
+            for (i = 0; i < nd; i++) data[(i + size_active_schur) * (size_schur + 1)] = schur_factor[cum + i];
           }
           /* workaround: since I cannot modify the matrices used inside the solvers for the forward and backward substitutions,
              set the diagonal entry of the Schur factor to a very large value */
-          for (i = size_active_schur + nd; i < size_schur; i++) { data[i * (size_schur + 1)] = infty; }
+          for (i = size_active_schur + nd; i < size_schur; i++) data[i * (size_schur + 1)] = infty;
           PetscCall(MatDenseRestoreArray(S_tmp, &data));
         } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Factor update not yet implemented for non SPD matrices");
         PetscCall(MatFactorRestoreSchurComplement(F, &S_tmp, MAT_FACTOR_SCHUR_FACTORED));

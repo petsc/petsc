@@ -262,8 +262,8 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *fcn, Vec G, void 
         xt = x[row + gxm];
       }
 
-      if (i > gxs && j + 1 < gys + gym) { xlt = x[row - 1 + gxm]; }
-      if (j > gys && i + 1 < gxs + gxm) { xrb = x[row + 1 - gxm]; }
+      if (i > gxs && j + 1 < gys + gym) xlt = x[row - 1 + gxm];
+      if (j > gys && i + 1 < gxs + gxm) xrb = x[row + 1 - gxm];
 
       d1 = (xc - xl);
       d2 = (xc - xr);
@@ -484,8 +484,8 @@ PetscErrorCode FormHessian(Tao tao, Vec X, Mat Hptr, Mat Hessian, void *ptr) {
         xt = x[row + gxm];
       }
 
-      if (i > gxs && j + 1 < gys + gym) { xlt = x[row - 1 + gxm]; }
-      if (j > gys && i + 1 < gxs + gxm) { xrb = x[row + 1 - gxm]; }
+      if (i > gxs && j + 1 < gys + gym) xlt = x[row - 1 + gxm];
+      if (j > gys && i + 1 < gxs + gxm) xrb = x[row + 1 - gxm];
 
       d1 = (xc - xl) * rhx;
       d2 = (xc - xr) * rhx;
@@ -745,7 +745,7 @@ static PetscErrorCode MSA_Plate(Vec XL, Vec XU, void *ctx) {
         t1  = (2.0 * i - mx) * bmy;
         t2  = (2.0 * j - my) * bmx;
         t3  = bmx * bmx * bmy * bmy;
-        if (t1 * t1 + t2 * t2 <= t3) { xl[row] = user->bheight; }
+        if (t1 * t1 + t2 * t2 <= t3) xl[row] = user->bheight;
       }
     }
   } else {
@@ -753,7 +753,7 @@ static PetscErrorCode MSA_Plate(Vec XL, Vec XU, void *ctx) {
     for (i = xs; i < xs + xm; i++) {
       for (j = ys; j < ys + ym; j++) {
         row = (j - ys) * xm + (i - xs);
-        if (i >= (mx - bmx) / 2 && i < mx - (mx - bmx) / 2 && j >= (my - bmy) / 2 && j < my - (my - bmy) / 2) { xl[row] = user->bheight; }
+        if (i >= (mx - bmx) / 2 && i < mx - (mx - bmx) / 2 && j >= (my - bmy) / 2 && j < my - (my - bmy) / 2) xl[row] = user->bheight;
       }
     }
   }

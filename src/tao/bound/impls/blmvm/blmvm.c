@@ -143,7 +143,7 @@ static PetscErrorCode TaoDestroy_BLMVM(Tao tao) {
     PetscCall(VecDestroy(&blmP->Gold));
   }
   PetscCall(MatDestroy(&blmP->M));
-  if (blmP->H0) { PetscObjectDereference((PetscObject)blmP->H0); }
+  if (blmP->H0) PetscObjectDereference((PetscObject)blmP->H0);
   PetscCall(PetscFree(tao->data));
   PetscFunctionReturn(0);
 }

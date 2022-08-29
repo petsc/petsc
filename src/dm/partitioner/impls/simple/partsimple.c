@@ -201,7 +201,7 @@ static PetscErrorCode PetscPartitionerPartition_Simple(PetscPartitioner part, Pe
       PetscCall(PetscMalloc1(size + 1, &offsets));
       offsets[0] = 0;
       PetscCallMPI(MPI_Allgather(&numVertices, 1, MPIU_INT, &offsets[1], 1, MPIU_INT, comm));
-      for (np = 2; np <= size; np++) { offsets[np] += offsets[np - 1]; }
+      for (np = 2; np <= size; np++) offsets[np] += offsets[np - 1];
       nvGlobal = offsets[size];
       PetscCallMPI(MPI_Comm_rank(comm, &rank));
       myFirst = offsets[rank];

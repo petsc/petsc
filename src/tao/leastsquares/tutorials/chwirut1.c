@@ -109,7 +109,7 @@ PetscErrorCode EvaluateFunction(Tao tao, Vec X, Vec F, void *ptr) {
   PetscCall(VecGetArrayRead(X, &x));
   PetscCall(VecGetArray(F, &f));
 
-  for (i = 0; i < NOBSERVATIONS; i++) { f[i] = y[i] - PetscExpScalar(-x[0] * t[i]) / (x[1] + x[2] * t[i]); }
+  for (i = 0; i < NOBSERVATIONS; i++) f[i] = y[i] - PetscExpScalar(-x[0] * t[i]) / (x[1] + x[2] * t[i]);
   PetscCall(VecRestoreArrayRead(X, &x));
   PetscCall(VecRestoreArray(F, &f));
   PetscLogFlops(6 * NOBSERVATIONS);

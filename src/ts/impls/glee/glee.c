@@ -591,7 +591,7 @@ static PetscErrorCode TSInterpolate_GLEE(TS ts, PetscReal itime, Vec X) {
   PetscCall(PetscMalloc1(s, &b));
   for (i = 0; i < s; i++) b[i] = 0;
   for (j = 0, tt = t; j < pinterp; j++, tt *= t) {
-    for (i = 0; i < s; i++) { b[i] += h * B[i * pinterp + j] * tt; }
+    for (i = 0; i < s; i++) b[i] += h * B[i * pinterp + j] * tt;
   }
   PetscCall(VecCopy(glee->YStage[0], X));
   PetscCall(VecMAXPY(X, s, b, glee->YdotStage));

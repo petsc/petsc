@@ -40,7 +40,7 @@ static PetscErrorCode TSInterpolate_RK_MultirateNonsplit(TS ts, PetscReal itime,
   PetscCall(PetscMalloc1(s, &b));
   for (i = 0; i < s; i++) b[i] = 0;
   for (j = 0, tt = t; j < p; j++, tt *= t) {
-    for (i = 0; i < s; i++) { b[i] += h * B[i * p + j] * tt; }
+    for (i = 0; i < s; i++) b[i] += h * B[i * p + j] * tt;
   }
   PetscCall(VecCopy(rk->X0, X));
   PetscCall(VecMAXPY(X, s, b, rk->YdotRHS_slow));
@@ -249,7 +249,7 @@ static PetscErrorCode TSInterpolate_RK_MultirateSplit(TS ts, PetscReal itime, Ve
   PetscCall(PetscMalloc1(s, &b));
   for (i = 0; i < s; i++) b[i] = 0;
   for (j = 0, tt = t; j < p; j++, tt *= t) {
-    for (i = 0; i < s; i++) { b[i] += h * B[i * p + j] * tt; }
+    for (i = 0; i < s; i++) b[i] += h * B[i * p + j] * tt;
   }
   for (i = 0; i < s; i++) PetscCall(VecGetSubVector(rk->YdotRHS[i], rk->is_slow, &rk->YdotRHS_slow[i]));
   PetscCall(VecGetSubVector(X, rk->is_slow, &Xslow));

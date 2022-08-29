@@ -757,7 +757,7 @@ PetscErrorCode RHSFunction_Hull1972C1(TS ts, PetscReal t, Vec Y, Vec F, void *s)
   PetscCall(VecGetArrayRead(Y, &y));
   PetscCall(VecGetArray(F, &f));
   f[0] = -y[0];
-  for (i = 1; i < N - 1; i++) { f[i] = y[i - 1] - y[i]; }
+  for (i = 1; i < N - 1; i++) f[i] = y[i - 1] - y[i];
   f[N - 1] = y[N - 2];
   PetscCall(VecRestoreArrayRead(Y, &y));
   PetscCall(VecRestoreArray(F, &f));
@@ -774,7 +774,7 @@ PetscErrorCode IFunction_Hull1972C1(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, 
   PetscCall(VecGetArrayRead(Y, &y));
   PetscCall(VecGetArray(F, &f));
   f[0] = -y[0];
-  for (i = 1; i < N - 1; i++) { f[i] = y[i - 1] - y[i]; }
+  for (i = 1; i < N - 1; i++) f[i] = y[i - 1] - y[i];
   f[N - 1] = y[N - 2];
   PetscCall(VecRestoreArrayRead(Y, &y));
   PetscCall(VecRestoreArray(F, &f));
@@ -828,7 +828,7 @@ PetscErrorCode RHSFunction_Hull1972C2(TS ts, PetscReal t, Vec Y, Vec F, void *s)
   PetscCall(VecGetArrayRead(Y, &y));
   PetscCall(VecGetArray(F, &f));
   f[0] = -y[0];
-  for (i = 1; i < N - 1; i++) { f[i] = (PetscReal)i * y[i - 1] - (PetscReal)(i + 1) * y[i]; }
+  for (i = 1; i < N - 1; i++) f[i] = (PetscReal)i * y[i - 1] - (PetscReal)(i + 1) * y[i];
   f[N - 1] = (PetscReal)(N - 1) * y[N - 2];
   PetscCall(VecRestoreArrayRead(Y, &y));
   PetscCall(VecRestoreArray(F, &f));
@@ -845,7 +845,7 @@ PetscErrorCode IFunction_Hull1972C2(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, 
   PetscCall(VecGetArrayRead(Y, &y));
   PetscCall(VecGetArray(F, &f));
   f[0] = -y[0];
-  for (i = 1; i < N - 1; i++) { f[i] = (PetscReal)i * y[i - 1] - (PetscReal)(i + 1) * y[i]; }
+  for (i = 1; i < N - 1; i++) f[i] = (PetscReal)i * y[i - 1] - (PetscReal)(i + 1) * y[i];
   f[N - 1] = (PetscReal)(N - 1) * y[N - 2];
   PetscCall(VecRestoreArrayRead(Y, &y));
   PetscCall(VecRestoreArray(F, &f));
@@ -899,7 +899,7 @@ PetscErrorCode RHSFunction_Hull1972C34(TS ts, PetscReal t, Vec Y, Vec F, void *s
   PetscCall(VecGetArrayRead(Y, &y));
   PetscCall(VecGetArray(F, &f));
   f[0] = -2.0 * y[0] + y[1];
-  for (i = 1; i < N - 1; i++) { f[i] = y[i - 1] - 2.0 * y[i] + y[i + 1]; }
+  for (i = 1; i < N - 1; i++) f[i] = y[i - 1] - 2.0 * y[i] + y[i + 1];
   f[N - 1] = y[N - 2] - 2.0 * y[N - 1];
   PetscCall(VecRestoreArrayRead(Y, &y));
   PetscCall(VecRestoreArray(F, &f));
@@ -916,7 +916,7 @@ PetscErrorCode IFunction_Hull1972C34(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F,
   PetscCall(VecGetArrayRead(Y, &y));
   PetscCall(VecGetArray(F, &f));
   f[0] = -2.0 * y[0] + y[1];
-  for (i = 1; i < N - 1; i++) { f[i] = y[i - 1] - 2.0 * y[i] + y[i + 1]; }
+  for (i = 1; i < N - 1; i++) f[i] = y[i - 1] - 2.0 * y[i] + y[i + 1];
   f[N - 1] = y[N - 2] - 2.0 * y[N - 1];
   PetscCall(VecRestoreArrayRead(Y, &y));
   PetscCall(VecRestoreArray(F, &f));

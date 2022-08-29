@@ -460,7 +460,7 @@ PetscErrorCode MatChop(Mat A, PetscReal tol) {
     PetscCall(MatGetSize(a, &rStart, &rEnd));
     PetscCall(MatDenseGetArray(a, &newVals));
     for (; colMax < rEnd; ++colMax) {
-      for (maxRows = 0; maxRows < rStart; ++maxRows) { newVals[maxRows + colMax * r] = PetscAbsScalar(newVals[maxRows + colMax * r]) < tol ? 0.0 : newVals[maxRows + colMax * r]; }
+      for (maxRows = 0; maxRows < rStart; ++maxRows) newVals[maxRows + colMax * r] = PetscAbsScalar(newVals[maxRows + colMax * r]) < tol ? 0.0 : newVals[maxRows + colMax * r];
     }
     PetscCall(MatDenseRestoreArray(a, &newVals));
   } else {

@@ -115,7 +115,7 @@ PetscErrorCode PetscDTAltVApply(PetscInt N, PetscInt k, const PetscReal *w, cons
 
         PetscCall(PetscDTEnumPerm(k, j, perm, &permOdd));
         prod = permOdd ? -1. : 1.;
-        for (l = 0; l < k; l++) { prod *= v[perm[l] * N + subset[l]]; }
+        for (l = 0; l < k; l++) prod *= v[perm[l] * N + subset[l]];
         subsum += prod;
       }
       sum += w[i] * subsum;
@@ -156,9 +156,9 @@ PetscErrorCode PetscDTAltVWedge(PetscInt N, PetscInt j, PetscInt k, const PetscR
 
     PetscCall(PetscDTBinomialInt(N, j + k, &Njk));
     if (!j) {
-      for (i = 0; i < Njk; i++) { awedgeb[i] = a[0] * b[i]; }
+      for (i = 0; i < Njk; i++) awedgeb[i] = a[0] * b[i];
     } else if (!k) {
-      for (i = 0; i < Njk; i++) { awedgeb[i] = a[i] * b[0]; }
+      for (i = 0; i < Njk; i++) awedgeb[i] = a[i] * b[0];
     } else {
       if (N == 2) {
         awedgeb[0] = a[0] * b[1] - a[1] * b[0];
@@ -191,8 +191,8 @@ PetscErrorCode PetscDTAltVWedge(PetscInt N, PetscInt j, PetscInt k, const PetscR
         PetscInt  m, jInd, kInd;
 
         PetscCall(PetscDTEnumSplit(j + k, j, l, subsetjk, &jkOdd));
-        for (m = 0; m < j; m++) { subsetj[m] = subset[subsetjk[m]]; }
-        for (m = 0; m < k; m++) { subsetk[m] = subset[subsetjk[j + m]]; }
+        for (m = 0; m < j; m++) subsetj[m] = subset[subsetjk[m]];
+        for (m = 0; m < k; m++) subsetk[m] = subset[subsetjk[j + m]];
         PetscCall(PetscDTSubsetIndex(N, j, subsetj, &jInd));
         PetscCall(PetscDTSubsetIndex(N, k, subsetk, &kInd));
         sum += jkOdd ? -(a[jInd] * b[kInd]) : (a[jInd] * b[kInd]);
@@ -232,10 +232,10 @@ PetscErrorCode PetscDTAltVWedgeMatrix(PetscInt N, PetscInt j, PetscInt k, const 
 
     PetscCall(PetscDTBinomialInt(N, j + k, &Njk));
     if (!j) {
-      for (i = 0; i < Njk * Njk; i++) { awedgeMat[i] = 0.; }
-      for (i = 0; i < Njk; i++) { awedgeMat[i * (Njk + 1)] = a[0]; }
+      for (i = 0; i < Njk * Njk; i++) awedgeMat[i] = 0.;
+      for (i = 0; i < Njk; i++) awedgeMat[i * (Njk + 1)] = a[0];
     } else if (!k) {
-      for (i = 0; i < Njk; i++) { awedgeMat[i] = a[i]; }
+      for (i = 0; i < Njk; i++) awedgeMat[i] = a[i];
     } else {
       if (N == 2) {
         awedgeMat[0] = -a[1];
@@ -278,8 +278,8 @@ PetscErrorCode PetscDTAltVWedgeMatrix(PetscInt N, PetscInt j, PetscInt k, const 
         PetscInt  m, jInd, kInd;
 
         PetscCall(PetscDTEnumSplit(j + k, j, l, subsetjk, &jkOdd));
-        for (m = 0; m < j; m++) { subsetj[m] = subset[subsetjk[m]]; }
-        for (m = 0; m < k; m++) { subsetk[m] = subset[subsetjk[j + m]]; }
+        for (m = 0; m < j; m++) subsetj[m] = subset[subsetjk[m]];
+        for (m = 0; m < k; m++) subsetk[m] = subset[subsetjk[j + m]];
         PetscCall(PetscDTSubsetIndex(N, j, subsetj, &jInd));
         PetscCall(PetscDTSubsetIndex(N, k, subsetk, &kInd));
         awedgeMat[i * Nk + kInd] += jkOdd ? -a[jInd] : a[jInd];
@@ -326,7 +326,7 @@ PetscErrorCode PetscDTAltVPullback(PetscInt N, PetscInt M, const PetscReal *L, P
       for (i = 0; i < Nk; i++) {
         PetscReal sum = 0.;
 
-        for (j = 0; j < Mk; j++) { sum += L[j * Nk + i] * w[j]; }
+        for (j = 0; j < Mk; j++) sum += L[j * Nk + i] * w[j];
         Lstarw[i] = sum;
       }
     } else if (k == -1) {
@@ -335,7 +335,7 @@ PetscErrorCode PetscDTAltVPullback(PetscInt N, PetscInt M, const PetscReal *L, P
       for (i = 0; i < Nk; i++) {
         PetscReal sum = 0.;
 
-        for (j = 0; j < Mk; j++) { sum += L[(Mk - 1 - j) * Nk + (Nk - 1 - i)] * w[j] * mult[j]; }
+        for (j = 0; j < Mk; j++) sum += L[(Mk - 1 - j) * Nk + (Nk - 1 - i)] * w[j] * mult[j];
         Lstarw[i] = mult[i] * sum;
       }
     } else if (k == 2) {
@@ -347,7 +347,7 @@ PetscErrorCode PetscDTAltVPullback(PetscInt N, PetscInt M, const PetscReal *L, P
 
       for (i = 0; i < Nk; i++) {
         PetscReal sum = 0.;
-        for (j = 0; j < Mk; j++) { sum += (L[pairs[j][0] * N + pairs[i][0]] * L[pairs[j][1] * N + pairs[i][1]] - L[pairs[j][1] * N + pairs[i][0]] * L[pairs[j][0] * N + pairs[i][1]]) * w[j]; }
+        for (j = 0; j < Mk; j++) sum += (L[pairs[j][0] * N + pairs[i][0]] * L[pairs[j][1] * N + pairs[i][1]] - L[pairs[j][1] * N + pairs[i][0]] * L[pairs[j][0] * N + pairs[i][1]]) * w[j];
         Lstarw[i] = sum;
       }
     } else if (k == -2) {
@@ -362,13 +362,13 @@ PetscErrorCode PetscDTAltVPullback(PetscInt N, PetscInt M, const PetscReal *L, P
       for (i = 0; i < Nk; i++) {
         PetscReal sum = 0.;
 
-        for (j = 0; j < Mk; j++) { sum += (L[pairs[offj + j][0] * N + pairs[offi + i][0]] * L[pairs[offj + j][1] * N + pairs[offi + i][1]] - L[pairs[offj + j][1] * N + pairs[offi + i][0]] * L[pairs[offj + j][0] * N + pairs[offi + i][1]]) * w[j]; }
+        for (j = 0; j < Mk; j++) sum += (L[pairs[offj + j][0] * N + pairs[offi + i][0]] * L[pairs[offj + j][1] * N + pairs[offi + i][1]] - L[pairs[offj + j][1] * N + pairs[offi + i][0]] * L[pairs[offj + j][0] * N + pairs[offi + i][1]]) * w[j];
         Lstarw[i] = sum;
       }
     } else {
       PetscReal detL = L[0] * (L[4] * L[8] - L[5] * L[7]) + L[1] * (L[5] * L[6] - L[3] * L[8]) + L[2] * (L[3] * L[7] - L[4] * L[6]);
 
-      for (i = 0; i < Nk; i++) { Lstarw[i] = detL * w[i]; }
+      for (i = 0; i < Nk; i++) Lstarw[i] = detL * w[i];
     }
   } else {
     PetscInt         Nf, l, p;
@@ -403,7 +403,7 @@ PetscErrorCode PetscDTAltVPullback(PetscInt N, PetscInt M, const PetscReal *L, P
 
           PetscCall(PetscDTEnumPerm(k, p, perm, &isOdd));
           prod = isOdd ? -ww[i] : ww[i];
-          for (l = 0; l < k; l++) { prod *= L[subsetw[perm[l]] * N + subsetv[l]]; }
+          for (l = 0; l < k; l++) prod *= L[subsetw[perm[l]] * N + subsetv[l]];
           Lstarw[j] += prod;
         }
       }
@@ -457,11 +457,11 @@ PetscErrorCode PetscDTAltVPullbackMatrix(PetscInt N, PetscInt M, const PetscReal
       Lstar[0] = 1.;
     } else if (k == 1) {
       for (i = 0; i < Nk; i++) {
-        for (j = 0; j < Mk; j++) { Lstar[i * Mk + j] = L[j * Nk + i]; }
+        for (j = 0; j < Mk; j++) Lstar[i * Mk + j] = L[j * Nk + i];
       }
     } else if (k == -1) {
       for (i = 0; i < Nk; i++) {
-        for (j = 0; j < Mk; j++) { Lstar[i * Mk + j] = L[(Mk - 1 - j) * Nk + (Nk - 1 - i)] * mult[i] * mult[j]; }
+        for (j = 0; j < Mk; j++) Lstar[i * Mk + j] = L[(Mk - 1 - j) * Nk + (Nk - 1 - i)] * mult[i] * mult[j];
       }
     } else if (k == 2) {
       PetscInt pairs[3][2] = {
@@ -471,7 +471,7 @@ PetscErrorCode PetscDTAltVPullbackMatrix(PetscInt N, PetscInt M, const PetscReal
       };
 
       for (i = 0; i < Nk; i++) {
-        for (j = 0; j < Mk; j++) { Lstar[i * Mk + j] = L[pairs[j][0] * N + pairs[i][0]] * L[pairs[j][1] * N + pairs[i][1]] - L[pairs[j][1] * N + pairs[i][0]] * L[pairs[j][0] * N + pairs[i][1]]; }
+        for (j = 0; j < Mk; j++) Lstar[i * Mk + j] = L[pairs[j][0] * N + pairs[i][0]] * L[pairs[j][1] * N + pairs[i][1]] - L[pairs[j][1] * N + pairs[i][0]] * L[pairs[j][0] * N + pairs[i][1]];
       }
     } else if (k == -2) {
       PetscInt pairs[3][2] = {
@@ -490,7 +490,7 @@ PetscErrorCode PetscDTAltVPullbackMatrix(PetscInt N, PetscInt M, const PetscReal
     } else {
       PetscReal detL = L[0] * (L[4] * L[8] - L[5] * L[7]) + L[1] * (L[5] * L[6] - L[3] * L[8]) + L[2] * (L[3] * L[7] - L[4] * L[6]);
 
-      for (i = 0; i < Nk; i++) { Lstar[i] = detL; }
+      for (i = 0; i < Nk; i++) Lstar[i] = detL;
     }
   } else {
     if (k < 0) {
@@ -522,7 +522,7 @@ PetscErrorCode PetscDTAltVPullbackMatrix(PetscInt N, PetscInt M, const PetscReal
           PetscCall(PetscDTEnumPerm(k, p, perm, &isOdd));
           isOdd = (PetscBool)(isOdd ^ jOdd);
           prod  = isOdd ? -1. : 1.;
-          for (l = 0; l < k; l++) { prod *= L[subsetw[perm[l]] * N + subsetv[l]]; }
+          for (l = 0; l < k; l++) prod *= L[subsetw[perm[l]] * N + subsetv[l]];
           Lstar[jidx * Mk + iidx] += prod;
         }
       }
@@ -559,12 +559,12 @@ PetscErrorCode PetscDTAltVInterior(PetscInt N, PetscInt k, const PetscReal *w, c
     if (k == 1) {
       PetscReal sum = 0.;
 
-      for (i = 0; i < N; i++) { sum += w[i] * v[i]; }
+      for (i = 0; i < N; i++) sum += w[i] * v[i];
       wIntv[0] = sum;
     } else if (k == N) {
       PetscReal mult[3] = {1., -1., 1.};
 
-      for (i = 0; i < N; i++) { wIntv[N - 1 - i] = w[0] * v[i] * mult[i]; }
+      for (i = 0; i < N; i++) wIntv[N - 1 - i] = w[0] * v[i] * mult[i];
     } else {
       wIntv[0] = -w[0] * v[1] - w[1] * v[2];
       wIntv[1] = w[0] * v[0] - w[2] * v[2];

@@ -4531,7 +4531,7 @@ PetscErrorCode SNESSolve(SNES snes, Vec b, Vec x) {
       }
     }
   }
-  if (!x) { x = snes->vec_sol; }
+  if (!x) x = snes->vec_sol;
   if (!x) {
     PetscCall(SNESGetDM(snes, &dm));
     PetscCall(DMCreateGlobalVector(dm, &xcreated));

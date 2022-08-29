@@ -72,8 +72,8 @@ static PetscErrorCode PetscPartitionerPartition_Shell(PetscPartitioner part, Pet
     PetscCall(PetscRandomSetInterval(r, 0.0, (PetscScalar)nparts));
     PetscCall(PetscRandomSetFromOptions(r));
     PetscCall(PetscCalloc2(nparts, &sizes, numVertices, &points));
-    for (v = 0; v < numVertices; ++v) { points[v] = v; }
-    for (p = 0; p < nparts; ++p) { sizes[p] = numVertices / nparts + (PetscInt)(p < numVertices % nparts); }
+    for (v = 0; v < numVertices; ++v) points[v] = v;
+    for (p = 0; p < nparts; ++p) sizes[p] = numVertices / nparts + (PetscInt)(p < numVertices % nparts);
     for (v = numVertices - 1; v > 0; --v) {
       PetscReal val;
       PetscInt  w, tmp;
@@ -159,8 +159,8 @@ PetscErrorCode PetscPartitionerShellSetPartition(PetscPartitioner part, PetscInt
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(part, PETSCPARTITIONER_CLASSID, 1, PETSCPARTITIONERSHELL);
-  if (sizes) { PetscValidIntPointer(sizes, 3); }
-  if (points) { PetscValidIntPointer(points, 4); }
+  if (sizes) PetscValidIntPointer(sizes, 3);
+  if (points) PetscValidIntPointer(points, 4);
   PetscCall(PetscSectionDestroy(&p->section));
   PetscCall(ISDestroy(&p->partition));
   PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)part), &p->section));

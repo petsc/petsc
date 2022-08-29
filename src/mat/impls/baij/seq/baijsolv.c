@@ -1544,7 +1544,7 @@ PetscErrorCode MatSolve_SeqBAIJ_1_inplace(Mat A, Vec bb, Vec xx) {
     vi = aj + ai[i];
     nz = diag[i] - ai[i];
     s1 = b[*r++];
-    while (nz--) { s1 -= (*v++) * t[*vi++]; }
+    while (nz--) s1 -= (*v++) * t[*vi++];
     t[i] = s1;
   }
   /* backward solve the upper triangular */
@@ -1553,7 +1553,7 @@ PetscErrorCode MatSolve_SeqBAIJ_1_inplace(Mat A, Vec bb, Vec xx) {
     vi = aj + diag[i] + 1;
     nz = ai[i + 1] - diag[i] - 1;
     s1 = t[i];
-    while (nz--) { s1 -= (*v++) * t[*vi++]; }
+    while (nz--) s1 -= (*v++) * t[*vi++];
     x[*c--] = t[i] = aa[diag[i]] * s1;
   }
 

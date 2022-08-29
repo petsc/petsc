@@ -7,7 +7,7 @@ PetscErrorCode MatColoringCreateLexicalWeights(MatColoring mc, PetscReal *weight
 
   PetscFunctionBegin;
   PetscCall(MatGetOwnershipRange(G, &s, &e));
-  for (i = s; i < e; i++) { weights[i - s] = i; }
+  for (i = s; i < e; i++) weights[i - s] = i;
   PetscFunctionReturn(0);
 }
 
@@ -59,7 +59,7 @@ PetscErrorCode MatColoringGetDegrees(Mat G, PetscInt distance, PetscInt *degrees
   Gi  = aij->i;
   Gj  = aij->j;
   PetscCall(PetscMalloc3(lm, &seen, lm, &idxbuf, lm, &distbuf));
-  for (i = 0; i < ln; i++) { seen[i] = -1; }
+  for (i = 0; i < ln; i++) seen[i] = -1;
   PetscCall(ISGetIndices(ris, &gidx));
   for (i = 0; i < ln; i++) {
     if (gidx[i] >= e || gidx[i] < s) continue;
@@ -214,7 +214,7 @@ PetscErrorCode MatColoringCreateSmallestLastWeights(MatColoring mc, PetscReal *w
   PetscCall(PetscSortRealWithPermutation(lm, lweights, rperm));
   PetscCall(PetscMalloc1(maxdegree + 1, &degb));
   PetscCall(PetscMalloc2(ln, &llnext, ln, &llprev));
-  for (i = 0; i < maxdegree + 1; i++) { degb[i] = -1; }
+  for (i = 0; i < maxdegree + 1; i++) degb[i] = -1;
   for (i = 0; i < ln; i++) {
     llnext[i] = -1;
     llprev[i] = -1;
@@ -257,7 +257,7 @@ PetscErrorCode MatColoringCreateSmallestLastWeights(MatColoring mc, PetscReal *w
           if (degrees[idx] > 0) {
             /* change up the degree of the neighbors still in the graph */
             if (lweights[idx] <= lweights[cur]) lweights[idx] = lweights[cur] + 1;
-            if (nxt > 0) { llprev[nxt] = prv; }
+            if (nxt > 0) llprev[nxt] = prv;
             if (prv > 0) {
               llnext[prv] = nxt;
             } else {
@@ -266,7 +266,7 @@ PetscErrorCode MatColoringCreateSmallestLastWeights(MatColoring mc, PetscReal *w
             degrees[idx]--;
             llnext[idx] = degb[degrees[idx]];
             llprev[idx] = -1;
-            if (degb[degrees[idx]] >= 0) { llprev[degb[degrees[idx]]] = idx; }
+            if (degb[degrees[idx]] >= 0) llprev[degb[degrees[idx]]] = idx;
             degb[degrees[idx]] = idx;
             if (dist < distance) {
               ncols = Gi[idx + 1] - Gi[idx];
@@ -287,7 +287,7 @@ PetscErrorCode MatColoringCreateSmallestLastWeights(MatColoring mc, PetscReal *w
     }
   }
   for (i = 0; i < lm; i++) {
-    if (gidx[i] >= s && gidx[i] < e) { weights[gidx[i] - s] = lweights[i]; }
+    if (gidx[i] >= s && gidx[i] < e) weights[gidx[i] - s] = lweights[i];
   }
   PetscCall(PetscRandomDestroy(&rand));
   PetscCall(PetscFree(degb));
@@ -318,7 +318,7 @@ PetscErrorCode MatColoringCreateWeights(MatColoring mc, PetscReal **weights, Pet
   }
   if (lperm) {
     PetscCall(PetscMalloc1(n, lperm));
-    for (i = 0; i < n; i++) { (*lperm)[i] = i; }
+    for (i = 0; i < n; i++) (*lperm)[i] = i;
     PetscCall(PetscSortRealWithPermutation(n, wts, *lperm));
     for (i = 0; i < n / 2; i++) {
       PetscInt swp;
@@ -339,9 +339,9 @@ PetscErrorCode MatColoringSetWeights(MatColoring mc, PetscReal *weights, PetscIn
   n = e - s;
   if (weights) {
     PetscCall(PetscMalloc2(n, &mc->user_weights, n, &mc->user_lperm));
-    for (i = 0; i < n; i++) { mc->user_weights[i] = weights[i]; }
+    for (i = 0; i < n; i++) mc->user_weights[i] = weights[i];
     if (!lperm) {
-      for (i = 0; i < n; i++) { mc->user_lperm[i] = i; }
+      for (i = 0; i < n; i++) mc->user_lperm[i] = i;
       PetscCall(PetscSortRealWithPermutation(n, mc->user_weights, mc->user_lperm));
       for (i = 0; i < n / 2; i++) {
         PetscInt swp;
@@ -350,7 +350,7 @@ PetscErrorCode MatColoringSetWeights(MatColoring mc, PetscReal *weights, PetscIn
         mc->user_lperm[n - 1 - i] = swp;
       }
     } else {
-      for (i = 0; i < n; i++) { mc->user_lperm[i] = lperm[i]; }
+      for (i = 0; i < n; i++) mc->user_lperm[i] = lperm[i];
     }
   } else {
     mc->user_weights = NULL;

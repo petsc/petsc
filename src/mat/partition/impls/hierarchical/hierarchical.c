@@ -229,7 +229,7 @@ static PetscErrorCode MatPartitioningApply_Hierarchical(MatPartitioning part, IS
   PetscCall(PetscMalloc1(bs * adj->rmap->n, &parts_indices));
   /* Modify the local indices to the global indices by combing the coarse partition and the fine partitions */
   for (i = 0; i < adj->rmap->n; i++) {
-    for (j = 0; j < bs; j++) { parts_indices[bs * i + j] = fineparts_indices[i] + offsets[coarseparts_indices[i]]; }
+    for (j = 0; j < bs; j++) parts_indices[bs * i + j] = fineparts_indices[i] + offsets[coarseparts_indices[i]];
   }
   PetscCall(ISRestoreIndices(hpart->fineparts, &fineparts_indices));
   PetscCall(ISRestoreIndices(hpart->coarseparts, &coarseparts_indices));
@@ -255,7 +255,7 @@ PetscErrorCode MatPartitioningHierarchical_ReassembleFineparts(Mat adj, IS finep
   PetscCall(MatGetLayouts(adj, &rmap, NULL));
   PetscCall(ISGetLocalSize(fineparts, &localsize));
   PetscCall(PetscMalloc2(localsize, &global_indices, localsize, &local_indices));
-  for (i = 0; i < localsize; i++) { local_indices[i] = i; }
+  for (i = 0; i < localsize; i++) local_indices[i] = i;
   /* map local indices back to global so that we can permulate data globally */
   PetscCall(ISLocalToGlobalMappingApply(mapping, localsize, local_indices, global_indices));
   PetscCall(PetscCalloc1(localsize, &owners));
@@ -264,7 +264,7 @@ PetscErrorCode MatPartitioningHierarchical_ReassembleFineparts(Mat adj, IS finep
   PetscCall(PetscLayoutGetRanges(rmap, &ranges));
   PetscCall(PetscMalloc1(ranges[rank + 1] - ranges[rank], &sfineparts_indices));
 
-  for (i = 0; i < ranges[rank + 1] - ranges[rank]; i++) { sfineparts_indices[i] = -1; }
+  for (i = 0; i < ranges[rank + 1] - ranges[rank]; i++) sfineparts_indices[i] = -1;
 
   PetscCall(ISGetIndices(fineparts, &fineparts_indices));
   PetscCall(PetscSFCreate(comm, &sf));

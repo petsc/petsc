@@ -2,7 +2,7 @@
 #define MKL_Complex8  PetscScalar
 #define PetscCallMKL(stat) \
   do { \
-    if (stat != SPARSE_STATUS_SUCCESS) { PetscFunctionReturn(PETSC_ERR_LIB); } \
+    if (stat != SPARSE_STATUS_SUCCESS) PetscFunctionReturn(PETSC_ERR_LIB); \
   } while (0)
 #if !defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_USE_REAL_SINGLE)

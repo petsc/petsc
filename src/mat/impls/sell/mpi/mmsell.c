@@ -159,7 +159,7 @@ PetscErrorCode MatSetUpMultiply_MPISELL(Mat mat) {
   }
 
   /* make indices now point into garray */
-  for (i = 0; i < ec; i++) { indices[garray[i]] = i; }
+  for (i = 0; i < ec; i++) indices[garray[i]] = i;
 
   /* compact out the extra columns in B */
   for (i = 0; i < totalslices; i++) { /* loop over slices */
@@ -222,12 +222,12 @@ PetscErrorCode MatMPISELLDiagonalScaleLocalSetUp(Mat inA, Vec scale) {
   PetscCheck(nt == n, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Hmm nt %" PetscInt_FMT " n %" PetscInt_FMT, nt, n);
   PetscCall(PetscMalloc1(n + 1, &auglyrmapd));
   for (i = 0; i < inA->rmap->mapping->n; i++) {
-    if (r_rmapd[i]) { auglyrmapd[(r_rmapd[i] - 1) - cstart] = i; }
+    if (r_rmapd[i]) auglyrmapd[(r_rmapd[i] - 1) - cstart] = i;
   }
   PetscCall(PetscFree(r_rmapd));
   PetscCall(VecCreateSeq(PETSC_COMM_SELF, n, &auglydd));
   PetscCall(PetscCalloc1(inA->cmap->N + 1, &lindices));
-  for (i = 0; i < ina->B->cmap->n; i++) { lindices[garray[i]] = i + 1; }
+  for (i = 0; i < ina->B->cmap->n; i++) lindices[garray[i]] = i + 1;
   no = inA->rmap->mapping->n - nt;
   PetscCall(PetscCalloc1(inA->rmap->mapping->n + 1, &r_rmapo));
   nt = 0;
@@ -241,7 +241,7 @@ PetscErrorCode MatMPISELLDiagonalScaleLocalSetUp(Mat inA, Vec scale) {
   PetscCall(PetscFree(lindices));
   PetscCall(PetscMalloc1(nt + 1, &auglyrmapo));
   for (i = 0; i < inA->rmap->mapping->n; i++) {
-    if (r_rmapo[i]) { auglyrmapo[(r_rmapo[i] - 1)] = i; }
+    if (r_rmapo[i]) auglyrmapo[(r_rmapo[i] - 1)] = i;
   }
   PetscCall(PetscFree(r_rmapo));
   PetscCall(VecCreateSeq(PETSC_COMM_SELF, nt, &auglyoo));

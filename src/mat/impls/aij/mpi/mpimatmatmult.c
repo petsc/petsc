@@ -130,7 +130,7 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat A, Mat P, Mat C) 
   /* get data from symbolic products */
   p_loc = (Mat_SeqAIJ *)(ptap->P_loc)->data;
   p_oth = NULL;
-  if (size > 1) { p_oth = (Mat_SeqAIJ *)(ptap->P_oth)->data; }
+  if (size > 1) p_oth = (Mat_SeqAIJ *)(ptap->P_oth)->data;
 
   /* get apa for storing dense row A[i,:]*P */
   apa = ptap->apa;
@@ -1085,7 +1085,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_seqMPI(Mat A, Mat P, PetscReal f
       row  = *adj++;
       pnz  = poff_i[row + 1] - poff_i[row];
       Jptr = poff_j + poff_i[row];
-      for (i1 = 0; i1 < pnz; i1++) { j_temp[i1] = p->garray[Jptr[i1]]; }
+      for (i1 = 0; i1 < pnz; i1++) j_temp[i1] = p->garray[Jptr[i1]];
       /* add non-zero cols of P into the sorted linked list lnk */
       PetscCall(PetscLLCondensedAddSorted(pnz, j_temp, lnk, lnkbt));
     }
@@ -1140,7 +1140,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_seqMPI(Mat A, Mat P, PetscReal f
     adpdnz = adpdi[i + 1] - adpdi[i];
 
     /* Correct indices from A_diag*P_diag */
-    for (i1 = 0; i1 < adpdnz; i1++) { adpdJ[i1] += p_colstart; }
+    for (i1 = 0; i1 < adpdnz; i1++) adpdJ[i1] += p_colstart;
     /* Merge j-arrays of A_diag * P_loc_off and A_diag * P_loc_diag and A_off * P_oth */
     Merge3SortedArrays(adponz, adpoJ, adpdnz, adpdJ, aopnz, aopJ, &apnz, apJ);
     PetscCall(MatPreallocateSet(i + rstart, apnz, apJ, dnz, onz));

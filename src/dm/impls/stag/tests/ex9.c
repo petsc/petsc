@@ -43,9 +43,9 @@ int main(int argc, char **argv) {
         for (d = 0; d < dofTotal; ++d) {
           if (a1[k][j][i][d] != 1.0) PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d] Unexpected value %g (expecting %g)\n", rank, (double)PetscRealPart(a1[k][j][i][d]), 1.0));
           a2[k][j][i][d] = 0.0;
-          for (ks = -stencilWidth; ks <= stencilWidth; ++ks) { a2[k][j][i][d] += a1[k + ks][j][i][d]; }
-          for (js = -stencilWidth; js <= stencilWidth; ++js) { a2[k][j][i][d] += a1[k][j + js][i][d]; }
-          for (is = -stencilWidth; is <= stencilWidth; ++is) { a2[k][j][i][d] += a1[k][j][i + is][d]; }
+          for (ks = -stencilWidth; ks <= stencilWidth; ++ks) a2[k][j][i][d] += a1[k + ks][j][i][d];
+          for (js = -stencilWidth; js <= stencilWidth; ++js) a2[k][j][i][d] += a1[k][j + js][i][d];
+          for (is = -stencilWidth; is <= stencilWidth; ++is) a2[k][j][i][d] += a1[k][j][i + is][d];
           a2[k][j][i][d] -= 2.0 * a1[k][j][i][d];
         }
       }

@@ -206,7 +206,7 @@ typedef struct {
 static inline PetscErrorCode KSPLogResidualHistory(KSP ksp, PetscReal norm) {
   PetscFunctionBegin;
   PetscCall(PetscObjectSAWsTakeAccess((PetscObject)ksp));
-  if (ksp->res_hist && ksp->res_hist_max > ksp->res_hist_len) { ksp->res_hist[ksp->res_hist_len++] = norm; }
+  if (ksp->res_hist && ksp->res_hist_max > ksp->res_hist_len) ksp->res_hist[ksp->res_hist_len++] = norm;
   PetscCall(PetscObjectSAWsGrantAccess((PetscObject)ksp));
   PetscFunctionReturn(0);
 }

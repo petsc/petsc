@@ -898,13 +898,13 @@ static PetscErrorCode PetscWeakFormViewTable_Ascii(PetscWeakForm wf, PetscViewer
       /* If the string sort is stable, it will be sorted correctly overall */
       for (k = 0; k < Nk; ++k) {
         if (keys[idx1[k]].label) PetscCall(PetscObjectGetName((PetscObject)keys[idx1[k]].label, &names[k]));
-        else { names[k] = ""; }
+        else names[k] = "";
         idx2[k] = k;
       }
       PetscCall(PetscSortStrWithPermutation(Nk, names, idx2));
       for (k = 0; k < Nk; ++k) {
         if (keys[k].label) PetscCall(PetscObjectGetName((PetscObject)keys[k].label, &names[k]));
-        else { names[k] = ""; }
+        else names[k] = "";
         idx[k] = idx1[idx2[k]];
       }
     }
@@ -987,7 +987,7 @@ PetscErrorCode PetscWeakFormView(PetscWeakForm wf, PetscViewer v) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(wf, PETSCWEAKFORM_CLASSID, 1);
   if (!v) PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)wf), &v));
-  else { PetscValidHeaderSpecific(v, PETSC_VIEWER_CLASSID, 2); }
+  else PetscValidHeaderSpecific(v, PETSC_VIEWER_CLASSID, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)v, PETSCVIEWERASCII, &iascii));
   if (iascii) PetscCall(PetscWeakFormView_Ascii(wf, v));
   PetscTryTypeMethod(wf, view, v);

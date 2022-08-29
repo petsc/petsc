@@ -866,7 +866,7 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C, PetscInt ismax, const I
     PetscCall(PetscMalloc1(nrqs, &r_waits2));
     PetscCall(PetscMalloc3(nrqs, &req_source2, nrqs, &rbuf2, nrqs, &rbuf3));
     if (nrqs) rbuf2[0] = tmp + msz;
-    for (i = 1; i < nrqs; ++i) { rbuf2[i] = rbuf2[i - 1] + w1[pa[i - 1]]; }
+    for (i = 1; i < nrqs; ++i) rbuf2[i] = rbuf2[i - 1] + w1[pa[i - 1]];
     for (i = 0; i < nrqs; ++i) {
       j = pa[i];
       PetscCallMPI(MPI_Irecv(rbuf2[i], w1[j], MPIU_INT, j, tag2, comm, r_waits2 + i));
@@ -952,7 +952,7 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C, PetscInt ismax, const I
               else break;
             }
             imark = l;
-            for (l = 0; l < nzA; l++) { cols[imark + l] = cstart + cworkA[l]; }
+            for (l = 0; l < nzA; l++) cols[imark + l] = cstart + cworkA[l];
             for (l = imark; l < nzB; l++) cols[nzA + l] = bmap[cworkB[l]];
             ct2 += ncols;
           }

@@ -957,7 +957,7 @@ PetscErrorCode ISSetPermutation(IS is) {
       PetscCall(ISGetIndices(is, &iidx));
       PetscCall(PetscArraycpy(idx, iidx, n));
       PetscCall(PetscIntSortSemiOrdered(n, idx));
-      for (i = 0; i < n; i++) { PetscCheck(idx[i] == i, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Index set is not a permutation"); }
+      for (i = 0; i < n; i++) PetscCheck(idx[i] == i, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Index set is not a permutation");
       PetscCall(PetscFree(idx));
       PetscCall(ISRestoreIndices(is, &iidx));
     }

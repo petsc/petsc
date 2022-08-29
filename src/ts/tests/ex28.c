@@ -134,7 +134,7 @@ static PetscErrorCode SetInitialConditions(DM dmSw, Vec u) {
   for (c = cStart; c < cEnd; ++c) {
     for (p = 0; p < Np; ++p) {
       const PetscInt n = c * Np + p;
-      for (d = 0; d < dim; d++) { initialConditions[n] = vals[n]; }
+      for (d = 0; d < dim; d++) initialConditions[n] = vals[n];
     }
   }
   PetscCall(VecRestoreArray(u, &initialConditions));
@@ -243,15 +243,15 @@ static PetscErrorCode CheckDistribution(DM dm, PetscReal m, PetscReal n, PetscRe
   PetscCall(PetscMalloc2(Nq, &xq, Nq, &wq));
   PetscCall(PetscDTGaussQuadrature(100, vmin, vmax, xq, wq));
   neq = 0.0;
-  for (q = 0; q < Nq; ++q) { neq += ComputePDF(m, n, T, &xq[q]) * wq[q]; }
+  for (q = 0; q < Nq; ++q) neq += ComputePDF(m, n, T, &xq[q]) * wq[q];
   PetscCheck(PetscAbsReal(neq - n) <= PETSC_SMALL, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Int f %g != %g mass (%g)", (double)neq, (double)n, (double)(neq - n));
   /* Check omemnts with quadrature */
   veq = 0.0;
-  for (q = 0; q < Nq; ++q) { veq += xq[q] * ComputePDF(m, n, T, &xq[q]) * wq[q]; }
+  for (q = 0; q < Nq; ++q) veq += xq[q] * ComputePDF(m, n, T, &xq[q]) * wq[q];
   veq /= neq;
   PetscCheck(PetscAbsReal(veq - v[0]) <= PETSC_SMALL, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Int v f %g != %g velocity (%g)", (double)veq, (double)v[0], (double)(veq - v[0]));
   Teq = 0.0;
-  for (q = 0; q < Nq; ++q) { Teq += PetscSqr(xq[q]) * ComputePDF(m, n, T, &xq[q]) * wq[q]; }
+  for (q = 0; q < Nq; ++q) Teq += PetscSqr(xq[q]) * ComputePDF(m, n, T, &xq[q]) * wq[q];
   Teq = Teq * m / neq - PetscSqr(veq);
   PetscCheck(PetscAbsReal(Teq - T) <= PETSC_SMALL, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Int v^2 f %g != %g temperature (%g)", (double)Teq, (double)T, (double)(Teq - T));
   PetscCall(PetscFree2(xq, wq));

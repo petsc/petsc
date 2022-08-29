@@ -368,7 +368,7 @@ static PetscErrorCode TSInterpolate_IRK(TS ts, PetscReal itime, Vec U) {
   PetscCall(PetscMalloc1(nstages, &bt));
   for (i = 0; i < nstages; i++) bt[i] = 0;
   for (j = 0, tt = t; j < pinterp; j++, tt *= t) {
-    for (i = 0; i < nstages; i++) { bt[i] += h * B[i * pinterp + j] * tt; }
+    for (i = 0; i < nstages; i++) bt[i] += h * B[i * pinterp + j] * tt;
   }
   PetscCall(VecMAXPY(U, nstages, bt, irk->YdotI));
   PetscFunctionReturn(0);

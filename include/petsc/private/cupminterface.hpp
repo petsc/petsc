@@ -50,7 +50,7 @@ namespace Impl {
 #define PetscCallCUPM(...) \
   do { \
     const cupmError_t cerr_p_ = __VA_ARGS__; \
-    if (PetscUnlikely(cerr_p_ != cupmSuccess)) { SETERRQ(PETSC_COMM_SELF, PETSC_ERR_GPU, "%s error %d (%s) : %s", cupmName(), static_cast<PetscErrorCode>(cerr_p_), cupmGetErrorName(cerr_p_), cupmGetErrorString(cerr_p_)); } \
+    PetscCheck(cerr_p_ == cupmSuccess, PETSC_COMM_SELF, PETSC_ERR_GPU, "%s error %d (%s) : %s", cupmName(), static_cast<PetscErrorCode>(cerr_p_), cupmGetErrorName(cerr_p_), cupmGetErrorString(cerr_p_)); \
   } while (0)
 
 // PETSC_CUPM_ALIAS_INTEGRAL_VALUE_EXACT() - declaration to alias a cuda/hip integral constant

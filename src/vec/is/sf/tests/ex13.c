@@ -31,13 +31,13 @@ int main(int argc, char **argv) {
 
   PetscCall(VecGetOwnershipRange(x, &low, NULL));
   PetscCall(VecGetArray(x, &array));
-  for (i = 0; i < n; i++) { array[i] = (PetscScalar)(i + low); }
+  for (i = 0; i < n; i++) array[i] = (PetscScalar)(i + low);
   PetscCall(VecRestoreArray(x, &array));
 
   /* Create a sequential vector y */
   PetscCall(VecCreateSeq(PETSC_COMM_SELF, n, &y));
   PetscCall(VecGetArray(y, &array));
-  for (i = 0; i < n; i++) { array[i] = (PetscScalar)(i + 100 * rank); }
+  for (i = 0; i < n; i++) array[i] = (PetscScalar)(i + 100 * rank);
   PetscCall(VecRestoreArray(y, &array));
 
   /* Create two index sets */

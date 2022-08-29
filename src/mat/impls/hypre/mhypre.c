@@ -39,7 +39,7 @@ static PetscErrorCode MatHYPRE_IJMatrixPreallocate(Mat A_d, Mat A_o, HYPRE_IJMat
     PetscCall(MatGetRowIJ(A_d, 0, PETSC_FALSE, PETSC_FALSE, &n_d, &ia_d, NULL, &done_d));
     if (done_d) {
       PetscCall(PetscMalloc1(n_d, &nnz_d));
-      for (i = 0; i < n_d; i++) { nnz_d[i] = ia_d[i + 1] - ia_d[i]; }
+      for (i = 0; i < n_d; i++) nnz_d[i] = ia_d[i + 1] - ia_d[i];
     }
     PetscCall(MatRestoreRowIJ(A_d, 0, PETSC_FALSE, PETSC_FALSE, NULL, &ia_d, NULL, &done_d));
   }
@@ -47,7 +47,7 @@ static PetscErrorCode MatHYPRE_IJMatrixPreallocate(Mat A_d, Mat A_o, HYPRE_IJMat
     PetscCall(MatGetRowIJ(A_o, 0, PETSC_FALSE, PETSC_FALSE, &n_o, &ia_o, NULL, &done_o));
     if (done_o) {
       PetscCall(PetscMalloc1(n_o, &nnz_o));
-      for (i = 0; i < n_o; i++) { nnz_o[i] = ia_o[i + 1] - ia_o[i]; }
+      for (i = 0; i < n_o; i++) nnz_o[i] = ia_o[i + 1] - ia_o[i];
     }
     PetscCall(MatRestoreRowIJ(A_o, 0, PETSC_FALSE, PETSC_FALSE, &n_o, &ia_o, NULL, &done_o));
   }

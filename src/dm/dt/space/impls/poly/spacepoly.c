@@ -50,7 +50,7 @@ static PetscErrorCode PetscSpaceSetUp_Polynomial(PetscSpace sp) {
 
   PetscFunctionBegin;
   if (poly->setupCalled) PetscFunctionReturn(0);
-  if (sp->Nv <= 1) { poly->tensor = PETSC_FALSE; }
+  if (sp->Nv <= 1) poly->tensor = PETSC_FALSE;
   if (sp->Nc != 1) {
     PetscInt    Nc     = sp->Nc;
     PetscBool   tensor = poly->tensor;
@@ -112,12 +112,12 @@ static PetscErrorCode CoordinateBasis(PetscInt dim, PetscInt npoints, const Pets
     for (PetscInt j = 0; j < PetscMin(1 + dim, Njet); j++) {
       if (j == 0) {
         if (b == 0) {
-          for (PetscInt pt = 0; pt < npoints; pt++) { pScalar[b * Njet * npoints + j * npoints + pt] = 1.; }
+          for (PetscInt pt = 0; pt < npoints; pt++) pScalar[b * Njet * npoints + j * npoints + pt] = 1.;
         } else {
-          for (PetscInt pt = 0; pt < npoints; pt++) { pScalar[b * Njet * npoints + j * npoints + pt] = points[pt * dim + (b - 1)]; }
+          for (PetscInt pt = 0; pt < npoints; pt++) pScalar[b * Njet * npoints + j * npoints + pt] = points[pt * dim + (b - 1)];
         }
       } else if (j == b) {
-        for (PetscInt pt = 0; pt < npoints; pt++) { pScalar[b * Njet * npoints + j * npoints + pt] = 1.; }
+        for (PetscInt pt = 0; pt < npoints; pt++) pScalar[b * Njet * npoints + j * npoints + pt] = 1.;
       }
     }
   }
@@ -165,7 +165,7 @@ static PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoi
 
     PetscCall(PetscArrayzero(B, npoints * Nb));
     for (PetscInt b = 0; b < Nb; b++) {
-      for (PetscInt p = 0; p < npoints; p++) { B[p * p_strl + b * b_strl] = pScalar[b * b_strr + p * p_strr]; }
+      for (PetscInt p = 0; p < npoints; p++) B[p * p_strl + b * b_strl] = pScalar[b * b_strr + p * p_strr];
     }
   }
   if (D) {
@@ -180,7 +180,7 @@ static PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoi
     PetscCall(PetscArrayzero(D, npoints * Nb * dim));
     for (PetscInt d = 0; d < dim; d++) {
       for (PetscInt b = 0; b < Nb; b++) {
-        for (PetscInt p = 0; p < npoints; p++) { D[p * p_strl + b * b_strl + d * d_strl] = pScalar[b * b_strr + (1 + d) * d_strr + p * p_strr]; }
+        for (PetscInt p = 0; p < npoints; p++) D[p * p_strl + b * b_strl + d * d_strl] = pScalar[b * b_strr + (1 + d) * d_strr + p * p_strr];
       }
     }
   }
@@ -206,7 +206,7 @@ static PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoi
         derivs[d1]--;
         derivs[d2]--;
         for (PetscInt b = 0; b < Nb; b++) {
-          for (PetscInt p = 0; p < npoints; p++) { H[p * p_strl + b * b_strl + d1 * d1_strl + d2 * d2_strl] = pScalar[b * b_strr + j * j_strr + p * p_strr]; }
+          for (PetscInt p = 0; p < npoints; p++) H[p * p_strl + b * b_strl + d1 * d1_strl + d2 * d2_strl] = pScalar[b * b_strr + j * j_strr + p * p_strr];
         }
       }
     }

@@ -297,7 +297,7 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ_Sorted(Mat A, Mat B, Mat C) {
       baj    = ba + bi[brow];
       /* perform dense axpy */
       valtmp = aa[j];
-      for (k = 0; k < bnzi; k++) { ab_dense[bjj[k]] += valtmp * baj[k]; }
+      for (k = 0; k < bnzi; k++) ab_dense[bjj[k]] += valtmp * baj[k];
       flops += 2 * bnzi;
     }
     aj += anzi;
@@ -1760,7 +1760,7 @@ PetscErrorCode MatTransColoringApplyDenToSp_SeqAIJ(MatTransposeColoring matcolor
       nrows = matcoloring->nrows[k];
       row   = rows + colorforrow[k];
       idx   = den2sp + colorforrow[k];
-      for (l = 0; l < nrows; l++) { ca[idx[l]] = ca_den_ptr[row[l]]; }
+      for (l = 0; l < nrows; l++) ca[idx[l]] = ca_den_ptr[row[l]];
       ca_den_ptr += m;
     }
   }

@@ -181,7 +181,7 @@ static PetscErrorCode KSPSolve_FCG(KSP ksp) {
           Pold[j] = fcg->Pvecs[idx];
         }
         PetscCall(VecXMDot(Z, ndots, Cold, dots));
-        for (k = 0; k < ndots; ++k) { dots[k] = -dots[k]; }
+        for (k = 0; k < ndots; ++k) dots[k] = -dots[k];
         PetscCall(VecMAXPY(Pcurr, ndots, dots, Pold));
         PetscCall(PetscFree3(dots, Cold, Pold));
       }

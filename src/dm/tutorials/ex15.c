@@ -79,7 +79,7 @@ PetscErrorCode DMDAVecGenerateEntries(DM dm, Vec a) {
         PetscScalar test_value_s;
 
         test_value_s = dmda_i_val[i] * ((PetscScalar)i) + dmda_j_val[j] * ((PetscScalar)(i + j * M)) + dmda_k_val[k] * ((PetscScalar)(i + j * M + k * M * N));
-        for (l = 0; l < dof; l++) { LA_v[k][j][i][l] = (PetscScalar)dof * test_value_s + (PetscScalar)l; }
+        for (l = 0; l < dof; l++) LA_v[k][j][i][l] = (PetscScalar)dof * test_value_s + (PetscScalar)l;
       }
     }
   }

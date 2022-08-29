@@ -636,7 +636,7 @@ static PetscErrorCode CreateConesIS_Private(DM dm, PetscInt cStart, PetscInt cEn
     replace = (value == 2) ? PETSC_TRUE : PETSC_FALSE;
     PetscCall(DMPlexGetTransitiveClosure(dm, cell, PETSC_TRUE, &closureSize, &closure));
     for (p = 0; p < closureSize * 2; p += 2) {
-      if ((closure[p] >= vStart) && (closure[p] < vEnd)) { closure[Nc++] = closure[p]; }
+      if ((closure[p] >= vStart) && (closure[p] < vEnd)) closure[Nc++] = closure[p];
     }
     PetscCall(DMPlexReorderCell(dm, cell, closure));
     for (p = 0; p < Nc; ++p) {
@@ -1357,7 +1357,7 @@ PetscErrorCode DMPlexLabelsLoad_HDF5_Internal(DM dm, PetscViewer viewer, PetscSF
 
   PetscFunctionBegin;
   PetscCall(DMPlexIsDistributed(dm, &distributed));
-  if (distributed) { PetscCheck(sfXC, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_NULL, "PetscSF must be given for parallel load"); }
+  if (distributed) PetscCheck(sfXC, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_NULL, "PetscSF must be given for parallel load");
   PetscCall(LoadLabelsCtxCreate(dm, viewer, sfXC, &ctx));
   PetscCall(DMPlexGetHDF5Name_Private(dm, &topologydm_name));
   PetscCall(DMPlexStorageVersionGet_Private(dm, viewer, &version));
@@ -1457,8 +1457,8 @@ static PetscErrorCode DMPlexDistributionLoad_HDF5_Static(DM dm, PetscViewer view
         buffer0[workIlocalp].rank = -1;
       }
     }
-    for (p = 0; p < lsize; ++p) { buffer1[p].rank = -1; }
-    for (p = 0; p < *chartSize; ++p) { buffer2[p].rank = -1; }
+    for (p = 0; p < lsize; ++p) buffer1[p].rank = -1;
+    for (p = 0; p < *chartSize; ++p) buffer2[p].rank = -1;
     PetscCall(PetscSFReduceBegin(sf, MPIU_2INT, buffer0, buffer1, MPI_MAXLOC));
     PetscCall(PetscSFReduceEnd(sf, MPIU_2INT, buffer0, buffer1, MPI_MAXLOC));
     PetscCall(PetscSFBcastBegin(*distsf, MPIU_2INT, buffer1, buffer2, MPI_REPLACE));
@@ -1500,10 +1500,10 @@ static PetscErrorCode DMPlexDistributionLoad_HDF5_Static(DM dm, PetscViewer view
       }
       buffer0[p].index = p;
     }
-    for (p = 0; p < lsize; ++p) { buffer1[p].rank = -1; }
+    for (p = 0; p < lsize; ++p) buffer1[p].rank = -1;
     PetscCall(PetscSFReduceBegin(*distsf, MPIU_2INT, buffer0, buffer1, MPI_MAXLOC));
     PetscCall(PetscSFReduceEnd(*distsf, MPIU_2INT, buffer0, buffer1, MPI_MAXLOC));
-    for (p = 0; p < *chartSize; ++p) { buffer0[p].rank = -1; }
+    for (p = 0; p < *chartSize; ++p) buffer0[p].rank = -1;
     PetscCall(PetscSFBcastBegin(*distsf, MPIU_2INT, buffer1, buffer0, MPI_REPLACE));
     PetscCall(PetscSFBcastEnd(*distsf, MPIU_2INT, buffer1, buffer0, MPI_REPLACE));
     if (PetscDefined(USE_DEBUG)) {

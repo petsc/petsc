@@ -132,7 +132,7 @@ static PetscErrorCode TaoLineSearchApply_Armijo(TaoLineSearch ls, Vec x, PetscRe
     ls->reason = TAOLINESEARCH_FAILED_BADPARAMETER;
   }
 
-  if (ls->reason != TAOLINESEARCH_CONTINUE_ITERATING) { PetscFunctionReturn(0); }
+  if (ls->reason != TAOLINESEARCH_CONTINUE_ITERATING) PetscFunctionReturn(0);
 
   /* Check to see of the memory has been allocated.  If not, allocate
      the historical array and populate it with the initial function
@@ -140,7 +140,7 @@ static PetscErrorCode TaoLineSearchApply_Armijo(TaoLineSearch ls, Vec x, PetscRe
   if (!armP->memory) PetscCall(PetscMalloc1(armP->memorySize, &armP->memory));
 
   if (!armP->memorySetup) {
-    for (i = 0; i < armP->memorySize; i++) { armP->memory[i] = armP->alpha * (*f); }
+    for (i = 0; i < armP->memorySize; i++) armP->memory[i] = armP->alpha * (*f);
 
     armP->current       = 0;
     armP->lastReference = armP->memory[0];
@@ -160,7 +160,7 @@ static PetscErrorCode TaoLineSearchApply_Armijo(TaoLineSearch ls, Vec x, PetscRe
 
   if (armP->referencePolicy == REFERENCE_AVE) {
     ref = 0;
-    for (i = 0; i < armP->memorySize; i++) { ref += armP->memory[i]; }
+    for (i = 0; i < armP->memorySize; i++) ref += armP->memory[i];
     ref = ref / armP->memorySize;
     ref = PetscMax(ref, armP->memory[armP->current]);
   } else if (armP->referencePolicy == REFERENCE_MEAN) {
@@ -202,7 +202,7 @@ static PetscErrorCode TaoLineSearchApply_Armijo(TaoLineSearch ls, Vec x, PetscRe
       PetscCall(TaoLineSearchComputeObjectiveAndGradient(ls, armP->work, f, g));
       g_computed = PETSC_TRUE;
     }
-    if (ls->step == ls->initstep) { ls->f_fullstep = *f; }
+    if (ls->step == ls->initstep) ls->f_fullstep = *f;
 
     PetscCall(TaoLineSearchMonitor(ls, its, *f, ls->step));
 
@@ -211,7 +211,7 @@ static PetscErrorCode TaoLineSearchApply_Armijo(TaoLineSearch ls, Vec x, PetscRe
     } else {
       /* Check descent condition */
       if (armP->nondescending && *f <= ref - ls->step * fact * ref) break;
-      if (!armP->nondescending && *f <= ref + ls->step * fact) { break; }
+      if (!armP->nondescending && *f <= ref + ls->step * fact) break;
 
       ls->step *= armP->beta;
     }
@@ -228,14 +228,14 @@ static PetscErrorCode TaoLineSearchApply_Armijo(TaoLineSearch ls, Vec x, PetscRe
     PetscCall(PetscInfo(ls, "Number of line search function evals (%" PetscInt_FMT ") > maximum allowed (%" PetscInt_FMT ")\n", ls->nfeval + ls->nfgeval, ls->max_funcs));
     ls->reason = TAOLINESEARCH_HALTED_MAXFCN;
   }
-  if (ls->reason) { PetscFunctionReturn(0); }
+  if (ls->reason) PetscFunctionReturn(0);
 
   /* Successful termination, update memory */
   ls->reason          = TAOLINESEARCH_SUCCESS;
   armP->lastReference = ref;
   if (armP->replacementPolicy == REPLACE_FIFO) {
     armP->memory[armP->current++] = *f;
-    if (armP->current >= armP->memorySize) { armP->current = 0; }
+    if (armP->current >= armP->memorySize) armP->current = 0;
   } else {
     armP->current     = idx;
     armP->memory[idx] = *f;

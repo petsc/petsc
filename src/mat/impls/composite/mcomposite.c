@@ -503,7 +503,7 @@ static PetscErrorCode MatCompositeAddMat_Composite(Mat mat, Mat smat) {
 
   if (!next) shell->head = ilink;
   else {
-    while (next->next) { next = next->next; }
+    while (next->next) next = next->next;
     next->next  = ilink;
     ilink->prev = next;
   }
@@ -835,7 +835,7 @@ static PetscErrorCode MatCompositeGetMat_Composite(Mat mat, PetscInt i, Mat *Ai)
   PetscFunctionBegin;
   PetscCheck(i < shell->nmat, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_OUTOFRANGE, "index out of range: %" PetscInt_FMT " >= %" PetscInt_FMT, i, shell->nmat);
   ilink = shell->head;
-  for (k = 0; k < i; k++) { ilink = ilink->next; }
+  for (k = 0; k < i; k++) ilink = ilink->next;
   *Ai = ilink->mat;
   PetscFunctionReturn(0);
 }

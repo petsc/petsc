@@ -354,7 +354,7 @@ static PetscErrorCode SNESSolve_NEWTONTRDC(SNES snes) {
       PetscCall(VecStrideNormAll(YNtmp, NORM_INFINITY, inorms));
       for (j = 0; j < bs; j++) {
         if (neP->auto_scale_max > 1.0) {
-          if (inorms[j] < 1.0 / neP->auto_scale_max) { inorms[j] = 1.0 / neP->auto_scale_max; }
+          if (inorms[j] < 1.0 / neP->auto_scale_max) inorms[j] = 1.0 / neP->auto_scale_max;
         }
         PetscCall(VecStrideSet(W, j, inorms[j]));
         PetscCall(VecStrideScale(YNtmp, j, 1.0 / inorms[j]));

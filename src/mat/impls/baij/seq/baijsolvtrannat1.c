@@ -65,7 +65,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_1_NaturalOrdering_inplace(Mat A, Vec bb
     s1 = (*v++) * x[i];
     vi = aj + diag[i] + 1;
     nz = ai[i + 1] - diag[i] - 1;
-    while (nz--) { x[*vi++] -= (*v++) * s1; }
+    while (nz--) x[*vi++] -= (*v++) * s1;
     x[i] = s1;
   }
   /* backward solve the L^T */
@@ -74,7 +74,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_1_NaturalOrdering_inplace(Mat A, Vec bb
     vi = aj + diag[i] - 1;
     nz = diag[i] - ai[i];
     s1 = x[i];
-    while (nz--) { x[*vi--] -= (*v--) * s1; }
+    while (nz--) x[*vi--] -= (*v--) * s1;
   }
   PetscCall(VecRestoreArray(xx, &x));
   PetscCall(PetscLogFlops(2.0 * (a->nz) - A->cmap->n));

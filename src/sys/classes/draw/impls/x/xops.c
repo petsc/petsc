@@ -60,7 +60,7 @@ static PetscErrorCode PetscDrawPoint_X(PetscDraw draw, PetscReal x, PetscReal y,
   yy = YTRANS(draw, XiWin, y);
   PetscDrawXiSetColor(XiWin, c);
   for (i = -1; i < 2; i++) {
-    for (j = -1; j < 2; j++) { XDrawPoint(XiWin->disp, PetscDrawXiDrawable(XiWin), XiWin->gc.set, xx + i, yy + j); }
+    for (j = -1; j < 2; j++) XDrawPoint(XiWin->disp, PetscDrawXiDrawable(XiWin), XiWin->gc.set, xx + i, yy + j);
   }
   PetscFunctionReturn(0);
 }

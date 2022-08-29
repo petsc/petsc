@@ -291,7 +291,7 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *fcn, Vec G, void 
         k++;
       }
       tt = 0;
-      for (kk = 0; kk < k; kk++) { tt += v[kk] * x[col[kk]]; }
+      for (kk = 0; kk < k; kk++) tt += v[kk] * x[col[kk]];
       row    = (j - ys) * xm + (i - xs);
       g[row] = tt;
     }

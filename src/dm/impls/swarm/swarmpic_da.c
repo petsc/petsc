@@ -16,7 +16,7 @@ PetscErrorCode private_DMSwarmCreateCellLocalCoords_DA_Q1_Regular(PetscInt dim, 
   case 2: npoints = np[0] * np[1]; break;
   case 3: npoints = np[0] * np[1] * np[2]; break;
   }
-  for (d = 0; d < dim; d++) { ds[d] = 2.0 / ((PetscReal)np[d]); }
+  for (d = 0; d < dim; d++) ds[d] = 2.0 / ((PetscReal)np[d]);
 
   PetscCall(PetscMalloc1(dim * npoints, &xi));
   switch (dim) {
@@ -69,7 +69,7 @@ PetscErrorCode private_DMSwarmCreateCellLocalCoords_DA_Q1_Gauss(PetscInt dim, Pe
   PetscCall(PetscQuadratureGetData(quadrature, NULL, NULL, &npoints_q, &quadrature_xi, NULL));
   PetscCall(PetscMalloc1(dim * npoints_q, &xi));
   for (q = 0; q < npoints_q; q++) {
-    for (d = 0; d < dim; d++) { xi[dim * q + d] = quadrature_xi[dim * q + d]; }
+    for (d = 0; d < dim; d++) xi[dim * q + d] = quadrature_xi[dim * q + d];
   }
   PetscCall(PetscQuadratureDestroy(&quadrature));
   *_npoints = npoints_q;
@@ -105,7 +105,7 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_DA_Q1(DM dm, DM dmc, Petsc
     PetscInt np_dir[3];
     nsub      = npoints;
     np_dir[0] = 1;
-    for (s = 0; s < nsub; s++) { np_dir[0] *= 2; }
+    for (s = 0; s < nsub; s++) np_dir[0] *= 2;
     np_dir[1] = np_dir[0];
     np_dir[2] = np_dir[0];
     PetscCall(private_DMSwarmCreateCellLocalCoords_DA_Q1_Regular(dim, np_dir, &npoints_q, &xi));
@@ -155,13 +155,13 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_DA_Q1(DM dm, DM dmc, Petsc
     const PetscInt *element = &element_list[npe * e];
 
     for (k = 0; k < npe; k++) {
-      for (d = 0; d < dim; d++) { elcoor[dim * k + d] = PetscRealPart(_coor[dim * element[k] + d]); }
+      for (d = 0; d < dim; d++) elcoor[dim * k + d] = PetscRealPart(_coor[dim * element[k] + d]);
     }
 
     for (q = 0; q < npoints_q; q++) {
-      for (d = 0; d < dim; d++) { swarm_coor[dim * pcnt + d] = 0.0; }
+      for (d = 0; d < dim; d++) swarm_coor[dim * pcnt + d] = 0.0;
       for (k = 0; k < npe; k++) {
-        for (d = 0; d < dim; d++) { swarm_coor[dim * pcnt + d] += basis[q][k] * elcoor[dim * k + d]; }
+        for (d = 0; d < dim; d++) swarm_coor[dim * pcnt + d] += basis[q][k] * elcoor[dim * k + d];
       }
       swarm_cellid[pcnt] = e;
       pcnt++;

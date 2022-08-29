@@ -72,7 +72,7 @@ static PetscErrorCode PCApplyTranspose_Composite_Multiplicative(PC pc, Vec x, Ve
   }
   if (pc->useAmat) mat = pc->mat;
   /* locate last PC */
-  while (next->next) { next = next->next; }
+  while (next->next) next = next->next;
   PetscCall(PCApplyTranspose(next->pc, x, y));
   while (next->previous) {
     next = next->previous;

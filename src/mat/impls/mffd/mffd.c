@@ -330,7 +330,7 @@ static PetscErrorCode MatMult_MFFD(Mat mat, Vec a, Vec y) {
 #else
   PetscCall(PetscInfo(mat, "Current differencing parameter: %15.12e\n", (double)PetscRealPart(h)));
 #endif
-  if (ctx->historyh && ctx->ncurrenth < ctx->maxcurrenth) { ctx->historyh[ctx->ncurrenth] = h; }
+  if (ctx->historyh && ctx->ncurrenth < ctx->maxcurrenth) ctx->historyh[ctx->ncurrenth] = h;
   ctx->ncurrenth++;
 
 #if defined(PETSC_USE_COMPLEX)

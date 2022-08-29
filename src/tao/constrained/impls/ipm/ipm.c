@@ -301,7 +301,7 @@ static PetscErrorCode IPMInitializeBounds(Tao tao) {
     if (ipmP->mi > 0) {
       PetscCall(VecGetOwnershipRange(tao->constraints_inequality, &ucstart, &ucend));
       counter = 0;
-      for (i = ucstart; i < ucend; i++) { cind[counter++] = i; }
+      for (i = ucstart; i < ucend; i++) cind[counter++] = i;
       PetscCall(ISCreateGeneral(comm, counter, cind, PETSC_COPY_VALUES, &isuc));
       PetscCall(ISCreateGeneral(comm, counter, cind, PETSC_COPY_VALUES, &isc));
       PetscCall(VecScatterCreate(tao->constraints_inequality, isuc, ipmP->ci, isc, &ipmP->ci_scat));
@@ -416,7 +416,7 @@ static PetscErrorCode IPMInitializeBounds(Tao tao) {
     PetscCall(VecScatterCreate(ipmP->bigstep, sis, tao->constraints_equality, is1, &ipmP->step3));
     PetscCall(ISDestroy(&sis));
 
-    for (i = ucestart; i < uceend; i++) { stepind[i - ucestart] = i + ipmP->n; }
+    for (i = ucestart; i < uceend; i++) stepind[i - ucestart] = i + ipmP->n;
 
     PetscCall(ISCreateGeneral(comm, uceend - ucestart, stepind, PETSC_COPY_VALUES, &sis));
     PetscCall(VecScatterCreate(tao->constraints_equality, is1, ipmP->bigrhs, sis, &ipmP->rhs2));
@@ -686,7 +686,7 @@ PetscErrorCode IPMUpdateAi(Tao tao) {
         nonzeros[i] = ncols;
         PetscCall(MatRestoreRow(tao->jacobian_inequality, i, &ncols, NULL, NULL));
       }
-      for (i = r2; i < r4; i++) { nonzeros[i] = 1; }
+      for (i = r2; i < r4; i++) nonzeros[i] = 1;
     }
     PetscCall(MatCreate(comm, &ipmP->Ai));
     PetscCall(MatSetType(ipmP->Ai, MATAIJ));
@@ -749,7 +749,7 @@ PetscErrorCode IPMUpdateAi(Tao tao) {
     PetscCall(VecScatterBegin(ipmP->ci_scat, tao->constraints_inequality, ipmP->ci, INSERT_VALUES, SCATTER_FORWARD));
     PetscCall(VecScatterEnd(ipmP->ci_scat, tao->constraints_inequality, ipmP->ci, INSERT_VALUES, SCATTER_FORWARD));
   }
-  if (!ipmP->work) { VecDuplicate(tao->solution, &ipmP->work); }
+  if (!ipmP->work) VecDuplicate(tao->solution, &ipmP->work);
   PetscCall(VecCopy(tao->solution, ipmP->work));
   if (tao->XL) {
     PetscCall(VecAXPY(ipmP->work, -1.0, tao->XL));

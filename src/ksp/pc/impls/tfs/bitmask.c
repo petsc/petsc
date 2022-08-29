@@ -117,7 +117,7 @@ PetscErrorCode PCTFS_set_bit_mask(PetscInt *bm, PetscInt len, PetscInt val) {
   }
 
   offset = val % BYTE;
-  for (i = 0; i < offset; i++) { mask <<= 1; }
+  for (i = 0; i < offset; i++) mask <<= 1;
 
   offset       = len - val / BYTE - 1;
   cptr[offset] = mask;

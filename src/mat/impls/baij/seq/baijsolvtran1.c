@@ -86,7 +86,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_1_inplace(Mat A, Vec bb, Vec xx) {
     s1 = (*v++) * t[i];
     vi = aj + diag[i] + 1;
     nz = ai[i + 1] - diag[i] - 1;
-    while (nz--) { t[*vi++] -= (*v++) * s1; }
+    while (nz--) t[*vi++] -= (*v++) * s1;
     t[i] = s1;
   }
   /* backward solve the L^T */
@@ -95,7 +95,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_1_inplace(Mat A, Vec bb, Vec xx) {
     vi = aj + diag[i] - 1;
     nz = diag[i] - ai[i];
     s1 = t[i];
-    while (nz--) { t[*vi--] -= (*v--) * s1; }
+    while (nz--) t[*vi--] -= (*v--) * s1;
   }
 
   /* copy t into x according to permutation */

@@ -45,7 +45,7 @@ int main(int argc, char **argv) {
           a2[k][j][i][d] = 0.0;
           for (ks = -stencilWidth; ks <= stencilWidth; ++ks) {
             for (js = -stencilWidth; js <= stencilWidth; ++js) {
-              for (is = -stencilWidth; is <= stencilWidth; ++is) { a2[k][j][i][d] += a1[k + ks][j + js][i + is][d]; }
+              for (is = -stencilWidth; is <= stencilWidth; ++is) a2[k][j][i][d] += a1[k + ks][j + js][i + is][d];
             }
           }
         }

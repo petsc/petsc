@@ -1044,7 +1044,7 @@ int main(int argc, char **argv) {
   PetscCall(PetscOptionsReal("-tmax", "", "", user.tmax, &user.tmax, NULL));
 
   PetscCall(PetscMalloc1(18 * nc, &user.ybusfault));
-  for (i = 0; i < 18 * nc; i++) { user.ybusfault[i] = 0; }
+  for (i = 0; i < 18 * nc; i++) user.ybusfault[i] = 0;
   user.ybusfault[user.faultbus * 2 + 1] = 1 / user.Rfault;
   PetscOptionsEnd();
 

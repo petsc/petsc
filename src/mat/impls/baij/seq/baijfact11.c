@@ -1551,7 +1551,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj(Mat C, Mat A
   /*    if ((unsigned long)bj==(unsigned long)aj) { */
   /*      colscale = 4; */
   /*    } */
-  if ((unsigned long)bj == (unsigned long)aj) { return (MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj_Inplace(C)); }
+  if ((unsigned long)bj == (unsigned long)aj) return (MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj_Inplace(C));
 
   for (i = 0; i < n; i++) {
     nz    = bi[i + 1] - bi[i];

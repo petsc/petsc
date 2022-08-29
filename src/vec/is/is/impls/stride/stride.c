@@ -125,7 +125,7 @@ PetscErrorCode ISLocate_Stride(IS is, PetscInt key, PetscInt *location) {
   step      = sub->step;
   key -= sub->first;
   rem = key / step;
-  if ((rem < is->map->n) && !(key % step)) { *location = rem; }
+  if ((rem < is->map->n) && !(key % step)) *location = rem;
   PetscFunctionReturn(0);
 }
 

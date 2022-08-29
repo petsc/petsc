@@ -32,7 +32,7 @@ int main(int argc, char **argv) {
   nroots  = 1;
   PetscCall(PetscMalloc1(nleaves, &ilocal));
 
-  for (i = 0; i < nleaves; i++) { ilocal[i] = i; }
+  for (i = 0; i < nleaves; i++) ilocal[i] = i;
 
   PetscCall(PetscMalloc1(nleaves, &iremote));
   if (rank == 0) {

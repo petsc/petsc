@@ -87,7 +87,7 @@ static PetscErrorCode SetInitialCoordinates(DM sw) {
   for (c = cStart; c < cEnd; ++c) {
     if (Np == 1) {
       PetscCall(DMPlexComputeCellGeometryFVM(dm, c, NULL, centroid, NULL));
-      for (d = 0; d < dim; ++d) { coords[c * dim + d] = centroid[d]; }
+      for (d = 0; d < dim; ++d) coords[c * dim + d] = centroid[d];
       vals[c] = 1.0;
     } else {
       PetscCall(DMPlexComputeCellGeometryFEM(dm, c, NULL, v0, J, invJ, &detJ)); /* affine */
@@ -146,7 +146,7 @@ static PetscErrorCode SetInitialConditions(DM dmSw, Vec u) {
   for (c = cStart; c < cEnd; ++c) {
     for (p = 0; p < Np; ++p) {
       const PetscInt n = c * Np + p;
-      for (d = 0; d < dim; d++) { initialConditions[n * dim + d] = velocity[n * dim + d]; }
+      for (d = 0; d < dim; d++) initialConditions[n * dim + d] = velocity[n * dim + d];
     }
   }
   PetscCall(VecRestoreArray(u, &initialConditions));
@@ -305,7 +305,7 @@ static PetscErrorCode QCompute(PetscInt dim, const PetscReal vp[], const PetscRe
   mag = PetscSqrtReal(xi2);
   xi3 = xi2 * mag;
   for (d = 0; d < dim; ++d) {
-    for (e = 0; e < dim; ++e) { Q[d * dim + e] = -xi[d] * xi[e] / xi3; }
+    for (e = 0; e < dim; ++e) Q[d * dim + e] = -xi[d] * xi[e] / xi3;
     Q[d * dim + d] += 1. / mag;
   }
   PetscFunctionReturn(0);

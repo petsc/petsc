@@ -19,7 +19,7 @@ PetscErrorCode SetCoordinates1d(DM da) {
   PetscCall(DMDAVecGetArrayRead(cda, local, &coorslocal));
   PetscCall(DMDAGetCorners(cda, &start, 0, 0, &m, 0, 0));
   for (i = start; i < start + m; i++) {
-    if (i % 2) { coors[i] = coorslocal[i - 1] + .1 * (coorslocal[i + 1] - coorslocal[i - 1]); }
+    if (i % 2) coors[i] = coorslocal[i - 1] + .1 * (coorslocal[i + 1] - coorslocal[i - 1]);
   }
   PetscCall(DMDAVecRestoreArray(cda, global, &coors));
   PetscCall(DMDAVecRestoreArrayRead(cda, local, &coorslocal));
@@ -44,8 +44,8 @@ PetscErrorCode SetCoordinates2d(DM da) {
   PetscCall(DMDAGetCorners(cda, &mstart, &nstart, 0, &m, &n, 0));
   for (i = mstart; i < mstart + m; i++) {
     for (j = nstart; j < nstart + n; j++) {
-      if (i % 2) { coors[j][i].x = coorslocal[j][i - 1].x + .1 * (coorslocal[j][i + 1].x - coorslocal[j][i - 1].x); }
-      if (j % 2) { coors[j][i].y = coorslocal[j - 1][i].y + .3 * (coorslocal[j + 1][i].y - coorslocal[j - 1][i].y); }
+      if (i % 2) coors[j][i].x = coorslocal[j][i - 1].x + .1 * (coorslocal[j][i + 1].x - coorslocal[j][i - 1].x);
+      if (j % 2) coors[j][i].y = coorslocal[j - 1][i].y + .3 * (coorslocal[j + 1][i].y - coorslocal[j - 1][i].y);
     }
   }
   PetscCall(DMDAVecRestoreArray(cda, global, &coors));
@@ -73,9 +73,9 @@ PetscErrorCode SetCoordinates3d(DM da) {
   for (i = mstart; i < mstart + m; i++) {
     for (j = nstart; j < nstart + n; j++) {
       for (k = pstart; k < pstart + p; k++) {
-        if (i % 2) { coors[k][j][i].x = coorslocal[k][j][i - 1].x + .1 * (coorslocal[k][j][i + 1].x - coorslocal[k][j][i - 1].x); }
-        if (j % 2) { coors[k][j][i].y = coorslocal[k][j - 1][i].y + .3 * (coorslocal[k][j + 1][i].y - coorslocal[k][j - 1][i].y); }
-        if (k % 2) { coors[k][j][i].z = coorslocal[k - 1][j][i].z + .4 * (coorslocal[k + 1][j][i].z - coorslocal[k - 1][j][i].z); }
+        if (i % 2) coors[k][j][i].x = coorslocal[k][j][i - 1].x + .1 * (coorslocal[k][j][i + 1].x - coorslocal[k][j][i - 1].x);
+        if (j % 2) coors[k][j][i].y = coorslocal[k][j - 1][i].y + .3 * (coorslocal[k][j + 1][i].y - coorslocal[k][j - 1][i].y);
+        if (k % 2) coors[k][j][i].z = coorslocal[k - 1][j][i].z + .4 * (coorslocal[k + 1][j][i].z - coorslocal[k - 1][j][i].z);
       }
     }
   }

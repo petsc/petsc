@@ -1705,7 +1705,7 @@ PetscErrorCode DMLabelDistribute(DMLabel label, PetscSF sf, DMLabel *labelNew) {
   for (p = pStart; p < pEnd; p++) {
     PetscCall(PetscSectionGetDof(leafSection, p, &dof));
     PetscCall(PetscSectionGetOffset(leafSection, p, &offset));
-    for (s = 0; s < dof; s++) { (*labelNew)->stratumSizes[leafStrata[offset + s]]++; }
+    for (s = 0; s < dof; s++) (*labelNew)->stratumSizes[leafStrata[offset + s]]++;
   }
   PetscCall(PetscCalloc1((*labelNew)->numStrata, &(*labelNew)->ht));
   PetscCall(PetscMalloc1((*labelNew)->numStrata, &(*labelNew)->points));
@@ -2412,7 +2412,7 @@ PetscErrorCode PetscSectionSymLabelSetStratum(PetscSectionSym sym, PetscInt stra
       for (j = 0; j < maxOrient - minOrient; j++) {
         if (perms[j]) {
           PetscCall(PetscMalloc1(size, &ownPerms[j]));
-          for (k = 0; k < size; k++) { ownPerms[j][k] = perms[j][k]; }
+          for (k = 0; k < size; k++) ownPerms[j][k] = perms[j][k];
         }
       }
       sl->perms[i] = (const PetscInt **)&ownPerms[-minOrient];
@@ -2424,7 +2424,7 @@ PetscErrorCode PetscSectionSymLabelSetStratum(PetscSectionSym sym, PetscInt stra
       for (j = 0; j < maxOrient - minOrient; j++) {
         if (rots[j]) {
           PetscCall(PetscMalloc1(size, &ownRots[j]));
-          for (k = 0; k < size; k++) { ownRots[j][k] = rots[j][k]; }
+          for (k = 0; k < size; k++) ownRots[j][k] = rots[j][k];
         }
       }
       sl->rots[i] = (const PetscScalar **)&ownRots[-minOrient];
@@ -2464,8 +2464,8 @@ static PetscErrorCode PetscSectionSymGetPoints_Label(PetscSectionSym sym, PetscS
     }
     PetscCheck(!(sl->minMaxOrients[j][1] > sl->minMaxOrients[j][0]) || !(ornt < sl->minMaxOrients[j][0] || ornt >= sl->minMaxOrients[j][1]), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "point %" PetscInt_FMT " orientation %" PetscInt_FMT " not in range [%" PetscInt_FMT ", %" PetscInt_FMT ") for stratum %" PetscInt_FMT, point, ornt, sl->minMaxOrients[j][0], sl->minMaxOrients[j][1],
                j < numStrata ? label->stratumValues[j] : label->defaultValue);
-    if (perms) { perms[i] = sl->perms[j] ? sl->perms[j][ornt] : NULL; }
-    if (rots) { rots[i] = sl->rots[j] ? sl->rots[j][ornt] : NULL; }
+    if (perms) perms[i] = sl->perms[j] ? sl->perms[j][ornt] : NULL;
+    if (rots) rots[i] = sl->rots[j] ? sl->rots[j][ornt] : NULL;
   }
   PetscFunctionReturn(0);
 }

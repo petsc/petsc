@@ -36,7 +36,7 @@ int main(int argc, char **argv) {
   nroots  = 1;
   PetscCall(PetscMalloc1(nleaves, &ilocal));
 
-  for (i = 0; i < nleaves; i++) { ilocal[i] = i; }
+  for (i = 0; i < nleaves; i++) ilocal[i] = i;
 
   PetscCall(PetscMalloc1(nleaves, &iremote));
   iremote[0].rank  = 0;
@@ -51,7 +51,7 @@ int main(int argc, char **argv) {
 
   PetscCall(VecDuplicate(A, &Aout));
   PetscCall(VecGetArray(A, &bufA));
-  for (i = 0; i < 4; i++) { bufA[i] = (PetscScalar)i; }
+  for (i = 0; i < 4; i++) bufA[i] = (PetscScalar)i;
   PetscCall(VecRestoreArray(A, &bufA));
 
   PetscCall(VecGetArrayRead(A, (const PetscScalar **)&bufA));

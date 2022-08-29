@@ -48,7 +48,7 @@ int main(int argc, char **args) {
   PetscCall(PetscRandomDestroy(&rand));
 #else
   for (i = 0; i < nrows; i++) {
-    for (j = 0; j < ncols; j++) { v[i * ncols + j] = (PetscReal)(10000 * rank + 100 * rows[i] + cols[j]); }
+    for (j = 0; j < ncols; j++) v[i * ncols + j] = (PetscReal)(10000 * rank + 100 * rows[i] + cols[j]);
   }
 #endif
   PetscCall(MatSetValues(C, nrows, rows, ncols, cols, v, INSERT_VALUES));
@@ -111,7 +111,7 @@ int main(int argc, char **args) {
   PetscCall(ISGetLocalSize(iscols, &ncols));
   PetscCall(ISGetIndices(iscols, &cols));
   for (i = 0; i < nrows; i++) {
-    for (j = 0; j < ncols; j++) { v[i * ncols + j] = (PetscReal)(1000 * rows[i] + cols[j]); }
+    for (j = 0; j < ncols; j++) v[i * ncols + j] = (PetscReal)(1000 * rows[i] + cols[j]);
   }
   PetscCall(MatSetValues(B, nrows, rows, ncols, cols, v, INSERT_VALUES));
   PetscCall(PetscFree(v));

@@ -325,7 +325,7 @@ PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ptr) {
     for (q = 0; q < npoints; ++q) {
       ff = ComputeForcingFunction(&phypts[3 * q], user);
 
-      for (i = 0; i < nconn; ++i) { localv[i] += jxw[q] * phi[q * nconn + i] * ff; }
+      for (i = 0; i < nconn; ++i) localv[i] += jxw[q] * phi[q * nconn + i] * ff;
     }
 
     /* check if element is on the boundary */
@@ -430,7 +430,7 @@ PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, void *ctx) {
       rho = ComputeDiffusionCoefficient(&phypts[q * 3], user);
 
       for (i = 0; i < nconn; ++i) {
-        for (j = 0; j < nconn; ++j) { array[i * nconn + j] += jxw[q] * rho * (dphi[0][q * nconn + i] * dphi[0][q * nconn + j] + dphi[1][q * nconn + i] * dphi[1][q * nconn + j]); }
+        for (j = 0; j < nconn; ++j) array[i * nconn + j] += jxw[q] * rho * (dphi[0][q * nconn + i] * dphi[0][q * nconn + j] + dphi[1][q * nconn + i] * dphi[1][q * nconn + j]);
       }
     }
 

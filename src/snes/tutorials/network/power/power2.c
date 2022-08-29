@@ -112,7 +112,7 @@ PetscErrorCode FormFunction_Subnet(DM networkdm, Vec localX, Vec localF, PetscIn
         }
       }
     }
-    if (bus && bus->ide == PV_BUS) { farr[offset + 1] = xarr[offset + 1] - bus->vm; }
+    if (bus && bus->ide == PV_BUS) farr[offset + 1] = xarr[offset + 1] - bus->vm;
   }
   PetscCall(VecRestoreArrayRead(localX, &xarr));
   PetscCall(VecRestoreArray(localF, &farr));

@@ -220,7 +220,7 @@ PetscErrorCode KSPSetUpOnBlocks(KSP ksp) {
      produce a result at KSPCheckNorm() thus communicating the known problem to all MPI ranks so they may
      terminate the Krylov solve. For many KSP implementations this is handled within KSPInitialResidual()
   */
-  if (pcreason) { ksp->reason = KSP_DIVERGED_PC_FAILED; }
+  if (pcreason) ksp->reason = KSP_DIVERGED_PC_FAILED;
   PetscFunctionReturn(0);
 }
 
@@ -394,7 +394,7 @@ PetscErrorCode KSPSetUp(KSP ksp) {
   PetscCall(PCSetUp(ksp->pc));
   PetscCall(PCGetFailedReasonRank(ksp->pc, &pcreason));
   /* TODO: this code was wrong and is still wrong, there is no way to propagate the failure to all processes; their is no code to handle a ksp->reason on only some ranks */
-  if (pcreason) { ksp->reason = KSP_DIVERGED_PC_FAILED; }
+  if (pcreason) ksp->reason = KSP_DIVERGED_PC_FAILED;
 
   PetscCall(MatGetNullSpace(mat, &nullsp));
   if (nullsp) {

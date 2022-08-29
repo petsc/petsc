@@ -453,8 +453,8 @@ PetscErrorCode TaoSetJacobianRoutine(Tao tao, Mat J, Mat Jpre, PetscErrorCode (*
     PetscValidHeaderSpecific(Jpre, MAT_CLASSID, 3);
     PetscCheckSameComm(tao, 1, Jpre, 3);
   }
-  if (ctx) { tao->user_jacP = ctx; }
-  if (func) { tao->ops->computejacobian = func; }
+  if (ctx) tao->user_jacP = ctx;
+  if (func) tao->ops->computejacobian = func;
   if (J) {
     PetscCall(PetscObjectReference((PetscObject)J));
     PetscCall(MatDestroy(&tao->jacobian));
@@ -506,8 +506,8 @@ PetscErrorCode TaoSetJacobianResidualRoutine(Tao tao, Mat J, Mat Jpre, PetscErro
     PetscValidHeaderSpecific(Jpre, MAT_CLASSID, 3);
     PetscCheckSameComm(tao, 1, Jpre, 3);
   }
-  if (ctx) { tao->user_lsjacP = ctx; }
-  if (func) { tao->ops->computeresidualjacobian = func; }
+  if (ctx) tao->user_lsjacP = ctx;
+  if (func) tao->ops->computeresidualjacobian = func;
   if (J) {
     PetscCall(PetscObjectReference((PetscObject)J));
     PetscCall(MatDestroy(&tao->ls_jac));
@@ -566,8 +566,8 @@ PetscErrorCode TaoSetJacobianStateRoutine(Tao tao, Mat J, Mat Jpre, Mat Jinv, Pe
     PetscValidHeaderSpecific(Jinv, MAT_CLASSID, 4);
     PetscCheckSameComm(tao, 1, Jinv, 4);
   }
-  if (ctx) { tao->user_jac_stateP = ctx; }
-  if (func) { tao->ops->computejacobianstate = func; }
+  if (ctx) tao->user_jac_stateP = ctx;
+  if (func) tao->ops->computejacobianstate = func;
   if (J) {
     PetscCall(PetscObjectReference((PetscObject)J));
     PetscCall(MatDestroy(&tao->jacobian_state));
@@ -619,8 +619,8 @@ PetscErrorCode TaoSetJacobianDesignRoutine(Tao tao, Mat J, PetscErrorCode (*func
     PetscValidHeaderSpecific(J, MAT_CLASSID, 2);
     PetscCheckSameComm(tao, 1, J, 2);
   }
-  if (ctx) { tao->user_jac_designP = ctx; }
-  if (func) { tao->ops->computejacobiandesign = func; }
+  if (ctx) tao->user_jac_designP = ctx;
+  if (func) tao->ops->computejacobiandesign = func;
   if (J) {
     PetscCall(PetscObjectReference((PetscObject)J));
     PetscCall(MatDestroy(&tao->jacobian_design));
@@ -767,8 +767,8 @@ PetscErrorCode TaoSetJacobianEqualityRoutine(Tao tao, Mat J, Mat Jpre, PetscErro
     PetscValidHeaderSpecific(Jpre, MAT_CLASSID, 3);
     PetscCheckSameComm(tao, 1, Jpre, 3);
   }
-  if (ctx) { tao->user_jac_equalityP = ctx; }
-  if (func) { tao->ops->computejacobianequality = func; }
+  if (ctx) tao->user_jac_equalityP = ctx;
+  if (func) tao->ops->computejacobianequality = func;
   if (J) {
     PetscCall(PetscObjectReference((PetscObject)J));
     PetscCall(MatDestroy(&tao->jacobian_equality));
@@ -821,8 +821,8 @@ PetscErrorCode TaoSetJacobianInequalityRoutine(Tao tao, Mat J, Mat Jpre, PetscEr
     PetscValidHeaderSpecific(Jpre, MAT_CLASSID, 3);
     PetscCheckSameComm(tao, 1, Jpre, 3);
   }
-  if (ctx) { tao->user_jac_inequalityP = ctx; }
-  if (func) { tao->ops->computejacobianinequality = func; }
+  if (ctx) tao->user_jac_inequalityP = ctx;
+  if (func) tao->ops->computejacobianinequality = func;
   if (J) {
     PetscCall(PetscObjectReference((PetscObject)J));
     PetscCall(MatDestroy(&tao->jacobian_inequality));
