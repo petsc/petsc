@@ -6,6 +6,24 @@
 
 /* SUBMANSEC = Sys */
 
+#if defined(__cplusplus)
+#if __cplusplus <= 201103L
+#define PETSC_CPP_VERSION 11
+#elif __cplusplus <= 201402L
+#define PETSC_CPP_VERSION 14
+#elif __cplusplus <= 201703L
+#define PETSC_CPP_VERSION 17
+#elif __cplusplus <= 202002L
+#define PETSC_CPP_VERSION 20
+#else
+#define PETSC_CPP_VERSION 22 // current year, or date of c++2b ratification
+#endif
+#endif // __cplusplus
+
+#ifndef PETSC_CPP_VERSION
+#define PETSC_CPP_VERSION 0
+#endif
+
 /* ========================================================================== */
 /* This facilitates using the C version of PETSc from C++ and the C++ version from C. */
 #if defined(__cplusplus)
@@ -348,30 +366,32 @@ M*/
 #endif
 
 /* C++14 features */
-#if defined(__cplusplus) && defined(PETSC_HAVE_CXX_DIALECT_CXX14) && __cplusplus >= 201402L
+#if PETSC_CPP_VERSION >= 14
 #define PETSC_CONSTEXPR_14 constexpr
 #else
 #define PETSC_CONSTEXPR_14
 #endif
 
 /* C++17 features */
-/* We met cases that the host CXX compiler (say mpicxx) supports C++17, but nvcc does not
- * agree, even with -ccbin mpicxx! */
-#if defined(__cplusplus) && defined(PETSC_HAVE_CXX_DIALECT_CXX17) && (!defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_CUDA_DIALECT_CXX17))
-#define PETSC_NODISCARD [[nodiscard]]
+#if PETSC_CPP_VERSION >= 17
+#define PETSC_NODISCARD    [[nodiscard]]
+#define PETSC_CONSTEXPR_17 constexpr
 #else
 #if PetscHasAttribute(warn_unused_result)
 #define PETSC_NODISCARD __attribute__((warn_unused_result))
-#else
-#define PETSC_NODISCARD
 #endif
+#define PETSC_CONSTEXPR_17
+#endif
+
+#ifndef PETSC_NODISCARD
+#define PETSC_NODISCARD
 #endif
 
 #include <petscversion.h>
 #define PETSC_AUTHOR_INFO "       The PETSc Team\n    petsc-maint@mcs.anl.gov\n https://petsc.org/\n"
 
 /* designated initializers since C99 and C++20, MSVC never supports them though */
-#if defined(_MSC_VER) || (defined(__cplusplus) && (__cplusplus < 202002L))
+#if defined(_MSC_VER) || (defined(__cplusplus) && (PETSC_CPP_VERSION < 20))
 #define PetscDesignatedInitializer(name, ...) __VA_ARGS__
 #else
 #define PetscDesignatedInitializer(name, ...) .name = __VA_ARGS__
@@ -550,8 +570,8 @@ M*/
 
 .seealso: `PetscConcat()`, `PetscExpandToNothing()`, `PetscExpand()`
 M*/
-#define PetscStringize_(x) #x
-#define PetscStringize(x)  PetscStringize_(x)
+#define PetscStringize_(...) #__VA_ARGS__
+#define PetscStringize(...)  PetscStringize_(__VA_ARGS__)
 
 /*MC
   PetscConcat - Concatenate two tokens

@@ -3,13 +3,13 @@
 
 #include <../src/vec/is/sf/impls/basic/sfbasic.h>
 #if defined(PETSC_HAVE_CUDA)
-#include <petscdevice.h>
+#include <petscdevice_cuda.h>
 typedef cudaStream_t cupmStream_t;
 typedef cudaEvent_t  cupmEvent_t;
 #endif
 
 #if defined(PETSC_HAVE_HIP)
-#include <petscdevice.h>
+#include <petscdevice_hip.h>
 typedef hipStream_t cupmStream_t;
 typedef hipEvent_t  cupmEvent_t;
 #endif

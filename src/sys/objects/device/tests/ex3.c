@@ -1,6 +1,5 @@
 static const char help[] = "Tests PetscDeviceContextDuplicate.\n\n";
 
-#include <petsc/private/deviceimpl.h>
 #include "petscdevicetestcommon.h"
 
 /* test duplication creates the same object type */
@@ -45,22 +44,24 @@ static PetscErrorCode TestPetscDeviceContextDuplicate(PetscDeviceContext dctx) {
 }
 
 int main(int argc, char *argv[]) {
+  MPI_Comm           comm;
   PetscDeviceContext dctx;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
+  comm = PETSC_COMM_WORLD;
 
   /* basic creation and destruction */
   PetscCall(PetscDeviceContextCreate(&dctx));
-  PetscCall(PetscDeviceContextSetFromOptions(PETSC_COMM_WORLD, "local_", dctx));
-  PetscCall(PetscDeviceContextSetUp(dctx));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)dctx, "local_"));
+  PetscCall(PetscDeviceContextSetFromOptions(comm, dctx));
   PetscCall(TestPetscDeviceContextDuplicate(dctx));
   PetscCall(PetscDeviceContextDestroy(&dctx));
 
   PetscCall(PetscDeviceContextGetCurrentContext(&dctx));
   PetscCall(TestPetscDeviceContextDuplicate(dctx));
 
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "EXIT_SUCCESS\n"));
+  PetscCall(PetscPrintf(comm, "EXIT_SUCCESS\n"));
   PetscCall(PetscFinalize());
   return 0;
 }
@@ -71,20 +72,24 @@ int main(int argc, char *argv[]) {
    requires: defined(PETSC_HAVE_CXX)
 
  testset:
-   TODO: broken in ci
-   requires: !device
-   suffix: no_device
-   filter: Error: grep -E -o -e ".*No support for this operation for this object type" -e ".*PETSc is not configured with device support.*" -e "^\[0\]PETSC ERROR:.*[0-9]{1} [A-z]+\(\)"
-
- testset:
    output_file: ./output/ExitSuccess.out
    nsize: {{1 4}}
+   args: -device_enable {{lazy eager}}
    args: -local_device_context_stream_type {{global_blocking default_blocking global_nonblocking}}
    test:
+     requires: !device
+     suffix: host_no_device
+   test:
+     requires: device
+     args: -default_device_type host -root_device_context_device_type host
+     suffix: host_with_device
+   test:
      requires: cuda
+     args: -default_device_type cuda -root_device_context_device_type cuda
      suffix: cuda
    test:
      requires: hip
+     args: -default_device_type hip -root_device_context_device_type hip
      suffix: hip
 
 TEST*/

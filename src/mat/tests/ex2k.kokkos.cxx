@@ -33,8 +33,10 @@ Examples:
 #include <petscdevice.h>
 
 #if defined(PETSC_HAVE_CUDA)
+#include <petscdevice_cuda.h>
 #define SyncDevice() PetscCallCUDA(cudaDeviceSynchronize())
 #elif defined(PETSC_HAVE_HIP)
+#include <petscdevice_hip.h>
 #define SyncDevice() PetscCallHIP(hipDeviceSynchronize())
 #elif defined(PETSC_HAVE_KOKKOS)
 #include <Kokkos_Core.hpp>

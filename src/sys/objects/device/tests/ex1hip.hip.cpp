@@ -7,7 +7,7 @@ static char help[] = "Benchmarking HIP kernel launch time\n";
   Average synchronous  HIP kernel launch time = 6.66 microseconds
 */
 #include <petscsys.h>
-#include <petscdevice.h>
+#include <petscdevice_hip.h>
 
 __global__ void NullKernel() { }
 

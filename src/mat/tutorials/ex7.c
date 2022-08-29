@@ -168,20 +168,20 @@ int main(int argc, char **argv) {
       requires: defined(PETSC_USE_INFO)
       suffix: 1
       args: -info
-      filter: grep -h -ve Running -ve communicator -ve MPI_Comm -ve OpenMP -ve PetscGetHostName -ve PetscDetermineInitialFPTrap -ve libpetscbamg -ve PetscDeviceContext -ve PetscDeviceType
+      filter: grep -h -ve Running -ve communicator -ve MPI_Comm -ve OpenMP -ve PetscGetHostName -ve PetscDetermineInitialFPTrap -ve libpetscbamg -ve PetscDeviceContext -ve PetscDeviceType -ve PetscDeviceInitializeTypeFromOptions_Private
 
    test:
       requires: defined(PETSC_USE_INFO)
       suffix: 2
       args: -info ex7info.2
-      filter: grep -h -ve Running -ve communicator -ve MPI_Comm -ve OpenMP -ve PetscGetHostName -ve PetscDetermineInitialFPTrap -ve libpetscbamg -ve PetscDeviceContext -ve PetscDeviceType "ex7info.2.0"
+      filter: grep -h -ve Running -ve communicator -ve MPI_Comm -ve OpenMP -ve PetscGetHostName -ve PetscDetermineInitialFPTrap -ve libpetscbamg -ve PetscDeviceContext -ve PetscDeviceType -ve PetscDeviceInitializeTypeFromOptions_Private "ex7info.2.0"
 
    test:
       requires: defined(PETSC_USE_INFO)
       suffix: 3
       nsize: 2
       args: -info ex7info.3
-      filter: grep -h -ve Running -ve communicator -ve MPI_Comm -ve OpenMP -ve PetscGetHostName  -ve PetscDetermineInitialFPTrap -ve libpetscbamg -ve PetscDeviceContext -ve PetscDeviceType "ex7info.3.0" | sort -b
+      filter: grep -h -ve Running -ve communicator -ve MPI_Comm -ve OpenMP -ve PetscGetHostName  -ve PetscDetermineInitialFPTrap -ve libpetscbamg -ve PetscDeviceContext -ve PetscDeviceType -ve PetscDeviceInitializeTypeFromOptions_Private "ex7info.3.0" | sort -b
 
    test:
       requires: defined(PETSC_USE_INFO)

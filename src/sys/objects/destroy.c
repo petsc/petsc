@@ -319,7 +319,7 @@ static PetscObject PetscObjectRegisterDestroy_Objects[MAXREGDESOBJS];
 PetscErrorCode PetscObjectRegisterDestroy(PetscObject obj) {
   PetscFunctionBegin;
   PetscValidHeader(obj, 1);
-  PetscCheck(PetscObjectRegisterDestroy_Count < MAXREGDESOBJS, PETSC_COMM_SELF, PETSC_ERR_PLIB, "No more room in array, limit %d \n recompile %s with larger value for " PetscStringize_(MAXREGDESOBJS), MAXREGDESOBJS, __FILE__);
+  PetscCheck(PetscObjectRegisterDestroy_Count < (int)PETSC_STATIC_ARRAY_LENGTH(PetscObjectRegisterDestroy_Objects), PETSC_COMM_SELF, PETSC_ERR_PLIB, "No more room in array, limit %zu \n recompile %s with larger value for " PetscStringize_(MAXREGDESOBJS), PETSC_STATIC_ARRAY_LENGTH(PetscObjectRegisterDestroy_Objects), __FILE__);
   PetscObjectRegisterDestroy_Objects[PetscObjectRegisterDestroy_Count++] = obj;
   PetscFunctionReturn(0);
 }
@@ -365,7 +365,7 @@ PetscErrorCode PetscRegisterFinalize(PetscErrorCode (*f)(void)) {
   for (PetscInt i = 0; i < PetscRegisterFinalize_Count; i++) {
     if (f == PetscRegisterFinalize_Functions[i]) PetscFunctionReturn(0);
   }
-  PetscCheck(PetscRegisterFinalize_Count < MAXREGFIN, PETSC_COMM_SELF, PETSC_ERR_PLIB, "No more room in array, limit %d \n recompile %s with larger value for " PetscStringize_(MAXREGFIN), MAXREGFIN, __FILE__);
+  PetscCheck(PetscRegisterFinalize_Count < (int)PETSC_STATIC_ARRAY_LENGTH(PetscRegisterFinalize_Functions), PETSC_COMM_SELF, PETSC_ERR_PLIB, "No more room in array, limit %zu \n recompile %s with larger value for " PetscStringize_(MAXREGFIN), PETSC_STATIC_ARRAY_LENGTH(PetscRegisterFinalize_Functions), __FILE__);
   PetscRegisterFinalize_Functions[PetscRegisterFinalize_Count++] = f;
   PetscFunctionReturn(0);
 }

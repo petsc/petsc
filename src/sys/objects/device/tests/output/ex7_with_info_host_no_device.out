@@ -1,0 +1,12 @@
+[0] <device> PetscDeviceContextSetupGlobalContext_Private(): Initializing global PetscDeviceContext with device type host
+[DEBUG OUTPUT] n: 139
+[DEBUG OUTPUT] n: 207
+[DEBUG OUTPUT] n: 462
+[0] <device> PetscDeviceContextWaitForContext(): dctx 15 waiting on dctx 12
+[0] <device> PetscDeviceContextWaitForContext(): dctx 16 waiting on dctx 12
+[0] <device> PetscDeviceContextForkWithStreamType(): Forked 2 children from parent 12 with IDs: 15, 16
+[0] <device> PetscDeviceContextWaitForContext(): dctx 12 waiting on dctx 15
+[0] <device> PetscDeviceContextWaitForContext(): dctx 12 waiting on dctx 16
+[0] <device> PetscDeviceContextJoin(): Joined 2 ctxs to ctx 12, mode destroy with IDs: 15, 16
+EXIT_SUCCESS
+[0] <device> operator()(): Destroying global PetscDeviceContext with device type host

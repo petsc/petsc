@@ -24,59 +24,54 @@ static char help[] = "Double-Precision STREAM Benchmark implementation in CUDA\n
 #include <petscconf.h>
 #include <petscsys.h>
 #include <petsctime.h>
-#include <petscdevice.h>
+#include <petscdevice_cuda.h>
 
-#define N        10000000
-#define NTIMES   10
+#define N      10000000
+#define NTIMES 10
 
-# ifndef MIN
-# define MIN(x,y) ((x)<(y) ? (x) : (y))
-# endif
-# ifndef MAX
-# define MAX(x,y) ((x)>(y) ? (x) : (y))
-# endif
+#ifndef MIN
+#define MIN(x, y) ((x) < (y) ? (x) : (y))
+#endif
+#ifndef MAX
+#define MAX(x, y) ((x) > (y) ? (x) : (y))
+#endif
 
 const float  flt_eps = 1.192092896e-07f;
 const double dbl_eps = 2.2204460492503131e-16;
 
-__global__ void set_array(float *a,  float value, size_t len)
-{
+__global__ void set_array(float *a, float value, size_t len) {
   size_t idx = threadIdx.x + blockIdx.x * blockDim.x;
   while (idx < len) {
     a[idx] = value;
-    idx   += blockDim.x * gridDim.x;
+    idx += blockDim.x * gridDim.x;
   }
 }
 
-__global__ void set_array_double(double *a,  double value, size_t len)
-{
+__global__ void set_array_double(double *a, double value, size_t len) {
   size_t idx = threadIdx.x + blockIdx.x * blockDim.x;
   while (idx < len) {
     a[idx] = value;
-    idx   += blockDim.x * gridDim.x;
+    idx += blockDim.x * gridDim.x;
   }
 }
 
-__global__ void STREAM_Copy(float *a, float *b, size_t len)
-{
+__global__ void STREAM_Copy(float *a, float *b, size_t len) {
   size_t idx = threadIdx.x + blockIdx.x * blockDim.x;
   while (idx < len) {
     b[idx] = a[idx];
-    idx   += blockDim.x * gridDim.x;
+    idx += blockDim.x * gridDim.x;
   }
 }
 
-__global__ void STREAM_Copy_double(double *a, double *b, size_t len)
-{
+__global__ void STREAM_Copy_double(double *a, double *b, size_t len) {
   size_t idx = threadIdx.x + blockIdx.x * blockDim.x;
   while (idx < len) {
     b[idx] = a[idx];
-    idx   += blockDim.x * gridDim.x;
+    idx += blockDim.x * gridDim.x;
   }
 }
 
-__global__ void STREAM_Copy_Optimized(float *a, float *b, size_t len)
-{
+__global__ void STREAM_Copy_Optimized(float *a, float *b, size_t len) {
   /*
    * Ensure size of thread index space is as large as or greater than
    * vector index space else return.
@@ -86,8 +81,7 @@ __global__ void STREAM_Copy_Optimized(float *a, float *b, size_t len)
   if (idx < len) b[idx] = a[idx];
 }
 
-__global__ void STREAM_Copy_Optimized_double(double *a, double *b, size_t len)
-{
+__global__ void STREAM_Copy_Optimized_double(double *a, double *b, size_t len) {
   /*
    * Ensure size of thread index space is as large as or greater than
    * vector index space else return.
@@ -97,250 +91,230 @@ __global__ void STREAM_Copy_Optimized_double(double *a, double *b, size_t len)
   if (idx < len) b[idx] = a[idx];
 }
 
-__global__ void STREAM_Scale(float *a, float *b, float scale,  size_t len)
-{
+__global__ void STREAM_Scale(float *a, float *b, float scale, size_t len) {
   size_t idx = threadIdx.x + blockIdx.x * blockDim.x;
   while (idx < len) {
-    b[idx] = scale* a[idx];
-    idx   += blockDim.x * gridDim.x;
+    b[idx] = scale * a[idx];
+    idx += blockDim.x * gridDim.x;
   }
 }
 
-__global__ void STREAM_Scale_double(double *a, double *b, double scale,  size_t len)
-{
+__global__ void STREAM_Scale_double(double *a, double *b, double scale, size_t len) {
   size_t idx = threadIdx.x + blockIdx.x * blockDim.x;
   while (idx < len) {
-    b[idx] = scale* a[idx];
-    idx   += blockDim.x * gridDim.x;
+    b[idx] = scale * a[idx];
+    idx += blockDim.x * gridDim.x;
   }
 }
 
-__global__ void STREAM_Scale_Optimized(float *a, float *b, float scale,  size_t len)
-{
+__global__ void STREAM_Scale_Optimized(float *a, float *b, float scale, size_t len) {
   /*
    * Ensure size of thread index space is as large as or greater than
    * vector index space else return.
    */
   if (blockDim.x * gridDim.x < len) return;
   size_t idx = threadIdx.x + blockIdx.x * blockDim.x;
-  if (idx < len) b[idx] = scale* a[idx];
+  if (idx < len) b[idx] = scale * a[idx];
 }
 
-__global__ void STREAM_Scale_Optimized_double(double *a, double *b, double scale,  size_t len)
-{
+__global__ void STREAM_Scale_Optimized_double(double *a, double *b, double scale, size_t len) {
   /*
    * Ensure size of thread index space is as large as or greater than
    * vector index space else return.
    */
   if (blockDim.x * gridDim.x < len) return;
   size_t idx = threadIdx.x + blockIdx.x * blockDim.x;
-  if (idx < len) b[idx] = scale* a[idx];
+  if (idx < len) b[idx] = scale * a[idx];
 }
 
-__global__ void STREAM_Add(float *a, float *b, float *c,  size_t len)
-{
+__global__ void STREAM_Add(float *a, float *b, float *c, size_t len) {
   size_t idx = threadIdx.x + blockIdx.x * blockDim.x;
   while (idx < len) {
-    c[idx] = a[idx]+b[idx];
-    idx   += blockDim.x * gridDim.x;
+    c[idx] = a[idx] + b[idx];
+    idx += blockDim.x * gridDim.x;
   }
 }
 
-__global__ void STREAM_Add_double(double *a, double *b, double *c,  size_t len)
-{
+__global__ void STREAM_Add_double(double *a, double *b, double *c, size_t len) {
   size_t idx = threadIdx.x + blockIdx.x * blockDim.x;
   while (idx < len) {
-    c[idx] = a[idx]+b[idx];
-    idx   += blockDim.x * gridDim.x;
+    c[idx] = a[idx] + b[idx];
+    idx += blockDim.x * gridDim.x;
   }
 }
 
-__global__ void STREAM_Add_Optimized(float *a, float *b, float *c,  size_t len)
-{
+__global__ void STREAM_Add_Optimized(float *a, float *b, float *c, size_t len) {
   /*
    * Ensure size of thread index space is as large as or greater than
    * vector index space else return.
    */
   if (blockDim.x * gridDim.x < len) return;
   size_t idx = threadIdx.x + blockIdx.x * blockDim.x;
-  if (idx < len) c[idx] = a[idx]+b[idx];
+  if (idx < len) c[idx] = a[idx] + b[idx];
 }
 
-__global__ void STREAM_Add_Optimized_double(double *a, double *b, double *c,  size_t len)
-{
+__global__ void STREAM_Add_Optimized_double(double *a, double *b, double *c, size_t len) {
   /*
    * Ensure size of thread index space is as large as or greater than
    * vector index space else return.
    */
   if (blockDim.x * gridDim.x < len) return;
   size_t idx = threadIdx.x + blockIdx.x * blockDim.x;
-  if (idx < len) c[idx] = a[idx]+b[idx];
+  if (idx < len) c[idx] = a[idx] + b[idx];
 }
 
-__global__ void STREAM_Triad(float *a, float *b, float *c, float scalar, size_t len)
-{
+__global__ void STREAM_Triad(float *a, float *b, float *c, float scalar, size_t len) {
   size_t idx = threadIdx.x + blockIdx.x * blockDim.x;
   while (idx < len) {
-    c[idx] = a[idx]+scalar*b[idx];
-    idx   += blockDim.x * gridDim.x;
+    c[idx] = a[idx] + scalar * b[idx];
+    idx += blockDim.x * gridDim.x;
   }
 }
 
-__global__ void STREAM_Triad_double(double *a, double *b, double *c, double scalar, size_t len)
-{
+__global__ void STREAM_Triad_double(double *a, double *b, double *c, double scalar, size_t len) {
   size_t idx = threadIdx.x + blockIdx.x * blockDim.x;
   while (idx < len) {
-    c[idx] = a[idx]+scalar*b[idx];
-    idx   += blockDim.x * gridDim.x;
+    c[idx] = a[idx] + scalar * b[idx];
+    idx += blockDim.x * gridDim.x;
   }
 }
 
-__global__ void STREAM_Triad_Optimized(float *a, float *b, float *c, float scalar, size_t len)
-{
+__global__ void STREAM_Triad_Optimized(float *a, float *b, float *c, float scalar, size_t len) {
   /*
    * Ensure size of thread index space is as large as or greater than
    * vector index space else return.
    */
   if (blockDim.x * gridDim.x < len) return;
   size_t idx = threadIdx.x + blockIdx.x * blockDim.x;
-  if (idx < len) c[idx] = a[idx]+scalar*b[idx];
+  if (idx < len) c[idx] = a[idx] + scalar * b[idx];
 }
 
-__global__ void STREAM_Triad_Optimized_double(double *a, double *b, double *c, double scalar, size_t len)
-{
+__global__ void STREAM_Triad_Optimized_double(double *a, double *b, double *c, double scalar, size_t len) {
   /*
    * Ensure size of thread index space is as large as or greater than
    * vector index space else return.
    */
   if (blockDim.x * gridDim.x < len) return;
   size_t idx = threadIdx.x + blockIdx.x * blockDim.x;
-  if (idx < len) c[idx] = a[idx]+scalar*b[idx];
+  if (idx < len) c[idx] = a[idx] + scalar * b[idx];
 }
 
 /* Host side verification routines */
-bool STREAM_Copy_verify(float *a, float *b, size_t len)
-{
+bool STREAM_Copy_verify(float *a, float *b, size_t len) {
   size_t idx;
   bool   bDifferent = false;
 
   for (idx = 0; idx < len && !bDifferent; idx++) {
     float expectedResult     = a[idx];
     float diffResultExpected = (b[idx] - expectedResult);
-    float relErrorULPS       = (fabsf(diffResultExpected)/fabsf(expectedResult))/flt_eps;
+    float relErrorULPS       = (fabsf(diffResultExpected) / fabsf(expectedResult)) / flt_eps;
     /* element-wise relative error determination */
-    bDifferent = (relErrorULPS > 2.f);
+    bDifferent               = (relErrorULPS > 2.f);
   }
 
   return bDifferent;
 }
 
-bool STREAM_Copy_verify_double(double *a, double *b, size_t len)
-{
+bool STREAM_Copy_verify_double(double *a, double *b, size_t len) {
   size_t idx;
   bool   bDifferent = false;
 
   for (idx = 0; idx < len && !bDifferent; idx++) {
     double expectedResult     = a[idx];
     double diffResultExpected = (b[idx] - expectedResult);
-    double relErrorULPS       = (fabsf(diffResultExpected)/fabsf(expectedResult))/dbl_eps;
+    double relErrorULPS       = (fabsf(diffResultExpected) / fabsf(expectedResult)) / dbl_eps;
     /* element-wise relative error determination */
-    bDifferent = (relErrorULPS > 2.);
+    bDifferent                = (relErrorULPS > 2.);
   }
 
   return bDifferent;
 }
 
-bool STREAM_Scale_verify(float *a, float *b, float scale, size_t len)
-{
+bool STREAM_Scale_verify(float *a, float *b, float scale, size_t len) {
   size_t idx;
   bool   bDifferent = false;
 
   for (idx = 0; idx < len && !bDifferent; idx++) {
-    float expectedResult     = scale*a[idx];
+    float expectedResult     = scale * a[idx];
     float diffResultExpected = (b[idx] - expectedResult);
-    float relErrorULPS       = (fabsf(diffResultExpected)/fabsf(expectedResult))/flt_eps;
+    float relErrorULPS       = (fabsf(diffResultExpected) / fabsf(expectedResult)) / flt_eps;
     /* element-wise relative error determination */
-    bDifferent = (relErrorULPS > 2.f);
+    bDifferent               = (relErrorULPS > 2.f);
   }
 
   return bDifferent;
 }
 
-bool STREAM_Scale_verify_double(double *a, double *b, double scale, size_t len)
-{
+bool STREAM_Scale_verify_double(double *a, double *b, double scale, size_t len) {
   size_t idx;
   bool   bDifferent = false;
 
   for (idx = 0; idx < len && !bDifferent; idx++) {
-    double expectedResult     = scale*a[idx];
+    double expectedResult     = scale * a[idx];
     double diffResultExpected = (b[idx] - expectedResult);
-    double relErrorULPS       = (fabsf(diffResultExpected)/fabsf(expectedResult))/flt_eps;
+    double relErrorULPS       = (fabsf(diffResultExpected) / fabsf(expectedResult)) / flt_eps;
     /* element-wise relative error determination */
-    bDifferent = (relErrorULPS > 2.);
+    bDifferent                = (relErrorULPS > 2.);
   }
 
   return bDifferent;
 }
 
-bool STREAM_Add_verify(float *a, float *b, float *c, size_t len)
-{
+bool STREAM_Add_verify(float *a, float *b, float *c, size_t len) {
   size_t idx;
   bool   bDifferent = false;
 
   for (idx = 0; idx < len && !bDifferent; idx++) {
     float expectedResult     = a[idx] + b[idx];
     float diffResultExpected = (c[idx] - expectedResult);
-    float relErrorULPS       = (fabsf(diffResultExpected)/fabsf(expectedResult))/flt_eps;
+    float relErrorULPS       = (fabsf(diffResultExpected) / fabsf(expectedResult)) / flt_eps;
     /* element-wise relative error determination */
-    bDifferent = (relErrorULPS > 2.f);
+    bDifferent               = (relErrorULPS > 2.f);
   }
 
   return bDifferent;
 }
 
-bool STREAM_Add_verify_double(double *a, double *b, double *c, size_t len)
-{
+bool STREAM_Add_verify_double(double *a, double *b, double *c, size_t len) {
   size_t idx;
   bool   bDifferent = false;
 
   for (idx = 0; idx < len && !bDifferent; idx++) {
     double expectedResult     = a[idx] + b[idx];
     double diffResultExpected = (c[idx] - expectedResult);
-    double relErrorULPS       = (fabsf(diffResultExpected)/fabsf(expectedResult))/flt_eps;
+    double relErrorULPS       = (fabsf(diffResultExpected) / fabsf(expectedResult)) / flt_eps;
     /* element-wise relative error determination */
-    bDifferent = (relErrorULPS > 2.);
+    bDifferent                = (relErrorULPS > 2.);
   }
 
   return bDifferent;
 }
 
-bool STREAM_Triad_verify(float *a, float *b, float *c, float scalar, size_t len)
-{
+bool STREAM_Triad_verify(float *a, float *b, float *c, float scalar, size_t len) {
   size_t idx;
   bool   bDifferent = false;
 
   for (idx = 0; idx < len && !bDifferent; idx++) {
-    float expectedResult     = a[idx] + scalar*b[idx];
+    float expectedResult     = a[idx] + scalar * b[idx];
     float diffResultExpected = (c[idx] - expectedResult);
-    float relErrorULPS       = (fabsf(diffResultExpected)/fabsf(expectedResult))/flt_eps;
+    float relErrorULPS       = (fabsf(diffResultExpected) / fabsf(expectedResult)) / flt_eps;
     /* element-wise relative error determination */
-    bDifferent = (relErrorULPS > 3.f);
+    bDifferent               = (relErrorULPS > 3.f);
   }
 
   return bDifferent;
 }
 
-bool STREAM_Triad_verify_double(double *a, double *b, double *c, double scalar, size_t len)
-{
+bool STREAM_Triad_verify_double(double *a, double *b, double *c, double scalar, size_t len) {
   size_t idx;
   bool   bDifferent = false;
 
   for (idx = 0; idx < len && !bDifferent; idx++) {
-    double expectedResult     = a[idx] + scalar*b[idx];
+    double expectedResult     = a[idx] + scalar * b[idx];
     double diffResultExpected = (c[idx] - expectedResult);
-    double relErrorULPS       = (fabsf(diffResultExpected)/fabsf(expectedResult))/flt_eps;
+    double relErrorULPS       = (fabsf(diffResultExpected) / fabsf(expectedResult)) / flt_eps;
     /* element-wise relative error determination */
-    bDifferent = (relErrorULPS > 3.);
+    bDifferent                = (relErrorULPS > 3.);
   }
 
   return bDifferent;
@@ -352,26 +326,23 @@ PetscErrorCode runStream(const PetscInt iNumThreadsPerBlock, PetscBool bDontUseG
 PetscErrorCode runStreamDouble(const PetscInt iNumThreadsPerBlock, PetscBool bDontUseGPUTiming);
 PetscErrorCode printResultsReadable(float times[][NTIMES], size_t);
 
-int main(int argc, char *argv[])
-{
-  PetscInt       device    = 0;
-  PetscBool      runDouble = PETSC_TRUE;
+int main(int argc, char *argv[]) {
+  PetscInt        device    = 0;
+  PetscBool       runDouble = PETSC_TRUE;
   const PetscBool cpuTiming = PETSC_TRUE; // must be true
-  PetscErrorCode ierr;
+  PetscErrorCode  ierr;
 
   PetscCallCUDA(cudaSetDeviceFlags(cudaDeviceBlockingSync));
 
   PetscCall(PetscInitialize(&argc, &argv, 0, help));
 
   PetscOptionsBegin(PETSC_COMM_WORLD, "", "STREAM Benchmark Options", "STREAM");
-  PetscCall(PetscOptionsBoundedInt("-device", "Specify the CUDA device to be used", "STREAM", device, &device, NULL,0));
-  PetscCall(PetscOptionsBool("-double",    "Also run double precision tests",   "STREAM", runDouble, &runDouble, NULL));
+  PetscCall(PetscOptionsBoundedInt("-device", "Specify the CUDA device to be used", "STREAM", device, &device, NULL, 0));
+  PetscCall(PetscOptionsBool("-double", "Also run double precision tests", "STREAM", runDouble, &runDouble, NULL));
   PetscOptionsEnd();
 
   ierr = setupStream(device, runDouble, cpuTiming);
-  if (ierr) {
-    PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n[streamBenchmark] - results:\t%s\n\n", (ierr == 0) ? "PASSES" : "FAILED"));
-  }
+  if (ierr) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n[streamBenchmark] - results:\t%s\n\n", (ierr == 0) ? "PASSES" : "FAILED")); }
   PetscCall(PetscFinalize());
   return 0;
 }
@@ -379,9 +350,8 @@ int main(int argc, char *argv[])
 ///////////////////////////////////////////////////////////////////////////////
 //Run the appropriate tests
 ///////////////////////////////////////////////////////////////////////////////
-PetscErrorCode setupStream(PetscInt deviceNum, PetscBool runDouble, PetscBool cpuTiming)
-{
-  PetscInt       iNumThreadsPerBlock = 128;
+PetscErrorCode setupStream(PetscInt deviceNum, PetscBool runDouble, PetscBool cpuTiming) {
+  PetscInt iNumThreadsPerBlock = 128;
 
   PetscFunctionBegin;
   // Check device
@@ -413,7 +383,7 @@ PetscErrorCode setupStream(PetscInt deviceNum, PetscBool runDouble, PetscBool cp
     return -1;
   }
   if (deviceProp.major == 2 && deviceProp.minor == 1) iNumThreadsPerBlock = 192; /* GF104 architecture / 48 CUDA Cores per MP */
-  else iNumThreadsPerBlock = 128; /* GF100 architecture / 32 CUDA Cores per MP */
+  else iNumThreadsPerBlock = 128;                                                /* GF100 architecture / 32 CUDA Cores per MP */
 
   if (runDouble) PetscCall(runStreamDouble(iNumThreadsPerBlock, cpuTiming));
   else PetscCall(runStream(iNumThreadsPerBlock, cpuTiming));
@@ -423,210 +393,209 @@ PetscErrorCode setupStream(PetscInt deviceNum, PetscBool runDouble, PetscBool cp
 ///////////////////////////////////////////////////////////////////////////
 // runStream
 ///////////////////////////////////////////////////////////////////////////
-PetscErrorCode runStream(const PetscInt iNumThreadsPerBlock, PetscBool bDontUseGPUTiming)
-{
-  float          *d_a, *d_b, *d_c;
-  int            k;
-  float          times[8][NTIMES];
-  float          scalar;
+PetscErrorCode runStream(const PetscInt iNumThreadsPerBlock, PetscBool bDontUseGPUTiming) {
+  float *d_a, *d_b, *d_c;
+  int    k;
+  float  times[8][NTIMES];
+  float  scalar;
 
   PetscFunctionBegin;
   /* Allocate memory on device */
-  PetscCallCUDA(cudaMalloc((void**)&d_a, sizeof(float)*N));
-  PetscCallCUDA(cudaMalloc((void**)&d_b, sizeof(float)*N));
-  PetscCallCUDA(cudaMalloc((void**)&d_c, sizeof(float)*N));
+  PetscCallCUDA(cudaMalloc((void **)&d_a, sizeof(float) * N));
+  PetscCallCUDA(cudaMalloc((void **)&d_b, sizeof(float) * N));
+  PetscCallCUDA(cudaMalloc((void **)&d_c, sizeof(float) * N));
 
   /* Compute execution configuration */
 
   dim3 dimBlock(iNumThreadsPerBlock); /* (iNumThreadsPerBlock,1,1) */
-  dim3 dimGrid(N/dimBlock.x); /* (N/dimBlock.x,1,1) */
-  if (N % dimBlock.x != 0) dimGrid.x+=1;
+  dim3 dimGrid(N / dimBlock.x);       /* (N/dimBlock.x,1,1) */
+  if (N % dimBlock.x != 0) dimGrid.x += 1;
 
   /* Initialize memory on the device */
-  set_array<<<dimGrid,dimBlock>>>(d_a, 2.f, N);
-  set_array<<<dimGrid,dimBlock>>>(d_b, .5f, N);
-  set_array<<<dimGrid,dimBlock>>>(d_c, .5f, N);
+  set_array<<<dimGrid, dimBlock>>>(d_a, 2.f, N);
+  set_array<<<dimGrid, dimBlock>>>(d_b, .5f, N);
+  set_array<<<dimGrid, dimBlock>>>(d_c, .5f, N);
 
   /* --- MAIN LOOP --- repeat test cases NTIMES times --- */
   PetscLogDouble cpuTimer = 0.0;
 
-  scalar=3.0f;
+  scalar = 3.0f;
   for (k = 0; k < NTIMES; ++k) {
     PetscTimeSubtract(&cpuTimer);
-    STREAM_Copy<<<dimGrid,dimBlock>>>(d_a, d_c, N);
+    STREAM_Copy<<<dimGrid, dimBlock>>>(d_a, d_c, N);
     cudaStreamSynchronize(NULL);
     PetscCallMPI(MPI_Barrier(MPI_COMM_WORLD));
     PetscTimeAdd(&cpuTimer);
-    if (bDontUseGPUTiming) times[0][k] = cpuTimer*1.e3; // millisec
+    if (bDontUseGPUTiming) times[0][k] = cpuTimer * 1.e3; // millisec
 
     cpuTimer = 0.0;
     PetscTimeSubtract(&cpuTimer);
-    STREAM_Copy_Optimized<<<dimGrid,dimBlock>>>(d_a, d_c, N);
+    STREAM_Copy_Optimized<<<dimGrid, dimBlock>>>(d_a, d_c, N);
     cudaStreamSynchronize(NULL);
     PetscCallMPI(MPI_Barrier(MPI_COMM_WORLD));
     //get the total elapsed time in ms
     PetscTimeAdd(&cpuTimer);
-    if (bDontUseGPUTiming) times[1][k] = cpuTimer*1.e3;
+    if (bDontUseGPUTiming) times[1][k] = cpuTimer * 1.e3;
 
     cpuTimer = 0.0;
     PetscTimeSubtract(&cpuTimer);
-    STREAM_Scale<<<dimGrid,dimBlock>>>(d_b, d_c, scalar,  N);
+    STREAM_Scale<<<dimGrid, dimBlock>>>(d_b, d_c, scalar, N);
     cudaStreamSynchronize(NULL);
     PetscCallMPI(MPI_Barrier(MPI_COMM_WORLD));
     //get the total elapsed time in ms
     PetscTimeAdd(&cpuTimer);
-    if (bDontUseGPUTiming) times[2][k] = cpuTimer*1.e3;
+    if (bDontUseGPUTiming) times[2][k] = cpuTimer * 1.e3;
 
     cpuTimer = 0.0;
     PetscTimeSubtract(&cpuTimer);
-    STREAM_Scale_Optimized<<<dimGrid,dimBlock>>>(d_b, d_c, scalar,  N);
+    STREAM_Scale_Optimized<<<dimGrid, dimBlock>>>(d_b, d_c, scalar, N);
     cudaStreamSynchronize(NULL);
     PetscCallMPI(MPI_Barrier(MPI_COMM_WORLD));
     //get the total elapsed time in ms
     PetscTimeAdd(&cpuTimer);
-    if (bDontUseGPUTiming) times[3][k] = cpuTimer*1.e3;
+    if (bDontUseGPUTiming) times[3][k] = cpuTimer * 1.e3;
 
     cpuTimer = 0.0;
     PetscTimeSubtract(&cpuTimer);
     // PetscCallCUDA(cudaEventRecord(start, 0));
-    STREAM_Add<<<dimGrid,dimBlock>>>(d_a, d_b, d_c,  N);
+    STREAM_Add<<<dimGrid, dimBlock>>>(d_a, d_b, d_c, N);
     cudaStreamSynchronize(NULL);
     PetscCallMPI(MPI_Barrier(MPI_COMM_WORLD));
     PetscCallCUDA(cudaEventRecord(stop, 0));
     // PetscCallCUDA(cudaEventSynchronize(stop));
     //get the total elapsed time in ms
     PetscTimeAdd(&cpuTimer);
-    if (bDontUseGPUTiming) times[4][k] = cpuTimer*1.e3;
+    if (bDontUseGPUTiming) times[4][k] = cpuTimer * 1.e3;
     else {
       // PetscCallCUDA(cudaEventElapsedTime(&times[4][k], start, stop));
     }
 
     cpuTimer = 0.0;
     PetscTimeSubtract(&cpuTimer);
-    STREAM_Add_Optimized<<<dimGrid,dimBlock>>>(d_a, d_b, d_c,  N);
+    STREAM_Add_Optimized<<<dimGrid, dimBlock>>>(d_a, d_b, d_c, N);
     cudaStreamSynchronize(NULL);
     PetscCallMPI(MPI_Barrier(MPI_COMM_WORLD));
     //get the total elapsed time in ms
     PetscTimeAdd(&cpuTimer);
-    if (bDontUseGPUTiming) times[5][k] = cpuTimer*1.e3;
+    if (bDontUseGPUTiming) times[5][k] = cpuTimer * 1.e3;
 
     cpuTimer = 0.0;
     PetscTimeSubtract(&cpuTimer);
-    STREAM_Triad<<<dimGrid,dimBlock>>>(d_b, d_c, d_a, scalar,  N);
+    STREAM_Triad<<<dimGrid, dimBlock>>>(d_b, d_c, d_a, scalar, N);
     cudaStreamSynchronize(NULL);
     PetscCallMPI(MPI_Barrier(MPI_COMM_WORLD));
     //get the total elapsed time in ms
     PetscTimeAdd(&cpuTimer);
-    if (bDontUseGPUTiming) times[6][k] = cpuTimer*1.e3;
+    if (bDontUseGPUTiming) times[6][k] = cpuTimer * 1.e3;
 
     cpuTimer = 0.0;
     PetscTimeSubtract(&cpuTimer);
-    STREAM_Triad_Optimized<<<dimGrid,dimBlock>>>(d_b, d_c, d_a, scalar,  N);
+    STREAM_Triad_Optimized<<<dimGrid, dimBlock>>>(d_b, d_c, d_a, scalar, N);
     cudaStreamSynchronize(NULL);
     PetscCallMPI(MPI_Barrier(MPI_COMM_WORLD));
     //get the total elapsed time in ms
     PetscTimeAdd(&cpuTimer);
-    if (bDontUseGPUTiming) times[7][k] = cpuTimer*1.e3;
+    if (bDontUseGPUTiming) times[7][k] = cpuTimer * 1.e3;
   }
 
   if (1) { /* verify kernels */
-  float *h_a, *h_b, *h_c;
-  bool  errorSTREAMkernel = true;
+    float *h_a, *h_b, *h_c;
+    bool   errorSTREAMkernel = true;
 
-  if ((h_a = (float*)calloc(N, sizeof(float))) == (float*)NULL) {
-    printf("Unable to allocate array h_a, exiting ...\n");
-    exit(1);
-  }
-  if ((h_b = (float*)calloc(N, sizeof(float))) == (float*)NULL) {
-    printf("Unable to allocate array h_b, exiting ...\n");
-    exit(1);
-  }
+    if ((h_a = (float *)calloc(N, sizeof(float))) == (float *)NULL) {
+      printf("Unable to allocate array h_a, exiting ...\n");
+      exit(1);
+    }
+    if ((h_b = (float *)calloc(N, sizeof(float))) == (float *)NULL) {
+      printf("Unable to allocate array h_b, exiting ...\n");
+      exit(1);
+    }
 
-  if ((h_c = (float*)calloc(N, sizeof(float))) == (float*)NULL) {
-    printf("Unalbe to allocate array h_c, exiting ...\n");
-    exit(1);
-  }
+    if ((h_c = (float *)calloc(N, sizeof(float))) == (float *)NULL) {
+      printf("Unalbe to allocate array h_c, exiting ...\n");
+      exit(1);
+    }
 
-  /*
+    /*
    * perform kernel, copy device memory into host memory and verify each
    * device kernel output
    */
 
-  /* Initialize memory on the device */
-  set_array<<<dimGrid,dimBlock>>>(d_a, 2.f, N);
-  set_array<<<dimGrid,dimBlock>>>(d_b, .5f, N);
-  set_array<<<dimGrid,dimBlock>>>(d_c, .5f, N);
+    /* Initialize memory on the device */
+    set_array<<<dimGrid, dimBlock>>>(d_a, 2.f, N);
+    set_array<<<dimGrid, dimBlock>>>(d_b, .5f, N);
+    set_array<<<dimGrid, dimBlock>>>(d_c, .5f, N);
 
-  STREAM_Copy<<<dimGrid,dimBlock>>>(d_a, d_c, N);
-  PetscCallCUDA(cudaMemcpy(h_a, d_a, sizeof(float) * N, cudaMemcpyDeviceToHost));
-  PetscCallCUDA(cudaMemcpy(h_c, d_c, sizeof(float) * N, cudaMemcpyDeviceToHost));
-  errorSTREAMkernel = STREAM_Copy_verify(h_a, h_c, N);
-  if (errorSTREAMkernel) {
-    PetscCall(PetscPrintf(PETSC_COMM_SELF, " device STREAM_Copy:\t\tError detected in device STREAM_Copy, exiting\n"));
-    exit(-2000);
-  }
+    STREAM_Copy<<<dimGrid, dimBlock>>>(d_a, d_c, N);
+    PetscCallCUDA(cudaMemcpy(h_a, d_a, sizeof(float) * N, cudaMemcpyDeviceToHost));
+    PetscCallCUDA(cudaMemcpy(h_c, d_c, sizeof(float) * N, cudaMemcpyDeviceToHost));
+    errorSTREAMkernel = STREAM_Copy_verify(h_a, h_c, N);
+    if (errorSTREAMkernel) {
+      PetscCall(PetscPrintf(PETSC_COMM_SELF, " device STREAM_Copy:\t\tError detected in device STREAM_Copy, exiting\n"));
+      exit(-2000);
+    }
 
-  /* Initialize memory on the device */
-  set_array<<<dimGrid,dimBlock>>>(d_a, 2.f, N);
-  set_array<<<dimGrid,dimBlock>>>(d_b, .5f, N);
-  set_array<<<dimGrid,dimBlock>>>(d_c, .5f, N);
+    /* Initialize memory on the device */
+    set_array<<<dimGrid, dimBlock>>>(d_a, 2.f, N);
+    set_array<<<dimGrid, dimBlock>>>(d_b, .5f, N);
+    set_array<<<dimGrid, dimBlock>>>(d_c, .5f, N);
 
-  STREAM_Copy_Optimized<<<dimGrid,dimBlock>>>(d_a, d_c, N);
-  PetscCallCUDA(cudaMemcpy(h_a, d_a, sizeof(float) * N, cudaMemcpyDeviceToHost));
-  PetscCallCUDA(cudaMemcpy(h_c, d_c, sizeof(float) * N, cudaMemcpyDeviceToHost));
-  errorSTREAMkernel = STREAM_Copy_verify(h_a, h_c, N);
-  if (errorSTREAMkernel) {
-    PetscCall(PetscPrintf(PETSC_COMM_SELF, " device STREAM_Copy_Optimized:\tError detected in device STREAM_Copy_Optimized, exiting\n"));
-    exit(-3000);
-  }
+    STREAM_Copy_Optimized<<<dimGrid, dimBlock>>>(d_a, d_c, N);
+    PetscCallCUDA(cudaMemcpy(h_a, d_a, sizeof(float) * N, cudaMemcpyDeviceToHost));
+    PetscCallCUDA(cudaMemcpy(h_c, d_c, sizeof(float) * N, cudaMemcpyDeviceToHost));
+    errorSTREAMkernel = STREAM_Copy_verify(h_a, h_c, N);
+    if (errorSTREAMkernel) {
+      PetscCall(PetscPrintf(PETSC_COMM_SELF, " device STREAM_Copy_Optimized:\tError detected in device STREAM_Copy_Optimized, exiting\n"));
+      exit(-3000);
+    }
 
-  /* Initialize memory on the device */
-  set_array<<<dimGrid,dimBlock>>>(d_a, 2.f, N);
-  set_array<<<dimGrid,dimBlock>>>(d_b, .5f, N);
-  set_array<<<dimGrid,dimBlock>>>(d_c, .5f, N);
+    /* Initialize memory on the device */
+    set_array<<<dimGrid, dimBlock>>>(d_a, 2.f, N);
+    set_array<<<dimGrid, dimBlock>>>(d_b, .5f, N);
+    set_array<<<dimGrid, dimBlock>>>(d_c, .5f, N);
 
-  STREAM_Scale<<<dimGrid,dimBlock>>>(d_b, d_c, scalar, N);
-  PetscCallCUDA(cudaMemcpy(h_b, d_b, sizeof(float) * N, cudaMemcpyDeviceToHost));
-  PetscCallCUDA(cudaMemcpy(h_c, d_c, sizeof(float) * N, cudaMemcpyDeviceToHost));
-  errorSTREAMkernel = STREAM_Scale_verify(h_b, h_c, scalar, N);
-  if (errorSTREAMkernel) {
-    PetscCall(PetscPrintf(PETSC_COMM_SELF, " device STREAM_Scale:\t\tError detected in device STREAM_Scale, exiting\n"));
-    exit(-4000);
-  }
+    STREAM_Scale<<<dimGrid, dimBlock>>>(d_b, d_c, scalar, N);
+    PetscCallCUDA(cudaMemcpy(h_b, d_b, sizeof(float) * N, cudaMemcpyDeviceToHost));
+    PetscCallCUDA(cudaMemcpy(h_c, d_c, sizeof(float) * N, cudaMemcpyDeviceToHost));
+    errorSTREAMkernel = STREAM_Scale_verify(h_b, h_c, scalar, N);
+    if (errorSTREAMkernel) {
+      PetscCall(PetscPrintf(PETSC_COMM_SELF, " device STREAM_Scale:\t\tError detected in device STREAM_Scale, exiting\n"));
+      exit(-4000);
+    }
 
-  /* Initialize memory on the device */
-  set_array<<<dimGrid,dimBlock>>>(d_a, 2.f, N);
-  set_array<<<dimGrid,dimBlock>>>(d_b, .5f, N);
-  set_array<<<dimGrid,dimBlock>>>(d_c, .5f, N);
+    /* Initialize memory on the device */
+    set_array<<<dimGrid, dimBlock>>>(d_a, 2.f, N);
+    set_array<<<dimGrid, dimBlock>>>(d_b, .5f, N);
+    set_array<<<dimGrid, dimBlock>>>(d_c, .5f, N);
 
-  STREAM_Add<<<dimGrid,dimBlock>>>(d_a, d_b, d_c, N);
-  PetscCallCUDA(cudaMemcpy(h_a, d_a, sizeof(float) * N, cudaMemcpyDeviceToHost));
-  PetscCallCUDA(cudaMemcpy(h_b, d_b, sizeof(float) * N, cudaMemcpyDeviceToHost));
-  PetscCallCUDA(cudaMemcpy(h_c, d_c, sizeof(float) * N, cudaMemcpyDeviceToHost));
-  errorSTREAMkernel = STREAM_Add_verify(h_a, h_b, h_c, N);
-  if (errorSTREAMkernel) {
-    PetscCall(PetscPrintf(PETSC_COMM_SELF, " device STREAM_Add:\t\tError detected in device STREAM_Add, exiting\n"));
-    exit(-5000);
-  }
+    STREAM_Add<<<dimGrid, dimBlock>>>(d_a, d_b, d_c, N);
+    PetscCallCUDA(cudaMemcpy(h_a, d_a, sizeof(float) * N, cudaMemcpyDeviceToHost));
+    PetscCallCUDA(cudaMemcpy(h_b, d_b, sizeof(float) * N, cudaMemcpyDeviceToHost));
+    PetscCallCUDA(cudaMemcpy(h_c, d_c, sizeof(float) * N, cudaMemcpyDeviceToHost));
+    errorSTREAMkernel = STREAM_Add_verify(h_a, h_b, h_c, N);
+    if (errorSTREAMkernel) {
+      PetscCall(PetscPrintf(PETSC_COMM_SELF, " device STREAM_Add:\t\tError detected in device STREAM_Add, exiting\n"));
+      exit(-5000);
+    }
 
-  /* Initialize memory on the device */
-  set_array<<<dimGrid,dimBlock>>>(d_a, 2.f, N);
-  set_array<<<dimGrid,dimBlock>>>(d_b, .5f, N);
-  set_array<<<dimGrid,dimBlock>>>(d_c, .5f, N);
+    /* Initialize memory on the device */
+    set_array<<<dimGrid, dimBlock>>>(d_a, 2.f, N);
+    set_array<<<dimGrid, dimBlock>>>(d_b, .5f, N);
+    set_array<<<dimGrid, dimBlock>>>(d_c, .5f, N);
 
-  STREAM_Triad<<<dimGrid,dimBlock>>>(d_b, d_c, d_a, scalar, N);
-  PetscCallCUDA(cudaMemcpy(h_a, d_a, sizeof(float) * N, cudaMemcpyDeviceToHost));
-  PetscCallCUDA(cudaMemcpy(h_b, d_b, sizeof(float) * N, cudaMemcpyDeviceToHost));
-  PetscCallCUDA(cudaMemcpy(h_c, d_c, sizeof(float) * N, cudaMemcpyDeviceToHost));
-  errorSTREAMkernel = STREAM_Triad_verify(h_b, h_c, h_a, scalar, N);
-  if (errorSTREAMkernel) {
-    PetscCall(PetscPrintf(PETSC_COMM_SELF, " device STREAM_Triad:\t\tError detected in device STREAM_Triad, exiting\n"));
-    exit(-6000);
-  }
+    STREAM_Triad<<<dimGrid, dimBlock>>>(d_b, d_c, d_a, scalar, N);
+    PetscCallCUDA(cudaMemcpy(h_a, d_a, sizeof(float) * N, cudaMemcpyDeviceToHost));
+    PetscCallCUDA(cudaMemcpy(h_b, d_b, sizeof(float) * N, cudaMemcpyDeviceToHost));
+    PetscCallCUDA(cudaMemcpy(h_c, d_c, sizeof(float) * N, cudaMemcpyDeviceToHost));
+    errorSTREAMkernel = STREAM_Triad_verify(h_b, h_c, h_a, scalar, N);
+    if (errorSTREAMkernel) {
+      PetscCall(PetscPrintf(PETSC_COMM_SELF, " device STREAM_Triad:\t\tError detected in device STREAM_Triad, exiting\n"));
+      exit(-6000);
+    }
 
-  free(h_a);
-  free(h_b);
-  free(h_c);
+    free(h_a);
+    free(h_b);
+    free(h_c);
   }
   /* continue from here */
   printResultsReadable(times, sizeof(float));
@@ -639,211 +608,210 @@ PetscErrorCode runStream(const PetscInt iNumThreadsPerBlock, PetscBool bDontUseG
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode runStreamDouble(const PetscInt iNumThreadsPerBlock, PetscBool bDontUseGPUTiming)
-{
-  double         *d_a, *d_b, *d_c;
-  int            k;
-  float          times[8][NTIMES];
-  double         scalar;
+PetscErrorCode runStreamDouble(const PetscInt iNumThreadsPerBlock, PetscBool bDontUseGPUTiming) {
+  double *d_a, *d_b, *d_c;
+  int     k;
+  float   times[8][NTIMES];
+  double  scalar;
 
   PetscFunctionBegin;
   /* Allocate memory on device */
-  PetscCallCUDA(cudaMalloc((void**)&d_a, sizeof(double)*N));
-  PetscCallCUDA(cudaMalloc((void**)&d_b, sizeof(double)*N));
-  PetscCallCUDA(cudaMalloc((void**)&d_c, sizeof(double)*N));
+  PetscCallCUDA(cudaMalloc((void **)&d_a, sizeof(double) * N));
+  PetscCallCUDA(cudaMalloc((void **)&d_b, sizeof(double) * N));
+  PetscCallCUDA(cudaMalloc((void **)&d_c, sizeof(double) * N));
 
   /* Compute execution configuration */
 
   dim3 dimBlock(iNumThreadsPerBlock); /* (iNumThreadsPerBlock,1,1) */
-  dim3 dimGrid(N/dimBlock.x); /* (N/dimBlock.x,1,1) */
-  if (N % dimBlock.x != 0) dimGrid.x+=1;
+  dim3 dimGrid(N / dimBlock.x);       /* (N/dimBlock.x,1,1) */
+  if (N % dimBlock.x != 0) dimGrid.x += 1;
 
   /* Initialize memory on the device */
-  set_array_double<<<dimGrid,dimBlock>>>(d_a, 2., N);
-  set_array_double<<<dimGrid,dimBlock>>>(d_b, .5, N);
-  set_array_double<<<dimGrid,dimBlock>>>(d_c, .5, N);
+  set_array_double<<<dimGrid, dimBlock>>>(d_a, 2., N);
+  set_array_double<<<dimGrid, dimBlock>>>(d_b, .5, N);
+  set_array_double<<<dimGrid, dimBlock>>>(d_c, .5, N);
 
   /* --- MAIN LOOP --- repeat test cases NTIMES times --- */
   PetscLogDouble cpuTimer = 0.0;
 
-  scalar=3.0;
+  scalar = 3.0;
   for (k = 0; k < NTIMES; ++k) {
     PetscTimeSubtract(&cpuTimer);
-    STREAM_Copy_double<<<dimGrid,dimBlock>>>(d_a, d_c, N);
+    STREAM_Copy_double<<<dimGrid, dimBlock>>>(d_a, d_c, N);
     cudaStreamSynchronize(NULL);
     PetscCallMPI(MPI_Barrier(MPI_COMM_WORLD));
     //get the total elapsed time in ms
     if (bDontUseGPUTiming) {
       PetscTimeAdd(&cpuTimer);
-      times[0][k] = cpuTimer*1.e3;
+      times[0][k] = cpuTimer * 1.e3;
     }
 
     cpuTimer = 0.0;
     PetscTimeSubtract(&cpuTimer);
-    STREAM_Copy_Optimized_double<<<dimGrid,dimBlock>>>(d_a, d_c, N);
+    STREAM_Copy_Optimized_double<<<dimGrid, dimBlock>>>(d_a, d_c, N);
     cudaStreamSynchronize(NULL);
     PetscCallMPI(MPI_Barrier(MPI_COMM_WORLD));
     //get the total elapsed time in ms
     if (bDontUseGPUTiming) {
       PetscTimeAdd(&cpuTimer);
-      times[1][k] = cpuTimer*1.e3;
+      times[1][k] = cpuTimer * 1.e3;
     }
 
     cpuTimer = 0.0;
     PetscTimeSubtract(&cpuTimer);
-    STREAM_Scale_double<<<dimGrid,dimBlock>>>(d_b, d_c, scalar,  N);
+    STREAM_Scale_double<<<dimGrid, dimBlock>>>(d_b, d_c, scalar, N);
     cudaStreamSynchronize(NULL);
     PetscCallMPI(MPI_Barrier(MPI_COMM_WORLD));
     //get the total elapsed time in ms
     PetscTimeAdd(&cpuTimer);
-    if (bDontUseGPUTiming) times[2][k] = cpuTimer*1.e3;
+    if (bDontUseGPUTiming) times[2][k] = cpuTimer * 1.e3;
 
     cpuTimer = 0.0;
     PetscTimeSubtract(&cpuTimer);
-    STREAM_Scale_Optimized_double<<<dimGrid,dimBlock>>>(d_b, d_c, scalar,  N);
+    STREAM_Scale_Optimized_double<<<dimGrid, dimBlock>>>(d_b, d_c, scalar, N);
     cudaStreamSynchronize(NULL);
     PetscCallMPI(MPI_Barrier(MPI_COMM_WORLD));
     //get the total elapsed time in ms
     PetscTimeAdd(&cpuTimer);
-    if (bDontUseGPUTiming) times[3][k] = cpuTimer*1.e3;
+    if (bDontUseGPUTiming) times[3][k] = cpuTimer * 1.e3;
 
     cpuTimer = 0.0;
     PetscTimeSubtract(&cpuTimer);
-    STREAM_Add_double<<<dimGrid,dimBlock>>>(d_a, d_b, d_c,  N);
+    STREAM_Add_double<<<dimGrid, dimBlock>>>(d_a, d_b, d_c, N);
     cudaStreamSynchronize(NULL);
     PetscCallMPI(MPI_Barrier(MPI_COMM_WORLD));
     //get the total elapsed time in ms
     PetscTimeAdd(&cpuTimer);
-    if (bDontUseGPUTiming) times[4][k] = cpuTimer*1.e3;
+    if (bDontUseGPUTiming) times[4][k] = cpuTimer * 1.e3;
 
     cpuTimer = 0.0;
     PetscTimeSubtract(&cpuTimer);
-    STREAM_Add_Optimized_double<<<dimGrid,dimBlock>>>(d_a, d_b, d_c,  N);
+    STREAM_Add_Optimized_double<<<dimGrid, dimBlock>>>(d_a, d_b, d_c, N);
     cudaStreamSynchronize(NULL);
     PetscCallMPI(MPI_Barrier(MPI_COMM_WORLD));
     //get the total elapsed time in ms
     PetscTimeAdd(&cpuTimer);
-    if (bDontUseGPUTiming) times[5][k] = cpuTimer*1.e3;
+    if (bDontUseGPUTiming) times[5][k] = cpuTimer * 1.e3;
 
     cpuTimer = 0.0;
     PetscTimeSubtract(&cpuTimer);
-    STREAM_Triad_double<<<dimGrid,dimBlock>>>(d_b, d_c, d_a, scalar,  N);
+    STREAM_Triad_double<<<dimGrid, dimBlock>>>(d_b, d_c, d_a, scalar, N);
     cudaStreamSynchronize(NULL);
     PetscCallMPI(MPI_Barrier(MPI_COMM_WORLD));
     //get the total elapsed time in ms
     PetscTimeAdd(&cpuTimer);
-    if (bDontUseGPUTiming) times[6][k] = cpuTimer*1.e3;
+    if (bDontUseGPUTiming) times[6][k] = cpuTimer * 1.e3;
 
     cpuTimer = 0.0;
     PetscTimeSubtract(&cpuTimer);
-    STREAM_Triad_Optimized_double<<<dimGrid,dimBlock>>>(d_b, d_c, d_a, scalar,  N);
+    STREAM_Triad_Optimized_double<<<dimGrid, dimBlock>>>(d_b, d_c, d_a, scalar, N);
     cudaStreamSynchronize(NULL);
     PetscCallMPI(MPI_Barrier(MPI_COMM_WORLD));
     //get the total elapsed time in ms
     PetscTimeAdd(&cpuTimer);
-    if (bDontUseGPUTiming) times[7][k] = cpuTimer*1.e3;
+    if (bDontUseGPUTiming) times[7][k] = cpuTimer * 1.e3;
   }
 
   if (1) { /* verify kernels */
-  double *h_a, *h_b, *h_c;
-  bool   errorSTREAMkernel = true;
+    double *h_a, *h_b, *h_c;
+    bool    errorSTREAMkernel = true;
 
-  if ((h_a = (double*)calloc(N, sizeof(double))) == (double*)NULL) {
-    printf("Unable to allocate array h_a, exiting ...\n");
-    exit(1);
-  }
-  if ((h_b = (double*)calloc(N, sizeof(double))) == (double*)NULL) {
-    printf("Unable to allocate array h_b, exiting ...\n");
-    exit(1);
-  }
+    if ((h_a = (double *)calloc(N, sizeof(double))) == (double *)NULL) {
+      printf("Unable to allocate array h_a, exiting ...\n");
+      exit(1);
+    }
+    if ((h_b = (double *)calloc(N, sizeof(double))) == (double *)NULL) {
+      printf("Unable to allocate array h_b, exiting ...\n");
+      exit(1);
+    }
 
-  if ((h_c = (double*)calloc(N, sizeof(double))) == (double*)NULL) {
-    printf("Unalbe to allocate array h_c, exiting ...\n");
-    exit(1);
-  }
+    if ((h_c = (double *)calloc(N, sizeof(double))) == (double *)NULL) {
+      printf("Unalbe to allocate array h_c, exiting ...\n");
+      exit(1);
+    }
 
-  /*
+    /*
    * perform kernel, copy device memory into host memory and verify each
    * device kernel output
    */
 
-  /* Initialize memory on the device */
-  set_array_double<<<dimGrid,dimBlock>>>(d_a, 2., N);
-  set_array_double<<<dimGrid,dimBlock>>>(d_b, .5, N);
-  set_array_double<<<dimGrid,dimBlock>>>(d_c, .5, N);
+    /* Initialize memory on the device */
+    set_array_double<<<dimGrid, dimBlock>>>(d_a, 2., N);
+    set_array_double<<<dimGrid, dimBlock>>>(d_b, .5, N);
+    set_array_double<<<dimGrid, dimBlock>>>(d_c, .5, N);
 
-  STREAM_Copy_double<<<dimGrid,dimBlock>>>(d_a, d_c, N);
-  PetscCallCUDA(cudaMemcpy(h_a, d_a, sizeof(double) * N, cudaMemcpyDeviceToHost));
-  PetscCallCUDA(cudaMemcpy(h_c, d_c, sizeof(double) * N, cudaMemcpyDeviceToHost));
-  errorSTREAMkernel = STREAM_Copy_verify_double(h_a, h_c, N);
-  if (errorSTREAMkernel) {
-    PetscCall(PetscPrintf(PETSC_COMM_SELF, " device STREAM_Copy:\t\tError detected in device STREAM_Copy, exiting\n"));
-    exit(-2000);
-  }
+    STREAM_Copy_double<<<dimGrid, dimBlock>>>(d_a, d_c, N);
+    PetscCallCUDA(cudaMemcpy(h_a, d_a, sizeof(double) * N, cudaMemcpyDeviceToHost));
+    PetscCallCUDA(cudaMemcpy(h_c, d_c, sizeof(double) * N, cudaMemcpyDeviceToHost));
+    errorSTREAMkernel = STREAM_Copy_verify_double(h_a, h_c, N);
+    if (errorSTREAMkernel) {
+      PetscCall(PetscPrintf(PETSC_COMM_SELF, " device STREAM_Copy:\t\tError detected in device STREAM_Copy, exiting\n"));
+      exit(-2000);
+    }
 
-  /* Initialize memory on the device */
-  set_array_double<<<dimGrid,dimBlock>>>(d_a, 2., N);
-  set_array_double<<<dimGrid,dimBlock>>>(d_b, .5, N);
-  set_array_double<<<dimGrid,dimBlock>>>(d_c, .5, N);
+    /* Initialize memory on the device */
+    set_array_double<<<dimGrid, dimBlock>>>(d_a, 2., N);
+    set_array_double<<<dimGrid, dimBlock>>>(d_b, .5, N);
+    set_array_double<<<dimGrid, dimBlock>>>(d_c, .5, N);
 
-  STREAM_Copy_Optimized_double<<<dimGrid,dimBlock>>>(d_a, d_c, N);
-  PetscCallCUDA(cudaMemcpy(h_a, d_a, sizeof(double) * N, cudaMemcpyDeviceToHost));
-  PetscCallCUDA(cudaMemcpy(h_c, d_c, sizeof(double) * N, cudaMemcpyDeviceToHost));
-  errorSTREAMkernel = STREAM_Copy_verify_double(h_a, h_c, N);
-  if (errorSTREAMkernel) {
-    PetscCall(PetscPrintf(PETSC_COMM_SELF, " device STREAM_Copy_Optimized:\tError detected in device STREAM_Copy_Optimized, exiting\n"));
-    exit(-3000);
-  }
+    STREAM_Copy_Optimized_double<<<dimGrid, dimBlock>>>(d_a, d_c, N);
+    PetscCallCUDA(cudaMemcpy(h_a, d_a, sizeof(double) * N, cudaMemcpyDeviceToHost));
+    PetscCallCUDA(cudaMemcpy(h_c, d_c, sizeof(double) * N, cudaMemcpyDeviceToHost));
+    errorSTREAMkernel = STREAM_Copy_verify_double(h_a, h_c, N);
+    if (errorSTREAMkernel) {
+      PetscCall(PetscPrintf(PETSC_COMM_SELF, " device STREAM_Copy_Optimized:\tError detected in device STREAM_Copy_Optimized, exiting\n"));
+      exit(-3000);
+    }
 
-  /* Initialize memory on the device */
-  set_array_double<<<dimGrid,dimBlock>>>(d_b, .5, N);
-  set_array_double<<<dimGrid,dimBlock>>>(d_c, .5, N);
+    /* Initialize memory on the device */
+    set_array_double<<<dimGrid, dimBlock>>>(d_b, .5, N);
+    set_array_double<<<dimGrid, dimBlock>>>(d_c, .5, N);
 
-  STREAM_Scale_double<<<dimGrid,dimBlock>>>(d_b, d_c, scalar, N);
-  PetscCallCUDA(cudaMemcpy(h_b, d_b, sizeof(double) * N, cudaMemcpyDeviceToHost));
-  PetscCallCUDA(cudaMemcpy(h_c, d_c, sizeof(double) * N, cudaMemcpyDeviceToHost));
-  errorSTREAMkernel = STREAM_Scale_verify_double(h_b, h_c, scalar, N);
-  if (errorSTREAMkernel) {
-    PetscCall(PetscPrintf(PETSC_COMM_SELF, " device STREAM_Scale:\t\tError detected in device STREAM_Scale, exiting\n"));
-    exit(-4000);
-  }
+    STREAM_Scale_double<<<dimGrid, dimBlock>>>(d_b, d_c, scalar, N);
+    PetscCallCUDA(cudaMemcpy(h_b, d_b, sizeof(double) * N, cudaMemcpyDeviceToHost));
+    PetscCallCUDA(cudaMemcpy(h_c, d_c, sizeof(double) * N, cudaMemcpyDeviceToHost));
+    errorSTREAMkernel = STREAM_Scale_verify_double(h_b, h_c, scalar, N);
+    if (errorSTREAMkernel) {
+      PetscCall(PetscPrintf(PETSC_COMM_SELF, " device STREAM_Scale:\t\tError detected in device STREAM_Scale, exiting\n"));
+      exit(-4000);
+    }
 
-  /* Initialize memory on the device */
-  set_array_double<<<dimGrid,dimBlock>>>(d_a, 2., N);
-  set_array_double<<<dimGrid,dimBlock>>>(d_b, .5, N);
-  set_array_double<<<dimGrid,dimBlock>>>(d_c, .5, N);
+    /* Initialize memory on the device */
+    set_array_double<<<dimGrid, dimBlock>>>(d_a, 2., N);
+    set_array_double<<<dimGrid, dimBlock>>>(d_b, .5, N);
+    set_array_double<<<dimGrid, dimBlock>>>(d_c, .5, N);
 
-  STREAM_Add_double<<<dimGrid,dimBlock>>>(d_a, d_b, d_c, N);
-  PetscCallCUDA(cudaMemcpy(h_a, d_a, sizeof(double) * N, cudaMemcpyDeviceToHost));
-  PetscCallCUDA(cudaMemcpy(h_b, d_b, sizeof(double) * N, cudaMemcpyDeviceToHost));
-  PetscCallCUDA(cudaMemcpy(h_c, d_c, sizeof(double) * N, cudaMemcpyDeviceToHost));
-  errorSTREAMkernel = STREAM_Add_verify_double(h_a, h_b, h_c, N);
-  if (errorSTREAMkernel) {
-    PetscCall(PetscPrintf(PETSC_COMM_SELF, " device STREAM_Add:\t\tError detected in device STREAM_Add, exiting\n"));
-    exit(-5000);
-  }
+    STREAM_Add_double<<<dimGrid, dimBlock>>>(d_a, d_b, d_c, N);
+    PetscCallCUDA(cudaMemcpy(h_a, d_a, sizeof(double) * N, cudaMemcpyDeviceToHost));
+    PetscCallCUDA(cudaMemcpy(h_b, d_b, sizeof(double) * N, cudaMemcpyDeviceToHost));
+    PetscCallCUDA(cudaMemcpy(h_c, d_c, sizeof(double) * N, cudaMemcpyDeviceToHost));
+    errorSTREAMkernel = STREAM_Add_verify_double(h_a, h_b, h_c, N);
+    if (errorSTREAMkernel) {
+      PetscCall(PetscPrintf(PETSC_COMM_SELF, " device STREAM_Add:\t\tError detected in device STREAM_Add, exiting\n"));
+      exit(-5000);
+    }
 
-  /* Initialize memory on the device */
-  set_array_double<<<dimGrid,dimBlock>>>(d_a, 2., N);
-  set_array_double<<<dimGrid,dimBlock>>>(d_b, .5, N);
-  set_array_double<<<dimGrid,dimBlock>>>(d_c, .5, N);
+    /* Initialize memory on the device */
+    set_array_double<<<dimGrid, dimBlock>>>(d_a, 2., N);
+    set_array_double<<<dimGrid, dimBlock>>>(d_b, .5, N);
+    set_array_double<<<dimGrid, dimBlock>>>(d_c, .5, N);
 
-  STREAM_Triad_double<<<dimGrid,dimBlock>>>(d_b, d_c, d_a, scalar, N);
-  PetscCallCUDA(cudaMemcpy(h_a, d_a, sizeof(double) * N, cudaMemcpyDeviceToHost));
-  PetscCallCUDA(cudaMemcpy(h_b, d_b, sizeof(double) * N, cudaMemcpyDeviceToHost));
-  PetscCallCUDA(cudaMemcpy(h_c, d_c, sizeof(double) * N, cudaMemcpyDeviceToHost));
-  errorSTREAMkernel = STREAM_Triad_verify_double(h_b, h_c, h_a, scalar, N);
-  if (errorSTREAMkernel) {
-    PetscCall(PetscPrintf(PETSC_COMM_SELF, " device STREAM_Triad:\t\tError detected in device STREAM_Triad, exiting\n"));
-    exit(-6000);
-  }
+    STREAM_Triad_double<<<dimGrid, dimBlock>>>(d_b, d_c, d_a, scalar, N);
+    PetscCallCUDA(cudaMemcpy(h_a, d_a, sizeof(double) * N, cudaMemcpyDeviceToHost));
+    PetscCallCUDA(cudaMemcpy(h_b, d_b, sizeof(double) * N, cudaMemcpyDeviceToHost));
+    PetscCallCUDA(cudaMemcpy(h_c, d_c, sizeof(double) * N, cudaMemcpyDeviceToHost));
+    errorSTREAMkernel = STREAM_Triad_verify_double(h_b, h_c, h_a, scalar, N);
+    if (errorSTREAMkernel) {
+      PetscCall(PetscPrintf(PETSC_COMM_SELF, " device STREAM_Triad:\t\tError detected in device STREAM_Triad, exiting\n"));
+      exit(-6000);
+    }
 
-  free(h_a);
-  free(h_b);
-  free(h_c);
+    free(h_a);
+    free(h_b);
+    free(h_c);
   }
   /* continue from here */
-  printResultsReadable(times,sizeof(double));
+  printResultsReadable(times, sizeof(double));
 
   /* Free memory on device */
   PetscCallCUDA(cudaFree(d_a));
@@ -856,29 +824,19 @@ PetscErrorCode runStreamDouble(const PetscInt iNumThreadsPerBlock, PetscBool bDo
 ///////////////////////////////////////////////////////////////////////////
 //Print Results to Screen and File
 ///////////////////////////////////////////////////////////////////////////
-PetscErrorCode printResultsReadable(float times[][NTIMES], const size_t bsize)
-{
+PetscErrorCode printResultsReadable(float times[][NTIMES], const size_t bsize) {
   PetscErrorCode ierr;
   PetscInt       j, k;
   float          avgtime[8]          = {0., 0., 0., 0., 0., 0., 0., 0.};
   float          maxtime[8]          = {0., 0., 0., 0., 0., 0., 0., 0.};
-  float          mintime[8]          = {1e30,1e30,1e30,1e30,1e30,1e30,1e30,1e30};
+  float          mintime[8]          = {1e30, 1e30, 1e30, 1e30, 1e30, 1e30, 1e30, 1e30};
   // char           *label[8]           = {"Copy:      ", "Copy Opt.: ", "Scale:     ", "Scale Opt: ", "Add:       ", "Add Opt:   ", "Triad:     ", "Triad Opt: "};
-  const float    bytes_per_kernel[8] = {
-    2. * bsize * N,
-    2. * bsize * N,
-    2. * bsize * N,
-    2. * bsize * N,
-    3. * bsize * N,
-    3. * bsize * N,
-    3. * bsize * N,
-    3. * bsize * N
-  };
-  double         rate,irate;
-  int            rank,size;
+  const float    bytes_per_kernel[8] = {2. * bsize * N, 2. * bsize * N, 2. * bsize * N, 2. * bsize * N, 3. * bsize * N, 3. * bsize * N, 3. * bsize * N, 3. * bsize * N};
+  double         rate, irate;
+  int            rank, size;
   PetscFunctionBegin;
-  PetscCallMPI(MPI_Comm_rank(MPI_COMM_WORLD,&rank));
-  PetscCallMPI(MPI_Comm_size(MPI_COMM_WORLD,&size));
+  PetscCallMPI(MPI_Comm_rank(MPI_COMM_WORLD, &rank));
+  PetscCallMPI(MPI_Comm_size(MPI_COMM_WORLD, &size));
   /* --- SUMMARY --- */
   for (k = 0; k < NTIMES; ++k) {
     for (j = 0; j < 8; ++j) {
@@ -887,25 +845,23 @@ PetscErrorCode printResultsReadable(float times[][NTIMES], const size_t bsize)
       maxtime[j] = MAX(maxtime[j], (1.e-03f * times[j][k]));
     }
   }
-  for (j = 0; j < 8; ++j) {
-    avgtime[j] = avgtime[j]/(float)(NTIMES-1);
-  }
-  j = 7;
-  irate = 1.0E-06 * bytes_per_kernel[j]/mintime[j];
-  ierr = MPI_Reduce(&irate,&rate,1,MPI_DOUBLE,MPI_SUM,0,MPI_COMM_WORLD);
+  for (j = 0; j < 8; ++j) { avgtime[j] = avgtime[j] / (float)(NTIMES - 1); }
+  j     = 7;
+  irate = 1.0E-06 * bytes_per_kernel[j] / mintime[j];
+  ierr  = MPI_Reduce(&irate, &rate, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
   if (rank == 0) {
     FILE *fd;
     if (size == 1) {
-      printf("%d %11.4f   Rate (MB/s)\n",size, rate);
-      fd = fopen("flops","w");
-      fprintf(fd,"%g\n",rate);
+      printf("%d %11.4f   Rate (MB/s)\n", size, rate);
+      fd = fopen("flops", "w");
+      fprintf(fd, "%g\n", rate);
       fclose(fd);
     } else {
       double prate;
-      fd = fopen("flops","r");
-      fscanf(fd,"%lg",&prate);
+      fd = fopen("flops", "r");
+      fscanf(fd, "%lg", &prate);
       fclose(fd);
-      printf("%d %11.4f   Rate (MB/s) %g \n", size, rate, rate/prate);
+      printf("%d %11.4f   Rate (MB/s) %g \n", size, rate, rate / prate);
     }
   }
 

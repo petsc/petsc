@@ -580,15 +580,11 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
     PetscCall(PetscLogGpuTimeEnd());
     PetscCall(PetscLogEventEnd(events[8], 0, 0, 0, 0));
     // Jacobian
-    int maximum_shared_mem_size = 64000;
+    int         maximum_shared_mem_size = 64000;
+    PetscDevice device;
 
-    if (PetscDeviceConfiguredFor_Internal(PETSC_DEVICE_DEFAULT)) {
-      // FIXME: remove the configuredfor check once the PETSC_DEVICE_HOST MR is merged in
-      PetscDevice device;
-
-      PetscCall(PetscDeviceGetDefault_Internal(&device));
-      PetscCall(PetscDeviceGetAttribute(device, PETSC_DEVICE_ATTR_SIZE_T_SHARED_MEM_PER_BLOCK, &maximum_shared_mem_size));
-    }
+    PetscCall(PetscDeviceGetDefault_Internal(&device));
+    PetscCall(PetscDeviceGetAttribute(device, PETSC_DEVICE_ATTR_SIZE_T_SHARED_MEM_PER_BLOCK, &maximum_shared_mem_size));
     const int jac_scr_bytes    = 2 * (g2_scr_t::shmem_size(dim, Nf_max, Nq) + g3_scr_t::shmem_size(dim, dim, Nf_max, Nq));
     const int jac_shared_level = (jac_scr_bytes > maximum_shared_mem_size) ? 1 : KOKKOS_SHARED_LEVEL;
     auto      jac_lambda       = KOKKOS_LAMBDA(const team_member team) {

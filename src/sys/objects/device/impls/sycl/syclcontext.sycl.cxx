@@ -1,20 +1,20 @@
-#include "../../interface/sycldevice.hpp"
+#include "sycldevice.hpp"
 #include <CL/sycl.hpp>
 
 namespace Petsc {
 
-namespace Device {
+namespace device {
 
-namespace SYCL {
+namespace sycl {
 
-namespace Impl {
+namespace impl {
 
 class DeviceContext {
 public:
   struct PetscDeviceContext_IMPLS {
-    sycl::event event;
-    sycl::event begin; // timer-only
-    sycl::event end;   // timer-only
+    ::sycl::event event;
+    ::sycl::event begin; // timer-only
+    ::sycl::event end;   // timer-only
 #if PetscDefined(USE_DEBUG)
     PetscBool timerInUse;
 #endif
@@ -85,16 +85,16 @@ public:
   };
 };
 
-} // namespace Impl
+} // namespace impl
 
-} // namespace SYCL
+} // namespace sycl
 
-} // namespace Device
+} // namespace device
 
 } // namespace Petsc
 
 PetscErrorCode PetscDeviceContextCreate_SYCL(PetscDeviceContext dctx) {
-  using namespace Petsc::Device::SYCL::Impl;
+  using namespace Petsc::device::sycl::impl;
 
   static const DeviceContext syclctx;
 

@@ -251,10 +251,12 @@ M*/
 
   Level: developer
 
-.seealso: `PetscAssert()`, `SETERRQ()`, `PetscError()`, `PetscCall()`, `PetscCheck()`, `SETTERRABORT()`
+.seealso: `PetscAssertAbort()`, `PetscAssert()`, `SETERRQ()`, `PetscError()`, `PetscCall()`, `PetscCheck()`, `SETTERRABORT()`
 M*/
 #define PetscCheckAbort(cond, comm, ierr, ...) \
-  if (PetscUnlikely(!(cond))) SETERRABORT(comm, ierr, __VA_ARGS__)
+  do { \
+    if (PetscUnlikely(!(cond))) SETERRABORT(comm, ierr, __VA_ARGS__); \
+  } while (0);
 
 /*MC
   PetscAssert - Assert that a particular condition is true
@@ -282,11 +284,38 @@ M*/
 
   Level: beginner
 
-.seealso: `PetscCheck()`, `SETERRQ()`, `PetscError()`
+.seealso: `PetscCheck()`, `SETERRQ()`, `PetscError()`, `PetscAssertAbort()`
 M*/
 #define PetscAssert(cond, comm, ierr, ...) \
   do { \
     if (PetscUnlikelyDebug(!(cond))) SETERRQ(comm, ierr, __VA_ARGS__); \
+  } while (0)
+
+/*MC
+  PetscAssertAbort - Assert that a particular condition is true, otherwise prints error and aborts
+
+  Synopsis:
+  #include <petscerror.h>
+  void PetscAssertAbort(bool cond, MPI_Comm comm, PetscErrorCode ierr, const char *message, ...)
+
+  Collective
+
+  Input Parameters:
++ cond    - The boolean condition
+. comm    - The communicator on which the check can be collective on
+. ierr    - A nonzero error code, see include/petscerror.h for the complete list
+- message - Error message in printf format
+
+  Notes:
+  Enabled only in debug builds. See `PetscCheckAbort()` for usage.
+
+  Level: beginner
+
+.seealso: `PetscCheckAbort()`, `PetscAssert()`, `PetscCheck()`, `SETERRABORT()`, `PetscError()`
+M*/
+#define PetscAssertAbort(cond, comm, ierr, ...) \
+  do { \
+    if (PetscUnlikelyDebug(!(cond))) SETERRABORT(comm, ierr, __VA_ARGS__); \
   } while (0)
 
 /*MC

@@ -7,11 +7,8 @@
 #error "Wrong mpi.h included! require mpi.h from MPIUNI"
 #endif
 
-#include <petsc/private/petscimpl.h> /* for PetscCUPMInitialized */
-
-#if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
-#include <petscdevice.h>
-#endif
+#include <petscdevice_cupm.h>
+#include <petsc/private/petscimpl.h>
 
 #define MPI_SUCCESS 0
 #define MPI_FAILURE 1
