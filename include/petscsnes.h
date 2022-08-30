@@ -118,6 +118,8 @@ PETSC_EXTERN PetscErrorCode MatSNESMFGetSNES(Mat, SNES *);
 PETSC_EXTERN PetscErrorCode MatSNESMFSetReuseBase(Mat, PetscBool);
 PETSC_EXTERN PetscErrorCode MatSNESMFGetReuseBase(Mat, PetscBool *);
 PETSC_EXTERN PetscErrorCode MatMFFDComputeJacobian(SNES, Vec, Mat, Mat, void *);
+PETSC_EXTERN PetscErrorCode MatCreateSNESMFMore(SNES, Vec, Mat *);
+PETSC_EXTERN PetscErrorCode MatSNESMFMoreSetParameters(Mat, PetscReal, PetscReal, PetscReal);
 
 PETSC_EXTERN PetscErrorCode SNESGetType(SNES, SNESType *);
 PETSC_EXTERN PetscErrorCode SNESMonitorDefaultSetUp(SNES, PetscViewerAndFormat *);
@@ -685,6 +687,10 @@ PETSC_EXTERN PetscErrorCode SNESVIGetInactiveSet(SNES, IS *);
 PETSC_EXTERN PetscErrorCode SNESVIGetActiveSetIS(SNES, Vec, Vec, IS *);
 PETSC_EXTERN PetscErrorCode SNESVIComputeInactiveSetFnorm(SNES, Vec, Vec, PetscReal *);
 PETSC_EXTERN PetscErrorCode SNESVISetRedundancyCheck(SNES, PetscErrorCode (*)(SNES, IS, IS *, void *), void *);
+PETSC_EXTERN PetscErrorCode SNESVIComputeMeritFunction(Vec, PetscReal *, PetscReal *);
+PETSC_EXTERN PetscErrorCode SNESVIComputeFunction(SNES, Vec, Vec, void *);
+PETSC_EXTERN PetscErrorCode DMSetVI(DM, IS);
+PETSC_EXTERN PetscErrorCode DMDestroyVI(DM);
 
 PETSC_EXTERN PetscErrorCode SNESTestLocalMin(SNES);
 

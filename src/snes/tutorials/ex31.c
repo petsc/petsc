@@ -122,10 +122,10 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-/*-------------------------------------------------------------------------------
+/*
    Helper function to evaluate Chebyshev polynomials with a set of coefficients
    with all their derivatives represented as a recurrence table
--------------------------------------------------------------------------------*/
+*/
 static void ChebyshevEval(PetscInt N, const PetscScalar *Tf, PetscReal x, PetscReal dx_deta, PetscScalar *f) {
   PetscScalar table[4][3] = {
     {1, x, 2 * x * x - 1},
@@ -145,7 +145,6 @@ static void ChebyshevEval(PetscInt N, const PetscScalar *Tf, PetscReal x, PetscR
   }
 }
 
-/* ------------------------------------------------------------------- */
 /*
    FormFunction - Evaluates nonlinear function, F(x).
 

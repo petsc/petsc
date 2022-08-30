@@ -8,10 +8,10 @@ typedef struct {
 /*@C
    SNESShellSetSolve - Sets routine to apply as solver
 
-   Logically Collective on SNES
+   Logically Collective on snes
 
    Input Parameters:
-+  snes - the nonlinear solver context
++  snes - the `SNES` nonlinear solver context
 -  apply - the application-provided solver routine
 
    Calling sequence of solve:
@@ -19,11 +19,8 @@ typedef struct {
    PetscErrorCode apply (SNES snes,Vec xout)
 .ve
 
-+  snes - the preconditioner, get the application context with SNESShellGetContext()
++  snes - the preconditioner, get the application context with `SNESShellGetContext()` provided with `SNESShelletContext()`
 -  xout - solution vector
-
-   Notes:
-    the function MUST return an error code of 0 on success and nonzero on failure.
 
    Level: advanced
 
@@ -65,22 +62,19 @@ PetscErrorCode SNESView_Shell(SNES snes, PetscViewer viewer) {
 }
 
 /*@
-    SNESShellGetContext - Returns the user-provided context associated with a shell SNES
+    SNESShellGetContext - Returns the user-provided context associated with a `SNESSHELL`
 
     Not Collective
 
     Input Parameter:
-.   snes - should have been created with SNESSetType(snes,SNESSHELL);
+.   snes - should have been created with `SNESSetType`(snes,`SNESSHELL`);
 
     Output Parameter:
 .   ctx - the user provided context
 
     Level: advanced
 
-    Notes:
-    This routine is intended for use within various shell routines
-
-.seealso: `SNESCreateShell()`, `SNESShellSetContext()`
+.seealso: `SNESSHELL`, `SNESCreateShell()`, `SNESShellSetContext()`
 @*/
 PetscErrorCode SNESShellGetContext(SNES snes, void *ctx) {
   PetscBool flg;
@@ -95,21 +89,20 @@ PetscErrorCode SNESShellGetContext(SNES snes, void *ctx) {
 }
 
 /*@
-    SNESShellSetContext - sets the context for a shell SNES
+    SNESShellSetContext - sets the context for a `SNESSHELL`
 
-   Logically Collective on SNES
+   Logically Collective on snes
 
     Input Parameters:
-+   snes - the shell SNES
++   snes - the `SNESSHELL`
 -   ctx - the context
 
    Level: advanced
 
-   Fortran Notes:
-    The context can only be an integer or a PetscObject
-      unfortunately it cannot be a Fortran array or derived type.
+   Fortran Note:
+   The context can only be an integer or a `PetscObject` it cannot be a Fortran array or derived type.
 
-.seealso: `SNESCreateShell()`, `SNESShellGetContext()`
+.seealso: `SNESSHELL`, `SNESCreateShell()`, `SNESShellGetContext()`
 @*/
 PetscErrorCode SNESShellSetContext(SNES snes, void *ctx) {
   SNES_Shell *shell = (SNES_Shell *)snes->data;
@@ -145,7 +138,7 @@ PetscErrorCode SNESShellSetSolve_Shell(SNES snes, PetscErrorCode (*solve)(SNES, 
 
    Level: advanced
 
-.seealso: `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESType`
+.seealso: `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESType`, `SNESShellGetContext()`, `SNESShellSetContext()`, `SNESShellSetSolve()`
 M*/
 
 PETSC_EXTERN PetscErrorCode SNESCreate_Shell(SNES snes) {

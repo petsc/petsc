@@ -1,12 +1,12 @@
 #include <../src/snes/impls/gs/gsimpl.h> /*I "petscsnes.h"  I*/
 
 /*@
-   SNESNGSSetTolerances - Sets various parameters used in convergence tests.
+   SNESNGSSetTolerances - Sets various parameters used in convergence tests for nonlinear Gauss-Seidel `SNESNCG`
 
-   Logically Collective on SNES
+   Logically Collective on snes
 
    Input Parameters:
-+  snes - the SNES context
++  snes - the `SNES` context
 .  abstol - absolute convergence tolerance
 .  rtol - relative convergence tolerance
 .  stol -  convergence tolerance in terms of the norm of the change in the solution between steps,  || delta x || < stol*|| x ||
@@ -20,7 +20,7 @@
 
    Level: intermediate
 
-.seealso: `SNESSetTrustRegionTolerance()`
+.seealso: `SNESNCG`, `SNESSetTrustRegionTolerance()`
 @*/
 PetscErrorCode SNESNGSSetTolerances(SNES snes, PetscReal abstol, PetscReal rtol, PetscReal stol, PetscInt maxit) {
   SNES_NGS *gs = (SNES_NGS *)snes->data;
@@ -48,24 +48,24 @@ PetscErrorCode SNESNGSSetTolerances(SNES snes, PetscReal abstol, PetscReal rtol,
 }
 
 /*@
-   SNESNGSGetTolerances - Gets various parameters used in convergence tests.
+   SNESNGSGetTolerances - Gets various parameters used in convergence tests for nonlinear Gauss-Seidel `SNESNCG`
 
    Not Collective
 
    Input Parameters:
-+  snes - the SNES context
++  snes - the `SNES` context
 .  atol - absolute convergence tolerance
 .  rtol - relative convergence tolerance
 .  stol -  convergence tolerance in terms of the norm
            of the change in the solution between steps
 -  maxit - maximum number of iterations
 
-   Notes:
+   Note:
    The user can specify NULL for any parameter that is not needed.
 
    Level: intermediate
 
-.seealso: `SNESSetTolerances()`
+.seealso: `SNESNCG`, `SNESSetTolerances()`
 @*/
 PetscErrorCode SNESNGSGetTolerances(SNES snes, PetscReal *atol, PetscReal *rtol, PetscReal *stol, PetscInt *maxit) {
   SNES_NGS *gs = (SNES_NGS *)snes->data;
@@ -80,15 +80,18 @@ PetscErrorCode SNESNGSGetTolerances(SNES snes, PetscReal *atol, PetscReal *rtol,
 }
 
 /*@
-   SNESNGSSetSweeps - Sets the number of sweeps of GS to use.
+   SNESNGSSetSweeps - Sets the number of sweeps of nonlinear GS to use in `SNESNCG`
 
    Input Parameters:
-+  snes   - the SNES context
--  sweeps  - the number of sweeps of GS to perform.
++  snes   - the `SNES` context
+-  sweeps  - the number of sweeps of nonlinear GS to perform.
+
+  Options Database Key:
+.   -snes_ngs_sweeps <n> - Number of sweeps of nonlinear GS to apply
 
    Level: intermediate
 
-.seealso: `SNESSetNGS()`, `SNESGetNGS()`, `SNESSetNPC()`, `SNESNGSGetSweeps()`
+.seealso: `SNESNCG`, `SNESSetNGS()`, `SNESGetNGS()`, `SNESSetNPC()`, `SNESNGSGetSweeps()`
 @*/
 
 PetscErrorCode SNESNGSSetSweeps(SNES snes, PetscInt sweeps) {
@@ -101,17 +104,17 @@ PetscErrorCode SNESNGSSetSweeps(SNES snes, PetscInt sweeps) {
 }
 
 /*@
-   SNESNGSGetSweeps - Gets the number of sweeps GS will use.
+   SNESNGSGetSweeps - Gets the number of sweeps nonlinear GS will use in `SNESNCG`
 
    Input Parameters:
-.  snes   - the SNES context
+.  snes   - the `SNES` context
 
    Output Parameters:
-.  sweeps  - the number of sweeps of GS to perform.
+.  sweeps  - the number of sweeps of nonlinear GS to perform.
 
    Level: intermediate
 
-.seealso: `SNESSetNGS()`, `SNESGetNGS()`, `SNESSetNPC()`, `SNESNGSSetSweeps()`
+.seealso: `SNESNCG`, `SNESSetNGS()`, `SNESGetNGS()`, `SNESSetNPC()`, `SNESNGSSetSweeps()`
 @*/
 PetscErrorCode SNESNGSGetSweeps(SNES snes, PetscInt *sweeps) {
   SNES_NGS *gs = (SNES_NGS *)snes->data;
@@ -270,34 +273,36 @@ PetscErrorCode SNESSolve_NGS(SNES snes) {
 }
 
 /*MC
-  SNESNGS - Either calls the user-provided solution routine provided with SNESSetNGS() or does a finite difference secant approximation
+  SNESNGS - Either calls the user-provided solution routine provided with `SNESSetNGS()` or does a finite difference secant approximation
             using coloring.
 
    Level: advanced
 
-  Options Database:
-+   -snes_ngs_sweeps <n> - Number of sweeps of GS to apply
-.    -snes_ngs_atol <atol> - Absolute residual tolerance for GS iteration
-.    -snes_ngs_rtol <rtol> - Relative residual tolerance for GS iteration
-.    -snes_ngs_stol <stol> - Absolute update tolerance for GS iteration
-.    -snes_ngs_max_it <maxit> - Maximum number of sweeps of GS to apply
+  Options Database Keys:
++   -snes_ngs_sweeps <n> - Number of sweeps of nonlinear GS to apply
+.    -snes_ngs_atol <atol> - Absolute residual tolerance for nonlinear GS iteration
+.    -snes_ngs_rtol <rtol> - Relative residual tolerance for nonlinear GS iteration
+.    -snes_ngs_stol <stol> - Absolute update tolerance for nonlinear GS iteration
+.    -snes_ngs_max_it <maxit> - Maximum number of sweeps of nonlinea GS to apply
 .    -snes_ngs_secant - Use pointwise secant local Jacobian approximation with coloring instead of user provided Gauss-Seidel routine, this is
-                        used by default if no user provided Gauss-Seidel routine is available. Requires either that a DM that can compute a coloring
+                        used by default if no user provided Gauss-Seidel routine is available. Requires either that a `DM` that can compute a coloring
                         is available or a Jacobian sparse matrix is provided (from which to get the coloring).
 .    -snes_ngs_secant_h <h> - Differencing parameter for secant approximation
 .    -snes_ngs_secant_mat_coloring - Use the graph coloring of the Jacobian for the secant GS even if a DM is available.
 -    -snes_norm_schedule <none, always, initialonly, finalonly, initialfinalonly> - how often the residual norms are computed
 
   Notes:
-  the Gauss-Seidel smoother is inherited through composition.  If a solver has been created with SNESGetNPC(), it will have
+  the Gauss-Seidel smoother is inherited through composition.  If a solver has been created with `SNESGetNPC()`, it will have
   its parent's Gauss-Seidel routine associated with it.
 
-  By default this routine computes the solution norm at each iteration, this can be time consuming, you can turn this off with SNESSetNormSchedule() or -snes_norm_schedule
+  By default this routine computes the solution norm at each iteration, this can be time consuming, you can turn this off with `SNESSetNormSchedule()`
+  or -snes_norm_schedule none
+
    References:
 .  * - Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu, "Composing Scalable Nonlinear Algebraic Solvers",
    SIAM Review, 57(4), 2015
 
-.seealso: `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESSetNGS()`, `SNESType`, `SNESNGSSetSweeps()`, `SNESNGSSetTolerances()`,
+.seealso: `SNESNCG`, `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESSetNGS()`, `SNESType`, `SNESNGSSetSweeps()`, `SNESNGSSetTolerances()`,
           `SNESSetNormSchedule()`
 M*/
 

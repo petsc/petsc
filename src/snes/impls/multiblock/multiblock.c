@@ -708,9 +708,9 @@ PetscErrorCode SNESMultiblockSetType_Default(SNES snes, PCCompositeType type) {
 }
 
 /*@
-  SNESMultiblockSetFields - Sets the fields for one particular block in the solver
+  SNESMultiblockSetFields - Sets the fields for one particular block in a `SNESMULTBLOCK` solver
 
-  Logically Collective on SNES
+  Logically Collective on snes
 
   Input Parameters:
 + snes   - the solver
@@ -721,9 +721,9 @@ PetscErrorCode SNESMultiblockSetType_Default(SNES snes, PCCompositeType type) {
   Level: intermediate
 
   Notes:
-    Use SNESMultiblockSetIS() to set a completely general set of row indices as a block.
+    Use `SNESMultiblockSetIS()` to set a completely general set of row indices as a block.
 
-  The SNESMultiblockSetFields() is for defining blocks as a group of strided indices, or fields.
+  The `SNESMultiblockSetFields()` is for defining blocks as a group of strided indices, or fields.
   For example, if the vector block size is three then one can define a block as field 0, or
   1 or 2, or field 0,1 or 0,2 or 1,2 which means
     0xx3xx6xx9xx12 ... x1xx4xx7xx ... xx2xx5xx8xx.. 01x34x67x... 0x1x3x5x7.. x12x45x78x....
@@ -732,7 +732,7 @@ PetscErrorCode SNESMultiblockSetType_Default(SNES snes, PCCompositeType type) {
   This function is called once per block (it creates a new block each time). Solve options
   for this block will be available under the prefix -multiblock_BLOCKNAME_.
 
-.seealso: `SNESMultiblockGetSubSNES()`, `SNESMULTIBLOCK`, `SNESMultiblockSetBlockSize()`, `SNESMultiblockSetIS()`
+.seealso: `SNESMULTBLOCK`, `SNESMultiblockGetSubSNES()`, `SNESMULTIBLOCK`, `SNESMultiblockSetBlockSize()`, `SNESMultiblockSetIS()`
 @*/
 PetscErrorCode SNESMultiblockSetFields(SNES snes, const char name[], PetscInt n, const PetscInt *fields) {
   PetscFunctionBegin;
@@ -745,9 +745,9 @@ PetscErrorCode SNESMultiblockSetFields(SNES snes, const char name[], PetscInt n,
 }
 
 /*@
-  SNESMultiblockSetIS - Sets the global row indices for the block
+  SNESMultiblockSetIS - Sets the global row indices for one particular block in a `SNESMULTBLOCK` solver
 
-  Logically Collective on SNES
+  Logically Collective on snes
 
   Input Parameters:
 + snes - the solver context
@@ -755,14 +755,14 @@ PetscErrorCode SNESMultiblockSetFields(SNES snes, const char name[], PetscInt n,
 - is   - the index set that defines the global row indices in this block
 
   Notes:
-  Use SNESMultiblockSetFields(), for blocks defined by strides.
+  Use `SNESMultiblockSetFields()`, for blocks defined by strides.
 
   This function is called once per block (it creates a new block each time). Solve options
   for this block will be available under the prefix -multiblock_BLOCKNAME_.
 
   Level: intermediate
 
-.seealso: `SNESMultiblockGetSubSNES()`, `SNESMULTIBLOCK`, `SNESMultiblockSetBlockSize()`
+.seealso: `SNESMULTBLOCK`, `SNESMultiblockGetSubSNES()`, `SNESMULTIBLOCK`, `SNESMultiblockSetBlockSize()`
 @*/
 PetscErrorCode SNESMultiblockSetIS(SNES snes, const char name[], IS is) {
   PetscFunctionBegin;
@@ -774,20 +774,20 @@ PetscErrorCode SNESMultiblockSetIS(SNES snes, const char name[], IS is) {
 }
 
 /*@
-  SNESMultiblockSetType - Sets the type of block combination.
+  SNESMultiblockSetType - Sets the type of block combination used for a `SNESMULTBLOCK` solver
 
-  Collective on SNES
+  Logically Collective on snes
 
   Input Parameters:
 + snes - the solver context
-- type - PC_COMPOSITE_ADDITIVE, PC_COMPOSITE_MULTIPLICATIVE (default), PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE
+- type - `PC_COMPOSITE_ADDITIVE`, `PC_COMPOSITE_MULTIPLICATIVE` (default), `PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE`
 
   Options Database Key:
 . -snes_multiblock_type <type: one of multiplicative, additive, symmetric_multiplicative> - Sets block combination type
 
-  Level: Developer
+  Level: advanced
 
-.seealso: `PCCompositeSetType()`
+.seealso: `SNESMULTBLOCK`, `PCCompositeSetType()`, `PC_COMPOSITE_ADDITIVE`, `PC_COMPOSITE_MULTIPLICATIVE`,`PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE`
 @*/
 PetscErrorCode SNESMultiblockSetType(SNES snes, PCCompositeType type) {
   PetscFunctionBegin;
@@ -797,9 +797,9 @@ PetscErrorCode SNESMultiblockSetType(SNES snes, PCCompositeType type) {
 }
 
 /*@
-  SNESMultiblockSetBlockSize - Sets the block size for structured mesh block division. If not set the matrix block size is used.
+  SNESMultiblockSetBlockSize - Sets the block size for structured block division in a `SNESMULTBLOCK` solver. If not set the matrix block size is used.
 
-  Logically Collective on SNES
+  Logically Collective on snes
 
   Input Parameters:
 + snes - the solver context
@@ -807,7 +807,7 @@ PetscErrorCode SNESMultiblockSetType(SNES snes, PCCompositeType type) {
 
   Level: intermediate
 
-.seealso: `SNESMultiblockGetSubSNES()`, `SNESMULTIBLOCK`, `SNESMultiblockSetFields()`
+.seealso: `SNESMULTBLOCK`, `SNESMultiblockGetSubSNES()`, `SNESMULTIBLOCK`, `SNESMultiblockSetFields()`
 @*/
 PetscErrorCode SNESMultiblockSetBlockSize(SNES snes, PetscInt bs) {
   PetscFunctionBegin;
@@ -818,26 +818,26 @@ PetscErrorCode SNESMultiblockSetBlockSize(SNES snes, PetscInt bs) {
 }
 
 /*@C
-  SNESMultiblockGetSubSNES - Gets the SNES contexts for all blocks
+  SNESMultiblockGetSubSNES - Gets the `SNES` contexts for all blocks in a `SNESMULTBLOCK` solver.
 
-  Collective on SNES
+  Not Collective but each `SNES` obtained is parallel
 
   Input Parameter:
 . snes - the solver context
 
   Output Parameters:
 + n       - the number of blocks
-- subsnes - the array of SNES contexts
+- subsnes - the array of `SNES` contexts
 
   Note:
-  After SNESMultiblockGetSubSNES() the array of SNESs MUST be freed by the user
-  (not each SNES, just the array that contains them).
+  After `SNESMultiblockGetSubSNES()` the array of `SNES`s MUST be freed by the user
+  (not each `SNES`, just the array that contains them).
 
-  You must call SNESSetUp() before calling SNESMultiblockGetSubSNES().
+  You must call `SNESSetUp()` before calling `SNESMultiblockGetSubSNES()`.
 
   Level: advanced
 
-.seealso: `SNESMULTIBLOCK`
+.seealso: `SNESMULTBLOCK`, `SNESMultiblockSetIS()`, `SNESMultiblockSetFields()`
 @*/
 PetscErrorCode SNESMultiblockGetSubSNES(SNES snes, PetscInt *n, SNES *subsnes[]) {
   PetscFunctionBegin;
@@ -853,7 +853,8 @@ PetscErrorCode SNESMultiblockGetSubSNES(SNES snes, PetscInt *n, SNES *subsnes[])
 
   Level: beginner
 
-.seealso: `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESNEWTONLS`, `SNESNEWTONTR`, `SNESNRICHARDSON`
+.seealso: `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESNEWTONLS`, `SNESNEWTONTR`, `SNESNRICHARDSON`, `SNESMultiblockSetType()`,
+          `PC_COMPOSITE_ADDITIVE`, `PC_COMPOSITE_MULTIPLICATIVE`,`PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE`
 M*/
 PETSC_EXTERN PetscErrorCode SNESCreate_Multiblock(SNES snes) {
   SNES_Multiblock *mb;

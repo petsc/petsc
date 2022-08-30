@@ -117,8 +117,8 @@ int main(int argc, char **argv) {
   /*
      Initialize problem parameters
   */
-  user.Nvglobal = 16; /*Global # of vertices  */
-  user.Neglobal = 18; /*Global # of elements  */
+  user.Nvglobal = 16; /* Global # of vertices  */
+  user.Neglobal = 18; /* Global # of elements  */
 
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-vert", &user.Nvglobal, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-elem", &user.Neglobal, NULL));
@@ -601,7 +601,7 @@ PetscErrorCode FormFunction(SNES snes, Vec X, Vec F, void *ptr) {
   */
   PetscCall(VecRestoreArray(localX, &x));
   PetscCall(VecRestoreArray(F, &f));
-  /*PetscCall(VecView(F,PETSC_VIEWER_STDOUT_WORLD));*/
+  /* PetscCall(VecView(F,PETSC_VIEWER_STDOUT_WORLD)); */
 
   return 0;
 }

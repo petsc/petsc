@@ -17,7 +17,7 @@ static PetscErrorCode SNESComputeMFFunctionCtx(SNES snes, Vec x, Vec f, void *ct
     SNESComputeJacobianDefaultColor - Computes the Jacobian using
     finite differences and coloring to exploit matrix sparsity.
 
-    Collective on SNES
+    Collective on snes
 
     Input Parameters:
 +   snes - nonlinear solver object
@@ -30,28 +30,28 @@ static PetscErrorCode SNESComputeMFFunctionCtx(SNES snes, Vec x, Vec f, void *ct
 
     Level: intermediate
 
-   Options Database Key:
+   Options Database Keys:
 +  -snes_fd_color_use_mat - use a matrix coloring from the explicit matrix nonzero pattern instead of from the DM providing the matrix
-.  -snes_fd_color - Activates SNESComputeJacobianDefaultColor() in SNESSetFromOptions()
+.  -snes_fd_color - Activates `SNESComputeJacobianDefaultColor()` in `SNESSetFromOptions()`
 .  -mat_fd_coloring_err <err> - Sets <err> (square root of relative error in the function)
 .  -mat_fd_coloring_umin <umin> - Sets umin, the minimum allowable u-value magnitude
-.  -mat_fd_type - Either wp or ds (see MATMFFD_WP or MATMFFD_DS)
+.  -mat_fd_type - Either wp or ds (see `MATMFFD_WP` or `MATMFFD_DS`)
 .  -snes_mf_operator - Use matrix free application of Jacobian
 -  -snes_mf - Use matrix free Jacobian with no explicit Jacobian representation
 
     Notes:
-        If the coloring is not provided through the context, this will first try to get the
-        coloring from the DM.  If the DM type has no coloring routine, then it will try to
-        get the coloring from the matrix.  This requires that the matrix have nonzero entries
-        precomputed.
+    If the coloring is not provided through the context, this will first try to get the
+    coloring from the `DM`.  If the `DM` has no coloring routine, then it will try to
+    get the coloring from the matrix.  This requires that the matrix have its nonzero locations already provided.
 
-       SNES supports three approaches for computing (approximate) Jacobians: user provided via SNESSetJacobian(), matrix free via SNESSetUseMatrixFree(),
-       and computing explicitly with finite differences and coloring using MatFDColoring. It is also possible to use automatic differentiation
-       and the MatFDColoring object, see src/ts/tutorials/autodiff/ex16adj_tl.cxx
+    `SNES` supports three approaches for computing (approximate) Jacobians: user provided via `SNESSetJacobian()`, matrix-free via `SNESSetUseMatrixFree()`,
+    and computing explicitly with finite differences and coloring using `MatFDColoring`. It is also possible to use automatic differentiation
+    and the `MatFDColoring` object, see src/ts/tutorials/autodiff/ex16adj_tl.cxx
 
-.seealso: `SNESSetJacobian()`, `SNESTestJacobian()`, `SNESComputeJacobianDefault()`, `SNESSetUseMatrixFree()`,
+   This function can be provided to `SNESSetJacobian()` along with an appropriate sparse matrix to hold the Jacobian
+
+.seealso: `SNES`, `SNESSetJacobian()`, `SNESTestJacobian()`, `SNESComputeJacobianDefault()`, `SNESSetUseMatrixFree()`,
           `MatFDColoringCreate()`, `MatFDColoringSetFunction()`
-
 @*/
 PetscErrorCode SNESComputeJacobianDefaultColor(SNES snes, Vec x1, Mat J, Mat B, void *ctx) {
   MatFDColoring color = (MatFDColoring)ctx;

@@ -205,27 +205,27 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes) {
 }
 
 /*MC
-  SNESNRICHARDSON - Richardson nonlinear solver that uses successive substitutions, also sometimes known as Picard iteration.
+   SNESNRICHARDSON - Richardson nonlinear solver that uses successive substitutions, also sometimes known as Picard iteration.
 
-  Level: beginner
+   Options Database Keys:
++  -snes_linesearch_type <l2,cp,basic> - Line search type.
+-  -snes_linesearch_damping<1.0> - Damping for the line search.
 
-  Options Database:
-+   -snes_linesearch_type <l2,cp,basic> - Line search type.
--   -snes_linesearch_damping<1.0> - Damping for the line search.
+   Level: beginner
 
-  Notes:
-    If no inner nonlinear preconditioner is provided then solves F(x) - b = 0 using x^{n+1} = x^{n} - lambda
-            (F(x^n) - b) where lambda is obtained either SNESLineSearchSetDamping(), -snes_damping or a line search.  If
-            an inner nonlinear preconditioner is provided (either with -npc_snes_type or SNESSetNPC()) then the inner
-            solver is called an initial solution x^n and the nonlinear Richardson uses x^{n+1} = x^{n} + lambda d^{n}
-            where d^{n} = \hat{x}^{n} - x^{n} where \hat{x}^{n} is the solution returned from the inner solver.
+   Notes:
+   If no inner nonlinear preconditioner is provided then solves F(x) - b = 0 using x^{n+1} = x^{n} - lambda
+   (F(x^n) - b) where lambda is obtained either `SNESLineSearchSetDamping()`, -snes_damping or a line search.  If
+   an inner nonlinear preconditioner is provided (either with -npc_snes_type or `SNESSetNPC())` then the inner
+   solver is called an initial solution x^n and the nonlinear Richardson uses x^{n+1} = x^{n} + lambda d^{n}
+   where d^{n} = \hat{x}^{n} - x^{n} where \hat{x}^{n} is the solution returned from the inner solver.
 
-            The update, especially without inner nonlinear preconditioner, may be ill-scaled.  If using the basic
-            linesearch, one may have to scale the update with -snes_linesearch_damping
+   The update, especially without inner nonlinear preconditioner, may be ill-scaled.  If using the basic
+   linesearch, one may have to scale the update with -snes_linesearch_damping
 
-     This uses no derivative information thus will be much slower then Newton's method obtained with -snes_type ls
+   This uses no derivative information thus will be much slower then Newton's method obtained with -snes_type ls
 
-     Only supports left non-linear preconditioning.
+   Only supports left non-linear preconditioning.
 
 .seealso: `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESNEWTONLS`, `SNESNEWTONTR`, `SNESNGMRES`, `SNESQN`, `SNESNCG`
 M*/

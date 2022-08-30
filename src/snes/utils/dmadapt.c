@@ -17,19 +17,19 @@ static PetscErrorCode DMAdaptorTransferSolution_Exact_Private(DMAdaptor adaptor,
 }
 
 /*@
-  DMAdaptorCreate - Create a DMAdaptor object. Its purpose is to construct a adaptation DMLabel or metric Vec that can be used to modify the DM.
+  DMAdaptorCreate - Create a `DMAdaptor` object. Its purpose is to construct a adaptation `DMLabel` or metric Vec that can be used to modify the `DM`.
 
   Collective
 
   Input Parameter:
-. comm - The communicator for the DMAdaptor object
+. comm - The communicator for the `DMAdaptor` object
 
   Output Parameter:
-. adaptor   - The DMAdaptor object
+. adaptor   - The `DMAdaptor` object
 
   Level: beginner
 
-.seealso: `DMAdaptorDestroy()`, `DMAdaptorAdapt()`
+.seealso: `DMAdaptor`, `DMAdaptorDestroy()`, `DMAdaptorAdapt()`
 @*/
 PetscErrorCode DMAdaptorCreate(MPI_Comm comm, DMAdaptor *adaptor) {
   VecTaggerBox refineBox, coarsenBox;
@@ -59,16 +59,16 @@ PetscErrorCode DMAdaptorCreate(MPI_Comm comm, DMAdaptor *adaptor) {
 }
 
 /*@
-  DMAdaptorDestroy - Destroys a DMAdaptor object
+  DMAdaptorDestroy - Destroys a `DMAdaptor` object
 
-  Collective on DMAdaptor
+  Collective on adaptor
 
   Input Parameter:
-. adaptor - The DMAdaptor object
+. adaptor - The `DMAdaptor` object
 
   Level: beginner
 
-.seealso: `DMAdaptorCreate()`, `DMAdaptorAdapt()`
+.seealso: `DMAdaptor`, `DMAdaptorCreate()`, `DMAdaptorAdapt()`
 @*/
 PetscErrorCode DMAdaptorDestroy(DMAdaptor *adaptor) {
   PetscFunctionBegin;
@@ -86,12 +86,12 @@ PetscErrorCode DMAdaptorDestroy(DMAdaptor *adaptor) {
 }
 
 /*@
-  DMAdaptorSetFromOptions - Sets a DMAdaptor object from options
+  DMAdaptorSetFromOptions - Sets properties of a `DMAdaptor` object from the options database
 
-  Collective on DMAdaptor
+  Collective on adaptor
 
   Input Parameter:
-. adaptor - The DMAdaptor object
+. adaptor - The `DMAdaptor` object
 
   Options Database Keys:
 + -adaptor_monitor <bool>        - Monitor the adaptation process
@@ -101,7 +101,7 @@ PetscErrorCode DMAdaptorDestroy(DMAdaptor *adaptor) {
 
   Level: beginner
 
-.seealso: `DMAdaptorCreate()`, `DMAdaptorAdapt()`
+.seealso: `DMAdaptor`, `DMAdaptorCreate()`, `DMAdaptorAdapt()`
 @*/
 PetscErrorCode DMAdaptorSetFromOptions(DMAdaptor adaptor) {
   PetscFunctionBegin;
@@ -117,17 +117,17 @@ PetscErrorCode DMAdaptorSetFromOptions(DMAdaptor adaptor) {
 }
 
 /*@
-  DMAdaptorView - Views a DMAdaptor object
+   DMAdaptorView - Views a `DMAdaptor` object
 
-  Collective on DMAdaptor
+   Collective on adaptor
 
-  Input Parameters:
-+ adaptor     - The DMAdaptor object
-- viewer - The PetscViewer object
+   Input Parameters:
++  adaptor - The `DMAdaptor` object
+-  viewer - The `PetscViewer` object
 
   Level: beginner
 
-.seealso: `DMAdaptorCreate()`, `DMAdaptorAdapt()`
+.seealso: `DMAdaptor`, `DMAdaptorCreate()`, `DMAdaptorAdapt()`
 @*/
 PetscErrorCode DMAdaptorView(DMAdaptor adaptor, PetscViewer viewer) {
   PetscFunctionBegin;
@@ -145,14 +145,14 @@ PetscErrorCode DMAdaptorView(DMAdaptor adaptor, PetscViewer viewer) {
   Not collective
 
   Input Parameter:
-. adaptor   - The DMAdaptor object
+. adaptor   - The `DMAdaptor` object
 
   Output Parameter:
 . snes - The solver
 
   Level: intermediate
 
-.seealso: `DMAdaptorSetSolver()`, `DMAdaptorCreate()`, `DMAdaptorAdapt()`
+.seealso: `DMAdaptor`, `DMAdaptorSetSolver()`, `DMAdaptorCreate()`, `DMAdaptorAdapt()`
 @*/
 PetscErrorCode DMAdaptorGetSolver(DMAdaptor adaptor, SNES *snes) {
   PetscFunctionBegin;
@@ -168,14 +168,15 @@ PetscErrorCode DMAdaptorGetSolver(DMAdaptor adaptor, SNES *snes) {
   Not collective
 
   Input Parameters:
-+ adaptor   - The DMAdaptor object
++ adaptor   - The `DMAdaptor` object
 - snes - The solver
 
   Level: intermediate
 
-  Note: The solver MUST have an attached DM/DS, so that we know the exact solution
+  Note:
+  The solver MUST have an attached `DM`/`DS`, so that we know the exact solution
 
-.seealso: `DMAdaptorGetSolver()`, `DMAdaptorCreate()`, `DMAdaptorAdapt()`
+.seealso: `DMAdaptor`, `DMAdaptorGetSolver()`, `DMAdaptorCreate()`, `DMAdaptorAdapt()`
 @*/
 PetscErrorCode DMAdaptorSetSolver(DMAdaptor adaptor, SNES snes) {
   PetscFunctionBegin;
@@ -187,19 +188,19 @@ PetscErrorCode DMAdaptorSetSolver(DMAdaptor adaptor, SNES snes) {
 }
 
 /*@
-  DMAdaptorGetSequenceLength - Gets the number of sequential adaptations
+  DMAdaptorGetSequenceLength - Gets the number of sequential adaptations used by an adapter
 
   Not collective
 
   Input Parameter:
-. adaptor - The DMAdaptor object
+. adaptor - The `DMAdaptor` object
 
   Output Parameter:
 . num - The number of adaptations
 
   Level: intermediate
 
-.seealso: `DMAdaptorSetSequenceLength()`, `DMAdaptorCreate()`, `DMAdaptorAdapt()`
+.seealso: `DMAdaptor`, `DMAdaptorSetSequenceLength()`, `DMAdaptorCreate()`, `DMAdaptorAdapt()`
 @*/
 PetscErrorCode DMAdaptorGetSequenceLength(DMAdaptor adaptor, PetscInt *num) {
   PetscFunctionBegin;
@@ -215,7 +216,7 @@ PetscErrorCode DMAdaptorGetSequenceLength(DMAdaptor adaptor, PetscInt *num) {
   Not collective
 
   Input Parameters:
-+ adaptor - The DMAdaptor object
++ adaptor - The `DMAdaptor` object
 - num - The number of adaptations
 
   Level: intermediate
@@ -232,10 +233,10 @@ PetscErrorCode DMAdaptorSetSequenceLength(DMAdaptor adaptor, PetscInt num) {
 /*@
   DMAdaptorSetUp - After the solver is specified, we create structures for controlling adaptivity
 
-  Collective on DMAdaptor
+  Collective on adaptor
 
   Input Parameters:
-. adaptor - The DMAdaptor object
+. adaptor - The `DMAdaptor` object
 
   Level: beginner
 
@@ -394,21 +395,24 @@ PetscErrorCode DMAdaptorPostAdapt(DMAdaptor adaptor) {
 }
 
 /*
-  DMAdaptorSimpleErrorIndicator - Just use the integrated gradient as an error indicator
+  DMAdaptorSimpleErrorIndicator - Use the integrated gradient as an error indicator
 
   Input Parameters:
-+ adaptor  - The DMAdaptor object
++ adaptor  - The `DMAdaptor` object
 . dim      - The topological dimension
 . cell     - The cell
 . field    - The field integrated over the cell
 . gradient - The gradient integrated over the cell
-. cg       - A PetscFVCellGeom struct
+. cg       - A `PetscFVCellGeom` struct
 - ctx      - A user context
 
   Output Parameter:
 . errInd   - The error indicator
 
-.seealso: `DMAdaptorComputeErrorIndicator()`
+  Developer Note:
+  Some of the input arguments are absurdly specialized to special situations, it is not clear this is a good general API
+
+.seealso: `DMAdaptor`, `DMAdaptorComputeErrorIndicator()`
 */
 static PetscErrorCode DMAdaptorSimpleErrorIndicator_Private(DMAdaptor adaptor, PetscInt dim, PetscInt Nc, const PetscScalar *field, const PetscScalar *gradient, const PetscFVCellGeom *cg, PetscReal *errInd, void *ctx) {
   PetscReal err = 0.;
@@ -743,33 +747,33 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
 }
 
 /*@
-  DMAdaptorAdapt - Creates a new DM that is adapted to the problem
+  DMAdaptorAdapt - Creates a new `DM` that is adapted to the problem
 
   Not collective
 
   Input Parameters:
-+ adaptor  - The DMAdaptor object
++ adaptor  - The `DMAdaptor` object
 . x        - The global approximate solution
 - strategy - The adaptation strategy
 
   Output Parameters:
-+ adm - The adapted DM
++ adm - The adapted `DM`
 - ax  - The adapted solution
 
-  Options database keys:
+  Options database Keys:
 + -snes_adapt <strategy> - initial, sequential, multigrid
 . -adapt_gradient_view - View the Clement interpolant of the solution gradient
 . -adapt_hessian_view - View the Clement interpolant of the solution Hessian
 - -adapt_metric_view - View the metric tensor for adaptive mesh refinement
 
   Note: The available adaptation strategies are:
-$ 1) Adapt the initial mesh until a quality metric, e.g., a priori error bound, is satisfied
-$ 2) Solve the problem on a series of adapted meshes until a quality metric, e.g. a posteriori error bound, is satisfied
-$ 3) Solve the problem on a hierarchy of adapted meshes generated to satisfy a quality metric using multigrid
++ * - Adapt the initial mesh until a quality metric, e.g., a priori error bound, is satisfied
+. * - Solve the problem on a series of adapted meshes until a quality metric, e.g. a posteriori error bound, is satisfied
+- * - Solve the problem on a hierarchy of adapted meshes generated to satisfy a quality metric using multigrid
 
   Level: intermediate
 
-.seealso: `DMAdaptorSetSolver()`, `DMAdaptorCreate()`, `DMAdaptorAdapt()`
+.seealso: `DMAdaptor`, `DMAdaptorSetSolver()`, `DMAdaptorCreate()`, `DMAdaptorAdapt()`
 @*/
 PetscErrorCode DMAdaptorAdapt(DMAdaptor adaptor, Vec x, DMAdaptationStrategy strategy, DM *adm, Vec *ax) {
   PetscFunctionBegin;

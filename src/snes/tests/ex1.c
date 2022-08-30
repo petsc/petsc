@@ -6,7 +6,7 @@ This example also illustrates the use of matrix coloring.  Runtime options inclu
   -mx <xg>, where <xg> = number of grid points in the x-direction\n\
   -my <yg>, where <yg> = number of grid points in the y-direction\n\n";
 
-/* ------------------------------------------------------------------------
+/*
 
     Solid Fuel Ignition (SFI) problem.  This problem is modeled by
     the partial differential equation
@@ -23,7 +23,7 @@ This example also illustrates the use of matrix coloring.  Runtime options inclu
 
     The parallel version of this code is snes/tutorials/ex5.c
 
-  ------------------------------------------------------------------------- */
+*/
 
 /*
    Include "petscsnes.h" so that we can use SNES solvers.  Note that
@@ -261,7 +261,7 @@ int main(int argc, char **argv) {
   PetscCall(PetscFinalize());
   return 0;
 }
-/* ------------------------------------------------------------------- */
+
 /*
    FormInitialGuess - Forms initial approximation.
 
@@ -311,7 +311,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user, Vec X) {
   PetscCall(VecRestoreArray(X, &x));
   return 0;
 }
-/* ------------------------------------------------------------------- */
+
 /*
    FormFunction - Evaluates nonlinear function, F(x).
 
@@ -373,7 +373,7 @@ PetscErrorCode FormFunction(SNES snes, Vec X, Vec F, void *ptr) {
   PetscCall(VecRestoreArray(F, &f));
   return 0;
 }
-/* ------------------------------------------------------------------- */
+
 /*
    FormJacobian - Evaluates Jacobian matrix.
 

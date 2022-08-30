@@ -362,25 +362,26 @@ static PetscErrorCode SNESView_QN(SNES snes, PetscViewer viewer) {
 }
 
 /*@
-    SNESQNSetRestartType - Sets the restart type for SNESQN.
+    SNESQNSetRestartType - Sets the restart type for `SNESQN`.
 
-    Logically Collective on SNES
+    Logically Collective on snes
 
     Input Parameters:
 +   snes - the iterative context
 -   rtype - restart type
 
-    Options Database:
+    Options Database Keys:
 +   -snes_qn_restart_type <powell,periodic,none> - set the restart type
 -   -snes_qn_m <m> - sets the number of stored updates and the restart period for periodic
 
     Level: intermediate
 
-    SNESQNRestartTypes:
-+   SNES_QN_RESTART_NONE - never restart
-.   SNES_QN_RESTART_POWELL - restart based upon descent criteria
--   SNES_QN_RESTART_PERIODIC - restart after a fixed number of iterations
+    `SNESQNRestartType`s:
++   `SNES_QN_RESTART_NONE` - never restart
+.   `SNES_QN_RESTART_POWELL` - restart based upon descent criteria
+-   `SNES_QN_RESTART_PERIODIC` - restart after a fixed number of iterations
 
+.seealso: `SNESQN`, `SNESQNRestartType`, `SNES_QN_RESTART_NONE`, `SNES_QN_RESTART_POWELL`, `SNES_QN_RESTART_PERIODIC`
 @*/
 PetscErrorCode SNESQNSetRestartType(SNES snes, SNESQNRestartType rtype) {
   PetscFunctionBegin;
@@ -390,12 +391,12 @@ PetscErrorCode SNESQNSetRestartType(SNES snes, SNESQNRestartType rtype) {
 }
 
 /*@
-    SNESQNSetScaleType - Sets the scaling type for the inner inverse Jacobian in SNESQN.
+    SNESQNSetScaleType - Sets the scaling type for the inner inverse Jacobian in `SNESQN`.
 
-    Logically Collective on SNES
+    Logically Collective on snes
 
     Input Parameters:
-+   snes - the iterative context
++   snes - the nonlinear solver context
 -   stype - scale type
 
     Options Database:
@@ -403,11 +404,11 @@ PetscErrorCode SNESQNSetRestartType(SNES snes, SNESQNRestartType rtype) {
 
     Level: intermediate
 
-    SNESQNScaleTypes:
-+   SNES_QN_SCALE_NONE - don't scale the problem
-.   SNES_QN_SCALE_SCALAR - use Shanno scaling
-.   SNES_QN_SCALE_DIAGONAL - scale with a diagonalized BFGS formula (see Gilbert and Lemarechal 1989), available
--   SNES_QN_SCALE_JACOBIAN - scale by solving a linear system coming from the Jacobian you provided with SNESSetJacobian() computed at the first iteration
+    `SNESQNScaleType`s:
++   `SNES_QN_SCALE_NONE` - don't scale the problem
+.   `SNES_QN_SCALE_SCALAR` - use Shanno scaling
+.   `SNES_QN_SCALE_DIAGONAL` - scale with a diagonalized BFGS formula (see Gilbert and Lemarechal 1989), available
+-   `SNES_QN_SCALE_JACOBIAN` - scale by solving a linear system coming from the Jacobian you provided with SNESSetJacobian() computed at the first iteration
                              of QN and at ever restart.
 
 .seealso: `SNES`, `SNESQN`, `SNESLineSearch`, `SNESQNScaleType`, `SNESSetJacobian()`
@@ -438,9 +439,9 @@ PetscErrorCode SNESQNSetRestartType_QN(SNES snes, SNESQNRestartType rtype) {
 }
 
 /*@
-    SNESQNSetType - Sets the quasi-Newton variant to be used in SNESQN.
+    SNESQNSetType - Sets the quasi-Newton variant to be used in `SNESQN`.
 
-    Logically Collective on SNES
+    Logically Collective on snes
 
     Input Parameters:
 +   snes - the iterative context
@@ -451,11 +452,12 @@ PetscErrorCode SNESQNSetRestartType_QN(SNES snes, SNESQNRestartType rtype) {
 
     Level: beginner
 
-    SNESQNTypes:
-+   SNES_QN_LBFGS - LBFGS variant
-.   SNES_QN_BROYDEN - Broyden variant
--   SNES_QN_BADBROYDEN - Bad Broyden variant
+    `SNESQNType`s:
++   `SNES_QN_LBFGS` - LBFGS variant
+.   `SNES_QN_BROYDEN` - Broyden variant
+-   `SNES_QN_BADBROYDEN` - Bad Broyden variant
 
+.seealso: `SNESQN`, `SNES_QN_LBFGS`, `SNES_QN_BROYDEN`, `SNES_QN_BADBROYDEN`, `SNESQNType`, `TAOLMVM`, `TAOBLMVM`
 @*/
 
 PetscErrorCode SNESQNSetType(SNES snes, SNESQNType qtype) {
@@ -473,32 +475,18 @@ PetscErrorCode SNESQNSetType_QN(SNES snes, SNESQNType qtype) {
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
 /*MC
       SNESQN - Limited-Memory Quasi-Newton methods for the solution of nonlinear systems.
 
-      Options Database:
-
+      Options Database Keys:
 +     -snes_qn_m <m> - Number of past states saved for the L-Broyden methods.
-+     -snes_qn_restart_type <powell,periodic,none> - set the restart type
+.     -snes_qn_restart_type <powell,periodic,none> - set the restart type
 .     -snes_qn_powell_gamma - Angle condition for restart.
 .     -snes_qn_powell_descent - Descent condition for restart.
 .     -snes_qn_type <lbfgs,broyden,badbroyden> - QN type
 .     -snes_qn_scale_type <diagonal,none,scalar,jacobian> - scaling performed on inner Jacobian
 .     -snes_linesearch_type <cp, l2, basic> - Type of line search.
 -     -snes_qn_monitor - Monitors the quasi-newton Jacobian.
-
-      Notes:
-    This implements the L-BFGS, Broyden, and "Bad" Broyden algorithms for the solution of F(x) = b using
-      previous change in F(x) and x to form the approximate inverse Jacobian using a series of multiplicative rank-one
-      updates.
-
-      When using a nonlinear preconditioner, one has two options as to how the preconditioner is applied.  The first of
-      these options, sequential, uses the preconditioner to generate a new solution and function and uses those at this
-      iteration as the current iteration's values when constructing the approximate Jacobian.  The second, composed,
-      perturbs the problem the Jacobian represents to be P(x, b) - x = 0, where P(x, b) is the preconditioner.
-
-      Uses left nonlinear preconditioning by default.
 
       References:
 +   * -   Kelley, C.T., Iterative Methods for Linear and Nonlinear Equations, Chapter 8, SIAM, 1995.
@@ -516,8 +504,20 @@ PetscErrorCode SNESQNSetType_QN(SNES snes, SNESQNType qtype) {
 
       Level: beginner
 
-.seealso: `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESNEWTONLS`, `SNESNEWTONTR`
+      Notes:
+      This implements the L-BFGS, Broyden, and "Bad" Broyden algorithms for the solution of F(x) = b using
+      previous change in F(x) and x to form the approximate inverse Jacobian using a series of multiplicative rank-one
+      updates.
 
+      When using a nonlinear preconditioner, one has two options as to how the preconditioner is applied.  The first of
+      these options, sequential, uses the preconditioner to generate a new solution and function and uses those at this
+      iteration as the current iteration's values when constructing the approximate Jacobian.  The second, composed,
+      perturbs the problem the Jacobian represents to be P(x, b) - x = 0, where P(x, b) is the preconditioner.
+
+      Uses left nonlinear preconditioning by default.
+
+.seealso: `SNESQNRestartType`, `SNESQNSetRestartType()`, `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESNEWTONLS`, `SNESNEWTONTR`,
+          `SNESQNScaleType`, `SNESQNSetScaleType()`, `SNESQNSetType`, `SNESQNSetType ()`
 M*/
 PETSC_EXTERN PetscErrorCode SNESCreate_QN(SNES snes) {
   SNES_QN    *qn;

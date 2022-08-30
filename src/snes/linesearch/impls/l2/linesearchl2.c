@@ -152,7 +152,7 @@ static PetscErrorCode SNESLineSearchApply_L2(SNESLineSearch linesearch) {
 }
 
 /*MC
-   SNESLINESEARCHL2 - Secant search in the L2 norm of the function or the objective function, if it is provided with SNESSetObjective().
+   SNESLINESEARCHL2 - Secant search in the L2 norm of the function or the objective function, if it is provided with `SNESSetObjective()`.
 
    Attempts to solve min_lambda f(x + lambda y) using the secant method with the initial bracketing of lambda between [0,damping]. Differences of f()
    are used to approximate the first and second derivative of f() with respect to lambda, f'() and f''(). The secant method is run for maxit iterations.
@@ -169,10 +169,10 @@ static PetscErrorCode SNESLineSearchApply_L2(SNESLineSearch linesearch) {
 
    Level: advanced
 
-   Developer Notes:
-    A better name for this method might be SNESLINESEARCHSECANT, L2 is not descriptive
+   Developer Note:
+    A better name for this method might be `SNESLINESEARCHSECANT`, L2 is not descriptive
 
-.seealso: `SNESLINESEARCHBT`, `SNESLINESEARCHCP`, `SNESLineSearch`, `SNESLineSearchCreate()`, `SNESLineSearchSetType()`
+.seealso: `SNESLINESEARCHBT`, `SNESLINESEARCHCP`, `SNESLineSearch`, `SNESLineSearchType`, `SNESLineSearchCreate()`, `SNESLineSearchSetType()`
 M*/
 PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_L2(SNESLineSearch linesearch) {
   PetscFunctionBegin;

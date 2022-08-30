@@ -32,7 +32,7 @@ const char              *SNESFunctionTypes_Shifted[] = {"DEFAULT", "UNPRECONDITI
 const char *const *const SNESFunctionTypes           = SNESFunctionTypes_Shifted + 1;
 
 /*@C
-   SNESRegisterAll - Registers all of the nonlinear solver methods in the SNES package.
+   SNESRegisterAll - Registers all of the nonlinear solver methods in the `SNES` package.
 
    Not Collective
 
