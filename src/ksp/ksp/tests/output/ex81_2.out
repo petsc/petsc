@@ -23,61 +23,10 @@ PC Object: (beta_) 2 MPI processes
             package used to perform factorization: mumps
             total: nonzeros=2, allocated nonzeros=2
               MUMPS run parameters:
-                SYM (matrix type):                   0
-                PAR (host participation):            1
-                ICNTL(1) (output for error):         6
-                ICNTL(2) (output of diagnostic msg): 0
-                ICNTL(3) (output for global info):   0
-                ICNTL(4) (level of printing):        0
-                ICNTL(5) (input mat struct):         0
-                ICNTL(6) (matrix prescaling):        7
-                ICNTL(7) (sequential matrix ordering):7
-                ICNTL(8) (scaling strategy):        77
-                ICNTL(10) (max num of refinements):  0
-                ICNTL(11) (error analysis):          0
-                ICNTL(12) (efficiency control):                         1
-                ICNTL(13) (sequential factorization of the root node):  0
-                ICNTL(14) (percentage of estimated workspace increase): 30
-                ICNTL(15) (compression of the input matrix):            0
-                ICNTL(18) (input mat struct):                           0
-                ICNTL(19) (Schur complement info):                      0
-                ICNTL(20) (RHS sparse pattern):                         0
-                ICNTL(21) (solution struct):                            0
-                ICNTL(22) (in-core/out-of-core facility):               0
-                ICNTL(23) (max size of memory can be allocated locally):0
-                ICNTL(24) (detection of null pivot rows):               0
-                ICNTL(25) (computation of a null space basis):          0
-                ICNTL(26) (Schur options for RHS or solution):          0
-                ICNTL(27) (blocking size for multiple RHS):             -32
-                ICNTL(28) (use parallel or sequential ordering):        1
-                ICNTL(29) (parallel ordering):                          0
-                ICNTL(30) (user-specified set of entries in inv(A)):    0
-                ICNTL(31) (factors is discarded in the solve phase):    0
-                ICNTL(33) (compute determinant):                        0
-                ICNTL(35) (activate BLR based factorization):           0
-                ICNTL(36) (choice of BLR factorization variant):        0
-                ICNTL(38) (estimated compression rate of LU factors):   600
-                CNTL(1) (relative pivoting threshold):      0.01 
-                CNTL(2) (stopping criterion of refinement): 1.49012e-08 
-                CNTL(3) (absolute pivoting threshold):      0. 
-                CNTL(4) (value of static pivoting):         -1. 
-                CNTL(5) (fixation for null pivots):         0. 
-                CNTL(7) (dropping parameter for BLR):       0. 
-                RINFO(1) (local estimated flops for the elimination after analysis): 
-                  [0] 0. 
-                RINFO(2) (local estimated flops for the assembly after factorization): 
-                  [0]  0. 
-                RINFO(3) (local estimated flops for the elimination after factorization): 
-                  [0]  0. 
-                INFO(15) (estimated size of (in MB) MUMPS internal data for running numerical factorization): 
-                [0] 0
-                INFO(16) (size of (in MB) MUMPS internal data used during numerical factorization): 
-                  [0] 0
-                INFO(23) (num of pivots eliminated on this processor after factorization): 
-                  [0] 2
-                RINFOG(1) (global estimated flops for the elimination after analysis): 0. 
-                RINFOG(2) (global estimated flops for the assembly after factorization): 0. 
-                RINFOG(3) (global estimated flops for the elimination after factorization): 0. 
+                Use -beta_sub_ksp_view ::ascii_info_detail to display information for all processes
+                RINFOG(1) (global estimated flops for the elimination after analysis): 0.
+                RINFOG(2) (global estimated flops for the assembly after factorization): 0.
+                RINFOG(3) (global estimated flops for the elimination after factorization): 0.
                 (RINFOG(12) RINFOG(13))*2^INFOG(34) (determinant): (0.,0.)*(2^0)
                 INFOG(3) (estimated real workspace for factors on all processors after analysis): 2
                 INFOG(4) (estimated integer workspace for factors on all processors after analysis): 44
@@ -152,61 +101,10 @@ PC Object: (beta_) 2 MPI processes
             package used to perform factorization: mumps
             total: nonzeros=2, allocated nonzeros=2
               MUMPS run parameters:
-                SYM (matrix type):                   0
-                PAR (host participation):            1
-                ICNTL(1) (output for error):         6
-                ICNTL(2) (output of diagnostic msg): 0
-                ICNTL(3) (output for global info):   0
-                ICNTL(4) (level of printing):        0
-                ICNTL(5) (input mat struct):         0
-                ICNTL(6) (matrix prescaling):        7
-                ICNTL(7) (sequential matrix ordering):7
-                ICNTL(8) (scaling strategy):        77
-                ICNTL(10) (max num of refinements):  0
-                ICNTL(11) (error analysis):          0
-                ICNTL(12) (efficiency control):                         1
-                ICNTL(13) (sequential factorization of the root node):  0
-                ICNTL(14) (percentage of estimated workspace increase): 30
-                ICNTL(15) (compression of the input matrix):            0
-                ICNTL(18) (input mat struct):                           0
-                ICNTL(19) (Schur complement info):                      0
-                ICNTL(20) (RHS sparse pattern):                         0
-                ICNTL(21) (solution struct):                            0
-                ICNTL(22) (in-core/out-of-core facility):               0
-                ICNTL(23) (max size of memory can be allocated locally):0
-                ICNTL(24) (detection of null pivot rows):               0
-                ICNTL(25) (computation of a null space basis):          0
-                ICNTL(26) (Schur options for RHS or solution):          0
-                ICNTL(27) (blocking size for multiple RHS):             -32
-                ICNTL(28) (use parallel or sequential ordering):        1
-                ICNTL(29) (parallel ordering):                          0
-                ICNTL(30) (user-specified set of entries in inv(A)):    0
-                ICNTL(31) (factors is discarded in the solve phase):    0
-                ICNTL(33) (compute determinant):                        0
-                ICNTL(35) (activate BLR based factorization):           0
-                ICNTL(36) (choice of BLR factorization variant):        0
-                ICNTL(38) (estimated compression rate of LU factors):   600
-                CNTL(1) (relative pivoting threshold):      0.01 
-                CNTL(2) (stopping criterion of refinement): 1.49012e-08 
-                CNTL(3) (absolute pivoting threshold):      0. 
-                CNTL(4) (value of static pivoting):         -1. 
-                CNTL(5) (fixation for null pivots):         0. 
-                CNTL(7) (dropping parameter for BLR):       0. 
-                RINFO(1) (local estimated flops for the elimination after analysis): 
-                  [0] 0. 
-                RINFO(2) (local estimated flops for the assembly after factorization): 
-                  [0]  0. 
-                RINFO(3) (local estimated flops for the elimination after factorization): 
-                  [0]  0. 
-                INFO(15) (estimated size of (in MB) MUMPS internal data for running numerical factorization): 
-                [0] 0
-                INFO(16) (size of (in MB) MUMPS internal data used during numerical factorization): 
-                  [0] 0
-                INFO(23) (num of pivots eliminated on this processor after factorization): 
-                  [0] 2
-                RINFOG(1) (global estimated flops for the elimination after analysis): 0. 
-                RINFOG(2) (global estimated flops for the assembly after factorization): 0. 
-                RINFOG(3) (global estimated flops for the elimination after factorization): 0. 
+                Use -beta_sub_ksp_view ::ascii_info_detail to display information for all processes
+                RINFOG(1) (global estimated flops for the elimination after analysis): 0.
+                RINFOG(2) (global estimated flops for the assembly after factorization): 0.
+                RINFOG(3) (global estimated flops for the elimination after factorization): 0.
                 (RINFOG(12) RINFOG(13))*2^INFOG(34) (determinant): (0.,0.)*(2^0)
                 INFOG(3) (estimated real workspace for factors on all processors after analysis): 2
                 INFOG(4) (estimated integer workspace for factors on all processors after analysis): 44
