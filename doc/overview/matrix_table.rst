@@ -140,7 +140,7 @@ Summary of Matrix Types Available In PETSc
      - H_2 matrices
      -
    * - Transpose, virtual
-     - ``MATTRANSPOSEVIRTUAl``
+     - ``MATTRANSPOSEVIRTUAL``
      - ``MatCreateTranspose()``
      -
      -
