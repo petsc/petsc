@@ -169,17 +169,54 @@ found:
   return MPI_SUCCESS;
 }
 
+/*
+  The reference counting business is here to guard against the following:
+
+  MPI_Comm_set_attr(comm, keyval, some_attr);
+  MPI_Comm_free_keyval(&keyval);
+  MPI_Comm_free(&comm);
+
+  Here MPI_Comm_free() will try to destroy all of the attributes of the comm, and hence we
+  should not clear the deleter or extra_state until all communicators that have the attribute
+  set are either freed or have given up their attribute.
+
+  The attribute reference count is INCREASED in:
+  - MPI_Comm_create_keyval()
+  - MPI_Comm_set_attr()
+
+  The atrtibute reference count is DECREASED in:
+  - MPI_Comm_free_keyval()
+  - MPI_Comm_delete_attr() (but only if the comm has the attribute)
+*/
+static int MPI_Attr_dereference_keyval(int keyval) {
+  if (--(attr_keyval[keyval].active) <= 0) {
+    attr_keyval[keyval].extra_state = 0;
+    attr_keyval[keyval].del         = 0;
+  }
+  return MPI_SUCCESS;
+}
+
+static int MPI_Attr_reference_keyval(int keyval) {
+  ++(attr_keyval[keyval].active);
+  return MPI_SUCCESS;
+}
+
 int MPI_Comm_free_keyval(int *keyval) {
-  attr_keyval[*keyval].extra_state = 0;
-  attr_keyval[*keyval].del         = 0;
-  attr_keyval[*keyval].active      = 0;
-  *keyval                          = 0;
+  int ret;
+
+  if (*keyval < 0 || *keyval >= num_attr) return MPI_FAILURE;
+  if ((ret = MPI_Attr_dereference_keyval(*keyval))) return ret;
+  *keyval = 0;
   return MPI_SUCCESS;
 }
 
 int MPI_Comm_set_attr(MPI_Comm comm, int keyval, void *attribute_val) {
-  int idx = CommIdx(comm);
+  int idx = CommIdx(comm), ret;
   if (comm < 1 || comm > MaxComm) return MPI_FAILURE;
+  if (keyval < 0 || keyval >= num_attr) return MPI_FAILURE;
+
+  if ((ret = MPI_Comm_delete_attr(comm, keyval))) return ret;
+  if ((ret = MPI_Attr_reference_keyval(keyval))) return ret;
   attr[idx][keyval].active        = 1;
   attr[idx][keyval].attribute_val = attribute_val;
   return MPI_SUCCESS;
@@ -188,11 +225,17 @@ int MPI_Comm_set_attr(MPI_Comm comm, int keyval, void *attribute_val) {
 int MPI_Comm_delete_attr(MPI_Comm comm, int keyval) {
   int idx = CommIdx(comm);
   if (comm < 1 || comm > MaxComm) return MPI_FAILURE;
-  if (attr[idx][keyval].active && attr_keyval[keyval].del) {
-    void *save_attribute_val        = attr[idx][keyval].attribute_val;
+  if (keyval < 0 || keyval >= num_attr) return MPI_FAILURE;
+  if (attr[idx][keyval].active) {
+    int   ret;
+    void *save_attribute_val = attr[idx][keyval].attribute_val;
+
     attr[idx][keyval].active        = 0;
     attr[idx][keyval].attribute_val = 0;
-    (*(attr_keyval[keyval].del))(comm, keyval, save_attribute_val, attr_keyval[keyval].extra_state);
+    if (attr_keyval[keyval].del) {
+      if ((ret = (*(attr_keyval[keyval].del))(comm, keyval, save_attribute_val, attr_keyval[keyval].extra_state))) return ret;
+    }
+    if ((ret = MPI_Attr_dereference_keyval(keyval))) return ret;
   }
   return MPI_SUCCESS;
 }
@@ -257,14 +300,13 @@ int MPI_Comm_dup(MPI_Comm comm, MPI_Comm *out) {
 }
 
 int MPI_Comm_free(MPI_Comm *comm) {
-  int i;
   int idx = CommIdx(*comm);
 
   if (*comm < 1 || *comm > MaxComm) return MPI_FAILURE;
-  for (i = 0; i < num_attr; i++) {
-    if (attr[idx][i].active && attr_keyval[i].del) (*attr_keyval[i].del)(*comm, i, attr[idx][i].attribute_val, attr_keyval[i].extra_state);
-    attr[idx][i].active        = 0;
-    attr[idx][i].attribute_val = 0;
+  for (int i = 0; i < num_attr; i++) {
+    int ret = MPI_Comm_delete_attr(*comm, i);
+
+    if (ret) return ret;
   }
   if (*comm >= 3) comm_active[idx] = 0;
   *comm = 0;
@@ -321,21 +363,30 @@ int MPI_Query_thread(int *provided) {
 }
 
 int MPI_Finalize(void) {
-  MPI_Comm comm;
-  if (MPI_was_finalized) return MPI_FAILURE;
-  if (!MPI_was_initialized) return MPI_FAILURE;
-  comm = MPI_COMM_WORLD;
-  MPI_Comm_free(&comm);
+  if (MPI_was_finalized || !MPI_was_initialized) return MPI_FAILURE;
+  MPI_Comm comm = MPI_COMM_WORLD;
+  int      ret  = MPI_Comm_free(&comm);
+
+  if (ret) return ret;
   comm = MPI_COMM_SELF;
-  MPI_Comm_free(&comm);
-#if defined(PETSC_USE_DEBUG)
-  {
-    int i;
-    for (i = 3; i <= MaxComm; i++) {
+  ret  = MPI_Comm_free(&comm);
+  if (ret) return ret;
+  if (PetscDefined(USE_DEBUG)) {
+    for (int i = 3; i <= MaxComm; ++i) {
       if (comm_active[CommIdx(i)]) printf("MPIUni warning: MPI communicator %d is not freed before MPI_Finalize()\n", i);
     }
+
+    for (int i = 1; i <= MaxComm; ++i) {
+      for (int j = 0; j < num_attr; ++j) {
+        if (attr[CommIdx(i)][j].active) printf("MPIUni warning: MPI communicator %d attribute %d was not freed before MPI_Finalize()\n", i, j);
+      }
+    }
+
+    for (int i = 1; i < num_attr; ++i) {
+      if (attr_keyval[i].active) printf("MPIUni warning: MPI attribute %d was not freed before MPI_Finalize()\n", i);
+    }
   }
-#endif
+
   /* reset counters */
   MaxComm             = 2;
   num_attr            = 1;
