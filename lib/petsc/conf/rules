@@ -131,9 +131,7 @@ tree: ${ACTION}
               continue; \
             fi; \
             (cd $$dir ; \
-            if [ ${PRINT_PROGRESS}foo = dotfoo ] ; then printf "."; fi; \
-            if [ ${PRINT_PROGRESS}foo = foo -o ${PRINT_PROGRESS}foo = yesfoo -o ${PRINT_PROGRESS}foo = dirfoo ] ; then echo ${ACTION} in: `pwd`; fi; \
-            ${OMAKE} tree ACTION=${ACTION}  PETSC_ARCH=${PETSC_ARCH} LOC=${LOC} DATAFILESPATH=${DATAFILESPATH} BASE_DIR=${BASE_DIR} PRINT_PROGRESS=${PRINT_PROGRESS});\
+            ${OMAKE} tree ACTION=${ACTION}  PETSC_ARCH=${PETSC_ARCH} LOC=${LOC} DATAFILESPATH=${DATAFILESPATH} BASE_DIR=${BASE_DIR}});\
 	  done
 
 printdot:
@@ -142,7 +140,7 @@ printdot:
 # Performs the specified action throughout the directory tree
 tree_basic: ${ACTION}
 	-@for dir in ${DIRS} ftn-custom ; do if [ -d $$dir ]; then \
-	(cd $$dir ; echo ${ACTION} in: `pwd`; \
+	(cd $$dir ; \
 	${OMAKE}  tree_basic ACTION=${ACTION}  \
 	PETSC_ARCH=${PETSC_ARCH}  LOC=${LOC}) ;fi; \
 	done
@@ -150,7 +148,7 @@ tree_basic: ${ACTION}
 # Skips all tutorial and test directories and their children
 tree_src: ${ACTION}
 	-@for dir in ${DIRS} ftn-custom ; do DIR=`basename $$dir`; if [[ -d $$dir && $$DIR != "tests" && $$DIR != "tutorials" && $$DIR != "doc" ]]; then \
-	(cd $$dir ; echo ${ACTION} in: `pwd`; \
+	(cd $$dir ; \
 	${OMAKE}  tree_src ACTION=${ACTION}  \
 	PETSC_ARCH=${PETSC_ARCH}  LOC=${LOC}) ;fi; \
 	done
@@ -159,7 +157,7 @@ tree_src: ${ACTION}
 alltree_src: ${ACTION}
 	-@DIRS=`ls | sed -e s'?tutorials??'g -e s'?tests??g'  -e s'?docs??'g -e s'?include??'g`; \
 	for dir in $$DIRS foo ; do if [ -f $$dir/makefile ]; then \
-	(cd $$dir ; echo ${ACTION} in: `pwd`; \
+	(cd $$dir ;  \
 	${OMAKE}  alltree_src ACTION=${ACTION}  \
 	PETSC_ARCH=${PETSC_ARCH} LOC=${LOC} ) ;fi; \
 	done
@@ -168,7 +166,7 @@ alltree_src: ${ACTION}
 alltree_makefile: ${ACTION}
 	-@DIRS=`ls`; \
 	for dir in $$DIRS foo ; do if [ -f $$dir/makefile ]; then \
-	(cd $$dir ; echo ${ACTION} in: `pwd`; \
+	(cd $$dir ;  \
 	${OMAKE}  alltree_makefile ACTION=${ACTION}  \
 	PETSC_ARCH=${PETSC_ARCH} LOC=${LOC} ) ;fi; \
 	done
@@ -184,7 +182,6 @@ alltree: ${ACTION}
 	done; fi ; \
 	for dir in $$NDIRS foo ; do if [ -d $$dir ]; then \
 	(cd $$dir ;\
-	echo ${ACTION} in: `pwd`; \
 	${OMAKE}  alltree ACTION="${ACTION}"  \
 	PETSC_ARCH=${PETSC_ARCH} LOC=${LOC} ; ) fi; \
 	done ; fi
@@ -544,7 +541,6 @@ manimplementations:
   git grep -n "^\(static \)\?\(PETSC_EXTERN \)\?\(PETSC_INTERN \)\?\(extern \)\?PetscErrorCode \+[^_ ]\+_[^_ ]\+(" -- '*/impls/*.c' '*/impls/*.cu' '*/impls/*.cxx' '*/impls/*.h' | grep -v -e ";" -e "_[Pp]rivate" > implsFuncAll.txt ; \
   for i in ${LOC}/docs/manualpages/*/*.md foo; do \
        if [ "$$i" != "foo" ] ; then \
-          printf "manimplementations in: $$i\n"; \
           itemName=`basename $$i .md`; \
           grep "\s$${itemName}_" implsFuncAll.txt > implsFunc.txt ; \
           grep "_p_$${itemName}\b" implsClassAll.txt > implsClass.txt ; \
