@@ -997,6 +997,8 @@ PetscErrorCode DMProjectCoordinates(DM dm, PetscFE disc) {
   To do a search of the local cells of the mesh, v should have PETSC_COMM_SELF as its communicator.
   To do a search of all the cells in the distributed mesh, v should have the same communicator as dm.
 
+  Points will only be located in owned cells, not overlap cells arising from `DMPlexDistribute()` or other overlapping distributions.
+
   If *cellSF is NULL on input, a PetscSF will be created.
   If *cellSF is not NULL on input, it should point to an existing PetscSF, whose graph will be used as initial guesses.
 
