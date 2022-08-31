@@ -610,8 +610,8 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer) {
   /* hdf5 chunks must be less than 4GB */
   if (chunksize > PETSC_HDF5_MAX_CHUNKSIZE / 64) {
     if (bs > 1 || dim2) {
-      if (chunkDims[dim - 2] > (PetscInt)PetscSqrtReal((PetscReal)(PETSC_HDF5_MAX_CHUNKSIZE / 128))) chunkDims[dim - 2] = (PetscInt)PetscSqrtReal((PetscReal)(PETSC_HDF5_MAX_CHUNKSIZE / 128));
-      if (chunkDims[dim - 1] > (PetscInt)PetscSqrtReal((PetscReal)(PETSC_HDF5_MAX_CHUNKSIZE / 128))) chunkDims[dim - 1] = (PetscInt)PetscSqrtReal((PetscReal)(PETSC_HDF5_MAX_CHUNKSIZE / 128));
+      if (chunkDims[dim - 2] > (hsize_t)PetscSqrtReal((PetscReal)(PETSC_HDF5_MAX_CHUNKSIZE / 128))) chunkDims[dim - 2] = (hsize_t)PetscSqrtReal((PetscReal)(PETSC_HDF5_MAX_CHUNKSIZE / 128));
+      if (chunkDims[dim - 1] > (hsize_t)PetscSqrtReal((PetscReal)(PETSC_HDF5_MAX_CHUNKSIZE / 128))) chunkDims[dim - 1] = (hsize_t)PetscSqrtReal((PetscReal)(PETSC_HDF5_MAX_CHUNKSIZE / 128));
     } else {
       chunkDims[dim - 1] = PETSC_HDF5_MAX_CHUNKSIZE / 128;
     }
@@ -621,8 +621,8 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer) {
   /* hdf5 chunks must be less than 4GB */
   if (chunksize > PETSC_HDF5_MAX_CHUNKSIZE / 64) {
     if (bs > 1 || dim2) {
-      if (chunkDims[dim - 2] > (PetscInt)PetscSqrtReal((PetscReal)(PETSC_HDF5_MAX_CHUNKSIZE / 64))) chunkDims[dim - 2] = (PetscInt)PetscSqrtReal((PetscReal)(PETSC_HDF5_MAX_CHUNKSIZE / 64));
-      if (chunkDims[dim - 1] > (PetscInt)PetscSqrtReal((PetscReal)(PETSC_HDF5_MAX_CHUNKSIZE / 64))) chunkDims[dim - 1] = (PetscInt)PetscSqrtReal((PetscReal)(PETSC_HDF5_MAX_CHUNKSIZE / 64));
+      if (chunkDims[dim - 2] > (hsize_t)PetscSqrtReal((PetscReal)(PETSC_HDF5_MAX_CHUNKSIZE / 64))) chunkDims[dim - 2] = (hsize_t)PetscSqrtReal((PetscReal)(PETSC_HDF5_MAX_CHUNKSIZE / 64));
+      if (chunkDims[dim - 1] > (hsize_t)PetscSqrtReal((PetscReal)(PETSC_HDF5_MAX_CHUNKSIZE / 64))) chunkDims[dim - 1] = (hsize_t)PetscSqrtReal((PetscReal)(PETSC_HDF5_MAX_CHUNKSIZE / 64));
     } else {
       chunkDims[dim - 1] = PETSC_HDF5_MAX_CHUNKSIZE / 64;
     }
