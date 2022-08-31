@@ -236,10 +236,11 @@ PetscErrorCode PCSetFromOptions_Factor(PC pc, PetscOptionItems *PetscOptionsObje
 }
 
 PetscErrorCode PCView_Factor(PC pc, PetscViewer viewer) {
-  PC_Factor      *factor = (PC_Factor *)pc->data;
-  PetscBool       isstring, iascii, canuseordering;
-  MatInfo         info;
-  MatOrderingType ordering;
+  PC_Factor        *factor = (PC_Factor *)pc->data;
+  PetscBool         isstring, iascii, canuseordering;
+  MatInfo           info;
+  MatOrderingType   ordering;
+  PetscViewerFormat format;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSTRING, &isstring));
@@ -285,7 +286,8 @@ PetscErrorCode PCView_Factor(PC pc, PetscViewer viewer) {
         PetscCall(PetscViewerASCIIPushTab(viewer));
         PetscCall(PetscViewerASCIIPushTab(viewer));
         PetscCall(PetscViewerASCIIPushTab(viewer));
-        PetscCall(PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_INFO));
+        PetscCall(PetscViewerGetFormat(viewer, &format));
+        PetscCall(PetscViewerPushFormat(viewer, format != PETSC_VIEWER_ASCII_INFO_DETAIL ? PETSC_VIEWER_ASCII_INFO : PETSC_VIEWER_ASCII_INFO_DETAIL));
         PetscCall(MatView(factor->fact, viewer));
         PetscCall(PetscViewerPopFormat(viewer));
         PetscCall(PetscViewerASCIIPopTab(viewer));
