@@ -597,9 +597,7 @@ below:
 LMVM matrices can be applied to vectors in forward mode via
 ``MatMult()`` or ``MatMultAdd()``, and in inverse mode via
 ``MatSolve()``. They also support ``MatCreateVecs()``, ``MatDuplicate()``
-and ``MatCopy()`` operations. The maximum number of :math:`s_k` and
-:math:`y_k` update vectors stored can be changed via
-``-mat_lmvm_num_vecs`` option.
+and ``MatCopy()`` operations.
 
 Restricted Broyden Family, DFP and BFGS methods additionally implement
 special Jacobian initialization and scaling options available via

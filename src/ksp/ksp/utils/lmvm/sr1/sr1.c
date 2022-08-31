@@ -311,11 +311,9 @@ PetscErrorCode MatCreate_LMVMSR1(Mat B) {
    Output Parameter:
 .  B - the matrix
 
+   Note:
    It is recommended that one use the MatCreate(), MatSetType() and/or MatSetFromOptions()
    paradigm instead of this routine directly.
-
-   Options Database Keys:
-.   -mat_lmvm_num_vecs - maximum number of correction vectors (i.e.: updates) stored
 
    Level: intermediate
 

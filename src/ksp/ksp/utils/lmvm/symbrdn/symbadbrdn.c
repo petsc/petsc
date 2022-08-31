@@ -231,8 +231,7 @@ PetscErrorCode MatCreate_LMVMSymBadBrdn(Mat B) {
    paradigm instead of this routine directly.
 
    Options Database Keys:
-+   -mat_lmvm_num_vecs - maximum number of correction vectors (i.e.: updates) stored
-.   -mat_lmvm_phi - (developer) convex ratio between BFGS and DFP components of the update
++   -mat_lmvm_phi - (developer) convex ratio between BFGS and DFP components of the update
 .   -mat_lmvm_scale_type - (developer) type of scaling applied to J0 (none, scalar, diagonal)
 .   -mat_lmvm_theta - (developer) convex ratio between BFGS and DFP components of the diagonal J0 scaling
 .   -mat_lmvm_rho - (developer) update limiter for the J0 scaling
