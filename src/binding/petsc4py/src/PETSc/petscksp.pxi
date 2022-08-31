@@ -171,6 +171,8 @@ cdef extern from * nogil:
     int KSPGetConvergedReason(PetscKSP,PetscKSPConvergedReason*)
     int KSPGetIterationNumber(PetscKSP,PetscInt*)
     int KSPGetResidualNorm(PetscKSP,PetscReal*)
+    int KSPSetErrorIfNotConverged(PetscKSP,PetscBool);
+    int KSPGetErrorIfNotConverged(PetscKSP,PetscBool*);
 
     int KSPBuildSolution(PetscKSP,PetscVec,PetscVec*)
     int KSPBuildResidual(PetscKSP,PetscVec,PetscVec,PetscVec*)
