@@ -627,7 +627,7 @@ choices below:
    the well-known :math:`y_k^T s_k / y_k^T y_k` scalar initialization).
    The number of updates to be used in the :math:`S` and :math:`Y`
    matrices is 1 by default (i.e.: the latest update only) and can be
-   changed via ``-mat_lmvm_scalar_hist``. This technique is inspired by
+   changed via ``-mat_lmvm_sigma_hist``. This technique is inspired by
    Gilbert and Lemarechal :cite:`KEYPREFIX-Gilbert-Lemarechal`.
 
 -  ``diagonal`` – Uses a full-memory restricted Broyden update formula
