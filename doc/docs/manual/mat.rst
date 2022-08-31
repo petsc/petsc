@@ -52,7 +52,7 @@ The creation of ``DM`` objects is discussed in :any:`sec_struct`, :any:`sec_unst
 Low-level matrix creation routines
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-When using a ``DM`` is not practical for a particular application on can create matrices directly
+When using a ``DM`` is not practical for a particular application one can create matrices directly
 using
 
 .. code-block::
@@ -68,7 +68,7 @@ or the local dimensions, given by ``m`` and ``n`` while PETSc completely
 controls memory allocation. This routine facilitates switching among
 various matrix types, for example, to determine the format that is most
 efficient for a certain application. By default, ``MatCreate()`` employs
-the sparse AIJ format, which is discussed in detail
+the sparse AIJ format, which is discussed in detail in
 :any:`sec_matsparse`. See the manual pages for further
 information about available matrix formats.
 
@@ -92,7 +92,7 @@ This routine inserts or adds a logically dense subblock of dimension
 ``m*n`` into the matrix. The integer indices ``idxm`` and ``idxn``,
 respectively, indicate the global row and column numbers to be inserted.
 ``MatSetValues()`` uses the standard C convention, where the row and
-column matrix indices begin with zero *regardless of the storage format
+column matrix indices begin with zero *regardless of the programming language
 employed*. The array ``values`` is logically two-dimensional, containing
 the values that are to be inserted. By default the values are given in
 row major order, which is the opposite of the Fortran convention,
@@ -218,7 +218,7 @@ The default matrix representation within PETSc is the general sparse AIJ
 format (also called the compressed sparse
 row format, CSR). This section discusses tips for *efficiently* using
 this matrix format for large-scale applications. Additional formats
-(such as block compressed row and block diagonal storage, which are
+(such as block compressed row and block symmetric storage, which are
 generally much more efficient for problems with multiple degrees of
 freedom per node) are discussed below. Beginning users need not concern
 themselves initially with such details and may wish to proceed directly
@@ -249,9 +249,9 @@ The sequential and parallel AIJ matrix storage formats by default employ
 *i-nodes* (identical nodes) when possible. We search for consecutive
 rows with the same nonzero structure, thereby reusing matrix information
 for increased efficiency. Related options database keys are
-``-mat_no_inode`` (do not use inodes) and ``-mat_inode_limit <limit>``
-(set inode limit (max limit=5)). Note that problems with a single degree
-of freedom per grid node will automatically not use I-nodes.
+``-mat_no_inode`` (do not use i-nodes) and ``-mat_inode_limit <limit>``
+(set i-node limit (max limit=5)). Note that problems with a single degree
+of freedom per grid node will automatically not use i-nodes.
 
 The internal data representation for the AIJ formats employs zero-based
 indexing.
@@ -271,7 +271,7 @@ is roughly the same throughout the matrix (or as a quick and easy first
 step for preallocation). If one underestimates the actual number of
 nonzeros in a given row, then during the assembly process PETSc will
 automatically allocate additional needed space. However, this extra
-memory allocation can slow the computation,
+memory allocation can slow the computation.
 
 If different rows have very different numbers of nonzeros, one should
 attempt to indicate (nearly) the exact number of elements intended for
@@ -366,13 +366,13 @@ command
 
 .. code-block::
 
-   MatCreateAIJ=(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt d_nz,PetscInt *d_nnz, PetscInt o_nz,PetscInt *o_nnz,Mat *A);
+   MatCreateAIJ(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt d_nz,PetscInt *d_nnz, PetscInt o_nz,PetscInt *o_nnz,Mat *A);
 
 ``A`` is the newly created matrix, while the arguments ``m``, ``M``, and
 ``N``, indicate the number of local rows and the number of global rows
 and columns, respectively. In the PETSc partitioning scheme, all the
 matrix columns are local and ``n`` is the number of columns
-corresponding to local part of a parallel vector. Either the local or
+corresponding to the local part of a parallel vector. Either the local or
 global parameters can be replaced with ``PETSC_DECIDE``, so that PETSc
 will determine them. The matrix is stored with a fixed number of rows on
 each process, given by ``m``, or determined by PETSc if ``m`` is
@@ -516,8 +516,8 @@ never make code overly complicated in order to generate all values
 locally. Rather, one should organize the code in such a way that *most*
 values are generated locally.
 
-The routine ``MatCreateAIJCusparse()`` allows one to create GPU based matrices for NVIDIA systems.
- ``MatCreateAIJKokkos()`` can create matrices for use with CPU, OpenMP, NVIDIA, AMD, or Intel based GPU systems.
+The routine ``MatCreateAIJCUSPARSE()`` allows one to create GPU based matrices for NVIDIA systems.
+``MatCreateAIJKokkos()`` can create matrices for use with CPU, OpenMP, NVIDIA, AMD, or Intel based GPU systems.
  
 
 Limited-Memory Variable Metric (LMVM) Matrices
@@ -554,8 +554,7 @@ applications based on a fixed number of stored update vectors.
     - ``MATLMVMDFP``
     - ``lmvmdfp``
     - SPD
-  * - Broyden-Fletcher-Goldfarb-Shanno (BFGS)
-       :cite:`KEYPREFIX-NW99`
+  * - Broyden-Fletcher-Goldfarb-Shanno (BFGS) :cite:`KEYPREFIX-NW99`
     - ``MATLMVMBFGS``
     - ``lmvmbfgs``
     - SPD
@@ -597,7 +596,7 @@ below:
 
 LMVM matrices can be applied to vectors in forward mode via
 ``MatMult()`` or ``MatMultAdd()``, and in inverse mode via
-``MatSolve()``. They also support ``MatGetVecs()``, ``MatDuplicate()``
+``MatSolve()``. They also support ``MatCreateVecs()``, ``MatDuplicate()``
 and ``MatCopy()`` operations. The maximum number of :math:`s_k` and
 :math:`y_k` update vectors stored can be changed via
 ``-mat_lmvm_num_vecs`` option.
@@ -765,11 +764,11 @@ a fully functional matrix and the caller does not even know a priori
 which communicator it will reside on, it always implements the local
 assembly functions (which are not collective). The index sets
 ``isrow,iscol`` can be obtained using ``DMCompositeGetLocalISs()`` if
-``DMComposite`` is being used. DMComposite can also be used to create
-matrices, in which case the MATNEST format can be specified using
-``-prefix_dm_mat_type nest`` and MATAIJ can be specified using
+``DMCOMPOSITE`` is being used. ``DMCOMPOSITE`` can also be used to create
+matrices, in which case the ``MATNEST`` format can be specified using
+``-prefix_dm_mat_type nest`` and ``MATAIJ`` can be specified using
 ``-prefix_dm_mat_type aij``. See
-`SNES Tutorail ex28 <../../src/snes/tutorials/ex28.c.html>`__
+`SNES Tutorial ex28 <../../src/snes/tutorials/ex28.c.html>`__
 for a simple example using this interface.
 
 .. _sec_matoptions:
@@ -888,7 +887,7 @@ viewers and options are given in the ``MatView()`` man page and
 
   * - Name
     - Meaning
-  * - ``SAME__NONZERO_PATTERN``
+  * - ``SAME_NONZERO_PATTERN``
     - the matrices have an identical nonzero pattern
   * - ``DIFFERENT_NONZERO_PATTERN``
     - the matrices may have a different nonzero pattern
@@ -942,7 +941,7 @@ discussed in the following chapters.
 
 The routine ``MatShellSetOperation()`` can be used to set any other
 matrix operations as well. The file
-``$PETSC_DIR/include/petscmat.h`` (`source <../../include/petscmat.h.html>`__).
+``$PETSC_DIR/include/petscmat.h`` (`source <../../../include/petscmat.h.html>`__)
 provides a complete list of matrix operations, which have the form
 ``MATOP_<OPERATION>``, where ``<OPERATION>`` is the name (in all capital
 letters) of the user interface routine (for example, ``MatMult()``
@@ -952,7 +951,7 @@ user-defined functions are intended to be accessed through the same
 interface, e.g., ``MatMult(Mat,Vec,Vec)`` :math:`\to`
 ``UserMult(Mat,Vec,Vec)``. The final argument for
 ``MatShellSetOperation()`` needs to be cast to a ``void *``, since the
-final argument could (depending on the MatOperation) be a variety of
+final argument could (depending on the ``MatOperation``) be a variety of
 different functions.
 
 Note that ``MatShellSetOperation()`` can also be used as a “backdoor”
@@ -1119,7 +1118,7 @@ Another matrix routine of interest is
 which converts the matrix ``mat`` to new matrix, ``M``, that has either
 the same or different format. Set ``newtype`` to ``MATSAME`` to copy the
 matrix, keeping the same matrix format. See
-``$PETSC_DIR/include/petscmat.h`` (`source <../../include/petscmat.h.html>`__)
+``$PETSC_DIR/include/petscmat.h`` (`source <../../../include/petscmat.h.html>`__)
 for other available matrix types; standard ones are ``MATSEQDENSE``,
 ``MATSEQAIJ``, ``MATMPIAIJ``, ``MATSEQBAIJ`` and ``MATMPIBAIJ``.
 
@@ -1190,7 +1189,7 @@ However, this does not mean it need be done in a separate, sequential
 program; rather, it should be done before one sets up the parallel grid
 data structures in the actual program. PETSc provides an interface to
 the ParMETIS (developed by George Karypis; see
-`the PETSc installation instructions <https://petsc.org/release/install/>`__.
+`the PETSc installation instructions <https://petsc.org/release/install/>`__
 for directions on installing PETSc to use ParMETIS) to allow the
 partitioning to be done in parallel. PETSc does not currently provide
 directly support for dynamic repartitioning, load balancing by migrating
@@ -1242,9 +1241,9 @@ triangular grid where we
 Note that elements are not connected to themselves and we only indicate
 edge connections (in some contexts single vertex connections between
 elements may also be included). We use a space above to denote the
-transition between rows in the matrix.
+transition between rows in the matrix; and
 
-and (2) partition by vertex.
+(2) partition by vertex.
 
 -  Process 0: ``mlocal = 3``, ``n = 6``,
    ``ja =``\ ``{3,4, 4,5, 3,4,5}``, ``ia =``\ ``{0, 2, 4, 7}``
@@ -1278,7 +1277,7 @@ process. The command
 
    AOCreateBasicIS(isg,NULL,&ao);
 
-generates, see :any:`sec_ao`, an AO object that can be
+generates, see :any:`sec_ao`, an ``AO`` object that can be
 used in conjunction with the ``is`` and ``isg`` to move the relevant
 grid information to the correct process and renumber the nodes etc. In
 this context, the new ordering is the “application” ordering so
