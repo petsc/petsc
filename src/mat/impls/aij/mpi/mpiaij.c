@@ -7725,7 +7725,7 @@ PETSC_INTERN PetscErrorCode MatCreateGraph_Simple_AIJ(Mat Amat, PetscBool symmet
     if (!isset || !issym) {
       Mat matTrans;
       PetscCall(MatTranspose(Gmat, MAT_INITIAL_MATRIX, &matTrans));
-      PetscCall(MatAXPY(Gmat, 1.0, matTrans, Gmat->structurally_symmetric ? SAME_NONZERO_PATTERN : DIFFERENT_NONZERO_PATTERN));
+      PetscCall(MatAXPY(Gmat, 1.0, matTrans, Gmat->structurally_symmetric == PETSC_BOOL3_TRUE ? SAME_NONZERO_PATTERN : DIFFERENT_NONZERO_PATTERN));
       PetscCall(MatDestroy(&matTrans));
     }
     PetscCall(MatSetOption(Gmat, MAT_SYMMETRIC, PETSC_TRUE));
