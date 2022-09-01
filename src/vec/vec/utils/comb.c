@@ -269,7 +269,7 @@ PetscMPIInt Petsc_Reduction_keyval = MPI_KEYVAL_INVALID;
   The binding for the first argument changed from MPI 1.0 to 1.1; in 1.0
   it was MPI_Comm *comm.
 */
-PETSC_EXTERN int MPIAPI Petsc_DelReduction(MPI_Comm comm, int keyval, void *attr_val, void *extra_state) {
+PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelReduction(MPI_Comm comm, PetscMPIInt keyval, void *attr_val, void *extra_state) {
   PetscFunctionBegin;
   PetscCallMPI(PetscInfo(0, "Deleting reduction data in an MPI_Comm %ld\n", (long)comm));
   PetscCallMPI(PetscSplitReductionDestroy((PetscSplitReduction *)attr_val));
@@ -336,7 +336,7 @@ PetscErrorCode VecDotBegin(Vec x, Vec y, PetscScalar *result) {
   sr->reducetype[sr->numopsbegin] = PETSC_SR_REDUCE_SUM;
   sr->invecs[sr->numopsbegin]     = (void *)x;
   PetscCall(PetscLogEventBegin(VEC_ReduceArithmetic, 0, 0, 0, 0));
-  PetscCall((*x->ops->dot_local)(x, y, sr->lvalues + sr->numopsbegin++));
+  PetscUseTypeMethod(x, dot_local, y, sr->lvalues + sr->numopsbegin++);
   PetscCall(PetscLogEventEnd(VEC_ReduceArithmetic, 0, 0, 0, 0));
   PetscFunctionReturn(0);
 }
@@ -413,7 +413,7 @@ PetscErrorCode VecTDotBegin(Vec x, Vec y, PetscScalar *result) {
   sr->reducetype[sr->numopsbegin] = PETSC_SR_REDUCE_SUM;
   sr->invecs[sr->numopsbegin]     = (void *)x;
   PetscCall(PetscLogEventBegin(VEC_ReduceArithmetic, 0, 0, 0, 0));
-  PetscCall((*x->ops->tdot_local)(x, y, sr->lvalues + sr->numopsbegin++));
+  PetscUseTypeMethod(x, tdot_local, y, sr->lvalues + sr->numopsbegin++);
   PetscCall(PetscLogEventEnd(VEC_ReduceArithmetic, 0, 0, 0, 0));
   PetscFunctionReturn(0);
 }
@@ -566,7 +566,7 @@ PetscErrorCode VecNormEnd(Vec x, NormType ntype, PetscReal *result) {
 PetscErrorCode VecMDotBegin(Vec x, PetscInt nv, const Vec y[], PetscScalar result[]) {
   PetscSplitReduction *sr;
   MPI_Comm             comm;
-  int                  i;
+  PetscInt             i;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)x, &comm));
@@ -578,7 +578,7 @@ PetscErrorCode VecMDotBegin(Vec x, PetscInt nv, const Vec y[], PetscScalar resul
     sr->invecs[sr->numopsbegin + i]     = (void *)x;
   }
   PetscCall(PetscLogEventBegin(VEC_ReduceArithmetic, 0, 0, 0, 0));
-  PetscCall((*x->ops->mdot_local)(x, nv, y, sr->lvalues + sr->numopsbegin));
+  PetscUseTypeMethod(x, mdot_local, nv, y, sr->lvalues + sr->numopsbegin);
   PetscCall(PetscLogEventEnd(VEC_ReduceArithmetic, 0, 0, 0, 0));
   sr->numopsbegin += nv;
   PetscFunctionReturn(0);
@@ -607,7 +607,7 @@ PetscErrorCode VecMDotBegin(Vec x, PetscInt nv, const Vec y[], PetscScalar resul
 PetscErrorCode VecMDotEnd(Vec x, PetscInt nv, const Vec y[], PetscScalar result[]) {
   PetscSplitReduction *sr;
   MPI_Comm             comm;
-  int                  i;
+  PetscInt             i;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)x, &comm));
@@ -651,7 +651,7 @@ PetscErrorCode VecMDotEnd(Vec x, PetscInt nv, const Vec y[], PetscScalar result[
 PetscErrorCode VecMTDotBegin(Vec x, PetscInt nv, const Vec y[], PetscScalar result[]) {
   PetscSplitReduction *sr;
   MPI_Comm             comm;
-  int                  i;
+  PetscInt             i;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)x, &comm));
@@ -663,7 +663,7 @@ PetscErrorCode VecMTDotBegin(Vec x, PetscInt nv, const Vec y[], PetscScalar resu
     sr->invecs[sr->numopsbegin + i]     = (void *)x;
   }
   PetscCall(PetscLogEventBegin(VEC_ReduceArithmetic, 0, 0, 0, 0));
-  PetscCall((*x->ops->mtdot_local)(x, nv, y, sr->lvalues + sr->numopsbegin));
+  PetscUseTypeMethod(x, mtdot_local, nv, y, sr->lvalues + sr->numopsbegin);
   PetscCall(PetscLogEventEnd(VEC_ReduceArithmetic, 0, 0, 0, 0));
   sr->numopsbegin += nv;
   PetscFunctionReturn(0);
