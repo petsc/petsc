@@ -111,6 +111,7 @@ exec-name``.
 
 - Add ``VecSetPreallocationCOO()``, ``VecSetValuesCOO()`` and ``VecSetPreallocationCOOLocal()`` to support vector assembly with coordinates
 - Add ``VecStrideSum()`` and ``VecStrideSumAll()`` for summing subvectors of strided vectors
+- Add ``VecCreateLocalVector()`` to be used for calls involving ``Vec{Get|Restore}LocalVector()``
 
 .. rubric:: PetscSection:
 

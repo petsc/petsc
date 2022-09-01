@@ -1507,6 +1507,46 @@ PetscErrorCode VecRestoreSubVector(Vec X, IS is, Vec *Y) {
 }
 
 /*@
+   VecCreateLocalVector - Creates a vector object suitable for use with VecGetLocalVector() and friends. You must call VecDestroy() when the
+   vector is no longer needed.
+
+   Not collective.
+
+   Input parameter:
+.  v - The vector for which the local vector is desired.
+
+   Output parameter:
+.  w - Upon exit this contains the local vector.
+
+   Level: beginner
+
+.seealso: `VecGetLocalVectorRead()`, `VecRestoreLocalVectorRead()`, `VecGetLocalVector()`, `VecRestoreLocalVector()`
+@*/
+PetscErrorCode VecCreateLocalVector(Vec v, Vec *w) {
+  PetscMPIInt size;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
+  PetscValidPointer(w, 2);
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)v), &size));
+  if (size == 1) PetscCall(VecDuplicate(v, w));
+  else if (v->ops->createlocalvector) PetscUseTypeMethod(v, createlocalvector, w);
+  else {
+    VecType  type;
+    PetscInt n;
+
+    PetscCall(VecCreate(PETSC_COMM_SELF, w));
+    PetscCall(VecGetLocalSize(v, &n));
+    PetscCall(VecSetSizes(*w, n, n));
+    PetscCall(VecGetBlockSize(v, &n));
+    PetscCall(VecSetBlockSize(*w, n));
+    PetscCall(VecGetType(v, &type));
+    PetscCall(VecSetType(*w, type));
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
    VecGetLocalVectorRead - Maps the local portion of a vector into a
    vector.  You must call VecRestoreLocalVectorRead() when the local
    vector is no longer needed.
@@ -1535,7 +1575,7 @@ PetscErrorCode VecRestoreSubVector(Vec X, IS is, Vec *Y) {
    Unlike VecGetLocalVector(), this routine is not collective and
    preserves cached information.
 
-.seealso: `VecRestoreLocalVectorRead()`, `VecGetLocalVector()`, `VecGetArrayRead()`, `VecGetArray()`
+.seealso: `VecCreateLocalVector()`, `VecRestoreLocalVectorRead()`, `VecGetLocalVector()`, `VecGetArrayRead()`, `VecGetArray()`
 @*/
 PetscErrorCode VecGetLocalVectorRead(Vec v, Vec w) {
   PetscScalar *a;
@@ -1568,7 +1608,7 @@ PetscErrorCode VecGetLocalVectorRead(Vec v, Vec w) {
 
    Level: beginner
 
-.seealso: `VecGetLocalVectorRead()`, `VecGetLocalVector()`, `VecGetArrayRead()`, `VecGetArray()`
+.seealso: `VecCreateLocalVector()`, `VecGetLocalVectorRead()`, `VecGetLocalVector()`, `VecGetArrayRead()`, `VecGetArray()`
 @*/
 PetscErrorCode VecRestoreLocalVectorRead(Vec v, Vec w) {
   PetscScalar *a;
@@ -1613,7 +1653,7 @@ PetscErrorCode VecRestoreLocalVectorRead(Vec v, Vec w) {
    VecGetArray() requires that the data between device and host is
    synchronized.
 
-.seealso: `VecRestoreLocalVector()`, `VecGetLocalVectorRead()`, `VecGetArrayRead()`, `VecGetArray()`
+.seealso: `VecCreateLocalVector()`, `VecRestoreLocalVector()`, `VecGetLocalVectorRead()`, `VecGetArrayRead()`, `VecGetArray()`
 @*/
 PetscErrorCode VecGetLocalVector(Vec v, Vec w) {
   PetscScalar *a;
@@ -1643,7 +1683,7 @@ PetscErrorCode VecGetLocalVector(Vec v, Vec w) {
 
    Level: beginner
 
-.seealso: `VecGetLocalVector()`, `VecGetLocalVectorRead()`, `VecRestoreLocalVectorRead()`, `LocalVectorRead()`, `VecGetArrayRead()`, `VecGetArray()`
+.seealso: `VecCreateLocalVector()`, `VecGetLocalVector()`, `VecGetLocalVectorRead()`, `VecRestoreLocalVectorRead()`, `LocalVectorRead()`, `VecGetArrayRead()`, `VecGetArray()`
 @*/
 PetscErrorCode VecRestoreLocalVector(Vec v, Vec w) {
   PetscScalar *a;
