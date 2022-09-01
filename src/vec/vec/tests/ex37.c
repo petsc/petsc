@@ -2,27 +2,33 @@ static char help[] = "Nest vector functionality.\n\n";
 
 #include <petscvec.h>
 
-static PetscErrorCode GetISs(Vec vecs[], IS is[]) {
+static PetscErrorCode GetISs(Vec vecs[], IS is[], PetscBool inv) {
   PetscInt rstart[2], rend[2];
 
   PetscFunctionBegin;
   PetscCall(VecGetOwnershipRange(vecs[0], &rstart[0], &rend[0]));
   PetscCall(VecGetOwnershipRange(vecs[1], &rstart[1], &rend[1]));
-  PetscCall(ISCreateStride(PETSC_COMM_WORLD, rend[0] - rstart[0], rstart[0] + rstart[1], 1, &is[0]));
-  PetscCall(ISCreateStride(PETSC_COMM_WORLD, rend[1] - rstart[1], rend[0] + rstart[1], 1, &is[1]));
+  if (!inv) {
+    PetscCall(ISCreateStride(PETSC_COMM_WORLD, rend[0] - rstart[0], rstart[0] + rstart[1], 1, &is[0]));
+    PetscCall(ISCreateStride(PETSC_COMM_WORLD, rend[1] - rstart[1], rend[0] + rstart[1], 1, &is[1]));
+  } else {
+    PetscCall(ISCreateStride(PETSC_COMM_WORLD, rend[0] - rstart[0], rend[0] + rend[1] - 1, -1, &is[0]));
+    PetscCall(ISCreateStride(PETSC_COMM_WORLD, rend[1] - rstart[1], rstart[0] + rend[1] - 1, -1, &is[1]));
+  }
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode test_view(void) {
-  Vec         X, a, b;
-  Vec         c, d, e, f;
-  Vec         tmp_buf[2];
-  IS          tmp_is[2];
-  PetscInt    index;
-  PetscReal   val;
-  PetscInt    list[]  = {0, 1, 2};
-  PetscScalar vals[]  = {0.720032, 0.061794, 0.0100223};
-  PetscBool   explcit = PETSC_FALSE;
+  Vec          X, lX, a, b;
+  Vec          c, d, e, f;
+  Vec          tmp_buf[2];
+  IS           tmp_is[2];
+  PetscInt     index, n;
+  PetscReal    val;
+  PetscInt     list[] = {0, 1, 2};
+  PetscScalar  vals[] = {0.5, 0.25, 0.125};
+  PetscScalar *x, *lx;
+  PetscBool    explcit = PETSC_FALSE, inv = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n\n============== %s ==============\n", PETSC_FUNCTION_NAME));
@@ -44,8 +50,8 @@ PetscErrorCode test_view(void) {
 
   tmp_buf[0] = e;
   tmp_buf[1] = f;
-  PetscCall(PetscOptionsGetBool(NULL, 0, "-explicit_is", &explcit, 0));
-  PetscCall(GetISs(tmp_buf, tmp_is));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-explicit_is", &explcit, 0));
+  PetscCall(GetISs(tmp_buf, tmp_is, PETSC_FALSE));
   PetscCall(VecCreateNest(PETSC_COMM_WORLD, 2, explcit ? tmp_is : NULL, tmp_buf, &b));
   PetscCall(VecDestroy(&e));
   PetscCall(VecDestroy(&f));
@@ -58,9 +64,17 @@ PetscErrorCode test_view(void) {
   PetscCall(VecDestroy(&c));
   PetscCall(VecDestroy(&d));
 
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-inv", &inv, 0));
   tmp_buf[0] = a;
   tmp_buf[1] = b;
-  PetscCall(VecCreateNest(PETSC_COMM_WORLD, 2, NULL, tmp_buf, &X));
+  if (inv) {
+    PetscCall(GetISs(tmp_buf, tmp_is, inv));
+    PetscCall(VecCreateNest(PETSC_COMM_WORLD, 2, tmp_is, tmp_buf, &X));
+    PetscCall(ISDestroy(&tmp_is[0]));
+    PetscCall(ISDestroy(&tmp_is[1]));
+  } else {
+    PetscCall(VecCreateNest(PETSC_COMM_WORLD, 2, NULL, tmp_buf, &X));
+  }
   PetscCall(VecDestroy(&a));
 
   PetscCall(VecAssemblyBegin(X));
@@ -81,6 +95,17 @@ PetscErrorCode test_view(void) {
 
   PetscCall(VecView(X, PETSC_VIEWER_STDOUT_WORLD));
 
+  PetscCall(VecCreateLocalVector(X, &lX));
+  PetscCall(VecGetLocalVectorRead(X, lX));
+  PetscCall(VecGetLocalSize(lX, &n));
+  PetscCall(VecGetArrayRead(lX, (const PetscScalar **)&lx));
+  PetscCall(VecGetArrayRead(X, (const PetscScalar **)&x));
+  for (PetscInt i = 0; i < n; i++) PetscCheck(lx[i] == x[i], PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid data");
+  PetscCall(VecRestoreArrayRead(X, (const PetscScalar **)&x));
+  PetscCall(VecRestoreArrayRead(lX, (const PetscScalar **)&lx));
+  PetscCall(VecRestoreLocalVectorRead(X, lX));
+
+  PetscCall(VecDestroy(&lX));
   PetscCall(VecDestroy(&X));
   PetscFunctionReturn(0);
 }
@@ -144,7 +169,7 @@ PetscErrorCode test_vec_ops(void)
 #endif
 
 PetscErrorCode gen_test_vector(MPI_Comm comm, PetscInt length, PetscInt start_value, PetscInt stride, Vec *_v) {
-  int         size;
+  PetscMPIInt size;
   Vec         v;
   PetscInt    i;
   PetscScalar vx;
@@ -280,13 +305,42 @@ int main(int argc, char **args) {
         suffix: 4
 
       test:
+        requires: cuda
+        suffix: 4_cuda
+        args: -vec_type cuda
+
+      test:
         requires: kokkos_kernels
-        suffix: kokkos
+        suffix: 4_kokkos
         args: -vec_type kokkos
 
       test:
         requires: hip
-        suffix: hip
+        suffix: 4_hip
+        args: -vec_type hip
+
+   testset:
+      nsize: 2
+      args: -explicit_is 1 -inv
+      output_file: output/ex37_5.out
+      filter: grep -v -e "type: mpi" -e "type=mpi"
+
+      test:
+        suffix: 5
+
+      test:
+        requires: cuda
+        suffix: 5_cuda
+        args: -vec_type cuda
+
+      test:
+        requires: kokkos_kernels
+        suffix: 5_kokkos
+        args: -vec_type kokkos
+
+      test:
+        requires: hip
+        suffix: 5_hip
         args: -vec_type hip
 
 TEST*/
