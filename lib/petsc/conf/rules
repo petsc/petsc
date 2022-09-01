@@ -693,7 +693,7 @@ GITCFSRCEXCL = \
 
 # Format all the source code in the given directory and down according to .clang_format
 clangformat:
-	-@git --no-pager ls-files -z ${GITCFSRC} | xargs -0 clang-format -i
+	-@git --no-pager ls-files -z ${GITCFSRC} | xargs -0 -P 8 -I{} clang-format -i {}
 
 checkbadSource:
 	@git --no-pager grep -n -P 'self\.gitcommit' -- config/BuildSystem/config/packages | grep 'origin/' ; if [[ "$$?" == "0" ]]; then echo "Error: Do not use a branch name in a configure package file"; false; fi
