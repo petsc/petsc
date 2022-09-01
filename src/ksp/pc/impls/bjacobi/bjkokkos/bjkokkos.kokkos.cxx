@@ -1,4 +1,5 @@
 #include <petscvec_kokkos.hpp>
+#include <petsc/private/deviceimpl.h>
 #include <petsc/private/pcimpl.h>
 #include <petsc/private/kspimpl.h>
 #include <petscksp.h> /*I "petscksp.h" I*/
@@ -9,7 +10,7 @@
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/mat/impls/aij/seq/kokkos/aijkok.hpp>
 
-#if defined(PETSC_HAVE_CUDA_NVTX)
+#if defined(PETSC_HAVE_CUDA)
 #include <nvToolsExt.h>
 #endif
 
@@ -775,7 +776,7 @@ static PetscErrorCode PCApply_BJKOKKOS(PC pc, Vec bin, Vec xout) {
       PetscCheck(jac->const_block_size, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "Kokkos (GMRES) solver requires constant block size (but can be made to work with species ordering or N_team==1)");
       PetscCheck(Nsolves % Nsolves_team == 0, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "Nsolves.mod(Nsolves_team) != 0: Nsolves = %d, Nsolves_team = %d", Nsolves, Nsolves_team);
       PetscCheck(((int)info.nz_used) % Nsolves == 0, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "info.nz_used.mod(Nsolves) != 0: info.nz_used = %g, Nsolves = %d", info.nz_used, Nsolves);
-#if defined(PETSC_HAVE_CUDA_NVTX)
+#if defined(PETSC_HAVE_CUDA)
       nvtxRangePushA("gmres-kk");
 #endif
       Kokkos::View<PetscScalar **, layout, exec_space, Kokkos::MemoryTraits<Kokkos::Unmanaged>> inv_diag((PetscScalar *)glb_idiag, Nsolves, Nloc); // in correct order
@@ -927,7 +928,7 @@ static PetscErrorCode PCApply_BJKOKKOS(PC pc, Vec bin, Vec xout) {
       if (jac->batch_target == -1 && jac->reason) {
         PetscCall(PetscPrintf(PetscObjectComm((PetscObject)A), "    Linear solve %s in %d iteration, batch %" PetscInt_FMT ", specie %" PetscInt_FMT "\n", handle.is_converged_host(mbid) ? "converged" : "diverged", jac->max_nits, mbid % batch_sz, mbid / batch_sz));
       }
-#if defined(PETSC_HAVE_CUDA_NVTX)
+#if defined(PETSC_HAVE_CUDA)
       nvtxRangePop();
 #endif
 #else
@@ -942,22 +943,17 @@ static PetscErrorCode PCApply_BJKOKKOS(PC pc, Vec bin, Vec xout) {
       // solve each block independently
       int scr_bytes_team_shared = 0, nShareVec = 0, nGlobBVec = 0;
       if (jac->const_block_size) { // use shared memory for work vectors only if constant block size - todo: test efficiency loss
-        int maximum_shared_mem_size;
-        stride_shared = jac->const_block_size; // captured
-#if defined(PETSC_HAVE_CUDA)
-        int         device;
-        cudaError_t ier = cudaGetDevice(&device);
-        ier             = cudaDeviceGetAttribute(&maximum_shared_mem_size, cudaDevAttrMaxSharedMemoryPerBlock, device);
-#elif defined(PETSC_HAVE_HIP)
-        int device;
-        hipGetDevice(&device);
-        hipDeviceGetAttribute(&maximum_shared_mem_size, hipDeviceAttributeMaxSharedMemoryPerBlock, device);
-#elif defined(PETSC_HAVE_SYCL)
-        maximum_shared_mem_size = 64000;
-#else
-        maximum_shared_mem_size = 72000;
-#endif
-        nShareVec = maximum_shared_mem_size / (jac->const_block_size * sizeof(PetscScalar)); // integer floor, number of vectors that fit in shared
+        int maximum_shared_mem_size = 64000;
+
+        if (PetscDeviceConfiguredFor_Internal(PETSC_DEVICE_DEFAULT)) {
+          // FIXME: remove the configuredfor check once the PETSC_DEVICE_HOST MR is merged in
+          PetscDevice device;
+
+          PetscCall(PetscDeviceGetDefault_Internal(&device));
+          PetscCall(PetscDeviceGetAttribute(device, PETSC_DEVICE_ATTR_SIZE_T_SHARED_MEM_PER_BLOCK, &maximum_shared_mem_size));
+        }
+        stride_shared = jac->const_block_size;                                                   // captured
+        nShareVec     = maximum_shared_mem_size / (jac->const_block_size * sizeof(PetscScalar)); // integer floor, number of vectors that fit in shared
         if (nShareVec > nwork) nShareVec = nwork;
         else nGlobBVec = nwork - nShareVec;
         global_buff_words     = jac->n * nGlobBVec;
@@ -970,7 +966,7 @@ static PetscErrorCode PCApply_BJKOKKOS(PC pc, Vec bin, Vec xout) {
         nGlobBVec             = nwork; // not needed == fix
       }
       stride_global = jac->n; // captured
-#if defined(PETSC_HAVE_CUDA_NVTX)
+#if defined(PETSC_HAVE_CUDA)
       nvtxRangePushA("batch-kokkos-solve");
 #endif
       Kokkos::View<PetscScalar *, Kokkos::DefaultExecutionSpace> d_work_vecs_k("workvectors", global_buff_words); // global work vectors
@@ -1002,7 +998,7 @@ static PetscErrorCode PCApply_BJKOKKOS(PC pc, Vec bin, Vec xout) {
           }
         });
       Kokkos::fence();
-#if defined(PETSC_HAVE_CUDA_NVTX)
+#if defined(PETSC_HAVE_CUDA)
       nvtxRangePop();
       nvtxRangePushA("Post-solve-metadata");
 #endif
@@ -1071,7 +1067,7 @@ static PetscErrorCode PCApply_BJKOKKOS(PC pc, Vec bin, Vec xout) {
           PetscCall(PetscPrintf(PETSC_COMM_SELF, "ERROR Kokkos batch solver did not converge in all solves\n"));
         }
       }
-#if defined(PETSC_HAVE_CUDA_NVTX)
+#if defined(PETSC_HAVE_CUDA)
       nvtxRangePop();
 #endif
     } // end of Kokkos (not Kernels) solvers block

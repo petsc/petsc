@@ -76,6 +76,16 @@ public:
     PetscFunctionReturn(0);
   }
 
+  PETSC_NODISCARD PetscErrorCode getattribute(PetscDeviceAttribute attr, void *value) const noexcept {
+    PetscFunctionBegin;
+    PetscCheck(initialized(), PETSC_COMM_SELF, PETSC_ERR_COR, "Device %d not initialized", id());
+    switch (attr) {
+    case PETSC_DEVICE_ATTR_SIZE_T_SHARED_MEM_PER_BLOCK: *static_cast<std::size_t *>(value) = syclDevice_.get_info<sycl::info::device::local_mem_size>();
+    case PETSC_DEVICE_ATTR_MAX: break;
+    }
+    PetscFunctionReturn(0);
+  }
+
 private:
   static sycl::device chooseSYCLDevice_(int id) {
     if (id == PETSC_SYCL_DEVICE_HOST) {
@@ -195,6 +205,7 @@ PetscErrorCode Device::getDevice(PetscDevice device, PetscInt id) const noexcept
   device->ops->createcontext = create_;
   device->ops->configure     = this->configureDevice;
   device->ops->view          = this->viewDevice;
+  device->ops->getattribute  = this->getAttribute;
   PetscFunctionReturn(0);
 }
 
@@ -207,6 +218,12 @@ PetscErrorCode Device::configureDevice(PetscDevice device) noexcept {
 PetscErrorCode Device::viewDevice(PetscDevice device, PetscViewer viewer) noexcept {
   PetscFunctionBegin;
   PetscCall(devices_[device->deviceId]->view(viewer));
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode Device::getAttribute(PetscDevice device, PetscDeviceAttribute attr, void *value) noexcept {
+  PetscFunctionBegin;
+  PetscCall(devices_[device->deviceId]->getattribute(attr, value));
   PetscFunctionReturn(0);
 }
 

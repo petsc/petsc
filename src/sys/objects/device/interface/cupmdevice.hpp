@@ -37,6 +37,8 @@ public:
 
   PETSC_NODISCARD static PetscErrorCode viewDevice(PetscDevice, PetscViewer) noexcept;
 
+  PETSC_NODISCARD static PetscErrorCode getAttribute(PetscDevice, PetscDeviceAttribute, void *) noexcept;
+
 private:
   // opaque class representing a single device
   class DeviceInternal;

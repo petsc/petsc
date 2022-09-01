@@ -133,6 +133,23 @@ PETSC_EXTERN const char *const PetscDeviceTypes[];
 #define PETSC_DEVICE_DEFAULT PETSC_DEVICE_INVALID
 #endif
 
+/*E
+  PetscDeviceAttribute - Attribute detailing a property or feature of a `PetscDevice`
+
+$ PETSC_DEVICE_ATTR_SIZE_T_SHARED_MEM_PER_BLOCK - The maximum amount of shared memory per block in a
+device kernel
+$ PETSC_DEVICE_ATTR_MAX                         - Invalid attribute, do not use
+
+  Level: beginner
+
+.seealso: `PetscDevice`, `PetscDeviceGetAttribute()`
+E*/
+typedef enum {
+  PETSC_DEVICE_ATTR_SIZE_T_SHARED_MEM_PER_BLOCK,
+  PETSC_DEVICE_ATTR_MAX
+} PetscDeviceAttribute;
+PETSC_EXTERN const char *const PetscDeviceAttributes[];
+
 /*S
   PetscDevice - Object to manage an accelerator "device" (usually a GPU)
 
@@ -142,7 +159,8 @@ PETSC_EXTERN const char *const PetscDeviceTypes[];
 
   Level: beginner
 
-.seealso: `PetscDeviceType`, `PetscDeviceInitType`, `PetscDeviceCreate()`, `PetscDeviceConfigure()`, `PetscDeviceDestroy()`, `PetscDeviceContext`, `PetscDeviceContextSetDevice()`, `PetscDeviceContextGetDevice()`
+.seealso: `PetscDeviceType`, `PetscDeviceInitType`, `PetscDeviceCreate()`, `PetscDeviceConfigure()`,
+`PetscDeviceDestroy()`, `PetscDeviceContext`, `PetscDeviceContextSetDevice()`, `PetscDeviceContextGetDevice()`, `PetscDeviceGetAttribute()`
 S*/
 typedef struct _n_PetscDevice *PetscDevice;
 

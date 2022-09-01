@@ -31,6 +31,8 @@ static_assert(Petsc::util::integral_value(PETSC_DEVICE_INIT_EAGER) == 2, "");
 const char *const PetscDeviceInitTypes[] = {"none", "lazy", "eager", "PetscDeviceInitType", "PETSC_DEVICE_INIT_", PETSC_NULLPTR};
 static_assert(sizeof(PetscDeviceInitTypes) / sizeof(*PetscDeviceInitTypes) == 6, "Must change CUPMDevice<T>::initialize number of enum values in -device_enable_cupm to match!");
 
+const char *const PetscDeviceAttributes[] = {"shared_mem_per_block", "max", "PetscDeviceAttribute", "PETSC_DEVICE_ATTR_", nullptr};
+
 #define PETSC_DEVICE_CASE(IMPLS, func, ...) \
   case PetscConcat_(PETSC_DEVICE_, IMPLS): { \
     PetscCall(PetscConcat_(IMPLS, Device).func(__VA_ARGS__)); \
@@ -273,6 +275,35 @@ PetscErrorCode PetscDeviceInitialize(PetscDeviceType type) {
 @*/
 PetscBool PetscDeviceInitialized(PetscDeviceType type) {
   return static_cast<PetscBool>(PetscDeviceConfiguredFor_Internal(type) && initializedDevice[type]);
+}
+
+/*@C
+  PetscDeviceGetAttribute - Query a particular attribute of a `PetscDevice`
+
+  Not Collective, Asynchronous
+
+  Input Parameters:
++ device - The `PetscDevice`
+- attr   - The attribute
+
+  Output Parameter:
+. value - The value of the attribute
+
+  Notes:
+  Since different attributes are often different types `value` is a `void *` to accommodate
+  them all. The underlying type of the attribute is therefore included in the name of the
+  `PetscDeviceAttribute` reponsible for querying it. For example,
+  `PETSC_DEVICE_ATTR_SIZE_T_SHARED_MEM_PER_BLOCK` is of type `size_t`.
+
+.seealso: `PetscDeviceAtrtibute`, `PetscDeviceConfigure()`, `PetscDevice`
+@*/
+PetscErrorCode PetscDeviceGetAttribute(PetscDevice device, PetscDeviceAttribute attr, void *value) {
+  PetscFunctionBegin;
+  PetscValidDevice(device, 1);
+  PetscValidDeviceAttribute(attr, 2);
+  PetscValidPointer(value, 3);
+  PetscUseTypeMethod(device, getattribute, attr, value);
+  PetscFunctionReturn(0);
 }
 
 /*
