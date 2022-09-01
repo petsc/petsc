@@ -26,6 +26,7 @@ public:
   PETSC_NODISCARD PetscErrorCode        getDevice(PetscDevice, PetscInt) const noexcept;
   PETSC_NODISCARD static PetscErrorCode configureDevice(PetscDevice) noexcept;
   PETSC_NODISCARD static PetscErrorCode viewDevice(PetscDevice, PetscViewer) noexcept;
+  PETSC_NODISCARD static PetscErrorCode getAttribute(PetscDevice, PetscDeviceAttribute, void *) noexcept;
 
 private:
   // opaque class representing a single device instance

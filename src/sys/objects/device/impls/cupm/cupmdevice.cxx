@@ -36,6 +36,7 @@ public:
   PETSC_NODISCARD PetscErrorCode initialize() noexcept;
   PETSC_NODISCARD PetscErrorCode configure() noexcept;
   PETSC_NODISCARD PetscErrorCode view(PetscViewer) const noexcept;
+  PETSC_NODISCARD PetscErrorCode getattribute(PetscDeviceAttribute, void *) const noexcept;
   PETSC_NODISCARD PetscErrorCode finalize() noexcept;
 
   PETSC_NODISCARD auto id() const -> decltype(id_) { return id_; }
@@ -43,7 +44,15 @@ public:
   PETSC_NODISCARD auto prop() const -> const decltype(dprop_) & { return dprop_; }
 
   // factory
-  PETSC_CXX_COMPAT_DECL(std::unique_ptr<DeviceInternal> makeDevice(int i)) { return std::unique_ptr<DeviceInternal>(new DeviceInternal(i)); }
+#if __cplusplus >= 201402L
+  PETSC_CXX_COMPAT_DECL(std::unique_ptr<DeviceInternal> makeDevice(int i)) {
+    return std::make_unique<DeviceInternal>(i);
+  }
+#else
+  PETSC_CXX_COMPAT_DECL(std::unique_ptr<DeviceInternal> makeDevice(int i)) {
+    return std::unique_ptr<DeviceInternal>(new DeviceInternal(i));
+  }
+#endif
 };
 
 // the goal here is simply to get the cupm backend to create its context, not to do any type of
@@ -139,6 +148,17 @@ PetscErrorCode Device<T>::DeviceInternal::view(PetscViewer viewer) const noexcep
     PetscCall(PetscViewerFlush(sviewer));
     PetscCall(PetscViewerRestoreSubViewer(viewer, PETSC_COMM_SELF, &sviewer));
     PetscCall(PetscViewerFlush(viewer));
+  }
+  PetscFunctionReturn(0);
+}
+
+template <DeviceType T>
+PetscErrorCode Device<T>::DeviceInternal::getattribute(PetscDeviceAttribute attr, void *value) const noexcept {
+  PetscFunctionBegin;
+  PetscAssert(initialized(), PETSC_COMM_SELF, PETSC_ERR_COR, "Device %d was not initialized", id());
+  switch (attr) {
+  case PETSC_DEVICE_ATTR_SIZE_T_SHARED_MEM_PER_BLOCK: *static_cast<std::size_t *>(value) = prop().sharedMemPerBlock;
+  case PETSC_DEVICE_ATTR_MAX: break;
   }
   PetscFunctionReturn(0);
 }
@@ -374,6 +394,7 @@ PetscErrorCode Device<T>::getDevice(PetscDevice device, PetscInt id) const noexc
   device->ops->createcontext = create_;
   device->ops->configure     = this->configureDevice;
   device->ops->view          = this->viewDevice;
+  device->ops->getattribute  = this->getAttribute;
   PetscFunctionReturn(0);
 }
 
@@ -391,6 +412,13 @@ PetscErrorCode Device<T>::viewDevice(PetscDevice device, PetscViewer viewer) noe
   // it is being reconfigured
   PetscCall(devices_[device->deviceId]->configure());
   PetscCall(devices_[device->deviceId]->view(viewer));
+  PetscFunctionReturn(0);
+}
+
+template <DeviceType T>
+PetscErrorCode Device<T>::getAttribute(PetscDevice device, PetscDeviceAttribute attr, void *value) noexcept {
+  PetscFunctionBegin;
+  PetscCall(devices_[device->deviceId]->getattribute(attr, value));
   PetscFunctionReturn(0);
 }
 

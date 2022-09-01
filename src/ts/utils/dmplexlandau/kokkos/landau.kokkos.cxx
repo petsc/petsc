@@ -4,6 +4,7 @@
 #include <petscconf.h>
 #include <petscvec_kokkos.hpp>
 #include <petsc/private/dmpleximpl.h> /*I   "petscdmplex.h"   I*/
+#include <petsc/private/deviceimpl.h>
 #include <petsclandau.h>
 #include <petscts.h>
 
@@ -579,21 +580,15 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
     PetscCall(PetscLogGpuTimeEnd());
     PetscCall(PetscLogEventEnd(events[8], 0, 0, 0, 0));
     // Jacobian
-#if defined(PETSC_HAVE_CUDA)
-    int         device;
-    int         maximum_shared_mem_size;
-    cudaError_t ier = cudaGetDevice(&device);
-    ier             = cudaDeviceGetAttribute(&maximum_shared_mem_size, cudaDevAttrMaxSharedMemoryPerBlock, device);
-#elif defined(PETSC_HAVE_HIP)
-    int device;
-    int maximum_shared_mem_size;
-    hipGetDevice(&device);
-    hipDeviceGetAttribute(&maximum_shared_mem_size, hipDeviceAttributeMaxSharedMemoryPerBlock, device);
-#elif defined(PETSC_HAVE_SYCL)
     int maximum_shared_mem_size = 64000;
-#else
-    int maximum_shared_mem_size = 72000;
-#endif
+
+    if (PetscDeviceConfiguredFor_Internal(PETSC_DEVICE_DEFAULT)) {
+      // FIXME: remove the configuredfor check once the PETSC_DEVICE_HOST MR is merged in
+      PetscDevice device;
+
+      PetscCall(PetscDeviceGetDefault_Internal(&device));
+      PetscCall(PetscDeviceGetAttribute(device, PETSC_DEVICE_ATTR_SIZE_T_SHARED_MEM_PER_BLOCK, &maximum_shared_mem_size));
+    }
     const int jac_scr_bytes    = 2 * (g2_scr_t::shmem_size(dim, Nf_max, Nq) + g3_scr_t::shmem_size(dim, dim, Nf_max, Nq));
     const int jac_shared_level = (jac_scr_bytes > maximum_shared_mem_size) ? 1 : KOKKOS_SHARED_LEVEL;
     auto      jac_lambda       = KOKKOS_LAMBDA(const team_member team) {

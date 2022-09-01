@@ -337,7 +337,7 @@ PetscErrorCode MatProductNumeric_Normal_Dense(Mat C) {
   PetscScalar  *array;
 
   PetscFunctionBegin;
-  MatCheckProduct(C, 3);
+  MatCheckProduct(C, 1);
   A        = C->product->A;
   a        = (Mat_Normal *)A->data;
   B        = C->product->B;
@@ -378,7 +378,7 @@ PetscErrorCode MatProductSymbolic_Normal_Dense(Mat C) {
   PetscInt      n, N, m, M;
 
   PetscFunctionBegin;
-  MatCheckProduct(C, 4);
+  MatCheckProduct(C, 1);
   PetscCheck(!C->product->data, PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "Product data not empty");
   A = C->product->A;
   a = (Mat_Normal *)A->data;
