@@ -448,19 +448,13 @@ deleteshared:
 	fi
 
 # ---------------------------------------------------------------------------------------
-#   Rules for the automatic generation of documentation, tutorials etc
-# See rule for allmanpages in ${PETSC_DIR}/makefile
+#   Rules for the generation of manual pages, html of source code etc
 #
-
-chk_mansec:
-	@if [ "${MANSEC}" = "" ] ; then \
-          echo "   makefile is missing MANSEC";\
-        fi
 
 chk_manualpage_dir:
 	@if [ "${SUBMANSEC}" = "" ] ; then LMANSEC=${MANSEC}; else LMANSEC=${SUBMANSEC}; fi; \
          if [ ! -d "${LOC}/docs/manualpages/$${LMANSEC}" ]; then \
-	  echo Making directory ${LOC}/docs/manualpages/$${LMANSEC} for library; ${MKDIR} ${LOC}/docs/manualpages/$${LMANSEC}; fi
+	  echo Making directory ${LOC}/docs/manualpages/$${LMANSEC} for manual pages; ${MKDIR} ${LOC}/docs/manualpages/$${LMANSEC}; fi
 
 #
 #  If this produces an error such as Could not open output file /Users/barrysmith/Src/petsc/docs/manualpages/MissingSUBMANSEC/*
@@ -472,7 +466,10 @@ manualpages: chk_manualpage_dir
             LMANSEC=`grep SUBMANSEC $${f} | sed s'?[ ]*/\*[ ]*SUBMANSEC[ ]*=[ ]*\([a-zA-Z]*\)[ ]*\*/?\1?'g`; \
             if [ "$${LMANSEC}" = "" ] ; then \
               LMANSEC="MissingSUBMANSEC"; \
-              echo "Missing MANSEC or SUBMANSEC definition in " `pwd` ; \
+              pwd | grep -e ftn-custom -e petsc/finclude -e petsc/fprivate > /dev/null; fnd=$?; \
+              if [ "$${fnd}" == "1" ]; then \
+                echo "Missing MANSEC or SUBMANSEC definition in " `pwd`/$$f ; \
+              fi; \
             fi; \
             DOCTEXT_PATH=${PETSC_DIR}/doc/classic/doctext \
             ${DOCTEXT} -myst -mpath ${LOC}/docs/manualpages/$${LMANSEC} -heading PETSc -defn ${PETSC_DIR}/doc/classic/doctext/myst.def \
