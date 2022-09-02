@@ -397,9 +397,38 @@ static PetscErrorCode CheckTransferOperatorRequirements_Private(DM dmc, DM dmf) 
   PetscFunctionReturn(0);
 }
 
+/* Since the interpolation uses MATMAIJ for dof > 0 we convert requests for non-MATAIJ baseded matrices to MATAIJ.
+   This is a bit of a hack; the reason for it is partially because -dm_mat_type defines the
+   matrix type for both the operator matrices and the interpolation matrices so that users
+   can select matrix types of base MATAIJ for accelerators
+
+   Note: The ConvertToAIJ() code below *has been copied from dainterp.c*! ConvertToAIJ() should perhaps be placed somewhere
+   in mat/utils to avoid code duplication, but then the DMStag and DMDA code would need to include the private Mat headers.
+   Since it is only used in two places, I have simply duplicated the code to avoid the need to exposure the private
+   Mat routines in parts of DM. If we find a need for ConvertToAIJ() elsewhere, then we should consolidate it to one
+   place in mat/utils.
+*/
+static PetscErrorCode ConvertToAIJ(MatType intype, MatType *outtype) {
+  PetscInt    i;
+  char const *types[3] = {MATAIJ, MATSEQAIJ, MATMPIAIJ};
+  PetscBool   flg;
+
+  PetscFunctionBegin;
+  *outtype = MATAIJ;
+  for (i = 0; i < 3; i++) {
+    PetscCall(PetscStrbeginswith(intype, types[i], &flg));
+    if (flg) {
+      *outtype = intype;
+      break;
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode DMCreateInterpolation_Stag(DM dmc, DM dmf, Mat *A, Vec *vec) {
   PetscInt               dim, entriesf, entriesc, doff[DMSTAG_MAX_STRATA];
   ISLocalToGlobalMapping ltogmf, ltogmc;
+  MatType                mattype;
 
   PetscFunctionBegin;
   PetscCall(CheckTransferOperatorRequirements_Private(dmc, dmf));
@@ -411,7 +440,8 @@ static PetscErrorCode DMCreateInterpolation_Stag(DM dmc, DM dmf, Mat *A, Vec *ve
 
   PetscCall(MatCreate(PetscObjectComm((PetscObject)dmc), A));
   PetscCall(MatSetSizes(*A, entriesf, entriesc, PETSC_DECIDE, PETSC_DECIDE));
-  PetscCall(MatSetType(*A, MATAIJ));
+  PetscCall(ConvertToAIJ(dmc->mattype, &mattype));
+  PetscCall(MatSetType(*A, mattype));
   PetscCall(MatSetLocalToGlobalMapping(*A, ltogmf, ltogmc));
 
   PetscCall(DMGetDimension(dmc, &dim));
@@ -439,6 +469,7 @@ static PetscErrorCode DMCreateInterpolation_Stag(DM dmc, DM dmf, Mat *A, Vec *ve
 static PetscErrorCode DMCreateRestriction_Stag(DM dmc, DM dmf, Mat *A) {
   PetscInt               dim, entriesf, entriesc, doff[DMSTAG_MAX_STRATA];
   ISLocalToGlobalMapping ltogmf, ltogmc;
+  MatType                mattype;
 
   PetscFunctionBegin;
   PetscCall(CheckTransferOperatorRequirements_Private(dmc, dmf));
@@ -450,7 +481,8 @@ static PetscErrorCode DMCreateRestriction_Stag(DM dmc, DM dmf, Mat *A) {
 
   PetscCall(MatCreate(PetscObjectComm((PetscObject)dmc), A));
   PetscCall(MatSetSizes(*A, entriesc, entriesf, PETSC_DECIDE, PETSC_DECIDE)); /* Note transpose wrt interpolation */
-  PetscCall(MatSetType(*A, MATAIJ));
+  PetscCall(ConvertToAIJ(dmc->mattype, &mattype));
+  PetscCall(MatSetType(*A, mattype));
   PetscCall(MatSetLocalToGlobalMapping(*A, ltogmc, ltogmf)); /* Note transpose wrt interpolation */
 
   PetscCall(DMGetDimension(dmc, &dim));
