@@ -168,10 +168,9 @@ PetscErrorCode PetscMallocValidate(int line, const char function[], const char f
     double aligned pointer to requested storage, or null if not  available.
  */
 PetscErrorCode PetscTrMallocDefault(size_t a, PetscBool clear, int lineno, const char function[], const char filename[], void **result) {
-  TRSPACE       *head;
-  char          *inew;
-  size_t         nsize;
-  PetscErrorCode ierr;
+  TRSPACE *head;
+  char    *inew;
+  size_t   nsize;
 
   PetscFunctionBegin;
   /* Do not try to handle empty blocks */
@@ -180,8 +179,7 @@ PetscErrorCode PetscTrMallocDefault(size_t a, PetscBool clear, int lineno, const
     PetscFunctionReturn(0);
   }
 
-  ierr = PetscMallocValidate(lineno, function, filename);
-  if (ierr) PetscFunctionReturn(ierr);
+  PetscCall(PetscMallocValidate(lineno, function, filename));
 
   nsize = (a + (PETSC_MEMALIGN - 1)) & ~(PETSC_MEMALIGN - 1);
   PetscCall(PetscMallocAlign(nsize + sizeof(TrSPACE) + sizeof(PetscClassId), clear, lineno, function, filename, (void **)&inew));
@@ -347,12 +345,11 @@ PetscErrorCode PetscTrFreeDefault(void *aa, int lineno, const char function[], c
 .seealso: `PetscTrMallocDefault()`, `PetscTrFreeDefault()`
 */
 PetscErrorCode PetscTrReallocDefault(size_t len, int lineno, const char function[], const char filename[], void **result) {
-  char          *a = (char *)*result;
-  TRSPACE       *head;
-  char          *ahead, *inew;
-  PetscClassId  *nend;
-  size_t         nsize;
-  PetscErrorCode ierr;
+  char         *a = (char *)*result;
+  TRSPACE      *head;
+  char         *ahead, *inew;
+  PetscClassId *nend;
+  size_t        nsize;
 
   PetscFunctionBegin;
   /* Realloc requests zero space so just free the current space */
@@ -367,8 +364,7 @@ PetscErrorCode PetscTrReallocDefault(size_t len, int lineno, const char function
     PetscFunctionReturn(0);
   }
 
-  ierr = PetscMallocValidate(lineno, function, filename);
-  if (ierr) PetscFunctionReturn(ierr);
+  PetscCall(PetscMallocValidate(lineno, function, filename));
 
   ahead = a;
   a     = a - sizeof(TrSPACE);

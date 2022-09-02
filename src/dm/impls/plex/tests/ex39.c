@@ -283,7 +283,7 @@ static PetscErrorCode TransformMesh(UserCtx *user, DM *mesh) {
     PetscCall(SkewMesh(mesh, coordVals, npoints, dim));
     PetscCall(PerturbMesh(mesh, coordVals, npoints, dim));
     break;
-  default: PetscFunctionReturn(-1);
+  default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "invalid mesh transformation");
   }
   PetscCall(VecRestoreArray(coords, &coordVals));
   PetscCall(DMSetCoordinates(*mesh, coords));
@@ -340,7 +340,7 @@ static PetscErrorCode SetupProblem(DM dm, UserCtx *user) {
     PetscCall(PetscDSSetExactSolution(prob, 0, sinusoid_u, NULL));
     PetscCall(PetscDSSetExactSolution(prob, 1, sinusoid_p, NULL));
     break;
-  default: PetscFunctionReturn(-1);
+  default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "invalid solution form");
   }
 
   PetscCall(DMGetLabel(dm, "marker", &label));

@@ -1,5 +1,5 @@
 
-/*************************************xxt.c************************************
+/*
 Module Name: xxt
 Module Info:
 
@@ -15,7 +15,7 @@ contact:
 +--------------------------------+--------------------------------+
 
 Last Modification: 3.20.01
-**************************************xxt.c***********************************/
+*/
 #include <../src/ksp/pc/impls/tfs/tfs.h>
 
 #define LEFT  -1
@@ -60,7 +60,6 @@ static PetscErrorCode xxt_generate(xxt_ADT xxt_handle);
 static PetscErrorCode do_xxt_factor(xxt_ADT xxt_handle);
 static mv_info       *set_mvi(PetscInt *local2global, PetscInt n, PetscInt m, PetscErrorCode (*matvec)(mv_info *, PetscScalar *, PetscScalar *), void *grid_data);
 
-/**************************************xxt.c***********************************/
 xxt_ADT XXT_new(void) {
   xxt_ADT xxt_handle;
 
@@ -74,7 +73,6 @@ xxt_ADT XXT_new(void) {
   return (xxt_handle);
 }
 
-/**************************************xxt.c***********************************/
 PetscErrorCode XXT_factor(xxt_ADT   xxt_handle,                                           /* prev. allocated xxt  handle */
                           PetscInt *local2global,                                         /* global column mapping       */
                           PetscInt  n,                                                    /* local num rows              */
@@ -104,7 +102,6 @@ PetscErrorCode XXT_factor(xxt_ADT   xxt_handle,                                 
   return (do_xxt_factor(xxt_handle));
 }
 
-/**************************************xxt.c***********************************/
 PetscErrorCode XXT_solve(xxt_ADT xxt_handle, PetscScalar *x, PetscScalar *b) {
   PCTFS_comm_init();
   check_handle(xxt_handle);
@@ -114,7 +111,6 @@ PetscErrorCode XXT_solve(xxt_ADT xxt_handle, PetscScalar *x, PetscScalar *b) {
   return do_xxt_solve(xxt_handle, x);
 }
 
-/**************************************xxt.c***********************************/
 PetscInt XXT_free(xxt_ADT xxt_handle) {
   PCTFS_comm_init();
   check_handle(xxt_handle);
@@ -142,7 +138,7 @@ PetscInt XXT_free(xxt_ADT xxt_handle) {
   return (0);
 }
 
-/**************************************xxt.c***********************************/
+/* This function is currently unused */
 PetscErrorCode XXT_stats(xxt_ADT xxt_handle) {
   PetscInt    op[]  = {NON_UNIFORM, GL_MIN, GL_MAX, GL_ADD, GL_MIN, GL_MAX, GL_ADD, GL_MIN, GL_MAX, GL_ADD};
   PetscInt    fop[] = {NON_UNIFORM, GL_MIN, GL_MAX, GL_ADD};
@@ -156,7 +152,7 @@ PetscErrorCode XXT_stats(xxt_ADT xxt_handle) {
   /* if factorization not done there are no stats */
   if (!xxt_handle->info || !xxt_handle->mvi) {
     if (!PCTFS_my_id) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "XXT_stats() :: no stats available!\n"));
-    PetscFunctionReturn(1);
+    PetscFunctionReturn(0);
   }
 
   vals[0] = vals[1] = vals[2] = xxt_handle->info->nnz;
@@ -188,7 +184,7 @@ PetscErrorCode XXT_stats(xxt_ADT xxt_handle) {
   PetscFunctionReturn(0);
 }
 
-/*************************************xxt.c************************************
+/*
 
 Description: get A_local, local portion of global coarse matrix which
 is a row dist. nxm matrix w/ n<m.
@@ -200,12 +196,11 @@ is a row dist. nxm matrix w/ n<m.
 
 mylocmatvec = my_ml->Amat[grid_tag].matvec->external;
 mylocmatvec (void :: void *data, double *in, double *out)
-**************************************xxt.c***********************************/
+*/
 static PetscErrorCode do_xxt_factor(xxt_ADT xxt_handle) {
   return xxt_generate(xxt_handle);
 }
 
-/**************************************xxt.c***********************************/
 static PetscErrorCode xxt_generate(xxt_ADT xxt_handle) {
   PetscInt      i, j, k, idex;
   PetscInt      dim, col;
@@ -447,7 +442,6 @@ static PetscErrorCode xxt_generate(xxt_ADT xxt_handle) {
   return (0);
 }
 
-/**************************************xxt.c***********************************/
 static PetscErrorCode do_xxt_solve(xxt_ADT xxt_handle, PetscScalar *uc) {
   PetscInt     off, len, *iptr;
   PetscInt     level       = xxt_handle->level;
@@ -490,7 +484,6 @@ static PetscErrorCode do_xxt_solve(xxt_ADT xxt_handle, PetscScalar *uc) {
   PetscFunctionReturn(0);
 }
 
-/**************************************xxt.c***********************************/
 static PetscErrorCode check_handle(xxt_ADT xxt_handle) {
   PetscInt vals[2], work[2], op[] = {NON_UNIFORM, GL_MIN, GL_MAX};
 
@@ -503,7 +496,6 @@ static PetscErrorCode check_handle(xxt_ADT xxt_handle) {
   PetscFunctionReturn(0);
 }
 
-/**************************************xxt.c***********************************/
 static PetscErrorCode det_separators(xxt_ADT xxt_handle) {
   PetscInt     i, ct, id;
   PetscInt     mask, edge, *iptr;
@@ -752,7 +744,6 @@ static PetscErrorCode det_separators(xxt_ADT xxt_handle) {
   PetscFunctionReturn(0);
 }
 
-/**************************************xxt.c***********************************/
 static mv_info *set_mvi(PetscInt *local2global, PetscInt n, PetscInt m, PetscErrorCode (*matvec)(mv_info *, PetscScalar *, PetscScalar *), void *grid_data) {
   mv_info *mvi;
 
@@ -773,7 +764,6 @@ static mv_info *set_mvi(PetscInt *local2global, PetscInt n, PetscInt m, PetscErr
   return (mvi);
 }
 
-/**************************************xxt.c***********************************/
 static PetscErrorCode do_matvec(mv_info *A, PetscScalar *v, PetscScalar *u) {
   PetscFunctionBegin;
   A->matvec((mv_info *)A->grid_data, v, u);

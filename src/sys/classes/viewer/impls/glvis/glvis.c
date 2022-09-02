@@ -203,12 +203,11 @@ static PetscErrorCode PetscViewerGLVisGetNewWindow_Private(PetscViewer viewer, P
   PetscViewerGLVis socket = (PetscViewerGLVis)viewer->data;
   PetscViewer      window = NULL;
   PetscBool        ldis, dis;
-  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  ierr = PetscViewerASCIISocketOpen(PETSC_COMM_SELF, socket->name, socket->port, &window);
-  /* if we could not estabilish a connection the first time, we disable the socket viewer */
-  ldis = ierr ? PETSC_TRUE : PETSC_FALSE;
+  PetscCall(PetscViewerASCIISocketOpen(PETSC_COMM_SELF, socket->name, socket->port, &window));
+  /* if we could not estabilish a connection, we disable the socket viewer on all MPI ranks */
+  ldis = !viewer ? PETSC_TRUE : PETSC_FALSE;
   PetscCall(MPIU_Allreduce(&ldis, &dis, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)viewer)));
   if (dis) {
     socket->status = PETSCVIEWERGLVIS_DISABLED;
@@ -736,6 +735,14 @@ static PetscErrorCode PetscViewerDestroy_ASCII_Socket(PetscViewer viewer) {
 }
 #endif
 
+/*
+    This attempts to return a NULL viewer if it is unable to open a socket connection.
+
+     The code below involving PetscUnlikely(ierr) is illegal in PETSc, one can NEVER attempt to recover once an error is initiated in PETSc.
+
+     The correct approach is to refactor PetscOpenSocket() to not initiate an error under certain failure conditions but instead either return a special value
+     of fd to indicate it was impossible to open the socket, or add another return argument to it indicating the socket was not opened.
+*/
 static PetscErrorCode PetscViewerASCIISocketOpen(MPI_Comm comm, const char *hostname, PetscInt port, PetscViewer *viewer) {
 #if defined(PETSC_HAVE_WINDOWS_H)
   PetscFunctionBegin;
@@ -753,14 +760,18 @@ static PetscErrorCode PetscViewerASCIISocketOpen(MPI_Comm comm, const char *host
 #else
   SETERRQ(comm, PETSC_ERR_SUP, "Missing Socket viewer");
 #endif
+  /*
+     The following code is illegal in PETSc, one can NEVER attempt to recover once an error is initiated in PETSc.
+        The correct approach is to refactor PetscOpenSocket() to not initiate an error under certain conditions but instead either return a special value
+     of fd to indicate it was impossible to open the socket, or add another return argument to it indicating the socket was not opened.
+   */
   if (PetscUnlikely(ierr)) {
-    PetscInt sierr = ierr;
-    char     err[1024];
+    char err[1024];
 
     PetscCall(PetscSNPrintf(err, 1024, "Cannot connect to socket on %s:%" PetscInt_FMT ". Socket visualization is disabled\n", hostname, port));
     PetscCall(PetscInfo(NULL, "%s", err));
     *viewer = NULL;
-    PetscFunctionReturn(sierr);
+    PetscFunctionReturn(0);
   } else {
     char msg[1024];
 

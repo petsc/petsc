@@ -182,7 +182,8 @@ PetscErrorCode MatScale_SMF(Mat mat, PetscReal a) {
 
 PetscErrorCode MatTranspose_SMF(Mat mat, Mat *B) {
   PetscFunctionBegin;
-  PetscFunctionReturn(1);
+  SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "No support for transpose for MatCreateSubMatrixFree() matrix");
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode MatGetDiagonal_SMF(Mat mat, Vec v) {

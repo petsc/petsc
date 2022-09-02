@@ -126,7 +126,10 @@ Even with the use of ``clang-format`` there are still many decisions about code 
 
 #. Functions in PETSc examples including ``main()`` should have  ``PetscFunctionBeginUser`` as the very first line after the local variable declarations.
 
-#. PETSc functions should return with ``PetscFunctionReturn(0)`` not ``return 0``.
+#. PETSc functions should almost always return with ``PetscFunctionReturn(0)`` not ``return 0``. ``PetscFunctionReturn()`` should never return a non-zero integer value.
+   It may, on occasion, return ``MPI_SUCCESS``, NULL, or a ``PetscObject`` such as a ``PetscViewer`` depending on the return type of the function.
+
+#. Functions that do use return should use ``return xx;`` rather than ``return(xx);``
 
 #. All PETSc functions must have their return value checked for errors using the
    ``PetscCall()`` macro. This should be wrapped around the function in question.

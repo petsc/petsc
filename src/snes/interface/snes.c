@@ -4146,11 +4146,10 @@ PETSC_EXTERN mxArray *SNESGetConvergenceHistoryMatlab(SNES snes) {
   PetscInt   i;
   PetscReal *ar;
 
-  PetscFunctionBegin;
   mat = mxCreateDoubleMatrix(snes->conv_hist_len, 1, mxREAL);
   ar  = (PetscReal *)mxGetData(mat);
   for (i = 0; i < snes->conv_hist_len; i++) ar[i] = snes->conv_hist[i];
-  PetscFunctionReturn(mat);
+  return mat;
 }
 #endif
 

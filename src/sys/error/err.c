@@ -38,7 +38,8 @@ static EH eh = NULL;
    You must put (server-start) in your .emacs file for the emacsclient software to work
 
    Developer Note:
-   Since this is an error handler it cannot call PetscCall(); thus we just return if an error is detected.
+   Since this is an error handler it should not call PetscCall(); thus we just return if an error is detected. But some of the functions it calls do perform error
+   checking that may not be appropriate in a error handler call.
 
 .seealso: `PetscError()`, `PetscPushErrorHandler()`, `PetscPopErrorHandler()`, `PetscAttachDebuggerErrorHandler()`,
           `PetscAbortErrorHandler()`, `PetscMPIAbortErrorHandler()`, `PetscTraceBackErrorHandler()`, `PetscReturnErrorHandler()`
@@ -49,28 +50,27 @@ PetscErrorCode PetscEmacsClientErrorHandler(MPI_Comm comm, int line, const char 
   const char    *pdir;
   FILE          *fp;
 
-  PetscFunctionBegin;
   ierr = PetscGetPetscDir(&pdir);
-  if (ierr) PetscFunctionReturn(ierr);
+  if (ierr) return ierr;
   sprintf(command, "cd %s; emacsclient --no-wait +%d %s\n", pdir, line, file);
 #if defined(PETSC_HAVE_POPEN)
   ierr = PetscPOpen(MPI_COMM_WORLD, (char *)ctx, command, "r", &fp);
-  if (ierr) PetscFunctionReturn(ierr);
+  if (ierr) return ierr;
   ierr = PetscPClose(MPI_COMM_WORLD, fp);
-  if (ierr) PetscFunctionReturn(ierr);
+  if (ierr) return ierr;
 #else
   SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP_SYS, "Cannot run external programs on this machine");
 #endif
   ierr = PetscPopErrorHandler();
-  if (ierr) PetscFunctionReturn(ierr); /* remove this handler from the stack of handlers */
+  if (ierr) return ierr; /* remove this handler from the stack of handlers */
   if (!eh) {
     ierr = PetscTraceBackErrorHandler(comm, line, fun, file, n, p, mess, NULL);
-    if (ierr) PetscFunctionReturn(ierr);
+    if (ierr) return ierr;
   } else {
     ierr = (*eh->handler)(comm, line, fun, file, n, p, mess, eh->ctx);
-    if (ierr) PetscFunctionReturn(ierr);
+    if (ierr) return ierr;
   }
-  PetscFunctionReturn(ierr);
+  return 0;
 }
 
 /*@C
