@@ -3993,6 +3993,7 @@ PetscErrorCode MatSolveTransposeAdd(Mat mat, Vec b, Vec y, Vec x) {
 .     `SOR_LOCAL_FORWARD_SWEEP` - local forward SOR
 .     `SOR_LOCAL_BACKWARD_SWEEP` - local forward SOR
 .     `SOR_LOCAL_SYMMETRIC_SWEEP` - local SSOR
+.     `SOR_EISENSTAT` - SOR with Eisenstat trick
 .     `SOR_APPLY_UPPER`, `SOR_APPLY_LOWER` - applies
          upper/lower triangular part of matrix to
          vector (with omega)
