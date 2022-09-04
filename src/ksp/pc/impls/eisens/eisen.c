@@ -25,6 +25,17 @@ static PetscErrorCode PCMult_Eisenstat(Mat mat, Vec b, Vec x) {
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PCNorm_Eisenstat(Mat mat, NormType type, PetscReal *nrm) {
+  PC            pc;
+  PC_Eisenstat *eis;
+
+  PetscFunctionBegin;
+  PetscCall(MatShellGetContext(mat, &pc));
+  eis = (PC_Eisenstat *)pc->data;
+  PetscCall(MatNorm(eis->A, type, nrm));
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode PCApply_Eisenstat(PC pc, Vec x, Vec y) {
   PC_Eisenstat *eis = (PC_Eisenstat *)pc->data;
   PetscBool     hasop;
@@ -155,6 +166,7 @@ static PetscErrorCode PCSetUp_Eisenstat(PC pc) {
     PetscCall(MatShellSetContext(eis->shell, pc));
     PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)eis->shell));
     PetscCall(MatShellSetOperation(eis->shell, MATOP_MULT, (void (*)(void))PCMult_Eisenstat));
+    PetscCall(MatShellSetOperation(eis->shell, MATOP_NORM, (void (*)(void))PCNorm_Eisenstat));
   }
   if (!eis->usediag) PetscFunctionReturn(0);
   if (!pc->setupcalled) {
