@@ -18,15 +18,16 @@
 */
 const char *const        PetscInfoCommFlags[]   = {"all", "no_self", "only_self", "PetscInfoCommFlag", "PETSC_INFO_COMM_", NULL};
 static PetscBool         PetscInfoClassesLocked = PETSC_FALSE, PetscInfoInvertClasses = PETSC_FALSE, PetscInfoClassesSet = PETSC_FALSE;
-static char            **PetscInfoClassnames = NULL;
-static char             *PetscInfoFilename   = NULL;
-static PetscInt          PetscInfoNumClasses = -1;
-static PetscInfoCommFlag PetscInfoCommFilter = PETSC_INFO_COMM_ALL;
-static int               PetscInfoFlags[]    = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                                                1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                                                1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
-PetscBool                PetscLogPrintInfo   = PETSC_FALSE;
-FILE                    *PetscInfoFile       = NULL;
+static char            **PetscInfoClassnames                                       = NULL;
+static char             *PetscInfoFilename                                         = NULL;
+static PetscInt          PetscInfoNumClasses                                       = -1;
+static PetscInfoCommFlag PetscInfoCommFilter                                       = PETSC_INFO_COMM_ALL;
+static int               PetscInfoFlags[]                                          = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                                                                                      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                                                                                      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+static char             *PetscInfoNames[PETSC_STATIC_ARRAY_LENGTH(PetscInfoFlags)] = {NULL};
+PetscBool                PetscLogPrintInfo                                         = PETSC_FALSE;
+FILE                    *PetscInfoFile                                             = NULL;
 
 /*@
     PetscInfoEnabled - Checks whether a given OBJECT_CLASSID is allowed to print using `PetscInfo()`
@@ -291,6 +292,12 @@ PetscErrorCode PetscInfoProcessClass(const char classname[], PetscInt numClassID
       for (PetscInt i = 0; i < numClassID; ++i) PetscCall(PetscInfoDeactivateClass(classIDs[i]));
     }
   }
+  for (PetscInt i = 0; i < numClassID; ++i) {
+    const PetscClassId idx = classIDs[i] - PETSC_SMALLEST_CLASSID;
+
+    PetscCall(PetscFree(PetscInfoNames[idx]));
+    PetscCall(PetscStrallocpy(classname, PetscInfoNames + idx));
+  }
   PetscCall(PetscInfoGetClass(classname, &found));
   if ((found && exclude) || (!found && !exclude)) {
     if (PetscInfoNumClasses > 0) {
@@ -419,7 +426,12 @@ PetscErrorCode PetscInfoDestroy(void) {
   PetscCheck(!err, PETSC_COMM_SELF, PETSC_ERR_SYS, "fflush() failed on file");
   if (PetscInfoFilename) PetscCall(PetscFClose(PETSC_COMM_SELF, PetscInfoFile));
   PetscCall(PetscFree(PetscInfoFilename));
-  for (size_t i = 0; i < PETSC_STATIC_ARRAY_LENGTH(PetscInfoFlags); ++i) PetscInfoFlags[i] = 1;
+  PetscAssert(PETSC_STATIC_ARRAY_LENGTH(PetscInfoFlags) == PETSC_STATIC_ARRAY_LENGTH(PetscInfoNames), PETSC_COMM_SELF, PETSC_ERR_PLIB, "PetscInfoFlags and PetscInfoNames must be the same size");
+  for (size_t i = 0; i < PETSC_STATIC_ARRAY_LENGTH(PetscInfoFlags); ++i) {
+    PetscInfoFlags[i] = 1;
+    PetscCall(PetscFree(PetscInfoNames[i]));
+  }
+
   PetscInfoClassesLocked = PETSC_FALSE;
   PetscInfoInvertClasses = PETSC_FALSE;
   PetscInfoClassesSet    = PETSC_FALSE;
@@ -589,7 +601,7 @@ PetscErrorCode PetscInfo_Private(const char func[], PetscObject obj, const char 
     PetscLogPrintInfo = PETSC_FALSE;
     PetscCallMPI(MPI_Comm_rank(MPI_COMM_WORLD, &urank));
     va_start(Argp, message);
-    PetscCall(PetscSNPrintf(string, PETSC_STATIC_ARRAY_LENGTH(string), "[%d] %s(): ", urank, func));
+    PetscCall(PetscSNPrintf(string, PETSC_STATIC_ARRAY_LENGTH(string), "[%d] <%s> %s(): ", urank, PetscInfoNames[classid - PETSC_SMALLEST_CLASSID], func));
     PetscCall(PetscStrlen(string, &len));
     PetscCall(PetscVSNPrintf(string + len, 8 * 1024 - len, message, &fullLength, Argp));
     PetscCall(PetscFPrintf(PETSC_COMM_SELF, PetscInfoFile, "%s", string));
