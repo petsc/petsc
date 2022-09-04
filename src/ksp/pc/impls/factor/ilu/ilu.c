@@ -254,15 +254,15 @@ static PetscErrorCode PCApplySymmetricRight_ILU(PC pc, Vec x, Vec y) {
    Level: beginner
 
    Notes:
-    Only implemented for some matrix formats. (for parallel see PCHYPRE for hypre's ILU)
+   Only implemented for some matrix format and sequential. For parallel see `PCHYPRE` for hypre's ILU
 
-          For BAIJ matrices this implements a point block ILU
+   For `MATSEQBAIJ` matrices this implements a point block ILU
 
-          The "symmetric" application of this preconditioner is not actually symmetric since L is not transpose(U)
-          even when the matrix is not symmetric since the U stores the diagonals of the factorization.
+   The "symmetric" application of this preconditioner is not actually symmetric since L is not transpose(U)
+   even when the matrix is not symmetric since the U stores the diagonals of the factorization.
 
-          If you are using MATSEQAIJCUSPARSE matrices (or MATMPIAIJCUSPARSE matrices with block Jacobi), factorization
-          is never done on the GPU).
+   If you are using `MATSEQAIJCUSPARSE` matrices (or `MATMPIAIJCUSPARSE` matrices with block Jacobi), factorization
+   is never done on the GPU).
 
    References:
 +  * - T. Dupont, R. Kendall, and H. Rachford. An approximate factorization procedure for solving
@@ -273,12 +273,11 @@ static PetscErrorCode PCApplySymmetricRight_ILU(PC pc, Vec x, Vec y) {
       Algorithms, edited by D. Keyes, A. Semah, V. Venkatakrishnan, ICASE/LaRC Interdisciplinary Series in
       Science and Engineering, Kluwer.
 
-.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCSOR`, `MatOrderingType`,
+.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCSOR`, `MatOrderingType`, `PCLU`, `PCICC`, `PCCHOLESKY`,
           `PCFactorSetZeroPivot()`, `PCFactorSetShiftSetType()`, `PCFactorSetAmount()`,
           `PCFactorSetDropTolerance()`, `PCFactorSetFill()`, `PCFactorSetMatOrderingType()`, `PCFactorSetReuseOrdering()`,
           `PCFactorSetLevels()`, `PCFactorSetUseInPlace()`, `PCFactorSetAllowDiagonalFill()`, `PCFactorSetPivotInBlocks()`,
           `PCFactorGetAllowDiagonalFill()`, `PCFactorGetUseInPlace()`
-
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_ILU(PC pc) {

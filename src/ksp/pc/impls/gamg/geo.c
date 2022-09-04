@@ -23,7 +23,6 @@ static inline int petsc_geo_mg_compare(const void *a, const void *b) {
   return (((GAMGNode *)a)->degree - ((GAMGNode *)b)->degree);
 }
 
-/* -------------------------------------------------------------------------- */
 /*
    PCSetCoordinates_GEO
 
@@ -73,7 +72,6 @@ PetscErrorCode PCSetCoordinates_GEO(PC pc, PetscInt ndm, PetscInt a_nloc, PetscR
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
 /*
    PCSetData_GEO
 
@@ -85,7 +83,6 @@ PetscErrorCode PCSetData_GEO(PC pc, Mat m) {
   SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_PLIB, "GEO MG needs coordinates");
 }
 
-/* -------------------------------------------------------------------------- */
 /*
    PCSetFromOptions_GEO
 
@@ -109,7 +106,6 @@ PetscErrorCode PCSetFromOptions_GEO(PC pc, PetscOptionItems *PetscOptionsObject)
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
 /*
  triangulateAndFormProl
 
@@ -413,7 +409,7 @@ static PetscErrorCode triangulateAndFormProl(IS selected_2, PetscInt data_stride
   SETERRQ(PetscObjectComm((PetscObject)a_Prol), PETSC_ERR_PLIB, "configure with TRIANGLE to use geometric MG");
 #endif
 }
-/* -------------------------------------------------------------------------- */
+
 /*
    getGIDsOnSquareGraph - square graph, get
 
@@ -515,7 +511,6 @@ static PetscErrorCode getGIDsOnSquareGraph(PC pc, PetscInt nselected_1, const Pe
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
 /*
    PCGAMGGraph_GEO
 
@@ -550,7 +545,6 @@ PetscErrorCode PCGAMGGraph_GEO(PC pc, Mat Amat, Mat *a_Gmat) {
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
 /*
    PCGAMGCoarsen_GEO
 
@@ -633,7 +627,6 @@ PetscErrorCode PCGAMGCoarsen_GEO(PC a_pc, Mat *a_Gmat, PetscCoarsenData **a_llis
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
 /*
  PCGAMGProlongator_GEO
 
@@ -768,7 +761,6 @@ static PetscErrorCode PCDestroy_GAMG_GEO(PC pc) {
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
 /*
  PCCreateGAMG_GEO
 

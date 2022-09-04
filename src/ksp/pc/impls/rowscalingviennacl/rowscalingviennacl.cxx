@@ -1,6 +1,4 @@
 
-/*  -------------------------------------------------------------------- */
-
 /*
    Include files needed for the ViennaCL row-scaling preconditioner:
      pcimpl.h - private include file intended for use by all preconditioners
@@ -22,7 +20,6 @@ typedef struct {
   viennacl::linalg::row_scaling<viennacl::compressed_matrix<PetscScalar>> *ROWSCALINGVIENNACL;
 } PC_ROWSCALINGVIENNACL;
 
-/* -------------------------------------------------------------------------- */
 /*
    PCSetUp_ROWSCALINGVIENNACL - Prepares for the use of the ROWSCALINGVIENNACL preconditioner
                                 by setting data structures and options.
@@ -32,7 +29,7 @@ typedef struct {
 
    Application Interface Routine: PCSetUp()
 
-   Notes:
+   Note:
    The interface routine PCSetUp() is not usually called directly by
    the user, but instead is called by PCApply() if necessary.
 */
@@ -65,7 +62,6 @@ static PetscErrorCode PCSetUp_ROWSCALINGVIENNACL(PC pc) {
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
 /*
    PCApply_ROWSCALINGVIENNACL - Applies the ROWSCALINGVIENNACL preconditioner to a vector.
 
@@ -106,7 +102,7 @@ static PetscErrorCode PCApply_ROWSCALINGVIENNACL(PC pc, Vec x, Vec y) {
   PetscCall(PetscObjectStateIncrease((PetscObject)y));
   PetscFunctionReturn(0);
 }
-/* -------------------------------------------------------------------------- */
+
 /*
    PCDestroy_ROWSCALINGVIENNACL - Destroys the private context for the ROWSCALINGVIENNACL preconditioner
    that was created with PCCreate_ROWSCALINGVIENNACL().
@@ -140,15 +136,15 @@ static PetscErrorCode PCSetFromOptions_ROWSCALINGVIENNACL(PC pc, PetscOptionItem
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
-
 /*MC
      PCRowScalingViennaCL  - A diagonal preconditioner (scaling rows of matrices by their norm) that can be used via the CUDA, OpenCL, and OpenMP backends of ViennaCL
 
    Level: advanced
 
-.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`
+   Developer Note:
+   This `PCType` does not appear to be registered
 
+.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_ROWSCALINGVIENNACL(PC pc) {

@@ -194,9 +194,9 @@ static PetscErrorCode PCPatchCreateDefaultSF_Private(PC pc, PetscInt n, const Pe
     PetscHSetI   ranksUniq;
 
     /* First figure out how many dofs there are in the concatenated numbering.
-     * allRoots: number of owned global dofs;
-     * allLeaves: number of visible dofs (global + ghosted).
-     */
+       allRoots: number of owned global dofs;
+       allLeaves: number of visible dofs (global + ghosted).
+    */
     for (i = 0; i < n; ++i) {
       PetscInt nroots, nleaves;
 
@@ -233,8 +233,7 @@ static PetscErrorCode PCPatchCreateDefaultSF_Private(PC pc, PetscInt n, const Pe
     PetscCall(PetscSFCreate(PetscObjectComm((PetscObject)pc), &rankSF));
     PetscCall(PetscSFSetGraph(rankSF, 1, numRanks, NULL, PETSC_OWN_POINTER, remote, PETSC_OWN_POINTER));
     PetscCall(PetscSFSetUp(rankSF));
-    /* OK, use it to communicate the root offset on the remote
-     * processes for each subspace. */
+    /* OK, use it to communicate the root offset on the remote processes for each subspace. */
     PetscCall(PetscMalloc1(n, &offsets));
     PetscCall(PetscMalloc1(n * numRanks, &remoteOffsets));
 
@@ -245,8 +244,7 @@ static PetscErrorCode PCPatchCreateDefaultSF_Private(PC pc, PetscInt n, const Pe
       PetscCall(PetscSFGetGraph(sf[i - 1], &nroots, NULL, NULL, NULL));
       offsets[i] = offsets[i - 1] + nroots * bs[i - 1];
     }
-    /* Offsets are the offsets on the current process of the
-     * global dof numbering for the subspaces. */
+    /* Offsets are the offsets on the current process of the global dof numbering for the subspaces. */
     PetscCallMPI(MPI_Type_contiguous(n, MPIU_INT, &contig));
     PetscCallMPI(MPI_Type_commit(&contig));
 
@@ -256,8 +254,8 @@ static PetscErrorCode PCPatchCreateDefaultSF_Private(PC pc, PetscInt n, const Pe
     PetscCall(PetscFree(offsets));
     PetscCall(PetscSFDestroy(&rankSF));
     /* Now remoteOffsets contains the offsets on the remote
-     * processes who communicate with me.  So now we can
-     * concatenate the list of SFs into a single one. */
+      processes who communicate with me.  So now we can
+      concatenate the list of SFs into a single one. */
     index = 0;
     for (i = 0; i < n; ++i) {
       const PetscSFNode *remote = NULL;
@@ -552,7 +550,7 @@ PetscErrorCode PCPatchSetDiscretisationInfoCombined(PC pc, DM dm, PetscInt *node
 
   PCPatchSetComputeFunction - Set the callback used to compute patch residuals
 
-  Logically collective on PC
+  Logically collective on pc
 
   Input Parameters:
 + pc   - The PC
@@ -574,7 +572,7 @@ $   func (PC pc,PetscInt point,Vec x,Vec f,IS cellIS,PetscInt n,const PetscInt* 
 
   Level: advanced
 
-  Notes:
+  Note:
   The entries of F (the output residual vector) have been set to zero before the call.
 
 .seealso: `PCPatchSetComputeOperator()`, `PCPatchGetComputeOperator()`, `PCPatchSetDiscretisationInfo()`, `PCPatchSetComputeFunctionInteriorFacets()`
@@ -592,7 +590,7 @@ PetscErrorCode PCPatchSetComputeFunction(PC pc, PetscErrorCode (*func)(PC, Petsc
 
   PCPatchSetComputeFunctionInteriorFacets - Set the callback used to compute facet integrals for patch residuals
 
-  Logically collective on PC
+  Logically collective on pc
 
   Input Parameters:
 + pc   - The PC
@@ -614,7 +612,7 @@ $   func (PC pc,PetscInt point,Vec x,Vec f,IS facetIS,PetscInt n,const PetscInt*
 
   Level: advanced
 
-  Notes:
+  Note:
   The entries of F (the output residual vector) have been set to zero before the call.
 
 .seealso: `PCPatchSetComputeOperator()`, `PCPatchGetComputeOperator()`, `PCPatchSetDiscretisationInfo()`, `PCPatchSetComputeFunction()`
@@ -632,7 +630,7 @@ PetscErrorCode PCPatchSetComputeFunctionInteriorFacets(PC pc, PetscErrorCode (*f
 
   PCPatchSetComputeOperator - Set the callback used to compute patch matrices
 
-  Logically collective on PC
+  Logically collective on pc
 
   Input Parameters:
 + pc   - The PC
@@ -654,7 +652,7 @@ $   func (PC pc,PetscInt point,Vec x,Mat mat,IS facetIS,PetscInt n,const PetscIn
 
   Level: advanced
 
-  Notes:
+  Note:
   The matrix entries have been set to zero before the call.
 
 .seealso: `PCPatchGetComputeOperator()`, `PCPatchSetComputeFunction()`, `PCPatchSetDiscretisationInfo()`
@@ -672,7 +670,7 @@ PetscErrorCode PCPatchSetComputeOperator(PC pc, PetscErrorCode (*func)(PC, Petsc
 
   PCPatchSetComputeOperatorInteriorFacets - Set the callback used to compute facet integrals for patch matrices
 
-  Logically collective on PC
+  Logically collective on pc
 
   Input Parameters:
 + pc   - The PC
@@ -694,7 +692,7 @@ $   func (PC pc,PetscInt point,Vec x,Mat mat,IS facetIS,PetscInt n,const PetscIn
 
   Level: advanced
 
-  Notes:
+  Note:
   The matrix entries have been set to zero before the call.
 
 .seealso: `PCPatchGetComputeOperator()`, `PCPatchSetComputeFunction()`, `PCPatchSetDiscretisationInfo()`
@@ -748,8 +746,8 @@ static PetscErrorCode PCPatchCompleteCellPatch(PC pc, PetscHSetI ht, PetscHSetI 
         if (ignoredim >= 0 && seenpoint >= iStart && seenpoint < iEnd) continue;
         PetscCall(PetscHSetIAdd(cht, seenpoint));
         /* Facet integrals couple dofs across facets, so in that case for each of
-         * the facets we need to add all dofs on the other side of the facet to
-         * the seen dofs. */
+          the facets we need to add all dofs on the other side of the facet to
+          the seen dofs. */
         if (patch->usercomputeopintfacet) {
           if (fBegin <= seenpoint && seenpoint < fEnd) {
             PetscCall(DMPlexGetTransitiveClosure(dm, seenpoint, PETSC_FALSE, &fStarSize, &fStar));
@@ -878,16 +876,16 @@ static PetscErrorCode PCPatchComputeSetDifference_Private(PetscHSetI A, PetscHSe
 }
 
 /*
- * PCPatchCreateCellPatches - create patches.
- *
- * Input Parameters:
- * + dm - The DMPlex object defining the mesh
- *
- * Output Parameters:
- * + cellCounts  - Section with counts of cells around each vertex
- * . cells       - IS of the cell point indices of cells in each patch
- * . pointCounts - Section with counts of cells around each vertex
- * - point       - IS of the cell point indices of cells in each patch
+  PCPatchCreateCellPatches - create patches.
+
+  Input Parameter:
+  . dm - The DMPlex object defining the mesh
+
+  Output Parameters:
+  + cellCounts  - Section with counts of cells around each vertex
+  . cells       - IS of the cell point indices of cells in each patch
+  . pointCounts - Section with counts of cells around each vertex
+  - point       - IS of the cell point indices of cells in each patch
  */
 static PetscErrorCode PCPatchCreateCellPatches(PC pc) {
   PC_PATCH       *patch = (PC_PATCH *)pc->data;
@@ -1143,20 +1141,20 @@ static PetscErrorCode PCPatchCreateCellPatches(PC pc) {
 }
 
 /*
- * PCPatchCreateCellPatchDiscretisationInfo - Build the dof maps for cell patches
- *
- * Input Parameters:
- * + dm - The DMPlex object defining the mesh
- * . cellCounts - Section with counts of cells around each vertex
- * . cells - IS of the cell point indices of cells in each patch
- * . cellNumbering - Section mapping plex cell points to Firedrake cell indices.
- * . nodesPerCell - number of nodes per cell.
- * - cellNodeMap - map from cells to node indices (nodesPerCell * numCells)
- *
- * Output Parameters:
- * + dofs - IS of local dof numbers of each cell in the patch, where local is a patch local numbering
- * . gtolCounts - Section with counts of dofs per cell patch
- * - gtol - IS mapping from global dofs to local dofs for each patch.
+  PCPatchCreateCellPatchDiscretisationInfo - Build the dof maps for cell patches
+
+  Input Parameters:
+  + dm - The DMPlex object defining the mesh
+  . cellCounts - Section with counts of cells around each vertex
+  . cells - IS of the cell point indices of cells in each patch
+  . cellNumbering - Section mapping plex cell points to Firedrake cell indices.
+  . nodesPerCell - number of nodes per cell.
+  - cellNodeMap - map from cells to node indices (nodesPerCell * numCells)
+
+  Output Parameters:
+  + dofs - IS of local dof numbers of each cell in the patch, where local is a patch local numbering
+  . gtolCounts - Section with counts of dofs per cell patch
+  - gtol - IS mapping from global dofs to local dofs for each patch.
  */
 static PetscErrorCode PCPatchCreateCellPatchDiscretisationInfo(PC pc) {
   PC_PATCH       *patch       = (PC_PATCH *)pc->data;
@@ -1398,7 +1396,7 @@ static PetscErrorCode PCPatchCreateCellPatchDiscretisationInfo(PC pc) {
 
             if (isNonlinear) {
               /* Build the dofmap for the function space with _all_ dofs,
-                 including those in any kind of boundary condition */
+   including those in any kind of boundary condition */
               PetscCall(PetscHMapIGet(htWithAll, globalDof + l, &localDof));
               if (localDof == -1) {
                 localDof = localIndexWithAll++;
@@ -1548,10 +1546,10 @@ static PetscErrorCode PCPatchCreateCellPatchDiscretisationInfo(PC pc) {
     PetscCall(PetscHSetIDestroy(&artificialbcs));
 
     /* At this point, we have a hash table ht built that maps globalDof -> localDof.
-     We need to create the dof table laid out cellwise first, then by subspace,
-     as the assembler assembles cell-wise and we need to stuff the different
-     contributions of the different function spaces to the right places. So we loop
-     over cells, then over subspaces. */
+   We need to create the dof table laid out cellwise first, then by subspace,
+   as the assembler assembles cell-wise and we need to stuff the different
+   contributions of the different function spaces to the right places. So we loop
+   over cells, then over subspaces. */
     if (patch->nsubspaces > 1) { /* for nsubspaces = 1, data we need is already in dofsArray */
       for (i = off; i < off + dof; ++i) {
         const PetscInt c    = cellsArray[i];
@@ -1571,9 +1569,9 @@ static PetscErrorCode PCPatchCreateCellPatchDiscretisationInfo(PC pc) {
 
               PetscCall(PetscHMapIGet(ht, globalDof, &localDof));
               /* If it's not in the hash table, i.e. is a BC dof,
-               then the PetscHSetIMap above gives -1, which matches
-               exactly the convention for PETSc's matrix assembly to
-               ignore the dof. So we don't need to do anything here */
+   then the PetscHSetIMap above gives -1, which matches
+   exactly the convention for PETSc's matrix assembly to
+   ignore the dof. So we don't need to do anything here */
               asmArray[asmKey] = localDof;
               if (patch->local_composition_type == PC_COMPOSITE_MULTIPLICATIVE) {
                 PetscCall(PetscHMapIGet(htWithArtificial, globalDof, &localDof));
@@ -1715,8 +1713,8 @@ static PetscErrorCode PCPatchCreateMatrix_Private(PC pc, PetscInt point, Mat *ma
     PetscCall(PetscSectionGetOffset(patch->cellCounts, point, &offset));
     PetscCall(PetscLogEventBegin(PC_Patch_Prealloc, pc, 0, 0, 0));
     /* A PetscBT uses N^2 bits to store the sparsity pattern on a
-     * patch. This is probably OK if the patches are not too big,
-     * but uses too much memory. We therefore switch based on rsize. */
+   * patch. This is probably OK if the patches are not too big,
+   * but uses too much memory. We therefore switch based on rsize. */
     if (rsize < 3000) { /* FIXME: I picked this switch value out of my hat */
       PetscScalar *zeroes;
       PetscInt     rows;
@@ -2065,12 +2063,12 @@ PetscErrorCode PCPatchComputeOperator_Internal(PC pc, Vec x, Mat mat, PetscInt p
           const PetscScalar *v     = elementTensors + patch->precomputedIntFacetTensorLocations[facet - fStart] * nFacetDof * nFacetDof;
           idx                      = 0;
           /*
-           * 0--1
-           * |\-|
-           * |+\|
-           * 2--3
-           * [0, 2, 3, 0, 1, 3]
-           */
+     0--1
+     |\-|
+     |+\|
+     2--3
+     [0, 2, 3, 0, 1, 3]
+   */
           for (c = 0; c < 2; c++) {
             const PetscInt cell = facetCells[2 * (intFacetOffset + i) + c];
             for (d = 0; d < patch->totalDofsPerCell; d++) {
@@ -2083,12 +2081,12 @@ PetscErrorCode PCPatchComputeOperator_Internal(PC pc, Vec x, Mat mat, PetscInt p
         PetscCall(VecRestoreArrayRead(patch->intFacetMats, &elementTensors));
       } else {
         /*
-         * 0--1
-         * |\-|
-         * |+\|
-         * 2--3
-         * [0, 2, 3, 0, 1, 3]
-         */
+     0--1
+     |\-|
+     |+\|
+     2--3
+     [0, 2, 3, 0, 1, 3]
+   */
         for (i = 0; i < numIntFacets; i++) {
           for (c = 0; c < 2; c++) {
             const PetscInt cell = facetCells[2 * (intFacetOffset + i) + c];
@@ -2998,7 +2996,7 @@ static PetscErrorCode PCSetFromOptions_PATCH(PC pc, PetscOptionItems *PetscOptio
   PetscCall(PetscOptionsBool(option, "Go start->end, end->start?", "PCPATCH", patch->symmetrise_sweep, &patch->symmetrise_sweep, &flg));
 
   /* If the user has set the number of subspaces, use that for the buffer size,
-     otherwise use a large number */
+   otherwise use a large number */
   if (patch->nsubspaces <= 0) {
     nfields = 128;
   } else {
@@ -3114,20 +3112,20 @@ static PetscErrorCode PCView_PATCH(PC pc, PetscViewer viewer) {
 }
 
 /*MC
-  PCPATCH - A PC object that encapsulates flexible definition of blocks for overlapping and non-overlapping
-            small block additive preconditioners. Block definition is based on topology from
-            a DM and equation numbering from a PetscSection.
+   PCPATCH - A `PC` object that encapsulates flexible definition of blocks for overlapping and non-overlapping
+   small block additive preconditioners. Block definition is based on topology from
+   a `DM` and equation numbering from a `PetscSection`.
 
-  Options Database Keys:
+   Options Database Keys:
 + -pc_patch_cells_view   - Views the process local cell numbers for each patch
 . -pc_patch_points_view  - Views the process local mesh point numbers for each patch
 . -pc_patch_g2l_view     - Views the map between global dofs and patch local dofs for each patch
 . -pc_patch_patches_view - Views the global dofs associated with each patch and its boundary
 - -pc_patch_sub_mat_view - Views the matrix associated with each patch
 
-  Level: intermediate
+   Level: intermediate
 
-.seealso: `PCType`, `PCCreate()`, `PCSetType()`
+.seealso: `PCType`, `PCCreate()`, `PCSetType()`, `PCASM`, `PCJACOBI`, `PCPBJACOBI`, `PCVPBJACOBI`, `SNESPATCH`
 M*/
 PETSC_EXTERN PetscErrorCode PCCreate_Patch(PC pc) {
   PC_PATCH *patch;

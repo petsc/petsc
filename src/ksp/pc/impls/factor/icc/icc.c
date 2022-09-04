@@ -153,25 +153,24 @@ extern PetscErrorCode PCFactorSetDropTolerance_ILU(PC, PetscReal, PetscReal, Pet
    Level: beginner
 
    Notes:
-    Only implemented for some matrix formats. Not implemented in parallel.
+   Only implemented for some matrix formats. Not implemented in parallel.
 
-          For BAIJ matrices this implements a point block ICC.
+   For `MATSEQBAIJ` matrices this implements a point block ICC.
 
-          The Manteuffel shift is only implemented for matrices with block size 1
+   By default, the Manteuffel is applied (for matrices with block size 1). Call `PCFactorSetShiftType`(pc,`MAT_SHIFT_POSITIVE_DEFINITE`);
+   to turn off the shift.
 
-          By default, the Manteuffel is applied (for matrices with block size 1). Call PCFactorSetShiftType(pc,MAT_SHIFT_POSITIVE_DEFINITE);
-          to turn off the shift.
+   The Manteuffel shift is only implemented for matrices with block size 1
 
    References:
 .  * - TONY F. CHAN AND HENK A. VAN DER VORST, Review article: APPROXIMATE AND INCOMPLETE FACTORIZATIONS,
       Chapter in Parallel Numerical Algorithms, edited by D. Keyes, A. Semah, V. Venkatakrishnan, ICASE/LaRC Interdisciplinary Series in
       Science and Engineering, Kluwer.
 
-.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCSOR`, `MatOrderingType`,
+.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCSOR`, `MatOrderingType`, `PCILU`, `PCLU`, `PCCHOLESKY`,
           `PCFactorSetZeroPivot()`, `PCFactorSetShiftType()`, `PCFactorSetShiftAmount()`,
           `PCFactorSetFill()`, `PCFactorSetMatOrderingType()`, `PCFactorSetReuseOrdering()`,
           `PCFactorSetLevels()`
-
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_ICC(PC pc) {

@@ -1,6 +1,4 @@
 
-/*  -------------------------------------------------------------------- */
-
 /*
    Include files needed for the ViennaCL Chow-Patel parallel ILU preconditioner:
      pcimpl.h - private include file intended for use by all preconditioners
@@ -22,7 +20,6 @@ typedef struct {
   viennacl::linalg::chow_patel_ilu_precond<viennacl::compressed_matrix<PetscScalar>> *CHOWILUVIENNACL;
 } PC_CHOWILUVIENNACL;
 
-/* -------------------------------------------------------------------------- */
 /*
    PCSetUp_CHOWILUVIENNACL - Prepares for the use of the CHOWILUVIENNACL preconditioner
                              by setting data structures and options.
@@ -32,7 +29,7 @@ typedef struct {
 
    Application Interface Routine: PCSetUp()
 
-   Notes:
+   Note:
    The interface routine PCSetUp() is not usually called directly by
    the user, but instead is called by PCApply() if necessary.
 */
@@ -65,7 +62,6 @@ static PetscErrorCode PCSetUp_CHOWILUVIENNACL(PC pc) {
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
 /*
    PCApply_CHOWILUVIENNACL - Applies the CHOWILUVIENNACL preconditioner to a vector.
 
@@ -106,7 +102,7 @@ static PetscErrorCode PCApply_CHOWILUVIENNACL(PC pc, Vec x, Vec y) {
   PetscCall(PetscObjectStateIncrease((PetscObject)y));
   PetscFunctionReturn(0);
 }
-/* -------------------------------------------------------------------------- */
+
 /*
    PCDestroy_CHOWILUVIENNACL - Destroys the private context for the CHOWILUVIENNACL preconditioner
    that was created with PCCreate_CHOWILUVIENNACL().
@@ -140,15 +136,15 @@ static PetscErrorCode PCSetFromOptions_CHOWILUVIENNACL(PC pc, PetscOptionItems *
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
-
 /*MC
      PCCHOWILUViennaCL  - A smoothed agglomeration algorithm that can be used via the CUDA, OpenCL, and OpenMP backends of ViennaCL
 
    Level: advanced
 
-.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`
+   Developer Note:
+   This does not appear to be wired up with `PCRegisterType()`
 
+.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_CHOWILUVIENNACL(PC pc) {

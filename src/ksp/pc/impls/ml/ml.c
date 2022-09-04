@@ -482,7 +482,7 @@ PetscErrorCode        PCReset_ML(PC pc) {
 
    Application Interface Routine: PCSetUp()
 
-   Notes:
+   Note:
    The interface routine PCSetUp() is not usually called directly by
    the user, but instead is called by PCApply() if necessary.
 */
@@ -1016,7 +1016,6 @@ PetscErrorCode PCSetFromOptions_ML(PC pc, PetscOptionItems *PetscOptionsObject) 
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
 /*
    PCCreate_ML - Creates a ML preconditioner context, PC_ML,
    and sets this as the private data within the generic preconditioning
@@ -1029,37 +1028,39 @@ PetscErrorCode PCSetFromOptions_ML(PC pc, PetscOptionItems *PetscOptionsObject) 
 */
 
 /*MC
-     PCML - Use algebraic multigrid preconditioning. This preconditioner requires you provide
-       fine grid discretization matrix. The coarser grid matrices and restriction/interpolation
-       operators are computed by ML, with the matrices coverted to PETSc matrices in aij format
-       and the restriction/interpolation operators wrapped as PETSc shell matrices.
+     PCML - Use the SNL ML algebraic multigrid preconditioner.
 
-   Options Database Key:
+   Options Database Keys:
    Multigrid options(inherited):
-+  -pc_mg_cycles <1> - 1 for V cycle, 2 for W-cycle (MGSetCycles)
-.  -pc_mg_distinct_smoothup - Should one configure the up and down smoothers separately (PCMGSetDistinctSmoothUp)
++  -pc_mg_cycles <1> - 1 for V cycle, 2 for W-cycle (`MGSetCycles()`)
+.  -pc_mg_distinct_smoothup - Should one configure the up and down smoothers separately (`PCMGSetDistinctSmoothUp()`)
 -  -pc_mg_type <multiplicative> - (one of) additive multiplicative full kascade
 
-   ML options:
-+  -pc_ml_PrintLevel <0> - Print level (ML_Set_PrintLevel)
+   ML Options Database Key:
++  -pc_ml_PrintLevel <0> - Print level (`ML_Set_PrintLevel()`)
 .  -pc_ml_maxNlevels <10> - Maximum number of levels (None)
-.  -pc_ml_maxCoarseSize <1> - Maximum coarsest mesh size (ML_Aggregate_Set_MaxCoarseSize)
+.  -pc_ml_maxCoarseSize <1> - Maximum coarsest mesh size (`ML_Aggregate_Set_MaxCoarseSize()`)
 .  -pc_ml_CoarsenScheme <Uncoupled> - (one of) Uncoupled Coupled MIS METIS
-.  -pc_ml_DampingFactor <1.33333> - P damping factor (ML_Aggregate_Set_DampingFactor)
-.  -pc_ml_Threshold <0> - Smoother drop tol (ML_Aggregate_Set_Threshold)
-.  -pc_ml_SpectralNormScheme_Anorm <false> - Method used for estimating spectral radius (ML_Set_SpectralNormScheme_Anorm)
-.  -pc_ml_repartition <false> - Allow ML to repartition levels of the hierarchy (ML_Repartition_Activate)
-.  -pc_ml_repartitionMaxMinRatio <1.3> - Acceptable ratio of repartitioned sizes (ML_Repartition_Set_LargestMinMaxRatio)
-.  -pc_ml_repartitionMinPerProc <512> - Smallest repartitioned size (ML_Repartition_Set_MinPerProc)
-.  -pc_ml_repartitionPutOnSingleProc <5000> - Problem size automatically repartitioned to one processor (ML_Repartition_Set_PutOnSingleProc)
-.  -pc_ml_repartitionType <Zoltan> - Repartitioning library to use (ML_Repartition_Set_Partitioner)
+.  -pc_ml_DampingFactor <1.33333> - P damping factor (`ML_Aggregate_Set_DampingFactor()`)
+.  -pc_ml_Threshold <0> - Smoother drop tol (`ML_Aggregate_Set_Threshold()`)
+.  -pc_ml_SpectralNormScheme_Anorm <false> - Method used for estimating spectral radius (`ML_Set_SpectralNormScheme_Anorm()`)
+.  -pc_ml_repartition <false> - Allow ML to repartition levels of the hierarchy (`ML_Repartition_Activate()`)
+.  -pc_ml_repartitionMaxMinRatio <1.3> - Acceptable ratio of repartitioned sizes (`ML_Repartition_Set_LargestMinMaxRatio()`)
+.  -pc_ml_repartitionMinPerProc <512> - Smallest repartitioned size (`ML_Repartition_Set_MinPerProc()`)
+.  -pc_ml_repartitionPutOnSingleProc <5000> - Problem size automatically repartitioned to one processor (`ML_Repartition_Set_PutOnSingleProc()`)
+.  -pc_ml_repartitionType <Zoltan> - Repartitioning library to use (`ML_Repartition_Set_Partitioner()`)
 .  -pc_ml_repartitionZoltanScheme <RCB> - Repartitioning scheme to use (None)
 .  -pc_ml_Aux <false> - Aggregate using auxiliary coordinate-based Laplacian (None)
 -  -pc_ml_AuxThreshold <0.0> - Auxiliary smoother drop tol (None)
 
    Level: intermediate
 
-.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCMGType`,
+   Developer Note:
+   The coarser grid matrices and restriction/interpolation
+   operators are computed by ML, with the matrices coverted to PETSc matrices in `MATAIJ` format
+   and the restriction/interpolation operators wrapped as PETSc shell matrices.
+
+.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCMGType`, `PCMG`, `PCHYPRE`, `PCGAMG`,
           `PCMGSetLevels()`, `PCMGGetLevels()`, `PCMGSetType()`, `MPSetCycles()`, `PCMGSetDistinctSmoothUp()`,
           `PCMGGetCoarseSolve()`, `PCMGSetResidual()`, `PCMGSetInterpolation()`,
           `PCMGSetRestriction()`, `PCMGGetSmoother()`, `PCMGGetSmootherUp()`, `PCMGGetSmootherDown()`,

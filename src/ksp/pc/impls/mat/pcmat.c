@@ -26,9 +26,9 @@ static PetscErrorCode PCDestroy_Mat(PC pc) {
 
 /*MC
      PCMAT - A preconditioner obtained by multiplying by the preconditioner matrix supplied
-             in PCSetOperators() or KSPSetOperators()
+             in `PCSetOperators()` or `KSPSetOperators()`
 
-   Notes:
+   Note:
     This one is a little strange. One rarely has an explicit matrix that approximates the
          inverse of the matrix they wish to solve for.
 
@@ -36,7 +36,6 @@ static PetscErrorCode PCDestroy_Mat(PC pc) {
 
 .seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`,
           `PCSHELL`
-
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_Mat(PC pc) {

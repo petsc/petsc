@@ -164,29 +164,28 @@ PETSC_INTERN PetscErrorCode PCDestroy_VPBJacobi(PC pc) {
 /*MC
      PCVPBJACOBI - Variable size point block Jacobi preconditioner
 
-   Notes:
-     See PCJACOBI for point Jacobi preconditioning, PCPBJACOBI for fixed point block size, and PCBJACOBI for large size blocks
+   Level: beginner
 
-     This works for AIJ matrices
+   Notes:
+     See `PCJACOBI` for point Jacobi preconditioning, `PCPBJACOBI` for fixed point block size, and `PCBJACOBI` for large size blocks
+
+     This works for `MATAIJ` matrices
 
      Uses dense LU factorization with partial pivoting to invert the blocks; if a zero pivot
      is detected a PETSc error is generated.
 
-     One must call MatSetVariableBlockSizes() to use this preconditioner
+     One must call `MatSetVariableBlockSizes()` to use this preconditioner
 
    Developer Notes:
-     This should support the PCSetErrorIfFailure() flag set to PETSC_TRUE to allow
+     This should support the `PCSetErrorIfFailure()` flag set to `PETSC_TRUE` to allow
      the factorization to continue even after a zero pivot is found resulting in a Nan and hence
-     terminating KSP with a KSP_DIVERGED_NANORIF allowing
+     terminating `KSP` with a `KSP_DIVERGED_NANORIF` allowing
      a nonlinear solver/ODE integrator to recover without stopping the program as currently happens.
 
      Perhaps should provide an option that allows generation of a valid preconditioner
-     even if a block is singular as the PCJACOBI does.
-
-   Level: beginner
+     even if a block is singular as the `PCJACOBI` does.
 
 .seealso: `MatSetVariableBlockSizes()`, `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCJACOBI`, `PCPBJACOBI`, `PCBJACOBI`
-
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_VPBJacobi(PC pc) {

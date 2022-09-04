@@ -206,7 +206,7 @@ PetscErrorCode amgx_output_messages(PC_AMGX *amgx) {
 
    Application Interface Routine: PCSetUp()
 
-   Notes:
+   Note:
    The interface routine PCSetUp() is not usually called directly by
    the user, but instead is called by PCApply() if necessary.
 */
@@ -542,17 +542,6 @@ static PetscErrorCode PCView_AMGX(PC pc, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-/*
-   PCCreate_AMGX - Creates a AmgX preconditioner context, PC_AMGX,
-   and sets this as the private data within the generic preconditioning
-   context, PC, that was created within PCCreate().
-
-   Input Parameter:
-.  pc - the preconditioner context
-
-   Application Interface Routine: PCCreate()
-*/
-
 /*MC
      PCAMGX - Interface to NVIDIA's AmgX algebraic multigrid
 
@@ -574,10 +563,10 @@ static PetscErrorCode PCView_AMGX(PC pc, PetscViewer viewer) {
 
    Level: intermediate
 
-   Notes:
-     Preconditioner supplied by the GPU accelerated library AmgX. Implementation will accept host or device pointers, but good performance will require that the KSP is also GPU accelerated so that data is not frequently transferred between host and device.
+   Note:
+     Implementation will accept host or device pointers, but good performance will require that the `KSP` is also GPU accelerated so that data is not frequently transferred between host and device.
 
-.seealso:  `PCGAMG`, `PCHYPRE`, `PCMG`, `PCAmgXGetResources()`, `PCCreate()`, `PCSetType()`, `PCType` (for list of available types), `PC`
+.seealso: `PCGAMG`, `PCHYPRE`, `PCMG`, `PCAmgXGetResources()`, `PCCreate()`, `PCSetType()`, `PCType` (for list of available types), `PC`
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_AMGX(PC pc) {
@@ -636,7 +625,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_AMGX(PC pc) {
 
     Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  pc - the PC
 
    Output Parameter:
@@ -644,7 +633,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_AMGX(PC pc) {
 
    Level: advanced
 
-.seealso: `PCCreate_AMGX()`
+.seealso: `PCAMGX`, `PC`, `PCGAMG`
 @*/
 PETSC_EXTERN PetscErrorCode PCAmgXGetResources(PC pc, void *rsrc_out) {
   PC_AMGX *amgx = (PC_AMGX *)pc->data;
@@ -656,7 +645,6 @@ PETSC_EXTERN PetscErrorCode PCAmgXGetResources(PC pc, void *rsrc_out) {
     PetscCallAmgX(AMGX_resources_create(&amgx->rsrc, amgx->cfg, &amgx->comm, 1, &amgx->devID));
     amgx->rsrc_init = true;
   }
-
   *static_cast<AMGX_resources_handle *>(rsrc_out) = amgx->rsrc;
   PetscFunctionReturn(0);
 }

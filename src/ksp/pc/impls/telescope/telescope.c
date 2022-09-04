@@ -790,7 +790,7 @@ static PetscErrorCode PCTelescopeGetDM_Telescope(PC pc, DM *dm) {
 }
 
 /*@
- PCTelescopeGetKSP - Gets the KSP created by the telescoping PC.
+ PCTelescopeGetKSP - Gets the `KSP` created by the telescoping `PC`.
 
  Not Collective
 
@@ -798,10 +798,11 @@ static PetscErrorCode PCTelescopeGetDM_Telescope(PC pc, DM *dm) {
 .  pc - the preconditioner context
 
  Output Parameter:
-.  subksp - the KSP defined the smaller set of processes
+.  subksp - the `KSP` defined the smaller set of processes
 
  Level: advanced
 
+.seealso: `PCTELESCOPE`
 @*/
 PetscErrorCode PCTelescopeGetKSP(PC pc, KSP *subksp) {
   PetscFunctionBegin;
@@ -810,7 +811,7 @@ PetscErrorCode PCTelescopeGetKSP(PC pc, KSP *subksp) {
 }
 
 /*@
- PCTelescopeGetReductionFactor - Gets the factor by which the original number of processes has been reduced by.
+ PCTelescopeGetReductionFactor - Gets the factor by which the original number of MPI ranks  has been reduced by.
 
  Not Collective
 
@@ -822,6 +823,7 @@ PetscErrorCode PCTelescopeGetKSP(PC pc, KSP *subksp) {
 
  Level: advanced
 
+.seealso: `PCTELESCOPE`, `PCTelescopeSetReductionFactor()`
 @*/
 PetscErrorCode PCTelescopeGetReductionFactor(PC pc, PetscInt *fact) {
   PetscFunctionBegin;
@@ -830,7 +832,7 @@ PetscErrorCode PCTelescopeGetReductionFactor(PC pc, PetscInt *fact) {
 }
 
 /*@
- PCTelescopeSetReductionFactor - Sets the factor by which the original number of processes has been reduced by.
+ PCTelescopeSetReductionFactor - Sets the factor by which the original number of MPI ranks will been reduced by.
 
  Not Collective
 
@@ -842,6 +844,7 @@ PetscErrorCode PCTelescopeGetReductionFactor(PC pc, PetscInt *fact) {
 
  Level: advanced
 
+.seealso: `PCTELESCOPE`, `PCTelescopeGetReductionFactor()`
 @*/
 PetscErrorCode PCTelescopeSetReductionFactor(PC pc, PetscInt fact) {
   PetscFunctionBegin;
@@ -850,7 +853,7 @@ PetscErrorCode PCTelescopeSetReductionFactor(PC pc, PetscInt fact) {
 }
 
 /*@
- PCTelescopeGetIgnoreDM - Get the flag indicating if any DM attached to the PC will be used.
+ PCTelescopeGetIgnoreDM - Get the flag indicating if any `DM` attached to the `PC` will be used.
 
  Not Collective
 
@@ -862,6 +865,7 @@ PetscErrorCode PCTelescopeSetReductionFactor(PC pc, PetscInt fact) {
 
  Level: advanced
 
+.seealso: `PCTELESCOPE`, `PCTelescopeSetIgnoreDM()`
 @*/
 PetscErrorCode PCTelescopeGetIgnoreDM(PC pc, PetscBool *v) {
   PetscFunctionBegin;
@@ -882,6 +886,7 @@ PetscErrorCode PCTelescopeGetIgnoreDM(PC pc, PetscBool *v) {
 
  Level: advanced
 
+.seealso: `PCTELESCOPE`, `PCTelescopeGetIgnoreDM()`
 @*/
 PetscErrorCode PCTelescopeSetIgnoreDM(PC pc, PetscBool v) {
   PetscFunctionBegin;
@@ -890,7 +895,7 @@ PetscErrorCode PCTelescopeSetIgnoreDM(PC pc, PetscBool v) {
 }
 
 /*@
- PCTelescopeGetUseCoarseDM - Get the flag indicating if the coarse DM attached to DM associated with the PC will be used.
+ PCTelescopeGetUseCoarseDM - Get the flag indicating if the coarse `DM` attached to `DM` associated with the `PC` will be used.
 
  Not Collective
 
@@ -902,6 +907,7 @@ PetscErrorCode PCTelescopeSetIgnoreDM(PC pc, PetscBool v) {
 
  Level: advanced
 
+.seealso: `PCTELESCOPE`, `PCTelescopeSetIgnoreDM()`, `PCTelescopeSetUseCoarseDM()`
 @*/
 PetscErrorCode PCTelescopeGetUseCoarseDM(PC pc, PetscBool *v) {
   PetscFunctionBegin;
@@ -910,7 +916,7 @@ PetscErrorCode PCTelescopeGetUseCoarseDM(PC pc, PetscBool *v) {
 }
 
 /*@
- PCTelescopeSetUseCoarseDM - Set a flag to query the DM attached to the PC if it also has a coarse DM
+ PCTelescopeSetUseCoarseDM - Set a flag to query the `DM` attached to the `PC` if it also has a coarse `DM`
 
  Not Collective
 
@@ -918,25 +924,25 @@ PetscErrorCode PCTelescopeGetUseCoarseDM(PC pc, PetscBool *v) {
 .  pc - the preconditioner context
 
  Output Parameter:
-.  v - Use PETSC_FALSE to ignore any coarse DM
+.  v - Use `PETSC_FALSE` to ignore any coarse `DM`
 
  Notes:
- When you have specified to use a coarse DM, the communicator used to create the sub-KSP within PCTelescope
- will be that of the coarse DM. Hence the flags -pc_telescope_reduction_factor and
+ When you have specified to use a coarse `DM`, the communicator used to create the sub-KSP within `PCTELESCOPE`
+ will be that of the coarse `DM`. Hence the flags -pc_telescope_reduction_factor and
  -pc_telescope_subcomm_type will no longer have any meaning.
- It is required that the communicator associated with the parent (fine) and the coarse DM are of different sizes.
- An error will occur of the size of the communicator associated with the coarse DM
- is the same as that of the parent DM.
+ It is required that the communicator associated with the parent (fine) and the coarse `DM` are of different sizes.
+ An error will occur of the size of the communicator associated with the coarse `DM`
+ is the same as that of the parent `DM`.
  Furthermore, it is required that the communicator on the coarse DM is a sub-communicator of the parent.
  This will be checked at the time the preconditioner is setup and an error will occur if
  the coarse DM does not define a sub-communicator of that used by the parent DM.
 
  The particular Telescope setup invoked when using a coarse DM is agnostic with respect to the type of
- the DM used (e.g. it supports DMSHELL, DMPLEX, etc).
+ the `DM` used (e.g. it supports `DMSHELL`, `DMPLEX`, etc).
 
- Support is currently only provided for the case when you are using KSPSetComputeOperators()
+ Support is currently only provided for the case when you are using `KSPSetComputeOperators()`
 
- The user is required to compose a function with the parent DM to facilitate the transfer of fields (Vec) between the different decompositions defined by the fine and coarse DMs.
+ The user is required to compose a function with the parent DM to facilitate the transfer of fields (`Vec`) between the different decompositions defined by the fine and coarse `DM`s.
  In the user code, this is achieved via
 .vb
    {
@@ -948,11 +954,11 @@ PetscErrorCode PCTelescopeGetUseCoarseDM(PC pc, PetscBool *v) {
 .vb
    PetscErrorCode your_field_scatter_method(DM dm_fine,Vec x_fine,ScatterMode mode,DM dm_coarse,Vec x_coarse);
 .ve
- The user must provide support for both mode = SCATTER_FORWARD and mode = SCATTER_REVERSE.
- SCATTER_FORWARD implies the direction of transfer is from the parent (fine) DM to the coarse DM.
+ The user must provide support for both mode = `SCATTER_FORWARD` and mode = `SCATTER_REVERSE`.
+ `SCATTER_FORWARD` implies the direction of transfer is from the parent (fine) `DM` to the coarse `DM`.
 
  Optionally, the user may also compose a function with the parent DM to facilitate the transfer
- of state variables between the fine and coarse DMs.
+ of state variables between the fine and coarse `DM`s.
  In the context of a finite element discretization, an example state variable might be
  values associated with quadrature points within each element.
  A user provided state scatter method is composed via
@@ -966,19 +972,19 @@ PetscErrorCode PCTelescopeGetUseCoarseDM(PC pc, PetscBool *v) {
 .vb
    PetscErrorCode your_state_scatter_method(DM dm_fine,ScatterMode mode,DM dm_coarse);
 .ve
- SCATTER_FORWARD implies the direction of transfer is from the fine DM to the coarse DM.
- The user is only required to support mode = SCATTER_FORWARD.
+ `SCATTER_FORWARD` implies the direction of transfer is from the fine `DM` to the coarse `DM`.
+ The user is only required to support mode = `SCATTER_FORWARD`.
  No assumption is made about the data type of the state variables.
- These must be managed by the user and must be accessible from the DM.
+ These must be managed by the user and must be accessible from the `DM`.
 
- Care must be taken in defining the user context passed to KSPSetComputeOperators() which is to be
- associated with the sub-KSP residing within PCTelescope.
- In general, PCTelescope assumes that the context on the fine and coarse DM used with
- KSPSetComputeOperators() should be "similar" in type or origin.
- Specifically the following rules are used to infer what context on the sub-KSP should be.
+ Care must be taken in defining the user context passed to `KSPSetComputeOperators()` which is to be
+ associated with the sub-`KSP` residing within `PCTELESCOPE`.
+ In general, `PCTELESCOPE` assumes that the context on the fine and coarse `DM` used with
+ `KSPSetComputeOperators()` should be "similar" in type or origin.
+ Specifically the following rules are used to infer what context on the sub-`KSP` should be.
 
- First the contexts from the KSP and the fine and coarse DMs are retrieved.
- Note that the special case of a DMSHELL context is queried.
+ First the contexts from the `KSP` and the fine and coarse `DM`s are retrieved.
+ Note that the special case of a `DMSHELL` context is queried.
 
 .vb
    DMKSPGetComputeOperators(dm_fine,&dmfine_kspfunc,&dmfine_kspctx);
@@ -992,21 +998,21 @@ PetscErrorCode PCTelescopeGetUseCoarseDM(PC pc, PetscBool *v) {
  The following rules are then enforced:
 
  1. If dmfine_kspctx = NULL, then we provide a NULL pointer as the context for the sub-KSP:
- KSPSetComputeOperators(sub_ksp,dmfine_kspfunc,NULL);
+ `KSPSetComputeOperators`(sub_ksp,dmfine_kspfunc,NULL);
 
  2. If dmfine_kspctx != NULL and dmfine_kspctx == dmfine_appctx,
  check that dmcoarse_appctx is also non-NULL. If this is true, then:
- KSPSetComputeOperators(sub_ksp,dmfine_kspfunc,dmcoarse_appctx);
+ `KSPSetComputeOperators`(sub_ksp,dmfine_kspfunc,dmcoarse_appctx);
 
  3. If dmfine_kspctx != NULL and dmfine_kspctx == dmfine_shellctx,
  check that dmcoarse_shellctx is also non-NULL. If this is true, then:
- KSPSetComputeOperators(sub_ksp,dmfine_kspfunc,dmcoarse_shellctx);
+ `KSPSetComputeOperators`(sub_ksp,dmfine_kspfunc,dmcoarse_shellctx);
 
- If neither of the above three tests passed, then PCTelescope cannot safely determine what
- context should be provided to KSPSetComputeOperators() for use with the sub-KSP.
+ If neither of the above three tests passed, then `PCTELESCOPE` cannot safely determine what
+ context should be provided to `KSPSetComputeOperators()` for use with the sub-`KSP`.
  In this case, an additional mechanism is provided via a composed function which will return
  the actual context to be used. To use this feature you must compose the "getter" function
- with the coarse DM, e.g.
+ with the coarse `DM`, e.g.
 .vb
    {
      DM dm_coarse;
@@ -1020,6 +1026,7 @@ PetscErrorCode PCTelescopeGetUseCoarseDM(PC pc, PetscBool *v) {
 
  Level: advanced
 
+.seealso: `PCTELESCOPE`, `PCTelescopeSetIgnoreDM()`, `PCTelescopeSetUseCoarseDM()`
 @*/
 PetscErrorCode PCTelescopeSetUseCoarseDM(PC pc, PetscBool v) {
   PetscFunctionBegin;
@@ -1028,7 +1035,7 @@ PetscErrorCode PCTelescopeSetUseCoarseDM(PC pc, PetscBool v) {
 }
 
 /*@
- PCTelescopeGetIgnoreKSPComputeOperators - Get the flag indicating if KSPComputeOperators will be used.
+ PCTelescopeGetIgnoreKSPComputeOperators - Get the flag indicating if `KSPComputeOperators()` will be used.
 
  Not Collective
 
@@ -1040,6 +1047,7 @@ PetscErrorCode PCTelescopeSetUseCoarseDM(PC pc, PetscBool v) {
 
  Level: advanced
 
+.seealso: `PCTELESCOPE`, `PCTelescopeSetIgnoreDM()`, `PCTelescopeSetUseCoarseDM()`, `PCTelescopeSetIgnoreKSPComputeOperators()`
 @*/
 PetscErrorCode PCTelescopeGetIgnoreKSPComputeOperators(PC pc, PetscBool *v) {
   PetscFunctionBegin;
@@ -1048,7 +1056,7 @@ PetscErrorCode PCTelescopeGetIgnoreKSPComputeOperators(PC pc, PetscBool *v) {
 }
 
 /*@
- PCTelescopeSetIgnoreKSPComputeOperators - Set a flag to ignore KSPComputeOperators.
+ PCTelescopeSetIgnoreKSPComputeOperators - Set a flag to ignore `KSPComputeOperators()`.
 
  Not Collective
 
@@ -1056,10 +1064,11 @@ PetscErrorCode PCTelescopeGetIgnoreKSPComputeOperators(PC pc, PetscBool *v) {
 .  pc - the preconditioner context
 
  Output Parameter:
-.  v - Use PETSC_TRUE to ignore the method (if defined) set via KSPSetComputeOperators on pc
+.  v - Use `PETSC_TRUE` to ignore the method (if defined) set via `KSPSetComputeOperators()` on pc
 
  Level: advanced
 
+.seealso: `PCTELESCOPE`, `PCTelescopeSetIgnoreDM()`, `PCTelescopeSetUseCoarseDM()`, `PCTelescopeGetIgnoreKSPComputeOperators()`
 @*/
 PetscErrorCode PCTelescopeSetIgnoreKSPComputeOperators(PC pc, PetscBool v) {
   PetscFunctionBegin;
@@ -1068,7 +1077,7 @@ PetscErrorCode PCTelescopeSetIgnoreKSPComputeOperators(PC pc, PetscBool v) {
 }
 
 /*@
- PCTelescopeGetDM - Get the re-partitioned DM attached to the sub KSP.
+ PCTelescopeGetDM - Get the re-partitioned `DM` attached to the sub-`KSP`.
 
  Not Collective
 
@@ -1080,6 +1089,7 @@ PetscErrorCode PCTelescopeSetIgnoreKSPComputeOperators(PC pc, PetscBool v) {
 
  Level: advanced
 
+.seealso: `PCTELESCOPE`, `PCTelescopeSetIgnoreDM()`, `PCTelescopeSetUseCoarseDM()`, `PCTelescopeGetIgnoreKSPComputeOperators()`
 @*/
 PetscErrorCode PCTelescopeGetDM(PC pc, DM *subdm) {
   PetscFunctionBegin;
@@ -1094,7 +1104,7 @@ PetscErrorCode PCTelescopeGetDM(PC pc, DM *subdm) {
 
  Input Parameters:
 +  pc - the preconditioner context
--  subcommtype - the subcommunicator type (see PetscSubcommType)
+-  subcommtype - the subcommunicator type (see `PetscSubcommType`)
 
  Level: advanced
 
@@ -1115,7 +1125,7 @@ PetscErrorCode PCTelescopeSetSubcommType(PC pc, PetscSubcommType subcommtype) {
 .  pc - the preconditioner context
 
  Output Parameter:
-.  subcommtype - the subcommunicator type (see PetscSubcommType)
+.  subcommtype - the subcommunicator type (see `PetscSubcommType`)
 
  Level: advanced
 
@@ -1127,99 +1137,98 @@ PetscErrorCode PCTelescopeGetSubcommType(PC pc, PetscSubcommType *subcommtype) {
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------------------*/
 /*MC
-   PCTELESCOPE - Runs a KSP solver on a sub-communicator. MPI ranks not in the sub-communicator are idle during the solve.
+   PCTELESCOPE - Runs a `KSP` solver on a sub-communicator. MPI ranks not in the sub-communicator are idle during the solve.
 
-   Options Database:
+   Options Database Keys:
 +  -pc_telescope_reduction_factor <r> - factor to reduce the communicator size by. e.g. with 64 MPI ranks and r=4, the new sub-communicator will have 64/4 = 16 ranks.
 .  -pc_telescope_ignore_dm  - flag to indicate whether an attached DM should be ignored.
 .  -pc_telescope_subcomm_type <interlaced,contiguous> - defines the selection of MPI ranks on the sub-communicator. see PetscSubcomm for more information.
-.  -pc_telescope_ignore_kspcomputeoperators - flag to indicate whether KSPSetComputeOperators should be used on the sub-KSP.
--  -pc_telescope_use_coarse_dm - flag to indicate whether the coarse DM should be used to define the sub-communicator.
+.  -pc_telescope_ignore_kspcomputeoperators - flag to indicate whether `KSPSetComputeOperators()` should be used on the sub-KSP.
+-  -pc_telescope_use_coarse_dm - flag to indicate whether the coarse `DM` should be used to define the sub-communicator.
 
    Level: advanced
 
    Notes:
-   Assuming that the parent preconditioner (PC) is defined on a communicator c, this implementation
-   creates a child sub-communicator (c') containing fewer MPI ranks than the original parent preconditioner (PC).
-   The preconditioner is deemed telescopic as it only calls KSPSolve() on a single
-   sub-communicator, in contrast with PCREDUNDANT which calls KSPSolve() on N sub-communicators.
+   Assuming that the parent preconditioner `PC` is defined on a communicator c, this implementation
+   creates a child sub-communicator (c') containing fewer MPI ranks than the original parent preconditioner `PC`.
+   The preconditioner is deemed telescopic as it only calls `KSPSolve()` on a single
+   sub-communicator, in contrast with `PCREDUNDANT` which calls `KSPSolve()` on N sub-communicators.
    This means there will be MPI ranks which will be idle during the application of this preconditioner.
-   Additionally, in comparison with PCREDUNDANT, PCTELESCOPE can utilize an attached DM.
+   Additionally, in comparison with `PCREDUNDANT`, `PCTELESCOPE` can utilize an attached `DM`.
 
-   The default type of the sub KSP (the KSP defined on c') is PREONLY.
+   The default type of the sub `KSP` (the `KSP` defined on c') is `KSPPREONLY`.
 
-   There are three setup mechanisms for PCTelescope. Features support by each type are described below.
-   In the following, we will refer to the operators B and B', these are the Bmat provided to the KSP on the
+   There are three setup mechanisms for `PCTELESCOPE`. Features support by each type are described below.
+   In the following, we will refer to the operators B and B', these are the Bmat provided to the `KSP` on the
    communicators c and c' respectively.
 
    [1] Default setup
-   The sub-communicator c' is created via PetscSubcommCreate().
+   The sub-communicator c' is created via `PetscSubcommCreate()`.
    Explicitly defined nullspace and near nullspace vectors will be propagated from B to B'.
-   Currently there is no support define nullspaces via a user supplied method (e.g. as passed to MatNullSpaceSetFunction()).
-   No support is provided for KSPSetComputeOperators().
+   Currently there is no support define nullspaces via a user supplied method (e.g. as passed to `MatNullSpaceSetFunction()`).
+   No support is provided for `KSPSetComputeOperators()`.
    Currently there is no support for the flag -pc_use_amat.
 
-   [2] DM aware setup
-   If a DM is attached to the PC, it is re-partitioned on the sub-communicator c'.
-   c' is created via PetscSubcommCreate().
-   Both the Bmat operator and the right hand side vector are permuted into the new DOF ordering defined by the re-partitioned DM.
-   Currently only support for re-partitioning a DMDA is provided.
+   [2] `DM` aware setup
+   If a `DM` is attached to the `PC`, it is re-partitioned on the sub-communicator c'.
+   c' is created via `PetscSubcommCreate()`.
+   Both the Bmat operator and the right hand side vector are permuted into the new DOF ordering defined by the re-partitioned `DM`.
+   Currently only support for re-partitioning a `DMDA` is provided.
    Any explicitly defined nullspace or near nullspace vectors attached to the original Bmat operator (B) are extracted, re-partitioned and set on the re-partitioned Bmat operator (B').
-   Currently there is no support define nullspaces via a user supplied method (e.g. as passed to MatNullSpaceSetFunction()).
-   Support is provided for KSPSetComputeOperators(). The user provided function and context is propagated to the sub KSP.
+   Currently there is no support define nullspaces via a user supplied method (e.g. as passed to `MatNullSpaceSetFunction()`).
+   Support is provided for `KSPSetComputeOperators()`. The user provided function and context is propagated to the sub `KSP`.
    This is fragile since the user must ensure that their user context is valid for use on c'.
    Currently there is no support for the flag -pc_use_amat.
 
-   [3] Coarse DM setup
-   If a DM (dmfine) is attached to the PC, dmfine is queried for a "coarse" DM (call this dmcoarse) via DMGetCoarseDM().
-   PCTELESCOPE will interpret the coarse DM as being defined on a sub-communicator of c.
-   The communicator associated with dmcoarse will define the c' to be used within PCTELESCOPE.
-   PCTELESCOPE will check that c' is in fact a sub-communicator of c. If it is not, an error will be reported.
-   The intention of this setup type is that PCTELESCOPE will use an existing (e.g. user defined) communicator hierarchy, say as would be
+   [3] Coarse `DM` setup
+   If a `DM` (dmfine) is attached to the `PC`, dmfine is queried for a "coarse" `DM` (call this dmcoarse) via `DMGetCoarseDM()`.
+   `PCTELESCOPE` will interpret the coarse `DM` as being defined on a sub-communicator of c.
+   The communicator associated with dmcoarse will define the c' to be used within `PCTELESCOPE`.
+   `PCTELESCOPE` will check that c' is in fact a sub-communicator of c. If it is not, an error will be reported.
+   The intention of this setup type is that` PCTELESCOPE` will use an existing (e.g. user defined) communicator hierarchy, say as would be
    available with using multi-grid on unstructured meshes.
    This setup will not use the command line options -pc_telescope_reduction_factor or -pc_telescope_subcomm_type.
    Any explicitly defined nullspace or near nullspace vectors attached to the original Bmat operator (B) are extracted, scattered into the correct ordering consistent with dmcoarse and set on B'.
-   Currently there is no support define nullspaces via a user supplied method (e.g. as passed to MatNullSpaceSetFunction()).
-   There is no general method to permute field orderings, hence only KSPSetComputeOperators() is supported.
-   The user must use PetscObjectComposeFunction() with dmfine to define the method to scatter fields from dmfine to dmcoarse.
-   Propagation of the user context for KSPSetComputeOperators() on the sub KSP is attempted by querying the DM contexts associated with dmfine and dmcoarse. Alternatively, the user may use PetscObjectComposeFunction() with dmcoarse to define a method which will return the appropriate user context for KSPSetComputeOperators().
+   Currently there is no support define nullspaces via a user supplied method (e.g. as passed to `MatNullSpaceSetFunction()`).
+   There is no general method to permute field orderings, hence only `KSPSetComputeOperators()` is supported.
+   The user must use `PetscObjectComposeFunction()` with dmfine to define the method to scatter fields from dmfine to dmcoarse.
+   Propagation of the user context for `KSPSetComputeOperators()` on the sub `KSP` is attempted by querying the `DM` contexts associated with dmfine and dmcoarse. Alternatively, the user may use `PetscObjectComposeFunction()` with dmcoarse to define a method which will return the appropriate user context for `KSPSetComputeOperators()`.
    Currently there is no support for the flag -pc_use_amat.
-   This setup can be invoked by the option -pc_telescope_use_coarse_dm or by calling PCTelescopeSetUseCoarseDM(pc,PETSC_TRUE);
-   Further information about the user-provided methods required by this setup type are described here PCTelescopeSetUseCoarseDM().
+   This setup can be invoked by the option -pc_telescope_use_coarse_dm or by calling `PCTelescopeSetUseCoarseDM`(pc,`PETSC_TRUE`);
+   Further information about the user-provided methods required by this setup type are described here `PCTelescopeSetUseCoarseDM()`.
 
    Developer Notes:
-   During PCSetup, the B operator is scattered onto c'.
-   Within PCApply, the RHS vector (x) is scattered into a redundant vector, xred (defined on c').
-   Then, KSPSolve() is executed on the c' communicator.
+   During `PCSetup()`, the B operator is scattered onto c'.
+   Within `PCApply()`, the RHS vector (x) is scattered into a redundant vector, xred (defined on c').
+   Then, `KSPSolve()` is executed on the c' communicator.
 
-   The communicator used within the telescoping preconditioner is defined by a PetscSubcomm using the INTERLACED
-   creation routine by default (this can be changed with -pc_telescope_subcomm_type). We run the sub KSP on only the ranks within the communicator which have a color equal to zero.
+   The communicator used within the telescoping preconditioner is defined by a `PetscSubcomm` using the INTERLACED
+   creation routine by default (this can be changed with -pc_telescope_subcomm_type). We run the sub `KSP` on only the ranks within the communicator which have a color equal to zero.
 
    The telescoping preconditioner is aware of nullspaces and near nullspaces which are attached to the B operator.
    In the case where B has a (near) nullspace attached, the (near) nullspace vectors are extracted from B and mapped into
    a new (near) nullspace, defined on the sub-communicator, which is attached to B' (the B operator which was scattered to c')
 
-   The telescoping preconditioner can re-partition an attached DM if it is a DMDA (2D or 3D -
-   support for 1D DMDAs is not provided). If a DMDA is found, a topologically equivalent DMDA is created on c'
-   and this new DM is attached the sub KSP. The design of telescope is such that it should be possible to extend support
-   for re-partitioning other to DM's (e.g. DMPLEX). The user can supply a flag to ignore attached DMs.
+   The telescoping preconditioner can re-partition an attached DM if it is a `DMDA` (2D or 3D -
+   support for 1D `DMDA`s is not provided). If a `DMDA` is found, a topologically equivalent `DMDA` is created on c'
+   and this new `DM` is attached the sub `KSP`. The design of telescope is such that it should be possible to extend support
+   for re-partitioning other to DM's (e.g. `DMPLEX`). The user can supply a flag to ignore attached DMs.
    Alternatively, user-provided re-partitioned DMs can be used via -pc_telescope_use_coarse_dm.
 
    With the default setup mode, B' is defined by fusing rows (in order) associated with MPI ranks common to c and c'.
 
-   When a DMDA is attached to the parent preconditioner, B' is defined by: (i) performing a symmetric permutation of B
-   into the ordering defined by the DMDA on c', (ii) extracting the local chunks via MatCreateSubMatrices(), (iii) fusing the
-   locally (sequential) matrices defined on the ranks common to c and c' into B' using MatCreateMPIMatConcatenateSeqMat()
+   When a `DMDA` is attached to the parent preconditioner, B' is defined by: (i) performing a symmetric permutation of B
+   into the ordering defined by the `DMDA` on c', (ii) extracting the local chunks via `MatCreateSubMatrices()`, (iii) fusing the
+   locally (sequential) matrices defined on the ranks common to c and c' into B' using `MatCreateMPIMatConcatenateSeqMat()`
 
    Limitations/improvements include the following.
-   VecPlaceArray() could be used within PCApply() to improve efficiency and reduce memory usage.
-   A unified mechanism to query for user contexts as required by KSPSetComputeOperators() and MatNullSpaceSetFunction().
+   `VecPlaceArray()` could be used within `PCApply()` to improve efficiency and reduce memory usage.
+   A unified mechanism to query for user contexts as required by `KSPSetComputeOperators()` and `MatNullSpaceSetFunction()`.
 
-   The symmetric permutation used when a DMDA is encountered is performed via explicitly assembling a permutation matrix P,
-   and performing P^T.A.P. Possibly it might be more efficient to use MatPermute(). We opted to use P^T.A.P as it appears
-   VecPermute() does not support the use case required here. By computing P, one can permute both the operator and RHS in a
+   The symmetric permutation used when a `DMDA` is encountered is performed via explicitly assembling a permutation matrix P,
+   and performing P^T.A.P. Possibly it might be more efficient to use `MatPermute()`. We opted to use P^T.A.P as it appears
+   `VecPermute()` does not support the use case required here. By computing P, one can permute both the operator and RHS in a
    consistent manner.
 
    Mapping of vectors (default setup mode) is performed in the following way.

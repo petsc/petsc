@@ -247,7 +247,6 @@ static PetscErrorCode PCApplyTranspose_PBJacobi_N(PC pc, Vec x, Vec y) {
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
 static PetscErrorCode PCSetUp_PBJacobi(PC pc) {
   PC_PBJacobi   *jac = (PC_PBJacobi *)pc->data;
   Mat            A   = pc->pmat;
@@ -275,7 +274,7 @@ static PetscErrorCode PCSetUp_PBJacobi(PC pc) {
   pc->ops->applytranspose = PCApplyTranspose_PBJacobi_N;
   PetscFunctionReturn(0);
 }
-/* -------------------------------------------------------------------------- */
+
 static PetscErrorCode PCDestroy_PBJacobi(PC pc) {
   PetscFunctionBegin;
   /*
@@ -295,31 +294,29 @@ static PetscErrorCode PCView_PBJacobi(PC pc, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
 /*MC
      PCPBJACOBI - Point block Jacobi preconditioner
 
    Notes:
-    See PCJACOBI for diagonal Jacobi, PCVPBJACOBI for variable-size point block, and PCBJACOBI for large size blocks
+    See `PCJACOBI` for diagonal Jacobi, `PCVPBJACOBI` for variable-size point block, and `PCBJACOBI` for large size blocks
 
-   This works for AIJ and BAIJ matrices and uses the blocksize provided to the matrix
+   This works for `MATAIJ` and `MATBAIJ` matrices and uses the blocksize provided to the matrix
 
    Uses dense LU factorization with partial pivoting to invert the blocks; if a zero pivot
    is detected a PETSc error is generated.
 
    Developer Notes:
-     This should support the PCSetErrorIfFailure() flag set to PETSC_TRUE to allow
+     This should support the `PCSetErrorIfFailure()` flag set to `PETSC_TRUE` to allow
      the factorization to continue even after a zero pivot is found resulting in a Nan and hence
-     terminating KSP with a KSP_DIVERGED_NANORIF allowing
+     terminating `KSP` with a `KSP_DIVERGED_NANORIF` allowing
      a nonlinear solver/ODE integrator to recover without stopping the program as currently happens.
 
      Perhaps should provide an option that allows generation of a valid preconditioner
-     even if a block is singular as the PCJACOBI does.
+     even if a block is singular as the `PCJACOBI` does.
 
    Level: beginner
 
 .seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCJACOBI`, `PCVPBJACOBI`, `PCBJACOBI`
-
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_PBJacobi(PC pc) {

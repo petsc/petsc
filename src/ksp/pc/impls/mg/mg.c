@@ -423,17 +423,17 @@ PetscErrorCode PCMGSetLevels_MG(PC pc, PetscInt levels, MPI_Comm *comms) {
 }
 
 /*@C
-   PCMGSetLevels - Sets the number of levels to use with MG.
-   Must be called before any other MG routine.
+   PCMGSetLevels - Sets the number of levels to use with `PCMG`.
+   Must be called before any other `PCMG` routine.
 
-   Logically Collective on PC
+   Logically Collective on pc
 
    Input Parameters:
 +  pc - the preconditioner context
 .  levels - the number of levels
 -  comms - optional communicators for each level; this is to allow solving the coarser problems
            on smaller sets of processes. For processes that are not included in the computation
-           you must pass MPI_COMM_NULL. Use comms = NULL to specify that all processes
+           you must pass `MPI_COMM_NULL`. Use comms = NULL to specify that all processes
            should participate in each level of problem.
 
    Level: intermediate
@@ -444,14 +444,14 @@ PetscErrorCode PCMGSetLevels_MG(PC pc, PetscInt levels, MPI_Comm *comms) {
 
      You can free the information in comms after this routine is called.
 
-     The array of MPI communicators must contain MPI_COMM_NULL for those ranks that at each level
+     The array of MPI communicators must contain `MPI_COMM_NULL` for those ranks that at each level
      are not participating in the coarser solve. For example, with 2 levels and 1 and 2 ranks on
      the two levels, rank 0 in the original communicator will pass in an array of 2 communicators
      of size 2 and 1, while rank 1 in the original communicator will pass in array of 2 communicators
-     the first of size 2 and the second of value MPI_COMM_NULL since the rank 1 does not participate
+     the first of size 2 and the second of value `MPI_COMM_NULL` since the rank 1 does not participate
      in the coarse grid solve.
 
-     Since each coarser level may have a new MPI_Comm with fewer ranks than the previous, one
+     Since each coarser level may have a new `MPI_Comm` with fewer ranks than the previous, one
      must take special care in providing the restriction and interpolation operation. We recommend
      providing these as two step operations; first perform a standard restriction or interpolation on
      the full number of ranks for that level and then use an MPI call to copy the resulting vector
@@ -459,9 +459,9 @@ PetscErrorCode PCMGSetLevels_MG(PC pc, PetscInt levels, MPI_Comm *comms) {
      cases the MPI calls must be made on the larger of the two communicators. Traditional MPI send and
      recieves or MPI_AlltoAllv() could be used to do the reshuffling of the vector entries.
 
-   Fortran Notes:
-     Use comms = PETSC_NULL_MPI_COMM as the equivalent of NULL in the C interface. Note PETSC_NULL_MPI_COMM
-     is not MPI_COMM_NULL. It is more like PETSC_NULL_INTEGER, PETSC_NULL_REAL etc.
+   Fortran Note:
+     Use comms = `PETSC_NULL_MPI_COMM` as the equivalent of NULL in the C interface. Note `PETSC_NULL_MPI_COMM`
+     is not `MPI_COMM_NULL`. It is more like `PETSC_NULL_INTEGER`, `PETSC_NULL_REAL` etc.
 
 .seealso: `PCMGSetType()`, `PCMGGetLevels()`
 @*/
@@ -1218,7 +1218,7 @@ PetscErrorCode PCMGGetLevels_MG(PC pc, PetscInt *levels) {
 }
 
 /*@
-   PCMGGetLevels - Gets the number of levels to use with MG.
+   PCMGGetLevels - Gets the number of levels to use with `PCMG`.
 
    Not Collective
 
@@ -1230,7 +1230,7 @@ PetscErrorCode PCMGGetLevels_MG(PC pc, PetscInt *levels) {
 
    Level: advanced
 
-.seealso: `PCMGSetLevels()`
+.seealso: `PCMG`, `PCMGSetLevels()`
 @*/
 PetscErrorCode PCMGGetLevels(PC pc, PetscInt *levels) {
   PetscFunctionBegin;
@@ -1242,7 +1242,7 @@ PetscErrorCode PCMGGetLevels(PC pc, PetscInt *levels) {
 }
 
 /*@
-   PCMGGetGridComplexity - compute operator and grid complexity of MG hierarchy
+   PCMGGetGridComplexity - compute operator and grid complexity of the `PCMG` hierarchy
 
    Input Parameter:
 .  pc - the preconditioner context
@@ -1253,7 +1253,10 @@ PetscErrorCode PCMGGetLevels(PC pc, PetscInt *levels) {
 
    Level: advanced
 
-.seealso: `PCMGGetLevels()`
+   Note:
+   This is often call the operator complexity in multigrid literature
+
+.seealso: `PCMG`, `PCMGGetLevels()`, `PCMGSetLevels()`
 @*/
 PetscErrorCode PCMGGetGridComplexity(PC pc, PetscReal *gc, PetscReal *oc) {
   PC_MG         *mg       = (PC_MG *)pc->data;
@@ -1294,12 +1297,11 @@ PetscErrorCode PCMGGetGridComplexity(PC pc, PetscReal *gc, PetscReal *oc) {
    PCMGSetType - Determines the form of multigrid to use:
    multiplicative, additive, full, or the Kaskade algorithm.
 
-   Logically Collective on PC
+   Logically Collective on pc
 
    Input Parameters:
 +  pc - the preconditioner context
--  form - multigrid form, one of PC_MG_MULTIPLICATIVE, PC_MG_ADDITIVE,
-   PC_MG_FULL, PC_MG_KASKADE
+-  form - multigrid form, one of `PC_MG_MULTIPLICATIVE`, `PC_MG_ADDITIVE`, `PC_MG_FULL`, `PC_MG_KASKADE`
 
    Options Database Key:
 .  -pc_mg_type <form> - Sets <form>, one of multiplicative,
@@ -1307,7 +1309,7 @@ PetscErrorCode PCMGGetGridComplexity(PC pc, PetscReal *gc, PetscReal *oc) {
 
    Level: advanced
 
-.seealso: `PCMGSetLevels()`
+.seealso: `PCMGType`, `PCMG`, `PCMGGetLevels()`, `PCMGSetLevels()`, `PCMGGetType()`, `PCMGCycleType`
 @*/
 PetscErrorCode PCMGSetType(PC pc, PCMGType form) {
   PC_MG *mg = (PC_MG *)pc->data;
@@ -1322,20 +1324,19 @@ PetscErrorCode PCMGSetType(PC pc, PCMGType form) {
 }
 
 /*@
-   PCMGGetType - Determines the form of multigrid to use:
-   multiplicative, additive, full, or the Kaskade algorithm.
+   PCMGGetType - Finds the form of multigrid the `PCMG` is using  multiplicative, additive, full, or the Kaskade algorithm.
 
-   Logically Collective on PC
+   Logically Collective on pc
 
    Input Parameter:
 .  pc - the preconditioner context
 
    Output Parameter:
-.  type - one of PC_MG_MULTIPLICATIVE, PC_MG_ADDITIVE,PC_MG_FULL, PC_MG_KASKADE
+.  type - one of `PC_MG_MULTIPLICATIVE`, `PC_MG_ADDITIVE`, `PC_MG_FULL`, `PC_MG_KASKADE`, `PCMGCycleType`
 
    Level: advanced
 
-.seealso: `PCMGSetLevels()`
+.seealso: `PCMGType`, `PCMG`, `PCMGGetLevels()`, `PCMGSetLevels()`, `PCMGSetType()`
 @*/
 PetscErrorCode PCMGGetType(PC pc, PCMGType *type) {
   PC_MG *mg = (PC_MG *)pc->data;
@@ -1347,21 +1348,21 @@ PetscErrorCode PCMGGetType(PC pc, PCMGType *type) {
 }
 
 /*@
-   PCMGSetCycleType - Sets the type cycles to use.  Use PCMGSetCycleTypeOnLevel() for more
+   PCMGSetCycleType - Sets the type cycles to use.  Use `PCMGSetCycleTypeOnLevel()` for more
    complicated cycling.
 
-   Logically Collective on PC
+   Logically Collective on pc
 
    Input Parameters:
 +  pc - the multigrid context
--  n - either PC_MG_CYCLE_V or PC_MG_CYCLE_W
+-  n - either `PC_MG_CYCLE_V` or `PC_MG_CYCLE_W`
 
    Options Database Key:
 .  -pc_mg_cycle_type <v,w> - provide the cycle desired
 
    Level: advanced
 
-.seealso: `PCMGSetCycleTypeOnLevel()`
+.seealso: `PCMG`, `PCMGSetCycleTypeOnLevel()`, `PCMGType`, `PCMGCycleType`
 @*/
 PetscErrorCode PCMGSetCycleType(PC pc, PCMGCycleType n) {
   PC_MG         *mg       = (PC_MG *)pc->data;
@@ -1379,9 +1380,9 @@ PetscErrorCode PCMGSetCycleType(PC pc, PCMGCycleType n) {
 
 /*@
    PCMGMultiplicativeSetCycles - Sets the number of cycles to use for each preconditioner step
-         of multigrid when PCMGType of PC_MG_MULTIPLICATIVE is used
+         of multigrid when `PCMGType` is `PC_MG_MULTIPLICATIVE`
 
-   Logically Collective on PC
+   Logically Collective on pc
 
    Input Parameters:
 +  pc - the multigrid context
@@ -1392,10 +1393,10 @@ PetscErrorCode PCMGSetCycleType(PC pc, PCMGCycleType n) {
 
    Level: advanced
 
-   Notes:
-    This is not associated with setting a v or w cycle, that is set with PCMGSetCycleType()
+   Note:
+    This is not associated with setting a v or w cycle, that is set with `PCMGSetCycleType()`
 
-.seealso: `PCMGSetCycleTypeOnLevel()`, `PCMGSetCycleType()`
+.seealso: `PCMGSetCycleTypeOnLevel()`, `PCMGSetCycleType()`, `PCMGCycleType`, `PCMGType`
 @*/
 PetscErrorCode PCMGMultiplicativeSetCycles(PC pc, PetscInt n) {
   PC_MG *mg = (PC_MG *)pc->data;
@@ -1419,23 +1420,22 @@ PetscErrorCode PCMGSetGalerkin_MG(PC pc, PCMGGalerkinType use) {
    PCMGSetGalerkin - Causes the coarser grid matrices to be computed from the
       finest grid via the Galerkin process: A_i-1 = r_i * A_i * p_i
 
-   Logically Collective on PC
+   Logically Collective on pc
 
    Input Parameters:
 +  pc - the multigrid context
--  use - one of PC_MG_GALERKIN_BOTH,PC_MG_GALERKIN_PMAT,PC_MG_GALERKIN_MAT, or PC_MG_GALERKIN_NONE
+-  use - one of `PC_MG_GALERKIN_BOTH`, `PC_MG_GALERKIN_PMAT`, `PC_MG_GALERKIN_MAT`, or `PC_MG_GALERKIN_NONE`
 
    Options Database Key:
 .  -pc_mg_galerkin <both,pmat,mat,none> - set the matrices to form via the Galerkin process
 
    Level: intermediate
 
-   Notes:
-    Some codes that use PCMG such as PCGAMG use Galerkin internally while constructing the hierarchy and thus do not
-     use the PCMG construction of the coarser grids.
+   Note:
+   Some codes that use `PCMG` such as `PCGAMG` use Galerkin internally while constructing the hierarchy and thus do not
+   use the `PCMG` construction of the coarser grids.
 
-.seealso: `PCMGGetGalerkin()`, `PCMGGalerkinType`
-
+.seealso: `PCMG`, `PCMGGetGalerkin()`, `PCMGGalerkinType`
 @*/
 PetscErrorCode PCMGSetGalerkin(PC pc, PCMGGalerkinType use) {
   PetscFunctionBegin;
@@ -1445,8 +1445,7 @@ PetscErrorCode PCMGSetGalerkin(PC pc, PCMGGalerkinType use) {
 }
 
 /*@
-   PCMGGetGalerkin - Checks if Galerkin multigrid is being used, i.e.
-      A_i-1 = r_i * A_i * p_i
+   PCMGGetGalerkin - Checks if Galerkin multigrid is being used, i.e. A_i-1 = r_i * A_i * p_i
 
    Not Collective
 
@@ -1454,12 +1453,11 @@ PetscErrorCode PCMGSetGalerkin(PC pc, PCMGGalerkinType use) {
 .  pc - the multigrid context
 
    Output Parameter:
-.  galerkin - one of PC_MG_GALERKIN_BOTH,PC_MG_GALERKIN_PMAT,PC_MG_GALERKIN_MAT, PC_MG_GALERKIN_NONE, or PC_MG_GALERKIN_EXTERNAL
+.  galerkin - one of `PC_MG_GALERKIN_BOTH`,`PC_MG_GALERKIN_PMAT`,`PC_MG_GALERKIN_MAT`, `PC_MG_GALERKIN_NONE`, or `PC_MG_GALERKIN_EXTERNAL`
 
    Level: intermediate
 
-.seealso: `PCMGSetGalerkin()`, `PCMGGalerkinType`
-
+.seealso: `PCMG`, `PCMGSetGalerkin()`, `PCMGGalerkinType`
 @*/
 PetscErrorCode PCMGGetGalerkin(PC pc, PCMGGalerkinType *galerkin) {
   PC_MG *mg = (PC_MG *)pc->data;
@@ -1524,7 +1522,7 @@ PetscErrorCode PCMGGetAdaptCR_MG(PC pc, PetscBool *cr) {
 
   Adapts or creates the interpolator based upon a vector space which should be accurately captured by the next coarser mesh, and thus accurately interpolated.
 
-  Logically Collective on PC
+  Logically Collective on pc
 
   Input Parameters:
 + pc    - the multigrid context
@@ -1536,8 +1534,7 @@ PetscErrorCode PCMGGetAdaptCR_MG(PC pc, PetscBool *cr) {
 
   Level: intermediate
 
-.keywords: MG, set, Galerkin
-.seealso: `PCMGCoarseSpaceType`, `PCMGGetAdaptCoarseSpaceType()`, `PCMGSetGalerkin()`
+.seealso: `PCMG`, `PCMGCoarseSpaceType`, `PCMGGetAdaptCoarseSpaceType()`, `PCMGSetGalerkin()`, `PCMGSetAdaptInterpolation()`
 @*/
 PetscErrorCode PCMGSetAdaptCoarseSpaceType(PC pc, PCMGCoarseSpaceType ctype) {
   PetscFunctionBegin;
@@ -1548,20 +1545,19 @@ PetscErrorCode PCMGSetAdaptCoarseSpaceType(PC pc, PCMGCoarseSpaceType ctype) {
 }
 
 /*@C
-  PCMGGetAdaptCoarseSpaceType - Get the type of adaptive coarse space.
+   PCMGGetAdaptCoarseSpaceType - Get the type of adaptive coarse space.
 
-  Not Collective
+   Not Collective
 
-  Input Parameter:
-. pc    - the multigrid context
+   Input Parameter:
+.  pc    - the multigrid context
 
-  Output Parameter:
-. ctype - the type of coarse space
+   Output Parameter:
+.  ctype - the type of coarse space
 
   Level: intermediate
 
-.keywords: MG, Get, Galerkin
-.seealso: `PCMGCoarseSpaceType`, `PCMGSetAdaptCoarseSpaceType()`, `PCMGSetGalerkin()`
+.seealso: `PCMG`, `PCMGCoarseSpaceType`, `PCMGSetAdaptCoarseSpaceType()`, `PCMGSetGalerkin()`, `PCMGSetAdaptInterpolation()`
 @*/
 PetscErrorCode PCMGGetAdaptCoarseSpaceType(PC pc, PCMGCoarseSpaceType *ctype) {
   PetscFunctionBegin;
@@ -1573,23 +1569,22 @@ PetscErrorCode PCMGGetAdaptCoarseSpaceType(PC pc, PCMGCoarseSpaceType *ctype) {
 
 /* MATT: REMOVE? */
 /*@
-  PCMGSetAdaptInterpolation - Adapt the interpolator based upon a vector space which should be accurately captured by the next coarser mesh, and thus accurately interpolated.
+   PCMGSetAdaptInterpolation - Adapt the interpolator based upon a vector space which should be accurately captured by the next coarser mesh, and thus accurately interpolated.
 
-  Logically Collective on PC
+   Logically Collective on pc
 
-  Input Parameters:
-+ pc    - the multigrid context
-- adapt - flag for adaptation of the interpolator
+   Input Parameters:
++  pc    - the multigrid context
+-  adapt - flag for adaptation of the interpolator
 
-  Options Database Keys:
-+ -pc_mg_adapt_interp                     - Turn on adaptation
-. -pc_mg_adapt_interp_n <int>             - The number of modes to use, should be divisible by dimension
-- -pc_mg_adapt_interp_coarse_space <type> - The type of coarse space: polynomial, harmonic, eigenvector, generalized_eigenvector
+   Options Database Keys:
++  -pc_mg_adapt_interp                     - Turn on adaptation
+.  -pc_mg_adapt_interp_n <int>             - The number of modes to use, should be divisible by dimension
+-  -pc_mg_adapt_interp_coarse_space <type> - The type of coarse space: polynomial, harmonic, eigenvector, generalized_eigenvector
 
   Level: intermediate
 
-.keywords: MG, set, Galerkin
-.seealso: `PCMGGetAdaptInterpolation()`, `PCMGSetGalerkin()`
+.seealso: `PCMG`, `PCMGGetAdaptInterpolation()`, `PCMGSetGalerkin()`, `PCMGGetAdaptCoarseSpaceType()`, `PCMGSetAdaptCoarseSpaceType()`
 @*/
 PetscErrorCode PCMGSetAdaptInterpolation(PC pc, PetscBool adapt) {
   PetscFunctionBegin;
@@ -1599,7 +1594,8 @@ PetscErrorCode PCMGSetAdaptInterpolation(PC pc, PetscBool adapt) {
 }
 
 /*@
-  PCMGGetAdaptInterpolation - Get the flag to adapt the interpolator based upon a vector space which should be accurately captured by the next coarser mesh, and thus accurately interpolated.
+  PCMGGetAdaptInterpolation - Get the flag to adapt the interpolator based upon a vector space which should be accurately captured by the next coarser mesh,
+  and thus accurately interpolated.
 
   Not collective
 
@@ -1611,8 +1607,7 @@ PetscErrorCode PCMGSetAdaptInterpolation(PC pc, PetscBool adapt) {
 
   Level: intermediate
 
-.keywords: MG, set, Galerkin
-.seealso: `PCMGSetAdaptInterpolation()`, `PCMGSetGalerkin()`
+.seealso: `PCMG`, `PCMGSetAdaptInterpolation()`, `PCMGSetGalerkin()`, `PCMGGetAdaptCoarseSpaceType()`, `PCMGSetAdaptCoarseSpaceType()`
 @*/
 PetscErrorCode PCMGGetAdaptInterpolation(PC pc, PetscBool *adapt) {
   PetscFunctionBegin;
@@ -1623,21 +1618,20 @@ PetscErrorCode PCMGGetAdaptInterpolation(PC pc, PetscBool *adapt) {
 }
 
 /*@
-  PCMGSetAdaptCR - Monitor the coarse space quality using an auxiliary solve with compatible relaxation.
+   PCMGSetAdaptCR - Monitor the coarse space quality using an auxiliary solve with compatible relaxation.
 
-  Logically Collective on PC
+   Logically Collective on pc
 
-  Input Parameters:
-+ pc - the multigrid context
-- cr - flag for compatible relaxation
+   Input Parameters:
++  pc - the multigrid context
+-  cr - flag for compatible relaxation
 
-  Options Database Keys:
-. -pc_mg_adapt_cr - Turn on compatible relaxation
+   Options Database Key:
+.  -pc_mg_adapt_cr - Turn on compatible relaxation
 
-  Level: intermediate
+   Level: intermediate
 
-.keywords: MG, set, Galerkin
-.seealso: `PCMGGetAdaptCR()`, `PCMGSetAdaptInterpolation()`, `PCMGSetGalerkin()`
+.seealso: `PCMG`, `PCMGGetAdaptCR()`, `PCMGSetAdaptInterpolation()`, `PCMGSetGalerkin()`, `PCMGGetAdaptCoarseSpaceType()`, `PCMGSetAdaptCoarseSpaceType()`
 @*/
 PetscErrorCode PCMGSetAdaptCR(PC pc, PetscBool cr) {
   PetscFunctionBegin;
@@ -1659,8 +1653,7 @@ PetscErrorCode PCMGSetAdaptCR(PC pc, PetscBool cr) {
 
   Level: intermediate
 
-.keywords: MG, set, Galerkin
-.seealso: `PCMGSetAdaptCR()`, `PCMGGetAdaptInterpolation()`, `PCMGSetGalerkin()`
+.seealso: `PCMGSetAdaptCR()`, `PCMGGetAdaptInterpolation()`, `PCMGSetGalerkin()`, `PCMGGetAdaptCoarseSpaceType()`, `PCMGSetAdaptCoarseSpaceType()`
 @*/
 PetscErrorCode PCMGGetAdaptCR(PC pc, PetscBool *cr) {
   PetscFunctionBegin;
@@ -1672,10 +1665,10 @@ PetscErrorCode PCMGGetAdaptCR(PC pc, PetscBool *cr) {
 
 /*@
    PCMGSetNumberSmooth - Sets the number of pre and post-smoothing steps to use
-   on all levels.  Use PCMGDistinctSmoothUp() to create separate up and down smoothers if you want different numbers of
+   on all levels.  Use `PCMGDistinctSmoothUp()` to create separate up and down smoothers if you want different numbers of
    pre- and post-smoothing steps.
 
-   Logically Collective on PC
+   Logically Collective on pc
 
    Input Parameters:
 +  mg - the multigrid context
@@ -1686,11 +1679,10 @@ PetscErrorCode PCMGGetAdaptCR(PC pc, PetscBool *cr) {
 
    Level: advanced
 
-   Notes:
-    this does not set a value on the coarsest grid, since we assume that
-    there is no separate smooth up on the coarsest grid.
+   Note:
+   This does not set a value on the coarsest grid, since we assume that there is no separate smooth up on the coarsest grid.
 
-.seealso: `PCMGSetDistinctSmoothUp()`
+.seealso: `PCMG`, `PCMGSetDistinctSmoothUp()`
 @*/
 PetscErrorCode PCMGSetNumberSmooth(PC pc, PetscInt n) {
   PC_MG         *mg       = (PC_MG *)pc->data;
@@ -1713,12 +1705,12 @@ PetscErrorCode PCMGSetNumberSmooth(PC pc, PetscInt n) {
 }
 
 /*@
-   PCMGSetDistinctSmoothUp - sets the up (post) smoother to be a separate KSP from the down (pre) smoother on all levels
+   PCMGSetDistinctSmoothUp - sets the up (post) smoother to be a separate `KSP` from the down (pre) smoother on all levels
        and adds the suffix _up to the options name
 
-   Logically Collective on PC
+   Logically Collective on pc
 
-   Input Parameters:
+   Input Parameter:
 .  pc - the preconditioner context
 
    Options Database Key:
@@ -1726,11 +1718,10 @@ PetscErrorCode PCMGSetNumberSmooth(PC pc, PetscInt n) {
 
    Level: advanced
 
-   Notes:
-    this does not set a value on the coarsest grid, since we assume that
-    there is no separate smooth up on the coarsest grid.
+   Note:
+   This does not set a value on the coarsest grid, since we assume that there is no separate smooth up on the coarsest grid.
 
-.seealso: `PCMGSetNumberSmooth()`
+.seealso: `PCMG`, `PCMGSetNumberSmooth()`
 @*/
 PetscErrorCode PCMGSetDistinctSmoothUp(PC pc) {
   PC_MG         *mg       = (PC_MG *)pc->data;
@@ -1793,28 +1784,30 @@ PetscErrorCode PCGetCoarseOperators_MG(PC pc, PetscInt *num_levels, Mat *coarseO
 }
 
 /*@C
-  PCMGRegisterCoarseSpaceConstructor -  Adds a method to the PCMG package for coarse space construction.
+   PCMGRegisterCoarseSpaceConstructor -  Adds a method to the `PCMG` package for coarse space construction.
 
-  Not collective
+   Not collective
 
-  Input Parameters:
-+ name     - name of the constructor
-- function - constructor routine
+   Input Parameters:
++  name     - name of the constructor
+-  function - constructor routine
 
-  Notes:
-  Calling sequence for the routine:
+   Calling sequence for the routine:
 $ my_csp(PC pc, PetscInt l, DM dm, KSP smooth, PetscInt Nc, Mat initGuess, Mat *coarseSp)
-$   pc        - The PC object
-$   l         - The multigrid level, 0 is the coarse level
-$   dm        - The DM for this level
-$   smooth    - The level smoother
-$   Nc        - The size of the coarse space
-$   initGuess - Basis for an initial guess for the space
-$   coarseSp  - A basis for the computed coarse space
++  pc        - The PC object
+.  l         - The multigrid level, 0 is the coarse level
+.  dm        - The DM for this level
+.  smooth    - The level smoother
+.  Nc        - The size of the coarse space
+.  initGuess - Basis for an initial guess for the space
+-  coarseSp  - A basis for the computed coarse space
 
   Level: advanced
 
-.seealso: `PCMGGetCoarseSpaceConstructor()`, `PCRegister()`
+  Developer Note:
+  How come this is not used by `PCGAMG`?
+
+.seealso: `PCMG`, `PCMGGetCoarseSpaceConstructor()`, `PCRegister()`
 @*/
 PetscErrorCode PCMGRegisterCoarseSpaceConstructor(const char name[], PetscErrorCode (*function)(PC, PetscInt, DM, KSP, PetscInt, Mat, Mat *)) {
   PetscFunctionBegin;
@@ -1834,28 +1827,15 @@ PetscErrorCode PCMGRegisterCoarseSpaceConstructor(const char name[], PetscErrorC
   Output Parameter:
 . function - constructor routine
 
-  Notes:
-  Calling sequence for the routine:
-$ my_csp(PC pc, PetscInt l, DM dm, KSP smooth, PetscInt Nc, Mat initGuess, Mat *coarseSp)
-$   pc        - The PC object
-$   l         - The multigrid level, 0 is the coarse level
-$   dm        - The DM for this level
-$   smooth    - The level smoother
-$   Nc        - The size of the coarse space
-$   initGuess - Basis for an initial guess for the space
-$   coarseSp  - A basis for the computed coarse space
-
   Level: advanced
 
-.seealso: `PCMGRegisterCoarseSpaceConstructor()`, `PCRegister()`
+.seealso: `PCMG`, `PCMGRegisterCoarseSpaceConstructor()`, `PCRegister()`
 @*/
 PetscErrorCode PCMGGetCoarseSpaceConstructor(const char name[], PetscErrorCode (**function)(PC, PetscInt, DM, KSP, PetscInt, Mat, Mat *)) {
   PetscFunctionBegin;
   PetscCall(PetscFunctionListFind(PCMGCoarseList, name, function));
   PetscFunctionReturn(0);
 }
-
-/* ----------------------------------------------------------------------------------------*/
 
 /*MC
    PCMG - Use multigrid preconditioning. This preconditioner requires you provide additional
@@ -1875,11 +1855,11 @@ PetscErrorCode PCMGGetCoarseSpaceConstructor(const char name[], PetscErrorCode (
                         to the binary output file called binaryoutput
 
    Notes:
-    If one uses a Krylov method such GMRES or CG as the smoother then one must use KSPFGMRES, KSPGCR, or KSPRICHARDSON as the outer Krylov method
+    If one uses a Krylov method such `KSPGMRES` or `KSPCG` as the smoother then one must use `KSPFGMRES`, `KSPGCR`, or `KSPRICHARDSON` as the outer Krylov method
 
        When run with a single level the smoother options are used on that level NOT the coarse grid solver options
 
-       When run with KSPRICHARDSON the convergence test changes slightly if monitor is turned on. The iteration count may change slightly. This
+       When run with `KSPRICHARDSON` the convergence test changes slightly if monitor is turned on. The iteration count may change slightly. This
        is because without monitoring the residual norm is computed WITHIN each multigrid cycle on the finest level after the pre-smoothing
        (because the residual has just been computed for the multigrid algorithm and is hence available for free) while with monitoring the
        residual is computed at the end of each cycle.
@@ -1890,7 +1870,8 @@ PetscErrorCode PCMGGetCoarseSpaceConstructor(const char name[], PetscErrorCode (
           `PCMGSetLevels()`, `PCMGGetLevels()`, `PCMGSetType()`, `PCMGSetCycleType()`,
           `PCMGSetDistinctSmoothUp()`, `PCMGGetCoarseSolve()`, `PCMGSetResidual()`, `PCMGSetInterpolation()`,
           `PCMGSetRestriction()`, `PCMGGetSmoother()`, `PCMGGetSmootherUp()`, `PCMGGetSmootherDown()`,
-          `PCMGSetCycleTypeOnLevel()`, `PCMGSetRhs()`, `PCMGSetX()`, `PCMGSetR()`
+          `PCMGSetCycleTypeOnLevel()`, `PCMGSetRhs()`, `PCMGSetX()`, `PCMGSetR()`,
+          `PCMGSetAdaptCR()`, `PCMGGetAdaptInterpolation()`, `PCMGSetGalerkin()`, `PCMGGetAdaptCoarseSpaceType()`, `PCMGSetAdaptCoarseSpaceType()`
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_MG(PC pc) {

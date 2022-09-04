@@ -126,7 +126,6 @@ static PetscErrorCode PCJacobiGetFixDiagonal_Jacobi(PC pc, PetscBool *flg) {
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
 /*
    PCSetUp_Jacobi - Prepares for the use of the Jacobi preconditioner
                     by setting data structures and options.
@@ -136,7 +135,7 @@ static PetscErrorCode PCJacobiGetFixDiagonal_Jacobi(PC pc, PetscBool *flg) {
 
    Application Interface Routine: PCSetUp()
 
-   Notes:
+   Note:
    The interface routine PCSetUp() is not usually called directly by
    the user, but instead is called by PCApply() if necessary.
 */
@@ -219,7 +218,7 @@ static PetscErrorCode PCSetUp_Jacobi(PC pc) {
   if (zeroflag) PetscCall(PetscInfo(pc, "Zero detected in diagonal of matrix, using 1 at those locations\n"));
   PetscFunctionReturn(0);
 }
-/* -------------------------------------------------------------------------- */
+
 /*
    PCSetUp_Jacobi_Symmetric - Allocates the vector needed to store the
    inverse of the square root of the diagonal entries of the matrix.  This
@@ -237,7 +236,7 @@ static PetscErrorCode PCSetUp_Jacobi_Symmetric(PC pc) {
   PetscCall(PCSetUp_Jacobi(pc));
   PetscFunctionReturn(0);
 }
-/* -------------------------------------------------------------------------- */
+
 /*
    PCSetUp_Jacobi_NonSymmetric - Allocates the vector needed to store the
    inverse of the diagonal entries of the matrix.  This is used for left of
@@ -255,7 +254,7 @@ static PetscErrorCode PCSetUp_Jacobi_NonSymmetric(PC pc) {
   PetscCall(PCSetUp_Jacobi(pc));
   PetscFunctionReturn(0);
 }
-/* -------------------------------------------------------------------------- */
+
 /*
    PCApply_Jacobi - Applies the Jacobi preconditioner to a vector.
 
@@ -276,7 +275,7 @@ static PetscErrorCode PCApply_Jacobi(PC pc, Vec x, Vec y) {
   PetscCall(VecPointwiseMult(y, x, jac->diag));
   PetscFunctionReturn(0);
 }
-/* -------------------------------------------------------------------------- */
+
 /*
    PCApplySymmetricLeftOrRight_Jacobi - Applies the left or right part of a
    symmetric preconditioner to a vector.
@@ -299,7 +298,6 @@ static PetscErrorCode PCApplySymmetricLeftOrRight_Jacobi(PC pc, Vec x, Vec y) {
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
 static PetscErrorCode PCReset_Jacobi(PC pc) {
   PC_Jacobi *jac = (PC_Jacobi *)pc->data;
 
@@ -372,7 +370,6 @@ static PetscErrorCode PCView_Jacobi(PC pc, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
 /*
    PCCreate_Jacobi - Creates a Jacobi preconditioner context, PC_Jacobi,
    and sets this as the private data within the generic preconditioning
@@ -387,7 +384,7 @@ static PetscErrorCode PCView_Jacobi(PC pc, PetscViewer viewer) {
 /*MC
      PCJACOBI - Jacobi (i.e. diagonal scaling preconditioning)
 
-   Options Database Key:
+   Options Database Keys:
 +    -pc_jacobi_type <diagonal,rowmax,rowsum> - approach for forming the preconditioner
 .    -pc_jacobi_abs - use the absolute value of the diagonal entry
 -    -pc_jacobi_fixdiag - fix for zero diagonal terms by placing 1.0 in those locations
@@ -395,15 +392,15 @@ static PetscErrorCode PCView_Jacobi(PC pc, PetscViewer viewer) {
    Level: beginner
 
   Notes:
-    By using KSPSetPCSide(ksp,PC_SYMMETRIC) or -ksp_pc_side symmetric
+    By using `KSPSetPCSide`(ksp,`PC_SYMMETRIC`) or -ksp_pc_side symmetric
     can scale each side of the matrix by the square root of the diagonal entries.
 
     Zero entries along the diagonal are replaced with the value 1.0
 
-    See PCPBJACOBI for fixed-size point block, PCVPBJACOBI for variable-sized point block, and PCBJACOBI for large size blocks
+    See `PCPBJACOBI` for fixed-size point block, `PCVPBJACOBI` for variable-sized point block, and `PCBJACOBI` for large size blocks
 
 .seealso:  `PCCreate()`, `PCSetType()`, `PCType`, `PC`,
-           `PCJacobiSetType()`, `PCJacobiSetUseAbs()`, `PCJacobiGetUseAbs()`,
+           `PCJacobiSetType()`, `PCJacobiSetUseAbs()`, `PCJacobiGetUseAbs()`, `PCASM`,
            `PCJacobiSetFixDiagonal()`, `PCJacobiGetFixDiagonal()`
            `PCJacobiSetType()`, `PCJacobiSetUseAbs()`, `PCJacobiGetUseAbs()`, `PCPBJACOBI`, `PCBJACOBI`, `PCVPBJACOBI`
 M*/
@@ -458,10 +455,10 @@ PETSC_EXTERN PetscErrorCode PCCreate_Jacobi(PC pc) {
 }
 
 /*@
-   PCJacobiSetUseAbs - Causes the Jacobi preconditioner to use the
+   PCJacobiSetUseAbs - Causes the Jacobi preconditioner `PCJACOBI` to use the
       absolute values of the diagonal divisors in the preconditioner
 
-   Logically Collective on PC
+   Logically Collective on pc
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -470,13 +467,12 @@ PETSC_EXTERN PetscErrorCode PCCreate_Jacobi(PC pc) {
    Options Database Key:
 .  -pc_jacobi_abs <bool> - use absolute values
 
-   Notes:
+   Note:
     This takes affect at the next construction of the preconditioner
 
    Level: intermediate
 
-.seealso: `PCJacobiaSetType()`, `PCJacobiGetUseAbs()`
-
+.seealso: `PCJACOBI`, `PCJacobiaSetType()`, `PCJacobiGetUseAbs()`
 @*/
 PetscErrorCode PCJacobiSetUseAbs(PC pc, PetscBool flg) {
   PetscFunctionBegin;
@@ -486,10 +482,10 @@ PetscErrorCode PCJacobiSetUseAbs(PC pc, PetscBool flg) {
 }
 
 /*@
-   PCJacobiGetUseAbs - Determines if the Jacobi preconditioner uses the
+   PCJacobiGetUseAbs - Determines if the Jacobi preconditioner `PCJACOBI` uses the
       absolute values of the diagonal divisors in the preconditioner
 
-   Logically Collective on PC
+   Logically Collective on pc
 
    Input Parameter:
 .  pc - the preconditioner context
@@ -499,8 +495,7 @@ PetscErrorCode PCJacobiSetUseAbs(PC pc, PetscBool flg) {
 
    Level: intermediate
 
-.seealso: `PCJacobiaSetType()`, `PCJacobiSetUseAbs()`, `PCJacobiGetType()`
-
+.seealso: `PCJACOBI`, `PCJacobiaSetType()`, `PCJacobiSetUseAbs()`, `PCJacobiGetType()`
 @*/
 PetscErrorCode PCJacobiGetUseAbs(PC pc, PetscBool *flg) {
   PetscFunctionBegin;
@@ -512,7 +507,7 @@ PetscErrorCode PCJacobiGetUseAbs(PC pc, PetscBool *flg) {
 /*@
    PCJacobiSetFixDiagonal - Check for zero values on the diagonal and replace them with 1.0
 
-   Logically Collective on PC
+   Logically Collective on pc
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -521,13 +516,12 @@ PetscErrorCode PCJacobiGetUseAbs(PC pc, PetscBool *flg) {
    Options Database Key:
 .  -pc_jacobi_fixdiagonal <bool> - check for zero values on the diagonal
 
-   Notes:
-    This takes affect at the next construction of the preconditioner
+   Note:
+   This takes affect at the next construction of the preconditioner
 
    Level: intermediate
 
-.seealso: `PCJacobiSetType()`, `PCJacobiGetFixDiagonal()`
-
+.seealso: `PCJACOBI`, `PCJacobiSetType()`, `PCJacobiGetFixDiagonal()`, `PCJacobiSetUseAbs()`
 @*/
 PetscErrorCode PCJacobiSetFixDiagonal(PC pc, PetscBool flg) {
   PetscFunctionBegin;
@@ -537,9 +531,9 @@ PetscErrorCode PCJacobiSetFixDiagonal(PC pc, PetscBool flg) {
 }
 
 /*@
-   PCJacobiGetFixDiagonal - Determines if the Jacobi preconditioner checks for zero diagonal terms
+   PCJacobiGetFixDiagonal - Determines if the Jacobi preconditioner `PCJACOBI` checks for zero diagonal terms
 
-   Logically Collective on PC
+   Logically Collective on pc
 
    Input Parameter:
 .  pc - the preconditioner context
@@ -552,8 +546,7 @@ PetscErrorCode PCJacobiSetFixDiagonal(PC pc, PetscBool flg) {
 
    Level: intermediate
 
-.seealso: `PCJacobiSetType()`, `PCJacobiSetFixDiagonal()`
-
+.seealso: `PCJACOBI`, `PCJacobiSetType()`, `PCJacobiSetFixDiagonal()`
 @*/
 PetscErrorCode PCJacobiGetFixDiagonal(PC pc, PetscBool *flg) {
   PetscFunctionBegin;
@@ -566,18 +559,21 @@ PetscErrorCode PCJacobiGetFixDiagonal(PC pc, PetscBool *flg) {
    PCJacobiSetType - Causes the Jacobi preconditioner to use either the diagonal, the maximum entry in each row,
       of the sum of rows entries for the diagonal preconditioner
 
-   Logically Collective on PC
+   Logically Collective on pc
 
    Input Parameters:
 +  pc - the preconditioner context
--  type - PC_JACOBI_DIAGONAL, PC_JACOBI_ROWMAX, PC_JACOBI_ROWSUM
+-  type - `PC_JACOBI_DIAGONAL`, `PC_JACOBI_ROWMAX`, `PC_JACOBI_ROWSUM`
 
    Options Database Key:
 .  -pc_jacobi_type <diagonal,rowmax,rowsum> - the type of diagonal matrix to use for Jacobi
 
    Level: intermediate
 
-.seealso: `PCJacobiaUseAbs()`, `PCJacobiGetType()`
+   Developer Note:
+   Why is there a separate function for using the absolute value?
+
+.seealso: `PCJACOBI`, `PCJacobiSetUseAbs()`, `PCJacobiGetType()`
 @*/
 PetscErrorCode PCJacobiSetType(PC pc, PCJacobiType type) {
   PetscFunctionBegin;
@@ -589,17 +585,17 @@ PetscErrorCode PCJacobiSetType(PC pc, PCJacobiType type) {
 /*@
    PCJacobiGetType - Gets how the diagonal matrix is produced for the preconditioner
 
-   Not Collective on PC
+   Not Collective on pc
 
    Input Parameter:
 .  pc - the preconditioner context
 
    Output Parameter:
-.  type - PC_JACOBI_DIAGONAL, PC_JACOBI_ROWMAX, PC_JACOBI_ROWSUM
+.  type - `PC_JACOBI_DIAGONAL`, `PC_JACOBI_ROWMAX`, `PC_JACOBI_ROWSUM`
 
    Level: intermediate
 
-.seealso: `PCJacobiaUseAbs()`, `PCJacobiSetType()`
+.seealso: `PCJACOBI`, `PCJacobiaUseAbs()`, `PCJacobiSetType()`
 @*/
 PetscErrorCode PCJacobiGetType(PC pc, PCJacobiType *type) {
   PetscFunctionBegin;

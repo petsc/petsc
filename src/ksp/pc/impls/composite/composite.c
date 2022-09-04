@@ -259,8 +259,6 @@ static PetscErrorCode PCView_Composite(PC pc, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-/* ------------------------------------------------------------------------------*/
-
 static PetscErrorCode PCCompositeSpecialSetAlpha_Composite(PC pc, PetscScalar alpha) {
   PC_Composite *jac = (PC_Composite *)pc->data;
 
@@ -374,21 +372,22 @@ static PetscErrorCode PCCompositeGetPC_Composite(PC pc, PetscInt n, PC *subpc) {
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------------- */
 /*@
    PCCompositeSetType - Sets the type of composite preconditioner.
 
-   Logically Collective on PC
+   Logically Collective on pc
 
    Input Parameters:
 +  pc - the preconditioner context
--  type - PC_COMPOSITE_ADDITIVE (default), PC_COMPOSITE_MULTIPLICATIVE, PC_COMPOSITE_SPECIAL
+-  type - `PC_COMPOSITE_ADDITIVE` (default), `PC_COMPOSITE_MULTIPLICATIVE`, `PC_COMPOSITE_SPECIAL`
 
    Options Database Key:
 .  -pc_composite_type <type: one of multiplicative, additive, special> - Sets composite preconditioner type
 
-   Level: Developer
+   Level: advanced
 
+.seealso: `PCCOMPOSITE`, `PC_COMPOSITE_ADDITIVE`, `PC_COMPOSITE_MULTIPLICATIVE`, `PC_COMPOSITE_SPECIAL`, `PCCompositeType`,
+          `PCCompositeGetType()`
 @*/
 PetscErrorCode PCCompositeSetType(PC pc, PCCompositeType type) {
   PetscFunctionBegin;
@@ -401,19 +400,18 @@ PetscErrorCode PCCompositeSetType(PC pc, PCCompositeType type) {
 /*@
    PCCompositeGetType - Gets the type of composite preconditioner.
 
-   Logically Collective on PC
+   Logically Collective on pc
 
    Input Parameter:
 .  pc - the preconditioner context
 
    Output Parameter:
-.  type - PC_COMPOSITE_ADDITIVE (default), PC_COMPOSITE_MULTIPLICATIVE, PC_COMPOSITE_SPECIAL
+.  type - `PC_COMPOSITE_ADDITIVE` (default), `PC_COMPOSITE_MULTIPLICATIVE`, `PC_COMPOSITE_SPECIAL`
 
-   Options Database Key:
-.  -pc_composite_type <type: one of multiplicative, additive, special> - Sets composite preconditioner type
+   Level: advanced
 
-   Level: Developer
-
+.seealso: `PCCOMPOSITE`, `PC_COMPOSITE_ADDITIVE`, `PC_COMPOSITE_MULTIPLICATIVE`, `PC_COMPOSITE_SPECIAL`, `PCCompositeType`,
+          `PCCompositeSetType()`
 @*/
 PetscErrorCode PCCompositeGetType(PC pc, PCCompositeType *type) {
   PetscFunctionBegin;
@@ -423,10 +421,10 @@ PetscErrorCode PCCompositeGetType(PC pc, PCCompositeType *type) {
 }
 
 /*@
-   PCCompositeSpecialSetAlpha - Sets alpha for the special composite preconditioner
+   PCCompositeSpecialSetAlpha - Sets alpha for the special composite preconditioner, `PC_COMPOSITE_SPECIAL`,
      for alphaI + R + S
 
-   Logically Collective on PC
+   Logically Collective on pc
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -434,6 +432,8 @@ PetscErrorCode PCCompositeGetType(PC pc, PCCompositeType *type) {
 
    Level: Developer
 
+.seealso: `PCCOMPOSITE`, `PC_COMPOSITE_ADDITIVE`, `PC_COMPOSITE_MULTIPLICATIVE`, `PC_COMPOSITE_SPECIAL`, `PCCompositeType`,
+          `PCCompositeSetType()`, `PCCompositeGetType()`
 @*/
 PetscErrorCode PCCompositeSpecialSetAlpha(PC pc, PetscScalar alpha) {
   PetscFunctionBegin;
@@ -444,17 +444,17 @@ PetscErrorCode PCCompositeSpecialSetAlpha(PC pc, PetscScalar alpha) {
 }
 
 /*@C
-  PCCompositeAddPCType - Adds another PC of the given type to the composite PC.
+  PCCompositeAddPCType - Adds another `PC` of the given type to the composite `PC`.
 
-  Collective on PC
+  Collective on pc
 
   Input Parameters:
 + pc - the preconditioner context
 - type - the type of the new preconditioner
 
-  Level: Developer
+  Level: intermediate
 
-.seealso: `PCCompositeAddPC()`
+.seealso: `PCCOMPOSITE`, `PCCompositeAddPC()`, `PCCompositeGetNumberPC()`
 @*/
 PetscErrorCode PCCompositeAddPCType(PC pc, PCType type) {
   PetscFunctionBegin;
@@ -464,17 +464,17 @@ PetscErrorCode PCCompositeAddPCType(PC pc, PCType type) {
 }
 
 /*@
-  PCCompositeAddPC - Adds another PC to the composite PC.
+  PCCompositeAddPC - Adds another `PC` to the composite `PC`.
 
-  Collective on PC
+  Collective on pc
 
   Input Parameters:
 + pc    - the preconditioner context
 - subpc - the new preconditioner
 
-   Level: Developer
+   Level: intermediate
 
-.seealso: `PCCompositeAddPCType()`
+.seealso: `PCCOMPOSITE`, `PCCompositeAddPCType()`, `PCCompositeGetNumberPC()`
 @*/
 PetscErrorCode PCCompositeAddPC(PC pc, PC subpc) {
   PetscFunctionBegin;
@@ -485,7 +485,7 @@ PetscErrorCode PCCompositeAddPC(PC pc, PC subpc) {
 }
 
 /*@
-   PCCompositeGetNumberPC - Gets the number of PC objects in the composite PC.
+   PCCompositeGetNumberPC - Gets the number of `PC` objects in the composite `PC`.
 
    Not Collective
 
@@ -497,7 +497,7 @@ PetscErrorCode PCCompositeAddPC(PC pc, PC subpc) {
 
    Level: Developer
 
-.seealso: `PCCompositeGetPC()`
+.seealso: `PCCOMPOSITE`, `PCCompositeGetPC()`, `PCCompositeAddPC()`,  `PCCompositeAddPCType()`
 @*/
 PetscErrorCode PCCompositeGetNumberPC(PC pc, PetscInt *num) {
   PetscFunctionBegin;
@@ -508,7 +508,7 @@ PetscErrorCode PCCompositeGetNumberPC(PC pc, PetscInt *num) {
 }
 
 /*@
-   PCCompositeGetPC - Gets one of the PC objects in the composite PC.
+   PCCompositeGetPC - Gets one of the `PC` objects in the composite `PC`.
 
    Not Collective
 
@@ -516,16 +516,16 @@ PetscErrorCode PCCompositeGetNumberPC(PC pc, PetscInt *num) {
 +  pc - the preconditioner context
 -  n - the number of the pc requested
 
-   Output Parameters:
+   Output Parameter:
 .  subpc - the PC requested
 
-   Level: Developer
+   Level: intermediate
 
-    Notes:
-    To use a different operator to construct one of the inner preconditioners first call PCCompositeGetPC(), then
-            call PCSetOperators() on that PC.
+    Note:
+    To use a different operator to construct one of the inner preconditioners first call `PCCompositeGetPC()`, then
+    call `PCSetOperators()` on that `PC`.
 
-.seealso: `PCCompositeAddPCType()`, `PCCompositeGetNumberPC()`, `PCSetOperators()`
+.seealso: `PCCOMPOSITE`, `PCCompositeAddPCType()`, `PCCompositeGetNumberPC()`, `PCSetOperators()`
 @*/
 PetscErrorCode PCCompositeGetPC(PC pc, PetscInt n, PC *subpc) {
   PetscFunctionBegin;
@@ -535,30 +535,27 @@ PetscErrorCode PCCompositeGetPC(PC pc, PetscInt n, PC *subpc) {
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------------------------*/
-
 /*MC
      PCCOMPOSITE - Build a preconditioner by composing together several preconditioners
 
    Options Database Keys:
 +  -pc_composite_type <type: one of multiplicative, additive, symmetric_multiplicative, special> - Sets composite preconditioner type
-.  -pc_use_amat - activates PCSetUseAmat()
+.  -pc_use_amat - activates `PCSetUseAmat()`
 -  -pc_composite_pcs - <pc0,pc1,...> list of PCs to compose
 
    Level: intermediate
 
    Notes:
-    To use a Krylov method inside the composite preconditioner, set the PCType of one or more
-          inner PCs to be PCKSP.
-          Using a Krylov method inside another Krylov method can be dangerous (you get divergence or
-          the incorrect answer) unless you use KSPFGMRES as the outer Krylov method
-          To use a different operator to construct one of the inner preconditioners first call PCCompositeGetPC(), then
-          call PCSetOperators() on that PC.
+   To use a Krylov method inside the composite preconditioner, set the `PCType` of one or more
+   inner `PC`s to be `PCKSP`. Using a Krylov method inside another Krylov method can be dangerous (you get divergence or
+   the incorrect answer) unless you use `KSPFGMRES` as the outer Krylov method
+
+   To use a different operator to construct one of the inner preconditioners first call `PCCompositeGetPC()`, then
+   call `PCSetOperators()` on that `PC`.
 
 .seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`,
           `PCSHELL`, `PCKSP`, `PCCompositeSetType()`, `PCCompositeSpecialSetAlpha()`, `PCCompositeAddPCType()`,
-          `PCCompositeGetPC()`, `PCSetUseAmat()`
-
+          `PCCompositeGetPC()`, `PCSetUseAmat()`, `PCCompositeAddPC()`, `PCCompositeGetNumberPC()`
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_Composite(PC pc) {

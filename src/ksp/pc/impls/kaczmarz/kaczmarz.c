@@ -89,20 +89,19 @@ PetscErrorCode PCView_Kaczmarz(PC pc, PetscViewer viewer) {
 /*MC
      PCKaczmarz - Kaczmarz iteration
 
-   Options Database Keys:
+   Options Database Key:
 .  -pc_sor_lambda <1.0> - Sets damping parameter lambda
 
    Level: beginner
 
-   Notes:
+   Note:
     In parallel this is block-Jacobi with Kaczmarz inner solve.
 
    References:
 .  * - S. Kaczmarz, "Angenaherte Auflosing von Systemen Linearer Gleichungen",
    Bull. Internat. Acad. Polon. Sci. C1. A, 1937.
 
-.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`
-
+.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCJACOBI`, `PCBJACOBI`
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_Kaczmarz(PC pc) {

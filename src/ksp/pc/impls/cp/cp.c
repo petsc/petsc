@@ -57,7 +57,7 @@ static PetscErrorCode PCSetUp_CP(PC pc) {
   }
   PetscFunctionReturn(0);
 }
-/* -------------------------------------------------------------------------- */
+
 static PetscErrorCode PCApply_CP(PC pc, Vec bb, Vec xx) {
   PC_CP       *cp = (PC_CP *)pc->data;
   PetscScalar *b, *x, xt;
@@ -87,7 +87,7 @@ static PetscErrorCode PCApply_CP(PC pc, Vec bb, Vec xx) {
   PetscCall(VecRestoreArray(xx, &x));
   PetscFunctionReturn(0);
 }
-/* -------------------------------------------------------------------------- */
+
 static PetscErrorCode PCReset_CP(PC pc) {
   PC_CP *cp = (PC_CP *)pc->data;
 
@@ -120,38 +120,39 @@ static PetscErrorCode PCSetFromOptions_CP(PC pc, PetscOptionItems *PetscOptionsO
      This is a terrible preconditioner and is not recommended, ever!
 
      Loops over the entries of x computing dx_i (e_i is the unit vector in the ith direction) to
-$
-$        min || b - A(x + dx_i e_i ||_2
-$        dx_i
-$
-$    That is, it changes a single entry of x to minimize the new residual norm.
-$   Let A_i represent the ith column of A, then the minimization can be written as
-$
-$       min || r - (dx_i) A e_i ||_2
-$       dx_i
-$   or   min || r - (dx_i) A_i ||_2
-$        dx_i
-$
-$    take the derivative with respect to dx_i to obtain
-$        dx_i = (A_i^T A_i)^(-1) A_i^T r
-$
-$    This algorithm can be thought of as Gauss-Seidel on the normal equations
+.vb
+
+        min || b - A(x + dx_i e_i ||_2
+        dx_i
+
+    That is, it changes a single entry of x to minimize the new residual norm.
+   Let A_i represent the ith column of A, then the minimization can be written as
+
+       min || r - (dx_i) A e_i ||_2
+       dx_i
+   or   min || r - (dx_i) A_i ||_2
+        dx_i
+
+    take the derivative with respect to dx_i to obtain
+        dx_i = (A_i^T A_i)^(-1) A_i^T r
+
+    This algorithm can be thought of as Gauss-Seidel on the normal equations
+.ve
 
     Notes:
     This proceedure can also be done with block columns or any groups of columns
-        but this is not coded.
+    but this is not coded.
 
-      These "projections" can be done simultaneously for all columns (similar to Jacobi)
-         or sequentially (similar to Gauss-Seidel/SOR). This is only coded for SOR type.
+    These "projections" can be done simultaneously for all columns (similar to Jacobi)
+    or sequentially (similar to Gauss-Seidel/SOR). This is only coded for SOR type.
 
-      This is related to, but not the same as "row projection" methods.
+    This is related to, but not the same as "row projection" methods.
 
-      This is currently coded only for SeqAIJ matrices in sequential (SOR) form.
+    This is currently coded only for `MATSEQAIJ` matrices
 
   Level: intermediate
 
 .seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PCJACOBI`, `PCSOR`
-
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_CP(PC pc) {

@@ -52,8 +52,8 @@ static PetscErrorCode PCSetUp_PARMS(PC pc) {
   PetscFunctionBegin;
   /* Get preconditioner matrix from PETSc and setup pARMS structs */
   PetscCall(PCGetOperators(pc, NULL, &pmat));
-  MPI_Comm_size(PetscObjectComm((PetscObject)pmat), &npro);
-  MPI_Comm_rank(PetscObjectComm((PetscObject)pmat), &rank);
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)pmat), &npro));
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)pmat), &rank));
 
   PetscCall(MatGetSize(pmat, &n, NULL));
   PetscCall(PetscMalloc1(npro + 1, &mapptr));
@@ -308,9 +308,9 @@ static PetscErrorCode PCPARMSSetGlobal_PARMS(PC pc, PCPARMSGlobalType type) {
 }
 
 /*@
-   PCPARMSSetGlobal - Sets the global preconditioner to be used in PARMS.
+   PCPARMSSetGlobal - Sets the global preconditioner to be used in `PCPARMS`.
 
-   Collective on PC
+   Collective on pc
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -321,13 +321,13 @@ static PetscErrorCode PCPARMSSetGlobal_PARMS(PC pc, PCPARMSGlobalType type) {
      PC_PARMS_GLOBAL_BJ    - Block Jacobi
 .ve
 
-   Options Database Keys:
-   -pc_parms_global [ras,schur,bj] - Sets global preconditioner
+   Options Database Key:
+.   -pc_parms_global [ras,schur,bj] - Sets global preconditioner
 
    Level: intermediate
 
-   Notes:
-   See the pARMS function parms_PCSetType for more information.
+   Note:
+   See the pARMS function `parms_PCSetType()` for more information.
 
 .seealso: `PCPARMS`, `PCPARMSSetLocal()`
 @*/
@@ -351,9 +351,9 @@ static PetscErrorCode PCPARMSSetLocal_PARMS(PC pc, PCPARMSLocalType type) {
 }
 
 /*@
-   PCPARMSSetLocal - Sets the local preconditioner to be used in PARMS.
+   PCPARMSSetLocal - Sets the local preconditioner to be used in `PCPARMS`.
 
-   Collective on PC
+   Collective on pc
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -374,7 +374,7 @@ static PetscErrorCode PCPARMSSetLocal_PARMS(PC pc, PCPARMSLocalType type) {
    For the ARMS preconditioner, one can use either the symmetric ARMS or the non-symmetric
    variant (ARMS-ddPQ) by setting the permutation type with PCPARMSSetNonsymPerm().
 
-   See the pARMS function parms_PCILUSetType for more information.
+   See the pARMS function `parms_PCILUSetType()` for more information.
 
 .seealso: `PCPARMS`, `PCPARMSSetGlobal()`, `PCPARMSSetNonsymPerm()`
 
@@ -406,7 +406,7 @@ static PetscErrorCode PCPARMSSetSolveTolerances_PARMS(PC pc, PetscReal tol, Pets
    PCPARMSSetSolveTolerances - Sets the convergence tolerance and the maximum iterations for the
    inner GMRES solver, when the Schur global preconditioner is used.
 
-   Collective on PC
+   Collective on pc
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -419,8 +419,8 @@ static PetscErrorCode PCPARMSSetSolveTolerances_PARMS(PC pc, PetscReal tol, Pets
 
    Level: intermediate
 
-   Notes:
-   See the pARMS functions parms_PCSetInnerEps and parms_PCSetInnerMaxits for more information.
+   Note:
+   See the pARMS functions `parms_PCSetInnerEps()` and `parms_PCSetInnerMaxits()` for more information.
 
 .seealso: `PCPARMS`, `PCPARMSSetSolveRestart()`
 @*/
@@ -446,18 +446,18 @@ static PetscErrorCode PCPARMSSetSolveRestart_PARMS(PC pc, PetscInt restart) {
    PCPARMSSetSolveRestart - Sets the number of iterations at which the
    inner GMRES solver restarts.
 
-   Collective on PC
+   Collective on pc
 
    Input Parameters:
 +  pc - the preconditioner context
 -  restart - maximum dimension of the Krylov subspace
 
-   Options Database Keys:
+   Options Database Key:
 .  -pc_parms_max_dim - sets the inner Krylov dimension
 
    Level: intermediate
 
-   Notes:
+   Note:
    See the pARMS function parms_PCSetInnerKSize for more information.
 
 .seealso: `PCPARMS`, `PCPARMSSetSolveTolerances()`
@@ -484,20 +484,20 @@ static PetscErrorCode PCPARMSSetNonsymPerm_PARMS(PC pc, PetscBool nonsym) {
    PCPARMSSetNonsymPerm - Sets the type of permutation for the ARMS preconditioner: the standard
    symmetric ARMS or the non-symmetric ARMS (ARMS-ddPQ).
 
-   Collective on PC
+   Collective on pc
 
    Input Parameters:
 +  pc - the preconditioner context
--  nonsym - PETSC_TRUE indicates the non-symmetric ARMS is used;
-            PETSC_FALSE indicates the symmetric ARMS is used
+-  nonsym - `PETSC_TRUE` indicates the non-symmetric ARMS is used;
+            `PETSC_FALSE` indicates the symmetric ARMS is used
 
-   Options Database Keys:
+   Options Database Key:
 .  -pc_parms_nonsymmetric_perm - sets the use of nonsymmetric permutation
 
    Level: intermediate
 
-   Notes:
-   See the pARMS function parms_PCSetPermType for more information.
+   Note:
+   See the pARMS function `parms_PCSetPermType()` for more information.
 
 .seealso: `PCPARMS`
 @*/
@@ -532,7 +532,7 @@ static PetscErrorCode PCPARMSSetFill_PARMS(PC pc, PetscInt lfil0, PetscInt lfil1
    Consider the original matrix A = [B F; E C] and the approximate version
    M = [LB 0; E/UB I]*[UB LB\F; 0 S].
 
-   Collective on PC
+   Collective on pc
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -547,8 +547,8 @@ static PetscErrorCode PCPARMSSetFill_PARMS(PC pc, PetscInt lfil0, PetscInt lfil1
 
    Level: intermediate
 
-   Notes:
-   See the pARMS function parms_PCSetFill for more information.
+   Note:
+   See the pARMS function `parms_PCSetFill()` for more information.
 
 .seealso: `PCPARMS`
 @*/
@@ -588,14 +588,16 @@ PetscErrorCode PCPARMSSetFill(PC pc, PetscInt lfil0, PetscInt lfil1, PetscInt lf
 .  -pc_parms_droptol_schur_compl - set the drop tolerance for schur complement at each level
 -  -pc_parms_droptol_last_schur - set the drop tolerance for ILUT in last level schur complement
 
-   IMPORTANT:
+   Note:
    Unless configured appropriately, this preconditioner performs an inexact solve
    as part of the preconditioner application. Therefore, it must be used in combination
-   with flexible variants of iterative solvers, such as KSPFGMRES or KSPGCR.
+   with flexible variants of iterative solvers, such as `KSPFGMRES` or `KSPGCR`.
 
    Level: intermediate
 
-.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`
+.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCMG`, `PCGAMG`, `PCHYPRE`, `PCPARMSSetGlobal()`,
+          `PCPARMSSetLocal()`, `PCPARMSSetSolveTolerances()`, `PCPARMSSetSolveRestart()`, `PCPARMSSetNonsymPerm()`,
+          `PCPARMSSetFill()`
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_PARMS(PC pc) {

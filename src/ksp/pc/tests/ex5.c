@@ -171,7 +171,6 @@ int main(int Argc, char **Args) {
   return 0;
 }
 
-/* --------------------------------------------------------------------- */
 PetscErrorCode residual(Mat mat, Vec bb, Vec xx, Vec rr) {
   PetscInt           i, n1;
   PetscScalar       *x, *r;
@@ -210,7 +209,6 @@ PetscErrorCode amult(Mat mat, Vec xx, Vec yy) {
   PetscFunctionReturn(0);
 }
 
-/* --------------------------------------------------------------------- */
 PetscErrorCode apply_pc(PC pc, Vec bb, Vec xx) {
   PetscFunctionBegin;
   SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Not implemented");
@@ -239,7 +237,7 @@ PetscErrorCode gauss_seidel(PC pc, Vec bb, Vec xx, Vec w, PetscReal rtol, PetscR
   PetscCall(VecRestoreArray(xx, &x));
   PetscFunctionReturn(0);
 }
-/* --------------------------------------------------------------------- */
+
 PetscErrorCode jacobi_smoother(PC pc, Vec bb, Vec xx, Vec w, PetscReal rtol, PetscReal abstol, PetscReal dtol, PetscInt m, PetscBool guesszero, PetscInt *its, PCRichardsonConvergedReason *reason) {
   PetscInt           i, n, n1;
   PetscScalar       *r, *x;
@@ -268,7 +266,7 @@ PetscErrorCode jacobi_smoother(PC pc, Vec bb, Vec xx, Vec w, PetscReal rtol, Pet
 /*
    We know for this application that yy  and zz are the same
 */
-/* --------------------------------------------------------------------- */
+
 PetscErrorCode interpolate(Mat mat, Vec xx, Vec yy, Vec zz) {
   PetscInt           i, n, N, i2;
   PetscScalar       *y;
@@ -289,7 +287,7 @@ PetscErrorCode interpolate(Mat mat, Vec xx, Vec yy, Vec zz) {
   PetscCall(VecRestoreArray(yy, &y));
   PetscFunctionReturn(0);
 }
-/* --------------------------------------------------------------------- */
+
 PetscErrorCode restrct(Mat mat, Vec rr, Vec bb) {
   PetscInt           i, n, N, i2;
   PetscScalar       *b;
@@ -309,7 +307,7 @@ PetscErrorCode restrct(Mat mat, Vec rr, Vec bb) {
   PetscCall(VecRestoreArray(bb, &b));
   PetscFunctionReturn(0);
 }
-/* --------------------------------------------------------------------- */
+
 PetscErrorCode Create1dLaplacian(PetscInt n, Mat *mat) {
   PetscScalar mone = -1.0, two = 2.0;
   PetscInt    i, idx;
@@ -329,7 +327,7 @@ PetscErrorCode Create1dLaplacian(PetscInt n, Mat *mat) {
   PetscCall(MatAssemblyEnd(*mat, MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }
-/* --------------------------------------------------------------------- */
+
 PetscErrorCode CalculateRhs(Vec u) {
   PetscInt    i, n;
   PetscReal   h;
@@ -344,7 +342,7 @@ PetscErrorCode CalculateRhs(Vec u) {
   }
   PetscFunctionReturn(0);
 }
-/* --------------------------------------------------------------------- */
+
 PetscErrorCode CalculateSolution(PetscInt n, Vec *solution) {
   PetscInt    i;
   PetscReal   h, x = 0.0;
@@ -360,7 +358,7 @@ PetscErrorCode CalculateSolution(PetscInt n, Vec *solution) {
   }
   PetscFunctionReturn(0);
 }
-/* --------------------------------------------------------------------- */
+
 PetscErrorCode CalculateError(Vec solution, Vec u, Vec r, PetscReal *e) {
   PetscFunctionBegin;
   PetscCall(VecNorm(r, NORM_2, e + 2));

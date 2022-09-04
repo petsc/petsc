@@ -4,7 +4,7 @@
 #requiresdefine  'PETSC_USE_SHARED_LIBRARIES'
 
 CXXFLAGS  = ${HPDDM_INCLUDE}
-SOURCECXX = hpddm.cxx
+SOURCECXX = pchpddm.cxx
 SOURCEF   =
 SOURCEH   =
 LIBBASE   = libpetscksp

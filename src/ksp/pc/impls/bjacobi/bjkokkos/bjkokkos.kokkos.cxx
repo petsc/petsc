@@ -1326,19 +1326,22 @@ static PetscErrorCode PCBJKOKKOSSetKSP_BJKOKKOS(PC pc, KSP ksp) {
 }
 
 /*@C
-   PCBJKOKKOSSetKSP - Sets the KSP context for a KSP PC.
+   PCBJKOKKOSSetKSP - Sets the `KSP` context for `PCBJKOKKOS`
 
-   Collective on PC
+   Collective on pc
 
    Input Parameters:
-+  pc - the preconditioner context
--  ksp - the KSP solver
++  pc - the `PCBJKOKKOS` preconditioner context
+-  ksp - the `KSP` solver
 
    Notes:
-   The PC and the KSP must have the same communicator
+   The `PC` and the `KSP` must have the same communicator
+
+   If the `PC` is not `PCBJKOKKOS` this function returns without doing anything
 
    Level: advanced
 
+,seealso: `PCBJKOKKOSGetKSP()`, `PCBJKOKKOS`
 @*/
 PetscErrorCode PCBJKOKKOSSetKSP(PC pc, KSP ksp) {
   PetscFunctionBegin;
@@ -1359,23 +1362,24 @@ static PetscErrorCode PCBJKOKKOSGetKSP_BJKOKKOS(PC pc, KSP *ksp) {
 }
 
 /*@C
-   PCBJKOKKOSGetKSP - Gets the KSP context for a KSP PC.
+   PCBJKOKKOSGetKSP - Gets the `KSP` context for the `PCBJKOKKOS` preconditioner
 
-   Not Collective but KSP returned is parallel if PC was parallel
+   Not Collective but `KSP` returned is parallel if `PC` was parallel
 
    Input Parameter:
 .  pc - the preconditioner context
 
-   Output Parameters:
-.  ksp - the KSP solver
+   Output Parameter:
+.  ksp - the `KSP` solver
 
    Notes:
-   You must call KSPSetUp() before calling PCBJKOKKOSGetKSP().
+   You must call `KSPSetUp()` before calling `PCBJKOKKOSGetKSP()`.
 
-   If the PC is not a PCBJKOKKOS object it raises an error
+   If the `PC` is not a `PCBJKOKKOS` object it raises an error
 
    Level: advanced
 
+.seealso: `PCBJKOKKOS`, `PCBJKOKKOSSetKSP()`
 @*/
 PetscErrorCode PCBJKOKKOSGetKSP(PC pc, KSP *ksp) {
   PetscFunctionBegin;
@@ -1393,24 +1397,24 @@ static PetscErrorCode PCPostSolve_BJKOKKOS(PC pc, KSP ksp, Vec b, Vec x) {
   PetscFunctionReturn(0);
 }
 
-/* ----------------------------------------------------------------------------------*/
-
 /*MC
-     PCBJKOKKOS -  Defines a preconditioner that applies a Krylov solver and preconditioner to the blocks in a AIJASeq matrix on the GPU.
+     PCBJKOKKOS -  Defines a preconditioner that applies a Krylov solver and preconditioner to the blocks in a `MATSEQAIJ` matrix on the GPU using Kokkos
 
    Options Database Key:
-.     -pc_bjkokkos_ - options prefix with ksp options
+.     -pc_bjkokkos_ - options prefix for its `KSP` options
 
    Level: intermediate
 
-   Notes:
-    For use with -ksp_type preonly to bypass any CPU work
+   Note:
+    For use with -ksp_type preonly to bypass any computation on the CPU
 
    Developer Notes:
+   The documentation is incomplete. Is this a block Jacobi preconditioner?
 
-.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`,
+   Why does it have its own `KSP`? Where is the `KSP` run if used with -ksp_type preonly?
+
+.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCBJACOBI`,
           `PCSHELL`, `PCCOMPOSITE`, `PCSetUseAmat()`, `PCBJKOKKOSGetKSP()`
-
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_BJKOKKOS(PC pc) {

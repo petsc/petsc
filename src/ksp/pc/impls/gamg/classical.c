@@ -11,19 +11,19 @@ typedef struct {
 } PC_GAMG_Classical;
 
 /*@C
-   PCGAMGClassicalSetType - Sets the type of classical interpolation to use
+   PCGAMGClassicalSetType - Sets the type of classical interpolation to use with `PCGAMG`
 
-   Collective on PC
+   Collective on pc
 
    Input Parameters:
 .  pc - the preconditioner context
 
    Options Database Key:
-.  -pc_gamg_classical_type <direct,standard> - set type of Classical AMG prolongation
+.  -pc_gamg_classical_type <direct,standard> - set type of classical AMG prolongation
 
    Level: intermediate
 
-.seealso: `()`
+.seealso: `PCGAMG`
 @*/
 PetscErrorCode PCGAMGClassicalSetType(PC pc, PCGAMGClassicalType type) {
   PetscFunctionBegin;
@@ -33,9 +33,9 @@ PetscErrorCode PCGAMGClassicalSetType(PC pc, PCGAMGClassicalType type) {
 }
 
 /*@C
-   PCGAMGClassicalGetType - Gets the type of classical interpolation to use
+   PCGAMGClassicalGetType - Gets the type of classical interpolation to use with `PCGAMG`
 
-   Collective on PC
+   Collective on pc
 
    Input Parameter:
 .  pc - the preconditioner context
@@ -45,7 +45,7 @@ PetscErrorCode PCGAMGClassicalSetType(PC pc, PCGAMGClassicalType type) {
 
    Level: intermediate
 
-.seealso: `()`
+.seealso: `PCGAMG`
 @*/
 PetscErrorCode PCGAMGClassicalGetType(PC pc, PCGAMGClassicalType *type) {
   PetscFunctionBegin;
@@ -906,7 +906,6 @@ PetscErrorCode PCGAMGClassicalInitializePackage(void) {
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
 /*
    PCCreateGAMG_Classical
 

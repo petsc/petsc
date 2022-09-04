@@ -195,12 +195,6 @@ PetscErrorCode PCMGAdaptInterpolator_Internal(PC pc, PetscInt l, KSP csmooth, KS
 /*
   PCMGRecomputeLevelOperators_Internal - Recomputes Galerkin coarse operator when interpolation is adapted
 
-  Input Parameters:
-+ pc - The PCMG
-- l  - The level l
-
-  Level: developer
-
   Note: This routine recomputes the Galerkin triple product for the operator on level l.
 */
 PetscErrorCode PCMGRecomputeLevelOperators_Internal(PC pc, PetscInt l) {

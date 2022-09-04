@@ -291,27 +291,27 @@ static PetscErrorCode PCMPIDestroy(PC pc) {
 
 /*@C
      PCMPIServerBegin - starts a server that runs on the rank != 0 MPI processes waiting to process requests for
-     parallel KSP solves and management of parallel KSP objects.
+     parallel `KSP` solves and management of parallel `KSP` objects.
 
      Logically collective on all MPI ranks except 0
 
-   Options Database:
+   Options Database Keys:
 +   -mpi_linear_solver_server - causes the PETSc program to start in MPI linear solver server mode where only the first MPI rank runs user code
 -   -mpi_linear_solver_server_view - displays information about the linear systems solved by the MPI linear solver server
 
-     Notes:
+     Note:
       This is normally started automatically in `PetscInitialize()` when the option is provided
 
      Developer Notes:
-       When called on rank zero this sets PETSC_COMM_WORLD to PETSC_COMM_SELF to allow a main program
-       written with PETSC_COMM_WORLD to run correctly on the single rank while all the ranks
-       (that would normally be sharing PETSC_COMM_WORLD) to run the solver server.
+       When called on rank zero this sets `PETSC_COMM_WORLD` to `PETSC_COMM_SELF` to allow a main program
+       written with `PETSC_COMM_WORLD` to run correctly on the single rank while all the ranks
+       (that would normally be sharing `PETSC_COMM_WORLD`) to run the solver server.
 
-       Can this be integrated into the PetscDevice abstraction that is currently being developed?
+       Can this be integrated into the `PetscDevice` abstraction that is currently being developed?
 
      Level: developer
 
-.seealso: PCMPIServerEnd(), PCMPI
+.seealso: `PCMPIServerEnd()`, `PCMPI`
 @*/
 PetscErrorCode PCMPIServerBegin(void) {
   PetscMPIInt rank;
@@ -348,16 +348,16 @@ PetscErrorCode PCMPIServerBegin(void) {
 
 /*@C
      PCMPIServerEnd - ends a server that runs on the rank != 0 MPI processes waiting to process requests for
-     parallel KSP solves and management of parallel KSP objects.
+     parallel KSP solves and management of parallel `KSP` objects.
 
      Logically collective on all MPI ranks except 0
 
-     Notes:
+     Note:
       This is normally ended automatically in `PetscFinalize()` when the option is provided
 
      Level: developer
 
-.seealso: PCMPIServerBegin(), PCMPI
+.seealso: `PCMPIServerBegin()`, `PCMPI`
 @*/
 PetscErrorCode PCMPIServerEnd(void) {
   PCMPICommand request = PCMPI_EXIT;
@@ -555,29 +555,28 @@ PetscErrorCode PCSetFromOptions_MPI(PC pc, PetscOptionItems *PetscOptionsObject)
 }
 
 /*MC
-     PCMPI - Calls an MPI parallel KSP to solve a linear system from user code running on one process
+     PCMPI - Calls an MPI parallel `KSP` to solve a linear system from user code running on one process
 
    Level: beginner
 
-   Options Database:
+   Options Database Keys:
 +  -mpi_linear_solver_server - causes the PETSc program to start in MPI linear solver server mode where only the first MPI rank runs user code
 .  -mpi_linear_solver_server_view - displays information about the linear systems solved by the MPI linear solver server
 .  -pc_mpi_minimum_count_per_rank - sets the minimum size of the linear system per MPI rank that the solver will strive for
 -  -pc_mpi_always_use_server - use the server solver code even if the particular system is only solved on the process, this option is only for debugging and testing purposes
 
    Notes:
-   The options database prefix for the MPI parallel KSP and PC is -mpi_
+   The options database prefix for the MPI parallel `KSP` and `PC` is -mpi_
 
    The MPI linear solver server will not support scaling user code to utilize extremely large numbers of MPI ranks but should give reasonable speedup for
    potentially 4 to 8 MPI ranks depending on the linear system being solved, solver algorithm, and the hardware.
 
    It can be particularly useful for user OpenMP code or potentially user GPU code.
 
-   When the program is running with a single MPI rank then this directly uses the provided matrix and right hand side (still in a KSP with the options prefix of -mpi)
-   and does not need to distribute the matrix and vector to the various MPI ranks; thus it incurs no extra overhead over just using the KSP directly.
+   When the program is running with a single MPI rank then this directly uses the provided matrix and right hand side (still in a `KSP` with the options prefix of -mpi)
+   and does not need to distribute the matrix and vector to the various MPI ranks; thus it incurs no extra overhead over just using the `KSP` directly.
 
 .seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `PC`, `PCMPIServerBegin()`, `PCMPIServerEnd()`
-
 M*/
 PETSC_EXTERN PetscErrorCode PCCreate_MPI(PC pc) {
   PC_MPI *km;
