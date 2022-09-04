@@ -22,6 +22,7 @@ static PetscErrorCode PCMult_Eisenstat(Mat mat, Vec b, Vec x) {
   PetscCall(MatShellGetContext(mat, &pc));
   eis = (PC_Eisenstat *)pc->data;
   PetscCall(MatSOR(eis->A, b, eis->omega, SOR_EISENSTAT, 0.0, 1, 1, x));
+  PetscCall(MatFactorGetError(eis->A, (MatFactorError *)&pc->failedreason));
   PetscFunctionReturn(0);
 }
 
@@ -74,6 +75,7 @@ static PetscErrorCode PCPreSolve_Eisenstat(PC pc, KSP ksp, Vec b, Vec x) {
   if (nonzero) {
     PetscCall(VecCopy(x, eis->b[pc->presolvedone - 1]));
     PetscCall(MatSOR(eis->A, eis->b[pc->presolvedone - 1], eis->omega, SOR_APPLY_UPPER, 0.0, 1, 1, x));
+    PetscCall(MatFactorGetError(eis->A, (MatFactorError *)&pc->failedreason));
   }
 
   /* save true b, other option is to swap pointers */
@@ -81,6 +83,7 @@ static PetscErrorCode PCPreSolve_Eisenstat(PC pc, KSP ksp, Vec b, Vec x) {
 
   /* modify b by (L + D/omega)^{-1} */
   PetscCall(MatSOR(eis->A, eis->b[pc->presolvedone - 1], eis->omega, (MatSORType)(SOR_ZERO_INITIAL_GUESS | SOR_LOCAL_FORWARD_SWEEP), 0.0, 1, 1, b));
+  PetscCall(MatFactorGetError(eis->A, (MatFactorError *)&pc->failedreason));
   PetscFunctionReturn(0);
 }
 
@@ -94,6 +97,7 @@ static PetscErrorCode PCPostSolve_Eisenstat(PC pc, KSP ksp, Vec b, Vec x) {
   /* modify x by (U + D/omega)^{-1} */
   PetscCall(VecCopy(x, eis->b[pc->presolvedone]));
   PetscCall(MatSOR(eis->A, eis->b[pc->presolvedone], eis->omega, (MatSORType)(SOR_ZERO_INITIAL_GUESS | SOR_LOCAL_BACKWARD_SWEEP), 0.0, 1, 1, x));
+  PetscCall(MatFactorGetError(eis->A, (MatFactorError *)&pc->failedreason));
   if (!pc->presolvedone) pc->mat = eis->A;
   PetscFunctionReturn(0);
 }
