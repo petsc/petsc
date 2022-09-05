@@ -11,7 +11,7 @@ PetscClassId PETSC_DRAWBAR_CLASSID = 0;
 /*@C
    PetscDrawBarCreate - Creates a bar graph data structure.
 
-   Collective over PetscDraw
+   Collective over draw
 
    Input Parameters:
 .  draw  - The window where the graph will be made
@@ -20,16 +20,16 @@ PetscClassId PETSC_DRAWBAR_CLASSID = 0;
 .  bar - The bar graph context
 
    Notes:
-    Call PetscDrawBarSetData() to provide the bins to be plotted and then PetscDrawBarDraw() to display the new plot
+    Call `PetscDrawBarSetData()` to provide the bins to be plotted and then `PetscDrawBarDraw()` to display the new plot
 
-  The difference between a bar chart, PetscDrawBar, and a histogram, PetscDrawHG, is explained here https://stattrek.com/statistics/charts/histogram.aspx?Tutorial=AP
+  The difference between a bar chart, `PetscDrawBar`, and a histogram, `PetscDrawHG`, is explained here https://stattrek.com/statistics/charts/histogram.aspx?Tutorial=AP
 
-   The MPI communicator that owns the PetscDraw owns this PetscDrawBar, but the calls to set options and add data are ignored on all processes except the
-   zeroth MPI process in the communicator. All MPI processes in the communicator must call PetscDrawBarDraw() to display the updated graph.
+   The MPI communicator that owns the `PetscDraw` owns this `PetscDrawBar`, but the calls to set options and add data are ignored on all processes except the
+   zeroth MPI rank in the communicator. All MPI ranks in the communicator must call `PetscDrawBarDraw()` to display the updated graph.
 
    Level: intermediate
 
-.seealso: `PetscDrawLGCreate()`, `PetscDrawLG`, `PetscDrawSPCreate()`, `PetscDrawSP`, `PetscDrawHGCreate()`, `PetscDrawHG`, `PetscDrawBarDestroy()`, `PetscDrawBarSetData()`,
+.seealso: `PetscDrawBar`, `PetscDrawLGCreate()`, `PetscDrawLG`, `PetscDrawSPCreate()`, `PetscDrawSP`, `PetscDrawHGCreate()`, `PetscDrawHG`, `PetscDrawBarDestroy()`, `PetscDrawBarSetData()`,
           `PetscDrawBar`, `PetscDrawBarDraw()`, `PetscDrawBarSave()`, `PetscDrawBarSetColor()`, `PetscDrawBarSort()`, `PetscDrawBarSetLimits()`, `PetscDrawBarGetAxis()`, `PetscDrawAxis`,
           `PetscDrawBarGetDraw()`, `PetscDrawBarSetFromOptions()`
 @*/
@@ -63,7 +63,7 @@ PetscErrorCode PetscDrawBarCreate(PetscDraw draw, PetscDrawBar *bar) {
 /*@C
    PetscDrawBarSetData
 
-   Logically Collective on PetscDrawBar
+   Logically Collective on bar
 
    Input Parameters:
 +  bar - The bar graph context.
@@ -74,10 +74,11 @@ PetscErrorCode PetscDrawBarCreate(PetscDraw draw, PetscDrawBar *bar) {
    Level: intermediate
 
    Notes:
-    Call PetscDrawBarDraw() after this call to display the new plot
+    Call `PetscDrawBarDraw()` after this call to display the new plot
 
-.seealso: `PetscDrawBarCreate()`, `PetscDrawBar`, `PetscDrawBarDraw()`
+   The data is ignored on all ranks except zero
 
+.seealso: `PetscDrawBar`, `PetscDrawBarCreate()`, `PetscDrawBar`, `PetscDrawBarDraw()`
 @*/
 PetscErrorCode PetscDrawBarSetData(PetscDrawBar bar, PetscInt bins, const PetscReal data[], const char *const *labels) {
   PetscFunctionBegin;
@@ -97,14 +98,14 @@ PetscErrorCode PetscDrawBarSetData(PetscDrawBar bar, PetscInt bins, const PetscR
 /*@C
   PetscDrawBarDestroy - Frees all space taken up by bar graph data structure.
 
-  Collective over PetscDrawBar
+  Collective over bar
 
   Input Parameter:
 . bar - The bar graph context
 
   Level: intermediate
 
-.seealso: `PetscDrawBarCreate()`
+.seealso: `PetscDrawBar`, `PetscDrawBarCreate()`
 @*/
 PetscErrorCode PetscDrawBarDestroy(PetscDrawBar *bar) {
   PetscFunctionBegin;
@@ -123,7 +124,7 @@ PetscErrorCode PetscDrawBarDestroy(PetscDrawBar *bar) {
 /*@
   PetscDrawBarDraw - Redraws a bar graph.
 
-  Collective on PetscDrawBar
+  Collective on bar
 
   Input Parameter:
 . bar - The bar graph context
@@ -131,7 +132,6 @@ PetscErrorCode PetscDrawBarDestroy(PetscDrawBar *bar) {
   Level: intermediate
 
 .seealso: `PetscDrawBar`, `PetscDrawBarCreate()`, `PetscDrawBarSetData()`
-
 @*/
 PetscErrorCode PetscDrawBarDraw(PetscDrawBar bar) {
   PetscDraw   draw;
@@ -221,16 +221,16 @@ PetscErrorCode PetscDrawBarDraw(PetscDrawBar bar) {
 }
 
 /*@
-  PetscDrawBarSave - Saves a drawn image
+  PetscDrawBarSave - Saves a drawn bar graph
 
-  Collective on PetscDrawBar
+  Collective on bar
 
   Input Parameters:
 . bar - The bar graph context
 
   Level: intermediate
 
-.seealso: `PetscDrawBarCreate()`, `PetscDrawBarGetDraw()`, `PetscDrawSetSave()`, `PetscDrawSave()`, `PetscDrawBarSetData()`
+.seealso: `PetscDrawSave()`, `PetscDrawBar`, `PetscDrawBarCreate()`, `PetscDrawBarGetDraw()`, `PetscDrawSetSave()`, `PetscDrawSave()`, `PetscDrawBarSetData()`
 @*/
 PetscErrorCode PetscDrawBarSave(PetscDrawBar bar) {
   PetscFunctionBegin;
@@ -242,17 +242,16 @@ PetscErrorCode PetscDrawBarSave(PetscDrawBar bar) {
 /*@
   PetscDrawBarSetColor - Sets the color the bars will be drawn with.
 
-  Logically Collective on PetscDrawBar
+  Logically Collective on bar
 
   Input Parameters:
 + bar - The bar graph context
-- color - one of the colors defined in petscdraw.h or PETSC_DRAW_ROTATE to make each bar a
+- color - one of the colors defined in petscdraw.h or `PETSC_DRAW_ROTATE` to make each bar a
           different color
 
   Level: intermediate
 
 .seealso: `PetscDrawBarCreate()`, `PetscDrawBar`, `PetscDrawBarSetData()`, `PetscDrawBarDraw()`, `PetscDrawBarGetAxis()`
-
 @*/
 PetscErrorCode PetscDrawBarSetColor(PetscDrawBar bar, int color) {
   PetscFunctionBegin;
@@ -262,18 +261,18 @@ PetscErrorCode PetscDrawBarSetColor(PetscDrawBar bar, int color) {
 }
 
 /*@
-  PetscDrawBarSort - Sorts the values before drawing the bar chart
+  PetscDrawBarSort - Sorts the values before drawing the bar chart, the bars will be in ascending order from left to right
 
-  Logically Collective on PetscDrawBar
+  Logically Collective on bar
 
   Input Parameters:
 + bar - The bar graph context
-. sort - PETSC_TRUE to sort the values
+. sort - `PETSC_TRUE` to sort the values
 - tolerance - discard values less than tolerance
 
   Level: intermediate
 
-.seealso: `PetscDrawBarCreate()`, `PetscDrawBar`, `PetscDrawBarSetData()`, `PetscDrawBarSetColor()`, `PetscDrawBarDraw()`, `PetscDrawBarGetAxis()`
+.seealso: `PetscDrawBar`, `PetscDrawBarCreate()`, `PetscDrawBar`, `PetscDrawBarSetData()`, `PetscDrawBarSetColor()`, `PetscDrawBarDraw()`, `PetscDrawBarGetAxis()`
 @*/
 PetscErrorCode PetscDrawBarSort(PetscDrawBar bar, PetscBool sort, PetscReal tolerance) {
   PetscFunctionBegin;
@@ -288,7 +287,7 @@ PetscErrorCode PetscDrawBarSort(PetscDrawBar bar, PetscBool sort, PetscReal tole
   points are added after this call, the limits will be adjusted to
   include those additional points.
 
-  Logically Collective on PetscDrawBar
+  Logically Collective on bar
 
   Input Parameters:
 + bar - The bar graph context
@@ -296,7 +295,7 @@ PetscErrorCode PetscDrawBarSort(PetscDrawBar bar, PetscBool sort, PetscReal tole
 
   Level: intermediate
 
-.seealso: `PetscDrawBarCreate()`, `PetscDrawBar`, `PetscDrawBarGetAxis()`, `PetscDrawBarSetData()`, `PetscDrawBarDraw()`
+.seealso: `PetscDrawBar`, `PetscDrawBarCreate()`, `PetscDrawBar`, `PetscDrawBarGetAxis()`, `PetscDrawBarSetData()`, `PetscDrawBarDraw()`
 @*/
 PetscErrorCode PetscDrawBarSetLimits(PetscDrawBar bar, PetscReal y_min, PetscReal y_max) {
   PetscFunctionBegin;
@@ -312,7 +311,7 @@ PetscErrorCode PetscDrawBarSetLimits(PetscDrawBar bar, PetscReal y_min, PetscRea
   labels, color, etc. The axis context should not be destroyed by the
   application code.
 
-  Not Collective, PetscDrawAxis is parallel if PetscDrawBar is parallel
+  Not Collective, axis is parallel if bar is parallel
 
   Input Parameter:
 . bar - The bar graph context
@@ -322,7 +321,7 @@ PetscErrorCode PetscDrawBarSetLimits(PetscDrawBar bar, PetscReal y_min, PetscRea
 
   Level: intermediate
 
-.seealso: `PetscDrawBarCreate()`, `PetscDrawBar`, `PetscDrawAxis`, `PetscDrawAxisCreate()`
+.seealso: `PetscDrawBar`, `PetscDrawBarCreate()`, `PetscDrawBar`, `PetscDrawAxis`, `PetscDrawAxisCreate()`
 @*/
 PetscErrorCode PetscDrawBarGetAxis(PetscDrawBar bar, PetscDrawAxis *axis) {
   PetscFunctionBegin;
@@ -335,7 +334,7 @@ PetscErrorCode PetscDrawBarGetAxis(PetscDrawBar bar, PetscDrawAxis *axis) {
 /*@C
   PetscDrawBarGetDraw - Gets the draw context associated with a bar graph.
 
-  Not Collective, PetscDraw is parallel if PetscDrawBar is parallel
+  Not Collective, draw is parallel if bar is parallel
 
   Input Parameter:
 . bar - The bar graph context
@@ -345,7 +344,7 @@ PetscErrorCode PetscDrawBarGetAxis(PetscDrawBar bar, PetscDrawAxis *axis) {
 
   Level: intermediate
 
-.seealso: `PetscDrawBarCreate()`, `PetscDrawBar`, `PetscDrawBarDraw()`, `PetscDraw`
+.seealso: `PetscDrawBar`, `PetscDraw`, `PetscDrawBarCreate()`, `PetscDrawBar`, `PetscDrawBarDraw()`, `PetscDraw`
 @*/
 PetscErrorCode PetscDrawBarGetDraw(PetscDrawBar bar, PetscDraw *draw) {
   PetscFunctionBegin;
@@ -356,16 +355,19 @@ PetscErrorCode PetscDrawBarGetDraw(PetscDrawBar bar, PetscDraw *draw) {
 }
 
 /*@
-    PetscDrawBarSetFromOptions - Sets options related to the PetscDrawBar
+    PetscDrawBarSetFromOptions - Sets options related to the display of the `PetscDrawBar`
 
-    Collective over PetscDrawBar
+    Collective over bar
 
-    Options Database:
+    Options Database Key:
 .  -bar_sort - sort the entries before drawing the bar graph
 
     Level: intermediate
 
-.seealso: `PetscDrawBarDestroy()`, `PetscDrawBarCreate()`, `PetscDrawBarSort()`
+    Note:
+    Does not set options related to the underlying `PetscDraw` or `PetscDrawAxis`
+
+.seealso: `PetscDrawBar`, `PetscDrawBarDestroy()`, `PetscDrawBarCreate()`, `PetscDrawBarSort()`
 @*/
 PetscErrorCode PetscDrawBarSetFromOptions(PetscDrawBar bar) {
   PetscBool set;

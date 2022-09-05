@@ -8,14 +8,17 @@
 #include <petsc/private/logimpl.h> /*I    "petscsys.h"   I*/
 
 /*@C
-  PetscClassRegLogCreate - This creates a PetscClassRegLog object.
+  PetscClassRegLogCreate - This creates a `PetscClassRegLog` object.
 
   Not collective
 
   Input Parameter:
-. classLog - The PetscClassRegLog
+. classLog - The `PetscClassRegLog`
 
   Level: developer
+
+  Note:
+  This is a low level routine used by the logging functions in PETSc
 
 .seealso: `PetscClassRegLogDestroy()`, `PetscStageLogCreate()`
 @*/
@@ -35,14 +38,17 @@ PetscErrorCode PetscClassRegLogCreate(PetscClassRegLog *classLog) {
 }
 
 /*@C
-  PetscClassRegLogDestroy - This destroys a PetscClassRegLog object.
+  PetscClassRegLogDestroy - This destroys a `PetscClassRegLog` object.
 
   Not collective
 
   Input Parameter:
-. classLog - The PetscClassRegLog
+. classLog - The `PetscClassRegLog`
 
   Level: developer
+
+  Note:
+  This is a low level routine used by the logging functions in PETSc
 
 .seealso: `PetscClassRegLogCreate()`
 @*/
@@ -57,7 +63,7 @@ PetscErrorCode PetscClassRegLogDestroy(PetscClassRegLog classLog) {
 }
 
 /*@C
-  PetscClassRegInfoDestroy - This destroys a PetscClassRegInfo object.
+  PetscClassRegInfoDestroy - This destroys a `PetscClassRegInfo` object.
 
   Not collective
 
@@ -65,6 +71,9 @@ PetscErrorCode PetscClassRegLogDestroy(PetscClassRegLog classLog) {
 . c - The PetscClassRegInfo
 
   Level: developer
+
+  Note:
+  This is a low level routine used by the logging functions in PETSc
 
 .seealso: `PetscStageLogDestroy()`, `EventLogDestroy()`
 @*/
@@ -75,14 +84,17 @@ PetscErrorCode PetscClassRegInfoDestroy(PetscClassRegInfo *c) {
 }
 
 /*@C
-  PetscClassPerfLogCreate - This creates a PetscClassPerfLog object.
+  PetscClassPerfLogCreate - This creates a `PetscClassPerfLog` object.
 
   Not collective
 
   Input Parameter:
-. classLog - The PetscClassPerfLog
+. classLog - The `PetscClassPerfLog`
 
   Level: developer
+
+  Note:
+  This is a low level routine used by the logging functions in PETSc
 
 .seealso: `PetscClassPerfLogDestroy()`, `PetscStageLogCreate()`
 @*/
@@ -102,14 +114,17 @@ PetscErrorCode PetscClassPerfLogCreate(PetscClassPerfLog *classLog) {
 }
 
 /*@C
-  PetscClassPerfLogDestroy - This destroys a PetscClassPerfLog object.
+  PetscClassPerfLogDestroy - This destroys a `PetscClassPerfLog` object.
 
   Not collective
 
   Input Parameter:
-. classLog - The PetscClassPerfLog
+. classLog - The `PetscClassPerfLog`
 
   Level: developer
+
+  Note:
+  This is a low level routine used by the logging functions in PETSc
 
 .seealso: `PetscClassPerfLogCreate()`
 @*/
@@ -122,14 +137,17 @@ PetscErrorCode PetscClassPerfLogDestroy(PetscClassPerfLog classLog) {
 
 /*------------------------------------------------ General Functions -------------------------------------------------*/
 /*@C
-  PetscClassPerfInfoClear - This clears a PetscClassPerfInfo object.
+  PetscClassPerfInfoClear - This clears a `PetscClassPerfInfo` object.
 
   Not collective
 
   Input Parameter:
-. classInfo - The PetscClassPerfInfo
+. classInfo - The `PetscClassPerfInfo`
 
   Level: developer
+
+  Note:
+  This is a low level routine used by the logging functions in PETSc
 
 .seealso: `PetscClassPerfLogCreate()`
 @*/
@@ -144,15 +162,18 @@ PetscErrorCode PetscClassPerfInfoClear(PetscClassPerfInfo *classInfo) {
 }
 
 /*@C
-  PetscClassPerfLogEnsureSize - This ensures that a PetscClassPerfLog is at least of a certain size.
+  PetscClassPerfLogEnsureSize - This ensures that a `PetscClassPerfLog` is at least of a certain size.
 
   Not collective
 
   Input Parameters:
-+ classLog - The PetscClassPerfLog
++ classLog - The `PetscClassPerfLog`
 - size     - The size
 
   Level: developer
+
+  Note:
+  This is a low level routine used by the logging functions in PETSc
 
 .seealso: `PetscClassPerfLogCreate()`
 @*/
@@ -179,13 +200,16 @@ PetscErrorCode PetscClassPerfLogEnsureSize(PetscClassPerfLog classLog, int size)
   Not Collective
 
   Input Parameters:
-+ classLog - The ClassLog
++ classLog - The `PetscClassRegLog`
 - cname    - The name associated with the class
 
   Output Parameter:
 .  classid   - The classid
 
   Level: developer
+
+  Note:
+  This is a low level routine used by the logging functions in PETSc
 
 .seealso: `PetscClassIdRegister()`
 @*/
@@ -219,13 +243,16 @@ PetscErrorCode PetscClassRegLogRegister(PetscClassRegLog classLog, const char cn
   Not Collective
 
   Input Parameters:
-+ classLog - The PetscClassRegLog
++ classLog - The `PetscClassRegLog`
 - classid  - The cookie
 
   Output Parameter:
 . oclass   - The class id
 
   Level: developer
+
+  Note:
+  This is a low level routine used by the logging functions in PETSc
 
 .seealso: `PetscClassIdRegister()`, `PetscLogObjCreateDefault()`, `PetscLogObjDestroyDefault()`
 @*/

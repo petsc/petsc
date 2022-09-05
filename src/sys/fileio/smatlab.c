@@ -12,7 +12,7 @@
 -     script - name of script (without the .m)
 
     Output Parameter:
-.     fp - a file pointer returned from PetscPOpen()
+.     fp - a file pointer returned from `PetscPOpen()`
 
     Level: intermediate
 

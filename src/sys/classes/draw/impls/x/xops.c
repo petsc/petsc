@@ -603,8 +603,7 @@ static PetscErrorCode PetscDrawXGetDisplaySize_Private(const char name[], int *w
 
    Level: beginner
 
-.seealso: `PetscDrawOpenX()`, `PetscDrawSetDisplay()`, `PetscDrawSetFromOptions()`
-
+.seealso: `PetscDraw`, `PetscDrawOpenX()`, `PetscDrawSetDisplay()`, `PetscDrawSetFromOptions()`
 M*/
 
 PETSC_EXTERN PetscErrorCode PetscDrawCreate_X(PetscDraw draw) {

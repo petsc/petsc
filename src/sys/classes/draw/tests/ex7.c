@@ -20,7 +20,7 @@ int main(int argc, char **argv) {
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   PetscCall(PetscDrawCreate(PETSC_COMM_WORLD, 0, "Draw Example", PETSC_DECIDE, PETSC_DECIDE, 101, 101, &draw));
-  /*PetscCall(PetscDrawSetPause(draw,2.0));*/
+  /* PetscCall(PetscDrawSetPause(draw,2.0)); */
   PetscCall(PetscDrawSetFromOptions(draw));
 
   PetscCall(PetscDrawCheckResizedWindow(draw));

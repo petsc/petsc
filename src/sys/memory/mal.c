@@ -193,18 +193,19 @@ PetscBool              petscsetmallocvisited = PETSC_FALSE;
 
 /*@C
    PetscMallocSet - Sets the routines used to do mallocs and frees.
-   This routine MUST be called before PetscInitialize() and may be
+   This routine MUST be called before `PetscInitialize()` and may be
    called only once.
 
    Not Collective
 
    Input Parameters:
-+ imalloc - the routine that provides the malloc (also provides calloc(), which is used depends on the second argument)
-. ifree - the routine that provides the free
-- iralloc - the routine that provides the realloc
++  imalloc - the routine that provides the malloc (also provides calloc(), which is used depends on the second argument)
+.  ifree - the routine that provides the free
+-  iralloc - the routine that provides the realloc
 
    Level: developer
 
+.seealso: `PetscMallocClear()`
 @*/
 PetscErrorCode PetscMallocSet(PetscErrorCode (*imalloc)(size_t, PetscBool, int, const char[], const char[], void **), PetscErrorCode (*ifree)(void *, int, const char[], const char[]), PetscErrorCode (*iralloc)(size_t, int, const char[], const char[], void **)) {
   PetscFunctionBegin;
@@ -223,13 +224,14 @@ PetscErrorCode PetscMallocSet(PetscErrorCode (*imalloc)(size_t, PetscBool, int, 
 
    Level: developer
 
-   Notes:
+   Note:
     In general one should never run a PETSc program with different malloc() and
     free() settings for different parts; this is because one NEVER wants to
     free() an address that was malloced by a different memory management system
 
-    Called in PetscFinalize() so that if PetscInitialize() is called again it starts with a fresh slate of allocation information
+    Called in `PetscFinalize()` so that if `PetscInitialize()` is called again it starts with a fresh slate of allocation information
 
+.seealso: `PetscMallocSet`
 @*/
 PetscErrorCode PetscMallocClear(void) {
   PetscFunctionBegin;
@@ -259,18 +261,18 @@ static PetscErrorCode (*PetscTrReallocOld)(size_t, int, const char[], const char
 static PetscErrorCode (*PetscTrFreeOld)(void *, int, const char[], const char[])                       = PetscFreeAlign;
 
 /*@C
-   PetscMallocSetDRAM - Set PetscMalloc to use DRAM.
+   PetscMallocSetDRAM - Set `PetscMalloc()` to use DRAM.
      If memkind is available, change the memkind type. Otherwise, switch the
-     current malloc and free routines to the PetscMallocAlign and
-     PetscFreeAlign (PETSc default).
+     current malloc and free routines to the `PetscMallocAlign()` and
+     `PetscFreeAlign()` (PETSc default).
 
    Not Collective
 
    Level: developer
 
-   Notes:
+   Note:
      This provides a way to do the allocation on DRAM temporarily. One
-     can switch back to the previous choice by calling PetscMallocReset().
+     can switch back to the previous choice by calling `PetscMallocReset()`.
 
 .seealso: `PetscMallocReset()`
 @*/
@@ -294,7 +296,7 @@ PetscErrorCode PetscMallocSetDRAM(void) {
 }
 
 /*@C
-   PetscMallocResetDRAM - Reset the changes made by PetscMallocSetDRAM
+   PetscMallocResetDRAM - Reset the changes made by `PetscMallocSetDRAM()`
 
    Not Collective
 
@@ -330,14 +332,17 @@ static PetscBool petscmalloccoalesce =
    Not Collective
 
    Input Parameters:
-.  coalesce - PETSC_TRUE to use coalesced malloc for multi-object allocation.
+.  coalesce - `PETSC_TRUE` to use coalesced malloc for multi-object allocation.
 
    Options Database Keys:
 .  -malloc_coalesce - turn coalesced malloc on or off
 
-   Note:
-   PETSc uses coalesced malloc by default for optimized builds and not for debugging builds.  This default can be changed via the command-line option -malloc_coalesce or by calling this function.
-   This function can only be called immediately after PetscInitialize()
+   Notes:
+   PETSc uses coalesced malloc by default for optimized builds and not for debugging builds.
+
+   This default can be changed via the command-line option -malloc_coalesce or by calling this function.
+
+   This function can only be called immediately after `PetscInitialize()`
 
    Level: developer
 
@@ -365,8 +370,8 @@ PetscErrorCode PetscMallocSetCoalesce(PetscBool coalesce) {
    Output Parameters:
 .  ptr0 - first of n pointers to allocate
 
-   Notes:
-   This function is not normally called directly by users, but rather via the macros PetscMalloc1(), PetscMalloc2(), or PetscCalloc1(), etc.
+   Notes
+   This function is not normally called directly by users, but rather via the macros `PetscMalloc1()`, `PetscMalloc2()`, or `PetscCalloc1()`, etc.
 
    Level: developer
 
@@ -419,8 +424,8 @@ PetscErrorCode PetscMallocA(int n, PetscBool clear, int lineno, const char *func
 .  filename - file name to attribute deallocation (typically __FILE__)
 -  ptr0 ... - first of n pointers to free
 
-   Note:
-   This function is not normally called directly by users, but rather via the macros PetscFree(), PetscFree2(), etc.
+   Notes:
+   This function is not normally called directly by users, but rather via the macros `PetscFree()`, `PetscFree2()`, etc.
 
    The pointers are zeroed to prevent users from accidentally reusing space that has been freed.
 

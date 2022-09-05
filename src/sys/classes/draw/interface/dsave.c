@@ -10,9 +10,9 @@ static PetscErrorCode PetscDrawSave_SAWs(PetscDraw);
 #endif
 
 /*@C
-   PetscDrawSetSave - Saves images produced in a PetscDraw into a file
+   PetscDrawSetSave - Saves images produced in a `PetscDraw` into a file
 
-   Collective on PetscDraw
+   Collective on draw
 
    Input Parameters:
 +  draw      - the graphics context
@@ -25,15 +25,15 @@ static PetscErrorCode PetscDrawSave_SAWs(PetscDraw);
 
    Level: intermediate
 
-   Notes:
-    You should call this BEFORE creating your image and calling PetscDrawSave().
+   Note:
+    You should call this BEFORE creating your image and calling `PetscDrawSave()`.
    The supported image types are .png, .gif, .jpg, and .ppm (PETSc chooses the default in that order).
    Support for .png images requires configure --with-libpng.
    Support for .gif images requires configure --with-giflib.
    Support for .jpg images requires configure --with-libjpeg.
    Support for .ppm images is built-in. The PPM format has no compression (640x480 pixels ~ 900 KiB).
 
-.seealso: `PetscDrawSetFromOptions()`, `PetscDrawCreate()`, `PetscDrawDestroy()`, `PetscDrawSetSaveFinalImage()`
+.seealso: `PetscDraw`, `PetscDrawOpenX()`, `PetscDrawOpenImage()`, `PetscDrawSetFromOptions()`, `PetscDrawCreate()`, `PetscDrawDestroy()`, `PetscDrawSetSaveFinalImage()`
 @*/
 PetscErrorCode PetscDrawSetSave(PetscDraw draw, const char filename[]) {
   const char *savename = NULL;
@@ -75,9 +75,9 @@ PetscErrorCode PetscDrawSetSave(PetscDraw draw, const char filename[]) {
 }
 
 /*@C
-   PetscDrawSetSaveMovie - Saves a movie produced from a PetscDraw into a file
+   PetscDrawSetSaveMovie - Saves a movie produced from a `PetscDraw` into a file
 
-   Collective on PetscDraw
+   Collective on draw
 
    Input Parameters:
 +  draw      - the graphics context
@@ -88,11 +88,11 @@ PetscErrorCode PetscDrawSetSave(PetscDraw draw, const char filename[]) {
 
    Level: intermediate
 
-   Notes:
-    You should call this AFTER calling PetscDrawSetSave() and BEFORE creating your image with PetscDrawSave().
+   Note:
+    You should call this AFTER calling `PetscDrawSetSave()` and BEFORE creating your image with `PetscDrawSave()`.
    The ffmpeg utility must be in your path to make the movie.
 
-.seealso: `PetscDrawSetSave()`, `PetscDrawSetFromOptions()`, `PetscDrawCreate()`, `PetscDrawDestroy()`
+.seealso: `PetscDraw`, `PetscDrawSetSave()`, `PetscDrawSetFromOptions()`, `PetscDrawCreate()`, `PetscDrawDestroy()`
 @*/
 PetscErrorCode PetscDrawSetSaveMovie(PetscDraw draw, const char movieext[]) {
   PetscFunctionBegin;
@@ -109,13 +109,13 @@ PetscErrorCode PetscDrawSetSaveMovie(PetscDraw draw, const char movieext[]) {
 }
 
 /*@C
-   PetscDrawSetSaveFinalImage - Saves the final image produced in a PetscDraw into a file
+   PetscDrawSetSaveFinalImage - Saves the final image produced in a `PetscDraw` into a file
 
-   Collective on PetscDraw
+   Collective on draw
 
    Input Parameters:
 +  draw      - the graphics context
--  filename  - name of the file, if NULL or empty uses name set with PetscDrawSetSave() or name of draw object
+-  filename  - name of the file, if NULL or empty uses name set with `PetscDrawSetSave()` or the name of the draw object
 
    Options Database Command:
 .  -draw_save_final_image  <filename> - filename could be name.ext or .ext (where .ext determines the type of graphics file to save, for example .png)
@@ -123,14 +123,17 @@ PetscErrorCode PetscDrawSetSaveMovie(PetscDraw draw, const char movieext[]) {
    Level: intermediate
 
    Notes:
-    You should call this BEFORE creating your image and calling PetscDrawSave().
+    You should call this BEFORE creating your image and calling `PetscDrawSave()`.
+
    The supported image types are .png, .gif, and .ppm (PETSc chooses the default in that order).
+.vb
    Support for .png images requires configure --with-libpng.
    Support for .gif images requires configure --with-giflib.
    Support for .jpg images requires configure --with-libjpeg.
    Support for .ppm images is built-in. The PPM format has no compression (640x480 pixels ~ 900 KiB).
+.ve
 
-.seealso: `PetscDrawSetSave()`, `PetscDrawSetFromOptions()`, `PetscDrawCreate()`, `PetscDrawDestroy()`
+.seealso: `PetscDraw`, `PetscDrawSetSave()`, `PetscDrawSetFromOptions()`, `PetscDrawCreate()`, `PetscDrawDestroy()`
 @*/
 PetscErrorCode PetscDrawSetSaveFinalImage(PetscDraw draw, const char filename[]) {
   char buf[PETSC_MAX_PATH_LEN];
@@ -153,18 +156,17 @@ PetscErrorCode PetscDrawSetSaveFinalImage(PetscDraw draw, const char filename[])
 /*@
    PetscDrawSave - Saves a drawn image
 
-   Collective on PetscDraw
+   Collective on draw
 
    Input Parameters:
 .  draw - the drawing context
 
    Level: advanced
 
-   Notes:
+   Note:
     this is not normally called by the user.
 
-.seealso: `PetscDrawSetSave()`
-
+.seealso: `PetscDraw`, `PetscDrawSetSave()`
 @*/
 PetscErrorCode PetscDrawSave(PetscDraw draw) {
   PetscInt       saveindex;
@@ -231,7 +233,7 @@ finally:
 /*@
    PetscDrawSaveMovie - Saves a movie from previously saved images
 
-   Collective on PetscDraw
+   Collective on draw
 
    Input Parameters:
 .  draw - the drawing context
@@ -239,11 +241,11 @@ finally:
    Level: advanced
 
    Notes:
-    this is not normally called by the user.
+   This is not normally called by the user.
+
    The ffmpeg utility must be in your path to make the movie.
 
-.seealso: `PetscDrawSetSave()`, `PetscDrawSetSaveMovie()`
-
+.seealso: `PetscDraw`, `PetscDrawSetSave()`, `PetscDrawSetSaveMovie()`
 @*/
 PetscErrorCode PetscDrawSaveMovie(PetscDraw draw) {
   PetscMPIInt rank;

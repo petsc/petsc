@@ -159,7 +159,7 @@ static PetscErrorCode PetscStrdup(const char s[], char *t[]) {
 .    Internal strings have arbitrary length and string copies are not checked that they fit into string space
 -    Only works for PetscInt == int, PetscReal == double etc
 
-    Developer Notes:
+    Developer Note:
     Normally the GUI that presents the options the user and retrieves the values would be running in a different
      address space and communicating with the PETSc program
 
@@ -588,7 +588,7 @@ PetscErrorCode PetscOptionsEnd_Private(PetscOptionItems *PetscOptionsObject) {
 /*MC
    PetscOptionsEnum - Gets the enum value for a particular option in the database.
 
-   Logically Collective on the communicator passed in PetscOptionsBegin()
+   Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
    Synopsis:
    #include "petscsys.h"
@@ -607,14 +607,14 @@ $                 if (flg) {
 
    Output Parameters:
 +  value - the  value to return
--  set - PETSC_TRUE if found, else PETSC_FALSE
+-  set - `PETSC_TRUE` if found, else `PETSC_FALSE`
 
    Level: beginner
 
    Notes:
-    Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+    Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
 
-          list is usually something like PCASMTypes or some other predefined list of enum names
+          list is usually something like `PCASMTypes` or some other predefined list of enum names
 
           If the user does not supply the option at all value is NOT changed. Thus
           you should ALWAYS initialize value if you access it without first checking if the set flag is true.
@@ -650,7 +650,7 @@ PetscErrorCode PetscOptionsEnum_Private(PetscOptionItems *PetscOptionsObject, co
    PetscOptionsEnumArray - Gets an array of enum values for a particular
    option in the database.
 
-   Logically Collective on the communicator passed in PetscOptionsBegin()
+   Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
    Synopsis:
    #include "petscsys.h"
@@ -666,7 +666,7 @@ PetscErrorCode PetscOptionsEnum_Private(PetscOptionItems *PetscOptionsObject, co
    Output Parameters:
 +  value - location to copy values
 .  n - actual number of values found
--  set - PETSC_TRUE if found, else PETSC_FALSE
+-  set - `PETSC_TRUE` if found, else `PETSC_FALSE`
 
    Level: beginner
 
@@ -675,7 +675,7 @@ PetscErrorCode PetscOptionsEnum_Private(PetscOptionItems *PetscOptionsObject, co
 
    There must be no intervening spaces between the values.
 
-   Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+   Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
 
 .seealso: `PetscOptionsGetInt()`, `PetscOptionsGetReal()`,
           `PetscOptionsHasName()`, `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsGetBool()`,
@@ -717,7 +717,7 @@ PetscErrorCode PetscOptionsEnumArray_Private(PetscOptionItems *PetscOptionsObjec
 /*MC
    PetscOptionsBoundedInt - Gets an integer value greater than or equal a given bound for a particular option in the database.
 
-   Logically Collective on the communicator passed in PetscOptionsBegin()
+   Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
    Synopsis:
    #include "petscsys.h"
@@ -736,7 +736,7 @@ $                 if (flg) {
 
    Output Parameters:
 +  value - the integer value to return
--  flg - PETSC_TRUE if found, else PETSC_FALSE
+-  flg - `PETSC_TRUE` if found, else `PETSC_FALSE`
 
    Notes:
     If the user does not supply the option at all value is NOT changed. Thus
@@ -744,7 +744,7 @@ $                 if (flg) {
 
     The default/currentvalue passed into this routine does not get transferred to the output value variable automatically.
 
-    Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+    Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
 
    Level: beginner
 
@@ -760,11 +760,11 @@ M*/
 /*MC
    PetscOptionsRangeInt - Gets an integer value within a range of values for a particular option in the database.
 
-   Logically Collective on the communicator passed in PetscOptionsBegin()
+   Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
    Synopsis:
    #include "petscsys.h"
-PetscErrorCode  PetscOptionsRangeInt(const char opt[],const char text[],const char man[],PetscInt currentvalue,PetscInt *value,PetscBool *flg,PetscInt lb,PetscInt ub)
+   PetscErrorCode  PetscOptionsRangeInt(const char opt[],const char text[],const char man[],PetscInt currentvalue,PetscInt *value,PetscBool *flg,PetscInt lb,PetscInt ub)
 
    Input Parameters:
 +  opt - option name
@@ -780,7 +780,7 @@ $                 if (flg) {
 
    Output Parameters:
 +  value - the integer value to return
--  flg - PETSC_TRUE if found, else PETSC_FALSE
+-  flg - `PETSC_TRUE` if found, else `PETSC_FALSE`
 
    Notes:
     If the user does not supply the option at all value is NOT changed. Thus
@@ -788,7 +788,7 @@ $                 if (flg) {
 
     The default/currentvalue passed into this routine does not get transferred to the output value variable automatically.
 
-    Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+    Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
 
    Level: beginner
 
@@ -804,11 +804,11 @@ M*/
 /*MC
    PetscOptionsInt - Gets the integer value for a particular option in the database.
 
-   Logically Collective on the communicator passed in PetscOptionsBegin()
+   Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
    Synopsis:
    #include "petscsys.h"
-PetscErrorCode  PetscOptionsInt(const char opt[],const char text[],const char man[],PetscInt currentvalue,PetscInt *value,PetscBool *flg))
+   PetscErrorCode  PetscOptionsInt(const char opt[],const char text[],const char man[],PetscInt currentvalue,PetscInt *value,PetscBool *flg))
 
    Input Parameters:
 +  opt - option name
@@ -822,7 +822,7 @@ $                 if (flg) {
 
    Output Parameters:
 +  value - the integer value to return
--  flg - PETSC_TRUE if found, else PETSC_FALSE
+-  flg - `PETSC_TRUE` if found, else `PETSC_FALSE`
 
    Notes:
     If the user does not supply the option at all value is NOT changed. Thus
@@ -830,7 +830,7 @@ $                 if (flg) {
 
     The default/currentvalue passed into this routine does not get transferred to the output value variable automatically.
 
-    Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+    Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
 
    Level: beginner
 
@@ -871,7 +871,7 @@ PetscErrorCode PetscOptionsInt_Private(PetscOptionItems *PetscOptionsObject, con
 /*MC
    PetscOptionsString - Gets the string value for a particular option in the database.
 
-   Logically Collective on the communicator passed in PetscOptionsBegin()
+   Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
    Synopsis:
    #include "petscsys.h"
@@ -886,12 +886,12 @@ PetscErrorCode PetscOptionsInt_Private(PetscOptionItems *PetscOptionsObject, con
 
    Output Parameters:
 +  value - the value to return
--  flg - PETSC_TRUE if found, else PETSC_FALSE
+-  flg - `PETSC_TRUE` if found, else `PETSC_FALSE`
 
    Level: beginner
 
    Notes:
-    Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+    Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
 
    Even if the user provided no string (for example -optionname -someotheroption) the flag is set to PETSC_TRUE (and the string is fulled with nulls).
 
@@ -928,9 +928,9 @@ PetscErrorCode PetscOptionsString_Private(PetscOptionItems *PetscOptionsObject, 
 }
 
 /*MC
-   PetscOptionsReal - Gets the PetscReal value for a particular option in the database.
+   PetscOptionsReal - Gets the `PetscReal` value for a particular option in the database.
 
-   Logically Collective on the communicator passed in PetscOptionsBegin()
+   Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
    Synopsis:
    #include "petscsys.h"
@@ -948,7 +948,7 @@ $                 if (flg) {
 
    Output Parameters:
 +  value - the value to return
--  flg - PETSC_TRUE if found, else PETSC_FALSE
+-  flg - `PETSC_TRUE` if found, else `PETSC_FALSE`
 
    Notes:
     If the user does not supply the option at all value is NOT changed. Thus
@@ -956,7 +956,7 @@ $                 if (flg) {
 
     The default/currentvalue passed into this routine does not get transferred to the output value variable automatically.
 
-    Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+    Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
 
    Level: beginner
 
@@ -989,9 +989,9 @@ PetscErrorCode PetscOptionsReal_Private(PetscOptionItems *PetscOptionsObject, co
 }
 
 /*MC
-   PetscOptionsScalar - Gets the scalar value for a particular option in the database.
+   PetscOptionsScalar - Gets the `PetscScalar` value for a particular option in the database.
 
-   Logically Collective on the communicator passed in PetscOptionsBegin()
+   Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
    Synopsis:
    #include "petscsys.h"
@@ -1009,7 +1009,7 @@ $                 if (flg) {
 
    Output Parameters:
 +  value - the value to return
--  flg - PETSC_TRUE if found, else PETSC_FALSE
+-  flg - `PETSC_TRUE` if found, else `PETSC_FALSE`
 
    Notes:
     If the user does not supply the option at all value is NOT changed. Thus
@@ -1017,7 +1017,7 @@ $                 if (flg) {
 
     The default/currentvalue passed into this routine does not get transferred to the output value variable automatically.
 
-    Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+    Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
 
    Level: beginner
 
@@ -1044,7 +1044,7 @@ PetscErrorCode PetscOptionsScalar_Private(PetscOptionItems *PetscOptionsObject, 
    PetscOptionsName - Determines if a particular option has been set in the database. This returns true whether the option is a number, string or boolean, even
                       its value is set to false.
 
-   Logically Collective on the communicator passed in PetscOptionsBegin()
+   Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
    Synopsis:
    #include "petscsys.h"
@@ -1056,12 +1056,12 @@ PetscErrorCode PetscOptionsScalar_Private(PetscOptionItems *PetscOptionsObject, 
 -  man - manual page with additional information on option
 
    Output Parameter:
-.  flg - PETSC_TRUE if found, else PETSC_FALSE
+.  flg - `PETSC_TRUE` if found, else `PETSC_FALSE`
 
    Level: beginner
 
-   Notes:
-    Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+   Note:
+    Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
 
 .seealso: `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`, `PetscOptionsGetInt()`,
           `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsGetBool()`,
@@ -1092,7 +1092,7 @@ PetscErrorCode PetscOptionsName_Private(PetscOptionItems *PetscOptionsObject, co
 /*MC
      PetscOptionsFList - Puts a list of option values that a single one may be selected from
 
-   Logically Collective on the communicator passed in PetscOptionsBegin()
+   Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
    Synopsis:
    #include "petscsys.h"
@@ -1110,24 +1110,25 @@ $                 if (flg) {
 
    Output Parameters:
 +  value - the value to return
--  set - PETSC_TRUE if found, else PETSC_FALSE
+-  set - `PETSC_TRUE` if found, else `PETSC_FALSE`
 
    Level: intermediate
 
    Notes:
-    Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+    Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
 
           If the user does not supply the option at all value is NOT changed. Thus
           you should ALWAYS initialize value if you access it without first checking if the set flag is true.
 
           The default/currentvalue passed into this routine does not get transferred to the output value variable automatically.
 
-   See PetscOptionsEList() for when the choices are given in a string array
+   See `PetscOptionsEList()` for when the choices are given in a string array
 
    To get a listing of all currently specified options,
-    see PetscOptionsView() or PetscOptionsGetAll()
+    see `PetscOptionsView()` or `PetscOptionsGetAll()`
 
-   Developer Note: This cannot check for invalid selection because of things like MATAIJ that are not included in the list
+   Developer Note:
+   This cannot check for invalid selection because of things like `MATAIJ` that are not included in the list
 
 .seealso: `PetscOptionsGetInt()`, `PetscOptionsGetReal()`,
           `PetscOptionsHasName()`, `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`,
@@ -1159,7 +1160,7 @@ PetscErrorCode PetscOptionsFList_Private(PetscOptionItems *PetscOptionsObject, c
 /*MC
      PetscOptionsEList - Puts a list of option values that a single one may be selected from
 
-   Logically Collective on the communicator passed in PetscOptionsBegin()
+   Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
    Synopsis:
    #include "petscsys.h"
@@ -1177,17 +1178,17 @@ $                 if (flg) {
 
    Output Parameters:
 +  value - the index of the value to return
--  set - PETSC_TRUE if found, else PETSC_FALSE
+-  set - `PETSC_TRUE` if found, else `PETSC_FALSE`
 
    Level: intermediate
 
    Notes:
-    Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+    Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
 
          If the user does not supply the option at all value is NOT changed. Thus
           you should ALWAYS initialize value if you access it without first checking if the set flag is true.
 
-   See PetscOptionsFList() for when the choices are given in a PetscFunctionList()
+   See `PetscOptionsFList()` for when the choices are given in a `PetscFunctionList()`
 
 .seealso: `PetscOptionsGetInt()`, `PetscOptionsGetReal()`,
           `PetscOptionsHasName()`, `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`,
@@ -1224,7 +1225,7 @@ PetscErrorCode PetscOptionsEList_Private(PetscOptionItems *PetscOptionsObject, c
      PetscOptionsBoolGroupBegin - First in a series of logical queries on the options database for
        which at most a single value can be true.
 
-   Logically Collective on the communicator passed in PetscOptionsBegin()
+   Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
    Synopsis:
    #include "petscsys.h"
@@ -1241,9 +1242,9 @@ PetscErrorCode PetscOptionsEList_Private(PetscOptionItems *PetscOptionsObject, c
    Level: intermediate
 
    Notes:
-    Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+    Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
 
-   Must be followed by 0 or more PetscOptionsBoolGroup()s and PetscOptionsBoolGroupEnd()
+   Must be followed by 0 or more P`etscOptionsBoolGroup()`s and `PetscOptionsBoolGroupEnd()`
 
 .seealso: `PetscOptionsGetInt()`, `PetscOptionsGetReal()`,
           `PetscOptionsHasName()`, `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`,
@@ -1276,7 +1277,7 @@ PetscErrorCode PetscOptionsBoolGroupBegin_Private(PetscOptionItems *PetscOptions
      PetscOptionsBoolGroup - One in a series of logical queries on the options database for
        which at most a single value can be true.
 
-   Logically Collective on the communicator passed in PetscOptionsBegin()
+   Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
    Synopsis:
    #include "petscsys.h"
@@ -1288,14 +1289,14 @@ PetscErrorCode PetscOptionsBoolGroupBegin_Private(PetscOptionItems *PetscOptions
 -  man - manual page with additional information on option
 
    Output Parameter:
-.  flg - PETSC_TRUE if found, else PETSC_FALSE
+.  flg - `PETSC_TRUE` if found, else `PETSC_FALSE`
 
    Level: intermediate
 
    Notes:
-    Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+    Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
 
-   Must follow a PetscOptionsBoolGroupBegin() and preceded a PetscOptionsBoolGroupEnd()
+   Must follow a `PetscOptionsBoolGroupBegin()` and preceded a `PetscOptionsBoolGroupEnd()`
 
 .seealso: `PetscOptionsGetInt()`, `PetscOptionsGetReal()`,
           `PetscOptionsHasName()`, `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`,
@@ -1327,7 +1328,7 @@ PetscErrorCode PetscOptionsBoolGroup_Private(PetscOptionItems *PetscOptionsObjec
      PetscOptionsBoolGroupEnd - Last in a series of logical queries on the options database for
        which at most a single value can be true.
 
-   Logically Collective on the communicator passed in PetscOptionsBegin()
+   Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
    Synopsis:
    #include "petscsys.h"
@@ -1339,14 +1340,14 @@ PetscErrorCode PetscOptionsBoolGroup_Private(PetscOptionItems *PetscOptionsObjec
 -  man - manual page with additional information on option
 
    Output Parameter:
-.  flg - PETSC_TRUE if found, else PETSC_FALSE
+.  flg - `PETSC_TRUE` if found, else `PETSC_FALSE`
 
    Level: intermediate
 
    Notes:
-    Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+    Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
 
-   Must follow a PetscOptionsBoolGroupBegin()
+   Must follow a `PetscOptionsBoolGroupBegin()`
 
 .seealso: `PetscOptionsGetInt()`, `PetscOptionsGetReal()`,
           `PetscOptionsHasName()`, `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`,
@@ -1377,7 +1378,7 @@ PetscErrorCode PetscOptionsBoolGroupEnd_Private(PetscOptionItems *PetscOptionsOb
 /*MC
    PetscOptionsBool - Determines if a particular option is in the database with a true or false
 
-   Logically Collective on the communicator passed in PetscOptionsBegin()
+   Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
    Synopsis:
    #include "petscsys.h"
@@ -1390,20 +1391,20 @@ PetscErrorCode PetscOptionsBoolGroupEnd_Private(PetscOptionItems *PetscOptionsOb
 -  currentvalue - the current value
 
    Output Parameters:
-+  flg - PETSC_TRUE or PETSC_FALSE
--  set - PETSC_TRUE if found, else PETSC_FALSE
++  flg -` PETSC_TRUE` or `PETSC_FALSE`
+-  set - `PETSC_TRUE` if found, else `PETSC_FALSE`
 
    Notes:
-       TRUE, true, YES, yes, nostring, and 1 all translate to PETSC_TRUE
-       FALSE, false, NO, no, and 0 all translate to PETSC_FALSE
+       TRUE, true, YES, yes, nostring, and 1 all translate to `PETSC_TRUE`
+       FALSE, false, NO, no, and 0 all translate to `PETSC_FALSE`
 
-      If the option is given, but no value is provided, then flg and set are both given the value PETSC_TRUE. That is -requested_bool
+      If the option is given, but no value is provided, then flg and set are both given the value `PETSC_TRUE`. That is -requested_bool
      is equivalent to -requested_bool true
 
        If the user does not supply the option at all flg is NOT changed. Thus
      you should ALWAYS initialize the flg if you access it without first checking if the set flag is true.
 
-    Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+    Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
 
    Level: beginner
 
@@ -1441,7 +1442,7 @@ PetscErrorCode PetscOptionsBool_Private(PetscOptionItems *PetscOptionsObject, co
    option in the database. The values must be separated with commas with
    no intervening spaces.
 
-   Logically Collective on the communicator passed in PetscOptionsBegin()
+   Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
    Synopsis:
    #include "petscsys.h"
@@ -1456,14 +1457,11 @@ PetscErrorCode PetscOptionsBool_Private(PetscOptionItems *PetscOptionsObject, co
    Output Parameters:
 +  value - location to copy values
 .  n - actual number of values found
--  set - PETSC_TRUE if found, else PETSC_FALSE
+-  set - `PETSC_TRUE` if found, else `PETSC_FALSE`
 
    Level: beginner
 
-   Notes:
-   The user should pass in an array of doubles
-
-   Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+   Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
 
 .seealso: `PetscOptionsGetInt()`, `PetscOptionsGetReal()`,
           `PetscOptionsHasName()`, `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`,
@@ -1497,11 +1495,11 @@ PetscErrorCode PetscOptionsRealArray_Private(PetscOptionItems *PetscOptionsObjec
 }
 
 /*MC
-   PetscOptionsScalarArray - Gets an array of Scalar values for a particular
+   PetscOptionsScalarArray - Gets an array of `PetscScalar` values for a particular
    option in the database. The values must be separated with commas with
    no intervening spaces.
 
-   Logically Collective on the communicator passed in PetscOptionsBegin()
+   Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
    Synopsis:
    #include "petscsys.h"
@@ -1516,14 +1514,11 @@ PetscErrorCode PetscOptionsRealArray_Private(PetscOptionItems *PetscOptionsObjec
    Output Parameters:
 +  value - location to copy values
 .  n - actual number of values found
--  set - PETSC_TRUE if found, else PETSC_FALSE
+-  set - `PETSC_TRUE` if found, else `PETSC_FALSE`
 
    Level: beginner
 
-   Notes:
-   The user should pass in an array of doubles
-
-   Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+   Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
 
 .seealso: `PetscOptionsGetInt()`, `PetscOptionsGetReal()`,
           `PetscOptionsHasName()`, `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`,
@@ -1560,7 +1555,7 @@ PetscErrorCode PetscOptionsScalarArray_Private(PetscOptionItems *PetscOptionsObj
    PetscOptionsIntArray - Gets an array of integers for a particular
    option in the database.
 
-   Logically Collective on the communicator passed in PetscOptionsBegin()
+   Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
    Synopsis:
    #include "petscsys.h"
@@ -1575,20 +1570,20 @@ PetscErrorCode PetscOptionsScalarArray_Private(PetscOptionItems *PetscOptionsObj
    Output Parameters:
 +  value - location to copy values
 .  n - actual number of values found
--  set - PETSC_TRUE if found, else PETSC_FALSE
+-  set - `PETSC_TRUE` if found, else `PETSC_FALSE`
 
    Level: beginner
 
    Notes:
    The array can be passed as
-   a comma separated list:                                 0,1,2,3,4,5,6,7
-   a range (start-end+1):                                  0-8
-   a range with given increment (start-end+1:inc):         0-7:2
-   a combination of values and ranges separated by commas: 0,1-8,8-15:2
++   a comma separated list -                                  0,1,2,3,4,5,6,7
+.   a range (start\-end+1) -                                  0-8
+.   a range with given increment (start\-end+1:inc) -         0-7:2
+-   a combination of values and ranges separated by commas -  0,1-8,8-15:2
 
    There must be no intervening spaces between the values.
 
-   Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+   Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
 
 .seealso: `PetscOptionsGetInt()`, `PetscOptionsGetReal()`,
           `PetscOptionsHasName()`, `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`,
@@ -1626,7 +1621,7 @@ PetscErrorCode PetscOptionsIntArray_Private(PetscOptionItems *PetscOptionsObject
    option in the database. The values must be separated with commas with
    no intervening spaces.
 
-   Logically Collective on the communicator passed in PetscOptionsBegin()
+   Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
    Synopsis:
    #include "petscsys.h"
@@ -1641,7 +1636,7 @@ PetscErrorCode PetscOptionsIntArray_Private(PetscOptionItems *PetscOptionsObject
    Output Parameters:
 +  value - location to copy strings
 .  nmax - actual number of strings found
--  set - PETSC_TRUE if found, else PETSC_FALSE
+-  set - `PETSC_TRUE` if found, else `PETSC_FALSE`
 
    Level: beginner
 
@@ -1652,7 +1647,7 @@ PetscErrorCode PetscOptionsIntArray_Private(PetscOptionItems *PetscOptionsObject
    The user is responsible for deallocating the strings that are
    returned. The Fortran interface for this routine is not supported.
 
-   Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+   Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
 
 .seealso: `PetscOptionsGetInt()`, `PetscOptionsGetReal()`,
           `PetscOptionsHasName()`, `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`,
@@ -1684,7 +1679,7 @@ PetscErrorCode PetscOptionsStringArray_Private(PetscOptionItems *PetscOptionsObj
    option in the database. The values must be separated with commas with
    no intervening spaces.
 
-   Logically Collective on the communicator passed in PetscOptionsBegin()
+   Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
    Synopsis:
    #include "petscsys.h"
@@ -1699,14 +1694,14 @@ PetscErrorCode PetscOptionsStringArray_Private(PetscOptionItems *PetscOptionsObj
    Output Parameters:
 +  value - location to copy values
 .  n - actual number of values found
--  set - PETSC_TRUE if found, else PETSC_FALSE
+-  set - `PETSC_TRUE` if found, else `PETSC_FALSE`
 
    Level: beginner
 
    Notes:
    The user should pass in an array of doubles
 
-   Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+   Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
 
 .seealso: `PetscOptionsGetInt()`, `PetscOptionsGetReal()`,
           `PetscOptionsHasName()`, `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`,
@@ -1742,7 +1737,7 @@ PetscErrorCode PetscOptionsBoolArray_Private(PetscOptionItems *PetscOptionsObjec
 /*MC
    PetscOptionsViewer - Gets a viewer appropriate for the type indicated by the user
 
-   Logically Collective on the communicator passed in PetscOptionsBegin()
+   Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
    Synopsis:
    #include "petscsys.h"
@@ -1756,14 +1751,14 @@ PetscErrorCode PetscOptionsBoolArray_Private(PetscOptionItems *PetscOptionsObjec
    Output Parameters:
 +  viewer - the viewer
 .  format - the PetscViewerFormat requested by the user, pass NULL if not needed
--  set - PETSC_TRUE if found, else PETSC_FALSE
+-  set - `PETSC_TRUE` if found, else `PETSC_FALSE`
 
    Level: beginner
 
    Notes:
-    Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+    Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
 
-   See PetscOptionsGetViewer() for the format of the supplied viewer and its options
+   See `PetscOptionsGetViewer()` for the format of the supplied viewer and its options
 
 .seealso: `PetscOptionsGetViewer()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`, `PetscOptionsGetInt()`,
           `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`

@@ -8,22 +8,24 @@
     PetscDrawGetMouseButton - Returns location of mouse and which button was
     pressed. Waits for button to be pressed.
 
-    Collective over PetscDraw
+    Collective on draw
 
     Input Parameter:
 .   draw - the window to be used
 
     Output Parameters:
-+   button - one of PETSC_BUTTON_LEFT, PETSC_BUTTON_CENTER, PETSC_BUTTON_RIGHT, PETSC_BUTTON_WHEEL_UP, PETSC_BUTTON_WHEEL_DOWN
++   button - one of `PETSC_BUTTON_LEFT`, `PETSC_BUTTON_CENTER`, `PETSC_BUTTON_RIGHT`, `PETSC_BUTTON_WHEEL_UP`, `PETSC_BUTTON_WHEEL_DOWN`
 .   x_user - horizontal user coordinate of location (user may pass in NULL).
 .   y_user - vertical user coordinate of location (user may pass in NULL).
 .   x_phys - horizontal window coordinate (user may pass in NULL).
 -   y_phys - vertical window coordinate (user may pass in NULL).
 
-    Notes:
+    Note:
     Only processor 0 actually waits for the button to be pressed.
 
     Level: intermediate
+
+.seealso: `PetscDraw`, `PetscDrawButton`
 @*/
 PetscErrorCode PetscDrawGetMouseButton(PetscDraw draw, PetscDrawButton *button, PetscReal *x_user, PetscReal *y_user, PetscReal *x_phys, PetscReal *y_phys) {
   PetscReal bcast[4] = {0, 0, 0, 0};

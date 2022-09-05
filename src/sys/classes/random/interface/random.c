@@ -16,7 +16,7 @@
 
 /*@
    PetscRandomGetValue - Generates a random number.  Call this after first calling
-   PetscRandomCreate().
+   `PetscRandomCreate()`.
 
    Not Collective
 
@@ -29,14 +29,14 @@
    Level: intermediate
 
    Notes:
-   Use VecSetRandom() to set the elements of a vector to random numbers.
+   Use `VecSetRandom()` to set the elements of a vector to random numbers.
 
    When PETSc is compiled for complex numbers this returns a complex number with random real and complex parts.
-   Use PetscRandomGetValueReal() to get a random real number.
+   Use `PetscRandomGetValueReal()` to get a random real number.
 
-   To get a complex number with only a random real part, first call PetscRandomSetInterval() with a equal
+   To get a complex number with only a random real part, first call `PetscRandomSetInterval()` with a equal
    low and high imaginary part. Similarly to get a complex number with only a random imaginary part call
-   PetscRandomSetInterval() with a equal low and high real part.
+   `PetscRandomSetInterval()` with a equal low and high real part.
 
    Example of Usage:
 .vb
@@ -47,7 +47,7 @@
       PetscRandomDestroy(&r);
 .ve
 
-.seealso: `PetscRandomCreate()`, `PetscRandomDestroy()`, `VecSetRandom()`, `PetscRandomGetValueReal()`
+.seealso: `PetscRandom`, `PetscRandomCreate()`, `PetscRandomDestroy()`, `VecSetRandom()`, `PetscRandomGetValueReal()`, `PetscRandomSetInterval()`
 @*/
 PetscErrorCode PetscRandomGetValue(PetscRandom r, PetscScalar *val) {
   PetscFunctionBegin;
@@ -61,7 +61,7 @@ PetscErrorCode PetscRandomGetValue(PetscRandom r, PetscScalar *val) {
 
 /*@
    PetscRandomGetValueReal - Generates a real random number.  Call this after first calling
-   PetscRandomCreate().
+   `PetscRandomCreate()`.
 
    Not Collective
 
@@ -73,8 +73,8 @@ PetscErrorCode PetscRandomGetValue(PetscRandom r, PetscScalar *val) {
 
    Level: intermediate
 
-   Notes:
-   Use VecSetRandom() to set the elements of a vector to random numbers.
+   Note:
+   Use `VecSetRandom()` to set the elements of a vector to random numbers.
 
    Example of Usage:
 .vb
@@ -85,7 +85,7 @@ PetscErrorCode PetscRandomGetValue(PetscRandom r, PetscScalar *val) {
       PetscRandomDestroy(&r);
 .ve
 
-.seealso: `PetscRandomCreate()`, `PetscRandomDestroy()`, `VecSetRandom()`, `PetscRandomGetValue()`
+.seealso: `PetscRandom`, `PetscRandomCreate()`, `PetscRandomDestroy()`, `VecSetRandom()`, `PetscRandomGetValue()`
 @*/
 PetscErrorCode PetscRandomGetValueReal(PetscRandom r, PetscReal *val) {
   PetscFunctionBegin;
@@ -99,7 +99,7 @@ PetscErrorCode PetscRandomGetValueReal(PetscRandom r, PetscReal *val) {
 
 /*@
    PetscRandomGetValues - Generates a sequence of random numbers.  Call this after first calling
-   PetscRandomCreate().
+   `PetscRandomCreate()`.
 
    Not Collective
 
@@ -113,12 +113,12 @@ PetscErrorCode PetscRandomGetValueReal(PetscRandom r, PetscReal *val) {
    Level: intermediate
 
    Notes:
-   Use VecSetRandom() to set the elements of a vector to random numbers.
+   Use `VecSetRandom()` to set the elements of a vector to random numbers.
 
    When PETSc is compiled for complex numbers this returns an array of complex numbers with random real and complex parts.
-   Use PetscRandomGetValuesReal() to get an array of random real numbers.
+   Use `PetscRandomGetValuesReal()` to get an array of random real numbers.
 
-.seealso: `PetscRandomCreate()`, `PetscRandomDestroy()`, `VecSetRandom()`, `PetscRandomGetValue()`
+.seealso: `PetscRandom`, `PetscRandomCreate()`, `PetscRandomDestroy()`, `VecSetRandom()`, `PetscRandomGetValue()`
 @*/
 PetscErrorCode PetscRandomGetValues(PetscRandom r, PetscInt n, PetscScalar *val) {
   PetscFunctionBegin;
@@ -134,7 +134,7 @@ PetscErrorCode PetscRandomGetValues(PetscRandom r, PetscInt n, PetscScalar *val)
 
 /*@
    PetscRandomGetValuesReal - Generates a sequence of real random numbers.  Call this after first calling
-   PetscRandomCreate().
+   `PetscRandomCreate()`.
 
    Not Collective
 
@@ -147,10 +147,10 @@ PetscErrorCode PetscRandomGetValues(PetscRandom r, PetscInt n, PetscScalar *val)
 
    Level: intermediate
 
-   Notes:
-   Use VecSetRandom() to set the elements of a vector to random numbers.
+   Note:
+   Use `VecSetRandom()` to set the elements of a vector to random numbers.
 
-.seealso: `PetscRandomCreate()`, `PetscRandomDestroy()`, `VecSetRandom()`, `PetscRandomGetValues()`
+.seealso: `PetscRandom`, `PetscRandomCreate()`, `PetscRandomDestroy()`, `VecSetRandom()`, `PetscRandomGetValues()`
 @*/
 PetscErrorCode PetscRandomGetValuesReal(PetscRandom r, PetscInt n, PetscReal *val) {
   PetscFunctionBegin;
@@ -166,7 +166,7 @@ PetscErrorCode PetscRandomGetValuesReal(PetscRandom r, PetscInt n, PetscReal *va
 
 /*@
    PetscRandomGetInterval - Gets the interval over which the random numbers
-   will be randomly distributed.  By default, this interval is [0,1).
+   will be distributed.  By default, this interval is [0,1).
 
    Not collective
 
@@ -179,7 +179,7 @@ PetscErrorCode PetscRandomGetValuesReal(PetscRandom r, PetscInt n, PetscReal *va
 
    Level: intermediate
 
-.seealso: `PetscRandomCreate()`, `PetscRandomSetInterval()`
+.seealso: `PetscRandom`, `PetscRandomCreate()`, `PetscRandomSetInterval()`
 @*/
 PetscErrorCode PetscRandomGetInterval(PetscRandom r, PetscScalar *low, PetscScalar *high) {
   PetscFunctionBegin;
@@ -197,7 +197,7 @@ PetscErrorCode PetscRandomGetInterval(PetscRandom r, PetscScalar *low, PetscScal
 
 /*@
    PetscRandomSetInterval - Sets the interval over which the random numbers
-   will be randomly distributed.  By default, this interval is [0,1).
+   will be distributed.  By default, this interval is [0,1).
 
    Not collective
 
@@ -210,6 +210,7 @@ PetscErrorCode PetscRandomGetInterval(PetscRandom r, PetscScalar *low, PetscScal
 
    Notes:
     for complex numbers either the real part or the imaginary part of high must be greater than its low part; or both of them can be greater.
+
     If the real or imaginary part of low and high are the same then that value is always returned in the real or imaginary part.
 
 .seealso: `PetscRandomCreate()`, `PetscRandomGetInterval()`

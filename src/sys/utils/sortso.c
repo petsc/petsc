@@ -884,7 +884,7 @@ static inline PetscErrorCode PetscTimSortBuildRunWithArray_Private(char *arr, ch
   likely all contain similar data.
 
   Sample usage:
-  The comparison function must follow the qsort() comparison function paradigm, returning the sign of the difference
+  The comparison function must follow the `qsort()` comparison function paradigm, returning the sign of the difference
   between its arguments. If left < right : return -1, if left == right : return 0, if left > right : return 1. The user
   may also
  change or reverse the order of the sort by flipping the above. Note that stability of the sort is only guaranteed if
@@ -1012,7 +1012,7 @@ PetscErrorCode PetscTimSort(PetscInt n, void *arr, size_t size, int (*cmp)(const
   likely all contain similar data.
 
   Sample usage:
-  The comparison function must follow the qsort() comparison function paradigm, returning the sign of the difference
+  The comparison function must follow the `qsort()` comparison function paradigm, returning the sign of the difference
   between its arguments. If left < right : return -1, if left == right : return 0, if left > right : return 1. The user
   may also change or reverse the order of the sort by flipping the above. Note that stability of the sort is only
   guaranteed if the comparison function forms a valid trigraph. For example when sorting an array of type "my_type" in
@@ -1109,7 +1109,7 @@ PetscErrorCode PetscTimSortWithArray(PetscInt n, void *arr, size_t asize, void *
 }
 
 /*@
-   PetscIntSortSemiOrdered - Sorts an array of integers in place in increasing order.
+   PetscIntSortSemiOrdered - Sorts an array of `PetscInt` in place in increasing order.
 
    Not Collective
 
@@ -1121,9 +1121,9 @@ PetscErrorCode PetscTimSortWithArray(PetscInt n, void *arr, size_t asize, void *
 .  arr - sorted array of integers
 
    Notes:
-   If the array is less than 64 entries long PetscSortInt() is automatically used.
+   If the array is less than 64 entries long `PetscSortInt()` is automatically used.
 
-   This function serves as an alternative to PetscSortInt(). While this function works for any array of integers it is
+   This function serves as an alternative to `PetscSortInt()`. While this function works for any array of integers it is
    significantly faster if the array is not totally random. There are exceptions to this and so it is __highly__
    recommended that the user benchmark their code to see which routine is fastest.
 
@@ -1144,8 +1144,8 @@ PetscErrorCode PetscIntSortSemiOrdered(PetscInt n, PetscInt arr[]) {
 }
 
 /*@
-   PetscIntSortSemiOrderedWithArray - Sorts an array of integers in place in increasing order and reorders a second
-   array to match the first.
+   PetscIntSortSemiOrderedWithArray - Sorts an array of `PetscInt` in place in increasing order and reorders a second
+   `PetscInt` array to match the first.
 
    Not Collective
 
@@ -1178,21 +1178,21 @@ PetscErrorCode PetscIntSortSemiOrderedWithArray(PetscInt n, PetscInt arr1[], Pet
 }
 
 /*@
-   PetscMPIIntSortSemiOrdered - Sorts an array of PetscMPIInts in place in increasing order.
+   PetscMPIIntSortSemiOrdered - Sorts an array of `PetscMPIInt` in place in increasing order.
 
    Not Collective
 
    Input Parameters:
 +  n   - number of values
--  arr - array of PetscMPIInts
+-  arr - array of `PetscMPIInt`
 
    Output Parameters:
 .  arr - sorted array of integers
 
    Notes:
-   If the array is less than 64 entries long PetscSortMPIInt() is automatically used.
+   If the array is less than 64 entries long `PetscSortMPIInt()` is automatically used.
 
-   This function serves as an alternative to PetscSortMPIInt(). While this function works for any array of PetscMPIInts it is
+   This function serves as an alternative to `PetscSortMPIInt()`. While this function works for any array of `PetscMPIInt` it is
    significantly faster if the array is not totally random. There are exceptions to this and so it is __highly__
    recommended that the user benchmark their code to see which routine is fastest.
 
@@ -1213,7 +1213,7 @@ PetscErrorCode PetscMPIIntSortSemiOrdered(PetscInt n, PetscMPIInt arr[]) {
 }
 
 /*@
-   PetscMPIIntSortSemiOrderedWithArray - Sorts an array of integers in place in increasing order and reorders a second
+   PetscMPIIntSortSemiOrderedWithArray - Sorts an array of `PetscMPIInt` in place in increasing order and reorders a second `PetscMPIInt`
    array to match the first.
 
    Not Collective
@@ -1228,7 +1228,7 @@ PetscErrorCode PetscMPIIntSortSemiOrdered(PetscInt n, PetscMPIInt arr[]) {
    Notes:
    The arrays CANNOT overlap.
 
-   This function serves as an alternative to PetscSortMPIIntWithArray(). While this function works for any array of integers it is
+   This function serves as an alternative to `PetscSortMPIIntWithArray()`. While this function works for any array of integers it is
    significantly faster if the array is not totally random. There are exceptions to this and so it is __highly__
    recommended that the user benchmark their code to see which routine is fastest.
 
@@ -1247,21 +1247,21 @@ PetscErrorCode PetscMPIIntSortSemiOrderedWithArray(PetscInt n, PetscMPIInt arr1[
 }
 
 /*@
-   PetscRealSortSemiOrdered - Sorts an array of PetscReals in place in increasing order.
+   PetscRealSortSemiOrdered - Sorts an array of `PetscReal` in place in increasing order.
 
    Not Collective
 
    Input Parameters:
 +  n   - number of values
--  arr - array of PetscReals
+-  arr - array of `PetscReal`
 
    Output Parameters:
 .  arr - sorted array of integers
 
    Notes:
-   If the array is less than 64 entries long PetscSortReal() is automatically used.
+   If the array is less than 64 entries long `PetscSortReal()` is automatically used.
 
-   This function serves as an alternative to PetscSortReal(). While this function works for any array of PetscReals it is
+   This function serves as an alternative to `PetscSortReal()`. While this function works for any array of `PetscReal` it is
    significantly faster if the array is not totally random. There are exceptions to this and so it is __highly__
    recommended that the user benchmark their code to see which routine is fastest.
 
@@ -1282,8 +1282,8 @@ PetscErrorCode PetscRealSortSemiOrdered(PetscInt n, PetscReal arr[]) {
 }
 
 /*@
-   PetscRealSortSemiOrderedWithArrayInt - Sorts an array of PetscReals in place in increasing order and reorders a second
-   array of PetscInts to match the first.
+   PetscRealSortSemiOrderedWithArrayInt - Sorts an array of `PetscReal` in place in increasing order and reorders a second
+   array of `PetscInt` to match the first.
 
    Not Collective
 
@@ -1291,11 +1291,11 @@ PetscErrorCode PetscRealSortSemiOrdered(PetscInt n, PetscReal arr[]) {
 .  n   - number of values
 
    Input/Output Parameters:
-.  arr1 - array of PetscReals to be sorted, modified on output
--  arr2 - array of PetscReals to be reordered, modified on output
+.  arr1 - array of `PetscReal` to be sorted, modified on output
+-  arr2 - array of `PetscInt` to be reordered, modified on output
 
    Notes:
-   This function serves as an alternative to PetscSortRealWithArray(). While this function works for any array of PetscReals it is
+   This function serves as an alternative to `PetscSortRealWithArray()`. While this function works for any array of `PetscReal` it is
    significantly faster if the array is not totally random. There are exceptions to this and so it is __highly__
    recommended that the user benchmark their code to see which routine is fastest.
 

@@ -21,13 +21,14 @@
          (both str1 and str2 are assumed to be of length len)
 
    Output Parameters:
-.   e - PETSC_TRUE if equal else PETSC_FALSE.
+.   e - `PETSC_TRUE` if equal else `PETSC_FALSE`.
 
    Level: intermediate
 
-   Note:
-   PetscArraycmp() is preferred
-   This routine is anologous to memcmp()
+   Notes:
+   `PetscArraycmp()` is preferred
+
+   This routine is anologous to `memcmp()` with additional error checking
 
 .seealso: `PetscMemcpy()`, `PetscMemcmp()`, `PetscArrayzero()`, `PetscMemzero()`, `PetscArraycmp()`, `PetscArraycpy()`, `PetscStrallocpy()`,
           `PetscArraymove()`
@@ -52,14 +53,14 @@ PetscErrorCode PetscMemcmp(const void *str1, const void *str2, size_t len, Petsc
 #include <hwloc.h>
 
 /*@C
-     PetscProcessPlacementView - display the MPI process placement by core
+     PetscProcessPlacementView - display the MPI rank placement by core
 
   Input Parameter:
 .   viewer - ASCII viewer to display the results on
 
   Level: intermediate
 
-  Notes:
+  Note:
     Requires that PETSc be installed with hwloc, for example using --download-hwloc
 @*/
 PetscErrorCode PetscProcessPlacementView(PetscViewer viewer) {

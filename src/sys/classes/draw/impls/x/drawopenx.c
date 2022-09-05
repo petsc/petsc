@@ -6,7 +6,7 @@
 #include <../src/sys/classes/draw/impls/x/ximpl.h> /*I  "petscsys.h" I*/
 
 /*@C
-   PetscDrawOpenX - Opens an X-window for use with the PetscDraw routines.
+   PetscDrawOpenX - Opens an X-window for use with the `PetscDraw` routines.
 
    Collective
 
@@ -15,10 +15,10 @@
 .  display - the X display on which to open,or null for the local machine
 .  title - the title to put in the title bar,or null for no title
 .  x,y - the screen coordinates of the upper left corner of window
-          may use PETSC_DECIDE for these two arguments, then PETSc places the
+          may use `PETSC_DECIDE` for these two arguments, then PETSc places the
           window
--  w, h - the screen width and height in pixels,  or PETSC_DRAW_HALF_SIZE, PETSC_DRAW_FULL_SIZE,
-          or PETSC_DRAW_THIRD_SIZE or PETSC_DRAW_QUARTER_SIZE
+-  w, h - the screen width and height in pixels,  or `PETSC_DRAW_HALF_SIZE`, `PETSC_DRAW_FULL_SIZE`,
+          or `PETSC_DRAW_THIRD_SIZE` or `PETSC_DRAW_QUARTER_SIZE`
 
    Output Parameter:
 .  draw - the drawing context.
@@ -46,12 +46,12 @@
 
    Note:
    When finished with the drawing context, it should be destroyed
-   with PetscDrawDestroy().
+   with `PetscDrawDestroy()`.
 
    Note for Fortran Programmers:
    Whenever indicating null character data in a Fortran code,
-   PETSC_NULL_CHARACTER must be employed; using NULL is not
-   correct for character data!  Thus, PETSC_NULL_CHARACTER can be
+   `PETSC_NULL_CHARACTER` must be employed; using NULL is not
+   correct for character data!  Thus, `PETSC_NULL_CHARACTER` can be
    used for the display and title input parameters.
 
 .seealso: `PetscDrawFlush()`, `PetscDrawDestroy()`, `PetscDrawCreate()`, `PetscDrawOpnOpenGL()`

@@ -18,8 +18,8 @@
    Input Parameters:
 .  s - number of seconds to sleep
 
-   Notes:
-      If s is negative waits for keyboard input
+   Note:
+   If s is negative waits for keyboard input
 
    Level: intermediate
 

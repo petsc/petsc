@@ -5,9 +5,9 @@ PetscFunctionList PetscRandomList              = NULL;
 PetscBool         PetscRandomRegisterAllCalled = PETSC_FALSE;
 
 /*@C
-  PetscRandomSetType - Builds a context for generating particular type of random numbers.
+  PetscRandomSetType - Builds a context for generating a particular type of random numbers.
 
-  Collective on PetscRandom
+  Collective on rnd
 
   Input Parameters:
 + rnd   - The random number generator context
@@ -17,12 +17,12 @@ PetscBool         PetscRandomRegisterAllCalled = PETSC_FALSE;
 . -random_type <type> - Sets the random type; use -help for a list
                      of available types
 
-  Notes:
-  See "petsc/include/petscsys.h" for available random types (for instance, PETSCRAND48, PETSCRAND).
+  Note:
+  See "petsc/include/petscsys.h" for available random types (for instance, `PETSCRAND48`, `PETSCRAND`).
 
   Level: intermediate
 
-.seealso: `PetscRandomGetType()`, `PetscRandomCreate()`
+.seealso: `PetscRandom`, `PetscRandomGetType()`, `PetscRandomCreate()`
 @*/
 
 PetscErrorCode PetscRandomSetType(PetscRandom rnd, PetscRandomType type) {
@@ -48,7 +48,7 @@ PetscErrorCode PetscRandomSetType(PetscRandom rnd, PetscRandomType type) {
 }
 
 /*@C
-  PetscRandomGetType - Gets the type name (as a string) from the PetscRandom.
+  PetscRandomGetType - Gets the type name (as a string) from the `PetscRandom`.
 
   Not Collective
 
@@ -60,7 +60,7 @@ PetscErrorCode PetscRandomSetType(PetscRandom rnd, PetscRandomType type) {
 
   Level: intermediate
 
-.seealso: `PetscRandomSetType()`, `PetscRandomCreate()`
+.seealso: `PetscRandom`, `PetscRandomSetType()`, `PetscRandomCreate()`
 @*/
 PetscErrorCode PetscRandomGetType(PetscRandom rnd, PetscRandomType *type) {
   PetscFunctionBegin;
@@ -71,7 +71,7 @@ PetscErrorCode PetscRandomGetType(PetscRandom rnd, PetscRandomType *type) {
 }
 
 /*@C
-  PetscRandomRegister -  Adds a new PetscRandom component implementation
+  PetscRandomRegister -  Adds a new `PetscRandom` implementation
 
   Not Collective
 
@@ -80,7 +80,9 @@ PetscErrorCode PetscRandomGetType(PetscRandom rnd, PetscRandomType *type) {
 - create_func - The creation routine itself
 
   Notes:
-  PetscRandomRegister() may be called multiple times to add several user-defined randome number generators
+  `PetscRandomRegister()` may be called multiple times to add several user-defined randome number generators
+
+  For an example of the code needed to interface your own random number generator see src/sys/random/impls/rand/rand.c
 
   Sample usage:
 .vb
@@ -97,13 +99,9 @@ PetscErrorCode PetscRandomGetType(PetscRandom rnd, PetscRandomType *type) {
     -random_type my_random_name
 .ve
 
-  Notes:
-    For an example of the code needed to interface your own random number generator see
-         src/sys/random/impls/rand/rand.c
-
   Level: advanced
 
-.seealso: `PetscRandomRegisterAll()`, `PetscRandomRegisterDestroy()`, `PetscRandomRegister()`
+.seealso: `PetscRandom`, `PetscRandomRegisterAll()`, `PetscRandomRegisterDestroy()`, `PetscRandomRegister()`
 @*/
 PetscErrorCode PetscRandomRegister(const char sname[], PetscErrorCode (*function)(PetscRandom)) {
   PetscFunctionBegin;
@@ -130,13 +128,13 @@ PETSC_EXTERN PetscErrorCode PetscRandomCreate_CURAND(PetscRandom);
 #endif
 
 /*@C
-  PetscRandomRegisterAll - Registers all of the components in the PetscRandom package.
+  PetscRandomRegisterAll - Registers all of the components in the `PetscRandom` package.
 
   Not Collective
 
   Level: advanced
 
-.seealso: `PetscRandomRegister()`, `PetscRandomRegisterDestroy()`
+.seealso: `PetscRandom`, `PetscRandomRegister()`, `PetscRandomRegisterDestroy()`
 @*/
 PetscErrorCode PetscRandomRegisterAll(void) {
   PetscFunctionBegin;

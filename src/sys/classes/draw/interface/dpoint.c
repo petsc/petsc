@@ -5,7 +5,7 @@
 #include <petsc/private/drawimpl.h> /*I "petscdraw.h" I*/
 
 /*@
-   PetscDrawPoint - PetscDraws a point onto a drawable.
+   PetscDrawPoint - draws a point onto a drawable.
 
    Not collective
 
@@ -16,9 +16,8 @@
 
    Level: beginner
 
-.seealso: `PetscDrawPointPixel()`, `PetscDrawPointSetSize()`, `PetscDrawLine()`, `PetscDrawRectangle()`, `PetscDrawTriangle()`, `PetscDrawEllipse()`,
+.seealso: `PetscDraw`, `PetscDrawPointPixel()`, `PetscDrawPointSetSize()`, `PetscDrawLine()`, `PetscDrawRectangle()`, `PetscDrawTriangle()`, `PetscDrawEllipse()`,
           `PetscDrawMarker()`, `PetscDrawString()`, `PetscDrawArrow()`
-
 @*/
 PetscErrorCode PetscDrawPoint(PetscDraw draw, PetscReal xl, PetscReal yl, int cl) {
   PetscFunctionBegin;
@@ -28,7 +27,7 @@ PetscErrorCode PetscDrawPoint(PetscDraw draw, PetscReal xl, PetscReal yl, int cl
 }
 
 /*@
-   PetscDrawPointPixel - PetscDraws a point onto a drawable, in pixel coordinates
+   PetscDrawPointPixel - draws a point onto a drawable, in pixel coordinates
 
    Not collective
 
@@ -39,8 +38,7 @@ PetscErrorCode PetscDrawPoint(PetscDraw draw, PetscReal xl, PetscReal yl, int cl
 
    Level: beginner
 
-.seealso: `PetscDrawPoint()`, `PetscDrawPointSetSize()`
-
+.seealso: `PetscDraw`, `PetscDrawPoint()`, `PetscDrawPointSetSize()`
 @*/
 PetscErrorCode PetscDrawPointPixel(PetscDraw draw, int x, int y, int c) {
   PetscFunctionBegin;
@@ -65,7 +63,7 @@ PetscErrorCode PetscDrawPointPixel(PetscDraw draw, int x, int y, int c) {
    Note:
    Even a size of zero insures that a single pixel is colored.
 
-.seealso: `PetscDrawPoint()`, `PetscDrawMarker()`
+.seealso: `PetscDraw`, `PetscDrawPoint()`, `PetscDrawMarker()`
 @*/
 PetscErrorCode PetscDrawPointSetSize(PetscDraw draw, PetscReal width) {
   PetscFunctionBegin;

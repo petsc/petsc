@@ -20,7 +20,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_CGNS(PetscViewer);
 PetscBool PetscViewerRegisterAllCalled;
 
 /*@C
-  PetscViewerRegisterAll - Registers all of the graphics methods in the PetscViewer package.
+  PetscViewerRegisterAll - Registers all of the viewer methods in the `PetscViewer` package.
 
   Not Collective
 

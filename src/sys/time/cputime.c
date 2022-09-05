@@ -67,11 +67,13 @@ PetscErrorCode PetscGetCPUTime(PetscLogDouble *t) {
 
     Level: intermediate
 
-    Notes:
-    One should use PetscTime() or the -log_view option of
+    Note:
+    One should use the -log_view option of
     PETSc for profiling. The CPU time is NOT a realistic number to
     use since it does not include the time for message passing etc.
     Also on many systems the accuracy is only on the order of microseconds.
+
+.seealso: `PetscTime()`, `PetscLogView()`
 @*/
 PetscErrorCode PetscGetCPUTime(PetscLogDouble *t) {
   static struct rusage temp;

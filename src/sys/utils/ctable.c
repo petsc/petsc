@@ -48,7 +48,7 @@ static PetscErrorCode PetscTableCreateHashSize(PetscInt sz, PetscInt *hsz) {
 +     n - expected number of keys
 -     maxkey- largest possible key
 
-   Notes:
+   Note:
     keys are between 1 and maxkey inclusive
 
 */

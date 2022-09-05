@@ -20,16 +20,16 @@ PetscClassId PETSC_RANDOM_CLASSID;
 
 /*@C
    PetscRandomDestroy - Destroys a context that has been formed by
-   PetscRandomCreate().
+   `PetscRandomCreate()`.
 
-   Collective on PetscRandom
+   Collective on r
 
    Input Parameter:
 .  r  - the random number generator context
 
    Level: intermediate
 
-.seealso: `PetscRandomGetValue()`, `PetscRandomCreate()`, `VecSetRandom()`
+.seealso: `PetscRandom`, `PetscRandomGetValue()`, `PetscRandomCreate()`, `VecSetRandom()`
 @*/
 PetscErrorCode PetscRandomDestroy(PetscRandom *r) {
   PetscFunctionBegin;
@@ -57,7 +57,7 @@ PetscErrorCode PetscRandomDestroy(PetscRandom *r) {
 
    Level: intermediate
 
-.seealso: `PetscRandomCreate()`, `PetscRandomSetSeed()`, `PetscRandomSeed()`
+.seealso: `PetscRandom`, `PetscRandomCreate()`, `PetscRandomSetSeed()`, `PetscRandomSeed()`
 @*/
 PetscErrorCode PetscRandomGetSeed(PetscRandom r, unsigned long *seed) {
   PetscFunctionBegin;
@@ -70,7 +70,7 @@ PetscErrorCode PetscRandomGetSeed(PetscRandom r, unsigned long *seed) {
 }
 
 /*@C
-   PetscRandomSetSeed - Sets the random seed. You MUST call PetscRandomSeed() after this call to have the new seed used.
+   PetscRandomSetSeed - Sets the random seed. You MUST call `PetscRandomSeed()` after this call to have the new seed used.
 
    Not collective
 
@@ -81,13 +81,16 @@ PetscErrorCode PetscRandomGetSeed(PetscRandom r, unsigned long *seed) {
    Level: intermediate
 
    Usage:
+.vb
       PetscRandomSetSeed(r,a positive integer);
-      PetscRandomSeed(r);  PetscRandomGetValue() will now start with the new seed.
+      PetscRandomSeed(r);
+      PetscRandomGetValue() will now start with the new seed.
 
       PetscRandomSeed(r) without a call to PetscRandomSetSeed() re-initializes
-        the seed. The random numbers generated will be the same as before.
+      the seed. The random numbers generated will be the same as before.
+.ve
 
-.seealso: `PetscRandomCreate()`, `PetscRandomGetSeed()`, `PetscRandomSeed()`
+.seealso: `PetscRandom`, `PetscRandomCreate()`, `PetscRandomGetSeed()`, `PetscRandomSeed()`
 @*/
 PetscErrorCode PetscRandomSetSeed(PetscRandom r, unsigned long seed) {
   PetscFunctionBegin;
@@ -101,7 +104,7 @@ PetscErrorCode PetscRandomSetSeed(PetscRandom r, unsigned long seed) {
 /*
   PetscRandomSetTypeFromOptions_Private - Sets the type of random generator from user options. Defaults to type PETSCRAND48 or PETSCRAND.
 
-  Collective on PetscRandom
+  Collective on rnd
 
   Input Parameter:
 . rnd - The random number generator context
@@ -135,23 +138,22 @@ static PetscErrorCode PetscRandomSetTypeFromOptions_Private(PetscRandom rnd, Pet
 /*@
   PetscRandomSetFromOptions - Configures the random number generator from the options database.
 
-  Collective on PetscRandom
+  Collective on rnd
 
   Input Parameter:
 . rnd - The random number generator context
 
-  Options Database:
+  Options Database Keys:
 + -random_seed <integer> - provide a seed to the random number generater
 - -random_no_imaginary_part - makes the imaginary part of the random number zero, this is useful when you want the
                               same code to produce the same result when run with real numbers or complex numbers for regression testing purposes
 
-  Notes:
-    To see all options, run your program with the -help option.
-          Must be called after PetscRandomCreate() but before the rnd is used.
+  Note:
+  Must be called after `PetscRandomCreate()` but before the rnd is used.
 
   Level: beginner
 
-.seealso: `PetscRandomCreate()`, `PetscRandomSetType()`
+.seealso: `PetscRandom`, `PetscRandomCreate()`, `PetscRandomSetType()`
 @*/
 PetscErrorCode PetscRandomSetFromOptions(PetscRandom rnd) {
   PetscBool set, noimaginary = PETSC_FALSE;
@@ -194,9 +196,9 @@ PetscErrorCode PetscRandomSetFromOptions(PetscRandom rnd) {
 #endif
 
 /*@C
-   PetscRandomViewFromOptions - View from Options
+   PetscRandomViewFromOptions - View a `PetscRandom` object based on the options database
 
-   Collective on PetscRandom
+   Collective on A
 
    Input Parameters:
 +  A - the  random number generator context
@@ -216,26 +218,23 @@ PetscErrorCode PetscRandomViewFromOptions(PetscRandom A, PetscObject obj, const 
 /*@C
    PetscRandomView - Views a random number generator object.
 
-   Collective on PetscRandom
+   Collective on rnd
 
    Input Parameters:
 +  rnd - The random number generator context
 -  viewer - an optional visualization context
 
-   Notes:
+   Note:
    The available visualization contexts include
-+     PETSC_VIEWER_STDOUT_SELF - standard output (default)
--     PETSC_VIEWER_STDOUT_WORLD - synchronized standard
++     `PETSC_VIEWER_STDOUT_SELF` - standard output (default)
+-     `PETSC_VIEWER_STDOUT_WORLD` - synchronized standard
          output where only the first processor opens
          the file.  All other processors send their
          data to the first processor to print.
 
-   You can change the format the vector is printed using the
-   option PetscViewerPushFormat().
-
    Level: beginner
 
-.seealso: `PetscRealView()`, `PetscScalarView()`, `PetscIntView()`
+.seealso: `PetscRandom`, `PetscRealView()`, `PetscScalarView()`, `PetscIntView()`
 @*/
 PetscErrorCode PetscRandomView(PetscRandom rnd, PetscViewer viewer) {
   PetscBool iascii;
@@ -295,18 +294,18 @@ PetscErrorCode PetscRandomView(PetscRandom rnd, PetscViewer viewer) {
    Level: intermediate
 
    Notes:
-   The random type has to be set by PetscRandomSetType().
+   The random type has to be set by `PetscRandomSetType()`.
 
    This is only a primitive "parallel" random number generator, it should NOT
    be used for sophisticated parallel Monte Carlo methods since it will very likely
    not have the correct statistics across processors. You can provide your own
    parallel generator using PetscRandomRegister();
 
-   If you create a PetscRandom() using PETSC_COMM_SELF on several processors then
-   the SAME random numbers will be generated on all those processors. Use PETSC_COMM_WORLD
+   If you create a `PetscRandom()` using `PETSC_COMM_SELF` on several processors then
+   the SAME random numbers will be generated on all those processors. Use `PETSC_COMM_WORLD`
    or the appropriate parallel communicator to eliminate this issue.
 
-   Use VecSetRandom() to set the elements of a vector to random numbers.
+   Use `VecSetRandom()` to set the elements of a vector to random numbers.
 
    Example of Usage:
 .vb
@@ -318,7 +317,7 @@ PetscErrorCode PetscRandomView(PetscRandom rnd, PetscViewer viewer) {
 .ve
 
 .seealso: `PetscRandomSetType()`, `PetscRandomGetValue()`, `PetscRandomGetValueReal()`, `PetscRandomSetInterval()`,
-          `PetscRandomDestroy()`, `VecSetRandom()`, `PetscRandomType`
+          `PetscRandomDestroy()`, `VecSetRandom()`, `PetscRandomType`, `PetscRandom`
 @*/
 
 PetscErrorCode PetscRandomCreate(MPI_Comm comm, PetscRandom *r) {
@@ -345,7 +344,7 @@ PetscErrorCode PetscRandomCreate(MPI_Comm comm, PetscRandom *r) {
 }
 
 /*@
-   PetscRandomSeed - Seed the generator.
+   PetscRandomSeed - Seed the random number generator.
 
    Not collective
 
@@ -355,11 +354,14 @@ PetscErrorCode PetscRandomCreate(MPI_Comm comm, PetscRandom *r) {
    Level: intermediate
 
    Usage:
+.vb
       PetscRandomSetSeed(r,a positive integer);
-      PetscRandomSeed(r);  PetscRandomGetValue() will now start with the new seed.
+      PetscRandomSeed(r);
+      PetscRandomGetValue() will now start with the new seed.
 
       PetscRandomSeed(r) without a call to PetscRandomSetSeed() re-initializes
-        the seed. The random numbers generated will be the same as before.
+      the seed. The random numbers generated will be the same as before.
+.ve
 
 .seealso: `PetscRandomCreate()`, `PetscRandomGetSeed()`, `PetscRandomSetSeed()`
 @*/

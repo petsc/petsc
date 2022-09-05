@@ -148,7 +148,7 @@ PetscErrorCode PetscHeaderDestroy_Private(PetscObject h) {
 /*@C
    PetscObjectCopyFortranFunctionPointers - Copy function pointers to another object
 
-   Logically Collective on PetscObject
+   Logically Collective on src
 
    Input Parameters:
 +  src - source object
@@ -158,6 +158,8 @@ PetscErrorCode PetscHeaderDestroy_Private(PetscObject h) {
 
    Note:
    Both objects must have the same class.
+
+   This is used to help manage user callback functions that were provided in Fortran
 @*/
 PetscErrorCode PetscObjectCopyFortranFunctionPointers(PetscObject src, PetscObject dest) {
   PetscFortranCallbackId cbtype, numcb[PETSC_FORTRAN_CALLBACK_MAXTYPE];
@@ -196,6 +198,9 @@ PetscErrorCode PetscObjectCopyFortranFunctionPointers(PetscObject src, PetscObje
 -  ctx - Fortran context
 
    Level: developer
+
+   Note:
+   This is used to help manage user callback functions that were provided in Fortran
 
 .seealso: `PetscObjectGetFortranCallback()`
 @*/
@@ -238,6 +243,9 @@ PetscErrorCode PetscObjectSetFortranCallback(PetscObject obj, PetscFortranCallba
 
    Level: developer
 
+   Note:
+   This is used to help manage user callback functions that were provided in Fortran
+
 .seealso: `PetscObjectSetFortranCallback()`
 @*/
 PetscErrorCode PetscObjectGetFortranCallback(PetscObject obj, PetscFortranCallbackType cbtype, PetscFortranCallbackId cid, void (**func)(void), void **ctx) {
@@ -255,15 +263,15 @@ PetscErrorCode PetscObjectGetFortranCallback(PetscObject obj, PetscFortranCallba
 
 #if defined(PETSC_USE_LOG)
 /*@C
-   PetscObjectsDump - Prints the currently existing objects.
+   PetscObjectsDump - Prints all the currently existing objects.
 
-   Logically Collective on PetscViewer
+   On rank 0 of `PETSC_COMM_WORLD` prints the values
 
    Input Parameters:
 +  fd - file pointer
--  all - by default only tries to display objects created explicitly by the user, if all is PETSC_TRUE then lists all outstanding objects
+-  all - by default only tries to display objects created explicitly by the user, if all is `PETSC_TRUE` then lists all outstanding objects
 
-   Options Database:
+   Options Database Key:
 .  -objects_dump <all> - print information about all the objects that exist at the end of the programs run
 
    Level: advanced
@@ -325,10 +333,10 @@ PetscErrorCode PetscObjectsDump(FILE *fd, PetscBool all) {
 /*@C
    PetscObjectsView - Prints the currently existing objects.
 
-   Logically Collective on PetscViewer
+   Logically Collective on viewer
 
    Input Parameter:
-.  viewer - must be an PETSCVIEWERASCII viewer
+.  viewer - must be an `PETSCVIEWERASCII` viewer
 
    Level: advanced
 
@@ -386,14 +394,14 @@ PetscErrorCode PetscObjectsGetObject(const char *name, PetscObject *obj, char **
 #endif
 
 /*@
-   PetscObjectSetPrintedOptions - indicate to an object that it should behave as if it has already printed the help for its options
+   PetscObjectSetPrintedOptions - indicate to an object that it should behave as if it has already printed the help for its options so it will not display the help message
 
    Input Parameters:
-.  obj  - the PetscObject
+.  obj  - the `PetscObject`
 
    Level: developer
 
-   Developer Notes:
+   Developer Note:
    This is used, for example to prevent sequential objects that are created from a parallel object; such as the `KSP` created by
    `PCBJACOBI` from all printing the same help messages to the screen
 
@@ -449,7 +457,6 @@ PetscErrorCode PetscObjectInheritPrintedOptions(PetscObject pobj, PetscObject ob
     Level: developer
 
 .seealso: `KSPSetFromOptions()`, `PCSetFromOptions()`, `SNESSetFromOptions()`, `PetscObjectProcessOptionsHandlers()`, `PetscObjectDestroyOptionsHandlers()`
-
 @*/
 PetscErrorCode PetscObjectAddOptionsHandler(PetscObject obj, PetscErrorCode (*handle)(PetscObject, PetscOptionItems *, void *), PetscErrorCode (*destroy)(PetscObject, void *), void *ctx) {
   PetscFunctionBegin;
@@ -473,7 +480,6 @@ PetscErrorCode PetscObjectAddOptionsHandler(PetscObject obj, PetscErrorCode (*ha
     Level: developer
 
 .seealso: `KSPSetFromOptions()`, `PCSetFromOptions()`, `SNESSetFromOptions()`, `PetscObjectAddOptionsHandler()`, `PetscObjectDestroyOptionsHandlers()`
-
 @*/
 PetscErrorCode PetscObjectProcessOptionsHandlers(PetscObject obj, PetscOptionItems *PetscOptionsObject) {
   PetscFunctionBegin;
@@ -493,7 +499,6 @@ PetscErrorCode PetscObjectProcessOptionsHandlers(PetscObject obj, PetscOptionIte
     Level: developer
 
 .seealso: `KSPSetFromOptions()`, `PCSetFromOptions()`, `SNESSetFromOptions()`, `PetscObjectAddOptionsHandler()`, `PetscObjectProcessOptionsHandlers()`
-
 @*/
 PetscErrorCode PetscObjectDestroyOptionsHandlers(PetscObject obj) {
   PetscFunctionBegin;
@@ -510,11 +515,11 @@ PetscErrorCode PetscObjectDestroyOptionsHandlers(PetscObject obj) {
    referenced by another `PetscObject`. This increases the reference
    count for that object by one.
 
-   Logically Collective on `PetscObject`
+   Logically Collective on obj
 
    Input Parameter:
-.  obj - the PETSc object. This must be cast with (PetscObject), for example,
-         PetscObjectReference((PetscObject)mat);
+.  obj - the PETSc object. This must be cast with (`PetscObject`), for example,
+         `PetscObjectReference`((`PetscObject`)mat);
 
    Level: advanced
 
@@ -535,8 +540,8 @@ PetscErrorCode PetscObjectReference(PetscObject obj) {
    Not Collective
 
    Input Parameter:
-.  obj - the PETSc object; this must be cast with (PetscObject), for example,
-         PetscObjectGetReference((PetscObject)mat,&cnt);
+.  obj - the PETSc object; this must be cast with (`PetscObject`), for example,
+         `PetscObjectGetReference`((`PetscObject`)mat,&cnt);
 
    Output Parameter:
 .  cnt - the reference count
@@ -558,14 +563,14 @@ PetscErrorCode PetscObjectGetReference(PetscObject obj, PetscInt *cnt) {
    referenced by one less `PetscObject`. This decreases the reference
    count for that object by one.
 
-   Collective on `PetscObject` if reference reaches 0 otherwise Logically Collective
+   Collective on obj if reference reaches 0 otherwise Logically Collective
 
    Input Parameter:
-.  obj - the PETSc object; this must be cast with (PetscObject), for example,
-         PetscObjectDereference((PetscObject)mat);
+.  obj - the PETSc object; this must be cast with (`PetscObject`), for example,
+         `PetscObjectDereference`((`PetscObject`)mat);
 
-   Notes:
-    `PetscObjectDestroy()`  sets the obj pointer to null after the call, this routine does not.
+   Note:
+    `PetscObjectDestroy()` sets the obj pointer to null after the call, this routine does not.
 
    Level: advanced
 
@@ -640,11 +645,11 @@ PetscErrorCode PetscObjectQueryFunction_Petsc(PetscObject obj, const char name[]
    Not Collective
 
    Input Parameters:
-+  obj - the PETSc object; this must be cast with (PetscObject), for example,
-         PetscObjectCompose((PetscObject)mat,...);
++  obj - the PETSc object; this must be cast with (`PetscObject`), for example,
+         `PetscObjectCompose`((`PetscObject`)mat,...);
 .  name - name associated with the child object
 -  ptr - the other PETSc object to associate with the PETSc object; this must also be
-         cast with (PetscObject)
+         cast with (`PetscObject`)
 
    Level: advanced
 
@@ -683,11 +688,11 @@ PetscErrorCode PetscObjectCompose(PetscObject obj, const char name[], PetscObjec
 
    Input Parameters:
 +  obj - the PETSc object
-         Thus must be cast with a (PetscObject), for example,
-         PetscObjectCompose((PetscObject)mat,...);
+         Thus must be cast with a (`PetscObject`), for example,
+         `PetscObjectCompose`((`PetscObject`)mat,...);
 .  name - name associated with child object
 -  ptr - the other PETSc object associated with the PETSc object, this must be
-         cast with (PetscObject*)
+         cast with (`PetscObject`*)
 
    Level: advanced
 
@@ -713,11 +718,11 @@ PetscErrorCode PetscObjectQuery(PetscObject obj, const char name[], PetscObject 
     #include <petscsys.h>
     PetscErrorCode PetscObjectComposeFunction(PetscObject obj,const char name[],void (*fptr)(void))
 
-   Logically Collective on PetscObject
+   Logically Collective on obj
 
    Input Parameters:
-+  obj - the PETSc object; this must be cast with a (PetscObject), for example,
-         PetscObjectCompose((PetscObject)mat,...);
++  obj - the PETSc object; this must be cast with a (`PetscObject`), for example,
+         `PetscObjectCompose`((`PetscObject`)mat,...);
 .  name - name associated with the child function
 .  fname - name of the function
 -  fptr - function pointer
@@ -754,11 +759,11 @@ PetscErrorCode PetscObjectComposeFunction_Private(PetscObject obj, const char na
     #include <petscsys.h>
     PetscErrorCode PetscObjectQueryFunction(PetscObject obj,const char name[],void (**fptr)(void))
 
-   Logically Collective on PetscObject
+   Logically Collective on obj
 
    Input Parameters:
-+  obj - the PETSc object; this must be cast with (PetscObject), for example,
-         PetscObjectQueryFunction((PetscObject)ksp,...);
++  obj - the PETSc object; this must be cast with (`PetscObject`), for example,
+         `PetscObjectQueryFunction`((`PetscObject`)ksp,...);
 -  name - name associated with the child function
 
    Output Parameter:
@@ -786,7 +791,7 @@ struct _p_PetscContainer {
    PetscContainerUserDestroyDefault - Default destroy routine for user-provided data that simply calls `PetscFree()` in the data
    provided with `PetscContainerSetPointer()`
 
-   Logically Collective on `PetscContainer`
+   Logically Collective on the `PetscContainer` containing the user data
 
    Input Parameter:
 .  ctx - pointer to user-provided data
@@ -828,7 +833,7 @@ PetscErrorCode PetscContainerGetPointer(PetscContainer obj, void **ptr) {
 /*@C
    PetscContainerSetPointer - Sets the pointer value contained in the container.
 
-   Logically Collective on `PetscContainer`
+   Logically Collective on obj
 
    Input Parameters:
 +  obj - the object created with `PetscContainerCreate()`
@@ -850,14 +855,14 @@ PetscErrorCode PetscContainerSetPointer(PetscContainer obj, void *ptr) {
 /*@C
    PetscContainerDestroy - Destroys a PETSc container object.
 
-   Collective on `PetscContainer`
+   Collective on obj
 
    Input Parameter:
 .  obj - an object that was created with `PetscContainerCreate()`
 
    Level: advanced
 
-   Notes:
+   Note:
    If `PetscContainerSetUserDestroy()` was used to provide a user destroy object for the data provided with `PetscContainerSetPointer()`
    then that function is called to destroy the data.
 
@@ -879,13 +884,13 @@ PetscErrorCode PetscContainerDestroy(PetscContainer *obj) {
 /*@C
    PetscContainerSetUserDestroy - Sets name of the user destroy function for the data provided to the `PetscContainer` with `PetscContainerSetPointer()`
 
-   Logically Collective on `PetscContainer`
+   Logically Collective on obj
 
    Input Parameters:
 +  obj - an object that was created with `PetscContainerCreate()`
 -  des - name of the user destroy function
 
-   Notes:
+   Note:
    Use `PetscContainerUserDestroyDefault()` if the memory was obtained by calling `PetscMalloc()` or one of its variants for single memory allocation.
 
    Level: advanced
@@ -936,9 +941,7 @@ PetscErrorCode PetscContainerCreate(MPI_Comm comm, PetscContainer *container) {
    Input Parameter:
 .  obj - the `PetscObject`
 
-   Options Database Keys:
-
-   Notes:
+   Note:
    We have no generic options at present, so this does nothing
 
    Level: beginner
@@ -954,12 +957,12 @@ PetscErrorCode PetscObjectSetFromOptions(PetscObject obj) {
 /*@
    PetscObjectSetUp - Sets up the internal data structures for the later use.
 
-   Collective on `PetscObject`
+   Collective on obj
 
    Input Parameters:
 .  obj - the `PetscObject`
 
-   Notes:
+   Note:
    This does nothing at present.
 
    Level: advanced

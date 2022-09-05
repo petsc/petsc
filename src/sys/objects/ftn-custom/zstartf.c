@@ -33,19 +33,18 @@ PETSC_EXTERN void petscsetcomm_(MPI_Fint*,MPI_Fint*);
    the call to PetscInitialize() if one is using a C main program
    that calls Fortran routines that in turn call PETSc routines.
 
-   Collective on PETSC_COMM_WORLD
+   Collective on `PETSC_COMM_WORLD`
 
    Level: beginner
 
-   Notes:
-   PetscInitializeFortran() initializes some of the default viewers,
+   Note:
+   `PetscInitializeFortran()` initializes some of the default viewers,
    communicators, etc. for use in the Fortran if a user's main program is
-   written in C.  PetscInitializeFortran() is NOT needed if a user's main
+   written in C.  `PetscInitializeFortran()` is NOT needed if a user's main
    program is written in Fortran; in this case, just calling
-   PetscInitialize() in the main (Fortran) program is sufficient.
+   `PetscInitialize()` in the main (Fortran) program is sufficient.
 
 .seealso:  PetscInitialize()
-
 @*/
 PetscErrorCode PetscInitializeFortran(void)
 {

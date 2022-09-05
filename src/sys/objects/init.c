@@ -178,17 +178,17 @@ void Petsc_MPI_DebuggerOnError(MPI_Comm *comm, PetscMPIInt *flag, ...) {
 }
 
 /*@C
-   PetscEnd - Calls PetscFinalize() and then ends the program. This is useful if one
+   PetscEnd - Calls `PetscFinalize()` and then ends the program. This is useful if one
      wishes a clean exit somewhere deep in the program.
 
-   Collective on PETSC_COMM_WORLD
+   Collective on `PETSC_COMM_WORLD`
 
-   Options Database Keys are the same as for PetscFinalize()
+   Options Database Keys are the same as for `PetscFinalize()`
 
    Level: advanced
 
    Note:
-   See PetscInitialize() for more general runtime options.
+   See `PetscInitialize()` for more general runtime options.
 
 .seealso: `PetscInitialize()`, `PetscOptionsView()`, `PetscMallocDump()`, `PetscMPIDump()`, `PetscFinalize()`
 @*/
@@ -213,7 +213,7 @@ PetscErrorCode (*PetscExternalHelpFunction)(MPI_Comm)    = NULL;
 
 /*@C
    PetscSetHelpVersionFunctions - Sets functions that print help and version information
-   before the PETSc help and version information is printed. Must call BEFORE PetscInitialize().
+   before the PETSc help and version information is printed. Must call BEFORE `PetscInitialize()`.
    This routine enables a "higher-level" package that uses PETSc to print its messages first.
 
    Input Parameters:

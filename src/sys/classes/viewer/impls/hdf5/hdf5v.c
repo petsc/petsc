@@ -138,23 +138,22 @@ static PetscErrorCode PetscViewerHDF5SetBaseDimension2_HDF5(PetscViewer viewer, 
      PetscViewerHDF5SetBaseDimension2 - Vectors of 1 dimension (i.e. bs/dof is 1) will be saved in the HDF5 file with a
        dimension of 2.
 
-    Logically Collective on PetscViewer
+    Logically Collective on viewer
 
   Input Parameters:
-+  viewer - the PetscViewer; if it is not hdf5 then this command is ignored
--  flg - if PETSC_TRUE the vector will always have at least a dimension of 2 even if that first dimension is of size 1
++  viewer - the `PetscViewer`; if it is a `PETSCVIEWERHDF5` then this command is ignored
+-  flg - if `PETSC_TRUE` the vector will always have at least a dimension of 2 even if that first dimension is of size 1
 
-  Options Database:
+  Options Database Key:
 .  -viewer_hdf5_base_dimension2 - turns on (true) or off (false) using a dimension of 2 in the HDF5 file even if the bs/dof of the vector is 1
 
-  Notes:
-    Setting this option allegedly makes code that reads the HDF5 in easier since they do not have a "special case" of a bs/dof
-         of one when the dimension is lower. Others think the option is crazy.
+  Note:
+  Setting this option allegedly makes code that reads the HDF5 in easier since they do not have a "special case" of a bs/dof
+  of one when the dimension is lower. Others think the option is crazy.
 
   Level: intermediate
 
-.seealso: `PetscViewerFileSetMode()`, `PetscViewerCreate()`, `PetscViewerSetType()`, `PetscViewerBinaryOpen()`
-
+.seealso: `PETSCVIEWERHDF5`, PetscViewerFileSetMode()`, `PetscViewerCreate()`, `PetscViewerSetType()`, `PetscViewerBinaryOpen()`
 @*/
 PetscErrorCode PetscViewerHDF5SetBaseDimension2(PetscViewer viewer, PetscBool flg) {
   PetscFunctionBegin;
@@ -167,22 +166,21 @@ PetscErrorCode PetscViewerHDF5SetBaseDimension2(PetscViewer viewer, PetscBool fl
      PetscViewerHDF5GetBaseDimension2 - Vectors of 1 dimension (i.e. bs/dof is 1) will be saved in the HDF5 file with a
        dimension of 2.
 
-    Logically Collective on PetscViewer
+    Logically Collective on viewer
 
   Input Parameter:
-.  viewer - the PetscViewer, must be of type HDF5
+.  viewer - the `PetscViewer`, must be `PETSCVIEWERHDF5`
 
   Output Parameter:
-.  flg - if PETSC_TRUE the vector will always have at least a dimension of 2 even if that first dimension is of size 1
+.  flg - if `PETSC_TRUE` the vector will always have at least a dimension of 2 even if that first dimension is of size 1
 
-  Notes:
-    Setting this option allegedly makes code that reads the HDF5 in easier since they do not have a "special case" of a bs/dof
-         of one when the dimension is lower. Others think the option is crazy.
+  Note:
+  Setting this option allegedly makes code that reads the HDF5 in easier since they do not have a "special case" of a bs/dof
+  of one when the dimension is lower. Others think the option is crazy.
 
   Level: intermediate
 
-.seealso: `PetscViewerFileSetMode()`, `PetscViewerCreate()`, `PetscViewerSetType()`, `PetscViewerBinaryOpen()`
-
+.seealso: `PETSCVIEWERHDF5`, `PetscViewerFileSetMode()`, `PetscViewerCreate()`, `PetscViewerSetType()`, `PetscViewerBinaryOpen()`
 @*/
 PetscErrorCode PetscViewerHDF5GetBaseDimension2(PetscViewer viewer, PetscBool *flg) {
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5 *)viewer->data;
@@ -203,26 +201,25 @@ static PetscErrorCode PetscViewerHDF5SetSPOutput_HDF5(PetscViewer viewer, PetscB
 
 /*@
      PetscViewerHDF5SetSPOutput - Data is written to disk in single precision even if PETSc is
-       compiled with double precision PetscReal.
+       compiled with double precision `PetscReal`.
 
-    Logically Collective on PetscViewer
+    Logically Collective on viewer
 
   Input Parameters:
-+  viewer - the PetscViewer; if it is not hdf5 then this command is ignored
--  flg - if PETSC_TRUE the data will be written to disk with single precision
++  viewer - the PetscViewer; if it is a `PETSCVIEWERHDF5` then this command is ignored
+-  flg - if `PETSC_TRUE` the data will be written to disk with single precision
 
-  Options Database:
+  Options Database Key:
 .  -viewer_hdf5_sp_output - turns on (true) or off (false) output in single precision
 
-  Notes:
+  Note:
     Setting this option does not make any difference if PETSc is compiled with single precision
          in the first place. It does not affect reading datasets (HDF5 handle this internally).
 
   Level: intermediate
 
-.seealso: `PetscViewerFileSetMode()`, `PetscViewerCreate()`, `PetscViewerSetType()`, `PetscViewerBinaryOpen()`,
-          `PetscReal`
-
+.seealso: `PETSCVIEWERHDF5`, `PetscViewerFileSetMode()`, `PetscViewerCreate()`, `PetscViewerSetType()`, `PetscViewerBinaryOpen()`,
+          `PetscReal`, `PetscViewerHDF5GetSPOutput()`
 @*/
 PetscErrorCode PetscViewerHDF5SetSPOutput(PetscViewer viewer, PetscBool flg) {
   PetscFunctionBegin;
@@ -233,25 +230,20 @@ PetscErrorCode PetscViewerHDF5SetSPOutput(PetscViewer viewer, PetscBool flg) {
 
 /*@
      PetscViewerHDF5GetSPOutput - Data is written to disk in single precision even if PETSc is
-       compiled with double precision PetscReal.
+       compiled with double precision `PetscReal`.
 
-    Logically Collective on PetscViewer
+    Logically Collective on viewer
 
   Input Parameter:
-.  viewer - the PetscViewer, must be of type HDF5
+.  viewer - the PetscViewer, must be of type `PETSCVIEWERHDF5`
 
   Output Parameter:
-.  flg - if PETSC_TRUE the data will be written to disk with single precision
-
-  Notes:
-    Setting this option does not make any difference if PETSc is compiled with single precision
-         in the first place. It does not affect reading datasets (HDF5 handle this internally).
+.  flg - if `PETSC_TRUE` the data will be written to disk with single precision
 
   Level: intermediate
 
 .seealso: `PetscViewerFileSetMode()`, `PetscViewerCreate()`, `PetscViewerSetType()`, `PetscViewerBinaryOpen()`,
-          `PetscReal`
-
+          `PetscReal`, `PetscViewerHDF5SetSPOutput()`
 @*/
 PetscErrorCode PetscViewerHDF5GetSPOutput(PetscViewer viewer, PetscBool *flg) {
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5 *)viewer->data;
@@ -283,25 +275,24 @@ static PetscErrorCode PetscViewerHDF5SetCollective_HDF5(PetscViewer viewer, Pets
   Logically Collective; flg must contain common value
 
   Input Parameters:
-+ viewer - the PetscViewer; if it is not hdf5 then this command is ignored
-- flg - PETSC_TRUE for collective mode; PETSC_FALSE for independent mode (default)
++ viewer - the `PetscViewer`; if it is not `PETSCVIEWERHDF5` then this command is ignored
+- flg - `PETSC_TRUE` for collective mode; `PETSC_FALSE` for independent mode (default)
 
-  Options Database:
+  Options Database Key:
 . -viewer_hdf5_collective - turns on (true) or off (false) collective transfers
 
-  Notes:
+  Note:
   Collective mode gives the MPI-IO layer underneath HDF5 a chance to do some additional collective optimizations and hence can perform better.
   However, this works correctly only since HDF5 1.10.3 and if HDF5 is installed for MPI; hence, we ignore this setting for older versions.
 
-  Developer notes:
-  In the HDF5 layer, PETSC_TRUE / PETSC_FALSE means H5Pset_dxpl_mpio() is called with H5FD_MPIO_COLLECTIVE / H5FD_MPIO_INDEPENDENT, respectively.
+  Developer Note:
+  In the HDF5 layer, `PETSC_TRUE` / `PETSC_FALSE` means `H5Pset_dxpl_mpio()` is called with `H5FD_MPIO_COLLECTIVE` / `H5FD_MPIO_INDEPENDENT`, respectively.
   This in turn means use of MPI_File_{read,write}_all /  MPI_File_{read,write} in the MPI-IO layer, respectively.
   See HDF5 documentation and MPI-IO documentation for details.
 
   Level: intermediate
 
-.seealso: `PetscViewerHDF5GetCollective()`, `PetscViewerCreate()`, `PetscViewerSetType()`, `PetscViewerHDF5Open()`
-
+.seealso: `PETSCVIEWERHDF5`, `PetscViewerHDF5GetCollective()`, `PetscViewerCreate()`, `PetscViewerSetType()`, `PetscViewerHDF5Open()`
 @*/
 PetscErrorCode PetscViewerHDF5SetCollective(PetscViewer viewer, PetscBool flg) {
   PetscFunctionBegin;
@@ -333,19 +324,18 @@ static PetscErrorCode PetscViewerHDF5GetCollective_HDF5(PetscViewer viewer, Pets
   Not Collective
 
   Input Parameters:
-. viewer - the HDF5 PetscViewer
+. viewer - the `PETSCVIEWERHDF5` `PetscViewer`
 
   Output Parameters:
 . flg - the flag
 
   Level: intermediate
 
-  Notes:
-  This setting works correctly only since HDF5 1.10.3 and if HDF5 was installed for MPI. For older versions, PETSC_FALSE will be always returned.
-  For more details, see PetscViewerHDF5SetCollective().
+  Note:
+  This setting works correctly only since HDF5 1.10.3 and if HDF5 was installed for MPI. For older versions, `PETSC_FALSE` will be always returned.
+  For more details, see `PetscViewerHDF5SetCollective()`.
 
-.seealso: `PetscViewerHDF5SetCollective()`, `PetscViewerCreate()`, `PetscViewerSetType()`, `PetscViewerHDF5Open()`
-
+.seealso: `PETSCVIEWERHDF5`, `PetscViewerHDF5SetCollective()`, `PetscViewerCreate()`, `PetscViewerSetType()`, `PetscViewerHDF5Open()`
 @*/
 PetscErrorCode PetscViewerHDF5GetCollective(PetscViewer viewer, PetscBool *flg) {
   PetscFunctionBegin;
@@ -438,21 +428,21 @@ static PetscErrorCode PetscViewerHDF5GetDefaultTimestepping_HDF5(PetscViewer vie
 /*@
   PetscViewerHDF5SetDefaultTimestepping - Set the flag for default timestepping
 
-  Logically Collective on PetscViewer
+  Logically Collective on viewer
 
   Input Parameters:
-+ viewer - the PetscViewer; if it is not hdf5 then this command is ignored
-- flg    - if PETSC_TRUE we will assume that timestepping is on
++ viewer - the `PetscViewer`; if it is not `PETSCVIEWERHDF5` then this command is ignored
+- flg    - if `PETSC_TRUE` we will assume that timestepping is on
 
-  Options Database:
+  Options Database Key:
 . -viewer_hdf5_default_timestepping - turns on (true) or off (false) default timestepping
 
-  Notes:
+  Note:
   If the timestepping attribute is not found for an object, then the default timestepping is used
 
   Level: intermediate
 
-.seealso: `PetscViewerHDF5GetDefaultTimestepping()`, `PetscViewerHDF5PushTimestepping()`, `PetscViewerHDF5GetTimestep()`
+.seealso: `PETSCVIEWERHDF5`, `PetscViewerHDF5GetDefaultTimestepping()`, `PetscViewerHDF5PushTimestepping()`, `PetscViewerHDF5GetTimestep()`
 @*/
 PetscErrorCode PetscViewerHDF5SetDefaultTimestepping(PetscViewer viewer, PetscBool flg) {
   PetscFunctionBegin;
@@ -467,17 +457,14 @@ PetscErrorCode PetscViewerHDF5SetDefaultTimestepping(PetscViewer viewer, PetscBo
   Not collective
 
   Input Parameter:
-. viewer - the PetscViewer
+. viewer - the `PetscViewer` of type `PETSCVIEWERHDF5`
 
   Output Parameter:
-. flg    - if PETSC_TRUE we will assume that timestepping is on
-
-  Notes:
-  If the timestepping attribute is not found for an object, then the default timestepping is used
+. flg    - if `PETSC_TRUE` we will assume that timestepping is on
 
   Level: intermediate
 
-.seealso: `PetscViewerHDF5SetDefaultTimestepping()`, `PetscViewerHDF5PushTimestepping()`, `PetscViewerHDF5GetTimestep()`
+.seealso: `PETSCVIEWERHDF5`, `PetscViewerHDF5SetDefaultTimestepping()`, `PetscViewerHDF5PushTimestepping()`, `PetscViewerHDF5GetTimestep()`
 @*/
 PetscErrorCode PetscViewerHDF5GetDefaultTimestepping(PetscViewer viewer, PetscBool *flg) {
   PetscFunctionBegin;
@@ -489,12 +476,12 @@ PetscErrorCode PetscViewerHDF5GetDefaultTimestepping(PetscViewer viewer, PetscBo
 /*MC
    PETSCVIEWERHDF5 - A viewer that writes to an HDF5 file
 
+  Level: beginner
+
 .seealso: `PetscViewerHDF5Open()`, `PetscViewerStringSPrintf()`, `PetscViewerSocketOpen()`, `PetscViewerDrawOpen()`, `PETSCVIEWERSOCKET`,
           `PetscViewerCreate()`, `PetscViewerASCIIOpen()`, `PetscViewerBinaryOpen()`, `PETSCVIEWERBINARY`, `PETSCVIEWERDRAW`, `PETSCVIEWERSTRING`,
           `PetscViewerMatlabOpen()`, `VecView()`, `DMView()`, `PetscViewerMatlabPutArray()`, `PETSCVIEWERASCII`, `PETSCVIEWERMATLAB`,
           `PetscViewerFileSetName()`, `PetscViewerFileSetMode()`, `PetscViewerFormat`, `PetscViewerType`, `PetscViewerSetType()`
-
-  Level: beginner
 M*/
 
 PETSC_EXTERN PetscErrorCode PetscViewerCreate_HDF5(PetscViewer v) {
@@ -538,7 +525,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_HDF5(PetscViewer v) {
 }
 
 /*@C
-   PetscViewerHDF5Open - Opens a file for HDF5 input/output.
+   PetscViewerHDF5Open - Opens a file for HDF5 input/output as a `PETSCVIEWERHDF5` `PetscViewer`
 
    Collective
 
@@ -548,9 +535,9 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_HDF5(PetscViewer v) {
 -  type - type of file
 
    Output Parameter:
-.  hdf5v - PetscViewer for HDF5 input/output to use with the specified file
+.  hdf5v - `PetscViewer` for HDF5 input/output to use with the specified file
 
-  Options Database:
+  Options Database Keys:
 +  -viewer_hdf5_base_dimension2 - turns on (true) or off (false) using a dimension of 2 in the HDF5 file even if the bs/dof of the vector is 1
 -  -viewer_hdf5_sp_output - forces (if true) the viewer to write data in single precision independent on the precision of PetscReal
 
@@ -558,16 +545,18 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_HDF5(PetscViewer v) {
 
    Notes:
    Reading is always available, regardless of the mode. Available modes are
-+  FILE_MODE_READ - open existing HDF5 file for read only access, fail if file does not exist [H5Fopen() with H5F_ACC_RDONLY]
-.  FILE_MODE_WRITE - if file exists, fully overwrite it, else create new HDF5 file [H5FcreateH5Fcreate() with H5F_ACC_TRUNC]
-.  FILE_MODE_APPEND - if file exists, keep existing contents [H5Fopen() with H5F_ACC_RDWR], else create new HDF5 file [H5FcreateH5Fcreate() with H5F_ACC_EXCL]
--  FILE_MODE_UPDATE - same as FILE_MODE_APPEND
+.vb
+  FILE_MODE_READ - open existing HDF5 file for read only access, fail if file does not exist [H5Fopen() with H5F_ACC_RDONLY]
+  FILE_MODE_WRITE - if file exists, fully overwrite it, else create new HDF5 file [H5FcreateH5Fcreate() with H5F_ACC_TRUNC]
+  FILE_MODE_APPEND - if file exists, keep existing contents [H5Fopen() with H5F_ACC_RDWR], else create new HDF5 file [H5FcreateH5Fcreate() with H5F_ACC_EXCL]
+  FILE_MODE_UPDATE - same as FILE_MODE_APPEND
+.ve
 
-   In case of FILE_MODE_APPEND / FILE_MODE_UPDATE, any stored object (dataset, attribute) can be selectively ovewritten if the same fully qualified name (/group/path/to/object) is specified.
+   In case of `FILE_MODE_APPEND` / `FILE_MODE_UPDATE`, any stored object (dataset, attribute) can be selectively ovewritten if the same fully qualified name (/group/path/to/object) is specified.
 
    This PetscViewer should be destroyed with PetscViewerDestroy().
 
-.seealso: `PetscViewerASCIIOpen()`, `PetscViewerPushFormat()`, `PetscViewerDestroy()`, `PetscViewerHDF5SetBaseDimension2()`,
+.seealso: `PETSCVIEWERHDF5`, `PetscViewerASCIIOpen()`, `PetscViewerPushFormat()`, `PetscViewerDestroy()`, `PetscViewerHDF5SetBaseDimension2()`,
           `PetscViewerHDF5SetSPOutput()`, `PetscViewerHDF5GetBaseDimension2()`, `VecView()`, `MatView()`, `VecLoad()`,
           `MatLoad()`, `PetscFileMode`, `PetscViewer`, `PetscViewerSetType()`, `PetscViewerFileSetMode()`, `PetscViewerFileSetName()`
 @*/
@@ -587,14 +576,14 @@ PetscErrorCode PetscViewerHDF5Open(MPI_Comm comm, const char name[], PetscFileMo
   Not collective
 
   Input Parameter:
-. viewer - the PetscViewer
+. viewer - the `PetscViewer`
 
   Output Parameter:
 . file_id - The file id
 
   Level: intermediate
 
-.seealso: `PetscViewerHDF5Open()`
+.seealso: `PETSCVIEWERHDF5`, `PetscViewerHDF5Open()`
 @*/
 PetscErrorCode PetscViewerHDF5GetFileId(PetscViewer viewer, hid_t *file_id) {
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5 *)viewer->data;
@@ -611,16 +600,18 @@ PetscErrorCode PetscViewerHDF5GetFileId(PetscViewer viewer, hid_t *file_id) {
   Not collective
 
   Input Parameters:
-+ viewer - the PetscViewer
++ viewer - the `PetscViewer` of type `PETSCVIEWERHDF5`
 - name - The group name
 
   Level: intermediate
 
   Notes:
   This is designed to mnemonically resemble the Unix cd command.
-  + If name begins with '/', it is interpreted as an absolute path fully replacing current group, otherwise it is taken as relative to the current group.
-  . NULL, empty string, or any sequence of all slashes (e.g. "///") is interpreted as the root group "/".
-  - "." means the current group is pushed again.
+.vb
+  If name begins with '/', it is interpreted as an absolute path fully replacing current group, otherwise it is taken as relative to the current group.
+  NULL, empty string, or any sequence of all slashes (e.g. "///") is interpreted as the root group "/".
+  "." means the current group is pushed again.
+.ve
 
   Example:
   Suppose the current group is "/a".
@@ -629,10 +620,10 @@ PetscErrorCode PetscViewerHDF5GetFileId(PetscViewer viewer, hid_t *file_id) {
   . If name is "b", then the new group will be "/a/b".
   - If name is "/b", then the new group will be "/b".
 
-  Developer Notes:
+  Developer Note:
   The root group "/" is internally stored as NULL.
 
-.seealso: `PetscViewerHDF5Open()`, `PetscViewerHDF5PopGroup()`, `PetscViewerHDF5GetGroup()`, `PetscViewerHDF5OpenGroup()`
+.seealso: `PETSCVIEWERHDF5`, `PetscViewerHDF5Open()`, `PetscViewerHDF5PopGroup()`, `PetscViewerHDF5GetGroup()`, `PetscViewerHDF5OpenGroup()`
 @*/
 PetscErrorCode PetscViewerHDF5PushGroup(PetscViewer viewer, const char name[]) {
   PetscViewer_HDF5         *hdf5 = (PetscViewer_HDF5 *)viewer->data;
@@ -678,16 +669,18 @@ PetscErrorCode PetscViewerHDF5PushGroup(PetscViewer viewer, const char name[]) {
   Not collective
 
   Input Parameters:
-+ viewer - the PetscViewer
++ viewer - the `PetscViewer` of type `PETSCVIEWERHDF5`
 - name - The group name to append
 
   Level: intermediate
 
-  Notes:
+  Note:
   This is designed to mnemonically resemble the Unix cd command.
-  + If name begins with '/', it is interpreted as an absolute path fully replacing current group, otherwise it is taken as relative to the current group.
-  . NULL, empty string, or any sequence of all slashes (e.g. "///") is interpreted as the root group "/".
-  - "." means the current group is pushed again.
+.vb
+  If name begins with '/', it is interpreted as an absolute path fully replacing current group, otherwise it is taken as relative to the current group.
+  NULL, empty string, or any sequence of all slashes (e.g. "///") is interpreted as the root group "/".
+  "." means the current group is pushed again.
+.ve
 
   Example:
   Suppose the current group is "/a".
@@ -696,10 +689,10 @@ PetscErrorCode PetscViewerHDF5PushGroup(PetscViewer viewer, const char name[]) {
   . If name is "b", then the new group will be "/a/b".
   - If name is "/b", then the new group will be "/b".
 
-  Developer Notes:
+  Developer Note:
   The root group "/" is internally stored as NULL.
 
-.seealso: `PetscViewerHDF5PushGroup()`, `PetscViewerHDF5PopGroup()`, `PetscViewerHDF5GetGroup()`, `PetscViewerHDF5OpenGroup()`, `PetscViewerHDF5Open()`
+.seealso: `PETSCVIEWERHDF5`, `PetscViewerHDF5PushGroup()`, `PetscViewerHDF5PopGroup()`, `PetscViewerHDF5GetGroup()`, `PetscViewerHDF5OpenGroup()`, `PetscViewerHDF5Open()`
 @*/
 PetscErrorCode PetscViewerHDF5PushGroupRelative(PetscViewer viewer, const char name[]) {
   PetscViewer_HDF5         *hdf5 = (PetscViewer_HDF5 *)viewer->data;
@@ -732,11 +725,11 @@ PetscErrorCode PetscViewerHDF5PushGroupRelative(PetscViewer viewer, const char n
   Not collective
 
   Input Parameter:
-. viewer - the PetscViewer
+. viewer - the `PetscViewer` of type `PETSCVIEWERHDF5`
 
   Level: intermediate
 
-.seealso: `PetscViewerHDF5Open()`, `PetscViewerHDF5PushGroup()`, `PetscViewerHDF5GetGroup()`, `PetscViewerHDF5OpenGroup()`
+.seealso: `PETSCVIEWERHDF5`, `PetscViewerHDF5Open()`, `PetscViewerHDF5PushGroup()`, `PetscViewerHDF5GetGroup()`, `PetscViewerHDF5OpenGroup()`
 @*/
 PetscErrorCode PetscViewerHDF5PopGroup(PetscViewer viewer) {
   PetscViewer_HDF5         *hdf5 = (PetscViewer_HDF5 *)viewer->data;
@@ -753,20 +746,20 @@ PetscErrorCode PetscViewerHDF5PopGroup(PetscViewer viewer) {
 }
 
 /*@C
-  PetscViewerHDF5GetGroup - Get the current HDF5 group name (full path), set with PetscViewerHDF5PushGroup()/PetscViewerHDF5PopGroup().
+  PetscViewerHDF5GetGroup - Get the current HDF5 group name (full path), set with `PetscViewerHDF5PushGroup()`/`PetscViewerHDF5PopGroup()`.
   If none has been assigned, returns NULL.
 
   Not collective
 
   Input Parameter:
-. viewer - the PetscViewer
+. viewer - the `PetscViewer` of type `PETSCVIEWERHDF5`
 
   Output Parameter:
 . name - The group name
 
   Level: intermediate
 
-.seealso: `PetscViewerHDF5Open()`, `PetscViewerHDF5PushGroup()`, `PetscViewerHDF5PopGroup()`, `PetscViewerHDF5OpenGroup()`
+.seealso: `PETSCVIEWERHDF5`, `PetscViewerHDF5Open()`, `PetscViewerHDF5PushGroup()`, `PetscViewerHDF5PopGroup()`, `PetscViewerHDF5OpenGroup()`
 @*/
 PetscErrorCode PetscViewerHDF5GetGroup(PetscViewer viewer, const char *name[]) {
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5 *)viewer->data;
@@ -780,25 +773,25 @@ PetscErrorCode PetscViewerHDF5GetGroup(PetscViewer viewer, const char *name[]) {
 }
 
 /*@
-  PetscViewerHDF5OpenGroup - Open the HDF5 group with the name (full path) returned by PetscViewerHDF5GetGroup(),
+  PetscViewerHDF5OpenGroup - Open the HDF5 group with the name (full path) returned by `PetscViewerHDF5GetGroup()`,
   and return this group's ID and file ID.
-  If PetscViewerHDF5GetGroup() yields NULL, then group ID is file ID.
+  If `PetscViewerHDF5GetGroup()` yields NULL, then group ID is file ID.
 
   Not collective
 
   Input Parameter:
-. viewer - the PetscViewer
+. viewer - the `PetscViewer` of type `PETSCVIEWERHDF5`
 
   Output Parameters:
 + fileId - The HDF5 file ID
 - groupId - The HDF5 group ID
 
-  Notes:
+  Note:
   If the viewer is writable, the group is created if it doesn't exist yet.
 
   Level: intermediate
 
-.seealso: `PetscViewerHDF5Open()`, `PetscViewerHDF5PushGroup()`, `PetscViewerHDF5PopGroup()`, `PetscViewerHDF5GetGroup()`
+.seealso: `PETSCVIEWERHDF5`, `PetscViewerHDF5Open()`, `PetscViewerHDF5PushGroup()`, `PetscViewerHDF5PopGroup()`, `PetscViewerHDF5GetGroup()`
 @*/
 PetscErrorCode PetscViewerHDF5OpenGroup(PetscViewer viewer, hid_t *fileId, hid_t *groupId) {
   hid_t       file_id;
@@ -828,24 +821,24 @@ PetscErrorCode PetscViewerHDF5OpenGroup(PetscViewer viewer, hid_t *fileId, hid_t
   Not collective
 
   Input Parameter:
-. viewer - the PetscViewer
+. viewer - the `PetscViewer` of type `PETSCVIEWERHDF5`
 
   Level: intermediate
 
   Notes:
-  On first PetscViewerHDF5PushTimestepping(), the initial time step is set to 0.
-  Next timesteps can then be set using PetscViewerHDF5IncrementTimestep() or PetscViewerHDF5SetTimestep().
-  Current timestep value determines which timestep is read from or written to any dataset on the next HDF5 I/O operation [e.g. VecView()].
-  Use PetscViewerHDF5PopTimestepping() to deactivate timestepping mode; calling it by the end of the program is NOT mandatory.
-  Current timestep is remembered between PetscViewerHDF5PopTimestepping() and the next PetscViewerHDF5PushTimestepping().
+  On first `PetscViewerHDF5PushTimestepping()`, the initial time step is set to 0.
+  Next timesteps can then be set using `PetscViewerHDF5IncrementTimestep()` or `PetscViewerHDF5SetTimestep()`.
+  Current timestep value determines which timestep is read from or written to any dataset on the next HDF5 I/O operation [e.g. `VecView()`].
+  Use `PetscViewerHDF5PopTimestepping()` to deactivate timestepping mode; calling it by the end of the program is NOT mandatory.
+  Current timestep is remembered between `PetscViewerHDF5PopTimestepping()` and the next `PetscViewerHDF5PushTimestepping()`.
 
   If a dataset was stored with timestepping, it can be loaded only in the timestepping mode again.
   Loading a timestepped dataset with timestepping disabled, or vice-versa results in an error.
 
-  Developer notes:
+  Developer note:
   Timestepped HDF5 dataset has an extra dimension and attribute "timestepping" set to true.
 
-.seealso: `PetscViewerHDF5Open()`, `PetscViewerHDF5PopTimestepping()`, `PetscViewerHDF5IsTimestepping()`, `PetscViewerHDF5SetTimestep()`, `PetscViewerHDF5IncrementTimestep()`, `PetscViewerHDF5GetTimestep()`
+.seealso: `PETSCVIEWERHDF5`, `PetscViewerHDF5Open()`, `PetscViewerHDF5PopTimestepping()`, `PetscViewerHDF5IsTimestepping()`, `PetscViewerHDF5SetTimestep()`, `PetscViewerHDF5IncrementTimestep()`, `PetscViewerHDF5GetTimestep()`
 @*/
 PetscErrorCode PetscViewerHDF5PushTimestepping(PetscViewer viewer) {
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5 *)viewer->data;
@@ -864,14 +857,14 @@ PetscErrorCode PetscViewerHDF5PushTimestepping(PetscViewer viewer) {
   Not collective
 
   Input Parameter:
-. viewer - the PetscViewer
+. viewer - the `PetscViewer` of type `PETSCVIEWERHDF5`
 
   Level: intermediate
 
-  Notes:
-  See PetscViewerHDF5PushTimestepping() for details.
+  Note:
+  See `PetscViewerHDF5PushTimestepping()` for details.
 
-.seealso: `PetscViewerHDF5Open()`, `PetscViewerHDF5PushTimestepping()`, `PetscViewerHDF5IsTimestepping()`, `PetscViewerHDF5SetTimestep()`, `PetscViewerHDF5IncrementTimestep()`, `PetscViewerHDF5GetTimestep()`
+.seealso: `PETSCVIEWERHDF5`, `PetscViewerHDF5Open()`, `PetscViewerHDF5PushTimestepping()`, `PetscViewerHDF5IsTimestepping()`, `PetscViewerHDF5SetTimestep()`, `PetscViewerHDF5IncrementTimestep()`, `PetscViewerHDF5GetTimestep()`
 @*/
 PetscErrorCode PetscViewerHDF5PopTimestepping(PetscViewer viewer) {
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5 *)viewer->data;
@@ -889,17 +882,17 @@ PetscErrorCode PetscViewerHDF5PopTimestepping(PetscViewer viewer) {
   Not collective
 
   Input Parameter:
-. viewer - the PetscViewer
+. viewer - the `PetscViewer` of type `PETSCVIEWERHDF5`
 
   Output Parameter:
 . flg - is timestepping active?
 
   Level: intermediate
 
-  Notes:
-  See PetscViewerHDF5PushTimestepping() for details.
+  Note:
+  See `PetscViewerHDF5PushTimestepping()` for details.
 
-.seealso: `PetscViewerHDF5Open()`, `PetscViewerHDF5PushTimestepping()`, `PetscViewerHDF5PopTimestepping()`, `PetscViewerHDF5SetTimestep()`, `PetscViewerHDF5IncrementTimestep()`, `PetscViewerHDF5GetTimestep()`
+.seealso: `PETSCVIEWERHDF5`, `PetscViewerHDF5Open()`, `PetscViewerHDF5PushTimestepping()`, `PetscViewerHDF5PopTimestepping()`, `PetscViewerHDF5SetTimestep()`, `PetscViewerHDF5IncrementTimestep()`, `PetscViewerHDF5GetTimestep()`
 @*/
 PetscErrorCode PetscViewerHDF5IsTimestepping(PetscViewer viewer, PetscBool *flg) {
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5 *)viewer->data;
@@ -916,14 +909,14 @@ PetscErrorCode PetscViewerHDF5IsTimestepping(PetscViewer viewer, PetscBool *flg)
   Not collective
 
   Input Parameter:
-. viewer - the PetscViewer
+. viewer - the `PetscViewer` of type `PETSCVIEWERHDF5`
 
   Level: intermediate
 
-  Notes:
-  This can be called only if the viewer is in timestepping mode. See PetscViewerHDF5PushTimestepping() for details.
+  Note:
+  This can be called only if the viewer is in timestepping mode. See `PetscViewerHDF5PushTimestepping()` for details.
 
-.seealso: `PetscViewerHDF5Open()`, `PetscViewerHDF5PushTimestepping()`, `PetscViewerHDF5SetTimestep()`, `PetscViewerHDF5GetTimestep()`
+.seealso: `PETSCVIEWERHDF5`, `PetscViewerHDF5Open()`, `PetscViewerHDF5PushTimestepping()`, `PetscViewerHDF5SetTimestep()`, `PetscViewerHDF5GetTimestep()`
 @*/
 PetscErrorCode PetscViewerHDF5IncrementTimestep(PetscViewer viewer) {
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5 *)viewer->data;
@@ -941,15 +934,15 @@ PetscErrorCode PetscViewerHDF5IncrementTimestep(PetscViewer viewer) {
   Logically collective
 
   Input Parameters:
-+ viewer - the PetscViewer
++ viewer - the `PetscViewer` of type `PETSCVIEWERHDF5`
 - timestep - The timestep
 
   Level: intermediate
 
-  Notes:
-  This can be called only if the viewer is in timestepping mode. See PetscViewerHDF5PushTimestepping() for details.
+  Note:
+  This can be called only if the viewer is in timestepping mode. See `PetscViewerHDF5PushTimestepping()` for details.
 
-.seealso: `PetscViewerHDF5Open()`, `PetscViewerHDF5PushTimestepping()`, `PetscViewerHDF5IncrementTimestep()`, `PetscViewerHDF5GetTimestep()`
+.seealso: `PETSCVIEWERHDF5`, `PetscViewerHDF5Open()`, `PetscViewerHDF5PushTimestepping()`, `PetscViewerHDF5IncrementTimestep()`, `PetscViewerHDF5GetTimestep()`
 @*/
 PetscErrorCode PetscViewerHDF5SetTimestep(PetscViewer viewer, PetscInt timestep) {
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5 *)viewer->data;
@@ -969,17 +962,17 @@ PetscErrorCode PetscViewerHDF5SetTimestep(PetscViewer viewer, PetscInt timestep)
   Not collective
 
   Input Parameter:
-. viewer - the PetscViewer
+. viewer - the `PetscViewer` of type `PETSCVIEWERHDF5`
 
   Output Parameter:
 . timestep - The timestep
 
   Level: intermediate
 
-  Notes:
-  This can be called only if the viewer is in the timestepping mode. See PetscViewerHDF5PushTimestepping() for details.
+  Note:
+  This can be called only if the viewer is in the timestepping mode. See `PetscViewerHDF5PushTimestepping()` for details.
 
-.seealso: `PetscViewerHDF5Open()`, `PetscViewerHDF5PushTimestepping()`, `PetscViewerHDF5IncrementTimestep()`, `PetscViewerHDF5SetTimestep()`
+.seealso: `PETSCVIEWERHDF5`, `PetscViewerHDF5Open()`, `PetscViewerHDF5PushTimestepping()`, `PetscViewerHDF5IncrementTimestep()`, `PetscViewerHDF5SetTimestep()`
 @*/
 PetscErrorCode PetscViewerHDF5GetTimestep(PetscViewer viewer, PetscInt *timestep) {
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5 *)viewer->data;
@@ -998,10 +991,10 @@ PetscErrorCode PetscViewerHDF5GetTimestep(PetscViewer viewer, PetscInt *timestep
   Not collective
 
   Input Parameter:
-. ptype - the PETSc datatype name (for example PETSC_DOUBLE)
+. ptype - the PETSc datatype name (for example `PETSC_DOUBLE`)
 
   Output Parameter:
-. mtype - the MPI datatype (for example MPI_DOUBLE, ...)
+. mtype - the HDF5  datatype
 
   Level: advanced
 
@@ -1034,10 +1027,10 @@ PetscErrorCode PetscDataTypeToHDF5DataType(PetscDataType ptype, hid_t *htype) {
   Not collective
 
   Input Parameter:
-. htype - the HDF5 datatype (for example H5T_NATIVE_DOUBLE, ...)
+. htype - the HDF5 datatype (for example `H5T_NATIVE_DOUBLE`, ...)
 
   Output Parameter:
-. ptype - the PETSc datatype name (for example PETSC_DOUBLE)
+. ptype - the PETSc datatype name (for example `PETSC_DOUBLE`)
 
   Level: advanced
 
@@ -1068,7 +1061,7 @@ PetscErrorCode PetscHDF5DataTypeToPetscDataType(hid_t htype, PetscDataType *ptyp
   Collective
 
   Input Parameters:
-+ viewer - The HDF5 viewer
++ viewer - The `PETSCVIEWERHDF5` viewer
 . parent - The parent dataset/group name
 . name   - The attribute name
 . datatype - The attribute type
@@ -1076,10 +1069,11 @@ PetscErrorCode PetscHDF5DataTypeToPetscDataType(hid_t htype, PetscDataType *ptyp
 
   Level: advanced
 
-  Notes:
+  Note:
   If parent starts with '/', it is taken as an absolute path overriding currently pushed group, else parent is relative to the current pushed group. NULL means the current pushed group.
 
-.seealso: `PetscViewerHDF5Open()`, `PetscViewerHDF5WriteObjectAttribute()`, `PetscViewerHDF5ReadAttribute()`, `PetscViewerHDF5HasAttribute()`, `PetscViewerHDF5PushGroup()`, `PetscViewerHDF5PopGroup()`, `PetscViewerHDF5GetGroup()`
+.seealso: `PETSCVIEWERHDF5`, `PetscViewerHDF5Open()`, `PetscViewerHDF5WriteObjectAttribute()`, `PetscViewerHDF5ReadAttribute()`, `PetscViewerHDF5HasAttribute()`,
+          `PetscViewerHDF5PushGroup()`, `PetscViewerHDF5PopGroup()`, `PetscViewerHDF5GetGroup()`
 @*/
 PetscErrorCode PetscViewerHDF5WriteAttribute(PetscViewer viewer, const char parent[], const char name[], PetscDataType datatype, const void *value) {
   char     *parentAbsPath;
@@ -1119,24 +1113,25 @@ PetscErrorCode PetscViewerHDF5WriteAttribute(PetscViewer viewer, const char pare
 }
 
 /*@C
- PetscViewerHDF5WriteObjectAttribute - Write an attribute to the dataset matching the given PetscObject by name
+ PetscViewerHDF5WriteObjectAttribute - Write an attribute to the dataset matching the given `PetscObject` by name
 
   Collective
 
   Input Parameters:
-+ viewer   - The HDF5 viewer
++ viewer   - The `PETSCVIEWERHDF5` viewer
 . obj      - The object whose name is used to lookup the parent dataset, relative to the current group.
 . name     - The attribute name
 . datatype - The attribute type
 - value    - The attribute value
 
-  Notes:
+  Note:
   This fails if the path current_group/object_name doesn't resolve to a dataset (the path doesn't exist or is not a dataset).
-  You might want to check first if it does using PetscViewerHDF5HasObject().
+  You might want to check first if it does using `PetscViewerHDF5HasObject()`.
 
   Level: advanced
 
-.seealso: `PetscViewerHDF5Open()`, `PetscViewerHDF5WriteAttribute()`, `PetscViewerHDF5ReadObjectAttribute()`, `PetscViewerHDF5HasObjectAttribute()`, `PetscViewerHDF5HasObject()`, `PetscViewerHDF5PushGroup()`, `PetscViewerHDF5PopGroup()`, `PetscViewerHDF5GetGroup()`
+.seealso: `PETSCVIEWERHDF5`, `PetscViewerHDF5Open()`, `PetscViewerHDF5WriteAttribute()`, `PetscViewerHDF5ReadObjectAttribute()`, `PetscViewerHDF5HasObjectAttribute()`,
+          `PetscViewerHDF5HasObject()`, `PetscViewerHDF5PushGroup()`, `PetscViewerHDF5PopGroup()`, `PetscViewerHDF5GetGroup()`
 @*/
 PetscErrorCode PetscViewerHDF5WriteObjectAttribute(PetscViewer viewer, PetscObject obj, const char name[], PetscDataType datatype, const void *value) {
   PetscFunctionBegin;
@@ -1155,7 +1150,7 @@ PetscErrorCode PetscViewerHDF5WriteObjectAttribute(PetscViewer viewer, PetscObje
   Collective
 
   Input Parameters:
-+ viewer - The HDF5 viewer
++ viewer - The `PETSCVIEWERHDF5` viewer
 . parent - The parent dataset/group name
 . name   - The attribute name
 . datatype - The attribute type
@@ -1168,17 +1163,17 @@ PetscErrorCode PetscViewerHDF5WriteObjectAttribute(PetscViewer viewer, PetscObje
   If defaultValue is NULL and the attribute is not found, an error occurs.
   If defaultValue is not NULL and the attribute is not found, defaultValue is copied to value.
   The pointers defaultValue and value can be the same; for instance
-$  flg = PETSC_FALSE;
-$  PetscCall(PetscViewerHDF5ReadAttribute(viewer,name,"attr",PETSC_BOOL,&flg,&flg));
+$  flg = `PETSC_FALSE`;
+$  PetscCall(`PetscViewerHDF5ReadAttribute`(viewer,name,"attr",PETSC_BOOL,&flg,&flg));
   is valid, but make sure the default value is initialized.
 
-  If the datatype is PETSC_STRING, the output string is newly allocated so one must PetscFree() it when no longer needed.
+  If the datatype is `PETSC_STRING`, the output string is newly allocated so one must `PetscFree()` it when no longer needed.
 
   If parent starts with '/', it is taken as an absolute path overriding currently pushed group, else parent is relative to the current pushed group. NULL means the current pushed group.
 
   Level: advanced
 
-.seealso: `PetscViewerHDF5Open()`, `PetscViewerHDF5ReadObjectAttribute()`, `PetscViewerHDF5WriteAttribute()`, `PetscViewerHDF5HasAttribute()`, `PetscViewerHDF5HasObject()`, `PetscViewerHDF5PushGroup()`, `PetscViewerHDF5PopGroup()`, `PetscViewerHDF5GetGroup()`
+.seealso: `PETSCVIEWERHDF5`, `PetscViewerHDF5Open()`, `PetscViewerHDF5ReadObjectAttribute()`, `PetscViewerHDF5WriteAttribute()`, `PetscViewerHDF5HasAttribute()`, `PetscViewerHDF5HasObject()`, `PetscViewerHDF5PushGroup()`, `PetscViewerHDF5PopGroup()`, `PetscViewerHDF5GetGroup()`
 @*/
 PetscErrorCode PetscViewerHDF5ReadAttribute(PetscViewer viewer, const char parent[], const char name[], PetscDataType datatype, const void *defaultValue, void *value) {
   char     *parentAbsPath;
@@ -1232,12 +1227,12 @@ PetscErrorCode PetscViewerHDF5ReadAttribute(PetscViewer viewer, const char paren
 }
 
 /*@C
- PetscViewerHDF5ReadObjectAttribute - Read an attribute from the dataset matching the given PetscObject by name
+ PetscViewerHDF5ReadObjectAttribute - Read an attribute from the dataset matching the given `PetscObject` by name
 
   Collective
 
   Input Parameters:
-+ viewer   - The HDF5 viewer
++ viewer   - The `PETSCVIEWERHDF5` viewer
 . obj      - The object whose name is used to lookup the parent dataset, relative to the current group.
 . name     - The attribute name
 - datatype - The attribute type
@@ -1245,13 +1240,13 @@ PetscErrorCode PetscViewerHDF5ReadAttribute(PetscViewer viewer, const char paren
   Output Parameter:
 . value    - The attribute value
 
-  Notes:
+  Note:
   This fails if current_group/object_name doesn't resolve to a dataset (the path doesn't exist or is not a dataset).
-  You might want to check first if it does using PetscViewerHDF5HasObject().
+  You might want to check first if it does using `PetscViewerHDF5HasObject()`.
 
   Level: advanced
 
-.seealso: `PetscViewerHDF5Open()`, `PetscViewerHDF5ReadAttribute()` `PetscViewerHDF5WriteObjectAttribute()`, `PetscViewerHDF5HasObjectAttribute()`, `PetscViewerHDF5PushGroup()`, `PetscViewerHDF5PopGroup()`, `PetscViewerHDF5GetGroup()`
+.seealso: `PETSCVIEWERHDF5`, `PetscViewerHDF5Open()`, `PetscViewerHDF5ReadAttribute()` `PetscViewerHDF5WriteObjectAttribute()`, `PetscViewerHDF5HasObjectAttribute()`, `PetscViewerHDF5PushGroup()`, `PetscViewerHDF5PopGroup()`, `PetscViewerHDF5GetGroup()`
 @*/
 PetscErrorCode PetscViewerHDF5ReadObjectAttribute(PetscViewer viewer, PetscObject obj, const char name[], PetscDataType datatype, void *defaultValue, void *value) {
   PetscFunctionBegin;
@@ -1344,7 +1339,7 @@ static PetscErrorCode PetscViewerHDF5Traverse_Internal(PetscViewer viewer, const
   Collective
 
   Input Parameters:
-+ viewer - The HDF5 viewer
++ viewer - The `PETSCVIEWERHDF5` viewer
 - path - The group path
 
   Output Parameter:
@@ -1355,9 +1350,10 @@ static PetscErrorCode PetscViewerHDF5Traverse_Internal(PetscViewer viewer, const
   Notes:
   If path starts with '/', it is taken as an absolute path overriding currently pushed group, else path is relative to the current pushed group.
   So NULL or empty path means the current pushed group.
-  If path exists but is not a group, PETSC_FALSE is returned.
 
-.seealso: `PetscViewerHDF5HasAttribute()`, `PetscViewerHDF5HasDataset()`, `PetscViewerHDF5PushGroup()`, `PetscViewerHDF5PopGroup()`, `PetscViewerHDF5GetGroup()`, `PetscViewerHDF5OpenGroup()`
+  If path exists but is not a group, `PETSC_FALSE` is returned.
+
+.seealso: `PETSCVIEWERHDF5`, `PetscViewerHDF5HasAttribute()`, `PetscViewerHDF5HasDataset()`, `PetscViewerHDF5PushGroup()`, `PetscViewerHDF5PopGroup()`, `PetscViewerHDF5GetGroup()`, `PetscViewerHDF5OpenGroup()`
 @*/
 PetscErrorCode PetscViewerHDF5HasGroup(PetscViewer viewer, const char path[], PetscBool *has) {
   H5O_type_t type;
@@ -1380,7 +1376,7 @@ PetscErrorCode PetscViewerHDF5HasGroup(PetscViewer viewer, const char path[], Pe
   Collective
 
   Input Parameters:
-+ viewer - The HDF5 viewer
++ viewer - The `PETSCVIEWERHDF5` viewer
 - path - The dataset path
 
   Output Parameter:
@@ -1390,10 +1386,12 @@ PetscErrorCode PetscViewerHDF5HasGroup(PetscViewer viewer, const char path[], Pe
 
   Notes:
   If path starts with '/', it is taken as an absolute path overriding currently pushed group, else path is relative to the current pushed group.
-  If path is NULL or empty, has is set to PETSC_FALSE.
-  If path exists but is not a dataset, has is set to PETSC_FALSE as well.
 
-.seealso: `PetscViewerHDF5HasObject()`, `PetscViewerHDF5HasAttribute()`, `PetscViewerHDF5HasGroup()`, `PetscViewerHDF5PushGroup()`, `PetscViewerHDF5PopGroup()`, `PetscViewerHDF5GetGroup()`
+  If path is NULL or empty, has is set to `PETSC_FALSE`.
+
+  If path exists but is not a dataset, has is set to `PETSC_FALSE` as well.
+
+.seealso: `PETSCVIEWERHDF5`, `PetscViewerHDF5HasObject()`, `PetscViewerHDF5HasAttribute()`, `PetscViewerHDF5HasGroup()`, `PetscViewerHDF5PushGroup()`, `PetscViewerHDF5PopGroup()`, `PetscViewerHDF5GetGroup()`
 @*/
 PetscErrorCode PetscViewerHDF5HasDataset(PetscViewer viewer, const char path[], PetscBool *has) {
   H5O_type_t type;
@@ -1416,7 +1414,7 @@ PetscErrorCode PetscViewerHDF5HasDataset(PetscViewer viewer, const char path[], 
   Collective
 
   Input Parameters:
-+ viewer - The HDF5 viewer
++ viewer - The `PETSCVIEWERHDF5` viewer
 - obj    - The named object
 
   Output Parameter:
@@ -1424,11 +1422,12 @@ PetscErrorCode PetscViewerHDF5HasDataset(PetscViewer viewer, const char path[], 
 
   Notes:
   If the object is unnamed, an error occurs.
-  If the path current_group/object_name exists but is not a dataset, has is set to PETSC_FALSE as well.
+
+  If the path current_group/object_name exists but is not a dataset, has is set to `PETSC_FALSE` as well.
 
   Level: advanced
 
-.seealso: `PetscViewerHDF5Open()`, `PetscViewerHDF5HasDataset()`, `PetscViewerHDF5HasAttribute()`, `PetscViewerHDF5PushGroup()`, `PetscViewerHDF5PopGroup()`, `PetscViewerHDF5GetGroup()`
+.seealso: `PETSCVIEWERHDF5`, `PetscViewerHDF5Open()`, `PetscViewerHDF5HasDataset()`, `PetscViewerHDF5HasAttribute()`, `PetscViewerHDF5PushGroup()`, `PetscViewerHDF5PopGroup()`, `PetscViewerHDF5GetGroup()`
 @*/
 PetscErrorCode PetscViewerHDF5HasObject(PetscViewer viewer, PetscObject obj, PetscBool *has) {
   size_t len;
@@ -1449,7 +1448,7 @@ PetscErrorCode PetscViewerHDF5HasObject(PetscViewer viewer, PetscObject obj, Pet
   Collective
 
   Input Parameters:
-+ viewer - The HDF5 viewer
++ viewer - The `PETSCVIEWERHDF5` viewer
 . parent - The parent dataset/group name
 - name   - The attribute name
 
@@ -1458,10 +1457,10 @@ PetscErrorCode PetscViewerHDF5HasObject(PetscViewer viewer, PetscObject obj, Pet
 
   Level: advanced
 
-  Notes:
+  Note:
   If parent starts with '/', it is taken as an absolute path overriding currently pushed group, else parent is relative to the current pushed group. NULL means the current pushed group.
 
-.seealso: `PetscViewerHDF5Open()`, `PetscViewerHDF5HasObjectAttribute()`, `PetscViewerHDF5WriteAttribute()`, `PetscViewerHDF5ReadAttribute()`, `PetscViewerHDF5PushGroup()`, `PetscViewerHDF5PopGroup()`, `PetscViewerHDF5GetGroup()`
+.seealso: `PETSCVIEWERHDF5`, `PetscViewerHDF5Open()`, `PetscViewerHDF5HasObjectAttribute()`, `PetscViewerHDF5WriteAttribute()`, `PetscViewerHDF5ReadAttribute()`, `PetscViewerHDF5PushGroup()`, `PetscViewerHDF5PopGroup()`, `PetscViewerHDF5GetGroup()`
 @*/
 PetscErrorCode PetscViewerHDF5HasAttribute(PetscViewer viewer, const char parent[], const char name[], PetscBool *has) {
   char *parentAbsPath;
@@ -1479,25 +1478,25 @@ PetscErrorCode PetscViewerHDF5HasAttribute(PetscViewer viewer, const char parent
 }
 
 /*@C
- PetscViewerHDF5HasObjectAttribute - Check whether an attribute is attached to the dataset matching the given PetscObject by name
+ PetscViewerHDF5HasObjectAttribute - Check whether an attribute is attached to the dataset matching the given `PetscObject` by name
 
   Collective
 
   Input Parameters:
-+ viewer - The HDF5 viewer
++ viewer - The `PETSCVIEWERHDF5` viewer
 . obj    - The object whose name is used to lookup the parent dataset, relative to the current group.
 - name   - The attribute name
 
   Output Parameter:
 . has    - Flag for attribute existence
 
-  Notes:
+  Note:
   This fails if current_group/object_name doesn't resolve to a dataset (the path doesn't exist or is not a dataset).
-  You might want to check first if it does using PetscViewerHDF5HasObject().
+  You might want to check first if it does using `PetscViewerHDF5HasObject()`.
 
   Level: advanced
 
-.seealso: `PetscViewerHDF5Open()`, `PetscViewerHDF5HasAttribute()`, `PetscViewerHDF5WriteObjectAttribute()`, `PetscViewerHDF5ReadObjectAttribute()`, `PetscViewerHDF5HasObject()`, `PetscViewerHDF5PushGroup()`, `PetscViewerHDF5PopGroup()`, `PetscViewerHDF5GetGroup()`
+.seealso: `PETSCVIEWERHDF5`, `PetscViewerHDF5Open()`, `PetscViewerHDF5HasAttribute()`, `PetscViewerHDF5WriteObjectAttribute()`, `PetscViewerHDF5ReadObjectAttribute()`, `PetscViewerHDF5HasObject()`, `PetscViewerHDF5PushGroup()`, `PetscViewerHDF5PopGroup()`, `PetscViewerHDF5GetGroup()`
 @*/
 PetscErrorCode PetscViewerHDF5HasObjectAttribute(PetscViewer viewer, PetscObject obj, const char name[], PetscBool *has) {
   PetscFunctionBegin;
@@ -1528,27 +1527,27 @@ static PetscErrorCode PetscViewerHDF5HasAttribute_Internal(PetscViewer viewer, c
 PetscMPIInt Petsc_Viewer_HDF5_keyval = MPI_KEYVAL_INVALID;
 
 /*@C
-  PETSC_VIEWER_HDF5_ - Creates an HDF5 PetscViewer shared by all processors in a communicator.
+  PETSC_VIEWER_HDF5_ - Creates an `PETSCVIEWERHDF5` `PetscViewer` shared by all processors in a communicator.
 
   Collective
 
   Input Parameter:
-. comm - the MPI communicator to share the HDF5 PetscViewer
+. comm - the MPI communicator to share the HDF5 `PetscViewer`
 
   Level: intermediate
 
-  Options Database Keys:
+  Options Database Key:
 . -viewer_hdf5_filename <name> - name of the HDF5 file
 
-  Environmental variables:
-. PETSC_VIEWER_HDF5_FILENAME - name of the HDF5 file
+  Environmental variable:
+. `PETSC_VIEWER_HDF5_FILENAME` - name of the HDF5 file
 
-  Notes:
-  Unlike almost all other PETSc routines, PETSC_VIEWER_HDF5_ does not return
-  an error code.  The HDF5 PetscViewer is usually used in the form
+  Note:
+  Unlike almost all other PETSc routines, `PETSC_VIEWER_HDF5_()` does not return
+  an error code.  The HDF5 `PetscViewer` is usually used in the form
 $       XXXView(XXX object, PETSC_VIEWER_HDF5_(comm));
 
-.seealso: `PetscViewerHDF5Open()`, `PetscViewerCreate()`, `PetscViewerDestroy()`
+.seealso: `PETSCVIEWERHDF5`, `PetscViewerHDF5Open()`, `PetscViewerCreate()`, `PetscViewerDestroy()`
 @*/
 PetscViewer PETSC_VIEWER_HDF5_(MPI_Comm comm) {
   PetscErrorCode ierr;

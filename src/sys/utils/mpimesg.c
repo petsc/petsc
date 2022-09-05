@@ -3,7 +3,7 @@
 #include <petsc/private/mpiutils.h>
 
 /*@C
-  PetscGatherNumberOfMessages -  Computes the number of messages a node expects to receive
+  PetscGatherNumberOfMessages -  Computes the number of messages an MPI rank expects to receive during a neighbor communication
 
   Collective
 
@@ -21,13 +21,13 @@
 
   Notes:
   With this info, the correct message lengths can be determined using
-  PetscGatherMessageLengths()
+  `PetscGatherMessageLengths()`
 
   Either iflags or ilengths should be provided.  If iflags is not
   provided (NULL) it can be computed from ilengths. If iflags is
   provided, ilengths is not required.
 
-.seealso: `PetscGatherMessageLengths()`
+.seealso: `PetscGatherMessageLengths()`, `PetscGatherMessageLengths2()`, `PetscCommBuildTwoSided()`
 @*/
 PetscErrorCode PetscGatherNumberOfMessages(MPI_Comm comm, const PetscMPIInt iflags[], const PetscMPIInt ilengths[], PetscMPIInt *nrecvs) {
   PetscMPIInt size, rank, *recv_buf, i, *iflags_local = NULL, *iflags_localm = NULL;
@@ -57,7 +57,7 @@ PetscErrorCode PetscGatherNumberOfMessages(MPI_Comm comm, const PetscMPIInt ifla
 }
 
 /*@C
-  PetscGatherMessageLengths - Computes info about messages that a MPI-node will receive,
+  PetscGatherMessageLengths - Computes infomation about messages that an MPI rank will receive,
   including (from-id,length) pairs for each message.
 
   Collective
@@ -76,14 +76,14 @@ PetscErrorCode PetscGatherNumberOfMessages(MPI_Comm comm, const PetscMPIInt ifla
   Level: developer
 
   Notes:
-  With this info, the correct MPI_Irecv() can be posted with the correct
+  With this info, the correct `MPI_Irecv()` can be posted with the correct
   from-id, with a buffer with the right amount of memory required.
 
   The calling function deallocates the memory in onodes and olengths
 
-  To determine nrecvs, one can use PetscGatherNumberOfMessages()
+  To determine nrecvs, one can use `PetscGatherNumberOfMessages()`
 
-.seealso: `PetscGatherNumberOfMessages()`
+.seealso: `PetscGatherNumberOfMessages()`, `PetscGatherMessageLengths2()`, `PetscCommBuildTwoSided()`
 @*/
 PetscErrorCode PetscGatherMessageLengths(MPI_Comm comm, PetscMPIInt nsends, PetscMPIInt nrecvs, const PetscMPIInt ilengths[], PetscMPIInt **onodes, PetscMPIInt **olengths) {
   PetscMPIInt  size, rank, tag, i, j;
@@ -201,8 +201,8 @@ PetscErrorCode PetscGatherMessageLengths_Private(MPI_Comm comm, PetscMPIInt nsen
 }
 
 /*@C
-  PetscGatherMessageLengths2 - Computes info about messages that a MPI-node will receive,
-  including (from-id,length) pairs for each message. Same functionality as PetscGatherMessageLengths()
+  PetscGatherMessageLengths2 - Computes info about messages that a MPI rank will receive,
+  including (from-id,length) pairs for each message. Same functionality as `PetscGatherMessageLengths()`
   except it takes TWO ilenths and output TWO olengths.
 
   Collective
@@ -222,14 +222,14 @@ PetscErrorCode PetscGatherMessageLengths_Private(MPI_Comm comm, PetscMPIInt nsen
   Level: developer
 
   Notes:
-  With this info, the correct MPI_Irecv() can be posted with the correct
+  With this info, the correct `MPI_Irecv()` can be posted with the correct
   from-id, with a buffer with the right amount of memory required.
 
   The calling function deallocates the memory in onodes and olengths
 
   To determine nrecvs, one can use PetscGatherNumberOfMessages()
 
-.seealso: `PetscGatherMessageLengths()` `and` `PetscGatherNumberOfMessages()`
+.seealso: `PetscGatherMessageLengths()`, `PetscGatherNumberOfMessages()`, `PetscCommBuildTwoSided()`
 @*/
 PetscErrorCode PetscGatherMessageLengths2(MPI_Comm comm, PetscMPIInt nsends, PetscMPIInt nrecvs, const PetscMPIInt ilengths1[], const PetscMPIInt ilengths2[], PetscMPIInt **onodes, PetscMPIInt **olengths1, PetscMPIInt **olengths2) {
   PetscMPIInt  size, tag, i, j, *buf_s = NULL, *buf_r = NULL, *buf_j = NULL;
@@ -281,10 +281,8 @@ PetscErrorCode PetscGatherMessageLengths2(MPI_Comm comm, PetscMPIInt nsends, Pet
 }
 
 /*
-
   Allocate a buffer sufficient to hold messages of size specified in olengths.
   And post Irecvs on these buffers using node info from onodes
-
  */
 PetscErrorCode PetscPostIrecvInt(MPI_Comm comm, PetscMPIInt tag, PetscMPIInt nrecvs, const PetscMPIInt onodes[], const PetscMPIInt olengths[], PetscInt ***rbuf, MPI_Request **r_waits) {
   PetscInt   **rbuf_t, i, len = 0;

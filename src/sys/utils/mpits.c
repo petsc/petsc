@@ -14,15 +14,15 @@ static PetscBuildTwoSidedType _twosided_type = PETSC_BUILDTWOSIDED_NOTSET;
    Logically Collective
 
    Input Parameters:
-+  comm - PETSC_COMM_WORLD
--  twosided - algorithm to use in subsequent calls to PetscCommBuildTwoSided()
++  comm - `PETSC_COMM_WORLD`
+-  twosided - algorithm to use in subsequent calls to `PetscCommBuildTwoSided()`
 
    Level: developer
 
    Note:
    This option is currently global, but could be made per-communicator.
 
-.seealso: `PetscCommBuildTwoSided()`, `PetscCommBuildTwoSidedGetType()`
+.seealso: `PetscCommBuildTwoSided()`, `PetscCommBuildTwoSidedGetType()`, `PetscBuildTwoSidedType`
 @*/
 PetscErrorCode PetscCommBuildTwoSidedSetType(MPI_Comm comm, PetscBuildTwoSidedType twosided) {
   PetscFunctionBegin;
@@ -38,17 +38,17 @@ PetscErrorCode PetscCommBuildTwoSidedSetType(MPI_Comm comm, PetscBuildTwoSidedTy
 }
 
 /*@
-   PetscCommBuildTwoSidedGetType - set algorithm to use when building two-sided communication
+   PetscCommBuildTwoSidedGetType - get algorithm used when building two-sided communication
 
    Logically Collective
 
    Output Parameters:
 +  comm - communicator on which to query algorithm
--  twosided - algorithm to use for PetscCommBuildTwoSided()
+-  twosided - algorithm to use for `PetscCommBuildTwoSided()`
 
    Level: developer
 
-.seealso: `PetscCommBuildTwoSided()`, `PetscCommBuildTwoSidedSetType()`
+.seealso: `PetscCommBuildTwoSided()`, `PetscCommBuildTwoSidedSetType()`, `PetscBuildTwoSidedType`
 @*/
 PetscErrorCode PetscCommBuildTwoSidedGetType(MPI_Comm comm, PetscBuildTwoSidedType *twosided) {
   PetscMPIInt size;
@@ -230,17 +230,17 @@ static PetscErrorCode PetscCommBuildTwoSided_RedScatter(MPI_Comm comm, PetscMPII
 
    Output Parameters:
 +  nfrom - number of ranks receiving messages from
-.  fromranks - ranks receiving messages from (length nfrom; caller should PetscFree())
--  fromdata - packed data from each rank, each with count entries of type dtype (length nfrom, caller responsible for PetscFree())
+.  fromranks - ranks receiving messages from (length nfrom; caller should `PetscFree()`)
+-  fromdata - packed data from each rank, each with count entries of type dtype (length nfrom, caller responsible for `PetscFree()`)
 
    Level: developer
 
-   Options Database Keys:
+   Options Database Key:
 .  -build_twosided <allreduce|ibarrier|redscatter> - algorithm to set up two-sided communication. Default is allreduce for communicators with <= 1024 ranks, otherwise ibarrier.
 
    Notes:
-   This memory-scalable interface is an alternative to calling PetscGatherNumberOfMessages() and
-   PetscGatherMessageLengths(), possibly with a subsequent round of communication to send other constant-size data.
+   This memory-scalable interface is an alternative to calling `PetscGatherNumberOfMessages()` and
+   `PetscGatherMessageLengths()`, possibly with a subsequent round of communication to send other constant-size data.
 
    Basic data types as well as contiguous types are supported, but non-contiguous (e.g., strided) types are not.
 
@@ -248,7 +248,7 @@ static PetscErrorCode PetscCommBuildTwoSided_RedScatter(MPI_Comm comm, PetscMPII
 .  * - Hoefler, Siebert and Lumsdaine, The MPI_Ibarrier implementation uses the algorithm in
    Scalable communication protocols for dynamic sparse data exchange, 2010.
 
-.seealso: `PetscGatherNumberOfMessages()`, `PetscGatherMessageLengths()`
+.seealso: `PetscGatherNumberOfMessages()`, `PetscGatherMessageLengths()`, `PetscCommBuildTwoSidedSetType()`, `PetscCommBuildTwoSidedType`
 @*/
 PetscErrorCode PetscCommBuildTwoSided(MPI_Comm comm, PetscMPIInt count, MPI_Datatype dtype, PetscMPIInt nto, const PetscMPIInt *toranks, const void *todata, PetscMPIInt *nfrom, PetscMPIInt **fromranks, void *fromdata) {
   PetscBuildTwoSidedType buildtype = PETSC_BUILDTWOSIDED_NOTSET;
@@ -416,14 +416,14 @@ static PetscErrorCode PetscCommBuildTwoSidedFReq_Ibarrier(MPI_Comm comm, PetscMP
 
    Output Parameters:
 +  nfrom - number of ranks receiving messages from
-.  fromranks - ranks receiving messages from (length nfrom; caller should PetscFree())
--  fromdata - packed data from each rank, each with count entries of type dtype (length nfrom, caller responsible for PetscFree())
+.  fromranks - ranks receiving messages from (length nfrom; caller should `PetscFree()`)
+-  fromdata - packed data from each rank, each with count entries of type dtype (length nfrom, caller responsible for `PetscFree()`)
 
    Level: developer
 
    Notes:
-   This memory-scalable interface is an alternative to calling PetscGatherNumberOfMessages() and
-   PetscGatherMessageLengths(), possibly with a subsequent round of communication to send other data.
+   This memory-scalable interface is an alternative to calling `PetscGatherNumberOfMessages()` and
+   `PetscGatherMessageLengths()`, possibly with a subsequent round of communication to send other data.
 
    Basic data types as well as contiguous types are supported, but non-contiguous (e.g., strided) types are not.
 
@@ -464,16 +464,16 @@ PetscErrorCode PetscCommBuildTwoSidedF(MPI_Comm comm, PetscMPIInt count, MPI_Dat
 
    Output Parameters:
 +  nfrom - number of ranks receiving messages from
-.  fromranks - ranks receiving messages from (length nfrom; caller should PetscFree())
-.  fromdata - packed data from each rank, each with count entries of type dtype (length nfrom, caller responsible for PetscFree())
-.  toreqs - array of nto*ntags sender requests (caller must wait on these, then PetscFree())
--  fromreqs - array of nfrom*ntags receiver requests (caller must wait on these, then PetscFree())
+.  fromranks - ranks receiving messages from (length nfrom; caller should `PetscFree()`)
+.  fromdata - packed data from each rank, each with count entries of type dtype (length nfrom, caller responsible for `PetscFree()`)
+.  toreqs - array of nto*ntags sender requests (caller must wait on these, then `PetscFree()`)
+-  fromreqs - array of nfrom*ntags receiver requests (caller must wait on these, then `PetscFree()`)
 
    Level: developer
 
    Notes:
-   This memory-scalable interface is an alternative to calling PetscGatherNumberOfMessages() and
-   PetscGatherMessageLengths(), possibly with a subsequent round of communication to send other data.
+   This memory-scalable interface is an alternative to calling `PetscGatherNumberOfMessages()` and
+   `PetscGatherMessageLengths()`, possibly with a subsequent round of communication to send other data.
 
    Basic data types as well as contiguous types are supported, but non-contiguous (e.g., strided) types are not.
 

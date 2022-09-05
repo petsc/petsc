@@ -22,7 +22,7 @@
 
     Level: developer
 
-    Notes:
+    Note:
        NULL (0), "stderr" or "stdout" may be passed in as the filename
 
     Fortran Note:
@@ -93,7 +93,7 @@ PetscErrorCode PetscFClose(MPI_Comm comm, FILE *fd) {
 static char PetscPOpenMachine[128] = "";
 
 /*@C
-      PetscPClose - Closes (ends) a program on processor zero run with PetscPOpen()
+      PetscPClose - Closes (ends) a program on processor zero run with `PetscPOpen()`
 
      Collective, but only process 0 runs the command
 
@@ -103,11 +103,10 @@ static char PetscPOpenMachine[128] = "";
 
    Level: intermediate
 
-   Notes:
+   Note:
        Does not work under Windows
 
 .seealso: `PetscFOpen()`, `PetscFClose()`, `PetscPOpen()`
-
 @*/
 PetscErrorCode PetscPClose(MPI_Comm comm, FILE *fd) {
   PetscMPIInt rank;
@@ -141,17 +140,17 @@ PetscErrorCode PetscPClose(MPI_Comm comm, FILE *fd) {
    Level: intermediate
 
    Notes:
-       Use PetscPClose() to close the file pointer when you are finished with it
+       Use `PetscPClose()` to close the file pointer when you are finished with it
+
        Does not work under Windows
 
-       If machine is not provided will use the value set with PetsPOpenSetMachine() if that was provided, otherwise
+       If machine is not provided will use the value set with `PetsPOpenSetMachine()` if that was provided, otherwise
        will use the machine running node zero of the communicator
 
        The program string may contain ${DISPLAY}, ${HOMEDIRECTORY} or ${WORKINGDIRECTORY}; these
     will be replaced with relevant values.
 
 .seealso: `PetscFOpen()`, `PetscFClose()`, `PetscPClose()`, `PetscPOpenSetMachine()`
-
 @*/
 PetscErrorCode PetscPOpen(MPI_Comm comm, const char machine[], const char program[], const char mode[], FILE **fp) {
   PetscMPIInt rank;
@@ -197,14 +196,14 @@ PetscErrorCode PetscPOpen(MPI_Comm comm, const char machine[], const char progra
 }
 
 /*@C
-      PetscPOpenSetMachine - Sets the name of the default machine to run PetscPOpen() calls on
+      PetscPOpenSetMachine - Sets the name of the default machine to run `PetscPOpen()` calls on
 
      Logically Collective, but only process 0 runs the command
 
    Input Parameter:
 .   machine - machine to run command on or NULL for the current machine
 
-   Options Database:
+   Options Database Key:
 .   -popen_machine <machine> - run the process on this machine
 
    Level: intermediate

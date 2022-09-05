@@ -26,12 +26,12 @@ static PetscFPTrap             _trapmode = PETSC_FP_TRAP_OFF; /* Current trappin
 static struct PetscFPTrapLink *_trapstack;                    /* Any pushed states of _trapmode */
 
 /*@
-   PetscFPTrapPush - push a floating point trapping mode, restored using PetscFPTrapPop()
+   PetscFPTrapPush - push a floating point trapping mode, restored using `PetscFPTrapPop()`
 
    Not Collective
 
    Input Parameter:
-.    trap - PETSC_FP_TRAP_ON or PETSC_FP_TRAP_OFF or any of the values passable to `PetscSetFPTrap()`
+.    trap - `PETSC_FP_TRAP_ON` or `PETSC_FP_TRAP_OFF` or any of the values passable to `PetscSetFPTrap()`
 
    Level: advanced
 
@@ -66,7 +66,7 @@ PetscErrorCode PetscFPTrapPush(PetscFPTrap trap) {
 }
 
 /*@
-   PetscFPTrapPop - push a floating point trapping mode, to be restored using PetscFPTrapPop()
+   PetscFPTrapPop - push a floating point trapping mode, to be restored using `PetscFPTrapPop()`
 
    Not Collective
 
@@ -153,7 +153,7 @@ sigfpe_handler_type PetscDefaultFPTrap(int sig, int code, struct sigcontext *scp
    Level: advanced
 
    Notes:
-   Currently only PETSC_FP_TRAP_OFF and PETSC_FP_TRAP_ON are handled. All others are treated as PETSC_FP_TRAP_ON.
+   Currently only `PETSC_FP_TRAP_OFF` and `PETSC_FP_TRAP_ON` are handled. All others are treated as `PETSC_FP_TRAP_ON`.
 
    The values are bit values and may be |ed together in the function call
 
@@ -170,10 +170,6 @@ sigfpe_handler_type PetscDefaultFPTrap(int sig, int code, struct sigcontext *scp
    floating point exception handling You can check which
    exception occurred using fetestexcept(FE_ALL_EXCEPT).  See fenv.h
    (usually at /usr/include/bits/fenv.h) for the enum values on your system.
-
-   Caution:
-   On certain machines, in particular the IBM PowerPC, floating point
-   trapping may be VERY slow!
 
 .seealso: `PetscFPTrapPush()`, `PetscFPTrapPop()`, `PetscDetermineInitialFPTrap()`
 @*/
@@ -196,11 +192,11 @@ PetscErrorCode PetscSetFPTrap(PetscFPTrap flag) {
 }
 
 /*@
-   PetscDetermineInitialFPTrap - Attempts to determine the floating point trapping that exists when PetscInitialize() is called
+   PetscDetermineInitialFPTrap - Attempts to determine the floating point trapping that exists when `PetscInitialize()` is called
 
    Not Collective
 
-   Notes:
+   Note:
       Currently only supported on Linux and MacOS. Checks if divide by zero is enable and if so declares that trapping is on.
 
    Level: advanced

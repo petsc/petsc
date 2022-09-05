@@ -46,21 +46,22 @@ static PetscErrorCode PetscShmCommDestroyDuppedComms(void) {
 #endif
 
 /*@C
-    PetscShmCommGet - Given a communicator returns a sub-communicator of all ranks that share a common memory
+    PetscShmCommGet - Returns a sub-communicator of all ranks that share a common memory
 
     Collective.
 
     Input Parameter:
-.   globcomm - MPI_Comm, which can be a user MPI_Comm or a PETSc inner MPI_Comm
+.   globcomm - `MPI_Comm`, which can be a user MPI_Comm or a PETSc inner MPI_Comm
 
     Output Parameter:
 .   pshmcomm - the PETSc shared memory communicator object
 
     Level: developer
 
-    Notes:
+    Note:
        When used with MPICH, MPICH must be configured with --download-mpich-device=ch3:nemesis
 
+.seealso: `PetscShmCommGlobalToLocal()`, `PetscShmCommLocalToGlobal()`, `PetscShmCommGetMpiShmComm()`
 @*/
 PetscErrorCode PetscShmCommGet(MPI_Comm globcomm, PetscShmComm *pshmcomm) {
 #ifdef PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY
@@ -130,7 +131,7 @@ PetscErrorCode PetscShmCommGet(MPI_Comm globcomm, PetscShmComm *pshmcomm) {
 -   grank    - the global rank
 
     Output Parameter:
-.   lrank - the local rank, or MPI_PROC_NULL if it does not exist
+.   lrank - the local rank, or `MPI_PROC_NULL` if it does not exist
 
     Level: developer
 
@@ -139,6 +140,7 @@ PetscErrorCode PetscShmCommGet(MPI_Comm globcomm, PetscShmComm *pshmcomm) {
 
     It may be better to rewrite this to map multiple global ranks to local in the same function call
 
+.seealso: `PetscShmCommGet()`, `PetscShmCommLocalToGlobal()`, `PetscShmCommGetMpiShmComm()`
 @*/
 PetscErrorCode PetscShmCommGlobalToLocal(PetscShmComm pshmcomm, PetscMPIInt grank, PetscMPIInt *lrank) {
   PetscMPIInt low, high, t, i;
@@ -181,6 +183,7 @@ PetscErrorCode PetscShmCommGlobalToLocal(PetscShmComm pshmcomm, PetscMPIInt gran
 
     Level: developer
 
+.seealso: `PetscShmCommGlobalToLocal()`, `PetscShmCommGet()`, `PetscShmCommGetMpiShmComm()`
 @*/
 PetscErrorCode PetscShmCommLocalToGlobal(PetscShmComm pshmcomm, PetscMPIInt lrank, PetscMPIInt *grank) {
   PetscFunctionBegin;
@@ -202,6 +205,7 @@ PetscErrorCode PetscShmCommLocalToGlobal(PetscShmComm pshmcomm, PetscMPIInt lran
 
     Level: developer
 
+.seealso: `PetscShmCommGlobalToLocal()`, `PetscShmCommGet()`, `PetscShmCommLocalToGlobal()`
 @*/
 PetscErrorCode PetscShmCommGetMpiShmComm(PetscShmComm pshmcomm, MPI_Comm *comm) {
   PetscFunctionBegin;
@@ -324,7 +328,7 @@ static inline PetscErrorCode PetscOmpCtrlDestroyBarrier(PetscOmpCtrl ctrl) {
 }
 
 /*@C
-    PetscOmpCtrlCreate - create a PETSc OpenMP controller, which manages PETSc's interaction with third party libraries using OpenMP
+    PetscOmpCtrlCreate - create a PETSc OpenMP controller, which manages PETSc's interaction with third party libraries that use OpenMP
 
     Input Parameters:
 +   petsc_comm - a communicator some PETSc object (for example, a matrix) lives in
@@ -335,9 +339,10 @@ static inline PetscErrorCode PetscOmpCtrlDestroyBarrier(PetscOmpCtrl ctrl) {
 
     Level: developer
 
-    TODO: Possibly use the variable PetscNumOMPThreads to determine the number for threads to use
+    Developer Note:
+    Possibly use the variable `PetscNumOMPThreads` to determine the number for threads to use
 
-.seealso `PetscOmpCtrlDestroy()`
+.seealso: `PetscOmpCtrlDestroy()`, `PetscOmpCtrlGetOmpComms()`, `PetscOmpCtrlBarrier()`, `PetscOmpCtrlOmpRegionOnMasterBegin()`, `PetscOmpCtrlOmpRegionOnMasterEnd()`,
 @*/
 PetscErrorCode PetscOmpCtrlCreate(MPI_Comm petsc_comm, PetscInt nthreads, PetscOmpCtrl *pctrl) {
   PetscOmpCtrl   ctrl;
@@ -453,7 +458,6 @@ PetscErrorCode PetscOmpCtrlCreate(MPI_Comm petsc_comm, PetscInt nthreads, PetscO
       }
     }
   }
-
   PetscCall(PetscFree(cpu_ulongs));
   *pctrl = ctrl;
   PetscFunctionReturn(0);
@@ -467,7 +471,7 @@ PetscErrorCode PetscOmpCtrlCreate(MPI_Comm petsc_comm, PetscInt nthreads, PetscO
 
     Level: developer
 
-.seealso `PetscOmpCtrlCreate()`
+.seealso: `PetscOmpCtrlCreate()`, `PetscOmpCtrlGetOmpComms()`, `PetscOmpCtrlBarrier()`, `PetscOmpCtrlOmpRegionOnMasterBegin()`, `PetscOmpCtrlOmpRegionOnMasterEnd()`,
 @*/
 PetscErrorCode PetscOmpCtrlDestroy(PetscOmpCtrl *pctrl) {
   PetscOmpCtrl ctrl = *pctrl;
@@ -494,12 +498,15 @@ PetscErrorCode PetscOmpCtrlDestroy(PetscOmpCtrl *pctrl) {
     Output Parameters:
 +   omp_comm         - a communicator that includes a master rank and slave ranks where master spawns threads
 .   omp_master_comm  - on master ranks, return a communicator that include master ranks of each omp_comm;
-                       on slave ranks, MPI_COMM_NULL will be return in reality.
+                       on slave ranks, `MPI_COMM_NULL` will be return in reality.
 -   is_omp_master    - true if the calling process is an OMP master rank.
 
-    Notes: any output parameter can be NULL. The parameter is just ignored.
+    Note:
+    Any output parameter can be NULL. The parameter is just ignored.
 
     Level: developer
+
+.seealso: `PetscOmpCtrlCreate()`, `PetscOmpCtrlDestroy()`, `PetscOmpCtrlBarrier()`, `PetscOmpCtrlOmpRegionOnMasterBegin()`, `PetscOmpCtrlOmpRegionOnMasterEnd()`,
 @*/
 PetscErrorCode PetscOmpCtrlGetOmpComms(PetscOmpCtrl ctrl, MPI_Comm *omp_comm, MPI_Comm *omp_master_comm, PetscBool *is_omp_master) {
   PetscFunctionBegin;
@@ -516,22 +523,23 @@ PetscErrorCode PetscOmpCtrlGetOmpComms(PetscOmpCtrl ctrl, MPI_Comm *omp_comm, MP
 .   ctrl - a PETSc OMP controller
 
     Notes:
-    this is a pthread barrier on MPI processes. Using MPI_Barrier instead is conceptually correct. But MPI standard does not
-    require processes blocked by MPI_Barrier free their CPUs to let other processes progress. In practice, to minilize latency,
-    MPI processes stuck in MPI_Barrier keep polling and do not free CPUs. In contrast, pthread_barrier has this requirement.
+    this is a pthread barrier on MPI ranks. Using `MPI_Barrier()` instead is conceptually correct. But MPI standard does not
+    require processes blocked by `MPI_Barrier()` free their CPUs to let other processes progress. In practice, to minilize latency,
+    MPI ranks stuck in `MPI_Barrier()` keep polling and do not free CPUs. In contrast, pthread_barrier has this requirement.
 
-    A code using PetscOmpCtrlBarrier() would be like this,
-
+    A code using `PetscOmpCtrlBarrier()` would be like this,
+.vb
     if (is_omp_master) {
       PetscOmpCtrlOmpRegionOnMasterBegin(ctrl);
       Call the library using OpenMP
       PetscOmpCtrlOmpRegionOnMasterEnd(ctrl);
     }
     PetscOmpCtrlBarrier(ctrl);
+.ve
 
     Level: developer
 
-.seealso `PetscOmpCtrlOmpRegionOnMasterBegin()`, `PetscOmpCtrlOmpRegionOnMasterEnd()`
+.seealso: `PetscOmpCtrlOmpRegionOnMasterBegin()`, `PetscOmpCtrlOmpRegionOnMasterEnd()`, `PetscOmpCtrlCreate()`, `PetscOmpCtrlDestroy()`,
 @*/
 PetscErrorCode PetscOmpCtrlBarrier(PetscOmpCtrl ctrl) {
   int err;
@@ -548,13 +556,13 @@ PetscErrorCode PetscOmpCtrlBarrier(PetscOmpCtrl ctrl) {
     Input Parameter:
 .   ctrl - a PETSc OMP controller
 
-    Notes:
-    Only master ranks can call this function. Call PetscOmpCtrlGetOmpComms() to know if this is a master rank.
+    Note:
+    Only master ranks can call this function. Call `PetscOmpCtrlGetOmpComms()` to know if this is a master rank.
     This function changes CPU binding of master ranks and nthreads-var of OpenMP runtime
 
     Level: developer
 
-.seealso: `PetscOmpCtrlOmpRegionOnMasterEnd()`
+.seealso: `PetscOmpCtrlOmpRegionOnMasterEnd()`, `PetscOmpCtrlCreate()`, `PetscOmpCtrlDestroy()`, `PetscOmpCtrlBarrier()`
 @*/
 PetscErrorCode PetscOmpCtrlOmpRegionOnMasterBegin(PetscOmpCtrl ctrl) {
   PetscFunctionBegin;
@@ -569,13 +577,13 @@ PetscErrorCode PetscOmpCtrlOmpRegionOnMasterBegin(PetscOmpCtrl ctrl) {
    Input Parameter:
 .  ctrl - a PETSc OMP controller
 
-   Notes:
-   Only master ranks can call this function. Call PetscOmpCtrlGetOmpComms() to know if this is a master rank.
+   Note:
+   Only master ranks can call this function. Call `PetscOmpCtrlGetOmpComms()` to know if this is a master rank.
    This function restores the CPU binding of master ranks and set and nthreads-var of OpenMP runtime to 1.
 
    Level: developer
 
-.seealso: `PetscOmpCtrlOmpRegionOnMasterBegin()`
+.seealso: `PetscOmpCtrlOmpRegionOnMasterBegin()`, `PetscOmpCtrlCreate()`, `PetscOmpCtrlDestroy()`, `PetscOmpCtrlBarrier()`
 @*/
 PetscErrorCode PetscOmpCtrlOmpRegionOnMasterEnd(PetscOmpCtrl ctrl) {
   PetscFunctionBegin;
