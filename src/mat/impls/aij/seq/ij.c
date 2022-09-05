@@ -23,7 +23,7 @@
 .   ia     - ia part of IJ representation (row information)
 .   ja     - ja part (column indices)
 
-    Notes:
+    Note:
     Both ia and ja may be freed with PetscFree();
     This routine is provided for ordering routines that require a
     symmetric structure.  It is required since those routines call

@@ -22,14 +22,14 @@ PetscErrorCode MatMult_Centering(Mat A, Vec xx, Vec yy) {
 /*@
    MatCreateCentering - Creates a new matrix object that implements the (symmetric and idempotent) centering matrix, I - (1/N) * ones*ones'
 
-   Collective on Mat
+   Collective
 
    Input Parameters:
 +  comm - MPI communicator
-.  n - number of local rows (or PETSC_DECIDE to have calculated if N is given)
+.  n - number of local rows (or `PETSC_DECIDE` to have calculated if N is given)
            This value should be the same as the local size used in creating the
            y vector for the matrix-vector product y = Ax.
--  N - number of global rows (or PETSC_DETERMINE to have calculated if n is given)
+-  N - number of global rows (or `PETSC_DETERMINE` to have calculated if n is given)
 
    Output Parameter:
 .  C - the matrix

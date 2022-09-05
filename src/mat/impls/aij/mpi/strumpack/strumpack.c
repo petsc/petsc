@@ -48,11 +48,11 @@ static PetscErrorCode MatSTRUMPACKSetReordering_STRUMPACK(Mat F, MatSTRUMPACKReo
   MatSTRUMPACKSetReordering - Set STRUMPACK fill-reducing reordering
 
    Input Parameters:
-+  F - the factored matrix obtained by calling MatGetFactor() from PETSc-STRUMPACK interface
++  F - the factored matrix obtained by calling `MatGetFactor(`) from PETSc-STRUMPACK interface
 -  reordering - the code to be used to find the fill-reducing reordering
       Possible values: NATURAL=0 METIS=1 PARMETIS=2 SCOTCH=3 PTSCOTCH=4 RCM=5
 
-  Options Database:
+  Options Database Key:
 .   -mat_strumpack_reordering <METIS>  - Sparsity reducing matrix reordering (choose one of) NATURAL METIS PARMETIS SCOTCH PTSCOTCH RCM (None)
 
    Level: beginner
@@ -81,13 +81,13 @@ static PetscErrorCode MatSTRUMPACKSetColPerm_STRUMPACK(Mat F, PetscBool cperm) {
 /*@
   MatSTRUMPACKSetColPerm - Set whether STRUMPACK should try to permute the columns of the matrix in order to get a nonzero diagonal
 
-   Logically Collective on Mat
+   Logically Collective on F
 
    Input Parameters:
-+  F - the factored matrix obtained by calling MatGetFactor() from PETSc-STRUMPACK interface
--  cperm - PETSC_TRUE to permute (internally) the columns of the matrix
++  F - the factored matrix obtained by calling `MatGetFactor()` from PETSc-STRUMPACK interface
+-  cperm - `PETSC_TRUE` to permute (internally) the columns of the matrix
 
-  Options Database:
+  Options Database Key:
 .   -mat_strumpack_colperm <cperm> - true to use the permutation
 
    Level: beginner
@@ -116,13 +116,13 @@ static PetscErrorCode MatSTRUMPACKSetHSSRelTol_STRUMPACK(Mat F, PetscReal rtol) 
 /*@
   MatSTRUMPACKSetHSSRelTol - Set STRUMPACK relative tolerance for HSS compression
 
-  Logically Collective on Mat
+  Logically Collective on F
 
    Input Parameters:
-+  F - the factored matrix obtained by calling MatGetFactor() from PETSc-STRUMPACK interface
++  F - the factored matrix obtained by calling `MatGetFactor()` from PETSc-STRUMPACK interface
 -  rtol - relative compression tolerance
 
-  Options Database:
+  Options Database Key:
 .   -mat_strumpack_hss_rel_tol <1e-2>         - Relative compression tolerance (None)
 
    Level: beginner
@@ -151,13 +151,13 @@ static PetscErrorCode MatSTRUMPACKSetHSSAbsTol_STRUMPACK(Mat F, PetscReal atol) 
 /*@
   MatSTRUMPACKSetHSSAbsTol - Set STRUMPACK absolute tolerance for HSS compression
 
-   Logically Collective on Mat
+   Logically Collective on F
 
    Input Parameters:
-+  F - the factored matrix obtained by calling MatGetFactor() from PETSc-STRUMPACK interface
++  F - the factored matrix obtained by calling `MatGetFactor()` from PETSc-STRUMPACK interface
 -  atol - absolute compression tolerance
 
-  Options Database:
+  Options Database Key:
 .   -mat_strumpack_hss_abs_tol <1e-8>         - Absolute compression tolerance (None)
 
    Level: beginner
@@ -186,14 +186,14 @@ static PetscErrorCode MatSTRUMPACKSetHSSMaxRank_STRUMPACK(Mat F, PetscInt hssmax
 /*@
   MatSTRUMPACKSetHSSMaxRank - Set STRUMPACK maximum HSS rank
 
-   Logically Collective on Mat
+   Logically Collective on F
 
    Input Parameters:
-+  F - the factored matrix obtained by calling MatGetFactor() from PETSc-STRUMPACK interface
++  F - the factored matrix obtained by calling `MatGetFactor()` from PETSc-STRUMPACK interface
 -  hssmaxrank - maximum rank used in low-rank approximation
 
-  Options Database:
-.   -mat_strumpack_max_rank    - Maximum rank in HSS compression, when using pctype ilu (None)
+  Options Database Key:
+.   -mat_strumpack_max_rank - Maximum rank in HSS compression, when using pctype ilu (None)
 
    Level: beginner
 
@@ -221,14 +221,14 @@ static PetscErrorCode MatSTRUMPACKSetHSSLeafSize_STRUMPACK(Mat F, PetscInt leaf_
 /*@
   MatSTRUMPACKSetHSSLeafSize - Set STRUMPACK HSS leaf size
 
-   Logically Collective on Mat
+   Logically Collective on F
 
    Input Parameters:
-+  F - the factored matrix obtained by calling MatGetFactor() from PETSc-STRUMPACK interface
++  F - the factored matrix obtained by calling `MatGetFactor()` from PETSc-STRUMPACK interface
 -  leaf_size - Size of diagonal blocks in HSS approximation
 
-  Options Database:
-.   -mat_strumpack_leaf_size    - Size of diagonal blocks in HSS approximation, when using pctype ilu (None)
+  Options Database Key:
+.   -mat_strumpack_leaf_size - Size of diagonal blocks in HSS approximation, when using pctype ilu (None)
 
    Level: beginner
 
@@ -256,13 +256,13 @@ static PetscErrorCode MatSTRUMPACKSetHSSMinSepSize_STRUMPACK(Mat F, PetscInt hss
 /*@
   MatSTRUMPACKSetHSSMinSepSize - Set STRUMPACK minimum separator size for low-rank approximation
 
-   Logically Collective on Mat
+   Logically Collective on F
 
    Input Parameters:
-+  F - the factored matrix obtained by calling MatGetFactor() from PETSc-STRUMPACK interface
++  F - the factored matrix obtained by calling `MatGetFactor()` from PETSc-STRUMPACK interface
 -  hssminsize - minimum dense matrix size for low-rank approximation
 
-  Options Database:
+  Options Database Key:
 .   -mat_strumpack_hss_min_sep_size <hssminsize> - set the minimum separator size
 
    Level: beginner
@@ -478,7 +478,7 @@ static PetscErrorCode MatFactorGetSolverType_aij_strumpack(Mat A, MatSolverType 
 
  Level: beginner
 
-.seealso: `PCLU`, `PCILU`, `MATSOLVERSUPERLU_DIST`, `MATSOLVERMUMPS`, `PCFactorSetMatSolverType()`, `MatSolverType`
+.seealso: `PCLU`, `PCILU`, `MATSOLVERSUPERLU_DIST`, `MATSOLVERMUMPS`, `PCFactorSetMatSolverType()`, `MatSolverType`, `MatGetFactor()`
 M*/
 static PetscErrorCode MatGetFactor_aij_strumpack(Mat A, MatFactorType ftype, Mat *F) {
   Mat                       B;

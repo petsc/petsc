@@ -14,7 +14,7 @@
              -> Query MatProductSetFromOptions_Atype_Btype_Ctype_C(D) from A, B and C (in order)
              if found -> run the specific setup that must set the symbolic operation (these callbacks should never fail)
            if callback not found or no symbolic operation set
-             -> Query MatProductSetFromOptions_anytype_C(D) from A, B and C (in order) (e.g, matrices may have inner matrices like MATTRANSPOSEMAT)
+             -> Query MatProductSetFromOptions_anytype_C(D) from A, B and C (in order) (e.g, matrices may have inner matrices like MATTRANSPOSEVIRTUAL)
            if dispatch found but combination still not present do
              -> check if B is dense and product type AtB or AB -> if true, basic looping of dense columns
              -> check if triple product (PtAP, RARt or ABC) -> if true, set the Basic routines
@@ -197,8 +197,8 @@ static PetscErrorCode MatProductSymbolic_Unsafe(Mat mat) {
 
    Level: intermediate
 
-   Notes:
-     To reuse the symbolic phase, input matrices must have exactly the same data structure as the replaced one.
+   Note:
+     To reuse the symbolic phase, the input matrices must have exactly the same data structure as the replaced one.
      If the type of any of the input matrices is different than what was previously used, or their symmetry flag changed but
      the symbolic phase took advantage of their symmetry, the product is cleared and `MatProductSetFromOptions()` and `MatProductSymbolic()` are invoked again.
 
@@ -435,7 +435,7 @@ static PetscErrorCode MatProductSetFromOptions_Private(Mat mat) {
     if (f) PetscCall((*f)(mat));
 
     /* We may have found f but it did not succeed */
-    /* some matrices (i.e. MATTRANSPOSE, MATSHELL constructed from MatConvert), knows what to do with their inner matrices */
+    /* some matrices (i.e. MATTRANSPOSEVIRTUAL, MATSHELL constructed from MatConvert), knows what to do with their inner matrices */
     if (!mat->ops->productsymbolic) {
       PetscCall(PetscStrncpy(mtypes, "MatProductSetFromOptions_anytype_C", sizeof(mtypes)));
       PetscCall(PetscObjectQueryFunction((PetscObject)A, mtypes, &f));
@@ -478,7 +478,7 @@ static PetscErrorCode MatProductSetFromOptions_Private(Mat mat) {
 }
 
 /*@C
-   MatProductSetFromOptions - Sets the options for the computation of a matrix product where the type, the algorithm etc are determined from the options database.
+   MatProductSetFromOptions - Sets the options for the computation of a matrix-matrix product where the type, the algorithm etc are determined from the options database.
 
    Logically Collective on Mat
 
@@ -507,16 +507,16 @@ PetscErrorCode MatProductSetFromOptions(Mat mat) {
 }
 
 /*@C
-   MatProductView - View the MatProduct algorithm object within a matrix
+   MatProductView - View the private `Mat_Product` algorithm object within a matrix
 
-   Logically Collective on Mat
+   Logically Collective on mat
 
    Input Parameter:
 .  mat - the matrix obtained with `MatProductCreate()` or `MatProductCreateWithMat()`
 
    Level: intermediate
 
-.seealso: `MatView()`, `MatProductCreate()`, `MatProductCreateWithMat()`
+.seealso: `MatProductSetFromOptions()`, `MatView()`, `MatProductCreate()`, `MatProductCreateWithMat()`
 @*/
 PetscErrorCode MatProductView(Mat mat, PetscViewer viewer) {
   PetscFunctionBegin;
@@ -589,18 +589,19 @@ PetscErrorCode MatProductNumeric_ABC(Mat mat) {
 /* ----------------------------------------------- */
 
 /*@
-   MatProductNumeric - Implement a matrix product with numerical values.
+   MatProductNumeric - Compute a matrix product with numerical values.
 
-   Collective on Mat
+   Collective on mat
 
    Input/Output Parameter:
 .  mat - the matrix holding the product
 
    Level: intermediate
 
-   Notes: `MatProductSymbolic()` must have been called on mat before calling this function
+   Note:
+   `MatProductSymbolic()` must have been called on mat before calling this function
 
-.seealso: `MatProductCreate()`, `MatSetType()`, `MatProductSymbolic()`
+.seealso: `MatProductSetAlgorithm()`, `MatProductSetType()`, `MatProductCreate()`, `MatSetType()`, `MatProductSymbolic()`
 @*/
 PetscErrorCode MatProductNumeric(Mat mat) {
   PetscLogEvent eventtype = -1;
@@ -691,14 +692,15 @@ PetscErrorCode MatProductSymbolic_ABC(Mat mat) {
    MatProductSymbolic - Perform the symbolic portion of a matrix product, this creates a data structure for use with the numerical product done with
   `MatProductNumeric()`
 
-   Collective on Mat
+   Collective on mat
 
    Input/Output Parameter:
 .  mat - the matrix to hold a product
 
    Level: intermediate
 
-   Notes: `MatProductSetFromOptions()` must have been called on mat before calling this function
+   Note:
+   `MatProductSetFromOptions()` must have been called on mat before calling this function
 
 .seealso: `MatProductCreate()`, `MatProductCreateWithMat()`, `MatProductSetFromOptions()`, `MatProductNumeric()`, `MatProductSetType()`, `MatProductSetAlgorithm()`
 @*/
@@ -746,12 +748,12 @@ PetscErrorCode MatProductSymbolic(Mat mat) {
    Collective on Mat
 
    Input Parameters:
-+  mat - the matrix product
++  mat - the matrix product result matrix
 -  fill - expected fill as ratio of nnz(mat)/(nnz(A) + nnz(B) + nnz(C)); use `PETSC_DEFAULT` if you do not have a good estimate. If the product is a dense matrix, this value is not used.
 
    Level: intermediate
 
-.seealso: `MatProductSetType()`, `MatProductSetAlgorithm()`, `MatProductCreate()`
+.seealso: `MatProductSetFromOptions()`, `MatProductSetType()`, `MatProductSetAlgorithm()`, `MatProductCreate()`
 @*/
 PetscErrorCode MatProductSetFill(Mat mat, PetscReal fill) {
   PetscFunctionBegin;
@@ -765,7 +767,7 @@ PetscErrorCode MatProductSetFill(Mat mat, PetscReal fill) {
 /*@
    MatProductSetAlgorithm - Requests a particular algorithm for a matrix product computation that will perform to compute the given matrix
 
-   Collective on Mat
+   Collective on mat
 
    Input Parameters:
 +  mat - the matrix product
@@ -777,7 +779,7 @@ PetscErrorCode MatProductSetFill(Mat mat, PetscReal fill) {
 
    Level: intermediate
 
-.seealso: `MatProductSetType()`, `MatProductSetFill()`, `MatProductCreate()`, `MatProductAlgorithm`
+.seealso: `MatProductSetType()`, `MatProductSetFill()`, `MatProductCreate()`, `MatProductAlgorithm`, `MatProductType`
 @*/
 PetscErrorCode MatProductSetAlgorithm(Mat mat, MatProductAlgorithm alg) {
   PetscFunctionBegin;
@@ -791,7 +793,7 @@ PetscErrorCode MatProductSetAlgorithm(Mat mat, MatProductAlgorithm alg) {
 /*@
    MatProductSetType - Sets a particular matrix product type to be used to compute the given matrix
 
-   Collective on Mat
+   Collective on mat
 
    Input Parameters:
 +  mat - the matrix
@@ -800,9 +802,10 @@ PetscErrorCode MatProductSetAlgorithm(Mat mat, MatProductAlgorithm alg) {
    Level: intermediate
 
    Note:
-   The small t represents the traspose operation.
+   The small t represents the transpose operation.
 
-.seealso: `MatProductCreate()`, `MatProductType`
+.seealso: `MatProductCreate()`, `MatProductType`, `MatProductType`,
+          `MATPRODUCT_AB`, `MATPRODUCT_AtB`, `MATPRODUCT_ABt`, `MATPRODUCT_PtAP`, `MATPRODUCT_RARt`, `MATPRODUCT_ABC`
 @*/
 PetscErrorCode MatProductSetType(Mat mat, MatProductType productype) {
   PetscFunctionBegin;
@@ -821,9 +824,9 @@ PetscErrorCode MatProductSetType(Mat mat, MatProductType productype) {
 }
 
 /*@
-   MatProductClear - Clears matrix product internal structure.
+   MatProductClear - Clears matrix product internal datastructures.
 
-   Collective on Mat
+   Collective on mat
 
    Input Parameters:
 .  mat - the product matrix
@@ -833,7 +836,7 @@ PetscErrorCode MatProductSetType(Mat mat, MatProductType productype) {
    Notes:
    This function should be called to remove any intermediate data used to compute the matrix to free up memory.
 
-   After having called this function, MatProduct operations can no longer be used on mat
+   After having called this function, matrix-matrix operations can no longer be used on mat
 
 .seealso: `MatProductCreate()`
 @*/
@@ -891,7 +894,7 @@ PetscErrorCode MatProductCreate_Private(Mat A, Mat B, Mat C, Mat D) {
 +  A - the first matrix
 .  B - the second matrix
 .  C - the third matrix (optional)
--  D - the matrix which will be used as a product
+-  D - the matrix which will be used to hold the product
 
    Output Parameters:
 .  D - the product matrix
@@ -942,9 +945,9 @@ PetscErrorCode MatProductCreateWithMat(Mat A, Mat B, Mat C, Mat D) {
 }
 
 /*@
-   MatProductCreate - create a matrix product object that can be used to compute various matrix times matrix operations such as A*B, R*A*P
+   MatProductCreate - create a matrix to hold the result of a matrix-matrix product operation
 
-   Collective on Mat
+   Collective on A
 
    Input Parameters:
 +  A - the first matrix
@@ -958,15 +961,15 @@ PetscErrorCode MatProductCreateWithMat(Mat A, Mat B, Mat C, Mat D) {
 
    Example of Usage:
 .vb
-    `MatProductCreate`(A,B,C,&D); or `MatProductCreateWithMat`(A,B,C,D)
-    `MatProductSetType`(D, `MATPRODUCT_AB` or `MATPRODUCT_AtB` or `MATPRODUCT_ABt` or `MATPRODUCT_PtAP` or `MATPRODUCT_RARt` or `MATPRODUCT_ABC`)
-    `MatProductSetAlgorithm`(D, alg)
-    `MatProductSetFill`(D,fill)
-    `MatProductSetFromOptions`(D)
-    `MatProductSymbolic`(D)
-    `MatProductNumeric`(D)
+    MatProductCreate(A,B,C,&D); or MatProductCreateWithMat(A,B,C,D)
+    MatProductSetType(D, MATPRODUCT_AB or MATPRODUCT_AtB or MATPRODUCT_ABt or MATPRODUCT_PtAP or MATPRODUCT_RARt or MATPRODUCT_ABC)
+    MatProductSetAlgorithm(D, alg)
+    MatProductSetFill(D,fill)
+    MatProductSetFromOptions(D)
+    MatProductSymbolic(D)
+    MatProductNumeric(D)
     Change numerical values in some of the matrices
-    `MatProductNumeric`(D)
+    MatProductNumeric(D)
 .ve
 
    Notes:
@@ -974,7 +977,7 @@ PetscErrorCode MatProductCreateWithMat(Mat A, Mat B, Mat C, Mat D) {
 
    The information computed during the symbolic stage can be reused for new numerical computations with the same non-zero structure
 
-   Developer Notes:
+   Developer Note:
    It is undocumented what happens if the nonzero structure of the input matrices changes. Is the symbolic stage automatically redone? Does it crash?
    Is there error checking for it?
 
@@ -1115,7 +1118,7 @@ PetscErrorCode MatProductSymbolic_ABC_Basic(Mat mat) {
 }
 
 /*@
-   MatProductGetType - Returns the type of the MatProduct.
+   MatProductGetType - Returns the type of matrix-matrix product associated with the given matrix.
 
    Not collective
 
@@ -1123,11 +1126,11 @@ PetscErrorCode MatProductSymbolic_ABC_Basic(Mat mat) {
 .  mat - the matrix
 
    Output Parameter:
-.  mtype - the MatProduct type
+.  mtype - the `MatProductType`
 
    Level: intermediate
 
-.seealso: `MatProductCreateWithMat()`, `MatProductSetType()`, `MatProductCreate()`, `MatProductType`
+.seealso: `MatProductCreateWithMat()`, `MatProductSetType()`, `MatProductCreate()`, `MatProductType`, `MatProductAlgorithm`
 @*/
 PetscErrorCode MatProductGetType(Mat mat, MatProductType *mtype) {
   PetscFunctionBegin;
@@ -1139,7 +1142,7 @@ PetscErrorCode MatProductGetType(Mat mat, MatProductType *mtype) {
 }
 
 /*@
-   MatProductGetMats - Returns the matrices associated with the MatProduct.
+   MatProductGetMats - Returns the matrices associated with the matrix-matrix product this matrix can receive
 
    Not collective
 

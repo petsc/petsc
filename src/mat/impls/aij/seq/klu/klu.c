@@ -239,7 +239,7 @@ PetscErrorCode MatFactorGetSolverType_seqaij_klu(Mat A, MatSolverType *type) {
 }
 
 /*MC
-  MATSOLVERKLU = "klu" - A matrix type providing direct solvers (LU) for sequential matrices
+  MATSOLVERKLU = "klu" - A matrix type providing direct solvers, LU, for sequential matrices
   via the external package KLU.
 
   ./configure --download-suitesparse to install PETSc to use KLU

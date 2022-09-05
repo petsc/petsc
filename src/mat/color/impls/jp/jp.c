@@ -460,9 +460,12 @@ static PetscErrorCode MatColoringApply_JP(MatColoring mc, ISColoring *iscoloring
 }
 
 /*MC
-  MATCOLORINGJP - Parallel Jones-Plassmann Coloring
+  MATCOLORINGJP - Parallel Jones-Plassmann coloring
 
    Level: beginner
+
+   Options Database Key:
+.  -mat_coloring_jp_local - perform a local coloring before applying the parallel algorithm
 
    Notes:
     This method uses a parallel Luby-style coloring with weights to choose an independent set of processor
@@ -474,7 +477,7 @@ static PetscErrorCode MatColoringApply_JP(MatColoring mc, ISColoring *iscoloring
 .  * - M. Jones and P. Plassmann, "A parallel graph coloring heuristic," SIAM Journal on Scientific Computing, vol. 14, no. 3,
    pp. 654-669, 1993.
 
-.seealso: `MatColoringCreate()`, `MatColoring`, `MatColoringSetType()`
+.seealso: `MatColoring`, `MatColoringType`, `MatColoringCreate()`, `MatColoring`, `MatColoringSetType()`
 M*/
 PETSC_EXTERN PetscErrorCode MatColoringCreate_JP(MatColoring mc) {
   MC_JP *jp;

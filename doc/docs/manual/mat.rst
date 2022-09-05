@@ -518,7 +518,17 @@ values are generated locally.
 
 The routine ``MatCreateAIJCUSPARSE()`` allows one to create GPU based matrices for NVIDIA systems.
 ``MatCreateAIJKokkos()`` can create matrices for use with CPU, OpenMP, NVIDIA, AMD, or Intel based GPU systems.
- 
+
+It is sometimes difficult to compute the required preallocation information efficiently, hence PETSc provides a
+special ``MatType``, ``MATPREALLOCATOR`` that helps make computing this information more straightforward. One first creates a matrix of this type and then, using the same
+code that one would use to actually compute the matrices numerical values, calls ``MatSetValues()`` for this matrix, without needing to provide any
+preallocation information (one need not provide the matrix numerical values). Once this is complete one uses ``MatPreallocatorPreallocate()`` to
+provide the accumulated preallocation information to
+the actual matrix one will use for the computations. We hope to simplify this process in the future, allowing the removal of ``MATPREALLOCATOR``,
+instead simply allowing the use of it's efficient insertion process automatically during the first assembly of any matrix type directly without
+requiring the detailed preallocation information.
+
+See :any:`doc_matrix` for a table of the matrix types available in PETSc.
 
 Limited-Memory Variable Metric (LMVM) Matrices
 ''''''''''''''''''''''''''''''''''''''''''''''
@@ -1173,6 +1183,8 @@ PETSc uses two approaches because the same programming problem was solved with t
 A better model would combine both approaches; an explicit
 separation of the stages and a unified operation that internally utilized the two stages appropriately and also handled changes to the nonzero structure. Code could be simplified in many places with this approach, in most places the use of the unified API would replace the use of the separate stages.
 
+See :any:`sec_matsub` and :any:`sec_matmatproduct`.
+
 .. _sec_partitioning:
 
 Partitioning
@@ -1291,6 +1303,9 @@ to include more support for this in the future, but designing the
 appropriate general user interface and providing a scalable
 implementation that can be used for a wide variety of different grids
 requires a great deal of time.
+
+See :any:`sec_fdmatrix` and :any:`sec_matfactor` for discussions on performing graph coloring and computing graph reorderings to
+reduce fill in sparse matrix factorizations.
 
 .. raw:: html
 

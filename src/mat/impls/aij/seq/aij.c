@@ -492,14 +492,14 @@ PetscErrorCode MatSetValues_SeqAIJ_SortedFullNoPreallocation(Mat A, PetscInt m, 
     MatSeqAIJSetTotalPreallocation - Sets an upper bound on the total number of expected nonzeros in the matrix.
 
   Input Parameters:
-+  A - the SeqAIJ matrix
++  A - the `MATSEQAIJ` matrix
 -  nztotal - bound on the number of nonzeros
 
   Level: advanced
 
   Notes:
     This can be called if you will be provided the matrix row by row (from row zero) with sorted column indices for each row.
-    Simply call MatSetValues() after this call to provide the matrix entries in the usual manner. This matrix may be used
+    Simply call `MatSetValues()` after this call to provide the matrix entries in the usual manner. This matrix may be used
     as always with multiple matrix assemblies.
 
 .seealso: `MatSetOption()`, `MAT_SORTED_FULL`, `MatSetValues()`, `MatSeqAIJSetPreallocation()`
@@ -3560,7 +3560,7 @@ PetscErrorCode MatSeqAIJCompactOutExtraColumns_SeqAIJ(Mat mat, ISLocalToGlobalMa
        in the matrix.
 
   Input Parameters:
-+  mat - the SeqAIJ matrix
++  mat - the `MATSEQAIJ` matrix
 -  indices - the column indices
 
   Level: advanced
@@ -3568,12 +3568,12 @@ PetscErrorCode MatSeqAIJCompactOutExtraColumns_SeqAIJ(Mat mat, ISLocalToGlobalMa
   Notes:
     This can be called if you have precomputed the nonzero structure of the
   matrix and want to provide it to the matrix object to improve the performance
-  of the MatSetValues() operation.
+  of the `MatSetValues()` operation.
 
     You MUST have set the correct numbers of nonzeros per row in the call to
-  MatCreateSeqAIJ(), and the columns indices MUST be sorted.
+  `MatCreateSeqAIJ()`, and the columns indices MUST be sorted.
 
-    MUST be called before any calls to MatSetValues();
+    MUST be called before any calls to `MatSetValues()`
 
     The indices should start with zero, not one.
 
@@ -3611,14 +3611,14 @@ PetscErrorCode MatStoreValues_SeqAIJ(Mat mat) {
        example, reuse of the linear part of a Jacobian, while recomputing the
        nonlinear portion.
 
-   Collect on Mat
+   Collect on mat
 
   Input Parameters:
-.  mat - the matrix (currently only AIJ matrices support this option)
+.  mat - the matrix (currently only `MATAIJ` matrices support this option)
 
   Level: advanced
 
-  Common Usage, with SNESSolve():
+  Common Usage, with `SNESSolve()`:
 $    Create Jacobian matrix
 $    Set linear terms into matrix
 $    Apply boundary conditions to matrix, at this time matrix must have
@@ -3644,14 +3644,13 @@ $    endloop
 
   Notes:
     Matrix must already be assemblied before calling this routine
-    Must set the matrix option MatSetOption(mat,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE); before
+    Must set the matrix option `MatSetOption`(mat,`MAT_NEW_NONZERO_LOCATIONS`,`PETSC_FALSE`); before
     calling this routine.
 
     When this is called multiple times it overwrites the previous set of stored values
     and does not allocated additional space.
 
 .seealso: `MatRetrieveValues()`
-
 @*/
 PetscErrorCode MatStoreValues(Mat mat) {
   PetscFunctionBegin;
@@ -3679,15 +3678,14 @@ PetscErrorCode MatRetrieveValues_SeqAIJ(Mat mat) {
        example, reuse of the linear part of a Jacobian, while recomputing the
        nonlinear portion.
 
-   Collect on Mat
+   Collect on mat
 
   Input Parameters:
-.  mat - the matrix (currently only AIJ matrices support this option)
+.  mat - the matrix (currently only `MATAIJ` matrices support this option)
 
   Level: advanced
 
 .seealso: `MatStoreValues()`
-
 @*/
 PetscErrorCode MatRetrieveValues(Mat mat) {
   PetscFunctionBegin;
@@ -3700,7 +3698,7 @@ PetscErrorCode MatRetrieveValues(Mat mat) {
 
 /* --------------------------------------------------------------------------------*/
 /*@C
-   MatCreateSeqAIJ - Creates a sparse matrix in AIJ (compressed row) format
+   MatCreateSeqAIJ - Creates a sparse matrix in `MATSEQAIJ` (compressed row) format
    (the default parallel PETSc format).  For good matrix assembly performance
    the user should preallocate the matrix storage by setting the parameter nz
    (or the array nnz).  By setting these parameters accurately, performance
@@ -3709,7 +3707,7 @@ PetscErrorCode MatRetrieveValues(Mat mat) {
    Collective
 
    Input Parameters:
-+  comm - MPI communicator, set to PETSC_COMM_SELF
++  comm - MPI communicator, set to `PETSC_COMM_SELF`
 .  m - number of rows
 .  n - number of columns
 .  nz - number of nonzeros per row (same for all rows)
@@ -3719,20 +3717,20 @@ PetscErrorCode MatRetrieveValues(Mat mat) {
    Output Parameter:
 .  A - the matrix
 
-   It is recommended that one use the MatCreate(), MatSetType() and/or MatSetFromOptions(),
+   It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`,
    MatXXXXSetPreallocation() paradigm instead of this routine directly.
-   [MatXXXXSetPreallocation() is, for example, MatSeqAIJSetPreallocation]
+   [MatXXXXSetPreallocation() is, for example, `MatSeqAIJSetPreallocation()`]
 
    Notes:
    If nnz is given then nz is ignored
 
-   The AIJ format (also called the Yale sparse matrix format or
-   compressed row storage), is fully compatible with standard Fortran 77
+   The AIJ format, also called
+   compressed row storage, is fully compatible with standard Fortran 77
    storage.  That is, the stored row and column indices can begin at
    either one (as in Fortran) or zero.  See the users' manual for details.
 
    Specify the preallocated storage with either nz or nnz (not both).
-   Set nz=PETSC_DEFAULT and nnz=NULL for PETSc to control dynamic memory
+   Set nz = `PETSC_DEFAULT` and nnz = NULL for PETSc to control dynamic memory
    allocation.  For large problems you MUST preallocate memory or you
    will get TERRIBLE performance, see the users' manual chapter on matrices.
 
@@ -3748,7 +3746,6 @@ PetscErrorCode MatRetrieveValues(Mat mat) {
    Level: intermediate
 
 .seealso: `MatCreate()`, `MatCreateAIJ()`, `MatSetValues()`, `MatSeqAIJSetColumnIndices()`, `MatCreateSeqAIJWithArrays()`
-
 @*/
 PetscErrorCode MatCreateSeqAIJ(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt nz, const PetscInt nnz[], Mat *A) {
   PetscFunctionBegin;
@@ -3776,22 +3773,23 @@ PetscErrorCode MatCreateSeqAIJ(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt n
    Notes:
      If nnz is given then nz is ignored
 
-    The AIJ format (also called the Yale sparse matrix format or
-   compressed row storage), is fully compatible with standard Fortran 77
+    The `MATSEQAIJ` format also called
+   compressed row storage, is fully compatible with standard Fortran 77
    storage.  That is, the stored row and column indices can begin at
    either one (as in Fortran) or zero.  See the users' manual for details.
 
    Specify the preallocated storage with either nz or nnz (not both).
-   Set nz=PETSC_DEFAULT and nnz=NULL for PETSc to control dynamic memory
+   Set nz = `PETSC_DEFAULT` and nnz = NULL for PETSc to control dynamic memory
    allocation.  For large problems you MUST preallocate memory or you
    will get TERRIBLE performance, see the users' manual chapter on matrices.
 
-   You can call MatGetInfo() to get information on how effective the preallocation was;
+   You can call `MatGetInfo()` to get information on how effective the preallocation was;
    for example the fields mallocs,nz_allocated,nz_used,nz_unneeded;
    You can also run with the option -info and look for messages with the string
    malloc in them to see if additional memory allocation was needed.
 
-   Developers: Use nz of MAT_SKIP_ALLOCATION to not allocate any space for the matrix
+   Developer Notes:
+   Use nz of `MAT_SKIP_ALLOCATION` to not allocate any space for the matrix
    entries or columns indices
 
    By default, this format uses inodes (identical nodes) when possible, to
@@ -3807,7 +3805,6 @@ PetscErrorCode MatCreateSeqAIJ(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt n
 
 .seealso: `MatCreate()`, `MatCreateAIJ()`, `MatSetValues()`, `MatSeqAIJSetColumnIndices()`, `MatCreateSeqAIJWithArrays()`, `MatGetInfo()`,
           `MatSeqAIJSetTotalPreallocation()`
-
 @*/
 PetscErrorCode MatSeqAIJSetPreallocation(Mat B, PetscInt nz, const PetscInt nnz[]) {
   PetscFunctionBegin;
@@ -3949,7 +3946,7 @@ PetscErrorCode MatResetPreallocation_SeqAIJ(Mat A) {
 }
 
 /*@
-   MatSeqAIJSetPreallocationCSR - Allocates memory for a sparse sequential matrix in AIJ format.
+   MatSeqAIJSetPreallocationCSR - Allocates memory for a sparse sequential matrix in `MATSEQAIJ` format.
 
    Input Parameters:
 +  B - the matrix
@@ -3960,16 +3957,16 @@ PetscErrorCode MatResetPreallocation_SeqAIJ(Mat A) {
    Level: developer
 
    Notes:
-      The i,j,v values are COPIED with this routine; to avoid the copy use MatCreateSeqAIJWithArrays()
+      The i,j,v values are COPIED with this routine; to avoid the copy use `MatCreateSeqAIJWithArrays()`
 
       This routine may be called multiple times with different nonzero patterns (or the same nonzero pattern). The nonzero
       structure will be the union of all the previous nonzero structures.
 
     Developer Notes:
       An optimization could be added to the implementation where it checks if the i, and j are identical to the current i and j and
-      then just copies the v values directly with PetscMemcpy().
+      then just copies the v values directly with `PetscMemcpy()`.
 
-      This routine could also take a PetscCopyMode argument to allow sharing the values instead of always copying them.
+      This routine could also take a `PetscCopyMode` argument to allow sharing the values instead of always copying them.
 
 .seealso: `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatSeqAIJSetPreallocation()`, `MatCreateSeqAIJ()`, `MATSEQAIJ`, `MatResetPreallocation()`
 @*/
@@ -4018,15 +4015,15 @@ PetscErrorCode MatSeqAIJSetPreallocationCSR_SeqAIJ(Mat B, const PetscInt Ii[], c
    Input Parameters:
 +  A - left-hand side matrix
 .  B - right-hand side matrix
--  reuse - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
+-  reuse - either `MAT_INITIAL_MATRIX` or `MAT_REUSE_MATRIX`
 
    Output Parameter:
 .  C - Kronecker product of A and B
 
    Level: intermediate
 
-   Notes:
-      MAT_REUSE_MATRIX can only be used when the nonzero structure of the product matrix has not changed from that last call to MatSeqAIJKron().
+   Note:
+      `MAT_REUSE_MATRIX` can only be used when the nonzero structure of the product matrix has not changed from that last call to `MatSeqAIJKron()`.
 
 .seealso: `MatCreateSeqAIJ()`, `MATSEQAIJ`, `MATKAIJ`, `MatReuse`
 @*/
@@ -4175,14 +4172,14 @@ PetscErrorCode MatMatMultSymbolic_SeqDense_SeqAIJ(Mat A, Mat B, PetscReal fill, 
    Level: beginner
 
    Notes:
-    MatSetValues() may be called for this matrix type with a NULL argument for the numerical values,
+    `MatSetValues()` may be called for this matrix type with a NULL argument for the numerical values,
     in this case the values associated with the rows and columns one passes in are set to zero
     in the matrix
 
-    MatSetOptions(,MAT_STRUCTURE_ONLY,PETSC_TRUE) may be called for this matrix type. In this no
-    space is allocated for the nonzero entries and any entries passed with MatSetValues() are ignored
+    `MatSetOptions`(,`MAT_STRUCTURE_ONLY`,`PETSC_TRUE`) may be called for this matrix type. In this no
+    space is allocated for the nonzero entries and any entries passed with `MatSetValues()` are ignored
 
-  Developer Notes:
+  Developer Note:
     It would be nice if all matrix formats supported passing NULL in for the numerical values
 
 .seealso: `MatCreateSeqAIJ()`, `MatSetFromOptions()`, `MatSetType()`, `MatCreate()`, `MatType`, `MATSELL`, `MATSEQSELL`, `MATMPISELL`
@@ -4191,17 +4188,17 @@ M*/
 /*MC
    MATAIJ - MATAIJ = "aij" - A matrix type to be used for sparse matrices.
 
-   This matrix type is identical to MATSEQAIJ when constructed with a single process communicator,
-   and MATMPIAIJ otherwise.  As a result, for single process communicators,
-   MatSeqAIJSetPreallocation() is supported, and similarly MatMPIAIJSetPreallocation() is supported
+   This matrix type is identical to `MATSEQAIJ` when constructed with a single process communicator,
+   and `MATMPIAIJ` otherwise.  As a result, for single process communicators,
+   `MatSeqAIJSetPreallocation()` is supported, and similarly `MatMPIAIJSetPreallocation()` is supported
    for communicators controlling multiple processes.  It is recommended that you call both of
    the above preallocation routines for simplicity.
 
    Options Database Keys:
-. -mat_type aij - sets the matrix type to "aij" during a call to MatSetFromOptions()
+. -mat_type aij - sets the matrix type to "aij" during a call to `MatSetFromOptions()`
 
-  Developer Notes:
-    Subclasses include MATAIJCUSPARSE, MATAIJPERM, MATAIJSELL, MATAIJMKL, MATAIJCRL, and also automatically switches over to use inodes when
+   Note:
+   Subclasses include `MATAIJCUSPARSE`, `MATAIJPERM`, `MATAIJSELL`, `MATAIJMKL`, `MATAIJCRL`, and also automatically switches over to use inodes when
    enough exist.
 
   Level: beginner
@@ -4212,14 +4209,14 @@ M*/
 /*MC
    MATAIJCRL - MATAIJCRL = "aijcrl" - A matrix type to be used for sparse matrices.
 
-   This matrix type is identical to MATSEQAIJCRL when constructed with a single process communicator,
-   and MATMPIAIJCRL otherwise.  As a result, for single process communicators,
-   MatSeqAIJSetPreallocation() is supported, and similarly MatMPIAIJSetPreallocation() is supported
+   This matrix type is identical to `MATSEQAIJCRL` when constructed with a single process communicator,
+   and `MATMPIAIJCRL` otherwise.  As a result, for single process communicators,
+   `MatSeqAIJSetPreallocation()` is supported, and similarly `MatMPIAIJSetPreallocation()` is supported
    for communicators controlling multiple processes.  It is recommended that you call both of
    the above preallocation routines for simplicity.
 
    Options Database Keys:
-. -mat_type aijcrl - sets the matrix type to "aijcrl" during a call to MatSetFromOptions()
+. -mat_type aijcrl - sets the matrix type to "aijcrl" during a call to `MatSetFromOptions()`
 
   Level: beginner
 
@@ -4242,12 +4239,12 @@ PETSC_INTERN PetscErrorCode MatConvert_XAIJ_IS(Mat, MatType, MatReuse, Mat *);
 PETSC_INTERN PetscErrorCode MatProductSetFromOptions_IS_XAIJ(Mat);
 
 /*@C
-   MatSeqAIJGetArray - gives read/write access to the array where the data for a MATSEQAIJ matrix is stored
+   MatSeqAIJGetArray - gives read/write access to the array where the data for a `MATSEQAIJ` matrix is stored
 
    Not Collective
 
    Input Parameter:
-.  mat - a MATSEQAIJ matrix
+.  mat - a `MATSEQAIJ` matrix
 
    Output Parameter:
 .   array - pointer to the data
@@ -4269,12 +4266,12 @@ PetscErrorCode MatSeqAIJGetArray(Mat A, PetscScalar **array) {
 }
 
 /*@C
-   MatSeqAIJRestoreArray - returns access to the array where the data for a MATSEQAIJ matrix is stored obtained by MatSeqAIJGetArray()
+   MatSeqAIJRestoreArray - returns access to the array where the data for a `MATSEQAIJ` matrix is stored obtained by `MatSeqAIJGetArray()`
 
    Not Collective
 
    Input Parameters:
-+  mat - a MATSEQAIJ matrix
++  mat - a `MATSEQAIJ` matrix
 -  array - pointer to the data
 
    Level: intermediate
@@ -4296,12 +4293,12 @@ PetscErrorCode MatSeqAIJRestoreArray(Mat A, PetscScalar **array) {
 }
 
 /*@C
-   MatSeqAIJGetArrayRead - gives read-only access to the array where the data for a MATSEQAIJ matrix is stored
+   MatSeqAIJGetArrayRead - gives read-only access to the array where the data for a `MATSEQAIJ` matrix is stored
 
    Not Collective
 
    Input Parameter:
-.  mat - a MATSEQAIJ matrix
+.  mat - a `MATSEQAIJ` matrix
 
    Output Parameter:
 .   array - pointer to the data
@@ -4323,12 +4320,12 @@ PetscErrorCode MatSeqAIJGetArrayRead(Mat A, const PetscScalar **array) {
 }
 
 /*@C
-   MatSeqAIJRestoreArrayRead - restore the read-only access array obtained from MatSeqAIJGetArrayRead
+   MatSeqAIJRestoreArrayRead - restore the read-only access array obtained from `MatSeqAIJGetArrayRead()`
 
    Not Collective
 
    Input Parameter:
-.  mat - a MATSEQAIJ matrix
+.  mat - a `MATSEQAIJ` matrix
 
    Output Parameter:
 .   array - pointer to the data
@@ -4350,12 +4347,12 @@ PetscErrorCode MatSeqAIJRestoreArrayRead(Mat A, const PetscScalar **array) {
 }
 
 /*@C
-   MatSeqAIJGetArrayWrite - gives write-only access to the array where the data for a MATSEQAIJ matrix is stored
+   MatSeqAIJGetArrayWrite - gives write-only access to the array where the data for a `MATSEQAIJ` matrix is stored
 
    Not Collective
 
    Input Parameter:
-.  mat - a MATSEQAIJ matrix
+.  mat - a `MATSEQAIJ` matrix
 
    Output Parameter:
 .   array - pointer to the data
@@ -4406,12 +4403,12 @@ PetscErrorCode MatSeqAIJRestoreArrayWrite(Mat A, PetscScalar **array) {
 }
 
 /*@C
-   MatSeqAIJGetCSRAndMemType - Get the CSR arrays and the memory type of the SEQAIJ matrix
+   MatSeqAIJGetCSRAndMemType - Get the CSR arrays and the memory type of the `MATSEQAIJ` matrix
 
    Not Collective
 
    Input Parameter:
-.  mat - a matrix of type MATSEQAIJ or its subclasses
+.  mat - a matrix of type `MATSEQAIJ` or its subclasses
 
    Output Parameters:
 +  i - row map array of the matrix
@@ -4452,7 +4449,7 @@ PetscErrorCode MatSeqAIJGetCSRAndMemType(Mat mat, const PetscInt **i, const Pets
    Not Collective
 
    Input Parameter:
-.  mat - a MATSEQAIJ matrix
+.  mat - a `MATSEQAIJ` matrix
 
    Output Parameter:
 .   nz - the maximum number of nonzeros in any row
@@ -4919,7 +4916,7 @@ PetscErrorCode MatEqual_SeqAIJ(Mat A, Mat B, PetscBool *flg) {
 }
 
 /*@
-     MatCreateSeqAIJWithArrays - Creates an sequential AIJ matrix using matrix elements (in CSR format)
+     MatCreateSeqAIJWithArrays - Creates an sequential `MATSEQAIJ` matrix using matrix elements (in CSR format)
               provided by the user.
 
       Collective
@@ -4958,7 +4955,6 @@ $        j =  {0,0,2,0,1,2}  [size = 6]; values must be sorted for each row
 $        v =  {1,2,3,4,5,6}  [size = 6]
 
 .seealso: `MatCreate()`, `MatCreateAIJ()`, `MatCreateSeqAIJ()`, `MatCreateMPIAIJWithArrays()`, `MatMPIAIJSetPreallocationCSR()`
-
 @*/
 PetscErrorCode MatCreateSeqAIJWithArrays(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt i[], PetscInt j[], PetscScalar a[], Mat *mat) {
   PetscInt    ii;
@@ -5007,7 +5003,7 @@ PetscErrorCode MatCreateSeqAIJWithArrays(MPI_Comm comm, PetscInt m, PetscInt n, 
 }
 
 /*@
-     MatCreateSeqAIJFromTriple - Creates an sequential AIJ matrix using matrix elements (in COO format)
+     MatCreateSeqAIJFromTriple - Creates an sequential `MATSEQAIJ` matrix using matrix elements (in COO format)
               provided by the user.
 
       Collective
@@ -5020,7 +5016,7 @@ PetscErrorCode MatCreateSeqAIJWithArrays(MPI_Comm comm, PetscInt m, PetscInt n, 
 .   j   - column indices
 .   a   - matrix values
 .   nz  - number of nonzeros
--   idx - if the i and j indices start with 1 use PETSC_TRUE otherwise use PETSC_FALSE
+-   idx - if the i and j indices start with 1 use `PETSC_TRUE` otherwise use `PETSC_FALSE`
 
    Output Parameter:
 .   mat - the matrix
@@ -5040,7 +5036,6 @@ PetscErrorCode MatCreateSeqAIJWithArrays(MPI_Comm comm, PetscInt m, PetscInt n, 
 .ve
 
 .seealso: `MatCreate()`, `MatCreateAIJ()`, `MatCreateSeqAIJ()`, `MatCreateSeqAIJWithArrays()`, `MatMPIAIJSetPreallocationCSR()`, `MatSetValuesCOO()`
-
 @*/
 PetscErrorCode MatCreateSeqAIJFromTriple(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt i[], PetscInt j[], PetscScalar a[], Mat *mat, PetscInt nz, PetscBool idx) {
   PetscInt ii, *nnz, one = 1, row, col;
@@ -5154,9 +5149,9 @@ PetscErrorCode MatSetSeqMat_SeqAIJ(Mat C, IS rowemb, IS colemb, MatStructure pat
 PetscFunctionList MatSeqAIJList = NULL;
 
 /*@C
-   MatSeqAIJSetType - Converts a MATSEQAIJ matrix to a subtype
+   MatSeqAIJSetType - Converts a `MATSEQAIJ` matrix to a subtype
 
-   Collective on Mat
+   Collective on mat
 
    Input Parameters:
 +  mat      - the matrix object
@@ -5185,16 +5180,16 @@ PetscErrorCode MatSeqAIJSetType(Mat mat, MatType matype) {
 }
 
 /*@C
-  MatSeqAIJRegister -  - Adds a new sub-matrix type for sequential AIJ matrices
+  MatSeqAIJRegister -  - Adds a new sub-matrix type for sequential `MATSEQAIJ` matrices
 
    Not Collective
 
    Input Parameters:
-+  name - name of a new user-defined matrix type, for example MATSEQAIJCRL
++  name - name of a new user-defined matrix type, for example `MATSEQAIJCRL`
 -  function - routine to convert to subtype
 
    Notes:
-   MatSeqAIJRegister() may be called multiple times to add several user-defined solvers.
+   `MatSeqAIJRegister()` may be called multiple times to add several user-defined solvers.
 
    Then, your matrix can be chosen with the procedural interface at runtime via the option
 $     -mat_seqaij_type my_mat
@@ -5202,8 +5197,6 @@ $     -mat_seqaij_type my_mat
    Level: advanced
 
 .seealso: `MatSeqAIJRegisterAll()`
-
-  Level: advanced
 @*/
 PetscErrorCode MatSeqAIJRegister(const char sname[], PetscErrorCode (*function)(Mat, MatType, MatReuse, Mat *)) {
   PetscFunctionBegin;
@@ -5215,7 +5208,7 @@ PetscErrorCode MatSeqAIJRegister(const char sname[], PetscErrorCode (*function)(
 PetscBool MatSeqAIJRegisterAllCalled = PETSC_FALSE;
 
 /*@C
-  MatSeqAIJRegisterAll - Registers all of the matrix subtypes of SeqAIJ
+  MatSeqAIJRegisterAll - Registers all of the matrix subtypes of `MATSSEQAIJ`
 
   Not Collective
 

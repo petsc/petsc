@@ -5,9 +5,6 @@
 #include <unistd.h>
 #endif
 
-/*
-   Currently using Party-1.99
-*/
 EXTERN_C_BEGIN
 #include <party_lib.h>
 EXTERN_C_END
@@ -155,7 +152,7 @@ PetscErrorCode MatPartitioningView_Party(MatPartitioning part, PetscViewer viewe
 /*@C
    MatPartitioningPartySetGlobal - Set global method for Party partitioner.
 
-   Collective on MatPartitioning
+   Collective on part
 
    Input Parameters:
 +  part - the partitioning context
@@ -166,13 +163,13 @@ PetscErrorCode MatPartitioningView_Party(MatPartitioning part, PetscViewer viewe
 
    Level: advanced
 
-   Notes:
-   The method may be one of MP_PARTY_OPT, MP_PARTY_LIN, MP_PARTY_SCA,
-   MP_PARTY_RAN, MP_PARTY_GBF, MP_PARTY_GCF, MP_PARTY_BUB or MP_PARTY_DEF, or
+   Note:
+   The method may be one of `MP_PARTY_OPT`, `MP_PARTY_LIN`, `MP_PARTY_SCA`,
+   `MP_PARTY_RAN`, `MP_PARTY_GBF`, `MP_PARTY_GCF`, `MP_PARTY_BUB` or `MP_PARTY_DEF`, or
    alternatively a string describing the method. Two or more methods can be
    combined like "gbf,gcf". Check the Party Library Users Manual for details.
 
-.seealso: `MatPartitioningPartySetLocal()`
+.seealso: `MATPARTITIONINGPARTY`, `MatPartitioningPartySetLocal()`
 @*/
 PetscErrorCode MatPartitioningPartySetGlobal(MatPartitioning part, const char *global) {
   PetscFunctionBegin;
@@ -190,9 +187,9 @@ PetscErrorCode MatPartitioningPartySetGlobal_Party(MatPartitioning part, const c
 }
 
 /*@C
-   MatPartitioningPartySetLocal - Set local method for Party partitioner.
+   MatPartitioningPartySetLocal - Set local method used by the Party partitioner.
 
-   Collective on MatPartitioning
+   Collective on part
 
    Input Parameters:
 +  part - the partitioning context
@@ -203,11 +200,11 @@ PetscErrorCode MatPartitioningPartySetGlobal_Party(MatPartitioning part, const c
 
    Level: advanced
 
-   Notes:
-   The method may be one of MP_PARTY_HELPFUL_SETS, MP_PARTY_KERNIGHAN_LIN, or
-   MP_PARTY_NONE. Check the Party Library Users Manual for details.
+   Note:
+   The method may be one of `MP_PARTY_HELPFUL_SETS`, `MP_PARTY_KERNIGHAN_LIN`, or
+   `MP_PARTY_NONE`. Check the Party Library Users Manual for details.
 
-.seealso: `MatPartitioningPartySetGlobal()`
+.seealso: `MATPARTITIONINGPARTY`, `MatPartitioningPartySetGlobal()`
 @*/
 PetscErrorCode MatPartitioningPartySetLocal(MatPartitioning part, const char *local) {
   PetscFunctionBegin;
@@ -230,7 +227,7 @@ PetscErrorCode MatPartitioningPartySetLocal_Party(MatPartitioning part, const ch
    MatPartitioningPartySetCoarseLevel - Set the coarse level parameter for the
    Party partitioner.
 
-   Collective on MatPartitioning
+   Collective on part
 
    Input Parameters:
 +  part - the partitioning context
@@ -240,6 +237,8 @@ PetscErrorCode MatPartitioningPartySetLocal_Party(MatPartitioning part, const ch
 .  -mat_partitioning_party_coarse <l> - Coarse level
 
    Level: advanced
+
+.seealso: `MATPARTITIONINGPARTY`
 @*/
 PetscErrorCode MatPartitioningPartySetCoarseLevel(MatPartitioning part, PetscReal level) {
   PetscFunctionBegin;
@@ -263,7 +262,7 @@ PetscErrorCode MatPartitioningPartySetCoarseLevel_Party(MatPartitioning part, Pe
    MatPartitioningPartySetMatchOptimization - Activate matching optimization for
    graph reduction.
 
-   Collective on MatPartitioning
+   Collective on part
 
    Input Parameters:
 +  part - the partitioning context
@@ -273,6 +272,8 @@ PetscErrorCode MatPartitioningPartySetCoarseLevel_Party(MatPartitioning part, Pe
 .  -mat_partitioning_party_match_optimization - Matching optimization on/off
 
    Level: advanced
+
+.seealso:  `MATPARTITIONINGPARTY`
 @*/
 PetscErrorCode MatPartitioningPartySetMatchOptimization(MatPartitioning part, PetscBool opt) {
   PetscFunctionBegin;
@@ -291,9 +292,9 @@ PetscErrorCode MatPartitioningPartySetMatchOptimization_Party(MatPartitioning pa
 }
 
 /*@
-   MatPartitioningPartySetBipart - Activate or deactivate recursive bisection.
+   MatPartitioningPartySetBipart - Activate or deactivate recursive bisection in the Party partitioner
 
-   Collective on MatPartitioning
+   Collective on part
 
    Input Parameters:
 +  part - the partitioning context
@@ -303,6 +304,8 @@ PetscErrorCode MatPartitioningPartySetMatchOptimization_Party(MatPartitioning pa
 -  -mat_partitioning_party_bipart - Bipartitioning option on/off
 
    Level: advanced
+
+.seealso:  `MATPARTITIONINGPARTY`
 @*/
 PetscErrorCode MatPartitioningPartySetBipart(MatPartitioning part, PetscBool bp) {
   PetscFunctionBegin;
@@ -363,10 +366,10 @@ PetscErrorCode MatPartitioningDestroy_Party(MatPartitioning part) {
    Notes:
     See http://wwwcs.upb.de/fachbereich/AG/monien/RESEARCH/PART/party.html
 
-    Does not support using MatPartitioningSetUseEdgeWeights()
+    Does not support the `MatPartitioningSetUseEdgeWeights()` option
 
-.seealso: `MatPartitioningSetType()`, `MatPartitioningType`
-
+.seealso: `MatPartitioningSetType()`, `MatPartitioningType`, `MatPartitioningPartySetGlobal()`, `MatPartitioningPartySetLocal()`,
+          `MatPartitioningPartySetCoarseLevel()`, `MatPartitioningPartySetMatchOptimization()`, `MatPartitioningPartySetBipart()`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Party(MatPartitioning part) {

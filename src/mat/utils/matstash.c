@@ -209,7 +209,7 @@ PetscErrorCode MatStashSetInitialSize_Private(MatStash *stash, PetscInt max) {
    stash - the stash
    incr  - the minimum increase requested
 
-   Notes:
+   Note:
    This routine doubles the currently used memory.
  */
 static PetscErrorCode MatStashExpand_Private(MatStash *stash, PetscInt incr) {
@@ -418,7 +418,7 @@ PetscErrorCode MatStashValuesColBlocked_Private(MatStash *stash, PetscInt row, P
   owners - an array of size 'no-of-procs' which gives the ownership range
            for each node.
 
-  Notes:
+  Note:
     The 'owners' array in the cased of the blocked-stash has the
   ranges specified blocked global indices, and for the regular stash in
   the proper global indices.

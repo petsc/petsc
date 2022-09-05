@@ -839,10 +839,10 @@ PetscErrorCode MatMkl_PardisoSetCntl_MKL_PARDISO(Mat F, PetscInt icntl, PetscInt
 /*@
   MatMkl_PardisoSetCntl - Set Mkl_Pardiso parameters
 
-   Logically Collective on Mat
+   Logically Collective on F
 
    Input Parameters:
-+  F - the factored matrix obtained by calling MatGetFactor()
++  F - the factored matrix obtained by calling `MatGetFactor()`
 .  icntl - index of Mkl_Pardiso parameter
 -  ival - value of Mkl_Pardiso parameter
 
@@ -854,7 +854,7 @@ PetscErrorCode MatMkl_PardisoSetCntl_MKL_PARDISO(Mat F, PetscInt icntl, PetscInt
    References:
 .  * - Mkl_Pardiso Users' Guide
 
-.seealso: `MatGetFactor()`
+.seealso: `MATSOLVERMKL_PARDISO`, `MatGetFactor()`
 @*/
 PetscErrorCode MatMkl_PardisoSetCntl(Mat F, PetscInt icntl, PetscInt ival) {
   PetscFunctionBegin;
@@ -863,10 +863,8 @@ PetscErrorCode MatMkl_PardisoSetCntl(Mat F, PetscInt icntl, PetscInt ival) {
 }
 
 /*MC
-  MATSOLVERMKL_PARDISO -  A matrix type providing direct solvers (LU) for
-  sequential matrices via the external package MKL_PARDISO.
-
-  Works with MATSEQAIJ matrices
+  MATSOLVERMKL_PARDISO -  A matrix type providing direct solvers, LU, for
+  `MATSEQAIJ` matrices via the external package MKL_PARDISO.
 
   Use -pc_type lu -pc_factor_mat_solver_type mkl_pardiso to use this direct solver
 
@@ -904,8 +902,7 @@ PetscErrorCode MatMkl_PardisoSetCntl(Mat F, PetscInt icntl, PetscInt ival) {
 
     For more information on the options check the MKL_Pardiso manual
 
-.seealso: `PCFactorSetMatSolverType()`, `MatSolverType`
-
+.seealso: `MATSEQAIJ`, `PCFactorSetMatSolverType()`, `MatSolverType`
 M*/
 static PetscErrorCode MatFactorGetSolverType_mkl_pardiso(Mat A, MatSolverType *type) {
   PetscFunctionBegin;

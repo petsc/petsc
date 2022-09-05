@@ -226,19 +226,15 @@ PetscErrorCode MatView_Matlab(Mat A, PetscViewer viewer) {
 }
 
 /*MC
-  MATSOLVERMATLAB - "matlab" - Providing direct solver LU for sequential aij matrix via the external package MATLAB.
-
-  Works with MATSEQAIJ matrices.
+  MATSOLVERMATLAB - "matlab" - Providing direct solver LU for `MATSEQAIJ` matrix via the external package MATLAB.
 
   Options Database Keys:
 . -pc_factor_mat_solver_type matlab - selects MATLAB to do the sparse factorization
 
-  Notes:
+  Note:
     You must ./configure with the options --with-matlab --with-matlab-engine
 
   Level: beginner
 
-.seealso: `PCLU`
-
-.seealso: `PCFactorSetMatSolverType()`, `MatSolverType`
+.seealso: `PCLU`, `PCFactorSetMatSolverType()`, `MatSolverType`
 M*/

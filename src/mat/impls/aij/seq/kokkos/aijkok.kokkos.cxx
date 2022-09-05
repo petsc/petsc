@@ -550,7 +550,7 @@ static PetscErrorCode MatDestroy_SeqAIJKokkos(Mat A) {
    A matrix type type using Kokkos-Kernels CrsMatrix type for portability across different device types
 
    Options Database Keys:
-.  -mat_type aijkokkos - sets the matrix type to "aijkokkos" during a call to MatSetFromOptions()
+.  -mat_type aijkokkos - sets the matrix type to `MATSEQAIJKOKKOS` during a call to `MatSetFromOptions()`
 
   Level: beginner
 
@@ -1230,7 +1230,7 @@ PETSC_INTERN PetscErrorCode MatCreateSeqAIJKokkosWithCSRMatrix(MPI_Comm comm, Ma
 
 /* --------------------------------------------------------------------------------*/
 /*@C
-   MatCreateSeqAIJKokkos - Creates a sparse matrix in AIJ (compressed row) format
+   MatCreateSeqAIJKokkos - Creates a sparse matrix in `MATSEQAIJKOKKOS` (compressed row) format
    (the default parallel PETSc format). This matrix will ultimately be handled by
    Kokkos for calculations. For good matrix
    assembly performance the user should preallocate the matrix storage by setting
@@ -1240,7 +1240,7 @@ PETSC_INTERN PetscErrorCode MatCreateSeqAIJKokkosWithCSRMatrix(MPI_Comm comm, Ma
    Collective
 
    Input Parameters:
-+  comm - MPI communicator, set to PETSC_COMM_SELF
++  comm - MPI communicator, set to `PETSC_COMM_SELF`
 .  m - number of rows
 .  n - number of columns
 .  nz - number of nonzeros per row (same for all rows)
@@ -1250,20 +1250,20 @@ PETSC_INTERN PetscErrorCode MatCreateSeqAIJKokkosWithCSRMatrix(MPI_Comm comm, Ma
    Output Parameter:
 .  A - the matrix
 
-   It is recommended that one use the MatCreate(), MatSetType() and/or MatSetFromOptions(),
+   It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`,
    MatXXXXSetPreallocation() paradgm instead of this routine directly.
-   [MatXXXXSetPreallocation() is, for example, MatSeqAIJSetPreallocation]
+   [MatXXXXSetPreallocation() is, for example, `MatSeqAIJSetPreallocation()`]
 
    Notes:
    If nnz is given then nz is ignored
 
-   The AIJ format (also called the Yale sparse matrix format or
-   compressed row storage), is fully compatible with standard Fortran 77
+   The AIJ format, also called
+   compressed row storage, is fully compatible with standard Fortran 77
    storage.  That is, the stored row and column indices can begin at
    either one (as in Fortran) or zero.  See the users' manual for details.
 
    Specify the preallocated storage with either nz or nnz (not both).
-   Set nz=PETSC_DEFAULT and nnz=NULL for PETSc to control dynamic memory
+   Set nz = `PETSC_DEFAULT` and nnz = NULL for PETSc to control dynamic memory
    allocation.  For large problems you MUST preallocate memory or you
    will get TERRIBLE performance, see the users' manual chapter on matrices.
 
@@ -1745,7 +1745,7 @@ static PetscErrorCode MatFactorGetSolverType_seqaij_kokkos_device(Mat A, MatSolv
 
 /*MC
   MATSOLVERKOKKOS = "Kokkos" - A matrix solver type providing triangular solvers for sequential matrices
-  on a single GPU of type, SeqAIJKokkos, AIJKokkos.
+  on a single GPU of type, `MATSEQAIJKOKKOS`, `MATAIJKOKKOS`.
 
   Level: beginner
 

@@ -298,19 +298,16 @@ PetscErrorCode MatCoarsenView_MIS(MatCoarsen coarse, PetscViewer viewer) {
 }
 
 /*MC
-   MATCOARSENMIS - Creates a coarsen context via the external package MIS.
+   MATCOARSENMIS - Creates a coarsening with a maximal independent set (MIS) algorithm
 
    Collective
 
    Input Parameter:
 .  coarse - the coarsen context
 
-   Options Database Keys:
-
    Level: beginner
 
-.seealso: `MatCoarsenSetType()`, `MatCoarsenType`
-
+.seealso: `MatCoarsen`, `MatCoarsenApply()`, `MatCoarsenGetData()`,`MatCoarsenSetType()`, `MatCoarsenType`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatCoarsenCreate_MIS(MatCoarsen coarse) {

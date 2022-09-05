@@ -715,7 +715,7 @@ PetscErrorCode MatMkl_CPardisoSetCntl_MKL_CPARDISO(Mat F, PetscInt icntl, PetscI
    Logically Collective on Mat
 
    Input Parameters:
-+  F - the factored matrix obtained by calling MatGetFactor()
++  F - the factored matrix obtained by calling `MatGetFactor()`
 .  icntl - index of Mkl_Pardiso parameter
 -  ival - value of Mkl_Pardiso parameter
 
@@ -724,14 +724,14 @@ PetscErrorCode MatMkl_CPardisoSetCntl_MKL_CPARDISO(Mat F, PetscInt icntl, PetscI
 
    Level: Intermediate
 
-   Notes:
-    This routine cannot be used if you are solving the linear system with TS, SNES, or KSP, only if you directly call MatGetFactor() so use the options
-          database approach when working with TS, SNES, or KSP.
+   Note:
+    This routine cannot be used if you are solving the linear system with `TS`, `SNES`, or `KSP`, only if you directly call `MatGetFactor()` so use the options
+          database approach when working with `TS`, `SNES`, or `KSP`.
 
    References:
 .  * - Mkl_Pardiso Users' Guide
 
-.seealso: `MatGetFactor()`
+.seealso: `MatGetFactor()`, `MATMPIAIJ`, `MATSOLVERMKL_CPARDISO`
 @*/
 PetscErrorCode MatMkl_CPardisoSetCntl(Mat F, PetscInt icntl, PetscInt ival) {
   PetscFunctionBegin;
@@ -742,7 +742,7 @@ PetscErrorCode MatMkl_CPardisoSetCntl(Mat F, PetscInt icntl, PetscInt ival) {
 /*MC
   MATSOLVERMKL_CPARDISO -  A matrix type providing direct solvers (LU) for parallel matrices via the external package MKL_CPARDISO.
 
-  Works with MATMPIAIJ matrices
+  Works with `MATMPIAIJ` matrices
 
   Use -pc_type lu -pc_factor_mat_solver_type mkl_cpardiso to use this direct solver
 
@@ -780,8 +780,7 @@ PetscErrorCode MatMkl_CPardisoSetCntl(Mat F, PetscInt icntl, PetscInt ival) {
 
     For more information on the options check the MKL_CPARDISO manual
 
-.seealso: `PCFactorSetMatSolverType()`, `MatSolverType`
-
+.seealso: `PCFactorSetMatSolverType()`, `MatSolverType`, `MatMkl_CPardisoSetCntl()`, `MatGetFactor()`
 M*/
 
 static PetscErrorCode MatFactorGetSolverType_mkl_cpardiso(Mat A, MatSolverType *type) {

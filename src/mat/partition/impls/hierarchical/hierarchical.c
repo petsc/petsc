@@ -488,7 +488,7 @@ static PetscErrorCode MatPartitioningImprove_Hierarchical(MatPartitioning part, 
    into a large number of subgraphs (often more than 10K) since partitions obtained with existing partitioners
    such as ParMETIS and PTScotch are far from ideal. The hierarchical partitioning also tries to avoid off-node
    communication as much as possible for multi-core processor. Another user case for the hierarchical partitioning
-   is to improve PCGASM convergence by generating multi-rank connected subdomain.
+   is to improve `PCGASM` convergence by generating multi-rank connected subdomain.
 
    Collective
 
@@ -510,8 +510,7 @@ static PetscErrorCode MatPartitioningImprove_Hierarchical(MatPartitioning part, 
       A general-purpose hierarchical mesh partitioning method with node balancing strategies for large-scale numerical simulations,
       arXiv preprint arXiv:1809.02666CoRR, 2018.
 
-.seealso: `MatPartitioningSetType()`, `MatPartitioningType`
-
+.seealso: `MatPartitioningSetType()`, `MatPartitioningType`, `MATPARTITIONINGMETIS`, `MATPARTITIONINGPARMETIS`,
 M*/
 
 PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Hierarchical(MatPartitioning part) {

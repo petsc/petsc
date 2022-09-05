@@ -87,7 +87,7 @@ PetscErrorCode MatGetMPIMatType_Private(Mat mat, MatType *MPIType) {
 /*@C
    MatSetType - Builds matrix object for a particular matrix type
 
-   Collective on Mat
+   Collective on mat
 
    Input Parameters:
 +  mat      - the matrix object
@@ -97,7 +97,7 @@ PetscErrorCode MatGetMPIMatType_Private(Mat mat, MatType *MPIType) {
 .  -mat_type  <method> - Sets the type; use -help for a list
     of available methods (for instance, seqaij)
 
-   Notes:
+   Note:
    See "${PETSC_DIR}/include/petscmat.h" for available methods
 
   Level: intermediate
@@ -173,7 +173,7 @@ PetscErrorCode MatSetType(Mat mat, MatType matype) {
 
    Level: intermediate
 
-.seealso: `MatSetType()`
+.seealso: `MatType`, `MatSetType()`
 @*/
 PetscErrorCode MatGetType(Mat mat, MatType *type) {
   PetscFunctionBegin;
@@ -184,7 +184,7 @@ PetscErrorCode MatGetType(Mat mat, MatType *type) {
 }
 
 /*@C
-   MatGetVecType - Gets the vector type used by the matrix object.
+   MatGetVecType - Gets the vector type the matrix will return with `MatCreateVecs()`
 
    Not Collective
 
@@ -196,7 +196,7 @@ PetscErrorCode MatGetType(Mat mat, MatType *type) {
 
    Level: intermediate
 
-.seealso: `MatSetVecType()`
+.seealso: `MatType`, `Mat`, `MatSetVecType()`, `VecType`
 @*/
 PetscErrorCode MatGetVecType(Mat mat, VecType *vtype) {
   PetscFunctionBegin;
@@ -207,20 +207,20 @@ PetscErrorCode MatGetVecType(Mat mat, VecType *vtype) {
 }
 
 /*@C
-   MatSetVecType - Set the vector type to be used for a matrix object
+   MatSetVecType - Set the vector type the matrix will return with `MatCreateVecs()`
 
-   Collective on Mat
+   Collective on mat
 
    Input Parameters:
 +  mat   - the matrix object
 -  vtype - vector type
 
-   Notes:
+   Note:
      This is rarely needed in practice since each matrix object internally sets the proper vector type.
 
   Level: intermediate
 
-.seealso: `VecSetType()`, `MatGetVecType()`
+.seealso: `VecType`, `VecSetType()`, `MatGetVecType()`
 @*/
 PetscErrorCode MatSetVecType(Mat mat, VecType vtype) {
   PetscFunctionBegin;
@@ -239,8 +239,8 @@ PetscErrorCode MatSetVecType(Mat mat, VecType vtype) {
 +  name - name of a new user-defined matrix type
 -  routine_create - routine to create method context
 
-   Notes:
-   MatRegister() may be called multiple times to add several user-defined solvers.
+   Note:
+   `MatRegister()` may be called multiple times to add several user-defined solvers.
 
    Sample usage:
 .vb
@@ -254,9 +254,7 @@ $     -mat_type my_mat
 
    Level: advanced
 
-.seealso: `MatRegisterAll()`
-
-  Level: advanced
+.seealso: `Mat`, `MatType`, `MatSetType()`, `MatRegisterAll()`
 @*/
 PetscErrorCode MatRegister(const char sname[], PetscErrorCode (*function)(Mat)) {
   PetscFunctionBegin;
@@ -268,26 +266,27 @@ PetscErrorCode MatRegister(const char sname[], PetscErrorCode (*function)(Mat)) 
 MatRootName MatRootNameList = NULL;
 
 /*@C
-      MatRegisterRootName - Registers a name that can be used for either a sequential or its corresponding parallel matrix type. MatSetType()
+      MatRegisterRootName - Registers a name that can be used for either a sequential or its corresponding parallel matrix type. `MatSetType()`
         and -mat_type will automatically use the sequential or parallel version based on the size of the MPI communicator associated with the
         matrix.
 
   Input Parameters:
-+     rname - the rootname, for example, MATAIJ
-.     sname - the name of the sequential matrix type, for example, MATSEQAIJ
--     mname - the name of the parallel matrix type, for example, MATMPIAIJ
++     rname - the rootname, for example, `MATAIJ`
+.     sname - the name of the sequential matrix type, for example, `MATSEQAIJ`
+-     mname - the name of the parallel matrix type, for example, `MATMPIAIJ`
 
-  Notes: The matrix rootname should not be confused with the base type of the function PetscObjectBaseTypeCompare()
+  Note:
+  The matrix rootname should not be confused with the base type of the function `PetscObjectBaseTypeCompare()`
 
-  Developer Notes: PETSc vectors have a similar rootname that indicates PETSc should automatically select the appropriate VecType based on the
-      size of the communicator but it is implemented by simply having additional VecCreate_RootName() registerer routines that dispatch to the
+  Developer Note:
+  PETSc vectors have a similar rootname that indicates PETSc should automatically select the appropriate `VecType` based on the
+      size of the communicator but it is implemented by simply having additional `VecCreate_RootName()` registerer routines that dispatch to the
       appropriate creation routine. Why have two different ways of implementing the same functionality for different types of objects? It is
       confusing.
 
   Level: developer
 
-.seealso: `PetscObjectBaseTypeCompare()`
-
+.seealso: `Mat`, `MatType`, `PetscObjectBaseTypeCompare()`
 @*/
 PetscErrorCode MatRegisterRootName(const char rname[], const char sname[], const char mname[]) {
   MatRootName names;

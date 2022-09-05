@@ -15,12 +15,12 @@ extern PetscErrorCode MatMFFDInitializePackage(void);
 extern PetscErrorCode MatSolverTypeDestroy(void);
 static PetscBool      MatPackageInitialized = PETSC_FALSE;
 /*@C
-  MatFinalizePackage - This function destroys everything in the Petsc interface to the Mat package. It is
-  called from PetscFinalize().
+  MatFinalizePackage - This function destroys everything in the Petsc interface to the `Mat` package. It is
+  called from `PetscFinalize()`.
 
   Level: developer
 
-.seealso: `PetscFinalize()`, `MatInitializePackage()`
+.seealso: `Mat`, `PetscFinalize()`, `MatInitializePackage()`
 @*/
 PetscErrorCode        MatFinalizePackage(void) {
          MatRootName nnames, names = MatRootNameList;
@@ -116,13 +116,13 @@ PETSC_INTERN PetscErrorCode MatGetFactor_constantdiagonal_petsc(Mat, MatFactorTy
 PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_bas(Mat, MatFactorType, Mat *);
 
 /*@C
-  MatInitializePackage - This function initializes everything in the Mat package. It is called
-  from PetscDLLibraryRegister_petscmat() when using dynamic libraries, and on the first call to MatCreate()
+  MatInitializePackage - This function initializes everything in the `Mat` package. It is called
+  from `PetscDLLibraryRegister_petscmat()` when using dynamic libraries, and on the first call to `MatCreate()`
   when using shared or static libraries.
 
   Level: developer
 
-.seealso: `PetscInitialize()`, `MatFinalizePackage()`
+.seealso: `Mat`, `PetscInitialize()`, `MatFinalizePackage()`
 @*/
 PetscErrorCode MatInitializePackage(void) {
   char      logList[256];

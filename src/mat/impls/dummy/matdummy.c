@@ -43,7 +43,6 @@ PetscErrorCode MatDestroy_Dummy(Mat A) {
   Level: developer
 
 .seealso: `Mat`
-
 M*/
 
 PETSC_EXTERN PetscErrorCode MatCreate_Dummy(Mat A) {

@@ -157,7 +157,7 @@ static PetscErrorCode MatDestroy_LocalRef(Mat B) {
 }
 
 /*@
-   MatCreateLocalRef - Gets a logical reference to a local submatrix, for use in assembly
+   MatCreateLocalRef - Gets a logical reference to a local submatrix, for use in assembly, that is to set values into the matrix
 
    Not Collective
 
@@ -172,13 +172,13 @@ static PetscErrorCode MatDestroy_LocalRef(Mat B) {
    Level: developer
 
    Notes:
-   Most will use MatGetLocalSubMatrix() which returns a real matrix corresponding to the local
+   Most will use `MatGetLocalSubMatrix()` which returns a real matrix corresponding to the local
    block if it available, such as with matrix formats that store these blocks separately.
 
-   The new matrix forwards MatSetValuesLocal() and MatSetValuesBlockedLocal() to the global system.
-   In general, it does not define MatMult() or any other functions.  Local submatrices can be nested.
+   The new matrix forwards `MatSetValuesLocal()` and `MatSetValuesBlockedLocal()` to the global system.
+   In general, it does not define `MatMult()` or any other functions.  Local submatrices can be nested.
 
-.seealso: `MatSetValuesLocal()`, `MatSetValuesBlockedLocal()`, `MatGetLocalSubMatrix()`, `MatCreateSubMatrix()`
+.seealso: MATSUBMATRIX`, `MatCreateSubMatrixVirtual()`, `MatSetValuesLocal()`, `MatSetValuesBlockedLocal()`, `MatGetLocalSubMatrix()`, `MatCreateSubMatrix()`
 @*/
 PetscErrorCode MatCreateLocalRef(Mat A, IS isrow, IS iscol, Mat *newmat) {
   Mat_LocalRef *lr;

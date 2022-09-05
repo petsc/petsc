@@ -1,41 +1,24 @@
 
-/*
-    Defines the basic matrix operations for the MAIJ  matrix storage format.
-  This format is used for restriction and interpolation operations for
-  multicomponent problems. It interpolates each component the same way
-  independently.
-
-     We provide:
-         MatMult()
-         MatMultTranspose()
-         MatMultTransposeAdd()
-         MatMultAdd()
-          and
-         MatCreateMAIJ(Mat,dof,Mat*)
-
-     This single directory handles both the sequential and parallel codes
-*/
-
 #include <../src/mat/impls/maij/maij.h> /*I "petscmat.h" I*/
 #include <../src/mat/utils/freespace.h>
 
 /*@
-   MatMAIJGetAIJ - Get the AIJ matrix describing the blockwise action of the MAIJ matrix
+   MatMAIJGetAIJ - Get the `MATAIJ` matrix describing the blockwise action of the `MATMAIJ` matrix
 
-   Not Collective, but if the MAIJ matrix is parallel, the AIJ matrix is also parallel
+   Not Collective, but if the `MATMAIJ` matrix is parallel, the `MATAIJ` matrix is also parallel
 
    Input Parameter:
-.  A - the MAIJ matrix
+.  A - the `MATMAIJ` matrix
 
    Output Parameter:
-.  B - the AIJ matrix
+.  B - the `MATAIJ` matrix
 
    Level: advanced
 
-   Notes:
-    The reference count on the AIJ matrix is not increased so you should not destroy it.
+   Note:
+    The reference count on the `MATAIJ` matrix is not increased so you should not destroy it.
 
-.seealso: `MatCreateMAIJ()`
+.seealso: `MATMAIJ`, `MATAIJ`, `MatCreateMAIJ()`
 @*/
 PetscErrorCode MatMAIJGetAIJ(Mat A, Mat *B) {
   PetscBool ismpimaij, isseqmaij;
@@ -58,20 +41,20 @@ PetscErrorCode MatMAIJGetAIJ(Mat A, Mat *B) {
 }
 
 /*@
-   MatMAIJRedimension - Get an MAIJ matrix with the same action, but for a different block size
+   MatMAIJRedimension - Get a new `MATMAIJ` matrix with the same action, but for a different block size
 
    Logically Collective
 
    Input Parameters:
-+  A - the MAIJ matrix
++  A - the `MATMAIJ` matrix
 -  dof - the block size for the new matrix
 
    Output Parameter:
-.  B - the new MAIJ matrix
+.  B - the new `MATMAIJ` matrix
 
    Level: advanced
 
-.seealso: `MatCreateMAIJ()`
+.seealso: `MATMAIJ`, `MatCreateMAIJ()`
 @*/
 PetscErrorCode MatMAIJRedimension(Mat A, PetscInt dof, Mat *B) {
   Mat Aij = NULL;
@@ -140,19 +123,19 @@ PetscErrorCode MatDestroy_MPIMAIJ(Mat A) {
 /*MC
   MATMAIJ - MATMAIJ = "maij" - A matrix type to be used for restriction and interpolation operations for
   multicomponent problems, interpolating or restricting each component the same way independently.
-  The matrix type is based on MATSEQAIJ for sequential matrices, and MATMPIAIJ for distributed matrices.
+  The matrix type is based on `MATSEQAIJ` for sequential matrices, and `MATMPIAIJ` for distributed matrices.
 
   Operations provided:
 .vb
-    MatMult
-    MatMultTranspose
-    MatMultAdd
-    MatMultTransposeAdd
+    MatMult()
+    MatMultTranspose()
+    MatMultAdd()
+    MatMultTransposeAdd()
 .ve
 
   Level: advanced
 
-.seealso: `MatMAIJGetAIJ()`, `MatMAIJRedimension()`, `MatCreateMAIJ()`
+.seealso: `MATAIJ`, `MatMAIJGetAIJ()`, `MatMAIJRedimension()`, `MatCreateMAIJ()`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatCreate_MAIJ(Mat A) {
@@ -3246,30 +3229,30 @@ PetscErrorCode MatCreateSubMatrices_MAIJ(Mat mat, PetscInt n, const IS irow[], c
 /*@
   MatCreateMAIJ - Creates a matrix type providing restriction and interpolation
   operations for multicomponent problems.  It interpolates each component the same
-  way independently.  The matrix type is based on MATSEQAIJ for sequential matrices,
-  and MATMPIAIJ for distributed matrices.
+  way independently.  The matrix type is based on `MATSEQAIJ` for sequential matrices,
+  and `MATMPIAIJ` for distributed matrices.
 
   Collective
 
   Input Parameters:
-+ A - the AIJ matrix describing the action on blocks
++ A - the `MATAIJ` matrix describing the action on blocks
 - dof - the block size (number of components per node)
 
   Output Parameter:
-. maij - the new MAIJ matrix
+. maij - the new `MATMAIJ` matrix
 
   Operations provided:
 .vb
-    MatMult
-    MatMultTranspose
-    MatMultAdd
-    MatMultTransposeAdd
-    MatView
+    MatMult()
+    MatMultTranspose()
+    MatMultAdd()
+    MatMultTransposeAdd()
+    MatView()
 .ve
 
   Level: advanced
 
-.seealso: `MatMAIJGetAIJ()`, `MatMAIJRedimension()`, `MATMAIJ`
+.seealso: `MATAIJ`, `MATMAIJ`, `MatMAIJGetAIJ()`, `MatMAIJRedimension()`, `MATMAIJ`
 @*/
 PetscErrorCode MatCreateMAIJ(Mat A, PetscInt dof, Mat *maij) {
   PetscInt  n;

@@ -795,7 +795,7 @@ PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_SuperLU_DIST(void) {
 
   Use -pc_type lu -pc_factor_mat_solver_type superlu_dist to use this direct solver
 
-   Works with AIJ matrices
+   Works with `MATAIJ` matrices
 
   Options Database Keys:
 + -mat_superlu_dist_r <n> - number of rows in processor partition
@@ -810,13 +810,10 @@ PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_SuperLU_DIST(void) {
 . -mat_superlu_dist_iterrefine - use iterative refinement
 - -mat_superlu_dist_statprint - print factorization information
 
-  Notes:
+  Note:
     If PETSc was configured with --with-cuda than this solver will automatically use the GPUs.
 
   Level: beginner
 
-.seealso: `PCLU`
-
-.seealso: `PCFactorSetMatSolverType()`, `MatSolverType`
-
+.seealso: `PCLU`, `PCFactorSetMatSolverType()`, `MatSolverType`, `MatGetFactor()`
 M*/

@@ -1031,19 +1031,19 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJMKL(Mat A, MatType type, Mat
 }
 
 /*@C
-   MatCreateSeqAIJMKL - Creates a sparse matrix of type SEQAIJMKL.
-   This type inherits from AIJ and is largely identical, but uses sparse BLAS
+   MatCreateSeqAIJMKL - Creates a sparse matrix of type `MATSEQAIJMKL`.
+   This type inherits from `MATSEQAIJ` and is largely identical, but uses sparse BLAS
    routines from Intel MKL whenever possible.
    If the installed version of MKL supports the "SpMV2" sparse
    inspector-executor routines, then those are used by default.
-   MatMult, MatMultAdd, MatMultTranspose, MatMultTransposeAdd, MatMatMult, MatTransposeMatMult, and MatPtAP (for
-   symmetric A) operations are currently supported.
-   Note that MKL version 18, update 2 or later is required for MatPtAP/MatPtAPNumeric and MatMatMultNumeric.
+   `MatMult()`, `MatMultAdd()`, `MatMultTranspose()`, `MatMultTransposeAdd()`, `MatMatMult()`, `MatTransposeMatMult()`, and `MatPtAP()`
+   (for symmetric A) operations are currently supported.
+   Note that MKL version 18, update 2 or later is required for `MatPtAP()`, `MatPtAPNumeric()` and `MatMatMultNumeric()`.
 
    Collective
 
    Input Parameters:
-+  comm - MPI communicator, set to PETSC_COMM_SELF
++  comm - MPI communicator, set to `PETSC_COMM_SELF`
 .  m - number of rows
 .  n - number of columns
 .  nz - number of nonzeros per row (same for all rows)
@@ -1057,7 +1057,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJMKL(Mat A, MatType type, Mat
 +  -mat_aijmkl_no_spmv2 - disable use of the SpMV2 inspector-executor routines
 -  -mat_aijmkl_eager_inspection - perform MKL "inspection" phase upon matrix assembly; default is to do "lazy" inspection, performing this step the first time the matrix is applied
 
-   Notes:
+   Note:
    If nnz is given then nz is ignored
 
    Level: intermediate

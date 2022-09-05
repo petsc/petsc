@@ -1558,11 +1558,9 @@ PetscErrorCode MatConvert_SeqDense_SeqDenseCUDA(Mat M, MatType type, MatReuse re
    Output Parameter:
 .  A - the matrix
 
-   Notes:
-
    Level: intermediate
 
-.seealso: `MatCreate()`, `MatCreateSeqDense()`
+.seealso: `MATSEQDENSE`, `MatCreate()`, `MatCreateSeqDense()`
 @*/
 PetscErrorCode MatCreateSeqDenseCUDA(MPI_Comm comm, PetscInt m, PetscInt n, PetscScalar *data, Mat *A) {
   PetscMPIInt size;
@@ -1581,9 +1579,11 @@ PetscErrorCode MatCreateSeqDenseCUDA(MPI_Comm comm, PetscInt m, PetscInt n, Pets
    MATSEQDENSECUDA - MATSEQDENSECUDA = "seqdensecuda" - A matrix type to be used for sequential dense matrices on GPUs.
 
    Options Database Keys:
-. -mat_type seqdensecuda - sets the matrix type to "seqdensecuda" during a call to MatSetFromOptions()
+. -mat_type seqdensecuda - sets the matrix type to `MATSEQDENSECUDA` during a call to MatSetFromOptions()
 
   Level: beginner
+
+.seealso: `MATSEQDENSE`
 M*/
 PETSC_EXTERN PetscErrorCode MatCreate_SeqDenseCUDA(Mat B) {
   PetscFunctionBegin;

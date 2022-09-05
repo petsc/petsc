@@ -633,9 +633,9 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCUSPARSE(Mat A) {
 }
 
 /*@
-   MatCreateAIJCUSPARSE - Creates a sparse matrix in AIJ (compressed row) format
+   MatCreateAIJCUSPARSE - Creates a sparse matrix in `MATAIJCUSPARSE` (compressed row) format
    (the default parallel PETSc format).  This matrix will ultimately pushed down
-   to NVidia GPUs and use the CUSPARSE library for calculations. For good matrix
+   to NVIDIA GPUs and use the CuSPARSE library for calculations. For good matrix
    assembly performance the user should preallocate the matrix storage by setting
    the parameter nz (or the array nnz).  By setting these parameters accurately,
    performance during matrix assembly can be increased by more than a factor of 50.
@@ -643,7 +643,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCUSPARSE(Mat A) {
    Collective
 
    Input Parameters:
-+  comm - MPI communicator, set to PETSC_COMM_SELF
++  comm - MPI communicator, set to `PETSC_COMM_SELF`
 .  m - number of rows
 .  n - number of columns
 .  nz - number of nonzeros per row (same for all rows)
@@ -653,20 +653,20 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCUSPARSE(Mat A) {
    Output Parameter:
 .  A - the matrix
 
-   It is recommended that one use the MatCreate(), MatSetType() and/or MatSetFromOptions(),
+   It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`,
    MatXXXXSetPreallocation() paradigm instead of this routine directly.
-   [MatXXXXSetPreallocation() is, for example, MatSeqAIJSetPreallocation]
+   [MatXXXXSetPreallocation() is, for example, `MatSeqAIJSetPreallocation()`]
 
    Notes:
    If nnz is given then nz is ignored
 
-   The AIJ format (also called the Yale sparse matrix format or
+   The AIJ format, also called the
    compressed row storage), is fully compatible with standard Fortran 77
    storage.  That is, the stored row and column indices can begin at
    either one (as in Fortran) or zero.  See the users' manual for details.
 
    Specify the preallocated storage with either nz or nnz (not both).
-   Set nz=PETSC_DEFAULT and nnz=NULL for PETSc to control dynamic memory
+   Set nz = `PETSC_DEFAULT` and nnz = NULL for PETSc to control dynamic memory
    allocation.  For large problems you MUST preallocate memory or you
    will get TERRIBLE performance, see the users' manual chapter on matrices.
 
@@ -677,7 +677,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCUSPARSE(Mat A) {
 
    Level: intermediate
 
-.seealso: `MatCreate()`, `MatCreateAIJ()`, `MatSetValues()`, `MatSeqAIJSetColumnIndices()`, `MatCreateSeqAIJWithArrays()`, `MatCreateAIJ()`, `MATMPIAIJCUSPARSE`, `MATAIJCUSPARSE`
+.seealso: `MATAIJCUSPARSE`, `MatCreate()`, `MatCreateAIJ()`, `MatSetValues()`, `MatSeqAIJSetColumnIndices()`, `MatCreateSeqAIJWithArrays()`, `MatCreateAIJ()`, `MATMPIAIJCUSPARSE`, `MATAIJCUSPARSE`
 @*/
 PetscErrorCode MatCreateAIJCUSPARSE(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscInt d_nz, const PetscInt d_nnz[], PetscInt o_nz, const PetscInt o_nnz[], Mat *A) {
   PetscMPIInt size;
@@ -697,23 +697,23 @@ PetscErrorCode MatCreateAIJCUSPARSE(MPI_Comm comm, PetscInt m, PetscInt n, Petsc
 }
 
 /*MC
-   MATAIJCUSPARSE - A matrix type to be used for sparse matrices; it is as same as MATMPIAIJCUSPARSE.
+   MATAIJCUSPARSE - A matrix type to be used for sparse matrices; it is as same as `MATMPIAIJCUSPARSE`.
 
-   A matrix type type whose data resides on Nvidia GPUs. These matrices can be in either
+   A matrix type type whose data resides on NVIDIA GPUs. These matrices can be in either
    CSR, ELL, or Hybrid format. The ELL and HYB formats require CUDA 4.2 or later.
-   All matrix calculations are performed on Nvidia GPUs using the CUSPARSE library.
+   All matrix calculations are performed on NVIDIA GPUs using the CuSPARSE library.
 
-   This matrix type is identical to MATSEQAIJCUSPARSE when constructed with a single process communicator,
-   and MATMPIAIJCUSPARSE otherwise.  As a result, for single process communicators,
-   MatSeqAIJSetPreallocation is supported, and similarly MatMPIAIJSetPreallocation is supported
+   This matrix type is identical to `MATSEQAIJCUSPARSE` when constructed with a single process communicator,
+   and `MATMPIAIJCUSPARSE` otherwise.  As a result, for single process communicators,
+   `MatSeqAIJSetPreallocation()` is supported, and similarly `MatMPIAIJSetPreallocation()` is supported
    for communicators controlling multiple processes.  It is recommended that you call both of
    the above preallocation routines for simplicity.
 
    Options Database Keys:
-+  -mat_type mpiaijcusparse - sets the matrix type to "mpiaijcusparse" during a call to MatSetFromOptions()
++  -mat_type mpiaijcusparse - sets the matrix type to `MATMPIAIJCUSPARSE` during a call to `MatSetFromOptions()`
 .  -mat_cusparse_storage_format csr - sets the storage format of diagonal and off-diagonal matrices during a call to MatSetFromOptions(). Other options include ell (ellpack) or hyb (hybrid).
-.  -mat_cusparse_mult_diag_storage_format csr - sets the storage format of diagonal matrix during a call to MatSetFromOptions(). Other options include ell (ellpack) or hyb (hybrid).
--  -mat_cusparse_mult_offdiag_storage_format csr - sets the storage format of off-diagonal matrix during a call to MatSetFromOptions(). Other options include ell (ellpack) or hyb (hybrid).
+.  -mat_cusparse_mult_diag_storage_format csr - sets the storage format of diagonal matrix during a call to `MatSetFromOptions()`. Other options include ell (ellpack) or hyb (hybrid).
+-  -mat_cusparse_mult_offdiag_storage_format csr - sets the storage format of off-diagonal matrix during a call to `MatSetFromOptions()`. Other options include ell (ellpack) or hyb (hybrid).
 
   Level: beginner
 
@@ -721,7 +721,7 @@ PetscErrorCode MatCreateAIJCUSPARSE(MPI_Comm comm, PetscInt m, PetscInt n, Petsc
 M*/
 
 /*MC
-   MATMPIAIJCUSPARSE - A matrix type to be used for sparse matrices; it is as same as MATAIJCUSPARSE.
+   MATMPIAIJCUSPARSE - A matrix type to be used for sparse matrices; it is as same as `MATAIJCUSPARSE`.
 
   Level: beginner
 

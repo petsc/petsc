@@ -2558,11 +2558,10 @@ PetscErrorCode MatSeqBAIJSetColumnIndices_SeqBAIJ(Mat mat, PetscInt *indices) {
 }
 
 /*@
-    MatSeqBAIJSetColumnIndices - Set the column indices for all the rows
-       in the matrix.
+    MatSeqBAIJSetColumnIndices - Set the column indices for all the rows in the matrix.
 
   Input Parameters:
-+  mat - the SeqBAIJ matrix
++  mat - the `MATSEQBAIJ` matrix
 -  indices - the column indices
 
   Level: advanced
@@ -2570,13 +2569,14 @@ PetscErrorCode MatSeqBAIJSetColumnIndices_SeqBAIJ(Mat mat, PetscInt *indices) {
   Notes:
     This can be called if you have precomputed the nonzero structure of the
   matrix and want to provide it to the matrix object to improve the performance
-  of the MatSetValues() operation.
+  of the `MatSetValues()` operation.
 
     You MUST have set the correct numbers of nonzeros per row in the call to
-  MatCreateSeqBAIJ(), and the columns indices MUST be sorted.
+  `MatCreateSeqBAIJ()`, and the columns indices MUST be sorted.
 
-    MUST be called before any calls to MatSetValues();
+    MUST be called before any calls to `MatSetValues()`
 
+.seealso: `MATSEQBAIJ`, `MatSetValues()`
 @*/
 PetscErrorCode MatSeqBAIJSetColumnIndices(Mat mat, PetscInt *indices) {
   PetscFunctionBegin;
@@ -3320,19 +3320,19 @@ PetscErrorCode MatSeqBAIJSetPreallocationCSR_SeqBAIJ(Mat B, PetscInt bs, const P
 }
 
 /*@C
-   MatSeqBAIJGetArray - gives access to the array where the data for a MATSEQBAIJ matrix is stored
+   MatSeqBAIJGetArray - gives read/write access to the array where the data for a `MATSEQBAIJ` matrix is stored
 
    Not Collective
 
    Input Parameter:
-.  mat - a MATSEQBAIJ matrix
+.  mat - a `MATSEQBAIJ` matrix
 
    Output Parameter:
 .   array - pointer to the data
 
    Level: intermediate
 
-.seealso: `MatSeqBAIJRestoreArray()`, `MatSeqAIJGetArray()`, `MatSeqAIJRestoreArray()`
+.seealso: `MATSEQBAIJ`, `MatSeqBAIJRestoreArray()`, `MatSeqAIJGetArray()`, `MatSeqAIJRestoreArray()`
 @*/
 PetscErrorCode MatSeqBAIJGetArray(Mat A, PetscScalar **array) {
   PetscFunctionBegin;
@@ -3341,12 +3341,12 @@ PetscErrorCode MatSeqBAIJGetArray(Mat A, PetscScalar **array) {
 }
 
 /*@C
-   MatSeqBAIJRestoreArray - returns access to the array where the data for a MATSEQBAIJ matrix is stored obtained by MatSeqBAIJGetArray()
+   MatSeqBAIJRestoreArray - returns access to the array where the data for a `MATSEQBAIJ` matrix is stored obtained by `MatSeqBAIJGetArray()`
 
    Not Collective
 
    Input Parameters:
-+  mat - a MATSEQBAIJ matrix
++  mat - a `MATSEQBAIJ` matrix
 -  array - pointer to the data
 
    Level: intermediate
@@ -3370,8 +3370,8 @@ PetscErrorCode MatSeqBAIJRestoreArray(Mat A, PetscScalar **array) {
    Level: beginner
 
    Notes:
-    MatSetOptions(,MAT_STRUCTURE_ONLY,PETSC_TRUE) may be called for this matrix type. In this no
-    space is allocated for the nonzero entries and any entries passed with MatSetValues() are ignored
+    `MatSetOptions`(,`MAT_STRUCTURE_ONLY`,`PETSC_TRUE`) may be called for this matrix type. In this no
+    space is allocated for the nonzero entries and any entries passed with `MatSetValues()` are ignored
 
    Run with -info to see what version of the matrix-vector product is being used
 
@@ -3640,7 +3640,7 @@ PetscErrorCode MatLoad_SeqBAIJ(Mat mat, PetscViewer viewer) {
 }
 
 /*@C
-   MatCreateSeqBAIJ - Creates a sparse matrix in block AIJ (block
+   MatCreateSeqBAIJ - Creates a sparse matrix in `MATSEQAIJ` (block
    compressed row) format.  For good matrix assembly performance the
    user should preallocate the matrix storage by setting the parameter nz
    (or the array nnz).  By setting these parameters accurately, performance
@@ -3649,9 +3649,9 @@ PetscErrorCode MatLoad_SeqBAIJ(Mat mat, PetscViewer viewer) {
    Collective
 
    Input Parameters:
-+  comm - MPI communicator, set to PETSC_COMM_SELF
-.  bs - size of block, the blocks are ALWAYS square. One can use MatSetBlockSizes() to set a different row and column blocksize but the row
-          blocksize always defines the size of the blocks. The column blocksize sets the blocksize of the vectors obtained with MatCreateVecs()
++  comm - MPI communicator, set to `PETSC_COMM_SELF`
+.  bs - size of block, the blocks are ALWAYS square. One can use `MatSetBlockSizes()` to set a different row and column blocksize but the row
+          blocksize always defines the size of the blocks. The column blocksize sets the blocksize of the vectors obtained with `MatCreateVecs()`
 .  m - number of rows
 .  n - number of columns
 .  nz - number of nonzero blocks  per block row (same for all rows)
@@ -3661,14 +3661,13 @@ PetscErrorCode MatLoad_SeqBAIJ(Mat mat, PetscViewer viewer) {
    Output Parameter:
 .  A - the matrix
 
-   It is recommended that one use the MatCreate(), MatSetType() and/or MatSetFromOptions(),
+   It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`,
    MatXXXXSetPreallocation() paradigm instead of this routine directly.
-   [MatXXXXSetPreallocation() is, for example, MatSeqAIJSetPreallocation]
+   [MatXXXXSetPreallocation() is, for example, `MatSeqAIJSetPreallocation()`]
 
    Options Database Keys:
-+   -mat_no_unroll - uses code that does not unroll the loops in the
-                     block calculations (much slower)
--    -mat_block_size - size of the blocks to use
++   -mat_no_unroll - uses code that does not unroll the loops in the block calculations (much slower)
+-   -mat_block_size - size of the blocks to use
 
    Level: intermediate
 
@@ -3679,12 +3678,12 @@ PetscErrorCode MatLoad_SeqBAIJ(Mat mat, PetscViewer viewer) {
 
    A nonzero block is any block that as 1 or more nonzeros in it
 
-   The block AIJ format is fully compatible with standard Fortran 77
+   The `MATSEQBAIJ` format is fully compatible with standard Fortran 77
    storage.  That is, the stored row and column indices can begin at
    either one (as in Fortran) or zero.  See the users' manual for details.
 
    Specify the preallocated storage with either nz or nnz (not both).
-   Set nz=PETSC_DEFAULT and nnz=NULL for PETSc to control dynamic memory
+   Set nz = `PETSC_DEFAULT` and nnz = NULL for PETSc to control dynamic memory
    allocation.  See Users-Manual: ch_mat for details.
    matrices.
 
@@ -3710,15 +3709,14 @@ PetscErrorCode MatCreateSeqBAIJ(MPI_Comm comm, PetscInt bs, PetscInt m, PetscInt
 
    Input Parameters:
 +  B - the matrix
-.  bs - size of block, the blocks are ALWAYS square. One can use MatSetBlockSizes() to set a different row and column blocksize but the row
-          blocksize always defines the size of the blocks. The column blocksize sets the blocksize of the vectors obtained with MatCreateVecs()
+.  bs - size of block, the blocks are ALWAYS square. One can use `MatSetBlockSizes()` to set a different row and column blocksize but the row
+          blocksize always defines the size of the blocks. The column blocksize sets the blocksize of the vectors obtained with `MatCreateVecs()`
 .  nz - number of block nonzeros per block row (same for all rows)
 -  nnz - array containing the number of block nonzeros in the various block rows
          (possibly different for each block row) or NULL
 
    Options Database Keys:
-+   -mat_no_unroll - uses code that does not unroll the loops in the
-                     block calculations (much slower)
++   -mat_no_unroll - uses code that does not unroll the loops in the block calculations (much slower)
 -   -mat_block_size - size of the blocks to use
 
    Level: intermediate
@@ -3726,17 +3724,17 @@ PetscErrorCode MatCreateSeqBAIJ(MPI_Comm comm, PetscInt bs, PetscInt m, PetscInt
    Notes:
    If the nnz parameter is given then the nz parameter is ignored
 
-   You can call MatGetInfo() to get information on how effective the preallocation was;
+   You can call `MatGetInfo()` to get information on how effective the preallocation was;
    for example the fields mallocs,nz_allocated,nz_used,nz_unneeded;
    You can also run with the option -info and look for messages with the string
    malloc in them to see if additional memory allocation was needed.
 
-   The block AIJ format is fully compatible with standard Fortran 77
+   The `MATSEQBAIJ` format is fully compatible with standard Fortran 77
    storage.  That is, the stored row and column indices can begin at
    either one (as in Fortran) or zero.  See the users' manual for details.
 
    Specify the preallocated storage with either nz or nnz (not both).
-   Set nz=PETSC_DEFAULT and nnz=NULL for PETSc to control dynamic memory
+   Set nz = `PETSC_DEFAULT` and nnz = NULL for PETSc to control dynamic memory
    allocation.  See Users-Manual: ch_mat for details.
 
 .seealso: `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatCreateBAIJ()`, `MatGetInfo()`
@@ -3751,7 +3749,7 @@ PetscErrorCode MatSeqBAIJSetPreallocation(Mat B, PetscInt bs, PetscInt nz, const
 }
 
 /*@C
-   MatSeqBAIJSetPreallocationCSR - Creates a sparse parallel matrix in BAIJ format using the given nonzero structure and (optional) numerical values
+   MatSeqBAIJSetPreallocationCSR - Creates a sparse sequential matrix in `MATSEQBAIJ` format using the given nonzero structure and (optional) numerical values
 
    Collective
 
@@ -3764,10 +3762,10 @@ PetscErrorCode MatSeqBAIJSetPreallocation(Mat B, PetscInt bs, PetscInt nz, const
    Level: advanced
 
    Notes:
-   The order of the entries in values is specified by the MatOption MAT_ROW_ORIENTED.  For example, C programs
-   may want to use the default MAT_ROW_ORIENTED=PETSC_TRUE and use an array v[nnz][bs][bs] where the second index is
+   The order of the entries in values is specified by the `MatOption` `MAT_ROW_ORIENTED`.  For example, C programs
+   may want to use the default `MAT_ROW_ORIENTED` of `PETSC_TRUE` and use an array v[nnz][bs][bs] where the second index is
    over rows within a block and the last index is over columns within a block row.  Fortran programs will likely set
-   MAT_ROW_ORIENTED=PETSC_FALSE and use a Fortran array v(bs,bs,nnz) in which the first index is over rows within a
+   `MAT_ROW_ORIENTED` of `PETSC_FALSE` and use a Fortran array v(bs,bs,nnz) in which the first index is over rows within a
    block column and the second index is over columns within a block.
 
    Though this routine has Preallocation() in the name it also sets the exact nonzero locations of the matrix entries and usually the numerical values as well
@@ -3784,7 +3782,7 @@ PetscErrorCode MatSeqBAIJSetPreallocationCSR(Mat B, PetscInt bs, const PetscInt 
 }
 
 /*@
-     MatCreateSeqBAIJWithArrays - Creates an sequential BAIJ matrix using matrix elements provided by the user.
+     MatCreateSeqBAIJWithArrays - Creates a `MATSEQBAIJ` matrix using matrix elements provided by the user.
 
      Collective
 
@@ -3810,7 +3808,7 @@ PetscErrorCode MatSeqBAIJSetPreallocationCSR(Mat B, PetscInt bs, const PetscInt 
 
        The i and j indices are 0 based
 
-       When block size is greater than 1 the matrix values must be stored using the BAIJ storage format (see the BAIJ code to determine this).
+       When block size is greater than 1 the matrix values must be stored using the `MATSEQBAIJ` storage format
 
       The order of the entries in values is the same as the block compressed sparse row storage format; that is, it is
       the same as a three dimensional array in Fortran values(bs,bs,nnz) that contains the first column of the first
@@ -3818,7 +3816,6 @@ PetscErrorCode MatSeqBAIJSetPreallocationCSR(Mat B, PetscInt bs, const PetscInt 
       with column-major ordering within blocks.
 
 .seealso: `MatCreate()`, `MatCreateBAIJ()`, `MatCreateSeqBAIJ()`
-
 @*/
 PetscErrorCode MatCreateSeqBAIJWithArrays(MPI_Comm comm, PetscInt bs, PetscInt m, PetscInt n, PetscInt i[], PetscInt j[], PetscScalar a[], Mat *mat) {
   PetscInt     ii;

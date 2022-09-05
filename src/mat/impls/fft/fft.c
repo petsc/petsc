@@ -24,7 +24,7 @@ PetscErrorCode MatDestroy_FFT(Mat A) {
 +   comm - MPI communicator
 .   ndim - the ndim-dimensional transform
 .   dim - array of size ndim, dim[i] contains the vector length in the i-dimension
--   type - package type, e.g., FFTW or MATSEQCUFFT
+-   type - package type, e.g., `MATFFTW` or `MATSEQCUFFT`
 
    Output Parameter:
 .   A  - the matrix
@@ -32,11 +32,11 @@ PetscErrorCode MatDestroy_FFT(Mat A) {
    Options Database Keys:
 .   -mat_fft_type - set FFT type fft or seqcufft
 
-   Note: this serves as a base class for all FFT marix classes, currently MATFFTW or MATSEQCUFFT
+   Note: this serves as a base class for all FFT marix classes, currently `MATFFTW` or `MATSEQCUFFT`
 
    Level: intermediate
 
-.seealso: `MatCreateVecsFFTW()`
+.seealso: `MATFFTW`, `MATSEQCUFFT`, `MatCreateVecsFFTW()`
 @*/
 PetscErrorCode MatCreateFFT(MPI_Comm comm, PetscInt ndim, const PetscInt dim[], MatType mattype, Mat *A) {
   PetscMPIInt size;

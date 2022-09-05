@@ -86,9 +86,26 @@ PetscErrorCode PetscObjectView(PetscObject obj, PetscViewer viewer) {
 . bobj  - optional other object that provides prefix (if NULL then the prefix in obj is used)
 - optionname - option string that is used to activate viewing
 
-  Level: intermediate
+  Options Database Key:
+.  -optionname_view [viewertype]:... - option name and values. In actual usage this would be something like -mat_coarse_view
 
-.seealso: `PetscObject`, `PetscObjectView()`
+  Notes:
+.vb
+    If no value is provided ascii:stdout is used
+       ascii[:[filename][:[format][:append]]]    defaults to stdout - format can be one of ascii_info, ascii_info_detail, or ascii_matlab,
+                                                  for example ascii::ascii_info prints just the information about the object not all details
+                                                  unless :append is given filename opens in write mode, overwriting what was already there
+       binary[:[filename][:[format][:append]]]   defaults to the file binaryoutput
+       draw[:drawtype[:filename]]                for example, draw:tikz, draw:tikz:figure.tex  or draw:x
+       socket[:port]                             defaults to the standard output port
+       saws[:communicatorname]                    publishes object to the Scientific Application Webserver (SAWs)
+.ve
+
+  This is not called directly but is called by, for example, `MatCoarseViewFromOptions()`
+
+  Level: developer
+
+.seealso: `PetscObject`, `PetscObjectView()`, `PetscOptionsGetViewer()`
 @*/
 PetscErrorCode PetscObjectViewFromOptions(PetscObject obj, PetscObject bobj, const char optionname[]) {
   PetscViewer       viewer;
@@ -129,7 +146,7 @@ PetscErrorCode PetscObjectViewFromOptions(PetscObject obj, PetscObject bobj, con
 
    Level: intermediate
 
-.seealso: `PetscObject`, `VecGetType()`, `KSPGetType()`, `PCGetType()`, `SNESGetType()`, `PetscObjectBaseTypeCompare()`, `PetscObjectTypeCompareAny()`, `PetscObjectBaseTypeCompareAny()`
+.seealso: `PetscObject`, `VecGetType()`, `KSPGetType()`, `PCGetType()`, `SNESGetType()`, `PetscObjectBaseTypeCompare()`, `PetscObjectTypeCompareAny()`, `PetscObjectBaseTypeCompareAny()`, `PetscObjectObjectTypeCompare()`
 @*/
 PetscErrorCode PetscObjectTypeCompare(PetscObject obj, const char type_name[], PetscBool *same) {
   PetscFunctionBegin;
@@ -142,6 +159,32 @@ PetscErrorCode PetscObjectTypeCompare(PetscObject obj, const char type_name[], P
     PetscValidCharPointer(type_name, 2);
     PetscCall(PetscStrcmp((char *)(obj->type_name), type_name, same));
   }
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   PetscObjectObjectTypeCompare - Determines whether two PETSc objects are of the same type
+
+   Logically Collective
+
+   Input Parameters:
++  obj1 - any PETSc object, for example a Vec, Mat or KSP.
+-  obj2 - anther PETSc object
+
+   Output Parameter:
+.  same - PETSC_TRUE if they are the same, else PETSC_FALSE
+
+   Level: intermediate
+
+.seealso: `PetscObjectTypeCompare()`, `VecGetType()`, `KSPGetType()`, `PCGetType()`, `SNESGetType()`, `PetscObjectBaseTypeCompare()`, `PetscObjectTypeCompareAny()`, `PetscObjectBaseTypeCompareAny()`
+
+@*/
+PetscErrorCode PetscObjectObjectTypeCompare(PetscObject obj1, PetscObject obj2, PetscBool *same) {
+  PetscFunctionBegin;
+  PetscValidBoolPointer(same, 3);
+  PetscValidHeader(obj1, 1);
+  PetscValidHeader(obj2, 2);
+  PetscCall(PetscStrcmp((char *)(obj1->type_name), (char *)(obj2->type_name), same));
   PetscFunctionReturn(0);
 }
 

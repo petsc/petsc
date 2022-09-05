@@ -1010,12 +1010,12 @@ PetscErrorCode MatNestGetSubMat_Nest(Mat A, PetscInt idxm, PetscInt jdxm, Mat *m
 }
 
 /*@
- MatNestGetSubMat - Returns a single, sub-matrix from a nest matrix.
+ MatNestGetSubMat - Returns a single, sub-matrix from a `MATNEST`
 
  Not collective
 
  Input Parameters:
-+   A  - nest matrix
++   A  - `MATNEST` matrix
 .   idxm - index of the matrix within the nest matrix
 -   jdxm - index of the matrix within the nest matrix
 
@@ -1024,7 +1024,7 @@ PetscErrorCode MatNestGetSubMat_Nest(Mat A, PetscInt idxm, PetscInt jdxm, Mat *m
 
  Level: developer
 
-.seealso: `MatNestGetSize()`, `MatNestGetSubMats()`, `MatCreateNest()`, `MATNEST`, `MatNestSetSubMat()`,
+.seealso: `MATNEST`, `MatNestGetSize()`, `MatNestGetSubMats()`, `MatCreateNest()`, `MATNEST`, `MatNestSetSubMat()`,
           `MatNestGetLocalISs()`, `MatNestGetISs()`
 @*/
 PetscErrorCode MatNestGetSubMat(Mat A, PetscInt idxm, PetscInt jdxm, Mat *sub) {
@@ -1062,12 +1062,12 @@ PetscErrorCode MatNestSetSubMat_Nest(Mat A, PetscInt idxm, PetscInt jdxm, Mat ma
 }
 
 /*@
- MatNestSetSubMat - Set a single submatrix in the nest matrix.
+ MatNestSetSubMat - Set a single submatrix in the `MATNEST`
 
  Logically collective on the submatrix communicator
 
  Input Parameters:
-+   A  - nest matrix
++   A  - `MATNEST` matrix
 .   idxm - index of the matrix within the nest matrix
 .   jdxm - index of the matrix within the nest matrix
 -   sub - matrix at index idxm,jdxm within the nest matrix
@@ -1079,7 +1079,7 @@ PetscErrorCode MatNestSetSubMat_Nest(Mat A, PetscInt idxm, PetscInt jdxm, Mat ma
 
  Level: developer
 
-.seealso: `MatNestSetSubMats()`, `MatNestGetSubMats()`, `MatNestGetLocalISs()`, `MATNEST`, `MatCreateNest()`,
+.seealso: `MATNEST`, `MatNestSetSubMats()`, `MatNestGetSubMats()`, `MatNestGetLocalISs()`, `MATNEST`, `MatCreateNest()`,
           `MatNestGetSubMat()`, `MatNestGetISs()`, `MatNestGetSize()`
 @*/
 PetscErrorCode MatNestSetSubMat(Mat A, PetscInt idxm, PetscInt jdxm, Mat sub) {
@@ -1099,7 +1099,7 @@ PetscErrorCode MatNestGetSubMats_Nest(Mat A, PetscInt *M, PetscInt *N, Mat ***ma
 }
 
 /*@C
- MatNestGetSubMats - Returns the entire two dimensional array of matrices defining a nest matrix.
+ MatNestGetSubMats - Returns the entire two dimensional array of matrices defining a `MATNEST` matrix.
 
  Not collective
 
@@ -1111,17 +1111,17 @@ PetscErrorCode MatNestGetSubMats_Nest(Mat A, PetscInt *M, PetscInt *N, Mat ***ma
 .   N - number of cols in the nest matrix
 -   mat - 2d array of matrices
 
- Notes:
-
+ Note:
  The user should not free the array mat.
 
- In Fortran, this routine has a calling sequence
+ Fortran Note:
+ This routine has a calling sequence
 $   call MatNestGetSubMats(A, M, N, mat, ierr)
  where the space allocated for the optional argument mat is assumed large enough (if provided).
 
  Level: developer
 
-.seealso: `MatNestGetSize()`, `MatNestGetSubMat()`, `MatNestGetLocalISs()`, `MATNEST`, `MatCreateNest()`,
+.seealso: `MATNEST`, `MatNestGetSize()`, `MatNestGetSubMat()`, `MatNestGetLocalISs()`, `MATNEST`, `MatCreateNest()`,
           `MatNestSetSubMats()`, `MatNestGetISs()`, `MatNestSetSubMat()`
 @*/
 PetscErrorCode MatNestGetSubMats(Mat A, PetscInt *M, PetscInt *N, Mat ***mat) {
@@ -1140,22 +1140,20 @@ PetscErrorCode MatNestGetSize_Nest(Mat A, PetscInt *M, PetscInt *N) {
 }
 
 /*@
- MatNestGetSize - Returns the size of the nest matrix.
+ MatNestGetSize - Returns the size of the `MATNEST` matrix.
 
  Not collective
 
  Input Parameter:
-.   A  - nest matrix
+.   A  - `MATNEST` matrix
 
  Output Parameters:
 +   M - number of rows in the nested mat
 -   N - number of cols in the nested mat
 
- Notes:
-
  Level: developer
 
-.seealso: `MatNestGetSubMat()`, `MatNestGetSubMats()`, `MATNEST`, `MatCreateNest()`, `MatNestGetLocalISs()`,
+.seealso: `MATNEST`, `MatNestGetSubMat()`, `MatNestGetSubMats()`, `MATNEST`, `MatCreateNest()`, `MatNestGetLocalISs()`,
           `MatNestGetISs()`
 @*/
 PetscErrorCode MatNestGetSize(Mat A, PetscInt *M, PetscInt *N) {
@@ -1177,12 +1175,12 @@ static PetscErrorCode MatNestGetISs_Nest(Mat A, IS rows[], IS cols[]) {
 }
 
 /*@C
- MatNestGetISs - Returns the index sets partitioning the row and column spaces
+ MatNestGetISs - Returns the index sets partitioning the row and column spaces of a `MATNEST`
 
  Not collective
 
  Input Parameter:
-.   A  - nest matrix
+.   A  - `MATNEST` matrix
 
  Output Parameters:
 +   rows - array of row index sets
@@ -1190,10 +1188,10 @@ static PetscErrorCode MatNestGetISs_Nest(Mat A, IS rows[], IS cols[]) {
 
  Level: advanced
 
- Notes:
+ Note:
  The user must have allocated arrays of the correct size. The reference count is not increased on the returned ISs.
 
-.seealso: `MatNestGetSubMat()`, `MatNestGetSubMats()`, `MatNestGetSize()`, `MatNestGetLocalISs()`, `MATNEST`,
+.seealso: `MATNEST`, `MatNestGetSubMat()`, `MatNestGetSubMats()`, `MatNestGetSize()`, `MatNestGetLocalISs()`, `MATNEST`,
           `MatCreateNest()`, `MatNestGetSubMats()`, `MatNestSetSubMats()`
 @*/
 PetscErrorCode MatNestGetISs(Mat A, IS rows[], IS cols[]) {
@@ -1216,12 +1214,12 @@ static PetscErrorCode MatNestGetLocalISs_Nest(Mat A, IS rows[], IS cols[]) {
 }
 
 /*@C
- MatNestGetLocalISs - Returns the index sets partitioning the row and column spaces
+ MatNestGetLocalISs - Returns the index sets partitioning the row and column spaces of a `MATNEST`
 
  Not collective
 
  Input Parameter:
-.   A  - nest matrix
+.   A  - `MATNEST` matrix
 
  Output Parameters:
 +   rows - array of row index sets (or NULL to ignore)
@@ -1229,10 +1227,10 @@ static PetscErrorCode MatNestGetLocalISs_Nest(Mat A, IS rows[], IS cols[]) {
 
  Level: advanced
 
- Notes:
+ Note:
  The user must have allocated arrays of the correct size. The reference count is not increased on the returned ISs.
 
-.seealso: `MatNestGetSubMat()`, `MatNestGetSubMats()`, `MatNestGetSize()`, `MatNestGetISs()`, `MatCreateNest()`,
+.seealso: `MATNEST`, `MatNestGetSubMat()`, `MatNestGetSubMats()`, `MatNestGetSize()`, `MatNestGetISs()`, `MatCreateNest()`,
           `MATNEST`, `MatNestSetSubMats()`, `MatNestSetSubMat()`
 @*/
 PetscErrorCode MatNestGetLocalISs(Mat A, IS rows[], IS cols[]) {
@@ -1254,19 +1252,17 @@ PetscErrorCode MatNestSetVecType_Nest(Mat A, VecType vtype) {
 }
 
 /*@C
- MatNestSetVecType - Sets the type of Vec returned by MatCreateVecs()
+ MatNestSetVecType - Sets the type of `Vec` returned by `MatCreateVecs()`
 
  Not collective
 
  Input Parameters:
-+  A  - nest matrix
--  vtype - type to use for creating vectors
-
- Notes:
++  A  - `MATNEST` matrix
+-  vtype - `VecType` to use for creating vectors
 
  Level: developer
 
-.seealso: `MatCreateVecs()`, `MATNEST`, `MatCreateNest()`
+.seealso: `MATNEST`, `MatCreateVecs()`, `MATNEST`, `MatCreateNest()`, `VecType`
 @*/
 PetscErrorCode MatNestSetVecType(Mat A, VecType vtype) {
   PetscFunctionBegin;
@@ -1363,23 +1359,24 @@ PetscErrorCode MatNestSetSubMats_Nest(Mat A, PetscInt nr, const IS is_row[], Pet
 }
 
 /*@
-   MatNestSetSubMats - Sets the nested submatrices
+   MatNestSetSubMats - Sets the nested submatrices in a `MATNEST`
 
-   Collective on Mat
+   Collective on A
 
    Input Parameters:
-+  A - nested matrix
++  A - `MATNEST` matrix
 .  nr - number of nested row blocks
 .  is_row - index sets for each nested row block, or NULL to make contiguous
 .  nc - number of nested column blocks
 .  is_col - index sets for each nested column block, or NULL to make contiguous
 -  a - row-aligned array of nr*nc submatrices, empty submatrices can be passed using NULL
 
-   Notes: this always resets any submatrix information previously set
+   Note:
+   This always resets any submatrix information previously set
 
    Level: advanced
 
-.seealso: `MatCreateNest()`, `MATNEST`, `MatNestSetSubMat()`, `MatNestGetSubMat()`, `MatNestGetSubMats()`
+.seealso: `MATNEST`, `MatCreateNest()`, `MATNEST`, `MatNestSetSubMat()`, `MatNestGetSubMat()`, `MatNestGetSubMats()`
 @*/
 PetscErrorCode MatNestSetSubMats(Mat A, PetscInt nr, const IS is_row[], PetscInt nc, const IS is_col[], const Mat a[]) {
   PetscInt i;
@@ -1646,12 +1643,12 @@ static PetscErrorCode MatSetUp_NestIS_Private(Mat A, PetscInt nr, const IS is_ro
 }
 
 /*@C
-   MatCreateNest - Creates a new matrix containing several nested submatrices, each stored separately
+   MatCreateNest - Creates a new `MATNEST` matrix containing several nested submatrices, each stored separately
 
-   Collective on Mat
+   Collective
 
    Input Parameters:
-+  comm - Communicator for the new Mat
++  comm - Communicator for the new `MATNEST`
 .  nr - number of nested row blocks
 .  is_row - index sets for each nested row block, or NULL to make contiguous
 .  nc - number of nested column blocks
@@ -1663,7 +1660,7 @@ static PetscErrorCode MatSetUp_NestIS_Private(Mat A, PetscInt nr, const IS is_ro
 
    Level: advanced
 
-.seealso: `MatCreate()`, `VecCreateNest()`, `DMCreateMatrix()`, `MATNEST`, `MatNestSetSubMat()`,
+.seealso: `MATNEST`, `MatCreate()`, `VecCreateNest()`, `DMCreateMatrix()`, `MATNEST`, `MatNestSetSubMat()`,
           `MatNestGetSubMat()`, `MatNestGetLocalISs()`, `MatNestGetSize()`,
           `MatNestGetISs()`, `MatNestSetSubMats()`, `MatNestGetSubMats()`
 @*/
@@ -1711,13 +1708,22 @@ PetscErrorCode MatConvert_Nest_SeqAIJ_fast(Mat A, MatType newtype, MatReuse reus
         PetscInt    *nii, *njj, nnr;
         PetscBool    istrans;
 
-        PetscCall(PetscObjectTypeCompare((PetscObject)B, MATTRANSPOSEMAT, &istrans));
+        PetscCall(PetscObjectTypeCompare((PetscObject)B, MATTRANSPOSEVIRTUAL, &istrans));
         if (istrans) {
           Mat Bt;
 
           PetscCall(MatTransposeGetMat(B, &Bt));
           PetscCall(MatTranspose(Bt, MAT_INITIAL_MATRIX, &trans[i * nest->nc + j]));
           B = trans[i * nest->nc + j];
+        } else {
+          PetscCall(PetscObjectTypeCompare((PetscObject)B, MATHERMITIANTRANSPOSEVIRTUAL, &istrans));
+          if (istrans) {
+            Mat Bt;
+
+            PetscCall(MatHermitianTransposeGetMat(B, &Bt));
+            PetscCall(MatHermitianTranspose(Bt, MAT_INITIAL_MATRIX, &trans[i * nest->nc + j]));
+            B = trans[i * nest->nc + j];
+          }
         }
         PetscCall(MatGetRowIJ(B, 0, PETSC_FALSE, PETSC_FALSE, &nnr, (const PetscInt **)&nii, (const PetscInt **)&njj, &done));
         PetscCheck(done, PetscObjectComm((PetscObject)B), PETSC_ERR_PLIB, "MatGetRowIJ");
@@ -1847,7 +1853,7 @@ PETSC_INTERN PetscErrorCode MatAXPY_Dense_Nest(Mat Y, PetscScalar a, Mat X) {
       PetscInt        bm, br;
       const PetscInt *bmindices;
       if (!B) continue;
-      PetscCall(PetscObjectTypeCompare((PetscObject)B, MATTRANSPOSEMAT, &flg));
+      PetscCall(PetscObjectTypeCompareAny((PetscObject)B, &flg, MATTRANSPOSEVIRTUAL, MATHERMITIANTRANSPOSEVIRTUAL, ""));
       if (flg) {
         PetscTryMethod(B, "MatTransposeGetMat_C", (Mat, Mat *), (B, &D));
         PetscTryMethod(B, "MatHermitianTransposeGetMat_C", (Mat, Mat *), (B, &D));
@@ -1919,12 +1925,20 @@ PetscErrorCode MatConvert_Nest_AIJ(Mat A, MatType newtype, MatReuse reuse, Mat *
           if (!fast) {
             PetscBool istrans;
 
-            PetscCall(PetscObjectTypeCompare((PetscObject)B, MATTRANSPOSEMAT, &istrans));
+            PetscCall(PetscObjectTypeCompare((PetscObject)B, MATTRANSPOSEVIRTUAL, &istrans));
             if (istrans) {
               Mat Bt;
 
               PetscCall(MatTransposeGetMat(B, &Bt));
               PetscCall(PetscObjectTypeCompare((PetscObject)Bt, MATSEQAIJ, &fast));
+            } else {
+              PetscCall(PetscObjectTypeCompare((PetscObject)B, MATHERMITIANTRANSPOSEVIRTUAL, &istrans));
+              if (istrans) {
+                Mat Bt;
+
+                PetscCall(MatHermitianTransposeGetMat(B, &Bt));
+                PetscCall(PetscObjectTypeCompare((PetscObject)Bt, MATSEQAIJ, &fast));
+              }
             }
           }
         }
@@ -2004,7 +2018,7 @@ PetscErrorCode MatConvert_Nest_AIJ(Mat A, MatType newtype, MatReuse reuse, Mat *
         sub_dnnz[k] = 0;
         sub_onnz[k] = 0;
       }
-      PetscCall(PetscObjectTypeCompare((PetscObject)B, MATTRANSPOSEMAT, &flg));
+      PetscCall(PetscObjectTypeCompare((PetscObject)B, MATTRANSPOSEVIRTUAL, &flg));
       if (flg) {
         PetscTryMethod(B, "MatTransposeGetMat_C", (Mat, Mat *), (B, &D));
         PetscTryMethod(B, "MatHermitianTransposeGetMat_C", (Mat, Mat *), (B, &D));
@@ -2122,15 +2136,15 @@ PetscErrorCode MatHasOperation_Nest(Mat mat, MatOperation op, PetscBool *has) {
   Level: intermediate
 
   Notes:
-  This matrix type permits scalable use of PCFieldSplit and avoids the large memory costs of extracting submatrices.
+  This matrix type permits scalable use of `PCFIELDSPLIT` and avoids the large memory costs of extracting submatrices.
   It allows the use of symmetric and block formats for parts of multi-physics simulations.
-  It is usually used with DMComposite and DMCreateMatrix()
+  It is usually used with `DMCOMPOSITE` and `DMCreateMatrix()`
 
   Each of the submatrices lives on the same MPI communicator as the original nest matrix (though they can have zero
   rows/columns on some processes.) Thus this is not meant for cases where the submatrices live on far fewer processes
   than the nest matrix.
 
-.seealso: `MatCreate()`, `MatType`, `MatCreateNest()`, `MatNestSetSubMat()`, `MatNestGetSubMat()`,
+.seealso: `MATNEST`, `MatCreate()`, `MatType`, `MatCreateNest()`, `MatNestSetSubMat()`, `MatNestGetSubMat()`,
           `VecCreateNest()`, `DMCreateMatrix()`, `DMCOMPOSITE`, `MatNestSetVecType()`, `MatNestGetLocalISs()`,
           `MatNestGetISs()`, `MatNestSetSubMats()`, `MatNestGetSubMats()`
 M*/
