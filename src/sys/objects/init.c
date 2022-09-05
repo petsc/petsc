@@ -494,7 +494,7 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[]) 
   PetscCall(PetscDetermineInitialFPTrap());
   flg1 = PETSC_FALSE;
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-fp_trap", &flg1, &flag));
-  if (flag) PetscCall(PetscSetFPTrap((PetscFPTrap)flg1));
+  if (flag) PetscCall(PetscSetFPTrap(flg1 ? PETSC_FP_TRAP_ON : PETSC_FP_TRAP_OFF));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-check_pointer_intensity", &intensity, &flag));
   if (flag) PetscCall(PetscCheckPointerSetIntensity(intensity));
 #if defined(PETSC_USE_LOG)

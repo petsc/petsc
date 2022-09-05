@@ -179,7 +179,7 @@ PetscErrorCode PetscSetFPTrap(PetscFPTrap flag) {
   PetscFunctionBegin;
   /* Clear accumulated exceptions.  Used to suppress meaningless messages from f77 programs */
   (void)ieee_flags("clear", "exception", "all", &out);
-  if (flag) {
+  if (flag == PETSC_FP_TRAP_ON) {
     /*
       To trap more fp exceptions, including underflow, change the line below to
       if (ieee_handler("set","all",PetscDefaultFPTrap)) {
@@ -188,6 +188,7 @@ PetscErrorCode PetscSetFPTrap(PetscFPTrap flag) {
   } else if (ieee_handler("clear", "common", PetscDefaultFPTrap)) (*PetscErrorPrintf)("Can't clear floatingpoint handler\n");
 
   _trapmode = flag;
+  PetscCall(PetscInfo(NULL, "Using PETSC_HAVE_SUN4_STYLE_FPTRAP\n"));
   PetscFunctionReturn(0);
 }
 
@@ -256,6 +257,7 @@ PetscErrorCode PetscSetFPTrap(PetscFPTrap flag) {
     if (ieee_handler("clear", "common", (sigfpe_handler_type)PetscDefaultFPTrap)) (*PetscErrorPrintf)("Can't clear floatingpoint handler\n");
   }
   _trapmode = flag;
+  PetscCall(PetscInfo(NULL,"Using PETSC_HAVE_SOLARIS_STYLE_FPTRAP\n");
   PetscFunctionReturn(0);
 }
 
@@ -294,66 +296,10 @@ void PetscDefaultFPTrap(unsigned exception[], int val[]) {
 
 PetscErrorCode PetscSetFPTrap(PetscFPTrap flag) {
   PetscFunctionBegin;
-  if (flag) handle_sigfpes(_ON, , _EN_UNDERFL | _EN_OVERFL | _EN_DIVZERO | _EN_INVALID, PetscDefaultFPTrap, _ABORT_ON_ERROR, 0);
+  if (flag == PETSC_FP_TRAP_ON) handle_sigfpes(_ON, , _EN_UNDERFL | _EN_OVERFL | _EN_DIVZERO | _EN_INVALID, PetscDefaultFPTrap, _ABORT_ON_ERROR, 0);
   else handle_sigfpes(_OFF, _EN_UNDERFL | _EN_OVERFL | _EN_DIVZERO | _EN_INVALID, 0, _ABORT_ON_ERROR, 0);
   _trapmode = flag;
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode PetscDetermineInitialFPTrap(void) {
-  PetscFunctionBegin;
-  PetscCall(PetscInfo(NULL, "Unable to determine initial floating point trapping. Assuming it is off\n"));
-  PetscFunctionReturn(0);
-}
-
-/* -------------------------------------------------------------------------------------------*/
-#elif defined(PETSC_HAVE_SOLARIS_STYLE_FPTRAP)
-#include <sunmath.h>
-#include <floatingpoint.h>
-#include <siginfo.h>
-#include <ucontext.h>
-
-static struct {
-  int   code_no;
-  char *name;
-} error_codes[] = {
-  {FPE_FLTINV, "invalid floating point operand"},
-  {FPE_FLTRES, "inexact floating point result" },
-  {FPE_FLTDIV, "division-by-zero"              },
-  {FPE_FLTUND, "floating point underflow"      },
-  {FPE_FLTOVF, "floating point overflow"       },
-  {0,          "unknown error"                 }
-};
-#define SIGPC(scp) (scp->si_addr)
-
-void PetscDefaultFPTrap(int sig, siginfo_t *scp, ucontext_t *uap) {
-  int err_ind = -1, code = scp->si_code;
-
-  PetscFunctionBegin;
-  err_ind = -1;
-  for (int j = 0; error_codes[j].code_no; j++) {
-    if (error_codes[j].code_no == code) err_ind = j;
-  }
-
-  if (err_ind >= 0) (*PetscErrorPrintf)("*** %s occurred at pc=%X ***\n", error_codes[err_ind].name, SIGPC(scp));
-  else (*PetscErrorPrintf)("*** floating point error 0x%x occurred at pc=%X ***\n", code, SIGPC(scp));
-
-  (void)PetscError(PETSC_COMM_SELF, 0, NULL, NULL, PETSC_ERR_FP, PETSC_ERROR_REPEAT, "floating point error");
-  PETSCABORT(MPI_COMM_WORLD, PETSC_ERR_FP);
-}
-
-PetscErrorCode PetscSetFPTrap(PetscFPTrap flag) {
-  char *out;
-
-  PetscFunctionBegin;
-  /* Clear accumulated exceptions.  Used to suppress meaningless messages from f77 programs */
-  (void)ieee_flags("clear", "exception", "all", &out);
-  if (flag) {
-    if (ieee_handler("set", "common", (sigfpe_handler_type)PetscDefaultFPTrap)) (*PetscErrorPrintf)("Can't set floating point handler\n");
-  } else {
-    if (ieee_handler("clear", "common", (sigfpe_handler_type)PetscDefaultFPTrap)) (*PetscErrorPrintf)("Can't clear floatingpoint handler\n");
-  }
-  _trapmode = flag;
+  PetscCall(PetscInfo(NULL, "Using PETSC_HAVE_IRIX_STYLE_FPTRAP\n"));
   PetscFunctionReturn(0);
 }
 
@@ -385,7 +331,7 @@ static struct {
   {FPE_FLTUND_TRAP,   "floating point underflow"     },
   {FPE_FLTDIV_TRAP,   "floating point divide"        },
   {FPE_FLTINEX_TRAP,  "inexact floating point result"},
-  {0,                 "unknown error"                }
+  < {0,                 "unknown error"                }
 };
 #define SIGPC(scp)        (0) /* Info MIGHT be in scp->sc_jmpbuf.jmp_context.iar */
 /*
@@ -415,25 +361,18 @@ void PetscDefaultFPTrap(int sig, int code, struct sigcontext *scp) {
 
 PetscErrorCode PetscSetFPTrap(PetscFPTrap flag) {
   PetscFunctionBegin;
-  if (flag) {
+  if (flag == PETSC_FP_TRAP_ON) {
     signal(SIGFPE, (void (*)(int))PetscDefaultFPTrap);
     fp_trap(FP_TRAP_SYNC);
-    fp_enable(TRP_INVALID | TRP_DIV_BY_ZERO | TRP_OVERFLOW | TRP_UNDERFLOW);
-    /* fp_enable(mask) for individual traps.  Values are:
-       TRP_INVALID
-       TRP_DIV_BY_ZERO
-       TRP_OVERFLOW
-       TRP_UNDERFLOW
-       TRP_INEXACT
-       Can OR then together.
-       fp_enable_all(); for all traps.
-    */
+    /* fp_enable(TRP_INVALID | TRP_DIV_BY_ZERO | TRP_OVERFLOW | TRP_UNDERFLOW); */
+    fp_enable(TRP_INVALID | TRP_DIV_BY_ZERO | TRP_OVERFLOW);
   } else {
     signal(SIGFPE, SIG_DFL);
     fp_disable(TRP_INVALID | TRP_DIV_BY_ZERO | TRP_OVERFLOW | TRP_UNDERFLOW);
     fp_trap(FP_TRAP_OFF);
   }
   _trapmode = flag;
+  PetscCall(PetscInfo(NULL, "Using PETSC_HAVE_RS6000_STYLE_FPTRAP\n"));
   PetscFunctionReturn(0);
 }
 
@@ -457,8 +396,9 @@ PetscErrorCode PetscSetFPTrap(PetscFPTrap flag) {
   unsigned int cw;
 
   PetscFunctionBegin;
-  if (flag) {
-    cw = _EM_INVALID | _EM_ZERODIVIDE | _EM_OVERFLOW | _EM_UNDERFLOW;
+  if (flag == PETSC_FP_TRAP_ON) {
+    /* cw = _EM_INVALID | _EM_ZERODIVIDE | _EM_OVERFLOW | _EM_UNDERFLOW; */
+    cw = _EM_INVALID | _EM_ZERODIVIDE | _EM_OVERFLOW;
     PetscCheck(SIG_ERR != signal(SIGFPE, PetscDefaultFPTrap), PETSC_COMM_SELF, PETSC_ERR_LIB, "Can't set floating point handler");
   } else {
     cw = 0;
@@ -466,6 +406,7 @@ PetscErrorCode PetscSetFPTrap(PetscFPTrap flag) {
   }
   (void)_controlfp(0, cw);
   _trapmode = flag;
+  PetscCall(PetscInfo(NULL, "Using PETSC_HAVE_WINDOWS_COMPILERS FPTRAP\n"));
   PetscFunctionReturn(0);
 }
 
@@ -542,20 +483,24 @@ void PetscDefaultFPTrap(int sig) {
 
 PetscErrorCode PetscSetFPTrap(PetscFPTrap flag) {
   PetscFunctionBegin;
-  if (flag) {
+  if (flag == PETSC_FP_TRAP_ON) {
     /* Clear any flags that are currently set so that activating trapping will not immediately call the signal handler. */
     PetscCheck(!feclearexcept(FE_ALL_EXCEPT), PETSC_COMM_SELF, PETSC_ERR_LIB, "Cannot clear floating point exception flags");
 #if defined(FE_NOMASK_ENV)
     /* Could use fesetenv(FE_NOMASK_ENV), but that causes spurious exceptions (like gettimeofday() -> PetscLogDouble). */
     /* PetscCheck(feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW | FE_UNDERFLOW) != -1,PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot activate floating point exceptions"); */
+    /* Doesn't work on AArch64 targets. There's a known hardware limitation. Need to detect hardware at configure time? */
     PetscCheck(feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW) != -1, PETSC_COMM_SELF, PETSC_ERR_LIB, "Cannot activate floating point exceptions");
+    PetscCall(PetscInfo(NULL, "Using PETSC_HAVE_FENV_H FPTRAP with FE_NOMASK_ENV\n"));
 #elif defined PETSC_HAVE_XMMINTRIN_H
     _MM_SET_EXCEPTION_MASK(_MM_GET_EXCEPTION_MASK() & ~_MM_MASK_DIV_ZERO);
-    _MM_SET_EXCEPTION_MASK(_MM_GET_EXCEPTION_MASK() & ~_MM_MASK_UNDERFLOW);
+    /* _MM_SET_EXCEPTION_MASK(_MM_GET_EXCEPTION_MASK() & ~_MM_MASK_UNDERFLOW); */
     _MM_SET_EXCEPTION_MASK(_MM_GET_EXCEPTION_MASK() & ~_MM_MASK_OVERFLOW);
     _MM_SET_EXCEPTION_MASK(_MM_GET_EXCEPTION_MASK() & ~_MM_MASK_INVALID);
+    PetscCall(PetscInfo(NULL, "Using PETSC_HAVE_FENV_H FPTRAP with PETSC_HAVE_XMMINTRIN_H\n"));
 #else
     /* C99 does not provide a way to modify the environment so there is no portable way to activate trapping. */
+    PetscCall(PetscInfo(NULL, "Using PETSC_HAVE_FENV_H FPTRAP\n"));
 #endif
     PetscCheck(SIG_ERR != signal(SIGFPE, PetscDefaultFPTrap), PETSC_COMM_SELF, PETSC_ERR_LIB, "Can't set floating point handler");
   } else {
@@ -624,6 +569,7 @@ PetscErrorCode PetscSetFPTrap(PetscFPTrap flag) {
     PetscCheck(SIG_ERR != signal(SIGFPE, SIG_DFL), PETSC_COMM_SELF, PETSC_ERR_LIB, "Can't clear floating point handler");
   }
   _trapmode = flag;
+  PetscCall(PetscInfo(NULL, "Using PETSC_HAVE_IEEEFP_H FPTRAP\n"));
   PetscFunctionReturn(0);
 }
 
@@ -645,11 +591,12 @@ void PetscDefaultFPTrap(int sig) {
 
 PetscErrorCode PetscSetFPTrap(PetscFPTrap flag) {
   PetscFunctionBegin;
-  if (flag) {
+  if (flag == PETSC_FP_TRAP_ON) {
     if (SIG_ERR == signal(SIGFPE, PetscDefaultFPTrap)) (*PetscErrorPrintf)("Can't set floatingpoint handler\n");
   } else if (SIG_ERR == signal(SIGFPE, SIG_DFL)) (*PetscErrorPrintf)("Can't clear floatingpoint handler\n");
 
   _trapmode = flag;
+  PetscCall(PetscInfo(NULL, "Using default FPTRAP\n"));
   PetscFunctionReturn(0);
 }
 
