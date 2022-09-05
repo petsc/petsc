@@ -5,16 +5,15 @@ Global sizes: 2 x 2
 Parallel decomposition: 1 x 1 ranks
 Boundary ghosting: NONE NONE
 Elementwise ghost stencil: BOX, width 1
-2 DOF per vertex  (0D)
-3 DOF per face  (1D)
+2 DOF per vertex (0D)
+3 DOF per face (1D)
 4 DOF per element (2D)
 [0] Rank coordinates (0,0)
 [0] Local elements : 2 x 2 (3 x 3 with ghosts)
 [0] Local native entries: 70
 [0] Local entries total : 108
 Vec Object: coordinates 1 MPI process
-  type: mpi
-Process [0]
+  type: seq
 1.
 1.
 1.5

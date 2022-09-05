@@ -353,7 +353,9 @@ static PetscErrorCode DMCreateGlobalVector_Stag(DM dm, Vec *vec) {
 
   PetscFunctionBegin;
   PetscCheck(dm->setupcalled, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "This function must be called after DMSetUp()");
-  PetscCall(VecCreateMPI(PetscObjectComm((PetscObject)dm), stag->entries, PETSC_DECIDE, vec));
+  PetscCall(VecCreate(PetscObjectComm((PetscObject)dm), vec));
+  PetscCall(VecSetSizes(*vec, stag->entries, PETSC_DETERMINE));
+  PetscCall(VecSetType(*vec, dm->vectype));
   PetscCall(VecSetDM(*vec, dm));
   /* Could set some ops, as DMDA does */
   PetscCall(VecSetLocalToGlobalMapping(*vec, dm->ltogmap));
@@ -365,7 +367,9 @@ static PetscErrorCode DMCreateLocalVector_Stag(DM dm, Vec *vec) {
 
   PetscFunctionBegin;
   PetscCheck(dm->setupcalled, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "This function must be called after DMSetUp()");
-  PetscCall(VecCreateSeq(PETSC_COMM_SELF, stag->entriesGhost, vec));
+  PetscCall(VecCreate(PETSC_COMM_SELF, vec));
+  PetscCall(VecSetSizes(*vec, stag->entriesGhost, PETSC_DETERMINE));
+  PetscCall(VecSetType(*vec, dm->vectype));
   PetscCall(VecSetBlockSize(*vec, stag->entriesPerElement));
   PetscCall(VecSetDM(*vec, dm));
   PetscFunctionReturn(0);
@@ -393,9 +397,38 @@ static PetscErrorCode CheckTransferOperatorRequirements_Private(DM dmc, DM dmf) 
   PetscFunctionReturn(0);
 }
 
+/* Since the interpolation uses MATMAIJ for dof > 0 we convert requests for non-MATAIJ baseded matrices to MATAIJ.
+   This is a bit of a hack; the reason for it is partially because -dm_mat_type defines the
+   matrix type for both the operator matrices and the interpolation matrices so that users
+   can select matrix types of base MATAIJ for accelerators
+
+   Note: The ConvertToAIJ() code below *has been copied from dainterp.c*! ConvertToAIJ() should perhaps be placed somewhere
+   in mat/utils to avoid code duplication, but then the DMStag and DMDA code would need to include the private Mat headers.
+   Since it is only used in two places, I have simply duplicated the code to avoid the need to exposure the private
+   Mat routines in parts of DM. If we find a need for ConvertToAIJ() elsewhere, then we should consolidate it to one
+   place in mat/utils.
+*/
+static PetscErrorCode ConvertToAIJ(MatType intype, MatType *outtype) {
+  PetscInt    i;
+  char const *types[3] = {MATAIJ, MATSEQAIJ, MATMPIAIJ};
+  PetscBool   flg;
+
+  PetscFunctionBegin;
+  *outtype = MATAIJ;
+  for (i = 0; i < 3; i++) {
+    PetscCall(PetscStrbeginswith(intype, types[i], &flg));
+    if (flg) {
+      *outtype = intype;
+      break;
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode DMCreateInterpolation_Stag(DM dmc, DM dmf, Mat *A, Vec *vec) {
   PetscInt               dim, entriesf, entriesc, doff[DMSTAG_MAX_STRATA];
   ISLocalToGlobalMapping ltogmf, ltogmc;
+  MatType                mattype;
 
   PetscFunctionBegin;
   PetscCall(CheckTransferOperatorRequirements_Private(dmc, dmf));
@@ -407,7 +440,8 @@ static PetscErrorCode DMCreateInterpolation_Stag(DM dmc, DM dmf, Mat *A, Vec *ve
 
   PetscCall(MatCreate(PetscObjectComm((PetscObject)dmc), A));
   PetscCall(MatSetSizes(*A, entriesf, entriesc, PETSC_DECIDE, PETSC_DECIDE));
-  PetscCall(MatSetType(*A, MATAIJ));
+  PetscCall(ConvertToAIJ(dmc->mattype, &mattype));
+  PetscCall(MatSetType(*A, mattype));
   PetscCall(MatSetLocalToGlobalMapping(*A, ltogmf, ltogmc));
 
   PetscCall(DMGetDimension(dmc, &dim));
@@ -435,6 +469,7 @@ static PetscErrorCode DMCreateInterpolation_Stag(DM dmc, DM dmf, Mat *A, Vec *ve
 static PetscErrorCode DMCreateRestriction_Stag(DM dmc, DM dmf, Mat *A) {
   PetscInt               dim, entriesf, entriesc, doff[DMSTAG_MAX_STRATA];
   ISLocalToGlobalMapping ltogmf, ltogmc;
+  MatType                mattype;
 
   PetscFunctionBegin;
   PetscCall(CheckTransferOperatorRequirements_Private(dmc, dmf));
@@ -446,7 +481,8 @@ static PetscErrorCode DMCreateRestriction_Stag(DM dmc, DM dmf, Mat *A) {
 
   PetscCall(MatCreate(PetscObjectComm((PetscObject)dmc), A));
   PetscCall(MatSetSizes(*A, entriesc, entriesf, PETSC_DECIDE, PETSC_DECIDE)); /* Note transpose wrt interpolation */
-  PetscCall(MatSetType(*A, MATAIJ));
+  PetscCall(ConvertToAIJ(dmc->mattype, &mattype));
+  PetscCall(MatSetType(*A, mattype));
   PetscCall(MatSetLocalToGlobalMapping(*A, ltogmc, ltogmf)); /* Note transpose wrt interpolation */
 
   PetscCall(DMGetDimension(dmc, &dim));
@@ -491,12 +527,9 @@ static PetscErrorCode DMCreateMatrix_Stag(DM dm, Mat *mat) {
 
   /* Compare to similar and perhaps superior logic in DMCreateMatrix_DA, which creates
      the matrix first and then performs this logic by checking for preallocation functions */
-  PetscCall(PetscStrcmp(mat_type, MATAIJ, &is_aij));
-  if (!is_aij) {
-    PetscCall(PetscStrcmp(mat_type, MATSEQAIJ, &is_aij));
-  } else if (!is_aij) {
-    PetscCall(PetscStrcmp(mat_type, MATMPIAIJ, &is_aij));
-  }
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)*mat, MATAIJ, &is_aij));
+  if (!is_aij) { PetscCall(PetscObjectBaseTypeCompare((PetscObject)*mat, MATSEQAIJ, &is_aij)); }
+  if (!is_aij) { PetscCall(PetscObjectBaseTypeCompare((PetscObject)*mat, MATMPIAIJ, &is_aij)); }
   PetscCall(PetscStrcmp(mat_type, MATSHELL, &is_shell));
   if (is_aij) {
     Mat             preallocator;
@@ -519,15 +552,16 @@ static PetscErrorCode DMCreateMatrix_Stag(DM dm, Mat *mat) {
     PetscCall(MatDestroy(&preallocator));
 
     if (!dm->prealloc_only) {
+      /* Bind to CPU before assembly, to prevent unnecessary copies of zero entries from CPU to GPU */
+      PetscCall(MatBindToCPU(*mat, PETSC_TRUE));
       switch (dim) {
       case 1: PetscCall(DMCreateMatrix_Stag_1D_AIJ_Assemble(dm, *mat)); break;
       case 2: PetscCall(DMCreateMatrix_Stag_2D_AIJ_Assemble(dm, *mat)); break;
       case 3: PetscCall(DMCreateMatrix_Stag_3D_AIJ_Assemble(dm, *mat)); break;
       default: SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported dimension %" PetscInt_FMT, dim);
       }
+      PetscCall(MatBindToCPU(*mat, PETSC_FALSE));
     }
-    /* Note: GPU-related logic, e.g. at the end of DMCreateMatrix_DA_1d_MPIAIJ, is not included here
-       but might be desirable */
   } else if (is_shell) {
     /* nothing more to do */
   } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Not implemented for Mattype %s", mat_type);
