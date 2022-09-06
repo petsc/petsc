@@ -517,6 +517,7 @@ static PetscErrorCode VecGetSubVector_Nest(Vec X, IS is, Vec *x) {
 
 static PetscErrorCode VecRestoreSubVector_Nest(Vec X, IS is, Vec *x) {
   PetscFunctionBegin;
+  PetscCall(PetscObjectStateIncrease((PetscObject)X));
   PetscCall(VecDestroy(x));
   PetscFunctionReturn(0);
 }
@@ -574,6 +575,7 @@ static PetscErrorCode VecRestoreArray_Nest(Vec X, PetscScalar **x) {
     PetscCall(VecRestoreArray(subvec, &y));
   }
   PetscCall(PetscFree(*x));
+  PetscCall(PetscObjectStateIncrease((PetscObject)X));
   PetscFunctionReturn(0);
 }
 
