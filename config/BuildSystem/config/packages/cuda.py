@@ -368,7 +368,10 @@ to set the right generation for your hardware.')
         newFlags = self.setCompilers.CXXPPFLAGS.split()+self.setCompilers.CXXFLAGS.split()
         # need to remove the std flag from the list, nvcc will already have its own flag set
         # With IBM XL compilers, we also need to remove -+
-        self.setCompilers.CUDA_CXXFLAGS = ' '.join([flg for flg in newFlags if not flg.startswith(('-std=c++','-std=gnu++','-+'))])
+        # Remove -O since the optimization level is already set by CUDAC_FLAGS, otherwise Kokkos nvcc_wrapper will complain
+        #   "nvcc_wrapper - *warning* you have set multiple optimization flags (-O*), only the last
+        #    is used because nvcc can only accept a single optimization setting."
+        self.setCompilers.CUDA_CXXFLAGS = ' '.join([flg for flg in newFlags if not flg.startswith(('-std=c++','-std=gnu++','-+','-O'))])
       else:
         # only add any -I arguments since compiler arguments may not work
         flags = self.setCompilers.CPPFLAGS.split(' ')+self.setCompilers.CXXFLAGS.split(' ')
