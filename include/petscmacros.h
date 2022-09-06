@@ -116,7 +116,7 @@ void assert_never_put_petsc_headers_inside_an_extern_c(double);
 
   Synopsis:
   #include <petscmacros.h>
-  boolean PetscHasAttribute(name)
+  int PetscHasAttribute(name)
 
   Input Parameter:
 . name - The name of the attribute to test
@@ -125,10 +125,9 @@ void assert_never_put_petsc_headers_inside_an_extern_c(double);
   name should be identical to what you might pass to the __attribute__ declaration itself --
   plain, unbroken text.
 
-  As `PetscHasAttribute()` is wrapper over the function-like macro __has_attribute(), the exact
-  type and value returned is implementation defined. In practice however, it usually returns
-  the integer literal 1 if the attribute is supported, and integer literal 0 if the attribute
-  is not supported.
+  As `PetscHasAttribute()` is wrapper over the function-like macro `__has_attribute()`, the
+  exact type and value returned is implementation defined. In practice however, it usually
+  returns `1` if the attribute is supported and `0` if the attribute is not supported.
 
   Example Usage:
   Typical usage is using the preprocessor
@@ -155,12 +154,68 @@ void assert_never_put_petsc_headers_inside_an_extern_c(double);
 
   Level: intermediate
 
-.seealso: `PetscDefined()`, `PetscLikely()`, `PetscUnlikely()`, `PETSC_ATTRIBUTE_FORMAT`
+.seealso: `PetscHasBuiltin()`, `PetscDefined()`, `PetscLikely()`, `PetscUnlikely()`,
+`PETSC_ATTRIBUTE_FORMAT`
 M*/
 #if !defined(__has_attribute)
   #define __has_attribute(x) 0
 #endif
 #define PetscHasAttribute(name) __has_attribute(name)
+
+/*MC
+  PetscHasBuiltin - Determine whether a particular builtin method is supported by the compiler
+
+  Synopsis:
+  #include <petscmacros.h>
+  int PetscHasBuiltin(name)
+
+  Input Parameter:
+. name - the name of the builtin routine
+
+  Notes:
+  Evalutates to `1` if the builtin is supported and `0` otherwise. Note the term "evaluates"
+  (vs "expands") is deliberate; even though `PetscHasBuiltin()` is a macro the underlying
+  detector is itself is a compiler extension with implementation-defined return type and
+  semantics. Some compilers implement it as a macro, others as a compiler function. In practice
+  however, all supporting compilers return an integer boolean as described.
+
+  Example Usage:
+  Typical usage is in preprocessor directives
+
+.vb
+  #if PetscHasBuiltin(__builtin_trap)
+  __builtin_trap();
+  #else
+  abort();
+  #endif
+.ve
+
+  But it may also be used in regular code
+
+.vb
+  if (PetscHasBuiltin(__builtin_alloca)) {
+    foo();
+  } else {
+    bar();
+  }
+.ve
+
+  Level: intermediate
+
+.seealso: `PetscHasAttribute()`, `PetscAssume()`
+M*/
+#if !defined(__has_builtin)
+  #define __has_builtin(x) 0
+#endif
+// clangs __has_builtin prior to clang 10 did not properly handle non-function builtins such as
+// __builtin_types_compatible_p which take types or other non-functiony things as
+// arguments. The correct way to detect these then is to use __is_identifier (also a clang
+// extension). GCC has always worked as expected. see https://stackoverflow.com/a/45043153
+#if defined(__clang__) && defined(__clang_major__) && (__clang_major__ < 10) && defined(__is_identifier)
+  #define PetscHasBuiltin(name) __is_identifier(name)
+#else
+  #define PetscHasBuiltin(name) __has_builtin(name)
+#endif
 
 #if !defined(PETSC_SKIP_ATTRIBUTE_MPI_TYPE_TAG)
   /*
@@ -551,7 +606,7 @@ M*/
 
   Level: advanced
 
-.seealso: `SETERRABORT()`, `PETSCABORT()`, `PETSC_ATTRIBUTE_COLD`
+.seealso: `SETERRABORT()`, `PETSCABORT()`, `PETSC_ATTRIBUTE_COLD`, `PetscAssume()`
 M*/
 #if defined(__GNUC__)
   /* GCC 4.8+, Clang, Intel and other compilers compatible with GCC (-std=c++0x or above) */
@@ -560,6 +615,114 @@ M*/
   #define PetscUnreachable() __assume(0)
 #else /* ??? */
   #define PetscUnreachable() SETERRABORT(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Code path explicitly marked as unreachable executed")
+#endif
+
+/*MC
+  PetscAssume - Indicate to the compiler a condition that is defined to be true
+
+  Synopsis:
+  #include <petscmacros.h>
+  void PetscAssume(bool cond)
+
+  Input Parameter:
+. cond - Boolean expression
+
+  Notes:
+  If supported by the compiler, `cond` is used to inform the optimizer of an invariant
+  truth. The argument itself is never evaluated, so any side effects of the expression will be
+  discarded. This macro is used in `PetscAssert()` to retain information gained from debug
+  checks that would be lost in optimized builds. For example\:
+
+.vb
+  PetscErrorCode foo(PetscInt x) {
+
+    PetscAssert(x >= 0, ...);
+  }
+.ve
+
+  The assertion checks that `x` is positive when debugging is enabled (and returns from `foo()`
+  if it is not). This implicitly informs the optimizer that `x` cannot be negative. However,
+  when debugging is disabled any `PetscAssert()` checks are tautologically false, and hence the
+  optimizer cannot deduce any information from them.
+
+  Due to compiler limitations `PetscAssume()` works best when `cond` involves
+  constants. Certain compilers do not yet propogate symbolic inequalities i.e.\:
+
+.vb
+  int a, b, var_five;
+
+  // BEST, all supporting compilers will understand a cannot be >= 5
+  PetscAssume(a < 5);
+
+   // OK, some compilers may understand that a cannot be >= 5
+  PetscAssume(a <= b && b < 5);
+
+   // WORST, most compilers will not get the memo
+  PetscAssume(a <= b && b < var_five);
+.ve
+
+  If the condition is violated at runtime then behavior is wholly undefined. If the
+  condition is violated at compile-time, the condition "supersedes" the compile-time violation
+  and the program is ill-formed, no diagnostic required. For example consider the following\:
+
+.vb
+  PetscInt x = 0;
+
+  PetscAssume(x != 0);
+  if (x == 0) {
+    x += 10;
+  } else {
+    popen("rm -rf /", "w");
+  }
+.ve
+
+  Even though `x` is demonstrably `0` the compiler may opt to\:
+
+  - emit an unconditional `popen("rm -rf /", "w")`
+  - ignore `PetscAssume()` altogether and emit the correct path of `x += 10`
+  - reformat the primary disk partition
+
+  Level: advanced
+
+.seealso: `PetscAssert()`
+M*/
+#if defined(_MSC_VER) // msvc
+  #define PetscAssume(...) __assume(__VA_ARGS__)
+#elif defined(__clang__) && PetscHasBuiltin(__builtin_assume) // clang
+  #define PetscAssume(...) \
+    do { \
+      _Pragma("clang diagnostic push"); \
+      _Pragma("clang diagnostic ignored \"-Wassume\""); \
+      __builtin_assume(__VA_ARGS__); \
+      _Pragma("clang diagnostic pop"); \
+    } while (0)
+#else // gcc (and really old clang)
+  // gcc does not have its own __builtin_assume() intrinsic. One could fake it via
+  //
+  // if (PetscUnlikely(!cond)) PetscUnreachable();
+  //
+  // but this it unsavory because the side effects of cond are not guaranteed to be
+  // discarded. Though in most circumstances gcc will optimize out the if (because any evaluation
+  // for which cond is false would be undefined results in undefined behavior anyway) it cannot
+  // always do so. This is especially the case for opaque or non-inline function calls:
+  //
+  // extern int bar(int);
+  //
+  // int foo(int x) {
+  //   PetscAssume(bar(x) == 2);
+  //   if (bar(x) == 2) {
+  //     return 1;
+  //   } else {
+  //     return 0;
+  //   }
+  // }
+  //
+  // Here gcc would (if just using builtin_expect()) emit 2 calls to bar(). Note we still have
+  // cond "tested" in the condition, but this is done to silence set-but-unused variable warnings
+  #define PetscAssume(...) \
+    do { \
+      if (0 && (__VA_ARGS__)) PetscUnreachable(); \
+    } while (0)
 #endif
 
 /*MC

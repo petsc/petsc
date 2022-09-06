@@ -261,7 +261,7 @@ M*/
 #define PetscCheckAbort(cond, comm, ierr, ...) \
   do { \
     if (PetscUnlikely(!(cond))) SETERRABORT(comm, ierr, __VA_ARGS__); \
-  } while (0);
+  } while (0)
 
 /*MC
   PetscAssert - Assert that a particular condition is true
@@ -279,9 +279,7 @@ M*/
 - message - Error message in printf format
 
   Notes:
-  Enabled only in debug builds. Note that any arguments to this macros are still visible to the
-  compiler optimized builds (so must still contain valid code) but are guaranteed to not be
-  executed.
+  Equivalent to `PetscCheck()` if debugging is enabled, and `PetscAssume(cond)` otherwise.
 
   See `PetscCheck()` for usage and behaviour.
 
@@ -291,10 +289,11 @@ M*/
 
 .seealso: `PetscCheck()`, `SETERRQ()`, `PetscError()`, `PetscAssertAbort()`
 M*/
-#define PetscAssert(cond, comm, ierr, ...) \
-  do { \
-    if (PetscUnlikelyDebug(!(cond))) SETERRQ(comm, ierr, __VA_ARGS__); \
-  } while (0)
+#if PetscDefined(USE_DEBUG)
+  #define PetscAssert(cond, comm, ierr, ...) PetscCheck(cond, comm, ierr, __VA_ARGS__)
+#else
+  #define PetscAssert(cond, ...) PetscAssume(cond)
+#endif
 
 /*MC
   PetscAssertAbort - Assert that a particular condition is true, otherwise prints error and aborts
