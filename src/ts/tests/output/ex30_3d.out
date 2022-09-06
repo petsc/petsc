@@ -34,7 +34,7 @@ Linear ptof_ solve converged due to CONVERGED_RTOL iterations 4
 Linear ftop_ solve converged due to CONVERGED_RTOL iterations 11
 Linear ftop_ solve converged due to CONVERGED_RTOL iterations 11
 Linear ftop_ solve converged due to CONVERGED_RTOL iterations 11
-[0] go(): Total number density:   3.491648217616e-07 (  3.491648217616e-07); x-momentum =  -8.250635277663e-15 (  9.897217499839e-18); energy =   1.294460616864e+05 (  1.294460616855e+05) error = 6.926225e-12 (log10 of error = -11), 125 particles. Use 1 threads
+[0] <vec> go(): Total number density:   3.491648217616e-07 (  3.491648217616e-07); x-momentum =  -8.250635277663e-15 (  9.897217499839e-18); energy =   1.294460616864e+05 (  1.294460616855e+05) error = 6.926225e-12 (log10 of error = -11), 125 particles. Use 1 threads
 Linear ptof_ solve converged due to CONVERGED_RTOL iterations 4
 Linear ptof_ solve converged due to CONVERGED_RTOL iterations 4
 Linear ptof_ solve converged due to CONVERGED_RTOL iterations 4
@@ -64,4 +64,4 @@ Linear ptof_ solve converged due to CONVERGED_RTOL iterations 4
 Linear ftop_ solve converged due to CONVERGED_RTOL iterations 11
 Linear ftop_ solve converged due to CONVERGED_RTOL iterations 11
 Linear ftop_ solve converged due to CONVERGED_RTOL iterations 11
-[0] go(): Total number density:   3.491648217616e-07 (  3.491648217616e-07); x-momentum =  -8.250635277663e-15 (  9.897217499839e-18); energy =   1.294460616864e+05 (  1.294460616855e+05) error = 6.926225e-12 (log10 of error = -11), 125 particles. Use 1 threads
+[0] <vec> go(): Total number density:   3.491648217616e-07 (  3.491648217616e-07); x-momentum =  -8.250635277663e-15 (  9.897217499839e-18); energy =   1.294460616864e+05 (  1.294460616855e+05) error = 6.926225e-12 (log10 of error = -11), 125 particles. Use 1 threads

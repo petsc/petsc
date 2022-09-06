@@ -4,12 +4,12 @@ n:             e:  1.000e+00                           i:  1.000e+00  1.000e-06
 thermal T (K): e= 2.321e+07 i= 1.160e+07  1.160e+07. v_0= 1.876e+07 ( 6.256e-02c) n_0= 1.000e+20 t_0= 1.637e-05, classical, Intuitive, 2 batched
 Domain radius (AMR levels) grid 0:  5.000e+00 (0) , 1:  5.835e-02 (0) , 2:  6.151e-03 (0) 
 Using default Plex order for all matrices
-[0] adaptToleranceFEM(): Phase:adaptToleranceFEM: Uniform refinement
-[0] adaptToleranceFEM(): 	Phase: adaptToleranceFEM: 8 cells, 128 total quadrature points
-[0] adaptToleranceFEM(): Phase:adaptToleranceFEM: Uniform refinement
-[0] adaptToleranceFEM(): 	Phase: adaptToleranceFEM: 8 cells, 128 total quadrature points
-[0] adaptToleranceFEM(): Phase:adaptToleranceFEM: Uniform refinement
-[0] adaptToleranceFEM(): 	Phase: adaptToleranceFEM: 8 cells, 128 total quadrature points
+[0] <vec> adaptToleranceFEM(): Phase:adaptToleranceFEM: Uniform refinement
+[0] <vec> adaptToleranceFEM(): 	Phase: adaptToleranceFEM: 8 cells, 128 total quadrature points
+[0] <vec> adaptToleranceFEM(): Phase:adaptToleranceFEM: Uniform refinement
+[0] <vec> adaptToleranceFEM(): 	Phase: adaptToleranceFEM: 8 cells, 128 total quadrature points
+[0] <vec> adaptToleranceFEM(): Phase:adaptToleranceFEM: Uniform refinement
+[0] <vec> adaptToleranceFEM(): 	Phase: adaptToleranceFEM: 8 cells, 128 total quadrature points
 0) FormLandau 384 IPs, 24 cells total, Nb=16, Nq=16, dim=2, Tab: Nb=16 Nf=3 Np=16 cdim=2 N=546
 Linear ptof_ solve converged due to CONVERGED_RTOL iterations 6
 Linear ptof_ solve converged due to CONVERGED_RTOL iterations 6
@@ -65,7 +65,7 @@ Linear ptof_ solve converged due to CONVERGED_RTOL iterations 6
 Linear ftop_ solve converged due to CONVERGED_RTOL iterations 3
 Linear ftop_ solve converged due to CONVERGED_RTOL iterations 3
 Linear ftop_ solve converged due to CONVERGED_RTOL iterations 3
-[0] go(): Total number density:   3.369774668056e-07 (  3.369774668056e-07); x-momentum =  -8.750922403644e-17 (  6.455110808139e-18); energy =   1.445347319404e+05 (  1.445347319404e+05) error = 1.771987e-13 (log10 of error = -12), 288 particles. Use 1 threads
+[0] <vec> go(): Total number density:   3.369774668056e-07 (  3.369774668056e-07); x-momentum =  -8.750922403644e-17 (  6.455110808139e-18); energy =   1.445347319404e+05 (  1.445347319404e+05) error = 1.771987e-13 (log10 of error = -12), 288 particles. Use 1 threads
 Linear ptof_ solve converged due to CONVERGED_RTOL iterations 6
 Linear ptof_ solve converged due to CONVERGED_RTOL iterations 6
 Linear ptof_ solve converged due to CONVERGED_RTOL iterations 6
@@ -120,4 +120,4 @@ Linear ptof_ solve converged due to CONVERGED_RTOL iterations 6
 Linear ftop_ solve converged due to CONVERGED_RTOL iterations 3
 Linear ftop_ solve converged due to CONVERGED_RTOL iterations 3
 Linear ftop_ solve converged due to CONVERGED_RTOL iterations 3
-[0] go(): Total number density:   3.369774668056e-07 (  3.369774668056e-07); x-momentum =  -8.750922403644e-17 (  6.455110808139e-18); energy =   1.445347319404e+05 (  1.445347319404e+05) error = 1.771987e-13 (log10 of error = -12), 288 particles. Use 1 threads
+[0] <vec> go(): Total number density:   3.369774668056e-07 (  3.369774668056e-07); x-momentum =  -8.750922403644e-17 (  6.455110808139e-18); energy =   1.445347319404e+05 (  1.445347319404e+05) error = 1.771987e-13 (log10 of error = -12), 288 particles. Use 1 threads
