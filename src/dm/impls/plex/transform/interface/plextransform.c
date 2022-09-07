@@ -1298,7 +1298,7 @@ static PetscErrorCode DMPlexTransformCreateCellVertices_Internal(DMPlexTransform
     DMPolytopeType      *rct;
     PetscInt            *rsize, *rcone, *rornt;
     PetscInt             Nct, n, r, pNew;
-    PetscInt             vStart, vEnd, Nc;
+    PetscInt             trdim, vStart, vEnd, Nc;
     const PetscInt       debug = 0;
     const char          *typeName;
 
@@ -1312,11 +1312,12 @@ static PetscErrorCode DMPlexTransformCreateCellVertices_Internal(DMPlexTransform
     PetscCall(DMPlexTransformSetUp(reftr));
     PetscCall(DMPlexTransformApply(reftr, refdm, &trdm));
 
+    PetscCall(DMGetDimension(trdm, &trdim));
     PetscCall(DMPlexGetDepthStratum(trdm, 0, &vStart, &vEnd));
     tr->trNv[ct] = vEnd - vStart;
     PetscCall(DMGetCoordinatesLocal(trdm, &coordinates));
     PetscCall(VecGetLocalSize(coordinates, &Nc));
-    PetscCheck(tr->trNv[ct] * DMPolytopeTypeGetDim(ct) == Nc, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Cell type %s, transformed coordinate size %" PetscInt_FMT " != %" PetscInt_FMT " size of coordinate storage", DMPolytopeTypes[ct], tr->trNv[ct] * DMPolytopeTypeGetDim(ct), Nc);
+    PetscCheck(tr->trNv[ct] * trdim == Nc, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Cell type %s, transformed coordinate size %" PetscInt_FMT " != %" PetscInt_FMT " size of coordinate storage", DMPolytopeTypes[ct], tr->trNv[ct] * trdim, Nc);
     PetscCall(PetscCalloc1(Nc, &tr->trVerts[ct]));
     PetscCall(VecGetArrayRead(coordinates, &coords));
     PetscCall(PetscArraycpy(tr->trVerts[ct], coords, Nc));
@@ -1347,7 +1348,7 @@ static PetscErrorCode DMPlexTransformCreateCellVertices_Internal(DMPlexTransform
     if (debug) {
       DMPolytopeType *rct;
       PetscInt       *rsize, *rcone, *rornt;
-      PetscInt        v, dE = DMPolytopeTypeGetDim(ct), d, off = 0;
+      PetscInt        v, dE = trdim, d, off = 0;
 
       PetscCall(PetscPrintf(PETSC_COMM_SELF, "%s: %" PetscInt_FMT " vertices\n", DMPolytopeTypes[ct], tr->trNv[ct]));
       for (v = 0; v < tr->trNv[ct]; ++v) {
