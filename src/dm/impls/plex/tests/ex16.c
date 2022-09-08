@@ -55,7 +55,25 @@ static PetscErrorCode CreateHalfDomainLabel(DM dm, PetscBool lower, DMLabel *lab
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode CreateSubmesh(DM dm, PetscBool domain, PetscBool lower, DM *subdm) {
+// Create a line of faces at a given x value
+static PetscErrorCode CreateLineLabel(DM dm, PetscReal x, DMLabel *label) {
+  PetscReal centroid[3];
+  PetscInt  fStart, fEnd;
+
+  PetscFunctionBeginUser;
+  PetscCall(DMGetCoordinatesLocalSetUp(dm));
+  PetscCall(DMCreateLabel(dm, "faces"));
+  PetscCall(DMGetLabel(dm, "faces", label));
+  PetscCall(DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd));
+  for (PetscInt f = fStart; f < fEnd; ++f) {
+    PetscCall(DMPlexComputeCellGeometryFVM(dm, f, NULL, centroid, NULL));
+    if (PetscAbsReal(centroid[0] - x) < PETSC_SMALL) PetscCall(DMLabelSetValue(*label, f, 1));
+  }
+  PetscCall(DMPlexLabelComplete(dm, *label));
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode CreateVolumeSubmesh(DM dm, PetscBool domain, PetscBool lower, DM *subdm) {
   DMLabel label, map;
 
   PetscFunctionBegin;
@@ -70,20 +88,62 @@ PetscErrorCode CreateSubmesh(DM dm, PetscBool domain, PetscBool lower, DM *subdm
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode TestBoundaryField(DM dm) {
+  DM       subdm;
+  DMLabel  label, map;
+  PetscFV  fvm;
+  Vec      gv;
+  PetscInt cdim;
+
+  PetscFunctionBeginUser;
+  PetscCall(CreateLineLabel(dm, 0.5, &label));
+  PetscCall(DMPlexFilter(dm, label, 1, &subdm));
+  PetscCall(PetscObjectSetName((PetscObject)subdm, "Submesh"));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)subdm, "sub_"));
+  PetscCall(DMViewFromOptions(subdm, NULL, "-dm_view"));
+  PetscCall(DMPlexGetSubpointMap(subdm, &map));
+  PetscCall(PetscObjectViewFromOptions((PetscObject)map, NULL, "-map_view"));
+
+  PetscCall(PetscFVCreate(PetscObjectComm((PetscObject)subdm), &fvm));
+  PetscCall(PetscObjectSetName((PetscObject)fvm, "testField"));
+  PetscCall(PetscFVSetNumComponents(fvm, 1));
+  PetscCall(DMGetCoordinateDim(subdm, &cdim));
+  PetscCall(PetscFVSetSpatialDimension(fvm, cdim));
+  PetscCall(PetscFVSetFromOptions(fvm));
+
+  PetscCall(DMAddField(subdm, NULL, (PetscObject)fvm));
+  PetscCall(PetscFVDestroy(&fvm));
+  PetscCall(DMCreateDS(subdm));
+
+  PetscCall(DMCreateGlobalVector(subdm, &gv));
+  PetscCall(PetscObjectSetName((PetscObject)gv, "potential"));
+  PetscCall(VecSet(gv, 1.));
+  PetscCall(VecViewFromOptions(gv, NULL, "-vec_view"));
+  PetscCall(VecDestroy(&gv));
+  PetscCall(DMDestroy(&subdm));
+  PetscFunctionReturn(0);
+}
+
 int main(int argc, char **argv) {
   DM        dm, subdm;
-  PetscBool domain = PETSC_FALSE;
+  PetscBool volume = PETSC_TRUE, domain = PETSC_FALSE;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-volume", &volume, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-domain", &domain, NULL));
+
   PetscCall(CreateMesh(PETSC_COMM_WORLD, &dm));
-  PetscCall(CreateSubmesh(dm, domain, PETSC_TRUE, &subdm));
-  PetscCall(DMSetFromOptions(subdm));
-  PetscCall(DMDestroy(&subdm));
-  PetscCall(CreateSubmesh(dm, domain, PETSC_FALSE, &subdm));
-  PetscCall(DMSetFromOptions(subdm));
-  PetscCall(DMDestroy(&subdm));
+  if (volume) {
+    PetscCall(CreateVolumeSubmesh(dm, domain, PETSC_TRUE, &subdm));
+    PetscCall(DMSetFromOptions(subdm));
+    PetscCall(DMDestroy(&subdm));
+    PetscCall(CreateVolumeSubmesh(dm, domain, PETSC_FALSE, &subdm));
+    PetscCall(DMSetFromOptions(subdm));
+    PetscCall(DMDestroy(&subdm));
+  } else {
+    PetscCall(TestBoundaryField(dm));
+  }
   PetscCall(DMDestroy(&dm));
   PetscCall(PetscFinalize());
   return 0;
@@ -110,5 +170,18 @@ int main(int argc, char **argv) {
     test:
       suffix: 2
       args: -domain
+
+  # This test checks whether filter can extract a lower-dimensional manifold and output a field on it
+  testset:
+    args: -volume 0 -dm_plex_simplex 0 -sub_dm_view hdf5:subdm.h5 -vec_view hdf5:subdm.h5::append
+    requires: hdf5
+
+    test:
+      suffix: surface_2d
+      args: -dm_plex_box_faces 5,5
+
+    test:
+      suffix: surface_3d
+      args: -dm_plex_box_faces 5,5,5
 
 TEST*/

@@ -247,7 +247,7 @@ PetscErrorCode VecView_Plex_Local_HDF5_Internal(Vec v, PetscViewer viewer) {
       PetscCall(DMPlexGetFieldType_Internal(dm, section, f, &pStart, &pEnd, &ft));
       fgroup = (ft == PETSC_VTK_POINT_VECTOR_FIELD) || (ft == PETSC_VTK_POINT_FIELD) ? "/vertex_fields" : "/cell_fields";
       PetscCall(PetscSectionGetFieldName(section, f, &fname));
-      if (!fname) continue;
+      if (!fname || ft == PETSC_VTK_INVALID) continue;
       PetscCall(PetscViewerHDF5PushGroup(viewer, fgroup));
       if (cutLabel) {
         const PetscScalar *ga;
