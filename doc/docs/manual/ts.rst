@@ -1351,7 +1351,7 @@ Examples include:
 
 -  a discrete adjoint sensitivity using ``TSCN`` methods for a PDE
    problem
-   `TS Advection-Diffusion-Reaction Tutorial ex5adj <../../src/ts/tutorials/advection-diffusion-reaction/ex5adj.c.html>`__.
+   `TS Advection-Diffusion-Reaction Tutorial ex5adj <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/ts/tutorials/advection-diffusion-reaction/ex5adj.c.html>`__.
 
 Checkpointing
 `````````````
