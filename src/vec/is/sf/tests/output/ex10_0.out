@@ -1,0 +1,34 @@
+PetscSF Object: sfA0 1 MPI process
+  type: basic
+  [0] Number of roots=1, leaves=0, remote ranks=0
+  MultiSF sort=rank-order
+PetscSF Object: sfA1 1 MPI process
+  type: basic
+  [0] Number of roots=1, leaves=1, remote ranks=1
+  [0] 1 <- (0,0)
+  MultiSF sort=rank-order
+PetscSF Object: sfA2 1 MPI process
+  type: basic
+  [0] Number of roots=1, leaves=1, remote ranks=1
+  [0] 0 <- (0,0)
+  MultiSF sort=rank-order
+PetscSF Object: sfB 1 MPI process
+  type: basic
+  [0] Number of roots=2, leaves=2, remote ranks=1
+  [0] 100 <- (0,0)
+  [0] 101 <- (0,1)
+  MultiSF sort=rank-order
+PetscSF Object: PetscSFCompose(sfA0, sfB) 1 MPI process
+  type: basic
+  [0] Number of roots=1, leaves=0, remote ranks=0
+  MultiSF sort=rank-order
+PetscSF Object: PetscSFCompose(sfA1, sfB) 1 MPI process
+  type: basic
+  [0] Number of roots=1, leaves=1, remote ranks=1
+  [0] 101 <- (0,0)
+  MultiSF sort=rank-order
+PetscSF Object: PetscSFCompose(sfA2, sfB) 1 MPI process
+  type: basic
+  [0] Number of roots=1, leaves=1, remote ranks=1
+  [0] 100 <- (0,0)
+  MultiSF sort=rank-order

@@ -1925,20 +1925,34 @@ PetscErrorCode PetscSFCompose(PetscSF sfA, PetscSF sfB, PetscSF *sfBA) {
 
   PetscCall(PetscSFGetGraph(sfA, &numRootsA, &numLeavesA, &localPointsA, &remotePointsA));
   PetscCall(PetscSFGetGraph(sfB, &numRootsB, &numLeavesB, &localPointsB, &remotePointsB));
-  if (localPointsA) {
-    PetscCall(PetscMalloc1(numRootsB, &reorderedRemotePointsA));
-    for (i = 0; i < numRootsB; i++) {
-      reorderedRemotePointsA[i].rank  = -1;
-      reorderedRemotePointsA[i].index = -1;
-    }
-    for (i = 0; i < numLeavesA; i++) {
-      if (localPointsA[i] >= numRootsB) continue;
-      reorderedRemotePointsA[localPointsA[i]] = remotePointsA[i];
-    }
-    remotePointsA = reorderedRemotePointsA;
+  /* Make sure that PetscSFBcast{Begin, End}(sfB, ...) works with root data of size       */
+  /* numRootsB; otherwise, garbage will be broadcasted.                                   */
+  /* Example (comm size = 1):                                                             */
+  /* sfA: 0 <- (0, 0)                                                                     */
+  /* sfB: 100 <- (0, 0)                                                                   */
+  /*      101 <- (0, 1)                                                                   */
+  /* Here, we have remotePointsA = [(0, 0)], but for remotePointsA to be a valid tartget  */
+  /* of sfB, it has to be recasted as [(0, 0), (-1, -1)] so that points 100 and 101 would */
+  /* receive (0, 0) and (-1, -1), respectively, when PetscSFBcast(sfB, ...) is called on  */
+  /* remotePointsA; if not recasted, point 101 would receive a garbage value.             */
+  PetscCall(PetscMalloc1(numRootsB, &reorderedRemotePointsA));
+  for (i = 0; i < numRootsB; i++) {
+    reorderedRemotePointsA[i].rank  = -1;
+    reorderedRemotePointsA[i].index = -1;
   }
+  for (i = 0; i < numLeavesA; i++) {
+    PetscInt localp = localPointsA ? localPointsA[i] : i;
+
+    if (localp >= numRootsB) continue;
+    reorderedRemotePointsA[localp] = remotePointsA[i];
+  }
+  remotePointsA = reorderedRemotePointsA;
   PetscCall(PetscSFGetLeafRange(sfB, &minleaf, &maxleaf));
   PetscCall(PetscMalloc1(maxleaf - minleaf + 1, &leafdataB));
+  for (i = 0; i < maxleaf - minleaf + 1; i++) {
+    leafdataB[i].rank  = -1;
+    leafdataB[i].index = -1;
+  }
   PetscCall(PetscSFBcastBegin(sfB, MPIU_2INT, remotePointsA, leafdataB - minleaf, MPI_REPLACE));
   PetscCall(PetscSFBcastEnd(sfB, MPIU_2INT, remotePointsA, leafdataB - minleaf, MPI_REPLACE));
   PetscCall(PetscFree(reorderedRemotePointsA));
