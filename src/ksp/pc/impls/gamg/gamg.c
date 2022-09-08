@@ -691,7 +691,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc) {
   } /* levels */
   PetscCall(PetscFree(pc_gamg->data));
 
-  PetscCall(PetscInfo(pc, "%s: %" PetscInt_FMT " levels, grid complexity = %g\n", ((PetscObject)pc)->prefix, level + 1, nnztot / nnz0));
+  PetscCall(PetscInfo(pc, "%s: %" PetscInt_FMT " levels, operator complexity = %g\n", ((PetscObject)pc)->prefix, level + 1, nnztot / nnz0));
   pc_gamg->Nlevels = level + 1;
   fine_level       = level;
   PetscCall(PCMGSetLevels(pc, pc_gamg->Nlevels, NULL));
