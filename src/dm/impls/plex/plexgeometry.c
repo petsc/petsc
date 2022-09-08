@@ -253,18 +253,17 @@ static PetscErrorCode DMPlexClosestPoint_Simplex_2D_Internal(DM dm, const PetscS
 }
 
 static PetscErrorCode DMPlexLocatePoint_Quad_2D_Internal(DM dm, const PetscScalar point[], PetscInt c, PetscInt *cell) {
-  PetscSection   coordSection;
-  Vec            coordsLocal;
-  PetscScalar   *coords    = NULL;
-  const PetscInt faces[8]  = {0, 1, 1, 2, 2, 3, 3, 0};
-  PetscReal      x         = PetscRealPart(point[0]);
-  PetscReal      y         = PetscRealPart(point[1]);
-  PetscInt       crossings = 0, f;
+  const PetscScalar *array;
+  PetscScalar       *coords    = NULL;
+  const PetscInt     faces[8]  = {0, 1, 1, 2, 2, 3, 3, 0};
+  PetscReal          x         = PetscRealPart(point[0]);
+  PetscReal          y         = PetscRealPart(point[1]);
+  PetscInt           crossings = 0, numCoords, f;
+  PetscBool          isDG;
 
   PetscFunctionBegin;
-  PetscCall(DMGetCoordinatesLocal(dm, &coordsLocal));
-  PetscCall(DMGetCoordinateSection(dm, &coordSection));
-  PetscCall(DMPlexVecGetClosure(dm, coordSection, coordsLocal, c, NULL, &coords));
+  PetscCall(DMPlexGetCellCoordinates(dm, c, &isDG, &numCoords, &array, &coords));
+  PetscCheck(numCoords == 8, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Quadrilateral should have 8 coordinates, not %" PetscInt_FMT, numCoords);
   for (f = 0; f < 4; ++f) {
     PetscReal x_i   = PetscRealPart(coords[faces[2 * f + 0] * 2 + 0]);
     PetscReal y_i   = PetscRealPart(coords[faces[2 * f + 0] * 2 + 1]);
@@ -278,7 +277,7 @@ static PetscErrorCode DMPlexLocatePoint_Quad_2D_Internal(DM dm, const PetscScala
   }
   if (crossings % 2) *cell = c;
   else *cell = DMLOCATEPOINT_POINT_NOT_FOUND;
-  PetscCall(DMPlexVecRestoreClosure(dm, coordSection, coordsLocal, c, NULL, &coords));
+  PetscCall(DMPlexRestoreCellCoordinates(dm, c, &isDG, &numCoords, &array, &coords));
   PetscFunctionReturn(0);
 }
 
@@ -303,17 +302,16 @@ static PetscErrorCode DMPlexLocatePoint_Simplex_3D_Internal(DM dm, const PetscSc
 }
 
 static PetscErrorCode DMPlexLocatePoint_General_3D_Internal(DM dm, const PetscScalar point[], PetscInt c, PetscInt *cell) {
-  PetscSection   coordSection;
-  Vec            coordsLocal;
-  PetscScalar   *coords    = NULL;
-  const PetscInt faces[24] = {0, 3, 2, 1, 5, 4, 7, 6, 3, 0, 4, 5, 1, 2, 6, 7, 3, 5, 6, 2, 0, 1, 7, 4};
-  PetscBool      found     = PETSC_TRUE;
-  PetscInt       f;
+  const PetscScalar *array;
+  PetscScalar       *coords    = NULL;
+  const PetscInt     faces[24] = {0, 3, 2, 1, 5, 4, 7, 6, 3, 0, 4, 5, 1, 2, 6, 7, 3, 5, 6, 2, 0, 1, 7, 4};
+  PetscBool          found     = PETSC_TRUE;
+  PetscInt           numCoords, f;
+  PetscBool          isDG;
 
   PetscFunctionBegin;
-  PetscCall(DMGetCoordinatesLocal(dm, &coordsLocal));
-  PetscCall(DMGetCoordinateSection(dm, &coordSection));
-  PetscCall(DMPlexVecGetClosure(dm, coordSection, coordsLocal, c, NULL, &coords));
+  PetscCall(DMPlexGetCellCoordinates(dm, c, &isDG, &numCoords, &array, &coords));
+  PetscCheck(numCoords == 24, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Quadrilateral should have 8 coordinates, not %" PetscInt_FMT, numCoords);
   for (f = 0; f < 6; ++f) {
     /* Check the point is under plane */
     /*   Get face normal */
@@ -345,7 +343,7 @@ static PetscErrorCode DMPlexLocatePoint_General_3D_Internal(DM dm, const PetscSc
   }
   if (found) *cell = c;
   else *cell = DMLOCATEPOINT_POINT_NOT_FOUND;
-  PetscCall(DMPlexVecRestoreClosure(dm, coordSection, coordsLocal, c, NULL, &coords));
+  PetscCall(DMPlexRestoreCellCoordinates(dm, c, &isDG, &numCoords, &array, &coords));
   PetscFunctionReturn(0);
 }
 
@@ -809,14 +807,7 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
       }
     }
   }
-  /* define domain bounding box */
-  {
-    Vec coorglobal;
-
-    PetscCall(DMGetCoordinates(dm, &coorglobal));
-    PetscCall(VecStrideMaxAll(coorglobal, NULL, gmax));
-    PetscCall(VecStrideMinAll(coorglobal, NULL, gmin));
-  }
+  PetscCall(DMGetBoundingBox(dm, gmin, gmax));
   if (hash) {
     if (!mesh->lbox) {
       PetscCall(PetscInfo(dm, "Initializing grid hashing"));

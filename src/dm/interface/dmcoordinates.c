@@ -824,28 +824,46 @@ PetscErrorCode DMSetCoordinateField(DM dm, DMField field) {
 .seealso: `DMGetCoordinates()`, `DMGetCoordinatesLocal()`, `DMGetBoundingBox()`
 @*/
 PetscErrorCode DMGetLocalBoundingBox(DM dm, PetscReal lmin[], PetscReal lmax[]) {
-  Vec                coords = NULL;
-  PetscReal          min[3] = {PETSC_MAX_REAL, PETSC_MAX_REAL, PETSC_MAX_REAL};
-  PetscReal          max[3] = {PETSC_MIN_REAL, PETSC_MIN_REAL, PETSC_MIN_REAL};
-  const PetscScalar *local_coords;
-  PetscInt           N, Ni;
-  PetscInt           cdim, i, j;
+  Vec       coords = NULL;
+  PetscReal min[3] = {PETSC_MAX_REAL, PETSC_MAX_REAL, PETSC_MAX_REAL};
+  PetscReal max[3] = {PETSC_MIN_REAL, PETSC_MIN_REAL, PETSC_MIN_REAL};
+  PetscInt  cdim, i, j;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscCall(DMGetCoordinateDim(dm, &cdim));
-  PetscCall(DMGetCoordinates(dm, &coords));
+  PetscCall(DMGetCoordinatesLocal(dm, &coords));
   if (coords) {
+    const PetscScalar *local_coords;
+    PetscInt           N, Ni;
+
+    for (j = cdim; j < 3; ++j) {
+      min[j] = 0;
+      max[j] = 0;
+    }
     PetscCall(VecGetArrayRead(coords, &local_coords));
     PetscCall(VecGetLocalSize(coords, &N));
     Ni = N / cdim;
     for (i = 0; i < Ni; ++i) {
-      for (j = 0; j < 3; ++j) {
-        min[j] = j < cdim ? PetscMin(min[j], PetscRealPart(local_coords[i * cdim + j])) : 0;
-        max[j] = j < cdim ? PetscMax(max[j], PetscRealPart(local_coords[i * cdim + j])) : 0;
+      for (j = 0; j < cdim; ++j) {
+        min[j] = PetscMin(min[j], PetscRealPart(local_coords[i * cdim + j]));
+        max[j] = PetscMax(max[j], PetscRealPart(local_coords[i * cdim + j]));
       }
     }
     PetscCall(VecRestoreArrayRead(coords, &local_coords));
+    PetscCall(DMGetCellCoordinatesLocal(dm, &coords));
+    if (coords) {
+      PetscCall(VecGetArrayRead(coords, &local_coords));
+      PetscCall(VecGetLocalSize(coords, &N));
+      Ni = N / cdim;
+      for (i = 0; i < Ni; ++i) {
+        for (j = 0; j < cdim; ++j) {
+          min[j] = PetscMin(min[j], PetscRealPart(local_coords[i * cdim + j]));
+          max[j] = PetscMax(max[j], PetscRealPart(local_coords[i * cdim + j]));
+        }
+      }
+      PetscCall(VecRestoreArrayRead(coords, &local_coords));
+    }
   } else {
     PetscBool isda;
 
