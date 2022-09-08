@@ -438,6 +438,7 @@ static struct _VecOps DvOps = {PetscDesignatedInitializer(duplicate, VecDuplicat
                                PetscDesignatedInitializer(stridesubsetscatter, VecStrideSubSetScatter_Default),
                                PetscDesignatedInitializer(viewnative, VecView_MPI),
                                PetscDesignatedInitializer(loadnative, NULL),
+                               PetscDesignatedInitializer(createlocalvector, NULL),
                                PetscDesignatedInitializer(getlocalvector, NULL),
                                PetscDesignatedInitializer(restorelocalvector, NULL),
                                PetscDesignatedInitializer(getlocalvectorread, NULL),

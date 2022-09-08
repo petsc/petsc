@@ -1,10 +1,10 @@
 
 
 ============== test_view ==============
-(max-b) = 7.200320 : index = 3 
-(min-b) = 0.100223 : index = 5 
-(max-X) = 7.200320 : index = 9 
-(min-X) = 0.100223 : index = 11 
+(max-b) = 5.000000 : index = 3 
+(min-b) = 1.250000 : index = 5 
+(max-X) = 5.000000 : index = 9 
+(min-X) = 1.000000 : index = 0 
 Vec Object: 1 MPI process
   type: nest
   VecNest, rows=2,  structure: 
@@ -37,9 +37,9 @@ Vec Object: 1 MPI process
       (1) : type=seq, rows=3 
         Vec Object: 1 MPI process
           type: seq
-        7.20032
-        0.61794
-        0.100223
+        5.
+        2.5
+        1.25
 
 
 ============== test_axpy_dot_max ==============

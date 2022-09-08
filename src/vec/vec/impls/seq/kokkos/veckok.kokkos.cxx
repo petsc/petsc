@@ -803,7 +803,7 @@ PetscErrorCode VecGetLocalVector_SeqKokkos(Vec v, Vec w) {
   Vec_Kokkos *veckok = static_cast<Vec_Kokkos *>(w->spptr);
 
   PetscFunctionBegin;
-  PetscCheckTypeName(w, VECSEQKOKKOS);
+  PetscCheckTypeNames(w, VECSEQKOKKOS, VECMPIKOKKOS);
   /* Destroy w->data, w->spptr */
   if (vecseq) {
     PetscCall(PetscFree(vecseq->array_allocated));
@@ -820,7 +820,7 @@ PetscErrorCode VecGetLocalVector_SeqKokkos(Vec v, Vec w) {
 
 PetscErrorCode VecRestoreLocalVector_SeqKokkos(Vec v, Vec w) {
   PetscFunctionBegin;
-  PetscCheckTypeName(w, VECSEQKOKKOS);
+  PetscCheckTypeNames(w, VECSEQKOKKOS, VECMPIKOKKOS);
   v->data  = w->data;
   v->spptr = w->spptr;
   PetscCall(PetscObjectStateIncrease((PetscObject)v));

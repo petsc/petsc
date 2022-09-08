@@ -22,6 +22,7 @@ static PetscErrorCode ISDestroy_Block(IS is) {
   PetscCall(PetscObjectComposeFunction((PetscObject)is, "ISBlockRestoreIndices_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)is, "ISBlockGetSize_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)is, "ISBlockGetLocalSize_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)is, "ISShift_C", NULL));
   PetscCall(PetscFree(is->data));
   PetscFunctionReturn(0);
 }
@@ -318,6 +319,19 @@ static PetscErrorCode ISOnComm_Block(IS is, MPI_Comm comm, PetscCopyMode mode, I
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode ISShift_Block(IS is, PetscInt shift, IS isy) {
+  IS_Block *isb  = (IS_Block *)is->data;
+  IS_Block *isby = (IS_Block *)isy->data;
+  PetscInt  i, n, bs;
+
+  PetscFunctionBegin;
+  PetscCall(PetscLayoutGetLocalSize(is->map, &n));
+  PetscCall(PetscLayoutGetBlockSize(is->map, &bs));
+  shift /= bs;
+  for (i = 0; i < n / bs; i++) isby->idx[i] = isb->idx[i] + shift;
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode ISSetBlockSize_Block(IS is, PetscInt bs) {
   PetscFunctionBegin;
   PetscCheck(is->map->bs <= 0 || bs == is->map->bs, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Cannot change blocksize %" PetscInt_FMT " (to %" PetscInt_FMT ") if ISType is ISBLOCK", is->map->bs, bs);
@@ -602,5 +616,6 @@ PETSC_EXTERN PetscErrorCode ISCreate_Block(IS is) {
   PetscCall(PetscObjectComposeFunction((PetscObject)is, "ISBlockRestoreIndices_C", ISBlockRestoreIndices_Block));
   PetscCall(PetscObjectComposeFunction((PetscObject)is, "ISBlockGetSize_C", ISBlockGetSize_Block));
   PetscCall(PetscObjectComposeFunction((PetscObject)is, "ISBlockGetLocalSize_C", ISBlockGetLocalSize_Block));
+  PetscCall(PetscObjectComposeFunction((PetscObject)is, "ISShift_C", ISShift_Block));
   PetscFunctionReturn(0);
 }

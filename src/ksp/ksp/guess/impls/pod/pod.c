@@ -91,23 +91,23 @@ static PetscErrorCode KSPGuessSetUp_POD(KSPGuess guess) {
   }
   /* work vectors are sequential, we explicitly use MPI_Allreduce */
   if (!pod->xsnap) {
-    VecType  type;
-    Vec     *v, vseq;
-    PetscInt n;
+    Vec *v, vseq;
 
     PetscCall(KSPCreateVecs(guess->ksp, 1, &v, 0, NULL));
-    PetscCall(VecCreate(PETSC_COMM_SELF, &vseq));
-    PetscCall(VecGetLocalSize(v[0], &n));
-    PetscCall(VecSetSizes(vseq, n, n));
-    PetscCall(VecGetType(v[0], &type));
-    PetscCall(VecSetType(vseq, type));
+    PetscCall(VecCreateLocalVector(v[0], &vseq));
     PetscCall(VecDestroyVecs(1, &v));
     PetscCall(VecDuplicateVecs(vseq, pod->maxn, &pod->xsnap));
     PetscCall(VecDestroy(&vseq));
     PetscCall(PetscLogObjectParents(guess, pod->maxn, pod->xsnap));
   }
   if (!pod->bsnap) {
-    PetscCall(VecDuplicateVecs(pod->xsnap[0], pod->maxn, &pod->bsnap));
+    Vec *v, vseq;
+
+    PetscCall(KSPCreateVecs(guess->ksp, 0, NULL, 1, &v));
+    PetscCall(VecCreateLocalVector(v[0], &vseq));
+    PetscCall(VecDestroyVecs(1, &v));
+    PetscCall(VecDuplicateVecs(vseq, pod->maxn, &pod->bsnap));
+    PetscCall(VecDestroy(&vseq));
     PetscCall(PetscLogObjectParents(guess, pod->maxn, pod->bsnap));
   }
   if (!pod->work) PetscCall(KSPCreateVecs(guess->ksp, 1, &pod->work, 0, NULL));
@@ -137,7 +137,7 @@ static PetscErrorCode KSPGuessUpdate_POD(KSPGuess, Vec, Vec);
 
 static PetscErrorCode KSPGuessFormGuess_POD(KSPGuess guess, Vec b, Vec x) {
   KSPGuessPOD *pod = (KSPGuessPOD *)guess->data;
-  PetscScalar  one = 1, zero = 0, *array;
+  PetscScalar  one = 1, zero = 0;
   PetscBLASInt bN, ione      = 1, bNen, lierr;
   PetscInt     i;
 
@@ -148,11 +148,9 @@ static PetscErrorCode KSPGuessFormGuess_POD(KSPGuess guess, Vec b, Vec x) {
   }
   if (!pod->nen) PetscFunctionReturn(0);
   /* b_low = S * V^T * X^T * b */
-  PetscCall(VecGetArrayRead(b, (const PetscScalar **)&array));
-  PetscCall(VecPlaceArray(pod->bsnap[pod->curr], array));
-  PetscCall(VecRestoreArrayRead(b, (const PetscScalar **)&array));
+  PetscCall(VecGetLocalVectorRead(b, pod->bsnap[pod->curr]));
   PetscCall(VecMDot(pod->bsnap[pod->curr], pod->n, pod->xsnap, pod->swork));
-  PetscCall(VecResetArray(pod->bsnap[pod->curr]));
+  PetscCall(VecRestoreLocalVectorRead(b, pod->bsnap[pod->curr]));
   PetscCall(MPIU_Allreduce(pod->swork, pod->swork + pod->n, pod->n, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)guess)));
   PetscCall(PetscBLASIntCast(pod->n, &bN));
   PetscCall(PetscBLASIntCast(pod->nen, &bNen));
@@ -178,9 +176,12 @@ static PetscErrorCode KSPGuessFormGuess_POD(KSPGuess guess, Vec b, Vec x) {
       Mat         L;
 
       PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)guess), &rank));
-      PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, pod->nen, pod->nen, pod->low, &L));
-      if (rank == 0) PetscCall(MatView(L, NULL));
-      PetscCall(MatDestroy(&L));
+      if (rank == 0) {
+        PetscCall(PetscPrintf(PetscObjectComm((PetscObject)guess), "  L = "));
+        PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, pod->nen, pod->nen, pod->low, &L));
+        PetscCall(MatView(L, NULL));
+        PetscCall(MatDestroy(&L));
+      }
     }
     PetscCall(MatIsSymmetricKnown(guess->A, &set, &symm));
     tsolve = (set && symm) ? PETSC_FALSE : pksp->transpose_solve;
@@ -202,18 +203,16 @@ static PetscErrorCode KSPGuessFormGuess_POD(KSPGuess guess, Vec b, Vec x) {
     }
     PetscCall(PetscPrintf(PetscObjectComm((PetscObject)guess), "\n"));
   }
-  PetscCall(VecGetArray(x, &array));
-  PetscCall(VecPlaceArray(pod->bsnap[pod->curr], array));
+  PetscCall(VecGetLocalVector(x, pod->bsnap[pod->curr]));
   PetscCall(VecSet(pod->bsnap[pod->curr], 0));
   PetscCall(VecMAXPY(pod->bsnap[pod->curr], pod->n, pod->swork + pod->n, pod->xsnap));
-  PetscCall(VecResetArray(pod->bsnap[pod->curr]));
-  PetscCall(VecRestoreArray(x, &array));
+  PetscCall(VecRestoreLocalVector(x, pod->bsnap[pod->curr]));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode KSPGuessUpdate_POD(KSPGuess guess, Vec b, Vec x) {
   KSPGuessPOD *pod = (KSPGuessPOD *)guess->data;
-  PetscScalar  one = 1, zero = 0, *array;
+  PetscScalar  one = 1, zero = 0;
   PetscReal    toten, parten, reps = 0; /* dlamch? */
   PetscBLASInt bN, lierr, idummy;
   PetscInt     i;
@@ -222,11 +221,8 @@ static PetscErrorCode KSPGuessUpdate_POD(KSPGuess guess, Vec b, Vec x) {
   if (pod->ndots_iallreduce) goto complete_request;
   pod->n = pod->n < pod->maxn ? pod->n + 1 : pod->maxn;
   PetscCall(VecCopy(x, pod->xsnap[pod->curr]));
-  PetscCall(VecGetArray(pod->bsnap[pod->curr], &array));
-  PetscCall(VecPlaceArray(pod->work[0], array));
   PetscCall(KSP_MatMult(guess->ksp, guess->A, x, pod->work[0]));
-  PetscCall(VecResetArray(pod->work[0]));
-  PetscCall(VecRestoreArray(pod->bsnap[pod->curr], &array));
+  PetscCall(VecCopy(pod->work[0], pod->bsnap[pod->curr]));
   if (pod->Aspd) {
     PetscCall(VecMDot(pod->xsnap[pod->curr], pod->n, pod->bsnap, pod->swork));
 #if !defined(PETSC_HAVE_MPI_NONBLOCKING_COLLECTIVES)
@@ -301,7 +297,7 @@ complete_request:
       pod->yhay[i * pod->maxn + pod->curr] = PetscConj(pod->swork[5 * pod->n + i]);
     }
   }
-  /* syevx change the input matrix */
+  /* syevx changes the input matrix */
   for (i = 0; i < pod->n; i++) {
     PetscInt j;
     for (j = i; j < pod->n; j++) pod->swork[i * pod->n + j] = pod->corr[i * pod->maxn + j];
@@ -350,6 +346,22 @@ complete_request:
   }
 
   if (pod->monitor) {
+    PetscMPIInt rank;
+    Mat         C;
+
+    PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)guess), &rank));
+    if (rank == 0) {
+      PetscCall(PetscPrintf(PetscObjectComm((PetscObject)guess), "  C = "));
+      PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, pod->n, pod->n, pod->corr, &C));
+      PetscCall(MatDenseSetLDA(C, pod->maxn));
+      PetscCall(MatView(C, NULL));
+      PetscCall(MatDestroy(&C));
+      PetscCall(PetscPrintf(PetscObjectComm((PetscObject)guess), "  YHAY = "));
+      PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, pod->n, pod->n, pod->yhay, &C));
+      PetscCall(MatDenseSetLDA(C, pod->maxn));
+      PetscCall(MatView(C, NULL));
+      PetscCall(MatDestroy(&C));
+    }
     PetscCall(PetscPrintf(PetscObjectComm((PetscObject)guess), "  KSPGuessPOD: basis %" PetscBLASInt_FMT ", energy fractions = ", pod->nen));
     for (i = pod->n - 1; i >= 0; i--) PetscCall(PetscPrintf(PetscObjectComm((PetscObject)guess), "%1.6e (%d) ", (double)(pod->eigs[i] / toten), i >= pod->st ? 1 : 0));
     PetscCall(PetscPrintf(PetscObjectComm((PetscObject)guess), "\n"));
