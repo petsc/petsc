@@ -40,7 +40,7 @@ Prepared by
 **D. A. May** :sup:`7`,
 **L. Curfman McInnes** :sup:`1`,
 **R. Tran Mills** :sup:`1`,
-**L. Mitchell** :sup:`13`,
+**L. Mitchell** :sup:`13,20`,
 **T. Munson** :sup:`1`,
 **J. E. Roman** :sup:`16`,
 **K. Rupp** :sup:`1,19`,
@@ -71,6 +71,7 @@ Prepared by
 | :sup:`17`\ Flatiron Institute, Simons Foundation
 | :sup:`18`\ University of Illinois, Urbana-Champaign
 | :sup:`19`\ Institute for Microelectronics, TU Wien
+| :sup:`20`\ Department of Computer Science, Durham University
 
 --------------
 
