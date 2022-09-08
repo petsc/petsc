@@ -64,7 +64,7 @@ Prepared by
 | :sup:`10`\ Department of Computer Science, University of Colorado, Boulder
 | :sup:`11`\ Computational Frameworks, Idaho National Laboratory
 | :sup:`12`\ Toulouse Institute of Compute Science Research
-| :sup:`13`\ Department of Computer Science, Durham University
+| :sup:`13`\ NVIDIA Corporation
 | :sup:`14`\ College of Computing, Georgia Tech
 | :sup:`15`\ Tech-X Corporation
 | :sup:`16`\ DSIC, Universitat Politècnica de València
