@@ -144,11 +144,10 @@ int main(int argc, char **argv) {
   PetscCall(VecDestroy(&F));
   PetscCall(MatDestroy(&J));
   PetscCall(SNESDestroy(&snes));
-  /*PetscCall(PetscViewerDestroy(&monP.viewer));*/
   PetscCall(PetscFinalize());
   return 0;
 }
-/* ------------------------------------------------------------------- */
+
 /*
    FormInitialGuess - Computes initial guess.
 
@@ -160,7 +159,7 @@ PetscErrorCode FormInitialGuess(Vec x) {
   PetscCall(VecSet(x, pfive));
   return 0;
 }
-/* ------------------------------------------------------------------- */
+
 /*
    FormFunction - Evaluates nonlinear function, F(x).
 

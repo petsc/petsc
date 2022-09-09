@@ -76,15 +76,14 @@ static PetscErrorCode SNESDestroy_KSPONLY(SNES snes) {
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
 /*MC
-      SNESKSPONLY - Nonlinear solver that only performs one Newton step and does not compute any norms.
-      The main purpose of this solver is to solve linear problems using the SNES interface, without
+      SNESKSPONLY - Nonlinear solver that performs one Newton step and does not compute any norms.
+      The main purpose of this solver is to solve linear problems using the `SNES` interface, without
       any additional overhead in the form of vector operations.
 
    Level: beginner
 
-.seealso: `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESNEWTONLS`, `SNESNEWTONTR`
+.seealso: `SNES`, `SNESType`, `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESNEWTONLS`, `SNESNEWTONTR`
 M*/
 PETSC_EXTERN PetscErrorCode SNESCreate_KSPONLY(SNES snes) {
   SNES_KSPONLY *ksponly;
@@ -108,13 +107,13 @@ PETSC_EXTERN PetscErrorCode SNESCreate_KSPONLY(SNES snes) {
 }
 
 /*MC
-      SNESKSPTRANSPOSEONLY - Nonlinear solver that only performs one Newton step and does not compute any norms.
-      The main purpose of this solver is to solve transposed linear problems using the SNES interface, without
+      SNESKSPTRANSPOSEONLY - Nonlinear solver that performs one Newton step and does not compute any norms.
+      The main purpose of this solver is to solve transposed linear problems using the `SNES` interface, without
       any additional overhead in the form of vector operations within adjoint solvers.
 
    Level: beginner
 
-.seealso: `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESKSPTRANSPOSEONLY`, `SNESNEWTONLS`, `SNESNEWTONTR`
+.seealso: `SNES`, `SNESType`, `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESKSPTRANSPOSEONLY`, `SNESNEWTONLS`, `SNESNEWTONTR`
 M*/
 PETSC_EXTERN PetscErrorCode SNESCreate_KSPTRANSPOSEONLY(SNES snes) {
   SNES_KSPONLY *kspo;

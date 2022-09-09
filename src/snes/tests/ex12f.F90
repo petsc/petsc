@@ -20,7 +20,6 @@
       end module
 
 ! ---------------------------------------------------------------------
-! ---------------------------------------------------------------------
 !  Subroutine FormMonitor
 !  This function lets up keep track of the SNES progress at each step
 !  In this routine, we determine when the Jacobian is rebuilt with the parameter 'jag'

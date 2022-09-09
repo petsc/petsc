@@ -599,7 +599,7 @@ static PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt
   t96 = PetscCosReal(t83);
   u6  = -((t18 * t20 + t34 * t35) * _PC1 + (t34 * t20 - t18 * t35) * _PC2 + (t51 * t20 + t61 * t35) * _PC3 + (t61 * t20 - t51 * t35) * _PC4 + (-0.4e1 * BB * B * t71 + 0.4e1 * AA * t74 * kn + t8 * AA * kn - AA * t80) * t84 + (-0.4e1 * AA * t71 * B - t8 * BB * kn - 0.4e1 * t74 * BB * kn - sigma + BB * t80) * t96) / km;
 
-  /*SS = sin(km*z)*(exp(UU*x)*(_PC1*cos(Rm*x)+_PC2*sin(Rm*x)) + exp(-VV*x)*(_PC3*cos(Rm*x)+_PC4*sin(Rm*x)) + exp(-2*x*B)*(AA*cos(kn*x)+BB*sin(kn*x)));*/
+  /* SS = sin(km*z)*(exp(UU*x)*(_PC1*cos(Rm*x)+_PC2*sin(Rm*x)) + exp(-VV*x)*(_PC3*cos(Rm*x)+_PC4*sin(Rm*x)) + exp(-2*x*B)*(AA*cos(kn*x)+BB*sin(kn*x))); */
 
   /* u1 = Vx, u2 = Vz, u3 = txx, u4 = tzx, u5 = pressure, u6 = tzz */
 

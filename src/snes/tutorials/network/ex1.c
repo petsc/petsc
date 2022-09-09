@@ -306,7 +306,6 @@ int main(int argc, char **argv) {
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
 
   /* (1) Read Data - Only rank 0 reads the data */
-  /*--------------------------------------------*/
   PetscCall(PetscLogStageRegister("Read Data", &stage[0]));
   PetscCall(PetscLogStagePush(stage[0]));
 
@@ -350,7 +349,6 @@ int main(int argc, char **argv) {
   PetscLogStagePop();
 
   /* (2) Create a network consist of two subnetworks */
-  /*-------------------------------------------------*/
   PetscCall(PetscLogStageRegister("Net Setup", &stage[1]));
   PetscCall(PetscLogStagePush(stage[1]));
 
@@ -393,7 +391,6 @@ int main(int argc, char **argv) {
   PetscCall(DMNetworkLayoutSetUp(networkdm));
 
   /* ADD VARIABLES AND COMPONENTS FOR THE POWER SUBNETWORK */
-  /*-------------------------------------------------------*/
   genj  = 0;
   loadj = 0;
   PetscCall(DMNetworkGetSubnetwork(networkdm, power_netnum, &nv, &ne, &vtx, &edges));
@@ -414,7 +411,6 @@ int main(int argc, char **argv) {
   }
 
   /* ADD VARIABLES AND COMPONENTS FOR THE WATER SUBNETWORK */
-  /*-------------------------------------------------------*/
   PetscCall(DMNetworkGetSubnetwork(networkdm, water_netnum, &nv, &ne, &vtx, &edges));
   for (i = 0; i < ne; i++) PetscCall(DMNetworkAddComponent(networkdm, edges[i], appctx_water->compkey_edge, &waterdata->edge[i], 0));
 
@@ -426,7 +422,6 @@ int main(int argc, char **argv) {
   }
 
   /* ADD VARIABLES AND COMPONENTS AT THE SHARED VERTEX: net[0].4 coupls with net[1].0 -- owning and all ghost ranks of the vertex do this */
-  /*----------------------------------------------------------------------------------------------------------------------------*/
   PetscCall(DMNetworkGetSharedVertices(networkdm, &nv, &vtx));
   for (i = 0; i < nv; i++) {
     /* power */
@@ -501,7 +496,6 @@ int main(int argc, char **argv) {
   PetscLogStagePop();
 
   /* (3) Setup Solvers */
-  /*-------------------*/
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-viewJ", &viewJ, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-viewX", &viewX, NULL));
 
@@ -511,7 +505,6 @@ int main(int argc, char **argv) {
   PetscCall(SetInitialGuess(networkdm, X, &user));
 
   /* Create coupled snes */
-  /*-------------------- */
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "SNES_coupled setup ......\n"));
   user.subsnes_id = Nsubnet;
   PetscCall(SNESCreate(PETSC_COMM_WORLD, &snes));
@@ -538,7 +531,6 @@ int main(int argc, char **argv) {
   }
 
   /* Create snes_power */
-  /*-------------------*/
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "SNES_power setup ......\n"));
 
   user.subsnes_id = 0;
@@ -565,7 +557,6 @@ int main(int argc, char **argv) {
   }
 
   /* Create snes_water */
-  /*-------------------*/
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "SNES_water setup......\n"));
 
   user.subsnes_id = 1;
@@ -583,7 +574,6 @@ int main(int argc, char **argv) {
   PetscCall(PetscLogStagePop());
 
   /* (4) Solve */
-  /*-----------*/
   PetscCall(PetscLogStageRegister("SNES Solve", &stage[3]));
   PetscCall(PetscLogStagePush(stage[3]));
   user.it = 0;

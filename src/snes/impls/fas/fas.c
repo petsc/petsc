@@ -398,12 +398,12 @@ static PetscErrorCode SNESFASUpSmooth_Private(SNES snes, Vec B, Vec X, Vec F, Pe
 }
 
 /*@
-   SNESFASCreateCoarseVec - create Vec corresponding to a state vector on one level coarser than current level
+   SNESFASCreateCoarseVec - create `Vec` corresponding to a state vector on one level coarser than current level
 
    Collective
 
    Input Parameter:
-.  snes - SNESFAS
+.  snes - `SNESFAS` object
 
    Output Parameter:
 .  Xcoarse - vector on level one coarser than snes
@@ -428,12 +428,12 @@ PetscErrorCode SNESFASCreateCoarseVec(SNES snes, Vec *Xcoarse) {
 }
 
 /*@
-   SNESFASRestrict - restrict a Vec to the next coarser level
+   SNESFASRestrict - restrict a `Vec` to the next coarser level
 
    Collective
 
    Input Parameters:
-+  fine - SNES from which to restrict
++  fine - `SNES` from which to restrict
 -  Xfine - vector to restrict
 
    Output Parameter:
@@ -441,7 +441,7 @@ PetscErrorCode SNESFASCreateCoarseVec(SNES snes, Vec *Xcoarse) {
 
    Level: developer
 
-.seealso: `SNESFASSetRestriction()`, `SNESFASSetInjection()`
+.seealso: `SNES`, `SNESFAS`, `SNESFASSetRestriction()`, `SNESFASSetInjection()`
 @*/
 PetscErrorCode SNESFASRestrict(SNES fine, Vec Xfine, Vec Xcoarse) {
   SNES_FAS *fas;
@@ -893,33 +893,34 @@ SNESFAS - Full Approximation Scheme nonlinear multigrid solver.
    of the nonlinear problem.  This problem is perturbed so that a projected
    solution of the fine problem elicits no correction from the coarse problem.
 
-Options Database:
+   Options Database Keys and Prefixes:
 +   -snes_fas_levels -  The number of levels
 .   -snes_fas_cycles<1> -  The number of cycles -- 1 for V, 2 for W
 .   -snes_fas_type<additive,multiplicative,full,kaskade>  -  Additive or multiplicative cycle
-.   -snes_fas_galerkin<PETSC_FALSE> -  Form coarse problems by projection back upon the fine problem
+.   -snes_fas_galerkin<`PETSC_FALSE`> -  Form coarse problems by projection back upon the fine problem
 .   -snes_fas_smoothup<1> -  The number of iterations of the post-smoother
 .   -snes_fas_smoothdown<1> -  The number of iterations of the pre-smoother
 .   -snes_fas_monitor -  Monitor progress of all of the levels
-.   -snes_fas_full_downsweep<PETSC_FALSE> - call the downsmooth on the initial downsweep of full FAS
-.   -fas_levels_snes_ -  SNES options for all smoothers
-.   -fas_levels_cycle_snes_ -  SNES options for all cycles
-.   -fas_levels_i_snes_ -  SNES options for the smoothers on level i
-.   -fas_levels_i_cycle_snes_ - SNES options for the cycle on level i
--   -fas_coarse_snes_ -  SNES options for the coarsest smoother
+.   -snes_fas_full_downsweep<`PETSC_FALSE`> - call the downsmooth on the initial downsweep of full FAS
+.   -fas_levels_snes_ -  `SNES` options for all smoothers
+.   -fas_levels_cycle_snes_ -  `SNES` options for all cycles
+.   -fas_levels_i_snes_ -  `SNES` options for the smoothers on level i
+.   -fas_levels_i_cycle_snes_ - `SNES` options for the cycle on level i
+-   -fas_coarse_snes_ -  `SNES` options for the coarsest smoother
 
-Notes:
-   The organization of the FAS solver is slightly different from the organization of PCMG
-   As each level has smoother SNES instances(down and potentially up) and a cycle SNES instance.
-   The cycle SNES instance may be used for monitoring convergence on a particular level.
+   Note:
+   The organization of the FAS solver is slightly different from the organization of `PCMG`
+   As each level has smoother `SNES` instances(down and potentially up) and a cycle `SNES` instance.
+   The cycle `SNES` instance may be used for monitoring convergence on a particular level.
 
-Level: beginner
+   Level: beginner
 
    References:
 .  * - Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu, "Composing Scalable Nonlinear Algebraic Solvers",
    SIAM Review, 57(4), 2015
 
-.seealso: `PCMG`, `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESType`
+.seealso: `PCMG`, `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESType`, `SNESFASSetRestriction()`, `SNESFASSetInjection()`,
+          `SNESFASFullGetTotal()`
 M*/
 
 PETSC_EXTERN PetscErrorCode SNESCreate_FAS(SNES snes) {

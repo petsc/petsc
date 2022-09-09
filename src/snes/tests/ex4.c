@@ -153,7 +153,6 @@ PetscErrorCode FormObjective(SNES snes, Vec x, PetscReal *f, void *dummy) {
   return 0;
 }
 
-/* ------------------------------------------------------------------- */
 PetscErrorCode FormFunction2(SNES snes, Vec x, Vec f, void *dummy) {
   const PetscScalar *xx;
   PetscScalar       *ff;
@@ -181,7 +180,7 @@ PetscErrorCode FormFunction2(SNES snes, Vec x, Vec f, void *dummy) {
   PetscCall(VecRestoreArray(f, &ff));
   return 0;
 }
-/* ------------------------------------------------------------------- */
+
 PetscErrorCode FormJacobian2(SNES snes, Vec x, Mat jac, Mat B, void *dummy) {
   const PetscScalar *xx;
   PetscScalar        A[4];

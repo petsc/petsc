@@ -152,16 +152,16 @@ static PetscErrorCode SNESComputeJacobian_DMLocal(SNES snes, Vec X, Mat A, Mat B
 /*@C
    DMSNESSetFunctionLocal - set a local residual evaluation function. This function is called with local vector
       containing the local vector information PLUS ghost point information. It should compute a result for all local
-      elements and DMSNES will automatically accumulate the overlapping values.
+      elements and `DMSNES` will automatically accumulate the overlapping values.
 
    Logically Collective
 
    Input Parameters:
-+  dm - DM to associate callback with
++  dm - `DM` to associate callback with
 .  func - local residual evaluation
 -  ctx - optional context for local residual evaluation
 
-   Level: beginner
+   Level: advanced
 
 .seealso: `DMSNESSetFunction()`, `DMDASNESSetJacobianLocal()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`
 @*/
@@ -192,11 +192,11 @@ PetscErrorCode DMSNESSetFunctionLocal(DM dm, PetscErrorCode (*func)(DM, Vec, Vec
    Logically Collective
 
    Input Parameters:
-+  dm - DM to associate callback with
++  dm - `DM` to associate callback with
 .  func - local boundary value evaluation
 -  ctx - optional context for local boundary value evaluation
 
-   Level: intermediate
+   Level: advanced
 
 .seealso: `DMSNESSetFunctionLocal()`, `DMDASNESSetJacobianLocal()`
 @*/
@@ -225,7 +225,7 @@ PetscErrorCode DMSNESSetBoundaryLocal(DM dm, PetscErrorCode (*func)(DM, Vec, voi
 .  func - local Jacobian evaluation
 -  ctx - optional context for local Jacobian evaluation
 
-   Level: beginner
+   Level: advanced
 
 .seealso: `DMSNESSetJacobian()`, `DMDASNESSetJacobian()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`
 @*/
@@ -246,12 +246,12 @@ PetscErrorCode DMSNESSetJacobianLocal(DM dm, PetscErrorCode (*func)(DM, Vec, Mat
 }
 
 /*@C
-   DMSNESGetFunctionLocal - get the local residual evaluation function information set with DMSNESSetFunctionLocal.
+   DMSNESGetFunctionLocal - get the local residual evaluation function information set with `DMSNESSetFunctionLocal()`.
 
    Not Collective
 
    Input Parameter:
-.  dm - DM with the associated callback
+.  dm - `DM` with the associated callback
 
    Output Parameters:
 +  func - local residual evaluation
@@ -275,12 +275,12 @@ PetscErrorCode DMSNESGetFunctionLocal(DM dm, PetscErrorCode (**func)(DM, Vec, Ve
 }
 
 /*@C
-   DMSNESGetBoundaryLocal - get the local boundary value function set with DMSNESSetBoundaryLocal.
+   DMSNESGetBoundaryLocal - get the local boundary value function set with `DMSNESSetBoundaryLocal()`.
 
    Not Collective
 
    Input Parameter:
-.  dm - DM with the associated callback
+.  dm - `DM` with the associated callback
 
    Output Parameters:
 +  func - local boundary value evaluation
@@ -304,12 +304,12 @@ PetscErrorCode DMSNESGetBoundaryLocal(DM dm, PetscErrorCode (**func)(DM, Vec, vo
 }
 
 /*@C
-   DMSNESGetJacobianLocal - the local Jacobian evaluation function set with DMSNESSetJacobianLocal.
+   DMSNESGetJacobianLocal - the local Jacobian evaluation function set with `DMSNESSetJacobianLocal()`.
 
    Logically Collective
 
    Input Parameter:
-.  dm - DM with the associated callback
+.  dm - `DM` with the associated callback
 
    Output Parameters:
 +  func - local Jacobian evaluation

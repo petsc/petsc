@@ -3,15 +3,17 @@
 /*@
    SNESFASGetGalerkin - Gets if the coarse problems are formed by projection to the fine problem
 
+   Not collective but the result would be the same on all MPI ranks
+
    Input Parameter:
-.  snes - the nonlinear solver context
+.  snes - the `SNESFAS` nonlinear solver context
 
    Output parameter:
-.  flg - the status of the galerkin problem
+.  flg - `PETSC_TRUE` if the coarse problem is formed by projection
 
    Level: advanced
 
-.seealso: `SNESFASSetLevels()`, `SNESFASSetGalerkin()`
+.seealso: `SNESFAS`, `SNESFASSetLevels()`, `SNESFASSetGalerkin()`
 @*/
 PetscErrorCode SNESFASGetGalerkin(SNES snes, PetscBool *flg) {
   SNES_FAS *fas;
@@ -26,13 +28,15 @@ PetscErrorCode SNESFASGetGalerkin(SNES snes, PetscBool *flg) {
 /*@
    SNESFASSetGalerkin - Sets coarse problems as formed by projection to the fine problem
 
+   Collective on snes
+
    Input Parameters:
-+  snes - the nonlinear solver context
--  flg - the status of the galerkin problem
++  snes - the `SNESFAS` nonlinear solver context
+-  flg - `PETSC_TRUE` to use the projection process
 
    Level: advanced
 
-.seealso: `SNESFASSetLevels()`, `SNESFASGetGalerkin()`
+.seealso: `SNESFAS`, `SNESFASSetLevels()`, `SNESFASGetGalerkin()`
 @*/
 PetscErrorCode SNESFASSetGalerkin(SNES snes, PetscBool flg) {
   SNES_FAS *fas;
@@ -48,21 +52,23 @@ PetscErrorCode SNESFASSetGalerkin(SNES snes, PetscBool flg) {
 /*@C
    SNESFASGalerkinFunctionDefault - Computes the Galerkin FAS function
 
+   Collective on snes
+
    Input Parameters:
-+  snes - the nonlinear solver context
++  snes - the `SNESFAS` nonlinear solver context
 .  X - input vector
--  ctx - the FAS context
+-  ctx - the application context
 
    Output Parameter:
 .  F - output vector
 
-   Notes:
+   Note:
    The Galerkin FAS function evalutation is defined as
 $  F^l(x^l) = I^l_0 F^0(P^0_l x^l)
 
    Level: developer
 
-.seealso: `SNESFASGetGalerkin()`, `SNESFASSetGalerkin()`
+.seealso: `SNESFAS`, `SNESFASGetGalerkin()`, `SNESFASSetGalerkin()`
 @*/
 PetscErrorCode SNESFASGalerkinFunctionDefault(SNES snes, Vec X, Vec F, void *ctx) {
   SNES      fassnes;

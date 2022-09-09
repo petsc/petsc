@@ -169,6 +169,7 @@ exec-name``.
 - Add ``TSSetTimeSpan()``, ``TSGetTimeSpan()`` and ``TSGetTimeSpanSolutions()`` to support time span
 - Add ``DMTSGetIFunctionLocal()``, ``DMTSGetIJacobianLocal()``, and ``DMTSGetRHSFunctionLocal()``
 - Add ``DMTSSetIFunctionContextDestroy()``, ``DMTSSetIJacobianContextDestroy()``, ``DMTSSetRHSFunctionContextDestroy()``,  ``DMTSSetRHSJacobianContextDestroy()``, ``DMTSSetI2FunctionContextDestroy()``, and ``DMTSSetI2JacobianContextDestroy()`` and use ``PetscContainter`` for user context to facilitate automatic destruction of user set context
+- Make public ``SNESVIComputeMeritFunction()`` and ``SNESVIComputeFunction()``
 
 .. rubric:: TAO:
 
@@ -178,6 +179,7 @@ exec-name``.
 - Add ``DMGetCellCoordinateDM()``, ``DMSetCellCoordinateDM()``, ``DMGetCellCoordinateSection()``, ``DMSetCellCoordinateSection()``, ``DMGetCellCoordinates()``, ``DMSetCellCoordinates()``, ``DMGetCellCoordinatesLocalSetup()``, ``DMGetCellCoordinatesLocal()``, ``DMGetCellCoordinatesLocalNoncollective()``, ``DMSetCellCoordinatesLocal()``
 - Add ``DMFieldCreateDSWithDG()`` to allow multiple representations of a given field
 - Add ``DMProjectFieldLabel()``
+- Make public ``DMSetVI()`` and ``DMDestroyVI()``
 
 .. rubric:: DMSwarm:
 

@@ -29,13 +29,13 @@ typedef struct {
 } SNES_MS;
 
 /*@C
-  SNESMSRegisterAll - Registers all of the multi-stage methods in SNESMS
+  SNESMSRegisterAll - Registers all of the multi-stage methods in `SNESMS`
 
-  Not Collective, but should be called by all processes which will need the schemes to be registered
+  Logically Collective
 
-  Level: advanced
+  Level: developer
 
-.seealso: `SNESMSRegisterDestroy()`
+.seealso: `SNES`, `SNESMS`, `SNESMSRegisterDestroy()`
 @*/
 PetscErrorCode SNESMSRegisterAll(void) {
   PetscFunctionBegin;
@@ -91,11 +91,11 @@ PetscErrorCode SNESMSRegisterAll(void) {
 }
 
 /*@C
-   SNESMSRegisterDestroy - Frees the list of schemes that were registered by SNESMSRegister().
+   SNESMSRegisterDestroy - Frees the list of schemes that were registered by `SNESMSRegister()`.
 
    Not Collective
 
-   Level: advanced
+   Level: developer
 
 .seealso: `SNESMSRegister()`, `SNESMSRegisterAll()`
 @*/
@@ -118,8 +118,8 @@ PetscErrorCode SNESMSRegisterDestroy(void) {
 }
 
 /*@C
-  SNESMSInitializePackage - This function initializes everything in the SNESMS package. It is called
-  from SNESInitializePackage().
+  SNESMSInitializePackage - This function initializes everything in the `SNESMS` package. It is called
+  from `SNESInitializePackage()`.
 
   Level: developer
 
@@ -136,8 +136,8 @@ PetscErrorCode SNESMSInitializePackage(void) {
 }
 
 /*@C
-  SNESMSFinalizePackage - This function destroys everything in the SNESMS package. It is
-  called from PetscFinalize().
+  SNESMSFinalizePackage - This function destroys everything in the `SNESMS` package. It is
+  called from `PetscFinalize()`.
 
   Level: developer
 
@@ -152,9 +152,9 @@ PetscErrorCode SNESMSFinalizePackage(void) {
 }
 
 /*@C
-   SNESMSRegister - register a multistage scheme
+   SNESMSRegister - register a multistage scheme for `SNESMS`
 
-   Not Collective, but the same schemes should be registered on all processes on which they will be used
+   Logically Collective
 
    Input Parameters:
 +  name - identifier for method
@@ -462,7 +462,7 @@ static PetscErrorCode SNESMSSetType_MS(SNES snes, SNESMSType mstype) {
 }
 
 /*@C
-  SNESMSGetType - Get the type of multistage smoother
+  SNESMSGetType - Get the type of multistage smoother `SNESMS`
 
   Not collective
 
@@ -472,9 +472,9 @@ static PetscErrorCode SNESMSSetType_MS(SNES snes, SNESMSType mstype) {
   Output Parameter:
 .  mstype - type of multistage method
 
-  Level: beginner
+  Level: advanced
 
-.seealso: `SNESMSSetType()`, `SNESMSType`, `SNESMS`
+.seealso: `SNESMS`, `SNESMSSetType()`, `SNESMSType`, `SNESMS`
 @*/
 PetscErrorCode SNESMSGetType(SNES snes, SNESMSType *mstype) {
   PetscFunctionBegin;
@@ -485,7 +485,7 @@ PetscErrorCode SNESMSGetType(SNES snes, SNESMSType *mstype) {
 }
 
 /*@C
-  SNESMSSetType - Set the type of multistage smoother
+  SNESMSSetType - Set the type of multistage smoother `SNESMS`
 
   Logically collective
 
@@ -493,9 +493,9 @@ PetscErrorCode SNESMSGetType(SNES snes, SNESMSType *mstype) {
 +  snes - nonlinear solver context
 -  mstype - type of multistage method
 
-  Level: beginner
+  Level: advanced
 
-.seealso: `SNESMSGetType()`, `SNESMSType`, `SNESMS`
+.seealso: `SNESMS`, `SNESMSGetType()`, `SNESMSType`, `SNESMS`
 @*/
 PetscErrorCode SNESMSSetType(SNES snes, SNESMSType mstype) {
   PetscFunctionBegin;
@@ -522,7 +522,7 @@ static PetscErrorCode SNESMSSetDamping_MS(SNES snes, PetscReal damping) {
 }
 
 /*@C
-  SNESMSGetDamping - Get the damping parameter
+  SNESMSGetDamping - Get the damping parameter of `SNESMS` multistage scheme
 
   Not collective
 
@@ -545,7 +545,7 @@ PetscErrorCode SNESMSGetDamping(SNES snes, PetscReal *damping) {
 }
 
 /*@C
-  SNESMSSetDamping - Set the damping parameter
+  SNESMSSetDamping - Set the damping parameter for a `SNESMS` multistage scheme
 
   Logically collective
 
@@ -565,12 +565,10 @@ PetscErrorCode SNESMSSetDamping(SNES snes, PetscReal damping) {
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
 /*MC
       SNESMS - multi-stage smoothers
 
-      Options Database:
-
+      Options Database Keys:
 +     -snes_ms_type - type of multi-stage smoother
 -     -snes_ms_damping - damping for multi-stage method
 
@@ -580,7 +578,7 @@ PetscErrorCode SNESMSSetDamping(SNES snes, PetscReal damping) {
 
       Multi-stage smoothers should usually be preconditioned by point-block Jacobi to ensure proper scaling and to normalize the wave speeds.
 
-      The methods are specified in low storage form (Ketcheson 2010). New methods can be registered with SNESMSRegister().
+      The methods are specified in low storage form (Ketcheson 2010). New methods can be registered with `SNESMSRegister()`.
 
       References:
 +     * - Ketcheson (2010) Runge Kutta methods with minimum storage implementations (https://doi.org/10.1016/j.jcp.2009.11.006).
@@ -588,7 +586,7 @@ PetscErrorCode SNESMSSetDamping(SNES snes, PetscReal damping) {
 .     * - Pierce and Giles (1997) Preconditioned multigrid methods for compressible flow calculations on stretched meshes (https://doi.org/10.1006/jcph.1997.5772).
 -     * - Van Leer, Tai, and Powell (1989) Design of optimally smoothing multi-stage schemes for the Euler equations (https://doi.org/10.2514/6.1989-1933).
 
-      Level: beginner
+      Level: advanced
 
 .seealso: `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESMS`, `SNESFAS`, `KSPCHEBYSHEV`
 

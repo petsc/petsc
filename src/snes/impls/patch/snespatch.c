@@ -312,16 +312,14 @@ static PetscErrorCode SNESSolve_Patch(SNES snes) {
 }
 
 /*MC
-  SNESPATCH - Solve a nonlinear problem by composing together many nonlinear solvers on patches
+  SNESPATCH - Solve a nonlinear problem or apply a nonlinear smoother by composing together many nonlinear solvers on (often overlapping) patches
 
   Level: intermediate
-
-.seealso: `SNESCreate()`, `SNESSetType()`, `SNESType`, `SNES`,
-          `PCPATCH`
 
    References:
 .  * - Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu, "Composing Scalable Nonlinear Algebraic Solvers", SIAM Review, 57(4), 2015
 
+.seealso: `SNESFAS`, `SNESCreate()`, `SNESSetType()`, `SNESType`, `SNES`, `PCPATCH`
 M*/
 PETSC_EXTERN PetscErrorCode SNESCreate_Patch(SNES snes) {
   SNES_Patch    *patch;

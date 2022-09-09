@@ -164,7 +164,7 @@ int main(int argc, char **argv) {
   PetscCall(PetscFinalize());
   return 0;
 }
-/* ------------------------------------------------------------------- */
+
 /*
    FormInitialGuess - Computes initial guess.
 
@@ -176,7 +176,7 @@ PetscErrorCode FormInitialGuess(Vec x) {
   PetscCall(VecSet(x, pfive));
   return 0;
 }
-/* ------------------------------------------------------------------- */
+
 /*
    FormFunction - Evaluates nonlinear function, F(x).
 
@@ -230,7 +230,7 @@ PetscErrorCode FormFunction(SNES snes, Vec x, Vec f, void *ctx) {
   PetscCall(VecRestoreArrayRead(g, &gg));
   return 0;
 }
-/* ------------------------------------------------------------------- */
+
 /*
    FormJacobian - Evaluates Jacobian matrix.
 
