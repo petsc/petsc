@@ -135,7 +135,7 @@ PetscErrorCode VecAssemblyBegin(Vec vec) {
    Options Database Keys:
 +  -vec_view - Prints vector in ASCII format
 .  -vec_view ::ascii_matlab - Prints vector in ASCII MATLAB format to stdout
-.  -vec_view matlab:filename - Prints vector in MATLAB format to matlaboutput.mat
+.  -vec_view matlab:filename - Prints vector in MATLAB format to filename (requires PETSc configured with --with-matlab-engine)
 .  -vec_view draw - Activates vector viewing using drawing tools
 .  -display <name> - Sets display name (default is host)
 .  -draw_pause <sec> - Sets number of seconds to pause after display

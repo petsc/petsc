@@ -139,23 +139,28 @@ PetscErrorCode PetscViewerDestroy_Matlab(PetscViewer v) {
 
    Level: intermediate
 
-       Note: Currently can only save PETSc vectors to .mat files, not matrices (use the `PETSCVIEWERBINARY` and
+       Notes:
+             Currently can only save PETSc vectors to .mat files, not matrices (use the `PETSCVIEWERBINARY` and
              ${PETSC_DIR}/share/petsc/matlab/PetscBinaryRead.m to read matrices into MATLAB).
 
              For parallel vectors obtained with `DMCreateGlobalVector()` or `DMGetGlobalVector()` the vectors are saved to
              the .mat file in natural ordering. You can use DMView() to save the `DMDA` information to the .mat file
-             the fields in the MATLAB loaded da variable give the array dimensions so you can reshape the `MATLAB`
+             the fields in the MATLAB loaded da variable give the array dimensions so you can reshape the MATLAB
              vector to the same multidimensional shape as it had in PETSc for plotting etc. For example,
 
-$             In your PETSc C/C++ code (assuming a two dimensional DMDA with one degree of freedom per node)
-$                PetscObjectSetName((PetscObject)x,"x");
-$                VecView(x,PETSC_VIEWER_MATLAB_WORLD);
-$                PetscObjectSetName((PetscObject)da,"da");
-$                DMView(x,PETSC_VIEWER_MATLAB_WORLD);
-$             Then from MATLAB
-$                load('matlaboutput.mat')   % matlaboutput.mat is the default filename
-$                xnew = zeros(da.n,da.m);
-$                xnew(:) = x;    % reshape one dimensional vector back to two dimensions
+             In your PETSc C/C++ code (assuming a two dimensional `DMDA` with one degree of freedom per node)
+.vb
+                PetscObjectSetName((PetscObject)x,"x");
+                VecView(x,PETSC_VIEWER_MATLAB_WORLD);
+                PetscObjectSetName((PetscObject)da,"da");
+                DMView(x,PETSC_VIEWER_MATLAB_WORLD);
+.ve
+             Then from MATLAB
+.vb
+                load('matlaboutput.mat')   % matlaboutput.mat is the default filename
+                xnew = zeros(da.n,da.m);
+                xnew(:) = x;    % reshape one dimensional vector back to two dimensions
+.ve
 
               If you wish to put the same variable into the .mat file several times you need to give it a new
               name before each call to view.
@@ -193,7 +198,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Matlab(PetscViewer viewer) {
 -  type - type of file
 $    `FILE_MODE_WRITE` - create new file for MATLAB output
 $    `FILE_MODE_READ` - open existing file for MATLAB input
-$    ``FILE_MODE_WRITE - open existing file for MATLAB output
+$    `FILE_MODE_WRITE` - open existing file for MATLAB output
 
    Output Parameter:
 .  binv - PetscViewer for MATLAB output to use with the specified file
