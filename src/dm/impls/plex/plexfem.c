@@ -4396,9 +4396,10 @@ PetscErrorCode DMPlexComputeBdResidual_Internal(DM dm, Vec locX, Vec locX_t, Pet
     PetscFormKey            key;
 
     PetscCall(PetscDSGetBoundary(prob, bd, &wf, &type, NULL, &label, &numValues, &values, &field, NULL, NULL, NULL, NULL, NULL));
+    if (type & DM_BC_ESSENTIAL) continue;
     PetscCall(PetscDSGetDiscretization(prob, field, &obj));
     PetscCall(PetscObjectGetClassId(obj, &id));
-    if ((id != PETSCFE_CLASSID) || (type & DM_BC_ESSENTIAL)) continue;
+    if (id != PETSCFE_CLASSID) continue;
     if (!facetIS) {
       DMLabel  depthLabel;
       PetscInt dim;
@@ -5164,9 +5165,10 @@ PetscErrorCode DMPlexComputeBdJacobian_Internal(DM dm, Vec locX, Vec locX_t, Pet
     PetscClassId            id;
 
     PetscCall(PetscDSGetBoundary(prob, bd, &wf, &type, NULL, &label, &numValues, &values, &fieldI, NULL, NULL, NULL, NULL, NULL));
+    if (type & DM_BC_ESSENTIAL) continue;
     PetscCall(PetscDSGetDiscretization(prob, fieldI, &obj));
     PetscCall(PetscObjectGetClassId(obj, &id));
-    if ((id != PETSCFE_CLASSID) || (type & DM_BC_ESSENTIAL)) continue;
+    if (id != PETSCFE_CLASSID) continue;
     PetscCall(DMPlexComputeBdJacobian_Single_Internal(dm, t, wf, label, numValues, values, fieldI, locX, locX_t, X_tShift, Jac, JacP, coordField, facetIS));
   }
   PetscCall(ISDestroy(&facetIS));
