@@ -26,12 +26,7 @@ class Configure(config.package.Package):
       self.found = 1
       return
 
-    if self.matlab.matlab_arch == 'glnx86' or self.matlab.matlab_arch == 'glnxa64':
-       matlab_sys = [self.setCompilers.CSharedLinkerFlag+os.path.join(self.matlab.matlab,'extern','lib',self.matlab.matlab_arch),'-L'+os.path.join(self.matlab.matlab,'extern','lib',self.matlab.matlab_arch),'-lmwm_dispatcher','-lmwopcmodel','-lmwservices','-lmwservices','-lmwopcmodel','-lmwopcmodel','-lmwm_dispatcher','-lmwmpath','-lmwopcmodel','-lmwservices','-lmwopcmodel','-lmwservices','-lxerces-c']
-    elif self.matlab.matlab_arch == 'maci64':
-       matlab_sys = ['-lut','-licudata','-licui18n','-licuuc']
-
-    self.lib = [self.setCompilers.CSharedLinkerFlag+os.path.join(self.matlab.matlab,'bin',self.matlab.matlab_arch),'-L'+os.path.join(self.matlab.matlab,'bin',self.matlab.matlab_arch),'-leng','-lmex','-lmx','-lmat']+matlab_sys
+    self.lib = [self.setCompilers.CSharedLinkerFlag+os.path.join(self.matlab.matlab,'bin',self.matlab.matlab_arch),'-L'+os.path.join(self.matlab.matlab,'bin',self.matlab.matlab_arch),'-leng','-lmex','-lmx','-lmat']
     self.framework.packages.append(self)
     self.found = 1
     return
