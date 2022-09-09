@@ -1939,44 +1939,11 @@ PetscErrorCode DMPlexSectionLoad_HDF5_Internal(DM dm, PetscViewer viewer, DM sec
         nleaves++;
       }
     }
+    PetscCall(PetscFree(buffer));
     PetscCall(PetscSFCreate(comm, &sfAX));
     PetscCall(PetscSFSetFromOptions(sfAX));
     PetscCall(PetscSFSetGraph(sfAX, n, nleaves, ilocal, PETSC_OWN_POINTER, iremote, PETSC_OWN_POINTER));
-    /* Fix PetscSFCompose() and replace the code-block below with:  */
-    /* PetscCall(PetscSFCompose(sfAX, sfXB, &sfAB));      */
-    /* which currently causes segmentation fault due to sparse map. */
-    {
-      PetscInt     npoints;
-      PetscInt     mleaves;
-      PetscInt    *jlocal;
-      PetscSFNode *jremote;
-
-      PetscCall(PetscSFGetGraph(sfXB, NULL, &npoints, NULL, NULL));
-      PetscCall(PetscMalloc1(npoints, &owners));
-      for (i = 0; i < npoints; ++i) {
-        owners[i].rank  = -1;
-        owners[i].index = -1;
-      }
-      PetscCall(PetscSFBcastBegin(sfXB, MPIU_2INT, buffer, owners, MPI_REPLACE));
-      PetscCall(PetscSFBcastEnd(sfXB, MPIU_2INT, buffer, owners, MPI_REPLACE));
-      for (i = 0, mleaves = 0; i < npoints; ++i)
-        if (owners[i].rank >= 0) mleaves++;
-      PetscCall(PetscMalloc1(mleaves, &jlocal));
-      PetscCall(PetscMalloc1(mleaves, &jremote));
-      for (i = 0, mleaves = 0; i < npoints; ++i) {
-        if (owners[i].rank >= 0) {
-          jlocal[mleaves]        = i;
-          jremote[mleaves].rank  = owners[i].rank;
-          jremote[mleaves].index = owners[i].index;
-          mleaves++;
-        }
-      }
-      PetscCall(PetscSFCreate(comm, &sfAB));
-      PetscCall(PetscSFSetFromOptions(sfAB));
-      PetscCall(PetscSFSetGraph(sfAB, n, mleaves, jlocal, PETSC_OWN_POINTER, jremote, PETSC_OWN_POINTER));
-      PetscCall(PetscFree(owners));
-    }
-    PetscCall(PetscFree(buffer));
+    PetscCall(PetscSFCompose(sfAX, sfXB, &sfAB));
     PetscCall(PetscSFDestroy(&sfAX));
   }
   PetscCall(PetscViewerHDF5PopGroup(viewer));
