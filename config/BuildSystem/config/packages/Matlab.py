@@ -18,6 +18,14 @@ class Configure(config.package.Package):
     help.addArgument('MATLAB', '-with-matlab-arch=<string>',  nargs.ArgString(None, None, 'Use Matlab Architecture (default use first-found)'))
     return
 
+  def __str__(self):
+    if self.found:
+      output  = config.package.Package.__str__(self)
+      output += '  mex: '+self.mex+'\n'
+      output += '  matlab: '+self.executable+'\n'
+      return output
+    return ''
+
   def generateGuesses(self):
     '''Generate list of possible locations of Matlab'''
     if 'with-matlab-dir' in self.argDB:
@@ -77,12 +85,12 @@ class Configure(config.package.Package):
           if 'with-matlab-arch' in self.argDB:
             self.mex = self.mex+' -'+self.argDB['with-matlab-arch']
 
-          self.command = os.path.join(matlab,'bin','matlab -'+self.matlab_arch)
+          self.executable = os.path.join(matlab,'bin','matlab -'+self.matlab_arch)
           self.include = [os.path.join(matlab,'extern','include')]
           self.framework.packages.append(self)
           self.addMakeMacro('MATLAB_MEX',self.mex)
-          self.addMakeMacro('MATLAB_COMMAND',self.command)
-          self.addDefine('MATLAB_COMMAND','"'+self.command+'"')
+          self.addMakeMacro('MATLAB_COMMAND',self.executable)
+          self.addDefine('MATLAB_COMMAND','"'+self.executable+'"')
           self.found = 1
           if not 'with-matlab-socket' in self.argDB or self.argDB['with-matlab-socket']:
             self.addDefine('USE_MATLAB_SOCKET','1')
