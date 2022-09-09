@@ -109,7 +109,7 @@ PetscErrorCode FormFunction_Dummy(DM networkdm, Vec localX, Vec localF, PetscInt
 
     PetscCall(DMNetworkGetLocalVecOffset(networkdm, vtx[i], ALL_COMPONENTS, &offset));
     PetscCall(DMNetworkGetComponent(networkdm, vtx[i], ALL_COMPONENTS, NULL, NULL, &nvar));
-    for (j = 0; j < nvar; j++) { farr[offset + j] = xarr[offset + j] - xoldarr[offset + j]; }
+    for (j = 0; j < nvar; j++) farr[offset + j] = xarr[offset + j] - xoldarr[offset + j];
   }
 
   PetscCall(VecRestoreArrayRead(localX, &xarr));
@@ -191,7 +191,7 @@ PetscErrorCode FormFunction(SNES snes, Vec X, Vec F, void *appctx) {
       PetscCall(DMNetworkGetNumComponents(networkdm, e, &ncomp));
       /* printf("\n  [%d] connected edge[%" PetscInt_FMT "]=%" PetscInt_FMT " has ncomp %" PetscInt_FMT "\n",rank,k,e,ncomp); */
       PetscCall(DMNetworkGetComponent(networkdm, e, 0, &keye, &component, NULL));
-      if (keye != appctx_water.compkey_edge) { PetscCheck(keye == appctx_power.compkey_branch, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Not a power branch"); }
+      if (keye != appctx_water.compkey_edge) PetscCheck(keye == appctx_power.compkey_branch, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Not a power branch");
     }
   }
 
@@ -320,7 +320,7 @@ int main(int argc, char **argv) {
   PetscCall(PetscOptionsGetString(NULL, NULL, "-pfdata", pfdata_file, PETSC_MAX_PATH_LEN - 1, NULL));
   PetscCall(PetscNew(&pfdata));
   PetscCall(PFReadMatPowerData(pfdata, pfdata_file));
-  if (rank == 0) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "Power network: nb = %" PetscInt_FMT ", ngen = %" PetscInt_FMT ", nload = %" PetscInt_FMT ", nbranch = %" PetscInt_FMT "\n", pfdata->nbus, pfdata->ngen, pfdata->nload, pfdata->nbranch)); }
+  if (rank == 0) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Power network: nb = %" PetscInt_FMT ", ngen = %" PetscInt_FMT ", nload = %" PetscInt_FMT ", nbranch = %" PetscInt_FMT "\n", pfdata->nbus, pfdata->ngen, pfdata->nload, pfdata->nbranch));
   Sbase = pfdata->sbase;
   if (rank == 0) { /* proc[0] will create Electric Power Grid */
     numEdges[0]    = pfdata->nbranch;
@@ -398,7 +398,7 @@ int main(int argc, char **argv) {
   loadj = 0;
   PetscCall(DMNetworkGetSubnetwork(networkdm, power_netnum, &nv, &ne, &vtx, &edges));
 
-  for (i = 0; i < ne; i++) { PetscCall(DMNetworkAddComponent(networkdm, edges[i], appctx_power->compkey_branch, &pfdata->branch[i], 0)); }
+  for (i = 0; i < ne; i++) PetscCall(DMNetworkAddComponent(networkdm, edges[i], appctx_power->compkey_branch, &pfdata->branch[i], 0));
 
   for (i = 0; i < nv; i++) {
     PetscCall(DMNetworkIsSharedVertex(networkdm, vtx[i], &flg));
@@ -406,17 +406,17 @@ int main(int argc, char **argv) {
 
     PetscCall(DMNetworkAddComponent(networkdm, vtx[i], appctx_power->compkey_bus, &pfdata->bus[i], 2));
     if (pfdata->bus[i].ngen) {
-      for (j = 0; j < pfdata->bus[i].ngen; j++) { PetscCall(DMNetworkAddComponent(networkdm, vtx[i], appctx_power->compkey_gen, &pfdata->gen[genj++], 0)); }
+      for (j = 0; j < pfdata->bus[i].ngen; j++) PetscCall(DMNetworkAddComponent(networkdm, vtx[i], appctx_power->compkey_gen, &pfdata->gen[genj++], 0));
     }
     if (pfdata->bus[i].nload) {
-      for (j = 0; j < pfdata->bus[i].nload; j++) { PetscCall(DMNetworkAddComponent(networkdm, vtx[i], appctx_power->compkey_load, &pfdata->load[loadj++], 0)); }
+      for (j = 0; j < pfdata->bus[i].nload; j++) PetscCall(DMNetworkAddComponent(networkdm, vtx[i], appctx_power->compkey_load, &pfdata->load[loadj++], 0));
     }
   }
 
   /* ADD VARIABLES AND COMPONENTS FOR THE WATER SUBNETWORK */
   /*-------------------------------------------------------*/
   PetscCall(DMNetworkGetSubnetwork(networkdm, water_netnum, &nv, &ne, &vtx, &edges));
-  for (i = 0; i < ne; i++) { PetscCall(DMNetworkAddComponent(networkdm, edges[i], appctx_water->compkey_edge, &waterdata->edge[i], 0)); }
+  for (i = 0; i < ne; i++) PetscCall(DMNetworkAddComponent(networkdm, edges[i], appctx_water->compkey_edge, &waterdata->edge[i], 0));
 
   for (i = 0; i < nv; i++) {
     PetscCall(DMNetworkIsSharedVertex(networkdm, vtx[i], &flg));

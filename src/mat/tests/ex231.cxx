@@ -66,7 +66,7 @@ int main(int argc, char **argv) {
         std::vector<PetscInt> dof_indices;
         std::stringstream     sstream(line);
         std::string           token;
-        while (std::getline(sstream, token, ' ')) { dof_indices.push_back(std::atoi(token.c_str())); }
+        while (std::getline(sstream, token, ' ')) dof_indices.push_back(std::atoi(token.c_str()));
         elem_dof_indices[proc_id].push_back(dof_indices);
       }
     } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Could not open file %s", file[proc_id]);

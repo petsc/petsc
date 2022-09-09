@@ -158,6 +158,19 @@ class BaseTestVec(object):
         self.vec.resetArray()
         self.assertAlmostEqual(abs(self.vec.sum()), self.vec.getSize())
 
+    def testLocalVector(self):
+        rank = self.vec.getComm().Get_rank()
+        self.vec.getArray()[:] = rank + 1
+        ln = self.vec.getLocalSize()
+        lvec = self.vec.createLocalVector()
+        self.vec.getLocalVector(lvec)
+        self.assertEqual(abs(lvec.sum()), (rank+1)*ln)
+        self.vec.restoreLocalVector(lvec)
+        self.vec.getLocalVector(lvec,readonly=True)
+        self.assertEqual(abs(lvec.sum()), (rank+1)*ln)
+        self.vec.restoreLocalVector(lvec,readonly=True)
+        lvec.destroy()
+
     def testSetOption(self):
         opt1 = PETSc.Vec.Option.IGNORE_OFF_PROC_ENTRIES
         opt2 = PETSc.Vec.Option.IGNORE_NEGATIVE_INDICES

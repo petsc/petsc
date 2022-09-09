@@ -27,7 +27,7 @@ static PetscErrorCode testQuadrature(PetscInt dim, PetscInt degree, PetscDTSimpl
       PetscReal I_quad  = 0.0;
       PetscReal err;
 
-      for (PetscInt q = 0; q < num_points; q++) { I_quad += weights[q] * eval[i * num_points + q] * eval[j * num_points + q]; }
+      for (PetscInt q = 0; q < num_points; q++) I_quad += weights[q] * eval[i * num_points + q] * eval[j * num_points + q];
       err = PetscAbsReal(I_exact - I_quad);
       PetscCall(PetscInfo(quad, "Dimension %d, degree %d, method %s, error in <P_PKD(%d),P_PKD(%d)> = %g\n", (int)dim, (int)degree, PetscDTSimplexQuadratureTypes[type], (int)i, (int)j, (double)err));
       PetscCheck(err < PETSC_SMALL, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Dimension %d, degree %d, method %s, error in <P_PKD(%d),P_PKD(%d)> = %g", (int)dim, (int)degree, PetscDTSimplexQuadratureTypes[type], (int)i, (int)j, (double)err);
@@ -47,7 +47,7 @@ int main(int argc, char **argv) {
     for (PetscInt deg = 0; deg <= dimdeg[dim]; deg++) {
       const PetscDTSimplexQuadratureType types[] = {PETSCDTSIMPLEXQUAD_DEFAULT, PETSCDTSIMPLEXQUAD_CONIC, PETSCDTSIMPLEXQUAD_MINSYM};
 
-      for (PetscInt t = 0; t < 3; t++) { PetscCall(testQuadrature(dim, deg, types[t])); }
+      for (PetscInt t = 0; t < 3; t++) PetscCall(testQuadrature(dim, deg, types[t]));
     }
   }
   PetscCall(PetscFinalize());

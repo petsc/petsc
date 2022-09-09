@@ -1252,7 +1252,7 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec P, PetscReal *f, Vec G, void *c
   PetscCall(SetInitialGuess(X, ctx));
 
   /* Approximate DICDP with finite difference, we want to zero out network variables */
-  for (i = 0; i < 3; i++) { PetscCall(VecDuplicate(X, &DICDP[i])); }
+  for (i = 0; i < 3; i++) PetscCall(VecDuplicate(X, &DICDP[i]));
   PetscCall(DICDPFiniteDifference(X, DICDP, ctx));
 
   PetscCall(VecDuplicate(X, &F_alg));
@@ -1428,7 +1428,7 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec P, PetscReal *f, Vec G, void *c
   PetscCall(VecDestroy(&F_alg));
   PetscCall(VecDestroy(&X));
   PetscCall(TSDestroy(&ts));
-  for (i = 0; i < 3; i++) { PetscCall(VecDestroy(&DICDP[i])); }
+  for (i = 0; i < 3; i++) PetscCall(VecDestroy(&DICDP[i]));
   PetscFunctionReturn(0);
 }
 

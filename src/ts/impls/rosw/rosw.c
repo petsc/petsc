@@ -733,20 +733,20 @@ PetscErrorCode TSRosWRegister(TSRosWType name, PetscInt order, PetscInt s, const
   for (i = 0; i < s; i++) {
     for (k = 0; k < i + 1; k++) {
       t->GammaExplicitCorr[i * s + k] = (t->GammaExplicitCorr[i * s + k]) * (t->GammaInv[k * s + k]);
-      for (j = k + 1; j < i + 1; j++) { t->GammaExplicitCorr[i * s + k] += (t->GammaExplicitCorr[i * s + j]) * (t->GammaInv[j * s + k]); }
+      for (j = k + 1; j < i + 1; j++) t->GammaExplicitCorr[i * s + k] += (t->GammaExplicitCorr[i * s + j]) * (t->GammaInv[j * s + k]);
     }
   }
 
   for (i = 0; i < s; i++) {
     for (j = 0; j < s; j++) {
       t->At[i * s + j] = 0;
-      for (k = 0; k < s; k++) { t->At[i * s + j] += t->A[i * s + k] * t->GammaInv[k * s + j]; }
+      for (k = 0; k < s; k++) t->At[i * s + j] += t->A[i * s + k] * t->GammaInv[k * s + j];
     }
     t->bt[i] = 0;
-    for (j = 0; j < s; j++) { t->bt[i] += t->b[j] * t->GammaInv[j * s + i]; }
+    for (j = 0; j < s; j++) t->bt[i] += t->b[j] * t->GammaInv[j * s + i];
     if (bembed) {
       t->bembedt[i] = 0;
-      for (j = 0; j < s; j++) { t->bembedt[i] += t->bembed[j] * t->GammaInv[j * s + i]; }
+      for (j = 0; j < s; j++) t->bembedt[i] += t->bembed[j] * t->GammaInv[j * s + i];
     }
   }
   t->ccfl = 1.0; /* Fix this */
@@ -971,7 +971,7 @@ static PetscErrorCode TSStep_RosW(TS ts) {
   PetscInt         lag;
 
   PetscFunctionBegin;
-  if (!ts->steprollback) { PetscCall(VecCopy(ts->vec_sol, ros->vec_sol_prev)); }
+  if (!ts->steprollback) PetscCall(VecCopy(ts->vec_sol, ros->vec_sol_prev));
 
   ros->status = TS_STEP_INCOMPLETE;
   while (!ts->reason && ros->status != TS_STEP_COMPLETE) {
@@ -1096,7 +1096,7 @@ static PetscErrorCode TSInterpolate_RosW(TS ts, PetscReal itime, Vec U) {
   PetscCall(PetscMalloc1(s, &bt));
   for (i = 0; i < s; i++) bt[i] = 0;
   for (j = 0, tt = t; j < pinterp; j++, tt *= t) {
-    for (i = 0; i < s; i++) { bt[i] += Bt[i * pinterp + j] * tt; }
+    for (i = 0; i < s; i++) bt[i] += Bt[i * pinterp + j] * tt;
   }
 
   /* y(t+tt*h) = y(t) + Sum bt(tt) * GammaInv * Ydot */
@@ -1105,7 +1105,7 @@ static PetscErrorCode TSInterpolate_RosW(TS ts, PetscReal itime, Vec U) {
   /* U <- Sum bt_i * GammaInv(i,1:i) * Y(1:i) */
   for (j = 0; j < s; j++) w[j] = 0;
   for (j = 0; j < s; j++) {
-    for (i = j; i < s; i++) { w[j] += bt[i] * GammaInv[i * s + j]; }
+    for (i = j; i < s; i++) w[j] += bt[i] * GammaInv[i * s + j];
   }
   PetscCall(VecMAXPY(U, i, w, Y));
   /* U <- y(t) + U */
@@ -1171,16 +1171,16 @@ static PetscErrorCode TSRosWGetVecs(TS ts, DM dm, Vec *Ydot, Vec *Zdot, Vec *Yst
 static PetscErrorCode TSRosWRestoreVecs(TS ts, DM dm, Vec *Ydot, Vec *Zdot, Vec *Ystage, Vec *Zstage) {
   PetscFunctionBegin;
   if (Ydot) {
-    if (dm && dm != ts->dm) { PetscCall(DMRestoreNamedGlobalVector(dm, "TSRosW_Ydot", Ydot)); }
+    if (dm && dm != ts->dm) PetscCall(DMRestoreNamedGlobalVector(dm, "TSRosW_Ydot", Ydot));
   }
   if (Zdot) {
-    if (dm && dm != ts->dm) { PetscCall(DMRestoreNamedGlobalVector(dm, "TSRosW_Zdot", Zdot)); }
+    if (dm && dm != ts->dm) PetscCall(DMRestoreNamedGlobalVector(dm, "TSRosW_Zdot", Zdot));
   }
   if (Ystage) {
-    if (dm && dm != ts->dm) { PetscCall(DMRestoreNamedGlobalVector(dm, "TSRosW_Ystage", Ystage)); }
+    if (dm && dm != ts->dm) PetscCall(DMRestoreNamedGlobalVector(dm, "TSRosW_Ystage", Ystage));
   }
   if (Zstage) {
-    if (dm && dm != ts->dm) { PetscCall(DMRestoreNamedGlobalVector(dm, "TSRosW_Zstage", Zstage)); }
+    if (dm && dm != ts->dm) PetscCall(DMRestoreNamedGlobalVector(dm, "TSRosW_Zstage", Zstage));
   }
   PetscFunctionReturn(0);
 }
@@ -1311,7 +1311,7 @@ static PetscErrorCode TSSetUp_RosW(TS ts) {
   PetscCall(DMSubDomainHookAdd(dm, DMSubDomainHook_TSRosW, DMSubDomainRestrictHook_TSRosW, ts));
   /* Rosenbrock methods are linearly implicit, so set that unless the user has specifically asked for something else */
   PetscCall(TSGetSNES(ts, &snes));
-  if (!((PetscObject)snes)->type_name) { PetscCall(SNESSetType(snes, SNESKSPONLY)); }
+  if (!((PetscObject)snes)->type_name) PetscCall(SNESSetType(snes, SNESKSPONLY));
   PetscCall(DMTSGetRHSJacobian(dm, &rhsjacobian, NULL));
   if (rhsjacobian == TSComputeRHSJacobianConstant) {
     Mat Amat, Pmat;
@@ -1363,7 +1363,7 @@ static PetscErrorCode TSSetFromOptions_RosW(TS ts, PetscOptionItems *PetscOption
   PetscOptionsHeadEnd();
   /* Rosenbrock methods are linearly implicit, so set that unless the user has specifically asked for something else */
   PetscCall(TSGetSNES(ts, &snes));
-  if (!((PetscObject)snes)->type_name) { PetscCall(SNESSetType(snes, SNESKSPONLY)); }
+  if (!((PetscObject)snes)->type_name) PetscCall(SNESSetType(snes, SNESKSPONLY));
   PetscFunctionReturn(0);
 }
 

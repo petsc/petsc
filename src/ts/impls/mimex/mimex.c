@@ -18,11 +18,11 @@ static PetscErrorCode TSMimexGetX0AndXdot(TS ts, DM dm, Vec *X0, Vec *Xdot) {
   PetscFunctionBegin;
   if (X0) {
     if (dm && dm != ts->dm) PetscCall(DMGetNamedGlobalVector(dm, "TSMimex_X0", X0));
-    else { *X0 = ts->vec_sol; }
+    else *X0 = ts->vec_sol;
   }
   if (Xdot) {
     if (dm && dm != ts->dm) PetscCall(DMGetNamedGlobalVector(dm, "TSMimex_Xdot", Xdot));
-    else { *Xdot = mimex->Xdot; }
+    else *Xdot = mimex->Xdot;
   }
   PetscFunctionReturn(0);
 }
@@ -276,7 +276,7 @@ static PetscErrorCode TSView_Mimex(TS ts, PetscViewer viewer) {
 
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) { PetscCall(PetscViewerASCIIPrintf(viewer, "  Version = %" PetscInt_FMT "\n", mimex->version)); }
+  if (iascii) PetscCall(PetscViewerASCIIPrintf(viewer, "  Version = %" PetscInt_FMT "\n", mimex->version));
   PetscFunctionReturn(0);
 }
 

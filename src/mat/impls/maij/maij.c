@@ -1,41 +1,24 @@
 
-/*
-    Defines the basic matrix operations for the MAIJ  matrix storage format.
-  This format is used for restriction and interpolation operations for
-  multicomponent problems. It interpolates each component the same way
-  independently.
-
-     We provide:
-         MatMult()
-         MatMultTranspose()
-         MatMultTransposeAdd()
-         MatMultAdd()
-          and
-         MatCreateMAIJ(Mat,dof,Mat*)
-
-     This single directory handles both the sequential and parallel codes
-*/
-
 #include <../src/mat/impls/maij/maij.h> /*I "petscmat.h" I*/
 #include <../src/mat/utils/freespace.h>
 
 /*@
-   MatMAIJGetAIJ - Get the AIJ matrix describing the blockwise action of the MAIJ matrix
+   MatMAIJGetAIJ - Get the `MATAIJ` matrix describing the blockwise action of the `MATMAIJ` matrix
 
-   Not Collective, but if the MAIJ matrix is parallel, the AIJ matrix is also parallel
+   Not Collective, but if the `MATMAIJ` matrix is parallel, the `MATAIJ` matrix is also parallel
 
    Input Parameter:
-.  A - the MAIJ matrix
+.  A - the `MATMAIJ` matrix
 
    Output Parameter:
-.  B - the AIJ matrix
+.  B - the `MATAIJ` matrix
 
    Level: advanced
 
-   Notes:
-    The reference count on the AIJ matrix is not increased so you should not destroy it.
+   Note:
+    The reference count on the `MATAIJ` matrix is not increased so you should not destroy it.
 
-.seealso: `MatCreateMAIJ()`
+.seealso: `MATMAIJ`, `MATAIJ`, `MatCreateMAIJ()`
 @*/
 PetscErrorCode MatMAIJGetAIJ(Mat A, Mat *B) {
   PetscBool ismpimaij, isseqmaij;
@@ -58,20 +41,20 @@ PetscErrorCode MatMAIJGetAIJ(Mat A, Mat *B) {
 }
 
 /*@
-   MatMAIJRedimension - Get an MAIJ matrix with the same action, but for a different block size
+   MatMAIJRedimension - Get a new `MATMAIJ` matrix with the same action, but for a different block size
 
    Logically Collective
 
    Input Parameters:
-+  A - the MAIJ matrix
++  A - the `MATMAIJ` matrix
 -  dof - the block size for the new matrix
 
    Output Parameter:
-.  B - the new MAIJ matrix
+.  B - the new `MATMAIJ` matrix
 
    Level: advanced
 
-.seealso: `MatCreateMAIJ()`
+.seealso: `MATMAIJ`, `MatCreateMAIJ()`
 @*/
 PetscErrorCode MatMAIJRedimension(Mat A, PetscInt dof, Mat *B) {
   Mat Aij = NULL;
@@ -140,19 +123,19 @@ PetscErrorCode MatDestroy_MPIMAIJ(Mat A) {
 /*MC
   MATMAIJ - MATMAIJ = "maij" - A matrix type to be used for restriction and interpolation operations for
   multicomponent problems, interpolating or restricting each component the same way independently.
-  The matrix type is based on MATSEQAIJ for sequential matrices, and MATMPIAIJ for distributed matrices.
+  The matrix type is based on `MATSEQAIJ` for sequential matrices, and `MATMPIAIJ` for distributed matrices.
 
   Operations provided:
 .vb
-    MatMult
-    MatMultTranspose
-    MatMultAdd
-    MatMultTransposeAdd
+    MatMult()
+    MatMultTranspose()
+    MatMultAdd()
+    MatMultTransposeAdd()
 .ve
 
   Level: advanced
 
-.seealso: `MatMAIJGetAIJ()`, `MatMAIJRedimension()`, `MatCreateMAIJ()`
+.seealso: `MATAIJ`, `MatMAIJGetAIJ()`, `MatMAIJRedimension()`, `MatCreateMAIJ()`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatCreate_MAIJ(Mat A) {
@@ -2603,7 +2586,7 @@ PetscErrorCode MatMult_SeqMAIJ_N(Mat A, Vec xx, Vec yy) {
     n    = ii[i + 1] - jrow;
     sums = y + dof * i;
     for (j = 0; j < n; j++) {
-      for (k = 0; k < dof; k++) { sums[k] += v[jrow] * x[dof * idx[jrow] + k]; }
+      for (k = 0; k < dof; k++) sums[k] += v[jrow] * x[dof * idx[jrow] + k];
       jrow++;
     }
   }
@@ -2635,7 +2618,7 @@ PetscErrorCode MatMultAdd_SeqMAIJ_N(Mat A, Vec xx, Vec yy, Vec zz) {
     n    = ii[i + 1] - jrow;
     sums = y + dof * i;
     for (j = 0; j < n; j++) {
-      for (k = 0; k < dof; k++) { sums[k] += v[jrow] * x[dof * idx[jrow] + k]; }
+      for (k = 0; k < dof; k++) sums[k] += v[jrow] * x[dof * idx[jrow] + k];
       jrow++;
     }
   }
@@ -2664,7 +2647,7 @@ PetscErrorCode MatMultTranspose_SeqMAIJ_N(Mat A, Vec xx, Vec yy) {
     n     = a->i[i + 1] - a->i[i];
     alpha = x + dof * i;
     while (n-- > 0) {
-      for (k = 0; k < dof; k++) { y[dof * (*idx) + k] += alpha[k] * (*v); }
+      for (k = 0; k < dof; k++) y[dof * (*idx) + k] += alpha[k] * (*v);
       idx++;
       v++;
     }
@@ -2693,7 +2676,7 @@ PetscErrorCode MatMultTransposeAdd_SeqMAIJ_N(Mat A, Vec xx, Vec yy, Vec zz) {
     n     = a->i[i + 1] - a->i[i];
     alpha = x + dof * i;
     while (n-- > 0) {
-      for (k = 0; k < dof; k++) { y[dof * (*idx) + k] += alpha[k] * (*v); }
+      for (k = 0; k < dof; k++) y[dof * (*idx) + k] += alpha[k] * (*v);
       idx++;
       v++;
     }
@@ -2787,12 +2770,12 @@ PetscErrorCode MatProductSetFromOptions_MPIAIJ_MPIMAIJ(Mat C) {
 
   /* Set the default algorithm */
   PetscCall(PetscStrcmp(C->product->alg, "default", &flg));
-  if (flg) { PetscCall(MatProductSetAlgorithm(C, (MatProductAlgorithm)algTypes[alg])); }
+  if (flg) PetscCall(MatProductSetAlgorithm(C, (MatProductAlgorithm)algTypes[alg]));
 
   /* Get runtime option */
   PetscOptionsBegin(PetscObjectComm((PetscObject)C), ((PetscObject)C)->prefix, "MatProduct_PtAP", "Mat");
   PetscCall(PetscOptionsEList("-mat_product_algorithm", "Algorithmic approach", "MatPtAP", algTypes, nalg, algTypes[alg], &alg, &flg));
-  if (flg) { PetscCall(MatProductSetAlgorithm(C, (MatProductAlgorithm)algTypes[alg])); }
+  if (flg) PetscCall(MatProductSetAlgorithm(C, (MatProductAlgorithm)algTypes[alg]));
   PetscOptionsEnd();
 
   PetscCall(PetscStrcmp(C->product->alg, "allatonce", &flg));
@@ -2894,7 +2877,7 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqMAIJ(Mat A, Mat PP, PetscReal fill, Mat
 
       /* If free space is not available, make more free space */
       /* Double the amount of total space in the list */
-      if (current_space->local_remaining < cnzi) { PetscCall(PetscFreeSpaceGet(PetscIntSumTruncate(cnzi, current_space->total_array_size), &current_space)); }
+      if (current_space->local_remaining < cnzi) PetscCall(PetscFreeSpaceGet(PetscIntSumTruncate(cnzi, current_space->total_array_size), &current_space));
 
       /* Copy data into free space, and zero out denserows */
       PetscCall(PetscArraycpy(current_space->array, sparserow, cnzi));
@@ -3195,8 +3178,8 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIMAIJ_MPIAIJ(Mat A, MatType newtype, Ma
     PetscCall(MatGetRow_SeqAIJ(MatAIJ, i, &ncols, &cols, &vals));
     PetscCall(MatGetRow_SeqAIJ(MatOAIJ, i, &oncols, &ocols, &ovals));
     for (j = 0; j < dof; j++) {
-      for (k = 0; k < ncols; k++) { icols[k] = cstart + dof * cols[k] + j; }
-      for (k = 0; k < oncols; k++) { oicols[k] = dof * garray[ocols[k]] + j; }
+      for (k = 0; k < ncols; k++) icols[k] = cstart + dof * cols[k] + j;
+      for (k = 0; k < oncols; k++) oicols[k] = dof * garray[ocols[k]] + j;
       PetscCall(MatSetValues_MPIAIJ(B, 1, &ii, ncols, icols, vals, INSERT_VALUES));
       PetscCall(MatSetValues_MPIAIJ(B, 1, &ii, oncols, oicols, ovals, INSERT_VALUES));
       ii++;
@@ -3246,30 +3229,30 @@ PetscErrorCode MatCreateSubMatrices_MAIJ(Mat mat, PetscInt n, const IS irow[], c
 /*@
   MatCreateMAIJ - Creates a matrix type providing restriction and interpolation
   operations for multicomponent problems.  It interpolates each component the same
-  way independently.  The matrix type is based on MATSEQAIJ for sequential matrices,
-  and MATMPIAIJ for distributed matrices.
+  way independently.  The matrix type is based on `MATSEQAIJ` for sequential matrices,
+  and `MATMPIAIJ` for distributed matrices.
 
   Collective
 
   Input Parameters:
-+ A - the AIJ matrix describing the action on blocks
++ A - the `MATAIJ` matrix describing the action on blocks
 - dof - the block size (number of components per node)
 
   Output Parameter:
-. maij - the new MAIJ matrix
+. maij - the new `MATMAIJ` matrix
 
   Operations provided:
 .vb
-    MatMult
-    MatMultTranspose
-    MatMultAdd
-    MatMultTransposeAdd
-    MatView
+    MatMult()
+    MatMultTranspose()
+    MatMultAdd()
+    MatMultTransposeAdd()
+    MatView()
 .ve
 
   Level: advanced
 
-.seealso: `MatMAIJGetAIJ()`, `MatMAIJRedimension()`, `MATMAIJ`
+.seealso: `MATAIJ`, `MATMAIJ`, `MatMAIJGetAIJ()`, `MatMAIJRedimension()`, `MATMAIJ`
 @*/
 PetscErrorCode MatCreateMAIJ(Mat A, PetscInt dof, Mat *maij) {
   PetscInt  n;
@@ -3441,7 +3424,7 @@ PetscErrorCode MatCreateMAIJ(Mat A, PetscInt dof, Mat *maij) {
       PetscBool flg;
       if (convert) {
         PetscCall(PetscObjectTypeCompareAny((PetscObject)A, &flg, MATSEQAIJCUSPARSE, MATMPIAIJCUSPARSE, MATAIJCUSPARSE, ""));
-        if (flg) { PetscCall(MatConvert(B, ((PetscObject)A)->type_name, MAT_INPLACE_MATRIX, &B)); }
+        if (flg) PetscCall(MatConvert(B, ((PetscObject)A)->type_name, MAT_INPLACE_MATRIX, &B));
       }
     }
 #endif

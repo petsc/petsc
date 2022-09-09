@@ -54,19 +54,19 @@ int main(int argc, char **argv) {
   /* Set numbers of nodes and edges */
   PetscCall(DMNetworkSetNumSubNetworks(networkdm, PETSC_DECIDE, 1));
   PetscCall(DMNetworkAddSubnetwork(networkdm, "", waterdata->nedge, edgelist, NULL));
-  if (!crank) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "water nvertices %" PetscInt_FMT ", nedges %" PetscInt_FMT "\n", waterdata->nvertex, waterdata->nedge)); }
+  if (!crank) PetscCall(PetscPrintf(PETSC_COMM_SELF, "water nvertices %" PetscInt_FMT ", nedges %" PetscInt_FMT "\n", waterdata->nvertex, waterdata->nedge));
 
   /* Set up the network layout */
   PetscCall(DMNetworkLayoutSetUp(networkdm));
 
-  if (!crank) { PetscCall(PetscFree(edgelist)); }
+  if (!crank) PetscCall(PetscFree(edgelist));
 
   /* ADD VARIABLES AND COMPONENTS FOR THE NETWORK */
   PetscCall(DMNetworkGetSubnetwork(networkdm, 0, &nv, &ne, &vtx, &edges));
 
-  for (i = 0; i < ne; i++) { PetscCall(DMNetworkAddComponent(networkdm, edges[i], appctx.compkey_edge, &waterdata->edge[i], 0)); }
+  for (i = 0; i < ne; i++) PetscCall(DMNetworkAddComponent(networkdm, edges[i], appctx.compkey_edge, &waterdata->edge[i], 0));
 
-  for (i = 0; i < nv; i++) { PetscCall(DMNetworkAddComponent(networkdm, vtx[i], appctx.compkey_vtx, &waterdata->vertex[i], 1)); }
+  for (i = 0; i < nv; i++) PetscCall(DMNetworkAddComponent(networkdm, vtx[i], appctx.compkey_vtx, &waterdata->vertex[i], 1));
 
   /* Set up DM for use */
   PetscCall(DMSetUp(networkdm));

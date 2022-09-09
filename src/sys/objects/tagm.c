@@ -14,16 +14,20 @@
     number of times.  This tag should only be used with the current objects
     communicator; do NOT use it with any other MPI communicator.
 
-    Collective on PetscObject
+    Collective on obj
 
     Input Parameter:
-.   obj - the PETSc object; this must be cast with a (PetscObject), for example,
-         PetscObjectGetNewTag((PetscObject)mat,&tag);
+.   obj - the PETSc object; this must be cast with a (`PetscObject`), for example,
+         `PetscObjectGetNewTag`((`PetscObject`)mat,&tag);
 
     Output Parameter:
 .   tag - the new tag
 
     Level: developer
+
+    Note:
+    This tag is needed if one is writing MPI communication code involving message passing and needs unique MPI tags to ensure the messages are connected to this specific
+    object.
 
 .seealso: `PetscCommGetNewTag()`
 @*/
@@ -79,7 +83,7 @@ PetscErrorCode PetscCommGetNewTag(MPI_Comm comm, PetscMPIInt *tag) {
 }
 
 /*@C
-  PetscCommGetComm - get an MPI communicator from a PETSc communicator that can be passed off to another package
+  PetscCommGetComm - get a new MPI communicator from a PETSc communicator that can be passed off to another package
 
   Collective
 
@@ -90,9 +94,9 @@ PetscErrorCode PetscCommGetNewTag(MPI_Comm comm, PetscMPIInt *tag) {
 . comm_out - Output communicator
 
   Notes:
-    Use PetscCommRestoreComm() to return the communicator when the external package no longer needs it
+    Use `PetscCommRestoreComm()` to return the communicator when the external package no longer needs it
 
-    Certain MPI implementations have MPI_Comm_free() that do not work, thus one can run out of available MPI communicators causing
+    Certain MPI implementations have `MPI_Comm_free()` that do not work, thus one can run out of available MPI communicators causing
     mysterious crashes in the code after running a long time. This routine allows reusing previously obtained MPI communicators that
     are no longer needed.
 
@@ -124,7 +128,7 @@ PetscErrorCode PetscCommGetComm(MPI_Comm comm_in, MPI_Comm *comm_out) {
 }
 
 /*@C
-  PetscCommRestoreComm - restores an MPI communicator that was obtained with PetscCommGetComm()
+  PetscCommRestoreComm - restores an MPI communicator that was obtained with `PetscCommGetComm()`
 
   Collective
 
@@ -162,23 +166,23 @@ PetscErrorCode PetscCommRestoreComm(MPI_Comm comm_in, MPI_Comm *comm_out) {
 }
 
 /*@C
-  PetscCommDuplicate - Duplicates the communicator only if it is not already a PETSc communicator.
+   PetscCommDuplicate - Duplicates the communicator only if it is not already a PETSc communicator.
 
-  Collective
+   Collective
 
-  Input Parameter:
-. comm_in - Input communicator
+   Input Parameter:
+.  comm_in - Input communicator
 
-  Output Parameters:
-+ comm_out - Output communicator.  May be comm_in.
-- first_tag - Tag available that has not already been used with this communicator (you may
-  pass in NULL if you do not need a tag)
+   Output Parameters:
++  comm_out - Output communicator.  May be comm_in.
+-  first_tag - Tag available that has not already been used with this communicator (you may pass in NULL if you do not need a tag)
 
-  PETSc communicators are just regular MPI communicators that keep track of which
-  tags have been used to prevent tag conflict. If you pass a non-PETSc communicator into
-  a PETSc creation routine it will attach a private communicator for use in the objects communications.
-  The internal MPI_Comm is used to perform all the MPI calls for PETSc, the outer MPI_Comm is a user
-  level MPI_Comm that may be performing communication for the user or other library and so IS NOT used by PETSc.
+   Note:
+   PETSc communicators are just regular MPI communicators that keep track of which
+   tags have been used to prevent tag conflict. If you pass a non-PETSc communicator into
+   a PETSc creation routine it will attach a private communicator for use in the objects communications.
+   The internal `MPI_Comm` is used to perform all the MPI calls for PETSc, the outer `MPI_Comm` is a user
+   level `MPI_Comm` that may be performing communication for the user or other library and so IS NOT used by PETSc.
 
 Level: developer
 
@@ -248,7 +252,7 @@ PetscErrorCode PetscCommDuplicate(MPI_Comm comm_in, MPI_Comm *comm_out, PetscMPI
 }
 
 /*@C
-   PetscCommDestroy - Frees communicator.  Use in conjunction with PetscCommDuplicate().
+   PetscCommDestroy - Frees communicator obtained with `PetscCommDuplicate()`.
 
    Collective
 
@@ -304,12 +308,12 @@ PetscErrorCode PetscCommDestroy(MPI_Comm *comm) {
 
 /*@C
     PetscObjectsListGetGlobalNumbering - computes a global numbering
-    of PetscObjects living on subcommunicators of a given communicator.
+    of `PetscObject`s living on subcommunicators of a given communicator.
 
     Collective.
 
     Input Parameters:
-+   comm    - MPI_Comm
++   comm    - the `MPI_Comm`
 .   len     - local length of objlist
 -   objlist - a list of PETSc objects living on subcomms of comm and containing this comm rank
               (subcomm ordering is assumed to be deadlock-free)
@@ -319,6 +323,9 @@ PetscErrorCode PetscCommDestroy(MPI_Comm *comm) {
 -   numbering  - global numbers of objlist entries (allocated by user)
 
     Level: developer
+
+    Note:
+    This is needed when PETSc is used with certain languages that do garbage collection to manage object life cycles.
 
 @*/
 PetscErrorCode PetscObjectsListGetGlobalNumbering(MPI_Comm comm, PetscInt len, PetscObject *objlist, PetscInt *count, PetscInt *numbering) {

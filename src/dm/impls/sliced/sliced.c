@@ -30,7 +30,7 @@ PetscErrorCode DMCreateMatrix_Sliced(DM dm, Mat *J) {
   /* In general, we have to do extra work to preallocate for scalar (AIJ) matrices so we check whether it will do any
   * good before going on with it. */
   PetscCall(PetscObjectQueryFunction((PetscObject)*J, "MatMPIAIJSetPreallocation_C", &aij));
-  if (!aij) { PetscCall(PetscObjectQueryFunction((PetscObject)*J, "MatSeqAIJSetPreallocation_C", &aij)); }
+  if (!aij) PetscCall(PetscObjectQueryFunction((PetscObject)*J, "MatSeqAIJSetPreallocation_C", &aij));
   if (aij) {
     if (bs == 1) {
       PetscCall(MatSeqAIJSetPreallocation(*J, slice->d_nz, slice->d_nnz));
@@ -43,7 +43,7 @@ PetscErrorCode DMCreateMatrix_Sliced(DM dm, Mat *J) {
       PetscCall(PetscMalloc2(slice->n * bs, &sd_nnz, (!!slice->o_nnz) * slice->n * bs, &so_nnz));
       for (i = 0; i < slice->n * bs; i++) {
         sd_nnz[i] = (slice->d_nnz[i / bs] - 1) * (slice->ofill ? slice->ofill->i[i % bs + 1] - slice->ofill->i[i % bs] : bs) + (slice->dfill ? slice->dfill->i[i % bs + 1] - slice->dfill->i[i % bs] : bs);
-        if (so_nnz) { so_nnz[i] = slice->o_nnz[i / bs] * (slice->ofill ? slice->ofill->i[i % bs + 1] - slice->ofill->i[i % bs] : bs); }
+        if (so_nnz) so_nnz[i] = slice->o_nnz[i / bs] * (slice->ofill ? slice->ofill->i[i % bs + 1] - slice->ofill->i[i % bs] : bs);
       }
       PetscCall(MatSeqAIJSetPreallocation(*J, slice->d_nz * bs, sd_nnz));
       PetscCall(MatMPIAIJSetPreallocation(*J, slice->d_nz * bs, sd_nnz, slice->o_nz * bs, so_nnz));
@@ -56,7 +56,7 @@ PetscErrorCode DMCreateMatrix_Sliced(DM dm, Mat *J) {
   PetscCall(MatGetOwnershipRange(*J, &rstart, NULL));
   for (i = 0; i < slice->n; i++) globals[i] = rstart / bs + i;
 
-  for (i = 0; i < slice->Nghosts; i++) { globals[slice->n + i] = slice->ghosts[i]; }
+  for (i = 0; i < slice->Nghosts; i++) globals[slice->n + i] = slice->ghosts[i];
   PetscCall(ISLocalToGlobalMappingCreate(PETSC_COMM_SELF, bs, slice->n + slice->Nghosts, globals, PETSC_OWN_POINTER, &lmap));
   PetscCall(MatSetLocalToGlobalMapping(*J, lmap, lmap));
   PetscCall(ISLocalToGlobalMappingDestroy(&lmap));

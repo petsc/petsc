@@ -102,12 +102,12 @@ int main(int argc, char **args) {
   PetscCall(MatDestroy(&a));
   PetscCall(MatDestroy(array + Q * Q - 1));
   PetscCall(MatCreateNest(PETSC_COMM_WORLD, Q, NULL, Q, NULL, array, &A));
-  for (i = 0; i < Q; ++i) { PetscCall(MatDestroy(array + (Q + 1) * i)); }
+  for (i = 0; i < Q; ++i) PetscCall(MatDestroy(array + (Q + 1) * i));
   for (i = 2; i < Q; ++i) {
     PetscCall(MatDestroy(array + i));
     PetscCall(MatDestroy(array + Q * i));
   }
-  for (i = 1; i < 3; ++i) { PetscCall(MatDestroy(array + Q * 3 + i)); }
+  for (i = 1; i < 3; ++i) PetscCall(MatDestroy(array + Q * 3 + i));
   PetscCall(MatDestroy(array + Q + Q - 1));
   PetscCall(KSPSetOperators(ksp, A, A));
   PetscCall(MatNestGetISs(A, rows, NULL));
@@ -191,13 +191,15 @@ int main(int argc, char **args) {
    test:
       nsize: {{1 3}shared output}
       suffix: wo_explicit_schur
-      filter: sed -e "s/seq/mpi/g" -e "s/CONVERGED_ATOL/CONVERGED_RTOL/g" -e "s/ 1 MPI process/ 3 MPI processes/g" -e "s/iterations [4-5]/iterations 4/g"
+      requires: !complex
+      filter: sed -e "s/seq/mpi/g" -e "s/CONVERGED_ATOL/CONVERGED_RTOL/g" -e "s/ 1 MPI process/ 3 MPI processes/g" -e "s/iterations [4-5]/iterations 4/g" -e "s/hermitiantranspose/transpose/g"
       args: -outer_fieldsplit_sizes {{1,2,2 2,1,2 2,2,1}separate output} -ksp_view_mat -pc_type fieldsplit -ksp_converged_reason -fieldsplit_pc_type jacobi -test_matmult
 
    test:
       nsize: {{1 3}shared output}
       suffix: w_explicit_schur
-      filter: sed -e "s/seq/mpi/g" -e "s/CONVERGED_ATOL/CONVERGED_RTOL/g" -e "s/ 1 MPI process/ 3 MPI processes/g" -e "s/iterations [1-2]/iterations 1/g"
+      requires: !complex
+      filter: sed -e "s/seq/mpi/g" -e "s/CONVERGED_ATOL/CONVERGED_RTOL/g" -e "s/ 1 MPI process/ 3 MPI processes/g" -e "s/iterations [1-2]/iterations 1/g" -e "s/hermitiantranspose/transpose/g"
       args: -outer_fieldsplit_sizes {{1,4 2,3 3,2 4,1}separate output} -ksp_view_mat -pc_type fieldsplit -ksp_converged_reason -fieldsplit_pc_type jacobi -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type full -pc_fieldsplit_schur_precondition full
 
 TEST*/

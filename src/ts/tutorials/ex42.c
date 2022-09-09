@@ -181,7 +181,7 @@ PetscErrorCode PrintSolution(Vec X, AppCtx *user) {
   PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(X, &x));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Activator,Inhibitor\n"));
-  for (i = 0; i < nb_cells; i++) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%5.6e,%5.6e\n", (double)x[2 * i], (double)x[2 * i + 1])); }
+  for (i = 0; i < nb_cells; i++) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%5.6e,%5.6e\n", (double)x[2 * i], (double)x[2 * i + 1]));
   PetscCall(VecRestoreArrayRead(X, &x));
   PetscFunctionReturn(0);
 }

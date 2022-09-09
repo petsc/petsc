@@ -215,7 +215,7 @@ int main(int argc, char **args) {
    test:
      nsize: 2
      output_file: output/ex132_1_par.out
-     requires: !sycl kokkos_kernels
+     requires: kokkos_kernels
      suffix: 1_par_kokkos
      filter: grep -v " type:" | grep -v "Mat Object"
      args: -view -mat_type aijkokkos
@@ -240,7 +240,7 @@ int main(int argc, char **args) {
    testset:
      nsize: 2
      output_file: output/ex132_2_par.out
-     requires: !sycl kokkos_kernels
+     requires: kokkos_kernels
      filter: grep -v " type:" | grep -v "Mat Object"
      args: -view -mat_type aijkokkos -mat_nonsym
      diff_args: -j

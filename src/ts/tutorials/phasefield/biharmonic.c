@@ -477,7 +477,7 @@ PetscErrorCode MyMonitor(TS ts, PetscInt step, PetscReal time, Vec U, void *ptr)
   PetscCall(PetscViewerDrawGetDrawLG(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD), 1, &lg));
   PetscCall(PetscDrawLGGetDraw(lg, &draw));
   PetscCall(PetscDrawCheckResizedWindow(draw));
-  if (!ctx->ports) { PetscCall(PetscDrawViewPortsCreateRect(draw, 1, 3, &ctx->ports)); }
+  if (!ctx->ports) PetscCall(PetscDrawViewPortsCreateRect(draw, 1, 3, &ctx->ports));
   ports = ctx->ports;
   PetscCall(PetscDrawLGGetAxis(lg, &axis));
   PetscCall(PetscDrawLGReset(lg));

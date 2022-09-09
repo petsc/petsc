@@ -60,7 +60,7 @@ static PetscErrorCode PetscDrawPoint_X(PetscDraw draw, PetscReal x, PetscReal y,
   yy = YTRANS(draw, XiWin, y);
   PetscDrawXiSetColor(XiWin, c);
   for (i = -1; i < 2; i++) {
-    for (j = -1; j < 2; j++) { XDrawPoint(XiWin->disp, PetscDrawXiDrawable(XiWin), XiWin->gc.set, xx + i, yy + j); }
+    for (j = -1; j < 2; j++) XDrawPoint(XiWin->disp, PetscDrawXiDrawable(XiWin), XiWin->gc.set, xx + i, yy + j);
   }
   PetscFunctionReturn(0);
 }
@@ -560,7 +560,7 @@ static PetscErrorCode PetscDrawRestoreSingleton_X(PetscDraw draw, PetscDraw *sdr
     if (!isdrawx) goto finally;
     PetscCall(PetscObjectTypeCompare((PetscObject)(*sdraw)->popup, PETSC_DRAW_X, &isdrawx));
     if (!isdrawx) goto finally;
-    if (sXwin->win == pXwin->win) { PetscCall(PetscDrawRestoreSingleton(draw->popup, &(*sdraw)->popup)); }
+    if (sXwin->win == pXwin->win) PetscCall(PetscDrawRestoreSingleton(draw->popup, &(*sdraw)->popup));
   }
 finally:
   PetscCall(PetscDrawDestroy(sdraw));
@@ -603,8 +603,7 @@ static PetscErrorCode PetscDrawXGetDisplaySize_Private(const char name[], int *w
 
    Level: beginner
 
-.seealso: `PetscDrawOpenX()`, `PetscDrawSetDisplay()`, `PetscDrawSetFromOptions()`
-
+.seealso: `PetscDraw`, `PetscDrawOpenX()`, `PetscDrawSetDisplay()`, `PetscDrawSetFromOptions()`
 M*/
 
 PETSC_EXTERN PetscErrorCode PetscDrawCreate_X(PetscDraw draw) {

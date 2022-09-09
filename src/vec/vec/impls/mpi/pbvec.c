@@ -219,8 +219,8 @@ static PetscErrorCode VecAssemblyBegin_MPI_BTS(Vec X) {
   if (x->first_assembly_done) { /* this is not the first assembly */
     PetscMPIInt tag[4];
     for (i = 0; i < 4; i++) PetscCall(PetscCommGetNewTag(comm, &tag[i]));
-    for (i = 0; i < x->nsendranks; i++) { PetscCall(VecAssemblySend_MPI_Private(comm, tag, i, x->sendranks[i], x->sendhdr + i, x->sendreqs + 4 * i, X)); }
-    for (i = 0; i < x->nrecvranks; i++) { PetscCall(VecAssemblyRecv_MPI_Private(comm, tag, x->recvranks[i], x->recvhdr + i, x->recvreqs + 4 * i, X)); }
+    for (i = 0; i < x->nsendranks; i++) PetscCall(VecAssemblySend_MPI_Private(comm, tag, i, x->sendranks[i], x->sendhdr + i, x->sendreqs + 4 * i, X));
+    for (i = 0; i < x->nrecvranks; i++) PetscCall(VecAssemblyRecv_MPI_Private(comm, tag, x->recvranks[i], x->recvhdr + i, x->recvreqs + 4 * i, X));
     x->use_status = PETSC_TRUE;
   } else { /* First time assembly */
     PetscCall(PetscCommBuildTwoSidedFReq(comm, 3, MPIU_INT, x->nsendranks, x->sendranks, (PetscInt *)x->sendhdr, &x->nrecvranks, &x->recvranks, &x->recvhdr, 4, &x->sendreqs, &x->recvreqs, VecAssemblySend_MPI_Private, VecAssemblyRecv_MPI_Private, X));
@@ -438,6 +438,7 @@ static struct _VecOps DvOps = {PetscDesignatedInitializer(duplicate, VecDuplicat
                                PetscDesignatedInitializer(stridesubsetscatter, VecStrideSubSetScatter_Default),
                                PetscDesignatedInitializer(viewnative, VecView_MPI),
                                PetscDesignatedInitializer(loadnative, NULL),
+                               PetscDesignatedInitializer(createlocalvector, NULL),
                                PetscDesignatedInitializer(getlocalvector, NULL),
                                PetscDesignatedInitializer(restorelocalvector, NULL),
                                PetscDesignatedInitializer(getlocalvectorread, NULL),
@@ -658,8 +659,8 @@ PetscErrorCode VecCreateGhostWithArray(MPI_Comm comm, PetscInt n, PetscInt N, Pe
   /* set local to global mapping for ghosted vector */
   PetscCall(PetscMalloc1(n + nghost, &indices));
   PetscCall(VecGetOwnershipRange(*vv, &rstart, NULL));
-  for (i = 0; i < n; i++) { indices[i] = rstart + i; }
-  for (i = 0; i < nghost; i++) { indices[n + i] = ghosts[i]; }
+  for (i = 0; i < n; i++) indices[i] = rstart + i;
+  for (i = 0; i < nghost; i++) indices[n + i] = ghosts[i];
   PetscCall(ISLocalToGlobalMappingCreate(comm, 1, n + nghost, indices, PETSC_OWN_POINTER, &ltog));
   PetscCall(VecSetLocalToGlobalMapping(*vv, ltog));
   PetscCall(ISLocalToGlobalMappingDestroy(&ltog));

@@ -135,7 +135,7 @@ int main(int argc, char **argv) {
     PetscCall(PetscOptionsGetBool(NULL, NULL, "-snes_mf_operator", &matrix_free_operator, NULL));
     if (matrix_free_operator) matrix_free = PETSC_FALSE;
   }
-  if (!matrix_free) { PetscCall(MatCreateSeqAIJ(PETSC_COMM_WORLD, N, N, 5, NULL, &J)); }
+  if (!matrix_free) PetscCall(MatCreateSeqAIJ(PETSC_COMM_WORLD, N, N, 5, NULL, &J));
 
   /*
      This option will cause the Jacobian to be computed via finite differences
@@ -245,7 +245,7 @@ int main(int argc, char **argv) {
   */
   PetscCall(PetscOptionsHasName(NULL, NULL, "-print_history", &flg));
   if (flg) {
-    for (i = 0; i < its + 1; i++) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "iteration %" PetscInt_FMT ": Linear iterations %" PetscInt_FMT " Function norm = %g\n", i, hist_its[i], (double)history[i])); }
+    for (i = 0; i < its + 1; i++) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "iteration %" PetscInt_FMT ": Linear iterations %" PetscInt_FMT " Function norm = %g\n", i, hist_its[i], (double)history[i]));
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -253,8 +253,8 @@ int main(int argc, char **argv) {
      are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  if (!matrix_free) { PetscCall(MatDestroy(&J)); }
-  if (fd_coloring) { PetscCall(MatFDColoringDestroy(&fdcoloring)); }
+  if (!matrix_free) PetscCall(MatDestroy(&J));
+  if (fd_coloring) PetscCall(MatFDColoringDestroy(&fdcoloring));
   PetscCall(VecDestroy(&x));
   PetscCall(VecDestroy(&r));
   PetscCall(SNESDestroy(&snes));

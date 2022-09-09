@@ -59,7 +59,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao) {
   PetscInt i, j;
 
   PetscFunctionBegin;
-  if (tao->XL || tao->XU || tao->ops->computebounds) { PetscCall(PetscInfo(tao, "WARNING: Variable bounds have been set but will be ignored by nls algorithm\n")); }
+  if (tao->XL || tao->XU || tao->ops->computebounds) PetscCall(PetscInfo(tao, "WARNING: Variable bounds have been set but will be ignored by nls algorithm\n"));
 
   /* Initialized variables */
   pert = nlsP->sval;
@@ -259,7 +259,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao) {
     /* Shift the Hessian matrix */
     if (pert > 0) {
       PetscCall(MatShift(tao->hessian, pert));
-      if (tao->hessian != tao->hessian_pre) { PetscCall(MatShift(tao->hessian_pre, pert)); }
+      if (tao->hessian != tao->hessian_pre) PetscCall(MatShift(tao->hessian_pre, pert));
     }
 
     if (nlsP->bfgs_pre) {
@@ -419,7 +419,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao) {
       default:
         /* Newton step computation is good; decrease perturbation */
         pert = PetscMin(nlsP->psfac * pert, nlsP->pmsfac * gnorm);
-        if (pert < nlsP->pmin) { pert = 0.0; }
+        if (pert < nlsP->pmin) pert = 0.0;
         break;
       }
 

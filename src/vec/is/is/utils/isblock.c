@@ -142,7 +142,7 @@ PetscErrorCode ISCompressIndicesSorted(PetscInt n, PetscInt bs, PetscInt imax, c
     for (j = 0; j < len; j++) {
       val = idx_local[0];
       PetscCheck(val % bs == 0, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Indices are not block ordered");
-      for (k = 0; k < bs; k++) { PetscCheck(val + k == idx_local[k], PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Indices are not block ordered"); }
+      for (k = 0; k < bs; k++) PetscCheck(val + k == idx_local[k], PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Indices are not block ordered");
       nidx[j] = val / bs;
       idx_local += bs;
     }

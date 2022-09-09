@@ -39,7 +39,7 @@ static PetscErrorCode Update1(DM da, const PetscScalar ***__restrict__ x1, Petsc
     if (it == nwarm) PetscCall(PetscTime(&tstart));
     for (k = zs; k < zs + zm; k++) {
       for (j = ys; j < ys + ym; j++) {
-        for (i = xs; i < xs + xm; i++) { y1[k][j][i] = 6 * x1[k][j][i] - x1[k - 1][j][i] - x1[k][j - 1][i] - x1[k][j][i - 1] - x1[k + 1][j][i] - x1[k][j + 1][i] - x1[k][j][i + 1]; }
+        for (i = xs; i < xs + xm; i++) y1[k][j][i] = 6 * x1[k][j][i] - x1[k - 1][j][i] - x1[k][j - 1][i] - x1[k][j][i - 1] - x1[k + 1][j][i] - x1[k][j + 1][i] - x1[k][j][i + 1];
       }
     }
   }
@@ -63,7 +63,7 @@ static PetscErrorCode Update2(DM da, const PetscScalar *__restrict__ x2, PetscSc
     if (it == nwarm) PetscCall(PetscTime(&tstart));
     for (k = zs; k < zs + zm; k++) {
       for (j = ys; j < ys + ym; j++) {
-        for (i = xs; i < xs + xm; i++) { Y2(k, j, i) = 6 * X2(k, j, i) - X2(k - 1, j, i) - X2(k, j - 1, i) - X2(k, j, i - 1) - X2(k + 1, j, i) - X2(k, j + 1, i) - X2(k, j, i + 1); }
+        for (i = xs; i < xs + xm; i++) Y2(k, j, i) = 6 * X2(k, j, i) - X2(k - 1, j, i) - X2(k, j - 1, i) - X2(k, j, i - 1) - X2(k + 1, j, i) - X2(k, j + 1, i) - X2(k, j, i + 1);
       }
     }
   }

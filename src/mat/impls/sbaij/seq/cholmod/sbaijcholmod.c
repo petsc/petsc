@@ -248,8 +248,8 @@ PETSC_INTERN PetscErrorCode MatDestroy_CHOLMOD(Mat F) {
   Mat_CHOLMOD *chol = (Mat_CHOLMOD *)F->data;
 
   PetscFunctionBegin;
-  if (chol->spqrfact) { PetscCall(!SuiteSparseQR_C_free(&chol->spqrfact, chol->common)); }
-  if (chol->factor) { PetscCall(!cholmod_X_free_factor(&chol->factor, chol->common)); }
+  if (chol->spqrfact) PetscCall(!SuiteSparseQR_C_free(&chol->spqrfact, chol->common));
+  if (chol->factor) PetscCall(!cholmod_X_free_factor(&chol->factor, chol->common));
   if (chol->common->itype == CHOLMOD_INT) {
     PetscCall(!cholmod_finish(chol->common));
   } else {
@@ -330,7 +330,7 @@ PETSC_INTERN PetscErrorCode MatView_CHOLMOD(Mat F, PetscViewer viewer) {
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   if (iascii) {
     PetscCall(PetscViewerGetFormat(viewer, &format));
-    if (format == PETSC_VIEWER_ASCII_INFO) { PetscCall(MatView_Info_CHOLMOD(F, viewer)); }
+    if (format == PETSC_VIEWER_ASCII_INFO) PetscCall(MatView_Info_CHOLMOD(F, viewer));
   }
   PetscFunctionReturn(0);
 }

@@ -273,7 +273,7 @@ static PetscErrorCode MatWrapML_SeqAIJ(ML_Operator *mlmat, MatReuse reuse, Mat *
     PetscCall(MatSetBlockSize(*newmat, mlmat->num_PDEs));
 
     PetscCall(PetscMalloc1(m, &nnz));
-    for (i = 0; i < m; i++) { PetscStackCallExternalVoid("ML_Operator_Getrow", ML_Operator_Getrow(mlmat, 1, &i, nz_max, aj, aa, &nnz[i])); }
+    for (i = 0; i < m; i++) PetscStackCallExternalVoid("ML_Operator_Getrow", ML_Operator_Getrow(mlmat, 1, &i, nz_max, aj, aa, &nnz[i]));
     PetscCall(MatSeqAIJSetPreallocation(*newmat, 0, nnz));
   }
   for (i = 0; i < m; i++) {
@@ -415,11 +415,11 @@ static PetscErrorCode PCSetCoordinates_ML(PC pc, PetscInt ndm, PetscInt a_nloc, 
   /* copy data in - column oriented */
   if (nloc == a_nloc) {
     for (kk = 0; kk < nloc; kk++) {
-      for (ii = 0; ii < ndm; ii++) { pc_ml->coords[ii * nloc + kk] = coords[kk * ndm + ii]; }
+      for (ii = 0; ii < ndm; ii++) pc_ml->coords[ii * nloc + kk] = coords[kk * ndm + ii];
     }
   } else { /* assumes the coordinates are blocked */
     for (kk = 0; kk < nloc; kk++) {
-      for (ii = 0; ii < ndm; ii++) { pc_ml->coords[ii * nloc + kk] = coords[bs * kk * ndm + ii]; }
+      for (ii = 0; ii < ndm; ii++) pc_ml->coords[ii * nloc + kk] = coords[bs * kk * ndm + ii];
     }
   }
   PetscFunctionReturn(0);
@@ -434,8 +434,8 @@ PetscErrorCode        PCReset_ML(PC pc) {
 
          PetscFunctionBegin;
          if (dim) {
-           for (level = 0; level <= fine_level; level++) { PetscCall(VecDestroy(&pc_ml->gridctx[level].coords)); }
-           if (pc_ml->ml_object && pc_ml->ml_object->Grid) {
+           for (level = 0; level <= fine_level; level++) PetscCall(VecDestroy(&pc_ml->gridctx[level].coords));
+    if (pc_ml->ml_object && pc_ml->ml_object->Grid) {
              ML_Aggregate_Viz_Stats *grid_info = (ML_Aggregate_Viz_Stats *)pc_ml->ml_object->Grid[0].Grid;
              grid_info->x                      = 0; /* do this so ML doesn't try to free coordinates */
              grid_info->y                      = 0;
@@ -571,7 +571,7 @@ PetscErrorCode PCSetUp_ML(PC pc) {
       }
 
       for (level = 0; level < fine_level; level++) {
-        if (level > 0) { PetscCall(PCMGSetResidual(pc, level, PCMGResidualDefault, gridctx[level].A)); }
+        if (level > 0) PetscCall(PCMGSetResidual(pc, level, PCMGResidualDefault, gridctx[level].A));
         PetscCall(KSPSetOperators(gridctx[level].ksp, gridctx[level].A, gridctx[level].A));
       }
       PetscCall(PCMGSetResidual(pc, fine_level, PCMGResidualDefault, gridctx[fine_level].A));
@@ -617,11 +617,11 @@ PetscErrorCode PCSetUp_ML(PC pc) {
     PetscCall(PetscMalloc1(dim * nlocghost, &ghostedcoords));
     for (i = 0; i < dim; i++) {
       /* copy coordinate values into first component of pwork */
-      for (j = 0; j < nloc; j++) { PetscMLdata->pwork[bs * j] = pc_ml->coords[nloc * i + j]; }
+      for (j = 0; j < nloc; j++) PetscMLdata->pwork[bs * j] = pc_ml->coords[nloc * i + j];
       /* get the ghost values */
       PetscCall(PetscML_comm(PetscMLdata->pwork, PetscMLdata));
       /* write into the vector */
-      for (j = 0; j < nlocghost; j++) { ghostedcoords[i * nlocghost + j] = PetscMLdata->pwork[bs * j]; }
+      for (j = 0; j < nlocghost; j++) ghostedcoords[i * nlocghost + j] = PetscMLdata->pwork[bs * j];
     }
     /* replace the original coords with the ghosted coords, because these are
      * what ML needs */
@@ -691,7 +691,7 @@ PetscErrorCode PCSetUp_ML(PC pc) {
   }
   PetscStackCallExternalVoid("ML_Aggregate_Set_Threshold", ML_Aggregate_Set_Threshold(agg_object, pc_ml->Threshold));
   PetscStackCallExternalVoid("ML_Aggregate_Set_DampingFactor", ML_Aggregate_Set_DampingFactor(agg_object, pc_ml->DampingFactor));
-  if (pc_ml->SpectralNormScheme_Anorm) { PetscStackCallExternalVoid("ML_Set_SpectralNormScheme_Anorm", ML_Set_SpectralNormScheme_Anorm(ml_object)); }
+  if (pc_ml->SpectralNormScheme_Anorm) PetscStackCallExternalVoid("ML_Set_SpectralNormScheme_Anorm", ML_Set_SpectralNormScheme_Anorm(ml_object));
   agg_object->keep_agg_information      = (int)pc_ml->KeepAggInfo;
   agg_object->keep_P_tentative          = (int)pc_ml->Reusable;
   agg_object->block_scaled_SA           = (int)pc_ml->BlockScaling;
@@ -847,7 +847,7 @@ PetscErrorCode PCSetUp_ML(PC pc) {
 
     PetscCall(PCMGSetInterpolation(pc, level1, gridctx[level].P));
     PetscCall(PCMGSetRestriction(pc, level1, gridctx[level].R));
-    if (level > 0) { PetscCall(PCMGSetResidual(pc, level, PCMGResidualDefault, gridctx[level].A)); }
+    if (level > 0) PetscCall(PCMGSetResidual(pc, level, PCMGResidualDefault, gridctx[level].A));
     PetscCall(KSPSetOperators(gridctx[level].ksp, gridctx[level].A, gridctx[level].A));
   }
   PetscCall(PCMGSetResidual(pc, fine_level, PCMGResidualDefault, gridctx[fine_level].A));
@@ -967,7 +967,7 @@ PetscErrorCode PCSetFromOptions_ML(PC pc, PetscOptionItems *PetscOptionsObject) 
   PetscCheck(pc_ml->EnergyMinimization >= -1 && pc_ml->EnergyMinimization <= 4, comm, PETSC_ERR_ARG_OUTOFRANGE, "EnergyMinimization must be in range -1..4");
   PetscCheck(pc_ml->EnergyMinimization != 4 || size == 1, comm, PETSC_ERR_SUP, "Energy minimization type 4 does not work in parallel");
   if (pc_ml->EnergyMinimization == 4) PetscCall(PetscInfo(pc, "Mandel's energy minimization scheme is experimental and broken in ML-6.2\n"));
-  if (pc_ml->EnergyMinimization) { PetscCall(PetscOptionsReal("-pc_ml_EnergyMinimizationDropTol", "Energy minimization drop tolerance", "None", pc_ml->EnergyMinimizationDropTol, &pc_ml->EnergyMinimizationDropTol, NULL)); }
+  if (pc_ml->EnergyMinimization) PetscCall(PetscOptionsReal("-pc_ml_EnergyMinimizationDropTol", "Energy minimization drop tolerance", "None", pc_ml->EnergyMinimizationDropTol, &pc_ml->EnergyMinimizationDropTol, NULL));
   if (pc_ml->EnergyMinimization == 2) {
     /* According to ml_MultiLevelPreconditioner.cpp, this option is only meaningful for norm type (2) */
     PetscCall(PetscOptionsBool("-pc_ml_EnergyMinimizationCheap", "Use cheaper variant of norm type 2", "None", pc_ml->EnergyMinimizationCheap, &pc_ml->EnergyMinimizationCheap, NULL));

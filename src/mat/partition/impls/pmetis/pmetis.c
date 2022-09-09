@@ -75,7 +75,7 @@ static PetscErrorCode MatPartitioningApply_Parmetis_Private(MatPartitioning part
       PetscInt rstart;
       PetscCall(MatGetOwnershipRange(pmat, &rstart, NULL));
       for (i = 0; i < pmat->rmap->n; i++) {
-        for (j = xadj[i]; j < xadj[i + 1]; j++) { PetscCheck(adjncy[j] != i + rstart, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Row %" PetscInt_FMT " has diagonal entry; Parmetis forbids diagonal entry", i + rstart); }
+        for (j = xadj[i]; j < xadj[i + 1]; j++) PetscCheck(adjncy[j] != i + rstart, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Row %" PetscInt_FMT " has diagonal entry; Parmetis forbids diagonal entry", i + rstart);
       }
     }
 
@@ -170,7 +170,7 @@ static PetscErrorCode MatPartitioningApply_Parmetis_Private(MatPartitioning part
       PetscInt i, j, *newlocals;
       PetscCall(PetscMalloc1(bs * pmat->rmap->n, &newlocals));
       for (i = 0; i < pmat->rmap->n; i++) {
-        for (j = 0; j < bs; j++) { newlocals[bs * i + j] = locals[i]; }
+        for (j = 0; j < bs; j++) newlocals[bs * i + j] = locals[i];
       }
       PetscCall(PetscFree(locals));
       PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)part), bs * pmat->rmap->n, newlocals, PETSC_OWN_POINTER, partitioning));
@@ -263,13 +263,14 @@ PetscErrorCode MatPartitioningView_Parmetis(MatPartitioning part, PetscViewer vi
      MatPartitioningParmetisSetCoarseSequential - Use the sequential code to
          do the partitioning of the coarse grid.
 
-  Logically Collective on MatPartitioning
+  Logically Collective on part
 
   Input Parameter:
 .  part - the partitioning context
 
    Level: advanced
 
+.seealso: `MATPARTITIONINGPARMETIS`
 @*/
 PetscErrorCode MatPartitioningParmetisSetCoarseSequential(MatPartitioning part) {
   MatPartitioning_Parmetis *pmetis = (MatPartitioning_Parmetis *)part->data;
@@ -283,13 +284,14 @@ PetscErrorCode MatPartitioningParmetisSetCoarseSequential(MatPartitioning part) 
      MatPartitioningParmetisSetRepartition - Repartition
      current mesh to rebalance computation.
 
-  Logically Collective on MatPartitioning
+  Logically Collective on part
 
   Input Parameter:
 .  part - the partitioning context
 
    Level: advanced
 
+.seealso: `MATPARTITIONINGPARMETIS`
 @*/
 PetscErrorCode MatPartitioningParmetisSetRepartition(MatPartitioning part) {
   MatPartitioning_Parmetis *pmetis = (MatPartitioning_Parmetis *)part->data;
@@ -310,6 +312,7 @@ PetscErrorCode MatPartitioningParmetisSetRepartition(MatPartitioning part) {
 
    Level: advanced
 
+.seealso: `MATPARTITIONINGPARMETIS`
 @*/
 PetscErrorCode MatPartitioningParmetisGetEdgeCut(MatPartitioning part, PetscInt *cut) {
   MatPartitioning_Parmetis *pmetis = (MatPartitioning_Parmetis *)part->data;
@@ -353,11 +356,11 @@ PetscErrorCode MatPartitioningDestroy_Parmetis(MatPartitioning part) {
 
    Level: beginner
 
-   Notes:
+   Note:
     See https://www-users.cs.umn.edu/~karypis/metis/
 
-.seealso: `MatPartitioningSetType()`, `MatPartitioningType`
-
+.seealso: `MatPartitioningSetType()`, `MatPartitioningType`, `MatPartitioningParmetisSetCoarseSequential()`, `MatPartitioningParmetisSetRepartition()`,
+          `MatPartitioningParmetisGetEdgeCut()`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Parmetis(MatPartitioning part) {
@@ -384,46 +387,14 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Parmetis(MatPartitioning part)
 }
 
 /*@
- MatMeshToVertexGraph -   This routine does not exist because ParMETIS does not provide the functionality.  Uses the ParMETIS package to
-                       convert a Mat that represents a mesh to a Mat the represents the graph of the coupling
-                       between vertices of the cells and is suitable for partitioning with the MatPartitioning object. Use this to partition
-                       vertices of a mesh. More likely you should use MatMeshToCellGraph()
-
-   Collective on Mat
-
-   Input Parameters:
-+     mesh - the graph that represents the mesh
--     ncommonnodes - mesh elements that share this number of common nodes are considered neighbors, use 2 for triangles and
-                     quadrilaterials, 3 for tetrahedrals and 4 for hexahedrals
-
-   Output Parameter:
-.     dual - the dual graph
-
-   Notes:
-     Currently requires ParMetis to be installed and uses ParMETIS_V3_Mesh2Dual()
-
-     The columns of each row of the Mat mesh are the global vertex numbers of the vertices of that rows cell. The number of rows in mesh is
-     number of cells, the number of columns is the number of vertices.
-
-   Level: advanced
-
-.seealso: `MatMeshToCellGraph()`, `MatCreateMPIAdj()`, `MatPartitioningCreate()`
-
-@*/
-PetscErrorCode MatMeshToVertexGraph(Mat mesh, PetscInt ncommonnodes, Mat *dual) {
-  PetscFunctionBegin;
-  SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "ParMETIS does not provide this functionality");
-}
-
-/*@
-     MatMeshToCellGraph -   Uses the ParMETIS package to convert a Mat that represents a mesh to a Mat the represents the graph of the coupling
-                       between cells (the "dual" graph) and is suitable for partitioning with the MatPartitioning object. Use this to partition
+     MatMeshToCellGraph -   Uses the ParMETIS package to convert a `Mat` that represents coupling of vertices of a mesh to a `Mat` the represents the graph of the coupling
+                       between cells (the "dual" graph) and is suitable for partitioning with the `MatPartitioning object`. Use this to partition
                        cells of a mesh.
 
-   Collective on Mat
+   Collective on mesh
 
    Input Parameters:
-+     mesh - the graph that represents the mesh
++     mesh - the graph that represents the coupling of the vertices of the mesh
 -     ncommonnodes - mesh elements that share this number of common nodes are considered neighbors, use 2 for triangles and
                      quadrilaterials, 3 for tetrahedrals and 4 for hexahedrals
 
@@ -441,8 +412,7 @@ $     The number of rows in mesh is number of cells, the number of columns is th
 
    Level: advanced
 
-.seealso: `MatMeshToVertexGraph()`, `MatCreateMPIAdj()`, `MatPartitioningCreate()`
-
+.seealso: `MatCreateMPIAdj()`, `MatPartitioningCreate()`
 @*/
 PetscErrorCode MatMeshToCellGraph(Mat mesh, PetscInt ncommonnodes, Mat *dual) {
   PetscInt   *newxadj, *newadjncy;

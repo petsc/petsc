@@ -636,14 +636,14 @@ static void FormStressOperatorQ13D(PetscScalar Ke[], PetscScalar coords[], Petsc
      */
     for (i = 0; i < nvdof; i++) {
       for (j = i; j < nvdof; j++) {
-        for (k = 0; k < 6; k++) { Ke[i * nvdof + j] += B[k][i] * tildeD[k] * B[k][j]; }
+        for (k = 0; k < 6; k++) Ke[i * nvdof + j] += B[k][i] * tildeD[k] * B[k][j];
       }
     }
   }
   /* fill lower triangular part */
 #if defined(ASSEMBLE_LOWER_TRIANGULAR)
   for (i = 0; i < nvdof; i++) {
-    for (j = i; j < nvdof; j++) { Ke[j * nvdof + i] = Ke[i * nvdof + j]; }
+    for (j = i; j < nvdof; j++) Ke[j * nvdof + i] = Ke[i * nvdof + j];
   }
 #endif
 }
@@ -692,7 +692,7 @@ static void FormDivergenceOperatorQ13D(PetscScalar De[], PetscScalar coords[]) {
   nc_g = P_DOFS * NODES_PER_EL;
 
   for (i = 0; i < nr_g; i++) {
-    for (j = 0; j < nc_g; j++) { De[nr_g * j + i] = Ge[nc_g * i + j]; }
+    for (j = 0; j < nc_g; j++) De[nr_g * j + i] = Ge[nc_g * i + j];
   }
 }
 
@@ -723,7 +723,7 @@ static void FormStabilisationOperatorQ13D(PetscScalar Ke[], PetscScalar coords[]
      */
 
     for (i = 0; i < NODES_PER_EL; i++) {
-      for (j = 0; j < NODES_PER_EL; j++) { Ke[NODES_PER_EL * i + j] -= fac * (Ni_p[i] * Ni_p[j] - 0.015625); }
+      for (j = 0; j < NODES_PER_EL; j++) Ke[NODES_PER_EL * i + j] -= fac * (Ni_p[i] * Ni_p[j] - 0.015625);
     }
   }
 
@@ -745,7 +745,7 @@ static void FormStabilisationOperatorQ13D(PetscScalar Ke[], PetscScalar coords[]
    */
 
   for (i = 0; i < NODES_PER_EL; i++) {
-    for (j = 0; j < NODES_PER_EL; j++) { Ke[NODES_PER_EL * i + j] = fac * Ke[NODES_PER_EL * i + j]; }
+    for (j = 0; j < NODES_PER_EL; j++) Ke[NODES_PER_EL * i + j] = fac * Ke[NODES_PER_EL * i + j];
   }
 }
 
@@ -777,7 +777,7 @@ static void FormScaledMassMatrixOperatorQ13D(PetscScalar Ke[], PetscScalar coord
      */
 
     for (i = 0; i < NODES_PER_EL; i++) {
-      for (j = 0; j < NODES_PER_EL; j++) { Ke[NODES_PER_EL * i + j] = Ke[NODES_PER_EL * i + j] - fac * Ni_p[i] * Ni_p[j]; }
+      for (j = 0; j < NODES_PER_EL; j++) Ke[NODES_PER_EL * i + j] = Ke[NODES_PER_EL * i + j] - fac * Ni_p[i] * Ni_p[j];
     }
   }
 
@@ -798,7 +798,7 @@ static void FormScaledMassMatrixOperatorQ13D(PetscScalar Ke[], PetscScalar coord
    */
 
   for (i = 0; i < NODES_PER_EL; i++) {
-    for (j = 0; j < NODES_PER_EL; j++) { Ke[NODES_PER_EL * i + j] = fac * Ke[NODES_PER_EL * i + j]; }
+    for (j = 0; j < NODES_PER_EL; j++) Ke[NODES_PER_EL * i + j] = fac * Ke[NODES_PER_EL * i + j];
   }
 }
 
@@ -1736,7 +1736,7 @@ static PetscErrorCode PCMGSetupViaCoarsen(PC pc, DM da_fine) {
   }
 
   /* tidy up */
-  for (k = 0; k < nlevels; k++) { PetscCall(DMDestroy(&da_list[k])); }
+  for (k = 0; k < nlevels; k++) PetscCall(DMDestroy(&da_list[k]));
   PetscCall(PetscFree(da_list));
   PetscCall(PetscFree(daclist));
   PetscFunctionReturn(0);
@@ -2066,9 +2066,9 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx, PetscInt my, PetscInt
     Vec X_analytic;
 
     PetscCall(DMDACreateManufacturedSolution(mx, my, mz, &da_Stokes_analytic, &X_analytic));
-    if (write_output) { PetscCall(DAView3DPVTS(da_Stokes_analytic, X_analytic, "ms")); }
+    if (write_output) PetscCall(DAView3DPVTS(da_Stokes_analytic, X_analytic, "ms"));
     PetscCall(DMDAIntegrateErrors3D(da_Stokes_analytic, X, X_analytic));
-    if (write_output) { PetscCall(DAView3DPVTS(da_Stokes, X, "up2")); }
+    if (write_output) PetscCall(DAView3DPVTS(da_Stokes, X, "up2"));
     PetscCall(DMDestroy(&da_Stokes_analytic));
     PetscCall(VecDestroy(&X_analytic));
   }

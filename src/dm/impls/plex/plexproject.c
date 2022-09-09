@@ -134,7 +134,7 @@ static PetscErrorCode DMProjectPoint_Func_Private(DM dm, PetscDS ds, DM dmIn, Pe
           for (d = 0; d < spDim; d++, v++) values[v] = values[v - spDim];
         }
       } else {
-        for (d = 0; d < spDim; ++d, ++v) { PetscCall(PetscDualSpaceApplyFVM(sp[f], d, time, fvgeom, Nc[f], funcs[f], ctx, &values[v])); }
+        for (d = 0; d < spDim; ++d, ++v) PetscCall(PetscDualSpaceApplyFVM(sp[f], d, time, fvgeom, Nc[f], funcs[f], ctx, &values[v]));
       }
     } else {
       for (d = 0; d < spDim; d++, v++) values[v] = 0.;
@@ -545,10 +545,10 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
 
   PetscFunctionBegin;
   if (localU) PetscCall(VecGetDM(localU, &dmIn));
-  else { dmIn = dm; }
+  else dmIn = dm;
   PetscCall(DMGetAuxiliaryVec(dm, label, numIds ? ids[0] : 0, 0, &localA));
   if (localA) PetscCall(VecGetDM(localA, &dmAux));
-  else { dmAux = NULL; }
+  else dmAux = NULL;
   PetscCall(DMConvert(dm, DMPLEX, &plex));
   PetscCall(DMConvert(dmIn, DMPLEX, &plexIn));
   PetscCall(DMGetEnclosureRelation(dmIn, dm, &encIn));
@@ -561,7 +561,7 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
   /* Auxiliary information can only be used with interpolation of field functions */
   if (dmAux) {
     PetscCall(DMConvert(dmAux, DMPLEX, &plexAux));
-    if (type == DM_BC_ESSENTIAL_FIELD || type == DM_BC_ESSENTIAL_BD_FIELD || type == DM_BC_NATURAL_FIELD) { PetscCheck(localA, PETSC_COMM_SELF, PETSC_ERR_USER, "Missing localA vector"); }
+    if (type == DM_BC_ESSENTIAL_FIELD || type == DM_BC_ESSENTIAL_BD_FIELD || type == DM_BC_NATURAL_FIELD) PetscCheck(localA, PETSC_COMM_SELF, PETSC_ERR_USER, "Missing localA vector");
   }
   if (localU && localU != localX) PetscCall(DMPlexInsertBoundaryValues(plex, PETSC_TRUE, localU, time, NULL, NULL, NULL));
   PetscCall(DMGetCoordinateField(dm, &coordField));
@@ -796,8 +796,8 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
       const PetscInt *fields;
 
       PetscCall(ISGetIndices(fieldIS, &fields));
-      for (f = 0; f < NfTot; ++f) { fieldActive[f] = PETSC_FALSE; }
-      for (f = 0; f < Nf; ++f) { fieldActive[fields[f]] = (funcs[f] && sp[f]) ? PETSC_TRUE : PETSC_FALSE; }
+      for (f = 0; f < NfTot; ++f) fieldActive[f] = PETSC_FALSE;
+      for (f = 0; f < Nf; ++f) fieldActive[fields[f]] = (funcs[f] && sp[f]) ? PETSC_TRUE : PETSC_FALSE;
       PetscCall(ISRestoreIndices(fieldIS, &fields));
     }
     if (label) {
@@ -818,7 +818,7 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
         PetscCall(ISGetLocalSize(isectIS, &n));
         PetscCall(ISGetIndices(isectIS, &points));
         PetscCall(DMFieldGetDegree(coordField, isectIS, NULL, &maxDegree));
-        if (maxDegree <= 1) { PetscCall(DMFieldCreateDefaultQuadrature(coordField, isectIS, &quad)); }
+        if (maxDegree <= 1) PetscCall(DMFieldCreateDefaultQuadrature(coordField, isectIS, &quad));
         if (!quad) {
           if (!h && allPoints) {
             quad      = allPoints;
@@ -851,7 +851,7 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
 
       PetscCall(ISCreateStride(PETSC_COMM_SELF, pEnd - pStart, pStart, 1, &pointIS));
       PetscCall(DMFieldGetDegree(coordField, pointIS, NULL, &maxDegree));
-      if (maxDegree <= 1) { PetscCall(DMFieldCreateDefaultQuadrature(coordField, pointIS, &quad)); }
+      if (maxDegree <= 1) PetscCall(DMFieldCreateDefaultQuadrature(coordField, pointIS, &quad));
       if (!quad) {
         if (!h && allPoints) {
           quad      = allPoints;

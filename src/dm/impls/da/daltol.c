@@ -40,7 +40,7 @@ PetscErrorCode DMLocalToLocalCreate_DA(DM da) {
     PetscCall(PetscMalloc1((dd->xe - dd->xs) * (up - down), &idx));
     count = 0;
     for (i = down; i < up; i++) {
-      for (j = 0; j < dd->xe - dd->xs; j++) { idx[count++] = left + i * (dd->Xe - dd->Xs) + j; }
+      for (j = 0; j < dd->xe - dd->xs; j++) idx[count++] = left + i * (dd->Xe - dd->Xs) + j;
     }
   } else if (dim == 3) {
     left   = dd->xs - dd->Xs;
@@ -53,7 +53,7 @@ PetscErrorCode DMLocalToLocalCreate_DA(DM da) {
     count = 0;
     for (i = down; i < up; i++) {
       for (j = bottom; j < top; j++) {
-        for (k = 0; k < dd->xe - dd->xs; k++) { idx[count++] = (left + j * (dd->Xe - dd->Xs)) + i * (dd->Xe - dd->Xs) * (dd->Ye - dd->Ys) + k; }
+        for (k = 0; k < dd->xe - dd->xs; k++) idx[count++] = (left + j * (dd->Xe - dd->Xs)) + i * (dd->Xe - dd->Xs) * (dd->Ye - dd->Ys) + k;
       }
     }
   } else SETERRQ(PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_CORRUPT, "DMDA has invalid dimension %" PetscInt_FMT, dim);
@@ -90,7 +90,7 @@ PetscErrorCode DMLocalToLocalBegin_DA(DM da, Vec g, InsertMode mode, Vec l) {
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da, DM_CLASSID, 1);
-  if (!dd->ltol) { PetscCall(DMLocalToLocalCreate_DA(da)); }
+  if (!dd->ltol) PetscCall(DMLocalToLocalCreate_DA(da));
   PetscCall(VecScatterBegin(dd->ltol, g, l, mode, SCATTER_FORWARD));
   PetscFunctionReturn(0);
 }

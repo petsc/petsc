@@ -79,7 +79,7 @@ int main(int argc, char **argv) {
     for (c = 0; c < Nc; ++c) {
       PetscInt cell = (InitPartForRank[rank])[c], cor;
 
-      for (cor = 0; cor < Ncor; ++cor) { cells[c * Ncor + cor] = Conn[cell][cor]; }
+      for (cor = 0; cor < Ncor; ++cor) cells[c * Ncor + cor] = Conn[cell][cor];
     }
     PetscCall(DMSetDimension(dm, dim));
     PetscCall(DMPlexBuildFromCellListParallel(dm, Nc, PETSC_DECIDE, Nv, Ncor, cells, &sfVert, NULL));

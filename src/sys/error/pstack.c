@@ -13,14 +13,14 @@ static PetscBool amsmemstack = PETSC_FALSE;
 /*@C
    PetscStackSAWsGrantAccess - Grants access of the PETSc stack frames to the SAWs publisher
 
-   Collective on PETSC_COMM_WORLD?
+   Collective on `PETSC_COMM_WORLD`?
 
    Level: developer
 
-   Developers Note: Cannot use PetscFunctionBegin/Return() or PetscCallSAWs() since it may be used within those routines
+   Developers Note:
+   Cannot use `PetscFunctionBegin`/`PetrscFunctionReturn()` or `PetscCallSAWs()` since it may be used within those routines
 
 .seealso: `PetscObjectSetName()`, `PetscObjectSAWsViewOff()`, `PetscObjectSAWsTakeAccess()`
-
 @*/
 void PetscStackSAWsGrantAccess(void) {
   if (amsmemstack) {
@@ -32,14 +32,14 @@ void PetscStackSAWsGrantAccess(void) {
 /*@C
    PetscStackSAWsTakeAccess - Takes access of the PETSc stack frames from the SAWs publisher
 
-   Collective on PETSC_COMM_WORLD?
+   Collective on `PETSC_COMM_WORLD`?
 
    Level: developer
 
-   Developers Note: Cannot use PetscFunctionBegin/Return() or PetscCallSAWs() since it may be used within those routines
+   Developers Note:
+   Cannot use `PetscFunctionBegin`/`PetscFunctionReturn()` or `PetscCallSAWs()` since it may be used within those routines
 
 .seealso: `PetscObjectSetName()`, `PetscObjectSAWsViewOff()`, `PetscObjectSAWsTakeAccess()`
-
 @*/
 void PetscStackSAWsTakeAccess(void) {
   if (amsmemstack) {
@@ -154,7 +154,7 @@ PetscErrorCode PetscStackView(FILE *file) {
 
    Level: developer
 
-   Notes:
+   Note:
    In debug mode PETSc maintains a stack of the current function calls that can be used to help to quickly see where a problem has
    occurred, for example, when a signal is received. It is recommended to use the debugger if extensive information is needed to
    help debug the problem.

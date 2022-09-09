@@ -38,7 +38,7 @@ static PetscErrorCode PetscDualSpaceRefinedSetCellSpaces_Refined(PetscDualSpace 
   dm = sp->dm;
   PetscCheck(dm, PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_WRONGSTATE, "PetscDualSpace must have a DM (PetscDualSpaceSetDM()) before calling PetscDualSpaceRefinedSetCellSpaces");
   PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
-  if (!sp->pointSpaces) { PetscCall(PetscCalloc1(pEnd - pStart, &(sp->pointSpaces))); }
+  if (!sp->pointSpaces) PetscCall(PetscCalloc1(pEnd - pStart, &(sp->pointSpaces)));
   PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
   for (c = 0; c < cEnd - cStart; c++) {
     PetscCall(PetscObjectReference((PetscObject)cellSpaces[c]));

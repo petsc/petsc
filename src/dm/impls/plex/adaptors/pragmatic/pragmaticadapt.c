@@ -126,7 +126,7 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Pragmatic_Plex(DM dm, Vec vertexMetric
     }
     PetscCall(DMPlexRestoreTransitiveClosure(dm, bdFacesFull[f], PETSC_TRUE, &closureSize, &closure));
     if (bdLabel) PetscCall(DMLabelGetValue(bdLabel, bdFacesFull[f], &bdFaceIds[f]));
-    else { bdFaceIds[f] = 1; }
+    else bdFaceIds[f] = 1;
   }
   PetscCall(ISDestroy(&bdIS));
   PetscCall(DMLabelDestroy(&bdLabelFull));

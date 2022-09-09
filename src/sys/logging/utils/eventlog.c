@@ -18,14 +18,17 @@ PetscBool PetscLogGpuTraffic = PETSC_FALSE;
 /* Note: these functions do not have prototypes in a public directory, so they are considered "internal" and not exported. */
 
 /*@C
-  PetscEventRegLogCreate - This creates a PetscEventRegLog object.
+  PetscEventRegLogCreate - This creates a `PetscEventRegLog` object.
 
   Not collective
 
   Input Parameter:
-. eventLog - The PetscEventRegLog
+. eventLog - The `PetscEventRegLog`
 
   Level: developer
+
+  Note:
+  This is a low level routine used by the logging functions in PETSc
 
 .seealso: `PetscEventRegLogDestroy()`, `PetscStageLogCreate()`
 @*/
@@ -42,14 +45,17 @@ PetscErrorCode PetscEventRegLogCreate(PetscEventRegLog *eventLog) {
 }
 
 /*@C
-  PetscEventRegLogDestroy - This destroys a PetscEventRegLog object.
+  PetscEventRegLogDestroy - This destroys a `PetscEventRegLog` object.
 
   Not collective
 
   Input Parameter:
-. eventLog - The PetscEventRegLog
+. eventLog - The `PetscEventRegLog`
 
   Level: developer
+
+  Note:
+  This is a low level routine used by the logging functions in PETSc
 
 .seealso: `PetscEventRegLogCreate()`
 @*/
@@ -57,21 +63,24 @@ PetscErrorCode PetscEventRegLogDestroy(PetscEventRegLog eventLog) {
   int e;
 
   PetscFunctionBegin;
-  for (e = 0; e < eventLog->numEvents; e++) { PetscCall(PetscFree(eventLog->eventInfo[e].name)); }
+  for (e = 0; e < eventLog->numEvents; e++) PetscCall(PetscFree(eventLog->eventInfo[e].name));
   PetscCall(PetscFree(eventLog->eventInfo));
   PetscCall(PetscFree(eventLog));
   PetscFunctionReturn(0);
 }
 
 /*@C
-  PetscEventPerfLogCreate - This creates a PetscEventPerfLog object.
+  PetscEventPerfLogCreate - This creates a `PetscEventPerfLog` object.
 
   Not collective
 
   Input Parameter:
-. eventLog - The PetscEventPerfLog
+. eventLog - The `PetscEventPerfLog`
 
   Level: developer
+
+  Note:
+  This is a low level routine used by the logging functions in PETSc
 
 .seealso: `PetscEventPerfLogDestroy()`, `PetscStageLogCreate()`
 @*/
@@ -88,14 +97,17 @@ PetscErrorCode PetscEventPerfLogCreate(PetscEventPerfLog *eventLog) {
 }
 
 /*@C
-  PetscEventPerfLogDestroy - This destroys a PetscEventPerfLog object.
+  PetscEventPerfLogDestroy - This destroys a `PetscEventPerfLog` object.
 
   Not collective
 
   Input Parameter:
-. eventLog - The PetscEventPerfLog
+. eventLog - The `PetscEventPerfLog`
 
   Level: developer
+
+  Note:
+  This is a low level routine used by the logging functions in PETSc
 
 .seealso: `PetscEventPerfLogCreate()`
 @*/
@@ -108,14 +120,17 @@ PetscErrorCode PetscEventPerfLogDestroy(PetscEventPerfLog eventLog) {
 
 /*------------------------------------------------ General Functions -------------------------------------------------*/
 /*@C
-  PetscEventPerfInfoClear - This clears a PetscEventPerfInfo object.
+  PetscEventPerfInfoClear - This clears a `PetscEventPerfInfo` object.
 
   Not collective
 
   Input Parameter:
-. eventInfo - The PetscEventPerfInfo
+. eventInfo - The `PetscEventPerfInfo`
 
   Level: developer
+
+  Note:
+  This is a low level routine used by the logging functions in PETSc
 
 .seealso: `PetscEventPerfLogCreate()`
 @*/
@@ -169,12 +184,15 @@ PetscErrorCode PetscEventPerfInfoClear(PetscEventPerfInfo *eventInfo) {
   Not collective
 
   Input Parameter:
-. eventInfo - The input PetscEventPerfInfo
+. eventInfo - The input `PetscEventPerfInfo`
 
   Output Parameter:
-. outInfo   - The output PetscEventPerfInfo
+. outInfo   - The output `PetscEventPerfInfo`
 
   Level: developer
+
+  Note:
+  This is a low level routine used by the logging functions in PETSc
 
 .seealso: `PetscEventPerfInfoClear()`
 @*/
@@ -187,15 +205,18 @@ PetscErrorCode PetscEventPerfInfoCopy(PetscEventPerfInfo *eventInfo, PetscEventP
 }
 
 /*@C
-  PetscEventPerfLogEnsureSize - This ensures that a PetscEventPerfLog is at least of a certain size.
+  PetscEventPerfLogEnsureSize - This ensures that a `PetscEventPerfLog` is at least of a certain size.
 
   Not collective
 
   Input Parameters:
-+ eventLog - The PetscEventPerfLog
++ eventLog - The `PetscEventPerfLog`
 - size     - The size
 
   Level: developer
+
+  Note:
+  This is a low level routine used by the logging functions in PETSc
 
 .seealso: `PetscEventPerfLogCreate()`
 @*/
@@ -210,7 +231,7 @@ PetscErrorCode PetscEventPerfLogEnsureSize(PetscEventPerfLog eventLog, int size)
     eventLog->eventInfo = eventInfo;
     eventLog->maxEvents *= 2;
   }
-  while (eventLog->numEvents < size) { PetscCall(PetscEventPerfInfoClear(&eventLog->eventInfo[eventLog->numEvents++])); }
+  while (eventLog->numEvents < size) PetscCall(PetscEventPerfInfoClear(&eventLog->eventInfo[eventLog->numEvents++]));
   PetscFunctionReturn(0);
 }
 
@@ -237,7 +258,7 @@ PetscErrorCode PetscLogEventEndMPE(PetscLogEvent event, int t, PetscObject o1, P
   Not Collective
 
   Input Parameters:
-+ eventLog - The PetscEventLog
++ eventLog - The `PetscEventLog`
 . ename    - The name associated with the event
 - classid   - The classid associated to the class for this event
 
@@ -256,13 +277,14 @@ PetscErrorCode PetscLogEventEndMPE(PetscLogEvent event, int t, PetscObject o1, P
 .ve
 
   Notes:
-
   PETSc can gather data for use with the utilities Jumpshot
   (part of the MPICH distribution).  If PETSc has been compiled
   with flag -DPETSC_HAVE_MPE (MPE is an additional utility within
   MPICH), the user can employ another command line option, -log_mpe,
   to create a logfile, "mpe.log", which can be visualized
   Jumpshot.
+
+  This is a low level routine used by the logging functions in PETSc
 
   Level: developer
 
@@ -321,7 +343,7 @@ PetscErrorCode PetscEventRegLogRegister(PetscEventRegLog eventLog, const char en
   Not Collective
 
   Input Parameters:
-+ eventLog - The PetscEventPerfLog
++ eventLog - The `PetscEventPerfLog`
 - event    - The event
 
    Usage:
@@ -332,9 +354,11 @@ PetscErrorCode PetscEventRegLogRegister(PetscEventRegLog eventLog, const char en
         [code where you do want to log VecSetValues()]
 .ve
 
-  Note:
+  Notes:
   The event may be either a pre-defined PETSc event (found in
-  include/petsclog.h) or an event number obtained with PetscEventRegLogRegister().
+  include/petsclog.h) or an event number obtained with `PetscEventRegLogRegister()`.
+
+  This is a low level routine used by the logging functions in PETSc
 
   Level: developer
 
@@ -352,7 +376,7 @@ PetscErrorCode PetscEventPerfLogActivate(PetscEventPerfLog eventLog, PetscLogEve
   Not Collective
 
   Input Parameters:
-+ eventLog - The PetscEventPerfLog
++ eventLog - The `PetscEventPerfLog`
 - event    - The event
 
    Usage:
@@ -363,9 +387,11 @@ PetscErrorCode PetscEventPerfLogActivate(PetscEventPerfLog eventLog, PetscLogEve
         [code where you do want to log VecSetValues()]
 .ve
 
-  Note:
+  Notes:
   The event may be either a pre-defined PETSc event (found in
-  include/petsclog.h) or an event number obtained with PetscEventRegLogRegister().
+  include/petsclog.h) or an event number obtained with `PetscEventRegLogRegister()`.
+
+  This is a low level routine used by the logging functions in PETSc
 
   Level: developer
 
@@ -383,7 +409,7 @@ PetscErrorCode PetscEventPerfLogDeactivate(PetscEventPerfLog eventLog, PetscLogE
   Not Collective
 
   Input Parameters:
-+ eventLog - The PetscEventPerfLog
++ eventLog - The `PetscEventPerfLog`
 - event    - The event
 
    Usage:
@@ -394,9 +420,11 @@ PetscErrorCode PetscEventPerfLogDeactivate(PetscEventPerfLog eventLog, PetscLogE
         [code where you do want to log VecSetValues()]
 .ve
 
-  Note:
+  Notes:
   The event may be either a pre-defined PETSc event (found in
-  include/petsclog.h) or an event number obtained with PetscEventRegLogRegister().
+  include/petsclog.h) or an event number obtained with `PetscEventRegLogRegister()`.
+
+  This is a low level routine used by the logging functions in PETSc
 
   Level: developer
 
@@ -414,7 +442,7 @@ PetscErrorCode PetscEventPerfLogDeactivatePush(PetscEventPerfLog eventLog, Petsc
   Not Collective
 
   Input Parameters:
-+ eventLog - The PetscEventPerfLog
++ eventLog - The `PetscEventPerfLog`
 - event    - The event
 
    Usage:
@@ -425,9 +453,11 @@ PetscErrorCode PetscEventPerfLogDeactivatePush(PetscEventPerfLog eventLog, Petsc
         [code where you do want to log VecSetValues()]
 .ve
 
-  Note:
+  Notes:
   The event may be either a pre-defined PETSc event (found in
-  include/petsclog.h) or an event number obtained with PetscEventRegLogRegister().
+  include/petsclog.h) or an event number obtained with `PetscEventRegLogRegister()`.
+
+  This is a low level routine used by the logging functions in PETSc
 
   Level: developer
 
@@ -445,11 +475,14 @@ PetscErrorCode PetscEventPerfLogDeactivatePop(PetscEventPerfLog eventLog, PetscL
   Not Collective
 
   Input Parameters:
-+ eventLog    - The PetscEventPerfLog
-. eventRegLog - The PetscEventRegLog
-- classid      - The class id, for example MAT_CLASSID, SNES_CLASSID,
++ eventLog    - The `PetscEventPerfLog`
+. eventRegLog - The `PetscEventRegLog`
+- classid      - The class id, for example `MAT_CLASSID`, `SNES_CLASSID`
 
   Level: developer
+
+  Note:
+  This is a low level routine used by the logging functions in PETSc
 
 .seealso: `PetscEventPerfLogDeactivateClass()`, `PetscEventPerfLogActivate()`, `PetscEventPerfLogDeactivate()`
 @*/
@@ -470,11 +503,14 @@ PetscErrorCode PetscEventPerfLogActivateClass(PetscEventPerfLog eventLog, PetscE
   Not Collective
 
   Input Parameters:
-+ eventLog    - The PetscEventPerfLog
-. eventRegLog - The PetscEventRegLog
-- classid - The class id, for example MAT_CLASSID, SNES_CLASSID,
++ eventLog    - The `PetscEventPerfLog`
+. eventRegLog - The `PetscEventRegLog`
+- classid - The class id, for example `MAT_CLASSID`, `SNES_CLASSID`
 
   Level: developer
+
+  Note:
+  This is a low level routine used by the logging functions in PETSc
 
 .seealso: `PetscEventPerfLogDeactivateClass()`, `PetscEventPerfLogDeactivate()`, `PetscEventPerfLogActivate()`
 @*/
@@ -496,13 +532,16 @@ PetscErrorCode PetscEventPerfLogDeactivateClass(PetscEventPerfLog eventLog, Pets
   Not Collective
 
   Input Parameters:
-+ eventLog - The PetscEventRegLog
++ eventLog - The `PetscEventRegLog`
 - name     - The stage name
 
   Output Parameter:
 . event    - The event id, or -1 if not found
 
   Level: developer
+
+  Note:
+  This is a low level routine used by the logging functions in PETSc
 
 .seealso: `PetscEventRegLogRegister()`
 @*/
@@ -525,19 +564,22 @@ PetscErrorCode PetscEventRegLogGetEvent(PetscEventRegLog eventLog, const char na
 }
 
 /*@C
-  PetscEventPerfLogSetVisible - This function determines whether an event is printed during PetscLogView()
+  PetscEventPerfLogSetVisible - This function determines whether an event is printed during `PetscLogView()`
 
   Not Collective
 
   Input Parameters:
-+ eventLog  - The PetscEventPerfLog
++ eventLog  - The `PetscEventPerfLog`
 . event     - The event to log
-- isVisible - The visibility flag, PETSC_TRUE for printing, otherwise PETSC_FALSE (default is PETSC_TRUE)
+- isVisible - The visibility flag, PETSC_TRUE for printing, otherwise `PETSC_FALSE` (default is `PETSC_TRUE`)
 
   Database Options:
 . -log_view - Activates log summary
 
   Level: developer
+
+  Note:
+  This is a low level routine used by the logging functions in PETSc
 
 .seealso: `PetscEventPerfLogGetVisible()`, `PetscEventRegLogRegister()`, `PetscStageLogGetEventLog()`
 @*/
@@ -548,21 +590,24 @@ PetscErrorCode PetscEventPerfLogSetVisible(PetscEventPerfLog eventLog, PetscLogE
 }
 
 /*@C
-  PetscEventPerfLogGetVisible - This function returns whether an event is printed during PetscLogView()
+  PetscEventPerfLogGetVisible - This function returns whether an event is printed during `PetscLogView()`
 
   Not Collective
 
   Input Parameters:
-+ eventLog  - The PetscEventPerfLog
++ eventLog  - The `PetscEventPerfLog`
 - event     - The event id to log
 
   Output Parameter:
-. isVisible - The visibility flag, PETSC_TRUE for printing, otherwise PETSC_FALSE (default is PETSC_TRUE)
+. isVisible - The visibility flag, `PETSC_TRUE` for printing, otherwise `PETSC_FALSE` (default is `PETSC_TRUE`)
 
   Database Options:
 . -log_view - Activates log summary
 
   Level: developer
+
+  Note:
+  This is a low level routine used by the logging functions in PETSc
 
 .seealso: `PetscEventPerfLogSetVisible()`, `PetscEventRegLogRegister()`, `PetscStageLogGetEventLog()`
 @*/
@@ -577,13 +622,16 @@ PetscErrorCode PetscEventPerfLogGetVisible(PetscEventPerfLog eventLog, PetscLogE
   PetscLogEventGetPerfInfo - Return the performance information about the given event in the given stage
 
   Input Parameters:
-+ stage - The stage number or PETSC_DETERMINE for the current stage
++ stage - The stage number or `PETSC_DETERMINE` for the current stage
 - event - The event number
 
   Output Parameters:
 . info - This structure is filled with the performance information
 
   Level: Intermediate
+
+  Note:
+  This is a low level routine used by the logging functions in PETSc
 
 .seealso: `PetscLogEventGetFlops()`
 @*/
@@ -936,7 +984,7 @@ PetscErrorCode PetscLogEventEndTrace(PetscLogEvent event, int t, PetscObject o1,
 }
 
 /*@C
-  PetscLogEventSetDof - Set the nth number of degrees of freedom associated with this event
+  PetscLogEventSetDof - Set the nth number of degrees of freedom of a numerical problem associated with this event
 
   Not Collective
 
@@ -948,7 +996,8 @@ PetscErrorCode PetscLogEventEndTrace(PetscLogEvent event, int t, PetscObject o1,
   Database Options:
 . -log_view - Activates log summary
 
-  Note: This is to enable logging of convergence
+  Note:
+  This is to enable logging of convergence
 
   Level: developer
 
@@ -969,7 +1018,7 @@ PetscErrorCode PetscLogEventSetDof(PetscLogEvent event, PetscInt n, PetscLogDoub
 }
 
 /*@C
-  PetscLogEventSetError - Set the nth error associated with this event
+  PetscLogEventSetError - Set the nth error associated with a numerical problem associated with this event
 
   Not Collective
 
@@ -981,8 +1030,11 @@ PetscErrorCode PetscLogEventSetDof(PetscLogEvent event, PetscInt n, PetscLogDoub
   Database Options:
 . -log_view - Activates log summary
 
-  Note: This is to enable logging of convergence, and enable users to interpret the errors as they wish. For example,
+  Notes:
+  This is to enable logging of convergence, and enable users to interpret the errors as they wish. For example,
   as different norms, or as errors for different fields
+
+  This is a low level routine used by the logging functions in PETSc
 
   Level: developer
 

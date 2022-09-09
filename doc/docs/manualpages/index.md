@@ -1,5 +1,6 @@
 # Manual Pages
 
+* [API Changes in each release](../changes/index.rst)
 * [MPI](http://www.mpich.org/static/docs/latest/)
 * [Vector Operations (Vec)](Vec/index.md)
 

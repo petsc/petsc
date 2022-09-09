@@ -139,7 +139,7 @@ static PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *total
       PetscCall(DMPlexReorderCell(dm, c, vertices));
       corners[numCells++] = nC;
       PetscCall(PetscFPrintf(comm, fp, "%" PetscInt_FMT " ", nC));
-      for (v = 0; v < nC; ++v) { PetscCall(PetscFPrintf(comm, fp, " %" PetscInt_FMT, vertices[v])); }
+      for (v = 0; v < nC; ++v) PetscCall(PetscFPrintf(comm, fp, " %" PetscInt_FMT, vertices[v]));
       PetscCall(PetscFPrintf(comm, fp, "\n"));
     }
     if (size > 1) PetscCall(PetscMalloc1(maxCorners + maxCells, &remoteVertices));
@@ -151,9 +151,9 @@ static PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *total
       for (c = 0; c < numCorners;) {
         PetscInt nC = remoteVertices[c++];
 
-        for (v = 0; v < nC; ++v, ++c) { vertices[v] = remoteVertices[c]; }
+        for (v = 0; v < nC; ++v, ++c) vertices[v] = remoteVertices[c];
         PetscCall(PetscFPrintf(comm, fp, "%" PetscInt_FMT " ", nC));
-        for (v = 0; v < nC; ++v) { PetscCall(PetscFPrintf(comm, fp, " %" PetscInt_FMT, vertices[v])); }
+        for (v = 0; v < nC; ++v) PetscCall(PetscFPrintf(comm, fp, " %" PetscInt_FMT, vertices[v]));
         PetscCall(PetscFPrintf(comm, fp, "\n"));
       }
     }
@@ -180,7 +180,7 @@ static PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *total
       }
       corners[numCells++] = nC;
       localVertices[k++]  = nC;
-      for (v = 0; v < nC; ++v, ++k) { localVertices[k] = closure[v]; }
+      for (v = 0; v < nC; ++v, ++k) localVertices[k] = closure[v];
       PetscCall(DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure));
       PetscCall(DMPlexReorderCell(dm, c, localVertices + k - nC));
     }
@@ -333,12 +333,12 @@ static PetscErrorCode DMPlexVTKWriteSection_ASCII(DM dm, PetscSection section, P
       PetscCall(PetscSectionGetOffset(globalSection, p, &goff));
       if (dof && goff >= 0) {
         for (d = 0; d < dof; d++) {
-          if (d > 0) { PetscCall(PetscFPrintf(comm, fp, " ")); }
+          if (d > 0) PetscCall(PetscFPrintf(comm, fp, " "));
           val  = array[off + d];
           dval = (PetscVTKReal)((imag ? PetscImaginaryPart(val) : PetscRealPart(val)) * scale);
           PetscCall(PetscFPrintf(comm, fp, formatString, dval));
         }
-        for (d = dof; d < enforceDof; d++) { PetscCall(PetscFPrintf(comm, fp, " 0.0")); }
+        for (d = dof; d < enforceDof; d++) PetscCall(PetscFPrintf(comm, fp, " 0.0"));
         PetscCall(PetscFPrintf(comm, fp, "\n"));
       }
     }
@@ -352,12 +352,12 @@ static PetscErrorCode DMPlexVTKWriteSection_ASCII(DM dm, PetscSection section, P
       PetscCallMPI(MPI_Recv(remoteValues, size, mpiType, proc, tag, comm, &status));
       for (p = 0; p < size / maxDof; ++p) {
         for (d = 0; d < maxDof; ++d) {
-          if (d > 0) { PetscCall(PetscFPrintf(comm, fp, " ")); }
+          if (d > 0) PetscCall(PetscFPrintf(comm, fp, " "));
           val  = remoteValues[p * maxDof + d];
           dval = (PetscVTKReal)((imag ? PetscImaginaryPart(val) : PetscRealPart(val)) * scale);
           PetscCall(PetscFPrintf(comm, fp, formatString, dval));
         }
-        for (d = maxDof; d < enforceDof; ++d) { PetscCall(PetscFPrintf(comm, fp, " 0.0")); }
+        for (d = maxDof; d < enforceDof; ++d) PetscCall(PetscFPrintf(comm, fp, " 0.0"));
         PetscCall(PetscFPrintf(comm, fp, "\n"));
       }
       PetscCall(PetscFree(remoteValues));
@@ -385,7 +385,7 @@ static PetscErrorCode DMPlexVTKWriteSection_ASCII(DM dm, PetscSection section, P
       PetscCall(PetscSectionGetOffset(section, p, &off));
       PetscCall(PetscSectionGetOffset(globalSection, p, &goff));
       if (goff >= 0) {
-        for (d = 0; d < dof; ++d) { localValues[k++] = array[off + d]; }
+        for (d = 0; d < dof; ++d) localValues[k++] = array[off + d];
       }
     }
     PetscCallMPI(MPI_Send(&k, 1, MPIU_INT, 0, tag, comm));
@@ -542,7 +542,7 @@ static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer) {
                 }
               }
             }
-            if (subpointIS) { PetscCall(ISRestoreIndices(subpointIS, &ind)); }
+            if (subpointIS) PetscCall(ISRestoreIndices(subpointIS, &ind));
             /* No need to setup section */
             section = newSection;
           }
@@ -564,7 +564,7 @@ static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer) {
       }
       PetscCall(PetscViewerVTKSanitizeName_Internal(namebuf, sizeof(namebuf)));
       PetscCall(PetscSectionCreateGlobalSection(section, dm->sf, PETSC_FALSE, PETSC_FALSE, &globalSection));
-      for (l = 0; l < loops_per_scalar; l++) { PetscCall(DMPlexVTKWriteField_ASCII(dm, section, globalSection, X, namebuf, fp, enforceDof, PETSC_DETERMINE, 1.0, writeComplex, l)); }
+      for (l = 0; l < loops_per_scalar; l++) PetscCall(DMPlexVTKWriteField_ASCII(dm, section, globalSection, X, namebuf, fp, enforceDof, PETSC_DETERMINE, 1.0, writeComplex, l));
       PetscCall(PetscSectionDestroy(&globalSection));
       if (newSection) PetscCall(PetscSectionDestroy(&newSection));
     }
@@ -588,7 +588,7 @@ static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer) {
         DM dmX;
 
         PetscCall(VecGetDM(X, &dmX));
-        if (dmX) { PetscCall(DMGetLocalSection(dmX, &section)); }
+        if (dmX) PetscCall(DMGetLocalSection(dmX, &section));
       }
       PetscCheck(section, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Vector %s had no PetscSection composed with it and could not create one from VecGetDM()", name);
       if (link->field >= 0) {
@@ -606,7 +606,7 @@ static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer) {
       }
       PetscCall(PetscViewerVTKSanitizeName_Internal(namebuf, sizeof(namebuf)));
       PetscCall(PetscSectionCreateGlobalSection(section, dm->sf, PETSC_FALSE, PETSC_FALSE, &globalSection));
-      for (l = 0; l < loops_per_scalar; l++) { PetscCall(DMPlexVTKWriteField_ASCII(dm, section, globalSection, X, namebuf, fp, enforceDof, PETSC_DETERMINE, 1.0, writeComplex, l)); }
+      for (l = 0; l < loops_per_scalar; l++) PetscCall(DMPlexVTKWriteField_ASCII(dm, section, globalSection, X, namebuf, fp, enforceDof, PETSC_DETERMINE, 1.0, writeComplex, l));
       PetscCall(PetscSectionDestroy(&globalSection));
     }
     if (writePartition) {

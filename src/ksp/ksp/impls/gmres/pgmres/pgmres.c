@@ -71,7 +71,7 @@ static PetscErrorCode KSPPGMRESCycle(PetscInt *itcount, KSP ksp) {
   PetscCall((*ksp->converged)(ksp, ksp->its, ksp->rnorm, &ksp->reason, ksp->cnvP));
   for (; !ksp->reason; it++) {
     Vec Zcur, Znext;
-    if (pgmres->vv_allocated <= it + VEC_OFFSET + 1) { PetscCall(KSPGMRESGetNewVectors(ksp, it + 1)); }
+    if (pgmres->vv_allocated <= it + VEC_OFFSET + 1) PetscCall(KSPGMRESGetNewVectors(ksp, it + 1));
     /* VEC_VV(it-1) is orthogonal, it will be normalized once the VecNorm arrives. */
     Zcur  = VEC_VV(it);     /* Zcur is not yet orthogonal, but the VecMDot to orthogonalize it has been started. */
     Znext = VEC_VV(it + 1); /* This iteration will compute Znext, update with a deferred correction once we know how

@@ -336,7 +336,7 @@ static PetscErrorCode MatCoarsenApply_MISK_private(IS perm, const PetscInt misk,
         PetscInt gidj;
         PetscCall(PetscCDIntNdGetID(pos, &gidj));
         PetscCall(PetscCDGetNextPos(agg_lists, lid, &pos));
-        if (gidj < Istart || gidj >= Istart + nloc) { PetscCall(MatSetValues(mat, 1, &gidi, 1, &gidj, &one, ADD_VALUES)); }
+        if (gidj < Istart || gidj >= Istart + nloc) PetscCall(MatSetValues(mat, 1, &gidi, 1, &gidj, &one, ADD_VALUES));
       }
     }
     PetscCall(MatAssemblyBegin(mat, MAT_FINAL_ASSEMBLY));
@@ -381,7 +381,7 @@ static PetscErrorCode MatCoarsenView_MISK(MatCoarsen coarse, PetscViewer viewer)
   if (iascii) {
     PetscCall(PetscViewerASCIIPushSynchronized(viewer));
     PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "  [%d] MISK aggregator\n", rank));
-    if (!rank) { PetscCall(PetscCoarsenDataView_private(coarse->agg_lists, viewer)); }
+    if (!rank) PetscCall(PetscCoarsenDataView_private(coarse->agg_lists, viewer));
     PetscCall(PetscViewerFlush(viewer));
     PetscCall(PetscViewerASCIIPopSynchronized(viewer));
   }
@@ -400,12 +400,14 @@ static PetscErrorCode MatCoarsenSetFromOptions_MISK(MatCoarsen coarse, PetscOpti
 }
 
 /*MC
-   MATCOARSENMISK - A coarsener that uses MISK a simple greedy coarsener
+   MATCOARSENMISK - A coarsener that uses MISK, a simple greedy coarsener
 
    Level: beginner
 
-.seealso: `MatCoarsenSetType()`, `MatCoarsenType`, `MatCoarsenCreate()`
+   Options Database:
+.   -mat_coarsen_misk_distance <k> - distance for MIS
 
+.seealso:`MatCoarsen`,  `MatCoarsenMISKSetDistance()`, `MatCoarsenApply()`, `MatCoarsenSetType()`, `MatCoarsenType`, `MatCoarsenCreate()`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatCoarsenCreate_MISK(MatCoarsen coarse) {
@@ -417,13 +419,48 @@ PETSC_EXTERN PetscErrorCode MatCoarsenCreate_MISK(MatCoarsen coarse) {
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode MatCoarsenMISKSetDistance(MatCoarsen crs, PetscInt k) {
+/*@
+   MatCoarsenMISKSetDistance - the distance to be used by MISK
+
+   Collective on coarser
+
+   Input Parameters:
++   coarsen - the coarsen
+-   k - the distance
+
+   Options Database Key:
+.   -mat_coarsen_misk_distance <k> - distance for MIS
+
+   Level: advanced
+
+.seealso: `MATCOARSENMISK`, `MatCoarsen`, `MatCoarseSetFromOptions()`, `MatCoarsenSetType()`, `MatCoarsenRegister()`, `MatCoarsenCreate()`,
+          `MatCoarsenDestroy()`, `MatCoarsenSetAdjacency()`, `MatCoarsenMISKGetDistance()`
+          `MatCoarsenGetData()`
+@*/
+PetscErrorCode MatCoarsenMISKSetDistance(MatCoarsen crs, PetscInt k) {
   PetscFunctionBegin;
   crs->subctx = (void *)(size_t)k;
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode MatCoarsenMISKGetDistance(MatCoarsen crs, PetscInt *k) {
+/*@
+   MatCoarsenMISKGetDistance - gets the distance to be used by MISK
+
+   Collective on coarser
+
+   Input Parameter:
+.   coarsen - the coarsen
+
+   Output Paramter:
+.   k - the distance
+
+   Level: advanced
+
+.seealso: `MATCOARSENMISK`, `MatCoarsen`, `MatCoarseSetFromOptions()`, `MatCoarsenSetType()`, `MatCoarsenRegister()`, `MatCoarsenCreate()`,
+          `MatCoarsenDestroy()`, `MatCoarsenSetAdjacency()`, `MatCoarsenMISKGetDistance()`
+          `MatCoarsenGetData()`
+@*/
+PetscErrorCode MatCoarsenMISKGetDistance(MatCoarsen crs, PetscInt *k) {
   PetscFunctionBegin;
   *k = (PetscInt)(size_t)crs->subctx;
   PetscFunctionReturn(0);

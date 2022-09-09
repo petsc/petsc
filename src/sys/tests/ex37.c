@@ -37,13 +37,13 @@ int main(int argc, char **argv) {
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "buffer :%s: fullLength %d\n", buffer, (int)fullLength));
 
   /* test that TestPetscVSNPrintf() fullLength argument returns required space for the string when buffer is not long enough */
-  for (i = 0; i < 255; i++) { longstr[i] = 's'; }
+  for (i = 0; i < 255; i++) longstr[i] = 's';
   longstr[255] = 0;
   PetscCall(TestPetscVSNPrintf(buffer, sizeof(buffer), &fullLength, "Greetings %s", longstr));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "longstr fullLength %d\n", (int)fullLength));
 
   /* test that PetscPrintf() works for strings longer than the default buffer size */
-  for (i = 0; i < 9998; i++) { superlongstr[i] = 's'; }
+  for (i = 0; i < 9998; i++) superlongstr[i] = 's';
   superlongstr[9998] = 't';
   superlongstr[9999] = 0;
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Greetings %s", superlongstr));

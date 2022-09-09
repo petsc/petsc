@@ -283,7 +283,7 @@ static PetscErrorCode MonitorError(TS ts, PetscInt step, PetscReal t, Vec x, voi
   PetscCall(VecAYPX(mon->x, -1, x));
   PetscCall(VecNorm(mon->x, NORM_2, &nrm_diff));
   PetscCall(TSGetTimeStep(ts, &h));
-  if (step < 0) { PetscCall(PetscPrintf(mon->comm, "Interpolated final solution ")); }
+  if (step < 0) PetscCall(PetscPrintf(mon->comm, "Interpolated final solution "));
   PetscCall(PetscPrintf(mon->comm, "step %4" PetscInt_FMT " t=%12.8e h=% 8.2e  |x|=%9.2e  |x_e|=%9.2e  |x-x_e|=%9.2e\n", step, (double)t, (double)h, (double)nrm_x, (double)nrm_exact, (double)nrm_diff));
   PetscFunctionReturn(0);
 }
@@ -366,7 +366,7 @@ int main(int argc, char **argv) {
   PetscCall(TSSetExactFinalTime(ts, TS_EXACTFINALTIME_STEPOVER));
   PetscCall(TSSetMaxStepRejections(ts, 10));
   PetscCall(TSSetMaxSNESFailures(ts, -1)); /* unlimited */
-  if (use_monitor) { PetscCall(TSMonitorSet(ts, &MonitorError, &mon, NULL)); }
+  if (use_monitor) PetscCall(TSMonitorSet(ts, &MonitorError, &mon, NULL));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions

@@ -220,7 +220,7 @@ PetscErrorCode KSPSetUpOnBlocks(KSP ksp) {
      produce a result at KSPCheckNorm() thus communicating the known problem to all MPI ranks so they may
      terminate the Krylov solve. For many KSP implementations this is handled within KSPInitialResidual()
   */
-  if (pcreason) { ksp->reason = KSP_DIVERGED_PC_FAILED; }
+  if (pcreason) ksp->reason = KSP_DIVERGED_PC_FAILED;
   PetscFunctionReturn(0);
 }
 
@@ -317,7 +317,7 @@ PetscErrorCode KSPSetUp(KSP ksp) {
   /* reset the convergence flag from the previous solves */
   ksp->reason = KSP_CONVERGED_ITERATING;
 
-  if (!((PetscObject)ksp)->type_name) { PetscCall(KSPSetType(ksp, KSPGMRES)); }
+  if (!((PetscObject)ksp)->type_name) PetscCall(KSPSetType(ksp, KSPGMRES));
   PetscCall(KSPSetUpNorms_Private(ksp, PETSC_TRUE, &ksp->normtype, &ksp->pc_side));
 
   if (ksp->dmActive && !ksp->setupstage) {
@@ -384,7 +384,7 @@ PetscErrorCode KSPSetUp(KSP ksp) {
       }
     }
     PetscCall(VecRestoreArray(ksp->diagonal, &xx));
-    if (zeroflag) { PetscCall(PetscInfo(ksp, "Zero detected in diagonal of matrix, using 1 at those locations\n")); }
+    if (zeroflag) PetscCall(PetscInfo(ksp, "Zero detected in diagonal of matrix, using 1 at those locations\n"));
     PetscCall(MatDiagonalScale(pmat, ksp->diagonal, ksp->diagonal));
     if (mat != pmat) PetscCall(MatDiagonalScale(mat, ksp->diagonal, ksp->diagonal));
     ksp->dscalefix2 = PETSC_FALSE;
@@ -394,7 +394,7 @@ PetscErrorCode KSPSetUp(KSP ksp) {
   PetscCall(PCSetUp(ksp->pc));
   PetscCall(PCGetFailedReasonRank(ksp->pc, &pcreason));
   /* TODO: this code was wrong and is still wrong, there is no way to propagate the failure to all processes; their is no code to handle a ksp->reason on only some ranks */
-  if (pcreason) { ksp->reason = KSP_DIVERGED_PC_FAILED; }
+  if (pcreason) ksp->reason = KSP_DIVERGED_PC_FAILED;
 
   PetscCall(MatGetNullSpace(mat, &nullsp));
   if (nullsp) {
@@ -528,7 +528,7 @@ PetscErrorCode KSPConvergedReasonViewCancel(KSP ksp) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   for (i = 0; i < ksp->numberreasonviews; i++) {
-    if (ksp->reasonviewdestroy[i]) { PetscCall((*ksp->reasonviewdestroy[i])(&ksp->reasonviewcontext[i])); }
+    if (ksp->reasonviewdestroy[i]) PetscCall((*ksp->reasonviewdestroy[i])(&ksp->reasonviewcontext[i]));
   }
   ksp->numberreasonviews = 0;
   PetscFunctionReturn(0);
@@ -555,7 +555,7 @@ PetscErrorCode KSPConvergedReasonViewFromOptions(KSP ksp) {
   PetscFunctionBegin;
 
   /* Call all user-provided reason review routines */
-  for (i = 0; i < ksp->numberreasonviews; i++) { PetscCall((*ksp->reasonview[i])(ksp, ksp->reasonviewcontext[i])); }
+  for (i = 0; i < ksp->numberreasonviews; i++) PetscCall((*ksp->reasonview[i])(ksp, ksp->reasonviewcontext[i]));
 
   /* Call the default PETSc routine */
   PetscCall(PetscOptionsGetViewer(PetscObjectComm((PetscObject)ksp), ((PetscObject)ksp)->options, ((PetscObject)ksp)->prefix, "-ksp_converged_reason", &viewer, &format, &flg));
@@ -1080,11 +1080,11 @@ PetscErrorCode KSPSolveTranspose(KSP ksp, Vec b, Vec x) {
     PetscCall(KSPGetOperators(ksp, &J, &Jpre));
     if (!ksp->transpose.reuse_transpose) {
       PetscCall(MatTranspose(J, MAT_INITIAL_MATRIX, &ksp->transpose.AT));
-      if (J != Jpre) { PetscCall(MatTranspose(Jpre, MAT_INITIAL_MATRIX, &ksp->transpose.BT)); }
+      if (J != Jpre) PetscCall(MatTranspose(Jpre, MAT_INITIAL_MATRIX, &ksp->transpose.BT));
       ksp->transpose.reuse_transpose = PETSC_TRUE;
     } else {
       PetscCall(MatTranspose(J, MAT_REUSE_MATRIX, &ksp->transpose.AT));
-      if (J != Jpre) { PetscCall(MatTranspose(Jpre, MAT_REUSE_MATRIX, &ksp->transpose.BT)); }
+      if (J != Jpre) PetscCall(MatTranspose(Jpre, MAT_REUSE_MATRIX, &ksp->transpose.BT));
     }
     if (J == Jpre && ksp->transpose.BT != ksp->transpose.AT) {
       PetscCall(PetscObjectReference((PetscObject)ksp->transpose.AT));
@@ -1114,7 +1114,7 @@ static PetscErrorCode KSPViewFinalMatResidual_Internal(KSP ksp, Mat B, Mat X, Pe
     PetscCall(PetscMalloc1(N, &norms));
     PetscCall(MatGetColumnNorms(R, NORM_2, norms));
     PetscCall(MatDestroy(&R));
-    for (i = 0; i < N; ++i) { PetscCall(PetscViewerASCIIPrintf(viewer, "%s #%" PetscInt_FMT " %g\n", i == 0 ? "KSP final norm of residual" : "                          ", shift + i, (double)norms[i])); }
+    for (i = 0; i < N; ++i) PetscCall(PetscViewerASCIIPrintf(viewer, "%s #%" PetscInt_FMT " %g\n", i == 0 ? "KSP final norm of residual" : "                          ", shift + i, (double)norms[i]));
     PetscCall(PetscFree(norms));
   }
   PetscFunctionReturn(0);
@@ -1396,7 +1396,7 @@ PetscErrorCode KSPDestroy(KSP *ksp) {
   PetscCall(PCDestroy(&(*ksp)->pc));
   PetscCall(PetscFree((*ksp)->res_hist_alloc));
   PetscCall(PetscFree((*ksp)->err_hist_alloc));
-  if ((*ksp)->convergeddestroy) { PetscCall((*(*ksp)->convergeddestroy)((*ksp)->cnvP)); }
+  if ((*ksp)->convergeddestroy) PetscCall((*(*ksp)->convergeddestroy)((*ksp)->cnvP));
   PetscCall(KSPMonitorCancel((*ksp)));
   PetscCall(KSPConvergedReasonViewCancel((*ksp)));
   PetscCall(PetscViewerDestroy(&(*ksp)->eigviewer));
@@ -2001,7 +2001,7 @@ PetscErrorCode KSPMonitor(KSP ksp, PetscInt it, PetscReal rnorm) {
   PetscInt i, n = ksp->numbermonitors;
 
   PetscFunctionBegin;
-  for (i = 0; i < n; i++) { PetscCall((*ksp->monitor[i])(ksp, it, rnorm, ksp->monitorcontext[i])); }
+  for (i = 0; i < n; i++) PetscCall((*ksp->monitor[i])(ksp, it, rnorm, ksp->monitorcontext[i]));
   PetscFunctionReturn(0);
 }
 
@@ -2099,7 +2099,7 @@ PetscErrorCode KSPMonitorCancel(KSP ksp) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   for (i = 0; i < ksp->numbermonitors; i++) {
-    if (ksp->monitordestroy[i]) { PetscCall((*ksp->monitordestroy[i])(&ksp->monitorcontext[i])); }
+    if (ksp->monitordestroy[i]) PetscCall((*ksp->monitordestroy[i])(&ksp->monitorcontext[i]));
   }
   ksp->numbermonitors = 0;
   PetscFunctionReturn(0);

@@ -139,7 +139,7 @@ PetscErrorCode DMSwarmDataExView(DMSwarmDataEx d) {
   if (d->topology_status == DEOBJECT_FINALIZED) {
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "  Topology:\n"));
     PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "    [%d] neighbours: %d \n", d->rank, d->n_neighbour_procs));
-    for (p = 0; p < d->n_neighbour_procs; p++) { PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "    [%d]   neighbour[%d] = %d \n", d->rank, p, d->neighbour_procs[p])); }
+    for (p = 0; p < d->n_neighbour_procs; p++) PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "    [%d]   neighbour[%d] = %d \n", d->rank, p, d->neighbour_procs[p]));
     PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD, stdout));
   }
 
@@ -210,7 +210,7 @@ PetscErrorCode DMSwarmDataExTopologyAddNeighbour(DMSwarmDataEx d, const PetscMPI
   /* check for proc_id */
   found = 0;
   for (n = 0; n < d->n_neighbour_procs; n++) {
-    if (d->neighbour_procs[n] == proc_id) { found = 1; }
+    if (d->neighbour_procs[n] == proc_id) found = 1;
   }
   if (found == 0) { /* add it to list */
     PetscCall(PetscRealloc(sizeof(PetscMPIInt) * (d->n_neighbour_procs + 1), &d->neighbour_procs));
@@ -280,7 +280,7 @@ PetscErrorCode _DMSwarmDataExCompleteCommunicationMap(MPI_Comm comm, PetscMPIInt
   PetscFunctionBegin;
   n_ = n;
   PetscCall(PetscMalloc(sizeof(PetscInt) * n_, &proc_neighbours_));
-  for (i = 0; i < n_; ++i) { proc_neighbours_[i] = proc_neighbours[i]; }
+  for (i = 0; i < n_; ++i) proc_neighbours_[i] = proc_neighbours[i];
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   rank_ = rank;
@@ -293,13 +293,13 @@ PetscErrorCode _DMSwarmDataExCompleteCommunicationMap(MPI_Comm comm, PetscMPIInt
   PetscCall(MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE));
   /* Build original map */
   PetscCall(PetscMalloc1(n_, &vals));
-  for (i = 0; i < n_; ++i) { vals[i] = 1.0; }
+  for (i = 0; i < n_; ++i) vals[i] = 1.0;
   PetscCall(MatSetValues(A, 1, &rank_, n_, proc_neighbours_, vals, INSERT_VALUES));
   PetscCall(MatAssemblyBegin(A, MAT_FLUSH_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FLUSH_ASSEMBLY));
   /* Now force all other connections if they are not already there */
   /* It's more efficient to do them all at once */
-  for (i = 0; i < n_; ++i) { vals[i] = 2.0; }
+  for (i = 0; i < n_; ++i) vals[i] = 2.0;
   PetscCall(MatSetValues(A, n_, proc_neighbours_, 1, &rank_, vals, INSERT_VALUES));
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
@@ -312,7 +312,7 @@ PetscErrorCode _DMSwarmDataExCompleteCommunicationMap(MPI_Comm comm, PetscMPIInt
     PetscCall(MatGetRow(A, rank_, &nc, &cols, &red_vals));
     _n_new = (PetscMPIInt)nc;
     PetscCall(PetscMalloc1(_n_new, &_proc_neighbours_new));
-    for (j = 0; j < nc; ++j) { _proc_neighbours_new[j] = (PetscMPIInt)cols[j]; }
+    for (j = 0; j < nc; ++j) _proc_neighbours_new[j] = (PetscMPIInt)cols[j];
     PetscCall(MatRestoreRow(A, rank_, &nc, &cols, &red_vals));
     *n_new               = (PetscMPIInt)_n_new;
     *proc_neighbours_new = (PetscMPIInt *)_proc_neighbours_new;
@@ -384,7 +384,7 @@ PetscErrorCode DMSwarmDataExInitializeSendCount(DMSwarmDataEx de) {
   PetscCheck(de->topology_status == DEOBJECT_FINALIZED, de->comm, PETSC_ERR_ORDER, "Topology not finalized");
   PetscCall(PetscLogEventBegin(DMSWARM_DataExchangerSendCount, 0, 0, 0, 0));
   de->message_lengths_status = DEOBJECT_INITIALIZED;
-  for (i = 0; i < de->n_neighbour_procs; ++i) { de->messages_to_be_sent[i] = 0; }
+  for (i = 0; i < de->n_neighbour_procs; ++i) de->messages_to_be_sent[i] = 0;
   PetscFunctionReturn(0);
 }
 
@@ -476,7 +476,7 @@ PetscErrorCode DMSwarmDataExPackInitialize(DMSwarmDataEx de, size_t unit_message
   }
   /* init the packer counters */
   de->total_pack_cnt = 0;
-  for (i = 0; i < np; ++i) { de->pack_cnt[i] = 0; }
+  for (i = 0; i < np; ++i) de->pack_cnt[i] = 0;
   PetscFunctionReturn(0);
 }
 
@@ -520,14 +520,14 @@ PetscErrorCode DMSwarmDataExPackFinalize(DMSwarmDataEx de) {
     PetscCheck(de->pack_cnt[i] == de->messages_to_be_sent[i], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Not all messages for neighbour[%d] have been packed. Expected %" PetscInt_FMT " : Inserted %" PetscInt_FMT, (int)de->neighbour_procs[i], de->messages_to_be_sent[i], de->pack_cnt[i]);
   }
   /* init */
-  for (i = 0; i < np; ++i) { de->messages_to_be_recvieved[i] = -1; }
+  for (i = 0; i < np; ++i) de->messages_to_be_recvieved[i] = -1;
   /* figure out the recv counts here */
-  for (i = 0; i < np; ++i) { PetscCallMPI(MPI_Isend(&de->messages_to_be_sent[i], 1, MPIU_INT, de->neighbour_procs[i], de->send_tags[i], de->comm, &de->_requests[i])); }
-  for (i = 0; i < np; ++i) { PetscCallMPI(MPI_Irecv(&de->messages_to_be_recvieved[i], 1, MPIU_INT, de->neighbour_procs[i], de->recv_tags[i], de->comm, &de->_requests[np + i])); }
+  for (i = 0; i < np; ++i) PetscCallMPI(MPI_Isend(&de->messages_to_be_sent[i], 1, MPIU_INT, de->neighbour_procs[i], de->send_tags[i], de->comm, &de->_requests[i]));
+  for (i = 0; i < np; ++i) PetscCallMPI(MPI_Irecv(&de->messages_to_be_recvieved[i], 1, MPIU_INT, de->neighbour_procs[i], de->recv_tags[i], de->comm, &de->_requests[np + i]));
   PetscCallMPI(MPI_Waitall(2 * np, de->_requests, de->_stats));
   /* create space for the data to be recvieved */
   total = 0;
-  for (i = 0; i < np; ++i) { total = total + de->messages_to_be_recvieved[i]; }
+  for (i = 0; i < np; ++i) total = total + de->messages_to_be_recvieved[i];
   PetscCall(PetscMalloc(de->unit_message_size * (total + 1), &de->recv_message));
   /* initialize memory */
   PetscCall(PetscMemzero(de->recv_message, de->unit_message_size * (total + 1)));
@@ -614,7 +614,7 @@ PetscErrorCode DMSwarmDataExGetRecvData(DMSwarmDataEx de, PetscInt *length, void
 
 PetscErrorCode DMSwarmDataExTopologyGetNeighbours(DMSwarmDataEx de, PetscMPIInt *n, PetscMPIInt *neigh[]) {
   PetscFunctionBegin;
-  if (n) { *n = de->n_neighbour_procs; }
-  if (neigh) { *neigh = de->neighbour_procs; }
+  if (n) *n = de->n_neighbour_procs;
+  if (neigh) *neigh = de->neighbour_procs;
   PetscFunctionReturn(0);
 }

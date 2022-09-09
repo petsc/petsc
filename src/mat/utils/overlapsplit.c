@@ -84,7 +84,7 @@ PetscErrorCode MatIncreaseOverlapSplit_Single(Mat mat, IS *is, PetscInt ov) {
     /* assign corresponding sources */
     localsize_tmp = 0;
     for (k = 0; k < ssize; k++) {
-      for (i = 0; i < localsizes_sc[k]; i++) { sources_sc[localsize_tmp++] = k; }
+      for (i = 0; i < localsizes_sc[k]; i++) sources_sc[localsize_tmp++] = k;
     }
     /* record where indices come from */
     PetscCall(PetscSortIntWithArray(localsize, indices_ov, sources_sc));
@@ -107,7 +107,7 @@ PetscErrorCode MatIncreaseOverlapSplit_Single(Mat mat, IS *is, PetscInt ov) {
     }
     PetscCall(PetscFree2(indices_ov, sources_sc));
     PetscCall(PetscCalloc1(ssize + 1, &localoffsets));
-    for (k = 0; k < ssize; k++) { localoffsets[k + 1] = localoffsets[k] + localsizes_sc[k]; }
+    for (k = 0; k < ssize; k++) localoffsets[k + 1] = localoffsets[k] + localsizes_sc[k];
     nleaves = localoffsets[ssize];
     PetscCall(PetscArrayzero(localoffsets, ssize + 1));
     nroots = localsizes_sc[srank];

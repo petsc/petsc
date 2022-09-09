@@ -5,64 +5,6 @@
    matrices (not complex matrices that are symmetric).
 */
 #include <../src/ksp/ksp/impls/cg/cgimpl.h>
-static PetscErrorCode LINPACKcgtql1(PetscInt *, PetscReal *, PetscReal *, PetscInt *);
-
-PetscErrorCode KSPComputeEigenvalues_CG(KSP ksp, PetscInt nmax, PetscReal *r, PetscReal *c, PetscInt *neig) {
-  KSP_CG      *cgP = (KSP_CG *)ksp->data;
-  PetscScalar *d, *e;
-  PetscReal   *ee;
-  PetscInt     j, n = ksp->its;
-
-  PetscFunctionBegin;
-  PetscCheck(nmax >= n, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_SIZ, "Not enough room in work space r and c for eigenvalues");
-  *neig = n;
-
-  PetscCall(PetscArrayzero(c, nmax));
-  if (!n) { PetscFunctionReturn(0); }
-  d  = cgP->d;
-  e  = cgP->e;
-  ee = cgP->ee;
-
-  /* copy tridiagonal matrix to work space */
-  for (j = 0; j < n; j++) {
-    r[j]  = PetscRealPart(d[j]);
-    ee[j] = PetscRealPart(e[j]);
-  }
-
-  LINPACKcgtql1(&n, r, ee, &j);
-  PetscCheck(j == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error from tql1(); eispack eigenvalue routine");
-  PetscCall(PetscSortReal(n, r));
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode KSPComputeExtremeSingularValues_CG(KSP ksp, PetscReal *emax, PetscReal *emin) {
-  KSP_CG      *cgP = (KSP_CG *)ksp->data;
-  PetscScalar *d, *e;
-  PetscReal   *dd, *ee;
-  PetscInt     j, n = ksp->its;
-
-  PetscFunctionBegin;
-  if (!n) {
-    *emax = *emin = 1.0;
-    PetscFunctionReturn(0);
-  }
-  d  = cgP->d;
-  e  = cgP->e;
-  dd = cgP->dd;
-  ee = cgP->ee;
-
-  /* copy tridiagonal matrix to work space */
-  for (j = 0; j < n; j++) {
-    dd[j] = PetscRealPart(d[j]);
-    ee[j] = PetscRealPart(e[j]);
-  }
-
-  LINPACKcgtql1(&n, dd, ee, &j);
-  PetscCheck(j == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error from tql1(); eispack eigenvalue routine");
-  *emin = dd[0];
-  *emax = dd[n - 1];
-  PetscFunctionReturn(0);
-}
 
 /* tql1.f -- translated by f2c (version of 25 March 1992  12:58:56).
    By Barry Smith on March 27, 1994.
@@ -74,7 +16,39 @@ PetscErrorCode KSPComputeExtremeSingularValues_CG(KSP ksp, PetscReal *emax, Pets
   always produces a real, symmetric tridiagonal matrix.
 */
 
-static PetscReal LINPACKcgpthy(PetscReal *, PetscReal *);
+static PetscReal LINPACKcgpthy(PetscReal *a, PetscReal *b) {
+  /* System generated locals */
+  PetscReal d__1, d__2, d__3;
+
+  /* Local variables */
+  PetscReal p, r, s, t, u;
+
+  /*     FINDS DSQRT(A**2+B**2) WITHOUT OVERFLOW OR DESTRUCTIVE UNDERFLOW */
+
+  /* Computing MAX */
+  d__1 = PetscAbsReal(*a);
+  d__2 = PetscAbsReal(*b);
+  p    = PetscMax(d__1, d__2);
+  if (!p) goto L20;
+  /* Computing MIN */
+  d__2 = PetscAbsReal(*a);
+  d__3 = PetscAbsReal(*b);
+  /* Computing 2nd power */
+  d__1 = PetscMin(d__2, d__3) / p;
+  r    = d__1 * d__1;
+L10:
+  t = r + 4.;
+  if (t == 4.) goto L20;
+  s    = r / t;
+  u    = s * 2. + 1.;
+  p    = u * p;
+  /* Computing 2nd power */
+  d__1 = s / u;
+  r    = d__1 * d__1 * r;
+  goto L10;
+L20:
+  return p;
+} /* cgpthy_ */
 
 static PetscErrorCode LINPACKcgtql1(PetscInt *n, PetscReal *d, PetscReal *e, PetscInt *ierr) {
   /* System generated locals */
@@ -246,38 +220,59 @@ L1001:
   PetscFunctionReturn(0);
 } /* cgtql1_ */
 
-static PetscReal LINPACKcgpthy(PetscReal *a, PetscReal *b) {
-  /* System generated locals */
-  PetscReal ret_val, d__1, d__2, d__3;
-
-  /* Local variables */
-  PetscReal p, r, s, t, u;
+PetscErrorCode KSPComputeEigenvalues_CG(KSP ksp, PetscInt nmax, PetscReal *r, PetscReal *c, PetscInt *neig) {
+  KSP_CG      *cgP = (KSP_CG *)ksp->data;
+  PetscScalar *d, *e;
+  PetscReal   *ee;
+  PetscInt     j, n = ksp->its;
 
   PetscFunctionBegin;
-  /*     FINDS DSQRT(A**2+B**2) WITHOUT OVERFLOW OR DESTRUCTIVE UNDERFLOW */
+  PetscCheck(nmax >= n, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_SIZ, "Not enough room in work space r and c for eigenvalues");
+  *neig = n;
 
-  /* Computing MAX */
-  d__1 = PetscAbsReal(*a);
-  d__2 = PetscAbsReal(*b);
-  p    = PetscMax(d__1, d__2);
-  if (!p) goto L20;
-  /* Computing MIN */
-  d__2 = PetscAbsReal(*a);
-  d__3 = PetscAbsReal(*b);
-  /* Computing 2nd power */
-  d__1 = PetscMin(d__2, d__3) / p;
-  r    = d__1 * d__1;
-L10:
-  t = r + 4.;
-  if (t == 4.) goto L20;
-  s    = r / t;
-  u    = s * 2. + 1.;
-  p    = u * p;
-  /* Computing 2nd power */
-  d__1 = s / u;
-  r    = d__1 * d__1 * r;
-  goto L10;
-L20:
-  ret_val = p;
-  PetscFunctionReturn(ret_val);
-} /* cgpthy_ */
+  PetscCall(PetscArrayzero(c, nmax));
+  if (!n) PetscFunctionReturn(0);
+  d  = cgP->d;
+  e  = cgP->e;
+  ee = cgP->ee;
+
+  /* copy tridiagonal matrix to work space */
+  for (j = 0; j < n; j++) {
+    r[j]  = PetscRealPart(d[j]);
+    ee[j] = PetscRealPart(e[j]);
+  }
+
+  LINPACKcgtql1(&n, r, ee, &j);
+  PetscCheck(j == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error from tql1(); eispack eigenvalue routine");
+  PetscCall(PetscSortReal(n, r));
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode KSPComputeExtremeSingularValues_CG(KSP ksp, PetscReal *emax, PetscReal *emin) {
+  KSP_CG      *cgP = (KSP_CG *)ksp->data;
+  PetscScalar *d, *e;
+  PetscReal   *dd, *ee;
+  PetscInt     j, n = ksp->its;
+
+  PetscFunctionBegin;
+  if (!n) {
+    *emax = *emin = 1.0;
+    PetscFunctionReturn(0);
+  }
+  d  = cgP->d;
+  e  = cgP->e;
+  dd = cgP->dd;
+  ee = cgP->ee;
+
+  /* copy tridiagonal matrix to work space */
+  for (j = 0; j < n; j++) {
+    dd[j] = PetscRealPart(d[j]);
+    ee[j] = PetscRealPart(e[j]);
+  }
+
+  LINPACKcgtql1(&n, dd, ee, &j);
+  PetscCheck(j == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error from tql1(); eispack eigenvalue routine");
+  *emin = dd[0];
+  *emax = dd[n - 1];
+  PetscFunctionReturn(0);
+}

@@ -512,7 +512,7 @@ PetscErrorCode DMCreateVector_Moab_Private(DM dm, moab::Tag tag, const moab::Ran
   PetscCall(PetscContainerDestroy(&moabdata));
 
   /* Vector created, manually set local to global mapping */
-  if (dmmoab->ltog_map) { PetscCall(VecSetLocalToGlobalMapping(*vec, dmmoab->ltog_map)); }
+  if (dmmoab->ltog_map) PetscCall(VecSetLocalToGlobalMapping(*vec, dmmoab->ltog_map));
 
   /* set the DM reference to the vector */
   PetscCall(VecSetDM(*vec, dm));

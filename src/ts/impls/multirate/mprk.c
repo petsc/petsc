@@ -643,27 +643,27 @@ static PetscErrorCode TSStep_MPRK(TS ts) {
 
     /* slow buffer region */
     for (j = 0; j < i; j++) wsb[j] = h * Asb[i * s + j];
-    for (j = 0; j < i; j++) { PetscCall(VecGetSubVector(YdotRHS[j], mprk->is_slowbuffer, &YdotRHS_slowbuffer[j])); }
+    for (j = 0; j < i; j++) PetscCall(VecGetSubVector(YdotRHS[j], mprk->is_slowbuffer, &YdotRHS_slowbuffer[j]));
     PetscCall(VecGetSubVector(Y[i], mprk->is_slowbuffer, &Yslowbuffer));
     PetscCall(VecMAXPY(Yslowbuffer, i, wsb, mprk->YdotRHS_slowbuffer));
     PetscCall(VecRestoreSubVector(Y[i], mprk->is_slowbuffer, &Yslowbuffer));
-    for (j = 0; j < i; j++) { PetscCall(VecRestoreSubVector(YdotRHS[j], mprk->is_slowbuffer, &YdotRHS_slowbuffer[j])); }
+    for (j = 0; j < i; j++) PetscCall(VecRestoreSubVector(YdotRHS[j], mprk->is_slowbuffer, &YdotRHS_slowbuffer[j]));
     /* slow region */
     if (mprk->is_slow) {
-      for (j = 0; j < i; j++) { PetscCall(VecGetSubVector(YdotRHS[j], mprk->is_slow, &YdotRHS_slow[j])); }
+      for (j = 0; j < i; j++) PetscCall(VecGetSubVector(YdotRHS[j], mprk->is_slow, &YdotRHS_slow[j]));
       PetscCall(VecGetSubVector(Y[i], mprk->is_slow, &Yslow));
       PetscCall(VecMAXPY(Yslow, i, wsb, mprk->YdotRHS_slow));
       PetscCall(VecRestoreSubVector(Y[i], mprk->is_slow, &Yslow));
-      for (j = 0; j < i; j++) { PetscCall(VecRestoreSubVector(YdotRHS[j], mprk->is_slow, &YdotRHS_slow[j])); }
+      for (j = 0; j < i; j++) PetscCall(VecRestoreSubVector(YdotRHS[j], mprk->is_slow, &YdotRHS_slow[j]));
     }
 
     /* fast region */
     for (j = 0; j < i; j++) wf[j] = h * Af[i * s + j];
-    for (j = 0; j < i; j++) { PetscCall(VecGetSubVector(YdotRHS[j], mprk->is_fast, &YdotRHS_fast[j])); }
+    for (j = 0; j < i; j++) PetscCall(VecGetSubVector(YdotRHS[j], mprk->is_fast, &YdotRHS_fast[j]));
     PetscCall(VecGetSubVector(Y[i], mprk->is_fast, &Yfast));
     PetscCall(VecMAXPY(Yfast, i, wf, mprk->YdotRHS_fast));
     PetscCall(VecRestoreSubVector(Y[i], mprk->is_fast, &Yfast));
-    for (j = 0; j < i; j++) { PetscCall(VecRestoreSubVector(YdotRHS[j], mprk->is_fast, &YdotRHS_fast[j])); }
+    for (j = 0; j < i; j++) PetscCall(VecRestoreSubVector(YdotRHS[j], mprk->is_fast, &YdotRHS_fast[j]));
     if (tab->np == 3) {
       Vec         *YdotRHS_medium = mprk->YdotRHS_medium, *YdotRHS_mediumbuffer = mprk->YdotRHS_mediumbuffer;
       Vec          Ymedium, Ymediumbuffer;
@@ -672,18 +672,18 @@ static PetscErrorCode TSStep_MPRK(TS ts) {
       for (j = 0; j < i; j++) wmb[j] = h * tab->Amb[i * s + j];
       /* medium region */
       if (mprk->is_medium) {
-        for (j = 0; j < i; j++) { PetscCall(VecGetSubVector(YdotRHS[j], mprk->is_medium, &YdotRHS_medium[j])); }
+        for (j = 0; j < i; j++) PetscCall(VecGetSubVector(YdotRHS[j], mprk->is_medium, &YdotRHS_medium[j]));
         PetscCall(VecGetSubVector(Y[i], mprk->is_medium, &Ymedium));
         PetscCall(VecMAXPY(Ymedium, i, wmb, mprk->YdotRHS_medium));
         PetscCall(VecRestoreSubVector(Y[i], mprk->is_medium, &Ymedium));
-        for (j = 0; j < i; j++) { PetscCall(VecRestoreSubVector(YdotRHS[j], mprk->is_medium, &YdotRHS_medium[j])); }
+        for (j = 0; j < i; j++) PetscCall(VecRestoreSubVector(YdotRHS[j], mprk->is_medium, &YdotRHS_medium[j]));
       }
       /* medium buffer region */
-      for (j = 0; j < i; j++) { PetscCall(VecGetSubVector(YdotRHS[j], mprk->is_mediumbuffer, &YdotRHS_mediumbuffer[j])); }
+      for (j = 0; j < i; j++) PetscCall(VecGetSubVector(YdotRHS[j], mprk->is_mediumbuffer, &YdotRHS_mediumbuffer[j]));
       PetscCall(VecGetSubVector(Y[i], mprk->is_mediumbuffer, &Ymediumbuffer));
       PetscCall(VecMAXPY(Ymediumbuffer, i, wmb, mprk->YdotRHS_mediumbuffer));
       PetscCall(VecRestoreSubVector(Y[i], mprk->is_mediumbuffer, &Ymediumbuffer));
-      for (j = 0; j < i; j++) { PetscCall(VecRestoreSubVector(YdotRHS[j], mprk->is_mediumbuffer, &YdotRHS_mediumbuffer[j])); }
+      for (j = 0; j < i; j++) PetscCall(VecRestoreSubVector(YdotRHS[j], mprk->is_mediumbuffer, &YdotRHS_mediumbuffer[j]));
     }
     PetscCall(TSPostStage(ts, mprk->stage_time, i, Y));
     /* compute the stage RHS by fast and slow tableau respectively */
@@ -870,7 +870,7 @@ static PetscErrorCode TSStep_MPRKSPLIT(TS ts) {
       /* must be computed after fast region and slow region are updated in Y */
       PetscCall(TSComputeRHSFunction(mprk->subts_mediumbuffer, t + h * cmb[i], Y[i], YdotRHS_mediumbuffer[i]));
     }
-    if (!(tab->np == 3 && mprk->is_medium)) { PetscCall(TSComputeRHSFunction(mprk->subts_slowbuffer, t + h * csb[i], Y[i], YdotRHS_slowbuffer[i])); }
+    if (!(tab->np == 3 && mprk->is_medium)) PetscCall(TSComputeRHSFunction(mprk->subts_slowbuffer, t + h * csb[i], Y[i], YdotRHS_slowbuffer[i]));
     PetscCall(TSComputeRHSFunction(mprk->subts_fast, t + h * cf[i], Y[i], YdotRHS_fast[i]));
   }
 
@@ -944,10 +944,10 @@ static PetscErrorCode TSMPRKTableauSetUp(TS ts) {
 
   PetscFunctionBegin;
   PetscCall(VecDuplicateVecs(ts->vec_sol, tab->s, &mprk->Y));
-  if (mprk->is_slow) { PetscCall(PetscMalloc1(tab->s, &mprk->work_slow)); }
+  if (mprk->is_slow) PetscCall(PetscMalloc1(tab->s, &mprk->work_slow));
   PetscCall(PetscMalloc1(tab->s, &mprk->work_slowbuffer));
   if (tab->np == 3) {
-    if (mprk->is_medium) { PetscCall(PetscMalloc1(tab->s, &mprk->work_medium)); }
+    if (mprk->is_medium) PetscCall(PetscMalloc1(tab->s, &mprk->work_medium));
     PetscCall(PetscMalloc1(tab->s, &mprk->work_mediumbuffer));
   }
   PetscCall(PetscMalloc1(tab->s, &mprk->work_fast));
@@ -976,10 +976,10 @@ static PetscErrorCode TSMPRKTableauSetUp(TS ts) {
     PetscCall(VecRestoreSubVector(ts->vec_sol, mprk->is_fast, &YdotRHS_fast));
   } else {
     PetscCall(VecDuplicateVecs(ts->vec_sol, tab->s, &mprk->YdotRHS));
-    if (mprk->is_slow) { PetscCall(PetscMalloc1(tab->s, &mprk->YdotRHS_slow)); }
+    if (mprk->is_slow) PetscCall(PetscMalloc1(tab->s, &mprk->YdotRHS_slow));
     PetscCall(PetscMalloc1(tab->s, &mprk->YdotRHS_slowbuffer));
     if (tab->np == 3) {
-      if (mprk->is_medium) { PetscCall(PetscMalloc1(tab->s, &mprk->YdotRHS_medium)); }
+      if (mprk->is_medium) PetscCall(PetscMalloc1(tab->s, &mprk->YdotRHS_medium));
       PetscCall(PetscMalloc1(tab->s, &mprk->YdotRHS_mediumbuffer));
     }
     PetscCall(PetscMalloc1(tab->s, &mprk->YdotRHS_fast));

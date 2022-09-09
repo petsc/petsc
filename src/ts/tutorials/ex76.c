@@ -540,7 +540,7 @@ static void f0_conduct_bd_pipe_v(PetscInt dim, PetscInt Nf, PetscInt NfAux, cons
   PetscInt  d, e;
 
   for (d = 0; d < dim; ++d) {
-    for (e = 0; e < dim; ++e) { f0[d] -= sigma[d * dim + e] * n[e]; }
+    for (e = 0; e < dim; ++e) f0[d] -= sigma[d * dim + e] * n[e];
   }
 }
 
@@ -649,7 +649,7 @@ static void f0_conduct_bd_pipe_wiggly_v(PetscInt dim, PetscInt Nf, PetscInt NfAu
   PetscInt        d, e;
 
   for (d = 0; d < dim; ++d) {
-    for (e = 0; e < dim; ++e) { f0[d] -= sigma[d * dim + e] * n[e]; }
+    for (e = 0; e < dim; ++e) f0[d] -= sigma[d * dim + e] * n[e];
   }
 }
 
@@ -682,13 +682,13 @@ static void f0_conduct_q(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscI
   f0[0] += -u_t[uOff[TEMP]] * S * p_th / PetscSqr(u[uOff[TEMP]]);
 
   // \frac{p^{th}}{T} \nabla \cdot \vb{u}
-  for (d = 0; d < dim; ++d) { f0[0] += p_th / u[uOff[TEMP]] * u_x[uOff_x[VEL] + d * dim + d]; }
+  for (d = 0; d < dim; ++d) f0[0] += p_th / u[uOff[TEMP]] * u_x[uOff_x[VEL] + d * dim + d];
 
   // - \frac{p^{th}}{T^2} \vb{u} \cdot \nabla T
-  for (d = 0; d < dim; ++d) { f0[0] -= p_th / (u[uOff[TEMP]] * u[uOff[TEMP]]) * u[uOff[VEL] + d] * u_x[uOff_x[TEMP] + d]; }
+  for (d = 0; d < dim; ++d) f0[0] -= p_th / (u[uOff[TEMP]] * u[uOff[TEMP]]) * u[uOff[VEL] + d] * u_x[uOff_x[TEMP] + d];
 
   // Add in any fixed source term
-  if (NfAux > 0) { f0[0] += a[aOff[MASS]]; }
+  if (NfAux > 0) f0[0] += a[aOff[MASS]];
 }
 
 /* \vb{u}_t + \vb{u} \cdot \nabla\vb{u} */
@@ -715,11 +715,11 @@ static void f0_conduct_v(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscI
   PetscInt        c, d;
 
   // \rho S \frac{\partial \vb{u}}{\partial t}
-  for (d = 0; d < dim; ++d) { f0[d] = rho * S * u_t[uOff[VEL] + d]; }
+  for (d = 0; d < dim; ++d) f0[d] = rho * S * u_t[uOff[VEL] + d];
 
   // \rho \vb{u} \cdot \nabla \vb{u}
   for (c = 0; c < Nc; ++c) {
-    for (d = 0; d < dim; ++d) { f0[c] += rho * u[uOff[VEL] + d] * u_x[uOff_x[VEL] + c * dim + d]; }
+    for (d = 0; d < dim; ++d) f0[c] += rho * u[uOff[VEL] + d] * u_x[uOff_x[VEL] + c * dim + d];
   }
 
   // rho \hat{z}/F^2
@@ -727,7 +727,7 @@ static void f0_conduct_v(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscI
 
   // Add in any fixed source term
   if (NfAux > 0) {
-    for (d = 0; d < dim; ++d) { f0[d] += a[aOff[MOMENTUM] + d]; }
+    for (d = 0; d < dim; ++d) f0[d] += a[aOff[MOMENTUM] + d];
   }
 }
 
@@ -738,7 +738,7 @@ static void f1_v(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[
   PetscInt        c, d;
 
   for (c = 0; c < Nc; ++c) {
-    for (d = 0; d < dim; ++d) { f1[c * dim + d] = nu * (u_x[c * dim + d] + u_x[d * dim + c]); }
+    for (d = 0; d < dim; ++d) f1[c * dim + d] = nu * (u_x[c * dim + d] + u_x[d * dim + c]);
     f1[c * dim + c] -= u[uOff[1]];
   }
 }
@@ -752,17 +752,17 @@ static void f1_conduct_v(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscI
   const PetscInt  Nc    = dim;
   PetscInt        c, d;
 
-  for (c = 0; c < Nc; ++c) { u_div += PetscRealPart(u_x[uOff_x[VEL] + c * dim + c]); }
+  for (c = 0; c < Nc; ++c) u_div += PetscRealPart(u_x[uOff_x[VEL] + c * dim + c]);
 
   for (c = 0; c < Nc; ++c) {
     // 2 \mu/Re 1/2 (\nabla \vb{u} + \nabla \vb{u}^T
-    for (d = 0; d < dim; ++d) { f1[c * dim + d] += coef * (u_x[uOff_x[VEL] + c * dim + d] + u_x[uOff_x[VEL] + d * dim + c]); }
+    for (d = 0; d < dim; ++d) f1[c * dim + d] += coef * (u_x[uOff_x[VEL] + c * dim + d] + u_x[uOff_x[VEL] + d * dim + c]);
     // -2/3 \mu/Re (\nabla \cdot \vb{u}) I
     f1[c * dim + c] -= 2.0 * coef / 3.0 * u_div;
   }
 
   // -p I
-  for (c = 0; c < Nc; ++c) { f1[c * dim + c] -= u[uOff[PRES]]; }
+  for (c = 0; c < Nc; ++c) f1[c * dim + c] -= u[uOff[PRES]];
 }
 
 /* T_t + \vb{u} \cdot \nabla T */
@@ -786,10 +786,10 @@ static void f0_conduct_w(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscI
   f0[0] = c_p * S * p_th / u[uOff[TEMP]] * u_t[uOff[TEMP]];
 
   // \frac{C_p p^{th}}{T} \vb{u} \cdot \nabla T
-  for (d = 0; d < dim; ++d) { f0[0] += c_p * p_th / u[uOff[TEMP]] * u[uOff[VEL] + d] * u_x[uOff_x[TEMP] + d]; }
+  for (d = 0; d < dim; ++d) f0[0] += c_p * p_th / u[uOff[TEMP]] * u[uOff[VEL] + d] * u_x[uOff_x[TEMP] + d];
 
   // Add in any fixed source term
-  if (NfAux > 0) { f0[0] += a[aOff[ENERGY]]; }
+  if (NfAux > 0) f0[0] += a[aOff[ENERGY]];
 }
 
 static void f1_w(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal X[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[]) {
@@ -806,7 +806,7 @@ static void f1_conduct_w(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscI
   PetscInt        d;
 
   // \frac{k}{Pe} \nabla T
-  for (d = 0; d < dim; ++d) { f1[d] = k / Pe * u_x[uOff_x[TEMP] + d]; }
+  for (d = 0; d < dim; ++d) f1[d] = k / Pe * u_x[uOff_x[TEMP] + d];
 }
 
 static void g1_qu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[]) {
@@ -821,7 +821,7 @@ static void g0_vu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff
   for (d = 0; d < dim; ++d) g0[d * dim + d] = u_tShift;
 
   for (c = 0; c < Nc; ++c) {
-    for (d = 0; d < dim; ++d) { g0[c * Nc + d] += u_x[c * Nc + d]; }
+    for (d = 0; d < dim; ++d) g0[c * Nc + d] += u_x[c * Nc + d];
   }
 }
 
@@ -833,7 +833,7 @@ static void g1_vu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff
   for (c = 0; c < NcI; ++c) {
     for (d = 0; d < NcJ; ++d) {
       for (e = 0; e < dim; ++e) {
-        if (c == d) { g1[(c * NcJ + d) * dim + e] += u[e]; }
+        if (c == d) g1[(c * NcJ + d) * dim + e] += u[e];
       }
     }
   }
@@ -844,7 +844,7 @@ static void g0_conduct_qu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const Petsc
   PetscInt        d;
 
   // - \phi_i \frac{p^{th}}{T^2} \frac{\partial T}{\partial x_c} \psi_{j, u_c}
-  for (d = 0; d < dim; ++d) { g0[d] = -p_th / PetscSqr(u[uOff[TEMP]]) * u_x[uOff_x[TEMP] + d]; }
+  for (d = 0; d < dim; ++d) g0[d] = -p_th / PetscSqr(u[uOff[TEMP]]) * u_x[uOff_x[TEMP] + d];
 }
 
 static void g1_conduct_qu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[]) {
@@ -852,7 +852,7 @@ static void g1_conduct_qu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const Petsc
   PetscInt        d;
 
   // \phi_i \frac{p^{th}}{T} \frac{\partial \psi_{u_c,j}}{\partial x_c}
-  for (d = 0; d < dim; ++d) { g1[d * dim + d] = p_th / u[uOff[TEMP]]; }
+  for (d = 0; d < dim; ++d) g1[d * dim + d] = p_th / u[uOff[TEMP]];
 }
 
 static void g0_conduct_qT(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[]) {
@@ -865,7 +865,7 @@ static void g0_conduct_qT(PetscInt dim, PetscInt Nf, PetscInt NfAux, const Petsc
   // \phi_i 2 \frac{S p^{th}}{T^3} T_t \psi_j
   g0[0] += 2.0 * S * p_th / PetscPowScalarInt(u[uOff[TEMP]], 3) * u_t[uOff[TEMP]];
   // \phi_i \frac{p^{th}}{T^2} \left( - \nabla \cdot \vb{u} \psi_j + \frac{2}{T} \vb{u} \cdot \nabla T \psi_j \right)
-  for (d = 0; d < dim; ++d) { g0[0] += p_th / PetscSqr(u[uOff[TEMP]]) * (-u_x[uOff_x[VEL] + d * dim + d] + 2.0 / u[uOff[TEMP]] * u[uOff[VEL] + d] * u_x[uOff_x[TEMP] + d]); }
+  for (d = 0; d < dim; ++d) g0[0] += p_th / PetscSqr(u[uOff[TEMP]]) * (-u_x[uOff_x[VEL] + d * dim + d] + 2.0 / u[uOff[TEMP]] * u[uOff[VEL] + d] * u_x[uOff_x[TEMP] + d]);
 }
 
 static void g1_conduct_qT(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[]) {
@@ -873,7 +873,7 @@ static void g1_conduct_qT(PetscInt dim, PetscInt Nf, PetscInt NfAux, const Petsc
   PetscInt        d;
 
   // - \phi_i \frac{p^{th}}{T^2} \vb{u} \cdot \nabla \psi_j
-  for (d = 0; d < dim; ++d) { g1[d] = -p_th / PetscSqr(u[uOff[TEMP]]) * u[uOff[VEL] + d]; }
+  for (d = 0; d < dim; ++d) g1[d] = -p_th / PetscSqr(u[uOff[TEMP]]) * u[uOff[VEL] + d];
 }
 
 static void g2_vp(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g2[]) {
@@ -903,11 +903,11 @@ static void g0_conduct_vT(PetscInt dim, PetscInt Nf, PetscInt NfAux, const Petsc
   PetscInt        c, d;
 
   // - \vb{\phi}_i \cdot \vb{u}_t \frac{p^{th} S}{T^2} \psi_j
-  for (d = 0; d < dim; ++d) { g0[d] -= p_th * S / PetscSqr(u[uOff[TEMP]]) * u_t[uOff[VEL] + d]; }
+  for (d = 0; d < dim; ++d) g0[d] -= p_th * S / PetscSqr(u[uOff[TEMP]]) * u_t[uOff[VEL] + d];
 
   // - \vb{\phi}_i \cdot \vb{u} \cdot \nabla \vb{u} \frac{p^{th}}{T^2} \psi_j
   for (c = 0; c < Nc; ++c) {
-    for (d = 0; d < dim; ++d) { g0[c] -= p_th / PetscSqr(u[uOff[TEMP]]) * u[uOff[VEL] + d] * u_x[uOff_x[VEL] + c * dim + d]; }
+    for (d = 0; d < dim; ++d) g0[c] -= p_th / PetscSqr(u[uOff[TEMP]]) * u[uOff[VEL] + d] * u_x[uOff_x[VEL] + c * dim + d];
   }
 
   // - \vb{\phi}_i \cdot \vu{z} \frac{p^{th}}{T^2 F^2} \psi_j
@@ -921,11 +921,11 @@ static void g0_conduct_vu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const Petsc
   PetscInt        c, d;
 
   // \vb{\phi}_i \cdot S \rho \psi_j
-  for (d = 0; d < dim; ++d) { g0[d * dim + d] = S * p_th / u[uOff[TEMP]] * u_tShift; }
+  for (d = 0; d < dim; ++d) g0[d * dim + d] = S * p_th / u[uOff[TEMP]] * u_tShift;
 
   // \phi^c_i \cdot \rho \frac{\partial u^c}{\partial x^d} \psi^d_j
   for (c = 0; c < Nc; ++c) {
-    for (d = 0; d < dim; ++d) { g0[c * Nc + d] += p_th / u[uOff[TEMP]] * u_x[uOff_x[VEL] + c * Nc + d]; }
+    for (d = 0; d < dim; ++d) g0[c * Nc + d] += p_th / u[uOff[TEMP]] * u_x[uOff_x[VEL] + c * Nc + d];
   }
 }
 
@@ -939,7 +939,7 @@ static void g1_conduct_vu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const Petsc
   for (c = 0; c < NcI; ++c) {
     for (d = 0; d < NcJ; ++d) {
       for (e = 0; e < dim; ++e) {
-        if (c == d) { g1[(c * NcJ + d) * dim + e] += p_th / u[uOff[TEMP]] * u[uOff[VEL] + e]; }
+        if (c == d) g1[(c * NcJ + d) * dim + e] += p_th / u[uOff[TEMP]] * u[uOff[VEL] + e];
       }
     }
   }
@@ -965,7 +965,7 @@ static void g3_conduct_vu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const Petsc
 
 static void g2_conduct_vp(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g2[]) {
   PetscInt d;
-  for (d = 0; d < dim; ++d) { g2[d * dim + d] = -1.0; }
+  for (d = 0; d < dim; ++d) g2[d * dim + d] = -1.0;
 }
 
 static void g0_wT(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[]) {
@@ -995,7 +995,7 @@ static void g0_conduct_wu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const Petsc
   PetscInt        d;
 
   // \phi_i \frac{C_p p^{th}}{T} \nabla T \cdot \psi_j
-  for (d = 0; d < dim; ++d) { g0[d] = c_p * p_th / u[uOff[TEMP]] * u_x[uOff_x[TEMP] + d]; }
+  for (d = 0; d < dim; ++d) g0[d] = c_p * p_th / u[uOff[TEMP]] * u_x[uOff_x[TEMP] + d];
 }
 
 static void g0_conduct_wT(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[]) {
@@ -1009,7 +1009,7 @@ static void g0_conduct_wT(PetscInt dim, PetscInt Nf, PetscInt NfAux, const Petsc
   // - \phi_i C_p S p^{th}/T^2 T_t \psi_j
   g0[0] -= c_p * S * p_th / PetscSqr(u[uOff[TEMP]]) * u_t[uOff[TEMP]];
   // - \phi_i C_p p^{th}/T^2 \vb{u} \cdot \nabla T \psi_j
-  for (d = 0; d < dim; ++d) { g0[0] -= c_p * p_th / PetscSqr(u[uOff[TEMP]]) * u[uOff[VEL] + d] * u_x[uOff_x[TEMP] + d]; }
+  for (d = 0; d < dim; ++d) g0[0] -= c_p * p_th / PetscSqr(u[uOff[TEMP]]) * u[uOff[VEL] + d] * u_x[uOff_x[TEMP] + d];
 }
 
 static void g1_conduct_wT(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[]) {
@@ -1018,7 +1018,7 @@ static void g1_conduct_wT(PetscInt dim, PetscInt Nf, PetscInt NfAux, const Petsc
   PetscInt        d;
 
   // \phi_i C_p p^{th}/T \vb{u} \cdot \nabla \psi_j
-  for (d = 0; d < dim; ++d) { g1[d] += c_p * p_th / u[uOff[TEMP]] * u[uOff[VEL] + d]; }
+  for (d = 0; d < dim; ++d) g1[d] += c_p * p_th / u[uOff[TEMP]] * u[uOff[VEL] + d];
 }
 
 static void g3_conduct_wT(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[]) {
@@ -1027,7 +1027,7 @@ static void g3_conduct_wT(PetscInt dim, PetscInt Nf, PetscInt NfAux, const Petsc
   PetscInt        d;
 
   // \nabla \phi_i \frac{k}{Pe} \nabla \phi_j
-  for (d = 0; d < dim; ++d) { g3[d * dim + d] = k / Pe; }
+  for (d = 0; d < dim; ++d) g3[d * dim + d] = k / Pe;
 }
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {

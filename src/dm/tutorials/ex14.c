@@ -121,7 +121,7 @@ int main(int argc, char **argv) {
     PetscCall(VecScatterView(patchscat, PETSC_VIEWER_STDOUT_WORLD));
 
     for (i = 0; i < size; i++) {
-      if (i == rank) { PetscCall(VecView(smallvec, PETSC_VIEWER_STDOUT_SELF)); }
+      if (i == rank) PetscCall(VecView(smallvec, PETSC_VIEWER_STDOUT_SELF));
       PetscCallMPI(MPI_Barrier(PETSC_COMM_WORLD));
     }
 

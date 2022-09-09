@@ -154,7 +154,7 @@ static PetscErrorCode MatLUFactorNumeric_KLU(Mat F, Mat A, const MatFactorInfo *
   /* numeric factorization of A' */
   /* ----------------------------*/
 
-  if (lu->flg == SAME_NONZERO_PATTERN && lu->Numeric) { klu_K_free_numeric(&lu->Numeric, &lu->Common); }
+  if (lu->flg == SAME_NONZERO_PATTERN && lu->Numeric) klu_K_free_numeric(&lu->Numeric, &lu->Common);
   lu->Numeric = klu_K_factor(ai, aj, (PetscReal *)av, lu->Symbolic, &lu->Common);
   PetscCheck(lu->Numeric, PETSC_COMM_SELF, PETSC_ERR_LIB, "KLU Numeric factorization failed");
 
@@ -213,7 +213,7 @@ static PetscErrorCode MatView_Info_KLU(Mat A, PetscViewer viewer) {
   /* BTF preordering */
   PetscCall(PetscViewerASCIIPrintf(viewer, "  BTF preordering enabled: %" PetscInt_FMT "\n", (PetscInt)(lu->Common.btf)));
   /* mat ordering */
-  if (!lu->PetscMatOrdering) { PetscCall(PetscViewerASCIIPrintf(viewer, "  Ordering: %s (not using the PETSc ordering)\n", KluOrderingTypes[(int)lu->Common.ordering])); }
+  if (!lu->PetscMatOrdering) PetscCall(PetscViewerASCIIPrintf(viewer, "  Ordering: %s (not using the PETSc ordering)\n", KluOrderingTypes[(int)lu->Common.ordering]));
   /* matrix row scaling */
   PetscCall(PetscViewerASCIIPrintf(viewer, "  Matrix row scaling: %s\n", scale[(int)lu->Common.scale]));
   PetscFunctionReturn(0);
@@ -227,7 +227,7 @@ static PetscErrorCode MatView_KLU(Mat A, PetscViewer viewer) {
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   if (iascii) {
     PetscCall(PetscViewerGetFormat(viewer, &format));
-    if (format == PETSC_VIEWER_ASCII_INFO) { PetscCall(MatView_Info_KLU(A, viewer)); }
+    if (format == PETSC_VIEWER_ASCII_INFO) PetscCall(MatView_Info_KLU(A, viewer));
   }
   PetscFunctionReturn(0);
 }
@@ -239,7 +239,7 @@ PetscErrorCode MatFactorGetSolverType_seqaij_klu(Mat A, MatSolverType *type) {
 }
 
 /*MC
-  MATSOLVERKLU = "klu" - A matrix type providing direct solvers (LU) for sequential matrices
+  MATSOLVERKLU = "klu" - A matrix type providing direct solvers, LU, for sequential matrices
   via the external package KLU.
 
   ./configure --download-suitesparse to install PETSc to use KLU

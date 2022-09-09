@@ -18,7 +18,7 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate_PTScotch(MatPartitioning);
 #endif
 
 /*@C
-  MatPartitioningRegisterAll - Registers all of the matrix Partitioning routines in PETSc.
+  MatPartitioningRegisterAll - Registers all of the matrix partitioning routines in PETSc.
 
   Not Collective
 
@@ -26,7 +26,7 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate_PTScotch(MatPartitioning);
 
   Adding new methods:
   To add a new method to the registry. Copy this routine and
-  modify it to incorporate a call to MatPartitioningRegister() for
+  modify it to incorporate a call to `MatPartitioningRegister()` for
   the new method, after the current list.
 
   Restricting the choices: To prevent all of the methods from being
@@ -35,7 +35,7 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate_PTScotch(MatPartitioning);
   do not wish to register.  Make sure that the replacement routine is
   linked before libpetscmat.a.
 
-.seealso: `MatPartitioningRegister()`, `MatPartitioningRegisterDestroy()`
+.seealso: `MatPartitioning`, `MatPartitioningType`, `MatPartitioningRegister()`, `MatPartitioningRegisterDestroy()`
 @*/
 PetscErrorCode MatPartitioningRegisterAll(void) {
   PetscFunctionBegin;

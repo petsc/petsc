@@ -228,7 +228,7 @@ PETSC_INTERN PetscErrorCode PetscInitFortran_Private(PetscBool readarguments,con
 /*
     petscinitialize - Version called from Fortran.
 
-    Notes:
+    Note:
       Since this is called from Fortran it does not return error codes
 
 */

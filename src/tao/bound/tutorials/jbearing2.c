@@ -138,9 +138,9 @@ int main(int argc, char **argv) {
   if (ksp) PetscCall(KSPSetType(ksp, KSPCG));
 
   PetscCall(PetscOptionsHasName(NULL, NULL, "-testmonitor", &flg));
-  if (flg) { PetscCall(TaoSetMonitor(tao, Monitor, &user, NULL)); }
+  if (flg) PetscCall(TaoSetMonitor(tao, Monitor, &user, NULL));
   PetscCall(PetscOptionsHasName(NULL, NULL, "-testconvergence", &flg));
-  if (flg) { PetscCall(TaoSetConvergenceTest(tao, ConvergenceTest, &user)); }
+  if (flg) PetscCall(TaoSetConvergenceTest(tao, ConvergenceTest, &user));
 
   /* Check for any tao command line options */
   PetscCall(TaoSetFromOptions(tao));
@@ -291,7 +291,7 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *fcn, Vec G, void 
         k++;
       }
       tt = 0;
-      for (kk = 0; kk < k; kk++) { tt += v[kk] * x[col[kk]]; }
+      for (kk = 0; kk < k; kk++) tt += v[kk] * x[col[kk]];
       row    = (j - ys) * xm + (i - xs);
       g[row] = tt;
     }
@@ -426,7 +426,7 @@ PetscErrorCode Monitor(Tao tao, void *ctx) {
 
   PetscFunctionBegin;
   PetscCall(TaoGetSolutionStatus(tao, &its, &f, &gnorm, &cnorm, &xdiff, &reason));
-  if (!(its % 5)) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "iteration=%" PetscInt_FMT "\tf=%g\n", its, (double)f)); }
+  if (!(its % 5)) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "iteration=%" PetscInt_FMT "\tf=%g\n", its, (double)f));
   PetscFunctionReturn(0);
 }
 
@@ -437,7 +437,7 @@ PetscErrorCode ConvergenceTest(Tao tao, void *ctx) {
 
   PetscFunctionBegin;
   PetscCall(TaoGetSolutionStatus(tao, &its, &f, &gnorm, &cnorm, &xdiff, &reason));
-  if (its == 100) { PetscCall(TaoSetConvergedReason(tao, TAO_DIVERGED_MAXITS)); }
+  if (its == 100) PetscCall(TaoSetConvergedReason(tao, TAO_DIVERGED_MAXITS));
   PetscFunctionReturn(0);
 }
 

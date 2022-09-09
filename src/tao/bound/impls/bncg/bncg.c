@@ -80,7 +80,7 @@ static PetscErrorCode TaoSolve_BNCG(Tao tao) {
   /* Project the initial point onto the feasible region */
   PetscCall(TaoBoundSolution(tao->solution, tao->XL, tao->XU, 0.0, &nDiff, tao->solution));
 
-  if (nDiff > 0 || !tao->recycle) { PetscCall(TaoComputeObjectiveAndGradient(tao, tao->solution, &cg->f, cg->unprojected_gradient)); }
+  if (nDiff > 0 || !tao->recycle) PetscCall(TaoComputeObjectiveAndGradient(tao, tao->solution, &cg->f, cg->unprojected_gradient));
   PetscCall(VecNorm(cg->unprojected_gradient, NORM_2, &gnorm));
   PetscCheck(!PetscIsInfOrNanReal(cg->f) && !PetscIsInfOrNanReal(gnorm), PetscObjectComm((PetscObject)tao), PETSC_ERR_USER, "User provided compute function generated Inf or NaN");
 
@@ -131,21 +131,21 @@ static PetscErrorCode TaoSetUp_BNCG(Tao tao) {
   TAO_BNCG *cg = (TAO_BNCG *)tao->data;
 
   PetscFunctionBegin;
-  if (!tao->gradient) { PetscCall(VecDuplicate(tao->solution, &tao->gradient)); }
-  if (!tao->stepdirection) { PetscCall(VecDuplicate(tao->solution, &tao->stepdirection)); }
-  if (!cg->W) { PetscCall(VecDuplicate(tao->solution, &cg->W)); }
-  if (!cg->work) { PetscCall(VecDuplicate(tao->solution, &cg->work)); }
-  if (!cg->sk) { PetscCall(VecDuplicate(tao->solution, &cg->sk)); }
-  if (!cg->yk) { PetscCall(VecDuplicate(tao->gradient, &cg->yk)); }
-  if (!cg->X_old) { PetscCall(VecDuplicate(tao->solution, &cg->X_old)); }
-  if (!cg->G_old) { PetscCall(VecDuplicate(tao->gradient, &cg->G_old)); }
+  if (!tao->gradient) PetscCall(VecDuplicate(tao->solution, &tao->gradient));
+  if (!tao->stepdirection) PetscCall(VecDuplicate(tao->solution, &tao->stepdirection));
+  if (!cg->W) PetscCall(VecDuplicate(tao->solution, &cg->W));
+  if (!cg->work) PetscCall(VecDuplicate(tao->solution, &cg->work));
+  if (!cg->sk) PetscCall(VecDuplicate(tao->solution, &cg->sk));
+  if (!cg->yk) PetscCall(VecDuplicate(tao->gradient, &cg->yk));
+  if (!cg->X_old) PetscCall(VecDuplicate(tao->solution, &cg->X_old));
+  if (!cg->G_old) PetscCall(VecDuplicate(tao->gradient, &cg->G_old));
   if (cg->diag_scaling) {
     PetscCall(VecDuplicate(tao->solution, &cg->d_work));
     PetscCall(VecDuplicate(tao->solution, &cg->y_work));
     PetscCall(VecDuplicate(tao->solution, &cg->g_work));
   }
-  if (!cg->unprojected_gradient) { PetscCall(VecDuplicate(tao->gradient, &cg->unprojected_gradient)); }
-  if (!cg->unprojected_gradient_old) { PetscCall(VecDuplicate(tao->gradient, &cg->unprojected_gradient_old)); }
+  if (!cg->unprojected_gradient) PetscCall(VecDuplicate(tao->gradient, &cg->unprojected_gradient));
+  if (!cg->unprojected_gradient_old) PetscCall(VecDuplicate(tao->gradient, &cg->unprojected_gradient_old));
   PetscCall(MatLMVMAllocate(cg->B, cg->sk, cg->yk));
   if (cg->pc) PetscCall(MatLMVMSetJ0(cg->B, cg->pc));
   PetscFunctionReturn(0);
@@ -176,7 +176,7 @@ static PetscErrorCode TaoDestroy_BNCG(Tao tao) {
   PetscCall(ISDestroy(&cg->inactive_old));
   PetscCall(ISDestroy(&cg->new_inactives));
   PetscCall(MatDestroy(&cg->B));
-  if (cg->pc) { PetscCall(MatDestroy(&cg->pc)); }
+  if (cg->pc) PetscCall(MatDestroy(&cg->pc));
   PetscCall(PetscFree(tao->data));
   PetscFunctionReturn(0);
 }
@@ -614,7 +614,7 @@ PETSC_INTERN PetscErrorCode TaoBNCGStepDirectionUpdate(Tao tao, PetscReal gnorm2
       PetscCall(VecWAXPY(cg->sk, -1.0, cg->X_old, tao->solution));
       snorm   = dnorm * step;
       cg->yts = step * dk_yk;
-      if (cg->use_dynamic_restart) { PetscCall(TaoBNCGCheckDynamicRestart(tao, step, gd, gd_old, &cg->dynamic_restart, fold)); }
+      if (cg->use_dynamic_restart) PetscCall(TaoBNCGCheckDynamicRestart(tao, step, gd, gd_old, &cg->dynamic_restart, fold));
       if (cg->dynamic_restart) {
         PetscCall(TaoBNCGResetUpdate(tao, gnorm2));
       } else {
@@ -704,7 +704,7 @@ PETSC_INTERN PetscErrorCode TaoBNCGStepDirectionUpdate(Tao tao, PetscReal gnorm2
       PetscCall(VecWAXPY(cg->sk, -1.0, cg->X_old, tao->solution));
       snorm   = step * dnorm;
       cg->yts = dk_yk * step;
-      if (cg->use_dynamic_restart) { PetscCall(TaoBNCGCheckDynamicRestart(tao, step, gd, gd_old, &cg->dynamic_restart, fold)); }
+      if (cg->use_dynamic_restart) PetscCall(TaoBNCGCheckDynamicRestart(tao, step, gd, gd_old, &cg->dynamic_restart, fold));
       if (cg->dynamic_restart) {
         PetscCall(TaoBNCGResetUpdate(tao, gnorm2));
       } else {
@@ -720,7 +720,7 @@ PETSC_INTERN PetscErrorCode TaoBNCGStepDirectionUpdate(Tao tao, PetscReal gnorm2
             if (gkp1_yk < 0 && cg->neg_xi) gamma = -1.0 * gd / dk_yk;
             /* This seems to be very effective when there's no tau_k scaling.
                This guarantees a large descent step every iteration, going through DK 2015 Lemma 3.1's proof but allowing for negative xi */
-            else { gamma = cg->xi * gd / dk_yk; }
+            else gamma = cg->xi * gd / dk_yk;
           }
           /* d <- -t*g + beta*t*d + t*tmp*yk */
           PetscCall(VecAXPBYPCZ(tao->stepdirection, -tau_k, gamma * tau_k, beta, tao->gradient, cg->yk));
@@ -744,7 +744,7 @@ PETSC_INTERN PetscErrorCode TaoBNCGStepDirectionUpdate(Tao tao, PetscReal gnorm2
           if (cg->neg_xi) {
             /* modified KD implementation */
             if (gkp1D_yk / dk_yk < 0) gamma = -1.0 * gd / dk_yk;
-            else { gamma = cg->xi * gd / dk_yk; }
+            else gamma = cg->xi * gd / dk_yk;
             if (beta < cg->zeta * tmp / (dnorm * dnorm)) {
               beta  = cg->zeta * tmp / (dnorm * dnorm);
               gamma = 0.0;
@@ -753,9 +753,7 @@ PETSC_INTERN PetscErrorCode TaoBNCGStepDirectionUpdate(Tao tao, PetscReal gnorm2
             if (beta < cg->zeta * tmp / (dnorm * dnorm)) {
               beta  = cg->zeta * tmp / (dnorm * dnorm);
               gamma = 0.0;
-            } else {
-              gamma = cg->xi * gd / dk_yk;
-            }
+            } else gamma = cg->xi * gd / dk_yk;
           }
           /* Do the update in two steps */
           PetscCall(VecAXPBY(tao->stepdirection, -1.0, beta, cg->g_work));
@@ -979,7 +977,7 @@ PETSC_INTERN PetscErrorCode TaoBNCGConductIteration(Tao tao, PetscReal gnorm) {
   if (cg->cg_type != CG_GradientDescent) {
     /* Figure out which previously active variables became inactive this iteration */
     PetscCall(ISDestroy(&cg->new_inactives));
-    if (cg->inactive_idx && cg->inactive_old) { PetscCall(ISDifference(cg->inactive_idx, cg->inactive_old, &cg->new_inactives)); }
+    if (cg->inactive_idx && cg->inactive_old) PetscCall(ISDifference(cg->inactive_idx, cg->inactive_old, &cg->new_inactives));
     /* Selectively reset the CG step those freshly inactive variables */
     if (cg->new_inactives) {
       PetscCall(VecGetSubVector(tao->stepdirection, cg->new_inactives, &cg->inactive_step));

@@ -33,12 +33,12 @@ static PetscErrorCode PCApply_Kaczmarz(PC pc, Vec x, Vec y) {
     r    = xarray[i - xs];
     anrm = 0.;
     for (j = 0; j < ncols; j++) {
-      if (cols[j] >= ys && cols[j] < ye) { r -= yarray[cols[j] - ys] * vals[j]; }
+      if (cols[j] >= ys && cols[j] < ye) r -= yarray[cols[j] - ys] * vals[j];
       anrm += PetscRealPart(PetscSqr(vals[j]));
     }
     if (anrm > 0.) {
       for (j = 0; j < ncols; j++) {
-        if (cols[j] >= ys && cols[j] < ye) { yarray[cols[j] - ys] += vals[j] * lambda * r / anrm; }
+        if (cols[j] >= ys && cols[j] < ye) yarray[cols[j] - ys] += vals[j] * lambda * r / anrm;
       }
     }
     PetscCall(MatRestoreRow(pc->pmat, i, &ncols, &cols, &vals));
@@ -49,12 +49,12 @@ static PetscErrorCode PCApply_Kaczmarz(PC pc, Vec x, Vec y) {
       r    = xarray[i - xs];
       anrm = 0.;
       for (j = 0; j < ncols; j++) {
-        if (cols[j] >= ys && cols[j] < ye) { r -= yarray[cols[j] - ys] * vals[j]; }
+        if (cols[j] >= ys && cols[j] < ye) r -= yarray[cols[j] - ys] * vals[j];
         anrm += PetscRealPart(PetscSqr(vals[j]));
       }
       if (anrm > 0.) {
         for (j = 0; j < ncols; j++) {
-          if (cols[j] >= ys && cols[j] < ye) { yarray[cols[j] - ys] += vals[j] * lambda * r / anrm; }
+          if (cols[j] >= ys && cols[j] < ye) yarray[cols[j] - ys] += vals[j] * lambda * r / anrm;
         }
       }
       PetscCall(MatRestoreRow(pc->pmat, i, &ncols, &cols, &vals));
@@ -82,7 +82,7 @@ PetscErrorCode PCView_Kaczmarz(PC pc, PetscViewer viewer) {
 
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) { PetscCall(PetscViewerASCIIPrintf(viewer, "  lambda = %g\n", (double)jac->lambda)); }
+  if (iascii) PetscCall(PetscViewerASCIIPrintf(viewer, "  lambda = %g\n", (double)jac->lambda));
   PetscFunctionReturn(0);
 }
 

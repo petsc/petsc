@@ -37,7 +37,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqAIJ(Mat A, MatType newtype, M
       }
     }
     rowlengths[k] *= bs;
-    for (j = 1; j < bs; j++) { rowlengths[k + j] = rowlengths[k]; }
+    for (j = 1; j < bs; j++) rowlengths[k + j] = rowlengths[k];
     k += bs;
   }
 
@@ -273,7 +273,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqBAIJ(Mat A, MatType newtype, 
       aj++;
 
       itmp = bs2 * browstart[i];
-      for (k = 0; k < bs2; k++) { bv[itmp + k] = av[k]; }
+      for (k = 0; k < bs2; k++) bv[itmp + k] = av[k];
       av += bs2;
       browstart[i]++;
     }
@@ -304,7 +304,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqSBAIJ(Mat A, MatType newtype, 
   PetscCheck(!flg, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Matrix is missing diagonal %" PetscInt_FMT, dd);
 
   PetscCall(PetscMalloc1(mbs, &browlengths));
-  for (i = 0; i < mbs; i++) { browlengths[i] = ai[i + 1] - a->diag[i]; }
+  for (i = 0; i < mbs; i++) browlengths[i] = ai[i + 1] - a->diag[i];
 
   if (reuse != MAT_REUSE_MATRIX) {
     PetscCall(MatCreate(PetscObjectComm((PetscObject)A), &B));

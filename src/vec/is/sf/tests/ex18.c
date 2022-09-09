@@ -86,13 +86,13 @@ PetscErrorCode CreateReferenceSF(AppCtx *ctx, PetscSF *refSF) {
 
   PetscFunctionBegin;
   ilocal = NULL;
-  if (ctx->sparseLeaves) { PetscCall(PetscCalloc1(nLeaves + 1, &ilocal)); }
+  if (ctx->sparseLeaves) PetscCall(PetscCalloc1(nLeaves + 1, &ilocal));
   PetscCall(PetscMalloc1(nLeaves, &iremote));
   PetscCall(PetscSFCreate(ctx->comm, &sf));
   for (i = 0, j = 0; i < ctx->nsfs; i++) {
     for (r = 0; r < ctx->size; r++) {
       for (k = 0; k < ctx->nLeavesPerRank; k++, j++) {
-        if (ctx->sparseLeaves) { ilocal[j + 1] = ilocal[j] + ctx->leaveStep; }
+        if (ctx->sparseLeaves) ilocal[j + 1] = ilocal[j] + ctx->leaveStep;
         iremote[j].rank  = r;
         iremote[j].index = k + i * ctx->nLeavesPerRank;
       }
@@ -111,7 +111,7 @@ PetscErrorCode CreateSFs(AppCtx *ctx, PetscSF *newSFs[], PetscInt *leafOffsets[]
   PetscInt  nroots  = ctx->shareRoots ? ctx->nLeavesPerRank * ctx->nsfs : ctx->nLeavesPerRank;
 
   PetscFunctionBegin;
-  if (ctx->sparseLeaves) { PetscCall(PetscCalloc1(ctx->nsfs + 1, &lOffsets)); }
+  if (ctx->sparseLeaves) PetscCall(PetscCalloc1(ctx->nsfs + 1, &lOffsets));
   PetscCall(PetscMalloc1(ctx->nsfs, &sfs));
   for (i = 0; i < ctx->nsfs; i++) {
     PetscInt     j, k;
@@ -119,11 +119,11 @@ PetscErrorCode CreateSFs(AppCtx *ctx, PetscSF *newSFs[], PetscInt *leafOffsets[]
     PetscInt    *ilocal = NULL;
     PetscSFNode *iremote;
 
-    if (ctx->sparseLeaves) { PetscCall(PetscCalloc1(nLeaves + 1, &ilocal)); }
+    if (ctx->sparseLeaves) PetscCall(PetscCalloc1(nLeaves + 1, &ilocal));
     PetscCall(PetscMalloc1(nLeaves, &iremote));
     for (r = 0, j = 0; r < ctx->size; r++) {
       for (k = 0; k < ctx->nLeavesPerRank; k++, j++) {
-        if (ctx->sparseLeaves) { ilocal[j + 1] = ilocal[j] + ctx->leaveStep; }
+        if (ctx->sparseLeaves) ilocal[j + 1] = ilocal[j] + ctx->leaveStep;
         iremote[j].rank  = r;
         iremote[j].index = ctx->shareRoots ? k + i * ctx->nLeavesPerRank : k;
       }
@@ -142,7 +142,7 @@ PetscErrorCode DestroySFs(AppCtx *ctx, PetscSF *sfs[]) {
   PetscInt i;
 
   PetscFunctionBegin;
-  for (i = 0; i < ctx->nsfs; i++) { PetscCall(PetscSFDestroy(&(*sfs)[i])); }
+  for (i = 0; i < ctx->nsfs; i++) PetscCall(PetscSFDestroy(&(*sfs)[i]));
   PetscCall(PetscFree(*sfs));
   PetscFunctionReturn(0);
 }

@@ -6,14 +6,14 @@
 /*@
    PetscDrawFlush - Flushes graphical output.
 
-   Collective on PetscDraw
+   Collective on draw
 
    Input Parameters:
 .  draw - the drawing context
 
    Level: beginner
 
-.seealso: `PetscDrawClear()`
+.seealso: `PetscDraw`, `PetscDrawClear()`
 @*/
 PetscErrorCode PetscDrawFlush(PetscDraw draw) {
   PetscFunctionBegin;

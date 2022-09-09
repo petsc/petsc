@@ -33,14 +33,14 @@ PetscErrorCode ex1_1(void) {
   {
     PetscReal *array;
     PetscCall(DMSwarmGetField(dms, "viscosity", NULL, NULL, (void **)&array));
-    for (p = 0; p < 5 + rank; p++) { array[p] = 11.1 + p * 0.1 + rank * 100.0; }
+    for (p = 0; p < 5 + rank; p++) array[p] = 11.1 + p * 0.1 + rank * 100.0;
     PetscCall(DMSwarmRestoreField(dms, "viscosity", NULL, NULL, (void **)&array));
   }
 
   {
     PetscReal *array;
     PetscCall(DMSwarmGetField(dms, "strain", NULL, NULL, (void **)&array));
-    for (p = 0; p < 5 + rank; p++) { array[p] = 2.0e-2 + p * 0.001 + rank * 1.0; }
+    for (p = 0; p < 5 + rank; p++) array[p] = 2.0e-2 + p * 0.001 + rank * 1.0;
     PetscCall(DMSwarmRestoreField(dms, "strain", NULL, NULL, (void **)&array));
   }
 
@@ -62,7 +62,7 @@ PetscErrorCode ex1_1(void) {
       rankval[0] = 1;
       rankval[3] = 1;
     }
-    if (rank == 3) { rankval[2] = 1; }
+    if (rank == 3) rankval[2] = 1;
     PetscCall(DMSwarmRestoreField(dms, "DMSwarm_rank", NULL, NULL, (void **)&rankval));
     PetscCall(DMSwarmMigrate(dms, PETSC_TRUE));
     PetscCall(DMSwarmGetLocalSize(dms, &npoints[0]));
@@ -109,13 +109,13 @@ PetscErrorCode ex1_2(void) {
   {
     PetscReal *array;
     PetscCall(DMSwarmGetField(dms, "viscosity", NULL, NULL, (void **)&array));
-    for (p = 0; p < 5 + rank; p++) { array[p] = 11.1 + p * 0.1 + rank * 100.0; }
+    for (p = 0; p < 5 + rank; p++) array[p] = 11.1 + p * 0.1 + rank * 100.0;
     PetscCall(DMSwarmRestoreField(dms, "viscosity", NULL, NULL, (void **)&array));
   }
   {
     PetscReal *array;
     PetscCall(DMSwarmGetField(dms, "strain", NULL, NULL, (void **)&array));
-    for (p = 0; p < 5 + rank; p++) { array[p] = 2.0e-2 + p * 0.001 + rank * 1.0; }
+    for (p = 0; p < 5 + rank; p++) array[p] = 2.0e-2 + p * 0.001 + rank * 1.0;
     PetscCall(DMSwarmRestoreField(dms, "strain", NULL, NULL, (void **)&array));
   }
   {
@@ -131,8 +131,8 @@ PetscErrorCode ex1_2(void) {
 
     PetscCall(DMSwarmGetField(dms, "DMSwarm_rank", NULL, NULL, (void **)&rankval));
 
-    if (rank == 1) { rankval[0] = -1; }
-    if (rank == 2) { rankval[1] = -1; }
+    if (rank == 1) rankval[0] = -1;
+    if (rank == 2) rankval[1] = -1;
     if (rank == 3) {
       rankval[3] = -1;
       rankval[4] = -1;
@@ -219,22 +219,22 @@ PetscErrorCode ex1_3(void) {
         xp                   = PetscRealPart(LA_coor[j][i].x);
         yp                   = PetscRealPart(LA_coor[j][i].y);
         array_x[4 * cnt + 0] = xp - 0.05;
-        if (array_x[4 * cnt + 0] < -1.0) { array_x[4 * cnt + 0] = -1.0 + 1.0e-12; }
+        if (array_x[4 * cnt + 0] < -1.0) array_x[4 * cnt + 0] = -1.0 + 1.0e-12;
         array_x[4 * cnt + 1] = xp + 0.05;
-        if (array_x[4 * cnt + 1] > 1.0) { array_x[4 * cnt + 1] = 1.0 - 1.0e-12; }
+        if (array_x[4 * cnt + 1] > 1.0) array_x[4 * cnt + 1] = 1.0 - 1.0e-12;
         array_x[4 * cnt + 2] = xp - 0.05;
-        if (array_x[4 * cnt + 2] < -1.0) { array_x[4 * cnt + 2] = -1.0 + 1.0e-12; }
+        if (array_x[4 * cnt + 2] < -1.0) array_x[4 * cnt + 2] = -1.0 + 1.0e-12;
         array_x[4 * cnt + 3] = xp + 0.05;
-        if (array_x[4 * cnt + 3] > 1.0) { array_x[4 * cnt + 3] = 1.0 - 1.0e-12; }
+        if (array_x[4 * cnt + 3] > 1.0) array_x[4 * cnt + 3] = 1.0 - 1.0e-12;
 
         array_y[4 * cnt + 0] = yp - 0.05;
-        if (array_y[4 * cnt + 0] < -1.0) { array_y[4 * cnt + 0] = -1.0 + 1.0e-12; }
+        if (array_y[4 * cnt + 0] < -1.0) array_y[4 * cnt + 0] = -1.0 + 1.0e-12;
         array_y[4 * cnt + 1] = yp - 0.05;
-        if (array_y[4 * cnt + 1] < -1.0) { array_y[4 * cnt + 1] = -1.0 + 1.0e-12; }
+        if (array_y[4 * cnt + 1] < -1.0) array_y[4 * cnt + 1] = -1.0 + 1.0e-12;
         array_y[4 * cnt + 2] = yp + 0.05;
-        if (array_y[4 * cnt + 2] > 1.0) { array_y[4 * cnt + 2] = 1.0 - 1.0e-12; }
+        if (array_y[4 * cnt + 2] > 1.0) array_y[4 * cnt + 2] = 1.0 - 1.0e-12;
         array_y[4 * cnt + 3] = yp + 0.05;
-        if (array_y[4 * cnt + 3] > 1.0) { array_y[4 * cnt + 3] = 1.0 - 1.0e-12; }
+        if (array_y[4 * cnt + 3] > 1.0) array_y[4 * cnt + 3] = 1.0 - 1.0e-12;
         cnt++;
       }
     }
@@ -272,7 +272,7 @@ PetscErrorCode ex1_3(void) {
     PetscCall(DMSwarmGetLocalSize(dms, &npoints));
     PetscCall(DMSwarmGetField(dms, "coorx", NULL, NULL, (void **)&array_x));
     PetscCall(DMSwarmGetField(dms, "coory", NULL, NULL, (void **)&array_y));
-    for (p = 0; p < npoints; p++) { fprintf(fp, "%+1.4e %+1.4e %1.4e\n", array_x[p], array_y[p], (double)rank); }
+    for (p = 0; p < npoints; p++) fprintf(fp, "%+1.4e %+1.4e %1.4e\n", array_x[p], array_y[p], (double)rank);
     PetscCall(DMSwarmRestoreField(dms, "coory", NULL, NULL, (void **)&array_y));
     PetscCall(DMSwarmRestoreField(dms, "coorx", NULL, NULL, (void **)&array_x));
     fclose(fp);
@@ -307,7 +307,7 @@ PetscErrorCode collect_zone(DM dm, void *ctx, PetscInt *nfound, PetscInt **found
 
     sep2 = (array_x[p] - zone->cx[0]) * (array_x[p] - zone->cx[0]);
     sep2 += (array_y[p] - zone->cx[1]) * (array_y[p] - zone->cx[1]);
-    if (sep2 < r2) { p2collect++; }
+    if (sep2 < r2) p2collect++;
   }
 
   PetscCall(PetscMalloc1(p2collect + 1, &plist));
@@ -383,12 +383,12 @@ PetscErrorCode ex1_4(void) {
 
         xp                   = PetscRealPart(LA_coor[j][i].x);
         yp                   = PetscRealPart(LA_coor[j][i].y);
-        array_x[4 * cnt + 0] = xp - dx * 0.1; /*if (array_x[4*cnt+0] < -1.0) { array_x[4*cnt+0] = -1.0+1.0e-12; }*/
+        array_x[4 * cnt + 0] = xp - dx * 0.1; /*if (array_x[4*cnt+0] < -1.0) array_x[4*cnt+0] = -1.0+1.0e-12;*/
         array_x[4 * cnt + 1] = xp + dx * 0.1; /*if (array_x[4*cnt+1] > 1.0)  { array_x[4*cnt+1] =  1.0-1.0e-12; }*/
-        array_x[4 * cnt + 2] = xp - dx * 0.1; /*if (array_x[4*cnt+2] < -1.0) { array_x[4*cnt+2] = -1.0+1.0e-12; }*/
+        array_x[4 * cnt + 2] = xp - dx * 0.1; /*if (array_x[4*cnt+2] < -1.0) array_x[4*cnt+2] = -1.0+1.0e-12;*/
         array_x[4 * cnt + 3] = xp + dx * 0.1; /*if (array_x[4*cnt+3] > 1.0)  { array_x[4*cnt+3] =  1.0-1.0e-12; }*/
-        array_y[4 * cnt + 0] = yp - dx * 0.1; /*if (array_y[4*cnt+0] < -1.0) { array_y[4*cnt+0] = -1.0+1.0e-12; }*/
-        array_y[4 * cnt + 1] = yp - dx * 0.1; /*if (array_y[4*cnt+1] < -1.0) { array_y[4*cnt+1] = -1.0+1.0e-12; }*/
+        array_y[4 * cnt + 0] = yp - dx * 0.1; /*if (array_y[4*cnt+0] < -1.0) array_y[4*cnt+0] = -1.0+1.0e-12;*/
+        array_y[4 * cnt + 1] = yp - dx * 0.1; /*if (array_y[4*cnt+1] < -1.0) array_y[4*cnt+1] = -1.0+1.0e-12;*/
         array_y[4 * cnt + 2] = yp + dx * 0.1; /*if (array_y[4*cnt+2] > 1.0)  { array_y[4*cnt+2] =  1.0-1.0e-12; }*/
         array_y[4 * cnt + 3] = yp + dx * 0.1; /*if (array_y[4*cnt+3] > 1.0)  { array_y[4*cnt+3] =  1.0-1.0e-12; }*/
         cnt++;
@@ -460,7 +460,7 @@ PetscErrorCode ex1_4(void) {
     PetscCall(DMSwarmGetLocalSize(dms, &npoints));
     PetscCall(DMSwarmGetField(dms, "coorx", NULL, NULL, (void **)&array_x));
     PetscCall(DMSwarmGetField(dms, "coory", NULL, NULL, (void **)&array_y));
-    for (p = 0; p < npoints; p++) { fprintf(fp, "%+1.4e %+1.4e %1.4e\n", array_x[p], array_y[p], (double)rank); }
+    for (p = 0; p < npoints; p++) fprintf(fp, "%+1.4e %+1.4e %1.4e\n", array_x[p], array_y[p], (double)rank);
     PetscCall(DMSwarmRestoreField(dms, "coory", NULL, NULL, (void **)&array_y));
     PetscCall(DMSwarmRestoreField(dms, "coorx", NULL, NULL, (void **)&array_x));
     fclose(fp);

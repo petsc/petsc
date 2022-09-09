@@ -115,7 +115,7 @@ int main(int argc, char *argv[]) {
   cmdp.setOption("print-residual", "no-print-residual", &printResidual, "Print solution residual");
   cmdp.setOption("print-lu-stats", "no-print-lu-stats", &printLUStats, "Print nnz in L and U factors");
   cmdp.setOption("solver", &solver_name, "Which TPL solver library to use.");
-  if (cmdp.parse(argc, argv) != Teuchos::CommandLineProcessor::PARSE_SUCCESSFUL) { std::cerr << "Options unknown to Trilinos in command line" << std::endl; }
+  if (cmdp.parse(argc, argv) != Teuchos::CommandLineProcessor::PARSE_SUCCESSFUL) std::cerr << "Options unknown to Trilinos in command line" << std::endl;
 
   // Before we do anything, check that the solver is enabled
   if (!Amesos2::query(solver_name)) {
@@ -186,7 +186,7 @@ int main(int argc, char *argv[]) {
     Teuchos::Array<Magnitude> xhatnorms(numVectors);
     Xhat->update(-1.0, *X, 1.0);
     Xhat->norm2(xhatnorms());
-    if (myRank == 0) { *fos << "Norm2 of Ax - b = " << xhatnorms << std::endl; }
+    if (myRank == 0) *fos << "Norm2 of Ax - b = " << xhatnorms << std::endl;
   }
 
   PetscFunctionBeginUser;

@@ -18,7 +18,7 @@ PETSC_INTERN PetscErrorCode MatConvert_Basic(Mat mat, MatType newtype, MatReuse 
     PetscFunctionReturn(0);
   }
   PetscCall(PetscObjectTypeCompare((PetscObject)mat, MATSEQSBAIJ, &isSBAIJ));
-  if (!isSBAIJ) { PetscCall(PetscObjectTypeCompare((PetscObject)mat, MATMPISBAIJ, &isSBAIJ)); }
+  if (!isSBAIJ) PetscCall(PetscObjectTypeCompare((PetscObject)mat, MATMPISBAIJ, &isSBAIJ));
   PetscCheck(!isSBAIJ, PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "Cannot convert from SBAIJ matrix since cannot obtain entire rows of matrix");
 
   if (reuse == MAT_REUSE_MATRIX) {
@@ -36,7 +36,7 @@ PETSC_INTERN PetscErrorCode MatConvert_Basic(Mat mat, MatType newtype, MatReuse 
     PetscCall(MatSetOption(M, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_FALSE));
     PetscCall(MatSetOption(M, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE));
     PetscCall(PetscObjectTypeCompare((PetscObject)M, MATSEQSBAIJ, &isSBAIJ));
-    if (!isSBAIJ) { PetscCall(PetscObjectTypeCompare((PetscObject)M, MATMPISBAIJ, &isSBAIJ)); }
+    if (!isSBAIJ) PetscCall(PetscObjectTypeCompare((PetscObject)M, MATMPISBAIJ, &isSBAIJ));
     if (isSBAIJ) PetscCall(MatSetOption(M, MAT_IGNORE_LOWER_TRIANGULAR, PETSC_TRUE));
   }
 

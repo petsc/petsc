@@ -213,7 +213,7 @@ static PetscErrorCode PCApply_PBJacobi_N(PC pc, Vec x, Vec y) {
   for (i = 0; i < m; i++) {
     for (ib = 0; ib < bs; ib++) {
       PetscScalar rowsum = 0;
-      for (jb = 0; jb < bs; jb++) { rowsum += diag[ib + jb * bs] * xx[bs * i + jb]; }
+      for (jb = 0; jb < bs; jb++) rowsum += diag[ib + jb * bs] * xx[bs * i + jb];
       yy[bs * i + ib] = rowsum;
     }
     diag += bs * bs;
@@ -237,7 +237,7 @@ static PetscErrorCode PCApplyTranspose_PBJacobi_N(PC pc, Vec x, Vec y) {
   for (i = 0; i < m; i++) {
     for (j = 0; j < bs; j++) yy[i * bs + j] = 0.;
     for (j = 0; j < bs; j++) {
-      for (k = 0; k < bs; k++) { yy[i * bs + k] += diag[k * bs + j] * xx[i * bs + j]; }
+      for (k = 0; k < bs; k++) yy[i * bs + k] += diag[k * bs + j] * xx[i * bs + j];
     }
     diag += bs * bs;
   }
@@ -291,7 +291,7 @@ static PetscErrorCode PCView_PBJacobi(PC pc, PetscViewer viewer) {
 
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) { PetscCall(PetscViewerASCIIPrintf(viewer, "  point-block size %" PetscInt_FMT "\n", jac->bs)); }
+  if (iascii) PetscCall(PetscViewerASCIIPrintf(viewer, "  point-block size %" PetscInt_FMT "\n", jac->bs));
   PetscFunctionReturn(0);
 }
 

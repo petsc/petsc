@@ -118,7 +118,7 @@ static PetscErrorCode MatMFFDView_DS(MatMFFD ctx, PetscViewer viewer) {
      make less sense
   */
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) { PetscCall(PetscViewerASCIIPrintf(viewer, "    umin=%g (minimum iterate parameter)\n", (double)hctx->umin)); }
+  if (iascii) PetscCall(PetscViewerASCIIPrintf(viewer, "    umin=%g (minimum iterate parameter)\n", (double)hctx->umin));
   PetscFunctionReturn(0);
 }
 
@@ -147,7 +147,7 @@ static PetscErrorCode MatMFFDSetFromOptions_DS(MatMFFD ctx, PetscOptionItems *Pe
    Input Parameter:
 .  ctx - the matrix free context
 
-   Notes:
+   Note:
    Does not free the ctx, that is handled by the calling routine
 */
 static PetscErrorCode MatMFFDDestroy_DS(MatMFFD ctx) {
@@ -175,20 +175,19 @@ PetscErrorCode MatMFFDDSSetUmin_DS(Mat mat, PetscReal umin) {
 /*@
     MatMFFDDSSetUmin - Sets the "umin" parameter used by the
     PETSc routine for computing the differencing parameter, h, which is used
-    for matrix-free Jacobian-vector products.
+    for matrix-free Jacobian-vector products for a `MATMFFD` matrix.
 
    Input Parameters:
-+  A - the matrix created with MatCreateSNESMF()
++  A - the `MATMFFD` matrix
 -  umin - the parameter
 
    Level: advanced
 
-   Notes:
-   See the manual page for MatCreateSNESMF() for a complete description of the
+   Note:
+   See the manual page for `MatCreateSNESMF()` for a complete description of the
    algorithm used to compute h.
 
-.seealso: `MatMFFDSetFunctionError()`, `MatCreateSNESMF()`
-
+.seealso: `MATMFFD`, `MatMFFDSetFunctionError()`, `MatCreateSNESMF()`
 @*/
 PetscErrorCode MatMFFDDSSetUmin(Mat A, PetscReal umin) {
   PetscFunctionBegin;
@@ -198,20 +197,17 @@ PetscErrorCode MatMFFDDSSetUmin(Mat A, PetscReal umin) {
 }
 
 /*MC
-     MATMFFD_DS - the code for compute the "h" used in the finite difference
-            matrix-free matrix vector product.  This code
-        implements the strategy in Dennis and Schnabel, "Numerical Methods for Unconstrained
-        Optimization and Nonlinear Equations".
+     MATMFFD_DS - algorithm for compute the "h" used in the finite difference matrix-free matrix vector product, `MatMult()`.
 
    Options Database Keys:
-.  -mat_mffd_umin <umin> - see MatMFFDDSSetUmin()
+.  -mat_mffd_umin <umin> - see `MatMFFDDSSetUmin()`
 
    Level: intermediate
 
    Notes:
     Requires 2 norms and 1 inner product, but they are computed together
-       so only one parallel collective operation is needed. See MATMFFD_WP for a method
-       (with GMRES) that requires NO collective operations.
+       so only one parallel collective operation is needed. See `MATMFFD_WP` for a method
+       (with `KSPGMRES`) that requires NO collective operations.
 
    Formula used:
      F'(u)*a = [F(u+h*a) - F(u)]/h where
@@ -221,8 +217,10 @@ PetscErrorCode MatMFFDDSSetUmin(Mat A, PetscReal umin) {
      error_rel = square root of relative error in function evaluation
      umin = minimum iterate parameter
 
-.seealso: `MATMFFD`, `MatCreateMFFD()`, `MatCreateSNESMF()`, `MATMFFD_WP`, `MatMFFDDSSetUmin()`
+  References:
+.  * -  Dennis and Schnabel, "Numerical Methods for Unconstrained Optimization and Nonlinear Equations"
 
+.seealso: `MATMFFD`, `MATMFFD_WP`, `MatCreateMFFD()`, `MatCreateSNESMF()`, `MATMFFD_WP`, `MatMFFDDSSetUmin()`
 M*/
 PETSC_EXTERN PetscErrorCode MatCreateMFFD_DS(MatMFFD ctx) {
   MatMFFD_DS *hctx;

@@ -64,7 +64,7 @@ int main(int argc, char **args) {
       PetscCall(VecSet(x, 1.0));
     } else if (function == TANH) {
       PetscCall(VecGetArray(x, &a));
-      for (i = 0; i < N; ++i) { a[i] = tanh((i - N / 2.0) * (10.0 / N)); }
+      for (i = 0; i < N; ++i) a[i] = tanh((i - N / 2.0) * (10.0 / N));
       PetscCall(VecRestoreArray(x, &a));
     }
     if (view) PetscCall(VecView(x, PETSC_VIEWER_DRAW_WORLD));
@@ -116,7 +116,7 @@ int main(int argc, char **args) {
     if (view) PetscCall(VecView(z2, PETSC_VIEWER_DRAW_WORLD));
     PetscCall(VecAXPY(z1, -1.0, z2));
     PetscCall(VecNorm(z1, NORM_1, &enorm));
-    if (enorm > 1.e-11) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Error norm of |z1 - z2| %g\n", (double)enorm)); }
+    if (enorm > 1.e-11) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Error norm of |z1 - z2| %g\n", (double)enorm));
 
     /* free spaces */
     PetscCall(VecDestroy(&x));

@@ -185,7 +185,7 @@ int main(int argc, char **args) {
   if (flg) {
     PetscCall(VecGetArray(x, &xa));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "The first three entries of x are:\n"));
-    for (i = 0; i < 3; i++) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "x[%" PetscInt_FMT "] = %g + %g i\n", i, (double)PetscRealPart(xa[i]), (double)PetscImaginaryPart(xa[i]))); }
+    for (i = 0; i < 3; i++) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "x[%" PetscInt_FMT "] = %g + %g i\n", i, (double)PetscRealPart(xa[i]), (double)PetscImaginaryPart(xa[i])));
     PetscCall(VecRestoreArray(x, &xa));
   }
 

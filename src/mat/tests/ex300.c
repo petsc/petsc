@@ -52,7 +52,7 @@ int main(int argc, char **args) {
 
   v = 2;
   /* Assembly on the diagonal: */
-  for (i = 0; i < m; i++) { PetscCall(MatSetValues(C, 1, &i, 1, &i, &v, ADD_VALUES)); }
+  for (i = 0; i < m; i++) PetscCall(MatSetValues(C, 1, &i, 1, &i, &v, ADD_VALUES));
   PetscCall(MatAssemblyBegin(C, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(C, MAT_FINAL_ASSEMBLY));
   PetscCall(MatSetOption(C, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE));

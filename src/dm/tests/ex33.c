@@ -68,7 +68,7 @@ int main(int argc, char **argv) {
   PetscCall(PetscRandomSetFromOptions(rdm));
   PetscCall(VecSetRandom(global1, rdm));
   if (isbinary) {
-    if (mpiio) { PetscCall(PetscOptionsSetValue(NULL, "-viewer_binary_mpiio", "")); }
+    if (mpiio) PetscCall(PetscOptionsSetValue(NULL, "-viewer_binary_mpiio", ""));
     PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, "temp", FILE_MODE_WRITE, &viewer));
 #if defined(PETSC_HAVE_HDF5)
   } else if (ishdf5) {

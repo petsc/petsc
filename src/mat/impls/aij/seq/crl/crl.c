@@ -146,7 +146,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJCRL(Mat A, MatType type, Mat
   PetscBool   sametype;
 
   PetscFunctionBegin;
-  if (reuse == MAT_INITIAL_MATRIX) { PetscCall(MatDuplicate(A, MAT_COPY_VALUES, &B)); }
+  if (reuse == MAT_INITIAL_MATRIX) PetscCall(MatDuplicate(A, MAT_COPY_VALUES, &B));
   PetscCall(PetscObjectTypeCompare((PetscObject)A, type, &sametype));
   if (sametype) PetscFunctionReturn(0);
 
@@ -167,20 +167,20 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJCRL(Mat A, MatType type, Mat
 }
 
 /*@C
-   MatCreateSeqAIJCRL - Creates a sparse matrix of type SEQAIJCRL.
-   This type inherits from AIJ, but stores some additional
+   MatCreateSeqAIJCRL - Creates a sparse matrix of type `MATSEQAIJCRL`.
+   This type inherits from `MATSEQAIJ`, but stores some additional
    information that is used to allow better vectorization of
-   the matrix-vector product. At the cost of increased storage, the AIJ formatted
+   the matrix-vector product. At the cost of increased storage, the `MATSEQAIJ` formatted
    matrix can be copied to a format in which pieces of the matrix are
    stored in ELLPACK format, allowing the vectorized matrix multiply
-   routine to use stride-1 memory accesses.  As with the AIJ type, it is
+   routine to use stride-1 memory accesses.  As with the `MATSEQAIJ` type, it is
    important to preallocate matrix storage in order to get good assembly
    performance.
 
    Collective
 
    Input Parameters:
-+  comm - MPI communicator, set to PETSC_COMM_SELF
++  comm - MPI communicator, set to `PETSC_COMM_SELF`
 .  m - number of rows
 .  n - number of columns
 .  nz - number of nonzeros per row (same for all rows)
@@ -190,7 +190,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJCRL(Mat A, MatType type, Mat
    Output Parameter:
 .  A - the matrix
 
-   Notes:
+   Note:
    If nnz is given then nz is ignored
 
    Level: intermediate

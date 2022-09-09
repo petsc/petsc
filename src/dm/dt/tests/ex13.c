@@ -28,7 +28,7 @@ static PetscErrorCode constructTabulationAndMass(PetscInt dim, PetscInt deg, Pet
         const PetscReal *p_i = &p_trimmed[(i * Nf + f) * Nk * npoints];
         const PetscReal *p_j = &p_trimmed[(j * Nf + f) * Nk * npoints];
 
-        for (PetscInt pt = 0; pt < npoints; pt++) { v += p_i[pt] * p_j[pt] * weights[pt]; }
+        for (PetscInt pt = 0; pt < npoints; pt++) v += p_i[pt] * p_j[pt] * weights[pt];
       }
       M_trimmed[i * Nbpt + j] += v;
     }
@@ -106,7 +106,7 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
         const PetscReal *p_i = &p_scalar[i * Nk * npoints];
         const PetscReal *p_j = &p_trimmed[(j * Nf + f) * Nk * npoints];
 
-        for (PetscInt pt = 0; pt < npoints; pt++) { v += p_i[pt] * p_j[pt] * weights[pt]; }
+        for (PetscInt pt = 0; pt < npoints; pt++) v += p_i[pt] * p_j[pt] * weights[pt];
         M_moments[(i * Nf + f) * Nbpt + j] += v;
       }
     }
@@ -175,16 +175,16 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
         const PetscReal *p_j;
 
         i = pattern[a][0];
-        if (form < 0) { i = Nf - 1 - i; }
+        if (form < 0) i = Nf - 1 - i;
         j = pattern[a][1];
-        if (form < 0) { j = Nf1 - 1 - j; }
+        if (form < 0) j = Nf1 - 1 - j;
         k    = pattern[a][2] < 0 ? -(pattern[a][2] + 1) : pattern[a][2];
         sign = pattern[a][2] < 0 ? -1 : 1;
-        if (form < 0 && (i & 1) ^ (j & 1)) { sign = -sign; }
+        if (form < 0 && (i & 1) ^ (j & 1)) sign = -sign;
 
         p_i = &p_koszul[(b * Nf + i) * npoints];
         p_j = &p_trimmed1[(b * Nf1 + j) * npoints];
-        for (PetscInt pt = 0; pt < npoints; pt++) { p_i[pt] += p_j[pt] * points[pt * dim + k] * sign; }
+        for (PetscInt pt = 0; pt < npoints; pt++) p_i[pt] += p_j[pt] * points[pt * dim + k] * sign;
       }
     }
 
@@ -198,7 +198,7 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
           const PetscReal *p_i = &p_koszul[(i * Nf + v) * npoints];
           const PetscReal *p_j = &p_koszul[(j * Nf + v) * npoints];
 
-          for (PetscInt pt = 0; pt < npoints; pt++) { val += p_i[pt] * p_j[pt] * weights[pt]; }
+          for (PetscInt pt = 0; pt < npoints; pt++) val += p_i[pt] * p_j[pt] * weights[pt];
         }
         M_koszul[i * Nbpt1 + j] = val;
       }
@@ -214,7 +214,7 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
           const PetscReal *p_i = &p_koszul[(i * Nf + v) * npoints];
           const PetscReal *p_j = &p_trimmed[(j * Nf + v) * Nk * npoints];
 
-          for (PetscInt pt = 0; pt < npoints; pt++) { val += p_i[pt] * p_j[pt] * weights[pt]; }
+          for (PetscInt pt = 0; pt < npoints; pt++) val += p_i[pt] * p_j[pt] * weights[pt];
         }
         M_k_moment[i * Nbpt + j] = val;
       }
@@ -250,7 +250,7 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
   // p_trimmed, which is [Nbpt][Nf][Nk][npoints]
   PetscCall(PetscCalloc1(Nbpt * Nf * Nk * npoints, &p_trimmed_copy));
   PetscCall(PetscMalloc1(Nbp * Nf * Nbpt, &M_moment_real));
-  for (PetscInt i = 0; i < Nbp * Nf * Nbpt; i++) { M_moment_real[i] = PetscRealPart(M_moments[i]); }
+  for (PetscInt i = 0; i < Nbp * Nf * Nbpt; i++) M_moment_real[i] = PetscRealPart(M_moments[i]);
   for (PetscInt f = 0; f < Nf; f++) {
     PetscBLASInt m     = Nk * npoints;
     PetscBLASInt n     = Nbpt;
@@ -264,7 +264,7 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
     PetscCallBLAS("BLASREALgemm", BLASREALgemm_("N", "T", &m, &n, &k, &alpha, p_scalar, &lda, &M_moment_real[f * Nbpt], &ldb, &beta, &p_trimmed_copy[f * Nk * npoints], &ldc));
   }
   frob_err = 0.;
-  for (PetscInt i = 0; i < Nbpt * Nf * Nk * npoints; i++) { frob_err += (p_trimmed_copy[i] - p_trimmed[i]) * (p_trimmed_copy[i] - p_trimmed[i]); }
+  for (PetscInt i = 0; i < Nbpt * Nf * Nk * npoints; i++) frob_err += (p_trimmed_copy[i] - p_trimmed[i]) * (p_trimmed_copy[i] - p_trimmed[i]);
   frob_err = PetscSqrtReal(frob_err);
 
   PetscCheck(frob_err < 10 * PETSC_SMALL, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "dimension %" PetscInt_FMT ", degree %" PetscInt_FMT ", form %" PetscInt_FMT ": jet error %g", dim, deg, form, (double)frob_err);
@@ -297,7 +297,7 @@ int main(int argc, char **argv) {
   PetscOptionsEnd();
   for (PetscInt dim = 2; dim <= max_dim; dim++) {
     for (PetscInt deg = 1; deg <= max_deg; deg++) {
-      for (PetscInt form = -dim + 1; form <= dim; form++) { PetscCall(test(dim, deg, form, PetscMax(1, k), cond)); }
+      for (PetscInt form = -dim + 1; form <= dim; form++) PetscCall(test(dim, deg, form, PetscMax(1, k), cond));
     }
   }
   PetscCall(PetscFinalize());

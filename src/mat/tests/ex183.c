@@ -58,7 +58,7 @@ int main(int argc, char **args) {
   PetscCall(MatGetOwnershipRange(A, &rstart, &rend));
   for (j = 0; j < N; ++j) cols[j] = j;
   for (i = rstart; i < rend; i++) {
-    for (j = 0; j < N; ++j) { vals[j] = i * 10000 + j; }
+    for (j = 0; j < N; ++j) vals[j] = i * 10000 + j;
     PetscCall(MatSetValues(A, 1, &i, N, cols, vals, INSERT_VALUES));
   }
   PetscCall(PetscFree2(cols, vals));
@@ -102,7 +102,7 @@ int main(int argc, char **args) {
     number to be viewed.
   */
   PetscCall(PetscViewerASCIIPrintf(viewer, "Subdomains"));
-  if (permute_indices) { PetscCall(PetscViewerASCIIPrintf(viewer, " (hash=%" PetscInt_FMT ")", hash)); }
+  if (permute_indices) PetscCall(PetscViewerASCIIPrintf(viewer, " (hash=%" PetscInt_FMT ")", hash));
   PetscCall(PetscViewerASCIIPrintf(viewer, ":\n"));
   PetscCall(PetscViewerFlush(viewer));
 
@@ -185,7 +185,7 @@ int main(int argc, char **args) {
   }
   PetscCall(PetscViewerFlush(viewer));
 cleanup:
-  for (k = 0; k < nsubdomains; ++k) { PetscCall(MatDestroy(submats + k)); }
+  for (k = 0; k < nsubdomains; ++k) PetscCall(MatDestroy(submats + k));
   PetscCall(PetscFree(submats));
   for (k = 0; k < nis; ++k) {
     PetscCall(ISDestroy(rowis + k));

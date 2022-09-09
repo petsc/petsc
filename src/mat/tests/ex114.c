@@ -149,7 +149,7 @@ int main(int argc, char **args) {
   PetscCall(VecWAXPY(e, 1.0, max, min)); /* e = max + min */
   PetscCall(VecNorm(e, NORM_INFINITY, &enorm));
   PetscCheck(enorm <= PETSC_MACHINE_EPSILON, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "max+min > PETSC_MACHINE_EPSILON ");
-  for (j = 0; j < n; j++) { PetscCheck(imin[j] == imax[j], PETSC_COMM_SELF, PETSC_ERR_PLIB, "imin[%" PetscInt_FMT "] %" PetscInt_FMT " != imax %" PetscInt_FMT, j, imin[j], imax[j]); }
+  for (j = 0; j < n; j++) PetscCheck(imin[j] == imax[j], PETSC_COMM_SELF, PETSC_ERR_PLIB, "imin[%" PetscInt_FMT "] %" PetscInt_FMT " != imax %" PetscInt_FMT, j, imin[j], imax[j]);
 
   /* MatGetRowMaxAbs() */
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n MatGetRowMaxAbs\n"));
@@ -188,7 +188,7 @@ int main(int argc, char **args) {
     PetscCall(VecWAXPY(e, 1.0, max, min)); /* e = max + min */
     PetscCall(VecNorm(e, NORM_INFINITY, &enorm));
     PetscCheck(enorm <= PETSC_MACHINE_EPSILON, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "max+min > PETSC_MACHINE_EPSILON ");
-    for (j = 0; j < n; j++) { PetscCheck(imin[j] == imax[j], PETSC_COMM_SELF, PETSC_ERR_PLIB, "imin[%" PetscInt_FMT "] %" PetscInt_FMT " != imax %" PetscInt_FMT " for seqdense matrix", j, imin[j], imax[j]); }
+    for (j = 0; j < n; j++) PetscCheck(imin[j] == imax[j], PETSC_COMM_SELF, PETSC_ERR_PLIB, "imin[%" PetscInt_FMT "] %" PetscInt_FMT " != imax %" PetscInt_FMT " for seqdense matrix", j, imin[j], imax[j]);
 
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "MatGetRowMaxAbs for seqdense matrix\n"));
     PetscCall(MatGetRowMaxAbs(Adense, maxabs_d, imaxabs));
@@ -221,7 +221,7 @@ int main(int argc, char **args) {
     PetscCall(VecNorm(e, NORM_INFINITY, &enorm));
     PetscCheck(enorm <= PETSC_MACHINE_EPSILON, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "norm(-maxabs + maxabs_d) %g > PETSC_MACHINE_EPSILON", (double)enorm);
 
-    for (j = 0; j < n; j++) { PetscCheck(imaxabs[j] == imaxabsB[j], PETSC_COMM_SELF, PETSC_ERR_PLIB, "imaxabs[%" PetscInt_FMT "] %" PetscInt_FMT " != imaxabsB %" PetscInt_FMT, j, imin[j], imax[j]); }
+    for (j = 0; j < n; j++) PetscCheck(imaxabs[j] == imaxabsB[j], PETSC_COMM_SELF, PETSC_ERR_PLIB, "imaxabs[%" PetscInt_FMT "] %" PetscInt_FMT " != imaxabsB %" PetscInt_FMT, j, imin[j], imax[j]);
     PetscCall(MatDestroy(&B));
 
     /* Test bs = 2: Create B with bs*bs block structure of A */
@@ -256,11 +256,11 @@ int main(int argc, char **args) {
     /* Check maxabsB2 and imaxabsB2 */
     PetscCall(VecGetArrayRead(maxabsB, &vals));
     PetscCall(VecGetArrayRead(maxabsB2, &vals2));
-    for (row = 0; row < m; row++) { PetscCheck(PetscAbsScalar(vals[row] - vals2[bs * row]) <= PETSC_MACHINE_EPSILON, PETSC_COMM_SELF, PETSC_ERR_PLIB, "row %" PetscInt_FMT " maxabsB != maxabsB2", row); }
+    for (row = 0; row < m; row++) PetscCheck(PetscAbsScalar(vals[row] - vals2[bs * row]) <= PETSC_MACHINE_EPSILON, PETSC_COMM_SELF, PETSC_ERR_PLIB, "row %" PetscInt_FMT " maxabsB != maxabsB2", row);
     PetscCall(VecRestoreArrayRead(maxabsB, &vals));
     PetscCall(VecRestoreArrayRead(maxabsB2, &vals2));
 
-    for (col = 0; col < n; col++) { PetscCheck(imaxabsB[col] == imaxabsB2[bs * col] / bs, PETSC_COMM_SELF, PETSC_ERR_PLIB, "col %" PetscInt_FMT " imaxabsB != imaxabsB2", col); }
+    for (col = 0; col < n; col++) PetscCheck(imaxabsB[col] == imaxabsB2[bs * col] / bs, PETSC_COMM_SELF, PETSC_ERR_PLIB, "col %" PetscInt_FMT " imaxabsB != imaxabsB2", col);
     PetscCall(VecDestroy(&maxabsB));
     PetscCall(MatDestroy(&B));
     PetscCall(VecDestroy(&maxabsB2));

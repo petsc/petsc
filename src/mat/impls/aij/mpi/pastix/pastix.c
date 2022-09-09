@@ -289,10 +289,10 @@ PetscErrorCode MatFactorNumeric_PaStiX(Mat F, Mat A, const MatFactorInfo *info) 
     icntl                    = -1;
     lu->iparm[IPARM_VERBOSE] = API_VERBOSE_NOT;
     PetscCall(PetscOptionsInt("-mat_pastix_verbose", "iparm[IPARM_VERBOSE] : level of printing (0 to 2)", "None", lu->iparm[IPARM_VERBOSE], &icntl, &flg));
-    if ((flg && icntl >= 0) || PetscLogPrintInfo) { lu->iparm[IPARM_VERBOSE] = icntl; }
+    if ((flg && icntl >= 0) || PetscLogPrintInfo) lu->iparm[IPARM_VERBOSE] = icntl;
     icntl = -1;
     PetscCall(PetscOptionsInt("-mat_pastix_threadnbr", "iparm[IPARM_THREAD_NBR] : Number of thread by MPI node", "None", lu->iparm[IPARM_THREAD_NBR], &icntl, &flg));
-    if ((flg && icntl > 0)) { lu->iparm[IPARM_THREAD_NBR] = icntl; }
+    if ((flg && icntl > 0)) lu->iparm[IPARM_THREAD_NBR] = icntl;
     PetscOptionsEnd();
     valOnly = PETSC_FALSE;
   } else {
@@ -422,8 +422,7 @@ PetscErrorCode MatView_PaStiX(Mat A, PetscViewer viewer) {
 
   Level: beginner
 
-.seealso: `PCFactorSetMatSolverType()`, `MatSolverType`
-
+.seealso: `PCFactorSetMatSolverType()`, `MatSolverType`, `MatGetFactor()`
 M*/
 
 PetscErrorCode MatGetInfo_PaStiX(Mat A, MatInfoType flag, MatInfo *info) {

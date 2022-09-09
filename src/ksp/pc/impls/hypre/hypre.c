@@ -214,7 +214,7 @@ static PetscErrorCode PCHYPREResetNearNullSpace_Private(PC pc) {
   PetscInt  i;
 
   PetscFunctionBegin;
-  for (i = 0; i < jac->n_hmnull; i++) { PetscCall(VecHYPRE_IJVectorDestroy(&jac->hmnull[i])); }
+  for (i = 0; i < jac->n_hmnull; i++) PetscCall(VecHYPRE_IJVectorDestroy(&jac->hmnull[i]));
   PetscCall(PetscFree(jac->hmnull));
   PetscCall(PetscFree(jac->phmnull));
   PetscCall(VecDestroy(&jac->hmnull_constant));
@@ -230,7 +230,7 @@ static PetscErrorCode PCSetUp_HYPRE(PC pc) {
   PetscBool          ishypre;
 
   PetscFunctionBegin;
-  if (!jac->hypre_type) { PetscCall(PCHYPRESetType(pc, "boomeramg")); }
+  if (!jac->hypre_type) PetscCall(PCHYPRESetType(pc, "boomeramg"));
 
   PetscCall(PetscObjectTypeCompare((PetscObject)pc->pmat, MATHYPRE, &ishypre));
   if (!ishypre) {
@@ -288,12 +288,12 @@ static PetscErrorCode PCSetUp_HYPRE(PC pc) {
     if (!jac->coords[0] && !jac->constants[0] && !(jac->ND_PiFull || (jac->ND_Pi[0] && jac->ND_Pi[1]))) {
       SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_USER, "HYPRE AMS preconditioner needs either the coordinate vectors via PCSetCoordinates() or the edge constant vectors via PCHYPRESetEdgeConstantVectors() or the interpolation matrix via PCHYPRESetInterpolations");
     }
-    if (jac->dim) { PetscCallExternal(HYPRE_AMSSetDimension, jac->hsolver, jac->dim); }
+    if (jac->dim) PetscCallExternal(HYPRE_AMSSetDimension, jac->hsolver, jac->dim);
     if (jac->constants[0]) {
       HYPRE_ParVector ozz, zoz, zzo = NULL;
       PetscCallExternal(HYPRE_IJVectorGetObject, jac->constants[0]->ij, (void **)(&ozz));
       PetscCallExternal(HYPRE_IJVectorGetObject, jac->constants[1]->ij, (void **)(&zoz));
-      if (jac->constants[2]) { PetscCallExternal(HYPRE_IJVectorGetObject, jac->constants[2]->ij, (void **)(&zzo)); }
+      if (jac->constants[2]) PetscCallExternal(HYPRE_IJVectorGetObject, jac->constants[2]->ij, (void **)(&zzo));
       PetscCallExternal(HYPRE_AMSSetEdgeConstantVectors, jac->hsolver, ozz, zoz, zzo);
     }
     if (jac->coords[0]) {
@@ -441,7 +441,7 @@ static PetscErrorCode PCApply_HYPRE(PC pc, Vec b, Vec x) {
       }
     } while (0));
 
-  if (jac->setup == HYPRE_AMSSetup && jac->ams_beta_is_zero_part) { PetscCallExternal(HYPRE_AMSProjectOutGradients, jac->hsolver, jxv); }
+  if (jac->setup == HYPRE_AMSSetup && jac->ams_beta_is_zero_part) PetscCallExternal(HYPRE_AMSProjectOutGradients, jac->hsolver, jxv);
   PetscCall(VecHYPRE_IJVectorPopVec(hjac->x));
   PetscCall(VecHYPRE_IJVectorPopVec(hjac->b));
   PetscFunctionReturn(0);
@@ -710,9 +710,9 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc, PetscOptionItems *
     PetscCallExternal(HYPRE_BoomerAMGSetTol, jac->hsolver, jac->tol);
   }
   bs = 1;
-  if (pc->pmat) { PetscCall(MatGetBlockSize(pc->pmat, &bs)); }
+  if (pc->pmat) PetscCall(MatGetBlockSize(pc->pmat, &bs));
   PetscCall(PetscOptionsInt("-pc_hypre_boomeramg_numfunctions", "Number of functions", "HYPRE_BoomerAMGSetNumFunctions", bs, &bs, &flg));
-  if (flg) { PetscCallExternal(HYPRE_BoomerAMGSetNumFunctions, jac->hsolver, bs); }
+  if (flg) PetscCallExternal(HYPRE_BoomerAMGSetNumFunctions, jac->hsolver, bs);
 
   PetscCall(PetscOptionsReal("-pc_hypre_boomeramg_truncfactor", "Truncation factor for interpolation (0=no truncation)", "None", jac->truncfactor, &jac->truncfactor, &flg));
   if (flg) {
@@ -758,17 +758,17 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc, PetscOptionItems *
     jac->gridsweeps[2] = 1;
   }
   PetscCall(PetscOptionsInt("-pc_hypre_boomeramg_nodal_coarsen", "Use a nodal based coarsening 1-6", "HYPRE_BoomerAMGSetNodal", jac->nodal_coarsening, &jac->nodal_coarsening, &flg));
-  if (flg) { PetscCallExternal(HYPRE_BoomerAMGSetNodal, jac->hsolver, jac->nodal_coarsening); }
+  if (flg) PetscCallExternal(HYPRE_BoomerAMGSetNodal, jac->hsolver, jac->nodal_coarsening);
   PetscCall(PetscOptionsInt("-pc_hypre_boomeramg_nodal_coarsen_diag", "Diagonal in strength matrix for nodal based coarsening 0-2", "HYPRE_BoomerAMGSetNodalDiag", jac->nodal_coarsening_diag, &jac->nodal_coarsening_diag, &flg));
-  if (flg) { PetscCallExternal(HYPRE_BoomerAMGSetNodalDiag, jac->hsolver, jac->nodal_coarsening_diag); }
+  if (flg) PetscCallExternal(HYPRE_BoomerAMGSetNodalDiag, jac->hsolver, jac->nodal_coarsening_diag);
   PetscCall(PetscOptionsInt("-pc_hypre_boomeramg_vec_interp_variant", "Variant of algorithm 1-3", "HYPRE_BoomerAMGSetInterpVecVariant", jac->vec_interp_variant, &jac->vec_interp_variant, &flg));
-  if (flg) { PetscCallExternal(HYPRE_BoomerAMGSetInterpVecVariant, jac->hsolver, jac->vec_interp_variant); }
+  if (flg) PetscCallExternal(HYPRE_BoomerAMGSetInterpVecVariant, jac->hsolver, jac->vec_interp_variant);
   PetscCall(PetscOptionsInt("-pc_hypre_boomeramg_vec_interp_qmax", "Max elements per row for each Q", "HYPRE_BoomerAMGSetInterpVecQMax", jac->vec_interp_qmax, &jac->vec_interp_qmax, &flg));
-  if (flg) { PetscCallExternal(HYPRE_BoomerAMGSetInterpVecQMax, jac->hsolver, jac->vec_interp_qmax); }
+  if (flg) PetscCallExternal(HYPRE_BoomerAMGSetInterpVecQMax, jac->hsolver, jac->vec_interp_qmax);
   PetscCall(PetscOptionsBool("-pc_hypre_boomeramg_vec_interp_smooth", "Whether to smooth the interpolation vectors", "HYPRE_BoomerAMGSetSmoothInterpVectors", jac->vec_interp_smooth, &jac->vec_interp_smooth, &flg));
-  if (flg) { PetscCallExternal(HYPRE_BoomerAMGSetSmoothInterpVectors, jac->hsolver, jac->vec_interp_smooth); }
+  if (flg) PetscCallExternal(HYPRE_BoomerAMGSetSmoothInterpVectors, jac->hsolver, jac->vec_interp_smooth);
   PetscCall(PetscOptionsInt("-pc_hypre_boomeramg_interp_refine", "Preprocess the interpolation matrix through iterative weight refinement", "HYPRE_BoomerAMGSetInterpRefine", jac->interp_refine, &jac->interp_refine, &flg));
-  if (flg) { PetscCallExternal(HYPRE_BoomerAMGSetInterpRefine, jac->hsolver, jac->interp_refine); }
+  if (flg) PetscCallExternal(HYPRE_BoomerAMGSetInterpRefine, jac->hsolver, jac->interp_refine);
   PetscCall(PetscOptionsInt("-pc_hypre_boomeramg_grid_sweeps_down", "Number of sweeps for the down cycles", "None", jac->gridsweeps[0], &indx, &flg));
   if (flg) {
     PetscCallExternal(HYPRE_BoomerAMGSetCycleNumSweeps, jac->hsolver, indx, 1);
@@ -902,9 +902,9 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc, PetscOptionItems *
   }
 
   PetscCall(PetscOptionsInt("-pc_hypre_boomeramg_max_coarse_size", "Maximum size of coarsest grid", "None", jac->maxc, &jac->maxc, &flg));
-  if (flg) { PetscCallExternal(HYPRE_BoomerAMGSetMaxCoarseSize, jac->hsolver, jac->maxc); }
+  if (flg) PetscCallExternal(HYPRE_BoomerAMGSetMaxCoarseSize, jac->hsolver, jac->maxc);
   PetscCall(PetscOptionsInt("-pc_hypre_boomeramg_min_coarse_size", "Minimum size of coarsest grid", "None", jac->minc, &jac->minc, &flg));
-  if (flg) { PetscCallExternal(HYPRE_BoomerAMGSetMinCoarseSize, jac->hsolver, jac->minc); }
+  if (flg) PetscCallExternal(HYPRE_BoomerAMGSetMinCoarseSize, jac->hsolver, jac->minc);
 #if PETSC_PKG_HYPRE_VERSION_GE(2, 23, 0)
   // global parameter but is closely associated with BoomerAMG
   PetscCall(PetscOptionsEList("-pc_mg_galerkin_mat_product_algorithm", "Type of SpGEMM to use in hypre (only for now)", "PCMGGalerkinSetMatProductAlgorithm", PCHYPRESpgemmTypes, PETSC_STATIC_ARRAY_LENGTH(PCHYPRESpgemmTypes), PCHYPRESpgemmTypes[0], &indx, &flg));
@@ -1021,7 +1021,7 @@ static PetscErrorCode PCView_HYPRE_BoomerAMG(PC pc, PetscViewer viewer) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "    Threshold for strong coupling %g\n", (double)jac->strongthreshold));
     PetscCall(PetscViewerASCIIPrintf(viewer, "    Interpolation truncation factor %g\n", (double)jac->truncfactor));
     PetscCall(PetscViewerASCIIPrintf(viewer, "    Interpolation: max elements per row %" PetscInt_FMT "\n", jac->pmax));
-    if (jac->interp_refine) { PetscCall(PetscViewerASCIIPrintf(viewer, "    Interpolation: number of steps of weighted refinement %" PetscInt_FMT "\n", jac->interp_refine)); }
+    if (jac->interp_refine) PetscCall(PetscViewerASCIIPrintf(viewer, "    Interpolation: number of steps of weighted refinement %" PetscInt_FMT "\n", jac->interp_refine));
     PetscCall(PetscViewerASCIIPrintf(viewer, "    Number of levels of aggressive coarsening %" PetscInt_FMT "\n", jac->agg_nl));
     PetscCall(PetscViewerASCIIPrintf(viewer, "    Number of paths for aggressive coarsening %" PetscInt_FMT "\n", jac->agg_num_paths));
 
@@ -1057,13 +1057,13 @@ static PetscErrorCode PCView_HYPRE_BoomerAMG(PC pc, PetscViewer viewer) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "    Measure type        %s\n", HYPREBoomerAMGMeasureType[jac->measuretype]));
     PetscCall(PetscViewerASCIIPrintf(viewer, "    Coarsen type        %s\n", HYPREBoomerAMGCoarsenType[jac->coarsentype]));
     PetscCall(PetscViewerASCIIPrintf(viewer, "    Interpolation type  %s\n", jac->interptype != 100 ? HYPREBoomerAMGInterpType[jac->interptype] : "1pt"));
-    if (jac->nodal_coarsening) { PetscCall(PetscViewerASCIIPrintf(viewer, "    Using nodal coarsening with HYPRE_BOOMERAMGSetNodal() %" PetscInt_FMT "\n", jac->nodal_coarsening)); }
+    if (jac->nodal_coarsening) PetscCall(PetscViewerASCIIPrintf(viewer, "    Using nodal coarsening with HYPRE_BOOMERAMGSetNodal() %" PetscInt_FMT "\n", jac->nodal_coarsening));
     if (jac->vec_interp_variant) {
       PetscCall(PetscViewerASCIIPrintf(viewer, "    HYPRE_BoomerAMGSetInterpVecVariant() %" PetscInt_FMT "\n", jac->vec_interp_variant));
       PetscCall(PetscViewerASCIIPrintf(viewer, "    HYPRE_BoomerAMGSetInterpVecQMax() %" PetscInt_FMT "\n", jac->vec_interp_qmax));
       PetscCall(PetscViewerASCIIPrintf(viewer, "    HYPRE_BoomerAMGSetSmoothInterpVectors() %d\n", jac->vec_interp_smooth));
     }
-    if (jac->nodal_relax) { PetscCall(PetscViewerASCIIPrintf(viewer, "    Using nodal relaxation via Schwarz smoothing on levels %" PetscInt_FMT "\n", jac->nodal_relax_levels)); }
+    if (jac->nodal_relax) PetscCall(PetscViewerASCIIPrintf(viewer, "    Using nodal relaxation via Schwarz smoothing on levels %" PetscInt_FMT "\n", jac->nodal_relax_levels));
 #if PETSC_PKG_HYPRE_VERSION_GE(2, 23, 0)
     PetscCall(PetscViewerASCIIPrintf(viewer, "    SpGEMM type         %s\n", jac->spgemm_type));
 #endif
@@ -1157,7 +1157,7 @@ static PetscErrorCode PCSetFromOptions_HYPRE_AMS(PC pc, PetscOptionItems *PetscO
   PetscCall(PetscOptionsInt("-pc_hypre_ams_relax_times", "Number of relaxation steps for AMS smoother", "None", jac->as_relax_times, &jac->as_relax_times, &flag2));
   PetscCall(PetscOptionsReal("-pc_hypre_ams_relax_weight", "Relaxation weight for AMS smoother", "None", jac->as_relax_weight, &jac->as_relax_weight, &flag3));
   PetscCall(PetscOptionsReal("-pc_hypre_ams_omega", "SSOR coefficient for AMS smoother", "None", jac->as_omega, &jac->as_omega, &flag4));
-  if (flag || flag2 || flag3 || flag4) { PetscCallExternal(HYPRE_AMSSetSmoothingOptions, jac->hsolver, jac->as_relax_type, jac->as_relax_times, jac->as_relax_weight, jac->as_omega); }
+  if (flag || flag2 || flag3 || flag4) PetscCallExternal(HYPRE_AMSSetSmoothingOptions, jac->hsolver, jac->as_relax_type, jac->as_relax_times, jac->as_relax_weight, jac->as_omega);
   PetscCall(PetscOptionsReal("-pc_hypre_ams_amg_alpha_theta", "Threshold for strong coupling of vector Poisson AMG solver", "None", jac->as_amg_alpha_theta, &jac->as_amg_alpha_theta, &flag));
   n = 5;
   PetscCall(PetscOptionsIntArray("-pc_hypre_ams_amg_alpha_options", "AMG options for vector Poisson", "None", jac->as_amg_alpha_opts, &n, &flag2));
@@ -1224,7 +1224,7 @@ static PetscErrorCode PCView_HYPRE_AMS(PC pc, PetscViewer viewer) {
       PetscCall(PetscViewerASCIIPrintf(viewer, "        boomerAMG interpolation type %" PetscInt_FMT "\n", jac->as_amg_beta_opts[3]));
       PetscCall(PetscViewerASCIIPrintf(viewer, "        boomerAMG max nonzero elements in interpolation rows %" PetscInt_FMT "\n", jac->as_amg_beta_opts[4]));
       PetscCall(PetscViewerASCIIPrintf(viewer, "        boomerAMG strength threshold %g\n", (double)jac->as_amg_beta_theta));
-      if (jac->ams_beta_is_zero_part) { PetscCall(PetscViewerASCIIPrintf(viewer, "        compatible subspace projection frequency %" PetscInt_FMT " (-1 HYPRE uses default)\n", jac->ams_proj_freq)); }
+      if (jac->ams_beta_is_zero_part) PetscCall(PetscViewerASCIIPrintf(viewer, "        compatible subspace projection frequency %" PetscInt_FMT " (-1 HYPRE uses default)\n", jac->ams_proj_freq));
     } else {
       PetscCall(PetscViewerASCIIPrintf(viewer, "    scalar Poisson solver not used (zero-conductivity everywhere) \n"));
     }
@@ -1251,7 +1251,7 @@ static PetscErrorCode PCSetFromOptions_HYPRE_ADS(PC pc, PetscOptionItems *PetscO
   PetscCall(PetscOptionsInt("-pc_hypre_ads_relax_times", "Number of relaxation steps for ADS smoother", "None", jac->as_relax_times, &jac->as_relax_times, &flag2));
   PetscCall(PetscOptionsReal("-pc_hypre_ads_relax_weight", "Relaxation weight for ADS smoother", "None", jac->as_relax_weight, &jac->as_relax_weight, &flag3));
   PetscCall(PetscOptionsReal("-pc_hypre_ads_omega", "SSOR coefficient for ADS smoother", "None", jac->as_omega, &jac->as_omega, &flag4));
-  if (flag || flag2 || flag3 || flag4) { PetscCallExternal(HYPRE_ADSSetSmoothingOptions, jac->hsolver, jac->as_relax_type, jac->as_relax_times, jac->as_relax_weight, jac->as_omega); }
+  if (flag || flag2 || flag3 || flag4) PetscCallExternal(HYPRE_ADSSetSmoothingOptions, jac->hsolver, jac->as_relax_type, jac->as_relax_times, jac->as_relax_weight, jac->as_omega);
   PetscCall(PetscOptionsReal("-pc_hypre_ads_ams_theta", "Threshold for strong coupling of AMS solver inside ADS", "None", jac->as_amg_alpha_theta, &jac->as_amg_alpha_theta, &flag));
   n = 5;
   PetscCall(PetscOptionsIntArray("-pc_hypre_ads_ams_options", "AMG options for AMS solver inside ADS", "None", jac->as_amg_alpha_opts, &n, &flag2));
@@ -2494,7 +2494,7 @@ PetscErrorCode PCSetFromOptions_SysPFMG(PC pc, PetscOptionItems *PetscOptionsObj
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "SysPFMG options");
   PetscCall(PetscOptionsBool("-pc_syspfmg_print_statistics", "Print statistics", "HYPRE_SStructSysPFMGSetPrintLevel", flg, &flg, NULL));
-  if (flg) { PetscCallExternal(HYPRE_SStructSysPFMGSetPrintLevel, ex->ss_solver, 3); }
+  if (flg) PetscCallExternal(HYPRE_SStructSysPFMGSetPrintLevel, ex->ss_solver, 3);
   PetscCall(PetscOptionsInt("-pc_syspfmg_its", "Number of iterations of SysPFMG to use as preconditioner", "HYPRE_SStructSysPFMGSetMaxIter", ex->its, &ex->its, NULL));
   PetscCallExternal(HYPRE_SStructSysPFMGSetMaxIter, ex->ss_solver, ex->its);
   PetscCall(PetscOptionsInt("-pc_syspfmg_num_pre_relax", "Number of smoothing steps before coarse grid", "HYPRE_SStructSysPFMGSetNumPreRelax", ex->num_pre_relax, &ex->num_pre_relax, NULL));

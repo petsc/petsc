@@ -72,7 +72,7 @@ static void f0_mms1_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt 
   PetscInt        c, d;
 
   for (c = 0; c < Ncomp; ++c) {
-    for (d = 0; d < dim; ++d) { f0[c] += u[d] * u_x[c * dim + d]; }
+    for (d = 0; d < dim; ++d) f0[c] += u[d] * u_x[c * dim + d];
   }
   f0[0] += u_t[0];
   f0[1] += u_t[1];
@@ -87,7 +87,7 @@ static void f0_mms2_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt 
   PetscInt        c, d;
 
   for (c = 0; c < Ncomp; ++c) {
-    for (d = 0; d < dim; ++d) { f0[c] += u[d] * u_x[c * dim + d]; }
+    for (d = 0; d < dim; ++d) f0[c] += u[d] * u_x[c * dim + d];
   }
   f0[0] += u_t[0];
   f0[1] += u_t[1];
@@ -102,7 +102,7 @@ static void f1_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[
   PetscInt        comp, d;
 
   for (comp = 0; comp < Ncomp; ++comp) {
-    for (d = 0; d < dim; ++d) { f1[comp * dim + d] = 1.0 / Re * u_x[comp * dim + d]; }
+    for (d = 0; d < dim; ++d) f1[comp * dim + d] = 1.0 / Re * u_x[comp * dim + d];
     f1[comp * dim + comp] -= u[Ncomp];
   }
 }
@@ -125,10 +125,10 @@ static void g0_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff
   PetscInt fc, gc;
   PetscInt d;
 
-  for (d = 0; d < dim; ++d) { g0[d * dim + d] = u_tShift; }
+  for (d = 0; d < dim; ++d) g0[d * dim + d] = u_tShift;
 
   for (fc = 0; fc < NcI; ++fc) {
-    for (gc = 0; gc < NcJ; ++gc) { g0[fc * NcJ + gc] += u_x[fc * NcJ + gc]; }
+    for (gc = 0; gc < NcJ; ++gc) g0[fc * NcJ + gc] += u_x[fc * NcJ + gc];
   }
 }
 
@@ -143,7 +143,7 @@ static void g1_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff
     for (gc = 0; gc < NcJ; ++gc) {
       for (dg = 0; dg < dim; ++dg) {
         /* kronecker delta */
-        if (fc == gc) { g1[(fc * NcJ + gc) * dim + dg] += u[dg]; }
+        if (fc == gc) g1[(fc * NcJ + gc) * dim + dg] += u[dg];
       }
     }
   }
@@ -171,7 +171,7 @@ static void g3_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff
   PetscInt        compI, d;
 
   for (compI = 0; compI < Ncomp; ++compI) {
-    for (d = 0; d < dim; ++d) { g3[((compI * Ncomp + compI) * dim + d) * dim + d] = 1.0 / Re; }
+    for (d = 0; d < dim; ++d) g3[((compI * Ncomp + compI) * dim + d) * dim + d] = 1.0 / Re;
   }
 }
 

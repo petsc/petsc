@@ -72,7 +72,7 @@ static PetscErrorCode PCApplyTranspose_Composite_Multiplicative(PC pc, Vec x, Ve
   }
   if (pc->useAmat) mat = pc->mat;
   /* locate last PC */
-  while (next->next) { next = next->next; }
+  while (next->next) next = next->next;
   PetscCall(PCApplyTranspose(next->pc, x, y));
   while (next->previous) {
     next = next->previous;
@@ -160,11 +160,11 @@ static PetscErrorCode PCSetUp_Composite(PC pc) {
   DM               dm;
 
   PetscFunctionBegin;
-  if (!jac->work1) { PetscCall(MatCreateVecs(pc->pmat, &jac->work1, NULL)); }
+  if (!jac->work1) PetscCall(MatCreateVecs(pc->pmat, &jac->work1, NULL));
   PetscCall(PCGetDM(pc, &dm));
   while (next) {
-    if (!next->pc->dm) { PetscCall(PCSetDM(next->pc, dm)); }
-    if (!next->pc->mat) { PetscCall(PCSetOperators(next->pc, pc->mat, pc->pmat)); }
+    if (!next->pc->dm) PetscCall(PCSetDM(next->pc, dm));
+    if (!next->pc->mat) PetscCall(PCSetOperators(next->pc, pc->mat, pc->pmat));
     next = next->next;
   }
   PetscFunctionReturn(0);

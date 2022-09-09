@@ -300,7 +300,7 @@ PetscErrorCode ComputeSolutionCoefficients(AppCtx *appctx) {
   PetscCall(PetscMalloc1(appctx->ncoeff, &appctx->solutioncoefficients));
   PetscCall(PetscRandomCreate(PETSC_COMM_WORLD, &rand));
   PetscCall(PetscRandomSetInterval(rand, .9, 1.0));
-  for (i = 0; i < appctx->ncoeff; i++) { PetscCall(PetscRandomGetValue(rand, &appctx->solutioncoefficients[i])); }
+  for (i = 0; i < appctx->ncoeff; i++) PetscCall(PetscRandomGetValue(rand, &appctx->solutioncoefficients[i]));
   PetscCall(PetscRandomDestroy(&rand));
   PetscFunctionReturn(0);
 }
@@ -369,7 +369,7 @@ PetscErrorCode TrueSolution(Vec u, AppCtx *appctx) {
   lenglob = appctx->param.E * (appctx->param.N - 1);
   for (i = 0; i < lenglob; i++) {
     s[i] = 0;
-    for (j = 0; j < appctx->ncoeff; j++) { s[i] += appctx->solutioncoefficients[j] * PetscSinScalar(2 * (j + 1) * PETSC_PI * xg[i]); }
+    for (j = 0; j < appctx->ncoeff; j++) s[i] += appctx->solutioncoefficients[j] * PetscSinScalar(2 * (j + 1) * PETSC_PI * xg[i]);
   }
   PetscCall(DMDAVecRestoreArray(appctx->da, u, &s));
   PetscCall(DMDAVecRestoreArrayRead(appctx->da, appctx->SEMop.grid, (void *)&xg));
@@ -475,7 +475,7 @@ PetscErrorCode RHSLaplacian(TS ts, PetscReal t, Vec X, Mat A, Mat BB, void *ctx)
    loop over local elements
    */
   for (j = xs; j < xs + xn; j++) {
-    for (l = 0; l < appctx->param.N; l++) { rowsDM[l] = 1 + (j - xs) * (appctx->param.N - 1) + l; }
+    for (l = 0; l < appctx->param.N; l++) rowsDM[l] = 1 + (j - xs) * (appctx->param.N - 1) + l;
     PetscCall(MatSetValuesLocal(A, appctx->param.N, rowsDM, appctx->param.N, rowsDM, &temp[0][0], ADD_VALUES));
   }
   PetscCall(PetscFree(rowsDM));
@@ -525,7 +525,7 @@ PetscErrorCode RHSAdvection(TS ts, PetscReal t, Vec X, Mat A, Mat BB, void *ctx)
    loop over local elements
    */
   for (j = xs; j < xs + xn; j++) {
-    for (l = 0; l < appctx->param.N; l++) { rowsDM[l] = 1 + (j - xs) * (appctx->param.N - 1) + l; }
+    for (l = 0; l < appctx->param.N; l++) rowsDM[l] = 1 + (j - xs) * (appctx->param.N - 1) + l;
     PetscCall(MatSetValuesLocal(A, appctx->param.N, rowsDM, appctx->param.N, rowsDM, &temp[0][0], ADD_VALUES));
   }
   PetscCall(PetscFree(rowsDM));

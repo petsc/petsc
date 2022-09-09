@@ -168,15 +168,15 @@ int main(int argc, char **args) {
   PetscCall(MatNorm(A, NORM_FROBENIUS, &r1));
   PetscCall(MatNorm(sA, NORM_FROBENIUS, &r2));
   rnorm = PetscAbsReal(r1 - r2) / r2;
-  if (rnorm > tol && rank == 0) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error: MatNorm_FROBENIUS(), Anorm=%16.14e, sAnorm=%16.14e bs=%" PetscInt_FMT "\n", (double)r1, (double)r2, bs)); }
+  if (rnorm > tol && rank == 0) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error: MatNorm_FROBENIUS(), Anorm=%16.14e, sAnorm=%16.14e bs=%" PetscInt_FMT "\n", (double)r1, (double)r2, bs));
   PetscCall(MatNorm(A, NORM_INFINITY, &r1));
   PetscCall(MatNorm(sA, NORM_INFINITY, &r2));
   rnorm = PetscAbsReal(r1 - r2) / r2;
-  if (rnorm > tol && rank == 0) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error: MatNorm_INFINITY(), Anorm=%16.14e, sAnorm=%16.14e bs=%" PetscInt_FMT "\n", (double)r1, (double)r2, bs)); }
+  if (rnorm > tol && rank == 0) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error: MatNorm_INFINITY(), Anorm=%16.14e, sAnorm=%16.14e bs=%" PetscInt_FMT "\n", (double)r1, (double)r2, bs));
   PetscCall(MatNorm(A, NORM_1, &r1));
   PetscCall(MatNorm(sA, NORM_1, &r2));
   rnorm = PetscAbsReal(r1 - r2) / r2;
-  if (rnorm > tol && rank == 0) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error: MatNorm_1(), Anorm=%16.14e, sAnorm=%16.14e bs=%" PetscInt_FMT "\n", (double)r1, (double)r2, bs)); }
+  if (rnorm > tol && rank == 0) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error: MatNorm_1(), Anorm=%16.14e, sAnorm=%16.14e bs=%" PetscInt_FMT "\n", (double)r1, (double)r2, bs));
 
   /* Test MatGetOwnershipRange() */
   PetscCall(MatGetOwnershipRange(sA, &rstart, &rend));
@@ -215,7 +215,7 @@ int main(int argc, char **args) {
   PetscCall(VecNorm(s1, NORM_1, &r1));
   PetscCall(VecNorm(s2, NORM_1, &r2));
   r1 -= r2;
-  if (r1 < -tol || r1 > tol) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error: MatGetRowMaxAbs() \n")); }
+  if (r1 < -tol || r1 > tol) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error: MatGetRowMaxAbs() \n"));
 
   /* Test MatMult(), MatMultAdd() */
   PetscCall(MatMultEqual(A, sA, 10, &flg));
@@ -260,7 +260,7 @@ int main(int argc, char **args) {
   /* Test MatDuplicate() */
   PetscCall(MatDuplicate(sA, MAT_COPY_VALUES, &sB));
   PetscCall(MatEqual(sA, sB, &flg));
-  if (!flg) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, " Error in MatDuplicate(), sA != sB \n")); }
+  if (!flg) PetscCall(PetscPrintf(PETSC_COMM_WORLD, " Error in MatDuplicate(), sA != sB \n"));
   PetscCall(MatMultEqual(sA, sB, 5, &flg));
   if (!flg) {
     PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "[%d], Error: MatDuplicate() or MatMult()\n", rank));

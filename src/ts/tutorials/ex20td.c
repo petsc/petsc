@@ -290,8 +290,8 @@ int main(int argc, char **argv) {
       sensitivity analysis method being used !
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscCall(MatCreate(PETSC_COMM_WORLD, &user.Jacp));
-  if (sa == SA_TRACK) { PetscCall(MatSetSizes(user.Jacp, PETSC_DECIDE, PETSC_DECIDE, 2, 2)); }
-  if (sa == SA_GLOBAL) { PetscCall(MatSetSizes(user.Jacp, PETSC_DECIDE, PETSC_DECIDE, 2, user.max_steps * 2)); }
+  if (sa == SA_TRACK) PetscCall(MatSetSizes(user.Jacp, PETSC_DECIDE, PETSC_DECIDE, 2, 2));
+  if (sa == SA_GLOBAL) PetscCall(MatSetSizes(user.Jacp, PETSC_DECIDE, PETSC_DECIDE, 2, user.max_steps * 2));
   PetscCall(MatSetFromOptions(user.Jacp));
   PetscCall(MatSetUp(user.Jacp));
 
@@ -304,15 +304,15 @@ int main(int argc, char **argv) {
 
   PetscCall(TSSetRHSFunction(ts, NULL, RHSFunction, &user));
   PetscCall(TSSetRHSJacobian(ts, user.A, user.A, RHSJacobian, &user));
-  if (sa == SA_TRACK) { PetscCall(TSSetRHSJacobianP(ts, user.Jacp, RHSJacobianP_track, &user)); }
-  if (sa == SA_GLOBAL) { PetscCall(TSSetRHSJacobianP(ts, user.Jacp, RHSJacobianP_global, &user)); }
+  if (sa == SA_TRACK) PetscCall(TSSetRHSJacobianP(ts, user.Jacp, RHSJacobianP_track, &user));
+  if (sa == SA_GLOBAL) PetscCall(TSSetRHSJacobianP(ts, user.Jacp, RHSJacobianP_global, &user));
 
   PetscCall(TSSetExactFinalTime(ts, TS_EXACTFINALTIME_MATCHSTEP));
   PetscCall(TSSetMaxTime(ts, user.final_time));
   PetscCall(TSSetTimeStep(ts, user.final_time / user.max_steps));
 
-  if (monitor) { PetscCall(TSMonitorSet(ts, Monitor, &user, NULL)); }
-  if (sa == SA_TRACK) { PetscCall(TSAdjointMonitorSet(ts, AdjointMonitor, &user, NULL)); }
+  if (monitor) PetscCall(TSMonitorSet(ts, Monitor, &user, NULL));
+  if (sa == SA_TRACK) PetscCall(TSAdjointMonitorSet(ts, AdjointMonitor, &user, NULL));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
@@ -377,7 +377,7 @@ int main(int argc, char **argv) {
       PetscCall(TSAdjointSolve(ts));
     }
   }
-  if (sa == SA_GLOBAL) { PetscCall(TSAdjointSolve(ts)); }
+  if (sa == SA_GLOBAL) PetscCall(TSAdjointSolve(ts));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Dispaly adjoint sensitivities wrt parameters and initial conditions

@@ -195,7 +195,7 @@ PetscErrorCode InitializeUserData(AppCtx *user) {
   for (k = 0; k < user->N; k++) {
     v = 1.0;
     n = k + 1;
-    if (k < user->N - 1) { PetscCall(MatSetValues(user->D, 1, &k, 1, &n, &v, INSERT_VALUES)); }
+    if (k < user->N - 1) PetscCall(MatSetValues(user->D, 1, &k, 1, &n, &v, INSERT_VALUES));
     v = -1.0;
     PetscCall(MatSetValues(user->D, 1, &k, 1, &k, &v, INSERT_VALUES));
   }

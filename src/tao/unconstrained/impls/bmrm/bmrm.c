@@ -278,7 +278,7 @@ PetscErrorCode init_df_solver(TAO_DF *df) {
   PetscCall(PetscMalloc1(n, &df->x));
   PetscCall(PetscMalloc1(n, &df->Q));
 
-  for (i = 0; i < n; i++) { PetscCall(PetscMalloc1(n, &df->Q[i])); }
+  for (i = 0; i < n; i++) PetscCall(PetscMalloc1(n, &df->Q[i]));
 
   PetscCall(PetscMalloc1(n, &df->g));
   PetscCall(PetscMalloc1(n, &df->y));
@@ -398,7 +398,7 @@ PetscErrorCode destroy_df_solver(TAO_DF *df) {
   PetscCall(PetscFree(df->u));
   PetscCall(PetscFree(df->x));
 
-  for (i = 0; i < df->cur_num_cp; i++) { PetscCall(PetscFree(df->Q[i])); }
+  for (i = 0; i < df->cur_num_cp; i++) PetscCall(PetscFree(df->Q[i]));
   PetscCall(PetscFree(df->Q));
   PetscCall(PetscFree(df->ipt));
   PetscCall(PetscFree(df->ipt2));
@@ -505,7 +505,7 @@ PetscInt project(PetscInt n, PetscReal *a, PetscReal b, PetscReal *c, PetscReal 
 
   PetscCheck(PetscAbsReal(dlambda) <= BMRM_INFTY, PETSC_COMM_SELF, PETSC_ERR_PLIB, "L2N2_DaiFletcherPGM detected Infeasible QP problem!");
 
-  if (ru == 0) { return innerIter; }
+  if (ru == 0) return innerIter;
 
   /* Secant Phase */
   s       = 1.0 - rl / ru;
@@ -556,7 +556,7 @@ PetscInt project(PetscInt n, PetscReal *a, PetscReal b, PetscReal *c, PetscReal 
   }
 
   *lam_ext = lambda;
-  if (innerIter >= df->maxProjIter) { PetscCall(PetscInfo(NULL, "WARNING: DaiFletcher max iterations\n")); }
+  if (innerIter >= df->maxProjIter) PetscCall(PetscInfo(NULL, "WARNING: DaiFletcher max iterations\n"));
   return innerIter;
 }
 
@@ -601,10 +601,10 @@ PetscErrorCode solve(TAO_DF *df) {
     tempQ = Q[ipt[i]];
     for (j = 0; j < dim; j++) t[j] += (tempQ[j] * x[ipt[i]]);
   }
-  for (i = 0; i < dim; i++) { g[i] = t[i] + f[i]; }
+  for (i = 0; i < dim; i++) g[i] = t[i] + f[i];
 
   /* y = -(x_{k} - g_{k}) */
-  for (i = 0; i < dim; i++) { y[i] = g[i] - x[i]; }
+  for (i = 0; i < dim; i++) y[i] = g[i] - x[i];
 
   /* Project x_{k} - g_{k} */
   project(dim, a, b, y, l, u, tempv, &lam_ext, df);
@@ -616,7 +616,7 @@ PetscErrorCode solve(TAO_DF *df) {
     if (PetscAbsReal(y[i]) > max) max = PetscAbsReal(y[i]);
   }
 
-  if (max < tol * 1e-3) { return 0; }
+  if (max < tol * 1e-3) return 0;
 
   alpha = 1.0 / max;
 

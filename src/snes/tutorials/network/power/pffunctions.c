@@ -14,7 +14,7 @@ PetscErrorCode GetListofEdges_Power(PFDATA *pfdata, PetscInt *edgelist) {
     tbus                = branch[i].internal_j;
     edgelist[2 * i]     = fbus;
     edgelist[2 * i + 1] = tbus;
-    if (netview) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "branch %" PetscInt_FMT ", bus[%" PetscInt_FMT "] -> bus[%" PetscInt_FMT "]\n", i, fbus, tbus)); }
+    if (netview) PetscCall(PetscPrintf(PETSC_COMM_SELF, "branch %" PetscInt_FMT ", bus[%" PetscInt_FMT "] -> bus[%" PetscInt_FMT "]\n", i, fbus, tbus));
   }
   if (netview) {
     for (i = 0; i < pfdata->nbus; i++) {
@@ -336,7 +336,7 @@ PetscErrorCode FormFunction_Power(DM networkdm, Vec localX, Vec localF, PetscInt
         }
       }
     }
-    if (bus && bus->ide == PV_BUS) { farr[offset + 1] = xarr[offset + 1] - bus->vm; }
+    if (bus && bus->ide == PV_BUS) farr[offset + 1] = xarr[offset + 1] - bus->vm;
   }
   PetscCall(VecRestoreArrayRead(localX, &xarr));
   PetscCall(VecRestoreArray(localF, &farr));

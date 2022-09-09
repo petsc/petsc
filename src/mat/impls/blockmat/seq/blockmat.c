@@ -262,7 +262,7 @@ static PetscErrorCode MatSetValues_BlockMat(Mat A, PetscInt m, const PetscInt im
       a->nz++;
       A->nonzerostate++;
     noinsert1:;
-      if (!*(ap + i)) { PetscCall(MatCreateSeqAIJ(PETSC_COMM_SELF, bs, bs, 0, NULL, ap + i)); }
+      if (!*(ap + i)) PetscCall(MatCreateSeqAIJ(PETSC_COMM_SELF, bs, bs, 0, NULL, ap + i));
       PetscCall(MatSetValues(ap[i], 1, &ridx, 1, &cidx, &value, is));
       low = i;
     }
@@ -325,7 +325,7 @@ static PetscErrorCode MatLoad_BlockMat(Mat newmat, PetscViewer viewer) {
     }
   }
 
-  if (newmat->rmap->n < 0 && newmat->rmap->N < 0 && newmat->cmap->n < 0 && newmat->cmap->N < 0) { PetscCall(MatSetSizes(newmat, m, n, PETSC_DETERMINE, PETSC_DETERMINE)); }
+  if (newmat->rmap->n < 0 && newmat->rmap->N < 0 && newmat->cmap->n < 0 && newmat->cmap->N < 0) PetscCall(MatSetSizes(newmat, m, n, PETSC_DETERMINE, PETSC_DETERMINE));
   PetscCall(MatBlockMatSetPreallocation(newmat, bs, 0, lens));
   if (flg) PetscCall(MatSetOption(newmat, MAT_SYMMETRIC, PETSC_TRUE));
   amat = (Mat_BlockMat *)(newmat)->data;
@@ -340,7 +340,7 @@ static PetscErrorCode MatLoad_BlockMat(Mat newmat, PetscViewer viewer) {
 
     currentcol = 1000000000;
     for (j = 0; j < bs; j++) { /* loop over rows in block finding first nonzero block */
-      if (ilens[j] > 0) { currentcol = PetscMin(currentcol, ii[j][0] / bs); }
+      if (ilens[j] > 0) currentcol = PetscMin(currentcol, ii[j][0] / bs);
     }
 
     while (PETSC_TRUE) { /* loops over blocks in block row */
@@ -409,10 +409,10 @@ static PetscErrorCode MatDestroy_BlockMat(Mat mat) {
   PetscCall(VecDestroy(&bmat->middle));
   PetscCall(VecDestroy(&bmat->workb));
   if (bmat->diags) {
-    for (i = 0; i < mat->rmap->n / mat->rmap->bs; i++) { PetscCall(MatDestroy(&bmat->diags[i])); }
+    for (i = 0; i < mat->rmap->n / mat->rmap->bs; i++) PetscCall(MatDestroy(&bmat->diags[i]));
   }
   if (bmat->a) {
-    for (i = 0; i < bmat->nz; i++) { PetscCall(MatDestroy(&bmat->a[i])); }
+    for (i = 0; i < bmat->nz; i++) PetscCall(MatDestroy(&bmat->a[i]));
   }
   PetscCall(MatSeqXAIJFreeAIJ(mat, (PetscScalar **)&bmat->a, &bmat->j, &bmat->i));
   PetscCall(PetscFree(mat->data));
@@ -524,7 +524,7 @@ static PetscErrorCode MatMarkDiagonal_BlockMat(Mat A) {
   PetscInt      i, j, mbs = A->rmap->n / A->rmap->bs;
 
   PetscFunctionBegin;
-  if (!a->diag) { PetscCall(PetscMalloc1(mbs, &a->diag)); }
+  if (!a->diag) PetscCall(PetscMalloc1(mbs, &a->diag));
   for (i = 0; i < mbs; i++) {
     a->diag[i] = a->i[i + 1];
     for (j = a->i[i]; j < a->i[i + 1]; j++) {
@@ -625,7 +625,7 @@ static PetscErrorCode MatAssemblyEnd_BlockMat(Mat A, MatAssemblyType mode) {
     ai[m] = ai[m - 1] + ailen[m - 1];
   }
   /* reset ilen and imax for each row */
-  for (i = 0; i < m; i++) { ailen[i] = imax[i] = ai[i + 1] - ai[i]; }
+  for (i = 0; i < m; i++) ailen[i] = imax[i] = ai[i + 1] - ai[i];
   a->nz = ai[m];
   for (i = 0; i < a->nz; i++) {
     PetscAssert(aa[i], PETSC_COMM_SELF, PETSC_ERR_PLIB, "Null matrix at location %" PetscInt_FMT " column %" PetscInt_FMT " nz %" PetscInt_FMT, i, aj[i], a->nz);
@@ -826,14 +826,13 @@ static struct _MatOps MatOps_Values = {MatSetValues_BlockMat,
      If nnz is given then nz is ignored
 
    Specify the preallocated storage with either nz or nnz (not both).
-   Set nz=PETSC_DEFAULT and nnz=NULL for PETSc to control dynamic memory
+   Set nz = `PETSC_DEFAULT` and nnz = NULL for PETSc to control dynamic memory
    allocation.  For large problems you MUST preallocate memory or you
    will get TERRIBLE performance, see the users' manual chapter on matrices.
 
    Level: intermediate
 
 .seealso: `MatCreate()`, `MatCreateBlockMat()`, `MatSetValues()`
-
 @*/
 PetscErrorCode MatBlockMatSetPreallocation(Mat B, PetscInt bs, PetscInt nz, const PetscInt nnz[]) {
   PetscFunctionBegin;
@@ -886,7 +885,7 @@ static PetscErrorCode MatBlockMatSetPreallocation_BlockMat(Mat A, PetscInt bs, P
   PetscCall(PetscMalloc3(nz, &bmat->a, nz, &bmat->j, A->rmap->n + 1, &bmat->i));
   PetscCall(PetscLogObjectMemory((PetscObject)A, (A->rmap->n + 1) * sizeof(PetscInt) + nz * (sizeof(PetscScalar) + sizeof(PetscInt))));
   bmat->i[0] = 0;
-  for (i = 1; i < bmat->mbs + 1; i++) { bmat->i[i] = bmat->i[i - 1] + bmat->imax[i - 1]; }
+  for (i = 1; i < bmat->mbs + 1; i++) bmat->i[i] = bmat->i[i - 1] + bmat->imax[i - 1];
   bmat->singlemalloc = PETSC_TRUE;
   bmat->free_a       = PETSC_TRUE;
   bmat->free_ij      = PETSC_TRUE;
@@ -899,13 +898,12 @@ static PetscErrorCode MatBlockMatSetPreallocation_BlockMat(Mat A, PetscInt bs, P
 }
 
 /*MC
-   MATBLOCKMAT - A matrix that is defined by a set of Mat's that represents a sparse block matrix
+   MATBLOCKMAT - A matrix that is defined by a set of `Mat`'s that represents a sparse block matrix
                  consisting of (usually) sparse blocks.
 
   Level: advanced
 
 .seealso: `MatCreateBlockMat()`
-
 M*/
 
 PETSC_EXTERN PetscErrorCode MatCreate_BlockMat(Mat A) {
@@ -925,7 +923,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_BlockMat(Mat A) {
 }
 
 /*@C
-   MatCreateBlockMat - Creates a new matrix in which each block contains a uniform-size sequential Mat object
+   MatCreateBlockMat - Creates a new matrix in which each block contains a uniform-size sequential `Mat` object
 
   Collective
 
@@ -934,7 +932,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_BlockMat(Mat A) {
 .  m - number of rows
 .  n  - number of columns
 .  bs - size of each submatrix
-.  nz  - expected maximum number of nonzero blocks in row (use PETSC_DEFAULT if not known)
+.  nz  - expected maximum number of nonzero blocks in row (use `PETSC_DEFAULT` if not known)
 -  nnz - expected number of nonzers per block row if known (use NULL otherwise)
 
    Output Parameter:
@@ -943,10 +941,13 @@ PETSC_EXTERN PetscErrorCode MatCreate_BlockMat(Mat A) {
    Level: intermediate
 
    Notes:
-    Matrices of this type are nominally-sparse matrices in which each "entry" is a Mat object.  Each Mat must
+    Matrices of this type are nominally-sparse matrices in which each "entry" is a `Mat` object.  Each `Mat` must
    have the same size and be sequential.  The local and global sizes must be compatible with this decomposition.
 
-   For matrices containing parallel submatrices and variable block sizes, see MATNEST.
+   For matrices containing parallel submatrices and variable block sizes, see `MATNEST`.
+
+   Developer Note:
+   I don't like the name, it is not `MATNESTMAT`
 
 .seealso: `MATBLOCKMAT`, `MatCreateNest()`
 @*/

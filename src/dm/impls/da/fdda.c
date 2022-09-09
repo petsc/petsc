@@ -74,7 +74,7 @@ static PetscErrorCode DMDASetBlockFills_Private2(DM_DA *dd) {
     for (k = dd->ofill[i]; k < dd->ofill[i + 1]; k++) dd->ofillcols[dd->ofill[k]] = 1;
   }
   for (i = 0; i < dd->w; i++) {
-    if (dd->ofillcols[i]) { dd->ofillcols[i] = cnt++; }
+    if (dd->ofillcols[i]) dd->ofillcols[i] = cnt++;
   }
   PetscFunctionReturn(0);
 }
@@ -288,7 +288,7 @@ PetscErrorCode DMCreateColoring_DA_2d_MPIAIJ(DM da, ISColoringType ctype, ISColo
         ii = 0;
         for (j = ys; j < ys + ny; j++) {
           for (i = xs; i < xs + nx; i++) {
-            for (k = 0; k < nc; k++) { colors[ii++] = k + nc * ((i % col) + col * (j % col)); }
+            for (k = 0; k < nc; k++) colors[ii++] = k + nc * ((i % col) + col * (j % col));
           }
         }
         ncolors = nc + nc * (col - 1 + col * (col - 1));
@@ -351,7 +351,7 @@ PetscErrorCode DMCreateColoring_DA_3d_MPIAIJ(DM da, ISColoringType ctype, ISColo
       for (k = zs; k < zs + nz; k++) {
         for (j = ys; j < ys + ny; j++) {
           for (i = xs; i < xs + nx; i++) {
-            for (l = 0; l < nc; l++) { colors[ii++] = l + nc * ((i % col) + col * (j % col) + col * col * (k % col)); }
+            for (l = 0; l < nc; l++) colors[ii++] = l + nc * ((i % col) + col * (j % col) + col * col * (k % col));
           }
         }
       }
@@ -426,7 +426,7 @@ PetscErrorCode DMCreateColoring_DA_1d_MPIAIJ(DM da, ISColoringType ctype, ISColo
       } else {
         i1 = 0;
         for (i = xs; i < xs + nx; i++) {
-          for (l = 0; l < nc; l++) { colors[i1++] = l + nc * (i % col); }
+          for (l = 0; l < nc; l++) colors[i1++] = l + nc * (i % col);
         }
         ncolors = nc + nc * (col - 1);
       }
@@ -478,7 +478,7 @@ PetscErrorCode DMCreateColoring_DA_2d_5pt_MPIAIJ(DM da, ISColoringType ctype, IS
       ii = 0;
       for (j = ys; j < ys + ny; j++) {
         for (i = xs; i < xs + nx; i++) {
-          for (k = 0; k < nc; k++) { colors[ii++] = k + nc * ((3 * j + i) % 5); }
+          for (k = 0; k < nc; k++) colors[ii++] = k + nc * ((3 * j + i) % 5);
         }
       }
       ncolors = 5 * nc;
@@ -491,7 +491,7 @@ PetscErrorCode DMCreateColoring_DA_2d_5pt_MPIAIJ(DM da, ISColoringType ctype, IS
       ii = 0;
       for (j = gys; j < gys + gny; j++) {
         for (i = gxs; i < gxs + gnx; i++) {
-          for (k = 0; k < nc; k++) { colors[ii++] = k + nc * ((3 * SetInRange(j, n) + SetInRange(i, m)) % 5); }
+          for (k = 0; k < nc; k++) colors[ii++] = k + nc * ((3 * SetInRange(j, n) + SetInRange(i, m)) % 5);
         }
       }
       ncolors = 5 * nc;
@@ -681,18 +681,18 @@ PetscErrorCode DMCreateMatrix_DA(DM da, Mat *J) {
    details of the matrix, not the type itself.
   */
   PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatMPIAIJSetPreallocation_C", &aij));
-  if (!aij) { PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatSeqAIJSetPreallocation_C", &aij)); }
+  if (!aij) PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatSeqAIJSetPreallocation_C", &aij));
   if (!aij) {
     PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatMPIBAIJSetPreallocation_C", &baij));
-    if (!baij) { PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatSeqBAIJSetPreallocation_C", &baij)); }
+    if (!baij) PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatSeqBAIJSetPreallocation_C", &baij));
     if (!baij) {
       PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatMPISBAIJSetPreallocation_C", &sbaij));
-      if (!sbaij) { PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatSeqSBAIJSetPreallocation_C", &sbaij)); }
+      if (!sbaij) PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatSeqSBAIJSetPreallocation_C", &sbaij));
       if (!sbaij) {
         PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatMPISELLSetPreallocation_C", &sell));
-        if (!sell) { PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatSeqSELLSetPreallocation_C", &sell)); }
+        if (!sell) PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatSeqSELLSetPreallocation_C", &sell));
       }
-      if (!sell) { PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatISSetPreallocation_C", &is)); }
+      if (!sell) PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatISSetPreallocation_C", &is));
     }
   }
   if (aij) {
@@ -817,7 +817,7 @@ PetscErrorCode DMCreateMatrix_DA_IS(DM dm, Mat J) {
     PetscCall(MatSetSizes(P, n, n, N, N));
     PetscCall(MatSetBlockSize(P, dof));
     PetscCall(MatSetUp(P));
-    for (i = 0; i < nel; i++) { PetscCall(MatSetValuesBlockedLocal(P, nen, e_loc + i * nen, nen, e_loc + i * nen, NULL, INSERT_VALUES)); }
+    for (i = 0; i < nel; i++) PetscCall(MatSetValuesBlockedLocal(P, nen, e_loc + i * nen, nen, e_loc + i * nen, NULL, INSERT_VALUES));
     PetscCall(MatPreallocatorPreallocate(P, (PetscBool)!da->prealloc_only, lJ));
     PetscCall(MatISRestoreLocalMat(J, &lJ));
     PetscCall(DMDARestoreElements(dm, &nel, &nen, &e_loc));
@@ -1295,7 +1295,7 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ(DM da, Mat J) {
 
   */
   PetscCall(DMDAGetInfo(da, &dim, &m, &n, &p, &M, &N, &P, &nc, &s, &bx, &by, &bz, &st));
-  if (bx == DM_BOUNDARY_NONE && by == DM_BOUNDARY_NONE && bz == DM_BOUNDARY_NONE) { PetscCall(MatSetOption(J, MAT_SORTED_FULL, PETSC_TRUE)); }
+  if (bx == DM_BOUNDARY_NONE && by == DM_BOUNDARY_NONE && bz == DM_BOUNDARY_NONE) PetscCall(MatSetOption(J, MAT_SORTED_FULL, PETSC_TRUE));
   col = 2 * s + 1;
 
   /*
@@ -1351,7 +1351,7 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ(DM da, Mat J) {
   PetscCall(MatMPIAIJSetPreallocation(J, 0, dnz, 0, onz));
   MatPreallocateEnd(dnz, onz);
   PetscCall(MatGetLocalToGlobalMapping(J, &mltog, NULL));
-  if (!mltog) { PetscCall(MatSetLocalToGlobalMapping(J, ltog, ltog)); }
+  if (!mltog) PetscCall(MatSetLocalToGlobalMapping(J, ltog, ltog));
 
   /*
     For each node in the grid: we get the neighbors in the local (on processor ordering
@@ -1395,7 +1395,7 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ(DM da, Mat J) {
     PetscCall(MatBindToCPU(J, PETSC_TRUE));
     PetscCall(MatAssemblyBegin(J, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(J, MAT_FINAL_ASSEMBLY));
-    if (bx == DM_BOUNDARY_NONE && by == DM_BOUNDARY_NONE && bz == DM_BOUNDARY_NONE) { PetscCall(MatSetOption(J, MAT_SORTED_FULL, PETSC_FALSE)); }
+    if (bx == DM_BOUNDARY_NONE && by == DM_BOUNDARY_NONE && bz == DM_BOUNDARY_NONE) PetscCall(MatSetOption(J, MAT_SORTED_FULL, PETSC_FALSE));
     PetscCall(MatBindToCPU(J, PETSC_FALSE));
     PetscCall(MatSetOption(J, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE));
   }
@@ -1499,9 +1499,9 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ_Fill(DM da, Mat J) {
           }
         }
         if (dfill) {
-          for (k = dfill[j]; k < dfill[j + 1]; k++) { cols[cnt++] = i * nc + dfill[k]; }
+          for (k = dfill[j]; k < dfill[j + 1]; k++) cols[cnt++] = i * nc + dfill[k];
         } else {
-          for (k = 0; k < nc; k++) { cols[cnt++] = i * nc + k; }
+          for (k = 0; k < nc; k++) cols[cnt++] = i * nc + k;
         }
         for (l = 0; l < s; l++) {
           for (k = ofill[j]; k < ofill[j + 1]; k++) cols[cnt++] = (i + s - l) * nc + ofill[k];
@@ -1517,9 +1517,9 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ_Fill(DM da, Mat J) {
           for (k = ofill[j]; k < ofill[j + 1]; k++) cols[cnt++] = (i - s + l) * nc + ofill[k];
         }
         if (dfill) {
-          for (k = dfill[j]; k < dfill[j + 1]; k++) { cols[cnt++] = i * nc + dfill[k]; }
+          for (k = dfill[j]; k < dfill[j + 1]; k++) cols[cnt++] = i * nc + dfill[k];
         } else {
-          for (k = 0; k < nc; k++) { cols[cnt++] = i * nc + k; }
+          for (k = 0; k < nc; k++) cols[cnt++] = i * nc + k;
         }
         for (l = 0; l < s; l++) {
           for (k = ofill[j]; k < ofill[j + 1]; k++) cols[cnt++] = (i + s - l) * nc + ofill[k];
@@ -1536,9 +1536,9 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ_Fill(DM da, Mat J) {
           for (k = ofill[j]; k < ofill[j + 1]; k++) cols[cnt++] = (i - s + l) * nc + ofill[k];
         }
         if (dfill) {
-          for (k = dfill[j]; k < dfill[j + 1]; k++) { cols[cnt++] = i * nc + dfill[k]; }
+          for (k = dfill[j]; k < dfill[j + 1]; k++) cols[cnt++] = i * nc + dfill[k];
         } else {
-          for (k = 0; k < nc; k++) { cols[cnt++] = i * nc + k; }
+          for (k = 0; k < nc; k++) cols[cnt++] = i * nc + k;
         }
         if (rank < size - 1) {
           for (l = 0; l < s; l++) {
@@ -1581,7 +1581,7 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ(DM da, Mat J) {
 
   */
   PetscCall(DMDAGetInfo(da, &dim, &m, NULL, NULL, NULL, NULL, NULL, &nc, &s, &bx, NULL, NULL, NULL));
-  if (bx == DM_BOUNDARY_NONE) { PetscCall(MatSetOption(J, MAT_SORTED_FULL, PETSC_TRUE)); }
+  if (bx == DM_BOUNDARY_NONE) PetscCall(MatSetOption(J, MAT_SORTED_FULL, PETSC_TRUE));
   col = 2 * s + 1;
 
   PetscCall(DMDAGetCorners(da, &xs, NULL, NULL, &nx, NULL, NULL));
@@ -1593,7 +1593,7 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ(DM da, Mat J) {
 
   PetscCall(DMGetLocalToGlobalMapping(da, &ltog));
   PetscCall(MatGetLocalToGlobalMapping(J, &mltog, NULL));
-  if (!mltog) { PetscCall(MatSetLocalToGlobalMapping(J, ltog, ltog)); }
+  if (!mltog) PetscCall(MatSetLocalToGlobalMapping(J, ltog, ltog));
 
   /*
     For each node in the grid: we get the neighbors in the local (on processor ordering
@@ -1623,7 +1623,7 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ(DM da, Mat J) {
     PetscCall(MatBindToCPU(J, PETSC_TRUE));
     PetscCall(MatAssemblyBegin(J, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(J, MAT_FINAL_ASSEMBLY));
-    if (bx == DM_BOUNDARY_NONE) { PetscCall(MatSetOption(J, MAT_SORTED_FULL, PETSC_FALSE)); }
+    if (bx == DM_BOUNDARY_NONE) PetscCall(MatSetOption(J, MAT_SORTED_FULL, PETSC_FALSE));
     PetscCall(MatBindToCPU(J, PETSC_FALSE));
     PetscCall(MatSetOption(J, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE));
     PetscCall(PetscFree2(rows, cols));
@@ -1656,7 +1656,7 @@ PetscErrorCode DMCreateMatrix_DA_1d_SeqAIJ_NoPreallocation(DM da, Mat J) {
 
   PetscCall(DMGetLocalToGlobalMapping(da, &ltog));
   PetscCall(MatGetLocalToGlobalMapping(J, &mltog, NULL));
-  if (!mltog) { PetscCall(MatSetLocalToGlobalMapping(J, ltog, ltog)); }
+  if (!mltog) PetscCall(MatSetLocalToGlobalMapping(J, ltog, ltog));
 
   /*
     For each node in the grid: we get the neighbors in the local (on processor ordering
@@ -1686,7 +1686,7 @@ PetscErrorCode DMCreateMatrix_DA_1d_SeqAIJ_NoPreallocation(DM da, Mat J) {
     PetscCall(MatBindToCPU(J, PETSC_TRUE));
     PetscCall(MatAssemblyBegin(J, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(J, MAT_FINAL_ASSEMBLY));
-    if (bx == DM_BOUNDARY_NONE) { PetscCall(MatSetOption(J, MAT_SORTED_FULL, PETSC_FALSE)); }
+    if (bx == DM_BOUNDARY_NONE) PetscCall(MatSetOption(J, MAT_SORTED_FULL, PETSC_FALSE));
     PetscCall(MatBindToCPU(J, PETSC_FALSE));
     PetscCall(MatSetOption(J, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE));
     PetscCall(PetscFree2(rows, cols));
@@ -1950,7 +1950,7 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPISBAIJ(DM da, Mat J) {
       cnt = 0;
       for (ii = istart; ii < iend + 1; ii++) {
         for (jj = jstart; jj < jend + 1; jj++) {
-          if (st == DMDA_STENCIL_BOX || !ii || !jj) { cols[cnt++] = slot + ii + gnx * jj; }
+          if (st == DMDA_STENCIL_BOX || !ii || !jj) cols[cnt++] = slot + ii + gnx * jj;
         }
       }
       PetscCall(L2GFilterUpperTriangular(ltog, &slot, &cnt, cols));
@@ -1982,7 +1982,7 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPISBAIJ(DM da, Mat J) {
         cnt = 0;
         for (ii = istart; ii < iend + 1; ii++) {
           for (jj = jstart; jj < jend + 1; jj++) {
-            if (st == DMDA_STENCIL_BOX || !ii || !jj) { cols[cnt++] = slot + ii + gnx * jj; }
+            if (st == DMDA_STENCIL_BOX || !ii || !jj) cols[cnt++] = slot + ii + gnx * jj;
           }
         }
         PetscCall(L2GFilterUpperTriangular(ltog, &slot, &cnt, cols));
@@ -2047,7 +2047,7 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPISBAIJ(DM da, Mat J) {
         for (ii = istart; ii < iend + 1; ii++) {
           for (jj = jstart; jj < jend + 1; jj++) {
             for (kk = kstart; kk < kend + 1; kk++) {
-              if ((st == DMDA_STENCIL_BOX) || (!ii && !jj) || (!jj && !kk) || (!ii && !kk)) { cols[cnt++] = slot + ii + gnx * jj + gnx * gny * kk; }
+              if ((st == DMDA_STENCIL_BOX) || (!ii && !jj) || (!jj && !kk) || (!ii && !kk)) cols[cnt++] = slot + ii + gnx * jj + gnx * gny * kk;
             }
           }
         }
@@ -2085,7 +2085,7 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPISBAIJ(DM da, Mat J) {
           for (ii = istart; ii < iend + 1; ii++) {
             for (jj = jstart; jj < jend + 1; jj++) {
               for (kk = kstart; kk < kend + 1; kk++) {
-                if ((st == DMDA_STENCIL_BOX) || (!ii && !jj) || (!jj && !kk) || (!ii && !kk)) { cols[cnt++] = slot + ii + gnx * jj + gnx * gny * kk; }
+                if ((st == DMDA_STENCIL_BOX) || (!ii && !jj) || (!jj && !kk) || (!ii && !kk)) cols[cnt++] = slot + ii + gnx * jj + gnx * gny * kk;
               }
             }
           }

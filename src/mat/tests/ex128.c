@@ -101,7 +101,7 @@ int main(int argc, char **args) {
       PetscCall(MatBackwardSolve(sA, ytmp, y));
       PetscCall(VecAXPY(y, -1.0, x));
       PetscCall(VecNorm(y, NORM_2, &norm2));
-      if (norm2 > tol) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "MatForwardSolve and BackwardSolve: Norm of error=%g\n", (double)norm2)); }
+      if (norm2 > tol) PetscCall(PetscPrintf(PETSC_COMM_SELF, "MatForwardSolve and BackwardSolve: Norm of error=%g\n", (double)norm2));
     }
   }
 
@@ -110,7 +110,7 @@ int main(int argc, char **args) {
   PetscCall(MatDestroy(&sA));
   PetscCall(VecAXPY(y, -1.0, x));
   PetscCall(VecNorm(y, NORM_2, &norm2));
-  if (lf == -1 && norm2 > tol) { PetscCall(PetscPrintf(PETSC_COMM_SELF, " reordered SEQAIJ:   Cholesky/ICC levels %" PetscInt_FMT ", residual %g\n", lf, (double)norm2)); }
+  if (lf == -1 && norm2 > tol) PetscCall(PetscPrintf(PETSC_COMM_SELF, " reordered SEQAIJ:   Cholesky/ICC levels %" PetscInt_FMT ", residual %g\n", lf, (double)norm2));
 
   /* Free data structures */
   PetscCall(MatDestroy(&C));

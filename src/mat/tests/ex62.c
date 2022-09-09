@@ -70,8 +70,8 @@ int main(int argc, char **args) {
     B = A_save;
   }
 
-  if (flgA) { PetscCall(MatConvert(A_save, A_mattype, MAT_INPLACE_MATRIX, &A_save)); }
-  if (flgB) { PetscCall(MatConvert(B, B_mattype, MAT_INPLACE_MATRIX, &B)); }
+  if (flgA) PetscCall(MatConvert(A_save, A_mattype, MAT_INPLACE_MATRIX, &A_save));
+  if (flgB) PetscCall(MatConvert(B, B_mattype, MAT_INPLACE_MATRIX, &B));
   PetscCall(MatSetFromOptions(A_save));
   PetscCall(MatSetFromOptions(B));
 
@@ -149,7 +149,7 @@ int main(int argc, char **args) {
   PetscCall(MatSeqAIJSetPreallocation(P, nzp, NULL));
   PetscCall(MatMPIAIJSetPreallocation(P, nzp, NULL, nzp, NULL));
   PetscCall(MatGetOwnershipRange(P, &rstart, &rend));
-  for (i = 0; i < nzp; i++) { PetscCall(PetscRandomGetValue(rdm, &a[i])); }
+  for (i = 0; i < nzp; i++) PetscCall(PetscRandomGetValue(rdm, &a[i]));
   for (i = rstart; i < rend; i++) {
     for (j = 0; j < nzp; j++) {
       PetscCall(PetscRandomGetValue(rdm, &rval));
@@ -468,7 +468,7 @@ int main(int argc, char **args) {
    test:
      nsize: {{1 3}}
      suffix: 14_aijkokkos
-     requires: !sycl kokkos_kernels !complex double !defined(PETSC_USE_64BIT_INDICES)
+     requires: kokkos_kernels !complex double !defined(PETSC_USE_64BIT_INDICES)
      args: -A_mat_type aijkokkos -B_mat_type aijkokkos -fA ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system -fB ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system
      output_file: output/ex62_1.out
 

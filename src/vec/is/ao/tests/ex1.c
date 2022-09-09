@@ -49,8 +49,8 @@ int main(int argc, char **argv) {
   PetscCall(AOApplicationToPetsc(ao, 3, getpetsc1));
 
   /* Check accuracy */;
-  for (i = 0; i < 4; i++) { PetscCheck(getapp1[i] == getapp[i], PETSC_COMM_SELF, PETSC_ERR_USER, "getapp1 %" PetscInt_FMT " != getapp %" PetscInt_FMT, getapp1[i], getapp[i]); }
-  for (i = 0; i < 3; i++) { PetscCheck(getpetsc1[i] == getpetsc[i], PETSC_COMM_SELF, PETSC_ERR_USER, "getpetsc1 %" PetscInt_FMT " != getpetsc %" PetscInt_FMT, getpetsc1[i], getpetsc[i]); }
+  for (i = 0; i < 4; i++) PetscCheck(getapp1[i] == getapp[i], PETSC_COMM_SELF, PETSC_ERR_USER, "getapp1 %" PetscInt_FMT " != getapp %" PetscInt_FMT, getapp1[i], getapp[i]);
+  for (i = 0; i < 3; i++) PetscCheck(getpetsc1[i] == getpetsc[i], PETSC_COMM_SELF, PETSC_ERR_USER, "getpetsc1 %" PetscInt_FMT " != getpetsc %" PetscInt_FMT, getpetsc1[i], getpetsc[i]);
 
   PetscCall(AODestroy(&ao));
 
@@ -65,8 +65,8 @@ int main(int argc, char **argv) {
   PetscCall(AOApplicationToPetsc(ao, 3, getpetsc2));
 
   /* Check accuracy */;
-  for (i = 0; i < 4; i++) { PetscCheck(getapp2[i] == getapp[i], PETSC_COMM_SELF, PETSC_ERR_USER, "getapp2 %" PetscInt_FMT " != getapp %" PetscInt_FMT, getapp2[i], getapp[i]); }
-  for (i = 0; i < 3; i++) { PetscCheck(getpetsc2[i] == getpetsc[i], PETSC_COMM_SELF, PETSC_ERR_USER, "getpetsc2 %" PetscInt_FMT " != getpetsc %" PetscInt_FMT, getpetsc2[i], getpetsc[i]); }
+  for (i = 0; i < 4; i++) PetscCheck(getapp2[i] == getapp[i], PETSC_COMM_SELF, PETSC_ERR_USER, "getapp2 %" PetscInt_FMT " != getapp %" PetscInt_FMT, getapp2[i], getapp[i]);
+  for (i = 0; i < 3; i++) PetscCheck(getpetsc2[i] == getpetsc[i], PETSC_COMM_SELF, PETSC_ERR_USER, "getpetsc2 %" PetscInt_FMT " != getpetsc %" PetscInt_FMT, getpetsc2[i], getpetsc[i]);
   PetscCall(AODestroy(&ao));
 
   /* test AOCreateMemoryScalable() ao: */
@@ -78,8 +78,8 @@ int main(int argc, char **argv) {
   PetscCall(AOApplicationToPetsc(ao, 3, getpetsc4));
 
   /* Check accuracy */;
-  for (i = 0; i < 4; i++) { PetscCheck(getapp4[i] == getapp[i], PETSC_COMM_SELF, PETSC_ERR_USER, "getapp4 %" PetscInt_FMT " != getapp %" PetscInt_FMT, getapp4[i], getapp[i]); }
-  for (i = 0; i < 3; i++) { PetscCheck(getpetsc4[i] == getpetsc[i], PETSC_COMM_SELF, PETSC_ERR_USER, "getpetsc4 %" PetscInt_FMT " != getpetsc %" PetscInt_FMT, getpetsc4[i], getpetsc[i]); }
+  for (i = 0; i < 4; i++) PetscCheck(getapp4[i] == getapp[i], PETSC_COMM_SELF, PETSC_ERR_USER, "getapp4 %" PetscInt_FMT " != getapp %" PetscInt_FMT, getapp4[i], getapp[i]);
+  for (i = 0; i < 3; i++) PetscCheck(getpetsc4[i] == getpetsc[i], PETSC_COMM_SELF, PETSC_ERR_USER, "getpetsc4 %" PetscInt_FMT " != getpetsc %" PetscInt_FMT, getpetsc4[i], getpetsc[i]);
   PetscCall(AODestroy(&ao));
 
   /* test general API */
@@ -102,8 +102,8 @@ int main(int argc, char **argv) {
   PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD, PETSC_STDOUT));
 
   /* Check accuracy */;
-  for (i = 0; i < 4; i++) { PetscCheck(getapp3[i] == getapp[i], PETSC_COMM_SELF, PETSC_ERR_USER, "getapp3 %" PetscInt_FMT " != getapp %" PetscInt_FMT, getapp3[i], getapp[i]); }
-  for (i = 0; i < 3; i++) { PetscCheck(getpetsc3[i] == getpetsc[i], PETSC_COMM_SELF, PETSC_ERR_USER, "getpetsc3 %" PetscInt_FMT " != getpetsc %" PetscInt_FMT, getpetsc3[i], getpetsc[i]); }
+  for (i = 0; i < 4; i++) PetscCheck(getapp3[i] == getapp[i], PETSC_COMM_SELF, PETSC_ERR_USER, "getapp3 %" PetscInt_FMT " != getapp %" PetscInt_FMT, getapp3[i], getapp[i]);
+  for (i = 0; i < 3; i++) PetscCheck(getpetsc3[i] == getpetsc[i], PETSC_COMM_SELF, PETSC_ERR_USER, "getpetsc3 %" PetscInt_FMT " != getpetsc %" PetscInt_FMT, getpetsc3[i], getpetsc[i]);
 
   PetscCall(AODestroy(&ao));
   PetscCall(PetscFinalize());

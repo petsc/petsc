@@ -125,7 +125,7 @@ PetscErrorCode ISLocate_Stride(IS is, PetscInt key, PetscInt *location) {
   step      = sub->step;
   key -= sub->first;
   rem = key / step;
-  if ((rem < is->map->n) && !(key % step)) { *location = rem; }
+  if ((rem < is->map->n) && !(key % step)) *location = rem;
   PetscFunctionReturn(0);
 }
 
@@ -179,7 +179,7 @@ PetscErrorCode ISView_Stride(IS is, PetscViewer viewer) {
         PetscCall(PetscViewerASCIIPrintf(viewer, "%s = [%" PetscInt_FMT " : %" PetscInt_FMT " : %" PetscInt_FMT "];\n", name, sub->first + 1, sub->step, sub->first + sub->step * (n - 1) + 1));
       } else {
         PetscCall(PetscViewerASCIIPrintf(viewer, "Number of indices in (stride) set %" PetscInt_FMT "\n", n));
-        for (i = 0; i < n; i++) { PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT " %" PetscInt_FMT "\n", i, sub->first + i * sub->step)); }
+        for (i = 0; i < n; i++) PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT " %" PetscInt_FMT "\n", i, sub->first + i * sub->step));
       }
       PetscCall(PetscViewerFlush(viewer));
     } else {
@@ -191,7 +191,7 @@ PetscErrorCode ISView_Stride(IS is, PetscViewer viewer) {
         PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "%s_%d = [%" PetscInt_FMT " : %" PetscInt_FMT " : %" PetscInt_FMT "];\n", name, rank, sub->first + 1, sub->step, sub->first + sub->step * (n - 1) + 1));
       } else {
         PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] Number of indices in (stride) set %" PetscInt_FMT "\n", rank, n));
-        for (i = 0; i < n; i++) { PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] %" PetscInt_FMT " %" PetscInt_FMT "\n", rank, i, sub->first + i * sub->step)); }
+        for (i = 0; i < n; i++) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] %" PetscInt_FMT " %" PetscInt_FMT "\n", rank, i, sub->first + i * sub->step));
       }
       PetscCall(PetscViewerFlush(viewer));
       PetscCall(PetscViewerASCIIPopSynchronized(viewer));

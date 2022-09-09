@@ -307,24 +307,24 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx) {
     /* communications */
     PetscCall(VecGetArrayRead(pcis->vec1_N, (const PetscScalar **)&array));
     for (i = 1; i < pcis->n_neigh; i++) {
-      for (j = 0; j < pcis->n_shared[i]; j++) { send_buffer[ptrs_buffer[i - 1] + j] = array[pcis->shared[i][j]]; }
+      for (j = 0; j < pcis->n_shared[i]; j++) send_buffer[ptrs_buffer[i - 1] + j] = array[pcis->shared[i][j]];
       PetscCall(PetscMPIIntCast(ptrs_buffer[i] - ptrs_buffer[i - 1], &buf_size));
       PetscCall(PetscMPIIntCast(pcis->neigh[i], &neigh));
       PetscCallMPI(MPI_Isend(&send_buffer[ptrs_buffer[i - 1]], buf_size, MPIU_SCALAR, neigh, 0, comm, &send_reqs[i - 1]));
       PetscCallMPI(MPI_Irecv(&recv_buffer[ptrs_buffer[i - 1]], buf_size, MPIU_SCALAR, neigh, 0, comm, &recv_reqs[i - 1]));
     }
     PetscCall(VecRestoreArrayRead(pcis->vec1_N, (const PetscScalar **)&array));
-    if (pcis->n_neigh > 0) { PetscCallMPI(MPI_Waitall(pcis->n_neigh - 1, recv_reqs, MPI_STATUSES_IGNORE)); }
+    if (pcis->n_neigh > 0) PetscCallMPI(MPI_Waitall(pcis->n_neigh - 1, recv_reqs, MPI_STATUSES_IGNORE));
     /* put values in correct places */
     for (i = 1; i < pcis->n_neigh; i++) {
       for (j = 0; j < pcis->n_shared[i]; j++) {
         k              = pcis->shared[i][j];
         neigh_position = 0;
-        while (mat_graph->neighbours_set[k][neigh_position] != pcis->neigh[i]) { neigh_position++; }
+        while (mat_graph->neighbours_set[k][neigh_position] != pcis->neigh[i]) neigh_position++;
         all_factors[k][neigh_position] = recv_buffer[ptrs_buffer[i - 1] + j];
       }
     }
-    if (pcis->n_neigh > 0) { PetscCallMPI(MPI_Waitall(pcis->n_neigh - 1, send_reqs, MPI_STATUSES_IGNORE)); }
+    if (pcis->n_neigh > 0) PetscCallMPI(MPI_Waitall(pcis->n_neigh - 1, send_reqs, MPI_STATUSES_IGNORE));
     PetscCall(PetscFree(send_reqs));
     PetscCall(PetscFree(recv_reqs));
     PetscCall(PetscFree(send_buffer));
@@ -350,10 +350,10 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx) {
     n_global_lambda = aux_global_numbering[cum];
     j               = mat_graph->count[aux_local_numbering_1[i]];
     aux_sums[0]     = 0;
-    for (s = 1; s < j; s++) { aux_sums[s] = aux_sums[s - 1] + j - s + 1; }
+    for (s = 1; s < j; s++) aux_sums[s] = aux_sums[s - 1] + j - s + 1;
     if (all_factors) array = all_factors[aux_local_numbering_1[i]];
     n_neg_values = 0;
-    while (n_neg_values < j && mat_graph->neighbours_set[aux_local_numbering_1[i]][n_neg_values] < rank) { n_neg_values++; }
+    while (n_neg_values < j && mat_graph->neighbours_set[aux_local_numbering_1[i]][n_neg_values] < rank) n_neg_values++;
     n_pos_values = j - n_neg_values;
     if (fully_redundant) {
       for (s = 0; s < n_neg_values; s++) {
@@ -417,7 +417,7 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx) {
   PetscCall(MatSetType(fetidpmat_ctx->B_delta, MATSEQAIJ));
   PetscCall(MatSeqAIJSetPreallocation(fetidpmat_ctx->B_delta, 1, NULL));
   PetscCall(MatSetOption(fetidpmat_ctx->B_delta, MAT_IGNORE_ZERO_ENTRIES, PETSC_TRUE));
-  for (i = 0; i < n_local_lambda; i++) { PetscCall(MatSetValue(fetidpmat_ctx->B_delta, i, cols_B_delta[i], vals_B_delta[i], INSERT_VALUES)); }
+  for (i = 0; i < n_local_lambda; i++) PetscCall(MatSetValue(fetidpmat_ctx->B_delta, i, cols_B_delta[i], vals_B_delta[i], INSERT_VALUES));
   PetscCall(PetscFree(vals_B_delta));
   PetscCall(MatAssemblyBegin(fetidpmat_ctx->B_delta, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(fetidpmat_ctx->B_delta, MAT_FINAL_ASSEMBLY));
@@ -430,7 +430,7 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx) {
     PetscCall(MatSetSizes(ScalingMat, n_local_lambda, n_local_lambda, n_local_lambda, n_local_lambda));
     PetscCall(MatSetType(ScalingMat, MATSEQAIJ));
     PetscCall(MatSeqAIJSetPreallocation(ScalingMat, 1, NULL));
-    for (i = 0; i < n_local_lambda; i++) { PetscCall(MatSetValue(ScalingMat, i, i, scaling_factors[i], INSERT_VALUES)); }
+    for (i = 0; i < n_local_lambda; i++) PetscCall(MatSetValue(ScalingMat, i, i, scaling_factors[i], INSERT_VALUES));
     PetscCall(MatAssemblyBegin(ScalingMat, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(ScalingMat, MAT_FINAL_ASSEMBLY));
     PetscCall(MatMatMult(ScalingMat, fetidpmat_ctx->B_delta, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &fetidpmat_ctx->B_Ddelta));
@@ -441,7 +441,7 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx) {
     if (!pcbddc->use_deluxe_scaling || !pcbddc->sub_schurs) {
       PetscCall(MatSetType(fetidpmat_ctx->B_Ddelta, MATSEQAIJ));
       PetscCall(MatSeqAIJSetPreallocation(fetidpmat_ctx->B_Ddelta, 1, NULL));
-      for (i = 0; i < n_local_lambda; i++) { PetscCall(MatSetValue(fetidpmat_ctx->B_Ddelta, i, cols_B_delta[i], scaling_factors[i], INSERT_VALUES)); }
+      for (i = 0; i < n_local_lambda; i++) PetscCall(MatSetValue(fetidpmat_ctx->B_Ddelta, i, cols_B_delta[i], scaling_factors[i], INSERT_VALUES));
       PetscCall(MatAssemblyBegin(fetidpmat_ctx->B_Ddelta, MAT_FINAL_ASSEMBLY));
       PetscCall(MatAssemblyEnd(fetidpmat_ctx->B_Ddelta, MAT_FINAL_ASSEMBLY));
     } else {
@@ -515,7 +515,7 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx) {
       PetscCall(MatMatMult(fetidpmat_ctx->B_delta, BD1, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &BD2));
       PetscCall(MatDestroy(&T));
       PetscCall(PetscFree3(W, pivots, Bwork));
-      if (sub_schurs->is_Ej_all) { PetscCall(ISRestoreIndices(sub_schurs->is_Ej_all, &idxs)); }
+      if (sub_schurs->is_Ej_all) PetscCall(ISRestoreIndices(sub_schurs->is_Ej_all, &idxs));
     }
   }
   PetscCall(PetscFree(scaling_factors));
@@ -715,7 +715,7 @@ PetscErrorCode PCBDDCSetupFETIDPPCContext(Mat fetimat, FETIDPPC_ctx fetidppc_ctx
     PetscBool discrete_harmonic = PETSC_FALSE;
 
     PetscCall(PetscObjectQuery((PetscObject)fetidppc_ctx->pc, "__KSPFETIDP_iV", (PetscObject *)&iV));
-    if (iV) { PetscCall(PetscOptionsGetBool(NULL, ((PetscObject)fetimat)->prefix, "-pc_discrete_harmonic", &discrete_harmonic, NULL)); }
+    if (iV) PetscCall(PetscOptionsGetBool(NULL, ((PetscObject)fetimat)->prefix, "-pc_discrete_harmonic", &discrete_harmonic, NULL));
     if (discrete_harmonic) {
       KSP             sksp;
       PC              pc;

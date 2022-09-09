@@ -33,18 +33,18 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2(Mat B, Mat A, const MatFactorInfo *i
     /* L part */
     nz    = bi[i + 1] - bi[i];
     bjtmp = bj + bi[i];
-    for (j = 0; j < nz; j++) { PetscCall(PetscArrayzero(rtmp + bs2 * bjtmp[j], bs2)); }
+    for (j = 0; j < nz; j++) PetscCall(PetscArrayzero(rtmp + bs2 * bjtmp[j], bs2));
 
     /* U part */
     nz    = bdiag[i] - bdiag[i + 1];
     bjtmp = bj + bdiag[i + 1] + 1;
-    for (j = 0; j < nz; j++) { PetscCall(PetscArrayzero(rtmp + bs2 * bjtmp[j], bs2)); }
+    for (j = 0; j < nz; j++) PetscCall(PetscArrayzero(rtmp + bs2 * bjtmp[j], bs2));
 
     /* load in initial (unfactored row) */
     nz    = ai[r[i] + 1] - ai[r[i]];
     ajtmp = aj + ai[r[i]];
     v     = aa + bs2 * ai[r[i]];
-    for (j = 0; j < nz; j++) { PetscCall(PetscArraycpy(rtmp + bs2 * ic[ajtmp[j]], v + bs2 * j, bs2)); }
+    for (j = 0; j < nz; j++) PetscCall(PetscArraycpy(rtmp + bs2 * ic[ajtmp[j]], v + bs2 * j, bs2));
 
     /* elimination */
     bjtmp = bj + bi[i];
@@ -82,7 +82,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2(Mat B, Mat A, const MatFactorInfo *i
     pv = b->a + bs2 * bi[i];
     pj = b->j + bi[i];
     nz = bi[i + 1] - bi[i];
-    for (j = 0; j < nz; j++) { PetscCall(PetscArraycpy(pv + bs2 * j, rtmp + bs2 * pj[j], bs2)); }
+    for (j = 0; j < nz; j++) PetscCall(PetscArraycpy(pv + bs2 * j, rtmp + bs2 * pj[j], bs2));
 
     /* Mark diagonal and invert diagonal for simpler triangular solves */
     pv = b->a + bs2 * bdiag[i];
@@ -95,7 +95,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2(Mat B, Mat A, const MatFactorInfo *i
     pv = b->a + bs2 * (bdiag[i + 1] + 1);
     pj = b->j + bdiag[i + 1] + 1;
     nz = bdiag[i] - bdiag[i + 1] - 1;
-    for (j = 0; j < nz; j++) { PetscCall(PetscArraycpy(pv + bs2 * j, rtmp + bs2 * pj[j], bs2)); }
+    for (j = 0; j < nz; j++) PetscCall(PetscArraycpy(pv + bs2 * j, rtmp + bs2 * pj[j], bs2));
   }
 
   PetscCall(PetscFree2(rtmp, mwork));
@@ -134,18 +134,18 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering(Mat B, Mat A, const 
     /* L part */
     nz    = bi[i + 1] - bi[i];
     bjtmp = bj + bi[i];
-    for (j = 0; j < nz; j++) { PetscCall(PetscArrayzero(rtmp + bs2 * bjtmp[j], bs2)); }
+    for (j = 0; j < nz; j++) PetscCall(PetscArrayzero(rtmp + bs2 * bjtmp[j], bs2));
 
     /* U part */
     nz    = bdiag[i] - bdiag[i + 1];
     bjtmp = bj + bdiag[i + 1] + 1;
-    for (j = 0; j < nz; j++) { PetscCall(PetscArrayzero(rtmp + bs2 * bjtmp[j], bs2)); }
+    for (j = 0; j < nz; j++) PetscCall(PetscArrayzero(rtmp + bs2 * bjtmp[j], bs2));
 
     /* load in initial (unfactored row) */
     nz    = ai[i + 1] - ai[i];
     ajtmp = aj + ai[i];
     v     = aa + bs2 * ai[i];
-    for (j = 0; j < nz; j++) { PetscCall(PetscArraycpy(rtmp + bs2 * ajtmp[j], v + bs2 * j, bs2)); }
+    for (j = 0; j < nz; j++) PetscCall(PetscArraycpy(rtmp + bs2 * ajtmp[j], v + bs2 * j, bs2));
 
     /* elimination */
     bjtmp = bj + bi[i];
@@ -183,7 +183,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering(Mat B, Mat A, const 
     pv = b->a + bs2 * bi[i];
     pj = b->j + bi[i];
     nz = bi[i + 1] - bi[i];
-    for (j = 0; j < nz; j++) { PetscCall(PetscArraycpy(pv + bs2 * j, rtmp + bs2 * pj[j], bs2)); }
+    for (j = 0; j < nz; j++) PetscCall(PetscArraycpy(pv + bs2 * j, rtmp + bs2 * pj[j], bs2));
 
     /* Mark diagonal and invert diagonal for simpler triangular solves */
     pv = b->a + bs2 * bdiag[i];
@@ -201,7 +201,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering(Mat B, Mat A, const 
     pv = b->a + bs2 * (bdiag[i + 1] + 1);
     pj = b->j + bdiag[i + 1] + 1;
     nz = bdiag[i] - bdiag[i + 1] - 1;
-    for (j = 0; j < nz; j++) { PetscCall(PetscArraycpy(pv + bs2 * j, rtmp + bs2 * pj[j], bs2)); }
+    for (j = 0; j < nz; j++) PetscCall(PetscArraycpy(pv + bs2 * j, rtmp + bs2 * pj[j], bs2));
   }
   PetscCall(PetscFree2(rtmp, mwork));
 
@@ -736,7 +736,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N(Mat C, Mat A, const MatFactorI
 
   PetscFunctionBegin;
   if (bs > 1) { /* convert A to a SBAIJ matrix and apply Cholesky factorization from it */
-    if (!a->sbaijMat) { PetscCall(MatConvert(A, MATSEQSBAIJ, MAT_INITIAL_MATRIX, &a->sbaijMat)); }
+    if (!a->sbaijMat) PetscCall(MatConvert(A, MATSEQSBAIJ, MAT_INITIAL_MATRIX, &a->sbaijMat));
     PetscCall((a->sbaijMat)->ops->choleskyfactornumeric(C, a->sbaijMat, info));
     PetscCall(MatDestroy(&a->sbaijMat));
     PetscFunctionReturn(0);
@@ -1004,7 +1004,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqBAIJ(Mat fact, Mat A, IS perm, const MatF
   PetscCheck(!missing, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Matrix is missing diagonal entry %" PetscInt_FMT, i);
 
   if (bs > 1) {
-    if (!a->sbaijMat) { PetscCall(MatConvert(A, MATSEQSBAIJ, MAT_INITIAL_MATRIX, &a->sbaijMat)); }
+    if (!a->sbaijMat) PetscCall(MatConvert(A, MATSEQSBAIJ, MAT_INITIAL_MATRIX, &a->sbaijMat));
     (fact)->ops->iccfactorsymbolic = MatICCFactorSymbolic_SeqSBAIJ; /* undue the change made in MatGetFactor_seqbaij_petsc */
 
     PetscCall(MatICCFactorSymbolic(fact, a->sbaijMat, perm, info));
@@ -1224,7 +1224,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqBAIJ(Mat fact, Mat A, IS perm, const
 
   PetscFunctionBegin;
   if (bs > 1) { /* convert to seqsbaij */
-    if (!a->sbaijMat) { PetscCall(MatConvert(A, MATSEQSBAIJ, MAT_INITIAL_MATRIX, &a->sbaijMat)); }
+    if (!a->sbaijMat) PetscCall(MatConvert(A, MATSEQSBAIJ, MAT_INITIAL_MATRIX, &a->sbaijMat));
     (fact)->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqSBAIJ; /* undue the change made in MatGetFactor_seqbaij_petsc */
 
     PetscCall(MatCholeskyFactorSymbolic(fact, a->sbaijMat, perm, info));
@@ -1643,7 +1643,7 @@ PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A, IS isrow, IS iscol, const MatFactor
         pj = bj + bdiag[row + 1] + 1; /* point to 1st entry of U(row,:) */
         pv = ba + bs2 * (bdiag[row + 1] + 1);
         nz = bdiag[row] - bdiag[row + 1] - 1; /* num of entries in U(row,:), excluding diagonal */
-        for (j = 0; j < nz; j++) { PetscKernel_A_gets_A_minus_B_times_C(bs, rtmp + bs2 * pj[j], pc, pv + bs2 * j); }
+        for (j = 0; j < nz; j++) PetscKernel_A_gets_A_minus_B_times_C(bs, rtmp + bs2 * pj[j], pc, pv + bs2 * j);
         /* PetscCall(PetscLogFlops(bslog*(nz+1.0)-bs)); */
       }
       row = *bjtmp++;

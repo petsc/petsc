@@ -950,10 +950,10 @@ static PetscErrorCode TSARKIMEXGetVecs(TS ts, DM dm, Vec *Z, Vec *Ydot) {
 static PetscErrorCode TSARKIMEXRestoreVecs(TS ts, DM dm, Vec *Z, Vec *Ydot) {
   PetscFunctionBegin;
   if (Z) {
-    if (dm && dm != ts->dm) { PetscCall(DMRestoreNamedGlobalVector(dm, "TSARKIMEX_Z", Z)); }
+    if (dm && dm != ts->dm) PetscCall(DMRestoreNamedGlobalVector(dm, "TSARKIMEX_Z", Z));
   }
   if (Ydot) {
-    if (dm && dm != ts->dm) { PetscCall(DMRestoreNamedGlobalVector(dm, "TSARKIMEX_Ydot", Ydot)); }
+    if (dm && dm != ts->dm) PetscCall(DMRestoreNamedGlobalVector(dm, "TSARKIMEX_Ydot", Ydot));
   }
   PetscFunctionReturn(0);
 }

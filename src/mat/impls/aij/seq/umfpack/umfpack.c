@@ -170,7 +170,7 @@ static PetscErrorCode MatLUFactorNumeric_UMFPACK(Mat F, Mat A, const MatFactorIn
   /* numeric factorization of A' */
   /* ----------------------------*/
 
-  if (lu->flg == SAME_NONZERO_PATTERN && lu->Numeric) { umfpack_UMF_free_numeric(&lu->Numeric); }
+  if (lu->flg == SAME_NONZERO_PATTERN && lu->Numeric) umfpack_UMF_free_numeric(&lu->Numeric);
 #if defined(PETSC_USE_COMPLEX)
   status = umfpack_UMF_numeric(ai, aj, (double *)av, NULL, lu->Symbolic, &lu->Numeric, lu->Control, lu->Info);
 #else
@@ -322,7 +322,7 @@ static PetscErrorCode MatView_Info_UMFPACK(Mat A, PetscViewer viewer) {
   PetscCall(PetscViewerASCIIPrintf(viewer, "  Control[UMFPACK_IRSTEP]: %g\n", lu->Control[UMFPACK_IRSTEP]));
 
   /* mat ordering */
-  if (!lu->perm_c) { PetscCall(PetscViewerASCIIPrintf(viewer, "  Control[UMFPACK_ORDERING]: %s (not using the PETSc ordering)\n", UmfpackOrderingTypes[(int)lu->Control[UMFPACK_ORDERING]])); }
+  if (!lu->perm_c) PetscCall(PetscViewerASCIIPrintf(viewer, "  Control[UMFPACK_ORDERING]: %s (not using the PETSc ordering)\n", UmfpackOrderingTypes[(int)lu->Control[UMFPACK_ORDERING]]));
   PetscFunctionReturn(0);
 }
 
@@ -334,7 +334,7 @@ static PetscErrorCode MatView_UMFPACK(Mat A, PetscViewer viewer) {
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   if (iascii) {
     PetscCall(PetscViewerGetFormat(viewer, &format));
-    if (format == PETSC_VIEWER_ASCII_INFO) { PetscCall(MatView_Info_UMFPACK(A, viewer)); }
+    if (format == PETSC_VIEWER_ASCII_INFO) PetscCall(MatView_Info_UMFPACK(A, viewer));
   }
   PetscFunctionReturn(0);
 }
@@ -346,7 +346,7 @@ PetscErrorCode MatFactorGetSolverType_seqaij_umfpack(Mat A, MatSolverType *type)
 }
 
 /*MC
-  MATSOLVERUMFPACK = "umfpack" - A matrix type providing direct solvers (LU) for sequential matrices
+  MATSOLVERUMFPACK = "umfpack" - A matrix type providing direct solvers, LU, for sequential matrices
   via the external package UMFPACK.
 
   Use ./configure --download-suitesparse to install PETSc to use UMFPACK
@@ -436,7 +436,7 @@ PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_SuiteSparse(void) {
   PetscCall(MatSolverTypeRegister(MATSOLVERCHOLMOD, MATSEQSBAIJ, MAT_FACTOR_CHOLESKY, MatGetFactor_seqsbaij_cholmod));
   PetscCall(MatSolverTypeRegister(MATSOLVERKLU, MATSEQAIJ, MAT_FACTOR_LU, MatGetFactor_seqaij_klu));
   PetscCall(MatSolverTypeRegister(MATSOLVERSPQR, MATSEQAIJ, MAT_FACTOR_QR, MatGetFactor_seqaij_spqr));
-  if (!PetscDefined(USE_COMPLEX)) { PetscCall(MatSolverTypeRegister(MATSOLVERSPQR, MATNORMAL, MAT_FACTOR_QR, MatGetFactor_seqaij_spqr)); }
+  if (!PetscDefined(USE_COMPLEX)) PetscCall(MatSolverTypeRegister(MATSOLVERSPQR, MATNORMAL, MAT_FACTOR_QR, MatGetFactor_seqaij_spqr));
   PetscCall(MatSolverTypeRegister(MATSOLVERSPQR, MATNORMALHERMITIAN, MAT_FACTOR_QR, MatGetFactor_seqaij_spqr));
   PetscFunctionReturn(0);
 }

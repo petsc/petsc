@@ -153,13 +153,13 @@ static PetscErrorCode MatCreateSubMatrices_Htool(Mat A, PetscInt n, const IS iro
   PetscBool          flg;
 
   PetscFunctionBegin;
-  if (scall != MAT_REUSE_MATRIX) { PetscCall(PetscCalloc1(n, submat)); }
+  if (scall != MAT_REUSE_MATRIX) PetscCall(PetscCalloc1(n, submat));
   for (i = 0; i < n; ++i) {
     PetscCall(ISGetLocalSize(irow[i], &nrow));
     PetscCall(ISGetLocalSize(icol[i], &m));
     PetscCall(ISGetIndices(irow[i], &idxr));
     PetscCall(ISGetIndices(icol[i], &idxc));
-    if (scall != MAT_REUSE_MATRIX) { PetscCall(MatCreateDense(PETSC_COMM_SELF, nrow, m, nrow, m, NULL, (*submat) + i)); }
+    if (scall != MAT_REUSE_MATRIX) PetscCall(MatCreateDense(PETSC_COMM_SELF, nrow, m, nrow, m, NULL, (*submat) + i));
     PetscCall(MatDenseGetArrayWrite((*submat)[i], &ptr));
     if (irow[i] == icol[i]) { /* same row and column IS? */
       PetscCall(MatHasCongruentLayouts(A, &flg));
@@ -265,7 +265,7 @@ static PetscErrorCode MatDestroy_Htool(Mat A) {
     PetscCall(PetscContainerDestroy(&container));
     PetscCall(PetscObjectCompose((PetscObject)A, "KernelTranspose", NULL));
   }
-  if (a->gcoords_source != a->gcoords_target) { PetscCall(PetscFree(a->gcoords_source)); }
+  if (a->gcoords_source != a->gcoords_target) PetscCall(PetscFree(a->gcoords_source));
   PetscCall(PetscFree(a->gcoords_target));
   PetscCall(PetscFree2(a->work_source, a->work_target));
   delete a->wrapper;
@@ -337,15 +337,15 @@ static PetscErrorCode MatGetRow_Htool(Mat A, PetscInt row, PetscInt *nz, PetscIn
     PetscCall(PetscBLASIntCast(A->cmap->N, &bn));
     PetscCallBLAS("BLASscal", BLASscal_(&bn, &a->s, *v, &one));
   }
-  if (!idx) { PetscCall(PetscFree(idxc)); }
+  if (!idx) PetscCall(PetscFree(idxc));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode MatRestoreRow_Htool(Mat A, PetscInt row, PetscInt *nz, PetscInt **idx, PetscScalar **v) {
   PetscFunctionBegin;
   if (nz) *nz = 0;
-  if (idx) { PetscCall(PetscFree(*idx)); }
-  if (v) { PetscCall(PetscFree(*v)); }
+  if (idx) PetscCall(PetscFree(*idx));
+  if (v) PetscCall(PetscFree(*v));
   PetscFunctionReturn(0);
 }
 
@@ -476,10 +476,10 @@ static PetscErrorCode MatProductSymbolic_Htool(Mat C) {
   PetscCheck(flg, PetscObjectComm((PetscObject)B), PETSC_ERR_SUP, "MatProduct_AB not supported for %s", ((PetscObject)product->B)->type_name);
   switch (product->type) {
   case MATPRODUCT_AB:
-    if (C->rmap->n == PETSC_DECIDE || C->cmap->n == PETSC_DECIDE || C->rmap->N == PETSC_DECIDE || C->cmap->N == PETSC_DECIDE) { PetscCall(MatSetSizes(C, A->rmap->n, B->cmap->n, A->rmap->N, B->cmap->N)); }
+    if (C->rmap->n == PETSC_DECIDE || C->cmap->n == PETSC_DECIDE || C->rmap->N == PETSC_DECIDE || C->cmap->N == PETSC_DECIDE) PetscCall(MatSetSizes(C, A->rmap->n, B->cmap->n, A->rmap->N, B->cmap->N));
     break;
   case MATPRODUCT_AtB:
-    if (C->rmap->n == PETSC_DECIDE || C->cmap->n == PETSC_DECIDE || C->rmap->N == PETSC_DECIDE || C->cmap->N == PETSC_DECIDE) { PetscCall(MatSetSizes(C, A->cmap->n, B->cmap->n, A->cmap->N, B->cmap->N)); }
+    if (C->rmap->n == PETSC_DECIDE || C->cmap->n == PETSC_DECIDE || C->rmap->N == PETSC_DECIDE || C->cmap->N == PETSC_DECIDE) PetscCall(MatSetSizes(C, A->cmap->n, B->cmap->n, A->cmap->N, B->cmap->N));
     break;
   default: SETERRQ(PetscObjectComm((PetscObject)B), PETSC_ERR_SUP, "ProductType %s is not supported", MatProductTypes[product->type]);
   }
@@ -509,7 +509,7 @@ static PetscErrorCode MatHtoolGetHierarchicalMat_Htool(Mat A, const htool::Virtu
 }
 
 /*@C
-     MatHtoolGetHierarchicalMat - Retrieves the opaque pointer to a Htool virtual matrix stored in a MATHTOOL.
+     MatHtoolGetHierarchicalMat - Retrieves the opaque pointer to a Htool virtual matrix stored in a `MATHTOOL`.
 
    Input Parameter:
 .     A - hierarchical matrix
@@ -541,7 +541,7 @@ static PetscErrorCode MatHtoolSetKernel_Htool(Mat A, MatHtoolKernel kernel, void
 }
 
 /*@C
-     MatHtoolSetKernel - Sets the kernel and context used for the assembly of a MATHTOOL.
+     MatHtoolSetKernel - Sets the kernel and context used for the assembly of a `MATHTOOL`.
 
    Input Parameters:
 +     A - hierarchical matrix
@@ -573,7 +573,7 @@ static PetscErrorCode MatHtoolGetPermutationSource_Htool(Mat A, IS *is) {
 }
 
 /*@C
-     MatHtoolGetPermutationSource - Gets the permutation associated to the source cluster.
+     MatHtoolGetPermutationSource - Gets the permutation associated to the source cluster for a `MATHTOOL` matrix.
 
    Input Parameter:
 .     A - hierarchical matrix
@@ -605,7 +605,7 @@ static PetscErrorCode MatHtoolGetPermutationTarget_Htool(Mat A, IS *is) {
 }
 
 /*@C
-     MatHtoolGetPermutationTarget - Gets the permutation associated to the target cluster.
+     MatHtoolGetPermutationTarget - Gets the permutation associated to the target cluster for a `MATHTOOL` matrix.
 
    Input Parameter:
 .     A - hierarchical matrix
@@ -634,7 +634,7 @@ static PetscErrorCode MatHtoolUsePermutation_Htool(Mat A, PetscBool use) {
 }
 
 /*@C
-     MatHtoolUsePermutation - Sets whether MATHTOOL should permute input (resp. output) vectors following its internal source (resp. target) permutation.
+     MatHtoolUsePermutation - Sets whether a `MATHTOOL` matrix should permute input (resp. output) vectors following its internal source (resp. target) permutation.
 
    Input Parameters:
 +     A - hierarchical matrix
@@ -752,14 +752,14 @@ static PetscErrorCode MatTranspose_Htool(Mat A, MatReuse reuse, Mat *B) {
 }
 
 /*@C
-     MatCreateHtoolFromKernel - Creates a MATHTOOL from a user-supplied kernel.
+     MatCreateHtoolFromKernel - Creates a `MATHTOOL` from a user-supplied kernel.
 
    Input Parameters:
 +     comm - MPI communicator
-.     m - number of local rows (or PETSC_DECIDE to have calculated if M is given)
-.     n - number of local columns (or PETSC_DECIDE to have calculated if N is given)
-.     M - number of global rows (or PETSC_DETERMINE to have calculated if m is given)
-.     N - number of global columns (or PETSC_DETERMINE to have calculated if n is given)
+.     m - number of local rows (or `PETSC_DECIDE` to have calculated if M is given)
+.     n - number of local columns (or `PETSC_DECIDE` to have calculated if N is given)
+.     M - number of global rows (or `PETSC_DETERMINE` to have calculated if m is given)
+.     N - number of global columns (or `PETSC_DETERMINE` to have calculated if n is given)
 .     spacedim - dimension of the space coordinates
 .     coords_target - coordinates of the target
 .     coords_source - coordinates of the source
@@ -770,12 +770,12 @@ static PetscErrorCode MatTranspose_Htool(Mat A, MatReuse reuse, Mat *B) {
 .     B - matrix
 
    Options Database Keys:
-+     -mat_htool_min_cluster_size <PetscInt> - minimal leaf size in cluster tree
-.     -mat_htool_max_block_size <PetscInt> - maximal number of coefficients in a dense block
-.     -mat_htool_epsilon <PetscReal> - relative error in Frobenius norm when approximating a block
-.     -mat_htool_eta <PetscReal> - admissibility condition tolerance
-.     -mat_htool_min_target_depth <PetscInt> - minimal cluster tree depth associated with the rows
-.     -mat_htool_min_source_depth <PetscInt> - minimal cluster tree depth associated with the columns
++     -mat_htool_min_cluster_size <`PetscInt`> - minimal leaf size in cluster tree
+.     -mat_htool_max_block_size <`PetscInt`> - maximal number of coefficients in a dense block
+.     -mat_htool_epsilon <`PetscReal`> - relative error in Frobenius norm when approximating a block
+.     -mat_htool_eta <`PetscReal`> - admissibility condition tolerance
+.     -mat_htool_min_target_depth <`PetscInt`> - minimal cluster tree depth associated with the rows
+.     -mat_htool_min_source_depth <`PetscInt`> - minimal cluster tree depth associated with the columns
 .     -mat_htool_compressor <sympartialACA, fullACA, SVD> - type of compression
 -     -mat_htool_clustering <PCARegular, PCAGeometric, BounbingBox1Regular, BoundingBox1Geometric> - type of clustering
 
@@ -821,7 +821,7 @@ PetscErrorCode MatCreateHtoolFromKernel(MPI_Comm comm, PetscInt m, PetscInt n, P
   Use ./configure --download-htool to install PETSc to use Htool.
 
    Options Database Keys:
-.     -mat_type htool - matrix type to "htool" during a call to MatSetFromOptions()
+.     -mat_type htool - matrix type to `MATHTOOL` during a call to `MatSetFromOptions()`
 
    Level: beginner
 

@@ -172,7 +172,7 @@ PetscErrorCode ini_bou(Vec X, AppCtx *user) {
       for (j = ys; j < ys + ym; j++) {
         xi = coors[j][i].x;
         yi = coors[j][i].y;
-        if ((xi == mux) && (yi == muy)) { p[j][i] = 1.0; }
+        if ((xi == mux) && (yi == muy)) p[j][i] = 1.0;
       }
     }
   } else {
@@ -389,7 +389,7 @@ PetscErrorCode Parameter_settings(AppCtx *user) {
   PetscCall(PetscOptionsGetScalar(NULL, NULL, "-mux", &user->mux, &flg));
   PetscCall(PetscOptionsGetScalar(NULL, NULL, "-sigmax", &user->sigmax, &flg));
   PetscCall(PetscOptionsGetScalar(NULL, NULL, "-muy", &user->muy, &flg));
-  if (flg == 0) { user->muy = user->ws; }
+  if (flg == 0) user->muy = user->ws;
   PetscCall(PetscOptionsGetScalar(NULL, NULL, "-sigmay", &user->sigmay, &flg));
   PetscCall(PetscOptionsGetScalar(NULL, NULL, "-rho", &user->rho, &flg));
   PetscCall(PetscOptionsGetScalar(NULL, NULL, "-xmin", &user->xmin, &flg));

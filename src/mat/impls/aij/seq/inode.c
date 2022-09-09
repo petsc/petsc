@@ -21,17 +21,17 @@ static PetscErrorCode MatCreateColInode_Private(Mat A, PetscInt *size, PetscInt 
       ;
     for (; count + 1 < n; count++, i++)
       ;
-    if (count < n) { i++; }
+    if (count < n) i++;
     *size = i;
     PetscFunctionReturn(0);
   }
   PetscCall(PetscMalloc1(n + 1, &ns_col));
 
   /* Use the same row structure wherever feasible. */
-  for (count = 0, i = 0; count < min_mn; count += ns_row[i], i++) { ns_col[i] = ns_row[i]; }
+  for (count = 0, i = 0; count < min_mn; count += ns_row[i], i++) ns_col[i] = ns_row[i];
 
   /* if m < n; pad up the remainder with inode_limit */
-  for (; count + 1 < n; count++, i++) { ns_col[i] = 1; }
+  for (; count + 1 < n; count++, i++) ns_col[i] = 1;
   /* The last node is the odd ball. padd it up with the remaining rows; */
   if (count < n) {
     ns_col[i] = n - count;
@@ -1243,7 +1243,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B, Mat A, const MatFactorInfo
   PetscCall(PetscMalloc1(node_max + 1, &tmp_vec2));
   for (i = 0, row = 0; i < node_max; i++) {
     nodesz = tmp_vec1[i];
-    for (j = 0; j < nodesz; j++, row++) { nsmap[row] = i; }
+    for (j = 0; j < nodesz; j++, row++) nsmap[row] = i;
   }
   /* Using nsmap, create a reordered ns structure */
   for (i = 0, j = 0; i < node_max; i++) {
@@ -2036,7 +2036,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode_inplace(Mat B, Mat A, const MatFa
   PetscCall(PetscMalloc2(n + 1, &nsmap, node_max + 1, &tmp_vec2));
   for (i = 0, row = 0; i < node_max; i++) {
     nodesz = tmp_vec1[i];
-    for (j = 0; j < nodesz; j++, row++) { nsmap[row] = i; }
+    for (j = 0; j < nodesz; j++, row++) nsmap[row] = i;
   }
   /* Using nsmap, create a reordered ns structure */
   for (i = 0, j = 0; i < node_max; i++) {
@@ -2784,16 +2784,16 @@ PetscErrorCode MatColoringPatch_SeqAIJ_Inode(Mat mat, PetscInt ncolors, PetscInt
   /* loop over inodes, marking a color for each column*/
   row = 0;
   for (i = 0; i < m; i++) {
-    for (j = 0; j < ns[i]; j++) { newcolor[row++] = coloring[i] + j * ncolors; }
+    for (j = 0; j < ns[i]; j++) newcolor[row++] = coloring[i] + j * ncolors;
   }
 
   /* eliminate unneeded colors */
   PetscCall(PetscCalloc1(5 * ncolors, &colorused));
-  for (i = 0; i < n; i++) { colorused[newcolor[i]] = 1; }
+  for (i = 0; i < n; i++) colorused[newcolor[i]] = 1;
 
-  for (i = 1; i < 5 * ncolors; i++) { colorused[i] += colorused[i - 1]; }
+  for (i = 1; i < 5 * ncolors; i++) colorused[i] += colorused[i - 1];
   ncolors = colorused[5 * ncolors - 1];
-  for (i = 0; i < n; i++) { newcolor[i] = colorused[newcolor[i]] - 1; }
+  for (i = 0; i < n; i++) newcolor[i] = colorused[newcolor[i]] - 1;
   PetscCall(PetscFree(colorused));
   PetscCall(ISColoringCreate(PetscObjectComm((PetscObject)mat), ncolors, n, newcolor, PETSC_OWN_POINTER, iscoloring));
   PetscCall(PetscFree(coloring));
@@ -2824,7 +2824,7 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A, Vec bb, PetscReal omega, MatSORType fl
   if (!a->inode.ibdiagvalid) {
     if (!a->inode.ibdiag) {
       /* calculate space needed for diagonal blocks */
-      for (i = 0; i < m; i++) { cnt += sizes[i] * sizes[i]; }
+      for (i = 0; i < m; i++) cnt += sizes[i] * sizes[i];
       a->inode.bdiagsize = cnt;
 
       PetscCall(PetscMalloc3(cnt, &a->inode.ibdiag, cnt, &a->inode.bdiag, A->rmap->n, &a->inode.ssor_work));
@@ -2836,7 +2836,7 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A, Vec bb, PetscReal omega, MatSORType fl
     cnt    = 0;
     for (i = 0, row = 0; i < m; i++) {
       for (j = 0; j < sizes[i]; j++) {
-        for (k = 0; k < sizes[i]; k++) { bdiag[cnt + k * sizes[i] + j] = v[diag[row + j] - j + k]; }
+        for (k = 0; k < sizes[i]; k++) bdiag[cnt + k * sizes[i] + j] = v[diag[row + j] - j + k];
       }
       PetscCall(PetscArraycpy(ibdiag + cnt, bdiag + cnt, sizes[i] * sizes[i]));
 
@@ -4220,7 +4220,7 @@ static PetscErrorCode MatSeqAIJ_Inode_ResetOps(Mat A) {
   A->ops->restorecolumnij   = MatRestoreColumnIJ_SeqAIJ;
   A->ops->coloringpatch     = NULL;
   A->ops->multdiagonalblock = NULL;
-  if (A->factortype) { A->ops->solve = MatSolve_SeqAIJ_inplace; }
+  if (A->factortype) A->ops->solve = MatSolve_SeqAIJ_inplace;
   PetscFunctionReturn(0);
 }
 
@@ -4365,7 +4365,7 @@ PetscErrorCode MatSeqAIJCheckInode_FactorLU(Mat A) {
 
   m = A->rmap->n;
   if (a->inode.size) ns = a->inode.size;
-  else { PetscCall(PetscMalloc1(m + 1, &ns)); }
+  else PetscCall(PetscMalloc1(m + 1, &ns));
 
   i          = 0;
   node_count = 0;
@@ -4495,12 +4495,12 @@ PetscErrorCode MatInodeAdjustForInodes_SeqAIJ_Inode(Mat A, IS *rperm, IS *cperm)
 }
 
 /*@C
-   MatInodeGetInodeSizes - Returns the inode information of the Inode matrix.
+   MatInodeGetInodeSizes - Returns the inode information of a matrix with inodes
 
    Not Collective
 
    Input Parameter:
-.  A - the Inode matrix or matrix derived from the Inode class -- e.g., SeqAIJ
+.  A - the Inode matrix or matrix derived from the Inode class -- e.g., `MATSEQAIJ`
 
    Output Parameters:
 +  node_count - no of inodes present in the matrix.
@@ -4509,7 +4509,7 @@ PetscErrorCode MatInodeAdjustForInodes_SeqAIJ_Inode(Mat A, IS *rperm, IS *cperm)
 
    Level: advanced
 
-   Notes:
+   Note:
     This routine returns some internal storage information
    of the matrix, it is intended to be used by advanced users.
    It should be called after the matrix is assembled.

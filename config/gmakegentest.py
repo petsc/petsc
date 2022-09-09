@@ -126,7 +126,7 @@ class generateExamples(Petsc):
     self.summarize=True if verbose else False
 
     # For help in setting the requirements
-    self.precision_types="single double __float128 int32".split()
+    self.precision_types="__fp16 single double __float128".split()
     self.integer_types="int32 int64 long32 long64".split()
     self.languages="fortran cuda hip sycl cxx cpp".split()    # Always requires C so do not list
 

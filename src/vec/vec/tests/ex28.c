@@ -4,7 +4,7 @@ static char help[] = "Tests repeated VecDotBegin()/VecDotEnd().\n\n";
 #include <petscvec.h>
 #define CheckError(a, b, tol) \
   do { \
-    if (!PetscIsCloseAtTol(a, b, 0, tol)) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Real error at line %d, tol %g: %s %g %s %g diff %g\n", __LINE__, (double)tol, #a, (double)(a), #b, (double)(b), (double)((a) - (b)))); } \
+    if (!PetscIsCloseAtTol(a, b, 0, tol)) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Real error at line %d, tol %g: %s %g %s %g diff %g\n", __LINE__, (double)tol, #a, (double)(a), #b, (double)(b), (double)((a) - (b)))); \
   } while (0)
 
 #define CheckErrorScalar(a, b, tol) \
@@ -138,13 +138,13 @@ int main(int argc, char **argv) {
     value = (PetscReal)i;
     PetscCall(VecSet(vecs[i], value));
   }
-  for (i = 0; i < 39; i++) { PetscCall(VecDotBegin(vecs[i], vecs[i + 1], results + i)); }
+  for (i = 0; i < 39; i++) PetscCall(VecDotBegin(vecs[i], vecs[i + 1], results + i));
   for (i = 0; i < 39; i++) {
     PetscScalar expected = 25.0 * i * (i + 1);
     PetscCall(VecDotEnd(vecs[i], vecs[i + 1], results + i));
     CheckErrorScalar(results[i], expected, tol);
   }
-  for (i = 0; i < 40; i++) { PetscCall(VecDestroy(&vecs[i])); }
+  for (i = 0; i < 40; i++) PetscCall(VecDestroy(&vecs[i]));
 
   PetscCall(PetscFinalize());
   return 0;

@@ -35,7 +35,7 @@ PetscErrorCode PCMGMCycle_Private(PC pc, PC_MG_Levels **mglevelsin, PetscBool tr
   if (mglevels->eventsmoothsolve) PetscCall(PetscLogEventEnd(mglevels->eventsmoothsolve, 0, 0, 0, 0));
   if (mglevels->level) { /* not the coarsest grid */
     if (mglevels->eventresidual) PetscCall(PetscLogEventBegin(mglevels->eventresidual, 0, 0, 0, 0));
-    if (matapp && !mglevels->R) { PetscCall(MatDuplicate(mglevels->B, MAT_DO_NOT_COPY_VALUES, &mglevels->R)); }
+    if (matapp && !mglevels->R) PetscCall(MatDuplicate(mglevels->B, MAT_DO_NOT_COPY_VALUES, &mglevels->R));
     if (!transpose) {
       if (matapp) PetscCall((*mglevels->matresidual)(mglevels->A, mglevels->B, mglevels->X, mglevels->R));
       else PetscCall((*mglevels->residual)(mglevels->A, mglevels->b, mglevels->x, mglevels->r));
@@ -80,7 +80,7 @@ PetscErrorCode PCMGMCycle_Private(PC pc, PC_MG_Levels **mglevelsin, PetscBool tr
     } else {
       PetscCall(VecZeroEntries(mgc->x));
     }
-    while (cycles--) { PetscCall(PCMGMCycle_Private(pc, mglevelsin - 1, transpose, matapp, reason)); }
+    while (cycles--) PetscCall(PCMGMCycle_Private(pc, mglevelsin - 1, transpose, matapp, reason));
     if (mglevels->eventinterprestrict) PetscCall(PetscLogEventBegin(mglevels->eventinterprestrict, 0, 0, 0, 0));
     if (!transpose) {
       if (matapp) PetscCall(MatMatInterpolateAdd(mglevels->interpolate, mgc->X, mglevels->X, &mglevels->X));
@@ -222,7 +222,7 @@ PetscErrorCode PCReset_MG(PC pc) {
     for (i = 0; i < n; i++) {
       PetscCall(MatDestroy(&mglevels[i]->coarseSpace));
       PetscCall(MatDestroy(&mglevels[i]->A));
-      if (mglevels[i]->smoothd != mglevels[i]->smoothu) { PetscCall(KSPReset(mglevels[i]->smoothd)); }
+      if (mglevels[i]->smoothd != mglevels[i]->smoothu) PetscCall(KSPReset(mglevels[i]->smoothd));
       PetscCall(KSPReset(mglevels[i]->smoothu));
       if (mglevels[i]->cr) PetscCall(KSPReset(mglevels[i]->cr));
     }
@@ -346,7 +346,7 @@ PetscErrorCode PCMGSetLevels_MG(PC pc, PetscInt levels, MPI_Comm *comms) {
     PetscCall(PCReset_MG(pc));
     n = mglevels[0]->levels;
     for (i = 0; i < n; i++) {
-      if (mglevels[i]->smoothd != mglevels[i]->smoothu) { PetscCall(KSPDestroy(&mglevels[i]->smoothd)); }
+      if (mglevels[i]->smoothd != mglevels[i]->smoothu) PetscCall(KSPDestroy(&mglevels[i]->smoothd));
       PetscCall(KSPDestroy(&mglevels[i]->smoothu));
       PetscCall(KSPDestroy(&mglevels[i]->cr));
       PetscCall(PetscFree(mglevels[i]));
@@ -483,7 +483,7 @@ PetscErrorCode PCDestroy_MG(PC pc) {
   if (mglevels) {
     n = mglevels[0]->levels;
     for (i = 0; i < n; i++) {
-      if (mglevels[i]->smoothd != mglevels[i]->smoothu) { PetscCall(KSPDestroy(&mglevels[i]->smoothd)); }
+      if (mglevels[i]->smoothd != mglevels[i]->smoothu) PetscCall(KSPDestroy(&mglevels[i]->smoothd));
       PetscCall(KSPDestroy(&mglevels[i]->smoothu));
       PetscCall(KSPDestroy(&mglevels[i]->cr));
       PetscCall(PetscFree(mglevels[i]));
@@ -553,7 +553,7 @@ static PetscErrorCode PCApply_MG_Internal(PC pc, Vec b, Vec x, Mat B, Mat X, Pet
         PetscCall(MatGetSize(mglevels[levels - 1]->B, NULL, &N1));
         PetscCall(MatGetSize(B, NULL, &N2));
         PetscCall(PetscObjectTypeCompare((PetscObject)mglevels[levels - 1]->B, ((PetscObject)B)->type_name, &flg));
-        if (N1 != N2 || !flg) { PetscCall(MatDestroy(&mglevels[levels - 1]->B)); }
+        if (N1 != N2 || !flg) PetscCall(MatDestroy(&mglevels[levels - 1]->B));
       }
       if (!mglevels[levels - 1]->B) {
         PetscCall(MatDuplicate(B, MAT_COPY_VALUES, &mglevels[levels - 1]->B));
@@ -599,7 +599,7 @@ static PetscErrorCode PCApply_MG_Internal(PC pc, Vec b, Vec x, Mat B, Mat X, Pet
   if (mg->am == PC_MG_MULTIPLICATIVE) {
     if (matapp) PetscCall(MatZeroEntries(X));
     else PetscCall(VecZeroEntries(x));
-    for (i = 0; i < mg->cyclesperpcapply; i++) { PetscCall(PCMGMCycle_Private(pc, mglevels + levels - 1, transpose, matapp, NULL)); }
+    for (i = 0; i < mg->cyclesperpcapply; i++) PetscCall(PCMGMCycle_Private(pc, mglevels + levels - 1, transpose, matapp, NULL));
   } else if (mg->am == PC_MG_ADDITIVE) {
     PetscCall(PCMGACycle_Private(pc, mglevels, transpose, matapp));
   } else if (mg->am == PC_MG_KASKADE) {
@@ -715,7 +715,7 @@ PetscErrorCode PCSetFromOptions_MG(PC pc, PetscOptionItems *PetscOptionsObject) 
         PetscCall(PetscStrcmp(stageLog->stageInfo[st].name, sname, &same));
         if (same) mg->stageApply = st;
       }
-      if (!mg->stageApply) { PetscCall(PetscLogStageRegister(sname, &mg->stageApply)); }
+      if (!mg->stageApply) PetscCall(PetscLogStageRegister(sname, &mg->stageApply));
     }
 #endif
   }
@@ -746,7 +746,7 @@ PetscErrorCode PCView_MG(PC pc, PetscViewer viewer) {
   if (iascii) {
     const char *cyclename = levels ? (mglevels[0]->cycles == PC_MG_CYCLE_V ? "v" : "w") : "unknown";
     PetscCall(PetscViewerASCIIPrintf(viewer, "  type is %s, levels=%" PetscInt_FMT " cycles=%s\n", PCMGTypes[mg->am], levels, cyclename));
-    if (mg->am == PC_MG_MULTIPLICATIVE) { PetscCall(PetscViewerASCIIPrintf(viewer, "    Cycles per PCApply=%" PetscInt_FMT "\n", mg->cyclesperpcapply)); }
+    if (mg->am == PC_MG_MULTIPLICATIVE) PetscCall(PetscViewerASCIIPrintf(viewer, "    Cycles per PCApply=%" PetscInt_FMT "\n", mg->cyclesperpcapply));
     if (mg->galerkin == PC_MG_GALERKIN_BOTH) {
       PetscCall(PetscViewerASCIIPrintf(viewer, "    Using Galerkin computed coarse grid matrices\n"));
     } else if (mg->galerkin == PC_MG_GALERKIN_PMAT) {
@@ -786,7 +786,7 @@ PetscErrorCode PCView_MG(PC pc, PetscViewer viewer) {
   } else if (isbinary) {
     for (i = levels - 1; i >= 0; i--) {
       PetscCall(KSPView(mglevels[i]->smoothd, viewer));
-      if (i && mglevels[i]->smoothd != mglevels[i]->smoothu) { PetscCall(KSPView(mglevels[i]->smoothu, viewer)); }
+      if (i && mglevels[i]->smoothd != mglevels[i]->smoothu) PetscCall(KSPView(mglevels[i]->smoothu, viewer));
     }
   } else if (isdraw) {
     PetscDraw draw;
@@ -1008,11 +1008,11 @@ PetscErrorCode PCSetUp_MG(PC pc) {
     if (pc->setupcalled) reuse = MAT_REUSE_MATRIX;
     for (i = n - 2; i > -1; i--) {
       PetscCheck(mglevels[i + 1]->restrct || mglevels[i + 1]->interpolate, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONGSTATE, "Must provide interpolation or restriction for each MG level except level 0");
-      if (!mglevels[i + 1]->interpolate) { PetscCall(PCMGSetInterpolation(pc, i + 1, mglevels[i + 1]->restrct)); }
-      if (!mglevels[i + 1]->restrct) { PetscCall(PCMGSetRestriction(pc, i + 1, mglevels[i + 1]->interpolate)); }
-      if (reuse == MAT_REUSE_MATRIX) { PetscCall(KSPGetOperators(mglevels[i]->smoothd, &A, &B)); }
-      if (doA) { PetscCall(MatGalerkin(mglevels[i + 1]->restrct, dA, mglevels[i + 1]->interpolate, reuse, 1.0, &A)); }
-      if (doB) { PetscCall(MatGalerkin(mglevels[i + 1]->restrct, dB, mglevels[i + 1]->interpolate, reuse, 1.0, &B)); }
+      if (!mglevels[i + 1]->interpolate) PetscCall(PCMGSetInterpolation(pc, i + 1, mglevels[i + 1]->restrct));
+      if (!mglevels[i + 1]->restrct) PetscCall(PCMGSetRestriction(pc, i + 1, mglevels[i + 1]->interpolate));
+      if (reuse == MAT_REUSE_MATRIX) PetscCall(KSPGetOperators(mglevels[i]->smoothd, &A, &B));
+      if (doA) PetscCall(MatGalerkin(mglevels[i + 1]->restrct, dA, mglevels[i + 1]->interpolate, reuse, 1.0, &A));
+      if (doB) PetscCall(MatGalerkin(mglevels[i + 1]->restrct, dB, mglevels[i + 1]->interpolate, reuse, 1.0, &B));
       /* the management of the PetscObjectReference() and PetscObjecDereference() below is rather delicate */
       if (!doA && dAeqdB) {
         if (reuse == MAT_INITIAL_MATRIX) PetscCall(PetscObjectReference((PetscObject)B));
@@ -1041,10 +1041,10 @@ PetscErrorCode PCSetUp_MG(PC pc) {
   /* Adapt interpolation matrices */
   if (adaptInterpolation) {
     for (i = 0; i < n; ++i) {
-      if (!mglevels[i]->coarseSpace) { PetscCall(PCMGComputeCoarseSpace_Internal(pc, i, mg->coarseSpaceType, mg->Nc, !i ? NULL : mglevels[i - 1]->coarseSpace, &mglevels[i]->coarseSpace)); }
+      if (!mglevels[i]->coarseSpace) PetscCall(PCMGComputeCoarseSpace_Internal(pc, i, mg->coarseSpaceType, mg->Nc, !i ? NULL : mglevels[i - 1]->coarseSpace, &mglevels[i]->coarseSpace));
       if (i) PetscCall(PCMGAdaptInterpolator_Internal(pc, i, mglevels[i - 1]->smoothu, mglevels[i]->smoothu, mglevels[i - 1]->coarseSpace, mglevels[i]->coarseSpace));
     }
-    for (i = n - 2; i > -1; --i) { PetscCall(PCMGRecomputeLevelOperators_Internal(pc, i)); }
+    for (i = n - 2; i > -1; --i) PetscCall(PCMGRecomputeLevelOperators_Internal(pc, i));
   }
 
   if (needRestricts && pc->dm) {
@@ -1062,10 +1062,10 @@ PetscErrorCode PCSetUp_MG(PC pc) {
   }
 
   if (!pc->setupcalled) {
-    for (i = 0; i < n; i++) { PetscCall(KSPSetFromOptions(mglevels[i]->smoothd)); }
+    for (i = 0; i < n; i++) PetscCall(KSPSetFromOptions(mglevels[i]->smoothd));
     for (i = 1; i < n; i++) {
-      if (mglevels[i]->smoothu && (mglevels[i]->smoothu != mglevels[i]->smoothd)) { PetscCall(KSPSetFromOptions(mglevels[i]->smoothu)); }
-      if (mglevels[i]->cr) { PetscCall(KSPSetFromOptions(mglevels[i]->cr)); }
+      if (mglevels[i]->smoothu && (mglevels[i]->smoothu != mglevels[i]->smoothd)) PetscCall(KSPSetFromOptions(mglevels[i]->smoothu));
+      if (mglevels[i]->cr) PetscCall(KSPSetFromOptions(mglevels[i]->cr));
     }
     /* insure that if either interpolation or restriction is set the other other one is set */
     for (i = 1; i < n; i++) {
@@ -1129,7 +1129,7 @@ PetscErrorCode PCSetUp_MG(PC pc) {
     if (mglevels[i]->cr) PetscCall(KSPSetInitialGuessNonzero(mglevels[i]->cr, PETSC_TRUE));
     if (mglevels[i]->eventsmoothsetup) PetscCall(PetscLogEventBegin(mglevels[i]->eventsmoothsetup, 0, 0, 0, 0));
     PetscCall(KSPSetUp(mglevels[i]->smoothd));
-    if (mglevels[i]->smoothd->reason == KSP_DIVERGED_PC_FAILED) { pc->failedreason = PC_SUBPC_ERROR; }
+    if (mglevels[i]->smoothd->reason == KSP_DIVERGED_PC_FAILED) pc->failedreason = PC_SUBPC_ERROR;
     if (mglevels[i]->eventsmoothsetup) PetscCall(PetscLogEventEnd(mglevels[i]->eventsmoothsetup, 0, 0, 0, 0));
     if (!mglevels[i]->residual) {
       Mat mat;
@@ -1156,7 +1156,7 @@ PetscErrorCode PCSetUp_MG(PC pc) {
       PetscCall(KSPSetInitialGuessNonzero(mglevels[i]->smoothu, PETSC_TRUE));
       if (mglevels[i]->eventsmoothsetup) PetscCall(PetscLogEventBegin(mglevels[i]->eventsmoothsetup, 0, 0, 0, 0));
       PetscCall(KSPSetUp(mglevels[i]->smoothu));
-      if (mglevels[i]->smoothu->reason == KSP_DIVERGED_PC_FAILED) { pc->failedreason = PC_SUBPC_ERROR; }
+      if (mglevels[i]->smoothu->reason == KSP_DIVERGED_PC_FAILED) pc->failedreason = PC_SUBPC_ERROR;
       if (mglevels[i]->eventsmoothsetup) PetscCall(PetscLogEventEnd(mglevels[i]->eventsmoothsetup, 0, 0, 0, 0));
     }
     if (mglevels[i]->cr) {
@@ -1172,14 +1172,14 @@ PetscErrorCode PCSetUp_MG(PC pc) {
       PetscCall(KSPSetInitialGuessNonzero(mglevels[i]->cr, PETSC_TRUE));
       if (mglevels[i]->eventsmoothsetup) PetscCall(PetscLogEventBegin(mglevels[i]->eventsmoothsetup, 0, 0, 0, 0));
       PetscCall(KSPSetUp(mglevels[i]->cr));
-      if (mglevels[i]->cr->reason == KSP_DIVERGED_PC_FAILED) { pc->failedreason = PC_SUBPC_ERROR; }
+      if (mglevels[i]->cr->reason == KSP_DIVERGED_PC_FAILED) pc->failedreason = PC_SUBPC_ERROR;
       if (mglevels[i]->eventsmoothsetup) PetscCall(PetscLogEventEnd(mglevels[i]->eventsmoothsetup, 0, 0, 0, 0));
     }
   }
 
   if (mglevels[0]->eventsmoothsetup) PetscCall(PetscLogEventBegin(mglevels[0]->eventsmoothsetup, 0, 0, 0, 0));
   PetscCall(KSPSetUp(mglevels[0]->smoothd));
-  if (mglevels[0]->smoothd->reason == KSP_DIVERGED_PC_FAILED) { pc->failedreason = PC_SUBPC_ERROR; }
+  if (mglevels[0]->smoothd->reason == KSP_DIVERGED_PC_FAILED) pc->failedreason = PC_SUBPC_ERROR;
   if (mglevels[0]->eventsmoothsetup) PetscCall(PetscLogEventEnd(mglevels[0]->eventsmoothsetup, 0, 0, 0, 0));
 
     /*
@@ -1198,7 +1198,7 @@ PetscErrorCode PCSetUp_MG(PC pc) {
   if (dump) viewer = PETSC_VIEWER_BINARY_(PetscObjectComm((PetscObject)pc));
 
   if (viewer) {
-    for (i = 1; i < n; i++) { PetscCall(MatView(mglevels[i]->restrct, viewer)); }
+    for (i = 1; i < n; i++) PetscCall(MatView(mglevels[i]->restrct, viewer));
     for (i = 0; i < n; i++) {
       PetscCall(KSPGetPC(mglevels[i]->smoothd, &pc));
       PetscCall(MatView(pc->mat, viewer));

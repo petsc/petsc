@@ -6,17 +6,17 @@ PetscClassId PETSC_DRAWAXIS_CLASSID = 0;
 /*@
    PetscDrawAxisCreate - Generate the axis data structure.
 
-   Collective on PetscDraw
+   Collective on draw
 
    Input Parameters:
-.  win - PetscDraw object where axis to to be made
+.  win - `PetscDraw` object where axis to to be made
 
    Output Parameter:
 .  axis - the axis datastructure
 
-   Notes:
-    the MPI communicator that owns the underlying draw object owns the PetscDrawAxis object, but calls to set PetscDrawAxis options are ignored by all processes
-          except the first MPI process in the communicator
+   Note:
+   The MPI communicator that owns the underlying draw object owns the `PetscDrawAxis` object, but calls to set `PetscDrawAxis` options are
+   ignored by all processes except the first MPI rank in the communicator
 
    Level: advanced
 
@@ -55,14 +55,14 @@ PetscErrorCode PetscDrawAxisCreate(PetscDraw draw, PetscDrawAxis *axis) {
 /*@
     PetscDrawAxisDestroy - Frees the space used by an axis structure.
 
-    Collective on PetscDrawAxis
+    Collective on axis
 
     Input Parameters:
 .   axis - the axis context
 
     Level: advanced
 
-.seealso: `PetscDrawAxisCreate()`, `PetscDrawAxis`
+.seealso: `PetscDraw`, `PetscDrawAxisCreate()`, `PetscDrawAxis`
 @*/
 PetscErrorCode PetscDrawAxisDestroy(PetscDrawAxis *axis) {
   PetscFunctionBegin;
@@ -85,7 +85,7 @@ PetscErrorCode PetscDrawAxisDestroy(PetscDrawAxis *axis) {
     PetscDrawAxisSetColors -  Sets the colors to be used for the axis,
                          tickmarks, and text.
 
-    Logically Collective on PetscDrawAxis
+    Logically Collective on axis
 
     Input Parameters:
 +   axis - the axis
@@ -95,7 +95,7 @@ PetscErrorCode PetscDrawAxisDestroy(PetscDrawAxis *axis) {
 
     Level: advanced
 
-.seealso: `PetscDrawAxisCreate()`, `PetscDrawAxis`, `PetscDrawAxisSetLabels()`, `PetscDrawAxisDraw()`, `PetscDrawAxisSetLimits()`
+.seealso: `PetscDraw`, `PetscDrawAxisCreate()`, `PetscDrawAxis`, `PetscDrawAxisSetLabels()`, `PetscDrawAxisDraw()`, `PetscDrawAxisSetLimits()`
 @*/
 PetscErrorCode PetscDrawAxisSetColors(PetscDrawAxis axis, int ac, int tc, int cc) {
   PetscFunctionBegin;
@@ -112,7 +112,7 @@ PetscErrorCode PetscDrawAxisSetColors(PetscDrawAxis axis, int ac, int tc, int cc
 /*@C
     PetscDrawAxisSetLabels -  Sets the x and y axis labels.
 
-    Logically Collective on PetscDrawAxis
+    Logically Collective on axis
 
     Input Parameters:
 +   axis - the axis
@@ -120,12 +120,13 @@ PetscErrorCode PetscDrawAxisSetColors(PetscDrawAxis axis, int ac, int tc, int cc
 -   xlabel,ylabel - the labes for the x and y axis
 
     Notes:
-    Must be called before PetscDrawAxisDraw() or PetscDrawLGDraw()
-           There should be no newlines in the arguments
+    Must be called before `PetscDrawAxisDraw()` or `PetscDrawLGDraw()`
+
+    There should be no newlines in the arguments
 
     Level: advanced
 
-.seealso: `PetscDrawAxisCreate()`, `PetscDrawAxis`, `PetscDrawAxisSetColors()`, `PetscDrawAxisDraw()`, `PetscDrawAxisSetLimits()`
+.seealso: `PetscDraw`, `PetscDrawAxisCreate()`, `PetscDrawAxis`, `PetscDrawAxisSetColors()`, `PetscDrawAxisDraw()`, `PetscDrawAxisSetLimits()`
 @*/
 PetscErrorCode PetscDrawAxisSetLabels(PetscDrawAxis axis, const char top[], const char xlabel[], const char ylabel[]) {
   PetscFunctionBegin;
@@ -142,20 +143,19 @@ PetscErrorCode PetscDrawAxisSetLabels(PetscDrawAxis axis, const char top[], cons
 /*@
     PetscDrawAxisSetLimits -  Sets the limits (in user coords) of the axis
 
-    Logically Collective on PetscDrawAxis
+    Logically Collective on axis
 
     Input Parameters:
 +   axis - the axis
 .   xmin,xmax - limits in x
 -   ymin,ymax - limits in y
 
-    Options Database:
+    Options Database Key:
 .   -drawaxis_hold - hold the initial set of axis limits for future plotting
 
     Level: advanced
 
 .seealso: `PetscDrawAxisSetHoldLimits()`, `PetscDrawAxisGetLimits()`, `PetscDrawAxisSetLabels()`, `PetscDrawAxisSetColors()`
-
 @*/
 PetscErrorCode PetscDrawAxisSetLimits(PetscDrawAxis axis, PetscReal xmin, PetscReal xmax, PetscReal ymin, PetscReal ymax) {
   PetscFunctionBegin;
@@ -182,7 +182,6 @@ PetscErrorCode PetscDrawAxisSetLimits(PetscDrawAxis axis, PetscReal xmin, PetscR
     Level: advanced
 
 .seealso: `PetscDrawAxisCreate()`, `PetscDrawAxis`, `PetscDrawAxisSetHoldLimits()`, `PetscDrawAxisSetLimits()`, `PetscDrawAxisSetLabels()`, `PetscDrawAxisSetColors()`
-
 @*/
 PetscErrorCode PetscDrawAxisGetLimits(PetscDrawAxis axis, PetscReal *xmin, PetscReal *xmax, PetscReal *ymin, PetscReal *ymax) {
   PetscFunctionBegin;
@@ -198,20 +197,19 @@ PetscErrorCode PetscDrawAxisGetLimits(PetscDrawAxis axis, PetscReal *xmin, Petsc
     PetscDrawAxisSetHoldLimits -  Causes an axis to keep the same limits until this is called
         again
 
-    Logically Collective on PetscDrawAxis
+    Logically Collective on axis
 
     Input Parameters:
 +   axis - the axis
--   hold - PETSC_TRUE - hold current limits, PETSC_FALSE allow limits to be changed
+-   hold - `PETSC_TRUE` - hold current limits, `PETSC_FALSE` allow limits to be changed
 
     Level: advanced
 
-    Notes:
-        Once this has been called with PETSC_TRUE the limits will not change if you call
-     PetscDrawAxisSetLimits() until you call this with PETSC_FALSE
+    Note:
+        Once this has been called with `PETSC_TRUE` the limits will not change if you call
+     `PetscDrawAxisSetLimits()` until you call this with `PETSC_FALSE`
 
 .seealso: `PetscDrawAxisCreate()`, `PetscDrawAxis`, `PetscDrawAxisGetLimits()`, `PetscDrawAxisSetLimits()`, `PetscDrawAxisSetLabels()`, `PetscDrawAxisSetColors()`
-
 @*/
 PetscErrorCode PetscDrawAxisSetHoldLimits(PetscDrawAxis axis, PetscBool hold) {
   PetscFunctionBegin;
@@ -222,12 +220,12 @@ PetscErrorCode PetscDrawAxisSetHoldLimits(PetscDrawAxis axis, PetscBool hold) {
 }
 
 /*@
-    PetscDrawAxisDraw - PetscDraws an axis.
+    PetscDrawAxisDraw - draws an axis.
 
-    Collective on PetscDrawAxis
+    Collective on axis
 
     Input Parameter:
-.   axis - Axis structure
+.   axis - `PetscDrawAxis` structure
 
     Level: advanced
 
@@ -238,7 +236,6 @@ PetscErrorCode PetscDrawAxisSetHoldLimits(PetscDrawAxis axis, PetscBool hold) {
     structure (axis).
 
 .seealso: `PetscDrawAxisCreate()`, `PetscDrawAxis`, `PetscDrawAxisGetLimits()`, `PetscDrawAxisSetLimits()`, `PetscDrawAxisSetLabels()`, `PetscDrawAxisSetColors()`
-
 @*/
 PetscErrorCode PetscDrawAxisDraw(PetscDrawAxis axis) {
   int         i, ntick, numx, numy, ac, tc, cc;

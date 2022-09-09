@@ -267,7 +267,7 @@ PetscErrorCode PetscDSView(PetscDS prob, PetscViewer v) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   if (!v) PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)prob), &v));
-  else { PetscValidHeaderSpecific(v, PETSC_VIEWER_CLASSID, 2); }
+  else PetscValidHeaderSpecific(v, PETSC_VIEWER_CLASSID, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)v, PETSCVIEWERASCII, &iascii));
   if (iascii) PetscCall(PetscDSView_Ascii(prob, v));
   PetscTryTypeMethod(prob, view, v);
@@ -545,7 +545,7 @@ PetscErrorCode PetscDSDestroy(PetscDS *ds) {
   }
   PetscCall(PetscFree((*ds)->subprobs));
   PetscCall(PetscDSDestroyStructs_Static(*ds));
-  for (f = 0; f < (*ds)->Nf; ++f) { PetscCall(PetscObjectDereference((*ds)->disc[f])); }
+  for (f = 0; f < (*ds)->Nf; ++f) PetscCall(PetscObjectDereference((*ds)->disc[f]));
   PetscCall(PetscFree4((*ds)->disc, (*ds)->implicit, (*ds)->cohesive, (*ds)->jetDegree));
   PetscCall(PetscWeakFormDestroy(&(*ds)->wf));
   PetscCall(PetscFree2((*ds)->update, (*ds)->ctx));

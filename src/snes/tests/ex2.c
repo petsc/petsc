@@ -218,7 +218,7 @@ int main(int argc, char **argv) {
   PetscCall(DMInterpolationAddPoints(interpolator, Np, pcoords));
   PetscCall(DMInterpolationSetUp(interpolator, dm, pointsAllProcs, PETSC_FALSE));
   /* Check locations */
-  for (c = 0; c < interpolator->n; ++c) { PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "[%d]Point %" PetscInt_FMT " is in Cell %" PetscInt_FMT "\n", rank, c, interpolator->cells[c])); }
+  for (c = 0; c < interpolator->n; ++c) PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "[%d]Point %" PetscInt_FMT " is in Cell %" PetscInt_FMT "\n", rank, c, interpolator->cells[c]));
   PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD, NULL));
   PetscCall(VecView(interpolator->coords, PETSC_VIEWER_STDOUT_WORLD));
   /* Setup Discretization */

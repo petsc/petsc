@@ -8,7 +8,7 @@ static PetscScalar GenEntry_Symm(PetscInt sdim, PetscReal x[], PetscReal y[], vo
   PetscReal clength = sdim == 3 ? 0.2 : 0.1;
   PetscReal dist, diff = 0.0;
 
-  for (d = 0; d < sdim; d++) { diff += (x[d] - y[d]) * (x[d] - y[d]); }
+  for (d = 0; d < sdim; d++) diff += (x[d] - y[d]) * (x[d] - y[d]);
   dist = PetscSqrtReal(diff);
   return PetscExpReal(-dist / clength);
 }
@@ -18,9 +18,9 @@ static PetscScalar GenEntry_Unsymm(PetscInt sdim, PetscReal x[], PetscReal y[], 
   PetscReal clength = sdim == 3 ? 0.2 : 0.1;
   PetscReal dist, diff = 0.0, nx = 0.0, ny = 0.0;
 
-  for (d = 0; d < sdim; d++) { nx += x[d] * x[d]; }
-  for (d = 0; d < sdim; d++) { ny += y[d] * y[d]; }
-  for (d = 0; d < sdim; d++) { diff += (x[d] - y[d]) * (x[d] - y[d]); }
+  for (d = 0; d < sdim; d++) nx += x[d] * x[d];
+  for (d = 0; d < sdim; d++) ny += y[d] * y[d];
+  for (d = 0; d < sdim; d++) diff += (x[d] - y[d]) * (x[d] - y[d]);
   dist = PetscSqrtReal(diff);
   return nx > ny ? PetscExpReal(-dist / clength) : PetscExpReal(-dist / clength) + 1.;
 }
@@ -92,7 +92,7 @@ int main(int argc, char **argv) {
   }
   PetscCall(PetscLayoutDestroy(&map));
 
-  if (lda) { PetscCall(PetscMalloc1(N * (n + lda), &Adata)); }
+  if (lda) PetscCall(PetscMalloc1(N * (n + lda), &Adata));
   PetscCall(MatCreateDense(PETSC_COMM_WORLD, n, n, N, N, Adata, &A));
   PetscCall(MatDenseSetLDA(A, n + lda));
 
@@ -113,7 +113,7 @@ int main(int argc, char **argv) {
 
     PetscCall(MatGetOwnershipRange(A, &ist, &ien));
     for (i = ist; i < ien; i++) {
-      for (j = 0; j < N; j++) { PetscCall(MatSetValue(A, i, j, (*k)(dim, coords + i * dim, coords + j * dim, NULL), INSERT_VALUES)); }
+      for (j = 0; j < N; j++) PetscCall(MatSetValue(A, i, j, (*k)(dim, coords + i * dim, coords + j * dim, NULL), INSERT_VALUES));
     }
     PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
@@ -136,7 +136,7 @@ int main(int argc, char **argv) {
     PetscCall(MatCreateH2OpusFromMat(A, dim, coords + ist * dim, PETSC_TRUE, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, &B));
   }
   PetscCall(PetscFree(coords));
-  if (agpu) { PetscCall(MatConvert(A, MATDENSECUDA, MAT_INPLACE_MATRIX, &A)); }
+  if (agpu) PetscCall(MatConvert(A, MATDENSECUDA, MAT_INPLACE_MATRIX, &A));
   PetscCall(MatViewFromOptions(A, NULL, "-A_view"));
 
   PetscCall(MatSetOption(B, MAT_SYMMETRIC, symm));
@@ -170,7 +170,7 @@ int main(int argc, char **argv) {
   PetscCall(MatMultAdd(B, Bx, By, By));
   PetscCall(VecNorm(By, NORM_INFINITY, &err));
   PetscCall(VecViewFromOptions(By, NULL, "-mult_vec_view"));
-  if (err > 10. * PETSC_SMALL) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "MatMultAdd err %g\n", err)); }
+  if (err > 10. * PETSC_SMALL) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "MatMultAdd err %g\n", err));
 
   /* Test MatNorm */
   PetscCall(MatNorm(A, NORM_INFINITY, &norms[0]));
@@ -200,10 +200,10 @@ int main(int argc, char **argv) {
   PetscCall(MatDuplicate(B, MAT_COPY_VALUES, &D));
   PetscCall(MatSetOption(D, MAT_SYMMETRIC, symm));
   PetscCall(MatMultEqual(B, D, 10, &flg));
-  if (!flg) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "MatMult error after MatDuplicate\n")); }
+  if (!flg) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "MatMult error after MatDuplicate\n"));
   if (testtrans) {
     PetscCall(MatMultTransposeEqual(B, D, 10, &flg));
-    if (!flg) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "MatMultTranspose error after MatDuplicate\n")); }
+    if (!flg) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "MatMultTranspose error after MatDuplicate\n"));
   }
   PetscCall(MatDestroy(&D));
 
@@ -222,7 +222,7 @@ int main(int argc, char **argv) {
     PetscCall(VecScale(Bx, -1.0));
     PetscCall(MatMultTransposeAdd(B, By, Bx, Bx));
     PetscCall(VecNorm(Bx, NORM_INFINITY, &err));
-    if (err > 10. * PETSC_SMALL) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "MatMultTransposeAdd err %g\n", err)); }
+    if (err > 10. * PETSC_SMALL) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "MatMultTransposeAdd err %g\n", err));
   }
   PetscCall(VecDestroy(&Ax));
   PetscCall(VecDestroy(&Ay));
@@ -230,11 +230,11 @@ int main(int argc, char **argv) {
   PetscCall(VecDestroy(&By));
 
   /* Test MatMatMult */
-  if (ldc) { PetscCall(PetscMalloc1(nrhs * (n + ldc), &Cdata)); }
+  if (ldc) PetscCall(PetscMalloc1(nrhs * (n + ldc), &Cdata));
   PetscCall(MatCreateDense(PETSC_COMM_WORLD, n, PETSC_DECIDE, N, nrhs, Cdata, &C));
   PetscCall(MatDenseSetLDA(C, n + ldc));
   PetscCall(MatSetRandom(C, NULL));
-  if (cgpu) { PetscCall(MatConvert(C, MATDENSECUDA, MAT_INPLACE_MATRIX, &C)); }
+  if (cgpu) PetscCall(MatConvert(C, MATDENSECUDA, MAT_INPLACE_MATRIX, &C));
   for (nt = 0; nt < ntrials; nt++) {
     PetscCall(MatMatMult(B, C, nt ? MAT_REUSE_MATRIX : MAT_INITIAL_MATRIX, PETSC_DEFAULT, &D));
     PetscCall(MatViewFromOptions(D, NULL, "-bc_view"));
@@ -288,7 +288,7 @@ int main(int argc, char **argv) {
     PetscCall(MatSetOption(D, MAT_SYMMETRIC, symm));
     PetscCall(MatH2OpusOrthogonalize(D));
     PetscCall(MatMultEqual(B, D, 10, &flg));
-    if (!flg) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "MatMult error after basis ortogonalization\n")); }
+    if (!flg) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "MatMult error after basis ortogonalization\n"));
     PetscCall(MatDestroy(&D));
   }
 
@@ -319,7 +319,7 @@ int main(int argc, char **argv) {
     PetscCall(MatH2OpusLowRankUpdate(D, U, V, 0.5));
     PetscCall(MatH2OpusLowRankUpdate(D, U, V, -0.5));
     PetscCall(MatMultEqual(B, D, 10, &flg));
-    if (!flg) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "MatMult error after low-rank update\n")); }
+    if (!flg) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "MatMult error after low-rank update\n"));
     PetscCall(MatDestroy(&D));
     PetscCall(MatDestroy(&U));
     PetscCall(PetscFree(Udata));

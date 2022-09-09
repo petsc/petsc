@@ -65,7 +65,8 @@ MPI_Datatype MPIU___COMPLEX128 = 0;
 #endif /* PETSC_HAVE_COMPLEX */
 #if defined(PETSC_HAVE_REAL___FLOAT128)
 MPI_Datatype MPIU___FLOAT128 = 0;
-#elif defined(PETSC_USE_REAL___FP16)
+#endif
+#if defined(PETSC_HAVE_REAL___FP16)
 MPI_Datatype MPIU___FP16 = 0;
 #endif
 MPI_Datatype MPIU_2SCALAR    = 0;
@@ -177,17 +178,17 @@ void Petsc_MPI_DebuggerOnError(MPI_Comm *comm, PetscMPIInt *flag, ...) {
 }
 
 /*@C
-   PetscEnd - Calls PetscFinalize() and then ends the program. This is useful if one
+   PetscEnd - Calls `PetscFinalize()` and then ends the program. This is useful if one
      wishes a clean exit somewhere deep in the program.
 
-   Collective on PETSC_COMM_WORLD
+   Collective on `PETSC_COMM_WORLD`
 
-   Options Database Keys are the same as for PetscFinalize()
+   Options Database Keys are the same as for `PetscFinalize()`
 
    Level: advanced
 
    Note:
-   See PetscInitialize() for more general runtime options.
+   See `PetscInitialize()` for more general runtime options.
 
 .seealso: `PetscInitialize()`, `PetscOptionsView()`, `PetscMallocDump()`, `PetscMPIDump()`, `PetscFinalize()`
 @*/
@@ -212,7 +213,7 @@ PetscErrorCode (*PetscExternalHelpFunction)(MPI_Comm)    = NULL;
 
 /*@C
    PetscSetHelpVersionFunctions - Sets functions that print help and version information
-   before the PETSc help and version information is printed. Must call BEFORE PetscInitialize().
+   before the PETSc help and version information is printed. Must call BEFORE `PetscInitialize()`.
    This routine enables a "higher-level" package that uses PETSc to print its messages first.
 
    Input Parameters:
@@ -285,7 +286,7 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[]) 
     if (flg2) PetscCall(PetscMallocLogRequestedSizeSet(flg1));
 
     PetscCall(PetscOptionsHasName(NULL, NULL, "-malloc_view", &mlog));
-    if (mlog) { mdebug = PETSC_TRUE; }
+    if (mlog) mdebug = PETSC_TRUE;
     /* the next line is deprecated */
     PetscCall(PetscOptionsGetBool(NULL, NULL, "-malloc", &mdebug, NULL));
     PetscCall(PetscOptionsGetBool(NULL, NULL, "-malloc_dump", &mdebug, NULL));
@@ -385,7 +386,7 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[]) 
   if (flg1) PetscCall(PetscPushErrorHandler(PetscMPIAbortErrorHandler, NULL));
   flg1 = PETSC_FALSE;
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-mpi_return_on_error", &flg1, NULL));
-  if (flg1) { PetscCallMPI(MPI_Comm_set_errhandler(comm, MPI_ERRORS_RETURN)); }
+  if (flg1) PetscCallMPI(MPI_Comm_set_errhandler(comm, MPI_ERRORS_RETURN));
   flg1 = PETSC_FALSE;
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-no_signal_handler", &flg1, NULL));
   if (!flg1) PetscCall(PetscPushSignalHandler(PetscSignalHandlerDefault, (void *)0));
@@ -422,10 +423,10 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[]) 
       PetscMPIInt dummy = 0;
       MPI_Status  status;
       for (i = 0; i < size; i++) {
-        if (rank != i) { PetscCallMPI(MPI_Send(&dummy, 1, MPI_INT, i, 109, comm)); }
+        if (rank != i) PetscCallMPI(MPI_Send(&dummy, 1, MPI_INT, i, 109, comm));
       }
       for (i = 0; i < size; i++) {
-        if (rank != i) { PetscCallMPI(MPI_Recv(&dummy, 1, MPI_INT, i, 109, comm, &status)); }
+        if (rank != i) PetscCallMPI(MPI_Recv(&dummy, 1, MPI_INT, i, 109, comm, &status));
       }
     }
     /* check if this processor node should be in debugger */
@@ -493,7 +494,7 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[]) 
   PetscCall(PetscDetermineInitialFPTrap());
   flg1 = PETSC_FALSE;
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-fp_trap", &flg1, &flag));
-  if (flag) PetscCall(PetscSetFPTrap((PetscFPTrap)flg1));
+  if (flag) PetscCall(PetscSetFPTrap(flg1 ? PETSC_FP_TRAP_ON : PETSC_FP_TRAP_OFF));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-check_pointer_intensity", &intensity, &flag));
   if (flag) PetscCall(PetscCheckPointerSetIntensity(intensity));
 #if defined(PETSC_USE_LOG)

@@ -146,7 +146,7 @@ PETSC_INTERN PetscErrorCode MatSeqAIJMKL_create_mkl_handle(Mat A) {
     PetscCallExternal(mkl_sparse_x_create_csr, &aijmkl->csrA, SPARSE_INDEX_BASE_ZERO, m, n, ai, ai + 1, aj, aa);
     PetscCallExternal(mkl_sparse_set_mv_hint, aijmkl->csrA, SPARSE_OPERATION_NON_TRANSPOSE, aijmkl->descr, 1000);
     PetscCallExternal(mkl_sparse_set_memory_hint, aijmkl->csrA, SPARSE_MEMORY_AGGRESSIVE);
-    if (!aijmkl->no_SpMV2) { PetscCallExternal(mkl_sparse_optimize, aijmkl->csrA); }
+    if (!aijmkl->no_SpMV2) PetscCallExternal(mkl_sparse_optimize, aijmkl->csrA);
     aijmkl->sparse_optimized = PETSC_TRUE;
     PetscCall(PetscObjectStateGet((PetscObject)A, &(aijmkl->state)));
   } else {
@@ -509,7 +509,7 @@ PetscErrorCode MatMultAdd_SeqAIJMKL(Mat A, Vec xx, Vec yy, Vec zz) {
      * MKL sparse BLAS does not have a MatMultAdd equivalent. */
     beta = 0.0;
     mkl_xcsrmv(&transa, &m, &n, &alpha, matdescra, aa, aj, ai, ai + 1, x, &beta, z);
-    for (i = 0; i < m; i++) { z[i] += y[i]; }
+    for (i = 0; i < m; i++) z[i] += y[i];
   }
 
   PetscCall(PetscLogFlops(2.0 * a->nz));
@@ -606,7 +606,7 @@ PetscErrorCode MatMultTransposeAdd_SeqAIJMKL(Mat A, Vec xx, Vec yy, Vec zz) {
      * MKL sparse BLAS does not have a MatMultAdd equivalent. */
     beta = 0.0;
     mkl_xcsrmv(&transa, &m, &n, &alpha, matdescra, aa, aj, ai, ai + 1, x, &beta, z);
-    for (i = 0; i < n; i++) { z[i] += y[i]; }
+    for (i = 0; i < n; i++) z[i] += y[i];
   }
 
   PetscCall(PetscLogFlops(2.0 * a->nz));
@@ -1031,19 +1031,19 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJMKL(Mat A, MatType type, Mat
 }
 
 /*@C
-   MatCreateSeqAIJMKL - Creates a sparse matrix of type SEQAIJMKL.
-   This type inherits from AIJ and is largely identical, but uses sparse BLAS
+   MatCreateSeqAIJMKL - Creates a sparse matrix of type `MATSEQAIJMKL`.
+   This type inherits from `MATSEQAIJ` and is largely identical, but uses sparse BLAS
    routines from Intel MKL whenever possible.
    If the installed version of MKL supports the "SpMV2" sparse
    inspector-executor routines, then those are used by default.
-   MatMult, MatMultAdd, MatMultTranspose, MatMultTransposeAdd, MatMatMult, MatTransposeMatMult, and MatPtAP (for
-   symmetric A) operations are currently supported.
-   Note that MKL version 18, update 2 or later is required for MatPtAP/MatPtAPNumeric and MatMatMultNumeric.
+   `MatMult()`, `MatMultAdd()`, `MatMultTranspose()`, `MatMultTransposeAdd()`, `MatMatMult()`, `MatTransposeMatMult()`, and `MatPtAP()`
+   (for symmetric A) operations are currently supported.
+   Note that MKL version 18, update 2 or later is required for `MatPtAP()`, `MatPtAPNumeric()` and `MatMatMultNumeric()`.
 
    Collective
 
    Input Parameters:
-+  comm - MPI communicator, set to PETSC_COMM_SELF
++  comm - MPI communicator, set to `PETSC_COMM_SELF`
 .  m - number of rows
 .  n - number of columns
 .  nz - number of nonzeros per row (same for all rows)
@@ -1057,7 +1057,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJMKL(Mat A, MatType type, Mat
 +  -mat_aijmkl_no_spmv2 - disable use of the SpMV2 inspector-executor routines
 -  -mat_aijmkl_eager_inspection - perform MKL "inspection" phase upon matrix assembly; default is to do "lazy" inspection, performing this step the first time the matrix is applied
 
-   Notes:
+   Note:
    If nnz is given then nz is ignored
 
    Level: intermediate

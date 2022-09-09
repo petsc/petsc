@@ -279,7 +279,7 @@ PetscErrorCode DMDAGetWireBasketInterpolation(PC pc, DM da, PC_Exotic *exotic, M
   /* Number the coarse grid points from 0 to Ntotal */
   PetscCall(MatGetSize(Aglobal, &Nt, NULL));
   PetscCall(PetscTableCreate(Ntotal / 3, Nt + 1, &ht));
-  for (i = 0; i < 26 * mp * np * pp; i++) { PetscCall(PetscTableAddCount(ht, globals[i] + 1)); }
+  for (i = 0; i < 26 * mp * np * pp; i++) PetscCall(PetscTableAddCount(ht, globals[i] + 1));
   PetscCall(PetscTableGetCount(ht, &cnt));
   PetscCheck(cnt == Ntotal, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Hash table size %" PetscInt_FMT " not equal to total number coarse grid points %" PetscInt_FMT, cnt, Ntotal);
   PetscCall(PetscFree(globals));
@@ -317,7 +317,7 @@ PetscErrorCode DMDAGetWireBasketInterpolation(PC pc, DM da, PC_Exotic *exotic, M
     PetscCall(VecSet(x, 1.0));
     PetscCall(MatMult(*P, x, y));
     PetscCall(VecGetArray(y, &yy));
-    for (i = 0; i < Ng; i++) { PetscCheck(PetscAbsScalar(yy[i] - 1.0) <= 1.e-10, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Wrong p interpolation at i %" PetscInt_FMT " value %g", i, (double)PetscAbsScalar(yy[i])); }
+    for (i = 0; i < Ng; i++) PetscCheck(PetscAbsScalar(yy[i] - 1.0) <= 1.e-10, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Wrong p interpolation at i %" PetscInt_FMT " value %g", i, (double)PetscAbsScalar(yy[i]));
     PetscCall(VecRestoreArray(y, &yy));
     PetscCall(VecDestroy(x));
     PetscCall(VecDestroy(y));
@@ -552,7 +552,7 @@ PetscCallMPI(MPI_Allgather(gl, 6, MPIU_INT, globals, 6, MPIU_INT, PetscObjectCom
 /* Number the coarse grid points from 0 to Ntotal */
 PetscCall(MatGetSize(Aglobal, &Nt, NULL));
 PetscCall(PetscTableCreate(Ntotal / 3, Nt + 1, &ht));
-for (i = 0; i < 6 * mp * np * pp; i++) { PetscCall(PetscTableAddCount(ht, globals[i] + 1)); }
+for (i = 0; i < 6 * mp * np * pp; i++) PetscCall(PetscTableAddCount(ht, globals[i] + 1));
 PetscCall(PetscTableGetCount(ht, &cnt));
 PetscCheck(cnt == Ntotal, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Hash table size %" PetscInt_FMT " not equal to total number coarse grid points %" PetscInt_FMT, cnt, Ntotal);
 PetscCall(PetscFree(globals));
@@ -590,7 +590,7 @@ PetscCall(PetscFree2(IIint, IIsurf));
   PetscCall(VecSet(x, 1.0));
   PetscCall(MatMult(*P, x, y));
   PetscCall(VecGetArray(y, &yy));
-  for (i = 0; i < Ng; i++) { PetscCheck(PetscAbsScalar(yy[i] - 1.0) <= 1.e-10, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Wrong p interpolation at i %" PetscInt_FMT " value %g", i, (double)PetscAbsScalar(yy[i])); }
+  for (i = 0; i < Ng; i++) PetscCheck(PetscAbsScalar(yy[i] - 1.0) <= 1.e-10, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Wrong p interpolation at i %" PetscInt_FMT " value %g", i, (double)PetscAbsScalar(yy[i]));
   PetscCall(VecRestoreArray(y, &yy));
   PetscCall(VecDestroy(x));
   PetscCall(VecDestroy(y));
@@ -707,7 +707,7 @@ PetscErrorCode PCView_Exotic(PC pc, PetscViewer viewer) {
       PetscCall(PetscViewerASCIIPushTab(viewer)); /* should not need to push this twice? */
       PetscCall(PetscViewerGetSubViewer(viewer, PETSC_COMM_SELF, &sviewer));
       PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)pc), &rank));
-      if (rank == 0) { PetscCall(KSPView(ctx->ksp, sviewer)); }
+      if (rank == 0) PetscCall(KSPView(ctx->ksp, sviewer));
       PetscCall(PetscViewerRestoreSubViewer(viewer, PETSC_COMM_SELF, &sviewer));
       PetscCall(PetscViewerASCIIPopTab(viewer));
       PetscCall(PetscViewerASCIIPopTab(viewer));

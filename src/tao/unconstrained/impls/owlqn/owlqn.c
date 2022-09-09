@@ -17,7 +17,7 @@ static PetscErrorCode ProjDirect_OWLQN(Vec d, Vec g) {
   PetscCall(VecGetArrayRead(g, &gptr));
   PetscCall(VecGetArray(d, &dptr));
   for (i = 0; i < high - low; i++) {
-    if (dptr[i] * gptr[i] <= 0.0) { dptr[i] = 0.0; }
+    if (dptr[i] * gptr[i] <= 0.0) dptr[i] = 0.0;
   }
   PetscCall(VecRestoreArray(d, &dptr));
   PetscCall(VecRestoreArrayRead(g, &gptr));
@@ -57,7 +57,7 @@ static PetscErrorCode TaoSolve_OWLQN(Tao tao) {
   TaoLineSearchConvergedReason ls_status = TAOLINESEARCH_CONTINUE_ITERATING;
 
   PetscFunctionBegin;
-  if (tao->XL || tao->XU || tao->ops->computebounds) { PetscCall(PetscInfo(tao, "WARNING: Variable bounds have been set but will be ignored by owlqn algorithm\n")); }
+  if (tao->XL || tao->XU || tao->ops->computebounds) PetscCall(PetscInfo(tao, "WARNING: Variable bounds have been set but will be ignored by owlqn algorithm\n"));
 
   /* Check convergence criteria */
   PetscCall(TaoComputeObjectiveAndGradient(tao, tao->solution, &f, tao->gradient));

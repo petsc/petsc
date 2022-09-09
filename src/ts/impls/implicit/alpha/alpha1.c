@@ -366,7 +366,7 @@ static PetscErrorCode TSView_Alpha(TS ts, PetscViewer viewer) {
 
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) { PetscCall(PetscViewerASCIIPrintf(viewer, "  Alpha_m=%g, Alpha_f=%g, Gamma=%g\n", (double)th->Alpha_m, (double)th->Alpha_f, (double)th->Gamma)); }
+  if (iascii) PetscCall(PetscViewerASCIIPrintf(viewer, "  Alpha_m=%g, Alpha_f=%g, Gamma=%g\n", (double)th->Alpha_m, (double)th->Alpha_f, (double)th->Gamma));
   PetscFunctionReturn(0);
 }
 

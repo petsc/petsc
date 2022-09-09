@@ -118,7 +118,7 @@ int main(int argc, char **args) {
   while (s2 < M) s2 *= 10;
   PetscCall(MatDenseGetArray(A, &data));
   for (j = 0; j < N; j++) {
-    for (i = 0; i < m; i++) { data[j * m + i] = s2 * j + i + s1 + 1; }
+    for (i = 0; i < m; i++) data[j * m + i] = s2 * j + i + s1 + 1;
   }
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
@@ -164,9 +164,9 @@ int main(int argc, char **args) {
     PetscReal err;
 
     PetscCall(MatMultAddEqual(A, S, 10, &flg));
-    if (!flg) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[test %" PetscInt_FMT "] Error mult add\n", test)); }
+    if (!flg) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[test %" PetscInt_FMT "] Error mult add\n", test));
     PetscCall(MatMultTransposeAddEqual(A, S, 10, &flg));
-    if (!flg) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[test %" PetscInt_FMT "] Error mult add (T)\n", test)); }
+    if (!flg) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[test %" PetscInt_FMT "] Error mult add (T)\n", test));
     if (testzerorows) {
       Mat       ST, B, C, BT, BTT;
       IS        zr;
@@ -238,7 +238,7 @@ int main(int argc, char **args) {
         PetscCall(VecCopy(b1, b));
         PetscCall(VecAXPY(b, -1.0, b2));
         PetscCall(VecNorm(b, NORM_INFINITY, &err));
-        if (err >= tol) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[test %" PetscInt_FMT "] Error b %g\n", test, (double)err)); }
+        if (err >= tol) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[test %" PetscInt_FMT "] Error b %g\n", test, (double)err));
         PetscCall(VecDestroy(&b));
       }
       PetscCall(VecDestroy(&b1));
@@ -260,12 +260,12 @@ int main(int argc, char **args) {
 
       PetscCall(MatAXPY(C, -1.0, B, SAME_NONZERO_PATTERN));
       PetscCall(MatNorm(C, NORM_FROBENIUS, &err));
-      if (err >= tol) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[test %" PetscInt_FMT "] Error mat mult after %s %g\n", test, ronl ? "MatZeroRows" : "MatZeroRowsColumns", (double)err)); }
+      if (err >= tol) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[test %" PetscInt_FMT "] Error mat mult after %s %g\n", test, ronl ? "MatZeroRows" : "MatZeroRowsColumns", (double)err));
 
       PetscCall(MatConvert(A, MATDENSE, MAT_REUSE_MATRIX, &C));
       PetscCall(MatAXPY(C, -1.0, BTT, SAME_NONZERO_PATTERN));
       PetscCall(MatNorm(C, NORM_FROBENIUS, &err));
-      if (err >= tol) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[test %" PetscInt_FMT "] Error mat mult transpose after %s %g\n", test, ronl ? "MatZeroRows" : "MatZeroRowsColumns", (double)err)); }
+      if (err >= tol) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[test %" PetscInt_FMT "] Error mat mult transpose after %s %g\n", test, ronl ? "MatZeroRows" : "MatZeroRowsColumns", (double)err));
 
       PetscCall(MatDestroy(&ST));
       PetscCall(MatDestroy(&BTT));
@@ -309,7 +309,7 @@ int main(int argc, char **args) {
       PetscCall(MatGetDiagonal(S, dS));
       PetscCall(VecAXPY(dA, -1.0, dS));
       PetscCall(VecNorm(dA, NORM_INFINITY, &err));
-      if (err >= tol) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[test %" PetscInt_FMT "] Error diag %g\n", test, (double)err)); }
+      if (err >= tol) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[test %" PetscInt_FMT "] Error diag %g\n", test, (double)err));
       PetscCall(VecDestroy(&dA));
       PetscCall(VecDestroy(&dS));
     }
@@ -337,14 +337,14 @@ int main(int argc, char **args) {
       PetscCall(MatCreateSubMatrix(A, r, c, MAT_INITIAL_MATRIX, &sA));
       PetscCall(MatCreateSubMatrix(S, r, c, MAT_INITIAL_MATRIX, &sS));
       PetscCall(MatMultAddEqual(sA, sS, 10, &flg));
-      if (!flg) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[test %" PetscInt_FMT "] Error submatrix mult add\n", test)); }
+      if (!flg) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[test %" PetscInt_FMT "] Error submatrix mult add\n", test));
       PetscCall(MatMultTransposeAddEqual(sA, sS, 10, &flg));
-      if (!flg) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[test %" PetscInt_FMT "] Error submatrix mult add (T)\n", test)); }
+      if (!flg) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[test %" PetscInt_FMT "] Error submatrix mult add (T)\n", test));
       PetscCall(MatConvert(sA, MATDENSE, MAT_INITIAL_MATRIX, &dA));
       PetscCall(MatConvert(sS, MATDENSE, MAT_INITIAL_MATRIX, &dS));
       PetscCall(MatAXPY(dA, -1.0, dS, SAME_NONZERO_PATTERN));
       PetscCall(MatNorm(dA, NORM_FROBENIUS, &err));
-      if (err >= tol) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[test %" PetscInt_FMT "] Error mat submatrix %g\n", test, (double)err)); }
+      if (err >= tol) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[test %" PetscInt_FMT "] Error mat submatrix %g\n", test, (double)err));
       PetscCall(MatDestroy(&sA));
       PetscCall(MatDestroy(&sS));
       PetscCall(MatDestroy(&dA));
@@ -354,14 +354,14 @@ int main(int argc, char **args) {
       PetscCall(MatCreateSubMatrix(At, c, r, MAT_INITIAL_MATRIX, &sA));
       PetscCall(MatCreateSubMatrix(St, c, r, MAT_INITIAL_MATRIX, &sS));
       PetscCall(MatMultAddEqual(sA, sS, 10, &flg));
-      if (!flg) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[test %" PetscInt_FMT "] Error submatrix (T) mult add\n", test)); }
+      if (!flg) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[test %" PetscInt_FMT "] Error submatrix (T) mult add\n", test));
       PetscCall(MatMultTransposeAddEqual(sA, sS, 10, &flg));
-      if (!flg) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[test %" PetscInt_FMT "] Error submatrix (T) mult add (T)\n", test)); }
+      if (!flg) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[test %" PetscInt_FMT "] Error submatrix (T) mult add (T)\n", test));
       PetscCall(MatConvert(sA, MATDENSE, MAT_INITIAL_MATRIX, &dA));
       PetscCall(MatConvert(sS, MATDENSE, MAT_INITIAL_MATRIX, &dS));
       PetscCall(MatAXPY(dA, -1.0, dS, SAME_NONZERO_PATTERN));
       PetscCall(MatNorm(dA, NORM_FROBENIUS, &err));
-      if (err >= tol) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[test %" PetscInt_FMT "] Error mat submatrix (T) %g\n", test, (double)err)); }
+      if (err >= tol) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[test %" PetscInt_FMT "] Error mat submatrix (T) %g\n", test, (double)err));
       PetscCall(MatDestroy(&sA));
       PetscCall(MatDestroy(&sS));
       PetscCall(MatDestroy(&dA));
@@ -391,14 +391,14 @@ int main(int argc, char **args) {
       PetscCall(MatDestroy(&tA));
       PetscCall(MatDestroy(&tS));
       PetscCall(MatMultAddEqual(A, S, 10, &flg));
-      if (!flg) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[test %" PetscInt_FMT "] Error axpy mult add\n", test)); }
+      if (!flg) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[test %" PetscInt_FMT "] Error axpy mult add\n", test));
       PetscCall(MatMultTransposeAddEqual(A, S, 10, &flg));
-      if (!flg) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[test %" PetscInt_FMT "] Error axpy mult add (T)\n", test)); }
+      if (!flg) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[test %" PetscInt_FMT "] Error axpy mult add (T)\n", test));
       PetscCall(MatConvert(A, MATDENSE, MAT_INITIAL_MATRIX, &dA));
       PetscCall(MatConvert(S, MATDENSE, MAT_INITIAL_MATRIX, &dS));
       PetscCall(MatAXPY(dA, -1.0, dS, SAME_NONZERO_PATTERN));
       PetscCall(MatNorm(dA, NORM_FROBENIUS, &err));
-      if (err >= tol) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[test %" PetscInt_FMT "] Error mat submatrix %g\n", test, (double)err)); }
+      if (err >= tol) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[test %" PetscInt_FMT "] Error mat submatrix %g\n", test, (double)err));
       PetscCall(MatDestroy(&dA));
       PetscCall(MatDestroy(&dS));
     }

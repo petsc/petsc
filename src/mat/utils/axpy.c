@@ -10,21 +10,21 @@ static PetscErrorCode MatTransposeAXPY_Private(Mat Y, PetscScalar a, Mat X, MatS
   if (f) {
     PetscCall(MatTransposeGetMat(T, &A));
     if (T == X) {
-      PetscCall(PetscInfo(NULL, "Explicitly transposing X of type MATTRANSPOSEMAT to perform MatAXPY()\n"));
+      PetscCall(PetscInfo(NULL, "Explicitly transposing X of type MATTRANSPOSEVIRTUAL to perform MatAXPY()\n"));
       PetscCall(MatTranspose(A, MAT_INITIAL_MATRIX, &F));
       A = Y;
     } else {
-      PetscCall(PetscInfo(NULL, "Transposing X because Y of type MATTRANSPOSEMAT to perform MatAXPY()\n"));
+      PetscCall(PetscInfo(NULL, "Transposing X because Y of type MATTRANSPOSEVIRTUAL to perform MatAXPY()\n"));
       PetscCall(MatTranspose(X, MAT_INITIAL_MATRIX, &F));
     }
   } else {
     PetscCall(MatHermitianTransposeGetMat(T, &A));
     if (T == X) {
-      PetscCall(PetscInfo(NULL, "Explicitly Hermitian transposing X of type MATTRANSPOSEMAT to perform MatAXPY()\n"));
+      PetscCall(PetscInfo(NULL, "Explicitly Hermitian transposing X of type MATHERITIANTRANSPOSEVIRTUAL to perform MatAXPY()\n"));
       PetscCall(MatHermitianTranspose(A, MAT_INITIAL_MATRIX, &F));
       A = Y;
     } else {
-      PetscCall(PetscInfo(NULL, "Hermitian transposing X because Y of type MATTRANSPOSEMAT to perform MatAXPY()\n"));
+      PetscCall(PetscInfo(NULL, "Hermitian transposing X because Y of type MATHERITIANTRANSPOSEVIRTUAL to perform MatAXPY()\n"));
       PetscCall(MatHermitianTranspose(X, MAT_INITIAL_MATRIX, &F));
     }
   }
@@ -44,7 +44,8 @@ static PetscErrorCode MatTransposeAXPY_Private(Mat Y, PetscScalar a, Mat X, MatS
 .  Y - the second matrix
 -  str - either SAME_NONZERO_PATTERN, DIFFERENT_NONZERO_PATTERN, UNKNOWN_NONZERO_PATTERN, or SUBSET_NONZERO_PATTERN (nonzeros of X is a subset of Y's)
 
-   Notes: No operation is performed when a is zero.
+   Note:
+   No operation is performed when a is zero.
 
    Level: intermediate
 
@@ -53,7 +54,6 @@ static PetscErrorCode MatTransposeAXPY_Private(Mat Y, PetscScalar a, Mat X, MatS
 PetscErrorCode MatAXPY(Mat Y, PetscScalar a, Mat X, MatStructure str) {
   PetscInt  M1, M2, N1, N2;
   PetscInt  m1, m2, n1, n2;
-  MatType   t1, t2;
   PetscBool sametype, transpose;
 
   PetscFunctionBegin;
@@ -74,18 +74,16 @@ PetscErrorCode MatAXPY(Mat Y, PetscScalar a, Mat X, MatStructure str) {
     PetscCall(MatScale(Y, 1.0 + a));
     PetscFunctionReturn(0);
   }
-  PetscCall(MatGetType(X, &t1));
-  PetscCall(MatGetType(Y, &t2));
-  PetscCall(PetscStrcmp(t1, t2, &sametype));
+  PetscCall(PetscObjectObjectTypeCompare((PetscObject)X, (PetscObject)Y, &sametype));
   PetscCall(PetscLogEventBegin(MAT_AXPY, Y, 0, 0, 0));
   if (Y->ops->axpy && (sametype || X->ops->axpy == Y->ops->axpy)) {
     PetscUseTypeMethod(Y, axpy, a, X, str);
   } else {
-    PetscCall(PetscStrcmp(t1, MATTRANSPOSEMAT, &transpose));
+    PetscCall(PetscObjectTypeCompareAny((PetscObject)X, &transpose, MATTRANSPOSEVIRTUAL, MATHERMITIANTRANSPOSEVIRTUAL, ""));
     if (transpose) {
       PetscCall(MatTransposeAXPY_Private(Y, a, X, str, X));
     } else {
-      PetscCall(PetscStrcmp(t2, MATTRANSPOSEMAT, &transpose));
+      PetscCall(PetscObjectTypeCompareAny((PetscObject)Y, &transpose, MATTRANSPOSEVIRTUAL, MATHERMITIANTRANSPOSEVIRTUAL, ""));
       if (transpose) {
         PetscCall(MatTransposeAXPY_Private(Y, a, X, str, Y));
       } else {
@@ -306,7 +304,7 @@ PetscErrorCode MatDiagonalSet_Default(Mat Y, Vec D, InsertMode is) {
   PetscFunctionBegin;
   PetscCall(MatGetOwnershipRange(Y, &start, &end));
   PetscCall(VecGetArrayRead(D, &v));
-  for (i = start; i < end; i++) { PetscCall(MatSetValues(Y, 1, &i, 1, &i, v + i - start, is)); }
+  for (i = start; i < end; i++) PetscCall(MatSetValues(Y, 1, &i, 1, &i, v + i - start, is));
   PetscCall(VecRestoreArrayRead(D, &v));
   PetscCall(MatAssemblyBegin(Y, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(Y, MAT_FINAL_ASSEMBLY));
@@ -325,7 +323,7 @@ PetscErrorCode MatDiagonalSet_Default(Mat Y, Vec D, InsertMode is) {
 .  D - the diagonal matrix, represented as a vector
 -  i - INSERT_VALUES or ADD_VALUES
 
-   Notes:
+   Note:
     If the matrix Y is missing some diagonal entries this routine can be very slow. To make it fast one should initially
    fill the matrix so that all diagonal entries have a value (with a value of zero for those locations that would not have an
    entry).
@@ -383,7 +381,7 @@ PetscErrorCode MatAYPX(Mat Y, PetscScalar a, Mat X, MatStructure str) {
     Output Parameter:
 .   mat - the explicit  operator
 
-    Notes:
+    Note:
     This computation is done by applying the operators to columns of the identity matrix.
     This routine is costly in general, and is recommended for use only with relatively small systems.
     Currently, this routine uses a dense matrix format if mattype == NULL.
@@ -412,7 +410,7 @@ PetscErrorCode MatComputeOperator(Mat inmat, MatType mattype, Mat *mat) {
     Output Parameter:
 .   mat - the explicit  operator transposed
 
-    Notes:
+    Note:
     This computation is done by applying the transpose of the operator to columns of the identity matrix.
     This routine is costly in general, and is recommended for use only with relatively small systems.
     Currently, this routine uses a dense matrix format if mattype == NULL.
@@ -460,7 +458,7 @@ PetscErrorCode MatChop(Mat A, PetscReal tol) {
     PetscCall(MatGetSize(a, &rStart, &rEnd));
     PetscCall(MatDenseGetArray(a, &newVals));
     for (; colMax < rEnd; ++colMax) {
-      for (maxRows = 0; maxRows < rStart; ++maxRows) { newVals[maxRows + colMax * r] = PetscAbsScalar(newVals[maxRows + colMax * r]) < tol ? 0.0 : newVals[maxRows + colMax * r]; }
+      for (maxRows = 0; maxRows < rStart; ++maxRows) newVals[maxRows + colMax * r] = PetscAbsScalar(newVals[maxRows + colMax * r]) < tol ? 0.0 : newVals[maxRows + colMax * r];
     }
     PetscCall(MatDenseRestoreArray(a, &newVals));
   } else {

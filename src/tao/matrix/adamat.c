@@ -152,10 +152,10 @@ static PetscErrorCode MatADAComputeDiagonal(Mat mat) {
     PetscCall(VecPointwiseMult(ctx->W, ctx->W, ctx->W));
     PetscCall(VecDotBegin(ctx->D1, ctx->W, dtemp + i));
   }
-  for (i = 0; i < n; i++) { PetscCall(VecDotEnd(ctx->D1, ctx->W, dtemp + i)); }
+  for (i = 0; i < n; i++) PetscCall(VecDotEnd(ctx->D1, ctx->W, dtemp + i));
 
   PetscCall(VecGetArray(ctx->ADADiag, &dptr));
-  for (i = low; i < high; i++) { dptr[i - low] = dtemp[i]; }
+  for (i = low; i < high; i++) dptr[i - low] = dtemp[i];
   PetscCall(VecRestoreArray(ctx->ADADiag, &dptr));
   PetscCall(PetscFree(dtemp));
   PetscFunctionReturn(0);
@@ -221,8 +221,8 @@ static PetscErrorCode MatCreateSubMatrices_ADA(Mat A, PetscInt n, IS *irow, IS *
   PetscInt i;
 
   PetscFunctionBegin;
-  if (scall == MAT_INITIAL_MATRIX) { PetscCall(PetscCalloc1(n + 1, B)); }
-  for (i = 0; i < n; i++) { PetscCall(MatCreateSubMatrix_ADA(A, irow[i], icol[i], scall, &(*B)[i])); }
+  if (scall == MAT_INITIAL_MATRIX) PetscCall(PetscCalloc1(n + 1, B));
+  for (i = 0; i < n; i++) PetscCall(MatCreateSubMatrix_ADA(A, irow[i], icol[i], scall, &(*B)[i]));
   PetscFunctionReturn(0);
 }
 
@@ -233,7 +233,7 @@ static PetscErrorCode MatGetColumnVector_ADA(Mat mat, Vec Y, PetscInt col) {
   PetscFunctionBegin;
   PetscCall(VecSet(Y, zero));
   PetscCall(VecGetOwnershipRange(Y, &low, &high));
-  if (col >= low && col < high) { PetscCall(VecSetValue(Y, col, one, INSERT_VALUES)); }
+  if (col >= low && col < high) PetscCall(VecSetValue(Y, col, one, INSERT_VALUES));
   PetscCall(VecAssemblyBegin(Y));
   PetscCall(VecAssemblyEnd(Y));
   PetscCall(MatMult_ADA(mat, Y, Y));
@@ -269,7 +269,7 @@ PETSC_INTERN PetscErrorCode MatConvert_ADA(Mat mat, MatType newtype, Mat *NewMat
     for (i = 0; i < M; i++) {
       PetscCall(MatGetColumnVector_ADA(mat, X, i));
       PetscCall(VecGetArrayRead(X, &dptr));
-      for (j = 0; j < high - low; j++) { PetscCall(MatSetValue(*NewMat, low + j, i, dptr[j], INSERT_VALUES)); }
+      for (j = 0; j < high - low; j++) PetscCall(MatSetValue(*NewMat, low + j, i, dptr[j], INSERT_VALUES));
       PetscCall(VecRestoreArrayRead(X, &dptr));
     }
     PetscCall(MatAssemblyBegin(*NewMat, MAT_FINAL_ASSEMBLY));
@@ -288,7 +288,7 @@ PETSC_INTERN PetscErrorCode MatConvert_ADA(Mat mat, MatType newtype, Mat *NewMat
     for (i = 0; i < M; i++) {
       PetscCall(MatGetColumnVector_ADA(mat, X, i));
       PetscCall(VecGetArrayRead(X, &dptr));
-      for (j = 0; j < high - low; j++) { PetscCall(MatSetValue(*NewMat, low + j, i, dptr[j], INSERT_VALUES)); }
+      for (j = 0; j < high - low; j++) PetscCall(MatSetValue(*NewMat, low + j, i, dptr[j], INSERT_VALUES));
       PetscCall(VecRestoreArrayRead(X, &dptr));
     }
     PetscCall(MatAssemblyBegin(*NewMat, MAT_FINAL_ASSEMBLY));

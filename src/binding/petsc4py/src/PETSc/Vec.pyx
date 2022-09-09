@@ -701,6 +701,23 @@ cdef class Vec(Object):
         CHKERR( MPI_Comm_size(comm, &size) )
         return array_i(size+1, rng)
 
+    def createLocalVector(self):
+        lvec = Vec()
+        CHKERR( VecCreateLocalVector(self.vec, &lvec.vec) )
+        return lvec
+
+    def getLocalVector(self, Vec lvec, readonly=False):
+        if readonly:
+            CHKERR( VecGetLocalVectorRead(self.vec, lvec.vec) )
+        else:
+            CHKERR( VecGetLocalVector(self.vec, lvec.vec) )
+
+    def restoreLocalVector(self, Vec lvec, readonly=False):
+        if readonly:
+            CHKERR( VecRestoreLocalVectorRead(self.vec, lvec.vec) )
+        else:
+            CHKERR( VecRestoreLocalVector(self.vec, lvec.vec) )
+
     def getBuffer(self, readonly=False):
         if readonly:
             return vec_getbuffer_r(self)

@@ -339,7 +339,7 @@ PetscErrorCode PetscOptionsDeprecatedNoObject(T...);
 @*/
 #define PetscOptionsHeadBegin(PetscOptionsObject, head) \
   do { \
-    if (PetscOptionsObject->printhelp && PetscOptionsObject->count == 1 && !PetscOptionsObject->alreadyprinted) { PetscCall((*PetscHelpPrintf)(PetscOptionsObject->comm, "  %s\n", head)); } \
+    if (PetscOptionsObject->printhelp && PetscOptionsObject->count == 1 && !PetscOptionsObject->alreadyprinted) PetscCall((*PetscHelpPrintf)(PetscOptionsObject->comm, "  %s\n", head)); \
   } while (0)
 
 #define PetscOptionsHead(...) PETSC_DEPRECATED_MACRO("GCC warning \"Use PetscOptionsHeadBegin() (since version 3.18)\"") PetscOptionsHeadBegin(__VA_ARGS__)

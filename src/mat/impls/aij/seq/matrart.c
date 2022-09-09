@@ -191,7 +191,7 @@ PetscErrorCode MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqDense(Mat R, Mat A, Mat B, 
       n  = a->i[i + 1] - a->i[i];
       aj = a->j + a->i[i];
       aa = a->a + a->i[i];
-      for (j = 0; j < n; j++) { r1 += (*aa++) * b1[*aj++]; }
+      for (j = 0; j < n; j++) r1 += (*aa++) * b1[*aj++];
       c[i] = r1;
     }
     b1 += bm;
@@ -201,7 +201,7 @@ PetscErrorCode MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqDense(Mat R, Mat A, Mat B, 
       n  = r->i[i + 1] - r->i[i];
       rj = r->j + r->i[i];
       ra = r->a + r->i[i];
-      for (j = 0; j < n; j++) { r1 += (*ra++) * c[*rj++]; }
+      for (j = 0; j < n; j++) r1 += (*ra++) * c[*rj++];
       d[col * rm + i] = r1;
     }
   }

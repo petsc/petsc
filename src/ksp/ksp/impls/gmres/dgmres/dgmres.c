@@ -145,7 +145,7 @@ PetscErrorCode KSPDGMRESCycle(PetscInt *itcount, KSP ksp) {
       PetscCall(KSPMonitor(ksp, ksp->its, ksp->rnorm));
     }
     dgmres->it = (it - 1);
-    if (dgmres->vv_allocated <= it + VEC_OFFSET + 1) { PetscCall(KSPDGMRESGetNewVectors(ksp, it + 1)); }
+    if (dgmres->vv_allocated <= it + VEC_OFFSET + 1) PetscCall(KSPDGMRESGetNewVectors(ksp, it + 1));
     if (dgmres->r > 0) {
       if (ksp->pc_side == PC_LEFT) {
         /* Apply the first preconditioner */
@@ -216,7 +216,7 @@ PetscErrorCode KSPDGMRESCycle(PetscInt *itcount, KSP ksp) {
   if (!ksp->reason && ksp->its < ksp->max_it) {
     test = max_k * PetscLogReal(ksp->rtol / res) / PetscLogReal(res / res_old);
     /* Compute data for the deflation if the residual rtol will not be reached in the remaining number of steps allowed  */
-    if ((test > dgmres->smv * (ksp->max_it - ksp->its)) || dgmres->force) { PetscCall(KSPDGMRESComputeDeflationData(ksp, NULL)); }
+    if ((test > dgmres->smv * (ksp->max_it - ksp->its)) || dgmres->force) PetscCall(KSPDGMRESComputeDeflationData(ksp, NULL));
   }
   PetscFunctionReturn(0);
 }
@@ -255,7 +255,7 @@ PetscErrorCode KSPSolve_DGMRES(KSP ksp) {
   }
   ksp->guess_zero = guess_zero; /* restore if user provided nonzero initial guess */
 
-  for (i = 0; i < dgmres->r; i++) { PetscCall(VecViewFromOptions(UU[i], (PetscObject)ksp, "-ksp_dgmres_view_deflation_vecs")); }
+  for (i = 0; i < dgmres->r; i++) PetscCall(VecViewFromOptions(UU[i], (PetscObject)ksp, "-ksp_dgmres_view_deflation_vecs"));
   PetscFunctionReturn(0);
 }
 
@@ -353,7 +353,7 @@ static PetscErrorCode KSPDGMRESBuildSoln(PetscScalar *nrs, Vec vs, Vec vdest, KS
   PetscCall(KSPUnwindPreconditioner(ksp, VEC_TEMP, VEC_TEMP_MATOP));
 
   /* add solution to previous solution */
-  if (vdest != vs) { PetscCall(VecCopy(vs, vdest)); }
+  if (vdest != vs) PetscCall(VecCopy(vs, vdest));
   PetscCall(VecAXPY(vdest, 1.0, VEC_TEMP));
   PetscFunctionReturn(0);
 }
@@ -422,7 +422,7 @@ static PetscErrorCode KSPDGMRESGetNewVectors(KSP ksp, PetscInt it) {
   nalloc = PetscMin(ksp->max_it, dgmres->delta_allocate);
   /* Adjust the number to allocate to make sure that we don't exceed the
    number of available slots */
-  if (it + VEC_OFFSET + nalloc >= dgmres->vecs_allocated) { nalloc = dgmres->vecs_allocated - it - VEC_OFFSET; }
+  if (it + VEC_OFFSET + nalloc >= dgmres->vecs_allocated) nalloc = dgmres->vecs_allocated - it - VEC_OFFSET;
   if (!nalloc) PetscFunctionReturn(0);
 
   dgmres->vv_allocated += nalloc;
@@ -431,7 +431,7 @@ static PetscErrorCode KSPDGMRESGetNewVectors(KSP ksp, PetscInt it) {
   PetscCall(PetscLogObjectParents(ksp, nalloc, dgmres->user_work[nwork]));
 
   dgmres->mwork_alloc[nwork] = nalloc;
-  for (k = 0; k < nalloc; k++) { dgmres->vecs[it + VEC_OFFSET + k] = dgmres->user_work[nwork][k]; }
+  for (k = 0; k < nalloc; k++) dgmres->vecs[it + VEC_OFFSET + k] = dgmres->user_work[nwork][k];
   dgmres->nwork_alloc++;
   PetscFunctionReturn(0);
 }
@@ -556,14 +556,14 @@ PetscErrorCode KSPDGMRESComputeDeflationData_DGMRES(KSP ksp, PetscInt *ExtrNeig)
 
   PetscCall(KSPDGMRESComputeSchurForm(ksp, &neig));
   /* Form the extended Schur vectors X=VV*Sr */
-  if (!XX) { PetscCall(VecDuplicateVecs(VEC_VV(0), neig1, &XX)); }
+  if (!XX) PetscCall(VecDuplicateVecs(VEC_VV(0), neig1, &XX));
   for (j = 0; j < neig; j++) {
     PetscCall(VecZeroEntries(XX[j]));
     PetscCall(VecMAXPY(XX[j], n, &SR[j * N], &VEC_VV(0)));
   }
 
   /* Orthogonalize X against U */
-  if (!ORTH) { PetscCall(PetscMalloc1(max_neig, &ORTH)); }
+  if (!ORTH) PetscCall(PetscMalloc1(max_neig, &ORTH));
   if (r > 0) {
     /* modified Gram-Schmidt */
     for (j = 0; j < neig; j++) {
@@ -576,8 +576,8 @@ PetscErrorCode KSPDGMRESComputeDeflationData_DGMRES(KSP ksp, PetscInt *ExtrNeig)
     }
   }
   /* Compute MX = M^{-1}*A*X */
-  if (!MX) { PetscCall(VecDuplicateVecs(VEC_VV(0), neig1, &MX)); }
-  for (j = 0; j < neig; j++) { PetscCall(KSP_PCApplyBAorAB(ksp, XX[j], MX[j], VEC_TEMP_MATOP)); }
+  if (!MX) PetscCall(VecDuplicateVecs(VEC_VV(0), neig1, &MX));
+  for (j = 0; j < neig; j++) PetscCall(KSP_PCApplyBAorAB(ksp, XX[j], MX[j], VEC_TEMP_MATOP));
   dgmres->matvecs += neig;
 
   if ((r + neig1) > max_neig && dgmres->improve) { /* Improve the approximate eigenvectors in X by solving a new generalized eigenvalue -- Quite expensive to do this actually */
@@ -587,23 +587,23 @@ PetscErrorCode KSPDGMRESComputeDeflationData_DGMRES(KSP ksp, PetscInt *ExtrNeig)
   }
 
   /* Compute XMX = X'*M^{-1}*A*X -- size (neig, neig) */
-  if (!XMX) { PetscCall(PetscMalloc1(neig1 * neig1, &XMX)); }
-  for (j = 0; j < neig; j++) { PetscCall(VecMDot(MX[j], neig, XX, &(XMX[j * neig1]))); }
+  if (!XMX) PetscCall(PetscMalloc1(neig1 * neig1, &XMX));
+  for (j = 0; j < neig; j++) PetscCall(VecMDot(MX[j], neig, XX, &(XMX[j * neig1])));
 
   if (r > 0) {
     /* Compute UMX = U'*M^{-1}*A*X -- size (r, neig) */
-    if (!UMX) { PetscCall(PetscMalloc1(max_neig * neig1, &UMX)); }
-    for (j = 0; j < neig; j++) { PetscCall(VecMDot(MX[j], r, UU, &(UMX[j * max_neig]))); }
+    if (!UMX) PetscCall(PetscMalloc1(max_neig * neig1, &UMX));
+    for (j = 0; j < neig; j++) PetscCall(VecMDot(MX[j], r, UU, &(UMX[j * max_neig])));
     /* Compute XMU = X'*M^{-1}*A*U -- size(neig, r) */
-    if (!XMU) { PetscCall(PetscMalloc1(max_neig * neig1, &XMU)); }
-    for (j = 0; j < r; j++) { PetscCall(VecMDot(MU[j], neig, XX, &(XMU[j * neig1]))); }
+    if (!XMU) PetscCall(PetscMalloc1(max_neig * neig1, &XMU));
+    for (j = 0; j < r; j++) PetscCall(VecMDot(MU[j], neig, XX, &(XMU[j * neig1])));
   }
 
   /* Form the new matrix T = [T UMX; XMU XMX]; */
-  if (!TT) { PetscCall(PetscMalloc1(max_neig * max_neig, &TT)); }
+  if (!TT) PetscCall(PetscMalloc1(max_neig * max_neig, &TT));
   if (r > 0) {
     /* Add XMU to T */
-    for (j = 0; j < r; j++) { PetscCall(PetscArraycpy(&(TT[max_neig * j + r]), &(XMU[neig1 * j]), neig)); }
+    for (j = 0; j < r; j++) PetscCall(PetscArraycpy(&(TT[max_neig * j + r]), &(XMU[neig1 * j]), neig));
     /* Add [UMX; XMX] to T */
     for (j = 0; j < neig; j++) {
       k = r + j;
@@ -611,7 +611,7 @@ PetscErrorCode KSPDGMRESComputeDeflationData_DGMRES(KSP ksp, PetscInt *ExtrNeig)
       PetscCall(PetscArraycpy(&(TT[max_neig * k + r]), &(XMX[neig1 * j]), neig));
     }
   } else { /* Add XMX to T */
-    for (j = 0; j < neig; j++) { PetscCall(PetscArraycpy(&(TT[max_neig * j]), &(XMX[neig1 * j]), neig)); }
+    for (j = 0; j < neig; j++) PetscCall(PetscArraycpy(&(TT[max_neig * j]), &(XMX[neig1 * j]), neig));
   }
 
   dgmres->r += neig;
@@ -620,9 +620,9 @@ PetscErrorCode KSPDGMRESComputeDeflationData_DGMRES(KSP ksp, PetscInt *ExtrNeig)
   /*LU Factorize T with Lapack xgetrf routine */
 
   PetscCall(PetscBLASIntCast(max_neig, &bmax));
-  if (!TTF) { PetscCall(PetscMalloc1(bmax * bmax, &TTF)); }
+  if (!TTF) PetscCall(PetscMalloc1(bmax * bmax, &TTF));
   PetscCall(PetscArraycpy(TTF, TT, bmax * r));
-  if (!INVP) { PetscCall(PetscMalloc1(bmax, &INVP)); }
+  if (!INVP) PetscCall(PetscMalloc1(bmax, &INVP));
   {
     PetscBLASInt info;
     PetscCallBLAS("LAPACKgetrf", LAPACKgetrf_(&nr, &nr, TTF, &bmax, INVP, &info));
@@ -694,7 +694,7 @@ PetscErrorCode KSPDGMRESComputeSchurForm_DGMRES(KSP ksp, PetscInt *neig) {
     /* Transpose the Hessenberg matrix */
     PetscCall(PetscMalloc1(bn * bn, &Ht));
     for (i = 0; i < bn; i++) {
-      for (j = 0; j < bn; j++) { Ht[i * bn + j] = dgmres->hes_origin[j * ldA + i]; }
+      for (j = 0; j < bn; j++) Ht[i * bn + j] = dgmres->hes_origin[j * ldA + i];
     }
 
     /* Solve the system H^T*t = h_{m+1,m}e_m */
@@ -759,7 +759,7 @@ PetscErrorCode KSPDGMRESComputeSchurForm_DGMRES(KSP ksp, PetscInt *neig) {
   PetscCall(PetscFree(select));
 
   /* Extract the Schur vectors */
-  for (j = 0; j < NbrEig; j++) { PetscCall(PetscArraycpy(&SR[j * N], &(Q[j * ldQ]), n)); }
+  for (j = 0; j < NbrEig; j++) PetscCall(PetscArraycpy(&SR[j * N], &(Q[j * ldQ]), n));
   *neig = NbrEig;
   PetscCall(PetscFree(A));
   PetscCall(PetscFree(work));
@@ -855,23 +855,23 @@ static PetscErrorCode KSPDGMRESImproveEig_DGMRES(KSP ksp, PetscInt neig) {
   /* AUU = (AU)'*U = [(MU)'*U (MU)'*X; (MX)'*U (MX)'*X]
    * Note that MU and MX have been computed previously either in ComputeDataDeflation() or down here in a previous call to this function */
   /* (MU)'*U size (r x r) -- store in the <r> first columns of AUU*/
-  for (j = 0; j < r; j++) { PetscCall(VecMDot(UU[j], r, MU, &AUU[j * aug1])); }
+  for (j = 0; j < r; j++) PetscCall(VecMDot(UU[j], r, MU, &AUU[j * aug1]));
   /* (MU)'*X size (r x neig) -- store in AUU from the column <r>*/
-  for (j = 0; j < neig; j++) { PetscCall(VecMDot(XX[j], r, MU, &AUU[(r + j) * aug1])); }
+  for (j = 0; j < neig; j++) PetscCall(VecMDot(XX[j], r, MU, &AUU[(r + j) * aug1]));
   /* (MX)'*U size (neig x r) -- store in the <r> first columns of AUU from the row <r>*/
-  for (j = 0; j < r; j++) { PetscCall(VecMDot(UU[j], neig, MX, &AUU[j * aug1 + r])); }
+  for (j = 0; j < r; j++) PetscCall(VecMDot(UU[j], neig, MX, &AUU[j * aug1 + r]));
   /* (MX)'*X size (neig neig) --  store in AUU from the column <r> and the row <r>*/
-  for (j = 0; j < neig; j++) { PetscCall(VecMDot(XX[j], neig, MX, &AUU[(r + j) * aug1 + r])); }
+  for (j = 0; j < neig; j++) PetscCall(VecMDot(XX[j], neig, MX, &AUU[(r + j) * aug1 + r]));
 
   /* AUAU = (AU)'*AU = [(MU)'*MU (MU)'*MX; (MX)'*MU (MX)'*MX] */
   /* (MU)'*MU size (r x r) -- store in the <r> first columns of AUAU*/
-  for (j = 0; j < r; j++) { PetscCall(VecMDot(MU[j], r, MU, &AUAU[j * aug1])); }
+  for (j = 0; j < r; j++) PetscCall(VecMDot(MU[j], r, MU, &AUAU[j * aug1]));
   /* (MU)'*MX size (r x neig) -- store in AUAU from the column <r>*/
-  for (j = 0; j < neig; j++) { PetscCall(VecMDot(MX[j], r, MU, &AUAU[(r + j) * aug1])); }
+  for (j = 0; j < neig; j++) PetscCall(VecMDot(MX[j], r, MU, &AUAU[(r + j) * aug1]));
   /* (MX)'*MU size (neig x r) -- store in the <r> first columns of AUAU from the row <r>*/
-  for (j = 0; j < r; j++) { PetscCall(VecMDot(MU[j], neig, MX, &AUAU[j * aug1 + r])); }
+  for (j = 0; j < r; j++) PetscCall(VecMDot(MU[j], neig, MX, &AUAU[j * aug1 + r]));
   /* (MX)'*MX size (neig neig) --  store in AUAU from the column <r> and the row <r>*/
-  for (j = 0; j < neig; j++) { PetscCall(VecMDot(MX[j], neig, MX, &AUAU[(r + j) * aug1 + r])); }
+  for (j = 0; j < neig; j++) PetscCall(VecMDot(MX[j], neig, MX, &AUAU[(r + j) * aug1 + r]));
 
   /* Computation of the eigenvectors */
   PetscCall(PetscBLASIntCast(aug1, &ldA));
@@ -903,7 +903,7 @@ static PetscErrorCode KSPDGMRESImproveEig_DGMRES(KSP ksp, PetscInt neig) {
   /* Save the norm of the largest eigenvalue */
   if (dgmres->lambdaN < modul[perm[N - 1]]) dgmres->lambdaN = modul[perm[N - 1]];
   /* Allocate space to extract the first r schur vectors   */
-  if (!SR2) { PetscCall(PetscMalloc1(aug1 * bmax, &SR2)); }
+  if (!SR2) PetscCall(PetscMalloc1(aug1 * bmax, &SR2));
   /* count the number of extracted eigenvalues (complex conjugates count as 2) */
   while (NbrEig < bmax) {
     if (wi[perm[NbrEig]] == 0) NbrEig += 1;
@@ -936,7 +936,7 @@ static PetscErrorCode KSPDGMRESImproveEig_DGMRES(KSP ksp, PetscInt neig) {
   }
   PetscCall(PetscFree(select));
 
-  for (j = 0; j < r; j++) { PetscCall(PetscArraycpy(&SR2[j * aug1], &(Z[j * N]), N)); }
+  for (j = 0; j < r; j++) PetscCall(PetscArraycpy(&SR2[j * aug1], &(Z[j * N]), N));
 
   /* Multiply the Schur vectors SR2 by U (and X)  to get a new U
    -- save it temporarily in MU */
@@ -951,7 +951,7 @@ static PetscErrorCode KSPDGMRESImproveEig_DGMRES(KSP ksp, PetscInt neig) {
     PetscCall(KSP_PCApplyBAorAB(ksp, UU[j], MU[j], VEC_TEMP_MATOP));
   }
   dgmres->matvecs += r;
-  for (j = 0; j < r; j++) { PetscCall(VecMDot(MU[j], r, UU, &TT[j * bmax])); }
+  for (j = 0; j < r; j++) PetscCall(VecMDot(MU[j], r, UU, &TT[j * bmax]));
   /* Factorize T */
   PetscCall(PetscArraycpy(TTF, TT, bmax * r));
   PetscCall(PetscBLASIntCast(r, &nr));

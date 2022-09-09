@@ -10,7 +10,7 @@
 .  pkg - external package name
 
    Output Parameters:
-.  has - PETSC_TRUE if PETSc is configured with the given package, else PETSC_FALSE.
+.  has - `PETSC_TRUE` if PETSc is configured with the given package, else `PETSC_FALSE`.
 
    Level: intermediate
 

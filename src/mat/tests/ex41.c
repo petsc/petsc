@@ -51,7 +51,7 @@ int main(int argc, char **args) {
 
   /* Create the random Index Sets */
   for (i = 0; i < nd; i++) {
-    for (j = 0; j < rank; j++) { PetscCall(PetscRandomGetValue(r, &rand)); }
+    for (j = 0; j < rank; j++) PetscCall(PetscRandomGetValue(r, &rand));
     PetscCall(PetscRandomGetValue(r, &rand));
     lsize = (PetscInt)(rand * m);
     for (j = 0; j < lsize; j++) {

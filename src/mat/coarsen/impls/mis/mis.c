@@ -54,7 +54,7 @@ PetscErrorCode MatCoarsenApply_MIS_private(IS perm, Mat Gmat, PetscBool strict_a
   PetscCall(MatGetOwnershipRange(Gmat, &my0, &Iend));
   PetscCall(PetscMalloc1(nloc, &lid_gid)); /* explicit array needed */
   if (mpimat) {
-    for (kk = 0, gid = my0; kk < nloc; kk++, gid++) { lid_gid[kk] = gid; }
+    for (kk = 0, gid = my0; kk < nloc; kk++, gid++) lid_gid[kk] = gid;
     PetscCall(VecGetLocalSize(mpimat->lvec, &num_fine_ghosts));
     PetscCall(PetscMalloc1(num_fine_ghosts, &cpcol_gid));
     PetscCall(PetscMalloc1(num_fine_ghosts, &cpcol_state));
@@ -63,12 +63,12 @@ PetscErrorCode MatCoarsenApply_MIS_private(IS perm, Mat Gmat, PetscBool strict_a
     PetscCall(PetscSFSetGraphLayout(sf, layout, num_fine_ghosts, NULL, PETSC_COPY_VALUES, mpimat->garray));
     PetscCall(PetscSFBcastBegin(sf, MPIU_INT, lid_gid, cpcol_gid, MPI_REPLACE));
     PetscCall(PetscSFBcastEnd(sf, MPIU_INT, lid_gid, cpcol_gid, MPI_REPLACE));
-    for (kk = 0; kk < num_fine_ghosts; kk++) { cpcol_state[kk] = MIS_NOT_DONE; }
+    for (kk = 0; kk < num_fine_ghosts; kk++) cpcol_state[kk] = MIS_NOT_DONE;
   } else num_fine_ghosts = 0;
 
   PetscCall(PetscMalloc1(nloc, &lid_cprowID));
   PetscCall(PetscMalloc1(nloc, &lid_removed)); /* explicit array needed */
-  if (strict_aggs) { PetscCall(PetscMalloc1(nloc, &lid_parent_gid)); }
+  if (strict_aggs) PetscCall(PetscMalloc1(nloc, &lid_parent_gid));
   PetscCall(PetscMalloc1(nloc, &lid_state));
 
   /* has ghost nodes for !strict and uses local indexing (yuck) */
@@ -79,7 +79,7 @@ PetscErrorCode MatCoarsenApply_MIS_private(IS perm, Mat Gmat, PetscBool strict_a
   for (kk = 0; kk < nloc; kk++) {
     lid_cprowID[kk] = -1;
     lid_removed[kk] = PETSC_FALSE;
-    if (strict_aggs) { lid_parent_gid[kk] = -1.0; }
+    if (strict_aggs) lid_parent_gid[kk] = -1.0;
     lid_state[kk] = MIS_NOT_DONE;
   }
   /* set index into cmpressed row 'lid_cprowID' */
@@ -162,7 +162,7 @@ PetscErrorCode MatCoarsenApply_MIS_private(IS perm, Mat Gmat, PetscBool strict_a
               for (j = 0; j < n; j++) {
                 cpid   = idx[j]; /* compressed row ID in B mat */
                 statej = cpcol_state[cpid];
-                if (statej == MIS_NOT_DONE) { PetscCall(PetscCDAppendID(agg_lists, lid, nloc + cpid)); }
+                if (statej == MIS_NOT_DONE) PetscCall(PetscCDAppendID(agg_lists, lid, nloc + cpid));
               }
             }
           }
@@ -298,19 +298,16 @@ PetscErrorCode MatCoarsenView_MIS(MatCoarsen coarse, PetscViewer viewer) {
 }
 
 /*MC
-   MATCOARSENMIS - Creates a coarsen context via the external package MIS.
+   MATCOARSENMIS - Creates a coarsening with a maximal independent set (MIS) algorithm
 
    Collective
 
    Input Parameter:
 .  coarse - the coarsen context
 
-   Options Database Keys:
-
    Level: beginner
 
-.seealso: `MatCoarsenSetType()`, `MatCoarsenType`
-
+.seealso: `MatCoarsen`, `MatCoarsenApply()`, `MatCoarsenGetData()`,`MatCoarsenSetType()`, `MatCoarsenType`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatCoarsenCreate_MIS(MatCoarsen coarse) {

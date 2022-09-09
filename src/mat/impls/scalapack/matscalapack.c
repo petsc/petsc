@@ -568,7 +568,7 @@ static PetscErrorCode MatDuplicate_ScaLAPACK(Mat A, MatDuplicateOption op, Mat *
   b->csrc = a->csrc;
   PetscCall(MatSetUp(Bs));
   *B = Bs;
-  if (op == MAT_COPY_VALUES) { PetscCall(PetscArraycpy(b->loc, a->loc, a->lld * a->locc)); }
+  if (op == MAT_COPY_VALUES) PetscCall(PetscArraycpy(b->loc, a->loc, a->lld * a->locc));
   Bs->assembled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -1520,7 +1520,7 @@ static PetscErrorCode MatStashScatterBegin_ScaLAPACK(Mat mat, MatStash *stash, P
 #if defined(PETSC_USE_INFO)
   PetscCall(PetscInfo(NULL, "No of messages: %" PetscInt_FMT "\n", nsends));
   for (i = 0; i < size; i++) {
-    if (sizes[i]) { PetscCall(PetscInfo(NULL, "Mesg_to: %" PetscInt_FMT ": size: %zu bytes\n", i, (size_t)(nlengths[i] * (bs2 * sizeof(PetscScalar) + 2 * sizeof(PetscInt))))); }
+    if (sizes[i]) PetscCall(PetscInfo(NULL, "Mesg_to: %" PetscInt_FMT ": size: %zu bytes\n", i, (size_t)(nlengths[i] * (bs2 * sizeof(PetscScalar) + 2 * sizeof(PetscInt)))));
   }
 #endif
   PetscCall(PetscFree(nlengths));
@@ -1565,18 +1565,18 @@ static PetscErrorCode MatScaLAPACKSetBlockSizes_ScaLAPACK(Mat A, PetscInt mb, Pe
 
 /*@
    MatScaLAPACKSetBlockSizes - Sets the block sizes to be used for the distribution of
-   the ScaLAPACK matrix
+   the `MATSCALAPACK` matrix
 
    Logically Collective on A
 
    Input Parameters:
-+  A  - a MATSCALAPACK matrix
++  A  - a `MATSCALAPACK` matrix
 .  mb - the row block size
 -  nb - the column block size
 
    Level: intermediate
 
-.seealso: `MatCreateScaLAPACK()`, `MatScaLAPACKGetBlockSizes()`
+.seealso: `MATSCALAPACK`, `MatCreateScaLAPACK()`, `MatScaLAPACKGetBlockSizes()`
 @*/
 PetscErrorCode MatScaLAPACKSetBlockSizes(Mat A, PetscInt mb, PetscInt nb) {
   PetscFunctionBegin;
@@ -1598,12 +1598,12 @@ static PetscErrorCode MatScaLAPACKGetBlockSizes_ScaLAPACK(Mat A, PetscInt *mb, P
 
 /*@
    MatScaLAPACKGetBlockSizes - Gets the block sizes used in the distribution of
-   the ScaLAPACK matrix
+   the `MATSCALAPACK` matrix
 
    Not collective
 
    Input Parameter:
-.  A  - a MATSCALAPACK matrix
+.  A  - a `MATSCALAPACK` matrix
 
    Output Parameters:
 +  mb - the row block size
@@ -1611,7 +1611,7 @@ static PetscErrorCode MatScaLAPACKGetBlockSizes_ScaLAPACK(Mat A, PetscInt *mb, P
 
    Level: intermediate
 
-.seealso: `MatCreateScaLAPACK()`, `MatScaLAPACKSetBlockSizes()`
+.seealso: `MATSCALAPACK`, `MatCreateScaLAPACK()`, `MatScaLAPACKSetBlockSizes()`
 @*/
 PetscErrorCode MatScaLAPACKGetBlockSizes(Mat A, PetscInt *mb, PetscInt *nb) {
   PetscFunctionBegin;
@@ -1629,7 +1629,7 @@ PETSC_INTERN PetscErrorCode MatStashScatterEnd_Ref(MatStash *);
    Use ./configure --download-scalapack to install PETSc to use ScaLAPACK
 
    Options Database Keys:
-+  -mat_type scalapack - sets the matrix type to "scalapack" during a call to MatSetFromOptions()
++  -mat_type scalapack - sets the matrix type to `MATSCALAPACK` during a call to `MatSetFromOptions()`
 .  -pc_factor_mat_solver_type scalapack - to use this direct solver with the option -pc_type lu
 .  -mat_scalapack_grid_height - sets Grid Height for 2D cyclic ordering of internal matrix
 -  -mat_scalapack_block_sizes - size of the blocks to use (one or two integers separated by comma)
@@ -1641,7 +1641,7 @@ PETSC_INTERN PetscErrorCode MatStashScatterEnd_Ref(MatStash *);
 
    Level: beginner
 
-.seealso: `MATDENSE`, `MATELEMENTAL`, `MatGetOwnershipIS()`
+.seealso: `MATSCALAPACK`, `MATDENSE`, `MATELEMENTAL`, `MatGetOwnershipIS()`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatCreate_ScaLAPACK(Mat A) {
@@ -1731,14 +1731,14 @@ PETSC_EXTERN PetscErrorCode MatCreate_ScaLAPACK(Mat A) {
 
 /*@C
    MatCreateScaLAPACK - Creates a dense parallel matrix in ScaLAPACK format
-   (2D block cyclic distribution).
+   (2D block cyclic distribution) for a `MATSCALAPACK` matrix
 
    Collective
 
    Input Parameters:
 +  comm - MPI communicator
-.  mb   - row block size (or PETSC_DECIDE to have it set)
-.  nb   - column block size (or PETSC_DECIDE to have it set)
+.  mb   - row block size (or `PETSC_DECIDE` to have it set)
+.  nb   - column block size (or `PETSC_DECIDE` to have it set)
 .  M    - number of global rows
 .  N    - number of global columns
 .  rsrc - coordinate of process that owns the first row of the distributed matrix
@@ -1747,26 +1747,26 @@ PETSC_EXTERN PetscErrorCode MatCreate_ScaLAPACK(Mat A) {
    Output Parameter:
 .  A - the matrix
 
-   Options Database Keys:
+   Options Database Key:
 .  -mat_scalapack_block_sizes - size of the blocks to use (one or two integers separated by comma)
 
-   It is recommended that one use the MatCreate(), MatSetType() and/or MatSetFromOptions(),
+   It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`,
    MatXXXXSetPreallocation() paradigm instead of this routine directly.
-   [MatXXXXSetPreallocation() is, for example, MatSeqAIJSetPreallocation]
+   [MatXXXXSetPreallocation() is, for example, `MatSeqAIJSetPreallocation()`]
 
-   Notes:
-   If PETSC_DECIDE is used for the block sizes, then an appropriate value
+   Note:
+   If `PETSC_DECIDE` is used for the block sizes, then an appropriate value
    is chosen.
 
    Storage Information:
    Storate is completely managed by ScaLAPACK, so this requires PETSc to be
    configured with ScaLAPACK. In particular, PETSc's local sizes lose
    significance and are thus ignored. The block sizes refer to the values
-   used for the distributed matrix, not the same meaning as in BAIJ.
+   used for the distributed matrix, not the same meaning as in `MATBAIJ`.
 
    Level: intermediate
 
-.seealso: `MatCreate()`, `MatCreateDense()`, `MatSetValues()`
+.seealso: `MATSCALAPACK`, `MATDENSE`, `MATELEMENTAL`, `MatCreate()`, `MatCreateDense()`, `MatSetValues()`
 @*/
 PetscErrorCode MatCreateScaLAPACK(MPI_Comm comm, PetscInt mb, PetscInt nb, PetscInt M, PetscInt N, PetscInt rsrc, PetscInt csrc, Mat *A) {
   Mat_ScaLAPACK *a;

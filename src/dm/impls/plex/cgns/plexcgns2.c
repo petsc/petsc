@@ -67,7 +67,7 @@ PetscErrorCode DMPlexCreateCGNS_Internal(MPI_Comm comm, PetscInt cgid, PetscBool
       cellStart[z] += sizes[1] + cellStart[z - 1];
       vertStart[z] += sizes[0] + vertStart[z - 1];
     }
-    for (z = 1; z <= nzones; ++z) { vertStart[z] += numCells; }
+    for (z = 1; z <= nzones; ++z) vertStart[z] += numCells;
     coordDim = dim;
   }
   PetscCallMPI(MPI_Bcast(basename, CGIO_MAX_NAME_LENGTH + 1, MPI_CHAR, 0, comm));
@@ -176,7 +176,7 @@ PetscErrorCode DMPlexCreateCGNS_Internal(MPI_Comm comm, PetscInt cgid, PetscBool
         }
       }
     }
-    for (v = numCells; v < numCells + numVertices; ++v) { PetscCall(DMPlexSetCellType(*dm, v, DM_POLYTOPE_POINT)); }
+    for (v = numCells; v < numCells + numVertices; ++v) PetscCall(DMPlexSetCellType(*dm, v, DM_POLYTOPE_POINT));
   }
 
   PetscCall(DMSetUp(*dm));
@@ -211,7 +211,7 @@ PetscErrorCode DMPlexCreateCGNS_Internal(MPI_Comm comm, PetscInt cgid, PetscBool
           default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid cell type %d", (int)elements[v]);
           }
           ++v;
-          for (v_loc = 0; v_loc < numCorners; ++v_loc, ++v) { cone[v_loc] = elements[v] + numCells - 1; }
+          for (v_loc = 0; v_loc < numCorners; ++v_loc, ++v) cone[v_loc] = elements[v] + numCells - 1;
           PetscCall(DMPlexReorderCell(*dm, c, cone));
           PetscCall(DMPlexSetCone(*dm, c, cone));
           PetscCall(DMLabelSetValue(label, c, z));
@@ -228,7 +228,7 @@ PetscErrorCode DMPlexCreateCGNS_Internal(MPI_Comm comm, PetscInt cgid, PetscBool
         }
         /* CGNS uses Fortran-based indexing, DMPlex uses C-style and numbers cell first then vertices. */
         for (c_loc = 0, v = 0; c_loc <= numc; ++c_loc, ++c) {
-          for (v_loc = 0; v_loc < numCorners; ++v_loc, ++v) { cone[v_loc] = elements[v] + numCells - 1; }
+          for (v_loc = 0; v_loc < numCorners; ++v_loc, ++v) cone[v_loc] = elements[v] + numCells - 1;
           PetscCall(DMPlexReorderCell(*dm, c, cone));
           PetscCall(DMPlexSetCone(*dm, c, cone));
           PetscCall(DMLabelSetValue(label, c, z));
@@ -329,10 +329,10 @@ PetscErrorCode DMPlexCreateCGNS_Internal(MPI_Comm comm, PetscInt cgid, PetscBool
         PetscCallCGNS(cg_boco_read(cgid, 1, z, bc, points, (void *)normals));
         if (pointtype == CGNS_ENUMV(ElementRange)) {
           /* Range of cells: assuming half-open interval since the documentation sucks */
-          for (c = points[0]; c < points[1]; ++c) { PetscCall(DMLabelSetValue(label, c - cellStart[z - 1], 1)); }
+          for (c = points[0]; c < points[1]; ++c) PetscCall(DMLabelSetValue(label, c - cellStart[z - 1], 1));
         } else if (pointtype == CGNS_ENUMV(ElementList)) {
           /* List of cells */
-          for (c = 0; c < npoints; ++c) { PetscCall(DMLabelSetValue(label, points[c] - cellStart[z - 1], 1)); }
+          for (c = 0; c < npoints; ++c) PetscCall(DMLabelSetValue(label, points[c] - cellStart[z - 1], 1));
         } else if (pointtype == CGNS_ENUMV(PointRange)) {
           CGNS_ENUMT(GridLocation_t) gridloc;
 
@@ -683,7 +683,7 @@ PetscErrorCode DMView_PlexCGNS(DM dm, PetscViewer viewer) {
       elem_size = closure_dof / coord_dim;
       if (!conn) PetscCall(PetscMalloc1((cEnd - cStart) * elem_size, &conn));
       PetscCall(DMPlexCGNSGetPermutation_Internal(cell_type, closure_dof / coord_dim, &element_type, &perm));
-      for (PetscInt j = 0; j < elem_size; j++) { conn[c++] = node_l2g[closure_indices[perm[j] * coord_dim] / coord_dim] + 1; }
+      for (PetscInt j = 0; j < elem_size; j++) conn[c++] = node_l2g[closure_indices[perm[j] * coord_dim] / coord_dim] + 1;
       PetscCall(DMPlexRestoreClosureIndices(cdm, cdm->localSection, cdm->localSection, i, PETSC_FALSE, &closure_dof, &closure_indices, NULL, NULL));
     }
     e_owned = cEnd - cStart;

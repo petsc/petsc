@@ -18,20 +18,23 @@ static PetscErrorCode PetscViewerDestroy_String(PetscViewer viewer) {
 }
 
 /*@C
-    PetscViewerStringSPrintf - Prints information to a PetscViewer string.
+    PetscViewerStringSPrintf - Prints information to a `PETSCVIEWERSTRING` `PetscViewer` object
 
-    Logically Collective on PetscViewer (Hmmm, each processor maintains a separate string)
+    Logically Collective on viewer
 
     Input Parameters:
-+   v - a string PetscViewer, formed by PetscViewerStringOpen()
++   v - a string `PetscViewer`, formed by `PetscViewerStringOpen()`
 -   format - the format of the input
 
     Level: developer
 
+    Note:
+    Though this is collective each MPI rank maintains a separate string
+
     Fortran Note:
     This routine is not supported in Fortran.
 
-.seealso: `PetscViewerStringOpen()`, `PetscViewerStringGetStringRead()`, `PetscViewerStringSetString()`, `PETSCVIEWERSTRING`
+.seealso: `PETSCVIEWERSTRING`, `PetscViewerStringOpen()`, `PetscViewerStringGetStringRead()`, `PetscViewerStringSetString()`
 @*/
 PetscErrorCode PetscViewerStringSPrintf(PetscViewer viewer, const char format[], ...) {
   va_list             Argp;
@@ -61,8 +64,8 @@ PetscErrorCode PetscViewerStringSPrintf(PetscViewer viewer, const char format[],
 }
 
 /*@C
-    PetscViewerStringOpen - Opens a string as a PetscViewer. This is a very
-    simple PetscViewer; information on the object is simply stored into
+    PetscViewerStringOpen - Opens a string as a `PETSCVIEWERSTRING` `PetscViewer`. This is a very
+    simple `PetscViewer`; information on the object is simply stored into
     the string in a fairly nice way.
 
     Collective
@@ -73,14 +76,14 @@ PetscErrorCode PetscViewerStringSPrintf(PetscViewer viewer, const char format[],
 -   len    - the string length
 
     Output Parameter:
-.   lab - the PetscViewer
+.   lab - the `PetscViewer`
 
     Level: advanced
 
     Fortran Note:
     This routine is not supported in Fortran.
 
-.seealso: `PetscViewerDestroy()`, `PetscViewerStringSPrintf()`, `PetscViewerStringGetStringRead()`, `PetscViewerStringSetString()`, `PETSCVIEWERSTRING`
+.seealso: `PETSCVIEWERSTRING`, `PetscViewerDestroy()`, `PetscViewerStringSPrintf()`, `PetscViewerStringGetStringRead()`, `PetscViewerStringSetString()`
 @*/
 PetscErrorCode PetscViewerStringOpen(MPI_Comm comm, char string[], size_t len, PetscViewer *lab) {
   PetscFunctionBegin;
@@ -112,12 +115,12 @@ PetscErrorCode PetscViewerRestoreSubViewer_String(PetscViewer viewer, MPI_Comm c
 /*MC
    PETSCVIEWERSTRING - A viewer that writes to a string
 
+  Level: beginner
+
 .seealso: `PetscViewerStringOpen()`, `PetscViewerStringSPrintf()`, `PetscViewerSocketOpen()`, `PetscViewerDrawOpen()`, `PETSCVIEWERSOCKET`,
           `PetscViewerCreate()`, `PetscViewerASCIIOpen()`, `PetscViewerBinaryOpen()`, `PETSCVIEWERBINARY`, `PETSCVIEWERDRAW`,
           `PetscViewerMatlabOpen()`, `VecView()`, `DMView()`, `PetscViewerMatlabPutArray()`, `PETSCVIEWERASCII`, `PETSCVIEWERMATLAB`,
           `PetscViewerFileSetName()`, `PetscViewerFileSetMode()`, `PetscViewerFormat`, `PetscViewerType`, `PetscViewerSetType()`
-
-  Level: beginner
 M*/
 
 PETSC_EXTERN PetscErrorCode PetscViewerCreate_String(PetscViewer v) {
@@ -137,18 +140,19 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_String(PetscViewer v) {
 
 /*@C
 
-   PetscViewerStringGetStringRead - Returns the string that a string viewer uses
+   PetscViewerStringGetStringRead - Returns the string that a `PETSCVIEWERSTRING` uses
 
-   Logically Collective on PetscViewer
+   Logically Collective on viewer
 
   Input Parameter:
-.   viewer - string viewer
+.   viewer -  `PETSCVIEWERSTRING` viewer
 
   Output Parameters:
 +    string - the string, optional use NULL if you do not need
 -   len - the length of the string, optional use NULL if you do
 
-  Notes: Do not write to the string nor free it
+  Note:
+  Do not write to the string nor free it
 
   Level: advanced
 
@@ -172,17 +176,17 @@ PetscErrorCode PetscViewerStringGetStringRead(PetscViewer viewer, const char *st
 
    PetscViewerStringSetString - sets the string that a string viewer will print to
 
-   Logically Collective on PetscViewer
+   Logically Collective on viewer
 
   Input Parameters:
 +   viewer - string viewer you wish to attach string to
 .   string - the string to print data into
 -   len - the length of the string
 
-  Notes: The function does not copy the string, it uses it directly therefore you cannot free
-   the string until the viewer is destroyed. If you call PetscViewerStringSetOwnString() the ownership
+  Note: The function does not copy the string, it uses it directly therefore you cannot free
+   the string until the viewer is destroyed. If you call `PetscViewerStringSetOwnString()` the ownership
    passes to the viewer and it will be responsable for freeing it. In this case the string must be
-   obtained with PetscMalloc().
+   obtained with `PetscMalloc()`.
 
   Level: advanced
 
@@ -212,12 +216,13 @@ PetscErrorCode PetscViewerStringSetString(PetscViewer viewer, char string[], siz
 
    PetscViewerStringSetOwnString - tells the viewer that it now owns the string and is responsible for freeing it
 
-   Logically Collective on PetscViewer
+   Logically Collective on viewer
 
   Input Parameters:
 .   viewer - string viewer
 
-  Notes: If you call this the string must have been obtained with PetscMalloc() and you cannot free the string
+  Note:
+  If you call this the string must have been obtained with `PetscMalloc()` and you cannot free the string
 
   Level: advanced
 

@@ -53,7 +53,7 @@ int main(int argc, char **args) {
 
   /* Dup submats to submats2 for later comparison */
   PetscCall(PetscMalloc1(n, &submats2));
-  for (i = 0; i < n; i++) { PetscCall(MatDuplicate(submats[i], MAT_COPY_VALUES, &submats2[i])); }
+  for (i = 0; i < n; i++) PetscCall(MatDuplicate(submats[i], MAT_COPY_VALUES, &submats2[i]));
 
   /* Create submats again */
   PetscCall(MatCreateSubMatrices(A, n, irow, icol, MAT_REUSE_MATRIX, &submats));

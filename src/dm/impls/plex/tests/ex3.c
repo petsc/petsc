@@ -293,7 +293,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm) {
 
 static void simple_mass(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[]) {
   PetscInt d, e;
-  for (d = 0, e = 0; d < dim; d++, e += dim + 1) { g0[e] = 1.; }
+  for (d = 0, e = 0; d < dim; d++, e += dim + 1) g0[e] = 1.;
 }
 
 /* < \nabla v, 1/2(\nabla u + {\nabla u}^T) > */
@@ -422,7 +422,7 @@ static PetscErrorCode SetupSection(DM dm, AppCtx *user) {
           PetscCheck(cDof % numComp == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point dofs not divisible by field components: %" PetscInt_FMT ", %" PetscInt_FMT, cDof, numComp);
 
           /* put in a simple equality constraint */
-          for (j = 0; j < cDof; j++) { PetscCall(MatSetValue(cMat, cOff + j, aOff + j, 1., INSERT_VALUES)); }
+          for (j = 0; j < cDof; j++) PetscCall(MatSetValue(cMat, cOff + j, aOff + j, 1., INSERT_VALUES));
         }
       }
       PetscCall(MatAssemblyBegin(cMat, MAT_FINAL_ASSEMBLY));
@@ -485,7 +485,7 @@ static PetscErrorCode TestFEJacobian(DM dm, AppCtx *user) {
       PetscCall(DMLocalToGlobalBegin(dm, localRes, ADD_VALUES, res));
       PetscCall(DMLocalToGlobalEnd(dm, localRes, ADD_VALUES, res));
       PetscCall(VecNorm(res, NORM_2, &resNorm));
-      if (resNorm > PETSC_SMALL) { PetscCall(PetscPrintf(PetscObjectComm((PetscObject)dm), "Symmetric gradient action null space vector %" PetscInt_FMT " residual: %E\n", i, (double)resNorm)); }
+      if (resNorm > PETSC_SMALL) PetscCall(PetscPrintf(PetscObjectComm((PetscObject)dm), "Symmetric gradient action null space vector %" PetscInt_FMT " residual: %E\n", i, (double)resNorm));
     }
     PetscCall(VecDestroy(&localRes));
     PetscCall(VecDestroy(&localX));
@@ -515,7 +515,7 @@ static PetscErrorCode TestInjector(DM dm, AppCtx *user) {
     PetscCall(DMPlexComputeInjectorReferenceTree(refTree, &inj));
     PetscCall(PetscObjectSetName((PetscObject)inj, "Reference Tree Injector"));
     PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
-    if (rank == 0) { PetscCall(MatView(inj, PETSC_VIEWER_STDOUT_SELF)); }
+    if (rank == 0) PetscCall(MatView(inj, PETSC_VIEWER_STDOUT_SELF));
     PetscCall(MatDestroy(&inj));
   }
   PetscFunctionReturn(0);
@@ -538,7 +538,7 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user) {
   PetscCall(DMSetBasicAdjacency(dm, PETSC_TRUE, PETSC_FALSE));
   PetscCallMPI(MPI_Comm_size(comm, &size));
   dmRedist = NULL;
-  if (size > 1) { PetscCall(DMPlexDistributeOverlap(dm, 1, NULL, &dmRedist)); }
+  if (size > 1) PetscCall(DMPlexDistributeOverlap(dm, 1, NULL, &dmRedist));
   if (!dmRedist) {
     dmRedist = dm;
     PetscCall(PetscObjectReference((PetscObject)dmRedist));

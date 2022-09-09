@@ -5,20 +5,21 @@
 #include <petsc/private/petscimpl.h> /*I   "petscsys.h"    I*/
 
 /*@
-   PetscObjectGetClassId - Gets the classid for any PetscObject
+   PetscObjectGetClassId - Gets the classid for any `PetscObject`
 
    Not Collective
 
    Input Parameter:
-.  obj - any PETSc object, for example a Vec, Mat or KSP.
-         Thus must be cast with a (PetscObject), for example,
-         PetscObjectGetClassId((PetscObject)mat,&classid);
+.  obj - any PETSc object, for example a `Vec`, `Mat` or `KSP`.
+         Thus must be cast with a (`PetscObject`), for example,
+         `PetscObjectGetClassId`((`PetscObject`)mat,&classid);
 
    Output Parameter:
 .  classid - the classid
 
    Level: developer
 
+.seealso: `PetscObject`, `PetscClassId`, `PetscObjectGetClassName()`, `PetscObjectGetType()`
 @*/
 PetscErrorCode PetscObjectGetClassId(PetscObject obj, PetscClassId *classid) {
   PetscFunctionBegin;
@@ -29,20 +30,21 @@ PetscErrorCode PetscObjectGetClassId(PetscObject obj, PetscClassId *classid) {
 }
 
 /*@C
-   PetscObjectGetClassName - Gets the class name for any PetscObject
+   PetscObjectGetClassName - Gets the class name for any `PetscObject`
 
    Not Collective
 
    Input Parameter:
-.  obj - any PETSc object, for example a Vec, Mat or KSP.
-         Thus must be cast with a (PetscObject), for example,
-         PetscObjectGetClassName((PetscObject)mat,&classname);
+.  obj - any PETSc object, for example a `Vec`, `Mat` or `KSP`.
+         Thus must be cast with a (`PetscObject`), for example,
+         `PetscObjectGetClassName`((`PetscObject`)mat,&classname);
 
    Output Parameter:
-.  classname - the class name
+.  classname - the class name, for example "Vec"
 
    Level: developer
 
+.seealso: `PetscObject`, `PetscClassId`, `PetscObjectGetType()`
 @*/
 PetscErrorCode PetscObjectGetClassName(PetscObject obj, const char *classname[]) {
   PetscFunctionBegin;

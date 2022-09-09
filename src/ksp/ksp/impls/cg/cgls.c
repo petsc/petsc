@@ -14,10 +14,10 @@ static PetscErrorCode KSPSetUp_CGLS(KSP ksp) {
 
   PetscFunctionBegin;
   cgls->nwork_m = 2;
-  if (cgls->vwork_m) { PetscCall(VecDestroyVecs(cgls->nwork_m, &cgls->vwork_m)); }
+  if (cgls->vwork_m) PetscCall(VecDestroyVecs(cgls->nwork_m, &cgls->vwork_m));
 
   cgls->nwork_n = 2;
-  if (cgls->vwork_n) { PetscCall(VecDestroyVecs(cgls->nwork_n, &cgls->vwork_n)); }
+  if (cgls->vwork_n) PetscCall(VecDestroyVecs(cgls->nwork_n, &cgls->vwork_n));
   PetscCall(KSPCreateVecs(ksp, cgls->nwork_n, &cgls->vwork_n, cgls->nwork_m, &cgls->vwork_m));
   PetscFunctionReturn(0);
 }
@@ -87,8 +87,8 @@ static PetscErrorCode KSPDestroy_CGLS(KSP ksp) {
 
   PetscFunctionBegin;
   /* Free work vectors */
-  if (cgls->vwork_n) { PetscCall(VecDestroyVecs(cgls->nwork_n, &cgls->vwork_n)); }
-  if (cgls->vwork_m) { PetscCall(VecDestroyVecs(cgls->nwork_m, &cgls->vwork_m)); }
+  if (cgls->vwork_n) PetscCall(VecDestroyVecs(cgls->nwork_n, &cgls->vwork_n));
+  if (cgls->vwork_m) PetscCall(VecDestroyVecs(cgls->nwork_m, &cgls->vwork_m));
   PetscCall(PetscFree(ksp->data));
   PetscFunctionReturn(0);
 }

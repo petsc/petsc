@@ -16,7 +16,7 @@ static PetscErrorCode MPIPetsc_Type_free(MPI_Datatype *a) {
   PetscFunctionBegin;
   PetscCallMPI(MPI_Type_get_envelope(*a, &nints, &naddrs, &ntypes, &combiner));
 
-  if (combiner != MPI_COMBINER_NAMED) { PetscCallMPI(MPI_Type_free(a)); }
+  if (combiner != MPI_COMBINER_NAMED) PetscCallMPI(MPI_Type_free(a));
 
   *a = MPI_DATATYPE_NULL;
   PetscFunctionReturn(0);
@@ -122,8 +122,8 @@ PetscErrorCode MPIPetsc_Type_compare(MPI_Datatype a, MPI_Datatype b, PetscBool *
     if (same) *match = PETSC_TRUE;
   }
 free_types:
-  if (freeatype) { PetscCall(MPIPetsc_Type_free(&atype)); }
-  if (freebtype) { PetscCall(MPIPetsc_Type_free(&btype)); }
+  if (freeatype) PetscCall(MPIPetsc_Type_free(&atype));
+  if (freebtype) PetscCall(MPIPetsc_Type_free(&btype));
   PetscFunctionReturn(0);
 }
 
@@ -160,11 +160,11 @@ PetscErrorCode MPIPetsc_Type_compare_contig(MPI_Datatype a, MPI_Datatype b, Pets
       PetscCall(MPIPetsc_Type_compare(atypes[0], btype, &same));
       if (same) *n = aints[0];
     }
-    for (i = 0; i < atypecount; i++) { PetscCall(MPIPetsc_Type_free(&(atypes[i]))); }
+    for (i = 0; i < atypecount; i++) PetscCall(MPIPetsc_Type_free(&(atypes[i])));
     PetscCall(PetscFree3(aints, aaddrs, atypes));
   }
 
-  if (freeatype) { PetscCall(MPIPetsc_Type_free(&atype)); }
-  if (freebtype) { PetscCall(MPIPetsc_Type_free(&btype)); }
+  if (freeatype) PetscCall(MPIPetsc_Type_free(&atype));
+  if (freebtype) PetscCall(MPIPetsc_Type_free(&btype));
   PetscFunctionReturn(0);
 }

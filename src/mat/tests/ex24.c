@@ -13,7 +13,7 @@ PetscErrorCode FormJacobian(Mat A) {
 
   for (i = ownbegin; i < ownend; i++) {
     for (j = i - 3; j < i + 3; j++) {
-      if (j >= 0 && j < M) { PetscCall(MatSetValues(A, 1, &i, 1, &j, &dummy, INSERT_VALUES)); }
+      if (j >= 0 && j < M) PetscCall(MatSetValues(A, 1, &i, 1, &j, &dummy, INSERT_VALUES));
     }
   }
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
@@ -49,7 +49,7 @@ int main(int argc, char *argv[]) {
   PetscCall(MatColoringSetFromOptions(coloring));
   PetscCall(MatColoringApply(coloring, &iscoloring));
 
-  if (size == 1) { PetscCall(MatISColoringTest(J, iscoloring)); }
+  if (size == 1) PetscCall(MatISColoringTest(J, iscoloring));
 
   PetscCall(ISColoringDestroy(&iscoloring));
   PetscCall(MatColoringDestroy(&coloring));

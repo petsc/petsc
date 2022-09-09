@@ -48,7 +48,7 @@ int main(int argc, char **args) {
   for (i = rstart; i < rend; i++) {
     for (j = 0; j < N; j++) {
       PetscReal v = MakeValue(i, j, M);
-      if (PetscAbsReal(v) > 0) { PetscCall(MatSetValue(A, i, j, v, INSERT_VALUES)); }
+      if (PetscAbsReal(v) > 0) PetscCall(MatSetValue(A, i, j, v, INSERT_VALUES));
     }
   }
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
@@ -59,7 +59,7 @@ int main(int argc, char **args) {
       Store the binary matrix to a file
   */
   PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, "matrix.dat", FILE_MODE_WRITE, &view));
-  for (i = 0; i < 3; i++) { PetscCall(MatView(A, view)); }
+  for (i = 0; i < 3; i++) PetscCall(MatView(A, view));
   PetscCall(PetscViewerDestroy(&view));
   PetscCall(MatDestroy(&A));
 

@@ -29,7 +29,7 @@ static PetscErrorCode SNESPatchComputeResidual_Private(SNES snes, Vec x, Vec F, 
   PetscCall(VecGetArrayRead(x, &X));
   PetscCall(VecGetArray(pcpatch->patchStateWithAll, &XWithAll));
 
-  for (i = 0; i < size; ++i) { XWithAll[indices[i]] = X[i]; }
+  for (i = 0; i < size; ++i) XWithAll[indices[i]] = X[i];
 
   PetscCall(VecRestoreArray(pcpatch->patchStateWithAll, &XWithAll));
   PetscCall(VecRestoreArrayRead(x, &X));
@@ -56,7 +56,7 @@ static PetscErrorCode SNESPatchComputeJacobian_Private(SNES snes, Vec x, Mat J, 
   PetscCall(VecGetArrayRead(x, &X));
   PetscCall(VecGetArray(pcpatch->patchStateWithAll, &XWithAll));
 
-  for (i = 0; i < size; ++i) { XWithAll[indices[i]] = X[i]; }
+  for (i = 0; i < size; ++i) XWithAll[indices[i]] = X[i];
 
   PetscCall(VecRestoreArray(pcpatch->patchStateWithAll, &XWithAll));
   PetscCall(VecRestoreArrayRead(x, &X));
@@ -231,7 +231,7 @@ static PetscErrorCode SNESView_Patch(SNES snes, PetscViewer viewer) {
 
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) { PetscCall(PetscViewerASCIIPrintf(viewer, "SNESPATCH\n")); }
+  if (iascii) PetscCall(PetscViewerASCIIPrintf(viewer, "SNESPATCH\n"));
   PetscCall(PetscViewerASCIIPushTab(viewer));
   PetscCall(PCView(patch->pc, viewer));
   PetscCall(PetscViewerASCIIPopTab(viewer));
@@ -339,7 +339,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Patch(SNES snes) {
   snes->ops->view           = SNESView_Patch;
 
   PetscCall(SNESGetLineSearch(snes, &linesearch));
-  if (!((PetscObject)linesearch)->type_name) { PetscCall(SNESLineSearchSetType(linesearch, SNESLINESEARCHBASIC)); }
+  if (!((PetscObject)linesearch)->type_name) PetscCall(SNESLineSearchSetType(linesearch, SNESLINESEARCHBASIC));
   snes->usesksp = PETSC_FALSE;
 
   snes->alwayscomputesfinalresidual = PETSC_FALSE;

@@ -31,7 +31,7 @@ PetscErrorCode MatMultASPIN(Mat m, Vec X, Vec Y) {
   PetscCall(VecSet(Y, 0));
   PetscCall(MatMult(npc->jacobian_pre, X, W));
 
-  for (i = 0; i < n; i++) { PetscCall(VecScatterBegin(oscatter[i], W, b[i], INSERT_VALUES, SCATTER_FORWARD)); }
+  for (i = 0; i < n; i++) PetscCall(VecScatterBegin(oscatter[i], W, b[i], INSERT_VALUES, SCATTER_FORWARD));
   for (i = 0; i < n; i++) {
     PetscCall(VecScatterEnd(oscatter[i], W, b[i], INSERT_VALUES, SCATTER_FORWARD));
     PetscCall(VecSet(x[i], 0.));
@@ -116,7 +116,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_ASPIN(SNES snes) {
   PetscCall(KSPGetPC(ksp, &pc));
   PetscCall(PCSetType(pc, PCNONE));
   PetscCall(SNESGetLineSearch(snes, &linesearch));
-  if (!((PetscObject)linesearch)->type_name) { PetscCall(SNESLineSearchSetType(linesearch, SNESLINESEARCHBT)); }
+  if (!((PetscObject)linesearch)->type_name) PetscCall(SNESLineSearchSetType(linesearch, SNESLINESEARCHBT));
 
   /* set up the shell matrix */
   PetscCall(SNESGetFunction(snes, &F, NULL, NULL));

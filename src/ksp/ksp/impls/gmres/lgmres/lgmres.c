@@ -53,7 +53,7 @@ PetscErrorCode KSPSetUp_LGMRES(KSP ksp) {
   PetscCall(KSPCreateVecs(ksp, lgmres->aug_vv_allocated, &lgmres->augvecs_user_work[0], 0, NULL));
   PetscCall(PetscMalloc1(max_k + 1, &lgmres->hwork));
   PetscCall(PetscLogObjectParents(ksp, lgmres->aug_vv_allocated, lgmres->augvecs_user_work[0]));
-  for (k = 0; k < lgmres->aug_vv_allocated; k++) { lgmres->augvecs[k] = lgmres->augvecs_user_work[0][k]; }
+  for (k = 0; k < lgmres->aug_vv_allocated; k++) lgmres->augvecs[k] = lgmres->augvecs_user_work[0][k];
   PetscFunctionReturn(0);
 }
 
@@ -227,7 +227,7 @@ PetscErrorCode KSPLGMRESCycle(PetscInt *itcount, KSP ksp) {
   PetscCall(KSPLogResidualHistory(ksp, res));
 
   /* Monitor if we know that we will not return for a restart */
-  if (ksp->reason || ksp->its >= max_it) { PetscCall(KSPMonitor(ksp, ksp->its, res)); }
+  if (ksp->reason || ksp->its >= max_it) PetscCall(KSPMonitor(ksp, ksp->its, res));
 
   if (itcount) *itcount = loc_it;
 
@@ -279,7 +279,7 @@ PetscErrorCode KSPLGMRESCycle(PetscInt *itcount, KSP ksp) {
     avec = lgmres->hwork;
     PetscCall(PetscArrayzero(avec, it_total + 1));
     for (ii = 0; ii < it_total + 1; ii++) {
-      for (jj = 0; jj <= ii + 1 && jj < it_total + 1; jj++) { avec[jj] += *HES(jj, ii) * *GRS(ii); }
+      for (jj = 0; jj <= ii + 1 && jj < it_total + 1; jj++) avec[jj] += *HES(jj, ii) * *GRS(ii);
     }
 
     /*now multiply result by V+ */
@@ -352,7 +352,7 @@ PetscErrorCode KSPDestroy_LGMRES(KSP ksp) {
 
   PetscFunctionBegin;
   PetscCall(PetscFree(lgmres->augvecs));
-  if (lgmres->augwork_alloc) { PetscCall(VecDestroyVecs(lgmres->augwork_alloc, &lgmres->augvecs_user_work[0])); }
+  if (lgmres->augwork_alloc) PetscCall(VecDestroyVecs(lgmres->augwork_alloc, &lgmres->augvecs_user_work[0]));
   PetscCall(PetscFree(lgmres->augvecs_user_work));
   PetscCall(PetscFree(lgmres->aug_order));
   PetscCall(PetscFree(lgmres->hwork));
@@ -560,7 +560,7 @@ static PetscErrorCode KSPLGMRESGetNewVectors(KSP ksp, PetscInt it) {
 
   /* Adjust the number to allocate to make sure that we don't exceed the
      number of available slots (lgmres->vecs_allocated)*/
-  if (it + VEC_OFFSET + nalloc >= lgmres->vecs_allocated) { nalloc = lgmres->vecs_allocated - it - VEC_OFFSET; }
+  if (it + VEC_OFFSET + nalloc >= lgmres->vecs_allocated) nalloc = lgmres->vecs_allocated - it - VEC_OFFSET;
   if (!nalloc) PetscFunctionReturn(0);
 
   lgmres->vv_allocated += nalloc; /* vv_allocated is the number of vectors allocated */
@@ -571,7 +571,7 @@ static PetscErrorCode KSPLGMRESGetNewVectors(KSP ksp, PetscInt it) {
   /* specify size of chunk allocated */
   lgmres->mwork_alloc[nwork] = nalloc;
 
-  for (k = 0; k < nalloc; k++) { lgmres->vecs[it + VEC_OFFSET + k] = lgmres->user_work[nwork][k]; }
+  for (k = 0; k < nalloc; k++) lgmres->vecs[it + VEC_OFFSET + k] = lgmres->user_work[nwork][k];
 
   /* LGMRES_MOD - for now we are preallocating the augmentation vectors */
 
@@ -627,7 +627,7 @@ PetscErrorCode KSPView_LGMRES(KSP ksp, PetscViewer viewer) {
   if (iascii) {
     /*LGMRES_MOD */
     PetscCall(PetscViewerASCIIPrintf(viewer, "  aug. dimension=%" PetscInt_FMT "\n", lgmres->aug_dim));
-    if (lgmres->approx_constant) { PetscCall(PetscViewerASCIIPrintf(viewer, "  approx. space size was kept constant.\n")); }
+    if (lgmres->approx_constant) PetscCall(PetscViewerASCIIPrintf(viewer, "  approx. space size was kept constant.\n"));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  number of matvecs=%" PetscInt_FMT "\n", lgmres->matvecs));
   }
   PetscFunctionReturn(0);

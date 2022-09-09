@@ -31,7 +31,7 @@ PetscErrorCode ex2_1(void) {
   {
     PetscReal *array;
     PetscCall(DMSwarmGetField(dms, "viscosity", &bs, NULL, (void **)&array));
-    for (p = 0; p < nlocal; p++) { array[p] = 11.1 + p * 0.1 + rank * 100.0; }
+    for (p = 0; p < nlocal; p++) array[p] = 11.1 + p * 0.1 + rank * 100.0;
     PetscCall(DMSwarmRestoreField(dms, "viscosity", &bs, NULL, (void **)&array));
   }
 

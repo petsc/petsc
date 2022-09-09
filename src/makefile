@@ -1,5 +1,5 @@
 -include ../petscdir.mk
-DIRS     = sys vec mat dm ksp snes ts tao benchmarks docs
+DIRS     = sys vec mat dm ksp snes ts tao benchmarks
 LOCDIR   = src/
 MANSEC   = Sys
 

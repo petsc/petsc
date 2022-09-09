@@ -7,7 +7,7 @@
 #endif
 
 /*@C
-   PetscIgnoreErrorHandler - Deprecated, use PetscReturnErrorHandler(). Ignores the error, allows program to continue as if error did not occure
+   PetscIgnoreErrorHandler - Deprecated, use `PetscReturnErrorHandler()`. Ignores the error, allows program to continue as if error did not occure
 
    Not Collective
 
@@ -22,17 +22,13 @@
 
    Level: developer
 
-   Notes:
-   Most users need not directly employ this routine and the other error
-   handlers, but can instead use the simplified interface SETERRQ, which has
-   the calling sequence
-$     SETERRQ(comm,number,p,mess)
+   Note:
+   Users do not directly call this routine
 
 .seealso: `PetscReturnErrorHandler()`
  @*/
 PetscErrorCode PetscIgnoreErrorHandler(MPI_Comm comm, int line, const char *fun, const char *file, PetscErrorCode n, PetscErrorType p, const char *mess, void *ctx) {
-  PetscFunctionBegin;
-  PetscFunctionReturn(n);
+  return n;
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -141,21 +137,17 @@ PETSC_EXTERN PetscErrorCode PetscOptionsViewError(void);
 .  file - the file in which the error was detected (indicated by __FILE__)
 .  mess - an error text string, usually just printed to the screen
 .  n - the generic error number
-.  p - PETSC_ERROR_INITIAL if this is the first call the error handler, otherwise PETSC_ERROR_REPEAT
+.  p - `PETSC_ERROR_INITIAL` if this is the first call the error handler, otherwise `PETSC_ERROR_REPEAT`
 -  ctx - error handler context
 
-  Options Database:
+  Options Database Keys:
 +  -error_output_stdout - output the error messages to stdout instead of the default stderr
 -  -error_output_none - do not output the error messages
 
    Notes:
-   Most users need not directly employ this routine and the other error
-   handlers, but can instead use the simplified interface SETERRQ, which has
-   the calling sequence
-$     SETERRQ(comm,number,n,mess)
+   Users do not directly call this routine
 
-   Notes for experienced users:
-   Use PetscPushErrorHandler() to set the desired error handler.
+   Use `PetscPushErrorHandler()` to set the desired error handler.
 
    Level: developer
 
@@ -212,7 +204,7 @@ PetscErrorCode PetscTraceBackErrorHandler(MPI_Comm comm, int line, const char *f
     if (fun) {
       PetscStrncmp(fun, "main", 4, &ismain);
       if (ismain) {
-        if ((n <= PETSC_ERR_MIN_VALUE) || (n >= PETSC_ERR_MAX_VALUE)) { (*PetscErrorPrintf)("Reached the main program with an out-of-range error code %d. This should never happen\n", n); }
+        if ((n <= PETSC_ERR_MIN_VALUE) || (n >= PETSC_ERR_MAX_VALUE)) (*PetscErrorPrintf)("Reached the main program with an out-of-range error code %d. This should never happen\n", n);
         PetscOptionsViewError();
         PetscErrorPrintfHilight();
         (*PetscErrorPrintf)("----------------End of Error Message -------send entire error message to petsc-maint@mcs.anl.gov----------\n");

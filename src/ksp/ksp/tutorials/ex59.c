@@ -107,7 +107,7 @@ static PetscErrorCode BuildCSRGraph(DomainData dd, PetscInt **xadj, PetscInt **a
         }
         for (kk = kstart_csr; kk < kend_csr; kk++) {
           for (jj = jstart_csr; jj < jend_csr; jj++) {
-            for (ii = istart_csr; ii < iend_csr; ii++) { count_adj = count_adj + 1; }
+            for (ii = istart_csr; ii < iend_csr; ii++) count_adj = count_adj + 1;
           }
         }
       }
@@ -1014,8 +1014,8 @@ int main(int argc, char **args) {
   /* create and customize KSP/PC for BDDC */
   PetscCall(ComputeKSPBDDC(dd, A, &KSPwithBDDC));
   /* create KSP/PC for FETIDP */
-  if (testfetidp) { PetscCall(ComputeKSPFETIDP(dd, KSPwithBDDC, &KSPwithFETIDP)); }
-  /* create random exact solution */
+  if (testfetidp) PetscCall(ComputeKSPFETIDP(dd, KSPwithBDDC, &KSPwithFETIDP));
+    /* create random exact solution */
 #if defined(PETSC_USE_COMPLEX)
   PetscCall(VecSet(exact_solution, 1.0 + PETSC_i));
 #else
@@ -1052,7 +1052,7 @@ int main(int argc, char **args) {
   }
   if (0.95 <= mineig && mineig <= 1.05) mineig = 1.0;
   PetscCall(PetscPrintf(dd.gcomm, "Eigenvalues preconditioned operator        : %1.1e %1.1e\n", (double)PetscFloorReal(100. * mineig) / 100., (double)PetscCeilReal(100. * maxeig) / 100.));
-  if (norm > 1.e-1 || reason < 0) { PetscCall(PetscPrintf(dd.gcomm, "Error between exact and computed solution : %1.2e\n", (double)norm)); }
+  if (norm > 1.e-1 || reason < 0) PetscCall(PetscPrintf(dd.gcomm, "Error between exact and computed solution : %1.2e\n", (double)norm));
   PetscCall(PetscPrintf(dd.gcomm, "--------------------------------------------------------------\n"));
   if (testfetidp) {
     Vec fetidp_solution_all = NULL, fetidp_solution = NULL, fetidp_rhs = NULL;
@@ -1094,7 +1094,7 @@ int main(int argc, char **args) {
     }
     if (0.95 <= mineig && mineig <= 1.05) mineig = 1.0;
     PetscCall(PetscPrintf(dd.gcomm, "Eigenvalues preconditioned operator        : %1.1e %1.1e\n", (double)PetscFloorReal(100. * mineig) / 100., (double)PetscCeilReal(100. * maxeig) / 100.));
-    if (norm > 1.e-1 || reason < 0) { PetscCall(PetscPrintf(dd.gcomm, "Error between exact and computed solution : %1.2e\n", (double)norm)); }
+    if (norm > 1.e-1 || reason < 0) PetscCall(PetscPrintf(dd.gcomm, "Error between exact and computed solution : %1.2e\n", (double)norm));
     PetscCall(PetscPrintf(dd.gcomm, "--------------------------------------------------------------\n"));
     PetscCall(VecDestroy(&fetidp_solution));
     PetscCall(VecDestroy(&fetidp_solution_all));

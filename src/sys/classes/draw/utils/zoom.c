@@ -2,9 +2,9 @@
 #include <petscdraw.h> /*I "petscdraw.h"  I*/
 
 /*@C
-    PetscDrawZoom - Allows one to create a graphic that users may zoom into.
+    PetscDrawZoom - Allows one to provide a function that gets called for zooming in on a drawing using the mouse buttons
 
-    Collective on PetscDraw
+    Collective draw
 
     Input Parameters:
 +   draw - the window where the graph will be made.
@@ -13,7 +13,7 @@
 
   Level: advanced
 
-.seealso:
+.seealso: `PetscDraw`, `PetscDrawCreate()`
 @*/
 PetscErrorCode PetscDrawZoom(PetscDraw draw, PetscErrorCode (*func)(PetscDraw, void *), void *ctx) {
   PetscDrawButton button;

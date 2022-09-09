@@ -214,7 +214,7 @@ int main(int argc, char **args) {
   PetscCall(VecNorm(x, NORM_2, &norm));
   PetscCall(VecNorm(b, NORM_2, &bnorm));
   PetscCall(KSPGetIterationNumber(ksp, &its));
-  if (!testscaledMat || norm / bnorm > 1.e-5) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Relative norm of the residual %g, Iterations %" PetscInt_FMT "\n", (double)norm / (double)bnorm, its)); }
+  if (!testscaledMat || norm / bnorm > 1.e-5) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Relative norm of the residual %g, Iterations %" PetscInt_FMT "\n", (double)norm / (double)bnorm, its));
 
   /* -------------- Stage 1: Solve Second System ---------------------- */
   /*
@@ -342,7 +342,7 @@ int main(int argc, char **args) {
   PetscCall(VecAXPY(x, none, u));
   PetscCall(VecNorm(x, NORM_2, &norm));
   PetscCall(KSPGetIterationNumber(ksp, &its));
-  if (!testscaledMat || norm / bnorm > PETSC_SMALL) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Relative norm of the residual %g, Iterations %" PetscInt_FMT "\n", (double)norm / (double)bnorm, its)); }
+  if (!testscaledMat || norm / bnorm > PETSC_SMALL) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Relative norm of the residual %g, Iterations %" PetscInt_FMT "\n", (double)norm / (double)bnorm, its));
 
   /*
      Free work space.  All PETSc objects should be destroyed when they

@@ -9,10 +9,10 @@ PetscErrorCode VecMDot_MPI(Vec xin, PetscInt nv, const Vec y[], PetscScalar *z) 
   PetscScalar awork[128], *work = awork;
 
   PetscFunctionBegin;
-  if (nv > 128) { PetscCall(PetscMalloc1(nv, &work)); }
+  if (nv > 128) PetscCall(PetscMalloc1(nv, &work));
   PetscCall(VecMDot_Seq(xin, nv, y, work));
   PetscCall(MPIU_Allreduce(work, z, nv, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)xin)));
-  if (nv > 128) { PetscCall(PetscFree(work)); }
+  if (nv > 128) PetscCall(PetscFree(work));
   PetscFunctionReturn(0);
 }
 
@@ -20,10 +20,10 @@ PetscErrorCode VecMTDot_MPI(Vec xin, PetscInt nv, const Vec y[], PetscScalar *z)
   PetscScalar awork[128], *work = awork;
 
   PetscFunctionBegin;
-  if (nv > 128) { PetscCall(PetscMalloc1(nv, &work)); }
+  if (nv > 128) PetscCall(PetscMalloc1(nv, &work));
   PetscCall(VecMTDot_Seq(xin, nv, y, work));
   PetscCall(MPIU_Allreduce(work, z, nv, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)xin)));
-  if (nv > 128) { PetscCall(PetscFree(work)); }
+  if (nv > 128) PetscCall(PetscFree(work));
   PetscFunctionReturn(0);
 }
 

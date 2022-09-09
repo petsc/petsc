@@ -26,7 +26,7 @@ static PetscErrorCode PetscLoadDynamicLibrary(const char *name, PetscBool *found
     PetscCall(PetscStrncpy(libs, "${PETSC_DIR}/${PETSC_ARCH}/lib/libpetsc", sizeof(libs)));
     PetscCall(PetscStrlcat(libs, name, sizeof(libs)));
     PetscCall(PetscDLLibraryRetrieve(PETSC_COMM_WORLD, libs, dlib, 1024, found));
-    if (*found) { PetscCall(PetscDLLibraryAppend(PETSC_COMM_WORLD, &PetscDLLibrariesLoaded, dlib)); }
+    if (*found) PetscCall(PetscDLLibraryAppend(PETSC_COMM_WORLD, &PetscDLLibrariesLoaded, dlib));
   }
   PetscFunctionReturn(0);
 }
@@ -207,9 +207,9 @@ static PetscFunctionList dlallhead = NULL;
    To remove a registered routine, pass in a NULL fptr.
 
    Users who wish to register new classes for use by a particular PETSc
-   component (e.g., SNES) should generally call the registration routine
-   for that particular component (e.g., SNESRegister()) instead of
-   calling PetscFunctionListAdd() directly.
+   component (e.g., `SNES`) should generally call the registration routine
+   for that particular component (e.g., `SNESRegister()`) instead of
+   calling `PetscFunctionListAdd()` directly.
 
     Level: developer
 
@@ -380,7 +380,7 @@ PETSC_EXTERN PetscErrorCode PetscFunctionListFind_Private(PetscFunctionList fl, 
 /*@
    PetscFunctionListView - prints out contents of an PetscFunctionList
 
-   Collective over MPI_Comm
+   Collective over viewer
 
    Input Parameters:
 +  list - the list of functions
@@ -410,7 +410,7 @@ PetscErrorCode PetscFunctionListView(PetscFunctionList list, PetscViewer viewer)
 }
 
 /*@C
-   PetscFunctionListGet - Gets an array the contains the entries in PetscFunctionList, this is used
+   PetscFunctionListGet - Gets an array the contains the entries in `PetscFunctionList`, this is used
          by help etc.
 
    Not Collective
@@ -422,7 +422,7 @@ PetscErrorCode PetscFunctionListView(PetscFunctionList list, PetscViewer viewer)
 +  array - array of names
 -  n - length of array
 
-   Notes:
+   Note:
        This allocates the array so that must be freed. BUT the individual entries are
     not copied so should not be freed.
 
@@ -452,12 +452,12 @@ PetscErrorCode PetscFunctionListGet(PetscFunctionList list, const char ***array,
 }
 
 /*@C
-   PetscFunctionListPrintTypes - Prints the methods available.
+   PetscFunctionListPrintTypes - Prints the methods available in a list of functions
 
    Collective over MPI_Comm
 
    Input Parameters:
-+  comm   - the communicator (usually MPI_COMM_WORLD)
++  comm   - the communicator (usually `MPI_COMM_WORLD`)
 .  fd     - file to print to, usually stdout
 .  prefix - prefix to prepend to name (optional)
 .  name   - option string (for example, "-ksp_type")
@@ -501,7 +501,6 @@ PetscErrorCode PetscFunctionListPrintTypes(MPI_Comm comm, FILE *fd, const char p
     Level: developer
 
 .seealso: `PetscFunctionList`, `PetscFunctionListAdd()`, `PetscFlistDestroy()`
-
 @*/
 PetscErrorCode PetscFunctionListDuplicate(PetscFunctionList fl, PetscFunctionList *nl) {
   PetscFunctionBegin;

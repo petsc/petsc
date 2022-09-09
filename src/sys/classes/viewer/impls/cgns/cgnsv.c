@@ -16,7 +16,7 @@ static PetscErrorCode PetscViewerView_CGNS(PetscViewer v, PetscViewer viewer) {
   PetscViewer_CGNS *cgv = (PetscViewer_CGNS *)v->data;
 
   PetscFunctionBegin;
-  if (cgv->filename) { PetscCall(PetscViewerASCIIPrintf(viewer, "Filename: %s\n", cgv->filename)); }
+  if (cgv->filename) PetscCall(PetscViewerASCIIPrintf(viewer, "Filename: %s\n", cgv->filename));
   PetscFunctionReturn(0);
 }
 
@@ -125,9 +125,9 @@ static PetscErrorCode PetscViewerFileGetName_CGNS(PetscViewer viewer, const char
 /*MC
    PETSCVIEWERCGNS - A viewer for CGNS files
 
-.seealso: `PetscViewerCreate()`, `VecView()`, `DMView()`, `PetscViewerFileSetName()`, `PetscViewerFileSetMode()`
-
   Level: beginner
+
+.seealso: `PetscViewerCreate()`, `VecView()`, `DMView()`, `PetscViewerFileSetName()`, `PetscViewerFileSetMode()`
 M*/
 
 PETSC_EXTERN PetscErrorCode PetscViewerCreate_CGNS(PetscViewer v) {

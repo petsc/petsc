@@ -129,7 +129,7 @@ static PetscErrorCode DMPlexComputeAnchorAdjacencies(DM dm, PetscBool useCone, P
           PetscCall(PetscSectionGetDof(section, qAdj, &qAdjDof));
           PetscCall(PetscSectionGetConstraintDof(section, qAdj, &qAdjCDof));
           PetscCall(PetscSectionGetOffset(sectionGlobal, qAdj, &qAdjOff));
-          for (nd = 0; nd < qAdjDof - qAdjCDof; ++nd) { adj[aOff++] = (qAdjOff < 0 ? -(qAdjOff + 1) : qAdjOff) + nd; }
+          for (nd = 0; nd < qAdjDof - qAdjCDof; ++nd) adj[aOff++] = (qAdjOff < 0 ? -(qAdjOff + 1) : qAdjOff) + nd;
         }
       }
       PetscCall(PetscSortRemoveDupsInt(&aDof, &adj[aOffOrig]));
@@ -226,11 +226,11 @@ static PetscErrorCode DMPlexCreateAdjacencySection_Static(DM dm, PetscInt bs, Pe
       if ((padj < pStart) || (padj >= pEnd)) continue;
       PetscCall(PetscSectionGetDof(section, padj, &ndof));
       PetscCall(PetscSectionGetConstraintDof(section, padj, &ncdof));
-      for (d = off; d < off + dof; ++d) { PetscCall(PetscSectionAddDof(leafSectionAdj, d, ndof - ncdof)); }
+      for (d = off; d < off + dof; ++d) PetscCall(PetscSectionAddDof(leafSectionAdj, d, ndof - ncdof));
     }
     PetscCall(PetscSectionGetDof(anchorSectionAdj, p, &anDof));
     if (anDof) {
-      for (d = off; d < off + dof; ++d) { PetscCall(PetscSectionAddDof(leafSectionAdj, d, anDof)); }
+      for (d = off; d < off + dof; ++d) PetscCall(PetscSectionAddDof(leafSectionAdj, d, anDof));
     }
   }
   PetscCall(PetscSectionSetUp(leafSectionAdj));
@@ -265,11 +265,11 @@ static PetscErrorCode DMPlexCreateAdjacencySection_Static(DM dm, PetscInt bs, Pe
       if ((padj < pStart) || (padj >= pEnd)) continue;
       PetscCall(PetscSectionGetDof(section, padj, &ndof));
       PetscCall(PetscSectionGetConstraintDof(section, padj, &ncdof));
-      for (d = off; d < off + dof; ++d) { PetscCall(PetscSectionAddDof(rootSectionAdj, d, ndof - ncdof)); }
+      for (d = off; d < off + dof; ++d) PetscCall(PetscSectionAddDof(rootSectionAdj, d, ndof - ncdof));
     }
     PetscCall(PetscSectionGetDof(anchorSectionAdj, p, &anDof));
     if (anDof) {
-      for (d = off; d < off + dof; ++d) { PetscCall(PetscSectionAddDof(rootSectionAdj, d, anDof)); }
+      for (d = off; d < off + dof; ++d) PetscCall(PetscSectionAddDof(rootSectionAdj, d, anDof));
     }
   }
   PetscCall(PetscSectionSetUp(rootSectionAdj));
@@ -473,11 +473,11 @@ static PetscErrorCode DMPlexCreateAdjacencySection_Static(DM dm, PetscInt bs, Pe
       PetscCall(PetscSectionGetDof(section, padj, &ndof));
       PetscCall(PetscSectionGetConstraintDof(section, padj, &ncdof));
       PetscCall(PetscSectionGetOffset(section, padj, &noff));
-      for (d = goff; d < goff + dof - cdof; ++d) { PetscCall(PetscSectionAddDof(sectionAdj, d, ndof - ncdof)); }
+      for (d = goff; d < goff + dof - cdof; ++d) PetscCall(PetscSectionAddDof(sectionAdj, d, ndof - ncdof));
     }
     PetscCall(PetscSectionGetDof(anchorSectionAdj, p, &anDof));
     if (anDof) {
-      for (d = goff; d < goff + dof - cdof; ++d) { PetscCall(PetscSectionAddDof(sectionAdj, d, anDof)); }
+      for (d = goff; d < goff + dof - cdof; ++d) PetscCall(PetscSectionAddDof(sectionAdj, d, anDof));
     }
   }
   PetscCall(PetscSectionSetUp(sectionAdj));
@@ -533,9 +533,9 @@ static PetscErrorCode DMPlexCreateAdjacencySection_Static(DM dm, PetscInt bs, Pe
         PetscCall(PetscSectionGetConstraintDof(section, padj, &ncdof));
         PetscCall(PetscSectionGetConstraintIndices(section, padj, &ncind));
         PetscCall(PetscSectionGetOffset(sectionGlobal, padj, &ngoff));
-        for (nd = 0; nd < ndof - ncdof; ++nd, ++i) { cols[aoff + i] = ngoff < 0 ? -(ngoff + 1) + nd : ngoff + nd; }
+        for (nd = 0; nd < ndof - ncdof; ++nd, ++i) cols[aoff + i] = ngoff < 0 ? -(ngoff + 1) + nd : ngoff + nd;
       }
-      for (q = 0; q < anDof; q++, i++) { cols[aoff + i] = anchorAdj[anOff + q]; }
+      for (q = 0; q < anDof; q++, i++) cols[aoff + i] = anchorAdj[anOff + q];
       PetscCheck(i == adof, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid number of entries %" PetscInt_FMT " != %" PetscInt_FMT " for dof %" PetscInt_FMT " (point %" PetscInt_FMT ")", i, adof, d, p);
     }
   }

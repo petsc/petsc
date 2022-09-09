@@ -21,7 +21,7 @@ static void sigpipe_handle(int x) { }
     PetscSSLInitializeContext - Set up an SSL context suitable for initiating HTTPS requests.
 
     Output Parameter:
-.   octx - the SSL_CTX to be passed to PetscHTTPSConnect
+.   octx - the SSL_CTX to be passed to `PetscHTTPSConnect90`
 
     Level: advanced
 
@@ -33,7 +33,6 @@ $    cat newkey.pem newcert.pem > sslclient.pem
     silly but it was all I could figure out.
 
 .seealso: `PetscSSLDestroyContext()`, `PetscHTTPSConnect()`, `PetscHTTPSRequest()`
-
 @*/
 PetscErrorCode PetscSSLInitializeContext(SSL_CTX **octx) {
   SSL_CTX *ctx;
@@ -84,10 +83,10 @@ PetscErrorCode PetscSSLInitializeContext(SSL_CTX **octx) {
 }
 
 /*@C
-     PetscSSLDestroyContext - frees a SSL_CTX obtained with PetscSSLInitializeContext()
+     PetscSSLDestroyContext - frees a `SSL_CTX` obtained with `PetscSSLInitializeContext()`
 
      Input Parameter:
-.     ctx - the SSL_CTX
+.     ctx - the `SSL_CTX`
 
     Level: advanced
 
@@ -160,7 +159,7 @@ static PetscErrorCode PetscHTTPBuildRequest(const char type[], const char url[],
 .   header - additional header information, may be NULL
 .   ctype - data type of body, for example application/json
 .   body - data to send to server
-.   ssl - obtained with PetscHTTPSConnect()
+.   ssl - obtained with `PetscHTTPSConnect()`
 -   buffsize - size of buffer
 
    Output Parameter:
@@ -169,7 +168,6 @@ static PetscErrorCode PetscHTTPBuildRequest(const char type[], const char url[],
     Level: advanced
 
 .seealso: `PetscHTTPRequest()`, `PetscHTTPSConnect()`, `PetscSSLInitializeContext()`, `PetscSSLDestroyContext()`, `PetscPullJSONValue()`
-
 @*/
 PetscErrorCode PetscHTTPSRequest(const char type[], const char url[], const char header[], const char ctype[], const char body[], SSL *ssl, char buff[], size_t buffsize) {
   char     *request;
@@ -241,7 +239,7 @@ PetscErrorCode PetscHTTPSRequest(const char type[], const char url[], const char
 .   header - additional header information, may be NULL
 .   ctype - data type of body, for example application/json
 .   body - data to send to server
-.   sock - obtained with PetscOpenSocket()
+.   sock - obtained with `PetscOpenSocket()`
 -   buffsize - size of buffer
 
    Output Parameter:
@@ -273,11 +271,11 @@ PetscErrorCode PetscHTTPRequest(const char type[], const char url[], const char 
     Input Parameters:
 +    host - the name of the machine hosting the HTTPS server
 .    port - the port number where the server is hosting, usually 443
--    ctx - value obtained with PetscSSLInitializeContext()
+-    ctx - value obtained with `PetscSSLInitializeContext()`
 
     Output Parameters:
 +    sock - socket to connect
--    ssl - the argument passed to PetscHTTPSRequest()
+-    ssl - the argument passed to `PetscHTTPSRequest()`
 
     Level: advanced
 
@@ -312,6 +310,7 @@ PetscErrorCode PetscHTTPSConnect(const char host[], int port, SSL_CTX *ctx, int 
 
     Level: advanced
 
+.seealso: `PetscOpenSocket()`, `PetscHTTPSRequest()`, `PetscSSLInitializeContext()`, `PetscPushJSONValue()`
 @*/
 PetscErrorCode PetscPullJSONValue(const char buff[], const char key[], char value[], size_t valuelen, PetscBool *found) {
   char  *v, *w;
@@ -364,8 +363,10 @@ PetscErrorCode PetscPullJSONValue(const char buff[], const char key[], char valu
 
     Level: advanced
 
-    Notes:
+    Note:
     Ignores lengths so can cause buffer overflow
+
+.seealso: `PetscOpenSocket()`, `PetscHTTPSRequest()`, `PetscSSLInitializeContext()`, `PetscPullJSONValue()`
 @*/
 PetscErrorCode PetscPushJSONValue(char buff[], const char key[], const char value[], size_t bufflen) {
   size_t    len;
@@ -373,8 +374,8 @@ PetscErrorCode PetscPushJSONValue(char buff[], const char key[], const char valu
 
   PetscFunctionBegin;
   PetscCall(PetscStrcmp(value, "null", &special));
-  if (!special) { PetscCall(PetscStrcmp(value, "true", &special)); }
-  if (!special) { PetscCall(PetscStrcmp(value, "false", &special)); }
+  if (!special) PetscCall(PetscStrcmp(value, "true", &special));
+  if (!special) PetscCall(PetscStrcmp(value, "false", &special));
   if (!special) {
     PetscInt i;
 
@@ -391,8 +392,8 @@ PetscErrorCode PetscPushJSONValue(char buff[], const char key[], const char valu
   PetscCall(PetscStrcat(buff, "\""));
   PetscCall(PetscStrcat(buff, key));
   PetscCall(PetscStrcat(buff, "\":"));
-  if (!special) { PetscCall(PetscStrcat(buff, "\"")); }
+  if (!special) PetscCall(PetscStrcat(buff, "\""));
   PetscCall(PetscStrcat(buff, value));
-  if (!special) { PetscCall(PetscStrcat(buff, "\"")); }
+  if (!special) PetscCall(PetscStrcat(buff, "\""));
   PetscFunctionReturn(0);
 }

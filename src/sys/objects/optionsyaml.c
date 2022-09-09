@@ -146,7 +146,7 @@ static PetscErrorCode PetscParseLayerYAML(PetscOptions options, yaml_document_t 
 }
 
 /*@C
-   PetscOptionsInsertStringYAML - Inserts YAML-formatted options into the database from a string
+   PetscOptionsInsertStringYAML - Inserts YAML-formatted options into the options database from a string
 
    Logically Collective
 
@@ -179,7 +179,7 @@ PetscErrorCode PetscOptionsInsertStringYAML(PetscOptions options, const char in_
     err = !yaml_parser_load(&parser, &doc);
     PetscCheck(!err, comm, PETSC_ERR_LIB, "YAML parser loading error");
     root = yaml_document_get_root_node(&doc);
-    if (root) { PetscCall(PetscParseLayerYAML(options, &doc, root)); }
+    if (root) PetscCall(PetscParseLayerYAML(options, &doc, root));
     yaml_document_delete(&doc);
   } while (root);
   yaml_parser_delete(&parser);
@@ -192,16 +192,17 @@ PetscErrorCode PetscOptionsInsertStringYAML(PetscOptions options, const char in_
   Collective
 
   Input Parameters:
-+   comm - the processes that will share the options (usually PETSC_COMM_WORLD)
++   comm - the processes that will share the options (usually `PETSC_COMM_WORLD`)
 .   options - options database, use NULL for default global database
 .   file - name of file
--   require - if PETSC_TRUE will generate an error if the file does not exist
+-   require - if `PETSC_TRUE` will generate an error if the file does not exist
 
+  Notes:
   PETSc will generate an error condition that stops the program if a YAML error
   is detected, hence the user should check that the YAML file is valid before
   supplying it, for instance at http://www.yamllint.com/ .
 
-  Uses PetscOptionsInsertStringYAML().
+  Uses `PetscOptionsInsertStringYAML()`.
 
   Level: intermediate
 

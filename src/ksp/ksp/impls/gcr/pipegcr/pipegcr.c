@@ -54,7 +54,7 @@ static PetscErrorCode KSPAllocateVectors_PIPEGCR(KSP ksp, PetscInt nvecsneeded, 
       pipegcr->qvecs[nvecsprev + i] = pipegcr->pqvecs[pipegcr->nchunks][i];
       pipegcr->pvecs[nvecsprev + i] = pipegcr->ppvecs[pipegcr->nchunks][i];
       pipegcr->svecs[nvecsprev + i] = pipegcr->psvecs[pipegcr->nchunks][i];
-      if (pipegcr->unroll_w) { pipegcr->tvecs[nvecsprev + i] = pipegcr->ptvecs[pipegcr->nchunks][i]; }
+      if (pipegcr->unroll_w) pipegcr->tvecs[nvecsprev + i] = pipegcr->ptvecs[pipegcr->nchunks][i];
     }
     pipegcr->chunksizes[pipegcr->nchunks] = nnewvecs;
     pipegcr->nchunks++;
@@ -145,7 +145,7 @@ static PetscErrorCode KSPSolve_PIPEGCR_cycle(KSP ksp) {
     p   = pipegcr->pvecs[idx];
     s   = pipegcr->svecs[idx];
     q   = pipegcr->qvecs[idx];
-    if (pipegcr->unroll_w) { t = pipegcr->tvecs[idx]; }
+    if (pipegcr->unroll_w) t = pipegcr->tvecs[idx];
     eta = pipegcr->etas + idx;
 
     /* number of old directions to orthogonalize against */
@@ -161,7 +161,7 @@ static PetscErrorCode KSPSolve_PIPEGCR_cycle(KSP ksp) {
       pipegcr->pold[j] = pipegcr->pvecs[kdx];
       pipegcr->sold[j] = pipegcr->svecs[kdx];
       pipegcr->qold[j] = pipegcr->qvecs[kdx];
-      if (pipegcr->unroll_w) { pipegcr->told[j] = pipegcr->tvecs[kdx]; }
+      if (pipegcr->unroll_w) pipegcr->told[j] = pipegcr->tvecs[kdx];
       redux[j] = pipegcr->svecs[kdx];
     }
     /* If the above loop is not run redux contains only r and w => all beta_k = 0, only gamma, delta != 0 */
@@ -293,7 +293,7 @@ static PetscErrorCode KSPSolve_PIPEGCR(KSP ksp) {
 
   /* Is A symmetric? */
   PetscCall(PetscObjectTypeCompareAny((PetscObject)A, &issym, MATSBAIJ, MATSEQSBAIJ, MATMPISBAIJ, ""));
-  if (!issym) { PetscCall(PetscInfo(A, "Matrix type is not any of MATSBAIJ,MATSEQSBAIJ,MATMPISBAIJ. Is matrix A symmetric (as required by CR methods)?")); }
+  if (!issym) PetscCall(PetscInfo(A, "Matrix type is not any of MATSBAIJ,MATSEQSBAIJ,MATMPISBAIJ. Is matrix A symmetric (as required by CR methods)?"));
 
   /* logging */
   PetscCall(PetscObjectSAWsTakeAccess((PetscObject)ksp));
@@ -363,11 +363,11 @@ static PetscErrorCode KSPSetUp_PIPEGCR(KSP ksp) {
   /* Allocated space for pointers to additional work vectors
     note that mmax is the number of previous directions, so we add 1 for the current direction */
   PetscCall(PetscMalloc6(pipegcr->mmax + 1, &(pipegcr->pvecs), pipegcr->mmax + 1, &(pipegcr->ppvecs), pipegcr->mmax + 1, &(pipegcr->svecs), pipegcr->mmax + 1, &(pipegcr->psvecs), pipegcr->mmax + 1, &(pipegcr->qvecs), pipegcr->mmax + 1, &(pipegcr->pqvecs)));
-  if (pipegcr->unroll_w) { PetscCall(PetscMalloc3(pipegcr->mmax + 1, &(pipegcr->tvecs), pipegcr->mmax + 1, &(pipegcr->ptvecs), pipegcr->mmax + 2, &(pipegcr->told))); }
+  if (pipegcr->unroll_w) PetscCall(PetscMalloc3(pipegcr->mmax + 1, &(pipegcr->tvecs), pipegcr->mmax + 1, &(pipegcr->ptvecs), pipegcr->mmax + 2, &(pipegcr->told)));
   PetscCall(PetscMalloc4(pipegcr->mmax + 2, &(pipegcr->pold), pipegcr->mmax + 2, &(pipegcr->sold), pipegcr->mmax + 2, &(pipegcr->qold), pipegcr->mmax + 2, &(pipegcr->chunksizes)));
   PetscCall(PetscMalloc3(pipegcr->mmax + 2, &(pipegcr->dots), pipegcr->mmax + 1, &(pipegcr->etas), pipegcr->mmax + 2, &(pipegcr->redux)));
   /* If the requested number of preallocated vectors is greater than mmax reduce nprealloc */
-  if (pipegcr->nprealloc > pipegcr->mmax + 1) { PetscCall(PetscInfo(NULL, "Requested nprealloc=%" PetscInt_FMT " is greater than m_max+1=%" PetscInt_FMT ". Resetting nprealloc = m_max+1.\n", pipegcr->nprealloc, pipegcr->mmax + 1)); }
+  if (pipegcr->nprealloc > pipegcr->mmax + 1) PetscCall(PetscInfo(NULL, "Requested nprealloc=%" PetscInt_FMT " is greater than m_max+1=%" PetscInt_FMT ". Resetting nprealloc = m_max+1.\n", pipegcr->nprealloc, pipegcr->mmax + 1));
 
   /* Preallocate additional work vectors */
   PetscCall(KSPAllocateVectors_PIPEGCR(ksp, pipegcr->nprealloc, pipegcr->nprealloc));
@@ -403,7 +403,7 @@ static PetscErrorCode KSPDestroy_PIPEGCR(KSP ksp) {
       PetscCall(VecDestroyVecs(pipegcr->chunksizes[i], &pipegcr->ppvecs[i]));
       PetscCall(VecDestroyVecs(pipegcr->chunksizes[i], &pipegcr->psvecs[i]));
       PetscCall(VecDestroyVecs(pipegcr->chunksizes[i], &pipegcr->pqvecs[i]));
-      if (pipegcr->unroll_w) { PetscCall(VecDestroyVecs(pipegcr->chunksizes[i], &pipegcr->ptvecs[i])); }
+      if (pipegcr->unroll_w) PetscCall(VecDestroyVecs(pipegcr->chunksizes[i], &pipegcr->ptvecs[i]));
     }
   }
 

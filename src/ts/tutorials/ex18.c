@@ -208,7 +208,7 @@ static void f0_lap_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt u
 static void f1_lap_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[]) {
   PetscInt comp, d;
   for (comp = 0; comp < dim; ++comp) {
-    for (d = 0; d < dim; ++d) { f1[comp * dim + d] = u_x[comp * dim + d]; }
+    for (d = 0; d < dim; ++d) f1[comp * dim + d] = u_x[comp * dim + d];
   }
 }
 
@@ -227,7 +227,7 @@ void g3_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], con
   PetscInt       compI, d;
 
   for (compI = 0; compI < Ncomp; ++compI) {
-    for (d = 0; d < dim; ++d) { g3[((compI * Ncomp + compI) * dim + d) * dim + d] = 1.0; }
+    for (d = 0; d < dim; ++d) g3[((compI * Ncomp + compI) * dim + d) * dim + d] = 1.0;
   }
 }
 

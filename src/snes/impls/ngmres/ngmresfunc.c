@@ -48,7 +48,7 @@ PetscErrorCode SNESNGMRESFormCombinedSolution_Private(SNES snes, PetscInt ivec, 
 
   /* construct h */
   for (j = 0; j < l; j++) {
-    for (i = 0; i < l; i++) { H(i, j) = Q(i, j) - xi[i] - xi[j] + nu; }
+    for (i = 0; i < l; i++) H(i, j) = Q(i, j) - xi[i] - xi[j] + nu;
   }
   if (l == 1) {
     /* simply set alpha[0] = beta[0] / H[0, 0] */
@@ -69,7 +69,7 @@ PetscErrorCode SNESNGMRESFormCombinedSolution_Private(SNES snes, PetscInt ivec, 
     PetscCheck(ngmres->info >= 0, PetscObjectComm((PetscObject)snes), PETSC_ERR_LIB, "Bad argument to GELSS");
     PetscCheck(ngmres->info <= 0, PetscObjectComm((PetscObject)snes), PETSC_ERR_LIB, "SVD failed to converge");
   }
-  for (i = 0; i < l; i++) { PetscCheck(!PetscIsInfOrNanScalar(beta[i]), PetscObjectComm((PetscObject)snes), PETSC_ERR_LIB, "SVD generated inconsistent output"); }
+  for (i = 0; i < l; i++) PetscCheck(!PetscIsInfOrNanScalar(beta[i]), PetscObjectComm((PetscObject)snes), PETSC_ERR_LIB, "SVD generated inconsistent output");
   alph_total = 0.;
   for (i = 0; i < l; i++) alph_total += beta[i];
 
@@ -153,7 +153,7 @@ PetscErrorCode SNESNGMRESSelect_Private(SNES snes, PetscInt k_restart, Vec XM, V
   PetscFunctionBegin;
   if (ngmres->select_type == SNES_NGMRES_SELECT_LINESEARCH) {
     /* X = X + \lambda(XA - X) */
-    if (ngmres->monitor) { PetscCall(PetscViewerASCIIPrintf(ngmres->monitor, "||F_A||_2 = %e, ||F_M||_2 = %e\n", (double)fAnorm, (double)fMnorm)); }
+    if (ngmres->monitor) PetscCall(PetscViewerASCIIPrintf(ngmres->monitor, "||F_A||_2 = %e, ||F_M||_2 = %e\n", (double)fAnorm, (double)fMnorm));
     PetscCall(VecCopy(FM, F));
     PetscCall(VecCopy(XM, X));
     PetscCall(VecCopy(XA, Y));
@@ -168,7 +168,7 @@ PetscErrorCode SNESNGMRESSelect_Private(SNES snes, PetscInt k_restart, Vec XM, V
         PetscFunctionReturn(0);
       }
     }
-    if (ngmres->monitor) { PetscCall(PetscViewerASCIIPrintf(ngmres->monitor, "Additive solution: ||F||_2 = %e\n", (double)*fnorm)); }
+    if (ngmres->monitor) PetscCall(PetscViewerASCIIPrintf(ngmres->monitor, "Additive solution: ||F||_2 = %e\n", (double)*fnorm));
   } else if (ngmres->select_type == SNES_NGMRES_SELECT_DIFFERENCE) {
     selectA = PETSC_TRUE;
     /* Conditions for choosing the accelerated answer */
@@ -180,7 +180,7 @@ PetscErrorCode SNESNGMRESSelect_Private(SNES snes, PetscInt k_restart, Vec XM, V
     } else selectA = PETSC_FALSE;
 
     if (selectA) {
-      if (ngmres->monitor) { PetscCall(PetscViewerASCIIPrintf(ngmres->monitor, "picked X_A, ||F_A||_2 = %e, ||F_M||_2 = %e\n", (double)fAnorm, (double)fMnorm)); }
+      if (ngmres->monitor) PetscCall(PetscViewerASCIIPrintf(ngmres->monitor, "picked X_A, ||F_A||_2 = %e, ||F_M||_2 = %e\n", (double)fAnorm, (double)fMnorm));
       /* copy it over */
       *xnorm = xAnorm;
       *fnorm = fAnorm;
@@ -188,7 +188,7 @@ PetscErrorCode SNESNGMRESSelect_Private(SNES snes, PetscInt k_restart, Vec XM, V
       PetscCall(VecCopy(FA, F));
       PetscCall(VecCopy(XA, X));
     } else {
-      if (ngmres->monitor) { PetscCall(PetscViewerASCIIPrintf(ngmres->monitor, "picked X_M, ||F_A||_2 = %e, ||F_M||_2 = %e\n", (double)fAnorm, (double)fMnorm)); }
+      if (ngmres->monitor) PetscCall(PetscViewerASCIIPrintf(ngmres->monitor, "picked X_M, ||F_A||_2 = %e, ||F_M||_2 = %e\n", (double)fAnorm, (double)fMnorm));
       *xnorm = xMnorm;
       *fnorm = fMnorm;
       *ynorm = yMnorm;
@@ -214,18 +214,18 @@ PetscErrorCode SNESNGMRESSelectRestart_Private(SNES snes, PetscInt l, PetscReal 
   *selectRestart = PETSC_FALSE;
   /* difference stagnation restart */
   if ((ngmres->epsilonB * dnorm > dminnorm) && (PetscSqrtReal(fAnorm) > ngmres->deltaB * PetscSqrtReal(fminnorm)) && l > 0) {
-    if (ngmres->monitor) { PetscCall(PetscViewerASCIIPrintf(ngmres->monitor, "difference restart: %e > %e\n", (double)(ngmres->epsilonB * dnorm), (double)dminnorm)); }
+    if (ngmres->monitor) PetscCall(PetscViewerASCIIPrintf(ngmres->monitor, "difference restart: %e > %e\n", (double)(ngmres->epsilonB * dnorm), (double)dminnorm));
     *selectRestart = PETSC_TRUE;
   }
   /* residual stagnation restart */
   if (PetscSqrtReal(fAnorm) > ngmres->gammaC * PetscSqrtReal(fminnorm)) {
-    if (ngmres->monitor) { PetscCall(PetscViewerASCIIPrintf(ngmres->monitor, "residual restart: %e > %e\n", (double)PetscSqrtReal(fAnorm), (double)(ngmres->gammaC * PetscSqrtReal(fminnorm)))); }
+    if (ngmres->monitor) PetscCall(PetscViewerASCIIPrintf(ngmres->monitor, "residual restart: %e > %e\n", (double)PetscSqrtReal(fAnorm), (double)(ngmres->gammaC * PetscSqrtReal(fminnorm))));
     *selectRestart = PETSC_TRUE;
   }
 
   /* F_M stagnation restart */
   if (ngmres->restart_fm_rise && fMnorm > snes->norm) {
-    if (ngmres->monitor) { PetscCall(PetscViewerASCIIPrintf(ngmres->monitor, "F_M rise restart: %e > %e\n", (double)fMnorm, (double)snes->norm)); }
+    if (ngmres->monitor) PetscCall(PetscViewerASCIIPrintf(ngmres->monitor, "F_M rise restart: %e > %e\n", (double)fMnorm, (double)snes->norm));
     *selectRestart = PETSC_TRUE;
   }
 

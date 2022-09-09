@@ -352,7 +352,7 @@ static PetscErrorCode VecGetHDF5ChunkSize(DM_DA *da, Vec xin, PetscInt dimension
       }
     }
     dim = 0;
-    if (timestep >= 0) { ++dim; }
+    if (timestep >= 0) ++dim;
     /* prefer to split z-axis, even down to planar slices */
     if (dimension == 3) {
       chunkDims[dim++] = (hsize_t)da->P / zslices;
@@ -368,7 +368,7 @@ static PetscErrorCode VecGetHDF5ChunkSize(DM_DA *da, Vec xin, PetscInt dimension
     if (target_size < chunk_size) {
       /* only change the defaults if target_size < chunk_size */
       dim = 0;
-      if (timestep >= 0) { ++dim; }
+      if (timestep >= 0) ++dim;
       /* prefer to split z-axis, even down to planar slices */
       if (dimension == 3) {
         /* try splitting the z-axis to core-size bits, i.e. divide chunk size by # comm_size in z-direction */
@@ -426,7 +426,7 @@ PetscErrorCode VecView_MPI_HDF5_DA(Vec xin, PetscViewer viewer) {
   PetscFunctionBegin;
   PetscCall(PetscViewerHDF5OpenGroup(viewer, &file_id, &group));
   PetscCall(PetscViewerHDF5IsTimestepping(viewer, &timestepping));
-  if (timestepping) { PetscCall(PetscViewerHDF5GetTimestep(viewer, &timestep)); }
+  if (timestepping) PetscCall(PetscViewerHDF5GetTimestep(viewer, &timestep));
   PetscCall(PetscViewerHDF5GetBaseDimension2(viewer, &dim2));
   PetscCall(PetscViewerHDF5GetSPOutput(viewer, &spoutput));
 
@@ -553,10 +553,10 @@ PetscErrorCode VecView_MPI_HDF5_DA(Vec xin, PetscViewer viewer) {
     PetscCall(PetscViewerHDF5WriteObjectAttribute(viewer, (PetscObject)xin, "complex", PETSC_BOOL, &tru));
   }
 #endif
-  if (timestepping) { PetscCall(PetscViewerHDF5WriteObjectAttribute(viewer, (PetscObject)xin, "timestepping", PETSC_BOOL, &timestepping)); }
+  if (timestepping) PetscCall(PetscViewerHDF5WriteObjectAttribute(viewer, (PetscObject)xin, "timestepping", PETSC_BOOL, &timestepping));
 
   /* Close/release resources */
-  if (group != file_id) { PetscCallHDF5(H5Gclose, (group)); }
+  if (group != file_id) PetscCallHDF5(H5Gclose, (group));
   PetscCallHDF5(H5Sclose, (filespace));
   PetscCallHDF5(H5Sclose, (memspace));
   PetscCallHDF5(H5Dclose, (dset_id));
@@ -594,7 +594,7 @@ static PetscErrorCode DMDAArrayMPIIO(DM da, PetscViewer viewer, Vec xin, PetscBo
   } else {
     tr[0] = VEC_FILE_CLASSID;
     tr[1] = vecrows;
-    if (!skipheader) { PetscCall(PetscViewerBinaryWrite(viewer, tr, 2, PETSC_INT)); }
+    if (!skipheader) PetscCall(PetscViewerBinaryWrite(viewer, tr, 2, PETSC_INT));
   }
 
   PetscCall(PetscMPIIntCast(dd->w, &dof));
@@ -727,9 +727,9 @@ PetscErrorCode VecView_MPI_DA(Vec xin, PetscViewer viewer) {
       PetscCall(DMDAGetInfo(da, &dim, &ni, &nj, &nk, &pi, &pj, &pk, &dof, NULL, NULL, NULL, NULL, NULL));
       PetscCall(PetscFPrintf(comm, info, "#--- begin code written by PetscViewerBinary for MATLAB format ---#\n"));
       PetscCall(PetscFPrintf(comm, info, "#$$ tmp = PetscBinaryRead(fd); \n"));
-      if (dim == 1) { PetscCall(PetscFPrintf(comm, info, "#$$ tmp = reshape(tmp,%" PetscInt_FMT ",%" PetscInt_FMT ");\n", dof, ni)); }
-      if (dim == 2) { PetscCall(PetscFPrintf(comm, info, "#$$ tmp = reshape(tmp,%" PetscInt_FMT ",%" PetscInt_FMT ",%" PetscInt_FMT ");\n", dof, ni, nj)); }
-      if (dim == 3) { PetscCall(PetscFPrintf(comm, info, "#$$ tmp = reshape(tmp,%" PetscInt_FMT ",%" PetscInt_FMT ",%" PetscInt_FMT ",%" PetscInt_FMT ");\n", dof, ni, nj, nk)); }
+      if (dim == 1) PetscCall(PetscFPrintf(comm, info, "#$$ tmp = reshape(tmp,%" PetscInt_FMT ",%" PetscInt_FMT ");\n", dof, ni));
+      if (dim == 2) PetscCall(PetscFPrintf(comm, info, "#$$ tmp = reshape(tmp,%" PetscInt_FMT ",%" PetscInt_FMT ",%" PetscInt_FMT ");\n", dof, ni, nj));
+      if (dim == 3) PetscCall(PetscFPrintf(comm, info, "#$$ tmp = reshape(tmp,%" PetscInt_FMT ",%" PetscInt_FMT ",%" PetscInt_FMT ",%" PetscInt_FMT ");\n", dof, ni, nj, nk));
 
       for (n = 0; n < dof; n++) {
         PetscCall(DMDAGetFieldName(da, n, &fieldname));
@@ -737,9 +737,9 @@ PetscErrorCode VecView_MPI_DA(Vec xin, PetscViewer viewer) {
           PetscCall(PetscSNPrintf(fieldbuf, sizeof fieldbuf, "field%" PetscInt_FMT, n));
           fieldname = fieldbuf;
         }
-        if (dim == 1) { PetscCall(PetscFPrintf(comm, info, "#$$ Set.%s.%s = squeeze(tmp(%" PetscInt_FMT ",:))';\n", name, fieldname, n + 1)); }
-        if (dim == 2) { PetscCall(PetscFPrintf(comm, info, "#$$ Set.%s.%s = squeeze(tmp(%" PetscInt_FMT ",:,:))';\n", name, fieldname, n + 1)); }
-        if (dim == 3) { PetscCall(PetscFPrintf(comm, info, "#$$ Set.%s.%s = permute(squeeze(tmp(%" PetscInt_FMT ",:,:,:)),[2 1 3]);\n", name, fieldname, n + 1)); }
+        if (dim == 1) PetscCall(PetscFPrintf(comm, info, "#$$ Set.%s.%s = squeeze(tmp(%" PetscInt_FMT ",:))';\n", name, fieldname, n + 1));
+        if (dim == 2) PetscCall(PetscFPrintf(comm, info, "#$$ Set.%s.%s = squeeze(tmp(%" PetscInt_FMT ",:,:))';\n", name, fieldname, n + 1));
+        if (dim == 3) PetscCall(PetscFPrintf(comm, info, "#$$ Set.%s.%s = permute(squeeze(tmp(%" PetscInt_FMT ",:,:,:)),[2 1 3]);\n", name, fieldname, n + 1));
       }
       PetscCall(PetscFPrintf(comm, info, "#$$ clear tmp; \n"));
       PetscCall(PetscFPrintf(comm, info, "#--- end code written by PetscViewerBinary for MATLAB format ---#\n\n"));
@@ -782,7 +782,7 @@ PetscErrorCode VecLoad_HDF5_DA(Vec xin, PetscViewer viewer) {
   PetscCall(PetscObjectGetName((PetscObject)xin, &vecname));
   PetscCall(PetscViewerHDF5CheckTimestepping_Internal(viewer, vecname));
   PetscCall(PetscViewerHDF5IsTimestepping(viewer, &timestepping));
-  if (timestepping) { PetscCall(PetscViewerHDF5GetTimestep(viewer, &timestep)); }
+  if (timestepping) PetscCall(PetscViewerHDF5GetTimestep(viewer, &timestep));
   PetscCall(VecGetDM(xin, &da));
   dd = (DM_DA *)da->data;
   PetscCall(DMGetDimension(da, &dimension));
@@ -860,7 +860,7 @@ PetscErrorCode VecLoad_HDF5_DA(Vec xin, PetscViewer viewer) {
   PetscCall(VecRestoreArray(xin, &x));
 
   /* Close/release resources */
-  if (group != file_id) { PetscCallHDF5(H5Gclose, (group)); }
+  if (group != file_id) PetscCallHDF5(H5Gclose, (group));
   PetscCallHDF5(H5Sclose, (filespace));
   PetscCallHDF5(H5Sclose, (memspace));
   PetscCallHDF5(H5Dclose, (dset_id));
@@ -900,7 +900,7 @@ PetscErrorCode VecLoad_Binary_DA(Vec xin, PetscViewer viewer) {
   PetscCall(VecDestroy(&natural));
   PetscCall(PetscInfo(xin, "Loading vector from natural ordering into DMDA\n"));
   PetscCall(PetscOptionsGetInt(NULL, ((PetscObject)xin)->prefix, "-vecload_block_size", &bs, &flag));
-  if (flag && bs != dd->w) { PetscCall(PetscInfo(xin, "Block size in file %" PetscInt_FMT " not equal to DMDA's dof %" PetscInt_FMT "\n", bs, dd->w)); }
+  if (flag && bs != dd->w) PetscCall(PetscInfo(xin, "Block size in file %" PetscInt_FMT " not equal to DMDA's dof %" PetscInt_FMT "\n", bs, dd->w));
   PetscFunctionReturn(0);
 }
 

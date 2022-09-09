@@ -77,7 +77,7 @@ PetscErrorCode PetscOptionsHelpPrintedCheck(PetscOptionsHelpPrinted hp, const ch
   PetscCall(PetscStrcpy(both, pre));
   PetscCall(PetscStrcat(both, name));
   kh_put(HTPrinted, hp->printed, both, &newitem);
-  if (!newitem) { PetscCall(PetscSegBufferUnuse(hp->strings, l1 + l2 + 1)); }
+  if (!newitem) PetscCall(PetscSegBufferUnuse(hp->strings, l1 + l2 + 1));
   *found = newitem ? PETSC_FALSE : PETSC_TRUE;
 #else
   *found = PETSC_FALSE;
@@ -90,18 +90,18 @@ static PetscBool noviewers[PETSCVIEWERGETVIEWEROFFPUSHESMAX];
 static PetscInt  inoviewers = 0;
 
 /*@
-  PetscOptionsPushGetViewerOff - control whether PetscOptionsGetViewer returns a viewer.
+  PetscOptionsPushGetViewerOff - sets if a `PetscOptionsGetViewer()` returns a viewer.
 
   Logically Collective
 
   Input Parameter:
-. flg - PETSC_TRUE to turn off viewer creation, PETSC_FALSE to turn it on.
+. flg - `PETSC_TRUE` to turn off viewer creation, `PETSC_FALSE` to turn it on.
 
   Level: developer
 
-  Notes:
+  Note:
     Calling XXXViewFromOptions in an inner loop can be very expensive.  This can appear, for example, when using
-   many small subsolves.  Call this function to control viewer creation in PetscOptionsGetViewer, thus removing the expensive XXXViewFromOptions calls.
+   many small subsolves.  Call this function to control viewer creation in `PetscOptionsGetViewer()`, thus removing the expensive XXXViewFromOptions calls.
 
 .seealso: `PetscOptionsGetViewer()`, `PetscOptionsPopGetViewerOff()`
 @*/
@@ -115,15 +115,15 @@ PetscErrorCode PetscOptionsPushGetViewerOff(PetscBool flg) {
 }
 
 /*@
-  PetscOptionsPopGetViewerOff - reset whether PetscOptionsGetViewer returns a viewer.
+  PetscOptionsPopGetViewerOff - reset whether `PetscOptionsGetViewer()` returns a viewer.
 
   Logically Collective
 
   Level: developer
 
-  Notes:
+  Note:
     Calling XXXViewFromOptions in an inner loop can be very expensive.  This can appear, for example, when using
-   many small subsolves.  Call this function to control viewer creation in PetscOptionsGetViewer, thus removing the expensive XXXViewFromOptions calls.
+   many small subsolves.  Call this function to control viewer creation in `PetscOptionsGetViewer()`, thus removing the expensive XXXViewFromOptions calls.
 
 .seealso: `PetscOptionsGetViewer()`, `PetscOptionsPushGetViewerOff()`
 @*/
@@ -135,7 +135,7 @@ PetscErrorCode PetscOptionsPopGetViewerOff(void) {
 }
 
 /*@
-  PetscOptionsGetViewerOff - does PetscOptionsGetViewer return a viewer?
+  PetscOptionsGetViewerOff - does `PetscOptionsGetViewer()` return a viewer?
 
   Logically Collective
 
@@ -144,7 +144,7 @@ PetscErrorCode PetscOptionsPopGetViewerOff(void) {
 
   Level: developer
 
-  Notes:
+  Note:
     Calling XXXViewFromOptions in an inner loop can be very expensive.  This can appear, for example, when using
    many small subsolves.
 
@@ -170,28 +170,28 @@ PetscErrorCode PetscOptionsGetViewerOff(PetscBool *flg) {
 
    Output Parameters:
 +  viewer - the viewer, pass NULL if not needed
-.  format - the PetscViewerFormat requested by the user, pass NULL if not needed
--  set - PETSC_TRUE if found, else PETSC_FALSE
+.  format - the `PetscViewerFormat` requested by the user, pass NULL if not needed
+-  set - `PETSC_TRUE` if found, else `PETSC_FALSE`
 
    Level: intermediate
 
    Notes:
     If no value is provided ascii:stdout is used
-$       ascii[:[filename][:[format][:append]]]    defaults to stdout - format can be one of ascii_info, ascii_info_detail, or ascii_matlab,
++       ascii[:[filename][:[format][:append]]]  -  defaults to stdout - format can be one of ascii_info, ascii_info_detail, or ascii_matlab,
                                                   for example ascii::ascii_info prints just the information about the object not all details
                                                   unless :append is given filename opens in write mode, overwriting what was already there
-$       binary[:[filename][:[format][:append]]]   defaults to the file binaryoutput
-$       draw[:drawtype[:filename]]                for example, draw:tikz, draw:tikz:figure.tex  or draw:x
-$       socket[:port]                             defaults to the standard output port
-$       saws[:communicatorname]                    publishes object to the Scientific Application Webserver (SAWs)
+.       binary[:[filename][:[format][:append]]] -  defaults to the file binaryoutput
+.       draw[:drawtype[:filename]]              -  for example, draw:tikz, draw:tikz:figure.tex  or draw:x
+.       socket[:port]                           -  defaults to the standard output port
+-       saws[:communicatorname]                 -   publishes object to the Scientific Application Webserver (SAWs)
 
-   Use PetscViewerDestroy() after using the viewer, otherwise a memory leak will occur
+   Use `PetscViewerDestroy()` after using the viewer, otherwise a memory leak will occur
 
-   You can control whether calls to this function create a viewer (or return early with *set of PETSC_FALSE) with
-   PetscOptionsPushGetViewerOff.  This is useful if calling many small subsolves, in which case XXXViewFromOptions can take
+   You can control whether calls to this function create a viewer (or return early with *set of `PETSC_FALSE`) with
+   `PetscOptionsPushGetViewerOff()`.  This is useful if calling many small subsolves, in which case XXXViewFromOptions can take
    an appreciable fraction of the runtime.
 
-   If PETSc is configured with --with-viewfromoptions=0 this function always returns with *set of PETSC_FALSE
+   If PETSc is configured with --with-viewfromoptions=0 this function always returns with *set of `PETSC_FALSE`
 
 .seealso: `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`,
           `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`
@@ -219,7 +219,7 @@ PetscErrorCode PetscOptionsGetViewer(MPI_Comm comm, PetscOptions options, const 
   if (hashelp) {
     PetscBool found;
 
-    if (!PetscOptionsHelpPrintedSingleton) { PetscCall(PetscOptionsHelpPrintedCreate(&PetscOptionsHelpPrintedSingleton)); }
+    if (!PetscOptionsHelpPrintedSingleton) PetscCall(PetscOptionsHelpPrintedCreate(&PetscOptionsHelpPrintedSingleton));
     PetscCall(PetscOptionsHelpPrintedCheck(PetscOptionsHelpPrintedSingleton, pre, name, &found));
     if (!found && viewer) {
       PetscCall((*PetscHelpPrintf)(comm, "----------------------------------------\nViewer (-%s%s) options:\n", pre ? pre : "", name + 1));
@@ -345,7 +345,7 @@ PetscErrorCode PetscOptionsGetViewer(MPI_Comm comm, PetscOptions options, const 
 }
 
 /*@
-   PetscViewerCreate - Creates a viewing context
+   PetscViewerCreate - Creates a viewing context. A `PetscViewer` represents a file, a graphical window, a Unix socket or a variety of other ways of viewing a PETSc object
 
    Collective
 
@@ -353,12 +353,11 @@ PetscErrorCode PetscOptionsGetViewer(MPI_Comm comm, PetscOptions options, const 
 .  comm - MPI communicator
 
    Output Parameter:
-.  inviewer - location to put the PetscViewer context
+.  inviewer - location to put the `PetscViewer` context
 
    Level: advanced
 
-.seealso: `PetscViewerDestroy()`, `PetscViewerSetType()`, `PetscViewerType`
-
+.seealso: `PetscViewer`, `PetscViewerDestroy()`, `PetscViewerSetType()`, `PetscViewerType`
 @*/
 PetscErrorCode PetscViewerCreate(MPI_Comm comm, PetscViewer *inviewer) {
   PetscViewer viewer;
@@ -373,13 +372,13 @@ PetscErrorCode PetscViewerCreate(MPI_Comm comm, PetscViewer *inviewer) {
 }
 
 /*@C
-   PetscViewerSetType - Builds PetscViewer for a particular implementation.
+   PetscViewerSetType - Builds `PetscViewer` for a particular implementation.
 
-   Collective on PetscViewer
+   Collective on viewer
 
    Input Parameters:
-+  viewer      - the PetscViewer context
--  type        - for example, PETSCVIEWERASCII
++  viewer      - the `PetscViewer` context obtained with `PetscViewerCreate()`
+-  type        - for example, `PETSCVIEWERASCII`
 
    Options Database Command:
 .  -viewer_type  <type> - Sets the type; use -help for a list
@@ -387,11 +386,11 @@ PetscErrorCode PetscViewerCreate(MPI_Comm comm, PetscViewer *inviewer) {
 
    Level: advanced
 
-   Notes:
+   Note:
    See "include/petscviewer.h" for available methods (for instance,
-   PETSCVIEWERSOCKET)
+   `PETSCVIEWERSOCKET`)
 
-.seealso: `PetscViewerCreate()`, `PetscViewerGetType()`, `PetscViewerType`, `PetscViewerPushFormat()`
+.seealso: `PetscViewer`, `PetscViewerCreate()`, `PetscViewerGetType()`, `PetscViewerType`, `PetscViewerPushFormat()`
 @*/
 PetscErrorCode PetscViewerSetType(PetscViewer viewer, PetscViewerType type) {
   PetscBool match;
@@ -419,7 +418,7 @@ PetscErrorCode PetscViewerSetType(PetscViewer viewer, PetscViewerType type) {
 }
 
 /*@C
-   PetscViewerRegister - Adds a viewer
+   PetscViewerRegister - Adds a viewer to those available for use
 
    Not Collective
 
@@ -428,8 +427,9 @@ PetscErrorCode PetscViewerSetType(PetscViewer viewer, PetscViewerType type) {
 -  routine_create - routine to create method context
 
    Level: developer
-   Notes:
-   PetscViewerRegister() may be called multiple times to add several user-defined viewers.
+
+   Note:
+   `PetscViewerRegister()` may be called multiple times to add several user-defined viewers.
 
    Sample usage:
 .vb
@@ -451,21 +451,19 @@ PetscErrorCode PetscViewerRegister(const char *sname, PetscErrorCode (*function)
 }
 
 /*@C
-   PetscViewerSetFromOptions - Sets the graphics type from the options database.
-      Defaults to a PETSc X windows graphics.
+   PetscViewerSetFromOptions - Sets various options for a viewer from the options database.
 
-   Collective on PetscViewer
+   Collective on viewer
 
    Input Parameter:
-.     PetscViewer - the graphics context
+.     viewer - the viewer context
 
    Level: intermediate
 
-   Notes:
+   Note:
     Must be called after PetscViewerCreate() before the PetscViewer is used.
 
-.seealso: `PetscViewerCreate()`, `PetscViewerSetType()`, `PetscViewerType`
-
+.seealso: `PetscViewer`, `PetscViewerCreate()`, `PetscViewerSetType()`, `PetscViewerType`
 @*/
 PetscErrorCode PetscViewerSetFromOptions(PetscViewer viewer) {
   char      vtype[256];
@@ -474,12 +472,12 @@ PetscErrorCode PetscViewerSetFromOptions(PetscViewer viewer) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
 
-  if (!PetscViewerList) { PetscCall(PetscViewerRegisterAll()); }
+  if (!PetscViewerList) PetscCall(PetscViewerRegisterAll());
   PetscObjectOptionsBegin((PetscObject)viewer);
   PetscCall(PetscOptionsFList("-viewer_type", "Type of PetscViewer", "None", PetscViewerList, (char *)(((PetscObject)viewer)->type_name ? ((PetscObject)viewer)->type_name : PETSCVIEWERASCII), vtype, 256, &flg));
   if (flg) PetscCall(PetscViewerSetType(viewer, vtype));
   /* type has not been set? */
-  if (!((PetscObject)viewer)->type_name) { PetscCall(PetscViewerSetType(viewer, PETSCVIEWERASCII)); }
+  if (!((PetscObject)viewer)->type_name) PetscCall(PetscViewerSetType(viewer, PETSCVIEWERASCII));
   PetscTryTypeMethod(viewer, setfromoptions, PetscOptionsObject);
 
   /* process any options handlers added with PetscObjectAddOptionsHandler() */

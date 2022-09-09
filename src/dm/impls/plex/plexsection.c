@@ -147,7 +147,7 @@ static PetscErrorCode DMPlexCreateSectionDof(DM dm, DMLabel label[], const Petsc
         case DM_POLYTOPE_SEG_PRISM_TENSOR:
         case DM_POLYTOPE_TRI_PRISM_TENSOR:
         case DM_POLYTOPE_QUAD_PRISM_TENSOR:
-          if (hasCohesive) { --d; }
+          if (hasCohesive) --d;
           break;
         default: break;
         }
@@ -338,7 +338,7 @@ static PetscErrorCode DMPlexCreateSectionBCIndicesField(DM dm, PetscInt numBC, c
       PetscCall(PetscSectionGetDof(aSec, a, &dof));
       if (dof) {
         /* if there are point-to-point constraints, then all dofs are constrained */
-        for (f = 0; f < Nf; f++) { PetscCall(PetscSectionSetFieldConstraintIndices(section, a, f, indices)); }
+        for (f = 0; f < Nf; f++) PetscCall(PetscSectionSetFieldConstraintIndices(section, a, f, indices));
       }
     }
   }
@@ -598,7 +598,7 @@ PetscErrorCode DMCreateLocalSection_Plex(DM dm) {
   PetscCall(DMPlexGetDepth(dm, &depth));
   for (f = 0; f < Nf; ++f) {
     PetscInt d;
-    for (d = 1; d < dim; ++d) { PetscCheck(numDof[f * (dim + 1) + d] <= 0 || depth >= dim, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Mesh must be interpolated when unknowns are specified on edges or faces."); }
+    for (d = 1; d < dim; ++d) PetscCheck(numDof[f * (dim + 1) + d] <= 0 || depth >= dim, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Mesh must be interpolated when unknowns are specified on edges or faces.");
   }
   PetscCall(DMPlexCreateSection(dm, labels, numComp, numDof, numBC, bcFields, bcComps, bcPoints, NULL, &section));
   for (f = 0; f < Nf; ++f) {

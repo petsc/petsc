@@ -26,7 +26,7 @@ int main(int argc, char **args) {
   PetscCall(MatView(A, PETSC_VIEWER_STDOUT_WORLD));
 
   PetscCall(MatCreateRedundantMatrix(A, size, MPI_COMM_NULL, MAT_INITIAL_MATRIX, &B));
-  if (rank == 0) { PetscCall(MatView(B, PETSC_VIEWER_STDOUT_SELF)); }
+  if (rank == 0) PetscCall(MatView(B, PETSC_VIEWER_STDOUT_SELF));
 
   PetscCall(MatDestroy(&A));
   PetscCall(MatDestroy(&B));

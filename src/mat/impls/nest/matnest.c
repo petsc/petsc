@@ -152,7 +152,7 @@ PetscErrorCode MatNest_DenseDestroy(void *ctx) {
 
   PetscFunctionBegin;
   PetscCall(PetscFree(contents->tarray));
-  for (i = 0; i < contents->k; i++) { PetscCall(MatDestroy(contents->workC + i)); }
+  for (i = 0; i < contents->k; i++) PetscCall(MatDestroy(contents->workC + i));
   PetscCall(PetscFree3(contents->dm, contents->dn, contents->workC));
   PetscCall(PetscFree(contents));
   PetscFunctionReturn(0);
@@ -187,7 +187,7 @@ PETSC_INTERN PetscErrorCode MatProductSymbolic_Nest_Dense(Mat C) {
     PetscCall(MatSetSizes(C, m, n, M, N));
   }
   PetscCall(PetscObjectTypeCompareAny((PetscObject)C, &cisdense, MATSEQDENSE, MATMPIDENSE, MATSEQDENSECUDA, MATMPIDENSECUDA, ""));
-  if (!cisdense) { PetscCall(MatSetType(C, ((PetscObject)B)->type_name)); }
+  if (!cisdense) PetscCall(MatSetType(C, ((PetscObject)B)->type_name));
   PetscCall(MatSetUp(C));
   if (!N) {
     C->ops->productnumeric = MatProductNumeric_Nest_Dense;
@@ -252,7 +252,7 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_Nest_Dense(Mat C) {
   Mat_Product *product = C->product;
 
   PetscFunctionBegin;
-  if (product->type == MATPRODUCT_AB) { PetscCall(MatProductSetFromOptions_Nest_Dense_AB(C)); }
+  if (product->type == MATPRODUCT_AB) PetscCall(MatProductSetFromOptions_Nest_Dense_AB(C));
   PetscFunctionReturn(0);
 }
 /* --------------------------------------------------------- */
@@ -322,7 +322,7 @@ static PetscErrorCode MatTranspose_Nest(Mat A, MatReuse reuse, Mat *B) {
     PetscCall(MatNestGetISs(A, is_row, is_col));
     if (reuse == MAT_INPLACE_MATRIX) {
       for (i = 0; i < nr; i++) {
-        for (j = 0; j < nc; j++) { subs[i + nr * j] = bA->m[i][j]; }
+        for (j = 0; j < nc; j++) subs[i + nr * j] = bA->m[i][j];
       }
     }
 
@@ -385,7 +385,7 @@ static PetscErrorCode MatReset_Nest(Mat A) {
   /* release the matrices and the place holders */
   if (vs->m) {
     for (i = 0; i < vs->nr; i++) {
-      for (j = 0; j < vs->nc; j++) { PetscCall(MatDestroy(&vs->m[i][j])); }
+      for (j = 0; j < vs->nc; j++) PetscCall(MatDestroy(&vs->m[i][j]));
       PetscCall(PetscFree(vs->m[i]));
     }
     PetscCall(PetscFree(vs->m));
@@ -481,7 +481,7 @@ static PetscErrorCode MatAssemblyEnd_Nest(Mat A, MatAssemblyType type) {
   for (i = 0; i < vs->nr; i++) {
     for (j = 0; j < vs->nc; j++) {
       if (vs->m[i][j]) {
-        if (vs->splitassembly) { PetscCall(MatAssemblyEnd(vs->m[i][j], type)); }
+        if (vs->splitassembly) PetscCall(MatAssemblyEnd(vs->m[i][j], type));
       }
     }
   }
@@ -631,7 +631,7 @@ static PetscErrorCode MatNestGetBlock_Private(Mat A, PetscInt rbegin, PetscInt r
   PetscCall(MatCreateNest(PetscObjectComm((PetscObject)A), nr, nr != vs->nr ? NULL : vs->isglobal.row, nc, nc != vs->nc ? NULL : vs->isglobal.col, a, B));
   for (i = 0; i < nr; i++) {
     for (j = 0; j < nc; j++) {
-      if (b[i * nc + j]) { PetscCall(MatDestroy(a + i * nc + j)); }
+      if (b[i * nc + j]) PetscCall(MatDestroy(a + i * nc + j));
     }
   }
   PetscCall(PetscFree2(a, b));
@@ -649,7 +649,7 @@ static PetscErrorCode MatNestFindSubMat(Mat A, struct MatNestISPair *is, IS isro
   PetscCall(MatNestFindISRange(A, vs->nr, is->row, isrow, &rbegin, &rend));
   PetscCall(MatNestFindISRange(A, vs->nc, is->col, iscol, &cbegin, &cend));
   if (rend == rbegin + 1 && cend == cbegin + 1) {
-    if (!vs->m[rbegin][cbegin]) { PetscCall(MatNestFillEmptyMat_Private(A, rbegin, cbegin, vs->m[rbegin] + cbegin)); }
+    if (!vs->m[rbegin][cbegin]) PetscCall(MatNestFillEmptyMat_Private(A, rbegin, cbegin, vs->m[rbegin] + cbegin));
     *B = vs->m[rbegin][cbegin];
   } else if (rbegin != -1 && cbegin != -1) {
     PetscCall(MatNestGetBlock_Private(A, rbegin, rend, cbegin, cend, B));
@@ -734,11 +734,11 @@ static PetscErrorCode MatDiagonalScale_Nest(Mat A, Vec l, Vec r) {
   }
   bl = NULL;
   for (i = 0; i < bA->nr; i++) {
-    if (l) { PetscCall(VecGetSubVector(l, bA->isglobal.row[i], &bl)); }
+    if (l) PetscCall(VecGetSubVector(l, bA->isglobal.row[i], &bl));
     for (j = 0; j < bA->nc; j++) {
-      if (bA->m[i][j]) { PetscCall(MatDiagonalScale(bA->m[i][j], bl, br[j])); }
+      if (bA->m[i][j]) PetscCall(MatDiagonalScale(bA->m[i][j], bl, br[j]));
     }
-    if (l) { PetscCall(VecRestoreSubVector(l, bA->isglobal.row[i], &bl)); }
+    if (l) PetscCall(VecRestoreSubVector(l, bA->isglobal.row[i], &bl));
   }
   if (r) {
     for (j = 0; j < bA->nc; j++) PetscCall(VecRestoreSubVector(r, bA->isglobal.col[j], &br[j]));
@@ -754,7 +754,7 @@ static PetscErrorCode MatScale_Nest(Mat A, PetscScalar a) {
   PetscFunctionBegin;
   for (i = 0; i < bA->nr; i++) {
     for (j = 0; j < bA->nc; j++) {
-      if (bA->m[i][j]) { PetscCall(MatScale(bA->m[i][j], a)); }
+      if (bA->m[i][j]) PetscCall(MatScale(bA->m[i][j], a));
     }
   }
   PetscFunctionReturn(0);
@@ -807,7 +807,7 @@ static PetscErrorCode MatSetRandom_Nest(Mat A, PetscRandom rctx) {
   PetscFunctionBegin;
   for (i = 0; i < bA->nr; i++) {
     for (j = 0; j < bA->nc; j++) {
-      if (bA->m[i][j]) { PetscCall(MatSetRandom(bA->m[i][j], rctx)); }
+      if (bA->m[i][j]) PetscCall(MatSetRandom(bA->m[i][j], rctx));
     }
   }
   PetscFunctionReturn(0);
@@ -836,7 +836,7 @@ static PetscErrorCode MatCreateVecs_Nest(Mat A, Vec *right, Vec *left) {
     }
     PetscCall(VecCreateNest(comm, bA->nc, bA->isglobal.col, R, right));
     /* hand back control to the nest vector */
-    for (j = 0; j < bA->nc; j++) { PetscCall(VecDestroy(&R[j])); }
+    for (j = 0; j < bA->nc; j++) PetscCall(VecDestroy(&R[j]));
     PetscCall(PetscFree(R));
   }
 
@@ -855,7 +855,7 @@ static PetscErrorCode MatCreateVecs_Nest(Mat A, Vec *right, Vec *left) {
     }
 
     PetscCall(VecCreateNest(comm, bA->nr, bA->isglobal.row, L, left));
-    for (i = 0; i < bA->nr; i++) { PetscCall(VecDestroy(&L[i])); }
+    for (i = 0; i < bA->nr; i++) PetscCall(VecDestroy(&L[i]));
 
     PetscCall(PetscFree(L));
   }
@@ -990,7 +990,7 @@ static PetscErrorCode MatDuplicate_Nest(Mat A, MatDuplicateOption op, Mat *B) {
   }
   PetscCall(MatCreateNest(PetscObjectComm((PetscObject)A), nr, bA->isglobal.row, nc, bA->isglobal.col, b, B));
   /* Give the new MatNest exclusive ownership */
-  for (i = 0; i < nr * nc; i++) { PetscCall(MatDestroy(&b[i])); }
+  for (i = 0; i < nr * nc; i++) PetscCall(MatDestroy(&b[i]));
   PetscCall(PetscFree(b));
 
   PetscCall(MatAssemblyBegin(*B, MAT_FINAL_ASSEMBLY));
@@ -1010,12 +1010,12 @@ PetscErrorCode MatNestGetSubMat_Nest(Mat A, PetscInt idxm, PetscInt jdxm, Mat *m
 }
 
 /*@
- MatNestGetSubMat - Returns a single, sub-matrix from a nest matrix.
+ MatNestGetSubMat - Returns a single, sub-matrix from a `MATNEST`
 
  Not collective
 
  Input Parameters:
-+   A  - nest matrix
++   A  - `MATNEST` matrix
 .   idxm - index of the matrix within the nest matrix
 -   jdxm - index of the matrix within the nest matrix
 
@@ -1024,7 +1024,7 @@ PetscErrorCode MatNestGetSubMat_Nest(Mat A, PetscInt idxm, PetscInt jdxm, Mat *m
 
  Level: developer
 
-.seealso: `MatNestGetSize()`, `MatNestGetSubMats()`, `MatCreateNest()`, `MATNEST`, `MatNestSetSubMat()`,
+.seealso: `MATNEST`, `MatNestGetSize()`, `MatNestGetSubMats()`, `MatCreateNest()`, `MATNEST`, `MatNestSetSubMat()`,
           `MatNestGetLocalISs()`, `MatNestGetISs()`
 @*/
 PetscErrorCode MatNestGetSubMat(Mat A, PetscInt idxm, PetscInt jdxm, Mat *sub) {
@@ -1062,12 +1062,12 @@ PetscErrorCode MatNestSetSubMat_Nest(Mat A, PetscInt idxm, PetscInt jdxm, Mat ma
 }
 
 /*@
- MatNestSetSubMat - Set a single submatrix in the nest matrix.
+ MatNestSetSubMat - Set a single submatrix in the `MATNEST`
 
  Logically collective on the submatrix communicator
 
  Input Parameters:
-+   A  - nest matrix
++   A  - `MATNEST` matrix
 .   idxm - index of the matrix within the nest matrix
 .   jdxm - index of the matrix within the nest matrix
 -   sub - matrix at index idxm,jdxm within the nest matrix
@@ -1079,7 +1079,7 @@ PetscErrorCode MatNestSetSubMat_Nest(Mat A, PetscInt idxm, PetscInt jdxm, Mat ma
 
  Level: developer
 
-.seealso: `MatNestSetSubMats()`, `MatNestGetSubMats()`, `MatNestGetLocalISs()`, `MATNEST`, `MatCreateNest()`,
+.seealso: `MATNEST`, `MatNestSetSubMats()`, `MatNestGetSubMats()`, `MatNestGetLocalISs()`, `MATNEST`, `MatCreateNest()`,
           `MatNestGetSubMat()`, `MatNestGetISs()`, `MatNestGetSize()`
 @*/
 PetscErrorCode MatNestSetSubMat(Mat A, PetscInt idxm, PetscInt jdxm, Mat sub) {
@@ -1099,7 +1099,7 @@ PetscErrorCode MatNestGetSubMats_Nest(Mat A, PetscInt *M, PetscInt *N, Mat ***ma
 }
 
 /*@C
- MatNestGetSubMats - Returns the entire two dimensional array of matrices defining a nest matrix.
+ MatNestGetSubMats - Returns the entire two dimensional array of matrices defining a `MATNEST` matrix.
 
  Not collective
 
@@ -1111,17 +1111,17 @@ PetscErrorCode MatNestGetSubMats_Nest(Mat A, PetscInt *M, PetscInt *N, Mat ***ma
 .   N - number of cols in the nest matrix
 -   mat - 2d array of matrices
 
- Notes:
-
+ Note:
  The user should not free the array mat.
 
- In Fortran, this routine has a calling sequence
+ Fortran Note:
+ This routine has a calling sequence
 $   call MatNestGetSubMats(A, M, N, mat, ierr)
  where the space allocated for the optional argument mat is assumed large enough (if provided).
 
  Level: developer
 
-.seealso: `MatNestGetSize()`, `MatNestGetSubMat()`, `MatNestGetLocalISs()`, `MATNEST`, `MatCreateNest()`,
+.seealso: `MATNEST`, `MatNestGetSize()`, `MatNestGetSubMat()`, `MatNestGetLocalISs()`, `MATNEST`, `MatCreateNest()`,
           `MatNestSetSubMats()`, `MatNestGetISs()`, `MatNestSetSubMat()`
 @*/
 PetscErrorCode MatNestGetSubMats(Mat A, PetscInt *M, PetscInt *N, Mat ***mat) {
@@ -1140,22 +1140,20 @@ PetscErrorCode MatNestGetSize_Nest(Mat A, PetscInt *M, PetscInt *N) {
 }
 
 /*@
- MatNestGetSize - Returns the size of the nest matrix.
+ MatNestGetSize - Returns the size of the `MATNEST` matrix.
 
  Not collective
 
  Input Parameter:
-.   A  - nest matrix
+.   A  - `MATNEST` matrix
 
  Output Parameters:
 +   M - number of rows in the nested mat
 -   N - number of cols in the nested mat
 
- Notes:
-
  Level: developer
 
-.seealso: `MatNestGetSubMat()`, `MatNestGetSubMats()`, `MATNEST`, `MatCreateNest()`, `MatNestGetLocalISs()`,
+.seealso: `MATNEST`, `MatNestGetSubMat()`, `MatNestGetSubMats()`, `MATNEST`, `MatCreateNest()`, `MatNestGetLocalISs()`,
           `MatNestGetISs()`
 @*/
 PetscErrorCode MatNestGetSize(Mat A, PetscInt *M, PetscInt *N) {
@@ -1177,12 +1175,12 @@ static PetscErrorCode MatNestGetISs_Nest(Mat A, IS rows[], IS cols[]) {
 }
 
 /*@C
- MatNestGetISs - Returns the index sets partitioning the row and column spaces
+ MatNestGetISs - Returns the index sets partitioning the row and column spaces of a `MATNEST`
 
  Not collective
 
  Input Parameter:
-.   A  - nest matrix
+.   A  - `MATNEST` matrix
 
  Output Parameters:
 +   rows - array of row index sets
@@ -1190,10 +1188,10 @@ static PetscErrorCode MatNestGetISs_Nest(Mat A, IS rows[], IS cols[]) {
 
  Level: advanced
 
- Notes:
+ Note:
  The user must have allocated arrays of the correct size. The reference count is not increased on the returned ISs.
 
-.seealso: `MatNestGetSubMat()`, `MatNestGetSubMats()`, `MatNestGetSize()`, `MatNestGetLocalISs()`, `MATNEST`,
+.seealso: `MATNEST`, `MatNestGetSubMat()`, `MatNestGetSubMats()`, `MatNestGetSize()`, `MatNestGetLocalISs()`, `MATNEST`,
           `MatCreateNest()`, `MatNestGetSubMats()`, `MatNestSetSubMats()`
 @*/
 PetscErrorCode MatNestGetISs(Mat A, IS rows[], IS cols[]) {
@@ -1216,12 +1214,12 @@ static PetscErrorCode MatNestGetLocalISs_Nest(Mat A, IS rows[], IS cols[]) {
 }
 
 /*@C
- MatNestGetLocalISs - Returns the index sets partitioning the row and column spaces
+ MatNestGetLocalISs - Returns the index sets partitioning the row and column spaces of a `MATNEST`
 
  Not collective
 
  Input Parameter:
-.   A  - nest matrix
+.   A  - `MATNEST` matrix
 
  Output Parameters:
 +   rows - array of row index sets (or NULL to ignore)
@@ -1229,10 +1227,10 @@ static PetscErrorCode MatNestGetLocalISs_Nest(Mat A, IS rows[], IS cols[]) {
 
  Level: advanced
 
- Notes:
+ Note:
  The user must have allocated arrays of the correct size. The reference count is not increased on the returned ISs.
 
-.seealso: `MatNestGetSubMat()`, `MatNestGetSubMats()`, `MatNestGetSize()`, `MatNestGetISs()`, `MatCreateNest()`,
+.seealso: `MATNEST`, `MatNestGetSubMat()`, `MatNestGetSubMats()`, `MatNestGetSize()`, `MatNestGetISs()`, `MatCreateNest()`,
           `MATNEST`, `MatNestSetSubMats()`, `MatNestSetSubMat()`
 @*/
 PetscErrorCode MatNestGetLocalISs(Mat A, IS rows[], IS cols[]) {
@@ -1254,19 +1252,17 @@ PetscErrorCode MatNestSetVecType_Nest(Mat A, VecType vtype) {
 }
 
 /*@C
- MatNestSetVecType - Sets the type of Vec returned by MatCreateVecs()
+ MatNestSetVecType - Sets the type of `Vec` returned by `MatCreateVecs()`
 
  Not collective
 
  Input Parameters:
-+  A  - nest matrix
--  vtype - type to use for creating vectors
-
- Notes:
++  A  - `MATNEST` matrix
+-  vtype - `VecType` to use for creating vectors
 
  Level: developer
 
-.seealso: `MatCreateVecs()`, `MATNEST`, `MatCreateNest()`
+.seealso: `MATNEST`, `MatCreateVecs()`, `MATNEST`, `MatCreateNest()`, `VecType`
 @*/
 PetscErrorCode MatNestSetVecType(Mat A, VecType vtype) {
   PetscFunctionBegin;
@@ -1288,11 +1284,11 @@ PetscErrorCode MatNestSetSubMats_Nest(Mat A, PetscInt nr, const IS is_row[], Pet
 
   /* Create space for submatrices */
   PetscCall(PetscMalloc1(nr, &s->m));
-  for (i = 0; i < nr; i++) { PetscCall(PetscMalloc1(nc, &s->m[i])); }
+  for (i = 0; i < nr; i++) PetscCall(PetscMalloc1(nc, &s->m[i]));
   for (i = 0; i < nr; i++) {
     for (j = 0; j < nc; j++) {
       s->m[i][j] = a[i * nc + j];
-      if (a[i * nc + j]) { PetscCall(PetscObjectReference((PetscObject)a[i * nc + j])); }
+      if (a[i * nc + j]) PetscCall(PetscObjectReference((PetscObject)a[i * nc + j]));
     }
   }
   PetscCall(MatGetVecType(A, &vtype));
@@ -1328,7 +1324,7 @@ PetscErrorCode MatNestSetSubMats_Nest(Mat A, PetscInt nr, const IS is_row[], Pet
   PetscCall(PetscCalloc1(nr * nc, &s->nnzstate));
   for (i = 0; i < nr; i++) {
     for (j = 0; j < nc; j++) {
-      if (s->m[i][j]) { PetscCall(MatGetNonzeroState(s->m[i][j], &s->nnzstate[i * nc + j])); }
+      if (s->m[i][j]) PetscCall(MatGetNonzeroState(s->m[i][j], &s->nnzstate[i * nc + j]));
     }
   }
 
@@ -1347,7 +1343,7 @@ PetscErrorCode MatNestSetSubMats_Nest(Mat A, PetscInt nr, const IS is_row[], Pet
   PetscCall(MatHasCongruentLayouts(A, &cong));
   if (cong && nr != nc) cong = PETSC_FALSE;
   if (cong) {
-    for (i = 0; cong && i < nr; i++) { PetscCall(ISEqualUnsorted(s->isglobal.row[i], s->isglobal.col[i], &cong)); }
+    for (i = 0; cong && i < nr; i++) PetscCall(ISEqualUnsorted(s->isglobal.row[i], s->isglobal.col[i], &cong));
   }
   if (!cong) {
     A->ops->missingdiagonal = NULL;
@@ -1363,23 +1359,24 @@ PetscErrorCode MatNestSetSubMats_Nest(Mat A, PetscInt nr, const IS is_row[], Pet
 }
 
 /*@
-   MatNestSetSubMats - Sets the nested submatrices
+   MatNestSetSubMats - Sets the nested submatrices in a `MATNEST`
 
-   Collective on Mat
+   Collective on A
 
    Input Parameters:
-+  A - nested matrix
++  A - `MATNEST` matrix
 .  nr - number of nested row blocks
 .  is_row - index sets for each nested row block, or NULL to make contiguous
 .  nc - number of nested column blocks
 .  is_col - index sets for each nested column block, or NULL to make contiguous
 -  a - row-aligned array of nr*nc submatrices, empty submatrices can be passed using NULL
 
-   Notes: this always resets any submatrix information previously set
+   Note:
+   This always resets any submatrix information previously set
 
    Level: advanced
 
-.seealso: `MatCreateNest()`, `MATNEST`, `MatNestSetSubMat()`, `MatNestGetSubMat()`, `MatNestGetSubMats()`
+.seealso: `MATNEST`, `MatCreateNest()`, `MATNEST`, `MatNestSetSubMat()`, `MatNestGetSubMat()`, `MatNestGetSubMats()`
 @*/
 PetscErrorCode MatNestSetSubMats(Mat A, PetscInt nr, const IS is_row[], PetscInt nc, const IS is_col[], const Mat a[]) {
   PetscInt i;
@@ -1646,12 +1643,12 @@ static PetscErrorCode MatSetUp_NestIS_Private(Mat A, PetscInt nr, const IS is_ro
 }
 
 /*@C
-   MatCreateNest - Creates a new matrix containing several nested submatrices, each stored separately
+   MatCreateNest - Creates a new `MATNEST` matrix containing several nested submatrices, each stored separately
 
-   Collective on Mat
+   Collective
 
    Input Parameters:
-+  comm - Communicator for the new Mat
++  comm - Communicator for the new `MATNEST`
 .  nr - number of nested row blocks
 .  is_row - index sets for each nested row block, or NULL to make contiguous
 .  nc - number of nested column blocks
@@ -1663,7 +1660,7 @@ static PetscErrorCode MatSetUp_NestIS_Private(Mat A, PetscInt nr, const IS is_ro
 
    Level: advanced
 
-.seealso: `MatCreate()`, `VecCreateNest()`, `DMCreateMatrix()`, `MATNEST`, `MatNestSetSubMat()`,
+.seealso: `MATNEST`, `MatCreate()`, `VecCreateNest()`, `DMCreateMatrix()`, `MATNEST`, `MatNestSetSubMat()`,
           `MatNestGetSubMat()`, `MatNestGetLocalISs()`, `MatNestGetSize()`,
           `MatNestGetISs()`, `MatNestSetSubMats()`, `MatNestGetSubMats()`
 @*/
@@ -1711,13 +1708,22 @@ PetscErrorCode MatConvert_Nest_SeqAIJ_fast(Mat A, MatType newtype, MatReuse reus
         PetscInt    *nii, *njj, nnr;
         PetscBool    istrans;
 
-        PetscCall(PetscObjectTypeCompare((PetscObject)B, MATTRANSPOSEMAT, &istrans));
+        PetscCall(PetscObjectTypeCompare((PetscObject)B, MATTRANSPOSEVIRTUAL, &istrans));
         if (istrans) {
           Mat Bt;
 
           PetscCall(MatTransposeGetMat(B, &Bt));
           PetscCall(MatTranspose(Bt, MAT_INITIAL_MATRIX, &trans[i * nest->nc + j]));
           B = trans[i * nest->nc + j];
+        } else {
+          PetscCall(PetscObjectTypeCompare((PetscObject)B, MATHERMITIANTRANSPOSEVIRTUAL, &istrans));
+          if (istrans) {
+            Mat Bt;
+
+            PetscCall(MatHermitianTransposeGetMat(B, &Bt));
+            PetscCall(MatHermitianTranspose(Bt, MAT_INITIAL_MATRIX, &trans[i * nest->nc + j]));
+            B = trans[i * nest->nc + j];
+          }
         }
         PetscCall(MatGetRowIJ(B, 0, PETSC_FALSE, PETSC_FALSE, &nnr, (const PetscInt **)&nii, (const PetscInt **)&njj, &done));
         PetscCheck(done, PetscObjectComm((PetscObject)B), PETSC_ERR_PLIB, "MatGetRowIJ");
@@ -1847,7 +1853,7 @@ PETSC_INTERN PetscErrorCode MatAXPY_Dense_Nest(Mat Y, PetscScalar a, Mat X) {
       PetscInt        bm, br;
       const PetscInt *bmindices;
       if (!B) continue;
-      PetscCall(PetscObjectTypeCompare((PetscObject)B, MATTRANSPOSEMAT, &flg));
+      PetscCall(PetscObjectTypeCompareAny((PetscObject)B, &flg, MATTRANSPOSEVIRTUAL, MATHERMITIANTRANSPOSEVIRTUAL, ""));
       if (flg) {
         PetscTryMethod(B, "MatTransposeGetMat_C", (Mat, Mat *), (B, &D));
         PetscTryMethod(B, "MatHermitianTransposeGetMat_C", (Mat, Mat *), (B, &D));
@@ -1910,7 +1916,7 @@ PetscErrorCode MatConvert_Nest_AIJ(Mat A, MatType newtype, MatReuse reuse, Mat *
     PetscBool fast;
 
     PetscCall(PetscStrcmp(newtype, MATAIJ, &fast));
-    if (!fast) { PetscCall(PetscStrcmp(newtype, MATSEQAIJ, &fast)); }
+    if (!fast) PetscCall(PetscStrcmp(newtype, MATSEQAIJ, &fast));
     for (i = 0; i < nest->nr && fast; ++i) {
       for (j = 0; j < nest->nc && fast; ++j) {
         Mat B = nest->m[i][j];
@@ -1919,12 +1925,20 @@ PetscErrorCode MatConvert_Nest_AIJ(Mat A, MatType newtype, MatReuse reuse, Mat *
           if (!fast) {
             PetscBool istrans;
 
-            PetscCall(PetscObjectTypeCompare((PetscObject)B, MATTRANSPOSEMAT, &istrans));
+            PetscCall(PetscObjectTypeCompare((PetscObject)B, MATTRANSPOSEVIRTUAL, &istrans));
             if (istrans) {
               Mat Bt;
 
               PetscCall(MatTransposeGetMat(B, &Bt));
               PetscCall(PetscObjectTypeCompare((PetscObject)Bt, MATSEQAIJ, &fast));
+            } else {
+              PetscCall(PetscObjectTypeCompare((PetscObject)B, MATHERMITIANTRANSPOSEVIRTUAL, &istrans));
+              if (istrans) {
+                Mat Bt;
+
+                PetscCall(MatHermitianTransposeGetMat(B, &Bt));
+                PetscCall(PetscObjectTypeCompare((PetscObject)Bt, MATSEQAIJ, &fast));
+              }
             }
           }
         }
@@ -2004,7 +2018,7 @@ PetscErrorCode MatConvert_Nest_AIJ(Mat A, MatType newtype, MatReuse reuse, Mat *
         sub_dnnz[k] = 0;
         sub_onnz[k] = 0;
       }
-      PetscCall(PetscObjectTypeCompare((PetscObject)B, MATTRANSPOSEMAT, &flg));
+      PetscCall(PetscObjectTypeCompare((PetscObject)B, MATTRANSPOSEVIRTUAL, &flg));
       if (flg) {
         PetscTryMethod(B, "MatTransposeGetMat_C", (Mat, Mat *), (B, &D));
         PetscTryMethod(B, "MatHermitianTransposeGetMat_C", (Mat, Mat *), (B, &D));
@@ -2122,15 +2136,15 @@ PetscErrorCode MatHasOperation_Nest(Mat mat, MatOperation op, PetscBool *has) {
   Level: intermediate
 
   Notes:
-  This matrix type permits scalable use of PCFieldSplit and avoids the large memory costs of extracting submatrices.
+  This matrix type permits scalable use of `PCFIELDSPLIT` and avoids the large memory costs of extracting submatrices.
   It allows the use of symmetric and block formats for parts of multi-physics simulations.
-  It is usually used with DMComposite and DMCreateMatrix()
+  It is usually used with `DMCOMPOSITE` and `DMCreateMatrix()`
 
   Each of the submatrices lives on the same MPI communicator as the original nest matrix (though they can have zero
   rows/columns on some processes.) Thus this is not meant for cases where the submatrices live on far fewer processes
   than the nest matrix.
 
-.seealso: `MatCreate()`, `MatType`, `MatCreateNest()`, `MatNestSetSubMat()`, `MatNestGetSubMat()`,
+.seealso: `MATNEST`, `MatCreate()`, `MatType`, `MatCreateNest()`, `MatNestSetSubMat()`, `MatNestGetSubMat()`,
           `VecCreateNest()`, `DMCreateMatrix()`, `DMCOMPOSITE`, `MatNestSetVecType()`, `MatNestGetLocalISs()`,
           `MatNestGetISs()`, `MatNestSetSubMats()`, `MatNestGetSubMats()`
 M*/

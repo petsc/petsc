@@ -9,7 +9,7 @@ typedef struct {
 } PetscViewer_Matlab;
 
 /*@C
-    PetscViewerMatlabPutArray - Puts an array into the MATLAB viewer.
+    PetscViewerMatlabPutArray - Puts an array into the `PETSCVIEWERMATLAB` viewer.
 
       Not collective: only processor zero saves the array
 
@@ -21,9 +21,10 @@ typedef struct {
 
    Level: advanced
 
-     Notes:
+    Note:
     Only writes array values on processor 0.
 
+.seealso: `PETSCVIEWERMATLAB`, `PetscViewerMatlabGetArray()`
 @*/
 PetscErrorCode PetscViewerMatlabPutArray(PetscViewer mfile, int m, int n, const PetscScalar *array, const char *name) {
   PetscViewer_Matlab *ml;
@@ -56,7 +57,7 @@ PetscErrorCode PetscViewerMatlabPutVariable(PetscViewer viewer, const char *name
 }
 
 /*@C
-    PetscViewerMatlabGetArray - Gets a variable from a MATLAB viewer into an array
+    PetscViewerMatlabGetArray - Gets a variable from a `PETSCVIEWERMATLAB` viewer into an array
 
     Not Collective; only processor zero reads in the array
 
@@ -68,9 +69,10 @@ PetscErrorCode PetscViewerMatlabPutVariable(PetscViewer viewer, const char *name
 
    Level: advanced
 
-     Notes:
+    Note:
     Only reads in array values on processor 0.
 
+.seealso: `PETSCVIEWERMATLAB`, `PetscViewerMatlabPutArray()`
 @*/
 PetscErrorCode PetscViewerMatlabGetArray(PetscViewer mfile, int m, int n, PetscScalar *array, const char *name) {
   PetscViewer_Matlab *ml;
@@ -137,12 +139,12 @@ PetscErrorCode PetscViewerDestroy_Matlab(PetscViewer v) {
 
    Level: intermediate
 
-       Note: Currently can only save PETSc vectors to .mat files, not matrices (use the PETSCVIEWERBINARY and
+       Note: Currently can only save PETSc vectors to .mat files, not matrices (use the `PETSCVIEWERBINARY` and
              ${PETSC_DIR}/share/petsc/matlab/PetscBinaryRead.m to read matrices into MATLAB).
 
-             For parallel vectors obtained with DMCreateGlobalVector() or DMGetGlobalVector() the vectors are saved to
-             the .mat file in natural ordering. You can use DMView() to save the DMDA information to the .mat file
-             the fields in the MATLAB loaded da variable give the array dimensions so you can reshape the MATLAB
+             For parallel vectors obtained with `DMCreateGlobalVector()` or `DMGetGlobalVector()` the vectors are saved to
+             the .mat file in natural ordering. You can use DMView() to save the `DMDA` information to the .mat file
+             the fields in the MATLAB loaded da variable give the array dimensions so you can reshape the `MATLAB`
              vector to the same multidimensional shape as it had in PETSc for plotting etc. For example,
 
 $             In your PETSc C/C++ code (assuming a two dimensional DMDA with one degree of freedom per node)
@@ -158,12 +160,11 @@ $                xnew(:) = x;    % reshape one dimensional vector back to two di
               If you wish to put the same variable into the .mat file several times you need to give it a new
               name before each call to view.
 
-              Use PetscViewerMatlabPutArray() to just put an array of doubles into the .mat file
+              Use `PetscViewerMatlabPutArray()` to just put an array of doubles into the .mat file
 
 .seealso: `PETSC_VIEWER_MATLAB_()`, `PETSC_VIEWER_MATLAB_SELF`, `PETSC_VIEWER_MATLAB_WORLD`, `PetscViewerCreate()`,
           `PetscViewerMatlabOpen()`, `VecView()`, `DMView()`, `PetscViewerMatlabPutArray()`, `PETSCVIEWERBINARY`, `PETSCVIEWERASCII`, `PETSCVIEWERDRAW`,
-          `PETSC_VIEWER_STDOUT_()`, `PetscViewerFileSetName()`, `PetscViewerFileSetMode()`, `PetscViewerFormat`
-
+          `PETSC_VIEWER_STDOUT_()`, `PetscViewerFileSetName()`, `PetscViewerFileSetMode()`, `PetscViewerFormat`, `PetscMatlabEngine`
 M*/
 PETSC_EXTERN PetscErrorCode PetscViewerCreate_Matlab(PetscViewer viewer) {
   PetscViewer_Matlab *e;
@@ -190,23 +191,24 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Matlab(PetscViewer viewer) {
 +  comm - MPI communicator
 .  name - name of file
 -  type - type of file
-$    FILE_MODE_WRITE - create new file for MATLAB output
-$    FILE_MODE_READ - open existing file for MATLAB input
-$    FILE_MODE_WRITE - open existing file for MATLAB output
+$    `FILE_MODE_WRITE` - create new file for MATLAB output
+$    `FILE_MODE_READ` - open existing file for MATLAB input
+$    ``FILE_MODE_WRITE - open existing file for MATLAB output
 
    Output Parameter:
 .  binv - PetscViewer for MATLAB output to use with the specified file
 
    Level: beginner
 
-   Note: This PetscViewer should be destroyed with PetscViewerDestroy().
+   Notes:
+   This `PetscViewer` should be destroyed with `PetscViewerDestroy()`.
 
-    For writing files it only opens the file on processor 0 in the communicator.
+   For writing files it only opens the file on processor 0 in the communicator.
 
-     This only saves Vecs it cannot be used to save Mats. We recommend using the PETSCVIEWERBINARY to save objects to be loaded into MATLAB
-     instead of this routine.
+   This only saves `Vec`s it cannot be used to save `Mat`s. We recommend using the `PETSCVIEWERBINARY` to save objects to be loaded into MATLAB
+   instead of this routine.
 
-.seealso: `PetscViewerASCIIOpen()`, `PetscViewerPushFormat()`, `PetscViewerDestroy()`, `PETSCVIEWERBINARY`, `PetscViewerBinaryOpen()`
+.seealso: `PETSCVIEWERMATLAB`, `PetscViewerASCIIOpen()`, `PetscViewerPushFormat()`, `PetscViewerDestroy()`, `PETSCVIEWERBINARY`, `PetscViewerBinaryOpen()`
           `VecView()`, `MatView()`, `VecLoad()`, `MatLoad()`
 @*/
 PetscErrorCode PetscViewerMatlabOpen(MPI_Comm comm, const char name[], PetscFileMode type, PetscViewer *binv) {
@@ -221,28 +223,28 @@ PetscErrorCode PetscViewerMatlabOpen(MPI_Comm comm, const char name[], PetscFile
 static PetscMPIInt Petsc_Viewer_Matlab_keyval = MPI_KEYVAL_INVALID;
 
 /*@C
-     PETSC_VIEWER_MATLAB_ - Creates a Matlab PetscViewer shared by all processors
+     PETSC_VIEWER_MATLAB_ - Creates a `PETSCVIEWERMATLAB` `PetscViewer` shared by all processors
                      in a communicator.
 
      Collective
 
      Input Parameter:
-.    comm - the MPI communicator to share the Matlab PetscViewer
+.    comm - the MPI communicator to share the Matlab `PetscViewer`
+
+   Options Database Key:
+.    -viewer_matlab_filename <name> - name of the Matlab file
+
+   Environmental variable:
+.   `PETSC_VIEWER_MATLAB_FILENAME` - name of the Matlab file
 
      Level: intermediate
 
-   Options Database Keys:
-.    -viewer_matlab_filename <name> - name of the Matlab file
-
-   Environmental variables:
-.   PETSC_VIEWER_MATLAB_FILENAME - name of the Matlab file
-
-     Notes:
-     Unlike almost all other PETSc routines, PETSC_VIEWER_MATLAB_ does not return
+     Note:
+     Unlike almost all other PETSc routines, `PETSC_VIEWER_MATLAB_()` does not return
      an error code.  The matlab PetscViewer is usually used in the form
 $       XXXView(XXX object,PETSC_VIEWER_MATLAB_(comm));
 
-     Use PETSC_VIEWER_SOCKET_() or PetscViewerSocketOpen() to communicator with an interactive MATLAB session.
+     Use `PETSC_VIEWER_SOCKET_()` or `PetscViewerSocketOpen()` to communicator with an interactive MATLAB session.
 
 .seealso: `PETSC_VIEWER_MATLAB_WORLD`, `PETSC_VIEWER_MATLAB_SELF`, `PetscViewerMatlabOpen()`, `PetscViewerCreate()`,
           `PetscViewerDestroy()`

@@ -144,7 +144,7 @@ int main(int argc, char **args) {
     h = 2.0 / q;
     for (j = 0; j < n; j++) {
       gll.weights[j] *= .5 * h;
-      for (l = 0; l < n; l++) { A[j][l] = 2. * A[j][l] / h; }
+      for (l = 0; l < n; l++) A[j][l] = 2. * A[j][l] / h;
     }
 
     /*

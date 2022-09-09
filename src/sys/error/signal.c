@@ -62,7 +62,7 @@ static void PetscSignalHandler_Private(int sig)
 -  ptr - unused pointer
 
    Developer Note:
-   This does not call PetscError(), handles the entire error process directly
+   This does not call `PetscError()`, handles the entire error process directly
 
    Level: advanced
 
@@ -184,7 +184,6 @@ PetscErrorCode PetscSignalHandlerDefault(int sig, void *ptr) {
   Level: developer
 
 .seealso: `PetscPopSignalHandler()`, `PetscSignalHandlerDefault()`, `PetscPushErrorHandler()`
-
 @*/
 PetscErrorCode PetscPushSignalHandler(PetscErrorCode (*routine)(int, void *), void *ctx) {
   struct SH *newsh;
@@ -336,7 +335,6 @@ PetscErrorCode PetscPushSignalHandler(PetscErrorCode (*routine)(int, void *), vo
   Level: developer
 
 .seealso: `PetscPushSignalHandler()`
-
 @*/
 PetscErrorCode PetscPopSignalHandler(void) {
   struct SH *tmp;

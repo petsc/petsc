@@ -183,9 +183,9 @@ static PetscErrorCode PetscConvEstGetConvRateTS_Spatial_Private(PetscConvEst ce,
       PetscCall(DMTSGetIFunctionLocal(dm[r - 1], &ifunc, &fctx));
       PetscCall(DMTSGetIJacobianLocal(dm[r - 1], &ijac, &jctx));
       PetscCall(DMTSGetRHSFunctionLocal(dm[r - 1], &rhsfunc, &rctx));
-      if (ifunc) { PetscCall(DMTSSetIFunctionLocal(dm[r], ifunc, fctx)); }
-      if (ijac) { PetscCall(DMTSSetIJacobianLocal(dm[r], ijac, jctx)); }
-      if (rhsfunc) { PetscCall(DMTSSetRHSFunctionLocal(dm[r], rhsfunc, rctx)); }
+      if (ifunc) PetscCall(DMTSSetIFunctionLocal(dm[r], ifunc, fctx));
+      if (ijac) PetscCall(DMTSSetIJacobianLocal(dm[r], ijac, jctx));
+      if (rhsfunc) PetscCall(DMTSSetRHSFunctionLocal(dm[r], rhsfunc, rctx));
     }
     PetscCall(TSSetTime(ts, 0.0));
     PetscCall(TSSetStepNumber(ts, 0));
@@ -231,7 +231,7 @@ static PetscErrorCode PetscConvEstGetConvRateTS_Spatial_Private(PetscConvEst ce,
   PetscCall(DMTSGetIFunctionLocal(dm[r - 1], &ifunc, &fctx));
   PetscCall(DMTSGetIJacobianLocal(dm[r - 1], &ijac, &jctx));
   PetscCall(DMTSGetRHSFunctionLocal(dm[r - 1], &rhsfunc, &rctx));
-  for (r = 1; r <= Nr; ++r) { PetscCall(DMDestroy(&dm[r])); }
+  for (r = 1; r <= Nr; ++r) PetscCall(DMDestroy(&dm[r]));
   /* Fit convergence rate */
   PetscCall(PetscMalloc2(Nr + 1, &x, Nr + 1, &y));
   for (f = 0; f < Nf; ++f) {
@@ -261,9 +261,9 @@ static PetscErrorCode PetscConvEstGetConvRateTS_Spatial_Private(PetscConvEst ce,
   }
   PetscCall(TSSetDM(ts, ce->idm));
   PetscCall(DMTSSetBoundaryLocal(ce->idm, DMPlexTSComputeBoundary, ctx));
-  if (ifunc) { PetscCall(DMTSSetIFunctionLocal(ce->idm, ifunc, fctx)); }
-  if (ijac) { PetscCall(DMTSSetIJacobianLocal(ce->idm, ijac, jctx)); }
-  if (rhsfunc) { PetscCall(DMTSSetRHSFunctionLocal(ce->idm, rhsfunc, rctx)); }
+  if (ifunc) PetscCall(DMTSSetIFunctionLocal(ce->idm, ifunc, fctx));
+  if (ijac) PetscCall(DMTSSetIJacobianLocal(ce->idm, ijac, jctx));
+  if (rhsfunc) PetscCall(DMTSSetRHSFunctionLocal(ce->idm, rhsfunc, rctx));
   PetscCall(TSSetConvergedReason(ts, TS_CONVERGED_ITERATING));
   PetscCall(TSSetTime(ts, 0.0));
   PetscCall(TSSetStepNumber(ts, 0));

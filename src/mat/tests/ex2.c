@@ -339,8 +339,8 @@ int main(int argc, char **argv) {
       args: -mat_type aijkokkos
       output_file: output/ex2_23.out
       # Turn off hip due to intermittent CI failures on hip.txcorp.com. Should re-enable this test when the machine is upgraded.
-      requires: !sycl !hip kokkos_kernels
-      filter: grep -v type | grep -v " MPI process"
+      requires: !hip kokkos_kernels
+      filter: grep -v type | grep -v "MPI processes"
 
    test:
       suffix: 3

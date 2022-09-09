@@ -26,10 +26,10 @@ static PetscErrorCode KSPGuessReset_Fischer(KSPGuess guess) {
   PetscFunctionBegin;
   itg->curl = 0;
   /* destroy vectors if the size of the linear system has changed */
-  if (guess->A) { PetscCall(MatGetLayouts(guess->A, &Alay, NULL)); }
-  if (itg->xtilde) { PetscCall(VecGetLayout(itg->xtilde[0], &vlay)); }
+  if (guess->A) PetscCall(MatGetLayouts(guess->A, &Alay, NULL));
+  if (itg->xtilde) PetscCall(VecGetLayout(itg->xtilde[0], &vlay));
   cong = PETSC_FALSE;
-  if (vlay && Alay) { PetscCall(PetscLayoutCompare(Alay, vlay, &cong)); }
+  if (vlay && Alay) PetscCall(PetscLayoutCompare(Alay, vlay, &cong));
   if (!cong) {
     PetscCall(VecDestroyVecs(itg->maxl, &itg->btilde));
     PetscCall(VecDestroyVecs(itg->maxl, &itg->xtilde));
@@ -104,7 +104,7 @@ static PetscErrorCode KSPGuessFormGuess_Fischer_1(KSPGuess guess, Vec b, Vec x) 
   PetscCall(VecMDot(b, itg->curl, itg->btilde, itg->alpha));
   if (itg->monitor) {
     PetscCall(PetscPrintf(((PetscObject)guess)->comm, "KSPFischerGuess alphas ="));
-    for (i = 0; i < itg->curl; i++) { PetscCall(PetscPrintf(((PetscObject)guess)->comm, " %g", (double)PetscAbsScalar(itg->alpha[i]))); }
+    for (i = 0; i < itg->curl; i++) PetscCall(PetscPrintf(((PetscObject)guess)->comm, " %g", (double)PetscAbsScalar(itg->alpha[i])));
     PetscCall(PetscPrintf(((PetscObject)guess)->comm, "\n"));
   }
   PetscCall(VecMAXPY(x, itg->curl, itg->alpha, itg->xtilde));
@@ -161,7 +161,7 @@ static PetscErrorCode KSPGuessFormGuess_Fischer_2(KSPGuess guess, Vec b, Vec x) 
   PetscCall(VecMDot(b, itg->curl, itg->xtilde, itg->alpha));
   if (itg->monitor) {
     PetscCall(PetscPrintf(((PetscObject)guess)->comm, "KSPFischerGuess alphas ="));
-    for (i = 0; i < itg->curl; i++) { PetscCall(PetscPrintf(((PetscObject)guess)->comm, " %g", (double)PetscAbsScalar(itg->alpha[i]))); }
+    for (i = 0; i < itg->curl; i++) PetscCall(PetscPrintf(((PetscObject)guess)->comm, " %g", (double)PetscAbsScalar(itg->alpha[i])));
     PetscCall(PetscPrintf(((PetscObject)guess)->comm, "\n"));
   }
   PetscCall(VecMAXPY(x, itg->curl, itg->alpha, itg->xtilde));
@@ -233,7 +233,7 @@ static PetscErrorCode KSPGuessFormGuess_Fischer_3(KSPGuess guess, Vec b, Vec x) 
 #endif
     PetscCall(VecMDot(b, itg->curl, itg->btilde, itg->last_b_coefs));
     for (j = 0; j < m; ++j) {
-      for (i = 0; i < m; ++i) { corr[m * j + i] = itg->corr[(itg->maxl) * j + i]; }
+      for (i = 0; i < m; ++i) corr[m * j + i] = itg->corr[(itg->maxl) * j + i];
     }
     PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
     PetscReal max_s_value = 0.0;
@@ -248,7 +248,7 @@ static PetscErrorCode KSPGuessFormGuess_Fischer_3(KSPGuess guess, Vec b, Vec x) 
       for (j = 0; j < m; ++j) {
         if (s_values[j] < 0.0) {
           s_values[j] = PetscAbsReal(s_values[j]);
-          for (i = 0; i < m; ++i) { corr[m * j + i] *= -1.0; }
+          for (i = 0; i < m; ++i) corr[m * j + i] *= -1.0;
         }
         max_s_value = PetscMax(max_s_value, s_values[j]);
       }
@@ -274,11 +274,11 @@ static PetscErrorCode KSPGuessFormGuess_Fischer_3(KSPGuess guess, Vec b, Vec x) 
     if (itg->monitor && blas_info == 0) {
       PetscCall(PetscPrintf(((PetscObject)guess)->comm, "KSPFischerGuess correlation rank = %d\n", (int)blas_rank));
       PetscCall(PetscPrintf(((PetscObject)guess)->comm, "KSPFischerGuess singular values = "));
-      for (i = 0; i < itg->curl; i++) { PetscCall(PetscPrintf(((PetscObject)guess)->comm, " %g", (double)s_values[i])); }
+      for (i = 0; i < itg->curl; i++) PetscCall(PetscPrintf(((PetscObject)guess)->comm, " %g", (double)s_values[i]));
       PetscCall(PetscPrintf(((PetscObject)guess)->comm, "\n"));
 
       PetscCall(PetscPrintf(((PetscObject)guess)->comm, "KSPFischerGuess alphas ="));
-      for (i = 0; i < itg->curl; i++) { PetscCall(PetscPrintf(((PetscObject)guess)->comm, " %g", (double)PetscAbsScalar(itg->alpha[i]))); }
+      for (i = 0; i < itg->curl; i++) PetscCall(PetscPrintf(((PetscObject)guess)->comm, " %g", (double)PetscAbsScalar(itg->alpha[i])));
       PetscCall(PetscPrintf(((PetscObject)guess)->comm, "\n"));
     }
     /* Form the initial guess by using b's projection coefficients with the xs */
@@ -304,17 +304,17 @@ static PetscErrorCode KSPGuessUpdate_Fischer_3(KSPGuess guess, Vec b, Vec x) {
   if (rotate) {
     /* we have the maximum number of vectors so rotate: oldest vector is at index 0 */
     oldest = itg->xtilde[0];
-    for (i = 1; i < itg->curl; ++i) { itg->xtilde[i - 1] = itg->xtilde[i]; }
+    for (i = 1; i < itg->curl; ++i) itg->xtilde[i - 1] = itg->xtilde[i];
     itg->xtilde[itg->curl - 1] = oldest;
     PetscCall(VecCopy(x, itg->xtilde[itg->curl - 1]));
 
     oldest = itg->btilde[0];
-    for (i = 1; i < itg->curl; ++i) { itg->btilde[i - 1] = itg->btilde[i]; }
+    for (i = 1; i < itg->curl; ++i) itg->btilde[i - 1] = itg->btilde[i];
     itg->btilde[itg->curl - 1] = oldest;
     PetscCall(VecCopy(b, itg->btilde[itg->curl - 1]));
     /* shift correlation matrix up and left */
     for (j = 1; j < itg->maxl; ++j) {
-      for (i = 1; i < itg->maxl; ++i) { itg->corr[(j - 1) * itg->maxl + i - 1] = itg->corr[j * itg->maxl + i]; }
+      for (i = 1; i < itg->maxl; ++i) itg->corr[(j - 1) * itg->maxl + i - 1] = itg->corr[j * itg->maxl + i];
     }
   } else {
     /* append new vectors */
@@ -333,14 +333,14 @@ static PetscErrorCode KSPGuessUpdate_Fischer_3(KSPGuess guess, Vec b, Vec x) {
   PetscCall(PetscObjectStateGet((PetscObject)b, &b_state));
   if (b_state == itg->last_b_state && b == itg->last_b) {
     if (rotate) {
-      for (i = 1; i < itg->maxl; ++i) { itg->last_b_coefs[i - 1] = itg->last_b_coefs[i]; }
+      for (i = 1; i < itg->maxl; ++i) itg->last_b_coefs[i - 1] = itg->last_b_coefs[i];
     }
     PetscCall(VecDot(b, b, &itg->last_b_coefs[itg->curl - 1]));
     PetscCall(PetscArraycpy(last_column, itg->last_b_coefs, itg->curl));
   } else {
     PetscCall(VecMDot(b, itg->curl, itg->btilde, last_column));
   }
-  for (i = 0; i < itg->curl; ++i) { itg->corr[i * itg->maxl + itg->curl - 1] = last_column[i]; }
+  for (i = 0; i < itg->curl; ++i) itg->corr[i * itg->maxl + itg->curl - 1] = last_column[i];
   PetscFunctionReturn(0);
 }
 
@@ -354,7 +354,7 @@ static PetscErrorCode KSPGuessSetFromOptions_Fischer(KSPGuess guess) {
   model[1] = ITG->maxl;
   PetscOptionsBegin(PetscObjectComm((PetscObject)guess), ((PetscObject)guess)->prefix, "Fischer guess options", "KSPGuess");
   PetscCall(PetscOptionsIntArray("-ksp_guess_fischer_model", "Model type and dimension of basis", "KSPGuessFischerSetModel", model, &nmax, &flg));
-  if (flg) { PetscCall(KSPGuessFischerSetModel(guess, model[0], model[1])); }
+  if (flg) PetscCall(KSPGuessFischerSetModel(guess, model[0], model[1]));
   PetscCall(PetscOptionsReal("-ksp_guess_fischer_tol", "Tolerance to determine rank via ratio of singular values", "KSPGuessSetTolerance", ITG->tol, &ITG->tol, NULL));
   PetscCall(PetscOptionsBool("-ksp_guess_fischer_monitor", "Monitor the guess", NULL, ITG->monitor, &ITG->monitor, NULL));
   PetscOptionsEnd();
@@ -375,7 +375,7 @@ static PetscErrorCode KSPGuessView_Fischer(KSPGuess guess, PetscViewer viewer) {
 
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
-  if (isascii) { PetscCall(PetscViewerASCIIPrintf(viewer, "Model %" PetscInt_FMT ", size %" PetscInt_FMT "\n", itg->method, itg->maxl)); }
+  if (isascii) PetscCall(PetscViewerASCIIPrintf(viewer, "Model %" PetscInt_FMT ", size %" PetscInt_FMT "\n", itg->method, itg->maxl));
   PetscFunctionReturn(0);
 }
 

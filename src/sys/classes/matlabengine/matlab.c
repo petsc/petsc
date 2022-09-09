@@ -24,13 +24,13 @@ PetscClassId MATLABENGINE_CLASSID = -1;
     Output Parameter:
 .   mengine - the resulting object
 
-   Options Database:
+   Options Database Keys:
 +    -matlab_engine_graphics - allow the MATLAB engine to display graphics
 .    -matlab_engine_host - hostname, machine to run the MATLAB engine on
 -    -info - print out all requests to MATLAB and all if its responses (for debugging)
 
-   Notes:
-   If a host string is passed in, any Matlab scripts that need to run in the
+   Note:
+   If a host string is passed in, any MATLAB scripts that need to run in the
    engine must be available via MATLABPATH on that machine.
 
    Level: advanced
@@ -87,7 +87,7 @@ PetscErrorCode PetscMatlabEngineCreate(MPI_Comm comm, const char host[], PetscMa
 /*@
    PetscMatlabEngineDestroy - Shuts down a MATLAB engine.
 
-   Collective on PetscMatlabEngine
+   Collective on v
 
    Input Parameters:
 .  e  - the engine
@@ -123,7 +123,9 @@ PetscErrorCode PetscMatlabEngineDestroy(PetscMatlabEngine *v) {
 -   string - format as in a printf()
 
    Notes:
-     Run the PETSc program with -info to always have printed back MATLAB's response to the string evaluation
+   Run the PETSc program with -info to always have printed back MATLAB's response to the string evaluation
+
+   If the string utilizes a MATLAB script that needs to run in the engine, the script must be available via MATLABPATH on that machine.
 
    Level: advanced
 
@@ -179,12 +181,13 @@ PetscErrorCode PetscMatlabEngineGetOutput(PetscMatlabEngine mengine, char **stri
 }
 
 /*@C
-    PetscMatlabEnginePrintOutput - prints the output from MATLAB
+    PetscMatlabEnginePrintOutput - prints the output from MATLAB to an ASCII file
 
-    Collective on PetscMatlabEngine
+    Collective on mengine
 
     Input Parameters:
-.    mengine - the Matlab engine
++    mengine - the MATLAB engine
+-    fd - the file
 
    Level: advanced
 
@@ -204,10 +207,10 @@ PetscErrorCode PetscMatlabEnginePrintOutput(PetscMatlabEngine mengine, FILE *fd)
 }
 
 /*@
-    PetscMatlabEnginePut - Puts a Petsc object into the MATLAB space. For parallel objects,
-      each processors part is put in a separate  MATLAB process.
+    PetscMatlabEnginePut - Puts a Petsc object, such as a `Mat` or `Vec` into the MATLAB space. For parallel objects,
+      each processor's part is put in a separate  MATLAB process.
 
-    Collective on PetscObject
+    Collective on mengine
 
     Input Parameters:
 +    mengine - the MATLAB engine
@@ -215,8 +218,9 @@ PetscErrorCode PetscMatlabEnginePrintOutput(PetscMatlabEngine mengine, FILE *fd)
 
    Level: advanced
 
-   Note: Mats transferred between PETSc and MATLAB and vis versa are transposed in the other space
-         (this is because MATLAB uses compressed column format and PETSc uses compressed row format)
+   Note:
+   `Mat`s transferred between PETSc and MATLAB and vis versa are transposed in the other space
+   (this is because MATLAB uses compressed column format and PETSc uses compressed row format)
 
 .seealso: `PetscMatlabEngineDestroy()`, `PetscMatlabEngineCreate()`, `PetscMatlabEngineGet()`,
           `PetscMatlabEngineEvaluate()`, `PetscMatlabEngineGetOutput()`, `PetscMatlabEnginePrintOutput()`,
@@ -238,16 +242,17 @@ PetscErrorCode PetscMatlabEnginePut(PetscMatlabEngine mengine, PetscObject obj) 
 /*@
     PetscMatlabEngineGet - Gets a variable from MATLAB into a PETSc object.
 
-    Collective on PetscObject
+    Collective on mengine
 
     Input Parameters:
 +    mengine - the MATLAB engine
--    object - the PETSc object, for example Vec
+-    object - the PETSc object, for example a `Vec`
 
    Level: advanced
 
-   Note: Mats transferred between PETSc and MATLAB and vis versa are transposed in the other space
-         (this is because MATLAB uses compressed column format and PETSc uses compressed row format)
+   Note:
+   `Mat`s transferred between PETSc and MATLAB and vis versa are transposed in the other space
+   (this is because MATLAB uses compressed column format and PETSc uses compressed row format)
 
 .seealso: `PetscMatlabEngineDestroy()`, `PetscMatlabEnginePut()`, `PetscMatlabEngineCreate()`,
           `PetscMatlabEngineEvaluate()`, `PetscMatlabEngineGetOutput()`, `PetscMatlabEnginePrintOutput()`,
@@ -281,12 +286,12 @@ static PetscMPIInt Petsc_Matlab_Engine_keyval = MPI_KEYVAL_INVALID;
    Input Parameter:
 .  comm - the MPI communicator to share the engine
 
-   Options Database:
-.  -matlab_engine_host - hostname
+   Options Database Key:
+.  -matlab_engine_host - hostname on which to run MATLAB, one must be able to ssh to this host
 
    Level: developer
 
-   Notes:
+   Note:
    Unlike almost all other PETSc routines, this does not return
    an error code. Usually used in the form
 $      PetscMatlabEngineYYY(XXX object,PETSC_MATLAB_ENGINE_(comm));
@@ -295,7 +300,6 @@ $      PetscMatlabEngineYYY(XXX object,PETSC_MATLAB_ENGINE_(comm));
           `PetscMatlabEngineEvaluate()`, `PetscMatlabEngineGetOutput()`, `PetscMatlabEnginePrintOutput()`,
           `PetscMatlabEngineCreate()`, `PetscMatlabEnginePutArray()`, `PetscMatlabEngineGetArray()`, `PetscMatlabEngine`,
           `PETSC_MATLAB_ENGINE_WORLD`, `PETSC_MATLAB_ENGINE_SELF`
-
 @*/
 PetscMatlabEngine PETSC_MATLAB_ENGINE_(MPI_Comm comm) {
   PetscErrorCode    ierr;
@@ -339,7 +343,7 @@ PetscMatlabEngine PETSC_MATLAB_ENGINE_(MPI_Comm comm) {
     PetscMatlabEnginePutArray - Puts an array into the MATLAB space, treating it as a Fortran style (column major ordering) array. For parallel objects,
       each processors part is put in a separate  MATLAB process.
 
-    Collective on PetscObject
+    Collective on mengine
 
     Input Parameters:
 +    mengine - the MATLAB engine

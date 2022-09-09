@@ -287,7 +287,7 @@ PetscErrorCode VecDot_SeqHIP(Vec xin, Vec yin, PetscScalar *z) {
   PetscCall(PetscLogGpuTimeBegin());
   PetscCallHIPBLAS(hipblasXdot(hipblasv2handle, bn, yarray, one, xarray, one, z));
   PetscCall(PetscLogGpuTimeEnd());
-  if (xin->map->n > 0) { PetscCall(PetscLogGpuFlops(2.0 * xin->map->n - 1)); }
+  if (xin->map->n > 0) PetscCall(PetscLogGpuFlops(2.0 * xin->map->n - 1));
   PetscCall(PetscLogGpuToCpu(sizeof(PetscScalar)));
   PetscCall(VecHIPRestoreArrayRead(xin, &xarray));
   PetscCall(VecHIPRestoreArrayRead(yin, &yarray));
@@ -726,7 +726,7 @@ PetscErrorCode VecTDot_SeqHIP(Vec xin, Vec yin, PetscScalar *z) {
   PetscCall(PetscLogGpuTimeBegin());
   PetscCallHIPBLAS(hipblasXdotu(hipblasv2handle, bn, xarray, one, yarray, one, z));
   PetscCall(PetscLogGpuTimeEnd());
-  if (xin->map->n > 0) { PetscCall(PetscLogGpuFlops(2.0 * xin->map->n - 1)); }
+  if (xin->map->n > 0) PetscCall(PetscLogGpuFlops(2.0 * xin->map->n - 1));
   PetscCall(PetscLogGpuToCpu(sizeof(PetscScalar)));
   PetscCall(VecHIPRestoreArrayRead(yin, &yarray));
   PetscCall(VecHIPRestoreArrayRead(xin, &xarray));
@@ -971,7 +971,7 @@ PetscErrorCode VecDestroy_SeqHIP(Vec v) {
       PetscCallHIP(hipFree(((Vec_HIP *)v->spptr)->GPUarray_allocated));
       ((Vec_HIP *)v->spptr)->GPUarray_allocated = NULL;
     }
-    if (((Vec_HIP *)v->spptr)->stream) { PetscCallHIP(hipStreamDestroy(((Vec_HIP *)v->spptr)->stream)); }
+    if (((Vec_HIP *)v->spptr)->stream) PetscCallHIP(hipStreamDestroy(((Vec_HIP *)v->spptr)->stream));
   }
   PetscCall(VecDestroy_SeqHIP_Private(v));
   PetscCall(PetscFree(v->spptr));
@@ -1016,7 +1016,7 @@ static inline PetscErrorCode VecGetLocalVectorK_SeqHIP(Vec v, Vec w, PetscBool r
   PetscCall(PetscObjectTypeCompare((PetscObject)w, VECSEQHIP, &wisseqhip));
   if (w->data && wisseqhip) {
     if (((Vec_Seq *)w->data)->array_allocated) {
-      if (w->pinned_memory) { PetscCall(PetscMallocSetHIPHost()); }
+      if (w->pinned_memory) PetscCall(PetscMallocSetHIPHost());
       PetscCall(PetscFree(((Vec_Seq *)w->data)->array_allocated));
       if (w->pinned_memory) {
         PetscCall(PetscMallocResetHIPHost());
@@ -1031,7 +1031,7 @@ static inline PetscErrorCode VecGetLocalVectorK_SeqHIP(Vec v, Vec w, PetscBool r
       PetscCallHIP(hipFree(((Vec_HIP *)w->spptr)->GPUarray));
       ((Vec_HIP *)w->spptr)->GPUarray = NULL;
     }
-    if (((Vec_HIP *)v->spptr)->stream) { PetscCallHIP(hipStreamDestroy(((Vec_HIP *)w->spptr)->stream)); }
+    if (((Vec_HIP *)v->spptr)->stream) PetscCallHIP(hipStreamDestroy(((Vec_HIP *)w->spptr)->stream));
     PetscCall(PetscFree(w->spptr));
   }
 
@@ -1049,7 +1049,7 @@ static inline PetscErrorCode VecGetLocalVectorK_SeqHIP(Vec v, Vec w, PetscBool r
       PetscCall(VecGetArray(v, &((Vec_Seq *)w->data)->array));
     }
     w->offloadmask = PETSC_OFFLOAD_CPU;
-    if (wisseqhip) { PetscCall(VecHIPAllocateCheck(w)); }
+    if (wisseqhip) PetscCall(VecHIPAllocateCheck(w));
   }
   PetscFunctionReturn(0);
 }
@@ -1079,7 +1079,7 @@ static inline PetscErrorCode VecRestoreLocalVectorK_SeqHIP(Vec v, Vec w, PetscBo
     if ((Vec_HIP *)w->spptr && wisseqhip) {
       PetscCallHIP(hipFree(((Vec_HIP *)w->spptr)->GPUarray));
       ((Vec_HIP *)w->spptr)->GPUarray = NULL;
-      if (((Vec_HIP *)v->spptr)->stream) { PetscCallHIP(hipStreamDestroy(((Vec_HIP *)w->spptr)->stream)); }
+      if (((Vec_HIP *)v->spptr)->stream) PetscCallHIP(hipStreamDestroy(((Vec_HIP *)w->spptr)->stream));
       PetscCall(PetscFree(w->spptr));
     }
   }

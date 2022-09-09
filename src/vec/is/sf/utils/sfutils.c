@@ -37,7 +37,7 @@ PetscErrorCode PetscSFSetGraphLayout(PetscSF sf, PetscLayout layout, PetscInt nl
   PetscCall(PetscLayoutGetLocalSize(layout, &nroots));
   PetscCall(PetscLayoutGetRanges(layout, &range));
   PetscCall(PetscMalloc1(nleaves, &remote));
-  if (nleaves) { ls = iremote[0] + 1; }
+  if (nleaves) ls = iremote[0] + 1;
   for (i = 0; i < nleaves; i++) {
     const PetscInt idx = iremote[i] - ls;
     if (idx < 0 || idx >= ln) { /* short-circuit the search */
@@ -452,7 +452,7 @@ PetscErrorCode PetscSFCreateFromLayouts(PetscLayout rmap, PetscLayout lmap, Pets
   PetscCall(PetscLayoutGetRange(lmap, &lst, &len));
   PetscCall(PetscMalloc1(len - lst, &remote));
   for (i = lst; i < len && i < rN; i++) {
-    if (owner < -1 || i >= rmap->range[owner + 1]) { PetscCall(PetscLayoutFindOwner(rmap, i, &owner)); }
+    if (owner < -1 || i >= rmap->range[owner + 1]) PetscCall(PetscLayoutFindOwner(rmap, i, &owner));
     remote[nleaves].rank  = owner;
     remote[nleaves].index = i - rmap->range[owner];
     nleaves++;
@@ -709,7 +709,7 @@ PetscErrorCode PetscSFCreateByMatchingIndices(PetscLayout layout, PetscInt numRo
   } else {
     nleaves = numLeafIndices;
     PetscCall(PetscMalloc1(nleaves, &ilocal));
-    for (i = 0; i < nleaves; ++i) { ilocal[i] = leafLocalOffset + (leafLocalIndices ? leafLocalIndices[i] : i); }
+    for (i = 0; i < nleaves; ++i) ilocal[i] = leafLocalOffset + (leafLocalIndices ? leafLocalIndices[i] : i);
     iremote = owners;
   }
   PetscCall(PetscSFCreate(comm, sf));

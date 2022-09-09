@@ -147,7 +147,7 @@ static PetscErrorCode MatPartitioningApply_Hierarchical(MatPartitioning part, IS
   /* Wrap the original vertex weights into an index set so that we can extract the corresponding
    * vertex weights for each big subdomain using ISCreateSubIS().
    * */
-  if (part->vertex_weights) { PetscCall(ISCreateGeneral(comm, mat_localsize, part->vertex_weights, PETSC_COPY_VALUES, &vweights)); }
+  if (part->vertex_weights) PetscCall(ISCreateGeneral(comm, mat_localsize, part->vertex_weights, PETSC_COPY_VALUES, &vweights));
 
   PetscCall(PetscCalloc1(mat_localsize, &fineparts_indices_tmp));
   for (i = 0; i < hpart->ncoarseparts; i += size) {
@@ -221,7 +221,7 @@ static PetscErrorCode MatPartitioningApply_Hierarchical(MatPartitioning part, IS
     PetscCall(ISLocalToGlobalMappingDestroy(&mapping));
   }
 
-  if (part->vertex_weights) { PetscCall(ISDestroy(&vweights)); }
+  if (part->vertex_weights) PetscCall(ISDestroy(&vweights));
 
   PetscCall(ISCreateGeneral(comm, mat_localsize, fineparts_indices_tmp, PETSC_OWN_POINTER, &hpart->fineparts));
   PetscCall(ISGetIndices(hpart->fineparts, &fineparts_indices));
@@ -229,7 +229,7 @@ static PetscErrorCode MatPartitioningApply_Hierarchical(MatPartitioning part, IS
   PetscCall(PetscMalloc1(bs * adj->rmap->n, &parts_indices));
   /* Modify the local indices to the global indices by combing the coarse partition and the fine partitions */
   for (i = 0; i < adj->rmap->n; i++) {
-    for (j = 0; j < bs; j++) { parts_indices[bs * i + j] = fineparts_indices[i] + offsets[coarseparts_indices[i]]; }
+    for (j = 0; j < bs; j++) parts_indices[bs * i + j] = fineparts_indices[i] + offsets[coarseparts_indices[i]];
   }
   PetscCall(ISRestoreIndices(hpart->fineparts, &fineparts_indices));
   PetscCall(ISRestoreIndices(hpart->coarseparts, &coarseparts_indices));
@@ -255,16 +255,16 @@ PetscErrorCode MatPartitioningHierarchical_ReassembleFineparts(Mat adj, IS finep
   PetscCall(MatGetLayouts(adj, &rmap, NULL));
   PetscCall(ISGetLocalSize(fineparts, &localsize));
   PetscCall(PetscMalloc2(localsize, &global_indices, localsize, &local_indices));
-  for (i = 0; i < localsize; i++) { local_indices[i] = i; }
+  for (i = 0; i < localsize; i++) local_indices[i] = i;
   /* map local indices back to global so that we can permulate data globally */
   PetscCall(ISLocalToGlobalMappingApply(mapping, localsize, local_indices, global_indices));
   PetscCall(PetscCalloc1(localsize, &owners));
   /* find owners for global indices */
-  for (i = 0; i < localsize; i++) { PetscCall(PetscLayoutFindOwner(rmap, global_indices[i], &owners[i])); }
+  for (i = 0; i < localsize; i++) PetscCall(PetscLayoutFindOwner(rmap, global_indices[i], &owners[i]));
   PetscCall(PetscLayoutGetRanges(rmap, &ranges));
   PetscCall(PetscMalloc1(ranges[rank + 1] - ranges[rank], &sfineparts_indices));
 
-  for (i = 0; i < ranges[rank + 1] - ranges[rank]; i++) { sfineparts_indices[i] = -1; }
+  for (i = 0; i < ranges[rank + 1] - ranges[rank]; i++) sfineparts_indices[i] = -1;
 
   PetscCall(ISGetIndices(fineparts, &fineparts_indices));
   PetscCall(PetscSFCreate(comm, &sf));
@@ -305,7 +305,7 @@ PetscErrorCode MatPartitioningHierarchical_AssembleSubdomain(Mat adj, IS vweight
   PetscCall(ISLocalToGlobalMappingCreate(comm, 1, irows_ln, irows_indices, PETSC_COPY_VALUES, mapping));
   PetscCall(ISRestoreIndices(irows, &irows_indices));
   PetscCall(MatCreateSubMatrices(adj, 1, &irows, &icols, MAT_INITIAL_MATRIX, &sadj));
-  if (vweights && svweights) { PetscCall(ISCreateSubIS(vweights, irows, svweights)); }
+  if (vweights && svweights) PetscCall(ISCreateSubIS(vweights, irows, svweights));
   PetscCall(ISDestroy(&irows));
   PetscCall(ISDestroy(&icols));
   PetscFunctionReturn(0);
@@ -409,9 +409,9 @@ PetscErrorCode MatPartitioningSetFromOptions_Hierarchical(MatPartitioning part, 
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "Set hierarchical partitioning options");
   PetscCall(PetscOptionsString("-mat_partitioning_hierarchical_coarseparttype", "coarse part type", NULL, NULL, value, sizeof(value), &flag));
-  if (flag) { PetscCall(PetscStrallocpy(value, &hpart->coarseparttype)); }
+  if (flag) PetscCall(PetscStrallocpy(value, &hpart->coarseparttype));
   PetscCall(PetscOptionsString("-mat_partitioning_hierarchical_fineparttype", "fine part type", NULL, NULL, value, sizeof(value), &flag));
-  if (flag) { PetscCall(PetscStrallocpy(value, &hpart->fineparttype)); }
+  if (flag) PetscCall(PetscStrallocpy(value, &hpart->fineparttype));
   PetscCall(PetscOptionsInt("-mat_partitioning_hierarchical_ncoarseparts", "number of coarse parts", NULL, hpart->ncoarseparts, &hpart->ncoarseparts, &flag));
   PetscCall(PetscOptionsInt("-mat_partitioning_hierarchical_nfineparts", "number of fine parts", NULL, hpart->nfineparts, &hpart->nfineparts, &flag));
   PetscOptionsHeadEnd();
@@ -488,7 +488,7 @@ static PetscErrorCode MatPartitioningImprove_Hierarchical(MatPartitioning part, 
    into a large number of subgraphs (often more than 10K) since partitions obtained with existing partitioners
    such as ParMETIS and PTScotch are far from ideal. The hierarchical partitioning also tries to avoid off-node
    communication as much as possible for multi-core processor. Another user case for the hierarchical partitioning
-   is to improve PCGASM convergence by generating multi-rank connected subdomain.
+   is to improve `PCGASM` convergence by generating multi-rank connected subdomain.
 
    Collective
 
@@ -510,8 +510,7 @@ static PetscErrorCode MatPartitioningImprove_Hierarchical(MatPartitioning part, 
       A general-purpose hierarchical mesh partitioning method with node balancing strategies for large-scale numerical simulations,
       arXiv preprint arXiv:1809.02666CoRR, 2018.
 
-.seealso: `MatPartitioningSetType()`, `MatPartitioningType`
-
+.seealso: `MatPartitioningSetType()`, `MatPartitioningType`, `MATPARTITIONINGMETIS`, `MATPARTITIONINGPARMETIS`,
 M*/
 
 PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Hierarchical(MatPartitioning part) {

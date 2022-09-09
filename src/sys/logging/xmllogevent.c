@@ -107,7 +107,7 @@ PETSC_INTERN PetscErrorCode PetscLogView_Flamegraph(PetscViewer);
   PetscLogNestedBegin - Turns on nested logging of objects and events. This logs flop
   rates and object creation and should not slow programs down too much.
 
-  Logically Collective over PETSC_COMM_WORLD
+  Logically Collective over `PETSC_COMM_WORLD`
 
   Options Database Keys:
 . -log_view :filename.xml:ascii_xml - Prints an XML summary of flop and timing information to the file
@@ -152,7 +152,7 @@ PetscErrorCode PetscLogNestedEnd(void) {
 
   PetscFunctionBegin;
   if (!nestedEvents) PetscFunctionReturn(0);
-  for (i = 0; i < nNestedEvents; i++) { PetscCall(PetscFree4(nestedEvents[i].dftParentsSorted, nestedEvents[i].dftEventsSorted, nestedEvents[i].dftParents, nestedEvents[i].dftEvents)); }
+  for (i = 0; i < nNestedEvents; i++) PetscCall(PetscFree4(nestedEvents[i].dftParentsSorted, nestedEvents[i].dftEventsSorted, nestedEvents[i].dftParents, nestedEvents[i].dftEvents));
   PetscCall(PetscFree(nestedEvents));
   nestedEvents           = NULL;
   nNestedEvents          = 0;
@@ -279,7 +279,7 @@ static PetscErrorCode PetscLogEventBeginNested(NestedEventId nstEvent, int t, Pe
 
     /* Clear space in nestedEvents for new nested event */
     nNestedEvents++;
-    for (i = nNestedEvents - 1; i > entry; i--) { nestedEvents[i] = nestedEvents[i - 1]; }
+    for (i = nNestedEvents - 1; i > entry; i--) nestedEvents[i] = nestedEvents[i - 1];
 
     /* Create event in nestedEvents */
     nestedEvents[entry].nstEvent = nstEvent;
@@ -392,7 +392,7 @@ static PetscErrorCode PetscLogEventEndNested(NestedEventId nstEvent, int t, Pets
    PetscLogSetThreshold - Set the threshold time for logging the events; this is a percentage out of 100, so 1. means any event
           that takes 1 or more percent of the time.
 
-  Logically Collective over PETSC_COMM_WORLD
+  Logically Collective over `PETSC_COMM_WORLD`
 
   Input Parameter:
 .   newThresh - the threshold to use
@@ -451,8 +451,8 @@ static PetscErrorCode PetscPrintExeSpecs(PetscViewer viewer) {
   PetscCall(PetscViewerXMLPutString(viewer, "date", "Started at", date));
   PetscCall(PetscViewerXMLPutString(viewer, "petscrelease", "Petsc Release", version));
 
-  if (PetscDefined(USE_DEBUG)) { PetscCall(PetscStrlcat(buildoptions, "Debug ", sizeof(buildoptions))); }
-  if (PetscDefined(USE_COMPLEX)) { PetscCall(PetscStrlcat(buildoptions, "Complex ", sizeof(buildoptions))); }
+  if (PetscDefined(USE_DEBUG)) PetscCall(PetscStrlcat(buildoptions, "Debug ", sizeof(buildoptions)));
+  if (PetscDefined(USE_COMPLEX)) PetscCall(PetscStrlcat(buildoptions, "Complex ", sizeof(buildoptions)));
   if (PetscDefined(USE_REAL_SINGLE)) {
     PetscCall(PetscStrlcat(buildoptions, "Single ", sizeof(buildoptions)));
   } else if (PetscDefined(USE_REAL___FLOAT128)) {
@@ -460,12 +460,12 @@ static PetscErrorCode PetscPrintExeSpecs(PetscViewer viewer) {
   } else if (PetscDefined(USE_REAL___FP16)) {
     PetscCall(PetscStrlcat(buildoptions, "Half ", sizeof(buildoptions)));
   }
-  if (PetscDefined(USE_64BIT_INDICES)) { PetscCall(PetscStrlcat(buildoptions, "Int64 ", sizeof(buildoptions))); }
+  if (PetscDefined(USE_64BIT_INDICES)) PetscCall(PetscStrlcat(buildoptions, "Int64 ", sizeof(buildoptions)));
 #if defined(__cplusplus)
   PetscCall(PetscStrlcat(buildoptions, "C++ ", sizeof(buildoptions)));
 #endif
   PetscCall(PetscStrlen(buildoptions, &len));
-  if (len) { PetscCall(PetscViewerXMLPutString(viewer, "petscbuildoptions", "Petsc build options", buildoptions)); }
+  if (len) PetscCall(PetscViewerXMLPutString(viewer, "petscbuildoptions", "Petsc build options", buildoptions));
   PetscCall(PetscViewerXMLEndSection(viewer, "runspecification"));
   PetscFunctionReturn(0);
 }
@@ -497,8 +497,8 @@ static PetscErrorCode PetscPrintXMLGlobalPerformanceElement(PetscViewer viewer, 
   PetscCall(PetscViewerXMLPutDouble(viewer, "max", NULL, max[0], "%e"));
   PetscCall(PetscViewerXMLPutInt(viewer, "maxrank", "rank at which max was found", (PetscMPIInt)max[1]));
   PetscCall(PetscViewerXMLPutDouble(viewer, "ratio", NULL, ratio, "%f"));
-  if (print_average) { PetscCall(PetscViewerXMLPutDouble(viewer, "average", NULL, avg, "%e")); }
-  if (print_total) { PetscCall(PetscViewerXMLPutDouble(viewer, "total", NULL, tot, "%e")); }
+  if (print_average) PetscCall(PetscViewerXMLPutDouble(viewer, "average", NULL, avg, "%e"));
+  if (print_total) PetscCall(PetscViewerXMLPutDouble(viewer, "total", NULL, tot, "%e"));
   PetscCall(PetscViewerXMLEndSection(viewer, name));
   PetscFunctionReturn(0);
 }
@@ -533,7 +533,7 @@ static PetscErrorCode PetscPrintGlobalPerformance(PetscViewer viewer, PetscLogDo
 
   /*   Memory */
   PetscCall(PetscMallocGetMaximumUsage(&mem));
-  if (mem > 0.0) { PetscCall(PetscPrintXMLGlobalPerformanceElement(viewer, "memory", "Memory (MiB)", mem / 1024.0 / 1024.0, print_average_yes, print_total_yes)); }
+  if (mem > 0.0) PetscCall(PetscPrintXMLGlobalPerformanceElement(viewer, "memory", "Memory (MiB)", mem / 1024.0 / 1024.0, print_average_yes, print_total_yes));
   /*   Messages */
   mess = 0.5 * (petsc_irecv_ct + petsc_isend_ct + petsc_recv_ct + petsc_send_ct);
   PetscCall(PetscPrintXMLGlobalPerformanceElement(viewer, "messagetransfers", "MPI Message Transfers", mess, print_average_yes, print_total_yes));
@@ -740,7 +740,7 @@ static PetscErrorCode PetscLogNestedTreeCreate(PetscViewer viewer, PetscNestedEv
 
         /* check whether the next path is the same as this process's next path */
         same = PETSC_TRUE;
-        for (j = 0; same && j < depth; j++) { same = (same && nstMyPath[j] == nstPath[j]) ? PETSC_TRUE : PETSC_FALSE; }
+        for (j = 0; same && j < depth; j++) same = (same && nstMyPath[j] == nstPath[j]) ? PETSC_TRUE : PETSC_FALSE;
 
         if (same) {
           /* Register 'own path' */
@@ -753,7 +753,7 @@ static PetscErrorCode PetscLogNestedTreeCreate(PetscViewer viewer, PetscNestedEv
             newTree[i + iextra].own      = PETSC_FALSE;
             newTree[i + iextra].depth    = depth;
             PetscCall(PetscMalloc1(depth, &newTree[i + iextra].nstPath));
-            for (j = 0; j < depth; j++) { newTree[i + iextra].nstPath[j] = nstPath[j]; }
+            for (j = 0; j < depth; j++) newTree[i + iextra].nstPath[j] = nstPath[j];
 
             newTree[i + iextra].dftEvent  = 0;
             newTree[i + iextra].dftParent = 0;
@@ -766,7 +766,7 @@ static PetscErrorCode PetscLogNestedTreeCreate(PetscViewer viewer, PetscNestedEv
 
     /* Determine the size of the complete tree (with own and not-own timers) and allocate the new tree */
     totalNTimers = nTimers + iextra;
-    if (!newTree) { PetscCall(PetscMalloc1(totalNTimers, &newTree)); }
+    if (!newTree) PetscCall(PetscMalloc1(totalNTimers, &newTree));
   }
   PetscCall(PetscFree(nstPath));
   PetscCall(PetscFree(nstMyPath));
@@ -787,7 +787,7 @@ static PetscErrorCode PetscLogNestedTreeDestroy(PetscNestedEventTree *tree, int 
   int i;
 
   PetscFunctionBegin;
-  for (i = 0; i < nTimers; i++) { PetscCall(PetscFree(tree[i].nstPath)); }
+  for (i = 0; i < nTimers; i++) PetscCall(PetscFree(tree[i].nstPath));
   PetscCall(PetscFree(tree));
   PetscFunctionReturn(0);
 }
@@ -939,13 +939,13 @@ static PetscErrorCode PetscLogNestedTreeSetChildrenSortItems(const PetscViewer v
 
     /* Calculate the children's maximum times, to see whether children will be ignored or printed */
     PetscCall(PetscMalloc1(nChildren, &times));
-    for (int i = 0; i < nChildren; i++) { times[i] = (*children)[i].val; }
+    for (int i = 0; i < nChildren; i++) times[i] = (*children)[i].val;
 
     PetscCall(PetscMalloc1(nChildren, &maxTimes));
     PetscCall(MPIU_Allreduce(times, maxTimes, nChildren, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm));
     PetscCall(PetscFree(times));
 
-    for (int i = 0; i < nChildren; i++) { (*children)[i].val = maxTimes[i]; }
+    for (int i = 0; i < nChildren; i++) (*children)[i].val = maxTimes[i];
     PetscCall(PetscFree(maxTimes));
   }
   PetscFunctionReturn(0);
@@ -1074,7 +1074,7 @@ static PetscErrorCode PetscLogNestedTreePrint(PetscViewer viewer, PetscNestedEve
         /* ignored: no output */
       } else if (children[i].id == -1) {
         PetscCall(PetscLogNestedTreePrintLine(viewer, selfPerfInfo, 1, parentCount, depth + 1, "self", totalTime, &childWasPrinted));
-        if (childWasPrinted) { PetscCall(PetscViewerXMLEndSection(viewer, "event")); }
+        if (childWasPrinted) PetscCall(PetscViewerXMLEndSection(viewer, "event"));
       } else if (children[i].id == -2) {
         size_t len;
         char  *otherName;
@@ -1084,7 +1084,7 @@ static PetscErrorCode PetscLogNestedTreePrint(PetscViewer viewer, PetscNestedEve
         PetscCall(PetscSNPrintf(otherName, len + 16, "%s: other-timed", name));
         PetscCall(PetscLogNestedTreePrintLine(viewer, otherPerfInfo, 1, 1, depth + 1, otherName, totalTime, &childWasPrinted));
         PetscCall(PetscFree(otherName));
-        if (childWasPrinted) { PetscCall(PetscViewerXMLEndSection(viewer, "event")); }
+        if (childWasPrinted) PetscCall(PetscViewerXMLEndSection(viewer, "event"));
       } else {
         /* Print the child with a recursive call to this function */
         PetscCall(PetscLogNestedTreePrint(viewer, tree, nTimers, children[i].id, totalTime));
@@ -1094,7 +1094,7 @@ static PetscErrorCode PetscLogNestedTreePrint(PetscViewer viewer, PetscNestedEve
     PetscCall(PetscFree(children));
   }
 
-  if (wasPrinted) { PetscCall(PetscViewerXMLEndSection(viewer, "event")); }
+  if (wasPrinted) PetscCall(PetscViewerXMLEndSection(viewer, "event"));
   PetscFunctionReturn(0);
 }
 
@@ -1168,7 +1168,7 @@ static PetscErrorCode PetscCalcSelfTime(PetscViewer viewer, PetscSelfTimer **p_s
     for (j = 0; j < nParents; j++) maxDefaultTimer = PetscMax(dftEvents[j], maxDefaultTimer);
   }
   PetscCall(PetscMalloc1(maxDefaultTimer + 1, &nstEvents));
-  for (dft = 0; dft < maxDefaultTimer; dft++) { nstEvents[dft] = 0; }
+  for (dft = 0; dft < maxDefaultTimer; dft++) nstEvents[dft] = 0;
   for (i = 0; i < nNestedEvents; i++) {
     int            nParents  = nestedEvents[i].nParents;
     NestedEventId  nstEvent  = nestedEvents[i].nstEvent;
@@ -1210,7 +1210,7 @@ static PetscErrorCode PetscCalcSelfTime(PetscViewer viewer, PetscSelfTimer **p_s
   }
 
   /* Initialize: self-times := totaltimes */
-  for (nst = 0; nst <= nstMax; nst++) { selftimes[nst] = totaltimes[nst]; }
+  for (nst = 0; nst <= nstMax; nst++) selftimes[nst] = totaltimes[nst];
 
   /* Subtract timed subprocesses from self-times */
   for (i = 0; i < nNestedEvents; i++) {
@@ -1257,7 +1257,7 @@ static PetscErrorCode PetscPrintSelfTime(PetscViewer viewer, const PetscSelfTime
 
   PetscCall(PetscMalloc1(nstMax + 1, &times));
   PetscCall(PetscMalloc1(nstMax + 1, &maxTimes));
-  for (nst = 0; nst <= nstMax; nst++) { times[nst] = selftimes[nst].time; }
+  for (nst = 0; nst <= nstMax; nst++) times[nst] = selftimes[nst].time;
   PetscCall(MPIU_Allreduce(times, maxTimes, nstMax + 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm));
   PetscCall(PetscFree(times));
 
@@ -1287,7 +1287,7 @@ static PetscErrorCode PetscPrintSelfTime(PetscViewer viewer, const PetscSelfTime
       selfPerfInfo.numReductions = selftimes[nstEvent].numReductions;
 
       PetscCall(PetscLogNestedTreePrintLine(viewer, selfPerfInfo, dum_count, dum_parentcount, dum_depth, name, totalTime, &wasPrinted));
-      if (wasPrinted) { PetscCall(PetscViewerXMLEndSection(viewer, "event")); }
+      if (wasPrinted) PetscCall(PetscViewerXMLEndSection(viewer, "event"));
     }
   }
   PetscCall(PetscViewerXMLEndSection(viewer, "selftimertable"));
@@ -1397,7 +1397,7 @@ static PetscErrorCode PetscLogNestedTreePrintFlamegraph(PetscViewer viewer, Pets
 
   /* Add the current event to the parent stack and write the child events */
   PetscIntStackPush(eventStack, iStart);
-  for (i = 0; i < nChildren; i++) { PetscCall(PetscLogNestedTreePrintFlamegraph(viewer, tree, nTimers, children[i].id, totalTime, eventStack)); }
+  for (i = 0; i < nChildren; i++) PetscCall(PetscLogNestedTreePrintFlamegraph(viewer, tree, nTimers, children[i].id, totalTime, eventStack));
   /* Pop the top item from the stack and immediately discard it */
   {
     int tmp;
@@ -1436,7 +1436,7 @@ PetscErrorCode PetscLogView_Flamegraph(PetscViewer viewer) {
   /* Initialize the child events and write them recursively */
   PetscCall(PetscLogNestedTreeGetChildrenCount(tree, nTimers, -1, 0, &nChildren));
   PetscCall(PetscLogNestedTreeSetChildrenSortItems(viewer, tree, nTimers, -1, 0, nChildren, &children));
-  for (i = 0; i < nChildren; i++) { PetscCall(PetscLogNestedTreePrintFlamegraph(viewer, tree, nTimers, children[i].id, totalTime, eventStack)); }
+  for (i = 0; i < nChildren; i++) PetscCall(PetscLogNestedTreePrintFlamegraph(viewer, tree, nTimers, children[i].id, totalTime, eventStack));
 
   PetscCall(PetscLogNestedTreeDestroy(tree, nTimers));
   PetscCall(PetscIntStackDestroy(eventStack));

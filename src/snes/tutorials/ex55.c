@@ -105,7 +105,7 @@ static PetscErrorCode FormExactSolution(DM da, AppCtx *user, Vec U) {
   PetscCall(DMDAVecGetArray(coordDA, coordinates, &coords));
   PetscCall(DMDAVecGetArray(da, U, &u));
   for (j = ys; j < ys + ym; ++j) {
-    for (i = xs; i < xs + xm; ++i) { user->mms_solution(user, &coords[j][i], &u[j][i]); }
+    for (i = xs; i < xs + xm; ++i) user->mms_solution(user, &coords[j][i], &u[j][i]);
   }
   PetscCall(DMDAVecRestoreArray(da, U, &u));
   PetscCall(DMDAVecRestoreArray(coordDA, coordinates, &coords));
@@ -467,7 +467,7 @@ static PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx) {
   hydhx  = hy / hx;
 
   PetscCall(DMGetLocalVector(da, &localX));
-  if (B) { PetscCall(DMGetLocalVector(da, &localB)); }
+  if (B) PetscCall(DMGetLocalVector(da, &localB));
   for (l = 0; l < sweeps; l++) {
     PetscCall(DMGlobalToLocalBegin(da, X, INSERT_VALUES, localX));
     PetscCall(DMGlobalToLocalEnd(da, X, INSERT_VALUES, localX));
@@ -517,7 +517,7 @@ static PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx) {
             u -= y;
             tot_its++;
 
-            if (atol > PetscAbsReal(PetscRealPart(F)) || rtol * PetscAbsReal(PetscRealPart(F0)) > PetscAbsReal(PetscRealPart(F)) || stol * PetscAbsReal(PetscRealPart(u)) > PetscAbsReal(PetscRealPart(y))) { break; }
+            if (atol > PetscAbsReal(PetscRealPart(F)) || rtol * PetscAbsReal(PetscRealPart(F0)) > PetscAbsReal(PetscRealPart(F)) || stol * PetscAbsReal(PetscRealPart(u)) > PetscAbsReal(PetscRealPart(y))) break;
           }
           x[j][i] = u;
         }

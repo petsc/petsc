@@ -87,14 +87,14 @@ static PetscErrorCode _DMDADetermineGlobalS0(PetscInt dim, PetscMPIInt rank_re, 
   case 1:
     for (i = 0; i < Mp_re; i++) {
       rank_ijk = i;
-      if (rank_ijk < rank_re) { start_IJK += range_i_re[i]; }
+      if (rank_ijk < rank_re) start_IJK += range_i_re[i];
     }
     break;
   case 2:
     for (j = 0; j < Np_re; j++) {
       for (i = 0; i < Mp_re; i++) {
         rank_ijk = i + j * Mp_re;
-        if (rank_ijk < rank_re) { start_IJK += range_i_re[i] * range_j_re[j]; }
+        if (rank_ijk < rank_re) start_IJK += range_i_re[i] * range_j_re[j];
       }
     }
     break;
@@ -103,7 +103,7 @@ static PetscErrorCode _DMDADetermineGlobalS0(PetscInt dim, PetscMPIInt rank_re, 
       for (j = 0; j < Np_re; j++) {
         for (i = 0; i < Mp_re; i++) {
           rank_ijk = i + j * Mp_re + k * Mp_re * Np_re;
-          if (rank_ijk < rank_re) { start_IJK += range_i_re[i] * range_j_re[j] * range_k_re[k]; }
+          if (rank_ijk < rank_re) start_IJK += range_i_re[i] * range_j_re[j] * range_k_re[k];
         }
       }
     }
@@ -124,7 +124,7 @@ static PetscErrorCode PCTelescopeSetUp_dmda_repart_coors2d(PC_Telescope sred, DM
   PetscFunctionBegin;
   PetscCall(DMGetCoordinates(dm, &coor));
   if (!coor) return (0);
-  if (PCTelescope_isActiveRank(sred)) { PetscCall(DMDASetUniformCoordinates(subdm, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0)); }
+  if (PCTelescope_isActiveRank(sred)) PetscCall(DMDASetUniformCoordinates(subdm, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0));
   /* Get the coordinate vector from the distributed array */
   PetscCall(DMGetCoordinateDM(dm, &cdm));
   PetscCall(DMDACreateNaturalVector(cdm, &coor_natural));
@@ -179,7 +179,7 @@ static PetscErrorCode PCTelescopeSetUp_dmda_repart_coors2d(PC_Telescope sred, DM
     PetscCall(DMGetCoordinates(subdm, &_coors));
     PetscCall(VecGetArrayRead(perm_coors, &LA_perm));
     PetscCall(VecGetArray(_coors, &LA_coors));
-    for (i = 0; i < Ml * Nl * 2; i++) { LA_coors[i] = LA_perm[i]; }
+    for (i = 0; i < Ml * Nl * 2; i++) LA_coors[i] = LA_perm[i];
     PetscCall(VecRestoreArray(_coors, &LA_coors));
     PetscCall(VecRestoreArrayRead(perm_coors, &LA_perm));
   }
@@ -215,7 +215,7 @@ static PetscErrorCode PCTelescopeSetUp_dmda_repart_coors3d(PC_Telescope sred, DM
   PetscCall(DMGetCoordinates(dm, &coor));
   if (!coor) PetscFunctionReturn(0);
 
-  if (PCTelescope_isActiveRank(sred)) { PetscCall(DMDASetUniformCoordinates(subdm, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0)); }
+  if (PCTelescope_isActiveRank(sred)) PetscCall(DMDASetUniformCoordinates(subdm, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0));
 
   /* Get the coordinate vector from the distributed array */
   PetscCall(DMGetCoordinateDM(dm, &cdm));
@@ -275,7 +275,7 @@ static PetscErrorCode PCTelescopeSetUp_dmda_repart_coors3d(PC_Telescope sred, DM
     PetscCall(DMGetCoordinates(subdm, &_coors));
     PetscCall(VecGetArrayRead(perm_coors, &LA_perm));
     PetscCall(VecGetArray(_coors, &LA_coors));
-    for (i = 0; i < Ml * Nl * Pl * 3; i++) { LA_coors[i] = LA_perm[i]; }
+    for (i = 0; i < Ml * Nl * Pl * 3; i++) LA_coors[i] = LA_perm[i];
     PetscCall(VecRestoreArray(_coors, &LA_coors));
     PetscCall(VecRestoreArrayRead(perm_coors, &LA_perm));
   }
@@ -701,7 +701,7 @@ PetscErrorCode PCTelescopeMatCreate_dmda_dmactivefalse(PC pc, PC_Telescope sred,
   if (PCTelescope_isActiveRank(sred)) {
     PetscInt mm;
 
-    if (reuse != MAT_INITIAL_MATRIX) { Bred = *A; }
+    if (reuse != MAT_INITIAL_MATRIX) Bred = *A;
     PetscCall(MatGetSize(Blocal, &mm, NULL));
     /* PetscCall(MatCreateMPIMatConcatenateSeqMat(subcomm,Blocal,PETSC_DECIDE,reuse,&Bred)); */
     PetscCall(MatCreateMPIMatConcatenateSeqMat(subcomm, Blocal, mm, reuse, &Bred));
@@ -762,7 +762,7 @@ PetscErrorCode PCTelescopeSubNullSpaceCreate_dmda_Telescope(PC pc, PC_Telescope 
 
   if (PCTelescope_isActiveRank(sred)) {
     /* create new vectors */
-    if (n) { PetscCall(VecDuplicateVecs(sred->xred, n, &sub_vecs)); }
+    if (n) PetscCall(VecDuplicateVecs(sred->xred, n, &sub_vecs));
   }
 
   /* copy entries */
@@ -784,7 +784,7 @@ PetscErrorCode PCTelescopeSubNullSpaceCreate_dmda_Telescope(PC pc, PC_Telescope 
       if (sub_vecs[k]) {
         PetscCall(VecGetOwnershipRange(sub_vecs[k], &st, &ed));
         PetscCall(VecGetArray(sub_vecs[k], &LA_sub_vec));
-        for (i = 0; i < ed - st; i++) { LA_sub_vec[i] = x_array[i]; }
+        for (i = 0; i < ed - st; i++) LA_sub_vec[i] = x_array[i];
         PetscCall(VecRestoreArray(sub_vecs[k], &LA_sub_vec));
       }
     }
@@ -868,7 +868,7 @@ PetscErrorCode PCApply_Telescope_dmda(PC pc, Vec x, Vec y) {
     PetscCall(VecGetOwnershipRange(xred, &st, &ed));
 
     PetscCall(VecGetArray(xred, &LA_xred));
-    for (i = 0; i < ed - st; i++) { LA_xred[i] = x_array[i]; }
+    for (i = 0; i < ed - st; i++) LA_xred[i] = x_array[i];
     PetscCall(VecRestoreArray(xred, &LA_xred));
   }
   PetscCall(VecRestoreArrayRead(xtmp, &x_array));
@@ -885,7 +885,7 @@ PetscErrorCode PCApply_Telescope_dmda(PC pc, Vec x, Vec y) {
     const PetscScalar *LA_yred;
     PetscCall(VecGetOwnershipRange(yred, &st, &ed));
     PetscCall(VecGetArrayRead(yred, &LA_yred));
-    for (i = 0; i < ed - st; i++) { array[i] = LA_yred[i]; }
+    for (i = 0; i < ed - st; i++) array[i] = LA_yred[i];
     PetscCall(VecRestoreArrayRead(yred, &LA_yred));
   }
   PetscCall(VecRestoreArray(xtmp, &array));
@@ -931,7 +931,7 @@ PetscErrorCode PCApplyRichardson_Telescope_dmda(PC pc, Vec x, Vec y, Vec w, Pets
       PetscScalar *LA_yred;
       PetscCall(VecGetOwnershipRange(yred, &st, &ed));
       PetscCall(VecGetArray(yred, &LA_yred));
-      for (i = 0; i < ed - st; i++) { LA_yred[i] = x_array[i]; }
+      for (i = 0; i < ed - st; i++) LA_yred[i] = x_array[i];
       PetscCall(VecRestoreArray(yred, &LA_yred));
     }
     PetscCall(VecRestoreArrayRead(xtmp, &x_array));
@@ -944,7 +944,7 @@ PetscErrorCode PCApplyRichardson_Telescope_dmda(PC pc, Vec x, Vec y, Vec w, Pets
 
   PetscCall(PCApply_Telescope_dmda(pc, x, y));
 
-  if (PCTelescope_isActiveRank(sred)) { PetscCall(KSPSetInitialGuessNonzero(sred->ksp, default_init_guess_value)); }
+  if (PCTelescope_isActiveRank(sred)) PetscCall(KSPSetInitialGuessNonzero(sred->ksp, default_init_guess_value));
 
   if (!*reason) *reason = PCRICHARDSON_CONVERGED_ITS;
   *outits = 1;

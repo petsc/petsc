@@ -445,11 +445,11 @@ static void PhysicsRiemann_SW_HLL(PetscInt dim, PetscInt Nf, const PetscReal *qp
   sL = PetscMin(u_L - aL, u_R - aR);
   sR = PetscMax(u_L + aL, u_R + aR);
   if (sL > zero) {
-    for (i = 0; i < dim + 1; i++) { flux[i] = fL.vals[i] * Norm2Real(n); }
+    for (i = 0; i < dim + 1; i++) flux[i] = fL.vals[i] * Norm2Real(n);
   } else if (sR < zero) {
-    for (i = 0; i < dim + 1; i++) { flux[i] = fR.vals[i] * Norm2Real(n); }
+    for (i = 0; i < dim + 1; i++) flux[i] = fR.vals[i] * Norm2Real(n);
   } else {
-    for (i = 0; i < dim + 1; i++) { flux[i] = ((sR * fL.vals[i] - sL * fR.vals[i] + sR * sL * (xR[i] - xL[i])) / (sR - sL)) * Norm2Real(n); }
+    for (i = 0; i < dim + 1; i++) flux[i] = ((sR * fL.vals[i] - sL * fR.vals[i] + sR * sL * (xR[i] - xL[i])) / (sR - sL)) * Norm2Real(n);
   }
 }
 
@@ -877,7 +877,7 @@ static PetscErrorCode ErrorIndicator_Simple(PetscInt dim, PetscReal volume, Pets
 
   PetscFunctionBeginUser;
   for (i = 0; i < numComps; i++) {
-    for (j = 0; j < dim; j++) { err += PetscSqr(PetscRealPart(grad[i * dim + j])); }
+    for (j = 0; j < dim; j++) err += PetscSqr(PetscRealPart(grad[i * dim + j]));
   }
   *error = volume * err;
   PetscFunctionReturn(0);
@@ -904,7 +904,7 @@ PetscErrorCode CreatePartitionVec(DM dm, DM *dmCell, Vec *partition) {
   PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)dm), &sectionCell));
   PetscCall(DMPlexGetHeightStratum(*dmCell, 0, &cStart, &cEnd));
   PetscCall(PetscSectionSetChart(sectionCell, cStart, cEnd));
-  for (c = cStart; c < cEnd; ++c) { PetscCall(PetscSectionSetDof(sectionCell, c, 1)); }
+  for (c = cStart; c < cEnd; ++c) PetscCall(PetscSectionSetDof(sectionCell, c, 1));
   PetscCall(PetscSectionSetUp(sectionCell));
   PetscCall(DMSetLocalSection(*dmCell, sectionCell));
   PetscCall(PetscSectionDestroy(&sectionCell));
@@ -1055,7 +1055,7 @@ static PetscErrorCode ModelFunctionalSetFromOptions(Model mod, PetscOptionItems 
   for (link = mod->functionalRegistry; link; link = link->next) {
     for (i = 0; i < mod->numCall; i++) {
       FunctionalLink call = mod->functionalCall[i];
-      if (link->func == call->func && link->ctx == call->ctx) { mod->maxComputed = PetscMax(mod->maxComputed, link->offset); }
+      if (link->func == call->func && link->ctx == call->ctx) mod->maxComputed = PetscMax(mod->maxComputed, link->offset);
     }
   }
   PetscFunctionReturn(0);
@@ -1117,7 +1117,7 @@ static PetscErrorCode MonitorVTK(TS ts, PetscInt stepnum, PetscReal time, Vec X,
   PetscCall(VecGetDM(X, &dm));
   PetscCall(VecNorm(X, NORM_INFINITY, &xnorm));
 
-  if (stepnum >= 0) { stepnum += user->monitorStepOffset; }
+  if (stepnum >= 0) stepnum += user->monitorStepOffset;
   if (stepnum >= 0) { /* No summary for final time */
     Model              mod = user->model;
     Vec                cellgeom;
@@ -1728,7 +1728,7 @@ PetscScalar cvmgp_(PetscScalar *a, PetscScalar *b, PetscScalar *test) {
   /* System generated locals */
   PetscScalar ret_val;
 
-  if (PetscRealPart(*test) > 0.) { goto L10; }
+  if (PetscRealPart(*test) > 0.) goto L10;
   ret_val = *b;
   return ret_val;
 L10:
@@ -1740,7 +1740,7 @@ PetscScalar cvmgm_(PetscScalar *a, PetscScalar *b, PetscScalar *test) {
   /* System generated locals */
   PetscScalar ret_val;
 
-  if (PetscRealPart(*test) < 0.) { goto L10; }
+  if (PetscRealPart(*test) < 0.) goto L10;
   ret_val = *b;
   return ret_val;
 L10:
@@ -2053,7 +2053,7 @@ int godunovflux(const PetscScalar *ul, const PetscScalar *ur, PetscScalar *flux,
     d__3  = bn[2];
     tmp   = PetscSqrtScalar(d__1 * d__1 + d__2 * d__2 + d__3 * d__3);
     i__1  = *ndim;
-    for (k = 1; k <= i__1; ++k) { bn[k - 1] /= tmp; }
+    for (k = 1; k <= i__1; ++k) bn[k - 1] /= tmp;
   } else if (*ndim == 2) {
     tg[0] = -nn[1];
     tg[1] = nn[0];
@@ -2117,7 +2117,7 @@ int godunovflux(const PetscScalar *ul, const PetscScalar *ur, PetscScalar *flux,
   flux[2] = fn * nn[1] + ft * tg[1];
   /*           flux(2)=rhom*unm*(unm)+pm */
   /*           flux(3)=rhom*(unm)*utm */
-  if (*ndim == 3) { flux[3] = rhom * unm * ubm; }
+  if (*ndim == 3) flux[3] = rhom * unm * ubm;
   flux[*ndim + 1] = (rhom * .5 * (unm * unm + utm * utm + ubm * ubm) + gamm / (gamm - 1.) * pm) * unm;
   return iwave;
 } /* godunovflux_ */
@@ -2130,7 +2130,7 @@ int projecteqstate(PetscReal wc[], const PetscReal ueq[], PetscReal lv[][3]) {
   /*      Wc=matmul(lv,Ueq) 3 vars */
   for (k = 0; k < 3; ++k) {
     wc[k] = 0.;
-    for (j = 0; j < 3; ++j) { wc[k] += lv[k][j] * ueq[j]; }
+    for (j = 0; j < 3; ++j) wc[k] += lv[k][j] * ueq[j];
   }
   return 0;
 }
@@ -2140,7 +2140,7 @@ int projecttoprim(PetscReal v[], const PetscReal wc[], PetscReal rv[][3]) {
   /*      V=matmul(rv,WC) 3 vars */
   for (k = 0; k < 3; ++k) {
     v[k] = 0.;
-    for (j = 0; j < 3; ++j) { v[k] += rv[k][j] * wc[j]; }
+    for (j = 0; j < 3; ++j) v[k] += rv[k][j] * wc[j];
   }
   return 0;
 }

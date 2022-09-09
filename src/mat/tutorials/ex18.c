@@ -68,7 +68,7 @@ static PetscErrorCode CreateMatrix(FEStruct *fe, Mat *A) {
   /* for lists of elements with different numbers of degrees of freedom assocated with each element the offsets will not be uniform */
   PetscCall(PetscMalloc1(fe->Ne, &fe->coo));
   fe->coo[0] = 0;
-  for (PetscInt e = 1; e < fe->Ne; e++) { fe->coo[e] = fe->coo[e - 1] + 3 * 3; }
+  for (PetscInt e = 1; e < fe->Ne; e++) fe->coo[e] = fe->coo[e - 1] + 3 * 3;
   PetscFunctionReturn(0);
 }
 
@@ -79,7 +79,7 @@ static PetscErrorCode FillMatrixCPU(FEStruct *fe, Mat A) {
   /* simulation of traditional PETSc CPU based finite assembly process */
   for (PetscInt e = 0; e < fe->Ne; e++) {
     for (PetscInt vi = 0; vi < 3; vi++) {
-      for (PetscInt vj = 0; vj < 3; vj++) { s[3 * vi + vj] = vi + 2 * vj; }
+      for (PetscInt vj = 0; vj < 3; vj++) s[3 * vi + vj] = vi + 2 * vj;
     }
     PetscCall(MatSetValues(A, 3, fe->vertices + 3 * e, 3, fe->vertices + 3 * e, s, ADD_VALUES));
   }
@@ -101,7 +101,7 @@ static PetscErrorCode FillMatrixCPUCOO(FEStruct *fe, Mat A) {
   for (PetscInt e = 0; e < fe->Ne; e++) {
     s = v + fe->coo[e]; /* point to location in COO of current element stiffness */
     for (PetscInt vi = 0; vi < 3; vi++) {
-      for (PetscInt vj = 0; vj < 3; vj++) { s[3 * vi + vj] = vi + 2 * vj; }
+      for (PetscInt vj = 0; vj < 3; vj++) s[3 * vi + vj] = vi + 2 * vj;
     }
   }
   PetscCall(MatSetValuesCOO(A, v, ADD_VALUES));
@@ -121,7 +121,7 @@ static PetscErrorCode FillMatrixCPUCOO3d(FEStruct *fe, Mat A) {
   PetscCall(PetscMalloc1(fe->Ne, &s));
   for (PetscInt e = 0; e < fe->Ne; e++) {
     for (PetscInt vi = 0; vi < 3; vi++) {
-      for (PetscInt vj = 0; vj < 3; vj++) { s[e][vi][vj] = vi + 2 * vj; }
+      for (PetscInt vj = 0; vj < 3; vj++) s[e][vi][vj] = vi + 2 * vj;
     }
   }
   PetscCall(MatSetValuesCOO(A, (PetscScalar *)s, INSERT_VALUES));

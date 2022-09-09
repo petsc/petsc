@@ -163,7 +163,7 @@ int main(int argc, char **argv) {
   PetscCall(TSSetMaxTime(ts, ftime));
   PetscCall(TSSetTimeStep(ts, 0.001));
   PetscCall(TSSetExactFinalTime(ts, TS_EXACTFINALTIME_STEPOVER));
-  if (monitor) { PetscCall(TSMonitorSet(ts, Monitor, &user, NULL)); }
+  if (monitor) PetscCall(TSMonitorSet(ts, Monitor, &user, NULL));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions

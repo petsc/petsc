@@ -76,10 +76,10 @@ static PetscErrorCode DMView_DA_2d(DM da, PetscViewer viewer) {
     if (rank == 0) {
       ymin = 0.0;
       ymax = dd->N - 1;
-      for (xmin = 0; xmin < dd->M; xmin++) { PetscCall(PetscDrawLine(draw, xmin, ymin, xmin, ymax, PETSC_DRAW_BLACK)); }
+      for (xmin = 0; xmin < dd->M; xmin++) PetscCall(PetscDrawLine(draw, xmin, ymin, xmin, ymax, PETSC_DRAW_BLACK));
       xmin = 0.0;
       xmax = dd->M - 1;
-      for (ymin = 0; ymin < dd->N; ymin++) { PetscCall(PetscDrawLine(draw, xmin, ymin, xmax, ymin, PETSC_DRAW_BLACK)); }
+      for (ymin = 0; ymin < dd->N; ymin++) PetscCall(PetscDrawLine(draw, xmin, ymin, xmax, ymin, PETSC_DRAW_BLACK));
     }
     PetscDrawCollectiveEnd(draw);
     PetscCall(PetscDrawFlush(draw));
@@ -261,14 +261,14 @@ PetscErrorCode DMSetUp_DA_2D(DM da) {
   if (!lx) {
     PetscCall(PetscMalloc1(m, &dd->lx));
     lx = dd->lx;
-    for (i = 0; i < m; i++) { lx[i] = M / m + ((M % m) > i); }
+    for (i = 0; i < m; i++) lx[i] = M / m + ((M % m) > i);
   }
   x  = lx[rank % m];
   xs = 0;
-  for (i = 0; i < (rank % m); i++) { xs += lx[i]; }
+  for (i = 0; i < (rank % m); i++) xs += lx[i];
   if (PetscDefined(USE_DEBUG)) {
     left = xs;
-    for (i = (rank % m); i < m; i++) { left += lx[i]; }
+    for (i = (rank % m); i < m; i++) left += lx[i];
     PetscCheck(left == M, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Sum of lx across processors not equal to M: %" PetscInt_FMT " %" PetscInt_FMT, left, M);
   }
 
@@ -279,14 +279,14 @@ PetscErrorCode DMSetUp_DA_2D(DM da) {
   if (!ly) {
     PetscCall(PetscMalloc1(n, &dd->ly));
     ly = dd->ly;
-    for (i = 0; i < n; i++) { ly[i] = N / n + ((N % n) > i); }
+    for (i = 0; i < n; i++) ly[i] = N / n + ((N % n) > i);
   }
   y  = ly[rank / m];
   ys = 0;
-  for (i = 0; i < (rank / m); i++) { ys += ly[i]; }
+  for (i = 0; i < (rank / m); i++) ys += ly[i];
   if (PetscDefined(USE_DEBUG)) {
     left = ys;
-    for (i = (rank / m); i < n; i++) { left += ly[i]; }
+    for (i = (rank / m); i < n; i++) left += ly[i];
     PetscCheck(left == N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Sum of ly across processors not equal to N: %" PetscInt_FMT " %" PetscInt_FMT, left, N);
   }
 
@@ -370,8 +370,8 @@ PetscErrorCode DMSetUp_DA_2D(DM da) {
   PetscCall(PetscMalloc2(size + 1, &bases, size, &ldims));
   PetscCallMPI(MPI_Allgather(&nn, 1, MPIU_INT, ldims, 1, MPIU_INT, comm));
   bases[0] = 0;
-  for (i = 1; i <= size; i++) { bases[i] = ldims[i - 1]; }
-  for (i = 1; i <= size; i++) { bases[i] += bases[i - 1]; }
+  for (i = 1; i <= size; i++) bases[i] = ldims[i - 1];
+  for (i = 1; i <= size; i++) bases[i] += bases[i - 1];
   base = bases[rank] * dof;
 
   /* allocate the base parallel and sequential vectors */
@@ -392,7 +392,7 @@ PetscErrorCode DMSetUp_DA_2D(DM da) {
     up    = down + (IYe - IYs);
     count = 0;
     for (i = down; i < up; i++) {
-      for (j = left; j < right; j++) { idx[count++] = j + i * (Xe - Xs); }
+      for (j = left; j < right; j++) idx[count++] = j + i * (Xe - Xs);
     }
     PetscCall(ISCreateBlock(comm, dof, count, idx, PETSC_OWN_POINTER, &to));
 
@@ -414,15 +414,15 @@ PetscErrorCode DMSetUp_DA_2D(DM da) {
     count = 0;
     /* bottom */
     for (i = (IYs - Ys); i < down; i++) {
-      for (j = left; j < right; j++) { idx[count++] = j + i * (Xe - Xs); }
+      for (j = left; j < right; j++) idx[count++] = j + i * (Xe - Xs);
     }
     /* middle */
     for (i = down; i < up; i++) {
-      for (j = (IXs - Xs); j < (IXe - Xs); j++) { idx[count++] = j + i * (Xe - Xs); }
+      for (j = (IXs - Xs); j < (IXe - Xs); j++) idx[count++] = j + i * (Xe - Xs);
     }
     /* top */
     for (i = up; i < up + IYe - ye; i++) {
-      for (j = left; j < right; j++) { idx[count++] = j + i * (Xe - Xs); }
+      for (j = left; j < right; j++) idx[count++] = j + i * (Xe - Xs);
     }
     PetscCall(ISCreateBlock(comm, dof, count, idx, PETSC_OWN_POINTER, &to));
   }

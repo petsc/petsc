@@ -54,7 +54,7 @@ static PetscErrorCode SNESLineSearchApply_NLEQERR(SNESLineSearch linesearch) {
 
   /* reset the state of the Lipschitz estimates */
   PetscCall(SNESGetIterationNumber(snes, &snes_iteration));
-  if (!snes_iteration) { PetscCall(SNESLineSearchReset_NLEQERR(linesearch)); }
+  if (!snes_iteration) PetscCall(SNESLineSearchReset_NLEQERR(linesearch));
 
   /* precheck */
   PetscCall(SNESLineSearchPreCheck(linesearch, X, Y, &changed_y));
@@ -165,7 +165,7 @@ static PetscErrorCode SNESLineSearchApply_NLEQERR(SNESLineSearch linesearch) {
     /* Solve linear system for bar_delta_x_curr: old Jacobian, new RHS. Note absence of minus sign, compared to Deuflhard, in keeping with PETSc convention */
     PetscCall(KSPSolve(snes->ksp, G, W));
     PetscCall(KSPGetConvergedReason(snes->ksp, &kspreason));
-    if (kspreason < 0) { PetscCall(PetscInfo(snes, "Solution for \\bar{delta x}^{k+1} failed.")); }
+    if (kspreason < 0) PetscCall(PetscInfo(snes, "Solution for \\bar{delta x}^{k+1} failed."));
 
     /* W now contains -bar_delta_x_curr. */
 

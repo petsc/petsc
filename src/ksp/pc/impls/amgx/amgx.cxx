@@ -228,7 +228,7 @@ static PetscErrorCode PCSetUp_AMGX(PC pc) {
       PetscCall(MatMPIAIJGetLocalMat(Pmat, MAT_INITIAL_MATRIX, &amgx->localA));
     }
 
-    if (is_dev_ptrs) { PetscCall(MatConvert(amgx->localA, MATSEQAIJCUSPARSE, MAT_INPLACE_MATRIX, &amgx->localA)); }
+    if (is_dev_ptrs) PetscCall(MatConvert(amgx->localA, MATSEQAIJCUSPARSE, MAT_INPLACE_MATRIX, &amgx->localA));
   } else {
     amgx->localA = Pmat;
   }
@@ -412,7 +412,7 @@ static PetscErrorCode PCDestroy_AMGX(PC pc) {
 template <class T>
 std::string map_reverse_lookup(const std::map<std::string, T> &map, const T &key) {
   for (auto const &m : map) {
-    if (m.second == key) { return m.first; }
+    if (m.second == key) return m.first;
   }
   return "";
 }
@@ -429,7 +429,7 @@ static PetscErrorCode PCSetFromOptions_AMGX(PC pc, PetscOptionItems *PetscOption
 
   // Set exact coarse solve
   PetscCall(PetscOptionsBool("-pc_amgx_exact_coarse_solve", "AmgX AMG Exact Coarse Solve", "", amgx->exact_coarse_solve, &amgx->exact_coarse_solve, NULL));
-  if (amgx->exact_coarse_solve) { amgx->cfg_contents += "exact_coarse_solve=1,"; }
+  if (amgx->exact_coarse_solve) amgx->cfg_contents += "exact_coarse_solve=1,";
 
   amgx->cfg_contents += "solver(amg)=AMG,";
 
@@ -503,7 +503,7 @@ static PetscErrorCode PCSetFromOptions_AMGX(PC pc, PetscOptionItems *PetscOption
 
   // Set aggressive_levels
   PetscCall(PetscOptionsInt("-pc_amgx_aggressive_levels", "AmgX AMG Presweep Count", "", amgx->aggressive_levels, &amgx->aggressive_levels, NULL));
-  if (amgx->aggressive_levels > 0) { amgx->cfg_contents += "amg:aggressive_levels=" + std::to_string(amgx->aggressive_levels) + ","; }
+  if (amgx->aggressive_levels > 0) amgx->cfg_contents += "amg:aggressive_levels=" + std::to_string(amgx->aggressive_levels) + ",";
 
   // Set coarse solver
   std::string def_coarse_solver = map_reverse_lookup(AmgXControlMap::CoarseSolvers, amgx->coarse_solver);
@@ -519,7 +519,7 @@ static PetscErrorCode PCSetFromOptions_AMGX(PC pc, PetscOptionItems *PetscOption
   // Set output control parameters
   PetscCall(PetscOptionsBool("-pc_amgx_print_grid_stats", "AmgX Print Grid Stats", "", amgx->print_grid_stats, &amgx->print_grid_stats, NULL));
 
-  if (amgx->print_grid_stats) { amgx->cfg_contents += "amg:print_grid_stats=1,"; }
+  if (amgx->print_grid_stats) amgx->cfg_contents += "amg:print_grid_stats=1,";
   amgx->cfg_contents += "amg:monitor_residual=0";
 
   // Set whether AmgX output will be seen

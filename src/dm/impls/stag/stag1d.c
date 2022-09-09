@@ -89,9 +89,9 @@ PETSC_INTERN PetscErrorCode DMStagRestrictSimple_1d(DM dmf, Vec xf_local, DM dmc
   PetscCall(DMStagGetLocationSlot(dmc, DMSTAG_LEFT, 0, &slot_left_coarse));
   PetscCall(DMStagGetLocationSlot(dmc, DMSTAG_ELEMENT, 0, &slot_element_coarse));
   for (i = start; i < start + n + nextra; ++i) {
-    for (d = 0; d < dof[0]; ++d) { LA_xc[i][slot_left_coarse + d] = LA_xf[2 * i][slot_left_fine + d]; }
+    for (d = 0; d < dof[0]; ++d) LA_xc[i][slot_left_coarse + d] = LA_xf[2 * i][slot_left_fine + d];
     if (i < N) {
-      for (d = 0; d < dof[1]; ++d) { LA_xc[i][slot_element_coarse + d] = 0.5 * (LA_xf[2 * i][slot_element_fine + d] + LA_xf[2 * i + 1][slot_element_fine + d]); }
+      for (d = 0; d < dof[1]; ++d) LA_xc[i][slot_element_coarse + d] = 0.5 * (LA_xf[2 * i][slot_element_fine + d] + LA_xf[2 * i + 1][slot_element_fine + d]);
     }
   }
   PetscCall(DMStagVecRestoreArray(dmf, xf_local, &LA_xf));
@@ -118,8 +118,8 @@ PETSC_INTERN PetscErrorCode DMStagSetUniformCoordinatesExplicit_1d(DM dm, PetscR
   PetscCall(DMCreateLocalVector(dmCoord, &coordLocal));
 
   PetscCall(DMStagVecGetArray(dmCoord, coordLocal, &arr));
-  if (stagCoord->dof[0]) { PetscCall(DMStagGetLocationSlot(dmCoord, DMSTAG_LEFT, 0, &ileft)); }
-  if (stagCoord->dof[1]) { PetscCall(DMStagGetLocationSlot(dmCoord, DMSTAG_ELEMENT, 0, &ielement)); }
+  if (stagCoord->dof[0]) PetscCall(DMStagGetLocationSlot(dmCoord, DMSTAG_LEFT, 0, &ileft));
+  if (stagCoord->dof[1]) PetscCall(DMStagGetLocationSlot(dmCoord, DMSTAG_ELEMENT, 0, &ielement));
   PetscCall(DMStagGetGhostCorners(dmCoord, &start_ghost, NULL, NULL, &n_ghost, NULL, NULL));
 
   min = xmin;
@@ -360,7 +360,7 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_1d(DM dm) {
       if (stag->firstRank[0]) {
         for (iLocal = 0; iLocal < ghostOffsetStart; ++iLocal) {
           /* Complete elements full of dummy entries */
-          for (d = 0; d < stag->entriesPerElement; ++d, ++countAll) { idxGlobalAll[countAll] = -1; }
+          for (d = 0; d < stag->entriesPerElement; ++d, ++countAll) idxGlobalAll[countAll] = -1;
         }
         i = 0; /* nonDummy entries start with global entry 0 */
       } else {
@@ -396,7 +396,7 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_1d(DM dm) {
         }
         for (iLocal = stag->nGhost[0] - ghostOffsetEnd + 1; iLocal < stag->nGhost[0]; ++iLocal) {
           /* Additional dummy elements */
-          for (d = 0; d < stag->entriesPerElement; ++d, ++countAll) { idxGlobalAll[countAll] = -1; }
+          for (d = 0; d < stag->entriesPerElement; ++d, ++countAll) idxGlobalAll[countAll] = -1;
         }
       }
     } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unsupported x boundary type %s", DMBoundaryTypes[stag->boundaryType[0]]);
@@ -418,7 +418,7 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_1d(DM dm) {
     }
 
     /* In special cases, create a dedicated injective local-to-global map */
-    if (stag->boundaryType[0] == DM_BOUNDARY_PERIODIC && stag->nRanks[0] == 1) { PetscCall(DMStagPopulateLocalToGlobalInjective(dm)); }
+    if (stag->boundaryType[0] == DM_BOUNDARY_PERIODIC && stag->nRanks[0] == 1) PetscCall(DMStagPopulateLocalToGlobalInjective(dm));
 
     /* Destroy ISs */
     PetscCall(ISDestroy(&isLocal));
@@ -521,11 +521,11 @@ PETSC_INTERN PetscErrorCode DMCreateMatrix_Stag_1D_AIJ_Assemble(DM dm, Mat A) {
 
     for (PetscInt e = start; e < start + n + n_extra; ++e) {
       {
-        for (PetscInt c = 0; c < dof[0]; ++c) { row_vertex[c].i = e; }
+        for (PetscInt c = 0; c < dof[0]; ++c) row_vertex[c].i = e;
         PetscCall(DMStagMatSetValuesStencil(dm, A, dof[0], row_vertex, dof[0], row_vertex, NULL, INSERT_VALUES));
       }
       if (e < N) {
-        for (PetscInt c = 0; c < dof[1]; ++c) { row_element[c].i = e; }
+        for (PetscInt c = 0; c < dof[1]; ++c) row_element[c].i = e;
         PetscCall(DMStagMatSetValuesStencil(dm, A, dof[1], row_element, dof[1], row_element, NULL, INSERT_VALUES));
       }
     }
@@ -563,7 +563,7 @@ PETSC_INTERN PetscErrorCode DMCreateMatrix_Stag_1D_AIJ_Assemble(DM dm, Mat A) {
       }
     }
     for (PetscInt e = start; e < start + n + n_extra; ++e) {
-      for (PetscInt i = 0; i < epe; ++i) { row[i].i = e; }
+      for (PetscInt i = 0; i < epe; ++i) row[i].i = e;
       for (PetscInt offset = -stencil_width; offset <= stencil_width; ++offset) {
         const PetscInt e_offset = e + offset;
 
@@ -573,7 +573,7 @@ PETSC_INTERN PetscErrorCode DMCreateMatrix_Stag_1D_AIJ_Assemble(DM dm, Mat A) {
            "extra" element which is partially outside the physical domain (those points in the
            global representation */
         if (boundary_type_x == DM_BOUNDARY_PERIODIC || (e_offset < N + 1 && e_offset >= 0)) {
-          for (PetscInt i = 0; i < epe; ++i) { col[i].i = e_offset; }
+          for (PetscInt i = 0; i < epe; ++i) col[i].i = e_offset;
           PetscCall(DMStagMatSetValuesStencil(dm, A, epe, row, epe, col, NULL, INSERT_VALUES));
         }
       }

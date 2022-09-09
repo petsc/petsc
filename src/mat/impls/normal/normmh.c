@@ -47,7 +47,7 @@ PetscErrorCode MatCreateSubMatrices_NormalHermitian(Mat mat, PetscInt n, const I
 
   PetscFunctionBegin;
   PetscCheck(!a->left && !a->right && irow == icol, PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "Not implemented");
-  if (scall != MAT_REUSE_MATRIX) { PetscCall(PetscCalloc1(n, submat)); }
+  if (scall != MAT_REUSE_MATRIX) PetscCall(PetscCalloc1(n, submat));
   PetscCall(MatGetSize(B, &M, NULL));
   PetscCall(PetscMalloc1(n, &row));
   PetscCall(ISCreateStride(PETSC_COMM_SELF, M, 0, 1, &row[0]));
@@ -114,7 +114,7 @@ PetscErrorCode MatMult_NormalHermitian(Mat N, Vec x, Vec y) {
   PetscFunctionBegin;
   in = x;
   if (Na->right) {
-    if (!Na->rightwork) { PetscCall(VecDuplicate(Na->right, &Na->rightwork)); }
+    if (!Na->rightwork) PetscCall(VecDuplicate(Na->right, &Na->rightwork));
     PetscCall(VecPointwiseMult(Na->rightwork, Na->right, in));
     in = Na->rightwork;
   }
@@ -132,7 +132,7 @@ PetscErrorCode MatMultHermitianAdd_Normal(Mat N, Vec v1, Vec v2, Vec v3) {
   PetscFunctionBegin;
   in = v1;
   if (Na->right) {
-    if (!Na->rightwork) { PetscCall(VecDuplicate(Na->right, &Na->rightwork)); }
+    if (!Na->rightwork) PetscCall(VecDuplicate(Na->right, &Na->rightwork));
     PetscCall(VecPointwiseMult(Na->rightwork, Na->right, in));
     in = Na->rightwork;
   }
@@ -155,7 +155,7 @@ PetscErrorCode MatMultHermitianTranspose_Normal(Mat N, Vec x, Vec y) {
   PetscFunctionBegin;
   in = x;
   if (Na->left) {
-    if (!Na->leftwork) { PetscCall(VecDuplicate(Na->left, &Na->leftwork)); }
+    if (!Na->leftwork) PetscCall(VecDuplicate(Na->left, &Na->leftwork));
     PetscCall(VecPointwiseMult(Na->leftwork, Na->left, in));
     in = Na->leftwork;
   }
@@ -173,7 +173,7 @@ PetscErrorCode MatMultHermitianTransposeAdd_Normal(Mat N, Vec v1, Vec v2, Vec v3
   PetscFunctionBegin;
   in = v1;
   if (Na->left) {
-    if (!Na->leftwork) { PetscCall(VecDuplicate(Na->left, &Na->leftwork)); }
+    if (!Na->leftwork) PetscCall(VecDuplicate(Na->left, &Na->leftwork));
     PetscCall(VecPointwiseMult(Na->leftwork, Na->left, in));
     in = Na->leftwork;
   }
@@ -224,7 +224,7 @@ PetscErrorCode MatGetDiagonal_NormalHermitian(Mat N, Vec v) {
   PetscCall(MatGetOwnershipRange(A, &rstart, &rend));
   for (i = rstart; i < rend; i++) {
     PetscCall(MatGetRow(A, i, &nnz, &cols, &mvalues));
-    for (j = 0; j < nnz; j++) { work[cols[j]] += mvalues[j] * PetscConj(mvalues[j]); }
+    for (j = 0; j < nnz; j++) work[cols[j]] += mvalues[j] * PetscConj(mvalues[j]);
     PetscCall(MatRestoreRow(A, i, &nnz, &cols, &mvalues));
   }
   PetscCall(MPIU_Allreduce(work, diag, A->cmap->N, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)N)));
@@ -258,20 +258,19 @@ PetscErrorCode MatNormalGetMat_NormalHermitian(Mat A, Mat *M) {
 }
 
 /*@
-      MatNormalHermitianGetMat - Gets the Mat object stored inside a MATNORMALHERMITIAN
+      MatNormalHermitianGetMat - Gets the `Mat` object stored inside a `MATNORMALHERMITIAN`
 
-   Logically collective on Mat
+   Logically collective on A
 
    Input Parameter:
-.   A  - the MATNORMALHERMITIAN matrix
+.   A  - the `MATNORMALHERMITIAN` matrix
 
    Output Parameter:
 .   M - the matrix object stored inside A
 
    Level: intermediate
 
-.seealso: `MatCreateNormalHermitian()`
-
+.seealso: `MATNORMALHERMITIAN`, `MatCreateNormalHermitian()`
 @*/
 PetscErrorCode MatNormalHermitianGetMat(Mat A, Mat *M) {
   PetscFunctionBegin;
@@ -315,9 +314,9 @@ PetscErrorCode MatConvert_NormalHermitian_AIJ(Mat A, MatType newtype, MatReuse r
 }
 
 /*@
-      MatCreateNormalHermitian - Creates a new matrix object that behaves like (A*)'*A.
+      MatCreateNormalHermitian - Creates a new matrix object `MATNORMALHERMITIAN` that behaves like (A*)'*A.
 
-   Collective on Mat
+   Collective on A
 
    Input Parameter:
 .   A  - the (possibly rectangular complex) matrix
@@ -327,10 +326,12 @@ PetscErrorCode MatConvert_NormalHermitian_AIJ(Mat A, MatType newtype, MatReuse r
 
    Level: intermediate
 
-   Notes:
+   Note:
     The product (A*)'*A is NOT actually formed! Rather the new matrix
-          object performs the matrix-vector product by first multiplying by
+          object performs the matrix-vector product, `MatMult()`, by first multiplying by
           A and then (A*)'
+
+.seealso: `MATNORMAL`, `MATNORMALHERMITIAN`, `MatNormalHermitianGetMat()`
 @*/
 PetscErrorCode MatCreateNormalHermitian(Mat A, Mat *N) {
   PetscInt    m, n;

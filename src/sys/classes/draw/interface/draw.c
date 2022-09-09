@@ -9,12 +9,12 @@ PetscClassId PETSC_DRAW_CLASSID;
 
 static PetscBool PetscDrawPackageInitialized = PETSC_FALSE;
 /*@C
-  PetscDrawFinalizePackage - This function destroys everything in the Petsc interface to the Draw package. It is
-  called from PetscFinalize().
+  PetscDrawFinalizePackage - This function destroys everything in the Petsc interface to the `PetscDraw` package. It is
+  called from `PetscFinalize()`.
 
   Level: developer
 
-.seealso: `PetscFinalize()`
+.seealso: `PetscDraw`, `PetscFinalize()`
 @*/
 PetscErrorCode   PetscDrawFinalizePackage(void) {
     PetscFunctionBegin;
@@ -25,13 +25,13 @@ PetscErrorCode   PetscDrawFinalizePackage(void) {
 }
 
 /*@C
-  PetscInitializeDrawPackage - This function initializes everything in the PetscDraw package. It is called
-  from PetscDLLibraryRegister_petsc() when using dynamic libraries, and on the call to PetscInitialize()
+  PetscInitializeDrawPackage - This function initializes everything in the `PetscDraw` package. It is called
+  from PetscDLLibraryRegister_petsc() when using dynamic libraries, and on the call to `PetscInitialize()`
   when using shared or static libraries.
 
   Level: developer
 
-.seealso: `PetscInitialize()`
+.seealso: `PetscDraw`, `PetscInitialize()`
 @*/
 PetscErrorCode PetscDrawInitializePackage(void) {
   char      logList[256];
@@ -82,7 +82,7 @@ PetscErrorCode PetscDrawInitializePackage(void) {
 /*@
    PetscDrawResizeWindow - Allows one to resize a window from a program.
 
-   Collective on PetscDraw
+   Collective on draw
 
    Input Parameters:
 +  draw - the window
@@ -90,7 +90,7 @@ PetscErrorCode PetscDrawInitializePackage(void) {
 
    Level: intermediate
 
-.seealso: `PetscDrawCheckResizedWindow()`
+.seealso: `PetscDraw`, `PetscDrawCheckResizedWindow()`
 @*/
 PetscErrorCode PetscDrawResizeWindow(PetscDraw draw, int w, int h) {
   PetscFunctionBegin;
@@ -114,7 +114,7 @@ PetscErrorCode PetscDrawResizeWindow(PetscDraw draw, int w, int h) {
 
    Level: intermediate
 
-.seealso: `PetscDrawResizeWindow()`, `PetscDrawCheckResizedWindow()`
+.seealso: `PetscDraw`, `PetscDrawResizeWindow()`, `PetscDrawCheckResizedWindow()`
 @*/
 PetscErrorCode PetscDrawGetWindowSize(PetscDraw draw, int *w, int *h) {
   PetscFunctionBegin;
@@ -129,15 +129,14 @@ PetscErrorCode PetscDrawGetWindowSize(PetscDraw draw, int *w, int *h) {
 /*@
    PetscDrawCheckResizedWindow - Checks if the user has resized the window.
 
-   Collective on PetscDraw
+   Collective on draw
 
    Input Parameter:
 .  draw - the window
 
    Level: advanced
 
-.seealso: `PetscDrawResizeWindow()`
-
+.seealso: `PetscDraw`, `PetscDrawResizeWindow()`
 @*/
 PetscErrorCode PetscDrawCheckResizedWindow(PetscDraw draw) {
   PetscFunctionBegin;
@@ -147,7 +146,7 @@ PetscErrorCode PetscDrawCheckResizedWindow(PetscDraw draw) {
 }
 
 /*@C
-   PetscDrawGetTitle - Gets pointer to title of a PetscDraw context.
+   PetscDrawGetTitle - Gets pointer to title of a `PetscDraw` context.
 
    Not collective
 
@@ -159,7 +158,7 @@ PetscErrorCode PetscDrawCheckResizedWindow(PetscDraw draw) {
 
    Level: intermediate
 
-.seealso: `PetscDrawSetTitle()`
+.seealso: `PetscDraw`, `PetscDrawSetTitle()`
 @*/
 PetscErrorCode PetscDrawGetTitle(PetscDraw draw, const char *title[]) {
   PetscFunctionBegin;
@@ -170,9 +169,9 @@ PetscErrorCode PetscDrawGetTitle(PetscDraw draw, const char *title[]) {
 }
 
 /*@C
-   PetscDrawSetTitle - Sets the title of a PetscDraw context.
+   PetscDrawSetTitle - Sets the title of a `PetscDraw` context.
 
-   Collective on PetscDraw
+   Collective on draw
 
    Input Parameters:
 +  draw - the graphics context
@@ -180,15 +179,16 @@ PetscErrorCode PetscDrawGetTitle(PetscDraw draw, const char *title[]) {
 
    Level: intermediate
 
-   Note: The title is positioned in the windowing system title bar for the window. Hence it will not be saved with -draw_save
+   Notes:
+   The title is positioned in the windowing system title bar for the window. Hence it will not be saved with -draw_save
    in the image.
 
    A copy of the string is made, so you may destroy the
    title string after calling this routine.
 
-   You can use PetscDrawAxisSetLabels() to indicate a title within the window
+   You can use `PetscDrawAxisSetLabels()` to indicate a title within the window
 
-.seealso: `PetscDrawGetTitle()`, `PetscDrawAppendTitle()`
+.seealso: `PetscDraw`, `PetscDrawGetTitle()`, `PetscDrawAppendTitle()`
 @*/
 PetscErrorCode PetscDrawSetTitle(PetscDraw draw, const char title[]) {
   PetscFunctionBegin;
@@ -201,9 +201,9 @@ PetscErrorCode PetscDrawSetTitle(PetscDraw draw, const char title[]) {
 }
 
 /*@C
-   PetscDrawAppendTitle - Appends to the title of a PetscDraw context.
+   PetscDrawAppendTitle - Appends to the title of a `PetscDraw` context.
 
-   Collective on PetscDraw
+   Collective on draw
 
    Input Parameters:
 +  draw - the graphics context
@@ -215,7 +215,7 @@ PetscErrorCode PetscDrawSetTitle(PetscDraw draw, const char title[]) {
 
    Level: advanced
 
-.seealso: `PetscDrawSetTitle()`, `PetscDrawGetTitle()`
+.seealso: `PetscDraw`, `PetscDrawSetTitle()`, `PetscDrawGetTitle()`
 @*/
 PetscErrorCode PetscDrawAppendTitle(PetscDraw draw, const char title[]) {
   PetscFunctionBegin;
@@ -256,15 +256,14 @@ static PetscErrorCode PetscDrawDestroy_Private(PetscDraw draw) {
 /*@
    PetscDrawDestroy - Deletes a draw context.
 
-   Collective on PetscDraw
+   Collective on draw
 
    Input Parameters:
 .  draw - the drawing context
 
    Level: beginner
 
-.seealso: `PetscDrawCreate()`
-
+.seealso: `PetscDraw`, `PetscDrawCreate()`
 @*/
 PetscErrorCode PetscDrawDestroy(PetscDraw *draw) {
   PetscFunctionBegin;
@@ -282,7 +281,7 @@ PetscErrorCode PetscDrawDestroy(PetscDraw *draw) {
 
   PetscCall(PetscDrawDestroy_Private(*draw));
 
-  if ((*draw)->ops->destroy) { PetscCall((*(*draw)->ops->destroy)(*draw)); }
+  if ((*draw)->ops->destroy) PetscCall((*(*draw)->ops->destroy)(*draw));
   PetscCall(PetscDrawDestroy(&(*draw)->popup));
   PetscCall(PetscFree((*draw)->title));
   PetscCall(PetscFree((*draw)->display));
@@ -295,9 +294,9 @@ PetscErrorCode PetscDrawDestroy(PetscDraw *draw) {
 }
 
 /*@
-   PetscDrawGetPopup - Creates a popup window associated with a PetscDraw window.
+   PetscDrawGetPopup - Creates a popup window associated with a `PetscDraw` window.
 
-   Collective on PetscDraw
+   Collective on draw
 
    Input Parameter:
 .  draw - the original window
@@ -307,8 +306,7 @@ PetscErrorCode PetscDrawDestroy(PetscDraw *draw) {
 
    Level: advanced
 
-.seealso: `PetscDrawScalePopup()`, `PetscDrawCreate()`
-
+.seealso: `PetscDraw`, `PetscDrawScalePopup()`, `PetscDrawCreate()`
 @*/
 PetscErrorCode PetscDrawGetPopup(PetscDraw draw, PetscDraw *popup) {
   PetscFunctionBegin;
@@ -328,7 +326,7 @@ PetscErrorCode PetscDrawGetPopup(PetscDraw draw, PetscDraw *popup) {
 }
 
 /*@C
-  PetscDrawSetDisplay - Sets the display where a PetscDraw object will be displayed
+  PetscDrawSetDisplay - Sets the display where a `PetscDraw` object will be displayed
 
   Input Parameters:
 + draw - the drawing context
@@ -336,8 +334,7 @@ PetscErrorCode PetscDrawGetPopup(PetscDraw draw, PetscDraw *popup) {
 
   Level: advanced
 
-.seealso: `PetscDrawCreate()`
-
+.seealso: `PetscDraw`, `PetscDrawOpenX()`, `PetscDrawCreate()`
 @*/
 PetscErrorCode PetscDrawSetDisplay(PetscDraw draw, const char display[]) {
   PetscFunctionBegin;
@@ -349,13 +346,14 @@ PetscErrorCode PetscDrawSetDisplay(PetscDraw draw, const char display[]) {
 /*@
    PetscDrawSetDoubleBuffer - Sets a window to be double buffered.
 
-   Logically Collective on PetscDraw
+   Logically Collective on draw
 
    Input Parameter:
 .  draw - the drawing context
 
    Level: intermediate
 
+.seealso: `PetscDraw`, `PetscDrawOpenX()`, `PetscDrawCreate()`
 @*/
 PetscErrorCode PetscDrawSetDoubleBuffer(PetscDraw draw) {
   PetscFunctionBegin;
@@ -365,10 +363,10 @@ PetscErrorCode PetscDrawSetDoubleBuffer(PetscDraw draw) {
 }
 
 /*@C
-   PetscDrawGetSingleton - Gain access to a PetscDraw object as if it were owned
+   PetscDrawGetSingleton - Gain access to a `PetscDraw` object as if it were owned
         by the one process.
 
-   Collective on PetscDraw
+   Collective on draw
 
    Input Parameter:
 .  draw - the original window
@@ -378,8 +376,7 @@ PetscErrorCode PetscDrawSetDoubleBuffer(PetscDraw draw) {
 
    Level: advanced
 
-.seealso: `PetscDrawRestoreSingleton()`, `PetscViewerGetSingleton()`, `PetscViewerRestoreSingleton()`
-
+.seealso: `PetscDraw`, `PetscDrawRestoreSingleton()`, `PetscViewerGetSingleton()`, `PetscViewerRestoreSingleton()`
 @*/
 PetscErrorCode PetscDrawGetSingleton(PetscDraw draw, PetscDraw *sdraw) {
   PetscMPIInt size;
@@ -401,10 +398,10 @@ PetscErrorCode PetscDrawGetSingleton(PetscDraw draw, PetscDraw *sdraw) {
 }
 
 /*@C
-   PetscDrawRestoreSingleton - Remove access to a PetscDraw object as if it were owned
+   PetscDrawRestoreSingleton - Remove access to a `PetscDraw` object obtained with `PetscDrawGetSingleton()`
         by the one process.
 
-   Collective on PetscDraw
+   Collective on draw
 
    Input Parameters:
 +  draw - the original window
@@ -412,8 +409,7 @@ PetscErrorCode PetscDrawGetSingleton(PetscDraw draw, PetscDraw *sdraw) {
 
    Level: advanced
 
-.seealso: `PetscDrawGetSingleton()`, `PetscViewerGetSingleton()`, `PetscViewerRestoreSingleton()`
-
+.seealso: `PetscDraw`, `PetscDrawGetSingleton()`, `PetscViewerGetSingleton()`, `PetscViewerRestoreSingleton()`
 @*/
 PetscErrorCode PetscDrawRestoreSingleton(PetscDraw draw, PetscDraw *sdraw) {
   PetscMPIInt size;

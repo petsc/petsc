@@ -96,7 +96,7 @@ int main(int argc, char **args) {
   /* Check error */
   PetscCall(MatMult(C, u, b));
   PetscCall(VecNorm(b, NORM_2, &norm));
-  if (norm > PETSC_SQRT_MACHINE_EPSILON) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Norm of error b %g should be near 0\n", (double)norm)); }
+  if (norm > PETSC_SQRT_MACHINE_EPSILON) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Norm of error b %g should be near 0\n", (double)norm));
 
   /* Now test MatGetValues() */
   PetscCall(PetscOptionsHasName(NULL, NULL, "-get_values", &flg));

@@ -33,7 +33,8 @@ static PetscErrorCode PetscFortranCallbackFinalize(void) {
 }
 
 /*@C
-   PetscFortranCallbackRegister - register a type+subtype callback
+   PetscFortranCallbackRegister - register a type+subtype callback. This is used by the PETSc Fortran interface to allow the use of user Fortran functions as arguments
+   to PETSc functions that take function pointers
 
    Not Collective
 

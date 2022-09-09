@@ -18,30 +18,31 @@
 */
 const char *const        PetscInfoCommFlags[]   = {"all", "no_self", "only_self", "PetscInfoCommFlag", "PETSC_INFO_COMM_", NULL};
 static PetscBool         PetscInfoClassesLocked = PETSC_FALSE, PetscInfoInvertClasses = PETSC_FALSE, PetscInfoClassesSet = PETSC_FALSE;
-static char            **PetscInfoClassnames = NULL;
-static char             *PetscInfoFilename   = NULL;
-static PetscInt          PetscInfoNumClasses = -1;
-static PetscInfoCommFlag PetscInfoCommFilter = PETSC_INFO_COMM_ALL;
-static int               PetscInfoFlags[]    = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                                                1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                                                1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
-PetscBool                PetscLogPrintInfo   = PETSC_FALSE;
-FILE                    *PetscInfoFile       = NULL;
+static char            **PetscInfoClassnames                                       = NULL;
+static char             *PetscInfoFilename                                         = NULL;
+static PetscInt          PetscInfoNumClasses                                       = -1;
+static PetscInfoCommFlag PetscInfoCommFilter                                       = PETSC_INFO_COMM_ALL;
+static int               PetscInfoFlags[]                                          = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                                                                                      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                                                                                      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+static char             *PetscInfoNames[PETSC_STATIC_ARRAY_LENGTH(PetscInfoFlags)] = {NULL};
+PetscBool                PetscLogPrintInfo                                         = PETSC_FALSE;
+FILE                    *PetscInfoFile                                             = NULL;
 
 /*@
-    PetscInfoEnabled - Checks whether a given OBJECT_CLASSID is allowed to print using PetscInfo()
+    PetscInfoEnabled - Checks whether a given OBJECT_CLASSID is allowed to print using `PetscInfo()`
 
     Not Collective
 
     Input Parameters:
-.   classid - PetscClassid retrieved from a PetscObject e.g. VEC_CLASSID
+.   classid - `PetscClassid` retrieved from a `PetscObject` e.g. `VEC_CLASSID`
 
     Output Parameter:
-.   enabled - PetscBool indicating whether this classid is allowed to print
+.   enabled - `PetscBool` indicating whether this classid is allowed to print
 
-    Notes:
-    Use PETSC_SMALLEST_CLASSID to check if "sys" PetscInfo() calls are enabled. When PETSc is configured with debugging
-    support this function checks if classid >= PETSC_SMALLEST_CLASSID, otherwise it assumes valid classid.
+    Note:
+    Use `PETSC_SMALLEST_CLASSID` to check if "sys" `PetscInfo()` calls are enabled. When PETSc is configured with debugging
+    support this function checks if classid >= `PETSC_SMALLEST_CLASSID`, otherwise it assumes valid classid.
 
     Level: advanced
 
@@ -49,18 +50,19 @@ FILE                    *PetscInfoFile       = NULL;
 @*/
 PetscErrorCode PetscInfoEnabled(PetscClassId classid, PetscBool *enabled) {
   PetscFunctionBegin;
+  PetscValidBoolPointer(enabled, 2);
   PetscCheck(classid >= PETSC_SMALLEST_CLASSID, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Classid (current: %d) must be equal to or greater than PETSC_SMALLEST_CLASSID", classid);
   *enabled = (PetscBool)(PetscLogPrintInfo && PetscInfoFlags[classid - PETSC_SMALLEST_CLASSID]);
   PetscFunctionReturn(0);
 }
 
 /*@
-    PetscInfoAllow - Enables/disables PetscInfo() messages
+    PetscInfoAllow - Enables/disables `PetscInfo()` messages
 
     Not Collective
 
     Input Parameter:
-.   flag - PETSC_TRUE or PETSC_FALSE
+.   flag - `PETSC_TRUE` or `PETSC_FALSE`
 
     Level: advanced
 
@@ -73,49 +75,54 @@ PetscErrorCode PetscInfoAllow(PetscBool flag) {
 }
 
 /*@C
-    PetscInfoSetFile - Sets the printing destination for all PetscInfo() calls
+    PetscInfoSetFile - Sets the printing destination for all `PetscInfo()` calls
 
     Not Collective
 
     Input Parameters:
-+   filename - Name of the file where PetscInfo() will print to
--   mode - Write mode passed to PetscFOpen()
++   filename - Name of the file where `PetscInfo()` will print to
+-   mode - Write mode passed to PetscFOpen()`
 
-    Notes:
-    Use filename=NULL to set PetscInfo() to write to PETSC_STDOUT.
+    Note:
+    Use filename = NULL to set `PetscInfo()` to write to `PETSC_STDOUT`.
 
     Level: advanced
 
 .seealso: `PetscInfo()`, `PetscInfoSetFile()`, `PetscInfoSetFromOptions()`, `PetscFOpen()`
 @*/
 PetscErrorCode PetscInfoSetFile(const char filename[], const char mode[]) {
-  char        fname[PETSC_MAX_PATH_LEN], tname[11];
-  PetscMPIInt rank;
-
   PetscFunctionBegin;
   if (!PetscInfoFile) PetscInfoFile = PETSC_STDOUT;
   PetscCall(PetscFree(PetscInfoFilename));
   if (filename) {
-    PetscBool oldflag;
+    PetscMPIInt rank;
+    char        fname[PETSC_MAX_PATH_LEN], tname[11];
+
     PetscValidCharPointer(filename, 1);
+    PetscValidCharPointer(mode, 2);
     PetscCall(PetscFixFilename(filename, fname));
     PetscCall(PetscStrallocpy(fname, &PetscInfoFilename));
-    PetscCallMPI(MPI_Comm_rank(MPI_COMM_WORLD, &rank));
-    sprintf(tname, ".%d", rank);
-    PetscCall(PetscStrcat(fname, tname));
-    oldflag           = PetscLogPrintInfo;
-    PetscLogPrintInfo = PETSC_FALSE;
-    PetscCall(PetscFOpen(MPI_COMM_SELF, fname, mode, &PetscInfoFile));
-    PetscLogPrintInfo = oldflag;
-    /* PetscFOpen will write to PETSC_STDOUT and not PetscInfoFile here, so we disable the PetscInfo call inside it, and
-     call it afterwards so that it actually writes to file */
+    PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
+    PetscCall(PetscSNPrintf(tname, PETSC_STATIC_ARRAY_LENGTH(tname), ".%d", rank));
+    PetscCall(PetscStrlcat(fname, tname, PETSC_STATIC_ARRAY_LENGTH(fname)));
+    {
+      const PetscBool oldflag = PetscLogPrintInfo;
+
+      PetscLogPrintInfo = PETSC_FALSE;
+      PetscCall(PetscFOpen(PETSC_COMM_SELF, fname, mode, &PetscInfoFile));
+      PetscLogPrintInfo = oldflag;
+      /*
+        PetscFOpen will write to PETSC_STDOUT and not PetscInfoFile here, so we disable the
+        PetscInfo call inside it, and call it afterwards so that it actually writes to file
+      */
+    }
     PetscCall(PetscInfo(NULL, "Opened PetscInfo file %s\n", fname));
   }
   PetscFunctionReturn(0);
 }
 
 /*@C
-    PetscInfoGetFile - Gets the name and FILE pointer of the file where PetscInfo() prints to
+    PetscInfoGetFile - Gets the name and FILE pointer of the file where `PetscInfo()` prints to
 
     Not Collective
 
@@ -126,7 +133,7 @@ PetscErrorCode PetscInfoSetFile(const char filename[], const char mode[]) {
     Level: advanced
 
     Note:
-    This routine allocates and copies the filename so that the filename survives PetscInfoDestroy(). The user is
+    This routine allocates and copies the filename so that the filename survives `PetscInfoDestroy()`. The user is
     therefore responsible for freeing the allocated filename pointer afterwards.
 
     Fortran Note:
@@ -144,50 +151,52 @@ PetscErrorCode PetscInfoGetFile(char **filename, FILE **InfoFile) {
 }
 
 /*@C
-    PetscInfoSetClasses - Sets the classes which PetscInfo() is filtered for/against
+    PetscInfoSetClasses - Sets the classes which `PetscInfo()` is filtered for/against
 
     Not Collective
 
     Input Parameters:
-+   exclude - Whether or not to invert the filter, i.e. if exclude is true, PetscInfo() will print from every class that
++   exclude - Whether or not to invert the filter, i.e. if exclude is true, `PetscInfo()` will print from every class that
     is NOT one of the classes specified
-.   N - Number of classes to filter for (size of classnames)
+.   n - Number of classes to filter for (size of classnames)
 -   classnames - String array containing the names of classes to filter for, e.g. "vec"
 
     Notes:
-    Not for use in Fortran
+    This function CANNOT be called after `PetscInfoGetClass()` or `PetscInfoProcessClass()` has been called.
 
-    This function CANNOT be called after PetscInfoGetClass() or PetscInfoProcessClass() has been called.
-
-    Names in the classnames list should correspond to the names returned by PetscObjectGetClassName().
+    Names in the classnames list should correspond to the names returned by `PetscObjectGetClassName()`.
 
     This function only sets the list of class names.
-    The actual filtering is deferred to PetscInfoProcessClass(), except of sys which is processed right away.
+    The actual filtering is deferred to `PetscInfoProcessClass()`, except of sys which is processed right away.
     The reason for this is that we need to set the list of included/excluded classes before their classids are known.
-    Typically the classid is assigned and PetscInfoProcessClass() called in <Class>InitializePackage() (e.g. VecInitializePackage()).
+    Typically the classid is assigned and `PetscInfoProcessClass()` called in <Class>InitializePackage() (e.g. `VecInitializePackage()`).
+
+    Fortran Note:
+    Not for use in Fortran
 
     Level: developer
 
 .seealso: `PetscInfo()`, `PetscInfoGetClass()`, `PetscInfoProcessClass()`, `PetscInfoSetFromOptions()`, `PetscStrToArray()`, `PetscObjectGetName()`
 @*/
-PetscErrorCode PetscInfoSetClasses(PetscBool exclude, PetscInt N, const char *const *classnames) {
+PetscErrorCode PetscInfoSetClasses(PetscBool exclude, PetscInt n, const char *const *classnames) {
   PetscFunctionBegin;
   PetscCheck(!PetscInfoClassesLocked, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "PetscInfoSetClasses() cannot be called after PetscInfoGetClass() or PetscInfoProcessClass()");
   PetscCall(PetscStrNArrayDestroy(PetscInfoNumClasses, &PetscInfoClassnames));
-  PetscCall(PetscStrNArrayallocpy(N, classnames, &PetscInfoClassnames));
-  PetscInfoNumClasses    = N;
+  PetscCall(PetscStrNArrayallocpy(n, classnames, &PetscInfoClassnames));
+  PetscInfoNumClasses    = n;
   PetscInfoInvertClasses = exclude;
+  /* Process sys class right away */
   {
-    /* Process sys class right away */
-    PetscClassId sysclassid = PETSC_SMALLEST_CLASSID;
-    PetscCall(PetscInfoProcessClass("sys", 1, &sysclassid));
+    const PetscClassId id = PETSC_SMALLEST_CLASSID;
+
+    PetscCall(PetscInfoProcessClass("sys", 1, &id));
   }
   PetscInfoClassesSet = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
 /*@C
-    PetscInfoGetClass - Indicates whether the provided classname is marked as a filter in PetscInfo() as set by PetscInfoSetClasses()
+    PetscInfoGetClass - Indicates whether the provided classname is marked as a filter in `PetscInfo()` as set by `PetscInfoSetClasses()`
 
     Not Collective
 
@@ -195,40 +204,41 @@ PetscErrorCode PetscInfoSetClasses(PetscBool exclude, PetscInt N, const char *co
 .   classname - Name of the class to search for
 
     Output Parameter:
-.   found - PetscBool indicating whether the classname was found
+.   found - `PetscBool` indicating whether the classname was found
 
-    Notes:
-    Use PetscObjectGetName() to retrieve an appropriate classname
+    Note:
+    Use `PetscObjectGetName()` to retrieve an appropriate classname
 
     Level: developer
 
 .seealso: `PetscInfo()`, `PetscInfoSetClasses()`, `PetscInfoSetFromOptions()`, `PetscObjectGetName()`
 @*/
 PetscErrorCode PetscInfoGetClass(const char *classname, PetscBool *found) {
-  PetscInt idx;
+  PetscInt unused;
 
   PetscFunctionBegin;
   PetscValidCharPointer(classname, 1);
-  PetscCall(PetscEListFind(PetscInfoNumClasses, (const char *const *)PetscInfoClassnames, classname ? classname : "sys", &idx, found));
+  PetscValidBoolPointer(found, 2);
+  PetscCall(PetscEListFind(PetscInfoNumClasses, (const char *const *)PetscInfoClassnames, classname ? classname : "sys", &unused, found));
   PetscInfoClassesLocked = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
 /*@
-    PetscInfoGetInfo - Returns the current state of several important flags for PetscInfo()
+    PetscInfoGetInfo - Returns the current state of several important flags for `PetscInfo()`
 
     Not Collective
 
     Output Parameters:
-+   infoEnabled - PETSC_TRUE if PetscInfoAllow(PETSC_TRUE) has been called
-.   classesSet - PETSC_TRUE if the list of classes to filter for has been set
-.   exclude - PETSC_TRUE if the class filtering for PetscInfo() is inverted
-.   locked - PETSC_TRUE if the list of classes to filter for has been locked
--   commSelfFlag - Enum indicating whether PetscInfo() will print for communicators of size 1, any size != 1, or all
++   infoEnabled - `PETSC_TRUE` if `PetscInfoAllow`(`PETSC_TRUE`) has been called
+.   classesSet - `PETSC_TRUE` if the list of classes to filter for has been set
+.   exclude - `PETSC_TRUE` if the class filtering for `PetscInfo()` is inverted
+.   locked - `PETSC_TRUE` if the list of classes to filter for has been locked
+-   commSelfFlag - Enum indicating whether `PetscInfo()` will print for communicators of size 1, any size != 1, or all
     communicators
 
-    Notes:
-    Initially commSelfFlag = PETSC_INFO_COMM_ALL
+    Note:
+    Initially commSelfFlag = `PETSC_INFO_COMM_ALL`
 
     Level: developer
 
@@ -236,6 +246,11 @@ PetscErrorCode PetscInfoGetClass(const char *classname, PetscBool *found) {
 @*/
 PetscErrorCode PetscInfoGetInfo(PetscBool *infoEnabled, PetscBool *classesSet, PetscBool *exclude, PetscBool *locked, PetscInfoCommFlag *commSelfFlag) {
   PetscFunctionBegin;
+  if (infoEnabled) PetscValidBoolPointer(infoEnabled, 1);
+  if (classesSet) PetscValidBoolPointer(classesSet, 2);
+  if (exclude) PetscValidBoolPointer(exclude, 3);
+  if (locked) PetscValidBoolPointer(locked, 4);
+  if (commSelfFlag) PetscValidPointer(commSelfFlag, 5);
   if (infoEnabled) *infoEnabled = PetscLogPrintInfo;
   if (classesSet) *classesSet = PetscInfoClassesSet;
   if (exclude) *exclude = PetscInfoInvertClasses;
@@ -245,12 +260,12 @@ PetscErrorCode PetscInfoGetInfo(PetscBool *infoEnabled, PetscBool *classesSet, P
 }
 
 /*@C
-    PetscInfoProcessClass - Activates or deactivates a class based on the filtering status of PetscInfo()
+    PetscInfoProcessClass - Activates or deactivates a class based on the filtering status of `PetscInfo()`
 
     Not Collective
 
     Input Parameters:
-+   classname - Name of the class to activate/deactivate PetscInfo() for
++   classname - Name of the class to activate/deactivate `PetscInfo()` for
 .   numClassID - Number of entries in classIDs
 -   classIDs - Array containing all of the PetscClassids associated with classname
 
@@ -258,41 +273,50 @@ PetscErrorCode PetscInfoGetInfo(PetscBool *infoEnabled, PetscBool *classesSet, P
 
 .seealso: `PetscInfo()`, `PetscInfoActivateClass()`, `PetscInfoDeactivateClass()`, `PetscInfoSetFromOptions()`
 @*/
-PetscErrorCode PetscInfoProcessClass(const char classname[], PetscInt numClassID, PetscClassId classIDs[]) {
-  PetscInt  i;
-  PetscBool enabled, exclude, found, opt, pkg;
+PetscErrorCode PetscInfoProcessClass(const char classname[], PetscInt numClassID, const PetscClassId classIDs[]) {
+  PetscBool enabled, exclude, found, opt;
   char      logList[256];
 
   PetscFunctionBegin;
   PetscValidCharPointer(classname, 1);
+  PetscAssert(numClassID > 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of classids %" PetscInt_FMT " <= 0", numClassID);
+  if (numClassID) PetscValidPointer(classIDs, 3);
   PetscCall(PetscInfoGetInfo(&enabled, NULL, &exclude, NULL, NULL));
   /* -info_exclude is DEPRECATED */
   PetscCall(PetscOptionsGetString(NULL, NULL, "-info_exclude", logList, sizeof(logList), &opt));
   if (opt) {
+    PetscBool pkg;
+
     PetscCall(PetscStrInList(classname, logList, ',', &pkg));
     if (pkg) {
-      for (i = 0; i < numClassID; ++i) { PetscCall(PetscInfoDeactivateClass(classIDs[i])); }
+      for (PetscInt i = 0; i < numClassID; ++i) PetscCall(PetscInfoDeactivateClass(classIDs[i]));
     }
+  }
+  for (PetscInt i = 0; i < numClassID; ++i) {
+    const PetscClassId idx = classIDs[i] - PETSC_SMALLEST_CLASSID;
+
+    PetscCall(PetscFree(PetscInfoNames[idx]));
+    PetscCall(PetscStrallocpy(classname, PetscInfoNames + idx));
   }
   PetscCall(PetscInfoGetClass(classname, &found));
   if ((found && exclude) || (!found && !exclude)) {
     if (PetscInfoNumClasses > 0) {
       /* Check if -info was called empty */
-      for (i = 0; i < numClassID; ++i) { PetscCall(PetscInfoDeactivateClass(classIDs[i])); }
+      for (PetscInt i = 0; i < numClassID; ++i) PetscCall(PetscInfoDeactivateClass(classIDs[i]));
     }
   } else {
-    for (i = 0; i < numClassID; ++i) { PetscCall(PetscInfoActivateClass(classIDs[i])); }
+    for (PetscInt i = 0; i < numClassID; ++i) PetscCall(PetscInfoActivateClass(classIDs[i]));
   }
   PetscFunctionReturn(0);
 }
 
 /*@
-    PetscInfoSetFilterCommSelf - Sets PetscInfoCommFlag enum to determine communicator filtering for PetscInfo()
+    PetscInfoSetFilterCommSelf - Sets `PetscInfoCommFlag` enum to determine communicator filtering for `PetscInfo()`
 
     Not Collective
 
     Input Parameter:
-.   commSelfFlag - Enum value indicating method with which to filter PetscInfo() based on the size of the communicator of the object calling PetscInfo()
+.   commSelfFlag - Enum value indicating method with which to filter `PetscInfo()` based on the size of the communicator of the object calling `PetscInfo()`
 
     Level: advanced
 
@@ -305,7 +329,7 @@ PetscErrorCode PetscInfoSetFilterCommSelf(PetscInfoCommFlag commSelfFlag) {
 }
 
 /*@
-    PetscInfoSetFromOptions - Configure PetscInfo() using command line options, enabling or disabling various calls to PetscInfo()
+    PetscInfoSetFromOptions - Configure `PetscInfo()` using command line options, enabling or disabling various calls to `PetscInfo()`
 
     Not Collective
 
@@ -315,25 +339,28 @@ PetscErrorCode PetscInfoSetFilterCommSelf(PetscInfoCommFlag commSelfFlag) {
     Options Database Keys:
 .   -info [filename][:[~]<list,of,classnames>[:[~]self]] - specify which informative messages are printed, See PetscInfo().
 
-    Notes:
-    This function is called automatically during PetscInitialize() so users usually do not need to call it themselves.
+    Note:
+    This function is called automatically during `PetscInitialize()` so users usually do not need to call it themselves.
 
     Level: advanced
 
 .seealso: `PetscInfo()`, `PetscInfoAllow()`, `PetscInfoSetFile()`, `PetscInfoSetClasses()`, `PetscInfoSetFilterCommSelf()`, `PetscInfoDestroy()`
 @*/
 PetscErrorCode PetscInfoSetFromOptions(PetscOptions options) {
-  char              optstring[PETSC_MAX_PATH_LEN], *loc0_ = NULL, *loc1_ = NULL, *loc2_ = NULL;
-  char            **loc1_array = NULL;
-  PetscBool         set, loc1_invert = PETSC_FALSE, loc2_invert = PETSC_FALSE, foundSelf = PETSC_FALSE;
-  size_t            size_loc0_ = 0, size_loc1_ = 0, size_loc2_ = 0;
-  int               nLoc1_       = 0;
-  PetscInfoCommFlag commSelfFlag = PETSC_INFO_COMM_ALL;
+  char      optstring[PETSC_MAX_PATH_LEN];
+  PetscBool set;
 
   PetscFunctionBegin;
   PetscCall(PetscOptionsDeprecated_Private(NULL, "-info_exclude", NULL, "3.13", "Use -info instead"));
-  PetscCall(PetscOptionsGetString(options, NULL, "-info", optstring, sizeof(optstring), &set));
+  PetscCall(PetscOptionsGetString(options, NULL, "-info", optstring, PETSC_STATIC_ARRAY_LENGTH(optstring), &set));
   if (set) {
+    size_t            size_loc0_, size_loc1_, size_loc2_;
+    char             *loc0_ = NULL, *loc1_ = NULL, *loc2_ = NULL;
+    char            **loc1_array  = NULL;
+    PetscBool         loc1_invert = PETSC_FALSE, loc2_invert = PETSC_FALSE;
+    int               nLoc1_       = 0;
+    PetscInfoCommFlag commSelfFlag = PETSC_INFO_COMM_ALL;
+
     PetscInfoClassesSet = PETSC_TRUE;
     PetscCall(PetscInfoAllow(PETSC_TRUE));
     PetscCall(PetscStrallocpy(optstring, &loc0_));
@@ -361,15 +388,11 @@ PetscErrorCode PetscInfoSetFromOptions(PetscOptions options) {
       PetscCall(PetscStrToArray(loc1_, ',', &nLoc1_, &loc1_array));
     }
     if (size_loc2_) {
+      PetscBool foundSelf;
+
       PetscCall(PetscStrtolower(loc2_));
       PetscCall(PetscStrcmp("self", loc2_, &foundSelf));
-      if (foundSelf) {
-        if (loc2_invert) {
-          commSelfFlag = PETSC_INFO_COMM_NO_SELF;
-        } else {
-          commSelfFlag = PETSC_INFO_COMM_ONLY_SELF;
-        }
-      }
+      if (foundSelf) commSelfFlag = loc2_invert ? PETSC_INFO_COMM_NO_SELF : PETSC_INFO_COMM_ONLY_SELF;
     }
     PetscCall(PetscInfoSetFile(size_loc0_ ? loc0_ : NULL, "w"));
     PetscCall(PetscInfoSetClasses(loc1_invert, (PetscInt)nLoc1_, (const char *const *)loc1_array));
@@ -381,30 +404,34 @@ PetscErrorCode PetscInfoSetFromOptions(PetscOptions options) {
 }
 
 /*@
-  PetscInfoDestroy - Destroys and resets internal PetscInfo() data structures.
+  PetscInfoDestroy - Destroys and resets internal `PetscInfo()` data structures.
 
   Not Collective
 
-  Notes:
-  This is automatically called in PetscFinalize(). Useful for changing filters mid-program, or culling subsequent
-  PetscInfo() calls down the line.
+  Note:
+  This is automatically called in `PetscFinalize()`. Useful for changing filters mid-program, or culling subsequent
+  `PetscInfo()` calls down the line.
 
   Level: developer
 
 .seealso: `PetscInfo()`, `PetscInfoSetFromOptions()`
 @*/
 PetscErrorCode PetscInfoDestroy(void) {
-  int    err;
-  size_t i;
+  int err;
 
   PetscFunctionBegin;
   PetscCall(PetscInfoAllow(PETSC_FALSE));
   PetscCall(PetscStrNArrayDestroy(PetscInfoNumClasses, &PetscInfoClassnames));
   err = fflush(PetscInfoFile);
   PetscCheck(!err, PETSC_COMM_SELF, PETSC_ERR_SYS, "fflush() failed on file");
-  if (PetscInfoFilename) PetscCall(PetscFClose(MPI_COMM_SELF, PetscInfoFile));
+  if (PetscInfoFilename) PetscCall(PetscFClose(PETSC_COMM_SELF, PetscInfoFile));
   PetscCall(PetscFree(PetscInfoFilename));
-  for (i = 0; i < PETSC_STATIC_ARRAY_LENGTH(PetscInfoFlags); i++) PetscInfoFlags[i] = 1;
+  PetscAssert(PETSC_STATIC_ARRAY_LENGTH(PetscInfoFlags) == PETSC_STATIC_ARRAY_LENGTH(PetscInfoNames), PETSC_COMM_SELF, PETSC_ERR_PLIB, "PetscInfoFlags and PetscInfoNames must be the same size");
+  for (size_t i = 0; i < PETSC_STATIC_ARRAY_LENGTH(PetscInfoFlags); ++i) {
+    PetscInfoFlags[i] = 1;
+    PetscCall(PetscFree(PetscInfoNames[i]));
+  }
+
   PetscInfoClassesLocked = PETSC_FALSE;
   PetscInfoInvertClasses = PETSC_FALSE;
   PetscInfoClassesSet    = PETSC_FALSE;
@@ -413,15 +440,22 @@ PetscErrorCode PetscInfoDestroy(void) {
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PetscInfoSetClassActivation_Private(PetscClassId classid, int value) {
+  PetscFunctionBegin;
+  if (!classid) classid = PETSC_SMALLEST_CLASSID;
+  PetscInfoFlags[classid - PETSC_SMALLEST_CLASSID] = value;
+  PetscFunctionReturn(0);
+}
+
 /*@
-  PetscInfoDeactivateClass - Deactivates PetscInfo() messages for a PETSc object class.
+  PetscInfoDeactivateClass - Deactivates `PetscInfo()` messages for a PETSc object class.
 
   Not Collective
 
   Input Parameter:
-. classid - The object class,  e.g., MAT_CLASSID, SNES_CLASSID, etc.
+. classid - The object class,  e.g., `MAT_CLASSID`, `SNES_CLASSID`, etc.
 
-  Notes:
+  Note:
   One can pass 0 to deactivate all messages that are not associated with an object.
 
   Level: developer
@@ -430,20 +464,19 @@ PetscErrorCode PetscInfoDestroy(void) {
 @*/
 PetscErrorCode PetscInfoDeactivateClass(PetscClassId classid) {
   PetscFunctionBegin;
-  if (!classid) classid = PETSC_SMALLEST_CLASSID;
-  PetscInfoFlags[classid - PETSC_SMALLEST_CLASSID] = 0;
+  PetscCall(PetscInfoSetClassActivation_Private(classid, 0));
   PetscFunctionReturn(0);
 }
 
 /*@
-  PetscInfoActivateClass - Activates PetscInfo() messages for a PETSc object class.
+  PetscInfoActivateClass - Activates `PetscInfo()` messages for a PETSc object class.
 
   Not Collective
 
   Input Parameter:
-. classid - The object class, e.g., MAT_CLASSID, SNES_CLASSID, etc.
+. classid - The object class, e.g., `MAT_CLASSID`, `SNES_CLASSID`, etc.
 
-  Notes:
+  Note:
   One can pass 0 to activate all messages that are not associated with an object.
 
   Level: developer
@@ -452,8 +485,7 @@ PetscErrorCode PetscInfoDeactivateClass(PetscClassId classid) {
 @*/
 PetscErrorCode PetscInfoActivateClass(PetscClassId classid) {
   PetscFunctionBegin;
-  if (!classid) classid = PETSC_SMALLEST_CLASSID;
-  PetscInfoFlags[classid - PETSC_SMALLEST_CLASSID] = 1;
+  PetscCall(PetscInfoSetClassActivation_Private(classid, 1));
   PetscFunctionReturn(0);
 }
 
@@ -483,22 +515,22 @@ PETSC_INTERN FILE *petsc_history;
 -   arg1, arg2, ... - arguments of the format
 
     Notes:
-    PetscInfo() prints only from the first processor in the communicator of obj.
-    If obj is NULL, the PETSC_COMM_SELF communicator is used, i.e. every rank of PETSC_COMM_WORLD prints the message.
+    `PetscInfo()` prints only from the first processor in the communicator of obj.
+    If obj is NULL, the `PETSC_COMM_SELF` communicator is used, i.e. every rank of `PETSC_COMM_WORLD` prints the message.
 
     Extent of the printed messages can be controlled using the option database key -info as follows.
 
 $   -info [filename][:[~]<list,of,classnames>[:[~]self]]
 
-    No filename means standard output PETSC_STDOUT is used.
+    No filename means standard output `PETSC_STDOUT` is used.
 
     The optional <list,of,classnames> is a comma separated list of enabled classes, e.g. vec,mat,ksp.
     If this list is not specified, all classes are enabled.
     Prepending the list with ~ means inverted selection, i.e. all classes except the listed are enabled.
     A special classname sys relates to PetscInfo() with obj being NULL.
 
-    The optional self keyword specifies that PetscInfo() is enabled only for communicator size = 1 (e.g. PETSC_COMM_SELF), i.e. only PetscInfo() calls which print from every rank of PETSC_COMM_WORLD are enabled.
-    By contrast, ~self means that PetscInfo() is enabled only for communicator size > 1 (e.g. PETSC_COMM_WORLD), i.e. those PetscInfo() calls which print from every rank of PETSC_COMM_WORLD are disabled.
+    The optional self keyword specifies that PetscInfo() is enabled only for communicator size = 1 (e.g. `PETSC_COMM_SELF`), i.e. only `PetscInfo()` calls which print from every rank of `PETSC_COMM_WORLD` are enabled.
+    By contrast, ~self means that PetscInfo() is enabled only for communicator size > 1 (e.g. `PETSC_COMM_WORLD`), i.e. those `PetscInfo()` calls which print from every rank of `PETSC_COMM_WORLD` are disabled.
 
     All classname/self matching is case insensitive. Filename is case sensitive.
 
@@ -523,57 +555,64 @@ $     -info :sys:~self
     deactivates all info messages because sys means obj = NULL which implies PETSC_COMM_SELF but ~self filters out everything on PETSC_COMM_SELF.
 
     Fortran Note:
-    This function does not take the obj argument, there is only the PetscInfo()
-     version, not PetscInfo() etc.
+    This function does not take the obj argument, there is only the `PetscInfo()`
+     version, not `PetscInfo()` etc.
 
     Level: intermediate
 
 .seealso: `PetscInfoAllow()`, `PetscInfoSetFromOptions()`
 M*/
 PetscErrorCode PetscInfo_Private(const char func[], PetscObject obj, const char message[], ...) {
-  va_list      Argp;
-  PetscMPIInt  rank = 0, urank, size = 1;
-  PetscClassId classid;
-  PetscBool    enabled = PETSC_FALSE, oldflag;
-  char         string[8 * 1024];
-  size_t       fullLength, len;
-  int          err;
+  PetscClassId classid = PETSC_SMALLEST_CLASSID;
+  PetscBool    enabled = PETSC_FALSE;
+  MPI_Comm     comm    = PETSC_COMM_SELF;
+  PetscMPIInt  rank;
 
   PetscFunctionBegin;
-  if (obj) PetscValidHeader(obj, 2);
-  classid = obj ? obj->classid : PETSC_SMALLEST_CLASSID;
+  if (obj) {
+    PetscValidHeader(obj, 2);
+    classid = obj->classid;
+  }
+  PetscValidCharPointer(message, 3);
   PetscCall(PetscInfoEnabled(classid, &enabled));
   if (!enabled) PetscFunctionReturn(0);
-  PetscValidCharPointer(message, 3);
-  if (obj) {
-    PetscCallMPI(MPI_Comm_rank(obj->comm, &rank));
-    PetscCallMPI(MPI_Comm_size(obj->comm, &size));
-  }
+  if (obj) PetscCall(PetscObjectGetComm(obj, &comm));
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
   /* rank > 0 always jumps out */
   if (rank) PetscFunctionReturn(0);
-  if (!PetscInfoCommFilter && (size < 2)) {
-    /* If no self printing is allowed, and size too small get out */
-    PetscFunctionReturn(0);
-  } else if ((PetscInfoCommFilter == PETSC_INFO_COMM_ONLY_SELF) && (size > 1)) {
+  else {
+    PetscMPIInt size;
+
+    PetscCallMPI(MPI_Comm_size(comm, &size));
+    /* If no self printing is allowed, and size too small, get out */
+    if ((PetscInfoCommFilter == PETSC_INFO_COMM_NO_SELF) && (size < 2)) PetscFunctionReturn(0);
     /* If ONLY self printing, and size too big, get out */
-    PetscFunctionReturn(0);
+    if ((PetscInfoCommFilter == PETSC_INFO_COMM_ONLY_SELF) && (size > 1)) PetscFunctionReturn(0);
   }
   /* Mute info messages within this function */
-  oldflag           = PetscLogPrintInfo;
-  PetscLogPrintInfo = PETSC_FALSE;
-  PetscCallMPI(MPI_Comm_rank(MPI_COMM_WORLD, &urank));
-  va_start(Argp, message);
-  sprintf(string, "[%d] %s(): ", urank, func);
-  PetscCall(PetscStrlen(string, &len));
-  PetscCall(PetscVSNPrintf(string + len, 8 * 1024 - len, message, &fullLength, Argp));
-  PetscCall(PetscFPrintf(PETSC_COMM_SELF, PetscInfoFile, "%s", string));
-  err = fflush(PetscInfoFile);
-  PetscCheck(!err, PETSC_COMM_SELF, PETSC_ERR_SYS, "fflush() failed on file");
-  if (petsc_history) {
+  {
+    const PetscBool oldflag = PetscLogPrintInfo;
+    va_list         Argp;
+    PetscMPIInt     urank;
+    int             err;
+    char            string[8 * 1024];
+    size_t          fullLength, len;
+
+    PetscLogPrintInfo = PETSC_FALSE;
+    PetscCallMPI(MPI_Comm_rank(MPI_COMM_WORLD, &urank));
     va_start(Argp, message);
-    PetscCall((*PetscVFPrintf)(petsc_history, message, Argp));
+    PetscCall(PetscSNPrintf(string, PETSC_STATIC_ARRAY_LENGTH(string), "[%d] <%s> %s(): ", urank, PetscInfoNames[classid - PETSC_SMALLEST_CLASSID], func));
+    PetscCall(PetscStrlen(string, &len));
+    PetscCall(PetscVSNPrintf(string + len, 8 * 1024 - len, message, &fullLength, Argp));
+    PetscCall(PetscFPrintf(PETSC_COMM_SELF, PetscInfoFile, "%s", string));
+    err = fflush(PetscInfoFile);
+    PetscCheck(!err, PETSC_COMM_SELF, PETSC_ERR_SYS, "fflush() failed on file");
+    if (petsc_history) {
+      va_start(Argp, message);
+      PetscCall((*PetscVFPrintf)(petsc_history, message, Argp));
+    }
+    va_end(Argp);
+    PetscLogPrintInfo = oldflag;
   }
-  va_end(Argp);
-  PetscLogPrintInfo = oldflag;
   PetscFunctionReturn(0);
 }

@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
   */
   PetscCall(ISGetIndices(set, &indices));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Printing indices directly\n"));
-  for (i = 0; i < n; i++) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%" PetscInt_FMT "\n", indices[i])); }
+  for (i = 0; i < n; i++) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%" PetscInt_FMT "\n", indices[i]));
 
   PetscCall(ISRestoreIndices(set, &indices));
 

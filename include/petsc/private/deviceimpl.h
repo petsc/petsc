@@ -19,6 +19,8 @@ void PetscValidDeviceType(T, int);
 template <typename T>
 void PetscValidDevice(T, int);
 template <typename T>
+void PetscValidDeviceAttribute(T, int);
+template <typename T>
 void PetscCheckCompatibleDevices(T, int, T, int);
 template <typename T>
 void PetscValidStreamType(T, int);
@@ -59,6 +61,14 @@ void PetscCheckCompatibleDeviceContexts(T, int, T, int);
     PetscValidDeviceType((_p_dev__)->type, _p_arg__); \
     PetscCheck((_p_dev__)->id >= 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid PetscDevice: Argument #%d; id %" PetscInt_FMT " < 0", (_p_arg__), (_p_dev__)->id); \
     PetscCheck((_p_dev__)->refcnt >= 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid PetscDevice: Argument #%d; negative reference count %" PetscInt_FMT, (_p_arg__), (_p_dev__)->refcnt); \
+  } while (0)
+
+#define PetscValidDeviceAttribute(_p_dev_attr__, _p_arg__) \
+  do { \
+    PetscDeviceAttribute pvda_attr_  = (_p_dev_attr__); \
+    int                  pvda_argno_ = (_p_arg__); \
+    PetscCheck((((int)pvda_attr_) >= 0) && (pvda_attr_ <= PETSC_DEVICE_ATTR_MAX), PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscDeviceAttribute '%d': Argument #%d", (int)pvda_attr_, pvda_argno_); \
+    PetscCheck(pvda_attr_ != PETSC_DEVICE_ATTR_MAX, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Invalid PetscDeviceAttribute '%s': Argument #%d", PetscDeviceAttributes[pvda_attr_], pvda_argno_); \
   } while (0)
 
 /* for now just checks strict equality, but this can be changed as some devices
@@ -103,6 +113,7 @@ void PetscCheckCompatibleDeviceContexts(T, int, T, int);
 #else /* PetscDefined(USE_DEBUG) */
 #define PetscValidDeviceType(_p_dev_type__, _p_arg__)
 #define PetscValidDevice(_p_dev__, _p_arg__)
+#define PetscValidDeviceAttribute(_p_dev_attr__, _p_arg__)
 #define PetscCheckCompatibleDevices(_p_dev1__, _p_arg1__, _p_dev2__, _p_arg2__)
 #define PetscValidStreamType(_p_strm_type__, _p_arg__)
 #define PetscValidDeviceContext(_p_dev_ctx__, _p_arg__)
@@ -119,6 +130,7 @@ struct _DeviceOps {
   PetscErrorCode (*createcontext)(PetscDeviceContext);
   PetscErrorCode (*configure)(PetscDevice);
   PetscErrorCode (*view)(PetscDevice, PetscViewer);
+  PetscErrorCode (*getattribute)(PetscDevice, PetscDeviceAttribute, void *);
 };
 
 struct _n_PetscDevice {
@@ -293,16 +305,6 @@ static inline PetscErrorCode PetscDeviceContextEndTimer_Internal(PetscDeviceCont
 #define PetscDeviceContextEndTimer_Internal(dctx, elapsed)                 0
 #endif /* PETSC_HAVE_CXX for PetscDeviceContext Internal Functions */
 
-#if PetscDefined(HAVE_CUDA)
-PETSC_INTERN PetscErrorCode PetscDeviceContextCreate_CUDA(PetscDeviceContext);
-#endif
-#if PetscDefined(HAVE_HIP)
-PETSC_INTERN PetscErrorCode PetscDeviceContextCreate_HIP(PetscDeviceContext);
-#endif
-#if PetscDefined(HAVE_SYCL)
-PETSC_INTERN PetscErrorCode PetscDeviceContextCreate_SYCL(PetscDeviceContext);
-#endif
-
 static inline PetscErrorCode PetscGetMemType(const void *ptr, PetscMemType *type) {
   PetscFunctionBegin;
   *type = PETSC_MEMTYPE_HOST;
@@ -335,4 +337,17 @@ static inline PetscErrorCode PetscGetMemType(const void *ptr, PetscMemType *type
 #endif
   PetscFunctionReturn(0);
 }
+
+/* Experimental API -- it will eventually become public */
+PETSC_EXTERN PetscErrorCode PetscDeviceGetAttribute(PetscDevice, PetscDeviceAttribute, void *);
+
+#if PetscDefined(HAVE_CUDA)
+PETSC_INTERN PetscErrorCode PetscDeviceContextCreate_CUDA(PetscDeviceContext);
+#endif
+#if PetscDefined(HAVE_HIP)
+PETSC_INTERN PetscErrorCode PetscDeviceContextCreate_HIP(PetscDeviceContext);
+#endif
+#if PetscDefined(HAVE_SYCL)
+PETSC_INTERN PetscErrorCode PetscDeviceContextCreate_SYCL(PetscDeviceContext);
+#endif
 #endif /* PETSCDEVICEIMPL_H */

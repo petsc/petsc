@@ -86,7 +86,7 @@ PetscErrorCode TestClear(DMLabel label, AppCtx *user) {
     PetscBool hasPoint;
 
     PetscCall(DMLabelGetValue(label, p, &val));
-    if (val != defaultValue) { PetscCall(DMLabelClearValue(label, p, val)); }
+    if (val != defaultValue) PetscCall(DMLabelClearValue(label, p, val));
     PetscCall(DMLabelGetValue(label, p, &val));
     PetscCall(DMLabelHasPoint(label, p, &hasPoint));
     PetscCheck(val == defaultValue, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Expected default value %" PetscInt_FMT " after clearing point %" PetscInt_FMT ", got %" PetscInt_FMT, defaultValue, p, val);

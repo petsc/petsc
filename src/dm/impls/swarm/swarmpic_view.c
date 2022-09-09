@@ -106,7 +106,7 @@ PetscErrorCode private_DMSwarmView_XDMF(DM dm, PetscViewer viewer) {
 
   PetscCall(PetscViewerASCIIPushTab(viewer));
   PetscCall(PetscObjectGetName((PetscObject)dm, &dmname));
-  if (!dmname) { PetscCall(DMGetOptionsPrefix(dm, &dmname)); }
+  if (!dmname) PetscCall(DMGetOptionsPrefix(dm, &dmname));
   if (!dmname) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "<Grid Name=\"DMSwarm\" GridType=\"Uniform\">\n"));
   } else {

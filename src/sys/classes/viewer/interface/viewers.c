@@ -9,31 +9,30 @@ struct _n_PetscViewers {
 };
 
 /*@C
-   PetscViewersDestroy - Destroys a set of PetscViewers created with PetscViewersCreate().
+   PetscViewersDestroy - Destroys a set of `PetscViewer`s created with `PetscViewersCreate()`.
 
-   Collective on PetscViewers
+   Collective on v
 
    Input Parameters:
-.  v - the PetscViewers to be destroyed.
+.  v - the `PetscViewer`s to be destroyed.
 
    Level: intermediate
 
-.seealso: `PetscViewerSocketOpen()`, `PetscViewerASCIIOpen()`, `PetscViewerCreate()`, `PetscViewerDrawOpen()`, `PetscViewersCreate()`
-
+.seealso: `PetscViewer`, `PetscViewerSocketOpen()`, `PetscViewerASCIIOpen()`, `PetscViewerCreate()`, `PetscViewerDrawOpen()`, `PetscViewersCreate()`
 @*/
 PetscErrorCode PetscViewersDestroy(PetscViewers *v) {
   int i;
 
   PetscFunctionBegin;
   if (!*v) PetscFunctionReturn(0);
-  for (i = 0; i < (*v)->n; i++) { PetscCall(PetscViewerDestroy(&(*v)->viewer[i])); }
+  for (i = 0; i < (*v)->n; i++) PetscCall(PetscViewerDestroy(&(*v)->viewer[i]));
   PetscCall(PetscFree((*v)->viewer));
   PetscCall(PetscFree(*v));
   PetscFunctionReturn(0);
 }
 
 /*@C
-   PetscViewersCreate - Creates a container to hold a set of PetscViewers.
+   PetscViewersCreate - Creates a container to hold a set of `PetscViewer`s. The container is essentially a sparse, growable in length array of `PetscViewer`s
 
    Collective
 
@@ -41,12 +40,11 @@ PetscErrorCode PetscViewersDestroy(PetscViewers *v) {
 .   comm - the MPI communicator
 
    Output Parameter:
-.  v - the collection of PetscViewers
+.  v - the collection of `PetscViewer`s
 
    Level: intermediate
 
-.seealso: `PetscViewerCreate()`, `PetscViewersDestroy()`
-
+.seealso: `PetscViewer`, `PetscViewerCreate()`, `PetscViewersDestroy()`
 @*/
 PetscErrorCode PetscViewersCreate(MPI_Comm comm, PetscViewers *v) {
   PetscFunctionBegin;
@@ -60,21 +58,20 @@ PetscErrorCode PetscViewersCreate(MPI_Comm comm, PetscViewers *v) {
 }
 
 /*@C
-   PetscViewersGetViewer - Gets a PetscViewer from a PetscViewer collection
+   PetscViewersGetViewer - Gets a `PetscViewer` from a `PetscViewer` collection
 
-   Not Collective, but PetscViewer will be collective object on PetscViewers
+   Not Collective, but the resulting `PetscViewer` will be collective object on viewers
 
    Input Parameters:
-+   viewers - object created with PetscViewersCreate()
--   n - number of PetscViewer you want
++   viewers - object created with `PetscViewersCreate()`
+-   n - number of `PetscViewer `you want
 
    Output Parameter:
-.  viewer - the PetscViewer
+.  viewer - the `PetscViewer`
 
    Level: intermediate
 
-.seealso: `PetscViewersCreate()`, `PetscViewersDestroy()`
-
+.seealso: `PetscViewer`, `PetscViewersCreate()`, `PetscViewersDestroy()`
 @*/
 PetscErrorCode PetscViewersGetViewer(PetscViewers viewers, PetscInt n, PetscViewer *viewer) {
   PetscFunctionBegin;
@@ -91,7 +88,7 @@ PetscErrorCode PetscViewersGetViewer(PetscViewers viewers, PetscInt n, PetscView
 
     viewers->viewer = v;
   }
-  if (!viewers->viewer[n]) { PetscCall(PetscViewerCreate(viewers->comm, &viewers->viewer[n])); }
+  if (!viewers->viewer[n]) PetscCall(PetscViewerCreate(viewers->comm, &viewers->viewer[n]));
   *viewer = viewers->viewer[n];
   PetscFunctionReturn(0);
 }
@@ -110,11 +107,11 @@ PetscErrorCode PetscViewersGetViewer(PetscViewers viewers, PetscInt n, PetscView
 - mdestroy  - The old monitor destroy function, or NULL
 
   Output Parameter:
-. identical - PETSC_TRUE if the monitors are the same
+. identical - `PETSC_TRUE` if the monitors are the same
 
   Level: developer
 
-.seealsp: DMMonitorSetFromOptions(), KSPMonitorSetFromOptions(), SNESMonitorSetFromOptions()
+.seealso: `DMMonitorSetFromOptions()`, `KSPMonitorSetFromOptions()`, `SNESMonitorSetFromOptions()`
 */
 PetscErrorCode PetscMonitorCompare(PetscErrorCode (*nmon)(void), void *nmctx, PetscErrorCode (*nmdestroy)(void **), PetscErrorCode (*mon)(void), void *mctx, PetscErrorCode (*mdestroy)(void **), PetscBool *identical) {
   PetscFunctionBegin;
@@ -127,7 +124,7 @@ PetscErrorCode PetscMonitorCompare(PetscErrorCode (*nmon)(void), void *nmctx, Pe
       if (old->viewer == newo->viewer && old->format == newo->format) *identical = PETSC_TRUE;
     }
     if (*identical) {
-      if (mdestroy) { PetscCall((*mdestroy)(&nmctx)); }
+      if (mdestroy) PetscCall((*mdestroy)(&nmctx));
     }
   }
   PetscFunctionReturn(0);

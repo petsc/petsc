@@ -23,7 +23,7 @@ PETSC_EXTERN PetscErrorCode SNESComputeNGSDefaultSecant(SNES snes, Vec X, Vec B,
   const PetscScalar *fa, *ga;
 
   PetscFunctionBegin;
-  if (snes->nwork < 3) { PetscCall(SNESSetWorkVecs(snes, 3)); }
+  if (snes->nwork < 3) PetscCall(SNESSetWorkVecs(snes, 3));
   W = snes->work[0];
   G = snes->work[1];
   F = snes->work[2];
@@ -62,7 +62,7 @@ PETSC_EXTERN PetscErrorCode SNESComputeNGSDefaultSecant(SNES snes, Vec X, Vec B,
     PetscCall(ISGetLocalSize(coloris[i], &size));
     PetscCall(VecCopy(X, W));
     PetscCall(VecGetArray(W, &wa));
-    for (j = 0; j < size; j++) { wa[idx[j] - s] += h; }
+    for (j = 0; j < size; j++) wa[idx[j] - s] += h;
     PetscCall(VecRestoreArray(W, &wa));
     PetscCall(PetscLogEventBegin(SNES_NGSFuncEval, snes, X, B, 0));
     PetscCall((*func)(snes, W, G, fctx));

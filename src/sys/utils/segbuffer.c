@@ -38,7 +38,7 @@ static PetscErrorCode PetscSegBufferAlloc_Private(PetscSegBuffer seg, size_t cou
 }
 
 /*@C
-   PetscSegBufferCreate - create segmented buffer
+   PetscSegBufferCreate - create a segmented buffer
 
    Not Collective
 
@@ -167,11 +167,12 @@ PetscErrorCode PetscSegBufferExtractTo(PetscSegBuffer seg, void *contig) {
 .  seg - segmented buffer
 
    Output Parameter:
-.  contiguous - address of new array containing contiguous data, caller frees with PetscFree()
+.  contiguous - address of new array containing contiguous data, caller frees with `PetscFree()`
 
    Level: developer
 
-   Developer Notes: 'seg' argument is a pointer so that implementation could reallocate, though this is not currently done
+   Developer Note:
+   'seg' argument is a pointer so that implementation could reallocate, though this is not currently done
 
 .seealso: `PetscSegBufferCreate()`, `PetscSegBufferGet()`, `PetscSegBufferDestroy()`, `PetscSegBufferExtractTo()`, `PetscSegBufferExtractInPlace()`
 @*/
@@ -245,7 +246,7 @@ PetscErrorCode PetscSegBufferGetSize(PetscSegBuffer seg, size_t *usedsize) {
 }
 
 /*@C
-   PetscSegBufferUnuse - return some unused entries obtained with an overzealous PetscSegBufferGet()
+   PetscSegBufferUnuse - return some unused entries obtained with an overzealous `PetscSegBufferGet()`
 
    Not Collective
 

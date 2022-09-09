@@ -5,19 +5,21 @@
    PetscDrawLGAddCommonPoint - Adds another point to each of the line graphs. All the points share
       the same new X coordinate.  The new point must have an X coordinate larger than the old points.
 
-   Logically Collective on PetscDrawLG
+   Logically Collective on lg
 
    Input Parameters:
-+  lg - the LineGraph data structure
++  lg - the line graph context
 .   x - the common x coordinate point
 -   y - the new y coordinate point for each curve.
 
    Level: intermediate
 
-   Note: You must call PetscDrawLGDraw() to display any added points
-         Call PetscDrawLGReset() to remove all points
+   Notes:
+   You must call `PetscDrawLGDraw()` to display any added points
 
-.seealso: `PetscDrawLGCreate()`, `PetscDrawLGAddPoints()`, `PetscDrawLGAddPoint()`, `PetscDrawLGReset()`, `PetscDrawLGDraw()`
+   Call `PetscDrawLGReset()` to remove all points
+
+.seealso: `PetscDrawLG`, `PetscDrawLGCreate()`, `PetscDrawLGAddPoints()`, `PetscDrawLGAddPoint()`, `PetscDrawLGReset()`, `PetscDrawLGDraw()`
 @*/
 PetscErrorCode PetscDrawLGAddCommonPoint(PetscDrawLG lg, const PetscReal x, const PetscReal *y) {
   PetscInt i;
@@ -53,19 +55,21 @@ PetscErrorCode PetscDrawLGAddCommonPoint(PetscDrawLG lg, const PetscReal x, cons
    PetscDrawLGAddPoint - Adds another point to each of the line graphs.
    The new point must have an X coordinate larger than the old points.
 
-   Logically Collective on PetscDrawLG
+   Logically Collective on lg
 
    Input Parameters:
-+  lg - the LineGraph data structure
++  lg - the line graph context
 -  x, y - the points to two arrays containing the new x and y
           point for each curve.
 
-   Note: You must call PetscDrawLGDraw() to display any added points
-         Call PetscDrawLGReset() to remove all points
+   Notes:
+   You must call `PetscDrawLGDraw()` to display any added points
+
+   Call `PetscDrawLGReset()` to remove all points
 
    Level: intermediate
 
-.seealso: `PetscDrawLGCreate()`, `PetscDrawLGAddPoints()`, `PetscDrawLGAddCommonPoint()`, `PetscDrawLGReset()`, `PetscDrawLGDraw()`
+.seealso: `PetscDrawLG`, `PetscDrawLGCreate()`, `PetscDrawLGAddPoints()`, `PetscDrawLGAddCommonPoint()`, `PetscDrawLGReset()`, `PetscDrawLGDraw()`
 @*/
 PetscErrorCode PetscDrawLGAddPoint(PetscDrawLG lg, const PetscReal *x, const PetscReal *y) {
   PetscInt  i;
@@ -107,20 +111,22 @@ PetscErrorCode PetscDrawLGAddPoint(PetscDrawLG lg, const PetscReal *x, const Pet
    PetscDrawLGAddPoints - Adds several points to each of the line graphs.
    The new points must have an X coordinate larger than the old points.
 
-   Logically Collective on PetscDrawLG
+   Logically Collective on lg
 
    Input Parameters:
-+  lg - the LineGraph data structure
++  lg - the line graph context
 .  xx,yy - points to two arrays of pointers that point to arrays
            containing the new x and y points for each curve.
 -  n - number of points being added
 
    Level: intermediate
 
-   Note: You must call PetscDrawLGDraw() to display any added points
-         Call PetscDrawLGReset() to remove all points
+   Notes:
+   You must call `PetscDrawLGDraw()` to display any added points
 
-.seealso: `PetscDrawLGCreate()`, `PetscDrawLGAddPoint()`, `PetscDrawLGAddCommonPoint()`, `PetscDrawLGReset()`, `PetscDrawLGDraw()`
+   Call `PetscDrawLGReset()` to remove all points
+
+.seealso: `PetscDrawLG`, `PetscDrawLGCreate()`, `PetscDrawLGAddPoint()`, `PetscDrawLGAddCommonPoint()`, `PetscDrawLGReset()`, `PetscDrawLGDraw()`
 @*/
 PetscErrorCode PetscDrawLGAddPoints(PetscDrawLG lg, PetscInt n, PetscReal **xx, PetscReal **yy) {
   PetscInt   i, j, k;

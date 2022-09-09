@@ -31,6 +31,8 @@ static_assert(Petsc::util::integral_value(PETSC_DEVICE_INIT_EAGER) == 2, "");
 const char *const PetscDeviceInitTypes[] = {"none", "lazy", "eager", "PetscDeviceInitType", "PETSC_DEVICE_INIT_", PETSC_NULLPTR};
 static_assert(sizeof(PetscDeviceInitTypes) / sizeof(*PetscDeviceInitTypes) == 6, "Must change CUPMDevice<T>::initialize number of enum values in -device_enable_cupm to match!");
 
+const char *const PetscDeviceAttributes[] = {"shared_mem_per_block", "max", "PetscDeviceAttribute", "PETSC_DEVICE_ATTR_", nullptr};
+
 #define PETSC_DEVICE_CASE(IMPLS, func, ...) \
   case PetscConcat_(PETSC_DEVICE_, IMPLS): { \
     PetscCall(PetscConcat_(IMPLS, Device).func(__VA_ARGS__)); \
@@ -66,22 +68,22 @@ static_assert(sizeof(PetscDeviceInitTypes) / sizeof(*PetscDeviceInitTypes) == 6,
 #define PETSC_DEVICE_CASE_IF_PETSC_DEFINED(IMPLS, func, ...) PetscIfPetscDefined(PetscConcat_(HAVE_, IMPLS), PETSC_DEVICE_CASE, PetscExpandToNothing)(IMPLS, func, __VA_ARGS__)
 
 /*@C
-  PetscDeviceCreate - Get a new handle for a particular device type
+  PetscDeviceCreate - Get a new handle for a particular device (often a GPU) type
 
   Not Collective, Possibly Synchronous
 
   Input Parameters:
-+ type  - The type of PetscDevice
-- devid - The numeric ID# of the device (pass PETSC_DECIDE to assign automatically)
++ type  - The type of `PetscDevice`
+- devid - The numeric ID# of the device (pass `PETSC_DECIDE` to assign automatically)
 
   Output Parameter:
-. device - The PetscDevice
+. device - The `PetscDevice`
 
   Notes:
-  This routine may initialize PetscDevice. If this is the case, this will most likely cause
+  This routine may initialize `PetscDevice`. If this is the case, this will most likely cause
   some sort of device synchronization.
 
-  devid is what you might pass to cudaSetDevice() for example.
+  `devid` is what you might pass to `cudaSetDevice()` for example.
 
   Level: beginner
 
@@ -118,7 +120,7 @@ PetscErrorCode PetscDeviceCreate(PetscDeviceType type, PetscInt devid, PetscDevi
 }
 
 /*@C
-  PetscDeviceDestroy - Free a PetscDevice
+  PetscDeviceDestroy - Free a `PetscDevice`
 
   Not Collective, Asynchronous
 
@@ -144,14 +146,14 @@ PetscErrorCode PetscDeviceDestroy(PetscDevice *device) {
 }
 
 /*@C
-  PetscDeviceConfigure - Configure a particular PetscDevice
+  PetscDeviceConfigure - Configure a particular `PetscDevice`
 
   Not Collective, Asynchronous
 
   Input Parameter:
-. device - The PetscDevice to configure
+. device - The `PetscDevice` to configure
 
-  Notes:
+  Note:
   The user should not assume that this is a cheap operation
 
   Level: beginner
@@ -181,13 +183,13 @@ PetscErrorCode PetscDeviceConfigure(PetscDevice device) {
 }
 
 /*@C
-  PetscDeviceView - View a PetscDevice
+  PetscDeviceView - View a `PetscDevice`
 
   Collective on viewer, Asynchronous
 
   Input Parameters:
-+ device - The PetscDevice to view
-- viewer - The PetscViewer to view the device with (NULL for PETSC_VIEWER_STDOUT_WORLD)
++ device - The `PetscDevice` to view
+- viewer - The `PetscViewer` to view the device with (NULL for `PETSC_VIEWER_STDOUT_WORLD`)
 
   Level: beginner
 
@@ -208,7 +210,7 @@ PetscErrorCode PetscDeviceView(PetscDevice device, PetscViewer viewer) {
   Not collective
 
   Input Parameter:
-. device - The PetscDevice
+. device - The `PetscDevice`
 
   Output Parameter:
 . id - The device id
@@ -230,15 +232,15 @@ static std::array<PetscDevice, PETSC_DEVICE_MAX> defaultDevices    = {};
 static_assert(initializedDevice.size() == defaultDevices.size(), "");
 
 /*@C
-  PetscDeviceInitialize - Initialize PetscDevice
+  PetscDeviceInitialize - Initialize `PetscDevice`
 
   Not Collective, Possibly Synchronous
 
   Input Parameter:
-. type - The PetscDeviceType to initialize
+. type - The `PetscDeviceType` to initialize
 
-  Notes:
-  Eagerly initializes the corresponding PetscDeviceType if needed.
+  Note:
+  Eagerly initializes the corresponding `PetscDeviceType` if needed.
 
   Level: beginner
 
@@ -252,20 +254,20 @@ PetscErrorCode PetscDeviceInitialize(PetscDeviceType type) {
 }
 
 /*@C
-  PetscDeviceInitialized - Determines whether PetscDevice is initialized for a particular
-  PetscDeviceType
+  PetscDeviceInitialized - Determines whether `PetscDevice` is initialized for a particular
+  `PetscDeviceType`
 
   Not Collective, Asynchronous
 
   Input Parameter:
-. type - The PetscDeviceType to check
+. type - The `PetscDeviceType` to check
 
   Output Parameter:
-. [return value] - PETSC_TRUE if type is initialized, PETSC_FALSE otherwise
+. [return value] - `PETSC_TRUE` if type is initialized, `PETSC_FALSE` otherwise
 
-  Notes:
-  If one has not configured PETSc for a particular PetscDeviceType then this routine will
-  return PETSC_FALSE for that PetscDeviceType.
+  Note:
+  If one has not configured PETSc for a particular `PetscDeviceType` then this routine will
+  return `PETSC_FALSE` for that `PetscDeviceType`.
 
   Level: beginner
 
@@ -273,6 +275,35 @@ PetscErrorCode PetscDeviceInitialize(PetscDeviceType type) {
 @*/
 PetscBool PetscDeviceInitialized(PetscDeviceType type) {
   return static_cast<PetscBool>(PetscDeviceConfiguredFor_Internal(type) && initializedDevice[type]);
+}
+
+/*@C
+  PetscDeviceGetAttribute - Query a particular attribute of a `PetscDevice`
+
+  Not Collective, Asynchronous
+
+  Input Parameters:
++ device - The `PetscDevice`
+- attr   - The attribute
+
+  Output Parameter:
+. value - The value of the attribute
+
+  Notes:
+  Since different attributes are often different types `value` is a `void *` to accommodate
+  them all. The underlying type of the attribute is therefore included in the name of the
+  `PetscDeviceAttribute` reponsible for querying it. For example,
+  `PETSC_DEVICE_ATTR_SIZE_T_SHARED_MEM_PER_BLOCK` is of type `size_t`.
+
+.seealso: `PetscDeviceAtrtibute`, `PetscDeviceConfigure()`, `PetscDevice`
+@*/
+PetscErrorCode PetscDeviceGetAttribute(PetscDevice device, PetscDeviceAttribute attr, void *value) {
+  PetscFunctionBegin;
+  PetscValidDevice(device, 1);
+  PetscValidDeviceAttribute(attr, 2);
+  PetscValidPointer(value, 3);
+  PetscUseTypeMethod(device, getattribute, attr, value);
+  PetscFunctionReturn(0);
 }
 
 /*

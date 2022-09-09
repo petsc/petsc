@@ -155,7 +155,7 @@ int main(int argc, char **argv) {
       for (j = Ys; j < Ys + Ym; j++) {
         for (i = Xs; i < Xs + Xm; i++) {
           iloc = w * ((k - Zs) * Xm * Ym + (j - Ys) * Xm + i - Xs);
-          for (l = 0; l < w; l++) { iglobal[kk++] = ltog[iloc + l]; }
+          for (l = 0; l < w; l++) iglobal[kk++] = ltog[iloc + l];
         }
       }
     }

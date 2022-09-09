@@ -43,7 +43,7 @@ PetscErrorCode KSPGMRESClassicalGramSchmidtOrthogonalization(KSP ksp, PetscInt i
 
   PetscFunctionBegin;
   PetscCall(PetscLogEventBegin(KSP_GMRESOrthogonalization, ksp, 0, 0, 0));
-  if (!gmres->orthogwork) { PetscCall(PetscMalloc1(gmres->max_k + 2, &gmres->orthogwork)); }
+  if (!gmres->orthogwork) PetscCall(PetscMalloc1(gmres->max_k + 2, &gmres->orthogwork));
   lhh = gmres->orthogwork;
 
   /* update Hessenberg matrix and do unmodified Gram-Schmidt */

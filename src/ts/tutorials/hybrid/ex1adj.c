@@ -99,7 +99,7 @@ PetscErrorCode PostEventFunction(TS ts, PetscInt nevents, PetscInt event_list[],
 
   PetscFunctionBegin;
   /* PetscCall(VecView(U,PETSC_VIEWER_STDOUT_WORLD)); */
-  if (!forwardsolve) { PetscCall(ShiftGradients(ts, U, actx)); }
+  if (!forwardsolve) PetscCall(ShiftGradients(ts, U, actx));
   if (actx->mode == 1) {
     actx->mode = 2;
     /* PetscCall(PetscPrintf(PETSC_COMM_SELF,"Change from mode 1 to 2 at t = %f \n",(double)t)); */

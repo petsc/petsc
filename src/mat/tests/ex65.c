@@ -18,7 +18,7 @@ int main(int argc, char **args) {
   for (i = 0; i < m; i++) {
     cnt = 0;
     if (i % 2) {
-      for (j = 0; j < n; j += 2) { js[cnt++] = j; }
+      for (j = 0; j < n; j += 2) js[cnt++] = j;
     } else {
       ;
     }

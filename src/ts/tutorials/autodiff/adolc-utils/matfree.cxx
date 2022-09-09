@@ -60,7 +60,7 @@ PetscErrorCode PetscAdolcIJacobianVectorProduct(Mat A_shell, Vec X, Vec Y) {
   for (j = info.gys; j < info.gys + info.gym; j++) {
     for (i = info.gxs; i < info.gxs + info.gxm; i++) {
       for (d = 0; d < 2; d++) {
-        if ((i >= info.xs) && (i < info.xs + info.xm) && (j >= info.ys) && (j < info.ys + info.ym)) { PetscCall(VecSetValuesLocal(Y, 1, &k, &action[k], INSERT_VALUES)); }
+        if ((i >= info.xs) && (i < info.xs + info.xm) && (j >= info.ys) && (j < info.ys + info.ym)) PetscCall(VecSetValuesLocal(Y, 1, &k, &action[k], INSERT_VALUES));
         k++;
       }
     }
@@ -142,7 +142,7 @@ PetscErrorCode PetscAdolcIJacobianVectorProductIDMass(Mat A_shell, Vec X, Vec Y)
   for (j = info.gys; j < info.gys + info.gym; j++) {
     for (i = info.gxs; i < info.gxs + info.gxm; i++) {
       for (d = 0; d < 2; d++) {
-        if ((i >= info.xs) && (i < info.xs + info.xm) && (j >= info.ys) && (j < info.ys + info.ym)) { PetscCall(VecSetValuesLocal(Y, 1, &k, &action[k], INSERT_VALUES)); }
+        if ((i >= info.xs) && (i < info.xs + info.xm) && (j >= info.ys) && (j < info.ys + info.ym)) PetscCall(VecSetValuesLocal(Y, 1, &k, &action[k], INSERT_VALUES));
         k++;
       }
     }
@@ -210,7 +210,7 @@ PetscErrorCode PetscAdolcIJacobianTransposeVectorProduct(Mat A_shell, Vec Y, Vec
   for (j = info.gys; j < info.gys + info.gym; j++) {
     for (i = info.gxs; i < info.gxs + info.gxm; i++) {
       for (d = 0; d < 2; d++) {
-        if ((i >= info.xs) && (i < info.xs + info.xm) && (j >= info.ys) && (j < info.ys + info.ym)) { PetscCall(VecSetValuesLocal(X, 1, &k, &action[k], INSERT_VALUES)); }
+        if ((i >= info.xs) && (i < info.xs + info.xm) && (j >= info.ys) && (j < info.ys + info.ym)) PetscCall(VecSetValuesLocal(X, 1, &k, &action[k], INSERT_VALUES));
         k++;
       }
     }
@@ -296,7 +296,7 @@ PetscErrorCode PetscAdolcIJacobianTransposeVectorProductIDMass(Mat A_shell, Vec 
   for (j = info.gys; j < info.gys + info.gym; j++) {
     for (i = info.gxs; i < info.gxs + info.gxm; i++) {
       for (d = 0; d < 2; d++) {
-        if ((i >= info.xs) && (i < info.xs + info.xm) && (j >= info.ys) && (j < info.ys + info.ym)) { PetscCall(VecSetValuesLocal(X, 1, &k, &action[k], INSERT_VALUES)); }
+        if ((i >= info.xs) && (i < info.xs + info.xm) && (j >= info.ys) && (j < info.ys + info.ym)) PetscCall(VecSetValuesLocal(X, 1, &k, &action[k], INSERT_VALUES));
         k++;
       }
     }

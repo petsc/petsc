@@ -158,7 +158,7 @@ int main(int argc, char **argv) {
   default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Invalid problem number %" PetscInt_FMT, problem);
   }
 
-  if (A != J) { PetscCall(MatDestroy(&A)); }
+  if (A != J) PetscCall(MatDestroy(&A));
   PetscCall(MatDestroy(&J));
   PetscCall(VecDestroy(&u));
   PetscCall(VecDestroy(&r));

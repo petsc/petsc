@@ -4,7 +4,7 @@
 /*@C
      PetscTellMyCell - Sends an SMS to an American/Canadian phone number
 
-   Not collective, only the first process in MPI_Comm does anything
+   Not collective, only the first process in `MPI_Comm` does anything
 
    Input Parameters:
 +  comm - the MPI communicator
@@ -12,9 +12,9 @@
 -  message - the message
 
    Output Parameter:
-.   flg - PETSC_TRUE if the text was sent
+.   flg - `PETSC_TRUE` if the text was sent
 
-   Options Database:
+   Options Database Keys:
 +   -tellmycell <number[,message]> - send a message to the give number when the program ends
 .   -tellmycell_user <Username> - this value is created when registering at tellmycell.com
 -   -tellmycell_password <Password> - this value is created when registering at tellmycell.com
@@ -28,7 +28,7 @@
 
    It would be nice to provide this as a free service but that would require making the PETSc TellMyCell password public.
 
-   Developer Notes:
+   Developer Note:
     Perhaps the Username and Password should be arguments to this function.
 
 .seealso: `PetscTextBelt()`, `PetscHTTPSRequest()`, `PetscHTTPSConnect()`, `PetscSSLInitializeContext()`

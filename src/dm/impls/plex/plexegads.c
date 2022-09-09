@@ -495,7 +495,7 @@ static PetscErrorCode DMPlexCreateEGADS_Internal(MPI_Comm comm, ego context, ego
           }
         }
         PetscCheck(nc == 2 * Ner, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Number of corners %" PetscInt_FMT " != %" PetscInt_FMT, nc, 2 * Ner);
-        if (Ner == 4) { cone[nc++] = numVertices - newVertices + numEdges + numQuads++; }
+        if (Ner == 4) cone[nc++] = numVertices - newVertices + numEdges + numQuads++;
         PetscCheck(nc <= maxCorners, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Number of corners %" PetscInt_FMT " > %" PetscInt_FMT " max", nc, maxCorners);
         /* Triangulate the loop */
         switch (Ner) {
@@ -785,7 +785,7 @@ static PetscErrorCode DMPlexCreateEGADS(MPI_Comm comm, ego context, ego model, D
           ego edge = eobjs[e];
 
           PetscCall(EG_getInfo(edge, &oclass, &mtype, &topRef, &prev, &next));
-          if (mtype != DEGENERATE) { ++edgeTemp; }
+          if (mtype != DEGENERATE) ++edgeTemp;
         }
         numCells += (2 * edgeTemp);
         EG_free(eobjs);
@@ -853,7 +853,7 @@ static PetscErrorCode DMPlexCreateEGADS(MPI_Comm comm, ego context, ego model, D
         int    periodic;
 
         PetscCall(EG_getInfo(edge, &oclass, &mtype, &topRef, &prev, &next));
-        if (mtype == DEGENERATE) { continue; }
+        if (mtype == DEGENERATE) continue;
 
         eid = EG_indexBodyTopo(body, edge);
 
@@ -925,7 +925,7 @@ static PetscErrorCode DMPlexCreateEGADS(MPI_Comm comm, ego context, ego model, D
 
             PetscCall(EG_getInfo(edge, &oclass, &mtype, &topRef, &prev, &next));
             eid = EG_indexBodyTopo(body, edge);
-            if (mtype == DEGENERATE) { continue; }
+            if (mtype == DEGENERATE) continue;
 
             // get relative offset from globalEdgeID Vector
             PetscCall(PetscHMapIFind(edgeMap, bodyEdgeGlobalIndexStart + eid - 1, &EMiter, &EMfound));
@@ -1042,7 +1042,7 @@ static PetscErrorCode DMPlexCreateEGADS(MPI_Comm comm, ego context, ego model, D
 
           // Skip DEGENERATE Edges
           PetscCall(EG_getInfo(edge, &oclass, &mtype, &topRef, &prev, &next));
-          if (mtype == DEGENERATE) { continue; }
+          if (mtype == DEGENERATE) continue;
           eid = EG_indexBodyTopo(body, edge);
 
           // get relative offset from globalEdgeID Vector

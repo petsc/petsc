@@ -150,7 +150,7 @@ PetscErrorCode DMMoabCreateMoab(MPI_Comm comm, moab::Interface *mbiface, moab::T
   MBERRNM(merr);
 
   /* set the local range of entities (vertices) of interest */
-  if (range) { PetscCall(DMMoabSetLocalVertices(dmmb, range)); }
+  if (range) PetscCall(DMMoabSetLocalVertices(dmmb, range));
   *dmb = dmmb;
   PetscFunctionReturn(0);
 }
@@ -704,7 +704,7 @@ PetscErrorCode DMMoabRestoreVertexConnectivity(DM dm, moab::EntityHandle ehandle
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(conn, 4);
 
-  if (conn) { PetscCall(PetscFree(*conn)); }
+  if (conn) PetscCall(PetscFree(*conn));
   if (nconn) *nconn = 0;
   PetscFunctionReturn(0);
 }
@@ -817,7 +817,7 @@ PetscErrorCode DMMoabCheckBoundaryVertices(DM dm, PetscInt nconn, const moab::En
   PetscValidPointer(isbdvtx, 4);
   dmmoab = (DM_Moab *)(dm)->data;
 
-  for (i = 0; i < nconn; ++i) { isbdvtx[i] = (dmmoab->bndyvtx->index(cnt[i]) >= 0 ? PETSC_TRUE : PETSC_FALSE); }
+  for (i = 0; i < nconn; ++i) isbdvtx[i] = (dmmoab->bndyvtx->index(cnt[i]) >= 0 ? PETSC_TRUE : PETSC_FALSE);
   PetscFunctionReturn(0);
 }
 
@@ -874,7 +874,7 @@ PETSC_EXTERN PetscErrorCode DMDestroy_Moab(DM dm) {
     PetscCall(PetscFree(dmmoab->ofill));
     PetscCall(PetscFree(dmmoab->materials));
     if (dmmoab->fieldNames) {
-      for (i = 0; i < dmmoab->numFields; i++) { PetscCall(PetscFree(dmmoab->fieldNames[i])); }
+      for (i = 0; i < dmmoab->numFields; i++) PetscCall(PetscFree(dmmoab->fieldNames[i]));
       PetscCall(PetscFree(dmmoab->fieldNames));
     }
 
@@ -1062,14 +1062,14 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm) {
       vent                 = dmmoab->mbiface->id_from_handle(*iter) - dmmoab->seqstart;
       dmmoab->gidmap[vent] = dmmoab->gsindices[i];
       dmmoab->lidmap[vent] = i;
-      for (f = 0; f < dmmoab->numFields; f++, j++) { lgmap[j] = (bs > 1 ? dmmoab->gsindices[i] * dmmoab->numFields + f : totsize * f + dmmoab->gsindices[i]); }
+      for (f = 0; f < dmmoab->numFields; f++, j++) lgmap[j] = (bs > 1 ? dmmoab->gsindices[i] * dmmoab->numFields + f : totsize * f + dmmoab->gsindices[i]);
     }
     /* next arrange all the ghosted data information */
     for (moab::Range::iterator iter = dmmoab->vghost->begin(); iter != dmmoab->vghost->end(); iter++, i++) {
       vent                 = dmmoab->mbiface->id_from_handle(*iter) - dmmoab->seqstart;
       dmmoab->gidmap[vent] = dmmoab->gsindices[i];
       dmmoab->lidmap[vent] = i;
-      for (f = 0; f < dmmoab->numFields; f++, j++) { lgmap[j] = (bs > 1 ? dmmoab->gsindices[i] * dmmoab->numFields + f : totsize * f + dmmoab->gsindices[i]); }
+      for (f = 0; f < dmmoab->numFields; f++, j++) lgmap[j] = (bs > 1 ? dmmoab->gsindices[i] * dmmoab->numFields + f : totsize * f + dmmoab->gsindices[i]);
     }
 
     /* We need to create the Global to Local Vector Scatter Contexts
@@ -1174,7 +1174,7 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm) {
     moab::Range msets;
     merr = dmmoab->mbiface->get_entities_by_type_and_tag(dmmoab->fileset, moab::MBENTITYSET, &dmmoab->material_tag, NULL, 1, msets, moab::Interface::UNION);
     MB_CHK_ERR(merr);
-    if (msets.size() == 0) { PetscInfo(NULL, "No material sets found in the fileset."); }
+    if (msets.size() == 0) PetscInfo(NULL, "No material sets found in the fileset.");
 
     for (unsigned i = 0; i < msets.size(); ++i) {
       moab::Range msetelems;
@@ -1355,7 +1355,7 @@ PETSC_EXTERN PetscErrorCode DMMoabView_Ascii(DM dm, PetscViewer viewer) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "Fields: %" PetscInt_FMT " components\n", dmmoab->numFields));
     {
       PetscCall(PetscViewerASCIIPushTab(viewer));
-      for (int i = 0; i < dmmoab->numFields; ++i) { PetscCall(PetscViewerASCIIPrintf(viewer, "[%" PetscInt_FMT "] - %s\n", i, dmmoab->fieldNames[i])); }
+      for (int i = 0; i < dmmoab->numFields; ++i) PetscCall(PetscViewerASCIIPrintf(viewer, "[%" PetscInt_FMT "] - %s\n", i, dmmoab->fieldNames[i]));
       PetscCall(PetscViewerASCIIPopTab(viewer));
     }
     PetscCall(PetscViewerASCIIPopTab(viewer));

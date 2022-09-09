@@ -15,14 +15,13 @@
 
    Notes:
    If a Mat type does not implement the operation, each processor for which this is called
-   gets the values for its rows using MatGetRow().
+   gets the values for its rows using `MatGetRow()`.
 
    The vector must have the same parallel row layout as the matrix.
 
    Contributed by: Denis Vanderstraeten
 
 .seealso: `MatGetRow()`, `MatGetDiagonal()`, `MatMult()`
-
 @*/
 PetscErrorCode MatGetColumnVector(Mat A, Vec yy, PetscInt col) {
   PetscScalar       *y;
@@ -71,19 +70,18 @@ PetscErrorCode MatGetColumnVector(Mat A, Vec yy, PetscInt col) {
 
    Input Parameters:
 +  A - the matrix
--  type - NORM_2, NORM_1 or NORM_INFINITY
+-  type - `NORM_2`, `NORM_1` or `NORM_INFINITY`
 
    Output Parameter:
 .  norms - an array as large as the TOTAL number of columns in the matrix
 
    Level: intermediate
 
-   Notes:
+   Note:
     Each process has ALL the column norms after the call. Because of the way this is computed each process gets all the values,
     if each process wants only some of the values it should extract the ones it wants from the array.
 
 .seealso: `NormType`, `MatNorm()`
-
 @*/
 PetscErrorCode MatGetColumnNorms(Mat A, NormType type, PetscReal norms[]) {
   /* NOTE: MatGetColumnNorms() could simply be a macro that calls MatGetColumnReductions().
@@ -108,12 +106,11 @@ PetscErrorCode MatGetColumnNorms(Mat A, NormType type, PetscReal norms[]) {
 
    Level: intermediate
 
-   Notes:
+   Note:
     Each process has ALL the column sums after the call. Because of the way this is computed each process gets all the values,
     if each process wants only some of the values it should extract the ones it wants from the array.
 
 .seealso: `MatGetColumnSumsImaginaryPart()`, `VecSum()`, `MatGetColumnMeans()`, `MatGetColumnNorms()`, `MatGetColumnReductions()`
-
 @*/
 PetscErrorCode MatGetColumnSumsRealPart(Mat A, PetscReal sums[]) {
   PetscFunctionBegin;
@@ -132,12 +129,11 @@ PetscErrorCode MatGetColumnSumsRealPart(Mat A, PetscReal sums[]) {
 
    Level: intermediate
 
-   Notes:
+   Note:
     Each process has ALL the column sums after the call. Because of the way this is computed each process gets all the values,
     if each process wants only some of the values it should extract the ones it wants from the array.
 
 .seealso: `MatGetColumnSumsRealPart()`, `VecSum()`, `MatGetColumnMeans()`, `MatGetColumnNorms()`, `MatGetColumnReductions()`
-
 @*/
 PetscErrorCode MatGetColumnSumsImaginaryPart(Mat A, PetscReal sums[]) {
   PetscFunctionBegin;
@@ -156,12 +152,11 @@ PetscErrorCode MatGetColumnSumsImaginaryPart(Mat A, PetscReal sums[]) {
 
    Level: intermediate
 
-   Notes:
+   Note:
     Each process has ALL the column sums after the call. Because of the way this is computed each process gets all the values,
     if each process wants only some of the values it should extract the ones it wants from the array.
 
 .seealso: `VecSum()`, `MatGetColumnMeans()`, `MatGetColumnNorms()`, `MatGetColumnReductions()`
-
 @*/
 PetscErrorCode MatGetColumnSums(Mat A, PetscScalar sums[]) {
 #if defined(PETSC_USE_COMPLEX)
@@ -197,12 +192,11 @@ PetscErrorCode MatGetColumnSums(Mat A, PetscScalar sums[]) {
 
    Level: intermediate
 
-   Notes:
+   Note:
     Each process has ALL the column means after the call. Because of the way this is computed each process gets all the values,
     if each process wants only some of the values it should extract the ones it wants from the array.
 
 .seealso: `MatGetColumnMeansImaginaryPart()`, `VecSum()`, `MatGetColumnSums()`, `MatGetColumnNorms()`, `MatGetColumnReductions()`
-
 @*/
 PetscErrorCode MatGetColumnMeansRealPart(Mat A, PetscReal means[]) {
   PetscFunctionBegin;
@@ -221,12 +215,11 @@ PetscErrorCode MatGetColumnMeansRealPart(Mat A, PetscReal means[]) {
 
    Level: intermediate
 
-   Notes:
+   Note:
     Each process has ALL the column means after the call. Because of the way this is computed each process gets all the values,
     if each process wants only some of the values it should extract the ones it wants from the array.
 
 .seealso: `MatGetColumnMeansRealPart()`, `VecSum()`, `MatGetColumnSums()`, `MatGetColumnNorms()`, `MatGetColumnReductions()`
-
 @*/
 PetscErrorCode MatGetColumnMeansImaginaryPart(Mat A, PetscReal means[]) {
   PetscFunctionBegin;
@@ -245,12 +238,11 @@ PetscErrorCode MatGetColumnMeansImaginaryPart(Mat A, PetscReal means[]) {
 
    Level: intermediate
 
-   Notes:
+   Note:
     Each process has ALL the column means after the call. Because of the way this is computed each process gets all the values,
     if each process wants only some of the values it should extract the ones it wants from the array.
 
 .seealso: `VecSum()`, `MatGetColumnSums()`, `MatGetColumnNorms()`, `MatGetColumnReductions()`
-
 @*/
 PetscErrorCode MatGetColumnMeans(Mat A, PetscScalar means[]) {
 #if defined(PETSC_USE_COMPLEX)
@@ -280,24 +272,23 @@ PetscErrorCode MatGetColumnMeans(Mat A, PetscScalar means[]) {
 
   Input Parameters:
 +  A - the matrix
--  type - A constant defined in NormType or ReductionType: NORM_2, NORM_1, NORM_INFINITY, REDUCTION_SUM_REALPART,
-          REDUCTION_SUM_IMAGINARYPART, REDUCTION_MEAN_REALPART, REDUCTION_MEAN_IMAGINARYPART
+-  type - A constant defined in `NormType` or `ReductionType`: `NORM_2`, `NORM_1`, `NORM_INFINITY`, `REDUCTION_SUM_REALPART`,
+          `REDUCTION_SUM_IMAGINARYPART`, `REDUCTION_MEAN_REALPART`, `REDUCTION_MEAN_IMAGINARYPART`
 
   Output Parameter:
 .  reductions - an array as large as the TOTAL number of columns in the matrix
 
    Level: developer
 
-   Notes:
+   Note:
     Each process has ALL the column reductions after the call. Because of the way this is computed each process gets all the values,
     if each process wants only some of the values it should extract the ones it wants from the array.
 
   Developer Note:
     This routine is primarily intended as a back-end.
-    MatGetColumnNorms(), MatGetColumnSums(), and MatGetColumnMeans() are implemented using this routine.
+    `MatGetColumnNorms()`, `MatGetColumnSums()`, and `MatGetColumnMeans()` are implemented using this routine.
 
 .seealso: `ReductionType`, `NormType`, `MatGetColumnNorms()`, `MatGetColumnSums()`, `MatGetColumnMeans()`
-
 @*/
 PetscErrorCode MatGetColumnReductions(Mat A, PetscInt type, PetscReal reductions[]) {
   PetscFunctionBegin;

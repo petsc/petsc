@@ -39,7 +39,7 @@ PetscErrorCode PetscCDDestroy(PetscCoarsenData *ail) {
   }
   if (ail->pool_list.array) PetscCall(PetscFree(ail->pool_list.array));
   PetscCall(PetscFree(ail->array));
-  if (ail->mat) { PetscCall(MatDestroy(&ail->mat)); }
+  if (ail->mat) PetscCall(MatDestroy(&ail->mat));
   /* delete this (+agg+pool array) */
   PetscCall(PetscFree(ail));
   PetscFunctionReturn(0);
@@ -358,7 +358,7 @@ PetscErrorCode PetscCDGetASMBlocks(const PetscCoarsenData *ail, const PetscInt a
       PetscCall(ISCreateGeneral(PETSC_COMM_SELF, lsz, idxs, PETSC_OWN_POINTER, &is_loc[kk++]));
     }
   }
-  if (is_bcs) { is_loc[kk++] = is_bcs; }
+  if (is_bcs) is_loc[kk++] = is_bcs;
   PetscCheck(*a_sz == kk, PETSC_COMM_SELF, PETSC_ERR_PLIB, "*a_sz %" PetscInt_FMT " != kk %" PetscInt_FMT, *a_sz, kk);
   *a_local_is = is_loc; /* out */
 
@@ -382,8 +382,8 @@ static int gamg_hem_compare(const void *a, const void *b) {
   MatCoarsenApply_HEM_private - parallel heavy edge matching
 
   Input Parameter:
-   . perm - permutation
-   . a_Gmat - global matrix of graph (data not defined)
+. perm - permutation
+. a_Gmat - global matrix of the graph
 
   Output Parameter:
    . a_locals_llist - array of list of local nodes rooted at local node
@@ -499,7 +499,7 @@ static PetscErrorCode MatCoarsenApply_HEM_private(IS perm, Mat a_Gmat, PetscCoar
     for (kk = 0; kk < nloc; kk++) lid_cprowID[kk] = -1;
     /* set index into compressed row 'lid_cprowID' */
     if (matB) {
-      for (ix = 0; ix < matB->compressedrow.nrows; ix++) { lid_cprowID[matB->compressedrow.rindex[ix]] = ix; }
+      for (ix = 0; ix < matB->compressedrow.nrows; ix++) lid_cprowID[matB->compressedrow.rindex[ix]] = ix;
     }
 
     /* compute 'locMaxEdge' & 'locMaxPE', and create list of edges, count edges' */
@@ -648,7 +648,7 @@ static PetscErrorCode MatCoarsenApply_HEM_private(IS perm, Mat a_Gmat, PetscCoar
               ew    = PetscRealPart(ap[jj]);
               max_e = PetscRealPart(cpcol_max_ew[lidj]);
               /* check for max_e == to this edge and larger processor that will deal with this */
-              if (ew > max_e - PETSC_SMALL && ew > PetscRealPart(lid_max_ew[lid0]) - PETSC_SMALL && (PetscMPIInt)PetscRealPart(cpcol_max_pe[lidj]) > rank) { isOK = PETSC_FALSE; }
+              if (ew > max_e - PETSC_SMALL && ew > PetscRealPart(lid_max_ew[lid0]) - PETSC_SMALL && (PetscMPIInt)PetscRealPart(cpcol_max_pe[lidj]) > rank) isOK = PETSC_FALSE;
             }
           }
 
@@ -665,7 +665,7 @@ static PetscErrorCode MatCoarsenApply_HEM_private(IS perm, Mat a_Gmat, PetscCoar
                 ew    = PetscRealPart(ap[jj]);
                 max_e = PetscRealPart(cpcol_max_ew[lidj]);
                 /* check for max_e == to this edge and larger processor that will deal with this */
-                if (ew > max_e - PETSC_SMALL && ew > PetscRealPart(lid_max_ew[lid1]) - PETSC_SMALL && (PetscMPIInt)PetscRealPart(cpcol_max_pe[lidj]) > rank) { isOK = PETSC_FALSE; }
+                if (ew > max_e - PETSC_SMALL && ew > PetscRealPart(lid_max_ew[lid1]) - PETSC_SMALL && (PetscMPIInt)PetscRealPart(cpcol_max_pe[lidj]) > rank) isOK = PETSC_FALSE;
               }
             }
           }
@@ -858,7 +858,7 @@ static PetscErrorCode MatCoarsenApply_HEM_private(IS perm, Mat a_Gmat, PetscCoar
         PetscCall(VecScatterEnd(mpimat->Mvctx, locMaxPE, ghostMaxEdge, INSERT_VALUES, SCATTER_FORWARD));
         PetscCall(VecGetArray(ghostMaxEdge, &cpcol_max_ew));
         PetscCall(VecGetLocalSize(mpimat->lvec, &n));
-        for (kk = 0; kk < n; kk++) { cpcol_matched[kk] = (PetscBool)(PetscRealPart(cpcol_max_ew[kk]) != 0.0); }
+        for (kk = 0; kk < n; kk++) cpcol_matched[kk] = (PetscBool)(PetscRealPart(cpcol_max_ew[kk]) != 0.0);
         PetscCall(VecRestoreArray(ghostMaxEdge, &cpcol_max_ew));
       } /* size > 1 */
 
@@ -955,7 +955,7 @@ static PetscErrorCode MatCoarsenApply_HEM_private(IS perm, Mat a_Gmat, PetscCoar
     PetscCall(VecDestroy(&locMaxEdge));
     PetscCall(VecDestroy(&locMaxPE));
 
-    if (mpimat) { PetscCall(VecRestoreArray(mpimat->lvec, &cpcol_gid)); }
+    if (mpimat) PetscCall(VecRestoreArray(mpimat->lvec, &cpcol_gid));
 
     /* create next G if needed */
     if (iter == n_iter) { /* hard wired test - need to look at full surrounded nodes or something */
@@ -969,7 +969,7 @@ static PetscErrorCode MatCoarsenApply_HEM_private(IS perm, Mat a_Gmat, PetscCoar
         if (!lid_matched[kk]) {
           gid = kk + my0;
           PetscCall(MatGetRow(cMat, gid, &n, NULL, NULL));
-          if (n > 1) { PetscCall(MatSetValues(P, 1, &gid, 1, &gid, &one, INSERT_VALUES)); }
+          if (n > 1) PetscCall(MatSetValues(P, 1, &gid, 1, &gid, &one, INSERT_VALUES));
           PetscCall(MatRestoreRow(cMat, gid, &n, NULL, NULL));
         }
       }
@@ -1013,7 +1013,7 @@ static PetscErrorCode MatCoarsenApply_HEM_private(IS perm, Mat a_Gmat, PetscCoar
         PetscCall(PetscCDIntNdGetID(pos, &gid1));
         PetscCall(PetscCDGetNextPos(agg_llists, kk, &pos));
 
-        if (gid1 < my0 || gid1 >= my0 + nloc) { PetscCall(MatSetValues(mat, 1, &gid, 1, &gid1, &one, ADD_VALUES)); }
+        if (gid1 < my0 || gid1 >= my0 + nloc) PetscCall(MatSetValues(mat, 1, &gid, 1, &gid1, &one, ADD_VALUES));
       }
     }
     PetscCall(MatAssemblyBegin(mat, MAT_FINAL_ASSEMBLY));
@@ -1070,8 +1070,7 @@ static PetscErrorCode MatCoarsenView_HEM(MatCoarsen coarse, PetscViewer viewer) 
 
    Level: beginner
 
-.seealso: `MatCoarsenSetType()`, `MatCoarsenType`, `MatCoarsenCreate()`
-
+.seealso: `MatCoarsen`, `MatCoarsenSetType()`, `MatCoarsenGetData()`, `MatCoarsenType`, `MatCoarsenCreate()`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatCoarsenCreate_HEM(MatCoarsen coarse) {

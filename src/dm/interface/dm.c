@@ -713,7 +713,7 @@ PetscErrorCode DMDestroy(DM *dm) {
   PetscCall(PetscObjectDestroy(&(*dm)->dmsnes));
   PetscCall(PetscObjectDestroy(&(*dm)->dmts));
 
-  if ((*dm)->ctx && (*dm)->ctxdestroy) { PetscCall((*(*dm)->ctxdestroy)(&(*dm)->ctx)); }
+  if ((*dm)->ctx && (*dm)->ctxdestroy) PetscCall((*(*dm)->ctxdestroy)(&(*dm)->ctx));
   PetscCall(MatFDColoringDestroy(&(*dm)->fd));
   PetscCall(ISLocalToGlobalMappingDestroy(&(*dm)->ltogmap));
   PetscCall(PetscFree((*dm)->vectype));
@@ -727,7 +727,7 @@ PetscErrorCode DMDestroy(DM *dm) {
   PetscCall(PetscSFDestroy(&(*dm)->sf));
   PetscCall(PetscSFDestroy(&(*dm)->sectionSF));
   if ((*dm)->useNatural) {
-    if ((*dm)->sfNatural) { PetscCall(PetscSFDestroy(&(*dm)->sfNatural)); }
+    if ((*dm)->sfNatural) PetscCall(PetscSFDestroy(&(*dm)->sfNatural));
     PetscCall(PetscObjectDereference((PetscObject)(*dm)->sfMigration));
   }
   {
@@ -741,10 +741,10 @@ PetscErrorCode DMDestroy(DM *dm) {
     PetscCall(PetscFree(auxData));
     PetscCall(PetscHMapAuxDestroy(&(*dm)->auxData));
   }
-  if ((*dm)->coarseMesh && (*dm)->coarseMesh->fineMesh == *dm) { PetscCall(DMSetFineDM((*dm)->coarseMesh, NULL)); }
+  if ((*dm)->coarseMesh && (*dm)->coarseMesh->fineMesh == *dm) PetscCall(DMSetFineDM((*dm)->coarseMesh, NULL));
 
   PetscCall(DMDestroy(&(*dm)->coarseMesh));
-  if ((*dm)->fineMesh && (*dm)->fineMesh->coarseMesh == *dm) { PetscCall(DMSetCoarseDM((*dm)->fineMesh, NULL)); }
+  if ((*dm)->fineMesh && (*dm)->fineMesh->coarseMesh == *dm) PetscCall(DMSetCoarseDM((*dm)->fineMesh, NULL));
   PetscCall(DMDestroy(&(*dm)->fineMesh));
   PetscCall(PetscFree((*dm)->Lstart));
   PetscCall(PetscFree((*dm)->L));
@@ -760,7 +760,7 @@ PetscErrorCode DMDestroy(DM *dm) {
   /* if memory was published with SAWs then destroy it */
   PetscCall(PetscObjectSAWsViewOff((PetscObject)*dm));
 
-  if ((*dm)->ops->destroy) { PetscCall((*(*dm)->ops->destroy)(*dm)); }
+  if ((*dm)->ops->destroy) PetscCall((*(*dm)->ops->destroy)(*dm));
   PetscCall(DMMonitorCancel(*dm));
 #ifdef PETSC_HAVE_LIBCEED
   PetscCallCEED(CeedElemRestrictionDestroy(&(*dm)->ceedERestrict));
@@ -939,7 +939,7 @@ PetscErrorCode DMView(DM dm, PetscViewer v) {
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (!v) { PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)dm), &v)); }
+  if (!v) PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)dm), &v));
   PetscValidHeaderSpecific(v, PETSC_VIEWER_CLASSID, 2);
   /* Ideally, we would like to have this test on.
      However, it currently breaks socket viz via GLVis.
@@ -1087,7 +1087,7 @@ PetscErrorCode DMGetLocalToGlobalMapping(DM dm, ISLocalToGlobalMapping *ltog) {
         PetscCall(PetscSectionGetOffset(sectionGlobal, p, &off));
         /* If you have dofs, and constraints, and they are unequal, we set the blocksize to 1 */
         bdof = cdof && (dof - cdof) ? 1 : dof;
-        if (dof) { bs = bs < 0 ? bdof : PetscGCD(bs, bdof); }
+        if (dof) bs = bs < 0 ? bdof : PetscGCD(bs, bdof);
 
         for (c = 0, cind = 0; c < dof; ++c, ++l) {
           if (cind < cdof && c == cdofs[cind]) {
@@ -1867,7 +1867,7 @@ PetscErrorCode DMCreateFieldIS(DM dm, PetscInt *numFields, char ***fieldNames, I
 
           PetscCall(PetscSectionGetFieldDof(section, p, f, &fdof));
           PetscCall(PetscSectionGetFieldConstraintDof(section, p, f, &fcdof));
-          for (fc = 0; fc < fdof - fcdof; ++fc, ++fieldSizes[f]) { fieldIndices[f][fieldSizes[f]] = goff++; }
+          for (fc = 0; fc < fdof - fcdof; ++fc, ++fieldSizes[f]) fieldIndices[f][fieldSizes[f]] = goff++;
         }
       }
     }
@@ -2042,7 +2042,7 @@ PetscErrorCode DMCreateSuperDM(DM dms[], PetscInt n, IS **is, DM *superdm) {
 
   PetscFunctionBegin;
   PetscValidPointer(dms, 1);
-  for (i = 0; i < n; ++i) { PetscValidHeaderSpecific(dms[i], DM_CLASSID, 1); }
+  for (i = 0; i < n; ++i) PetscValidHeaderSpecific(dms[i], DM_CLASSID, 1);
   if (is) PetscValidPointer(is, 3);
   PetscValidPointer(superdm, 4);
   PetscCheck(n >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of DMs must be nonnegative: %" PetscInt_FMT, n);
@@ -2856,7 +2856,7 @@ static PetscErrorCode DMLocalToGlobalHook_Constraints(DM dm, Vec l, InsertMode m
         PetscCall(VecSetValuesSection(cVec, cSec, p, vals, mode));
         /* for this to be the true transpose, we have to zero the values that
          * we just extracted */
-        for (d = 0; d < dof; d++) { vals[d] = 0.; }
+        for (d = 0; d < dof; d++) vals[d] = 0.;
       }
     }
     PetscCall(MatMultTransposeAdd(cMat, cVec, l, l));
@@ -3512,7 +3512,7 @@ PetscErrorCode DMRefineHierarchy(DM dm, PetscInt nlevels, DM dmf[]) {
     PetscInt i;
 
     PetscCall(DMRefine(dm, PetscObjectComm((PetscObject)dm), &dmf[0]));
-    for (i = 1; i < nlevels; i++) { PetscCall(DMRefine(dmf[i - 1], PetscObjectComm((PetscObject)dm), &dmf[i])); }
+    for (i = 1; i < nlevels; i++) PetscCall(DMRefine(dmf[i - 1], PetscObjectComm((PetscObject)dm), &dmf[i]));
   } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "No RefineHierarchy for this DM yet");
   PetscFunctionReturn(0);
 }
@@ -3546,7 +3546,7 @@ PetscErrorCode DMCoarsenHierarchy(DM dm, PetscInt nlevels, DM dmc[]) {
     PetscInt i;
 
     PetscCall(DMCoarsen(dm, PetscObjectComm((PetscObject)dm), &dmc[0]));
-    for (i = 1; i < nlevels; i++) { PetscCall(DMCoarsen(dmc[i - 1], PetscObjectComm((PetscObject)dm), &dmc[i])); }
+    for (i = 1; i < nlevels; i++) PetscCall(DMCoarsen(dmc[i - 1], PetscObjectComm((PetscObject)dm), &dmc[i]));
   } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "No CoarsenHierarchy for this DM yet");
   PetscFunctionReturn(0);
 }
@@ -3766,7 +3766,7 @@ PetscErrorCode DMHasCreateInjection(DM dm, PetscBool *flg) {
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidBoolPointer(flg, 2);
   if (dm->ops->hascreateinjection) PetscUseTypeMethod(dm, hascreateinjection, flg);
-  else { *flg = (dm->ops->createinjection) ? PETSC_TRUE : PETSC_FALSE; }
+  else *flg = (dm->ops->createinjection) ? PETSC_TRUE : PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -4049,7 +4049,7 @@ PetscErrorCode DMPrintCellVector(PetscInt c, const char name[], PetscInt len, co
 
   PetscFunctionBegin;
   PetscCall(PetscPrintf(PETSC_COMM_SELF, "Cell %" PetscInt_FMT " Element %s\n", c, name));
-  for (f = 0; f < len; ++f) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "  | %g |\n", (double)PetscRealPart(x[f]))); }
+  for (f = 0; f < len; ++f) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  | %g |\n", (double)PetscRealPart(x[f])));
   PetscFunctionReturn(0);
 }
 
@@ -4060,7 +4060,7 @@ PetscErrorCode DMPrintCellMatrix(PetscInt c, const char name[], PetscInt rows, P
   PetscCall(PetscPrintf(PETSC_COMM_SELF, "Cell %" PetscInt_FMT " Element %s\n", c, name));
   for (f = 0; f < rows; ++f) {
     PetscCall(PetscPrintf(PETSC_COMM_SELF, "  |"));
-    for (g = 0; g < cols; ++g) { PetscCall(PetscPrintf(PETSC_COMM_SELF, " % 9.5g", (double)PetscRealPart(A[f * cols + g]))); }
+    for (g = 0; g < cols; ++g) PetscCall(PetscPrintf(PETSC_COMM_SELF, " % 9.5g", (double)PetscRealPart(A[f * cols + g])));
     PetscCall(PetscPrintf(PETSC_COMM_SELF, " |\n"));
   }
   PetscFunctionReturn(0);
@@ -4484,7 +4484,7 @@ PetscErrorCode DMGetSectionSF(DM dm, PetscSF *sf) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(sf, 2);
-  if (!dm->sectionSF) { PetscCall(PetscSFCreate(PetscObjectComm((PetscObject)dm), &dm->sectionSF)); }
+  if (!dm->sectionSF) PetscCall(PetscSFCreate(PetscObjectComm((PetscObject)dm), &dm->sectionSF));
   PetscCall(PetscSFGetGraph(dm->sectionSF, &nroots, NULL, NULL, NULL));
   if (nroots < 0) {
     PetscSection section, gSection;
@@ -5479,7 +5479,7 @@ PetscErrorCode DMSetRegionNumDS(DM dm, PetscInt num, DMLabel label, IS fields, P
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (label) { PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 3); }
+  if (label) PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 3);
   PetscCall(DMGetNumDS(dm, &Nds));
   PetscCheck((num >= 0) && (num < Nds), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Region number %" PetscInt_FMT " is not in [0, %" PetscInt_FMT ")", num, Nds);
   PetscCall(PetscObjectReference((PetscObject)label));
@@ -7189,7 +7189,7 @@ PetscErrorCode DMCompareLabels(DM dm0, DM dm1, PetscBool *equal, char **message)
     PetscCall(DMGetNumLabels(dm0, &n));
     PetscCall(DMGetNumLabels(dm1, &n1));
     eq = (PetscBool)(n == n1);
-    if (!eq) { PetscCall(PetscSNPrintf(msg, sizeof(msg), "Number of labels in dm0 = %" PetscInt_FMT " != %" PetscInt_FMT " = Number of labels in dm1", n, n1)); }
+    if (!eq) PetscCall(PetscSNPrintf(msg, sizeof(msg), "Number of labels in dm0 = %" PetscInt_FMT " != %" PetscInt_FMT " = Number of labels in dm1", n, n1));
     PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, &eq, 1, MPIU_BOOL, MPI_LAND, comm));
     if (!eq) goto finish;
   }
@@ -7217,9 +7217,9 @@ finish:
   /* If message output arg not set, print to stderr */
   if (message) {
     *message = NULL;
-    if (msg[0]) { PetscCall(PetscStrallocpy(msg, message)); }
+    if (msg[0]) PetscCall(PetscStrallocpy(msg, message));
   } else {
-    if (msg[0]) { PetscCall(PetscSynchronizedFPrintf(comm, PETSC_STDERR, "[%d] %s\n", rank, msg)); }
+    if (msg[0]) PetscCall(PetscSynchronizedFPrintf(comm, PETSC_STDERR, "[%d] %s\n", rank, msg));
     PetscCall(PetscSynchronizedFlush(comm, PETSC_STDERR));
   }
   /* If same output arg not ser and labels are not equal, throw error */
@@ -7308,7 +7308,7 @@ PetscErrorCode DMUniversalLabelCreate(DM dm, DMUniversalLabel *universal) {
     PetscCall(DMLabelGetNumValues(label, &nv));
     PetscCall(DMLabelGetValueIS(label, &valueIS));
     PetscCall(ISGetIndices(valueIS, &varr));
-    for (v = 0; v < nv; ++v) { ul->values[ul->offsets[m] + v] = varr[v]; }
+    for (v = 0; v < nv; ++v) ul->values[ul->offsets[m] + v] = varr[v];
     PetscCall(ISRestoreIndices(valueIS, &varr));
     PetscCall(ISDestroy(&valueIS));
     PetscCall(PetscSortInt(nv, &ul->values[ul->offsets[m]]));
@@ -8028,8 +8028,8 @@ PetscErrorCode DMProjectFieldLabel(DM dm, PetscReal time, DMLabel label, PetscIn
   PetscCall(VecGetDM(U, &dmIn));
   PetscCall(DMGetLocalVector(dmIn, &localU));
   PetscCall(DMGetLocalVector(dm, &localX));
-  PetscCall(DMGlobalToLocalBegin(dm, U, mode, localU));
-  PetscCall(DMGlobalToLocalEnd(dm, U, mode, localU));
+  PetscCall(DMGlobalToLocalBegin(dmIn, U, mode, localU));
+  PetscCall(DMGlobalToLocalEnd(dmIn, U, mode, localU));
   PetscCall(DMProjectFieldLabelLocal(dm, time, label, numIds, ids, Nc, comps, localU, funcs, mode, localX));
   PetscCall(DMLocalToGlobalBegin(dm, localX, mode, X));
   PetscCall(DMLocalToGlobalEnd(dm, localX, mode, X));
@@ -8547,7 +8547,7 @@ PetscErrorCode DMMonitor(DM dm) {
   PetscFunctionBegin;
   if (!dm) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  for (m = 0; m < dm->numbermonitors; ++m) { PetscCall((*dm->monitor[m])(dm, dm->monitorcontext[m])); }
+  for (m = 0; m < dm->numbermonitors; ++m) PetscCall((*dm->monitor[m])(dm, dm->monitorcontext[m]));
   PetscFunctionReturn(0);
 }
 
@@ -8600,7 +8600,7 @@ PetscErrorCode DMComputeError(DM dm, Vec sol, PetscReal errors[], Vec *errorVec)
     }
     if (fieldIS) PetscCall(ISRestoreIndices(fieldIS, &fields));
   }
-  for (f = 0; f < Nf; ++f) { PetscCheck(exactSol[f], PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "DS must contain exact solution functions in order to calculate error, missing for field %" PetscInt_FMT, f); }
+  for (f = 0; f < Nf; ++f) PetscCheck(exactSol[f], PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "DS must contain exact solution functions in order to calculate error, missing for field %" PetscInt_FMT, f);
   PetscCall(DMGetOutputSequenceNumber(dm, NULL, &time));
   if (errors) PetscCall(DMComputeL2FieldDiff(dm, time, exactSol, ctxs, sol, errors));
   if (errorVec) {

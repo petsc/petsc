@@ -1,4 +1,4 @@
-[1] MatAssemblyEnd_SeqBAIJ(): Number of mallocs during MatSetValues is 0
-[1] MatAssemblyEnd_SeqBAIJ(): Number of mallocs during MatSetValues is 0
-[1] MatAssemblyEnd_SeqBAIJ(): Number of mallocs during MatSetValues is 0
-[1] MatAssemblyEnd_SeqBAIJ(): Number of mallocs during MatSetValues is 0
+[1] <mat> MatAssemblyEnd_SeqBAIJ(): Number of mallocs during MatSetValues is 0
+[1] <mat> MatAssemblyEnd_SeqBAIJ(): Number of mallocs during MatSetValues is 0
+[1] <mat> MatAssemblyEnd_SeqBAIJ(): Number of mallocs during MatSetValues is 0
+[1] <mat> MatAssemblyEnd_SeqBAIJ(): Number of mallocs during MatSetValues is 0

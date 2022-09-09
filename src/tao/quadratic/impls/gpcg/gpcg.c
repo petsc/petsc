@@ -78,8 +78,8 @@ static PetscErrorCode TaoSetup_GPCG(Tao tao) {
 
   PetscFunctionBegin;
   /* Allocate some arrays */
-  if (!tao->gradient) { PetscCall(VecDuplicate(tao->solution, &tao->gradient)); }
-  if (!tao->stepdirection) { PetscCall(VecDuplicate(tao->solution, &tao->stepdirection)); }
+  if (!tao->gradient) PetscCall(VecDuplicate(tao->solution, &tao->gradient));
+  if (!tao->stepdirection) PetscCall(VecDuplicate(tao->solution, &tao->stepdirection));
 
   PetscCall(VecDuplicate(tao->solution, &gpcg->B));
   PetscCall(VecDuplicate(tao->solution, &gpcg->Work));
@@ -127,7 +127,7 @@ static PetscErrorCode TaoSolve_GPCG(Tao tao) {
   PetscCall(VecAXPY(gpcg->B, -1.0, gpcg->Work));
   PetscCall(VecDot(gpcg->B, tao->solution, &xtb));
   gpcg->c = f - xtHx / 2.0 - xtb;
-  if (gpcg->Free_Local) { PetscCall(ISDestroy(&gpcg->Free_Local)); }
+  if (gpcg->Free_Local) PetscCall(ISDestroy(&gpcg->Free_Local));
   PetscCall(VecWhichInactive(tao->XL, tao->solution, tao->gradient, tao->XU, PETSC_TRUE, &gpcg->Free_Local));
 
   /* Project the gradient and calculate the norm */

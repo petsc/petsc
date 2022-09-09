@@ -137,7 +137,7 @@ PetscErrorCode EvaluateFunction(Tao tao, Vec X, Vec F, void *ptr) {
   /* Even for linear least square, we do not direct use matrix operation f = A*x - b now, just for future modification and compatibility for nonlinear least square */
   for (m = 0; m < M; m++) {
     f[m] = -b[m];
-    for (n = 0; n < N; n++) { f[m] += user->A[m][n] * x[n]; }
+    for (n = 0; n < N; n++) f[m] += user->A[m][n] * x[n];
   }
   PetscCall(VecRestoreArrayRead(X, &x));
   PetscCall(VecRestoreArray(F, &f));
@@ -157,7 +157,7 @@ PetscErrorCode EvaluateJacobian(Tao tao, Vec X, Mat J, Mat Jpre, void *ptr) {
   /* XH: TODO:  For linear least square, we can just set J=A fixed once, instead of keep update it! Maybe just create a function getFixedJacobian?
     For nonlinear least square, we require x to compute J, keep codes here for future nonlinear least square*/
   for (m = 0; m < M; ++m) {
-    for (n = 0; n < N; ++n) { user->J[m][n] = user->A[m][n]; }
+    for (n = 0; n < N; ++n) user->J[m][n] = user->A[m][n];
   }
 
   PetscCall(MatSetValues(J, M, user->idm, N, user->idn, (PetscReal *)user->J, INSERT_VALUES));
@@ -229,7 +229,7 @@ PetscErrorCode InitializeUserData(AppCtx *user) {
 
   /* initialize to 0 */
   for (k = 0; k < K; k++) {
-    for (n = 0; n < N; n++) { user->D[k][n] = 0.0; }
+    for (n = 0; n < N; n++) user->D[k][n] = 0.0;
   }
   /* Choice I: set D to identity matrix of size N*N for testing */
   /* for (k=0; k<K; k++) user->D[k][k] = 1.0; */

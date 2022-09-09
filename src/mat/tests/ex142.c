@@ -50,7 +50,7 @@ int main(int argc, char **args) {
     /* create vectors of length N=dim[0]*dim[1]* ...*dim[DIM-1] */
     /*----------------------------------------------------------*/
     N = Ny = 1;
-    for (i = 0; i < DIM - 1; i++) { N *= dim[i]; }
+    for (i = 0; i < DIM - 1; i++) N *= dim[i];
     Ny = N;
     Ny *= 2 * (dim[DIM - 1] / 2 + 1); /* add padding elements to output vector y */
     N *= dim[DIM - 1];
@@ -109,7 +109,7 @@ int main(int argc, char **args) {
       PetscCall(VecSet(x, 1.0));
     } else if (function == TANH) {
       PetscCall(VecGetArray(x, &x_array));
-      for (i = 0; i < N; ++i) { x_array[i] = tanh((i - N / 2.0) * (10.0 / N)); }
+      for (i = 0; i < N; ++i) x_array[i] = tanh((i - N / 2.0) * (10.0 / N));
       PetscCall(VecRestoreArray(x, &x_array));
     }
     if (view) PetscCall(VecView(x, PETSC_VIEWER_STDOUT_WORLD));
@@ -138,7 +138,7 @@ int main(int argc, char **args) {
     if (view) PetscCall(VecView(z, PETSC_VIEWER_DRAW_WORLD));
     PetscCall(VecAXPY(z, -1.0, x));
     PetscCall(VecNorm(z, NORM_1, &enorm));
-    if (enorm > 1.e-11) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Error norm of |x - z| %g\n", (double)enorm)); }
+    if (enorm > 1.e-11) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Error norm of |x - z| %g\n", (double)enorm));
 
     /* free spaces */
     fftw_destroy_plan(fplan);

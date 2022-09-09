@@ -102,7 +102,7 @@ int main(int argc, char **args) {
   for (i = 0; i < nd; ++i) {
     PetscCall(ISEqual(is1[i], is2[i], &flg));
 
-    if (!flg) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "i=%" PetscInt_FMT ", flg=%d :bs=%" PetscInt_FMT " m=%" PetscInt_FMT " ov=%" PetscInt_FMT " nd=%" PetscInt_FMT " np=%d\n", i, flg, bs, m, ov, nd, size)); }
+    if (!flg) PetscCall(PetscPrintf(PETSC_COMM_SELF, "i=%" PetscInt_FMT ", flg=%d :bs=%" PetscInt_FMT " m=%" PetscInt_FMT " ov=%" PetscInt_FMT " nd=%" PetscInt_FMT " np=%d\n", i, flg, bs, m, ov, nd, size));
   }
 
   for (i = 0; i < nd; ++i) {
@@ -126,7 +126,7 @@ int main(int argc, char **args) {
       PetscCall(VecNorm(s1, NORM_2, &s1norm));
       PetscCall(VecNorm(s2, NORM_2, &s2norm));
       rnorm = s2norm - s1norm;
-      if (rnorm < -tol || rnorm > tol) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d]Error:MatMult - Norm1=%16.14e Norm2=%16.14e\n", rank, (double)s1norm, (double)s2norm)); }
+      if (rnorm < -tol || rnorm > tol) PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d]Error:MatMult - Norm1=%16.14e Norm2=%16.14e\n", rank, (double)s1norm, (double)s2norm));
     }
     PetscCall(VecDestroy(&xx));
     PetscCall(VecDestroy(&s1));
@@ -150,7 +150,7 @@ int main(int argc, char **args) {
       PetscCall(VecNorm(s1, NORM_2, &s1norm));
       PetscCall(VecNorm(s2, NORM_2, &s2norm));
       rnorm = s2norm - s1norm;
-      if (rnorm < -tol || rnorm > tol) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d]Error:MatMult - Norm1=%16.14e Norm2=%16.14e\n", rank, (double)s1norm, (double)s2norm)); }
+      if (rnorm < -tol || rnorm > tol) PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d]Error:MatMult - Norm1=%16.14e Norm2=%16.14e\n", rank, (double)s1norm, (double)s2norm));
     }
     PetscCall(VecDestroy(&xx));
     PetscCall(VecDestroy(&s1));

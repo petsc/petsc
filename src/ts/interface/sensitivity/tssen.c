@@ -174,7 +174,7 @@ PetscErrorCode TSComputeIJacobianP(TS ts, PetscReal t, Vec U, Vec Udot, PetscRea
   PetscValidHeaderSpecific(Udot, VEC_CLASSID, 4);
 
   PetscCall(PetscLogEventBegin(TS_JacobianPEval, ts, U, Amat, 0));
-  if (ts->ijacobianp) { PetscCallBack("TS callback JacobianP for sensitivity analysis", (*ts->ijacobianp)(ts, t, U, Udot, shift, Amat, ts->ijacobianpctx)); }
+  if (ts->ijacobianp) PetscCallBack("TS callback JacobianP for sensitivity analysis", (*ts->ijacobianp)(ts, t, U, Udot, shift, Amat, ts->ijacobianpctx));
   if (imex) {
     if (!ts->ijacobianp) { /* system was written as Udot = G(t,U) */
       PetscBool assembled;
@@ -440,7 +440,7 @@ PetscErrorCode TSComputeIHessianProductFunctionUU(TS ts, PetscReal t, Vec U, Vec
   if (ts->rhshessianproduct_guu) {
     PetscInt nadj;
     PetscCall(TSComputeRHSHessianProductFunctionUU(ts, t, U, Vl, Vr, VHV));
-    for (nadj = 0; nadj < ts->numcost; nadj++) { PetscCall(VecScale(VHV[nadj], -1)); }
+    for (nadj = 0; nadj < ts->numcost; nadj++) PetscCall(VecScale(VHV[nadj], -1));
   }
   PetscFunctionReturn(0);
 }
@@ -473,7 +473,7 @@ PetscErrorCode TSComputeIHessianProductFunctionUP(TS ts, PetscReal t, Vec U, Vec
   if (ts->rhshessianproduct_gup) {
     PetscInt nadj;
     PetscCall(TSComputeRHSHessianProductFunctionUP(ts, t, U, Vl, Vr, VHV));
-    for (nadj = 0; nadj < ts->numcost; nadj++) { PetscCall(VecScale(VHV[nadj], -1)); }
+    for (nadj = 0; nadj < ts->numcost; nadj++) PetscCall(VecScale(VHV[nadj], -1));
   }
   PetscFunctionReturn(0);
 }
@@ -506,7 +506,7 @@ PetscErrorCode TSComputeIHessianProductFunctionPU(TS ts, PetscReal t, Vec U, Vec
   if (ts->rhshessianproduct_gpu) {
     PetscInt nadj;
     PetscCall(TSComputeRHSHessianProductFunctionPU(ts, t, U, Vl, Vr, VHV));
-    for (nadj = 0; nadj < ts->numcost; nadj++) { PetscCall(VecScale(VHV[nadj], -1)); }
+    for (nadj = 0; nadj < ts->numcost; nadj++) PetscCall(VecScale(VHV[nadj], -1));
   }
   PetscFunctionReturn(0);
 }
@@ -539,7 +539,7 @@ PetscErrorCode TSComputeIHessianProductFunctionPP(TS ts, PetscReal t, Vec U, Vec
   if (ts->rhshessianproduct_gpp) {
     PetscInt nadj;
     PetscCall(TSComputeRHSHessianProductFunctionPP(ts, t, U, Vl, Vr, VHV));
-    for (nadj = 0; nadj < ts->numcost; nadj++) { PetscCall(VecScale(VHV[nadj], -1)); }
+    for (nadj = 0; nadj < ts->numcost; nadj++) PetscCall(VecScale(VHV[nadj], -1));
   }
   PetscFunctionReturn(0);
 }
@@ -932,7 +932,7 @@ PetscErrorCode TSAdjointSetUp(TS ts) {
 
   if (ts->quadraturets) { /* if there is integral in the cost function */
     PetscCall(VecDuplicate(ts->vecs_sensi[0], &ts->vec_drdu_col));
-    if (ts->vecs_sensip) { PetscCall(VecDuplicate(ts->vecs_sensip[0], &ts->vec_drdp_col)); }
+    if (ts->vecs_sensip) PetscCall(VecDuplicate(ts->vecs_sensip[0], &ts->vec_drdp_col));
   }
 
   PetscTryTypeMethod(ts, adjointsetup);
@@ -958,7 +958,7 @@ PetscErrorCode TSAdjointReset(TS ts) {
   PetscTryTypeMethod(ts, adjointreset);
   if (ts->quadraturets) { /* if there is integral in the cost function */
     PetscCall(VecDestroy(&ts->vec_drdu_col));
-    if (ts->vecs_sensip) { PetscCall(VecDestroy(&ts->vec_drdp_col)); }
+    if (ts->vecs_sensip) PetscCall(VecDestroy(&ts->vec_drdp_col));
   }
   ts->vecs_sensi         = NULL;
   ts->vecs_sensip        = NULL;
@@ -1197,7 +1197,7 @@ PetscErrorCode TSAdjointMonitorCancel(TS ts) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   for (i = 0; i < ts->numberadjointmonitors; i++) {
-    if (ts->adjointmonitordestroy[i]) { PetscCall((*ts->adjointmonitordestroy[i])(&ts->adjointmonitorcontext[i])); }
+    if (ts->adjointmonitordestroy[i]) PetscCall((*ts->adjointmonitordestroy[i])(&ts->adjointmonitorcontext[i]));
   }
   ts->numberadjointmonitors = 0;
   PetscFunctionReturn(0);
@@ -1405,7 +1405,7 @@ PetscErrorCode TSAdjointSolve(TS ts) {
     PetscCall(TSAdjointMonitor(ts, ts->steps, ts->ptime, ts->vec_sol, ts->numcost, ts->vecs_sensi, ts->vecs_sensip));
     PetscCall(TSAdjointEventHandler(ts));
     PetscCall(TSAdjointStep(ts));
-    if ((ts->vec_costintegral || ts->quadraturets) && !ts->costintegralfwd) { PetscCall(TSAdjointCostIntegral(ts)); }
+    if ((ts->vec_costintegral || ts->quadraturets) && !ts->costintegralfwd) PetscCall(TSAdjointCostIntegral(ts));
   }
   if (!ts->steps) {
     PetscCall(TSTrajectoryGet(ts->trajectory, ts, ts->steps, &ts->ptime));
@@ -1449,7 +1449,7 @@ PetscErrorCode TSAdjointMonitor(TS ts, PetscInt step, PetscReal ptime, Vec u, Pe
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidHeaderSpecific(u, VEC_CLASSID, 4);
   PetscCall(VecLockReadPush(u));
-  for (i = 0; i < n; i++) { PetscCall((*ts->adjointmonitor[i])(ts, step, ptime, u, numcost, lambda, mu, ts->adjointmonitorcontext[i])); }
+  for (i = 0; i < n; i++) PetscCall((*ts->adjointmonitor[i])(ts, step, ptime, u, numcost, lambda, mu, ts->adjointmonitorcontext[i]));
   PetscCall(VecLockReadPop(u));
   PetscFunctionReturn(0);
 }
@@ -1520,7 +1520,7 @@ PetscErrorCode TSForwardReset(TS ts) {
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscTryTypeMethod(ts, forwardreset);
   PetscCall(MatDestroy(&ts->mat_sensip));
-  if (quadts) { PetscCall(MatDestroy(&quadts->mat_sensip)); }
+  if (quadts) PetscCall(MatDestroy(&quadts->mat_sensip));
   PetscCall(VecDestroy(&ts->vec_sensip_col));
   ts->forward_solve      = PETSC_FALSE;
   ts->forwardsetupcalled = PETSC_FALSE;
@@ -1693,7 +1693,7 @@ PetscErrorCode TSForwardSetInitialSensitivities(TS ts, Mat didp) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidHeaderSpecific(didp, MAT_CLASSID, 2);
-  if (!ts->mat_sensip) { PetscCall(TSForwardSetSensitivities(ts, PETSC_DEFAULT, didp)); }
+  if (!ts->mat_sensip) PetscCall(TSForwardSetSensitivities(ts, PETSC_DEFAULT, didp));
   PetscFunctionReturn(0);
 }
 

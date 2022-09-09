@@ -283,7 +283,7 @@ static PetscErrorCode TransformMesh(UserCtx *user, DM *mesh) {
     PetscCall(SkewMesh(mesh, coordVals, npoints, dim));
     PetscCall(PerturbMesh(mesh, coordVals, npoints, dim));
     break;
-  default: PetscFunctionReturn(-1);
+  default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "invalid mesh transformation");
   }
   PetscCall(VecRestoreArray(coords, &coordVals));
   PetscCall(DMSetCoordinates(*mesh, coords));
@@ -297,7 +297,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, UserCtx *user, DM *mesh) {
   PetscCall(DMSetFromOptions(*mesh));
 
   /* Perform any mesh transformations if specified by user */
-  if (user->mesh_transform != NONE) { PetscCall(TransformMesh(user, mesh)); }
+  if (user->mesh_transform != NONE) PetscCall(TransformMesh(user, mesh));
 
   /* Get any other mesh options from the command line */
   PetscCall(DMSetApplicationContext(*mesh, user));
@@ -340,7 +340,7 @@ static PetscErrorCode SetupProblem(DM dm, UserCtx *user) {
     PetscCall(PetscDSSetExactSolution(prob, 0, sinusoid_u, NULL));
     PetscCall(PetscDSSetExactSolution(prob, 1, sinusoid_p, NULL));
     break;
-  default: PetscFunctionReturn(-1);
+  default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "invalid solution form");
   }
 
   PetscCall(DMGetLabel(dm, "marker", &label));
@@ -447,7 +447,7 @@ int main(int argc, char **argv) {
   /* Tear down */
   PetscCall(VecDestroy(&divErr));
   PetscCall(VecDestroy(&computed));
-  for (i = 0; i < 3; ++i) { PetscCall(ISDestroy(&fieldIS[i])); }
+  for (i = 0; i < 3; ++i) PetscCall(ISDestroy(&fieldIS[i]));
   PetscCall(PetscFree(fieldIS));
   PetscCall(SNESDestroy(&snes));
   PetscCall(DMDestroy(&mesh));

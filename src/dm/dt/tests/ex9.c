@@ -64,7 +64,7 @@ static PetscErrorCode testDerivativesLegendre(PetscInt dim, PetscInt deg, PetscI
 
   /* create a random coefficient vector */
   PetscCall(PetscMalloc2(Np, &lgndre_coeffs, Np, &pkd_coeffs));
-  for (i = 0; i < Np; i++) { PetscCall(PetscRandomGetValueReal(rand, &lgndre_coeffs[i])); }
+  for (i = 0; i < Np; i++) PetscCall(PetscRandomGetValueReal(rand, &lgndre_coeffs[i]));
 
   PetscCall(PetscMalloc2(dim, &degtup, dim, &ktup));
   PetscCall(PetscMalloc1(deg + 1, &degrees));
@@ -89,22 +89,22 @@ static PetscErrorCode testDerivativesLegendre(PetscInt dim, PetscInt deg, PetscI
       PetscReal valj = 1.;
 
       PetscCall(PetscDTIndexToGradedOrder(dim, j, degtup));
-      for (l = 0; l < dim; l++) { valj *= B[l][i * (deg + 1) + degtup[l]]; }
+      for (l = 0; l < dim; l++) valj *= B[l][i * (deg + 1) + degtup[l]];
       val += mul * valj;
     }
-    for (j = 0; j < Np; j++) { pkd_coeffs[j] += proj[j * npoints + i] * val; }
+    for (j = 0; j < Np; j++) pkd_coeffs[j] += proj[j * npoints + i] * val;
   }
-  for (i = 0; i < dim; i++) { PetscCall(PetscFree(B[i])); }
+  for (i = 0; i < dim; i++) PetscCall(PetscFree(B[i]));
   PetscCall(PetscFree(B));
 
   /* create a random point in the biunit simplex */
   PetscCall(PetscMalloc1(dim, &point));
-  for (i = 0; i < dim; i++) { PetscCall(PetscRandomGetValueReal(rand, &point[i])); }
+  for (i = 0; i < dim; i++) PetscCall(PetscRandomGetValueReal(rand, &point[i]));
   for (i = dim - 1; i > 0; i--) {
     PetscReal val = point[i];
     PetscInt  j;
 
-    for (j = 0; j < i; j++) { point[j] = (point[j] + 1.) * (1. - val) * 0.5 - 1.; }
+    for (j = 0; j < i; j++) point[j] = (point[j] + 1.) * (1. - val) * 0.5 - 1.;
   }
 
   PetscCall(PetscMalloc3(Nk * Np, &pkd_jet_basis, Nk, &lgndre_jet, Nk, &pkd_jet));
@@ -112,7 +112,7 @@ static PetscErrorCode testDerivativesLegendre(PetscInt dim, PetscInt deg, PetscI
   PetscCall(PetscDTPKDEvalJet(dim, 1, point, deg, k, pkd_jet_basis));
   for (i = 0; i < Nk; i++) {
     PetscReal val = 0.;
-    for (j = 0; j < Np; j++) { val += pkd_coeffs[j] * pkd_jet_basis[j * Nk + i]; }
+    for (j = 0; j < Np; j++) val += pkd_coeffs[j] * pkd_jet_basis[j * Nk + i];
     pkd_jet[i] = val;
   }
 
@@ -132,11 +132,11 @@ static PetscErrorCode testDerivativesLegendre(PetscInt dim, PetscInt deg, PetscI
       PetscReal val = 1.;
 
       PetscCall(PetscDTIndexToGradedOrder(dim, j, ktup));
-      for (l = 0; l < dim; l++) { val *= D[l][degtup[l] * (k + 1) + ktup[l]]; }
+      for (l = 0; l < dim; l++) val *= D[l][degtup[l] * (k + 1) + ktup[l]];
       lgndre_jet[j] += mul * val;
     }
   }
-  for (i = 0; i < dim; i++) { PetscCall(PetscFree(D[i])); }
+  for (i = 0; i < dim; i++) PetscCall(PetscFree(D[i]));
   PetscCall(PetscFree(D));
 
   for (i = 0; i < Nk; i++) {

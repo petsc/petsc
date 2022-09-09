@@ -28,12 +28,12 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N_inplace(Mat C, Mat A, const MatFacto
   for (i = 0; i < n; i++) {
     nz    = bi[i + 1] - bi[i];
     ajtmp = bj + bi[i];
-    for (j = 0; j < nz; j++) { PetscCall(PetscArrayzero(rtmp + bs2 * ajtmp[j], bs2)); }
+    for (j = 0; j < nz; j++) PetscCall(PetscArrayzero(rtmp + bs2 * ajtmp[j], bs2));
     /* load in initial (unfactored row) */
     nz       = ai[r[i] + 1] - ai[r[i]];
     ajtmpold = aj + ai[r[i]];
     v        = aa + bs2 * ai[r[i]];
-    for (j = 0; j < nz; j++) { PetscCall(PetscArraycpy(rtmp + bs2 * ic[ajtmpold[j]], v + bs2 * j, bs2)); }
+    for (j = 0; j < nz; j++) PetscCall(PetscArraycpy(rtmp + bs2 * ic[ajtmpold[j]], v + bs2 * j, bs2));
     row = *ajtmp++;
     while (row < i) {
       pc = rtmp + bs2 * row;
@@ -50,7 +50,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N_inplace(Mat C, Mat A, const MatFacto
         PetscKernel_A_gets_A_times_B(bs, pc, pv, multiplier);
         nz = bi[row + 1] - diag_offset[row] - 1;
         pv += bs2;
-        for (j = 0; j < nz; j++) { PetscKernel_A_gets_A_minus_B_times_C(bs, rtmp + bs2 * pj[j], pc, pv + bs2 * j); }
+        for (j = 0; j < nz; j++) PetscKernel_A_gets_A_minus_B_times_C(bs, rtmp + bs2 * pj[j], pc, pv + bs2 * j);
         PetscCall(PetscLogFlops(2.0 * bs * bs2 * (nz + 1.0) - bs));
       }
       row = *ajtmp++;
@@ -59,7 +59,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N_inplace(Mat C, Mat A, const MatFacto
     pv = ba + bs2 * bi[i];
     pj = bj + bi[i];
     nz = bi[i + 1] - bi[i];
-    for (j = 0; j < nz; j++) { PetscCall(PetscArraycpy(pv + bs2 * j, rtmp + bs2 * pj[j], bs2)); }
+    for (j = 0; j < nz; j++) PetscCall(PetscArraycpy(pv + bs2 * j, rtmp + bs2 * pj[j], bs2));
     diag = diag_offset[i] - bi[i];
     /* invert diagonal block */
     w    = pv + bs2 * diag;

@@ -107,7 +107,7 @@ int main(int argc, char **argv) {
     int  inum = 0, major = 0, minor = 0, micro = 0;
     PetscCall(PetscSNPrintf(cmd, sizeof(cmd), "%s -info", gmsh));
     PetscCall(PetscPOpen(PETSC_COMM_SELF, NULL, cmd, "r", &fp));
-    if (fp) { inum = fscanf(fp, "Version %s %d.%d.%d", space, &major, &minor, &micro); }
+    if (fp) inum = fscanf(fp, "Version %s %d.%d.%d", space, &major, &minor, &micro);
     PetscCall(PetscPClose(PETSC_COMM_SELF, fp));
     if (inum != 4 || major < 4 || (major == 4 && minor < 2)) {
       PetscCall(PetscPrintf(PETSC_COMM_SELF, "Gmsh>=4.2.0 not available\n"));

@@ -43,9 +43,9 @@ static PetscErrorCode test(PetscInt dim, PetscInt formDegree, PetscInt degree, P
   Hsize = dim * Dsize;
   PetscCall(PetscMalloc3(Bsize, &B, Dsize, &D, Hsize, &H));
   PetscCall(PetscSpaceEvaluate(sp, npoints, points, B, D, H));
-  for (PetscInt i = 0; i < Bsize; i++) { PetscCheck(!PetscIsInfOrNanReal(B[i]), comm, PETSC_ERR_PLIB, "Bad value B[%" PetscInt_FMT "]", i); }
-  for (PetscInt i = 0; i < Dsize; i++) { PetscCheck(!PetscIsInfOrNanReal(D[i]), comm, PETSC_ERR_PLIB, "Bad value D[%" PetscInt_FMT "]", i); }
-  for (PetscInt i = 0; i < Hsize; i++) { PetscCheck(!PetscIsInfOrNanReal(H[i]), comm, PETSC_ERR_PLIB, "Bad value H[%" PetscInt_FMT "]", i); }
+  for (PetscInt i = 0; i < Bsize; i++) PetscCheck(!PetscIsInfOrNanReal(B[i]), comm, PETSC_ERR_PLIB, "Bad value B[%" PetscInt_FMT "]", i);
+  for (PetscInt i = 0; i < Dsize; i++) PetscCheck(!PetscIsInfOrNanReal(D[i]), comm, PETSC_ERR_PLIB, "Bad value D[%" PetscInt_FMT "]", i);
+  for (PetscInt i = 0; i < Hsize; i++) PetscCheck(!PetscIsInfOrNanReal(H[i]), comm, PETSC_ERR_PLIB, "Bad value H[%" PetscInt_FMT "]", i);
   PetscCall(PetscFree3(B, D, H));
   PetscCall(PetscQuadratureDestroy(&quad));
   PetscCall(PetscSpaceDestroy(&sp));
@@ -59,7 +59,7 @@ int main(int argc, char *argv[]) {
     for (PetscInt formDegree = -dim; formDegree <= dim; formDegree++) {
       for (PetscInt degree = 0; degree <= 4; degree++) {
         if (formDegree == 0 && degree == 0) continue;
-        for (PetscInt nCopies = 1; nCopies <= PetscMax(2, dim); nCopies++) { PetscCall(test(dim, formDegree, degree, nCopies)); }
+        for (PetscInt nCopies = 1; nCopies <= PetscMax(2, dim); nCopies++) PetscCall(test(dim, formDegree, degree, nCopies));
       }
     }
   }

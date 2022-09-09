@@ -5,7 +5,7 @@
 #include <petsc/private/drawimpl.h> /*I "petscdraw.h" I*/
 
 /*@
-   PetscDrawTriangle - PetscDraws a triangle  onto a drawable.
+   PetscDrawTriangle - draws a triangle  onto a drawable.
 
    Not Collective
 
@@ -16,7 +16,7 @@
 
    Level: beginner
 
-.seealso: `PetscDrawLine()`, `PetscDrawRectangle()`, `PetscDrawEllipse()`, `PetscDrawMarker()`, `PetscDrawPoint()`, `PetscDrawArrow()`
+.seealso: `PetscDraw`, `PetscDrawLine()`, `PetscDrawRectangle()`, `PetscDrawEllipse()`, `PetscDrawMarker()`, `PetscDrawPoint()`, `PetscDrawArrow()`
 @*/
 PetscErrorCode PetscDrawTriangle(PetscDraw draw, PetscReal x1, PetscReal y_1, PetscReal x2, PetscReal y2, PetscReal x3, PetscReal y3, int c1, int c2, int c3) {
   PetscFunctionBegin;
@@ -28,20 +28,19 @@ PetscErrorCode PetscDrawTriangle(PetscDraw draw, PetscReal x1, PetscReal y_1, Pe
 /*@
    PetscDrawScalePopup - draws a contour scale window.
 
-   Collective on PetscDraw
+   Collective on popop
 
    Input Parameters:
-+  popup - the window (often a window obtained via PetscDrawGetPopup()
++  popup - the window (often a window obtained via `PetscDrawGetPopup()`
 .  min - minimum value being plotted
 -  max - maximum value being plotted
 
    Level: intermediate
 
-   Notes:
+   Note:
     All processors that share the draw MUST call this routine
 
-.seealso: `PetscDrawGetPopup()`, `PetscDrawTensorContour()`
-
+.seealso: `PetscDraw`, `PetscDrawGetPopup()`, `PetscDrawTensorContour()`
 @*/
 PetscErrorCode PetscDrawScalePopup(PetscDraw popup, PetscReal min, PetscReal max) {
   PetscBool   isnull;
@@ -95,17 +94,16 @@ static PetscErrorCode PetscDrawTensorContour_Zoom(PetscDraw win, void *dctx) {
   PetscFunctionBegin;
   PetscCall(PetscDrawTensorContourPatch(win, ctx->m, ctx->n, ctx->x, ctx->y, ctx->min, ctx->max, ctx->v));
   if (ctx->showgrid) {
-    for (i = 0; i < ctx->m; i++) { PetscCall(PetscDrawLine(win, ctx->x[i], ctx->y[0], ctx->x[i], ctx->y[ctx->n - 1], PETSC_DRAW_BLACK)); }
-    for (i = 0; i < ctx->n; i++) { PetscCall(PetscDrawLine(win, ctx->x[0], ctx->y[i], ctx->x[ctx->m - 1], ctx->y[i], PETSC_DRAW_BLACK)); }
+    for (i = 0; i < ctx->m; i++) PetscCall(PetscDrawLine(win, ctx->x[i], ctx->y[0], ctx->x[i], ctx->y[ctx->n - 1], PETSC_DRAW_BLACK));
+    for (i = 0; i < ctx->n; i++) PetscCall(PetscDrawLine(win, ctx->x[0], ctx->y[i], ctx->x[ctx->m - 1], ctx->y[i], PETSC_DRAW_BLACK));
   }
   PetscFunctionReturn(0);
 }
 
 /*@C
-   PetscDrawTensorContour - PetscDraws a contour plot for a two-dimensional array
-   that is stored as a PETSc vector.
+   PetscDrawTensorContour - draws a contour plot for a two-dimensional array
 
-   Collective on PetscDraw, but PetscDraw must be sequential
+   Collective on draw, but draw must be sequential
 
    Input Parameters:
 +   draw  - the draw context
@@ -116,12 +114,11 @@ static PetscErrorCode PetscDrawTensorContour_Zoom(PetscDraw win, void *dctx) {
 
    Options Database Keys:
 +  -draw_x_shared_colormap - Indicates use of private colormap
--  -draw_contour_grid - PetscDraws grid contour
+-  -draw_contour_grid - draws grid contour
 
    Level: intermediate
 
-.seealso: `PetscDrawTensorContourPatch()`, `PetscDrawScalePopup()`
-
+.seealso: `PetscDraw`, `PetscDrawTensorContourPatch()`, `PetscDrawScalePopup()`
 @*/
 PetscErrorCode PetscDrawTensorContour(PetscDraw draw, int m, int n, const PetscReal xi[], const PetscReal yi[], PetscReal *v) {
   int         N = m * n;
@@ -185,7 +182,7 @@ PetscErrorCode PetscDrawTensorContour(PetscDraw draw, int m, int n, const PetscR
 }
 
 /*@
-   PetscDrawTensorContourPatch - PetscDraws a rectangular patch of a contour plot
+   PetscDrawTensorContourPatch - draws a rectangular patch of a contour plot
    for a two-dimensional array.
 
    Not Collective
@@ -204,10 +201,9 @@ PetscErrorCode PetscDrawTensorContour(PetscDraw draw, int m, int n, const PetscR
 
    Note:
    This is a lower level support routine, usually the user will call
-   PetscDrawTensorContour().
+   `PetscDrawTensorContour()`.
 
-.seealso: `PetscDrawTensorContour()`
-
+.seealso: `PetscDraw`, `PetscDrawTensorContour()`
 @*/
 PetscErrorCode PetscDrawTensorContourPatch(PetscDraw draw, int m, int n, PetscReal *x, PetscReal *y, PetscReal min, PetscReal max, PetscReal *v) {
   int       c1, c2, c3, c4, i, j;

@@ -155,9 +155,9 @@ static PetscErrorCode MatDestroy_SubMatrix(Mat N) {
 }
 
 /*@
-   MatCreateSubMatrixVirtual - Creates a virtual matrix that acts as a submatrix
+   MatCreateSubMatrixVirtual - Creates a virtual matrix `MATSUBMATRIX` that acts as a submatrix
 
-   Collective on Mat
+   Collective on A
 
    Input Parameters:
 +  A - matrix that we will extract a submatrix of
@@ -169,10 +169,13 @@ static PetscErrorCode MatDestroy_SubMatrix(Mat N) {
 
    Level: developer
 
-   Notes:
-   Most will use MatCreateSubMatrix which provides a more efficient representation if it is available.
+   Note:
+   Most will use `MatCreateSubMatrix()` which provides a more efficient representation if it is available.
 
-.seealso: `MatCreateSubMatrix()`, `MatSubMatrixVirtualUpdate()`
+   Developer Note:
+   The `MatType` is `MATSUBMATRIX` but the routines associated have `SubMatrixVirtual` in them, the `MatType` should likely be changed
+
+.seealso: `MATSUBMATRIX`, `MATLOCALREF`, `MatCreateLocalRef()`, `MatCreateSubMatrix()`, `MatSubMatrixVirtualUpdate()`
 @*/
 PetscErrorCode MatCreateSubMatrixVirtual(Mat A, IS isrow, IS iscol, Mat *newmat) {
   Vec             left, right;
@@ -235,10 +238,21 @@ PetscErrorCode MatCreateSubMatrixVirtual(Mat A, IS isrow, IS iscol, Mat *newmat)
   PetscFunctionReturn(0);
 }
 
-/*@
-   MatSubMatrixVirtualUpdate - Updates a submatrix
+/*MC
+   MATSUBMATRIX - "submatrix" - A matrix type that represents a virtual submatrix of a matrix
 
-   Collective on Mat
+  Level: advanced
+
+  Developer Note:
+  This should be named `MATSUBMATRIXVIRTUAL`
+
+.seealso: `Mat`, `MatCreateSubMatrixVirtual()`, `MatCreateSubMatrixVirtual()`, `MatCreateSubMatrix()`
+M*/
+
+/*@
+   MatSubMatrixVirtualUpdate - Updates a `MATSUBMATRIX` virtual submatrix
+
+   Collective on N
 
    Input Parameters:
 +  N - submatrix to update
@@ -248,10 +262,10 @@ PetscErrorCode MatCreateSubMatrixVirtual(Mat A, IS isrow, IS iscol, Mat *newmat)
 
    Level: developer
 
-   Notes:
-   Most will use MatCreateSubMatrix which provides a more efficient representation if it is available.
+   Note:
+   Most will use `MatCreateSubMatrix()` which provides a more efficient representation if it is available.
 
-.seealso: `MatCreateSubMatrixVirtual()`
+.seealso: MATSUBMATRIX`, `MatCreateSubMatrixVirtual()`
 @*/
 PetscErrorCode MatSubMatrixVirtualUpdate(Mat N, Mat A, IS isrow, IS iscol) {
   PetscBool       flg;

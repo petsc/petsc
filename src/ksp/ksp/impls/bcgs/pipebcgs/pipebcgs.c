@@ -43,7 +43,7 @@ static PetscErrorCode KSPSolve_PIPEBCGS(KSP ksp) {
   /* Only supports right preconditioning */
   PetscCheck(ksp->pc_side == PC_RIGHT, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "KSP pipebcgs does not support %s", PCSides[ksp->pc_side]);
   if (!ksp->guess_zero) {
-    if (!bcgs->guess) { PetscCall(VecDuplicate(X, &bcgs->guess)); }
+    if (!bcgs->guess) PetscCall(VecDuplicate(X, &bcgs->guess));
     PetscCall(VecCopy(X, bcgs->guess));
   } else {
     PetscCall(VecSet(X, 0.0));
@@ -155,7 +155,7 @@ static PetscErrorCode KSPSolve_PIPEBCGS(KSP ksp) {
     PetscCall(KSP_PCApply(ksp, W, W2));          /* w2 <- K w */
     PetscCall(KSP_MatMult(ksp, pc->mat, W2, T)); /* t <- A w2 */
 
-    if (ksp->normtype != KSP_NORM_NONE && ksp->chknorm < i + 2) { PetscCall(VecNormEnd(R, NORM_2, &dp)); }
+    if (ksp->normtype != KSP_NORM_NONE && ksp->chknorm < i + 2) PetscCall(VecNormEnd(R, NORM_2, &dp));
     PetscCall(VecDotEnd(R, RP, &rho));
     PetscCall(VecDotEnd(S, RP, &d1));
     PetscCall(VecDotEnd(W, RP, &d2));

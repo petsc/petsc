@@ -293,7 +293,7 @@ PetscErrorCode VecScatterGetRemoteOrdered_Private(VecScatter sf, PetscBool send,
   if (PetscUnlikelyDebug(n && procs)) {
     PetscInt i;
     /* from back to front to also handle cases *n=0 */
-    for (i = *n - 1; i > 0; i--) { PetscCheck((*procs)[i - 1] <= (*procs)[i], PETSC_COMM_SELF, PETSC_ERR_PLIB, "procs[] are not ordered"); }
+    for (i = *n - 1; i > 0; i--) PetscCheck((*procs)[i - 1] <= (*procs)[i], PETSC_COMM_SELF, PETSC_ERR_PLIB, "procs[] are not ordered");
   }
   PetscFunctionReturn(0);
 }

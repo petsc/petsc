@@ -33,7 +33,7 @@ int main(int argc, char **args) {
   PetscCheck(size == 1, PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "This is a uniprocessor example only!");
 
   PetscCall(PetscOptionsHasName(NULL, NULL, "-test_syev", &flg));
-  if (flg) { TestSYEVX = PETSC_FALSE; }
+  if (flg) TestSYEVX = PETSC_FALSE;
 
   /* Determine files from which we read the two matrices */
   PetscCall(PetscOptionsGetString(NULL, NULL, "-f", file[0], sizeof(file[0]), &flg));
@@ -237,7 +237,7 @@ PetscErrorCode CkEigenSolutions(PetscInt cklvl, Mat A, PetscInt il, PetscInt iu,
       norm = PetscAbsScalar(norm);
       if (norm > norm_max) norm_max = norm;
       /* sniff, and bark if necessary */
-      if (norm > tols[0]) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "  residual violation: %" PetscInt_FMT ", resi: %g\n", i, (double)norm)); }
+      if (norm > tols[0]) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  residual violation: %" PetscInt_FMT ", resi: %g\n", i, (double)norm));
     }
     PetscCall(PetscPrintf(PETSC_COMM_SELF, "    max_resi:                    %g\n", (double)norm_max));
     break;

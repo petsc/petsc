@@ -30,7 +30,7 @@ typedef void *dlsymbol_t;
 #endif
 
 /*@C
-   PetscDLOpen - opens dynamic library
+   PetscDLOpen - opens a dynamic library
 
    Not Collective
 
@@ -39,7 +39,7 @@ typedef void *dlsymbol_t;
 -    mode - options on how to open library
 
    Output Parameter:
-.    handle - opaque pointer to be used with PetscDLSym()
+.    handle - opaque pointer to be used with `PetscDLSym()`
 
    Level: developer
 
@@ -129,7 +129,7 @@ PetscErrorCode PetscDLOpen(const char name[], PetscDLMode mode, PetscDLHandle *h
    Not Collective
 
   Input Parameter:
-.   handle - the handle for the library obtained with PetscDLOpen()
+.   handle - the handle for the library obtained with `PetscDLOpen()`
 
   Level: developer
 
@@ -192,7 +192,7 @@ PetscErrorCode PetscDLClose(PetscDLHandle *handle) {
    Not Collective
 
    Input Parameters:
-+   handle - obtained with PetscDLOpen() or NULL
++   handle - obtained with `PetscDLOpen()` or NULL
 -   symbol - name of symbol
 
    Output Parameter:
@@ -200,7 +200,7 @@ PetscErrorCode PetscDLClose(PetscDLHandle *handle) {
 
    Level: developer
 
-  Notes:
+  Note:
    If handle is NULL, the symbol is looked for in the main executable's dynamic symbol table.
    In order to be dynamically loadable, the symbol has to be exported as such.  On many UNIX-like
    systems this requires platform-specific linker flags.
@@ -303,7 +303,7 @@ PetscErrorCode PetscDLSym(PetscDLHandle handle, const char symbol[], void **valu
   Not Collective
 
   Input Parameters:
-+ handle - obtained with PetscDLOpen() or NULL
++ handle - obtained with `PetscDLOpen()` or NULL
 - func   - pointer to the function, NULL if not found
 
   Output Parameter:

@@ -22,7 +22,7 @@
 /*@C
     PetscGetHostName - Returns the name of the host. This attempts to
     return the entire Internet name. It may not return the same name
-    as MPI_Get_processor_name().
+    as `MPI_Get_processor_name()`.
 
     Not Collective
 
@@ -35,7 +35,7 @@
 
     Level: developer
 
-   Fortran Version:
+   Fortran Note:
    In Fortran this routine has the format
 
 $       character*(64) name

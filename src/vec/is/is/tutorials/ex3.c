@@ -28,7 +28,7 @@ int main(int argc, char **argv) {
   PetscCall(ISGetLocalSize(set, &issize));
   PetscCall(ISGetIndices(set, &indices));
   PetscCall(PetscPrintf(PETSC_COMM_SELF, "Printing indices directly\n"));
-  for (i = 0; i < issize; i++) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "%" PetscInt_FMT "\n", indices[i])); }
+  for (i = 0; i < issize; i++) PetscCall(PetscPrintf(PETSC_COMM_SELF, "%" PetscInt_FMT "\n", indices[i]));
   PetscCall(ISRestoreIndices(set, &indices));
 
   /*
@@ -36,7 +36,7 @@ int main(int argc, char **argv) {
   */
   PetscCall(ISBlockGetIndices(set, &indices));
   PetscCall(PetscPrintf(PETSC_COMM_SELF, "Printing block indices directly\n"));
-  for (i = 0; i < n; i++) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "%" PetscInt_FMT "\n", indices[i])); }
+  for (i = 0; i < n; i++) PetscCall(PetscPrintf(PETSC_COMM_SELF, "%" PetscInt_FMT "\n", indices[i]));
   PetscCall(ISBlockRestoreIndices(set, &indices));
 
   /*

@@ -132,7 +132,7 @@ int main(int argc, char **args) {
       PetscCall(PetscStrcmp(type[j], MATMPISBAIJ, &ismpisbaij));
       PetscCall(PetscStrcmp(type[j], MATMPISBAIJ, &isseqsbaij));
       if (!issymmetric && (ismpisbaij || isseqsbaij)) continue;
-      if (verbose > 0) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, " \n[%d] test conversion between %s and %s\n", rank, type[i], type[j])); }
+      if (verbose > 0) PetscCall(PetscPrintf(PETSC_COMM_WORLD, " \n[%d] test conversion between %s and %s\n", rank, type[i], type[j]));
 
       if (rank == 0 && verbose) printf("Convert %s A to %s B\n", type[i], type[j]);
       PetscCall(MatConvert(A, type[j], MAT_INITIAL_MATRIX, &B));

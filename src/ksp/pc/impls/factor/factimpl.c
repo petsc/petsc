@@ -8,7 +8,7 @@ PetscErrorCode PCFactorSetUpMatSolverType_Factor(PC pc) {
 
   PetscFunctionBegin;
   PetscCheck(pc->pmat, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONGSTATE, "You can only call this routine after the matrix object has been provided to the solver, for example with KSPSetOperators() or SNESSetJacobian()");
-  if (!pc->setupcalled && !((PC_Factor *)icc)->fact) { PetscCall(MatGetFactor(pc->pmat, ((PC_Factor *)icc)->solvertype, ((PC_Factor *)icc)->factortype, &((PC_Factor *)icc)->fact)); }
+  if (!pc->setupcalled && !((PC_Factor *)icc)->fact) PetscCall(MatGetFactor(pc->pmat, ((PC_Factor *)icc)->solvertype, ((PC_Factor *)icc)->factortype, &((PC_Factor *)icc)->fact));
   PetscFunctionReturn(0);
 }
 
@@ -236,10 +236,11 @@ PetscErrorCode PCSetFromOptions_Factor(PC pc, PetscOptionItems *PetscOptionsObje
 }
 
 PetscErrorCode PCView_Factor(PC pc, PetscViewer viewer) {
-  PC_Factor      *factor = (PC_Factor *)pc->data;
-  PetscBool       isstring, iascii, canuseordering;
-  MatInfo         info;
-  MatOrderingType ordering;
+  PC_Factor        *factor = (PC_Factor *)pc->data;
+  PetscBool         isstring, iascii, canuseordering;
+  MatInfo           info;
+  MatOrderingType   ordering;
+  PetscViewerFormat format;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSTRING, &isstring));
@@ -285,7 +286,8 @@ PetscErrorCode PCView_Factor(PC pc, PetscViewer viewer) {
         PetscCall(PetscViewerASCIIPushTab(viewer));
         PetscCall(PetscViewerASCIIPushTab(viewer));
         PetscCall(PetscViewerASCIIPushTab(viewer));
-        PetscCall(PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_INFO));
+        PetscCall(PetscViewerGetFormat(viewer, &format));
+        PetscCall(PetscViewerPushFormat(viewer, format != PETSC_VIEWER_ASCII_INFO_DETAIL ? PETSC_VIEWER_ASCII_INFO : PETSC_VIEWER_ASCII_INFO_DETAIL));
         PetscCall(MatView(factor->fact, viewer));
         PetscCall(PetscViewerPopFormat(viewer));
         PetscCall(PetscViewerASCIIPopTab(viewer));
@@ -297,7 +299,7 @@ PetscErrorCode PCView_Factor(PC pc, PetscViewer viewer) {
   } else if (isstring) {
     MatFactorType t;
     PetscCall(MatGetFactorType(factor->fact, &t));
-    if (t == MAT_FACTOR_ILU || t == MAT_FACTOR_ICC) { PetscCall(PetscViewerStringSPrintf(viewer, " lvls=%" PetscInt_FMT ",order=%s", (PetscInt)factor->info.levels, factor->ordering)); }
+    if (t == MAT_FACTOR_ILU || t == MAT_FACTOR_ICC) PetscCall(PetscViewerStringSPrintf(viewer, " lvls=%" PetscInt_FMT ",order=%s", (PetscInt)factor->info.levels, factor->ordering));
   }
   PetscFunctionReturn(0);
 }

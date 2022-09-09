@@ -17,7 +17,7 @@ int main(int argc, char **argv) {
   /* Create matrix and three vectors: these are all normal */
   PetscCall(PetscMalloc1(lda * size, &b));
   for (i = 0; i < size; i++) {
-    for (j = 0; j < size; j++) { b[i + j * lda] = rand(); }
+    for (j = 0; j < size; j++) b[i + j * lda] = rand();
   }
   PetscCall(MatCreate(MPI_COMM_SELF, &A));
   PetscCall(MatSetSizes(A, size, size, size, size));
@@ -26,7 +26,7 @@ int main(int argc, char **argv) {
 
   PetscCall(MatDenseGetArray(A, &a));
   for (i = 0; i < size; i++) {
-    for (j = 0; j < size; j++) { a[i + j * size] = b[i + j * lda]; }
+    for (j = 0; j < size; j++) a[i + j * size] = b[i + j * lda];
   }
   PetscCall(MatDenseRestoreArray(A, &a));
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));

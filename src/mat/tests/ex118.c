@@ -88,7 +88,7 @@ int main(int argc, char **args) {
   tols[1] = 1.e-8;
   PetscCall(CkEigenSolutions(cklvl, T, il - 1, iu - 1, evals, evecs, tols));
 
-  for (i = 0; i < nevs; i++) { PetscCall(VecResetArray(evecs[i])); }
+  for (i = 0; i < nevs; i++) PetscCall(VecResetArray(evecs[i]));
 
   /* free space */
 
@@ -169,7 +169,7 @@ PetscErrorCode CkEigenSolutions(PetscInt cklvl, Mat A, PetscInt il, PetscInt iu,
       norm = PetscAbsReal(norm);
       if (norm > norm_max) norm_max = norm;
 #if defined(DEBUG_CkEigenSolutions)
-      if (norm > tols[0]) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "  residual violation: %d, resi: %g\n", i, norm)); }
+      if (norm > tols[0]) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  residual violation: %d, resi: %g\n", i, norm));
 #endif
     }
     PetscCall(PetscPrintf(PETSC_COMM_SELF, "    max_resi:                    %g\n", (double)norm_max));

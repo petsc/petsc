@@ -78,7 +78,7 @@ static PetscErrorCode DMStagGetProductCoordinateArrays_Private(DM dm, void *arrX
       for (s = 0; s < DMSTAG_MAX_STRATA; ++s) dofCheck[s] = dof[s];
       checkDof = PETSC_TRUE;
     } else {
-      for (s = 0; s < DMSTAG_MAX_STRATA; ++s) { PetscCheck(dofCheck[s] == dof[s], PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "Coordinate sub-DMs have different dofs"); }
+      for (s = 0; s < DMSTAG_MAX_STRATA; ++s) PetscCheck(dofCheck[s] == dof[s], PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "Coordinate sub-DMs have different dofs");
     }
     PetscCall(DMGetCoordinatesLocal(subDM, &coord1d_local));
     if (read) {
@@ -209,7 +209,7 @@ PETSC_EXTERN PetscErrorCode DMStagGetProductCoordinateLocationSlot(DM dm, DMStag
       for (s = 0; s < DMSTAG_MAX_STRATA; ++s) dofCheck[s] = dof[s];
       PetscCall(DMStagGetLocationSlot(subDM, loc, component, slot));
     } else {
-      for (s = 0; s < DMSTAG_MAX_STRATA; ++s) { PetscCheck(dofCheck[s] == dof[s], PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "Coordinate sub-DMs have different dofs"); }
+      for (s = 0; s < DMSTAG_MAX_STRATA; ++s) PetscCheck(dofCheck[s] == dof[s], PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "Coordinate sub-DMs have different dofs");
     }
   }
   PetscFunctionReturn(0);
@@ -1224,7 +1224,7 @@ PetscErrorCode DMStagSetOwnershipRanges(DM dm, PetscInt const *lx, PetscInt cons
   for (d = 0; d < dim; ++d) {
     if (lin[d]) {
       PetscCheck(stag->nRanks[d] >= 0, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "Cannot set ownership ranges before setting number of ranks");
-      if (!stag->l[d]) { PetscCall(PetscMalloc1(stag->nRanks[d], &stag->l[d])); }
+      if (!stag->l[d]) PetscCall(PetscMalloc1(stag->nRanks[d], &stag->l[d]));
       PetscCall(PetscArraycpy(stag->l[d], lin[d], stag->nRanks[d]));
     }
   }
@@ -1380,6 +1380,9 @@ PetscErrorCode DMStagSetUniformCoordinatesProduct(DM dm, PetscReal xmin, PetscRe
 
     /* Create sub-DMs living on these new communicators (which are destroyed by DMProduct) */
     PetscCall(DMStagCreate1d(subcomm, stag->boundaryType[d], stag->N[d], dof0, dof1, stag->stencilType, stag->stencilWidth, stag->l[d], &subdm));
+    /* Copy vector and matrix type information from parent DM */
+    PetscCall(DMSetVecType(subdm, dm->vectype));
+    PetscCall(DMSetMatType(subdm, dm->mattype));
     PetscCall(DMSetUp(subdm));
     switch (d) {
     case 0: PetscCall(DMStagSetUniformCoordinatesExplicit(subdm, xmin, xmax, 0, 0, 0, 0)); break;

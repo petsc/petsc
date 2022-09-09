@@ -173,7 +173,7 @@ static PetscErrorCode MatDestroy_SuperLU_DIST(Mat A) {
   if (lu->CleanUpSuperLU_Dist) {
     /* Deallocate SuperLU_DIST storage */
     PetscStackCallExternalVoid("SuperLU_DIST:Destroy_CompRowLoc_Matrix_dist", Destroy_CompRowLoc_Matrix_dist(&lu->A_sup));
-    if (lu->options.SolveInitialized) { PetscStackCallExternalVoid("SuperLU_DIST:SolveFinalize", SolveFinalize(&lu->options, &lu->SOLVEstruct)); }
+    if (lu->options.SolveInitialized) PetscStackCallExternalVoid("SuperLU_DIST:SolveFinalize", SolveFinalize(&lu->options, &lu->SOLVEstruct));
 #if PETSC_PKG_SUPERLU_DIST_VERSION_GE(7, 2, 0)
     if (lu->use3d) {
       if (lu->grid3d.zscp.Iam == 0) {
@@ -293,7 +293,7 @@ static PetscErrorCode MatMatSolve_SuperLU_DIST(Mat A, Mat B_mpi, Mat X) {
     PetscStackCallExternalVoid("SuperLU_DIST:SolveFinalize", SolveFinalize(&lu->options, &lu->SOLVEstruct));
     lu->options.SolveInitialized = NO;
   }
-  if (X != B_mpi) { PetscCall(MatCopy(B_mpi, X, SAME_NONZERO_PATTERN)); }
+  if (X != B_mpi) PetscCall(MatCopy(B_mpi, X, SAME_NONZERO_PATTERN));
 
   PetscCall(MatGetSize(B_mpi, NULL, &nrhs));
 
@@ -663,7 +663,7 @@ static PetscErrorCode MatView_Info_SuperLU_DIST(Mat A, PetscViewer viewer) {
    * format spec for int64_t is set to %d for whatever reason */
   PetscCall(PetscViewerASCIIPrintf(viewer, "  Process grid nprow %lld x npcol %lld \n", (long long)lu->nprow, (long long)lu->npcol));
 #if PETSC_PKG_SUPERLU_DIST_VERSION_GE(7, 2, 0)
-  if (lu->use3d) { PetscCall(PetscViewerASCIIPrintf(viewer, "  Using 3d decomposition with npdep %lld \n", (long long)lu->npdep)); }
+  if (lu->use3d) PetscCall(PetscViewerASCIIPrintf(viewer, "  Using 3d decomposition with npdep %lld \n", (long long)lu->npdep));
 #endif
 
   PetscCall(PetscViewerASCIIPrintf(viewer, "  Equilibrate matrix %s \n", PetscBools[options.Equil != NO]));
@@ -711,7 +711,7 @@ static PetscErrorCode MatView_SuperLU_DIST(Mat A, PetscViewer viewer) {
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   if (iascii) {
     PetscCall(PetscViewerGetFormat(viewer, &format));
-    if (format == PETSC_VIEWER_ASCII_INFO) { PetscCall(MatView_Info_SuperLU_DIST(A, viewer)); }
+    if (format == PETSC_VIEWER_ASCII_INFO) PetscCall(MatView_Info_SuperLU_DIST(A, viewer));
   }
   PetscFunctionReturn(0);
 }
@@ -795,7 +795,7 @@ PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_SuperLU_DIST(void) {
 
   Use -pc_type lu -pc_factor_mat_solver_type superlu_dist to use this direct solver
 
-   Works with AIJ matrices
+   Works with `MATAIJ` matrices
 
   Options Database Keys:
 + -mat_superlu_dist_r <n> - number of rows in processor partition
@@ -810,13 +810,10 @@ PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_SuperLU_DIST(void) {
 . -mat_superlu_dist_iterrefine - use iterative refinement
 - -mat_superlu_dist_statprint - print factorization information
 
-  Notes:
+  Note:
     If PETSc was configured with --with-cuda than this solver will automatically use the GPUs.
 
   Level: beginner
 
-.seealso: `PCLU`
-
-.seealso: `PCFactorSetMatSolverType()`, `MatSolverType`
-
+.seealso: `PCLU`, `PCFactorSetMatSolverType()`, `MatSolverType`, `MatGetFactor()`
 M*/

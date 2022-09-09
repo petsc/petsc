@@ -45,7 +45,7 @@ int main(int argc, char **argv) {
   PetscCall(PetscDrawHGGetAxis(hist, &axis));
   PetscCall(PetscDrawAxisSetColors(axis, PETSC_DRAW_BLACK, PETSC_DRAW_RED, PETSC_DRAW_BLUE));
   PetscCall(PetscDrawAxisSetLabels(axis, toplabel, xlabel, ylabel));
-  /*PetscCall(PetscDrawHGSetFromOptions(hist));*/
+  /* PetscCall(PetscDrawHGSetFromOptions(hist)); */
 
   for (i = 0; i < n; i++) {
     xd = (PetscReal)(i - 5);

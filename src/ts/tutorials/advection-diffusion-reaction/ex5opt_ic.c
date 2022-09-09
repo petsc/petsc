@@ -335,7 +335,7 @@ PetscErrorCode FormFunctionAndGradient(Tao tao, Vec P, PetscReal *f, Vec G, void
   PetscFunctionBeginUser;
   PetscCall(TSSetTime(appctx->ts, 0.0));
   PetscCall(TSGetTimeStep(appctx->ts, &timestep));
-  if (timestep < 0) { PetscCall(TSSetTimeStep(appctx->ts, -timestep)); }
+  if (timestep < 0) PetscCall(TSSetTimeStep(appctx->ts, -timestep));
   PetscCall(TSSetStepNumber(appctx->ts, 0));
   PetscCall(TSSetFromOptions(appctx->ts));
 

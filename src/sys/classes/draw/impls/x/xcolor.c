@@ -185,7 +185,7 @@ PetscErrorCode PetscDrawSetColormap_X(PetscDraw_X *XiWin, Colormap colormap) {
   PetscFunctionBegin;
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-draw_fast", &fast, NULL));
   PetscCheck(XiWin->depth >= 8, PETSC_COMM_SELF, PETSC_ERR_SUP_SYS, "PETSc Graphics require monitors with at least 8 bit color (256 colors)");
-  if (!gColormap) { PetscCall(PetscDrawSetUpColormap_X(XiWin->disp, XiWin->screen, XiWin->vis, colormap)); }
+  if (!gColormap) PetscCall(PetscDrawSetUpColormap_X(XiWin->disp, XiWin->screen, XiWin->vis, colormap));
   XiWin->cmap     = gColormap;
   XiWin->cmapsize = fast ? PETSC_DRAW_BASIC_COLORS : PETSC_DRAW_MAXCOLOR;
   PetscCall(PetscMemcpy(XiWin->cmapping, gCmapping, sizeof(XiWin->cmapping)));

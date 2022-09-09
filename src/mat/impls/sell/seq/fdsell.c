@@ -32,7 +32,7 @@ PetscErrorCode MatGetColumnIJ_SeqSELL_Color(Mat A, PetscInt oshift, PetscBool sy
   }
 
   cia[0] = oshift;
-  for (i = 0; i < n; i++) { cia[i + 1] = cia[i] + collengths[i]; }
+  for (i = 0; i < n; i++) cia[i + 1] = cia[i] + collengths[i];
   PetscCall(PetscArrayzero(collengths, n));
 
   for (i = 0; i < totalslices; i++) { /* loop over slices */

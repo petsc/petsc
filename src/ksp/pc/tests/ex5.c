@@ -115,11 +115,11 @@ int main(int Argc, char **Args) {
     PetscCall(VecCreateSeq(PETSC_COMM_SELF, N[i], &x));
 
     X[levels - 1 - i] = x;
-    if (i > 0) { PetscCall(PCMGSetX(pcmg, levels - 1 - i, x)); }
+    if (i > 0) PetscCall(PCMGSetX(pcmg, levels - 1 - i, x));
     PetscCall(VecCreateSeq(PETSC_COMM_SELF, N[i], &x));
 
     B[levels - 1 - i] = x;
-    if (i > 0) { PetscCall(PCMGSetRhs(pcmg, levels - 1 - i, x)); }
+    if (i > 0) PetscCall(PCMGSetRhs(pcmg, levels - 1 - i, x));
     PetscCall(VecCreateSeq(PETSC_COMM_SELF, N[i], &x));
 
     R[levels - 1 - i] = x;
@@ -163,7 +163,7 @@ int main(int Argc, char **Args) {
     PetscCall(VecDestroy(&B[i]));
     if (i) PetscCall(VecDestroy(&R[i]));
   }
-  for (i = 0; i < levels - 1; i++) { PetscCall(MatDestroy(&mat[i])); }
+  for (i = 0; i < levels - 1; i++) PetscCall(MatDestroy(&mat[i]));
   PetscCall(MatDestroy(&cmat));
   PetscCall(MatDestroy(&fmat));
   PetscCall(KSPDestroy(&kspmg));

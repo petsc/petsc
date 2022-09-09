@@ -111,6 +111,7 @@ exec-name``.
 
 - Add ``VecSetPreallocationCOO()``, ``VecSetValuesCOO()`` and ``VecSetPreallocationCOOLocal()`` to support vector assembly with coordinates
 - Add ``VecStrideSum()`` and ``VecStrideSumAll()`` for summing subvectors of strided vectors
+- Add ``VecCreateLocalVector()`` to be used for calls involving ``Vec{Get|Restore}LocalVector()``
 
 .. rubric:: PetscSection:
 
@@ -136,6 +137,8 @@ exec-name``.
 - Add ``MatTransposeSymbolic()``
 - Add ``MatShellSetContextDestroy()`` and add internal refrence counting for user defined ``MatShell`` context data
 - Add ``MatShellSetContextDestroy()`` and add internal reference counting for user defined ``MatShell`` context data
+- Change ``MATTRANPOSEMAT`` to ``MATTRANPOSEVIRTUAL``
+- Add ``MATHERMITIANTRANSPOSEVIRTUAL``
 
 .. rubric:: MatCoarsen:
 

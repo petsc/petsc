@@ -90,6 +90,7 @@ struct _VecOps {
   PetscErrorCode (*stridesubsetscatter)(Vec, PetscInt, const PetscInt[], const PetscInt[], Vec, InsertMode);
   PetscErrorCode (*viewnative)(Vec, PetscViewer);
   PetscErrorCode (*loadnative)(Vec, PetscViewer);
+  PetscErrorCode (*createlocalvector)(Vec, Vec *);
   PetscErrorCode (*getlocalvector)(Vec, Vec);
   PetscErrorCode (*restorelocalvector)(Vec, Vec);
   PetscErrorCode (*getlocalvectorread)(Vec, Vec);

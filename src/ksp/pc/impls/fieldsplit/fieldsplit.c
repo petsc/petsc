@@ -106,16 +106,16 @@ static PetscErrorCode PCView_FieldSplit(PC pc, PetscViewer viewer) {
     } else {
       PetscCall(PetscViewerASCIIPrintf(viewer, "  FieldSplit with %s composition: total splits = %" PetscInt_FMT "\n", PCCompositeTypes[jac->type], jac->nsplits));
     }
-    if (pc->useAmat) { PetscCall(PetscViewerASCIIPrintf(viewer, "  using Amat (not Pmat) as operator for blocks\n")); }
-    if (jac->diag_use_amat) { PetscCall(PetscViewerASCIIPrintf(viewer, "  using Amat (not Pmat) as operator for diagonal blocks\n")); }
-    if (jac->offdiag_use_amat) { PetscCall(PetscViewerASCIIPrintf(viewer, "  using Amat (not Pmat) as operator for off-diagonal blocks\n")); }
+    if (pc->useAmat) PetscCall(PetscViewerASCIIPrintf(viewer, "  using Amat (not Pmat) as operator for blocks\n"));
+    if (jac->diag_use_amat) PetscCall(PetscViewerASCIIPrintf(viewer, "  using Amat (not Pmat) as operator for diagonal blocks\n"));
+    if (jac->offdiag_use_amat) PetscCall(PetscViewerASCIIPrintf(viewer, "  using Amat (not Pmat) as operator for off-diagonal blocks\n"));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Solver info for each split is in the following KSP objects:\n"));
     for (i = 0; i < jac->nsplits; i++) {
       if (ilink->fields) {
         PetscCall(PetscViewerASCIIPrintf(viewer, "Split number %" PetscInt_FMT " Fields ", i));
         PetscCall(PetscViewerASCIIUseTabs(viewer, PETSC_FALSE));
         for (j = 0; j < ilink->nfields; j++) {
-          if (j > 0) { PetscCall(PetscViewerASCIIPrintf(viewer, ",")); }
+          if (j > 0) PetscCall(PetscViewerASCIIPrintf(viewer, ","));
           PetscCall(PetscViewerASCIIPrintf(viewer, " %" PetscInt_FMT, ilink->fields[j]));
         }
         PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
@@ -164,7 +164,7 @@ static PetscErrorCode PCView_FieldSplit_Schur(PC pc, PetscViewer viewer) {
     } else {
       PetscCall(PetscViewerASCIIPrintf(viewer, "  FieldSplit with Schur preconditioner, factorization %s\n", PCFieldSplitSchurFactTypes[jac->schurfactorization]));
     }
-    if (pc->useAmat) { PetscCall(PetscViewerASCIIPrintf(viewer, "  using Amat (not Pmat) as operator for blocks\n")); }
+    if (pc->useAmat) PetscCall(PetscViewerASCIIPrintf(viewer, "  using Amat (not Pmat) as operator for blocks\n"));
     switch (jac->schurpre) {
     case PC_FIELDSPLIT_SCHUR_PRE_SELF: PetscCall(PetscViewerASCIIPrintf(viewer, "  Preconditioner for the Schur complement formed from S itself\n")); break;
     case PC_FIELDSPLIT_SCHUR_PRE_SELFP:
@@ -189,7 +189,7 @@ static PetscErrorCode PCView_FieldSplit_Schur(PC pc, PetscViewer viewer) {
         PetscCall(PetscViewerASCIIPrintf(viewer, "Split number %" PetscInt_FMT " Fields ", i));
         PetscCall(PetscViewerASCIIUseTabs(viewer, PETSC_FALSE));
         for (j = 0; j < ilink->nfields; j++) {
-          if (j > 0) { PetscCall(PetscViewerASCIIPrintf(viewer, ",")); }
+          if (j > 0) PetscCall(PetscViewerASCIIPrintf(viewer, ","));
           PetscCall(PetscViewerASCIIPrintf(viewer, " %" PetscInt_FMT, ilink->fields[j]));
         }
         PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
@@ -277,9 +277,9 @@ static PetscErrorCode PCView_FieldSplit_GKB(PC pc, PetscViewer viewer) {
     } else {
       PetscCall(PetscViewerASCIIPrintf(viewer, "  FieldSplit with %s composition: total splits = %" PetscInt_FMT "\n", PCCompositeTypes[jac->type], jac->nsplits));
     }
-    if (pc->useAmat) { PetscCall(PetscViewerASCIIPrintf(viewer, "  using Amat (not Pmat) as operator for blocks\n")); }
-    if (jac->diag_use_amat) { PetscCall(PetscViewerASCIIPrintf(viewer, "  using Amat (not Pmat) as operator for diagonal blocks\n")); }
-    if (jac->offdiag_use_amat) { PetscCall(PetscViewerASCIIPrintf(viewer, "  using Amat (not Pmat) as operator for off-diagonal blocks\n")); }
+    if (pc->useAmat) PetscCall(PetscViewerASCIIPrintf(viewer, "  using Amat (not Pmat) as operator for blocks\n"));
+    if (jac->diag_use_amat) PetscCall(PetscViewerASCIIPrintf(viewer, "  using Amat (not Pmat) as operator for diagonal blocks\n"));
+    if (jac->offdiag_use_amat) PetscCall(PetscViewerASCIIPrintf(viewer, "  using Amat (not Pmat) as operator for off-diagonal blocks\n"));
 
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Stopping tolerance=%.1e, delay in error estimate=%" PetscInt_FMT ", maximum iterations=%" PetscInt_FMT "\n", (double)jac->gkbtol, jac->gkbdelay, jac->gkbmaxit));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Solver info for H = A00 + nu*A01*A01' matrix:\n"));
@@ -289,7 +289,7 @@ static PetscErrorCode PCView_FieldSplit_GKB(PC pc, PetscViewer viewer) {
       PetscCall(PetscViewerASCIIPrintf(viewer, "Split number 0 Fields "));
       PetscCall(PetscViewerASCIIUseTabs(viewer, PETSC_FALSE));
       for (j = 0; j < ilink->nfields; j++) {
-        if (j > 0) { PetscCall(PetscViewerASCIIPrintf(viewer, ",")); }
+        if (j > 0) PetscCall(PetscViewerASCIIPrintf(viewer, ","));
         PetscCall(PetscViewerASCIIPrintf(viewer, " %" PetscInt_FMT, ilink->fields[j]));
       }
       PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
@@ -415,7 +415,7 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc) {
           PetscCall(ISDestroy(&fields[f]));
         }
       } else {
-        for (j = 0; j < numFields; j++) { PetscCall(DMDestroy(dms + j)); }
+        for (j = 0; j < numFields; j++) PetscCall(DMDestroy(dms + j));
         PetscCall(PetscFree(dms));
         PetscCall(PetscMalloc1(i, &dms));
         for (j = 0; j < i; ++j) dms[j] = subdm[j];
@@ -498,7 +498,7 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc) {
             PetscCall(MatNestGetSize(M, &nf, NULL));
             PetscCall(PetscMalloc1(nf, &fields));
             PetscCall(MatNestGetISs(M, fields, NULL));
-            for (i = 0; i < nf; i++) { PetscCall(PCFieldSplitSetIS(pc, NULL, fields[i])); }
+            for (i = 0; i < nf; i++) PetscCall(PCFieldSplitSetIS(pc, NULL, fields[i]));
             PetscCall(PetscFree(fields));
           } else {
             for (i = 0; i < jac->bs; i++) {
@@ -641,14 +641,14 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc) {
       /* compute scatter contexts needed by multiplicative versions and non-default splits */
       PetscCall(VecScatterCreate(xtmp, ilink->is, jac->x[i], NULL, &ilink->sctx));
       PetscCall(PetscObjectQuery((PetscObject)ilink->is, "nearnullspace", (PetscObject *)&sp));
-      if (sp) { PetscCall(MatSetNearNullSpace(jac->pmat[i], sp)); }
+      if (sp) PetscCall(MatSetNearNullSpace(jac->pmat[i], sp));
       ilink = ilink->next;
     }
     PetscCall(VecDestroy(&xtmp));
   } else {
     MatReuse scall;
     if (pc->flag == DIFFERENT_NONZERO_PATTERN) {
-      for (i = 0; i < nsplit; i++) { PetscCall(MatDestroy(&jac->pmat[i])); }
+      for (i = 0; i < nsplit; i++) PetscCall(MatDestroy(&jac->pmat[i]));
       scall = MAT_INITIAL_MATRIX;
     } else scall = MAT_REUSE_MATRIX;
 
@@ -657,7 +657,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc) {
 
       /* Check for preconditioning matrix attached to IS */
       PetscCall(PetscObjectQuery((PetscObject)ilink->is, "pmat", (PetscObject *)&pmat));
-      if (!pmat) { PetscCall(MatCreateSubMatrix(pc->pmat, ilink->is, ilink->is_col, scall, &jac->pmat[i])); }
+      if (!pmat) PetscCall(MatCreateSubMatrix(pc->pmat, ilink->is, ilink->is_col, scall, &jac->pmat[i]));
       ilink = ilink->next;
     }
   }
@@ -672,7 +672,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc) {
     } else {
       MatReuse scall;
       if (pc->flag == DIFFERENT_NONZERO_PATTERN) {
-        for (i = 0; i < nsplit; i++) { PetscCall(MatDestroy(&jac->mat[i])); }
+        for (i = 0; i < nsplit; i++) PetscCall(MatDestroy(&jac->mat[i]));
         scall = MAT_INITIAL_MATRIX;
       } else scall = MAT_REUSE_MATRIX;
 
@@ -691,7 +691,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc) {
     MatNullSpace sp;
 
     PetscCall(PetscObjectQuery((PetscObject)ilink->is, "nullspace", (PetscObject *)&sp));
-    if (sp) { PetscCall(MatSetNullSpace(jac->mat[i], sp)); }
+    if (sp) PetscCall(MatSetNullSpace(jac->mat[i], sp));
     ilink = ilink->next;
   }
 
@@ -736,7 +736,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc) {
       } else {
         MatReuse scall;
         if (pc->flag == DIFFERENT_NONZERO_PATTERN) {
-          for (i = 0; i < nsplit; i++) { PetscCall(MatDestroy(&jac->Afield[i])); }
+          for (i = 0; i < nsplit; i++) PetscCall(MatDestroy(&jac->Afield[i]));
           scall = MAT_INITIAL_MATRIX;
         } else scall = MAT_REUSE_MATRIX;
 
@@ -802,8 +802,8 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc) {
         PetscCall(MatDestroy(&jac->schurp));
         PetscCall(MatSchurComplementGetPmat(jac->schur, MAT_INITIAL_MATRIX, &jac->schurp));
       }
-      if (kspA != kspInner) { PetscCall(KSPSetOperators(kspA, jac->mat[0], jac->pmat[0])); }
-      if (kspUpper != kspA) { PetscCall(KSPSetOperators(kspUpper, jac->mat[0], jac->pmat[0])); }
+      if (kspA != kspInner) PetscCall(KSPSetOperators(kspA, jac->mat[0], jac->pmat[0]));
+      if (kspUpper != kspA) PetscCall(KSPSetOperators(kspUpper, jac->mat[0], jac->pmat[0]));
       PetscCall(KSPSetOperators(jac->kspschur, jac->schur, FieldSplitSchurPre(jac)));
     } else {
       const char  *Dprefix;
@@ -895,7 +895,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc) {
           KSP ksp;
 
           PetscCall(PCKSPGetKSP(pcInner, &ksp));
-          if (ksp == jac->head->ksp) { PetscCall(PCSetUseAmat(pcInner, PETSC_TRUE)); }
+          if (ksp == jac->head->ksp) PetscCall(PCSetUseAmat(pcInner, PETSC_TRUE));
         }
       }
       PetscCall(PetscSNPrintf(schurtestoption, sizeof(schurtestoption), "-fieldsplit_%s_upper_", ilink->splitname));
@@ -920,7 +920,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc) {
         PetscCall(PetscObjectReference((PetscObject)jac->head->ksp));
       }
 
-      if (jac->schurpre == PC_FIELDSPLIT_SCHUR_PRE_SELFP) { PetscCall(MatSchurComplementGetPmat(jac->schur, MAT_INITIAL_MATRIX, &jac->schurp)); }
+      if (jac->schurpre == PC_FIELDSPLIT_SCHUR_PRE_SELFP) PetscCall(MatSchurComplementGetPmat(jac->schur, MAT_INITIAL_MATRIX, &jac->schurp));
       PetscCall(KSPCreate(PetscObjectComm((PetscObject)pc), &jac->kspschur));
       PetscCall(KSPSetErrorIfNotConverged(jac->kspschur, pc->erroriffailure));
       PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)jac->kspschur));
@@ -1335,7 +1335,7 @@ static PetscErrorCode PCApply_FieldSplit_GKB(PC pc, Vec x, Vec y) {
 
   iterGKB = 1;
   lowbnd  = 2 * jac->gkbtol;
-  if (jac->gkbmonitor) { PetscCall(PetscViewerASCIIPrintf(jac->gkbviewer, "%3" PetscInt_FMT " GKB Lower bound estimate %14.12e\n", iterGKB, (double)lowbnd)); }
+  if (jac->gkbmonitor) PetscCall(PetscViewerASCIIPrintf(jac->gkbviewer, "%3" PetscInt_FMT " GKB Lower bound estimate %14.12e\n", iterGKB, (double)lowbnd));
 
   while (iterGKB < jac->gkbmaxit && lowbnd > jac->gkbtol) {
     iterGKB += 1;
@@ -1371,12 +1371,12 @@ static PetscErrorCode PCApply_FieldSplit_GKB(PC pc, Vec x, Vec y) {
     /* Compute Lower Bound estimate */
     if (iterGKB > jac->gkbdelay) {
       lowbnd = 0.0;
-      for (j = 0; j < jac->gkbdelay; j++) { lowbnd += PetscAbsScalar(vecz[j] * vecz[j]); }
+      for (j = 0; j < jac->gkbdelay; j++) lowbnd += PetscAbsScalar(vecz[j] * vecz[j]);
       lowbnd = PetscSqrtReal(lowbnd / PetscAbsScalar(nrmz2));
     }
 
-    for (j = 0; j < jac->gkbdelay - 1; j++) { vecz[jac->gkbdelay - j - 1] = vecz[jac->gkbdelay - j - 2]; }
-    if (jac->gkbmonitor) { PetscCall(PetscViewerASCIIPrintf(jac->gkbviewer, "%3" PetscInt_FMT " GKB Lower bound estimate %14.12e\n", iterGKB, (double)lowbnd)); }
+    for (j = 0; j < jac->gkbdelay - 1; j++) vecz[jac->gkbdelay - j - 1] = vecz[jac->gkbdelay - j - 2];
+    if (jac->gkbmonitor) PetscCall(PetscViewerASCIIPrintf(jac->gkbviewer, "%3" PetscInt_FMT " GKB Lower bound estimate %14.12e\n", iterGKB, (double)lowbnd));
   }
 
   PetscCall(VecScatterBegin(ilinkA->sctx, ilinkA->y, y, INSERT_VALUES, SCATTER_REVERSE));
@@ -1644,7 +1644,7 @@ static PetscErrorCode PCFieldSplitSetFields_FieldSplit(PC pc, const char splitna
     jac->head       = ilink;
     ilink->previous = NULL;
   } else {
-    while (next->next) { next = next->next; }
+    while (next->next) next = next->next;
     next->next      = ilink;
     ilink->previous = next;
   }
@@ -1817,7 +1817,7 @@ static PetscErrorCode PCFieldSplitSetIS_FieldSplit(PC pc, const char splitname[]
     jac->head       = ilink;
     ilink->previous = NULL;
   } else {
-    while (next->next) { next = next->next; }
+    while (next->next) next = next->next;
     next->next      = ilink;
     ilink->previous = next;
   }
@@ -2708,7 +2708,7 @@ static PetscErrorCode PCSetCoordinates_FieldSplit(PC pc, PetscInt dim, PetscInt 
     // Allocate coordinates vector and set it directly
     PetscCall(PetscMalloc1(ndofs_block * dim, &(ilink_current->coords)));
     for (PetscInt dof = 0; dof < ndofs_block; ++dof) {
-      for (PetscInt d = 0; d < dim; ++d) { (ilink_current->coords)[dim * dof + d] = coords[dim * block_dofs_enumeration[dof] + d]; }
+      for (PetscInt d = 0; d < dim; ++d) (ilink_current->coords)[dim * dof + d] = coords[dim * block_dofs_enumeration[dof] + d];
     }
     ilink_current->dim   = dim;
     ilink_current->ndofs = ndofs_block;
@@ -2794,7 +2794,7 @@ PetscErrorCode PCFieldSplitSetDMSplits(PC pc, PetscBool flg) {
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidLogicalCollectiveBool(pc, flg, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCFIELDSPLIT, &isfs));
-  if (isfs) { jac->dm_splits = flg; }
+  if (isfs) jac->dm_splits = flg;
   PetscFunctionReturn(0);
 }
 

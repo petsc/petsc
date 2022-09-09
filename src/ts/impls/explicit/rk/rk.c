@@ -682,7 +682,7 @@ static PetscErrorCode TSForwardStep_RK(TS ts) {
       PetscCall(MatCopy(ts->mat_sensip, rk->MatsFwdStageSensip[i], SAME_NONZERO_PATTERN));
     } else if (!zero) {
       PetscCall(MatZeroEntries(rk->MatsFwdStageSensip[i]));
-      for (j = 0; j < i; j++) { PetscCall(MatAXPY(rk->MatsFwdStageSensip[i], h * A[i * s + j], MatsFwdSensipTemp[j], SAME_NONZERO_PATTERN)); }
+      for (j = 0; j < i; j++) PetscCall(MatAXPY(rk->MatsFwdStageSensip[i], h * A[i * s + j], MatsFwdSensipTemp[j], SAME_NONZERO_PATTERN));
       PetscCall(MatAXPY(rk->MatsFwdStageSensip[i], 1., ts->mat_sensip, SAME_NONZERO_PATTERN));
     } else {
       PetscCall(MatZeroEntries(rk->MatsFwdStageSensip[i]));
@@ -705,7 +705,7 @@ static PetscErrorCode TSForwardStep_RK(TS ts) {
     }
   }
 
-  for (i = 0; i < s; i++) { PetscCall(MatAXPY(ts->mat_sensip, h * b[i], rk->MatsFwdSensipTemp[i], SAME_NONZERO_PATTERN)); }
+  for (i = 0; i < s; i++) PetscCall(MatAXPY(ts->mat_sensip, h * b[i], rk->MatsFwdSensipTemp[i], SAME_NONZERO_PATTERN));
   rk->status = TS_STEP_COMPLETE;
   PetscFunctionReturn(0);
 }
@@ -747,11 +747,11 @@ static PetscErrorCode TSForwardReset_RK(TS ts) {
   PetscFunctionBegin;
   PetscCall(MatDestroy(&rk->MatFwdSensip0));
   if (rk->MatsFwdStageSensip) {
-    for (i = 0; i < tab->s; i++) { PetscCall(MatDestroy(&rk->MatsFwdStageSensip[i])); }
+    for (i = 0; i < tab->s; i++) PetscCall(MatDestroy(&rk->MatsFwdStageSensip[i]));
     PetscCall(PetscFree(rk->MatsFwdStageSensip));
   }
   if (rk->MatsFwdSensipTemp) {
-    for (i = 0; i < tab->s; i++) { PetscCall(MatDestroy(&rk->MatsFwdSensipTemp[i])); }
+    for (i = 0; i < tab->s; i++) PetscCall(MatDestroy(&rk->MatsFwdSensipTemp[i]));
     PetscCall(PetscFree(rk->MatsFwdSensipTemp));
   }
   PetscCall(VecDestroy(&rk->VecDeltaFwdSensipCol));
@@ -837,12 +837,12 @@ static PetscErrorCode TSAdjointSetUp_RK(TS ts) {
   if (ts->adjointsetupcalled++) PetscFunctionReturn(0);
   PetscCall(VecDuplicateVecs(ts->vecs_sensi[0], s * ts->numcost, &rk->VecsDeltaLam));
   PetscCall(VecDuplicateVecs(ts->vecs_sensi[0], ts->numcost, &rk->VecsSensiTemp));
-  if (ts->vecs_sensip) { PetscCall(VecDuplicate(ts->vecs_sensip[0], &rk->VecDeltaMu)); }
+  if (ts->vecs_sensip) PetscCall(VecDuplicate(ts->vecs_sensip[0], &rk->VecDeltaMu));
   if (ts->vecs_sensi2) {
     PetscCall(VecDuplicateVecs(ts->vecs_sensi[0], s * ts->numcost, &rk->VecsDeltaLam2));
     PetscCall(VecDuplicateVecs(ts->vecs_sensi2[0], ts->numcost, &rk->VecsSensi2Temp));
   }
-  if (ts->vecs_sensi2p) { PetscCall(VecDuplicate(ts->vecs_sensi2p[0], &rk->VecDeltaMu2)); }
+  if (ts->vecs_sensi2p) PetscCall(VecDuplicate(ts->vecs_sensi2p[0], &rk->VecDeltaMu2));
   PetscFunctionReturn(0);
 }
 
@@ -869,7 +869,7 @@ static PetscErrorCode TSAdjointStep_RK(TS ts) {
   rk->status = TS_STEP_INCOMPLETE;
 
   PetscCall(TSGetRHSJacobian(ts, &J, &Jpre, NULL, NULL));
-  if (quadts) { PetscCall(TSGetRHSJacobian(quadts, &Jquad, NULL, NULL, NULL)); }
+  if (quadts) PetscCall(TSGetRHSJacobian(quadts, &Jquad, NULL, NULL, NULL));
   for (i = s - 1; i >= 0; i--) {
     if (tab->FSAL && i == s - 1) {
       /* VecsDeltaLam[nadj*s+s-1] are initialized with zeros and the values never change.*/
@@ -973,7 +973,7 @@ static PetscErrorCode TSAdjointStep_RK(TS ts) {
           PetscCall(MatMultTranspose(J, VecsSensi2Temp[nadj], VecsDeltaLam2[nadj * s + i]));
           PetscCall(VecScale(VecsDeltaLam2[nadj * s + i], -h * b[i]));
           PetscCall(VecAXPY(VecsDeltaLam2[nadj * s + i], -h * b[i], ts->vecs_guu[nadj]));
-          if (ts->vecs_sensip) { PetscCall(VecAXPY(VecsDeltaLam2[nadj * s + i], -h * b[i], ts->vecs_gup[nadj])); }
+          if (ts->vecs_sensip) PetscCall(VecAXPY(VecsDeltaLam2[nadj * s + i], -h * b[i], ts->vecs_gup[nadj]));
         } else {
           /* \sum_{j=i+1}^s a_{ji}*Lambda_{s,j} */
           PetscCall(VecSet(VecsDeltaLam2[nadj * s + i], 0));
@@ -981,7 +981,7 @@ static PetscErrorCode TSAdjointStep_RK(TS ts) {
           PetscCall(MatMultTranspose(J, VecsSensi2Temp[nadj], VecsDeltaLam2[nadj * s + i]));
           PetscCall(VecScale(VecsDeltaLam2[nadj * s + i], -h));
           PetscCall(VecAXPY(VecsDeltaLam2[nadj * s + i], -h, ts->vecs_guu[nadj]));
-          if (ts->vecs_sensip) { PetscCall(VecAXPY(VecsDeltaLam2[nadj * s + i], -h, ts->vecs_gup[nadj])); }
+          if (ts->vecs_sensip) PetscCall(VecAXPY(VecsDeltaLam2[nadj * s + i], -h, ts->vecs_gup[nadj]));
         }
         if (ts->vecs_sensi2p) { /* 2nd-order adjoint for parameters */
           PetscCall(MatMultTranspose(ts->Jacprhs, VecsSensi2Temp[nadj], VecDeltaMu2));
@@ -1003,7 +1003,7 @@ static PetscErrorCode TSAdjointStep_RK(TS ts) {
   for (j = 0; j < s; j++) w[j] = 1.0;
   for (nadj = 0; nadj < ts->numcost; nadj++) { /* no need to do this for mu's */
     PetscCall(VecMAXPY(ts->vecs_sensi[nadj], s, w, &VecsDeltaLam[nadj * s]));
-    if (ts->vecs_sensi2) { PetscCall(VecMAXPY(ts->vecs_sensi2[nadj], s, w, &VecsDeltaLam2[nadj * s])); }
+    if (ts->vecs_sensi2) PetscCall(VecMAXPY(ts->vecs_sensi2[nadj], s, w, &VecsDeltaLam2[nadj * s]));
   }
   rk->status = TS_STEP_COMPLETE;
   PetscFunctionReturn(0);
@@ -1049,7 +1049,7 @@ static PetscErrorCode TSInterpolate_RK(TS ts, PetscReal itime, Vec X) {
   PetscCall(PetscMalloc1(s, &b));
   for (i = 0; i < s; i++) b[i] = 0;
   for (j = 0, tt = t; j < p; j++, tt *= t) {
-    for (i = 0; i < s; i++) { b[i] += h * B[i * p + j] * tt; }
+    for (i = 0; i < s; i++) b[i] += h * B[i * p + j] * tt;
   }
   PetscCall(VecCopy(rk->Y[0], X));
   PetscCall(VecMAXPY(X, s, b, rk->YdotRHS));

@@ -10,12 +10,12 @@ PetscLogEvent MATMFFD_Mult;
 
 static PetscBool MatMFFDPackageInitialized = PETSC_FALSE;
 /*@C
-  MatMFFDFinalizePackage - This function destroys everything in the MatMFFD package. It is
-  called from PetscFinalize().
+  MatMFFDFinalizePackage - This function destroys everything in the MATMFFD` package. It is
+  called from `PetscFinalize()`.
 
   Level: developer
 
-.seealso: `PetscFinalize()`, `MatCreateMFFD()`, `MatCreateSNESMF()`
+.seealso: `MATMFFD`, `PetscFinalize()`, `MatCreateMFFD()`, `MatCreateSNESMF()`
 @*/
 PetscErrorCode   MatMFFDFinalizePackage(void) {
     PetscFunctionBegin;
@@ -26,12 +26,12 @@ PetscErrorCode   MatMFFDFinalizePackage(void) {
 }
 
 /*@C
-  MatMFFDInitializePackage - This function initializes everything in the MatMFFD package. It is called
-  from MatInitializePackage().
+  MatMFFDInitializePackage - This function initializes everything in the MATMFFD` package. It is called
+  from `MatInitializePackage()`.
 
   Level: developer
 
-.seealso: `PetscInitialize()`
+.seealso: `MATMFFD`, `PetscInitialize()`
 @*/
 PetscErrorCode MatMFFDInitializePackage(void) {
   char      logList[256];
@@ -93,13 +93,13 @@ static PetscErrorCode MatMFFDSetType_MFFD(Mat mat, MatMFFDType ftype) {
     differencing parameter for finite differene matrix-free formulations.
 
     Input Parameters:
-+   mat - the "matrix-free" matrix created via MatCreateSNESMF(), or MatCreateMFFD()
-          or MatSetType(mat,MATMFFD);
--   ftype - the type requested, either MATMFFD_WP or MATMFFD_DS
++   mat - the "matrix-free" matrix created via `MatCreateSNESMF()`, or `MatCreateMFFD()`
+          or `MatSetType`(mat,`MATMFFD`);
+-   ftype - the type requested, either `MATMFFD_WP` or `MATMFFD_DS`
 
     Level: advanced
 
-    Notes:
+    Note:
     For example, such routines can compute h for use in
     Jacobian-vector products of the form
 
@@ -107,7 +107,7 @@ static PetscErrorCode MatMFFDSetType_MFFD(Mat mat, MatMFFDType ftype) {
           F'(u)a  ~=  ----------------
                               h
 
-.seealso: `MatCreateSNESMF()`, `MatMFFDRegister()`, `MatMFFDSetFunction()`, `MatCreateMFFD()`
+.seealso: `MATMFFD`, `MATMFFD_WP`, `MATMFFD_DS`, `MatCreateSNESMF()`, `MatMFFDRegister()`, `MatMFFDSetFunction()`, `MatCreateMFFD()`
 @*/
 PetscErrorCode MatMFFDSetType(Mat mat, MatMFFDType ftype) {
   PetscFunctionBegin;
@@ -159,7 +159,7 @@ static PetscErrorCode MatMFFDResetHHistory_MFFD(Mat J) {
 }
 
 /*@C
-   MatMFFDRegister - Adds a method to the MatMFFD registry.
+   MatMFFDRegister - Adds a method to the MATMFFD` registry.
 
    Not Collective
 
@@ -169,8 +169,8 @@ static PetscErrorCode MatMFFDResetHHistory_MFFD(Mat J) {
 
    Level: developer
 
-   Notes:
-   MatMFFDRegister() may be called multiple times to add several user-defined solvers.
+   Note:
+   `MatMFFDRegister()` may be called multiple times to add several user-defined solvers.
 
    Sample usage:
 .vb
@@ -178,11 +178,11 @@ static PetscErrorCode MatMFFDResetHHistory_MFFD(Mat J) {
 .ve
 
    Then, your solver can be chosen with the procedural interface via
-$     MatMFFDSetType(mfctx,"my_h")
+$     `MatMFFDSetType`(mfctx,"my_h")
    or at runtime via the option
 $     -mat_mffd_type my_h
 
-.seealso: `MatMFFDRegisterAll()`, `MatMFFDRegisterDestroy()`
+.seealso: `MATMFFD`, `MatMFFDRegisterAll()`, `MatMFFDRegisterDestroy()`
  @*/
 PetscErrorCode MatMFFDRegister(const char sname[], PetscErrorCode (*function)(MatMFFD)) {
   PetscFunctionBegin;
@@ -199,7 +199,7 @@ static PetscErrorCode MatDestroy_MFFD(Mat mat) {
   PetscCall(MatShellGetContext(mat, &ctx));
   PetscCall(VecDestroy(&ctx->w));
   PetscCall(VecDestroy(&ctx->current_u));
-  if (ctx->current_f_allocated) { PetscCall(VecDestroy(&ctx->current_f)); }
+  if (ctx->current_f_allocated) PetscCall(VecDestroy(&ctx->current_f));
   PetscTryTypeMethod(ctx, destroy);
   PetscCall(PetscHeaderDestroy(&ctx));
 
@@ -241,7 +241,7 @@ static PetscErrorCode MatView_MFFD(Mat J, PetscViewer viewer) {
       PetscCall(PetscViewerASCIIPrintf(viewer, "Using %s compute h routine\n", ((PetscObject)ctx)->type_name));
     }
 #if defined(PETSC_USE_COMPLEX)
-    if (ctx->usecomplex) { PetscCall(PetscViewerASCIIPrintf(viewer, "Using Lyness complex number trick to compute the matrix-vector product\n")); }
+    if (ctx->usecomplex) PetscCall(PetscViewerASCIIPrintf(viewer, "Using Lyness complex number trick to compute the matrix-vector product\n"));
 #endif
     PetscTryTypeMethod(ctx, view, viewer);
     PetscCall(PetscObjectGetOptionsPrefix((PetscObject)J, &prefix));
@@ -321,7 +321,7 @@ static PetscErrorCode MatMult_MFFD(Mat mat, Vec a, Vec y) {
   }
 
   PetscCheck(!mat->erroriffailure || !PetscIsInfOrNanScalar(h), PETSC_COMM_SELF, PETSC_ERR_PLIB, "Computed Nan differencing parameter h");
-  if (ctx->checkh) { PetscCall((*ctx->checkh)(ctx->checkhctx, U, a, &h)); }
+  if (ctx->checkh) PetscCall((*ctx->checkh)(ctx->checkhctx, U, a, &h));
 
   /* keep a record of the current differencing parameter h */
   ctx->currenth = h;
@@ -330,7 +330,7 @@ static PetscErrorCode MatMult_MFFD(Mat mat, Vec a, Vec y) {
 #else
   PetscCall(PetscInfo(mat, "Current differencing parameter: %15.12e\n", (double)PetscRealPart(h)));
 #endif
-  if (ctx->historyh && ctx->ncurrenth < ctx->maxcurrenth) { ctx->historyh[ctx->ncurrenth] = h; }
+  if (ctx->historyh && ctx->ncurrenth < ctx->maxcurrenth) ctx->historyh[ctx->ncurrenth] = h;
   ctx->ncurrenth++;
 
 #if defined(PETSC_USE_COMPLEX)
@@ -341,7 +341,7 @@ static PetscErrorCode MatMult_MFFD(Mat mat, Vec a, Vec y) {
   PetscCall(VecWAXPY(w, h, a, U));
 
   /* compute func(U) as base for differencing; only needed first time in and not when provided by user */
-  if (ctx->ncurrenth == 1 && ctx->current_f_allocated) { PetscCall((*ctx->func)(ctx->funcctx, U, F)); }
+  if (ctx->ncurrenth == 1 && ctx->current_f_allocated) PetscCall((*ctx->func)(ctx->funcctx, U, F));
   PetscCall((*ctx->func)(ctx->funcctx, w, y));
 
 #if defined(PETSC_USE_COMPLEX)
@@ -430,7 +430,7 @@ PETSC_EXTERN PetscErrorCode MatMFFDSetBase_MFFD(Mat J, Vec U, Vec F) {
     PetscCall(MatCreateVecs(J, NULL, &ctx->current_f));
     ctx->current_f_allocated = PETSC_TRUE;
   }
-  if (!ctx->w) { PetscCall(VecDuplicate(ctx->current_u, &ctx->w)); }
+  if (!ctx->w) PetscCall(VecDuplicate(ctx->current_u, &ctx->w));
   J->assembled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -449,21 +449,21 @@ static PetscErrorCode MatMFFDSetCheckh_MFFD(Mat J, FCN3 fun, void *ectx) {
 
 /*@C
    MatMFFDSetOptionsPrefix - Sets the prefix used for searching for all
-   MatMFFD options in the database.
+   MATMFFD` options in the database.
 
-   Collective on Mat
+   Collective on mat
 
    Input Parameters:
-+  A - the Mat context
++  A - the `MATMFFD` context
 -  prefix - the prefix to prepend to all option names
 
-   Notes:
+   Note:
    A hyphen (-) must NOT be given at the beginning of the prefix name.
    The first character of all runtime options is AUTOMATICALLY the hyphen.
 
    Level: advanced
 
-.seealso: `MatSetFromOptions()`, `MatCreateSNESMF()`, `MatCreateMFFD()`
+.seealso: `MATMFFD`, `MatSetFromOptions()`, `MatCreateSNESMF()`, `MatCreateMFFD()`
 @*/
 PetscErrorCode MatMFFDSetOptionsPrefix(Mat mat, const char prefix[]) {
   MatMFFD mfctx;
@@ -546,7 +546,7 @@ PetscErrorCode MatMFFDSetHHistory_MFFD(Mat J, PetscScalar history[], PetscInt nh
 
   Level: advanced
 
-  Developers Note: This is implemented on top of MATSHELL to get support for scaling and shifting without requiring duplicate code
+  Developers Note: This is implemented on top of `MATSHELL` to get support for scaling and shifting without requiring duplicate code
 
 .seealso: `MatCreateMFFD()`, `MatCreateSNESMF()`, `MatMFFDSetFunction()`, `MatMFFDSetType()`,
           `MatMFFDSetFunctionError()`, `MatMFFDDSSetUmin()`, `MatMFFDSetFunction()`
@@ -611,29 +611,30 @@ PETSC_EXTERN PetscErrorCode MatCreate_MFFD(Mat A) {
 }
 
 /*@
-   MatCreateMFFD - Creates a matrix-free matrix. See also MatCreateSNESMF()
+   MatCreateMFFD - Creates a matrix-free matrix of type `MATMFFD`. See also `MatCreateSNESMF()`
 
-   Collective on Vec
+   Collective
 
    Input Parameters:
 +  comm - MPI communicator
-.  m - number of local rows (or PETSC_DECIDE to have calculated if M is given)
+.  m - number of local rows (or `PETSC_DECIDE` to have calculated if M is given)
            This value should be the same as the local size used in creating the
            y vector for the matrix-vector product y = Ax.
 .  n - This value should be the same as the local size used in creating the
-       x vector for the matrix-vector product y = Ax. (or PETSC_DECIDE to have
+       x vector for the matrix-vector product y = Ax. (or `PETSC_DECIDE` to have
        calculated if N is given) For square matrices n is almost always m.
-.  M - number of global rows (or PETSC_DETERMINE to have calculated if m is given)
--  N - number of global columns (or PETSC_DETERMINE to have calculated if n is given)
+.  M - number of global rows (or `PETSC_DETERMINE` to have calculated if m is given)
+-  N - number of global columns (or `PETSC_DETERMINE` to have calculated if n is given)
 
    Output Parameter:
 .  J - the matrix-free matrix
 
-   Options Database Keys: call MatSetFromOptions() to trigger these
-+  -mat_mffd_type - wp or ds (see MATMFFD_WP or MATMFFD_DS)
+   Options Database Keys:
++  -mat_mffd_type - wp or ds (see `MATMFFD_WP` or `MATMFFD_DS`)
 .  -mat_mffd_err - square root of estimated relative error in function evaluation
 .  -mat_mffd_period - how often h is recomputed, defaults to 1, every time
 .  -mat_mffd_check_positivity - possibly decrease h until U + h*a has only positive values
+.  -mat_mffd_umin <umin> - Sets umin (for default PETSc routine that computes h only)
 -  -mat_mffd_complex - use the Lyness trick with complex numbers to compute the matrix-vector product instead of differencing
                        (requires real valued functions but that PETSc be configured for complex numbers)
 
@@ -655,24 +656,18 @@ PETSC_EXTERN PetscErrorCode MatCreate_MFFD(Mat A) {
      umin = minimum iterate parameter
 .ve
 
-   You can call SNESSetJacobian() with MatMFFDComputeJacobian() if you are using matrix and not a different
+   You can call `SNESSetJacobian()` with `MatMFFDComputeJacobian()` if you are using matrix and not a different
    preconditioner matrix
 
-   The user can set the error_rel via MatMFFDSetFunctionError() and
-   umin via MatMFFDDSSetUmin(); see Users-Manual: ch_snes for details.
+   The user can set the error_rel via `MatMFFDSetFunctionError()` and
+   umin via `MatMFFDDSSetUmin()`; see Users-Manual: ch_snes for details.
 
-   The user should call MatDestroy() when finished with the matrix-free
+   The user should call `MatDestroy()` when finished with the matrix-free
    matrix context.
 
-   Options Database Keys:
-+  -mat_mffd_err <error_rel> - Sets error_rel
-.  -mat_mffd_umin <umin> - Sets umin (for default PETSc routine that computes h only)
--  -mat_mffd_check_positivity - check positivity
-
-.seealso: `MatDestroy()`, `MatMFFDSetFunctionError()`, `MatMFFDDSSetUmin()`, `MatMFFDSetFunction()`
+.seealso: `MATMFFD`, `MatDestroy()`, `MatMFFDSetFunctionError()`, `MatMFFDDSSetUmin()`, `MatMFFDSetFunction()`
           `MatMFFDSetHHistory()`, `MatMFFDResetHHistory()`, `MatCreateSNESMF()`,
           `MatMFFDGetH()`, `MatMFFDRegister()`, `MatMFFDComputeJacobian()`
-
 @*/
 PetscErrorCode MatCreateMFFD(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, PetscInt N, Mat *J) {
   PetscFunctionBegin;
@@ -684,20 +679,20 @@ PetscErrorCode MatCreateMFFD(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, 
 }
 
 /*@
-   MatMFFDGetH - Gets the last value that was used as the differencing
+   MatMFFDGetH - Gets the last value that was used as the differencing for a `MATMFFD` matrix
    parameter.
 
    Not Collective
 
    Input Parameters:
-.  mat - the matrix obtained with MatCreateSNESMF()
+.  mat - the `MATMFFD` matrix
 
    Output Parameter:
 .  h - the differencing step size
 
    Level: advanced
 
-.seealso: `MatCreateSNESMF()`, `MatMFFDSetHHistory()`, `MatCreateMFFD()`, `MATMFFD`, `MatMFFDResetHHistory()`
+.seealso: `MATMFFD`, `MatCreateSNESMF()`, `MatMFFDSetHHistory()`, `MatCreateMFFD()`, `MATMFFD`, `MatMFFDResetHHistory()`
 @*/
 PetscErrorCode MatMFFDGetH(Mat mat, PetscScalar *h) {
   PetscFunctionBegin;
@@ -708,12 +703,12 @@ PetscErrorCode MatMFFDGetH(Mat mat, PetscScalar *h) {
 }
 
 /*@C
-   MatMFFDSetFunction - Sets the function used in applying the matrix free.
+   MatMFFDSetFunction - Sets the function used in applying the matrix free `MATMFFD` matrix.
 
-   Logically Collective on Mat
+   Logically Collective on mat
 
    Input Parameters:
-+  mat - the matrix free matrix created via MatCreateSNESMF() or MatCreateMFFD()
++  mat - the matrix free matrix `MATMFFD` created via `MatCreateSNESMF()` or `MatCreateMFFD()`
 .  func - the function to use
 -  funcctx - optional function context passed to function
 
@@ -727,12 +722,12 @@ $     func (void *funcctx, Vec x, Vec f)
    Level: advanced
 
    Notes:
-    If you use this you MUST call MatAssemblyBegin()/MatAssemblyEnd() on the matrix free
+    If you use this you MUST call `MatAssemblyBegin()` and `MatAssemblyEnd()` on the matrix free
     matrix inside your compute Jacobian routine
 
-    If this is not set then it will use the function set with SNESSetFunction() if MatCreateSNESMF() was used.
+    If this is not set then it will use the function set with `SNESSetFunction()` if `MatCreateSNESMF()` was used.
 
-.seealso: `MatCreateSNESMF()`, `MatMFFDGetH()`, `MatCreateMFFD()`, `MATMFFD`,
+.seealso: `MATMFFD`, `MatCreateSNESMF()`, `MatMFFDGetH()`, `MatCreateMFFD()`, `MATMFFD`,
           `MatMFFDSetHHistory()`, `MatMFFDResetHHistory()`, `SNESetFunction()`
 @*/
 PetscErrorCode MatMFFDSetFunction(Mat mat, PetscErrorCode (*func)(void *, Vec, Vec), void *funcctx) {
@@ -743,24 +738,24 @@ PetscErrorCode MatMFFDSetFunction(Mat mat, PetscErrorCode (*func)(void *, Vec, V
 }
 
 /*@C
-   MatMFFDSetFunctioni - Sets the function for a single component
+   MatMFFDSetFunctioni - Sets the function for a single component for a `MATMFFD` matrix
 
-   Logically Collective on Mat
+   Logically Collective on mat
 
    Input Parameters:
-+  mat - the matrix free matrix created via MatCreateSNESMF()
++  mat - the matrix free matrix `MATMFFD`
 -  funci - the function to use
 
    Level: advanced
 
    Notes:
-    If you use this you MUST call MatAssemblyBegin()/MatAssemblyEnd() on the matrix free
+    If you use this you MUST call `MatAssemblyBegin()` and `MatAssemblyEnd()` on the matrix free
     matrix inside your compute Jacobian routine.
+
     This function is necessary to compute the diagonal of the matrix.
     funci must not contain any MPI call as it is called inside a loop on the local portion of the vector.
 
-.seealso: `MatCreateSNESMF()`, `MatMFFDGetH()`, `MatMFFDSetHHistory()`, `MatMFFDResetHHistory()`, `SNESetFunction()`, `MatGetDiagonal()`
-
+.seealso: `MATMFFD`, `MatCreateSNESMF()`, `MatMFFDGetH()`, `MatMFFDSetHHistory()`, `MatMFFDResetHHistory()`, `SNESetFunction()`, `MatGetDiagonal()`
 @*/
 PetscErrorCode MatMFFDSetFunctioni(Mat mat, PetscErrorCode (*funci)(void *, PetscInt, Vec, PetscScalar *)) {
   PetscFunctionBegin;
@@ -770,22 +765,23 @@ PetscErrorCode MatMFFDSetFunctioni(Mat mat, PetscErrorCode (*funci)(void *, Pets
 }
 
 /*@C
-   MatMFFDSetFunctioniBase - Sets the base vector for a single component function evaluation
+   MatMFFDSetFunctioniBase - Sets the base vector for a single component function evaluation for a `MATMFFD` matrix
 
-   Logically Collective on Mat
+   Logically Collective on mat
 
    Input Parameters:
-+  mat - the matrix free matrix created via MatCreateSNESMF()
++  mat - the `MATMFFD` matrix free matrix
 -  func - the function to use
 
    Level: advanced
 
    Notes:
-    If you use this you MUST call MatAssemblyBegin()/MatAssemblyEnd() on the matrix free
+    If you use this you MUST call `MatAssemblyBegin()` and `MatAssemblyEnd()` on the matrix free
     matrix inside your compute Jacobian routine.
-    This function is necessary to compute the diagonal of the matrix.
 
-.seealso: `MatCreateSNESMF()`, `MatMFFDGetH()`, `MatCreateMFFD()`, `MATMFFD`
+    This function is necessary to compute the diagonal of the matrix, used for example with `PCJACOBI`
+
+.seealso: `MATMFFD`, `MatCreateSNESMF()`, `MatMFFDGetH()`, `MatCreateMFFD()`, `MATMFFD`
           `MatMFFDSetHHistory()`, `MatMFFDResetHHistory()`, `SNESetFunction()`, `MatGetDiagonal()`
 @*/
 PetscErrorCode MatMFFDSetFunctioniBase(Mat mat, PetscErrorCode (*func)(void *, Vec)) {
@@ -796,12 +792,12 @@ PetscErrorCode MatMFFDSetFunctioniBase(Mat mat, PetscErrorCode (*func)(void *, V
 }
 
 /*@
-   MatMFFDSetPeriod - Sets how often h is recomputed, by default it is every time
+   MatMFFDSetPeriod - Sets how often h is recomputed for a `MATMFFD` matrix, by default it is every time
 
-   Logically Collective on Mat
+   Logically Collective on mat
 
    Input Parameters:
-+  mat - the matrix free matrix created via MatCreateSNESMF()
++  mat - the `MATMFFD` matrix free matrix
 -  period - 1 for every time, 2 for every second etc
 
    Options Database Keys:
@@ -809,7 +805,7 @@ PetscErrorCode MatMFFDSetFunctioniBase(Mat mat, PetscErrorCode (*func)(void *, V
 
    Level: advanced
 
-.seealso: `MatCreateSNESMF()`, `MatMFFDGetH()`,
+.seealso: `MATMFFD`, `MatCreateSNESMF()`, `MatMFFDGetH()`,
           `MatMFFDSetHHistory()`, `MatMFFDResetHHistory()`
 @*/
 PetscErrorCode MatMFFDSetPeriod(Mat mat, PetscInt period) {
@@ -821,22 +817,20 @@ PetscErrorCode MatMFFDSetPeriod(Mat mat, PetscInt period) {
 }
 
 /*@
-   MatMFFDSetFunctionError - Sets the error_rel for the approximation of
-   matrix-vector products using finite differences.
+   MatMFFDSetFunctionError - Sets the error_rel for the approximation of matrix-vector products using finite differences with the `MATMFFD` matrix
 
-   Logically Collective on Mat
+   Logically Collective on mat
 
    Input Parameters:
-+  mat - the matrix free matrix created via MatCreateMFFD() or MatCreateSNESMF()
--  error_rel - relative error (should be set to the square root of
-               the relative error in the function evaluations)
++  mat - the `MATMFFD` matrix free matrix
+-  error_rel - relative error (should be set to the square root of the relative error in the function evaluations)
 
    Options Database Keys:
 .  -mat_mffd_err <error_rel> - Sets error_rel
 
    Level: advanced
 
-   Notes:
+   Note:
    The default matrix-free matrix-vector product routine computes
 .vb
      F'(u)*a = [F(u+h*a) - F(u)]/h where
@@ -844,7 +838,7 @@ PetscErrorCode MatMFFDSetPeriod(Mat mat, PetscInt period) {
        = error_rel*umin*sign(u'a)*||a||_{1}/||a||^2   else
 .ve
 
-.seealso: `MatCreateSNESMF()`, `MatMFFDGetH()`, `MatCreateMFFD()`, `MATMFFD`
+.seealso: `MATMFFD`, `MatCreateSNESMF()`, `MatMFFDGetH()`, `MatCreateMFFD()`, `MATMFFD`
           `MatMFFDSetHHistory()`, `MatMFFDResetHHistory()`
 @*/
 PetscErrorCode MatMFFDSetFunctionError(Mat mat, PetscReal error) {
@@ -857,25 +851,24 @@ PetscErrorCode MatMFFDSetFunctionError(Mat mat, PetscReal error) {
 
 /*@
    MatMFFDSetHHistory - Sets an array to collect a history of the
-   differencing values (h) computed for the matrix-free product.
+   differencing values (h) computed for the matrix-free product `MATMFFD` matrix
 
-   Logically Collective on Mat
+   Logically Collective on mat
 
    Input Parameters:
-+  J - the matrix-free matrix context
++  J - the `MATMFFD` matrix-free matrix
 .  history - space to hold the history
 -  nhistory - number of entries in history, if more entries are generated than
               nhistory, then the later ones are discarded
 
    Level: advanced
 
-   Notes:
-   Use MatMFFDResetHHistory() to reset the history counter and collect
+   Note:
+   Use `MatMFFDResetHHistory()` to reset the history counter and collect
    a new batch of differencing parameters, h.
 
-.seealso: `MatMFFDGetH()`, `MatCreateSNESMF()`,
+.seealso: `MATMFFD`, `MatMFFDGetH()`, `MatCreateSNESMF()`,
           `MatMFFDResetHHistory()`, `MatMFFDSetFunctionError()`
-
 @*/
 PetscErrorCode MatMFFDSetHHistory(Mat J, PetscScalar history[], PetscInt nhistory) {
   PetscFunctionBegin;
@@ -888,21 +881,20 @@ PetscErrorCode MatMFFDSetHHistory(Mat J, PetscScalar history[], PetscInt nhistor
 
 /*@
    MatMFFDResetHHistory - Resets the counter to zero to begin
-   collecting a new set of differencing histories.
+   collecting a new set of differencing histories for the `MATMFFD` matrix
 
-   Logically Collective on Mat
+   Logically Collective on mat
 
    Input Parameters:
 .  J - the matrix-free matrix context
 
    Level: advanced
 
-   Notes:
-   Use MatMFFDSetHHistory() to create the original history counter.
+   Note:
+   Use `MatMFFDSetHHistory()` to create the original history counter.
 
-.seealso: `MatMFFDGetH()`, `MatCreateSNESMF()`,
+.seealso: `MATMFFD`, `MatMFFDGetH()`, `MatCreateSNESMF()`,
           `MatMFFDSetHHistory()`, `MatMFFDSetFunctionError()`
-
 @*/
 PetscErrorCode MatMFFDResetHHistory(Mat J) {
   PetscFunctionBegin;
@@ -913,12 +905,12 @@ PetscErrorCode MatMFFDResetHHistory(Mat J) {
 
 /*@
     MatMFFDSetBase - Sets the vector U at which matrix vector products of the
-        Jacobian are computed
+        Jacobian are computed for the `MATMFFD` matrix
 
-    Logically Collective on Mat
+    Logically Collective on mat
 
     Input Parameters:
-+   J - the MatMFFD matrix
++   J - the `MATMFFD` matrix
 .   U - the vector
 -   F - (optional) vector that contains F(u) if it has been already computed
 
@@ -926,10 +918,11 @@ PetscErrorCode MatMFFDResetHHistory(Mat J) {
     This is rarely used directly
 
     If F is provided then it is not recomputed. Otherwise the function is evaluated at the base
-    point during the first MatMult() after each call to MatMFFDSetBase().
+    point during the first `MatMult()` after each call to `MatMFFDSetBase()`.
 
     Level: advanced
 
+.seealso: `MATMFFD`, `MatMult()`, `MatMFFDSetBase()`
 @*/
 PetscErrorCode MatMFFDSetBase(Mat J, Vec U, Vec F) {
   PetscFunctionBegin;
@@ -942,12 +935,12 @@ PetscErrorCode MatMFFDSetBase(Mat J, Vec U, Vec F) {
 
 /*@C
     MatMFFDSetCheckh - Sets a function that checks the computed h and adjusts
-        it to satisfy some criteria
+        it to satisfy some criteria for the `MATMFFD` matrix
 
-    Logically Collective on Mat
+    Logically Collective on mat
 
     Input Parameters:
-+   J - the MatMFFD matrix
++   J - the `MATMFFD` matrix
 .   fun - the function that checks h
 -   ctx - any context needed by the function
 
@@ -957,13 +950,13 @@ PetscErrorCode MatMFFDSetBase(Mat J, Vec U, Vec F) {
     Level: advanced
 
     Notes:
-    For example, MatMFFDCheckPositivity() insures that all entries
+    For example, `MatMFFDCheckPositivity()` insures that all entries
        of U + h*a are non-negative
 
      The function you provide is called after the default h has been computed and allows you to
      modify it.
 
-.seealso: `MatMFFDCheckPositivity()`
+.seealso: `MATMFFD`, `MatMFFDCheckPositivity()`
 @*/
 PetscErrorCode MatMFFDSetCheckh(Mat J, PetscErrorCode (*fun)(void *, Vec, Vec, PetscScalar *), void *ctx) {
   PetscFunctionBegin;
@@ -974,9 +967,9 @@ PetscErrorCode MatMFFDSetCheckh(Mat J, PetscErrorCode (*fun)(void *, Vec, Vec, P
 
 /*@
     MatMFFDCheckPositivity - Checks that all entries in U + h*a are positive or
-        zero, decreases h until this is satisfied.
+        zero, decreases h until this is satisfied for a `MATMFFD` matrix
 
-    Logically Collective on Vec
+    Logically Collective on U
 
     Input Parameters:
 +   U - base vector that is added to
@@ -989,11 +982,11 @@ PetscErrorCode MatMFFDSetCheckh(Mat J, PetscErrorCode (*fun)(void *, Vec, Vec, P
 
     Level: advanced
 
-    Notes:
+    Note:
     This is rarely used directly, rather it is passed as an argument to
-           MatMFFDSetCheckh()
+           `MatMFFDSetCheckh()`
 
-.seealso: `MatMFFDSetCheckh()`
+.seealso: `MATMFFD`, `MatMFFDSetCheckh()`
 @*/
 PetscErrorCode MatMFFDCheckPositivity(void *dummy, Vec U, Vec a, PetscScalar *h) {
   PetscReal    val, minval;

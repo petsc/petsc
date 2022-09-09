@@ -48,18 +48,18 @@ PetscInt PetscDeviceContextAllocator::PetscDeviceContextID = 1;
 static Petsc::ObjectPool<PetscDeviceContext, PetscDeviceContextAllocator> contextPool;
 
 /*@C
-  PetscDeviceContextCreate - Creates a PetscDeviceContext
+  PetscDeviceContextCreate - Creates a `PetscDeviceContext`
 
   Not Collective, Asynchronous
 
   Output Paramemter:
-. dctx - The PetscDeviceContext
+. dctx - The `PetscDeviceContext`
 
-  Notes:
+  Note:
   Unlike almost every other PETSc class it is advised that most users use
-  PetscDeviceContextDuplicate() rather than this routine to create new contexts. Contexts
+  `PetscDeviceContextDuplicate()` rather than this routine to create new contexts. Contexts
   of different types are incompatible with one another; using
-  PetscDeviceContextDuplicate() ensures compatible types.
+  `PetscDeviceContextDuplicate()` ensures compatible types.
 
   Level: beginner
 
@@ -76,19 +76,19 @@ PetscErrorCode PetscDeviceContextCreate(PetscDeviceContext *dctx) {
 }
 
 /*@C
-  PetscDeviceContextDestroy - Frees a PetscDeviceContext
+  PetscDeviceContextDestroy - Frees a `PetscDeviceContext`
 
   Not Collective, Asynchronous
 
   Input Parameters:
-. dctx - The PetscDeviceContext
+. dctx - The `PetscDeviceContext`
 
-  Notes:
+  Note:
   No implicit synchronization occurs due to this routine, all resources are released completely asynchronously
   w.r.t. the host. If one needs to guarantee access to the data produced on this contexts stream one should perform the
   appropriate synchronization before calling this routine.
 
-  Developer Notes:
+  Developer Note:
   The context is never actually "destroyed", only returned to an ever growing pool of
   contexts. There are currently no safeguards on the size of the pool, this should perhaps
   be implemented.
@@ -106,18 +106,20 @@ PetscErrorCode PetscDeviceContextDestroy(PetscDeviceContext *dctx) {
 }
 
 /*@C
-  PetscDeviceContextSetStreamType - Set the implementation type of the underlying stream for a PetscDeviceContext
+  PetscDeviceContextSetStreamType - Set the implementation type of the underlying stream for a `PetscDeviceContext`
 
   Not Collective, Asynchronous
 
   Input Parameters:
-+ dctx - The PetscDeviceContext
-- type - The PetscStreamType
++ dctx - The `PetscDeviceContext`
+- type - The `PetscStreamType`
 
   Notes:
-  See PetscStreamType in include/petscdevicetypes.h for more information on the available
-  types and their interactions. If the PetscDeviceContext was previously set up and stream
-  type was changed, you must call PetscDeviceContextSetUp() again after this routine.
+  See `PetscStreamType` in `include/petscdevicetypes.h` for more information on the available
+  types and their interactions.
+
+  If the `PetscDeviceContext` was previously set up and stream
+  type was changed, you must call `PetscDeviceContextSetUp()` again after this routine.
 
   Level: intermediate
 
@@ -137,18 +139,18 @@ PetscErrorCode PetscDeviceContextSetStreamType(PetscDeviceContext dctx, PetscStr
 }
 
 /*@C
-  PetscDeviceContextGetStreamType - Get the implementation type of the underlying stream for a PetscDeviceContext
+  PetscDeviceContextGetStreamType - Get the implementation type of the underlying stream for a `PetscDeviceContext`
 
   Not Collective, Asynchronous
 
   Input Parameter:
-. dctx - The PetscDeviceContext
+. dctx - The `PetscDeviceContext`
 
   Output Parameter:
-. type - The PetscStreamType
+. type - The `PetscStreamType`
 
-  Notes:
-  See PetscStreamType in include/petscdevicetypes.h for more information on the available types and their interactions
+  Note:
+  See `PetscStreamType` in `include/petscdevicetypes.h` for more information on the available types and their interactions
 
   Level: intermediate
 
@@ -163,17 +165,17 @@ PetscErrorCode PetscDeviceContextGetStreamType(PetscDeviceContext dctx, PetscStr
 }
 
 /*@C
-  PetscDeviceContextSetDevice - Set the underlying device for the PetscDeviceContext
+  PetscDeviceContextSetDevice - Set the underlying device for the `PetscDeviceContext`
 
   Not Collective, Possibly Synchronous
 
   Input Parameters:
-+ dctx   - The PetscDeviceContext
-- device - The PetscDevice
++ dctx   - The `PetscDeviceContext`
+- device - The `PetscDevice`
 
   Notes:
-  This routine is effectively PetscDeviceContext's "set-type" (so every PetscDeviceContext
-  must also have an attached PetscDevice). Unlike the usual set-type semantics, it is
+  This routine is effectively `PetscDeviceContext`'s "set-type" (so every `PetscDeviceContext`
+  must also have an attached `PetscDevice`). Unlike the usual set-type semantics, it is
   not stricly necessary to set a contexts device to enable usage, any created device
   contexts will always come equipped with the "default" device.
 
@@ -204,18 +206,18 @@ PetscErrorCode PetscDeviceContextSetDevice(PetscDeviceContext dctx, PetscDevice 
 }
 
 /*@C
-  PetscDeviceContextGetDevice - Get the underlying PetscDevice for a PetscDeviceContext
+  PetscDeviceContextGetDevice - Get the underlying `PetscDevice` for a `PetscDeviceContext`
 
   Not Collective, Asynchronous
 
   Input Parameter:
-. dctx - the PetscDeviceContext
+. dctx - the `PetscDeviceContext`
 
   Output Parameter:
-. device - The PetscDevice
+. device - The `PetscDevice`
 
-  Notes:
-  This is a borrowed reference, the user should not destroy the device.
+  Note:
+  This is a borrowed reference, the user should not destroy `device`.
 
   Level: intermediate
 
@@ -231,15 +233,15 @@ PetscErrorCode PetscDeviceContextGetDevice(PetscDeviceContext dctx, PetscDevice 
 }
 
 /*@C
-  PetscDeviceContextSetUp - Prepares a PetscDeviceContext for use
+  PetscDeviceContextSetUp - Prepares a `PetscDeviceContext` for use
 
   Not Collective, Asynchronous
 
   Input Parameter:
-. dctx - The PetscDeviceContext
+. dctx - The `PetscDeviceContext`
 
-  Developer Notes:
-  This routine is usually the stage where a PetscDeviceContext acquires device-side data structures such as streams,
+  Developer Note:
+  This routine is usually the stage where a `PetscDeviceContext` acquires device-side data structures such as streams,
   events, and (possibly) handles.
 
   Level: beginner
@@ -260,19 +262,19 @@ PetscErrorCode PetscDeviceContextSetUp(PetscDeviceContext dctx) {
 }
 
 /*@C
-  PetscDeviceContextDuplicate - Duplicates a PetscDeviceContext object
+  PetscDeviceContextDuplicate - Duplicates a `PetscDeviceContext` object
 
   Not Collective, Asynchronous
 
   Input Parameter:
-. dctx - The PetscDeviceContext to duplicate
+. dctx - The `PetscDeviceContext` to duplicate
 
   Output Parameter:
-. dctxdup - The duplicated PetscDeviceContext
+. dctxdup - The duplicated `PetscDeviceContext`
 
-  Notes:
-  This is a shorthand method for creating a PetscDeviceContext with the exact same
-  settings as another. Note however that the duplicated PetscDeviceContext does not "share"
+  Note:
+  This is a shorthand method for creating a `PetscDeviceContext` with the exact same
+  settings as another. However the `dctxdup` does not "share"
   any of the underlying data with the original, (including its current stream-state) they
   are completely separate objects.
 
@@ -295,20 +297,20 @@ PetscErrorCode PetscDeviceContextDuplicate(PetscDeviceContext dctx, PetscDeviceC
 }
 
 /*@C
-  PetscDeviceContextQueryIdle - Returns whether or not a PetscDeviceContext is idle
+  PetscDeviceContextQueryIdle - Returns whether or not a `PetscDeviceContext` is idle
 
   Not Collective, Asynchronous
 
   Input Parameter:
-. dctx - The PetscDeviceContext object
+. dctx - The `PetscDeviceContext` object
 
   Output Parameter:
-. idle - PETSC_TRUE if PetscDeviceContext has NO work, PETSC_FALSE if it has work
+. idle - `PETSC_TRUE` if `PetscDeviceContext` has NO work, `PETSC_FALSE` if it has work
 
-  Notes:
+  Note:
   This routine only refers a singular context and does NOT take any of its children into
-  account. That is, if dctx is idle but has dependents who do have work, this routine still
-  returns PETSC_TRUE.
+  account. That is, if `dctx` is idle but has dependents who do have work, this routine still
+  returns `PETSC_TRUE`.
 
   Level: intermediate
 
@@ -329,12 +331,14 @@ PetscErrorCode PetscDeviceContextQueryIdle(PetscDeviceContext dctx, PetscBool *i
   Not Collective, Asynchronous
 
   Input Parameters:
-+ dctxa - The PetscDeviceContext object that is waiting
-- dctxb - The PetscDeviceContext object that is being waited on
++ dctxa - The `PetscDeviceContext` object that is waiting
+- dctxb - The `PetscDeviceContext` object that is being waited on
 
   Notes:
-  Serializes two PetscDeviceContexts. This routine uses only the state of dctxb at the moment this routine was
-  called, so any future work queued will not affect dctxa. It is safe to pass the same context to both arguments.
+  Serializes two `PetscDeviceContexts`. This routine uses only the state of `dctxb` at the moment this routine was
+  called, so any future work queued will not affect `dctxa`.
+
+  It is safe to pass the same context to both arguments.
 
   Level: beginner
 
@@ -358,7 +362,7 @@ PetscErrorCode PetscDeviceContextWaitForContext(PetscDeviceContext dctxa, PetscD
   Not Collective, Asynchronous
 
   Input Parameters:
-+ dctx - The parent PetscDeviceContext
++ dctx - The parent `PetscDeviceContext`
 - n    - The number of children to create
 
   Output Parameter:
@@ -452,30 +456,30 @@ PetscErrorCode PetscDeviceContextFork(PetscDeviceContext dctx, PetscInt n, Petsc
   Not Collective, Asynchronous
 
   Input Parameters:
-+ dctx         - A PetscDeviceContext to converge on
++ dctx         - A `PetscDeviceContext` to converge on
 . n            - The number of sub contexts to converge
 . joinMode     - The type of join to perform
 - dsub         - The sub contexts to converge
 
   Notes:
-  If PetscDeviceContextFork() creates n edges from a source node which all depend on the
+  If `PetscDeviceContextFork()` creates `n` edges from a source node which all depend on the
   source node, then this routine is the exact mirror. That is, it creates a node
-  (represented in dctx) which recieves n edges (and optionally destroys them) which is
+  (represented in `dctx`) which receives `n` edges (and optionally destroys them) which is
   dependent on the completion of all incoming edges.
 
-  If joinMode is PETSC_DEVICE_CONTEXT_JOIN_DESTROY all contexts in dsub will be destroyed
-  by this routine. Thus all sub contexts must have been created with the dctx passed to
+  If `joinMode` is `PETSC_DEVICE_CONTEXT_JOIN_DESTROY` all contexts in `dsub` will be destroyed
+  by this routine. Thus all sub contexts must have been created with the `dctx` passed to
   this routine.
 
-  if joinMode is PETSC_DEVICE_CONTEXT_JOIN_NO_SYNC dctx waits for all sub contexts but the
+  if `joinMode` is `PETSC_DEVICE_CONTEXT_JOIN_NO_SYNC` `dctx` waits for all sub contexts but the
   sub contexts do not wait for one another afterwards.
 
-  If joinMode is PETSC_DEVICE_CONTEXT_JOIN_SYNC all sub contexts will additionally
-  wait on dctx after converging. This has the effect of "synchronizing" the outgoing
+  If `joinMode` is `PETSC_DEVICE_CONTEXT_JOIN_SYNC` all sub contexts will additionally
+  wait on `dctx` after converging. This has the effect of "synchronizing" the outgoing
   edges.
 
   DAG representations:
-  If joinMode is PETSC_DEVICE_CONTEXT_JOIN_DESTROY
+  If `joinMode` is `PETSC_DEVICE_CONTEXT_JOIN_DESTROY`
 .vb
   time ->
 
@@ -484,7 +488,7 @@ PetscErrorCode PetscDeviceContextFork(PetscDeviceContext dctx, PetscInt n, Petsc
   ->  ... -------/
   -> dsub[n-1] -/
 .ve
-  If joinMode is PETSC_DEVICE_CONTEXT_JOIN_NO_SYNC
+  If `joinMode` is `PETSC_DEVICE_CONTEXT_JOIN_NO_SYNC`
 .vb
   time ->
 
@@ -493,7 +497,7 @@ PetscErrorCode PetscDeviceContextFork(PetscDeviceContext dctx, PetscInt n, Petsc
   ->  ... -------/---------->
   -> dsub[n-1] -/----------->
 .ve
-  If joinMode is PETSC_DEVICE_CONTEXT_JOIN_SYNC
+  If `joinMode` is `PETSC_DEVICE_CONTEXT_JOIN_SYNC`
 .vb
   time ->
 
@@ -565,12 +569,12 @@ PetscErrorCode PetscDeviceContextJoin(PetscDeviceContext dctx, PetscInt n, Petsc
 }
 
 /*@C
-  PetscDeviceContextSynchronize - Block the host until all work queued on or associated with a PetscDeviceContext has finished
+  PetscDeviceContextSynchronize - Block the host until all work queued on or associated with a `PetscDeviceContext` has finished
 
   Not Collective, Synchronous
 
   Input Parameters:
-. dctx - The PetscDeviceContext to synchronize
+. dctx - The `PetscDeviceContext` to synchronize
 
   Level: beginner
 
@@ -638,21 +642,21 @@ static PetscErrorCode PetscDeviceContextSetupGlobalContext_Private(void) {
 }
 
 /*@C
-  PetscDeviceContextGetCurrentContext - Get the current active PetscDeviceContext
+  PetscDeviceContextGetCurrentContext - Get the current active `PetscDeviceContext`
 
   Not Collective, Asynchronous
 
   Output Parameter:
-. dctx - The PetscDeviceContext
+. dctx - The `PetscDeviceContext`
 
-  Notes:
+  Note:
   The user generally should not destroy contexts retrieved with this routine unless they
   themselves have created them. There exists no protection against destroying the root
   context.
 
-  Developer Notes:
+  Developer Note:
   Unless the user has set their own, this routine creates the "root" context the first time it
-  is called, registering its destructor to PetscFinalize().
+  is called, registering its destructor to `PetscFinalize()`.
 
   Level: beginner
 
@@ -671,22 +675,22 @@ PetscErrorCode PetscDeviceContextGetCurrentContext(PetscDeviceContext *dctx) {
 }
 
 /*@C
-  PetscDeviceContextSetCurrentContext - Set the current active PetscDeviceContext
+  PetscDeviceContextSetCurrentContext - Set the current active `PetscDeviceContext`
 
   Not Collective, Asynchronous
 
   Input Parameter:
-. dctx - The PetscDeviceContext
+. dctx - The `PetscDeviceContext`
 
   Notes:
-  This routine can be used to set the defacto "root" PetscDeviceContext to a user-defined
-  implementation by calling this routine immediately after PetscInitialize() and ensuring that
-  PetscDevice is not greedily intialized. In this case the user is responsible for destroying
-  their PetscDeviceContext before PetscFinalize() returns.
+  This routine can be used to set the defacto "root" `PetscDeviceContext` to a user-defined
+  implementation by calling this routine immediately after `PetscInitialize()` and ensuring that
+  `PetscDevice` is not eagerly initialized. In this case the user is responsible for destroying
+  their `PetscDeviceContext` before `PetscFinalize()` returns.
 
   The old context is not stored in any way by this routine; if one is overriding a context that
   they themselves do not control, one should take care to temporarily store it by calling
-  PetscDeviceContextGetCurrentContext() before calling this routine.
+  `PetscDeviceContextGetCurrentContext()` before calling this routine.
 
   Level: beginner
 
@@ -703,22 +707,21 @@ PetscErrorCode PetscDeviceContextSetCurrentContext(PetscDeviceContext dctx) {
 }
 
 /*@C
-  PetscDeviceContextSetFromOptions - Configure a PetscDeviceContext from the options database
+  PetscDeviceContextSetFromOptions - Configure a `PetscDeviceContext` from the options database
 
   Collective on comm, Asynchronous
 
   Input Parameters:
 + comm   - MPI communicator on which to query the options database
 . prefix - prefix to prepend to all options database queries, NULL if not needed
-- dctx   - The PetscDeviceContext to configure
+- dctx   - The `PetscDeviceContext` to configure
 
   Output Parameter:
-. dctx - The PetscDeviceContext
+. dctx - The `PetscDeviceContext`
 
-  Options Database:
-+ -device_context_stream_type - type of stream to create inside the PetscDeviceContext -
-   PetscDeviceContextSetStreamType()
-- -device_context_device_type - the type of PetscDevice to attach by default - PetscDeviceType
+  Options Database Keys:
++ -device_context_stream_type - type of stream to create inside the `PetscDeviceContext` - `PetscDeviceContextSetStreamType()`
+- -device_context_device_type - the type of `PetscDevice` to attach by default - `PetscDeviceType`
 
   Level: beginner
 
@@ -735,7 +738,7 @@ PetscErrorCode PetscDeviceContextSetFromOptions(MPI_Comm comm, const char prefix
   PetscCall(PetscOptionsEList("-device_context_stream_type", "PetscDeviceContext PetscStreamType", "PetscDeviceContextSetStreamType", PetscStreamTypes, PETSC_STREAM_MAX, PetscStreamTypes[dctx->streamType], &stype, &flag));
   if (flag) PetscCall(PetscDeviceContextSetStreamType(dctx, static_cast<PetscStreamType>(stype)));
   PetscCall(PetscOptionsEList("-device_context_device_type", "Underlying PetscDevice", "PetscDeviceContextSetDevice", PetscDeviceTypes + 1, PETSC_DEVICE_MAX - 1, dctx->device ? PetscDeviceTypes[dctx->device->type] : PetscDeviceTypes[PETSC_DEVICE_CONTEXT_DEFAULT_DEVICE], &dtype, &flag));
-  if (flag) { PetscCall(PetscDeviceContextSetDefaultDeviceForType_Internal(dctx, static_cast<PetscDeviceType>(dtype + 1))); }
+  if (flag) PetscCall(PetscDeviceContextSetDefaultDeviceForType_Internal(dctx, static_cast<PetscDeviceType>(dtype + 1)));
   PetscOptionsEnd();
   PetscFunctionReturn(0);
 }

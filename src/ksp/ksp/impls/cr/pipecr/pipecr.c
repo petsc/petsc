@@ -73,14 +73,14 @@ static PetscErrorCode KSPSolve_PIPECR(KSP ksp) {
   do {
     PetscCall(KSP_PCApply(ksp, W, M)); /*   m <- Bw       */
 
-    if (i > 0 && ksp->normtype == KSP_NORM_PRECONDITIONED) { PetscCall(VecNormBegin(U, NORM_2, &dp)); }
+    if (i > 0 && ksp->normtype == KSP_NORM_PRECONDITIONED) PetscCall(VecNormBegin(U, NORM_2, &dp));
     PetscCall(VecDotBegin(W, U, &gamma));
     PetscCall(VecDotBegin(M, W, &delta));
     PetscCall(PetscCommSplitReductionBegin(PetscObjectComm((PetscObject)U)));
 
     PetscCall(KSP_MatMult(ksp, Amat, M, N)); /*   n <- Am       */
 
-    if (i > 0 && ksp->normtype == KSP_NORM_PRECONDITIONED) { PetscCall(VecNormEnd(U, NORM_2, &dp)); }
+    if (i > 0 && ksp->normtype == KSP_NORM_PRECONDITIONED) PetscCall(VecNormEnd(U, NORM_2, &dp));
     PetscCall(VecDotEnd(W, U, &gamma));
     PetscCall(VecDotEnd(M, W, &delta));
 

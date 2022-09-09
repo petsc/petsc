@@ -14,7 +14,6 @@ PETSC_EXTERN mxArray *MatSeqAIJToMatlab(Mat B) {
   mxArray    *mat;
   PetscInt    i;
 
-  PetscFunctionBegin;
   mat = mxCreateSparse(B->cmap->n, B->rmap->n, aij->nz, mxREAL);
   if (PetscArraycpy(mxGetPr(mat), aij->a, aij->nz)) return NULL;
   /* MATLAB stores by column, not row so we pass in the transpose of the matrix */
@@ -22,7 +21,7 @@ PETSC_EXTERN mxArray *MatSeqAIJToMatlab(Mat B) {
   for (i = 0; i < aij->nz; i++) jj[i] = aij->j[i];
   ii = mxGetJc(mat);
   for (i = 0; i < B->rmap->n + 1; i++) ii[i] = aij->i[i];
-  PetscFunctionReturn(mat);
+  return mat;
 }
 
 PETSC_EXTERN PetscErrorCode MatlabEnginePut_SeqAIJ(PetscObject obj, void *mengine) {
@@ -227,19 +226,15 @@ PetscErrorCode MatView_Matlab(Mat A, PetscViewer viewer) {
 }
 
 /*MC
-  MATSOLVERMATLAB - "matlab" - Providing direct solver LU for sequential aij matrix via the external package MATLAB.
-
-  Works with MATSEQAIJ matrices.
+  MATSOLVERMATLAB - "matlab" - Providing direct solver LU for `MATSEQAIJ` matrix via the external package MATLAB.
 
   Options Database Keys:
 . -pc_factor_mat_solver_type matlab - selects MATLAB to do the sparse factorization
 
-  Notes:
+  Note:
     You must ./configure with the options --with-matlab --with-matlab-engine
 
   Level: beginner
 
-.seealso: `PCLU`
-
-.seealso: `PCFactorSetMatSolverType()`, `MatSolverType`
+.seealso: `PCLU`, `PCFactorSetMatSolverType()`, `MatSolverType`
 M*/

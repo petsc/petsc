@@ -37,7 +37,7 @@ PetscErrorCode AOView_Mapping(AO ao, PetscViewer viewer) {
   if (iascii) {
     PetscViewerASCIIPrintf(viewer, "Number of elements in ordering %" PetscInt_FMT "\n", aomap->N);
     PetscViewerASCIIPrintf(viewer, "   App.   PETSc\n");
-    for (i = 0; i < aomap->N; i++) { PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT "   %" PetscInt_FMT "    %" PetscInt_FMT "\n", i, aomap->app[i], aomap->petsc[aomap->appPerm[i]]); }
+    for (i = 0; i < aomap->N; i++) PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT "   %" PetscInt_FMT "    %" PetscInt_FMT "\n", i, aomap->app[i], aomap->petsc[aomap->appPerm[i]]);
   }
   PetscFunctionReturn(0);
 }
@@ -294,10 +294,10 @@ PetscErrorCode AOCreateMapping(MPI_Comm comm, PetscInt napp, const PetscInt myap
 
   if (PetscDefined(USE_DEBUG)) {
     /* Check that the permutations are complementary */
-    for (i = 0; i < N; i++) { PetscCheck(i == aomap->appPerm[aomap->petscPerm[i]], PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid ordering"); }
+    for (i = 0; i < N; i++) PetscCheck(i == aomap->appPerm[aomap->petscPerm[i]], PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid ordering");
   }
   /* Cleanup */
-  if (!mypetsc) { PetscCall(PetscFree(petsc)); }
+  if (!mypetsc) PetscCall(PetscFree(petsc));
   PetscCall(PetscFree4(allapp, appPerm, allpetsc, petscPerm));
 
   PetscCall(AOViewFromOptions(ao, NULL, "-ao_view"));
@@ -348,6 +348,6 @@ PetscErrorCode AOCreateMappingIS(IS isapp, IS ispetsc, AO *aoout) {
   PetscCall(AOCreateMapping(comm, napp, myapp, mypetsc, aoout));
 
   PetscCall(ISRestoreIndices(isapp, &myapp));
-  if (ispetsc) { PetscCall(ISRestoreIndices(ispetsc, &mypetsc)); }
+  if (ispetsc) PetscCall(ISRestoreIndices(ispetsc, &mypetsc));
   PetscFunctionReturn(0);
 }

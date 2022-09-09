@@ -210,7 +210,7 @@ PetscErrorCode DMCreateSubDM_DA(DM dm, PetscInt numFields, const PetscInt fields
 
     PetscCall(PetscMalloc1(da->Nlocal * numFields / dof, &indices));
     for (i = da->base / dof; i < (da->base + da->Nlocal) / dof; ++i) {
-      for (j = 0; j < numFields; ++j) { indices[cnt++] = dof * i + fields[j]; }
+      for (j = 0; j < numFields; ++j) indices[cnt++] = dof * i + fields[j];
     }
     PetscCheck(cnt == da->Nlocal * numFields / dof, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Count %" PetscInt_FMT " does not equal expected value %" PetscInt_FMT, cnt, da->Nlocal * numFields / dof);
     PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)dm), cnt, indices, PETSC_OWN_POINTER, is));
@@ -234,12 +234,12 @@ PetscErrorCode DMCreateFieldDecomposition_DA(DM dm, PetscInt *len, char ***namel
     PetscCall(VecGetLocalSize(v, &n));
     PetscCall(DMRestoreGlobalVector(dm, &v));
     PetscCall(PetscMalloc1(dof, islist));
-    for (i = 0; i < dof; i++) { PetscCall(ISCreateStride(PetscObjectComm((PetscObject)dm), n / dof, rstart + i, dof, &(*islist)[i])); }
+    for (i = 0; i < dof; i++) PetscCall(ISCreateStride(PetscObjectComm((PetscObject)dm), n / dof, rstart + i, dof, &(*islist)[i]));
   }
   if (namelist) {
     PetscCall(PetscMalloc1(dof, namelist));
     if (dd->fieldname) {
-      for (i = 0; i < dof; i++) { PetscCall(PetscStrallocpy(dd->fieldname[i], &(*namelist)[i])); }
+      for (i = 0; i < dof; i++) PetscCall(PetscStrallocpy(dd->fieldname[i], &(*namelist)[i]));
     } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Currently DMDA must have fieldnames");
   }
   if (dmlist) {
@@ -305,15 +305,15 @@ static PetscErrorCode DMGetNeighbors_DA(DM dm, PetscInt *nranks, const PetscMPII
   switch (dim) {
   case 1:
     *nranks = 3;
-    /* if (st == DMDA_STENCIL_STAR) { *nranks = 3; } */
+    /* if (st == DMDA_STENCIL_STAR) *nranks = 3; */
     break;
   case 2:
     *nranks = 9;
-    /* if (st == DMDA_STENCIL_STAR) { *nranks = 5; } */
+    /* if (st == DMDA_STENCIL_STAR) *nranks = 5; */
     break;
   case 3:
     *nranks = 27;
-    /* if (st == DMDA_STENCIL_STAR) { *nranks = 7; } */
+    /* if (st == DMDA_STENCIL_STAR) *nranks = 7; */
     break;
   default: break;
   }

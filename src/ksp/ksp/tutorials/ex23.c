@@ -175,7 +175,7 @@ int main(int argc, char **args) {
   PetscCall(VecAXPY(x, -1.0, u));
   PetscCall(VecNorm(x, NORM_2, &norm));
   PetscCall(KSPGetIterationNumber(ksp, &its));
-  if (norm > tol) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Norm of error %g, Iterations %" PetscInt_FMT "\n", (double)norm, its)); }
+  if (norm > tol) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Norm of error %g, Iterations %" PetscInt_FMT "\n", (double)norm, its));
 
   /*
      Free work space.  All PETSc objects should be destroyed when they

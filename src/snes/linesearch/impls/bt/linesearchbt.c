@@ -155,11 +155,11 @@ static PetscErrorCode SNESLineSearchApply_BT(SNESLineSearch linesearch) {
       PetscCall(PetscViewerASCIIPrintf(monitor, "    Line search: objective function at lambdas = %g is Inf or Nan, cutting lambda\n", (double)lambda));
       PetscCall(PetscViewerASCIISubtractTab(monitor, ((PetscObject)linesearch)->tablevel));
     }
-    if (lambda <= minlambda) { SNESCheckFunctionNorm(snes, g); }
+    if (lambda <= minlambda) SNESCheckFunctionNorm(snes, g);
     lambda = .5 * lambda;
   }
 
-  if (!objective) { PetscCall(PetscInfo(snes, "Initial fnorm %14.12e gnorm %14.12e\n", (double)fnorm, (double)gnorm)); }
+  if (!objective) PetscCall(PetscInfo(snes, "Initial fnorm %14.12e gnorm %14.12e\n", (double)fnorm, (double)gnorm));
   if (.5 * g <= .5 * f + lambda * alpha * initslope) { /* Sufficient reduction or step tolerance convergence */
     if (monitor) {
       PetscCall(PetscViewerASCIIAddTab(monitor, ((PetscObject)linesearch)->tablevel));
@@ -269,7 +269,7 @@ static PetscErrorCode SNESLineSearchApply_BT(SNESLineSearch linesearch) {
         if (linesearch->ops->viproject) PetscCall((*linesearch->ops->viproject)(snes, W));
         if (snes->nfuncs >= snes->max_funcs && snes->max_funcs >= 0) {
           PetscCall(PetscInfo(snes, "Exceeded maximum function evaluations, while looking for good step length! %" PetscInt_FMT " \n", count));
-          if (!objective) { PetscCall(PetscInfo(snes, "fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lambda=%18.16e, initial slope=%18.16e\n", (double)fnorm, (double)gnorm, (double)ynorm, (double)lambda, (double)initslope)); }
+          if (!objective) PetscCall(PetscInfo(snes, "fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lambda=%18.16e, initial slope=%18.16e\n", (double)fnorm, (double)gnorm, (double)ynorm, (double)lambda, (double)initslope));
           PetscCall(SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_FUNCTION));
           snes->reason = SNES_DIVERGED_FUNCTION_COUNT;
           PetscFunctionReturn(0);

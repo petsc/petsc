@@ -969,7 +969,7 @@ int main(int argc, char **argv) {
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
 
   /* Read initial voltage vector and Ybus */
-  if (rank == 0) { PetscCall(read_data(nc, &gen, &exc, &load, &bus, &branch, &edgelist)); }
+  if (rank == 0) PetscCall(read_data(nc, &gen, &exc, &load, &bus, &branch, &edgelist));
 
   PetscCall(DMNetworkCreate(PETSC_COMM_WORLD, &networkdm));
   PetscCall(DMNetworkRegisterComponent(networkdm, "branchstruct", sizeof(Branch), &componentkey[0]));
@@ -989,7 +989,7 @@ int main(int argc, char **argv) {
   /* Set up the network layout */
   PetscCall(DMNetworkLayoutSetUp(networkdm));
 
-  if (rank == 0) { PetscCall(PetscFree(edgelist)); }
+  if (rank == 0) PetscCall(PetscFree(edgelist));
 
   /* Add network components (physical parameters of nodes and branches) and number of variables */
   if (rank == 0) {
@@ -997,7 +997,7 @@ int main(int argc, char **argv) {
     genj  = 0;
     loadj = 0;
     excj  = 0;
-    for (i = eStart; i < eEnd; i++) { PetscCall(DMNetworkAddComponent(networkdm, i, componentkey[0], &branch[i - eStart], 0)); }
+    for (i = eStart; i < eEnd; i++) PetscCall(DMNetworkAddComponent(networkdm, i, componentkey[0], &branch[i - eStart], 0));
 
     PetscCall(DMNetworkGetVertexRange(networkdm, &vStart, &vEnd));
 
@@ -1012,17 +1012,17 @@ int main(int argc, char **argv) {
         }
       }
       if (bus[i - vStart].nofload) {
-        for (j = 0; j < bus[i - vStart].nofload; j++) { PetscCall(DMNetworkAddComponent(networkdm, i, componentkey[4], &load[loadj++], 0)); }
+        for (j = 0; j < bus[i - vStart].nofload; j++) PetscCall(DMNetworkAddComponent(networkdm, i, componentkey[4], &load[loadj++], 0));
       }
     }
   }
 
   PetscCall(DMSetUp(networkdm));
 
-  if (rank == 0) { PetscCall(PetscFree5(bus, gen, load, branch, exc)); }
+  if (rank == 0) PetscCall(PetscFree5(bus, gen, load, branch, exc));
 
   /* for parallel options: Network partitioning and distribution of data */
-  if (size > 1) { PetscCall(DMNetworkDistribute(&networkdm, 0)); }
+  if (size > 1) PetscCall(DMNetworkDistribute(&networkdm, 0));
   PetscCall(PetscLogStagePop());
 
   PetscCall(DMCreateGlobalVector(networkdm, &X));
@@ -1044,7 +1044,7 @@ int main(int argc, char **argv) {
   PetscCall(PetscOptionsReal("-tmax", "", "", user.tmax, &user.tmax, NULL));
 
   PetscCall(PetscMalloc1(18 * nc, &user.ybusfault));
-  for (i = 0; i < 18 * nc; i++) { user.ybusfault[i] = 0; }
+  for (i = 0; i < 18 * nc; i++) user.ybusfault[i] = 0;
   user.ybusfault[user.faultbus * 2 + 1] = 1 / user.Rfault;
   PetscOptionsEnd();
 
@@ -1070,7 +1070,7 @@ int main(int argc, char **argv) {
   user.alg_flg = PETSC_FALSE;
 
   /* Prefault period */
-  if (rank == 0) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "... (1) Prefault period ... \n")); }
+  if (rank == 0) PetscCall(PetscPrintf(PETSC_COMM_SELF, "... (1) Prefault period ... \n"));
 
   PetscCall(TSSetSolution(ts, X));
   PetscCall(TSSetUp(ts));
@@ -1091,7 +1091,7 @@ int main(int argc, char **argv) {
   user.alg_flg = PETSC_TRUE;
 
   /* Solve the algebraic equations */
-  if (rank == 0) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n... (2) Apply disturbance, solve algebraic equations ... \n")); }
+  if (rank == 0) PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n... (2) Apply disturbance, solve algebraic equations ... \n"));
   PetscCall(SNESSolve(snes_alg, NULL, X));
 
   /* Disturbance period */
@@ -1101,7 +1101,7 @@ int main(int argc, char **argv) {
   PetscCall(TSSetIFunction(ts, NULL, (TSIFunction)FormIFunction, &user));
 
   user.alg_flg = PETSC_TRUE;
-  if (rank == 0) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n... (3) Disturbance period ... \n")); }
+  if (rank == 0) PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n... (3) Disturbance period ... \n"));
   PetscCall(TSSolve(ts, X));
 
   /* Remove the fault */
@@ -1109,7 +1109,7 @@ int main(int argc, char **argv) {
 
   user.alg_flg = PETSC_FALSE;
   /* Solve the algebraic equations */
-  if (rank == 0) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n... (4) Remove fault, solve algebraic equations ... \n")); }
+  if (rank == 0) PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n... (4) Remove fault, solve algebraic equations ... \n"));
   PetscCall(SNESSolve(snes_alg, NULL, X));
   PetscCall(SNESDestroy(&snes_alg));
 
@@ -1120,7 +1120,7 @@ int main(int argc, char **argv) {
   PetscCall(TSSetIFunction(ts, NULL, (TSIFunction)FormIFunction, &user));
 
   user.alg_flg = PETSC_FALSE;
-  if (rank == 0) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n... (5) Post-disturbance period ... \n")); }
+  if (rank == 0) PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n... (5) Post-disturbance period ... \n"));
   PetscCall(TSSolve(ts, X));
 
   PetscCall(PetscFree(user.ybusfault));

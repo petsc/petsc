@@ -1196,10 +1196,10 @@ PETSC_EXTERN MPI_Op MPIU_MIN;
 #define MPIU_MAX MPI_MAX
 #define MPIU_MIN MPI_MIN
 #endif
-#if defined(PETSC_HAVE_REAL___FLOAT128)
+#if defined(PETSC_HAVE_REAL___FLOAT128) || defined(PETSC_HAVE_REAL___FP16)
 /*MC
-    MPIU_SUM___FLOAT128 - MPI_Op that acts as a replacement for MPI_SUM with
-    custom MPI_Datatype `MPIU___FLOAT128` and `MPIU___COMPLEX128`.
+    MPIU_SUM___FP16___FLOAT128 - MPI_Op that acts as a replacement for MPI_SUM with
+    custom MPI_Datatype `MPIU___FLOAT128`, `MPIU___COMPLEX128`, and `MPIU___FP16`.
 
    Level: advanced
 
@@ -1208,7 +1208,7 @@ PETSC_EXTERN MPI_Op MPIU_MIN;
 
 .seealso: `MPIU_REAL`, `MPIU_SCALAR`, `MPIU_COMPLEX`
 M*/
-PETSC_EXTERN MPI_Op MPIU_SUM___FLOAT128;
+PETSC_EXTERN MPI_Op MPIU_SUM___FP16___FLOAT128;
 #endif
 PETSC_EXTERN PetscErrorCode PetscMaxSum(MPI_Comm, const PetscInt[], PetscInt *, PetscInt *);
 
@@ -1327,6 +1327,7 @@ PETSC_EXTERN PetscErrorCode PetscObjectRegisterDestroyAll(void);
 PETSC_EXTERN PetscErrorCode PetscObjectViewFromOptions(PetscObject, PetscObject, const char[]);
 PETSC_EXTERN PetscErrorCode PetscObjectName(PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectTypeCompare(PetscObject, const char[], PetscBool *);
+PETSC_EXTERN PetscErrorCode PetscObjectObjectTypeCompare(PetscObject, PetscObject, PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscObjectBaseTypeCompare(PetscObject, const char[], PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscObjectTypeCompareAny(PetscObject, PetscBool *, const char[], ...);
 PETSC_EXTERN PetscErrorCode PetscObjectBaseTypeCompareAny(PetscObject, PetscBool *, const char[], ...);

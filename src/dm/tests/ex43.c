@@ -26,7 +26,7 @@ PetscErrorCode PrintVecWithGhosts(DM da, Vec v) {
   PetscCall(PetscSynchronizedPrintf(com, "begin rank %d portion (with ghosts, %" PetscInt_FMT " x %" PetscInt_FMT ")\n", rank, info.gxm, info.gym));
   PetscCall(DMDAVecGetArray(da, v, &p));
   for (i = info.gxs; i < info.gxs + info.gxm; i++) {
-    for (j = info.gys; j < info.gys + info.gym; j++) { PetscCall(PetscSynchronizedPrintf(com, "%g, ", (double)PetscRealPart(p[j][i]))); }
+    for (j = info.gys; j < info.gys + info.gym; j++) PetscCall(PetscSynchronizedPrintf(com, "%g, ", (double)PetscRealPart(p[j][i])));
     PetscCall(PetscSynchronizedPrintf(com, "\n"));
   }
   PetscCall(DMDAVecRestoreArray(da, v, &p));
@@ -43,7 +43,7 @@ PetscErrorCode VecSetOwned(DM da, Vec v, PetscScalar value) {
   PetscCall(DMDAGetCorners(da, &xs, &ys, 0, &xm, &ym, 0));
   PetscCall(DMDAVecGetArray(da, v, &p));
   for (i = xs; i < xs + xm; i++) {
-    for (j = ys; j < ys + ym; j++) { p[j][i] = value; }
+    for (j = ys; j < ys + ym; j++) p[j][i] = value;
   }
   PetscCall(DMDAVecRestoreArray(da, v, &p));
   return 0;

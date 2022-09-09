@@ -186,7 +186,7 @@ found:
       if (rootdirect[i]) { /* Aha, we disguise rootdata as rootbuf */
         link->rootbuf[i][rootmtype] = (char *)rootdata + bas->rootstart[i] * link->unitbytes;
       } else { /* Have to have a separate rootbuf */
-        if (!link->rootbuf_alloc[i][rootmtype]) { PetscCall(PetscSFMalloc(sf, rootmtype, bas->rootbuflen[i] * link->unitbytes, (void **)&link->rootbuf_alloc[i][rootmtype])); }
+        if (!link->rootbuf_alloc[i][rootmtype]) PetscCall(PetscSFMalloc(sf, rootmtype, bas->rootbuflen[i] * link->unitbytes, (void **)&link->rootbuf_alloc[i][rootmtype]));
         link->rootbuf[i][rootmtype] = link->rootbuf_alloc[i][rootmtype];
       }
     }
@@ -195,7 +195,7 @@ found:
       if (leafdirect[i]) {
         link->leafbuf[i][leafmtype] = (char *)leafdata + sf->leafstart[i] * link->unitbytes;
       } else {
-        if (!link->leafbuf_alloc[i][leafmtype]) { PetscCall(PetscSFMalloc(sf, leafmtype, sf->leafbuflen[i] * link->unitbytes, (void **)&link->leafbuf_alloc[i][leafmtype])); }
+        if (!link->leafbuf_alloc[i][leafmtype]) PetscCall(PetscSFMalloc(sf, leafmtype, sf->leafbuflen[i] * link->unitbytes, (void **)&link->leafbuf_alloc[i][leafmtype]));
         link->leafbuf[i][leafmtype] = link->leafbuf_alloc[i][leafmtype];
       }
     }
@@ -204,11 +204,11 @@ found:
 #if defined(PETSC_HAVE_DEVICE)
   /* Allocate buffers on host for buffering data on device in cast not use_gpu_aware_mpi */
   if (PetscMemTypeDevice(rootmtype) && PetscMemTypeHost(rootmtype_mpi)) {
-    if (!link->rootbuf_alloc[PETSCSF_REMOTE][PETSC_MEMTYPE_HOST]) { PetscCall(PetscMalloc(bas->rootbuflen[PETSCSF_REMOTE] * link->unitbytes, &link->rootbuf_alloc[PETSCSF_REMOTE][PETSC_MEMTYPE_HOST])); }
+    if (!link->rootbuf_alloc[PETSCSF_REMOTE][PETSC_MEMTYPE_HOST]) PetscCall(PetscMalloc(bas->rootbuflen[PETSCSF_REMOTE] * link->unitbytes, &link->rootbuf_alloc[PETSCSF_REMOTE][PETSC_MEMTYPE_HOST]));
     link->rootbuf[PETSCSF_REMOTE][PETSC_MEMTYPE_HOST] = link->rootbuf_alloc[PETSCSF_REMOTE][PETSC_MEMTYPE_HOST];
   }
   if (PetscMemTypeDevice(leafmtype) && PetscMemTypeHost(leafmtype_mpi)) {
-    if (!link->leafbuf_alloc[PETSCSF_REMOTE][PETSC_MEMTYPE_HOST]) { PetscCall(PetscMalloc(sf->leafbuflen[PETSCSF_REMOTE] * link->unitbytes, &link->leafbuf_alloc[PETSCSF_REMOTE][PETSC_MEMTYPE_HOST])); }
+    if (!link->leafbuf_alloc[PETSCSF_REMOTE][PETSC_MEMTYPE_HOST]) PetscCall(PetscMalloc(sf->leafbuflen[PETSCSF_REMOTE] * link->unitbytes, &link->leafbuf_alloc[PETSCSF_REMOTE][PETSC_MEMTYPE_HOST]));
     link->leafbuf[PETSCSF_REMOTE][PETSC_MEMTYPE_HOST] = link->leafbuf_alloc[PETSCSF_REMOTE][PETSC_MEMTYPE_HOST];
   }
 #endif

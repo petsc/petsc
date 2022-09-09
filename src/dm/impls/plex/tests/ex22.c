@@ -16,7 +16,7 @@ static PetscErrorCode testIdentity(DM dm, PetscBool dmIsSimplicial, PetscInt cel
   PetscCall(DMGetWorkArray(dm, dimC * numPoints, MPIU_REAL, &mapped));
   PetscCall(DMGetWorkArray(dm, dimR * numPoints, MPIU_REAL, &inverted));
 
-  for (i = 0; i < dimR * numPoints; i++) { PetscCall(PetscRandomGetValueReal(randCtx, &preimage[i])); }
+  for (i = 0; i < dimR * numPoints; i++) PetscCall(PetscRandomGetValueReal(randCtx, &preimage[i]));
   if (dmIsSimplicial && dimR > 1) {
     for (i = 0; i < numPoints; i++) {
       for (j = 0; j < dimR; j++) {
@@ -34,22 +34,22 @@ static PetscErrorCode testIdentity(DM dm, PetscBool dmIsSimplicial, PetscInt cel
   for (i = 0; i < numPoints; i++) {
     PetscReal max = 0.;
 
-    for (j = 0; j < dimR; j++) { max = PetscMax(max, PetscAbsReal(preimage[i * dimR + j] - inverted[i * dimR + j])); }
+    for (j = 0; j < dimR; j++) max = PetscMax(max, PetscAbsReal(preimage[i * dimR + j] - inverted[i * dimR + j]));
     if (max > tol) {
       PetscCall(PetscPrintf(PETSC_COMM_SELF, "Bad inversion for cell %" PetscInt_FMT " with error %g (tol %g): (", cell, (double)max, (double)tol));
       for (j = 0; j < dimR; j++) {
         PetscCall(PetscPrintf(PETSC_COMM_SELF, "%+f", (double)preimage[i * dimR + j]));
-        if (j < dimR - 1) { PetscCall(PetscPrintf(PETSC_COMM_SELF, ",")); }
+        if (j < dimR - 1) PetscCall(PetscPrintf(PETSC_COMM_SELF, ","));
       }
       PetscCall(PetscPrintf(PETSC_COMM_SELF, ") --> ("));
       for (j = 0; j < dimC; j++) {
         PetscCall(PetscPrintf(PETSC_COMM_SELF, "%+f", (double)mapped[i * dimC + j]));
-        if (j < dimC - 1) { PetscCall(PetscPrintf(PETSC_COMM_SELF, ",")); }
+        if (j < dimC - 1) PetscCall(PetscPrintf(PETSC_COMM_SELF, ","));
       }
       PetscCall(PetscPrintf(PETSC_COMM_SELF, ") --> ("));
       for (j = 0; j < dimR; j++) {
         PetscCall(PetscPrintf(PETSC_COMM_SELF, "%+f", (double)inverted[i * dimR + j]));
-        if (j < dimR - 1) { PetscCall(PetscPrintf(PETSC_COMM_SELF, ",")); }
+        if (j < dimR - 1) PetscCall(PetscPrintf(PETSC_COMM_SELF, ","));
       }
       PetscCall(PetscPrintf(PETSC_COMM_SELF, ")\n"));
     } else {
@@ -100,7 +100,7 @@ static PetscErrorCode testIdentity(DM dm, PetscBool dmIsSimplicial, PetscInt cel
 static PetscErrorCode identityEmbedding(PetscInt dim, PetscReal time, const PetscReal *x, PetscInt Nf, PetscScalar *u, void *ctx) {
   PetscInt i;
 
-  for (i = 0; i < dim; i++) { u[i] = x[i]; };
+  for (i = 0; i < dim; i++) u[i] = x[i];
   return 0;
 }
 
@@ -185,8 +185,8 @@ int main(int argc, char **argv) {
             for (i = 0; i < n / dim; i++) {
               PetscInt j;
 
-              for (j = 0; j < dim; j++) { newCoordArray[i * dimC + j] = coordArray[i * dim + j]; }
-              for (; j < dimC; j++) { newCoordArray[i * dimC + j] = 0.; }
+              for (j = 0; j < dim; j++) newCoordArray[i * dimC + j] = coordArray[i * dim + j];
+              for (; j < dimC; j++) newCoordArray[i * dimC + j] = 0.;
             }
             PetscCall(VecRestoreArray(coords, &coordArray));
             PetscCall(VecRestoreArray(newVec, &newCoordArray));

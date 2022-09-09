@@ -957,7 +957,7 @@ PetscErrorCode ISSetPermutation(IS is) {
       PetscCall(ISGetIndices(is, &iidx));
       PetscCall(PetscArraycpy(idx, iidx, n));
       PetscCall(PetscIntSortSemiOrdered(n, idx));
-      for (i = 0; i < n; i++) { PetscCheck(idx[i] == i, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Index set is not a permutation"); }
+      for (i = 0; i < n; i++) PetscCheck(idx[i] == i, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Index set is not a permutation");
       PetscCall(PetscFree(idx));
       PetscCall(ISRestoreIndices(is, &iidx));
     }
@@ -992,7 +992,7 @@ PetscErrorCode ISDestroy(IS *is) {
     PetscCheck(refcnt <= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Nonlocal IS has not been restored");
     PetscCall(ISDestroy(&(*is)->complement));
   }
-  if ((*is)->ops->destroy) { PetscCall((*(*is)->ops->destroy)(*is)); }
+  if ((*is)->ops->destroy) PetscCall((*(*is)->ops->destroy)(*is));
   PetscCall(PetscLayoutDestroy(&(*is)->map));
   /* Destroy local representations of offproc data. */
   PetscCall(PetscFree((*is)->total));
@@ -1370,7 +1370,7 @@ PetscErrorCode ISGetTotalIndices(IS is, const PetscInt *indices[]) {
   if (size == 1) {
     PetscUseTypeMethod(is, getindices, indices);
   } else {
-    if (!is->total) { PetscCall(ISGatherTotal_Private(is)); }
+    if (!is->total) PetscCall(ISGatherTotal_Private(is));
     *indices = is->total;
   }
   PetscFunctionReturn(0);
@@ -1438,7 +1438,7 @@ PetscErrorCode ISGetNonlocalIndices(IS is, const PetscInt *indices[]) {
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)is), &size));
   if (size == 1) *indices = NULL;
   else {
-    if (!is->total) { PetscCall(ISGatherTotal_Private(is)); }
+    if (!is->total) PetscCall(ISGatherTotal_Private(is));
     PetscCall(ISGetLocalSize(is, &n));
     PetscCall(ISGetSize(is, &N));
     PetscCall(PetscMalloc1(N - n, &(is->nonlocal)));

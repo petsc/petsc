@@ -5,17 +5,18 @@
 #include <petsc/private/drawimpl.h> /*I "petscdraw.h" I*/
 
 /*@C
-   PetscDrawIndicatorFunction - Draws an indicator function (where a relationship is true) on a PetscDraw
+   PetscDrawIndicatorFunction - Draws an indicator function (where a relationship is true) on a `PetscDraw`
 
    Not collective
 
    Input Parameters:
-+  draw - a PetscDraw
++  draw - a `PetscDraw`
 .  xmin,xmax,ymin,ymax - region to draw indicator function
 -  f - the indicator function
 
    Level: developer
 
+.seealso: `PetscDraw`
 @*/
 PetscErrorCode PetscDrawIndicatorFunction(PetscDraw draw, PetscReal xmin, PetscReal xmax, PetscReal ymin, PetscReal ymax, int c, PetscErrorCode (*indicator)(void *, PetscReal, PetscReal, PetscBool *), void *ctx) {
   int       i, j, xstart, ystart, xend, yend;
@@ -46,7 +47,7 @@ PetscErrorCode PetscDrawIndicatorFunction(PetscDraw draw, PetscReal xmin, PetscR
 }
 
 /*@C
-   PetscDrawCoordinateToPixel - given a coordinate in a PetscDraw returns the pixel location
+   PetscDrawCoordinateToPixel - given a coordinate in a `PetscDraw` returns the pixel location
 
    Not collective
 
@@ -61,6 +62,7 @@ PetscErrorCode PetscDrawIndicatorFunction(PetscDraw draw, PetscReal xmin, PetscR
 
    Level: developer
 
+.seealso: `PetscDraw`
 @*/
 PetscErrorCode PetscDrawCoordinateToPixel(PetscDraw draw, PetscReal x, PetscReal y, int *i, int *j) {
   PetscFunctionBegin;
@@ -70,7 +72,7 @@ PetscErrorCode PetscDrawCoordinateToPixel(PetscDraw draw, PetscReal x, PetscReal
 }
 
 /*@C
-   PetscDrawPixelToCoordinate - given a pixel in a PetscDraw returns the coordinate
+   PetscDrawPixelToCoordinate - given a pixel in a `PetscDraw` returns the coordinate
 
    Not collective
 
@@ -85,6 +87,7 @@ PetscErrorCode PetscDrawCoordinateToPixel(PetscDraw draw, PetscReal x, PetscReal
 
    Level: developer
 
+.seealso: `PetscDraw`
 @*/
 PetscErrorCode PetscDrawPixelToCoordinate(PetscDraw draw, int i, int j, PetscReal *x, PetscReal *y) {
   PetscFunctionBegin;
@@ -94,7 +97,7 @@ PetscErrorCode PetscDrawPixelToCoordinate(PetscDraw draw, int i, int j, PetscRea
 }
 
 /*@
-   PetscDrawRectangle - PetscDraws a rectangle  onto a drawable.
+   PetscDrawRectangle - draws a rectangle  onto a drawable.
 
    Not Collective
 
@@ -105,9 +108,8 @@ PetscErrorCode PetscDrawPixelToCoordinate(PetscDraw draw, int i, int j, PetscRea
 
    Level: beginner
 
-.seealso: `PetscDrawLine()`, `PetscDrawRectangle()`, `PetscDrawTriangle()`, `PetscDrawEllipse()`,
+.seealso: `PetscDraw`, `PetscDrawLine()`, `PetscDrawRectangle()`, `PetscDrawTriangle()`, `PetscDrawEllipse()`,
           `PetscDrawMarker()`, `PetscDrawPoint()`, `PetscDrawString()`, `PetscDrawPoint()`, `PetscDrawArrow()`
-
 @*/
 PetscErrorCode PetscDrawRectangle(PetscDraw draw, PetscReal xl, PetscReal yl, PetscReal xr, PetscReal yr, int c1, int c2, int c3, int c4) {
   PetscFunctionBegin;

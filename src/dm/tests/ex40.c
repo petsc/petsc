@@ -25,7 +25,7 @@ int main(int argc, char **argv) {
   PetscCall(DMDAVecGetArrayDOF(da, global, &vglobal));
   for (j = ystart; j < ystart + n; j++) {
     for (i = xstart; i < xstart + m; i++) {
-      for (c = 0; c < dof; c++) { vglobal[j][i][c] = 100 * j + 10 * (i + 1) + c; }
+      for (c = 0; c < dof; c++) vglobal[j][i][c] = 100 * j + 10 * (i + 1) + c;
     }
   }
   PetscCall(DMDAVecRestoreArrayDOF(da, global, &vglobal));

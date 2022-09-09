@@ -111,7 +111,7 @@ PetscErrorCode MINPACKslo(PetscInt *n, const PetscInt *indrow, const PetscInt *j
     numdeg   = ndeg[jp];
     iwa2[jp] = 0;
     iwa3[jp] = iwa1[numdeg];
-    if (iwa1[numdeg] > 0) { iwa2[iwa1[numdeg]] = jp; }
+    if (iwa1[numdeg] > 0) iwa2[iwa1[numdeg]] = jp;
     iwa1[numdeg] = jp;
   }
   *maxclq = 0;

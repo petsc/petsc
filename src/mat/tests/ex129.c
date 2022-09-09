@@ -85,14 +85,14 @@ int main(int argc, char **args) {
   PetscCall(MatMult(A, x, b1));
   PetscCall(VecAXPY(b1, -1.0, b));
   PetscCall(VecNorm(b1, NORM_2, &norm));
-  if (norm > tol) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "MatSolve              : Error of norm %g\n", (double)norm)); }
+  if (norm > tol) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "MatSolve              : Error of norm %g\n", (double)norm));
 
   /* MatSolveTranspose */
   PetscCall(MatSolveTranspose(F, b, x));
   PetscCall(MatMultTranspose(A, x, b1));
   PetscCall(VecAXPY(b1, -1.0, b));
   PetscCall(VecNorm(b1, NORM_2, &norm));
-  if (norm > tol) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "MatSolveTranspose     : Error of norm %g\n", (double)norm)); }
+  if (norm > tol) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "MatSolveTranspose     : Error of norm %g\n", (double)norm));
 
   /* MatSolveAdd */
   PetscCall(MatSolveAdd(F, b, y, x));
@@ -101,7 +101,7 @@ int main(int argc, char **args) {
   PetscCall(MatMultAdd(A, x, b1, b1));
   PetscCall(VecAXPY(b1, -1.0, b));
   PetscCall(VecNorm(b1, NORM_2, &norm));
-  if (norm > tol) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "MatSolveAdd           : Error of norm %g\n", (double)norm)); }
+  if (norm > tol) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "MatSolveAdd           : Error of norm %g\n", (double)norm));
 
   /* MatSolveTransposeAdd */
   PetscCall(MatSolveTransposeAdd(F, b, y, x));
@@ -110,14 +110,14 @@ int main(int argc, char **args) {
   PetscCall(MatMultTransposeAdd(A, x, b1, b1));
   PetscCall(VecAXPY(b1, -1.0, b));
   PetscCall(VecNorm(b1, NORM_2, &norm));
-  if (norm > tol) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "MatSolveTransposeAdd  : Error of norm %g\n", (double)norm)); }
+  if (norm > tol) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "MatSolveTransposeAdd  : Error of norm %g\n", (double)norm));
 
   /* MatMatSolve */
   PetscCall(MatMatSolve(F, RHS, X));
   PetscCall(MatMatMult(A, X, MAT_INITIAL_MATRIX, 2.0, &C1));
   PetscCall(MatAXPY(C1, -1.0, RHS, SAME_NONZERO_PATTERN));
   PetscCall(MatNorm(C1, NORM_FROBENIUS, &norm));
-  if (norm > tol) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "MatMatSolve           : Error of norm %g\n", (double)norm)); }
+  if (norm > tol) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "MatMatSolve           : Error of norm %g\n", (double)norm));
 
   PetscCall(VecDestroy(&x));
   PetscCall(VecDestroy(&b));
@@ -167,7 +167,7 @@ PetscErrorCode ComputeRHSMatrix(PetscInt m, PetscInt nrhs, Mat *C) {
   }
   if (nrhs > 1) {
     for (k = 1; k < nrhs; k++) {
-      for (i = 0; i < m; i++) { array[m * k + i] = array[i]; }
+      for (i = 0; i < m; i++) array[m * k + i] = array[i];
     }
   }
   PetscCall(MatDenseRestoreArray(RHS, &array));

@@ -162,7 +162,7 @@ int main(int argc, char **argv) {
       PetscCall(PetscMalloc1(adctx->n, &u_vec));
       JP = (unsigned int **)malloc(adctx->m * sizeof(unsigned int *));
       jac_pat(1, adctx->m, adctx->n, u_vec, JP, ctrl);
-      if (adctx->sparse_view) { PetscCall(PrintSparsity(MPI_COMM_WORLD, adctx->m, JP)); }
+      if (adctx->sparse_view) PetscCall(PrintSparsity(MPI_COMM_WORLD, adctx->m, JP));
 
       /*
         Extract a column colouring
@@ -870,7 +870,7 @@ PetscErrorCode IJacobianByHand(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a,
       rowstencil.c = 0;
 
       PetscCall(MatSetValuesStencil(A, 1, &rowstencil, 6, stencil, entries, INSERT_VALUES));
-      if (appctx->aijpc) { PetscCall(MatSetValuesStencil(B, 1, &rowstencil, 6, stencil, entries, INSERT_VALUES)); }
+      if (appctx->aijpc) PetscCall(MatSetValuesStencil(B, 1, &rowstencil, 6, stencil, entries, INSERT_VALUES));
       stencil[0].c = 1;
       entries[0]   = -appctx->D2 * sy;
       stencil[1].c = 1;
@@ -885,7 +885,7 @@ PetscErrorCode IJacobianByHand(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a,
       entries[5]   = -vc * vc;
 
       PetscCall(MatSetValuesStencil(A, 1, &rowstencil, 6, stencil, entries, INSERT_VALUES));
-      if (appctx->aijpc) { PetscCall(MatSetValuesStencil(B, 1, &rowstencil, 6, stencil, entries, INSERT_VALUES)); }
+      if (appctx->aijpc) PetscCall(MatSetValuesStencil(B, 1, &rowstencil, 6, stencil, entries, INSERT_VALUES));
       /* f[j][i].v = appctx->D2*(vxx + vyy) + uc*vc*vc - (appctx->gamma + appctx->kappa)*vc; */
     }
   }

@@ -26,7 +26,7 @@ PETSC_INTERN PetscFPT PetscFPTData;
 static inline PetscErrorCode PetscFPTView(PetscViewer viewer) {
   if (PetscFPTData) {
     for (PetscInt i = 0; i < PetscFPTData->tablesize; ++i) {
-      if (PetscFPTData->functionpointer[i]) { printf("%s()\n", PetscFPTData->functionname[i]); }
+      if (PetscFPTData->functionpointer[i]) printf("%s()\n", PetscFPTData->functionname[i]);
     }
   }
   return 0;

@@ -186,7 +186,7 @@ static PetscErrorCode MatUpdate_LMVMBFGS(Mat B, Vec X, Vec F) {
       lbfgs->yty[lmvm->k] = PetscRealPart(ytytmp);
       lbfgs->sts[lmvm->k] = PetscRealPart(ststmp);
       /* Compute the scalar scale if necessary */
-      if (lbfgs->scale_type == MAT_LMVM_SYMBROYDEN_SCALE_SCALAR) { PetscCall(MatSymBrdnComputeJ0Scalar(B)); }
+      if (lbfgs->scale_type == MAT_LMVM_SYMBROYDEN_SCALE_SCALAR) PetscCall(MatSymBrdnComputeJ0Scalar(B));
     } else {
       /* Update is bad, skip it */
       ++lmvm->nrejects;
@@ -206,11 +206,11 @@ static PetscErrorCode MatUpdate_LMVMBFGS(Mat B, Vec X, Vec F) {
   }
 
   /* Update the scaling */
-  if (lbfgs->scale_type == MAT_LMVM_SYMBROYDEN_SCALE_DIAGONAL) { PetscCall(MatLMVMUpdate(lbfgs->D, X, F)); }
+  if (lbfgs->scale_type == MAT_LMVM_SYMBROYDEN_SCALE_DIAGONAL) PetscCall(MatLMVMUpdate(lbfgs->D, X, F));
 
   if (lbfgs->watchdog > lbfgs->max_seq_rejects) {
     PetscCall(MatLMVMReset(B, PETSC_FALSE));
-    if (lbfgs->scale_type == MAT_LMVM_SYMBROYDEN_SCALE_DIAGONAL) { PetscCall(MatLMVMReset(lbfgs->D, PETSC_FALSE)); }
+    if (lbfgs->scale_type == MAT_LMVM_SYMBROYDEN_SCALE_DIAGONAL) PetscCall(MatLMVMReset(lbfgs->D, PETSC_FALSE));
   }
 
   /* Save the solution and function to be used in the next update */
@@ -303,7 +303,7 @@ static PetscErrorCode MatAllocate_LMVMBFGS(Mat B, Vec X, Vec F) {
   if (!lbfgs->allocated) {
     PetscCall(VecDuplicate(X, &lbfgs->work));
     PetscCall(PetscMalloc4(lmvm->m, &lbfgs->stp, lmvm->m, &lbfgs->yts, lmvm->m, &lbfgs->yty, lmvm->m, &lbfgs->sts));
-    if (lmvm->m > 0) { PetscCall(VecDuplicateVecs(X, lmvm->m, &lbfgs->P)); }
+    if (lmvm->m > 0) PetscCall(VecDuplicateVecs(X, lmvm->m, &lbfgs->P));
     switch (lbfgs->scale_type) {
     case MAT_LMVM_SYMBROYDEN_SCALE_DIAGONAL: PetscCall(MatLMVMAllocate(lbfgs->D, X, F)); break;
     default: break;
@@ -345,7 +345,7 @@ static PetscErrorCode MatSetUp_LMVMBFGS(Mat B) {
   if (!lbfgs->allocated) {
     PetscCall(VecDuplicate(lmvm->Xprev, &lbfgs->work));
     PetscCall(PetscMalloc4(lmvm->m, &lbfgs->stp, lmvm->m, &lbfgs->yts, lmvm->m, &lbfgs->yty, lmvm->m, &lbfgs->sts));
-    if (lmvm->m > 0) { PetscCall(VecDuplicateVecs(lmvm->Xprev, lmvm->m, &lbfgs->P)); }
+    if (lmvm->m > 0) PetscCall(VecDuplicateVecs(lmvm->Xprev, lmvm->m, &lbfgs->P));
     switch (lbfgs->scale_type) {
     case MAT_LMVM_SYMBROYDEN_SCALE_DIAGONAL:
       PetscCall(MatGetLocalSize(B, &n, &n));
@@ -428,8 +428,7 @@ PetscErrorCode MatCreate_LMVMBFGS(Mat B) {
    paradigm instead of this routine directly.
 
    Options Database Keys:
-+   -mat_lmvm_num_vecs - maximum number of correction vectors (i.e.: updates) stored
-.   -mat_lmvm_scale_type - (developer) type of scaling applied to J0 (none, scalar, diagonal)
++   -mat_lmvm_scale_type - (developer) type of scaling applied to J0 (none, scalar, diagonal)
 .   -mat_lmvm_theta - (developer) convex ratio between BFGS and DFP components of the diagonal J0 scaling
 .   -mat_lmvm_rho - (developer) update limiter for the J0 scaling
 .   -mat_lmvm_alpha - (developer) coefficient factor for the quadratic subproblem in J0 scaling

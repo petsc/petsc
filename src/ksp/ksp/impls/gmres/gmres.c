@@ -73,7 +73,7 @@ PetscErrorCode KSPSetUp_GMRES(KSP ksp) {
 
     gmres->mwork_alloc[0] = gmres->vv_allocated;
     gmres->nwork_alloc    = 1;
-    for (k = 0; k < gmres->vv_allocated; k++) { gmres->vecs[k] = gmres->user_work[0][k]; }
+    for (k = 0; k < gmres->vv_allocated; k++) gmres->vecs[k] = gmres->user_work[0][k];
   } else {
     gmres->vv_allocated = 5;
 
@@ -82,7 +82,7 @@ PetscErrorCode KSPSetUp_GMRES(KSP ksp) {
 
     gmres->mwork_alloc[0] = 5;
     gmres->nwork_alloc    = 1;
-    for (k = 0; k < gmres->vv_allocated; k++) { gmres->vecs[k] = gmres->user_work[0][k]; }
+    for (k = 0; k < gmres->vv_allocated; k++) gmres->vecs[k] = gmres->user_work[0][k];
   }
   PetscFunctionReturn(0);
 }
@@ -147,7 +147,7 @@ PetscErrorCode KSPGMRESCycle(PetscInt *itcount, KSP ksp) {
       PetscCall(KSPMonitor(ksp, ksp->its, res));
     }
     gmres->it = (it - 1);
-    if (gmres->vv_allocated <= it + VEC_OFFSET + 1) { PetscCall(KSPGMRESGetNewVectors(ksp, it + 1)); }
+    if (gmres->vv_allocated <= it + VEC_OFFSET + 1) PetscCall(KSPGMRESGetNewVectors(ksp, it + 1));
     PetscCall(KSP_PCApplyBAorAB(ksp, VEC_VV(it), VEC_VV(1 + it), VEC_TEMP_MATOP));
 
     /* update hessenberg matrix and do Gram-Schmidt */
@@ -240,7 +240,7 @@ PetscErrorCode KSPSolve_GMRES(KSP ksp) {
           PetscCall(VecDuplicateVecs(VEC_VV(0), N, &gmres->vecb));
         }
         PetscCall(PetscArraycpy(gmres->hes_ritz, gmres->hes_origin, N * N));
-        for (i = 0; i < gmres->max_k + 1; i++) { PetscCall(VecCopy(VEC_VV(i), gmres->vecb[i])); }
+        for (i = 0; i < gmres->max_k + 1; i++) PetscCall(VecCopy(VEC_VV(i), gmres->vecb[i]));
       }
     }
     itcount += its;
@@ -265,9 +265,9 @@ PetscErrorCode KSPReset_GMRES(KSP ksp) {
 
   /* free work vectors */
   PetscCall(PetscFree(gmres->vecs));
-  for (i = 0; i < gmres->nwork_alloc; i++) { PetscCall(VecDestroyVecs(gmres->mwork_alloc[i], &gmres->user_work[i])); }
+  for (i = 0; i < gmres->nwork_alloc; i++) PetscCall(VecDestroyVecs(gmres->mwork_alloc[i], &gmres->user_work[i]));
   gmres->nwork_alloc = 0;
-  if (gmres->vecb) { PetscCall(VecDestroyVecs(gmres->max_k + 1, &gmres->vecb)); }
+  if (gmres->vecb) PetscCall(VecDestroyVecs(gmres->max_k + 1, &gmres->vecb));
 
   PetscCall(PetscFree(gmres->user_work));
   PetscCall(PetscFree(gmres->mwork_alloc));
@@ -352,7 +352,7 @@ static PetscErrorCode KSPGMRESBuildSoln(PetscScalar *nrs, Vec vs, Vec vdest, KSP
 
   PetscCall(KSPUnwindPreconditioner(ksp, VEC_TEMP, VEC_TEMP_MATOP));
   /* add solution to previous solution */
-  if (vdest != vs) { PetscCall(VecCopy(vs, vdest)); }
+  if (vdest != vs) PetscCall(VecCopy(vs, vdest));
   PetscCall(VecAXPY(vdest, 1.0, VEC_TEMP));
   PetscFunctionReturn(0);
 }
@@ -420,7 +420,7 @@ PetscErrorCode KSPGMRESGetNewVectors(KSP ksp, PetscInt it) {
   nalloc = PetscMin(ksp->max_it, gmres->delta_allocate);
   /* Adjust the number to allocate to make sure that we don't exceed the
     number of available slots */
-  if (it + VEC_OFFSET + nalloc >= gmres->vecs_allocated) { nalloc = gmres->vecs_allocated - it - VEC_OFFSET; }
+  if (it + VEC_OFFSET + nalloc >= gmres->vecs_allocated) nalloc = gmres->vecs_allocated - it - VEC_OFFSET;
   if (!nalloc) PetscFunctionReturn(0);
 
   gmres->vv_allocated += nalloc;
@@ -429,7 +429,7 @@ PetscErrorCode KSPGMRESGetNewVectors(KSP ksp, PetscInt it) {
   PetscCall(PetscLogObjectParents(ksp, nalloc, gmres->user_work[nwork]));
 
   gmres->mwork_alloc[nwork] = nalloc;
-  for (k = 0; k < nalloc; k++) { gmres->vecs[it + VEC_OFFSET + k] = gmres->user_work[nwork][k]; }
+  for (k = 0; k < nalloc; k++) gmres->vecs[it + VEC_OFFSET + k] = gmres->user_work[nwork][k];
   gmres->nwork_alloc++;
   PetscFunctionReturn(0);
 }

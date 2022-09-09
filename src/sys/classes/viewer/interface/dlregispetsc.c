@@ -7,7 +7,7 @@ static PetscBool PetscSysPackageInitialized = PETSC_FALSE;
 
 /*@C
   PetscSysFinalizePackage - This function destroys everything in the PETSc created internally in the system library portion of PETSc.
-  It is called from PetscFinalize().
+  It is called from `PetscFinalize()`.
 
   Level: developer
 
@@ -15,14 +15,14 @@ static PetscBool PetscSysPackageInitialized = PETSC_FALSE;
 @*/
 PetscErrorCode PetscSysFinalizePackage(void) {
   PetscFunctionBegin;
-  if (Petsc_Seq_keyval != MPI_KEYVAL_INVALID) { PetscCallMPI(MPI_Comm_free_keyval(&Petsc_Seq_keyval)); }
+  if (Petsc_Seq_keyval != MPI_KEYVAL_INVALID) PetscCallMPI(MPI_Comm_free_keyval(&Petsc_Seq_keyval));
   PetscSysPackageInitialized = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
 /*@C
   PetscSysInitializePackage - This function initializes everything in the main Petsc package. It is called
-  from PetscDLLibraryRegister_petsc() when using dynamic libraries, and on the call to PetscInitialize()
+  from PetscDLLibraryRegister_petsc() when using dynamic libraries, and on the call to `PetscInitialize()`
   when using shared or static libraries.
 
   Level: developer

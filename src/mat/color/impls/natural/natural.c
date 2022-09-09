@@ -17,7 +17,7 @@ static PetscErrorCode MatColoringApply_Natural(MatColoring mc, ISColoring *iscol
   /* this is ugly way to get blocksize but cannot call MatGetBlockSize() because AIJ can have bs > 1 */
   PetscCall(PetscObjectTypeCompare((PetscObject)mat, MATSEQBAIJ, &flg1));
   PetscCall(PetscObjectTypeCompare((PetscObject)mat, MATMPIBAIJ, &flg2));
-  if (flg1 || flg2) { PetscCall(MatGetBlockSize(mat, &bs)); }
+  if (flg1 || flg2) PetscCall(MatGetBlockSize(mat, &bs));
 
   PetscCall(PetscObjectGetComm((PetscObject)mat, &comm));
   PetscCallMPI(MPI_Comm_size(comm, &size));
@@ -34,7 +34,7 @@ static PetscErrorCode MatColoringApply_Natural(MatColoring mc, ISColoring *iscol
   start = start / bs;
   end   = end / bs;
   PetscCall(PetscMalloc1(end - start + 1, &colors));
-  for (i = start; i < end; i++) { colors[i - start] = (ISColoringValue)i; }
+  for (i = start; i < end; i++) colors[i - start] = (ISColoringValue)i;
   PetscCall(ISColoringCreate(comm, n, end - start, colors, PETSC_OWN_POINTER, iscoloring));
 
   if (size > 1) {
@@ -48,7 +48,7 @@ static PetscErrorCode MatColoringApply_Natural(MatColoring mc, ISColoring *iscol
 
     /* get local colors for each local node */
     PetscCall(PetscMalloc1(N_loc + 1, &colors_loc));
-    for (i = rstart; i < rend; i++) { colors_loc[i - rstart] = iscoloring_seq->colors[i]; }
+    for (i = rstart; i < rend; i++) colors_loc[i - rstart] = iscoloring_seq->colors[i];
     /* create a parallel iscoloring */
     nc = iscoloring_seq->n;
     PetscCall(ISColoringCreate(comm, nc, N_loc, colors_loc, PETSC_OWN_POINTER, iscoloring));
@@ -62,7 +62,10 @@ static PetscErrorCode MatColoringApply_Natural(MatColoring mc, ISColoring *iscol
 
   Level: beginner
 
-.seealso: `MatColoringCreate()`, `MatColoring`, `MatColoringSetType()`, `MatColoringType`
+  Note:
+  Using this coloring would be extremely inefficient but it is useful for testing
+
+.seealso: `MatColoring`, `MatColoringType`, `MatColoringCreate()`, `MatColoring`, `MatColoringSetType()`, `MatColoringType`
 M*/
 PETSC_EXTERN PetscErrorCode MatColoringCreate_Natural(MatColoring mc) {
   PetscFunctionBegin;

@@ -14,15 +14,15 @@ static PetscBuildTwoSidedType _twosided_type = PETSC_BUILDTWOSIDED_NOTSET;
    Logically Collective
 
    Input Parameters:
-+  comm - PETSC_COMM_WORLD
--  twosided - algorithm to use in subsequent calls to PetscCommBuildTwoSided()
++  comm - `PETSC_COMM_WORLD`
+-  twosided - algorithm to use in subsequent calls to `PetscCommBuildTwoSided()`
 
    Level: developer
 
    Note:
    This option is currently global, but could be made per-communicator.
 
-.seealso: `PetscCommBuildTwoSided()`, `PetscCommBuildTwoSidedGetType()`
+.seealso: `PetscCommBuildTwoSided()`, `PetscCommBuildTwoSidedGetType()`, `PetscBuildTwoSidedType`
 @*/
 PetscErrorCode PetscCommBuildTwoSidedSetType(MPI_Comm comm, PetscBuildTwoSidedType twosided) {
   PetscFunctionBegin;
@@ -38,17 +38,17 @@ PetscErrorCode PetscCommBuildTwoSidedSetType(MPI_Comm comm, PetscBuildTwoSidedTy
 }
 
 /*@
-   PetscCommBuildTwoSidedGetType - set algorithm to use when building two-sided communication
+   PetscCommBuildTwoSidedGetType - get algorithm used when building two-sided communication
 
    Logically Collective
 
    Output Parameters:
 +  comm - communicator on which to query algorithm
--  twosided - algorithm to use for PetscCommBuildTwoSided()
+-  twosided - algorithm to use for `PetscCommBuildTwoSided()`
 
    Level: developer
 
-.seealso: `PetscCommBuildTwoSided()`, `PetscCommBuildTwoSidedSetType()`
+.seealso: `PetscCommBuildTwoSided()`, `PetscCommBuildTwoSidedSetType()`, `PetscBuildTwoSidedType`
 @*/
 PetscErrorCode PetscCommBuildTwoSidedGetType(MPI_Comm comm, PetscBuildTwoSidedType *twosided) {
   PetscMPIInt size;
@@ -82,7 +82,7 @@ static PetscErrorCode PetscCommBuildTwoSided_Ibarrier(MPI_Comm comm, PetscMPIInt
   PetscCheck(lb == 0, comm, PETSC_ERR_SUP, "Datatype with nonzero lower bound %ld", (long)lb);
   tdata = (char *)todata;
   PetscCall(PetscMalloc1(nto, &sendreqs));
-  for (i = 0; i < nto; i++) { PetscCallMPI(MPI_Issend((void *)(tdata + count * unitbytes * i), count, dtype, toranks[i], tag, comm, sendreqs + i)); }
+  for (i = 0; i < nto; i++) PetscCallMPI(MPI_Issend((void *)(tdata + count * unitbytes * i), count, dtype, toranks[i], tag, comm, sendreqs + i));
   PetscCall(PetscSegBufferCreate(sizeof(PetscMPIInt), 4, &segrank));
   PetscCall(PetscSegBufferCreate(unitbytes, 4 * count, &segdata));
 
@@ -157,8 +157,8 @@ static PetscErrorCode PetscCommBuildTwoSided_Allreduce(MPI_Comm comm, PetscMPIIn
   tdata = (char *)todata;
   PetscCall(PetscMalloc2(nto + nrecvs, &reqs, nto + nrecvs, &statuses));
   sendreqs = reqs + nrecvs;
-  for (i = 0; i < nrecvs; i++) { PetscCallMPI(MPI_Irecv((void *)(fdata + count * unitbytes * i), count, dtype, MPI_ANY_SOURCE, tag, comm, reqs + i)); }
-  for (i = 0; i < nto; i++) { PetscCallMPI(MPI_Isend((void *)(tdata + count * unitbytes * i), count, dtype, toranks[i], tag, comm, sendreqs + i)); }
+  for (i = 0; i < nrecvs; i++) PetscCallMPI(MPI_Irecv((void *)(fdata + count * unitbytes * i), count, dtype, MPI_ANY_SOURCE, tag, comm, reqs + i));
+  for (i = 0; i < nto; i++) PetscCallMPI(MPI_Isend((void *)(tdata + count * unitbytes * i), count, dtype, toranks[i], tag, comm, sendreqs + i));
   PetscCallMPI(MPI_Waitall(nto + nrecvs, reqs, statuses));
   PetscCall(PetscMalloc1(nrecvs, &franks));
   for (i = 0; i < nrecvs; i++) franks[i] = statuses[i].MPI_SOURCE;
@@ -200,8 +200,8 @@ static PetscErrorCode PetscCommBuildTwoSided_RedScatter(MPI_Comm comm, PetscMPII
   tdata = (char *)todata;
   PetscCall(PetscMalloc2(nto + nrecvs, &reqs, nto + nrecvs, &statuses));
   sendreqs = reqs + nrecvs;
-  for (i = 0; i < nrecvs; i++) { PetscCallMPI(MPI_Irecv((void *)(fdata + count * unitbytes * i), count, dtype, MPI_ANY_SOURCE, tag, comm, reqs + i)); }
-  for (i = 0; i < nto; i++) { PetscCallMPI(MPI_Isend((void *)(tdata + count * unitbytes * i), count, dtype, toranks[i], tag, comm, sendreqs + i)); }
+  for (i = 0; i < nrecvs; i++) PetscCallMPI(MPI_Irecv((void *)(fdata + count * unitbytes * i), count, dtype, MPI_ANY_SOURCE, tag, comm, reqs + i));
+  for (i = 0; i < nto; i++) PetscCallMPI(MPI_Isend((void *)(tdata + count * unitbytes * i), count, dtype, toranks[i], tag, comm, sendreqs + i));
   PetscCallMPI(MPI_Waitall(nto + nrecvs, reqs, statuses));
   PetscCall(PetscMalloc1(nrecvs, &franks));
   for (i = 0; i < nrecvs; i++) franks[i] = statuses[i].MPI_SOURCE;
@@ -230,17 +230,17 @@ static PetscErrorCode PetscCommBuildTwoSided_RedScatter(MPI_Comm comm, PetscMPII
 
    Output Parameters:
 +  nfrom - number of ranks receiving messages from
-.  fromranks - ranks receiving messages from (length nfrom; caller should PetscFree())
--  fromdata - packed data from each rank, each with count entries of type dtype (length nfrom, caller responsible for PetscFree())
+.  fromranks - ranks receiving messages from (length nfrom; caller should `PetscFree()`)
+-  fromdata - packed data from each rank, each with count entries of type dtype (length nfrom, caller responsible for `PetscFree()`)
 
    Level: developer
 
-   Options Database Keys:
+   Options Database Key:
 .  -build_twosided <allreduce|ibarrier|redscatter> - algorithm to set up two-sided communication. Default is allreduce for communicators with <= 1024 ranks, otherwise ibarrier.
 
    Notes:
-   This memory-scalable interface is an alternative to calling PetscGatherNumberOfMessages() and
-   PetscGatherMessageLengths(), possibly with a subsequent round of communication to send other constant-size data.
+   This memory-scalable interface is an alternative to calling `PetscGatherNumberOfMessages()` and
+   `PetscGatherMessageLengths()`, possibly with a subsequent round of communication to send other constant-size data.
 
    Basic data types as well as contiguous types are supported, but non-contiguous (e.g., strided) types are not.
 
@@ -248,7 +248,7 @@ static PetscErrorCode PetscCommBuildTwoSided_RedScatter(MPI_Comm comm, PetscMPII
 .  * - Hoefler, Siebert and Lumsdaine, The MPI_Ibarrier implementation uses the algorithm in
    Scalable communication protocols for dynamic sparse data exchange, 2010.
 
-.seealso: `PetscGatherNumberOfMessages()`, `PetscGatherMessageLengths()`
+.seealso: `PetscGatherNumberOfMessages()`, `PetscGatherMessageLengths()`, `PetscCommBuildTwoSidedSetType()`, `PetscCommBuildTwoSidedType`
 @*/
 PetscErrorCode PetscCommBuildTwoSided(MPI_Comm comm, PetscMPIInt count, MPI_Datatype dtype, PetscMPIInt nto, const PetscMPIInt *toranks, const void *todata, PetscMPIInt *nfrom, PetscMPIInt **fromranks, void *fromdata) {
   PetscBuildTwoSidedType buildtype = PETSC_BUILDTWOSIDED_NOTSET;
@@ -287,8 +287,8 @@ static PetscErrorCode PetscCommBuildTwoSidedFReq_Reference(MPI_Comm comm, PetscM
 
   PetscFunctionBegin;
   PetscCall(PetscMalloc1(ntags, &tag));
-  if (ntags > 0) { PetscCall(PetscCommDuplicate(comm, &comm, &tag[0])); }
-  for (i = 1; i < ntags; i++) { PetscCall(PetscCommGetNewTag(comm, &tag[i])); }
+  if (ntags > 0) PetscCall(PetscCommDuplicate(comm, &comm, &tag[0]));
+  for (i = 1; i < ntags; i++) PetscCall(PetscCommGetNewTag(comm, &tag[i]));
 
   /* Perform complete initial rendezvous */
   PetscCall(PetscCommBuildTwoSided(comm, count, dtype, nto, toranks, todata, nfrom, fromranks, fromdata));
@@ -329,14 +329,14 @@ static PetscErrorCode PetscCommBuildTwoSidedFReq_Ibarrier(MPI_Comm comm, PetscMP
   PetscFunctionBegin;
   PetscCall(PetscCommDuplicate(comm, &comm, &tag));
   PetscCall(PetscMalloc1(ntags, &tags));
-  for (i = 0; i < ntags; i++) { PetscCall(PetscCommGetNewTag(comm, &tags[i])); }
+  for (i = 0; i < ntags; i++) PetscCall(PetscCommGetNewTag(comm, &tags[i]));
   PetscCallMPI(MPI_Type_get_extent(dtype, &lb, &unitbytes));
   PetscCheck(lb == 0, comm, PETSC_ERR_SUP, "Datatype with nonzero lower bound %ld", (long)lb);
   tdata = (char *)todata;
   PetscCall(PetscMalloc1(nto, &sendreqs));
   PetscCall(PetscMalloc1(nto * ntags, &usendreqs));
   /* Post synchronous sends */
-  for (i = 0; i < nto; i++) { PetscCallMPI(MPI_Issend((void *)(tdata + count * unitbytes * i), count, dtype, toranks[i], tag, comm, sendreqs + i)); }
+  for (i = 0; i < nto; i++) PetscCallMPI(MPI_Issend((void *)(tdata + count * unitbytes * i), count, dtype, toranks[i], tag, comm, sendreqs + i));
   /* Post actual payloads.  These are typically larger messages.  Hopefully sending these later does not slow down the
    * synchronous messages above. */
   for (i = 0; i < nto; i++) {
@@ -416,14 +416,14 @@ static PetscErrorCode PetscCommBuildTwoSidedFReq_Ibarrier(MPI_Comm comm, PetscMP
 
    Output Parameters:
 +  nfrom - number of ranks receiving messages from
-.  fromranks - ranks receiving messages from (length nfrom; caller should PetscFree())
--  fromdata - packed data from each rank, each with count entries of type dtype (length nfrom, caller responsible for PetscFree())
+.  fromranks - ranks receiving messages from (length nfrom; caller should `PetscFree()`)
+-  fromdata - packed data from each rank, each with count entries of type dtype (length nfrom, caller responsible for `PetscFree()`)
 
    Level: developer
 
    Notes:
-   This memory-scalable interface is an alternative to calling PetscGatherNumberOfMessages() and
-   PetscGatherMessageLengths(), possibly with a subsequent round of communication to send other data.
+   This memory-scalable interface is an alternative to calling `PetscGatherNumberOfMessages()` and
+   `PetscGatherMessageLengths()`, possibly with a subsequent round of communication to send other data.
 
    Basic data types as well as contiguous types are supported, but non-contiguous (e.g., strided) types are not.
 
@@ -464,16 +464,16 @@ PetscErrorCode PetscCommBuildTwoSidedF(MPI_Comm comm, PetscMPIInt count, MPI_Dat
 
    Output Parameters:
 +  nfrom - number of ranks receiving messages from
-.  fromranks - ranks receiving messages from (length nfrom; caller should PetscFree())
-.  fromdata - packed data from each rank, each with count entries of type dtype (length nfrom, caller responsible for PetscFree())
-.  toreqs - array of nto*ntags sender requests (caller must wait on these, then PetscFree())
--  fromreqs - array of nfrom*ntags receiver requests (caller must wait on these, then PetscFree())
+.  fromranks - ranks receiving messages from (length nfrom; caller should `PetscFree()`)
+.  fromdata - packed data from each rank, each with count entries of type dtype (length nfrom, caller responsible for `PetscFree()`)
+.  toreqs - array of nto*ntags sender requests (caller must wait on these, then `PetscFree()`)
+-  fromreqs - array of nfrom*ntags receiver requests (caller must wait on these, then `PetscFree()`)
 
    Level: developer
 
    Notes:
-   This memory-scalable interface is an alternative to calling PetscGatherNumberOfMessages() and
-   PetscGatherMessageLengths(), possibly with a subsequent round of communication to send other data.
+   This memory-scalable interface is an alternative to calling `PetscGatherNumberOfMessages()` and
+   `PetscGatherMessageLengths()`, possibly with a subsequent round of communication to send other data.
 
    Basic data types as well as contiguous types are supported, but non-contiguous (e.g., strided) types are not.
 
@@ -491,7 +491,7 @@ PetscErrorCode PetscCommBuildTwoSidedFReq(MPI_Comm comm, PetscMPIInt count, MPI_
   PetscFunctionBegin;
   PetscCall(PetscSysInitializePackage());
   PetscCallMPI(MPI_Comm_size(comm, &size));
-  for (i = 0; i < nto; i++) { PetscCheck(toranks[i] >= 0 && size > toranks[i], comm, PETSC_ERR_ARG_OUTOFRANGE, "toranks[%d] %d not in comm size %d", i, toranks[i], size); }
+  for (i = 0; i < nto; i++) PetscCheck(toranks[i] >= 0 && size > toranks[i], comm, PETSC_ERR_ARG_OUTOFRANGE, "toranks[%d] %d not in comm size %d", i, toranks[i], size);
   PetscCall(PetscLogEventSync(PETSC_BuildTwoSidedF, comm));
   PetscCall(PetscLogEventBegin(PETSC_BuildTwoSidedF, 0, 0, 0, 0));
   PetscCall(PetscCommBuildTwoSidedGetType(comm, &buildtype));

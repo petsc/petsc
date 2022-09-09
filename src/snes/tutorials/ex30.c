@@ -949,7 +949,7 @@ PetscErrorCode ReportParams(Parameter *param, GridInfo *grid)
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\nRheology:"));
     if (param->ivisc == VISC_CONST) {
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, "                 Isoviscous \n"));
-      if (param->pv_analytic) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "                          Pressure and Velocity prescribed! \n")); }
+      if (param->pv_analytic) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "                          Pressure and Velocity prescribed! \n"));
     } else if (param->ivisc == VISC_DIFN) {
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, "                 Diffusion Creep (T-Dependent Newtonian) \n"));
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, "                          Viscosity range: %g--%g Pa-sec \n", (double)param->eta0, (double)(param->visc_cutoff * param->eta0)));
@@ -983,7 +983,7 @@ PetscErrorCode ReportParams(Parameter *param, GridInfo *grid)
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Output Destination:       PETSc binary file \"%s\"\n", param->filename));
 #endif
     }
-    if (param->output_ivisc != param->ivisc) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "                          Output viscosity: -ivisc %" PetscInt_FMT "\n", param->output_ivisc)); }
+    if (param->output_ivisc != param->ivisc) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "                          Output viscosity: -ivisc %" PetscInt_FMT "\n", param->output_ivisc));
 
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "---------------------END ex30 PARAM REPORT---------------------\n"));
   }
@@ -1301,7 +1301,8 @@ PetscErrorCode SNESConverged_Interactive(SNES snes, PetscInt it, PetscReal xnorm
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, "USER SIGNAL: activating ksp singular value monitor. \n"));
     }
   }
-  PetscFunctionReturn(SNESConvergedDefault(snes, it, xnorm, snorm, fnorm, reason, ctx));
+  PetscCall(SNESConvergedDefault(snes, it, xnorm, snorm, fnorm, reason, ctx));
+  PetscFunctionReturn(0);
 }
 
 /* ------------------------------------------------------------------- */

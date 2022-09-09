@@ -157,7 +157,7 @@ PetscErrorCode ini_bou(Vec X, AppCtx *user) {
   user->PM_min = user->Pmax * PetscSinScalar(user->mux);
   PetscCall(
     PetscPrintf(PETSC_COMM_WORLD, "Corrected user->mux = %f, user->muy = %f user->PM_min = %f,user->dx = %f\n", (double)PetscRealPart(user->mux), (double)PetscRealPart(user->muy), (double)PetscRealPart(user->PM_min), (double)PetscRealPart(user->dx)));
-  if (Ir > -1 && J > -1) { p[J][Ir] = 1.0; }
+  if (Ir > -1 && J > -1) p[J][Ir] = 1.0;
 
   PetscCall(DMDAVecRestoreArrayRead(cda, gc, &coors));
   PetscCall(DMDAVecRestoreArray(user->da, X, &p));

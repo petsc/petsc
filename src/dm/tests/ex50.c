@@ -44,7 +44,7 @@ static PetscErrorCode test_3d(PetscInt cells[], PetscBool plex, PetscBool ho) {
     PetscCall(DMDACreate3d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, cells[0] + 1, cells[1] + 1, cells[2] + 1, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, 1, 1, NULL, NULL, NULL, &dm));
   }
   PetscCall(DMSetUp(dm));
-  if (!plex) { PetscCall(DMDASetUniformCoordinates(dm, l[0], u[0], l[1], u[1], l[2], u[2])); }
+  if (!plex) PetscCall(DMDASetUniformCoordinates(dm, l[0], u[0], l[1], u[1], l[2], u[2]));
   if (ho) { /* each element mapped to a sphere */
     DM            cdm;
     Vec           cv;
@@ -119,7 +119,7 @@ static PetscErrorCode test_3d(PetscInt cells[], PetscBool plex, PetscBool ho) {
         }
       }
     }
-    if (!plex) { PetscCall(DMDAVecRestoreArray(cdm, cv, &_coords)); }
+    if (!plex) PetscCall(DMDAVecRestoreArray(cdm, cv, &_coords));
     PetscCall(VecRestoreArray(v, &c));
     PetscCall(PetscSNPrintf(name, sizeof(name), "FiniteElementCollection: L2_T1_3D_P%" PetscInt_FMT, dof - 1));
     PetscCall(PetscObjectSetName((PetscObject)v, name));
@@ -132,7 +132,7 @@ static PetscErrorCode test_3d(PetscInt cells[], PetscBool plex, PetscBool ho) {
     PetscCall(DMGetCoordinates(dm, &v));
     PetscCall(VecGetLocalSize(v, &nl));
     PetscCall(VecGetArray(v, &c));
-    for (i = 0; i < nl / 3; i++) { PetscCall(MapPoint(c + 3 * i, c + 3 * i)); }
+    for (i = 0; i < nl / 3; i++) PetscCall(MapPoint(c + 3 * i, c + 3 * i));
     PetscCall(VecRestoreArray(v, &c));
     PetscCall(DMSetCoordinates(dm, v));
     PetscCall(DMViewFromOptions(dm, NULL, "-view"));

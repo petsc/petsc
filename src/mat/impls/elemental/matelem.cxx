@@ -387,7 +387,7 @@ PetscErrorCode MatProductSetFromOptions_Elemental_MPIDense(Mat C) {
   Mat_Product *product = C->product;
 
   PetscFunctionBegin;
-  if (product->type == MATPRODUCT_AB) { PetscCall(MatProductSetFromOptions_Elemental_MPIDense_AB(C)); }
+  if (product->type == MATPRODUCT_AB) PetscCall(MatProductSetFromOptions_Elemental_MPIDense_AB(C));
   PetscFunctionReturn(0);
 }
 /* --------------------------------------- */
@@ -1248,8 +1248,6 @@ static struct _MatOps MatOps_Values = {MatSetValues_Elemental,
    MATELEMENTAL = "elemental" - A matrix type for dense matrices using the Elemental package
 
   Use ./configure --download-elemental to install PETSc to use Elemental
-
-  Option Database Keys:
 
    Options Database Keys:
 + -mat_type elemental - sets the matrix type to "elemental" during a call to MatSetFromOptions()

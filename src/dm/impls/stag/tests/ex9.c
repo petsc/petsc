@@ -41,11 +41,11 @@ int main(int argc, char **argv) {
     for (j = starty; j < starty + ny; ++j) {
       for (i = startx; i < startx + nx; ++i) {
         for (d = 0; d < dofTotal; ++d) {
-          if (a1[k][j][i][d] != 1.0) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d] Unexpected value %g (expecting %g)\n", rank, (double)PetscRealPart(a1[k][j][i][d]), 1.0)); }
+          if (a1[k][j][i][d] != 1.0) PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d] Unexpected value %g (expecting %g)\n", rank, (double)PetscRealPart(a1[k][j][i][d]), 1.0));
           a2[k][j][i][d] = 0.0;
-          for (ks = -stencilWidth; ks <= stencilWidth; ++ks) { a2[k][j][i][d] += a1[k + ks][j][i][d]; }
-          for (js = -stencilWidth; js <= stencilWidth; ++js) { a2[k][j][i][d] += a1[k][j + js][i][d]; }
-          for (is = -stencilWidth; is <= stencilWidth; ++is) { a2[k][j][i][d] += a1[k][j][i + is][d]; }
+          for (ks = -stencilWidth; ks <= stencilWidth; ++ks) a2[k][j][i][d] += a1[k + ks][j][i][d];
+          for (js = -stencilWidth; js <= stencilWidth; ++js) a2[k][j][i][d] += a1[k][j + js][i][d];
+          for (is = -stencilWidth; is <= stencilWidth; ++is) a2[k][j][i][d] += a1[k][j][i + is][d];
           a2[k][j][i][d] -= 2.0 * a1[k][j][i][d];
         }
       }
@@ -63,12 +63,12 @@ int main(int argc, char **argv) {
     PetscCall(DMStagGetGhostCorners(dm, NULL, NULL, NULL, &ngx, &ngy, &ngz));
     expected = (ngx * ngy * ngz - 8 * stencilWidth * stencilWidth * stencilWidth - 4 * stencilWidth * stencilWidth * (nx + ny + nz)) * dofTotal;
     PetscCall(VecSum(vecLocal1, &sum));
-    if (sum != expected) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d] Unexpected sum of local entries %g (expected %g)\n", rank, (double)PetscRealPart(sum), (double)PetscRealPart(expected))); }
+    if (sum != expected) PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d] Unexpected sum of local entries %g (expected %g)\n", rank, (double)PetscRealPart(sum), (double)PetscRealPart(expected)));
 
     PetscCall(VecGetArray(vec, &a));
     expected = 1 + 6 * stencilWidth;
     for (i = 0; i < nz * ny * nx * dofTotal; ++i) {
-      if (a[i] != expected) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d] Unexpected value %g (expecting %g)\n", rank, (double)PetscRealPart(a[i]), (double)PetscRealPart(expected))); }
+      if (a[i] != expected) PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d] Unexpected value %g (expecting %g)\n", rank, (double)PetscRealPart(a[i]), (double)PetscRealPart(expected)));
     }
     PetscCall(VecRestoreArray(vec, &a));
   }

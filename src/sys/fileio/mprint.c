@@ -22,7 +22,9 @@ FILE              *PETSC_STDOUT = NULL;
 FILE              *PETSC_STDERR = NULL;
 
 /*@C
-     PetscFormatConvertGetSize - Gets the length of a string needed to hold format converted with PetscFormatConvert()
+     PetscFormatConvertGetSize - Gets the length of a string needed to hold format converted with `PetscFormatConvert()`
+
+   Deprecated
 
    Input Parameter:
 .   format - the PETSc format string
@@ -33,7 +35,6 @@ FILE              *PETSC_STDERR = NULL;
  Level: developer
 
 .seealso: `PetscFormatConvert()`, `PetscVSNPrintf()`, `PetscVFPrintf()`
-
 @*/
 PetscErrorCode PetscFormatConvertGetSize(const char *format, size_t *size) {
   size_t   sz = 0;
@@ -73,17 +74,18 @@ PetscErrorCode PetscFormatConvertGetSize(const char *format, size_t *size) {
      PetscFormatConvert - Takes a PETSc format string and converts the %D to %d for 32 bit PETSc indices and %lld for 64 bit PETSc indices. Also
                         converts %g to [|%g|] so that PetscVSNPrintf() can easily insure all %g formatted numbers have a decimal point when printed.
 
+   Deprecated
+
    Input Parameters:
 +   format - the PETSc format string
 .   newformat - the location to put the new format
--   size - the length of newformat, you can use PetscFormatConvertGetSize() to compute the needed size
+-   size - the length of newformat, you can use `PetscFormatConvertGetSize()` to compute the needed size
 
-    Note: this exists so we can have the same code when PetscInt is either int or long long int
+    Note: this exists so we can have the same code when `PetscInt` is either int or long long int
 
  Level: developer
 
 .seealso: `PetscFormatConvertGetSize()`, `PetscVSNPrintf()`, `PetscVFPrintf()`
-
 @*/
 PetscErrorCode PetscFormatConvert(const char *format, char *newformat) {
   PetscInt i = 0, j = 0;
@@ -140,14 +142,13 @@ PetscErrorCode PetscFormatConvert(const char *format, char *newformat) {
 +   format - the PETSc format string
 -   fullLength - the amount of space in str actually used.
 
-    Developer Notes:
+    Developer Note:
     this function may be called from an error handler, if an error occurs when it is called by the error handler than likely
       a recursion will occur and possible crash.
 
  Level: developer
 
 .seealso: `PetscVSNPrintf()`, `PetscErrorPrintf()`, `PetscVPrintf()`
-
 @*/
 PetscErrorCode PetscVSNPrintf(char *str, size_t len, const char *format, size_t *fullLength, va_list Argp) {
   char  *newformat = NULL;
@@ -169,7 +170,7 @@ PetscErrorCode PetscVSNPrintf(char *str, size_t len, const char *format, size_t 
 #else
 #error "vsnprintf not found"
 #endif
-  if (newLength > sizeof(formatbuf) - 1) { PetscCall(PetscFree(newformat)); }
+  if (newLength > sizeof(formatbuf) - 1) PetscCall(PetscFree(newformat));
   {
     PetscBool foundedot;
     size_t    cnt = 0, ncnt = 0, leng;
@@ -262,18 +263,17 @@ $}
 then before the call to PetscInitialize() do the assignment
 $    PetscVFPrintf = mypetscvfprintf;
 
-      Notes:
+      Note:
     For error messages this may be called by any process, for regular standard out it is
           called only by process 0 of a given communicator
 
-      Developer Notes:
+      Developer Note:
     this could be called by an error handler, if that happens then a recursion of the error handler may occur
                        and a crash
 
   Level:  developer
 
 .seealso: `PetscVSNPrintf()`, `PetscErrorPrintf()`
-
 @*/
 PetscErrorCode PetscVFPrintfDefault(FILE *fd, const char *format, va_list Argp) {
   char   str[PETSCDEFAULTBUFFERSIZE];
@@ -298,7 +298,7 @@ PetscErrorCode PetscVFPrintfDefault(FILE *fd, const char *format, va_list Argp) 
   }
   fprintf(fd, "%s", buff);
   fflush(fd);
-  if (buff != str) { PetscCall(PetscFree(buff)); }
+  if (buff != str) PetscCall(PetscFree(buff));
   PetscFunctionReturn(0);
 }
 
@@ -373,12 +373,12 @@ int         petsc_printfqueuelength = 0;
 
    Level: intermediate
 
-    Notes:
-    REQUIRES a call to PetscSynchronizedFlush() by all the processes after the completion of the calls to PetscSynchronizedPrintf() for the information
+    Note:
+    REQUIRES a call to `PetscSynchronizedFlush()` by all the processes after the completion of the calls to `PetscSynchronizedPrintf()` for the information
     from all the processors to be printed.
 
     Fortran Note:
-    The call sequence is PetscSynchronizedPrintf(MPI_Comm, character(*), PetscErrorCode ierr) from Fortran.
+    The call sequence is `PetscSynchronizedPrintf`(MPI_Comm, character(*), PetscErrorCode ierr) from Fortran.
     That is, you can only pass a single character string from Fortran.
 
 .seealso: `PetscSynchronizedFlush()`, `PetscSynchronizedFPrintf()`, `PetscFPrintf()`,
@@ -442,13 +442,12 @@ PetscErrorCode PetscSynchronizedPrintf(MPI_Comm comm, const char format[], ...) 
 
     Level: intermediate
 
-    Notes:
-    REQUIRES a intervening call to PetscSynchronizedFlush() for the information
+    Note:
+    REQUIRES a intervening call to `PetscSynchronizedFlush()` for the information
     from all the processors to be printed.
 
 .seealso: `PetscSynchronizedPrintf()`, `PetscSynchronizedFlush()`, `PetscFPrintf()`,
           `PetscFOpen()`, `PetscViewerASCIISynchronizedPrintf()`, `PetscViewerASCIIPrintf()`
-
 @*/
 PetscErrorCode PetscSynchronizedFPrintf(MPI_Comm comm, FILE *fp, const char format[], ...) {
   PetscMPIInt rank;
@@ -496,7 +495,7 @@ PetscErrorCode PetscSynchronizedFPrintf(MPI_Comm comm, FILE *fp, const char form
 
 /*@C
     PetscSynchronizedFlush - Flushes to the screen output from all processors
-    involved in previous PetscSynchronizedPrintf()/PetscSynchronizedFPrintf() calls.
+    involved in previous `PetscSynchronizedPrintf()`/`PetscSynchronizedFPrintf()` calls.
 
     Collective
 
@@ -506,11 +505,12 @@ PetscErrorCode PetscSynchronizedFPrintf(MPI_Comm comm, FILE *fp, const char form
 
     Level: intermediate
 
-    Notes:
-    If PetscSynchronizedPrintf() and/or PetscSynchronizedFPrintf() are called with
-    different MPI communicators there must be an intervening call to PetscSynchronizedFlush() between the calls with different MPI communicators.
+    Note:
+    If `PetscSynchronizedPrintf()` and/or `PetscSynchronizedFPrintf()` are called with
+    different MPI communicators there must be an intervening call to `PetscSynchronizedFlush()` between the calls with different MPI communicators.
 
-    From Fortran pass PETSC_STDOUT if the flush is for standard out; otherwise pass a value obtained from PetscFOpen()
+    Fortran Note:
+    Pass `PETSC_STDOUT` if the flush is for standard out; otherwise pass a value obtained from `PetscFOpen()`
 
 .seealso: `PetscSynchronizedPrintf()`, `PetscFPrintf()`, `PetscPrintf()`, `PetscViewerASCIIPrintf()`,
           `PetscViewerASCIISynchronizedPrintf()`
@@ -614,12 +614,12 @@ PetscErrorCode PetscFPrintf(MPI_Comm comm, FILE *fd, const char format[], ...) {
 
     Level: intermediate
 
-    Notes:
-    PetscPrintf() supports some format specifiers that are unique to PETSc.
-    See the manual page for PetscFormatConvert() for details.
+    Note:
+    Deprecated information: `PetscPrintf()` supports some format specifiers that are unique to PETSc.
+    See the manual page for `PetscFormatConvert()` for details.
 
     Fortran Note:
-    The call sequence is PetscPrintf(MPI_Comm, character(*), PetscErrorCode ierr) from Fortran.
+    The call sequence is `PetscPrintf`(MPI_Comm, character(*), `PetscErrorCode` ierr) from Fortran.
     That is, you can only pass a single character string from Fortran.
 
 .seealso: `PetscFPrintf()`, `PetscSynchronizedPrintf()`, `PetscFormatConvert()`
@@ -681,7 +681,6 @@ PetscErrorCode PetscHelpPrintfDefault(MPI_Comm comm, const char format[], ...) {
 
 .seealso: `PetscSynchronizedPrintf()`, `PetscSynchronizedFlush()`,
           `PetscFOpen()`, `PetscViewerASCIISynchronizedPrintf()`, `PetscViewerASCIIPrintf()`
-
 @*/
 PetscErrorCode PetscSynchronizedFGets(MPI_Comm comm, FILE *fp, size_t len, char string[]) {
   PetscMPIInt rank;

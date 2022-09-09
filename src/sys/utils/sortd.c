@@ -16,7 +16,7 @@
   }
 
 /*@
-   PetscSortedReal - Determines whether the array is sorted.
+   PetscSortedReal - Determines whether the array of `PetscReal` is sorted.
 
    Not Collective
 
@@ -65,7 +65,7 @@ static PetscErrorCode PetscSortReal_Private(PetscReal *v, PetscInt right) {
 }
 
 /*@
-   PetscSortReal - Sorts an array of doubles in place in increasing order.
+   PetscSortReal - Sorts an array of `PetscReal` in place in increasing order.
 
    Not Collective
 
@@ -73,8 +73,8 @@ static PetscErrorCode PetscSortReal_Private(PetscReal *v, PetscInt right) {
 +  n  - number of values
 -  v  - array of doubles
 
-   Notes:
-   This function serves as an alternative to PetscRealSortSemiOrdered(), and may perform faster especially if the array
+   Note:
+   This function serves as an alternative to `PetscRealSortSemiOrdered()`, and may perform faster especially if the array
    is completely random. There are exceptions to this and so it is __highly__ recommended that the user benchmark their
    code to see which routine is fastest.
 
@@ -139,8 +139,8 @@ static PetscErrorCode PetscSortRealWithArrayInt_Private(PetscReal *v, PetscInt *
   PetscFunctionReturn(0);
 }
 /*@
-   PetscSortRealWithArrayInt - Sorts an array of PetscReal in place in increasing order;
-       changes a second PetscInt array to match the sorted first array.
+   PetscSortRealWithArrayInt - Sorts an array of `PetscReal` in place in increasing order;
+       changes a second `PetscInt` array to match the sorted first array.
 
    Not Collective
 
@@ -177,7 +177,7 @@ PetscErrorCode PetscSortRealWithArrayInt(PetscInt n, PetscReal r[], PetscInt Ii[
 }
 
 /*@
-  PetscFindReal - Finds a PetscReal in a sorted array of PetscReals
+  PetscFindReal - Finds a PetscReal` in a sorted array of `PetscReal`s
 
    Not Collective
 
@@ -215,7 +215,7 @@ PetscErrorCode PetscFindReal(PetscReal key, PetscInt n, const PetscReal t[], Pet
 }
 
 /*@
-   PetscSortRemoveDupsReal - Sorts an array of doubles in place in increasing order removes all duplicate entries
+   PetscSortRemoveDupsReal - Sorts an array of `PetscReal` in place in increasing order and removes all duplicate entries
 
    Not Collective
 
@@ -246,7 +246,7 @@ PetscErrorCode PetscSortRemoveDupsReal(PetscInt *n, PetscReal v[]) {
 }
 
 /*@
-   PetscSortSplit - Quick-sort split of an array of PetscScalars in place.
+   PetscSortSplit - Quick-sort split of an array of `PetscScalar`s in place.
 
    Not Collective
 
@@ -310,7 +310,7 @@ PetscErrorCode PetscSortSplit(PetscInt ncut, PetscInt n, PetscScalar a[], PetscI
 }
 
 /*@
-   PetscSortSplitReal - Quick-sort split of an array of PetscReals in place.
+   PetscSortSplitReal - Quick-sort split of an array of `PetscReal`s in place.
 
    Not Collective
 

@@ -405,7 +405,7 @@ PetscErrorCode ISIntersect(IS is1, IS is2, IS *isout) {
 
     PetscCall(ISLocate(is1sorted, key, &loc));
     if (loc >= 0) {
-      if (!nout || iout[nout - 1] < key) { iout[nout++] = key; }
+      if (!nout || iout[nout - 1] < key) iout[nout++] = key;
     }
   }
   PetscCall(PetscRealloc(nout * sizeof(PetscInt), &iout));
@@ -634,7 +634,7 @@ PetscErrorCode ISPairToList(IS xis, IS yis, PetscInt *listlen, IS **islist) {
   if (low <= high) {
     if (lcount > 0) {
       *listlen = lcount;
-      if (!*islist) { PetscCall(PetscMalloc1(lcount, islist)); }
+      if (!*islist) PetscCall(PetscMalloc1(lcount, islist));
     }
     /*
      Traverse all possible global colors, and participate in the subcommunicators

@@ -42,7 +42,7 @@ PetscErrorCode PetscAdolcComputeRHSJacobian(PetscInt tag, Mat A, const PetscScal
   } else {
     for (i = 0; i < m; i++) {
       for (j = 0; j < n; j++) {
-        if (fabs(J[i][j]) > 1.e-16) { PetscCall(MatSetValues(A, 1, &i, 1, &j, &J[i][j], INSERT_VALUES)); }
+        if (fabs(J[i][j]) > 1.e-16) PetscCall(MatSetValues(A, 1, &i, 1, &j, &J[i][j], INSERT_VALUES));
       }
     }
   }
@@ -79,7 +79,7 @@ PetscErrorCode PetscAdolcComputeRHSJacobianLocal(PetscInt tag, Mat A, const Pets
   } else {
     for (i = 0; i < m; i++) {
       for (j = 0; j < n; j++) {
-        if (fabs(J[i][j]) > 1.e-16) { PetscCall(MatSetValuesLocal(A, 1, &i, 1, &j, &J[i][j], INSERT_VALUES)); }
+        if (fabs(J[i][j]) > 1.e-16) PetscCall(MatSetValuesLocal(A, 1, &i, 1, &j, &J[i][j], INSERT_VALUES));
       }
     }
   }
@@ -120,7 +120,7 @@ PetscErrorCode PetscAdolcComputeIJacobian(PetscInt tag1, PetscInt tag2, Mat A, c
   } else {
     for (i = 0; i < m; i++) {
       for (j = 0; j < n; j++) {
-        if (fabs(J[i][j]) > 1.e-16) { PetscCall(MatSetValues(A, 1, &i, 1, &j, &J[i][j], INSERT_VALUES)); }
+        if (fabs(J[i][j]) > 1.e-16) PetscCall(MatSetValues(A, 1, &i, 1, &j, &J[i][j], INSERT_VALUES));
       }
     }
   }
@@ -179,7 +179,7 @@ PetscErrorCode PetscAdolcComputeIJacobianIDMass(PetscInt tag, Mat A, PetscScalar
   } else {
     for (i = 0; i < m; i++) {
       for (j = 0; j < n; j++) {
-        if (fabs(J[i][j]) > 1.e-16) { PetscCall(MatSetValues(A, 1, &i, 1, &j, &J[i][j], INSERT_VALUES)); }
+        if (fabs(J[i][j]) > 1.e-16) PetscCall(MatSetValues(A, 1, &i, 1, &j, &J[i][j], INSERT_VALUES));
       }
     }
   }
@@ -222,7 +222,7 @@ PetscErrorCode PetscAdolcComputeIJacobianLocal(PetscInt tag1, PetscInt tag2, Mat
   } else {
     for (i = 0; i < m; i++) {
       for (j = 0; j < n; j++) {
-        if (fabs(J[i][j]) > 1.e-16) { PetscCall(MatSetValuesLocal(A, 1, &i, 1, &j, &J[i][j], INSERT_VALUES)); }
+        if (fabs(J[i][j]) > 1.e-16) PetscCall(MatSetValuesLocal(A, 1, &i, 1, &j, &J[i][j], INSERT_VALUES));
       }
     }
   }
@@ -280,7 +280,7 @@ PetscErrorCode PetscAdolcComputeIJacobianLocalIDMass(PetscInt tag, Mat A, const 
   } else {
     for (i = 0; i < m; i++) {
       for (j = 0; j < n; j++) {
-        if (fabs(J[i][j]) > 1.e-16) { PetscCall(MatSetValuesLocal(A, 1, &i, 1, &j, &J[i][j], INSERT_VALUES)); }
+        if (fabs(J[i][j]) > 1.e-16) PetscCall(MatSetValuesLocal(A, 1, &i, 1, &j, &J[i][j], INSERT_VALUES));
       }
     }
   }
@@ -332,7 +332,7 @@ PetscErrorCode PetscAdolcComputeRHSJacobianP(PetscInt tag, Mat A, const PetscSca
   /* Set matrix values */
   for (i = 0; i < m; i++) {
     for (j = 0; j < p; j++) {
-      if (fabs(J[i][j]) > 1.e-16) { PetscCall(MatSetValues(A, 1, &i, 1, &j, &J[i][j], INSERT_VALUES)); }
+      if (fabs(J[i][j]) > 1.e-16) PetscCall(MatSetValues(A, 1, &i, 1, &j, &J[i][j], INSERT_VALUES));
     }
   }
   PetscCall(AdolcFree2(J));
@@ -376,7 +376,7 @@ PetscErrorCode PetscAdolcComputeRHSJacobianPLocal(PetscInt tag, Mat A, const Pet
   /* Set matrix values */
   for (i = 0; i < m; i++) {
     for (j = 0; j < p; j++) {
-      if (fabs(J[i][j]) > 1.e-16) { PetscCall(MatSetValuesLocal(A, 1, &i, 1, &j, &J[i][j], INSERT_VALUES)); }
+      if (fabs(J[i][j]) > 1.e-16) PetscCall(MatSetValuesLocal(A, 1, &i, 1, &j, &J[i][j], INSERT_VALUES));
     }
   }
   PetscCall(AdolcFree2(J));
@@ -417,7 +417,7 @@ PetscErrorCode PetscAdolcComputeIJacobianAndDiagonalLocal(PetscInt tag1, PetscIn
     PetscCall(RecoverDiagonalLocal(diag, INSERT_VALUES, m, adctx->rec, J, NULL));
   } else {
     for (i = 0; i < m; i++) {
-      if (fabs(J[i][i]) > 1.e-16) { PetscCall(VecSetValuesLocal(diag, 1, &i, &J[i][i], INSERT_VALUES)); }
+      if (fabs(J[i][i]) > 1.e-16) PetscCall(VecSetValuesLocal(diag, 1, &i, &J[i][i], INSERT_VALUES));
     }
   }
   PetscCall(VecAssemblyBegin(diag));

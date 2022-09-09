@@ -20,7 +20,7 @@ static PetscInt petsc_checkpointer_intensity = 1;
    Input Parameter:
 .  intensity - how much to check pointers for validity
 
-   Options Database:
+   Options Database Key:
 .  -check_pointer_intensity - intensity (0, 1, or 2)
 
    Level: advanced
@@ -61,7 +61,7 @@ void PetscSignalSegvCheckPointerOrMpi(void) {
 }
 
 /*@C
-     PetscCheckPointer - Returns PETSC_TRUE if a pointer points to accessible data
+     PetscCheckPointer - Returns `PETSC_TRUE` if a pointer points to accessible data
 
    Not Collective
 
@@ -70,6 +70,9 @@ void PetscSignalSegvCheckPointerOrMpi(void) {
 -     dtype - the type of data the pointer is suppose to point to
 
    Level: developer
+
+   Note:
+   This is a non-standard PETSc function in that it returns the result as the return code and does not return an error code
 
 .seealso: `PetscCheckPointerSetIntensity()`
 @*/

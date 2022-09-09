@@ -61,7 +61,7 @@ int main(int argc, char **argv) {
       PetscCall(PetscRandomSetFromOptions(rand));
       PetscCall(PetscRandomSetInterval(rand, -1., 1.));
       /* create a random point in the trace domain */
-      for (i = 0; i < dim - 1; i++) { PetscCall(PetscRandomGetValueReal(rand, &testSub[i])); }
+      for (i = 0; i < dim - 1; i++) PetscCall(PetscRandomGetValueReal(rand, &testSub[i]));
       PetscCall(DMPlexComputeCellGeometryFEM(dm, point, NULL, testFull, J, NULL, &detJ));
       /* project it into the full domain */
       for (i = 0; i < dim; i++) {
@@ -71,7 +71,7 @@ int main(int argc, char **argv) {
       PetscCall(PetscFEGetDimension(fe, &nFull));
       PetscCall(VecCreateSeq(PETSC_COMM_SELF, nFull, &vecFull));
       PetscCall(VecGetArray(vecFull, &arrayFull));
-      for (i = 0; i < nFull; i++) { PetscCall(PetscRandomGetValue(rand, &arrayFull[i])); }
+      for (i = 0; i < nFull; i++) PetscCall(PetscRandomGetValue(rand, &arrayFull[i]));
       PetscCall(VecRestoreArray(vecFull, &arrayFull));
       /* create a vector on the trace domain */
       PetscCall(PetscFEGetDimension(traceFE, &nSub));
@@ -86,7 +86,7 @@ int main(int argc, char **argv) {
       PetscCall(PetscFECreateTabulation(fe, 1, 1, testFull, 0, &Tfull));
       for (i = 0; i < Nc; i++) {
         outSub[i] = 0.0;
-        for (j = 0; j < nSub; j++) { outSub[i] += Tsub->T[0][j * Nc + i] * arraySub[j]; }
+        for (j = 0; j < nSub; j++) outSub[i] += Tsub->T[0][j * Nc + i] * arraySub[j];
       }
       PetscCall(VecGetArray(vecFull, &arrayFull));
       err = 0.0;
@@ -94,7 +94,7 @@ int main(int argc, char **argv) {
         PetscScalar diff;
 
         outFull[i] = 0.0;
-        for (j = 0; j < nFull; j++) { outFull[i] += Tfull->T[0][j * Nc + i] * arrayFull[j]; }
+        for (j = 0; j < nFull; j++) outFull[i] += Tfull->T[0][j * Nc + i] * arrayFull[j];
         diff = outFull[i] - outSub[i];
         err += PetscRealPart(PetscConj(diff) * diff);
       }

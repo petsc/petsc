@@ -163,7 +163,7 @@ PetscErrorCode MatSolve_SuperLU_Private(Mat A, Vec b, Vec x) {
 #endif
 #endif
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Factor type not supported");
-  if (!lu->options.Equil) { PetscCall(VecRestoreArrayRead(b, &barray)); }
+  if (!lu->options.Equil) PetscCall(VecRestoreArrayRead(b, &barray));
   PetscCall(VecRestoreArray(x, &xarray));
 
   if (!info || info == lu->A.ncol + 1) {
@@ -294,14 +294,14 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F, Mat A, const MatFactorIn
 #endif
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Factor type not supported");
   if (!sinfo || sinfo == lu->A.ncol + 1) {
-    if (lu->options.PivotGrowth) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Recip. pivot growth = %e\n", lu->rpg)); }
-    if (lu->options.ConditionNumber) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Recip. condition number = %e\n", lu->rcond)); }
+    if (lu->options.PivotGrowth) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Recip. pivot growth = %e\n", lu->rpg));
+    if (lu->options.ConditionNumber) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Recip. condition number = %e\n", lu->rcond));
   } else if (sinfo > 0) {
     if (A->erroriffailure) {
       SETERRQ(PETSC_COMM_SELF, PETSC_ERR_MAT_LU_ZRPVT, "Zero pivot in row %" PetscInt_FMT, sinfo);
     } else {
       if (sinfo <= lu->A.ncol) {
-        if (lu->options.ILU_FillTol == 0.0) { F->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT; }
+        if (lu->options.ILU_FillTol == 0.0) F->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
         PetscCall(PetscInfo(F, "Number of zero pivots %" PetscInt_FMT ", ILU_FillTol %g\n", sinfo, lu->options.ILU_FillTol));
       } else if (sinfo == lu->A.ncol + 1) {
         /*
@@ -375,7 +375,7 @@ static PetscErrorCode MatView_SuperLU(Mat A, PetscViewer viewer) {
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   if (iascii) {
     PetscCall(PetscViewerGetFormat(viewer, &format));
-    if (format == PETSC_VIEWER_ASCII_INFO) { PetscCall(MatView_Info_SuperLU(A, viewer)); }
+    if (format == PETSC_VIEWER_ASCII_INFO) PetscCall(MatView_Info_SuperLU(A, viewer));
   }
   PetscFunctionReturn(0);
 }
@@ -453,7 +453,7 @@ static PetscErrorCode MatLUFactorSymbolic_SuperLU(Mat F, Mat A, IS r, IS c, cons
 
   /* if we are here, the nonzero pattern has changed unless the user explicitly called MatLUFactorSymbolic */
   PetscCall(MatDestroy(&lu->A_dup));
-  if (lu->needconversion) { PetscCall(MatConvert(A, MATSEQAIJ, MAT_INITIAL_MATRIX, &lu->A_dup)); }
+  if (lu->needconversion) PetscCall(MatConvert(A, MATSEQAIJ, MAT_INITIAL_MATRIX, &lu->A_dup));
   if (lu->options.Equil == YES && !lu->A_dup) { /* superlu overwrites input matrix and rhs when Equil is used, thus create A_dup to keep user's A unchanged */
     PetscCall(MatDuplicate_SeqAIJ(A, MAT_COPY_VALUES, &lu->A_dup));
   }
@@ -471,10 +471,10 @@ static PetscErrorCode MatSuperluSetILUDropTol_SuperLU(Mat F, PetscReal dtol) {
 /*@
   MatSuperluSetILUDropTol - Set SuperLU ILU drop tolerance
 
-   Logically Collective on Mat
+   Logically Collective on F
 
    Input Parameters:
-+  F - the factored matrix obtained by calling MatGetFactor() from PETSc-SuperLU interface
++  F - the factored matrix obtained by calling `MatGetFactor()` from PETSc-SuperLU interface
 -  dtol - drop tolerance
 
   Options Database:
@@ -529,9 +529,9 @@ PetscErrorCode MatFactorGetSolverType_seqaij_superlu(Mat A, MatSolverType *type)
 - -mat_superlu_ilu_milu <0>             - ILU_MILU (None)
 
    Notes:
-    Do not confuse this with MATSOLVERSUPERLU_DIST which is for parallel sparse solves
+    Do not confuse this with `MATSOLVERSUPERLU_DIST` which is for parallel sparse solves
 
-    Cannot currently use ordering provided by PETSc.
+    Cannot use ordering provided by PETSc, provides its own.
 
    Level: beginner
 

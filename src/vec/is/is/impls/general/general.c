@@ -189,7 +189,7 @@ static PetscErrorCode ISView_General_HDF5(IS is, PetscViewer viewer) {
   bs = PetscMax(bs, 1); /* If N = 0, bs  = 0 as well */
   PetscCall(PetscViewerHDF5OpenGroup(viewer, &file_id, &group));
   PetscCall(PetscViewerHDF5IsTimestepping(viewer, &timestepping));
-  if (timestepping) { PetscCall(PetscViewerHDF5GetTimestep(viewer, &timestep)); }
+  if (timestepping) PetscCall(PetscViewerHDF5GetTimestep(viewer, &timestep));
 
   /* Create the dataspace for the dataset.
    *
@@ -228,8 +228,8 @@ static PetscErrorCode ISView_General_HDF5(IS is, PetscViewer viewer) {
   /* hdf5 chunks must be less than 4GB */
   if (chunksize > PETSC_HDF5_MAX_CHUNKSIZE / 64) {
     if (bs >= 1) {
-      if (chunkDims[dim - 2] > (PetscInt)PetscSqrtReal((PetscReal)(PETSC_HDF5_MAX_CHUNKSIZE / 64))) { chunkDims[dim - 2] = (PetscInt)PetscSqrtReal((PetscReal)(PETSC_HDF5_MAX_CHUNKSIZE / 64)); }
-      if (chunkDims[dim - 1] > (PetscInt)PetscSqrtReal((PetscReal)(PETSC_HDF5_MAX_CHUNKSIZE / 64))) { chunkDims[dim - 1] = (PetscInt)PetscSqrtReal((PetscReal)(PETSC_HDF5_MAX_CHUNKSIZE / 64)); }
+      if (chunkDims[dim - 2] > (PetscInt)PetscSqrtReal((PetscReal)(PETSC_HDF5_MAX_CHUNKSIZE / 64))) chunkDims[dim - 2] = (PetscInt)PetscSqrtReal((PetscReal)(PETSC_HDF5_MAX_CHUNKSIZE / 64));
+      if (chunkDims[dim - 1] > (PetscInt)PetscSqrtReal((PetscReal)(PETSC_HDF5_MAX_CHUNKSIZE / 64))) chunkDims[dim - 1] = (PetscInt)PetscSqrtReal((PetscReal)(PETSC_HDF5_MAX_CHUNKSIZE / 64));
     } else {
       chunkDims[dim - 1] = PETSC_HDF5_MAX_CHUNKSIZE / 64;
     }
@@ -308,7 +308,7 @@ static PetscErrorCode ISView_General_HDF5(IS is, PetscViewer viewer) {
   PetscCallHDF5(H5Sclose, (memspace));
   PetscCallHDF5(H5Dclose, (dset_id));
 
-  if (timestepping) { PetscCall(PetscViewerHDF5WriteObjectAttribute(viewer, (PetscObject)is, "timestepping", PETSC_BOOL, &timestepping)); }
+  if (timestepping) PetscCall(PetscViewerHDF5WriteObjectAttribute(viewer, (PetscObject)is, "timestepping", PETSC_BOOL, &timestepping));
   PetscCall(PetscInfo(is, "Wrote IS object with name %s\n", isname));
   PetscFunctionReturn(0);
 }
@@ -344,14 +344,14 @@ static PetscErrorCode ISView_General(IS is, PetscViewer viewer) {
 
         PetscCall(PetscObjectGetName((PetscObject)is, &name));
         PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "%s_%d = [...\n", name, rank));
-        for (i = 0; i < n; i++) { PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "%" PetscInt_FMT "\n", idx[i] + 1)); }
+        for (i = 0; i < n; i++) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "%" PetscInt_FMT "\n", idx[i] + 1));
         PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "];\n"));
       } else {
         PetscInt st = 0;
 
         if (fmt == PETSC_VIEWER_ASCII_INDEX) st = is->map->rstart;
         PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] Number of indices in set %" PetscInt_FMT "\n", rank, n));
-        for (i = 0; i < n; i++) { PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] %" PetscInt_FMT " %" PetscInt_FMT "\n", rank, i + st, idx[i])); }
+        for (i = 0; i < n; i++) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] %" PetscInt_FMT " %" PetscInt_FMT "\n", rank, i + st, idx[i]));
       }
     } else {
       if (fmt == PETSC_VIEWER_ASCII_MATLAB) {
@@ -359,14 +359,14 @@ static PetscErrorCode ISView_General(IS is, PetscViewer viewer) {
 
         PetscCall(PetscObjectGetName((PetscObject)is, &name));
         PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "%s = [...\n", name));
-        for (i = 0; i < n; i++) { PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "%" PetscInt_FMT "\n", idx[i] + 1)); }
+        for (i = 0; i < n; i++) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "%" PetscInt_FMT "\n", idx[i] + 1));
         PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "];\n"));
       } else {
         PetscInt st = 0;
 
         if (fmt == PETSC_VIEWER_ASCII_INDEX) st = is->map->rstart;
         PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "Number of indices in set %" PetscInt_FMT "\n", n));
-        for (i = 0; i < n; i++) { PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "%" PetscInt_FMT " %" PetscInt_FMT "\n", i + st, idx[i])); }
+        for (i = 0; i < n; i++) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "%" PetscInt_FMT " %" PetscInt_FMT "\n", i + st, idx[i]));
       }
     }
     PetscCall(PetscViewerFlush(viewer));

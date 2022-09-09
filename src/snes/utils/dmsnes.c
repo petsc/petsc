@@ -48,9 +48,9 @@ PetscErrorCode DMSNESView(DMSNES kdm, PetscViewer viewer) {
     const char *fname;
 
     PetscCall(PetscFPTFind(kdm->ops->computefunction, &fname));
-    if (fname) { PetscCall(PetscViewerASCIIPrintf(viewer, "Function used by SNES: %s\n", fname)); }
+    if (fname) PetscCall(PetscViewerASCIIPrintf(viewer, "Function used by SNES: %s\n", fname));
     PetscCall(PetscFPTFind(kdm->ops->computejacobian, &fname));
-    if (fname) { PetscCall(PetscViewerASCIIPrintf(viewer, "Jacobian function used by SNES: %s\n", fname)); }
+    if (fname) PetscCall(PetscViewerASCIIPrintf(viewer, "Jacobian function used by SNES: %s\n", fname));
 #endif
   } else if (isbinary) {
     struct {
@@ -349,7 +349,7 @@ PetscErrorCode DMSNESSetMFFunction(DM dm, PetscErrorCode (*f)(SNES, Vec, Vec, vo
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (f || ctx) { PetscCall(DMGetDMSNESWrite(dm, &sdm)); }
+  if (f || ctx) PetscCall(DMGetDMSNESWrite(dm, &sdm));
   if (f) sdm->ops->computemffunction = f;
   if (ctx) sdm->mffunctionctx = ctx;
   PetscFunctionReturn(0);
@@ -408,7 +408,7 @@ PetscErrorCode DMSNESSetObjective(DM dm, PetscErrorCode (*obj)(SNES, Vec, PetscR
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (obj || ctx) { PetscCall(DMGetDMSNESWrite(dm, &sdm)); }
+  if (obj || ctx) PetscCall(DMGetDMSNESWrite(dm, &sdm));
   if (obj) sdm->ops->computeobjective = obj;
   if (ctx) sdm->objectivectx = ctx;
   PetscFunctionReturn(0);
@@ -469,7 +469,7 @@ PetscErrorCode DMSNESSetNGS(DM dm, PetscErrorCode (*f)(SNES, Vec, Vec, void *), 
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (f || ctx) { PetscCall(DMGetDMSNESWrite(dm, &sdm)); }
+  if (f || ctx) PetscCall(DMGetDMSNESWrite(dm, &sdm));
   if (f) sdm->ops->computegs = f;
   if (ctx) sdm->gsctx = ctx;
   PetscFunctionReturn(0);

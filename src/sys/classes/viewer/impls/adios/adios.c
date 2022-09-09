@@ -71,12 +71,12 @@ static PetscErrorCode PetscViewerFileGetName_ADIOS(PetscViewer viewer, const cha
 /*MC
    PETSCVIEWERADIOS - A viewer that writes to an ADIOS file
 
+  Level: beginner
+
 .seealso: `PetscViewerADIOSOpen()`, `PetscViewerStringSPrintf()`, `PetscViewerSocketOpen()`, `PetscViewerDrawOpen()`, `PETSCVIEWERSOCKET`,
           `PetscViewerCreate()`, `PetscViewerASCIIOpen()`, `PetscViewerBinaryOpen()`, `PETSCVIEWERBINARY`, `PETSCVIEWERDRAW`, `PETSCVIEWERSTRING`,
           `PetscViewerMatlabOpen()`, `VecView()`, `DMView()`, `PetscViewerMatlabPutArray()`, `PETSCVIEWERASCII`, `PETSCVIEWERMATLAB`,
           `PetscViewerFileSetName()`, `PetscViewerFileSetMode()`, `PetscViewerFormat`, `PetscViewerType`, `PetscViewerSetType()`
-
-  Level: beginner
 M*/
 
 PETSC_EXTERN PetscErrorCode PetscViewerCreate_ADIOS(PetscViewer v) {
@@ -113,12 +113,12 @@ $    FILE_MODE_READ - open existing file for binary input
 $    FILE_MODE_APPEND - open existing file for binary output
 
    Output Parameter:
-.  adiosv - PetscViewer for ADIOS input/output to use with the specified file
+.  adiosv - `PetscViewer` for ADIOS input/output to use with the specified file
 
    Level: beginner
 
    Note:
-   This PetscViewer should be destroyed with PetscViewerDestroy().
+   This PetscViewer should be destroyed with `PetscViewerDestroy()`.
 
 .seealso: `PetscViewerASCIIOpen()`, `PetscViewerPushFormat()`, `PetscViewerDestroy()`, `PetscViewerHDF5Open()`,
           `VecView()`, `MatView()`, `VecLoad()`, `PetscViewerSetType()`, `PetscViewerFileSetMode()`, `PetscViewerFileSetName()`
@@ -139,14 +139,12 @@ PetscErrorCode PetscViewerADIOSOpen(MPI_Comm comm, const char name[], PetscFileM
   Not collective
 
   Input Parameter:
-. ptype - the PETSc datatype name (for example PETSC_DOUBLE)
+. ptype - the PETSc datatype name (for example `PETSC_DOUBLE`)
 
   Output Parameter:
-. mtype - the MPI datatype (for example MPI_DOUBLE, ...)
+. mtype - the ADIOS datatype (for example MPI_DOUBLE, ...)
 
   Level: advanced
-
-  Developer Notes: These have not been verified
 
 .seealso: `PetscDataType`, `PetscADIOSDataTypeToPetscDataType()`
 @*/
@@ -178,11 +176,9 @@ PetscErrorCode PetscDataTypeToADIOSDataType(PetscDataType ptype, enum ADIOS_DATA
 . htype - the ADIOS datatype (for example H5T_NATIVE_DOUBLE, ...)
 
   Output Parameter:
-. ptype - the PETSc datatype name (for example PETSC_DOUBLE)
+. ptype - the PETSc datatype name (for example `PETSC_DOUBLE`)
 
   Level: advanced
-
-  Developer Notes: These have not been verified
 
 .seealso: `PetscDataType`, `PetscADIOSDataTypeToPetscDataType()`
 @*/

@@ -13,12 +13,12 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqAIJ(Mat A, MatType newtype, Ma
   PetscFunctionBegin;
   if (reuse == MAT_REUSE_MATRIX) {
     B = *newmat;
-    for (i = 0; i < n; i++) { maxlen = PetscMax(maxlen, (ai[i + 1] - ai[i])); }
+    for (i = 0; i < n; i++) maxlen = PetscMax(maxlen, (ai[i + 1] - ai[i]));
   } else {
     PetscCall(PetscMalloc1(n * bs, &rowlengths));
     for (i = 0; i < n; i++) {
       maxlen = PetscMax(maxlen, (ai[i + 1] - ai[i]));
-      for (j = 0; j < bs; j++) { rowlengths[i * bs + j] = bs * (ai[i + 1] - ai[i]); }
+      for (j = 0; j < bs; j++) rowlengths[i * bs + j] = bs * (ai[i + 1] - ai[i]);
     }
     PetscCall(MatCreate(PetscObjectComm((PetscObject)A), &B));
     PetscCall(MatSetType(B, MATSEQAIJ));
@@ -34,10 +34,10 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqAIJ(Mat A, MatType newtype, Ma
   PetscCall(PetscMalloc1(bs, &rows));
   PetscCall(PetscMalloc1(bs * maxlen, &cols));
   for (i = 0; i < n; i++) {
-    for (j = 0; j < bs; j++) { rows[j] = i * bs + j; }
+    for (j = 0; j < bs; j++) rows[j] = i * bs + j;
     ncols = ai[i + 1] - ai[i];
     for (k = 0; k < ncols; k++) {
-      for (j = 0; j < bs; j++) { cols[k * bs + j] = bs * (*aj) + j; }
+      for (j = 0; j < bs; j++) cols[k * bs + j] = bs * (*aj) + j;
       aj++;
     }
     PetscCall(MatSetValues(B, bs, rows, bs * ncols, cols, aa, INSERT_VALUES));
@@ -66,7 +66,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqBAIJ(Mat A, MatType newtype, Ma
   PetscFunctionBegin;
   if (reuse != MAT_REUSE_MATRIX) {
     PetscCall(PetscMalloc1(m / bs, &rowlengths));
-    for (i = 0; i < m / bs; i++) { rowlengths[i] = (ai[i * bs + 1] - ai[i * bs]) / bs; }
+    for (i = 0; i < m / bs; i++) rowlengths[i] = (ai[i * bs + 1] - ai[i * bs]) / bs;
     PetscCall(MatCreate(PetscObjectComm((PetscObject)A), &B));
     PetscCall(MatSetSizes(B, m, n, m, n));
     PetscCall(MatSetType(B, MATSEQBAIJ));

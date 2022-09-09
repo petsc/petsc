@@ -31,13 +31,13 @@ int main(int argc, char **argv) {
 
   PetscCall(VecGetOwnershipRange(x, &low, NULL));
   PetscCall(VecGetArray(x, &array));
-  for (i = 0; i < n; i++) { array[i] = (PetscScalar)(i + low); }
+  for (i = 0; i < n; i++) array[i] = (PetscScalar)(i + low);
   PetscCall(VecRestoreArray(x, &array));
 
   /* Create a sequential vector y */
   PetscCall(VecCreateSeq(PETSC_COMM_SELF, n, &y));
   PetscCall(VecGetArray(y, &array));
-  for (i = 0; i < n; i++) { array[i] = (PetscScalar)(i + 100 * rank); }
+  for (i = 0; i < n; i++) array[i] = (PetscScalar)(i + 100 * rank);
   PetscCall(VecRestoreArray(y, &array));
 
   /* Create two index sets */
@@ -68,7 +68,7 @@ int main(int argc, char **argv) {
   PetscCall(VecScatterBegin(ctx, x, y, ADD_VALUES, SCATTER_REVERSE));
   PetscCall(VecScatterEnd(ctx, x, y, ADD_VALUES, SCATTER_REVERSE));
   PetscCall(PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD, PETSC_COMM_SELF, &sviewer));
-  if (rank == 1) { PetscCall(VecView(y, sviewer)); }
+  if (rank == 1) PetscCall(VecView(y, sviewer));
   PetscCall(PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD, PETSC_COMM_SELF, &sviewer));
 
   /* Free spaces */

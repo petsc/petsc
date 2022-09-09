@@ -99,7 +99,7 @@ static PetscErrorCode DMPlexTransformView_1D(DMPlexTransform tr, PetscViewer vie
     PetscCall(PetscObjectGetName((PetscObject)tr, &name));
     PetscCall(PetscViewerASCIIPrintf(viewer, "1D refinement %s\n", name ? name : ""));
     PetscCall(PetscViewerGetFormat(viewer, &format));
-    if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) { PetscCall(DMLabelView(tr->trType, viewer)); }
+    if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) PetscCall(DMLabelView(tr->trType, viewer));
   } else {
     SETERRQ(PetscObjectComm((PetscObject)tr), PETSC_ERR_SUP, "Viewer type %s not yet supported for DMPlexTransform writing", ((PetscObject)viewer)->type_name);
   }

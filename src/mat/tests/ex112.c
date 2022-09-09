@@ -63,7 +63,7 @@ int main(int argc, char **args) {
     } else if (function == TANH) {
       PetscScalar *a;
       PetscCall(VecGetArray(x, &a));
-      for (i = 0; i < N; ++i) { a[i] = tanh((i - N / 2.0) * (10.0 / N)); }
+      for (i = 0; i < N; ++i) a[i] = tanh((i - N / 2.0) * (10.0 / N));
       PetscCall(VecRestoreArray(x, &a));
     }
     if (view) PetscCall(VecView(x, PETSC_VIEWER_DRAW_WORLD));
@@ -80,7 +80,7 @@ int main(int argc, char **args) {
       if (view && i == 0) PetscCall(VecView(z, PETSC_VIEWER_DRAW_WORLD));
       PetscCall(VecAXPY(z, -1.0, x));
       PetscCall(VecNorm(z, NORM_1, &enorm));
-      if (enorm > tol) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Error norm of |x - z| %g\n", (double)enorm)); }
+      if (enorm > tol) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Error norm of |x - z| %g\n", (double)enorm));
     }
 
     /* apply FFTW_FORWARD and FFTW_BACKWARD several times on different x */
@@ -98,7 +98,7 @@ int main(int argc, char **args) {
       if (view && i == 0) PetscCall(VecView(z, PETSC_VIEWER_DRAW_WORLD));
       PetscCall(VecAXPY(z, -1.0, x));
       PetscCall(VecNorm(z, NORM_1, &enorm));
-      if (enorm > tol) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Error norm of new |x - z| %g\n", (double)enorm)); }
+      if (enorm > tol) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Error norm of new |x - z| %g\n", (double)enorm));
     }
 
     /* free spaces */

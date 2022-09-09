@@ -7,6 +7,7 @@ static char help[] = "Tests ISDuplicate(), ISCopy(), ISShift(), ISEqualUnsorted(
 /*
 type = 0 general
 type = 1 stride
+type = 2 block
 */
 static PetscErrorCode CreateIS(MPI_Comm comm, PetscInt type, PetscInt n, PetscInt first, PetscInt step, IS *is) {
   PetscInt   *idx, i, j;
@@ -15,15 +16,18 @@ static PetscErrorCode CreateIS(MPI_Comm comm, PetscInt type, PetscInt n, PetscIn
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   first += rank * n * step;
-  switch (type % 2) {
-  case 1: {
-    PetscCall(ISCreateStride(comm, n, first, step, is));
-  } break;
-  default: {
+  switch (type) {
+  case 0:
     PetscCall(PetscMalloc1(n, &idx));
     for (i = 0, j = first; i < n; i++, j += step) idx[i] = j;
     PetscCall(ISCreateGeneral(comm, n, idx, PETSC_OWN_POINTER, is));
-  }
+    break;
+  case 1: PetscCall(ISCreateStride(comm, n, first, step, is)); break;
+  case 2:
+    PetscCall(PetscMalloc1(n, &idx));
+    for (i = 0, j = first; i < n; i++, j += step) idx[i] = j;
+    PetscCall(ISCreateBlock(comm, 1, n, idx, PETSC_OWN_POINTER, is));
+    break;
   }
   PetscFunctionReturn(0);
 }
@@ -46,7 +50,7 @@ int main(int argc, char **argv) {
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-offset", &offset, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-verbose", &verbose, NULL));
 
-  for (type = 0; type < 2; type++) {
+  for (type = 0; type < 3; type++) {
     PetscCall(CreateIS(comm, type, n, first + offset, step, &is[j]));
     j++;
 
@@ -93,7 +97,7 @@ int main(int argc, char **argv) {
     PetscCheck(flg, comm, PETSC_ERR_PLIB, "is[%02" PetscInt_FMT "] differs from is[0]", i);
     if (verbose) PetscCall(PetscPrintf(comm, "is[%02" PetscInt_FMT "] identical to is[0]\n", i));
   }
-  for (i = 0; i < j; i++) { PetscCall(ISDestroy(&is[i])); }
+  for (i = 0; i < j; i++) PetscCall(ISDestroy(&is[i]));
   PetscCall(PetscFinalize());
   return 0;
 }

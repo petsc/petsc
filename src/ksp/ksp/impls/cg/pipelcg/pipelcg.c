@@ -150,18 +150,18 @@ static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp) {
     /* ----------------------------------- */
     /* Shift the U vector pointers */
     temp = U[2];
-    for (i = 2; i > 0; i--) { U[i] = U[i - 1]; }
+    for (i = 2; i > 0; i--) U[i] = U[i - 1];
     U[0] = temp;
     if (it < l) {
       /* SpMV and Sigma-shift and Prec */
       PetscCall(MatMult(A, Z[l - it], U[0]));
       PetscCall(VecAXPY(U[0], -sigma(it), U[1]));
       PetscCall(KSP_PCApply(ksp, U[0], Z[l - it - 1]));
-      if (it < l - 1) { PetscCall(VecCopy(Z[l - it - 1], Q[3 * it])); }
+      if (it < l - 1) PetscCall(VecCopy(Z[l - it - 1], Q[3 * it]));
     } else {
       /* Shift the Z vector pointers */
       temp = Z[PetscMax(l, 2)];
-      for (i = PetscMax(l, 2); i > 0; --i) { Z[i] = Z[i - 1]; }
+      for (i = PetscMax(l, 2); i > 0; --i) Z[i] = Z[i - 1];
       Z[0] = temp;
       /* SpMV and Prec */
       PetscCall(MatMult(A, Z[1], U[0]));
@@ -178,9 +178,9 @@ static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp) {
         beta    = PetscSqrtReal(PetscRealPart(G(0, 0)));
         G(0, 0) = 1.0;
         PetscCall(VecAXPY(V[0], 1.0 / beta, p)); /* this assumes V[0] to be zero initially */
-        for (j = 0; j <= PetscMax(l, 2); ++j) { PetscCall(VecScale(Z[j], 1.0 / beta)); }
-        for (j = 0; j <= 2; ++j) { PetscCall(VecScale(U[j], 1.0 / beta)); }
-        for (j = 0; j < l - 1; ++j) { PetscCall(VecScale(Q[3 * j], 1.0 / beta)); }
+        for (j = 0; j <= PetscMax(l, 2); ++j) PetscCall(VecScale(Z[j], 1.0 / beta));
+        for (j = 0; j <= 2; ++j) PetscCall(VecScale(U[j], 1.0 / beta));
+        for (j = 0; j < l - 1; ++j) PetscCall(VecScale(Q[3 * j], 1.0 / beta));
       }
 
       /* MPI_Wait until the dot products,started l iterations ago,are completed */
@@ -192,26 +192,26 @@ static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp) {
       if (it <= 2 * l - 1) {
         invbeta2 = 1.0 / (beta * beta);
         /* Scale columns 1 up to l of G with 1/beta^2 */
-        for (j = PetscMax(it - 3 * l + 1, 0); j <= it - l + 1; ++j) { G(j, it - l + 1) *= invbeta2; }
+        for (j = PetscMax(it - 3 * l + 1, 0); j <= it - l + 1; ++j) G(j, it - l + 1) *= invbeta2;
       }
 
       for (j = PetscMax(it - 2 * l + 2, 0); j <= it - l; ++j) {
         sum_dummy = 0.0;
-        for (k = PetscMax(it - 3 * l + 1, 0); k <= j - 1; ++k) { sum_dummy = sum_dummy + G(k, j) * G(k, it - l + 1); }
+        for (k = PetscMax(it - 3 * l + 1, 0); k <= j - 1; ++k) sum_dummy = sum_dummy + G(k, j) * G(k, it - l + 1);
         G(j, it - l + 1) = (G(j, it - l + 1) - sum_dummy) / G(j, j);
       }
 
       sum_dummy = 0.0;
-      for (k = PetscMax(it - 3 * l + 1, 0); k <= it - l; ++k) { sum_dummy = sum_dummy + G(k, it - l + 1) * G(k, it - l + 1); }
+      for (k = PetscMax(it - 3 * l + 1, 0); k <= it - l; ++k) sum_dummy = sum_dummy + G(k, it - l + 1) * G(k, it - l + 1);
 
       tmp = PetscRealPart(G(it - l + 1, it - l + 1) - sum_dummy);
       /* Breakdown check */
       if (tmp < 0) {
-        if (plcg->show_rstrt) { PetscCall(PetscPrintf(comm, "Sqrt breakdown in iteration %" PetscInt_FMT ": sqrt argument is %e. Iteration was restarted.\n", ksp->its + 1, (double)tmp)); }
+        if (plcg->show_rstrt) PetscCall(PetscPrintf(comm, "Sqrt breakdown in iteration %" PetscInt_FMT ": sqrt argument is %e. Iteration was restarted.\n", ksp->its + 1, (double)tmp));
         /* End hanging dot-products in the pipeline before exiting for-loop */
         start = it - l + 2;
         end   = PetscMin(it + 1, max_it + 1); /* !warning! 'it' can actually be greater than 'max_it' */
-        for (i = start; i < end; ++i) { PetscCallMPI(MPI_Wait(&req(i), MPI_STATUS_IGNORE)); }
+        for (i = start; i < end; ++i) PetscCallMPI(MPI_Wait(&req(i), MPI_STATUS_IGNORE));
         break;
       }
       G(it - l + 1, it - l + 1) = PetscSqrtReal(tmp);
@@ -233,7 +233,7 @@ static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp) {
       /* -------------------------------------------------- */
       /* Shift the V vector pointers */
       temp = V[2];
-      for (i = 2; i > 0; i--) { V[i] = V[i - 1]; }
+      for (i = 2; i > 0; i--) V[i] = V[i - 1];
       V[0] = temp;
 
       /* Recurrence V vectors */
@@ -255,7 +255,7 @@ static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp) {
       for (j = 0; j < l - 1; ++j) {
         /* Shift the Q vector pointers */
         temp = Q[3 * j + 2];
-        for (i = 2; i > 0; i--) { Q[3 * j + i] = Q[3 * j + i - 1]; }
+        for (i = 2; i > 0; i--) Q[3 * j + i] = Q[3 * j + i - 1];
         Q[3 * j] = temp;
 
         if (j < l - 2) {
@@ -306,7 +306,7 @@ static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp) {
     /* ----------------------------------------- */
     if (it >= l) {
       if (it == l) {
-        if (ksp->its != 0) { ++ksp->its; }
+        if (ksp->its != 0) ++ksp->its;
         eta  = gamma(0);
         zeta = beta;
         PetscCall(VecCopy(V[1], p));
@@ -334,7 +334,7 @@ static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp) {
         /* End hanging dot-products in the pipeline before exiting for-loop */
         start = it - l + 2;
         end   = PetscMin(it + 2, max_it + 1); /* !warning! 'it' can actually be greater than 'max_it' */
-        for (i = start; i < end; ++i) { PetscCallMPI(MPI_Wait(&req(i), MPI_STATUS_IGNORE)); }
+        for (i = start; i < end; ++i) PetscCallMPI(MPI_Wait(&req(i), MPI_STATUS_IGNORE));
         break;
       }
     }
@@ -347,14 +347,14 @@ static PetscErrorCode KSPSolve_ReInitData_PIPELCG(KSP ksp) {
   PetscInt       i = 0, j = 0, l = plcg->l, max_it = ksp->max_it;
 
   PetscFunctionBegin;
-  for (i = 0; i < PetscMax(3, l + 1); ++i) { PetscCall(VecSet(plcg->Z[i], 0.0)); }
-  for (i = 1; i < 3; ++i) { PetscCall(VecSet(plcg->U[i], 0.0)); }
-  for (i = 0; i < 3; ++i) { PetscCall(VecSet(plcg->V[i], 0.0)); }
-  for (i = 0; i < 3 * (l - 1) + 1; ++i) { PetscCall(VecSet(plcg->Q[i], 0.0)); }
+  for (i = 0; i < PetscMax(3, l + 1); ++i) PetscCall(VecSet(plcg->Z[i], 0.0));
+  for (i = 1; i < 3; ++i) PetscCall(VecSet(plcg->U[i], 0.0));
+  for (i = 0; i < 3; ++i) PetscCall(VecSet(plcg->V[i], 0.0));
+  for (i = 0; i < 3 * (l - 1) + 1; ++i) PetscCall(VecSet(plcg->Q[i], 0.0));
   for (j = 0; j < (max_it + 1); ++j) {
     gamma(j) = 0.0;
     delta(j) = 0.0;
-    for (i = 0; i < (2 * l + 1); ++i) { G_noshift(i, j) = 0.0; }
+    for (i = 0; i < (2 * l + 1); ++i) G_noshift(i, j) = 0.0;
   }
   PetscFunctionReturn(0);
 }
@@ -388,7 +388,7 @@ static PetscErrorCode KSPSolve_PIPELCG(KSP ksp) {
 
   PetscCall(PCGetOperators(ksp->pc, &A, &Pmat));
 
-  for (i = 0; i < l; ++i) { sigma(i) = (0.5 * (lmin + lmax) + (0.5 * (lmax - lmin) * PetscCosReal(PETSC_PI * (2.0 * i + 1.0) / (2.0 * l)))); }
+  for (i = 0; i < l; ++i) sigma(i) = (0.5 * (lmin + lmax) + (0.5 * (lmax - lmin) * PetscCosReal(PETSC_PI * (2.0 * i + 1.0) / (2.0 * l))));
 
   ksp->its        = 0;
   outer_it        = 0;

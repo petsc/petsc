@@ -32,7 +32,7 @@ int main(int argc, char **argv) {
 
   /* fill local part of parallel vector x */
   value = (PetscScalar)(rank + 1);
-  for (i = n * rank; i < n * (rank + 1); i++) { PetscCall(VecSetValues(x, 1, &i, &value, INSERT_VALUES)); }
+  for (i = n * rank; i < n * (rank + 1); i++) PetscCall(VecSetValues(x, 1, &i, &value, INSERT_VALUES));
   PetscCall(VecAssemblyBegin(x));
   PetscCall(VecAssemblyEnd(x));
 

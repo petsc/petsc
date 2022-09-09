@@ -218,7 +218,7 @@ PetscErrorCode MatCreateSubMatrix_SeqSBAIJ(Mat A, IS isrow, IS iscol, MatReuse s
   PetscCall(PetscMalloc2(maxmnbs, &vary, maxmnbs, &iary));
   PetscCall(PetscArrayzero(vary, a->mbs));
   for (i = 0; i < nrows; i++) vary[irow[i] / bs]++;
-  for (i = 0; i < a->mbs; i++) { PetscCheck(vary[i] == 0 || vary[i] == bs, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Index set does not match blocks"); }
+  for (i = 0; i < a->mbs; i++) PetscCheck(vary[i] == 0 || vary[i] == bs, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Index set does not match blocks");
   count = 0;
   for (i = 0; i < nrows; i++) {
     PetscInt j = irow[i] / bs;
@@ -228,7 +228,7 @@ PetscErrorCode MatCreateSubMatrix_SeqSBAIJ(Mat A, IS isrow, IS iscol, MatReuse s
 
   PetscCall(PetscArrayzero(vary, a->nbs));
   for (i = 0; i < ncols; i++) vary[icol[i] / bs]++;
-  for (i = 0; i < a->nbs; i++) { PetscCheck(vary[i] == 0 || vary[i] == bs, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Internal error in PETSc"); }
+  for (i = 0; i < a->nbs; i++) PetscCheck(vary[i] == 0 || vary[i] == bs, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Internal error in PETSc");
   count = 0;
   for (i = 0; i < ncols; i++) {
     PetscInt j = icol[i] / bs;
@@ -246,7 +246,7 @@ PetscErrorCode MatCreateSubMatrix_SeqSBAIJ(Mat A, IS isrow, IS iscol, MatReuse s
   if (isrow != iscol) {
     PetscBool isequal;
     PetscCall(ISEqual(isrow, iscol, &isequal));
-    if (!isequal) { PetscCall(MatSeqSBAIJZeroOps_Private(*B)); }
+    if (!isequal) PetscCall(MatSeqSBAIJZeroOps_Private(*B));
   }
   PetscFunctionReturn(0);
 }
@@ -255,9 +255,9 @@ PetscErrorCode MatCreateSubMatrices_SeqSBAIJ(Mat A, PetscInt n, const IS irow[],
   PetscInt i;
 
   PetscFunctionBegin;
-  if (scall == MAT_INITIAL_MATRIX) { PetscCall(PetscCalloc1(n + 1, B)); }
+  if (scall == MAT_INITIAL_MATRIX) PetscCall(PetscCalloc1(n + 1, B));
 
-  for (i = 0; i < n; i++) { PetscCall(MatCreateSubMatrix_SeqSBAIJ(A, irow[i], icol[i], scall, &(*B)[i])); }
+  for (i = 0; i < n; i++) PetscCall(MatCreateSubMatrix_SeqSBAIJ(A, irow[i], icol[i], scall, &(*B)[i]));
   PetscFunctionReturn(0);
 }
 
@@ -667,7 +667,7 @@ PetscErrorCode MatMult_SeqSBAIJ_N(Mat A, Vec xx, Vec zz) {
   v  = a->a;
   ii = a->i;
 
-  if (!a->mult_work) { PetscCall(PetscMalloc1(A->rmap->N + 1, &a->mult_work)); }
+  if (!a->mult_work) PetscCall(PetscMalloc1(A->rmap->N + 1, &a->mult_work));
   work = a->mult_work;
 
   for (i = 0; i < mbs; i++) {
@@ -1177,7 +1177,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_N(Mat A, Vec xx, Vec yy, Vec zz) {
   v  = a->a;
   ii = a->i;
 
-  if (!a->mult_work) { PetscCall(PetscMalloc1(A->rmap->n + 1, &a->mult_work)); }
+  if (!a->mult_work) PetscCall(PetscMalloc1(A->rmap->n + 1, &a->mult_work));
   work = a->mult_work;
 
   for (i = 0; i < mbs; i++) {

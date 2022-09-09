@@ -82,7 +82,7 @@ PetscErrorCode ISColoringDestroy(ISColoring *iscoloring) {
   }
 
   if ((*iscoloring)->is) {
-    for (i = 0; i < (*iscoloring)->n; i++) { PetscCall(ISDestroy(&(*iscoloring)->is[i])); }
+    for (i = 0; i < (*iscoloring)->n; i++) PetscCall(ISDestroy(&(*iscoloring)->is[i]));
     PetscCall(PetscFree((*iscoloring)->is));
   }
   if ((*iscoloring)->allocated) PetscCall(PetscFree((*iscoloring)->colors));
@@ -144,7 +144,7 @@ PetscErrorCode ISColoringView(ISColoring iscoloring, PetscViewer viewer) {
 
   PetscFunctionBegin;
   PetscValidPointer(iscoloring, 1);
-  if (!viewer) { PetscCall(PetscViewerASCIIGetStdout(iscoloring->comm, &viewer)); }
+  if (!viewer) PetscCall(PetscViewerASCIIGetStdout(iscoloring->comm, &viewer));
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
 
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
@@ -164,7 +164,7 @@ PetscErrorCode ISColoringView(ISColoring iscoloring, PetscViewer viewer) {
   }
 
   PetscCall(ISColoringGetIS(iscoloring, PETSC_USE_POINTER, PETSC_IGNORE, &is));
-  for (i = 0; i < iscoloring->n; i++) { PetscCall(ISView(iscoloring->is[i], viewer)); }
+  for (i = 0; i < iscoloring->n; i++) PetscCall(ISView(iscoloring->is[i], viewer));
   PetscCall(ISColoringRestoreIS(iscoloring, PETSC_USE_POINTER, &is));
   PetscFunctionReturn(0);
 }
@@ -225,7 +225,7 @@ PetscErrorCode ISColoringGetIS(ISColoring iscoloring, PetscCopyMode mode, PetscI
       IS              *is;
 
       if (PetscDefined(USE_DEBUG)) {
-        for (i = 0; i < n; i++) { PetscCheck(((PetscInt)colors[i]) < nc, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Coloring is our of range index %d value %d number colors %d", (int)i, (int)colors[i], (int)nc); }
+        for (i = 0; i < n; i++) PetscCheck(((PetscInt)colors[i]) < nc, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Coloring is our of range index %d value %d number colors %d", (int)i, (int)colors[i], (int)nc);
       }
 
       /* generate the lists of nodes for each color */
@@ -246,7 +246,7 @@ PetscErrorCode ISColoringGetIS(ISColoring iscoloring, PetscCopyMode mode, PetscI
       } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Not provided for this ISColoringType type");
 
       PetscCall(PetscMalloc1(nc, &is));
-      for (i = 0; i < nc; i++) { PetscCall(ISCreateGeneral(iscoloring->comm, mcolors[i], ii[i], PETSC_COPY_VALUES, is + i)); }
+      for (i = 0; i < nc; i++) PetscCall(ISCreateGeneral(iscoloring->comm, mcolors[i], ii[i], PETSC_COPY_VALUES, is + i));
 
       if (mode != PETSC_OWN_POINTER) iscoloring->is = is;
       *isis = is;
@@ -336,7 +336,7 @@ PetscErrorCode ISColoringCreate(MPI_Comm comm, PetscInt ncolors, PetscInt n, con
     PetscCallMPI(MPI_Recv(&base, 1, MPIU_INT, rank - 1, tag, comm, &status));
     top = base + n;
   }
-  if (rank < size - 1) { PetscCallMPI(MPI_Send(&top, 1, MPIU_INT, rank + 1, tag, comm)); }
+  if (rank < size - 1) PetscCallMPI(MPI_Send(&top, 1, MPIU_INT, rank + 1, tag, comm));
 
   /* compute the total number of colors */
   ncwork = 0;
@@ -426,14 +426,14 @@ PetscErrorCode ISBuildTwoSided(IS ito, IS toindx, IS *rows) {
   }
   nsends = tooffsets_tmp[size];
   PetscCall(PetscCalloc1(nsends, &send_indices));
-  if (toindx) { PetscCall(ISGetIndices(toindx, &toindx_indices)); }
+  if (toindx) PetscCall(ISGetIndices(toindx, &toindx_indices));
   for (i = 0; i < ito_ln; i++) {
     if (ito_indices[i] < 0) continue;
     target_rank                              = ito_indices[i];
     send_indices[tooffsets_tmp[target_rank]] = toindx ? toindx_indices[i] : (i + rstart);
     tooffsets_tmp[target_rank]++;
   }
-  if (toindx) { PetscCall(ISRestoreIndices(toindx, &toindx_indices)); }
+  if (toindx) PetscCall(ISRestoreIndices(toindx, &toindx_indices));
   PetscCall(ISRestoreIndices(ito, &ito_indices));
   PetscCall(PetscFree2(tosizes_tmp, tooffsets_tmp));
   PetscCall(PetscCommBuildTwoSided(comm, 2, MPIU_INT, nto, toranks, tosizes, &nfrom, &fromranks, &fromsizes));

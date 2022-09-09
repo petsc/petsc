@@ -218,7 +218,7 @@ static PetscErrorCode MatMult_SeqBAIJMKL_SpMV2(Mat A, Vec xx, Vec yy) {
   /* In some cases, we get to this point without mkl_sparse_optimize() having been called, so we check and then call
    * it if needed. Eventually, when everything in PETSc is properly updating the matrix state, we should probably
    * take a "lazy" approach to creation/updating of the MKL matrix handle and plan to always do it here (when needed). */
-  if (!baijmkl->sparse_optimized) { PetscCall(MatSeqBAIJMKL_create_mkl_handle(A)); }
+  if (!baijmkl->sparse_optimized) PetscCall(MatSeqBAIJMKL_create_mkl_handle(A));
 
   /* Call MKL SpMV2 executor routine to do the MatMult. */
   PetscCallMKL(mkl_sparse_x_mv(SPARSE_OPERATION_NON_TRANSPOSE, 1.0, baijmkl->bsrA, baijmkl->descr, x, 0.0, y));
@@ -248,7 +248,7 @@ static PetscErrorCode MatMultTranspose_SeqBAIJMKL_SpMV2(Mat A, Vec xx, Vec yy) {
   /* In some cases, we get to this point without mkl_sparse_optimize() having been called, so we check and then call
    * it if needed. Eventually, when everything in PETSc is properly updating the matrix state, we should probably
    * take a "lazy" approach to creation/updating of the MKL matrix handle and plan to always do it here (when needed). */
-  if (!baijmkl->sparse_optimized) { PetscCall(MatSeqBAIJMKL_create_mkl_handle(A)); }
+  if (!baijmkl->sparse_optimized) PetscCall(MatSeqBAIJMKL_create_mkl_handle(A));
 
   /* Call MKL SpMV2 executor routine to do the MatMultTranspose. */
   PetscCallMKL(mkl_sparse_x_mv(SPARSE_OPERATION_TRANSPOSE, 1.0, baijmkl->bsrA, baijmkl->descr, x, 0.0, y));
@@ -280,7 +280,7 @@ static PetscErrorCode MatMultAdd_SeqBAIJMKL_SpMV2(Mat A, Vec xx, Vec yy, Vec zz)
   /* In some cases, we get to this point without mkl_sparse_optimize() having been called, so we check and then call
    * it if needed. Eventually, when everything in PETSc is properly updating the matrix state, we should probably
    * take a "lazy" approach to creation/updating of the MKL matrix handle and plan to always do it here (when needed). */
-  if (!baijmkl->sparse_optimized) { PetscCall(MatSeqBAIJMKL_create_mkl_handle(A)); }
+  if (!baijmkl->sparse_optimized) PetscCall(MatSeqBAIJMKL_create_mkl_handle(A));
 
   /* Call MKL sparse BLAS routine to do the MatMult. */
   if (zz == yy) {
@@ -291,7 +291,7 @@ static PetscErrorCode MatMultAdd_SeqBAIJMKL_SpMV2(Mat A, Vec xx, Vec yy, Vec zz)
     /* zz and yy are different vectors, so we call mkl_sparse_x_mv with alpha=1.0 and beta=0.0, and then
      * we add the contents of vector yy to the result; MKL sparse BLAS does not have a MatMultAdd equivalent. */
     PetscCallMKL(mkl_sparse_x_mv(SPARSE_OPERATION_NON_TRANSPOSE, 1.0, baijmkl->bsrA, baijmkl->descr, x, 0.0, z));
-    for (i = 0; i < m; i++) { z[i] += y[i]; }
+    for (i = 0; i < m; i++) z[i] += y[i];
   }
 
   PetscCall(PetscLogFlops(2.0 * a->bs2 * a->nz));
@@ -322,7 +322,7 @@ static PetscErrorCode MatMultTransposeAdd_SeqBAIJMKL_SpMV2(Mat A, Vec xx, Vec yy
   /* In some cases, we get to this point without mkl_sparse_optimize() having been called, so we check and then call
    * it if needed. Eventually, when everything in PETSc is properly updating the matrix state, we should probably
    * take a "lazy" approach to creation/updating of the MKL matrix handle and plan to always do it here (when needed). */
-  if (!baijmkl->sparse_optimized) { PetscCall(MatSeqBAIJMKL_create_mkl_handle(A)); }
+  if (!baijmkl->sparse_optimized) PetscCall(MatSeqBAIJMKL_create_mkl_handle(A));
 
   /* Call MKL sparse BLAS routine to do the MatMult. */
   if (zz == yy) {
@@ -333,7 +333,7 @@ static PetscErrorCode MatMultTransposeAdd_SeqBAIJMKL_SpMV2(Mat A, Vec xx, Vec yy
     /* zz and yy are different vectors, so we call mkl_sparse_x_mv with alpha=1.0 and beta=0.0, and then
      * we add the contents of vector yy to the result; MKL sparse BLAS does not have a MatMultAdd equivalent. */
     PetscCallMKL(mkl_sparse_x_mv(SPARSE_OPERATION_TRANSPOSE, 1.0, baijmkl->bsrA, baijmkl->descr, x, 0.0, z));
-    for (i = 0; i < n; i++) { z[i] += y[i]; }
+    for (i = 0; i < n; i++) z[i] += y[i];
   }
 
   PetscCall(PetscLogFlops(2.0 * a->bs2 * a->nz));
@@ -415,17 +415,17 @@ static PetscErrorCode MatAssemblyEnd_SeqBAIJMKL(Mat A, MatAssemblyType mode) {
 }
 
 /*@C
-   MatCreateSeqBAIJMKL - Creates a sparse matrix of type SEQBAIJMKL.
-   This type inherits from BAIJ and is largely identical, but uses sparse BLAS
+   MatCreateSeqBAIJMKL - Creates a sparse matrix of type `MATSEQBAIJMKL`.
+   This type inherits from `MATSEQBAIJ` and is largely identical, but uses sparse BLAS
    routines from Intel MKL whenever possible.
-   MatMult, MatMultAdd, MatMultTranspose, and MatMultTransposeAdd
+   `MatMult()`, `MatMultAdd()`, `MatMultTranspose()`, and `MatMultTransposeAdd()`
    operations are currently supported.
    If the installed version of MKL supports the "SpMV2" sparse
    inspector-executor routines, then those are used by default.
    Default PETSc kernels are used otherwise.
 
    Input Parameters:
-+  comm - MPI communicator, set to PETSC_COMM_SELF
++  comm - MPI communicator, set to `PETSC_COMM_SELF`
 .  bs - size of block, the blocks are ALWAYS square. One can use MatSetBlockSizes() to set a different row and column blocksize but the row
           blocksize always defines the size of the blocks. The column blocksize sets the blocksize of the vectors obtained with MatCreateVecs()
 .  m - number of rows
@@ -437,13 +437,12 @@ static PetscErrorCode MatAssemblyEnd_SeqBAIJMKL(Mat A, MatAssemblyType mode) {
    Output Parameter:
 .  A - the matrix
 
-   It is recommended that one use the MatCreate(), MatSetType() and/or MatSetFromOptions(),
+   It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`,
    MatXXXXSetPreallocation() paradigm instead of this routine directly.
-   [MatXXXXSetPreallocation() is, for example, MatSeqAIJSetPreallocation]
+   [MatXXXXSetPreallocation() is, for example, `MatSeqBAIJSetPreallocation()`]
 
    Options Database Keys:
-+   -mat_no_unroll - uses code that does not unroll the loops in the
-                     block calculations (much slower)
++   -mat_no_unroll - uses code that does not unroll the loops in the block calculations (much slower)
 -   -mat_block_size - size of the blocks to use
 
    Level: intermediate
@@ -455,17 +454,16 @@ static PetscErrorCode MatAssemblyEnd_SeqBAIJMKL(Mat A, MatAssemblyType mode) {
 
    A nonzero block is any block that as 1 or more nonzeros in it
 
-   The block AIJ format is fully compatible with standard Fortran 77
+   The `MATSEQBAIJ` format is fully compatible with standard Fortran 77
    storage.  That is, the stored row and column indices can begin at
    either one (as in Fortran) or zero.  See the users' manual for details.
 
    Specify the preallocated storage with either nz or nnz (not both).
-   Set nz=PETSC_DEFAULT and nnz=NULL for PETSc to control dynamic memory
+   Set nz = `PETSC_DEFAULT` and nnz = NULL for PETSc to control dynamic memory
    allocation.  See Users-Manual: ch_mat for details.
    matrices.
 
 .seealso: `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatCreateBAIJ()`
-
 @*/
 PetscErrorCode MatCreateSeqBAIJMKL(MPI_Comm comm, PetscInt bs, PetscInt m, PetscInt n, PetscInt nz, const PetscInt nnz[], Mat *A) {
   PetscFunctionBegin;

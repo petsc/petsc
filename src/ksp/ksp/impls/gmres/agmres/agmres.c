@@ -370,14 +370,14 @@ static PetscErrorCode KSPAGMRESBuildHessenberg(KSP ksp) {
   while (j < max_k) {
     /* Real shifts */
     if (Ishift[j] == 0) {
-      for (i = 0; i <= j; i++) { *H(i, j) = *RLOC(i, j + 1) / Scale[j] + (Rshift[j] * *RLOC(i, j)); }
+      for (i = 0; i <= j; i++) *H(i, j) = *RLOC(i, j + 1) / Scale[j] + (Rshift[j] * *RLOC(i, j));
       *H(j + 1, j) = *RLOC(j + 1, j + 1) / Scale[j];
       j++;
     } else if (Ishift[j] > 0) {
-      for (i = 0; i <= j; i++) { *H(i, j) = *RLOC(i, j + 1) / Scale[j] + Rshift[j] * *RLOC(i, j); }
+      for (i = 0; i <= j; i++) *H(i, j) = *RLOC(i, j + 1) / Scale[j] + Rshift[j] * *RLOC(i, j);
       *H(j + 1, j) = *RLOC(j + 1, j + 1) / Scale[j];
       j++;
-      for (i = 0; i <= j; i++) { *H(i, j) = (*RLOC(i, j + 1) + Rshift[j - 1] * *RLOC(i, j) - Scale[j - 1] * Ishift[j - 1] * Ishift[j - 1] * *RLOC(i, j - 1)); }
+      for (i = 0; i <= j; i++) *H(i, j) = (*RLOC(i, j + 1) + Rshift[j - 1] * *RLOC(i, j) - Scale[j - 1] * Ishift[j - 1] * Ishift[j - 1] * *RLOC(i, j - 1));
       *H(j, j)     = (*RLOC(j, j + 1) + Rshift[j - 1] * *RLOC(j, j));
       *H(j + 1, j) = *RLOC(j + 1, j + 1);
       j++;
@@ -412,7 +412,7 @@ static PetscErrorCode KSPAGMRESBuildSoln(KSP ksp, PetscInt it) {
   PetscCall(PetscBLASIntCast(N + 1, &ldH));
   /* Save a copy of the Hessenberg matrix */
   for (j = 0; j < N - 1; j++) {
-    for (i = 0; i < N; i++) { *HS(i, j) = *H(i, j); }
+    for (i = 0; i < N; i++) *HS(i, j) = *H(i, j);
   }
   /* QR factorize the Hessenberg matrix */
   PetscCallBLAS("LAPACKgeqrf", LAPACKgeqrf_(&lC, &KspSize, agmres->hh_origin, &ldH, agmres->tau, agmres->work, &lwork, &info));

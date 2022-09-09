@@ -95,7 +95,7 @@ int main(int argc, char **args) {
 
     test:
       suffix: kok
-      requires: !sycl kokkos_kernels
+      requires: kokkos_kernels
       nsize: {{1 3 4}}
       args: -mat_type aijkokkos
 

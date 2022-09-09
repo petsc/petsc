@@ -18,7 +18,7 @@ typedef struct {
    MatPartitioningPTScotchSetImbalance - Sets the value of the load imbalance
    ratio to be used during strategy selection.
 
-   Collective on MatPartitioning
+   Collective on part
 
    Input Parameters:
 +  part - the partitioning context
@@ -32,7 +32,7 @@ typedef struct {
 
    Level: advanced
 
-.seealso: `MatPartitioningPTScotchSetStrategy()`, `MatPartitioningPTScotchGetImbalance()`
+.seealso: `MATPARTITIONINGSCOTCH`, `MatPartitioningPTScotchSetStrategy()`, `MatPartitioningPTScotchGetImbalance()`
 @*/
 PetscErrorCode MatPartitioningPTScotchSetImbalance(MatPartitioning part, PetscReal imb) {
   PetscFunctionBegin;
@@ -68,7 +68,7 @@ PetscErrorCode MatPartitioningPTScotchSetImbalance_PTScotch(MatPartitioning part
 
    Level: advanced
 
-.seealso: `MatPartitioningPTScotchSetImbalance()`
+.seealso: `MATPARTITIONINGSCOTCH`, `MatPartitioningPTScotchSetImbalance()`
 @*/
 PetscErrorCode MatPartitioningPTScotchGetImbalance(MatPartitioning part, PetscReal *imb) {
   PetscFunctionBegin;
@@ -89,7 +89,7 @@ PetscErrorCode MatPartitioningPTScotchGetImbalance_PTScotch(MatPartitioning part
 /*@
    MatPartitioningPTScotchSetStrategy - Sets the strategy to be used in PTScotch.
 
-   Collective on MatPartitioning
+   Collective on part
 
    Input Parameters:
 +  part - the partitioning context
@@ -108,10 +108,10 @@ PetscErrorCode MatPartitioningPTScotchGetImbalance_PTScotch(MatPartitioning part
 
    Level: advanced
 
-   Notes:
-   The default is MP_SCOTCH_QUALITY. See the PTScotch documentation for more information.
+   Note:
+   The default is `MP_SCOTCH_QUALITY`. See the PTScotch documentation for more information.
 
-.seealso: `MatPartitioningPTScotchSetImbalance()`, `MatPartitioningPTScotchGetStrategy()`
+.seealso: `MATPARTITIONINGSCOTCH`, `MatPartitioningPTScotchSetImbalance()`, `MatPartitioningPTScotchGetStrategy()`
 @*/
 PetscErrorCode MatPartitioningPTScotchSetStrategy(MatPartitioning part, MPPTScotchStrategyType strategy) {
   PetscFunctionBegin;
@@ -149,7 +149,7 @@ PetscErrorCode MatPartitioningPTScotchSetStrategy_PTScotch(MatPartitioning part,
 
    Level: advanced
 
-.seealso: `MatPartitioningPTScotchSetStrategy()`
+.seealso: `MATPARTITIONINGSCOTCH`, `MatPartitioningPTScotchSetStrategy()`
 @*/
 PetscErrorCode MatPartitioningPTScotchGetStrategy(MatPartitioning part, MPPTScotchStrategyType *strategy) {
   PetscFunctionBegin;
@@ -364,7 +364,7 @@ static PetscErrorCode MatPartitioningApply_PTScotch_Private(MatPartitioning part
     PetscInt *newlocals;
     PetscCall(PetscMalloc1(bs * mat->rmap->n, &newlocals));
     for (i = 0; i < mat->rmap->n; i++) {
-      for (j = 0; j < bs; j++) { newlocals[bs * i + j] = locals[i]; }
+      for (j = 0; j < bs; j++) newlocals[bs * i + j] = locals[i];
     }
     PetscCall(PetscFree(locals));
     PetscCall(ISCreateGeneral(pcomm, bs * mat->rmap->n, newlocals, PETSC_OWN_POINTER, partitioning));
@@ -384,7 +384,7 @@ static PetscErrorCode MatPartitioningApply_PTScotch_Private(MatPartitioning part
     PetscCall(ISDestroy(&ndis));
   }
 
-  if (!flg) { PetscCall(MatDestroy(&mat)); }
+  if (!flg) PetscCall(MatDestroy(&mat));
   PetscFunctionReturn(0);
 }
 
@@ -414,14 +414,15 @@ PetscErrorCode MatPartitioningDestroy_PTScotch(MatPartitioning part) {
 }
 
 /*MC
-   MATPARTITIONINGPTSCOTCH - Creates a partitioning context via the external package SCOTCH.
+   MATPARTITIONINGPTSCOTCH - Creates a partitioning context that uses the external package SCOTCH.
 
    Level: beginner
 
-   Notes:
+   Note:
     See http://www.labri.fr/perso/pelegrin/scotch/
 
-.seealso: `MatPartitioningSetType()`, `MatPartitioningType`
+.seealso: `MatPartitioningSetType()`, `MatPartitioningType`, `MatPartitioningPTScotchSetImbalance()`, `MatPartitioningPTScotchGetImbalance()`,
+          `MatPartitioningPTScotchSetStrategy()`, `MatPartitioningPTScotchGetStrategy()`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatPartitioningCreate_PTScotch(MatPartitioning part) {

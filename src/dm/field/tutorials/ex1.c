@@ -144,8 +144,8 @@ static PetscErrorCode radiusSquared(PetscInt dim, PetscReal time, const PetscRea
   PetscReal r2 = 0.;
 
   PetscFunctionBegin;
-  for (i = 0; i < dim; i++) { r2 += PetscSqr(x[i]); }
-  for (i = 0; i < Nf; i++) { u[i] = (i + 1) * r2; }
+  for (i = 0; i < dim; i++) r2 += PetscSqr(x[i]);
+  for (i = 0; i < Nf; i++) u[i] = (i + 1) * r2;
   PetscFunctionReturn(0);
 }
 
@@ -167,7 +167,7 @@ static PetscErrorCode TestShellEvaluate(DMField field, Vec points, PetscDataType
   for (i = 0; i < n; i++) {
     PetscReal r2 = 0.;
 
-    for (j = 0; j < dim; j++) { r2 += PetscSqr(PetscRealPart(x[i * dim + j])); }
+    for (j = 0; j < dim; j++) r2 += PetscSqr(PetscRealPart(x[i * dim + j]));
     for (j = 0; j < Nc; j++) {
       PetscReal m = PetscRealPart(mult[j]);
       if (B) {

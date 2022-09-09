@@ -255,18 +255,18 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4(Mat B, Mat A, const MatFactorInfo *i
     /* L part */
     nz    = bi[i + 1] - bi[i];
     bjtmp = bj + bi[i];
-    for (j = 0; j < nz; j++) { PetscCall(PetscArrayzero(rtmp + bs2 * bjtmp[j], bs2)); }
+    for (j = 0; j < nz; j++) PetscCall(PetscArrayzero(rtmp + bs2 * bjtmp[j], bs2));
 
     /* U part */
     nz    = bdiag[i] - bdiag[i + 1];
     bjtmp = bj + bdiag[i + 1] + 1;
-    for (j = 0; j < nz; j++) { PetscCall(PetscArrayzero(rtmp + bs2 * bjtmp[j], bs2)); }
+    for (j = 0; j < nz; j++) PetscCall(PetscArrayzero(rtmp + bs2 * bjtmp[j], bs2));
 
     /* load in initial (unfactored row) */
     nz    = ai[r[i] + 1] - ai[r[i]];
     ajtmp = aj + ai[r[i]];
     v     = aa + bs2 * ai[r[i]];
-    for (j = 0; j < nz; j++) { PetscCall(PetscArraycpy(rtmp + bs2 * ic[ajtmp[j]], v + bs2 * j, bs2)); }
+    for (j = 0; j < nz; j++) PetscCall(PetscArraycpy(rtmp + bs2 * ic[ajtmp[j]], v + bs2 * j, bs2));
 
     /* elimination */
     bjtmp = bj + bi[i];
@@ -304,7 +304,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4(Mat B, Mat A, const MatFactorInfo *i
     pv = b->a + bs2 * bi[i];
     pj = b->j + bi[i];
     nz = bi[i + 1] - bi[i];
-    for (j = 0; j < nz; j++) { PetscCall(PetscArraycpy(pv + bs2 * j, rtmp + bs2 * pj[j], bs2)); }
+    for (j = 0; j < nz; j++) PetscCall(PetscArraycpy(pv + bs2 * j, rtmp + bs2 * pj[j], bs2));
 
     /* Mark diagonal and invert diagonal for simpler triangular solves */
     pv = b->a + bs2 * bdiag[i];
@@ -317,7 +317,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4(Mat B, Mat A, const MatFactorInfo *i
     pv = b->a + bs2 * (bdiag[i + 1] + 1);
     pj = b->j + bdiag[i + 1] + 1;
     nz = bdiag[i] - bdiag[i + 1] - 1;
-    for (j = 0; j < nz; j++) { PetscCall(PetscArraycpy(pv + bs2 * j, rtmp + bs2 * pj[j], bs2)); }
+    for (j = 0; j < nz; j++) PetscCall(PetscArraycpy(pv + bs2 * j, rtmp + bs2 * pj[j], bs2));
   }
 
   PetscCall(PetscFree2(rtmp, mwork));
@@ -566,18 +566,18 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat B, Mat A, const 
     /* L part */
     nz    = bi[i + 1] - bi[i];
     bjtmp = bj + bi[i];
-    for (j = 0; j < nz; j++) { PetscCall(PetscArrayzero(rtmp + bs2 * bjtmp[j], bs2)); }
+    for (j = 0; j < nz; j++) PetscCall(PetscArrayzero(rtmp + bs2 * bjtmp[j], bs2));
 
     /* U part */
     nz    = bdiag[i] - bdiag[i + 1];
     bjtmp = bj + bdiag[i + 1] + 1;
-    for (j = 0; j < nz; j++) { PetscCall(PetscArrayzero(rtmp + bs2 * bjtmp[j], bs2)); }
+    for (j = 0; j < nz; j++) PetscCall(PetscArrayzero(rtmp + bs2 * bjtmp[j], bs2));
 
     /* load in initial (unfactored row) */
     nz    = ai[i + 1] - ai[i];
     ajtmp = aj + ai[i];
     v     = aa + bs2 * ai[i];
-    for (j = 0; j < nz; j++) { PetscCall(PetscArraycpy(rtmp + bs2 * ajtmp[j], v + bs2 * j, bs2)); }
+    for (j = 0; j < nz; j++) PetscCall(PetscArraycpy(rtmp + bs2 * ajtmp[j], v + bs2 * j, bs2));
 
     /* elimination */
     bjtmp = bj + bi[i];
@@ -615,7 +615,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat B, Mat A, const 
     pv = b->a + bs2 * bi[i];
     pj = b->j + bi[i];
     nz = bi[i + 1] - bi[i];
-    for (j = 0; j < nz; j++) { PetscCall(PetscArraycpy(pv + bs2 * j, rtmp + bs2 * pj[j], bs2)); }
+    for (j = 0; j < nz; j++) PetscCall(PetscArraycpy(pv + bs2 * j, rtmp + bs2 * pj[j], bs2));
 
     /* Mark diagonal and invert diagonal for simpler triangular solves */
     pv = b->a + bs2 * bdiag[i];
@@ -628,7 +628,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat B, Mat A, const 
     pv = b->a + bs2 * (bdiag[i + 1] + 1);
     pj = b->j + bdiag[i + 1] + 1;
     nz = bdiag[i] - bdiag[i + 1] - 1;
-    for (j = 0; j < nz; j++) { PetscCall(PetscArraycpy(pv + bs2 * j, rtmp + bs2 * pj[j], bs2)); }
+    for (j = 0; j < nz; j++) PetscCall(PetscArraycpy(pv + bs2 * j, rtmp + bs2 * pj[j], bs2));
   }
   PetscCall(PetscFree2(rtmp, mwork));
 
@@ -1551,7 +1551,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj(Mat C, Mat A
   /*    if ((unsigned long)bj==(unsigned long)aj) { */
   /*      colscale = 4; */
   /*    } */
-  if ((unsigned long)bj == (unsigned long)aj) { return (MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj_Inplace(C)); }
+  if ((unsigned long)bj == (unsigned long)aj) return (MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj_Inplace(C));
 
   for (i = 0; i < n; i++) {
     nz    = bi[i + 1] - bi[i];

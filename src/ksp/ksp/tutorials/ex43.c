@@ -97,7 +97,7 @@ static PetscErrorCode glvis_extract_eta(PetscObject oV, PetscInt nf, PetscObject
   cum = 0;
   for (ej = sey; ej < sey + my; ej++) {
     for (ei = sex; ei < sex + mx; ei++) {
-      for (p = 0; p < GAUSS_POINTS; p++) { array[cum++] = props[ej][ei].eta[p]; }
+      for (p = 0; p < GAUSS_POINTS; p++) array[cum++] = props[ej][ei].eta[p];
     }
   }
   PetscCall(VecRestoreArray(Vf[0], &array));
@@ -568,7 +568,7 @@ static void FormDivergenceOperatorQ1(PetscScalar De[], PetscScalar coords[]) {
   nc_g = P_DOFS * NODES_PER_EL;
 
   for (i = 0; i < nr_g; i++) {
-    for (j = 0; j < nc_g; j++) { De[nr_g * j + i] = Ge[nc_g * i + j]; }
+    for (j = 0; j < nc_g; j++) De[nr_g * j + i] = Ge[nc_g * i + j];
   }
 }
 
@@ -592,7 +592,7 @@ static void FormStabilisationOperatorQ1(PetscScalar Ke[], PetscScalar coords[], 
     fac = gp_weight[p] * J_p;
 
     for (i = 0; i < NODES_PER_EL; i++) {
-      for (j = 0; j < NODES_PER_EL; j++) { Ke[NODES_PER_EL * i + j] = Ke[NODES_PER_EL * i + j] - fac * (Ni_p[i] * Ni_p[j] - 0.0625); }
+      for (j = 0; j < NODES_PER_EL; j++) Ke[NODES_PER_EL * i + j] = Ke[NODES_PER_EL * i + j] - fac * (Ni_p[i] * Ni_p[j] - 0.0625);
     }
   }
 
@@ -602,7 +602,7 @@ static void FormStabilisationOperatorQ1(PetscScalar Ke[], PetscScalar coords[], 
   eta_avg = (1.0 / ((PetscScalar)ngp)) * eta_avg;
   fac     = 1.0 / eta_avg;
   for (i = 0; i < NODES_PER_EL; i++) {
-    for (j = 0; j < NODES_PER_EL; j++) { Ke[NODES_PER_EL * i + j] = fac * Ke[NODES_PER_EL * i + j]; }
+    for (j = 0; j < NODES_PER_EL; j++) Ke[NODES_PER_EL * i + j] = fac * Ke[NODES_PER_EL * i + j];
   }
 }
 
@@ -626,7 +626,7 @@ static void FormScaledMassMatrixOperatorQ1(PetscScalar Ke[], PetscScalar coords[
     fac = gp_weight[p] * J_p;
 
     for (i = 0; i < NODES_PER_EL; i++) {
-      for (j = 0; j < NODES_PER_EL; j++) { Ke[NODES_PER_EL * i + j] = Ke[NODES_PER_EL * i + j] - fac * Ni_p[i] * Ni_p[j]; }
+      for (j = 0; j < NODES_PER_EL; j++) Ke[NODES_PER_EL * i + j] = Ke[NODES_PER_EL * i + j] - fac * Ni_p[i] * Ni_p[j];
     }
   }
 
@@ -636,7 +636,7 @@ static void FormScaledMassMatrixOperatorQ1(PetscScalar Ke[], PetscScalar coords[
   eta_avg = (1.0 / ((PetscScalar)ngp)) * eta_avg;
   fac     = 1.0 / eta_avg;
   for (i = 0; i < NODES_PER_EL; i++) {
-    for (j = 0; j < NODES_PER_EL; j++) { Ke[NODES_PER_EL * i + j] = fac * Ke[NODES_PER_EL * i + j]; }
+    for (j = 0; j < NODES_PER_EL; j++) Ke[NODES_PER_EL * i + j] = fac * Ke[NODES_PER_EL * i + j];
   }
 }
 
@@ -1458,7 +1458,7 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx, PetscInt my) {
         PetscCall(MatZeroRowsIS(B, vel, 0.0, NULL, NULL));
         PetscCall(ISDestroy(&vel));
         PetscCall(PCBDDCSetDivergenceMat(pc, B, PETSC_FALSE, NULL));
-        for (i = 0; i < nf; i++) { PetscCall(ISDestroy(&fields[i])); }
+        for (i = 0; i < nf; i++) PetscCall(ISDestroy(&fields[i]));
         PetscCall(PetscFree(fields));
       }
     }
@@ -1518,7 +1518,7 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx, PetscInt my) {
     PetscCall(VecView(X, viewer));
     PetscCall(PetscViewerDestroy(&viewer));
   }
-  if (output_gnuplot) { PetscCall(DMDAViewGnuplot2d(da_Stokes, X, "Velocity solution for Stokes eqn.", "X")); }
+  if (output_gnuplot) PetscCall(DMDAViewGnuplot2d(da_Stokes, X, "Velocity solution for Stokes eqn.", "X"));
 
   if (glvis) {
     PetscViewer view;
@@ -1549,7 +1549,7 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx, PetscInt my) {
     PetscCall(PetscOptionsGetInt(NULL, NULL, "-solcx_nz", &opts_nz, NULL));
 
     PetscCall(DMDACreateSolCx(opts_eta0, opts_eta1, opts_xc, opts_nz, mx, my, &da_Stokes_analytic, &X_analytic));
-    if (output_gnuplot) { PetscCall(DMDAViewGnuplot2d(da_Stokes_analytic, X_analytic, "Analytic solution for Stokes eqn.", "X_analytic")); }
+    if (output_gnuplot) PetscCall(DMDAViewGnuplot2d(da_Stokes_analytic, X_analytic, "Analytic solution for Stokes eqn.", "X_analytic"));
     PetscCall(DMDAIntegrateErrors(da_Stokes_analytic, X, X_analytic));
 
     PetscCall(VecAXPY(X_analytic, -1.0, X));

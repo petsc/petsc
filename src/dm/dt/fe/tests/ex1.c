@@ -259,7 +259,7 @@ static PetscErrorCode TestIntegration2(DM dm, PetscInt cbs, PetscInt its) {
   PetscCall(PetscLogStagePush(stage));
   PetscCall(DMGetLocalVector(dm, &X));
   PetscCall(DMGetLocalVector(dm, &F));
-  for (i = 0; i < its; ++i) { PetscCall(DMPlexSNESComputeResidualFEM(dm, X, F, NULL)); }
+  for (i = 0; i < its; ++i) PetscCall(DMPlexSNESComputeResidualFEM(dm, X, F, NULL));
   PetscCall(DMRestoreLocalVector(dm, &X));
   PetscCall(DMRestoreLocalVector(dm, &F));
   PetscCall(PetscLogStagePop());

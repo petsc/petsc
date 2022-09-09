@@ -27,7 +27,7 @@ PetscErrorCode AOView_Basic(AO ao, PetscViewer viewer) {
     if (iascii) {
       PetscCall(PetscViewerASCIIPrintf(viewer, "Number of elements in ordering %" PetscInt_FMT "\n", ao->N));
       PetscCall(PetscViewerASCIIPrintf(viewer, "PETSc->App  App->PETSc\n"));
-      for (i = 0; i < ao->N; i++) { PetscCall(PetscViewerASCIIPrintf(viewer, "%3" PetscInt_FMT "  %3" PetscInt_FMT "    %3" PetscInt_FMT "  %3" PetscInt_FMT "\n", i, aobasic->app[i], i, aobasic->petsc[i])); }
+      for (i = 0; i < ao->N; i++) PetscCall(PetscViewerASCIIPrintf(viewer, "%3" PetscInt_FMT "  %3" PetscInt_FMT "    %3" PetscInt_FMT "  %3" PetscInt_FMT "\n", i, aobasic->app[i], i, aobasic->petsc[i]));
     }
   }
   PetscCall(PetscViewerFlush(viewer));
@@ -211,11 +211,11 @@ PETSC_EXTERN PetscErrorCode AOCreate_Basic(AO ao) {
 
     PetscCall(PetscArraycpy(sorted, allpetsc, N));
     PetscCall(PetscSortInt(N, sorted));
-    for (i = 0; i < N; i++) { PetscCheck(sorted[i] == i, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "PETSc ordering requires a permutation of numbers 0 to N-1\n it is missing %" PetscInt_FMT " has %" PetscInt_FMT, i, sorted[i]); }
+    for (i = 0; i < N; i++) PetscCheck(sorted[i] == i, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "PETSc ordering requires a permutation of numbers 0 to N-1\n it is missing %" PetscInt_FMT " has %" PetscInt_FMT, i, sorted[i]);
 
     PetscCall(PetscArraycpy(sorted, allapp, N));
     PetscCall(PetscSortInt(N, sorted));
-    for (i = 0; i < N; i++) { PetscCheck(sorted[i] == i, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Application ordering requires a permutation of numbers 0 to N-1\n it is missing %" PetscInt_FMT " has %" PetscInt_FMT, i, sorted[i]); }
+    for (i = 0; i < N; i++) PetscCheck(sorted[i] == i, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Application ordering requires a permutation of numbers 0 to N-1\n it is missing %" PetscInt_FMT " has %" PetscInt_FMT, i, sorted[i]);
 
     PetscCall(PetscFree(sorted));
   }
@@ -232,7 +232,7 @@ PETSC_EXTERN PetscErrorCode AOCreate_Basic(AO ao) {
     PetscCheck(!aobasic->petsc[ia], PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Duplicate in Application ordering at position %" PetscInt_FMT ". Already mapped to %" PetscInt_FMT ", not %" PetscInt_FMT ".", i, aobasic->petsc[ia] - 1, ip);
     aobasic->petsc[ia] = ip + 1;
   }
-  if (napp && !mypetsc) { PetscCall(PetscFree(petsc)); }
+  if (napp && !mypetsc) PetscCall(PetscFree(petsc));
   PetscCall(PetscFree2(allpetsc, allapp));
   /* shift indices down by one */
   for (i = 0; i < N; i++) {
@@ -287,7 +287,7 @@ PetscErrorCode AOCreateBasic(MPI_Comm comm, PetscInt napp, const PetscInt myapp[
   }
   PetscCall(AOCreateBasicIS(isapp, ispetsc, aoout));
   PetscCall(ISDestroy(&isapp));
-  if (mypetsc) { PetscCall(ISDestroy(&ispetsc)); }
+  if (mypetsc) PetscCall(ISDestroy(&ispetsc));
   PetscFunctionReturn(0);
 }
 

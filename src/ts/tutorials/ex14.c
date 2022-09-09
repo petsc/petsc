@@ -636,7 +636,7 @@ static PetscErrorCode THIFixGhosts(THI thi, DM da3, DM da2, Vec X3, Vec X2) {
   PetscCall(DMDAVecGetArray(da2, X2, &x2));
   for (i = info.gzs; i < info.gzs + info.gzm; i++) {
     if (i > -1 && i < info.mz) continue;
-    for (j = info.gys; j < info.gys + info.gym; j++) { x2[i][j].b += PetscSinReal(thi->alpha) * thi->Lx * (i < 0 ? 1.0 : -1.0); }
+    for (j = info.gys; j < info.gys + info.gym; j++) x2[i][j].b += PetscSinReal(thi->alpha) * thi->Lx * (i < 0 ? 1.0 : -1.0);
   }
   PetscCall(DMDAVecRestoreArray(da2, X2, &x2));
   /* PetscCall(VecView(X2,PETSC_VIEWER_STDOUT_WORLD)); */
@@ -1343,7 +1343,7 @@ static PetscErrorCode THIDAVecView_VTK_XML(THI thi, DM pack, Vec X, const char f
       PetscScalar(*y2)[PRMNODE_SIZE];
       MPI_Status status;
 
-      if (r) { PetscCallMPI(MPI_Recv(range, 6, MPIU_INT, r, tag, comm, MPI_STATUS_IGNORE)); }
+      if (r) PetscCallMPI(MPI_Recv(range, 6, MPIU_INT, r, tag, comm, MPI_STATUS_IGNORE));
       zs = range[0];
       ys = range[1];
       xs = range[2];
@@ -1389,11 +1389,11 @@ static PetscErrorCode THIDAVecView_VTK_XML(THI thi, DM pack, Vec X, const char f
       { /* Velocity and rank (3D) */
         PetscCall(PetscViewerASCIIPrintf(viewer3, "      <PointData>\n"));
         PetscCall(PetscViewerASCIIPrintf(viewer3, "        <DataArray type=\"Float32\" Name=\"velocity\" NumberOfComponents=\"3\" format=\"ascii\">\n"));
-        for (i = 0; i < nn / dof; i++) { PetscCall(PetscViewerASCIIPrintf(viewer3, "%f %f %f\n", (double)(PetscRealPart(y3[i].u) * units->year / units->meter), (double)(PetscRealPart(y3[i].v) * units->year / units->meter), 0.0)); }
+        for (i = 0; i < nn / dof; i++) PetscCall(PetscViewerASCIIPrintf(viewer3, "%f %f %f\n", (double)(PetscRealPart(y3[i].u) * units->year / units->meter), (double)(PetscRealPart(y3[i].v) * units->year / units->meter), 0.0));
         PetscCall(PetscViewerASCIIPrintf(viewer3, "        </DataArray>\n"));
 
         PetscCall(PetscViewerASCIIPrintf(viewer3, "        <DataArray type=\"Int32\" Name=\"rank\" NumberOfComponents=\"1\" format=\"ascii\">\n"));
-        for (i = 0; i < nn; i += dof) { PetscCall(PetscViewerASCIIPrintf(viewer3, "%" PetscInt_FMT "\n", r)); }
+        for (i = 0; i < nn; i += dof) PetscCall(PetscViewerASCIIPrintf(viewer3, "%" PetscInt_FMT "\n", r));
         PetscCall(PetscViewerASCIIPrintf(viewer3, "        </DataArray>\n"));
         PetscCall(PetscViewerASCIIPrintf(viewer3, "      </PointData>\n"));
       }
@@ -1404,7 +1404,7 @@ static PetscErrorCode THIDAVecView_VTK_XML(THI thi, DM pack, Vec X, const char f
           const char *fieldname;
           PetscCall(DMDAGetFieldName(da2, f, &fieldname));
           PetscCall(PetscViewerASCIIPrintf(viewer2, "        <DataArray type=\"Float32\" Name=\"%s\" format=\"ascii\">\n", fieldname));
-          for (i = 0; i < nn2 / PRMNODE_SIZE; i++) { PetscCall(PetscViewerASCIIPrintf(viewer2, "%g\n", (double)y2[i][f])); }
+          for (i = 0; i < nn2 / PRMNODE_SIZE; i++) PetscCall(PetscViewerASCIIPrintf(viewer2, "%g\n", (double)y2[i][f]));
           PetscCall(PetscViewerASCIIPrintf(viewer2, "        </DataArray>\n"));
         }
         PetscCall(PetscViewerASCIIPrintf(viewer2, "      </PointData>\n"));

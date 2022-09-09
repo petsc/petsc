@@ -65,7 +65,7 @@ int main(int argc, char **argv) {
     /* The edges have no degrees of freedom */
     PetscCall(DMNetworkAddComponent(network, edges[e], ecompkey, NULL, 1));
   }
-  for (v = 0; v < nv; v++) { PetscCall(DMNetworkAddComponent(network, nodes[v], vcompkey, NULL, 2)); }
+  for (v = 0; v < nv; v++) PetscCall(DMNetworkAddComponent(network, nodes[v], vcompkey, NULL, 2));
 
   PetscCall(DMSetUp(network));
   PetscCall(DMNetworkGetPlex(network, &plex));

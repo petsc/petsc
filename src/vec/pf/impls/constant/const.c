@@ -88,7 +88,7 @@ static PetscErrorCode PFView_Identity(void *value, PetscViewer viewer) {
 
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) { PetscCall(PetscViewerASCIIPrintf(viewer, "Identity function\n")); }
+  if (iascii) PetscCall(PetscViewerASCIIPrintf(viewer, "Identity function\n"));
   PetscFunctionReturn(0);
 }
 static PetscErrorCode PFDestroy_Identity(void *value) {

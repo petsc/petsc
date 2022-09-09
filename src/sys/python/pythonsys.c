@@ -13,7 +13,7 @@ static PetscErrorCode PetscPythonFindExecutable(char pythonexe[], size_t len) {
   /* get the path for the Python interpreter executable */
   PetscCall(PetscStrncpy(pythonexe, PETSC_PYTHON_EXE, len));
   PetscCall(PetscOptionsGetString(NULL, NULL, "-python", pythonexe, len, &flag));
-  if (!flag || pythonexe[0] == 0) { PetscCall(PetscStrncpy(pythonexe, PETSC_PYTHON_EXE, len)); }
+  if (!flag || pythonexe[0] == 0) PetscCall(PetscStrncpy(pythonexe, PETSC_PYTHON_EXE, len));
   PetscFunctionReturn(0);
 }
 
@@ -60,10 +60,10 @@ static PetscErrorCode PetscPythonFindLibrary(const char pythonexe[], char python
 #endif
 
   PetscCall(PetscPythonFindLibraryName(pythonexe, cmdline1, pythonlib, pl, &found));
-  if (!found) { PetscCall(PetscPythonFindLibraryName(pythonexe, cmdline2, pythonlib, pl, &found)); }
-  if (!found) { PetscCall(PetscPythonFindLibraryName(pythonexe, cmdline3, pythonlib, pl, &found)); }
-  if (!found) { PetscCall(PetscPythonFindLibraryName(pythonexe, cmdline4, pythonlib, pl, &found)); }
-  if (!found) { PetscCall(PetscPythonFindLibraryName(pythonexe, cmdline5, pythonlib, pl, &found)); }
+  if (!found) PetscCall(PetscPythonFindLibraryName(pythonexe, cmdline2, pythonlib, pl, &found));
+  if (!found) PetscCall(PetscPythonFindLibraryName(pythonexe, cmdline3, pythonlib, pl, &found));
+  if (!found) PetscCall(PetscPythonFindLibraryName(pythonexe, cmdline4, pythonlib, pl, &found));
+  if (!found) PetscCall(PetscPythonFindLibraryName(pythonexe, cmdline5, pythonlib, pl, &found));
   PetscCall(PetscInfo(NULL, "Python library  %s found %d\n", pythonlib, found));
   PetscFunctionReturn(0);
 }
@@ -141,10 +141,11 @@ static char      PetscPythonLib[PETSC_MAX_PATH_LEN] = {0};
 static PetscBool PetscBeganPython                   = PETSC_FALSE;
 
 /*@C
-  PetscPythonFinalize - Finalize Python.
+  PetscPythonFinalize - Finalize PETSc for use with Python.
 
   Level: intermediate
 
+.seealso: `PetscPythonInitialize()`, `PetscPythonPrintError()`
 @*/
 PetscErrorCode PetscPythonFinalize(void) {
   PetscFunctionBegin;
@@ -156,7 +157,7 @@ PetscErrorCode PetscPythonFinalize(void) {
 }
 
 /*@C
-  PetscPythonInitialize - Initialize Python and import petsc4py.
+  PetscPythonInitialize - Initialize Python for use with PETSc and import petsc4py.
 
    Input Parameters:
 +  pyexe - path to the Python interpreter executable, or NULL.
@@ -164,6 +165,7 @@ PetscErrorCode PetscPythonFinalize(void) {
 
   Level: intermediate
 
+.seealso: `PetscPythonFinalize()`, `PetscPythonPrintError()`
 @*/
 PetscErrorCode PetscPythonInitialize(const char pyexe[], const char pylib[]) {
   PyObject *module = NULL;
@@ -245,10 +247,11 @@ PetscErrorCode PetscPythonInitialize(const char pyexe[], const char pylib[]) {
 }
 
 /*@C
-  PetscPythonPrintError - Print Python errors.
+  PetscPythonPrintError - Print any current Python errors.
 
   Level: developer
 
+.seealso: `PetscPythonInitialize()`, `PetscPythonFinalize()`
 @*/
 PetscErrorCode PetscPythonPrintError(void) {
   PyObject *exc = NULL, *val = NULL, *tb = NULL;
@@ -269,10 +272,11 @@ PETSC_EXTERN PetscErrorCode (*PetscPythonMonitorSet_C)(PetscObject, const char[]
 PetscErrorCode (*PetscPythonMonitorSet_C)(PetscObject, const char[]) = NULL;
 
 /*@C
-  PetscPythonMonitorSet - Set Python monitor
+  PetscPythonMonitorSet - Set a Python monitor for a `PetscObject`
 
   Level: developer
 
+.seealso: `PetscPythonInitialize()`, `PetscPythonFinalize()`, `PetscPythonPrintError()`
 @*/
 PetscErrorCode PetscPythonMonitorSet(PetscObject obj, const char url[]) {
   PetscFunctionBegin;

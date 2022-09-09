@@ -125,7 +125,7 @@ int main(int argc, char **args) {
   PetscCall(MatSetFromOptions(B));
   PetscCall(MatSetUp(B));
   v = 1.0;
-  for (Ii = 0; Ii < dim; Ii++) { PetscCall(MatSetValues(B, 1, &Ii, 1, &Ii, &v, ADD_VALUES)); }
+  for (Ii = 0; Ii < dim; Ii++) PetscCall(MatSetValues(B, 1, &Ii, 1, &Ii, &v, ADD_VALUES));
 
   /* Solve standard eigenvalue problem: A*x = lambda*x */
   /*===================================================*/
@@ -219,7 +219,7 @@ int main(int argc, char **args) {
   PetscCall(PetscFree(evecs));
 
   /* Free work space. */
-  if (TestZHEEVX || TestZHEGVX) { PetscCall(PetscFree(evecs_array)); }
+  if (TestZHEEVX || TestZHEGVX) PetscCall(PetscFree(evecs_array));
   PetscCall(PetscFree(evals));
   PetscCall(PetscFree(work));
   PetscCall(MatDestroy(&A_dense));
@@ -287,7 +287,7 @@ PetscErrorCode CkEigenSolutions(PetscInt cklvl, Mat A, PetscInt il, PetscInt iu,
       norm = PetscAbs(norm);
       if (norm > norm_max) norm_max = norm;
       /* sniff, and bark if necessary */
-      if (norm > tols[0]) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "  residual violation: %" PetscInt_FMT ", resi: %g\n", i, norm)); }
+      if (norm > tols[0]) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "  residual violation: %" PetscInt_FMT ", resi: %g\n", i, norm));
     }
     PetscCall(PetscPrintf(PETSC_COMM_SELF, "    max_resi:                    %g\n", (double)norm_max));
     break;

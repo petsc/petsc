@@ -6,13 +6,17 @@ class Configure(config.base.Configure):
     config.base.Configure.__init__(self, framework)
     self.headerPrefix   = ''
     self.substPrefix    = ''
+    self.have__fp16     = 0
     self.have__float128 = 0
     return
 
   def __str1__(self):
     output  = '  Scalar type: ' + self.scalartype + '\n'
     output += '  Precision: ' + self.precision + '\n'
-    if self.have__float128 and not self.precision == '__float128': output += '  Support for __float128\n'
+    support = []
+    if self.have__fp16 and not self.precision == '__fp16': support.append('__fp16')
+    if self.have__float128 and not self.precision == '__float128': support.append('__float128')
+    if not len(support) == 0: output += '  Support for ' + ' and '.join(support) + '\n'
     return output
 
   def setupHelp(self, help):
@@ -86,7 +90,7 @@ class Configure(config.base.Configure):
       if hasattr(self.compilers, 'FC'):
         self.libraries.pushLanguage('FC')
         self.log.write('Checking Fortran works with quadmath library\n')
-        if self.libraries.check('quadmath','     ',call = '      real*16 s,w; w = 2.0 ;s = cos(w)'):
+        if self.libraries.check('quadmath','     ',call = '      real*16 s,w; w = 2.0; s = cos(w)'):
           self.log.write('Fortran works with quadmath library\n')
         else:
           self.have__float128 = 0
@@ -96,14 +100,23 @@ class Configure(config.base.Configure):
           self.libraries.add('quadmath','logq',prototype='#include <quadmath.h>',call='__float128 f; logq(f);')
           self.addDefine('HAVE_REAL___FLOAT128', '1')
 
+    self.log.write('Checking C compiler works with __fp16\n')
+    self.have__fp16 = 0
+    if self.libraries.check('','',call='__fp16 f = 1.0, g; g = ret___fp16(f);',prototype='static __fp16 ret___fp16(__fp16 f) { return f; }'):
+      self.have__fp16 = 1
+      self.addDefine('HAVE_REAL___FP16', '1')
+
     self.precision = self.framework.argDB['with-precision'].lower()
     if self.precision == '__fp16':  # supported by gcc trunk
       if self.scalartype == 'complex':
         raise RuntimeError('__fp16 can only be used with real numbers, not complex')
       if hasattr(self.compilers, 'FC'):
         raise RuntimeError('__fp16 can only be used with C compiler, not Fortran')
-      self.addDefine('USE_REAL___FP16', '1')
-      self.addMakeMacro('PETSC_SCALAR_SIZE', '16')
+      if self.have__fp16:
+        self.addDefine('USE_REAL___FP16', '1')
+        self.addMakeMacro('PETSC_SCALAR_SIZE', '16')
+      else:
+        raise RuntimeError('__fp16 support not found, cannot proceed --with-precision=__fp16')
     elif self.precision == 'single':
       self.addDefine('USE_REAL_SINGLE', '1')
       self.addMakeMacro('PETSC_SCALAR_SIZE', '32')

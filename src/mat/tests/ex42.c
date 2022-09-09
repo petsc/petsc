@@ -56,12 +56,12 @@ int main(int argc, char **args) {
   PetscCall(PetscMalloc1(nd, &is1));
   PetscCall(PetscMalloc1(nd, &is2));
   PetscCall(PetscMalloc1(m, &idx));
-  for (i = 0; i < m; i++) { idx[i] = i; }
+  for (i = 0; i < m; i++) idx[i] = i;
 
   /* Create the random Index Sets */
   for (i = 0; i < nd; i++) {
     /* Skip a few,so that the IS on different procs are diffeent*/
-    for (j = 0; j < rank; j++) { PetscCall(PetscRandomGetValue(r, &rand)); }
+    for (j = 0; j < rank; j++) PetscCall(PetscRandomGetValue(r, &rand));
     PetscCall(PetscRandomGetValue(r, &rand));
     lsize = (PetscInt)(rand * (m / bs));
     /* shuffle */

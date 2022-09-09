@@ -263,7 +263,7 @@ int main(int argc, char **args) {
     PetscCall(PCFactorSetUpMatSolverType(pc)); /* call MatGetFactor() to create F */
     PetscCall(PCFactorGetMatrix(pc, &F));
 #if defined(PETSC_HAVE_SUPERLU)
-    if (size == 1) { PetscCall(MatSuperluSetILUDropTol(F, 1.e-8)); }
+    if (size == 1) PetscCall(MatSuperluSetILUDropTol(F, 1.e-8));
 #endif
   }
 #endif

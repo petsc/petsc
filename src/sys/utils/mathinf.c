@@ -1,17 +1,21 @@
 #define PETSC_SKIP_COMPLEX
 #include <petscsys.h>
 /*@C
-      PetscIsNormalReal - Returns PETSC_TRUE if the input value satisfies isnormal()
+      PetscIsNormalReal - Returns `PETSC_TRUE` if the input value satisfies `isnormal()`
 
     Input Parameter:
 .     a - the PetscReal Value
 
-     Notes:
-    uses the C99 standard isnormal() on systems where they exist.
-      Uses isnormalq() with __float128
-      Otherwises always returns true
+    Developer Notes:
+    Uses the C99 standard `isnormal()` on systems where they exist.
+
+    Uses `isnormalq()` with `__float128`
+
+    Otherwise always returns true
 
      Level: beginner
+
+.seealso: `PetscIsInfReal()`, `PetscIsNanReal()`
 @*/
 #if defined(PETSC_USE_REAL___FLOAT128) || defined(PETSC_USE_REAL___FP16)
 PetscBool PetscIsNormalReal(PetscReal a) {
@@ -33,12 +37,14 @@ PetscBool PetscIsNormalReal(PetscReal a) {
     Input Parameter:
 .     a - the floating point number
 
-     Notes:
-    uses the C99 standard isinf() on systems where it exists.
-      Otherwises uses (a && a/2 == a), note that some optimizing compiles compile
-      out this form, thus removing the check.
+    Developer Notes:
+    Uses the C99 standard `isinf()` on systems where it exists.
+
+    Otherwise uses (a && a/2 == a), note that some optimizing compilers compile out this form, thus removing the check.
 
      Level: beginner
+
+.seealso: `PetscIsNormalReal()`, `PetscIsNanReal()`
 @*/
 #if defined(PETSC_USE_REAL___FLOAT128)
 PetscBool PetscIsInfReal(PetscReal a) {
@@ -70,12 +76,15 @@ PetscBool PetscIsInfReal(PetscReal a) {
     Input Parameter:
 .     a - the floating point number
 
-     Notes:
-    uses the C99 standard isnan() on systems where it exists.
-      Otherwises uses (a != a), note that some optimizing compiles compile
-      out this form, thus removing the check.
+    Developer Notes:
+    Uses the C99 standard `isnan()` on systems where it exists.
+
+    Otherwise uses (a != a), note that some optimizing compilers compile
+    out this form, thus removing the check.
 
      Level: beginner
+
+.seealso: `PetscIsNormalReal()`, `PetscIsInfReal()`
 @*/
 #if defined(PETSC_USE_REAL___FLOAT128)
 PetscBool PetscIsNanReal(PetscReal a) {

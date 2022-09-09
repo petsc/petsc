@@ -50,6 +50,11 @@ PetscErrorCode DMStagDuplicateWithoutSetup(DM dm, MPI_Comm comm, DM *newdm) {
   /* Copy all data unrelated to setup */
   newstag = (DM_Stag *)(*newdm)->data;
   PetscCall(PetscStrallocpy(stag->coordinateDMType, (char **)&newstag->coordinateDMType));
+
+  /* Copy vectype and mattype from original DM */
+  PetscCall(DMSetVecType(*newdm, dm->vectype));
+  PetscCall(DMSetMatType(*newdm, dm->mattype));
+
   PetscFunctionReturn(0);
 }
 

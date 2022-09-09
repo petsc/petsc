@@ -229,7 +229,7 @@ PetscErrorCode StokesRhs(Stokes *s) {
   for (row = start; row < end; row++) {
     PetscCall(StokesGetPosition(s, row, &i, &j));
     PetscCall(StokesRhsMass(s, i, j, &val));
-    if (s->matsymmetric) { val = -1.0 * val; }
+    if (s->matsymmetric) val = -1.0 * val;
     PetscCall(VecSetValue(b1, row, val, INSERT_VALUES));
   }
   PetscCall(VecRestoreSubVector(s->b, s->isg[1], &b1));
@@ -301,7 +301,7 @@ PetscErrorCode StokesSetupMatBlock10(Stokes *s) {
   PetscFunctionBeginUser;
   /* A[2] is minus transpose of A[1] */
   PetscCall(MatTranspose(s->subA[1], MAT_INITIAL_MATRIX, &s->subA[2]));
-  if (!s->matsymmetric) { PetscCall(MatScale(s->subA[2], -1.0)); }
+  if (!s->matsymmetric) PetscCall(MatScale(s->subA[2], -1.0));
   PetscCall(MatSetOptionsPrefix(s->subA[2], "a10_"));
   PetscFunctionReturn(0);
 }

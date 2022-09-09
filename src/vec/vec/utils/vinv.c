@@ -609,7 +609,7 @@ PetscErrorCode VecStrideSumAll(Vec v, PetscScalar sums[]) {
 
   for (j = 0; j < bs; j++) local_sums[j] = 0.0;
   for (i = 0; i < n; i += bs) {
-    for (j = 0; j < bs; j++) { local_sums[j] += x[i + j]; }
+    for (j = 0; j < bs; j++) local_sums[j] += x[i + j];
   }
   PetscCall(MPIU_Allreduce(local_sums, sums, bs, MPIU_SCALAR, MPIU_SUM, comm));
 
@@ -706,7 +706,7 @@ PetscErrorCode VecStrideGatherAll(Vec v, Vec s[], InsertMode addv) {
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown insert type");
 
   PetscCall(VecRestoreArrayRead(v, &x));
-  for (i = 0; i < nv; i++) { PetscCall(VecRestoreArray(s[i], &y[i])); }
+  for (i = 0; i < nv; i++) PetscCall(VecRestoreArray(s[i], &y[i]));
 
   PetscCall(PetscFree2(y, bss));
   PetscFunctionReturn(0);
@@ -796,7 +796,7 @@ PetscErrorCode VecStrideScatterAll(Vec s[], Vec v, InsertMode addv) {
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown insert type");
 
   PetscCall(VecRestoreArray(v, &x));
-  for (i = 0; i < nv; i++) { PetscCall(VecRestoreArrayRead(s[i], &y[i])); }
+  for (i = 0; i < nv; i++) PetscCall(VecRestoreArrayRead(s[i], &y[i]));
   PetscCall(PetscFree2(*(PetscScalar ***)&y, bss));
   PetscFunctionReturn(0);
 }
@@ -1527,7 +1527,7 @@ PetscErrorCode VecPermute(Vec x, IS row, PetscBool inv) {
   PetscCall(VecGetArrayRead(x, &array));
   PetscCall(PetscMalloc1(x->map->n, &newArray));
   if (PetscDefined(USE_DEBUG)) {
-    for (i = 0; i < x->map->n; i++) { PetscCheck(!(idx[i] < rstart) && !(idx[i] >= rend), PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "Permutation index %" PetscInt_FMT " is out of bounds: %" PetscInt_FMT, i, idx[i]); }
+    for (i = 0; i < x->map->n; i++) PetscCheck(!(idx[i] < rstart) && !(idx[i] >= rend), PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "Permutation index %" PetscInt_FMT " is out of bounds: %" PetscInt_FMT, i, idx[i]);
   }
   if (!inv) {
     for (i = 0; i < x->map->n; i++) newArray[i] = array[idx[i] - rstart];
@@ -1630,9 +1630,9 @@ PetscErrorCode VecUniqueEntries(Vec vec, PetscInt *n, PetscScalar **e) {
   PetscCall(VecRestoreArrayRead(vec, &v));
   /* Gather serial results */
   PetscCallMPI(MPI_Allgather(&l, 1, MPI_INT, N, 1, MPI_INT, PetscObjectComm((PetscObject)vec)));
-  for (p = 0, ng = 0; p < size; ++p) { ng += N[p]; }
+  for (p = 0, ng = 0; p < size; ++p) ng += N[p];
   PetscCall(PetscMalloc2(ng, &vals, size + 1, &displs));
-  for (p = 1, displs[0] = 0; p <= size; ++p) { displs[p] = displs[p - 1] + N[p - 1]; }
+  for (p = 1, displs[0] = 0; p <= size; ++p) displs[p] = displs[p - 1] + N[p - 1];
   PetscCallMPI(MPI_Allgatherv(tmp, l, MPIU_SCALAR, vals, N, displs, MPIU_SCALAR, PetscObjectComm((PetscObject)vec)));
   /* Find unique entries */
 #ifdef PETSC_USE_COMPLEX
@@ -1643,7 +1643,7 @@ PetscErrorCode VecUniqueEntries(Vec vec, PetscInt *n, PetscScalar **e) {
   if (e) {
     PetscValidPointer(e, 3);
     PetscCall(PetscMalloc1(*n, e));
-    for (i = 0; i < *n; ++i) { (*e)[i] = vals[i]; }
+    for (i = 0; i < *n; ++i) (*e)[i] = vals[i];
   }
   PetscCall(PetscFree2(vals, displs));
   PetscCall(PetscFree2(tmp, N));

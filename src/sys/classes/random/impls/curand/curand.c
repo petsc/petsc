@@ -26,7 +26,7 @@ PetscErrorCode PetscRandomGetValuesReal_CURAND(PetscRandom r, PetscInt n, PetscR
 #else
   PetscCallCURAND(curandGenerateUniformDouble(curand->gen, val, nn));
 #endif
-  if (r->iset) { PetscCall(PetscRandomCurandScale_Private(r, nn, val, (PetscBool)(n < 0))); }
+  if (r->iset) PetscCall(PetscRandomCurandScale_Private(r, nn, val, (PetscBool)(n < 0)));
   PetscFunctionReturn(0);
 }
 
@@ -60,13 +60,13 @@ static struct _PetscRandomOps PetscRandomOps_Values = {
 };
 
 /*MC
-   PETSCCURAND - access to the CUDA random number generator
+   PETSCCURAND - access to the CUDA random number generator from a `PetscRandom` object
 
   PETSc must be ./configure with the option --with-cuda to use this random number generator.
 
   Level: beginner
 
-.seealso: `PetscRandomCreate()`, `PetscRandomSetType()`
+.seealso: `PetscRandomCreate()`, `PetscRandomSetType()`, `PetscRandomType`
 M*/
 
 PETSC_EXTERN PetscErrorCode PetscRandomCreate_CURAND(PetscRandom r) {

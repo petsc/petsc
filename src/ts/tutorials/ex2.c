@@ -134,7 +134,7 @@ int main(int argc, char **argv) {
      Set optional user-defined monitoring routine
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  if (mymonitor) { PetscCall(TSMonitorSet(ts, Monitor, &appctx, NULL)); }
+  if (mymonitor) PetscCall(TSMonitorSet(ts, Monitor, &appctx, NULL));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      For nonlinear problems, the user can provide a Jacobian evaluation

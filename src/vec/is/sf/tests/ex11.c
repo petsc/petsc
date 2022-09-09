@@ -32,7 +32,7 @@ int main(int argc, char **argv) {
 
   PetscCall(VecGetOwnershipRange(x, &low, NULL));
   PetscCall(VecGetArray(x, &array));
-  for (i = 0; i < n; i++) { array[i] = (PetscScalar)(i + low); }
+  for (i = 0; i < n; i++) array[i] = (PetscScalar)(i + low);
   PetscCall(VecRestoreArray(x, &array));
   /* PetscCall(VecView(x,PETSC_VIEWER_STDOUT_WORLD)); */
 
@@ -57,7 +57,7 @@ int main(int argc, char **argv) {
   PetscCall(VecSetSizes(y, n, PETSC_DECIDE));
   PetscCall(VecSetFromOptions(y));
   PetscCall(VecGetArray(y, &array));
-  for (i = 0; i < n; i++) { array[i] = -(PetscScalar)(i + 100 * rank); }
+  for (i = 0; i < n; i++) array[i] = -(PetscScalar)(i + 100 * rank);
   PetscCall(VecRestoreArray(y, &array));
   PetscCall(VecAssemblyBegin(y));
   PetscCall(VecAssemblyEnd(y));
@@ -97,7 +97,7 @@ int main(int argc, char **argv) {
   PetscCall(VecSet(y, 0.0));
   PetscCall(VecGetOwnershipRange(y, &low, NULL));
   PetscCall(VecGetArray(y, &array));
-  for (i = 0; i < n; i++) { array[i] = (PetscScalar)(i + low); }
+  for (i = 0; i < n; i++) array[i] = (PetscScalar)(i + low);
   PetscCall(VecRestoreArray(y, &array));
   PetscCall(VecScatterBegin(ctx, y, x, ADD_VALUES, SCATTER_REVERSE));
   PetscCall(VecScatterEnd(ctx, y, x, ADD_VALUES, SCATTER_REVERSE));

@@ -27,7 +27,7 @@ static PetscErrorCode PetscSFViewCustomLocals_Private(PetscSF sf, const PetscInt
   PetscCall(PetscViewerASCIIPushTab(viewer));
   PetscCall(PetscViewerASCIIPushSynchronized(viewer));
   PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] Number of roots=%" PetscInt_FMT ", leaves=%" PetscInt_FMT ", remote ranks=%" PetscInt_FMT "\n", rank, nroots, nleaves, nranks));
-  for (i = 0; i < nleaves; i++) { PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] %" PetscInt_FMT " <- (%" PetscInt_FMT ",%" PetscInt_FMT ")\n", rank, locals[i], iremote[i].rank, iremote[i].index)); }
+  for (i = 0; i < nleaves; i++) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] %" PetscInt_FMT " <- (%" PetscInt_FMT ",%" PetscInt_FMT ")\n", rank, locals[i], iremote[i].rank, iremote[i].index));
   PetscCall(PetscViewerFlush(viewer));
   PetscCall(PetscViewerASCIIPopTab(viewer));
   PetscCall(PetscViewerASCIIPopSynchronized(viewer));
@@ -64,25 +64,25 @@ int main(int argc, char **argv) {
   PetscCall(PetscStrcpy(opstring, "sum"));
   PetscCall(PetscOptionsString("-test_op", "Designate which MPI_Op to use", "", opstring, opstring, sizeof(opstring), NULL));
   PetscCall(PetscStrcmp("sum", opstring, &strflg));
-  if (strflg) { mop = MPIU_SUM; }
+  if (strflg) mop = MPIU_SUM;
   PetscCall(PetscStrcmp("prod", opstring, &strflg));
-  if (strflg) { mop = MPI_PROD; }
+  if (strflg) mop = MPI_PROD;
   PetscCall(PetscStrcmp("max", opstring, &strflg));
-  if (strflg) { mop = MPI_MAX; }
+  if (strflg) mop = MPI_MAX;
   PetscCall(PetscStrcmp("min", opstring, &strflg));
-  if (strflg) { mop = MPI_MIN; }
+  if (strflg) mop = MPI_MIN;
   PetscCall(PetscStrcmp("land", opstring, &strflg));
-  if (strflg) { mop = MPI_LAND; }
+  if (strflg) mop = MPI_LAND;
   PetscCall(PetscStrcmp("band", opstring, &strflg));
-  if (strflg) { mop = MPI_BAND; }
+  if (strflg) mop = MPI_BAND;
   PetscCall(PetscStrcmp("lor", opstring, &strflg));
-  if (strflg) { mop = MPI_LOR; }
+  if (strflg) mop = MPI_LOR;
   PetscCall(PetscStrcmp("bor", opstring, &strflg));
-  if (strflg) { mop = MPI_BOR; }
+  if (strflg) mop = MPI_BOR;
   PetscCall(PetscStrcmp("lxor", opstring, &strflg));
-  if (strflg) { mop = MPI_LXOR; }
+  if (strflg) mop = MPI_LXOR;
   PetscCall(PetscStrcmp("bxor", opstring, &strflg));
-  if (strflg) { mop = MPI_BXOR; }
+  if (strflg) mop = MPI_BXOR;
   test_degree = test_all;
   PetscCall(PetscOptionsBool("-test_degree", "Test computation of vertex degree", "", test_degree, &test_degree, NULL));
   test_fetchandop = test_all;
@@ -123,7 +123,7 @@ int main(int argc, char **argv) {
       PetscInt i;
 
       PetscCall(PetscMalloc1(nleaves, &mine));
-      for (i = 0; i < nleaves; i++) { mine[i] = stride * i; }
+      for (i = 0; i < nleaves; i++) mine[i] = stride * i;
     }
     PetscCall(PetscMalloc1(nleaves, &remote));
     /* Left periodic neighbor */

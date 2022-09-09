@@ -192,7 +192,7 @@ PetscErrorCode ex2_square_bsvariable(void) {
     PetscScalar *vv;
 
     PetscCall(PetscCalloc1(bs * bs, &vv));
-    for (ii = 0; ii < bs * bs; ii++) { vv[ii] = (PetscReal)(ii + 1); }
+    for (ii = 0; ii < bs * bs; ii++) vv[ii] = (PetscReal)(ii + 1);
 
     ii = 0;
     jj = 9;

@@ -8,7 +8,7 @@ typedef enum {
   MATHEMATICA_LINK_LAUNCH
 } LinkMode;
 
-static int setupConnection(MLENV *env, MLINK *link, const char *linkhost, LinkMode linkmode) {
+static PetscErroCode setupConnection(MLENV *env, MLINK *link, const char *linkhost, LinkMode linkmode) {
   int   argc = 5;
   char *argv[5];
   char  hostname[256];
@@ -41,7 +41,7 @@ static int setupConnection(MLENV *env, MLINK *link, const char *linkhost, LinkMo
   PetscFunctionReturn(0);
 }
 
-static int printIndent(int indent) {
+static PetscErrorCode printIndent(int indent) {
   int i;
 
   PetscFunctionBegin;
@@ -49,7 +49,7 @@ static int printIndent(int indent) {
   PetscFunctionReturn(0);
 }
 
-static int processPacket(MLINK link, int indent) {
+static PetscErrorCode processPacket(MLINK link, int indent, int *result) {
   static int isHead    = 0;
   int        tokenType = MLGetNext(link);
   int        ierr;
@@ -66,12 +66,12 @@ static int processPacket(MLINK link, int indent) {
     /* Process head */
     printf("  Head:\n");
     isHead = 1;
-    ierr   = processPacket(link, indent + 4);
-    if (ierr) PetscFunctionReturn(ierr);
+    PetscCall(processPacket(link, indent + 4, result));
+    if (*result) PetscFunctionReturn(0);
     isHead = 0;
     /* Process arguments */
     printf("  Arguments:\n");
-    for (arg = 0; arg < numArguments; arg++) { PetscCall(processPacket(link, indent + 4)); }
+    for (arg = 0; arg < numArguments; arg++) PetscCall(processPacket(link, indent + 4));
   } break;
   case MLTKSYM: {
     const char *symbol;
@@ -80,7 +80,8 @@ static int processPacket(MLINK link, int indent) {
     printf("Symbol: %s\n", symbol);
     if (isHead && !strcmp(symbol, "Shutdown")) {
       MLDisownSymbol(link, symbol);
-      PetscFunctionReturn(2);
+      *result = 2;
+      PetscFunctionReturn(0);
     }
     MLDisownSymbol(link, symbol);
   } break;
@@ -107,16 +108,17 @@ static int processPacket(MLINK link, int indent) {
     printf("Unknown code %d\n", tokenType);
     MLClearError(link);
     fprintf(stderr, "ERROR: %s\n", (char *)MLErrorMessage(link));
-    PetscFunctionReturn(1);
+    *result = 1;
+    PetscFunctionReturn(0);
   }
   PetscFunctionReturn(0);
 }
 
-static int processPackets(MLINK link) {
+static PetscErrorCode processPackets(MLINK link) {
   int packetType;
   int loop   = 1;
   int errors = 0;
-  int err;
+  int err, result;
 
   PetscFunctionBegin;
   while (loop) {
@@ -152,9 +154,8 @@ static int processPackets(MLINK link) {
       printf("ERROR: %s\n", (char *)MLErrorMessage(link));
       errors++;
     } else if (packetType == RETURNPKT) {
-      err = processPacket(link, 0);
-      PetscCheck(err != 1, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error returned from Mathematica");
-      if (err == 2) loop = 0;
+      PetscCall(processPacket(link, result));
+      if (result == 2) loop = 0;
     } else {
       fprintf(stderr, "Invalid packet type %d\n", packetType);
       loop = 0;
@@ -164,7 +165,7 @@ static int processPackets(MLINK link) {
   PetscFunctionReturn(0);
 }
 
-static int cleanupConnection(MLENV env, MLINK link) {
+static PetscErrorCode cleanupConnection(MLENV env, MLINK link) {
   PetscFunctionBegin;
   MLClose(link);
   MLDeinitialize(env);
@@ -174,12 +175,11 @@ static int cleanupConnection(MLENV env, MLINK link) {
 int main(int argc, char *argv[]) {
   MLENV env;
   MLINK link;
-  int   ierr;
 
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(setupConnection(&env, &link, "192.168.119.1", MATHEMATICA_LINK_CONNECT));
   PetscCall(processPackets(link));
   PetscCall(cleanupConnection(env, link));
   PetscCall(PetscFinalize());
-  return (ierr);
+  return 0;
 }

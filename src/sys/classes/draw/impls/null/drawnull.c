@@ -131,7 +131,10 @@ static struct _PetscDrawOps DvOps = {NULL, /* PetscDrawSetDoubleBuffer_Null */
 
    Level: beginner
 
-.seealso: `PetscDrawOpenNull()`, `PetscDrawIsNull()`
+   Note:
+    A `PETSC_DRAW_NULL` is useful in places where `PetscDraw` routines are called but no graphics window, for example, is available.
+
+.seealso: `PetscDraw`, `PetscDrawOpenNull()`, `PETSC_DRAW_X`, `PetscDrawOpenNull()`, `PetscDrawIsNull()`
 M*/
 PETSC_EXTERN PetscErrorCode PetscDrawCreate_Null(PetscDraw);
 
@@ -164,6 +167,8 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_Null(PetscDraw draw) {
 .  draw - the drawing context
 
    Level: advanced
+
+.seealso: `PetscDraw`, `PetscDrawIsNull()`, `PETSC_DRAW_NULL`, `PetscDrawOpenX()`, `PetscDrawIsNull()`
 @*/
 PetscErrorCode PetscDrawOpenNull(MPI_Comm comm, PetscDraw *win) {
   PetscFunctionBegin;
@@ -173,7 +178,7 @@ PetscErrorCode PetscDrawOpenNull(MPI_Comm comm, PetscDraw *win) {
 }
 
 /*@
-   PetscDrawIsNull - Returns PETSC_TRUE if draw is a null draw object.
+   PetscDrawIsNull - Returns `PETSC_TRUE` if draw is a null draw object.
 
    Not collective
 
@@ -181,9 +186,11 @@ PetscErrorCode PetscDrawOpenNull(MPI_Comm comm, PetscDraw *win) {
 .  draw - the draw context
 
    Output Parameter:
-.  yes - PETSC_TRUE if it is a null draw object; otherwise PETSC_FALSE
+.  yes - `PETSC_TRUE` if it is a null draw object; otherwise `PETSC_FALSE`
 
    Level: advanced
+
+.seealso: `PetscDraw`, `PETSC_DRAW_NULL`, `PetscDrawOpenX()`, `PetscDrawIsNull()`
 @*/
 PetscErrorCode PetscDrawIsNull(PetscDraw draw, PetscBool *yes) {
   PetscFunctionBegin;

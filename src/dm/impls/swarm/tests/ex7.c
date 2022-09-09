@@ -274,7 +274,7 @@ PetscErrorCode go() {
   for (int tid = 0; tid < numthreads; tid++) { // change size of particle list a little
     Np_t[tid] = Np2[0] * Np2[1];
     PetscCall(PetscMalloc3(Np_t[tid], &xx_t[tid], Np_t[tid], &yy_t[tid], Np_t[tid], &wp_t[tid]));
-    if (tid == target) { moments_0[0] = moments_0[1] = moments_0[2] = 0; }
+    if (tid == target) moments_0[0] = moments_0[1] = moments_0[2] = 0;
     for (int pi = 0, pp = 0; pi < Np2[0]; pi++) {
       for (int pj = 0; pj < Np2[1]; pj++, pp++) {
         xx_t[tid][pp] = lo[0] + hp[0] / 2. + pi * hp[0];

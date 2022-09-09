@@ -122,7 +122,7 @@ static PetscErrorCode CreateSpectralPlanes(DM dm, PetscInt numPlanes, const Pets
       PetscInt off;
 
       PetscCall(PetscSectionGetOffset(coordSection, v, &off));
-      if (PetscAbsReal(planeCoord[p] - PetscRealPart(coords[off + planeDir[p]])) < PETSC_SMALL) { PetscCall(DMLabelSetValue(label, v, 1)); }
+      if (PetscAbsReal(planeCoord[p] - PetscRealPart(coords[off + planeDir[p]])) < PETSC_SMALL) PetscCall(DMLabelSetValue(label, v, 1));
     }
   }
   PetscCall(VecRestoreArrayRead(coordinates, &coords));
@@ -282,7 +282,7 @@ static PetscErrorCode ComputeSpectral(DM dm, Vec u, PetscInt numPlanes, const Pe
     if (rank == 0) {
       /* Sort point along ray */
       PetscCall(PetscMalloc2(N, &perm, N, &nperm));
-      for (i = 0; i < N; ++i) { perm[i] = i; }
+      for (i = 0; i < N; ++i) perm[i] = i;
       PetscCall(PetscSortRealWithPermutation(N, gray, perm));
       /* Count duplicates and squish mapping */
       nperm[0] = perm[0];
@@ -619,7 +619,7 @@ int main(int argc, char **argv) {
     args: -potential_petscspace_degree 1 -dm_refine 1 -adjoint -adjoint_petscspace_degree 1 -error_petscspace_degree 0
   test:
     nsize: 2
-    requires: !sycl kokkos_kernels
+    requires: kokkos_kernels
     suffix: kokkos
     args: -dm_plex_dim 3 -dm_plex_box_faces 2,3,6 -petscpartitioner_type simple -dm_plex_simplex 0 -potential_petscspace_degree 1 \
          -dm_refine 0 -ksp_type cg -ksp_rtol 1.e-11 -ksp_norm_type unpreconditioned -pc_type gamg -pc_gamg_coarse_eq_limit 1000 -pc_gamg_threshold 0.0 \

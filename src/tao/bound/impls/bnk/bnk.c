@@ -317,8 +317,8 @@ PetscErrorCode TaoBNKEstimateActiveSet(Tao tao, PetscInt asType) {
       PetscCall(MatSolve(bnk->M, bnk->unprojected_gradient, bnk->W));
     } else {
       hessComputed = diagExists = PETSC_FALSE;
-      if (tao->hessian) { PetscCall(MatAssembled(tao->hessian, &hessComputed)); }
-      if (hessComputed) { PetscCall(MatHasOperation(tao->hessian, MATOP_GET_DIAGONAL, &diagExists)); }
+      if (tao->hessian) PetscCall(MatAssembled(tao->hessian, &hessComputed));
+      if (hessComputed) PetscCall(MatHasOperation(tao->hessian, MATOP_GET_DIAGONAL, &diagExists));
       if (diagExists) {
         /* BFGS preconditioner doesn't exist so let's invert the absolute diagonal of the Hessian instead onto the gradient */
         PetscCall(MatGetDiagonal(tao->hessian, bnk->Xwork));
@@ -422,7 +422,7 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool shift, KSPConvergedReason *k
       PetscCall(MatShift(tao->hessian, bnk->pert));
     } else {
       PetscCall(MatShift(bnk->H_inactive, bnk->pert));
-      if (bnk->H_inactive != bnk->Hpre_inactive) { PetscCall(MatShift(bnk->Hpre_inactive, bnk->pert)); }
+      if (bnk->H_inactive != bnk->Hpre_inactive) PetscCall(MatShift(bnk->Hpre_inactive, bnk->pert));
     }
   }
 
@@ -652,7 +652,7 @@ PetscErrorCode TaoBNKSafeguardStep(Tao tao, KSPConvergedReason ksp_reason, Petsc
       default:
         /* Newton step computation is good; decrease perturbation */
         bnk->pert = PetscMin(bnk->psfac * bnk->pert, bnk->pmsfac * bnk->gnorm);
-        if (bnk->pert < bnk->pmin) { bnk->pert = 0.0; }
+        if (bnk->pert < bnk->pmin) bnk->pert = 0.0;
         break;
       }
       *stepType = BNK_NEWTON;
@@ -981,17 +981,17 @@ PetscErrorCode TaoSetUp_BNK(Tao tao) {
   PetscInt i;
 
   PetscFunctionBegin;
-  if (!tao->gradient) { PetscCall(VecDuplicate(tao->solution, &tao->gradient)); }
-  if (!tao->stepdirection) { PetscCall(VecDuplicate(tao->solution, &tao->stepdirection)); }
-  if (!bnk->W) { PetscCall(VecDuplicate(tao->solution, &bnk->W)); }
-  if (!bnk->Xold) { PetscCall(VecDuplicate(tao->solution, &bnk->Xold)); }
-  if (!bnk->Gold) { PetscCall(VecDuplicate(tao->solution, &bnk->Gold)); }
-  if (!bnk->Xwork) { PetscCall(VecDuplicate(tao->solution, &bnk->Xwork)); }
-  if (!bnk->Gwork) { PetscCall(VecDuplicate(tao->solution, &bnk->Gwork)); }
-  if (!bnk->unprojected_gradient) { PetscCall(VecDuplicate(tao->solution, &bnk->unprojected_gradient)); }
-  if (!bnk->unprojected_gradient_old) { PetscCall(VecDuplicate(tao->solution, &bnk->unprojected_gradient_old)); }
-  if (!bnk->Diag_min) { PetscCall(VecDuplicate(tao->solution, &bnk->Diag_min)); }
-  if (!bnk->Diag_max) { PetscCall(VecDuplicate(tao->solution, &bnk->Diag_max)); }
+  if (!tao->gradient) PetscCall(VecDuplicate(tao->solution, &tao->gradient));
+  if (!tao->stepdirection) PetscCall(VecDuplicate(tao->solution, &tao->stepdirection));
+  if (!bnk->W) PetscCall(VecDuplicate(tao->solution, &bnk->W));
+  if (!bnk->Xold) PetscCall(VecDuplicate(tao->solution, &bnk->Xold));
+  if (!bnk->Gold) PetscCall(VecDuplicate(tao->solution, &bnk->Gold));
+  if (!bnk->Xwork) PetscCall(VecDuplicate(tao->solution, &bnk->Xwork));
+  if (!bnk->Gwork) PetscCall(VecDuplicate(tao->solution, &bnk->Gwork));
+  if (!bnk->unprojected_gradient) PetscCall(VecDuplicate(tao->solution, &bnk->unprojected_gradient));
+  if (!bnk->unprojected_gradient_old) PetscCall(VecDuplicate(tao->solution, &bnk->unprojected_gradient_old));
+  if (!bnk->Diag_min) PetscCall(VecDuplicate(tao->solution, &bnk->Diag_min));
+  if (!bnk->Diag_max) PetscCall(VecDuplicate(tao->solution, &bnk->Diag_max));
   if (bnk->max_cg_its > 0) {
     /* Ensure that the important common vectors are shared between BNK and embedded BNCG */
     bnk->bncg_ctx = (TAO_BNCG *)bnk->bncg->data;
@@ -1155,7 +1155,7 @@ PetscErrorCode TaoView_BNK(Tao tao, PetscViewer viewer) {
     }
     PetscCall(PetscViewerASCIIPrintf(viewer, "CG steps: %" PetscInt_FMT "\n", bnk->tot_cg_its));
     PetscCall(PetscViewerASCIIPrintf(viewer, "Newton steps: %" PetscInt_FMT "\n", bnk->newt));
-    if (bnk->M) { PetscCall(PetscViewerASCIIPrintf(viewer, "BFGS steps: %" PetscInt_FMT "\n", bnk->bfgs)); }
+    if (bnk->M) PetscCall(PetscViewerASCIIPrintf(viewer, "BFGS steps: %" PetscInt_FMT "\n", bnk->bfgs));
     PetscCall(PetscViewerASCIIPrintf(viewer, "Scaled gradient steps: %" PetscInt_FMT "\n", bnk->sgrad));
     PetscCall(PetscViewerASCIIPrintf(viewer, "Gradient steps: %" PetscInt_FMT "\n", bnk->grad));
     PetscCall(PetscViewerASCIIPrintf(viewer, "KSP termination reasons:\n"));

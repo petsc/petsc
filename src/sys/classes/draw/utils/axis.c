@@ -48,7 +48,7 @@ PetscErrorCode PetscADefTicks(PetscReal low, PetscReal high, int num, int *ntick
   *ntick         = i;
   tickloc[i - 1] = PetscMin(tickloc[i - 1], high);
 
-  if (i < 2 && num < 10) { PetscCall(PetscADefTicks(low, high, num + 1, ntick, tickloc, maxtick)); }
+  if (i < 2 && num < 10) PetscCall(PetscADefTicks(low, high, num + 1, ntick, tickloc, maxtick));
   PetscFunctionReturn(0);
 }
 

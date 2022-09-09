@@ -62,7 +62,7 @@ PetscErrorCode MatCreateSubMatrices_Normal(Mat mat, PetscInt n, const IS irow[],
 
   PetscFunctionBegin;
   PetscCheck(!a->left && !a->right && irow == icol, PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "Not implemented");
-  if (scall != MAT_REUSE_MATRIX) { PetscCall(PetscCalloc1(n, submat)); }
+  if (scall != MAT_REUSE_MATRIX) PetscCall(PetscCalloc1(n, submat));
   PetscCall(MatGetSize(B, &M, NULL));
   PetscCall(PetscMalloc1(n, &row));
   PetscCall(ISCreateStride(PETSC_COMM_SELF, M, 0, 1, &row[0]));
@@ -129,7 +129,7 @@ PetscErrorCode MatMult_Normal(Mat N, Vec x, Vec y) {
   PetscFunctionBegin;
   in = x;
   if (Na->right) {
-    if (!Na->rightwork) { PetscCall(VecDuplicate(Na->right, &Na->rightwork)); }
+    if (!Na->rightwork) PetscCall(VecDuplicate(Na->right, &Na->rightwork));
     PetscCall(VecPointwiseMult(Na->rightwork, Na->right, in));
     in = Na->rightwork;
   }
@@ -147,7 +147,7 @@ PetscErrorCode MatMultAdd_Normal(Mat N, Vec v1, Vec v2, Vec v3) {
   PetscFunctionBegin;
   in = v1;
   if (Na->right) {
-    if (!Na->rightwork) { PetscCall(VecDuplicate(Na->right, &Na->rightwork)); }
+    if (!Na->rightwork) PetscCall(VecDuplicate(Na->right, &Na->rightwork));
     PetscCall(VecPointwiseMult(Na->rightwork, Na->right, in));
     in = Na->rightwork;
   }
@@ -170,7 +170,7 @@ PetscErrorCode MatMultTranspose_Normal(Mat N, Vec x, Vec y) {
   PetscFunctionBegin;
   in = x;
   if (Na->left) {
-    if (!Na->leftwork) { PetscCall(VecDuplicate(Na->left, &Na->leftwork)); }
+    if (!Na->leftwork) PetscCall(VecDuplicate(Na->left, &Na->leftwork));
     PetscCall(VecPointwiseMult(Na->leftwork, Na->left, in));
     in = Na->leftwork;
   }
@@ -188,7 +188,7 @@ PetscErrorCode MatMultTransposeAdd_Normal(Mat N, Vec v1, Vec v2, Vec v3) {
   PetscFunctionBegin;
   in = v1;
   if (Na->left) {
-    if (!Na->leftwork) { PetscCall(VecDuplicate(Na->left, &Na->leftwork)); }
+    if (!Na->leftwork) PetscCall(VecDuplicate(Na->left, &Na->leftwork));
     PetscCall(VecPointwiseMult(Na->leftwork, Na->left, in));
     in = Na->leftwork;
   }
@@ -242,7 +242,7 @@ PetscErrorCode MatGetDiagonal_Normal(Mat N, Vec v) {
   PetscCall(MatGetOwnershipRange(A, &rstart, &rend));
   for (i = rstart; i < rend; i++) {
     PetscCall(MatGetRow(A, i, &nnz, &cols, &mvalues));
-    for (j = 0; j < nnz; j++) { work[cols[j]] += mvalues[j] * mvalues[j]; }
+    for (j = 0; j < nnz; j++) work[cols[j]] += mvalues[j] * mvalues[j];
     PetscCall(MatRestoreRow(A, i, &nnz, &cols, &mvalues));
   }
   PetscCall(MPIU_Allreduce(work, diag, A->cmap->N, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)N)));
@@ -276,20 +276,19 @@ PetscErrorCode MatNormalGetMat_Normal(Mat A, Mat *M) {
 }
 
 /*@
-      MatNormalGetMat - Gets the Mat object stored inside a MATNORMAL
+      MatNormalGetMat - Gets the `Mat` object stored inside a `MATNORMAL`
 
-   Logically collective on Mat
+   Logically collective on A
 
    Input Parameter:
-.   A  - the MATNORMAL matrix
+.   A  - the `MATNORMAL` matrix
 
    Output Parameter:
 .   M - the matrix object stored inside A
 
    Level: intermediate
 
-.seealso: `MatCreateNormal()`
-
+.seealso: `MATNORMAL`, `MATNORMALHERMITIAN`, `MatCreateNormal()`
 @*/
 PetscErrorCode MatNormalGetMat(Mat A, Mat *M) {
   PetscFunctionBegin;
@@ -337,7 +336,7 @@ PetscErrorCode MatProductNumeric_Normal_Dense(Mat C) {
   PetscScalar  *array;
 
   PetscFunctionBegin;
-  MatCheckProduct(C, 3);
+  MatCheckProduct(C, 1);
   A        = C->product->A;
   a        = (Mat_Normal *)A->data;
   B        = C->product->B;
@@ -378,7 +377,7 @@ PetscErrorCode MatProductSymbolic_Normal_Dense(Mat C) {
   PetscInt      n, N, m, M;
 
   PetscFunctionBegin;
-  MatCheckProduct(C, 4);
+  MatCheckProduct(C, 1);
   PetscCheck(!C->product->data, PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "Product data not empty");
   A = C->product->A;
   a = (Mat_Normal *)A->data;
@@ -428,14 +427,14 @@ PetscErrorCode MatProductSetFromOptions_Normal_Dense(Mat C) {
   Mat_Product *product = C->product;
 
   PetscFunctionBegin;
-  if (product->type == MATPRODUCT_AB) { PetscCall(MatProductSetFromOptions_Normal_Dense_AB(C)); }
+  if (product->type == MATPRODUCT_AB) PetscCall(MatProductSetFromOptions_Normal_Dense_AB(C));
   PetscFunctionReturn(0);
 }
 
 /*@
-      MatCreateNormal - Creates a new matrix object that behaves like A'*A.
+      MatCreateNormal - Creates a new `MATNORMAL` matrix object that behaves like A'*A.
 
-   Collective on Mat
+   Collective on mat
 
    Input Parameter:
 .   A  - the (possibly rectangular) matrix
@@ -447,8 +446,10 @@ PetscErrorCode MatProductSetFromOptions_Normal_Dense(Mat C) {
 
    Notes:
     The product A'*A is NOT actually formed! Rather the new matrix
-          object performs the matrix-vector product by first multiplying by
+          object performs the matrix-vector product, `MatMult()`, by first multiplying by
           A and then A'
+
+.seealso: `MATNORMAL`, `MatMult()`, `MatNormalGetMat()`, `MATNORMALHERMITIAN`,
 @*/
 PetscErrorCode MatCreateNormal(Mat A, Mat *N) {
   PetscInt    n, nn;

@@ -167,7 +167,7 @@ static PetscErrorCode PCSetFromOptions_BJacobi(PC pc, PetscOptionItems *PetscOpt
   if (jac->ksp) {
     /* The sub-KSP has already been set up (e.g., PCSetUp_BJacobi_Singleblock), but KSPSetFromOptions was not called
      * unless we had already been called. */
-    for (i = 0; i < jac->n_local; i++) { PetscCall(KSPSetFromOptions(jac->ksp[i])); }
+    for (i = 0; i < jac->n_local; i++) PetscCall(KSPSetFromOptions(jac->ksp[i]));
   }
   PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
@@ -189,7 +189,7 @@ static PetscErrorCode PCView_BJacobi(PC pc, PetscViewer viewer) {
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSTRING, &isstring));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERDRAW, &isdraw));
   if (iascii) {
-    if (pc->useAmat) { PetscCall(PetscViewerASCIIPrintf(viewer, "  using Amat local matrix, number of blocks = %" PetscInt_FMT "\n", jac->n)); }
+    if (pc->useAmat) PetscCall(PetscViewerASCIIPrintf(viewer, "  using Amat local matrix, number of blocks = %" PetscInt_FMT "\n", jac->n));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  number of blocks = %" PetscInt_FMT "\n", jac->n));
     PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)pc), &rank));
     PetscCall(PetscViewerGetFormat(viewer, &format));
@@ -586,7 +586,7 @@ static PetscErrorCode PCSetUpOnBlocks_BJacobi_Singleblock(PC pc) {
   PetscFunctionBegin;
   PetscCall(KSPSetUp(subksp));
   PetscCall(KSPGetConvergedReason(subksp, &reason));
-  if (reason == KSP_DIVERGED_PC_FAILED) { pc->failedreason = PC_SUBPC_ERROR; }
+  if (reason == KSP_DIVERGED_PC_FAILED) pc->failedreason = PC_SUBPC_ERROR;
   PetscFunctionReturn(0);
 }
 
@@ -793,7 +793,7 @@ static PetscErrorCode PCReset_BJacobi_Multiblock(PC pc) {
   PetscFunctionBegin;
   if (bjac && bjac->pmat) {
     PetscCall(MatDestroyMatrices(jac->n_local, &bjac->pmat));
-    if (pc->useAmat) { PetscCall(MatDestroyMatrices(jac->n_local, &bjac->mat)); }
+    if (pc->useAmat) PetscCall(MatDestroyMatrices(jac->n_local, &bjac->mat));
   }
 
   for (i = 0; i < jac->n_local; i++) {
@@ -822,7 +822,7 @@ static PetscErrorCode PCDestroy_BJacobi_Multiblock(PC pc) {
     PetscCall(PetscFree(bjac->is));
   }
   PetscCall(PetscFree(jac->data));
-  for (i = 0; i < jac->n_local; i++) { PetscCall(KSPDestroy(&jac->ksp[i])); }
+  for (i = 0; i < jac->n_local; i++) PetscCall(KSPDestroy(&jac->ksp[i]));
   PetscCall(PetscFree(jac->ksp));
   PetscCall(PCDestroy_BJacobi(pc));
   PetscFunctionReturn(0);
@@ -837,7 +837,7 @@ static PetscErrorCode PCSetUpOnBlocks_BJacobi_Multiblock(PC pc) {
   for (i = 0; i < n_local; i++) {
     PetscCall(KSPSetUp(jac->ksp[i]));
     PetscCall(KSPGetConvergedReason(jac->ksp[i], &reason));
-    if (reason == KSP_DIVERGED_PC_FAILED) { pc->failedreason = PC_SUBPC_ERROR; }
+    if (reason == KSP_DIVERGED_PC_FAILED) pc->failedreason = PC_SUBPC_ERROR;
   }
   PetscFunctionReturn(0);
 }
@@ -1010,13 +1010,13 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc, Mat mat, Mat pmat) {
     */
     if (pc->flag == DIFFERENT_NONZERO_PATTERN) {
       PetscCall(MatDestroyMatrices(n_local, &bjac->pmat));
-      if (pc->useAmat) { PetscCall(MatDestroyMatrices(n_local, &bjac->mat)); }
+      if (pc->useAmat) PetscCall(MatDestroyMatrices(n_local, &bjac->mat));
       scall = MAT_INITIAL_MATRIX;
     } else scall = MAT_REUSE_MATRIX;
   }
 
   PetscCall(MatCreateSubMatrices(pmat, n_local, bjac->is, bjac->is, scall, &bjac->pmat));
-  if (pc->useAmat) { PetscCall(MatCreateSubMatrices(mat, n_local, bjac->is, bjac->is, scall, &bjac->mat)); }
+  if (pc->useAmat) PetscCall(MatCreateSubMatrices(mat, n_local, bjac->is, bjac->is, scall, &bjac->mat));
   /* Return control to the user so that the submatrices can be modified (e.g., to apply
      different boundary conditions for the submatrices than for the global problem) */
   PetscCall(PCModifySubMatrices(pc, n_local, bjac->is, bjac->is, bjac->pmat, pc->modifysubmatricesP));
@@ -1032,7 +1032,7 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc, Mat mat, Mat pmat) {
       PetscCall(KSPSetOperators(jac->ksp[i], bjac->pmat[i], bjac->pmat[i]));
     }
     PetscCall(MatSetOptionsPrefix(bjac->pmat[i], prefix));
-    if (pc->setfromoptionscalled) { PetscCall(KSPSetFromOptions(jac->ksp[i])); }
+    if (pc->setfromoptionscalled) PetscCall(KSPSetFromOptions(jac->ksp[i]));
   }
   PetscFunctionReturn(0);
 }
@@ -1049,7 +1049,7 @@ static PetscErrorCode PCSetUpOnBlocks_BJacobi_Multiproc(PC pc) {
   PetscFunctionBegin;
   PetscCall(KSPSetUp(subksp));
   PetscCall(KSPGetConvergedReason(subksp, &reason));
-  if (reason == KSP_DIVERGED_PC_FAILED) { pc->failedreason = PC_SUBPC_ERROR; }
+  if (reason == KSP_DIVERGED_PC_FAILED) pc->failedreason = PC_SUBPC_ERROR;
   PetscFunctionReturn(0);
 }
 
@@ -1100,7 +1100,7 @@ static PetscErrorCode PCApply_BJacobi_Multiproc(PC pc, Vec x, Vec y) {
   PetscCall(KSPCheckSolve(jac->ksp[0], pc, mpjac->ysub));
   PetscCall(PetscLogEventEnd(PC_ApplyOnBlocks, jac->ksp[0], mpjac->xsub, mpjac->ysub, 0));
   PetscCall(KSPGetConvergedReason(jac->ksp[0], &reason));
-  if (reason == KSP_DIVERGED_PC_FAILED) { pc->failedreason = PC_SUBPC_ERROR; }
+  if (reason == KSP_DIVERGED_PC_FAILED) pc->failedreason = PC_SUBPC_ERROR;
 
   PetscCall(VecResetArray(mpjac->xsub));
   PetscCall(VecResetArray(mpjac->ysub));
@@ -1138,7 +1138,7 @@ static PetscErrorCode PCMatApply_BJacobi_Multiproc(PC pc, Mat X, Mat Y) {
   PetscCall(MatDenseRestoreArrayWrite(Y, &y));
   PetscCall(MatDenseRestoreArrayRead(X, &x));
   PetscCall(KSPGetConvergedReason(jac->ksp[0], &reason));
-  if (reason == KSP_DIVERGED_PC_FAILED) { pc->failedreason = PC_SUBPC_ERROR; }
+  if (reason == KSP_DIVERGED_PC_FAILED) pc->failedreason = PC_SUBPC_ERROR;
   PetscFunctionReturn(0);
 }
 
@@ -1216,6 +1216,6 @@ static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC pc) {
     PetscCall(KSPSetOperators(jac->ksp[0], mpjac->submats, mpjac->submats));
   }
 
-  if (!wasSetup && pc->setfromoptionscalled) { PetscCall(KSPSetFromOptions(jac->ksp[0])); }
+  if (!wasSetup && pc->setfromoptionscalled) PetscCall(KSPSetFromOptions(jac->ksp[0]));
   PetscFunctionReturn(0);
 }

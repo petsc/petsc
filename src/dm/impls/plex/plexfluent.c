@@ -342,7 +342,7 @@ PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool i
         }
       }
     }
-    for (c = 0; c < numCells; c++) { PetscCall(DMPlexSetCone(*dm, c, &(cellVertices[c * numCellVertices]))); }
+    for (c = 0; c < numCells; c++) PetscCall(DMPlexSetCone(*dm, c, &(cellVertices[c * numCellVertices])));
   }
   PetscCall(DMPlexSymmetrize(*dm));
   PetscCall(DMPlexStratify(*dm));
@@ -410,7 +410,7 @@ PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool i
   PetscCall(VecGetArray(coordinates, &coords));
   if (rank == 0 && coordsIn) {
     for (v = 0; v < numVertices; ++v) {
-      for (d = 0; d < dim; ++d) { coords[v * dim + d] = coordsIn[v * dim + d]; }
+      for (d = 0; d < dim; ++d) coords[v * dim + d] = coordsIn[v * dim + d];
     }
   }
   PetscCall(VecRestoreArray(coordinates, &coords));

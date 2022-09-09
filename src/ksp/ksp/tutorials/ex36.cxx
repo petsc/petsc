@@ -142,7 +142,7 @@ int main(int argc, char **argv) {
     if (usehierarchy) {
       PetscCall(DMRefineHierarchy(dm, user.nlevels, &dmhierarchy[1]));
     } else {
-      for (k = 1; k <= user.nlevels; k++) { PetscCall(DMRefine(dmhierarchy[k - 1], MPI_COMM_NULL, &dmhierarchy[k])); }
+      for (k = 1; k <= user.nlevels; k++) PetscCall(DMRefine(dmhierarchy[k - 1], MPI_COMM_NULL, &dmhierarchy[k]));
     }
     dmref = dmhierarchy[user.nlevels];
     PetscObjectReference((PetscObject)dmref);
@@ -162,7 +162,7 @@ int main(int argc, char **argv) {
       }
     }
 
-    for (k = 1; k <= user.nlevels; k++) { PetscCall(DMDestroy(&dmhierarchy[k])); }
+    for (k = 1; k <= user.nlevels; k++) PetscCall(DMDestroy(&dmhierarchy[k]));
     PetscCall(PetscFree(dmhierarchy));
   } else {
     dmref = dm;
@@ -298,7 +298,7 @@ PetscErrorCode ComputeRHS_MOAB(KSP ksp, Vec b, void *ptr) {
       const double   ff     = ForcingFunction(&phypts[3 * q], user);
       const PetscInt offset = q * nconn;
 
-      for (i = 0; i < nconn; ++i) { localv[i] += jxw[q] * phi[offset + i] * ff; }
+      for (i = 0; i < nconn; ++i) localv[i] += jxw[q] * phi[offset + i] * ff;
     }
 
     /* check if element is on the boundary */
@@ -496,7 +496,7 @@ PetscErrorCode ComputeDiscreteL2Error(KSP ksp, Vec err, UserContext *user) {
 
   /* Restore vectors */
   PetscCall(VecRestoreArrayRead(sol, &x));
-  if (err) { PetscCall(VecRestoreArray(err, &e)); }
+  if (err) PetscCall(VecRestoreArray(err, &e));
   PetscFunctionReturn(0);
 }
 

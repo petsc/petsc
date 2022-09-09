@@ -58,7 +58,7 @@ PETSC_INTERN PetscErrorCode PetscSFSetUp_Basic(PetscSF sf) {
   nRemoteLeafRanks = bas->niranks - bas->ndiranks;
   PetscCall(PetscMalloc1(bas->itotal, &bas->irootloc));
   PetscCall(PetscMalloc2(nRemoteLeafRanks, &rootreqs, nRemoteRootRanks, &leafreqs));
-  for (i = bas->ndiranks; i < bas->niranks; i++) { PetscCallMPI(MPIU_Irecv(bas->irootloc + bas->ioffset[i], bas->ioffset[i + 1] - bas->ioffset[i], MPIU_INT, bas->iranks[i], tag, comm, &rootreqs[i - bas->ndiranks])); }
+  for (i = bas->ndiranks; i < bas->niranks; i++) PetscCallMPI(MPIU_Irecv(bas->irootloc + bas->ioffset[i], bas->ioffset[i + 1] - bas->ioffset[i], MPIU_INT, bas->iranks[i], tag, comm, &rootreqs[i - bas->ndiranks]));
   for (i = 0; i < sf->nranks; i++) {
     PetscInt npoints = sf->roffset[i + 1] - sf->roffset[i];
     if (i < sf->ndranks) {
@@ -147,7 +147,7 @@ PETSC_INTERN PetscErrorCode PetscSFView_Basic_PatternAndSizes(PetscSF sf, PetscV
   PetscCall(PetscSFGetRootInfo_Basic(sf, &nrootranks, &ndrootranks, &rootranks, &rootoffset, NULL));
   PetscCall(MatCreateAIJ(comm, 1, 1, size, size, 1, NULL, nrootranks - ndrootranks, NULL, &A));
   PetscCall(MatSetOptionsPrefix(A, "__petsc_internal__")); /* To prevent the internal A from taking any command line options */
-  for (i = 0; i < nrootranks; i++) { PetscCall(MatSetValue(A, (PetscInt)rank, bas->iranks[i], (rootoffset[i + 1] - rootoffset[i]) * unitbytes, INSERT_VALUES)); }
+  for (i = 0; i < nrootranks; i++) PetscCall(MatSetValue(A, (PetscInt)rank, bas->iranks[i], (rootoffset[i + 1] - rootoffset[i]) * unitbytes, INSERT_VALUES));
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatView(A, viewer));
@@ -167,7 +167,7 @@ PETSC_INTERN PetscErrorCode PetscSFView_Basic(PetscSF sf, PetscViewer viewer) {
     PetscBool isdraw, isbinary;
     PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERDRAW, &isdraw));
     PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERBINARY, &isbinary));
-    if ((isascii && viewer->format == PETSC_VIEWER_ASCII_MATLAB) || isdraw || isbinary) { PetscCall(PetscSFView_Basic_PatternAndSizes(sf, viewer)); }
+    if ((isascii && viewer->format == PETSC_VIEWER_ASCII_MATLAB) || isdraw || isbinary) PetscCall(PetscSFView_Basic_PatternAndSizes(sf, viewer));
   }
 #endif
   PetscFunctionReturn(0);

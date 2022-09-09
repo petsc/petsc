@@ -41,7 +41,7 @@ static PetscErrorCode PetscSortIntWithPermutation_Private(const PetscInt v[], Pe
 }
 
 /*@
-   PetscSortIntWithPermutation - Computes the permutation of values that gives
+   PetscSortIntWithPermutation - Computes the permutation of `PetscInt` that gives
    a sorted sequence.
 
    Not Collective
@@ -53,7 +53,7 @@ static PetscErrorCode PetscSortIntWithPermutation_Private(const PetscInt v[], Pe
 
    Level: intermediate
 
-   Notes:
+   Note:
    On output i is unchanged and idx[i] is the position of the i-th smallest index in i.
 
 .seealso: `PetscSortInt()`, `PetscSortRealWithPermutation()`, `PetscSortIntWithArray()`
@@ -107,7 +107,7 @@ static PetscErrorCode PetscSortRealWithPermutation_Private(const PetscReal v[], 
 }
 
 /*@
-   PetscSortRealWithPermutation - Computes the permutation of values that gives
+   PetscSortRealWithPermutation - Computes the permutation of `PetscReal` that gives
    a sorted sequence.
 
    Not Collective
@@ -119,7 +119,7 @@ static PetscErrorCode PetscSortRealWithPermutation_Private(const PetscReal v[], 
 
    Level: intermediate
 
-   Notes:
+   Note:
    i is unchanged on output.
 
 .seealso: `PetscSortReal()`, `PetscSortIntWithPermutation()`
@@ -175,7 +175,7 @@ static PetscErrorCode PetscSortStrWithPermutation_Private(const char *v[], Petsc
 }
 
 /*@C
-   PetscSortStrWithPermutation - Computes the permutation of values that gives
+   PetscSortStrWithPermutation - Computes the permutation of strings that gives
    a sorted sequence.
 
    Not Collective
@@ -187,7 +187,7 @@ static PetscErrorCode PetscSortStrWithPermutation_Private(const char *v[], Petsc
 
    Level: intermediate
 
-   Notes:
+   Note:
    i is unchanged on output.
 
 .seealso: `PetscSortInt()`, `PetscSortRealWithPermutation()`

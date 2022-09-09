@@ -850,7 +850,7 @@ PetscErrorCode PetscSFView(PetscSF sf, PetscViewer viewer) {
       PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)sf), &rank));
       PetscCall(PetscViewerASCIIPushSynchronized(viewer));
       PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] Number of roots=%" PetscInt_FMT ", leaves=%" PetscInt_FMT ", remote ranks=%" PetscInt_FMT "\n", rank, sf->nroots, sf->nleaves, sf->nranks));
-      for (i = 0; i < sf->nleaves; i++) { PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] %" PetscInt_FMT " <- (%" PetscInt_FMT ",%" PetscInt_FMT ")\n", rank, sf->mine ? sf->mine[i] : i, sf->remote[i].rank, sf->remote[i].index)); }
+      for (i = 0; i < sf->nleaves; i++) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] %" PetscInt_FMT " <- (%" PetscInt_FMT ",%" PetscInt_FMT ")\n", rank, sf->mine ? sf->mine[i] : i, sf->remote[i].rank, sf->remote[i].index));
       PetscCall(PetscViewerFlush(viewer));
       PetscCall(PetscViewerGetFormat(viewer, &format));
       if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
@@ -863,7 +863,7 @@ PetscErrorCode PetscSFView(PetscSF sf, PetscViewer viewer) {
         for (ii = 0; ii < sf->nranks; ii++) {
           i = perm[ii];
           PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] %d: %" PetscInt_FMT " edges\n", rank, sf->ranks[i], sf->roffset[i + 1] - sf->roffset[i]));
-          for (j = sf->roffset[i]; j < sf->roffset[i + 1]; j++) { PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d]    %" PetscInt_FMT " <- %" PetscInt_FMT "\n", rank, sf->rmine[j], sf->rremote[j])); }
+          for (j = sf->roffset[i]; j < sf->roffset[i + 1]; j++) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d]    %" PetscInt_FMT " <- %" PetscInt_FMT "\n", rank, sf->rmine[j], sf->rremote[j]));
         }
         PetscCall(PetscFree2(tmpranks, perm));
       }
@@ -1161,7 +1161,7 @@ PetscErrorCode PetscSFGetMultiSF(PetscSF sf, PetscSF *multi) {
     PetscCall(PetscSFFetchAndOpEnd(sf, MPIU_INT, inoffset, outones, outoffset, MPI_SUM));
     for (i = 0; i < sf->nroots; i++) inoffset[i] -= indegree[i]; /* Undo the increment */
     if (PetscDefined(USE_DEBUG)) {                               /* Check that the expected number of increments occurred */
-      for (i = 0; i < sf->nroots; i++) { PetscCheck(inoffset[i] + indegree[i] == inoffset[i + 1], PETSC_COMM_SELF, PETSC_ERR_PLIB, "Incorrect result after PetscSFFetchAndOp"); }
+      for (i = 0; i < sf->nroots; i++) PetscCheck(inoffset[i] + indegree[i] == inoffset[i + 1], PETSC_COMM_SELF, PETSC_ERR_PLIB, "Incorrect result after PetscSFFetchAndOp");
     }
     PetscCall(PetscMalloc1(sf->nleaves, &remote));
     for (i = 0; i < sf->nleaves; i++) {
@@ -1745,7 +1745,7 @@ PetscErrorCode PetscSFComputeMultiRootOriginalNumbering(PetscSF sf, const PetscI
   PetscCall(PetscMalloc1(nmroots, multiRootsOrigNumbering));
   for (i = 0, j = 0, k = 0; i < nroots; i++) {
     if (!degree[i]) continue;
-    for (j = 0; j < degree[i]; j++, k++) { (*multiRootsOrigNumbering)[k] = i; }
+    for (j = 0; j < degree[i]; j++, k++) (*multiRootsOrigNumbering)[k] = i;
   }
   PetscCheck(k == nmroots, PETSC_COMM_SELF, PETSC_ERR_PLIB, "sanity check fail");
   if (nMultiRoots) *nMultiRoots = nmroots;
@@ -1925,20 +1925,34 @@ PetscErrorCode PetscSFCompose(PetscSF sfA, PetscSF sfB, PetscSF *sfBA) {
 
   PetscCall(PetscSFGetGraph(sfA, &numRootsA, &numLeavesA, &localPointsA, &remotePointsA));
   PetscCall(PetscSFGetGraph(sfB, &numRootsB, &numLeavesB, &localPointsB, &remotePointsB));
-  if (localPointsA) {
-    PetscCall(PetscMalloc1(numRootsB, &reorderedRemotePointsA));
-    for (i = 0; i < numRootsB; i++) {
-      reorderedRemotePointsA[i].rank  = -1;
-      reorderedRemotePointsA[i].index = -1;
-    }
-    for (i = 0; i < numLeavesA; i++) {
-      if (localPointsA[i] >= numRootsB) continue;
-      reorderedRemotePointsA[localPointsA[i]] = remotePointsA[i];
-    }
-    remotePointsA = reorderedRemotePointsA;
+  /* Make sure that PetscSFBcast{Begin, End}(sfB, ...) works with root data of size       */
+  /* numRootsB; otherwise, garbage will be broadcasted.                                   */
+  /* Example (comm size = 1):                                                             */
+  /* sfA: 0 <- (0, 0)                                                                     */
+  /* sfB: 100 <- (0, 0)                                                                   */
+  /*      101 <- (0, 1)                                                                   */
+  /* Here, we have remotePointsA = [(0, 0)], but for remotePointsA to be a valid tartget  */
+  /* of sfB, it has to be recasted as [(0, 0), (-1, -1)] so that points 100 and 101 would */
+  /* receive (0, 0) and (-1, -1), respectively, when PetscSFBcast(sfB, ...) is called on  */
+  /* remotePointsA; if not recasted, point 101 would receive a garbage value.             */
+  PetscCall(PetscMalloc1(numRootsB, &reorderedRemotePointsA));
+  for (i = 0; i < numRootsB; i++) {
+    reorderedRemotePointsA[i].rank  = -1;
+    reorderedRemotePointsA[i].index = -1;
   }
+  for (i = 0; i < numLeavesA; i++) {
+    PetscInt localp = localPointsA ? localPointsA[i] : i;
+
+    if (localp >= numRootsB) continue;
+    reorderedRemotePointsA[localp] = remotePointsA[i];
+  }
+  remotePointsA = reorderedRemotePointsA;
   PetscCall(PetscSFGetLeafRange(sfB, &minleaf, &maxleaf));
   PetscCall(PetscMalloc1(maxleaf - minleaf + 1, &leafdataB));
+  for (i = 0; i < maxleaf - minleaf + 1; i++) {
+    leafdataB[i].rank  = -1;
+    leafdataB[i].index = -1;
+  }
   PetscCall(PetscSFBcastBegin(sfB, MPIU_2INT, remotePointsA, leafdataB - minleaf, MPI_REPLACE));
   PetscCall(PetscSFBcastEnd(sfB, MPIU_2INT, remotePointsA, leafdataB - minleaf, MPI_REPLACE));
   PetscCall(PetscFree(reorderedRemotePointsA));

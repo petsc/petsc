@@ -404,7 +404,7 @@ static PetscErrorCode DMPlexCreateBoxSurfaceMesh_Tensor_2D_Internal(DM dm, const
     PetscInt e, ex, ey;
 
     PetscCall(DMPlexSetChart(dm, 0, numEdges + numVertices));
-    for (e = 0; e < numEdges; ++e) { PetscCall(DMPlexSetConeSize(dm, e, 2)); }
+    for (e = 0; e < numEdges; ++e) PetscCall(DMPlexSetConeSize(dm, e, 2));
     PetscCall(DMSetUp(dm)); /* Allocate space for cones */
     for (vx = 0; vx <= edges[0]; vx++) {
       for (ey = 0; ey < edges[1]; ey++) {
@@ -529,7 +529,7 @@ static PetscErrorCode DMPlexCreateBoxSurfaceMesh_Tensor_3D_Internal(DM dm, const
     PetscInt f;
 
     PetscCall(DMPlexSetChart(dm, 0, numFaces + numVertices));
-    for (f = 0; f < numFaces; ++f) { PetscCall(DMPlexSetConeSize(dm, f, 4)); }
+    for (f = 0; f < numFaces; ++f) PetscCall(DMPlexSetConeSize(dm, f, 4));
     PetscCall(DMSetUp(dm)); /* Allocate space for cones */
 
     /* Side 0 (Top) */
@@ -748,13 +748,13 @@ static PetscErrorCode DMPlexCreateLineMesh_Internal(DM dm, PetscInt segments, Pe
   numPoints[1] = numCells;
   PetscCall(PetscMalloc4(numCells + numVerts, &coneSize, numCells * 2, &cones, numCells + numVerts, &coneOrientations, numVerts, &vertexCoords));
   PetscCall(PetscArrayzero(coneOrientations, numCells + numVerts));
-  for (i = 0; i < numCells; ++i) { coneSize[i] = 2; }
-  for (i = 0; i < numVerts; ++i) { coneSize[numCells + i] = 0; }
+  for (i = 0; i < numCells; ++i) coneSize[i] = 2;
+  for (i = 0; i < numVerts; ++i) coneSize[numCells + i] = 0;
   for (i = 0; i < numCells; ++i) {
     cones[2 * i]     = numCells + i % numVerts;
     cones[2 * i + 1] = numCells + (i + 1) % numVerts;
   }
-  for (i = 0; i < numVerts; ++i) { vertexCoords[i] = lower + (upper - lower) * ((PetscReal)i / (PetscReal)numCells); }
+  for (i = 0; i < numVerts; ++i) vertexCoords[i] = lower + (upper - lower) * ((PetscReal)i / (PetscReal)numCells);
   PetscCall(DMPlexCreateFromDAG(dm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords));
   PetscCall(PetscFree4(coneSize, cones, coneOrientations, vertexCoords));
 
@@ -883,9 +883,9 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
     PetscInt       c, f, fx, fy, fz, e, ex, ey, ez;
 
     PetscCall(DMPlexSetChart(dm, 0, numCells + numFaces + numEdges + numVertices));
-    for (c = 0; c < numCells; c++) { PetscCall(DMPlexSetConeSize(dm, c, 6)); }
-    for (f = firstXFace; f < firstXFace + numFaces; ++f) { PetscCall(DMPlexSetConeSize(dm, f, 4)); }
-    for (e = firstXEdge; e < firstXEdge + numEdges; ++e) { PetscCall(DMPlexSetConeSize(dm, e, 2)); }
+    for (c = 0; c < numCells; c++) PetscCall(DMPlexSetConeSize(dm, c, 6));
+    for (f = firstXFace; f < firstXFace + numFaces; ++f) PetscCall(DMPlexSetConeSize(dm, f, 4));
+    for (e = firstXEdge; e < firstXEdge + numEdges; ++e) PetscCall(DMPlexSetConeSize(dm, e, 2));
     PetscCall(DMSetUp(dm)); /* Allocate space for cones */
     /* Build cells */
     for (fz = 0; fz < numZEdges; ++fz) {
@@ -1210,7 +1210,7 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
         for (vx = 0; vx < numXVertices; ++vx) {
           coords[((vz * numYVertices + vy) * numXVertices + vx) * dim + 0] = lower[0] + ((upper[0] - lower[0]) / numXEdges) * vx;
           coords[((vz * numYVertices + vy) * numXVertices + vx) * dim + 1] = lower[1] + ((upper[1] - lower[1]) / numYEdges) * vy;
-          if (dim == 3) { coords[((vz * numYVertices + vy) * numXVertices + vx) * dim + 2] = lower[2] + ((upper[2] - lower[2]) / numZEdges) * vz; }
+          if (dim == 3) coords[((vz * numYVertices + vy) * numXVertices + vx) * dim + 2] = lower[2] + ((upper[2] - lower[2]) / numZEdges) * vz;
         }
       }
     }
@@ -1920,7 +1920,7 @@ static PetscErrorCode DMPlexCreateWedgeCylinderMesh_Internal(DM dm, PetscInt n, 
     PetscCall(DMPlexSymmetrize(dm));
     PetscCall(DMPlexStratify(dm));
   }
-  for (v = numCells; v < numCells + numVertices; ++v) { PetscCall(DMPlexSetCellType(dm, v, DM_POLYTOPE_POINT)); }
+  for (v = numCells; v < numCells + numVertices; ++v) PetscCall(DMPlexSetCellType(dm, v, DM_POLYTOPE_POINT));
   /* Create cylinder geometry */
   {
     Vec          coordinates;
@@ -2083,7 +2083,7 @@ static PetscErrorCode DMPlexCreateSphereMesh_Internal(DM dm, PetscInt dim, Petsc
       }
       /* Build Topology */
       PetscCall(DMPlexSetChart(dm, 0, numCells + numVerts));
-      for (c = 0; c < numCells; c++) { PetscCall(DMPlexSetConeSize(dm, c, embedDim)); }
+      for (c = 0; c < numCells; c++) PetscCall(DMPlexSetConeSize(dm, c, embedDim));
       PetscCall(DMSetUp(dm)); /* Allocate space for cones */
       /* Cells */
       for (i = 0, c = 0; i < numVerts; ++i) {
@@ -2106,7 +2106,7 @@ static PetscErrorCode DMPlexCreateSphereMesh_Internal(DM dm, PetscInt dim, Petsc
                 for (d = 0; d < embedDim; ++d) {
                   normal[d] = 0.0;
                   for (e = 0; e < embedDim; ++e) {
-                    for (f = 0; f < embedDim; ++f) { normal[d] += epsilon[d][e][f] * (coordsIn[j * embedDim + e] - coordsIn[i * embedDim + e]) * (coordsIn[k * embedDim + f] - coordsIn[i * embedDim + f]); }
+                    for (f = 0; f < embedDim; ++f) normal[d] += epsilon[d][e][f] * (coordsIn[j * embedDim + e] - coordsIn[i * embedDim + e]) * (coordsIn[k * embedDim + f] - coordsIn[i * embedDim + f]);
                   }
                 }
                 if (DotReal(embedDim, normal, &coordsIn[i * embedDim]) < 0) {
@@ -2152,8 +2152,8 @@ static PetscErrorCode DMPlexCreateSphereMesh_Internal(DM dm, PetscInt dim, Petsc
       firstEdge   = numCells + numVerts;
       /* Build Topology */
       PetscCall(DMPlexSetChart(dm, 0, numCells + numEdges + numVerts));
-      for (c = 0; c < numCells; c++) { PetscCall(DMPlexSetConeSize(dm, c, 4)); }
-      for (e = firstEdge; e < firstEdge + numEdges; ++e) { PetscCall(DMPlexSetConeSize(dm, e, 2)); }
+      for (c = 0; c < numCells; c++) PetscCall(DMPlexSetConeSize(dm, c, 4));
+      for (e = firstEdge; e < firstEdge + numEdges; ++e) PetscCall(DMPlexSetConeSize(dm, e, 2));
       PetscCall(DMSetUp(dm)); /* Allocate space for cones */
       if (rank == 0) {
         /* Cell 0 */
@@ -2391,7 +2391,7 @@ static PetscErrorCode DMPlexCreateSphereMesh_Internal(DM dm, PetscInt dim, Petsc
       }
       /* Build Topology */
       PetscCall(DMPlexSetChart(dm, 0, numCells + numVerts));
-      for (c = 0; c < numCells; c++) { PetscCall(DMPlexSetConeSize(dm, c, embedDim)); }
+      for (c = 0; c < numCells; c++) PetscCall(DMPlexSetConeSize(dm, c, embedDim));
       PetscCall(DMSetUp(dm)); /* Allocate space for cones */
       /* Cells */
       if (rank == 0) {
@@ -2466,7 +2466,7 @@ static PetscErrorCode DMPlexCreateSphereMesh_Internal(DM dm, PetscInt dim, Petsc
   PetscCall(VecSetType(coordinates, VECSTANDARD));
   PetscCall(VecGetArray(coordinates, &coords));
   for (v = 0; v < numVerts; ++v)
-    for (d = 0; d < embedDim; ++d) { coords[v * embedDim + d] = coordsIn[v * embedDim + d]; }
+    for (d = 0; d < embedDim; ++d) coords[v * embedDim + d] = coordsIn[v * embedDim + d];
   PetscCall(VecRestoreArray(coordinates, &coords));
   PetscCall(DMSetCoordinatesLocal(dm, coordinates));
   PetscCall(VecDestroy(&coordinates));
@@ -2499,13 +2499,13 @@ static void TPSEvaluate_SchwarzP(const PetscReal y[3], PetscReal *f, PetscReal g
   f[0]           = c[0] + c[1] + c[2];
   for (PetscInt i = 0; i < 3; i++) {
     grad[i] = PETSC_PI * g[i];
-    for (PetscInt j = 0; j < 3; j++) { hess[i][j] = (i == j) ? -PetscSqr(PETSC_PI) * c[i] : 0.; }
+    for (PetscInt j = 0; j < 3; j++) hess[i][j] = (i == j) ? -PetscSqr(PETSC_PI) * c[i] : 0.;
   }
 }
 
 // u[] is a tentative normal on input. Replace with the implicit function gradient in the same direction
 static PetscErrorCode TPSExtrudeNormalFunc_SchwarzP(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt r, PetscScalar u[], void *ctx) {
-  for (PetscInt i = 0; i < 3; i++) { u[i] = -PETSC_PI * PetscSinReal(x[i] * PETSC_PI); }
+  for (PetscInt i = 0; i < 3; i++) u[i] = -PETSC_PI * PetscSinReal(x[i] * PETSC_PI);
   return 0;
 }
 
@@ -2578,7 +2578,7 @@ static void TPSNearestPointResJac(TPSEvaluateFunc feval, const PetscScalar x[], 
 
   for (PetscInt i = 0; i < 3; i++) n[i] = grad[i];
   norm = PetscSqrtReal(PetscSqr(n[0]) + PetscSqr(n[1]) + PetscSqr(n[2]));
-  for (PetscInt i = 0; i < 3; i++) { norm_y[i] = 1. / norm * n[i] * n_y[i][i]; }
+  for (PetscInt i = 0; i < 3; i++) norm_y[i] = 1. / norm * n[i] * n_y[i][i];
 
   // Define the Householder reflector
   sign = n[0] >= 0 ? 1. : -1.;
@@ -3021,7 +3021,7 @@ static PetscErrorCode DMPlexCreateTPSMesh_Internal(DM dm, DMPlexTPSType tpstype,
       }
       for (PetscInt i = 0; i < numBlocks; i++) {
         for (PetscInt f = 0; f < facesPerBlock; f++) {
-          for (PetscInt v = 0; v < 4; v++) { cells[i][f][v] = vertToTrueVert[cells[i][f][v]]; }
+          for (PetscInt v = 0; v < 4; v++) cells[i][f][v] = vertToTrueVert[cells[i][f][v]];
         }
       }
       PetscCall(PetscFree(vertToTrueVert));
@@ -3102,7 +3102,7 @@ static PetscErrorCode DMPlexCreateTPSMesh_Internal(DM dm, DMPlexTPSType tpstype,
     PetscCall(DMPlexGetPartitioner(dm, &part));
     PetscCall(PetscPartitionerSetFromOptions(part));
     PetscCall(DMPlexDistribute(dm, 0, NULL, &pdm));
-    if (pdm) { PetscCall(DMPlexReplace_Internal(dm, &pdm)); }
+    if (pdm) PetscCall(DMPlexReplace_Internal(dm, &pdm));
     // Do not auto-distribute again
     PetscCall(DMPlexDistributeSetDefault(dm, PETSC_FALSE));
   }
@@ -3119,7 +3119,7 @@ static PetscErrorCode DMPlexCreateTPSMesh_Internal(DM dm, DMPlexTPSType tpstype,
     PetscCall(DMGetCoordinatesLocal(dm, &X));
     PetscCall(VecGetLocalSize(X, &m));
     PetscCall(VecGetArray(X, &x));
-    for (PetscInt i = 0; i < m; i += 3) { PetscCall(TPSNearestPoint(evalFunc, &x[i])); }
+    for (PetscInt i = 0; i < m; i += 3) PetscCall(TPSNearestPoint(evalFunc, &x[i]));
     PetscCall(VecRestoreArray(X, &x));
   }
 
@@ -3632,7 +3632,7 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems *PetscOp
     }
   }
   PetscCall(DMPlexSetRefinementUniform(dm, PETSC_TRUE));
-  if (!((PetscObject)dm)->name && nameflg) { PetscCall(PetscObjectSetName((PetscObject)dm, plexname)); }
+  if (!((PetscObject)dm)->name && nameflg) PetscCall(PetscObjectSetName((PetscObject)dm, plexname));
   PetscFunctionReturn(0);
 }
 
@@ -3776,7 +3776,7 @@ static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems *PetscOption
   }
   /* Handle DMPlex refinement before distribution */
   PetscCall(PetscOptionsBool("-dm_refine_ignore_model", "Flag to ignore the geometry model when refining", "DMCreate", ignoreModel, &ignoreModel, &flg));
-  if (flg) { ((DM_Plex *)dm->data)->ignoreModel = ignoreModel; }
+  if (flg) ((DM_Plex *)dm->data)->ignoreModel = ignoreModel;
   PetscCall(DMPlexGetRefinementUniform(dm, &uniformOrig));
   PetscCall(PetscOptionsBoundedInt("-dm_refine_pre", "The number of refinements before distribution", "DMCreate", prerefine, &prerefine, NULL, 0));
   PetscCall(PetscOptionsBool("-dm_refine_remap_pre", "Flag to control coordinate remapping", "DMCreate", remap, &remap, NULL));
@@ -3839,7 +3839,7 @@ static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems *PetscOption
     PetscCall(DMPlexGetPartitioner(dm, &part));
     PetscCall(PetscPartitionerSetFromOptions(part));
     PetscCall(DMPlexDistribute(dm, overlap, NULL, &pdm));
-    if (pdm) { PetscCall(DMPlexReplace_Internal(dm, &pdm)); }
+    if (pdm) PetscCall(DMPlexReplace_Internal(dm, &pdm));
   }
   /* Create coordinate space */
   if (created) {
@@ -4308,11 +4308,11 @@ PetscErrorCode DMPlexBuildFromCellListParallel(DM dm, PetscInt numCells, PetscIn
 
     PetscCall(PetscHSetICreate(&vhash));
     for (c = 0; c < numCells; ++c) {
-      for (p = 0; p < numCorners; ++p) { PetscCall(PetscHSetIAdd(vhash, cells[c * numCorners + p])); }
+      for (p = 0; p < numCorners; ++p) PetscCall(PetscHSetIAdd(vhash, cells[c * numCorners + p]));
     }
     PetscCall(PetscHSetIGetSize(vhash, &numVerticesAdj));
     if (!verticesAdjSaved) PetscCall(PetscMalloc1(numVerticesAdj, &verticesAdj));
-    else { verticesAdj = *verticesAdjSaved; }
+    else verticesAdj = *verticesAdjSaved;
     PetscCall(PetscHSetIGetElems(vhash, &off, verticesAdj));
     PetscCall(PetscHSetIDestroy(&vhash));
     PetscCheck(off == numVerticesAdj, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid number of local vertices %" PetscInt_FMT " should be %" PetscInt_FMT, off, numVerticesAdj);
@@ -4556,11 +4556,11 @@ PetscErrorCode DMPlexBuildFromCellList(DM dm, PetscInt numCells, PetscInt numVer
       PetscCheck(numVertices >= NVerticesInCells, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Specified number of vertices %" PetscInt_FMT " must be greater than or equal to the number of vertices in cells %" PetscInt_FMT, numVertices, NVerticesInCells);
   }
   PetscCall(DMPlexSetChart(dm, 0, numCells + numVertices));
-  for (c = 0; c < numCells; ++c) { PetscCall(DMPlexSetConeSize(dm, c, numCorners)); }
+  for (c = 0; c < numCells; ++c) PetscCall(DMPlexSetConeSize(dm, c, numCorners));
   PetscCall(DMSetUp(dm));
   PetscCall(DMPlexGetCones(dm, &cones));
   for (c = 0; c < numCells; ++c) {
-    for (p = 0; p < numCorners; ++p) { cones[c * numCorners + p] = cells[c * numCorners + p] + numCells; }
+    for (p = 0; p < numCorners; ++p) cones[c * numCorners + p] = cells[c * numCorners + p] + numCells;
   }
   PetscCall(DMPlexSymmetrize(dm));
   PetscCall(DMPlexStratify(dm));
@@ -4611,7 +4611,7 @@ PetscErrorCode DMPlexBuildCoordinatesFromCellList(DM dm, PetscInt spaceDim, cons
   PetscCall(PetscObjectSetName((PetscObject)coordinates, "coordinates"));
   PetscCall(VecGetArrayWrite(coordinates, &coords));
   for (v = 0; v < vEnd - vStart; ++v) {
-    for (d = 0; d < spaceDim; ++d) { coords[v * spaceDim + d] = vertexCoords[v * spaceDim + d]; }
+    for (d = 0; d < spaceDim; ++d) coords[v * spaceDim + d] = vertexCoords[v * spaceDim + d];
   }
   PetscCall(VecRestoreArrayWrite(coordinates, &coords));
   PetscCall(DMSetCoordinatesLocal(dm, coordinates));
@@ -4726,7 +4726,7 @@ PetscErrorCode DMPlexCreateFromDAG(DM dm, PetscInt depth, const PetscInt numPoin
   PetscCall(DMPlexSetChart(dm, pStart, pEnd));
   for (p = pStart; p < pEnd; ++p) {
     PetscCall(DMPlexSetConeSize(dm, p, coneSize[p - pStart]));
-    if (firstVertex < 0 && !coneSize[p - pStart]) { firstVertex = p - pStart; }
+    if (firstVertex < 0 && !coneSize[p - pStart]) firstVertex = p - pStart;
   }
   PetscCheck(firstVertex >= 0 || !numPoints[0], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Expected %" PetscInt_FMT " vertices but could not find any", numPoints[0]);
   PetscCall(DMSetUp(dm)); /* Allocate space for cones */
@@ -4758,7 +4758,7 @@ PetscErrorCode DMPlexCreateFromDAG(DM dm, PetscInt depth, const PetscInt numPoin
       PetscInt off;
 
       PetscCall(PetscSectionGetOffset(coordSection, v + firstVertex, &off));
-      for (d = 0; d < dimEmbed; ++d) { coords[off + d] = vertexCoords[v * dimEmbed + d]; }
+      for (d = 0; d < dimEmbed; ++d) coords[off + d] = vertexCoords[v * dimEmbed + d];
     }
   }
   PetscCall(VecRestoreArray(coordinates, &coords));

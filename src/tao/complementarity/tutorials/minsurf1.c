@@ -186,8 +186,8 @@ PetscErrorCode FormConstraints(Tao tao, Vec X, Vec G, void *ptr) {
         xt = x[row + mx];
       }
 
-      if (i > 0 && j + 1 < my) { xlt = x[row - 1 + mx]; }
-      if (j > 0 && i + 1 < mx) { xrb = x[row + 1 - mx]; }
+      if (i > 0 && j + 1 < my) xlt = x[row - 1 + mx];
+      if (j > 0 && i + 1 < mx) xrb = x[row + 1 - mx];
 
       d1 = (xc - xl);
       d2 = (xc - xr);
@@ -310,8 +310,8 @@ PetscErrorCode FormJacobian(Tao tao, Vec X, Mat H, Mat tHPre, void *ptr) {
         xt = x[row + mx];
       }
 
-      if (i > 0 && j + 1 < my) { xlt = x[row - 1 + mx]; }
-      if (j > 0 && i + 1 < mx) { xrb = x[row + 1 - mx]; }
+      if (i > 0 && j + 1 < my) xlt = x[row - 1 + mx];
+      if (j > 0 && i + 1 < mx) xrb = x[row + 1 - mx];
 
       d1 = (xc - xl) / hx;
       d2 = (xc - xr) / hx;

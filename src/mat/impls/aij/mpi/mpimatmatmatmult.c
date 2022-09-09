@@ -50,7 +50,7 @@ PetscErrorCode MatMatMatMultSymbolic_MPIAIJ_MPIAIJ_MPIAIJ(Mat A, Mat B, Mat C, P
   Mat_Product *product;
 
   PetscFunctionBegin;
-  MatCheckProduct(D, 4);
+  MatCheckProduct(D, 5);
   PetscCheck(!D->product->data, PetscObjectComm((PetscObject)D), PETSC_ERR_PLIB, "Product data not empty");
   product = D->product;
   PetscCall(MatProductCreate(B, C, NULL, &BC));

@@ -162,7 +162,7 @@ int main(int argc, char **argv) {
     PetscCall(PetscOptionsString("-o", "Output solution in vts format", "", filename, filename, sizeof(filename), &write_output));
   }
   PetscOptionsEnd();
-  if (user.lambda > bratu_lambda_max || user.lambda < bratu_lambda_min) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "WARNING: lambda %g out of range for p=2\n", (double)user.lambda)); }
+  if (user.lambda > bratu_lambda_max || user.lambda < bratu_lambda_min) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "WARNING: lambda %g out of range for p=2\n", (double)user.lambda));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create nonlinear solver context
@@ -621,7 +621,7 @@ static PetscErrorCode FormJacobianLocal(DMDALocalInfo *info, PetscScalar **x, Ma
      Tell the matrix we will never add a new nonzero location to the
      matrix. If we do, it will generate an error.
   */
-  if (user->jtype == JAC_NEWTON) { PetscCall(PetscLogFlops(info->xm * info->ym * (131.0))); }
+  if (user->jtype == JAC_NEWTON) PetscCall(PetscLogFlops(info->xm * info->ym * (131.0)));
   PetscFunctionReturn(0);
 }
 
@@ -636,7 +636,7 @@ PetscErrorCode PreCheckSetFromOptions(PreCheck precheck) {
   PetscCall(PetscOptionsReal("-precheck_angle", "Angle in degrees between successive search directions necessary to activate step correction", "", precheck->angle, &precheck->angle, NULL));
   flg = PETSC_FALSE;
   PetscCall(PetscOptionsBool("-precheck_monitor", "Monitor choices made by precheck routine", "", flg, &flg, NULL));
-  if (flg) { PetscCall(PetscViewerASCIIOpen(precheck->comm, "stdout", &precheck->monitor)); }
+  if (flg) PetscCall(PetscViewerASCIIOpen(precheck->comm, "stdout", &precheck->monitor));
   PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
@@ -678,11 +678,11 @@ PetscErrorCode PreCheckFunction(SNESLineSearch linesearch, Vec X, Vec Y, PetscBo
     alpha = ylastnorm / ydiffnorm;
     PetscCall(VecCopy(Y, Ylast));
     PetscCall(VecScale(Y, alpha));
-    if (precheck->monitor) { PetscCall(PetscViewerASCIIPrintf(precheck->monitor, "Angle %g degrees less than threshold %g, corrected step by alpha=%g\n", (double)(theta * 180. / PETSC_PI), (double)precheck->angle, (double)alpha)); }
+    if (precheck->monitor) PetscCall(PetscViewerASCIIPrintf(precheck->monitor, "Angle %g degrees less than threshold %g, corrected step by alpha=%g\n", (double)(theta * 180. / PETSC_PI), (double)precheck->angle, (double)alpha));
   } else {
     PetscCall(VecCopy(Y, Ylast));
     *changed = PETSC_FALSE;
-    if (precheck->monitor) { PetscCall(PetscViewerASCIIPrintf(precheck->monitor, "Angle %g degrees exceeds threshold %g, no correction applied\n", (double)(theta * 180. / PETSC_PI), (double)precheck->angle)); }
+    if (precheck->monitor) PetscCall(PetscViewerASCIIPrintf(precheck->monitor, "Angle %g degrees exceeds threshold %g, no correction applied\n", (double)(theta * 180. / PETSC_PI), (double)precheck->angle));
   }
   PetscFunctionReturn(0);
 }
@@ -735,7 +735,7 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx) {
   PetscCall(SNESNGSGetSweeps(snes, &sweeps));
   PetscCall(SNESNGSGetTolerances(snes, &atol, &rtol, &stol, &its));
   PetscCall(DMGetLocalVector(da, &localX));
-  if (B) { PetscCall(DMGetLocalVector(da, &localB)); }
+  if (B) PetscCall(DMGetLocalVector(da, &localB));
   if (B) {
     PetscCall(DMGlobalToLocalBegin(da, B, INSERT_VALUES, localB));
     PetscCall(DMGlobalToLocalEnd(da, B, INSERT_VALUES, localB));
@@ -777,7 +777,7 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx) {
               y = F / J;
               u -= y;
               tot_its++;
-              if (atol > PetscAbsReal(PetscRealPart(F)) || rtol * PetscAbsReal(PetscRealPart(F0)) > PetscAbsReal(PetscRealPart(F)) || stol * PetscAbsReal(PetscRealPart(u)) > PetscAbsReal(PetscRealPart(y))) { break; }
+              if (atol > PetscAbsReal(PetscRealPart(F)) || rtol * PetscAbsReal(PetscRealPart(F0)) > PetscAbsReal(PetscRealPart(F)) || stol * PetscAbsReal(PetscRealPart(u)) > PetscAbsReal(PetscRealPart(y))) break;
             }
             x[j][i] = u;
           }

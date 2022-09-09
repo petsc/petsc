@@ -1625,7 +1625,7 @@ PetscErrorCode DMPlexCopyCoordinates(DM dmA, DM dmB) {
 
     PetscCall(PetscSectionGetOffset(coordSectionA, v + vStartA, &offA));
     PetscCall(PetscSectionGetOffset(coordSectionB, v + vStartB, &offB));
-    for (d = 0; d < spaceDim; ++d) { coordsB[offB + d] = coordsA[offA + d]; }
+    for (d = 0; d < spaceDim; ++d) coordsB[offB + d] = coordsA[offA + d];
   }
   if (lc) { /* localized coordinates */
     PetscInt c;

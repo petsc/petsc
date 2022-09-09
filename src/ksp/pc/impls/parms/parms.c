@@ -195,19 +195,19 @@ static PetscErrorCode PCView_PARMS(PC pc, PetscViewer viewer) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "  non-zero elements/original non-zero entries: %-4.2f\n", fill_fact));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Tolerance for local solve: %g\n", parms->solvetol));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Number of levels: %d\n", parms->levels));
-    if (parms->nonsymperm) { PetscCall(PetscViewerASCIIPrintf(viewer, "  Using nonsymmetric permutation\n")); }
+    if (parms->nonsymperm) PetscCall(PetscViewerASCIIPrintf(viewer, "  Using nonsymmetric permutation\n"));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Block size: %d\n", parms->blocksize));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Tolerance for independent sets: %g\n", parms->indtol));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Inner Krylov dimension: %d\n", parms->maxdim));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Maximum number of inner iterations: %d\n", parms->maxits));
-    if (parms->meth[0]) { PetscCall(PetscViewerASCIIPrintf(viewer, "  Using nonsymmetric permutation for interlevel blocks\n")); }
-    if (parms->meth[1]) { PetscCall(PetscViewerASCIIPrintf(viewer, "  Using column permutation for interlevel blocks\n")); }
-    if (parms->meth[2]) { PetscCall(PetscViewerASCIIPrintf(viewer, "  Using row scaling for interlevel blocks\n")); }
-    if (parms->meth[3]) { PetscCall(PetscViewerASCIIPrintf(viewer, "  Using column scaling for interlevel blocks\n")); }
-    if (parms->meth[4]) { PetscCall(PetscViewerASCIIPrintf(viewer, "  Using nonsymmetric permutation for last level blocks\n")); }
-    if (parms->meth[5]) { PetscCall(PetscViewerASCIIPrintf(viewer, "  Using column permutation for last level blocks\n")); }
-    if (parms->meth[6]) { PetscCall(PetscViewerASCIIPrintf(viewer, "  Using row scaling for last level blocks\n")); }
-    if (parms->meth[7]) { PetscCall(PetscViewerASCIIPrintf(viewer, "  Using column scaling for last level blocks\n")); }
+    if (parms->meth[0]) PetscCall(PetscViewerASCIIPrintf(viewer, "  Using nonsymmetric permutation for interlevel blocks\n"));
+    if (parms->meth[1]) PetscCall(PetscViewerASCIIPrintf(viewer, "  Using column permutation for interlevel blocks\n"));
+    if (parms->meth[2]) PetscCall(PetscViewerASCIIPrintf(viewer, "  Using row scaling for interlevel blocks\n"));
+    if (parms->meth[3]) PetscCall(PetscViewerASCIIPrintf(viewer, "  Using column scaling for interlevel blocks\n"));
+    if (parms->meth[4]) PetscCall(PetscViewerASCIIPrintf(viewer, "  Using nonsymmetric permutation for last level blocks\n"));
+    if (parms->meth[5]) PetscCall(PetscViewerASCIIPrintf(viewer, "  Using column permutation for last level blocks\n"));
+    if (parms->meth[6]) PetscCall(PetscViewerASCIIPrintf(viewer, "  Using row scaling for last level blocks\n"));
+    if (parms->meth[7]) PetscCall(PetscViewerASCIIPrintf(viewer, "  Using column scaling for last level blocks\n"));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  amount of fill-in for ilut, iluk and arms: %d\n", parms->lfil[0]));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  amount of fill-in for schur: %d\n", parms->lfil[4]));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  amount of fill-in for ILUT L and U: %d\n", parms->lfil[5]));

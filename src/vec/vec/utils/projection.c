@@ -247,8 +247,8 @@ PetscErrorCode VecWhichBetween(Vec VecLow, Vec V, Vec VecHigh, IS *S) {
     }
 
     PetscCall(VecRestoreArrayRead(VecLow, &v1));
-    if (VecLow != VecHigh) { PetscCall(VecRestoreArrayRead(VecHigh, &v2)); }
-    if (V != VecLow && V != VecHigh) { PetscCall(VecRestoreArrayRead(V, &vmiddle)); }
+    if (VecLow != VecHigh) PetscCall(VecRestoreArrayRead(VecHigh, &v2));
+    if (V != VecLow && V != VecHigh) PetscCall(VecRestoreArrayRead(V, &vmiddle));
   }
   PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)V), n_vm, vm, PETSC_OWN_POINTER, S));
   PetscFunctionReturn(0);
@@ -313,8 +313,8 @@ PetscErrorCode VecWhichBetweenOrEqual(Vec VecLow, Vec V, Vec VecHigh, IS *S) {
     }
 
     PetscCall(VecRestoreArrayRead(VecLow, &v1));
-    if (VecLow != VecHigh) { PetscCall(VecRestoreArrayRead(VecHigh, &v2)); }
-    if (V != VecLow && V != VecHigh) { PetscCall(VecRestoreArrayRead(V, &vmiddle)); }
+    if (VecLow != VecHigh) PetscCall(VecRestoreArrayRead(VecHigh, &v2));
+    if (V != VecLow && V != VecHigh) PetscCall(VecRestoreArrayRead(V, &vmiddle));
   }
   PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)V), n_vm, vm, PETSC_OWN_POINTER, S));
   PetscFunctionReturn(0);
@@ -422,9 +422,9 @@ PetscErrorCode VecWhichInactive(Vec VecLow, Vec V, Vec D, Vec VecHigh, PetscBool
     }
 
     PetscCall(VecRestoreArrayRead(VecLow, &v1));
-    if (VecLow != VecHigh) { PetscCall(VecRestoreArrayRead(VecHigh, &v2)); }
-    if (V != VecLow && V != VecHigh) { PetscCall(VecRestoreArrayRead(V, &v)); }
-    if (D != VecLow && D != VecHigh && D != V) { PetscCall(VecRestoreArrayRead(D, &d)); }
+    if (VecLow != VecHigh) PetscCall(VecRestoreArrayRead(VecHigh, &v2));
+    if (V != VecLow && V != VecHigh) PetscCall(VecRestoreArrayRead(V, &v));
+    if (D != VecLow && D != VecHigh && D != V) PetscCall(VecRestoreArrayRead(D, &d));
   }
   PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)V), n_vm, vm, PETSC_OWN_POINTER, S));
   PetscFunctionReturn(0);
@@ -802,12 +802,12 @@ PetscErrorCode VecStepBoundInfo(Vec X, Vec DX, Vec XL, Vec XU, PetscReal *boundm
     if (PetscRealPart(dx[i]) > 0 && PetscRealPart(xu[i]) < PETSC_INFINITY) {
       t        = PetscRealPart((xu[i] - x[i]) / dx[i]);
       localmin = PetscMin(t, localmin);
-      if (localmin > 0) { localwolfemin = PetscMin(t, localwolfemin); }
+      if (localmin > 0) localwolfemin = PetscMin(t, localwolfemin);
       localmax = PetscMax(t, localmax);
     } else if (PetscRealPart(dx[i]) < 0 && PetscRealPart(xl[i]) > PETSC_NINFINITY) {
       t        = PetscRealPart((xl[i] - x[i]) / dx[i]);
       localmin = PetscMin(t, localmin);
-      if (localmin > 0) { localwolfemin = PetscMin(t, localwolfemin); }
+      if (localmin > 0) localwolfemin = PetscMin(t, localwolfemin);
       localmax = PetscMax(t, localmax);
     }
   }
@@ -897,12 +897,12 @@ PetscErrorCode VecPow(Vec v, PetscScalar p) {
 
   if (1.0 == p) {
   } else if (-1.0 == p) {
-    for (i = 0; i < n; ++i) { v1[i] = 1.0 / v1[i]; }
+    for (i = 0; i < n; ++i) v1[i] = 1.0 / v1[i];
   } else if (0.0 == p) {
     for (i = 0; i < n; ++i) {
       /*  Not-a-number left alone
           Infinity set to one  */
-      if (v1[i] == v1[i]) { v1[i] = 1.0; }
+      if (v1[i] == v1[i]) v1[i] = 1.0;
     }
   } else if (0.5 == p) {
     for (i = 0; i < n; ++i) {
@@ -921,9 +921,9 @@ PetscErrorCode VecPow(Vec v, PetscScalar p) {
       }
     }
   } else if (2.0 == p) {
-    for (i = 0; i < n; ++i) { v1[i] *= v1[i]; }
+    for (i = 0; i < n; ++i) v1[i] *= v1[i];
   } else if (-2.0 == p) {
-    for (i = 0; i < n; ++i) { v1[i] = 1.0 / (v1[i] * v1[i]); }
+    for (i = 0; i < n; ++i) v1[i] = 1.0 / (v1[i] * v1[i]);
   } else {
     for (i = 0; i < n; ++i) {
       if (PetscRealPart(v1[i]) >= 0) {
@@ -1013,12 +1013,12 @@ PetscErrorCode VecMedian(Vec Vec1, Vec Vec2, Vec Vec3, Vec VMedian) {
       v3 = vmed;
     }
 
-    for (i = 0; i < n; ++i) { vmed[i] = PetscMax(PetscMax(PetscMin(PetscRealPart(v1[i]), PetscRealPart(v2[i])), PetscMin(PetscRealPart(v1[i]), PetscRealPart(v3[i]))), PetscMin(PetscRealPart(v2[i]), PetscRealPart(v3[i]))); }
+    for (i = 0; i < n; ++i) vmed[i] = PetscMax(PetscMax(PetscMin(PetscRealPart(v1[i]), PetscRealPart(v2[i])), PetscMin(PetscRealPart(v1[i]), PetscRealPart(v3[i]))), PetscMin(PetscRealPart(v2[i]), PetscRealPart(v3[i])));
 
     PetscCall(VecRestoreArray(VMedian, &vmed));
-    if (VMedian != Vec1) { PetscCall(VecRestoreArrayRead(Vec1, &v1)); }
-    if (VMedian != Vec2) { PetscCall(VecRestoreArrayRead(Vec2, &v2)); }
-    if (VMedian != Vec3) { PetscCall(VecRestoreArrayRead(Vec3, &v3)); }
+    if (VMedian != Vec1) PetscCall(VecRestoreArrayRead(Vec1, &v1));
+    if (VMedian != Vec2) PetscCall(VecRestoreArrayRead(Vec2, &v2));
+    if (VMedian != Vec3) PetscCall(VecRestoreArrayRead(Vec3, &v3));
   }
   PetscFunctionReturn(0);
 }

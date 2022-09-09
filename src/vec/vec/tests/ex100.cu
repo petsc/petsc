@@ -140,7 +140,7 @@ int main(int argc, char **args) {
   PetscCall(VecGetArrayRead(u, &values));
   PetscCall(VecGetLocalSize(u, &ldim));
   PetscCall(VecGetOwnershipRange(u, &low, NULL));
-  for (i = 0; i < ldim; i++) { PetscCheck(values[i] == (PetscScalar)(i + low), PETSC_COMM_WORLD, PETSC_ERR_SUP, "Data check failed!"); }
+  for (i = 0; i < ldim; i++) PetscCheck(values[i] == (PetscScalar)(i + low), PETSC_COMM_WORLD, PETSC_ERR_SUP, "Data check failed!");
   PetscCall(VecRestoreArrayRead(u, &values));
 
   /* Free data structures */

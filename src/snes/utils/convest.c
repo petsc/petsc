@@ -164,7 +164,7 @@ PetscErrorCode PetscConvEstSetUp(PetscConvEst ce) {
     }
     if (fieldIS) PetscCall(ISRestoreIndices(fieldIS, &fields));
   }
-  for (f = 0; f < Nf; ++f) { PetscCheck(ce->exactSol[f], PetscObjectComm((PetscObject)ce), PETSC_ERR_ARG_WRONG, "DS must contain exact solution functions in order to estimate convergence, missing for field %" PetscInt_FMT, f); }
+  for (f = 0; f < Nf; ++f) PetscCheck(ce->exactSol[f], PetscObjectComm((PetscObject)ce), PETSC_ERR_ARG_WRONG, "DS must contain exact solution functions in order to estimate convergence, missing for field %" PetscInt_FMT, f);
   PetscFunctionReturn(0);
 }
 
@@ -381,7 +381,7 @@ static PetscErrorCode PetscConvEstGetConvRateSNES_Private(PetscConvEst ce, Petsc
     PetscCall(VecDestroy(&u));
     PetscCall(PetscLogStagePop());
   }
-  for (r = 1; r <= Nr; ++r) { PetscCall(DMDestroy(&dm[r])); }
+  for (r = 1; r <= Nr; ++r) PetscCall(DMDestroy(&dm[r]));
   /* Fit convergence rate */
   PetscCall(PetscMalloc2(Nr + 1, &x, Nr + 1, &y));
   for (f = 0; f < ce->Nf; ++f) {

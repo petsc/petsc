@@ -37,7 +37,7 @@ int main(int argc, char **argv) {
   PetscCall(MatGetSize(A, &M, &N));
   for (i = rstart; i < rend; i++) {
     PetscCall(MatSetValue(A, i, i, 2.0, INSERT_VALUES));
-    if (rend < N) { PetscCall(MatSetValue(A, i, rend, 1.0, INSERT_VALUES)); }
+    if (rend < N) PetscCall(MatSetValue(A, i, rend, 1.0, INSERT_VALUES));
   }
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));

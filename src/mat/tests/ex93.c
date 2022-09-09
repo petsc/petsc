@@ -30,7 +30,7 @@ int main(int argc, char **argv) {
   PetscCall(MatSetUp(A));
   PetscCall(MatSetOption(A, MAT_IGNORE_ZERO_ENTRIES, PETSC_TRUE));
 
-  if (rank == 0) { PetscCall(MatSetValues(A, 3, ij, 3, ij, a, ADD_VALUES)); }
+  if (rank == 0) PetscCall(MatSetValues(A, 3, ij, 3, ij, a, ADD_VALUES));
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
 
@@ -104,7 +104,7 @@ PetscErrorCode testPTAPRectangular(void) {
   PetscFunctionBegin;
   /* set up A  */
   PetscCall(MatCreateSeqAIJ(PETSC_COMM_WORLD, rows, rows, 1, NULL, &A));
-  for (i = 0; i < rows; i++) { PetscCall(MatSetValue(A, i, i, 1.0, INSERT_VALUES)); }
+  for (i = 0; i < rows; i++) PetscCall(MatSetValue(A, i, i, 1.0, INSERT_VALUES));
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
 

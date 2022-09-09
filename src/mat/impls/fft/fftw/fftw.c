@@ -362,7 +362,7 @@ PetscErrorCode MatDestroy_FFTW(Mat A) {
   PetscFunctionBegin;
   fftw_destroy_plan(fftw->p_forward);
   fftw_destroy_plan(fftw->p_backward);
-  if (fftw->iodims) { free(fftw->iodims); }
+  if (fftw->iodims) free(fftw->iodims);
   PetscCall(PetscFree(fftw->dim_fftw));
   PetscCall(PetscFree(fft->data));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatCreateVecsFFTW_C", NULL));
@@ -419,7 +419,7 @@ static PetscErrorCode VecDuplicate_FFTW_bout(Vec bout, Vec *bout_new) {
 
 /*@
    MatCreateVecsFFTW - Get vector(s) compatible with the matrix, i.e. with the
-     parallel layout determined by FFTW
+     parallel layout determined by `MATFFTW`
 
    Collective on Mat
 
@@ -433,20 +433,26 @@ static PetscErrorCode VecDuplicate_FFTW_bout(Vec bout, Vec *bout_new) {
 
   Level: advanced
 
-  Note: The parallel layout of output of forward FFTW is always same as the input
-        of the backward FFTW. But parallel layout of the input vector of forward
-        FFTW might not be same as the output of backward FFTW.
-        Also note that we need to provide enough space while doing parallel real transform.
-        We need to pad extra zeros at the end of last dimension. For this reason the one needs to
-        invoke the routine fftw_mpi_local_size_transposed routines. Remember one has to change the
-        last dimension from n to n/2+1 while invoking this routine. The number of zeros to be padded
-        depends on if the last dimension is even or odd. If the last dimension is even need to pad two
-        zeros if it is odd only one zero is needed.
-        Lastly one needs some scratch space at the end of data set in each process. alloc_local
-        figures out how much space is needed, i.e. it figures out the data+scratch space for
-        each processor and returns that.
+  Notes:
+  The parallel layout of output of forward FFTW is always same as the input
+  of the backward FFTW. But parallel layout of the input vector of forward
+  FFTW might not be same as the output of backward FFTW.
 
-.seealso: `MatCreateFFT()`
+  We need to provide enough space while doing parallel real transform.
+  We need to pad extra zeros at the end of last dimension. For this reason the one needs to
+  invoke the routine fftw_mpi_local_size_transposed routines. Remember one has to change the
+  last dimension from n to n/2+1 while invoking this routine. The number of zeros to be padded
+  depends on if the last dimension is even or odd. If the last dimension is even need to pad two
+  zeros if it is odd only one zero is needed.
+
+  Lastly one needs some scratch space at the end of data set in each process. alloc_local
+  figures out how much space is needed, i.e. it figures out the data+scratch space for
+  each processor and returns that.
+
+  Developer Note:
+  How come `MatCreateVecs()` doesn't produce the correctly padded vectors automatically?
+
+.seealso: `MATFFTW`, `MatCreateFFT()`, `MatCreateVecs()`
 @*/
 PetscErrorCode MatCreateVecsFFTW(Mat A, Vec *x, Vec *y, Vec *z) {
   PetscFunctionBegin;
@@ -693,7 +699,7 @@ PetscErrorCode MatCreateVecsFFTW_FFTW(Mat A, Vec *fin, Vec *fout, Vec *bout) {
 }
 
 /*@
-   VecScatterPetscToFFTW - Copies the PETSc vector to the vector that goes into FFTW block.
+   VecScatterPetscToFFTW - Copies a PETSc vector to the vector that goes into `MATFFTW` calls.
 
    Collective on Mat
 
@@ -704,16 +710,14 @@ PetscErrorCode MatCreateVecsFFTW_FFTW(Mat A, Vec *fin, Vec *fout, Vec *bout) {
    Output Parameters:
 .  y - the FFTW vector
 
-  Options Database Keys:
-. -mat_fftw_plannerflags - set FFTW planner flags
-
    Level: intermediate
 
-   Note: For real parallel FFT, FFTW requires insertion of extra space at the end of last dimension. This required even when
-         one is not doing in-place transform. The last dimension size must be changed to 2*(dim[last]/2+1) to accommodate these extra
-         zeros. This routine does that job by scattering operation.
+   Note:
+   For real parallel FFT, FFTW requires insertion of extra space at the end of last dimension. This required even when
+   one is not doing in-place transform. The last dimension size must be changed to 2*(dim[last]/2+1) to accommodate these extra
+   zeros. This routine does that job by scattering operation.
 
-.seealso: `VecScatterFFTWToPetsc()`
+.seealso: `MATFFTW`, `VecScatterFFTWToPetsc()`, `MatCreateVecsFFTW()`
 @*/
 PetscErrorCode VecScatterPetscToFFTW(Mat A, Vec x, Vec y) {
   PetscFunctionBegin;
@@ -928,12 +932,12 @@ PetscErrorCode VecScatterPetscToFFTW_FFTW(Mat A, Vec x, Vec y) {
 }
 
 /*@
-   VecScatterFFTWToPetsc - Converts FFTW output to the PETSc vector.
+   VecScatterFFTWToPetsc - Converts `MATFFTW` output vector to a PETSc vector.
 
    Collective on Mat
 
     Input Parameters:
-+   A - FFTW matrix
++   A - `MATFFTW` matrix
 -   x - FFTW vector
 
    Output Parameters:
@@ -941,10 +945,11 @@ PetscErrorCode VecScatterPetscToFFTW_FFTW(Mat A, Vec x, Vec y) {
 
    Level: intermediate
 
-   Note: While doing real transform the FFTW output of backward DFT contains extra zeros at the end of last dimension.
-         VecScatterFFTWToPetsc removes those extra zeros.
+   Note:
+   While doing real transform the FFTW output of backward DFT contains extra zeros at the end of last dimension.
+   `VecScatterFFTWToPetsc()` removes those extra zeros.
 
-.seealso: `VecScatterPetscToFFTW()`
+.seealso: `VecScatterPetscToFFTW()`, `MATFFTW`, `MatCreateVecsFFTW()`
 @*/
 PetscErrorCode VecScatterFFTWToPetsc(Mat A, Vec x, Vec y) {
   PetscFunctionBegin;

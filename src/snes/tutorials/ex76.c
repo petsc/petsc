@@ -204,7 +204,7 @@ static void g0_vu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff
   PetscInt       c, d;
 
   for (c = 0; c < Nc; ++c) {
-    for (d = 0; d < dim; ++d) { g0[c * Nc + d] = u_x[c * Nc + d]; }
+    for (d = 0; d < dim; ++d) g0[c * Nc + d] = u_x[c * Nc + d];
   }
 }
 
@@ -216,7 +216,7 @@ static void g1_vu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff
   for (c = 0; c < NcI; ++c) {
     for (d = 0; d < NcJ; ++d) {
       for (e = 0; e < dim; ++e) {
-        if (c == d) { g1[(c * NcJ + d) * dim + e] = u[e]; }
+        if (c == d) g1[(c * NcJ + d) * dim + e] = u[e];
       }
     }
   }

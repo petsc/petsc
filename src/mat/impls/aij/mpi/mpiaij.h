@@ -252,7 +252,7 @@ PETSC_INTERN PetscErrorCode MatResetPreallocationCOO_MPIAIJ(Mat);
       _pa     = p_loc->a + _pi[_row]; \
       /* perform dense axpy */ \
       _valtmp = _aa[_j]; \
-      for (_k = 0; _k < _pnz; _k++) { apa[_pj[_k]] += _valtmp * _pa[_k]; } \
+      for (_k = 0; _k < _pnz; _k++) apa[_pj[_k]] += _valtmp * _pa[_k]; \
       (void)PetscLogFlops(2.0 * _pnz); \
     } \
     /* off-diagonal portion of A */ \
@@ -269,7 +269,7 @@ PETSC_INTERN PetscErrorCode MatResetPreallocationCOO_MPIAIJ(Mat);
         _pa     = p_oth->a + _pi[_row]; \
         /* perform dense axpy */ \
         _valtmp = _aa[_j]; \
-        for (_k = 0; _k < _pnz; _k++) { apa[_pj[_k]] += _valtmp * _pa[_k]; } \
+        for (_k = 0; _k < _pnz; _k++) apa[_pj[_k]] += _valtmp * _pa[_k]; \
         (void)PetscLogFlops(2.0 * _pnz); \
       } \
     } \

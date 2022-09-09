@@ -185,7 +185,7 @@ static PetscErrorCode DMPlexCreateCutVertexLabel_Private(DM dm, DMLabel cutLabel
         for (cl = 0; cl < closureSize * 2; cl += 2) {
           if ((closure[cl] >= vStart) && (closure[cl] < vEnd)) {
             PetscCall(DMLabelGetValue(cutLabel, closure[cl], &value));
-            if (value == 1) { PetscCall(DMLabelSetValue(*cutVertexLabel, closure[cl], 1)); }
+            if (value == 1) PetscCall(DMLabelSetValue(*cutVertexLabel, closure[cl], 1));
           }
         }
         PetscCall(DMPlexRestoreTransitiveClosure(dm, cutc[c], PETSC_TRUE, &closureSize, &closure));
@@ -247,7 +247,7 @@ PetscErrorCode VecView_Plex_Local_HDF5_Internal(Vec v, PetscViewer viewer) {
       PetscCall(DMPlexGetFieldType_Internal(dm, section, f, &pStart, &pEnd, &ft));
       fgroup = (ft == PETSC_VTK_POINT_VECTOR_FIELD) || (ft == PETSC_VTK_POINT_FIELD) ? "/vertex_fields" : "/cell_fields";
       PetscCall(PetscSectionGetFieldName(section, f, &fname));
-      if (!fname) continue;
+      if (!fname || ft == PETSC_VTK_INVALID) continue;
       PetscCall(PetscViewerHDF5PushGroup(viewer, fgroup));
       if (cutLabel) {
         const PetscScalar *ga;
@@ -325,7 +325,7 @@ PetscErrorCode VecView_Plex_Local_HDF5_Internal(Vec v, PetscViewer viewer) {
       PetscCall(PetscViewerHDF5PopGroup(viewer));
     }
   }
-  if (seqnum >= 0) { PetscCall(PetscViewerHDF5PopTimestepping(viewer)); }
+  if (seqnum >= 0) PetscCall(PetscViewerHDF5PopTimestepping(viewer));
   PetscCall(DMRestoreGlobalVector(dmBC, &gv));
   PetscFunctionReturn(0);
 }
@@ -388,7 +388,7 @@ PetscErrorCode VecLoad_Plex_HDF5_Internal(Vec v, PetscViewer viewer) {
     PetscCall(PetscViewerHDF5SetTimestep(viewer, seqnum));
   }
   PetscCall(VecLoad_Plex_Local(locv, viewer));
-  if (seqnum >= 0) { PetscCall(PetscViewerHDF5PopTimestepping(viewer)); }
+  if (seqnum >= 0) PetscCall(PetscViewerHDF5PopTimestepping(viewer));
   PetscCall(PetscViewerHDF5PopGroup(viewer));
   PetscCall(DMLocalToGlobalBegin(dm, locv, INSERT_VALUES, v));
   PetscCall(DMLocalToGlobalEnd(dm, locv, INSERT_VALUES, v));
@@ -409,7 +409,7 @@ PetscErrorCode VecLoad_Plex_HDF5_Native_Internal(Vec v, PetscViewer viewer) {
     PetscCall(PetscViewerHDF5SetTimestep(viewer, seqnum));
   }
   PetscCall(VecLoad_Default(v, viewer));
-  if (seqnum >= 0) { PetscCall(PetscViewerHDF5PopTimestepping(viewer)); }
+  if (seqnum >= 0) PetscCall(PetscViewerHDF5PopTimestepping(viewer));
   PetscCall(PetscViewerHDF5PopGroup(viewer));
   PetscFunctionReturn(0);
 }
@@ -636,7 +636,7 @@ static PetscErrorCode CreateConesIS_Private(DM dm, PetscInt cStart, PetscInt cEn
     replace = (value == 2) ? PETSC_TRUE : PETSC_FALSE;
     PetscCall(DMPlexGetTransitiveClosure(dm, cell, PETSC_TRUE, &closureSize, &closure));
     for (p = 0; p < closureSize * 2; p += 2) {
-      if ((closure[p] >= vStart) && (closure[p] < vEnd)) { closure[Nc++] = closure[p]; }
+      if ((closure[p] >= vStart) && (closure[p] < vEnd)) closure[Nc++] = closure[p];
     }
     PetscCall(DMPlexReorderCell(dm, cell, closure));
     for (p = 0; p < Nc; ++p) {
@@ -1357,7 +1357,7 @@ PetscErrorCode DMPlexLabelsLoad_HDF5_Internal(DM dm, PetscViewer viewer, PetscSF
 
   PetscFunctionBegin;
   PetscCall(DMPlexIsDistributed(dm, &distributed));
-  if (distributed) { PetscCheck(sfXC, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_NULL, "PetscSF must be given for parallel load"); }
+  if (distributed) PetscCheck(sfXC, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_NULL, "PetscSF must be given for parallel load");
   PetscCall(LoadLabelsCtxCreate(dm, viewer, sfXC, &ctx));
   PetscCall(DMPlexGetHDF5Name_Private(dm, &topologydm_name));
   PetscCall(DMPlexStorageVersionGet_Private(dm, viewer, &version));
@@ -1457,8 +1457,8 @@ static PetscErrorCode DMPlexDistributionLoad_HDF5_Static(DM dm, PetscViewer view
         buffer0[workIlocalp].rank = -1;
       }
     }
-    for (p = 0; p < lsize; ++p) { buffer1[p].rank = -1; }
-    for (p = 0; p < *chartSize; ++p) { buffer2[p].rank = -1; }
+    for (p = 0; p < lsize; ++p) buffer1[p].rank = -1;
+    for (p = 0; p < *chartSize; ++p) buffer2[p].rank = -1;
     PetscCall(PetscSFReduceBegin(sf, MPIU_2INT, buffer0, buffer1, MPI_MAXLOC));
     PetscCall(PetscSFReduceEnd(sf, MPIU_2INT, buffer0, buffer1, MPI_MAXLOC));
     PetscCall(PetscSFBcastBegin(*distsf, MPIU_2INT, buffer1, buffer2, MPI_REPLACE));
@@ -1500,10 +1500,10 @@ static PetscErrorCode DMPlexDistributionLoad_HDF5_Static(DM dm, PetscViewer view
       }
       buffer0[p].index = p;
     }
-    for (p = 0; p < lsize; ++p) { buffer1[p].rank = -1; }
+    for (p = 0; p < lsize; ++p) buffer1[p].rank = -1;
     PetscCall(PetscSFReduceBegin(*distsf, MPIU_2INT, buffer0, buffer1, MPI_MAXLOC));
     PetscCall(PetscSFReduceEnd(*distsf, MPIU_2INT, buffer0, buffer1, MPI_MAXLOC));
-    for (p = 0; p < *chartSize; ++p) { buffer0[p].rank = -1; }
+    for (p = 0; p < *chartSize; ++p) buffer0[p].rank = -1;
     PetscCall(PetscSFBcastBegin(*distsf, MPIU_2INT, buffer1, buffer0, MPI_REPLACE));
     PetscCall(PetscSFBcastEnd(*distsf, MPIU_2INT, buffer1, buffer0, MPI_REPLACE));
     if (PetscDefined(USE_DEBUG)) {
@@ -1939,44 +1939,11 @@ PetscErrorCode DMPlexSectionLoad_HDF5_Internal(DM dm, PetscViewer viewer, DM sec
         nleaves++;
       }
     }
+    PetscCall(PetscFree(buffer));
     PetscCall(PetscSFCreate(comm, &sfAX));
     PetscCall(PetscSFSetFromOptions(sfAX));
     PetscCall(PetscSFSetGraph(sfAX, n, nleaves, ilocal, PETSC_OWN_POINTER, iremote, PETSC_OWN_POINTER));
-    /* Fix PetscSFCompose() and replace the code-block below with:  */
-    /* PetscCall(PetscSFCompose(sfAX, sfXB, &sfAB));      */
-    /* which currently causes segmentation fault due to sparse map. */
-    {
-      PetscInt     npoints;
-      PetscInt     mleaves;
-      PetscInt    *jlocal;
-      PetscSFNode *jremote;
-
-      PetscCall(PetscSFGetGraph(sfXB, NULL, &npoints, NULL, NULL));
-      PetscCall(PetscMalloc1(npoints, &owners));
-      for (i = 0; i < npoints; ++i) {
-        owners[i].rank  = -1;
-        owners[i].index = -1;
-      }
-      PetscCall(PetscSFBcastBegin(sfXB, MPIU_2INT, buffer, owners, MPI_REPLACE));
-      PetscCall(PetscSFBcastEnd(sfXB, MPIU_2INT, buffer, owners, MPI_REPLACE));
-      for (i = 0, mleaves = 0; i < npoints; ++i)
-        if (owners[i].rank >= 0) mleaves++;
-      PetscCall(PetscMalloc1(mleaves, &jlocal));
-      PetscCall(PetscMalloc1(mleaves, &jremote));
-      for (i = 0, mleaves = 0; i < npoints; ++i) {
-        if (owners[i].rank >= 0) {
-          jlocal[mleaves]        = i;
-          jremote[mleaves].rank  = owners[i].rank;
-          jremote[mleaves].index = owners[i].index;
-          mleaves++;
-        }
-      }
-      PetscCall(PetscSFCreate(comm, &sfAB));
-      PetscCall(PetscSFSetFromOptions(sfAB));
-      PetscCall(PetscSFSetGraph(sfAB, n, mleaves, jlocal, PETSC_OWN_POINTER, jremote, PETSC_OWN_POINTER));
-      PetscCall(PetscFree(owners));
-    }
-    PetscCall(PetscFree(buffer));
+    PetscCall(PetscSFCompose(sfAX, sfXB, &sfAB));
     PetscCall(PetscSFDestroy(&sfAX));
   }
   PetscCall(PetscViewerHDF5PopGroup(viewer));

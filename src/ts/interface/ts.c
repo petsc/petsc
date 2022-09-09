@@ -822,7 +822,7 @@ static PetscErrorCode TSRecoverRHSJacobian(TS ts, Mat A, Mat B) {
   PetscCheck(B == ts->Brhs, PetscObjectComm((PetscObject)ts), PETSC_ERR_SUP, "Invalid Bmat");
 
   if (ts->rhsjacobian.shift) PetscCall(MatShift(A, -ts->rhsjacobian.shift));
-  if (ts->rhsjacobian.scale == -1.) { PetscCall(MatScale(A, -1)); }
+  if (ts->rhsjacobian.scale == -1.) PetscCall(MatScale(A, -1));
   if (B && B == ts->Brhs && A != B) {
     if (ts->rhsjacobian.shift) PetscCall(MatShift(B, -ts->rhsjacobian.shift));
     if (ts->rhsjacobian.scale == -1.) PetscCall(MatScale(B, -1));
@@ -5782,7 +5782,7 @@ PetscErrorCode TSClone(TS tsin, TS *tsout) {
   if (((PetscObject)tsin)->fortran_func_pointers) {
     PetscInt i;
     PetscCall(PetscMalloc((10) * sizeof(void (*)(void)), &((PetscObject)t)->fortran_func_pointers));
-    for (i = 0; i < 10; i++) { ((PetscObject)t)->fortran_func_pointers[i] = ((PetscObject)tsin)->fortran_func_pointers[i]; }
+    for (i = 0; i < 10; i++) ((PetscObject)t)->fortran_func_pointers[i] = ((PetscObject)tsin)->fortran_func_pointers[i];
   }
   *tsout = t;
   PetscFunctionReturn(0);

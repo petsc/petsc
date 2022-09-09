@@ -36,7 +36,7 @@ PetscErrorCode PetscIntStackDestroy(PetscIntStack stack) {
 . stack - The stack
 
   Output Parameter:
-. empty - PETSC_TRUE if the stack is empty
+. empty - `PETSC_TRUE` if the stack is empty
 
   Level: developer
 

@@ -164,7 +164,7 @@ int main(int argc, char **args) {
 
   flg = PETSC_FALSE;
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-print_error", &flg, NULL));
-  if (flg) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Infinity norm of the error: %g\n", (double)e)); }
+  if (flg) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Infinity norm of the error: %g\n", (double)e));
   /*
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.

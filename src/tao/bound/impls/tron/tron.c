@@ -92,7 +92,7 @@ static PetscErrorCode TaoSolve_TRON(Tao tao) {
 
   /* Initialize trust region radius */
   tao->trust = tao->trust0;
-  if (tao->trust <= 0) { tao->trust = PetscMax(tron->gnorm * tron->gnorm, 1.0); }
+  if (tao->trust <= 0) tao->trust = PetscMax(tron->gnorm * tron->gnorm, 1.0);
 
   /* Initialize step sizes for the line searches */
   tron->pgstepsize = 1.0;
@@ -129,7 +129,7 @@ static PetscErrorCode TaoSolve_TRON(Tao tao) {
       PetscCall(TaoLogConvergenceHistory(tao, tron->f, tron->gnorm, 0.0, tao->ksp_its));
       PetscCall(TaoMonitor(tao, tao->niter, tron->f, tron->gnorm, 0.0, delta));
       PetscUseTypeMethod(tao, convergencetest, tao->cnvP);
-      if (!tao->reason) { tao->reason = TAO_CONVERGED_STEPTOL; }
+      if (!tao->reason) tao->reason = TAO_CONVERGED_STEPTOL;
       break;
     }
     /* use free_local to mask/submat gradient, hessian, stepdirection */

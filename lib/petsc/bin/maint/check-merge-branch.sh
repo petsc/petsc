@@ -6,7 +6,12 @@ if [ ! -z "${CI_MERGE_REQUEST_TARGET_BRANCH_NAME+x}" -a "${CI_MERGE_REQUEST_EVEN
   exit 0
 fi
 
-git fetch -q --unshallow --no-tags origin +release:remotes/origin/release +main:remotes/origin/main
+if [ ! -z "${CI_PIPELINE_ID+x}" ]; then
+  git fetch -q --unshallow --no-tags origin +release:remotes/origin/release +main:remotes/origin/main
+else
+  git fetch -q
+fi
+
 base_release=$(git merge-base --octopus origin/release origin/main HEAD)
 base_main=$(git merge-base origin/main HEAD)
 if [ ${base_release} = ${base_main} ]; then

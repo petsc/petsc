@@ -9,7 +9,7 @@ src/ts/event/             @abhyshr @caidao22 @BarrySmith
 /src/ts/utils/dmplexlandau/ @markadams4 @knepley
 
 /src/dm/impls/plex/       @knepley @wence @haplav @tisaac
-/src/dm/impls/stag/       @psanan @knepley
+/src/dm/impls/stag/       @psanan @knepley @rtmills
 
 /src/*/*/network/         @abhyshr @hongzhangsun @knepley
 /src/*/*/*/network/       @abhyshr @hongzhangsun @knepley

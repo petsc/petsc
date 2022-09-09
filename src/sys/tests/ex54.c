@@ -21,6 +21,7 @@ int main(int argc, char **argv) {
       args: -options_left 0 -options_view
 
    testset:
+      TODO: occassionally randomly produces errors in CI, very difficult to debug, the wasted time out-weighs keeping this test in the CI
       args: -options_left 0 -options_view
       test:
         suffix: 1

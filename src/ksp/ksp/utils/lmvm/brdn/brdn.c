@@ -123,7 +123,7 @@ static PetscErrorCode MatUpdate_LMVMBrdn(Mat B, Vec X, Vec F) {
     PetscCall(MatUpdateKernel_LMVM(B, lmvm->Xprev, lmvm->Fprev));
     /* If we hit the memory limit, shift the sts array */
     if (old_k == lmvm->k) {
-      for (i = 0; i <= lmvm->k - 1; ++i) { lbrdn->sts[i] = lbrdn->sts[i + 1]; }
+      for (i = 0; i <= lmvm->k - 1; ++i) lbrdn->sts[i] = lbrdn->sts[i + 1];
     }
     PetscCall(VecDot(lmvm->S[lmvm->k], lmvm->S[lmvm->k], &sts));
     lbrdn->sts[lmvm->k] = PetscRealPart(sts);
@@ -283,11 +283,9 @@ PetscErrorCode MatCreate_LMVMBrdn(Mat B) {
    Output Parameter:
 .  B - the matrix
 
+   Note:
    It is recommended that one use the MatCreate(), MatSetType() and/or MatSetFromOptions()
    paradigm instead of this routine directly.
-
-   Options Database Keys:
-.   -mat_lmvm_num_vecs - maximum number of correction vectors (i.e.: updates) stored
 
    Level: intermediate
 

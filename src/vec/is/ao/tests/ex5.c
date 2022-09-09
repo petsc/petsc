@@ -78,7 +78,7 @@ int main(int argc, char *argv[]) {
 
   PetscCall(AOApplicationToPetsc(app2petsc, n_loc, ia));
 
-  for (i = 0; i < n_loc; ++i) { PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "proc = %d : %" PetscInt_FMT " -> %" PetscInt_FMT " \n", rank, ia0[i], ia[i])); }
+  for (i = 0; i < n_loc; ++i) PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "proc = %d : %" PetscInt_FMT " -> %" PetscInt_FMT " \n", rank, ia0[i], ia[i]));
   PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD, PETSC_STDOUT));
   PetscCall(AODestroy(&app2petsc));
   PetscCall(PetscLayoutDestroy(&layout));

@@ -174,7 +174,7 @@ int main(int argc, char **argv) {
   PetscCall(MatGetOwnershipRange(J, &matis, &matie));
   PetscCall(MatSetSizes(Identity, matie - matis, matie - matis, ctxt.imax, ctxt.imax));
   PetscCall(MatSetUp(Identity));
-  for (i = matis; i < matie; i++) { PetscCall(MatSetValues(Identity, 1, &i, 1, &i, &one, INSERT_VALUES)); }
+  for (i = matis; i < matie; i++) PetscCall(MatSetValues(Identity, 1, &i, 1, &i, &one, INSERT_VALUES));
   PetscCall(MatAssemblyBegin(Identity, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(Identity, MAT_FINAL_ASSEMBLY));
 

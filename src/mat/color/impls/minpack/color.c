@@ -57,7 +57,7 @@ static PetscErrorCode MatColoringApply_SL(MatColoring mc, ISColoring *iscoloring
   /* this is ugly way to get blocksize but cannot call MatGetBlockSize() because AIJ can have bs > 1 */
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)mat, MATSEQBAIJ, &flg1));
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)mat, MATMPIBAIJ, &flg2));
-  if (flg1 || flg2) { PetscCall(MatGetBlockSize(mat, &bs)); }
+  if (flg1 || flg2) PetscCall(MatGetBlockSize(mat, &bs));
 
   PetscCall(PetscObjectGetComm((PetscObject)mat, &comm));
   PetscCallMPI(MPI_Comm_size(comm, &size));
@@ -88,7 +88,7 @@ static PetscErrorCode MatColoringApply_SL(MatColoring mc, ISColoring *iscoloring
   PetscCheck(ncolors <= IS_COLORING_MAX - 1, PETSC_COMM_SELF, PETSC_ERR_SUP, "Maximum color size exceeded");
   {
     ISColoringValue *s = (ISColoringValue *)coloring;
-    for (i = 0; i < n; i++) { s[i] = (ISColoringValue)(coloring[i] - 1); }
+    for (i = 0; i < n; i++) s[i] = (ISColoringValue)(coloring[i] - 1);
     PetscCall(MatColoringPatch(mat_seq, ncolors, n, s, iscoloring));
   }
 
@@ -103,7 +103,7 @@ static PetscErrorCode MatColoringApply_SL(MatColoring mc, ISColoring *iscoloring
 
     /* get local colors for each local node */
     PetscCall(PetscMalloc1(N_loc + 1, &colors_loc));
-    for (i = rstart; i < rend; i++) { colors_loc[i - rstart] = iscoloring_seq->colors[i]; }
+    for (i = rstart; i < rend; i++) colors_loc[i - rstart] = iscoloring_seq->colors[i];
     /* create a parallel iscoloring */
     nc = iscoloring_seq->n;
     PetscCall(ISColoringCreate(comm, nc, N_loc, colors_loc, PETSC_OWN_POINTER, iscoloring));
@@ -159,7 +159,7 @@ static PetscErrorCode MatColoringApply_LF(MatColoring mc, ISColoring *iscoloring
   /* this is ugly way to get blocksize but cannot call MatGetBlockSize() because AIJ can have bs > 1 */
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)mat, MATSEQBAIJ, &flg1));
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)mat, MATMPIBAIJ, &flg2));
-  if (flg1 || flg2) { PetscCall(MatGetBlockSize(mat, &bs)); }
+  if (flg1 || flg2) PetscCall(MatGetBlockSize(mat, &bs));
 
   PetscCall(PetscObjectGetComm((PetscObject)mat, &comm));
   PetscCallMPI(MPI_Comm_size(comm, &size));
@@ -225,13 +225,13 @@ static PetscErrorCode MatColoringApply_LF(MatColoring mc, ISColoring *iscoloring
    Notes:
     Supports only distance two colorings (for computation of Jacobians)
 
-          This is a sequential algorithm
+    This is a sequential algorithm
 
    References:
 .  * - TF Coleman and J More, "Estimation of sparse Jacobian matrices and graph coloring," SIAM Journal on Numerical Analysis, vol. 20, no. 1,
    pp. 187-209, 1983.
 
-.seealso: `MatColoringCreate()`, `MatColoring`, `MatColoringSetType()`, `MATCOLORINGGREEDY`, `MatColoringType`
+.seealso: `MatColoringTpe`, `MatColoringCreate()`, `MatColoring`, `MatColoringSetType()`, `MATCOLORINGGREEDY`, `MatColoringType`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatColoringCreate_LF(MatColoring mc) {
@@ -264,7 +264,7 @@ static PetscErrorCode MatColoringApply_ID(MatColoring mc, ISColoring *iscoloring
   /* this is ugly way to get blocksize but cannot call MatGetBlockSize() because AIJ can have bs > 1 */
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)mat, MATSEQBAIJ, &flg1));
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)mat, MATMPIBAIJ, &flg2));
-  if (flg1 || flg2) { PetscCall(MatGetBlockSize(mat, &bs)); }
+  if (flg1 || flg2) PetscCall(MatGetBlockSize(mat, &bs));
 
   PetscCall(PetscObjectGetComm((PetscObject)mat, &comm));
   PetscCallMPI(MPI_Comm_size(comm, &size));
@@ -296,7 +296,7 @@ static PetscErrorCode MatColoringApply_ID(MatColoring mc, ISColoring *iscoloring
   PetscCheck(ncolors <= IS_COLORING_MAX - 1, PETSC_COMM_SELF, PETSC_ERR_SUP, "Maximum color size exceeded");
   {
     ISColoringValue *s = (ISColoringValue *)coloring;
-    for (i = 0; i < n; i++) { s[i] = (ISColoringValue)(coloring[i] - 1); }
+    for (i = 0; i < n; i++) s[i] = (ISColoringValue)(coloring[i] - 1);
     PetscCall(MatColoringPatch(mat_seq, ncolors, n, s, iscoloring));
   }
 
@@ -311,7 +311,7 @@ static PetscErrorCode MatColoringApply_ID(MatColoring mc, ISColoring *iscoloring
 
     /* get local colors for each local node */
     PetscCall(PetscMalloc1(N_loc + 1, &colors_loc));
-    for (i = rstart; i < rend; i++) { colors_loc[i - rstart] = iscoloring_seq->colors[i]; }
+    for (i = rstart; i < rend; i++) colors_loc[i - rstart] = iscoloring_seq->colors[i];
     /* create a parallel iscoloring */
     nc = iscoloring_seq->n;
     PetscCall(ISColoringCreate(comm, nc, N_loc, colors_loc, PETSC_OWN_POINTER, iscoloring));

@@ -154,7 +154,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawImageSaveGIF(const char filename[], unsigne
   if (!GifFile) SETERRGIF("Opening");
   PetscCallGIF("Writing screen descriptor", EGifPutScreenDesc(GifFile, Width, Height, ColorRes, 0, GifCMap));
   PetscCallGIF("Writing image descriptor", EGifPutImageDesc(GifFile, 0, 0, Width, Height, 0, NULL));
-  for (Row = 0; Row < Height; Row++) { PetscCallGIF("Writing image pixels", EGifPutLine(GifFile, (GifPixelType *)pixels + Row * Width, Width)); }
+  for (Row = 0; Row < Height; Row++) PetscCallGIF("Writing image pixels", EGifPutLine(GifFile, (GifPixelType *)pixels + Row * Width, Width));
   PetscCallGIF("Closing", EGifCloseFile(GifFile, NULL));
   GifFreeMapObject(GifCMap);
   GifCMap = NULL;

@@ -125,7 +125,7 @@ PETSC_DEVICE_FUNC_DECL void LandauTensor3DRelativistic(const PetscReal a_x1[], c
 
   if (mask == 0.0) {
     for (i = 0; i < 3; ++i) {
-      for (j = 0; j < 3; ++j) { U[i][j] = 0; }
+      for (j = 0; j < 3; ++j) U[i][j] = 0;
     }
   } else {
     for (i = 0, u1u2 = u12 = u22 = udiff2 = 0; i < 3; ++i) {
@@ -141,7 +141,7 @@ PETSC_DEVICE_FUNC_DECL void LandauTensor3DRelativistic(const PetscReal a_x1[], c
     rsq  = 1. + wsq / c02;
     fact = -rsq / (g1 * g2 * PetscSqrtReal(wsq)); /* flip sign. papers use du/dt = C, PETSc uses form G(u) = du/dt - C(u) = 0 */
     for (i = 0; i < 3; ++i) {
-      for (j = 0; j < 3; ++j) { U[i][j] = fact * (-diff[i] * diff[j] / wsq + (PetscSqrtReal(rsq) - 1.) * (x1[i] * x2[j] + x1[j] * x2[i]) / wsq); }
+      for (j = 0; j < 3; ++j) U[i][j] = fact * (-diff[i] * diff[j] / wsq + (PetscSqrtReal(rsq) - 1.) * (x1[i] * x2[j] + x1[j] * x2[i]) / wsq);
       U[i][i] += fact;
     }
   }

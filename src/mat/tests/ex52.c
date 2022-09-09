@@ -28,7 +28,7 @@ int main(int argc, char **args) {
 
   /* inproc assembly */
   for (row = start; row < end; row++) {
-    for (col = start; col < end; col++, data += 1) { PetscCall(MatSetValues(A, 1, &row, 1, &col, &data, INSERT_VALUES)); }
+    for (col = start; col < end; col++, data += 1) PetscCall(MatSetValues(A, 1, &row, 1, &col, &data, INSERT_VALUES));
   }
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
@@ -36,7 +36,7 @@ int main(int argc, char **args) {
   /* offproc assembly */
   data = 5.0;
   row  = (M + start - 1) % M;
-  for (col = 0; col < M; col++) { PetscCall(MatSetValues(A, 1, &row, 1, &col, &data, ADD_VALUES)); }
+  for (col = 0; col < M; col++) PetscCall(MatSetValues(A, 1, &row, 1, &col, &data, ADD_VALUES));
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
 

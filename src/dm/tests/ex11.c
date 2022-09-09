@@ -50,7 +50,7 @@ int main(int argc, char **argv) {
   PetscCall(DMDAGetCorners(da, &xs, &ys, 0, &m, &n, 0));
   for (k = 0; k < dof; k++) {
     for (j = ys; j < ys + n; j++) {
-      for (i = xs; i < xs + m; i++) { aglobal[j][i][k] = PetscSinScalar(2.0 * PETSC_PI * (k + 1) * xy[j][i][0]); }
+      for (i = xs; i < xs + m; i++) aglobal[j][i][k] = PetscSinScalar(2.0 * PETSC_PI * (k + 1) * xy[j][i][0]);
     }
   }
   PetscCall(DMDAVecRestoreArrayDOF(da, global, &aglobal));

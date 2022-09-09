@@ -258,7 +258,7 @@ PetscErrorCode DADefineXLinearField2D(DM da, Vec field) {
   PetscCall(DMDAGetCorners(da, &sx, &sy, 0, &nx, &ny, 0));
 
   for (i = sx; i < sx + nx; i++) {
-    for (j = sy; j < sy + ny; j++) { FF[j][i] = 10.0 + 3.0 * XX[j][i].x + 5.5 * XX[j][i].y + 8.003 * XX[j][i].x * XX[j][i].y; }
+    for (j = sy; j < sy + ny; j++) FF[j][i] = 10.0 + 3.0 * XX[j][i].x + 5.5 * XX[j][i].y + 8.003 * XX[j][i].x * XX[j][i].y;
   }
 
   PetscCall(DMDAVecRestoreArray(da, field, &FF));
@@ -401,7 +401,7 @@ PetscErrorCode da_test_RefineCoords2D(PetscInt mx, PetscInt my) {
   /* apply conformal mappings */
   map_id = 0;
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-cmap", &map_id, NULL));
-  if (map_id >= 1) { PetscCall(DAApplyConformalMapping(dac, map_id)); }
+  if (map_id >= 1) PetscCall(DAApplyConformalMapping(dac, map_id));
 
   {
     DM  cdaf, cdac;
@@ -490,7 +490,7 @@ PetscErrorCode da_test_RefineCoords3D(PetscInt mx, PetscInt my, PetscInt mz) {
   /* apply conformal mappings */
   map_id = 0;
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-cmap", &map_id, NULL));
-  if (map_id >= 1) { PetscCall(DAApplyConformalMapping(dac, map_id)); }
+  if (map_id >= 1) PetscCall(DAApplyConformalMapping(dac, map_id));
 
   {
     DM  cdaf, cdac;

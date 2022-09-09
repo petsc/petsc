@@ -24,7 +24,7 @@ int main(int argc, char **argv) {
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-auto_offset", &auto_offset, NULL));
   PetscCall(PetscOptionsGetViewer(comm, NULL, NULL, "-viewer", &viewer, &format, NULL));
   PetscCall(PetscMalloc1(nLocal, &indices));
-  for (i = 0; i < nLocal; i++) { indices[i] = i + rank; }
+  for (i = 0; i < nLocal; i++) indices[i] = i + rank;
   nGlobal = size - 1 + nLocal;
   if (viewer) {
     PetscCall(PetscViewerPushFormat(viewer, format));

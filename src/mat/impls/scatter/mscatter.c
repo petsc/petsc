@@ -11,19 +11,19 @@ typedef struct {
 } Mat_Scatter;
 
 /*@
-    MatScatterGetVecScatter - Returns the user-provided scatter set with MatScatterSetVecScatter()
+    MatScatterGetVecScatter - Returns the user-provided scatter set with `MatScatterSetVecScatter()` in a `MATSCATTER` matrix
 
-    Not Collective, but not cannot use scatter if not used collectively on Mat
+    Not Collective, but not cannot use scatter if not used collectively on `Mat`
 
     Input Parameter:
-.   mat - the matrix, should have been created with MatCreateScatter() or have type MATSCATTER
+.   mat - the matrix, should have been created with MatCreateScatter() or have type `MATSCATTER`
 
     Output Parameter:
 .   scatter - the scatter context
 
     Level: intermediate
 
-.seealso: `MatCreateScatter()`, `MatScatterSetVecScatter()`, `MATSCATTER`
+.seealso: `MATSCATTER`, `MatCreateScatter()`, `MatScatterSetVecScatter()`, `MATSCATTER`
 @*/
 PetscErrorCode MatScatterGetVecScatter(Mat mat, VecScatter *scatter) {
   Mat_Scatter *mscatter;
@@ -242,12 +242,11 @@ static struct _MatOps MatOps_Values = {NULL,
                                        /*150*/ NULL};
 
 /*MC
-   MATSCATTER - MATSCATTER = "scatter" - A matrix type that simply applies a VecScatterBegin/End()
+   MATSCATTER - MATSCATTER = "scatter" - A matrix type that simply applies a `VecScatterBegin()` and `VecScatterEnd()`
 
   Level: advanced
 
-.seealso: `MatCreateScatter()`, `MatScatterSetVecScatter()`, `MatScatterGetVecScatter()`
-
+.seealso: ``MATSCATTER`, MatCreateScatter()`, `MatScatterSetVecScatter()`, `MatScatterGetVecScatter()`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatCreate_Scatter(Mat A) {
@@ -271,13 +270,13 @@ PETSC_EXTERN PetscErrorCode MatCreate_Scatter(Mat A) {
 
 #include <petsc/private/sfimpl.h>
 /*@C
-   MatCreateScatter - Creates a new matrix based on a VecScatter
+   MatCreateScatter - Creates a new matrix of `MatType` `MATSCATTER`, based on a VecScatter
 
   Collective
 
    Input Parameters:
 +  comm - MPI communicator
--  scatter - a VecScatterContext
+-  scatter - a `VecScatter`
 
    Output Parameter:
 .  A - the matrix
@@ -287,13 +286,14 @@ PETSC_EXTERN PetscErrorCode MatCreate_Scatter(Mat A) {
    PETSc requires that matrices and vectors being used for certain
    operations are partitioned accordingly.  For example, when
    creating a scatter matrix, A, that supports parallel matrix-vector
-   products using MatMult(A,x,y) the user should set the number
+   products using `MatMult`(A,x,y) the user should set the number
    of local matrix rows to be the number of local elements of the
    corresponding result vector, y. Note that this is information is
    required for use of the matrix interface routines, even though
    the scatter matrix may not actually be physically partitioned.
 
-  Developer Notes: This directly accesses information inside the VecScatter associated with the matrix-vector product
+  Developer Note:
+   This directly accesses information inside the `VecScatter` associated with the matrix-vector product
    for this matrix. This is not desirable..
 
 .seealso: `MatScatterSetVecScatter()`, `MatScatterGetVecScatter()`, `MATSCATTER`
@@ -309,17 +309,17 @@ PetscErrorCode MatCreateScatter(MPI_Comm comm, VecScatter scatter, Mat *A) {
 }
 
 /*@
-    MatScatterSetVecScatter - sets that scatter that the matrix is to apply as its linear operator
+    MatScatterSetVecScatter - sets the scatter that the matrix is to apply as its linear operator in a `MATSCATTER`
 
-   Collective on Mat
+   Collective on mat
 
     Input Parameters:
-+   mat - the scatter matrix
--   scatter - the scatter context create with VecScatterCreate()
++   mat - the `MATSCATTER` matrix
+-   scatter - the scatter context create with `VecScatterCreate()`
 
    Level: advanced
 
-.seealso: `MatCreateScatter()`, `MATSCATTER`
+.seealso: `MATSCATTER`, `MatCreateScatter()`, `MATSCATTER`
 @*/
 PetscErrorCode MatScatterSetVecScatter(Mat mat, VecScatter scatter) {
   Mat_Scatter *mscatter = (Mat_Scatter *)mat->data;

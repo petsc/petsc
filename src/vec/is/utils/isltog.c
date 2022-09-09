@@ -339,7 +339,7 @@ PetscErrorCode ISLocalToGlobalMappingView(ISLocalToGlobalMapping mapping, PetscV
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mapping, IS_LTOGM_CLASSID, 1);
-  if (!viewer) { PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)mapping), &viewer)); }
+  if (!viewer) PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)mapping), &viewer));
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
 
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)mapping), &rank));
@@ -347,7 +347,7 @@ PetscErrorCode ISLocalToGlobalMappingView(ISLocalToGlobalMapping mapping, PetscV
   if (iascii) {
     PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)mapping, viewer));
     PetscCall(PetscViewerASCIIPushSynchronized(viewer));
-    for (i = 0; i < mapping->n; i++) { PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] %" PetscInt_FMT " %" PetscInt_FMT "\n", rank, i, mapping->indices[i])); }
+    for (i = 0; i < mapping->n; i++) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] %" PetscInt_FMT " %" PetscInt_FMT "\n", rank, i, mapping->indices[i]));
     PetscCall(PetscViewerFlush(viewer));
     PetscCall(PetscViewerASCIIPopSynchronized(viewer));
   }
@@ -507,7 +507,7 @@ PetscErrorCode ISLocalToGlobalMappingSetBlockSize(ISLocalToGlobalMapping mapping
     PetscInt i;
 
     PetscCall(PetscFree((mapping->info_indices)[0]));
-    for (i = 1; i < mapping->info_nproc; i++) { PetscCall(PetscFree(mapping->info_indices[i])); }
+    for (i = 1; i < mapping->info_nproc; i++) PetscCall(PetscFree(mapping->info_indices[i]));
     PetscCall(PetscFree(mapping->info_indices));
   }
   mapping->info_cached = PETSC_FALSE;
@@ -645,19 +645,19 @@ PetscErrorCode ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping *mapping) {
     *mapping = NULL;
     PetscFunctionReturn(0);
   }
-  if ((*mapping)->dealloc_indices) { PetscCall(PetscFree((*mapping)->indices)); }
+  if ((*mapping)->dealloc_indices) PetscCall(PetscFree((*mapping)->indices));
   PetscCall(PetscFree((*mapping)->info_procs));
   PetscCall(PetscFree((*mapping)->info_numprocs));
   if ((*mapping)->info_indices) {
     PetscInt i;
 
     PetscCall(PetscFree(((*mapping)->info_indices)[0]));
-    for (i = 1; i < (*mapping)->info_nproc; i++) { PetscCall(PetscFree(((*mapping)->info_indices)[i])); }
+    for (i = 1; i < (*mapping)->info_nproc; i++) PetscCall(PetscFree(((*mapping)->info_indices)[i]));
     PetscCall(PetscFree((*mapping)->info_indices));
   }
-  if ((*mapping)->info_nodei) { PetscCall(PetscFree(((*mapping)->info_nodei)[0])); }
+  if ((*mapping)->info_nodei) PetscCall(PetscFree(((*mapping)->info_nodei)[0]));
   PetscCall(PetscFree2((*mapping)->info_nodec, (*mapping)->info_nodei));
-  if ((*mapping)->ops->destroy) { PetscCall((*(*mapping)->ops->destroy)(*mapping)); }
+  if ((*mapping)->ops->destroy) PetscCall((*(*mapping)->ops->destroy)(*mapping));
   PetscCall(PetscHeaderDestroy(mapping));
   *mapping = NULL;
   PetscFunctionReturn(0);
@@ -843,7 +843,7 @@ PetscErrorCode ISLocalToGlobalMappingApplyBlock(ISLocalToGlobalMapping mapping, 
 PetscErrorCode ISGlobalToLocalMappingApply(ISLocalToGlobalMapping mapping, ISGlobalToLocalMappingMode type, PetscInt n, const PetscInt idx[], PetscInt *nout, PetscInt idxout[]) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mapping, IS_LTOGM_CLASSID, 1);
-  if (!mapping->data) { PetscCall(ISGlobalToLocalMappingSetUp(mapping)); }
+  if (!mapping->data) PetscCall(ISGlobalToLocalMappingSetUp(mapping));
   PetscUseTypeMethod(mapping, globaltolocalmappingapply, type, n, idx, nout, idxout);
   PetscFunctionReturn(0);
 }
@@ -934,7 +934,7 @@ PetscErrorCode ISGlobalToLocalMappingApplyIS(ISLocalToGlobalMapping mapping, ISG
 PetscErrorCode ISGlobalToLocalMappingApplyBlock(ISLocalToGlobalMapping mapping, ISGlobalToLocalMappingMode type, PetscInt n, const PetscInt idx[], PetscInt *nout, PetscInt idxout[]) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mapping, IS_LTOGM_CLASSID, 1);
-  if (!mapping->data) { PetscCall(ISGlobalToLocalMappingSetUp(mapping)); }
+  if (!mapping->data) PetscCall(ISGlobalToLocalMappingSetUp(mapping));
   PetscUseTypeMethod(mapping, globaltolocalmappingapplyblock, type, n, idx, nout, idxout);
   PetscFunctionReturn(0);
 }
@@ -1068,7 +1068,7 @@ static PetscErrorCode ISLocalToGlobalMappingGetBlockInfo_Private(ISLocalToGlobal
   /* post receives for owned rows */
   PetscCall(PetscMalloc1((2 * nrecvs + 1) * (nmax + 1), &recvs));
   PetscCall(PetscMalloc1(nrecvs + 1, &recv_waits));
-  for (i = 0; i < nrecvs; i++) { PetscCallMPI(MPI_Irecv(recvs + 2 * nmax * i, 2 * nmax, MPIU_INT, MPI_ANY_SOURCE, tag1, comm, recv_waits + i)); }
+  for (i = 0; i < nrecvs; i++) PetscCallMPI(MPI_Irecv(recvs + 2 * nmax * i, 2 * nmax, MPIU_INT, MPI_ANY_SOURCE, tag1, comm, recv_waits + i));
 
   /* pack messages containing lists of local nodes to owners */
   PetscCall(PetscMalloc1(2 * n + 1, &sends));
@@ -1145,7 +1145,7 @@ static PetscErrorCode ISLocalToGlobalMappingGetBlockInfo_Private(ISLocalToGlobal
     for (i = 0; i < ng; i++) {
       if (nownedsenders[i] > 1) {
         PetscCall(PetscSynchronizedPrintf(comm, "[%d] global node %" PetscInt_FMT " local owner processors: ", rank, i + rstart));
-        for (j = 0; j < nownedsenders[i]; j++) { PetscCall(PetscSynchronizedPrintf(comm, "%" PetscInt_FMT " ", ownedsenders[starts[i] + j])); }
+        for (j = 0; j < nownedsenders[i]; j++) PetscCall(PetscSynchronizedPrintf(comm, "%" PetscInt_FMT " ", ownedsenders[starts[i] + j]));
         PetscCall(PetscSynchronizedPrintf(comm, "\n"));
       }
     }
@@ -1212,10 +1212,10 @@ static PetscErrorCode ISLocalToGlobalMappingGetBlockInfo_Private(ISLocalToGlobal
   PetscCall(PetscMalloc1(nrecvs2 + 1, &lens2));
   PetscCall(PetscMalloc1(nrecvs2 + 1, &starts3));
   PetscCall(PetscMalloc1(nrecvs2 + 1, &recv_waits));
-  for (i = 0; i < nrecvs2; i++) { PetscCallMPI(MPI_Irecv(&lens2[i], 1, MPIU_INT, dest[i], tag2, comm, recv_waits + i)); }
+  for (i = 0; i < nrecvs2; i++) PetscCallMPI(MPI_Irecv(&lens2[i], 1, MPIU_INT, dest[i], tag2, comm, recv_waits + i));
 
   /* send the message lengths */
-  for (i = 0; i < nsends2; i++) { PetscCallMPI(MPI_Send(&nprocs[i], 1, MPIU_INT, source[i], tag2, comm)); }
+  for (i = 0; i < nsends2; i++) PetscCallMPI(MPI_Send(&nprocs[i], 1, MPIU_INT, source[i], tag2, comm));
 
   /* wait on receives of lens */
   if (nrecvs2) {
@@ -1235,11 +1235,11 @@ static PetscErrorCode ISLocalToGlobalMappingGetBlockInfo_Private(ISLocalToGlobal
 
   PetscCall(PetscMalloc1(nt + 1, &recvs2));
   PetscCall(PetscMalloc1(nrecvs2 + 1, &recv_waits));
-  for (i = 0; i < nrecvs2; i++) { PetscCallMPI(MPI_Irecv(recvs2 + starts3[i], lens2[i], MPIU_INT, dest[i], tag3, comm, recv_waits + i)); }
+  for (i = 0; i < nrecvs2; i++) PetscCallMPI(MPI_Irecv(recvs2 + starts3[i], lens2[i], MPIU_INT, dest[i], tag3, comm, recv_waits + i));
 
   /* send the messages */
   PetscCall(PetscMalloc1(nsends2 + 1, &send_waits));
-  for (i = 0; i < nsends2; i++) { PetscCallMPI(MPI_Isend(sends2 + starts2[i], nprocs[i], MPIU_INT, source[i], tag3, comm, send_waits + i)); }
+  for (i = 0; i < nsends2; i++) PetscCallMPI(MPI_Isend(sends2 + starts2[i], nprocs[i], MPIU_INT, source[i], tag3, comm, send_waits + i));
 
   /* wait on receives */
   if (nrecvs2) {
@@ -1256,7 +1256,7 @@ static PetscErrorCode ISLocalToGlobalMappingGetBlockInfo_Private(ISLocalToGlobal
       nt = recvs2[cnt++];
       for (j = 0; j < nt; j++) {
         PetscCall(PetscSynchronizedPrintf(comm, "[%d] local node %" PetscInt_FMT " number of subdomains %" PetscInt_FMT ": ", rank, recvs2[cnt], recvs2[cnt + 1]));
-        for (k = 0; k < recvs2[cnt + 1]; k++) { PetscCall(PetscSynchronizedPrintf(comm, "%" PetscInt_FMT " ", recvs2[cnt + 2 + k])); }
+        for (k = 0; k < recvs2[cnt + 1]; k++) PetscCall(PetscSynchronizedPrintf(comm, "%" PetscInt_FMT " ", recvs2[cnt + 2 + k]));
         cnt += 2 + recvs2[cnt + 1];
         PetscCall(PetscSynchronizedPrintf(comm, "\n"));
       }
@@ -1319,7 +1319,7 @@ static PetscErrorCode ISLocalToGlobalMappingGetBlockInfo_Private(ISLocalToGlobal
     nt = *nproc;
     for (i = 0; i < nt; i++) {
       PetscCall(PetscSynchronizedPrintf(comm, "[%d] subdomain %" PetscInt_FMT " number of indices %" PetscInt_FMT ": ", rank, (*procs)[i], (*numprocs)[i]));
-      for (j = 0; j < (*numprocs)[i]; j++) { PetscCall(PetscSynchronizedPrintf(comm, "%" PetscInt_FMT " ", (*indices)[i][j])); }
+      for (j = 0; j < (*numprocs)[i]; j++) PetscCall(PetscSynchronizedPrintf(comm, "%" PetscInt_FMT " ", (*indices)[i][j]));
       PetscCall(PetscSynchronizedPrintf(comm, "\n"));
     }
     PetscCall(PetscSynchronizedFlush(comm, PETSC_STDOUT));
@@ -1401,7 +1401,7 @@ PetscErrorCode ISLocalToGlobalMappingRestoreBlockInfo(ISLocalToGlobalMapping map
       PetscInt i;
 
       PetscCall(PetscFree((*indices)[0]));
-      for (i = 1; i < *nproc; i++) { PetscCall(PetscFree((*indices)[i])); }
+      for (i = 1; i < *nproc; i++) PetscCall(PetscFree((*indices)[i]));
       PetscCall(PetscFree(*indices));
     }
   }
@@ -1454,7 +1454,7 @@ PetscErrorCode ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping, Pet
     for (i = 0; i < *nproc; i++) {
       PetscCall(PetscMalloc1(bs * bnumprocs[i], &(*indices)[i]));
       for (j = 0; j < bnumprocs[i]; j++) {
-        for (k = 0; k < bs; k++) { (*indices)[i][j * bs + k] = bs * bindices[i][j] + k; }
+        for (k = 0; k < bs; k++) (*indices)[i][j * bs + k] = bs * bindices[i][j] + k;
       }
       (*numprocs)[i] = bnumprocs[i] * bs;
     }
@@ -1522,7 +1522,7 @@ PetscErrorCode ISLocalToGlobalMappingGetNodeInfo(ISLocalToGlobalMapping mapping,
 
     PetscCall(PetscMalloc2(n + 1, &mapping->info_nodec, n, &mapping->info_nodei));
     PetscCall(ISLocalToGlobalMappingGetInfo(mapping, &n_neigh, &neigh, &n_shared, &shared));
-    for (i = 0; i < n; i++) { mapping->info_nodec[i] = 1; }
+    for (i = 0; i < n; i++) mapping->info_nodec[i] = 1;
     m                      = n;
     mapping->info_nodec[n] = 0;
     for (i = 1; i < n_neigh; i++) {
@@ -1641,7 +1641,7 @@ PetscErrorCode ISLocalToGlobalMappingRestoreIndices(ISLocalToGlobalMapping ltog,
   PetscValidPointer(array, 2);
   PetscCheck(ltog->bs != 1 || *array == ltog->indices, PETSC_COMM_SELF, PETSC_ERR_ARG_BADPTR, "Trying to return mismatched pointer");
 
-  if (ltog->bs > 1) { PetscCall(PetscFree(*(void **)array)); }
+  if (ltog->bs > 1) PetscCall(PetscFree(*(void **)array));
   PetscFunctionReturn(0);
 }
 

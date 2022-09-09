@@ -91,7 +91,7 @@ static PetscErrorCode PCApply_SAVIENNACL(PC pc, Vec x, Vec y) {
   PetscCall(PetscObjectTypeCompare((PetscObject)x, VECSEQVIENNACL, &flg1));
   PetscCall(PetscObjectTypeCompare((PetscObject)y, VECSEQVIENNACL, &flg2));
   PetscCheck((flg1 && flg2), PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "Currently only handles ViennaCL vectors");
-  if (!sac->SAVIENNACL) { PetscCall(PCSetUp_SAVIENNACL(pc)); }
+  if (!sac->SAVIENNACL) PetscCall(PCSetUp_SAVIENNACL(pc));
   PetscCall(VecViennaCLGetArrayRead(x, &xarray));
   PetscCall(VecViennaCLGetArrayWrite(y, &yarray));
   try {

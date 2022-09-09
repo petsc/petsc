@@ -131,8 +131,8 @@ PetscErrorCode ApplyOperator(Mat A, Vec in, Vec out) {
   PetscCall(DMStagGetIsLastRank(dm, &isLast, NULL, NULL));
 
   /* Set "pressures" on ghost boundaries by copying neighboring values*/
-  if (isFirst) { arrIn[-1][idxP] = arrIn[0][idxP]; }
-  if (isLast) { arrIn[start + n][idxP] = arrIn[start + n - 1][idxP]; }
+  if (isFirst) arrIn[-1][idxP] = arrIn[0][idxP];
+  if (isLast) arrIn[start + n][idxP] = arrIn[start + n - 1][idxP];
 
   /* Apply operator on physical points */
   for (ex = start; ex < start + n + nExtra; ++ex) {

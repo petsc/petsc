@@ -392,7 +392,7 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx) {
   PetscCall(SNESNGSGetSweeps(snes, &sweeps));
   PetscCall(SNESGetDM(snes, (DM *)&da));
   PetscCall(DMGetLocalVector(da, &localX));
-  if (B) { PetscCall(DMGetLocalVector(da, &localB)); }
+  if (B) PetscCall(DMGetLocalVector(da, &localB));
   /*
      Scatter ghost points to local vector, using the 2-step process
         DMGlobalToLocalBegin(), DMGlobalToLocalEnd().
@@ -405,7 +405,7 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx) {
   }
   PetscCall(DMDAGetLocalInfo(da, &info));
   PetscCall(DMDAVecGetArrayWrite(da, localX, &x));
-  if (B) { PetscCall(DMDAVecGetArrayRead(da, localB, &b)); }
+  if (B) PetscCall(DMDAVecGetArrayRead(da, localB, &b));
   /* looks like a combination of the formfunction / formjacobian routines */
   dhx   = (PetscReal)(info.mx - 1);
   dhy   = (PetscReal)(info.my - 1);
@@ -623,12 +623,12 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx) {
     }
   }
   PetscCall(DMDAVecRestoreArrayWrite(da, localX, &x));
-  if (B) { PetscCall(DMDAVecRestoreArrayRead(da, localB, &b)); }
+  if (B) PetscCall(DMDAVecRestoreArrayRead(da, localB, &b));
   PetscCall(DMLocalToGlobalBegin(da, localX, INSERT_VALUES, X));
   PetscCall(DMLocalToGlobalEnd(da, localX, INSERT_VALUES, X));
   PetscCall(PetscLogFlops(tot_its * (84.0 + 41.0 + 26.0)));
   PetscCall(DMRestoreLocalVector(da, &localX));
-  if (B) { PetscCall(DMRestoreLocalVector(da, &localB)); }
+  if (B) PetscCall(DMRestoreLocalVector(da, &localB));
   PetscFunctionReturn(0);
 }
 

@@ -84,7 +84,7 @@ PetscErrorCode PetscFEGeomGetChunk(PetscFEGeom *geom, PetscInt cStart, PetscInt 
   PetscFunctionBegin;
   PetscValidPointer(geom, 1);
   PetscValidPointer(chunkGeom, 4);
-  if (!(*chunkGeom)) { PetscCall(PetscNew(chunkGeom)); }
+  if (!(*chunkGeom)) PetscCall(PetscNew(chunkGeom));
   Nq                        = geom->numPoints;
   dE                        = geom->dimEmbed;
   (*chunkGeom)->dim         = geom->dim;
@@ -165,7 +165,7 @@ PetscErrorCode PetscFEGeomGetPoint(PetscFEGeom *geom, PetscInt c, PetscInt p, co
       pgeom->detJ = &geom->detJ[c * Np];
       pgeom->n    = geom->n ? &geom->n[c * Np * dE] : NULL;
     }
-    if (pcoords) { CoordinatesRefToReal(dE, dim, pgeom->xi, &geom->v[c * Np * dE], pgeom->J, pcoords, pgeom->v); }
+    if (pcoords) CoordinatesRefToReal(dE, dim, pgeom->xi, &geom->v[c * Np * dE], pgeom->J, pcoords, pgeom->v);
   } else {
     pgeom->v    = &geom->v[(c * Np + p) * dE];
     pgeom->J    = &geom->J[(c * Np + p) * dE * dE];
@@ -268,7 +268,7 @@ PetscErrorCode PetscFEGeomComplete(PetscFEGeom *geom) {
   }
   if (geom->n) {
     for (i = 0; i < N; i++) {
-      for (j = 0; j < dE; j++) { geom->n[dE * i + j] = geom->J[dE * dE * i + dE * j + dE - 1] * ((dE == 2) ? -1. : 1.); }
+      for (j = 0; j < dE; j++) geom->n[dE * i + j] = geom->J[dE * dE * i + dE * j + dE - 1] * ((dE == 2) ? -1. : 1.);
     }
   }
   PetscFunctionReturn(0);

@@ -86,12 +86,12 @@ PetscErrorCode MatDestroy_SeqCUFFT(Mat A) {
 }
 
 /*@
-  MatCreateSeqCUFFT - Creates a matrix object that provides sequential FFT via the external package CUFFT
+  MatCreateSeqCUFFT - Creates a matrix object that provides `MATSEQCUFFT` via the NVIDIA package CuFFT
 
   Collective
 
   Input Parameters:
-+ comm - MPI communicator, set to PETSC_COMM_SELF
++ comm - MPI communicator, set to `PETSC_COMM_SELF`
 . ndim - the ndim-dimensional transform
 - dim  - array of size ndim, dim[i] contains the vector length in the i-dimension
 
@@ -102,6 +102,8 @@ PetscErrorCode MatDestroy_SeqCUFFT(Mat A) {
 . -mat_cufft_plannerflags - set CUFFT planner flags
 
   Level: intermediate
+
+.seealso: `MATSEQCUFFT`
 @*/
 PetscErrorCode MatCreateSeqCUFFT(MPI_Comm comm, PetscInt ndim, const PetscInt dim[], Mat *A) {
   Mat_CUFFT *cufft;

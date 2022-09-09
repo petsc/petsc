@@ -32,58 +32,10 @@ class Configure(config.package.Package):
               "+Oopenmp", # HP
               "/openmp"   # Microsoft Visual Studio
               ]
-    self.setCompilers.pushLanguage('C')
-
-    self.found = 0
-    for flag in oflags:
-      if self.setCompilers.checkCompilerFlag(flag):
-        ompflag = flag
-        self.found = 1
-        self.compilers.CPPFLAGS += ' '+ompflag
-        try:
-          output,err,status  = self.preprocess('#if defined(_OPENMP)\nopmv=_OPENMP\n#else\n#error "No _OPENMP macro, something is wrong with the OpenMP install"\n#endif')
-        except:
-          raise RuntimeError('Unable to run preprocessor to determine if OpenMP compile flag worked')
-        loutput = output.split('\n')
-        for i in loutput:
-          if i.startswith('opmv='):
-            self.foundversion = i[5:]
-            self.ompflag = ompflag
-            break
-          if i.startswith('opmv ='):
-            self.foundversion = i[6:]
-            self.ompflag = ompflag
-            break
-        break
-    if not self.found:
-      raise RuntimeError('C Compiler has no support for OpenMP')
-    # OpenMP compile flag is also needed at link time but preprocessor flags not passed to linker
-    self.setCompilers.addLinkerFlag(ompflag)
-    self.setCompilers.popLanguage()
-
-    if hasattr(self.compilers, 'FC'):
-      self.setCompilers.pushLanguage('FC')
-      self.found = 0
-      for flag in oflags:
-        if self.setCompilers.checkCompilerFlag(flag):
-          ompflag = flag
-          self.found = 1
-          oldFlags = self.compilers.CPPFLAGS
-          # Flag is sometimes needed at preprocessor time so put it there and NOT in compiler flags
-          self.compilers.CPPFLAGS += ' '+ompflag
-          try:
-            output,err,status  = self.preprocess('#if !defined(_OPENMP)\n#error "No _OPENMP macro, something is wrong with the OpenMP install"\n#endif')
-          except:
-            raise RuntimeError('Unable to run preprocessor to determine if OpenMP compile flag worked')
-          self.compilers.CPPFLAGS = oldFlags
-          break
-      if not self.found:
-        raise RuntimeError('Fortran Compiler has no support for OpenMP')
-      self.setCompilers.addCompilerFlag(ompflag)
-      self.setCompilers.popLanguage()
 
     # No ('CUDA','CUDAC') since cuda host code is compiled by host CXX
-    for language, compiler in [('Cxx', 'CXX'), ('HIP', 'HIPC'), ('SYCL', 'SYCLC')]:
+    foundversion = False
+    for language, compiler in [('C','CC'),('Cxx','CXX'),('FC','FC'),('HIP','HIPC'),('SYCL','SYCLC')]:
       if hasattr(self.compilers, compiler):
         self.setCompilers.pushLanguage(language)
         self.found = 0
@@ -96,9 +48,19 @@ class Configure(config.package.Package):
             oldFlags = getattr(self.setCompilers, flagsName)
             setattr(self.setCompilers, flagsName, oldFlags+' '+ompflag)
             try:
-              output,err,status  = self.preprocess('#if !defined(_OPENMP)\n#error "No _OPENMP macro, something is wrong with the OpenMP install"\n#endif')
+              output,err,status  = self.preprocess('#if defined(_OPENMP)\nompv=_OPENMP\n#else\n#error "No _OPENMP macro for '+compiler+', something is wrong with the OpenMP install"\n#endif')
             except:
               raise RuntimeError('Unable to run preprocessor to determine if OpenMP compile flag worked')
+            if not foundversion and language in ['C','Cxx']:
+              loutput = output.split('\n')
+              for i in loutput:
+                if i.startswith('ompv='):
+                  self.foundversion = i[5:]
+                  self.ompflag = ompflag
+                  foundversion = True
+                  break
+            # OpenMP compile flag is also needed at link time but preprocessor flags not passed to linker
+            self.setCompilers.addLinkerFlag(ompflag)
             break
         if not self.found:
           raise RuntimeError(compiler + ' Compiler has no support for OpenMP')

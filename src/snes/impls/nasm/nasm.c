@@ -61,7 +61,7 @@ static PetscErrorCode SNESReset_NASM(SNES snes) {
   PetscCall(PetscFree(nasm->iscatter));
   PetscCall(PetscFree(nasm->gscatter));
 
-  if (nasm->weight_set) { PetscCall(VecDestroy(&nasm->weight)); }
+  if (nasm->weight_set) PetscCall(VecDestroy(&nasm->weight));
 
   nasm->eventrestrictinterp = 0;
   nasm->eventsubsolve       = 0;
@@ -111,7 +111,7 @@ static PetscErrorCode SNESSetUp_NASM(SNES snes) {
       PetscCheck(subdms, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "DM has no default decomposition defined.  Set subsolves manually with SNESNASMSetSubdomains().");
       PetscCall(DMCreateDomainDecompositionScatters(dm, nasm->n, subdms, &nasm->iscatter, &nasm->oscatter, &nasm->gscatter));
       PetscCall(PetscMalloc1(nasm->n, &nasm->oscatter_copy));
-      for (i = 0; i < nasm->n; i++) { PetscCall(VecScatterCopy(nasm->oscatter[i], &nasm->oscatter_copy[i])); }
+      for (i = 0; i < nasm->n; i++) PetscCall(VecScatterCopy(nasm->oscatter[i], &nasm->oscatter_copy[i]));
 
       PetscCall(SNESGetOptionsPrefix(snes, &optionsprefix));
       PetscCall(PetscMalloc1(nasm->n, &nasm->subsnes));
@@ -135,10 +135,10 @@ static PetscErrorCode SNESSetUp_NASM(SNES snes) {
     } else SETERRQ(PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_WRONGSTATE, "Cannot construct local problems automatically without a DM!");
   } else SETERRQ(PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_WRONGSTATE, "Must set subproblems manually if there is no DM!");
   /* allocate the global vectors */
-  if (!nasm->x) { PetscCall(PetscCalloc1(nasm->n, &nasm->x)); }
-  if (!nasm->xl) { PetscCall(PetscCalloc1(nasm->n, &nasm->xl)); }
-  if (!nasm->y) { PetscCall(PetscCalloc1(nasm->n, &nasm->y)); }
-  if (!nasm->b) { PetscCall(PetscCalloc1(nasm->n, &nasm->b)); }
+  if (!nasm->x) PetscCall(PetscCalloc1(nasm->n, &nasm->x));
+  if (!nasm->xl) PetscCall(PetscCalloc1(nasm->n, &nasm->xl));
+  if (!nasm->y) PetscCall(PetscCalloc1(nasm->n, &nasm->y));
+  if (!nasm->b) PetscCall(PetscCalloc1(nasm->n, &nasm->b));
 
   for (i = 0; i < nasm->n; i++) {
     PetscCall(SNESGetFunction(nasm->subsnes[i], &F, NULL, NULL));
@@ -153,8 +153,8 @@ static PetscErrorCode SNESSetUp_NASM(SNES snes) {
   }
   if (nasm->finaljacobian) {
     PetscCall(SNESSetUpMatrices(snes));
-    if (nasm->fjtype == 2) { PetscCall(VecDuplicate(snes->vec_sol, &nasm->xinit)); }
-    for (i = 0; i < nasm->n; i++) { PetscCall(SNESSetUpMatrices(nasm->subsnes[i])); }
+    if (nasm->fjtype == 2) PetscCall(VecDuplicate(snes->vec_sol, &nasm->xinit));
+    for (i = 0; i < nasm->n; i++) PetscCall(SNESSetUpMatrices(nasm->subsnes[i]));
   }
   PetscFunctionReturn(0);
 }
@@ -364,16 +364,16 @@ static PetscErrorCode SNESNASMSetSubdomains_NASM(SNES snes, PetscInt n, SNES sub
   }
   if (iscatter) {
     PetscCall(PetscMalloc1(n, &nasm->iscatter));
-    for (i = 0; i < n; i++) { nasm->iscatter[i] = iscatter[i]; }
+    for (i = 0; i < n; i++) nasm->iscatter[i] = iscatter[i];
   }
   if (gscatter) {
     PetscCall(PetscMalloc1(n, &nasm->gscatter));
-    for (i = 0; i < n; i++) { nasm->gscatter[i] = gscatter[i]; }
+    for (i = 0; i < n; i++) nasm->gscatter[i] = gscatter[i];
   }
 
   if (subsnes) {
     PetscCall(PetscMalloc1(n, &nasm->subsnes));
-    for (i = 0; i < n; i++) { nasm->subsnes[i] = subsnes[i]; }
+    for (i = 0; i < n; i++) nasm->subsnes[i] = subsnes[i];
   }
   PetscFunctionReturn(0);
 }

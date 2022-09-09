@@ -93,12 +93,12 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetPointsUniformCoordinates(DM dm, PetscReal 
         ijk[0] = i;
         ijk[1] = j;
         ijk[2] = k;
-        for (b = 0; b < bs; b++) { xp[b] = min[b] + ijk[b] * dx[b]; }
+        for (b = 0; b < bs; b++) xp[b] = min[b] + ijk[b] * dx[b];
         for (b = 0; b < bs; b++) {
-          if (xp[b] < gmin[b]) { point_inside = PETSC_FALSE; }
-          if (xp[b] > gmax[b]) { point_inside = PETSC_FALSE; }
+          if (xp[b] < gmin[b]) point_inside = PETSC_FALSE;
+          if (xp[b] > gmax[b]) point_inside = PETSC_FALSE;
         }
-        if (point_inside) { n_estimate++; }
+        if (point_inside) n_estimate++;
       }
     }
   }
@@ -121,13 +121,13 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetPointsUniformCoordinates(DM dm, PetscReal 
         ijk[0] = i;
         ijk[1] = j;
         ijk[2] = k;
-        for (b = 0; b < bs; b++) { xp[b] = min[b] + ijk[b] * dx[b]; }
+        for (b = 0; b < bs; b++) xp[b] = min[b] + ijk[b] * dx[b];
         for (b = 0; b < bs; b++) {
-          if (xp[b] < gmin[b]) { point_inside = PETSC_FALSE; }
-          if (xp[b] > gmax[b]) { point_inside = PETSC_FALSE; }
+          if (xp[b] < gmin[b]) point_inside = PETSC_FALSE;
+          if (xp[b] > gmax[b]) point_inside = PETSC_FALSE;
         }
         if (point_inside) {
-          for (b = 0; b < bs; b++) { _pos[bs * n_estimate + b] = xp[b]; }
+          for (b = 0; b < bs; b++) _pos[bs * n_estimate + b] = xp[b];
           n_estimate++;
         }
       }
@@ -140,7 +140,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetPointsUniformCoordinates(DM dm, PetscReal 
   PetscCall(PetscSFGetGraph(sfcell, NULL, NULL, NULL, &LA_sfcell));
   n_found = 0;
   for (p = 0; p < n_estimate; p++) {
-    if (LA_sfcell[p].index != DMLOCATEPOINT_POINT_NOT_FOUND) { n_found++; }
+    if (LA_sfcell[p].index != DMLOCATEPOINT_POINT_NOT_FOUND) n_found++;
   }
 
   /* adjust size */
@@ -162,7 +162,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetPointsUniformCoordinates(DM dm, PetscReal 
   n_found = 0;
   for (p = 0; p < n_estimate; p++) {
     if (LA_sfcell[p].index != DMLOCATEPOINT_POINT_NOT_FOUND) {
-      for (b = 0; b < bs; b++) { swarm_coor[bs * (n_curr + n_found) + b] = PetscRealPart(_coor[bs * p + b]); }
+      for (b = 0; b < bs; b++) swarm_coor[bs * (n_curr + n_found) + b] = PetscRealPart(_coor[bs * p + b]);
       swarm_cellid[n_curr + n_found] = LA_sfcell[p].index;
       n_found++;
     }
@@ -256,10 +256,10 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetPointCoordinates(DM dm, PetscInt npoints, 
     PetscBool point_inside = PETSC_TRUE;
 
     for (b = 0; b < bs; b++) {
-      if (my_coor[bs * i + b] < gmin[b]) { point_inside = PETSC_FALSE; }
-      if (my_coor[bs * i + b] > gmax[b]) { point_inside = PETSC_FALSE; }
+      if (my_coor[bs * i + b] < gmin[b]) point_inside = PETSC_FALSE;
+      if (my_coor[bs * i + b] > gmax[b]) point_inside = PETSC_FALSE;
     }
-    if (point_inside) { n_estimate++; }
+    if (point_inside) n_estimate++;
   }
 
   /* create candidate list */
@@ -274,11 +274,11 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetPointCoordinates(DM dm, PetscInt npoints, 
     PetscBool point_inside = PETSC_TRUE;
 
     for (b = 0; b < bs; b++) {
-      if (my_coor[bs * i + b] < gmin[b]) { point_inside = PETSC_FALSE; }
-      if (my_coor[bs * i + b] > gmax[b]) { point_inside = PETSC_FALSE; }
+      if (my_coor[bs * i + b] < gmin[b]) point_inside = PETSC_FALSE;
+      if (my_coor[bs * i + b] > gmax[b]) point_inside = PETSC_FALSE;
     }
     if (point_inside) {
-      for (b = 0; b < bs; b++) { _pos[bs * n_estimate + b] = my_coor[bs * i + b]; }
+      for (b = 0; b < bs; b++) _pos[bs * n_estimate + b] = my_coor[bs * i + b];
       n_estimate++;
     }
   }
@@ -290,7 +290,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetPointCoordinates(DM dm, PetscInt npoints, 
   PetscCall(PetscSFGetGraph(sfcell, NULL, NULL, NULL, &LA_sfcell));
   n_found = 0;
   for (p = 0; p < n_estimate; p++) {
-    if (LA_sfcell[p].index != DMLOCATEPOINT_POINT_NOT_FOUND) { n_found++; }
+    if (LA_sfcell[p].index != DMLOCATEPOINT_POINT_NOT_FOUND) n_found++;
   }
 
   /* adjust size */
@@ -312,7 +312,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetPointCoordinates(DM dm, PetscInt npoints, 
   n_found = 0;
   for (p = 0; p < n_estimate; p++) {
     if (LA_sfcell[p].index != DMLOCATEPOINT_POINT_NOT_FOUND) {
-      for (b = 0; b < bs; b++) { swarm_coor[bs * (n_curr + n_found) + b] = PetscRealPart(_coor[bs * p + b]); }
+      for (b = 0; b < bs; b++) swarm_coor[bs * (n_curr + n_found) + b] = PetscRealPart(_coor[bs * p + b]);
       swarm_cellid[n_curr + n_found] = LA_sfcell[p].index;
       n_found++;
     }
@@ -322,7 +322,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetPointCoordinates(DM dm, PetscInt npoints, 
   PetscCall(VecRestoreArrayRead(pos, &_coor));
 
   if (redundant) {
-    if (rank > 0) { PetscCall(PetscFree(my_coor)); }
+    if (rank > 0) PetscCall(PetscFree(my_coor));
   }
   PetscCall(PetscSFDestroy(&sfcell));
   PetscCall(VecDestroy(&pos));
@@ -531,7 +531,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmCreatePointPerCellCount(DM dm, PetscInt *ncel
     PetscCall(DMSwarmSortGetSizes(dm, &nel, NULL));
 
     PetscCall(PetscMalloc1(nel, &sum));
-    for (e = 0; e < nel; e++) { PetscCall(DMSwarmSortGetNumberOfPointsPerCell(dm, e, &sum[e])); }
+    for (e = 0; e < nel; e++) PetscCall(DMSwarmSortGetNumberOfPointsPerCell(dm, e, &sum[e]));
   } else {
     DM        celldm;
     PetscBool isda, isplex, isshell;
@@ -570,11 +570,11 @@ PETSC_EXTERN PetscErrorCode DMSwarmCreatePointPerCellCount(DM dm, PetscInt *ncel
     PetscCall(DMSwarmGetLocalSize(dm, &npoints));
     PetscCall(DMSwarmGetField(dm, DMSwarmPICField_cellid, NULL, NULL, (void **)&swarm_cellid));
     for (p = 0; p < npoints; p++) {
-      if (swarm_cellid[p] != DMLOCATEPOINT_POINT_NOT_FOUND) { sum[swarm_cellid[p]]++; }
+      if (swarm_cellid[p] != DMLOCATEPOINT_POINT_NOT_FOUND) sum[swarm_cellid[p]]++;
     }
     PetscCall(DMSwarmRestoreField(dm, DMSwarmPICField_cellid, NULL, NULL, (void **)&swarm_cellid));
   }
-  if (ncells) { *ncells = nel; }
+  if (ncells) *ncells = nel;
   *count = sum;
   PetscFunctionReturn(0);
 }
@@ -979,7 +979,7 @@ PetscErrorCode DMSwarmInitializeVelocities(DM sw, PetscProbFunc sampler, const P
 
       for (d = 0; d < dim; ++d) PetscCall(PetscRandomGetValueReal(rnd, &a[d]));
       PetscCall(sampler(a, NULL, vel));
-      for (d = 0; d < dim; ++d) { v[p * dim + d] = (v0[s] / v0[0]) * vel[d]; }
+      for (d = 0; d < dim; ++d) v[p * dim + d] = (v0[s] / v0[0]) * vel[d];
     }
     PetscCall(PetscRandomDestroy(&rnd));
   }

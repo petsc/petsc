@@ -70,15 +70,15 @@ static PetscErrorCode PetscBoxStartWebServer_Private(void) {
 /*@C
      PetscBoxAuthorize - Get authorization and refresh token for accessing Box drive from PETSc
 
-   Not collective, only the first process in MPI_Comm does anything
+   Not collective, only the first rank in `MPI_Comm` does anything
 
    Input Parameters:
 +  comm - the MPI communicator
 -  tokensize - size of the token arrays
 
    Output Parameters:
-+  access_token - can be used with PetscBoxUpload() for this one session
--  refresh_token - can be used for ever to obtain new access_tokens with PetscBoxRefresh(), guard this like a password
++  access_token - can be used with `PetscBoxUpload()` for this one session
+-  refresh_token - can be used for ever to obtain new access_tokens with `PetscBoxRefresh()`, guard this like a password
                    it gives access to your Box Drive
 
    Notes:
@@ -100,7 +100,6 @@ $    cat newkey.pem newcert.pem > sslclient.pem
    Level: intermediate
 
 .seealso: `PetscBoxRefresh()`, `PetscBoxUpload()`, `PetscURLShorten()`
-
 @*/
 PetscErrorCode PetscBoxAuthorize(MPI_Comm comm, char access_token[], char refresh_token[], size_t tokensize) {
   SSL_CTX    *ctx;
@@ -154,22 +153,21 @@ PetscErrorCode PetscBoxAuthorize(MPI_Comm comm, char access_token[], char refres
 /*@C
      PetscBoxRefresh - Get a new authorization token for accessing Box drive from PETSc from a refresh token
 
-   Not collective, only the first process in the MPI_Comm does anything
+   Not collective, only the first process in the `MPI_Comm` does anything
 
    Input Parameters:
 +   comm - MPI communicator
-.   refresh token - obtained with PetscBoxAuthorize(), if NULL PETSc will first look for one in the options data
-                    if not found it will call PetscBoxAuthorize()
+.   refresh token - obtained with `PetscBoxAuthorize()`, if NULL PETSc will first look for one in the options data
+                    if not found it will call `PetscBoxAuthorize()`
 -   tokensize - size of the output string access_token
 
    Output Parameters:
-+   access_token - token that can be passed to PetscBoxUpload()
++   access_token - token that can be passed to `PetscBoxUpload()`
 -   new_refresh_token - the old refresh token is no longer valid, not this is different than Google where the same refresh_token is used forever
 
    Level: intermediate
 
 .seealso: `PetscURLShorten()`, `PetscBoxAuthorize()`, `PetscBoxUpload()`
-
 @*/
 PetscErrorCode PetscBoxRefresh(MPI_Comm comm, const char refresh_token[], char access_token[], char new_refresh_token[], size_t tokensize) {
   SSL_CTX    *ctx;
@@ -231,17 +229,18 @@ PetscErrorCode PetscBoxRefresh(MPI_Comm comm, const char refresh_token[], char a
 
      This routine has not yet been written; it is just copied from Google Drive
 
-     Not collective, only the first process in the MPI_Comm uploads the file
+     Not collective, only the first process in the `MPI_Comm` uploads the file
 
   Input Parameters:
 +   comm - MPI communicator
-.   access_token - obtained with PetscBoxRefresh(), pass NULL to have PETSc generate one
+.   access_token - obtained with `PetscBoxRefresh()`, pass NULL to have PETSc generate one
 -   filename - file to upload; if you upload multiple times it will have different names each time on Box Drive
 
-  Options Database:
+  Options Database Key:
 .  -box_refresh_token XXX - the token value
 
   Usage Patterns:
+.vb
     With PETSc option -box_refresh_token XXX given
     PetscBoxUpload(comm,NULL,filename);        will upload file with no user interaction
 
@@ -258,11 +257,11 @@ PetscErrorCode PetscBoxRefresh(MPI_Comm comm, const char refresh_token[], char a
 
     PetscBoxAuthorize(comm,access_token,refresh_token,sizeof(access_token));
     PetscBoxUpload(comm,access_token,filename);
+.ve
 
    Level: intermediate
 
 .seealso: `PetscURLShorten()`, `PetscBoxAuthorize()`, `PetscBoxRefresh()`
-
 @*/
 PetscErrorCode PetscBoxUpload(MPI_Comm comm, const char access_token[], const char filename[]) {
   SSL_CTX    *ctx;

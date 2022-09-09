@@ -87,7 +87,7 @@ static PetscErrorCode PCApply_VPBJacobi(PC pc, Vec x, Vec y) {
     default:
       for (ib = 0; ib < bs; ib++) {
         PetscScalar rowsum = 0;
-        for (jb = 0; jb < bs; jb++) { rowsum += diag[ib + jb * bs] * xx[ncnt + jb]; }
+        for (jb = 0; jb < bs; jb++) rowsum += diag[ib + jb * bs] * xx[ncnt + jb];
         yy[ncnt + ib] = rowsum;
       }
     }

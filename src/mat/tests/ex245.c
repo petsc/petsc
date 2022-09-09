@@ -165,13 +165,13 @@ int main(int argc, char **argv) {
   PetscCall(MatMult(Aher, x, c));
   PetscCall(VecAXPY(c, -1.0, b));
   PetscCall(VecNorm(c, NORM_1, &norm));
-  if (norm > tol) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Warning: ||Aher*x - b||=%g for Cholesky\n", (double)norm)); }
+  if (norm > tol) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Warning: ||Aher*x - b||=%g for Cholesky\n", (double)norm));
 
   /* Check norm(Aher*X - B) */
   PetscCall(MatMatMult(Aher, X, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &C));
   PetscCall(MatAXPY(C, -1.0, B, SAME_NONZERO_PATTERN));
   PetscCall(MatNorm(C, NORM_1, &norm));
-  if (norm > tol) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Warning: ||Aher*X - B||=%g for Cholesky\n", (double)norm)); }
+  if (norm > tol) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Warning: ||Aher*X - B||=%g for Cholesky\n", (double)norm));
 
   /* LU factorization */
   /*------------------*/
@@ -200,13 +200,13 @@ int main(int argc, char **argv) {
   PetscCall(VecAXPY(c, -1.0, e));
   PetscCall(VecAXPY(c, -1.0, b));
   PetscCall(VecNorm(c, NORM_1, &norm));
-  if (norm > tol) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Warning: ||A*x - b||=%g for LU\n", (double)norm)); }
+  if (norm > tol) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Warning: ||A*x - b||=%g for LU\n", (double)norm));
   /* Reuse product C; replace Aher with A */
   PetscCall(MatProductReplaceMats(A, NULL, NULL, C));
   PetscCall(MatMatMult(A, X, MAT_REUSE_MATRIX, PETSC_DEFAULT, &C));
   PetscCall(MatAXPY(C, -1.0, B, SAME_NONZERO_PATTERN));
   PetscCall(MatNorm(C, NORM_1, &norm));
-  if (norm > tol) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Warning: ||A*X - B||=%g for LU\n", (double)norm)); }
+  if (norm > tol) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Warning: ||A*X - B||=%g for LU\n", (double)norm));
 
   /* Out-place LU */
   PetscCall(MatGetFactor(A, MATSOLVERSCALAPACK, MAT_FACTOR_LU, &F));

@@ -423,12 +423,12 @@ PetscErrorCode DMFieldCreateFEGeom(DMField field, IS pointIS, PetscQuadrature qu
       PetscReal J[9];
 
       for (j = 0; j < dE; j++) {
-        for (k = 0; k < dim; k++) { J[j * dE + k] = g->J[i * dE * dim + j * dim + k]; }
+        for (k = 0; k < dim; k++) J[j * dE + k] = g->J[i * dE * dim + j * dim + k];
       }
       switch (dim) {
       case 0:
         for (j = 0; j < dE; j++) {
-          for (k = 0; k < dE; k++) { J[j * dE + k] = (j == k) ? 1. : 0.; }
+          for (k = 0; k < dE; k++) J[j * dE + k] = (j == k) ? 1. : 0.;
         }
         break;
       case 1:
@@ -478,13 +478,13 @@ PetscErrorCode DMFieldCreateFEGeom(DMField field, IS pointIS, PetscQuadrature qu
         J[8] *= inorm;
       } break;
       }
-      for (j = 0; j < dE * dE; j++) { g->J[i * dE * dE + j] = J[j]; }
+      for (j = 0; j < dE * dE; j++) g->J[i * dE * dE + j] = J[j];
     }
   }
   PetscCall(PetscFEGeomComplete(g));
   PetscCall(DMFieldGetDegree(field, pointIS, NULL, &maxDegree));
   g->isAffine = (maxDegree <= 1) ? PETSC_TRUE : PETSC_FALSE;
-  if (faceData) { PetscCall((*field->ops->computeFaceData)(field, pointIS, quad, g)); }
+  if (faceData) PetscCall((*field->ops->computeFaceData)(field, pointIS, quad, g));
   *geom = g;
   PetscFunctionReturn(0);
 }

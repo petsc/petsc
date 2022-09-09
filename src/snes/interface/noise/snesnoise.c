@@ -127,13 +127,13 @@ PetscErrorCode SNESDiffParameterCompute_More(SNES snes, void *nePv, Vec x, Vec p
     for (i = 0; i < nf; i++) tab[i][0] = fval[i];
 
     for (j = 0; j < nf - 1; j++) {
-      for (i = 0; i < nf - j - 1; i++) { tab[i][j + 1] = tab[i + 1][j] - tab[i][j]; }
+      for (i = 0; i < nf - j - 1; i++) tab[i][j + 1] = tab[i + 1][j] - tab[i][j];
     }
 
     /* Print the difference table */
     PetscCall(PetscFPrintf(comm, fp, "Difference Table: iter = %" PetscInt_FMT "\n", iter));
     for (i = 0; i < nf; i++) {
-      for (j = 0; j < nf - i; j++) { PetscCall(PetscFPrintf(comm, fp, " %10.2e ", tab[i][j])); }
+      for (j = 0; j < nf - i; j++) PetscCall(PetscFPrintf(comm, fp, " %10.2e ", tab[i][j]));
       PetscCall(PetscFPrintf(comm, fp, "\n"));
     }
 
@@ -143,8 +143,8 @@ PetscErrorCode SNESDiffParameterCompute_More(SNES snes, void *nePv, Vec x, Vec p
     /* Output statements */
     rerrf = *fnoise / PetscAbsScalar(f);
     if (info == 1) PetscCall(PetscFPrintf(comm, fp, "%s\n", "Noise detected"));
-    if (info == 2) { PetscCall(PetscFPrintf(comm, fp, "%s\n", "Noise not detected; h is too small")); }
-    if (info == 3) { PetscCall(PetscFPrintf(comm, fp, "%s\n", "Noise not detected; h is too large")); }
+    if (info == 2) PetscCall(PetscFPrintf(comm, fp, "%s\n", "Noise not detected; h is too small"));
+    if (info == 3) PetscCall(PetscFPrintf(comm, fp, "%s\n", "Noise not detected; h is too large"));
     if (info == 4) PetscCall(PetscFPrintf(comm, fp, "%s\n", "Noise detected, but unreliable hopt"));
     PetscCall(PetscFPrintf(comm, fp, "Approximate epsfcn %g  %g  %g  %g  %g  %g\n", (double)eps[0], (double)eps[1], (double)eps[2], (double)eps[3], (double)eps[4], (double)eps[5]));
     PetscCall(PetscFPrintf(comm, fp, "h = %g, fnoise = %g, fder2 = %g, rerrf = %g, hopt = %g\n\n", (double)h, (double)*fnoise, (double)fder2, (double)rerrf, (double)*hopt));

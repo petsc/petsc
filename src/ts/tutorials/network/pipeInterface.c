@@ -158,7 +158,7 @@ PetscErrorCode PipeDestroyJacobian(Pipe pipe) {
 
   PetscFunctionBegin;
   if (Jpipe) {
-    for (i = 0; i < 3; i++) { PetscCall(MatDestroy(&Jpipe[i])); }
+    for (i = 0; i < 3; i++) PetscCall(MatDestroy(&Jpipe[i]));
   }
   PetscCall(PetscFree(Jpipe));
   PetscFunctionReturn(0);

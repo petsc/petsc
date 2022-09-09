@@ -11,7 +11,7 @@ static PetscErrorCode PFView_String(void *value, PetscViewer viewer) {
 
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) { PetscCall(PetscViewerASCIIPrintf(viewer, "String = %s\n", (char *)value)); }
+  if (iascii) PetscCall(PetscViewerASCIIPrintf(viewer, "String = %s\n", (char *)value));
   PetscFunctionReturn(0);
 }
 
@@ -109,7 +109,7 @@ PETSC_EXTERN PetscErrorCode PFCreate_String(PF pf, void *value) {
   FCN f = NULL;
 
   PetscFunctionBegin;
-  if (value) { PetscCall(PFStringCreateFunction(pf, (char *)value, (void **)&f)); }
+  if (value) PetscCall(PFStringCreateFunction(pf, (char *)value, (void **)&f));
   PetscCall(PFSet(pf, f, NULL, PFView_String, PFDestroy_String, NULL));
   pf->ops->setfromoptions = PFSetFromOptions_String;
   PetscFunctionReturn(0);

@@ -130,7 +130,7 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat A, Mat P, Mat C) 
   /* get data from symbolic products */
   p_loc = (Mat_SeqAIJ *)(ptap->P_loc)->data;
   p_oth = NULL;
-  if (size > 1) { p_oth = (Mat_SeqAIJ *)(ptap->P_oth)->data; }
+  if (size > 1) p_oth = (Mat_SeqAIJ *)(ptap->P_oth)->data;
 
   /* get apa for storing dense row A[i,:]*P */
   apa = ptap->apa;
@@ -387,8 +387,8 @@ PetscErrorCode MatMPIAIJ_MPIDenseDestroy(void *ctx) {
   PetscFunctionBegin;
   PetscCall(MatDestroy(&contents->workB));
   PetscCall(MatDestroy(&contents->workB1));
-  for (i = 0; i < contents->nsends; i++) { PetscCallMPI(MPI_Type_free(&contents->stype[i])); }
-  for (i = 0; i < contents->nrecvs; i++) { PetscCallMPI(MPI_Type_free(&contents->rtype[i])); }
+  for (i = 0; i < contents->nsends; i++) PetscCallMPI(MPI_Type_free(&contents->stype[i]));
+  for (i = 0; i < contents->nrecvs; i++) PetscCallMPI(MPI_Type_free(&contents->rtype[i]));
   PetscCall(PetscFree4(contents->stype, contents->rtype, contents->rwaits, contents->swaits));
   PetscCall(PetscFree(contents));
   PetscFunctionReturn(0);
@@ -411,10 +411,10 @@ static PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat A, Mat B, PetscReal
   PetscCheck(!C->product->data, PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "Product data not empty");
   PetscCall(PetscObjectGetComm((PetscObject)A, &comm));
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)C, MATMPIDENSE, &cisdense));
-  if (!cisdense) { PetscCall(MatSetType(C, ((PetscObject)B)->type_name)); }
+  if (!cisdense) PetscCall(MatSetType(C, ((PetscObject)B)->type_name));
   PetscCall(MatGetLocalSize(C, &m, &n));
   PetscCall(MatGetSize(C, &M, &N));
-  if (m == PETSC_DECIDE || n == PETSC_DECIDE || M == PETSC_DECIDE || N == PETSC_DECIDE) { PetscCall(MatSetSizes(C, Am, B->cmap->n, A->rmap->N, BN)); }
+  if (m == PETSC_DECIDE || n == PETSC_DECIDE || M == PETSC_DECIDE || N == PETSC_DECIDE) PetscCall(MatSetSizes(C, Am, B->cmap->n, A->rmap->N, BN));
   PetscCall(MatSetBlockSizesFromMats(C, A, B));
   PetscCall(MatSetUp(C));
   PetscCall(MatDenseGetLDA(B, &blda));
@@ -547,12 +547,12 @@ PetscErrorCode              MatMPIDenseScatter(Mat A, Mat B, PetscInt Bbidx, Mat
                /* Post recv, use MPI derived data type to save memory */
                PetscCall(PetscObjectGetComm((PetscObject)C, &comm));
                rtype = contents->rtype;
-               for (i = 0; i < nrecvs; i++) { PetscCallMPI(MPI_Irecv(rvalues + (rstarts[i] - rstarts[0]), ncols, rtype[i], rprocs[i], tag, comm, rwaits + i)); }
+               for (i = 0; i < nrecvs; i++) PetscCallMPI(MPI_Irecv(rvalues + (rstarts[i] - rstarts[0]), ncols, rtype[i], rprocs[i], tag, comm, rwaits + i));
 
-               stype = contents->stype;
-               for (i = 0; i < nsends; i++) { PetscCallMPI(MPI_Isend(b, ncols, stype[i], sprocs[i], tag, comm, swaits + i)); }
+  stype = contents->stype;
+               for (i = 0; i < nsends; i++) PetscCallMPI(MPI_Isend(b, ncols, stype[i], sprocs[i], tag, comm, swaits + i));
 
-               if (nrecvs) PetscCallMPI(MPI_Waitall(nrecvs_mpi, rwaits, MPI_STATUSES_IGNORE));
+  if (nrecvs) PetscCallMPI(MPI_Waitall(nrecvs_mpi, rwaits, MPI_STATUSES_IGNORE));
   if (nsends) PetscCallMPI(MPI_Waitall(nsends_mpi, swaits, MPI_STATUSES_IGNORE));
 
   PetscCall(VecScatterRestoreRemote_Private(ctx, PETSC_TRUE /*send*/, &nsends, &sstarts, &sindices, &sprocs, NULL));
@@ -1085,7 +1085,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_seqMPI(Mat A, Mat P, PetscReal f
       row  = *adj++;
       pnz  = poff_i[row + 1] - poff_i[row];
       Jptr = poff_j + poff_i[row];
-      for (i1 = 0; i1 < pnz; i1++) { j_temp[i1] = p->garray[Jptr[i1]]; }
+      for (i1 = 0; i1 < pnz; i1++) j_temp[i1] = p->garray[Jptr[i1]];
       /* add non-zero cols of P into the sorted linked list lnk */
       PetscCall(PetscLLCondensedAddSorted(pnz, j_temp, lnk, lnkbt));
     }
@@ -1140,7 +1140,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_seqMPI(Mat A, Mat P, PetscReal f
     adpdnz = adpdi[i + 1] - adpdi[i];
 
     /* Correct indices from A_diag*P_diag */
-    for (i1 = 0; i1 < adpdnz; i1++) { adpdJ[i1] += p_colstart; }
+    for (i1 = 0; i1 < adpdnz; i1++) adpdJ[i1] += p_colstart;
     /* Merge j-arrays of A_diag * P_loc_off and A_diag * P_loc_diag and A_off * P_oth */
     Merge3SortedArrays(adponz, adpoJ, adpdnz, adpdJ, aopnz, aopJ, &apnz, apJ);
     PetscCall(MatPreallocateSet(i + rstart, apnz, apJ, dnz, onz));
@@ -1336,7 +1336,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P, Mat 
   c_loc = (Mat_SeqAIJ *)ptap->C_loc->data;
 
   /* receives coj are complete */
-  for (i = 0; i < nrecv; i++) { PetscCallMPI(MPI_Waitany(nrecv, rwaits, &icompleted, &rstatus)); }
+  for (i = 0; i < nrecv; i++) PetscCallMPI(MPI_Waitany(nrecv, rwaits, &icompleted, &rstatus));
   PetscCall(PetscFree(rwaits));
   if (nsend) PetscCallMPI(MPI_Waitall(nsend, swaits, sstatus));
 
@@ -1349,7 +1349,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P, Mat 
 
   for (k = 0; k < nrecv; k++) { /* k-th received message */
     Jptr = buf_rj[k];
-    for (j = 0; j < len_r[k]; j++) { PetscCall(PetscTableAdd(ta, *(Jptr + j) + 1, 1, INSERT_VALUES)); }
+    for (j = 0; j < len_r[k]; j++) PetscCall(PetscTableAdd(ta, *(Jptr + j) + 1, 1, INSERT_VALUES));
   }
   PetscCall(PetscTableGetCount(ta, &Crmax));
   PetscCall(PetscTableDestroy(&ta));
@@ -1383,7 +1383,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P, Mat 
     k++;
     buf_si += len_si[proc];
   }
-  for (i = 0; i < nrecv; i++) { PetscCallMPI(MPI_Waitany(nrecv, rwaits, &icompleted, &rstatus)); }
+  for (i = 0; i < nrecv; i++) PetscCallMPI(MPI_Waitany(nrecv, rwaits, &icompleted, &rstatus));
   PetscCall(PetscFree(rwaits));
   if (nsend) PetscCallMPI(MPI_Waitall(nsend, swaits, sstatus));
 
@@ -1456,7 +1456,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P, Mat 
     row   = rstart + i;
     PetscCall(MatSetValues(C, 1, (const PetscInt *)&row, ncols, (const PetscInt *)cols, NULL, INSERT_VALUES));
 
-    if (C->force_diagonals) { PetscCall(MatSetValues(C, 1, (const PetscInt *)&row, 1, (const PetscInt *)&row, NULL, INSERT_VALUES)); }
+    if (C->force_diagonals) PetscCall(MatSetValues(C, 1, (const PetscInt *)&row, 1, (const PetscInt *)&row, NULL, INSERT_VALUES));
   }
   for (i = 0; i < con; i++) {
     ncols = c_oth->i[i + 1] - c_oth->i[i];
@@ -1891,7 +1891,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P, Mat A, PetscReal
   /* Armax can be as large as aN if a P[row,:] is dense, see src/ksp/ksp/tutorials/ex56.c! */
   for (k = 0; k < merge->nrecv; k++) { /* k-th received message */
     Jptr = buf_rj[k];
-    for (j = 0; j < merge->len_r[k]; j++) { PetscCall(PetscTableAdd(ta, *(Jptr + j) + 1, 1, INSERT_VALUES)); }
+    for (j = 0; j < merge->len_r[k]; j++) PetscCall(PetscTableAdd(ta, *(Jptr + j) + 1, 1, INSERT_VALUES));
   }
   PetscCall(PetscTableGetCount(ta, &Armax));
 
@@ -2175,7 +2175,7 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_AB(Mat C) {
     PetscCall(PetscOptionsEList("-mat_product_algorithm", "Algorithmic approach", "MatMatMult", algTypes, nalg, algTypes[alg], &alg, &flg));
     PetscOptionsEnd();
   }
-  if (flg) { PetscCall(MatProductSetAlgorithm(C, (MatProductAlgorithm)algTypes[alg])); }
+  if (flg) PetscCall(MatProductSetAlgorithm(C, (MatProductAlgorithm)algTypes[alg]));
 
   C->ops->productsymbolic = MatProductSymbolic_AB_MPIAIJ_MPIAIJ;
   PetscFunctionReturn(0);
@@ -2206,7 +2206,7 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_AtB(Mat C) {
 
   /* Set default algorithm */
   PetscCall(PetscStrcmp(C->product->alg, "default", &flg));
-  if (flg) { PetscCall(MatProductSetAlgorithm(C, (MatProductAlgorithm)algTypes[alg])); }
+  if (flg) PetscCall(MatProductSetAlgorithm(C, (MatProductAlgorithm)algTypes[alg]));
 
   /* Set "scalable" as default if BN and local nonzeros of A and B are large */
   if (alg && B->cmap->N > 100000) { /* may switch to scalable algorithm as default */
@@ -2238,7 +2238,7 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_AtB(Mat C) {
     PetscCall(PetscOptionsEList("-mat_product_algorithm", "Algorithmic approach", "MatTransposeMatMult", algTypes, nalg, algTypes[alg], &alg, &flg));
     PetscOptionsEnd();
   }
-  if (flg) { PetscCall(MatProductSetAlgorithm(C, (MatProductAlgorithm)algTypes[alg])); }
+  if (flg) PetscCall(MatProductSetAlgorithm(C, (MatProductAlgorithm)algTypes[alg]));
 
   C->ops->productsymbolic = MatProductSymbolic_AtB_MPIAIJ_MPIAIJ;
   PetscFunctionReturn(0);
@@ -2302,7 +2302,7 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_PtAP(Mat C) {
     PetscCall(PetscOptionsEList("-mat_product_algorithm", "Algorithmic approach", "MatPtAP", algTypes, nalg, algTypes[alg], &alg, &flg));
     PetscOptionsEnd();
   }
-  if (flg) { PetscCall(MatProductSetAlgorithm(C, (MatProductAlgorithm)algTypes[alg])); }
+  if (flg) PetscCall(MatProductSetAlgorithm(C, (MatProductAlgorithm)algTypes[alg]));
 
   C->ops->productsymbolic = MatProductSymbolic_PtAP_MPIAIJ_MPIAIJ;
   PetscFunctionReturn(0);
@@ -2334,7 +2334,7 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_ABC(Mat C) {
   PetscFunctionBegin;
   /* Set default algorithm */
   PetscCall(PetscStrcmp(C->product->alg, "default", &flg));
-  if (flg) { PetscCall(MatProductSetAlgorithm(C, (MatProductAlgorithm)algTypes[alg])); }
+  if (flg) PetscCall(MatProductSetAlgorithm(C, (MatProductAlgorithm)algTypes[alg]));
 
   /* Get runtime option */
   if (product->api_user) {
@@ -2346,7 +2346,7 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_ABC(Mat C) {
     PetscCall(PetscOptionsEList("-mat_product_algorithm", "Algorithmic approach", "MatProduct_ABC", algTypes, nalg, algTypes[alg], &alg, &flg));
     PetscOptionsEnd();
   }
-  if (flg) { PetscCall(MatProductSetAlgorithm(C, (MatProductAlgorithm)algTypes[alg])); }
+  if (flg) PetscCall(MatProductSetAlgorithm(C, (MatProductAlgorithm)algTypes[alg]));
 
   C->ops->matmatmultsymbolic = MatMatMatMultSymbolic_MPIAIJ_MPIAIJ_MPIAIJ;
   C->ops->productsymbolic    = MatProductSymbolic_ABC;

@@ -86,7 +86,7 @@ int main(int argc, char **argv) {
   {
     PetscBool compatible, set;
     PetscCall(DMGetCompatibility(da, da, &compatible, &set));
-    if (!set || !compatible) { PetscCall(PetscPrintf(PetscObjectComm((PetscObject)da), "Error: DM not compatible with itself\n")); }
+    if (!set || !compatible) PetscCall(PetscPrintf(PetscObjectComm((PetscObject)da), "Error: DM not compatible with itself\n"));
   }
 
   /* Check compatibility with the same DM on a dup'd communicator */
@@ -99,7 +99,7 @@ int main(int argc, char **argv) {
     PetscCall(DMSetFromOptions(da2));
     PetscCall(DMSetUp(da2));
     PetscCall(DMGetCompatibility(da, da2, &compatible, &set));
-    if (!set || !compatible) { PetscCall(PetscPrintf(PetscObjectComm((PetscObject)da), "Error: DM not compatible with DMDA on dup'd comm\n")); }
+    if (!set || !compatible) PetscCall(PetscPrintf(PetscObjectComm((PetscObject)da), "Error: DM not compatible with DMDA on dup'd comm\n"));
     PetscCall(DMDestroy(&da2));
     PetscCallMPI(MPI_Comm_free(&comm2));
   }
@@ -110,7 +110,7 @@ int main(int argc, char **argv) {
     PetscBool compatible, set;
     PetscCall(DMDACreateCompatibleDMDA(da, w * 2, &da2));
     PetscCall(DMGetCompatibility(da, da2, &compatible, &set));
-    if (!set || !compatible) { PetscCall(PetscPrintf(PetscObjectComm((PetscObject)da), "Error: DM not compatible with DMDA created with DMDACreateCompatibleDMDA()\n")); }
+    if (!set || !compatible) PetscCall(PetscPrintf(PetscObjectComm((PetscObject)da), "Error: DM not compatible with DMDA created with DMDACreateCompatibleDMDA()\n"));
     PetscCall(DMDestroy(&da2));
   }
 
@@ -121,7 +121,7 @@ int main(int argc, char **argv) {
     PetscCall(DMDACreate3d(PETSC_COMM_WORLD, bx, by, bz, stencil_type, M, N, P, m, n, p, w, 0, lx, ly, lz, &da2));
     PetscCall(DMSetUp(da2));
     PetscCall(DMGetCompatibility(da, da2, &compatible, &set));
-    if (!set || compatible) { PetscCall(PetscPrintf(PetscObjectComm((PetscObject)da), "Error: DM not determined incompatible with known-incompatible DMDA (different stencil width)\n")); }
+    if (!set || compatible) PetscCall(PetscPrintf(PetscObjectComm((PetscObject)da), "Error: DM not determined incompatible with known-incompatible DMDA (different stencil width)\n"));
     PetscCall(DMDestroy(&da2));
   }
 
@@ -134,7 +134,7 @@ int main(int argc, char **argv) {
     PetscCall(DMDACreate3d(PETSC_COMM_WORLD, bx, by, bz2, stencil_type, M, N, P, m, n, p, w, s, lx, ly, lz, &da2));
     PetscCall(DMSetUp(da2));
     PetscCall(DMGetCompatibility(da, da2, &compatible, &set));
-    if (!set || compatible) { PetscCall(PetscPrintf(PetscObjectComm((PetscObject)da), "Error: DM not determined incompatible with known-incompatible DMDA (different boundary type)\n")); }
+    if (!set || compatible) PetscCall(PetscPrintf(PetscObjectComm((PetscObject)da), "Error: DM not determined incompatible with known-incompatible DMDA (different boundary type)\n"));
     PetscCall(DMDestroy(&da2));
   }
 
@@ -146,7 +146,7 @@ int main(int argc, char **argv) {
       PetscCall(DMDACreate3d(PETSC_COMM_WORLD, bx, by, bz, stencil_type, M, N, P * 2, m, n, p, w, s, lx, ly, lz, &da2));
       PetscCall(DMSetUp(da2));
       PetscCall(DMGetCompatibility(da, da2, &compatible, &set));
-      if (!set || compatible) { PetscCall(PetscPrintf(PetscObjectComm((PetscObject)da), "Error: DM not determined incompatible with known-incompatible DMDA (different global sizes)\n")); }
+      if (!set || compatible) PetscCall(PetscPrintf(PetscObjectComm((PetscObject)da), "Error: DM not determined incompatible with known-incompatible DMDA (different global sizes)\n"));
       PetscCall(DMDestroy(&da2));
     }
   }
@@ -165,7 +165,7 @@ int main(int argc, char **argv) {
       PetscCall(DMDACreate3d(PETSC_COMM_WORLD, bx, by, bz, stencil_type, M, N, P, m, n, p, w, s, lx, ly, lz2, &da2));
       PetscCall(DMSetUp(da2));
       PetscCall(DMGetCompatibility(da, da2, &compatible, &set));
-      if (!set || compatible) { PetscCall(PetscPrintf(PetscObjectComm((PetscObject)da), "Error: DM not determined incompatible with known-incompatible DMDA (different local sizes) \n")); }
+      if (!set || compatible) PetscCall(PetscPrintf(PetscObjectComm((PetscObject)da), "Error: DM not determined incompatible with known-incompatible DMDA (different local sizes) \n"));
       PetscCall(DMDestroy(&da2));
       PetscCall(PetscFree(lz2));
     }

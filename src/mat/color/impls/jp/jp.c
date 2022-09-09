@@ -112,7 +112,7 @@ static PetscErrorCode MCJPGreatestWeight_Private(MatColoring mc, const PetscReal
       }
     }
     if (l < mc->dist - 1) {
-      for (i = 0; i < dn; i++) { dwts[i] = maxweights[i]; }
+      for (i = 0; i < dn; i++) dwts[i] = maxweights[i];
       if (oG) {
         PetscCall(PetscLogEventBegin(MATCOLORING_Comm, mc, 0, 0, 0));
         PetscCall(PetscSFBcastBegin(sf, MPIU_REAL, dwts, owts, MPI_REPLACE));
@@ -213,7 +213,7 @@ static PetscErrorCode MCJPInitialLocalColor_Private(MatColoring mc, PetscInt *lp
         }
       }
     }
-    for (i = 0; i < dn; i++) { seen[i] = -1; }
+    for (i = 0; i < dn; i++) seen[i] = -1;
   }
   /* pass two -- color it by looking at nearby vertices and building a mask */
   for (i = 0; i < dn; i++) {
@@ -233,7 +233,7 @@ static PetscErrorCode MCJPInitialLocalColor_Private(MatColoring mc, PetscInt *lp
         dist = distbuf[bidx];
         bidx--;
         /* mask this color */
-        if (colors[idx] < IS_COLORING_MAX) { colormask[colors[idx]] = cidx; }
+        if (colors[idx] < IS_COLORING_MAX) colormask[colors[idx]] = cidx;
         if (dist < distance) {
           ncols = di[idx + 1] - di[idx];
           cols  = &(dj[di[idx]]);
@@ -313,7 +313,7 @@ static PetscErrorCode MCJPMinColor_Private(MatColoring mc, ISColoringValue maxco
     di   = daij->i;
     dj   = daij->j;
   }
-  for (i = 0; i < dn; i++) { mincolors[i] = IS_COLORING_MAX; }
+  for (i = 0; i < dn; i++) mincolors[i] = IS_COLORING_MAX;
   /* set up the distance-zero mask */
   if (!dmask) {
     PetscCall(PetscMalloc1(dn, &dmask));
@@ -344,14 +344,14 @@ static PetscErrorCode MCJPMinColor_Private(MatColoring mc, ISColoringValue maxco
       for (i = 0; i < dn; i++) {
         ncols = di[i + 1] - di[i];
         cols  = &(dj[di[i]]);
-        for (j = 0; j < ncols; j++) { cmask[i] = cmask[i] | dmask[cols[j]]; }
+        for (j = 0; j < ncols; j++) cmask[i] = cmask[i] | dmask[cols[j]];
         if (oG) {
           ncols = oi[i + 1] - oi[i];
           cols  = &(oj[oi[i]]);
-          for (j = 0; j < ncols; j++) { cmask[i] = cmask[i] | omask[cols[j]]; }
+          for (j = 0; j < ncols; j++) cmask[i] = cmask[i] | omask[cols[j]];
         }
       }
-      for (i = 0; i < dn; i++) { dmask[i] = cmask[i]; }
+      for (i = 0; i < dn; i++) dmask[i] = cmask[i];
       if (l < mc->dist - 1) {
         if (oG) {
           PetscCall(PetscLogEventBegin(MATCOLORING_Comm, mc, 0, 0, 0));
@@ -378,7 +378,7 @@ static PetscErrorCode MCJPMinColor_Private(MatColoring mc, ISColoringValue maxco
     maskbase += maskradix;
   }
   for (i = 0; i < dn; i++) {
-    if (mincolors[i] == IS_COLORING_MAX) { mincolors[i] = maxcolor + 1; }
+    if (mincolors[i] == IS_COLORING_MAX) mincolors[i] = maxcolor + 1;
   }
   PetscFunctionReturn(0);
 }
@@ -460,9 +460,12 @@ static PetscErrorCode MatColoringApply_JP(MatColoring mc, ISColoring *iscoloring
 }
 
 /*MC
-  MATCOLORINGJP - Parallel Jones-Plassmann Coloring
+  MATCOLORINGJP - Parallel Jones-Plassmann coloring
 
    Level: beginner
+
+   Options Database Key:
+.  -mat_coloring_jp_local - perform a local coloring before applying the parallel algorithm
 
    Notes:
     This method uses a parallel Luby-style coloring with weights to choose an independent set of processor
@@ -474,7 +477,7 @@ static PetscErrorCode MatColoringApply_JP(MatColoring mc, ISColoring *iscoloring
 .  * - M. Jones and P. Plassmann, "A parallel graph coloring heuristic," SIAM Journal on Scientific Computing, vol. 14, no. 3,
    pp. 654-669, 1993.
 
-.seealso: `MatColoringCreate()`, `MatColoring`, `MatColoringSetType()`
+.seealso: `MatColoring`, `MatColoringType`, `MatColoringCreate()`, `MatColoring`, `MatColoringSetType()`
 M*/
 PETSC_EXTERN PetscErrorCode MatColoringCreate_JP(MatColoring mc) {
   MC_JP *jp;

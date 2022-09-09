@@ -40,7 +40,7 @@ static PetscErrorCode TSTrajectorySet_Basic(TSTrajectory tj, TS ts, PetscInt ste
     PetscCall(MatView(A, tjbasic->viewer));
     if (stepnum) {
       PetscCall(TSForwardGetStages(ts, &ns, &S));
-      for (i = 0; i < ns; i++) { PetscCall(MatView(S[i], tjbasic->viewer)); }
+      for (i = 0; i < ns; i++) PetscCall(MatView(S[i], tjbasic->viewer));
     }
   }
   PetscFunctionReturn(0);
@@ -88,7 +88,7 @@ static PetscErrorCode TSTrajectoryGet_Basic(TSTrajectory tj, TS ts, PetscInt ste
     if (stepnum) {
       Mat *S;
       PetscCall(TSForwardGetStages(ts, &ns, &S));
-      for (i = 0; i < ns; i++) { PetscCall(MatLoad(S[i], viewer)); }
+      for (i = 0; i < ns; i++) PetscCall(MatLoad(S[i], viewer));
     }
   }
   PetscCall(PetscViewerDestroy(&viewer));

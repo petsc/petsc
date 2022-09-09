@@ -371,21 +371,21 @@ PetscErrorCode DMDASubDomainDA_Private(DM dm, PetscInt *nlocal, DM **sdm) {
             xsize += xo;
             xo = 0;
           }
-          if (xo + xsize > info.mx - 1) { xsize -= xo + xsize - info.mx; }
+          if (xo + xsize > info.mx - 1) xsize -= xo + xsize - info.mx;
         }
         if (info.by != DM_BOUNDARY_PERIODIC) {
           if (yo < 0) {
             ysize += yo;
             yo = 0;
           }
-          if (yo + ysize > info.my - 1) { ysize -= yo + ysize - info.my; }
+          if (yo + ysize > info.my - 1) ysize -= yo + ysize - info.my;
         }
         if (info.bz != DM_BOUNDARY_PERIODIC) {
           if (zo < 0) {
             zsize += zo;
             zo = 0;
           }
-          if (zo + zsize > info.mz - 1) { zsize -= zo + zsize - info.mz; }
+          if (zo + zsize > info.mz - 1) zsize -= zo + zsize - info.mz;
         }
 
         PetscCall(DMDASetSizes(da[idx], xsize, ysize, zsize));
@@ -544,7 +544,7 @@ PetscErrorCode DMCreateDomainDecomposition_DA(DM dm, PetscInt *len, char ***name
   PetscCall(DMDASubDomainIS_Private(dm, n, sdm, iis, ois));
   if (subdm) *subdm = sdm;
   else {
-    for (i = 0; i < n; i++) { PetscCall(DMDestroy(&sdm[i])); }
+    for (i = 0; i < n; i++) PetscCall(DMDestroy(&sdm[i]));
   }
   if (len) *len = n;
   PetscFunctionReturn(0);

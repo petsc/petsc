@@ -182,7 +182,8 @@ PetscErrorCode MatScale_SMF(Mat mat, PetscReal a) {
 
 PetscErrorCode MatTranspose_SMF(Mat mat, Mat *B) {
   PetscFunctionBegin;
-  PetscFunctionReturn(1);
+  SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "No support for transpose for MatCreateSubMatrixFree() matrix");
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode MatGetDiagonal_SMF(Mat mat, Vec v) {
@@ -207,9 +208,9 @@ PetscErrorCode MatCreateSubMatrices_SMF(Mat A, PetscInt n, IS *irow, IS *icol, M
   PetscInt i;
 
   PetscFunctionBegin;
-  if (scall == MAT_INITIAL_MATRIX) { PetscCall(PetscCalloc1(n + 1, B)); }
+  if (scall == MAT_INITIAL_MATRIX) PetscCall(PetscCalloc1(n + 1, B));
 
-  for (i = 0; i < n; i++) { PetscCall(MatCreateSubMatrix_SMF(A, irow[i], icol[i], scall, &(*B)[i])); }
+  for (i = 0; i < n; i++) PetscCall(MatCreateSubMatrix_SMF(A, irow[i], icol[i], scall, &(*B)[i]));
   PetscFunctionReturn(0);
 }
 
@@ -218,7 +219,7 @@ PetscErrorCode MatCreateSubMatrix_SMF(Mat mat, IS isrow, IS iscol, MatReuse cll,
 
   PetscFunctionBegin;
   PetscCall(MatShellGetContext(mat, &ctx));
-  if (newmat) { PetscCall(MatDestroy(&*newmat)); }
+  if (newmat) PetscCall(MatDestroy(&*newmat));
   PetscCall(MatCreateSubMatrixFree(ctx->A, isrow, iscol, newmat));
   PetscFunctionReturn(0);
 }

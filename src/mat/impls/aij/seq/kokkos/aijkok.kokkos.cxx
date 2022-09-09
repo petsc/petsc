@@ -550,7 +550,7 @@ static PetscErrorCode MatDestroy_SeqAIJKokkos(Mat A) {
    A matrix type type using Kokkos-Kernels CrsMatrix type for portability across different device types
 
    Options Database Keys:
-.  -mat_type aijkokkos - sets the matrix type to "aijkokkos" during a call to MatSetFromOptions()
+.  -mat_type aijkokkos - sets the matrix type to `MATSEQAIJKOKKOS` during a call to `MatSetFromOptions()`
 
   Level: beginner
 
@@ -719,7 +719,9 @@ static PetscErrorCode MatProductNumeric_SeqAIJKokkos_SeqAIJKokkos(Mat C) {
   }
   PetscCall(PetscLogGpuTimeBegin());
   PetscCallCXX(KokkosSparse::spgemm_numeric(pdata->kh, *csrmatA, transA, *csrmatB, transB, ckok->csrmat));
-  PetscCallCXX(sort_crs_matrix(ckok->csrmat)); /* without the sort, mat_tests-ex62_14_seqaijkokkos failed */
+  auto spgemmHandle = pdata->kh.get_spgemm_handle();
+  if (spgemmHandle->get_sort_option() != 1) PetscCallCXX(sort_crs_matrix(ckok->csrmat)); /* without sort, mat_tests-ex62_14_seqaijkokkos fails */
+
   PetscCall(PetscLogGpuTimeEnd());
   PetscCall(MatSeqAIJKokkosModifyDevice(C));
   /* shorter version of MatAssemblyEnd_SeqAIJ */
@@ -781,10 +783,15 @@ static PetscErrorCode MatProductSymbolic_SeqAIJKokkos_SeqAIJKokkos(Mat C) {
   pdata->reusesym = product->api_user;
 
   /* TODO: add command line options to select spgemm algorithms */
-  auto spgemm_alg = KokkosSparse::SPGEMMAlgorithm::SPGEMM_KK;
-  /* CUDA-10.2's spgemm has bugs. As as of 2022-01-19, KK does not support CUDA-11.x's newer spgemm API.
-     We can default to SPGEMMAlgorithm::SPGEMM_CUSPARSE with CUDA-11+ when KK adds the support.
-   */
+  auto spgemm_alg = KokkosSparse::SPGEMMAlgorithm::SPGEMM_DEFAULT; /* default alg is TPL if enabled, otherwise KK */
+
+  /* CUDA-10.2's spgemm has bugs. We prefer the SpGEMMreuse APIs introduced in cuda-11.4 */
+#if defined(KOKKOSKERNELS_ENABLE_TPL_CUSPARSE)
+#if PETSC_PKG_CUDA_VERSION_LT(11, 4, 0)
+  spgemm_alg = KokkosSparse::SPGEMMAlgorithm::SPGEMM_KK;
+#endif
+#endif
+
   pdata->kh.create_spgemm_handle(spgemm_alg);
 
   PetscCall(PetscLogGpuTimeBegin());
@@ -800,13 +807,16 @@ static PetscErrorCode MatProductSymbolic_SeqAIJKokkos_SeqAIJKokkos(Mat C) {
   }
 
   PetscCallCXX(KokkosSparse::spgemm_symbolic(pdata->kh, *csrmatA, transA, *csrmatB, transB, csrmatC));
+
   /* spgemm_symbolic() only populates C's rowmap, but not C's column indices.
     So we have to do a fake spgemm_numeric() here to get csrmatC.j_d setup, before
     calling new Mat_SeqAIJKokkos().
     TODO: Remove the fake spgemm_numeric() after KK fixed this problem.
   */
   PetscCallCXX(KokkosSparse::spgemm_numeric(pdata->kh, *csrmatA, transA, *csrmatB, transB, csrmatC));
-  PetscCallCXX(sort_crs_matrix(csrmatC));
+  /* Query if KK outputs a sorted matrix. If not, we need to sort it */
+  auto spgemmHandle = pdata->kh.get_spgemm_handle();
+  if (spgemmHandle->get_sort_option() != 1) PetscCallCXX(sort_crs_matrix(csrmatC)); /* sort_option defaults to -1 in KK!*/
   PetscCall(PetscLogGpuTimeEnd());
 
   PetscCallCXX(ckok = new Mat_SeqAIJKokkos(csrmatC));
@@ -823,7 +833,7 @@ static PetscErrorCode MatProductSetFromOptions_SeqAIJKokkos(Mat mat) {
   PetscFunctionBegin;
   MatCheckProduct(mat, 1);
   PetscCall(PetscObjectTypeCompare((PetscObject)product->B, MATSEQAIJKOKKOS, &Biskok));
-  if (product->type == MATPRODUCT_ABC) { PetscCall(PetscObjectTypeCompare((PetscObject)product->C, MATSEQAIJKOKKOS, &Ciskok)); }
+  if (product->type == MATPRODUCT_ABC) PetscCall(PetscObjectTypeCompare((PetscObject)product->C, MATSEQAIJKOKKOS, &Ciskok));
   if (Biskok && Ciskok) {
     switch (product->type) {
     case MATPRODUCT_AB:
@@ -1197,7 +1207,7 @@ PETSC_INTERN PetscErrorCode MatSetSeqAIJKokkosWithCSRMatrix(Mat A, Mat_SeqAIJKok
 
   PetscCall(PetscMalloc1(m, &aseq->imax));
   PetscCall(PetscMalloc1(m, &aseq->ilen));
-  for (i = 0; i < m; i++) { aseq->ilen[i] = aseq->imax[i] = aseq->i[i + 1] - aseq->i[i]; }
+  for (i = 0; i < m; i++) aseq->ilen[i] = aseq->imax[i] = aseq->i[i + 1] - aseq->i[i];
 
   /* It is critical to set the nonzerostate, as we use it to check if sparsity pattern (hence data) has changed on host in MatAssemblyEnd */
   akok->nonzerostate = A->nonzerostate;
@@ -1220,7 +1230,7 @@ PETSC_INTERN PetscErrorCode MatCreateSeqAIJKokkosWithCSRMatrix(MPI_Comm comm, Ma
 
 /* --------------------------------------------------------------------------------*/
 /*@C
-   MatCreateSeqAIJKokkos - Creates a sparse matrix in AIJ (compressed row) format
+   MatCreateSeqAIJKokkos - Creates a sparse matrix in `MATSEQAIJKOKKOS` (compressed row) format
    (the default parallel PETSc format). This matrix will ultimately be handled by
    Kokkos for calculations. For good matrix
    assembly performance the user should preallocate the matrix storage by setting
@@ -1230,7 +1240,7 @@ PETSC_INTERN PetscErrorCode MatCreateSeqAIJKokkosWithCSRMatrix(MPI_Comm comm, Ma
    Collective
 
    Input Parameters:
-+  comm - MPI communicator, set to PETSC_COMM_SELF
++  comm - MPI communicator, set to `PETSC_COMM_SELF`
 .  m - number of rows
 .  n - number of columns
 .  nz - number of nonzeros per row (same for all rows)
@@ -1240,20 +1250,20 @@ PETSC_INTERN PetscErrorCode MatCreateSeqAIJKokkosWithCSRMatrix(MPI_Comm comm, Ma
    Output Parameter:
 .  A - the matrix
 
-   It is recommended that one use the MatCreate(), MatSetType() and/or MatSetFromOptions(),
+   It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`,
    MatXXXXSetPreallocation() paradgm instead of this routine directly.
-   [MatXXXXSetPreallocation() is, for example, MatSeqAIJSetPreallocation]
+   [MatXXXXSetPreallocation() is, for example, `MatSeqAIJSetPreallocation()`]
 
    Notes:
    If nnz is given then nz is ignored
 
-   The AIJ format (also called the Yale sparse matrix format or
-   compressed row storage), is fully compatible with standard Fortran 77
+   The AIJ format, also called
+   compressed row storage, is fully compatible with standard Fortran 77
    storage.  That is, the stored row and column indices can begin at
    either one (as in Fortran) or zero.  See the users' manual for details.
 
    Specify the preallocated storage with either nz or nnz (not both).
-   Set nz=PETSC_DEFAULT and nnz=NULL for PETSc to control dynamic memory
+   Set nz = `PETSC_DEFAULT` and nnz = NULL for PETSc to control dynamic memory
    allocation.  For large problems you MUST preallocate memory or you
    will get TERRIBLE performance, see the users' manual chapter on matrices.
 
@@ -1735,7 +1745,7 @@ static PetscErrorCode MatFactorGetSolverType_seqaij_kokkos_device(Mat A, MatSolv
 
 /*MC
   MATSOLVERKOKKOS = "Kokkos" - A matrix solver type providing triangular solvers for sequential matrices
-  on a single GPU of type, SeqAIJKokkos, AIJKokkos.
+  on a single GPU of type, `MATSEQAIJKOKKOS`, `MATAIJKOKKOS`.
 
   Level: beginner
 
@@ -1810,7 +1820,7 @@ PETSC_INTERN PetscErrorCode PrintCsrMatrix(const KokkosCsrMatrix &csrmat) {
   PetscCall(PetscPrintf(PETSC_COMM_SELF, "%" PetscInt_FMT " x %" PetscInt_FMT " SeqAIJKokkos, with %" PetscInt_FMT " nonzeros\n", m, n, nnz));
   for (PetscInt k = 0; k < m; k++) {
     PetscCall(PetscPrintf(PETSC_COMM_SELF, "%" PetscInt_FMT ": ", k));
-    for (PetscInt p = i[k]; p < i[k + 1]; p++) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "%" PetscInt_FMT "(%.1f), ", j[p], (double)PetscRealPart(a[p]))); }
+    for (PetscInt p = i[k]; p < i[k + 1]; p++) PetscCall(PetscPrintf(PETSC_COMM_SELF, "%" PetscInt_FMT "(%.1f), ", j[p], (double)PetscRealPart(a[p])));
     PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n"));
   }
   PetscFunctionReturn(0);

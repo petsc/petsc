@@ -237,7 +237,7 @@ static PetscErrorCode PortableBoundaryDestroy(PortableBoundary *bnd) {
   PetscFunctionBegin;
   if (!*bnd) PetscFunctionReturn(0);
   PetscCall(VecDestroy(&(*bnd)->coordinates));
-  for (d = 0; d < (*bnd)->depth; d++) { PetscCall(PetscSectionDestroy(&(*bnd)->sections[d])); }
+  for (d = 0; d < (*bnd)->depth; d++) PetscCall(PetscSectionDestroy(&(*bnd)->sections[d]));
   PetscCall(PetscFree((*bnd)->sections));
   PetscCall(PetscFree(*bnd));
   PetscFunctionReturn(0);
@@ -282,7 +282,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   PetscCall(PetscOptionsReal("-view_vertices_from_coords_tol", "Tolerance for -view_vertices_from_coords", "ex18.c", options->coordsTol, &options->coordsTol, NULL));
   options->nPointsToExpand = 128;
   PetscCall(PetscOptionsIntArray("-test_expand_points", "Expand given array of DAG point using DMPlexGetConeRecursive() and print results", "ex18.c", options->pointsToExpand, &options->nPointsToExpand, NULL));
-  if (options->nPointsToExpand) { PetscCall(PetscOptionsBool("-test_expand_points_empty", "For -test_expand_points, rank 0 will have empty input array", "ex18.c", options->testExpandPointsEmpty, &options->testExpandPointsEmpty, NULL)); }
+  if (options->nPointsToExpand) PetscCall(PetscOptionsBool("-test_expand_points_empty", "For -test_expand_points, rank 0 will have empty input array", "ex18.c", options->testExpandPointsEmpty, &options->testExpandPointsEmpty, NULL));
   PetscCall(PetscOptionsBool("-test_heavy", "Run the heavy PointSF test", "ex18.c", options->testHeavy, &options->testHeavy, NULL));
   PetscCall(PetscOptionsBool("-custom_view", "Custom DMPlex view", "ex18.c", options->customView, &options->customView, NULL));
   PetscCall(PetscOptionsRangeInt("-dim", "The topological mesh dimension", "ex18.c", options->dim, &options->dim, &flg1, 1, 3));
@@ -740,7 +740,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm) {
       serialDM = *dm;
       PetscCall(PetscObjectReference((PetscObject)*dm));
     }
-    if (serialDM) { PetscCall(DMPlexGetExpandedBoundary_Private(serialDM, &boundary)); }
+    if (serialDM) PetscCall(DMPlexGetExpandedBoundary_Private(serialDM, &boundary));
     if (boundary) {
       /* check DM which has been created in parallel and already interpolated */
       PetscCall(DMPlexCheckPointSFHeavy(*dm, boundary));
@@ -944,7 +944,7 @@ static PetscErrorCode DMPlexExpandedVerticesToFaces_Private(DM dm, IS boundary_e
 }
 
 #define CHKERRQI(incall, ierr) \
-  if (ierr) { incall = PETSC_FALSE; }
+  if (ierr) incall = PETSC_FALSE;
 
 static PetscErrorCode DMLabelViewFromOptionsOnComm_Private(DMLabel label, const char optionname[], MPI_Comm comm) {
   PetscViewer       viewer;
@@ -987,16 +987,16 @@ static PetscErrorCode PetscSectionReplicate_Private(MPI_Comm comm, PetscMPIInt r
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
-  if (rank == rootrank) { PetscCall(PetscSectionGetChart(sec0, &chart[0], &chart[1])); }
+  if (rank == rootrank) PetscCall(PetscSectionGetChart(sec0, &chart[0], &chart[1]));
   PetscCallMPI(MPI_Bcast(chart, 2, MPIU_INT, rootrank, comm));
   PetscCall(PetscMalloc1(chart[1] - chart[0], &dofarr));
   if (rank == rootrank) {
-    for (p = chart[0]; p < chart[1]; p++) { PetscCall(PetscSectionGetDof(sec0, p, &dofarr[p - chart[0]])); }
+    for (p = chart[0]; p < chart[1]; p++) PetscCall(PetscSectionGetDof(sec0, p, &dofarr[p - chart[0]]));
   }
   PetscCallMPI(MPI_Bcast(dofarr, chart[1] - chart[0], MPIU_INT, rootrank, comm));
   PetscCall(PetscSectionCreate(comm, &sec));
   PetscCall(PetscSectionSetChart(sec, chart[0], chart[1]));
-  for (p = chart[0]; p < chart[1]; p++) { PetscCall(PetscSectionSetDof(sec, p, dofarr[p - chart[0]])); }
+  for (p = chart[0]; p < chart[1]; p++) PetscCall(PetscSectionSetDof(sec, p, dofarr[p - chart[0]]));
   PetscCall(PetscSectionSetUp(sec));
   PetscCall(PetscFree(dofarr));
   *secout = sec;
@@ -1139,9 +1139,9 @@ static PetscErrorCode DMPlexGetExpandedBoundary_Private(DM dm, PortableBoundary 
   bnd->depth = bnd0->depth;
   PetscCallMPI(MPI_Bcast(&bnd->depth, 1, MPIU_INT, rootrank, comm));
   PetscCall(PetscMalloc1(bnd->depth, &bnd->sections));
-  for (d = 0; d < bnd->depth; d++) { PetscCall(PetscSectionReplicate_Private(comm, rootrank, (rank == rootrank) ? bnd0->sections[d] : NULL, &bnd->sections[d])); }
+  for (d = 0; d < bnd->depth; d++) PetscCall(PetscSectionReplicate_Private(comm, rootrank, (rank == rootrank) ? bnd0->sections[d] : NULL, &bnd->sections[d]));
 
-  if (rank == rootrank) { PetscCall(DMPlexRestoreConeRecursive(idm, boundary_is, &bnd0->depth, &boundary_expanded_iss, &bnd0->sections)); }
+  if (rank == rootrank) PetscCall(DMPlexRestoreConeRecursive(idm, boundary_is, &bnd0->depth, &boundary_expanded_iss, &bnd0->sections));
   PetscCall(PortableBoundaryDestroy(&bnd0));
   PetscCall(DMRemoveLabelBySelf(idm, &label, PETSC_TRUE));
   PetscCall(DMLabelDestroy(&label));
@@ -1282,7 +1282,7 @@ static PetscErrorCode ViewPointsWithType_Internal(DM dm, IS pointsIS, PetscViewe
       case 3: PetscCall(PetscStrcpy(entityType, "cell")); break;
       default: SETERRQ(PetscObjectComm((PetscObject)v), PETSC_ERR_SUP, "Only for depth <= 3");
       }
-      if (depth == dim && dim < 3) { PetscCall(PetscStrlcat(entityType, " (cell)", sizeof(entityType))); }
+      if (depth == dim && dim < 3) PetscCall(PetscStrlcat(entityType, " (cell)", sizeof(entityType)));
       PetscCall(PetscViewerASCIISynchronizedPrintf(v, "%s %" PetscInt_FMT "\n", entityType, p));
     }
     PetscCall(DMPlexGetConeSize(dm, p, &coneSize));
@@ -1460,7 +1460,7 @@ int main(int argc, char **argv) {
   PetscCall(PetscLogStageRegister("interpolate", &stage[2]));
   PetscCall(ProcessOptions(PETSC_COMM_WORLD, &user));
   PetscCall(CreateMesh(PETSC_COMM_WORLD, &user, &dm));
-  if (user.nPointsToExpand) { PetscCall(TestExpandPoints(dm, &user)); }
+  if (user.nPointsToExpand) PetscCall(TestExpandPoints(dm, &user));
   if (user.ncoords) {
     Vec coords;
 

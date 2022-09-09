@@ -31,17 +31,17 @@ struct _n_PetscViewerGLVis {
 typedef struct _n_PetscViewerGLVis *PetscViewerGLVis;
 
 /*@
-     PetscViewerGLVisSetPrecision - Set the number of digits for floating point values
+     PetscViewerGLVisSetPrecision - Set the number of digits for floating point values to be displayed
 
   Not Collective
 
   Input Parameters:
-+  viewer - the PetscViewer
++  viewer - the `PetscViewer` of type `PETSCVIEWERGLVIS`
 -  prec   - the number of digits required
 
   Level: beginner
 
-.seealso: `PetscViewerGLVisOpen()`, `PetscViewerGLVisSetFields()`, `PetscViewerCreate()`, `PetscViewerSetType()`
+.seealso: `PETSCVIEWERGLVIS`, `PetscViewerGLVisOpen()`, `PetscViewerGLVisSetFields()`, `PetscViewerCreate()`, `PetscViewerSetType()`
 @*/
 PetscErrorCode PetscViewerGLVisSetPrecision(PetscViewer viewer, PetscInt prec) {
   PetscFunctionBegin;
@@ -65,17 +65,17 @@ static PetscErrorCode PetscViewerGLVisSetPrecision_GLVis(PetscViewer viewer, Pet
 }
 
 /*@
-     PetscViewerGLVisSetSnapId - Set the snapshot id. Only relevant when the viewer is of type PETSC_VIEWER_GLVIS_DUMP
+     PetscViewerGLVisSetSnapId - Set the snapshot id. Only relevant when the `PetscViewerGLVisType` is `PETSC_VIEWER_GLVIS_DUMP`
 
-  Logically Collective on PetscViewer
+  Logically Collective on viewer
 
   Input Parameters:
-+  viewer - the PetscViewer
++  viewer - the `PetscViewer` of type `PETSCVIEWERGLVIS`
 -  id     - the current snapshot id in a time-dependent simulation
 
   Level: beginner
 
-.seealso: `PetscViewerGLVisOpen()`, `PetscViewerGLVisSetFields()`, `PetscViewerCreate()`, `PetscViewerSetType()`
+.seealso: `PETSCVIEWERGLVIS`, `PetscViewerGLVisOpen()`, `PetscViewerGLVisSetFields()`, `PetscViewerCreate()`, `PetscViewerSetType()`
 @*/
 PetscErrorCode PetscViewerGLVisSetSnapId(PetscViewer viewer, PetscInt id) {
   PetscFunctionBegin;
@@ -96,10 +96,10 @@ static PetscErrorCode PetscViewerGLVisSetSnapId_GLVis(PetscViewer viewer, PetscI
 /*@C
      PetscViewerGLVisSetFields - Sets the required information to visualize different fields from a vector.
 
-  Logically Collective on PetscViewer
+  Logically Collective on viewer
 
   Input Parameters:
-+  viewer     - the PetscViewer
++  viewer     - the `PetscViewer` of type `PETSCVIEWERGLVIS`
 .  nf         - number of fields to be visualized
 .  fec_type   - the type of finite element to be used to visualize the data (see FiniteElementCollection::Name() in MFEM)
 .  dim        - array of space dimension for field vectors (used to initialize the scene)
@@ -113,12 +113,13 @@ static PetscErrorCode PetscViewerGLVisSetSnapId_GLVis(PetscViewer viewer, PetscI
 .vb
   g2lfields((PetscObject)V,nfields,(PetscObject*)Vfield[],ctx).
 .ve
+
   For vector spaces, the block size of Vfield[i] represents the vector dimension. It misses the Fortran bindings.
   The names of the Vfield vectors will be displayed in the window title.
 
   Level: intermediate
 
-.seealso: `PetscViewerGLVisOpen()`, `PetscViewerCreate()`, `PetscViewerSetType()`, `PetscObjectSetName()`
+.seealso: `PETSCVIEWERGLVIS`, `PetscViewerGLVisOpen()`, `PetscViewerCreate()`, `PetscViewerSetType()`, `PetscObjectSetName()`
 @*/
 PetscErrorCode PetscViewerGLVisSetFields(PetscViewer viewer, PetscInt nf, const char *fec_type[], PetscInt dim[], PetscErrorCode (*g2l)(PetscObject, PetscInt, PetscObject[], void *), PetscObject Vfield[], void *ctx, PetscErrorCode (*destroyctx)(void *)) {
   PetscFunctionBegin;
@@ -203,12 +204,11 @@ static PetscErrorCode PetscViewerGLVisGetNewWindow_Private(PetscViewer viewer, P
   PetscViewerGLVis socket = (PetscViewerGLVis)viewer->data;
   PetscViewer      window = NULL;
   PetscBool        ldis, dis;
-  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  ierr = PetscViewerASCIISocketOpen(PETSC_COMM_SELF, socket->name, socket->port, &window);
-  /* if we could not estabilish a connection the first time, we disable the socket viewer */
-  ldis = ierr ? PETSC_TRUE : PETSC_FALSE;
+  PetscCall(PetscViewerASCIISocketOpen(PETSC_COMM_SELF, socket->name, socket->port, &window));
+  /* if we could not estabilish a connection, we disable the socket viewer on all MPI ranks */
+  ldis = !viewer ? PETSC_TRUE : PETSC_FALSE;
   PetscCall(MPIU_Allreduce(&ldis, &dis, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)viewer)));
   if (dis) {
     socket->status = PETSCVIEWERGLVIS_DISABLED;
@@ -222,7 +222,7 @@ PetscErrorCode PetscViewerGLVisPause_Private(PetscViewer viewer) {
   PetscViewerGLVis socket = (PetscViewerGLVis)viewer->data;
 
   PetscFunctionBegin;
-  if (socket->type == PETSC_VIEWER_GLVIS_SOCKET && socket->pause > 0) { PetscCall(PetscSleep(socket->pause)); }
+  if (socket->type == PETSC_VIEWER_GLVIS_SOCKET && socket->pause > 0) PetscCall(PetscSleep(socket->pause));
   PetscFunctionReturn(0);
 }
 
@@ -383,7 +383,7 @@ PetscErrorCode PetscViewerGLVisGetWindow_Private(PetscViewer viewer, PetscInt wi
     } else {
       PetscCall(PetscViewerGLVisGetNewWindow_Private(viewer, &socket->window[wid]));
     }
-    if (socket->window[wid]) { PetscCall(PetscViewerPushFormat(socket->window[wid], PETSC_VIEWER_ASCII_GLVIS)); }
+    if (socket->window[wid]) PetscCall(PetscViewerPushFormat(socket->window[wid], PETSC_VIEWER_ASCII_GLVIS));
     *view = socket->window[wid];
     break;
   case PETSCVIEWERGLVIS_CONNECTED: *view = socket->window[wid]; break;
@@ -435,8 +435,8 @@ PetscErrorCode PetscViewerGLVisInitWindow_Private(PetscViewer viewer, PetscBool 
   if (info->init) PetscFunctionReturn(0);
 
   /* Configure window */
-  if (info->size[0] > 0) { PetscCall(PetscViewerASCIIPrintf(viewer, "window_size %" PetscInt_FMT " %" PetscInt_FMT "\n", info->size[0], info->size[1])); }
-  if (name) { PetscCall(PetscViewerASCIIPrintf(viewer, "window_title '%s'\n", name)); }
+  if (info->size[0] > 0) PetscCall(PetscViewerASCIIPrintf(viewer, "window_size %" PetscInt_FMT " %" PetscInt_FMT "\n", info->size[0], info->size[1]));
+  if (name) PetscCall(PetscViewerASCIIPrintf(viewer, "window_title '%s'\n", name));
 
   /* Configure default view */
   if (mesh) {
@@ -475,8 +475,8 @@ PetscErrorCode PetscViewerGLVisInitWindow_Private(PetscViewer viewer, PetscBool 
   }
 
   /* Pause visualization */
-  if (!mesh && info->pause == -1) { PetscCall(PetscViewerASCIIPrintf(viewer, "autopause 1\n")); }
-  if (!mesh && info->pause == 0) { PetscCall(PetscViewerASCIIPrintf(viewer, "pause\n")); }
+  if (!mesh && info->pause == -1) PetscCall(PetscViewerASCIIPrintf(viewer, "autopause 1\n"));
+  if (!mesh && info->pause == 0) PetscCall(PetscViewerASCIIPrintf(viewer, "pause\n"));
 
   info->init = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -556,18 +556,18 @@ static PetscErrorCode PetscViewerFileSetName_GLVis(PetscViewer viewer, const cha
 }
 
 /*@C
-  PetscViewerGLVisOpen - Opens a GLVis type viewer
+  PetscViewerGLVisOpen - Opens a `PETSCVIEWERGLVIS` `PetscViewer`
 
   Collective
 
   Input Parameters:
 +  comm      - the MPI communicator
-.  type      - the viewer type: PETSC_VIEWER_GLVIS_SOCKET for real-time visualization or PETSC_VIEWER_GLVIS_DUMP for dumping to disk
+.  type      - the viewer type: `PETSC_VIEWER_GLVIS_SOCKET` for real-time visualization or `PETSC_VIEWER_GLVIS_DUMP` for dumping to a file
 .  name      - either the hostname where the GLVis server is running or the base filename for dumping the data for subsequent visualizations
--  port      - socket port where the GLVis server is listening. Not referenced when type is PETSC_VIEWER_GLVIS_DUMP
+-  port      - socket port where the GLVis server is listening. Not referenced when type is `PETSC_VIEWER_GLVIS_DUMP`
 
   Output Parameters:
--  viewer    - the PetscViewer object
+-  viewer    - the `PetscViewer` object
 
   Options Database Keys:
 +  -glvis_precision <precision> - Sets number of digits for floating point values
@@ -577,12 +577,12 @@ static PetscErrorCode PetscViewerFileSetName_GLVis(PetscViewer viewer, const cha
 .  -glvis_keys - Additional keys to configure visualization
 -  -glvis_exec - Additional commands to configure visualization
 
-  Notes:
-    misses Fortran binding
+  Fortran Note:
+  Missing Fortran binding
 
   Level: beginner
 
-.seealso: `PetscViewerCreate()`, `PetscViewerSetType()`, `PetscViewerGLVisType`
+.seealso: `PETSCVIEWERGLVIS`, `PetscViewerCreate()`, `PetscViewerSetType()`, `PetscViewerGLVisType`
 @*/
 PetscErrorCode PetscViewerGLVisOpen(MPI_Comm comm, PetscViewerGLVisType type, const char name[], PetscInt port, PetscViewer *viewer) {
   PetscViewerGLVis socket;
@@ -604,29 +604,29 @@ PetscErrorCode PetscViewerGLVisOpen(MPI_Comm comm, PetscViewerGLVisType type, co
 }
 
 /*
-  PETSC_VIEWER_GLVIS_ - Creates an GLVIS PetscViewer shared by all processors in a communicator.
+  PETSC_VIEWER_GLVIS_ - Creates a `PETSCVIEWERGLVIS` `PetscViewer` shared by all processors in a communicator.
 
   Collective
 
   Input Parameter:
-. comm - the MPI communicator to share the GLVIS PetscViewer
+. comm - the MPI communicator to share the `PETSCVIEWERGLVIS` `PetscViewer`
 
   Level: intermediate
 
-  Notes:
-    misses Fortran bindings
-
   Environmental variables:
-+ PETSC_VIEWER_GLVIS_FILENAME : output filename (if specified dump to disk, and takes precedence on PETSC_VIEWER_GLVIS_HOSTNAME)
-. PETSC_VIEWER_GLVIS_HOSTNAME : machine where the GLVis server is listening (defaults to localhost)
-- PETSC_VIEWER_GLVIS_PORT     : port opened by the GLVis server (defaults to 19916)
++ `PETSC_VIEWER_GLVIS_FILENAME` : output filename (if specified dump to disk, and takes precedence on `PETSC_VIEWER_GLVIS_HOSTNAME`)
+. `PETSC_VIEWER_GLVIS_HOSTNAME` : machine where the GLVis server is listening (defaults to localhost)
+- `PETSC_VIEWER_GLVIS_PORT`     : port opened by the GLVis server (defaults to 19916)
 
-  Notes:
-  Unlike almost all other PETSc routines, PETSC_VIEWER_GLVIS_ does not return
-  an error code.  The GLVIS PetscViewer is usually used in the form
+  Note:
+  Unlike almost all other PETSc routines, `PETSC_VIEWER_GLVIS_()` does not return
+  an error code.  It is usually used in the form
 $       XXXView(XXX object, PETSC_VIEWER_GLVIS_(comm));
 
-.seealso: `PetscViewerGLVISOpen()`, `PetscViewerGLVisType`, `PetscViewerCreate()`, `PetscViewerDestroy()`
+  Fortran Note:
+  Missing Fortran bindings
+
+.seealso: `PETSCVIEWERGLVIS`, `PetscViewer`, `PetscViewerGLVISOpen()`, `PetscViewerGLVisType`, `PetscViewerCreate()`, `PetscViewerDestroy()`
 */
 PetscViewer PETSC_VIEWER_GLVIS_(MPI_Comm comm) {
   PetscErrorCode       ierr;
@@ -736,6 +736,14 @@ static PetscErrorCode PetscViewerDestroy_ASCII_Socket(PetscViewer viewer) {
 }
 #endif
 
+/*
+    This attempts to return a NULL viewer if it is unable to open a socket connection.
+
+     The code below involving PetscUnlikely(ierr) is illegal in PETSc, one can NEVER attempt to recover once an error is initiated in PETSc.
+
+     The correct approach is to refactor PetscOpenSocket() to not initiate an error under certain failure conditions but instead either return a special value
+     of fd to indicate it was impossible to open the socket, or add another return argument to it indicating the socket was not opened.
+*/
 static PetscErrorCode PetscViewerASCIISocketOpen(MPI_Comm comm, const char *hostname, PetscInt port, PetscViewer *viewer) {
 #if defined(PETSC_HAVE_WINDOWS_H)
   PetscFunctionBegin;
@@ -753,14 +761,18 @@ static PetscErrorCode PetscViewerASCIISocketOpen(MPI_Comm comm, const char *host
 #else
   SETERRQ(comm, PETSC_ERR_SUP, "Missing Socket viewer");
 #endif
+  /*
+     The following code is illegal in PETSc, one can NEVER attempt to recover once an error is initiated in PETSc.
+        The correct approach is to refactor PetscOpenSocket() to not initiate an error under certain conditions but instead either return a special value
+     of fd to indicate it was impossible to open the socket, or add another return argument to it indicating the socket was not opened.
+   */
   if (PetscUnlikely(ierr)) {
-    PetscInt sierr = ierr;
-    char     err[1024];
+    char err[1024];
 
     PetscCall(PetscSNPrintf(err, 1024, "Cannot connect to socket on %s:%" PetscInt_FMT ". Socket visualization is disabled\n", hostname, port));
     PetscCall(PetscInfo(NULL, "%s", err));
     *viewer = NULL;
-    PetscFunctionReturn(sierr);
+    PetscFunctionReturn(0);
   } else {
     char msg[1024];
 

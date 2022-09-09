@@ -130,7 +130,7 @@ void f1_u_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], c
 
   /* f1 is the first Piola-Kirchhoff tensor */
   for (comp = 0; comp < Ncomp; ++comp) {
-    for (d = 0; d < dim; ++d) { f1[comp * dim + d] = mu * u_x[comp * dim + d] + p * cofu_x[comp * dim + d]; }
+    for (d = 0; d < dim; ++d) f1[comp * dim + d] = mu * u_x[comp * dim + d] + p * cofu_x[comp * dim + d];
   }
 }
 
@@ -189,7 +189,7 @@ void g1_bd_uu_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[
     for (d = 0, m[comp] = 0.0; d < dim; ++d) m[comp] += cofu_x[comp * dim + d] * n[d];
   for (compI = 0; compI < Ncomp; ++compI) {
     for (compJ = 0; compJ < Ncomp; ++compJ) {
-      for (d = 0; d < dim; ++d) { g1[(compI * Ncomp + compJ) * dim + d] = p * (m[compI] * cofu_x[compJ * dim + d] - cofu_x[compI * dim + d] * m[compJ]); }
+      for (d = 0; d < dim; ++d) g1[(compI * Ncomp + compJ) * dim + d] = p * (m[compI] * cofu_x[compJ * dim + d] - cofu_x[compI * dim + d] * m[compJ]);
     }
   }
 }
@@ -285,7 +285,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm) {
           for (v = 0; v < Nv; ++v) faceCoord += PetscRealPart(coords[v * dim + d]);
           faceCoord /= Nv;
           for (b = 0; b < 2; ++b) {
-            if (PetscAbs(faceCoord - b * 1.0) < PETSC_SMALL) { PetscCall(DMSetLabelValue(*dm, "Faces", faces[f], d * 2 + b + 1)); }
+            if (PetscAbs(faceCoord - b * 1.0) < PETSC_SMALL) PetscCall(DMSetLabelValue(*dm, "Faces", faces[f], d * 2 + b + 1));
           }
         }
         PetscCall(DMPlexVecRestoreClosure(cdm, cs, coordinates, faces[f], &csize, &coords));

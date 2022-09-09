@@ -6,7 +6,7 @@
 const char *const PetscDrawMarkerTypes[] = {"CROSS", "POINT", "PLUS", "CIRCLE", "PetscDrawMarkerType", "PETSC_DRAW_MARKER_", NULL};
 
 /*@
-   PetscDrawMarker - PetscDraws a marker onto a drawable.
+   PetscDrawMarker - draws a marker onto a drawable.
 
    Not collective
 
@@ -17,8 +17,7 @@ const char *const PetscDrawMarkerTypes[] = {"CROSS", "POINT", "PLUS", "CIRCLE", 
 
    Level: beginner
 
-.seealso: `PetscDrawPoint()`, `PetscDrawString()`, `PetscDrawSetMarkerType()`, `PetscDrawGetMarkerType()`
-
+.seealso: `PetscDraw`, `PetscDrawPoint()`, `PetscDrawString()`, `PetscDrawSetMarkerType()`, `PetscDrawGetMarkerType()`
 @*/
 PetscErrorCode PetscDrawMarker(PetscDraw draw, PetscReal xl, PetscReal yl, int cl) {
   PetscFunctionBegin;
@@ -57,21 +56,20 @@ PetscErrorCode PetscDrawMarker(PetscDraw draw, PetscReal xl, PetscReal yl, int c
 }
 
 /*@
-   PetscDrawSetMarkerType - sets the type of marker to display with PetscDrawMarker()
+   PetscDrawSetMarkerType - sets the type of marker to display with `PetscDrawMarker()`
 
    Not collective
 
    Input Parameters:
 +  draw - the drawing context
--  mtype - either PETSC_DRAW_MARKER_CROSS (default) or PETSC_DRAW_MARKER_POINT
+-  mtype - either `PETSC_DRAW_MARKER_CROSS` (default) or `PETSC_DRAW_MARKER_POINT`
 
-   Options Database:
+   Options Database Key:
 .  -draw_marker_type - x or point
 
    Level: beginner
 
-.seealso: `PetscDrawPoint()`, `PetscDrawMarker()`, `PetscDrawGetMarkerType()`
-
+.seealso: `PetscDraw`, `PetscDrawPoint()`, `PetscDrawMarker()`, `PetscDrawGetMarkerType()`, `PetscDrawMarkerType`
 @*/
 PetscErrorCode PetscDrawSetMarkerType(PetscDraw draw, PetscDrawMarkerType mtype) {
   PetscFunctionBegin;
@@ -81,18 +79,17 @@ PetscErrorCode PetscDrawSetMarkerType(PetscDraw draw, PetscDrawMarkerType mtype)
 }
 
 /*@
-   PetscDrawGetMarkerType - gets the type of marker to display with PetscDrawMarker()
+   PetscDrawGetMarkerType - gets the type of marker to display with `PetscDrawMarker()`
 
    Not collective
 
    Input Parameters:
 +  draw - the drawing context
--  mtype - either PETSC_DRAW_MARKER_CROSS (default) or PETSC_DRAW_MARKER_POINT
+-  mtype - either `PETSC_DRAW_MARKER_CROSS` (default) or `PETSC_DRAW_MARKER_POINT`
 
    Level: beginner
 
-.seealso: `PetscDrawPoint()`, `PetscDrawMarker()`, `PetscDrawSetMarkerType()`
-
+.seealso: `PetscDraw`, `PetscDrawPoint()`, `PetscDrawMarker()`, `PetscDrawSetMarkerType()`, `PetscDrawMarkerType`
 @*/
 PetscErrorCode PetscDrawGetMarkerType(PetscDraw draw, PetscDrawMarkerType *mtype) {
   PetscFunctionBegin;

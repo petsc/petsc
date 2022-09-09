@@ -51,10 +51,10 @@ PetscErrorCode SNESMatrixFreeView2_Private(Mat J, PetscViewer viewer) {
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   if (iascii) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "  SNES matrix-free approximation:\n"));
-    if (ctx->jorge) { PetscCall(PetscViewerASCIIPrintf(viewer, "    using Jorge's method of determining differencing parameter\n")); }
+    if (ctx->jorge) PetscCall(PetscViewerASCIIPrintf(viewer, "    using Jorge's method of determining differencing parameter\n"));
     PetscCall(PetscViewerASCIIPrintf(viewer, "    err=%g (relative error in function evaluation)\n", (double)ctx->error_rel));
     PetscCall(PetscViewerASCIIPrintf(viewer, "    umin=%g (minimum iterate parameter)\n", (double)ctx->umin));
-    if (ctx->compute_err) { PetscCall(PetscViewerASCIIPrintf(viewer, "    freq_err=%" PetscInt_FMT " (frequency for computing err)\n", ctx->compute_err_freq)); }
+    if (ctx->compute_err) PetscCall(PetscViewerASCIIPrintf(viewer, "    freq_err=%" PetscInt_FMT " (frequency for computing err)\n", ctx->compute_err_freq));
   }
   PetscFunctionReturn(0);
 }

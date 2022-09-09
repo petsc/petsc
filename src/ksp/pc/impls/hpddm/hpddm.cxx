@@ -1119,10 +1119,11 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc) {
           if (PetscDefined(USE_DEBUG)) {
             Mat T, U = NULL;
             IS  z;
-            PetscCall(PetscObjectTypeCompare((PetscObject)A10, MATTRANSPOSEMAT, &flg));
-            if (flg) {
-              PetscTryMethod(A10, "MatTransposeGetMat_C", (Mat, Mat *), (A10, &U));
-              PetscTryMethod(A10, "MatHermitianTransposeGetMat_C", (Mat, Mat *), (A10, &U));
+            PetscCall(PetscObjectTypeCompare((PetscObject)A10, MATTRANSPOSEVIRTUAL, &flg));
+            if (flg) PetscCall(MatTransposeGetMat(A10, &U));
+            else {
+              PetscCall(PetscObjectTypeCompare((PetscObject)A10, MATHERMITIANTRANSPOSEVIRTUAL, &flg));
+              if (flg) PetscCall(MatHermitianTransposeGetMat(A10, &U));
             }
             if (U) PetscCall(MatDuplicate(U, MAT_COPY_VALUES, &T));
             else PetscCall(MatHermitianTranspose(A10, MAT_INITIAL_MATRIX, &T));

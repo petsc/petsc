@@ -21,7 +21,7 @@ PetscErrorCode MatDestroySubMatrices_Dummy(PetscInt n, Mat *mat[]) {
 
       if (smat && !smat->singleis) {
         PetscInt i, nstages = smat->nstages;
-        for (i = 0; i < nstages; i++) { PetscCall(MatDestroy(&(*mat)[n + i])); }
+        for (i = 0; i < nstages; i++) PetscCall(MatDestroy(&(*mat)[n + i]));
       }
     }
   }
@@ -43,7 +43,6 @@ PetscErrorCode MatDestroy_Dummy(Mat A) {
   Level: developer
 
 .seealso: `Mat`
-
 M*/
 
 PETSC_EXTERN PetscErrorCode MatCreate_Dummy(Mat A) {

@@ -163,7 +163,7 @@ PetscErrorCode PetscHeapView(PetscHeap h, PetscViewer viewer) {
   PetscBool iascii;
 
   PetscFunctionBegin;
-  if (!viewer) { PetscCall(PetscViewerASCIIGetStdout(PETSC_COMM_SELF, &viewer)); }
+  if (!viewer) PetscCall(PetscViewerASCIIGetStdout(PETSC_COMM_SELF, &viewer));
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   if (iascii) {

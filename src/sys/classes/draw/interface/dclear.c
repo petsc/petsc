@@ -7,7 +7,7 @@
    PetscDrawClear - Clears graphical output. All processors must call this routine.
    Does not return until the draw in context is clear.
 
-   Collective on PetscDraw
+   Collective on draw
 
    Input Parameters:
 .  draw - the drawing context
@@ -26,7 +26,7 @@ PetscErrorCode PetscDrawClear(PetscDraw draw) {
 /*@
    PetscDrawBOP - Begins a new page or frame on the selected graphical device.
 
-   Logically Collective on PetscDraw
+   Logically Collective on draw
 
    Input Parameter:
 .  draw - the drawing context
@@ -44,7 +44,7 @@ PetscErrorCode PetscDrawBOP(PetscDraw draw) {
 /*@
    PetscDrawEOP - Ends a page or frame on the selected graphical device.
 
-   Logically Collective on PetscDraw
+   Logically Collective on draw
 
    Input Parameter:
 .  draw - the drawing context

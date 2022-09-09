@@ -22,12 +22,12 @@ PetscBool        petscindebugger     = PETSC_FALSE;
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  terminal - name of terminal and any flags required to execute a program.
               For example xterm, "urxvt -e", "gnome-terminal -x".
               On Apple MacOS you can use Terminal (note the capital T)
 
-   Options Database Keys:
+   Options Database Key:
    -debug_terminal terminal - use this terminal instead of the default
 
    Level: developer
@@ -162,14 +162,14 @@ PetscErrorCode PetscSetDebuggerFromString(const char *string) {
 }
 
 /*@
-   PetscWaitOnError - If an error is detected and the process would normally exit the main program with MPI_Abort() sleep instead
+   PetscWaitOnError - If an error is detected and the process would normally exit the main program with `MPI_Abort()` sleep instead
                       of exiting.
 
    Not Collective
 
    Level: advanced
 
-   Notes:
+   Note:
       When -start_in_debugger -debugger_ranks x,y,z is used this prevents the processes NOT listed in x,y,z from calling MPI_Abort and
       killing the user's debugging sessions.
 
@@ -191,8 +191,8 @@ PetscErrorCode PetscWaitOnError() {
 
    Level: advanced
 
-   Developer Notes:
-    Since this can be called by the error handler should it be calling SETERRQ() and PetscCall()?
+   Developer Note:
+    Since this can be called by the error handler should it be calling `SETERRQ()` and `PetscCall()`?
 
 .seealso: `PetscSetDebugger()`, `PetscSetDefaultDebugger()`, `PetscSetDebugTerminal()`, `PetscAttachDebuggerErrorHandler()`, `PetscStopForDebugger()`
 @*/
@@ -203,7 +203,6 @@ PetscErrorCode PetscAttachDebugger(void) {
   char      program[PETSC_MAX_PATH_LEN], display[256], hostname[64];
 #endif
 
-  PetscFunctionBegin;
 #if defined(PETSC_CANNOT_START_DEBUGGER) || !defined(PETSC_HAVE_FORK)
   (*PetscErrorPrintf)("System cannot start debugger\n");
   (*PetscErrorPrintf)("On Cray run program in Totalview debugger\n");
@@ -212,20 +211,20 @@ PetscErrorCode PetscAttachDebugger(void) {
 #else
   if (PetscUnlikely(PetscGetDisplay(display, sizeof(display)))) {
     (*PetscErrorPrintf)("Cannot determine display\n");
-    PetscFunctionReturn(PETSC_ERR_SYS);
+    return PETSC_ERR_SYS;
   }
   if (PetscUnlikely(PetscGetProgramName(program, sizeof(program)))) {
-    (*PetscErrorPrintf)("Cannot determine program name\n");
-    PetscFunctionReturn(PETSC_ERR_SYS);
+    (*PetscErrorPrintf)("Cannot determine program name needed to attach debugger\n");
+    return PETSC_ERR_SYS;
   }
   if (PetscUnlikely(!program[0])) {
-    (*PetscErrorPrintf)("Cannot determine program name\n");
-    PetscFunctionReturn(PETSC_ERR_SYS);
+    (*PetscErrorPrintf)("Cannot determine program name needed to attach debugger\n");
+    return PETSC_ERR_SYS;
   }
   child = (int)fork();
   if (PetscUnlikely(child < 0)) {
     (*PetscErrorPrintf)("Error in fork() prior to attaching debugger\n");
-    PetscFunctionReturn(PETSC_ERR_SYS);
+    return PETSC_ERR_SYS;
   }
   petscindebugger = PETSC_TRUE;
 
@@ -439,7 +438,7 @@ PetscErrorCode PetscAttachDebugger(void) {
 #endif
   }
 #endif
-  PetscFunctionReturn(0);
+  return 0;
 }
 
 /*@C
@@ -455,7 +454,7 @@ PetscErrorCode PetscAttachDebugger(void) {
 .  file - the file in which the error was detected (indicated by __FILE__)
 .  message - an error text string, usually just printed to the screen
 .  number - the generic error number
-.  p - PETSC_ERROR_INITIAL if error just detected, otherwise PETSC_ERROR_REPEAT
+.  p - `PETSC_ERROR_INITIAL` if error just detected, otherwise `PETSC_ERROR_REPEAT`
 -  ctx - error handler context
 
    Options Database Keys:
@@ -474,29 +473,28 @@ PetscErrorCode PetscAttachDebugger(void) {
 $     SETERRQ(PETSC_COMM_SELF,number,p,message)
 
    Notes for experienced users:
-   Use PetscPushErrorHandler() to set the desired error handler.  The
+   Use `PetscPushErrorHandler()` to set the desired error handler.  The
    currently available PETSc error handlers are
 $    PetscTraceBackErrorHandler()
 $    PetscAttachDebuggerErrorHandler()
 $    PetscAbortErrorHandler()
    or you may write your own.
 
-   Developer Notes:
-     This routine calls abort instead of returning because if it returned then MPI_Abort() would get called which can generate an exception
+   Developer Note:
+     This routine calls abort instead of returning because if it returned then `MPI_Abort()` would get called which can generate an exception
      causing the debugger to be attached again in a cycle.
 
 .seealso: `PetscSetDebuggerFromString()`, `PetscSetDebugger()`, `PetscSetDefaultDebugger()`, `PetscError()`, `PetscPushErrorHandler()`, `PetscPopErrorHandler()`, `PetscTraceBackErrorHandler()`,
           `PetscAbortErrorHandler()`, `PetscMPIAbortErrorHandler()`, `PetscEmacsClientErrorHandler()`, `PetscReturnErrorHandler()`, `PetscSetDebugTermainal()`
 @*/
 PetscErrorCode PetscAttachDebuggerErrorHandler(MPI_Comm comm, int line, const char *fun, const char *file, PetscErrorCode num, PetscErrorType p, const char *mess, void *ctx) {
-  PetscFunctionBegin;
   if (!mess) mess = " ";
 
   if (fun) (*PetscErrorPrintf)("%s() at %s:%d %s\n", fun, file, line, mess);
   else (*PetscErrorPrintf)("%s:%d %s\n", file, line, mess);
 
   PetscAttachDebugger();
-  abort(); /* call abort because don't want to kill other MPI processes that may successfully attach to debugger */
+  abort(); /* call abort because don't want to kill other MPI ranks that may successfully attach to debugger */
   PetscFunctionReturn(0);
 }
 
@@ -507,16 +505,16 @@ PetscErrorCode PetscAttachDebuggerErrorHandler(MPI_Comm comm, int line, const ch
 
    Not Collective
 
-   Options Database:
+   Options Database Key:
 .   -stop_for_debugger - will stop for you to attach the debugger when PetscInitialize() is called
 
    Level: developer
 
-   Notes:
-    This is likely never needed since PetscAttachDebugger() is easier to use and seems to always work.
+   Note:
+    This is likely never needed since `PetscAttachDebugger()` is easier to use and seems to always work.
 
-   Developer Notes:
-    Since this can be called by the error handler, should it be calling SETERRQ() and PetscCall()?
+   Developer Note:
+    Since this can be called by the error handler, should it be calling `SETERRQ()` and `PetscCall()`?
 
 .seealso: `PetscSetDebugger()`, `PetscAttachDebugger()`
 @*/

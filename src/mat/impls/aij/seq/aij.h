@@ -171,8 +171,8 @@ static inline PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA, MatScalar **a, PetscInt *
     PetscCall(PetscMalloc3(BS2 *new_nz, &new_a, new_nz, &new_j, AM + 1, &new_i)); \
 \
     /* copy over old data into new slots */ \
-    for (ii = 0; ii < ROW + 1; ii++) { new_i[ii] = AI[ii]; } \
-    for (ii = ROW + 1; ii < AM + 1; ii++) { new_i[ii] = AI[ii] + CHUNKSIZE; } \
+    for (ii = 0; ii < ROW + 1; ii++) new_i[ii] = AI[ii]; \
+    for (ii = ROW + 1; ii < AM + 1; ii++) new_i[ii] = AI[ii] + CHUNKSIZE; \
     PetscCall(PetscArraycpy(new_j, AJ, AI[ROW] + NROW)); \
     len = (new_nz - CHUNKSIZE - AI[ROW] - NROW); \
     PetscCall(PetscArraycpy(new_j + AI[ROW] + NROW + CHUNKSIZE, AJ + AI[ROW] + NROW, len)); \
@@ -206,8 +206,8 @@ static inline PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA, MatScalar **a, PetscInt *
     PetscCall(PetscMalloc1(AM + 1, &new_i)); \
 \
     /* copy over old data into new slots */ \
-    for (ii = 0; ii < ROW + 1; ii++) { new_i[ii] = AI[ii]; } \
-    for (ii = ROW + 1; ii < AM + 1; ii++) { new_i[ii] = AI[ii] + CHUNKSIZE; } \
+    for (ii = 0; ii < ROW + 1; ii++) new_i[ii] = AI[ii]; \
+    for (ii = ROW + 1; ii < AM + 1; ii++) new_i[ii] = AI[ii] + CHUNKSIZE; \
     PetscCall(PetscArraycpy(new_j, AJ, AI[ROW] + NROW)); \
     len = (new_nz - CHUNKSIZE - AI[ROW] - NROW); \
     PetscCall(PetscArraycpy(new_j + AI[ROW] + NROW + CHUNKSIZE, AJ + AI[ROW] + NROW, len)); \
@@ -424,11 +424,10 @@ PETSC_INTERN PetscErrorCode MatSetSeqAIJWithArrays_private(MPI_Comm, PetscInt, P
 +   PETSC_KERNEL_USE_UNROLL_4
 -   PETSC_KERNEL_USE_UNROLL_2
 
-  Developer Notes:
+  Developer Note:
     The macro changes sum but not other parameters
 
 .seealso: `PetscSparseDensePlusDot()`
-
 */
 #if defined(PETSC_KERNEL_USE_UNROLL_4)
 #define PetscSparseDenseMinusDot(sum, r, xv, xi, nnz) \
@@ -487,11 +486,10 @@ PETSC_INTERN PetscErrorCode MatSetSeqAIJWithArrays_private(MPI_Comm, PetscInt, P
 +   PETSC_KERNEL_USE_UNROLL_4
 -   PETSC_KERNEL_USE_UNROLL_2
 
-  Developer Notes:
+  Developer Note:
     The macro changes sum but not other parameters
 
 .seealso: `PetscSparseDenseMinusDot()`
-
 */
 #if defined(PETSC_KERNEL_USE_UNROLL_4)
 #define PetscSparseDensePlusDot(sum, r, xv, xi, nnz) \
@@ -591,7 +589,6 @@ static inline void PetscSparseDensePlusDot_AVX512_Private(PetscScalar *sum, cons
 .  max - the max of results
 
 .seealso: `PetscSparseDensePlusDot()`, `PetscSparseDenseMinusDot()`
-
 */
 #define PetscSparseDenseMaxDot(max, r, xv, xi, nnz) \
   { \

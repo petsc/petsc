@@ -365,7 +365,7 @@ int main(int argc, char **args) {
    test:
       suffix: hpddm
       nsize: 4
-      requires: hpddm !__float128
+      requires: hpddm !__float128 !__fp16
       filter: sed -e "s/ iterations 9/ iterations 8/g"
       args: -ksp_converged_reason -ksp_type hpddm -ksp_hpddm_precision {{single double}shared output} -ksp_pc_side {{left right}shared output}
 

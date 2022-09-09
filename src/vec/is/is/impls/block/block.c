@@ -22,6 +22,7 @@ static PetscErrorCode ISDestroy_Block(IS is) {
   PetscCall(PetscObjectComposeFunction((PetscObject)is, "ISBlockRestoreIndices_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)is, "ISBlockGetSize_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)is, "ISBlockGetLocalSize_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)is, "ISShift_C", NULL));
   PetscCall(PetscFree(is->data));
   PetscFunctionReturn(0);
 }
@@ -55,7 +56,7 @@ static PetscErrorCode ISLocate_Block(IS is, PetscInt key, PetscInt *location) {
       }
     }
   }
-  if (*location >= 0) { *location = *location * bs + mkey; }
+  if (*location >= 0) *location = *location * bs + mkey;
   PetscFunctionReturn(0);
 }
 
@@ -156,7 +157,7 @@ static PetscErrorCode ISView_Block(IS is, PetscViewer viewer) {
       PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "Block size %" PetscInt_FMT "\n", bs));
       PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "Number of block indices in set %" PetscInt_FMT "\n", n));
       PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "The first indices of each block are\n"));
-      for (i = 0; i < n; i++) { PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "Block %" PetscInt_FMT " Index %" PetscInt_FMT "\n", i, idx[i])); }
+      for (i = 0; i < n; i++) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "Block %" PetscInt_FMT " Index %" PetscInt_FMT "\n", i, idx[i]));
       PetscCall(PetscViewerFlush(viewer));
       PetscCall(PetscViewerASCIIPopSynchronized(viewer));
     }
@@ -315,6 +316,19 @@ static PetscErrorCode ISOnComm_Block(IS is, MPI_Comm comm, PetscCopyMode mode, I
   PetscCall(PetscLayoutGetBlockSize(is->map, &bs));
   PetscCall(PetscLayoutGetLocalSize(is->map, &n));
   PetscCall(ISCreateBlock(comm, bs, n / bs, sub->idx, mode, newis));
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode ISShift_Block(IS is, PetscInt shift, IS isy) {
+  IS_Block *isb  = (IS_Block *)is->data;
+  IS_Block *isby = (IS_Block *)isy->data;
+  PetscInt  i, n, bs;
+
+  PetscFunctionBegin;
+  PetscCall(PetscLayoutGetLocalSize(is->map, &n));
+  PetscCall(PetscLayoutGetBlockSize(is->map, &bs));
+  shift /= bs;
+  for (i = 0; i < n / bs; i++) isby->idx[i] = isb->idx[i] + shift;
   PetscFunctionReturn(0);
 }
 
@@ -602,5 +616,6 @@ PETSC_EXTERN PetscErrorCode ISCreate_Block(IS is) {
   PetscCall(PetscObjectComposeFunction((PetscObject)is, "ISBlockRestoreIndices_C", ISBlockRestoreIndices_Block));
   PetscCall(PetscObjectComposeFunction((PetscObject)is, "ISBlockGetSize_C", ISBlockGetSize_Block));
   PetscCall(PetscObjectComposeFunction((PetscObject)is, "ISBlockGetLocalSize_C", ISBlockGetLocalSize_Block));
+  PetscCall(PetscObjectComposeFunction((PetscObject)is, "ISShift_C", ISShift_Block));
   PetscFunctionReturn(0);
 }

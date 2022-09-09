@@ -74,7 +74,7 @@ int main(int argc, char **args) {
     if (view) PetscCall(VecView(z, PETSC_VIEWER_STDOUT_WORLD));
     PetscCall(VecAXPY(z, -1.0, x));
     PetscCall(VecNorm(z, NORM_1, &enorm));
-    if (enorm > 1.e-11) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Error norm of |x - z| %g\n", (double)enorm)); }
+    if (enorm > 1.e-11) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Error norm of |x - z| %g\n", (double)enorm));
 
     /* Free spaces */
     fftw_destroy_plan(fplan);
@@ -97,11 +97,11 @@ int main(int argc, char **args) {
     for (i = 2; i < 3; i++) { /* (i=3,4: -- error in VecScatterPetscToFFTW(A,input,x); */
       DIM = i;
       PetscCall(PetscMalloc1(i, &dim));
-      for (k = 0; k < i; k++) { dim[k] = 30; }
+      for (k = 0; k < i; k++) dim[k] = 30;
       N *= dim[i - 1];
 
       /* Create FFTW object */
-      if (rank == 0) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "Use PETSc-FFTW interface...%d-DIM:%d \n", DIM, N)); }
+      if (rank == 0) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Use PETSc-FFTW interface...%d-DIM:%d \n", DIM, N));
       PetscCall(MatCreateFFT(PETSC_COMM_WORLD, DIM, dim, MATFFTW, &A));
 
       /* Create FFTW vectors that are compatible with parallel layout of A */
@@ -141,7 +141,7 @@ int main(int argc, char **args) {
       if (view) PetscCall(VecView(output, PETSC_VIEWER_STDOUT_WORLD));
       PetscCall(VecAXPY(output, -1.0, input));
       PetscCall(VecNorm(output, NORM_1, &enorm));
-      if (enorm > 1.e-09 && rank == 0) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Error norm of |x - z| %e\n", enorm)); }
+      if (enorm > 1.e-09 && rank == 0) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Error norm of |x - z| %e\n", enorm));
 
       /* Free spaces */
       PetscCall(PetscFree(dim));

@@ -127,7 +127,7 @@ int main(int argc, char **argv) {
   PetscCall(CreateSystem(dmSol, &A, &rhs, pinPressure));
 
   /* Attach a constant-pressure nullspace to the operator */
-  if (!pinPressure) { PetscCall(AttachNullspace(dmSol, A)); }
+  if (!pinPressure) PetscCall(AttachNullspace(dmSol, A));
 
   /* Solve */
   PetscCall(DMCreateGlobalVector(dmSol, &sol));
@@ -1811,10 +1811,10 @@ static PetscErrorCode CreateReferenceSolution(DM dmSol, Vec *pSolRef) {
   for (ez = start[2]; ez < start[2] + n[2] + nExtra[2]; ++ez) {
     for (ey = start[1]; ey < start[1] + n[1] + nExtra[1]; ++ey) {
       for (ex = start[0]; ex < start[0] + n[0] + nExtra[0]; ++ex) {
-        if (ex < start[0] + n[0] && ey < start[1] + n[1]) { arrSol[ez][ey][ex][iuz] = uzRef(arrCoord[ez][ey][ex][icuz[0]], arrCoord[ez][ey][ex][icuz[1]], arrCoord[ez][ey][ex][icuz[2]]); }
-        if (ex < start[0] + n[0] && ey < start[2] + n[2]) { arrSol[ez][ey][ex][iuy] = uyRef(arrCoord[ez][ey][ex][icuy[0]], arrCoord[ez][ey][ex][icuy[1]], arrCoord[ez][ey][ex][icuy[2]]); }
-        if (ex < start[1] + n[1] && ey < start[2] + n[2]) { arrSol[ez][ey][ex][iux] = uxRef(arrCoord[ez][ey][ex][icux[0]], arrCoord[ez][ey][ex][icux[1]], arrCoord[ez][ey][ex][icux[2]]); }
-        if (ex < start[0] + n[0] && ey < start[1] + n[1] && ez < start[2] + n[2]) { arrSol[ez][ey][ex][ip] = pRef(arrCoord[ez][ey][ex][icp[0]], arrCoord[ez][ey][ex][icp[1]], arrCoord[ez][ey][ex][icp[2]]); }
+        if (ex < start[0] + n[0] && ey < start[1] + n[1]) arrSol[ez][ey][ex][iuz] = uzRef(arrCoord[ez][ey][ex][icuz[0]], arrCoord[ez][ey][ex][icuz[1]], arrCoord[ez][ey][ex][icuz[2]]);
+        if (ex < start[0] + n[0] && ey < start[2] + n[2]) arrSol[ez][ey][ex][iuy] = uyRef(arrCoord[ez][ey][ex][icuy[0]], arrCoord[ez][ey][ex][icuy[1]], arrCoord[ez][ey][ex][icuy[2]]);
+        if (ex < start[1] + n[1] && ey < start[2] + n[2]) arrSol[ez][ey][ex][iux] = uxRef(arrCoord[ez][ey][ex][icux[0]], arrCoord[ez][ey][ex][icux[1]], arrCoord[ez][ey][ex][icux[2]]);
+        if (ex < start[0] + n[0] && ey < start[1] + n[1] && ez < start[2] + n[2]) arrSol[ez][ey][ex][ip] = pRef(arrCoord[ez][ey][ex][icp[0]], arrCoord[ez][ey][ex][icp[1]], arrCoord[ez][ey][ex][icp[2]]);
       }
     }
   }

@@ -14,30 +14,30 @@
 PetscFunctionList PetscDrawList = NULL;
 
 /*@C
-   PetscDrawView - Prints the PetscDraw data structure.
+   PetscDrawView - Prints the `PetscDraw` data structure.
 
-   Collective on PetscDraw
+   Collective on indraw
 
    Input Parameters:
-+  indraw - the PetscDraw context
++  indraw - the `PetscDraw` context
 -  viewer - visualization context
 
    See PetscDrawSetFromOptions() for options database keys
 
    Note:
    The available visualization contexts include
-+     PETSC_VIEWER_STDOUT_SELF - standard output (default)
--     PETSC_VIEWER_STDOUT_WORLD - synchronized standard
++     `PETSC_VIEWER_STDOUT_SELF` - standard output (default)
+-     `PETSC_VIEWER_STDOUT_WORLD` - synchronized standard
          output where only the first processor opens
          the file.  All other processors send their
          data to the first processor to print.
 
    The user can open an alternative visualization context with
-   PetscViewerASCIIOpen() - output to a specified file.
+   `PetscViewerASCIIOpen()` - output to a specified file.
 
    Level: beginner
 
-.seealso: `PCView()`, `PetscViewerASCIIOpen()`
+.seealso: `PetscDraw`, `PetscViewerASCIIOpen()`, `PetscViewer`
 @*/
 PetscErrorCode PetscDrawView(PetscDraw indraw, PetscViewer viewer) {
   PetscBool isdraw;
@@ -47,7 +47,7 @@ PetscErrorCode PetscDrawView(PetscDraw indraw, PetscViewer viewer) {
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(indraw, PETSC_DRAW_CLASSID, 1);
-  if (!viewer) { PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)indraw), &viewer)); }
+  if (!viewer) PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)indraw), &viewer));
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscCheckSameComm(indraw, 1, viewer, 2);
 
@@ -74,19 +74,19 @@ PetscErrorCode PetscDrawView(PetscDraw indraw, PetscViewer viewer) {
 
     PetscCall(PetscObjectName((PetscObject)indraw));
     PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
-    if (!((PetscObject)indraw)->amsmem && rank == 0) { PetscCall(PetscObjectViewSAWs((PetscObject)indraw, viewer)); }
+    if (!((PetscObject)indraw)->amsmem && rank == 0) PetscCall(PetscObjectViewSAWs((PetscObject)indraw, viewer));
 #endif
   } else PetscTryTypeMethod(indraw, view, viewer);
   PetscFunctionReturn(0);
 }
 
 /*@C
-   PetscDrawViewFromOptions - View from Options
+   PetscDrawViewFromOptions - View a `PetscDraw` from the option database
 
-   Collective on PetscDraw
+   Collective on A
 
    Input Parameters:
-+  A - the PetscDraw context
++  A - the `PetscDraw` context
 .  obj - Optional object
 -  name - command line option
 
@@ -109,12 +109,12 @@ PetscErrorCode PetscDrawViewFromOptions(PetscDraw A, PetscObject obj, const char
 +  comm - MPI communicator
 .  display - X display when using X Windows
 .  title - optional title added to top of window
-.  x,y - coordinates of lower left corner of window or PETSC_DECIDE
--  w, h - width and height of window or PETSC_DECIDE or PETSC_DRAW_HALF_SIZE, PETSC_DRAW_FULL_SIZE,
-          or PETSC_DRAW_THIRD_SIZE or PETSC_DRAW_QUARTER_SIZE
+.  x,y - coordinates of lower left corner of window or `PETSC_DECIDE`
+-  w, h - width and height of window or `PETSC_DECIDE` or `PETSC_DRAW_HALF_SIZE`, `PETSC_DRAW_FULL_SIZE`,
+          or `PETSC_DRAW_THIRD_SIZE` or `PETSC_DRAW_QUARTER_SIZE`
 
    Output Parameter:
-.  draw - location to put the PetscDraw context
+.  draw - location to put the `PetscDraw` context
 
    Level: beginner
 
@@ -128,7 +128,6 @@ PetscErrorCode PetscDrawViewFromOptions(PetscDraw A, PetscObject obj, const char
           `PetscDrawSplitViewPort()`, `PetscDrawSetTitle()`, `PetscDrawAppendTitle()`, `PetscDrawGetTitle()`, `PetscDrawSetPause()`, `PetscDrawGetPause()`,
           `PetscDrawPause()`, `PetscDrawSetDoubleBuffer()`, `PetscDrawClear()`, `PetscDrawFlush()`, `PetscDrawGetSingleton()`, `PetscDrawGetMouseButton()`,
           `PetscDrawZoom()`, `PetscDrawGetBoundingBox()`
-
 @*/
 PetscErrorCode PetscDrawCreate(MPI_Comm comm, const char display[], const char title[], int x, int y, int w, int h, PetscDraw *indraw) {
   PetscDraw draw;
@@ -182,11 +181,11 @@ PetscErrorCode PetscDrawCreate(MPI_Comm comm, const char display[], const char t
 /*@C
    PetscDrawSetType - Builds graphics object for a particular implementation
 
-   Collective on PetscDraw
+   Collective on draw
 
    Input Parameters:
 +  draw      - the graphics context
--  type      - for example, PETSC_DRAW_X
+-  type      - for example, `PETSC_DRAW_X`
 
    Options Database Command:
 .  -draw_type  <type> - Sets the type; use -help for a list of available methods (for instance, x)
@@ -195,11 +194,11 @@ PetscErrorCode PetscDrawCreate(MPI_Comm comm, const char display[], const char t
 
    Level: intermediate
 
-   Notes:
+   Note:
    See "petsc/include/petscdraw.h" for available methods (for instance,
-   PETSC_DRAW_X, PETSC_DRAW_TIKZ or PETSC_DRAW_IMAGE)
+   `PETSC_DRAW_X`, `PETSC_DRAW_TIKZ` or `PETSC_DRAW_IMAGE`)
 
-.seealso: `PetscDrawSetFromOptions()`, `PetscDrawCreate()`, `PetscDrawDestroy()`, `PetscDrawType`
+.seealso: `PetscDraw`, `PETSC_DRAW_X`, `PETSC_DRAW_TIKZ`, `PETSC_DRAW_IMAGE`, `PetscDrawSetFromOptions()`, `PetscDrawCreate()`, `PetscDrawDestroy()`, `PetscDrawType`
 @*/
 PetscErrorCode PetscDrawSetType(PetscDraw draw, PetscDrawType type) {
   PetscBool match;
@@ -256,7 +255,7 @@ PetscErrorCode PetscDrawSetType(PetscDraw draw, PetscDrawType type) {
 }
 
 /*@C
-   PetscDrawGetType - Gets the PetscDraw type as a string from the PetscDraw object.
+   PetscDrawGetType - Gets the `PetscDraw` type as a string from the `PetscDraw` object.
 
    Not Collective
 
@@ -268,8 +267,7 @@ PetscErrorCode PetscDrawSetType(PetscDraw draw, PetscDrawType type) {
 
    Level: advanced
 
-.seealso: `PetscDrawSetType()`, `PetscDrawType`
-
+.seealso: `PetscDraw`, `PetscDrawType`, `PetscDrawSetType()`, `PetscDrawCreate()
 @*/
 PetscErrorCode PetscDrawGetType(PetscDraw draw, PetscDrawType *type) {
   PetscFunctionBegin;
@@ -290,8 +288,8 @@ PetscErrorCode PetscDrawGetType(PetscDraw draw, PetscDrawType *type) {
 
    Level: developer
 
-   Notes:
-   PetscDrawRegister() may be called multiple times to add several user-defined graphics classes
+   Note:
+   `PetscDrawRegister()` may be called multiple times to add several user-defined graphics classes
 
    Sample usage:
 .vb
@@ -303,7 +301,7 @@ $     PetscDrawSetType(ksp,"my_draw_type")
    or at runtime via the option
 $     -draw_type my_draw_type
 
-.seealso: `PetscDrawRegisterAll()`, `PetscDrawRegisterDestroy()`, `PetscDrawType`, `PetscDrawSetType()`
+.seealso: `PetscDraw`, `PetscDrawRegisterAll()`, `PetscDrawRegisterDestroy()`, `PetscDrawType`, `PetscDrawSetType()`
 @*/
 PetscErrorCode PetscDrawRegister(const char *sname, PetscErrorCode (*function)(PetscDraw)) {
   PetscFunctionBegin;
@@ -314,9 +312,9 @@ PetscErrorCode PetscDrawRegister(const char *sname, PetscErrorCode (*function)(P
 
 /*@C
    PetscDrawSetOptionsPrefix - Sets the prefix used for searching for all
-   PetscDraw options in the database.
+   `PetscDraw` options in the database.
 
-   Logically Collective on PetscDraw
+   Logically Collective on draw
 
    Input Parameters:
 +  draw - the draw context
@@ -324,7 +322,7 @@ PetscErrorCode PetscDrawRegister(const char *sname, PetscErrorCode (*function)(P
 
    Level: advanced
 
-.seealso: `PetscDrawSetFromOptions()`, `PetscDrawCreate()`
+.seealso: `PetscDraw`, `PetscDrawSetFromOptions()`, `PetscDrawCreate()`
 @*/
 PetscErrorCode PetscDrawSetOptionsPrefix(PetscDraw draw, const char prefix[]) {
   PetscFunctionBegin;
@@ -337,7 +335,7 @@ PetscErrorCode PetscDrawSetOptionsPrefix(PetscDraw draw, const char prefix[]) {
    PetscDrawSetFromOptions - Sets the graphics type from the options database.
       Defaults to a PETSc X Windows graphics.
 
-   Collective on PetscDraw
+   Collective on draw
 
    Input Parameter:
 .     draw - the graphics context
@@ -356,11 +354,10 @@ PetscErrorCode PetscDrawSetOptionsPrefix(PetscDraw draw, const char prefix[]) {
 
    Level: intermediate
 
-   Notes:
-    Must be called after PetscDrawCreate() before the PetscDraw is used.
+   Note:
+    Must be called after `PetscDrawCreate()` before the `PetscDraw` is used.
 
-.seealso: `PetscDrawCreate()`, `PetscDrawSetType()`, `PetscDrawSetSave()`, `PetscDrawSetSaveFinalImage()`, `PetscDrawPause()`, `PetscDrawSetPause()`
-
+.seealso: `PetscDraw`, `PetscDrawCreate()`, `PetscDrawSetType()`, `PetscDrawSetSave()`, `PetscDrawSetSaveFinalImage()`, `PetscDrawPause()`, `PetscDrawSetPause()`
 @*/
 PetscErrorCode PetscDrawSetFromOptions(PetscDraw draw) {
   PetscBool   flg, nox;

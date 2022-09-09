@@ -9,7 +9,7 @@ static PetscErrorCode estsv(PetscInt n, PetscReal *r, PetscInt ldr, PetscReal *s
   PetscFunctionBegin;
   PetscCall(PetscBLASIntCast(n, &blasn));
   PetscCall(PetscBLASIntCast(ldr, &blasldr));
-  for (i = 0; i < n; i++) { z[i] = 0.0; }
+  for (i = 0; i < n; i++) z[i] = 0.0;
   e = PetscAbs(r[0]);
   if (e == 0.0) {
     *svmin = 0.0;
@@ -38,7 +38,7 @@ static PetscErrorCode estsv(PetscInt n, PetscReal *r, PetscInt ldr, PetscReal *s
       /*  Chose y[i] based on the predicted value of y[j] for j>i */
       s  = PetscAbs(e - z[i]);
       sm = PetscAbs(e + z[i]);
-      for (j = i + 1; j < n; j++) { sm += PetscAbs(z[j] + wm * r[i + ldr * j]); }
+      for (j = i + 1; j < n; j++) sm += PetscAbs(z[j] + wm * r[i + ldr * j]);
       if (i < n - 1) {
         PetscCall(PetscBLASIntCast(n - i - 1, &blasnmi));
         PetscCallBLAS("BLASaxpy", BLASaxpy_(&blasnmi, &w, &r[i + ldr * (i + 1)], &blasldr, &z[i + 1], &blas1));
@@ -47,7 +47,7 @@ static PetscErrorCode estsv(PetscInt n, PetscReal *r, PetscInt ldr, PetscReal *s
       if (s < sm) {
         temp = wm - w;
         w    = wm;
-        if (i < n - 1) { PetscCallBLAS("BLASaxpy", BLASaxpy_(&blasnmi, &temp, &r[i + ldr * (i + 1)], &blasldr, &z[i + 1], &blas1)); }
+        if (i < n - 1) PetscCallBLAS("BLASaxpy", BLASaxpy_(&blasnmi, &temp, &r[i + ldr * (i + 1)], &blasldr, &z[i + 1], &blas1));
       }
       z[i] = w;
     }
@@ -245,7 +245,7 @@ PetscErrorCode gqt(PetscInt n, PetscReal *a, PetscInt lda, PetscReal *b, PetscRe
     CHKMEMQ;
     anorm = PetscMax(anorm, wa2[j]);
   }
-  for (j = 0; j < n; j++) { wa2[j] = wa2[j] - PetscAbs(wa1[j]); }
+  for (j = 0; j < n; j++) wa2[j] = wa2[j] - PetscAbs(wa1[j]);
   PetscCallBLAS("BLASnrm2", bnorm = BLASnrm2_(&blasn, b, &blas1));
   CHKMEMQ;
   /* Calculate a lower bound, pars, for the domain of the problem.
@@ -275,7 +275,7 @@ PetscErrorCode gqt(PetscInt n, PetscReal *a, PetscInt lda, PetscReal *b, PetscRe
   info = 0;
   for (iter = 1; iter <= itmax; iter++) {
     /* Safeguard par */
-    if (par <= pars && paru > 0) { par = PetscMax(p001, PetscSqrtScalar(parl / paru)) * paru; }
+    if (par <= pars && paru > 0) par = PetscMax(p001, PetscSqrtScalar(parl / paru)) * paru;
 
     /* Copy the lower triangle of A into its upper triangle and  compute A + par*I */
 
@@ -283,7 +283,7 @@ PetscErrorCode gqt(PetscInt n, PetscReal *a, PetscInt lda, PetscReal *b, PetscRe
       PetscCall(PetscBLASIntCast(n - j - 1, &iblas));
       PetscCallBLAS("BLAScopy", BLAScopy_(&iblas, &a[j + 1 + j * lda], &blas1, &a[j + (j + 1) * lda], &blaslda));
     }
-    for (j = 0; j < n; j++) { a[j + j * lda] = wa1[j] + par; }
+    for (j = 0; j < n; j++) a[j + j * lda] = wa1[j] + par;
 
     /* Attempt the Cholesky factorization of A without referencing the lower triangular part. */
     PetscCallBLAS("LAPACKpotrf", LAPACKpotrf_("U", &blasn, a, &blaslda, &indef));
@@ -306,7 +306,7 @@ PetscErrorCode gqt(PetscInt n, PetscReal *a, PetscInt lda, PetscReal *b, PetscRe
       CHKMEMQ;
 
       /* Test for convergence */
-      if (PetscAbs(xnorm - delta) <= rtol * delta || (par == 0 && xnorm <= (1.0 + rtol) * delta)) { info = 1; }
+      if (PetscAbs(xnorm - delta) <= rtol * delta || (par == 0 && xnorm <= (1.0 + rtol) * delta)) info = 1;
 
       /* Compute a direction of negative curvature and use this information to improve pars. */
       PetscCall(estsv(n, a, lda, &rznorm, z));
@@ -326,7 +326,7 @@ PetscErrorCode gqt(PetscInt n, PetscReal *a, PetscInt lda, PetscReal *b, PetscRe
 
         /* Test to decide if the negative curvature step produces a larger reduction than with z=0 */
         rznorm = PetscAbs(alpha) * rznorm;
-        if ((rznorm * rznorm + par * xnorm * xnorm) / (delta2) <= par) { rednc = 1; }
+        if ((rznorm * rznorm + par * xnorm * xnorm) / (delta2) <= par) rednc = 1;
         /* Test for convergence */
         if (p5 * rznorm * rznorm / delta2 <= rtol * (1.0 - p5 * rtol) * (par + rxnorm * rxnorm / delta2)) {
           info = 1;

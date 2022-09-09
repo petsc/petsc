@@ -1,9 +1,7 @@
 #define MKL_Complex16 PetscScalar
 #define MKL_Complex8  PetscScalar
 #define PetscCallMKL(stat) \
-  do { \
-    if (stat != SPARSE_STATUS_SUCCESS) { PetscFunctionReturn(PETSC_ERR_LIB); } \
-  } while (0)
+  do { PetscCheck(stat == SPARSE_STATUS_SUCCESS, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in MKL sparse matrix call"); } while (0)
 #if !defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_USE_REAL_SINGLE)
 #define mkl_sparse_x_create_bsr(A, indexing, block_layout, rows, cols, block_size, rows_start, rows_end, col_indx, values) mkl_sparse_s_create_bsr(A, indexing, block_layout, rows, cols, block_size, rows_start, rows_end, col_indx, values)

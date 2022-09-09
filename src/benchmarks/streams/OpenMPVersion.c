@@ -239,7 +239,7 @@ int checktick()
     minDelta = MIN(minDelta, MAX(Delta,0));
   }
 
-  return(minDelta);
+  return minDelta;
 }
 
 /* A gettimeofday routine to give access to the wall

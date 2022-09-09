@@ -93,7 +93,7 @@ static PetscErrorCode SNESSetUp_FAS(SNES snes) {
   PetscCall(SNESSetWorkVecs(snes, 2)); /* work vectors used for intergrid transfers */
 
   /* set up the smoothers if they haven't already been set up */
-  if (!fas->smoothd) { PetscCall(SNESFASCycleCreateSmoother_Private(snes, &fas->smoothd)); }
+  if (!fas->smoothd) PetscCall(SNESFASCycleCreateSmoother_Private(snes, &fas->smoothd));
 
   if (snes->dm) {
     /* set the smoother DMs properly */
@@ -123,7 +123,7 @@ static PetscErrorCode SNESSetUp_FAS(SNES snes) {
       /* set the injection from the DM */
       if (!fas->inject) {
         PetscCall(DMHasCreateInjection(next->dm, &hasCreateInjection));
-        if (hasCreateInjection) { PetscCall(DMCreateInjection(next->dm, snes->dm, &fas->inject)); }
+        if (hasCreateInjection) PetscCall(DMCreateInjection(next->dm, snes->dm, &fas->inject));
       }
     }
   }
@@ -131,8 +131,8 @@ static PetscErrorCode SNESSetUp_FAS(SNES snes) {
   /*pass the smoother, function, and jacobian up to the next level if it's not user set already */
   if (fas->galerkin) {
     if (next) PetscCall(SNESSetFunction(next, NULL, SNESFASGalerkinFunctionDefault, next));
-    if (fas->smoothd && fas->level != fas->levels - 1) { PetscCall(SNESSetFunction(fas->smoothd, NULL, SNESFASGalerkinFunctionDefault, snes)); }
-    if (fas->smoothu && fas->level != fas->levels - 1) { PetscCall(SNESSetFunction(fas->smoothu, NULL, SNESFASGalerkinFunctionDefault, snes)); }
+    if (fas->smoothd && fas->level != fas->levels - 1) PetscCall(SNESSetFunction(fas->smoothd, NULL, SNESFASGalerkinFunctionDefault, snes));
+    if (fas->smoothu && fas->level != fas->levels - 1) PetscCall(SNESSetFunction(fas->smoothu, NULL, SNESFASGalerkinFunctionDefault, snes));
   }
 
   /* sets the down (pre) smoother's default norm and sets it from options */
@@ -362,7 +362,7 @@ static PetscErrorCode SNESFASDownSmooth_Private(SNES snes, Vec B, Vec X, Vec F, 
 
   PetscCall(SNESGetFunction(smoothd, &FPC, NULL, NULL));
   PetscCall(SNESGetAlwaysComputesFinalResidual(smoothd, &flg));
-  if (!flg) { PetscCall(SNESComputeFunction(smoothd, X, FPC)); }
+  if (!flg) PetscCall(SNESComputeFunction(smoothd, X, FPC));
   PetscCall(VecCopy(FPC, F));
   if (fnorm) PetscCall(VecNorm(F, NORM_2, fnorm));
   PetscFunctionReturn(0);
@@ -391,7 +391,7 @@ static PetscErrorCode SNESFASUpSmooth_Private(SNES snes, Vec B, Vec X, Vec F, Pe
   }
   PetscCall(SNESGetFunction(smoothu, &FPC, NULL, NULL));
   PetscCall(SNESGetAlwaysComputesFinalResidual(smoothu, &flg));
-  if (!flg) { PetscCall(SNESComputeFunction(smoothu, X, FPC)); }
+  if (!flg) PetscCall(SNESComputeFunction(smoothu, X, FPC));
   PetscCall(VecCopy(FPC, F));
   if (fnorm) PetscCall(VecNorm(F, NORM_2, fnorm));
   PetscFunctionReturn(0);

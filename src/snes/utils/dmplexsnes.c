@@ -359,7 +359,7 @@ PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo ctx, DM dm, PetscBool re
 #endif
   PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF, ctx->dim, N * ctx->dim, globalPointsScalar, &pointVec));
   PetscCall(PetscMalloc2(N, &foundProcs, N, &globalProcs));
-  for (p = 0; p < N; ++p) { foundProcs[p] = size; }
+  for (p = 0; p < N; ++p) foundProcs[p] = size;
   cellSF = NULL;
   PetscCall(DMLocatePoints(dm, pointVec, DM_POINTLOCATION_REMOVE, &cellSF));
   PetscCall(PetscSFGetGraph(cellSF, NULL, &numFound, &foundPoints, &foundCells));
@@ -742,7 +742,7 @@ static inline PetscErrorCode DMInterpolate_Quad_Private(DMInterpolationInfo ctx,
       PetscCall(PetscFEComputeTabulation(fem, 1, xir, 0, T));
       for (comp = 0; comp < dof; ++comp) {
         a[p * dof + comp] = 0.0;
-        for (d = 0; d < xSize / dof; ++d) { a[p * dof + comp] += x[d * dof + comp] * T->T[0][d * dof + comp]; }
+        for (d = 0; d < xSize / dof; ++d) a[p * dof + comp] += x[d * dof + comp] * T->T[0][d * dof + comp];
       }
     }
     PetscCall(VecRestoreArray(ref, &xi));
@@ -1053,7 +1053,7 @@ PetscErrorCode DMInterpolationEvaluate(DMInterpolationInfo ctx, DM dm, Vec x, Ve
 
           for (fc = 0; fc < Nc; ++fc) {
             interpolant[p * ctx->dof + coff + fc] = 0.0;
-            for (f = 0; f < Nb; ++f) { interpolant[p * ctx->dof + coff + fc] += xa[foff + f] * basis[(0 * Nb + f) * Nc + fc]; }
+            for (f = 0; f < Nb; ++f) interpolant[p * ctx->dof + coff + fc] += xa[foff + f] * basis[(0 * Nb + f) * Nc + fc];
           }
           coff += Nc;
           foff += Nb;
@@ -1262,7 +1262,7 @@ PetscErrorCode DMSNESComputeResidual(DM dm, Vec X, Vec F, void *user) {
         Nk += Nkm;
       }
       PetscCall(PetscMalloc1(Nk, &reskeys));
-      for (m = 0; m < Nm; ++m) { PetscCall(PetscHMapFormGetKeys(ds->wf->form[resmap[m]], &off, reskeys)); }
+      for (m = 0; m < Nm; ++m) PetscCall(PetscHMapFormGetKeys(ds->wf->form[resmap[m]], &off, reskeys));
       PetscCheck(off == Nk, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Number of keys %" PetscInt_FMT " should be %" PetscInt_FMT, off, Nk);
       PetscCall(PetscFormKeySort(Nk, reskeys));
       for (k = 0, kp = 1; kp < Nk; ++kp) {
@@ -1370,7 +1370,7 @@ PetscErrorCode DMSNESComputeJacobianAction(DM dm, Vec X, Vec Y, Vec F, void *use
         Nk += Nkm;
       }
       PetscCall(PetscMalloc1(Nk, &jackeys));
-      for (m = 0; m < Nm; ++m) { PetscCall(PetscHMapFormGetKeys(ds->wf->form[jacmap[m]], &off, jackeys)); }
+      for (m = 0; m < Nm; ++m) PetscCall(PetscHMapFormGetKeys(ds->wf->form[jacmap[m]], &off, jackeys));
       PetscCheck(off == Nk, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Number of keys %" PetscInt_FMT " should be %" PetscInt_FMT, off, Nk);
       PetscCall(PetscFormKeySort(Nk, jackeys));
       for (k = 0, kp = 1; kp < Nk; ++kp) {
@@ -1680,7 +1680,7 @@ PetscErrorCode DMSNESCheckDiscretization(SNES snes, DM dm, PetscReal t, Vec u, P
   if (Nf > 1) {
     PetscCall(DMComputeL2FieldDiff(dm, t, exacts, ectxs, u, err));
     if (tol >= 0.0) {
-      for (f = 0; f < Nf; ++f) { PetscCheck(err[f] <= tol, comm, PETSC_ERR_ARG_WRONG, "L_2 Error %g for field %" PetscInt_FMT " exceeds tolerance %g", (double)err[f], f, (double)tol); }
+      for (f = 0; f < Nf; ++f) PetscCheck(err[f] <= tol, comm, PETSC_ERR_ARG_WRONG, "L_2 Error %g for field %" PetscInt_FMT " exceeds tolerance %g", (double)err[f], f, (double)tol);
     } else if (error) {
       for (f = 0; f < Nf; ++f) error[f] = err[f];
     } else {

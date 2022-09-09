@@ -44,7 +44,7 @@ int main(int argc, char **args) {
   /* Test MatGetOwnershipRange() */
   PetscCall(MatGetOwnershipRange(A, &Ii, &J));
   PetscCall(MatGetOwnershipRange(sA, &i, &j));
-  if (i - Ii || j - J) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error: MatGetOwnershipRange() in MatSBAIJ format\n")); }
+  if (i - Ii || j - J) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error: MatGetOwnershipRange() in MatSBAIJ format\n"));
 
   /* Assemble matrix */
   if (bs == 1) {
@@ -176,7 +176,7 @@ int main(int argc, char **args) {
   j  = (int)(minfo1.nz_allocated - minfo2.nz_allocated);
   k1 = (int)(minfo1.nz_allocated - minfo1.nz_used);
   k2 = (int)(minfo2.nz_allocated - minfo2.nz_used);
-  if (i < 0 || j < 0 || k1 < 0 || k2 < 0) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error (compare A and sA): MatGetInfo()\n")); }
+  if (i < 0 || j < 0 || k1 < 0 || k2 < 0) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error (compare A and sA): MatGetInfo()\n"));
 
   /* Test MatDuplicate() */
   PetscCall(MatNorm(A, NORM_FROBENIUS, &norm1));
@@ -188,15 +188,15 @@ int main(int argc, char **args) {
   PetscCall(MatNorm(A, NORM_FROBENIUS, &norm1));
   PetscCall(MatNorm(sB, NORM_FROBENIUS, &norm2));
   rnorm = PetscAbsReal(norm1 - norm2) / norm2;
-  if (rnorm > tol) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error: MatNorm_FROBENIUS, NormA=%16.14e NormsB=%16.14e\n", (double)norm1, (double)norm2)); }
+  if (rnorm > tol) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error: MatNorm_FROBENIUS, NormA=%16.14e NormsB=%16.14e\n", (double)norm1, (double)norm2));
   PetscCall(MatNorm(A, NORM_INFINITY, &norm1));
   PetscCall(MatNorm(sB, NORM_INFINITY, &norm2));
   rnorm = PetscAbsReal(norm1 - norm2) / norm2;
-  if (rnorm > tol) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error: MatNorm_INFINITY(), NormA=%16.14e NormsB=%16.14e\n", (double)norm1, (double)norm2)); }
+  if (rnorm > tol) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error: MatNorm_INFINITY(), NormA=%16.14e NormsB=%16.14e\n", (double)norm1, (double)norm2));
   PetscCall(MatNorm(A, NORM_1, &norm1));
   PetscCall(MatNorm(sB, NORM_1, &norm2));
   rnorm = PetscAbsReal(norm1 - norm2) / norm2;
-  if (rnorm > tol) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error: MatNorm_INFINITY(), NormA=%16.14e NormsB=%16.14e\n", (double)norm1, (double)norm2)); }
+  if (rnorm > tol) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error: MatNorm_INFINITY(), NormA=%16.14e NormsB=%16.14e\n", (double)norm1, (double)norm2));
 
   /* Test MatGetInfo(), MatGetSize(), MatGetBlockSize() */
   PetscCall(MatGetInfo(A, MAT_LOCAL, &minfo1));
@@ -205,15 +205,15 @@ int main(int argc, char **args) {
   j  = (int)(minfo1.nz_allocated - minfo2.nz_allocated);
   k1 = (int)(minfo1.nz_allocated - minfo1.nz_used);
   k2 = (int)(minfo2.nz_allocated - minfo2.nz_used);
-  if (i < 0 || j < 0 || k1 < 0 || k2 < 0) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error(compare A and sB): MatGetInfo()\n")); }
+  if (i < 0 || j < 0 || k1 < 0 || k2 < 0) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error(compare A and sB): MatGetInfo()\n"));
 
   PetscCall(MatGetSize(A, &Ii, &J));
   PetscCall(MatGetSize(sB, &i, &j));
-  if (i - Ii || j - J) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error: MatGetSize()\n")); }
+  if (i - Ii || j - J) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error: MatGetSize()\n"));
 
   PetscCall(MatGetBlockSize(A, &Ii));
   PetscCall(MatGetBlockSize(sB, &i));
-  if (i - Ii) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error: MatGetBlockSize()\n")); }
+  if (i - Ii) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error: MatGetBlockSize()\n"));
 
   PetscCall(PetscRandomCreate(PETSC_COMM_SELF, &rdm));
   PetscCall(PetscRandomSetFromOptions(rdm));
@@ -237,7 +237,7 @@ int main(int argc, char **args) {
   PetscCall(MatGetDiagonal(sB, s2));
   PetscCall(VecAXPY(s2, neg_one, s1));
   PetscCall(VecNorm(s2, NORM_1, &norm1));
-  if (norm1 > tol) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error:MatGetDiagonal(), ||s1-s2||=%g\n", (double)norm1)); }
+  if (norm1 > tol) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error:MatGetDiagonal(), ||s1-s2||=%g\n", (double)norm1));
 
   {
     PetscScalar alpha = 0.1;
@@ -252,7 +252,7 @@ int main(int argc, char **args) {
   PetscCall(VecNorm(s1, NORM_1, &norm1));
   PetscCall(VecNorm(s2, NORM_1, &norm2));
   norm1 -= norm2;
-  if (norm1 < -tol || norm1 > tol) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error:MatGetRowMaxAbs() \n")); }
+  if (norm1 < -tol || norm1 > tol) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error:MatGetRowMaxAbs() \n"));
 
   /* Test MatMult() */
   for (i = 0; i < 40; i++) {
@@ -262,7 +262,7 @@ int main(int argc, char **args) {
     PetscCall(VecNorm(s1, NORM_1, &norm1));
     PetscCall(VecNorm(s2, NORM_1, &norm2));
     norm1 -= norm2;
-    if (norm1 < -tol || norm1 > tol) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error: MatMult(), norm1-norm2: %g\n", (double)norm1)); }
+    if (norm1 < -tol || norm1 > tol) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error: MatMult(), norm1-norm2: %g\n", (double)norm1));
   }
 
   /* MatMultAdd() */
@@ -274,7 +274,7 @@ int main(int argc, char **args) {
     PetscCall(VecNorm(s1, NORM_1, &norm1));
     PetscCall(VecNorm(s2, NORM_1, &norm2));
     norm1 -= norm2;
-    if (norm1 < -tol || norm1 > tol) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error:MatMultAdd(), norm1-norm2: %g\n", (double)norm1)); }
+    if (norm1 < -tol || norm1 > tol) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error:MatMultAdd(), norm1-norm2: %g\n", (double)norm1));
   }
 
   /* Test MatMatMult() for sbaij and dense matrices */
@@ -328,7 +328,7 @@ int main(int argc, char **args) {
       PetscCall(MatBackwardSolve(sFactor, s1, s2));
       PetscCall(VecAXPY(s2, neg_one, x));
       PetscCall(VecNorm(s2, NORM_2, &norm2));
-      if (10 * norm1 < norm2) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "MatForwardSolve and BackwardSolve: Norm of error=%g, bs=%" PetscInt_FMT "\n", (double)norm2, bs)); }
+      if (10 * norm1 < norm2) PetscCall(PetscPrintf(PETSC_COMM_SELF, "MatForwardSolve and BackwardSolve: Norm of error=%g, bs=%" PetscInt_FMT "\n", (double)norm2, bs));
     }
 
     /* test MatSolve() */
@@ -337,7 +337,7 @@ int main(int argc, char **args) {
     /* Check the error */
     PetscCall(VecAXPY(y, neg_one, x));
     PetscCall(VecNorm(y, NORM_2, &norm2));
-    if (10 * norm1 < norm2 && lf - inc != -1) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "lf=%" PetscInt_FMT ", %" PetscInt_FMT ", Norm of error=%g, %g\n", lf - inc, lf, (double)norm1, (double)norm2)); }
+    if (10 * norm1 < norm2 && lf - inc != -1) PetscCall(PetscPrintf(PETSC_COMM_SELF, "lf=%" PetscInt_FMT ", %" PetscInt_FMT ", Norm of error=%g, %g\n", lf - inc, lf, (double)norm1, (double)norm2));
     norm1 = norm2;
     if (norm2 < tol && lf != -1) break;
   }
@@ -353,7 +353,7 @@ int main(int argc, char **args) {
     PetscCall(MatMult(sA, y, x));
     PetscCall(VecAXPY(x, neg_one, b));
     PetscCall(VecNorm(x, NORM_2, &norm2));
-    if (norm2 > tol) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error:MatSolve(), norm2: %g\n", (double)norm2)); }
+    if (norm2 > tol) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error:MatSolve(), norm2: %g\n", (double)norm2));
   }
   PetscCall(MatDestroy(&sFactor));
 #endif

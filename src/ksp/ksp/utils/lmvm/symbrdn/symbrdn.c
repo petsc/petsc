@@ -263,7 +263,7 @@ static PetscErrorCode MatUpdate_LMVMSymBrdn(Mat B, Vec X, Vec F) {
       lsb->yty[lmvm->k] = PetscRealPart(ytytmp);
       lsb->sts[lmvm->k] = PetscRealPart(ststmp);
       /* Compute the scalar scale if necessary */
-      if (lsb->scale_type == MAT_LMVM_SYMBROYDEN_SCALE_SCALAR) { PetscCall(MatSymBrdnComputeJ0Scalar(B)); }
+      if (lsb->scale_type == MAT_LMVM_SYMBROYDEN_SCALE_SCALAR) PetscCall(MatSymBrdnComputeJ0Scalar(B));
     } else {
       /* Update is bad, skip it */
       ++lmvm->nrejects;
@@ -283,11 +283,11 @@ static PetscErrorCode MatUpdate_LMVMSymBrdn(Mat B, Vec X, Vec F) {
   }
 
   /* Update the scaling */
-  if (lsb->scale_type == MAT_LMVM_SYMBROYDEN_SCALE_DIAGONAL) { PetscCall(MatLMVMUpdate(lsb->D, X, F)); }
+  if (lsb->scale_type == MAT_LMVM_SYMBROYDEN_SCALE_DIAGONAL) PetscCall(MatLMVMUpdate(lsb->D, X, F));
 
   if (lsb->watchdog > lsb->max_seq_rejects) {
     PetscCall(MatLMVMReset(B, PETSC_FALSE));
-    if (lsb->scale_type == MAT_LMVM_SYMBROYDEN_SCALE_DIAGONAL) { PetscCall(MatLMVMReset(lsb->D, PETSC_FALSE)); }
+    if (lsb->scale_type == MAT_LMVM_SYMBROYDEN_SCALE_DIAGONAL) PetscCall(MatLMVMReset(lsb->D, PETSC_FALSE));
   }
 
   /* Save the solution and function to be used in the next update */
@@ -470,7 +470,7 @@ PetscErrorCode MatView_LMVMSymBrdn(Mat B, PetscViewer pv) {
     PetscCall(PetscViewerASCIIPrintf(pv, "Convex factors: phi=%g, theta=%g\n", (double)lsb->phi, (double)lsb->theta));
   }
   PetscCall(MatView_LMVM(B, pv));
-  if (lsb->scale_type == MAT_LMVM_SYMBROYDEN_SCALE_DIAGONAL) { PetscCall(MatView(lsb->D, pv)); }
+  if (lsb->scale_type == MAT_LMVM_SYMBROYDEN_SCALE_DIAGONAL) PetscCall(MatView(lsb->D, pv));
   PetscFunctionReturn(0);
 }
 
@@ -669,8 +669,7 @@ PetscErrorCode MatLMVMSymBroydenSetScaleType(Mat B, MatLMVMSymBroydenScaleType s
    paradigm instead of this routine directly.
 
    Options Database Keys:
-+   -mat_lmvm_num_vecs - maximum number of correction vectors (i.e.: updates) stored
-.   -mat_lmvm_phi - (developer) convex ratio between BFGS and DFP components of the update
++   -mat_lmvm_phi - (developer) convex ratio between BFGS and DFP components of the update
 .   -mat_lmvm_scale_type - (developer) type of scaling applied to J0 (none, scalar, diagonal)
 .   -mat_lmvm_theta - (developer) convex ratio between BFGS and DFP components of the diagonal J0 scaling
 .   -mat_lmvm_rho - (developer) update limiter for the J0 scaling
@@ -755,12 +754,12 @@ PetscErrorCode MatSymBrdnComputeJ0Scalar(Mat B) {
     start  = PetscMax(0, lmvm->k - lsb->sigma_hist + 1);
     signew = 0.0;
     if (lsb->alpha == 1.0) {
-      for (i = start; i <= lmvm->k; ++i) { signew += lsb->yts[i] / lsb->yty[i]; }
+      for (i = start; i <= lmvm->k; ++i) signew += lsb->yts[i] / lsb->yty[i];
     } else if (lsb->alpha == 0.5) {
-      for (i = start; i <= lmvm->k; ++i) { signew += lsb->sts[i] / lsb->yty[i]; }
+      for (i = start; i <= lmvm->k; ++i) signew += lsb->sts[i] / lsb->yty[i];
       signew = PetscSqrtReal(signew);
     } else if (lsb->alpha == 0.0) {
-      for (i = start; i <= lmvm->k; ++i) { signew += lsb->sts[i] / lsb->yts[i]; }
+      for (i = start; i <= lmvm->k; ++i) signew += lsb->sts[i] / lsb->yts[i];
     } else {
       /* compute coefficients of the quadratic */
       a = b = c = 0.0;

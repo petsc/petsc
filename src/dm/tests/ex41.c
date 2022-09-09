@@ -27,7 +27,7 @@ int main(int argc, char **argv) {
   for (k = zstart; k < zstart + p; k++) {
     for (j = ystart; j < ystart + n; j++) {
       for (i = xstart; i < xstart + m; i++) {
-        for (c = 0; c < dof; c++) { vglobal[k][j][i][c] = 1000 * k + 100 * j + 10 * i + c; }
+        for (c = 0; c < dof; c++) vglobal[k][j][i][c] = 1000 * k + 100 * j + 10 * i + c;
       }
     }
   }

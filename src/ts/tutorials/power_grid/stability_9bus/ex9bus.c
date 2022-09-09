@@ -1272,7 +1272,7 @@ int main(int argc, char **argv) {
   PetscCall(ISDestroy(&user.is_diff));
   PetscCall(ISDestroy(&user.is_alg));
   PetscCall(TSDestroy(&ts));
-  if (user.setisdiff) { PetscCall(VecDestroy(&vatol)); }
+  if (user.setisdiff) PetscCall(VecDestroy(&vatol));
   PetscCall(PetscFinalize());
   return 0;
 }

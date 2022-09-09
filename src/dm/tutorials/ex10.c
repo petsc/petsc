@@ -55,7 +55,7 @@ int main(int argc, char **argv) {
   /* Build the gaussian profile (exp(-x^2-y^2)) */
   PetscCall(DMDAVecGetArray(da2D, gauss, &gauss_ptr));
   for (j = iys; j < iys + iym; j++) {
-    for (i = ixs; i < ixs + ixm; i++) { gauss_ptr[j][i] = PetscExpScalar(-(xm + i * dx) * (xm + i * dx) - (ym + j * dy) * (ym + j * dy)); }
+    for (i = ixs; i < ixs + ixm; i++) gauss_ptr[j][i] = PetscExpScalar(-(xm + i * dx) * (xm + i * dx) - (ym + j * dy) * (ym + j * dy));
   }
   PetscCall(DMDAVecRestoreArray(da2D, gauss, &gauss_ptr));
 

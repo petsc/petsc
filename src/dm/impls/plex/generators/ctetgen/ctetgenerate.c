@@ -166,13 +166,13 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_CTetgen(DM boundary, PetscBool interp
 
     PetscCall(DMPlexInvertCells_CTetgen(numCells, numCorners, cells));
     PetscCall(DMPlexCreateFromCellListPetsc(comm, dim, numCells, numVertices, numCorners, interpolate, cells, dim, meshCoords, dm));
-    if (sizeof(PetscReal) != sizeof(out->pointlist[0])) { PetscCall(PetscFree(meshCoords)); }
-    if (sizeof(PetscInt) != sizeof(out->tetrahedronlist[0])) { PetscCall(PetscFree(cells)); }
+    if (sizeof(PetscReal) != sizeof(out->pointlist[0])) PetscCall(PetscFree(meshCoords));
+    if (sizeof(PetscInt) != sizeof(out->tetrahedronlist[0])) PetscCall(PetscFree(cells));
 
     /* Set labels */
     PetscCall(DMUniversalLabelCreateLabels(universal, PETSC_TRUE, *dm));
     for (v = 0; v < numVertices; ++v) {
-      if (out->pointmarkerlist[v]) { PetscCall(DMUniversalLabelSetLabelValue(universal, *dm, PETSC_TRUE, v + numCells, out->pointmarkerlist[v])); }
+      if (out->pointmarkerlist[v]) PetscCall(DMUniversalLabelSetLabelValue(universal, *dm, PETSC_TRUE, v + numCells, out->pointmarkerlist[v]));
     }
     if (interpolate) {
       PetscInt e;
@@ -446,7 +446,7 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_CTetgen(DM dm, PetscReal *maxVolumes, D
     /* Set labels */
     PetscCall(DMUniversalLabelCreateLabels(universal, PETSC_TRUE, *dmRefined));
     for (v = 0; v < numVertices; ++v) {
-      if (out->pointmarkerlist[v]) { PetscCall(DMUniversalLabelSetLabelValue(universal, *dmRefined, PETSC_TRUE, v + numCells, out->pointmarkerlist[v])); }
+      if (out->pointmarkerlist[v]) PetscCall(DMUniversalLabelSetLabelValue(universal, *dmRefined, PETSC_TRUE, v + numCells, out->pointmarkerlist[v]));
     }
     if (interpolate) {
       PetscInt e, f;

@@ -111,7 +111,7 @@ static PetscErrorCode PCDeflationSetCorrectionFactor_Deflation(PC pc, PetscScala
   /* TODO PETSC_DETERMINE -> compute max eigenvalue with power method */
   def->correct     = PETSC_TRUE;
   def->correctfact = fact;
-  if (def->correct == 0.0) { def->correct = PETSC_FALSE; }
+  if (def->correct == 0.0) def->correct = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -446,8 +446,8 @@ static PetscErrorCode PCSetUp_Deflation(PC pc) {
   if (pc->setupcalled) PetscFunctionReturn(0);
   PetscCall(PetscObjectGetComm((PetscObject)pc, &comm));
   PetscCall(PCGetOperators(pc, NULL, &Amat));
-  if (!def->lvl && !def->prefix) { PetscCall(PCGetOptionsPrefix(pc, &def->prefix)); }
-  if (def->lvl) { PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "%d_", (int)def->lvl)); }
+  if (!def->lvl && !def->prefix) PetscCall(PCGetOptionsPrefix(pc, &def->prefix));
+  if (def->lvl) PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "%d_", (int)def->lvl));
 
   /* compute a deflation space */
   if (def->W || def->Wt) {
@@ -476,7 +476,7 @@ static PetscErrorCode PCSetUp_Deflation(PC pc) {
     if (!transp) {
       if (def->lvl < def->maxlvl) {
         PetscCall(PetscMalloc1(size, &mats));
-        for (i = 0; i < size; i++) { PetscCall(MatCompositeGetMat(def->W, i, &mats[i])); }
+        for (i = 0; i < size; i++) PetscCall(MatCompositeGetMat(def->W, i, &mats[i]));
         size -= 1;
         PetscCall(MatDestroy(&def->W));
         def->W = mats[size];
@@ -497,7 +497,7 @@ static PetscErrorCode PCSetUp_Deflation(PC pc) {
     } else {
       if (def->lvl < def->maxlvl) {
         PetscCall(PetscMalloc1(size, &mats));
-        for (i = 0; i < size; i++) { PetscCall(MatCompositeGetMat(def->Wt, i, &mats[i])); }
+        for (i = 0; i < size; i++) PetscCall(MatCompositeGetMat(def->Wt, i, &mats[i]));
         size -= 1;
         PetscCall(MatDestroy(&def->Wt));
         def->Wt = mats[0];
@@ -549,7 +549,7 @@ static PetscErrorCode PCSetUp_Deflation(PC pc) {
 
         PetscCall(PetscMalloc1(m, &norms));
         PetscCall(MatGetColumnNorms(def->WtAW, NORM_INFINITY, norms));
-        for (i = 0; i < m; i++) { PetscCheck(norms[i] > 100 * PETSC_MACHINE_EPSILON, PetscObjectComm((PetscObject)def->WtAW), PETSC_ERR_SUP, "Column %" PetscInt_FMT " of W is in kernel of A.", i); }
+        for (i = 0; i < m; i++) PetscCheck(norms[i] > 100 * PETSC_MACHINE_EPSILON, PetscObjectComm((PetscObject)def->WtAW), PETSC_ERR_SUP, "Column %" PetscInt_FMT " of W is in kernel of A.", i);
         PetscCall(PetscFree(norms));
       }
     } else PetscCall(MatIsSPDKnown(def->WtAW, &isset, &flgspd));
@@ -689,8 +689,8 @@ static PetscErrorCode PCView_Deflation(PC pc, PetscViewer viewer) {
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   if (iascii) {
-    if (def->correct) { PetscCall(PetscViewerASCIIPrintf(viewer, "using CP correction, factor = %g+%gi\n", (double)PetscRealPart(def->correctfact), (double)PetscImaginaryPart(def->correctfact))); }
-    if (!def->lvl) { PetscCall(PetscViewerASCIIPrintf(viewer, "deflation space type: %s\n", PCDeflationSpaceTypes[def->spacetype])); }
+    if (def->correct) PetscCall(PetscViewerASCIIPrintf(viewer, "using CP correction, factor = %g+%gi\n", (double)PetscRealPart(def->correctfact), (double)PetscImaginaryPart(def->correctfact)));
+    if (!def->lvl) PetscCall(PetscViewerASCIIPrintf(viewer, "deflation space type: %s\n", PCDeflationSpaceTypes[def->spacetype]));
 
     PetscCall(PetscViewerASCIIPrintf(viewer, "--- Additional PC:\n"));
     PetscCall(PetscViewerASCIIPushTab(viewer));

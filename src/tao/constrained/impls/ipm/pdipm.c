@@ -192,11 +192,11 @@ static PetscErrorCode TaoPDIPMSetUpBounds(Tao tao) {
   pdipm->Nxbox   = recvbuf[3];
   pdipm->Nxfree  = recvbuf[4];
 
-  if (pdipm->Nxlb) { PetscCall(ISCreateGeneral(comm, pdipm->nxlb, ixlb, PETSC_COPY_VALUES, &pdipm->isxlb)); }
-  if (pdipm->Nxub) { PetscCall(ISCreateGeneral(comm, pdipm->nxub, ixub, PETSC_COPY_VALUES, &pdipm->isxub)); }
-  if (pdipm->Nxfixed) { PetscCall(ISCreateGeneral(comm, pdipm->nxfixed, ixfixed, PETSC_COPY_VALUES, &pdipm->isxfixed)); }
-  if (pdipm->Nxbox) { PetscCall(ISCreateGeneral(comm, pdipm->nxbox, ixbox, PETSC_COPY_VALUES, &pdipm->isxbox)); }
-  if (pdipm->Nxfree) { PetscCall(ISCreateGeneral(comm, pdipm->nxfree, ixfree, PETSC_COPY_VALUES, &pdipm->isxfree)); }
+  if (pdipm->Nxlb) PetscCall(ISCreateGeneral(comm, pdipm->nxlb, ixlb, PETSC_COPY_VALUES, &pdipm->isxlb));
+  if (pdipm->Nxub) PetscCall(ISCreateGeneral(comm, pdipm->nxub, ixub, PETSC_COPY_VALUES, &pdipm->isxub));
+  if (pdipm->Nxfixed) PetscCall(ISCreateGeneral(comm, pdipm->nxfixed, ixfixed, PETSC_COPY_VALUES, &pdipm->isxfixed));
+  if (pdipm->Nxbox) PetscCall(ISCreateGeneral(comm, pdipm->nxbox, ixbox, PETSC_COPY_VALUES, &pdipm->isxbox));
+  if (pdipm->Nxfree) PetscCall(ISCreateGeneral(comm, pdipm->nxfree, ixfree, PETSC_COPY_VALUES, &pdipm->isxfree));
   PetscCall(PetscFree5(ixlb, ixub, ixfixed, ixbox, ixfree));
   PetscFunctionReturn(0);
 }
@@ -576,7 +576,7 @@ static PetscErrorCode TaoSNESFunction_PDIPM_residual(SNES snes, Vec X, Vec F, vo
 
       if (pdipm->Nci) {
         PetscCall(VecGetArrayWrite(pdipm->z, &tmparr));
-        for (i = 0; i < pdipm->nci; i++) { tmparr[i] /= Xarr[pdipm->off_z + i]; }
+        for (i = 0; i < pdipm->nci; i++) tmparr[i] /= Xarr[pdipm->off_z + i];
         PetscCall(VecRestoreArrayWrite(pdipm->z, &tmparr));
       }
       PetscCall(VecResetArray(pdipm->z));
@@ -824,7 +824,7 @@ PetscErrorCode TaoSolve_PDIPM(Tao tao) {
 
     /* Check SNES convergence */
     PetscCall(SNESGetConvergedReason(pdipm->snes, &reason));
-    if (reason < 0) { PetscCall(PetscPrintf(PetscObjectComm((PetscObject)pdipm->snes), "SNES solve did not converged due to reason %s\n", SNESConvergedReasons[reason])); }
+    if (reason < 0) PetscCall(PetscPrintf(PetscObjectComm((PetscObject)pdipm->snes), "SNES solve did not converged due to reason %s\n", SNESConvergedReasons[reason]));
 
     /* Check TAO convergence */
     PetscCheck(!PetscIsInfOrNanReal(pdipm->obj), PETSC_COMM_SELF, PETSC_ERR_SUP, "User-provided compute function generated Inf or NaN");
@@ -848,7 +848,7 @@ PetscErrorCode TaoView_PDIPM(Tao tao, PetscViewer viewer) {
   tao->constrained = PETSC_TRUE;
   PetscCall(PetscViewerASCIIPushTab(viewer));
   PetscCall(PetscViewerASCIIPrintf(viewer, "Number of prime=%" PetscInt_FMT ", Number of dual=%" PetscInt_FMT "\n", pdipm->Nx + pdipm->Nci, pdipm->Nce + pdipm->Nci));
-  if (pdipm->kkt_pd) { PetscCall(PetscViewerASCIIPrintf(viewer, "KKT shifts deltaw=%g, deltac=%g\n", (double)pdipm->deltaw, (double)pdipm->deltac)); }
+  if (pdipm->kkt_pd) PetscCall(PetscViewerASCIIPrintf(viewer, "KKT shifts deltaw=%g, deltac=%g\n", (double)pdipm->deltaw, (double)pdipm->deltac));
   PetscCall(PetscViewerASCIIPopTab(viewer));
   PetscFunctionReturn(0);
 }
@@ -940,10 +940,10 @@ PetscErrorCode TaoSetup_PDIPM(Tao tao) {
   /* Subvectors; they share local arrays with X */
   PetscCall(VecGetArrayRead(pdipm->X, &Xarr));
   /* x shares local array with X.x */
-  if (pdipm->Nx) { PetscCall(VecCreateMPIWithArray(comm, 1, pdipm->nx, pdipm->Nx, Xarr, &pdipm->x)); }
+  if (pdipm->Nx) PetscCall(VecCreateMPIWithArray(comm, 1, pdipm->nx, pdipm->Nx, Xarr, &pdipm->x));
 
   /* lambdae shares local array with X.lambdae */
-  if (pdipm->Nce) { PetscCall(VecCreateMPIWithArray(comm, 1, pdipm->nce, pdipm->Nce, Xarr + pdipm->off_lambdae, &pdipm->lambdae)); }
+  if (pdipm->Nce) PetscCall(VecCreateMPIWithArray(comm, 1, pdipm->nce, pdipm->Nce, Xarr + pdipm->off_lambdae, &pdipm->lambdae));
 
   /* tao->DE shares local array with X.lambdae_g */
   if (pdipm->Ng) {
@@ -963,7 +963,7 @@ PetscErrorCode TaoSetup_PDIPM(Tao tao) {
   }
 
   /* tao->DI which shares local array with X.lambdai_h */
-  if (pdipm->Nh) { PetscCall(VecCreateMPIWithArray(comm, 1, pdipm->nh, pdipm->Nh, Xarr + pdipm->off_lambdai, &tao->DI)); }
+  if (pdipm->Nh) PetscCall(VecCreateMPIWithArray(comm, 1, pdipm->nh, pdipm->Nh, Xarr + pdipm->off_lambdai, &tao->DI));
   PetscCall(VecCreate(comm, &pdipm->lambdai_xb));
   PetscCall(VecSetSizes(pdipm->lambdai_xb, (pdipm->nci - pdipm->nh), PETSC_DECIDE));
   PetscCall(VecSetFromOptions(pdipm->lambdai_xb));
@@ -1081,7 +1081,7 @@ PetscErrorCode TaoSetup_PDIPM(Tao tao) {
   /* Count dnz,onz for preallocation of KKT matrix */
   nce_all = pdipm->nce_all;
 
-  if (pdipm->Nxfixed) { PetscCall(MatTranspose(pdipm->Jce_xfixed, MAT_INITIAL_MATRIX, &Jce_xfixed_trans)); }
+  if (pdipm->Nxfixed) PetscCall(MatTranspose(pdipm->Jce_xfixed, MAT_INITIAL_MATRIX, &Jce_xfixed_trans));
   PetscCall(MatTranspose(pdipm->Jci_xb, MAT_INITIAL_MATRIX, &Jci_xb_trans));
 
   MatPreallocateBegin(comm, pdipm->n, pdipm->n, dnz, onz);
@@ -1262,7 +1262,7 @@ PetscErrorCode TaoSetup_PDIPM(Tao tao) {
   /* (8) Insert constant entries to  K */
   /* Set 0.0 to diagonal of K, so that the solver does not complain *about missing diagonal value */
   PetscCall(MatGetOwnershipRange(J, &rstart, &rend));
-  for (i = rstart; i < rend; i++) { PetscCall(MatSetValue(J, i, i, 0.0, INSERT_VALUES)); }
+  for (i = rstart; i < rend; i++) PetscCall(MatSetValue(J, i, i, 0.0, INSERT_VALUES));
   /* In case Wxx has no diagonal entries preset set diagonal to deltaw given */
   if (pdipm->kkt_pd) {
     for (i = 0; i < pdipm->nh; i++) {
@@ -1321,7 +1321,7 @@ PetscErrorCode TaoSetup_PDIPM(Tao tao) {
     PetscCall(MatSetValue(J, row, col, 1, INSERT_VALUES));
   }
 
-  if (pdipm->Nxfixed) { PetscCall(MatDestroy(&Jce_xfixed_trans)); }
+  if (pdipm->Nxfixed) PetscCall(MatDestroy(&Jce_xfixed_trans));
   PetscCall(MatDestroy(&Jci_xb_trans));
   PetscCall(PetscFree3(ng_all, nh_all, Jranges));
 

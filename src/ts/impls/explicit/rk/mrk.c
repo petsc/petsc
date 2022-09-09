@@ -40,7 +40,7 @@ static PetscErrorCode TSInterpolate_RK_MultirateNonsplit(TS ts, PetscReal itime,
   PetscCall(PetscMalloc1(s, &b));
   for (i = 0; i < s; i++) b[i] = 0;
   for (j = 0, tt = t; j < p; j++, tt *= t) {
-    for (i = 0; i < s; i++) { b[i] += h * B[i * p + j] * tt; }
+    for (i = 0; i < s; i++) b[i] += h * B[i * p + j] * tt;
   }
   PetscCall(VecCopy(rk->X0, X));
   PetscCall(VecMAXPY(X, s, b, rk->YdotRHS_slow));
@@ -104,7 +104,7 @@ static PetscErrorCode TSStepRefine_RK_MultirateNonsplit(TS ts) {
       ts->ptime         = t;
       ts->time_step     = h;
       PetscCall(TSRHSSplitGetIS(previousts, "fast", &rk->is_fast));
-      for (i = 0; i < s; i++) { PetscCall(VecCopy(YdotRHS_copy[i], rk->YdotRHS_slow[i])); }
+      for (i = 0; i < s; i++) PetscCall(VecCopy(YdotRHS_copy[i], rk->YdotRHS_slow[i]));
       PetscCall(VecDestroyVecs(s, &YdotRHS_copy));
     }
   }
@@ -249,14 +249,14 @@ static PetscErrorCode TSInterpolate_RK_MultirateSplit(TS ts, PetscReal itime, Ve
   PetscCall(PetscMalloc1(s, &b));
   for (i = 0; i < s; i++) b[i] = 0;
   for (j = 0, tt = t; j < p; j++, tt *= t) {
-    for (i = 0; i < s; i++) { b[i] += h * B[i * p + j] * tt; }
+    for (i = 0; i < s; i++) b[i] += h * B[i * p + j] * tt;
   }
-  for (i = 0; i < s; i++) { PetscCall(VecGetSubVector(rk->YdotRHS[i], rk->is_slow, &rk->YdotRHS_slow[i])); }
+  for (i = 0; i < s; i++) PetscCall(VecGetSubVector(rk->YdotRHS[i], rk->is_slow, &rk->YdotRHS_slow[i]));
   PetscCall(VecGetSubVector(X, rk->is_slow, &Xslow));
   PetscCall(VecISCopy(rk->X0, rk->is_slow, SCATTER_REVERSE, Xslow));
   PetscCall(VecMAXPY(Xslow, s, b, rk->YdotRHS_slow));
   PetscCall(VecRestoreSubVector(X, rk->is_slow, &Xslow));
-  for (i = 0; i < s; i++) { PetscCall(VecRestoreSubVector(rk->YdotRHS[i], rk->is_slow, &rk->YdotRHS_slow[i])); }
+  for (i = 0; i < s; i++) PetscCall(VecRestoreSubVector(rk->YdotRHS[i], rk->is_slow, &rk->YdotRHS_slow[i]));
   PetscCall(PetscFree(b));
   PetscFunctionReturn(0);
 }
@@ -309,7 +309,7 @@ static PetscErrorCode TSStepRefine_RK_MultirateSplit(TS ts) {
   PetscFunctionBegin;
   for (k = 0; k < rk->dtratio; k++) {
     PetscCall(VecGetSubVector(ts->vec_sol, rk->is_fast, &Xfast));
-    for (i = 0; i < s; i++) { PetscCall(VecGetSubVector(YdotRHS[i], rk->is_fast, &YdotRHS_fast[i])); }
+    for (i = 0; i < s; i++) PetscCall(VecGetSubVector(YdotRHS[i], rk->is_fast, &YdotRHS_fast[i]));
     /* propagate fast component using small time steps */
     for (i = 0; i < s; i++) {
       /* stage value for slow components */
@@ -335,7 +335,7 @@ static PetscErrorCode TSStepRefine_RK_MultirateSplit(TS ts) {
     /* update the value of fast components using fast time step */
     rk->slow = PETSC_FALSE;
     PetscCall(TSEvaluateStep_RK_MultirateSplit(ts, tab->order, ts->vec_sol, NULL));
-    for (i = 0; i < s; i++) { PetscCall(VecRestoreSubVector(YdotRHS[i], rk->is_fast, &YdotRHS_fast[i])); }
+    for (i = 0; i < s; i++) PetscCall(VecRestoreSubVector(YdotRHS[i], rk->is_fast, &YdotRHS_fast[i]));
 
     if (subrk_fast->subts_fast) {
       subts_fast->ptime     = t + k * h / rk->dtratio;

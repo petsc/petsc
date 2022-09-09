@@ -45,7 +45,7 @@ int main(int argc, char **args) {
     nloc = (rank + 1) * n;
     if (rank == size - 1) { /* proc[size-1] stores all remaining rows */
       nloc = m * n;
-      for (i = 0; i < size - 1; i++) { nloc -= (i + 1) * n; }
+      for (i = 0; i < size - 1; i++) nloc -= (i + 1) * n;
     }
     break;
   default: /* proc[0] and proc[1] load much smaller row blocks, the rest processes have same loads */

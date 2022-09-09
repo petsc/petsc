@@ -51,7 +51,7 @@ static const char citation[] = "@inproceedings{ZhangELLPACK2018,\n"
  Collective
 
  Input Parameters:
- +  B - The matrix
+ +  B - The `MATSEQSELL` matrix
  .  nz - number of nonzeros per row (same for all rows)
  -  nnz - array containing the number of nonzeros in the various rows
  (possibly different for each row) or NULL
@@ -60,16 +60,16 @@ static const char citation[] = "@inproceedings{ZhangELLPACK2018,\n"
  If nnz is given then nz is ignored.
 
  Specify the preallocated storage with either nz or nnz (not both).
- Set nz=PETSC_DEFAULT and nnz=NULL for PETSc to control dynamic memory
+ Set nz = `PETSC_DEFAULT` and nnz = NULL for PETSc to control dynamic memory
  allocation.  For large problems you MUST preallocate memory or you
  will get TERRIBLE performance, see the users' manual chapter on matrices.
 
- You can call MatGetInfo() to get information on how effective the preallocation was;
+ You can call `MatGetInfo()` to get information on how effective the preallocation was;
  for example the fields mallocs,nz_allocated,nz_used,nz_unneeded;
  You can also run with the option -info and look for messages with the string
  malloc in them to see if additional memory allocation was needed.
 
- Developers: Use nz of MAT_SKIP_ALLOCATION to not allocate any space for the matrix
+ Developers: Use nz of `MAT_SKIP_ALLOCATION` to not allocate any space for the matrix
  entries or columns indices.
 
  The maximum number of nonzeos in any row should be as accurate as possible.
@@ -78,8 +78,7 @@ static const char citation[] = "@inproceedings{ZhangELLPACK2018,\n"
 
  Level: intermediate
 
- .seealso: `MatCreate()`, `MatCreateSELL()`, `MatSetValues()`, `MatGetInfo()`
-
+ .seealso: `MATSEQSELL`, `MATSELL`, `MatCreate()`, `MatCreateSELL()`, `MatSetValues()`, `MatGetInfo()`
  @*/
 PetscErrorCode MatSeqSELLSetPreallocation(Mat B, PetscInt rlenmax, const PetscInt rlen[]) {
   PetscFunctionBegin;
@@ -136,7 +135,7 @@ PetscErrorCode MatSeqSELLSetPreallocation_SeqSELL(Mat B, PetscInt maxallocrow, c
       b->sliidx[0] = 0;
       for (i = 1; i < totalslices; i++) {
         b->sliidx[i] = 0;
-        for (j = 0; j < 8; j++) { b->sliidx[i] = PetscMax(b->sliidx[i], rlen[8 * (i - 1) + j]); }
+        for (j = 0; j < 8; j++) b->sliidx[i] = PetscMax(b->sliidx[i], rlen[8 * (i - 1) + j]);
         maxallocrow = PetscMax(b->sliidx[i], maxallocrow);
         PetscCall(PetscIntSumError(b->sliidx[i - 1], 8 * b->sliidx[i], &b->sliidx[i]));
       }
@@ -182,7 +181,7 @@ PetscErrorCode MatGetRow_SeqSELL(Mat A, PetscInt row, PetscInt *nz, PetscInt **i
   PetscCheck(row >= 0 && row < A->rmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Row %" PetscInt_FMT " out of range", row);
   if (nz) *nz = a->rlen[row];
   shift = a->sliidx[row >> 3] + (row & 0x07);
-  if (!a->getrowcols) { PetscCall(PetscMalloc2(a->rlenmax, &a->getrowcols, a->rlenmax, &a->getrowvals)); }
+  if (!a->getrowcols) PetscCall(PetscMalloc2(a->rlenmax, &a->getrowcols, a->rlenmax, &a->getrowvals));
   if (idx) {
     PetscInt j;
     for (j = 0; j < a->rlen[row]; j++) a->getrowcols[j] = a->colidx[shift + 8 * j];
@@ -254,7 +253,7 @@ PetscErrorCode MatConvert_SeqAIJ_SeqSELL(Mat A, MatType newtype, MatReuse reuse,
   } else {
     if (PetscDefined(USE_DEBUG) || !a->ilen) {
       PetscCall(PetscMalloc1(m, &rowlengths));
-      for (i = 0; i < m; i++) { rowlengths[i] = ai[i + 1] - ai[i]; }
+      for (i = 0; i < m; i++) rowlengths[i] = ai[i + 1] - ai[i];
     }
     if (PetscDefined(USE_DEBUG) && a->ilen) {
       PetscBool eq;
@@ -950,7 +949,7 @@ PetscErrorCode MatDiagonalScale_SeqSELL(Mat A, Vec ll, Vec rr) {
           if (row < (A->rmap->n & 0x07)) a->val[j] *= l[8 * i + row];
         }
       } else {
-        for (j = a->sliidx[i], row = 0; j < a->sliidx[i + 1]; j++, row = ((row + 1) & 0x07)) { a->val[j] *= l[8 * i + row]; }
+        for (j = a->sliidx[i], row = 0; j < a->sliidx[i + 1]; j++, row = ((row + 1) & 0x07)) a->val[j] *= l[8 * i + row];
       }
     }
     PetscCall(VecRestoreArrayRead(ll, &l));
@@ -966,7 +965,7 @@ PetscErrorCode MatDiagonalScale_SeqSELL(Mat A, Vec ll, Vec rr) {
           if (row < (A->rmap->n & 0x07)) a->val[j] *= r[a->colidx[j]];
         }
       } else {
-        for (j = a->sliidx[i]; j < a->sliidx[i + 1]; j++) { a->val[j] *= r[a->colidx[j]]; }
+        for (j = a->sliidx[i]; j < a->sliidx[i + 1]; j++) a->val[j] *= r[a->colidx[j]];
       }
     }
     PetscCall(VecRestoreArrayRead(rr, &r));
@@ -1586,7 +1585,7 @@ PetscErrorCode MatShift_SeqSELL(Mat Y, PetscScalar a) {
   Mat_SeqSELL *y = (Mat_SeqSELL *)Y->data;
 
   PetscFunctionBegin;
-  if (!Y->preallocated || !y->nz) { PetscCall(MatSeqSELLSetPreallocation(Y, 1, NULL)); }
+  if (!Y->preallocated || !y->nz) PetscCall(MatSeqSELLSetPreallocation(Y, 1, NULL));
   PetscCall(MatShift_Basic(Y, a));
   PetscFunctionReturn(0);
 }
@@ -1873,17 +1872,17 @@ PetscErrorCode MatRetrieveValues_SeqSELL(Mat mat) {
 }
 
 /*@C
- MatSeqSELLRestoreArray - returns access to the array where the data for a MATSEQSELL matrix is stored obtained by MatSeqSELLGetArray()
+ MatSeqSELLRestoreArray - returns access to the array where the data for a `MATSEQSELL` matrix is stored obtained by `MatSeqSELLGetArray()`
 
  Not Collective
 
  Input Parameters:
- .  mat - a MATSEQSELL matrix
+ .  mat - a `MATSEQSELL` matrix
  .  array - pointer to the data
 
  Level: intermediate
 
- .seealso: `MatSeqSELLGetArray()`, `MatSeqSELLRestoreArrayF90()`
+ .seealso: `MATSEQSELL`, `MatSeqSELLGetArray()`, `MatSeqSELLRestoreArrayF90()`
  @*/
 PetscErrorCode MatSeqSELLRestoreArray(Mat A, PetscScalar **array) {
   PetscFunctionBegin;
@@ -1985,7 +1984,7 @@ PetscErrorCode MatDuplicateNoCreate_SeqSELL(Mat C, Mat A, MatDuplicateOption cpv
   if (a->diag) {
     PetscCall(PetscMalloc1(m, &c->diag));
     PetscCall(PetscLogObjectMemory((PetscObject)C, m * sizeof(PetscInt)));
-    for (i = 0; i < m; i++) { c->diag[i] = a->diag[i]; }
+    for (i = 0; i < m; i++) c->diag[i] = a->diag[i];
   } else c->diag = NULL;
 
   c->solve_work         = NULL;
@@ -2013,7 +2012,7 @@ PetscErrorCode MatDuplicate_SeqSELL(Mat A, MatDuplicateOption cpvalues, Mat *B) 
   PetscFunctionBegin;
   PetscCall(MatCreate(PetscObjectComm((PetscObject)A), B));
   PetscCall(MatSetSizes(*B, A->rmap->n, A->cmap->n, A->rmap->n, A->cmap->n));
-  if (!(A->rmap->n % A->rmap->bs) && !(A->cmap->n % A->cmap->bs)) { PetscCall(MatSetBlockSizesFromMats(*B, A, A)); }
+  if (!(A->rmap->n % A->rmap->bs) && !(A->cmap->n % A->cmap->bs)) PetscCall(MatSetBlockSizesFromMats(*B, A, A));
   PetscCall(MatSetType(*B, ((PetscObject)A)->type_name));
   PetscCall(MatDuplicateNoCreate_SeqSELL(*B, A, cpvalues, PETSC_TRUE));
   PetscFunctionReturn(0);
@@ -2024,7 +2023,7 @@ PetscErrorCode MatDuplicate_SeqSELL(Mat A, MatDuplicateOption cpvalues, Mat *B) 
    based on the sliced Ellpack format
 
    Options Database Keys:
-. -mat_type seqsell - sets the matrix type to "seqsell" during a call to MatSetFromOptions()
+. -mat_type seqsell - sets the matrix type to "`MATSEQELL` during a call to `MatSetFromOptions()`
 
    Level: beginner
 
@@ -2034,9 +2033,9 @@ M*/
 /*MC
    MATSELL - MATSELL = "sell" - A matrix type to be used for sparse matrices.
 
-   This matrix type is identical to MATSEQSELL when constructed with a single process communicator,
-   and MATMPISELL otherwise.  As a result, for single process communicators,
-  MatSeqSELLSetPreallocation() is supported, and similarly MatMPISELLSetPreallocation() is supported
+   This matrix type is identical to `MATSEQSELL` when constructed with a single process communicator,
+   and `MATMPISELL` otherwise.  As a result, for single process communicators,
+  `MatSeqSELLSetPreallocation()` is supported, and similarly `MatMPISELLSetPreallocation()` is supported
   for communicators controlling multiple processes.  It is recommended that you call both of
   the above preallocation routines for simplicity.
 
@@ -2087,12 +2086,12 @@ M*/
 M*/
 
 /*@C
-       MatCreateSeqSELL - Creates a sparse matrix in SELL format.
+       MatCreateSeqSELL - Creates a sparse matrix in `MATSEQSELL` format.
 
  Collective on comm
 
  Input Parameters:
-+  comm - MPI communicator, set to PETSC_COMM_SELF
++  comm - MPI communicator, set to `PETSC_COMM_SELF`
 .  m - number of rows
 .  n - number of columns
 .  rlenmax - maximum number of nonzeros in a row
@@ -2102,22 +2101,21 @@ M*/
  Output Parameter:
 .  A - the matrix
 
- It is recommended that one use the MatCreate(), MatSetType() and/or MatSetFromOptions(),
+ It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`,
  MatXXXXSetPreallocation() paradigm instead of this routine directly.
- [MatXXXXSetPreallocation() is, for example, MatSeqSELLSetPreallocation]
+ [MatXXXXSetPreallocation() is, for example, `MatSeqSELLSetPreallocation()`]
 
  Notes:
  If nnz is given then nz is ignored
 
  Specify the preallocated storage with either rlenmax or rlen (not both).
- Set rlenmax=PETSC_DEFAULT and rlen=NULL for PETSc to control dynamic memory
+ Set rlenmax = `PETSC_DEFAULT` and rlen = NULL for PETSc to control dynamic memory
  allocation.  For large problems you MUST preallocate memory or you
  will get TERRIBLE performance, see the users' manual chapter on matrices.
 
  Level: intermediate
 
- .seealso: `MatCreate()`, `MatCreateSELL()`, `MatSetValues()`, `MatSeqSELLSetPreallocation()`, `MATSELL`, `MATSEQSELL`, `MATMPISELL`
-
+ .seealso: `MATSEQSELL`, `MatCreate()`, `MatCreateSELL()`, `MatSetValues()`, `MatSeqSELLSetPreallocation()`, `MATSELL`, `MATSEQSELL`, `MATMPISELL`
  @*/
 PetscErrorCode MatCreateSeqSELL(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt maxallocrow, const PetscInt rlen[], Mat *A) {
   PetscFunctionBegin;
@@ -2161,7 +2159,7 @@ PetscErrorCode MatConjugate_SeqSELL(Mat A) {
   PetscScalar *val = a->val;
 
   PetscFunctionBegin;
-  for (i = 0; i < a->sliidx[a->totalslices]; i++) { val[i] = PetscConj(val[i]); }
+  for (i = 0; i < a->sliidx[a->totalslices]; i++) val[i] = PetscConj(val[i]);
 #else
   PetscFunctionBegin;
 #endif
