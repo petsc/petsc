@@ -18,6 +18,9 @@
 #  This script needs the following tools:
 #	*) f2c available from http://www.netlib.org/f2c or as a tarball at http://pkgs.fedoraproject.org/repo/pkgs/f2c/
 #	*) lex
+#           on macOS you may need to do brew install flex and change the definitions below to
+#             LEX=/usr/local/opt/flex/bin/flex
+#             LEXFLAGS=" -L/usr/local/opt/flex/lib -lfl"
 #	*) c compiler (cc)
 #	*) awk
 #	*) sed - the sed on Apple does not work with this script so you must do
@@ -28,21 +31,25 @@
 #             lapack-src-dir is lapack-version/SRC
 #             newer releases of LAPACK will not work
 #
-#  This script should be run with bash, because it uses the 'echo -n' option. 
+#  This script should be run with bash, because it uses the 'echo -n' option.
 
 if [ $# -lt 2 ]
 then
   echo Usage: toclapack.sh [blas-src-dir] [lapack-src-dir]
+  echo The result is put into the tarball f2cblaslapack-3.4.2.q4.tar.gz
   exit
 fi
 
 # Path tools and temp directory
 F2C=f2c
-LEX=lex
 CC=cc
 AWK=awk
 TMP=${PWD}/toclapack.$$
-LEXFLAGS=-lfl
+# On the Apple you may need to switch the next lines
+#LEX=lex
+#LEXFLAGS=-lfl
+LEX=/usr/local/opt/flex/bin/flex
+LEXFLAGS=" -L/usr/local/opt/flex/lib -lfl"
 SED=sed
 TAR=tar
 
