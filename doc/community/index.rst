@@ -1,8 +1,8 @@
 .. _ind_contact:
 
-*************************
-Contact And Mailing Lists
-*************************
+*******
+Contact
+*******
 
 This document describes the most appropriate means of getting in touch with the PETSc
 development team. Please do not email individual PETSc authors, instead use the contact

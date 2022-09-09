@@ -1,6 +1,6 @@
-===============
-PETSc Tutorials
-===============
+=========
+Tutorials
+=========
 
 .. toctree::
   :maxdepth: 2

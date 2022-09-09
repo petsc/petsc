@@ -1,5 +1,5 @@
-PETSc/TAO Users Manual
-======================
+User-Guide
+==========
 
 .. raw:: latex
 

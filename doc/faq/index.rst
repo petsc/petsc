@@ -1,8 +1,8 @@
 .. _doc_faq:
 
-==================================
- Frequently Asked Questions (FAQ)
-==================================
+===
+FAQ
+===
 
 .. contents:: Table Of Contents
    :local:
