@@ -29,14 +29,14 @@
 #       *) the BLAS and LAPACK source code. Download the tarball from http://www.netlib.org/lapack/lapack-3.4.2.tgz
 #             blas-src-dir is lapack-version/BLAS/SRC
 #             lapack-src-dir is lapack-version/SRC
-#             newer releases of LAPACK will not work
+#             recent releases of LAPACK will not work, they have pure f90 code that cannot easily be patched
 #
 #  This script should be run with bash, because it uses the 'echo -n' option.
 
 if [ $# -lt 2 ]
 then
   echo Usage: toclapack.sh [blas-src-dir] [lapack-src-dir]
-  echo The result is put into the tarball f2cblaslapack-3.4.2.q4.tar.gz
+  echo The result is put into the tarball f2cblaslapack-3.4.2.q6.tar.gz
   exit
 fi
 
@@ -46,15 +46,15 @@ CC=cc
 AWK=awk
 TMP=${PWD}/toclapack.$$
 # On the Apple you may need to switch the next lines
-#LEX=lex
-#LEXFLAGS=-lfl
-LEX=/usr/local/opt/flex/bin/flex
-LEXFLAGS=" -L/usr/local/opt/flex/lib -lfl"
+LEX=lex
+LEXFLAGS=-lfl
+#LEX=/usr/local/opt/flex/bin/flex
+#LEXFLAGS=" -L/usr/local/opt/flex/lib -lfl"
 SED=sed
 TAR=tar
 
 # Some vars
-FBLASLAPACK=f2cblaslapack-3.4.2.q4
+FBLASLAPACK=f2cblaslapack-3.4.2.q6
 BIN=${TMP}/bin
 PAC=${TMP}/${FBLASLAPACK}
 BLASDIR=${PAC}/blas
@@ -96,6 +96,7 @@ len	[a-z][a-z0-9]*_len
 "do_fio"{iofun}         |
 "do_lio"{iofun}         { printf("%s", yytext); /* unchanged */ }
 {any}"ilaenv_("         |
+{any}"iparmq_("         |
 [a-z]"tim"[a-z0-9]*"_(" |
 [a-z]"prtb"[a-z0-9]"_(" { 
                           register int c, paran_count = 1;
@@ -207,8 +208,8 @@ dist: cleanblaslapck cleanlib
 
 # 2) Transform fortran source to c from blas and lapack
 
-# Create blacklist of files that won't be compiled
-# Those functions correspond to extra precision routines
+# Create blacklist of files that won't be be processed by fc2
+# Those functions correspond to extra precision routines and codes with f90 constructs
 cat > ${TMP}/black.list << EOF
 SXLASRC = sgesvxx.o sgerfsx.o sla_gerfsx_extended.o sla_geamv.o		\
    sla_gercond.o sla_rpvgrw.o ssysvxx.o ssyrfsx.o			\
@@ -216,14 +217,14 @@ SXLASRC = sgesvxx.o sgerfsx.o sla_gerfsx_extended.o sla_geamv.o		\
    sposvxx.o sporfsx.o sla_porfsx_extended.o sla_porcond.o		\
    sla_porpvgrw.o sgbsvxx.o sgbrfsx.o sla_gbrfsx_extended.o		\
    sla_gbamv.o sla_gbrcond.o sla_gbrpvgrw.o sla_lin_berr.o slarscl2.o	\
-   slascl2.o sla_wwaddw.o
+   slascl2.o sla_wwaddw.o stgsja.o  slaqz0.o sgejsv.o sbdsvdx.o stgsja.o sgejsv.o sbdsvdx.o stgsja.o sgejsv.o
 DXLASRC = dgesvxx.o dgerfsx.o dla_gerfsx_extended.o dla_geamv.o		\
    dla_gercond.o dla_rpvgrw.o dsysvxx.o dsyrfsx.o			\
    dla_syrfsx_extended.o dla_syamv.o dla_syrcond.o dla_syrpvgrw.o	\
    dposvxx.o dporfsx.o dla_porfsx_extended.o dla_porcond.o		\
    dla_porpvgrw.o dgbsvxx.o dgbrfsx.o dla_gbrfsx_extended.o		\
    dla_gbamv.o dla_gbrcond.o dla_gbrpvgrw.o dla_lin_berr.o dlarscl2.o	\
-   dlascl2.o dla_wwaddw.o
+   dlascl2.o dla_wwaddw.o dtgsja.o dlaqz0.o dgejsv.o dbdsvdx.o dtgsja.o dgejsv.o dbdsvdx.o dtgsja.o dcgejsv.o
 CXLASRC =    cgesvxx.o cgerfsx.o cla_gerfsx_extended.o cla_geamv.o \
    cla_gercond_c.o cla_gercond_x.o cla_rpvgrw.o \
    csysvxx.o csyrfsx.o cla_syrfsx_extended.o cla_syamv.o \
@@ -234,7 +235,7 @@ CXLASRC =    cgesvxx.o cgerfsx.o cla_gerfsx_extended.o cla_geamv.o \
    cla_gbrcond_c.o cla_gbrcond_x.o cla_gbrpvgrw.o \
    chesvxx.o cherfsx.o cla_herfsx_extended.o cla_heamv.o \
    cla_hercond_c.o cla_hercond_x.o cla_herpvgrw.o \
-   cla_lin_berr.o clarscl2.o clascl2.o cla_wwaddw.o
+   cla_lin_berr.o clarscl2.o clascl2.o cla_wwaddw.o ctgsja.o  claqz0.o cgejsv.o cbdsvdx.o ctgsja.o cgejsv.o cbdsvdx.o ctgsja.o cgejsv.o
 ZXLASRC = zgesvxx.o zgerfsx.o zla_gerfsx_extended.o zla_geamv.o		\
    zla_gercond_c.o zla_gercond_x.o zla_rpvgrw.o zsysvxx.o zsyrfsx.o	\
    zla_syrfsx_extended.o zla_syamv.o zla_syrcond_c.o zla_syrcond_x.o	\
@@ -243,7 +244,7 @@ ZXLASRC = zgesvxx.o zgerfsx.o zla_gerfsx_extended.o zla_geamv.o		\
    zla_gbrfsx_extended.o zla_gbamv.o zla_gbrcond_c.o zla_gbrcond_x.o	\
    zla_gbrpvgrw.o zhesvxx.o zherfsx.o zla_herfsx_extended.o		\
    zla_heamv.o zla_hercond_c.o zla_hercond_x.o zla_herpvgrw.o		\
-   zla_lin_berr.o zlarscl2.o zlascl2.o zla_wwaddw.o
+   zla_lin_berr.o zlarscl2.o zlascl2.o zla_wwaddw.o ztgsja.o  zlaqz0.o zgejsv.o zsbdsvdx.o ztgsja.o zgejsv.o zbdsvdx.o ztgsja.o zgejsv.o
 EOF
 
 QL=${TMP}/ql.sed
@@ -371,6 +372,7 @@ for p in blas qblas hblas lapack qlapack hlapack; do
 		# - Replace the intrinsic functions exit and maxloc by the macros myexit and mymaxloc
 		# - Replace sqrt, sin, cos, log and exp by M(*)
 		# - Replace max and min by f2cmax and f2cmin
+                # - F90 constructs that snuck into LAPACK
 		$SED -r -e "
 			s/RECURSIVE//g;
 			s/CHARACTER\\(1\\)/CHARACTER/g;
@@ -380,8 +382,34 @@ for p in blas qblas hblas lapack qlapack hlapack; do
 			s/(INTRINSIC [^\\n]*)MYMAXLOC/\\1 MAX/g;
 			s/MAXLOC\\(([^:]+):/MAXLOC(\\1,/g;
 			s/MAXLOC\\(([^(]+)\\((.+)\\),/MAXLOC( \\1, \\2,/g;
+        		s/^([ ]*SUBROUTINE[^(]+\\([^)]+\\))/\\1\\n      EXTERNAL LEN_TRIM, CEILING\\n       INTEGER LEN_TRIM, CEILING\\n/g;
+            		s/(INTRINSIC [^\\n]*)LEN_TRIM/\\1 MAX/g;
+        		s/(INTRINSIC [^\\n]*)CEILING/\\1 MIN/g;
+                        s/INTENT\\([ A-Za-z]*\\)//g;
+                        s/^([ A-Z]*), EXTERNAL :: ([A-Z, 0-9]*)/\\1 \\2\\n       EXTERNAL \\2/g;
+                        s/^[ ]*REAL,/       REAL/g;
+                        s/^[ ]*COMPLEX,/       COMPLEX/g;
+                        s/^[ ]*INTEGER,/       INTEGER/g;
+                        s/^[ ]*DOUBLE PRECISION,/      DOUBLE PRECISION/g;
+                        s/^[ ]*LOGICAL,/       LOGICAL/g;
+                        s/:://g;
 		" ${base}.f |
 		$F2C -a -A -R | ${BIN}/lenscrub |
+             	$SED -e "
+                        1 i\
+                        #define len_trim__(cad,len) ({ \
+                          integer _r=0,i; \
+                          for(i=0; i<(len) && (cad)[i]; i++) \
+                            if((cad)[i] != ' ') _r=i; \
+                          _r+1; })
+                        1 i\
+                        #define ceiling_(a) (myceil(*(a)))
+                        1 i\
+                        #define myceil(a) (sizeof(a) == sizeof(float) ? ceilf(a) : ceil(a))
+                        1 i\
+                        #include <math.h>
+                        s/extern integer len_trim__([^)]*);//g
+                        s/extern [^ ]* ceiling_([^)]*);//g" |
 		$SED -r -e "
 			/\\/\\*  *\\.\\. .*\\*\\//d;
 			s/extern integer mymaxloc_\\([^)]*\\);//g;
@@ -391,6 +419,9 @@ for p in blas qblas hblas lapack qlapack hlapack; do
 			done )
 			s/([^a-zA-Z_1-9]+)max([^a-zA-Z_1-9]+)/\\1f2cmax\\2/g;
 			s/([^a-zA-Z_1-9]+)min([^a-zA-Z_1-9]+)/\\1f2cmin\\2/g;" |
+                $SED -r -e "
+                        s?/\* Subroutine \*/ int?void ?g;
+                        s?return 0?return?g;" |
 		$AWK '
 			BEGIN {	a=1; }
 			{
