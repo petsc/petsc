@@ -1,8 +1,8 @@
 .. _doc_download:
 
-=================
-Downloading PETSc
-=================
+========
+Download
+========
 
 
 Recommended Download

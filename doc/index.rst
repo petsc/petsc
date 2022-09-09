@@ -38,16 +38,15 @@ Main Topics
 .. toctree::
    :maxdepth: 1
 
-   Overview <overview/index>
-   Download <download/index>
-   Install <install/index>
-   User-Guide <docs/manual/index>
-   API-Docs <docs/manualpages/index>
-   Tutorials <tutorials/index>
-   FAQ <faq/index>
-   Community <community/index>
-   Developers <developers/index>
-   Misc. <miscellaneous/index>
+   overview/index
+   install/index
+   docs/manual/index
+   docs/manualpages/index
+   tutorials/index
+   faq/index
+   community/index
+   developers/index
+   miscellaneous/index
 
 Toolkits/libraries that use PETSc
 ==========================================
@@ -69,7 +68,7 @@ Toolkits/libraries that use PETSc
    optimization
 -  `DEAL.II <https://www.dealii.org/>`__ C++ based finite element
    simulation package
--  `DUNE-FEM <https://dune-project.org/sphinx/content/sphinx/dune-fem/>`__ Python and C++ based finite element simulation package      
+-  `DUNE-FEM <https://dune-project.org/sphinx/content/sphinx/dune-fem/>`__ Python and C++ based finite element simulation package
 -  `FEniCS <https://fenicsproject.org/>`__ Python based finite
    element simulation package
 -  `Firedrake <https://www.firedrakeproject.org/>`__ Python based
