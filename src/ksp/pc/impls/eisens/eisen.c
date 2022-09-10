@@ -22,6 +22,18 @@ static PetscErrorCode PCMult_Eisenstat(Mat mat, Vec b, Vec x) {
   PetscCall(MatShellGetContext(mat, &pc));
   eis = (PC_Eisenstat *)pc->data;
   PetscCall(MatSOR(eis->A, b, eis->omega, SOR_EISENSTAT, 0.0, 1, 1, x));
+  PetscCall(MatFactorGetError(eis->A, (MatFactorError *)&pc->failedreason));
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PCNorm_Eisenstat(Mat mat, NormType type, PetscReal *nrm) {
+  PC            pc;
+  PC_Eisenstat *eis;
+
+  PetscFunctionBegin;
+  PetscCall(MatShellGetContext(mat, &pc));
+  eis = (PC_Eisenstat *)pc->data;
+  PetscCall(MatNorm(eis->A, type, nrm));
   PetscFunctionReturn(0);
 }
 
@@ -30,6 +42,24 @@ static PetscErrorCode PCApply_Eisenstat(PC pc, Vec x, Vec y) {
   PetscBool     hasop;
 
   PetscFunctionBegin;
+  if (eis->usediag) {
+    PetscCall(MatHasOperation(pc->pmat, MATOP_MULT_DIAGONAL_BLOCK, &hasop));
+    if (hasop) {
+      PetscCall(MatMultDiagonalBlock(pc->pmat, x, y));
+    } else {
+      PetscCall(VecPointwiseMult(y, x, eis->diag));
+    }
+  } else PetscCall(VecCopy(x, y));
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PCApplyTranspose_Eisenstat(PC pc, Vec x, Vec y) {
+  PC_Eisenstat *eis = (PC_Eisenstat *)pc->data;
+  PetscBool     hasop, set, sym;
+
+  PetscFunctionBegin;
+  PetscCall(MatIsSymmetricKnown(eis->A, &set, &sym));
+  PetscCheck(set && sym, PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "Can only apply transpose of Eisenstat if matrix is symmetric");
   if (eis->usediag) {
     PetscCall(MatHasOperation(pc->pmat, MATOP_MULT_DIAGONAL_BLOCK, &hasop));
     if (hasop) {
@@ -63,6 +93,7 @@ static PetscErrorCode PCPreSolve_Eisenstat(PC pc, KSP ksp, Vec b, Vec x) {
   if (nonzero) {
     PetscCall(VecCopy(x, eis->b[pc->presolvedone - 1]));
     PetscCall(MatSOR(eis->A, eis->b[pc->presolvedone - 1], eis->omega, SOR_APPLY_UPPER, 0.0, 1, 1, x));
+    PetscCall(MatFactorGetError(eis->A, (MatFactorError *)&pc->failedreason));
   }
 
   /* save true b, other option is to swap pointers */
@@ -70,6 +101,7 @@ static PetscErrorCode PCPreSolve_Eisenstat(PC pc, KSP ksp, Vec b, Vec x) {
 
   /* modify b by (L + D/omega)^{-1} */
   PetscCall(MatSOR(eis->A, eis->b[pc->presolvedone - 1], eis->omega, (MatSORType)(SOR_ZERO_INITIAL_GUESS | SOR_LOCAL_FORWARD_SWEEP), 0.0, 1, 1, b));
+  PetscCall(MatFactorGetError(eis->A, (MatFactorError *)&pc->failedreason));
   PetscFunctionReturn(0);
 }
 
@@ -83,6 +115,7 @@ static PetscErrorCode PCPostSolve_Eisenstat(PC pc, KSP ksp, Vec b, Vec x) {
   /* modify x by (U + D/omega)^{-1} */
   PetscCall(VecCopy(x, eis->b[pc->presolvedone]));
   PetscCall(MatSOR(eis->A, eis->b[pc->presolvedone], eis->omega, (MatSORType)(SOR_ZERO_INITIAL_GUESS | SOR_LOCAL_BACKWARD_SWEEP), 0.0, 1, 1, x));
+  PetscCall(MatFactorGetError(eis->A, (MatFactorError *)&pc->failedreason));
   if (!pc->presolvedone) pc->mat = eis->A;
   PetscFunctionReturn(0);
 }
@@ -142,12 +175,14 @@ static PetscErrorCode PCView_Eisenstat(PC pc, PetscViewer viewer) {
 
 static PetscErrorCode PCSetUp_Eisenstat(PC pc) {
   PetscInt      M, N, m, n;
+  PetscBool     set, sym;
   PC_Eisenstat *eis = (PC_Eisenstat *)pc->data;
 
   PetscFunctionBegin;
   if (!pc->setupcalled) {
     PetscCall(MatGetSize(pc->mat, &M, &N));
     PetscCall(MatGetLocalSize(pc->mat, &m, &n));
+    PetscCall(MatIsSymmetricKnown(pc->mat, &set, &sym));
     PetscCall(MatCreate(PetscObjectComm((PetscObject)pc), &eis->shell));
     PetscCall(MatSetSizes(eis->shell, m, n, M, N));
     PetscCall(MatSetType(eis->shell, MATSHELL));
@@ -155,6 +190,8 @@ static PetscErrorCode PCSetUp_Eisenstat(PC pc) {
     PetscCall(MatShellSetContext(eis->shell, pc));
     PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)eis->shell));
     PetscCall(MatShellSetOperation(eis->shell, MATOP_MULT, (void (*)(void))PCMult_Eisenstat));
+    if (set && sym) PetscCall(MatShellSetOperation(eis->shell, MATOP_MULT_TRANSPOSE, (void (*)(void))PCMult_Eisenstat));
+    PetscCall(MatShellSetOperation(eis->shell, MATOP_NORM, (void (*)(void))PCNorm_Eisenstat));
   }
   if (!eis->usediag) PetscFunctionReturn(0);
   if (!pc->setupcalled) {
@@ -365,6 +402,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Eisenstat(PC pc) {
   PetscCall(PetscNewLog(pc, &eis));
 
   pc->ops->apply           = PCApply_Eisenstat;
+  pc->ops->applytranspose  = PCApplyTranspose_Eisenstat;
   pc->ops->presolve        = PCPreSolve_Eisenstat;
   pc->ops->postsolve       = PCPostSolve_Eisenstat;
   pc->ops->applyrichardson = NULL;
