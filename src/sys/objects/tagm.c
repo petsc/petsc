@@ -293,9 +293,8 @@ PetscErrorCode PetscCommDestroy(MPI_Comm *comm) {
     if (flg) {
       ocomm = ucomm.comm;
       PetscCallMPI(MPI_Comm_get_attr(ocomm, Petsc_InnerComm_keyval, &ucomm, &flg));
-      if (flg) {
-        PetscCallMPI(MPI_Comm_delete_attr(ocomm, Petsc_InnerComm_keyval));
-      } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "Outer MPI_Comm %ld does not have expected reference to inner comm %ld, problem with corrupted memory", (long int)ocomm, (long int)icomm);
+      PetscCheck(flg, PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "Outer MPI_Comm %ld does not have expected reference to inner comm %ld, problem with corrupted memory", (long int)ocomm, (long int)icomm);
+      PetscCallMPI(MPI_Comm_delete_attr(ocomm, Petsc_InnerComm_keyval));
     }
 
     PetscCall(PetscInfo(NULL, "Deleting PETSc MPI_Comm %ld\n", (long)icomm));

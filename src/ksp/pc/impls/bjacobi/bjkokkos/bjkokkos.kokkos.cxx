@@ -14,6 +14,8 @@
 #include <nvToolsExt.h>
 #endif
 
+#include <petscdevice_cupm.h>
+
 #define PCBJKOKKOS_SHARED_LEVEL 0 // 0 is shared, 1 is global
 #define PCBJKOKKOS_VEC_SIZE     16
 #define PCBJKOKKOS_TEAM_SIZE    16
@@ -943,15 +945,10 @@ static PetscErrorCode PCApply_BJKOKKOS(PC pc, Vec bin, Vec xout) {
       // solve each block independently
       int scr_bytes_team_shared = 0, nShareVec = 0, nGlobBVec = 0;
       if (jac->const_block_size) { // use shared memory for work vectors only if constant block size - todo: test efficiency loss
-        int maximum_shared_mem_size = 64000;
-
-        if (PetscDeviceConfiguredFor_Internal(PETSC_DEVICE_DEFAULT)) {
-          // FIXME: remove the configuredfor check once the PETSC_DEVICE_HOST MR is merged in
-          PetscDevice device;
-
-          PetscCall(PetscDeviceGetDefault_Internal(&device));
-          PetscCall(PetscDeviceGetAttribute(device, PETSC_DEVICE_ATTR_SIZE_T_SHARED_MEM_PER_BLOCK, &maximum_shared_mem_size));
-        }
+        int         maximum_shared_mem_size = 64000;
+        PetscDevice device;
+        PetscCall(PetscDeviceGetDefault_Internal(&device));
+        PetscCall(PetscDeviceGetAttribute(device, PETSC_DEVICE_ATTR_SIZE_T_SHARED_MEM_PER_BLOCK, &maximum_shared_mem_size));
         stride_shared = jac->const_block_size;                                                   // captured
         nShareVec     = maximum_shared_mem_size / (jac->const_block_size * sizeof(PetscScalar)); // integer floor, number of vectors that fit in shared
         if (nShareVec > nwork) nShareVec = nwork;

@@ -2,6 +2,7 @@
 #define __CUDAVECIMPL
 
 #include <petscvec.h>
+#include <petscdevice_cuda.h>
 #include <petsc/private/deviceimpl.h>
 #include <petsc/private/vecimpl.h>
 

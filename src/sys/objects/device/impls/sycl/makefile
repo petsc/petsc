@@ -1,10 +1,10 @@
--include ../../../../../../petsckdir.mk
+-include ../../../../../../petscdir.mk
 #requirespackage 'PETSC_HAVE_SYCL'
 
 SOURCEC	  =
 SOURCESYCL = sycldevice.sycl.cxx syclcontext.sycl.cxx
 SOURCEF	  =
-SOURCEH   =
+SOURCEH   = sycldevice.hpp
 MANSEC	  = Sys
 LIBBASE	  = libpetscsys
 DIRS	    =

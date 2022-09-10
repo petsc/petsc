@@ -2,6 +2,7 @@
 #define __HIPVECIMPL
 
 #include <petscvec.h>
+#include <petscdevice_hip.h>
 #include <petsc/private/deviceimpl.h>
 #include <petsc/private/vecimpl.h>
 

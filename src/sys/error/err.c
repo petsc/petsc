@@ -686,7 +686,7 @@ PetscErrorCode PetscScalarView(PetscInt N, const PetscScalar idx[], PetscViewer 
 }
 
 #if defined(PETSC_HAVE_CUDA)
-#include <petscdevice.h>
+#include <petscdevice_cuda.h>
 PETSC_EXTERN const char *PetscCUBLASGetErrorName(cublasStatus_t status) {
   switch (status) {
 #if (CUDART_VERSION >= 8000) /* At least CUDA 8.0 of Sep. 2016 had these */
@@ -750,7 +750,7 @@ PETSC_EXTERN const char *PetscCUFFTGetErrorName(cufftResult result) {
 #endif
 
 #if defined(PETSC_HAVE_HIP)
-#include <petscdevice.h>
+#include <petscdevice_hip.h>
 PETSC_EXTERN const char *PetscHIPBLASGetErrorName(hipblasStatus_t status) {
   switch (status) {
   case HIPBLAS_STATUS_SUCCESS: return "HIPBLAS_STATUS_SUCCESS";

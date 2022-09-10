@@ -13,7 +13,11 @@
 #undef VecType
 #include <../src/mat/impls/aij/seq/seqcusparse/cusparsematimpl.h>
 #include <thrust/adjacent_difference.h>
+#if PETSC_CPP_VERSION >= 14
+#define PETSC_HAVE_THRUST_ASYNC 1
+// thrust::for_each(thrust::cuda::par.on()) requires C++14
 #include <thrust/async/for_each.h>
+#endif
 #include <thrust/iterator/constant_iterator.h>
 #include <thrust/remove.h>
 #include <thrust/sort.h>
@@ -3313,8 +3317,13 @@ static PetscErrorCode MatMultAddKernel_SeqAIJCUSPARSE(Mat A, Vec xx, Vec yy, Vec
       beta = yy ? matstruct->beta_one : matstruct->beta_zero;
       if (compressed) { /* Scatter x to work vector */
         thrust::device_ptr<PetscScalar> xarr = thrust::device_pointer_cast(xarray);
-        thrust::for_each(thrust::cuda::par.on(PetscDefaultCudaStream), thrust::make_zip_iterator(thrust::make_tuple(cusparsestruct->workVector->begin(), thrust::make_permutation_iterator(xarr, matstruct->cprowIndices->begin()))),
-                         thrust::make_zip_iterator(thrust::make_tuple(cusparsestruct->workVector->begin(), thrust::make_permutation_iterator(xarr, matstruct->cprowIndices->begin()))) + matstruct->cprowIndices->size(), VecCUDAEqualsReverse());
+
+        thrust::for_each(
+#if PetscDefined(HAVE_THRUST_ASYNC)
+          thrust::cuda::par.on(PetscDefaultCudaStream),
+#endif
+          thrust::make_zip_iterator(thrust::make_tuple(cusparsestruct->workVector->begin(), thrust::make_permutation_iterator(xarr, matstruct->cprowIndices->begin()))),
+          thrust::make_zip_iterator(thrust::make_tuple(cusparsestruct->workVector->begin(), thrust::make_permutation_iterator(xarr, matstruct->cprowIndices->begin()))) + matstruct->cprowIndices->size(), VecCUDAEqualsReverse());
       }
 #if PETSC_PKG_CUDA_VERSION_GE(11, 0, 0)
       if (cusparsestruct->format == MAT_CUSPARSE_CSR) {

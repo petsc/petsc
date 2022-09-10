@@ -77,7 +77,33 @@ In addition to the changes above
 -  Change ``PetscStackCall()`` to ``PetscStackCallExternalVoid()``
 -  Change ``PetscStackCallXXX()`` to ``PetscCallXXX()``
 -  Add ``PetscCallBack()' for calling all PETSc callbacks (usually to user code) to replace the use of ``PetscStackPush()`` and ``PetscStackPop``
--  Add ``PetscTryTypeMethod()`` and ``PetscUseTypeMethod()`` to replace direct calls of the form ``(\*obj->ops->op)(obj,...)``.
+-  Add ``PetscTryTypeMethod()`` and ``PetscUseTypeMethod()`` to replace direct calls of the form ``(\*obj->ops->op)(obj,...)``
+- Add ``PetscMemTypeToString()`` to convert ``PetscMemType`` to string
+- Add ``PetscOffloadMaskToString()`` to (shockingly) convert ``PetscOffloadMask`` to string
+- Add ``PetscOffloadMaskToMemType()``
+- Add ``PetscDeviceCopyMode``
+- Add ``PetscMemoryAccessMode``
+- Split off CUDA and HIP specific headers from ``petscdevice.h`` into ``petscdevice_cuda.h`` and ``petscdevice_hip.h``
+- Add ``petscdevice_cupm.h``
+- Allow ``PetscDevice`` and ``PetscDeviceContext`` API to be callable from C via stub macros
+- Replace ``PETSC_DEVICE_INVALID`` with ``PETSC_DEVICE_HOST``
+- Make ``PETSC_DEVICE_DEFAULT()`` a function
+- Add ``PetscDeviceSetDefaultDeviceType()``
+- Make ``PetscDeviceContext`` into a ``PetscObject``
+- Add ``PetscDeviceContextGetDeviceType()`` convenience function
+- Add ``PetscDeviceContextForkWithStreamType()``
+- Change ``PetscDeviceContextSetFromOptions()`` to no longer accept the options prefix (``PetscDeviceContext`` now has one as a ``PetscObject``)
+- Add ``PetscDeviceContextView()``
+- Add ``PetscDeviceContextViewFromOptions()``
+- Add ``PetscDeviceAllocate()``
+- Add ``PetscDeviceMalloc()``
+- Add ``PetscDeviceCalloc()``
+- Add ``PetscDeviceDeallocate()``
+- Add ``PetscDeviceFree()``
+- Add ``PetscDeviceMemcpy()``
+- Add ``PetscDeviceArrayCopy()``
+- Add ``PetscDeviceMemset()``
+- Add ``PetscDeviceArrayZero()``
 
 .. rubric:: Event Logging:
 

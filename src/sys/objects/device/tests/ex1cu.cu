@@ -7,7 +7,7 @@ static char help[] = "Benchmarking CUDA kernel launch time\n";
   Average synchronous  CUDA kernel launch time = 12.83 microseconds
 */
 #include <petscsys.h>
-#include <petscdevice.h>
+#include <petscdevice_cuda.h>
 
 __global__ void NullKernel() { }
 

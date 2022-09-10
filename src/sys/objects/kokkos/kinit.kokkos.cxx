@@ -1,4 +1,5 @@
 #include <petsc/private/deviceimpl.h>
+#include <petscpkg_version.h>
 #include <Kokkos_Core.hpp>
 
 PetscBool PetscKokkosInitialized = PETSC_FALSE;

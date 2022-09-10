@@ -1,4 +1,4 @@
-#include <petscdevice.h>
+#include <petscdevice_cuda.h>
 #include <../src/ksp/pc/impls/vpbjacobi/vpbjacobi.h>
 
 /* A class that manages helper arrays assisting parallel PCApply() with CUDA */

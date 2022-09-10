@@ -1,7 +1,7 @@
 # --------------------------------------------------------------------
 
 class DeviceType(object):
-    INVALID = PETSC_DEVICE_INVALID
+    INVALID = PETSC_DEVICE_HOST
     CUDA    = PETSC_DEVICE_CUDA
     HIP     = PETSC_DEVICE_HIP
     SYCL    = PETSC_DEVICE_SYCL

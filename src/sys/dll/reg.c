@@ -188,6 +188,15 @@ struct _n_PetscFunctionList {
 */
 static PetscFunctionList dlallhead = NULL;
 
+static PetscErrorCode PetscFunctionListCreateNode_Private(PetscFunctionList *entry, const char name[], void (*func)(void)) {
+  PetscFunctionBegin;
+  PetscCall(PetscNew(entry));
+  PetscCall(PetscStrallocpy(name, &(*entry)->name));
+  (*entry)->routine = func;
+  (*entry)->next    = NULL;
+  PetscFunctionReturn(0);
+}
+
 /*MC
    PetscFunctionListAdd - Given a routine and a string id, saves that routine in the
    specified registry.
@@ -217,48 +226,54 @@ static PetscFunctionList dlallhead = NULL;
           `PCRegister()`, `TSRegister()`, `PetscFunctionList`, `PetscObjectComposeFunction()`
 M*/
 PETSC_EXTERN PetscErrorCode PetscFunctionListAdd_Private(PetscFunctionList *fl, const char name[], void (*fnc)(void)) {
-  PetscFunctionList entry, ne;
-
   PetscFunctionBegin;
-  if (!*fl) {
-    PetscCall(PetscNew(&entry));
-    PetscCall(PetscStrallocpy(name, &entry->name));
-    entry->routine = fnc;
-    entry->next    = NULL;
-    *fl            = entry;
-
-    if (PetscDefined(USE_DEBUG)) {
-      /* add this new list to list of all lists */
-      if (!dlallhead) {
-        dlallhead        = *fl;
-        (*fl)->next_list = NULL;
-      } else {
-        ne               = dlallhead;
-        dlallhead        = *fl;
-        (*fl)->next_list = ne;
-      }
-    }
-
-  } else {
+  PetscValidPointer(fl, 1);
+  if (name) PetscValidCharPointer(name, 2);
+  if (fnc) PetscValidFunction(fnc, 3);
+  if (*fl) {
     /* search list to see if it is already there */
-    ne = *fl;
-    while (ne) {
+    PetscFunctionList empty_node = NULL;
+    PetscFunctionList ne         = *fl;
+
+    while (1) {
       PetscBool founddup;
 
       PetscCall(PetscStrcmp(ne->name, name, &founddup));
-      if (founddup) { /* found duplicate */
+      if (founddup) {
+        /* found duplicate, clear it */
         ne->routine = fnc;
+        if (!fnc) PetscCall(PetscFree(ne->name));
         PetscFunctionReturn(0);
       }
-      if (ne->next) ne = ne->next;
-      else break;
+
+      if (!empty_node && !ne->routine && !ne->name) {
+        /* save the empty node for later */
+        empty_node = ne;
+      }
+
+      if (!ne->next) break; /* end of list */
+      ne = ne->next;
     }
-    /* create new entry and add to end of list */
-    PetscCall(PetscNew(&entry));
-    PetscCall(PetscStrallocpy(name, &entry->name));
-    entry->routine = fnc;
-    entry->next    = NULL;
-    ne->next       = entry;
+
+    /* there was an empty entry we could grab, fill it and bail */
+    if (empty_node) {
+      empty_node->routine = fnc;
+      PetscCall(PetscStrallocpy(name, &empty_node->name));
+    } else {
+      /* create new entry at the end of list */
+      PetscCall(PetscFunctionListCreateNode_Private(&ne->next, name, fnc));
+    }
+    PetscFunctionReturn(0);
+  }
+
+  /* we didn't have a list */
+  PetscCall(PetscFunctionListCreateNode_Private(fl, name, fnc));
+  if (PetscDefined(USE_DEBUG)) {
+    const PetscFunctionList head = dlallhead;
+
+    /* add this new list to list of all lists */
+    dlallhead        = *fl;
+    (*fl)->next_list = head;
   }
   PetscFunctionReturn(0);
 }
@@ -271,7 +286,7 @@ PETSC_EXTERN PetscErrorCode PetscFunctionListAdd_Private(PetscFunctionList *fl, 
 
     Level: developer
 
-.seealso: `PetscFunctionListAdd()`, `PetscFunctionList`
+.seealso: `PetscFunctionListAdd()`, `PetscFunctionList`, `PetscFunctionListClear()`
 @*/
 PetscErrorCode PetscFunctionListDestroy(PetscFunctionList *fl) {
   PetscFunctionList next, entry, tmp = dlallhead;
@@ -302,6 +317,32 @@ PetscErrorCode PetscFunctionListDestroy(PetscFunctionList *fl) {
     entry = next;
   }
   *fl = NULL;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscFunctionListClear - Clear a `PetscFunctionList`
+
+  Not Collective
+
+  Input Parameter:
+. fl - The `PetscFunctionList` to clear
+
+  Notes:
+  This clears the contents of `fl` but does not deallocate the entries themselves.
+
+  Level: developer
+
+.seealso: `PetscFunctionList`, `PetscFunctionListDestroy()`, `PetscFunctionListAdd()`
+@*/
+PetscErrorCode PetscFunctionListClear(PetscFunctionList fl) {
+  PetscFunctionBegin;
+  /* free the names and clear the routine but don't deallocate the node */
+  while (fl) {
+    PetscCall(PetscFree(fl->name));
+    fl->routine = NULL;
+    fl          = fl->next;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -360,13 +401,13 @@ PetscErrorCode PetscFunctionListPrintNonEmpty(PetscFunctionList fl) {
 M*/
 PETSC_EXTERN PetscErrorCode PetscFunctionListFind_Private(PetscFunctionList fl, const char name[], void (**r)(void)) {
   PetscFunctionList entry = fl;
-  PetscBool         flg;
 
   PetscFunctionBegin;
-  PetscCheck(name, PETSC_COMM_SELF, PETSC_ERR_ARG_NULL, "Trying to find routine with null name");
-
-  *r = NULL;
+  PetscValidCharPointer(name, 2);
+  PetscValidPointer(r, 3);
   while (entry) {
+    PetscBool flg;
+
     PetscCall(PetscStrcmp(name, entry->name, &flg));
     if (flg) {
       *r = entry->routine;
@@ -374,6 +415,7 @@ PETSC_EXTERN PetscErrorCode PetscFunctionListFind_Private(PetscFunctionList fl, 
     }
     entry = entry->next;
   }
+  *r = NULL;
   PetscFunctionReturn(0);
 }
 

@@ -180,6 +180,7 @@ PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*PetscObjectViewFunction)(PetscObje
 
 PETSC_EXTERN PetscErrorCode PetscComposedQuantitiesDestroy(PetscObject obj);
 PETSC_EXTERN PetscErrorCode PetscHeaderCreate_Private(PetscObject, PetscClassId, const char[], const char[], const char[], MPI_Comm, PetscObjectDestroyFunction, PetscObjectViewFunction);
+PETSC_INTERN PetscObjectId  PetscObjectNewId_Internal(void);
 
 /*@C
     PetscHeaderDestroy - Final step in destroying a PetscObject
@@ -191,12 +192,13 @@ PETSC_EXTERN PetscErrorCode PetscHeaderCreate_Private(PetscObject, PetscClassId,
 
 .seealso: `PetscHeaderCreate()`
 @*/
-#define PetscHeaderDestroy(h) (PetscHeaderDestroy_Private((PetscObject)(*(h))) || PetscFree(*(h)))
+#define PetscHeaderDestroy(h) (PetscHeaderDestroy_Private((PetscObject)(*(h)), PETSC_FALSE) || PetscFree(*(h)))
 
-PETSC_EXTERN PetscErrorCode PetscHeaderDestroy_Private(PetscObject);
-PETSC_EXTERN PetscErrorCode PetscObjectCopyFortranFunctionPointers(PetscObject, PetscObject);
-PETSC_EXTERN PetscErrorCode PetscObjectSetFortranCallback(PetscObject, PetscFortranCallbackType, PetscFortranCallbackId *, void (*)(void), void *ctx);
-PETSC_EXTERN PetscErrorCode PetscObjectGetFortranCallback(PetscObject, PetscFortranCallbackType, PetscFortranCallbackId, void (**)(void), void **ctx);
+PETSC_EXTERN PetscErrorCode                PetscHeaderDestroy_Private(PetscObject, PetscBool);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PetscHeaderReset_Internal(PetscObject);
+PETSC_EXTERN PetscErrorCode                PetscObjectCopyFortranFunctionPointers(PetscObject, PetscObject);
+PETSC_EXTERN PetscErrorCode                PetscObjectSetFortranCallback(PetscObject, PetscFortranCallbackType, PetscFortranCallbackId *, void (*)(void), void *ctx);
+PETSC_EXTERN PetscErrorCode                PetscObjectGetFortranCallback(PetscObject, PetscFortranCallbackType, PetscFortranCallbackId, void (**)(void), void **ctx);
 
 PETSC_INTERN PetscErrorCode PetscCitationsInitialize(void);
 PETSC_INTERN PetscErrorCode PetscFreeMPIResources(void);
@@ -205,7 +207,11 @@ PETSC_INTERN PetscErrorCode PetscOptionsHasHelpIntro_Internal(PetscOptions, Pets
 /* Code shared between C and Fortran */
 PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *, const char *, const char *, PetscBool, PetscBool, PetscInt);
 
+#if PetscDefined(HAVE_SETJMP_H)
 PETSC_EXTERN PetscBool PetscCheckPointer(const void *, PetscDataType);
+#else
+#define PetscCheckPointer(ptr, data_type) (ptr ? PETSC_TRUE : PETSC_FALSE)
+#endif
 #if !defined(PETSC_CLANG_STATIC_ANALYZER)
 /*
     Macros to test if a PETSc object is valid and if pointers are valid

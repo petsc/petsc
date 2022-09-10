@@ -1,4 +1,4 @@
-#include <petscdevice.h>
+#include <petscdevice_cuda.h>
 #include "ex18.h"
 
 __global__ void FillValues(PetscInt n, PetscScalar *v) {

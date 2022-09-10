@@ -682,16 +682,16 @@ int64_t Petsc_adios_group;
 PetscInt PetscNumOMPThreads;
 #endif
 
-#if PetscDefined(HAVE_DEVICE)
 #include <petsc/private/deviceimpl.h>
 #if PetscDefined(HAVE_CUDA)
+#include <petscdevice_cuda.h>
 // REMOVE ME
 cudaStream_t PetscDefaultCudaStream = NULL;
 #endif
 #if PetscDefined(HAVE_HIP)
+#include <petscdevice_hip.h>
 // REMOVE ME
 hipStream_t PetscDefaultHipStream = NULL;
-#endif
 #endif
 
 #if PetscDefined(HAVE_DLFCN_H)
@@ -959,17 +959,25 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
   PetscCall(PetscOptionsCheckInitial_Private(help));
 
   /*
+    Creates the logging data structures; this is enabled even if logging is not turned on
+    This is the last thing we do before returning to the user code to prevent having the
+    logging numbers contaminated by any startup time associated with MPI
+  */
+#if defined(PETSC_USE_LOG)
+  PetscCall(PetscLogInitialize());
+#endif
+
+  /*
    Initialize PetscDevice and PetscDeviceContext
 
    Note to any future devs thinking of moving this, proper initialization requires:
    1. MPI initialized
    2. Options DB initialized
-   3. Petsc error handling initialized, specifically signal handlers. This expects to set up its own SIGSEV handler via
-      the push/pop interface.
+   3. Petsc error handling initialized, specifically signal handlers. This expects to set up
+      its own SIGSEV handler via the push/pop interface.
+   4. Logging initialized
   */
-#if (PetscDefined(HAVE_CUDA) || PetscDefined(HAVE_HIP) || PetscDefined(HAVE_SYCL))
   PetscCall(PetscDeviceInitializeFromOptions_Internal(PETSC_COMM_WORLD));
-#endif
 
 #if PetscDefined(HAVE_VIENNACL)
   flg = PETSC_FALSE;
@@ -978,15 +986,6 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
   if (!flg) PetscCall(PetscOptionsGetBool(NULL, NULL, "-viennacl_synchronize", &flg, NULL));
   PetscViennaCLSynchronize = flg;
   PetscCall(PetscViennaCLInit());
-#endif
-
-  /*
-     Creates the logging data structures; this is enabled even if logging is not turned on
-     This is the last thing we do before returning to the user code to prevent having the
-     logging numbers contaminated by any startup time associated with MPI
-  */
-#if defined(PETSC_USE_LOG)
-  PetscCall(PetscLogInitialize());
 #endif
 
   PetscCall(PetscCitationsInitialize());

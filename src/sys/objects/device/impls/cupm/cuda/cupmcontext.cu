@@ -1,16 +1,14 @@
 #include "../cupmcontext.hpp" /*I "petscdevice.h" I*/
 
-using namespace Petsc::Device::CUPM;
+using namespace Petsc::device::cupm;
 
 PetscErrorCode PetscDeviceContextCreate_CUDA(PetscDeviceContext dctx) {
-  static constexpr auto contextCuda = CUPMContextCuda();
-  PetscDeviceContext_(CUDA) * dci;
+  static constexpr auto cuda_context = CUPMContextCuda();
 
   PetscFunctionBegin;
-  PetscCall(contextCuda.initialize());
-  PetscCall(PetscNew(&dci));
-  dctx->data = static_cast<decltype(dctx->data)>(dci);
-  PetscCall(PetscMemcpy(dctx->ops, &contextCuda.ops, sizeof(contextCuda.ops)));
+  PetscCall(cuda_context.initialize());
+  dctx->data = new PetscDeviceContext_(CUDA);
+  PetscCall(PetscMemcpy(dctx->ops, &cuda_context.ops, sizeof(cuda_context.ops)));
   PetscFunctionReturn(0);
 }
 

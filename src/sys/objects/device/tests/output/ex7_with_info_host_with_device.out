@@ -1,0 +1,64 @@
+[0] <device> PetscDeviceContextSetupGlobalContext_Private(): Initializing global PetscDeviceContext with device type IMPL
+[DEBUG OUTPUT] n: 139
+[0] <device> PetscDeviceContextMarkIntentFromID_Private(): dctx 12 (global root) - obj 15 (memory allocation): new mode (PETSC_MEMORY_ACCESS_WRITE) NOT COMPATIBLE with default mode (PETSC_MEMORY_ACCESS_READ), serializing then clearing (0) dependencies
+[0] <device> PetscDeviceContextMarkIntentFromID_Private(): dctx 12 (global root) - obj 15 (memory allocation): dependency list is empty, creating new leaf with intent PETSC_MEMORY_ACCESS_WRITE
+[0] <device> PetscDeviceContextMarkIntentFromID_Private(): dctx 12 (global root) - obj 15 (memory deallocation): new mode (PETSC_MEMORY_ACCESS_WRITE) NOT COMPATIBLE with old mode (PETSC_MEMORY_ACCESS_WRITE), serializing then clearing (1) dependency
+[0] <device> PetscDeviceContextMarkIntentFromID_Private(): dctx 12 (global root) - obj 15 (memory deallocation): found old self as dependency, skipping
+[0] <device> PetscDeviceContextMarkIntentFromID_Private(): dctx 12 (global root) - obj 15 (memory deallocation): moving last write dependency (intent PETSC_MEMORY_ACCESS_WRITE)
+[0] <device> PetscDeviceContextMarkIntentFromID_Private(): dctx 12 (global root) - obj 15 (memory deallocation): dependency list is empty, creating new leaf with intent PETSC_MEMORY_ACCESS_WRITE
+[DEBUG OUTPUT] n: 207
+[0] <device> PetscDeviceContextMarkIntentFromID_Private(): dctx 12 (global root) - obj 18 (memory allocation): new mode (PETSC_MEMORY_ACCESS_WRITE) NOT COMPATIBLE with default mode (PETSC_MEMORY_ACCESS_READ), serializing then clearing (0) dependencies
+[0] <device> PetscDeviceContextMarkIntentFromID_Private(): dctx 12 (global root) - obj 18 (memory allocation): dependency list is empty, creating new leaf with intent PETSC_MEMORY_ACCESS_WRITE
+[0] <device> PetscDeviceContextMarkIntentFromID_Private(): dctx 12 (global root) - obj 18 (memory deallocation): new mode (PETSC_MEMORY_ACCESS_WRITE) NOT COMPATIBLE with old mode (PETSC_MEMORY_ACCESS_WRITE), serializing then clearing (1) dependency
+[0] <device> PetscDeviceContextMarkIntentFromID_Private(): dctx 12 (global root) - obj 18 (memory deallocation): found old self as dependency, skipping
+[0] <device> PetscDeviceContextMarkIntentFromID_Private(): dctx 12 (global root) - obj 18 (memory deallocation): moving last write dependency (intent PETSC_MEMORY_ACCESS_WRITE)
+[0] <device> PetscDeviceContextMarkIntentFromID_Private(): dctx 12 (global root) - obj 18 (memory deallocation): dependency list is empty, creating new leaf with intent PETSC_MEMORY_ACCESS_WRITE
+[DEBUG OUTPUT] n: 462
+[0] <device> PetscDeviceContextMarkIntentFromID_Private(): dctx 12 (global root) - obj 19 (memory allocation): new mode (PETSC_MEMORY_ACCESS_WRITE) NOT COMPATIBLE with default mode (PETSC_MEMORY_ACCESS_READ), serializing then clearing (0) dependencies
+[0] <device> PetscDeviceContextMarkIntentFromID_Private(): dctx 12 (global root) - obj 19 (memory allocation): dependency list is empty, creating new leaf with intent PETSC_MEMORY_ACCESS_WRITE
+[0] <device> PetscDeviceContextMarkIntentFromID_Private(): dctx 12 (global root) - obj 19 (memory set): new mode (PETSC_MEMORY_ACCESS_WRITE) NOT COMPATIBLE with old mode (PETSC_MEMORY_ACCESS_WRITE), serializing then clearing (1) dependency
+[0] <device> PetscDeviceContextMarkIntentFromID_Private(): dctx 12 (global root) - obj 19 (memory set): found old self as dependency, skipping
+[0] <device> PetscDeviceContextMarkIntentFromID_Private(): dctx 12 (global root) - obj 19 (memory set): moving last write dependency (intent PETSC_MEMORY_ACCESS_WRITE)
+[0] <device> PetscDeviceContextMarkIntentFromID_Private(): dctx 12 (global root) - obj 19 (memory set): dependency list is empty, creating new leaf with intent PETSC_MEMORY_ACCESS_WRITE
+[0] <device> PetscDeviceContextMarkIntentFromID_Private(): dctx 12 (global root) - obj 19 (memory copy (src)): new mode (PETSC_MEMORY_ACCESS_READ) NOT COMPATIBLE with old mode (PETSC_MEMORY_ACCESS_WRITE), serializing then clearing (1) dependency
+[0] <device> PetscDeviceContextMarkIntentFromID_Private(): dctx 12 (global root) - obj 19 (memory copy (src)): found old self as dependency, skipping
+[0] <device> PetscDeviceContextMarkIntentFromID_Private(): dctx 12 (global root) - obj 19 (memory copy (src)): moving last write dependency (intent PETSC_MEMORY_ACCESS_WRITE)
+[0] <device> PetscDeviceContextMarkIntentFromID_Private(): dctx 12 (global root) - obj 19 (memory copy (src)): dependency list is empty, creating new leaf with intent PETSC_MEMORY_ACCESS_READ
+[0] <device> PetscDeviceContextMarkIntentFromID_Private(): dctx 12 (global root) - obj 20 (memory copy (dest)): new mode (PETSC_MEMORY_ACCESS_WRITE) NOT COMPATIBLE with default mode (PETSC_MEMORY_ACCESS_READ), serializing then clearing (0) dependencies
+[0] <device> PetscDeviceContextMarkIntentFromID_Private(): dctx 12 (global root) - obj 20 (memory copy (dest)): dependency list is empty, creating new leaf with intent PETSC_MEMORY_ACCESS_WRITE
+[0] <device> PetscDeviceContextMarkIntentFromID_Private(): dctx 12 (global root) - obj 20 (memory deallocation): new mode (PETSC_MEMORY_ACCESS_WRITE) NOT COMPATIBLE with default mode (PETSC_MEMORY_ACCESS_READ), serializing then clearing (0) dependencies
+[0] <device> PetscDeviceContextMarkIntentFromID_Private(): dctx 12 (global root) - obj 20 (memory deallocation): dependency list is empty, creating new leaf with intent PETSC_MEMORY_ACCESS_WRITE
+[0] <device> PetscDeviceContextMarkIntentFromID_Private(): dctx 12 (global root) - obj 19 (memory deallocation): new mode (PETSC_MEMORY_ACCESS_WRITE) NOT COMPATIBLE with default mode (PETSC_MEMORY_ACCESS_READ), serializing then clearing (0) dependencies
+[0] <device> PetscDeviceContextMarkIntentFromID_Private(): dctx 12 (global root) - obj 19 (memory deallocation): dependency list is empty, creating new leaf with intent PETSC_MEMORY_ACCESS_WRITE
+[0] <device> PetscDeviceContextWaitForContext(): dctx 21 waiting on dctx 12
+[0] <device> PetscDeviceContextWaitForContext(): dctx 22 waiting on dctx 12
+[0] <device> PetscDeviceContextForkWithStreamType(): Forked 2 children from parent 12 with IDs: 21, 22
+[0] <device> PetscDeviceContextMarkIntentFromID_Private(): dctx 21 (unnamed) - obj 23 (memory allocation): new mode (PETSC_MEMORY_ACCESS_WRITE) NOT COMPATIBLE with default mode (PETSC_MEMORY_ACCESS_READ), serializing then clearing (0) dependencies
+[0] <device> PetscDeviceContextMarkIntentFromID_Private(): dctx 21 (unnamed) - obj 23 (memory allocation): dependency list is empty, creating new leaf with intent PETSC_MEMORY_ACCESS_WRITE
+[0] <device> PetscDeviceContextMarkIntentFromID_Private(): dctx 21 (unnamed) - obj 23 (memory deallocation): new mode (PETSC_MEMORY_ACCESS_WRITE) NOT COMPATIBLE with old mode (PETSC_MEMORY_ACCESS_WRITE), serializing then clearing (1) dependency
+[0] <device> PetscDeviceContextMarkIntentFromID_Private(): dctx 21 (unnamed) - obj 23 (memory deallocation): found old self as dependency, skipping
+[0] <device> PetscDeviceContextMarkIntentFromID_Private(): dctx 21 (unnamed) - obj 23 (memory deallocation): moving last write dependency (intent PETSC_MEMORY_ACCESS_WRITE)
+[0] <device> PetscDeviceContextMarkIntentFromID_Private(): dctx 21 (unnamed) - obj 23 (memory deallocation): dependency list is empty, creating new leaf with intent PETSC_MEMORY_ACCESS_WRITE
+[0] <device> PetscDeviceContextMarkIntentFromID_Private(): dctx 22 (unnamed) - obj 24 (memory allocation): new mode (PETSC_MEMORY_ACCESS_WRITE) NOT COMPATIBLE with default mode (PETSC_MEMORY_ACCESS_READ), serializing then clearing (0) dependencies
+[0] <device> PetscDeviceContextMarkIntentFromID_Private(): dctx 22 (unnamed) - obj 24 (memory allocation): dependency list is empty, creating new leaf with intent PETSC_MEMORY_ACCESS_WRITE
+[0] <device> PetscDeviceContextMarkIntentFromID_Private(): dctx 22 (unnamed) - obj 24 (memory deallocation): new mode (PETSC_MEMORY_ACCESS_WRITE) NOT COMPATIBLE with old mode (PETSC_MEMORY_ACCESS_WRITE), serializing then clearing (1) dependency
+[0] <device> PetscDeviceContextMarkIntentFromID_Private(): dctx 22 (unnamed) - obj 24 (memory deallocation): found old self as dependency, skipping
+[0] <device> PetscDeviceContextMarkIntentFromID_Private(): dctx 22 (unnamed) - obj 24 (memory deallocation): moving last write dependency (intent PETSC_MEMORY_ACCESS_WRITE)
+[0] <device> PetscDeviceContextMarkIntentFromID_Private(): dctx 22 (unnamed) - obj 24 (memory deallocation): dependency list is empty, creating new leaf with intent PETSC_MEMORY_ACCESS_WRITE
+[0] <device> PetscDeviceContextMarkIntentFromID_Private(): dctx 21 (unnamed) - obj 25 (memory allocation): new mode (PETSC_MEMORY_ACCESS_WRITE) NOT COMPATIBLE with default mode (PETSC_MEMORY_ACCESS_READ), serializing then clearing (0) dependencies
+[0] <device> PetscDeviceContextMarkIntentFromID_Private(): dctx 21 (unnamed) - obj 25 (memory allocation): dependency list is empty, creating new leaf with intent PETSC_MEMORY_ACCESS_WRITE
+[0] <device> PetscDeviceContextMarkIntentFromID_Private(): dctx 22 (unnamed) - obj 25 (memory deallocation): new mode (PETSC_MEMORY_ACCESS_WRITE) NOT COMPATIBLE with old mode (PETSC_MEMORY_ACCESS_WRITE), serializing then clearing (1) dependency
+[0] <device> PetscDeviceContextMarkIntentFromID_Private(): dctx 22 (unnamed) - obj 25 (memory deallocation): moving last write dependency (intent PETSC_MEMORY_ACCESS_WRITE)
+[0] <device> PetscDeviceContextMarkIntentFromID_Private(): dctx 22 (unnamed) - obj 25 (memory deallocation): dependency list is empty, creating new leaf with intent PETSC_MEMORY_ACCESS_WRITE
+[0] <device> PetscDeviceContextMarkIntentFromID_Private(): dctx 21 (unnamed) - obj 26 (memory allocation): new mode (PETSC_MEMORY_ACCESS_WRITE) NOT COMPATIBLE with default mode (PETSC_MEMORY_ACCESS_READ), serializing then clearing (0) dependencies
+[0] <device> PetscDeviceContextMarkIntentFromID_Private(): dctx 21 (unnamed) - obj 26 (memory allocation): dependency list is empty, creating new leaf with intent PETSC_MEMORY_ACCESS_WRITE
+[0] <device> PetscDeviceContextMarkIntentFromID_Private(): dctx 22 (unnamed) - obj 26 (memory set): new mode (PETSC_MEMORY_ACCESS_WRITE) NOT COMPATIBLE with old mode (PETSC_MEMORY_ACCESS_WRITE), serializing then clearing (1) dependency
+[0] <device> PetscDeviceContextMarkIntentFromID_Private(): dctx 22 (unnamed) - obj 26 (memory set): moving last write dependency (intent PETSC_MEMORY_ACCESS_WRITE)
+[0] <device> PetscDeviceContextMarkIntentFromID_Private(): dctx 22 (unnamed) - obj 26 (memory set): dependency list is empty, creating new leaf with intent PETSC_MEMORY_ACCESS_WRITE
+[0] <device> PetscDeviceContextMarkIntentFromID_Private(): dctx 22 (unnamed) - obj 26 (memory deallocation): new mode (PETSC_MEMORY_ACCESS_WRITE) NOT COMPATIBLE with default mode (PETSC_MEMORY_ACCESS_READ), serializing then clearing (0) dependencies
+[0] <device> PetscDeviceContextMarkIntentFromID_Private(): dctx 22 (unnamed) - obj 26 (memory deallocation): dependency list is empty, creating new leaf with intent PETSC_MEMORY_ACCESS_WRITE
+[0] <device> PetscDeviceContextWaitForContext(): dctx 12 waiting on dctx 21
+[0] <device> PetscDeviceContextWaitForContext(): dctx 12 waiting on dctx 22
+[0] <device> PetscDeviceContextJoin(): Joined 2 ctxs to ctx 12, mode destroy with IDs: 21, 22
+EXIT_SUCCESS
+[0] <device> operator()(): Destroying global PetscDeviceContext with device type IMPL

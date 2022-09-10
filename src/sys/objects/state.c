@@ -216,6 +216,8 @@ PetscErrorCode PetscObjectComposedDataIncreaseScalarstar(PetscObject obj) {
 @*/
 PetscErrorCode PetscObjectGetId(PetscObject obj, PetscObjectId *id) {
   PetscFunctionBegin;
+  PetscValidHeader(obj, 1);
+  PetscValidIntPointer(id, 2);
   *id = obj->id;
   PetscFunctionReturn(0);
 }
@@ -240,7 +242,12 @@ PetscErrorCode PetscObjectGetId(PetscObject obj, PetscObjectId *id) {
 .seealso: `PetscObjectStateGet()`, `PetscObjectGetId()`
 @*/
 PetscErrorCode PetscObjectCompareId(PetscObject obj, PetscObjectId id, PetscBool *eq) {
+  PetscObjectId oid;
+
   PetscFunctionBegin;
-  *eq = (id == obj->id) ? PETSC_TRUE : PETSC_FALSE;
+  PetscValidHeader(obj, 1);
+  PetscValidBoolPointer(eq, 3);
+  PetscCall(PetscObjectGetId(obj, &oid));
+  *eq = (id == oid) ? PETSC_TRUE : PETSC_FALSE;
   PetscFunctionReturn(0);
 }

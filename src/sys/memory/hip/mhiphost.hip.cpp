@@ -1,5 +1,5 @@
-#include <petscsys.h>    /*I   "petscsys.h"   I*/
-#include <petscdevice.h> /* Needed to provide PetscCallHIP() */
+#include <petscsys.h>        /*I   "petscsys.h"   I*/
+#include <petscdevice_hip.h> /* Needed to provide PetscCallHIP() */
 
 PETSC_EXTERN PetscErrorCode PetscHIPHostMalloc(size_t a, PetscBool clear, int lineno, const char function[], const char filename[], void **result) {
   PetscCallHIP(hipHostMalloc(result, a));

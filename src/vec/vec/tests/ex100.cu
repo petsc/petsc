@@ -2,7 +2,7 @@
 static char help[] = "Tests I/O of vectors for different data formats (binary,HDF5)\n\n";
 
 #include <petscvec.h>
-#include <petscdevice.h>
+#include <petscdevice_cuda.h>
 #include <petscviewerhdf5.h>
 
 /* Note:  Most applications would not read and write a vector within
