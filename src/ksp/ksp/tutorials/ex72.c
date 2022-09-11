@@ -552,12 +552,12 @@ int main(int argc, char **args) {
 
    testset:
       suffix: 12
-      requires: matlab
+      requires: datafilespath matlab
       args: -pc_type lu -pc_factor_mat_solver_type matlab -f0 ${DATAFILESPATH}/matrices/arco1
 
    testset:
       suffix: 13
-      requires: lusol
+      requires: datafilespath lusol
       args: -f0 ${DATAFILESPATH}/matrices/arco1
       args: -mat_type lusol -pc_type lu
 

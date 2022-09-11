@@ -120,7 +120,7 @@ PetscErrorCode PetscBinaryRead(int fd, void *p, int n, int *dummy, PetscDataType
     does byte swapping to work on all machines.
 */
 PetscErrorCode PetscBinaryWrite(int fd, const void *p, int n, PetscDataType type) {
-  int   maxblock, wsize, err, retv = 0;
+  int   maxblock, wsize, err = 0, retv = 0;
   char *pp   = (char *)p;
   int   ntmp = n;
   void *ptmp = (void *)p;
