@@ -9,6 +9,11 @@
 #include <string>
 #include <sstream> // std::ostringstream
 
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wgnu-zero-variadic-macro-arguments"
+#endif
+
 // ==========================================================================================
 // PetscEvent
 // ==========================================================================================
@@ -514,3 +519,7 @@ PetscErrorCode PetscDeviceContextMarkIntentFromID(PetscDeviceContext dctx, Petsc
   PetscCall(PetscLogEventEnd(DCONTEXT_Mark, dctx, nullptr, nullptr, nullptr));
   PetscFunctionReturn(0);
 }
+
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
