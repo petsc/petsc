@@ -2236,6 +2236,14 @@ int main(int argc, char **argv) {
             -pc_type svd
 
     test:
+      # -bd_dm_refine 3 -dm_refine_volume_limit_pre 0.004 -convest_num_refine 2 gives L_2 convergence rate: []
+      suffix: 3d_cryer_sconv
+      args: -bd_dm_refine 1 -dm_refine_volume_limit_pre 0.00666667 \
+            -ts_dt 1e-5 -dt_initial 1e-5 -ts_max_steps 2 \
+            -ts_convergence_estimate -ts_convergence_temporal 0 -convest_num_refine 1 \
+            -pc_type lu -pc_factor_shift_type nonzero
+
+    test:
       # Displacement and Pressure converge. The analytic expression for trace strain is inaccurate at the origin
       # -bd_dm_refine 3 -ref_limit 0.00666667 -ts_max_steps 5 -convest_num_refine 2 gives L_2 convergence rate: [0.47, -0.43, 1.5]
       suffix: 3d_cryer_tconv
