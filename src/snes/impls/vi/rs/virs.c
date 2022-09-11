@@ -13,6 +13,8 @@
    Output parameter:
 .  inact - inactive set index set
 
+   Level: advanced
+
 .seealso: `SNESVINEWTONRSLS`
 @*/
 PetscErrorCode SNESVIGetInactiveSet(SNES snes, IS *inact) {
@@ -183,6 +185,8 @@ PetscErrorCode DMDestroy_SNESVI(DM_SNESVI *dmsnesvi) {
     Input Parameters:
 +   dm - the `DM` object
 -   inactive - an `IS` indicating which points are currently not active
+
+    Level: intermediate
 
 .seealso: `SNESVINEWTONRSLS`, `SNESVIGetInactiveSet()`
 @*/
