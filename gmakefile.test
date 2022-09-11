@@ -193,7 +193,7 @@ endif
 
 #   This is a hack to fix a broken gfortran.
 define GFORTRAN_DEP_CLEANUP
-  if test -e "$(@:%.o=%.d)" && head -1 "$(@:%.o=%.d)" | fgrep -q -v : ; then\
+  if test -e "$(@:%.o=%.d)" && head -1 "$(@:%.o=%.d)" | grep -F -q -v : ; then\
     echo "$(@): \\" > $(@:%.o=%.dtemp) ; \
     tr '\n' '@' < $(@:%.o=%.d) | cut -d: -f2- | tr '@' '\n' >> $(@:%.o=%.dtemp) ; \
     mv $(@:%.o=%.dtemp) $(@:%.o=%.d); \
