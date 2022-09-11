@@ -3684,10 +3684,10 @@ PetscErrorCode MatLoad_SeqBAIJ(Mat mat, PetscViewer viewer) {
 
    Specify the preallocated storage with either nz or nnz (not both).
    Set nz = `PETSC_DEFAULT` and nnz = NULL for PETSc to control dynamic memory
-   allocation.  See Users-Manual: ch_mat for details.
+   allocation.  See [Sparse Matrices](sec_matsparse) for details.
    matrices.
 
-.seealso: `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatCreateBAIJ()`
+.seealso: [Sparse Matrices](sec_matsparse), `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatCreateBAIJ()`
 @*/
 PetscErrorCode MatCreateSeqBAIJ(MPI_Comm comm, PetscInt bs, PetscInt m, PetscInt n, PetscInt nz, const PetscInt nnz[], Mat *A) {
   PetscFunctionBegin;
@@ -3735,9 +3735,9 @@ PetscErrorCode MatCreateSeqBAIJ(MPI_Comm comm, PetscInt bs, PetscInt m, PetscInt
 
    Specify the preallocated storage with either nz or nnz (not both).
    Set nz = `PETSC_DEFAULT` and nnz = NULL for PETSc to control dynamic memory
-   allocation.  See Users-Manual: ch_mat for details.
+   allocation.  See [Sparse Matrices](sec_matsparse) for details.
 
-.seealso: `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatCreateBAIJ()`, `MatGetInfo()`
+.seealso: [Sparse Matrices](sec_matsparse), `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatCreateBAIJ()`, `MatGetInfo()`
 @*/
 PetscErrorCode MatSeqBAIJSetPreallocation(Mat B, PetscInt bs, PetscInt nz, const PetscInt nnz[]) {
   PetscFunctionBegin;

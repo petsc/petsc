@@ -1925,7 +1925,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqSBAIJ(Mat B) {
    Notes:
    Specify the preallocated storage with either nz or nnz (not both).
    Set nz = `PETSC_DEFAULT` and nnz = NULL for PETSc to control dynamic memory
-   allocation.  See Users-Manual: ch_mat for details.
+   allocation.  See [Sparse Matrices](sec_matsparse) for details.
 
    You can call `MatGetInfo()` to get information on how effective the preallocation was;
    for example the fields mallocs,nz_allocated,nz_used,nz_unneeded;
@@ -1934,7 +1934,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqSBAIJ(Mat B) {
 
    If the nnz parameter is given then the nz parameter is ignored
 
-.seealso: `MATSEQSBAIJ`, `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatCreateSBAIJ()`
+.seealso: [Sparse Matrices](sec_matsparse), `MATSEQSBAIJ`, `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatCreateSBAIJ()`
 @*/
 PetscErrorCode MatSeqSBAIJSetPreallocation(Mat B, PetscInt bs, PetscInt nz, const PetscInt nnz[]) {
   PetscFunctionBegin;
@@ -2018,11 +2018,11 @@ PetscErrorCode MatSeqSBAIJSetPreallocationCSR(Mat B, PetscInt bs, const PetscInt
 
    Specify the preallocated storage with either nz or nnz (not both).
    Set nz = `PETSC_DEFAULT` and nnz = NULL for PETSc to control dynamic memory
-   allocation.  See Users-Manual: ch_mat for details.
+   allocation.  See [Sparse Matrices](sec_matsparse) for details.
 
    If the nnz parameter is given then the nz parameter is ignored
 
-.seealso: `MATSEQSBAIJ`, `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatCreateSBAIJ()`
+.seealso: [Sparse Matrices](sec_matsparse), `MATSEQSBAIJ`, `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatCreateSBAIJ()`
 @*/
 PetscErrorCode MatCreateSeqSBAIJ(MPI_Comm comm, PetscInt bs, PetscInt m, PetscInt n, PetscInt nz, const PetscInt nnz[], Mat *A) {
   PetscFunctionBegin;
