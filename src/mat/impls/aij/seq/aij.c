@@ -4609,7 +4609,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJ(Mat B) {
   b->keepnonzeropattern = PETSC_FALSE;
 
   PetscCall(PetscObjectChangeTypeName((PetscObject)B, MATSEQAIJ));
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
+#if defined(PETSC_HAVE_MATLAB)
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "PetscMatlabEnginePut_C", MatlabEnginePut_SeqAIJ));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "PetscMatlabEngineGet_C", MatlabEngineGet_SeqAIJ));
 #endif

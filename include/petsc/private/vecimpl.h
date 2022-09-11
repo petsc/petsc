@@ -300,7 +300,7 @@ PETSC_INTERN PetscErrorCode VecReciprocal_Default(Vec);
 PETSC_INTERN PetscErrorCode VecStrideSubSetGather_Default(Vec, PetscInt, const PetscInt[], const PetscInt[], Vec, InsertMode);
 PETSC_INTERN PetscErrorCode VecStrideSubSetScatter_Default(Vec, PetscInt, const PetscInt[], const PetscInt[], Vec, InsertMode);
 
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
+#if defined(PETSC_HAVE_MATLAB)
 PETSC_EXTERN PetscErrorCode VecMatlabEnginePut_Default(PetscObject, void *);
 PETSC_EXTERN PetscErrorCode VecMatlabEngineGet_Default(PetscObject, void *);
 #endif

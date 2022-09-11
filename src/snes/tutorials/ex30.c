@@ -922,7 +922,7 @@ PetscErrorCode ReportParams(Parameter *param, GridInfo *grid) {
     }
 
     if (param->output_to_file) {
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
+#if defined(PETSC_HAVE_MATLAB)
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Output Destination:       Mat file \"%s\"\n", param->filename));
 #else
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Output Destination:       PETSc binary file \"%s\"\n", param->filename));
@@ -1039,7 +1039,7 @@ PetscErrorCode DoOutput(SNES snes, PetscInt its) {
     PetscCall(VecAssemblyEnd(pars));
 
     /* create viewer */
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
+#if defined(PETSC_HAVE_MATLAB)
     PetscCall(PetscViewerMatlabOpen(PETSC_COMM_WORLD, param->filename, FILE_MODE_WRITE, &viewer));
 #else
     PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, param->filename, FILE_MODE_WRITE, &viewer));

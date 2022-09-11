@@ -6,7 +6,7 @@ PETSC_EXTERN PetscErrorCode PFCreate_Constant(PF, void *);
 PETSC_EXTERN PetscErrorCode PFCreate_String(PF, void *);
 PETSC_EXTERN PetscErrorCode PFCreate_Quick(PF, void *);
 PETSC_EXTERN PetscErrorCode PFCreate_Identity(PF, void *);
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
+#if defined(PETSC_HAVE_MATLAB)
 PETSC_EXTERN PetscErrorCode PFCreate_Matlab(PF, void *);
 #endif
 
@@ -28,7 +28,7 @@ PetscErrorCode PFRegisterAll(void) {
   PetscCall(PFRegister(PFSTRING, PFCreate_String));
   PetscCall(PFRegister(PFQUICK, PFCreate_Quick));
   PetscCall(PFRegister(PFIDENTITY, PFCreate_Identity));
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
+#if defined(PETSC_HAVE_MATLAB)
   PetscCall(PFRegister(PFMATLAB, PFCreate_Matlab));
 #endif
   PetscFunctionReturn(0);

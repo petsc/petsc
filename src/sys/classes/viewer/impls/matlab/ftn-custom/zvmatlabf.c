@@ -7,7 +7,7 @@
 #define petscviewermatlabopen_     petscviewermatlabopen
 #endif
 
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
+#if defined(PETSC_HAVE_MATLAB)
 PETSC_EXTERN void petscviewermatlabopen_(MPI_Comm *comm,char* name,PetscFileMode *type,
                            PetscViewer *binv,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {

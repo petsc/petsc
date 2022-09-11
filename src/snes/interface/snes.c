@@ -4141,7 +4141,7 @@ PetscErrorCode SNESSetConvergenceHistory(SNES snes, PetscReal a[], PetscInt its[
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
+#if defined(PETSC_HAVE_MATLAB)
 #include <engine.h> /* MATLAB include file */
 #include <mex.h>    /* MATLAB include file */
 

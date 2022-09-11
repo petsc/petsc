@@ -5,7 +5,7 @@
 
 #include <petsc/private/dmdaimpl.h> /*I   "petscdmda.h"   I*/
 
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
+#if defined(PETSC_HAVE_MATLAB)
 #include <mat.h> /* MATLAB include file */
 
 PetscErrorCode DMView_DA_Matlab(DM da, PetscViewer viewer) {

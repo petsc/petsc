@@ -492,7 +492,7 @@ PetscErrorCode VecView_Seq_Binary(Vec xin, PetscViewer viewer) {
   return VecView_Binary(xin, viewer);
 }
 
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
+#if defined(PETSC_HAVE_MATLAB)
 #include <petscmatlab.h>
 #include <mat.h> /* MATLAB include file */
 PetscErrorCode VecView_Seq_Matlab(Vec vec, PetscViewer viewer) {
@@ -514,7 +514,7 @@ PETSC_EXTERN PetscErrorCode VecView_Seq(Vec xin, PetscViewer viewer) {
 #if defined(PETSC_HAVE_MATHEMATICA)
   PetscBool ismathematica;
 #endif
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
+#if defined(PETSC_HAVE_MATLAB)
   PetscBool ismatlab;
 #endif
 #if defined(PETSC_HAVE_HDF5)
@@ -536,7 +536,7 @@ PETSC_EXTERN PetscErrorCode VecView_Seq(Vec xin, PetscViewer viewer) {
 #if defined(PETSC_HAVE_HDF5)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERHDF5, &ishdf5));
 #endif
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
+#if defined(PETSC_HAVE_MATLAB)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERMATLAB, &ismatlab));
 #endif
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERGLVIS, &isglvis));
@@ -562,7 +562,7 @@ PETSC_EXTERN PetscErrorCode VecView_Seq(Vec xin, PetscViewer viewer) {
   } else if (isadios) {
     PetscCall(VecView_MPI_ADIOS(xin, viewer)); /* Reusing VecView_MPI_ADIOS ... don't want code duplication*/
 #endif
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
+#if defined(PETSC_HAVE_MATLAB)
   } else if (ismatlab) {
     PetscCall(VecView_Seq_Matlab(xin, viewer));
 #endif
@@ -862,7 +862,7 @@ PetscErrorCode VecCreate_Seq_Private(Vec v, const PetscScalar array[]) {
 
   PetscCall(PetscLayoutSetUp(v->map));
   PetscCall(PetscObjectChangeTypeName((PetscObject)v, VECSEQ));
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
+#if defined(PETSC_HAVE_MATLAB)
   PetscCall(PetscObjectComposeFunction((PetscObject)v, "PetscMatlabEnginePut_C", VecMatlabEnginePut_Default));
   PetscCall(PetscObjectComposeFunction((PetscObject)v, "PetscMatlabEngineGet_C", VecMatlabEngineGet_Default));
 #endif

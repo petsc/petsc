@@ -12,7 +12,7 @@
 /*
    This allows the DMDA vectors to properly tell MATLAB their dimensions
 */
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
+#if defined(PETSC_HAVE_MATLAB)
 #include <engine.h> /* MATLAB include file */
 #include <mex.h>    /* MATLAB include file */
 static PetscErrorCode VecMatlabEnginePut_DA2d(PetscObject obj, void *mengine) {
@@ -57,7 +57,7 @@ PetscErrorCode DMCreateLocalVector_DA(DM da, Vec *g) {
     PetscCall(VecBindToCPU(*g, PETSC_TRUE));
   }
   PetscCall(VecSetDM(*g, da));
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
+#if defined(PETSC_HAVE_MATLAB)
   if (dd->w == 1 && da->dim == 2) PetscCall(PetscObjectComposeFunction((PetscObject)*g, "PetscMatlabEnginePut_C", VecMatlabEnginePut_DA2d));
 #endif
   PetscFunctionReturn(0);

@@ -91,11 +91,20 @@ class Configure(config.package.Package):
           self.addMakeMacro('MATLAB_MEX',self.mex)
           self.addMakeMacro('MATLAB_COMMAND',self.executable)
           self.addDefine('MATLAB_COMMAND','"'+self.executable+'"')
+
+          if 'with-matlab-engine-lib' in self.framework.clArgDB:
+            self.lib = self.argDB['with-matlab-engine-lib']
+          elif 'with-matlab-lib' in self.framework.clArgDB:
+            self.lib = self.argDB['with-matlab-lib']
+          else:
+            self.lib = [self.setCompilers.CSharedLinkerFlag+os.path.join(self.matlab,'bin',self.matlab_arch),'-L'+os.path.join(self.matlab,'bin',self.matlab_arch),'-leng','-lmex','-lmx','-lmat']
+
           self.found = 1
           if not 'with-matlab-socket' in self.argDB or self.argDB['with-matlab-socket']:
             self.addDefine('USE_MATLAB_SOCKET','1')
             self.addMakeMacro('MATLAB_SOCKET','yes')
           return
+          self.framework.packages.append(self)
         else:
           self.log.write('WARNING:Unable to use Matlab because cannot locate Matlab external libraries at '+os.path.join(matlab,'extern','lib')+'\n')
     raise RuntimeError('Could not find a functional Matlab\nRun with --with-matlab-dir=Matlabrootdir if you know where it is\n')
