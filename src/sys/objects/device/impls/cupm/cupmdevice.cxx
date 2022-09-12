@@ -177,29 +177,7 @@ PETSC_CXX_COMPAT_DEFN(PetscErrorCode Device<T>::DeviceInternal::CUPMAwareMPI_(bo
   PetscCallCUPM(cupmDeviceSynchronize());
   PetscCall(PetscPushSignalHandler(cupmSignalHandler, nullptr));
   cupmMPIAwareJumpBufferSet = true;
-  if (setjmp(cupmMPIAwareJumpBuffer)) {
-    // if a segv was triggered in the MPI_Allreduce below, it is very likely due to MPI not
-    // being GPU-aware
-
-    // control flow up until this point:
-    // 1. CUPMDevice<T>::CUPMDeviceInternal::MPICUPMAware__()
-    // 2. MPI_Allreduce
-    // 3. SIGSEGV
-    // 4. PetscSignalHandler_Private
-    // 5. cupmSignalHandler (lambda function)
-    // 6. here
-    // PetscSignalHandler_Private starts with PetscFunctionBegin and is pushed onto the stack
-    // so we must undo this. This would be most naturally done in cupmSignalHandler, however
-    // the C/C++ standard dictates:
-    //
-    // After invoking longjmp(), non-volatile-qualified local objects should not be accessed if
-    // their values could have changed since the invocation of setjmp(). Their value in this
-    // case is considered indeterminate, and accessing them is undefined behavior.
-    //
-    // so for safety (since we don't know what PetscStackPop may try to read/declare) we do it
-    // outside of the longjmp control flow
-    PetscStackPop;
-  } else if (!MPI_Allreduce(dbuf, dbuf + 1, 1, MPI_INT, MPI_SUM, PETSC_COMM_SELF)) *awareness = true;
+  if (!setjmp(cupmMPIAwareJumpBuffer) && !MPI_Allreduce(dbuf, dbuf + 1, 1, MPI_INT, MPI_SUM, PETSC_COMM_SELF)) *awareness = true;
   cupmMPIAwareJumpBufferSet = false;
   PetscCall(PetscPopSignalHandler());
   PetscCallCUPM(cupmFree(dbuf));
