@@ -328,7 +328,7 @@ PETSC_NODISCARD PetscErrorCode MemoryBlock<T, A, S>::clear_(const stream_type *s
 // default constructor, allocates memory immediately
 template <typename T, typename A, typename S>
 template <typename U>
-MemoryBlock<T, A, S>::MemoryBlock(allocator_type *alloc, size_type s, const device::StreamBase<U> *stream) noexcept : size_(s), allocator_(alloc) {
+MemoryBlock<T, A, S>::MemoryBlock(allocator_type *alloc, size_type s, const device::StreamBase<U> *stream) noexcept : allocator_(alloc), size_(s) {
   PetscFunctionBegin;
   PetscCallAbort(PETSC_COMM_SELF, alloc->allocate(&mem_, s, stream));
   PetscAssertAbort(mem_, PETSC_COMM_SELF, PETSC_ERR_MEM, "Failed to allocate memory block of size %zu", s);
