@@ -2,7 +2,6 @@
 
 LOCDIR          = src/dm/tutorials/
 MANSEC          = DM
-SUBMANSEC       = DMDA
 CLEANFILES      = output_file output_file.info swarm_ex[1-3]
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
