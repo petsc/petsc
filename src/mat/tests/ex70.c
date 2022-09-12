@@ -729,10 +729,20 @@ int main(int argc, char **args) {
     PetscCall(MatProductSetFromOptions(D));
     PetscCall(MatProductSymbolic(D));
     PetscCall(MatProductNumeric(C));
+    PetscCall(MatMatMultEqual(A, B, C, 10, &flg));
+    if (!flg) {
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error with Normal (AB != C)\n"));
+      PetscCall(MatView(A, NULL));
+      PetscCall(MatView(B, NULL));
+      PetscCall(MatView(C, NULL));
+    }
     PetscCall(MatProductNumeric(D));
     PetscCall(MatMatMultEqual(AtA, B, D, 10, &flg));
     if (!flg) {
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error with Normal (2)\n"));
       PetscCall(MatMatMult(AtA, C, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &T));
+      PetscCall(MatView(D, NULL));
+      PetscCall(MatView(T, NULL));
       PetscCall(MatAXPY(T, -1.0, D, SAME_NONZERO_PATTERN));
       PetscCall(MatView(T, NULL));
       PetscCall(MatDestroy(&T));

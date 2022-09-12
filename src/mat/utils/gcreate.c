@@ -76,6 +76,7 @@ PetscErrorCode MatCreate(MPI_Comm comm, Mat *A) {
   PetscCall(PetscLayoutCreate(comm, &B->rmap));
   PetscCall(PetscLayoutCreate(comm, &B->cmap));
   PetscCall(PetscStrallocpy(VECSTANDARD, &B->defaultvectype));
+  PetscCall(PetscStrallocpy(PETSCRANDER48, &B->defaultrandtype));
 
   B->symmetric                   = PETSC_BOOL3_UNKNOWN;
   B->hermitian                   = PETSC_BOOL3_UNKNOWN;
@@ -376,6 +377,7 @@ PetscErrorCode MatHeaderMerge(Mat A, Mat *C) {
   PetscTryTypeMethod(A, destroy);
 
   PetscCall(PetscFree(A->defaultvectype));
+  PetscCall(PetscFree(A->defaultrandtype));
   PetscCall(PetscLayoutDestroy(&A->rmap));
   PetscCall(PetscLayoutDestroy(&A->cmap));
   PetscCall(PetscFunctionListDestroy(&((PetscObject)A)->qlist));

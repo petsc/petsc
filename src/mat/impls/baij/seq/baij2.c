@@ -233,6 +233,7 @@ PetscErrorCode MatDestroySubMatrices_SeqBAIJ(PetscInt n, Mat *mat[]) {
         PetscCall((*submatj->destroy)(C));
         PetscCall(MatDestroySubMatrix_Private(submatj));
         PetscCall(PetscFree(C->defaultvectype));
+        PetscCall(PetscFree(C->defaultrandtype));
         PetscCall(PetscLayoutDestroy(&C->rmap));
         PetscCall(PetscLayoutDestroy(&C->cmap));
         PetscCall(PetscHeaderDestroy(&C));

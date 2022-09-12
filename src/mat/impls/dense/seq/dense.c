@@ -2705,18 +2705,18 @@ PETSC_INTERN PetscErrorCode MatGetColumnReductions_SeqDense(Mat A, PetscInt type
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatSetRandom_SeqDense(Mat x, PetscRandom rctx) {
+PetscErrorCode MatSetRandom_SeqDense(Mat x, PetscRandom rctx) {
   PetscScalar *a;
   PetscInt     lda, m, n, i, j;
 
   PetscFunctionBegin;
   PetscCall(MatGetSize(x, &m, &n));
   PetscCall(MatDenseGetLDA(x, &lda));
-  PetscCall(MatDenseGetArray(x, &a));
+  PetscCall(MatDenseGetArrayWrite(x, &a));
   for (j = 0; j < n; j++) {
     for (i = 0; i < m; i++) PetscCall(PetscRandomGetValue(rctx, a + j * lda + i));
   }
-  PetscCall(MatDenseRestoreArray(x, &a));
+  PetscCall(MatDenseRestoreArrayWrite(x, &a));
   PetscFunctionReturn(0);
 }
 
@@ -3166,6 +3166,9 @@ PetscErrorCode MatDenseRestoreSubMatrix_SeqDense(Mat A, Mat *v) {
   a->matinuse = 0;
   PetscCall(MatDenseResetArray(a->cmat));
   if (v) *v = NULL;
+#if defined(PETSC_HAVE_CUDA)
+  A->offloadmask = PETSC_OFFLOAD_CPU;
+#endif
   PetscFunctionReturn(0);
 }
 

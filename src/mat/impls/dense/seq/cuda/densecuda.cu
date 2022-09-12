@@ -1327,6 +1327,8 @@ static PetscErrorCode MatDenseGetSubMatrix_SeqDenseCUDA(Mat A, PetscInt rbegin, 
     PetscCall(MatDenseCUDAPlaceArray(a->cmat, dA->d_v + rbegin + (size_t)cbegin * a->lda));
   }
   PetscCall(MatDenseSetLDA(a->cmat, a->lda));
+  /* Place CPU array if present but not copy any data */
+  a->cmat->offloadmask = PETSC_OFFLOAD_GPU;
   if (a->v) PetscCall(MatDensePlaceArray(a->cmat, a->v + rbegin + (size_t)cbegin * a->lda));
   a->cmat->offloadmask = A->offloadmask;
   a->matinuse          = cbegin + 1;
@@ -1335,8 +1337,9 @@ static PetscErrorCode MatDenseGetSubMatrix_SeqDenseCUDA(Mat A, PetscInt rbegin, 
 }
 
 static PetscErrorCode MatDenseRestoreSubMatrix_SeqDenseCUDA(Mat A, Mat *v) {
-  Mat_SeqDense *a    = (Mat_SeqDense *)A->data;
-  PetscBool     copy = PETSC_FALSE, reset;
+  Mat_SeqDense    *a    = (Mat_SeqDense *)A->data;
+  PetscBool        copy = PETSC_FALSE, reset;
+  PetscOffloadMask suboff;
 
   PetscFunctionBegin;
   PetscCheck(a->matinuse, PETSC_COMM_SELF, PETSC_ERR_ORDER, "Need to call MatDenseGetSubMatrix() first");
@@ -1344,7 +1347,8 @@ static PetscErrorCode MatDenseRestoreSubMatrix_SeqDenseCUDA(Mat A, Mat *v) {
   PetscCheck(*v == a->cmat, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Not the matrix obtained from MatDenseGetSubMatrix()");
   a->matinuse = 0;
   reset       = a->v ? PETSC_TRUE : PETSC_FALSE;
-  if (a->cmat->offloadmask == PETSC_OFFLOAD_CPU && !a->v) {
+  suboff      = a->cmat->offloadmask; /* calls to ResetArray may change it, so save it here */
+  if (suboff == PETSC_OFFLOAD_CPU && !a->v) {
     copy = PETSC_TRUE;
     PetscCall(MatSeqDenseSetPreallocation(A, NULL));
   }
@@ -1352,7 +1356,7 @@ static PetscErrorCode MatDenseRestoreSubMatrix_SeqDenseCUDA(Mat A, Mat *v) {
   if (reset) PetscCall(MatDenseResetArray(a->cmat));
   if (copy) {
     PetscCall(MatSeqDenseCUDACopyFromGPU(A));
-  } else A->offloadmask = (a->cmat->offloadmask == PETSC_OFFLOAD_CPU) ? PETSC_OFFLOAD_CPU : PETSC_OFFLOAD_GPU;
+  } else A->offloadmask = (suboff == PETSC_OFFLOAD_CPU) ? PETSC_OFFLOAD_CPU : PETSC_OFFLOAD_GPU;
   a->cmat->offloadmask = PETSC_OFFLOAD_UNALLOCATED;
   if (v) *v = NULL;
   PetscFunctionReturn(0);
@@ -1379,6 +1383,29 @@ static PetscErrorCode MatSetUp_SeqDenseCUDA(Mat A) {
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode MatSetRandom_SeqDenseCUDA(Mat A, PetscRandom r) {
+  PetscBool iscurand;
+
+  PetscFunctionBegin;
+  PetscCall(PetscObjectTypeCompare((PetscObject)r, PETSCCURAND, &iscurand));
+  if (iscurand) {
+    PetscScalar *a;
+    PetscInt     lda, m, n, mn = 0;
+
+    PetscCall(MatGetSize(A, &m, &n));
+    PetscCall(MatDenseGetLDA(A, &lda));
+    PetscCall(MatDenseCUDAGetArrayWrite(A, &a));
+    if (lda > m) {
+      for (PetscInt i = 0; i < n; i++) PetscCall(PetscRandomGetValues(r, m, a + i * lda));
+    } else {
+      PetscCall(PetscIntMultError(m, n, &mn));
+      PetscCall(PetscRandomGetValues(r, mn, a));
+    }
+    PetscCall(MatDenseCUDARestoreArrayWrite(A, &a));
+  } else PetscCall(MatSetRandom_SeqDense(A, r));
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode MatBindToCPU_SeqDenseCUDA(Mat A, PetscBool flg) {
   Mat_SeqDense *a = (Mat_SeqDense *)A->data;
 
@@ -1389,6 +1416,8 @@ static PetscErrorCode MatBindToCPU_SeqDenseCUDA(Mat A, PetscBool flg) {
   if (!flg) {
     PetscBool iscuda;
 
+    PetscCall(PetscFree(A->defaultrandtype));
+    PetscCall(PetscStrallocpy(PETSCCURAND, &A->defaultrandtype));
     PetscCall(PetscObjectTypeCompare((PetscObject)a->cvec, VECSEQCUDA, &iscuda));
     if (!iscuda) PetscCall(VecDestroy(&a->cvec));
     PetscCall(PetscObjectTypeCompare((PetscObject)a->cmat, MATSEQDENSECUDA, &iscuda));
@@ -1425,9 +1454,12 @@ static PetscErrorCode MatBindToCPU_SeqDenseCUDA(Mat A, PetscBool flg) {
     A->ops->copy                    = MatCopy_SeqDenseCUDA;
     A->ops->zeroentries             = MatZeroEntries_SeqDenseCUDA;
     A->ops->setup                   = MatSetUp_SeqDenseCUDA;
+    A->ops->setrandom               = MatSetRandom_SeqDenseCUDA;
   } else {
     /* make sure we have an up-to-date copy on the CPU */
     PetscCall(MatSeqDenseCUDACopyFromGPU(A));
+    PetscCall(PetscFree(A->defaultrandtype));
+    PetscCall(PetscStrallocpy(PETSCRANDER48, &A->defaultrandtype));
     PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatDenseGetArray_C", MatDenseGetArray_SeqDense));
     PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatDenseGetArrayRead_C", MatDenseGetArray_SeqDense));
     PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatDenseGetArrayWrite_C", MatDenseGetArray_SeqDense));
@@ -1461,6 +1493,7 @@ static PetscErrorCode MatBindToCPU_SeqDenseCUDA(Mat A, PetscBool flg) {
     A->ops->copy                    = MatCopy_SeqDense;
     A->ops->zeroentries             = MatZeroEntries_SeqDense;
     A->ops->setup                   = MatSetUp_SeqDense;
+    A->ops->setrandom               = MatSetRandom_SeqDense;
   }
   if (a->cmat) PetscCall(MatBindToCPU(a->cmat, flg));
   PetscFunctionReturn(0);
