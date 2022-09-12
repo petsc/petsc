@@ -327,8 +327,8 @@ to allow the overlap of communication and calculation, the user’s code
 can perform any series of other actions between these two calls while
 the messages are in transition.
 
-Example usage of ``VecSetValues()`` may be found in `src/vec/vec/tutorials/ex2.c <../../src/vec/vec/tutorials/ex2.c.html>`__
-or `src/vec/vec/tutorials/ex2f.F90 <../../src/vec/vec/tutorials/ex2f.F90.html>`__.
+Example usage of ``VecSetValues()`` may be found in `src/vec/vec/tutorials/ex2.c <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/vec/vec/tutorials/ex2.c.html>`__
+or `src/vec/vec/tutorials/ex2f.F90 <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/vec/vec/tutorials/ex2f.F90.html>`__.
 
 Often, rather than inserting elements in a vector, one may wish to add
 values. This process is also done with the command
@@ -379,7 +379,7 @@ If the values do not need to be modified, the routines
 
 should be used instead.
 
-.. admonition:: Listing: `SNES Tutorial src/snes/tutorials/ex1.c <../../src/snes/tutorials/ex1.c.html>`__
+.. admonition:: Listing: `SNES Tutorial src/snes/tutorials/ex1.c <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/snes/tutorials/ex1.c.html>`__
 
    .. literalinclude:: /../src/snes/tutorials/ex1.c
       :name: snesex1
@@ -401,7 +401,7 @@ can call, for example,
 
    VecCUDAGetArray(Vec v, PetscScalar **array);
 
-.. admonition:: Listing: `SNES Tutorial src/snes/tutorials/ex47cu.cu <../../src/snes/tutorials/ex47cu.cu.html>`__
+.. admonition:: Listing: `SNES Tutorial src/snes/tutorials/ex47cu.cu <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/snes/tutorials/ex47cu.cu.html>`__
 
    .. literalinclude:: /../src/snes/tutorials/ex47cu.cu
       :name: snesex47
@@ -505,7 +505,7 @@ for a scalar problem in two dimensions one could use
    DMDAVecRestoreArrayRead(DM da,Vec local,&u);
    DMDAVecRestoreArray(DM da,Vec global,&f);
 
-.. admonition:: Listing: `SNES Tutorial src/snes/tutorials/ex3.c <../../src/snes/tutorials/ex3.c.html>`__
+.. admonition:: Listing: `SNES Tutorial src/snes/tutorials/ex3.c <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/snes/tutorials/ex3.c.html>`__
 
    .. literalinclude:: /../src/snes/tutorials/ex3.c
       :name: snesex3
@@ -544,7 +544,7 @@ The ``DMDAVecGetArray`` routines are also provided for GPU access with CUDA, HIP
 where ``*XX*`` can contain any number of  `*`. This allows one to write very natural Kokkos multi-dimensional parallel for kernels
 that act on the local portion of ``DMDA`` vectors.
 
-.. admonition:: Listing: `SNES Tutorial src/snes/tutorials/ex3k.kokkos.cxx <../../src/snes/tutorials/ex3k.kokkos.cxx.html>`__
+.. admonition:: Listing: `SNES Tutorial src/snes/tutorials/ex3k.kokkos.cxx <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/snes/tutorials/ex3k.kokkos.cxx.html>`__
    :name: snes-ex3-kokkos
 
    .. literalinclude:: /../src/snes/tutorials/ex3k.kokkos.cxx
@@ -584,7 +584,7 @@ For structured grids with staggered data (living on elements, faces, edges,
 and/or vertices), the ``DMStag`` object is available. It behaves much
 like ``DMDA``; see the ``DMSTAG`` manual page for more information.
 
-.. admonition:: Listing: `SNES Tutorial src/dm/impls/stag/tutorials/ex6.c <../../src/dm/impls/stag/tutorials/ex6.c.html>`__
+.. admonition:: Listing: `SNES Tutorial src/dm/impls/stag/tutorials/ex6.c <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/dm/impls/stag/tutorials/ex6.c.html>`__
 
    .. literalinclude:: /../src/dm/impls/stag/tutorials/ex6.c
       :name: stagex6
@@ -1127,10 +1127,10 @@ Now entries may be added to the vector and matrix using the local
 numbering and ``VecSetValuesLocal()`` and ``MatSetValuesLocal()``.
 
 The example
-`SNES Tutorial ex5 <../../src/snes/tutorials/ex5.c.html>`__
+`SNES Tutorial ex5 <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/snes/tutorials/ex5.c.html>`__
 illustrates the use of a distributed array in the solution of a
 nonlinear problem. The analogous Fortran program is
-`SNES Tutorial ex5f <../../src/snes/tutorials/ex5f.F90.html>`__;
+`SNES Tutorial ex5f <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/snes/tutorials/ex5f.F90.html>`__;
 see :any:`chapter_snes` for a discussion of the
 nonlinear solvers.
 

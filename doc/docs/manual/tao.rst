@@ -39,7 +39,7 @@ of code as well as the (essential) code required for the routine
 ``FormFunctionGradient``, which evaluates the function and gradient, and
 the code for ``FormHessian``, which evaluates the Hessian matrix for
 Rosenbrock’s function. The complete code is available in
-`$TAO_DIR/src/unconstrained/tutorials/rosenbrock1.c <../../src/tao/unconstrained/tutorials/rosenbrock1.c.html>`__.
+`$TAO_DIR/src/unconstrained/tutorials/rosenbrock1.c <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/tao/unconstrained/tutorials/rosenbrock1.c.html>`__.
 The following sections annotate the lines of code in
 :any:`the example <tao-example1>`.
 

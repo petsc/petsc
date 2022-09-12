@@ -57,4 +57,4 @@ One can attach a `DM` to a solver object with
 Once the ``DM`` is attached, the solver can utilize it to create and process much of the data that the solver needs to set up and implement its solve.
 For example, with ``PCMG`` simply providing a ``DM`` can allow it to create all the data structures needed to run geometric multigrid on your problem.
 
-`SNES Tutorial ex19 <../../src/snes/tutorials/ex19.c.html>`__ demonstrates how this may be done with ``DMDA``.
+`SNES Tutorial ex19 <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/snes/tutorials/ex19.c.html>`__ demonstrates how this may be done with ``DMDA``.

@@ -608,10 +608,10 @@ working *only* with real numbers in a code, one should use a version of
 PETSc for real numbers for best efficiency.
 
 The program
-`KSP Tutorial ex11 <../../src/ksp/ksp/tutorials/ex11.c.html>`__
+`KSP Tutorial ex11 <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/ksp/ksp/tutorials/ex11.c.html>`__
 solves a linear system with a complex coefficient matrix. Its Fortran
 counterpart is
-`KSP Tutorial ex11f <../../src/ksp/ksp/tutorials/ex11f.F90.html>`__.
+`KSP Tutorial ex11f <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/ksp/ksp/tutorials/ex11f.F90.html>`__.
 
 Parallel Communication
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -836,7 +836,7 @@ will prevent any windows from being opened or any drawing actions to be
 done. This is useful for running large jobs when the graphics overhead
 is too large, or for timing.
 
-The full example, `Draw Test ex3 <../../src/sys/classes/draw/tests/ex3.c.html>`__,
+The full example, `Draw Test ex3 <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/sys/classes/draw/tests/ex3.c.html>`__,
 follows.
 
 .. _listing_draw_test_ex3:
