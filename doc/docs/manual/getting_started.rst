@@ -300,7 +300,7 @@ a linear system with ``KSP``, the interface to the preconditioners,
 Krylov subspace methods, and direct linear solvers of PETSc. Following
 the code we highlight a few of the most important parts of this example.
 
-.. admonition:: Listing: `KSP Tutorial src/ksp/ksp/tutorials/ex1.c <../../src/ksp/ksp/tutorials/ex1..c.html>`__
+.. admonition:: Listing: `KSP Tutorial src/ksp/ksp/tutorials/ex1.c <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/ksp/ksp/tutorials/ex1..c.html>`__
    :name: ksp-ex1
 
    .. literalinclude:: /../src/ksp/ksp/tutorials/ex1.c
@@ -599,7 +599,7 @@ being used, they *must* be called in the same order on each processor.
 The next example, given below,
 illustrates the solution of a linear system in parallel. This code,
 corresponding to
-`KSP Tutorial ex2 <../../src/ksp/ksp/tutorials/ex2.c.html>`__,
+`KSP Tutorial ex2 <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/ksp/ksp/tutorials/ex2.c.html>`__,
 handles the two-dimensional Laplacian discretized with finite
 differences, where the linear system is again solved with KSP. The code
 performs the same tasks as the sequential version within
@@ -611,7 +611,7 @@ multiprocessor examples. The primary difference between the examples in
 here is that each processor forms only its
 local part of the matrix and vectors in the parallel case.
 
-.. admonition:: Listing: `KSP Tutorial src/ksp/ksp/tutorials/ex2.c <../../src/ksp/ksp/tutorials/ex2..c.html>`__``
+.. admonition:: Listing: `KSP Tutorial src/ksp/ksp/tutorials/ex2.c <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/ksp/ksp/tutorials/ex2..c.html>`__``
    :name: ksp-ex2
 
    .. literalinclude:: /../src/ksp/ksp/tutorials/ex2.c

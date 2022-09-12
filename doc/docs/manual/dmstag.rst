@@ -83,7 +83,7 @@ The following snippet give an example of this usage.
   :end-at: PetscCall(DMStagVecRestoreArray
 
 DMStag provides a stencil-based method for getting and setting entries of ``Mat`` and ``Vec`` objects.
-The follow excerpt from `DMStag Tutorial ex1 <../../src/dm/tutorials/ex1.c.html>`__ demonstrates
+The follow excerpt from `DMStag Tutorial ex1 <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/dm/tutorials/ex1.c.html>`__ demonstrates
 the idea. For more, see the manual page for ``DMStagMatSetValuesStencil()``.
 
 .. literalinclude:: /../src/dm/impls/stag/tutorials/ex1.c
