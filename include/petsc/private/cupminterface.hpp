@@ -516,7 +516,7 @@ struct InterfaceImpl<DeviceType::HIP> : InterfaceBase<DeviceType::HIP> {
   // HIP appears to only have hipLaunchHostFunc from 5.2.0 onwards
   // https://github.com/ROCm-Developer-Tools/HIPIFY/blob/master/doc/markdown/CUDA_Runtime_API_functions_supported_by_HIP.md#7-execution-control=
 #if PETSC_PKG_HIP_VERSION_GE(5, 2, 0)
-  PETSC_CUPM_ALIAS_FUNCTION(LauncHostFunc);
+  PETSC_CUPM_ALIAS_FUNCTION(LaunchHostFunc);
 #else
   PETSC_CXX_COMPAT_DECL(hipError_t cupmLaunchHostFunc(hipStream_t stream, cupmHostFn_t fn, void *ctx)) {
     // the only correct way to spoof this function is to do it synchronously...
