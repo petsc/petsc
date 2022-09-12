@@ -9,5 +9,4 @@ include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
 include ${PETSC_DIR}/lib/petsc/conf/test
 
-ex13f90.o: ex13f90aux.o
-ex13f90: ex13f90.o ex13f90aux.o
+ex13f90: ex13f90aux.o
