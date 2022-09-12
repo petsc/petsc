@@ -530,6 +530,8 @@ requiring the detailed preallocation information.
 
 See :any:`doc_matrix` for a table of the matrix types available in PETSc.
 
+.. _sec_matlmvm:
+
 Limited-Memory Variable Metric (LMVM) Matrices
 ''''''''''''''''''''''''''''''''''''''''''''''
 
