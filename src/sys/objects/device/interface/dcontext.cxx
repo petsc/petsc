@@ -88,9 +88,9 @@ PetscErrorCode PetscDeviceContextCreate(PetscDeviceContext *dctx) {
   PetscFunctionBegin;
   PetscValidPointer(dctx, 1);
   PetscCall(PetscDeviceInitializePackage());
-  PetscCall(PetscLogEventBegin(DCONTEXT_Create, 0, 0, 0, 0));
+  PetscCall(PetscLogEventBegin(DCONTEXT_Create, nullptr, nullptr, nullptr, nullptr));
   PetscCall(contextPool.allocate(dctx));
-  PetscCall(PetscLogEventEnd(DCONTEXT_Create, 0, 0, 0, 0));
+  PetscCall(PetscLogEventEnd(DCONTEXT_Create, nullptr, nullptr, nullptr, nullptr));
   PetscFunctionReturn(0);
 }
 
@@ -131,7 +131,7 @@ PetscErrorCode PetscDeviceContextDestroy(PetscDeviceContext *dctx) {
   PetscFunctionBegin;
   PetscValidPointer(dctx, 1);
   if (!*dctx) PetscFunctionReturn(0);
-  PetscCall(PetscLogEventBegin(DCONTEXT_Destroy, 0, 0, 0, 0));
+  PetscCall(PetscLogEventBegin(DCONTEXT_Destroy, nullptr, nullptr, nullptr, nullptr));
   if (--(PetscObjectCast(*dctx)->refct) <= 0) {
     PetscCall(PetscDeviceContextCheckNotOrphaned_Internal(*dctx));
     // std::move of the expression of the trivially-copyable type 'PetscDeviceContext' (aka
@@ -139,7 +139,7 @@ PetscErrorCode PetscDeviceContextDestroy(PetscDeviceContext *dctx) {
     // can't remove std::move, since reclaim only takes r-value reference
     PetscCall(contextPool.deallocate(std::move(*dctx))); // NOLINT (performance-move-const-arg)
   }
-  PetscCall(PetscLogEventEnd(DCONTEXT_Destroy, 0, 0, 0, 0));
+  PetscCall(PetscLogEventEnd(DCONTEXT_Destroy, nullptr, nullptr, nullptr, nullptr));
   *dctx = nullptr;
   PetscFunctionReturn(0);
 }
@@ -173,9 +173,9 @@ PetscErrorCode PetscDeviceContextSetStreamType(PetscDeviceContext dctx, PetscStr
   // only need to do complex swapping if the object has already been setup
   if (dctx->setup && (dctx->streamType != type)) {
     dctx->setup = PETSC_FALSE;
-    PetscCall(PetscLogEventBegin(DCONTEXT_ChangeStream, dctx, 0, 0, 0));
+    PetscCall(PetscLogEventBegin(DCONTEXT_ChangeStream, dctx, nullptr, nullptr, nullptr));
     PetscUseTypeMethod(dctx, changestreamtype, type);
-    PetscCall(PetscLogEventEnd(DCONTEXT_ChangeStream, dctx, 0, 0, 0));
+    PetscCall(PetscLogEventEnd(DCONTEXT_ChangeStream, dctx, nullptr, nullptr, nullptr));
   }
   dctx->streamType = type;
   PetscFunctionReturn(0);
@@ -229,12 +229,12 @@ static PetscErrorCode PetscDeviceContextSetDevice_Private(PetscDeviceContext dct
   PetscValidDeviceContext(dctx, 1);
   PetscValidDevice(device, 2);
   if (dctx->device && (dctx->device->id == device->id)) PetscFunctionReturn(0);
-  PetscCall(PetscLogEventBegin(DCONTEXT_SetDevice, dctx, 0, 0, 0));
+  PetscCall(PetscLogEventBegin(DCONTEXT_SetDevice, dctx, nullptr, nullptr, nullptr));
   if (const auto destroy = dctx->ops->destroy) PetscCall((*destroy)(dctx));
   PetscCall(PetscDeviceDestroy(&dctx->device));
   PetscCall(PetscMemzero(dctx->ops, sizeof(*dctx->ops)));
   PetscCall((*device->ops->createcontext)(dctx));
-  PetscCall(PetscLogEventEnd(DCONTEXT_SetDevice, dctx, 0, 0, 0));
+  PetscCall(PetscLogEventEnd(DCONTEXT_SetDevice, dctx, nullptr, nullptr, nullptr));
   PetscCall(PetscDeviceReference_Internal(device));
   dctx->device        = device;
   dctx->setup         = PETSC_FALSE;
@@ -366,21 +366,21 @@ PetscErrorCode PetscDeviceContextSetUp(PetscDeviceContext dctx) {
     PetscCall(PetscInfo(dctx, "PetscDeviceContext %" PetscInt64_FMT " did not have an explicitly attached PetscDevice, using default with type %s\n", PetscObjectCast(dctx)->id, PetscDeviceTypes[default_dtype]));
     PetscCall(PetscDeviceContextSetDefaultDeviceForType_Internal(dctx, default_dtype));
   }
-  PetscCall(PetscLogEventBegin(DCONTEXT_SetUp, dctx, 0, 0, 0));
+  PetscCall(PetscLogEventBegin(DCONTEXT_SetUp, dctx, nullptr, nullptr, nullptr));
   PetscUseTypeMethod(dctx, setup);
-  PetscCall(PetscLogEventEnd(DCONTEXT_SetUp, dctx, 0, 0, 0));
+  PetscCall(PetscLogEventEnd(DCONTEXT_SetUp, dctx, nullptr, nullptr, nullptr));
   dctx->setup = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PetscDeviceContextDuplicate_Private(PetscDeviceContext dctx, PetscStreamType stype, PetscDeviceContext *dctxdup) {
   PetscFunctionBegin;
-  PetscCall(PetscLogEventBegin(DCONTEXT_Duplicate, dctx, 0, 0, 0));
+  PetscCall(PetscLogEventBegin(DCONTEXT_Duplicate, dctx, nullptr, nullptr, nullptr));
   PetscCall(PetscDeviceContextCreate(dctxdup));
   PetscCall(PetscDeviceContextSetStreamType(*dctxdup, stype));
   if (const auto device = dctx->device) PetscCall(PetscDeviceContextSetDevice_Private(*dctxdup, device, dctx->usersetdevice));
   PetscCall(PetscDeviceContextSetUp(*dctxdup));
-  PetscCall(PetscLogEventEnd(DCONTEXT_Duplicate, dctx, 0, 0, 0));
+  PetscCall(PetscLogEventEnd(DCONTEXT_Duplicate, dctx, nullptr, nullptr, nullptr));
   PetscFunctionReturn(0);
 }
 
@@ -450,9 +450,9 @@ PetscErrorCode PetscDeviceContextQueryIdle(PetscDeviceContext dctx, PetscBool *i
   PetscFunctionBegin;
   PetscCall(PetscDeviceContextGetOptionalNullContext_Internal(&dctx));
   PetscValidBoolPointer(idle, 2);
-  PetscCall(PetscLogEventBegin(DCONTEXT_QueryIdle, dctx, 0, 0, 0));
+  PetscCall(PetscLogEventBegin(DCONTEXT_QueryIdle, dctx, nullptr, nullptr, nullptr));
   PetscUseTypeMethod(dctx, query, idle);
-  PetscCall(PetscLogEventEnd(DCONTEXT_QueryIdle, dctx, 0, 0, 0));
+  PetscCall(PetscLogEventEnd(DCONTEXT_QueryIdle, dctx, nullptr, nullptr, nullptr));
   PetscCall(PetscInfo(dctx, "PetscDeviceContext ('%s', id %" PetscInt64_FMT ") %s idle\n", PetscObjectCast(dctx)->name ? PetscObjectCast(dctx)->name : "unnamed", PetscObjectCast(dctx)->id, *idle ? "was" : "was not"));
   PetscFunctionReturn(0);
 }
@@ -498,10 +498,10 @@ PetscErrorCode PetscDeviceContextWaitForContext(PetscDeviceContext dctxa, PetscD
   PetscCheckCompatibleDeviceContexts(dctxa, 1, dctxb, 2);
   if (dctxa == dctxb) PetscFunctionReturn(0);
   aobj = PetscObjectCast(dctxa);
-  PetscCall(PetscLogEventBegin(DCONTEXT_WaitForCtx, dctxa, dctxb, 0, 0));
+  PetscCall(PetscLogEventBegin(DCONTEXT_WaitForCtx, dctxa, dctxb, nullptr, nullptr));
   PetscUseTypeMethod(dctxa, waitforcontext, dctxb);
   PetscCallCXX(CxxDataCast(dctxa)->upstream[dctxb] = CxxData::parent_type(dctxb));
-  PetscCall(PetscLogEventEnd(DCONTEXT_WaitForCtx, dctxa, dctxb, 0, 0));
+  PetscCall(PetscLogEventEnd(DCONTEXT_WaitForCtx, dctxa, dctxb, nullptr, nullptr));
   PetscCall(PetscInfo(dctxa, "dctx %" PetscInt64_FMT " waiting on dctx %" PetscInt64_FMT "\n", aobj->id, PetscObjectCast(dctxb)->id));
   PetscCall(PetscObjectStateIncrease(aobj));
   PetscFunctionReturn(0);
@@ -566,7 +566,7 @@ PetscErrorCode PetscDeviceContextForkWithStreamType(PetscDeviceContext dctx, Pet
   *dsub = nullptr;
   /* reserve 4 chars per id, 2 for number and 2 for ', ' separator */
   if (PetscDefined(USE_DEBUG_AND_INFO)) PetscCallCXX(idList.reserve(4 * n));
-  PetscCall(PetscLogEventBegin(DCONTEXT_Fork, dctx, 0, 0, 0));
+  PetscCall(PetscLogEventBegin(DCONTEXT_Fork, dctx, nullptr, nullptr, nullptr));
   /* update child totals */
   dctx->numChildren += n;
   /* now to find out if we have room */
@@ -611,7 +611,7 @@ PetscErrorCode PetscDeviceContextForkWithStreamType(PetscDeviceContext dctx, Pet
       --ninput;
     }
   }
-  PetscCall(PetscLogEventEnd(DCONTEXT_Fork, dctx, 0, 0, 0));
+  PetscCall(PetscLogEventEnd(DCONTEXT_Fork, dctx, nullptr, nullptr, nullptr));
   PetscCall(PetscDebugInfo(dctx, "Forked %" PetscInt_FMT " children from parent %" PetscInt64_FMT " with IDs: %s\n", n, PetscObjectCast(dctx)->id, idList.c_str()));
   PetscFunctionReturn(0);
 }
@@ -733,7 +733,7 @@ PetscErrorCode PetscDeviceContextJoin(PetscDeviceContext dctx, PetscInt n, Petsc
   /* reserve 4 chars per id, 2 for number and 2 for ', ' separator */
   if (PetscDefined(USE_DEBUG_AND_INFO)) PetscCallCXX(idList.reserve(4 * n));
   /* first dctx waits on all the incoming edges */
-  PetscCall(PetscLogEventBegin(DCONTEXT_Join, dctx, 0, 0, 0));
+  PetscCall(PetscLogEventBegin(DCONTEXT_Join, dctx, nullptr, nullptr, nullptr));
   for (PetscInt i = 0; i < n; ++i) {
     PetscCheckCompatibleDeviceContexts(dctx, 1, (*dsub)[i], 4);
     PetscCall(PetscDeviceContextWaitForContext(dctx, (*dsub)[i]));
@@ -773,7 +773,7 @@ PetscErrorCode PetscDeviceContextJoin(PetscDeviceContext dctx, PetscInt n, Petsc
   case PETSC_DEVICE_CONTEXT_JOIN_NO_SYNC: break;
   default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown PetscDeviceContextJoinMode given");
   }
-  PetscCall(PetscLogEventEnd(DCONTEXT_Join, dctx, 0, 0, 0));
+  PetscCall(PetscLogEventEnd(DCONTEXT_Join, dctx, nullptr, nullptr, nullptr));
 
   PetscCall(PetscDebugInfo(dctx, "Joined %" PetscInt_FMT " ctxs to ctx %" PetscInt64_FMT ", mode %s with IDs: %s\n", n, PetscObjectCast(dctx)->id, PetscDeviceContextJoinModes[joinMode], idList.c_str()));
   PetscFunctionReturn(0);
@@ -809,13 +809,13 @@ PetscErrorCode PetscDeviceContextJoin(PetscDeviceContext dctx, PetscInt n, Petsc
 PetscErrorCode PetscDeviceContextSynchronize(PetscDeviceContext dctx) {
   PetscFunctionBegin;
   PetscCall(PetscDeviceContextGetOptionalNullContext_Internal(&dctx));
-  PetscCall(PetscLogEventBegin(DCONTEXT_Sync, dctx, 0, 0, 0));
+  PetscCall(PetscLogEventBegin(DCONTEXT_Sync, dctx, nullptr, nullptr, nullptr));
   /* if it isn't setup there is nothing to sync on */
   if (dctx->setup) {
     PetscCall((*dctx->ops->synchronize)(dctx));
     PetscCall(PetscDeviceContextSyncClearMap_Internal(dctx));
   }
-  PetscCall(PetscLogEventEnd(DCONTEXT_Sync, dctx, 0, 0, 0));
+  PetscCall(PetscLogEventEnd(DCONTEXT_Sync, dctx, nullptr, nullptr, nullptr));
   PetscFunctionReturn(0);
 }
 
