@@ -137,10 +137,6 @@ PETSC_EXTERN PetscErrorCode PetscSFConcatenate(MPI_Comm, PetscInt, PetscSF[], Pe
 /* Build PetscSF from PetscLayout */
 PETSC_EXTERN PetscErrorCode PetscSFSetGraphLayout(PetscSF, PetscLayout, PetscInt, PetscInt *, PetscCopyMode, const PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscSFCreateFromLayouts(PetscLayout, PetscLayout, PetscSF *);
-PETSC_DEPRECATED_FUNCTION("Use PetscSFCreateFromLayouts (since v3.15)")
-static inline PetscErrorCode PetscLayoutsCreateSF(PetscLayout rmap, PetscLayout lmap, PetscSF *sf) {
-  return PetscSFCreateFromLayouts(rmap, lmap, sf);
-}
 PETSC_EXTERN PetscErrorCode PetscSFCreateByMatchingIndices(PetscLayout, PetscInt, const PetscInt *, const PetscInt *, PetscInt, PetscInt, const PetscInt *, const PetscInt *, PetscInt, PetscSF *, PetscSF *);
 
 /* PetscSection interoperability */
