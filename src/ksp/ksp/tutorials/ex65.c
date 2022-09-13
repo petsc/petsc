@@ -32,6 +32,7 @@ static PetscErrorCode Refine(DM, MPI_Comm, DM *);
 static PetscErrorCode Coarsen(DM, MPI_Comm, DM *);
 static PetscErrorCode CreateInterpolation(DM, DM, Mat *, Vec *);
 static PetscErrorCode CreateRestriction(DM, DM, Mat *);
+static PetscErrorCode Destroy(void *);
 
 static PetscErrorCode MyDMShellCreate(MPI_Comm comm, DM da, DM *shell) {
   PetscCall(DMShellCreate(comm, shell));
@@ -43,6 +44,7 @@ static PetscErrorCode MyDMShellCreate(MPI_Comm comm, DM da, DM *shell) {
   PetscCall(DMShellSetCoarsen(*shell, Coarsen));
   PetscCall(DMShellSetCreateInterpolation(*shell, CreateInterpolation));
   PetscCall(DMShellSetCreateRestriction(*shell, CreateRestriction));
+  PetscCall(DMShellSetDestroyContext(*shell, Destroy));
   return 0;
 }
 
@@ -70,8 +72,12 @@ int main(int argc, char **argv) {
 
   PetscCall(KSPDestroy(&ksp));
   PetscCall(DMDestroy(&shell));
-  PetscCall(DMDestroy(&da));
   PetscCall(PetscFinalize());
+  return 0;
+}
+
+static PetscErrorCode Destroy(void *ctx) {
+  PetscCall(DMDestroy((DM *)&ctx));
   return 0;
 }
 
@@ -137,8 +143,6 @@ static PetscErrorCode Coarsen(DM shell, MPI_Comm comm, DM *dmnew) {
   PetscCall(DMShellGetContext(shell, &da));
   PetscCall(DMCoarsen(da, comm, &dacoarse));
   PetscCall(MyDMShellCreate(PetscObjectComm((PetscObject)shell), dacoarse, dmnew));
-  /* discard an "extra" reference count to dacoarse */
-  PetscCall(DMDestroy(&dacoarse));
   return 0;
 }
 
