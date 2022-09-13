@@ -225,7 +225,8 @@ static const char *PetscErrorStrings[] = {
   /*95 */ "Missing or incorrect user input",
   /*96 */ "GPU resources unavailable",
   /*97 */ "GPU error",
-  /*98 */ "General MPI error"};
+  /*98 */ "General MPI error",
+  /*99 */ "PetscError() incorrectly returned an error code of 0"};
 
 /*@C
    PetscErrorMessage - returns the text string associated with a PETSc error code.
@@ -306,17 +307,25 @@ static void PetscCxxErrorThrow() {
   Level: intermediate
 
    Notes:
-   PETSc error handling is done with error return codes. A non-zero return indicates an error was detected. Errors are generally not something that the code
-   can recover from. Note that numerical errors (potential divide by zero, for example) are not managed by the error return codes; they are managed via, for example,
-   `KSPGetConvergedReason()` that indicates if the solve was successful or not. The option -ksp_error_if_not_converged, for example, turns numerical failures into
-   hard errors managed via `PetscError()`.
+   PETSc error handling is done with error return codes. A non-zero return indicates an error
+   was detected. The return-value of this routine is what is ultimately returned by
+   `SETERRQ()`.
 
-   PETSc provides a rich supply of error handlers, see the list below, and users can also provide their own error handlers.
+   Note that numerical errors (potential divide by zero, for example) are not managed by the
+   error return codes; they are managed via, for example, `KSPGetConvergedReason()` that
+   indicates if the solve was successful or not. The option `-ksp_error_if_not_converged`, for
+   example, turns numerical failures into hard errors managed via `PetscError()`.
 
-   Most users need not directly use this routine and the error handlers, but
-   can instead use the simplified interface `PetscCall()` or `SETERRQ()`
+   PETSc provides a rich supply of error handlers, see the list below, and users can also
+   provide their own error handlers.
 
-   Set the error handler with `PetscPushErrorHandler()`.
+   If the user sets their own error handler (via `PetscPushErrorHandler()`) they may return any
+   arbitrary value from it, but are encouraged to return nonzero values. If the return value is
+   zero, `SETERRQ()` will ignore the value and return `PETSC_ERR_RETURN` (a nonzero value)
+   instead.
+
+   Most users need not directly use this routine and the error handlers, but can instead use
+   the simplified interface `PetscCall()` or `SETERRQ()`.
 
    Fortran Note:
    This routine is used differently from Fortran

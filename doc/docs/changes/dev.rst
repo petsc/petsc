@@ -27,6 +27,8 @@ In addition to the changes above
 
 .. rubric:: General:
 
+- Add ``PETSC_ERR_RETURN`` to signal when an error handler returns 0 in ``PetscError()``
+- Change behavior of ``SETERRQ()`` when ``PetscError()`` returns 0 via user-set error handler. In such cases ``SETERRQ()`` now returns ``PETSC_ERR_RETURN`` (a nonzero value) instead. Previously the value (0) would be propagated as-is. Note that while returning 0 from error handlers in ``PetscError()`` is supported, doing so is discouraged
 - Change ``PetscOptionsBegin()``, ``PetscOptionsEnd()``, and ``PetscObjectOptionsBegin()`` to not return an error code
 - Change ``PetscOptionsHead()``, ``PetscOptionsTail()``, to ``PetscOptionsHeadBegin()`` and ``PetscOptionsHeadEnd()`` and to not return an error code
 - Add ``PETSC_ATTRIBUTE_FORMAT()`` to enable compile-time ``printf()``-style format specifier checking and apply it any PETSc functions taking a format string

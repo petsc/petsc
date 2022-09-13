@@ -60,15 +60,16 @@
 #define PETSC_ERR_INT_OVERFLOW 84
 
 #define PETSC_ERR_FLOP_COUNT     90
-#define PETSC_ERR_NOT_CONVERGED  91 /* solver did not converge */
-#define PETSC_ERR_MISSING_FACTOR 92 /* MatGetFactor() failed */
-#define PETSC_ERR_OPT_OVERWRITE  93 /* attempted to over write options which should not be changed */
-#define PETSC_ERR_WRONG_MPI_SIZE 94 /* example/application run with number of MPI ranks it does not support */
-#define PETSC_ERR_USER_INPUT     95 /* missing or incorrect user input */
-#define PETSC_ERR_GPU_RESOURCE   96 /* unable to load a GPU resource, for example cuBLAS */
-#define PETSC_ERR_GPU            97 /* An error from a GPU call, this may be due to lack of resources on the GPU or a true error in the call */
-#define PETSC_ERR_MPI            98 /* general MPI error */
-#define PETSC_ERR_MAX_VALUE      99 /* this is always the one more than the largest error code */
+#define PETSC_ERR_NOT_CONVERGED  91  /* solver did not converge */
+#define PETSC_ERR_MISSING_FACTOR 92  /* MatGetFactor() failed */
+#define PETSC_ERR_OPT_OVERWRITE  93  /* attempted to over write options which should not be changed */
+#define PETSC_ERR_WRONG_MPI_SIZE 94  /* example/application run with number of MPI ranks it does not support */
+#define PETSC_ERR_USER_INPUT     95  /* missing or incorrect user input */
+#define PETSC_ERR_GPU_RESOURCE   96  /* unable to load a GPU resource, for example cuBLAS */
+#define PETSC_ERR_GPU            97  /* An error from a GPU call, this may be due to lack of resources on the GPU or a true error in the call */
+#define PETSC_ERR_MPI            98  /* general MPI error */
+#define PETSC_ERR_RETURN         99  /* PetscError() incorrectly returned an error code of 0 */
+#define PETSC_ERR_MAX_VALUE      100 /* this is always the one more than the largest error code */
 
 #define SETERRQ1(...) PETSC_DEPRECATED_MACRO("GCC warning \"Use SETERRQ() (since version 3.17)\"") SETERRQ(__VA_ARGS__)
 #define SETERRQ2(...) PETSC_DEPRECATED_MACRO("GCC warning \"Use SETERRQ() (since version 3.17)\"") SETERRQ(__VA_ARGS__)
@@ -109,7 +110,11 @@
 .seealso: `PetscCheck()`, `PetscAssert()`, `PetscTraceBackErrorHandler()`, `PetscPushErrorHandler()`,
           `PetscError()`, `PetscCall()`, `CHKMEMQ`, `CHKERRA()`, `PetscCallMPI()`
 M*/
-#define SETERRQ(comm, ierr, ...) return PetscError(comm, __LINE__, PETSC_FUNCTION_NAME, __FILE__, ierr, PETSC_ERROR_INITIAL, __VA_ARGS__)
+#define SETERRQ(comm, ierr, ...) \
+  do { \
+    PetscErrorCode ierr_seterrq_petsc_ = PetscError(comm, __LINE__, PETSC_FUNCTION_NAME, __FILE__, ierr, PETSC_ERROR_INITIAL, __VA_ARGS__); \
+    return ierr_seterrq_petsc_ ? ierr_seterrq_petsc_ : PETSC_ERR_RETURN; \
+  } while (0)
 
 /*
     Returned from PETSc functions that are called from MPI, such as related to attributes
