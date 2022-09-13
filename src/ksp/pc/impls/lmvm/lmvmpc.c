@@ -151,6 +151,7 @@ static PetscErrorCode PCSetUp_LMVM(PC pc) {
   const char *prefix;
 
   PetscFunctionBegin;
+  if (pc->setupcalled) PetscFunctionReturn(0);
   PetscCall(MatLMVMIsAllocated(ctx->B, &allocated));
   if (!allocated) {
     PetscCall(MatCreateVecs(pc->mat, &ctx->xwork, &ctx->ywork));
@@ -235,8 +236,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_LMVM(PC pc) {
   pc->ops->applyrichardson     = NULL;
   pc->ops->presolve            = NULL;
   pc->ops->postsolve           = NULL;
-
-  PetscCall(PCSetReusePreconditioner(pc, PETSC_TRUE));
 
   PetscCall(MatCreate(PetscObjectComm((PetscObject)pc), &ctx->B));
   PetscCall(MatSetType(ctx->B, MATLMVMBFGS));
