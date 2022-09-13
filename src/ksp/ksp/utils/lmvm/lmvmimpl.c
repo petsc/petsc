@@ -231,7 +231,7 @@ static PetscErrorCode MatShift_LMVM(Mat B, PetscScalar a) {
 
 /*------------------------------------------------------------*/
 
-static PetscErrorCode MatGetVecs_LMVM(Mat B, Vec *L, Vec *R) {
+static PetscErrorCode MatCreateVecs_LMVM(Mat B, Vec *L, Vec *R) {
   Mat_LMVM *lmvm = (Mat_LMVM *)B->data;
 
   PetscFunctionBegin;
@@ -367,7 +367,7 @@ PetscErrorCode MatCreate_LMVM(Mat B) {
   B->ops->setfromoptions = MatSetFromOptions_LMVM;
   B->ops->view           = MatView_LMVM;
   B->ops->setup          = MatSetUp_LMVM;
-  B->ops->getvecs        = MatGetVecs_LMVM;
+  B->ops->getvecs        = MatCreateVecs_LMVM;
   B->ops->shift          = MatShift_LMVM;
   B->ops->duplicate      = MatDuplicate_LMVM;
   B->ops->mult           = MatMult_LMVM;
