@@ -546,12 +546,16 @@ class generateExamples(Petsc):
       Generate bash script using template found next to this file.
       This file is read in at constructor time to avoid file I/O
     """
+    def opener(path,flags,*args,**kwargs):
+      kwargs.setdefault('mode',0o755)
+      return os.open(path,flags,*args,**kwargs)
+
     # runscript_dir directory has to be consistent with gmakefile
     testDict=srcDict[testname]
     rpath=self.srcrelpath(root)
     runscript_dir=os.path.join(self.testroot_dir,rpath)
     if not os.path.isdir(runscript_dir): os.makedirs(runscript_dir)
-    with open(os.path.join(runscript_dir,testname+".sh"),"w") as fh:
+    with open(os.path.join(runscript_dir,testname+".sh"),"w",opener=opener) as fh:
 
       # Get variables to go into shell scripts.  last time testDict used
       subst=self.getSubstVars(testDict,rpath,testname)
@@ -617,9 +621,6 @@ class generateExamples(Petsc):
         fh.write(loopFoot+"\n")
 
       fh.write(footer+"\n")
-
-    os.chmod(os.path.join(runscript_dir,testname+".sh"),0o755)
-    #if '10_9' in testname: sys.exit()
     return
 
   def  genScriptsAndInfo(self,exfile,root,srcDict):
