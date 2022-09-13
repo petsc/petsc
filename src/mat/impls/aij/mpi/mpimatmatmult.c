@@ -502,64 +502,65 @@ static PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat A, Mat B, PetscReal
 }
 
 PETSC_INTERN PetscErrorCode MatMatMultNumericAdd_SeqAIJ_SeqDense(Mat, Mat, Mat, const PetscBool);
+
 /*
     Performs an efficient scatter on the rows of B needed by this process; this is
     a modification of the VecScatterBegin_() routines.
 
-    Input: Bbidx = 0: B = Bb
-                 = 1: B = Bb1, see MatMatMultSymbolic_MPIAIJ_MPIDense()
+    Input: If Bbidx = 0, uses B = Bb, else B = Bb1, see MatMatMultSymbolic_MPIAIJ_MPIDense()
 */
-PetscErrorCode              MatMPIDenseScatter(Mat A, Mat B, PetscInt Bbidx, Mat C, Mat *outworkB) {
-               Mat_MPIAIJ        *aij = (Mat_MPIAIJ *)A->data;
-               const PetscScalar *b;
-               PetscScalar       *rvalues;
-               VecScatter         ctx = aij->Mvctx;
-               const PetscInt    *sindices, *sstarts, *rstarts;
-               const PetscMPIInt *sprocs, *rprocs;
-               PetscInt           i, nsends, nrecvs;
-               MPI_Request       *swaits, *rwaits;
-               MPI_Comm           comm;
-               PetscMPIInt        tag = ((PetscObject)ctx)->tag, ncols = B->cmap->N, nrows = aij->B->cmap->n, nsends_mpi, nrecvs_mpi;
-               MPIAIJ_MPIDense   *contents;
-               Mat                workB;
-               MPI_Datatype      *stype, *rtype;
-               PetscInt           blda;
 
-               PetscFunctionBegin;
-               MatCheckProduct(C, 4);
-               PetscCheck(C->product->data, PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "Product data empty");
-               contents = (MPIAIJ_MPIDense *)C->product->data;
-               PetscCall(VecScatterGetRemote_Private(ctx, PETSC_TRUE /*send*/, &nsends, &sstarts, &sindices, &sprocs, NULL /*bs*/));
-               PetscCall(VecScatterGetRemoteOrdered_Private(ctx, PETSC_FALSE /*recv*/, &nrecvs, &rstarts, NULL, &rprocs, NULL /*bs*/));
-               PetscCall(PetscMPIIntCast(nsends, &nsends_mpi));
-               PetscCall(PetscMPIIntCast(nrecvs, &nrecvs_mpi));
-               if (Bbidx == 0) workB = *outworkB = contents->workB;
+PetscErrorCode MatMPIDenseScatter(Mat A, Mat B, PetscInt Bbidx, Mat C, Mat *outworkB) {
+  Mat_MPIAIJ        *aij = (Mat_MPIAIJ *)A->data;
+  const PetscScalar *b;
+  PetscScalar       *rvalues;
+  VecScatter         ctx = aij->Mvctx;
+  const PetscInt    *sindices, *sstarts, *rstarts;
+  const PetscMPIInt *sprocs, *rprocs;
+  PetscInt           i, nsends, nrecvs;
+  MPI_Request       *swaits, *rwaits;
+  MPI_Comm           comm;
+  PetscMPIInt        tag = ((PetscObject)ctx)->tag, ncols = B->cmap->N, nrows = aij->B->cmap->n, nsends_mpi, nrecvs_mpi;
+  MPIAIJ_MPIDense   *contents;
+  Mat                workB;
+  MPI_Datatype      *stype, *rtype;
+  PetscInt           blda;
+
+  PetscFunctionBegin;
+  MatCheckProduct(C, 4);
+  PetscCheck(C->product->data, PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "Product data empty");
+  contents = (MPIAIJ_MPIDense *)C->product->data;
+  PetscCall(VecScatterGetRemote_Private(ctx, PETSC_TRUE /*send*/, &nsends, &sstarts, &sindices, &sprocs, NULL /*bs*/));
+  PetscCall(VecScatterGetRemoteOrdered_Private(ctx, PETSC_FALSE /*recv*/, &nrecvs, &rstarts, NULL, &rprocs, NULL /*bs*/));
+  PetscCall(PetscMPIIntCast(nsends, &nsends_mpi));
+  PetscCall(PetscMPIIntCast(nrecvs, &nrecvs_mpi));
+  if (Bbidx == 0) workB = *outworkB = contents->workB;
   else workB = *outworkB = contents->workB1;
   PetscCheck(nrows == workB->rmap->n, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of rows of workB %" PetscInt_FMT " not equal to columns of aij->B %d", workB->cmap->n, nrows);
-               swaits = contents->swaits;
-               rwaits = contents->rwaits;
+  swaits = contents->swaits;
+  rwaits = contents->rwaits;
 
-               PetscCall(MatDenseGetArrayRead(B, &b));
-               PetscCall(MatDenseGetLDA(B, &blda));
-               PetscCheck(blda == contents->blda, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot reuse an input matrix with lda %" PetscInt_FMT " != %" PetscInt_FMT, blda, contents->blda);
-               PetscCall(MatDenseGetArray(workB, &rvalues));
+  PetscCall(MatDenseGetArrayRead(B, &b));
+  PetscCall(MatDenseGetLDA(B, &blda));
+  PetscCheck(blda == contents->blda, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot reuse an input matrix with lda %" PetscInt_FMT " != %" PetscInt_FMT, blda, contents->blda);
+  PetscCall(MatDenseGetArray(workB, &rvalues));
 
-               /* Post recv, use MPI derived data type to save memory */
-               PetscCall(PetscObjectGetComm((PetscObject)C, &comm));
-               rtype = contents->rtype;
-               for (i = 0; i < nrecvs; i++) PetscCallMPI(MPI_Irecv(rvalues + (rstarts[i] - rstarts[0]), ncols, rtype[i], rprocs[i], tag, comm, rwaits + i));
+  /* Post recv, use MPI derived data type to save memory */
+  PetscCall(PetscObjectGetComm((PetscObject)C, &comm));
+  rtype = contents->rtype;
+  for (i = 0; i < nrecvs; i++) PetscCallMPI(MPI_Irecv(rvalues + (rstarts[i] - rstarts[0]), ncols, rtype[i], rprocs[i], tag, comm, rwaits + i));
 
   stype = contents->stype;
-               for (i = 0; i < nsends; i++) PetscCallMPI(MPI_Isend(b, ncols, stype[i], sprocs[i], tag, comm, swaits + i));
+  for (i = 0; i < nsends; i++) PetscCallMPI(MPI_Isend(b, ncols, stype[i], sprocs[i], tag, comm, swaits + i));
 
   if (nrecvs) PetscCallMPI(MPI_Waitall(nrecvs_mpi, rwaits, MPI_STATUSES_IGNORE));
   if (nsends) PetscCallMPI(MPI_Waitall(nsends_mpi, swaits, MPI_STATUSES_IGNORE));
 
   PetscCall(VecScatterRestoreRemote_Private(ctx, PETSC_TRUE /*send*/, &nsends, &sstarts, &sindices, &sprocs, NULL));
-               PetscCall(VecScatterRestoreRemoteOrdered_Private(ctx, PETSC_FALSE /*recv*/, &nrecvs, &rstarts, NULL, &rprocs, NULL));
-               PetscCall(MatDenseRestoreArrayRead(B, &b));
-               PetscCall(MatDenseRestoreArray(workB, &rvalues));
-               PetscFunctionReturn(0);
+  PetscCall(VecScatterRestoreRemoteOrdered_Private(ctx, PETSC_FALSE /*recv*/, &nrecvs, &rstarts, NULL, &rprocs, NULL));
+  PetscCall(MatDenseRestoreArrayRead(B, &b));
+  PetscCall(MatDenseRestoreArray(workB, &rvalues));
+  PetscFunctionReturn(0);
 }
 
 static PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIDense(Mat A, Mat B, Mat C) {

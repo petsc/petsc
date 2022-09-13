@@ -82,6 +82,7 @@ PetscErrorCode MatSetRandom(Mat x, PetscRandom rctx) {
     MPI_Comm comm;
     PetscCall(PetscObjectGetComm((PetscObject)x, &comm));
     PetscCall(PetscRandomCreate(comm, &randObj));
+    PetscCall(PetscRandomSetType(randObj, x->defaultrandtype));
     PetscCall(PetscRandomSetFromOptions(randObj));
     rctx = randObj;
   }
@@ -1332,6 +1333,7 @@ PetscErrorCode MatDestroy(Mat *A) {
 
   PetscCall(PetscFree((*A)->factorprefix));
   PetscCall(PetscFree((*A)->defaultvectype));
+  PetscCall(PetscFree((*A)->defaultrandtype));
   PetscCall(PetscFree((*A)->bsizes));
   PetscCall(PetscFree((*A)->solvertype));
   for (PetscInt i = 0; i < MAT_FACTOR_NUM_TYPES; i++) PetscCall(PetscFree((*A)->preferredordering[i]));

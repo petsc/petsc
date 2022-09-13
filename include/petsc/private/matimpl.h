@@ -487,6 +487,7 @@ struct _p_Mat {
   PetscBool        boundtocpu;
   PetscBool        bindingpropagates;
 #endif
+  char                *defaultrandtype;
   void                *spptr; /* pointer for special library like SuperLU */
   char                *solvertype;
   PetscBool            checksymmetryonassembly, checknullspaceonassembly;
