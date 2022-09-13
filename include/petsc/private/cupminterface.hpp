@@ -338,6 +338,10 @@ struct InterfaceImpl<DeviceType::CUDA> : InterfaceBase<DeviceType::CUDA> {
     return cupmSuccess;
   }
 #endif
+  // CUDA has no cudaInit() to match hipInit()
+  PETSC_CXX_COMPAT_DECL(cupmError_t cupmInit(unsigned int)) {
+    return cudaFree(nullptr);
+  }
 
   // stream management
   PETSC_CUPM_ALIAS_FUNCTION(EventCreate)
@@ -474,6 +478,7 @@ struct InterfaceImpl<DeviceType::HIP> : InterfaceBase<DeviceType::HIP> {
     return cupmSuccess;
   }
 #endif
+  PETSC_CUPM_ALIAS_FUNCTION(Init)
 
   // stream management
   PETSC_CUPM_ALIAS_FUNCTION(EventCreate)
@@ -589,6 +594,7 @@ struct InterfaceImpl<DeviceType::HIP> : InterfaceBase<DeviceType::HIP> {
   using base_name::cupmPointerGetAttributes; \
   using base_name::cupmDeviceGetMemPool; \
   using base_name::cupmMemPoolSetAttribute; \
+  using base_name::cupmInit; \
   using base_name::cupmEventCreate; \
   using base_name::cupmEventCreateWithFlags; \
   using base_name::cupmEventDestroy; \

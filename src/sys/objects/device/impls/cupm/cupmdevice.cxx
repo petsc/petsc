@@ -55,9 +55,9 @@ PetscErrorCode Device<T>::DeviceInternal::initialize() noexcept {
     const auto PETSC_UNUSED unused = cupmGetLastError();
   } else PetscCallCUPM(cupmGetLastError());
   // cuda 5.0+ will create a context when cupmSetDevice is called
-  if (cupmSetDevice(id_) != cupmErrorDeviceAlreadyInUse) PetscCallCUPM(cupmGetLastError());
-  // forces cuda < 5.0 to initialize a context
-  PetscCallCUPM(cupmFree(nullptr));
+  if (cupmSetDevice(id()) != cupmErrorDeviceAlreadyInUse) PetscCallCUPM(cupmGetLastError());
+  // and in case it doesn't, explicitly call init here
+  PetscCallCUPM(cupmInit(0));
   // where is this variable defined and when is it set? who knows! but it is defined and set
   // at this point. either way, each device must make this check since I guess MPI might not be
   // aware of all of them?
