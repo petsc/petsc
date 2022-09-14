@@ -290,13 +290,13 @@ struct MDotFunctor {
   // Per https://kokkos.github.io/kokkos-core-wiki/API/core/parallel-dispatch/parallel_reduce.html#requirements
   // "when specifying a tag in the policy, the functor's potential init/join/final member functions must also be tagged"
   // So we have this kind of duplicated code.
-  KOKKOS_INLINE_FUNCTION void join(TransposeDotTag, volatile value_type dst, const volatile value_type src) const { join(dst, src); }
-  KOKKOS_INLINE_FUNCTION void join(ConjugateDotTag, volatile value_type dst, const volatile value_type src) const { join(dst, src); }
+  KOKKOS_INLINE_FUNCTION void join(TransposeDotTag, value_type dst, const value_type src) const { join(dst, src); }
+  KOKKOS_INLINE_FUNCTION void join(ConjugateDotTag, value_type dst, const value_type src) const { join(dst, src); }
 
   KOKKOS_INLINE_FUNCTION void init(TransposeDotTag, value_type sum) const { init(sum); }
   KOKKOS_INLINE_FUNCTION void init(ConjugateDotTag, value_type sum) const { init(sum); }
 
-  KOKKOS_INLINE_FUNCTION void join(volatile value_type dst, const volatile value_type src) const {
+  KOKKOS_INLINE_FUNCTION void join(value_type dst, const value_type src) const {
     for (size_type j = 0; j < value_count; j++) dst[j] += src[j];
   }
 
@@ -714,7 +714,7 @@ struct DotNorm2 {
     result[1] += PetscConj(yv_(i)) * yv_(i);
   }
 
-  KOKKOS_INLINE_FUNCTION void join(volatile value_type dst, const volatile value_type src) const {
+  KOKKOS_INLINE_FUNCTION void join(value_type dst, const value_type src) const {
     dst[0] += src[0];
     dst[1] += src[1];
   }
