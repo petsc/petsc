@@ -10,6 +10,8 @@ if platform.node() == 'instinct':
     '--with-blaslapack-dir=/home/users/balay/soft/fblaslapack',
     '--with-make-np=24',
     '--with-make-test-np=8',
+    '--with-hipc=/opt/rocm-5.1.0/bin/hipcc',
+    '--with-hip-dir=/opt/rocm-5.1.0',
   ]
 else:
   opts = [
@@ -17,6 +19,8 @@ else:
     '--with-mpi-dir=/scratch/soft/mpich',
     '--download-fblaslapack',
     '--download-hypre',
+    '--with-hipc=/opt/rocm/bin/hipcc',
+    '--with-hip-dir=/opt/rocm',
   ]
 
 if __name__ == '__main__':
@@ -33,8 +37,6 @@ if __name__ == '__main__':
     'HIPOPTFLAGS=-g -O',
     '--with-cuda=0',
     '--with-hip=1',
-    '--with-hipc=/opt/rocm/bin/hipcc',
-    '--with-hip-dir=/opt/rocm',
     '--with-precision=double',
     '--with-clanguage=c',
     '--download-kokkos',
