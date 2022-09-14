@@ -3804,7 +3804,7 @@ PetscErrorCode DMPlexCreateCohesiveSubmesh(DM dm, PetscBool hasLagrange, const c
 .seealso: `DMPlexGetSubpointMap()`, `DMGetLabel()`, `DMLabelSetValue()`, `DMPlexCreateSubmesh()`
 @*/
 PetscErrorCode DMPlexFilter(DM dm, DMLabel cellLabel, PetscInt value, DM *subdm) {
-  PetscInt dim;
+  PetscInt dim, overlap;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -3815,6 +3815,29 @@ PetscErrorCode DMPlexFilter(DM dm, DMLabel cellLabel, PetscInt value, DM *subdm)
   /* Extract submesh in place, could be empty on some procs, could have inconsistency if procs do not both extract a shared cell */
   PetscCall(DMPlexCreateSubmeshGeneric_Interpolated(dm, cellLabel, value, PETSC_FALSE, PETSC_FALSE, 0, *subdm));
   PetscCall(DMPlexCopy_Internal(dm, PETSC_TRUE, PETSC_TRUE, *subdm));
+  // It is possible to obtain a surface mesh where some faces are in SF
+  //   We should either mark the mesh as having an overlap, or delete these from the SF
+  PetscCall(DMPlexGetOverlap(dm, &overlap));
+  if (!overlap) {
+    PetscSF         sf;
+    const PetscInt *leaves;
+    PetscInt        cStart, cEnd, Nl;
+    PetscBool       hasSubcell = PETSC_FALSE, ghasSubcell;
+
+    PetscCall(DMPlexGetHeightStratum(*subdm, 0, &cStart, &cEnd));
+    PetscCall(DMGetPointSF(*subdm, &sf));
+    PetscCall(PetscSFGetGraph(sf, NULL, &Nl, &leaves, NULL));
+    for (PetscInt l = 0; l < Nl; ++l) {
+      const PetscInt point = leaves ? leaves[l] : l;
+
+      if (point >= cStart && point < cEnd) {
+        hasSubcell = PETSC_TRUE;
+        break;
+      }
+    }
+    PetscCall(MPIU_Allreduce(&hasSubcell, &ghasSubcell, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)dm)));
+    if (ghasSubcell) PetscCall(DMPlexSetOverlap(*subdm, NULL, 1));
+  }
   PetscFunctionReturn(0);
 }
 
