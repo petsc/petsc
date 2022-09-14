@@ -145,6 +145,34 @@ M*/
 #endif
 #define PetscHasAttribute(name) __has_attribute(name)
 
+#if !defined(PETSC_SKIP_ATTRIBUTE_MPI_TYPE_TAG)
+/*
+   Support for Clang (>=3.2) matching type tag arguments with void* buffer types.
+   This allows the compiler to detect cases where the MPI datatype argument passed to a MPI routine
+   does not match the actual type of the argument being passed in
+*/
+#if PetscHasAttribute(pointer_with_type_tag)
+#define PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(bufno, typeno) __attribute__((pointer_with_type_tag(MPI, bufno, typeno)))
+#endif
+
+#if PetscHasAttribute(type_tag_for_datatype)
+#define PETSC_ATTRIBUTE_MPI_TYPE_TAG(type)                   __attribute__((type_tag_for_datatype(MPI, type)))
+#define PETSC_ATTRIBUTE_MPI_TYPE_TAG_LAYOUT_COMPATIBLE(type) __attribute__((type_tag_for_datatype(MPI, type, layout_compatible)))
+#endif
+#endif // PETSC_SKIP_ATTRIBUTE_MPI_TYPE_TAG
+
+#ifndef PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE
+#define PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(bufno, typeno)
+#endif
+
+#ifndef PETSC_ATTRIBUTE_MPI_TYPE_TAG
+#define PETSC_ATTRIBUTE_MPI_TYPE_TAG(type)
+#endif
+
+#ifndef PETSC_ATTRIBUTE_MPI_TYPE_TAG_LAYOUT_COMPATIBLE
+#define PETSC_ATTRIBUTE_MPI_TYPE_TAG_LAYOUT_COMPATIBLE(type)
+#endif
+
 /*MC
   PETSC_ATTRIBUTE_FORMAT - Indicate to the compiler that specified arguments should be treated
   as format specifiers and checked for validity

@@ -236,7 +236,7 @@ PETSC_EXTERN PetscErrorCode DMPlexDistributeGetDefault(DM, PetscBool *);
 PETSC_EXTERN PetscErrorCode DMPlexDistributeSetDefault(DM, PetscBool);
 PETSC_EXTERN PetscErrorCode DMPlexDistributeField(DM, PetscSF, PetscSection, Vec, PetscSection, Vec);
 PETSC_EXTERN PetscErrorCode DMPlexDistributeFieldIS(DM, PetscSF, PetscSection, IS, PetscSection, IS *);
-PETSC_EXTERN PetscErrorCode DMPlexDistributeData(DM, PetscSF, PetscSection, MPI_Datatype, void *, PetscSection, void **);
+PETSC_EXTERN PetscErrorCode DMPlexDistributeData(DM, PetscSF, PetscSection, MPI_Datatype, void *, PetscSection, void **) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(5, 4) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(7, 4);
 PETSC_EXTERN PetscErrorCode DMPlexRebalanceSharedPoints(DM, PetscInt, PetscBool, PetscBool, PetscBool *);
 PETSC_EXTERN PetscErrorCode DMPlexMigrate(DM, PetscSF, DM);
 PETSC_EXTERN PetscErrorCode DMPlexGetGatherDM(DM, PetscSF *, DM *);

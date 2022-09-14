@@ -146,31 +146,31 @@ PETSC_EXTERN PetscErrorCode PetscSFDistributeSection(PetscSF, PetscSection, Pets
 PETSC_EXTERN PetscErrorCode PetscSFCreateSectionSF(PetscSF, PetscSection, PetscInt[], PetscSection, PetscSF *);
 
 /* Reduce rootdata to leafdata using provided operation */
-PETSC_EXTERN PetscErrorCode PetscSFBcastBegin(PetscSF, MPI_Datatype, const void *, void *, MPI_Op) PetscAttrMPIPointerWithType(3, 2) PetscAttrMPIPointerWithType(4, 2);
-PETSC_EXTERN PetscErrorCode PetscSFBcastEnd(PetscSF, MPI_Datatype, const void *, void *, MPI_Op) PetscAttrMPIPointerWithType(3, 2) PetscAttrMPIPointerWithType(4, 2);
-PETSC_EXTERN PetscErrorCode PetscSFBcastWithMemTypeBegin(PetscSF, MPI_Datatype, PetscMemType, const void *, PetscMemType, void *, MPI_Op) PetscAttrMPIPointerWithType(4, 2) PetscAttrMPIPointerWithType(6, 2);
+PETSC_EXTERN PetscErrorCode PetscSFBcastBegin(PetscSF, MPI_Datatype, const void *, void *, MPI_Op) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(3, 2) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(4, 2);
+PETSC_EXTERN PetscErrorCode PetscSFBcastEnd(PetscSF, MPI_Datatype, const void *, void *, MPI_Op) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(3, 2) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(4, 2);
+PETSC_EXTERN PetscErrorCode PetscSFBcastWithMemTypeBegin(PetscSF, MPI_Datatype, PetscMemType, const void *, PetscMemType, void *, MPI_Op) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(4, 2) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(6, 2);
 
 /* Reduce leafdata into rootdata using provided operation */
-PETSC_EXTERN PetscErrorCode PetscSFReduceBegin(PetscSF, MPI_Datatype, const void *, void *, MPI_Op) PetscAttrMPIPointerWithType(3, 2) PetscAttrMPIPointerWithType(4, 2);
-PETSC_EXTERN PetscErrorCode PetscSFReduceEnd(PetscSF, MPI_Datatype, const void *, void *, MPI_Op) PetscAttrMPIPointerWithType(3, 2) PetscAttrMPIPointerWithType(4, 2);
-PETSC_EXTERN PetscErrorCode PetscSFReduceWithMemTypeBegin(PetscSF, MPI_Datatype, PetscMemType, const void *, PetscMemType, void *, MPI_Op) PetscAttrMPIPointerWithType(4, 2) PetscAttrMPIPointerWithType(6, 2);
+PETSC_EXTERN PetscErrorCode PetscSFReduceBegin(PetscSF, MPI_Datatype, const void *, void *, MPI_Op) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(3, 2) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(4, 2);
+PETSC_EXTERN PetscErrorCode PetscSFReduceEnd(PetscSF, MPI_Datatype, const void *, void *, MPI_Op) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(3, 2) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(4, 2);
+PETSC_EXTERN PetscErrorCode PetscSFReduceWithMemTypeBegin(PetscSF, MPI_Datatype, PetscMemType, const void *, PetscMemType, void *, MPI_Op) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(4, 2) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(6, 2);
 
 /* Atomically modifies (using provided operation) rootdata using leafdata from each leaf, value at root at time of modification is returned in leafupdate. */
-PETSC_EXTERN PetscErrorCode PetscSFFetchAndOpBegin(PetscSF, MPI_Datatype, void *, const void *, void *, MPI_Op) PetscAttrMPIPointerWithType(3, 2) PetscAttrMPIPointerWithType(4, 2) PetscAttrMPIPointerWithType(5, 2);
-PETSC_EXTERN PetscErrorCode PetscSFFetchAndOpEnd(PetscSF, MPI_Datatype, void *, const void *, void *, MPI_Op) PetscAttrMPIPointerWithType(3, 2) PetscAttrMPIPointerWithType(4, 2) PetscAttrMPIPointerWithType(5, 2);
+PETSC_EXTERN PetscErrorCode PetscSFFetchAndOpBegin(PetscSF, MPI_Datatype, void *, const void *, void *, MPI_Op) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(3, 2) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(4, 2) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(5, 2);
+PETSC_EXTERN PetscErrorCode PetscSFFetchAndOpEnd(PetscSF, MPI_Datatype, void *, const void *, void *, MPI_Op) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(3, 2) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(4, 2) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(5, 2);
 
-PETSC_EXTERN PetscErrorCode PetscSFFetchAndOpWithMemTypeBegin(PetscSF, MPI_Datatype, PetscMemType, void *, PetscMemType, const void *, PetscMemType, void *, MPI_Op) PetscAttrMPIPointerWithType(4, 2) PetscAttrMPIPointerWithType(6, 2) PetscAttrMPIPointerWithType(8, 2);
+PETSC_EXTERN PetscErrorCode PetscSFFetchAndOpWithMemTypeBegin(PetscSF, MPI_Datatype, PetscMemType, void *, PetscMemType, const void *, PetscMemType, void *, MPI_Op) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(4, 2) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(6, 2) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(8, 2);
 
 /* Compute the degree of every root vertex (number of leaves in its star) */
 PETSC_EXTERN PetscErrorCode PetscSFComputeDegreeBegin(PetscSF, const PetscInt **);
 PETSC_EXTERN PetscErrorCode PetscSFComputeDegreeEnd(PetscSF, const PetscInt **);
 PETSC_EXTERN PetscErrorCode PetscSFComputeMultiRootOriginalNumbering(PetscSF, const PetscInt[], PetscInt *, PetscInt *[]);
 /* Concatenate data from all leaves into roots */
-PETSC_EXTERN PetscErrorCode PetscSFGatherBegin(PetscSF, MPI_Datatype, const void *, void *) PetscAttrMPIPointerWithType(3, 2) PetscAttrMPIPointerWithType(4, 2);
-PETSC_EXTERN PetscErrorCode PetscSFGatherEnd(PetscSF, MPI_Datatype, const void *, void *) PetscAttrMPIPointerWithType(3, 2) PetscAttrMPIPointerWithType(4, 2);
+PETSC_EXTERN PetscErrorCode PetscSFGatherBegin(PetscSF, MPI_Datatype, const void *, void *) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(3, 2) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(4, 2);
+PETSC_EXTERN PetscErrorCode PetscSFGatherEnd(PetscSF, MPI_Datatype, const void *, void *) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(3, 2) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(4, 2);
 /* Distribute distinct values to each leaf from roots */
-PETSC_EXTERN PetscErrorCode PetscSFScatterBegin(PetscSF, MPI_Datatype, const void *, void *) PetscAttrMPIPointerWithType(3, 2) PetscAttrMPIPointerWithType(4, 2);
-PETSC_EXTERN PetscErrorCode PetscSFScatterEnd(PetscSF, MPI_Datatype, const void *, void *) PetscAttrMPIPointerWithType(3, 2) PetscAttrMPIPointerWithType(4, 2);
+PETSC_EXTERN PetscErrorCode PetscSFScatterBegin(PetscSF, MPI_Datatype, const void *, void *) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(3, 2) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(4, 2);
+PETSC_EXTERN PetscErrorCode PetscSFScatterEnd(PetscSF, MPI_Datatype, const void *, void *) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(3, 2) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(4, 2);
 
 PETSC_EXTERN PetscErrorCode PetscSFCompose(PetscSF, PetscSF, PetscSF *);
 PETSC_EXTERN PetscErrorCode PetscSFComposeInverse(PetscSF, PetscSF, PetscSF *);

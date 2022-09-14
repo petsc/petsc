@@ -150,7 +150,7 @@ PETSC_EXTERN PetscBool      PetscSFRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode PetscSFRegisterAll(void);
 
 PETSC_INTERN PetscErrorCode PetscSFCreateLocalSF_Private(PetscSF, PetscSF *);
-PETSC_INTERN PetscErrorCode PetscSFBcastToZero_Private(PetscSF, MPI_Datatype, const void *, void *);
+PETSC_INTERN PetscErrorCode PetscSFBcastToZero_Private(PetscSF, MPI_Datatype, const void *, void *) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(3, 2) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(4, 2);
 
 PETSC_EXTERN PetscErrorCode MPIPetsc_Type_unwrap(MPI_Datatype, MPI_Datatype *, PetscBool *);
 PETSC_EXTERN PetscErrorCode MPIPetsc_Type_compare(MPI_Datatype, MPI_Datatype, PetscBool *);
