@@ -7610,9 +7610,9 @@ PetscErrorCode MatResidual(Mat mat, Vec b, Vec x, Vec r) {
                  always used.
 
     Output Parameters:
-+   n - number of local rows in the (possibly compressed) matrix
-.   ia - the row pointers; that is ia[0] = 0, ia[row] = ia[row-1] + number of elements in that row of the matrix
-.   ja - the column indices
++   n - number of local rows in the (possibly compressed) matrix, use NULL if not needed
+.   ia - the row pointers; that is ia[0] = 0, ia[row] = ia[row-1] + number of elements in that row of the matrix, use NULL if not needed
+.   ja - the column indices, use NULL if not needed
 -   done - indicates if the routine actually worked and returned appropriate ia[] and ja[] arrays; callers
            are responsible for handling the case when done == `PETSC_FALSE` and ia and ja are not set
 
