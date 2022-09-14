@@ -66,8 +66,8 @@ class Configure(config.package.Package):
       if self.checkSharedLibrariesEnabled():
         slepcbuilddep = ''
         ldflags = ' '.join(self.setCompilers.sharedLibraryFlags)
-        cxxflags += ' '+self.headers.toStringNoDupes(self.dinclude+[os.path.join(PETSC_DIR,'include'),os.path.join(PETSC_DIR,PETSC_ARCH,'include')])
-        ldflags += ' '+self.libraries.toStringNoDupes(self.dlib)
+        cxxflags += ' '+self.headers.toStringNoDupes(self.dinclude+[os.path.join(PETSC_DIR,'include'),incDir])
+        ldflags += ' '+self.libraries.toStringNoDupes(self.dlib+[os.path.join(libDir,'libpetsc.'+self.setCompilers.sharedLibraryExt)])
         slepcbuilddep = 'slepc-install slepc-build'
         oldFlags = self.compilers.CXXPPFLAGS
         self.compilers.CXXPPFLAGS += ' -I'+incDir
@@ -76,8 +76,6 @@ class Configure(config.package.Package):
         # check for Windows-specific define
         if self.sharedLibraries.getMakeMacro('PETSC_DLL_EXPORTS'):
           cxxflags += ' -Dpetsc_EXPORTS'
-          # need to explicitly link to PETSc and BLAS on Windows
-          ldflags += ' '+self.libraries.toStringNoDupes([os.path.join(libDir,'libpetsc.'+self.setCompilers.sharedLibraryExt),self.libraries.toStringNoDupes(self.blasLapack.lib)])
         self.addMakeRule('hpddmbuild',slepcbuilddep,\
                            ['@echo "*** Building and installing HPDDM ***"',\
                             '@${RM} -f ${PETSC_ARCH}/lib/petsc/conf/hpddm.errorflg',\
