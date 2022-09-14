@@ -857,7 +857,7 @@ static PetscErrorCode PetscDeviceContextGetNullContextForDevice_Private(PetscBoo
     if (PetscUnlikely(!ctxlist[devid])) {
       // we have not seen this device before
       PetscCall(PetscDeviceContextCreate(dctx));
-      PetscCall(PetscInfo(dctx, "Initializing null PetscDeviceContext (of type %s) for device %" PetscInt_FMT "\n", PetscDeviceTypes[dtype], devid));
+      PetscCall(PetscInfo(*dctx, "Initializing null PetscDeviceContext (of type %s) for device %" PetscInt_FMT "\n", PetscDeviceTypes[dtype], devid));
       {
         const auto pobj   = PetscObjectCast(*dctx);
         const auto name   = "null context " + std::to_string(devid);
