@@ -1329,7 +1329,7 @@ static PetscErrorCode PetscViewerHDF5Traverse_Internal(PetscViewer viewer, const
 
   Input Parameters:
 + viewer - The `PETSCVIEWERHDF5` viewer
-- path - The path relative to the pushed group, or NULL
+- path - (Optional) The path relative to the pushed group
 
   Output Parameter:
 . has - Flag for group existence
