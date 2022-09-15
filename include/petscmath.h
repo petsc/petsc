@@ -11,6 +11,7 @@
 #define PETSCMATH_H
 
 #include <math.h>
+#include <petscmacros.h>
 #include <petscsystypes.h>
 
 /* SUBMANSEC = Sys */
@@ -176,10 +177,10 @@ static inline PetscReal PetscLog2Real(PetscReal a) {
 #endif
 
 #if defined(PETSC_HAVE_REAL___FLOAT128)
-PETSC_EXTERN MPI_Datatype MPIU___FLOAT128 PetscAttrMPITypeTag(__float128);
+PETSC_EXTERN MPI_Datatype MPIU___FLOAT128 PETSC_ATTRIBUTE_MPI_TYPE_TAG(__float128);
 #endif
 #if defined(PETSC_HAVE_REAL___FP16)
-PETSC_EXTERN MPI_Datatype MPIU___FP16 PetscAttrMPITypeTag(__fp16);
+PETSC_EXTERN MPI_Datatype MPIU___FP16 PETSC_ATTRIBUTE_MPI_TYPE_TAG(__fp16);
 #endif
 
 /*MC
@@ -416,7 +417,16 @@ static inline PetscComplex PetscCMPLX(PetscReal x, PetscReal y) {
 #define MPIU_C_DOUBLE_COMPLEX MPI_C_DOUBLE_COMPLEX PETSC_DEPRECATED_MACRO("GCC warning \"MPIU_C_DOUBLE_COMPLEX macro is deprecated use MPI_C_DOUBLE_COMPLEX (since version 3.15)\"")
 
 #if defined(PETSC_HAVE_REAL___FLOAT128)
-PETSC_EXTERN MPI_Datatype MPIU___COMPLEX128 PetscAttrMPITypeTag(__complex128);
+// if complex is not used, then quadmath.h won't be included by petscsystypes.h
+#if defined(PETSC_USE_COMPLEX)
+#define MPIU___COMPLEX128_ATTR_TAG PETSC_ATTRIBUTE_MPI_TYPE_TAG(__complex128)
+#else
+#define MPIU___COMPLEX128_ATTR_TAG
+#endif
+
+PETSC_EXTERN MPI_Datatype MPIU___COMPLEX128 MPIU___COMPLEX128_ATTR_TAG;
+
+#undef MPIU___COMPLEX128_ATTR_TAG
 #endif /* PETSC_HAVE_REAL___FLOAT128 */
 
 /*MC
@@ -824,21 +834,37 @@ typedef PetscReal   MatReal;
 struct petsc_mpiu_2scalar {
   PetscScalar a, b;
 };
-PETSC_EXTERN MPI_Datatype MPIU_2SCALAR PetscAttrMPITypeTagLayoutCompatible(struct petsc_mpiu_2scalar);
+PETSC_EXTERN MPI_Datatype MPIU_2SCALAR PETSC_ATTRIBUTE_MPI_TYPE_TAG_LAYOUT_COMPATIBLE(struct petsc_mpiu_2scalar);
 
-/*
-   MPI Datatypes for composite reductions:
-   MPIU_REAL_INT -> struct { PetscReal; PetscInt; }
-   MPIU_SCALAR_INT -> struct { PetscScalar; PetscInt; }
-*/
-PETSC_EXTERN MPI_Datatype MPIU_REAL_INT;
-PETSC_EXTERN MPI_Datatype MPIU_SCALAR_INT;
+/* MPI Datatypes for composite reductions */
+struct petsc_mpiu_real_int {
+  PetscReal v;
+  PetscInt  i;
+};
+
+struct petsc_mpiu_scalar_int {
+  PetscScalar v;
+  PetscInt    i;
+};
+
+PETSC_EXTERN MPI_Datatype MPIU_REAL_INT   PETSC_ATTRIBUTE_MPI_TYPE_TAG_LAYOUT_COMPATIBLE(struct petsc_mpiu_real_int);
+PETSC_EXTERN MPI_Datatype MPIU_SCALAR_INT PETSC_ATTRIBUTE_MPI_TYPE_TAG_LAYOUT_COMPATIBLE(struct petsc_mpiu_scalar_int);
 
 #if defined(PETSC_USE_64BIT_INDICES)
-struct petsc_mpiu_2int {
-  PetscInt a, b;
+struct /* __attribute__((packed, aligned(alignof(PetscInt *)))) */ petsc_mpiu_2int {
+  PetscInt a;
+  PetscInt b;
 };
-PETSC_EXTERN MPI_Datatype MPIU_2INT PetscAttrMPITypeTagLayoutCompatible(struct petsc_mpiu_2int);
+/*
+ static_assert(sizeof(struct petsc_mpiu_2int) == 2 * sizeof(PetscInt), "");
+ static_assert(alignof(struct petsc_mpiu_2int) == alignof(PetscInt *), "");
+ static_assert(alignof(struct petsc_mpiu_2int) == alignof(PetscInt[2]), "");
+
+ clang generates warnings that petsc_mpiu_2int is not layout compatible with PetscInt[2] or
+ PetscInt *, even though (with everything else uncommented) both of the static_asserts above
+ pass! So we just comment it out...
+*/
+PETSC_EXTERN MPI_Datatype MPIU_2INT /* PETSC_ATTRIBUTE_MPI_TYPE_TAG_LAYOUT_COMPATIBLE(struct petsc_mpiu_2int) */;
 #else
 #define MPIU_2INT MPI_2INT
 #endif

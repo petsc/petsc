@@ -31,6 +31,7 @@ In addition to the changes above
 - Change behavior of ``SETERRQ()`` when ``PetscError()`` returns 0 via user-set error handler. In such cases ``SETERRQ()`` now returns ``PETSC_ERR_RETURN`` (a nonzero value) instead. Previously the value (0) would be propagated as-is. Note that while returning 0 from error handlers in ``PetscError()`` is supported, doing so is discouraged
 - Change ``PetscOptionsBegin()``, ``PetscOptionsEnd()``, and ``PetscObjectOptionsBegin()`` to not return an error code
 - Change ``PetscOptionsHead()``, ``PetscOptionsTail()``, to ``PetscOptionsHeadBegin()`` and ``PetscOptionsHeadEnd()`` and to not return an error code
+- Enable ``MPI_Datatype`` type-checking to ensure that the type of the pointer passed to communication routines (e.g. ``PetscSFBcastBegin()``) matches the corresponding ``MPI_Datatype`` argument. Compilers supporting this feature will emit a warning in case of mismatch. These may be disabled by defining ``PETSC_SKIP_ATTRIBUTE_MPI_TYPE_TAG`` prior to all PETSc header-file inclusions
 - Add ``PETSC_ATTRIBUTE_FORMAT()`` to enable compile-time ``printf()``-style format specifier checking and apply it any PETSc functions taking a format string
 - Deprecate the use of ``%D`` for printing ``PetscInt`` in favor of ``%" PetscInt_FMT "``. Compilers may now emit warnings when using ``%D`` as a result of applying ``PETSC_ATTRIBUTE_FORMAT``. Users that need to support older versions of PETSc may do one of two things:
 
