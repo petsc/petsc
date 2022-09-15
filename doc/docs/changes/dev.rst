@@ -123,8 +123,8 @@ exec-name``.
 .. rubric:: PetscDraw:
 
 - Add ``PetscDrawSPGetDimension()``
--  Change ``PetscDrawCollectiveBegin()`` and ``PetscDrawCollectiveEnd()`` to not return an error code. Users can remove the error code checking for
-   these functions and it will work correctly for all versions of PETSc
+- Change ``PetscDrawCollectiveBegin()`` and ``PetscDrawCollectiveEnd()`` to not return an error code. Users can remove the error code checking for
+  these functions and it will work correctly for all versions of PETSc
 
 .. rubric:: AO:
 
