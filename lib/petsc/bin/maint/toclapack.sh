@@ -457,6 +457,10 @@ for p in blas qblas hblas lapack qlapack hlapack; do
 				s/^sdsdot/dqddot/
 				/^ila[dz]l[rc]/ { y/dz/qw/; }' )";
 			echo "s/([^a-zA-Z_1-9]+)${base}_([^a-zA-Z_1-9]+)/\\1${qbase}_\\2/g;" >> $QL
+                        if [ "$base" = "dladiv" ]; then  # special routine that has auxiliary functions
+                           echo "s/([^a-zA-Z_1-9]+)${base}1_([^a-zA-Z_1-9]+)/\\1${qbase}1_\\2/g;" >> $QL;
+                           echo "s/([^a-zA-Z_1-9]+)${base}2_([^a-zA-Z_1-9]+)/\\1${qbase}2_\\2/g;" >> $QL;
+                        fi;
 			cp $base.f ${TMP}/${qbase}.f
 			echo ${qbase}.f >> ${TMP}/ql.list
 		fi
@@ -473,6 +477,10 @@ for p in blas qblas hblas lapack qlapack hlapack; do
 				s/^sdsdot/dhddot/
 				/^ila[dz]l[rc]/ { y/dz/hk/; }' )";
 			echo "s/([^a-zA-Z_1-9]+)${base}_([^a-zA-Z_1-9]+)/\\1${hbase}_\\2/g;" >> $HL
+                        if [ "$base" = "dladiv" ]; then  # special routine that has auxiliary functions
+                           echo "s/([^a-zA-Z_1-9]+)${base}1_([^a-zA-Z_1-9]+)/\\1${hbase}1_\\2/g;" >> $HL;
+                           echo "s/([^a-zA-Z_1-9]+)${base}2_([^a-zA-Z_1-9]+)/\\1${hbase}2_\\2/g;" >> $HL;
+                        fi;
 			cp $base.f ${TMP}/${hbase}.f
 			echo ${hbase}.f >> ${TMP}/hl.list
 		fi
