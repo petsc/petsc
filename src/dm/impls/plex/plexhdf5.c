@@ -96,6 +96,11 @@ static PetscErrorCode PetscViewerCheckVersion_Private(PetscViewer viewer, DMPlex
   PetscFunctionReturn(0);
 }
 
+static inline PetscBool DMPlexStorageVersionGE(DMPlexStorageVersion version, int major, int minor, int subminor)
+{
+  return (PetscBool)((version->major == major && version->minor == minor && version->subminor >= subminor) || (version->major == major && version->minor > minor) || (version->major > major));
+}
+
 PetscErrorCode PetscViewerHDF5GetDMPlexStorageVersionWriting(PetscViewer viewer, DMPlexStorageVersion *version)
 {
   const char ATTR_NAME[] = "dmplex_storage_version";
@@ -517,7 +522,7 @@ static PetscErrorCode DMPlexDistributionView_HDF5_Static(DM dm, IS globalPointNu
 
   PetscFunctionBegin;
   PetscCall(PetscViewerHDF5GetDMPlexStorageVersionWriting(viewer, &version));
-  if (version->major < 2) PetscFunctionReturn(0);
+  if (!DMPlexStorageVersionGE(version, 2, 0, 0)) PetscFunctionReturn(0);
   PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
@@ -663,11 +668,10 @@ PetscErrorCode DMPlexTopologyView_HDF5_Internal(DM dm, IS globalPointNumbers, Pe
   PetscFunctionBegin;
   PetscCall(PetscViewerHDF5GetDMPlexStorageVersionWriting(viewer, &version));
   PetscCall(DMPlexGetHDF5Name_Private(dm, &topologydm_name));
-  if (version->major < 2) {
-    PetscCall(PetscStrcpy(group, "/topology"));
-  } else {
-    /* since DMPlexStorageVersion 2.0.0 */
+  if (DMPlexStorageVersionGE(version, 2, 0, 0)) {
     PetscCall(PetscSNPrintf(group, sizeof(group), "topologies/%s/topology", topologydm_name));
+  } else {
+    PetscCall(PetscStrcpy(group, "/topology"));
   }
   PetscCall(PetscViewerHDF5PushGroup(viewer, group));
   PetscCall(DMPlexTopologyView_HDF5_Legacy_Private(dm, globalPointNumbers, viewer));
@@ -871,11 +875,12 @@ PetscErrorCode DMPlexCoordinatesView_HDF5_Internal(DM dm, PetscViewer viewer)
 
     PetscCall(PetscViewerGetFormat(viewer, &format));
     PetscCall(PetscViewerHDF5GetDMPlexStorageVersionWriting(viewer, &version));
-    if (format == PETSC_VIEWER_HDF5_XDMF || format == PETSC_VIEWER_HDF5_VIZ || version->major < 2) {
+    if (!DMPlexStorageVersionGE(version, 2, 0, 0) || format == PETSC_VIEWER_HDF5_XDMF || format == PETSC_VIEWER_HDF5_VIZ) {
       PetscCall(DMPlexCoordinatesView_HDF5_Legacy_Private(dm, viewer));
       PetscFunctionReturn(0);
     }
   }
+  /* since 2.0.0 */
   PetscCall(DMGetCoordinateDM(dm, &cdm));
   PetscCall(DMGetCoordinates(dm, &coords));
   PetscCall(PetscObjectGetName((PetscObject)cdm, &coordinatedm_name));
@@ -1049,11 +1054,10 @@ PetscErrorCode DMPlexLabelsView_HDF5_Internal(DM dm, IS globalPointNumbers, Pets
   PetscCall(PetscViewerHDF5GetDMPlexStorageVersionWriting(viewer, &version));
   PetscCall(ISGetIndices(globalPointNumbers, &gpoint));
   PetscCall(DMPlexGetHDF5Name_Private(dm, &topologydm_name));
-  if (version->major < 2) {
-    PetscCall(PetscStrcpy(group, "/labels"));
-  } else {
-    /* since DMPlexStorageVersion 2.0.0 */
+  if (DMPlexStorageVersionGE(version, 2, 0, 0)) {
     PetscCall(PetscSNPrintf(group, sizeof(group), "topologies/%s/labels", topologydm_name));
+  } else {
+    PetscCall(PetscStrcpy(group, "/labels"));
   }
   PetscCall(PetscViewerHDF5PushGroup(viewer, group));
   PetscCall(DMGetNumLabels(dm, &numLabels));
@@ -1490,11 +1494,10 @@ PetscErrorCode DMPlexLabelsLoad_HDF5_Internal(DM dm, PetscViewer viewer, PetscSF
   PetscCall(LoadLabelsCtxCreate(dm, viewer, sfXC, &ctx));
   PetscCall(DMPlexGetHDF5Name_Private(dm, &topologydm_name));
   PetscCall(PetscViewerHDF5GetDMPlexStorageVersionReading(viewer, &version));
-  if (version->major < 2) {
-    PetscCall(PetscStrcpy(group, "labels"));
-  } else {
-    /* since DMPlexStorageVersion 2.0.0 */
+  if (DMPlexStorageVersionGE(version, 2, 0, 0)) {
     PetscCall(PetscSNPrintf(group, sizeof(group), "topologies/%s/labels", topologydm_name));
+  } else {
+    PetscCall(PetscStrcpy(group, "labels"));
   }
   PetscCall(PetscViewerHDF5PushGroup(viewer, group));
   PetscCall(PetscViewerHDF5HasGroup(viewer, NULL, &hasGroup));
@@ -1810,11 +1813,10 @@ PetscErrorCode DMPlexTopologyLoad_HDF5_Internal(DM dm, PetscViewer viewer, Petsc
   PetscFunctionBegin;
   PetscCall(DMPlexGetHDF5Name_Private(dm, &topologydm_name));
   PetscCall(PetscViewerHDF5GetDMPlexStorageVersionReading(viewer, &version));
-  if (version->major < 2) {
-    PetscCall(PetscStrcpy(group, "/topology"));
-  } else {
-    /* since DMPlexStorageVersion 2.0.0 */
+  if (DMPlexStorageVersionGE(version, 2, 0, 0)) {
     PetscCall(PetscSNPrintf(group, sizeof(group), "topologies/%s/topology", topologydm_name));
+  } else {
+    PetscCall(PetscStrcpy(group, "/topology"));
   }
   PetscCall(PetscViewerHDF5PushGroup(viewer, group));
   PetscCall(DMPlexTopologyLoad_HDF5_Legacy_Private(dm, viewer, sfXC));
@@ -1881,7 +1883,7 @@ PetscErrorCode DMPlexCoordinatesLoad_HDF5_Internal(DM dm, PetscViewer viewer, Pe
 
   PetscFunctionBegin;
   PetscCall(PetscViewerHDF5GetDMPlexStorageVersionReading(viewer, &version));
-  if (version->major < 2) {
+  if (!DMPlexStorageVersionGE(version, 2, 0, 0)) {
     PetscCall(DMPlexCoordinatesLoad_HDF5_Legacy_Private(dm, viewer));
     PetscFunctionReturn(0);
   }
@@ -1921,7 +1923,7 @@ PetscErrorCode DMPlexLoad_HDF5_Internal(DM dm, PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscCall(PetscViewerHDF5GetDMPlexStorageVersionReading(viewer, &version));
-  if (version->major < 2) {
+  if (!DMPlexStorageVersionGE(version, 2, 0, 0)) {
     PetscCall(DMPlexTopologyLoad_HDF5_Internal(dm, viewer, NULL));
     PetscCall(DMPlexLabelsLoad_HDF5_Internal(dm, viewer, NULL));
     PetscCall(DMPlexCoordinatesLoad_HDF5_Legacy_Private(dm, viewer));
