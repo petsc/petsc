@@ -23,7 +23,7 @@ static PetscErrorCode PetscViewerHDF5HasAttribute_Internal(PetscViewer, const ch
 
   The output abspath is newly allocated so needs to be freed.
 
-.seealso: `PETSCVIEWERHDF5`, `PetscViewerHDF5Open()`, `PetscViewerHDF5PushGroup()`, `PetscViewerHDF5PopGroup()`, `PetscViewerHDF5OpenGroup()`
+.seealso: `PETSCVIEWERHDF5`, `PetscViewerHDF5Open()`, `PetscViewerHDF5PushGroup()`, `PetscViewerHDF5PopGroup()`, `PetscViewerHDF5OpenGroup()`, `PetscViewerHDF5WriteGroup()`
 @*/
 PetscErrorCode PetscViewerHDF5GetGroup(PetscViewer viewer, const char path[], char *abspath[]) {
   size_t      len;
@@ -650,7 +650,7 @@ PetscErrorCode PetscViewerHDF5GetFileId(PetscViewer viewer, hid_t *file_id) {
   Developer Note:
   The root group "/" is internally stored as NULL.
 
-.seealso: `PETSCVIEWERHDF5`, `PetscViewerHDF5Open()`, `PetscViewerHDF5PopGroup()`, `PetscViewerHDF5GetGroup()`, `PetscViewerHDF5OpenGroup()`
+.seealso: `PETSCVIEWERHDF5`, `PetscViewerHDF5Open()`, `PetscViewerHDF5PopGroup()`, `PetscViewerHDF5GetGroup()`, `PetscViewerHDF5OpenGroup()`, `PetscViewerHDF5WriteGroup()`
 @*/
 PetscErrorCode PetscViewerHDF5PushGroup(PetscViewer viewer, const char name[]) {
   PetscViewer_HDF5         *hdf5 = (PetscViewer_HDF5 *)viewer->data;
@@ -700,7 +700,7 @@ PetscErrorCode PetscViewerHDF5PushGroup(PetscViewer viewer, const char name[]) {
 
   Level: intermediate
 
-.seealso: `PETSCVIEWERHDF5`, `PetscViewerHDF5Open()`, `PetscViewerHDF5PushGroup()`, `PetscViewerHDF5GetGroup()`, `PetscViewerHDF5OpenGroup()`
+.seealso: `PETSCVIEWERHDF5`, `PetscViewerHDF5Open()`, `PetscViewerHDF5PushGroup()`, `PetscViewerHDF5GetGroup()`, `PetscViewerHDF5OpenGroup()`, `PetscViewerHDF5WriteGroup()`
 @*/
 PetscErrorCode PetscViewerHDF5PopGroup(PetscViewer viewer) {
   PetscViewer_HDF5         *hdf5 = (PetscViewer_HDF5 *)viewer->data;
@@ -750,7 +750,7 @@ PetscErrorCode PetscViewerHDF5GetGroup_Internal(PetscViewer viewer, const char *
 
   Level: intermediate
 
-.seealso: `PETSCVIEWERHDF5`, `PetscViewerHDF5Open()`, `PetscViewerHDF5PushGroup()`, `PetscViewerHDF5PopGroup()`, `PetscViewerHDF5GetGroup()`
+.seealso: `PETSCVIEWERHDF5`, `PetscViewerHDF5Open()`, `PetscViewerHDF5PushGroup()`, `PetscViewerHDF5PopGroup()`, `PetscViewerHDF5GetGroup()`, `PetscViewerHDF5WriteGroup()`
 @*/
 PetscErrorCode PetscViewerHDF5OpenGroup(PetscViewer viewer, const char path[], hid_t *fileId, hid_t *groupId) {
   hid_t       file_id;
@@ -773,6 +773,34 @@ PetscErrorCode PetscViewerHDF5OpenGroup(PetscViewer viewer, const char path[], h
   PetscCallHDF5Return(*groupId, H5Gopen2, (file_id, groupName, H5P_DEFAULT));
   PetscCall(PetscFree(groupName));
   *fileId = file_id;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  PetscViewerHDF5WriteGroup - Ensure the HDF5 group exists in the HDF5 file
+
+  Not collective
+
+  Input Parameters:
++ viewer - the `PetscViewer` of type `PETSCVIEWERHDF5`
+- path - (Optional) The path relative to the pushed group
+
+  Note:
+  If path starts with '/', it is taken as an absolute path overriding currently pushed group, else path is relative to the current pushed group.
+  So NULL or empty path means the current pushed group.
+
+  This will fail if the viewer is not writable.
+
+  Level: intermediate
+
+.seealso: `PETSCVIEWERHDF5`, `PetscViewerHDF5Open()`, `PetscViewerHDF5PushGroup()`, `PetscViewerHDF5PopGroup()`, `PetscViewerHDF5GetGroup()`, `PetscViewerHDF5OpenGroup()`
+@*/
+PetscErrorCode PetscViewerHDF5WriteGroup(PetscViewer viewer, const char path[]) {
+  hid_t fileId, groupId;
+
+  PetscFunctionBegin;
+  PetscCall(PetscViewerHDF5OpenGroup(viewer, path, &fileId, &groupId)); // make sure group is actually created
+  PetscCallHDF5(H5Gclose, (groupId));
   PetscFunctionReturn(0);
 }
 

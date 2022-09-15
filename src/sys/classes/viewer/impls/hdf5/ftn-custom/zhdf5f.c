@@ -11,6 +11,7 @@
 #define petscviewerhdf5readattribute_   PETSCVIEWERHDF5READATTRIBUTE
 #define petscviewerhdf5hasgroup_        PETSCVIEWERHDF5HASGROUP
 #define petscviewerhdf5opengroup_       PETSCVIEWERHDF5OPENGROUP
+#define petscviewerhdf5writegroup_      PETSCVIEWERHDF5WRITEGROUP
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define petscviewerhdf5open_            petscviewerhdf5open
 #define petscviewerhdf5pushgroup_       petscviewerhdf5pushgroup
@@ -21,6 +22,7 @@
 #define petscviewerhdf5readattribute_   petscviewerhdf5readattribute
 #define petscviewerhdf5hasgroup_        petscviewerhdf5hasgroup
 #define petscviewerhdf5opengroup_       petscviewerhdf5opengroup
+#define petscviewerhdf5writegroup_      petscviewerhdf5writegroup
 #endif
 
 PETSC_EXTERN void petscviewerhdf5open_(MPI_Comm *comm, char* name, PetscFileMode *type,
@@ -117,5 +119,14 @@ PETSC_EXTERN void petscviewerhdf5opengroup_(PetscViewer *viewer, char path[], hi
 
    FIXCHAR(path, len, c1);
    *ierr = PetscViewerHDF5OpenGroup(*viewer, c1, fileId, groupId);
+   FREECHAR(path, c1);
+}
+
+PETSC_EXTERN void petscviewerhdf5writegroup_(PetscViewer *viewer, char path[], int *ierr, PETSC_FORTRAN_CHARLEN_T len)
+{
+   char *c1;
+
+   FIXCHAR(path, len, c1);
+   *ierr = PetscViewerHDF5WriteGroup(*viewer, c1);
    FREECHAR(path, c1);
 }

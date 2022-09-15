@@ -118,6 +118,7 @@ exec-name``.
 
 - Change ``PetscViewerHDF5GetGroup()`` to accept optional path relative to the pushed group and always return absolute path (newly allocated)
 - Change ``PetscViewerHDF5OpenGroup()`` to accept optional path relative to the pushed group
+- Add ``PetscViewerHDF5WriteGroup()``
 
 .. rubric:: PetscDraw:
 
