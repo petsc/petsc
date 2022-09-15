@@ -211,7 +211,7 @@ static PetscErrorCode MatGetRowIJ_SeqAIJ_Inode(Mat A, PetscInt oshift, PetscBool
   Mat_SeqAIJ *a = (Mat_SeqAIJ *)A->data;
 
   PetscFunctionBegin;
-  *n = a->inode.node_count;
+  if (n) *n = a->inode.node_count;
   if (!ia) PetscFunctionReturn(0);
   if (!blockcompressed) {
     PetscCall(MatGetRowIJ_SeqAIJ(A, oshift, symmetric, blockcompressed, n, ia, ja, done));

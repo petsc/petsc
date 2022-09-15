@@ -106,7 +106,7 @@ static PetscErrorCode PCMPICreate(PC pc) {
     size_t slen;
 
     PetscCallMPI(MPI_Comm_size(comm, &size));
-    PCMPIKSPCounts[size]++;
+    PCMPIKSPCounts[size - 1]++;
     PetscCall(PCGetOptionsPrefix(pc, (const char **)&prefix));
     PetscCall(PetscStrlen(prefix, &slen));
     len = (PetscMPIInt)slen;
@@ -141,7 +141,7 @@ static PetscErrorCode PCMPISetMat(PC pc) {
   PetscCall(PetscObjectGetComm((PetscObject)ksp, &comm));
   if (pc) {
     PetscCallMPI(MPI_Comm_size(comm, &size));
-    PCMPIMatCounts[size]++;
+    PCMPIMatCounts[size - 1]++;
     PetscCall(PCGetOperators(pc, &sA, &sA));
     PetscCall(MatGetSize(sA, &N[0], &N[1]));
   }
@@ -215,19 +215,18 @@ static PetscErrorCode PCMPIUpdateMatValues(PC pc) {
   PetscScalar       *a;
   PetscCount         nz;
   const PetscScalar *sa = NULL;
+  PetscMPIInt        size;
 
   PetscFunctionBegin;
   if (pc) {
-    PetscMPIInt size;
-
-    PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)pc), &size));
-    PCMPIMatCounts[size]++;
     PetscCall(PCGetOperators(pc, &sA, &sA));
     PetscCall(MatSeqAIJGetArrayRead(sA, &sa));
   }
   PetscCallMPI(MPI_Scatter(pc ? km->ksps : NULL, 1, MPI_AINT, &ksp, 1, MPI_AINT, 0, comm));
   if (!ksp) PetscFunctionReturn(0);
   PetscCall(PetscObjectGetComm((PetscObject)ksp, &comm));
+  PetscCallMPI(MPI_Comm_size(comm, &size));
+  PCMPIMatCounts[size - 1]++;
   PetscCall(KSPGetOperators(ksp, NULL, &A));
   PetscCall(MatMPIAIJGetNumberNonzeros(A, &nz));
   PetscCall(PetscMalloc1(nz, &a));
@@ -257,8 +256,8 @@ static PetscErrorCode PCMPISolve(PC pc, Vec B, Vec X) {
   if (pc) {
     PetscMPIInt size;
 
-    PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)pc), &size));
-    PCMPISolveCounts[size]++;
+    PetscCallMPI(MPI_Comm_size(comm, &size));
+    PCMPISolveCounts[size - 1]++;
     PetscCall(VecGetArrayRead(B, &sb));
   }
   PetscCall(VecGetLocalSize(ksp->vec_rhs, &n));
@@ -382,7 +381,7 @@ PetscErrorCode PCMPIServerEnd(void) {
         PetscInt    i, ksp = 0, mat = 0, solve = 0;
 
         PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
-        for (i = 1; i < size; i++) {
+        for (i = 0; i < size; i++) {
           ksp += PCMPIKSPCounts[i];
           mat += PCMPIMatCounts[i];
           solve += PCMPISolveCounts[i];
