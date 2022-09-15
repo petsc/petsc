@@ -11,6 +11,8 @@
 +  merit - the merit function 1/2 ||phi||^2
 -  phinorm -  the two-norm of the vector, ||phi||
 
+   Level: developer
+
 .seealso: `SNESVINEWTONSSLS`, `SNESVIComputeFunction()`
 @*/
 PetscErrorCode SNESVIComputeMeritFunction(Vec phi, PetscReal *merit, PetscReal *phinorm) {
@@ -41,6 +43,8 @@ static inline PetscScalar DPhi(PetscScalar a, PetscScalar b) {
 
    Output Parameter:
 .  phi - the evaluation of Semismooth function at X
+
+   Level: developer
 
 .seealso: `SNESVINEWTONSSLS`, `SNESVIComputeMeritFunction()`
 @*/

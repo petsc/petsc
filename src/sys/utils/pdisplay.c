@@ -150,6 +150,9 @@ PetscErrorCode PetscSetDisplay(void) {
 -  -x_virtual - forces use of a X virtual display Xvfb that will not display anything but -draw_save will still work. Xvfb is automatically
                 started up in PetscSetDisplay() with this option
 
+  Level: advanced
+
+.seealso: `PETSC_DRAW_X`, `PetscDrawOpenX()`
 @*/
 PetscErrorCode PetscGetDisplay(char display[], size_t n) {
   PetscFunctionBegin;
