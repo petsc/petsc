@@ -55,7 +55,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerHDF5HasObjectAttribute(PetscViewer, Petsc
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5Open(MPI_Comm, const char[], PetscFileMode, PetscViewer *);
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5PushGroup(PetscViewer, const char[]);
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5PopGroup(PetscViewer);
-PETSC_EXTERN PetscErrorCode PetscViewerHDF5GetGroup(PetscViewer, const char *[]);
+PETSC_EXTERN PetscErrorCode PetscViewerHDF5GetGroup(PetscViewer, const char[], char *[]);
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5HasGroup(PetscViewer, const char[], PetscBool *);
 
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5SetDefaultTimestepping(PetscViewer, PetscBool);

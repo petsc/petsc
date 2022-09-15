@@ -412,9 +412,11 @@ cdef class ViewerHDF5(Viewer):
         CHKERR( PetscViewerHDF5PopGroup(self.vwr) )
 
     def getGroup(self):
-        cdef const char *cgroup = NULL
-        CHKERR( PetscViewerHDF5GetGroup(self.vwr, &cgroup) )
-        return bytes2str(cgroup)
+        cdef char *cgroup = NULL
+        CHKERR( PetscViewerHDF5GetGroup(self.vwr, NULL, &cgroup) )
+        group = bytes2str(cgroup)
+        CHKERR( PetscFree(cgroup) )
+        return group
 
 # --------------------------------------------------------------------
 

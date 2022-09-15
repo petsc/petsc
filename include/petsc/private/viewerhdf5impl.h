@@ -58,5 +58,6 @@ typedef struct {
 } PetscViewer_HDF5;
 
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5CheckTimestepping_Internal(PetscViewer, const char[]); /* currently used in src/dm/impls/da/gr2.c so needs to be extern */
+PETSC_INTERN PetscErrorCode PetscViewerHDF5GetGroup_Internal(PetscViewer, const char *[]);
 #endif
 #endif

@@ -116,6 +116,8 @@ exec-name``.
 
 .. rubric:: PetscViewer:
 
+- Change ``PetscViewerHDF5GetGroup()`` to accept optional path relative to the pushed group and always return absolute path (newly allocated)
+
 .. rubric:: PetscDraw:
 
 - Add ``PetscDrawSPGetDimension()``
