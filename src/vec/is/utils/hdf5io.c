@@ -34,7 +34,7 @@ static PetscErrorCode PetscViewerHDF5ReadInitialize_Private(PetscViewer viewer, 
   PetscFunctionBegin;
   PetscCall(PetscViewerHDF5CheckTimestepping_Internal(viewer, name));
   PetscCall(PetscNew(&h));
-  PetscCall(PetscViewerHDF5OpenGroup(viewer, &h->file, &h->group));
+  PetscCall(PetscViewerHDF5OpenGroup(viewer, NULL, &h->file, &h->group));
   PetscCallHDF5Return(h->dataset, H5Dopen2, (h->group, name, H5P_DEFAULT));
   PetscCallHDF5Return(h->dataspace, H5Dget_space, (h->dataset));
   PetscCall(PetscViewerHDF5ReadAttribute(viewer, name, "complex", PETSC_BOOL, &h->complexVal, &h->complexVal));

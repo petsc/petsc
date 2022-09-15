@@ -672,7 +672,7 @@ static PetscErrorCode DMPlexTopologyView_HDF5_XDMF_Private(DM dm, IS globalCellN
 
   PetscFunctionBegin;
   PetscCall(PetscViewerHDF5PushGroup(viewer, "/viz"));
-  PetscCall(PetscViewerHDF5OpenGroup(viewer, &fileId, &groupId));
+  PetscCall(PetscViewerHDF5OpenGroup(viewer, NULL, &fileId, &groupId));
   PetscCallHDF5(H5Gclose, (groupId));
 
   PetscCall(PetscViewerHDF5PopGroup(viewer));
@@ -915,7 +915,7 @@ static PetscErrorCode DMPlexCoordinatesView_HDF5_XDMF_Private(DM dm, PetscViewer
   PetscCall(PetscObjectSetName((PetscObject)newcoords, "vertices"));
   PetscCall(VecScale(newcoords, lengthScale));
   PetscCall(PetscViewerHDF5PushGroup(viewer, "/viz"));
-  PetscCall(PetscViewerHDF5OpenGroup(viewer, &fileId, &groupId));
+  PetscCall(PetscViewerHDF5OpenGroup(viewer, NULL, &fileId, &groupId));
   PetscCallHDF5(H5Gclose, (groupId));
   PetscCall(PetscViewerHDF5PopGroup(viewer));
   PetscCall(PetscViewerHDF5PushGroup(viewer, "/viz/geometry"));
@@ -1371,7 +1371,7 @@ PetscErrorCode DMPlexLabelsLoad_HDF5_Internal(DM dm, PetscViewer viewer, PetscSF
   if (hasGroup) {
     hid_t fileId, groupId;
 
-    PetscCall(PetscViewerHDF5OpenGroup(viewer, &fileId, &groupId));
+    PetscCall(PetscViewerHDF5OpenGroup(viewer, NULL, &fileId, &groupId));
     /* Iterate over labels */
     PetscCallHDF5(H5Literate, (groupId, H5_INDEX_NAME, H5_ITER_NATIVE, &idx, ReadLabelHDF5_Static, ctx));
     PetscCallHDF5(H5Gclose, (groupId));

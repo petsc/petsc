@@ -727,45 +727,51 @@ PetscErrorCode PetscViewerHDF5GetGroup_Internal(PetscViewer viewer, const char *
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
   PetscViewerHDF5OpenGroup - Open the HDF5 group with the name (full path) returned by `PetscViewerHDF5GetGroup()`,
   and return this group's ID and file ID.
   If `PetscViewerHDF5GetGroup()` yields NULL, then group ID is file ID.
 
   Not collective
 
-  Input Parameter:
-. viewer - the `PetscViewer` of type `PETSCVIEWERHDF5`
+  Input Parameters:
++ viewer - the `PetscViewer` of type `PETSCVIEWERHDF5`
+- path - (Optional) The path relative to the pushed group
 
   Output Parameters:
 + fileId - The HDF5 file ID
 - groupId - The HDF5 group ID
 
   Note:
+  If path starts with '/', it is taken as an absolute path overriding currently pushed group, else path is relative to the current pushed group.
+  So NULL or empty path means the current pushed group.
+
   If the viewer is writable, the group is created if it doesn't exist yet.
 
   Level: intermediate
 
 .seealso: `PETSCVIEWERHDF5`, `PetscViewerHDF5Open()`, `PetscViewerHDF5PushGroup()`, `PetscViewerHDF5PopGroup()`, `PetscViewerHDF5GetGroup()`
 @*/
-PetscErrorCode PetscViewerHDF5OpenGroup(PetscViewer viewer, hid_t *fileId, hid_t *groupId) {
+PetscErrorCode PetscViewerHDF5OpenGroup(PetscViewer viewer, const char path[], hid_t *fileId, hid_t *groupId) {
   hid_t       file_id;
   H5O_type_t  type;
-  const char *groupName = NULL, *fileName = NULL;
+  const char *fileName  = NULL;
+  char       *groupName = NULL;
   PetscBool   writable, has;
 
   PetscFunctionBegin;
   PetscCall(PetscViewerWritable(viewer, &writable));
   PetscCall(PetscViewerHDF5GetFileId(viewer, &file_id));
   PetscCall(PetscViewerFileGetName(viewer, &fileName));
-  PetscCall(PetscViewerHDF5GetGroup_Internal(viewer, &groupName));
+  PetscCall(PetscViewerHDF5GetGroup(viewer, path, &groupName));
   PetscCall(PetscViewerHDF5Traverse_Internal(viewer, groupName, writable, &has, &type));
   if (!has) {
     PetscCheck(writable, PetscObjectComm((PetscObject)viewer), PETSC_ERR_FILE_UNEXPECTED, "Group %s does not exist and file %s is not open for writing", groupName, fileName);
     SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_LIB, "HDF5 failed to create group %s although file %s is open for writing", groupName, fileName);
   }
   PetscCheck(type == H5O_TYPE_GROUP, PetscObjectComm((PetscObject)viewer), PETSC_ERR_FILE_UNEXPECTED, "Path %s in file %s resolves to something which is not a group", groupName, fileName);
-  PetscCallHDF5Return(*groupId, H5Gopen2, (file_id, groupName ? groupName : "/", H5P_DEFAULT));
+  PetscCallHDF5Return(*groupId, H5Gopen2, (file_id, groupName, H5P_DEFAULT));
+  PetscCall(PetscFree(groupName));
   *fileId = file_id;
   PetscFunctionReturn(0);
 }
