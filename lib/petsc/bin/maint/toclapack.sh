@@ -36,7 +36,7 @@
 if [ $# -lt 2 ]
 then
   echo Usage: toclapack.sh [blas-src-dir] [lapack-src-dir]
-  echo The result is put into the tarball f2cblaslapack-3.4.2.q6.tar.gz
+  echo The result is put into the tarball f2cblaslapack-3.8.0.q0.tar.gz
   exit
 fi
 
@@ -54,7 +54,7 @@ SED=sed
 TAR=tar
 
 # Some vars
-FBLASLAPACK=f2cblaslapack-3.4.2.q6
+FBLASLAPACK=f2cblaslapack-3.8.0.q0
 BIN=${TMP}/bin
 PAC=${TMP}/${FBLASLAPACK}
 BLASDIR=${PAC}/blas
@@ -217,14 +217,14 @@ SXLASRC = sgesvxx.o sgerfsx.o sla_gerfsx_extended.o sla_geamv.o		\
    sposvxx.o sporfsx.o sla_porfsx_extended.o sla_porcond.o		\
    sla_porpvgrw.o sgbsvxx.o sgbrfsx.o sla_gbrfsx_extended.o		\
    sla_gbamv.o sla_gbrcond.o sla_gbrpvgrw.o sla_lin_berr.o slarscl2.o	\
-   slascl2.o sla_wwaddw.o stgsja.o  slaqz0.o sgejsv.o sbdsvdx.o stgsja.o sgejsv.o sbdsvdx.o stgsja.o sgejsv.o
+   slascl2.o sla_wwaddw.o sgesvdx.o sgejsv.o sbdsvdx.o
 DXLASRC = dgesvxx.o dgerfsx.o dla_gerfsx_extended.o dla_geamv.o		\
    dla_gercond.o dla_rpvgrw.o dsysvxx.o dsyrfsx.o			\
    dla_syrfsx_extended.o dla_syamv.o dla_syrcond.o dla_syrpvgrw.o	\
    dposvxx.o dporfsx.o dla_porfsx_extended.o dla_porcond.o		\
    dla_porpvgrw.o dgbsvxx.o dgbrfsx.o dla_gbrfsx_extended.o		\
    dla_gbamv.o dla_gbrcond.o dla_gbrpvgrw.o dla_lin_berr.o dlarscl2.o	\
-   dlascl2.o dla_wwaddw.o dtgsja.o dlaqz0.o dgejsv.o dbdsvdx.o dtgsja.o dgejsv.o dbdsvdx.o dtgsja.o dcgejsv.o
+   dlascl2.o dla_wwaddw.o dgesvdx.o dgejsv.o dbdsvdx.o
 CXLASRC =    cgesvxx.o cgerfsx.o cla_gerfsx_extended.o cla_geamv.o \
    cla_gercond_c.o cla_gercond_x.o cla_rpvgrw.o \
    csysvxx.o csyrfsx.o cla_syrfsx_extended.o cla_syamv.o \
@@ -235,7 +235,7 @@ CXLASRC =    cgesvxx.o cgerfsx.o cla_gerfsx_extended.o cla_geamv.o \
    cla_gbrcond_c.o cla_gbrcond_x.o cla_gbrpvgrw.o \
    chesvxx.o cherfsx.o cla_herfsx_extended.o cla_heamv.o \
    cla_hercond_c.o cla_hercond_x.o cla_herpvgrw.o \
-   cla_lin_berr.o clarscl2.o clascl2.o cla_wwaddw.o ctgsja.o  claqz0.o cgejsv.o cbdsvdx.o ctgsja.o cgejsv.o cbdsvdx.o ctgsja.o cgejsv.o
+   cla_lin_berr.o clarscl2.o clascl2.o cla_wwaddw.o cgesvdx.o cgejsv.o cbdsvdx.o
 ZXLASRC = zgesvxx.o zgerfsx.o zla_gerfsx_extended.o zla_geamv.o		\
    zla_gercond_c.o zla_gercond_x.o zla_rpvgrw.o zsysvxx.o zsyrfsx.o	\
    zla_syrfsx_extended.o zla_syamv.o zla_syrcond_c.o zla_syrcond_x.o	\
@@ -244,7 +244,7 @@ ZXLASRC = zgesvxx.o zgerfsx.o zla_gerfsx_extended.o zla_geamv.o		\
    zla_gbrfsx_extended.o zla_gbamv.o zla_gbrcond_c.o zla_gbrcond_x.o	\
    zla_gbrpvgrw.o zhesvxx.o zherfsx.o zla_herfsx_extended.o		\
    zla_heamv.o zla_hercond_c.o zla_hercond_x.o zla_herpvgrw.o		\
-   zla_lin_berr.o zlarscl2.o zlascl2.o zla_wwaddw.o ztgsja.o  zlaqz0.o zgejsv.o zsbdsvdx.o ztgsja.o zgejsv.o zbdsvdx.o ztgsja.o zgejsv.o
+   zla_lin_berr.o zlarscl2.o zlascl2.o zla_wwaddw.o zgesvdx.o zgejsv.o zsbdsvdx.o
 EOF
 
 QL=${TMP}/ql.sed
@@ -373,6 +373,7 @@ for p in blas qblas hblas lapack qlapack hlapack; do
 		# - Replace sqrt, sin, cos, log and exp by M(*)
 		# - Replace max and min by f2cmax and f2cmin
                 # - F90 constructs that snuck into LAPACK
+		case $base in [zwk]*) $SED -r -e "s/\bAIMAG\b/DIMAG/g;" ${base}.f;; *) cat ${base}.f;; esac |
 		$SED -r -e "
 			s/RECURSIVE//g;
 			s/CHARACTER\\(1\\)/CHARACTER/g;
@@ -393,7 +394,7 @@ for p in blas qblas hblas lapack qlapack hlapack; do
                         s/^[ ]*DOUBLE PRECISION,/      DOUBLE PRECISION/g;
                         s/^[ ]*LOGICAL,/       LOGICAL/g;
                         s/:://g;
-		" ${base}.f |
+		" |
 		$F2C -a -A -R | ${BIN}/lenscrub |
              	$SED -e "
                         1 i\
