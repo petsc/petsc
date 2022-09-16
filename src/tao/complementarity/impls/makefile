@@ -1,4 +1,4 @@
--include ../../../../petsckdir.mk
+-include ../../../../petscdir.mk
 
 DIRS = ssls asls
 LOCDIR = src/tao/complementarity/impls/

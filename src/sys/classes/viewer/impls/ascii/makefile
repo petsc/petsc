@@ -1,4 +1,4 @@
--include ../../../../../../petsckdir.mk
+-include ../../../../../../petscdir.mk
 
 SOURCEC   = filev.c vcreatea.c
 SOURCEF   =

@@ -1,4 +1,4 @@
--include ../../../../../petsckdir.mk
+-include ../../../../../petscdir.mk
 
 DIRS      = basic mapping memscalable
 LOCDIR    = src/vec/is/ao/impls/

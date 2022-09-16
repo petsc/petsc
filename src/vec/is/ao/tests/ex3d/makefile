@@ -1,4 +1,4 @@
--include ../../../../../../petsckdir.mk
+-include ../../../../../../petscdir.mk
 
 LOCDIR          = src/vec/is/ao/tests/ex3d/
 MANSEC          = Vec

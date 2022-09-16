@@ -1,4 +1,4 @@
--include ../../../../../../petsckdir.mk
+-include ../../../../../../petscdir.mk
 # -*- makefile -*-
 
 MPIEXEC=mpiexec -n 2
