@@ -622,7 +622,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
       PetscCoarsenData *agg_lists;
       Mat               Prol11;
 
-      PetscCall(pc_gamg->ops->graph(pc, Aarr[level], &Gmat));
+      PetscCall(PCGAMGCreateGraph(pc, Aarr[level], &Gmat));
       PetscCall(pc_gamg->ops->coarsen(pc, &Gmat, &agg_lists));
       PetscCall(pc_gamg->ops->prolongator(pc, Aarr[level], Gmat, agg_lists, &Prol11));
 
@@ -1553,20 +1553,19 @@ PetscErrorCode PCSetFromOptions_GAMG(PC pc, PetscOptionItems *PetscOptionsObject
      PCGAMG - Geometric algebraic multigrid (AMG) preconditioner
 
    Options Database Keys:
-+   -pc_gamg_type <type> - one of agg, geo, or classical
++   -pc_gamg_type <type> - one of agg, geo, or classical, agg is the default
 .   -pc_gamg_repartition  <true,default=false> - repartition the degrees of freedom accross the coarse grids as they are determined
--   -pc_gamg_reuse_interpolation <true,default=false> - when rebuilding the algebraic multigrid preconditioner reuse the previously computed interpolations
-+   -pc_gamg_asm_use_agg <true,default=false> - use the aggregates from the coasening process to defined the subdomains on each level for the `PCASM` smoother
+.   -pc_gamg_reuse_interpolation <true,default=false> - when rebuilding the algebraic multigrid preconditioner reuse the previously computed interpolations
+.   -pc_gamg_asm_use_agg <true,default=false> - use the aggregates from the coasening process to defined the subdomains on each level for the PCASM smoother
 .   -pc_gamg_process_eq_limit <limit, default=50> - `PCGAMG` will reduce the number of MPI processes used directly on the coarse grids so that there are around <limit>
                                         equations on each process that has degrees of freedom
--   -pc_gamg_coarse_eq_limit <limit, default=50> - Set maximum number of equations on coarsest grid to aim for.
-+   -pc_gamg_threshold[] <thresh,default=-1> - Before aggregating the graph `PCGAMG` will remove small values from the graph on each level (< 0 is no filtering)
-.   -pc_gamg_threshold_scale <scale,default=1> - Scaling of threshold on each coarser grid if not specified
+.   -pc_gamg_coarse_eq_limit <limit, default=50> - Set maximum number of equations on coarsest grid to aim for.
+.   -pc_gamg_threshold[] <thresh,default=-1> - Before aggregating the graph `PCGAMG` will remove small values from the graph on each level (< 0 is no filtering)
+-   -pc_gamg_threshold_scale <scale,default=1> - Scaling of threshold on each coarser grid if not specified
 
    Options Database Keys for Aggregation:
 +  -pc_gamg_agg_nsmooths <nsmooth, default=1> - number of smoothing steps to use with smooth aggregation
-.  -pc_gamg_symmetrize_graph <true,default=false> - symmetrize the graph before computing the aggregation
--  -pc_gamg_square_graph <n,default=1> - alias for pc_gamg_aggressive_coarsening (deprecated)
+.  -pc_gamg_square_graph <n,default=1> - alias for pc_gamg_aggressive_coarsening (deprecated)
 -  -pc_gamg_aggressive_coarsening <n,default=1> - number of aggressive coarsening (MIS-2) levels from finest.
 
    Options Database Keys for Multigrid:
@@ -1682,7 +1681,6 @@ PetscErrorCode PCGAMGInitializePackage(void)
   /* general events */
   PetscCall(PetscLogEventRegister("PCSetUp_GAMG+", PC_CLASSID, &petsc_gamg_setup_events[GAMG_SETUP]));
   PetscCall(PetscLogEventRegister(" PCGAMGCreateG", PC_CLASSID, &petsc_gamg_setup_events[GAMG_GRAPH]));
-  PetscCall(PetscLogEventRegister(" PCGAMGFilter", PC_CLASSID, &petsc_gamg_setup_events[GAMG_FILTER]));
   PetscCall(PetscLogEventRegister(" GAMG Coarsen", PC_CLASSID, &petsc_gamg_setup_events[GAMG_COARSEN]));
   PetscCall(PetscLogEventRegister("  GAMG MIS/Agg", PC_CLASSID, &petsc_gamg_setup_events[GAMG_MIS]));
   PetscCall(PetscLogEventRegister(" PCGAMGProl", PC_CLASSID, &petsc_gamg_setup_events[GAMG_PROL]));
@@ -1749,5 +1747,29 @@ PetscErrorCode PCGAMGRegister(PCGAMGType type, PetscErrorCode (*create)(PC))
   PetscFunctionBegin;
   PetscCall(PCGAMGInitializePackage());
   PetscCall(PetscFunctionListAdd(&GAMGList, type, create));
+  PetscFunctionReturn(0);
+}
+
+/*@C
+    PCGAMGCreateGraph - Creates a graph that is used by the ``PCGAMGType`` in the coarsening process
+
+   Input Parameters:
++  pc - the `PCGAMG`
+-  A - the matrix, for any level
+
+   Output Parameter:
+.  G - the graph
+
+  Level: advanced
+
+ .seealso: `PCGAMGType`, `PCGAMG`, `PCGAMGSetType()`
+@*/
+PetscErrorCode PCGAMGCreateGraph(PC pc, Mat A, Mat *G)
+{
+  PC_MG   *mg      = (PC_MG *)pc->data;
+  PC_GAMG *pc_gamg = (PC_GAMG *)mg->innerctx;
+
+  PetscFunctionBegin;
+  PetscCall(pc_gamg->ops->creategraph(pc, A, G));
   PetscFunctionReturn(0);
 }

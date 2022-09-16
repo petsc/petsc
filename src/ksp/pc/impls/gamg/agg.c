@@ -8,9 +8,9 @@
 #include <petsc/private/kspimpl.h>
 
 typedef struct {
-  PetscInt  nsmooths;
-  PetscBool symmetrize_graph;
-  PetscInt  aggressive_coarsening_levels; // number of aggressive coarsening levels (square or MISk)
+  PetscInt   nsmooths;
+  PetscInt   aggressive_coarsening_levels; // number of aggressive coarsening levels (square or MISk)
+  MatCoarsen crs;
 } PC_GAMG_AGG;
 
 /*@
@@ -49,46 +49,6 @@ static PetscErrorCode PCGAMGSetNSmooths_AGG(PC pc, PetscInt n)
 }
 
 /*@
-   PCGAMGSetSymmetrizeGraph - Symmetrize the graph before computing the aggregation. Some algorithms require the graph be symmetric
-
-   Logically Collective on pc
-
-   Input Parameters:
-+  pc - the preconditioner context
--  n - `PETSC_TRUE` or `PETSC_FALSE`
-
-   Options Database Key:
-.  -pc_gamg_symmetrize_graph <true,default=false> - symmetrize the graph before computing the aggregation
-
-   Level: intermediate
-
-   Developer Note:
-   If the aggregation can hang with a nonsymmetric graph then the graph should always be symmetrized before calling the aggregation,
-   it should not be up to the user.
-
-.seealso: `PCGAMG`, `PCGAMGSetAggressiveLevels()`
-@*/
-PetscErrorCode PCGAMGSetSymmetrizeGraph(PC pc, PetscBool n)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscValidLogicalCollectiveBool(pc, n, 2);
-  PetscTryMethod(pc, "PCGAMGSetSymmetrizeGraph_C", (PC, PetscBool), (pc, n));
-  PetscFunctionReturn(0);
-}
-
-static PetscErrorCode PCGAMGSetSymmetrizeGraph_AGG(PC pc, PetscBool n)
-{
-  PC_MG       *mg          = (PC_MG *)pc->data;
-  PC_GAMG     *pc_gamg     = (PC_GAMG *)mg->innerctx;
-  PC_GAMG_AGG *pc_gamg_agg = (PC_GAMG_AGG *)pc_gamg->subctx;
-
-  PetscFunctionBegin;
-  pc_gamg_agg->symmetrize_graph = n;
-  PetscFunctionReturn(0);
-}
-
-/*@
    PCGAMGSetAggressiveLevels -  Use aggressive coarsening on first n levels
 
    Logically Collective on pc
@@ -102,7 +62,7 @@ static PetscErrorCode PCGAMGSetSymmetrizeGraph_AGG(PC pc, PetscBool n)
 
    Level: intermediate
 
-.seealso: `PCGAMG`, `PCGAMGSetSymmetrizeGraph()`, `PCGAMGSetThreshold()`
+.seealso: `PCGAMG`, `PCGAMGSetThreshold()`
 @*/
 PetscErrorCode PCGAMGSetAggressiveLevels(PC pc, PetscInt n)
 {
@@ -135,7 +95,6 @@ static PetscErrorCode PCSetFromOptions_GAMG_AGG(PC pc, PetscOptionItems *PetscOp
   {
     PetscBool flg;
     PetscCall(PetscOptionsInt("-pc_gamg_agg_nsmooths", "smoothing steps for smoothed aggregation, usually 1", "PCGAMGSetNSmooths", pc_gamg_agg->nsmooths, &pc_gamg_agg->nsmooths, NULL));
-    PetscCall(PetscOptionsBool("-pc_gamg_symmetrize_graph", "Set for asymmetric matrices", "PCGAMGSetSymmetrizeGraph", pc_gamg_agg->symmetrize_graph, &pc_gamg_agg->symmetrize_graph, NULL));
     pc_gamg_agg->aggressive_coarsening_levels = 1;
     PetscCall(
       PetscOptionsInt("-pc_gamg_square_graph", "Number of aggressive coarsening (MIS-2) levels from finest (alias for -pc_gamg_aggressive_coarsening, deprecated)", "PCGAMGSetAggressiveLevels", pc_gamg_agg->aggressive_coarsening_levels, &pc_gamg_agg->aggressive_coarsening_levels, &flg));
@@ -158,7 +117,6 @@ static PetscErrorCode PCDestroy_GAMG_AGG(PC pc)
   PetscFunctionBegin;
   PetscCall(PetscFree(pc_gamg->subctx));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGSetNSmooths_C", NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGSetSymmetrizeGraph_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGSetAggressiveLevels_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCSetCoordinates_C", NULL));
   PetscFunctionReturn(0);
@@ -456,52 +414,33 @@ static PetscErrorCode PCView_GAMG_AGG(PC pc, PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscCall(PetscViewerASCIIPrintf(viewer, "      AGG specific options\n"));
-  PetscCall(PetscViewerASCIIPrintf(viewer, "        Symmetric graph %s\n", pc_gamg_agg->symmetrize_graph ? "true" : "false"));
   PetscCall(PetscViewerASCIIPrintf(viewer, "        Number of levels to square graph %d\n", (int)pc_gamg_agg->aggressive_coarsening_levels));
   PetscCall(PetscViewerASCIIPrintf(viewer, "        Number smoothing steps %d\n", (int)pc_gamg_agg->nsmooths));
   PetscFunctionReturn(0);
 }
 
-/*
-   PCGAMGGraph_AGG
-
-  Input Parameter:
-   . pc - this
-   . Amat - matrix on this fine level
-
-  Output Parameter:
-   . a_Gmat -
-*/
-static PetscErrorCode PCGAMGGraph_AGG(PC pc, Mat Amat, Mat *a_Gmat)
+static PetscErrorCode PCGAMGCreateGraph_AGG(PC pc, Mat Amat, Mat *a_Gmat)
 {
-  PC_MG                    *mg          = (PC_MG *)pc->data;
-  PC_GAMG                  *pc_gamg     = (PC_GAMG *)mg->innerctx;
-  const PetscReal           vfilter     = pc_gamg->threshold[pc_gamg->current_level];
-  PC_GAMG_AGG              *pc_gamg_agg = (PC_GAMG_AGG *)pc_gamg->subctx;
-  Mat                       Gmat, F = NULL;
-  MPI_Comm                  comm;
-  PetscBool /* set,flg , */ symm;
+  PC_MG          *mg          = (PC_MG *)pc->data;
+  PC_GAMG        *pc_gamg     = (PC_GAMG *)mg->innerctx;
+  PC_GAMG_AGG    *pc_gamg_agg = (PC_GAMG_AGG *)pc_gamg->subctx;
+  const PetscReal vfilter     = pc_gamg->threshold[pc_gamg->current_level];
+  PetscBool       ishem;
+  const char     *prefix;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectGetComm((PetscObject)Amat, &comm));
-
-  /* PetscCall(MatIsSymmetricKnown(Amat, &set, &flg)); || !(set && flg) -- this causes lot of symm calls */
-  symm = (PetscBool)(pc_gamg_agg->symmetrize_graph); /* && !pc_gamg_agg->square_graph; */
-
   PetscCall(PetscLogEventBegin(petsc_gamg_setup_events[GAMG_GRAPH], 0, 0, 0, 0));
-  PetscCall(MatCreateGraph(Amat, symm, PETSC_TRUE, &Gmat));
+  /* Note: depending on the algorithm that will be used for computing the coarse grid points this should pass PETSC_TRUE or PETSC_FALSE as the first argument */
+
+  /* MATCOARSENHEM requires numerical weights for edges so ensure they are computed */
+  PetscCall(MatCoarsenCreate(PetscObjectComm((PetscObject)pc), &pc_gamg_agg->crs));
+  PetscCall(PetscObjectGetOptionsPrefix((PetscObject)pc, &prefix));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)pc_gamg_agg->crs, prefix));
+  PetscCall(MatCoarsenSetFromOptions(pc_gamg_agg->crs));
+  PetscCall(PetscObjectTypeCompare((PetscObject)pc_gamg_agg->crs, MATCOARSENHEM, &ishem));
+
+  PetscCall(MatCreateGraph(Amat, PETSC_TRUE, (vfilter >= 0 || ishem) ? PETSC_TRUE : PETSC_FALSE, vfilter, a_Gmat));
   PetscCall(PetscLogEventEnd(petsc_gamg_setup_events[GAMG_GRAPH], 0, 0, 0, 0));
-
-  PetscCall(PetscLogEventBegin(petsc_gamg_setup_events[GAMG_FILTER], 0, 0, 0, 0));
-  PetscCall(MatFilter(Gmat, vfilter, &F));
-  if (F) {
-    PetscCall(MatDestroy(&Gmat));
-    Gmat = F;
-  }
-  PetscCall(PetscLogEventEnd(petsc_gamg_setup_events[GAMG_FILTER], 0, 0, 0, 0));
-
-  *a_Gmat = Gmat;
-
   PetscFunctionReturn(0);
 }
 
@@ -529,15 +468,12 @@ static PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc, Mat *a_Gmat1, PetscCoarsenData 
   PetscInt     Istart, Iend, Ii, nloc, bs, nn;
   PetscInt    *permute, *degree;
   PetscBool   *bIndexSet;
-  MatCoarsen   crs;
-  MPI_Comm     comm;
   PetscReal    hashfact;
   PetscInt     iSwapIndex;
   PetscRandom  random;
 
   PetscFunctionBegin;
   PetscCall(PetscLogEventBegin(petsc_gamg_setup_events[GAMG_COARSEN], 0, 0, 0, 0));
-  PetscCall(PetscObjectGetComm((PetscObject)Gmat1, &comm));
   PetscCall(MatGetLocalSize(Gmat1, &nn, NULL));
   PetscCall(MatGetBlockSize(Gmat1, &bs));
   PetscCheck(bs == 1, PETSC_COMM_SELF, PETSC_ERR_PLIB, "bs %" PetscInt_FMT " must be 1", bs);
@@ -575,17 +511,15 @@ static PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc, Mat *a_Gmat1, PetscCoarsenData 
   PetscCall(PetscRandomDestroy(&random));
   PetscCall(ISCreateGeneral(PETSC_COMM_SELF, nloc, permute, PETSC_USE_POINTER, &perm));
   PetscCall(PetscLogEventBegin(petsc_gamg_setup_events[GAMG_MIS], 0, 0, 0, 0));
-  PetscCall(MatCoarsenCreate(comm, &crs));
-  PetscCall(MatCoarsenSetFromOptions(crs));
-  PetscCall(MatCoarsenSetGreedyOrdering(crs, perm));
-  PetscCall(MatCoarsenSetAdjacency(crs, Gmat1));
-  PetscCall(MatCoarsenSetStrictAggs(crs, PETSC_TRUE));
-  if (pc_gamg->current_level < pc_gamg_agg->aggressive_coarsening_levels) PetscCall(MatCoarsenMISKSetDistance(crs, 2)); // hardwire to MIS-2
-  else PetscCall(MatCoarsenMISKSetDistance(crs, 1));                                                                    // MIS
-  PetscCall(MatCoarsenApply(crs));
-  PetscCall(MatCoarsenViewFromOptions(crs, NULL, "-mat_coarsen_view"));
-  PetscCall(MatCoarsenGetData(crs, agg_lists)); /* output */
-  PetscCall(MatCoarsenDestroy(&crs));
+  PetscCall(MatCoarsenSetGreedyOrdering(pc_gamg_agg->crs, perm));
+  PetscCall(MatCoarsenSetAdjacency(pc_gamg_agg->crs, Gmat1));
+  PetscCall(MatCoarsenSetStrictAggs(pc_gamg_agg->crs, PETSC_TRUE));
+  if (pc_gamg->current_level < pc_gamg_agg->aggressive_coarsening_levels) PetscCall(MatCoarsenMISKSetDistance(pc_gamg_agg->crs, 2)); // hardwire to MIS-2
+  else PetscCall(MatCoarsenMISKSetDistance(pc_gamg_agg->crs, 1));                                                                    // MIS
+  PetscCall(MatCoarsenApply(pc_gamg_agg->crs));
+  PetscCall(MatCoarsenViewFromOptions(pc_gamg_agg->crs, NULL, "-mat_coarsen_view"));
+  PetscCall(MatCoarsenGetData(pc_gamg_agg->crs, agg_lists)); /* output */
+  PetscCall(MatCoarsenDestroy(&pc_gamg_agg->crs));
 
   PetscCall(ISDestroy(&perm));
   PetscCall(PetscFree2(permute, degree));
@@ -878,7 +812,7 @@ PetscErrorCode PCCreateGAMG_AGG(PC pc)
   /* reset does not do anything; setup not virtual */
 
   /* set internal function pointers */
-  pc_gamg->ops->graph             = PCGAMGGraph_AGG;
+  pc_gamg->ops->creategraph       = PCGAMGCreateGraph_AGG;
   pc_gamg->ops->coarsen           = PCGAMGCoarsen_AGG;
   pc_gamg->ops->prolongator       = PCGAMGProlongator_AGG;
   pc_gamg->ops->optprolongator    = PCGAMGOptProlongator_AGG;
@@ -886,11 +820,9 @@ PetscErrorCode PCCreateGAMG_AGG(PC pc)
   pc_gamg->ops->view              = PCView_GAMG_AGG;
 
   pc_gamg_agg->aggressive_coarsening_levels = 0;
-  pc_gamg_agg->symmetrize_graph             = PETSC_FALSE;
   pc_gamg_agg->nsmooths                     = 1;
 
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGSetNSmooths_C", PCGAMGSetNSmooths_AGG));
-  PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGSetSymmetrizeGraph_C", PCGAMGSetSymmetrizeGraph_AGG));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGSetAggressiveLevels_C", PCGAMGSetAggressiveLevels_AGG));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCSetCoordinates_C", PCSetCoordinates_AGG));
   PetscFunctionReturn(0);

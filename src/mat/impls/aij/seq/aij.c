@@ -3580,7 +3580,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
                                        NULL,
                                        NULL,
                                        MatCreateGraph_Simple_AIJ,
-                                       MatFilter_AIJ,
+                                       NULL,
                                        /*150*/ MatTransposeSymbolic_SeqAIJ};
 
 PetscErrorCode MatSeqAIJSetColumnIndices_SeqAIJ(Mat mat, PetscInt *indices)

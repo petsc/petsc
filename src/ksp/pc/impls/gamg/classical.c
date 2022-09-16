@@ -78,7 +78,7 @@ static PetscErrorCode PCGAMGClassicalGetType_GAMG(PC pc, PCGAMGClassicalType *ty
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCGAMGGraph_Classical(PC pc, Mat A, Mat *G)
+PetscErrorCode PCGAMGCreateGraph_Classical(PC pc, Mat A, Mat *G)
 {
   PetscInt           s, f, n, idx, lidx, gidx;
   PetscInt           r, c, ncols;
@@ -947,7 +947,7 @@ PetscErrorCode PCCreateGAMG_Classical(PC pc)
 
   /* set internal function pointers */
   pc_gamg->ops->destroy        = PCGAMGDestroy_Classical;
-  pc_gamg->ops->graph          = PCGAMGGraph_Classical;
+  pc_gamg->ops->creategraph    = PCGAMGCreateGraph_Classical;
   pc_gamg->ops->coarsen        = PCGAMGCoarsen_Classical;
   pc_gamg->ops->prolongator    = PCGAMGProlongator_Classical;
   pc_gamg->ops->optprolongator = PCGAMGOptProlongator_Classical_Jacobi;

@@ -327,13 +327,13 @@ PETSC_EXTERN PetscErrorCode PCGAMGSetThresholdScale(PC, PetscReal);
 PETSC_EXTERN PetscErrorCode PCGAMGSetCoarseEqLim(PC, PetscInt);
 PETSC_EXTERN PetscErrorCode PCGAMGSetNlevels(PC, PetscInt);
 PETSC_EXTERN PetscErrorCode PCGAMGSetNSmooths(PC, PetscInt);
-PETSC_EXTERN PetscErrorCode PCGAMGSetSymmetrizeGraph(PC, PetscBool);
 PETSC_EXTERN PetscErrorCode PCGAMGSetSquareGraph(PC, PetscInt);
 PETSC_EXTERN PetscErrorCode PCGAMGSetAggressiveLevels(PC, PetscInt);
 PETSC_EXTERN PetscErrorCode PCGAMGSetReuseInterpolation(PC, PetscBool);
 PETSC_EXTERN PetscErrorCode PCGAMGFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode PCGAMGInitializePackage(void);
 PETSC_EXTERN PetscErrorCode PCGAMGRegister(PCGAMGType, PetscErrorCode (*)(PC));
+PETSC_EXTERN PetscErrorCode PCGAMGCreateGraph(PC, Mat, Mat *);
 
 PETSC_EXTERN PetscErrorCode PCGAMGClassicalSetType(PC, PCGAMGClassicalType);
 PETSC_EXTERN PetscErrorCode PCGAMGClassicalGetType(PC, PCGAMGClassicalType *);
