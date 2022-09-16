@@ -30,6 +30,7 @@ if __name__ == '__main__':
     '--with-display=140.221.10.20:0.0', # for matlab example with graphics
     '--with-blaslapack-dir='+matlab_dir,
     '--with-matlab=1',
+# matlab-engine is deprecated, no longer needed but still allowed
     '--with-matlab-engine=1',
     '--with-shared-libraries=1',
     '-known-64-bit-blas-indices=1',

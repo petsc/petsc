@@ -516,7 +516,7 @@ static PetscErrorCode TaoSolve_LCL(Tao tao) {
 
       /* Update the quasi-newton approximation */
       PetscCall(MatLMVMUpdate(lclP->R, lclP->V, lclP->g2));
-      /* Use "-tao_ls_type gpcg -tao_ls_ftol 0 -tao_lmm_broyden_phi 0.0 -tao_lmm_scale_type scalar" to obtain agreement with Matlab code */
+      /* Use "-tao_ls_type gpcg -tao_ls_ftol 0 -tao_lmm_broyden_phi 0.0 -tao_lmm_scale_type scalar" to obtain agreement with MATLAB code */
     }
 
     PetscCall(VecCopy(lclP->lamda, lclP->lamda0));

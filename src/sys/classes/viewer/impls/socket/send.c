@@ -252,7 +252,7 @@ PETSC_INTERN PetscErrorCode PetscSocketListen(int listenport, int *t) {
 
    Input Parameters:
 +  comm - the MPI communicator
-.  machine - the machine the server is running on,, use NULL for the local machine, use "server" to passively wait for
+.  machine - the machine the server is running on, use NULL for the local machine, use "server" to passively wait for
              a connection from elsewhere
 -  port - the port to connect to, use `PETSC_DEFAULT` for the default
 
@@ -284,7 +284,7 @@ $
 $    PetscViewerSocketOpen(MPI_Comm comm,char *machine,int port,PetscViewer &viewer)
 $    VecView(Vec vector,PetscViewer viewer)
 
-     Currently the only socket client available is MATLAB. See
+     Currently the only socket client available is MATLAB, PETSc must be configured with --with-matlab for this client. See
      src/dm/tests/ex12.c and ex12.m for an example of usage.
 
     The socket viewer is in some sense a subclass of the binary viewer, to read and write to the socket

@@ -232,7 +232,7 @@ PetscErrorCode MatView_Matlab(Mat A, PetscViewer viewer) {
 . -pc_factor_mat_solver_type matlab - selects MATLAB to do the sparse factorization
 
   Note:
-    You must ./configure with the options --with-matlab --with-matlab-engine
+    You must ./configure with the options --with-matlab
 
   Level: beginner
 

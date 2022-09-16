@@ -1,6 +1,8 @@
 function d = read(sreader,count,datatype)
 %
-%   O = read(sreader,count,datatype) - reads data from a socket opened with sreader(socketnumber)
+%   O = read(sreader,count,datatype) - reads data from a socket opened with sopen(socketnumber)
+%
+%   See $PETSC_DIR/share/petsc/matlab/@PetscOpenSocket/PetscOpenSocket.m
 %
   switch (datatype)
   case 'int32'
@@ -19,6 +21,3 @@ d = sread(sreader.fd,count,datatype);
 if datatype == 6
   d = d';
 end
-
-
-

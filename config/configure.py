@@ -46,7 +46,7 @@ def check_for_unsupported_combinations(opts):
     sys.exit(ValueError('PETSc does not support single precision complex with C++ clanguage, run with --with-clanguage=c'))
 
 def check_for_option_changed(opts):
-# Document changes in command line options here.
+# Document changes in command line options here. (matlab-engine is deprecated, no longer needed but still allowed)
   optMap = [('with-64bit-indices','with-64-bit-indices'),
             ('with-mpi-exec','with-mpiexec'),
             ('c-blas-lapack','f2cblaslapack'),

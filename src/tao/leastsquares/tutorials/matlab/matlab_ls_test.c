@@ -1,4 +1,4 @@
-static char help[] = "TAO/Pounders Matlab Testing on the More'-Wild Benchmark Problems\n\
+static char help[] = "TAO/Pounders MATLAB Testing on the More'-Wild Benchmark Problems\n\
 The interface calls:\n\
     TestingInitialize.m to initialize the problem set\n\
     ProblemInitialize.m to initialize each instance\n\
@@ -6,7 +6,7 @@ The interface calls:\n\
     TestingFinalize.m to store the entire set of performance data\n\
 \n\
 TestingPlot.m is called outside of TAO/Pounders to produce a performance profile\n\
-of the results compared to the Matlab fminsearch algorithm.\n";
+of the results compared to the MATLAB fminsearch algorithm.\n";
 
 #include <petsctao.h>
 #include <petscmatlab.h>
@@ -156,7 +156,7 @@ int main(int argc, char **argv) {
 /*TEST
 
    build:
-      requires: matlab_engine
+      requires: matlab
 
    test:
       localrunfiles: more_wild_probs TestingInitialize.m TestingFinalize.m ProblemInitialize.m ProblemFinalize.m
