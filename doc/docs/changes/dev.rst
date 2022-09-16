@@ -118,8 +118,6 @@ exec-name``.
 
 .. rubric:: PetscViewer:
 
-- Add ``PetscViewerHDF5PushGroupRelative()``
-
 .. rubric:: PetscDraw:
 
 - Add ``PetscDrawSPGetDimension()``
