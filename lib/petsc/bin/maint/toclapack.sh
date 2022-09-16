@@ -540,7 +540,7 @@ hlib: \$(SINGLEO) \$(DOUBLEO) \$(HALFO) \$(AUXO)
 	\$(AR) \$(AR_FLAGS) ../\$(LIBNAME) \$(SINGLEO) \$(DOUBLEO) \$(HALFO) \$(AUXO)
 
 qhlib: \$(SINGLEO) \$(DOUBLEO) \$(QUADO) \$(HALFO) \$(AUXO)
-	\$(AR) \$(AR_FLAGS) ../\$(LIBNAME) \$(SINGLEO) \$(DOUBLEO) \$(QUADO) \$(HALFO \$(AUXO)
+	\$(AR) \$(AR_FLAGS) ../\$(LIBNAME) \$(SINGLEO) \$(DOUBLEO) \$(QUADO) \$(HALFO) \$(AUXO)
 
 EOF
 		;;
