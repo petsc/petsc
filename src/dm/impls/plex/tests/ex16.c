@@ -199,4 +199,10 @@ int main(int argc, char **argv) {
       suffix: surface_3d
       args: -dm_plex_box_faces 5,5,5
 
+    # This test checks that if cells are present in the SF, the dm is marked as having an overlap
+    test:
+      suffix: surface_2d_2
+      nsize: 3
+      args: -dm_plex_box_faces 5,5 -domain -height 0.625
+
 TEST*/
