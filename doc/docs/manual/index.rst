@@ -37,7 +37,7 @@ Prepared by
 **M. G. Knepley** :sup:`1,9`,
 **F. Kong** :sup:`1,11`,
 **S. Kruger** :sup:`15`,
-**D. A. May** :sup:`7`,
+**D. A. May** :sup:`7,21`,
 **L. Curfman McInnes** :sup:`1`,
 **R. Tran Mills** :sup:`1`,
 **L. Mitchell** :sup:`13,20`,
@@ -72,6 +72,7 @@ Prepared by
 | :sup:`18`\ University of Illinois, Urbana-Champaign
 | :sup:`19`\ Institute for Microelectronics, TU Wien
 | :sup:`20`\ Department of Computer Science, Durham University
+| :sup:`21`\ Scripps Institution of Oceanography, University of California, San Diego
 
 --------------
 
