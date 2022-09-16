@@ -3679,7 +3679,7 @@ PetscErrorCode DMSetFromOptions_NonRefinement_Plex(DM dm, PetscOptionItems *Pets
       PetscCall(PetscOptionsBool("-dm_plex_check_geometry", "Check that cells have positive volume", "DMPlexCheckGeometry", PETSC_FALSE, &flg, &flg2));
       if (flg && flg2) PetscCall(DMPlexCheckGeometry(dm));
       PetscCall(PetscOptionsBool("-dm_plex_check_pointsf", "Check some necessary conditions for PointSF", "DMPlexCheckPointSF", PETSC_FALSE, &flg, &flg2));
-      if (flg && flg2) PetscCall(DMPlexCheckPointSF(dm, NULL));
+      if (flg && flg2) PetscCall(DMPlexCheckPointSF(dm, NULL, PETSC_FALSE));
       PetscCall(PetscOptionsBool("-dm_plex_check_interface_cones", "Check points on inter-partition interfaces have conforming order of cone points", "DMPlexCheckInterfaceCones", PETSC_FALSE, &flg, &flg2));
       if (flg && flg2) PetscCall(DMPlexCheckInterfaceCones(dm));
     }

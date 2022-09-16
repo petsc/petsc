@@ -7957,7 +7957,7 @@ PetscErrorCode DMPlexCreateNumbering_Plex(DM dm, PetscInt pStart, PetscInt pEnd,
   PetscInt    *numbers, p;
 
   PetscFunctionBegin;
-  if (PetscDefined(USE_DEBUG)) PetscCall(DMPlexCheckPointSF(dm, sf));
+  if (PetscDefined(USE_DEBUG)) PetscCall(DMPlexCheckPointSF(dm, sf, PETSC_TRUE));
   PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)dm), &section));
   PetscCall(PetscSectionSetChart(section, pStart, pEnd));
   for (p = pStart; p < pEnd; ++p) PetscCall(PetscSectionSetDof(section, p, 1));
@@ -8597,18 +8597,21 @@ PetscErrorCode DMPlexCheckGeometry(DM dm) {
 
   Input Parameters:
 + dm - The DMPlex object
-- pointSF - The Point SF, or NULL for Point SF attached to DM
+. pointSF - The Point SF, or NULL for Point SF attached to DM
+- allowExtraRoots - Flag to allow extra points not present in the DM
 
   Notes:
   This is mainly intended for debugging/testing purposes.
 
   For the complete list of DMPlexCheck* functions, see DMSetFromOptions().
 
+  Extra roots can come from priodic cuts, where additional points appear on the boundary
+
   Level: developer
 
 .seealso: `DMGetPointSF()`, `DMSetFromOptions()`
 @*/
-PetscErrorCode DMPlexCheckPointSF(DM dm, PetscSF pointSF) {
+PetscErrorCode DMPlexCheckPointSF(DM dm, PetscSF pointSF, PetscBool allowExtraRoots) {
   PetscInt           l, nleaves, nroots, overlap;
   const PetscInt    *locals;
   const PetscSFNode *remotes;
@@ -8644,7 +8647,7 @@ PetscErrorCode DMPlexCheckPointSF(DM dm, PetscSF pointSF) {
 
     PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
     PetscCall(PetscSFGetLeafRange(pointSF, NULL, &maxLeaf));
-    PetscCheck(pEnd - pStart == nroots, PETSC_COMM_SELF, PETSC_ERR_PLIB, "pEnd - pStart = %" PetscInt_FMT " != nroots = %" PetscInt_FMT, pEnd - pStart, nroots);
+    PetscCheck(allowExtraRoots || pEnd - pStart == nroots, PETSC_COMM_SELF, PETSC_ERR_PLIB, "pEnd - pStart = %" PetscInt_FMT " != nroots = %" PetscInt_FMT, pEnd - pStart, nroots);
     PetscCheck(maxLeaf < pEnd, PETSC_COMM_SELF, PETSC_ERR_PLIB, "maxLeaf = %" PetscInt_FMT " >= pEnd = %" PetscInt_FMT, maxLeaf, pEnd);
   }
 
@@ -8720,7 +8723,7 @@ PetscErrorCode DMPlexCheck(DM dm) {
   PetscCall(DMPlexCheckSkeleton(dm, cellHeight));
   PetscCall(DMPlexCheckFaces(dm, cellHeight));
   PetscCall(DMPlexCheckGeometry(dm));
-  PetscCall(DMPlexCheckPointSF(dm, NULL));
+  PetscCall(DMPlexCheckPointSF(dm, NULL, PETSC_FALSE));
   PetscCall(DMPlexCheckInterfaceCones(dm));
   PetscFunctionReturn(0);
 }

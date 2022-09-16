@@ -68,6 +68,12 @@ int main(int argc, char **argv) {
     suffix: 5
     nsize: 2
     args: -dm_plex_simplex 0 -dm_plex_box_faces 6,2,0 -dm_plex_box_bd periodic,none -dm_plex_periodic_cut -petscpartitioner_type simple -dm_view ::ascii_info_detail
+  # This checks that the SF with extra root for periodic cut still checks
+  test:
+    suffix: 5_hdf5
+    requires: hdf5
+    nsize: 2
+    args: -dm_plex_simplex 0 -dm_plex_box_faces 6,2,0 -dm_plex_box_bd periodic,none -dm_plex_periodic_cut -petscpartitioner_type simple -dm_view hdf5:mesh.h5
   test:
     suffix: 6
     nsize: 4

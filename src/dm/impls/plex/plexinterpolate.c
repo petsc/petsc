@@ -739,7 +739,7 @@ PetscErrorCode DMPlexOrientInterface_Internal(DM dm) {
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCall(DMGetPointSF(dm, &sf));
   PetscCall(DMViewFromOptions(dm, NULL, "-before_orient_interface_dm_view"));
-  if (PetscDefined(USE_DEBUG)) PetscCall(DMPlexCheckPointSF(dm, sf));
+  if (PetscDefined(USE_DEBUG)) PetscCall(DMPlexCheckPointSF(dm, sf, PETSC_FALSE));
   PetscCall(PetscSFGetGraph(sf, &nroots, &nleaves, &locals, &remotes));
   if (nroots < 0) PetscFunctionReturn(0);
   PetscCall(PetscSFSetUp(sf));
@@ -1408,7 +1408,7 @@ PetscErrorCode DMPlexInterpolatePointSF(DM dm, PetscSF pointSF) {
     PetscCall(PetscSFSetUp(sfPointNew));
     PetscCall(DMSetPointSF(dm, sfPointNew));
     PetscCall(PetscObjectViewFromOptions((PetscObject)sfPointNew, NULL, "-petscsf_interp_view"));
-    if (PetscDefined(USE_DEBUG)) PetscCall(DMPlexCheckPointSF(dm, sfPointNew));
+    if (PetscDefined(USE_DEBUG)) PetscCall(DMPlexCheckPointSF(dm, sfPointNew, PETSC_FALSE));
     PetscCall(PetscSFDestroy(&sfPointNew));
     PetscCall(PetscHMapIDestroy(&claimshash));
   }
@@ -1473,7 +1473,7 @@ PetscErrorCode DMPlexInterpolate(DM dm, DM *dmInt) {
       if (depth > 0) {
         PetscCall(DMPlexInterpolateFaces_Internal(odm, 1, idm));
         PetscCall(DMGetPointSF(odm, &sfPoint));
-        if (PetscDefined(USE_DEBUG)) PetscCall(DMPlexCheckPointSF(odm, sfPoint));
+        if (PetscDefined(USE_DEBUG)) PetscCall(DMPlexCheckPointSF(odm, sfPoint, PETSC_FALSE));
         {
           /* TODO: We need to systematically fix cases of distributed Plexes with no graph set */
           PetscInt nroots;
@@ -1732,7 +1732,7 @@ PetscErrorCode DMPlexUninterpolate(DM dm, DM *dmUnint) {
 
     /* Get original SF information */
     PetscCall(DMGetPointSF(dm, &sfPoint));
-    if (PetscDefined(USE_DEBUG)) PetscCall(DMPlexCheckPointSF(dm, sfPoint));
+    if (PetscDefined(USE_DEBUG)) PetscCall(DMPlexCheckPointSF(dm, sfPoint, PETSC_FALSE));
     PetscCall(DMGetPointSF(udm, &sfPointUn));
     PetscCall(PetscSFGetGraph(sfPoint, &numRoots, &numLeaves, &localPoints, &remotePoints));
     if (numRoots >= 0) {
@@ -1765,7 +1765,7 @@ PetscErrorCode DMPlexUninterpolate(DM dm, DM *dmUnint) {
     plex->interpolated = plex->interpolatedCollective = DMPLEX_INTERPOLATED_NONE;
   }
   PetscCall(DMPlexCopy_Internal(dm, PETSC_TRUE, PETSC_TRUE, udm));
-  if (PetscDefined(USE_DEBUG)) PetscCall(DMPlexCheckPointSF(udm, NULL));
+  if (PetscDefined(USE_DEBUG)) PetscCall(DMPlexCheckPointSF(udm, NULL, PETSC_FALSE));
   *dmUnint = udm;
   PetscFunctionReturn(0);
 }
