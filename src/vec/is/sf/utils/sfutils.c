@@ -1,7 +1,7 @@
 #include <petsc/private/sfimpl.h> /*I  "petscsf.h"   I*/
 #include <petsc/private/sectionimpl.h>
 
-/*@C
+/*@
    PetscSFSetGraphLayout - Set a parallel star forest via global indices and a PetscLayout
 
    Collective
@@ -12,7 +12,7 @@
 .  nleaves - number of leaf vertices on the current process, each of these references a root on any process
 .  ilocal - locations of leaves in leafdata buffers, pass NULL for contiguous storage
 .  localmode - copy mode for ilocal
--  iremote - root vertices in global numbering corresponding to leaves in ilocal
+-  gremote - root vertices in global numbering corresponding to leaves in ilocal
 
    Level: intermediate
 
@@ -25,9 +25,9 @@
    encode contiguous storage. In such case, if localmode is PETSC_OWN_POINTER, the memory is deallocated as it is not
    needed
 
-.seealso: `PetscSFCreate()`, `PetscSFView()`, `PetscSFSetGraph()`, `PetscSFGetGraph()`
+.seealso: `PetscSFGetGraphLayout()`, `PetscSFCreate()`, `PetscSFView()`, `PetscSFSetGraph()`, `PetscSFGetGraph()`
 @*/
-PetscErrorCode PetscSFSetGraphLayout(PetscSF sf, PetscLayout layout, PetscInt nleaves, PetscInt *ilocal, PetscCopyMode localmode, const PetscInt *iremote) {
+PetscErrorCode PetscSFSetGraphLayout(PetscSF sf, PetscLayout layout, PetscInt nleaves, PetscInt *ilocal, PetscCopyMode localmode, const PetscInt *gremote) {
   const PetscInt *range;
   PetscInt        i, nroots, ls = -1, ln = -1;
   PetscMPIInt     lr = -1;
@@ -37,11 +37,11 @@ PetscErrorCode PetscSFSetGraphLayout(PetscSF sf, PetscLayout layout, PetscInt nl
   PetscCall(PetscLayoutGetLocalSize(layout, &nroots));
   PetscCall(PetscLayoutGetRanges(layout, &range));
   PetscCall(PetscMalloc1(nleaves, &remote));
-  if (nleaves) ls = iremote[0] + 1;
+  if (nleaves) ls = gremote[0] + 1;
   for (i = 0; i < nleaves; i++) {
-    const PetscInt idx = iremote[i] - ls;
+    const PetscInt idx = gremote[i] - ls;
     if (idx < 0 || idx >= ln) { /* short-circuit the search */
-      PetscCall(PetscLayoutFindOwnerIndex(layout, iremote[i], &lr, &remote[i].index));
+      PetscCall(PetscLayoutFindOwnerIndex(layout, gremote[i], &lr, &remote[i].index));
       remote[i].rank = lr;
       ls             = range[lr];
       ln             = range[lr + 1] - ls;
@@ -51,6 +51,54 @@ PetscErrorCode PetscSFSetGraphLayout(PetscSF sf, PetscLayout layout, PetscInt nl
     }
   }
   PetscCall(PetscSFSetGraph(sf, nroots, nleaves, ilocal, localmode, remote, PETSC_OWN_POINTER));
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   PetscSFGetGraphLayout - Get the global indices and PetscLayout that describe this star forest
+
+   Collective
+
+   Input Parameter:
+.  sf - star forest
+
+   Output Parameters:
++  layout - PetscLayout defining the global space for roots
+.  nleaves - number of leaf vertices on the current process, each of these references a root on any process
+.  ilocal - locations of leaves in leafdata buffers, or NULL for contiguous storage
+-  gremote - root vertices in global numbering corresponding to leaves in ilocal
+
+   Level: intermediate
+
+   Notes:
+   The outputs are such that passing them as inputs to `PetscSFSetGraphLayout()` would lead to the same star forest.
+   The outputs layout and gremote are freshly created each time this function is called,
+   so they need to be freed by user and cannot be qualified as const.
+
+
+.seealso: `PetscSFSetGraphLayout()`, `PetscSFCreate()`, `PetscSFView()`, `PetscSFSetGraph()`, `PetscSFGetGraph()`
+@*/
+PetscErrorCode PetscSFGetGraphLayout(PetscSF sf, PetscLayout *layout, PetscInt *nleaves, const PetscInt *ilocal[], PetscInt *gremote[]) {
+  PetscInt           nr, nl;
+  const PetscSFNode *ir;
+  PetscLayout        lt;
+
+  PetscFunctionBegin;
+  PetscCall(PetscSFGetGraph(sf, &nr, &nl, ilocal, &ir));
+  PetscCall(PetscLayoutCreateFromSizes(PetscObjectComm((PetscObject)sf), nr, PETSC_DECIDE, 1, &lt));
+  if (gremote) {
+    PetscInt        i;
+    const PetscInt *range;
+    PetscInt       *gr;
+
+    PetscCall(PetscLayoutGetRanges(lt, &range));
+    PetscCall(PetscMalloc1(nl, &gr));
+    for (i = 0; i < nl; i++) gr[i] = range[ir[i].rank] + ir[i].index;
+    *gremote = gr;
+  }
+  if (nleaves) *nleaves = nl;
+  if (layout) *layout = lt;
+  else PetscCall(PetscLayoutDestroy(&lt));
   PetscFunctionReturn(0);
 }
 

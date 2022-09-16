@@ -134,6 +134,8 @@ exec-name``.
 
 .. rubric:: VecScatter / PetscSF:
 
+- Add ``PetscSFGetGraphLayout()`` 
+
 .. rubric:: PF:
 
 .. rubric:: Vec:
