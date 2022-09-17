@@ -677,7 +677,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_ADMM(Tao tao) {
   TAO_ADMM *am;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(tao, &am));
+  PetscCall(PetscNew(&am));
 
   tao->ops->destroy        = TaoDestroy_ADMM;
   tao->ops->setup          = TaoSetUp_ADMM;

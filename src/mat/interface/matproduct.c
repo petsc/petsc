@@ -866,7 +866,7 @@ PetscErrorCode MatProductCreate_Private(Mat A, Mat B, Mat C, Mat D) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(D, MAT_CLASSID, 4);
   PetscCheck(!D->product, PetscObjectComm((PetscObject)D), PETSC_ERR_PLIB, "Product already present");
-  PetscCall(PetscNewLog(D, &product));
+  PetscCall(PetscNew(&product));
   product->A        = A;
   product->B        = B;
   product->C        = C;

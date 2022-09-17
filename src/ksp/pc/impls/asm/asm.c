@@ -247,7 +247,6 @@ static PetscErrorCode PCSetUp_ASM(PC pc) {
       for (i = 0; i < osm->n_local_true; i++) {
         PetscCall(KSPCreate(PETSC_COMM_SELF, &ksp));
         PetscCall(KSPSetErrorIfNotConverged(ksp, pc->erroriffailure));
-        PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)ksp));
         PetscCall(PetscObjectIncrementTabLevel((PetscObject)ksp, (PetscObject)pc, 1));
         PetscCall(KSPSetType(ksp, KSPPREONLY));
         PetscCall(KSPGetPC(ksp, &subpc));
@@ -291,10 +290,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc) {
   PetscCall(MatCreateSubMatrices(pc->pmat, osm->n_local_true, osm->is, osm->is, scall, &osm->pmat));
   if (scall == MAT_INITIAL_MATRIX) {
     PetscCall(PetscObjectGetOptionsPrefix((PetscObject)pc->pmat, &pprefix));
-    for (i = 0; i < osm->n_local_true; i++) {
-      PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)osm->pmat[i]));
-      PetscCall(PetscObjectSetOptionsPrefix((PetscObject)osm->pmat[i], pprefix));
-    }
+    for (i = 0; i < osm->n_local_true; i++) { PetscCall(PetscObjectSetOptionsPrefix((PetscObject)osm->pmat[i], pprefix)); }
   }
 
   /* Convert the types of the submatrices (if needbe) */
@@ -1238,7 +1234,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_ASM(PC pc) {
   PC_ASM *osm;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(pc, &osm));
+  PetscCall(PetscNew(&osm));
 
   osm->n             = PETSC_DECIDE;
   osm->n_local       = 0;

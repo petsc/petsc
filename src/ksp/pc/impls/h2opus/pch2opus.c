@@ -500,7 +500,6 @@ static PetscErrorCode PCSetUp_H2OPUS(PC pc) {
 #if defined(PETSC_H2OPUS_USE_GPU)
     PetscCall(MatShellSetVecType(pch2opus->T, VECCUDA));
 #endif
-    PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)pch2opus->T));
     PetscCall(MatSetOptionsPrefix(pch2opus->T, prefix));
     PetscCall(MatAppendOptionsPrefix(pch2opus->T, "pc_h2opus_est_"));
   }
@@ -647,7 +646,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_H2OPUS(PC pc) {
   PC_H2OPUS *pch2opus;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(pc, &pch2opus));
+  PetscCall(PetscNew(&pch2opus));
   pc->data = (void *)pch2opus;
 
   pch2opus->atol       = 1.e-2;

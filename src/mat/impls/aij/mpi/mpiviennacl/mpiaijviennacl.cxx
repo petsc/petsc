@@ -15,11 +15,9 @@ PetscErrorCode MatMPIAIJSetPreallocation_MPIAIJViennaCL(Mat B, PetscInt d_nz, co
     PetscCall(MatCreate(PETSC_COMM_SELF, &b->A));
     PetscCall(MatSetSizes(b->A, B->rmap->n, B->cmap->n, B->rmap->n, B->cmap->n));
     PetscCall(MatSetType(b->A, MATSEQAIJVIENNACL));
-    PetscCall(PetscLogObjectParent((PetscObject)B, (PetscObject)b->A));
     PetscCall(MatCreate(PETSC_COMM_SELF, &b->B));
     PetscCall(MatSetSizes(b->B, B->rmap->n, B->cmap->N, B->rmap->n, B->cmap->N));
     PetscCall(MatSetType(b->B, MATSEQAIJVIENNACL));
-    PetscCall(PetscLogObjectParent((PetscObject)B, (PetscObject)b->B));
   }
   PetscCall(MatSeqAIJSetPreallocation(b->A, d_nz, d_nnz));
   PetscCall(MatSeqAIJSetPreallocation(b->B, o_nz, o_nnz));

@@ -582,7 +582,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_MPI(PC pc) {
   PC_MPI *km;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(pc, &km));
+  PetscCall(PetscNew(&km));
   pc->data = (void *)km;
 
   km->mincntperrank = 10000;

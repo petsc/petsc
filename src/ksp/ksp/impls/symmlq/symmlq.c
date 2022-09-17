@@ -205,7 +205,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_SYMMLQ(KSP ksp) {
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_PRECONDITIONED, PC_LEFT, 3));
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_NONE, PC_LEFT, 1));
 
-  PetscCall(PetscNewLog(ksp, &symmlq));
+  PetscCall(PetscNew(&symmlq));
   symmlq->haptol = 1.e-18;
   ksp->data      = (void *)symmlq;
 

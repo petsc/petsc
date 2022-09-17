@@ -591,7 +591,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_Pseudo(TS ts) {
   PetscCall(SNESGetType(snes, &stype));
   if (!stype) PetscCall(SNESSetType(snes, SNESKSPONLY));
 
-  PetscCall(PetscNewLog(ts, &pseudo));
+  PetscCall(PetscNew(&pseudo));
   ts->data = (void *)pseudo;
 
   pseudo->dt                           = TSPseudoTimeStepDefault;

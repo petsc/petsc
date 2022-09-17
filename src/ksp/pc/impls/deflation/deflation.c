@@ -240,7 +240,6 @@ static PetscErrorCode PCDeflationSetProjectionNullSpaceMat_Deflation(PC pc, Mat 
   PetscCall(PetscObjectReference((PetscObject)mat));
   PetscCall(MatDestroy(&def->WtA));
   def->WtA = mat;
-  PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)def->WtA));
   PetscFunctionReturn(0);
 }
 
@@ -272,7 +271,6 @@ static PetscErrorCode PCDeflationSetCoarseMat_Deflation(PC pc, Mat mat) {
   PetscCall(PetscObjectReference((PetscObject)mat));
   PetscCall(MatDestroy(&def->WtAW));
   def->WtAW = mat;
-  PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)def->WtAW));
   PetscFunctionReturn(0);
 }
 
@@ -808,7 +806,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Deflation(PC pc) {
   PC_Deflation *def;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(pc, &def));
+  PetscCall(PetscNew(&def));
   pc->data = (void *)def;
 
   def->init          = PETSC_FALSE;

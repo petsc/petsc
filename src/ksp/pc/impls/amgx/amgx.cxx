@@ -573,7 +573,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_AMGX(PC pc) {
   PC_AMGX *amgx;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(pc, &amgx));
+  PetscCall(PetscNew(&amgx));
   pc->ops->apply          = PCApply_AMGX;
   pc->ops->setfromoptions = PCSetFromOptions_AMGX;
   pc->ops->setup          = PCSetUp_AMGX;

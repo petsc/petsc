@@ -472,7 +472,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NCG(SNES snes) {
     snes->stol      = 1e-20;
   }
 
-  PetscCall(PetscNewLog(snes, &neP));
+  PetscCall(PetscNew(&neP));
   snes->data   = (void *)neP;
   neP->monitor = NULL;
   neP->type    = SNES_NCG_PRP;

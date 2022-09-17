@@ -107,7 +107,7 @@ PetscErrorCode VecTaggerCreate_Simple(VecTagger tagger) {
   tagger->ops->setup          = VecTaggerSetUp_Simple;
   tagger->ops->view           = VecTaggerView_Simple;
   tagger->ops->computeis      = VecTaggerComputeIS_FromBoxes;
-  PetscCall(PetscNewLog(tagger, &smpl));
+  PetscCall(PetscNew(&smpl));
   tagger->data = smpl;
   PetscFunctionReturn(0);
 }

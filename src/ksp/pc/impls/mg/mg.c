@@ -357,13 +357,12 @@ PetscErrorCode PCMGSetLevels_MG(PC pc, PetscInt levels, MPI_Comm *comms) {
   mg->nlevels = levels;
 
   PetscCall(PetscMalloc1(levels, &mglevels));
-  PetscCall(PetscLogObjectMemory((PetscObject)pc, levels * (sizeof(PC_MG *))));
 
   PetscCall(PCGetOptionsPrefix(pc, &prefix));
 
   mg->stageApply = 0;
   for (i = 0; i < levels; i++) {
-    PetscCall(PetscNewLog(pc, &mglevels[i]));
+    PetscCall(PetscNew(&mglevels[i]));
 
     mglevels[i]->level               = i;
     mglevels[i]->levels              = levels;
@@ -408,7 +407,6 @@ PetscErrorCode PCMGSetLevels_MG(PC pc, PetscInt levels, MPI_Comm *comms) {
         }
         PetscCall(PCFactorSetShiftType(ipc, MAT_SHIFT_INBLOCKS));
       }
-      PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)mglevels[i]->smoothd));
     }
     mglevels[i]->smoothu = mglevels[i]->smoothd;
     mg->rtol             = 0.0;
@@ -892,7 +890,6 @@ PetscErrorCode PCSetUp_MG(PC pc) {
       PetscCall(KSPSetInitialGuessNonzero(mglevels[i]->cr, PETSC_TRUE));
       PetscCall(PetscSNPrintf(crprefix, 128, "mg_levels_%d_cr_", (int)i));
       PetscCall(KSPAppendOptionsPrefix(mglevels[i]->cr, crprefix));
-      PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)mglevels[i]->cr));
     }
   }
 
@@ -1878,7 +1875,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_MG(PC pc) {
   PC_MG *mg;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(pc, &mg));
+  PetscCall(PetscNew(&mg));
   pc->data               = mg;
   mg->nlevels            = -1;
   mg->am                 = PC_MG_MULTIPLICATIVE;

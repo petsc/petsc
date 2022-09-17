@@ -17,12 +17,11 @@ PetscErrorCode MatDisAssemble_MPISELL(Mat A) {
   Mat_MPISELL *sell  = (Mat_MPISELL *)A->data;
   Mat          B     = sell->B, Bnew;
   Mat_SeqSELL *Bsell = (Mat_SeqSELL *)B->data;
-  PetscInt     i, j, totalslices, N = A->cmap->N, ec, row;
+  PetscInt     i, j, totalslices, N = A->cmap->N, row;
   PetscBool    isnonzero;
 
   PetscFunctionBegin;
   /* free stuff related to matrix-vec multiply */
-  PetscCall(VecGetSize(sell->lvec, &ec)); /* needed for PetscLogObjectMemory below */
   PetscCall(VecDestroy(&sell->lvec));
   PetscCall(VecScatterDestroy(&sell->Mvctx));
   if (sell->colmap) {
@@ -30,7 +29,6 @@ PetscErrorCode MatDisAssemble_MPISELL(Mat A) {
     PetscCall(PetscTableDestroy(&sell->colmap));
 #else
     PetscCall(PetscFree(sell->colmap));
-    PetscCall(PetscLogObjectMemory((PetscObject)A, -sell->B->cmap->n * sizeof(PetscInt)));
 #endif
   }
 
@@ -63,9 +61,7 @@ PetscErrorCode MatDisAssemble_MPISELL(Mat A) {
   }
 
   PetscCall(PetscFree(sell->garray));
-  PetscCall(PetscLogObjectMemory((PetscObject)A, -ec * sizeof(PetscInt)));
   PetscCall(MatDestroy(&B));
-  PetscCall(PetscLogObjectParent((PetscObject)A, (PetscObject)Bnew));
 
   sell->B          = Bnew;
   A->was_assembled = PETSC_FALSE;
@@ -185,14 +181,9 @@ PetscErrorCode MatSetUpMultiply_MPISELL(Mat mat) {
   /* generate the scatter context */
   PetscCall(VecScatterCreate(gvec, from, sell->lvec, to, &sell->Mvctx));
   PetscCall(VecScatterViewFromOptions(sell->Mvctx, (PetscObject)mat, "-matmult_vecscatter_view"));
-  PetscCall(PetscLogObjectParent((PetscObject)mat, (PetscObject)sell->Mvctx));
-  PetscCall(PetscLogObjectParent((PetscObject)mat, (PetscObject)sell->lvec));
-  PetscCall(PetscLogObjectParent((PetscObject)mat, (PetscObject)from));
-  PetscCall(PetscLogObjectParent((PetscObject)mat, (PetscObject)to));
 
   sell->garray = garray;
 
-  PetscCall(PetscLogObjectMemory((PetscObject)mat, ec * sizeof(PetscInt)));
   PetscCall(ISDestroy(&from));
   PetscCall(ISDestroy(&to));
   PetscCall(VecDestroy(&gvec));

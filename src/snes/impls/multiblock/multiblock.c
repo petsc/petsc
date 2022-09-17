@@ -328,7 +328,6 @@ PetscErrorCode SNESSetUp_Multiblock(SNES snes) {
       PetscCall(MatSetFromOptions(jac->schur));
 
       PetscCall(KSPCreate(PetscObjectComm((PetscObject)pc),&jac->kspschur));
-      PetscCall(PetscLogObjectParent((PetscObject)pc,(PetscObject)jac->kspschur));
       PetscCall(PetscObjectIncrementTabLevel((PetscObject)jac->kspschur,(PetscObject)pc,1));
       PetscCall(KSPSetOperators(jac->kspschur,jac->schur,FieldSplitSchurPre(jac)));
       if (jac->schurpre == PC_FIELDSPLIT_SCHUR_PRE_SELF) {
@@ -595,7 +594,6 @@ PetscErrorCode SNESMultiblockSetFields_Default(SNES snes, const char name[], Pet
   PetscCall(SNESCreate(PetscObjectComm((PetscObject)snes), &newblock->snes));
   PetscCall(PetscObjectIncrementTabLevel((PetscObject)newblock->snes, (PetscObject)snes, 1));
   PetscCall(SNESSetType(newblock->snes, SNESNRICHARDSON));
-  PetscCall(PetscLogObjectParent((PetscObject)snes, (PetscObject)newblock->snes));
   PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "%smultiblock_%s_", ((PetscObject)snes)->prefix ? ((PetscObject)snes)->prefix : "", newblock->name));
   PetscCall(SNESSetOptionsPrefix(newblock->snes, prefix));
 
@@ -639,7 +637,6 @@ PetscErrorCode SNESMultiblockSetIS_Default(SNES snes, const char name[], IS is) 
   PetscCall(SNESCreate(PetscObjectComm((PetscObject)snes), &newblock->snes));
   PetscCall(PetscObjectIncrementTabLevel((PetscObject)newblock->snes, (PetscObject)snes, 1));
   PetscCall(SNESSetType(newblock->snes, SNESNRICHARDSON));
-  PetscCall(PetscLogObjectParent((PetscObject)snes, (PetscObject)newblock->snes));
   PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "%smultiblock_%s_", ((PetscObject)snes)->prefix ? ((PetscObject)snes)->prefix : "", newblock->name));
   PetscCall(SNESSetOptionsPrefix(newblock->snes, prefix));
 
@@ -872,7 +869,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Multiblock(SNES snes) {
 
   snes->alwayscomputesfinalresidual = PETSC_TRUE;
 
-  PetscCall(PetscNewLog(snes, &mb));
+  PetscCall(PetscNew(&mb));
   snes->data    = (void *)mb;
   mb->defined   = PETSC_FALSE;
   mb->numBlocks = 0;

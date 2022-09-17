@@ -1558,12 +1558,12 @@ PETSC_EXTERN PetscErrorCode PCCreate_GAMG(PC pc) {
   PetscCall(PetscObjectChangeTypeName((PetscObject)pc, PCGAMG));
 
   /* create a supporting struct and attach it to pc */
-  PetscCall(PetscNewLog(pc, &pc_gamg));
+  PetscCall(PetscNew(&pc_gamg));
   PetscCall(PCMGSetGalerkin(pc, PC_MG_GALERKIN_EXTERNAL));
   mg           = (PC_MG *)pc->data;
   mg->innerctx = pc_gamg;
 
-  PetscCall(PetscNewLog(pc, &pc_gamg->ops));
+  PetscCall(PetscNew(&pc_gamg->ops));
 
   /* these should be in subctx but repartitioning needs simple arrays */
   pc_gamg->data_sz = 0;

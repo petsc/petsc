@@ -61,7 +61,6 @@ PetscErrorCode MatFDColoringApply_BAIJ(Mat J, MatFDColoring coloring, Vec x1, vo
     PetscCall(VecDuplicate(x1, &coloring->w3));
     /* Vec is used intensively in particular piece of scalar CPU code; won't benefit from bouncing back and forth to the GPU */
     PetscCall(VecBindToCPU(coloring->w3, PETSC_TRUE));
-    PetscCall(PetscLogObjectParent((PetscObject)coloring, (PetscObject)coloring->w3));
   }
   w3 = coloring->w3;
 
@@ -210,10 +209,7 @@ PetscErrorCode MatFDColoringApply_AIJ(Mat J, MatFDColoring coloring, Vec x1, voi
   }
 
   /* (3) Loop over each color */
-  if (!coloring->w3) {
-    PetscCall(VecDuplicate(x1, &coloring->w3));
-    PetscCall(PetscLogObjectParent((PetscObject)coloring, (PetscObject)coloring->w3));
-  }
+  if (!coloring->w3) { PetscCall(VecDuplicate(x1, &coloring->w3)); }
   w3 = coloring->w3;
 
   PetscCall(VecGetOwnershipRange(x1, &cstart, &cend)); /* used by ghosted vscale */
@@ -490,15 +486,12 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat, ISColoring iscoloring, MatFDC
 
   PetscCall(PetscMalloc2(nis, &c->ncolumns, nis, &c->columns));
   PetscCall(PetscMalloc1(nis, &c->nrows));
-  PetscCall(PetscLogObjectMemory((PetscObject)c, 3 * nis * sizeof(PetscInt)));
 
   if (c->htype[0] == 'd') {
     PetscCall(PetscMalloc1(nz, &Jentry));
-    PetscCall(PetscLogObjectMemory((PetscObject)c, nz * sizeof(MatEntry)));
     c->matentry = Jentry;
   } else if (c->htype[0] == 'w') {
     PetscCall(PetscMalloc1(nz, &Jentry2));
-    PetscCall(PetscLogObjectMemory((PetscObject)c, nz * sizeof(MatEntry2)));
     c->matentry2 = Jentry2;
   } else SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "htype is not supported");
 

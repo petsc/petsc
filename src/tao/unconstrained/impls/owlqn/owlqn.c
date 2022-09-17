@@ -301,7 +301,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_OWLQN(Tao tao) {
   tao->ops->setfromoptions = TaoSetFromOptions_OWLQN;
   tao->ops->destroy        = TaoDestroy_OWLQN;
 
-  PetscCall(PetscNewLog(tao, &lmP));
+  PetscCall(PetscNew(&lmP));
   lmP->D      = NULL;
   lmP->M      = NULL;
   lmP->GV     = NULL;

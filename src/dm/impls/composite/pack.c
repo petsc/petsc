@@ -1657,7 +1657,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Composite(DM p) {
   DM_Composite *com;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(p, &com));
+  PetscCall(PetscNew(&com));
   p->data     = com;
   com->n      = 0;
   com->nghost = 0;

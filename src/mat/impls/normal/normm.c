@@ -465,7 +465,7 @@ PetscErrorCode MatCreateNormal(Mat A, Mat *N) {
   PetscCall(PetscLayoutReference(A->cmap, &(*N)->rmap));
   PetscCall(PetscLayoutReference(A->cmap, &(*N)->cmap));
 
-  PetscCall(PetscNewLog(*N, &Na));
+  PetscCall(PetscNew(&Na));
   (*N)->data = (void *)Na;
   PetscCall(PetscObjectReference((PetscObject)A));
   Na->A     = A;

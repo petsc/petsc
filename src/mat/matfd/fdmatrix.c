@@ -443,11 +443,9 @@ PetscErrorCode MatFDColoringCreate(Mat mat, ISColoring iscoloring, MatFDColoring
   PetscCall(MatCreateVecs(mat, NULL, &c->w1));
   /* Vec is used intensively in particular piece of scalar CPU code; won't benefit from bouncing back and forth to the GPU */
   PetscCall(VecBindToCPU(c->w1, PETSC_TRUE));
-  PetscCall(PetscLogObjectParent((PetscObject)c, (PetscObject)c->w1));
   PetscCall(VecDuplicate(c->w1, &c->w2));
   /* Vec is used intensively in particular piece of scalar CPU code; won't benefit from bouncing back and forth to the GPU */
   PetscCall(VecBindToCPU(c->w2, PETSC_TRUE));
-  PetscCall(PetscLogObjectParent((PetscObject)c, (PetscObject)c->w2));
 
   c->error_rel    = PETSC_SQRT_MACHINE_EPSILON;
   c->umin         = 100.0 * PETSC_SQRT_MACHINE_EPSILON;

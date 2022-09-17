@@ -293,7 +293,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPREStruct(Mat B) {
   Mat_HYPREStruct *ex;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(B, &ex));
+  PetscCall(PetscNew(&ex));
   B->data      = (void *)ex;
   B->rmap->bs  = 1;
   B->assembled = PETSC_FALSE;
@@ -795,7 +795,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPRESStruct(Mat B) {
   Mat_HYPRESStruct *ex;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(B, &ex));
+  PetscCall(PetscNew(&ex));
   B->data      = (void *)ex;
   B->rmap->bs  = 1;
   B->assembled = PETSC_FALSE;

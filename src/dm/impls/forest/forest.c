@@ -1555,7 +1555,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Forest(DM dm) {
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscCall(PetscNewLog(dm, &forest));
+  PetscCall(PetscNew(&forest));
   dm->dim                     = 0;
   dm->data                    = forest;
   forest->refct               = 1;

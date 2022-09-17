@@ -2368,7 +2368,6 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ_MSR(Mat B, Mat A, IS perm, const Ma
   /* put together the new matrix */
   PetscCall(MatSeqSBAIJSetPreallocation(B, bs, 0, NULL));
 
-  /* PetscCall(PetscLogObjectParent((PetscObject)B,(PetscObject)iperm)); */
   b = (Mat_SeqSBAIJ *)(B)->data;
   PetscCall(PetscFree2(b->imax, b->ilen));
 
@@ -2393,7 +2392,6 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ_MSR(Mat B, Mat A, IS perm, const Ma
   PetscCall(PetscMalloc1(bs * mbs + bs, &b->solve_work));
   /* In b structure:  Free imax, ilen, old a, old j.
      Allocate idnew, solve_work, new a, new j */
-  PetscCall(PetscLogObjectMemory((PetscObject)B, (iu[mbs] - mbs) * (sizeof(PetscInt) + sizeof(MatScalar))));
   b->maxnz = b->nz = iu[mbs];
 
   (B)->info.factor_mallocs   = reallocs;
@@ -2593,7 +2591,6 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat fact, Mat A, IS perm, const Mat
   b->pivotinblocks = PETSC_FALSE; /* need to get from MatFactorInfo */
 
   PetscCall(PetscMalloc1(am + 1, &b->solve_work));
-  PetscCall(PetscLogObjectMemory((PetscObject)fact, ui[am] * (sizeof(PetscInt) + sizeof(MatScalar))));
 
   b->maxnz = b->nz = ui[am];
 

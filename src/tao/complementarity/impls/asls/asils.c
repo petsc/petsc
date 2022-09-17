@@ -283,7 +283,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_ASILS(Tao tao) {
   const char *armijo_type = TAOLINESEARCHARMIJO;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(tao, &asls));
+  PetscCall(PetscNew(&asls));
   tao->data                = (void *)asls;
   tao->ops->solve          = TaoSolve_ASILS;
   tao->ops->setup          = TaoSetUp_ASILS;

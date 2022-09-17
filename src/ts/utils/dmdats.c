@@ -25,7 +25,7 @@ static PetscErrorCode DMTSDestroy_DMDA(DMTS sdm) {
 
 static PetscErrorCode DMTSDuplicate_DMDA(DMTS oldsdm, DMTS sdm) {
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(sdm, (DMTS_DA **)&sdm->data));
+  PetscCall(PetscNew((DMTS_DA **)&sdm->data));
   if (oldsdm->data) PetscCall(PetscMemcpy(sdm->data, oldsdm->data, sizeof(DMTS_DA)));
   PetscFunctionReturn(0);
 }
@@ -34,7 +34,7 @@ static PetscErrorCode DMDATSGetContext(DM dm, DMTS sdm, DMTS_DA **dmdats) {
   PetscFunctionBegin;
   *dmdats = NULL;
   if (!sdm->data) {
-    PetscCall(PetscNewLog(dm, (DMTS_DA **)&sdm->data));
+    PetscCall(PetscNew((DMTS_DA **)&sdm->data));
     sdm->ops->destroy   = DMTSDestroy_DMDA;
     sdm->ops->duplicate = DMTSDuplicate_DMDA;
   }

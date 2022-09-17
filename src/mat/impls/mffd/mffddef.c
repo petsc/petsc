@@ -227,7 +227,7 @@ PETSC_EXTERN PetscErrorCode MatCreateMFFD_DS(MatMFFD ctx) {
 
   PetscFunctionBegin;
   /* allocate my own private data structure */
-  PetscCall(PetscNewLog(ctx, &hctx));
+  PetscCall(PetscNew(&hctx));
   ctx->hctx  = (void *)hctx;
   /* set a default for my parameter */
   hctx->umin = 1.e-6;

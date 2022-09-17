@@ -2509,7 +2509,7 @@ PetscErrorCode PetscSectionSymCreate_Label(PetscSectionSym sym) {
   PetscSectionSym_Label *sl;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(sym, &sl));
+  PetscCall(PetscNew(&sl));
   sym->ops->getpoints  = PetscSectionSymGetPoints_Label;
   sym->ops->distribute = PetscSectionSymDistribute_Label;
   sym->ops->copy       = PetscSectionSymCopy_Label;

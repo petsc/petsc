@@ -428,7 +428,6 @@ static PetscErrorCode KSPDGMRESGetNewVectors(KSP ksp, PetscInt it) {
   dgmres->vv_allocated += nalloc;
 
   PetscCall(KSPCreateVecs(ksp, nalloc, &dgmres->user_work[nwork], 0, NULL));
-  PetscCall(PetscLogObjectParents(ksp, nalloc, dgmres->user_work[nwork]));
 
   dgmres->mwork_alloc[nwork] = nalloc;
   for (k = 0; k < nalloc; k++) dgmres->vecs[it + VEC_OFFSET + k] = dgmres->user_work[nwork][k];
@@ -441,16 +440,12 @@ PetscErrorCode KSPBuildSolution_DGMRES(KSP ksp, Vec ptr, Vec *result) {
 
   PetscFunctionBegin;
   if (!ptr) {
-    if (!dgmres->sol_temp) {
-      PetscCall(VecDuplicate(ksp->vec_sol, &dgmres->sol_temp));
-      PetscCall(PetscLogObjectParent((PetscObject)ksp, (PetscObject)dgmres->sol_temp));
-    }
+    if (!dgmres->sol_temp) { PetscCall(VecDuplicate(ksp->vec_sol, &dgmres->sol_temp)); }
     ptr = dgmres->sol_temp;
   }
   if (!dgmres->nrs) {
     /* allocate the work area */
     PetscCall(PetscMalloc1(dgmres->max_k, &dgmres->nrs));
-    PetscCall(PetscLogObjectMemory((PetscObject)ksp, dgmres->max_k * sizeof(PetscScalar)));
   }
   PetscCall(KSPDGMRESBuildSoln(dgmres->nrs, ksp->vec_sol, ptr, ksp, dgmres->it));
   if (result) *result = ptr;
@@ -1029,7 +1024,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_DGMRES(KSP ksp) {
   KSP_DGMRES *dgmres;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(ksp, &dgmres));
+  PetscCall(PetscNew(&dgmres));
   ksp->data = (void *)dgmres;
 
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_PRECONDITIONED, PC_LEFT, 3));

@@ -404,7 +404,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BRGN(Tao tao) {
   TAO_BRGN *gn;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(tao, &gn));
+  PetscCall(PetscNew(&gn));
 
   tao->ops->destroy        = TaoDestroy_BRGN;
   tao->ops->setup          = TaoSetUp_BRGN;

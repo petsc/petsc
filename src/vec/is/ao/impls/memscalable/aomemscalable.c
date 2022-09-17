@@ -376,7 +376,7 @@ PETSC_EXTERN PetscErrorCode AOCreate_MemoryScalable(AO ao) {
   PetscFunctionBegin;
   PetscCheck(isapp, PetscObjectComm((PetscObject)ao), PETSC_ERR_ARG_WRONGSTATE, "AOSetIS() must be called before AOSetType()");
   /* create special struct aomems */
-  PetscCall(PetscNewLog(ao, &aomems));
+  PetscCall(PetscNew(&aomems));
   ao->data = (void *)aomems;
   PetscCall(PetscMemcpy(ao->ops, &AOOps_MemoryScalable, sizeof(struct _AOOps)));
   PetscCall(PetscObjectChangeTypeName((PetscObject)ao, AOMEMORYSCALABLE));
@@ -422,7 +422,6 @@ PETSC_EXTERN PetscErrorCode AOCreate_MemoryScalable(AO ao) {
   /* create distributed indices app_loc: petsc->app and petsc_loc: app->petsc */
   n_local = map->n;
   PetscCall(PetscCalloc2(n_local, &aomems->app_loc, n_local, &aomems->petsc_loc));
-  PetscCall(PetscLogObjectMemory((PetscObject)ao, 2 * n_local * sizeof(PetscInt)));
   PetscCall(ISGetIndices(isapp, &myapp));
 
   PetscCall(AOCreateMemoryScalable_private(comm, napp, petsc, myapp, ao, aomems->app_loc));

@@ -516,7 +516,7 @@ static PetscErrorCode MatGetFactor_aij_strumpack(Mat A, MatFactorType ftype, Mat
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSTRUMPACKSetHSSLeafSize_C", MatSTRUMPACKSetHSSLeafSize_STRUMPACK));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSTRUMPACKSetHSSMinSepSize_C", MatSTRUMPACKSetHSSMinSepSize_STRUMPACK));
   B->factortype = ftype;
-  PetscCall(PetscNewLog(B, &S));
+  PetscCall(PetscNew(&S));
   B->spptr = S;
 
   PetscCall(PetscObjectTypeCompare((PetscObject)A, MATSEQAIJ, &flg));

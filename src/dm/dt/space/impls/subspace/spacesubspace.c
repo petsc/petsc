@@ -250,7 +250,7 @@ PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Subspace(PetscSpace sp) {
   PetscSpace_Subspace *subsp;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(sp, &subsp));
+  PetscCall(PetscNew(&subsp));
   sp->data = (void *)subsp;
   PetscFunctionReturn(0);
 }

@@ -68,7 +68,7 @@ PETSC_INTERN PetscErrorCode PetscSFCreate_Gather(PetscSF sf) {
   sf->ops->BcastBegin  = PetscSFBcastBegin_Gather;
   sf->ops->ReduceBegin = PetscSFReduceBegin_Gather;
 
-  PetscCall(PetscNewLog(sf, &dat));
+  PetscCall(PetscNew(&dat));
   sf->data = (void *)dat;
   PetscFunctionReturn(0);
 }

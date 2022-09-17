@@ -28,7 +28,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Product(DM dm) {
 
   PetscFunctionBegin;
   PetscValidPointer(dm, 1);
-  PetscCall(PetscNewLog(dm, &product));
+  PetscCall(PetscNew(&product));
   dm->data = product;
 
   for (d = 0; d < DMPRODUCT_MAX_DIM; ++d) product->dm[d] = NULL;

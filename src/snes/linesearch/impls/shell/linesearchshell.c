@@ -135,7 +135,7 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_Shell(SNESLineSearch linesearch
   linesearch->ops->view           = NULL;
   linesearch->ops->setup          = NULL;
 
-  PetscCall(PetscNewLog(linesearch, &shell));
+  PetscCall(PetscNew(&shell));
 
   linesearch->data = (void *)shell;
   PetscFunctionReturn(0);

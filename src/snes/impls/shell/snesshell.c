@@ -157,7 +157,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Shell(SNES snes) {
 
   snes->alwayscomputesfinalresidual = PETSC_FALSE;
 
-  PetscCall(PetscNewLog(snes, &shell));
+  PetscCall(PetscNew(&shell));
   snes->data = (void *)shell;
   PetscCall(PetscObjectComposeFunction((PetscObject)snes, "SNESShellSetSolve_C", SNESShellSetSolve_Shell));
   PetscFunctionReturn(0);

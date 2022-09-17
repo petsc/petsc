@@ -40,13 +40,11 @@ PetscErrorCode KSPSetUp_FGMRES(KSP ksp) {
 
   PetscCall(PetscMalloc1(max_k + 2, &fgmres->prevecs));
   PetscCall(PetscMalloc1(max_k + 2, &fgmres->prevecs_user_work));
-  PetscCall(PetscLogObjectMemory((PetscObject)ksp, (max_k + 2) * (2 * sizeof(void *))));
 
   /* fgmres->vv_allocated includes extra work vectors, which are not used in the additional
      block of vectors used to store the preconditioned directions, hence  the -VEC_OFFSET
      term for this first allocation of vectors holding preconditioned directions */
   PetscCall(KSPCreateVecs(ksp, fgmres->vv_allocated - VEC_OFFSET, &fgmres->prevecs_user_work[0], 0, NULL));
-  PetscCall(PetscLogObjectParents(ksp, fgmres->vv_allocated - VEC_OFFSET, fgmres->prevecs_user_work[0]));
   for (k = 0; k < fgmres->vv_allocated - VEC_OFFSET; k++) fgmres->prevecs[k] = fgmres->prevecs_user_work[0][k];
   PetscFunctionReturn(0);
 }
@@ -462,14 +460,12 @@ static PetscErrorCode KSPFGMRESGetNewVectors(KSP ksp, PetscInt it) {
 
   /* work vectors */
   PetscCall(KSPCreateVecs(ksp, nalloc, &fgmres->user_work[nwork], 0, NULL));
-  PetscCall(PetscLogObjectParents(ksp, nalloc, fgmres->user_work[nwork]));
   for (k = 0; k < nalloc; k++) fgmres->vecs[it + VEC_OFFSET + k] = fgmres->user_work[nwork][k];
   /* specify size of chunk allocated */
   fgmres->mwork_alloc[nwork] = nalloc;
 
   /* preconditioned vectors */
   PetscCall(KSPCreateVecs(ksp, nalloc, &fgmres->prevecs_user_work[nwork], 0, NULL));
-  PetscCall(PetscLogObjectParents(ksp, nalloc, fgmres->prevecs_user_work[nwork]));
   for (k = 0; k < nalloc; k++) fgmres->prevecs[it + k] = fgmres->prevecs_user_work[nwork][k];
 
   /* increment the number of work vector chunks */
@@ -497,16 +493,12 @@ PetscErrorCode KSPBuildSolution_FGMRES(KSP ksp, Vec ptr, Vec *result) {
 
   PetscFunctionBegin;
   if (!ptr) {
-    if (!fgmres->sol_temp) {
-      PetscCall(VecDuplicate(ksp->vec_sol, &fgmres->sol_temp));
-      PetscCall(PetscLogObjectParent((PetscObject)ksp, (PetscObject)fgmres->sol_temp));
-    }
+    if (!fgmres->sol_temp) { PetscCall(VecDuplicate(ksp->vec_sol, &fgmres->sol_temp)); }
     ptr = fgmres->sol_temp;
   }
   if (!fgmres->nrs) {
     /* allocate the work area */
     PetscCall(PetscMalloc1(fgmres->max_k, &fgmres->nrs));
-    PetscCall(PetscLogObjectMemory((PetscObject)ksp, fgmres->max_k * sizeof(PetscScalar)));
   }
 
   PetscCall(KSPFGMRESBuildSoln(fgmres->nrs, ksp->vec_sol, ptr, ksp, fgmres->it));
@@ -624,7 +616,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_FGMRES(KSP ksp) {
   KSP_FGMRES *fgmres;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(ksp, &fgmres));
+  PetscCall(PetscNew(&fgmres));
 
   ksp->data                              = (void *)fgmres;
   ksp->ops->buildsolution                = KSPBuildSolution_FGMRES;

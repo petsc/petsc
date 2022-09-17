@@ -2757,7 +2757,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc) {
   PC_BDDC *pcbddc;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(pc, &pcbddc));
+  PetscCall(PetscNew(&pcbddc));
   pc->data = pcbddc;
 
   /* create PCIS data structure */

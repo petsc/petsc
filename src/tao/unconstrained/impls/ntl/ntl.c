@@ -739,7 +739,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_NTL(Tao tao) {
   const char *morethuente_type = TAOLINESEARCHMT;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(tao, &tl));
+  PetscCall(PetscNew(&tl));
   tao->ops->setup          = TaoSetUp_NTL;
   tao->ops->solve          = TaoSolve_NTL;
   tao->ops->view           = TaoView_NTL;

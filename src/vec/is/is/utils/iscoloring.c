@@ -353,7 +353,6 @@ PetscErrorCode ISColoringCreate(MPI_Comm comm, PetscInt ncolors, PetscInt n, con
   (*iscoloring)->ctype = IS_COLORING_GLOBAL;
   if (mode == PETSC_COPY_VALUES) {
     PetscCall(PetscMalloc1(n, &(*iscoloring)->colors));
-    PetscCall(PetscLogObjectMemory((PetscObject)(*iscoloring), n * sizeof(ISColoringValue)));
     PetscCall(PetscArraycpy((*iscoloring)->colors, colors, n));
     (*iscoloring)->allocated = PETSC_TRUE;
   } else if (mode == PETSC_OWN_POINTER) {

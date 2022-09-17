@@ -204,7 +204,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_VTK(PetscViewer v) {
   PetscViewer_VTK *vtk;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(v, &vtk));
+  PetscCall(PetscNew(&vtk));
 
   v->data         = (void *)vtk;
   v->ops->destroy = PetscViewerDestroy_VTK;

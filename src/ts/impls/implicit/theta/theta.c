@@ -1211,7 +1211,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_Theta(TS ts) {
 
   ts->usessnes = PETSC_TRUE;
 
-  PetscCall(PetscNewLog(ts, &th));
+  PetscCall(PetscNew(&th));
   ts->data = (void *)th;
 
   th->VecsDeltaLam   = NULL;

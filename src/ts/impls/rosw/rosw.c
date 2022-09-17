@@ -1606,7 +1606,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_RosW(TS ts) {
 
   ts->usessnes = PETSC_TRUE;
 
-  PetscCall(PetscNewLog(ts, &ros));
+  PetscCall(PetscNew(&ros));
   ts->data = (void *)ros;
 
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSRosWGetType_C", TSRosWGetType_RosW));

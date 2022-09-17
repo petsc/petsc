@@ -249,7 +249,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_KSP(PC pc) {
   PC_KSP *jac;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(pc, &jac));
+  PetscCall(PetscNew(&jac));
   pc->data = (void *)jac;
 
   PetscCall(PetscMemzero(pc->ops, sizeof(struct _PCOps)));

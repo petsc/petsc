@@ -736,7 +736,7 @@ PETSC_EXTERN PetscErrorCode PetscFECreate_OpenCL(PetscFE fem) {
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
-  PetscCall(PetscNewLog(fem, &ocl));
+  PetscCall(PetscNew(&ocl));
   fem->data = ocl;
 
   /* Init Platform */

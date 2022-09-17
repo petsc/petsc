@@ -409,7 +409,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_SOR(PC pc) {
   PC_SOR *jac;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(pc, &jac));
+  PetscCall(PetscNew(&jac));
 
   pc->ops->apply           = PCApply_SOR;
   pc->ops->applytranspose  = PCApplyTranspose_SOR;

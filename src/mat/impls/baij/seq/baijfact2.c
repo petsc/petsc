@@ -250,17 +250,13 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ_ilu0(Mat fact, Mat A, IS isrow, IS i
 
   /* allocate matrix arrays for new data structure */
   PetscCall(PetscMalloc3(bs2 * ai[n] + 1, &b->a, ai[n] + 1, &b->j, n + 1, &b->i));
-  PetscCall(PetscLogObjectMemory((PetscObject)fact, ai[n] * (bs2 * sizeof(PetscScalar) + sizeof(PetscInt)) + (n + 1) * sizeof(PetscInt)));
 
   b->singlemalloc    = PETSC_TRUE;
   b->free_a          = PETSC_TRUE;
   b->free_ij         = PETSC_TRUE;
   fact->preallocated = PETSC_TRUE;
   fact->assembled    = PETSC_TRUE;
-  if (!b->diag) {
-    PetscCall(PetscMalloc1(n + 1, &b->diag));
-    PetscCall(PetscLogObjectMemory((PetscObject)fact, (n + 1) * sizeof(PetscInt)));
-  }
+  if (!b->diag) { PetscCall(PetscMalloc1(n + 1, &b->diag)); }
   bdiag = b->diag;
 
   if (n > 0) PetscCall(PetscArrayzero(b->a, bs2 * ai[n]));
@@ -470,7 +466,6 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat fact, Mat A, IS isrow, IS iscol,
 
   /* put together the new matrix */
   PetscCall(MatSeqBAIJSetPreallocation(fact, bs, MAT_SKIP_ALLOCATION, NULL));
-  PetscCall(PetscLogObjectParent((PetscObject)fact, (PetscObject)isicol));
 
   b               = (Mat_SeqBAIJ *)(fact)->data;
   b->free_a       = PETSC_TRUE;
@@ -494,7 +489,6 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat fact, Mat A, IS isrow, IS iscol,
   PetscCall(PetscMalloc1(bs * n + bs, &b->solve_work));
   /* In b structure:  Free imax, ilen, old a, old j.
      Allocate bdiag, solve_work, new a, new j */
-  PetscCall(PetscLogObjectMemory((PetscObject)fact, (bdiag[0] + 1) * (sizeof(PetscInt) + bs2 * sizeof(PetscScalar))));
   b->maxnz = b->nz = bdiag[0] + 1;
 
   fact->info.factor_mallocs    = reallocs;
@@ -686,7 +680,6 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ_inplace(Mat fact, Mat A, IS isrow, I
 
   /* put together the new matrix */
   PetscCall(MatSeqBAIJSetPreallocation(fact, bs, MAT_SKIP_ALLOCATION, NULL));
-  PetscCall(PetscLogObjectParent((PetscObject)fact, (PetscObject)isicol));
   b = (Mat_SeqBAIJ *)fact->data;
 
   b->free_a       = PETSC_TRUE;
@@ -712,7 +705,6 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ_inplace(Mat fact, Mat A, IS isrow, I
   PetscCall(PetscMalloc1(bs * n + bs, &b->solve_work));
   /* In b structure:  Free imax, ilen, old a, old j.
      Allocate dloc, solve_work, new a, new j */
-  PetscCall(PetscLogObjectMemory((PetscObject)fact, (ainew[n] - n) * (sizeof(PetscInt)) + bs2 * ainew[n] * sizeof(PetscScalar)));
   b->maxnz = b->nz = ainew[n];
 
   fact->info.factor_mallocs    = reallocate;

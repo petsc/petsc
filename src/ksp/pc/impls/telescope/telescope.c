@@ -469,7 +469,6 @@ static PetscErrorCode PCSetUp_Telescope(PC pc) {
         PetscCall(PetscSubcommCreate(comm, &sred->psubcomm));
         PetscCall(PetscSubcommSetNumber(sred->psubcomm, sred->redfactor));
         PetscCall(PetscSubcommSetType(sred->psubcomm, sred->subcommtype));
-        PetscCall(PetscLogObjectMemory((PetscObject)pc, sizeof(PetscSubcomm)));
         sred->subcomm = PetscSubcommChild(sred->psubcomm);
       }
     } else { /* query PC for DM, check communicators */
@@ -511,7 +510,6 @@ static PetscErrorCode PCSetUp_Telescope(PC pc) {
       PetscCall(KSPCreate(subcomm, &sred->ksp));
       PetscCall(KSPSetErrorIfNotConverged(sred->ksp, pc->erroriffailure));
       PetscCall(PetscObjectIncrementTabLevel((PetscObject)sred->ksp, (PetscObject)pc, 1));
-      PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)sred->ksp));
       PetscCall(KSPSetType(sred->ksp, KSPPREONLY));
       PetscCall(PCGetOptionsPrefix(pc, &prefix));
       PetscCall(KSPSetOptionsPrefix(sred->ksp, prefix));
@@ -1280,7 +1278,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Telescope(PC pc) {
   struct _PC_Telescope *sred;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(pc, &sred));
+  PetscCall(PetscNew(&sred));
   sred->psubcomm                   = NULL;
   sred->subcommtype                = PETSC_SUBCOMM_INTERLACED;
   sred->subcomm                    = MPI_COMM_NULL;

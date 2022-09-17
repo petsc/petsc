@@ -122,7 +122,7 @@ PETSC_INTERN PetscErrorCode PetscSFCreate_Allgather(PetscSF sf) {
   sf->ops->ReduceBegin = PetscSFReduceBegin_Allgather;
   sf->ops->BcastToZero = PetscSFBcastToZero_Allgather;
 
-  PetscCall(PetscNewLog(sf, &dat));
+  PetscCall(PetscNew(&dat));
   sf->data = (void *)dat;
   PetscFunctionReturn(0);
 }

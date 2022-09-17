@@ -1139,7 +1139,7 @@ PETSC_EXTERN PetscErrorCode PetscFECreate_Basic(PetscFE fem) {
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
-  PetscCall(PetscNewLog(fem, &b));
+  PetscCall(PetscNew(&b));
   fem->data = b;
 
   PetscCall(PetscFEInitialize_Basic(fem));

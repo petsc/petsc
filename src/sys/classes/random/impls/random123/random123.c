@@ -125,7 +125,7 @@ PETSC_EXTERN PetscErrorCode PetscRandomCreate_Random123(PetscRandom r) {
   PetscRandom123 *r123;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(r, &r123));
+  PetscCall(PetscNew(&r123));
   r->data = r123;
   PetscCall(PetscMemcpy(r->ops, &PetscRandomOps_Values, sizeof(PetscRandomOps_Values)));
   PetscCall(PetscObjectChangeTypeName((PetscObject)r, PETSCRANDOM123));

@@ -98,8 +98,6 @@ static PetscErrorCode PCSetUp_ILU(PC pc) {
       PetscCall(PCFactorSetDefaultOrdering_Factor(pc));
       PetscCall(MatDestroy(&((PC_Factor *)ilu)->fact));
       PetscCall(MatGetOrdering(pc->pmat, ((PC_Factor *)ilu)->ordering, &ilu->row, &ilu->col));
-      if (ilu->row) PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)ilu->row));
-      if (ilu->col) PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)ilu->col));
     }
 
     /* In place ILU only makes sense with fill factor of 1.0 because
@@ -121,16 +119,11 @@ static PetscErrorCode PCSetUp_ILU(PC pc) {
     if (!pc->setupcalled) {
       /* first time in so compute reordering and symbolic factorization */
       PetscBool canuseordering;
-      if (!((PC_Factor *)ilu)->fact) {
-        PetscCall(MatGetFactor(pc->pmat, ((PC_Factor *)ilu)->solvertype, MAT_FACTOR_ILU, &((PC_Factor *)ilu)->fact));
-        PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)((PC_Factor *)ilu)->fact));
-      }
+      if (!((PC_Factor *)ilu)->fact) { PetscCall(MatGetFactor(pc->pmat, ((PC_Factor *)ilu)->solvertype, MAT_FACTOR_ILU, &((PC_Factor *)ilu)->fact)); }
       PetscCall(MatFactorGetCanUseOrdering(((PC_Factor *)ilu)->fact, &canuseordering));
       if (canuseordering) {
         PetscCall(PCFactorSetDefaultOrdering_Factor(pc));
         PetscCall(MatGetOrdering(pc->pmat, ((PC_Factor *)ilu)->ordering, &ilu->row, &ilu->col));
-        PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)ilu->row));
-        PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)ilu->col));
         /*  Remove zeros along diagonal?     */
         if (ilu->nonzerosalongdiagonal) PetscCall(MatReorderForNonzeroDiagonal(pc->pmat, ilu->nonzerosalongdiagonaltol, ilu->row, ilu->col));
       }
@@ -142,7 +135,6 @@ static PetscErrorCode PCSetUp_ILU(PC pc) {
         PetscBool canuseordering;
         PetscCall(MatDestroy(&((PC_Factor *)ilu)->fact));
         PetscCall(MatGetFactor(pc->pmat, ((PC_Factor *)ilu)->solvertype, MAT_FACTOR_ILU, &((PC_Factor *)ilu)->fact));
-        PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)((PC_Factor *)ilu)->fact));
         PetscCall(MatFactorGetCanUseOrdering(((PC_Factor *)ilu)->fact, &canuseordering));
         if (canuseordering) {
           /* compute a new ordering for the ILU */
@@ -150,8 +142,6 @@ static PetscErrorCode PCSetUp_ILU(PC pc) {
           PetscCall(ISDestroy(&ilu->col));
           PetscCall(PCFactorSetDefaultOrdering_Factor(pc));
           PetscCall(MatGetOrdering(pc->pmat, ((PC_Factor *)ilu)->ordering, &ilu->row, &ilu->col));
-          PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)ilu->row));
-          PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)ilu->col));
           /*  Remove zeros along diagonal?     */
           if (ilu->nonzerosalongdiagonal) PetscCall(MatReorderForNonzeroDiagonal(pc->pmat, ilu->nonzerosalongdiagonaltol, ilu->row, ilu->col));
         }
@@ -284,7 +274,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_ILU(PC pc) {
   PC_ILU *ilu;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(pc, &ilu));
+  PetscCall(PetscNew(&ilu));
   pc->data = (void *)ilu;
   PetscCall(PCFactorInitialize(pc, MAT_FACTOR_ILU));
 

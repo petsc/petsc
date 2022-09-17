@@ -124,7 +124,6 @@ PetscErrorCode MatSeqSELLSetPreallocation_SeqSELL(Mat B, PetscInt maxallocrow, c
 
     if (!b->sliidx) { /* sliidx gives the starting index of each slice, the last element is the total space allocated */
       PetscCall(PetscMalloc1(totalslices + 1, &b->sliidx));
-      PetscCall(PetscLogObjectMemory((PetscObject)B, (totalslices + 1) * sizeof(PetscInt)));
     }
     if (!rlen) { /* if rlen is not provided, allocate same space for all the slices */
       if (maxallocrow == PETSC_DEFAULT || maxallocrow == PETSC_DECIDE) maxallocrow = 10;
@@ -151,10 +150,8 @@ PetscErrorCode MatSeqSELLSetPreallocation_SeqSELL(Mat B, PetscInt maxallocrow, c
     PetscCall(MatSeqXSELLFreeSELL(B, &b->val, &b->colidx));
     /* FIXME: assuming an element of the bit array takes 8 bits */
     PetscCall(PetscMalloc2(b->sliidx[totalslices], &b->val, b->sliidx[totalslices], &b->colidx));
-    PetscCall(PetscLogObjectMemory((PetscObject)B, b->sliidx[totalslices] * (sizeof(PetscScalar) + sizeof(PetscInt))));
     /* b->rlen will count nonzeros in each row so far. We dont copy rlen to b->rlen because the matrix has not been set. */
     PetscCall(PetscCalloc1(8 * totalslices, &b->rlen));
-    PetscCall(PetscLogObjectMemory((PetscObject)B, 8 * totalslices * sizeof(PetscInt)));
 
     b->singlemalloc = PETSC_TRUE;
     b->free_val     = PETSC_TRUE;
@@ -767,7 +764,6 @@ PetscErrorCode MatMarkDiagonal_SeqSELL(Mat A) {
   PetscFunctionBegin;
   if (!a->diag) {
     PetscCall(PetscMalloc1(m, &a->diag));
-    PetscCall(PetscLogObjectMemory((PetscObject)A, m * sizeof(PetscInt)));
     a->free_diag = PETSC_TRUE;
   }
   for (i = 0; i < m; i++) {                      /* loop over rows */
@@ -798,7 +794,6 @@ PetscErrorCode MatInvertDiagonal_SeqSELL(Mat A, PetscScalar omega, PetscScalar f
   diag = a->diag;
   if (!a->idiag) {
     PetscCall(PetscMalloc3(m, &a->idiag, m, &a->mdiag, m, &a->ssor_work));
-    PetscCall(PetscLogObjectMemory((PetscObject)A, 3 * m * sizeof(PetscScalar)));
     val = a->val;
   }
   mdiag = a->mdiag;
@@ -1427,7 +1422,7 @@ PetscErrorCode MatGetInfo_SeqSELL(Mat A, MatInfoType flag, MatInfo *info) {
   info->nz_unneeded  = (a->maxallocmat - a->sliidx[a->totalslices]);
   info->assemblies   = A->num_ass;
   info->mallocs      = A->info.mallocs;
-  info->memory       = ((PetscObject)A)->mem;
+  info->memory       = 0; /* REVIEW ME */
   if (A->factortype) {
     info->fill_ratio_given  = A->info.fill_ratio_given;
     info->fill_ratio_needed = A->info.fill_ratio_needed;
@@ -1851,10 +1846,7 @@ PetscErrorCode MatStoreValues_SeqSELL(Mat mat) {
   PetscCheck(a->nonew, PETSC_COMM_SELF, PETSC_ERR_ORDER, "Must call MatSetOption(A,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);first");
 
   /* allocate space for values if not already there */
-  if (!a->saved_values) {
-    PetscCall(PetscMalloc1(a->sliidx[a->totalslices] + 1, &a->saved_values));
-    PetscCall(PetscLogObjectMemory((PetscObject)mat, (a->sliidx[a->totalslices] + 1) * sizeof(PetscScalar)));
-  }
+  if (!a->saved_values) { PetscCall(PetscMalloc1(a->sliidx[a->totalslices] + 1, &a->saved_values)); }
 
   /* copy values over */
   PetscCall(PetscArraycpy(a->saved_values, a->val, a->sliidx[a->totalslices]));
@@ -1899,7 +1891,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqSELL(Mat B) {
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)B), &size));
   PetscCheck(size <= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Comm must be of size 1");
 
-  PetscCall(PetscNewLog(B, &b));
+  PetscCall(PetscNew(&b));
 
   B->data = (void *)b;
 
@@ -1954,9 +1946,7 @@ PetscErrorCode MatDuplicateNoCreate_SeqSELL(Mat C, Mat A, MatDuplicateOption cpv
   PetscCall(PetscLayoutReference(A->cmap, &C->cmap));
 
   PetscCall(PetscMalloc1(8 * totalslices, &c->rlen));
-  PetscCall(PetscLogObjectMemory((PetscObject)C, m * sizeof(PetscInt)));
   PetscCall(PetscMalloc1(totalslices + 1, &c->sliidx));
-  PetscCall(PetscLogObjectMemory((PetscObject)C, (totalslices + 1) * sizeof(PetscInt)));
 
   for (i = 0; i < m; i++) c->rlen[i] = a->rlen[i];
   for (i = 0; i < totalslices + 1; i++) c->sliidx[i] = a->sliidx[i];
@@ -1964,7 +1954,6 @@ PetscErrorCode MatDuplicateNoCreate_SeqSELL(Mat C, Mat A, MatDuplicateOption cpv
   /* allocate the matrix space */
   if (mallocmatspace) {
     PetscCall(PetscMalloc2(a->maxallocmat, &c->val, a->maxallocmat, &c->colidx));
-    PetscCall(PetscLogObjectMemory((PetscObject)C, a->maxallocmat * (sizeof(PetscScalar) + sizeof(PetscInt))));
 
     c->singlemalloc = PETSC_TRUE;
 
@@ -1983,7 +1972,6 @@ PetscErrorCode MatDuplicateNoCreate_SeqSELL(Mat C, Mat A, MatDuplicateOption cpv
   c->nonew             = a->nonew;
   if (a->diag) {
     PetscCall(PetscMalloc1(m, &c->diag));
-    PetscCall(PetscLogObjectMemory((PetscObject)C, m * sizeof(PetscInt)));
     for (i = 0; i < m; i++) c->diag[i] = a->diag[i];
   } else c->diag = NULL;
 

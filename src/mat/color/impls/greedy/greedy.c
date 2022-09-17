@@ -552,7 +552,7 @@ PETSC_EXTERN PetscErrorCode MatColoringCreate_Greedy(MatColoring mc) {
   MC_Greedy *gr;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(mc, &gr));
+  PetscCall(PetscNew(&gr));
   mc->data                = gr;
   mc->ops->apply          = MatColoringApply_Greedy;
   mc->ops->view           = NULL;

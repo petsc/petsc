@@ -486,10 +486,9 @@ static PetscErrorCode SNESCompositeAddSNES_Composite(SNES snes, SNESType type) {
   DM                 dm;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(snes, &ilink));
+  PetscCall(PetscNew(&ilink));
   ilink->next = NULL;
   PetscCall(SNESCreate(PetscObjectComm((PetscObject)snes), &ilink->snes));
-  PetscCall(PetscLogObjectParent((PetscObject)snes, (PetscObject)ilink->snes));
   PetscCall(SNESGetDM(snes, &dm));
   PetscCall(SNESSetDM(ilink->snes, dm));
   PetscCall(SNESSetTolerances(ilink->snes, snes->abstol, snes->rtol, snes->stol, 1, snes->max_funcs));
@@ -810,7 +809,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Composite(SNES snes) {
   SNES_Composite *jac;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(snes, &jac));
+  PetscCall(PetscNew(&jac));
 
   snes->ops->solve          = SNESSolve_Composite;
   snes->ops->setup          = SNESSetUp_Composite;

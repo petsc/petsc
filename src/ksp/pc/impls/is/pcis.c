@@ -441,7 +441,7 @@ PetscErrorCode PCISCreate(PC pc) {
 
   PetscFunctionBegin;
   if (!pcis) {
-    PetscCall(PetscNewLog(pc, &pcis));
+    PetscCall(PetscNew(&pcis));
     pc->data = pcis;
   }
   pcis->n_neigh          = -1;

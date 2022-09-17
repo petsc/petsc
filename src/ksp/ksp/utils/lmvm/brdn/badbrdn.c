@@ -257,7 +257,7 @@ PetscErrorCode MatCreate_LMVMBadBrdn(Mat B) {
   lmvm->ops->update   = MatUpdate_LMVMBadBrdn;
   lmvm->ops->copy     = MatCopy_LMVMBadBrdn;
 
-  PetscCall(PetscNewLog(B, &lbb));
+  PetscCall(PetscNew(&lbb));
   lmvm->ctx      = (void *)lbb;
   lbb->allocated = PETSC_FALSE;
   lbb->needP = lbb->needQ = PETSC_TRUE;

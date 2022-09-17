@@ -21,7 +21,7 @@ static PetscErrorCode DMSNESDuplicate_DMLocal(DMSNES oldsdm, DMSNES sdm) {
   PetscFunctionBegin;
   if (sdm->data != oldsdm->data) {
     PetscCall(PetscFree(sdm->data));
-    PetscCall(PetscNewLog(sdm, (DMSNES_Local **)&sdm->data));
+    PetscCall(PetscNew((DMSNES_Local **)&sdm->data));
     if (oldsdm->data) PetscCall(PetscMemcpy(sdm->data, oldsdm->data, sizeof(DMSNES_Local)));
   }
   PetscFunctionReturn(0);
@@ -31,7 +31,7 @@ static PetscErrorCode DMLocalSNESGetContext(DM dm, DMSNES sdm, DMSNES_Local **dm
   PetscFunctionBegin;
   *dmlocalsnes = NULL;
   if (!sdm->data) {
-    PetscCall(PetscNewLog(dm, (DMSNES_Local **)&sdm->data));
+    PetscCall(PetscNew((DMSNES_Local **)&sdm->data));
 
     sdm->ops->destroy   = DMSNESDestroy_DMLocal;
     sdm->ops->duplicate = DMSNESDuplicate_DMLocal;

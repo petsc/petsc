@@ -117,11 +117,6 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat) {
 
   sbaij->garray = garray;
 
-  PetscCall(PetscLogObjectParent((PetscObject)mat, (PetscObject)sbaij->Mvctx));
-  PetscCall(PetscLogObjectParent((PetscObject)mat, (PetscObject)sbaij->lvec));
-  PetscCall(PetscLogObjectParent((PetscObject)mat, (PetscObject)from));
-  PetscCall(PetscLogObjectParent((PetscObject)mat, (PetscObject)to));
-
   PetscCall(ISDestroy(&from));
   PetscCall(ISDestroy(&to));
 
@@ -166,16 +161,6 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat) {
 
   PetscCall(PetscFree(stmp));
 
-  PetscCall(PetscLogObjectParent((PetscObject)mat, (PetscObject)sbaij->sMvctx));
-  PetscCall(PetscLogObjectParent((PetscObject)mat, (PetscObject)sbaij->slvec0));
-  PetscCall(PetscLogObjectParent((PetscObject)mat, (PetscObject)sbaij->slvec1));
-  PetscCall(PetscLogObjectParent((PetscObject)mat, (PetscObject)sbaij->slvec0b));
-  PetscCall(PetscLogObjectParent((PetscObject)mat, (PetscObject)sbaij->slvec1a));
-  PetscCall(PetscLogObjectParent((PetscObject)mat, (PetscObject)sbaij->slvec1b));
-  PetscCall(PetscLogObjectParent((PetscObject)mat, (PetscObject)from));
-  PetscCall(PetscLogObjectParent((PetscObject)mat, (PetscObject)to));
-
-  PetscCall(PetscLogObjectMemory((PetscObject)mat, ec * sizeof(PetscInt)));
   PetscCall(ISDestroy(&from));
   PetscCall(ISDestroy(&to));
   PetscCall(PetscFree2(sgarray, ec_owner));
@@ -196,7 +181,7 @@ PetscErrorCode MatDisAssemble_MPISBAIJ(Mat A) {
   Mat           B     = baij->B, Bnew;
   Mat_SeqBAIJ  *Bbaij = (Mat_SeqBAIJ *)B->data;
   PetscInt      i, j, mbs = Bbaij->mbs, n = A->cmap->N, col, *garray = baij->garray;
-  PetscInt      k, bs = A->rmap->bs, bs2 = baij->bs2, *rvals, *nz, ec, m = A->rmap->n;
+  PetscInt      k, bs = A->rmap->bs, bs2 = baij->bs2, *rvals, *nz, m = A->rmap->n;
   MatScalar    *a = Bbaij->a;
   PetscScalar  *atmp;
 #if defined(PETSC_USE_REAL_MAT_SINGLE)
@@ -208,7 +193,6 @@ PetscErrorCode MatDisAssemble_MPISBAIJ(Mat A) {
   PetscCall(PetscMalloc1(A->rmap->bs, &atmp));
 #endif
   /* free stuff related to matrix-vec multiply */
-  PetscCall(VecGetSize(baij->lvec, &ec)); /* needed for PetscLogObjectMemory below */
   PetscCall(VecDestroy(&baij->lvec));
   PetscCall(VecScatterDestroy(&baij->Mvctx));
 
@@ -223,7 +207,6 @@ PetscErrorCode MatDisAssemble_MPISBAIJ(Mat A) {
     PetscCall(PetscTableDestroy(&baij->colmap));
 #else
     PetscCall(PetscFree(baij->colmap));
-    PetscCall(PetscLogObjectMemory((PetscObject)A, -Bbaij->nbs * sizeof(PetscInt)));
 #endif
   }
 
@@ -274,9 +257,7 @@ PetscErrorCode MatDisAssemble_MPISBAIJ(Mat A) {
   baij->garray = NULL;
 
   PetscCall(PetscFree(rvals));
-  PetscCall(PetscLogObjectMemory((PetscObject)A, -ec * sizeof(PetscInt)));
   PetscCall(MatDestroy(&B));
-  PetscCall(PetscLogObjectParent((PetscObject)A, (PetscObject)Bnew));
 
   baij->B = Bnew;
 

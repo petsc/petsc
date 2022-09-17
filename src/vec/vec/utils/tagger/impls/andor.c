@@ -142,7 +142,7 @@ PetscErrorCode VecTaggerCreate_AndOr(VecTagger tagger) {
   tagger->ops->setup          = VecTaggerSetUp_AndOr;
   tagger->ops->view           = VecTaggerView_AndOr;
   tagger->ops->computeis      = VecTaggerComputeIS_FromBoxes;
-  PetscCall(PetscNewLog(tagger, &andOr));
+  PetscCall(PetscNew(&andOr));
   tagger->data = andOr;
   PetscFunctionReturn(0);
 }

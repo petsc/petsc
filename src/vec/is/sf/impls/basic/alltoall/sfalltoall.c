@@ -212,7 +212,7 @@ PETSC_INTERN PetscErrorCode PetscSFCreate_Alltoall(PetscSF sf) {
   sf->ops->CreateLocalSF        = PetscSFCreateLocalSF_Alltoall;
   sf->ops->CreateEmbeddedRootSF = PetscSFCreateEmbeddedRootSF_Alltoall;
 
-  PetscCall(PetscNewLog(sf, &dat));
+  PetscCall(PetscNew(&dat));
   sf->data = (void *)dat;
   PetscFunctionReturn(0);
 }

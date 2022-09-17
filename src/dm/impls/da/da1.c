@@ -233,7 +233,6 @@ PetscErrorCode DMSetUp_DA_1D(DM da) {
   PetscCall(ISCreateStride(comm, dof * (IXe - IXs), dof * (IXs - Xs), 1, &to));
 
   PetscCall(PetscMalloc1(x + 2 * sDist, &idx));
-  PetscCall(PetscLogObjectMemory((PetscObject)da, (x + 2 * (sDist)) * sizeof(PetscInt)));
 
   for (i = 0; i < IXs - Xs; i++) idx[i] = -1; /* prepend with -1s if needed for ghosted case*/
 
@@ -280,7 +279,6 @@ PetscErrorCode DMSetUp_DA_1D(DM da) {
 
   PetscCall(ISCreateBlock(comm, dof, nn - IXs + Xs, &idx[IXs - Xs], PETSC_USE_POINTER, &from));
   PetscCall(VecScatterCreate(global, from, local, to, &gtol));
-  PetscCall(PetscLogObjectParent((PetscObject)da, (PetscObject)gtol));
   PetscCall(ISDestroy(&to));
   PetscCall(ISDestroy(&from));
   PetscCall(VecDestroy(&local));
@@ -310,7 +308,6 @@ PetscErrorCode DMSetUp_DA_1D(DM da) {
   for (i = 0; i < Xe - IXe; i++) idx[nn++] = -1; /* pad with -1s if needed for ghosted case*/
 
   PetscCall(ISLocalToGlobalMappingCreate(comm, dof, nn, idx, PETSC_OWN_POINTER, &da->ltogmap));
-  PetscCall(PetscLogObjectParent((PetscObject)da, (PetscObject)da->ltogmap));
 
   PetscFunctionReturn(0);
 }

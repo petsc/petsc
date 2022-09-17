@@ -308,7 +308,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_TRON(Tao tao) {
   tao->ops->destroy        = TaoDestroy_TRON;
   tao->ops->computedual    = TaoComputeDual_TRON;
 
-  PetscCall(PetscNewLog(tao, &tron));
+  PetscCall(PetscNew(&tron));
   tao->data = (void *)tron;
 
   /* Override default settings (unless already changed) */

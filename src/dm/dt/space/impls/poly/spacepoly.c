@@ -343,7 +343,7 @@ PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Polynomial(PetscSpace sp) {
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  PetscCall(PetscNewLog(sp, &poly));
+  PetscCall(PetscNew(&poly));
   sp->data = poly;
 
   poly->tensor    = PETSC_FALSE;

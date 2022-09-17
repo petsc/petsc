@@ -219,7 +219,6 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat B, Mat A, IS isrow, IS iscol, con
 
   /* put together the new matrix */
   PetscCall(MatSeqBAIJSetPreallocation(B, bs, MAT_SKIP_ALLOCATION, NULL));
-  PetscCall(PetscLogObjectParent((PetscObject)B, (PetscObject)isicol));
   b = (Mat_SeqBAIJ *)(B)->data;
 
   b->free_a       = PETSC_TRUE;
@@ -241,7 +240,6 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat B, Mat A, IS isrow, IS iscol, con
   PetscCall(PetscObjectReference((PetscObject)iscol));
   b->icol = isicol;
   PetscCall(PetscMalloc1(bs * n + bs, &b->solve_work));
-  PetscCall(PetscLogObjectMemory((PetscObject)B, (bdiag[0] + 1) * (sizeof(PetscInt) + sizeof(PetscScalar) * bs2)));
 
   b->maxnz = b->nz = bdiag[0] + 1;
 
@@ -384,7 +382,6 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ_inplace(Mat B, Mat A, IS isrow, IS is
 
   /* put together the new matrix */
   PetscCall(MatSeqBAIJSetPreallocation(B, bs, MAT_SKIP_ALLOCATION, NULL));
-  PetscCall(PetscLogObjectParent((PetscObject)B, (PetscObject)isicol));
   b = (Mat_SeqBAIJ *)(B)->data;
 
   b->free_a       = PETSC_TRUE;
@@ -407,7 +404,6 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ_inplace(Mat B, Mat A, IS isrow, IS is
   b->icol = isicol;
 
   PetscCall(PetscMalloc1(bs * n + bs, &b->solve_work));
-  PetscCall(PetscLogObjectMemory((PetscObject)B, (bi[n] - n) * (sizeof(PetscInt) + sizeof(PetscScalar) * bs2)));
 
   b->maxnz = b->nz = bi[n];
 

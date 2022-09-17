@@ -1038,7 +1038,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_IPM(Tao tao) {
   tao->ops->destroy        = TaoDestroy_IPM;
   /* tao->ops->computedual = TaoComputeDual_IPM; */
 
-  PetscCall(PetscNewLog(tao, &ipmP));
+  PetscCall(PetscNew(&ipmP));
   tao->data = (void *)ipmP;
 
   /* Override default settings (unless already changed) */

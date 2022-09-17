@@ -108,7 +108,7 @@ PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Point(PetscSpace sp) {
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  PetscCall(PetscNewLog(sp, &pt));
+  PetscCall(PetscNew(&pt));
   sp->data = pt;
 
   sp->Nv        = 0;

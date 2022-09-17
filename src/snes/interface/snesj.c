@@ -74,7 +74,6 @@ PetscErrorCode SNESComputeJacobianDefault(SNES snes, Vec x1, Mat J, Mat B, void 
     } else {
       snes->nvwork = 3;
       PetscCall(VecDuplicateVecs(x1, snes->nvwork, &snes->vwork));
-      PetscCall(PetscLogObjectParents(snes, snes->nvwork, snes->vwork));
       j1a = snes->vwork[0];
       j2a = snes->vwork[1];
       x2  = snes->vwork[2];

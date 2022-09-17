@@ -600,7 +600,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_Chebyshev(KSP ksp) {
   KSP_Chebyshev *chebyshevP;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(ksp, &chebyshevP));
+  PetscCall(PetscNew(&chebyshevP));
 
   ksp->data = (void *)chebyshevP;
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_PRECONDITIONED, PC_LEFT, 3));

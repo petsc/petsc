@@ -543,7 +543,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_QN(SNES snes) {
     snes->max_its   = 10000;
   }
 
-  PetscCall(PetscNewLog(snes, &qn));
+  PetscCall(PetscNew(&qn));
   snes->data       = (void *)qn;
   qn->m            = 10;
   qn->scaling      = 1.0;

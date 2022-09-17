@@ -83,7 +83,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_ADIOS(PetscViewer v) {
   PetscViewer_ADIOS *adios;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(v, &adios));
+  PetscCall(PetscNew(&adios));
 
   v->data                = (void *)adios;
   v->ops->destroy        = PetscViewerDestroy_ADIOS;

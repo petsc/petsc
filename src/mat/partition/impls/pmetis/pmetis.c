@@ -367,7 +367,7 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Parmetis(MatPartitioning part)
   MatPartitioning_Parmetis *pmetis;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(part, &pmetis));
+  PetscCall(PetscNew(&pmetis));
   part->data = (void *)pmetis;
 
   pmetis->cuts        = 0;   /* output variable */

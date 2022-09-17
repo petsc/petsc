@@ -277,7 +277,6 @@ PetscErrorCode MatNullSpaceCreate(MPI_Comm comm, PetscBool has_cnst, PetscInt n,
   if (n) {
     PetscCall(PetscMalloc1(n, &sp->vecs));
     PetscCall(PetscMalloc1(n, &sp->alpha));
-    PetscCall(PetscLogObjectMemory((PetscObject)sp, n * (sizeof(Vec) + sizeof(PetscScalar))));
     for (i = 0; i < n; i++) {
       PetscCall(PetscObjectReference((PetscObject)vecs[i]));
       sp->vecs[i] = vecs[i];

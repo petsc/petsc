@@ -155,7 +155,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_ROWSCALINGVIENNACL(PC pc) {
      Creates the private data structure for this preconditioner and
      attach it to the PC object.
   */
-  PetscCall(PetscNewLog(pc, &rowscaling));
+  PetscCall(PetscNew(&rowscaling));
   pc->data = (void *)rowscaling;
 
   /*

@@ -30,7 +30,7 @@ static PetscErrorCode DMSNESDestroy_DMDA(DMSNES sdm) {
 
 static PetscErrorCode DMSNESDuplicate_DMDA(DMSNES oldsdm, DMSNES sdm) {
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(sdm, (DMSNES_DA **)&sdm->data));
+  PetscCall(PetscNew((DMSNES_DA **)&sdm->data));
   if (oldsdm->data) PetscCall(PetscMemcpy(sdm->data, oldsdm->data, sizeof(DMSNES_DA)));
   PetscFunctionReturn(0);
 }
@@ -39,7 +39,7 @@ static PetscErrorCode DMDASNESGetContext(DM dm, DMSNES sdm, DMSNES_DA **dmdasnes
   PetscFunctionBegin;
   *dmdasnes = NULL;
   if (!sdm->data) {
-    PetscCall(PetscNewLog(dm, (DMSNES_DA **)&sdm->data));
+    PetscCall(PetscNew((DMSNES_DA **)&sdm->data));
     sdm->ops->destroy   = DMSNESDestroy_DMDA;
     sdm->ops->duplicate = DMSNESDuplicate_DMDA;
   }

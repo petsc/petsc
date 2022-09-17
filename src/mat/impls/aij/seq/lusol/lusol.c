@@ -399,7 +399,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_lusol(Mat A, MatFactorType ftype
   PetscCall(MatSetType(B, ((PetscObject)A)->type_name));
   PetscCall(MatSeqAIJSetPreallocation(B, 0, NULL));
 
-  PetscCall(PetscNewLog(B, &lusol));
+  PetscCall(PetscNew(&lusol));
   B->spptr = lusol;
 
   B->trivialsymbolic       = PETSC_TRUE;

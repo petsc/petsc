@@ -930,7 +930,6 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc) {
       if (jac->schurpre == PC_FIELDSPLIT_SCHUR_PRE_SELFP) PetscCall(MatSchurComplementGetPmat(jac->schur, MAT_INITIAL_MATRIX, &jac->schurp));
       PetscCall(KSPCreate(PetscObjectComm((PetscObject)pc), &jac->kspschur));
       PetscCall(KSPSetErrorIfNotConverged(jac->kspschur, pc->erroriffailure));
-      PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)jac->kspschur));
       PetscCall(PetscObjectIncrementTabLevel((PetscObject)jac->kspschur, (PetscObject)pc, 1));
       if (jac->schurpre == PC_FIELDSPLIT_SCHUR_PRE_SELF) {
         PC pcschur;
@@ -1640,7 +1639,6 @@ static PetscErrorCode PCFieldSplitSetFields_FieldSplit(PC pc, const char splitna
   PetscCall(KSPSetErrorIfNotConverged(ilink->ksp, pc->erroriffailure));
   PetscCall(PetscObjectIncrementTabLevel((PetscObject)ilink->ksp, (PetscObject)pc, 1));
   PetscCall(KSPSetType(ilink->ksp, KSPPREONLY));
-  PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)ilink->ksp));
 
   PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "%sfieldsplit_%s_", ((PetscObject)pc)->prefix ? ((PetscObject)pc)->prefix : "", ilink->splitname));
   PetscCall(KSPSetOptionsPrefix(ilink->ksp, prefix));
@@ -1818,7 +1816,6 @@ static PetscErrorCode PCFieldSplitSetIS_FieldSplit(PC pc, const char splitname[]
   PetscCall(KSPSetErrorIfNotConverged(ilink->ksp, pc->erroriffailure));
   PetscCall(PetscObjectIncrementTabLevel((PetscObject)ilink->ksp, (PetscObject)pc, 1));
   PetscCall(KSPSetType(ilink->ksp, KSPPREONLY));
-  PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)ilink->ksp));
 
   PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "%sfieldsplit_%s_", ((PetscObject)pc)->prefix ? ((PetscObject)pc)->prefix : "", ilink->splitname));
   PetscCall(KSPSetOptionsPrefix(ilink->ksp, prefix));
@@ -3017,7 +3014,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_FieldSplit(PC pc) {
   PC_FieldSplit *jac;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(pc, &jac));
+  PetscCall(PetscNew(&jac));
 
   jac->bs                 = -1;
   jac->nsplits            = 0;

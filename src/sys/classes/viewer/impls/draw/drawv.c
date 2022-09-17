@@ -88,7 +88,6 @@ PetscErrorCode PetscViewerDrawGetDraw(PetscViewer viewer, PetscInt windownumber,
       title = tmp_str;
     }
     PetscCall(PetscDrawCreate(PetscObjectComm((PetscObject)viewer), vdraw->display, title, PETSC_DECIDE, PETSC_DECIDE, vdraw->w, vdraw->h, &vdraw->draw[windownumber]));
-    PetscCall(PetscLogObjectParent((PetscObject)viewer, (PetscObject)vdraw->draw[windownumber]));
     if (vdraw->drawtype) PetscCall(PetscDrawSetType(vdraw->draw[windownumber], vdraw->drawtype));
     PetscCall(PetscDrawSetPause(vdraw->draw[windownumber], vdraw->pause));
     PetscCall(PetscDrawSetOptionsPrefix(vdraw->draw[windownumber], ((PetscObject)viewer)->prefix));
@@ -199,7 +198,6 @@ PetscErrorCode PetscViewerDrawGetDrawLG(PetscViewer viewer, PetscInt windownumbe
   if (windownumber + vdraw->draw_base >= vdraw->draw_max || !vdraw->draw[windownumber + vdraw->draw_base]) PetscCall(PetscViewerDrawGetDraw(viewer, windownumber, NULL));
   if (!vdraw->drawlg[windownumber + vdraw->draw_base]) {
     PetscCall(PetscDrawLGCreate(vdraw->draw[windownumber + vdraw->draw_base], 1, &vdraw->drawlg[windownumber + vdraw->draw_base]));
-    PetscCall(PetscLogObjectParent((PetscObject)viewer, (PetscObject)vdraw->drawlg[windownumber + vdraw->draw_base]));
     PetscCall(PetscDrawLGSetFromOptions(vdraw->drawlg[windownumber + vdraw->draw_base]));
   }
   *drawlg = vdraw->drawlg[windownumber + vdraw->draw_base];
@@ -240,10 +238,7 @@ PetscErrorCode PetscViewerDrawGetDrawAxis(PetscViewer viewer, PetscInt windownum
   vdraw = (PetscViewer_Draw *)viewer->data;
 
   if (windownumber + vdraw->draw_base >= vdraw->draw_max || !vdraw->draw[windownumber + vdraw->draw_base]) PetscCall(PetscViewerDrawGetDraw(viewer, windownumber, NULL));
-  if (!vdraw->drawaxis[windownumber + vdraw->draw_base]) {
-    PetscCall(PetscDrawAxisCreate(vdraw->draw[windownumber + vdraw->draw_base], &vdraw->drawaxis[windownumber + vdraw->draw_base]));
-    PetscCall(PetscLogObjectParent((PetscObject)viewer, (PetscObject)vdraw->drawaxis[windownumber + vdraw->draw_base]));
-  }
+  if (!vdraw->drawaxis[windownumber + vdraw->draw_base]) PetscCall(PetscDrawAxisCreate(vdraw->draw[windownumber + vdraw->draw_base], &vdraw->drawaxis[windownumber + vdraw->draw_base]));
   *drawaxis = vdraw->drawaxis[windownumber + vdraw->draw_base];
   PetscFunctionReturn(0);
 }
@@ -511,7 +506,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Draw(PetscViewer viewer) {
   PetscViewer_Draw *vdraw;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(viewer, &vdraw));
+  PetscCall(PetscNew(&vdraw));
   viewer->data = (void *)vdraw;
 
   viewer->ops->flush            = PetscViewerFlush_Draw;

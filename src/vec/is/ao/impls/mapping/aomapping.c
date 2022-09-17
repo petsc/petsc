@@ -232,7 +232,7 @@ PetscErrorCode AOCreateMapping(MPI_Comm comm, PetscInt napp, const PetscInt myap
   PetscCall(AOInitializePackage());
 
   PetscCall(PetscHeaderCreate(ao, AO_CLASSID, "AO", "Application Ordering", "AO", comm, AODestroy, AOView));
-  PetscCall(PetscNewLog(ao, &aomap));
+  PetscCall(PetscNew(&aomap));
   PetscCall(PetscMemcpy(ao->ops, &AOps, sizeof(AOps)));
   ao->data = (void *)aomap;
 
@@ -268,7 +268,6 @@ PetscErrorCode AOCreateMapping(MPI_Comm comm, PetscInt napp, const PetscInt myap
 
   /* generate a list of application and PETSc node numbers */
   PetscCall(PetscMalloc4(N, &aomap->app, N, &aomap->appPerm, N, &aomap->petsc, N, &aomap->petscPerm));
-  PetscCall(PetscLogObjectMemory((PetscObject)ao, 4 * N * sizeof(PetscInt)));
   for (i = 0; i < N; i++) {
     appPerm[i]   = i;
     petscPerm[i] = i;

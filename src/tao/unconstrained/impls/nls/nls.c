@@ -866,7 +866,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_NLS(Tao tao) {
   const char *morethuente_type = TAOLINESEARCHMT;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(tao, &nlsP));
+  PetscCall(PetscNew(&nlsP));
 
   tao->ops->setup          = TaoSetUp_NLS;
   tao->ops->solve          = TaoSolve_NLS;

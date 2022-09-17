@@ -1137,7 +1137,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_POUNDERS(Tao tao) {
   tao->ops->setfromoptions = TaoSetFromOptions_POUNDERS;
   tao->ops->destroy        = TaoDestroy_POUNDERS;
 
-  PetscCall(PetscNewLog(tao, &mfqP));
+  PetscCall(PetscNew(&mfqP));
   tao->data = (void *)mfqP;
   /* Override default settings (unless already changed) */
   if (!tao->max_it_changed) tao->max_it = 2000;

@@ -530,7 +530,7 @@ PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_BL(DMPlexTransform tr) {
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
-  PetscCall(PetscNewLog(tr, &bl));
+  PetscCall(PetscNew(&bl));
   tr->data = bl;
 
   bl->n = 1; /* 1 split -> 2 new cells */

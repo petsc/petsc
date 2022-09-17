@@ -123,7 +123,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Mathematica(PetscViewer v) {
   PetscFunctionBegin;
   PetscCall(PetscViewerMathematicaInitializePackage());
 
-  PetscCall(PetscNewLog(v, &vmath));
+  PetscCall(PetscNew(&vmath));
   v->data         = (void *)vmath;
   v->ops->destroy = PetscViewerDestroy_Mathematica;
   v->ops->flush   = 0;

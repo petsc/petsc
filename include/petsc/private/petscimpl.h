@@ -100,8 +100,7 @@ typedef struct _p_PetscObject {
   PetscOps          bops[1];
   MPI_Comm          comm;
   PetscInt          type;
-  PetscLogDouble    flops, time, mem, memchildren; /* these are not set properly and should possibly be removed */
-  PetscObjectId     id;                            /* this is used to compare object for identity that may no longer exist since memory addresses get recycled for new objects */
+  PetscObjectId     id; /* this is used to compare object for identity that may no longer exist since memory addresses get recycled for new objects */
   PetscInt          refct;
   PetscMPIInt       tag;
   PetscFunctionList qlist;
@@ -110,8 +109,6 @@ typedef struct _p_PetscObject {
   char             *description;
   char             *mansec;
   char             *type_name; /*  this is the subclass, for example VECSEQ which equals "seq" */
-  PetscObject       parent;    /* this is not set properly and should possibly be removed */
-  PetscObjectId     parentid;  /* this is not set properly and should possibly be removed */
   char             *name;
   char             *prefix;
   PetscInt          tablevel;
@@ -176,7 +173,7 @@ PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*PetscObjectViewFunction)(PetscObje
 
 @*/
 #define PetscHeaderCreate(h, classid, class_name, descr, mansec, comm, destroy, view) \
-  (PetscNew(&(h)) || PetscHeaderCreate_Private((PetscObject)(h), classid, class_name, descr, mansec, comm, (PetscObjectDestroyFunction)(destroy), (PetscObjectViewFunction)(view)) || PetscLogObjectCreate(h) || PetscLogObjectMemory((PetscObject)(h), sizeof(*(h))))
+  (PetscNew(&(h)) || PetscHeaderCreate_Private((PetscObject)(h), classid, class_name, descr, mansec, comm, (PetscObjectDestroyFunction)(destroy), (PetscObjectViewFunction)(view)) || PetscLogObjectCreate(h))
 
 PETSC_EXTERN PetscErrorCode PetscComposedQuantitiesDestroy(PetscObject obj);
 PETSC_EXTERN PetscErrorCode PetscHeaderCreate_Private(PetscObject, PetscClassId, const char[], const char[], const char[], MPI_Comm, PetscObjectDestroyFunction, PetscObjectViewFunction);

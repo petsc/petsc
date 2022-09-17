@@ -178,7 +178,7 @@ PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_Alfeld(DMPlexTransform tr) {
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
-  PetscCall(PetscNewLog(tr, &f));
+  PetscCall(PetscNew(&f));
   tr->data = f;
 
   PetscCall(DMPlexTransformInitialize_Alfeld(tr));

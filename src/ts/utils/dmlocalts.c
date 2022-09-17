@@ -23,7 +23,7 @@ static PetscErrorCode DMTSDestroy_DMLocal(DMTS tdm) {
 
 static PetscErrorCode DMTSDuplicate_DMLocal(DMTS oldtdm, DMTS tdm) {
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(tdm, (DMTS_Local **)&tdm->data));
+  PetscCall(PetscNew((DMTS_Local **)&tdm->data));
   if (oldtdm->data) PetscCall(PetscMemcpy(tdm->data, oldtdm->data, sizeof(DMTS_Local)));
   PetscFunctionReturn(0);
 }
@@ -32,7 +32,7 @@ static PetscErrorCode DMLocalTSGetContext(DM dm, DMTS tdm, DMTS_Local **dmlocalt
   PetscFunctionBegin;
   *dmlocalts = NULL;
   if (!tdm->data) {
-    PetscCall(PetscNewLog(dm, (DMTS_Local **)&tdm->data));
+    PetscCall(PetscNew((DMTS_Local **)&tdm->data));
 
     tdm->ops->destroy   = DMTSDestroy_DMLocal;
     tdm->ops->duplicate = DMTSDuplicate_DMLocal;

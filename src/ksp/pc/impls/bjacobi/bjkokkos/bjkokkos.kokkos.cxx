@@ -1421,7 +1421,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_BJKOKKOS(PC pc) {
   PC_PCBJKOKKOS *jac;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(pc, &jac));
+  PetscCall(PetscNew(&jac));
   pc->data = (void *)jac;
 
   jac->ksp              = NULL;

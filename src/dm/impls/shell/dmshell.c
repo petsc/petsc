@@ -1070,7 +1070,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Shell(DM dm) {
   DM_Shell *shell;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(dm, &shell));
+  PetscCall(PetscNew(&shell));
   dm->data = shell;
 
   dm->ops->destroy            = DMDestroy_Shell;

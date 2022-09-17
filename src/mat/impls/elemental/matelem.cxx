@@ -80,7 +80,7 @@ static PetscErrorCode MatGetInfo_Elemental(Mat A, MatInfoType flag, MatInfo *inf
   info->nz_unneeded       = 0.0;
   info->assemblies        = A->num_ass;
   info->mallocs           = 0;
-  info->memory            = ((PetscObject)A)->mem;
+  info->memory            = 0; /* REVIEW ME */
   info->fill_ratio_given  = 0; /* determined by Elemental */
   info->fill_ratio_needed = 0;
   info->factor_mallocs    = 0;
@@ -1275,7 +1275,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Elemental(Mat A) {
   PetscCall(PetscMemcpy(A->ops, &MatOps_Values, sizeof(struct _MatOps)));
   A->insertmode = NOT_SET_VALUES;
 
-  PetscCall(PetscNewLog(A, &a));
+  PetscCall(PetscNew(&a));
   A->data = (void *)a;
 
   /* Set up the elemental matrix */
@@ -1289,7 +1289,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Elemental(Mat A) {
   PetscCall(PetscCommDuplicate(cxxcomm.comm, &icomm, NULL));
   PetscCallMPI(MPI_Comm_get_attr(icomm, Petsc_Elemental_keyval, (void **)&commgrid, (int *)&flg));
   if (!flg) {
-    PetscCall(PetscNewLog(A, &commgrid));
+    PetscCall(PetscNew(&commgrid));
 
     PetscOptionsBegin(PetscObjectComm((PetscObject)A), ((PetscObject)A)->prefix, "Elemental Options", "Mat");
     /* displayed default grid sizes (CommSize,1) are set by us arbitrarily until El::Grid() is called */

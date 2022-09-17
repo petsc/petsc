@@ -184,7 +184,7 @@ PetscErrorCode TSSetEventHandler(TS ts, PetscInt nevents, PetscInt direction[], 
     PetscValidBoolPointer(terminate, 4);
   }
 
-  PetscCall(PetscNewLog(ts, &event));
+  PetscCall(PetscNew(&event));
   PetscCall(PetscMalloc1(nevents, &event->fvalue));
   PetscCall(PetscMalloc1(nevents, &event->fvalue_prev));
   PetscCall(PetscMalloc1(nevents, &event->fvalue_right));

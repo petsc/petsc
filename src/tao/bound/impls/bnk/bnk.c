@@ -1240,7 +1240,7 @@ PetscErrorCode TaoCreate_BNK(Tao tao) {
   PC       pc;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(tao, &bnk));
+  PetscCall(PetscNew(&bnk));
 
   tao->ops->setup          = TaoSetUp_BNK;
   tao->ops->view           = TaoView_BNK;

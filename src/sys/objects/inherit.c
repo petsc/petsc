@@ -124,17 +124,11 @@ PetscErrorCode PetscHeaderDestroy_Private(PetscObject obj, PetscBool clear_for_r
     obj->bops->queryfunction   = PetscObjectQueryFunction_Petsc;
 
     /* reset quantities, in order of appearance in _p_PetscObject */
-    obj->type        = 0;
-    obj->flops       = 0.0;
-    obj->time        = 0.0;
-    obj->mem         = 0.0;
-    obj->memchildren = 0.0;
-    obj->id          = PetscObjectNewId_Internal();
-    obj->refct       = 1;
-    obj->parent      = NULL;
-    obj->parentid    = 0;
-    obj->tablevel    = 0;
-    obj->state       = 0;
+    obj->type     = 0;
+    obj->id       = PetscObjectNewId_Internal();
+    obj->refct    = 1;
+    obj->tablevel = 0;
+    obj->state    = 0;
     /* don't deallocate, zero these out instead */
     PetscCall(PetscFunctionListClear(obj->qlist));
     PetscCall(PetscArrayzero(obj->fortran_func_pointers, obj->num_fortran_func_pointers));

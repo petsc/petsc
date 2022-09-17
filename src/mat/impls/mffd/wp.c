@@ -191,7 +191,7 @@ PETSC_EXTERN PetscErrorCode MatCreateMFFD_WP(MatMFFD ctx) {
 
   PetscFunctionBegin;
   /* allocate my own private data structure */
-  PetscCall(PetscNewLog(ctx, &hctx));
+  PetscCall(PetscNew(&hctx));
   ctx->hctx          = (void *)hctx;
   hctx->computenormU = PETSC_FALSE;
 

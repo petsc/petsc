@@ -853,7 +853,7 @@ PetscErrorCode PCCreateGAMG_AGG(PC pc) {
 
   PetscFunctionBegin;
   /* create sub context for SA */
-  PetscCall(PetscNewLog(pc, &pc_gamg_agg));
+  PetscCall(PetscNew(&pc_gamg_agg));
   pc_gamg->subctx = pc_gamg_agg;
 
   pc_gamg->ops->setfromoptions = PCSetFromOptions_GAMG_AGG;

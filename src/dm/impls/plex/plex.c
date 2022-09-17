@@ -3714,13 +3714,11 @@ PetscErrorCode DMSetUp_Plex(DM dm) {
   PetscCall(PetscSectionGetStorageSize(mesh->coneSection, &size));
   PetscCall(PetscMalloc1(size, &mesh->cones));
   PetscCall(PetscCalloc1(size, &mesh->coneOrientations));
-  PetscCall(PetscLogObjectMemory((PetscObject)dm, size * 2 * sizeof(PetscInt)));
   PetscCall(PetscSectionGetMaxDof(mesh->supportSection, &maxSupportSize));
   if (maxSupportSize) {
     PetscCall(PetscSectionSetUp(mesh->supportSection));
     PetscCall(PetscSectionGetStorageSize(mesh->supportSection, &size));
     PetscCall(PetscMalloc1(size, &mesh->supports));
-    PetscCall(PetscLogObjectMemory((PetscObject)dm, size * sizeof(PetscInt)));
   }
   PetscFunctionReturn(0);
 }

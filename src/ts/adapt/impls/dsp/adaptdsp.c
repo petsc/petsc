@@ -369,7 +369,7 @@ PETSC_EXTERN PetscErrorCode TSAdaptCreate_DSP(TSAdapt adapt) {
   TSAdapt_DSP *dsp;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(adapt, &dsp));
+  PetscCall(PetscNew(&dsp));
   adapt->reject_safety = 1.0; /* unused */
 
   adapt->data                = (void *)dsp;

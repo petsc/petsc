@@ -175,7 +175,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Matlab(PetscViewer viewer) {
   PetscViewer_Matlab *e;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(viewer, &e));
+  PetscCall(PetscNew(&e));
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)viewer), &e->rank));
   e->btype     = FILE_MODE_UNDEFINED;
   viewer->data = (void *)e;

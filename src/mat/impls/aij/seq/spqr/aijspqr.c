@@ -281,7 +281,7 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_spqr(Mat A, MatFactorType ftype,
   PetscCall(MatGetOptionsPrefix(A, &prefix));
   PetscCall(MatSetOptionsPrefix(B, prefix));
   PetscCall(MatSetUp(B));
-  PetscCall(PetscNewLog(B, &chol));
+  PetscCall(PetscNew(&chol));
 
   chol->Wrap = MatWrapCholmod_SPQR_seqaij;
   B->data    = chol;

@@ -1175,7 +1175,6 @@ static PetscErrorCode KSPReset_FETIDP(KSP ksp) {
   PetscCall(PCSetType(fetidp->innerbddc, PCBDDC));
   pcbddc                   = (PC_BDDC *)fetidp->innerbddc->data;
   pcbddc->symmetric_primal = PETSC_FALSE;
-  PetscCall(PetscLogObjectParent((PetscObject)ksp, (PetscObject)fetidp->innerbddc));
   PetscCall(KSPDestroy(&fetidp->innerksp));
   fetidp->saddlepoint  = PETSC_FALSE;
   fetidp->matstate     = -1;
@@ -1313,7 +1312,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_FETIDP(KSP ksp) {
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_UNPRECONDITIONED, PC_RIGHT, 2));
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_NATURAL, PC_LEFT, 2));
 
-  PetscCall(PetscNewLog(ksp, &fetidp));
+  PetscCall(PetscNew(&fetidp));
   fetidp->matstate     = -1;
   fetidp->matnnzstate  = -1;
   fetidp->statechanged = PETSC_TRUE;
@@ -1334,7 +1333,6 @@ PETSC_EXTERN PetscErrorCode KSPCreate_FETIDP(KSP ksp) {
   PetscCall(KSPCreate(PetscObjectComm((PetscObject)ksp), &fetidp->innerksp));
   PetscCall(KSPGetPC(fetidp->innerksp, &pc));
   PetscCall(PCSetType(pc, PCNONE));
-  PetscCall(PetscLogObjectParent((PetscObject)ksp, (PetscObject)fetidp->innerksp));
   /* monitor */
   PetscCall(PetscNew(&monctx));
   monctx->parentksp = ksp;
@@ -1347,7 +1345,6 @@ PETSC_EXTERN PetscErrorCode KSPCreate_FETIDP(KSP ksp) {
      for symmetric problems, the user can always customize it through the command line */
   pcbddc                   = (PC_BDDC *)fetidp->innerbddc->data;
   pcbddc->symmetric_primal = PETSC_FALSE;
-  PetscCall(PetscLogObjectParent((PetscObject)ksp, (PetscObject)fetidp->innerbddc));
   /* composed functions */
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPFETIDPSetInnerBDDC_C", KSPFETIDPSetInnerBDDC_FETIDP));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPFETIDPGetInnerBDDC_C", KSPFETIDPGetInnerBDDC_FETIDP));

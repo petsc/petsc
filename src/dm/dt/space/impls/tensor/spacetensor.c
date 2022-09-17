@@ -621,7 +621,7 @@ PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Tensor(PetscSpace sp) {
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  PetscCall(PetscNewLog(sp, &tens));
+  PetscCall(PetscNew(&tens));
   sp->data = tens;
 
   tens->numTensSpaces = PETSC_DEFAULT;

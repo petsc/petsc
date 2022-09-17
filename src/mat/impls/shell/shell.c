@@ -1550,7 +1550,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Shell(Mat A) {
   PetscFunctionBegin;
   PetscCall(PetscMemcpy(A->ops, &MatOps_Values, sizeof(struct _MatOps)));
 
-  PetscCall(PetscNewLog(A, &b));
+  PetscCall(PetscNew(&b));
   A->data = (void *)b;
 
   b->ctxcontainer        = NULL;

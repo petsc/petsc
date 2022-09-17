@@ -199,7 +199,7 @@ PETSC_EXTERN PetscErrorCode TaoLineSearchCreate_GPCG(TaoLineSearch ls) {
   ls->max_funcs = 30;
   ls->step      = 1.0;
 
-  PetscCall(PetscNewLog(ls, &neP));
+  PetscCall(PetscNew(&neP));
   neP->bracket = 0;
   neP->infoc   = 1;
   ls->data     = (void *)neP;

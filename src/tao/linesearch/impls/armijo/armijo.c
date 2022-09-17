@@ -265,7 +265,7 @@ PETSC_EXTERN PetscErrorCode TaoLineSearchCreate_Armijo(TaoLineSearch ls) {
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ls, TAOLINESEARCH_CLASSID, 1);
-  PetscCall(PetscNewLog(ls, &armP));
+  PetscCall(PetscNew(&armP));
 
   armP->memory            = NULL;
   armP->alpha             = 1.0;

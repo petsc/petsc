@@ -1776,7 +1776,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Swarm(DM dm) {
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscCall(PetscNewLog(dm, &swarm));
+  PetscCall(PetscNew(&swarm));
   dm->data = swarm;
   PetscCall(DMSwarmDataBucketCreate(&swarm->db));
   PetscCall(DMSwarmInitializeFieldRegister(dm));

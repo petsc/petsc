@@ -871,28 +871,7 @@ M*/
 M*/
 #define PetscNew(b) PetscCalloc1(1, (b))
 
-/*MC
-   PetscNewLog - Allocates memory of a type matching pointer, zeros the memory! Aligned to `PETSC_MEMALIGN`. Associates the memory allocated
-         with the given object using `PetscLogObjectMemory()`.
-
-   Synopsis:
-    #include <petscsys.h>
-   PetscErrorCode PetscNewLog(PetscObject obj,type **result)
-
-   Not Collective
-
-   Input Parameter:
-.  obj - object memory is logged to
-
-   Output Parameter:
-.  result - memory allocated, sized to match pointer type
-
-   Level: developer
-
-.seealso: `PetscFree()`, `PetscMalloc()`, `PetscNew()`, `PetscLogObjectMemory()`, `PetscCalloc1()`, `PetscMalloc1()`
-
-M*/
-#define PetscNewLog(o, b) (PetscNew((b)) || PetscLogObjectMemory((PetscObject)o, sizeof(**(b))))
+#define PetscNewLog(o, b) PETSC_DEPRECATED_MACRO("GCC warning \"PetscNewLog is deprecated, use PetscNew() instead (since version 3.18)\"") PetscNew((b))
 
 /*MC
    PetscFree - Frees memory

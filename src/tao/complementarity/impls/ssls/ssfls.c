@@ -117,7 +117,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_SSFLS(Tao tao) {
   const char *armijo_type = TAOLINESEARCHARMIJO;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(tao, &ssls));
+  PetscCall(PetscNew(&ssls));
   tao->data                = (void *)ssls;
   tao->ops->solve          = TaoSolve_SSFLS;
   tao->ops->setup          = TaoSetUp_SSFLS;

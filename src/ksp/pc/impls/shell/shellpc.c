@@ -856,7 +856,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Shell(PC pc) {
   PC_Shell *shell;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(pc, &shell));
+  PetscCall(PetscNew(&shell));
   pc->data = (void *)shell;
 
   pc->ops->destroy             = PCDestroy_Shell;

@@ -132,7 +132,6 @@ PetscErrorCode KSPComputeEigenvaluesExplicitly(KSP ksp, PetscInt nmax, PetscReal
     }
     PetscCall(MatSetType(A, MATMPIDENSE));
     PetscCall(MatMPIDenseSetPreallocation(A, NULL));
-    PetscCall(PetscLogObjectParent((PetscObject)BA, (PetscObject)A));
 
     PetscCall(MatGetOwnershipRange(BA, &row, &dummy));
     PetscCall(MatGetLocalSize(BA, &m, &dummy));

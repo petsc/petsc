@@ -175,7 +175,6 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_TikZ(PetscDraw draw) {
   PetscFunctionBegin;
   PetscCall(PetscMemcpy(draw->ops, &DvOps, sizeof(DvOps)));
   PetscCall(PetscNew(&win));
-  PetscCall(PetscLogObjectMemory((PetscObject)draw, sizeof(PetscDraw_TikZ)));
 
   draw->data = (void *)win;
 

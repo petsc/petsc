@@ -127,7 +127,7 @@ PetscErrorCode MatDuplicate_SeqAIJPERM(Mat A, MatDuplicateOption op, Mat *M) {
     PetscCall(PetscFree(aijperm_dest->nzgroup));
     PetscCall(PetscFree(aijperm_dest->iperm));
   } else {
-    PetscCall(PetscNewLog(*M, &aijperm_dest));
+    PetscCall(PetscNew(&aijperm_dest));
     (*M)->spptr = (void *)aijperm_dest;
     PetscCall(PetscObjectChangeTypeName((PetscObject)*M, MATSEQAIJPERM));
     PetscCall(PetscObjectComposeFunction((PetscObject)*M, "MatConvert_seqaijperm_seqaij_C", MatConvert_SeqAIJPERM_SeqAIJ));
@@ -614,7 +614,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJPERM(Mat A, MatType type, Ma
   PetscCall(PetscObjectTypeCompare((PetscObject)A, type, &sametype));
   if (sametype) PetscFunctionReturn(0);
 
-  PetscCall(PetscNewLog(B, &aijperm));
+  PetscCall(PetscNew(&aijperm));
   B->spptr = (void *)aijperm;
 
   /* Set function pointers for methods that we inherit from AIJ but override. */

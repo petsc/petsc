@@ -1241,7 +1241,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_MPRK(TS ts) {
   ts->ops->setfromoptions = TSSetFromOptions_MPRK;
   ts->ops->getstages      = TSGetStages_MPRK;
 
-  PetscCall(PetscNewLog(ts, &mprk));
+  PetscCall(PetscNew(&mprk));
   ts->data = (void *)mprk;
 
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSMPRKGetType_C", TSMPRKGetType_MPRK));

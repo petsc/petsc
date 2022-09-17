@@ -427,7 +427,7 @@ static PetscErrorCode TSSetUp_RK_MultirateSplit(TS ts) {
 
     /* set up the ts for the slow part */
     nextlevelts = currentlevelrk->subts_slow;
-    PetscCall(PetscNewLog(nextlevelts, &nextlevelrk));
+    PetscCall(PetscNew(&nextlevelrk));
     nextlevelrk->tableau = rk->tableau;
     nextlevelrk->work    = rk->work;
     nextlevelrk->Y       = rk->Y;
@@ -438,7 +438,7 @@ static PetscErrorCode TSSetUp_RK_MultirateSplit(TS ts) {
 
     /* set up the ts for the fast part */
     nextlevelts = currentlevelrk->subts_fast;
-    PetscCall(PetscNewLog(nextlevelts, &nextlevelrk));
+    PetscCall(PetscNew(&nextlevelrk));
     nextlevelrk->tableau = rk->tableau;
     nextlevelrk->work    = rk->work;
     nextlevelrk->Y       = rk->Y;

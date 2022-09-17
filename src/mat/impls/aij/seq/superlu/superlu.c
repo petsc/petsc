@@ -564,7 +564,7 @@ static PetscErrorCode MatGetFactor_seqaij_superlu(Mat A, MatFactorType ftype, Ma
   B->assembled    = PETSC_TRUE; /* required by -ksp_view */
   B->preallocated = PETSC_TRUE;
 
-  PetscCall(PetscNewLog(B, &lu));
+  PetscCall(PetscNew(&lu));
 
   if (ftype == MAT_FACTOR_LU) {
     set_default_options(&lu->options);

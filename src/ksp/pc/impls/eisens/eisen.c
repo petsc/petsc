@@ -83,10 +83,7 @@ static PetscErrorCode PCPreSolve_Eisenstat(PC pc, KSP ksp, Vec b, Vec x) {
     pc->mat = eis->shell;
   }
 
-  if (!eis->b[pc->presolvedone - 1]) {
-    PetscCall(VecDuplicate(b, &eis->b[pc->presolvedone - 1]));
-    PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)eis->b[pc->presolvedone - 1]));
-  }
+  if (!eis->b[pc->presolvedone - 1]) { PetscCall(VecDuplicate(b, &eis->b[pc->presolvedone - 1])); }
 
   /* if nonzero initial guess, modify x */
   PetscCall(KSPGetInitialGuessNonzero(ksp, &nonzero));
@@ -188,16 +185,12 @@ static PetscErrorCode PCSetUp_Eisenstat(PC pc) {
     PetscCall(MatSetType(eis->shell, MATSHELL));
     PetscCall(MatSetUp(eis->shell));
     PetscCall(MatShellSetContext(eis->shell, pc));
-    PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)eis->shell));
     PetscCall(MatShellSetOperation(eis->shell, MATOP_MULT, (void (*)(void))PCMult_Eisenstat));
     if (set && sym) PetscCall(MatShellSetOperation(eis->shell, MATOP_MULT_TRANSPOSE, (void (*)(void))PCMult_Eisenstat));
     PetscCall(MatShellSetOperation(eis->shell, MATOP_NORM, (void (*)(void))PCNorm_Eisenstat));
   }
   if (!eis->usediag) PetscFunctionReturn(0);
-  if (!pc->setupcalled) {
-    PetscCall(MatCreateVecs(pc->pmat, &eis->diag, NULL));
-    PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)eis->diag));
-  }
+  if (!pc->setupcalled) { PetscCall(MatCreateVecs(pc->pmat, &eis->diag, NULL)); }
   PetscCall(MatGetDiagonal(pc->pmat, eis->diag));
   PetscFunctionReturn(0);
 }
@@ -401,7 +394,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Eisenstat(PC pc) {
   PC_Eisenstat *eis;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(pc, &eis));
+  PetscCall(PetscNew(&eis));
 
   pc->ops->apply           = PCApply_Eisenstat;
   pc->ops->applytranspose  = PCApplyTranspose_Eisenstat;

@@ -196,7 +196,7 @@ PetscErrorCode MatCreateSubMatrixVirtual(Mat A, IS isrow, IS iscol, Mat *newmat)
   PetscCall(MatSetSizes(N, m, n, PETSC_DETERMINE, PETSC_DETERMINE));
   PetscCall(PetscObjectChangeTypeName((PetscObject)N, MATSUBMATRIX));
 
-  PetscCall(PetscNewLog(N, &Na));
+  PetscCall(PetscNew(&Na));
   N->data = (void *)Na;
 
   PetscCall(PetscObjectReference((PetscObject)isrow));

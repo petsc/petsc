@@ -216,7 +216,7 @@ PETSC_EXTERN PetscErrorCode PetscFECreate_Composite(PetscFE fem) {
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
-  PetscCall(PetscNewLog(fem, &cmp));
+  PetscCall(PetscNew(&cmp));
   fem->data = cmp;
 
   cmp->numSubelements = -1;

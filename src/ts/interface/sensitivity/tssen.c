@@ -1742,7 +1742,6 @@ PetscErrorCode TSCreateQuadratureTS(TS ts, PetscBool fwd, TS *quadts) {
   PetscCall(TSDestroy(&ts->quadraturets));
   PetscCall(TSCreate(PetscObjectComm((PetscObject)ts), &ts->quadraturets));
   PetscCall(PetscObjectIncrementTabLevel((PetscObject)ts->quadraturets, (PetscObject)ts, 1));
-  PetscCall(PetscLogObjectParent((PetscObject)ts, (PetscObject)ts->quadraturets));
   PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "%squad_", ((PetscObject)ts)->prefix ? ((PetscObject)ts)->prefix : ""));
   PetscCall(TSSetOptionsPrefix(ts->quadraturets, prefix));
   *quadts = ts->quadraturets;

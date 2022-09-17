@@ -515,7 +515,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_EIMEX(TS ts) {
 
   ts->usessnes = PETSC_TRUE;
 
-  PetscCall(PetscNewLog(ts, &ext));
+  PetscCall(PetscNew(&ext));
   ts->data = (void *)ext;
 
   ext->ord_adapt = PETSC_FALSE; /* By default, no order adapativity */

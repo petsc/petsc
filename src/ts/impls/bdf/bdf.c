@@ -485,7 +485,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_BDF(TS ts) {
 
   ts->usessnes = PETSC_TRUE;
 
-  PetscCall(PetscNewLog(ts, &bdf));
+  PetscCall(PetscNew(&bdf));
   ts->data = (void *)bdf;
 
   bdf->status = TS_STEP_COMPLETE;

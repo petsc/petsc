@@ -52,7 +52,6 @@ PetscErrorCode MatCreateColmap_MPISELL_Private(Mat mat) {
   for (i = 0; i < n; i++) PetscCall(PetscTableAdd(sell->colmap, sell->garray[i] + 1, i + 1, INSERT_VALUES));
 #else
   PetscCall(PetscCalloc1(mat->cmap->N + 1, &sell->colmap));
-  PetscCall(PetscLogObjectMemory((PetscObject)mat, (mat->cmap->N + 1) * sizeof(PetscInt)));
   for (i = 0; i < n; i++) sell->colmap[sell->garray[i]] = i + 1;
 #endif
   PetscFunctionReturn(0);
@@ -587,7 +586,6 @@ PetscErrorCode MatView_MPISELL_ASCIIorDraworSocket(Mat mat, PetscViewer viewer) 
     PetscCall(MatSetType(A, MATMPISELL));
     PetscCall(MatMPISELLSetPreallocation(A, 0, NULL, 0, NULL));
     PetscCall(MatSetOption(A, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_FALSE));
-    PetscCall(PetscLogObjectParent((PetscObject)mat, (PetscObject)A));
 
     /* copy over the A part */
     Aloc    = (Mat_SeqSELL *)sell->A->data;
@@ -1127,12 +1125,10 @@ PetscErrorCode MatMPISELLSetPreallocation_MPISELL(Mat B, PetscInt d_rlenmax, con
     PetscCall(MatSetSizes(b->A, B->rmap->n, B->cmap->n, B->rmap->n, B->cmap->n));
     PetscCall(MatSetBlockSizesFromMats(b->A, B, B));
     PetscCall(MatSetType(b->A, MATSEQSELL));
-    PetscCall(PetscLogObjectParent((PetscObject)B, (PetscObject)b->A));
     PetscCall(MatCreate(PETSC_COMM_SELF, &b->B));
     PetscCall(MatSetSizes(b->B, B->rmap->n, B->cmap->N, B->rmap->n, B->cmap->N));
     PetscCall(MatSetBlockSizesFromMats(b->B, B, B));
     PetscCall(MatSetType(b->B, MATSEQSELL));
-    PetscCall(PetscLogObjectParent((PetscObject)B, (PetscObject)b->B));
   }
 
   PetscCall(MatSeqSELLSetPreallocation(b->A, d_rlenmax, d_rlen));
@@ -1181,7 +1177,6 @@ PetscErrorCode MatDuplicate_MPISELL(Mat matin, MatDuplicateOption cpvalues, Mat 
     PetscCall(PetscTableCreateCopy(oldmat->colmap, &a->colmap));
 #else
     PetscCall(PetscMalloc1(mat->cmap->N, &a->colmap));
-    PetscCall(PetscLogObjectMemory((PetscObject)mat, (mat->cmap->N) * sizeof(PetscInt)));
     PetscCall(PetscArraycpy(a->colmap, oldmat->colmap, mat->cmap->N));
 #endif
   } else a->colmap = NULL;
@@ -1189,18 +1184,13 @@ PetscErrorCode MatDuplicate_MPISELL(Mat matin, MatDuplicateOption cpvalues, Mat 
     PetscInt len;
     len = oldmat->B->cmap->n;
     PetscCall(PetscMalloc1(len + 1, &a->garray));
-    PetscCall(PetscLogObjectMemory((PetscObject)mat, len * sizeof(PetscInt)));
     if (len) PetscCall(PetscArraycpy(a->garray, oldmat->garray, len));
   } else a->garray = NULL;
 
   PetscCall(VecDuplicate(oldmat->lvec, &a->lvec));
-  PetscCall(PetscLogObjectParent((PetscObject)mat, (PetscObject)a->lvec));
   PetscCall(VecScatterCopy(oldmat->Mvctx, &a->Mvctx));
-  PetscCall(PetscLogObjectParent((PetscObject)mat, (PetscObject)a->Mvctx));
   PetscCall(MatDuplicate(oldmat->A, cpvalues, &a->A));
-  PetscCall(PetscLogObjectParent((PetscObject)mat, (PetscObject)a->A));
   PetscCall(MatDuplicate(oldmat->B, cpvalues, &a->B));
-  PetscCall(PetscLogObjectParent((PetscObject)mat, (PetscObject)a->B));
   PetscCall(PetscFunctionListDuplicate(((PetscObject)matin)->qlist, &((PetscObject)mat)->qlist));
   *newmat = mat;
   PetscFunctionReturn(0);
@@ -1778,7 +1768,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPISELL(Mat B) {
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)B), &size));
-  PetscCall(PetscNewLog(B, &b));
+  PetscCall(PetscNew(&b));
   B->data = (void *)b;
   PetscCall(PetscMemcpy(B->ops, &MatOps_Values, sizeof(struct _MatOps)));
   B->assembled  = PETSC_FALSE;

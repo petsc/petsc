@@ -3878,7 +3878,7 @@ PETSC_EXTERN PetscErrorCode PetscDSCreate_Basic(PetscDS ds) {
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
-  PetscCall(PetscNewLog(ds, &b));
+  PetscCall(PetscNew(&b));
   ds->data = b;
 
   PetscCall(PetscDSInitialize_Basic(ds));

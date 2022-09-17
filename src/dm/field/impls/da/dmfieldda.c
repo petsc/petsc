@@ -449,7 +449,7 @@ PETSC_INTERN PetscErrorCode DMFieldCreate_DA(DMField field) {
   DMField_DA *dafield;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(field, &dafield));
+  PetscCall(PetscNew(&dafield));
   field->data = dafield;
   PetscCall(DMFieldInitialize_DA(field));
   PetscFunctionReturn(0);

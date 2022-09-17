@@ -362,7 +362,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_GCR(KSP ksp) {
   KSP_GCR *ctx;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(ksp, &ctx));
+  PetscCall(PetscNew(&ctx));
 
   ctx->restart    = 30;
   ctx->n_restarts = 0;

@@ -831,7 +831,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Htool(Mat A) {
   Mat_Htool *a;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(A, &a));
+  PetscCall(PetscNew(&a));
   A->data = (void *)a;
   PetscCall(PetscObjectChangeTypeName((PetscObject)A, MATHTOOL));
   PetscCall(PetscMemzero(A->ops, sizeof(struct _MatOps)));

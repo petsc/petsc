@@ -370,7 +370,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_QCG(KSP ksp) {
   PetscFunctionBegin;
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_PRECONDITIONED, PC_SYMMETRIC, 3));
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_NONE, PC_SYMMETRIC, 1));
-  PetscCall(PetscNewLog(ksp, &cgP));
+  PetscCall(PetscNew(&cgP));
 
   ksp->data                = (void *)cgP;
   ksp->ops->setup          = KSPSetUp_QCG;

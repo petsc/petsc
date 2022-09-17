@@ -385,16 +385,12 @@ PetscErrorCode KSPBuildSolution_PGMRES(KSP ksp, Vec ptr, Vec *result) {
 
   PetscFunctionBegin;
   if (!ptr) {
-    if (!pgmres->sol_temp) {
-      PetscCall(VecDuplicate(ksp->vec_sol, &pgmres->sol_temp));
-      PetscCall(PetscLogObjectParent((PetscObject)ksp, (PetscObject)pgmres->sol_temp));
-    }
+    if (!pgmres->sol_temp) { PetscCall(VecDuplicate(ksp->vec_sol, &pgmres->sol_temp)); }
     ptr = pgmres->sol_temp;
   }
   if (!pgmres->nrs) {
     /* allocate the work area */
     PetscCall(PetscMalloc1(pgmres->max_k, &pgmres->nrs));
-    PetscCall(PetscLogObjectMemory((PetscObject)ksp, pgmres->max_k * sizeof(PetscScalar)));
   }
 
   PetscCall(KSPPGMRESBuildSoln(pgmres->nrs, ksp->vec_sol, ptr, ksp, pgmres->it));
@@ -452,7 +448,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PGMRES(KSP ksp) {
   KSP_PGMRES *pgmres;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(ksp, &pgmres));
+  PetscCall(PetscNew(&pgmres));
 
   ksp->data                              = (void *)pgmres;
   ksp->ops->buildsolution                = KSPBuildSolution_PGMRES;

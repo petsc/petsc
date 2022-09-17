@@ -167,7 +167,6 @@ PETSC_EXTERN PetscErrorCode VecViennaCLAllocateCheckHost(Vec v) {
   PetscCall(VecViennaCLAllocateCheck(v));
   if (s->array == 0) {
     PetscCall(PetscMalloc1(n, &array));
-    PetscCall(PetscLogObjectMemory((PetscObject)v, n * sizeof(PetscScalar)));
     s->array           = array;
     s->array_allocated = array;
   }

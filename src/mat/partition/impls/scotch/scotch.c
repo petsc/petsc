@@ -429,7 +429,7 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate_PTScotch(MatPartitioning part)
   MatPartitioning_PTScotch *scotch;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(part, &scotch));
+  PetscCall(PetscNew(&scotch));
   part->data = (void *)scotch;
 
   scotch->imbalance = 0.01;

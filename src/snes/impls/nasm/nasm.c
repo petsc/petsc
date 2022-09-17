@@ -812,7 +812,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NASM(SNES snes) {
   SNES_NASM *nasm;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(snes, &nasm));
+  PetscCall(PetscNew(&nasm));
   snes->data = (void *)nasm;
 
   nasm->n             = PETSC_DECIDE;

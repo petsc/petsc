@@ -203,7 +203,7 @@ PetscErrorCode MatGetInfo_ConstantDiagonal(Mat A, MatInfoType flag, MatInfo *inf
   info->nz_unneeded  = 0.0;
   info->assemblies   = A->num_ass;
   info->mallocs      = 0.0;
-  info->memory       = ((PetscObject)A)->mem;
+  info->memory       = 0; /* REVIEW ME */
   if (A->factortype) {
     info->fill_ratio_given  = 1.0;
     info->fill_ratio_needed = 1.0;

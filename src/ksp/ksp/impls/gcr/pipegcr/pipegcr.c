@@ -40,15 +40,9 @@ static PetscErrorCode KSPAllocateVectors_PIPEGCR(KSP ksp, PetscInt nvecsneeded, 
     nvecsprev = pipegcr->nvecs;
     nnewvecs  = PetscMin(PetscMax(nvecsneeded - pipegcr->nvecs, chunksize), pipegcr->mmax + 1 - pipegcr->nvecs);
     PetscCall(KSPCreateVecs(ksp, nnewvecs, &pipegcr->ppvecs[pipegcr->nchunks], 0, NULL));
-    PetscCall(PetscLogObjectParents((PetscObject)ksp, nnewvecs, pipegcr->ppvecs[pipegcr->nchunks]));
     PetscCall(KSPCreateVecs(ksp, nnewvecs, &pipegcr->psvecs[pipegcr->nchunks], 0, NULL));
-    PetscCall(PetscLogObjectParents((PetscObject)ksp, nnewvecs, pipegcr->psvecs[pipegcr->nchunks]));
     PetscCall(KSPCreateVecs(ksp, nnewvecs, &pipegcr->pqvecs[pipegcr->nchunks], 0, NULL));
-    PetscCall(PetscLogObjectParents((PetscObject)ksp, nnewvecs, pipegcr->pqvecs[pipegcr->nchunks]));
-    if (pipegcr->unroll_w) {
-      PetscCall(KSPCreateVecs(ksp, nnewvecs, &pipegcr->ptvecs[pipegcr->nchunks], 0, NULL));
-      PetscCall(PetscLogObjectParents((PetscObject)ksp, nnewvecs, pipegcr->ptvecs[pipegcr->nchunks]));
-    }
+    if (pipegcr->unroll_w) { PetscCall(KSPCreateVecs(ksp, nnewvecs, &pipegcr->ptvecs[pipegcr->nchunks], 0, NULL)); }
     pipegcr->nvecs += nnewvecs;
     for (i = 0; i < nnewvecs; i++) {
       pipegcr->qvecs[nvecsprev + i] = pipegcr->pqvecs[pipegcr->nchunks][i];
@@ -371,14 +365,6 @@ static PetscErrorCode KSPSetUp_PIPEGCR(KSP ksp) {
 
   /* Preallocate additional work vectors */
   PetscCall(KSPAllocateVectors_PIPEGCR(ksp, pipegcr->nprealloc, pipegcr->nprealloc));
-
-  PetscCall(PetscLogObjectMemory((PetscObject)ksp, (pipegcr->mmax + 1) * 4 * sizeof(Vec *) +     /* old dirs  */
-                                                     (pipegcr->mmax + 1) * 4 * sizeof(Vec **) +  /* old pdirs */
-                                                     (pipegcr->mmax + 1) * 4 * sizeof(Vec *) +   /* p/s/qold/told */
-                                                     (pipegcr->mmax + 1) * sizeof(PetscInt) +    /* chunksizes */
-                                                     (pipegcr->mmax + 2) * sizeof(Vec *) +       /* redux */
-                                                     (pipegcr->mmax + 2) * sizeof(PetscScalar) + /* dots */
-                                                     (pipegcr->mmax + 1) * sizeof(PetscReal) /* etas */));
   PetscFunctionReturn(0);
 }
 
@@ -737,7 +723,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PIPEGCR(KSP ksp) {
   KSP_PIPEGCR *pipegcr;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(ksp, &pipegcr));
+  PetscCall(PetscNew(&pipegcr));
   pipegcr->mmax       = KSPPIPEGCR_DEFAULT_MMAX;
   pipegcr->nprealloc  = KSPPIPEGCR_DEFAULT_NPREALLOC;
   pipegcr->nvecs      = 0;

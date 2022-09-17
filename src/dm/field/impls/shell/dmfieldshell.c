@@ -230,7 +230,7 @@ PETSC_INTERN PetscErrorCode DMFieldCreate_Shell(DMField field) {
   DMField_Shell *shell;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(field, &shell));
+  PetscCall(PetscNew(&shell));
   field->data = shell;
   PetscCall(DMFieldInitialize_Shell(field));
   PetscFunctionReturn(0);

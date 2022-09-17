@@ -568,7 +568,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_HPDDM(KSP ksp) {
   PetscBool   flg      = PETSC_FALSE;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(ksp, &data));
+  PetscCall(PetscNew(&data));
   ksp->data = (void *)data;
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_PRECONDITIONED, PC_LEFT, 2));
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_UNPRECONDITIONED, PC_RIGHT, 1));

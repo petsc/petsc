@@ -201,7 +201,7 @@ PetscErrorCode MatCreateSNESMFMore(SNES snes, Vec x, Mat *J) {
   char           p[64];
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(snes, &mfctx));
+  PetscCall(PetscNew(&mfctx));
   mfctx->sp               = NULL;
   mfctx->snes             = snes;
   mfctx->error_rel        = PETSC_SQRT_MACHINE_EPSILON;
@@ -254,8 +254,6 @@ PetscErrorCode MatCreateSNESMFMore(SNES snes, Vec x, Mat *J) {
   PetscCall(MatShellSetOperation(*J, MATOP_VIEW, (void (*)(void))SNESMatrixFreeView2_Private));
   PetscCall(MatSetUp(*J));
 
-  PetscCall(PetscLogObjectParent((PetscObject)*J, (PetscObject)mfctx->w));
-  PetscCall(PetscLogObjectParent((PetscObject)snes, (PetscObject)*J));
   PetscFunctionReturn(0);
 }
 

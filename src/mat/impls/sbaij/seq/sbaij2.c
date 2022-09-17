@@ -1455,7 +1455,7 @@ PetscErrorCode MatGetInfo_SeqSBAIJ(Mat A, MatInfoType flag, MatInfo *info) {
   info->nz_unneeded  = info->nz_allocated - info->nz_used;
   info->assemblies   = A->num_ass;
   info->mallocs      = A->info.mallocs;
-  info->memory       = ((PetscObject)A)->mem;
+  info->memory       = 0; /* REVIEW ME */
   if (A->factortype) {
     info->fill_ratio_given  = A->info.fill_ratio_given;
     info->fill_ratio_needed = A->info.fill_ratio_needed;

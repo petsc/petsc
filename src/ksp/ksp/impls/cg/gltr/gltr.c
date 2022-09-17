@@ -1165,7 +1165,6 @@ static PetscErrorCode KSPCGSetUp_GLTR(KSP ksp) {
     PetscCall(PetscArrayzero(cg->norm_r, max_its));
   } else {
     PetscCall(PetscCalloc5(max_its, &cg->diag, max_its, &cg->offd, max_its, &cg->alpha, max_its, &cg->beta, max_its, &cg->norm_r));
-    PetscCall(PetscLogObjectMemory((PetscObject)ksp, 5 * max_its * sizeof(PetscReal)));
   }
   PetscFunctionReturn(0);
 }
@@ -1307,7 +1306,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_GLTR(KSP ksp) {
   KSPCG_GLTR *cg;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(ksp, &cg));
+  PetscCall(PetscNew(&cg));
   cg->radius = 0.0;
   cg->dtype  = GLTR_UNPRECONDITIONED_DIRECTION;
 

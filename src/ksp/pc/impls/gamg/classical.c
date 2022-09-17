@@ -923,7 +923,7 @@ PetscErrorCode PCCreateGAMG_Classical(PC pc) {
   }
 
   /* create sub context for SA */
-  PetscCall(PetscNewLog(pc, &pc_gamg_classical));
+  PetscCall(PetscNew(&pc_gamg_classical));
   pc_gamg->subctx         = pc_gamg_classical;
   pc->ops->setfromoptions = PCGAMGSetFromOptions_Classical;
   /* reset does not do anything; setup not virtual */

@@ -36,10 +36,7 @@ static PetscErrorCode PCSetUp_QR(PC pc) {
     MatInfo info;
 
     if (!pc->setupcalled) {
-      if (!((PC_Factor *)dir)->fact) {
-        PetscCall(MatGetFactor(pc->pmat, ((PC_Factor *)dir)->solvertype, MAT_FACTOR_QR, &((PC_Factor *)dir)->fact));
-        PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)((PC_Factor *)dir)->fact));
-      }
+      if (!((PC_Factor *)dir)->fact) { PetscCall(MatGetFactor(pc->pmat, ((PC_Factor *)dir)->solvertype, MAT_FACTOR_QR, &((PC_Factor *)dir)->fact)); }
       PetscCall(MatQRFactorSymbolic(((PC_Factor *)dir)->fact, pc->pmat, dir->col, &((PC_Factor *)dir)->info));
       PetscCall(MatGetInfo(((PC_Factor *)dir)->fact, MAT_LOCAL, &info));
       dir->hdr.actualfill = info.fill_ratio_needed;
@@ -144,7 +141,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_QR(PC pc) {
   PC_QR *dir;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(pc, &dir));
+  PetscCall(PetscNew(&dir));
   pc->data = (void *)dir;
   PetscCall(PCFactorInitialize(pc, MAT_FACTOR_QR));
 

@@ -264,8 +264,6 @@ PetscErrorCode TSSetUp_Sundials(TS ts) {
 
   PetscCall(VecDuplicate(ts->vec_sol, &cvode->update));
   PetscCall(VecDuplicate(ts->vec_sol, &cvode->ydot));
-  PetscCall(PetscLogObjectParent((PetscObject)ts, (PetscObject)cvode->update));
-  PetscCall(PetscLogObjectParent((PetscObject)ts, (PetscObject)cvode->ydot));
 
   /*
     Create work vectors for the TSPSolve_Sundials() routine. Note these are
@@ -274,8 +272,6 @@ PetscErrorCode TSSetUp_Sundials(TS ts) {
   */
   PetscCall(VecCreateMPIWithArray(PetscObjectComm((PetscObject)ts), 1, locsize, PETSC_DECIDE, NULL, &cvode->w1));
   PetscCall(VecCreateMPIWithArray(PetscObjectComm((PetscObject)ts), 1, locsize, PETSC_DECIDE, NULL, &cvode->w2));
-  PetscCall(PetscLogObjectParent((PetscObject)ts, (PetscObject)cvode->w1));
-  PetscCall(PetscLogObjectParent((PetscObject)ts, (PetscObject)cvode->w2));
 
   /* Call CVodeCreate to create the solver memory and the use of a Newton iteration */
   mem = CVodeCreate(cvode->cvode_type, CV_NEWTON);
@@ -872,7 +868,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_Sundials(TS ts) {
   ts->ops->setfromoptions = TSSetFromOptions_Sundials;
   ts->default_adapt_type  = TSADAPTNONE;
 
-  PetscCall(PetscNewLog(ts, &cvode));
+  PetscCall(PetscNew(&cvode));
 
   ts->usessnes = PETSC_TRUE;
 

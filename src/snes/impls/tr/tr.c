@@ -503,7 +503,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NEWTONTR(SNES snes) {
 
   snes->alwayscomputesfinalresidual = PETSC_TRUE;
 
-  PetscCall(PetscNewLog(snes, &neP));
+  PetscCall(PetscNew(&neP));
   snes->data  = (void *)neP;
   neP->mu     = 0.25;
   neP->eta    = 0.75;

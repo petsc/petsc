@@ -98,7 +98,6 @@ static PetscErrorCode KSPGuessSetUp_POD(KSPGuess guess) {
     PetscCall(VecDestroyVecs(1, &v));
     PetscCall(VecDuplicateVecs(vseq, pod->maxn, &pod->xsnap));
     PetscCall(VecDestroy(&vseq));
-    PetscCall(PetscLogObjectParents(guess, pod->maxn, pod->xsnap));
   }
   if (!pod->bsnap) {
     Vec *v, vseq;
@@ -108,7 +107,6 @@ static PetscErrorCode KSPGuessSetUp_POD(KSPGuess guess) {
     PetscCall(VecDestroyVecs(1, &v));
     PetscCall(VecDuplicateVecs(vseq, pod->maxn, &pod->bsnap));
     PetscCall(VecDestroy(&vseq));
-    PetscCall(PetscLogObjectParents(guess, pod->maxn, pod->bsnap));
   }
   if (!pod->work) PetscCall(KSPCreateVecs(guess->ksp, 1, &pod->work, 0, NULL));
   PetscFunctionReturn(0);
@@ -438,7 +436,7 @@ PetscErrorCode KSPGuessCreate_POD(KSPGuess guess) {
   KSPGuessPOD *pod;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(guess, &pod));
+  PetscCall(PetscNew(&pod));
   pod->maxn   = 10;
   pod->tol    = PETSC_MACHINE_EPSILON;
   guess->data = pod;

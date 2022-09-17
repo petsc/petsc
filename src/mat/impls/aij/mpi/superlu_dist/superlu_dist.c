@@ -763,7 +763,7 @@ static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A, MatFactorType ftype, 
   PetscCall(PetscFree(B->solvertype));
   PetscCall(PetscStrallocpy(MATSOLVERSUPERLU_DIST, &B->solvertype));
 
-  PetscCall(PetscNewLog(B, &lu));
+  PetscCall(PetscNew(&lu));
   B->data = lu;
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)A), &size));
 

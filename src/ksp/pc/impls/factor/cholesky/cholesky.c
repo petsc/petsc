@@ -43,7 +43,6 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc) {
     if (dir->col && (dir->row != dir->col)) { /* only use row ordering for SBAIJ */
       PetscCall(ISDestroy(&dir->col));
     }
-    if (dir->row) PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)dir->row));
     PetscCall(MatCholeskyFactor(pc->pmat, dir->row, &((PC_Factor *)dir)->info));
     PetscCall(MatFactorGetError(pc->pmat, &err));
     if (err) { /* Factor() fails */
@@ -57,10 +56,7 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc) {
 
     if (!pc->setupcalled) {
       PetscBool canuseordering;
-      if (!((PC_Factor *)dir)->fact) {
-        PetscCall(MatGetFactor(pc->pmat, ((PC_Factor *)dir)->solvertype, MAT_FACTOR_CHOLESKY, &((PC_Factor *)dir)->fact));
-        PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)((PC_Factor *)dir)->fact));
-      }
+      if (!((PC_Factor *)dir)->fact) { PetscCall(MatGetFactor(pc->pmat, ((PC_Factor *)dir)->solvertype, MAT_FACTOR_CHOLESKY, &((PC_Factor *)dir)->fact)); }
       PetscCall(MatFactorGetCanUseOrdering(((PC_Factor *)dir)->fact, &canuseordering));
       if (canuseordering) {
         PetscCall(PCFactorSetDefaultOrdering_Factor(pc));
@@ -79,7 +75,6 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc) {
           PetscCall(PetscOptionsGetReal(((PetscObject)pc)->options, ((PetscObject)pc)->prefix, "-pc_factor_nonzeros_along_diagonal", &tol, NULL));
           PetscCall(MatReorderForNonzeroDiagonal(pc->pmat, tol, dir->row, dir->row));
         }
-        PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)dir->row));
       }
       PetscCall(MatCholeskyFactorSymbolic(((PC_Factor *)dir)->fact, pc->pmat, dir->row, &((PC_Factor *)dir)->info));
       PetscCall(MatGetInfo(((PC_Factor *)dir)->fact, MAT_LOCAL, &info));
@@ -89,7 +84,6 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc) {
         PetscBool canuseordering;
         PetscCall(MatDestroy(&((PC_Factor *)dir)->fact));
         PetscCall(MatGetFactor(pc->pmat, ((PC_Factor *)dir)->solvertype, MAT_FACTOR_CHOLESKY, &((PC_Factor *)dir)->fact));
-        PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)((PC_Factor *)dir)->fact));
         PetscCall(MatFactorGetCanUseOrdering(((PC_Factor *)dir)->fact, &canuseordering));
         if (canuseordering) {
           PetscCall(ISDestroy(&dir->row));
@@ -104,13 +98,11 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc) {
             PetscCall(PetscOptionsGetReal(((PetscObject)pc)->options, ((PetscObject)pc)->prefix, "-pc_factor_nonzeros_along_diagonal", &tol, NULL));
             PetscCall(MatReorderForNonzeroDiagonal(pc->pmat, tol, dir->row, dir->row));
           }
-          PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)dir->row));
         }
       }
       PetscCall(MatCholeskyFactorSymbolic(((PC_Factor *)dir)->fact, pc->pmat, dir->row, &((PC_Factor *)dir)->info));
       PetscCall(MatGetInfo(((PC_Factor *)dir)->fact, MAT_LOCAL, &info));
       dir->hdr.actualfill = info.fill_ratio_needed;
-      PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)((PC_Factor *)dir)->fact));
     } else {
       PetscCall(MatFactorGetError(((PC_Factor *)dir)->fact, &err));
       if (err == MAT_FACTOR_NUMERIC_ZEROPIVOT) {
@@ -278,7 +270,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Cholesky(PC pc) {
   PC_Cholesky *dir;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(pc, &dir));
+  PetscCall(PetscNew(&dir));
   pc->data = (void *)dir;
   PetscCall(PCFactorInitialize(pc, MAT_FACTOR_CHOLESKY));
 

@@ -2152,7 +2152,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Nest(Mat A) {
   Mat_Nest *s;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(A, &s));
+  PetscCall(PetscNew(&s));
   A->data = (void *)s;
 
   s->nr            = -1;

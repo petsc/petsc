@@ -535,7 +535,7 @@ PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Sum(PetscSpace sp) {
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  PetscCall(PetscNewLog(sp, &sum));
+  PetscCall(PetscNew(&sum));
   sum->numSumSpaces = PETSC_DEFAULT;
   sp->data          = sum;
   PetscCall(PetscSpaceInitialize_Sum(sp));

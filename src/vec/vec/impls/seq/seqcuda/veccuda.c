@@ -42,7 +42,7 @@ PetscErrorCode VecCUDAAllocateCheckHost(Vec v) {
 
   PetscFunctionBegin;
   if (!s) {
-    PetscCall(PetscNewLog((PetscObject)v, &s));
+    PetscCall(PetscNew(&s));
     v->data = s;
   }
   if (!s->array) {
@@ -51,7 +51,6 @@ PetscErrorCode VecCUDAAllocateCheckHost(Vec v) {
       v->pinned_memory = PETSC_TRUE;
     }
     PetscCall(PetscMalloc1(n, &array));
-    PetscCall(PetscLogObjectMemory((PetscObject)v, n * sizeof(PetscScalar)));
     s->array           = array;
     s->array_allocated = array;
     if (n * sizeof(PetscScalar) > v->minimum_bytes_pinned_memory) PetscCall(PetscMallocResetCUDAHost());

@@ -159,7 +159,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_CP(PC pc) {
   PC_CP *cp;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(pc, &cp));
+  PetscCall(PetscNew(&cp));
   pc->data = (void *)cp;
 
   pc->ops->apply           = PCApply_CP;

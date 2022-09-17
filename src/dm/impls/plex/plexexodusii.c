@@ -190,7 +190,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_ExodusII(PetscViewer v) {
   PetscViewer_ExodusII *exo;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(v, &exo));
+  PetscCall(PetscNew(&exo));
 
   v->data                = (void *)exo;
   v->ops->destroy        = PetscViewerDestroy_ExodusII;

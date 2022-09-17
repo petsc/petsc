@@ -236,7 +236,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_NM(Tao tao) {
   TAO_NelderMead *nm;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(tao, &nm));
+  PetscCall(PetscNew(&nm));
   tao->data = (void *)nm;
 
   tao->ops->setup          = TaoSetUp_NM;

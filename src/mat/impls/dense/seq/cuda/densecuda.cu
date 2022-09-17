@@ -1228,7 +1228,6 @@ static PetscErrorCode MatDenseGetColumnVec_SeqDenseCUDA(Mat A, PetscInt col, Vec
   PetscCall(MatDenseCUDAGetArray(A, (PetscScalar **)&a->ptrinuse));
   if (!a->cvec) { /* we pass the data of A, to prevent allocating needless GPU memory the first time VecCUDAPlaceArray is called */
     PetscCall(VecCreateSeqCUDAWithArray(PetscObjectComm((PetscObject)A), A->rmap->bs, A->rmap->n, a->ptrinuse, &a->cvec));
-    PetscCall(PetscLogObjectParent((PetscObject)A, (PetscObject)a->cvec));
   }
   a->vecinuse = col + 1;
   PetscCall(VecCUDAPlaceArray(a->cvec, a->ptrinuse + (size_t)col * (size_t)a->lda));
@@ -1258,7 +1257,6 @@ static PetscErrorCode MatDenseGetColumnVecRead_SeqDenseCUDA(Mat A, PetscInt col,
   PetscCall(MatDenseCUDAGetArrayRead(A, &a->ptrinuse));
   if (!a->cvec) { /* we pass the data of A, to prevent allocating needless GPU memory the first time VecCUDAPlaceArray is called */
     PetscCall(VecCreateSeqCUDAWithArray(PetscObjectComm((PetscObject)A), A->rmap->bs, A->rmap->n, a->ptrinuse, &a->cvec));
-    PetscCall(PetscLogObjectParent((PetscObject)A, (PetscObject)a->cvec));
   }
   a->vecinuse = col + 1;
   PetscCall(VecCUDAPlaceArray(a->cvec, a->ptrinuse + (size_t)col * (size_t)a->lda));
@@ -1290,7 +1288,6 @@ static PetscErrorCode MatDenseGetColumnVecWrite_SeqDenseCUDA(Mat A, PetscInt col
   PetscCall(MatDenseCUDAGetArrayWrite(A, (PetscScalar **)&a->ptrinuse));
   if (!a->cvec) { /* we pass the data of A, to prevent allocating needless GPU memory the first time VecCUDAPlaceArray is called */
     PetscCall(VecCreateSeqCUDAWithArray(PetscObjectComm((PetscObject)A), A->rmap->bs, A->rmap->n, a->ptrinuse, &a->cvec));
-    PetscCall(PetscLogObjectParent((PetscObject)A, (PetscObject)a->cvec));
   }
   a->vecinuse = col + 1;
   PetscCall(VecCUDAPlaceArray(a->cvec, a->ptrinuse + (size_t)col * (size_t)a->lda));
@@ -1322,7 +1319,6 @@ static PetscErrorCode MatDenseGetSubMatrix_SeqDenseCUDA(Mat A, PetscInt rbegin, 
   PetscCall(MatSeqDenseCUDACopyToGPU(A));
   if (!a->cmat) {
     PetscCall(MatCreateDenseCUDA(PetscObjectComm((PetscObject)A), rend - rbegin, PETSC_DECIDE, rend - rbegin, cend - cbegin, dA->d_v + rbegin + (size_t)cbegin * a->lda, &a->cmat));
-    PetscCall(PetscLogObjectParent((PetscObject)A, (PetscObject)a->cmat));
   } else {
     PetscCall(MatDenseCUDAPlaceArray(a->cmat, dA->d_v + rbegin + (size_t)cbegin * a->lda));
   }
@@ -1565,7 +1561,7 @@ PetscErrorCode MatConvert_SeqDense_SeqDenseCUDA(Mat M, MatType type, MatReuse re
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatProductSetFromOptions_seqaij_seqdensecuda_C", MatProductSetFromOptions_SeqAIJ_SeqDense));
   a = (Mat_SeqDense *)B->data;
   PetscCall(VecDestroy(&a->cvec)); /* cvec might be VECSEQ. Destroy it and rebuild a VECSEQCUDA when needed */
-  PetscCall(PetscNewLog(B, &dB));
+  PetscCall(PetscNew(&dB));
 
   B->spptr       = dB;
   B->offloadmask = PETSC_OFFLOAD_UNALLOCATED;

@@ -368,7 +368,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Socket(PetscViewer v) {
   PetscViewer_Socket *vmatlab;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(v, &vmatlab));
+  PetscCall(PetscNew(&vmatlab));
   vmatlab->port          = 0;
   v->data                = (void *)vmatlab;
   v->ops->destroy        = PetscViewerDestroy_Socket;

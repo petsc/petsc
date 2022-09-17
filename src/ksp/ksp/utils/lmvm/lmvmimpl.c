@@ -309,7 +309,7 @@ PetscErrorCode MatCreate_LMVM(Mat B) {
   Mat_LMVM *lmvm;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(B, &lmvm));
+  PetscCall(PetscNew(&lmvm));
   B->data = (void *)lmvm;
 
   lmvm->m_old    = 0;

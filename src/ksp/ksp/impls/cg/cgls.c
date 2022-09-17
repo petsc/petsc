@@ -111,7 +111,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_CGLS(KSP ksp) {
   KSP_CGLS *cgls;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(ksp, &cgls));
+  PetscCall(PetscNew(&cgls));
   ksp->data = (void *)cgls;
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_UNPRECONDITIONED, PC_LEFT, 3));
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_NONE, PC_LEFT, 1));

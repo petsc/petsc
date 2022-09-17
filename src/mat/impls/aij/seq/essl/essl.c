@@ -98,8 +98,6 @@ PetscErrorCode MatLUFactorSymbolic_Essl(Mat B, Mat A, IS r, IS c, const MatFacto
 
   essl->CleanUpESSL = PETSC_TRUE;
 
-  PetscCall(PetscLogObjectMemory((PetscObject)B, essl->lna * (2 * sizeof(int) + sizeof(PetscScalar)) + essl->naux * sizeof(PetscScalar)));
-
   B->ops->lufactornumeric = MatLUFactorNumeric_Essl;
   PetscFunctionReturn(0);
 }
@@ -135,7 +133,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_essl(Mat A, MatFactorType ftype,
   PetscCall(PetscStrallocpy("essl", &((PetscObject)B)->type_name));
   PetscCall(MatSetUp(B));
 
-  PetscCall(PetscNewLog(B, &essl));
+  PetscCall(PetscNew(&essl));
 
   B->data                  = essl;
   B->ops->lufactorsymbolic = MatLUFactorSymbolic_Essl;

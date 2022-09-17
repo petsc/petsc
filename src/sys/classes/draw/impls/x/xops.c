@@ -532,7 +532,7 @@ static PetscErrorCode PetscDrawGetSingleton_X(PetscDraw draw, PetscDraw *sdraw) 
   (*sdraw)->port_yr = draw->port_yr;
 
   /* share drawables (windows and/or pixmap) from the parent draw */
-  PetscCall(PetscNewLog(*sdraw, &sXwin));
+  PetscCall(PetscNew(&sXwin));
   (*sdraw)->data = (void *)sXwin;
   PetscCall(PetscDrawXiInit(sXwin, draw->display));
   if (Xwin->win) {
@@ -729,7 +729,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_X(PetscDraw draw) {
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)draw), &rank));
   PetscCheck(rank != 0 || (w > 0 && h > 0), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Negative window width or height");
 
-  PetscCall(PetscNewLog(draw, &Xwin));
+  PetscCall(PetscNew(&Xwin));
   PetscCall(PetscMemcpy(draw->ops, &DvOps, sizeof(DvOps)));
   draw->data = (void *)Xwin;
 

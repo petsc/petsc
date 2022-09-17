@@ -251,7 +251,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NRichardson(SNES snes) {
 
   snes->alwayscomputesfinalresidual = PETSC_TRUE;
 
-  PetscCall(PetscNewLog(snes, &neP));
+  PetscCall(PetscNew(&neP));
   snes->data = (void *)neP;
 
   if (!snes->tolerancesset) {

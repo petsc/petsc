@@ -381,7 +381,6 @@ static PetscErrorCode PCRedundantGetKSP_Redundant(PC pc, KSP *innerksp) {
 
     PetscCall(PetscSubcommSetOptionsPrefix(red->psubcomm, prefix));
     PetscCall(PetscSubcommSetFromOptions(red->psubcomm));
-    PetscCall(PetscLogObjectMemory((PetscObject)pc, sizeof(PetscSubcomm)));
 
     /* create a new PC that processors in each subcomm have copy of */
     subcomm = PetscSubcommChild(red->psubcomm);
@@ -389,7 +388,6 @@ static PetscErrorCode PCRedundantGetKSP_Redundant(PC pc, KSP *innerksp) {
     PetscCall(KSPCreate(subcomm, &red->ksp));
     PetscCall(KSPSetErrorIfNotConverged(red->ksp, pc->erroriffailure));
     PetscCall(PetscObjectIncrementTabLevel((PetscObject)red->ksp, (PetscObject)pc, 1));
-    PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)red->ksp));
     PetscCall(KSPSetType(red->ksp, KSPPREONLY));
     PetscCall(KSPGetPC(red->ksp, &red->pc));
     PetscCall(PetscObjectTypeCompare((PetscObject)pc->pmat, MATSEQSBAIJ, &issbaij));
@@ -495,7 +493,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Redundant(PC pc) {
   PetscMPIInt   size;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(pc, &red));
+  PetscCall(PetscNew(&red));
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)pc), &size));
 
   red->nsubcomm       = size;

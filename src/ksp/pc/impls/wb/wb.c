@@ -734,7 +734,6 @@ PetscErrorCode PCSetFromOptions_Exotic(PC pc, PetscOptionItems *PetscOptionsObje
       PetscCall(KSPCreate(PETSC_COMM_SELF, &ctx->ksp));
       PetscCall(KSPSetErrorIfNotConverged(ctx->ksp, pc->erroriffailure));
       PetscCall(PetscObjectIncrementTabLevel((PetscObject)ctx->ksp, (PetscObject)pc, 1));
-      PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)ctx->ksp));
       PetscCall(PCGetOptionsPrefix(pc, &prefix));
       PetscCall(KSPSetOptionsPrefix(ctx->ksp, prefix));
       PetscCall(KSPAppendOptionsPrefix(ctx->ksp, "exotic_"));

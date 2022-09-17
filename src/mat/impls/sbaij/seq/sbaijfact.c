@@ -171,7 +171,6 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ_MSR(Mat F, Mat A, IS perm, con
   /* put together the new matrix */
   PetscCall(MatSeqSBAIJSetPreallocation(F, bs, MAT_SKIP_ALLOCATION, NULL));
 
-  /* PetscCall(PetscLogObjectParent((PetscObject)B,(PetscObject)iperm)); */
   b               = (Mat_SeqSBAIJ *)(F)->data;
   b->singlemalloc = PETSC_FALSE;
   b->free_a       = PETSC_TRUE;
@@ -194,7 +193,6 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ_MSR(Mat F, Mat A, IS perm, con
   PetscCall(PetscMalloc1(bs * mbs + bs, &b->solve_work));
   /* In b structure:  Free imax, ilen, old a, old j.
      Allocate idnew, solve_work, new a, new j */
-  PetscCall(PetscLogObjectMemory((PetscObject)F, (iu[mbs] - mbs) * (sizeof(PetscInt) + sizeof(MatScalar))));
   b->maxnz = b->nz = iu[mbs];
 
   (F)->info.factor_mallocs   = reallocs;
@@ -356,7 +354,6 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ(Mat fact, Mat A, IS perm, cons
   b->pivotinblocks = PETSC_FALSE; /* need to get from MatFactorInfo */
 
   PetscCall(PetscMalloc1(mbs + 1, &b->solve_work));
-  PetscCall(PetscLogObjectMemory((PetscObject)fact, ui[mbs] * (sizeof(PetscInt) + sizeof(MatScalar))));
 
   b->maxnz = b->nz = ui[mbs];
 
@@ -532,7 +529,6 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ_inplace(Mat fact, Mat A, IS pe
   b->icol = perm;
   PetscCall(PetscObjectReference((PetscObject)perm));
   PetscCall(PetscMalloc1(mbs + 1, &b->solve_work));
-  PetscCall(PetscLogObjectMemory((PetscObject)fact, (ui[mbs] - mbs) * (sizeof(PetscInt) + sizeof(MatScalar))));
   b->maxnz = b->nz = ui[mbs];
 
   fact->info.factor_mallocs   = reallocs;
