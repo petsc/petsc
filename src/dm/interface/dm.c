@@ -7445,6 +7445,7 @@ PetscErrorCode DMSetCoarseDM(DM dm, DM cdm) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   if (cdm) PetscValidHeaderSpecific(cdm, DM_CLASSID, 2);
+  if (dm == cdm) cdm = NULL;
   PetscCall(PetscObjectReference((PetscObject)cdm));
   PetscCall(DMDestroy(&dm->coarseMesh));
   dm->coarseMesh = cdm;
@@ -7490,6 +7491,7 @@ PetscErrorCode DMSetFineDM(DM dm, DM fdm) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   if (fdm) PetscValidHeaderSpecific(fdm, DM_CLASSID, 2);
+  if (dm == fdm) fdm = NULL;
   PetscCall(PetscObjectReference((PetscObject)fdm));
   PetscCall(DMDestroy(&dm->fineMesh));
   dm->fineMesh = fdm;
