@@ -611,7 +611,7 @@ multiprocessor examples. The primary difference between the examples in
 here is that each processor forms only its
 local part of the matrix and vectors in the parallel case.
 
-.. admonition:: Listing: `KSP Tutorial src/ksp/ksp/tutorials/ex2.c <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/ksp/ksp/tutorials/ex2..c.html>`__``
+.. admonition:: Listing: `KSP Tutorial src/ksp/ksp/tutorials/ex2.c <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/ksp/ksp/tutorials/ex2..c.html>`__
    :name: ksp-ex2
 
    .. literalinclude:: /../src/ksp/ksp/tutorials/ex2.c
