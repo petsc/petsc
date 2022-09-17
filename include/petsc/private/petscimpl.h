@@ -136,13 +136,13 @@ typedef struct _p_PetscObject {
   PetscInt noptionhandler;
   PetscErrorCode (*optionhandler[PETSC_MAX_OPTIONS_HANDLER])(PetscObject, PetscOptionItems *, void *);
   PetscErrorCode (*optiondestroy[PETSC_MAX_OPTIONS_HANDLER])(PetscObject, void *);
-  void     *optionctx[PETSC_MAX_OPTIONS_HANDLER];
-  PetscBool optionsprinted;
+  void *optionctx[PETSC_MAX_OPTIONS_HANDLER];
 #if defined(PETSC_HAVE_SAWS)
   PetscBool amsmem;          /* if PETSC_TRUE then this object is registered with SAWs and visible to clients */
   PetscBool amspublishblock; /* if PETSC_TRUE and publishing objects then will block at PetscObjectSAWsBlock() */
 #endif
   PetscOptions options; /* options database used, NULL means default */
+  PetscBool    optionsprinted;
   PetscBool    donotPetscObjectPrintClassNamePrefixType;
 } _p_PetscObject;
 
