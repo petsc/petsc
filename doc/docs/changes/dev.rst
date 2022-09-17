@@ -185,6 +185,7 @@ exec-name``.
 - Add ``PCHYPREAMSSetInteriorNodes()`` to set interior nodes for HYPRE AMS
 - Add ``PCAMGX``, a PC interface for NVIDIA's AMGx AMG solver
 - Remove ``PCGAMGSetSymmetrizeGraph()`` and ``-pc_gamg_sym_graph``. The user should indicate symmetry and structural symmetry using ``MatSetOptions()``.
+- Change ``-pc_gamg_reuse_interpolation`` default from false to true.
 
 .. rubric:: KSP:
 
