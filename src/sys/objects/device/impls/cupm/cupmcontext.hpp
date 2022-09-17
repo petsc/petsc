@@ -13,6 +13,7 @@
 #include "cupmevent.hpp"
 
 #if defined(__cplusplus)
+
 namespace Petsc {
 
 namespace device {
@@ -212,7 +213,7 @@ public:
   PETSC_CXX_COMPAT_DECL(PetscErrorCode getHandle(PetscDeviceContext, void *));
   PETSC_CXX_COMPAT_DECL(PetscErrorCode beginTimer(PetscDeviceContext));
   PETSC_CXX_COMPAT_DECL(PetscErrorCode endTimer(PetscDeviceContext, PetscLogDouble *));
-  PETSC_CXX_COMPAT_DECL(PetscErrorCode memAlloc(PetscDeviceContext, PetscBool, PetscMemType, std::size_t, void **));
+  PETSC_CXX_COMPAT_DECL(PetscErrorCode memAlloc(PetscDeviceContext, PetscBool, PetscMemType, std::size_t, std::size_t, void **));
   PETSC_CXX_COMPAT_DECL(PetscErrorCode memFree(PetscDeviceContext, PetscMemType, void **));
   PETSC_CXX_COMPAT_DECL(PetscErrorCode memCopy(PetscDeviceContext, void *PETSC_RESTRICT, const void *PETSC_RESTRICT, std::size_t, PetscDeviceCopyMode));
   PETSC_CXX_COMPAT_DECL(PetscErrorCode memSet(PetscDeviceContext, PetscMemType, void *, PetscInt, std::size_t));
@@ -388,19 +389,18 @@ PETSC_CXX_COMPAT_DEFN(PetscErrorCode DeviceContext<T>::endTimer(PetscDeviceConte
 }
 
 template <DeviceType T>
-PETSC_CXX_COMPAT_DEFN(PetscErrorCode DeviceContext<T>::memAlloc(PetscDeviceContext dctx, PetscBool clear, PetscMemType mtype, std::size_t n, void **dest)) {
+PETSC_CXX_COMPAT_DEFN(PetscErrorCode DeviceContext<T>::memAlloc(PetscDeviceContext dctx, PetscBool clear, PetscMemType mtype, std::size_t n, std::size_t alignment, void **dest)) {
   const auto &stream = impls_cast_(dctx)->stream;
 
   PetscFunctionBegin;
   PetscCall(check_current_device_(dctx));
   PetscCall(check_memtype_(mtype, "allocating"));
   if (PetscMemTypeHost(mtype)) {
-    PetscCall(default_pool_<HostAllocator<T>>().allocate(n, reinterpret_cast<char **>(dest), &stream));
-    if (clear) std::memset(*dest, 0, n);
+    PetscCall(default_pool_<HostAllocator<T>>().allocate(n, reinterpret_cast<char **>(dest), &stream, alignment));
   } else {
-    PetscCall(default_pool_<DeviceAllocator<T>>().allocate(n, reinterpret_cast<char **>(dest), &stream));
-    if (clear) PetscCallCUPM(cupmMemsetAsync(*dest, 0, n, stream.get_stream()));
+    PetscCall(default_pool_<DeviceAllocator<T>>().allocate(n, reinterpret_cast<char **>(dest), &stream, alignment));
   }
+  if (clear) PetscCallCUPM(cupmMemsetAsync(*dest, 0, n, stream.get_stream()));
   PetscFunctionReturn(0);
 }
 
@@ -454,18 +454,10 @@ PETSC_CXX_COMPAT_DEFN(PetscErrorCode DeviceContext<T>::memCopy(PetscDeviceContex
 
 template <DeviceType T>
 PETSC_CXX_COMPAT_DEFN(PetscErrorCode DeviceContext<T>::memSet(PetscDeviceContext dctx, PetscMemType mtype, void *ptr, PetscInt v, std::size_t n)) {
-  auto vint = static_cast<int>(v);
-
   PetscFunctionBegin;
   PetscCall(check_current_device_(dctx));
   PetscCall(check_memtype_(mtype, "zeroing"));
-  if (PetscMemTypeHost(mtype)) {
-    // must call public sync to prune the dependency graph
-    PetscCall(PetscDeviceContextSynchronize(dctx));
-    std::memset(ptr, vint, n);
-  } else {
-    PetscCallCUPM(cupmMemsetAsync(ptr, vint, n, impls_cast_(dctx)->stream.get_stream()));
-  }
+  PetscCallCUPM(cupmMemsetAsync(ptr, static_cast<int>(v), n, impls_cast_(dctx)->stream.get_stream()));
   PetscFunctionReturn(0);
 }
 

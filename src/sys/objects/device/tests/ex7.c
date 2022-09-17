@@ -32,22 +32,45 @@ static PetscErrorCode TestAllocate(PetscDeviceContext dctx, PetscRandom rand, Pe
   PetscCall(IncrementSize(rand, &n));
   PetscCall(PetscDeviceMalloc(dctx, mtype, n, &ptr));
   PetscCheck(ptr, PETSC_COMM_SELF, PETSC_ERR_POINTER, "PetscDeviceMalloc() return NULL pointer for %s allocation size %" PetscInt_FMT, PetscMemTypeToString(mtype), n);
+  // this ensures the host pointer is at least valid
   if (PetscMemTypeHost(mtype)) {
     for (PetscInt i = 0; i < n; ++i) ptr[i] = (PetscScalar)i;
   }
   PetscCall(PetscDeviceFree(dctx, ptr));
 
+  // test alignment of various types
+  {
+    char     *char_ptr;
+    short    *short_ptr;
+    int      *int_ptr;
+    double   *double_ptr;
+    long int *long_int_ptr;
+
+    PetscCall(PetscDeviceMalloc(dctx, mtype, 1, &char_ptr));
+    PetscCall(PetscDeviceMalloc(dctx, mtype, 1, &short_ptr));
+    PetscCall(PetscDeviceMalloc(dctx, mtype, 1, &int_ptr));
+    PetscCall(PetscDeviceMalloc(dctx, mtype, 1, &double_ptr));
+    PetscCall(PetscDeviceMalloc(dctx, mtype, 1, &long_int_ptr));
+
+    // if an error occurs here, it means the alignment system is broken!
+    PetscCall(PetscDeviceFree(dctx, char_ptr));
+    PetscCall(PetscDeviceFree(dctx, short_ptr));
+    PetscCall(PetscDeviceFree(dctx, int_ptr));
+    PetscCall(PetscDeviceFree(dctx, double_ptr));
+    PetscCall(PetscDeviceFree(dctx, long_int_ptr));
+  }
+
   // test that calloc() produces cleared memory
   PetscCall(IncrementSize(rand, &n));
   PetscCall(PetscDeviceCalloc(dctx, mtype, n, &ptr));
-  PetscCheck(ptr, PETSC_COMM_SELF, PETSC_ERR_POINTER, "PetscDeviceCalloc() return NULL pointer for %s allocation size %" PetscInt_FMT, PetscMemTypeToString(mtype), n);
+  PetscCheck(ptr, PETSC_COMM_SELF, PETSC_ERR_POINTER, "PetscDeviceCalloc() returned NULL pointer for %s allocation size %" PetscInt_FMT, PetscMemTypeToString(mtype), n);
   if (PetscMemTypeHost(mtype)) {
     tmp_ptr = ptr;
   } else {
     PetscCall(PetscDeviceMalloc(dctx, PETSC_MEMTYPE_HOST, n, &tmp_ptr));
     PetscCall(PetscDeviceArrayCopy(dctx, tmp_ptr, ptr, n));
-    PetscCall(PetscDeviceContextSynchronize(dctx));
   }
+  PetscCall(PetscDeviceContextSynchronize(dctx));
   for (PetscInt i = 0; i < n; ++i) PetscCheck(tmp_ptr[i] == (PetscScalar)0.0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "PetscDeviceCalloc() returned memory that was not cleared, ptr[%" PetscInt_FMT "] %g != 0", i, (double)PetscAbsScalar(tmp_ptr[i]));
   if (tmp_ptr == ptr) {
     tmp_ptr = NULL;

@@ -215,7 +215,7 @@ struct _DeviceContextOps {
   PetscErrorCode (*getstreamhandle)(PetscDeviceContext, void *);
   PetscErrorCode (*begintimer)(PetscDeviceContext);
   PetscErrorCode (*endtimer)(PetscDeviceContext, PetscLogDouble *);
-  PetscErrorCode (*memalloc)(PetscDeviceContext, PetscBool, PetscMemType, size_t, void **);                                     // optional
+  PetscErrorCode (*memalloc)(PetscDeviceContext, PetscBool, PetscMemType, size_t, size_t, void **);                             // optional
   PetscErrorCode (*memfree)(PetscDeviceContext, PetscMemType, void **);                                                         // optional
   PetscErrorCode (*memcopy)(PetscDeviceContext, void *PETSC_RESTRICT, const void *PETSC_RESTRICT, size_t, PetscDeviceCopyMode); // optional
   PetscErrorCode (*memset)(PetscDeviceContext, PetscMemType, void *, PetscInt, size_t);                                         // optional

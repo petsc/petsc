@@ -24,6 +24,23 @@
 #define PETSC_CPP_VERSION 0
 #endif
 
+#if defined(__STDC_VERSION__)
+#if __STDC_VERSION__ <= 199901L
+// C99 except that 99 is >= 11 or 17 so we shorten it to 9 instead
+#define PETSC_C_VERSION 9
+#elif __STDC_VERSION__ <= 201112L
+#define PETSC_C_VERSION 11
+#elif __STDC_VERSION__ <= 201710L
+#define PETSC_C_VERSION 17
+#else
+#define PETSC_C_VERSION 22 // current year, or date of c2b ratification
+#endif
+#endif // __STDC_VERSION__
+
+#ifndef PETSC_C_VERSION
+#define PETSC_C_VERSION 0
+#endif
+
 /* ========================================================================== */
 /* This facilitates using the C version of PETSc from C++ and the C++ version from C. */
 #if defined(__cplusplus)
