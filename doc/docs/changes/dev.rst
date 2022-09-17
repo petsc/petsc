@@ -107,7 +107,7 @@ In addition to the changes above
 - Add ``PetscDeviceArrayZero()``
 - Deprecate ``PetscLogObjectParent()``
 - Deprecate ``PetscLogObjectMemory()``
-- Deprecate ``PetscNewLog()``, users should just use ``PetscNew()``` instead
+- Deprecate ``PetscNewLog()``, users should just use ``PetscNew()`` instead
 
 .. rubric:: Event Logging:
 

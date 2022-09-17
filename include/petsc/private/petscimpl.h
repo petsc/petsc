@@ -64,7 +64,6 @@ PETSC_EXTERN PetscErrorCode PetscVFPrintfSetClosure(int (^)(const char *));
 */
 
 typedef struct {
-  PetscErrorCode (*getcomm)(PetscObject, MPI_Comm *);
   PetscErrorCode (*view)(PetscObject, PetscViewer);
   PetscErrorCode (*destroy)(PetscObject *);
   PetscErrorCode (*compose)(PetscObject, const char[], PetscObject);
