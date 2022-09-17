@@ -7,7 +7,7 @@
 PETSC_EXTERN PetscErrorCode DMPlexLandauPrintNorms(Vec, PetscInt);
 PETSC_EXTERN PetscErrorCode DMPlexLandauCreateVelocitySpace(MPI_Comm, PetscInt, const char[], Vec *, Mat *, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexLandauDestroyVelocitySpace(DM *);
-PETSC_EXTERN PetscErrorCode DMPlexLandauAddToFunction(DM, Vec, PetscErrorCode (*)(DM, Vec, PetscInt, PetscInt, PetscInt, void *), void *);
+PETSC_EXTERN PetscErrorCode DMPlexLandauAccess(DM, Vec, PetscErrorCode (*)(DM, Vec, PetscInt, PetscInt, PetscInt, void *), void *);
 PETSC_EXTERN PetscErrorCode DMPlexLandauAddMaxwellians(DM, Vec, PetscReal, PetscReal[], PetscReal[], PetscInt, PetscInt, PetscInt, void *);
 PETSC_EXTERN PetscErrorCode DMPlexLandauCreateMassMatrix(DM dm, Mat *Amat);
 PETSC_EXTERN PetscErrorCode DMPlexLandauIFunction(TS, PetscReal, Vec, Vec, Vec, void *);
@@ -78,7 +78,7 @@ typedef struct {
   void *dfdy;    // nip*Nf - dynamic (IP)
   void *dfdz;    // nip*Nf - dynamic (IP)
   int   dim_, ns_, nip_, nq_, nb_;
-  void *NCells;         // remove and ise elem_offset - TODO
+  void *NCells;         // remove and use elem_offset - TODO
   void *species_offset; // for each grid, but same for all batched vertices
   void *mat_offset;     // for each grid, but same for all batched vertices
   void *elem_offset;    // for each grid, but same for all batched vertices
@@ -128,6 +128,7 @@ typedef struct {
   PetscReal i_radius[LANDAU_MAX_GRIDS]; // not used
   PetscReal e_radius;                   // not used
   PetscInt  num_sections;               // not used
+  PetscInt  cells0[3];
   /* AMR */
   PetscBool use_p4est;
   PetscInt  numRERefine;                     /* RE: refinement along v_perp=0, z > 0 */

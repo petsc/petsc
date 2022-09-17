@@ -742,15 +742,11 @@ static PetscErrorCode LandauDMCreateVMeshes(MPI_Comm comm_self, const PetscInt d
     for (PetscInt grid = 0; grid < ctx->num_grids; grid++) {
       PetscReal radius = ctx->radius[grid];
       if (!ctx->sphere) {
-        PetscInt       cells[] = {2, 2, 2};
         PetscReal      lo[] = {-radius, -radius, -radius}, hi[] = {radius, radius, radius};
         DMBoundaryType periodicity[3] = {DM_BOUNDARY_NONE, dim == 2 ? DM_BOUNDARY_NONE : DM_BOUNDARY_NONE, DM_BOUNDARY_NONE};
-        if (dim == 2) {
-          lo[0]                     = 0;
-          cells[0] /* = cells[1] */ = 1;
-        }
-        PetscCall(DMPlexCreateBoxMesh(comm_self, dim, PETSC_FALSE, cells, lo, hi, periodicity, PETSC_TRUE, &ctx->plex[grid])); // todo: make composite and create dm[grid] here
-        PetscCall(DMLocalizeCoordinates(ctx->plex[grid]));                                                                     /* needed for periodic */
+        if (dim == 2) lo[0] = 0;
+        PetscCall(DMPlexCreateBoxMesh(comm_self, dim, PETSC_FALSE, ctx->cells0, lo, hi, periodicity, PETSC_TRUE, &ctx->plex[grid])); // todo: make composite and create dm[grid] here
+        PetscCall(DMLocalizeCoordinates(ctx->plex[grid]));                                                                           /* needed for periodic */
         if (dim == 3) PetscCall(PetscObjectSetName((PetscObject)ctx->plex[grid], "cube"));
         else PetscCall(PetscObjectSetName((PetscObject)ctx->plex[grid], "half-plane"));
       } else if (dim == 2) { // sphere is all wrong. should just have one inner radius
@@ -1276,6 +1272,8 @@ static PetscErrorCode ProcessOptions(LandauCtx *ctx, const char prefix[])
   ctx->n_0      = 1.e20;          /* typical plasma n, but could set it to 1 */
   ctx->Ez       = 0;
   for (PetscInt grid = 0; grid < LANDAU_NUM_TIMERS; grid++) ctx->times[grid] = 0;
+  for (PetscInt ii = 0; ii < LANDAU_DIM; ii++) ctx->cells0[ii] = 2;
+  if (LANDAU_DIM == 2) ctx->cells0[0] = 1;
   ctx->use_matrix_mass                = PETSC_FALSE;
   ctx->use_relativistic_corrections   = PETSC_FALSE;
   ctx->use_energy_tensor_trick        = PETSC_FALSE; /* Use Eero's trick for energy conservation v --> grad(v^2/2) */
@@ -1396,6 +1394,8 @@ static PetscErrorCode ProcessOptions(LandauCtx *ctx, const char prefix[])
     ctx->radius[grid] *= v0_grid[grid] / ctx->v_0; // scale domain by thermal radius relative to v_0
   }
   /* amr parametres */
+  nt = LANDAU_DIM;
+  PetscCall(PetscOptionsIntArray("-dm_landau_num_cells", "Number of cells in each dimention of base grid", "plexland.c", ctx->cells0, &nt, &flg));
   nt = LANDAU_MAX_GRIDS;
   PetscCall(PetscOptionsIntArray("-dm_landau_amr_levels_max", "Number of AMR levels of refinement around origin, after (RE) refinements along z", "plexland.c", ctx->numAMRRefine, &nt, &flg));
   PetscCheck(!flg || nt >= ctx->num_grids, ctx->comm, PETSC_ERR_ARG_WRONG, "-dm_landau_amr_levels_max: given %" PetscInt_FMT " != number grids %" PetscInt_FMT, nt, ctx->num_grids);
@@ -1944,7 +1944,7 @@ static PetscErrorCode LandauCreateJacobianMatrix(MPI_Comm comm, Vec X, IS grid_b
   if (!ctx->gpu_assembly) { /* we need GPU object with GPU assembly */
     PetscFunctionReturn(0);
   }
-  // get the RCM for this grid to separate out species into blocks -- create 'idxs' & 'ctx->batch_is'
+  // get the RCM for this grid to separate out species into blocks -- create 'idxs' & 'ctx->batch_is' -- not used
   if (ctx->gpu_assembly && ctx->jacobian_field_major_order) PetscCall(PetscMalloc1(ctx->mat_offset[ctx->num_grids] * ctx->batch_sz, &idxs));
   for (PetscInt grid = 0; grid < ctx->num_grids; grid++) {
     const PetscInt *values, n = ctx->mat_offset[grid + 1] - ctx->mat_offset[grid];
@@ -2133,7 +2133,7 @@ PetscErrorCode DMPlexLandauCreateVelocitySpace(MPI_Comm comm, PetscInt dim, cons
       PetscScalar const *values;
       const PetscInt     moffset = LAND_MOFFSET(b_id, grid, ctx->batch_sz, ctx->num_grids, ctx->mat_offset);
       PetscCall(LandauSetInitialCondition(ctx->plex[grid], Xsub[grid], grid, b_id, ctx->batch_sz, ctx));
-      PetscCall(VecGetArrayRead(Xsub[grid], &values));
+      PetscCall(VecGetArrayRead(Xsub[grid], &values)); // Drop whole grid in Plex ordering
       for (int i = 0, idx = moffset; i < n; i++, idx++) PetscCall(VecSetValue(*X, idx, values[i], INSERT_VALUES));
       PetscCall(VecRestoreArrayRead(Xsub[grid], &values));
     }
@@ -2156,8 +2156,8 @@ PetscErrorCode DMPlexLandauCreateVelocitySpace(MPI_Comm comm, PetscInt dim, cons
     }
   }
   PetscCall(PetscLogEventEnd(ctx->events[15], 0, 0, 0, 0));
-  // create field major ordering
 
+  // create field major ordering
   ctx->work_vec   = NULL;
   ctx->plex_batch = NULL;
   ctx->batch_is   = NULL;
@@ -2206,7 +2206,7 @@ PetscErrorCode DMPlexLandauCreateVelocitySpace(MPI_Comm comm, PetscInt dim, cons
 }
 
 /*@
- DMPlexLandauAddToFunction - Add to the distribution function with user callback
+ DMPlexLandauAccess - Acess to the distribution function with user callback
 
  Collective on dm
 
@@ -2223,42 +2223,41 @@ PetscErrorCode DMPlexLandauCreateVelocitySpace(MPI_Comm comm, PetscInt dim, cons
  .keywords: mesh
  .seealso: `DMPlexLandauCreateVelocitySpace()`
  @*/
-PetscErrorCode DMPlexLandauAddToFunction(DM pack, Vec X, PetscErrorCode (*func)(DM, Vec, PetscInt, PetscInt, PetscInt, void *), void *user_ctx)
+PetscErrorCode DMPlexLandauAccess(DM pack, Vec X, PetscErrorCode (*func)(DM, Vec, PetscInt, PetscInt, PetscInt, void *), void *user_ctx)
 {
   LandauCtx *ctx;
   PetscFunctionBegin;
   PetscCall(DMGetApplicationContext(pack, &ctx)); // uses ctx->num_grids; ctx->plex[grid]; ctx->batch_sz; ctx->mat_offset
   for (PetscInt grid = 0; grid < ctx->num_grids; grid++) {
-    PetscInt dim, n, Nf = ctx->species_offset[grid + 1] - ctx->species_offset[grid];
-    Vec      vec;
-    DM       dm;
-    PetscFE  fe;
+    PetscInt dim, n;
     PetscCall(DMGetDimension(pack, &dim));
-    PetscCall(DMClone(ctx->plex[grid], &dm));
-    PetscCall(PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, PETSC_FALSE, NULL, PETSC_DECIDE, &fe));
-    PetscCall(PetscObjectSetName((PetscObject)fe, "species"));
-    PetscCall(DMSetField(dm, 0, NULL, (PetscObject)fe));
-    PetscCall(PetscFEDestroy(&fe));
-    PetscCall(DMSetApplicationContext(dm, ctx)); // does the user want this?
-    PetscCall(DMCreateGlobalVector(dm, &vec));
-    PetscCall(VecGetSize(vec, &n));
-    for (PetscInt b_id = 0; b_id < ctx->batch_sz; b_id++) {
-      const PetscInt moffset = LAND_MOFFSET(b_id, grid, ctx->batch_sz, ctx->num_grids, ctx->mat_offset);
-      for (PetscInt sp = ctx->species_offset[grid], i0 = 0; sp < ctx->species_offset[grid + 1]; sp++, i0++) {
+    for (PetscInt sp = ctx->species_offset[grid], i0 = 0; sp < ctx->species_offset[grid + 1]; sp++, i0++) {
+      Vec      vec;
+      PetscInt vf[1] = {i0};
+      IS       vis;
+      DM       vdm;
+      PetscCall(DMCreateSubDM(ctx->plex[grid], 1, vf, &vis, &vdm));
+      PetscCall(DMSetApplicationContext(vdm, ctx)); // the user might want this
+      PetscCall(DMCreateGlobalVector(vdm, &vec));
+      PetscCall(VecGetSize(vec, &n));
+      for (PetscInt b_id = 0; b_id < ctx->batch_sz; b_id++) {
+        const PetscInt moffset = LAND_MOFFSET(b_id, grid, ctx->batch_sz, ctx->num_grids, ctx->mat_offset);
         PetscCall(VecZeroEntries(vec));
         /* Add your data with 'dm' for species 'sp' to 'vec' */
-        PetscCall(func(dm, vec, i0, grid, b_id, user_ctx));
+        PetscCall(func(vdm, vec, i0, grid, b_id, user_ctx));
         /* add to global */
         PetscScalar const *values;
+        const PetscInt    *offsets;
         PetscCall(VecGetArrayRead(vec, &values));
-        for (int i = 0, idx = moffset + i0; i < n; i++, idx += Nf) { // works for Q1 & Q2 only -- TODO
-          PetscCall(VecSetValue(X, idx, values[i], ADD_VALUES));
-        }
+        PetscCall(ISGetIndices(vis, &offsets));
+        for (int i = 0; i < n; i++) { PetscCall(VecSetValue(X, moffset + offsets[i], values[i], ADD_VALUES)); }
         PetscCall(VecRestoreArrayRead(vec, &values));
-      }
-    } // batch
-    PetscCall(VecDestroy(&vec));
-    PetscCall(DMDestroy(&dm));
+        PetscCall(ISRestoreIndices(vis, &offsets));
+      } // batch
+      PetscCall(VecDestroy(&vec));
+      PetscCall(ISDestroy(&vis));
+      PetscCall(DMDestroy(&vdm));
+    }
   } // grid
   PetscFunctionReturn(0);
 }
