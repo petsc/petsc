@@ -1,6 +1,16 @@
 #include "../mmgcommon.h" /*I      "petscdmplex.h"   I*/
 #include <mmg/libmmg.h>
 
+PetscBool  MmgCite       = PETSC_FALSE;
+const char MmgCitation[] = "@article{DAPOGNY2014358,\n"
+                           "  title   = {Three-dimensional adaptive domain remeshing, implicit domain meshing, and applications to free and moving boundary problems},\n"
+                           "  journal = {Journal of Computational Physics},\n"
+                           "  author  = {C. Dapogny and C. Dobrzynski and P. Frey},\n"
+                           "  volume  = {262},\n"
+                           "  pages   = {358--378},\n"
+                           "  doi     = {10.1016/j.jcp.2014.01.005},\n"
+                           "  year    = {2014}\n}\n";
+
 PETSC_EXTERN PetscErrorCode DMAdaptMetric_Mmg_Plex(DM dm, Vec vertexMetric, DMLabel bdLabel, DMLabel rgLabel, DM *dmNew) {
   MPI_Comm           comm;
   const char        *bdName = "_boundary_";
@@ -23,6 +33,7 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Mmg_Plex(DM dm, Vec vertexMetric, DMLa
   MMG5_pSol          mmg_metric = NULL;
 
   PetscFunctionBegin;
+  PetscCall(PetscCitationsRegister(MmgCitation, &MmgCite));
   PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
   if (bdLabel) {
     PetscCall(PetscObjectGetName((PetscObject)bdLabel, &bdLabelName));
