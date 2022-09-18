@@ -121,7 +121,6 @@ PetscErrorCode PetscHeaderDestroy_Private(PetscObject obj, PetscBool clear_for_r
     obj->bops->queryfunction   = PetscObjectQueryFunction_Petsc;
 
     /* reset quantities, in order of appearance in _p_PetscObject */
-    obj->type     = 0;
     obj->id       = PetscObjectNewId_Internal();
     obj->refct    = 1;
     obj->tablevel = 0;
