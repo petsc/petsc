@@ -145,7 +145,7 @@ typedef enum {
 #define PetscOffloadUnallocated(m) ((m) == PETSC_OFFLOAD_UNALLOCATED)
 #define PetscOffloadHost(m)        (((m)&PETSC_OFFLOAD_CPU) == PETSC_OFFLOAD_CPU)
 #define PetscOffloadDevice(m)      (((m)&PETSC_OFFLOAD_GPU) == PETSC_OFFLOAD_GPU)
-#define PetscOffloadBoth(m)        ((m) != PETSC_OFFLOAD_UNALLOCATED)
+#define PetscOffloadBoth(m)        ((m) == PETSC_OFFLOAD_BOTH)
 
 #if defined(__cplusplus)
 #if PETSC_SHOULD_SILENCE_GCC_TAUTOLOGICAL_COMPARE_WARNING
@@ -163,6 +163,12 @@ static_assert(!PetscOffloadDevice(PETSC_OFFLOAD_CPU), "");
 static_assert(PetscOffloadDevice(PETSC_OFFLOAD_GPU), "");
 static_assert(PetscOffloadDevice(PETSC_OFFLOAD_BOTH), "");
 static_assert(!PetscOffloadDevice(PETSC_OFFLOAD_KOKKOS), "");
+
+static_assert(PetscOffloadBoth(PETSC_OFFLOAD_BOTH), "");
+static_assert(!PetscOffloadBoth(PETSC_OFFLOAD_CPU), "");
+static_assert(!PetscOffloadBoth(PETSC_OFFLOAD_GPU), "");
+static_assert(!PetscOffloadBoth(PETSC_OFFLOAD_GPU), "");
+static_assert(!PetscOffloadBoth(PETSC_OFFLOAD_KOKKOS), "");
 #if PETSC_SHOULD_SILENCE_GCC_TAUTOLOGICAL_COMPARE_WARNING
 #pragma GCC diagnostic pop
 #endif
