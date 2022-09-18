@@ -1,4 +1,4 @@
--include ../../../../../petsckdir.mk
+-include ../../../../../petscdir.mk
 
 SOURCEH	  =
 SOURCEC   = dlregissf.c sfregi.c sf.c sftype.c vscat.c

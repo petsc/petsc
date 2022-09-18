@@ -1,7 +1,7 @@
 -include ../../../../petscdir.mk
 
 LOCDIR		 = src/tao/unconstrained/tutorials/
-MANSEC		 =
+MANSEC		 = Tao
 DOCS		 =
 DIRS		 =
 CLEANFILES       = eptorsion1 eptorsion2 minsurf2 rosenbrock1 eptorsion2f rosenbrock1f rosenbrock2 rosenbrock3

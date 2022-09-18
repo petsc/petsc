@@ -1,4 +1,4 @@
--include ../../../petsckdir.mk
+-include ../../../petscdir.mk
 
 SOURCEC = mal.c   mem.c   mtr.c  mhbw.c
 SOURCEF =

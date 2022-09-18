@@ -535,8 +535,8 @@ manexamples:
 #
 # Note: PETSC_DOC_OUT_ROOT_PLACEHOLDER must match the term used elsewhere in doc/
 manimplementations:
-	-@git grep "struct\s\+_[pn]_[^\s]\+.*{" -- *.cu *.c *.h *.cxx | grep -v -e ";" -e "/tests/" -e "/tutorials/" > implsClassAll.txt ; \
-  git grep -n "^\(static \)\?\(PETSC_EXTERN \)\?\(PETSC_INTERN \)\?\(extern \)\?PetscErrorCode \+[^_ ]\+_[^_ ]\+(" -- '*/impls/*.c' '*/impls/*.cu' '*/impls/*.cxx' '*/impls/*.h' | grep -v -e ";" -e "_[Pp]rivate" > implsFuncAll.txt ; \
+	-@git grep "struct\s\+_[pn]_[^\s]\+.*{" -- *.cpp *.cu *.c *.h *.cxx | grep -v -e ";" -e "/tests/" -e "/tutorials/" > implsClassAll.txt ; \
+  git grep -n "^\(static \)\?\(PETSC_EXTERN \)\?\(PETSC_INTERN \)\?\(extern \)\?PetscErrorCode \+[^_ ]\+_[^_ ]\+(" -- '*/impls/*.c' '*/impls/*.cpp' '*/impls/*.cu' '*/impls/*.cxx' '*/impls/*.h' | grep -v -e ";" -e "_[Pp]rivate" > implsFuncAll.txt ; \
   for i in ${LOC}/docs/manualpages/*/*.md foo; do \
        if [ "$$i" != "foo" ] ; then \
           itemName=`basename $$i .md`; \

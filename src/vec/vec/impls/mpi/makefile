@@ -1,4 +1,4 @@
--include ../../../../../petsckdir.mk
+-include ../../../../../petscdir.mk
 
 SOURCEC  = pbvec.c pdvec.c pvec2.c vmpicr.c commonmpvec.c
 SOURCEF  =

@@ -1,4 +1,4 @@
--include ../../../../petsckdir.mk
+-include ../../../../petscdir.mk
 
 MANSEC   = TS
 LOCDIR   = src/ts/impls/explicit/

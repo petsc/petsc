@@ -1,4 +1,4 @@
--include ../../../../../../petsckdir.mk
+-include ../../../../../../petscdir.mk
 #requirespackage  'PETSC_HAVE_HDF5'
 
 CFLAGS    = ${HDF5_INCLUDE}

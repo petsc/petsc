@@ -1,4 +1,4 @@
--include ../../../petsckdir.mk
+-include ../../../petscdir.mk
 
 SOURCEH   = pfimpl.h ../../../include/petscpf.h
 DIRS      = interface impls

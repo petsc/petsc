@@ -1,4 +1,4 @@
--include ../../pde_../../petsckdir.mk
+-include ../../pde_../../petscdir.mk
 
 DIRS     = lcl
 LOCDIR   = src/tao/pde_constrained/impls/

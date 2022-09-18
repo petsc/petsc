@@ -1,7 +1,7 @@
 -include ../../../../petscdir.mk
 
 LOCDIR		 = src/tao/bound/tutorials/
-MANSEC		 =
+MANSEC		 = Tao
 DOCS		 =
 DIRS		 =
 CLEANFILES       = plate2 jbearing2 plate2f jbearing2f
