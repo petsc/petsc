@@ -2057,6 +2057,8 @@ PetscErrorCode VecGetPinnedMemoryMin(Vec v, size_t *mbytes) {
 @*/
 PetscErrorCode VecGetOffloadMask(Vec v, PetscOffloadMask *mask) {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
+  PetscValidPointer(mask, 2);
   *mask = v->offloadmask;
   PetscFunctionReturn(0);
 }
