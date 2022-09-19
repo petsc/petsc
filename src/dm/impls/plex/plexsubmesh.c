@@ -3286,7 +3286,7 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
         PetscCall(DMPlexGetSupport(dm, point, &support));
         PetscCall(DMPlexGetSupportSize(dm, point, &supportSize));
         for (s = 0; s < supportSize; ++s) {
-          PetscBool isHybrid;
+          PetscBool isHybrid = PETSC_FALSE;
 
           PetscCall(DMPlexCellIsHybrid_Internal(dm, support[s], &isHybrid));
           if (!isHybrid) continue;
@@ -3568,7 +3568,7 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Uninterpolated(DM dm, PetscBoo
     const PetscInt  cell    = subCells[c];
     const PetscInt  subcell = c;
     const PetscInt *cone, *cells;
-    PetscBool       isHybrid;
+    PetscBool       isHybrid = PETSC_FALSE;
     PetscInt        numCells, subVertex, p, v;
 
     PetscCall(DMPlexCellIsHybrid_Internal(dm, cell, &isHybrid));
@@ -3585,7 +3585,7 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Uninterpolated(DM dm, PetscBoo
     PetscCheck(numCells == 2,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cohesive cells should separate two cells"); */
     for (p = 0; p < numCells; ++p) {
       PetscInt  negsubcell;
-      PetscBool isHybrid;
+      PetscBool isHybrid = PETSC_FALSE;
 
       PetscCall(DMPlexCellIsHybrid_Internal(dm, cells[p], &isHybrid));
       if (isHybrid) continue;
