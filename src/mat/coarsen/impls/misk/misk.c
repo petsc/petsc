@@ -64,7 +64,8 @@ static PetscErrorCode MatCoarsenApply_MISK_private(IS perm, const PetscInt misk,
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCall(PetscInfo(Gmat, "misk %d\n", (int)misk));
   /* make a copy of the graph, this gets destroyed in iterates */
-  PetscCall(MatDuplicate(Gmat, MAT_COPY_VALUES, &cMat));
+  if (misk > 1) PetscCall(MatDuplicate(Gmat, MAT_COPY_VALUES, &cMat));
+  else cMat = Gmat;
   for (PetscInt iterIdx = 0; iterIdx < misk; iterIdx++) {
     Mat_SeqAIJ       *matA, *matB = NULL;
     Mat_MPIAIJ       *mpimat = NULL;
@@ -259,7 +260,6 @@ static PetscErrorCode MatCoarsenApply_MISK_private(IS perm, const PetscInt misk,
     PetscCall(MatSetSizes(Prols[iterIdx], nloc, nselected, PETSC_DETERMINE, PETSC_DETERMINE));
     PetscCall(MatSeqAIJSetPreallocation(Prols[iterIdx], 1, NULL));
     PetscCall(MatMPIAIJSetPreallocation(Prols[iterIdx], 1, NULL, 1, NULL));
-    //PetscCall(MatCreateAIJ(comm, nloc, nselected, PETSC_DETERMINE, PETSC_DETERMINE, 1, NULL, 1, NULL, &Prols[iterIdx]));
     {
       PetscCDIntNd *pos, *pos2;
       PetscInt      colIndex, Iend, fgid;
@@ -285,9 +285,7 @@ static PetscErrorCode MatCoarsenApply_MISK_private(IS perm, const PetscInt misk,
       PetscCall(MatPtAP(cMat, Prols[iterIdx], MAT_INITIAL_MATRIX, PETSC_DEFAULT, &new_mat));
       PetscCall(MatDestroy(&cMat));
       cMat = new_mat; // next iter
-    } else {
-      PetscCall(MatDestroy(&cMat));
-    }
+    } else if (cMat != Gmat) PetscCall(MatDestroy(&cMat));
     // cleanup
     PetscCall(PetscCDDestroy(agg_lists));
   } /* MIS-k iteration */
