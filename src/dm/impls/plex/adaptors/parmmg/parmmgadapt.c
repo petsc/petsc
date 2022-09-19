@@ -1,6 +1,15 @@
 #include "../mmgcommon.h" /*I      "petscdmplex.h"   I*/
 #include <parmmg/libparmmg.h>
 
+PetscBool  ParMmgCite       = PETSC_FALSE;
+const char ParMmgCitation[] = "@techreport{cirrottola:hal-02386837,\n"
+                              "  title       = {Parallel unstructured mesh adaptation using iterative remeshing and repartitioning},\n"
+                              "  institution = {Inria Bordeaux},\n"
+                              "  author      = {L. Cirrottola and A. Froehly},\n"
+                              "  number      = {9307},\n"
+                              "  note        = {\\url{https://hal.inria.fr/hal-02386837}},\n"
+                              "  year        = {2019}\n}\n";
+
 PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM dm, Vec vertexMetric, DMLabel bdLabel, DMLabel rgLabel, DM *dmNew) {
   MPI_Comm           comm;
   const char        *bdName = "_boundary_";
@@ -30,6 +39,7 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM dm, Vec vertexMetric, D
   PMMG_pParMesh      parmesh = NULL;
 
   PetscFunctionBegin;
+  PetscCall(PetscCitationsRegister(ParMmgCitation, &ParMmgCite));
   PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
   PetscCallMPI(MPI_Comm_size(comm, &numProcs));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
