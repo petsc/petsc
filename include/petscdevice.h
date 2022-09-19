@@ -262,7 +262,7 @@ M*/
 
   Synopsis:
   #include <petscdevice.h>
-  PetscErrorCode PetscDeviceArrayCopy(PetscDeviceContext dctx, void *PETSC_RESTRICT dest, const void *PETSC_RESTRICT src, size_t n, PetscDeviceCopyMode mode)
+  PetscErrorCode PetscDeviceArrayCopy(PetscDeviceContext dctx, void *dest, const void *src, size_t n)
 
   Not Collective, Asynchronous, Auto-dependency aware
 
@@ -284,10 +284,10 @@ M*/
   PetscInt *to,*from;
 
   // correct
-  PetscDeviceArrayCopy(dctx,to,from,n,PETSC_DEVICE_COPY_AUTO);
+  PetscDeviceArrayCopy(dctx,to,from,n);
 
   // incorrect
-  PetscDeviceArrayCopy(dctx,to,from,n*sizeof(*from),PETSC_DEVICE_COPY_AUTO);
+  PetscDeviceArrayCopy(dctx,to,from,n*sizeof(*from));
 .ve
 
   See `PetscDeviceMemcpy()` for further discussion.
@@ -306,7 +306,7 @@ M*/
 
   Synopsis:
   #include <petscdevice.h>
-  PetscErrorCode PetscDeviceArrayZero(PetscDeviceContext dctx, PetscMemType mtype, void *ptr, size_t n)
+  PetscErrorCode PetscDeviceArrayZero(PetscDeviceContext dctx, void *ptr, size_t n)
 
   Not Collective, Asynchronous, Auto-dependency aware
 
@@ -325,10 +325,10 @@ M*/
   PetscInt *ptr;
 
   // correct
-  PetscDeviceArrayZero(dctx,PETSC_MEMTYPE_DEVICE,ptr,n);
+  PetscDeviceArrayZero(dctx,ptr,n);
 
   // incorrect
-  PetscDeviceArrayZero(dctx,PETSC_MEMTYPE_DEVICE,ptr,n*sizeof(*ptr));
+  PetscDeviceArrayZero(dctx,ptr,n*sizeof(*ptr));
 .ve
 
   See `PetscDeviceMemset()` for futher discussion.
