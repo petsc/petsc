@@ -2309,15 +2309,35 @@ int initLinearWave(EulerNode *ux, const PetscReal gamma, const PetscReal coord[]
       requires: exodusii
       args: -ufv_vtk_interval 0 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad.exo
 
-    # 2D Shallow water
+  # 2D Shallow water
+  testset:
+    args: -physics sw -ufv_vtk_interval 0 -dm_plex_adj_cone -dm_plex_adj_closure 0
+
     test:
       suffix: sw_0
       requires: exodusii
-      args: -ufv_vtk_interval 0 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/annulus-20.exo -bc_wall 100,101 -physics sw -ufv_cfl 5 -petscfv_type   leastsquares -petsclimiter_type sin -ts_max_time 1 -ts_ssp_type rks2 -ts_ssp_nstages 10 -monitor height,energy
+      args: -bc_wall 100,101 -ufv_cfl 5 -petscfv_type leastsquares -petsclimiter_type sin \
+            -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/annulus-20.exo \
+            -ts_max_time 1 -ts_ssp_type rks2 -ts_ssp_nstages 10 \
+            -monitor height,energy
+
+    test:
+      suffix: sw_1
+      nsize: 2
+      args: -bc_wall 1,3 -ufv_cfl 5 -petsclimiter_type sin \
+            -dm_plex_shape annulus -dm_plex_simplex 0 -dm_plex_box_faces 24,12 -dm_plex_box_lower 0,1 -dm_plex_box_upper 1,3 -dm_distribute_overlap 1 \
+            -ts_max_time 1 -ts_ssp_type rks2 -ts_ssp_nstages 10 \
+            -monitor height,energy
 
     test:
       suffix: sw_hll
-      args: -ufv_vtk_interval 0 -bc_wall 1,2,3,4 -physics sw -ufv_cfl 3 -petscfv_type leastsquares -petsclimiter_type sin -ts_max_steps 5 -ts_ssp_type rks2 -ts_ssp_nstages 10 -monitor height,energy -grid_bounds 0,5,0,5 -dm_plex_box_faces 25,25 -sw_riemann hll
+      args: -sw_riemann hll -bc_wall 1,2,3,4 -ufv_cfl 3 -petscfv_type leastsquares -petsclimiter_type sin \
+            -grid_bounds 0,5,0,5 -dm_plex_simplex 0 -dm_plex_box_faces 25,25 \
+            -ts_max_steps 5 -ts_ssp_type rks2 -ts_ssp_nstages 10 \
+            -monitor height,energy
+
+  testset:
+    args: -dm_plex_adj_cone -dm_plex_adj_closure 0 -dm_plex_simplex 0 -dm_plex_box_faces 1,1,1
 
     # 2D Advection: p4est
     test:
