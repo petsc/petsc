@@ -1602,6 +1602,7 @@ static PetscErrorCode DMPlexDrawCell(DM dm, PetscDraw draw, PetscInt cell, const
     PetscCall(PetscDrawLine(draw, PetscRealPart(coords[4]), PetscRealPart(coords[5]), PetscRealPart(coords[6]), PetscRealPart(coords[7]), PETSC_DRAW_BLACK));
     PetscCall(PetscDrawLine(draw, PetscRealPart(coords[6]), PetscRealPart(coords[7]), PetscRealPart(coords[0]), PetscRealPart(coords[1]), PETSC_DRAW_BLACK));
     break;
+  case DM_POLYTOPE_FV_GHOST: break;
   default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot draw cells of type %s", DMPolytopeTypes[ct]);
   }
   PetscFunctionReturn(0);
