@@ -951,8 +951,14 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
               xio[0] = xi[1];
               xio[1] = -xi[0];
               break;
-            case 2: xio[0] = -xi[0]; xio[1] = -xi[1];
-            case 3: xio[0] = -xi[1]; xio[1] = xi[0];
+            case 2:
+              xio[0] = -xi[0];
+              xio[1] = -xi[1];
+              break;
+            case 3:
+              xio[0] = -xi[1];
+              xio[1] = xi[0];
+              break;
             case 0:
             default:
               xio[0] = xi[0];

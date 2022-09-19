@@ -258,9 +258,9 @@ PetscErrorCode DMDAGetElementsSizes(DM da, PetscInt *mx, PetscInt *my, PetscInt 
   PetscCall(DMGetDimension(da, &dim));
   switch (dim) {
   case 3:
-    if (mz) *mz = ze - zs - 1;
+    if (mz) *mz = ze - zs - 1; /* fall through */
   case 2:
-    if (my) *my = ye - ys - 1;
+    if (my) *my = ye - ys - 1; /* fall through */
   case 1:
     if (mx) *mx = xe - xs - 1;
     break;

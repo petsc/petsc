@@ -450,6 +450,7 @@ PetscErrorCode PetscSpaceCreateSubspace(PetscSpace origSpace, PetscDualSpace dua
     if (Jx) subsp->Jx_alloc = Jx;
     if (u) subsp->u_alloc = u;
     if (Ju) subsp->Ju_alloc = Ju;
+    /* fall through */
   case PETSC_USE_POINTER:
     if (x) subsp->x = x;
     if (Jx) subsp->Jx = Jx;

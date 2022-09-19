@@ -2444,8 +2444,8 @@ static PetscErrorCode DMPlexCreateSphereMesh_Internal(DM dm, PetscInt dim, Petsc
       PetscCall(DMPlexSymmetrize(dm));
       PetscCall(DMPlexStratify(dm));
       PetscCall(PetscFree(graph));
-      break;
     }
+    break;
   default: SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unsupported dimension for sphere: %" PetscInt_FMT, dim);
   }
   /* Create coordinates */

@@ -114,17 +114,17 @@ PetscErrorCode VecMDot_Seq(Vec xin, PetscInt nv, const Vec yin[], PetscScalar *z
       x2 = x[2];
       sum0 += x2 * PetscConj(yy0[2]);
       sum1 += x2 * PetscConj(yy1[2]);
-      sum2 += x2 * PetscConj(yy2[2]);
+      sum2 += x2 * PetscConj(yy2[2]); /* fall through */
     case 2:
       x1 = x[1];
       sum0 += x1 * PetscConj(yy0[1]);
       sum1 += x1 * PetscConj(yy1[1]);
-      sum2 += x1 * PetscConj(yy2[1]);
+      sum2 += x1 * PetscConj(yy2[1]); /* fall through */
     case 1:
       x0 = x[0];
       sum0 += x0 * PetscConj(yy0[0]);
       sum1 += x0 * PetscConj(yy1[0]);
-      sum2 += x0 * PetscConj(yy2[0]);
+      sum2 += x0 * PetscConj(yy2[0]); /* fall through */
     case 0:
       x += j_rem;
       yy0 += j_rem;
@@ -162,15 +162,15 @@ PetscErrorCode VecMDot_Seq(Vec xin, PetscInt nv, const Vec yin[], PetscScalar *z
     case 3:
       x2 = x[2];
       sum0 += x2 * PetscConj(yy0[2]);
-      sum1 += x2 * PetscConj(yy1[2]);
+      sum1 += x2 * PetscConj(yy1[2]); /* fall through */
     case 2:
       x1 = x[1];
       sum0 += x1 * PetscConj(yy0[1]);
-      sum1 += x1 * PetscConj(yy1[1]);
+      sum1 += x1 * PetscConj(yy1[1]); /* fall through */
     case 1:
       x0 = x[0];
       sum0 += x0 * PetscConj(yy0[0]);
-      sum1 += x0 * PetscConj(yy1[0]);
+      sum1 += x0 * PetscConj(yy1[0]); /* fall through */
     case 0:
       x += j_rem;
       yy0 += j_rem;
@@ -200,9 +200,9 @@ PetscErrorCode VecMDot_Seq(Vec xin, PetscInt nv, const Vec yin[], PetscScalar *z
   case 1:
     PetscCall(VecGetArrayRead(yy[0], &yy0));
     switch (j_rem = j & 0x3) {
-    case 3: x2 = x[2]; sum0 += x2 * PetscConj(yy0[2]);
-    case 2: x1 = x[1]; sum0 += x1 * PetscConj(yy0[1]);
-    case 1: x0 = x[0]; sum0 += x0 * PetscConj(yy0[0]);
+    case 3: x2 = x[2]; sum0 += x2 * PetscConj(yy0[2]); /* fall through */
+    case 2: x1 = x[1]; sum0 += x1 * PetscConj(yy0[1]); /* fall through */
+    case 1: x0 = x[0]; sum0 += x0 * PetscConj(yy0[0]); /* fall through */
     case 0:
       x += j_rem;
       yy0 += j_rem;
@@ -243,19 +243,19 @@ PetscErrorCode VecMDot_Seq(Vec xin, PetscInt nv, const Vec yin[], PetscScalar *z
       sum0 += x2 * PetscConj(yy0[2]);
       sum1 += x2 * PetscConj(yy1[2]);
       sum2 += x2 * PetscConj(yy2[2]);
-      sum3 += x2 * PetscConj(yy3[2]);
+      sum3 += x2 * PetscConj(yy3[2]); /* fall through */
     case 2:
       x1 = x[1];
       sum0 += x1 * PetscConj(yy0[1]);
       sum1 += x1 * PetscConj(yy1[1]);
       sum2 += x1 * PetscConj(yy2[1]);
-      sum3 += x1 * PetscConj(yy3[1]);
+      sum3 += x1 * PetscConj(yy3[1]); /* fall through */
     case 1:
       x0 = x[0];
       sum0 += x0 * PetscConj(yy0[0]);
       sum1 += x0 * PetscConj(yy1[0]);
       sum2 += x0 * PetscConj(yy2[0]);
-      sum3 += x0 * PetscConj(yy3[0]);
+      sum3 += x0 * PetscConj(yy3[0]); /* fall through */
     case 0:
       x += j_rem;
       yy0 += j_rem;
@@ -329,17 +329,17 @@ PetscErrorCode VecMTDot_Seq(Vec xin, PetscInt nv, const Vec yin[], PetscScalar *
       x2 = x[2];
       sum0 += x2 * yy0[2];
       sum1 += x2 * yy1[2];
-      sum2 += x2 * yy2[2];
+      sum2 += x2 * yy2[2]; /* fall through */
     case 2:
       x1 = x[1];
       sum0 += x1 * yy0[1];
       sum1 += x1 * yy1[1];
-      sum2 += x1 * yy2[1];
+      sum2 += x1 * yy2[1]; /* fall through */
     case 1:
       x0 = x[0];
       sum0 += x0 * yy0[0];
       sum1 += x0 * yy1[0];
-      sum2 += x0 * yy2[0];
+      sum2 += x0 * yy2[0]; /* fall through */
     case 0:
       x += j_rem;
       yy0 += j_rem;
@@ -377,15 +377,15 @@ PetscErrorCode VecMTDot_Seq(Vec xin, PetscInt nv, const Vec yin[], PetscScalar *
     case 3:
       x2 = x[2];
       sum0 += x2 * yy0[2];
-      sum1 += x2 * yy1[2];
+      sum1 += x2 * yy1[2]; /* fall through */
     case 2:
       x1 = x[1];
       sum0 += x1 * yy0[1];
-      sum1 += x1 * yy1[1];
+      sum1 += x1 * yy1[1]; /* fall through */
     case 1:
       x0 = x[0];
       sum0 += x0 * yy0[0];
-      sum1 += x0 * yy1[0];
+      sum1 += x0 * yy1[0]; /* fall through */
     case 0:
       x += j_rem;
       yy0 += j_rem;
@@ -415,9 +415,9 @@ PetscErrorCode VecMTDot_Seq(Vec xin, PetscInt nv, const Vec yin[], PetscScalar *
   case 1:
     PetscCall(VecGetArrayRead(yy[0], &yy0));
     switch (j_rem = j & 0x3) {
-    case 3: x2 = x[2]; sum0 += x2 * yy0[2];
-    case 2: x1 = x[1]; sum0 += x1 * yy0[1];
-    case 1: x0 = x[0]; sum0 += x0 * yy0[0];
+    case 3: x2 = x[2]; sum0 += x2 * yy0[2]; /* fall through */
+    case 2: x1 = x[1]; sum0 += x1 * yy0[1]; /* fall through */
+    case 1: x0 = x[0]; sum0 += x0 * yy0[0]; /* fall through */
     case 0:
       x += j_rem;
       yy0 += j_rem;
@@ -458,19 +458,19 @@ PetscErrorCode VecMTDot_Seq(Vec xin, PetscInt nv, const Vec yin[], PetscScalar *
       sum0 += x2 * yy0[2];
       sum1 += x2 * yy1[2];
       sum2 += x2 * yy2[2];
-      sum3 += x2 * yy3[2];
+      sum3 += x2 * yy3[2]; /* fall through */
     case 2:
       x1 = x[1];
       sum0 += x1 * yy0[1];
       sum1 += x1 * yy1[1];
       sum2 += x1 * yy2[1];
-      sum3 += x1 * yy3[1];
+      sum3 += x1 * yy3[1]; /* fall through */
     case 1:
       x0 = x[0];
       sum0 += x0 * yy0[0];
       sum1 += x0 * yy1[0];
       sum2 += x0 * yy2[0];
-      sum3 += x0 * yy3[0];
+      sum3 += x0 * yy3[0]; /* fall through */
     case 0:
       x += j_rem;
       yy0 += j_rem;

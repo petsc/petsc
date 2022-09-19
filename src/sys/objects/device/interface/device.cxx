@@ -173,6 +173,7 @@ PetscErrorCode PetscDeviceConfigure(PetscDevice device) {
     goto error;
   case PETSC_DEVICE_SYCL:
     if (PetscDefined(HAVE_SYCL)) break;
+    goto error;
   default:
   error:
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "PETSc was not configured for PetscDeviceType %s", PetscDeviceTypes[dtype]);

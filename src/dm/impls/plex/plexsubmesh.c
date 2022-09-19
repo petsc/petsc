@@ -11,8 +11,8 @@ static PetscErrorCode DMPlexCellIsHybrid_Internal(DM dm, PetscInt p, PetscBool *
   case DM_POLYTOPE_POINT_PRISM_TENSOR:
   case DM_POLYTOPE_SEG_PRISM_TENSOR:
   case DM_POLYTOPE_TRI_PRISM_TENSOR:
-  case DM_POLYTOPE_QUAD_PRISM_TENSOR: *isHybrid = PETSC_TRUE;
-  default: *isHybrid = PETSC_FALSE;
+  case DM_POLYTOPE_QUAD_PRISM_TENSOR: *isHybrid = PETSC_TRUE; break;
+  default: *isHybrid = PETSC_FALSE; break;
   }
   PetscFunctionReturn(0);
 }

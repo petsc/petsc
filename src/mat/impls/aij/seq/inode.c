@@ -3574,10 +3574,10 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A, Vec bb, PetscReal omega, MatSORType fl
           sz  = ii[row + 1] - ii[row];
           idx = a->j + ii[row];
           switch (sizes[i]) {
-          case 5: v5 = a->a + ii[row - 4];
-          case 4: /* fall through */ v4 = a->a + ii[row - 3];
-          case 3: v3 = a->a + ii[row - 2];
-          case 2: v2 = a->a + ii[row - 1];
+          case 5: v5 = a->a + ii[row - 4]; /* fall through */
+          case 4: v4 = a->a + ii[row - 3]; /* fall through */
+          case 3: v3 = a->a + ii[row - 2]; /* fall through */
+          case 2: v2 = a->a + ii[row - 1]; /* fall through */
           case 1: v1 = a->a + ii[row]; break;
           default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Inode size %" PetscInt_FMT " not supported", sizes[i]);
           }
@@ -3586,19 +3586,19 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A, Vec bb, PetscReal omega, MatSORType fl
           sz  = ii[row + 1] - diag[row] - 1;
           idx = a->j + diag[row] + 1;
           switch (sizes[i]) {
-          case 5: v5 = a->a + diag[row - 4] + 5;
-          case 4: /* fall through */ v4 = a->a + diag[row - 3] + 4;
-          case 3: v3 = a->a + diag[row - 2] + 3;
-          case 2: v2 = a->a + diag[row - 1] + 2;
+          case 5: v5 = a->a + diag[row - 4] + 5; /* fall through */
+          case 4: v4 = a->a + diag[row - 3] + 4; /* fall through */
+          case 3: v3 = a->a + diag[row - 2] + 3; /* fall through */
+          case 2: v2 = a->a + diag[row - 1] + 2; /* fall through */
           case 1: v1 = a->a + diag[row] + 1;
           }
         }
         /* set sum */
         switch (sizes[i]) {
-        case 5: sum5 = xb[row - 4];
-        case 4: /* fall through */ sum4 = xb[row - 3];
-        case 3: sum3 = xb[row - 2];
-        case 2: sum2 = xb[row - 1];
+        case 5: sum5 = xb[row - 4]; /* fall through */
+        case 4: sum4 = xb[row - 3]; /* fall through */
+        case 3: sum3 = xb[row - 2]; /* fall through */
+        case 2: sum2 = xb[row - 1]; /* fall through */
         case 1:
           /* note that sum1 is associated with the last row */
           sum1 = xb[row];
@@ -3611,10 +3611,10 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A, Vec bb, PetscReal omega, MatSORType fl
           tmp0 = x[i1];
           tmp1 = x[i2];
           switch (sizes[i]) {
-          case 5: sum5 -= v5[0] * tmp0 + v5[1] * tmp1; v5 += 2;
-          case 4: /* fall through */ sum4 -= v4[0] * tmp0 + v4[1] * tmp1; v4 += 2;
-          case 3: sum3 -= v3[0] * tmp0 + v3[1] * tmp1; v3 += 2;
-          case 2: sum2 -= v2[0] * tmp0 + v2[1] * tmp1; v2 += 2;
+          case 5: sum5 -= v5[0] * tmp0 + v5[1] * tmp1; v5 += 2; /* fall through */
+          case 4: sum4 -= v4[0] * tmp0 + v4[1] * tmp1; v4 += 2; /* fall through */
+          case 3: sum3 -= v3[0] * tmp0 + v3[1] * tmp1; v3 += 2; /* fall through */
+          case 2: sum2 -= v2[0] * tmp0 + v2[1] * tmp1; v2 += 2; /* fall through */
           case 1: sum1 -= v1[0] * tmp0 + v1[1] * tmp1; v1 += 2;
           }
         }
@@ -3622,10 +3622,10 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A, Vec bb, PetscReal omega, MatSORType fl
         if (n == sz - 1) {
           tmp0 = x[*idx];
           switch (sizes[i]) {
-          case 5: sum5 -= *v5 * tmp0;
-          case 4: /* fall through */ sum4 -= *v4 * tmp0;
-          case 3: sum3 -= *v3 * tmp0;
-          case 2: sum2 -= *v2 * tmp0;
+          case 5: sum5 -= *v5 * tmp0; /* fall through */
+          case 4: sum4 -= *v4 * tmp0; /* fall through */
+          case 3: sum3 -= *v3 * tmp0; /* fall through */
+          case 2: sum2 -= *v2 * tmp0; /* fall through */
           case 1: sum1 -= *v1 * tmp0;
           }
         }
