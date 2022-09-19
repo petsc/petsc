@@ -2495,14 +2495,14 @@ PetscErrorCode MatMult(Mat mat, Vec x, Vec y) {
   PetscCheck(mat->cmap->n == x->map->n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Mat mat,Vec x: local dim %" PetscInt_FMT " %" PetscInt_FMT, mat->cmap->n, x->map->n);
   PetscCheck(mat->rmap->n == y->map->n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Mat mat,Vec y: local dim %" PetscInt_FMT " %" PetscInt_FMT, mat->rmap->n, y->map->n);
   PetscCall(VecSetErrorIfLocked(y, 3));
-  if (mat->erroriffailure) PetscCall(VecValidValues(x, 2, PETSC_TRUE));
+  if (mat->erroriffailure) PetscCall(VecValidValues_Internal(x, 2, PETSC_TRUE));
   MatCheckPreallocated(mat, 1);
 
   PetscCall(VecLockReadPush(x));
   PetscCall(PetscLogEventBegin(MAT_Mult, mat, x, y, 0));
   PetscUseTypeMethod(mat, mult, x, y);
   PetscCall(PetscLogEventEnd(MAT_Mult, mat, x, y, 0));
-  if (mat->erroriffailure) PetscCall(VecValidValues(y, 3, PETSC_FALSE));
+  if (mat->erroriffailure) PetscCall(VecValidValues_Internal(y, 3, PETSC_FALSE));
   PetscCall(VecLockReadPop(x));
   PetscFunctionReturn(0);
 }
@@ -2546,7 +2546,7 @@ PetscErrorCode MatMultTranspose(Mat mat, Vec x, Vec y) {
   PetscCheck(mat->rmap->N == x->map->N, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_SIZ, "Mat mat,Vec x: global dim %" PetscInt_FMT " %" PetscInt_FMT, mat->rmap->N, x->map->N);
   PetscCheck(mat->cmap->n == y->map->n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Mat mat,Vec y: local dim %" PetscInt_FMT " %" PetscInt_FMT, mat->cmap->n, y->map->n);
   PetscCheck(mat->rmap->n == x->map->n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Mat mat,Vec x: local dim %" PetscInt_FMT " %" PetscInt_FMT, mat->rmap->n, x->map->n);
-  if (mat->erroriffailure) PetscCall(VecValidValues(x, 2, PETSC_TRUE));
+  if (mat->erroriffailure) PetscCall(VecValidValues_Internal(x, 2, PETSC_TRUE));
   MatCheckPreallocated(mat, 1);
 
   if (!mat->ops->multtranspose) {
@@ -2559,7 +2559,7 @@ PetscErrorCode MatMultTranspose(Mat mat, Vec x, Vec y) {
   PetscCall(VecLockReadPop(x));
   PetscCall(PetscLogEventEnd(MAT_MultTranspose, mat, x, y, 0));
   PetscCall(PetscObjectStateIncrease((PetscObject)y));
-  if (mat->erroriffailure) PetscCall(VecValidValues(y, 3, PETSC_FALSE));
+  if (mat->erroriffailure) PetscCall(VecValidValues_Internal(y, 3, PETSC_FALSE));
   PetscFunctionReturn(0);
 }
 

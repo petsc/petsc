@@ -2351,7 +2351,7 @@ PetscErrorCode SNESComputeFunction(SNES snes, Vec x, Vec y) {
   PetscValidHeaderSpecific(y, VEC_CLASSID, 3);
   PetscCheckSameComm(snes, 1, x, 2);
   PetscCheckSameComm(snes, 1, y, 3);
-  PetscCall(VecValidValues(x, 2, PETSC_TRUE));
+  PetscCall(VecValidValues_Internal(x, 2, PETSC_TRUE));
 
   PetscCall(SNESGetDM(snes, &dm));
   PetscCall(DMGetDMSNES(dm, &sdm));
@@ -2415,7 +2415,7 @@ PetscErrorCode SNESComputeMFFunction(SNES snes, Vec x, Vec y) {
   PetscValidHeaderSpecific(y, VEC_CLASSID, 3);
   PetscCheckSameComm(snes, 1, x, 2);
   PetscCheckSameComm(snes, 1, y, 3);
-  PetscCall(VecValidValues(x, 2, PETSC_TRUE));
+  PetscCall(VecValidValues_Internal(x, 2, PETSC_TRUE));
 
   PetscCall(SNESGetDM(snes, &dm));
   PetscCall(DMGetDMSNES(dm, &sdm));
@@ -2467,7 +2467,7 @@ PetscErrorCode SNESComputeNGS(SNES snes, Vec b, Vec x) {
   if (b) PetscValidHeaderSpecific(b, VEC_CLASSID, 2);
   PetscCheckSameComm(snes, 1, x, 3);
   if (b) PetscCheckSameComm(snes, 1, b, 2);
-  if (b) PetscCall(VecValidValues(b, 2, PETSC_TRUE));
+  if (b) PetscCall(VecValidValues_Internal(b, 2, PETSC_TRUE));
   PetscCall(PetscLogEventBegin(SNES_NGSEval, snes, x, b, 0));
   PetscCall(SNESGetDM(snes, &dm));
   PetscCall(DMGetDMSNES(dm, &sdm));
@@ -2692,7 +2692,7 @@ PetscErrorCode SNESComputeJacobian(SNES snes, Vec X, Mat A, Mat B) {
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidHeaderSpecific(X, VEC_CLASSID, 2);
   PetscCheckSameComm(snes, 1, X, 2);
-  PetscCall(VecValidValues(X, 2, PETSC_TRUE));
+  PetscCall(VecValidValues_Internal(X, 2, PETSC_TRUE));
   PetscCall(SNESGetDM(snes, &dm));
   PetscCall(DMGetDMSNES(dm, &sdm));
 
