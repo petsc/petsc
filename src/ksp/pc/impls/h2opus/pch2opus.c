@@ -620,6 +620,29 @@ static PetscErrorCode PCView_H2OPUS(PC pc, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
+/*MC
+     PCH2OPUS = "h2opus" - A preconditioner type for, `MATH2OPUS`, hierarchical matrices using the H2Opus package.
+
+   Options Database Keys:
++   -pc_type h2opus - pc type to "h2opus" during a call to `PCSetFromOptions()`
+.   -pc_h2opus_maxits - maximum number of iterations for Newton-Schultz
+.   -pc_h2opus_monitor - monitor Newton-Schultz convergence
+.   -pc_h2opus_atol - absolute tolerance
+.   -pc_h2opus_rtol - relative tolerance
+.   -pc_h2opus_norm_type - normtype
+.   -pc_h2opus_hyperorder - Hyper power order of sampling
+.   -pc_h2opus_leafsize - leaf size when constructed from kernel
+.   -pc_h2opus_eta - admissibility condition tolerance
+.   -pc_h2opus_maxrank - maximum rank when constructed from matvecs
+.   -pc_h2opus_samples - number of samples to be taken concurrently when constructing from matvecs
+.   -pc_h2opus_mrtol - relative tolerance for construction from sampling
+-   -pc_h2opus_forcecpu - force construction of preconditioner on CPU
+
+   Level: intermediate
+
+.seealso: `MATH2OPUS`, `MATHTOOL`, `MATDENSE`, `MatCreateH2OpusFromKernel()`, `MatCreateH2OpusFromMat()`
+M*/
+
 PETSC_EXTERN PetscErrorCode PCCreate_H2OPUS(PC pc) {
   PC_H2OPUS *pch2opus;
 
@@ -630,7 +653,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_H2OPUS(PC pc) {
   pch2opus->atol       = 1.e-2;
   pch2opus->rtol       = 1.e-6;
   pch2opus->maxits     = 50;
-  pch2opus->hyperorder = 1; /* defaults to basic NewtonSchultz */
+  pch2opus->hyperorder = 1; /* defaults to basic Newton-Schultz */
   pch2opus->normtype   = NORM_2;
 
   /* these are needed when we are sampling the pmat */

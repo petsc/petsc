@@ -199,38 +199,36 @@ static PetscErrorCode PCApplyTranspose_LU(PC pc, Vec x, Vec y) {
   PetscFunctionReturn(0);
 }
 
-/* -----------------------------------------------------------------------------------*/
-
 /*MC
    PCLU - Uses a direct solver, based on LU factorization, as a preconditioner
 
    Options Database Keys:
-+  -pc_factor_reuse_ordering - Activate PCFactorSetReuseOrdering()
-.  -pc_factor_mat_solver_type - Actives PCFactorSetMatSolverType() to choose the direct solver, like superlu
-.  -pc_factor_reuse_fill - Activates PCFactorSetReuseFill()
++  -pc_factor_reuse_ordering - Activate `PCFactorSetReuseOrdering()`
+.  -pc_factor_mat_solver_type - Actives `PCFactorSetMatSolverType()` to choose the direct solver, like superlu
+.  -pc_factor_reuse_fill - Activates `PCFactorSetReuseFill()`
 .  -pc_factor_fill <fill> - Sets fill amount
 .  -pc_factor_in_place - Activates in-place factorization
 .  -pc_factor_mat_ordering_type <nd,rcm,...> - Sets ordering routine
 .  -pc_factor_pivot_in_blocks <true,false> - allow pivoting within the small blocks during factorization (may increase
                                          stability of factorization.
-.  -pc_factor_shift_type <shifttype> - Sets shift type or PETSC_DECIDE for the default; use '-help' for a list of available types
-.  -pc_factor_shift_amount <shiftamount> - Sets shift amount or PETSC_DECIDE for the default
+.  -pc_factor_shift_type <shifttype> - Sets shift type or -1 for the default; use '-help' for a list of available types
+.  -pc_factor_shift_amount <shiftamount> - Sets shift amount or -1 for the default
 .  -pc_factor_nonzeros_along_diagonal - permutes the rows and columns to try to put nonzero value along the diagonal.
+.  -pc_factor_mat_solver_type <packagename> - use an external package for the solve, see `MatSolverType` for possibilities
 -  -mat_solvertype_optionname - options for a specific solver package, for example -mat_mumps_cntl_1
-
-   Notes:
-    Not all options work for all matrix formats
-          Run with -help to see additional options for particular matrix formats or factorization
-          algorithms
 
    Level: beginner
 
    Notes:
-    Usually this will compute an "exact" solution in one iteration and does
-          not need a Krylov method (i.e. you can use -ksp_type preonly, or
-          KSPSetType(ksp,KSPPREONLY) for the Krylov method
+   Not all options work for all matrix formats
 
-.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`,
+   Run with -help to see additional options for particular matrix formats or factorization algorithms
+
+   Usually this will compute an "exact" solution in one iteration and does
+   not need a Krylov method (i.e. you can use -ksp_type preonly, or
+   `KSPSetType`(ksp,`KSPPREONLY`) for the Krylov method
+
+.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `MatSolverType`, `MatGetFactor()`, `PCQR`, `PCSVD`,
           `PCILU`, `PCCHOLESKY`, `PCICC`, `PCFactorSetReuseOrdering()`, `PCFactorSetReuseFill()`, `PCFactorGetMatrix()`,
           `PCFactorSetFill()`, `PCFactorSetUseInPlace()`, `PCFactorSetMatOrderingType()`, `PCFactorSetColumnPivot()`,
           `PCFactorSetPivotInBlocks()`, `PCFactorSetShiftType()`, `PCFactorSetShiftAmount()`

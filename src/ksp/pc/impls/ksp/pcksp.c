@@ -144,19 +144,22 @@ static PetscErrorCode PCKSPSetKSP_KSP(PC pc, KSP ksp) {
 }
 
 /*@
-   PCKSPSetKSP - Sets the KSP context for a KSP PC.
+   PCKSPSetKSP - Sets the `KSP` context for a `PCKSP`.
 
-   Collective on PC
+   Collective on pc
 
    Input Parameters:
 +  pc - the preconditioner context
--  ksp - the KSP solver
-
-   Notes:
-   The PC and the KSP must have the same communicator
+-  ksp - the `KSP` solver
 
    Level: advanced
 
+   Notes:
+   The `PC` and the `KSP` must have the same communicator
+
+   This would rarely be used, the standard usage is to call `PCKSPGetKSP()` and then change options on that `KSP`
+
+.seealso: `PCKSP`, `PCKSPGetKSP()`
 @*/
 PetscErrorCode PCKSPSetKSP(PC pc, KSP ksp) {
   PetscFunctionBegin;
@@ -177,23 +180,22 @@ static PetscErrorCode PCKSPGetKSP_KSP(PC pc, KSP *ksp) {
 }
 
 /*@
-   PCKSPGetKSP - Gets the KSP context for a KSP PC.
+   PCKSPGetKSP - Gets the `KSP` context for a `PCKSP`.
 
-   Not Collective but KSP returned is parallel if PC was parallel
+   Not Collective but ksp returned is parallel if pc was parallel
 
    Input Parameter:
 .  pc - the preconditioner context
 
-   Output Parameters:
-.  ksp - the KSP solver
+   Output Parameter:
+.  ksp - the `KSP` solver
 
-   Notes:
-   You must call KSPSetUp() before calling PCKSPGetKSP().
-
-   If the PC is not a PCKSP object it raises an error
+   Note:
+   If the `PC` is not a `PCKSP` object it raises an error
 
    Level: advanced
 
+.seealso: `PCKSP`, `PCKSPSetKSP()`
 @*/
 PetscErrorCode PCKSPGetKSP(PC pc, KSP *ksp) {
   PetscFunctionBegin;
@@ -213,37 +215,34 @@ static PetscErrorCode PCSetFromOptions_KSP(PC pc, PetscOptionItems *PetscOptions
   PetscFunctionReturn(0);
 }
 
-/* ----------------------------------------------------------------------------------*/
-
 /*MC
-     PCKSP -    Defines a preconditioner that can consist of any KSP solver.
+     PCKSP -    Defines a preconditioner as any `KSP` solver.
                  This allows, for example, embedding a Krylov method inside a preconditioner.
 
    Options Database Key:
-.     -pc_use_amat - use the matrix that defines the linear system, Amat as the matrix for the
+.   -pc_use_amat - use the matrix that defines the linear system, Amat as the matrix for the
                     inner solver, otherwise by default it uses the matrix used to construct
-                    the preconditioner, Pmat (see PCSetOperators())
+                    the preconditioner, Pmat (see `PCSetOperators()`)
 
    Level: intermediate
 
-   Notes:
-    The application of an inexact Krylov solve is a nonlinear operation. Thus, performing a solve with KSP is,
-    in general, a nonlinear operation, so PCKSP is in general a nonlinear preconditioner.
-    Thus, one can see divergence or an incorrect answer unless using a flexible Krylov method (e.g. KSPFGMRES, KSPGCR, or KSPFCG) for the outer Krylov solve.
+   Note:
+    The application of an inexact Krylov solve is a nonlinear operation. Thus, performing a solve with `KSP` is,
+    in general, a nonlinear operation, so `PCKSP` is in general a nonlinear preconditioner.
+    Thus, one can see divergence or an incorrect answer unless using a flexible Krylov method (e.g. `KSPFGMRES`, `KSPGCR`, or `KSPFCG`) for the outer Krylov solve.
 
-   Developer Notes:
+   Developer Note:
     If the outer Krylov method has a nonzero initial guess it will compute a new residual based on that initial guess
-    and pass that as the right hand side into this KSP (and hence this KSP will always have a zero initial guess). For all outer Krylov methods
+    and pass that as the right hand side into this `KSP` (and hence this `KSP` will always have a zero initial guess). For all outer Krylov methods
     except Richardson this is neccessary since Krylov methods, even the flexible ones, need to "see" the result of the action of the preconditioner on the
     input (current residual) vector, the action of the preconditioner cannot depend also on some other vector (the "initial guess"). For
-    KSPRICHARDSON it is possible to provide a PCApplyRichardson_PCKSP() that short circuits returning to the KSP object at each iteration to compute the
-    residual, see for example PCApplyRichardson_SOR(). We do not implement a PCApplyRichardson_PCKSP()  because (1) using a KSP directly inside a Richardson
+    `KSPRICHARDSON` it is possible to provide a `PCApplyRichardson_PCKSP()` that short circuits returning to the `KSP` object at each iteration to compute the
+    residual, see for example `PCApplyRichardson_SOR()`. We do not implement a `PCApplyRichardson_PCKSP()`  because (1) using a `KSP` directly inside a Richardson
     is not an efficient algorithm anyways and (2) implementing it for its > 1 would essentially require that we implement Richardson (reimplementing the
-    Richardson code) inside the PCApplyRichardson_PCKSP() leading to duplicate code.
+    Richardson code) inside the `PCApplyRichardson_PCKSP()` leading to duplicate code.
 
 .seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`,
-          `PCSHELL`, `PCCOMPOSITE`, `PCSetUseAmat()`, `PCKSPGetKSP()`
-
+          `PCSHELL`, `PCCOMPOSITE`, `PCSetUseAmat()`, `PCKSPGetKSP()`, `KSPFGMRES`, `KSPGCR`, `KSPFCG`
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_KSP(PC pc) {

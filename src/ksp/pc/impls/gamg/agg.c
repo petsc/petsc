@@ -14,9 +14,9 @@ typedef struct {
 } PC_GAMG_AGG;
 
 /*@
-   PCGAMGSetNSmooths - Set number of smoothing steps (1 is typical)
+   PCGAMGSetNSmooths - Set number of smoothing steps (1 is typical) used for multigrid on all the levels
 
-   Logically Collective on PC
+   Logically Collective on pc
 
    Input Parameters:
 .  pc - the preconditioner context
@@ -26,7 +26,7 @@ typedef struct {
 
    Level: intermediate
 
-.seealso: `()`
+.seealso: `PCMG`, `PCGAMG`
 @*/
 PetscErrorCode PCGAMGSetNSmooths(PC pc, PetscInt n) {
   PetscFunctionBegin;
@@ -49,18 +49,22 @@ static PetscErrorCode PCGAMGSetNSmooths_AGG(PC pc, PetscInt n) {
 /*@
    PCGAMGSetSymmetrizeGraph - Symmetrize the graph before computing the aggregation. Some algorithms require the graph be symmetric
 
-   Logically Collective on PC
+   Logically Collective on pc
 
    Input Parameters:
 +  pc - the preconditioner context
--  n - PETSC_TRUE or PETSC_FALSE
+-  n - `PETSC_TRUE` or `PETSC_FALSE`
 
    Options Database Key:
 .  -pc_gamg_symmetrize_graph <true,default=false> - symmetrize the graph before computing the aggregation
 
    Level: intermediate
 
-.seealso: `PCGAMGSetAggressiveLevels()`
+   Developer Note:
+   If the aggregation can hang with a nonsymmetric graph then the graph should always be symmetrized before calling the aggregation,
+   it should not be up to the user.
+
+.seealso: `PCGAMG`, `PCGAMGSetAggressiveLevels()`
 @*/
 PetscErrorCode PCGAMGSetSymmetrizeGraph(PC pc, PetscBool n) {
   PetscFunctionBegin;
@@ -81,9 +85,9 @@ static PetscErrorCode PCGAMGSetSymmetrizeGraph_AGG(PC pc, PetscBool n) {
 }
 
 /*@
-   PCGAMGSetAggressiveLevels -  Aggressive coarsening on first n levels
+   PCGAMGSetAggressiveLevels -  Use aggressive coarsening on first n levels
 
-   Logically Collective on PC
+   Logically Collective on pc
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -94,7 +98,7 @@ static PetscErrorCode PCGAMGSetSymmetrizeGraph_AGG(PC pc, PetscBool n) {
 
    Level: intermediate
 
-.seealso: `PCGAMGSetSymmetrizeGraph()`, `PCGAMGSetThreshold()`
+.seealso: `PCGAMG`, `PCGAMGSetSymmetrizeGraph()`, `PCGAMGSetThreshold()`
 @*/
 PetscErrorCode PCGAMGSetAggressiveLevels(PC pc, PetscInt n) {
   PetscFunctionBegin;
@@ -139,7 +143,6 @@ static PetscErrorCode PCSetFromOptions_GAMG_AGG(PC pc, PetscOptionItems *PetscOp
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
 static PetscErrorCode PCDestroy_GAMG_AGG(PC pc) {
   PC_MG   *mg      = (PC_MG *)pc->data;
   PC_GAMG *pc_gamg = (PC_GAMG *)mg->innerctx;
@@ -153,7 +156,6 @@ static PetscErrorCode PCDestroy_GAMG_AGG(PC pc) {
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
 /*
    PCSetCoordinates_AGG
      - collective
@@ -231,7 +233,6 @@ static PetscErrorCode PCSetCoordinates_AGG(PC pc, PetscInt ndm, PetscInt a_nloc,
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
 /*
    PCSetData_AGG - called if data is not set with PCSetCoordinates.
       Looks in Mat for near null space.
@@ -297,7 +298,6 @@ static PetscErrorCode PCSetData_AGG(PC pc, Mat a_A) {
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
 /*
   formProl0 - collect null space data for each aggregate, do QR, put R in coarse grid data and Q in P_0
 
@@ -313,7 +313,6 @@ static PetscErrorCode PCSetData_AGG(PC pc, Mat a_A) {
   Output Parameter:
    . a_data_out - in with fine grid data (w/ghosts), out with coarse grid data
    . a_Prol - prolongation operator
-
 */
 static PetscErrorCode formProl0(PetscCoarsenData *agg_llists, PetscInt bs, PetscInt nSAvec, PetscInt my0crs, PetscInt data_stride, PetscReal data_in[], const PetscInt flid_fgid[], PetscReal **a_data_out, Mat a_Prol) {
   PetscInt        Istart, my0, Iend, nloc, clid, flid = 0, aggID, kk, jj, ii, mm, nSelected, minsz, nghosts, out_data_stride;
@@ -451,7 +450,6 @@ static PetscErrorCode PCView_GAMG_AGG(PC pc, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
 /*
    PCGAMGGraph_AGG
 
@@ -494,7 +492,6 @@ static PetscErrorCode PCGAMGGraph_AGG(PC pc, Mat Amat, Mat *a_Gmat) {
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
 /*
    PCGAMGCoarsen_AGG - supports squaring the graph (deprecated) and new graph for
      communication of QR data used with HEM and MISk coarsening
@@ -593,7 +590,6 @@ static PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc, Mat *a_Gmat1, PetscCoarsenData 
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
 /*
  PCGAMGProlongator_AGG
 
@@ -729,7 +725,6 @@ static PetscErrorCode PCGAMGProlongator_AGG(PC pc, Mat Amat, Mat Gmat, PetscCoar
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
 /*
    PCGAMGOptProlongator_AGG
 
@@ -845,7 +840,6 @@ static PetscErrorCode PCGAMGOptProlongator_AGG(PC pc, Mat Amat, Mat *a_P) {
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
 /*
    PCCreateGAMG_AGG
 

@@ -134,14 +134,14 @@ static PetscErrorCode PCView_LSC(PC pc, PetscViewer viewer) {
    Level: intermediate
 
    Notes:
-   This preconditioner will normally be used with PCFieldSplit to precondition the Schur complement, but
+   This preconditioner will normally be used with `PCFIELDSPLIT` to precondition the Schur complement, but
    it can be used for any Schur complement system.  Consider the Schur complement
 
 .vb
    S = A11 - A10 inv(A00) A01
 .ve
 
-   PCLSC currently doesn't do anything with A11, so let's assume it is 0.  The idea is that a good approximation to
+   `PCLSC` currently doesn't do anything with A11, so let's assume it is 0.  The idea is that a good approximation to
    inv(S) is given by
 
 .vb
@@ -152,8 +152,8 @@ static PetscErrorCode PCView_LSC(PC pc, PetscViewer viewer) {
    usually more efficient anyway).  In the case of incompressible flow, A10 A01 is a Laplacian; call it L.  The current
    interface is to hang L and a preconditioning matrix Lp on the preconditioning matrix.
 
-   If you had called KSPSetOperators(ksp,S,Sp), S should have type MATSCHURCOMPLEMENT and Sp can be any type you
-   like (PCLSC doesn't use it directly) but should have matrices composed with it, under the names "LSC_L" and "LSC_Lp".
+   If you had called `KSPSetOperators`(ksp,S,Sp), S should have type `MATSCHURCOMPLEMENT` and Sp can be any type you
+   like (`PCLSC` doesn't use it directly) but should have matrices composed with it, under the names "LSC_L" and "LSC_Lp".
    For example, you might have setup code like this
 
 .vb
@@ -184,7 +184,8 @@ static PetscErrorCode PCView_LSC(PC pc, PetscViewer viewer) {
 
 .seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `Block_Preconditioners`, `PCFIELDSPLIT`,
           `PCFieldSplitGetSubKSP()`, `PCFieldSplitSetFields()`, `PCFieldSplitSetType()`, `PCFieldSplitSetIS()`, `PCFieldSplitSetSchurPre()`,
-          `MatCreateSchurComplement()`
+          `MatCreateSchurComplement()`, `MatCreateSchurComplement()`, `MatSchurComplementSetSubMatrices()`, `MatSchurComplementUpdateSubMatrices()`,
+          `MatSchurComplementSetAinvType()`, `MatGetSchurComplement()`
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_LSC(PC pc) {

@@ -14,14 +14,16 @@ typedef struct {
 } PC_LMVM;
 
 /*@
-   PCLMVMSetMatLMVM - Replaces the LMVM matrix inside the preconditioner with
+   PCLMVMSetMatLMVM - Replaces the `MATLMVM` matrix inside the preconditioner with
    the one provided by the user.
 
    Input Parameters:
-+  pc - An LMVM preconditioner
--  B  - An LMVM-type matrix (MATLDFP, MATLBFGS, MATLSR1, MATLBRDN, MATLMBRDN, MATLSBRDN)
++  pc - An `PCLMVM` preconditioner
+-  B  - An  LMVM-type matrix (`MATLMVM`, `MATLDFP`, `MATLBFGS`, `MATLSR1`, `MATLBRDN`, `MATLMBRDN`, `MATLSBRDN`)
 
    Level: intermediate
+
+.seealso: `PCLMVM`, `MATLDFP`, `MATLBFGS`, `MATLSR1`, `MATLBRDN`, `MATLMBRDN`, `MATLSBRDN`, `PCLMVMGetMatLMVM()`
 @*/
 PetscErrorCode PCLMVMSetMatLMVM(PC pc, Mat B) {
   PC_LMVM  *ctx = (PC_LMVM *)pc->data;
@@ -41,15 +43,17 @@ PetscErrorCode PCLMVMSetMatLMVM(PC pc, Mat B) {
 }
 
 /*@
-   PCLMVMGetMatLMVM - Returns a pointer to the underlying LMVM matrix.
+   PCLMVMGetMatLMVM - Returns a pointer to the underlying `MATLMVM` matrix.
 
-   Input Parameters:
-.  pc - An LMVM preconditioner
+   Input Parameter:
+.  pc - An `PCLMVM` preconditioner
 
-   Output Parameters:
-.  B - LMVM matrix inside the preconditioner
+   Output Parameter:
+.  B - matrix inside the preconditioner, one of type `MATLMVM`, `MATLDFP`, `MATLBFGS`, `MATLSR1`, `MATLBRDN`, `MATLMBRDN`, `MATLSBRDN`
 
    Level: intermediate
+
+.seealso: `PCLMVM`, `MATLMVM`, `MATLDFP`, `MATLBFGS`, `MATLSR1`, `MATLBRDN`, `MATLMBRDN`, `MATLSBRDN`, `PCLMVMSetMatLMVM()`
 @*/
 PetscErrorCode PCLMVMGetMatLMVM(PC pc, Mat *B) {
   PC_LMVM  *ctx = (PC_LMVM *)pc->data;
@@ -64,15 +68,18 @@ PetscErrorCode PCLMVMGetMatLMVM(PC pc, Mat *B) {
 }
 
 /*@
-   PCLMVMSetIS - Sets the index sets that reduce the PC application.
+   PCLMVMSetIS - Sets the index sets that reduce the `PC` application.
 
    Input Parameters:
-+  pc - An LMVM preconditioner
++  pc - An `PCLMVM` preconditioner
 -  inactive - Index set defining the variables removed from the problem
 
    Level: intermediate
 
-.seealso: `MatLMVMUpdate()`
+   Developer Note:
+   Need to explain the purpose of this `IS`
+
+.seealso: `PCLMVM`, `MatLMVMUpdate()`
 @*/
 PetscErrorCode PCLMVMSetIS(PC pc, IS inactive) {
   PC_LMVM  *ctx = (PC_LMVM *)pc->data;
@@ -90,14 +97,14 @@ PetscErrorCode PCLMVMSetIS(PC pc, IS inactive) {
 }
 
 /*@
-   PCLMVMClearIS - Removes the inactive variable index set.
+   PCLMVMClearIS - Removes the inactive variable index set from a `PCLMVM`
 
-   Input Parameters:
-.  pc - An LMVM preconditioner
+   Input Parameter:
+.  pc - An `PCLMVM` preconditioner
 
    Level: intermediate
 
-.seealso: `MatLMVMUpdate()`
+.seealso: `PCLMVM`, `MatLMVMUpdate()`
 @*/
 PetscErrorCode PCLMVMClearIS(PC pc) {
   PC_LMVM  *ctx = (PC_LMVM *)pc->data;
@@ -209,12 +216,12 @@ static PetscErrorCode PCDestroy_LMVM(PC pc) {
 }
 
 /*MC
-   PCLMVM - Creates a preconditioner around an LMVM matrix. Options for the
-            underlying LMVM matrix can be access with the "-pc_lmvm_" prefix.
+   PCLMVM - A a preconditioner constructed from a `MATLMVM` matrix. Options for the
+            underlying `MATLMVM` matrix can be access with the -pc_lmvm_ prefix.
 
    Level: intermediate
 
-.seealso: `PCCreate()`, `PCSetType()`, `PCType`,
+.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PCLMVM`, `MATLDFP`, `MATLBFGS`, `MATLSR1`, `MATLBRDN`, `MATLMBRDN`, `MATLSBRDN`,
           `PC`, `MATLMVM`, `PCLMVMUpdate()`, `PCLMVMSetMatLMVM()`, `PCLMVMGetMatLMVM()`
 M*/
 PETSC_EXTERN PetscErrorCode PCCreate_LMVM(PC pc) {

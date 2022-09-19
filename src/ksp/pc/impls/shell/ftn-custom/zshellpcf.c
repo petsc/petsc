@@ -241,5 +241,3 @@ PETSC_EXTERN void pcshellgetname_(PC *pc,char* name, PetscErrorCode *ierr,PETSC_
   *ierr = PetscStrncpy(name,c,len);if (*ierr) return;
   FIXRETURNCHAR(PETSC_TRUE,name,len);
 }
-
-/* -----------------------------------------------------------------*/

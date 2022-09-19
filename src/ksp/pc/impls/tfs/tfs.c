@@ -132,16 +132,16 @@ static PetscErrorCode PCView_TFS(PC pc, PetscViewer viewer) {
          coarse grid in multigrid). Performs a Cholesky or LU factorization of a matrix defined by
          its local matrix vector product.
 
-   Implemented by  Henry M. Tufo III and Paul Fischer originally for Nek5000 and called XXT or XYT
-
    Level: beginner
 
    Notes:
-    Only implemented for the MPIAIJ matrices
+    Only implemented for the `MATMPIAIJ` matrices
 
-    Only works on a solver object that lives on all of PETSC_COMM_WORLD!
+    Only works on a solver object that lives on all of `PETSC_COMM_WORLD`!
 
-    Only works for real numbers (is not built if PetscScalar is complex)
+    Only works for real numbers (is not built if `PetscScalar` is complex)
+
+   Implemented by  Henry M. Tufo III and Paul Fischer originally for Nek5000 and called XXT or XYT
 
 .seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`
 M*/

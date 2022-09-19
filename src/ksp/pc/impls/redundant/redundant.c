@@ -305,7 +305,7 @@ static PetscErrorCode PCRedundantSetNumber_Redundant(PC pc, PetscInt nreds) {
 /*@
    PCRedundantSetNumber - Sets the number of redundant preconditioner contexts.
 
-   Logically Collective on PC
+   Logically Collective on pc
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -314,6 +314,7 @@ static PetscErrorCode PCRedundantSetNumber_Redundant(PC pc, PetscInt nreds) {
 
    Level: advanced
 
+.seealso: `PCREDUNDANT`
 @*/
 PetscErrorCode PCRedundantSetNumber(PC pc, PetscInt nredundant) {
   PetscFunctionBegin;
@@ -343,7 +344,7 @@ static PetscErrorCode PCRedundantSetScatter_Redundant(PC pc, VecScatter in, VecS
      redundant local solve and the scatter to move them back into the global
      vector.
 
-   Logically Collective on PC
+   Logically Collective on pc
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -352,6 +353,7 @@ static PetscErrorCode PCRedundantSetScatter_Redundant(PC pc, VecScatter in, VecS
 
    Level: advanced
 
+.seealso: `PCREDUNDANT`
 @*/
 PetscErrorCode PCRedundantSetScatter(PC pc, VecScatter in, VecScatter out) {
   PetscFunctionBegin;
@@ -409,7 +411,7 @@ static PetscErrorCode PCRedundantGetKSP_Redundant(PC pc, KSP *innerksp) {
 }
 
 /*@
-   PCRedundantGetKSP - Gets the less parallel KSP created by the redundant PC.
+   PCRedundantGetKSP - Gets the less parallel `KSP` created by the redundant `PC`.
 
    Not Collective
 
@@ -417,10 +419,11 @@ static PetscErrorCode PCRedundantGetKSP_Redundant(PC pc, KSP *innerksp) {
 .  pc - the preconditioner context
 
    Output Parameter:
-.  innerksp - the KSP on the smaller set of processes
+.  innerksp - the `KSP` on the smaller set of processes
 
    Level: advanced
 
+.seealso: `PCREDUNDANT`
 @*/
 PetscErrorCode PCRedundantGetKSP(PC pc, KSP *innerksp) {
   PetscFunctionBegin;
@@ -453,6 +456,7 @@ static PetscErrorCode PCRedundantGetOperators_Redundant(PC pc, Mat *mat, Mat *pm
 
    Level: advanced
 
+.seealso: `PCREDUNDANT`
 @*/
 PetscErrorCode PCRedundantGetOperators(PC pc, Mat *mat, Mat *pmat) {
   PetscFunctionBegin;
@@ -463,28 +467,27 @@ PetscErrorCode PCRedundantGetOperators(PC pc, Mat *mat, Mat *pmat) {
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------------------*/
 /*MC
-     PCREDUNDANT - Runs a KSP solver with preconditioner for the entire problem on subgroups of processors
+     PCREDUNDANT - Runs a `KSP` solver with preconditioner for the entire problem on subgroups of processors
 
-     Options for the redundant preconditioners can be set with -redundant_pc_xxx for the redundant KSP with -redundant_ksp_xxx
-
-  Options Database:
+  Options Database Key:
 .  -pc_redundant_number <n> - number of redundant solves, for example if you are using 64 MPI processes and
                               use an n of 4 there will be 4 parallel solves each on 16 = 64/4 processes.
 
    Level: intermediate
 
    Notes:
-    The default KSP is preonly and the default PC is LU or CHOLESKY if Pmat is of type MATSBAIJ.
+   Options for the redundant preconditioners can be set using the options database prefix -redundant_
 
-   PCFactorSetShiftType() applied to this PC will convey they shift type into the inner PC if it is factorization based.
+   The default `KSP` is preonly and the default `PC` is `PCLU` or `PCCHOLESKY` if Pmat is of type `MATSBAIJ`.
 
-   Developer Notes:
-    Note that PCSetInitialGuessNonzero()  is not used by this class but likely should be.
+   `PCFactorSetShiftType()` applied to this `PC` will convey they shift type into the inner `PC` if it is factorization based.
+
+   Developer Note:
+   `PCSetInitialGuessNonzero()` is not used by this class but likely should be.
 
 .seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PCRedundantSetScatter()`,
-          `PCRedundantGetKSP()`, `PCRedundantGetOperators()`, `PCRedundantSetNumber()`
+          `PCRedundantGetKSP()`, `PCRedundantGetOperators()`, `PCRedundantSetNumber()`, `PCREDISTRIBUTE`
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_Redundant(PC pc) {

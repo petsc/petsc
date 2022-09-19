@@ -612,7 +612,7 @@ PetscFunctionReturn(0);
 /*@
    PCExoticSetType - Sets the type of coarse grid interpolation to use
 
-   Logically Collective on PC
+   Logically Collective on pc
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -748,11 +748,15 @@ PetscErrorCode PCSetFromOptions_Exotic(PC pc, PetscOptionItems *PetscOptionsObje
 /*MC
      PCEXOTIC - Two level overlapping Schwarz preconditioner with exotic (non-standard) coarse grid spaces
 
-     This uses the PCMG infrastructure restricted to two levels and the face and wirebasket based coarse
+     This uses the `PCMG` infrastructure restricted to two levels and the face and wirebasket based coarse
    grid spaces.
 
+   Level: advanced
+
    Notes:
-    By default this uses GMRES on the fine grid smoother so this should be used with KSPFGMRES or the smoother changed to not use GMRES
+   Must be used with `DMDA`
+
+   By default this uses `KSPGMRES` on the fine grid smoother so this should be used with `KSPFGMRES` or the smoother changed to not use `KSPGMRES`
 
    References:
 +  * - These coarse grid spaces originate in the work of Bramble, Pasciak  and Schatz, "The Construction
@@ -782,10 +786,7 @@ PetscErrorCode PCSetFromOptions_Exotic(PC pc, PetscOptionItems *PetscOptionsObje
    TR2008 912, Department of Computer Science, Courant Institute
    of Mathematical Sciences, New York University, May 2008. URL:
 
-   Options Database: The usual PCMG options are supported, such as -mg_levels_pc_type <type> -mg_coarse_pc_type <type>
-      -pc_mg_type <type>
-
-   Level: advanced
+   The usual `PCMG` options are supported, such as -mg_levels_pc_type <type> -mg_coarse_pc_type <type> and  -pc_mg_type <type>
 
 .seealso: `PCMG`, `PCSetDM()`, `PCExoticType`, `PCExoticSetType()`
 M*/

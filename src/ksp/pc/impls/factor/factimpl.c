@@ -1,8 +1,6 @@
 
 #include <../src/ksp/pc/impls/factor/factor.h> /*I "petscpc.h"  I*/
 
-/* ------------------------------------------------------------------------------------------*/
-
 PetscErrorCode PCFactorSetUpMatSolverType_Factor(PC pc) {
   PC_Factor *icc = (PC_Factor *)pc->data;
 
@@ -139,8 +137,6 @@ PetscErrorCode PCFactorGetAllowDiagonalFill_Factor(PC pc, PetscBool *flg) {
   *flg = dir->info.diagonal_fill ? PETSC_TRUE : PETSC_FALSE;
   PetscFunctionReturn(0);
 }
-
-/* ------------------------------------------------------------------------------------------*/
 
 PetscErrorCode PCFactorSetPivotInBlocks_Factor(PC pc, PetscBool pivot) {
   PC_Factor *dir = (PC_Factor *)pc->data;

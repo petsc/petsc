@@ -11,7 +11,7 @@
 
    Application Interface Routine: PCSetUp()
 
-   Notes:
+   Note:
    The interface routine PCSetUp() is not usually called directly by
    the user, but instead is called by PCApply() if necessary.
 */
@@ -123,7 +123,6 @@ static PetscErrorCode PCDestroy_NN(PC pc) {
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
 /*MC
    PCNN - Balancing Neumann-Neumann for scalar elliptic PDEs.
 
@@ -138,22 +137,23 @@ static PetscErrorCode PCDestroy_NN(PC pc) {
 .    -pc_is_not_damp_floating -
 -    -pc_is_not_remove_nullspace_floating -
 
+   Options Database prefixes for the subsolvers this preconditioner uses:
++  -nn_coarse_pc_ - for the coarse grid preconditioner
+.  -is_localD_pc_ - for the Dirichlet subproblem preconditioner
+-  -is_localN_pc_ - for the Neumann subproblem preconditioner
+
    Level: intermediate
 
    Notes:
-    The matrix used with this preconditioner must be of type MATIS
+    The matrix used with this preconditioner must be of type `MATIS`
 
           Unlike more 'conventional' Neumann-Neumann preconditioners this iterates over ALL the
           degrees of freedom, NOT just those on the interface (this allows the use of approximate solvers
           on the subdomains; though in our experience using approximate solvers is slower.).
 
-          Options for the coarse grid preconditioner can be set with -nn_coarse_pc_xxx
-          Options for the Dirichlet subproblem preconditioner can be set with -is_localD_pc_xxx
-          Options for the Neumann subproblem preconditioner can be set with -is_localN_pc_xxx
-
    Contributed by Paulo Goldfeld
 
-.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `MATIS`
+.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `MATIS`, `PCBDDC`
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_NN(PC pc) {
@@ -192,7 +192,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_NN(PC pc) {
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
 /*
    PCNNCreateCoarseMatrix -
 */
@@ -375,7 +374,6 @@ PetscErrorCode PCNNCreateCoarseMatrix(PC pc) {
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
 /*
    PCNNApplySchurToChunk -
 
@@ -406,7 +404,6 @@ PetscErrorCode PCNNApplySchurToChunk(PC pc, PetscInt n, PetscInt *idx, PetscScal
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
 /*
    PCNNApplyInterfacePreconditioner - Apply the interface preconditioner, i.e.,
                                       the preconditioner for the Schur complement.
@@ -473,7 +470,6 @@ PetscErrorCode PCNNApplyInterfacePreconditioner(PC pc, Vec r, Vec z, PetscScalar
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
 /*
    PCNNBalancing - Computes z, as given in equations (15) and (16) (if the
                    input argument u is provided), or s, as given in equations
@@ -558,16 +554,12 @@ PetscErrorCode PCNNBalancing(PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B,
   PetscFunctionReturn(0);
 }
 
-/*  -------   E N D   O F   T H E   C O D E   -------  */
 /*                                                     */
 /*  From now on, "footnotes" (or "historical notes").  */
 /*                                                     */
-/*  -------------------------------------------------  */
-
-/* --------------------------------------------------------------------------
-   Historical note 01
-   -------------------------------------------------------------------------- */
 /*
+   Historical note 01
+
    We considered the possibility of an alternative D_i that would still
    provide a partition of unity (i.e., $ \sum_i  N_i D_i N_i^T = I $).
    The basic principle was still the pseudo-inverse of the counting
@@ -580,10 +572,9 @@ PetscErrorCode PCNNBalancing(PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B,
    the balanced residual by zero.
 */
 
-/* --------------------------------------------------------------------------
-   Historical note 02
-   -------------------------------------------------------------------------- */
 /*
+   Historical note 02
+
    We tried an alternative coarse problem, that would eliminate exactly a
    constant error. Turned out not to improve the overall convergence.
 */

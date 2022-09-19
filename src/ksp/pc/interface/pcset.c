@@ -15,7 +15,7 @@ PetscFunctionList PCList              = NULL;
 /*@C
    PCSetType - Builds PC for a particular preconditioner type
 
-   Collective on PC
+   Collective on pc
 
    Input Parameters:
 +  pc - the preconditioner context.
@@ -115,12 +115,12 @@ extern PetscErrorCode PCGetDefaultType_Private(PC, const char *[]);
    This routine must be called before PCSetUp() if the user is to be
    allowed to set the preconditioner method.
 
-   Collective on PC
+   Collective on pc
 
    Input Parameter:
 .  pc - the preconditioner context
 
-   Options Database:
+   Options Database Key:
 .   -pc_use_amat true,false - see PCSetUseAmat()
 
    Level: developer
@@ -169,7 +169,7 @@ skipoptions:
 /*@
    PCSetDM - Sets the DM that may be used by some preconditioners
 
-   Logically Collective on PC
+   Logically Collective on pc
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -177,7 +177,7 @@ skipoptions:
 
    Level: intermediate
 
-   Developer Notes:
+   Developer Note:
     The routines KSP/SNES/TSSetDM() require the dm to be non-NULL, but this one can be NULL since all it does is
     replace the current DM
 
@@ -217,7 +217,7 @@ PetscErrorCode PCGetDM(PC pc, DM *dm) {
 /*@
    PCSetApplicationContext - Sets the optional user-defined context for the linear solver.
 
-   Logically Collective on PC
+   Logically Collective on pc
 
    Input Parameters:
 +  pc - the PC context

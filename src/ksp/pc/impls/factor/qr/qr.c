@@ -123,19 +123,17 @@ static PetscErrorCode PCApplyTranspose_QR(PC pc, Vec x, Vec y) {
   PetscFunctionReturn(0);
 }
 
-/* -----------------------------------------------------------------------------------*/
-
 /*MC
    PCQR - Uses a direct solver, based on QR factorization, as a preconditioner
 
    Level: beginner
 
-   Notes:
-    Usually this will compute an "exact" solution in one iteration and does
-          not need a Krylov method (i.e. you can use -ksp_type preonly, or
-          KSPSetType(ksp,KSPPREONLY) for the Krylov method
+   Note:
+   Usually this will compute an "exact" solution in one iteration and does
+   not need a Krylov method (i.e. you can use -ksp_type preonly, or
+   `KSPSetType`(ksp,`KSPPREONLY`) for the Krylov method
 
-.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`,
+.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCSVD`,
           `PCILU`, `PCLU`, `PCCHOLESKY`, `PCICC`, `PCFactorSetReuseOrdering()`, `PCFactorSetReuseFill()`, `PCFactorGetMatrix()`,
           `PCFactorSetFill()`, `PCFactorSetUseInPlace()`, `PCFactorSetMatOrderingType()`, `PCFactorSetColumnPivot()`,
           `PCFactorSetPivotingInBlocks()`, `PCFactorSetShiftType()`, `PCFactorSetShiftAmount()`

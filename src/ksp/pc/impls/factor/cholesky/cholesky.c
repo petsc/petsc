@@ -222,27 +222,23 @@ static PetscErrorCode PCApplyTranspose_Cholesky(PC pc, Vec x, Vec y) {
   PetscFunctionReturn(0);
 }
 
-/* -----------------------------------------------------------------------------------*/
-
-/* -----------------------------------------------------------------------------------*/
-
 /*@
    PCFactorSetReuseOrdering - When similar matrices are factored, this
    causes the ordering computed in the first factor to be used for all
    following factors.
 
-   Logically Collective on PC
+   Logically Collective on pc
 
    Input Parameters:
 +  pc - the preconditioner context
--  flag - PETSC_TRUE to reuse else PETSC_FALSE
+-  flag - `PETSC_TRUE` to reuse else `PETSC_FALSE`
 
    Options Database Key:
-.  -pc_factor_reuse_ordering - Activate PCFactorSetReuseOrdering()
+.  -pc_factor_reuse_ordering - Activate `PCFactorSetReuseOrdering()`
 
    Level: intermediate
 
-.seealso: `PCFactorSetReuseFill()`
+.seealso: `PCLU`, `PCCHOLESKY`, `PCFactorSetReuseFill()`
 @*/
 PetscErrorCode PCFactorSetReuseOrdering(PC pc, PetscBool flag) {
   PetscFunctionBegin;
@@ -256,28 +252,26 @@ PetscErrorCode PCFactorSetReuseOrdering(PC pc, PetscBool flag) {
    PCCHOLESKY - Uses a direct solver, based on Cholesky factorization, as a preconditioner
 
    Options Database Keys:
-+  -pc_factor_reuse_ordering - Activate PCFactorSetReuseOrdering()
-.  -pc_factor_mat_solver_type - Actives PCFactorSetMatSolverType() to choose the direct solver, like superlu
-.  -pc_factor_reuse_fill - Activates PCFactorSetReuseFill()
++  -pc_factor_reuse_ordering - Activate `PCFactorSetReuseOrdering()`
+.  -pc_factor_mat_solver_type - Actives `PCFactorSetMatSolverType()` to choose the direct solver, like superlu
+.  -pc_factor_reuse_fill - Activates `PCFactorSetReuseFill()`
 .  -pc_factor_fill <fill> - Sets fill amount
 .  -pc_factor_in_place - Activates in-place factorization
 -  -pc_factor_mat_ordering_type <nd,rcm,...> - Sets ordering routine
 
-   Notes:
-    Not all options work for all matrix formats
-
    Level: beginner
 
    Notes:
-    Usually this will compute an "exact" solution in one iteration and does
-          not need a Krylov method (i.e. you can use -ksp_type preonly, or
-          KSPSetType(ksp,KSPPREONLY) for the Krylov method
+   Not all options work for all matrix formats
+
+   Usually this will compute an "exact" solution in one iteration and does
+   not need a Krylov method (i.e. you can use -ksp_type preonly, or
+   `KSPSetType`(ksp,`KSPPREONLY`) for the Krylov method
 
 .seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`,
           `PCILU`, `PCLU`, `PCICC`, `PCFactorSetReuseOrdering()`, `PCFactorSetReuseFill()`, `PCFactorGetMatrix()`,
           `PCFactorSetFill()`, `PCFactorSetShiftNonzero()`, `PCFactorSetShiftType()`, `PCFactorSetShiftAmount()`
-          `PCFactorSetUseInPlace()`, `PCFactorGetUseInPlace()`, `PCFactorSetMatOrderingType()`
-
+          `PCFactorSetUseInPlace()`, `PCFactorGetUseInPlace()`, `PCFactorSetMatOrderingType()`, `PCFactorSetReuseOrdering()`
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_Cholesky(PC pc) {

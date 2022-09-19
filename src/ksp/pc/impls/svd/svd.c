@@ -23,7 +23,6 @@ typedef enum {
   READ_WRITE = 3
 } AccessMode;
 
-/* -------------------------------------------------------------------------- */
 /*
    PCSetUp_SVD - Prepares for the use of the SVD preconditioner
                     by setting data structures and options.
@@ -33,7 +32,7 @@ typedef enum {
 
    Application Interface Routine: PCSetUp()
 
-   Notes:
+   Note:
    The interface routine PCSetUp() is not usually called directly by
    the user, but instead is called by PCApply() if necessary.
 */
@@ -194,7 +193,6 @@ static PetscErrorCode PCSVDRestoreVec(PC pc, PCSide side, AccessMode amode, Vec 
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
 /*
    PCApply_SVD - Applies the SVD preconditioner to a vector.
 
@@ -273,7 +271,6 @@ static PetscErrorCode PCReset_SVD(PC pc) {
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
 /*
    PCDestroy_SVD - Destroys the private context for the SVD preconditioner
    that was created with PCCreate_SVD().
@@ -318,7 +315,7 @@ static PetscErrorCode PCView_SVD(PC pc, PetscViewer viewer) {
   }
   PetscFunctionReturn(0);
 }
-/* -------------------------------------------------------------------------- */
+
 /*
    PCCreate_SVD - Creates a SVD preconditioner context, PC_SVD,
    and sets this as the private data within the generic preconditioning
@@ -335,16 +332,16 @@ static PetscErrorCode PCView_SVD(PC pc, PetscViewer viewer) {
 
    Level: advanced
 
-  Options Database:
+  Options Database Keys:
 +  -pc_svd_zero_sing <rtol> - Singular values smaller than this are treated as zero
 -  -pc_svd_monitor - Print information on the extreme singular values of the operator
 
   Developer Note:
   This implementation automatically creates a redundant copy of the
    matrix on each process and uses a sequential SVD solve. Why does it do this instead
-   of using the composable PCREDUNDANT object?
+   of using the composable `PCREDUNDANT` object?
 
-.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`
+.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCREDUNDANT`
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_SVD(PC pc) {

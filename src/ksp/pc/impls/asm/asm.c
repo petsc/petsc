@@ -719,8 +719,6 @@ static PetscErrorCode PCSetFromOptions_ASM(PC pc, PetscOptionItems *PetscOptions
   PetscFunctionReturn(0);
 }
 
-/*------------------------------------------------------------------------------------*/
-
 static PetscErrorCode PCASMSetLocalSubdomains_ASM(PC pc, PetscInt n, IS is[], IS is_local[]) {
   PC_ASM  *osm = (PC_ASM *)pc->data;
   PetscInt i;
@@ -882,7 +880,7 @@ static PetscErrorCode PCASMSetSubMatType_ASM(PC pc, MatType sub_mat_type) {
 }
 
 /*@C
-    PCASMSetLocalSubdomains - Sets the local subdomains (for this processor only) for the additive Schwarz preconditioner.
+    PCASMSetLocalSubdomains - Sets the local subdomains (for this processor only) for the additive Schwarz preconditioner `PCASM`.
 
     Collective on pc
 
@@ -900,22 +898,22 @@ static PetscErrorCode PCASMSetSubMatType_ASM(PC pc, MatType sub_mat_type) {
 .    -pc_asm_local_blocks <blks> - Sets local blocks
 
     Notes:
-    The IS numbering is in the parallel, global numbering of the vector for both is and is_local
+    The `IS` numbering is in the parallel, global numbering of the vector for both is and is_local
 
-    By default the ASM preconditioner uses 1 block per processor.
+    By default the `PCASM` preconditioner uses 1 block per processor.
 
-    Use PCASMSetTotalSubdomains() to set the subdomains for all processors.
+    Use `PCASMSetTotalSubdomains()` to set the subdomains for all processors.
 
-    If is_local is provided and PCASMType is PC_ASM_RESTRICT then the solution only over the is_local region is interpolated
+    If is_local is provided and `PCASMType` is `PC_ASM_RESTRICT` then the solution only over the is_local region is interpolated
     back to form the global solution (this is the standard restricted additive Schwarz method)
 
-    If the is_local is provided and PCASMType is PC_ASM_INTERPOLATE or PC_ASM_NONE then an error is generated since there is
+    If the is_local is provided and `PCASMType` is `PC_ASM_INTERPOLATE` or `PC_ASM_NONE` then an error is generated since there is
     no code to handle that case.
 
     Level: advanced
 
-.seealso: `PCASMSetTotalSubdomains()`, `PCASMSetOverlap()`, `PCASMGetSubKSP()`,
-          `PCASMCreateSubdomains2D()`, `PCASMGetLocalSubdomains()`, `PCASMType`, `PCASMSetType()`
+.seealso: `PCASM`, `PCASMSetTotalSubdomains()`, `PCASMSetOverlap()`, `PCASMGetSubKSP()`,
+          `PCASMCreateSubdomains2D()`, `PCASMGetLocalSubdomains()`, `PCASMType`, `PCASMSetType()`, `PCGASM`
 @*/
 PetscErrorCode PCASMSetLocalSubdomains(PC pc, PetscInt n, IS is[], IS is_local[]) {
   PetscFunctionBegin;
@@ -926,10 +924,9 @@ PetscErrorCode PCASMSetLocalSubdomains(PC pc, PetscInt n, IS is[], IS is_local[]
 
 /*@C
     PCASMSetTotalSubdomains - Sets the subdomains for all processors for the
-    additive Schwarz preconditioner.  Either all or no processors in the
-    PC communicator must call this routine, with the same index sets.
+    additive Schwarz preconditioner, `PCASM`.
 
-    Collective on pc
+    Collective on pc, all MPI ranks must pass in the same array of `IS`
 
     Input Parameters:
 +   pc - the preconditioner context
@@ -947,19 +944,19 @@ PetscErrorCode PCASMSetLocalSubdomains(PC pc, PetscInt n, IS is[], IS is_local[]
     Notes:
     Currently you cannot use this to set the actual subdomains with the argument is or is_local.
 
-    By default the ASM preconditioner uses 1 block per processor.
+    By default the `PCASM` preconditioner uses 1 block per processor.
 
     These index sets cannot be destroyed until after completion of the
-    linear solves for which the ASM preconditioner is being used.
+    linear solves for which the `PCASM` preconditioner is being used.
 
-    Use PCASMSetLocalSubdomains() to set local subdomains.
+    Use `PCASMSetLocalSubdomains()` to set local subdomains.
 
-    The IS numbering is in the parallel, global numbering of the vector for both is and is_local
+    The `IS` numbering is in the parallel, global numbering of the vector for both is and is_local
 
     Level: advanced
 
-.seealso: `PCASMSetLocalSubdomains()`, `PCASMSetOverlap()`, `PCASMGetSubKSP()`,
-          `PCASMCreateSubdomains2D()`
+.seealso: `PCASM`, `PCASMSetLocalSubdomains()`, `PCASMSetOverlap()`, `PCASMGetSubKSP()`,
+          `PCASMCreateSubdomains2D()`, `PCGASM`
 @*/
 PetscErrorCode PCASMSetTotalSubdomains(PC pc, PetscInt N, IS is[], IS is_local[]) {
   PetscFunctionBegin;
@@ -970,8 +967,7 @@ PetscErrorCode PCASMSetTotalSubdomains(PC pc, PetscInt N, IS is[], IS is_local[]
 
 /*@
     PCASMSetOverlap - Sets the overlap between a pair of subdomains for the
-    additive Schwarz preconditioner.  Either all or no processors in the
-    PC communicator must call this routine.
+    additive Schwarz preconditioner, `PCASM`.
 
     Logically Collective on pc
 
@@ -983,30 +979,30 @@ PetscErrorCode PCASMSetTotalSubdomains(PC pc, PetscInt N, IS is[], IS is_local[]
 .   -pc_asm_overlap <ovl> - Sets overlap
 
     Notes:
-    By default the ASM preconditioner uses 1 block per processor.  To use
-    multiple blocks per perocessor, see PCASMSetTotalSubdomains() and
-    PCASMSetLocalSubdomains() (and the option -pc_asm_blocks <blks>).
+    By default the `PCASM` preconditioner uses 1 block per processor.  To use
+    multiple blocks per perocessor, see `PCASMSetTotalSubdomains()` and
+    `PCASMSetLocalSubdomains()` (and the option -pc_asm_blocks <blks>).
 
     The overlap defaults to 1, so if one desires that no additional
     overlap be computed beyond what may have been set with a call to
-    PCASMSetTotalSubdomains() or PCASMSetLocalSubdomains(), then ovl
+    `PCASMSetTotalSubdomains()` or `PCASMSetLocalSubdomains()`, then ovl
     must be set to be 0.  In particular, if one does not explicitly set
     the subdomains an application code, then all overlap would be computed
-    internally by PETSc, and using an overlap of 0 would result in an ASM
+    internally by PETSc, and using an overlap of 0 would result in an `PCASM`
     variant that is equivalent to the block Jacobi preconditioner.
 
     The default algorithm used by PETSc to increase overlap is fast, but not scalable,
     use the option -mat_increase_overlap_scalable when the problem and number of processes is large.
 
     Note that one can define initial index sets with any overlap via
-    PCASMSetLocalSubdomains(); the routine
-    PCASMSetOverlap() merely allows PETSc to extend that overlap further
+    `PCASMSetLocalSubdomains()`; the routine
+    `PCASMSetOverlap()` merely allows PETSc to extend that overlap further
     if desired.
 
     Level: intermediate
 
-.seealso: `PCASMSetTotalSubdomains()`, `PCASMSetLocalSubdomains()`, `PCASMGetSubKSP()`,
-          `PCASMCreateSubdomains2D()`, `PCASMGetLocalSubdomains()`, `MatIncreaseOverlap()`
+.seealso: `PCASM`, `PCASMSetTotalSubdomains()`, `PCASMSetLocalSubdomains()`, `PCASMGetSubKSP()`,
+          `PCASMCreateSubdomains2D()`, `PCASMGetLocalSubdomains()`, `MatIncreaseOverlap()`, `PCGASM`
 @*/
 PetscErrorCode PCASMSetOverlap(PC pc, PetscInt ovl) {
   PetscFunctionBegin;
@@ -1018,13 +1014,13 @@ PetscErrorCode PCASMSetOverlap(PC pc, PetscInt ovl) {
 
 /*@
     PCASMSetType - Sets the type of restriction and interpolation used
-    for local problems in the additive Schwarz method.
+    for local problems in the additive Schwarz method, `PCASM`.
 
     Logically Collective on pc
 
     Input Parameters:
 +   pc  - the preconditioner context
--   type - variant of ASM, one of
+-   type - variant of `PCASM`, one of
 .vb
       PC_ASM_BASIC       - full interpolation and restriction
       PC_ASM_RESTRICT    - full restriction, local processor interpolation (default)
@@ -1033,16 +1029,16 @@ PetscErrorCode PCASMSetOverlap(PC pc, PetscInt ovl) {
 .ve
 
     Options Database Key:
-.   -pc_asm_type [basic,restrict,interpolate,none] - Sets ASM type
+.   -pc_asm_type [basic,restrict,interpolate,none] - Sets `PCASMType`
 
-    Notes:
-    if the is_local arguments are passed to PCASMSetLocalSubdomains() then they are used when PC_ASM_RESTRICT has been selected
+    Note:
+    if the is_local arguments are passed to `PCASMSetLocalSubdomains()` then they are used when `PC_ASM_RESTRICT` has been selected
     to limit the local processor interpolation
 
     Level: intermediate
 
-.seealso: `PCASMSetTotalSubdomains()`, `PCASMSetTotalSubdomains()`, `PCASMGetSubKSP()`,
-          `PCASMCreateSubdomains2D()`, `PCASMType`, `PCASMSetLocalType()`, `PCASMGetLocalType()`
+.seealso: `PCASM`, `PCASMSetTotalSubdomains()`, `PCASMSetTotalSubdomains()`, `PCASMGetSubKSP()`,
+          `PCASMCreateSubdomains2D()`, `PCASMType`, `PCASMSetLocalType()`, `PCASMGetLocalType()`, `PCGASM`
 @*/
 PetscErrorCode PCASMSetType(PC pc, PCASMType type) {
   PetscFunctionBegin;
@@ -1054,7 +1050,7 @@ PetscErrorCode PCASMSetType(PC pc, PCASMType type) {
 
 /*@
     PCASMGetType - Gets the type of restriction and interpolation used
-    for local problems in the additive Schwarz method.
+    for local problems in the additive Schwarz method, `PCASM`.
 
     Logically Collective on pc
 
@@ -1062,7 +1058,7 @@ PetscErrorCode PCASMSetType(PC pc, PCASMType type) {
 .   pc  - the preconditioner context
 
     Output Parameter:
-.   type - variant of ASM, one of
+.   type - variant of `PCASM`, one of
 
 .vb
       PC_ASM_BASIC       - full interpolation and restriction
@@ -1072,11 +1068,11 @@ PetscErrorCode PCASMSetType(PC pc, PCASMType type) {
 .ve
 
     Options Database Key:
-.   -pc_asm_type [basic,restrict,interpolate,none] - Sets ASM type
+.   -pc_asm_type [basic,restrict,interpolate,none] - Sets `PCASM` type
 
     Level: intermediate
 
-.seealso: `PCASMSetTotalSubdomains()`, `PCASMSetTotalSubdomains()`, `PCASMGetSubKSP()`,
+.seealso: `PCASM`, `PCASMSetTotalSubdomains()`, `PCASMSetTotalSubdomains()`, `PCASMGetSubKSP()`, `PCGASM`,
           `PCASMCreateSubdomains2D()`, `PCASMType`, `PCASMSetType()`, `PCASMSetLocalType()`, `PCASMGetLocalType()`
 @*/
 PetscErrorCode PCASMGetType(PC pc, PCASMType *type) {
@@ -1087,7 +1083,7 @@ PetscErrorCode PCASMGetType(PC pc, PCASMType *type) {
 }
 
 /*@
-  PCASMSetLocalType - Sets the type of composition used for local problems in the additive Schwarz method.
+  PCASMSetLocalType - Sets the type of composition used for local problems in the additive Schwarz method, `PCASM`.
 
   Logically Collective on pc
 
@@ -1104,7 +1100,7 @@ PetscErrorCode PCASMGetType(PC pc, PCASMType *type) {
 
   Level: intermediate
 
-.seealso: `PCASMSetType()`, `PCASMGetType()`, `PCASMGetLocalType()`, `PCASM`, `PCASMType`, `PCASMSetType()`, `PCASMGetType()`, `PCCompositeType`
+.seealso: `PCASM`, `PCASMSetType()`, `PCASMGetType()`, `PCASMGetLocalType()`, `PCASM`, `PCASMType`, `PCASMSetType()`, `PCASMGetType()`, `PCCompositeType`
 @*/
 PetscErrorCode PCASMSetLocalType(PC pc, PCCompositeType type) {
   PetscFunctionBegin;
@@ -1115,7 +1111,7 @@ PetscErrorCode PCASMSetLocalType(PC pc, PCCompositeType type) {
 }
 
 /*@
-  PCASMGetLocalType - Gets the type of composition used for local problems in the additive Schwarz method.
+  PCASMGetLocalType - Gets the type of composition used for local problems in the additive Schwarz method, `PCASM`.
 
   Logically Collective on pc
 
@@ -1134,7 +1130,7 @@ PetscErrorCode PCASMSetLocalType(PC pc, PCCompositeType type) {
 
   Level: intermediate
 
-.seealso: `PCASMSetType()`, `PCASMGetType()`, `PCASMSetLocalType()`, `PCASMCreate()`, `PCASMType`, `PCASMSetType()`, `PCASMGetType()`, `PCCompositeType`
+.seealso: `PCASM`, `PCASMSetType()`, `PCASMGetType()`, `PCASMSetLocalType()`, `PCASMCreate()`, `PCASMType`, `PCASMSetType()`, `PCASMGetType()`, `PCCompositeType`
 @*/
 PetscErrorCode PCASMGetLocalType(PC pc, PCCompositeType *type) {
   PetscFunctionBegin;
@@ -1155,7 +1151,7 @@ PetscErrorCode PCASMGetLocalType(PC pc, PCCompositeType *type) {
 
     Level: intermediate
 
-.seealso: `PCASMSetLocalSubdomains()`, `PCASMSetTotalSubdomains()`, `PCASMGetSubKSP()`,
+.seealso: `PCASM`, `PCASMSetLocalSubdomains()`, `PCASMSetTotalSubdomains()`, `PCASMGetSubKSP()`,
           `PCASMCreateSubdomains2D()`
 @*/
 PetscErrorCode PCASMSetSortIndices(PC pc, PetscBool doSort) {
@@ -1167,7 +1163,7 @@ PetscErrorCode PCASMSetSortIndices(PC pc, PetscBool doSort) {
 }
 
 /*@C
-   PCASMGetSubKSP - Gets the local KSP contexts for all blocks on
+   PCASMGetSubKSP - Gets the local `KSP` contexts for all blocks on
    this processor.
 
    Collective on pc iff first_local is requested
@@ -1179,19 +1175,19 @@ PetscErrorCode PCASMSetSortIndices(PC pc, PetscBool doSort) {
 +  n_local - the number of blocks on this processor or NULL
 .  first_local - the global number of the first block on this processor or NULL,
                  all processors must request or all must pass NULL
--  ksp - the array of KSP contexts
+-  ksp - the array of `KSP` contexts
 
-   Note:
-   After PCASMGetSubKSP() the array of KSPes is not to be freed.
+   Notes:
+   After `PCASMGetSubKSP()` the array of `KSP`s is not to be freed.
 
-   You must call KSPSetUp() before calling PCASMGetSubKSP().
+   You must call `KSPSetUp()` before calling `PCASMGetSubKSP()`.
 
-   Fortran note:
-   The output argument 'ksp' must be an array of sufficient length or PETSC_NULL_KSP. The latter can be used to learn the necessary length.
+   Fortran Note:
+   The output argument 'ksp' must be an array of sufficient length or `PETSC_NULL_KSP`. The latter can be used to learn the necessary length.
 
    Level: advanced
 
-.seealso: `PCASMSetTotalSubdomains()`, `PCASMSetTotalSubdomains()`, `PCASMSetOverlap()`,
+.seealso: `PCASM`, `PCASMSetTotalSubdomains()`, `PCASMSetTotalSubdomains()`, `PCASMSetOverlap()`,
           `PCASMCreateSubdomains2D()`,
 @*/
 PetscErrorCode PCASMGetSubKSP(PC pc, PetscInt *n_local, PetscInt *first_local, KSP *ksp[]) {
@@ -1201,33 +1197,31 @@ PetscErrorCode PCASMGetSubKSP(PC pc, PetscInt *n_local, PetscInt *first_local, K
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------------------*/
 /*MC
    PCASM - Use the (restricted) additive Schwarz method, each block is (approximately) solved with
-           its own KSP object.
+           its own `KSP` object.
 
    Options Database Keys:
-+  -pc_asm_blocks <blks> - Sets total blocks
++  -pc_asm_blocks <blks> - Sets total blocks. Defaults to one block per MPI rank.
 .  -pc_asm_overlap <ovl> - Sets overlap
-.  -pc_asm_type [basic,restrict,interpolate,none] - Sets ASM type, default is restrict
--  -pc_asm_local_type [additive, multiplicative] - Sets ASM type, default is additive
-
-     IMPORTANT: If you run with, for example, 3 blocks on 1 processor or 3 blocks on 3 processors you
-      will get a different convergence rate due to the default option of -pc_asm_type restrict. Use
-      -pc_asm_type basic to use the standard ASM.
-
-   Notes:
-    Each processor can have one or more blocks, but a block cannot be shared by more
-     than one processor. Use PCGASM for subdomains shared by multiple processes. Defaults to one block per processor.
-
-     To set options on the solvers for each block append -sub_ to all the KSP, and PC
-        options database keys. For example, -sub_pc_type ilu -sub_pc_factor_levels 1 -sub_ksp_type preonly
-
-     To set the options on the solvers separate for each block call PCASMGetSubKSP()
-         and set the options directly on the resulting KSP object (you can access its PC
-         with KSPGetPC())
+.  -pc_asm_type [basic,restrict,interpolate,none] - Sets `PCASMType`, default is restrict. See `PCASMSetType()`
+-  -pc_asm_local_type [additive, multiplicative] - Sets `PCCompositeType`, default is additive. See `PCASMSetLocalType()`
 
    Level: beginner
+
+   Notes:
+   If you run with, for example, 3 blocks on 1 processor or 3 blocks on 3 processors you
+   will get a different convergence rate due to the default option of -pc_asm_type restrict. Use
+    -pc_asm_type basic to get the same convergence behavior
+
+   Each processor can have one or more blocks, but a block cannot be shared by more
+   than one processor. Use `PCGASM` for subdomains shared by multiple processes.
+
+   To set options on the solvers for each block append -sub_ to all the `KSP`, and `PC`
+   options database keys. For example, -sub_pc_type ilu -sub_pc_factor_levels 1 -sub_ksp_type preonly
+
+   To set the options on the solvers separate for each block call `PCASMGetSubKSP()`
+   and set the options directly on the resulting `KSP` object (you can access its `PC` with `KSPGetPC()`)
 
     References:
 +   * - M Dryja, OB Widlund, An additive variant of the Schwarz alternating method for the case of many subregions
@@ -1235,10 +1229,9 @@ PetscErrorCode PCASMGetSubKSP(PC pc, PetscInt *n_local, PetscInt *first_local, K
 -   * - Barry Smith, Petter Bjorstad, and William Gropp, Domain Decompositions: Parallel Multilevel Methods for Elliptic Partial Differential Equations,
     Cambridge University Press.
 
-.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`,
+.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCASMType`, `PCCompositeType`,
           `PCBJACOBI`, `PCASMGetSubKSP()`, `PCASMSetLocalSubdomains()`, `PCASMType`, `PCASMGetType()`, `PCASMSetLocalType()`, `PCASMGetLocalType()`
           `PCASMSetTotalSubdomains()`, `PCSetModifySubMatrices()`, `PCASMSetOverlap()`, `PCASMSetType()`, `PCCompositeType`
-
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_ASM(PC pc) {
@@ -1295,7 +1288,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_ASM(PC pc) {
 
 /*@C
    PCASMCreateSubdomains - Creates the index sets for the overlapping Schwarz
-   preconditioner for any problem on a general grid.
+   preconditioner, `PCASM`,  for any problem on a general grid.
 
    Collective
 
@@ -1308,12 +1301,14 @@ PETSC_EXTERN PetscErrorCode PCCreate_ASM(PC pc) {
 
    Level: advanced
 
-   Note: this generates nonoverlapping subdomains; the PCASM will generate the overlap
-    from these if you use PCASMSetLocalSubdomains()
+   Note:
+   This generates nonoverlapping subdomains; the `PCASM` will generate the overlap
+   from these if you use `PCASMSetLocalSubdomains()`
 
-    In the Fortran version you must provide the array outis[] already allocated of length n.
+   Fortran Note:
+   You must provide the array outis[] already allocated of length n.
 
-.seealso: `PCASMSetLocalSubdomains()`, `PCASMDestroySubdomains()`
+.seealso: `PCASM`, `PCASMSetLocalSubdomains()`, `PCASMDestroySubdomains()`
 @*/
 PetscErrorCode PCASMCreateSubdomains(Mat A, PetscInt n, IS *outis[]) {
   MatPartitioning mpart;
@@ -1463,8 +1458,7 @@ PetscErrorCode PCASMCreateSubdomains(Mat A, PetscInt n, IS *outis[]) {
 
 /*@C
    PCASMDestroySubdomains - Destroys the index sets created with
-   PCASMCreateSubdomains(). Should be called after setting subdomains
-   with PCASMSetLocalSubdomains().
+   `PCASMCreateSubdomains()`. Should be called after setting subdomains with `PCASMSetLocalSubdomains()`.
 
    Collective
 
@@ -1475,7 +1469,7 @@ PetscErrorCode PCASMCreateSubdomains(Mat A, PetscInt n, IS *outis[]) {
 
    Level: advanced
 
-.seealso: `PCASMCreateSubdomains()`, `PCASMSetLocalSubdomains()`
+.seealso: `PCASM`, `PCASMCreateSubdomains()`, `PCASMSetLocalSubdomains()`
 @*/
 PetscErrorCode PCASMDestroySubdomains(PetscInt n, IS is[], IS is_local[]) {
   PetscInt i;
@@ -1497,7 +1491,7 @@ PetscErrorCode PCASMDestroySubdomains(PetscInt n, IS is[], IS is_local[]) {
 
 /*@
    PCASMCreateSubdomains2D - Creates the index sets for the overlapping Schwarz
-   preconditioner for a two-dimensional problem on a regular grid.
+   preconditioner, `PCASM`, for a two-dimensional problem on a regular grid.
 
    Not Collective
 
@@ -1515,13 +1509,13 @@ PetscErrorCode PCASMDestroySubdomains(PetscInt n, IS is[], IS is_local[]) {
 -  is_local - array of index sets defining non-overlapping subdomains
 
    Note:
-   Presently PCAMSCreateSubdomains2d() is valid only for sequential
+   Presently `PCAMSCreateSubdomains2d()` is valid only for sequential
    preconditioners.  More general related routines are
-   PCASMSetTotalSubdomains() and PCASMSetLocalSubdomains().
+   `PCASMSetTotalSubdomains()` and `PCASMSetLocalSubdomains()`.
 
    Level: advanced
 
-.seealso: `PCASMSetTotalSubdomains()`, `PCASMSetLocalSubdomains()`, `PCASMGetSubKSP()`,
+.seealso: `PCASM`, `PCASMSetTotalSubdomains()`, `PCASMSetLocalSubdomains()`, `PCASMGetSubKSP()`,
           `PCASMSetOverlap()`
 @*/
 PetscErrorCode PCASMCreateSubdomains2D(PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscInt dof, PetscInt overlap, PetscInt *Nsub, IS **is, IS **is_local) {
@@ -1581,7 +1575,7 @@ PetscErrorCode PCASMCreateSubdomains2D(PetscInt m, PetscInt n, PetscInt M, Petsc
 
 /*@C
     PCASMGetLocalSubdomains - Gets the local subdomains (for this processor
-    only) for the additive Schwarz preconditioner.
+    only) for the additive Schwarz preconditioner, `PCASM`.
 
     Not Collective
 
@@ -1593,12 +1587,12 @@ PetscErrorCode PCASMCreateSubdomains2D(PetscInt m, PetscInt n, PetscInt M, Petsc
 .   is - if requested, the index sets that define the subdomains for this processor
 -   is_local - if requested, the index sets that define the local part of the subdomains for this processor (can be NULL)
 
-    Notes:
-    The IS numbering is in the parallel, global numbering of the vector.
+    Note:
+    The `IS` numbering is in the parallel, global numbering of the vector.
 
     Level: advanced
 
-.seealso: `PCASMSetTotalSubdomains()`, `PCASMSetOverlap()`, `PCASMGetSubKSP()`,
+.seealso: `PCASM`, `PCASMSetTotalSubdomains()`, `PCASMSetOverlap()`, `PCASMGetSubKSP()`,
           `PCASMCreateSubdomains2D()`, `PCASMSetLocalSubdomains()`, `PCASMGetLocalSubmatrices()`
 @*/
 PetscErrorCode PCASMGetLocalSubdomains(PC pc, PetscInt *n, IS *is[], IS *is_local[]) {
@@ -1620,7 +1614,7 @@ PetscErrorCode PCASMGetLocalSubdomains(PC pc, PetscInt *n, IS *is[], IS *is_loca
 
 /*@C
     PCASMGetLocalSubmatrices - Gets the local submatrices (for this processor
-    only) for the additive Schwarz preconditioner.
+    only) for the additive Schwarz preconditioner, `PCASM`.
 
     Not Collective
 
@@ -1634,11 +1628,11 @@ PetscErrorCode PCASMGetLocalSubdomains(PC pc, PetscInt *n, IS *is[], IS *is_loca
     Level: advanced
 
     Notes:
-    Call after PCSetUp() (or KSPSetUp()) but before PCApply() and before PCSetUpOnBlocks())
+    Call after `PCSetUp()` (or `KSPSetUp()`) but before `PCApply()` and before `PCSetUpOnBlocks()`)
 
-           Usually one would use PCSetModifySubMatrices() to change the submatrices in building the preconditioner.
+    Usually one would use `PCSetModifySubMatrices()` to change the submatrices in building the preconditioner.
 
-.seealso: `PCASMSetTotalSubdomains()`, `PCASMSetOverlap()`, `PCASMGetSubKSP()`,
+.seealso: `PCASM`, `PCASMSetTotalSubdomains()`, `PCASMSetOverlap()`, `PCASMGetSubKSP()`,
           `PCASMCreateSubdomains2D()`, `PCASMSetLocalSubdomains()`, `PCASMGetLocalSubdomains()`, `PCSetModifySubMatrices()`
 @*/
 PetscErrorCode PCASMGetLocalSubmatrices(PC pc, PetscInt *n, Mat *mat[]) {
@@ -1663,24 +1657,24 @@ PetscErrorCode PCASMGetLocalSubmatrices(PC pc, PetscInt *n, Mat *mat[]) {
 }
 
 /*@
-    PCASMSetDMSubdomains - Indicates whether to use DMCreateDomainDecomposition() to define the subdomains, whenever possible.
+    PCASMSetDMSubdomains - Indicates whether to use `DMCreateDomainDecomposition()` to define the subdomains, whenever possible.
 
     Logically Collective
 
     Input Parameters:
 +   pc  - the preconditioner
--   flg - boolean indicating whether to use subdomains defined by the DM
+-   flg - boolean indicating whether to use subdomains defined by the `DM`
 
     Options Database Key:
-.   -pc_asm_dm_subdomains <bool> - use subdomains defined by the DM
+.   -pc_asm_dm_subdomains <bool> - use subdomains defined by the `DM`
 
     Level: intermediate
 
-    Notes:
-    PCASMSetTotalSubdomains() and PCASMSetOverlap() take precedence over PCASMSetDMSubdomains(),
+    Note:
+    `PCASMSetTotalSubdomains()` and `PCASMSetOverlap()` take precedence over `PCASMSetDMSubdomains()`,
     so setting either of the first two effectively turns the latter off.
 
-.seealso: `PCASMGetDMSubdomains()`, `PCASMSetTotalSubdomains()`, `PCASMSetOverlap()`
+.seealso: `PCASM`, `PCASMGetDMSubdomains()`, `PCASMSetTotalSubdomains()`, `PCASMSetOverlap()`
           `PCASMCreateSubdomains2D()`, `PCASMSetLocalSubdomains()`, `PCASMGetLocalSubdomains()`
 @*/
 PetscErrorCode PCASMSetDMSubdomains(PC pc, PetscBool flg) {
@@ -1697,7 +1691,8 @@ PetscErrorCode PCASMSetDMSubdomains(PC pc, PetscBool flg) {
 }
 
 /*@
-    PCASMGetDMSubdomains - Returns flag indicating whether to use DMCreateDomainDecomposition() to define the subdomains, whenever possible.
+    PCASMGetDMSubdomains - Returns flag indicating whether to use `DMCreateDomainDecomposition()` to define the subdomains, whenever possible.
+
     Not Collective
 
     Input Parameter:
@@ -1708,7 +1703,7 @@ PetscErrorCode PCASMSetDMSubdomains(PC pc, PetscBool flg) {
 
     Level: intermediate
 
-.seealso: `PCASMSetDMSubdomains()`, `PCASMSetTotalSubdomains()`, `PCASMSetOverlap()`
+.seealso: `PCASM`, `PCASMSetDMSubdomains()`, `PCASMSetTotalSubdomains()`, `PCASMSetOverlap()`
           `PCASMCreateSubdomains2D()`, `PCASMSetLocalSubdomains()`, `PCASMGetLocalSubdomains()`
 @*/
 PetscErrorCode PCASMGetDMSubdomains(PC pc, PetscBool *flg) {
@@ -1725,19 +1720,19 @@ PetscErrorCode PCASMGetDMSubdomains(PC pc, PetscBool *flg) {
 }
 
 /*@
-     PCASMGetSubMatType - Gets the matrix type used for ASM subsolves, as a string.
+     PCASMGetSubMatType - Gets the matrix type used for `PCASM` subsolves, as a string.
 
    Not Collective
 
    Input Parameter:
-.  pc - the PC
+.  pc - the `PC`
 
    Output Parameter:
-.  -pc_asm_sub_mat_type - name of matrix type
+.  pc_asm_sub_mat_type - name of matrix type
 
    Level: advanced
 
-.seealso: `PCASMSetSubMatType()`, `PCASM`, `PCSetType()`, `VecSetType()`, `MatType`, `Mat`
+.seealso: `PCASM`, `PCASMSetSubMatType()`, `PCASM`, `PCSetType()`, `VecSetType()`, `MatType`, `Mat`
 @*/
 PetscErrorCode PCASMGetSubMatType(PC pc, MatType *sub_mat_type) {
   PetscFunctionBegin;
@@ -1747,23 +1742,24 @@ PetscErrorCode PCASMGetSubMatType(PC pc, MatType *sub_mat_type) {
 }
 
 /*@
-     PCASMSetSubMatType - Set the type of matrix used for ASM subsolves
+     PCASMSetSubMatType - Set the type of matrix used for `PCASM` subsolves
 
-   Collective on Mat
+   Collective on pc
 
    Input Parameters:
-+  pc             - the PC object
--  sub_mat_type   - matrix type
++  pc             - the `PC` object
+-  sub_mat_type   - the `MatType`
 
    Options Database Key:
-.  -pc_asm_sub_mat_type  <sub_mat_type> - Sets the matrix type used for subsolves, for example, seqaijviennacl. If you specify a base name like aijviennacl, the corresponding sequential type is assumed.
+.  -pc_asm_sub_mat_type  <sub_mat_type> - Sets the matrix type used for subsolves, for example, seqaijviennacl.
+   If you specify a base name like aijviennacl, the corresponding sequential type is assumed.
 
-   Notes:
+   Note:
    See "${PETSC_DIR}/include/petscmat.h" for available types
 
   Level: advanced
 
-.seealso: `PCASMGetSubMatType()`, `PCASM`, `PCSetType()`, `VecSetType()`, `MatType`, `Mat`
+.seealso: `PCASM`, `PCASMGetSubMatType()`, `PCASM`, `PCSetType()`, `VecSetType()`, `MatType`, `Mat`
 @*/
 PetscErrorCode PCASMSetSubMatType(PC pc, MatType sub_mat_type) {
   PetscFunctionBegin;
