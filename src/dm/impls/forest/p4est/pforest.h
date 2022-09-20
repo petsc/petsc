@@ -1319,7 +1319,7 @@ static PetscErrorCode DMView_ASCII_pforest(PetscObject odm, PetscViewer viewer) 
     PetscCall(DMGetDimension(dm, &dim));
     if (name) PetscCall(PetscViewerASCIIPrintf(viewer, "Forest %s in %" PetscInt_FMT " dimensions:\n", name, dim));
     else PetscCall(PetscViewerASCIIPrintf(viewer, "Forest in %" PetscInt_FMT " dimensions:\n", dim));
-  }
+  } /* fall through */
   case PETSC_VIEWER_ASCII_INFO_DETAIL:
   case PETSC_VIEWER_LOAD_BALANCE: {
     DM plex;

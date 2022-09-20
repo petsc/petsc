@@ -2026,7 +2026,7 @@ static PetscErrorCode DMPlexCreateSphereMesh_Internal(DM dm, PetscInt dim, Petsc
   Vec            coordinates;
   PetscScalar   *coords;
   PetscReal     *coordsIn;
-  PetscInt       numCells, numEdges, numVerts, firstVertex, v, firstEdge, coordSize, d, c, e;
+  PetscInt       numCells, numEdges, numVerts = 0, firstVertex = 0, v, firstEdge, coordSize, d, c, e;
   PetscMPIInt    rank;
 
   PetscFunctionBegin;
@@ -2444,8 +2444,8 @@ static PetscErrorCode DMPlexCreateSphereMesh_Internal(DM dm, PetscInt dim, Petsc
       PetscCall(DMPlexSymmetrize(dm));
       PetscCall(DMPlexStratify(dm));
       PetscCall(PetscFree(graph));
-      break;
     }
+    break;
   default: SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unsupported dimension for sphere: %" PetscInt_FMT, dim);
   }
   /* Create coordinates */

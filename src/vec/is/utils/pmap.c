@@ -171,7 +171,7 @@ PetscErrorCode PetscLayoutCreateFromRanges(MPI_Comm comm, const PetscInt range[]
     PetscCall(PetscMalloc1(map->size + 1, &map->range));
     PetscCall(PetscArraycpy(map->range, range, map->size + 1));
     break;
-  case PETSC_USE_POINTER: map->range_alloc = PETSC_FALSE;
+  case PETSC_USE_POINTER: map->range_alloc = PETSC_FALSE; break;
   default: map->range = (PetscInt *)range; break;
   }
   map->rstart = map->range[rank];
