@@ -605,6 +605,7 @@ static PetscErrorCode HandlePoint_Private(DM dm, PetscInt p, PetscSection sectio
         if (insert) PetscCall(DMLabelSetValue(ovAdjByRank, adj[a], remoteRank));
       }
     }
+    PetscCall(PetscFree(adj));
   }
   PetscFunctionReturn(0);
 }
