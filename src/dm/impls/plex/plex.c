@@ -1851,7 +1851,7 @@ PetscErrorCode DMPlexCoordinatesView(DM dm, PetscViewer viewer) {
     PetscCall(PetscViewerGetFormat(viewer, &format));
     if (format == PETSC_VIEWER_HDF5_PETSC || format == PETSC_VIEWER_DEFAULT || format == PETSC_VIEWER_NATIVE) {
       PetscCall(DMPlexCoordinatesView_HDF5_Internal(dm, viewer));
-    } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "PetscViewerFormat %s not supported for HDF5 input.", PetscViewerFormats[format]);
+    } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "PetscViewerFormat %s not supported for HDF5 output.", PetscViewerFormats[format]);
 #else
     SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
 #endif
