@@ -4800,9 +4800,10 @@ PetscErrorCode DMPlexComputeResidual_Hybrid_Internal(DM dm, PetscFormKey key[], 
   PetscDS         ds         = NULL;
   PetscDS         dsAux[3]   = {NULL, NULL, NULL};
   Vec             locA[3]    = {NULL, NULL, NULL};
+  PetscScalar    *a[3]       = {NULL, NULL, NULL};
   PetscSection    section    = NULL;
   DMField         coordField = NULL;
-  PetscScalar    *u          = NULL, *u_t, *a[3];
+  PetscScalar    *u          = NULL, *u_t;
   PetscScalar    *elemVec;
   IS              chunkIS;
   const PetscInt *cells;
@@ -4853,6 +4854,7 @@ PetscErrorCode DMPlexComputeResidual_Hybrid_Internal(DM dm, PetscFormKey key[], 
         else if (support[1] == cellStart) s = 0;
         else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %" PetscInt_FMT " does not have cell %" PetscInt_FMT " in its support", cone[c], cellStart);
         PetscCall(DMGetAuxiliaryVec(dm, key[c].label, key[c].value, key[c].part, &locA[c]));
+        PetscCheck(locA[c], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must have auxiliary vector for (%p, %" PetscInt_FMT ", %" PetscInt_FMT ")", key[c].label, key[c].value, key[c].part);
         if (locA[c]) PetscCall(VecGetDM(locA[c], &dmAux[c]));
         else dmAux[c] = dmAux[2];
         PetscCall(DMGetCellDS(dmAux[c], support[s], &dsAux[c]));
