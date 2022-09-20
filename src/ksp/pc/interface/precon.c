@@ -412,7 +412,7 @@ PetscErrorCode PCApply(PC pc, Vec x, Vec y) {
   PetscValidHeaderSpecific(x, VEC_CLASSID, 2);
   PetscValidHeaderSpecific(y, VEC_CLASSID, 3);
   PetscCheck(x != y, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_IDN, "x and y must be different vectors");
-  if (pc->erroriffailure) PetscCall(VecValidValues(x, 2, PETSC_TRUE));
+  if (pc->erroriffailure) PetscCall(VecValidValues_Internal(x, 2, PETSC_TRUE));
   /* use pmat to check vector sizes since for KSPLSQR the pmat may be of a different size than mat */
   PetscCall(MatGetLocalSize(pc->pmat, &m, &n));
   PetscCall(VecGetLocalSize(x, &mv));
@@ -427,7 +427,7 @@ PetscErrorCode PCApply(PC pc, Vec x, Vec y) {
   PetscCall(PetscLogEventBegin(PC_Apply, pc, x, y, 0));
   PetscUseTypeMethod(pc, apply, x, y);
   PetscCall(PetscLogEventEnd(PC_Apply, pc, x, y, 0));
-  if (pc->erroriffailure) PetscCall(VecValidValues(y, 3, PETSC_FALSE));
+  if (pc->erroriffailure) PetscCall(VecValidValues_Internal(y, 3, PETSC_FALSE));
   PetscCall(VecLockReadPop(x));
   PetscFunctionReturn(0);
 }
@@ -518,14 +518,14 @@ PetscErrorCode PCApplySymmetricLeft(PC pc, Vec x, Vec y) {
   PetscValidHeaderSpecific(x, VEC_CLASSID, 2);
   PetscValidHeaderSpecific(y, VEC_CLASSID, 3);
   PetscCheck(x != y, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_IDN, "x and y must be different vectors");
-  if (pc->erroriffailure) PetscCall(VecValidValues(x, 2, PETSC_TRUE));
+  if (pc->erroriffailure) PetscCall(VecValidValues_Internal(x, 2, PETSC_TRUE));
   PetscCall(PCSetUp(pc));
   PetscCall(VecLockReadPush(x));
   PetscCall(PetscLogEventBegin(PC_ApplySymmetricLeft, pc, x, y, 0));
   PetscUseTypeMethod(pc, applysymmetricleft, x, y);
   PetscCall(PetscLogEventEnd(PC_ApplySymmetricLeft, pc, x, y, 0));
   PetscCall(VecLockReadPop(x));
-  if (pc->erroriffailure) PetscCall(VecValidValues(y, 3, PETSC_FALSE));
+  if (pc->erroriffailure) PetscCall(VecValidValues_Internal(y, 3, PETSC_FALSE));
   PetscFunctionReturn(0);
 }
 
@@ -554,14 +554,14 @@ PetscErrorCode PCApplySymmetricRight(PC pc, Vec x, Vec y) {
   PetscValidHeaderSpecific(x, VEC_CLASSID, 2);
   PetscValidHeaderSpecific(y, VEC_CLASSID, 3);
   PetscCheck(x != y, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_IDN, "x and y must be different vectors");
-  if (pc->erroriffailure) PetscCall(VecValidValues(x, 2, PETSC_TRUE));
+  if (pc->erroriffailure) PetscCall(VecValidValues_Internal(x, 2, PETSC_TRUE));
   PetscCall(PCSetUp(pc));
   PetscCall(VecLockReadPush(x));
   PetscCall(PetscLogEventBegin(PC_ApplySymmetricRight, pc, x, y, 0));
   PetscUseTypeMethod(pc, applysymmetricright, x, y);
   PetscCall(PetscLogEventEnd(PC_ApplySymmetricRight, pc, x, y, 0));
   PetscCall(VecLockReadPop(x));
-  if (pc->erroriffailure) PetscCall(VecValidValues(y, 3, PETSC_FALSE));
+  if (pc->erroriffailure) PetscCall(VecValidValues_Internal(y, 3, PETSC_FALSE));
   PetscFunctionReturn(0);
 }
 
@@ -593,14 +593,14 @@ PetscErrorCode PCApplyTranspose(PC pc, Vec x, Vec y) {
   PetscValidHeaderSpecific(x, VEC_CLASSID, 2);
   PetscValidHeaderSpecific(y, VEC_CLASSID, 3);
   PetscCheck(x != y, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_IDN, "x and y must be different vectors");
-  if (pc->erroriffailure) PetscCall(VecValidValues(x, 2, PETSC_TRUE));
+  if (pc->erroriffailure) PetscCall(VecValidValues_Internal(x, 2, PETSC_TRUE));
   PetscCall(PCSetUp(pc));
   PetscCall(VecLockReadPush(x));
   PetscCall(PetscLogEventBegin(PC_Apply, pc, x, y, 0));
   PetscUseTypeMethod(pc, applytranspose, x, y);
   PetscCall(PetscLogEventEnd(PC_Apply, pc, x, y, 0));
   PetscCall(VecLockReadPop(x));
-  if (pc->erroriffailure) PetscCall(VecValidValues(y, 3, PETSC_FALSE));
+  if (pc->erroriffailure) PetscCall(VecValidValues_Internal(y, 3, PETSC_FALSE));
   PetscFunctionReturn(0);
 }
 
@@ -663,7 +663,7 @@ PetscErrorCode PCApplyBAorAB(PC pc, PCSide side, Vec x, Vec y, Vec work) {
   PetscCheck(x != y, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_IDN, "x and y must be different vectors");
   PetscCheck(side == PC_LEFT || side == PC_SYMMETRIC || side == PC_RIGHT, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_OUTOFRANGE, "Side must be right, left, or symmetric");
   PetscCheck(!pc->diagonalscale || side != PC_SYMMETRIC, PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "Cannot include diagonal scaling with symmetric preconditioner application");
-  if (pc->erroriffailure) PetscCall(VecValidValues(x, 3, PETSC_TRUE));
+  if (pc->erroriffailure) PetscCall(VecValidValues_Internal(x, 3, PETSC_TRUE));
 
   PetscCall(PCSetUp(pc));
   if (pc->diagonalscale) {
@@ -702,7 +702,7 @@ PetscErrorCode PCApplyBAorAB(PC pc, PCSide side, Vec x, Vec y, Vec work) {
       PetscCall(PCApplySymmetricLeft(pc, work, y));
     }
   }
-  if (pc->erroriffailure) PetscCall(VecValidValues(y, 4, PETSC_FALSE));
+  if (pc->erroriffailure) PetscCall(VecValidValues_Internal(y, 4, PETSC_FALSE));
   PetscFunctionReturn(0);
 }
 
@@ -737,10 +737,10 @@ PetscErrorCode PCApplyBAorABTranspose(PC pc, PCSide side, Vec x, Vec y, Vec work
   PetscValidHeaderSpecific(y, VEC_CLASSID, 4);
   PetscValidHeaderSpecific(work, VEC_CLASSID, 5);
   PetscCheck(x != y, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_IDN, "x and y must be different vectors");
-  if (pc->erroriffailure) PetscCall(VecValidValues(x, 3, PETSC_TRUE));
+  if (pc->erroriffailure) PetscCall(VecValidValues_Internal(x, 3, PETSC_TRUE));
   if (pc->ops->applyBAtranspose) {
     PetscUseTypeMethod(pc, applyBAtranspose, side, x, y, work);
-    if (pc->erroriffailure) PetscCall(VecValidValues(y, 4, PETSC_FALSE));
+    if (pc->erroriffailure) PetscCall(VecValidValues_Internal(y, 4, PETSC_FALSE));
     PetscFunctionReturn(0);
   }
   PetscCheck(side == PC_LEFT || side == PC_RIGHT, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_OUTOFRANGE, "Side must be right or left");
@@ -754,7 +754,7 @@ PetscErrorCode PCApplyBAorABTranspose(PC pc, PCSide side, Vec x, Vec y, Vec work
     PetscCall(PCApplyTranspose(pc, work, y));
   }
   /* add support for PC_SYMMETRIC */
-  if (pc->erroriffailure) PetscCall(VecValidValues(y, 4, PETSC_FALSE));
+  if (pc->erroriffailure) PetscCall(VecValidValues_Internal(y, 4, PETSC_FALSE));
   PetscFunctionReturn(0);
 }
 

@@ -666,8 +666,6 @@ PETSC_EXTERN PETSC_DEPRECATED_FUNCTION("Use VecLockReadPop() (since version 3.11
 #define VecLocked(x, arg)           0
 #endif
 
-PETSC_EXTERN PetscErrorCode VecValidValues(Vec, PetscInt, PetscBool);
-
 /*
     These numbers need to match the entries in
   the function table in vecimpl.h
@@ -898,5 +896,12 @@ PETSC_EXTERN PetscErrorCode VecTaggerAndGetSubs(VecTagger, PetscInt *, VecTagger
 
 PETSC_EXTERN PetscErrorCode VecTaggerInitializePackage(void);
 PETSC_EXTERN PetscErrorCode VecTaggerFinalizePackage(void);
+
+#if PetscDefined(USE_DEBUG)
+/* This is an internal debug-only routine that should not be used by users */
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecValidValues_Internal(Vec, PetscInt, PetscBool);
+#else
+#define VecValidValues_Internal(...) 0
+#endif /* PETSC_USE_DEBUG */
 
 #endif

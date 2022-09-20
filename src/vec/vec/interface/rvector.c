@@ -15,20 +15,20 @@
 #endif
 PetscInt VecGetSubVectorSavedStateId = -1;
 
-PETSC_EXTERN PetscErrorCode VecValidValues(Vec vec, PetscInt argnum, PetscBool begin) {
-#if defined(PETSC_USE_DEBUG)
-  PetscInt           n, i;
-  const PetscScalar *x;
-
+#if PetscDefined(USE_DEBUG)
+// this is a no-op '0' macro in optimized builds
+PetscErrorCode VecValidValues_Internal(Vec vec, PetscInt argnum, PetscBool begin) {
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_DEVICE)
-  if ((vec->petscnative || vec->ops->getarray) && (vec->offloadmask & PETSC_OFFLOAD_CPU)) {
-#else
   if (vec->petscnative || vec->ops->getarray) {
-#endif
+    PetscInt           n;
+    const PetscScalar *x;
+    PetscOffloadMask   mask;
+
+    PetscCall(VecGetOffloadMask(vec, &mask));
+    if (!PetscOffloadHost(mask)) PetscFunctionReturn(0);
     PetscCall(VecGetLocalSize(vec, &n));
     PetscCall(VecGetArrayRead(vec, &x));
-    for (i = 0; i < n; i++) {
+    for (PetscInt i = 0; i < n; i++) {
       if (begin) {
         PetscCheck(!PetscIsInfOrNanScalar(x[i]), PETSC_COMM_SELF, PETSC_ERR_FP, "Vec entry at local location %" PetscInt_FMT " is not-a-number or infinite at beginning of function: Parameter number %" PetscInt_FMT, i, argnum);
       } else {
@@ -37,11 +37,9 @@ PETSC_EXTERN PetscErrorCode VecValidValues(Vec vec, PetscInt argnum, PetscBool b
     }
     PetscCall(VecRestoreArrayRead(vec, &x));
   }
-#else
-  PetscFunctionBegin;
-#endif
   PetscFunctionReturn(0);
 }
+#endif
 
 /*@
    VecMaxPointwiseDivide - Computes the maximum of the componentwise division max = max_i abs(x_i/y_i).
