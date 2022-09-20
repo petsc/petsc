@@ -8,7 +8,7 @@ class Configure(config.package.Package):
     self.versionname      = 'MUMPS_VERSION'
     self.requiresversion  = 1
     self.gitcommit        = 'v'+self.version
-    self.download         = ['http://mumps.enseeiht.fr/MUMPS_'+self.version+'.tar.gz',
+    self.download         = ['https://graal.ens-lyon.fr/MUMPS/MUMPS_'+self.version+'.tar.gz',
                              'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/MUMPS_'+self.version+'.tar.gz']
     self.downloaddirnames = ['petsc-pkg-mumps','MUMPS']
     self.liblist          = [['libcmumps.a','libdmumps.a','libsmumps.a','libzmumps.a','libmumps_common.a','libpord.a'],
