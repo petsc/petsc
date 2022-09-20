@@ -1443,7 +1443,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Binary(PetscViewer v) {
   PetscViewer_Binary *vbinary;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(v, &vbinary));
+  PetscCall(PetscNew(&vbinary));
   v->data = (void *)vbinary;
 
   v->ops->setfromoptions   = PetscViewerSetFromOptions_Binary;

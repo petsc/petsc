@@ -1644,7 +1644,6 @@ PetscErrorCode KSPSetWorkVecs(KSP ksp, PetscInt nw) {
   PetscCall(VecDestroyVecs(ksp->nwork, &ksp->work));
   ksp->nwork = nw;
   PetscCall(KSPCreateVecs(ksp, nw, &ksp->work, 0, NULL));
-  PetscCall(PetscLogObjectParents(ksp, nw, ksp->work));
   PetscFunctionReturn(0);
 }
 

@@ -354,7 +354,7 @@ PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Ptrimmed(PetscSpace sp) {
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  PetscCall(PetscNewLog(sp, &pt));
+  PetscCall(PetscNew(&pt));
   sp->data = pt;
 
   pt->subspaces = NULL;

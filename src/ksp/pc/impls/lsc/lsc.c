@@ -192,7 +192,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_LSC(PC pc) {
   PC_LSC *lsc;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(pc, &lsc));
+  PetscCall(PetscNew(&lsc));
   pc->data = (void *)lsc;
 
   pc->ops->apply           = PCApply_LSC;

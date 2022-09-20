@@ -559,7 +559,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_BCGSL(KSP ksp) {
 
   PetscFunctionBegin;
   /* allocate BiCGStab(L) context */
-  PetscCall(PetscNewLog(ksp, &bcgsl));
+  PetscCall(PetscNew(&bcgsl));
   ksp->data = (void *)bcgsl;
 
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_PRECONDITIONED, PC_LEFT, 3));

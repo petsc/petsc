@@ -12,37 +12,6 @@
 #include <petsctime.h>
 #include <petscviewer.h>
 
-/* this is not consistently used and is difficult to keep correct if done manually, possibly it should be removed */
-PetscErrorCode PetscLogObjectParent(PetscObject p, PetscObject c) {
-  if (!c || !p) return 0;
-  c->parent   = p;
-  c->parentid = p->id;
-  return 0;
-}
-
-/*@C
-   PetscLogObjectMemory - Adds to an object a count of additional amount of memory that is used by the object.
-
-   Not collective.
-
-   Input Parameters:
-+  obj  - the PETSc object
--  mem  - the amount of memory that is being added to the object
-
-   Level: developer
-
-   Developer Note:
-   This is not used consistently. It is very difficult to manually track the memory usage per object so this should
-   likely be removed and replaced with an automated system.
-
-.seealso: `PetscFinalize()`, `PetscInitializeFortran()`, `PetscGetArgs()`, `PetscInitializeNoArguments()`
-@*/
-PetscErrorCode PetscLogObjectMemory(PetscObject p, PetscLogDouble m) {
-  if (!p) return 0;
-  p->mem += m;
-  return 0;
-}
-
 PetscLogEvent PETSC_LARGEST_EVENT = PETSC_EVENT;
 
 #if defined(PETSC_USE_LOG)

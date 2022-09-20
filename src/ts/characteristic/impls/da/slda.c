@@ -70,7 +70,6 @@ PETSC_EXTERN PetscErrorCode CharacteristicCreate_DA(Characteristic c) {
   PetscFunctionBegin;
   PetscCall(PetscNew(&da));
   PetscCall(PetscMemzero(da, sizeof(Characteristic_DA)));
-  PetscCall(PetscLogObjectMemory((PetscObject)c, sizeof(Characteristic_DA)));
   c->data = (void *)da;
 
   c->ops->setup   = CharacteristicSetUp_DA;

@@ -282,7 +282,7 @@ PETSC_EXTERN PetscErrorCode TaoLineSearchCreate_MT(TaoLineSearch ls) {
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ls, TAOLINESEARCH_CLASSID, 1);
-  PetscCall(PetscNewLog(ls, &ctx));
+  PetscCall(PetscNew(&ctx));
   ctx->bracket            = 0;
   ctx->infoc              = 1;
   ls->data                = (void *)ctx;

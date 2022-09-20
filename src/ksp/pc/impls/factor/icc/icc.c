@@ -177,7 +177,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_ICC(PC pc) {
   PC_ICC *icc;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(pc, &icc));
+  PetscCall(PetscNew(&icc));
   pc->data = (void *)icc;
   PetscCall(PCFactorInitialize(pc, MAT_FACTOR_ICC));
 

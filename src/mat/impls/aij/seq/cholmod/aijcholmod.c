@@ -70,7 +70,7 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_cholmod(Mat A, MatFactorType fty
   PetscCall(MatSetSizes(B, PETSC_DECIDE, PETSC_DECIDE, m, n));
   PetscCall(PetscStrallocpy("cholmod", &((PetscObject)B)->type_name));
   PetscCall(MatSetUp(B));
-  PetscCall(PetscNewLog(B, &chol));
+  PetscCall(PetscNew(&chol));
 
   chol->Wrap = MatWrapCholmod_seqaij;
   B->data    = chol;

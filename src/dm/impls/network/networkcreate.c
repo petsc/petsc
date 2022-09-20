@@ -366,7 +366,7 @@ PetscErrorCode DMClone_Network(DM dm, DM *newdm) {
 
   PetscFunctionBegin;
   network->cloneshared->refct++;
-  PetscCall(PetscNewLog(*newdm, &newnetwork));
+  PetscCall(PetscNew(&newnetwork));
   (*newdm)->data = newnetwork;
   PetscCall(DMNetworkInitializeToDefault_NonShared(*newdm));
   newnetwork->cloneshared = network->cloneshared; /* Share all data that can be cloneshared */
@@ -395,8 +395,8 @@ PETSC_EXTERN PetscErrorCode DMCreate_Network(DM dm) {
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscCall(PetscNewLog(dm, &network));
-  PetscCall(PetscNewLog(dm, &network->cloneshared));
+  PetscCall(PetscNew(&network));
+  PetscCall(PetscNew(&network->cloneshared));
   dm->data = network;
 
   PetscCall(DMNetworkInitializeToDefault(dm));

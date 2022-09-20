@@ -151,8 +151,6 @@ void PetscMatrixSampler::sample(H2Opus_Real *x, H2Opus_Real *y, int samples) {
     PetscCallVoid(MatCreateDenseCUDA(comm, m, PETSC_DECIDE, M, samples, py, &Y));
 #endif
   }
-  PetscCallVoid(PetscLogObjectParent((PetscObject)this->A, (PetscObject)X));
-  PetscCallVoid(PetscLogObjectParent((PetscObject)this->A, (PetscObject)Y));
   PetscCallVoid(MatMatMult(this->A, X, MAT_REUSE_MATRIX, PETSC_DEFAULT, &Y));
 #if defined(PETSC_HAVE_CUDA)
   if (this->gpusampling) {

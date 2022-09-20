@@ -41,7 +41,6 @@ PetscErrorCode PetscDrawBarCreate(PetscDraw draw, PetscDrawBar *bar) {
   PetscValidPointer(bar, 2);
 
   PetscCall(PetscHeaderCreate(h, PETSC_DRAWBAR_CLASSID, "DrawBar", "Bar Graph", "Draw", PetscObjectComm((PetscObject)draw), PetscDrawBarDestroy, NULL));
-  PetscCall(PetscLogObjectParent((PetscObject)draw, (PetscObject)h));
 
   PetscCall(PetscObjectReference((PetscObject)draw));
   h->win = draw;

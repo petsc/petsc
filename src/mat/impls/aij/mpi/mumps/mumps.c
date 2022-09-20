@@ -2969,7 +2969,7 @@ static PetscErrorCode MatGetFactor_aij_mumps(Mat A, MatFactorType ftype, Mat *F)
   PetscCall(PetscStrallocpy("mumps", &((PetscObject)B)->type_name));
   PetscCall(MatSetUp(B));
 
-  PetscCall(PetscNewLog(B, &mumps));
+  PetscCall(PetscNew(&mumps));
 
   B->ops->view    = MatView_MUMPS;
   B->ops->getinfo = MatGetInfo_MUMPS;
@@ -3044,7 +3044,7 @@ static PetscErrorCode MatGetFactor_sbaij_mumps(Mat A, MatFactorType ftype, Mat *
   PetscCall(PetscStrallocpy("mumps", &((PetscObject)B)->type_name));
   PetscCall(MatSetUp(B));
 
-  PetscCall(PetscNewLog(B, &mumps));
+  PetscCall(PetscNew(&mumps));
   PetscCall(PetscObjectTypeCompare((PetscObject)A, MATSEQSBAIJ, &isSeqSBAIJ));
   if (isSeqSBAIJ) {
     mumps->ConvertToTriples = MatConvertToTriples_seqsbaij_seqsbaij;
@@ -3112,7 +3112,7 @@ static PetscErrorCode MatGetFactor_baij_mumps(Mat A, MatFactorType ftype, Mat *F
   PetscCall(PetscStrallocpy("mumps", &((PetscObject)B)->type_name));
   PetscCall(MatSetUp(B));
 
-  PetscCall(PetscNewLog(B, &mumps));
+  PetscCall(PetscNew(&mumps));
   if (ftype == MAT_FACTOR_LU) {
     B->ops->lufactorsymbolic = MatLUFactorSymbolic_BAIJMUMPS;
     B->factortype            = MAT_FACTOR_LU;
@@ -3173,7 +3173,7 @@ static PetscErrorCode MatGetFactor_sell_mumps(Mat A, MatFactorType ftype, Mat *F
   PetscCall(PetscStrallocpy("mumps", &((PetscObject)B)->type_name));
   PetscCall(MatSetUp(B));
 
-  PetscCall(PetscNewLog(B, &mumps));
+  PetscCall(PetscNew(&mumps));
 
   B->ops->view    = MatView_MUMPS;
   B->ops->getinfo = MatGetInfo_MUMPS;

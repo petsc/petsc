@@ -622,7 +622,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_LSQR(KSP ksp) {
   void     *ctx;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(ksp, &lsqr));
+  PetscCall(PetscNew(&lsqr));
   lsqr->se         = NULL;
   lsqr->se_flg     = PETSC_FALSE;
   lsqr->exact_norm = PETSC_FALSE;

@@ -944,7 +944,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_FAS(SNES snes) {
 
   snes->alwayscomputesfinalresidual = PETSC_TRUE;
 
-  PetscCall(PetscNewLog(snes, &fas));
+  PetscCall(PetscNew(&fas));
 
   snes->data                  = (void *)fas;
   fas->level                  = 0;

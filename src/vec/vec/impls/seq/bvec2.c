@@ -851,7 +851,7 @@ PetscErrorCode VecCreate_Seq_Private(Vec v, const PetscScalar array[]) {
   Vec_Seq *s;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(v, &s));
+  PetscCall(PetscNew(&s));
   PetscCall(PetscMemcpy(v->ops, &DvOps, sizeof(DvOps)));
 
   v->data            = (void *)s;

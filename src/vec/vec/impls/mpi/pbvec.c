@@ -56,7 +56,6 @@ PetscErrorCode VecDuplicate_MPI(Vec win, Vec *v) {
     PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF, PetscAbs(win->map->bs), win->map->n + w->nghost, array, &vw->localrep));
     PetscCall(PetscMemcpy(vw->localrep->ops, w->localrep->ops, sizeof(struct _VecOps)));
     PetscCall(VecRestoreArray(*v, &array));
-    PetscCall(PetscLogObjectParent((PetscObject)*v, (PetscObject)vw->localrep));
 
     vw->localupdate = w->localupdate;
     if (vw->localupdate) PetscCall(PetscObjectReference((PetscObject)vw->localupdate));
@@ -469,7 +468,7 @@ PetscErrorCode VecCreate_MPI_Private(Vec v, PetscBool alloc, PetscInt nghost, co
   Vec_MPI *s;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(v, &s));
+  PetscCall(PetscNew(&s));
   v->data = (void *)s;
   PetscCall(PetscMemcpy(v->ops, &DvOps, sizeof(DvOps)));
   s->nghost      = nghost;
@@ -483,7 +482,6 @@ PetscErrorCode VecCreate_MPI_Private(Vec v, PetscBool alloc, PetscInt nghost, co
   if (alloc && !array) {
     PetscInt n = v->map->n + nghost;
     PetscCall(PetscCalloc1(n, &s->array));
-    PetscCall(PetscLogObjectMemory((PetscObject)v, n * sizeof(PetscScalar)));
     s->array_allocated = s->array;
   }
 
@@ -643,7 +641,6 @@ PetscErrorCode VecCreateGhostWithArray(MPI_Comm comm, PetscInt n, PetscInt N, Pe
   /* Create local representation */
   PetscCall(VecGetArray(*vv, &larray));
   PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF, 1, n + nghost, larray, &w->localrep));
-  PetscCall(PetscLogObjectParent((PetscObject)*vv, (PetscObject)w->localrep));
   PetscCall(VecRestoreArray(*vv, &larray));
 
   /*
@@ -652,7 +649,6 @@ PetscErrorCode VecCreateGhostWithArray(MPI_Comm comm, PetscInt n, PetscInt N, Pe
   PetscCall(ISCreateGeneral(comm, nghost, ghosts, PETSC_COPY_VALUES, &from));
   PetscCall(ISCreateStride(PETSC_COMM_SELF, nghost, n, 1, &to));
   PetscCall(VecScatterCreate(*vv, from, w->localrep, to, &w->localupdate));
-  PetscCall(PetscLogObjectParent((PetscObject)*vv, (PetscObject)w->localupdate));
   PetscCall(ISDestroy(&to));
   PetscCall(ISDestroy(&from));
 
@@ -753,7 +749,6 @@ PetscErrorCode VecMPISetGhost(Vec vv, PetscInt nghost, const PetscInt ghosts[]) 
     /* Create local representation */
     PetscCall(VecGetArray(vv, &larray));
     PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF, 1, n + nghost, larray, &w->localrep));
-    PetscCall(PetscLogObjectParent((PetscObject)vv, (PetscObject)w->localrep));
     PetscCall(VecRestoreArray(vv, &larray));
 
     /*
@@ -762,7 +757,6 @@ PetscErrorCode VecMPISetGhost(Vec vv, PetscInt nghost, const PetscInt ghosts[]) 
     PetscCall(ISCreateGeneral(comm, nghost, ghosts, PETSC_COPY_VALUES, &from));
     PetscCall(ISCreateStride(PETSC_COMM_SELF, nghost, n, 1, &to));
     PetscCall(VecScatterCreate(vv, from, w->localrep, to, &w->localupdate));
-    PetscCall(PetscLogObjectParent((PetscObject)vv, (PetscObject)w->localupdate));
     PetscCall(ISDestroy(&to));
     PetscCall(ISDestroy(&from));
 
@@ -841,7 +835,6 @@ PetscErrorCode VecCreateGhostBlockWithArray(MPI_Comm comm, PetscInt bs, PetscInt
   /* Create local representation */
   PetscCall(VecGetArray(*vv, &larray));
   PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF, bs, n + bs * nghost, larray, &w->localrep));
-  PetscCall(PetscLogObjectParent((PetscObject)*vv, (PetscObject)w->localrep));
   PetscCall(VecRestoreArray(*vv, &larray));
 
   /*
@@ -850,7 +843,6 @@ PetscErrorCode VecCreateGhostBlockWithArray(MPI_Comm comm, PetscInt bs, PetscInt
   PetscCall(ISCreateBlock(comm, bs, nghost, ghosts, PETSC_COPY_VALUES, &from));
   PetscCall(ISCreateStride(PETSC_COMM_SELF, bs * nghost, n, 1, &to));
   PetscCall(VecScatterCreate(*vv, from, w->localrep, to, &w->localupdate));
-  PetscCall(PetscLogObjectParent((PetscObject)*vv, (PetscObject)w->localupdate));
   PetscCall(ISDestroy(&to));
   PetscCall(ISDestroy(&from));
 

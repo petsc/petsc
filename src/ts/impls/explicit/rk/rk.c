@@ -1458,7 +1458,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_RK(TS ts) {
   ts->ops->forwardstep      = TSForwardStep_RK;
   ts->ops->forwardgetstages = TSForwardGetStages_RK;
 
-  PetscCall(PetscNewLog(ts, &rk));
+  PetscCall(PetscNew(&rk));
   ts->data = (void *)rk;
 
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSRKGetOrder_C", TSRKGetOrder_RK));

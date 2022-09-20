@@ -572,7 +572,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_LCL(Tao tao) {
   tao->ops->view           = TaoView_LCL;
   tao->ops->setfromoptions = TaoSetFromOptions_LCL;
   tao->ops->destroy        = TaoDestroy_LCL;
-  PetscCall(PetscNewLog(tao, &lclP));
+  PetscCall(PetscNew(&lclP));
   tao->data = (void *)lclP;
 
   /* Override default settings (unless already changed) */

@@ -207,7 +207,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_MINRES(KSP ksp) {
   PetscFunctionBegin;
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_PRECONDITIONED, PC_LEFT, 3));
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_NONE, PC_LEFT, 1));
-  PetscCall(PetscNewLog(ksp, &minres));
+  PetscCall(PetscNew(&minres));
 
   /* this parameter is arbitrary; but e-50 didn't work for __float128 in one example */
 #if defined(PETSC_USE_REAL___FLOAT128)

@@ -274,7 +274,7 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_klu(Mat A, MatFactorType ftype, 
   PetscCall(PetscStrallocpy("klu", &((PetscObject)B)->type_name));
   PetscCall(MatSetUp(B));
 
-  PetscCall(PetscNewLog(B, &lu));
+  PetscCall(PetscNew(&lu));
 
   B->data                  = lu;
   B->ops->getinfo          = MatGetInfo_External;

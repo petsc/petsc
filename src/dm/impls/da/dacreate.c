@@ -341,7 +341,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_DA(DM da) {
 
   PetscFunctionBegin;
   PetscValidPointer(da, 1);
-  PetscCall(PetscNewLog(da, &dd));
+  PetscCall(PetscNew(&dd));
   da->data = dd;
 
   da->dim        = -1;

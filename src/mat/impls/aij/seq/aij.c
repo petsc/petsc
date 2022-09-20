@@ -512,13 +512,9 @@ PetscErrorCode MatSeqAIJSetTotalPreallocation(Mat A, PetscInt nztotal) {
   PetscCall(PetscLayoutSetUp(A->rmap));
   PetscCall(PetscLayoutSetUp(A->cmap));
   a->maxnz = nztotal;
-  if (!a->imax) {
-    PetscCall(PetscMalloc1(A->rmap->n, &a->imax));
-    PetscCall(PetscLogObjectMemory((PetscObject)A, A->rmap->n * sizeof(PetscInt)));
-  }
+  if (!a->imax) { PetscCall(PetscMalloc1(A->rmap->n, &a->imax)); }
   if (!a->ilen) {
     PetscCall(PetscMalloc1(A->rmap->n, &a->ilen));
-    PetscCall(PetscLogObjectMemory((PetscObject)A, A->rmap->n * sizeof(PetscInt)));
   } else {
     PetscCall(PetscMemzero(a->ilen, A->rmap->n * sizeof(PetscInt)));
   }
@@ -527,10 +523,8 @@ PetscErrorCode MatSeqAIJSetTotalPreallocation(Mat A, PetscInt nztotal) {
   if (A->structure_only) {
     PetscCall(PetscMalloc1(nztotal, &a->j));
     PetscCall(PetscMalloc1(A->rmap->n + 1, &a->i));
-    PetscCall(PetscLogObjectMemory((PetscObject)A, (A->rmap->n + 1) * sizeof(PetscInt) + nztotal * sizeof(PetscInt)));
   } else {
     PetscCall(PetscMalloc3(nztotal, &a->a, nztotal, &a->j, A->rmap->n + 1, &a->i));
-    PetscCall(PetscLogObjectMemory((PetscObject)A, (A->rmap->n + 1) * sizeof(PetscInt) + nztotal * (sizeof(PetscScalar) + sizeof(PetscInt))));
   }
   a->i[0] = 0;
   if (A->structure_only) {
@@ -1620,7 +1614,6 @@ PetscErrorCode MatMarkDiagonal_SeqAIJ(Mat A) {
   PetscFunctionBegin;
   if (!a->diag) {
     PetscCall(PetscMalloc1(m, &a->diag));
-    PetscCall(PetscLogObjectMemory((PetscObject)A, m * sizeof(PetscInt)));
     alreadySet = PETSC_FALSE;
   }
   for (i = 0; i < A->rmap->n; i++) {
@@ -1811,10 +1804,7 @@ PetscErrorCode MatInvertDiagonal_SeqAIJ(Mat A, PetscScalar omega, PetscScalar fs
   if (a->idiagvalid) PetscFunctionReturn(0);
   PetscCall(MatMarkDiagonal_SeqAIJ(A));
   diag = a->diag;
-  if (!a->idiag) {
-    PetscCall(PetscMalloc3(m, &a->idiag, m, &a->mdiag, m, &a->ssor_work));
-    PetscCall(PetscLogObjectMemory((PetscObject)A, 3 * m * sizeof(PetscScalar)));
-  }
+  if (!a->idiag) { PetscCall(PetscMalloc3(m, &a->idiag, m, &a->mdiag, m, &a->ssor_work)); }
 
   mdiag = a->mdiag;
   idiag = a->idiag;
@@ -2030,7 +2020,7 @@ PetscErrorCode MatGetInfo_SeqAIJ(Mat A, MatInfoType flag, MatInfo *info) {
   info->nz_unneeded  = (a->maxnz - a->nz);
   info->assemblies   = A->num_ass;
   info->mallocs      = A->info.mallocs;
-  info->memory       = ((PetscObject)A)->mem;
+  info->memory       = 0; /* REVIEW ME */
   if (A->factortype) {
     info->fill_ratio_given  = A->info.fill_ratio_given;
     info->fill_ratio_needed = A->info.fill_ratio_needed;
@@ -2601,11 +2591,9 @@ PetscErrorCode MatILUFactor_SeqAIJ(Mat inA, IS row, IS col, const MatFactorInfo 
   /* Create the inverse permutation so that it can be used in MatLUFactorNumeric() */
   PetscCall(ISDestroy(&a->icol));
   PetscCall(ISInvertPermutation(col, PETSC_DECIDE, &a->icol));
-  PetscCall(PetscLogObjectParent((PetscObject)inA, (PetscObject)a->icol));
 
   if (!a->solve_work) { /* this matrix may have been factored before */
     PetscCall(PetscMalloc1(inA->rmap->n + 1, &a->solve_work));
-    PetscCall(PetscLogObjectMemory((PetscObject)inA, (inA->rmap->n + 1) * sizeof(PetscScalar)));
   }
 
   PetscCall(MatMarkDiagonal_SeqAIJ(inA));
@@ -3171,10 +3159,7 @@ PetscErrorCode MatInvertBlockDiagonal_SeqAIJ(Mat A, const PetscScalar **values) 
     PetscFunctionReturn(0);
   }
   PetscCall(MatMarkDiagonal_SeqAIJ(A));
-  if (!a->ibdiag) {
-    PetscCall(PetscMalloc1(bs2 * mbs, &a->ibdiag));
-    PetscCall(PetscLogObjectMemory((PetscObject)A, bs2 * mbs * sizeof(PetscScalar)));
-  }
+  if (!a->ibdiag) { PetscCall(PetscMalloc1(bs2 * mbs, &a->ibdiag)); }
   diag = a->ibdiag;
   if (values) *values = a->ibdiag;
   /* factor and invert each block */
@@ -3597,10 +3582,7 @@ PetscErrorCode MatStoreValues_SeqAIJ(Mat mat) {
   PetscCheck(aij->nonew, PETSC_COMM_SELF, PETSC_ERR_ORDER, "Must call MatSetOption(A,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);first");
 
   /* allocate space for values if not already there */
-  if (!aij->saved_values) {
-    PetscCall(PetscMalloc1(nz + 1, &aij->saved_values));
-    PetscCall(PetscLogObjectMemory((PetscObject)mat, (nz + 1) * sizeof(PetscScalar)));
-  }
+  if (!aij->saved_values) { PetscCall(PetscMalloc1(nz + 1, &aij->saved_values)); }
 
   /* copy values over */
   PetscCall(PetscArraycpy(aij->saved_values, aij->a, nz));
@@ -3843,21 +3825,14 @@ PetscErrorCode MatSeqAIJSetPreallocation_SeqAIJ(Mat B, PetscInt nz, const PetscI
   b = (Mat_SeqAIJ *)B->data;
 
   if (!skipallocation) {
-    if (!b->imax) {
-      PetscCall(PetscMalloc1(B->rmap->n, &b->imax));
-      PetscCall(PetscLogObjectMemory((PetscObject)B, B->rmap->n * sizeof(PetscInt)));
-    }
+    if (!b->imax) { PetscCall(PetscMalloc1(B->rmap->n, &b->imax)); }
     if (!b->ilen) {
       /* b->ilen will count nonzeros in each row so far. */
       PetscCall(PetscCalloc1(B->rmap->n, &b->ilen));
-      PetscCall(PetscLogObjectMemory((PetscObject)B, B->rmap->n * sizeof(PetscInt)));
     } else {
       PetscCall(PetscMemzero(b->ilen, B->rmap->n * sizeof(PetscInt)));
     }
-    if (!b->ipre) {
-      PetscCall(PetscMalloc1(B->rmap->n, &b->ipre));
-      PetscCall(PetscLogObjectMemory((PetscObject)B, B->rmap->n * sizeof(PetscInt)));
-    }
+    if (!b->ipre) { PetscCall(PetscMalloc1(B->rmap->n, &b->ipre)); }
     if (!nnz) {
       if (nz == PETSC_DEFAULT || nz == PETSC_DECIDE) nz = 10;
       else if (nz < 0) nz = 1;
@@ -3879,10 +3854,8 @@ PetscErrorCode MatSeqAIJSetPreallocation_SeqAIJ(Mat B, PetscInt nz, const PetscI
     if (B->structure_only) {
       PetscCall(PetscMalloc1(nz, &b->j));
       PetscCall(PetscMalloc1(B->rmap->n + 1, &b->i));
-      PetscCall(PetscLogObjectMemory((PetscObject)B, (B->rmap->n + 1) * sizeof(PetscInt) + nz * sizeof(PetscInt)));
     } else {
       PetscCall(PetscMalloc3(nz, &b->a, nz, &b->j, B->rmap->n + 1, &b->i));
-      PetscCall(PetscLogObjectMemory((PetscObject)B, (B->rmap->n + 1) * sizeof(PetscInt) + nz * (sizeof(PetscScalar) + sizeof(PetscInt))));
     }
     b->i[0] = 0;
     for (i = 1; i < B->rmap->n + 1; i++) b->i[i] = b->i[i - 1] + b->imax[i - 1];
@@ -4608,7 +4581,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJ(Mat B) {
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)B), &size));
   PetscCheck(size <= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Comm must be of size 1");
 
-  PetscCall(PetscNewLog(B, &b));
+  PetscCall(PetscNew(&b));
 
   B->data = (void *)b;
 
@@ -4717,12 +4690,10 @@ PetscErrorCode MatDuplicateNoCreate_SeqAIJ(Mat C, Mat A, MatDuplicateOption cpva
     PetscCall(PetscMemcpy(c->imax, a->imax, m * sizeof(PetscInt)));
     PetscCall(PetscMalloc1(m, &c->ilen));
     PetscCall(PetscMemcpy(c->ilen, a->ilen, m * sizeof(PetscInt)));
-    PetscCall(PetscLogObjectMemory((PetscObject)C, 2 * m * sizeof(PetscInt)));
 
     /* allocate the matrix space */
     if (mallocmatspace) {
       PetscCall(PetscMalloc3(a->i[m], &c->a, a->i[m], &c->j, m + 1, &c->i));
-      PetscCall(PetscLogObjectMemory((PetscObject)C, a->i[m] * (sizeof(PetscScalar) + sizeof(PetscInt)) + (m + 1) * sizeof(PetscInt)));
 
       c->singlemalloc = PETSC_TRUE;
 
@@ -4747,7 +4718,6 @@ PetscErrorCode MatDuplicateNoCreate_SeqAIJ(Mat C, Mat A, MatDuplicateOption cpva
     if (a->diag) {
       PetscCall(PetscMalloc1(m + 1, &c->diag));
       PetscCall(PetscMemcpy(c->diag, a->diag, m * sizeof(PetscInt)));
-      PetscCall(PetscLogObjectMemory((PetscObject)C, (m + 1) * sizeof(PetscInt)));
     } else c->diag = NULL;
 
     c->solve_work         = NULL;

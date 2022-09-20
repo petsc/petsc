@@ -1945,7 +1945,6 @@ PetscErrorCode KSPSetPC(KSP ksp, PC pc) {
   PetscCall(PetscObjectReference((PetscObject)pc));
   PetscCall(PCDestroy(&ksp->pc));
   ksp->pc = pc;
-  PetscCall(PetscLogObjectParent((PetscObject)ksp, (PetscObject)ksp->pc));
   PetscFunctionReturn(0);
 }
 
@@ -1972,7 +1971,6 @@ PetscErrorCode KSPGetPC(KSP ksp, PC *pc) {
   if (!ksp->pc) {
     PetscCall(PCCreate(PetscObjectComm((PetscObject)ksp), &ksp->pc));
     PetscCall(PetscObjectIncrementTabLevel((PetscObject)ksp->pc, (PetscObject)ksp, 0));
-    PetscCall(PetscLogObjectParent((PetscObject)ksp, (PetscObject)ksp->pc));
     PetscCall(PetscObjectSetOptions((PetscObject)ksp->pc, ((PetscObject)ksp)->options));
   }
   *pc = ksp->pc;
@@ -2581,14 +2579,10 @@ PetscErrorCode KSPBuildResidual(KSP ksp, Vec t, Vec v, Vec *V) {
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  if (!w) {
-    PetscCall(VecDuplicate(ksp->vec_rhs, &w));
-    PetscCall(PetscLogObjectParent((PetscObject)ksp, (PetscObject)w));
-  }
+  if (!w) { PetscCall(VecDuplicate(ksp->vec_rhs, &w)); }
   if (!tt) {
     PetscCall(VecDuplicate(ksp->vec_sol, &tt));
     flag = PETSC_TRUE;
-    PetscCall(PetscLogObjectParent((PetscObject)ksp, (PetscObject)tt));
   }
   PetscUseTypeMethod(ksp, buildresidual, tt, w, V);
   if (flag) PetscCall(VecDestroy(&tt));

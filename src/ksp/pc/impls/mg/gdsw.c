@@ -70,7 +70,6 @@ static PetscErrorCode PCMGGDSWSetUp(PC pc, PetscInt l, DM dm, KSP smooth, PetscI
 
     PetscCall(PCGetOperators(smoothpc, &smoothA, NULL));
     PetscCall(PCCreate(PetscObjectComm((PetscObject)A), &pcbddc));
-    PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)pcbddc));
     PetscCall(PCSetType(pcbddc, PCBDDC));
     PetscCall(PCSetOperators(pcbddc, smoothA, A));
     PetscCall(PCISSetUp(pcbddc, PETSC_TRUE, PETSC_FALSE));

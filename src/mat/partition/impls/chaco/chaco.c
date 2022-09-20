@@ -647,7 +647,7 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Chaco(MatPartitioning part) {
   MatPartitioning_Chaco *chaco;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(part, &chaco));
+  PetscCall(PetscNew(&chaco));
   part->data = (void *)chaco;
 
   chaco->global_method = MP_CHACO_MULTILEVEL;

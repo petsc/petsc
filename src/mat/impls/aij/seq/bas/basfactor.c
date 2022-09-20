@@ -79,7 +79,6 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ_Bas(Mat fact, Mat A, IS perm, const M
   b->icol          = iperm;
   b->pivotinblocks = PETSC_FALSE; /* need to get from MatFactorInfo */
   PetscCall(PetscMalloc1(am + 1, &b->solve_work));
-  PetscCall(PetscLogObjectMemory((PetscObject)(fact), (ui[am] - am) * (sizeof(PetscInt) + sizeof(MatScalar))));
   b->maxnz = b->nz = ui[am];
   b->free_a        = PETSC_TRUE;
   b->free_ij       = PETSC_TRUE;

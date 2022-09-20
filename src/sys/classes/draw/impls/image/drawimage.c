@@ -513,7 +513,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_Image(PetscDraw draw) {
   draw->h = h = size[1];
   draw->x     = 0;
 
-  PetscCall(PetscNewLog(draw, &img));
+  PetscCall(PetscNew(&img));
   PetscCall(PetscMemcpy(draw->ops, &DvOps, sizeof(DvOps)));
   draw->data = (void *)img;
 

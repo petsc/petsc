@@ -301,7 +301,7 @@ PetscErrorCode MatCreateTranspose(Mat A, Mat *N) {
   PetscCall(PetscLayoutSetUp((*N)->cmap));
   PetscCall(PetscObjectChangeTypeName((PetscObject)*N, MATTRANSPOSEVIRTUAL));
 
-  PetscCall(PetscNewLog(*N, &Na));
+  PetscCall(PetscNew(&Na));
   (*N)->data = (void *)Na;
   PetscCall(PetscObjectReference((PetscObject)A));
   Na->A = A;

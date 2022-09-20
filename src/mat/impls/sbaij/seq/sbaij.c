@@ -53,7 +53,6 @@ PetscErrorCode MatMarkDiagonal_SeqSBAIJ(Mat A) {
   PetscFunctionBegin;
   if (!a->diag) {
     PetscCall(PetscMalloc1(a->mbs, &a->diag));
-    PetscCall(PetscLogObjectMemory((PetscObject)A, a->mbs * sizeof(PetscInt)));
     a->free_diag = PETSC_TRUE;
   }
   for (i = 0; i < a->mbs; i++) {
@@ -730,7 +729,6 @@ PetscErrorCode MatAssemblyEnd_SeqSBAIJ_SeqAIJ_Inode(Mat A) {
     a->inode.node_count = node_count;
 
     PetscCall(PetscMalloc1(node_count, &a->inode.size));
-    PetscCall(PetscLogObjectMemory((PetscObject)A, node_count * sizeof(PetscInt)));
     PetscCall(PetscArraycpy(a->inode.size, ns, node_count));
     PetscCall(PetscFree(ns));
     PetscCall(PetscInfo(A, "Found %" PetscInt_FMT " nodes of %" PetscInt_FMT ". Limit used: %" PetscInt_FMT ". Using Inode routines\n", node_count, m, a->inode.limit));
@@ -822,7 +820,6 @@ PetscErrorCode MatAssemblyEnd_SeqSBAIJ(Mat A, MatAssemblyType mode) {
       PetscCall(PetscFree(a->jshort));
     }
     PetscCall(PetscMalloc1(a->i[A->rmap->n], &a->jshort));
-    PetscCall(PetscLogObjectMemory((PetscObject)A, a->i[A->rmap->n] * sizeof(unsigned short)));
     for (i = 0; i < a->i[A->rmap->n]; i++) a->jshort[i] = a->j[i];
     A->ops->mult   = MatMult_SeqSBAIJ_1_ushort;
     A->ops->sor    = MatSOR_SeqSBAIJ_ushort;
@@ -991,12 +988,8 @@ PetscErrorCode MatICCFactor_SeqSBAIJ(Mat inA, IS row, const MatFactorInfo *info)
 
   /* Create the invert permutation so that it can be used in MatCholeskyFactorNumeric() */
   if (a->icol) PetscCall(ISInvertPermutation(row, PETSC_DECIDE, &a->icol));
-  PetscCall(PetscLogObjectParent((PetscObject)inA, (PetscObject)a->icol));
 
-  if (!a->solve_work) {
-    PetscCall(PetscMalloc1(inA->rmap->N + inA->rmap->bs, &a->solve_work));
-    PetscCall(PetscLogObjectMemory((PetscObject)inA, (inA->rmap->N + inA->rmap->bs) * sizeof(PetscScalar)));
-  }
+  if (!a->solve_work) { PetscCall(PetscMalloc1(inA->rmap->N + inA->rmap->bs, &a->solve_work)); }
 
   PetscCall(MatCholeskyFactorNumeric(outA, inA, info));
   PetscFunctionReturn(0);
@@ -1568,8 +1561,6 @@ static PetscErrorCode MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B, PetscInt bs, P
       PetscCall(PetscMalloc2(mbs, &b->imax, mbs, &b->ilen));
 
       b->free_imax_ilen = PETSC_TRUE;
-
-      PetscCall(PetscLogObjectMemory((PetscObject)B, 2 * mbs * sizeof(PetscInt)));
     }
     if (!nnz) {
       if (nz == PETSC_DEFAULT || nz == PETSC_DECIDE) nz = 5;
@@ -1592,7 +1583,6 @@ static PetscErrorCode MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B, PetscInt bs, P
     /* allocate the matrix space */
     PetscCall(MatSeqXAIJFreeAIJ(B, &b->a, &b->j, &b->i));
     PetscCall(PetscMalloc3(bs2 * nz, &b->a, nz, &b->j, B->rmap->N + 1, &b->i));
-    PetscCall(PetscLogObjectMemory((PetscObject)B, (B->rmap->N + 1) * sizeof(PetscInt) + nz * (bs2 * sizeof(PetscScalar) + sizeof(PetscInt))));
     PetscCall(PetscArrayzero(b->a, nz * bs2));
     PetscCall(PetscArrayzero(b->j, nz));
 
@@ -1822,7 +1812,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqSBAIJ(Mat B) {
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)B), &size));
   PetscCheck(size <= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Comm must be of size 1");
 
-  PetscCall(PetscNewLog(B, &b));
+  PetscCall(PetscNew(&b));
   B->data = (void *)b;
   PetscCall(PetscMemcpy(B->ops, &MatOps_Values, sizeof(struct _MatOps)));
 
@@ -2068,7 +2058,6 @@ PetscErrorCode MatDuplicate_SeqSBAIJ(Mat A, MatDuplicateOption cpvalues, Mat *B)
     c->free_imax_ilen = PETSC_FALSE;
   } else {
     PetscCall(PetscMalloc2((mbs + 1), &c->imax, (mbs + 1), &c->ilen));
-    PetscCall(PetscLogObjectMemory((PetscObject)C, 2 * (mbs + 1) * sizeof(PetscInt)));
     for (i = 0; i < mbs; i++) {
       c->imax[i] = a->imax[i];
       c->ilen[i] = a->ilen[i];
@@ -2079,7 +2068,6 @@ PetscErrorCode MatDuplicate_SeqSBAIJ(Mat A, MatDuplicateOption cpvalues, Mat *B)
   /* allocate the matrix space */
   if (cpvalues == MAT_SHARE_NONZERO_PATTERN) {
     PetscCall(PetscMalloc1(bs2 * nz, &c->a));
-    PetscCall(PetscLogObjectMemory((PetscObject)C, nz * bs2 * sizeof(MatScalar)));
     c->i            = a->i;
     c->j            = a->j;
     c->singlemalloc = PETSC_FALSE;
@@ -2092,7 +2080,6 @@ PetscErrorCode MatDuplicate_SeqSBAIJ(Mat A, MatDuplicateOption cpvalues, Mat *B)
   } else {
     PetscCall(PetscMalloc3(bs2 * nz, &c->a, nz, &c->j, mbs + 1, &c->i));
     PetscCall(PetscArraycpy(c->i, a->i, mbs + 1));
-    PetscCall(PetscLogObjectMemory((PetscObject)C, (mbs + 1) * sizeof(PetscInt) + nz * (bs2 * sizeof(MatScalar) + sizeof(PetscInt))));
     c->singlemalloc = PETSC_TRUE;
     c->free_a       = PETSC_TRUE;
     c->free_ij      = PETSC_TRUE;
@@ -2108,7 +2095,6 @@ PetscErrorCode MatDuplicate_SeqSBAIJ(Mat A, MatDuplicateOption cpvalues, Mat *B)
       /* cannot share jshort, it is reallocated in MatAssemblyEnd_SeqSBAIJ() */
       /* if the parent matrix is reassembled, this child matrix will never notice */
       PetscCall(PetscMalloc1(nz, &c->jshort));
-      PetscCall(PetscLogObjectMemory((PetscObject)C, nz * sizeof(unsigned short)));
       PetscCall(PetscArraycpy(c->jshort, a->jshort, nz));
 
       c->free_jshort = PETSC_TRUE;
@@ -2124,7 +2110,6 @@ PetscErrorCode MatDuplicate_SeqSBAIJ(Mat A, MatDuplicateOption cpvalues, Mat *B)
       c->free_diag = PETSC_FALSE;
     } else {
       PetscCall(PetscMalloc1(mbs, &c->diag));
-      PetscCall(PetscLogObjectMemory((PetscObject)C, mbs * sizeof(PetscInt)));
       for (i = 0; i < mbs; i++) c->diag[i] = a->diag[i];
       c->free_diag = PETSC_TRUE;
     }
@@ -2199,7 +2184,6 @@ PetscErrorCode MatCreateSeqSBAIJWithArrays(MPI_Comm comm, PetscInt bs, PetscInt 
   PetscCall(MatSeqSBAIJSetPreallocation(*mat, bs, MAT_SKIP_ALLOCATION, NULL));
   sbaij = (Mat_SeqSBAIJ *)(*mat)->data;
   PetscCall(PetscMalloc2(m, &sbaij->imax, m, &sbaij->ilen));
-  PetscCall(PetscLogObjectMemory((PetscObject)*mat, 2 * m * sizeof(PetscInt)));
 
   sbaij->i = i;
   sbaij->j = j;

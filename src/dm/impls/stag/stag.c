@@ -875,7 +875,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Stag(DM dm) {
 
   PetscFunctionBegin;
   PetscValidPointer(dm, 1);
-  PetscCall(PetscNewLog(dm, &stag));
+  PetscCall(PetscNew(&stag));
   dm->data = stag;
 
   stag->gtol           = NULL;

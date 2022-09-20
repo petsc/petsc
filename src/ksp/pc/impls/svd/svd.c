@@ -353,7 +353,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_SVD(PC pc) {
      Creates the private data structure for this preconditioner and
      attach it to the PC object.
   */
-  PetscCall(PetscNewLog(pc, &jac));
+  PetscCall(PetscNew(&jac));
   jac->zerosing = 1.e-12;
   pc->data      = (void *)jac;
 

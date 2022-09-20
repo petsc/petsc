@@ -514,7 +514,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_Alpha2(TS ts) {
 
   ts->usessnes = PETSC_TRUE;
 
-  PetscCall(PetscNewLog(ts, &th));
+  PetscCall(PetscNew(&th));
   ts->data = (void *)th;
 
   th->Alpha_m = 0.5;

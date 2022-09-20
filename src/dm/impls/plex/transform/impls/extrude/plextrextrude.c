@@ -649,7 +649,7 @@ PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_Extrude(DMPlexTransform tr) {
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
-  PetscCall(PetscNewLog(tr, &ex));
+  PetscCall(PetscNew(&ex));
   tr->data      = ex;
   ex->thickness = 1.;
   ex->useTensor = PETSC_TRUE;

@@ -251,7 +251,7 @@ PetscErrorCode MatCreateLRC(Mat A, Mat U, Vec c, Mat V, Mat *N) {
   /* Flag matrix as symmetric if A is symmetric and U == V */
   PetscCall(MatSetOption(*N, MAT_SYMMETRIC, (PetscBool)((A ? A->symmetric == PETSC_BOOL3_TRUE : PETSC_TRUE) && U == V)));
 
-  PetscCall(PetscNewLog(*N, &Na));
+  PetscCall(PetscNew(&Na));
   (*N)->data = (void *)Na;
   Na->A      = A;
   Na->U      = U;
@@ -276,7 +276,6 @@ PetscErrorCode MatCreateLRC(Mat A, Mat U, Vec c, Mat V, Mat *N) {
       PetscCall(VecScatterEnd(sct, Na->c, c, INSERT_VALUES, SCATTER_FORWARD));
       PetscCall(VecScatterDestroy(&sct));
       PetscCall(VecDestroy(&Na->c));
-      PetscCall(PetscLogObjectParent((PetscObject)*N, (PetscObject)c));
       Na->c = c;
     }
     PetscCall(MatDenseGetLocalMatrix(Na->V, &Vloc));
@@ -284,10 +283,6 @@ PetscErrorCode MatCreateLRC(Mat A, Mat U, Vec c, Mat V, Mat *N) {
     PetscCall(MatCreateVecs(Vloc, NULL, &Na->xl));
     PetscCall(MatCreateVecs(Uloc, NULL, &Na->yl));
   }
-  PetscCall(PetscLogObjectParent((PetscObject)*N, (PetscObject)Na->work1));
-  PetscCall(PetscLogObjectParent((PetscObject)*N, (PetscObject)Na->work1));
-  PetscCall(PetscLogObjectParent((PetscObject)*N, (PetscObject)Na->xl));
-  PetscCall(PetscLogObjectParent((PetscObject)*N, (PetscObject)Na->yl));
 
   /* Internally create a scaling vector if roottypes do not match */
   if (Na->c) {
@@ -300,7 +295,6 @@ PetscErrorCode MatCreateLRC(Mat A, Mat U, Vec c, Mat V, Mat *N) {
       PetscCall(VecDuplicate(Na->c, &c));
       PetscCall(VecCopy(Na->c, c));
       PetscCall(VecDestroy(&Na->c));
-      PetscCall(PetscLogObjectParent((PetscObject)*N, (PetscObject)c));
       Na->c = c;
     }
   }

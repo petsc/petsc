@@ -224,7 +224,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BLMVM(Tao tao) {
   tao->ops->destroy        = TaoDestroy_BLMVM;
   tao->ops->computedual    = TaoComputeDual_BLMVM;
 
-  PetscCall(PetscNewLog(tao, &blmP));
+  PetscCall(PetscNew(&blmP));
   blmP->H0      = NULL;
   blmP->recycle = PETSC_FALSE;
   tao->data     = (void *)blmP;

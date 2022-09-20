@@ -535,7 +535,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_NTR(Tao tao) {
 
   PetscFunctionBegin;
 
-  PetscCall(PetscNewLog(tao, &tr));
+  PetscCall(PetscNew(&tr));
 
   tao->ops->setup          = TaoSetUp_NTR;
   tao->ops->solve          = TaoSolve_NTR;

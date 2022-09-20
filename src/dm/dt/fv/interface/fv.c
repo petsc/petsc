@@ -383,7 +383,7 @@ PETSC_EXTERN PetscErrorCode PetscLimiterCreate_Sin(PetscLimiter lim) {
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lim, PETSCLIMITER_CLASSID, 1);
-  PetscCall(PetscNewLog(lim, &l));
+  PetscCall(PetscNew(&l));
   lim->data = l;
 
   PetscCall(PetscLimiterInitialize_Sin(lim));
@@ -445,7 +445,7 @@ PETSC_EXTERN PetscErrorCode PetscLimiterCreate_Zero(PetscLimiter lim) {
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lim, PETSCLIMITER_CLASSID, 1);
-  PetscCall(PetscNewLog(lim, &l));
+  PetscCall(PetscNew(&l));
   lim->data = l;
 
   PetscCall(PetscLimiterInitialize_Zero(lim));
@@ -507,7 +507,7 @@ PETSC_EXTERN PetscErrorCode PetscLimiterCreate_None(PetscLimiter lim) {
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lim, PETSCLIMITER_CLASSID, 1);
-  PetscCall(PetscNewLog(lim, &l));
+  PetscCall(PetscNew(&l));
   lim->data = l;
 
   PetscCall(PetscLimiterInitialize_None(lim));
@@ -569,7 +569,7 @@ PETSC_EXTERN PetscErrorCode PetscLimiterCreate_Minmod(PetscLimiter lim) {
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lim, PETSCLIMITER_CLASSID, 1);
-  PetscCall(PetscNewLog(lim, &l));
+  PetscCall(PetscNew(&l));
   lim->data = l;
 
   PetscCall(PetscLimiterInitialize_Minmod(lim));
@@ -631,7 +631,7 @@ PETSC_EXTERN PetscErrorCode PetscLimiterCreate_VanLeer(PetscLimiter lim) {
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lim, PETSCLIMITER_CLASSID, 1);
-  PetscCall(PetscNewLog(lim, &l));
+  PetscCall(PetscNew(&l));
   lim->data = l;
 
   PetscCall(PetscLimiterInitialize_VanLeer(lim));
@@ -693,7 +693,7 @@ PETSC_EXTERN PetscErrorCode PetscLimiterCreate_VanAlbada(PetscLimiter lim) {
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lim, PETSCLIMITER_CLASSID, 1);
-  PetscCall(PetscNewLog(lim, &l));
+  PetscCall(PetscNew(&l));
   lim->data = l;
 
   PetscCall(PetscLimiterInitialize_VanAlbada(lim));
@@ -755,7 +755,7 @@ PETSC_EXTERN PetscErrorCode PetscLimiterCreate_Superbee(PetscLimiter lim) {
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lim, PETSCLIMITER_CLASSID, 1);
-  PetscCall(PetscNewLog(lim, &l));
+  PetscCall(PetscNew(&l));
   lim->data = l;
 
   PetscCall(PetscLimiterInitialize_Superbee(lim));
@@ -818,7 +818,7 @@ PETSC_EXTERN PetscErrorCode PetscLimiterCreate_MC(PetscLimiter lim) {
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lim, PETSCLIMITER_CLASSID, 1);
-  PetscCall(PetscNewLog(lim, &l));
+  PetscCall(PetscNew(&l));
   lim->data = l;
 
   PetscCall(PetscLimiterInitialize_MC(lim));
@@ -1781,7 +1781,7 @@ PETSC_EXTERN PetscErrorCode PetscFVCreate_Upwind(PetscFV fvm) {
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
-  PetscCall(PetscNewLog(fvm, &b));
+  PetscCall(PetscNew(&b));
   fvm->data = b;
 
   PetscCall(PetscFVInitialize_Upwind(fvm));
@@ -2076,7 +2076,7 @@ PETSC_EXTERN PetscErrorCode PetscFVCreate_LeastSquares(PetscFV fvm) {
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
-  PetscCall(PetscNewLog(fvm, &ls));
+  PetscCall(PetscNew(&ls));
   fvm->data = ls;
 
   ls->maxFaces = -1;

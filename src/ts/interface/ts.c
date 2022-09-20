@@ -2700,7 +2700,6 @@ PetscErrorCode TSGetSNES(TS ts, SNES *snes) {
     PetscCall(SNESCreate(PetscObjectComm((PetscObject)ts), &ts->snes));
     PetscCall(PetscObjectSetOptions((PetscObject)ts->snes, ((PetscObject)ts)->options));
     PetscCall(SNESSetFunction(ts->snes, NULL, SNESTSFormFunction, ts));
-    PetscCall(PetscLogObjectParent((PetscObject)ts, (PetscObject)ts->snes));
     PetscCall(PetscObjectIncrementTabLevel((PetscObject)ts->snes, (PetscObject)ts, 1));
     if (ts->dm) PetscCall(SNESSetDM(ts->snes, ts->dm));
     if (ts->problem_type == TS_LINEAR) PetscCall(SNESSetType(ts->snes, SNESKSPONLY));
@@ -4625,7 +4624,6 @@ PetscErrorCode TSGetAdapt(TS ts, TSAdapt *adapt) {
   PetscValidPointer(adapt, 2);
   if (!ts->adapt) {
     PetscCall(TSAdaptCreate(PetscObjectComm((PetscObject)ts), &ts->adapt));
-    PetscCall(PetscLogObjectParent((PetscObject)ts, (PetscObject)ts->adapt));
     PetscCall(PetscObjectIncrementTabLevel((PetscObject)ts->adapt, (PetscObject)ts, 1));
   }
   *adapt = ts->adapt;

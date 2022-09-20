@@ -195,7 +195,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_BCGS(KSP ksp) {
   KSP_BCGS *bcgs;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(ksp, &bcgs));
+  PetscCall(PetscNew(&bcgs));
 
   ksp->data                = bcgs;
   ksp->ops->setup          = KSPSetUp_BCGS;

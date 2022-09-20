@@ -64,7 +64,6 @@ PETSC_EXTERN PetscErrorCode PetscVFPrintfSetClosure(int (^)(const char *));
 */
 
 typedef struct {
-  PetscErrorCode (*getcomm)(PetscObject, MPI_Comm *);
   PetscErrorCode (*view)(PetscObject, PetscViewer);
   PetscErrorCode (*destroy)(PetscObject *);
   PetscErrorCode (*compose)(PetscObject, const char[], PetscObject);
@@ -96,12 +95,10 @@ typedef struct {
 */
 #define PETSC_MAX_OPTIONS_HANDLER 5
 typedef struct _p_PetscObject {
-  PetscClassId      classid;
   PetscOps          bops[1];
+  PetscClassId      classid;
   MPI_Comm          comm;
-  PetscInt          type;
-  PetscLogDouble    flops, time, mem, memchildren; /* these are not set properly and should possibly be removed */
-  PetscObjectId     id;                            /* this is used to compare object for identity that may no longer exist since memory addresses get recycled for new objects */
+  PetscObjectId     id; /* this is used to compare object for identity that may no longer exist since memory addresses get recycled for new objects */
   PetscInt          refct;
   PetscMPIInt       tag;
   PetscFunctionList qlist;
@@ -110,8 +107,6 @@ typedef struct _p_PetscObject {
   char             *description;
   char             *mansec;
   char             *type_name; /*  this is the subclass, for example VECSEQ which equals "seq" */
-  PetscObject       parent;    /* this is not set properly and should possibly be removed */
-  PetscObjectId     parentid;  /* this is not set properly and should possibly be removed */
   char             *name;
   char             *prefix;
   PetscInt          tablevel;
@@ -136,13 +131,13 @@ typedef struct _p_PetscObject {
   PetscInt noptionhandler;
   PetscErrorCode (*optionhandler[PETSC_MAX_OPTIONS_HANDLER])(PetscObject, PetscOptionItems *, void *);
   PetscErrorCode (*optiondestroy[PETSC_MAX_OPTIONS_HANDLER])(PetscObject, void *);
-  void     *optionctx[PETSC_MAX_OPTIONS_HANDLER];
-  PetscBool optionsprinted;
+  void *optionctx[PETSC_MAX_OPTIONS_HANDLER];
 #if defined(PETSC_HAVE_SAWS)
   PetscBool amsmem;          /* if PETSC_TRUE then this object is registered with SAWs and visible to clients */
   PetscBool amspublishblock; /* if PETSC_TRUE and publishing objects then will block at PetscObjectSAWsBlock() */
 #endif
   PetscOptions options; /* options database used, NULL means default */
+  PetscBool    optionsprinted;
   PetscBool    donotPetscObjectPrintClassNamePrefixType;
 } _p_PetscObject;
 
@@ -176,7 +171,7 @@ PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*PetscObjectViewFunction)(PetscObje
 
 @*/
 #define PetscHeaderCreate(h, classid, class_name, descr, mansec, comm, destroy, view) \
-  (PetscNew(&(h)) || PetscHeaderCreate_Private((PetscObject)(h), classid, class_name, descr, mansec, comm, (PetscObjectDestroyFunction)(destroy), (PetscObjectViewFunction)(view)) || PetscLogObjectCreate(h) || PetscLogObjectMemory((PetscObject)(h), sizeof(*(h))))
+  (PetscNew(&(h)) || PetscHeaderCreate_Private((PetscObject)(h), classid, class_name, descr, mansec, comm, (PetscObjectDestroyFunction)(destroy), (PetscObjectViewFunction)(view)) || PetscLogObjectCreate(h))
 
 PETSC_EXTERN PetscErrorCode PetscComposedQuantitiesDestroy(PetscObject obj);
 PETSC_EXTERN PetscErrorCode PetscHeaderCreate_Private(PetscObject, PetscClassId, const char[], const char[], const char[], MPI_Comm, PetscObjectDestroyFunction, PetscObjectViewFunction);
@@ -282,7 +277,7 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void *, PetscDataType);
 #define PetscValidFunction(f, arg) \
   do { PetscCheck((f), PETSC_COMM_SELF, PETSC_ERR_ARG_NULL, "Null Function Pointer: Parameter # %d", arg); } while (0)
 #endif
-#else /* PETSC_CLANG_STATIC_ANALYZER */
+#else  /* PETSC_CLANG_STATIC_ANALYZER */
 template <typename T>
 void PetscValidHeaderSpecificType(T, PetscClassId, int, const char[]);
 template <typename T>
@@ -303,7 +298,8 @@ template <typename T>
 void PetscValidScalarPointer(T *, int);
 template <typename T>
 void PetscValidRealPointer(T *, int);
-#define PetscValidFunction(f, arg)
+template <typename T>
+void PetscValidFunction(T, int);
 #endif /* PETSC_CLANG_STATIC_ANALYZER */
 
 #define PetscSorted(n, idx, sorted) \
@@ -380,11 +376,28 @@ void PetscValidRealPointer(T *, int);
 #else
 
 /*
-    For example, in the dot product between two vectors,
-  both vectors must be either Seq or MPI, not one of each
+  This macro currently does nothing, the plan is for each PetscObject to have a PetscInt "type"
+  member associated with the string type_name that can be quickly compared.
+
+  **Do not swap this macro to compare string type_name!**
+
+  This macro is used incorrectly in the code. Many places that do not need identity of the
+  types incorrectly call this check and would need to be fixed if this macro is enabled.
 */
+#if 0
 #define PetscCheckSameType(a, arga, b, argb) \
-  do { PetscCheck(((PetscObject)(a))->type == ((PetscObject)(b))->type, PETSC_COMM_SELF, PETSC_ERR_ARG_NOTSAMETYPE, "Objects not of same type: Argument # %d and %d", arga, argb); } while (0)
+  do { \
+    PetscBool pcst_type_eq_ = PETSC_TRUE; \
+    PetscCall(PetscStrcmp(((PetscObject)(a))->type_name, (((PetscObject)(b)))->type_name, &pcst_type_eq_)); \
+    PetscCheck(pcst_type_eq_, PETSC_COMM_SELF, PETSC_ERR_ARG_NOTSAMETYPE, "Objects not of same type : Argument # % d and % d, % s != % s ", arga, argb, ((PetscObject)(a))->type_name, ((PetscObject)(b))->type_name); \
+  } while (0)
+#else
+#define PetscCheckSameType(a, arga, b, argb) \
+  do { \
+    (void)(a); \
+    (void)(b); \
+  } while (0)
+#endif
 
 /*
     Check type_name
@@ -402,12 +415,12 @@ void PetscValidRealPointer(T *, int);
     PetscCall(PetscObjectTypeCompareAny(((PetscObject)(a)), &_7_match, (type1), (type2), "")); \
     PetscCheck(_7_match, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Object (%s) is not %s or %s", (char *)(((PetscObject)(a))->type_name), type1, type2); \
   } while (0)
+
 /*
    Use this macro to check if the type is set
 */
+#define PetscValidType(a, arg) PetscCheck(((PetscObject)(a))->type_name, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "%s object's type is not set: Argument # %d", ((PetscObject)(a))->class_name, arg)
 
-#define PetscValidType(a, arg) \
-  do { PetscCheck(((PetscObject)(a))->type_name, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "%s object's type is not set: Argument # %d", ((PetscObject)(a))->class_name, arg); } while (0)
 /*
    Sometimes object must live on same communicator to inter-operate
 */
@@ -499,11 +512,13 @@ void PetscValidRealPointer(T *, int);
   } while (0)
 
 #endif
-#else /* PETSC_CLANG_STATIC_ANALYZER */
+#else  /* PETSC_CLANG_STATIC_ANALYZER */
 template <typename Ta, typename Tb>
 void PetscCheckSameType(Ta, int, Tb, int);
-#define PetscCheckTypeName(a, type)
-#define PetscCheckTypeNames(a, type1, type2)
+template <typename Ta, typename Tb>
+void PetscCheckTypeName(Ta, Tb);
+template <typename Ta, typename Tb, typename Tc>
+void PetscCheckTypeName(Ta, Tb, Tc);
 template <typename T>
 void PetscValidType(T, int);
 template <typename Ta, typename Tb>
@@ -522,7 +537,8 @@ template <typename Ta, typename Tb>
 void PetscValidLogicalCollectiveBool(Ta, Tb, int);
 template <typename Ta, typename Tb>
 void PetscValidLogicalCollectiveEnum(Ta, Tb, int);
-#define PetscCheckSorted(n, idx)
+template <typename T>
+void PetscCheckSorted(PetscInt, T);
 #endif /* PETSC_CLANG_STATIC_ANALYZER */
 
 /*MC

@@ -436,7 +436,7 @@ PETSC_EXTERN PetscErrorCode PetscSFCreate_Basic(PetscSF sf) {
   sf->ops->GetLeafRanks         = PetscSFGetLeafRanks_Basic;
   sf->ops->CreateEmbeddedRootSF = PetscSFCreateEmbeddedRootSF_Basic;
 
-  PetscCall(PetscNewLog(sf, &dat));
+  PetscCall(PetscNew(&dat));
   sf->data = (void *)dat;
   PetscFunctionReturn(0);
 }

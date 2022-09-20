@@ -373,7 +373,7 @@ PETSC_INTERN PetscErrorCode PetscSFCreate_Allgatherv(PetscSF sf) {
   sf->ops->CreateLocalSF   = PetscSFCreateLocalSF_Allgatherv;
   sf->ops->BcastToZero     = PetscSFBcastToZero_Allgatherv;
 
-  PetscCall(PetscNewLog(sf, &dat));
+  PetscCall(PetscNew(&dat));
   sf->data = (void *)dat;
   PetscFunctionReturn(0);
 }

@@ -112,13 +112,7 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat) {
   PetscCall(VecScatterDestroy(&aij->Mvctx));
   PetscCall(VecScatterCreate(gvec, from, aij->lvec, to, &aij->Mvctx));
   PetscCall(VecScatterViewFromOptions(aij->Mvctx, (PetscObject)mat, "-matmult_vecscatter_view"));
-  PetscCall(PetscLogObjectParent((PetscObject)mat, (PetscObject)aij->Mvctx));
-  PetscCall(PetscLogObjectParent((PetscObject)mat, (PetscObject)aij->lvec));
-  PetscCall(PetscLogObjectMemory((PetscObject)mat, ec * sizeof(PetscInt)));
   aij->garray = garray;
-
-  PetscCall(PetscLogObjectParent((PetscObject)mat, (PetscObject)from));
-  PetscCall(PetscLogObjectParent((PetscObject)mat, (PetscObject)to));
 
   PetscCall(ISDestroy(&from));
   PetscCall(ISDestroy(&to));
@@ -136,20 +130,18 @@ PetscErrorCode MatDisAssemble_MPIAIJ(Mat A) {
   Mat_MPIAIJ        *aij  = (Mat_MPIAIJ *)A->data;
   Mat                B    = aij->B, Bnew;
   Mat_SeqAIJ        *Baij = (Mat_SeqAIJ *)B->data;
-  PetscInt           i, j, m = B->rmap->n, n = A->cmap->N, col, ct = 0, *garray = aij->garray, *nz, ec;
+  PetscInt           i, j, m = B->rmap->n, n = A->cmap->N, col, ct = 0, *garray = aij->garray, *nz;
   PetscScalar        v;
   const PetscScalar *ba;
 
   PetscFunctionBegin;
   /* free stuff related to matrix-vec multiply */
-  PetscCall(VecGetSize(aij->lvec, &ec)); /* needed for PetscLogObjectMemory below */
   PetscCall(VecDestroy(&aij->lvec));
   if (aij->colmap) {
 #if defined(PETSC_USE_CTABLE)
     PetscCall(PetscTableDestroy(&aij->colmap));
 #else
     PetscCall(PetscFree(aij->colmap));
-    PetscCall(PetscLogObjectMemory((PetscObject)A, -aij->B->cmap->n * sizeof(PetscInt)));
 #endif
   }
 
@@ -188,9 +180,7 @@ PetscErrorCode MatDisAssemble_MPIAIJ(Mat A) {
   PetscCall(MatSeqAIJRestoreArrayRead(B, &ba));
 
   PetscCall(PetscFree(aij->garray));
-  PetscCall(PetscLogObjectMemory((PetscObject)A, -ec * sizeof(PetscInt)));
   PetscCall(MatDestroy(&B));
-  PetscCall(PetscLogObjectParent((PetscObject)A, (PetscObject)Bnew));
 
   aij->B           = Bnew;
   A->was_assembled = PETSC_FALSE;

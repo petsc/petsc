@@ -759,7 +759,6 @@ static PetscErrorCode TSGLLEGetAdapt_GLLE(TS ts, TSGLLEAdapt *adapt) {
   if (!gl->adapt) {
     PetscCall(TSGLLEAdaptCreate(PetscObjectComm((PetscObject)ts), &gl->adapt));
     PetscCall(PetscObjectIncrementTabLevel((PetscObject)gl->adapt, (PetscObject)ts, 1));
-    PetscCall(PetscLogObjectParent((PetscObject)ts, (PetscObject)gl->adapt));
   }
   *adapt = gl->adapt;
   PetscFunctionReturn(0);
@@ -1375,7 +1374,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_GLLE(TS ts) {
   PetscFunctionBegin;
   PetscCall(TSGLLEInitializePackage());
 
-  PetscCall(PetscNewLog(ts, &gl));
+  PetscCall(PetscNew(&gl));
   ts->data = (void *)gl;
 
   ts->ops->reset          = TSReset_GLLE;

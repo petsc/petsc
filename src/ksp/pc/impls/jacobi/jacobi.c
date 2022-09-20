@@ -152,7 +152,6 @@ static PetscErrorCode PCSetUp_Jacobi(PC pc) {
 
   if (pc->setupcalled == 0) { allocate space the first time this is ever called
     PetscCall(MatCreateVecs(pc->mat,&jac->diag));
-    PetscLogObjectParent((PetscObject)pc,(PetscObject)jac->diag);
   }
 
     But for this preconditioner we want to support use of both the matrix' diagonal
@@ -232,7 +231,6 @@ static PetscErrorCode PCSetUp_Jacobi_Symmetric(PC pc) {
 
   PetscFunctionBegin;
   PetscCall(MatCreateVecs(pc->pmat, &jac->diagsqrt, NULL));
-  PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)jac->diagsqrt));
   PetscCall(PCSetUp_Jacobi(pc));
   PetscFunctionReturn(0);
 }
@@ -250,7 +248,6 @@ static PetscErrorCode PCSetUp_Jacobi_NonSymmetric(PC pc) {
 
   PetscFunctionBegin;
   PetscCall(MatCreateVecs(pc->pmat, &jac->diag, NULL));
-  PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)jac->diag));
   PetscCall(PCSetUp_Jacobi(pc));
   PetscFunctionReturn(0);
 }
@@ -413,7 +410,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Jacobi(PC pc) {
      Creates the private data structure for this preconditioner and
      attach it to the PC object.
   */
-  PetscCall(PetscNewLog(pc, &jac));
+  PetscCall(PetscNew(&jac));
   pc->data = (void *)jac;
 
   /*

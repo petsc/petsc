@@ -281,7 +281,6 @@ static PetscErrorCode PCBJacobiSetTotalBlocks_BJacobi(PC pc, PetscInt blocks, Pe
   if (!lens) jac->g_lens = NULL;
   else {
     PetscCall(PetscMalloc1(blocks, &jac->g_lens));
-    PetscCall(PetscLogObjectMemory((PetscObject)pc, blocks * sizeof(PetscInt)));
     PetscCall(PetscArraycpy(jac->g_lens, lens, blocks));
   }
   PetscFunctionReturn(0);
@@ -306,7 +305,6 @@ static PetscErrorCode PCBJacobiSetLocalBlocks_BJacobi(PC pc, PetscInt blocks, co
   if (!lens) jac->l_lens = NULL;
   else {
     PetscCall(PetscMalloc1(blocks, &jac->l_lens));
-    PetscCall(PetscLogObjectMemory((PetscObject)pc, blocks * sizeof(PetscInt)));
     PetscCall(PetscArraycpy(jac->l_lens, lens, blocks));
   }
   PetscFunctionReturn(0);
@@ -508,7 +506,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_BJacobi(PC pc) {
   PC_BJacobi *jac;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(pc, &jac));
+  PetscCall(PetscNew(&jac));
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)pc), &rank));
 
   pc->ops->apply           = NULL;
@@ -711,7 +709,6 @@ static PetscErrorCode PCSetUp_BJacobi_Singleblock(PC pc, Mat mat, Mat pmat) {
       PetscCall(KSPCreate(PETSC_COMM_SELF, &ksp));
       PetscCall(KSPSetErrorIfNotConverged(ksp, pc->erroriffailure));
       PetscCall(PetscObjectIncrementTabLevel((PetscObject)ksp, (PetscObject)pc, 1));
-      PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)ksp));
       PetscCall(KSPSetType(ksp, KSPPREONLY));
       PetscCall(PCGetOptionsPrefix(pc, &prefix));
       PetscCall(KSPSetOptionsPrefix(ksp, prefix));
@@ -729,7 +726,7 @@ static PetscErrorCode PCSetUp_BJacobi_Singleblock(PC pc, Mat mat, Mat pmat) {
       PetscCall(PetscMalloc1(1, &jac->ksp));
       jac->ksp[0] = ksp;
 
-      PetscCall(PetscNewLog(pc, &bjac));
+      PetscCall(PetscNew(&bjac));
       jac->data = (void *)bjac;
     } else {
       ksp  = jac->ksp[0];
@@ -749,8 +746,6 @@ static PetscErrorCode PCSetUp_BJacobi_Singleblock(PC pc, Mat mat, Mat pmat) {
     PetscCall(MatGetVecType(pmat, &vectype));
     PetscCall(VecSetType(bjac->x, vectype));
     PetscCall(VecSetType(bjac->y, vectype));
-    PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)bjac->x));
-    PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)bjac->y));
   } else {
     ksp  = jac->ksp[0];
     bjac = (PC_BJacobi_Singleblock *)jac->data;
@@ -931,22 +926,18 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc, Mat mat, Mat pmat) {
       pc->ops->applytranspose = PCApplyTranspose_BJacobi_Multiblock;
       pc->ops->setuponblocks  = PCSetUpOnBlocks_BJacobi_Multiblock;
 
-      PetscCall(PetscNewLog(pc, &bjac));
+      PetscCall(PetscNew(&bjac));
       PetscCall(PetscMalloc1(n_local, &jac->ksp));
-      PetscCall(PetscLogObjectMemory((PetscObject)pc, sizeof(n_local * sizeof(KSP))));
       PetscCall(PetscMalloc2(n_local, &bjac->x, n_local, &bjac->y));
       PetscCall(PetscMalloc1(n_local, &bjac->starts));
-      PetscCall(PetscLogObjectMemory((PetscObject)pc, sizeof(n_local * sizeof(PetscScalar))));
 
       jac->data = (void *)bjac;
       PetscCall(PetscMalloc1(n_local, &bjac->is));
-      PetscCall(PetscLogObjectMemory((PetscObject)pc, sizeof(n_local * sizeof(IS))));
 
       for (i = 0; i < n_local; i++) {
         PetscCall(KSPCreate(PETSC_COMM_SELF, &ksp));
         PetscCall(KSPSetErrorIfNotConverged(ksp, pc->erroriffailure));
         PetscCall(PetscObjectIncrementTabLevel((PetscObject)ksp, (PetscObject)pc, 1));
-        PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)ksp));
         PetscCall(KSPSetType(ksp, KSPPREONLY));
         PetscCall(KSPGetPC(ksp, &subpc));
         PetscCall(PCGetOptionsPrefix(pc, &prefix));
@@ -975,8 +966,6 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc, Mat mat, Mat pmat) {
       PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF, 1, m, NULL, &y));
       PetscCall(VecSetType(x, vectype));
       PetscCall(VecSetType(y, vectype));
-      PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)x));
-      PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)y));
 
       bjac->x[i]      = x;
       bjac->y[i]      = y;
@@ -984,7 +973,6 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc, Mat mat, Mat pmat) {
 
       PetscCall(ISCreateStride(PETSC_COMM_SELF, m, start, 1, &is));
       bjac->is[i] = is;
-      PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)is));
 
       start += m;
     }
@@ -1007,10 +995,8 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc, Mat mat, Mat pmat) {
   PetscCall(PCModifySubMatrices(pc, n_local, bjac->is, bjac->is, bjac->pmat, pc->modifysubmatricesP));
 
   for (i = 0; i < n_local; i++) {
-    PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)bjac->pmat[i]));
     PetscCall(KSPGetOptionsPrefix(jac->ksp[i], &prefix));
     if (pc->useAmat) {
-      PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)bjac->mat[i]));
       PetscCall(KSPSetOperators(jac->ksp[i], bjac->mat[i], bjac->pmat[i]));
       PetscCall(MatSetOptionsPrefix(bjac->mat[i], prefix));
     } else {
@@ -1141,7 +1127,7 @@ static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC pc) {
   jac->n_local = 1; /* currently only a single block is supported for a subcommunicator */
   if (!pc->setupcalled) {
     wasSetup = PETSC_FALSE;
-    PetscCall(PetscNewLog(pc, &mpjac));
+    PetscCall(PetscNew(&mpjac));
     jac->data = (void *)mpjac;
 
     /* initialize datastructure mpjac */
@@ -1150,7 +1136,6 @@ static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC pc) {
       PetscCall(PetscSubcommCreate(comm, &jac->psubcomm));
       PetscCall(PetscSubcommSetNumber(jac->psubcomm, jac->n));
       PetscCall(PetscSubcommSetType(jac->psubcomm, PETSC_SUBCOMM_CONTIGUOUS));
-      PetscCall(PetscLogObjectMemory((PetscObject)pc, sizeof(PetscSubcomm)));
     }
     mpjac->psubcomm = jac->psubcomm;
     subcomm         = PetscSubcommChild(mpjac->psubcomm);
@@ -1163,7 +1148,6 @@ static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC pc) {
     PetscCall(KSPCreate(subcomm, &jac->ksp[0]));
     PetscCall(KSPSetErrorIfNotConverged(jac->ksp[0], pc->erroriffailure));
     PetscCall(PetscObjectIncrementTabLevel((PetscObject)jac->ksp[0], (PetscObject)pc, 1));
-    PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)jac->ksp[0]));
     PetscCall(KSPSetOperators(jac->ksp[0], mpjac->submats, mpjac->submats));
     PetscCall(KSPGetPC(jac->ksp[0], &mpjac->pc));
 
@@ -1180,8 +1164,6 @@ static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC pc) {
     PetscCall(MatGetVecType(mpjac->submats, &vectype));
     PetscCall(VecSetType(mpjac->xsub, vectype));
     PetscCall(VecSetType(mpjac->ysub, vectype));
-    PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)mpjac->xsub));
-    PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)mpjac->ysub));
 
     pc->ops->setuponblocks = PCSetUpOnBlocks_BJacobi_Multiproc;
     pc->ops->reset         = PCReset_BJacobi_Multiproc;

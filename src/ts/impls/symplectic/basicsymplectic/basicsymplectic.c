@@ -455,7 +455,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_BasicSymplectic(TS ts) {
 
   PetscFunctionBegin;
   PetscCall(TSBasicSymplecticInitializePackage());
-  PetscCall(PetscNewLog(ts, &bsymp));
+  PetscCall(PetscNew(&bsymp));
   ts->data = (void *)bsymp;
 
   ts->ops->setup           = TSSetUp_BasicSymplectic;

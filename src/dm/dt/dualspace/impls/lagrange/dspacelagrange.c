@@ -3182,7 +3182,7 @@ PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate_Lagrange(PetscDualSpace sp) {
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
-  PetscCall(PetscNewLog(sp, &lag));
+  PetscCall(PetscNew(&lag));
   sp->data = lag;
 
   lag->tensorCell  = PETSC_FALSE;

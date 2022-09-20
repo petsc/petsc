@@ -380,9 +380,6 @@ PetscErrorCode MatCreateADA(Mat mat, Vec d1, Vec d2, Mat *J) {
   PetscCall(MatShellSetOperation(*J, MATOP_DUPLICATE, (void (*)(void))MatDuplicate_ADA));
   PetscCall(MatShellSetOperation(*J, MATOP_CREATE_SUBMATRIX, (void (*)(void))MatCreateSubMatrix_ADA));
 
-  PetscCall(PetscLogObjectParent((PetscObject)(*J), (PetscObject)ctx->W));
-  PetscCall(PetscLogObjectParent((PetscObject)mat, (PetscObject)(*J)));
-
   PetscCall(MatSetOption(*J, MAT_SYMMETRIC, PETSC_TRUE));
   PetscFunctionReturn(0);
 }

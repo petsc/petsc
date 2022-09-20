@@ -119,7 +119,6 @@ PetscErrorCode VecDuplicate_MPIViennaCL(Vec win, Vec *v) {
     PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF, 1, win->map->n + w->nghost, array, &vw->localrep));
     PetscCall(PetscMemcpy(vw->localrep->ops, w->localrep->ops, sizeof(struct _VecOps)));
     PetscCall(VecRestoreArray(*v, &array));
-    PetscCall(PetscLogObjectParent((PetscObject)*v, (PetscObject)vw->localrep));
     vw->localupdate = w->localupdate;
     if (vw->localupdate) PetscCall(PetscObjectReference((PetscObject)vw->localupdate));
   }

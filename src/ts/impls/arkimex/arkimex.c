@@ -1343,7 +1343,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_ARKIMEX(TS ts) {
 
   ts->usessnes = PETSC_TRUE;
 
-  PetscCall(PetscNewLog(ts, &th));
+  PetscCall(PetscNew(&th));
   ts->data = (void *)th;
   th->imex = PETSC_TRUE;
 

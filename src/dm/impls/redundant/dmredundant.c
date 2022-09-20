@@ -325,7 +325,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Redundant(DM dm) {
   DM_Redundant *red;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(dm, &red));
+  PetscCall(PetscNew(&red));
   dm->data = red;
 
   dm->ops->setup               = DMSetUp_Redundant;

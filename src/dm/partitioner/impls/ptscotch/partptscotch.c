@@ -300,7 +300,7 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_PTScotch(PetscPartitioner par
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
-  PetscCall(PetscNewLog(part, &p));
+  PetscCall(PetscNew(&p));
   part->data = p;
 
   PetscCallMPI(MPI_Comm_dup(PetscObjectComm((PetscObject)part), &p->pcomm));

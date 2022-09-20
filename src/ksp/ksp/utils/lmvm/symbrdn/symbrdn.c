@@ -554,7 +554,7 @@ PetscErrorCode MatCreate_LMVMSymBrdn(Mat B) {
   lmvm->ops->mult     = MatMult_LMVMSymBrdn;
   lmvm->ops->copy     = MatCopy_LMVMSymBrdn;
 
-  PetscCall(PetscNewLog(B, &lsb));
+  PetscCall(PetscNew(&lsb));
   lmvm->ctx      = (void *)lsb;
   lsb->allocated = PETSC_FALSE;
   lsb->needP = lsb->needQ = PETSC_TRUE;

@@ -515,7 +515,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BQPIP(Tao tao) {
   TAO_BQPIP *qp;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(tao, &qp));
+  PetscCall(PetscNew(&qp));
 
   tao->ops->setup          = TaoSetup_BQPIP;
   tao->ops->solve          = TaoSolve_BQPIP;

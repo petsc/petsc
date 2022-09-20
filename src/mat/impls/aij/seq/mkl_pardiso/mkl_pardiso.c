@@ -924,7 +924,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_mkl_pardiso(Mat A, MatFactorType ft
   PetscCall(PetscStrallocpy("mkl_pardiso", &((PetscObject)B)->type_name));
   PetscCall(MatSetUp(B));
 
-  PetscCall(PetscNewLog(B, &mat_mkl_pardiso));
+  PetscCall(PetscNew(&mat_mkl_pardiso));
   B->data = mat_mkl_pardiso;
 
   PetscCall(MatFactorMKL_PARDISOInitialize_Private(A, ftype, mat_mkl_pardiso));

@@ -456,7 +456,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_SSP(TS ts) {
   ts->ops->setfromoptions = TSSetFromOptions_SSP;
   ts->ops->view           = TSView_SSP;
 
-  PetscCall(PetscNewLog(ts, &ssp));
+  PetscCall(PetscNew(&ssp));
   ts->data = (void *)ssp;
 
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSSSPGetType_C", TSSSPGetType_SSP));

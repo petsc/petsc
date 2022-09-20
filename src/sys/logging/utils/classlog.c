@@ -363,7 +363,6 @@ PetscErrorCode PetscLogObjDestroyDefault(PetscObject obj) {
     PetscCall(PetscStageLogGetClassPerfLog(stageLog, stage, &classPerfLog));
     PetscCall(PetscClassRegLogGetClass(classRegLog, obj->classid, &oclass));
     classPerfLog->classInfo[oclass].destructions++;
-    classPerfLog->classInfo[oclass].mem += obj->mem;
   }
   /* Cannot Credit all ancestors with your memory because they may have already been destroyed*/
   petsc_numObjectsDestroyed++;
@@ -397,7 +396,6 @@ PetscErrorCode PetscLogObjDestroyDefault(PetscObject obj) {
   if (petsc_logObjects) {
     if (obj->name) PetscCall(PetscStrncpy(petsc_objects[obj->id].name, obj->name, 64));
     petsc_objects[obj->id].obj = NULL;
-    petsc_objects[obj->id].mem = obj->mem;
   }
   PetscFunctionReturn(0);
 }

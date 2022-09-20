@@ -717,7 +717,6 @@ PetscErrorCode MatLUFactor_SeqBAIJ(Mat A, IS row, IS col, const MatFactorInfo *i
   A->ops->solvetranspose = C->ops->solvetranspose;
 
   PetscCall(MatHeaderMerge(A, &C));
-  PetscCall(PetscLogObjectParent((PetscObject)A, (PetscObject)((Mat_SeqBAIJ *)(A->data))->icol));
   PetscFunctionReturn(0);
 }
 
@@ -1177,7 +1176,6 @@ PetscErrorCode MatICCFactorSymbolic_SeqBAIJ(Mat fact, Mat A, IS perm, const MatF
 
   PetscCall(PetscObjectReference((PetscObject)perm));
   PetscCall(PetscMalloc1(am + 1, &b->solve_work));
-  PetscCall(PetscLogObjectMemory((PetscObject)B, (ui[am] - am) * (sizeof(PetscInt) + sizeof(MatScalar))));
 
   b->maxnz = b->nz = ui[am];
 
@@ -1355,7 +1353,6 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqBAIJ(Mat fact, Mat A, IS perm, const
   b->icol = perm;
   PetscCall(PetscObjectReference((PetscObject)perm));
   PetscCall(PetscMalloc1(mbs + 1, &b->solve_work));
-  PetscCall(PetscLogObjectMemory((PetscObject)B, (ui[mbs] - mbs) * (sizeof(PetscInt) + sizeof(MatScalar))));
   b->maxnz = b->nz = ui[mbs];
 
   B->info.factor_mallocs   = reallocs;
@@ -1557,7 +1554,6 @@ PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A, IS isrow, IS iscol, const MatFactor
 
   /* put together the new matrix */
   PetscCall(MatSeqBAIJSetPreallocation(B, bs, MAT_SKIP_ALLOCATION, NULL));
-  PetscCall(PetscLogObjectParent((PetscObject)B, (PetscObject)isicol));
 
   b               = (Mat_SeqBAIJ *)(B)->data;
   b->free_a       = PETSC_TRUE;
@@ -1578,7 +1574,6 @@ PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A, IS isrow, IS iscol, const MatFactor
 
   b->icol = isicol;
   PetscCall(PetscMalloc1(bs * (mbs + 1), &b->solve_work));
-  PetscCall(PetscLogObjectMemory((PetscObject)B, nnz_max * (sizeof(PetscInt) + sizeof(MatScalar))));
   b->maxnz = nnz_max / bs2;
 
   (B)->factortype            = MAT_FACTOR_ILUDT;

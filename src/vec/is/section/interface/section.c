@@ -2647,7 +2647,6 @@ PetscErrorCode PetscSectionSetClosurePermutation_Internal(PetscSection section, 
   }
   if (mode == PETSC_COPY_VALUES) {
     PetscCall(PetscMalloc1(clSize, &val->perm));
-    PetscCall(PetscLogObjectMemory((PetscObject)obj, clSize * sizeof(PetscInt)));
     PetscCall(PetscArraycpy(val->perm, clPerm, clSize));
   } else if (mode == PETSC_OWN_POINTER) {
     val->perm = clPerm;
@@ -3143,7 +3142,7 @@ PetscErrorCode PetscSectionGetPointSyms(PetscSection section, PetscInt numPoints
       link        = sym->workin;
       sym->workin = sym->workin->next;
     } else {
-      PetscCall(PetscNewLog(sym, &link));
+      PetscCall(PetscNew(&link));
     }
     if (numPoints > link->numPoints) {
       PetscInt    **perms = (PetscInt **)link->perms;

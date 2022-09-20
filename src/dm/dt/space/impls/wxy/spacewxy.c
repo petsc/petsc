@@ -380,7 +380,7 @@ PETSC_EXTERN PetscErrorCode PetscSpaceCreate_WXY(PetscSpace sp) {
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  PetscCall(PetscNewLog(sp, &wxy));
+  PetscCall(PetscNew(&wxy));
   sp->data   = wxy;
   sp->degree = 2;
 

@@ -193,7 +193,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_TSIRM(KSP ksp) {
   KSP_TSIRM *tsirm;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(ksp, &tsirm));
+  PetscCall(PetscNew(&tsirm));
   ksp->data = (void *)tsirm;
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_PRECONDITIONED, PC_LEFT, 2));
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_UNPRECONDITIONED, PC_RIGHT, 1));

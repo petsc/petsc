@@ -454,7 +454,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_VINEWTONSSLS(SNES snes) {
 
   snes->alwayscomputesfinalresidual = PETSC_FALSE;
 
-  PetscCall(PetscNewLog(snes, &vi));
+  PetscCall(PetscNew(&vi));
   snes->data = (void *)vi;
 
   PetscCall(PetscObjectComposeFunction((PetscObject)snes, "SNESVISetVariableBounds_C", SNESVISetVariableBounds_VI));

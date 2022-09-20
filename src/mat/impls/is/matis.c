@@ -3298,7 +3298,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_IS(Mat A) {
   Mat_IS *a;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(A, &a));
+  PetscCall(PetscNew(&a));
   PetscCall(PetscStrallocpy(MATAIJ, &a->lmattype));
   A->data = (void *)a;
 

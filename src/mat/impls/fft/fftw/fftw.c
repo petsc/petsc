@@ -1277,7 +1277,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_FFTW(Mat A) {
   }
   free(pdim);
   PetscCall(PetscObjectChangeTypeName((PetscObject)A, MATFFTW));
-  PetscCall(PetscNewLog(A, &fftw));
+  PetscCall(PetscNew(&fftw));
   fft->data = (void *)fftw;
 
   fftw->ndim_fftw   = (ptrdiff_t)ndim; /* This is dimension of fft */

@@ -1256,7 +1256,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_H2OPUS(Mat A) {
 #if defined(PETSC_H2OPUS_USE_GPU)
   PetscCall(PetscDeviceInitialize(PETSC_DEVICE_CUDA));
 #endif
-  PetscCall(PetscNewLog(A, &a));
+  PetscCall(PetscNew(&a));
   A->data = (void *)a;
 
   a->eta              = 0.9;

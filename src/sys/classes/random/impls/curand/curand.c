@@ -75,7 +75,7 @@ PETSC_EXTERN PetscErrorCode PetscRandomCreate_CURAND(PetscRandom r) {
 
   PetscFunctionBegin;
   PetscCall(PetscDeviceInitialize(PETSC_DEVICE_CUDA));
-  PetscCall(PetscNewLog(r, &curand));
+  PetscCall(PetscNew(&curand));
   PetscCallCURAND(curandCreateGenerator(&curand->gen, CURAND_RNG_PSEUDO_DEFAULT));
   /* https://docs.nvidia.com/cuda/curand/host-api-overview.html#performance-notes2 */
   PetscCallCURAND(curandSetGeneratorOrdering(curand->gen, CURAND_ORDERING_PSEUDO_SEEDED));

@@ -36,13 +36,9 @@ static PetscErrorCode KSPAllocateVectors_PIPEFCG(KSP ksp, PetscInt nvecsneeded, 
     nvecsprev = pipefcg->nvecs;
     nnewvecs  = PetscMin(PetscMax(nvecsneeded - pipefcg->nvecs, chunksize), pipefcg->mmax + 1 - pipefcg->nvecs);
     PetscCall(KSPCreateVecs(ksp, nnewvecs, &pipefcg->pQvecs[pipefcg->nchunks], 0, NULL));
-    PetscCall(PetscLogObjectParents((PetscObject)ksp, nnewvecs, pipefcg->pQvecs[pipefcg->nchunks]));
     PetscCall(KSPCreateVecs(ksp, nnewvecs, &pipefcg->pZETAvecs[pipefcg->nchunks], 0, NULL));
-    PetscCall(PetscLogObjectParents((PetscObject)ksp, nnewvecs, pipefcg->pZETAvecs[pipefcg->nchunks]));
     PetscCall(KSPCreateVecs(ksp, nnewvecs, &pipefcg->pPvecs[pipefcg->nchunks], 0, NULL));
-    PetscCall(PetscLogObjectParents((PetscObject)ksp, nnewvecs, pipefcg->pPvecs[pipefcg->nchunks]));
     PetscCall(KSPCreateVecs(ksp, nnewvecs, &pipefcg->pSvecs[pipefcg->nchunks], 0, NULL));
-    PetscCall(PetscLogObjectParents((PetscObject)ksp, nnewvecs, pipefcg->pSvecs[pipefcg->nchunks]));
     pipefcg->nvecs += nnewvecs;
     for (i = 0; i < nnewvecs; ++i) {
       pipefcg->Qvecs[nvecsprev + i]    = pipefcg->pQvecs[pipefcg->nchunks][i];
@@ -80,9 +76,6 @@ static PetscErrorCode KSPSetUp_PIPEFCG(KSP ksp) {
 
   /* Preallocate additional work vectors */
   PetscCall(KSPAllocateVectors_PIPEFCG(ksp, pipefcg->nprealloc, pipefcg->nprealloc));
-
-  PetscCall(PetscLogObjectMemory((PetscObject)ksp, (pipefcg->mmax + 1) * 4 * sizeof(Vec *) + (pipefcg->mmax + 1) * 4 * sizeof(Vec **) + (pipefcg->mmax + 1) * 4 * sizeof(Vec *) + (pipefcg->mmax + 1) * sizeof(PetscInt) + (pipefcg->mmax + 2) * sizeof(Vec *) +
-                                                     (pipefcg->mmax + 2) * sizeof(PetscScalar) + (pipefcg->mmax + 1) * sizeof(PetscReal)));
   PetscFunctionReturn(0);
 }
 
@@ -594,7 +587,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PIPEFCG(KSP ksp) {
   KSP_PIPEFCG *pipefcg;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(ksp, &pipefcg));
+  PetscCall(PetscNew(&pipefcg));
 #if !defined(PETSC_USE_COMPLEX)
   pipefcg->type = KSP_CG_SYMMETRIC;
 #else

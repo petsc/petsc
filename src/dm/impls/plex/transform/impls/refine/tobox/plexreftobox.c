@@ -609,7 +609,7 @@ PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_ToBox(DMPlexTransform tr) {
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
-  PetscCall(PetscNewLog(tr, &f));
+  PetscCall(PetscNew(&f));
   tr->data = f;
 
   PetscCall(DMPlexTransformInitialize_ToBox(tr));

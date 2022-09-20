@@ -1117,7 +1117,6 @@ PetscErrorCode DMGetLocalToGlobalMapping(DM dm, ISLocalToGlobalMapping *ltog) {
         n /= bs;
       }
       PetscCall(ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)dm), bs, n, ltog, PETSC_OWN_POINTER, &dm->ltogmap));
-      PetscCall(PetscLogObjectParent((PetscObject)dm, (PetscObject)dm->ltogmap));
     } else PetscUseTypeMethod(dm, getlocaltoglobalmapping);
   }
   *ltog = dm->ltogmap;
@@ -1572,7 +1571,7 @@ PetscErrorCode DMGetWorkArray(DM dm, PetscInt count, MPI_Datatype dtype, void *m
     link       = dm->workin;
     dm->workin = dm->workin->next;
   } else {
-    PetscCall(PetscNewLog(dm, &link));
+    PetscCall(PetscNew(&link));
   }
   PetscCallMPI(MPI_Type_size(dtype, &dsize));
   if (((size_t)dsize * count) > link->bytes) {

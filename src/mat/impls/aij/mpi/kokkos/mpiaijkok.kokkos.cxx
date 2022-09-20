@@ -48,14 +48,12 @@ PetscErrorCode MatMPIAIJSetPreallocation_MPIAIJKokkos(Mat mat, PetscInt d_nz, co
   if (!mpiaij->A) {
     PetscCall(MatCreate(PETSC_COMM_SELF, &mpiaij->A));
     PetscCall(MatSetSizes(mpiaij->A, mat->rmap->n, mat->cmap->n, mat->rmap->n, mat->cmap->n));
-    PetscCall(PetscLogObjectParent((PetscObject)mat, (PetscObject)mpiaij->A));
   }
   if (!mpiaij->B) {
     PetscMPIInt size;
     PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)mat), &size));
     PetscCall(MatCreate(PETSC_COMM_SELF, &mpiaij->B));
     PetscCall(MatSetSizes(mpiaij->B, mat->rmap->n, size > 1 ? mat->cmap->N : 0, mat->rmap->n, size > 1 ? mat->cmap->N : 0));
-    PetscCall(PetscLogObjectParent((PetscObject)mat, (PetscObject)mpiaij->B));
   }
   PetscCall(MatSetType(mpiaij->A, MATSEQAIJKOKKOS));
   PetscCall(MatSetType(mpiaij->B, MATSEQAIJKOKKOS));
@@ -1491,7 +1489,6 @@ PetscErrorCode MatKokkosGetDeviceMatWrite(Mat A, PetscSplitCSRDataStructure *B) 
       aij->A->nooffprocentries = aij->B->nooffprocentries = A->nooffprocentries = PETSC_TRUE;
       jaca->nonew = jacb->nonew = PETSC_TRUE; // no more disassembly
       PetscCall(PetscCalloc1(A->cmap->N, &colmap));
-      PetscCall(PetscLogObjectMemory((PetscObject)A, (A->cmap->N) * sizeof(PetscInt)));
       for (ii = 0; ii < aij->B->cmap->n; ii++) colmap[aij->garray[ii]] = ii + 1;
       // allocate B copy data
       h_mat.rstart = A->rmap->rstart;

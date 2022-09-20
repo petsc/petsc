@@ -436,7 +436,7 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_BT(SNESLineSearch linesearch) {
   linesearch->ops->view           = SNESLineSearchView_BT;
   linesearch->ops->setup          = NULL;
 
-  PetscCall(PetscNewLog(linesearch, &bt));
+  PetscCall(PetscNew(&bt));
 
   linesearch->data    = (void *)bt;
   linesearch->max_its = 40;

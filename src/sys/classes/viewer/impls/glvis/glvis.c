@@ -688,7 +688,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_GLVis(PetscViewer viewer) {
   PetscViewerGLVis socket;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(viewer, &socket));
+  PetscCall(PetscNew(&socket));
 
   /* defaults to socket viewer */
   PetscCall(PetscStrallocpy("localhost", &socket->name));

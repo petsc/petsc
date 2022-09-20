@@ -110,7 +110,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_Euler(TS ts) {
   TS_Euler *euler;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(ts, &euler));
+  PetscCall(PetscNew(&euler));
   ts->data = (void *)euler;
 
   ts->ops->setup           = TSSetUp_Euler;

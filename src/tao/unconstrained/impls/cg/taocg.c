@@ -281,7 +281,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_CG(Tao tao) {
   PetscCall(TaoLineSearchUseTaoRoutines(tao->linesearch, tao));
   PetscCall(TaoLineSearchSetOptionsPrefix(tao->linesearch, tao->hdr.prefix));
 
-  PetscCall(PetscNewLog(tao, &cgP));
+  PetscCall(PetscNew(&cgP));
   tao->data      = (void *)cgP;
   cgP->eta       = 0.1;
   cgP->delta_min = 1e-7;

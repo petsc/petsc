@@ -810,6 +810,5 @@ PetscErrorCode SNESSetWorkVecs(SNES snes, PetscInt nw) {
   PetscCall(DMGetGlobalVector(dm, &v));
   PetscCall(VecDuplicateVecs(v, snes->nwork, &snes->work));
   PetscCall(DMRestoreGlobalVector(dm, &v));
-  PetscCall(PetscLogObjectParents(snes, nw, snes->work));
   PetscFunctionReturn(0);
 }

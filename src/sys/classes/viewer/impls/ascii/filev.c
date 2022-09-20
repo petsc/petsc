@@ -768,7 +768,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_ASCII(PetscViewer viewer) {
   PetscViewer_ASCII *vascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(viewer, &vascii));
+  PetscCall(PetscNew(&vascii));
   viewer->data = (void *)vascii;
 
   viewer->ops->destroy          = PetscViewerDestroy_ASCII;

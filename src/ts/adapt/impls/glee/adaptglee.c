@@ -137,7 +137,7 @@ PETSC_EXTERN PetscErrorCode TSAdaptCreate_GLEE(TSAdapt adapt) {
   TSAdapt_GLEE *glee;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(adapt, &glee));
+  PetscCall(PetscNew(&glee));
   adapt->data         = (void *)glee;
   adapt->ops->choose  = TSAdaptChoose_GLEE;
   adapt->ops->reset   = TSAdaptReset_GLEE;

@@ -409,7 +409,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_ALMM(Tao tao) {
   TAO_ALMM *auglag;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(tao, &auglag));
+  PetscCall(PetscNew(&auglag));
 
   tao->ops->destroy        = TaoDestroy_ALMM;
   tao->ops->setup          = TaoSetUp_ALMM;

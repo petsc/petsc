@@ -935,7 +935,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAdj(Mat B) {
   Mat_MPIAdj *b;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(B, &b));
+  PetscCall(PetscNew(&b));
   B->data = (void *)b;
   PetscCall(PetscMemcpy(B->ops, &MatOps_Values, sizeof(struct _MatOps)));
   B->assembled    = PETSC_FALSE;

@@ -1739,7 +1739,7 @@ PetscErrorCode SNESCreate(MPI_Comm comm, SNES *outsnes) {
   snes->alwayscomputesfinalresidual = PETSC_FALSE;
 
   /* Create context to compute Eisenstat-Walker relative tolerance for KSP */
-  PetscCall(PetscNewLog(snes, &kctx));
+  PetscCall(PetscNew(&kctx));
 
   snes->kspconvctx  = (void *)kctx;
   kctx->version     = 2;
@@ -4560,10 +4560,7 @@ PetscErrorCode SNESSolve(SNES snes, Vec b, Vec x) {
     if (snes->vec_rhs) PetscCheck(snes->vec_func != snes->vec_rhs, PETSC_COMM_SELF, PETSC_ERR_ARG_IDN, "Right hand side vector cannot be function vector");
     PetscCheck(snes->vec_func != snes->vec_sol, PETSC_COMM_SELF, PETSC_ERR_ARG_IDN, "Solution vector cannot be function vector");
     PetscCheck(snes->vec_rhs != snes->vec_sol, PETSC_COMM_SELF, PETSC_ERR_ARG_IDN, "Solution vector cannot be right hand side vector");
-    if (!snes->vec_sol_update /* && snes->vec_sol */) {
-      PetscCall(VecDuplicate(snes->vec_sol, &snes->vec_sol_update));
-      PetscCall(PetscLogObjectParent((PetscObject)snes, (PetscObject)snes->vec_sol_update));
-    }
+    if (!snes->vec_sol_update /* && snes->vec_sol */) { PetscCall(VecDuplicate(snes->vec_sol, &snes->vec_sol_update)); }
     PetscCall(DMShellSetGlobalVector(dm, snes->vec_sol));
     PetscCall(SNESSetUp(snes));
 
@@ -5311,7 +5308,6 @@ PetscErrorCode SNESGetKSP(SNES snes, KSP *ksp) {
   if (!snes->ksp) {
     PetscCall(KSPCreate(PetscObjectComm((PetscObject)snes), &snes->ksp));
     PetscCall(PetscObjectIncrementTabLevel((PetscObject)snes->ksp, (PetscObject)snes, 1));
-    PetscCall(PetscLogObjectParent((PetscObject)snes, (PetscObject)snes->ksp));
 
     PetscCall(KSPSetPreSolve(snes->ksp, (PetscErrorCode(*)(KSP, Vec, Vec, void *))KSPPreSolve_SNESEW, snes));
     PetscCall(KSPSetPostSolve(snes->ksp, (PetscErrorCode(*)(KSP, Vec, Vec, void *))KSPPostSolve_SNESEW, snes));
@@ -5425,7 +5421,6 @@ PetscErrorCode SNESSetNPC(SNES snes, SNES npc) {
   PetscCall(PetscObjectReference((PetscObject)npc));
   PetscCall(SNESDestroy(&snes->npc));
   snes->npc = npc;
-  PetscCall(PetscLogObjectParent((PetscObject)snes, (PetscObject)snes->npc));
   PetscFunctionReturn(0);
 }
 
@@ -5462,7 +5457,6 @@ PetscErrorCode SNESGetNPC(SNES snes, SNES *pc) {
   if (!snes->npc) {
     PetscCall(SNESCreate(PetscObjectComm((PetscObject)snes), &snes->npc));
     PetscCall(PetscObjectIncrementTabLevel((PetscObject)snes->npc, (PetscObject)snes, 1));
-    PetscCall(PetscLogObjectParent((PetscObject)snes, (PetscObject)snes->npc));
     PetscCall(SNESGetOptionsPrefix(snes, &optionsprefix));
     PetscCall(SNESSetOptionsPrefix(snes->npc, optionsprefix));
     PetscCall(SNESAppendOptionsPrefix(snes->npc, "npc_"));
@@ -5583,7 +5577,6 @@ PetscErrorCode SNESSetLineSearch(SNES snes, SNESLineSearch linesearch) {
 
   snes->linesearch = linesearch;
 
-  PetscCall(PetscLogObjectParent((PetscObject)snes, (PetscObject)snes->linesearch));
   PetscFunctionReturn(0);
 }
 
@@ -5615,7 +5608,6 @@ PetscErrorCode SNESGetLineSearch(SNES snes, SNESLineSearch *linesearch) {
     PetscCall(SNESLineSearchSetSNES(snes->linesearch, snes));
     PetscCall(SNESLineSearchAppendOptionsPrefix(snes->linesearch, optionsprefix));
     PetscCall(PetscObjectIncrementTabLevel((PetscObject)snes->linesearch, (PetscObject)snes, 1));
-    PetscCall(PetscLogObjectParent((PetscObject)snes, (PetscObject)snes->linesearch));
   }
   *linesearch = snes->linesearch;
   PetscFunctionReturn(0);

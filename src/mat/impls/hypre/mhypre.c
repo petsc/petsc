@@ -2235,7 +2235,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPRE(Mat B) {
   Mat_HYPRE *hB;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(B, &hB));
+  PetscCall(PetscNew(&hB));
 
   hB->inner_free  = PETSC_TRUE;
   hB->available   = PETSC_TRUE;

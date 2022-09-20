@@ -551,7 +551,7 @@ PETSC_INTERN PetscErrorCode VecTaggerCreate_CDF(VecTagger tagger) {
 
   PetscFunctionBegin;
   PetscCall(VecTaggerCreate_Simple(tagger));
-  PetscCall(PetscNewLog(tagger, &cuml));
+  PetscCall(PetscNew(&cuml));
   PetscCall(PetscMemcpy(&cuml->smpl, tagger->data, sizeof(VecTagger_Simple)));
   PetscCall(PetscFree(tagger->data));
   tagger->data                = cuml;

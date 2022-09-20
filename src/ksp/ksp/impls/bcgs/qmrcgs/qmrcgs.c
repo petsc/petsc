@@ -253,7 +253,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_QMRCGS(KSP ksp) {
   PetscFunctionBegin;
 
   PetscCall(PetscCitationsRegister(citations, &cite));
-  PetscCall(PetscNewLog(ksp, &bcgs));
+  PetscCall(PetscNew(&bcgs));
 
   ksp->data                = bcgs;
   ksp->ops->setup          = KSPSetUp_QMRCGS;

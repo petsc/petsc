@@ -255,7 +255,7 @@ PETSC_INTERN PetscErrorCode PetscSFCreate_Neighbor(PetscSF sf) {
   sf->ops->FetchAndOpBegin = PetscSFFetchAndOpBegin_Neighbor;
   sf->ops->FetchAndOpEnd   = PetscSFFetchAndOpEnd_Neighbor;
 
-  PetscCall(PetscNewLog(sf, &dat));
+  PetscCall(PetscNew(&dat));
   sf->data = (void *)dat;
   PetscFunctionReturn(0);
 }

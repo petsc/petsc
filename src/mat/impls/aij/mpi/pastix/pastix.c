@@ -476,7 +476,7 @@ static PetscErrorCode MatGetFactor_seqaij_pastix(Mat A, MatFactorType ftype, Mat
   PetscCall(PetscFree(B->solvertype));
   PetscCall(PetscStrallocpy(MATSOLVERPASTIX, &B->solvertype));
 
-  PetscCall(PetscNewLog(B, &pastix));
+  PetscCall(PetscNew(&pastix));
 
   pastix->CleanUpPastix = PETSC_FALSE;
   pastix->scat_rhs      = NULL;
@@ -513,7 +513,7 @@ static PetscErrorCode MatGetFactor_mpiaij_pastix(Mat A, MatFactorType ftype, Mat
   PetscCall(PetscFree(B->solvertype));
   PetscCall(PetscStrallocpy(MATSOLVERPASTIX, &B->solvertype));
 
-  PetscCall(PetscNewLog(B, &pastix));
+  PetscCall(PetscNew(&pastix));
 
   pastix->CleanUpPastix = PETSC_FALSE;
   pastix->scat_rhs      = NULL;
@@ -550,7 +550,7 @@ static PetscErrorCode MatGetFactor_seqsbaij_pastix(Mat A, MatFactorType ftype, M
   PetscCall(PetscFree(B->solvertype));
   PetscCall(PetscStrallocpy(MATSOLVERPASTIX, &B->solvertype));
 
-  PetscCall(PetscNewLog(B, &pastix));
+  PetscCall(PetscNew(&pastix));
 
   pastix->CleanUpPastix = PETSC_FALSE;
   pastix->scat_rhs      = NULL;
@@ -587,7 +587,7 @@ static PetscErrorCode MatGetFactor_mpisbaij_pastix(Mat A, MatFactorType ftype, M
   PetscCall(PetscFree(B->solvertype));
   PetscCall(PetscStrallocpy(MATSOLVERPASTIX, &B->solvertype));
 
-  PetscCall(PetscNewLog(B, &pastix));
+  PetscCall(PetscNew(&pastix));
 
   pastix->CleanUpPastix = PETSC_FALSE;
   pastix->scat_rhs      = NULL;

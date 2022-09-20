@@ -236,7 +236,6 @@ static PetscErrorCode PCSetUp_HYPRE(PC pc) {
   if (!ishypre) {
     PetscCall(MatDestroy(&jac->hpmat));
     PetscCall(MatConvert(pc->pmat, MATHYPRE, MAT_INITIAL_MATRIX, &jac->hpmat));
-    PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)jac->hpmat));
   } else {
     PetscCall(PetscObjectReference((PetscObject)pc->pmat));
     PetscCall(MatDestroy(&jac->hpmat));
@@ -268,7 +267,6 @@ static PetscErrorCode PCSetUp_HYPRE(PC pc) {
       }
       if (has_const) {
         PetscCall(MatCreateVecs(pc->pmat, &jac->hmnull_constant, NULL));
-        PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)jac->hmnull_constant));
         PetscCall(VecSet(jac->hmnull_constant, 1));
         PetscCall(VecNormalize(jac->hmnull_constant, NULL));
         PetscCall(VecHYPRE_IJVectorCreate(jac->hmnull_constant->map, &jac->hmnull[nvec]));
@@ -2224,7 +2222,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_HYPRE(PC pc) {
   PC_HYPRE *jac;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(pc, &jac));
+  PetscCall(PetscNew(&jac));
 
   pc->data                = jac;
   pc->ops->reset          = PCReset_HYPRE;

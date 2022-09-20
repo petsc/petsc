@@ -201,7 +201,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PIPEPRCG(KSP ksp) {
                                    "archivePrefix = {arXiv},\n  primaryClass = {cs.NA}\n}",
                                    &cite));
 
-  PetscCall(PetscNewLog(ksp, &prcg));
+  PetscCall(PetscNew(&prcg));
   ksp->data = (void *)prcg;
 
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_UNPRECONDITIONED, PC_LEFT, 2));

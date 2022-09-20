@@ -239,7 +239,6 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJCUSPARSEBAND(Mat B, Mat A, IS isrow, IS
   PetscCall(ISGetIndices(isicol, &ic));
 
   PetscCall(MatSeqAIJSetPreallocation_SeqAIJ(B, MAT_SKIP_ALLOCATION, NULL));
-  PetscCall(PetscLogObjectParent((PetscObject)B, (PetscObject)isicol));
   b = (Mat_SeqAIJ *)(B)->data;
 
   /* get band widths, MatComputeBandwidth should take a reordering ic and do this */
@@ -269,7 +268,6 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJCUSPARSEBAND(Mat B, Mat A, IS isrow, IS
   cusparseTriFactors->a_band_d = ba_t;
   cusparseTriFactors->i_band_d = bi_t;
   /* In b structure:  Free imax, ilen, old a, old j.  Allocate solve_work, new a, new j */
-  PetscCall(PetscLogObjectMemory((PetscObject)B, (nzBcsr + 1) * (sizeof(PetscInt) + sizeof(PetscScalar))));
   {
     dim3 dimBlockTeam(1, 128);
     dim3 dimBlockLeague(Nf, 1);

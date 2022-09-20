@@ -17,7 +17,6 @@ PetscInt     PetscObjectsCounts = 0, PetscObjectsMaxCounts = 0;
 PetscBool    PetscObjectsLog = PETSC_FALSE;
 #endif
 
-PETSC_EXTERN PetscErrorCode PetscObjectGetComm_Petsc(PetscObject, MPI_Comm *);
 PETSC_EXTERN PetscErrorCode PetscObjectCompose_Petsc(PetscObject, const char[], PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectQuery_Petsc(PetscObject, const char[], PetscObject *);
 PETSC_EXTERN PetscErrorCode PetscObjectComposeFunction_Petsc(PetscObject, const char[], void (*)(void));
@@ -42,7 +41,6 @@ PetscErrorCode PetscHeaderCreate_Private(PetscObject h, PetscClassId classid, co
   h->id                    = PetscObjectNewId_Internal();
   h->bops->destroy         = destroy;
   h->bops->view            = view;
-  h->bops->getcomm         = PetscObjectGetComm_Petsc;
   h->bops->compose         = PetscObjectCompose_Petsc;
   h->bops->query           = PetscObjectQuery_Petsc;
   h->bops->composefunction = PetscObjectComposeFunction_Petsc;
@@ -117,24 +115,16 @@ PetscErrorCode PetscHeaderDestroy_Private(PetscObject obj, PetscBool clear_for_r
 
   if (clear_for_reuse) {
     /* we will assume that obj->bops->view and destroy are safe to leave as-is */
-    obj->bops->getcomm         = PetscObjectGetComm_Petsc;
     obj->bops->compose         = PetscObjectCompose_Petsc;
     obj->bops->query           = PetscObjectQuery_Petsc;
     obj->bops->composefunction = PetscObjectComposeFunction_Petsc;
     obj->bops->queryfunction   = PetscObjectQueryFunction_Petsc;
 
     /* reset quantities, in order of appearance in _p_PetscObject */
-    obj->type        = 0;
-    obj->flops       = 0.0;
-    obj->time        = 0.0;
-    obj->mem         = 0.0;
-    obj->memchildren = 0.0;
-    obj->id          = PetscObjectNewId_Internal();
-    obj->refct       = 1;
-    obj->parent      = NULL;
-    obj->parentid    = 0;
-    obj->tablevel    = 0;
-    obj->state       = 0;
+    obj->id       = PetscObjectNewId_Internal();
+    obj->refct    = 1;
+    obj->tablevel = 0;
+    obj->state    = 0;
     /* don't deallocate, zero these out instead */
     PetscCall(PetscFunctionListClear(obj->qlist));
     PetscCall(PetscArrayzero(obj->fortran_func_pointers, obj->num_fortran_func_pointers));
@@ -644,14 +634,6 @@ PetscErrorCode PetscObjectDereference(PetscObject obj) {
      The following routines are the versions private to the PETSc object
      data structures.
 */
-PetscErrorCode PetscObjectGetComm_Petsc(PetscObject obj, MPI_Comm *comm) {
-  PetscFunctionBegin;
-  PetscValidHeader(obj, 1);
-  PetscValidPointer(comm, 2);
-  *comm = obj->comm;
-  PetscFunctionReturn(0);
-}
-
 PetscErrorCode PetscObjectRemoveReference(PetscObject obj, const char name[]) {
   PetscFunctionBegin;
   PetscValidHeader(obj, 1);

@@ -23,9 +23,7 @@ static PetscErrorCode KSPAllocateVectors_FCG(KSP ksp, PetscInt nvecsneeded, Pets
     nvecsprev = fcg->nvecs;
     nnewvecs  = PetscMin(PetscMax(nvecsneeded - fcg->nvecs, chunksize), fcg->mmax + 1 - fcg->nvecs);
     PetscCall(KSPCreateVecs(ksp, nnewvecs, &fcg->pCvecs[fcg->nchunks], 0, NULL));
-    PetscCall(PetscLogObjectParents((PetscObject)ksp, nnewvecs, fcg->pCvecs[fcg->nchunks]));
     PetscCall(KSPCreateVecs(ksp, nnewvecs, &fcg->pPvecs[fcg->nchunks], 0, NULL));
-    PetscCall(PetscLogObjectParents((PetscObject)ksp, nnewvecs, fcg->pPvecs[fcg->nchunks]));
     fcg->nvecs += nnewvecs;
     for (i = 0; i < nnewvecs; ++i) {
       fcg->Cvecs[nvecsprev + i] = fcg->pCvecs[fcg->nchunks][i];
@@ -51,7 +49,6 @@ static PetscErrorCode KSPSetUp_FCG(KSP ksp) {
    note that mmax is the number of previous directions, so we add 1 for the current direction,
    and an extra 1 for the prealloc (which might be empty) */
   PetscCall(PetscMalloc5(fcg->mmax + 1, &fcg->Pvecs, fcg->mmax + 1, &fcg->Cvecs, fcg->mmax + 1, &fcg->pPvecs, fcg->mmax + 1, &fcg->pCvecs, fcg->mmax + 2, &fcg->chunksizes));
-  PetscCall(PetscLogObjectMemory((PetscObject)ksp, 2 * (fcg->mmax + 1) * sizeof(Vec *) + 2 * (fcg->mmax + 1) * sizeof(Vec **) + (fcg->mmax + 2) * sizeof(PetscInt)));
 
   /* If the requested number of preallocated vectors is greater than mmax reduce nprealloc */
   if (fcg->nprealloc > fcg->mmax + 1) PetscCall(PetscInfo(NULL, "Requested nprealloc=%" PetscInt_FMT " is greater than m_max+1=%" PetscInt_FMT ". Resetting nprealloc = m_max+1.\n", fcg->nprealloc, fcg->mmax + 1));
@@ -65,7 +62,6 @@ static PetscErrorCode KSPSetUp_FCG(KSP ksp) {
   if (ksp->calc_sings) {
     /* get space to store tridiagonal matrix for Lanczos */
     PetscCall(PetscMalloc4(maxit, &fcg->e, maxit, &fcg->d, maxit, &fcg->ee, maxit, &fcg->dd));
-    PetscCall(PetscLogObjectMemory((PetscObject)ksp, 2 * (maxit + 1) * (sizeof(PetscScalar) + sizeof(PetscReal))));
 
     ksp->ops->computeextremesingularvalues = KSPComputeExtremeSingularValues_CG;
     ksp->ops->computeeigenvalues           = KSPComputeEigenvalues_CG;
@@ -495,7 +491,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_FCG(KSP ksp) {
   KSP_FCG *fcg;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(ksp, &fcg));
+  PetscCall(PetscNew(&fcg));
 #if !defined(PETSC_USE_COMPLEX)
   fcg->type = KSP_CG_SYMMETRIC;
 #else

@@ -113,7 +113,7 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJCRL(Mat A, MatType type, Mat
   PetscFunctionBegin;
   if (reuse == MAT_INITIAL_MATRIX) PetscCall(MatDuplicate(A, MAT_COPY_VALUES, &B));
 
-  PetscCall(PetscNewLog(B, &aijcrl));
+  PetscCall(PetscNew(&aijcrl));
   B->spptr = (void *)aijcrl;
 
   /* Set function pointers for methods that we inherit from AIJ but override. */

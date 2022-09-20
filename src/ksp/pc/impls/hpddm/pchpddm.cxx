@@ -260,7 +260,7 @@ static PetscErrorCode PCSetFromOptions_HPDDM(PC pc, PetscOptionItems *PetscOptio
   while (i < PETSC_PCHPDDM_MAXLEVELS) {
     PetscInt p = 1;
 
-    if (!data->levels[i - 1]) PetscCall(PetscNewLog(pc, data->levels + i - 1));
+    if (!data->levels[i - 1]) PetscCall(PetscNew(data->levels + i - 1));
     data->levels[i - 1]->parent = data;
     /* if the previous level has a single process, it is not possible to coarsen further */
     if (previous == 1 || !flg) break;
@@ -1742,7 +1742,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_HPDDM(PC pc) {
     if (found) PetscCall(PetscDLLibrarySym(PETSC_COMM_SELF, &PetscDLLibrariesLoaded, NULL, "PCHPDDM_Internal", (void **)&loadedSym));
   }
   PetscCheck(loadedSym, PETSC_COMM_SELF, PETSC_ERR_PLIB, "PCHPDDM_Internal symbol not found in loaded libhpddm_petsc");
-  PetscCall(PetscNewLog(pc, &data));
+  PetscCall(PetscNew(&data));
   pc->data                = data;
   pc->ops->reset          = PCReset_HPDDM;
   pc->ops->destroy        = PCDestroy_HPDDM;

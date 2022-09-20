@@ -204,7 +204,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJSELL(Mat A, MatType type, Ma
   PetscCall(PetscObjectTypeCompare((PetscObject)A, type, &sametype));
   if (sametype) PetscFunctionReturn(0);
 
-  PetscCall(PetscNewLog(B, &aijsell));
+  PetscCall(PetscNew(&aijsell));
   b        = (Mat_SeqAIJ *)B->data;
   B->spptr = (void *)aijsell;
 

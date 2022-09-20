@@ -495,7 +495,7 @@ static PetscErrorCode MatCompositeAddMat_Composite(Mat mat, Mat smat) {
   Mat_CompositeLink ilink, next = shell->head;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(mat, &ilink));
+  PetscCall(PetscNew(&ilink));
   ilink->next = NULL;
   PetscCall(PetscObjectReference((PetscObject)smat));
   ilink->mat = smat;
@@ -1058,7 +1058,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Composite(Mat A) {
   Mat_Composite *b;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(A, &b));
+  PetscCall(PetscNew(&b));
   A->data = (void *)b;
   PetscCall(PetscMemcpy(A->ops, &MatOps_Values, sizeof(struct _MatOps)));
 

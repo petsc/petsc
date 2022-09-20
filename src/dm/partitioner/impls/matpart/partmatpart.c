@@ -201,7 +201,7 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_MatPartitioning(PetscPartitio
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
-  PetscCall(PetscNewLog(part, &p));
+  PetscCall(PetscNew(&p));
   part->data = p;
   PetscCall(PetscPartitionerInitialize_MatPartitioning(part));
   PetscCall(MatPartitioningCreate(PetscObjectComm((PetscObject)part), &p->mp));

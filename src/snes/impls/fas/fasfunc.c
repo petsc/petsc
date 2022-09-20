@@ -435,7 +435,6 @@ PetscErrorCode SNESFASCycleCreateSmoother_Private(SNES snes, SNES *smooth) {
     PetscCall(SNESSetTolerances(nsmooth, 0.0, 0.0, 0.0, fas->max_down_it, nsmooth->max_funcs));
   }
   PetscCall(PetscObjectIncrementTabLevel((PetscObject)nsmooth, (PetscObject)snes, 1));
-  PetscCall(PetscLogObjectParent((PetscObject)snes, (PetscObject)nsmooth));
   PetscCall(PetscObjectCopyFortranFunctionPointers((PetscObject)snes, (PetscObject)nsmooth));
   PetscCall(PetscObjectComposedDataSetInt((PetscObject)nsmooth, PetscMGLevelId, fas->level));
   *smooth = nsmooth;

@@ -364,7 +364,7 @@ PETSC_EXTERN PetscErrorCode ISCreate_Stride(IS is) {
   IS_Stride *sub;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(is, &sub));
+  PetscCall(PetscNew(&sub));
   is->data = (void *)sub;
   PetscCall(PetscMemcpy(is->ops, &myops, sizeof(myops)));
   PetscCall(PetscObjectComposeFunction((PetscObject)is, "ISStrideSetStride_C", ISStrideSetStride_Stride));

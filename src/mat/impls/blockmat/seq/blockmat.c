@@ -865,10 +865,7 @@ static PetscErrorCode MatBlockMatSetPreallocation_BlockMat(Mat A, PetscInt bs, P
   PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF, 1, bs, NULL, &bmat->middle));
   PetscCall(VecCreateSeq(PETSC_COMM_SELF, bs, &bmat->left));
 
-  if (!bmat->imax) {
-    PetscCall(PetscMalloc2(A->rmap->n, &bmat->imax, A->rmap->n, &bmat->ilen));
-    PetscCall(PetscLogObjectMemory((PetscObject)A, 2 * A->rmap->n * sizeof(PetscInt)));
-  }
+  if (!bmat->imax) { PetscCall(PetscMalloc2(A->rmap->n, &bmat->imax, A->rmap->n, &bmat->ilen)); }
   if (PetscLikely(nnz)) {
     nz = 0;
     for (i = 0; i < A->rmap->n / A->rmap->bs; i++) {
@@ -883,7 +880,6 @@ static PetscErrorCode MatBlockMatSetPreallocation_BlockMat(Mat A, PetscInt bs, P
   /* allocate the matrix space */
   PetscCall(MatSeqXAIJFreeAIJ(A, (PetscScalar **)&bmat->a, &bmat->j, &bmat->i));
   PetscCall(PetscMalloc3(nz, &bmat->a, nz, &bmat->j, A->rmap->n + 1, &bmat->i));
-  PetscCall(PetscLogObjectMemory((PetscObject)A, (A->rmap->n + 1) * sizeof(PetscInt) + nz * (sizeof(PetscScalar) + sizeof(PetscInt))));
   bmat->i[0] = 0;
   for (i = 1; i < bmat->mbs + 1; i++) bmat->i[i] = bmat->i[i - 1] + bmat->imax[i - 1];
   bmat->singlemalloc = PETSC_TRUE;
@@ -910,7 +906,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_BlockMat(Mat A) {
   Mat_BlockMat *b;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(A, &b));
+  PetscCall(PetscNew(&b));
   A->data = (void *)b;
   PetscCall(PetscMemcpy(A->ops, &MatOps_Values, sizeof(struct _MatOps)));
 

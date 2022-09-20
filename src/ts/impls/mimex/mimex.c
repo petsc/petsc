@@ -320,7 +320,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_Mimex(TS ts) {
   ts->ops->snesjacobian    = SNESTSFormJacobian_Mimex;
   ts->default_adapt_type   = TSADAPTNONE;
 
-  PetscCall(PetscNewLog(ts, &mimex));
+  PetscCall(PetscNew(&mimex));
   ts->data = (void *)mimex;
 
   mimex->version = 1;

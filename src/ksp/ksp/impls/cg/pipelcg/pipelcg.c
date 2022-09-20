@@ -476,7 +476,7 @@ PetscErrorCode KSPCreate_PIPELCG(KSP ksp) {
   KSP_CG_PIPE_L *plcg = NULL;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(ksp, &plcg));
+  PetscCall(PetscNew(&plcg));
   ksp->data = (void *)plcg;
 
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_NONE, PC_LEFT, 1));

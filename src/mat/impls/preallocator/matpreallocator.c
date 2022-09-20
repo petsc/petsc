@@ -247,7 +247,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Preallocator(Mat A) {
   Mat_Preallocator *p;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(A, &p));
+  PetscCall(PetscNew(&p));
   A->data = (void *)p;
 
   p->ht   = NULL;

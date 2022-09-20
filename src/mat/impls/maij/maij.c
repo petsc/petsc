@@ -143,7 +143,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MAIJ(Mat A) {
   PetscMPIInt  size;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(A, &b));
+  PetscCall(PetscNew(&b));
   A->data = (void *)b;
 
   PetscCall(PetscMemzero(A->ops, sizeof(struct _MatOps)));

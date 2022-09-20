@@ -67,7 +67,6 @@ static PetscErrorCode KSPSetUp_CG(KSP ksp) {
   if (ksp->calc_sings) {
     PetscCall(PetscFree4(cgP->e, cgP->d, cgP->ee, cgP->dd));
     PetscCall(PetscMalloc4(maxit, &cgP->e, maxit, &cgP->d, maxit, &cgP->ee, maxit, &cgP->dd));
-    PetscCall(PetscLogObjectMemory((PetscObject)ksp, 2 * maxit * (sizeof(PetscScalar) + sizeof(PetscReal))));
 
     ksp->ops->computeextremesingularvalues = KSPComputeExtremeSingularValues_CG;
     ksp->ops->computeeigenvalues           = KSPComputeEigenvalues_CG;
@@ -559,7 +558,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_CG(KSP ksp) {
   KSP_CG *cg;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(ksp, &cg));
+  PetscCall(PetscNew(&cg));
 #if !defined(PETSC_USE_COMPLEX)
   cg->type = KSP_CG_SYMMETRIC;
 #else

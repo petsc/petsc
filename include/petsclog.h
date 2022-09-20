@@ -218,8 +218,13 @@ struct _n_PetscStageLog {
 };
 /* -----------------------------------------------------------------------------------------------------*/
 
-PETSC_EXTERN PetscErrorCode PetscLogObjectParent(PetscObject, PetscObject);
-PETSC_EXTERN PetscErrorCode PetscLogObjectMemory(PetscObject, PetscLogDouble);
+PETSC_DEPRECATED_FUNCTION("PetscLogObjectParent() is deprecated (since version 3.18)") static inline PetscErrorCode PetscLogObjectParent(PetscObject o, PetscObject p) {
+  return 0;
+}
+
+PETSC_DEPRECATED_FUNCTION("PetscLogObjectMemory() is deprecated (since version 3.18)") static inline PetscErrorCode PetscLogObjectMemory(PetscObject o, PetscLogDouble m) {
+  return 0;
+}
 
 #if defined(PETSC_USE_LOG) /* --- Logging is turned on --------------------------------*/
 PETSC_EXTERN PetscStageLog  petsc_stageLog;

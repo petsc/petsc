@@ -249,7 +249,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Sliced(DM p) {
   DM_Sliced *slice;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(p, &slice));
+  PetscCall(PetscNew(&slice));
   p->data = slice;
 
   p->ops->createglobalvector = DMCreateGlobalVector_Sliced;

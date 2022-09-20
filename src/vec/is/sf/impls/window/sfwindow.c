@@ -655,7 +655,6 @@ static PetscErrorCode PetscSFSetUp_Window(PetscSF sf) {
     PetscCall(PetscSFDuplicate(sf, PETSCSF_DUPLICATE_RANKS, &w->dynsf));
     PetscCall(PetscSFWindowSetFlavorType(w->dynsf, PETSCSF_WINDOW_FLAVOR_CREATE)); /* break recursion */
     PetscCall(PetscSFSetGraph(w->dynsf, 1, sf->nranks, NULL, PETSC_OWN_POINTER, remotes, PETSC_OWN_POINTER));
-    PetscCall(PetscLogObjectParent((PetscObject)sf, (PetscObject)w->dynsf));
   }
   switch (w->sync) {
   case PETSCSF_WINDOW_SYNC_ACTIVE: PetscCall(PetscSFGetGroups(sf, &ingroup, &outgroup));
@@ -933,7 +932,7 @@ PETSC_INTERN PetscErrorCode PetscSFCreate_Window(PetscSF sf) {
   sf->ops->FetchAndOpBegin = PetscSFFetchAndOpBegin_Window;
   sf->ops->FetchAndOpEnd   = PetscSFFetchAndOpEnd_Window;
 
-  PetscCall(PetscNewLog(sf, &w));
+  PetscCall(PetscNew(&w));
   sf->data  = (void *)w;
   w->sync   = PETSCSF_WINDOW_SYNC_FENCE;
   w->flavor = PETSCSF_WINDOW_FLAVOR_CREATE;

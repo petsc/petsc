@@ -356,7 +356,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BNCG(Tao tao) {
   PetscCall(TaoLineSearchSetType(tao->linesearch, morethuente_type));
   PetscCall(TaoLineSearchUseTaoRoutines(tao->linesearch, tao));
 
-  PetscCall(PetscNewLog(tao, &cg));
+  PetscCall(PetscNew(&cg));
   tao->data = (void *)cg;
   PetscCall(KSPInitializePackage());
   PetscCall(MatCreate(PetscObjectComm((PetscObject)tao), &cg->B));

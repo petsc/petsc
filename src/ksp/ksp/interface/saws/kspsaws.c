@@ -27,7 +27,7 @@ PetscErrorCode KSPMonitorSAWsCreate(KSP ksp, void **ctx) {
   KSPMonitor_SAWs *mon;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(ksp, &mon));
+  PetscCall(PetscNew(&mon));
   mon->viewer = PETSC_VIEWER_SAWS_(PetscObjectComm((PetscObject)ksp));
   PetscCheck(mon->viewer, PetscObjectComm((PetscObject)ksp), PETSC_ERR_PLIB, "Cannot create SAWs default viewer");
   *ctx = (void *)mon;

@@ -51,7 +51,7 @@ PetscErrorCode MatCreateFFT(MPI_Comm comm, PetscInt ndim, const PetscInt dim[], 
   PetscCallMPI(MPI_Comm_size(comm, &size));
 
   PetscCall(MatCreate(comm, &FFT));
-  PetscCall(PetscNewLog(FFT, &fft));
+  PetscCall(PetscNew(&fft));
   FFT->data = (void *)fft;
   N         = 1;
   for (i = 0; i < ndim; i++) {

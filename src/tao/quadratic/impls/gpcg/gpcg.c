@@ -303,7 +303,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_GPCG(Tao tao) {
   tao->ops->destroy        = TaoDestroy_GPCG;
   tao->ops->computedual    = TaoComputeDual_GPCG;
 
-  PetscCall(PetscNewLog(tao, &gpcg));
+  PetscCall(PetscNew(&gpcg));
   tao->data = (void *)gpcg;
 
   /* Override default settings (unless already changed) */

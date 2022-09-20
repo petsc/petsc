@@ -483,7 +483,7 @@ PETSC_EXTERN PetscErrorCode MatColoringCreate_JP(MatColoring mc) {
   MC_JP *jp;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(mc, &jp));
+  PetscCall(PetscNew(&jp));
   jp->sf                  = NULL;
   jp->dmask               = NULL;
   jp->omask               = NULL;

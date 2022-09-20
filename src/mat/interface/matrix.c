@@ -3838,7 +3838,6 @@ PetscErrorCode MatSolveAdd(Mat mat, Vec b, Vec y, Vec x) {
       PetscCall(VecAXPY(x, one, y));
     } else {
       PetscCall(VecDuplicate(x, &tmp));
-      PetscCall(PetscLogObjectParent((PetscObject)mat, (PetscObject)tmp));
       PetscCall(VecCopy(x, tmp));
       PetscCall(MatSolve(mat, b, x));
       PetscCall(VecAXPY(x, one, tmp));
@@ -3959,7 +3958,6 @@ PetscErrorCode MatSolveTransposeAdd(Mat mat, Vec b, Vec y, Vec x) {
       PetscCall(VecAXPY(x, one, y));
     } else {
       PetscCall(VecDuplicate(x, &tmp));
-      PetscCall(PetscLogObjectParent((PetscObject)mat, (PetscObject)tmp));
       PetscCall(VecCopy(x, tmp));
       PetscCall(MatSolveTranspose(mat, b, x));
       PetscCall(VecAXPY(x, one, tmp));
@@ -8384,7 +8382,6 @@ PetscErrorCode MatMatInterpolateAdd(Mat A, Mat x, Mat w, Mat *y) {
     if (!w) {
       PetscCall(MatDuplicate(*y, MAT_COPY_VALUES, &w));
       PetscCall(PetscObjectCompose((PetscObject)*y, "__MatMatIntAdd_w", (PetscObject)w));
-      PetscCall(PetscLogObjectParent((PetscObject)*y, (PetscObject)w));
       PetscCall(PetscObjectDereference((PetscObject)w));
     } else {
       PetscCall(MatCopy(*y, w, UNKNOWN_NONZERO_PATTERN));
@@ -9890,7 +9887,7 @@ PetscErrorCode MatCreateRedundantMatrix(Mat mat, PetscInt nsubcomm, MPI_Comm sub
     PetscCall(MatCreateMPIMatConcatenateSeqMat(subcomm, matseq[0], nloc_sub, reuse, matredundant));
 
     /* create a supporting struct and attach it to C for reuse */
-    PetscCall(PetscNewLog(*matredundant, &redund));
+    PetscCall(PetscNew(&redund));
     (*matredundant)->redundant = redund;
     redund->isrow              = isrow;
     redund->iscol              = iscol;

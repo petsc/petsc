@@ -507,7 +507,6 @@ static PetscErrorCode PCSetUp_GASM(PC pc) {
       char subprefix[PETSC_MAX_PATH_LEN + 1];
       PetscCall(KSPCreate(((PetscObject)(osm->ois[i]))->comm, &ksp));
       PetscCall(KSPSetErrorIfNotConverged(ksp, pc->erroriffailure));
-      PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)ksp));
       PetscCall(PetscObjectIncrementTabLevel((PetscObject)ksp, (PetscObject)pc, 1));
       PetscCall(KSPSetType(ksp, KSPPREONLY));
       PetscCall(KSPGetPC(ksp, &subpc)); /* Why do we need this here? */
@@ -554,10 +553,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc) {
   }
   if (scall == MAT_INITIAL_MATRIX) {
     PetscCall(PetscObjectGetOptionsPrefix((PetscObject)pc->pmat, &pprefix));
-    for (i = 0; i < osm->n; i++) {
-      PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)osm->pmat[i]));
-      PetscCall(PetscObjectSetOptionsPrefix((PetscObject)osm->pmat[i], pprefix));
-    }
+    for (i = 0; i < osm->n; i++) { PetscCall(PetscObjectSetOptionsPrefix((PetscObject)osm->pmat[i], pprefix)); }
   }
 
   /* Return control to the user so that the submatrices can be modified (e.g., to apply
@@ -1237,7 +1233,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_GASM(PC pc) {
   PC_GASM *osm;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(pc, &osm));
+  PetscCall(PetscNew(&osm));
 
   osm->N                        = PETSC_DETERMINE;
   osm->n                        = PETSC_DECIDE;

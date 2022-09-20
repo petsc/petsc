@@ -228,7 +228,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_LMVM(PC pc) {
   PC_LMVM *ctx;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(pc, &ctx));
+  PetscCall(PetscNew(&ctx));
   pc->data = (void *)ctx;
 
   pc->ops->reset               = PCReset_LMVM;

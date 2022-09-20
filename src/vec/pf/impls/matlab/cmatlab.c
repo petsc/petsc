@@ -59,7 +59,7 @@ PETSC_EXTERN PetscErrorCode PFCreate_Matlab(PF pf, void *value) {
   PF_Matlab *matlab;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(pf, &matlab));
+  PetscCall(PetscNew(&matlab));
   matlab->dimin  = pf->dimin;
   matlab->dimout = pf->dimout;
 

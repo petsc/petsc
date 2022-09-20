@@ -203,7 +203,7 @@ PetscErrorCode MatCreateLocalRef(Mat A, IS isrow, IS iscol, Mat *newmat) {
 
   B->ops->destroy = MatDestroy_LocalRef;
 
-  PetscCall(PetscNewLog(B, &lr));
+  PetscCall(PetscNew(&lr));
   B->data = (void *)lr;
 
   PetscCall(PetscObjectTypeCompare((PetscObject)A, MATLOCALREF, &islr));

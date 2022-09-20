@@ -154,7 +154,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_SAVIENNACL(PC pc) {
      Creates the private data structure for this preconditioner and
      attach it to the PC object.
   */
-  PetscCall(PetscNewLog(pc, &sac));
+  PetscCall(PetscNew(&sac));
   pc->data = (void *)sac;
 
   /*

@@ -47,34 +47,13 @@ static PetscErrorCode KSPGuessSetUp_Fischer(KSPGuess guess) {
   KSPGuessFischer *itg = (KSPGuessFischer *)guess->data;
 
   PetscFunctionBegin;
-  if (!itg->alpha) {
-    PetscCall(PetscMalloc1(itg->maxl, &itg->alpha));
-    PetscCall(PetscLogObjectMemory((PetscObject)guess, itg->maxl * sizeof(PetscScalar)));
-  }
-  if (!itg->xtilde) {
-    PetscCall(KSPCreateVecs(guess->ksp, itg->maxl, &itg->xtilde, 0, NULL));
-    PetscCall(PetscLogObjectParents(guess, itg->maxl, itg->xtilde));
-  }
-  if (!itg->btilde && (itg->method == 1 || itg->method == 3)) {
-    PetscCall(KSPCreateVecs(guess->ksp, itg->maxl, &itg->btilde, 0, NULL));
-    PetscCall(PetscLogObjectParents(guess, itg->maxl, itg->btilde));
-  }
-  if (!itg->Ax && itg->method == 2) {
-    PetscCall(VecDuplicate(itg->xtilde[0], &itg->Ax));
-    PetscCall(PetscLogObjectParent((PetscObject)guess, (PetscObject)itg->Ax));
-  }
-  if (!itg->guess && (itg->method == 1 || itg->method == 2)) {
-    PetscCall(VecDuplicate(itg->xtilde[0], &itg->guess));
-    PetscCall(PetscLogObjectParent((PetscObject)guess, (PetscObject)itg->guess));
-  }
-  if (!itg->corr && itg->method == 3) {
-    PetscCall(PetscCalloc1(itg->maxl * itg->maxl, &itg->corr));
-    PetscCall(PetscLogObjectMemory((PetscObject)guess, itg->maxl * itg->maxl * sizeof(PetscScalar)));
-  }
-  if (!itg->last_b_coefs && itg->method == 3) {
-    PetscCall(PetscCalloc1(itg->maxl, &itg->last_b_coefs));
-    PetscCall(PetscLogObjectMemory((PetscObject)guess, itg->maxl * sizeof(PetscScalar)));
-  }
+  if (!itg->alpha) PetscCall(PetscMalloc1(itg->maxl, &itg->alpha));
+  if (!itg->xtilde) PetscCall(KSPCreateVecs(guess->ksp, itg->maxl, &itg->xtilde, 0, NULL));
+  if (!itg->btilde && (itg->method == 1 || itg->method == 3)) PetscCall(KSPCreateVecs(guess->ksp, itg->maxl, &itg->btilde, 0, NULL));
+  if (!itg->Ax && itg->method == 2) PetscCall(VecDuplicate(itg->xtilde[0], &itg->Ax));
+  if (!itg->guess && (itg->method == 1 || itg->method == 2)) PetscCall(VecDuplicate(itg->xtilde[0], &itg->guess));
+  if (!itg->corr && itg->method == 3) PetscCall(PetscCalloc1(itg->maxl * itg->maxl, &itg->corr));
+  if (!itg->last_b_coefs && itg->method == 3) PetscCall(PetscCalloc1(itg->maxl, &itg->last_b_coefs));
   PetscFunctionReturn(0);
 }
 
@@ -476,7 +455,7 @@ PetscErrorCode KSPGuessCreate_Fischer(KSPGuess guess) {
   KSPGuessFischer *fischer;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(guess, &fischer));
+  PetscCall(PetscNew(&fischer));
   fischer->method = 1; /* defaults to method 1 */
   fischer->maxl   = 10;
   fischer->tol    = 32.0 * PETSC_MACHINE_EPSILON;

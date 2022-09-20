@@ -338,7 +338,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Redistribute(PC pc) {
   const char      *prefix;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(pc, &red));
+  PetscCall(PetscNew(&red));
   pc->data = (void *)red;
 
   pc->ops->apply          = PCApply_Redistribute;
@@ -351,7 +351,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_Redistribute(PC pc) {
   PetscCall(KSPCreate(PetscObjectComm((PetscObject)pc), &red->ksp));
   PetscCall(KSPSetErrorIfNotConverged(red->ksp, pc->erroriffailure));
   PetscCall(PetscObjectIncrementTabLevel((PetscObject)red->ksp, (PetscObject)pc, 1));
-  PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)red->ksp));
   PetscCall(PCGetOptionsPrefix(pc, &prefix));
   PetscCall(KSPSetOptionsPrefix(red->ksp, prefix));
   PetscCall(KSPAppendOptionsPrefix(red->ksp, "redistribute_"));

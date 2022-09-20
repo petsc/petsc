@@ -609,7 +609,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_MS(SNES snes) {
 
   snes->alwayscomputesfinalresidual = PETSC_FALSE;
 
-  PetscCall(PetscNewLog(snes, &ms));
+  PetscCall(PetscNew(&ms));
   snes->data  = (void *)ms;
   ms->damping = 0.9;
   ms->norms   = PETSC_FALSE;

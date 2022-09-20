@@ -150,7 +150,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJCRL(Mat A, MatType type, Mat
   PetscCall(PetscObjectTypeCompare((PetscObject)A, type, &sametype));
   if (sametype) PetscFunctionReturn(0);
 
-  PetscCall(PetscNewLog(B, &aijcrl));
+  PetscCall(PetscNew(&aijcrl));
   B->spptr = (void *)aijcrl;
 
   /* Set function pointers for methods that we inherit from AIJ but override. */

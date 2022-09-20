@@ -468,7 +468,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_SPAI(PC pc) {
   PC_SPAI *ispai;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(pc, &ispai));
+  PetscCall(PetscNew(&ispai));
   pc->data = ispai;
 
   pc->ops->destroy         = PCDestroy_SPAI;

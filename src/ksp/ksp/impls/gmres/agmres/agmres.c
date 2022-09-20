@@ -81,7 +81,6 @@ static PetscErrorCode KSPBuildSolution_AGMRES(KSP ksp, Vec ptr, Vec *result) {
     if (!agmres->sol_temp) {
       PetscCall(VecDuplicate(ksp->vec_sol, &agmres->sol_temp));
       PetscCall(VecCopy(ksp->vec_sol, agmres->sol_temp));
-      PetscCall(PetscLogObjectParent((PetscObject)ksp, (PetscObject)agmres->sol_temp));
     }
     ptr = agmres->sol_temp;
   } else {
@@ -680,7 +679,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_AGMRES(KSP ksp) {
   KSP_AGMRES *agmres;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(ksp, &agmres));
+  PetscCall(PetscNew(&agmres));
   ksp->data = (void *)agmres;
 
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_PRECONDITIONED, PC_LEFT, 3));

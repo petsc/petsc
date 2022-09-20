@@ -301,7 +301,7 @@ static PetscErrorCode PCCompositeAddPC_Composite(PC pc, PC subpc) {
   char             newprefix[20];
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(pc, &ilink));
+  PetscCall(PetscNew(&ilink));
   ilink->next = NULL;
   ilink->pc   = subpc;
 
@@ -333,7 +333,6 @@ static PetscErrorCode PCCompositeAddPCType_Composite(PC pc, PCType type) {
   PetscFunctionBegin;
   PetscCall(PCCreate(PetscObjectComm((PetscObject)pc), &subpc));
   PetscCall(PetscObjectIncrementTabLevel((PetscObject)subpc, (PetscObject)pc, 1));
-  PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)subpc));
   PetscCall(PCCompositeAddPC_Composite(pc, subpc));
   /* type is set after prefix, because some methods may modify prefix, e.g. pcksp */
   PetscCall(PCSetType(subpc, type));
@@ -562,7 +561,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Composite(PC pc) {
   PC_Composite *jac;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(pc, &jac));
+  PetscCall(PetscNew(&jac));
 
   pc->ops->apply           = PCApply_Composite_Additive;
   pc->ops->applytranspose  = PCApplyTranspose_Composite_Additive;

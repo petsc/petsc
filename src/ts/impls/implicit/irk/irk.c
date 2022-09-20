@@ -812,7 +812,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_IRK(TS ts) {
 
   ts->usessnes = PETSC_TRUE;
 
-  PetscCall(PetscNewLog(ts, &irk));
+  PetscCall(PetscNew(&irk));
   ts->data = (void *)irk;
 
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSIRKSetType_C", TSIRKSetType_IRK));

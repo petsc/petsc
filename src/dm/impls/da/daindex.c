@@ -136,7 +136,6 @@ PetscErrorCode DMDAGetAO(DM da, AO *ao) {
     PetscCall(AOCreate(PetscObjectComm((PetscObject)da), &dd->ao));
     PetscCall(AOSetIS(dd->ao, isnatural, ispetsc));
     PetscCall(AOSetType(dd->ao, dd->aotype));
-    PetscCall(PetscLogObjectParent((PetscObject)da, (PetscObject)dd->ao));
     PetscCall(ISDestroy(&ispetsc));
     PetscCall(ISDestroy(&isnatural));
   }

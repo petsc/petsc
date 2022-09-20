@@ -191,7 +191,7 @@ static PetscErrorCode MatDuplicate_SeqBAIJMKL(Mat A, MatDuplicateOption op, Mat 
   PetscFunctionBegin;
   PetscCall(MatDuplicate_SeqBAIJ(A, op, M));
   baijmkl = (Mat_SeqBAIJMKL *)A->spptr;
-  PetscCall(PetscNewLog((*M), &baijmkl_dest));
+  PetscCall(PetscNew(&baijmkl_dest));
   (*M)->spptr = (void *)baijmkl_dest;
   PetscCall(PetscMemcpy(baijmkl_dest, baijmkl, sizeof(Mat_SeqBAIJMKL)));
   baijmkl_dest->sparse_optimized = PETSC_FALSE;
@@ -380,7 +380,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqBAIJMKL(Mat A, MatType type, M
   PetscCall(PetscObjectTypeCompare((PetscObject)A, type, &sametype));
   if (sametype) PetscFunctionReturn(0);
 
-  PetscCall(PetscNewLog(B, &baijmkl));
+  PetscCall(PetscNew(&baijmkl));
   B->spptr = (void *)baijmkl;
 
   /* Set function pointers for methods that we inherit from BAIJ but override.

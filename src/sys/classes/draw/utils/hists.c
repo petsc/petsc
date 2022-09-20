@@ -64,7 +64,6 @@ PetscErrorCode PetscDrawHGCreate(PetscDraw draw, int bins, PetscDrawHG *hist) {
   PetscValidPointer(hist, 3);
 
   PetscCall(PetscHeaderCreate(h, PETSC_DRAWHG_CLASSID, "DrawHG", "Histogram", "Draw", PetscObjectComm((PetscObject)draw), PetscDrawHGDestroy, NULL));
-  PetscCall(PetscLogObjectParent((PetscObject)draw, (PetscObject)h));
 
   PetscCall(PetscObjectReference((PetscObject)draw));
   h->win = draw;
@@ -87,10 +86,7 @@ PetscErrorCode PetscDrawHGCreate(PetscDraw draw, int bins, PetscDrawHG *hist) {
   h->integerBins = PETSC_FALSE;
 
   PetscCall(PetscMalloc1(h->maxValues, &h->values));
-  PetscCall(PetscLogObjectMemory((PetscObject)h, (h->maxBins + h->maxValues) * sizeof(PetscReal)));
-
   PetscCall(PetscDrawAxisCreate(draw, &h->axis));
-  PetscCall(PetscLogObjectParent((PetscObject)h, (PetscObject)h->axis));
 
   *hist = h;
   PetscFunctionReturn(0);
@@ -117,7 +113,6 @@ PetscErrorCode PetscDrawHGSetNumberBins(PetscDrawHG hist, int bins) {
   if (hist->maxBins < bins) {
     PetscCall(PetscFree(hist->bins));
     PetscCall(PetscMalloc1(bins, &hist->bins));
-    PetscCall(PetscLogObjectMemory((PetscObject)hist, (bins - hist->maxBins) * sizeof(PetscReal)));
     hist->maxBins = bins;
   }
   hist->numBins = bins;
@@ -199,7 +194,6 @@ PetscErrorCode PetscDrawHGAddValue(PetscDrawHG hist, PetscReal value) {
     PetscReal *tmp;
 
     PetscCall(PetscMalloc1(hist->maxValues + CHUNKSIZE, &tmp));
-    PetscCall(PetscLogObjectMemory((PetscObject)hist, CHUNKSIZE * sizeof(PetscReal)));
     PetscCall(PetscArraycpy(tmp, hist->values, hist->maxValues));
     PetscCall(PetscFree(hist->values));
 

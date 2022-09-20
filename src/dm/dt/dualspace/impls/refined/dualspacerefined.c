@@ -188,7 +188,7 @@ PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate_Refined(PetscDualSpace sp) {
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
-  PetscCall(PetscNewLog(sp, &ref));
+  PetscCall(PetscNew(&ref));
   sp->data = ref;
 
   PetscCall(PetscDualSpaceInitialize_Refined(sp));

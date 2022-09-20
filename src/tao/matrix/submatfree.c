@@ -58,7 +58,6 @@ PetscErrorCode MatCreateSubMatrixFree(Mat mat, IS Rows, IS Cols, Mat *J) {
   PetscCall(MatShellSetOperation(*J, MATOP_CREATE_SUBMATRIX, (void (*)(void))MatCreateSubMatrix_SMF));
   PetscCall(MatShellSetOperation(*J, MATOP_GET_ROW_MAX, (void (*)(void))MatDuplicate_SMF));
 
-  PetscCall(PetscLogObjectParent((PetscObject)mat, (PetscObject)(*J)));
   PetscFunctionReturn(0);
 }
 

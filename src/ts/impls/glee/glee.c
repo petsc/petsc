@@ -1010,7 +1010,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_GLEE(TS ts) {
 
   ts->usessnes = PETSC_TRUE;
 
-  PetscCall(PetscNewLog(ts, &th));
+  PetscCall(PetscNew(&th));
   ts->data = (void *)th;
 
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSGLEEGetType_C", TSGLEEGetType_GLEE));

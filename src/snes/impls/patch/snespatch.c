@@ -83,7 +83,6 @@ static PetscErrorCode PCSetUp_PATCH_Nonlinear(PC pc) {
       PetscCall(SNESSetOptionsPrefix(snes, prefix));
       PetscCall(SNESAppendOptionsPrefix(snes, "sub_"));
       PetscCall(PetscObjectIncrementTabLevel((PetscObject)snes, (PetscObject)pc, 2));
-      PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)snes));
       patch->solver[i] = (PetscObject)snes;
 
       PetscCall(PetscSectionGetDof(patch->gtolCountsWithAll, i + pStart, &dof));
@@ -327,7 +326,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Patch(SNES snes) {
   SNESLineSearch linesearch;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(snes, &patch));
+  PetscCall(PetscNew(&patch));
 
   snes->ops->solve          = SNESSolve_Patch;
   snes->ops->setup          = SNESSetUp_Patch;

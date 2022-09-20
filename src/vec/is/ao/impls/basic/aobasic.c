@@ -163,7 +163,7 @@ PETSC_EXTERN PetscErrorCode AOCreate_Basic(AO ao) {
 
   PetscFunctionBegin;
   /* create special struct aobasic */
-  PetscCall(PetscNewLog(ao, &aobasic));
+  PetscCall(PetscNew(&aobasic));
   ao->data = (void *)aobasic;
   PetscCall(PetscMemcpy(ao->ops, &AOOps_Basic, sizeof(struct _AOOps)));
   PetscCall(PetscObjectChangeTypeName((PetscObject)ao, AOBASIC));
@@ -222,7 +222,6 @@ PETSC_EXTERN PetscErrorCode AOCreate_Basic(AO ao) {
 
   /* generate a list of application and PETSc node numbers */
   PetscCall(PetscCalloc2(N, &aobasic->app, N, &aobasic->petsc));
-  PetscCall(PetscLogObjectMemory((PetscObject)ao, 2 * N * sizeof(PetscInt)));
   for (i = 0; i < N; i++) {
     ip = allpetsc[i];
     ia = allapp[i];

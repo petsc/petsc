@@ -248,7 +248,7 @@ static PetscErrorCode DMFTopologyCreateBrick_pforest(DM dm, PetscInt N[], PetscI
 
   PetscFunctionBegin;
   PetscCheck(useMorton, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Lexicographic ordering not implemented yet");
-  PetscCall(PetscNewLog(dm, topo));
+  PetscCall(PetscNew(topo));
 
   (*topo)->refct = 1;
 #if !defined(P4_TO_P8)
@@ -310,7 +310,7 @@ static PetscErrorCode DMFTopologyCreate_pforest(DM dm, DMForestTopology topology
     PetscCall(DMFTopologyCreateBrick_pforest(dm, N, P, B, topo, useMorton));
     if (periodic) PetscCall(DMSetPeriodicity(dm, maxCell, Lstart, L));
   } else {
-    PetscCall(PetscNewLog(dm, topo));
+    PetscCall(PetscNew(topo));
 
     (*topo)->refct = 1;
     PetscCallP4estReturn((*topo)->conn, p4est_connectivity_new_byname, (name));
@@ -747,7 +747,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm) {
       }
       PetscCall(DMViewFromOptions(base, NULL, "-dm_p4est_base_view"));
       PetscCall(DMPlexCreateConnectivity_pforest(base, &conn, &tree_face_to_uniq));
-      PetscCall(PetscNewLog(dm, &topo));
+      PetscCall(PetscNew(&topo));
       topo->refct = 1;
       topo->conn  = conn;
       topo->geom  = NULL;
@@ -1006,7 +1006,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm) {
         PetscInt            maxLevel;
 
         PetscCall(DMForestGetMaximumRefinement(dm, &maxLevel));
-        PetscCall(PetscNewLog(dm, &ctx));
+        PetscCall(PetscNew(&ctx));
         ctx->maxLevel = PetscMin(maxLevel, P4EST_QMAXLEVEL);
         if (initLevel + ctx->maxLevel > minLevel) pforest->coarsen_hierarchy = PETSC_TRUE;
         switch (pattern) {
@@ -5025,7 +5025,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_pforest(DM dm) {
   PetscCall(DMForestSetPartitionOverlap(dm, 0));
 
   /* create p4est data */
-  PetscCall(PetscNewLog(dm, &pforest));
+  PetscCall(PetscNew(&pforest));
 
   forest                            = (DM_Forest *)dm->data;
   forest->data                      = pforest;

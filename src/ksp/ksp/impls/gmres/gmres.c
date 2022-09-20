@@ -46,14 +46,11 @@ PetscErrorCode KSPSetUp_GMRES(KSP ksp) {
   cc    = (max_k + 1);
 
   PetscCall(PetscCalloc5(hh, &gmres->hh_origin, hes, &gmres->hes_origin, rs, &gmres->rs_origin, cc, &gmres->cc_origin, cc, &gmres->ss_origin));
-  PetscCall(PetscLogObjectMemory((PetscObject)ksp, (hh + hes + rs + 2 * cc) * sizeof(PetscScalar)));
 
   if (ksp->calc_sings) {
     /* Allocate workspace to hold Hessenberg matrix needed by lapack */
     PetscCall(PetscMalloc1((max_k + 3) * (max_k + 9), &gmres->Rsvd));
-    PetscCall(PetscLogObjectMemory((PetscObject)ksp, (max_k + 3) * (max_k + 9) * sizeof(PetscScalar)));
     PetscCall(PetscMalloc1(6 * (max_k + 2), &gmres->Dsvd));
-    PetscCall(PetscLogObjectMemory((PetscObject)ksp, 6 * (max_k + 2) * sizeof(PetscReal)));
   }
 
   /* Allocate array to hold pointers to user vectors.  Note that we need
@@ -63,13 +60,11 @@ PetscErrorCode KSPSetUp_GMRES(KSP ksp) {
   PetscCall(PetscMalloc1(gmres->vecs_allocated, &gmres->vecs));
   PetscCall(PetscMalloc1(VEC_OFFSET + 2 + max_k, &gmres->user_work));
   PetscCall(PetscMalloc1(VEC_OFFSET + 2 + max_k, &gmres->mwork_alloc));
-  PetscCall(PetscLogObjectMemory((PetscObject)ksp, (VEC_OFFSET + 2 + max_k) * (sizeof(Vec *) + sizeof(PetscInt)) + gmres->vecs_allocated * sizeof(Vec)));
 
   if (gmres->q_preallocate) {
     gmres->vv_allocated = VEC_OFFSET + 2 + max_k;
 
     PetscCall(KSPCreateVecs(ksp, gmres->vv_allocated, &gmres->user_work[0], 0, NULL));
-    PetscCall(PetscLogObjectParents(ksp, gmres->vv_allocated, gmres->user_work[0]));
 
     gmres->mwork_alloc[0] = gmres->vv_allocated;
     gmres->nwork_alloc    = 1;
@@ -78,7 +73,6 @@ PetscErrorCode KSPSetUp_GMRES(KSP ksp) {
     gmres->vv_allocated = 5;
 
     PetscCall(KSPCreateVecs(ksp, 5, &gmres->user_work[0], 0, NULL));
-    PetscCall(PetscLogObjectParents(ksp, 5, gmres->user_work[0]));
 
     gmres->mwork_alloc[0] = 5;
     gmres->nwork_alloc    = 1;
@@ -236,7 +230,6 @@ PetscErrorCode KSPSolve_GMRES(KSP ksp) {
       if (ksp->calc_ritz) {
         if (!gmres->hes_ritz) {
           PetscCall(PetscMalloc1(N * N, &gmres->hes_ritz));
-          PetscCall(PetscLogObjectMemory((PetscObject)ksp, N * N * sizeof(PetscScalar)));
           PetscCall(VecDuplicateVecs(VEC_VV(0), N, &gmres->vecb));
         }
         PetscCall(PetscArraycpy(gmres->hes_ritz, gmres->hes_origin, N * N));
@@ -426,7 +419,6 @@ PetscErrorCode KSPGMRESGetNewVectors(KSP ksp, PetscInt it) {
   gmres->vv_allocated += nalloc;
 
   PetscCall(KSPCreateVecs(ksp, nalloc, &gmres->user_work[nwork], 0, NULL));
-  PetscCall(PetscLogObjectParents(ksp, nalloc, gmres->user_work[nwork]));
 
   gmres->mwork_alloc[nwork] = nalloc;
   for (k = 0; k < nalloc; k++) gmres->vecs[it + VEC_OFFSET + k] = gmres->user_work[nwork][k];
@@ -439,16 +431,12 @@ PetscErrorCode KSPBuildSolution_GMRES(KSP ksp, Vec ptr, Vec *result) {
 
   PetscFunctionBegin;
   if (!ptr) {
-    if (!gmres->sol_temp) {
-      PetscCall(VecDuplicate(ksp->vec_sol, &gmres->sol_temp));
-      PetscCall(PetscLogObjectParent((PetscObject)ksp, (PetscObject)gmres->sol_temp));
-    }
+    if (!gmres->sol_temp) { PetscCall(VecDuplicate(ksp->vec_sol, &gmres->sol_temp)); }
     ptr = gmres->sol_temp;
   }
   if (!gmres->nrs) {
     /* allocate the work area */
     PetscCall(PetscMalloc1(gmres->max_k, &gmres->nrs));
-    PetscCall(PetscLogObjectMemory((PetscObject)ksp, gmres->max_k));
   }
 
   PetscCall(KSPGMRESBuildSoln(gmres->nrs, ksp->vec_sol, ptr, ksp, gmres->it));
@@ -830,7 +818,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_GMRES(KSP ksp) {
   KSP_GMRES *gmres;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(ksp, &gmres));
+  PetscCall(PetscNew(&gmres));
   ksp->data = (void *)gmres;
 
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_PRECONDITIONED, PC_LEFT, 4));

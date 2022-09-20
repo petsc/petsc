@@ -127,7 +127,7 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Shell(PetscPartitioner part) 
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
-  PetscCall(PetscNewLog(part, &p));
+  PetscCall(PetscNew(&p));
   part->data = p;
 
   PetscCall(PetscPartitionerInitialize_Shell(part));

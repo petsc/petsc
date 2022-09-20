@@ -32,7 +32,6 @@ PetscErrorCode PetscDrawAxisCreate(PetscDraw draw, PetscDrawAxis *axis) {
   PetscValidPointer(axis, 2);
 
   PetscCall(PetscHeaderCreate(ad, PETSC_DRAWAXIS_CLASSID, "DrawAxis", "Draw Axis", "Draw", PetscObjectComm((PetscObject)draw), PetscDrawAxisDestroy, NULL));
-  PetscCall(PetscLogObjectParent((PetscObject)draw, (PetscObject)ad));
 
   PetscCall(PetscObjectReference((PetscObject)draw));
   ad->win = draw;

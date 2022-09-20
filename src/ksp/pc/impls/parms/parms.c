@@ -604,7 +604,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_PARMS(PC pc) {
   PC_PARMS *parms;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(pc, &parms));
+  PetscCall(PetscNew(&parms));
 
   parms->map        = 0;
   parms->A          = 0;

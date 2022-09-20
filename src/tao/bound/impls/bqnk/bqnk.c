@@ -172,7 +172,7 @@ PETSC_INTERN PetscErrorCode TaoCreate_BQNK(Tao tao) {
   bnk->computestep    = TaoBQNKComputeStep;
   bnk->init_type      = BNK_INIT_DIRECTION;
 
-  PetscCall(PetscNewLog(tao, &bqnk));
+  PetscCall(PetscNew(&bqnk));
   bnk->ctx     = (void *)bqnk;
   bqnk->is_spd = PETSC_TRUE;
 

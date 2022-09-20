@@ -517,7 +517,7 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Hierarchical(MatPartitioning p
   MatPartitioning_Hierarchical *hpart;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(part, &hpart));
+  PetscCall(PetscNew(&hpart));
   part->data = (void *)hpart;
 
   hpart->fineparttype   = NULL; /* fine level (second) partitioner */

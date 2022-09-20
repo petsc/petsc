@@ -233,7 +233,6 @@ PETSC_INTERN PetscErrorCode DMStagSetUniformCoordinatesExplicit_3d(DM dm, PetscR
   }
   PetscCall(DMStagVecRestoreArray(dmCoord, coordLocal, &arr));
   PetscCall(DMSetCoordinatesLocal(dm, coordLocal));
-  PetscCall(PetscLogObjectParent((PetscObject)dm, (PetscObject)coordLocal));
   PetscCall(VecDestroy(&coordLocal));
   PetscFunctionReturn(0);
 }
@@ -3138,7 +3137,6 @@ static PetscErrorCode DMStagSetUpBuildL2G_3d(DM dm, const PetscInt *globalOffset
 
   /* Create local-to-global map (in local ordering, includes maps to -1 for dummy points) */
   PetscCall(ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)dm), 1, stag->entriesGhost, idxGlobalAll, PETSC_OWN_POINTER, &dm->ltogmap));
-  PetscCall(PetscLogObjectParent((PetscObject)dm, (PetscObject)dm->ltogmap));
   PetscFunctionReturn(0);
 }
 

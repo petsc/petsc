@@ -131,7 +131,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_VU(PetscViewer viewer) {
   PetscViewer_VU *vu;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(viewer, &vu));
+  PetscCall(PetscNew(&vu));
   viewer->data = (void *)vu;
 
   viewer->ops->destroy          = PetscViewerDestroy_VU;

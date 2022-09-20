@@ -735,10 +735,7 @@ PetscErrorCode MatInvertBlockDiagonal_SeqKAIJ(Mat A, const PetscScalar **values)
     if (values) *values = b->ibdiag;
     PetscFunctionReturn(0);
   }
-  if (!b->ibdiag) {
-    PetscCall(PetscMalloc1(dof2 * m, &b->ibdiag));
-    PetscCall(PetscLogObjectMemory((PetscObject)A, dof2 * m * sizeof(PetscScalar)));
-  }
+  if (!b->ibdiag) { PetscCall(PetscMalloc1(dof2 * m, &b->ibdiag)); }
   if (values) *values = b->ibdiag;
   diag = b->ibdiag;
 
@@ -1419,7 +1416,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_KAIJ(Mat A) {
   PetscMPIInt  size;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(A, &b));
+  PetscCall(PetscNew(&b));
   A->data = (void *)b;
 
   PetscCall(PetscMemzero(A->ops, sizeof(struct _MatOps)));

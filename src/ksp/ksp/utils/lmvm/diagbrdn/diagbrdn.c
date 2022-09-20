@@ -514,7 +514,7 @@ PetscErrorCode MatCreate_LMVMDiagBrdn(Mat B) {
   lmvm->ops->update   = MatUpdate_DiagBrdn;
   lmvm->ops->copy     = MatCopy_DiagBrdn;
 
-  PetscCall(PetscNewLog(B, &ldb));
+  PetscCall(PetscNew(&ldb));
   lmvm->ctx       = (void *)ldb;
   ldb->theta      = 0.0;
   ldb->alpha      = 1.0;

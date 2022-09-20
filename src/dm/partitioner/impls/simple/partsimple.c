@@ -271,7 +271,7 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Simple(PetscPartitioner part)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
-  PetscCall(PetscNewLog(part, &p));
+  PetscCall(PetscNew(&p));
   p->gridDim = -1;
   part->data = p;
 

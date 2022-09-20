@@ -30,7 +30,7 @@ PetscErrorCode SNESDiffParameterCreate_More(SNES snes, Vec x, void **outneP) {
   char          noise_file[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(snes, &neP));
+  PetscCall(PetscNew(&neP));
 
   neP->function_count = 0;
   neP->fnoise_min     = 1.0e-20;

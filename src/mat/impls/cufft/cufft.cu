@@ -121,7 +121,7 @@ PetscErrorCode MatCreateSeqCUFFT(MPI_Comm comm, PetscInt ndim, const PetscInt di
   PetscCall(MatSetSizes(*A, m, m, m, m));
   PetscCall(PetscObjectChangeTypeName((PetscObject)*A, MATSEQCUFFT));
 
-  PetscCall(PetscNewLog(*A, &cufft));
+  PetscCall(PetscNew(&cufft));
   (*A)->data = (void *)cufft;
   PetscCall(PetscMalloc1(ndim + 1, &cufft->dim));
   PetscCall(PetscArraycpy(cufft->dim, dim, ndim));

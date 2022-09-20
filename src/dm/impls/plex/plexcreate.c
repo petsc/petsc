@@ -4171,7 +4171,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Plex(DM dm) {
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscCall(PetscNewLog(dm, &mesh));
+  PetscCall(PetscNew(&mesh));
   dm->data = mesh;
 
   mesh->refct = 1;

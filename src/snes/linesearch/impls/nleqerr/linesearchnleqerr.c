@@ -305,7 +305,7 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_NLEQERR(SNESLineSearch linesear
   linesearch->ops->view           = SNESLineSearchView_NLEQERR;
   linesearch->ops->setup          = NULL;
 
-  PetscCall(PetscNewLog(linesearch, &nleqerr));
+  PetscCall(PetscNew(&nleqerr));
 
   linesearch->data    = (void *)nleqerr;
   linesearch->max_its = 40;

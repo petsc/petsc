@@ -589,10 +589,8 @@ PetscErrorCode PetscDeviceContextForkWithStreamType(PetscDeviceContext dctx, Pet
     }
     /* update total number of children */
     maxNumChildren = numChildren;
-    PetscCall(PetscLogObjectMemory(PetscObjectCast(dctx), numAllocated * sizeof(*(dctx->childIDs))));
   }
   PetscCall(PetscMalloc1(n, dsub));
-  PetscCall(PetscLogObjectMemory(PetscObjectCast(dctx), n * sizeof(*dsub)));
   for (PetscInt i = 0; ninput && (i < dctx->numChildren); ++i) {
     auto &childID = dctx->childIDs[i];
     /* empty child slot */
@@ -766,7 +764,6 @@ PetscErrorCode PetscDeviceContextJoin(PetscDeviceContext dctx, PetscInt n, Petsc
     /* gone through the loop but did not find every child */
     PetscCheck(j == n, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "%" PetscInt_FMT " contexts still remain after destroy, this may be because you are trying to restore to the wrong parent context, or the device contexts are not in the same order as they were checked out out in", n - j);
     PetscCall(PetscFree(*dsub));
-    PetscCall(PetscLogObjectMemory(PetscObjectCast(dctx), -n * sizeof(*dsub)));
   } break;
   case PETSC_DEVICE_CONTEXT_JOIN_SYNC:
     for (PetscInt i = 0; i < n; ++i) PetscCall(PetscDeviceContextWaitForContext((*dsub)[i], dctx));

@@ -279,7 +279,7 @@ PetscErrorCode MatCreate_LMVMSR1(Mat B) {
   lmvm->ops->mult     = MatMult_LMVMSR1;
   lmvm->ops->copy     = MatCopy_LMVMSR1;
 
-  PetscCall(PetscNewLog(B, &lsr1));
+  PetscCall(PetscNew(&lsr1));
   lmvm->ctx       = (void *)lsr1;
   lsr1->allocated = PETSC_FALSE;
   lsr1->needP = lsr1->needQ = PETSC_TRUE;

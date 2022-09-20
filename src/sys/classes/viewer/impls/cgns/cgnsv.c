@@ -134,7 +134,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_CGNS(PetscViewer v) {
   PetscViewer_CGNS *cgv;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(v, &cgv));
+  PetscCall(PetscNew(&cgv));
 
   v->data                = cgv;
   v->ops->destroy        = PetscViewerDestroy_CGNS;

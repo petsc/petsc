@@ -31,7 +31,6 @@ PETSC_EXTERN PetscErrorCode VecCreate_Seq(Vec V) {
   PetscCheck(size <= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot create VECSEQ on more than one process");
 #if !defined(PETSC_USE_MIXED_PRECISION)
   PetscCall(PetscCalloc1(n, &array));
-  PetscCall(PetscLogObjectMemory((PetscObject)V, n * sizeof(PetscScalar)));
   PetscCall(VecCreate_Seq_Private(V, array));
 
   s                  = (Vec_Seq *)V->data;
@@ -42,7 +41,6 @@ PETSC_EXTERN PetscErrorCode VecCreate_Seq(Vec V) {
     float *aarray;
 
     PetscCall(PetscCalloc1(n, &aarray));
-    PetscCall(PetscLogObjectMemory((PetscObject)V, n * sizeof(float)));
     PetscCall(VecCreate_Seq_Private(V, aarray));
 
     s                  = (Vec_Seq *)V->data;
@@ -52,7 +50,6 @@ PETSC_EXTERN PetscErrorCode VecCreate_Seq(Vec V) {
     double *aarray;
 
     PetscCall(PetscCalloc1(n, &aarray));
-    PetscCall(PetscLogObjectMemory((PetscObject)V, n * sizeof(double)));
     PetscCall(VecCreate_Seq_Private(V, aarray));
 
     s                  = (Vec_Seq *)V->data;

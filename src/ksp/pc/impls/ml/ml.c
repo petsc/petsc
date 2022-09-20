@@ -599,7 +599,7 @@ PetscErrorCode PCSetUp_ML(PC pc) {
   } else SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "Matrix type '%s' cannot be used with ML. ML can only handle AIJ matrices.", ((PetscObject)A)->type_name);
 
   /* create and initialize struct 'PetscMLdata' */
-  PetscCall(PetscNewLog(pc, &PetscMLdata));
+  PetscCall(PetscNew(&PetscMLdata));
   pc_ml->PetscMLdata = PetscMLdata;
   PetscCall(PetscMalloc1(Aloc->cmap->n + 1, &PetscMLdata->pwork));
 
@@ -1081,7 +1081,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_ML(PC pc) {
   mg = (PC_MG *)pc->data;
 
   /* create a supporting struct and attach it to pc */
-  PetscCall(PetscNewLog(pc, &pc_ml));
+  PetscCall(PetscNew(&pc_ml));
   mg->innerctx = pc_ml;
 
   pc_ml->ml_object                = 0;

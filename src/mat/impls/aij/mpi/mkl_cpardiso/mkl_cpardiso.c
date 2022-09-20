@@ -806,7 +806,7 @@ static PetscErrorCode MatGetFactor_mpiaij_mkl_cpardiso(Mat A, MatFactorType ftyp
   PetscCall(PetscStrallocpy("mkl_cpardiso", &((PetscObject)B)->type_name));
   PetscCall(MatSetUp(B));
 
-  PetscCall(PetscNewLog(B, &mat_mkl_cpardiso));
+  PetscCall(PetscNew(&mat_mkl_cpardiso));
 
   if (isSeqAIJ) mat_mkl_cpardiso->ConvertToTriples = MatCopy_seqaij_seqaij_MKL_CPARDISO;
   else if (isMPIBAIJ) mat_mkl_cpardiso->ConvertToTriples = MatConvertToTriples_mpibaij_mpibaij_MKL_CPARDISO;

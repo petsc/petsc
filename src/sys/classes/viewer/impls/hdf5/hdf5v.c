@@ -496,7 +496,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_HDF5(PetscViewer v) {
   }
 #endif
 
-  PetscCall(PetscNewLog(v, &hdf5));
+  PetscCall(PetscNew(&hdf5));
 
   v->data                = (void *)hdf5;
   v->ops->destroy        = PetscViewerDestroy_HDF5;

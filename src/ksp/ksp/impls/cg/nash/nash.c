@@ -599,7 +599,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_NASH(KSP ksp) {
   KSPCG_NASH *cg;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(ksp, &cg));
+  PetscCall(PetscNew(&cg));
   cg->radius = 0.0;
   cg->dtype  = NASH_UNPRECONDITIONED_DIRECTION;
 

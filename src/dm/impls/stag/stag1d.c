@@ -137,7 +137,6 @@ PETSC_INTERN PetscErrorCode DMStagSetUniformCoordinatesExplicit_1d(DM dm, PetscR
   }
   PetscCall(DMStagVecRestoreArray(dmCoord, coordLocal, &arr));
   PetscCall(DMSetCoordinatesLocal(dm, coordLocal));
-  PetscCall(PetscLogObjectParent((PetscObject)dm, (PetscObject)coordLocal));
   PetscCall(VecDestroy(&coordLocal));
   PetscFunctionReturn(0);
 }
@@ -426,7 +425,6 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_1d(DM dm) {
 
     /* Create local-to-global map (transferring pointer ownership) */
     PetscCall(ISLocalToGlobalMappingCreate(comm, 1, stag->entriesGhost, idxGlobalAll, PETSC_OWN_POINTER, &dm->ltogmap));
-    PetscCall(PetscLogObjectParent((PetscObject)dm, (PetscObject)dm->ltogmap));
   }
 
   /* Precompute location offsets */

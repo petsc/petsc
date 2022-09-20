@@ -43,7 +43,6 @@ PetscErrorCode KSPSetUp_LGMRES(KSP ksp) {
 
   PetscCall(PetscMalloc1(2 * aug_dim + AUG_OFFSET, &lgmres->augvecs_user_work));
   PetscCall(PetscMalloc1(aug_dim, &lgmres->aug_order));
-  PetscCall(PetscLogObjectMemory((PetscObject)ksp, (aug_dim) * (4 * sizeof(void *) + sizeof(PetscInt)) + AUG_OFFSET * 2 * sizeof(void *)));
 
   /*  for now we will preallocate the augvecs - because aug_dim << restart
      ... also keep in mind that we need to keep augvecs from cycle to cycle*/
@@ -52,7 +51,6 @@ PetscErrorCode KSPSetUp_LGMRES(KSP ksp) {
 
   PetscCall(KSPCreateVecs(ksp, lgmres->aug_vv_allocated, &lgmres->augvecs_user_work[0], 0, NULL));
   PetscCall(PetscMalloc1(max_k + 1, &lgmres->hwork));
-  PetscCall(PetscLogObjectParents(ksp, lgmres->aug_vv_allocated, lgmres->augvecs_user_work[0]));
   for (k = 0; k < lgmres->aug_vv_allocated; k++) lgmres->augvecs[k] = lgmres->augvecs_user_work[0][k];
   PetscFunctionReturn(0);
 }
@@ -567,7 +565,6 @@ static PetscErrorCode KSPLGMRESGetNewVectors(KSP ksp, PetscInt it) {
 
   /* work vectors */
   PetscCall(KSPCreateVecs(ksp, nalloc, &lgmres->user_work[nwork], 0, NULL));
-  PetscCall(PetscLogObjectParents(ksp, nalloc, lgmres->user_work[nwork]));
   /* specify size of chunk allocated */
   lgmres->mwork_alloc[nwork] = nalloc;
 
@@ -600,16 +597,12 @@ PetscErrorCode KSPBuildSolution_LGMRES(KSP ksp, Vec ptr, Vec *result) {
 
   PetscFunctionBegin;
   if (!ptr) {
-    if (!lgmres->sol_temp) {
-      PetscCall(VecDuplicate(ksp->vec_sol, &lgmres->sol_temp));
-      PetscCall(PetscLogObjectParent((PetscObject)ksp, (PetscObject)lgmres->sol_temp));
-    }
+    if (!lgmres->sol_temp) { PetscCall(VecDuplicate(ksp->vec_sol, &lgmres->sol_temp)); }
     ptr = lgmres->sol_temp;
   }
   if (!lgmres->nrs) {
     /* allocate the work area */
     PetscCall(PetscMalloc1(lgmres->max_k, &lgmres->nrs));
-    PetscCall(PetscLogObjectMemory((PetscObject)ksp, lgmres->max_k * sizeof(PetscScalar)));
   }
 
   PetscCall(KSPLGMRESBuildSoln(lgmres->nrs, ksp->vec_sol, ptr, ksp, lgmres->it));
@@ -715,7 +708,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_LGMRES(KSP ksp) {
   KSP_LGMRES *lgmres;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(ksp, &lgmres));
+  PetscCall(PetscNew(&lgmres));
 
   ksp->data               = (void *)lgmres;
   ksp->ops->buildsolution = KSPBuildSolution_LGMRES;

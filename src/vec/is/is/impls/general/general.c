@@ -525,12 +525,10 @@ PetscErrorCode ISGeneralSetIndices_General(IS is, PetscInt n, const PetscInt idx
   if (sub->allocated) PetscCall(PetscFree(sub->idx));
   if (mode == PETSC_COPY_VALUES) {
     PetscCall(PetscMalloc1(n, &sub->idx));
-    PetscCall(PetscLogObjectMemory((PetscObject)is, n * sizeof(PetscInt)));
     PetscCall(PetscArraycpy(sub->idx, idx, n));
     sub->allocated = PETSC_TRUE;
   } else if (mode == PETSC_OWN_POINTER) {
-    sub->idx = (PetscInt *)idx;
-    PetscCall(PetscLogObjectMemory((PetscObject)is, n * sizeof(PetscInt)));
+    sub->idx       = (PetscInt *)idx;
     sub->allocated = PETSC_TRUE;
   } else {
     sub->idx       = (PetscInt *)idx;
@@ -636,7 +634,7 @@ PETSC_EXTERN PetscErrorCode ISCreate_General(IS is) {
   IS_General *sub;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(is, &sub));
+  PetscCall(PetscNew(&sub));
   is->data = (void *)sub;
   PetscCall(PetscMemcpy(is->ops, &myops, sizeof(myops)));
   PetscCall(PetscObjectComposeFunction((PetscObject)is, "ISGeneralSetIndices_C", ISGeneralSetIndices_General));

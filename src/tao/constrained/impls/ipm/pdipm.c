@@ -1468,7 +1468,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_PDIPM(Tao tao) {
   tao->ops->view           = TaoView_PDIPM;
   tao->ops->destroy        = TaoDestroy_PDIPM;
 
-  PetscCall(PetscNewLog(tao, &pdipm));
+  PetscCall(PetscNew(&pdipm));
   tao->data = (void *)pdipm;
 
   pdipm->nx = pdipm->Nx = 0;

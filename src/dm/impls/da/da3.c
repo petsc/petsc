@@ -1062,7 +1062,6 @@ PetscErrorCode DMSetUp_DA_3D(DM da) {
 
   PetscCall(ISCreateBlock(comm, dof, nn, idx, PETSC_USE_POINTER, &from));
   PetscCall(VecScatterCreate(global, from, local, to, &gtol));
-  PetscCall(PetscLogObjectParent((PetscObject)da, (PetscObject)gtol));
   PetscCall(ISDestroy(&to));
   PetscCall(ISDestroy(&from));
 
@@ -1403,7 +1402,6 @@ PetscErrorCode DMSetUp_DA_3D(DM da) {
      of VecSetValuesLocal().
   */
   PetscCall(ISLocalToGlobalMappingCreate(comm, dof, nn, idx, PETSC_OWN_POINTER, &da->ltogmap));
-  PetscCall(PetscLogObjectParent((PetscObject)da, (PetscObject)da->ltogmap));
 
   PetscCall(PetscFree2(bases, ldims));
   dd->m  = m;

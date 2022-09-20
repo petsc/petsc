@@ -1173,7 +1173,7 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C, PetscInt ismax, const I
       PetscCall(MatSetType(submats[0], MATDUMMY));
 
       /* create struct Mat_SubSppt and attached it to submat */
-      PetscCall(PetscNewLog(submats[0], &smat_i));
+      PetscCall(PetscNew(&smat_i));
       submats[0]->data = (void *)smat_i;
 
       smat_i->destroy          = submats[0]->ops->destroy;

@@ -175,7 +175,6 @@ static PetscErrorCode ISGlobalToLocalMappingSetUp_Basic(ISLocalToGlobalMapping m
     globals[idx[i] - start] = i;
   }
   mapping->data = (void *)map;
-  PetscCall(PetscLogObjectMemory((PetscObject)mapping, (end - start + 1) * sizeof(PetscInt)));
   PetscFunctionReturn(0);
 }
 
@@ -191,7 +190,6 @@ static PetscErrorCode ISGlobalToLocalMappingSetUp_Hash(ISLocalToGlobalMapping ma
     PetscCall(PetscHMapISet(map->globalht, idx[i], i));
   }
   mapping->data = (void *)map;
-  PetscCall(PetscLogObjectMemory((PetscObject)mapping, 2 * n * sizeof(PetscInt)));
   PetscFunctionReturn(0);
 }
 
@@ -585,11 +583,9 @@ PetscErrorCode ISLocalToGlobalMappingCreate(MPI_Comm comm, PetscInt bs, PetscInt
     PetscCall(PetscArraycpy(in, indices, n));
     (*mapping)->indices         = in;
     (*mapping)->dealloc_indices = PETSC_TRUE;
-    PetscCall(PetscLogObjectMemory((PetscObject)*mapping, n * sizeof(PetscInt)));
   } else if (mode == PETSC_OWN_POINTER) {
     (*mapping)->indices         = (PetscInt *)indices;
     (*mapping)->dealloc_indices = PETSC_TRUE;
-    PetscCall(PetscLogObjectMemory((PetscObject)*mapping, n * sizeof(PetscInt)));
   } else if (mode == PETSC_USE_POINTER) {
     (*mapping)->indices = (PetscInt *)indices;
   } else SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Invalid mode %d", mode);

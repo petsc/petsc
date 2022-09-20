@@ -2528,7 +2528,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_Local(Mat C, PetscInt ismax, const IS
       PetscCall(MatSetType(submats[0], MATDUMMY));
 
       /* create struct Mat_SubSppt and attached it to submat */
-      PetscCall(PetscNewLog(submats[0], &smat_i));
+      PetscCall(PetscNew(&smat_i));
       submats[0]->data = (void *)smat_i;
 
       smat_i->destroy          = submats[0]->ops->destroy;
@@ -2856,7 +2856,6 @@ PetscErrorCode MatSetSeqMats_MPIAIJ(Mat C, IS rowemb, IS dcolemb, IS ocolemb, Ma
     PetscCall(MatSetSizes(aij->A, C->rmap->n, C->cmap->n, C->rmap->n, C->cmap->n));
     PetscCall(MatSetBlockSizesFromMats(aij->A, C, C));
     PetscCall(MatSetType(aij->A, MATSEQAIJ));
-    PetscCall(PetscLogObjectParent((PetscObject)C, (PetscObject)aij->A));
   }
   if (A) {
     PetscCall(MatSetSeqMat_SeqAIJ(aij->A, rowemb, dcolemb, pattern, A));
@@ -2882,14 +2881,10 @@ PetscErrorCode MatSetSeqMats_MPIAIJ(Mat C, IS rowemb, IS dcolemb, IS ocolemb, Ma
 #else
       PetscCall(PetscFree(aij->colmap));
       /* A bit of a HACK: ideally we should deal with case aij->B all in one code block below. */
-      if (aij->B) PetscCall(PetscLogObjectMemory((PetscObject)C, -aij->B->cmap->n * sizeof(PetscInt)));
 #endif
       ngcol = 0;
       if (aij->lvec) PetscCall(VecGetSize(aij->lvec, &ngcol));
-      if (aij->garray) {
-        PetscCall(PetscFree(aij->garray));
-        PetscCall(PetscLogObjectMemory((PetscObject)C, -ngcol * sizeof(PetscInt)));
-      }
+      if (aij->garray) { PetscCall(PetscFree(aij->garray)); }
       PetscCall(VecDestroy(&aij->lvec));
       PetscCall(VecScatterDestroy(&aij->Mvctx));
     }
@@ -2899,7 +2894,6 @@ PetscErrorCode MatSetSeqMats_MPIAIJ(Mat C, IS rowemb, IS dcolemb, IS ocolemb, Ma
   Bdisassembled = PETSC_FALSE;
   if (!aij->B) {
     PetscCall(MatCreate(PETSC_COMM_SELF, &aij->B));
-    PetscCall(PetscLogObjectParent((PetscObject)C, (PetscObject)aij->B));
     PetscCall(MatSetSizes(aij->B, C->rmap->n, C->cmap->N, C->rmap->n, C->cmap->N));
     PetscCall(MatSetBlockSizesFromMats(aij->B, B, B));
     PetscCall(MatSetType(aij->B, MATSEQAIJ));

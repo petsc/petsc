@@ -259,7 +259,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_Richardson(KSP ksp) {
   KSP_Richardson *richardsonP;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(ksp, &richardsonP));
+  PetscCall(PetscNew(&richardsonP));
   ksp->data = (void *)richardsonP;
 
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_PRECONDITIONED, PC_LEFT, 3));

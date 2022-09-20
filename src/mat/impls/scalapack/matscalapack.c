@@ -78,7 +78,7 @@ static PetscErrorCode MatGetInfo_ScaLAPACK(Mat A, MatInfoType flag, MatInfo *inf
   info->nz_unneeded       = 0;
   info->assemblies        = A->num_ass;
   info->mallocs           = 0;
-  info->memory            = ((PetscObject)A)->mem;
+  info->memory            = 0; /* REVIEW ME */
   info->fill_ratio_given  = 0;
   info->fill_ratio_needed = 0;
   info->factor_mallocs    = 0;
@@ -716,10 +716,7 @@ static PetscErrorCode MatLUFactor_ScaLAPACK(Mat A, IS row, IS col, const MatFact
   PetscBLASInt   one = 1, info;
 
   PetscFunctionBegin;
-  if (!a->pivots) {
-    PetscCall(PetscMalloc1(a->locr + a->mb, &a->pivots));
-    PetscCall(PetscLogObjectMemory((PetscObject)A, a->locr * sizeof(PetscBLASInt)));
-  }
+  if (!a->pivots) { PetscCall(PetscMalloc1(a->locr + a->mb, &a->pivots)); }
   PetscCallBLAS("SCALAPACKgetrf", SCALAPACKgetrf_(&a->M, &a->N, a->loc, &one, &one, a->desc, a->pivots, &info));
   PetscCheckScaLapackInfo("getrf", info);
   A->factortype = MAT_FACTOR_LU;
@@ -1127,7 +1124,6 @@ static PetscErrorCode MatScaLAPACKSetPreallocation(Mat A) {
   PetscCall(PetscFree(a->loc));
   PetscCall(PetscIntMultError(a->lld, a->locc, &sz));
   PetscCall(PetscCalloc1(sz, &a->loc));
-  PetscCall(PetscLogObjectMemory((PetscObject)A, sz * sizeof(PetscScalar)));
 
   A->preallocated = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -1663,7 +1659,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_ScaLAPACK(Mat A) {
   A->stash.ScatterEnd     = MatStashScatterEnd_Ref;
   A->stash.ScatterDestroy = NULL;
 
-  PetscCall(PetscNewLog(A, &a));
+  PetscCall(PetscNew(&a));
   A->data = (void *)a;
 
   /* Grid needs to be shared between multiple Mats on the same communicator, implement by attribute caching on the MPI_Comm */
@@ -1675,7 +1671,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_ScaLAPACK(Mat A) {
   PetscCall(PetscCommDuplicate(PetscObjectComm((PetscObject)A), &icomm, NULL));
   PetscCallMPI(MPI_Comm_get_attr(icomm, Petsc_ScaLAPACK_keyval, (void **)&grid, (int *)&flg));
   if (!flg) {
-    PetscCall(PetscNewLog(A, &grid));
+    PetscCall(PetscNew(&grid));
 
     PetscCallMPI(MPI_Comm_size(icomm, &size));
     grid->nprow = (PetscInt)(PetscSqrtReal((PetscReal)size) + 0.001);

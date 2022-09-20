@@ -147,7 +147,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_Radau5(TS ts) {
   ts->ops->solve         = TSSolve_Radau5;
   ts->default_adapt_type = TSADAPTNONE;
 
-  PetscCall(PetscNewLog(ts, &cvode));
+  PetscCall(PetscNew(&cvode));
   ts->data = (void *)cvode;
   PetscFunctionReturn(0);
 }

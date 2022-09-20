@@ -150,7 +150,6 @@ PetscErrorCode PetscDrawLGCreate(PetscDraw draw, PetscInt dim, PetscDrawLG *outl
   PetscValidPointer(outlg, 3);
 
   PetscCall(PetscHeaderCreate(lg, PETSC_DRAWLG_CLASSID, "DrawLG", "Line Graph", "Draw", PetscObjectComm((PetscObject)draw), PetscDrawLGDestroy, NULL));
-  PetscCall(PetscLogObjectParent((PetscObject)draw, (PetscObject)lg));
   PetscCall(PetscDrawLGSetOptionsPrefix(lg, ((PetscObject)draw)->prefix));
 
   PetscCall(PetscObjectReference((PetscObject)draw));
@@ -166,14 +165,12 @@ PetscErrorCode PetscDrawLGCreate(PetscDraw draw, PetscInt dim, PetscDrawLG *outl
   lg->ymax    = -1.e20;
 
   PetscCall(PetscMalloc2(dim * PETSC_DRAW_LG_CHUNK_SIZE, &lg->x, dim * PETSC_DRAW_LG_CHUNK_SIZE, &lg->y));
-  PetscCall(PetscLogObjectMemory((PetscObject)lg, 2 * dim * PETSC_DRAW_LG_CHUNK_SIZE * sizeof(PetscReal)));
 
   lg->len         = dim * PETSC_DRAW_LG_CHUNK_SIZE;
   lg->loc         = 0;
   lg->use_markers = PETSC_FALSE;
 
   PetscCall(PetscDrawAxisCreate(draw, &lg->axis));
-  PetscCall(PetscLogObjectParent((PetscObject)lg, (PetscObject)lg->axis));
 
   *outlg = lg;
   PetscFunctionReturn(0);
@@ -289,7 +286,6 @@ PetscErrorCode PetscDrawLGSetDimension(PetscDrawLG lg, PetscInt dim) {
   PetscCall(PetscFree(lg->colors));
   lg->dim = dim;
   PetscCall(PetscMalloc2(dim * PETSC_DRAW_LG_CHUNK_SIZE, &lg->x, dim * PETSC_DRAW_LG_CHUNK_SIZE, &lg->y));
-  PetscCall(PetscLogObjectMemory((PetscObject)lg, 2 * dim * PETSC_DRAW_LG_CHUNK_SIZE * sizeof(PetscReal)));
   lg->len = dim * PETSC_DRAW_LG_CHUNK_SIZE;
   PetscFunctionReturn(0);
 }

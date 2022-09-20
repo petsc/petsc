@@ -2368,7 +2368,6 @@ static PetscErrorCode PCSetUp_PATCH_Linear(PC pc) {
         PetscCall(PetscObjectIncrementTabLevel((PetscObject)ksp, (PetscObject)pc, 1));
         PetscCall(KSPGetPC(ksp, &subpc));
         PetscCall(PetscObjectIncrementTabLevel((PetscObject)subpc, (PetscObject)pc, 1));
-        PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)ksp));
         patch->solver[i] = (PetscObject)ksp;
       }
     }
@@ -3131,7 +3130,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Patch(PC pc) {
   PC_PATCH *patch;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(pc, &patch));
+  PetscCall(PetscNew(&patch));
 
   if (patch->subspaces_to_exclude) PetscCall(PetscHSetIDestroy(&patch->subspaces_to_exclude));
   PetscCall(PetscHSetICreate(&patch->subspaces_to_exclude));

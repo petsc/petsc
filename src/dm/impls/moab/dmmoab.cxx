@@ -1445,7 +1445,7 @@ PETSC_EXTERN PetscErrorCode DMClone_Moab(DM dm, DM *newdm) {
 PETSC_EXTERN PetscErrorCode DMCreate_Moab(DM dm) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscCall(PetscNewLog(dm, (DM_Moab **)&dm->data));
+  PetscCall(PetscNew((DM_Moab **)&dm->data));
 
   ((DM_Moab *)dm->data)->bs            = 1;
   ((DM_Moab *)dm->data)->numFields     = 1;

@@ -28,7 +28,6 @@ PetscErrorCode DMLocalToLocalCreate_DA(DM da) {
      rather then from the plain array.
   */
   PetscCall(VecScatterCopy(dd->gtol, &dd->ltol));
-  PetscCall(PetscLogObjectParent((PetscObject)da, (PetscObject)dd->ltol));
   if (dim == 1) {
     left = dd->xs - dd->Xs;
     PetscCall(PetscMalloc1(dd->xe - dd->xs, &idx));

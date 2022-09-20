@@ -393,7 +393,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_umfpack(Mat A, MatFactorType fty
   PetscCall(PetscStrallocpy("umfpack", &((PetscObject)B)->type_name));
   PetscCall(MatSetUp(B));
 
-  PetscCall(PetscNewLog(B, &lu));
+  PetscCall(PetscNew(&lu));
 
   B->data                  = lu;
   B->ops->getinfo          = MatGetInfo_External;

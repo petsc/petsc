@@ -115,7 +115,6 @@ PetscErrorCode MatViennaCLCopyFromGPU(Mat A, const ViennaCLAIJMatrix *Agpu) {
         if (a->a) PetscCall(PetscFree(a->a));
       }
       PetscCall(PetscMalloc3(a->nz, &a->a, a->nz, &a->j, m + 1, &a->i));
-      PetscCall(PetscLogObjectMemory((PetscObject)A, a->nz * (sizeof(PetscScalar) + sizeof(PetscInt)) + (m + 1) * sizeof(PetscInt)));
 
       a->singlemalloc = PETSC_TRUE;
 
@@ -124,7 +123,6 @@ PetscErrorCode MatViennaCLCopyFromGPU(Mat A, const ViennaCLAIJMatrix *Agpu) {
       PetscCall(PetscFree(a->ilen));
       PetscCall(PetscMalloc1(m, &a->imax));
       PetscCall(PetscMalloc1(m, &a->ilen));
-      PetscCall(PetscLogObjectMemory((PetscObject)A, 2 * m * sizeof(PetscInt)));
 
       /* Copy data back from GPU */
       viennacl::backend::typesafe_host_array<unsigned int> row_buffer;

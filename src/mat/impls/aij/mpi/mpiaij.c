@@ -283,7 +283,6 @@ PetscErrorCode MatCreateColmap_MPIAIJ_Private(Mat mat) {
   for (i = 0; i < n; i++) PetscCall(PetscTableAdd(aij->colmap, aij->garray[i] + 1, i + 1, INSERT_VALUES));
 #else
   PetscCall(PetscCalloc1(mat->cmap->N + 1, &aij->colmap));
-  PetscCall(PetscLogObjectMemory((PetscObject)mat, (mat->cmap->N + 1) * sizeof(PetscInt)));
   for (i = 0; i < n; i++) aij->colmap[aij->garray[i]] = i + 1;
 #endif
   PetscFunctionReturn(0);
@@ -2840,14 +2839,12 @@ PetscErrorCode MatMPIAIJSetPreallocation_MPIAIJ(Mat B, PetscInt d_nz, const Pets
   PetscCall(MatSetSizes(b->B, B->rmap->n, size > 1 ? B->cmap->N : 0, B->rmap->n, size > 1 ? B->cmap->N : 0));
   PetscCall(MatSetBlockSizesFromMats(b->B, B, B));
   PetscCall(MatSetType(b->B, MATSEQAIJ));
-  PetscCall(PetscLogObjectParent((PetscObject)B, (PetscObject)b->B));
 
   if (!B->preallocated) {
     PetscCall(MatCreate(PETSC_COMM_SELF, &b->A));
     PetscCall(MatSetSizes(b->A, B->rmap->n, B->cmap->n, B->rmap->n, B->cmap->n));
     PetscCall(MatSetBlockSizesFromMats(b->A, B, B));
     PetscCall(MatSetType(b->A, MATSEQAIJ));
-    PetscCall(PetscLogObjectParent((PetscObject)B, (PetscObject)b->A));
   }
 
   PetscCall(MatSeqAIJSetPreallocation(b->A, d_nz, d_nnz));
@@ -2917,7 +2914,6 @@ PetscErrorCode MatDuplicate_MPIAIJ(Mat matin, MatDuplicateOption cpvalues, Mat *
     PetscCall(PetscTableCreateCopy(oldmat->colmap, &a->colmap));
 #else
     PetscCall(PetscMalloc1(mat->cmap->N, &a->colmap));
-    PetscCall(PetscLogObjectMemory((PetscObject)mat, (mat->cmap->N) * sizeof(PetscInt)));
     PetscCall(PetscArraycpy(a->colmap, oldmat->colmap, mat->cmap->N));
 #endif
   } else a->colmap = NULL;
@@ -2925,25 +2921,16 @@ PetscErrorCode MatDuplicate_MPIAIJ(Mat matin, MatDuplicateOption cpvalues, Mat *
     PetscInt len;
     len = oldmat->B->cmap->n;
     PetscCall(PetscMalloc1(len + 1, &a->garray));
-    PetscCall(PetscLogObjectMemory((PetscObject)mat, len * sizeof(PetscInt)));
     if (len) PetscCall(PetscArraycpy(a->garray, oldmat->garray, len));
   } else a->garray = NULL;
 
   /* It may happen MatDuplicate is called with a non-assembled matrix
      In fact, MatDuplicate only requires the matrix to be preallocated
      This may happen inside a DMCreateMatrix_Shell */
-  if (oldmat->lvec) {
-    PetscCall(VecDuplicate(oldmat->lvec, &a->lvec));
-    PetscCall(PetscLogObjectParent((PetscObject)mat, (PetscObject)a->lvec));
-  }
-  if (oldmat->Mvctx) {
-    PetscCall(VecScatterCopy(oldmat->Mvctx, &a->Mvctx));
-    PetscCall(PetscLogObjectParent((PetscObject)mat, (PetscObject)a->Mvctx));
-  }
+  if (oldmat->lvec) { PetscCall(VecDuplicate(oldmat->lvec, &a->lvec)); }
+  if (oldmat->Mvctx) { PetscCall(VecScatterCopy(oldmat->Mvctx, &a->Mvctx)); }
   PetscCall(MatDuplicate(oldmat->A, cpvalues, &a->A));
-  PetscCall(PetscLogObjectParent((PetscObject)mat, (PetscObject)a->A));
   PetscCall(MatDuplicate(oldmat->B, cpvalues, &a->B));
-  PetscCall(PetscLogObjectParent((PetscObject)mat, (PetscObject)a->B));
   PetscCall(PetscFunctionListDuplicate(((PetscObject)matin)->qlist, &((PetscObject)mat)->qlist));
   *newmat = mat;
   PetscFunctionReturn(0);
@@ -6512,7 +6499,6 @@ PetscErrorCode MatSetPreallocationCOO_MPIAIJ(Mat mat, PetscCount coo_n, PetscInt
   PetscCall(MatConvert(mpiaij->B, rtype, MAT_INPLACE_MATRIX, &mpiaij->B));
   PetscCall(VecDestroy(&mpiaij->lvec));
   PetscCall(MatCreateVecs(mpiaij->B, &mpiaij->lvec, NULL));
-  PetscCall(PetscLogObjectParent((PetscObject)mat, (PetscObject)mpiaij->lvec));
 
   mpiaij->coo_n   = coo_n;
   mpiaij->coo_sf  = sf2;
@@ -6625,7 +6611,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJ(Mat B) {
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)B), &size));
 
-  PetscCall(PetscNewLog(B, &b));
+  PetscCall(PetscNew(&b));
   B->data = (void *)b;
   PetscCall(PetscMemcpy(B->ops, &MatOps_Values, sizeof(struct _MatOps)));
   B->assembled  = PETSC_FALSE;

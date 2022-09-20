@@ -60,10 +60,7 @@ static PetscErrorCode PCSetUp_LU(PC pc) {
       /* This should only get the ordering if needed, but since MatGetFactor() is not called we can't know if it is needed */
       PetscCall(PCFactorSetDefaultOrdering_Factor(pc));
       PetscCall(MatGetOrdering(pc->pmat, ((PC_Factor *)dir)->ordering, &dir->row, &dir->col));
-      if (dir->row) {
-        PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)dir->row));
-        PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)dir->col));
-      }
+      if (dir->row) { }
       PetscCall(MatLUFactor(pc->pmat, dir->row, dir->col, &((PC_Factor *)dir)->info));
       PetscCall(MatFactorGetError(pc->pmat, &err));
       if (err) { /* Factor() fails */
@@ -77,17 +74,12 @@ static PetscErrorCode PCSetUp_LU(PC pc) {
 
     if (!pc->setupcalled) {
       PetscBool canuseordering;
-      if (!((PC_Factor *)dir)->fact) {
-        PetscCall(MatGetFactor(pc->pmat, ((PC_Factor *)dir)->solvertype, MAT_FACTOR_LU, &((PC_Factor *)dir)->fact));
-        PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)((PC_Factor *)dir)->fact));
-      }
+      if (!((PC_Factor *)dir)->fact) { PetscCall(MatGetFactor(pc->pmat, ((PC_Factor *)dir)->solvertype, MAT_FACTOR_LU, &((PC_Factor *)dir)->fact)); }
       PetscCall(MatFactorGetCanUseOrdering(((PC_Factor *)dir)->fact, &canuseordering));
       if (canuseordering) {
         PetscCall(PCFactorSetDefaultOrdering_Factor(pc));
         PetscCall(MatGetOrdering(pc->pmat, ((PC_Factor *)dir)->ordering, &dir->row, &dir->col));
         if (dir->nonzerosalongdiagonal) PetscCall(MatReorderForNonzeroDiagonal(pc->pmat, dir->nonzerosalongdiagonaltol, dir->row, dir->col));
-        PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)dir->row));
-        PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)dir->col));
       }
       PetscCall(MatLUFactorSymbolic(((PC_Factor *)dir)->fact, pc->pmat, dir->row, dir->col, &((PC_Factor *)dir)->info));
       PetscCall(MatGetInfo(((PC_Factor *)dir)->fact, MAT_LOCAL, &info));
@@ -97,7 +89,6 @@ static PetscErrorCode PCSetUp_LU(PC pc) {
       if (!dir->hdr.reuseordering) {
         PetscCall(MatDestroy(&((PC_Factor *)dir)->fact));
         PetscCall(MatGetFactor(pc->pmat, ((PC_Factor *)dir)->solvertype, MAT_FACTOR_LU, &((PC_Factor *)dir)->fact));
-        PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)((PC_Factor *)dir)->fact));
         PetscCall(MatFactorGetCanUseOrdering(((PC_Factor *)dir)->fact, &canuseordering));
         if (canuseordering) {
           if (dir->row && dir->col && dir->row != dir->col) PetscCall(ISDestroy(&dir->row));
@@ -105,8 +96,6 @@ static PetscErrorCode PCSetUp_LU(PC pc) {
           PetscCall(PCFactorSetDefaultOrdering_Factor(pc));
           PetscCall(MatGetOrdering(pc->pmat, ((PC_Factor *)dir)->ordering, &dir->row, &dir->col));
           if (dir->nonzerosalongdiagonal) PetscCall(MatReorderForNonzeroDiagonal(pc->pmat, dir->nonzerosalongdiagonaltol, dir->row, dir->col));
-          PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)dir->row));
-          PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)dir->col));
         }
       }
       PetscCall(MatLUFactorSymbolic(((PC_Factor *)dir)->fact, pc->pmat, dir->row, dir->col, &((PC_Factor *)dir)->info));
@@ -239,7 +228,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_LU(PC pc) {
   PC_LU *dir;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(pc, &dir));
+  PetscCall(PetscNew(&dir));
   pc->data = (void *)dir;
   PetscCall(PCFactorInitialize(pc, MAT_FACTOR_LU));
   dir->nonzerosalongdiagonal = PETSC_FALSE;

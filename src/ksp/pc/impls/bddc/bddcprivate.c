@@ -8615,7 +8615,6 @@ PetscErrorCode PCBDDCComputeFakeChange(PC pc, PetscBool constraints, PCBDDCGraph
 
   PetscFunctionBegin;
   PetscCall(PCCreate(PetscObjectComm((PetscObject)pc), &pcf));
-  PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)pcf));
   PetscCall(PCSetOperators(pcf, pc->mat, pc->pmat));
   PetscCall(PCSetType(pcf, PCBDDC));
 
@@ -8992,7 +8991,6 @@ PetscErrorCode MatMPIAIJRestrict(Mat A, MPI_Comm ccomm, Mat *B) {
       PetscCall(PetscTableCreateCopy(a->colmap, &b->colmap));
 #else
       PetscCall(PetscMalloc1(At->cmap->N, &b->colmap));
-      PetscCall(PetscLogObjectMemory((PetscObject)*B, At->cmap->N * sizeof(PetscInt)));
       PetscCall(PetscArraycpy(b->colmap, a->colmap, At->cmap->N));
 #endif
     } else b->colmap = NULL;
@@ -9000,13 +8998,11 @@ PetscErrorCode MatMPIAIJRestrict(Mat A, MPI_Comm ccomm, Mat *B) {
       PetscInt len;
       len = a->B->cmap->n;
       PetscCall(PetscMalloc1(len + 1, &b->garray));
-      PetscCall(PetscLogObjectMemory((PetscObject)(*B), len * sizeof(PetscInt)));
       if (len) PetscCall(PetscArraycpy(b->garray, a->garray, len));
     } else b->garray = NULL;
 
     PetscCall(PetscObjectReference((PetscObject)a->lvec));
     b->lvec = a->lvec;
-    PetscCall(PetscLogObjectParent((PetscObject)*B, (PetscObject)b->lvec));
 
     /* cannot use VecScatterCopy */
     PetscCall(VecGetLocalSize(b->lvec, &lsize));
@@ -9014,7 +9010,6 @@ PetscErrorCode MatMPIAIJRestrict(Mat A, MPI_Comm ccomm, Mat *B) {
     PetscCall(ISCreateStride(PETSC_COMM_SELF, lsize, 0, 1, &to));
     PetscCall(MatCreateVecs(*B, &gvec, NULL));
     PetscCall(VecScatterCreate(gvec, from, b->lvec, to, &b->Mvctx));
-    PetscCall(PetscLogObjectParent((PetscObject)*B, (PetscObject)b->Mvctx));
     PetscCall(ISDestroy(&from));
     PetscCall(ISDestroy(&to));
     PetscCall(VecDestroy(&gvec));

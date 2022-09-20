@@ -327,7 +327,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NGS(SNES snes) {
     snes->max_funcs = 10000;
   }
 
-  PetscCall(PetscNewLog(snes, &gs));
+  PetscCall(PetscNew(&gs));
 
   gs->sweeps  = 1;
   gs->rtol    = 1e-5;

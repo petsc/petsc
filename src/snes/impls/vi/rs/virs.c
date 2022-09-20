@@ -287,7 +287,6 @@ PetscErrorCode SNESVIResetPCandKSP(SNES snes, Mat Amat, Mat Pmat) {
   PetscCall(PCFactorSetMatSolverType(kspnew->pc,stype));
   PetscCall(KSPDestroy(&snesksp));
   snes->ksp = kspnew;
-  PetscCall(PetscLogObjectParent((PetscObject)snes,(PetscObject)kspnew));
    PetscCall(KSPSetFromOptions(kspnew));*/
   PetscFunctionReturn(0);
 }
@@ -758,7 +757,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_VINEWTONRSLS(SNES snes) {
 
   snes->alwayscomputesfinalresidual = PETSC_TRUE;
 
-  PetscCall(PetscNewLog(snes, &vi));
+  PetscCall(PetscNew(&vi));
   snes->data          = (void *)vi;
   vi->checkredundancy = NULL;
 

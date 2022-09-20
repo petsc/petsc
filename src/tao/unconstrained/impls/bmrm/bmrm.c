@@ -247,7 +247,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BMRM(Tao tao) {
   tao->ops->setfromoptions = TaoSetFromOptions_BMRM;
   tao->ops->destroy        = TaoDestroy_BMRM;
 
-  PetscCall(PetscNewLog(tao, &bmrm));
+  PetscCall(PetscNew(&bmrm));
   bmrm->lambda = 1.0;
   tao->data    = (void *)bmrm;
 

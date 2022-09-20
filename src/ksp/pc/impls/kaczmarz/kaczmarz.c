@@ -108,7 +108,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Kaczmarz(PC pc) {
   PC_Kaczmarz *jac;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(pc, &jac));
+  PetscCall(PetscNew(&jac));
 
   pc->ops->apply          = PCApply_Kaczmarz;
   pc->ops->setfromoptions = PCSetFromOptions_Kaczmarz;
