@@ -3469,7 +3469,22 @@ static PetscErrorCode DMPlexCreateBoundaryLabel_Private(DM dm, const char name[]
   PetscFunctionReturn(0);
 }
 
-const char *const DMPlexShapes[] = {"box", "box_surface", "ball", "sphere", "cylinder", "schwarz_p", "gyroid", "doublet", "unknown", "DMPlexShape", "DM_SHAPE_", NULL};
+/*
+  We use the last coordinate as the radius, the inner radius is lower[dim-1] and the outer radius is upper[dim-1]. Then we map the first coordinate around the circle.
+
+    (x, y) -> (r, theta) = (x[1], (x[0] - lower[0]) * 2\pi/(upper[0] - lower[0]))
+*/
+static void boxToAnnulus(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[]) {
+  const PetscReal low = PetscRealPart(constants[0]);
+  const PetscReal upp = PetscRealPart(constants[1]);
+  const PetscReal r   = PetscRealPart(u[1]);
+  const PetscReal th  = 2. * PETSC_PI * (PetscRealPart(u[0]) - low) / (upp - low);
+
+  f0[0] = r * PetscCosReal(th);
+  f0[1] = r * PetscSinReal(th);
+}
+
+const char *const DMPlexShapes[] = {"box", "box_surface", "ball", "sphere", "cylinder", "schwarz_p", "gyroid", "doublet", "annulus", "unknown", "DMPlexShape", "DM_SHAPE_", NULL};
 
 static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems *PetscOptionsObject, PetscBool *useCoordSpace, DM dm) {
   DMPlexShape    shape   = DM_SHAPE_BOX;
@@ -3531,11 +3546,13 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems *PetscOp
   } else {
     PetscCall(PetscObjectSetName((PetscObject)dm, DMPlexShapes[shape]));
     switch (shape) {
-    case DM_SHAPE_BOX: {
-      PetscInt       faces[3] = {0, 0, 0};
-      PetscReal      lower[3] = {0, 0, 0};
-      PetscReal      upper[3] = {1, 1, 1};
-      DMBoundaryType bdt[3]   = {DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE};
+    case DM_SHAPE_BOX:
+    case DM_SHAPE_ANNULUS: {
+      PetscInt       faces[3]  = {0, 0, 0};
+      PetscReal      lower[3]  = {0, 0, 0};
+      PetscReal      upper[3]  = {1, 1, 1};
+      DMBoundaryType bdt[3]    = {DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE};
+      PetscBool      isAnnular = shape == DM_SHAPE_ANNULUS ? PETSC_TRUE : PETSC_FALSE;
       PetscInt       i, n;
 
       n = dim;
@@ -3550,6 +3567,11 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems *PetscOp
       n = 3;
       PetscCall(PetscOptionsEnumArray("-dm_plex_box_bd", "Boundary type for each dimension", "", DMBoundaryTypes, (PetscEnum *)bdt, &n, &flg));
       PetscCheck(!flg || !(n != dim), comm, PETSC_ERR_ARG_SIZ, "Box boundary types had %" PetscInt_FMT " values, should have been %" PetscInt_FMT, n, dim);
+
+      PetscCheck(!isAnnular || dim == 2, comm, PETSC_ERR_ARG_OUTOFRANGE, "Only two dimensional annuli have been implemented");
+      if (isAnnular)
+        for (i = 0; i < dim - 1; ++i) bdt[i] = DM_BOUNDARY_PERIODIC;
+
       switch (cell) {
       case DM_POLYTOPE_TRI_PRISM_TENSOR:
         PetscCall(DMPlexCreateWedgeBoxMesh_Internal(dm, faces, lower, upper, bdt));
@@ -3561,6 +3583,21 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems *PetscOp
         }
         break;
       default: PetscCall(DMPlexCreateBoxMesh_Internal(dm, dim, simplex, faces, lower, upper, bdt, interpolate)); break;
+      }
+      if (isAnnular) {
+        DM          cdm;
+        PetscDS     cds;
+        PetscScalar bounds[2] = {lower[0], upper[0]};
+
+        // Fix coordinates for annular region
+        PetscCall(DMSetPeriodicity(dm, NULL, NULL, NULL));
+        PetscCall(DMSetCellCoordinatesLocal(dm, NULL));
+        PetscCall(DMSetCellCoordinates(dm, NULL));
+        PetscCall(DMPlexCreateCoordinateSpace(dm, 1, NULL));
+        PetscCall(DMGetCoordinateDM(dm, &cdm));
+        PetscCall(DMGetDS(cdm, &cds));
+        PetscCall(PetscDSSetConstants(cds, 2, bounds));
+        PetscCall(DMPlexRemapGeometry(dm, 0.0, boxToAnnulus));
       }
     } break;
     case DM_SHAPE_BOX_SURFACE: {
