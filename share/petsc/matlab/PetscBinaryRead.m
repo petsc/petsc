@@ -3,12 +3,12 @@ function [varargout] = PetscBinaryRead(inarg,varargin)
 %   [varargout] = PetscBinaryRead(inarg,['complex',false or true],['indices','int32' or 'int64'],['cell',cnt],['precision','float64' or 'float32'])
 %
 %  Reads in PETSc binary file matrices or vectors
-%  emits as Matlab sparse matrice or vectors.
+%  emits as MATLAB sparse matrice or vectors.
 %
 %  [] indices optional arguments
 %  There are no [] in the arguments
 %
-%  Examples: A = PetscBinaryRead('myfile'); read from file 
+%  Examples: A = PetscBinaryRead('myfile'); read from file
 %            b = PetscBinaryRead(1024);   read from socket
 %            c = PetscBinaryRead();       read from default socket PETSc uses
 %
@@ -25,11 +25,11 @@ function [varargout] = PetscBinaryRead(inarg,varargin)
 %  'precision','float32' indicates the PETSc program was built with --with-precision=single
 %
 %  Examples:  A = PetscBinaryRead('myfile','cell',10000);  read all objects in file
-%             A = PetscBinaryRead(1024,'cell',2);  read two objects from socket 
-%   
+%             A = PetscBinaryRead(1024,'cell',2);  read two objects from socket
+%
 if nargin == 0
   fd = PetscOpenSocket();
-else if ischar(inarg) 
+else if ischar(inarg)
   fd = PetscOpenFile(inarg);
 else if isnumeric(inarg)
   fd = PetscOpenSocket(inarg);
@@ -69,7 +69,7 @@ if strcmp(precision,'float128')
   system(['./convert -f ' inarg]);
   fd = PetscOpenFile([inarg '_double']);
 end
-  
+
 if arecell
   narg = arecell;
   rsult = cell(1);
@@ -78,18 +78,18 @@ else
 end
 
 for l=1:narg
-  header = double(read(fd,1,indices));  
+  header = double(read(fd,1,indices));
   if isempty(header)
     if arecell
       varargout(1) = {result};
-      return 
-    else 
+      return
+    else
       disp('File/Socket does not have that many items')
     end
     return
   end
-  if header == 1211216 % Petsc Mat Object 
-    
+  if header == 1211216 % Petsc Mat Object
+
     header = double(read(fd,3,indices));
     m      = header(1);
     n      = header(2);
@@ -114,7 +114,7 @@ for l=1:narg
       j   = double(read(fd,nz,indices)) + 1;
       if arecomplex
         s   = read(fd,2*nz,precision);
-      else 
+      else
         s   = read(fd,nz,precision);
       end
       i   = ones(nz,1);
@@ -132,11 +132,11 @@ for l=1:narg
     end
     if arecell
       result{l} = A;
-    else 
+    else
       varargout(l) = {A};
     end
   elseif  header == 1211214 % Petsc Vec Object
-    m = double(read(fd,1,indices)); 
+    m = double(read(fd,1,indices));
     if arecomplex
       v = read(fd,2*m,precision);
       v = complex(v(1:2:2*m),v(2:2:2*m));
@@ -145,7 +145,7 @@ for l=1:narg
     end
     if arecell
       result{l} = v;
-    else 
+    else
       varargout(l) = {v};
     end
 
@@ -154,7 +154,7 @@ for l=1:narg
 
     if arecell
       result{l} = v;
-    else 
+    else
       varargout(l) = {v};
     end
 
@@ -163,7 +163,7 @@ for l=1:narg
     v = read(fd,m,'int') + 1; % Indexing in Matlab starts at 1, 0 in PETSc
     if arecell
       result{l} = v;
-    else 
+    else
       varargout(l) = {v};
     end
 
@@ -171,7 +171,7 @@ for l=1:narg
     b = PetscBagRead(fd);
     if arecell
       result{l} = b;
-    else 
+    else
       varargout(l) = {b};
     end
 
@@ -181,11 +181,11 @@ for l=1:narg
     b = [' dm ' int2str(m(3)) ' by ' int2str(m(4)) ' by ' int2str(m(5))];
     if arecell
       result{l} = b;
-    else 
+    else
       varargout(l) = {b};
     end
 
-  else 
+  else
     disp(['Found unrecognized header ' int2str(header) ' in file. If your file contains complex numbers'])
     disp(' then call PetscBinaryRead() with "complex",true as two additional arguments')
     return

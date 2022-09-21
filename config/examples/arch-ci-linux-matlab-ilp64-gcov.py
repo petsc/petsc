@@ -30,8 +30,8 @@ if __name__ == '__main__':
     '--with-display=140.221.10.20:0.0', # for matlab example with graphics
     '--with-blaslapack-dir='+matlab_dir,
     '--with-matlab=1',
+# matlab-engine is deprecated, no longer needed but still allowed
     '--with-matlab-engine=1',
-    '--with-matlab-engine-lib=-Wl,-rpath,'+matlab_dir+'/sys/os/glnxa64:'+matlab_dir+'/bin/glnxa64:'+matlab_dir+'/extern/lib/glnxa64 -L'+matlab_dir+'/bin/glnxa64 -L'+matlab_dir+'/extern/lib/glnxa64 -leng -lmex -lmx -lmat -lut -lmwm_dispatcher -lmwopcmodel -lmwservices -lmwservices -lmwopcmodel -lmwopcmodel -lmwm_dispatcher -lmwmpath -lmwopcmodel -lmwservices -lmwopcmodel -lmwservices -lxerces-c',
     '--with-shared-libraries=1',
     '-known-64-bit-blas-indices=1',
     '--with-ssl=0',

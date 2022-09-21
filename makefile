@@ -228,7 +228,7 @@ check_build:
            ${RUN_TEST} testex5f; \
            ${RUN_TEST} clean-legacy; \
          fi; ${RM} .ftn.log;
-	+@egrep "^#define PETSC_HAVE_MATLAB_ENGINE 1" ${PETSCCONF_H} | tee .ftn.log > /dev/null; \
+	+@egrep "^#define PETSC_HAVE_MATLAB 1" ${PETSCCONF_H} | tee .ftn.log > /dev/null; \
          if test -s .ftn.log; then \
            cd src/vec/vec/tutorials >/dev/null; \
            ${RUN_TEST} clean-legacy; \

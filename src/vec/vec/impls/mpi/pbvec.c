@@ -497,7 +497,7 @@ PetscErrorCode VecCreate_MPI_Private(Vec v, PetscBool alloc, PetscInt nghost, co
   PetscCall(VecStashCreate_Private(PetscObjectComm((PetscObject)v), 1, &v->stash));
   PetscCall(VecStashCreate_Private(PetscObjectComm((PetscObject)v), PetscAbs(v->map->bs), &v->bstash));
 
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
+#if defined(PETSC_HAVE_MATLAB)
   PetscCall(PetscObjectComposeFunction((PetscObject)v, "PetscMatlabEnginePut_C", VecMatlabEnginePut_Default));
   PetscCall(PetscObjectComposeFunction((PetscObject)v, "PetscMatlabEngineGet_C", VecMatlabEngineGet_Default));
 #endif

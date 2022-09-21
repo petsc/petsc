@@ -11,7 +11,7 @@ static PetscErrorCode DMView_DA_1d(DM da, PetscViewer viewer) {
   PetscMPIInt rank;
   PetscBool   iascii, isdraw, isglvis, isbinary;
   DM_DA      *dd = (DM_DA *)da->data;
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
+#if defined(PETSC_HAVE_MATLAB)
   PetscBool ismatlab;
 #endif
 
@@ -22,7 +22,7 @@ static PetscErrorCode DMView_DA_1d(DM da, PetscViewer viewer) {
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERDRAW, &isdraw));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERGLVIS, &isglvis));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERBINARY, &isbinary));
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
+#if defined(PETSC_HAVE_MATLAB)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERMATLAB, &ismatlab));
 #endif
   if (iascii) {
@@ -113,7 +113,7 @@ static PetscErrorCode DMView_DA_1d(DM da, PetscViewer viewer) {
     PetscCall(DMView_DA_GLVis(da, viewer));
   } else if (isbinary) {
     PetscCall(DMView_DA_Binary(da, viewer));
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
+#if defined(PETSC_HAVE_MATLAB)
   } else if (ismatlab) {
     PetscCall(DMView_DA_Matlab(da, viewer));
 #endif

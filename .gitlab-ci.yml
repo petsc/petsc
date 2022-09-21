@@ -205,6 +205,7 @@ checksource:
     when: always
     paths:
     - arch-*/lib/petsc/conf/*.patch
+    - arch-*/lib/petsc/conf/*.log
     expire_in: 4 days
 
 pause-for-approval:

@@ -390,7 +390,7 @@ static PetscErrorCode FormJacobianLocal(DMDALocalInfo *info, PetscScalar **x, Ma
 }
 
 static PetscErrorCode FormFunctionMatlab(SNES snes, Vec X, Vec F, void *ptr) {
-#if PetscDefined(HAVE_MATLAB_ENGINE)
+#if PetscDefined(HAVE_MATLAB)
   AppCtx   *user = (AppCtx *)ptr;
   PetscInt  Mx, My;
   PetscReal lambda, hx, hy;
@@ -646,7 +646,7 @@ int main(int argc, char **argv) {
     else PetscCall(DMDASNESSetObjectiveLocal(da, (DMDASNESObjective)FormObjectiveLocal, &user));
   }
 
-  if (PetscDefined(HAVE_MATLAB_ENGINE)) {
+  if (PetscDefined(HAVE_MATLAB)) {
     PetscBool matlab_function = PETSC_FALSE;
     PetscCall(PetscOptionsGetBool(NULL, NULL, "-matlab_function", &matlab_function, 0));
     if (matlab_function) {

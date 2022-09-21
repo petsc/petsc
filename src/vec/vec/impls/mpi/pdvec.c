@@ -479,7 +479,7 @@ PetscErrorCode VecView_MPI_Draw(Vec xin, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
+#if defined(PETSC_HAVE_MATLAB)
 PetscErrorCode VecView_MPI_Matlab(Vec xin, PetscViewer viewer) {
   PetscMPIInt        rank, size, *lens;
   PetscInt           i, N = xin->map->N;
@@ -738,7 +738,7 @@ PETSC_EXTERN PetscErrorCode VecView_MPI(Vec xin, PetscViewer viewer) {
 #if defined(PETSC_HAVE_HDF5)
   PetscBool ishdf5;
 #endif
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
+#if defined(PETSC_HAVE_MATLAB)
   PetscBool ismatlab;
 #endif
 #if defined(PETSC_HAVE_ADIOS)
@@ -756,7 +756,7 @@ PETSC_EXTERN PetscErrorCode VecView_MPI(Vec xin, PetscViewer viewer) {
 #if defined(PETSC_HAVE_HDF5)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERHDF5, &ishdf5));
 #endif
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
+#if defined(PETSC_HAVE_MATLAB)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERMATLAB, &ismatlab));
 #endif
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERGLVIS, &isglvis));
@@ -787,7 +787,7 @@ PETSC_EXTERN PetscErrorCode VecView_MPI(Vec xin, PetscViewer viewer) {
   } else if (isadios) {
     PetscCall(VecView_MPI_ADIOS(xin, viewer));
 #endif
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
+#if defined(PETSC_HAVE_MATLAB)
   } else if (ismatlab) {
     PetscCall(VecView_MPI_Matlab(xin, viewer));
 #endif

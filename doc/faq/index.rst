@@ -1198,13 +1198,8 @@ load.
 How can I get PETSc vectors and matrices to MATLAB or vice versa?
 -----------------------------------------------------------------
 
-There are numerous  ways to work with PETSc and MATLAB:
-
-#. Using the `MATLAB Engine
-   <https://www.mathworks.com/help/matlab/calling-matlab-engine-from-c-programs-1.html>`__,
-   allowing PETSc to automatically call MATLAB to perform some specific computations. This
-   does not allow MATLAB to be used interactively by the user. See the
-   ``PetscMatlabEngine``.
+There are numerous  ways to work with PETSc and MATLAB. All but the first approach
+require PETSc to be configured with --with-matlab.
 
 #. To save PETSc ``Mat`` and ``Vec`` to files that can be read from MATLAB use
    ``PetscViewerBinaryOpen()`` viewer and ``VecView()`` or ``MatView()`` to save objects
@@ -1212,13 +1207,19 @@ There are numerous  ways to work with PETSc and MATLAB:
    saved. See ``share/petsc/matlab/PetscBinaryRead.m`` and
    ``share/petsc/matlab/PetscBinaryWrite.m`` for loading and saving the objects in MATLAB.
 
+#. Using the `MATLAB Engine
+   <https://www.mathworks.com/help/matlab/calling-matlab-engine-from-c-programs-1.html>`__,
+   allows PETSc to automatically call MATLAB to perform some specific computations. This
+   does not allow MATLAB to be used interactively by the user. See the
+   ``PetscMatlabEngine``.
+
 #. You can open a socket connection between MATLAB and PETSc to allow sending objects back
    and forth between an interactive MATLAB session and a running PETSc program. See
    ``PetscViewerSocketOpen()`` for access from the PETSc side and
    ``share/petsc/matlab/PetscReadBinary.m`` for access from the MATLAB side.
 
 #. You can save PETSc ``Vec`` (**not** ``Mat``) with the ``PetscViewerMatlabOpen()``
-   viewer that saves ``.mat`` files can then be loaded into MATLAB.
+   viewer that saves ``.mat`` files can then be loaded into MATLAB using the ``load()`` command
 
 How do I get started with Cython so that I can extend petsc4py?
 ---------------------------------------------------------------

@@ -371,7 +371,7 @@ PETSC_INTERN PetscErrorCode MatSeqAIJCheckInode_FactorLU(Mat);
 
 PETSC_INTERN PetscErrorCode MatAXPYGetPreallocation_SeqAIJ(Mat, Mat, PetscInt *);
 
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
+#if defined(PETSC_HAVE_MATLAB)
 PETSC_EXTERN PetscErrorCode MatlabEnginePut_SeqAIJ(PetscObject, void *);
 PETSC_EXTERN PetscErrorCode MatlabEngineGet_SeqAIJ(PetscObject, void *);
 #endif

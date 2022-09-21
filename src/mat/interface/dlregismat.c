@@ -71,7 +71,7 @@ PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_Elemental(void);
 #if defined(PETSC_HAVE_SCALAPACK)
 PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_ScaLAPACK(void);
 #endif
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
+#if defined(PETSC_HAVE_MATLAB)
 PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_Matlab(void);
 #endif
 #if defined(PETSC_HAVE_ESSL)
@@ -377,7 +377,7 @@ PetscErrorCode MatInitializePackage(void) {
 #if defined(PETSC_HAVE_SCALAPACK)
   PetscCall(MatSolverTypeRegister_ScaLAPACK());
 #endif
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
+#if defined(PETSC_HAVE_MATLAB)
   PetscCall(MatSolverTypeRegister_Matlab());
 #endif
 #if defined(PETSC_HAVE_ESSL)

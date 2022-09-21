@@ -80,6 +80,8 @@ PetscErrorCode PetscMatlabEngineCreate(MPI_Comm comm, const char host[], PetscMa
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCall(PetscMatlabEngineEvaluate(e, "MPI_Comm_rank = %d; MPI_Comm_size = %d;\n", rank, size));
+  /* work around bug in MATLAB R2021b https://www.mathworks.com/matlabcentral/answers/1566246-got-error-using-exit-in-nodesktop-mode */
+  PetscCall(PetscMatlabEngineEvaluate(e, "settings"));
   *mengine = e;
   PetscFunctionReturn(0);
 }

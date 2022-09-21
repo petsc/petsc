@@ -213,6 +213,8 @@ $    `FILE_MODE_WRITE` - open existing file for MATLAB output
    This only saves `Vec`s it cannot be used to save `Mat`s. We recommend using the `PETSCVIEWERBINARY` to save objects to be loaded into MATLAB
    instead of this routine.
 
+   PETSc must be configured with the option -with-matlab for this functionality
+
 .seealso: `PETSCVIEWERMATLAB`, `PetscViewerASCIIOpen()`, `PetscViewerPushFormat()`, `PetscViewerDestroy()`, `PETSCVIEWERBINARY`, `PetscViewerBinaryOpen()`
           `VecView()`, `MatView()`, `VecLoad()`, `MatLoad()`
 @*/
