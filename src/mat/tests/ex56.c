@@ -3,7 +3,8 @@ static char help[] = "Test the use of MatSetValuesBlocked(), MatZeroRows() for r
 
 #include <petscmat.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat         A;
   PetscInt    bs = 3, m = 4, n = 6, i, j, val = 10, row[2], col[3], eval, rstart;
   PetscMPIInt size, rank;

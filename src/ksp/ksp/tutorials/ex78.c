@@ -2,7 +2,8 @@
 
 static char help[] = "Exercises switching back and forth between different KSP and KSPHPDDM types.\n\n";
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   KSP ksp;
 #if defined(PETSC_HAVE_HPDDM)
   KSPHPDDMType type;

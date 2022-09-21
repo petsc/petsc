@@ -3,7 +3,8 @@
 #include <petsc/private/viewerimpl.h>
 #include <petsclayouthdf5.h>
 
-PetscErrorCode ISView_Binary(IS is, PetscViewer viewer) {
+PetscErrorCode ISView_Binary(IS is, PetscViewer viewer)
+{
   PetscBool       skipHeader;
   PetscLayout     map;
   PetscInt        tr[2], n, s, N;
@@ -35,18 +36,19 @@ PetscErrorCode ISView_Binary(IS is, PetscViewer viewer) {
      This should handle properly the cases where PetscInt is 32 or 64 and hsize_t is 32 or 64. These means properly casting with
    checks back and forth between the two types of variables.
 */
-PetscErrorCode ISLoad_HDF5(IS is, PetscViewer viewer) {
+PetscErrorCode ISLoad_HDF5(IS is, PetscViewer viewer)
+{
   hid_t       inttype; /* int type (H5T_NATIVE_INT or H5T_NATIVE_LLONG) */
   PetscInt   *ind;
   const char *isname;
 
   PetscFunctionBegin;
   PetscCheck(((PetscObject)is)->name, PetscObjectComm((PetscObject)is), PETSC_ERR_SUP, "IS name must be given using PetscObjectSetName() before ISLoad() since HDF5 can store multiple objects in a single file");
-#if defined(PETSC_USE_64BIT_INDICES)
+  #if defined(PETSC_USE_64BIT_INDICES)
   inttype = H5T_NATIVE_LLONG;
-#else
+  #else
   inttype = H5T_NATIVE_INT;
-#endif
+  #endif
   PetscCall(PetscObjectGetName((PetscObject)is, &isname));
   PetscCall(PetscViewerHDF5Load(viewer, isname, is->map, inttype, (void **)&ind));
   PetscCall(ISGeneralSetIndices(is, is->map->n, ind, PETSC_OWN_POINTER));
@@ -54,7 +56,8 @@ PetscErrorCode ISLoad_HDF5(IS is, PetscViewer viewer) {
 }
 #endif
 
-PetscErrorCode ISLoad_Binary(IS is, PetscViewer viewer) {
+PetscErrorCode ISLoad_Binary(IS is, PetscViewer viewer)
+{
   PetscBool   isgeneral, skipHeader;
   PetscInt    tr[2], rows, N, n, s, *idx;
   PetscLayout map;
@@ -97,7 +100,8 @@ PetscErrorCode ISLoad_Binary(IS is, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode ISLoad_Default(IS is, PetscViewer viewer) {
+PetscErrorCode ISLoad_Default(IS is, PetscViewer viewer)
+{
   PetscBool isbinary, ishdf5;
 
   PetscFunctionBegin;

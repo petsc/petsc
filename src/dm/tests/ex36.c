@@ -10,7 +10,8 @@ struct _n_CCmplx {
   PetscReal imag;
 };
 
-CCmplx CCmplxPow(CCmplx a, PetscReal n) {
+CCmplx CCmplxPow(CCmplx a, PetscReal n)
+{
   CCmplx    b;
   PetscReal r, theta;
   r      = PetscSqrtReal(a.real * a.real + a.imag * a.imag);
@@ -19,13 +20,15 @@ CCmplx CCmplxPow(CCmplx a, PetscReal n) {
   b.imag = PetscPowReal(r, n) * PetscSinReal(n * theta);
   return b;
 }
-CCmplx CCmplxExp(CCmplx a) {
+CCmplx CCmplxExp(CCmplx a)
+{
   CCmplx b;
   b.real = PetscExpReal(a.real) * PetscCosReal(a.imag);
   b.imag = PetscExpReal(a.real) * PetscSinReal(a.imag);
   return b;
 }
-CCmplx CCmplxSqrt(CCmplx a) {
+CCmplx CCmplxSqrt(CCmplx a)
+{
   CCmplx    b;
   PetscReal r, theta;
   r      = PetscSqrtReal(a.real * a.real + a.imag * a.imag);
@@ -34,20 +37,24 @@ CCmplx CCmplxSqrt(CCmplx a) {
   b.imag = PetscSqrtReal(r) * PetscSinReal(0.5 * theta);
   return b;
 }
-CCmplx CCmplxAdd(CCmplx a, CCmplx c) {
+CCmplx CCmplxAdd(CCmplx a, CCmplx c)
+{
   CCmplx b;
   b.real = a.real + c.real;
   b.imag = a.imag + c.imag;
   return b;
 }
-PetscScalar CCmplxRe(CCmplx a) {
+PetscScalar CCmplxRe(CCmplx a)
+{
   return (PetscScalar)a.real;
 }
-PetscScalar CCmplxIm(CCmplx a) {
+PetscScalar CCmplxIm(CCmplx a)
+{
   return (PetscScalar)a.imag;
 }
 
-PetscErrorCode DAApplyConformalMapping(DM da, PetscInt idx) {
+PetscErrorCode DAApplyConformalMapping(DM da, PetscInt idx)
+{
   PetscInt     i, n;
   PetscInt     sx, nx, sy, ny, sz, nz, dim;
   Vec          Gcoords;
@@ -186,7 +193,8 @@ PetscErrorCode DAApplyConformalMapping(DM da, PetscInt idx) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DAApplyTrilinearMapping(DM da) {
+PetscErrorCode DAApplyTrilinearMapping(DM da)
+{
   PetscInt      i, j, k;
   PetscInt      sx, nx, sy, ny, sz, nz;
   Vec           Gcoords;
@@ -240,7 +248,8 @@ PetscErrorCode DAApplyTrilinearMapping(DM da) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DADefineXLinearField2D(DM da, Vec field) {
+PetscErrorCode DADefineXLinearField2D(DM da, Vec field)
+{
   PetscInt      i, j;
   PetscInt      sx, nx, sy, ny;
   Vec           Gcoords;
@@ -266,7 +275,8 @@ PetscErrorCode DADefineXLinearField2D(DM da, Vec field) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DADefineXLinearField3D(DM da, Vec field) {
+PetscErrorCode DADefineXLinearField3D(DM da, Vec field)
+{
   PetscInt       i, j, k;
   PetscInt       sx, nx, sy, ny, sz, nz;
   Vec            Gcoords;
@@ -297,7 +307,8 @@ PetscErrorCode DADefineXLinearField3D(DM da, Vec field) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode da_test_RefineCoords1D(PetscInt mx) {
+PetscErrorCode da_test_RefineCoords1D(PetscInt mx)
+{
   DM          dac, daf;
   PetscViewer vv;
   Vec         ac, af;
@@ -376,7 +387,8 @@ PetscErrorCode da_test_RefineCoords1D(PetscInt mx) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode da_test_RefineCoords2D(PetscInt mx, PetscInt my) {
+PetscErrorCode da_test_RefineCoords2D(PetscInt mx, PetscInt my)
+{
   DM          dac, daf;
   PetscViewer vv;
   Vec         ac, af;
@@ -461,7 +473,8 @@ PetscErrorCode da_test_RefineCoords2D(PetscInt mx, PetscInt my) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode da_test_RefineCoords3D(PetscInt mx, PetscInt my, PetscInt mz) {
+PetscErrorCode da_test_RefineCoords3D(PetscInt mx, PetscInt my, PetscInt mz)
+{
   DM          dac, daf;
   PetscViewer vv;
   Vec         ac, af;
@@ -553,7 +566,8 @@ PetscErrorCode da_test_RefineCoords3D(PetscInt mx, PetscInt my, PetscInt mz) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt mx = 2, my = 2, mz = 2, l, nl, dim;
 
   PetscFunctionBeginUser;

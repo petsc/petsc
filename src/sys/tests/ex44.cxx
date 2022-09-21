@@ -4,7 +4,8 @@ static char help[] = "Demonstrates call PETSc and Chombo in the same program.\n\
 #include <petscsys.h>
 #include "Box.H"
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   /*
     Every PETSc routine should begin with the PetscInitialize() routine.
     argc, argv - These command line arguments are taken to extract the options

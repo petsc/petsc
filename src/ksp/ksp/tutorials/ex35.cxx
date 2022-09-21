@@ -108,7 +108,8 @@ static PetscErrorCode ComputeRHS(KSP, Vec, void *);
 static PetscErrorCode ComputeDiscreteL2Error(KSP, Vec, UserContext *);
 static PetscErrorCode InitializeOptions(UserContext *);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   KSP ksp;
   PC  pc;
   Mat R;
@@ -219,7 +220,8 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-PetscScalar ComputeDiffusionCoefficient(PetscReal coords[3], UserContext *user) {
+PetscScalar ComputeDiffusionCoefficient(PetscReal coords[3], UserContext *user)
+{
   switch (user->problem) {
   case 2:
     if ((coords[0] > user->bounds[1] / 3.0) && (coords[0] < 2.0 * user->bounds[1] / 3.0) && (coords[1] > user->bounds[3] / 3.0) && (coords[1] < 2.0 * user->bounds[3] / 3.0)) {
@@ -229,23 +231,30 @@ PetscScalar ComputeDiffusionCoefficient(PetscReal coords[3], UserContext *user) 
     }
   case 1:
   case 3:
-  default: return user->rho;
+  default:
+    return user->rho;
   }
 }
 
-PetscScalar ExactSolution(PetscReal coords[3], UserContext *user) {
+PetscScalar ExactSolution(PetscReal coords[3], UserContext *user)
+{
   switch (user->problem) {
-  case 1: return sin(PETSC_PI * coords[0] / user->bounds[1]) * sin(PETSC_PI * coords[1] / user->bounds[3]);
+  case 1:
+    return sin(PETSC_PI * coords[0] / user->bounds[1]) * sin(PETSC_PI * coords[1] / user->bounds[3]);
   case 3:
   case 2:
-  default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Exact solution for -problem = [%" PetscInt_FMT "] is not available.", user->problem);
+  default:
+    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Exact solution for -problem = [%" PetscInt_FMT "] is not available.", user->problem);
   }
 }
 
-PetscScalar ComputeForcingFunction(PetscReal coords[3], UserContext *user) {
+PetscScalar ComputeForcingFunction(PetscReal coords[3], UserContext *user)
+{
   switch (user->problem) {
-  case 3: return user->nu * sin(PETSC_PI * coords[0] / user->bounds[1]) * sin(PETSC_PI * coords[1] / user->bounds[3]);
-  case 2: return PetscExpScalar(-((coords[0] - user->xref) * (coords[0] - user->xref) + (coords[1] - user->yref) * (coords[1] - user->yref)) / user->nu);
+  case 3:
+    return user->nu * sin(PETSC_PI * coords[0] / user->bounds[1]) * sin(PETSC_PI * coords[1] / user->bounds[3]);
+  case 2:
+    return PetscExpScalar(-((coords[0] - user->xref) * (coords[0] - user->xref) + (coords[1] - user->yref) * (coords[1] - user->yref)) / user->nu);
   case 1:
   default:
     return PETSC_PI * PETSC_PI * ComputeDiffusionCoefficient(coords, user) * (1.0 / user->bounds[1] / user->bounds[1] + 1.0 / user->bounds[3] / user->bounds[3]) * sin(PETSC_PI * coords[0] / user->bounds[1]) * sin(PETSC_PI * coords[1] / user->bounds[3]);
@@ -255,19 +264,23 @@ PetscScalar ComputeForcingFunction(PetscReal coords[3], UserContext *user) {
 #define BCHECKEPS                   1e-10
 #define BCHECK(coordxyz, truetrace) ((coordxyz < truetrace + BCHECKEPS && coordxyz > truetrace - BCHECKEPS))
 
-PetscScalar EvaluateStrongDirichletCondition(PetscReal coords[3], UserContext *user) {
+PetscScalar EvaluateStrongDirichletCondition(PetscReal coords[3], UserContext *user)
+{
   switch (user->problem) {
   case 3:
     if (BCHECK(coords[0], user->bounds[0]) || BCHECK(coords[0], user->bounds[1]) || BCHECK(coords[1], user->bounds[2]) || BCHECK(coords[1], user->bounds[3])) return 0.0;
     else // ( coords[0]*coords[0] + coords[1]*coords[1] < 0.04 + BCHECKEPS)
       return 1.0;
-  case 2: return ComputeForcingFunction(coords, user);
+  case 2:
+    return ComputeForcingFunction(coords, user);
   case 1:
-  default: return ExactSolution(coords, user);
+  default:
+    return ExactSolution(coords, user);
   }
 }
 
-PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ptr) {
+PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ptr)
+{
   UserContext              *user = (UserContext *)ptr;
   DM                        dm;
   PetscInt                  dof_indices[4];
@@ -369,7 +382,8 @@ PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ptr) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, void *ctx) {
+PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, void *ctx)
+{
   UserContext              *user = (UserContext *)ctx;
   DM                        dm;
   PetscInt                  i, j, q, nconn, nglobale, nglobalv, nc, npoints, hlevel;
@@ -477,7 +491,8 @@ PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, void *ctx) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode ComputeDiscreteL2Error(KSP ksp, Vec err, UserContext *user) {
+PetscErrorCode ComputeDiscreteL2Error(KSP ksp, Vec err, UserContext *user)
+{
   DM                 dm;
   Vec                sol;
   PetscScalar        vpos[3];
@@ -539,7 +554,8 @@ PetscErrorCode ComputeDiscreteL2Error(KSP ksp, Vec err, UserContext *user) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode InitializeOptions(UserContext *user) {
+PetscErrorCode InitializeOptions(UserContext *user)
+{
   const char *bcTypes[2] = {"dirichlet", "neumann"};
   PetscInt    bc;
 

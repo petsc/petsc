@@ -2,7 +2,8 @@
 
 const char *const MatSchurComplementAinvTypes[] = {"DIAG", "LUMP", "BLOCKDIAG", "FULL", "MatSchurComplementAinvType", "MAT_SCHUR_COMPLEMENT_AINV_", NULL};
 
-PetscErrorCode MatCreateVecs_SchurComplement(Mat N, Vec *right, Vec *left) {
+PetscErrorCode MatCreateVecs_SchurComplement(Mat N, Vec *right, Vec *left)
+{
   Mat_SchurComplement *Na = (Mat_SchurComplement *)N->data;
 
   PetscFunctionBegin;
@@ -15,7 +16,8 @@ PetscErrorCode MatCreateVecs_SchurComplement(Mat N, Vec *right, Vec *left) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatView_SchurComplement(Mat N, PetscViewer viewer) {
+PetscErrorCode MatView_SchurComplement(Mat N, PetscViewer viewer)
+{
   Mat_SchurComplement *Na = (Mat_SchurComplement *)N->data;
 
   PetscFunctionBegin;
@@ -46,7 +48,8 @@ PetscErrorCode MatView_SchurComplement(Mat N, PetscViewer viewer) {
 /*
            A11^T - A01^T ksptrans(A00,Ap00) A10^T
 */
-PetscErrorCode MatMultTranspose_SchurComplement(Mat N, Vec x, Vec y) {
+PetscErrorCode MatMultTranspose_SchurComplement(Mat N, Vec x, Vec y)
+{
   Mat_SchurComplement *Na = (Mat_SchurComplement *)N->data;
 
   PetscFunctionBegin;
@@ -63,7 +66,8 @@ PetscErrorCode MatMultTranspose_SchurComplement(Mat N, Vec x, Vec y) {
 /*
            A11 - A10 ksp(A00,Ap00) A01
 */
-PetscErrorCode MatMult_SchurComplement(Mat N, Vec x, Vec y) {
+PetscErrorCode MatMult_SchurComplement(Mat N, Vec x, Vec y)
+{
   Mat_SchurComplement *Na = (Mat_SchurComplement *)N->data;
 
   PetscFunctionBegin;
@@ -80,7 +84,8 @@ PetscErrorCode MatMult_SchurComplement(Mat N, Vec x, Vec y) {
 /*
            A11 - A10 ksp(A00,Ap00) A01
 */
-PetscErrorCode MatMultAdd_SchurComplement(Mat N, Vec x, Vec y, Vec z) {
+PetscErrorCode MatMultAdd_SchurComplement(Mat N, Vec x, Vec y, Vec z)
+{
   Mat_SchurComplement *Na = (Mat_SchurComplement *)N->data;
 
   PetscFunctionBegin;
@@ -99,7 +104,8 @@ PetscErrorCode MatMultAdd_SchurComplement(Mat N, Vec x, Vec y, Vec z) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatSetFromOptions_SchurComplement(Mat N, PetscOptionItems *PetscOptionsObject) {
+PetscErrorCode MatSetFromOptions_SchurComplement(Mat N, PetscOptionItems *PetscOptionsObject)
+{
   Mat_SchurComplement *Na = (Mat_SchurComplement *)N->data;
 
   PetscFunctionBegin;
@@ -112,7 +118,8 @@ PetscErrorCode MatSetFromOptions_SchurComplement(Mat N, PetscOptionItems *PetscO
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatDestroy_SchurComplement(Mat N) {
+PetscErrorCode MatDestroy_SchurComplement(Mat N)
+{
   Mat_SchurComplement *Na = (Mat_SchurComplement *)N->data;
 
   PetscFunctionBegin;
@@ -165,7 +172,8 @@ PetscErrorCode MatDestroy_SchurComplement(Mat N) {
           `MatSchurComplementGetPmat()`, `MatSchurComplementSetSubMatrices()`
 
 @*/
-PetscErrorCode MatCreateSchurComplement(Mat A00, Mat Ap00, Mat A01, Mat A10, Mat A11, Mat *S) {
+PetscErrorCode MatCreateSchurComplement(Mat A00, Mat Ap00, Mat A01, Mat A10, Mat A11, Mat *S)
+{
   PetscFunctionBegin;
   PetscCall(KSPInitializePackage());
   PetscCall(MatCreate(PetscObjectComm((PetscObject)A00), S));
@@ -203,7 +211,8 @@ $        MatSchurComplementSetSubMatrices(S,...);
 .seealso: `MatCreateNormal()`, `MatMult()`, `MatCreate()`, `MatSchurComplementGetKSP()`, `MatSchurComplementUpdateSubMatrices()`, `MatCreateTranspose()`, `MatCreateSchurComplement()`, `MatGetSchurComplement()`
 
 @*/
-PetscErrorCode MatSchurComplementSetSubMatrices(Mat S, Mat A00, Mat Ap00, Mat A01, Mat A10, Mat A11) {
+PetscErrorCode MatSchurComplementSetSubMatrices(Mat S, Mat A00, Mat Ap00, Mat A01, Mat A10, Mat A11)
+{
   Mat_SchurComplement *Na = (Mat_SchurComplement *)S->data;
   PetscBool            isschur;
 
@@ -264,7 +273,8 @@ PetscErrorCode MatSchurComplementSetSubMatrices(Mat S, Mat A00, Mat Ap00, Mat A0
 
 .seealso: `MatSchurComplementSetKSP()`, `MatCreateSchurComplement()`, `MatCreateNormal()`, `MatMult()`, `MatCreate()`
 @*/
-PetscErrorCode MatSchurComplementGetKSP(Mat S, KSP *ksp) {
+PetscErrorCode MatSchurComplementGetKSP(Mat S, KSP *ksp)
+{
   Mat_SchurComplement *Na;
   PetscBool            isschur;
 
@@ -295,7 +305,8 @@ PetscErrorCode MatSchurComplementGetKSP(Mat S, KSP *ksp) {
 
 .seealso: `MatSchurComplementGetKSP()`, `MatCreateSchurComplement()`, `MatCreateNormal()`, `MatMult()`, `MatCreate()`, `MATSCHURCOMPLEMENT`
 @*/
-PetscErrorCode MatSchurComplementSetKSP(Mat S, KSP ksp) {
+PetscErrorCode MatSchurComplementSetKSP(Mat S, KSP ksp)
+{
   Mat_SchurComplement *Na;
   PetscBool            isschur;
 
@@ -340,7 +351,8 @@ PetscErrorCode MatSchurComplementSetKSP(Mat S, KSP ksp) {
 .seealso: `MatCreateNormal()`, `MatMult()`, `MatCreate()`, `MatSchurComplementGetKSP()`, `MatCreateSchurComplement()`
 
 @*/
-PetscErrorCode MatSchurComplementUpdateSubMatrices(Mat S, Mat A00, Mat Ap00, Mat A01, Mat A10, Mat A11) {
+PetscErrorCode MatSchurComplementUpdateSubMatrices(Mat S, Mat A00, Mat Ap00, Mat A01, Mat A10, Mat A11)
+{
   Mat_SchurComplement *Na = (Mat_SchurComplement *)S->data;
   PetscBool            isschur;
 
@@ -410,7 +422,8 @@ PetscErrorCode MatSchurComplementUpdateSubMatrices(Mat S, Mat A00, Mat Ap00, Mat
 
 .seealso: `MatCreateNormal()`, `MatMult()`, `MatCreate()`, `MatSchurComplementGetKSP()`, `MatCreateSchurComplement()`, `MatSchurComplementUpdateSubMatrices()`
 @*/
-PetscErrorCode MatSchurComplementGetSubMatrices(Mat S, Mat *A00, Mat *Ap00, Mat *A01, Mat *A10, Mat *A11) {
+PetscErrorCode MatSchurComplementGetSubMatrices(Mat S, Mat *A00, Mat *Ap00, Mat *A01, Mat *A10, Mat *A11)
+{
   Mat_SchurComplement *Na = (Mat_SchurComplement *)S->data;
   PetscBool            flg;
 
@@ -448,7 +461,8 @@ PetscErrorCode MatSchurComplementGetSubMatrices(Mat S, Mat *A00, Mat *Ap00, Mat 
 
 .seealso: `MatCreateSchurComplement()`, `MatSchurComplementUpdate()`, `MatSchurComplementGetPmat()`
 @*/
-PetscErrorCode MatSchurComplementComputeExplicitOperator(Mat A, Mat *S) {
+PetscErrorCode MatSchurComplementComputeExplicitOperator(Mat A, Mat *S)
+{
   Mat       B, C, D, E = NULL, Bd, AinvBd;
   KSP       ksp;
   PetscInt  n, N, m, M;
@@ -486,7 +500,8 @@ PetscErrorCode MatSchurComplementComputeExplicitOperator(Mat A, Mat *S) {
 
 /* Developer Notes:
     This should be implemented with a MatCreate_SchurComplement() as that is the standard design for new Mat classes. */
-PetscErrorCode MatGetSchurComplement_Basic(Mat mat, IS isrow0, IS iscol0, IS isrow1, IS iscol1, MatReuse mreuse, Mat *S, MatSchurComplementAinvType ainvtype, MatReuse preuse, Mat *Sp) {
+PetscErrorCode MatGetSchurComplement_Basic(Mat mat, IS isrow0, IS iscol0, IS isrow1, IS iscol1, MatReuse mreuse, Mat *S, MatSchurComplementAinvType ainvtype, MatReuse preuse, Mat *Sp)
+{
   Mat      A = NULL, Ap = NULL, B = NULL, C = NULL, D = NULL;
   MatReuse reuse;
 
@@ -519,9 +534,14 @@ PetscErrorCode MatGetSchurComplement_Basic(Mat mat, IS isrow0, IS iscol0, IS isr
   PetscCall(MatCreateSubMatrix(mat, isrow1, iscol0, reuse, &C));
   PetscCall(MatCreateSubMatrix(mat, isrow1, iscol1, reuse, &D));
   switch (mreuse) {
-  case MAT_INITIAL_MATRIX: PetscCall(MatCreateSchurComplement(A, A, B, C, D, S)); break;
-  case MAT_REUSE_MATRIX: PetscCall(MatSchurComplementUpdateSubMatrices(*S, A, A, B, C, D)); break;
-  default: PetscCheck(mreuse == MAT_IGNORE_MATRIX, PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "Unrecognized value of mreuse %d", (int)mreuse);
+  case MAT_INITIAL_MATRIX:
+    PetscCall(MatCreateSchurComplement(A, A, B, C, D, S));
+    break;
+  case MAT_REUSE_MATRIX:
+    PetscCall(MatSchurComplementUpdateSubMatrices(*S, A, A, B, C, D));
+    break;
+  default:
+    PetscCheck(mreuse == MAT_IGNORE_MATRIX, PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "Unrecognized value of mreuse %d", (int)mreuse);
   }
   if (preuse != MAT_IGNORE_MATRIX) PetscCall(MatCreateSchurComplementPmat(A, B, C, D, ainvtype, preuse, Sp));
   PetscCall(MatDestroy(&A));
@@ -575,7 +595,8 @@ PetscErrorCode MatGetSchurComplement_Basic(Mat mat, IS isrow0, IS iscol0, IS isr
 
 .seealso: `MatCreateSubMatrix()`, `PCFIELDSPLIT`, `MatCreateSchurComplement()`, `MatSchurComplementAinvType`
 @*/
-PetscErrorCode MatGetSchurComplement(Mat A, IS isrow0, IS iscol0, IS isrow1, IS iscol1, MatReuse mreuse, Mat *S, MatSchurComplementAinvType ainvtype, MatReuse preuse, Mat *Sp) {
+PetscErrorCode MatGetSchurComplement(Mat A, IS isrow0, IS iscol0, IS isrow1, IS iscol1, MatReuse mreuse, Mat *S, MatSchurComplementAinvType ainvtype, MatReuse preuse, Mat *Sp)
+{
   PetscErrorCode (*f)(Mat, IS, IS, IS, IS, MatReuse, Mat *, MatReuse, Mat *) = NULL;
 
   PetscFunctionBegin;
@@ -616,7 +637,8 @@ PetscErrorCode MatGetSchurComplement(Mat A, IS isrow0, IS iscol0, IS isrow1, IS 
 
 .seealso: `MatSchurComplementAinvType`, `MatCreateSchurComplement()`, `MatGetSchurComplement()`, `MatSchurComplementGetPmat()`, `MatSchurComplementGetAinvType()`
 @*/
-PetscErrorCode MatSchurComplementSetAinvType(Mat S, MatSchurComplementAinvType ainvtype) {
+PetscErrorCode MatSchurComplementSetAinvType(Mat S, MatSchurComplementAinvType ainvtype)
+{
   PetscBool            isschur;
   Mat_SchurComplement *schur;
 
@@ -647,7 +669,8 @@ PetscErrorCode MatSchurComplementSetAinvType(Mat S, MatSchurComplementAinvType a
 
 .seealso: `MatSchurComplementAinvType`, `MatCreateSchurComplement()`, `MatGetSchurComplement()`, `MatSchurComplementGetPmat()`, `MatSchurComplementSetAinvType()`
 @*/
-PetscErrorCode MatSchurComplementGetAinvType(Mat S, MatSchurComplementAinvType *ainvtype) {
+PetscErrorCode MatSchurComplementGetAinvType(Mat S, MatSchurComplementAinvType *ainvtype)
+{
   PetscBool            isschur;
   Mat_SchurComplement *schur;
 
@@ -681,7 +704,8 @@ PetscErrorCode MatSchurComplementGetAinvType(Mat S, MatSchurComplementAinvType *
 
 .seealso: `MatCreateSchurComplement()`, `MatGetSchurComplement()`, `MatSchurComplementGetPmat()`, `MatSchurComplementAinvType`
 @*/
-PetscErrorCode MatCreateSchurComplementPmat(Mat A00, Mat A01, Mat A10, Mat A11, MatSchurComplementAinvType ainvtype, MatReuse preuse, Mat *Sp) {
+PetscErrorCode MatCreateSchurComplementPmat(Mat A00, Mat A01, Mat A10, Mat A11, MatSchurComplementAinvType ainvtype, MatReuse preuse, Mat *Sp)
+{
   PetscInt N00;
 
   PetscFunctionBegin;
@@ -742,7 +766,8 @@ PetscErrorCode MatCreateSchurComplementPmat(Mat A00, Mat A01, Mat A10, Mat A11, 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatSchurComplementGetPmat_Basic(Mat S, MatReuse preuse, Mat *Sp) {
+PetscErrorCode MatSchurComplementGetPmat_Basic(Mat S, MatReuse preuse, Mat *Sp)
+{
   Mat                  A, B, C, D;
   Mat_SchurComplement *schur = (Mat_SchurComplement *)S->data;
 
@@ -790,7 +815,8 @@ PetscErrorCode MatSchurComplementGetPmat_Basic(Mat S, MatReuse preuse, Mat *Sp) 
 
 .seealso: `MatCreateSubMatrix()`, `PCFIELDSPLIT`, `MatGetSchurComplement()`, `MatCreateSchurComplement()`, `MatSchurComplementSetAinvType()`
 @*/
-PetscErrorCode MatSchurComplementGetPmat(Mat S, MatReuse preuse, Mat *Sp) {
+PetscErrorCode MatSchurComplementGetPmat(Mat S, MatReuse preuse, Mat *Sp)
+{
   PetscErrorCode (*f)(Mat, MatReuse, Mat *);
 
   PetscFunctionBegin;
@@ -810,7 +836,8 @@ PetscErrorCode MatSchurComplementGetPmat(Mat S, MatReuse preuse, Mat *Sp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatProductNumeric_SchurComplement_Dense(Mat C) {
+static PetscErrorCode MatProductNumeric_SchurComplement_Dense(Mat C)
+{
   Mat_Product         *product = C->product;
   Mat_SchurComplement *Na      = (Mat_SchurComplement *)product->A->data;
   Mat                  work1, work2;
@@ -838,7 +865,8 @@ static PetscErrorCode MatProductNumeric_SchurComplement_Dense(Mat C) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatProductSymbolic_SchurComplement_Dense(Mat C) {
+static PetscErrorCode MatProductSymbolic_SchurComplement_Dense(Mat C)
+{
   Mat_Product *product = C->product;
   Mat          A = product->A, B = product->B;
   PetscInt     m = A->rmap->n, n = B->cmap->n, M = A->rmap->N, N = B->cmap->N;
@@ -856,13 +884,15 @@ static PetscErrorCode MatProductSymbolic_SchurComplement_Dense(Mat C) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatProductSetFromOptions_Dense_AB(Mat C) {
+static PetscErrorCode MatProductSetFromOptions_Dense_AB(Mat C)
+{
   PetscFunctionBegin;
   C->ops->productsymbolic = MatProductSymbolic_SchurComplement_Dense;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatProductSetFromOptions_SchurComplement_Dense(Mat C) {
+static PetscErrorCode MatProductSetFromOptions_SchurComplement_Dense(Mat C)
+{
   Mat_Product *product = C->product;
 
   PetscFunctionBegin;
@@ -871,7 +901,8 @@ static PetscErrorCode MatProductSetFromOptions_SchurComplement_Dense(Mat C) {
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode MatCreate_SchurComplement(Mat N) {
+PETSC_EXTERN PetscErrorCode MatCreate_SchurComplement(Mat N)
+{
   Mat_SchurComplement *Na;
 
   PetscFunctionBegin;

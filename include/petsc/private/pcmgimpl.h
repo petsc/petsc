@@ -3,10 +3,10 @@
 */
 #include "petscpctypes.h"
 #if !defined(__MG_IMPL)
-#define __MG_IMPL
-#include <petsc/private/pcimpl.h>
-#include <petscksp.h>
-#define PETSC_MG_MAXLEVELS 10
+  #define __MG_IMPL
+  #include <petsc/private/pcimpl.h>
+  #include <petscksp.h>
+  #define PETSC_MG_MAXLEVELS 10
 /*
      Each level has its own copy of this data.
      Level (0) is always the coarsest level and Level (levels-1) is the finest.
@@ -84,7 +84,8 @@ PETSC_INTERN PetscErrorCode PCSetFromOptions_MG(PC, PetscOptionItems *PetscOptio
 PETSC_INTERN PetscErrorCode PCView_MG(PC, PetscViewer);
 PETSC_INTERN PetscErrorCode PCMGGetLevels_MG(PC, PetscInt *);
 PETSC_INTERN PetscErrorCode PCMGSetLevels_MG(PC, PetscInt, MPI_Comm *);
-PETSC_DEPRECATED_FUNCTION("Use PCMGResidualDefault() (since version 3.5)") static inline PetscErrorCode PCMGResidual_Default(Mat A, Vec b, Vec x, Vec r) {
+PETSC_DEPRECATED_FUNCTION("Use PCMGResidualDefault() (since version 3.5)") static inline PetscErrorCode PCMGResidual_Default(Mat A, Vec b, Vec x, Vec r)
+{
   return PCMGResidualDefault(A, b, x, r);
 }
 

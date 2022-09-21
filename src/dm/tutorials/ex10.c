@@ -16,7 +16,8 @@
 
 static char help[] = "Test to write HDF5 file from PETSc DMDA Vec.\n\n";
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM            da2D;
   PetscInt      i, j, ixs, ixm, iys, iym;
   PetscViewer   H5viewer;

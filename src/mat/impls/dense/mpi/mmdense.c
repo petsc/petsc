@@ -5,7 +5,8 @@
 #include <../src/mat/impls/dense/mpi/mpidense.h>
 #include <petscblaslapack.h>
 
-PetscErrorCode MatSetUpMultiply_MPIDense(Mat mat) {
+PetscErrorCode MatSetUpMultiply_MPIDense(Mat mat)
+{
   Mat_MPIDense *mdn = (Mat_MPIDense *)mat->data;
 
   PetscFunctionBegin;
@@ -22,7 +23,8 @@ PetscErrorCode MatSetUpMultiply_MPIDense(Mat mat) {
 
 static PetscErrorCode MatCreateSubMatrices_MPIDense_Local(Mat, PetscInt, const IS[], const IS[], MatReuse, Mat *);
 
-PetscErrorCode MatCreateSubMatrices_MPIDense(Mat C, PetscInt ismax, const IS isrow[], const IS iscol[], MatReuse scall, Mat *submat[]) {
+PetscErrorCode MatCreateSubMatrices_MPIDense(Mat C, PetscInt ismax, const IS isrow[], const IS iscol[], MatReuse scall, Mat *submat[])
+{
   PetscInt nmax, nstages_local, nstages, i, pos, max_no;
 
   PetscFunctionBegin;
@@ -46,7 +48,8 @@ PetscErrorCode MatCreateSubMatrices_MPIDense(Mat C, PetscInt ismax, const IS isr
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------*/
-PetscErrorCode MatCreateSubMatrices_MPIDense_Local(Mat C, PetscInt ismax, const IS isrow[], const IS iscol[], MatReuse scall, Mat *submats) {
+PetscErrorCode MatCreateSubMatrices_MPIDense_Local(Mat C, PetscInt ismax, const IS isrow[], const IS iscol[], MatReuse scall, Mat *submats)
+{
   Mat_MPIDense    *c = (Mat_MPIDense *)C->data;
   Mat              A = c->A;
   Mat_SeqDense    *a = (Mat_SeqDense *)A->data, *mat;
@@ -235,7 +238,7 @@ PetscErrorCode MatCreateSubMatrices_MPIDense_Local(Mat C, PetscInt ismax, const 
       rbuf1_i = rbuf1[idex];             /* Actual message from s_proc */
       /* no of rows = end - start; since start is array idex[], 0idex, whel end
          is length of the buffer - which is 1idex */
-      start   = 2 * rbuf1_i[0] + 1;
+      start = 2 * rbuf1_i[0] + 1;
       PetscCallMPI(MPI_Get_count(r_status1 + i, MPIU_INT, &end));
       /* allocate memory sufficinet to hold all the row values */
       PetscCall(PetscMalloc1((end - start) * N, &sbuf2[idex]));
@@ -389,7 +392,8 @@ PetscErrorCode MatCreateSubMatrices_MPIDense_Local(Mat C, PetscInt ismax, const 
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode MatScale_MPIDense(Mat inA, PetscScalar alpha) {
+PETSC_INTERN PetscErrorCode MatScale_MPIDense(Mat inA, PetscScalar alpha)
+{
   Mat_MPIDense *A = (Mat_MPIDense *)inA->data;
 
   PetscFunctionBegin;

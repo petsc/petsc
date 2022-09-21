@@ -1,6 +1,7 @@
 #include <petsc/private/petscfeimpl.h> /*I "petscfe.h" I*/
 
-static PetscErrorCode PetscSpaceTensorCreateSubspace(PetscSpace space, PetscInt Nvs, PetscInt Ncs, PetscSpace *subspace) {
+static PetscErrorCode PetscSpaceTensorCreateSubspace(PetscSpace space, PetscInt Nvs, PetscInt Ncs, PetscSpace *subspace)
+{
   PetscInt    degree;
   const char *prefix;
   const char *name;
@@ -24,7 +25,8 @@ static PetscErrorCode PetscSpaceTensorCreateSubspace(PetscSpace space, PetscInt 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSpaceSetFromOptions_Tensor(PetscSpace sp, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode PetscSpaceSetFromOptions_Tensor(PetscSpace sp, PetscOptionItems *PetscOptionsObject)
+{
   PetscSpace_Tensor *tens = (PetscSpace_Tensor *)sp->data;
   PetscInt           Ns, Nc, i, Nv, deg;
   PetscBool          uniform = PETSC_TRUE;
@@ -91,7 +93,8 @@ static PetscErrorCode PetscSpaceSetFromOptions_Tensor(PetscSpace sp, PetscOption
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSpaceTensorView_Ascii(PetscSpace sp, PetscViewer v) {
+static PetscErrorCode PetscSpaceTensorView_Ascii(PetscSpace sp, PetscViewer v)
+{
   PetscSpace_Tensor *tens    = (PetscSpace_Tensor *)sp->data;
   PetscBool          uniform = PETSC_TRUE;
   PetscInt           Ns      = tens->numTensSpaces, i, n;
@@ -114,7 +117,8 @@ static PetscErrorCode PetscSpaceTensorView_Ascii(PetscSpace sp, PetscViewer v) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSpaceView_Tensor(PetscSpace sp, PetscViewer viewer) {
+static PetscErrorCode PetscSpaceView_Tensor(PetscSpace sp, PetscViewer viewer)
+{
   PetscBool iascii;
 
   PetscFunctionBegin;
@@ -123,7 +127,8 @@ static PetscErrorCode PetscSpaceView_Tensor(PetscSpace sp, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSpaceSetUp_Tensor(PetscSpace sp) {
+static PetscErrorCode PetscSpaceSetUp_Tensor(PetscSpace sp)
+{
   PetscSpace_Tensor *tens = (PetscSpace_Tensor *)sp->data;
   PetscInt           Nc, Nv, Ns;
   PetscBool          uniform = PETSC_TRUE;
@@ -246,7 +251,8 @@ static PetscErrorCode PetscSpaceSetUp_Tensor(PetscSpace sp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSpaceDestroy_Tensor(PetscSpace sp) {
+static PetscErrorCode PetscSpaceDestroy_Tensor(PetscSpace sp)
+{
   PetscSpace_Tensor *tens = (PetscSpace_Tensor *)sp->data;
   PetscInt           Ns, i;
 
@@ -270,7 +276,8 @@ static PetscErrorCode PetscSpaceDestroy_Tensor(PetscSpace sp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSpaceGetDimension_Tensor(PetscSpace sp, PetscInt *dim) {
+static PetscErrorCode PetscSpaceGetDimension_Tensor(PetscSpace sp, PetscInt *dim)
+{
   PetscSpace_Tensor *tens = (PetscSpace_Tensor *)sp->data;
   PetscInt           i, Ns, d;
 
@@ -288,7 +295,8 @@ static PetscErrorCode PetscSpaceGetDimension_Tensor(PetscSpace sp, PetscInt *dim
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSpaceEvaluate_Tensor(PetscSpace sp, PetscInt npoints, const PetscReal points[], PetscReal B[], PetscReal D[], PetscReal H[]) {
+static PetscErrorCode PetscSpaceEvaluate_Tensor(PetscSpace sp, PetscInt npoints, const PetscReal points[], PetscReal B[], PetscReal D[], PetscReal H[])
+{
   PetscSpace_Tensor *tens = (PetscSpace_Tensor *)sp->data;
   DM                 dm   = sp->dm;
   PetscInt           Nc   = sp->Nc;
@@ -430,7 +438,8 @@ static PetscErrorCode PetscSpaceEvaluate_Tensor(PetscSpace sp, PetscInt npoints,
 
 .seealso: `PetscSpaceTensorGetNumSubspaces()`, `PetscSpaceSetDegree()`, `PetscSpaceSetNumVariables()`
 @*/
-PetscErrorCode PetscSpaceTensorSetNumSubspaces(PetscSpace sp, PetscInt numTensSpaces) {
+PetscErrorCode PetscSpaceTensorSetNumSubspaces(PetscSpace sp, PetscInt numTensSpaces)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
   PetscTryMethod(sp, "PetscSpaceTensorSetNumSubspaces_C", (PetscSpace, PetscInt), (sp, numTensSpaces));
@@ -450,7 +459,8 @@ PetscErrorCode PetscSpaceTensorSetNumSubspaces(PetscSpace sp, PetscInt numTensSp
 
 .seealso: `PetscSpaceTensorSetNumSubspaces()`, `PetscSpaceSetDegree()`, `PetscSpaceSetNumVariables()`
 @*/
-PetscErrorCode PetscSpaceTensorGetNumSubspaces(PetscSpace sp, PetscInt *numTensSpaces) {
+PetscErrorCode PetscSpaceTensorGetNumSubspaces(PetscSpace sp, PetscInt *numTensSpaces)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
   PetscValidIntPointer(numTensSpaces, 2);
@@ -470,7 +480,8 @@ PetscErrorCode PetscSpaceTensorGetNumSubspaces(PetscSpace sp, PetscInt *numTensS
 
 .seealso: `PetscSpaceTensorGetSubspace()`, `PetscSpaceSetDegree()`, `PetscSpaceSetNumVariables()`
 @*/
-PetscErrorCode PetscSpaceTensorSetSubspace(PetscSpace sp, PetscInt s, PetscSpace subsp) {
+PetscErrorCode PetscSpaceTensorSetSubspace(PetscSpace sp, PetscInt s, PetscSpace subsp)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
   if (subsp) PetscValidHeaderSpecific(subsp, PETSCSPACE_CLASSID, 3);
@@ -492,7 +503,8 @@ PetscErrorCode PetscSpaceTensorSetSubspace(PetscSpace sp, PetscInt s, PetscSpace
 
 .seealso: `PetscSpaceTensorSetSubspace()`, `PetscSpaceSetDegree()`, `PetscSpaceSetNumVariables()`
 @*/
-PetscErrorCode PetscSpaceTensorGetSubspace(PetscSpace sp, PetscInt s, PetscSpace *subsp) {
+PetscErrorCode PetscSpaceTensorGetSubspace(PetscSpace sp, PetscInt s, PetscSpace *subsp)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
   PetscValidPointer(subsp, 3);
@@ -500,7 +512,8 @@ PetscErrorCode PetscSpaceTensorGetSubspace(PetscSpace sp, PetscInt s, PetscSpace
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSpaceTensorSetNumSubspaces_Tensor(PetscSpace space, PetscInt numTensSpaces) {
+static PetscErrorCode PetscSpaceTensorSetNumSubspaces_Tensor(PetscSpace space, PetscInt numTensSpaces)
+{
   PetscSpace_Tensor *tens = (PetscSpace_Tensor *)space->data;
   PetscInt           Ns;
 
@@ -519,7 +532,8 @@ static PetscErrorCode PetscSpaceTensorSetNumSubspaces_Tensor(PetscSpace space, P
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSpaceTensorGetNumSubspaces_Tensor(PetscSpace space, PetscInt *numTensSpaces) {
+static PetscErrorCode PetscSpaceTensorGetNumSubspaces_Tensor(PetscSpace space, PetscInt *numTensSpaces)
+{
   PetscSpace_Tensor *tens = (PetscSpace_Tensor *)space->data;
 
   PetscFunctionBegin;
@@ -527,7 +541,8 @@ static PetscErrorCode PetscSpaceTensorGetNumSubspaces_Tensor(PetscSpace space, P
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSpaceTensorSetSubspace_Tensor(PetscSpace space, PetscInt s, PetscSpace subspace) {
+static PetscErrorCode PetscSpaceTensorSetSubspace_Tensor(PetscSpace space, PetscInt s, PetscSpace subspace)
+{
   PetscSpace_Tensor *tens = (PetscSpace_Tensor *)space->data;
   PetscInt           Ns;
 
@@ -542,7 +557,8 @@ static PetscErrorCode PetscSpaceTensorSetSubspace_Tensor(PetscSpace space, Petsc
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSpaceGetHeightSubspace_Tensor(PetscSpace sp, PetscInt height, PetscSpace *subsp) {
+static PetscErrorCode PetscSpaceGetHeightSubspace_Tensor(PetscSpace sp, PetscInt height, PetscSpace *subsp)
+{
   PetscSpace_Tensor *tens = (PetscSpace_Tensor *)sp->data;
   PetscInt           Nc, dim, order, i;
   PetscSpace         bsp;
@@ -579,7 +595,8 @@ static PetscErrorCode PetscSpaceGetHeightSubspace_Tensor(PetscSpace sp, PetscInt
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSpaceTensorGetSubspace_Tensor(PetscSpace space, PetscInt s, PetscSpace *subspace) {
+static PetscErrorCode PetscSpaceTensorGetSubspace_Tensor(PetscSpace space, PetscInt s, PetscSpace *subspace)
+{
   PetscSpace_Tensor *tens = (PetscSpace_Tensor *)space->data;
   PetscInt           Ns;
 
@@ -591,7 +608,8 @@ static PetscErrorCode PetscSpaceTensorGetSubspace_Tensor(PetscSpace space, Petsc
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSpaceInitialize_Tensor(PetscSpace sp) {
+static PetscErrorCode PetscSpaceInitialize_Tensor(PetscSpace sp)
+{
   PetscFunctionBegin;
   sp->ops->setfromoptions    = PetscSpaceSetFromOptions_Tensor;
   sp->ops->setup             = PetscSpaceSetUp_Tensor;
@@ -616,7 +634,8 @@ static PetscErrorCode PetscSpaceInitialize_Tensor(PetscSpace sp) {
 .seealso: `PetscSpaceType`, `PetscSpaceCreate()`, `PetscSpaceSetType()`
 M*/
 
-PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Tensor(PetscSpace sp) {
+PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Tensor(PetscSpace sp)
+{
   PetscSpace_Tensor *tens;
 
   PetscFunctionBegin;

@@ -25,7 +25,8 @@
 
 .seealso: `VecCreateMPI()`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`, `VecCreateGhost()`
 @*/
-PetscErrorCode VecCreateSeq(MPI_Comm comm, PetscInt n, Vec *v) {
+PetscErrorCode VecCreateSeq(MPI_Comm comm, PetscInt n, Vec *v)
+{
   PetscFunctionBegin;
   PetscCall(VecCreate(comm, v));
   PetscCall(VecSetSizes(*v, n, n));

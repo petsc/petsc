@@ -11,7 +11,8 @@ static char help[] = "Partition tiny grid using hierarchical partitioning and in
 */
 #include <petscmat.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat             A, B;
   PetscMPIInt     rank, size, membershipKey;
   PetscInt       *ia, *ja, *indices_sc, isrows_localsize;

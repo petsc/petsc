@@ -1,7 +1,8 @@
 #include <petsc/private/matimpl.h> /*I "petscmat.h"  I*/
 #include <../src/mat/impls/aij/seq/aij.h>
 
-PetscErrorCode MatColoringCreateLexicalWeights(MatColoring mc, PetscReal *weights) {
+PetscErrorCode MatColoringCreateLexicalWeights(MatColoring mc, PetscReal *weights)
+{
   PetscInt i, s, e;
   Mat      G = mc->mat;
 
@@ -11,7 +12,8 @@ PetscErrorCode MatColoringCreateLexicalWeights(MatColoring mc, PetscReal *weight
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatColoringCreateRandomWeights(MatColoring mc, PetscReal *weights) {
+PetscErrorCode MatColoringCreateRandomWeights(MatColoring mc, PetscReal *weights)
+{
   PetscInt    i, s, e;
   PetscRandom rand;
   PetscReal   r;
@@ -30,7 +32,8 @@ PetscErrorCode MatColoringCreateRandomWeights(MatColoring mc, PetscReal *weights
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatColoringGetDegrees(Mat G, PetscInt distance, PetscInt *degrees) {
+PetscErrorCode MatColoringGetDegrees(Mat G, PetscInt distance, PetscInt *degrees)
+{
   PetscInt        j, i, s, e, n, ln, lm, degree, bidx, idx, dist;
   Mat             lG, *lGs;
   IS              ris;
@@ -102,7 +105,8 @@ PetscErrorCode MatColoringGetDegrees(Mat G, PetscInt distance, PetscInt *degrees
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatColoringCreateLargestFirstWeights(MatColoring mc, PetscReal *weights) {
+PetscErrorCode MatColoringCreateLargestFirstWeights(MatColoring mc, PetscReal *weights)
+{
   PetscInt    i, s, e, n, ncols;
   PetscRandom rand;
   PetscReal   r;
@@ -128,7 +132,8 @@ PetscErrorCode MatColoringCreateLargestFirstWeights(MatColoring mc, PetscReal *w
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatColoringCreateSmallestLastWeights(MatColoring mc, PetscReal *weights) {
+PetscErrorCode MatColoringCreateSmallestLastWeights(MatColoring mc, PetscReal *weights)
+{
   PetscInt       *degrees, *degb, *llprev, *llnext;
   PetscInt        j, i, s, e, n, ln, lm, degree, maxdegree = 0, bidx, idx, dist, distance = mc->dist;
   Mat             lG, *lGs;
@@ -301,7 +306,8 @@ PetscErrorCode MatColoringCreateSmallestLastWeights(MatColoring mc, PetscReal *w
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatColoringCreateWeights(MatColoring mc, PetscReal **weights, PetscInt **lperm) {
+PetscErrorCode MatColoringCreateWeights(MatColoring mc, PetscReal **weights, PetscInt **lperm)
+{
   PetscInt   i, s, e, n;
   PetscReal *wts;
 
@@ -311,10 +317,18 @@ PetscErrorCode MatColoringCreateWeights(MatColoring mc, PetscReal **weights, Pet
   n = e - s;
   PetscCall(PetscMalloc1(n, &wts));
   switch (mc->weight_type) {
-  case MAT_COLORING_WEIGHT_RANDOM: PetscCall(MatColoringCreateRandomWeights(mc, wts)); break;
-  case MAT_COLORING_WEIGHT_LEXICAL: PetscCall(MatColoringCreateLexicalWeights(mc, wts)); break;
-  case MAT_COLORING_WEIGHT_LF: PetscCall(MatColoringCreateLargestFirstWeights(mc, wts)); break;
-  case MAT_COLORING_WEIGHT_SL: PetscCall(MatColoringCreateSmallestLastWeights(mc, wts)); break;
+  case MAT_COLORING_WEIGHT_RANDOM:
+    PetscCall(MatColoringCreateRandomWeights(mc, wts));
+    break;
+  case MAT_COLORING_WEIGHT_LEXICAL:
+    PetscCall(MatColoringCreateLexicalWeights(mc, wts));
+    break;
+  case MAT_COLORING_WEIGHT_LF:
+    PetscCall(MatColoringCreateLargestFirstWeights(mc, wts));
+    break;
+  case MAT_COLORING_WEIGHT_SL:
+    PetscCall(MatColoringCreateSmallestLastWeights(mc, wts));
+    break;
   }
   if (lperm) {
     PetscCall(PetscMalloc1(n, lperm));
@@ -331,7 +345,8 @@ PetscErrorCode MatColoringCreateWeights(MatColoring mc, PetscReal **weights, Pet
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatColoringSetWeights(MatColoring mc, PetscReal *weights, PetscInt *lperm) {
+PetscErrorCode MatColoringSetWeights(MatColoring mc, PetscReal *weights, PetscInt *lperm)
+{
   PetscInt i, s, e, n;
 
   PetscFunctionBegin;

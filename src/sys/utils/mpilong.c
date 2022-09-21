@@ -5,7 +5,8 @@
     Allows sending/receiving larger messages then 2 gigabytes in a single call
 */
 
-PetscErrorCode MPIULong_Send(void *mess, PetscInt cnt, MPI_Datatype type, PetscMPIInt to, PetscMPIInt tag, MPI_Comm comm) {
+PetscErrorCode MPIULong_Send(void *mess, PetscInt cnt, MPI_Datatype type, PetscMPIInt to, PetscMPIInt tag, MPI_Comm comm)
+{
   static PetscInt CHUNKSIZE = 250000000; /* 250,000,000 */
   PetscInt        i, numchunks;
   PetscMPIInt     icnt;
@@ -22,7 +23,8 @@ PetscErrorCode MPIULong_Send(void *mess, PetscInt cnt, MPI_Datatype type, PetscM
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MPIULong_Recv(void *mess, PetscInt cnt, MPI_Datatype type, PetscMPIInt from, PetscMPIInt tag, MPI_Comm comm) {
+PetscErrorCode MPIULong_Recv(void *mess, PetscInt cnt, MPI_Datatype type, PetscMPIInt from, PetscMPIInt tag, MPI_Comm comm)
+{
   static PetscInt CHUNKSIZE = 250000000; /* 250,000,000 */
   MPI_Status      status;
   PetscInt        i, numchunks;

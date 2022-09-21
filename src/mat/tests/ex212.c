@@ -2,7 +2,8 @@ static char help[] = "Test MatCreateSubMatrix with -mat_type nest and block size
 
 #include <petscmat.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   Mat                    A, B, C, mats[6];
   IS                     rows[2];
   ISLocalToGlobalMapping cmap, rmap;

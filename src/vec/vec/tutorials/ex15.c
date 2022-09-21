@@ -7,7 +7,8 @@ static char help[] = "Tests Mathematica I/O of vectors and illustrates the use o
   the same program.  This example is intended only to demonstrate
   both input and output. */
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   PetscViewer viewer;
   Vec         u;
   PetscScalar v;

@@ -9,7 +9,8 @@
 #include <../src/mat/impls/baij/seq/baijmkl/baijmkl.h>
 #include <mkl_spblas.h>
 
-static PetscBool PetscSeqBAIJSupportsZeroBased(void) {
+static PetscBool PetscSeqBAIJSupportsZeroBased(void)
+{
   static PetscBool set = PETSC_FALSE, value;
   int              n   = 1, ia[1], ja[1];
   float            a[1];
@@ -36,7 +37,8 @@ typedef struct {
 static PetscErrorCode MatAssemblyEnd_SeqBAIJMKL(Mat A, MatAssemblyType mode);
 extern PetscErrorCode MatAssemblyEnd_SeqBAIJ(Mat, MatAssemblyType);
 
-PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJMKL_SeqBAIJ(Mat A, MatType type, MatReuse reuse, Mat *newmat) {
+PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJMKL_SeqBAIJ(Mat A, MatType type, MatReuse reuse, Mat *newmat)
+{
   /* This routine is only called to convert a MATBAIJMKL to its base PETSc type, */
   /* so we will ignore 'MatType type'. */
   Mat             B       = *newmat;
@@ -115,7 +117,8 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJMKL_SeqBAIJ(Mat A, MatType type, M
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatDestroy_SeqBAIJMKL(Mat A) {
+static PetscErrorCode MatDestroy_SeqBAIJMKL(Mat A)
+{
   Mat_SeqBAIJMKL *baijmkl = (Mat_SeqBAIJMKL *)A->spptr;
 
   PetscFunctionBegin;
@@ -133,7 +136,8 @@ static PetscErrorCode MatDestroy_SeqBAIJMKL(Mat A) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatSeqBAIJMKL_create_mkl_handle(Mat A) {
+static PetscErrorCode MatSeqBAIJMKL_create_mkl_handle(Mat A)
+{
   Mat_SeqBAIJ    *a       = (Mat_SeqBAIJ *)A->data;
   Mat_SeqBAIJMKL *baijmkl = (Mat_SeqBAIJMKL *)A->spptr;
   PetscInt        mbs, nbs, nz, bs;
@@ -184,7 +188,8 @@ static PetscErrorCode MatSeqBAIJMKL_create_mkl_handle(Mat A) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatDuplicate_SeqBAIJMKL(Mat A, MatDuplicateOption op, Mat *M) {
+static PetscErrorCode MatDuplicate_SeqBAIJMKL(Mat A, MatDuplicateOption op, Mat *M)
+{
   Mat_SeqBAIJMKL *baijmkl;
   Mat_SeqBAIJMKL *baijmkl_dest;
 
@@ -199,7 +204,8 @@ static PetscErrorCode MatDuplicate_SeqBAIJMKL(Mat A, MatDuplicateOption op, Mat 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatMult_SeqBAIJMKL_SpMV2(Mat A, Vec xx, Vec yy) {
+static PetscErrorCode MatMult_SeqBAIJMKL_SpMV2(Mat A, Vec xx, Vec yy)
+{
   Mat_SeqBAIJ       *a       = (Mat_SeqBAIJ *)A->data;
   Mat_SeqBAIJMKL    *baijmkl = (Mat_SeqBAIJMKL *)A->spptr;
   const PetscScalar *x;
@@ -229,7 +235,8 @@ static PetscErrorCode MatMult_SeqBAIJMKL_SpMV2(Mat A, Vec xx, Vec yy) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatMultTranspose_SeqBAIJMKL_SpMV2(Mat A, Vec xx, Vec yy) {
+static PetscErrorCode MatMultTranspose_SeqBAIJMKL_SpMV2(Mat A, Vec xx, Vec yy)
+{
   Mat_SeqBAIJ       *a       = (Mat_SeqBAIJ *)A->data;
   Mat_SeqBAIJMKL    *baijmkl = (Mat_SeqBAIJMKL *)A->spptr;
   const PetscScalar *x;
@@ -259,7 +266,8 @@ static PetscErrorCode MatMultTranspose_SeqBAIJMKL_SpMV2(Mat A, Vec xx, Vec yy) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatMultAdd_SeqBAIJMKL_SpMV2(Mat A, Vec xx, Vec yy, Vec zz) {
+static PetscErrorCode MatMultAdd_SeqBAIJMKL_SpMV2(Mat A, Vec xx, Vec yy, Vec zz)
+{
   Mat_SeqBAIJ       *a       = (Mat_SeqBAIJ *)A->data;
   Mat_SeqBAIJMKL    *baijmkl = (Mat_SeqBAIJMKL *)A->spptr;
   const PetscScalar *x;
@@ -300,7 +308,8 @@ static PetscErrorCode MatMultAdd_SeqBAIJMKL_SpMV2(Mat A, Vec xx, Vec yy, Vec zz)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatMultTransposeAdd_SeqBAIJMKL_SpMV2(Mat A, Vec xx, Vec yy, Vec zz) {
+static PetscErrorCode MatMultTransposeAdd_SeqBAIJMKL_SpMV2(Mat A, Vec xx, Vec yy, Vec zz)
+{
   Mat_SeqBAIJ       *a       = (Mat_SeqBAIJ *)A->data;
   Mat_SeqBAIJMKL    *baijmkl = (Mat_SeqBAIJMKL *)A->spptr;
   const PetscScalar *x;
@@ -342,21 +351,24 @@ static PetscErrorCode MatMultTransposeAdd_SeqBAIJMKL_SpMV2(Mat A, Vec xx, Vec yy
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatScale_SeqBAIJMKL(Mat inA, PetscScalar alpha) {
+static PetscErrorCode MatScale_SeqBAIJMKL(Mat inA, PetscScalar alpha)
+{
   PetscFunctionBegin;
   PetscCall(MatScale_SeqBAIJ(inA, alpha));
   PetscCall(MatSeqBAIJMKL_create_mkl_handle(inA));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatDiagonalScale_SeqBAIJMKL(Mat A, Vec ll, Vec rr) {
+static PetscErrorCode MatDiagonalScale_SeqBAIJMKL(Mat A, Vec ll, Vec rr)
+{
   PetscFunctionBegin;
   PetscCall(MatDiagonalScale_SeqBAIJ(A, ll, rr));
   PetscCall(MatSeqBAIJMKL_create_mkl_handle(A));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatAXPY_SeqBAIJMKL(Mat Y, PetscScalar a, Mat X, MatStructure str) {
+static PetscErrorCode MatAXPY_SeqBAIJMKL(Mat Y, PetscScalar a, Mat X, MatStructure str)
+{
   PetscFunctionBegin;
   PetscCall(MatAXPY_SeqBAIJ(Y, a, X, str));
   if (str == SAME_NONZERO_PATTERN) {
@@ -369,7 +381,8 @@ static PetscErrorCode MatAXPY_SeqBAIJMKL(Mat Y, PetscScalar a, Mat X, MatStructu
  * SeqBAIJMKL matrix.  This routine is called by the MatCreate_SeqMKLBAIJ()
  * routine, but can also be used to convert an assembled SeqBAIJ matrix
  * into a SeqBAIJMKL one. */
-PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqBAIJMKL(Mat A, MatType type, MatReuse reuse, Mat *newmat) {
+PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqBAIJMKL(Mat A, MatType type, MatReuse reuse, Mat *newmat)
+{
   Mat             B = *newmat;
   Mat_SeqBAIJMKL *baijmkl;
   PetscBool       sametype;
@@ -397,7 +410,8 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqBAIJMKL(Mat A, MatType type, M
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatAssemblyEnd_SeqBAIJMKL(Mat A, MatAssemblyType mode) {
+static PetscErrorCode MatAssemblyEnd_SeqBAIJMKL(Mat A, MatAssemblyType mode)
+{
   PetscFunctionBegin;
   if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
   PetscCall(MatAssemblyEnd_SeqBAIJ(A, mode));
@@ -465,7 +479,8 @@ static PetscErrorCode MatAssemblyEnd_SeqBAIJMKL(Mat A, MatAssemblyType mode) {
 
 .seealso: [Sparse Matrices](sec_matsparse), `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatCreateBAIJ()`
 @*/
-PetscErrorCode MatCreateSeqBAIJMKL(MPI_Comm comm, PetscInt bs, PetscInt m, PetscInt n, PetscInt nz, const PetscInt nnz[], Mat *A) {
+PetscErrorCode MatCreateSeqBAIJMKL(MPI_Comm comm, PetscInt bs, PetscInt m, PetscInt n, PetscInt nz, const PetscInt nnz[], Mat *A)
+{
   PetscFunctionBegin;
   PetscCall(MatCreate(comm, A));
   PetscCall(MatSetSizes(*A, m, n, m, n));
@@ -474,7 +489,8 @@ PetscErrorCode MatCreateSeqBAIJMKL(MPI_Comm comm, PetscInt bs, PetscInt m, Petsc
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode MatCreate_SeqBAIJMKL(Mat A) {
+PETSC_EXTERN PetscErrorCode MatCreate_SeqBAIJMKL(Mat A)
+{
   PetscFunctionBegin;
   PetscCall(MatSetType(A, MATSEQBAIJ));
   PetscCall(MatConvert_SeqBAIJ_SeqBAIJMKL(A, MATSEQBAIJMKL, MAT_INPLACE_MATRIX, &A));

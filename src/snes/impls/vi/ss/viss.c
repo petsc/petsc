@@ -15,7 +15,8 @@
 
 .seealso: `SNESVINEWTONSSLS`, `SNESVIComputeFunction()`
 @*/
-PetscErrorCode SNESVIComputeMeritFunction(Vec phi, PetscReal *merit, PetscReal *phinorm) {
+PetscErrorCode SNESVIComputeMeritFunction(Vec phi, PetscReal *merit, PetscReal *phinorm)
+{
   PetscFunctionBegin;
   PetscCall(VecNormBegin(phi, NORM_2, phinorm));
   PetscCall(VecNormEnd(phi, NORM_2, phinorm));
@@ -23,11 +24,13 @@ PetscErrorCode SNESVIComputeMeritFunction(Vec phi, PetscReal *merit, PetscReal *
   PetscFunctionReturn(0);
 }
 
-static inline PetscScalar Phi(PetscScalar a, PetscScalar b) {
+static inline PetscScalar Phi(PetscScalar a, PetscScalar b)
+{
   return a + b - PetscSqrtScalar(a * a + b * b);
 }
 
-static inline PetscScalar DPhi(PetscScalar a, PetscScalar b) {
+static inline PetscScalar DPhi(PetscScalar a, PetscScalar b)
+{
   if ((PetscAbsScalar(a) >= 1.e-6) || (PetscAbsScalar(b) >= 1.e-6)) return 1.0 - a / PetscSqrtScalar(a * a + b * b);
   else return .5;
 }
@@ -48,7 +51,8 @@ static inline PetscScalar DPhi(PetscScalar a, PetscScalar b) {
 
 .seealso: `SNESVINEWTONSSLS`, `SNESVIComputeMeritFunction()`
 @*/
-PetscErrorCode SNESVIComputeFunction(SNES snes, Vec X, Vec phi, void *functx) {
+PetscErrorCode SNESVIComputeFunction(SNES snes, Vec X, Vec phi, void *functx)
+{
   SNES_VINEWTONSSLS *vi = (SNES_VINEWTONSSLS *)snes->data;
   Vec                Xl = snes->xl, Xu = snes->xu, F = snes->vec_func;
   PetscScalar       *phi_arr, *f_arr, *l, *u;
@@ -90,7 +94,8 @@ PetscErrorCode SNESVIComputeFunction(SNES snes, Vec X, Vec phi, void *functx) {
    SNESVIComputeBsubdifferentialVectors - Computes the diagonal shift (Da) and row scaling (Db) vectors needed for the
                                           the semismooth jacobian.
 */
-PetscErrorCode SNESVIComputeBsubdifferentialVectors(SNES snes, Vec X, Vec F, Mat jac, Vec Da, Vec Db) {
+PetscErrorCode SNESVIComputeBsubdifferentialVectors(SNES snes, Vec X, Vec F, Mat jac, Vec Da, Vec Db)
+{
   PetscScalar *l, *u, *x, *f, *da, *db, da1, da2, db1, db2;
   PetscInt     i, nlocal;
 
@@ -153,7 +158,8 @@ PetscErrorCode SNESVIComputeBsubdifferentialVectors(SNES snes, Vec X, Vec F, Mat
          Da is the diagonal perturbation matrix stored as a vector
    and   jacfun is the jacobian of the original nonlinear function.
 */
-PetscErrorCode SNESVIComputeJacobian(Mat jac, Mat jac_pre, Vec Da, Vec Db) {
+PetscErrorCode SNESVIComputeJacobian(Mat jac, Mat jac_pre, Vec Da, Vec Db)
+{
   /* Do row scaling  and add diagonal perturbation */
   PetscFunctionBegin;
   PetscCall(MatDiagonalScale(jac, Db, NULL));
@@ -179,7 +185,8 @@ PetscErrorCode SNESVIComputeJacobian(Mat jac, Mat jac_pre, Vec Da, Vec Db) {
   The merit function gradient is computed as follows
         dpsi = H^T*phi
 */
-PetscErrorCode SNESVIComputeMeritFunctionGradient(Mat H, Vec phi, Vec dpsi) {
+PetscErrorCode SNESVIComputeMeritFunctionGradient(Mat H, Vec phi, Vec dpsi)
+{
   PetscFunctionBegin;
   PetscCall(MatMultTranspose(H, phi, dpsi));
   PetscFunctionReturn(0);
@@ -202,7 +209,8 @@ PetscErrorCode SNESVIComputeMeritFunctionGradient(Mat H, Vec phi, Vec dpsi) {
    Developer Note: the code in this file should be slightly modified so that this routine need not exist and the SNESSolve_NEWTONLS() routine is called directly with the appropriate wrapped function and Jacobian evaluations
 
 */
-PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes) {
+PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes)
+{
   SNES_VINEWTONSSLS   *vi = (SNES_VINEWTONSSLS *)snes->data;
   PetscInt             maxits, i, lits;
   SNESLineSearchReason lssucceed;
@@ -365,7 +373,8 @@ PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes) {
    SNESSetUp(), since these actions will automatically occur during
    the call to SNESSolve().
  */
-PetscErrorCode SNESSetUp_VINEWTONSSLS(SNES snes) {
+PetscErrorCode SNESSetUp_VINEWTONSSLS(SNES snes)
+{
   SNES_VINEWTONSSLS *vi = (SNES_VINEWTONSSLS *)snes->data;
 
   PetscFunctionBegin;
@@ -379,7 +388,8 @@ PetscErrorCode SNESSetUp_VINEWTONSSLS(SNES snes) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SNESReset_VINEWTONSSLS(SNES snes) {
+PetscErrorCode SNESReset_VINEWTONSSLS(SNES snes)
+{
   SNES_VINEWTONSSLS *vi = (SNES_VINEWTONSSLS *)snes->data;
 
   PetscFunctionBegin;
@@ -401,7 +411,8 @@ PetscErrorCode SNESReset_VINEWTONSSLS(SNES snes) {
 
    Application Interface Routine: SNESSetFromOptions()
 */
-static PetscErrorCode SNESSetFromOptions_VINEWTONSSLS(SNES snes, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode SNESSetFromOptions_VINEWTONSSLS(SNES snes, PetscOptionItems *PetscOptionsObject)
+{
   PetscFunctionBegin;
   PetscCall(SNESSetFromOptions_VI(snes, PetscOptionsObject));
   PetscOptionsHeadBegin(PetscOptionsObject, "SNES semismooth method options");
@@ -431,7 +442,8 @@ static PetscErrorCode SNESSetFromOptions_VINEWTONSSLS(SNES snes, PetscOptionItem
 
 .seealso: `SNESVINEWTONRSLS`, `SNESVISetVariableBounds()`, `SNESVISetComputeVariableBounds()`, `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESVINEWTONRSLS`, `SNESNEWTONTR`, `SNESLineSearchSetType()`, `SNESLineSearchSetPostCheck()`, `SNESLineSearchSetPreCheck()`
 M*/
-PETSC_EXTERN PetscErrorCode SNESCreate_VINEWTONSSLS(SNES snes) {
+PETSC_EXTERN PetscErrorCode SNESCreate_VINEWTONSSLS(SNES snes)
+{
   SNES_VINEWTONSSLS *vi;
   SNESLineSearch     linesearch;
 

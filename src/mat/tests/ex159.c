@@ -2,7 +2,8 @@ static const char help[] = "Test MatGetLocalSubMatrix() with multiple levels of 
 
 #include <petscmat.h>
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   IS          is0a, is0b, is0, is1, isl0a, isl0b, isl0, isl1;
   Mat         A, Aexplicit;
   PetscBool   usenest;

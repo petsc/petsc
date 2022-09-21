@@ -4,7 +4,8 @@ static char help[] = "Example use of PetscInfo() as a configurable informative l
 #include <petscmat.h>
 #include <petscvec.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   Mat A, Aself;
   Vec b, bself;
 #if defined(PETSC_USE_INFO)

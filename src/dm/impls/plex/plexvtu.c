@@ -11,19 +11,20 @@ typedef struct {
 /* output in float if single or half precision in memory */
 static const char precision[] = "Float32";
 typedef float     PetscVTUReal;
-#define MPIU_VTUREAL MPI_FLOAT
+  #define MPIU_VTUREAL MPI_FLOAT
 #elif defined(PETSC_USE_REAL_DOUBLE) || defined(PETSC_USE_REAL___FLOAT128)
 /* output in double if double or quad precision in memory */
 static const char precision[] = "Float64";
 typedef double    PetscVTUReal;
-#define MPIU_VTUREAL MPI_DOUBLE
+  #define MPIU_VTUREAL MPI_DOUBLE
 #else
 static const char precision[] = "UnknownPrecision";
 typedef PetscReal PetscVTUReal;
-#define MPIU_VTUREAL MPIU_REAL
+  #define MPIU_VTUREAL MPIU_REAL
 #endif
 
-static PetscErrorCode TransferWrite(MPI_Comm comm, PetscViewer viewer, FILE *fp, PetscMPIInt srank, PetscMPIInt root, const void *send, void *recv, PetscMPIInt count, MPI_Datatype mpidatatype, PetscMPIInt tag) {
+static PetscErrorCode TransferWrite(MPI_Comm comm, PetscViewer viewer, FILE *fp, PetscMPIInt srank, PetscMPIInt root, const void *send, void *recv, PetscMPIInt count, MPI_Datatype mpidatatype, PetscMPIInt tag)
+{
   PetscMPIInt rank;
 
   PetscFunctionBegin;
@@ -47,7 +48,8 @@ static PetscErrorCode TransferWrite(MPI_Comm comm, PetscViewer viewer, FILE *fp,
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexGetVTKConnectivity(DM dm, PetscBool localized, PieceInfo *piece, PetscVTKInt **oconn, PetscVTKInt **ooffsets, PetscVTKType **otypes) {
+static PetscErrorCode DMPlexGetVTKConnectivity(DM dm, PetscBool localized, PieceInfo *piece, PetscVTKInt **oconn, PetscVTKInt **ooffsets, PetscVTKType **otypes)
+{
   PetscSection  coordSection, cellCoordSection;
   PetscVTKInt  *conn, *offsets;
   PetscVTKType *types;
@@ -122,7 +124,8 @@ static PetscErrorCode DMPlexGetVTKConnectivity(DM dm, PetscBool localized, Piece
   Write all fields that have been provided to the viewer
   Multi-block XML format with binary appended data.
 */
-PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm, PetscViewer viewer) {
+PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm, PetscViewer viewer)
+{
   MPI_Comm                 comm;
   PetscSection             coordSection, cellCoordSection;
   PetscViewer_VTK         *vtk = (PetscViewer_VTK *)viewer->data;

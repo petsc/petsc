@@ -17,7 +17,8 @@ static char help[] = "Tests repeated VecDotBegin()/VecDotEnd().\n\n";
     } \
   } while (0)
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt    n = 25, i, row0 = 0;
   PetscScalar two = 2.0, result1, result2, results[40], value, ten = 10.0;
   PetscScalar result1a, result2a;

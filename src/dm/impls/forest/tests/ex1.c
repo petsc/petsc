@@ -5,7 +5,8 @@ This exposed a bug with sharing discretizations.\n\n\n";
 #include <petscdmplex.h>
 #include <petscviewerhdf5.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM           base, forest, plex;
   Vec          g, g2;
   PetscSection s;

@@ -7,7 +7,8 @@ typedef struct {
   PetscBool ll;
 } DMDAGhostedGLVisViewerCtx;
 
-static PetscErrorCode DMDAGhostedDestroyGLVisViewerCtx_Private(void **vctx) {
+static PetscErrorCode DMDAGhostedDestroyGLVisViewerCtx_Private(void **vctx)
+{
   PetscFunctionBegin;
   PetscCall(PetscFree(*vctx));
   PetscFunctionReturn(0);
@@ -17,7 +18,8 @@ typedef struct {
   Vec xlocal;
 } DMDAFieldGLVisViewerCtx;
 
-static PetscErrorCode DMDAFieldDestroyGLVisViewerCtx_Private(void *vctx) {
+static PetscErrorCode DMDAFieldDestroyGLVisViewerCtx_Private(void *vctx)
+{
   DMDAFieldGLVisViewerCtx *ctx = (DMDAFieldGLVisViewerCtx *)vctx;
 
   PetscFunctionBegin;
@@ -30,7 +32,8 @@ static PetscErrorCode DMDAFieldDestroyGLVisViewerCtx_Private(void *vctx) {
    dactx->ll is false -> all but the last proc per dimension claim the ghosted node on the right
    dactx->ll is true -> all but the first proc per dimension claim the ghosted node on the left
 */
-static PetscErrorCode DMDAGetNumElementsGhosted(DM da, PetscInt *nex, PetscInt *ney, PetscInt *nez) {
+static PetscErrorCode DMDAGetNumElementsGhosted(DM da, PetscInt *nex, PetscInt *ney, PetscInt *nez)
+{
   DMDAGhostedGLVisViewerCtx *dactx;
   PetscInt                   sx, sy, sz, ien, jen, ken;
 
@@ -63,7 +66,8 @@ static PetscErrorCode DMDAGetNumElementsGhosted(DM da, PetscInt *nex, PetscInt *
 }
 
 /* inherits number of vertices from DMDAGetNumElementsGhosted */
-static PetscErrorCode DMDAGetNumVerticesGhosted(DM da, PetscInt *nvx, PetscInt *nvy, PetscInt *nvz) {
+static PetscErrorCode DMDAGetNumVerticesGhosted(DM da, PetscInt *nvx, PetscInt *nvy, PetscInt *nvz)
+{
   PetscInt ien = 0, jen = 0, ken = 0, dim;
   PetscInt tote;
 
@@ -82,7 +86,8 @@ static PetscErrorCode DMDAGetNumVerticesGhosted(DM da, PetscInt *nvx, PetscInt *
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMDASampleGLVisFields_Private(PetscObject oX, PetscInt nf, PetscObject oXf[], void *vctx) {
+static PetscErrorCode DMDASampleGLVisFields_Private(PetscObject oX, PetscInt nf, PetscObject oXf[], void *vctx)
+{
   DM                         da;
   DMDAFieldGLVisViewerCtx   *ctx = (DMDAFieldGLVisViewerCtx *)vctx;
   DMDAGhostedGLVisViewerCtx *dactx;
@@ -131,7 +136,8 @@ static PetscErrorCode DMDASampleGLVisFields_Private(PetscObject oX, PetscInt nf,
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode DMSetUpGLVisViewer_DMDA(PetscObject oda, PetscViewer viewer) {
+PETSC_INTERN PetscErrorCode DMSetUpGLVisViewer_DMDA(PetscObject oda, PetscViewer viewer)
+{
   DM da = (DM)oda, daview;
 
   PetscFunctionBegin;
@@ -172,7 +178,8 @@ PETSC_INTERN PetscErrorCode DMSetUpGLVisViewer_DMDA(PetscObject oda, PetscViewer
       PetscCall(DMDACreate3d(PetscObjectComm((PetscObject)da), DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, M, N, P, m, n, p, dof, 1, lx, ly, lz, &daview));
       if (!hashocoord) PetscCall(DMDACreate3d(PetscObjectComm((PetscObject)da), DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, M, N, P, m, n, p, 3, 1, lx, ly, lz, &dacoord));
       break;
-    default: SETERRQ(PetscObjectComm((PetscObject)da), PETSC_ERR_SUP, "Unsupported dimension %" PetscInt_FMT, dim);
+    default:
+      SETERRQ(PetscObjectComm((PetscObject)da), PETSC_ERR_SUP, "Unsupported dimension %" PetscInt_FMT, dim);
     }
     PetscCall(DMSetApplicationContext(daview, dactx));
     PetscCall(DMSetApplicationContextDestroy(daview, DMDAGhostedDestroyGLVisViewerCtx_Private));
@@ -309,7 +316,8 @@ PETSC_INTERN PetscErrorCode DMSetUpGLVisViewer_DMDA(PetscObject oda, PetscViewer
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMDAView_GLVis_ASCII(DM dm, PetscViewer viewer) {
+static PetscErrorCode DMDAView_GLVis_ASCII(DM dm, PetscViewer viewer)
+{
   DM                 da, cda;
   Vec                xcoorl;
   PetscMPIInt        size;
@@ -409,7 +417,8 @@ static PetscErrorCode DMDAView_GLVis_ASCII(DM dm, PetscViewer viewer) {
       }
     }
     break;
-  default: SETERRQ(PetscObjectComm((PetscObject)da), PETSC_ERR_SUP, "Unsupported dimension %" PetscInt_FMT, dim);
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)da), PETSC_ERR_SUP, "Unsupported dimension %" PetscInt_FMT, dim);
   }
   PetscCall(PetscViewerASCIIPrintf(viewer, "\nboundary\n"));
   PetscCall(PetscViewerASCIIPrintf(viewer, "0\n"));
@@ -480,7 +489,8 @@ static PetscErrorCode DMDAView_GLVis_ASCII(DM dm, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMView_DA_GLVis(DM dm, PetscViewer viewer) {
+PetscErrorCode DMView_DA_GLVis(DM dm, PetscViewer viewer)
+{
   PetscFunctionBegin;
   PetscCall(DMView_GLVis(dm, viewer, DMDAView_GLVis_ASCII));
   PetscFunctionReturn(0);

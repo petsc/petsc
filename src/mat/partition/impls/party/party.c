@@ -2,7 +2,7 @@
 #include <../src/mat/impls/adj/mpi/mpiadj.h> /*I "petscmat.h" I*/
 
 #if defined(PETSC_HAVE_UNISTD_H)
-#include <unistd.h>
+  #include <unistd.h>
 #endif
 
 EXTERN_C_BEGIN
@@ -21,7 +21,8 @@ typedef struct {
 
 #define SIZE_LOG 10000 /* size of buffer for mesg_log */
 
-static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part, IS *partitioning) {
+static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part, IS *partitioning)
+{
   int                    perr;
   PetscInt               i, *parttab, *locals, nb_locals, M, N;
   PetscMPIInt            size, rank;
@@ -132,7 +133,8 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part, IS *parti
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatPartitioningView_Party(MatPartitioning part, PetscViewer viewer) {
+PetscErrorCode MatPartitioningView_Party(MatPartitioning part, PetscViewer viewer)
+{
   MatPartitioning_Party *party = (MatPartitioning_Party *)part->data;
   PetscBool              isascii;
 
@@ -171,14 +173,16 @@ PetscErrorCode MatPartitioningView_Party(MatPartitioning part, PetscViewer viewe
 
 .seealso: `MATPARTITIONINGPARTY`, `MatPartitioningPartySetLocal()`
 @*/
-PetscErrorCode MatPartitioningPartySetGlobal(MatPartitioning part, const char *global) {
+PetscErrorCode MatPartitioningPartySetGlobal(MatPartitioning part, const char *global)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, MAT_PARTITIONING_CLASSID, 1);
   PetscTryMethod(part, "MatPartitioningPartySetGlobal_C", (MatPartitioning, const char *), (part, global));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatPartitioningPartySetGlobal_Party(MatPartitioning part, const char *global) {
+PetscErrorCode MatPartitioningPartySetGlobal_Party(MatPartitioning part, const char *global)
+{
   MatPartitioning_Party *party = (MatPartitioning_Party *)part->data;
 
   PetscFunctionBegin;
@@ -206,7 +210,8 @@ PetscErrorCode MatPartitioningPartySetGlobal_Party(MatPartitioning part, const c
 
 .seealso: `MATPARTITIONINGPARTY`, `MatPartitioningPartySetGlobal()`
 @*/
-PetscErrorCode MatPartitioningPartySetLocal(MatPartitioning part, const char *local) {
+PetscErrorCode MatPartitioningPartySetLocal(MatPartitioning part, const char *local)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, MAT_PARTITIONING_CLASSID, 1);
   PetscTryMethod(part, "MatPartitioningPartySetLocal_C", (MatPartitioning, const char *), (part, local));
@@ -240,7 +245,8 @@ PetscErrorCode MatPartitioningPartySetLocal_Party(MatPartitioning part, const ch
 
 .seealso: `MATPARTITIONINGPARTY`
 @*/
-PetscErrorCode MatPartitioningPartySetCoarseLevel(MatPartitioning part, PetscReal level) {
+PetscErrorCode MatPartitioningPartySetCoarseLevel(MatPartitioning part, PetscReal level)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, MAT_PARTITIONING_CLASSID, 1);
   PetscValidLogicalCollectiveReal(part, level, 2);
@@ -248,7 +254,8 @@ PetscErrorCode MatPartitioningPartySetCoarseLevel(MatPartitioning part, PetscRea
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatPartitioningPartySetCoarseLevel_Party(MatPartitioning part, PetscReal level) {
+PetscErrorCode MatPartitioningPartySetCoarseLevel_Party(MatPartitioning part, PetscReal level)
+{
   MatPartitioning_Party *party = (MatPartitioning_Party *)part->data;
 
   PetscFunctionBegin;
@@ -275,7 +282,8 @@ PetscErrorCode MatPartitioningPartySetCoarseLevel_Party(MatPartitioning part, Pe
 
 .seealso:  `MATPARTITIONINGPARTY`
 @*/
-PetscErrorCode MatPartitioningPartySetMatchOptimization(MatPartitioning part, PetscBool opt) {
+PetscErrorCode MatPartitioningPartySetMatchOptimization(MatPartitioning part, PetscBool opt)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, MAT_PARTITIONING_CLASSID, 1);
   PetscValidLogicalCollectiveBool(part, opt, 2);
@@ -283,7 +291,8 @@ PetscErrorCode MatPartitioningPartySetMatchOptimization(MatPartitioning part, Pe
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatPartitioningPartySetMatchOptimization_Party(MatPartitioning part, PetscBool opt) {
+PetscErrorCode MatPartitioningPartySetMatchOptimization_Party(MatPartitioning part, PetscBool opt)
+{
   MatPartitioning_Party *party = (MatPartitioning_Party *)part->data;
 
   PetscFunctionBegin;
@@ -307,7 +316,8 @@ PetscErrorCode MatPartitioningPartySetMatchOptimization_Party(MatPartitioning pa
 
 .seealso:  `MATPARTITIONINGPARTY`
 @*/
-PetscErrorCode MatPartitioningPartySetBipart(MatPartitioning part, PetscBool bp) {
+PetscErrorCode MatPartitioningPartySetBipart(MatPartitioning part, PetscBool bp)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, MAT_PARTITIONING_CLASSID, 1);
   PetscValidLogicalCollectiveBool(part, bp, 2);
@@ -315,7 +325,8 @@ PetscErrorCode MatPartitioningPartySetBipart(MatPartitioning part, PetscBool bp)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatPartitioningPartySetBipart_Party(MatPartitioning part, PetscBool bp) {
+PetscErrorCode MatPartitioningPartySetBipart_Party(MatPartitioning part, PetscBool bp)
+{
   MatPartitioning_Party *party = (MatPartitioning_Party *)part->data;
 
   PetscFunctionBegin;
@@ -323,7 +334,8 @@ PetscErrorCode MatPartitioningPartySetBipart_Party(MatPartitioning part, PetscBo
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatPartitioningSetFromOptions_Party(MatPartitioning part, PetscOptionItems *PetscOptionsObject) {
+PetscErrorCode MatPartitioningSetFromOptions_Party(MatPartitioning part, PetscOptionItems *PetscOptionsObject)
+{
   PetscBool              flag;
   char                   value[256];
   PetscReal              r;
@@ -344,7 +356,8 @@ PetscErrorCode MatPartitioningSetFromOptions_Party(MatPartitioning part, PetscOp
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatPartitioningDestroy_Party(MatPartitioning part) {
+PetscErrorCode MatPartitioningDestroy_Party(MatPartitioning part)
+{
   MatPartitioning_Party *party = (MatPartitioning_Party *)part->data;
 
   PetscFunctionBegin;
@@ -372,7 +385,8 @@ PetscErrorCode MatPartitioningDestroy_Party(MatPartitioning part) {
           `MatPartitioningPartySetCoarseLevel()`, `MatPartitioningPartySetMatchOptimization()`, `MatPartitioningPartySetBipart()`
 M*/
 
-PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Party(MatPartitioning part) {
+PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Party(MatPartitioning part)
+{
   MatPartitioning_Party *party;
 
   PetscFunctionBegin;

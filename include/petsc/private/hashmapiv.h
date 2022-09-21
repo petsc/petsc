@@ -26,7 +26,8 @@ PETSC_HASH_MAP(HMapIV, PetscInt, PetscScalar, PetscHashInt, PetscHashEqual, -1)
 
 .seealso: `PetscHMapTGet()`, `PetscHMapTIterSet()`, `PetscHMapIVSet()`
 M*/
-static inline PetscErrorCode PetscHMapIVAddValue(PetscHMapIV ht, PetscInt key, PetscScalar val) {
+static inline PetscErrorCode PetscHMapIVAddValue(PetscHMapIV ht, PetscInt key, PetscScalar val)
+{
   int      ret;
   khiter_t iter;
   PetscFunctionBeginHot;

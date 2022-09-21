@@ -253,8 +253,8 @@ struct _p_TS {
     MatStructure     mstructure; /* The structure returned */
     /* Flag to unshift Jacobian before calling the IJacobian or RHSJacobian functions.  This is useful
      * if the user would like to reuse (part of) the Jacobian from the last evaluation. */
-    PetscBool        reuse;
-    PetscReal        scale, shift;
+    PetscBool reuse;
+    PetscReal scale, shift;
   } rhsjacobian;
 
   struct {
@@ -263,13 +263,13 @@ struct _p_TS {
 
   MatStructure axpy_pattern; /* information about the nonzero pattern of the RHS Jacobian in reference to the implicit Jacobian */
   /* --------------------Nonlinear Iteration------------------------------*/
-  SNES         snes;
-  PetscBool    usessnes; /* Flag set by each TSType to indicate if the type actually uses a SNES;
+  SNES      snes;
+  PetscBool usessnes; /* Flag set by each TSType to indicate if the type actually uses a SNES;
                            this works around the design flaw that a SNES is ALWAYS created with TS even when it is not needed.*/
-  PetscInt     ksp_its;  /* total number of linear solver iterations */
-  PetscInt     snes_its; /* total number of nonlinear solver iterations */
-  PetscInt     num_snes_failures;
-  PetscInt     max_snes_failures;
+  PetscInt  ksp_its;  /* total number of linear solver iterations */
+  PetscInt  snes_its; /* total number of nonlinear solver iterations */
+  PetscInt  num_snes_failures;
+  PetscInt  max_snes_failures;
 
   /* --- Logging --- */
   PetscInt ifuncs, rhsfuncs, ijacs, rhsjacs;
@@ -307,8 +307,8 @@ struct _p_TS {
   PetscBool testjacobian;
   PetscBool testjacobiantranspose;
   /* ------------------- Default work-area management ------------------ */
-  PetscInt  nwork;
-  Vec      *work;
+  PetscInt nwork;
+  Vec     *work;
 
   /* ---------------------- RHS splitting support ---------------------------------*/
   PetscInt        num_rhs_splits;
@@ -521,7 +521,8 @@ struct _n_TSMonitorEnvelopeCtx {
 /*
     Checks if the user provide a TSSetIFunction() but an explicit method is called; generate an error in that case
 */
-static inline PetscErrorCode TSCheckImplicitTerm(TS ts) {
+static inline PetscErrorCode TSCheckImplicitTerm(TS ts)
+{
   TSIFunction ifunction;
   DM          dm;
 

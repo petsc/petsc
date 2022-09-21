@@ -1,7 +1,8 @@
 #include <../src/mat/impls/baij/seq/baij.h>
 #include <petsc/private/kernels/blockinvert.h>
 
-PetscErrorCode MatSolve_SeqBAIJ_6_NaturalOrdering_inplace(Mat A, Vec bb, Vec xx) {
+PetscErrorCode MatSolve_SeqBAIJ_6_NaturalOrdering_inplace(Mat A, Vec bb, Vec xx)
+{
   Mat_SeqBAIJ       *a = (Mat_SeqBAIJ *)A->data;
   PetscInt           i, nz, idx, idt, jdx;
   const PetscInt    *diag = a->diag, *vi, n = a->mbs, *ai = a->i, *aj = a->j;
@@ -97,7 +98,8 @@ PetscErrorCode MatSolve_SeqBAIJ_6_NaturalOrdering_inplace(Mat A, Vec bb, Vec xx)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatSolve_SeqBAIJ_6_NaturalOrdering(Mat A, Vec bb, Vec xx) {
+PetscErrorCode MatSolve_SeqBAIJ_6_NaturalOrdering(Mat A, Vec bb, Vec xx)
+{
   Mat_SeqBAIJ       *a = (Mat_SeqBAIJ *)A->data;
   const PetscInt     n = a->mbs, *vi, *ai = a->i, *aj = a->j, *adiag = a->diag;
   PetscInt           i, k, nz, idx, jdx, idt;

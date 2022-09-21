@@ -33,7 +33,8 @@ struct KSP_CG_PIPE_L_s {
   This is called once, usually automatically by KSPSolve() or KSPSetUp()
   but can be called directly by KSPSetUp()
 */
-static PetscErrorCode KSPSetUp_PIPELCG(KSP ksp) {
+static PetscErrorCode KSPSetUp_PIPELCG(KSP ksp)
+{
   KSP_CG_PIPE_L *plcg = (KSP_CG_PIPE_L *)ksp->data;
   PetscInt       l = plcg->l, max_it = ksp->max_it;
   MPI_Comm       comm;
@@ -57,7 +58,8 @@ static PetscErrorCode KSPSetUp_PIPELCG(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPReset_PIPELCG(KSP ksp) {
+static PetscErrorCode KSPReset_PIPELCG(KSP ksp)
+{
   KSP_CG_PIPE_L *plcg = (KSP_CG_PIPE_L *)ksp->data;
   PetscInt       l    = plcg->l;
 
@@ -71,14 +73,16 @@ static PetscErrorCode KSPReset_PIPELCG(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPDestroy_PIPELCG(KSP ksp) {
+static PetscErrorCode KSPDestroy_PIPELCG(KSP ksp)
+{
   PetscFunctionBegin;
   PetscCall(KSPReset_PIPELCG(ksp));
   PetscCall(KSPDestroyDefault(ksp));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPSetFromOptions_PIPELCG(KSP ksp, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode KSPSetFromOptions_PIPELCG(KSP ksp, PetscOptionItems *PetscOptionsObject)
+{
   KSP_CG_PIPE_L *plcg = (KSP_CG_PIPE_L *)ksp->data;
   PetscBool      flag = PETSC_FALSE;
 
@@ -96,7 +100,8 @@ static PetscErrorCode KSPSetFromOptions_PIPELCG(KSP ksp, PetscOptionItems *Petsc
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MPIPetsc_Iallreduce(void *sendbuf, void *recvbuf, PetscMPIInt count, MPI_Datatype datatype, MPI_Op op, MPI_Comm comm, MPI_Request *request) {
+static PetscErrorCode MPIPetsc_Iallreduce(void *sendbuf, void *recvbuf, PetscMPIInt count, MPI_Datatype datatype, MPI_Op op, MPI_Comm comm, MPI_Request *request)
+{
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_MPI_NONBLOCKING_COLLECTIVES)
   PetscCallMPI(MPI_Iallreduce(sendbuf, recvbuf, count, datatype, op, comm, request));
@@ -107,7 +112,8 @@ static PetscErrorCode MPIPetsc_Iallreduce(void *sendbuf, void *recvbuf, PetscMPI
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPView_PIPELCG(KSP ksp, PetscViewer viewer) {
+static PetscErrorCode KSPView_PIPELCG(KSP ksp, PetscViewer viewer)
+{
   KSP_CG_PIPE_L *plcg   = (KSP_CG_PIPE_L *)ksp->data;
   PetscBool      iascii = PETSC_FALSE, isstring = PETSC_FALSE;
 
@@ -126,7 +132,8 @@ static PetscErrorCode KSPView_PIPELCG(KSP ksp, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp) {
+static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp)
+{
   KSP_CG_PIPE_L *plcg = (KSP_CG_PIPE_L *)ksp->data;
   Mat            A = NULL, Pmat = NULL;
   PetscInt       it = 0, max_it = ksp->max_it, l = plcg->l, i = 0, j = 0, k = 0;
@@ -342,7 +349,8 @@ static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPSolve_ReInitData_PIPELCG(KSP ksp) {
+static PetscErrorCode KSPSolve_ReInitData_PIPELCG(KSP ksp)
+{
   KSP_CG_PIPE_L *plcg = (KSP_CG_PIPE_L *)ksp->data;
   PetscInt       i = 0, j = 0, l = plcg->l, max_it = ksp->max_it;
 
@@ -362,7 +370,8 @@ static PetscErrorCode KSPSolve_ReInitData_PIPELCG(KSP ksp) {
 /*
   KSPSolve_PIPELCG - This routine actually applies the pipelined(l) conjugate gradient method
 */
-static PetscErrorCode KSPSolve_PIPELCG(KSP ksp) {
+static PetscErrorCode KSPSolve_PIPELCG(KSP ksp)
+{
   KSP_CG_PIPE_L *plcg = (KSP_CG_PIPE_L *)ksp->data;
   Mat            A = NULL, Pmat = NULL;
   Vec            b = NULL, x = NULL, p = NULL;
@@ -471,8 +480,8 @@ static PetscErrorCode KSPSolve_PIPELCG(KSP ksp) {
 .seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSPCG`, `KSPPIPECG`, `KSPPIPECGRR`, `KSPPGMRES`,
           `KSPPIPEBCGS`, `KSPSetPCSide()`
 M*/
-PETSC_EXTERN
-PetscErrorCode KSPCreate_PIPELCG(KSP ksp) {
+PETSC_EXTERN PetscErrorCode KSPCreate_PIPELCG(KSP ksp)
+{
   KSP_CG_PIPE_L *plcg = NULL;
 
   PetscFunctionBegin;

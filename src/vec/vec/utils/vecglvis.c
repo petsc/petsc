@@ -1,7 +1,8 @@
 #include <petsc/private/glvisviewerimpl.h>
 #include <petsc/private/glvisvecimpl.h>
 
-static PetscErrorCode PetscViewerGLVisVecInfoDestroy_Private(void *ptr) {
+static PetscErrorCode PetscViewerGLVisVecInfoDestroy_Private(void *ptr)
+{
   PetscViewerGLVisVecInfo info = (PetscViewerGLVisVecInfo)ptr;
 
   PetscFunctionBeginUser;
@@ -11,7 +12,8 @@ static PetscErrorCode PetscViewerGLVisVecInfoDestroy_Private(void *ptr) {
 }
 
 /* the main function to visualize vectors using GLVis */
-PetscErrorCode VecView_GLVis(Vec U, PetscViewer viewer) {
+PetscErrorCode VecView_GLVis(Vec U, PetscViewer viewer)
+{
   PetscErrorCode (*g2lfields)(PetscObject, PetscInt, PetscObject[], void *);
   Vec                   *Ufield;
   const char           **fec_type;

@@ -14,7 +14,8 @@
 #include <../src/ksp/ksp/impls/bcgsl/bcgslimpl.h>
 #include <petscblaslapack.h>
 
-static PetscErrorCode KSPSolve_BCGSL(KSP ksp) {
+static PetscErrorCode KSPSolve_BCGSL(KSP ksp)
+{
   KSP_BCGSL   *bcgsl = (KSP_BCGSL *)ksp->data;
   PetscScalar  alpha, beta, omega, sigma;
   PetscScalar  rho0, rho1;
@@ -316,7 +317,8 @@ static PetscErrorCode KSPSolve_BCGSL(KSP ksp) {
 
 .seealso: `KSPBCGSLSetEll()`, `KSPBCGSLSetPol()`, `KSP`
 @*/
-PetscErrorCode KSPBCGSLSetXRes(KSP ksp, PetscReal delta) {
+PetscErrorCode KSPBCGSLSetXRes(KSP ksp, PetscReal delta)
+{
   KSP_BCGSL *bcgsl = (KSP_BCGSL *)ksp->data;
 
   PetscFunctionBegin;
@@ -350,7 +352,8 @@ PetscErrorCode KSPBCGSLSetXRes(KSP ksp, PetscReal delta) {
 
 .seealso: `KSPBCGSLSetEll()`, `KSP`
 @*/
-PetscErrorCode KSPBCGSLSetUsePseudoinverse(KSP ksp, PetscBool use_pinv) {
+PetscErrorCode KSPBCGSLSetUsePseudoinverse(KSP ksp, PetscBool use_pinv)
+{
   KSP_BCGSL *bcgsl = (KSP_BCGSL *)ksp->data;
 
   PetscFunctionBegin;
@@ -377,7 +380,8 @@ PetscErrorCode KSPBCGSLSetUsePseudoinverse(KSP ksp, PetscBool use_pinv) {
 
 .seealso: `KSP`, `KSPBCGSL`, `KSPCreate()`, `KSPSetType()`
 @*/
-PetscErrorCode KSPBCGSLSetPol(KSP ksp, PetscBool uMROR) {
+PetscErrorCode KSPBCGSLSetPol(KSP ksp, PetscBool uMROR)
+{
   KSP_BCGSL *bcgsl = (KSP_BCGSL *)ksp->data;
 
   PetscFunctionBegin;
@@ -420,7 +424,8 @@ PetscErrorCode KSPBCGSLSetPol(KSP ksp, PetscBool uMROR) {
 
 .seealso: `KSPBCGSLSetUsePseudoinverse()`, `KSP`, `KSPBCGSL`
 @*/
-PetscErrorCode KSPBCGSLSetEll(KSP ksp, PetscInt ell) {
+PetscErrorCode KSPBCGSLSetEll(KSP ksp, PetscInt ell)
+{
   KSP_BCGSL *bcgsl = (KSP_BCGSL *)ksp->data;
 
   PetscFunctionBegin;
@@ -440,7 +445,8 @@ PetscErrorCode KSPBCGSLSetEll(KSP ksp, PetscInt ell) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPView_BCGSL(KSP ksp, PetscViewer viewer) {
+PetscErrorCode KSPView_BCGSL(KSP ksp, PetscViewer viewer)
+{
   KSP_BCGSL *bcgsl = (KSP_BCGSL *)ksp->data;
   PetscBool  isascii;
 
@@ -454,7 +460,8 @@ PetscErrorCode KSPView_BCGSL(KSP ksp, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPSetFromOptions_BCGSL(KSP ksp, PetscOptionItems *PetscOptionsObject) {
+PetscErrorCode KSPSetFromOptions_BCGSL(KSP ksp, PetscOptionItems *PetscOptionsObject)
+{
   KSP_BCGSL *bcgsl = (KSP_BCGSL *)ksp->data;
   PetscInt   this_ell;
   PetscReal  delta;
@@ -492,7 +499,8 @@ PetscErrorCode KSPSetFromOptions_BCGSL(KSP ksp, PetscOptionItems *PetscOptionsOb
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPSetUp_BCGSL(KSP ksp) {
+PetscErrorCode KSPSetUp_BCGSL(KSP ksp)
+{
   KSP_BCGSL *bcgsl = (KSP_BCGSL *)ksp->data;
   PetscInt   ell = bcgsl->ell, ldMZ = ell + 1;
 
@@ -504,7 +512,8 @@ PetscErrorCode KSPSetUp_BCGSL(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPReset_BCGSL(KSP ksp) {
+PetscErrorCode KSPReset_BCGSL(KSP ksp)
+{
   KSP_BCGSL *bcgsl = (KSP_BCGSL *)ksp->data;
 
   PetscFunctionBegin;
@@ -514,7 +523,8 @@ PetscErrorCode KSPReset_BCGSL(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPDestroy_BCGSL(KSP ksp) {
+PetscErrorCode KSPDestroy_BCGSL(KSP ksp)
+{
   PetscFunctionBegin;
   PetscCall(KSPReset_BCGSL(ksp));
   PetscCall(KSPDestroyDefault(ksp));
@@ -554,7 +564,8 @@ PetscErrorCode KSPDestroy_BCGSL(KSP ksp) {
 .seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPFGMRES`, `KSPBCGS`, `KSPSetPCSide()`, `KSPBCGSLSetEll()`, `KSPBCGSLSetXRes()`
 
 M*/
-PETSC_EXTERN PetscErrorCode KSPCreate_BCGSL(KSP ksp) {
+PETSC_EXTERN PetscErrorCode KSPCreate_BCGSL(KSP ksp)
+{
   KSP_BCGSL *bcgsl;
 
   PetscFunctionBegin;

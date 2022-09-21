@@ -19,7 +19,8 @@ static const char NLEQERR_citation[] = "@book{deuflhard2011,\n"
                                        "  publisher = {Springer-Verlag},\n"
                                        "  address = {Berlin, Heidelberg}\n}\n";
 
-static PetscErrorCode SNESLineSearchReset_NLEQERR(SNESLineSearch linesearch) {
+static PetscErrorCode SNESLineSearchReset_NLEQERR(SNESLineSearch linesearch)
+{
   SNESLineSearch_NLEQERR *nleqerr = (SNESLineSearch_NLEQERR *)linesearch->data;
 
   PetscFunctionBegin;
@@ -29,7 +30,8 @@ static PetscErrorCode SNESLineSearchReset_NLEQERR(SNESLineSearch linesearch) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESLineSearchApply_NLEQERR(SNESLineSearch linesearch) {
+static PetscErrorCode SNESLineSearchApply_NLEQERR(SNESLineSearch linesearch)
+{
   PetscBool               changed_y, changed_w;
   Vec                     X, F, Y, W, G;
   SNES                    snes;
@@ -252,7 +254,8 @@ static PetscErrorCode SNESLineSearchApply_NLEQERR(SNESLineSearch linesearch) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SNESLineSearchView_NLEQERR(SNESLineSearch linesearch, PetscViewer viewer) {
+PetscErrorCode SNESLineSearchView_NLEQERR(SNESLineSearch linesearch, PetscViewer viewer)
+{
   PetscBool               iascii;
   SNESLineSearch_NLEQERR *nleqerr;
 
@@ -266,7 +269,8 @@ PetscErrorCode SNESLineSearchView_NLEQERR(SNESLineSearch linesearch, PetscViewer
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESLineSearchDestroy_NLEQERR(SNESLineSearch linesearch) {
+static PetscErrorCode SNESLineSearchDestroy_NLEQERR(SNESLineSearch linesearch)
+{
   PetscFunctionBegin;
   PetscCall(PetscFree(linesearch->data));
   PetscFunctionReturn(0);
@@ -294,7 +298,8 @@ static PetscErrorCode SNESLineSearchDestroy_NLEQERR(SNESLineSearch linesearch) {
 
 .seealso: `SNESLineSearch`, `SNES`, `SNESLineSearchCreate()`, `SNESLineSearchSetType()`
 M*/
-PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_NLEQERR(SNESLineSearch linesearch) {
+PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_NLEQERR(SNESLineSearch linesearch)
+{
   SNESLineSearch_NLEQERR *nleqerr;
 
   PetscFunctionBegin;

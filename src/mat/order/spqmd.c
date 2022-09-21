@@ -5,7 +5,8 @@
 /*
     MatGetOrdering_QMD - Find the Quotient Minimum Degree ordering of a given matrix.
 */
-PETSC_INTERN PetscErrorCode MatGetOrdering_QMD(Mat mat, MatOrderingType type, IS *row, IS *col) {
+PETSC_INTERN PetscErrorCode MatGetOrdering_QMD(Mat mat, MatOrderingType type, IS *row, IS *col)
+{
   PetscInt        i, *deg, *marker, *rchset, *nbrhd, *qsize, *qlink, nofsub, *iperm, nrow, *perm;
   const PetscInt *ia, *ja;
   PetscBool       done;

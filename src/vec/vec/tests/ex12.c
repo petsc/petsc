@@ -5,7 +5,8 @@ parallel vector.\n";
 
 #include <petscvec.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscMPIInt size, rank;
   PetscInt    n = 5, i;
   PetscScalar value;

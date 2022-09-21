@@ -55,7 +55,8 @@ typedef struct {
   phi_t + u . grad phi = -3 + <1, 1, 1> . <1, 1, 1> = 0
 */
 
-static PetscErrorCode analytic_phi(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx) {
+static PetscErrorCode analytic_phi(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+{
   PetscInt d;
 
   *u = -dim * time;
@@ -63,14 +64,16 @@ static PetscErrorCode analytic_phi(PetscInt dim, PetscReal time, const PetscReal
   return 0;
 }
 
-static PetscErrorCode velocity(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx) {
+static PetscErrorCode velocity(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+{
   PetscInt d;
   for (d = 0; d < dim; ++d) u[d] = 1.0;
   return 0;
 }
 
 /* <psi, phi_t> + <psi, u . grad phi> */
-static void f0_prim_phi(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[]) {
+static void f0_prim_phi(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
   PetscInt d;
 
   f0[0] = u_t[0];
@@ -78,34 +81,40 @@ static void f0_prim_phi(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscIn
 }
 
 /* <psi, phi_t> */
-static void f0_ibp_phi(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[]) {
+static void f0_ibp_phi(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
   f0[0] = u_t[0];
 }
 
 /* <grad psi, u phi> */
-static void f1_ibp_phi(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[]) {
+static void f1_ibp_phi(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[])
+{
   PetscInt d;
   for (d = 0; d < dim; ++d) f1[d] = a[d] * u[0];
 }
 
 /* <psi, phi_t> */
-static void g0_prim_phi(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[]) {
+static void g0_prim_phi(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[])
+{
   g0[0] = u_tShift * 1.0;
 }
 
 /* <psi, u . grad phi> */
-static void g1_prim_phi(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[]) {
+static void g1_prim_phi(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[])
+{
   PetscInt d;
   for (d = 0; d < dim; ++d) g1[d] = a[d];
 }
 
 /* <grad psi, u phi> */
-static void g2_ibp_phi(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g2[]) {
+static void g2_ibp_phi(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g2[])
+{
   PetscInt d;
   for (d = 0; d < dim; ++d) g2[d] = a[d];
 }
 
-static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
+static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
+{
   const char *formTypes[2] = {"primitive", "int_by_parts"};
   PetscInt    form;
 
@@ -119,7 +128,8 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *ctx) {
+static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *ctx)
+{
   PetscFunctionBeginUser;
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetType(*dm, DMPLEX));
@@ -128,7 +138,8 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *ctx) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SetupProblem(DM dm, AppCtx *ctx) {
+static PetscErrorCode SetupProblem(DM dm, AppCtx *ctx)
+{
   PetscDS        ds;
   DMLabel        label;
   const PetscInt id = 1;
@@ -151,7 +162,8 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *ctx) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SetupVelocity(DM dm, DM dmAux, AppCtx *user) {
+static PetscErrorCode SetupVelocity(DM dm, DM dmAux, AppCtx *user)
+{
   PetscSimplePointFunc funcs[1] = {velocity};
   Vec                  v;
 
@@ -163,7 +175,8 @@ static PetscErrorCode SetupVelocity(DM dm, DM dmAux, AppCtx *user) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SetupAuxDM(DM dm, PetscFE feAux, AppCtx *user) {
+static PetscErrorCode SetupAuxDM(DM dm, PetscFE feAux, AppCtx *user)
+{
   DM dmAux, coordDM;
 
   PetscFunctionBeginUser;
@@ -179,7 +192,8 @@ static PetscErrorCode SetupAuxDM(DM dm, PetscFE feAux, AppCtx *user) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SetupDiscretization(DM dm, AppCtx *ctx) {
+static PetscErrorCode SetupDiscretization(DM dm, AppCtx *ctx)
+{
   DM        cdm = dm;
   PetscFE   fe, feAux;
   MPI_Comm  comm;
@@ -207,7 +221,8 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *ctx) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MonitorError(KSP ksp, PetscInt it, PetscReal rnorm, void *ctx) {
+static PetscErrorCode MonitorError(KSP ksp, PetscInt it, PetscReal rnorm, void *ctx)
+{
   DM                   dm;
   PetscDS              ds;
   PetscSimplePointFunc func[1];
@@ -238,7 +253,8 @@ static PetscErrorCode MonitorError(KSP ksp, PetscInt it, PetscReal rnorm, void *
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MyTSMonitorError(TS ts, PetscInt step, PetscReal crtime, Vec u, void *ctx) {
+static PetscErrorCode MyTSMonitorError(TS ts, PetscInt step, PetscReal crtime, Vec u, void *ctx)
+{
   DM                   dm;
   PetscDS              ds;
   PetscSimplePointFunc func[1];
@@ -254,7 +270,8 @@ static PetscErrorCode MyTSMonitorError(TS ts, PetscInt step, PetscReal crtime, V
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   AppCtx    ctx;
   DM        dm;
   TS        ts;

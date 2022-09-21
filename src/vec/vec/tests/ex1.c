@@ -2,7 +2,8 @@ static char help[] = "Tests repeated VecSetType().\n\n";
 
 #include <petscvec.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt    n   = 5;
   PetscScalar one = 1.0, two = 2.0;
   Vec         x, y;

@@ -3,7 +3,8 @@ static const char help[] = "Tests PetscDeviceContextView().\n\n";
 #include "petscdevicetestcommon.h"
 #include <petscviewer.h>
 
-static PetscErrorCode TestView(PetscDeviceContext dctx) {
+static PetscErrorCode TestView(PetscDeviceContext dctx)
+{
   PetscViewer viewer;
 
   PetscFunctionBegin;
@@ -18,7 +19,8 @@ static PetscErrorCode TestView(PetscDeviceContext dctx) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   MPI_Comm           comm;
   PetscDeviceContext dctx, dup;
 

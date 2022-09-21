@@ -35,7 +35,8 @@ PETSC_EXTERN PetscErrorCode TSCreate_IRK(TS);
 
 .seealso: `TSCreate()`, `TSRegister()`, `TSRegisterDestroy()`
 @*/
-PetscErrorCode TSRegisterAll(void) {
+PetscErrorCode TSRegisterAll(void)
+{
   PetscFunctionBegin;
   if (TSRegisterAllCalled) PetscFunctionReturn(0);
   TSRegisterAllCalled = PETSC_TRUE;

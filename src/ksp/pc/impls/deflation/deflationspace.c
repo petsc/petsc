@@ -13,7 +13,8 @@ PetscScalar biorth22[] = {0.0, -0.1767766952966369, 0.3535533905932738, 1.060660
 
 PetscScalar meyer[] = {0.0, -1.009999956941423e-12, 8.519459636796214e-09, -1.111944952595278e-08, -1.0798819539621958e-08, 6.066975741351135e-08, -1.0866516536735883e-07, 8.200680650386481e-08, 1.1783004497663934e-07, -5.506340565252278e-07, 1.1307947017916706e-06, -1.489549216497156e-06, 7.367572885903746e-07, 3.20544191334478e-06, -1.6312699734552807e-05, 6.554305930575149e-05, -0.0006011502343516092, -0.002704672124643725, 0.002202534100911002, 0.006045814097323304, -0.006387718318497156, -0.011061496392513451, 0.015270015130934803, 0.017423434103729693, -0.03213079399021176, -0.024348745906078023, 0.0637390243228016, 0.030655091960824263, -0.13284520043622938, -0.035087555656258346, 0.44459300275757724, 0.7445855923188063, 0.44459300275757724, -0.035087555656258346, -0.13284520043622938, 0.030655091960824263, 0.0637390243228016, -0.024348745906078023, -0.03213079399021176, 0.017423434103729693, 0.015270015130934803, -0.011061496392513451, -0.006387718318497156, 0.006045814097323304, 0.002202534100911002, -0.002704672124643725, -0.0006011502343516092, 6.554305930575149e-05, -1.6312699734552807e-05, 3.20544191334478e-06, 7.367572885903746e-07, -1.489549216497156e-06, 1.1307947017916706e-06, -5.506340565252278e-07, 1.1783004497663934e-07, 8.200680650386481e-08, -1.0866516536735883e-07, 6.066975741351135e-08, -1.0798819539621958e-08, -1.111944952595278e-08, 8.519459636796214e-09, -1.009999956941423e-12};
 
-static PetscErrorCode PCDeflationCreateSpaceWave(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscInt ncoeffs, PetscScalar *coeffs, PetscBool trunc, Mat *H) {
+static PetscErrorCode PCDeflationCreateSpaceWave(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscInt ncoeffs, PetscScalar *coeffs, PetscBool trunc, Mat *H)
+{
   Mat      defl;
   PetscInt i, j, k, ilo, ihi, *Iidx;
 
@@ -53,7 +54,8 @@ static PetscErrorCode PCDeflationCreateSpaceWave(MPI_Comm comm, PetscInt m, Pets
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCDeflationGetSpaceHaar(PC pc, Mat *W, PetscInt size) {
+PetscErrorCode PCDeflationGetSpaceHaar(PC pc, Mat *W, PetscInt size)
+{
   Mat          A, defl;
   PetscInt     i, j, len, ilo, ihi, *Iidx, m, M;
   PetscScalar *col, val;
@@ -97,7 +99,8 @@ PetscErrorCode PCDeflationGetSpaceHaar(PC pc, Mat *W, PetscInt size) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCDeflationGetSpaceWave(PC pc, Mat *W, PetscInt size, PetscInt ncoeffs, PetscScalar *coeffs, PetscBool trunc) {
+PetscErrorCode PCDeflationGetSpaceWave(PC pc, Mat *W, PetscInt size, PetscInt ncoeffs, PetscScalar *coeffs, PetscBool trunc)
+{
   Mat      A, *H, defl;
   PetscInt i, m, M, Mdefl, Ndefl;
   MPI_Comm comm;
@@ -128,7 +131,8 @@ PetscErrorCode PCDeflationGetSpaceWave(PC pc, Mat *W, PetscInt size, PetscInt nc
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCDeflationGetSpaceAggregation(PC pc, Mat *W) {
+PetscErrorCode PCDeflationGetSpaceAggregation(PC pc, Mat *W)
+{
   Mat          A, defl;
   PetscInt     i, ilo, ihi, *Iidx, M;
   PetscMPIInt  m;
@@ -166,7 +170,8 @@ PetscErrorCode PCDeflationGetSpaceAggregation(PC pc, Mat *W) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCDeflationComputeSpace(PC pc) {
+PetscErrorCode PCDeflationComputeSpace(PC pc)
+{
   Mat           defl;
   PetscBool     transp = PETSC_TRUE;
   PC_Deflation *def    = (PC_Deflation *)pc->data;
@@ -179,17 +184,30 @@ PetscErrorCode PCDeflationComputeSpace(PC pc) {
     transp = PETSC_FALSE;
     PetscCall(PCDeflationGetSpaceHaar(pc, &defl, def->spacesize));
     break;
-  case PC_DEFLATION_SPACE_DB2: PetscCall(PCDeflationGetSpaceWave(pc, &defl, def->spacesize, 2, db2, PetscNot(def->extendsp))); break;
-  case PC_DEFLATION_SPACE_DB4: PetscCall(PCDeflationGetSpaceWave(pc, &defl, def->spacesize, 4, db4, PetscNot(def->extendsp))); break;
-  case PC_DEFLATION_SPACE_DB8: PetscCall(PCDeflationGetSpaceWave(pc, &defl, def->spacesize, 8, db8, PetscNot(def->extendsp))); break;
-  case PC_DEFLATION_SPACE_DB16: PetscCall(PCDeflationGetSpaceWave(pc, &defl, def->spacesize, 16, db16, PetscNot(def->extendsp))); break;
-  case PC_DEFLATION_SPACE_BIORTH22: PetscCall(PCDeflationGetSpaceWave(pc, &defl, def->spacesize, 6, biorth22, PetscNot(def->extendsp))); break;
-  case PC_DEFLATION_SPACE_MEYER: PetscCall(PCDeflationGetSpaceWave(pc, &defl, def->spacesize, 62, meyer, PetscNot(def->extendsp))); break;
+  case PC_DEFLATION_SPACE_DB2:
+    PetscCall(PCDeflationGetSpaceWave(pc, &defl, def->spacesize, 2, db2, PetscNot(def->extendsp)));
+    break;
+  case PC_DEFLATION_SPACE_DB4:
+    PetscCall(PCDeflationGetSpaceWave(pc, &defl, def->spacesize, 4, db4, PetscNot(def->extendsp)));
+    break;
+  case PC_DEFLATION_SPACE_DB8:
+    PetscCall(PCDeflationGetSpaceWave(pc, &defl, def->spacesize, 8, db8, PetscNot(def->extendsp)));
+    break;
+  case PC_DEFLATION_SPACE_DB16:
+    PetscCall(PCDeflationGetSpaceWave(pc, &defl, def->spacesize, 16, db16, PetscNot(def->extendsp)));
+    break;
+  case PC_DEFLATION_SPACE_BIORTH22:
+    PetscCall(PCDeflationGetSpaceWave(pc, &defl, def->spacesize, 6, biorth22, PetscNot(def->extendsp)));
+    break;
+  case PC_DEFLATION_SPACE_MEYER:
+    PetscCall(PCDeflationGetSpaceWave(pc, &defl, def->spacesize, 62, meyer, PetscNot(def->extendsp)));
+    break;
   case PC_DEFLATION_SPACE_AGGREGATION:
     transp = PETSC_FALSE;
     PetscCall(PCDeflationGetSpaceAggregation(pc, &defl));
     break;
-  default: SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "Wrong PCDeflationSpaceType specified");
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "Wrong PCDeflationSpaceType specified");
   }
 
   PetscCall(PCDeflationSetSpace(pc, defl, transp));

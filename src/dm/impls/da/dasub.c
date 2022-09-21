@@ -30,7 +30,8 @@
    All processors that share the DMDA must call this with the same coordinate value
 
 @*/
-PetscErrorCode DMDAGetLogicalCoordinate(DM da, PetscScalar x, PetscScalar y, PetscScalar z, PetscInt *II, PetscInt *JJ, PetscInt *KK, PetscScalar *X, PetscScalar *Y, PetscScalar *Z) {
+PetscErrorCode DMDAGetLogicalCoordinate(DM da, PetscScalar x, PetscScalar y, PetscScalar z, PetscInt *II, PetscInt *JJ, PetscInt *KK, PetscScalar *X, PetscScalar *Y, PetscScalar *Z)
+{
   Vec          coors;
   DM           dacoors;
   DMDACoor2d **c;
@@ -98,7 +99,8 @@ PetscErrorCode DMDAGetLogicalCoordinate(DM da, PetscScalar x, PetscScalar y, Pet
    All processors that share the DMDA must call this with the same gp value
 
 @*/
-PetscErrorCode DMDAGetRay(DM da, DMDirection dir, PetscInt gp, Vec *newvec, VecScatter *scatter) {
+PetscErrorCode DMDAGetRay(DM da, DMDirection dir, PetscInt gp, Vec *newvec, VecScatter *scatter)
+{
   PetscMPIInt rank;
   DM_DA      *dd = (DM_DA *)da->data;
   IS          is;
@@ -194,7 +196,8 @@ PetscErrorCode DMDAGetRay(DM da, DMDirection dir, PetscInt gp, Vec *newvec, VecS
    Not supported from Fortran
 
 @*/
-PetscErrorCode DMDAGetProcessorSubset(DM da, DMDirection dir, PetscInt gp, MPI_Comm *comm) {
+PetscErrorCode DMDAGetProcessorSubset(DM da, DMDirection dir, PetscInt gp, MPI_Comm *comm)
+{
   MPI_Group   group, subgroup;
   PetscInt    i, ict, flag, *owners, xs, xm, ys, ym, zs, zm;
   PetscMPIInt size, *ranks = NULL;
@@ -263,7 +266,8 @@ PetscErrorCode DMDAGetProcessorSubset(DM da, DMDirection dir, PetscInt gp, MPI_C
    Not supported from Fortran
 
 @*/
-PetscErrorCode DMDAGetProcessorSubsets(DM da, DMDirection dir, MPI_Comm *subcomm) {
+PetscErrorCode DMDAGetProcessorSubsets(DM da, DMDirection dir, MPI_Comm *subcomm)
+{
   MPI_Comm    comm;
   MPI_Group   group, subgroup;
   PetscInt    subgroupSize = 0;

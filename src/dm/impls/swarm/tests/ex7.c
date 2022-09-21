@@ -6,7 +6,7 @@ static char help[] = "Example program demonstrating projection between particle 
 #include "petscksp.h"
 #include <petsc/private/petscimpl.h>
 #if defined(PETSC_HAVE_OPENMP) && defined(PETSC_HAVE_THREADSAFETY)
-#include <omp.h>
+  #include <omp.h>
 #endif
 
 typedef struct {
@@ -16,7 +16,8 @@ typedef struct {
   Vec uu;
 } MatShellCtx;
 
-PetscErrorCode MatMultMtM_SeqAIJ(Mat MtM, Vec xx, Vec yy) {
+PetscErrorCode MatMultMtM_SeqAIJ(Mat MtM, Vec xx, Vec yy)
+{
   MatShellCtx *matshellctx;
 
   PetscFunctionBeginUser;
@@ -27,7 +28,8 @@ PetscErrorCode MatMultMtM_SeqAIJ(Mat MtM, Vec xx, Vec yy) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatMultAddMtM_SeqAIJ(Mat MtM, Vec xx, Vec yy, Vec zz) {
+PetscErrorCode MatMultAddMtM_SeqAIJ(Mat MtM, Vec xx, Vec yy, Vec zz)
+{
   MatShellCtx *matshellctx;
 
   PetscFunctionBeginUser;
@@ -38,7 +40,8 @@ PetscErrorCode MatMultAddMtM_SeqAIJ(Mat MtM, Vec xx, Vec yy, Vec zz) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode createSwarm(const DM dm, DM *sw) {
+PetscErrorCode createSwarm(const DM dm, DM *sw)
+{
   PetscInt Nc = 1, dim = 2;
 
   PetscFunctionBeginUser;
@@ -53,7 +56,8 @@ PetscErrorCode createSwarm(const DM dm, DM *sw) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode gridToParticles(const DM dm, DM sw, PetscReal *moments, Vec rhs, Mat M_p) {
+PetscErrorCode gridToParticles(const DM dm, DM sw, PetscReal *moments, Vec rhs, Mat M_p)
+{
   PetscBool     is_lsqr;
   KSP           ksp;
   Mat           PM_p = NULL, MtM, D;
@@ -154,7 +158,8 @@ PetscErrorCode gridToParticles(const DM dm, DM sw, PetscReal *moments, Vec rhs, 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode particlesToGrid(const DM dm, DM sw, const PetscInt Np, const PetscInt a_tid, const PetscInt dim, const PetscInt target, const PetscReal xx[], const PetscReal yy[], const PetscReal a_wp[], Vec rho, Mat *Mp_out) {
+PetscErrorCode particlesToGrid(const DM dm, DM sw, const PetscInt Np, const PetscInt a_tid, const PetscInt dim, const PetscInt target, const PetscReal xx[], const PetscReal yy[], const PetscReal a_wp[], Vec rho, Mat *Mp_out)
+{
   PetscBool     removePoints = PETSC_TRUE;
   PetscReal    *wq, *coords;
   PetscDataType dtype;
@@ -194,7 +199,8 @@ PetscErrorCode particlesToGrid(const DM dm, DM sw, const PetscInt Np, const Pets
 
   PetscFunctionReturn(0);
 }
-static PetscErrorCode maxwellian(PetscInt dim, const PetscReal x[], PetscReal kt_m, PetscReal n, PetscScalar *u) {
+static PetscErrorCode maxwellian(PetscInt dim, const PetscReal x[], PetscReal kt_m, PetscReal n, PetscScalar *u)
+{
   PetscInt  i;
   PetscReal v2 = 0, theta = 2 * kt_m; /* theta = 2kT/mc^2 */
 
@@ -207,7 +213,8 @@ static PetscErrorCode maxwellian(PetscInt dim, const PetscReal x[], PetscReal kt
 }
 
 #define MAX_NUM_THRDS 12
-PetscErrorCode go() {
+PetscErrorCode go()
+{
   DM        dm_t[MAX_NUM_THRDS], sw_t[MAX_NUM_THRDS];
   PetscFE   fe;
   PetscInt  dim = 2, Nc = 1, i, faces[3];
@@ -297,21 +304,25 @@ PetscErrorCode go() {
   PetscCall(PetscLogEventBegin(solve_ev, 0, 0, 0, 0));
   /* Create particle swarm */
   PetscPragmaOMP(parallel for)
-  for (int tid=0; tid<numthreads; tid++) {
+  for (int tid=0; tid<numthreads; tid++)
+  {
     PetscCallAbort(PETSC_COMM_SELF, createSwarm(dm_t[tid], &sw_t[tid]));
   }
   PetscPragmaOMP(parallel for)
-  for (int tid=0; tid<numthreads; tid++) {
+  for (int tid=0; tid<numthreads; tid++)
+  {
     PetscCallAbort(PETSC_COMM_SELF, particlesToGrid(dm_t[tid], sw_t[tid], Np_t[tid], tid, dim, target, xx_t[tid], yy_t[tid], wp_t[tid], rho_t[tid], &M_p_t[tid]));
   }
   /* Project field to particles */
   /*   This gives f_p = M_p^+ M f */
   PetscPragmaOMP(parallel for)
-  for (int tid=0; tid<numthreads; tid++) {
+  for (int tid=0; tid<numthreads; tid++)
+  {
     PetscCallAbort(PETSC_COMM_SELF, VecCopy(rho_t[tid], rhs_t[tid])); /* Identity: M^1 M rho */
   }
   PetscPragmaOMP(parallel for)
-  for (int tid=0; tid<numthreads; tid++) {
+  for (int tid=0; tid<numthreads; tid++)
+  {
     PetscCallAbort(PETSC_COMM_SELF, gridToParticles(dm_t[tid], sw_t[tid], (tid == target) ? moments_1 : NULL, rhs_t[tid], M_p_t[tid]));
   }
   /* Cleanup */
@@ -332,7 +343,8 @@ PetscErrorCode go() {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(go());

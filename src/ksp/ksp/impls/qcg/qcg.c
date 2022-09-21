@@ -18,7 +18,8 @@ static PetscErrorCode KSPQCGQuadraticRoots(Vec, Vec, PetscReal, PetscReal *, Pet
     Level: advanced
 
 @*/
-PetscErrorCode KSPQCGSetTrustRegionRadius(KSP ksp, PetscReal delta) {
+PetscErrorCode KSPQCGSetTrustRegionRadius(KSP ksp, PetscReal delta)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscCheck(delta >= 0.0, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "Tolerance must be non-negative");
@@ -40,7 +41,8 @@ PetscErrorCode KSPQCGSetTrustRegionRadius(KSP ksp, PetscReal delta) {
 
     Level: advanced
 @*/
-PetscErrorCode KSPQCGGetTrialStepNorm(KSP ksp, PetscReal *tsnorm) {
+PetscErrorCode KSPQCGGetTrialStepNorm(KSP ksp, PetscReal *tsnorm)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscUseMethod(ksp, "KSPQCGGetTrialStepNorm_C", (KSP, PetscReal *), (ksp, tsnorm));
@@ -73,14 +75,16 @@ PetscErrorCode KSPQCGGetTrialStepNorm(KSP ksp, PetscReal *tsnorm) {
 
     Level: advanced
 @*/
-PetscErrorCode KSPQCGGetQuadratic(KSP ksp, PetscReal *quadratic) {
+PetscErrorCode KSPQCGGetQuadratic(KSP ksp, PetscReal *quadratic)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscUseMethod(ksp, "KSPQCGGetQuadratic_C", (KSP, PetscReal *), (ksp, quadratic));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPSolve_QCG(KSP ksp) {
+PetscErrorCode KSPSolve_QCG(KSP ksp)
+{
   /*
    Correpondence with documentation above:
       B = g = gradient,
@@ -262,14 +266,16 @@ PetscErrorCode KSPSolve_QCG(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPSetUp_QCG(KSP ksp) {
+PetscErrorCode KSPSetUp_QCG(KSP ksp)
+{
   PetscFunctionBegin;
   /* Get work vectors from user code */
   PetscCall(KSPSetWorkVecs(ksp, 7));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPDestroy_QCG(KSP ksp) {
+PetscErrorCode KSPDestroy_QCG(KSP ksp)
+{
   PetscFunctionBegin;
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPQCGGetQuadratic_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPQCGGetTrialStepNorm_C", NULL));
@@ -278,7 +284,8 @@ PetscErrorCode KSPDestroy_QCG(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPQCGSetTrustRegionRadius_QCG(KSP ksp, PetscReal delta) {
+static PetscErrorCode KSPQCGSetTrustRegionRadius_QCG(KSP ksp, PetscReal delta)
+{
   KSP_QCG *cgP = (KSP_QCG *)ksp->data;
 
   PetscFunctionBegin;
@@ -286,7 +293,8 @@ static PetscErrorCode KSPQCGSetTrustRegionRadius_QCG(KSP ksp, PetscReal delta) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPQCGGetTrialStepNorm_QCG(KSP ksp, PetscReal *ltsnrm) {
+static PetscErrorCode KSPQCGGetTrialStepNorm_QCG(KSP ksp, PetscReal *ltsnrm)
+{
   KSP_QCG *cgP = (KSP_QCG *)ksp->data;
 
   PetscFunctionBegin;
@@ -294,7 +302,8 @@ static PetscErrorCode KSPQCGGetTrialStepNorm_QCG(KSP ksp, PetscReal *ltsnrm) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPQCGGetQuadratic_QCG(KSP ksp, PetscReal *quadratic) {
+static PetscErrorCode KSPQCGGetQuadratic_QCG(KSP ksp, PetscReal *quadratic)
+{
   KSP_QCG *cgP = (KSP_QCG *)ksp->data;
 
   PetscFunctionBegin;
@@ -302,7 +311,8 @@ static PetscErrorCode KSPQCGGetQuadratic_QCG(KSP ksp, PetscReal *quadratic) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPSetFromOptions_QCG(KSP ksp, PetscOptionItems *PetscOptionsObject) {
+PetscErrorCode KSPSetFromOptions_QCG(KSP ksp, PetscOptionItems *PetscOptionsObject)
+{
   PetscReal delta;
   KSP_QCG  *cgP = (KSP_QCG *)ksp->data;
   PetscBool flg;
@@ -364,7 +374,8 @@ $  other KSP converged/diverged reasons
           `KSPQCGGetTrialStepNorm()`, `KSPQCGGetQuadratic()`
 M*/
 
-PETSC_EXTERN PetscErrorCode KSPCreate_QCG(KSP ksp) {
+PETSC_EXTERN PetscErrorCode KSPCreate_QCG(KSP ksp)
+{
   KSP_QCG *cgP;
 
   PetscFunctionBegin;
@@ -406,7 +417,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_QCG(KSP ksp) {
    C code is translated from the Fortran version of the MINPACK-2 Project,
    Argonne National Laboratory, Brett M. Averick and Richard G. Carter.
 */
-static PetscErrorCode KSPQCGQuadraticRoots(Vec s, Vec p, PetscReal delta, PetscReal *step1, PetscReal *step2) {
+static PetscErrorCode KSPQCGQuadraticRoots(Vec s, Vec p, PetscReal delta, PetscReal *step1, PetscReal *step2)
+{
   PetscReal dsq, ptp, pts, rad, sts;
 
   PetscFunctionBegin;

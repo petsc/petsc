@@ -13,7 +13,8 @@
 PETSC_INTERN PetscErrorCode MatPtAPSymbolic_AIJ_AIJ_wHYPRE(Mat, Mat, PetscReal, Mat);
 #endif
 
-PetscErrorCode MatProductSymbolic_PtAP_SeqAIJ_SeqAIJ(Mat C) {
+PetscErrorCode MatProductSymbolic_PtAP_SeqAIJ_SeqAIJ(Mat C)
+{
   Mat_Product        *product = C->product;
   Mat                 A = product->A, P = product->B;
   MatProductAlgorithm alg  = product->alg;
@@ -61,7 +62,8 @@ PetscErrorCode MatProductSymbolic_PtAP_SeqAIJ_SeqAIJ(Mat C) {
   SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "MatProductType is not supported");
 }
 
-PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ_SparseAxpy(Mat A, Mat P, PetscReal fill, Mat C) {
+PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ_SparseAxpy(Mat A, Mat P, PetscReal fill, Mat C)
+{
   PetscFreeSpaceList free_space = NULL, current_space = NULL;
   Mat_SeqAIJ        *a = (Mat_SeqAIJ *)A->data, *p = (Mat_SeqAIJ *)P->data, *c;
   PetscInt          *pti, *ptj, *ptJ, *ai = a->i, *aj = a->j, *ajj, *pi = p->i, *pj = p->j, *pjj;
@@ -184,7 +186,8 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ_SparseAxpy(Mat A, Mat P, PetscReal 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ_SparseAxpy(Mat A, Mat P, Mat C) {
+PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ_SparseAxpy(Mat A, Mat P, Mat C)
+{
   Mat_SeqAIJ *a  = (Mat_SeqAIJ *)A->data;
   Mat_SeqAIJ *p  = (Mat_SeqAIJ *)P->data;
   Mat_SeqAIJ *c  = (Mat_SeqAIJ *)C->data;
@@ -273,7 +276,8 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ_SparseAxpy(Mat A, Mat P, Mat C) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ(Mat A, Mat P, Mat C) {
+PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ(Mat A, Mat P, Mat C)
+{
   Mat_MatTransMatMult *atb;
 
   PetscFunctionBegin;

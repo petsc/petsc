@@ -18,7 +18,8 @@ $     FVM++: Two points p and q are adjacent if q \in star(closure(p)), prealloc
 
 .seealso: `DMCreateMatrix()`, `DMDAPreallocateOperator()`
 @*/
-PetscErrorCode DMDASetPreallocationCenterDimension(DM dm, PetscInt preallocCenterDim) {
+PetscErrorCode DMDASetPreallocationCenterDimension(DM dm, PetscInt preallocCenterDim)
+{
   DM_DA *mesh = (DM_DA *)dm->data;
 
   PetscFunctionBegin;
@@ -45,7 +46,8 @@ $     FVM++: Two points p and q are adjacent if q \in star(closure(p)), prealloc
 
 .seealso: `DMCreateMatrix()`, `DMDAPreallocateOperator()`, `DMDASetPreallocationCenterDimension()`
 @*/
-PetscErrorCode DMDAGetPreallocationCenterDimension(DM dm, PetscInt *preallocCenterDim) {
+PetscErrorCode DMDAGetPreallocationCenterDimension(DM dm, PetscInt *preallocCenterDim)
+{
   DM_DA *mesh = (DM_DA *)dm->data;
 
   PetscFunctionBegin;

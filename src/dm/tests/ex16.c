@@ -7,7 +7,8 @@ static char help[] = "Tests DMComposite routines.\n\n";
 #include <petscdmcomposite.h>
 #include <petscpf.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt                nredundant1 = 5, nredundant2 = 2, i;
   ISLocalToGlobalMapping *ltog;
   PetscMPIInt             rank, size;

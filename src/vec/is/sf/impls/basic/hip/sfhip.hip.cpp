@@ -5,7 +5,8 @@
 #undef PETSC_HAVE_COMPLEX
 
 /* Map a thread id to an index in root/leaf space through a series of 3D subdomains. See PetscSFPackOpt. */
-__device__ static inline PetscInt MapTidToIndex(const PetscInt *opt, PetscInt tid) {
+__device__ static inline PetscInt MapTidToIndex(const PetscInt *opt, PetscInt tid)
+{
   PetscInt        i, j, k, m, n, r;
   const PetscInt *offset, *start, *dx, *dy, *X, *Y;
 
@@ -41,7 +42,8 @@ __device__ static inline PetscInt MapTidToIndex(const PetscInt *opt, PetscInt ti
   For the common case in VecScatter, bs=1, BS=1, EQ=1, MBS=1, the inner for-loops below will be totally unrolled.
 */
 template <class Type, PetscInt BS, PetscInt EQ>
-__global__ static void d_Pack(PetscInt bs, PetscInt count, PetscInt start, const PetscInt *opt, const PetscInt *idx, const Type *data, Type *buf) {
+__global__ static void d_Pack(PetscInt bs, PetscInt count, PetscInt start, const PetscInt *opt, const PetscInt *idx, const Type *data, Type *buf)
+{
   PetscInt       i, s, t, tid = blockIdx.x * blockDim.x + threadIdx.x;
   const PetscInt grid_size = gridDim.x * blockDim.x;
   const PetscInt M         = (EQ) ? 1 : bs / BS; /* If EQ, then M=1 enables compiler's const-propagation */
@@ -58,7 +60,8 @@ __global__ static void d_Pack(PetscInt bs, PetscInt count, PetscInt start, const
 }
 
 template <class Type, class Op, PetscInt BS, PetscInt EQ>
-__global__ static void d_UnpackAndOp(PetscInt bs, PetscInt count, PetscInt start, const PetscInt *opt, const PetscInt *idx, Type *data, const Type *buf) {
+__global__ static void d_UnpackAndOp(PetscInt bs, PetscInt count, PetscInt start, const PetscInt *opt, const PetscInt *idx, Type *data, const Type *buf)
+{
   PetscInt       i, s, t, tid = blockIdx.x * blockDim.x + threadIdx.x;
   const PetscInt grid_size = gridDim.x * blockDim.x;
   const PetscInt M = (EQ) ? 1 : bs / BS, MBS = M * BS;
@@ -72,7 +75,8 @@ __global__ static void d_UnpackAndOp(PetscInt bs, PetscInt count, PetscInt start
 }
 
 template <class Type, class Op, PetscInt BS, PetscInt EQ>
-__global__ static void d_FetchAndOp(PetscInt bs, PetscInt count, PetscInt rootstart, const PetscInt *rootopt, const PetscInt *rootidx, Type *rootdata, Type *leafbuf) {
+__global__ static void d_FetchAndOp(PetscInt bs, PetscInt count, PetscInt rootstart, const PetscInt *rootopt, const PetscInt *rootidx, Type *rootdata, Type *leafbuf)
+{
   PetscInt       i, l, r, tid = blockIdx.x * blockDim.x + threadIdx.x;
   const PetscInt grid_size = gridDim.x * blockDim.x;
   const PetscInt M = (EQ) ? 1 : bs / BS, MBS = M * BS;
@@ -86,7 +90,8 @@ __global__ static void d_FetchAndOp(PetscInt bs, PetscInt count, PetscInt rootst
 }
 
 template <class Type, class Op, PetscInt BS, PetscInt EQ>
-__global__ static void d_ScatterAndOp(PetscInt bs, PetscInt count, PetscInt srcx, PetscInt srcy, PetscInt srcX, PetscInt srcY, PetscInt srcStart, const PetscInt *srcIdx, const Type *src, PetscInt dstx, PetscInt dsty, PetscInt dstX, PetscInt dstY, PetscInt dstStart, const PetscInt *dstIdx, Type *dst) {
+__global__ static void d_ScatterAndOp(PetscInt bs, PetscInt count, PetscInt srcx, PetscInt srcy, PetscInt srcX, PetscInt srcY, PetscInt srcStart, const PetscInt *srcIdx, const Type *src, PetscInt dstx, PetscInt dsty, PetscInt dstX, PetscInt dstY, PetscInt dstStart, const PetscInt *dstIdx, Type *dst)
+{
   PetscInt       i, j, k, s, t, tid = blockIdx.x * blockDim.x + threadIdx.x;
   const PetscInt grid_size = gridDim.x * blockDim.x;
   const PetscInt M = (EQ) ? 1 : bs / BS, MBS = M * BS;
@@ -118,7 +123,8 @@ __global__ static void d_ScatterAndOp(PetscInt bs, PetscInt count, PetscInt srcx
 }
 
 template <class Type, class Op, PetscInt BS, PetscInt EQ>
-__global__ static void d_FetchAndOpLocal(PetscInt bs, PetscInt count, PetscInt rootstart, const PetscInt *rootopt, const PetscInt *rootidx, Type *rootdata, PetscInt leafstart, const PetscInt *leafopt, const PetscInt *leafidx, const Type *leafdata, Type *leafupdate) {
+__global__ static void d_FetchAndOpLocal(PetscInt bs, PetscInt count, PetscInt rootstart, const PetscInt *rootopt, const PetscInt *rootidx, Type *rootdata, PetscInt leafstart, const PetscInt *leafopt, const PetscInt *leafidx, const Type *leafdata, Type *leafupdate)
+{
   PetscInt       i, l, r, tid = blockIdx.x * blockDim.x + threadIdx.x;
   const PetscInt grid_size = gridDim.x * blockDim.x;
   const PetscInt M = (EQ) ? 1 : bs / BS, MBS = M * BS;
@@ -136,7 +142,8 @@ __global__ static void d_FetchAndOpLocal(PetscInt bs, PetscInt count, PetscInt r
 /*====================================================================================*/
 template <typename Type>
 struct Insert {
-  __device__ Type operator()(Type &x, Type y) const {
+  __device__ Type operator()(Type &x, Type y) const
+  {
     Type old = x;
     x        = y;
     return old;
@@ -144,7 +151,8 @@ struct Insert {
 };
 template <typename Type>
 struct Add {
-  __device__ Type operator()(Type &x, Type y) const {
+  __device__ Type operator()(Type &x, Type y) const
+  {
     Type old = x;
     x += y;
     return old;
@@ -152,7 +160,8 @@ struct Add {
 };
 template <typename Type>
 struct Mult {
-  __device__ Type operator()(Type &x, Type y) const {
+  __device__ Type operator()(Type &x, Type y) const
+  {
     Type old = x;
     x *= y;
     return old;
@@ -160,7 +169,8 @@ struct Mult {
 };
 template <typename Type>
 struct Min {
-  __device__ Type operator()(Type &x, Type y) const {
+  __device__ Type operator()(Type &x, Type y) const
+  {
     Type old = x;
     x        = PetscMin(x, y);
     return old;
@@ -168,7 +178,8 @@ struct Min {
 };
 template <typename Type>
 struct Max {
-  __device__ Type operator()(Type &x, Type y) const {
+  __device__ Type operator()(Type &x, Type y) const
+  {
     Type old = x;
     x        = PetscMax(x, y);
     return old;
@@ -176,7 +187,8 @@ struct Max {
 };
 template <typename Type>
 struct LAND {
-  __device__ Type operator()(Type &x, Type y) const {
+  __device__ Type operator()(Type &x, Type y) const
+  {
     Type old = x;
     x        = x && y;
     return old;
@@ -184,7 +196,8 @@ struct LAND {
 };
 template <typename Type>
 struct LOR {
-  __device__ Type operator()(Type &x, Type y) const {
+  __device__ Type operator()(Type &x, Type y) const
+  {
     Type old = x;
     x        = x || y;
     return old;
@@ -192,7 +205,8 @@ struct LOR {
 };
 template <typename Type>
 struct LXOR {
-  __device__ Type operator()(Type &x, Type y) const {
+  __device__ Type operator()(Type &x, Type y) const
+  {
     Type old = x;
     x        = !x != !y;
     return old;
@@ -200,7 +214,8 @@ struct LXOR {
 };
 template <typename Type>
 struct BAND {
-  __device__ Type operator()(Type &x, Type y) const {
+  __device__ Type operator()(Type &x, Type y) const
+  {
     Type old = x;
     x        = x & y;
     return old;
@@ -208,7 +223,8 @@ struct BAND {
 };
 template <typename Type>
 struct BOR {
-  __device__ Type operator()(Type &x, Type y) const {
+  __device__ Type operator()(Type &x, Type y) const
+  {
     Type old = x;
     x        = x | y;
     return old;
@@ -216,7 +232,8 @@ struct BOR {
 };
 template <typename Type>
 struct BXOR {
-  __device__ Type operator()(Type &x, Type y) const {
+  __device__ Type operator()(Type &x, Type y) const
+  {
     Type old = x;
     x        = x ^ y;
     return old;
@@ -224,7 +241,8 @@ struct BXOR {
 };
 template <typename Type>
 struct Minloc {
-  __device__ Type operator()(Type &x, Type y) const {
+  __device__ Type operator()(Type &x, Type y) const
+  {
     Type old = x;
     if (y.a < x.a) x = y;
     else if (y.a == x.a) x.b = min(x.b, y.b);
@@ -233,7 +251,8 @@ struct Minloc {
 };
 template <typename Type>
 struct Maxloc {
-  __device__ Type operator()(Type &x, Type y) const {
+  __device__ Type operator()(Type &x, Type y) const
+  {
     Type old = x;
     if (y.a > x.a) x = y;
     else if (y.a == x.a) x.b = min(x.b, y.b); /* See MPI MAXLOC */
@@ -251,12 +270,14 @@ struct Maxloc {
   See Cuda version
 */
 #if PETSC_PKG_HIP_VERSION_LT(4, 4, 0)
-__device__ static double atomicExch(double *address, double val) {
+__device__ static double atomicExch(double *address, double val)
+{
   return __longlong_as_double(atomicExch((ullint *)address, __double_as_longlong(val)));
 }
 #endif
 
-__device__ static llint atomicExch(llint *address, llint val) {
+__device__ static llint atomicExch(llint *address, llint val)
+{
   return (llint)(atomicExch((ullint *)address, (ullint)val));
 }
 
@@ -266,10 +287,11 @@ struct AtomicInsert {
 };
 
 #if defined(PETSC_HAVE_COMPLEX)
-#if defined(PETSC_USE_REAL_DOUBLE)
+  #if defined(PETSC_USE_REAL_DOUBLE)
 template <>
 struct AtomicInsert<PetscComplex> {
-  __device__ PetscComplex operator()(PetscComplex &x, PetscComplex y) const {
+  __device__ PetscComplex operator()(PetscComplex &x, PetscComplex y) const
+  {
     PetscComplex         old, *z = &old;
     double              *xp = (double *)&x, *yp = (double *)&y;
     AtomicInsert<double> op;
@@ -278,23 +300,25 @@ struct AtomicInsert<PetscComplex> {
     return old; /* The returned value may not be atomic. It can be mix of two ops. Caller should discard it. */
   }
 };
-#elif defined(PETSC_USE_REAL_SINGLE)
+  #elif defined(PETSC_USE_REAL_SINGLE)
 template <>
 struct AtomicInsert<PetscComplex> {
-  __device__ PetscComplex operator()(PetscComplex &x, PetscComplex y) const {
+  __device__ PetscComplex operator()(PetscComplex &x, PetscComplex y) const
+  {
     double              *xp = (double *)&x, *yp = (double *)&y;
     AtomicInsert<double> op;
     return op(xp[0], yp[0]);
   }
 };
-#endif
+  #endif
 #endif
 
 /*
   Atomic add operations
 
 */
-__device__ static llint atomicAdd(llint *address, llint val) {
+__device__ static llint atomicAdd(llint *address, llint val)
+{
   return (llint)atomicAdd((ullint *)address, (ullint)val);
 }
 
@@ -305,7 +329,8 @@ struct AtomicAdd {
 
 template <>
 struct AtomicAdd<double> {
-  __device__ double operator()(double &x, double y) const {
+  __device__ double operator()(double &x, double y) const
+  {
     /* Cuda version does more checks that may be needed */
     return atomicAdd(&x, y);
   }
@@ -313,7 +338,8 @@ struct AtomicAdd<double> {
 
 template <>
 struct AtomicAdd<float> {
-  __device__ float operator()(float &x, float y) const {
+  __device__ float operator()(float &x, float y) const
+  {
     /* Cuda version does more checks that may be needed */
     return atomicAdd(&x, y);
   }
@@ -322,7 +348,8 @@ struct AtomicAdd<float> {
 #if defined(PETSC_HAVE_COMPLEX)
 template <>
 struct AtomicAdd<PetscComplex> {
-  __device__ PetscComplex operator()(PetscComplex &x, PetscComplex y) const {
+  __device__ PetscComplex operator()(PetscComplex &x, PetscComplex y) const
+  {
     PetscComplex         old, *z = &old;
     PetscReal           *xp = (PetscReal *)&x, *yp = (PetscReal *)&y;
     AtomicAdd<PetscReal> op;
@@ -339,18 +366,20 @@ struct AtomicAdd<PetscComplex> {
   HIP has no atomicMult at all, so we build our own with atomicCAS
  */
 #if defined(PETSC_USE_REAL_DOUBLE)
-__device__ static double atomicMult(double *address, double val) {
+__device__ static double atomicMult(double *address, double val)
+{
   ullint *address_as_ull = (ullint *)(address);
   ullint  old            = *address_as_ull, assumed;
   do {
     assumed = old;
     /* Other threads can access and modify value of *address_as_ull after the read above and before the write below */
-    old     = atomicCAS(address_as_ull, assumed, __double_as_longlong(val * __longlong_as_double(assumed)));
+    old = atomicCAS(address_as_ull, assumed, __double_as_longlong(val * __longlong_as_double(assumed)));
   } while (assumed != old);
   return __longlong_as_double(old);
 }
 #elif defined(PETSC_USE_REAL_SINGLE)
-__device__ static float atomicMult(float *address, float val) {
+__device__ static float atomicMult(float *address, float val)
+{
   int *address_as_int = (int *)(address);
   int  old            = *address_as_int, assumed;
   do {
@@ -361,7 +390,8 @@ __device__ static float atomicMult(float *address, float val) {
 }
 #endif
 
-__device__ static int atomicMult(int *address, int val) {
+__device__ static int atomicMult(int *address, int val)
+{
   int *address_as_int = (int *)(address);
   int  old            = *address_as_int, assumed;
   do {
@@ -371,7 +401,8 @@ __device__ static int atomicMult(int *address, int val) {
   return (int)old;
 }
 
-__device__ static llint atomicMult(llint *address, llint val) {
+__device__ static llint atomicMult(llint *address, llint val)
+{
   ullint *address_as_ull = (ullint *)(address);
   ullint  old            = *address_as_ull, assumed;
   do {
@@ -392,8 +423,9 @@ struct AtomicMult {
   See CUDA version for comments.
  */
 #if PETSC_PKG_HIP_VERSION_LT(4, 4, 0)
-#if defined(PETSC_USE_REAL_DOUBLE)
-__device__ static double atomicMin(double *address, double val) {
+  #if defined(PETSC_USE_REAL_DOUBLE)
+__device__ static double atomicMin(double *address, double val)
+{
   ullint *address_as_ull = (ullint *)(address);
   ullint  old            = *address_as_ull, assumed;
   do {
@@ -403,7 +435,8 @@ __device__ static double atomicMin(double *address, double val) {
   return __longlong_as_double(old);
 }
 
-__device__ static double atomicMax(double *address, double val) {
+__device__ static double atomicMax(double *address, double val)
+{
   ullint *address_as_ull = (ullint *)(address);
   ullint  old            = *address_as_ull, assumed;
   do {
@@ -412,8 +445,9 @@ __device__ static double atomicMax(double *address, double val) {
   } while (assumed != old);
   return __longlong_as_double(old);
 }
-#elif defined(PETSC_USE_REAL_SINGLE)
-__device__ static float atomicMin(float *address, float val) {
+  #elif defined(PETSC_USE_REAL_SINGLE)
+__device__ static float atomicMin(float *address, float val)
+{
   int *address_as_int = (int *)(address);
   int  old            = *address_as_int, assumed;
   do {
@@ -423,7 +457,8 @@ __device__ static float atomicMin(float *address, float val) {
   return __int_as_float(old);
 }
 
-__device__ static float atomicMax(float *address, float val) {
+__device__ static float atomicMax(float *address, float val)
+{
   int *address_as_int = (int *)(address);
   int  old            = *address_as_int, assumed;
   do {
@@ -432,11 +467,12 @@ __device__ static float atomicMax(float *address, float val) {
   } while (assumed != old);
   return __int_as_float(old);
 }
-#endif
+  #endif
 #endif
 
 /* As of ROCm 3.10 llint atomicMin/Max(llint*, llint) is not supported */
-__device__ static llint atomicMin(llint *address, llint val) {
+__device__ static llint atomicMin(llint *address, llint val)
+{
   ullint *address_as_ull = (ullint *)(address);
   ullint  old            = *address_as_ull, assumed;
   do {
@@ -446,7 +482,8 @@ __device__ static llint atomicMin(llint *address, llint val) {
   return (llint)old;
 }
 
-__device__ static llint atomicMax(llint *address, llint val) {
+__device__ static llint atomicMax(llint *address, llint val)
+{
   ullint *address_as_ull = (ullint *)(address);
   ullint  old            = *address_as_ull, assumed;
   do {
@@ -470,7 +507,8 @@ struct AtomicMax {
   As of ROCm 3.10, the llint atomicAnd/Or/Xor(llint*, llint) is not supported
 */
 
-__device__ static llint atomicAnd(llint *address, llint val) {
+__device__ static llint atomicAnd(llint *address, llint val)
+{
   ullint *address_as_ull = (ullint *)(address);
   ullint  old            = *address_as_ull, assumed;
   do {
@@ -479,7 +517,8 @@ __device__ static llint atomicAnd(llint *address, llint val) {
   } while (assumed != old);
   return (llint)old;
 }
-__device__ static llint atomicOr(llint *address, llint val) {
+__device__ static llint atomicOr(llint *address, llint val)
+{
   ullint *address_as_ull = (ullint *)(address);
   ullint  old            = *address_as_ull, assumed;
   do {
@@ -489,7 +528,8 @@ __device__ static llint atomicOr(llint *address, llint val) {
   return (llint)old;
 }
 
-__device__ static llint atomicXor(llint *address, llint val) {
+__device__ static llint atomicXor(llint *address, llint val)
+{
   ullint *address_as_ull = (ullint *)(address);
   ullint  old            = *address_as_ull, assumed;
   do {
@@ -526,7 +566,8 @@ struct AtomicLogical;
 
 template <typename Type, class Op>
 struct AtomicLogical<Type, Op, 4> {
-  __device__ Type operator()(Type &x, Type y) const {
+  __device__ Type operator()(Type &x, Type y) const
+  {
     int *address_as_int = (int *)(&x);
     int  old            = *address_as_int, assumed;
     Op   op;
@@ -540,7 +581,8 @@ struct AtomicLogical<Type, Op, 4> {
 
 template <typename Type, class Op>
 struct AtomicLogical<Type, Op, 8> {
-  __device__ Type operator()(Type &x, Type y) const {
+  __device__ Type operator()(Type &x, Type y) const
+  {
     ullint *address_as_ull = (ullint *)(&x);
     ullint  old            = *address_as_ull, assumed;
     Op      op;
@@ -568,21 +610,24 @@ struct lxor {
 
 template <typename Type>
 struct AtomicLAND {
-  __device__ Type operator()(Type &x, Type y) const {
+  __device__ Type operator()(Type &x, Type y) const
+  {
     AtomicLogical<Type, land<Type>, sizeof(Type)> op;
     return op(x, y);
   }
 };
 template <typename Type>
 struct AtomicLOR {
-  __device__ Type operator()(Type &x, Type y) const {
+  __device__ Type operator()(Type &x, Type y) const
+  {
     AtomicLogical<Type, lor<Type>, sizeof(Type)> op;
     return op(x, y);
   }
 };
 template <typename Type>
 struct AtomicLXOR {
-  __device__ Type operator()(Type &x, Type y) const {
+  __device__ Type operator()(Type &x, Type y) const
+  {
     AtomicLogical<Type, lxor<Type>, sizeof(Type)> op;
     return op(x, y);
   }
@@ -592,7 +637,8 @@ struct AtomicLXOR {
 /*  Wrapper functions of hip kernels. Function pointers are stored in 'link'         */
 /*====================================================================================*/
 template <typename Type, PetscInt BS, PetscInt EQ>
-static PetscErrorCode Pack(PetscSFLink link, PetscInt count, PetscInt start, PetscSFPackOpt opt, const PetscInt *idx, const void *data, void *buf) {
+static PetscErrorCode Pack(PetscSFLink link, PetscInt count, PetscInt start, PetscSFPackOpt opt, const PetscInt *idx, const void *data, void *buf)
+{
   PetscInt        nthreads = 256;
   PetscInt        nblocks  = (count + nthreads - 1) / nthreads;
   const PetscInt *iarray   = opt ? opt->array : NULL;
@@ -606,7 +652,8 @@ static PetscErrorCode Pack(PetscSFLink link, PetscInt count, PetscInt start, Pet
 }
 
 template <typename Type, class Op, PetscInt BS, PetscInt EQ>
-static PetscErrorCode UnpackAndOp(PetscSFLink link, PetscInt count, PetscInt start, PetscSFPackOpt opt, const PetscInt *idx, void *data, const void *buf) {
+static PetscErrorCode UnpackAndOp(PetscSFLink link, PetscInt count, PetscInt start, PetscSFPackOpt opt, const PetscInt *idx, void *data, const void *buf)
+{
   PetscInt        nthreads = 256;
   PetscInt        nblocks  = (count + nthreads - 1) / nthreads;
   const PetscInt *iarray   = opt ? opt->array : NULL;
@@ -620,7 +667,8 @@ static PetscErrorCode UnpackAndOp(PetscSFLink link, PetscInt count, PetscInt sta
 }
 
 template <typename Type, class Op, PetscInt BS, PetscInt EQ>
-static PetscErrorCode FetchAndOp(PetscSFLink link, PetscInt count, PetscInt start, PetscSFPackOpt opt, const PetscInt *idx, void *data, void *buf) {
+static PetscErrorCode FetchAndOp(PetscSFLink link, PetscInt count, PetscInt start, PetscSFPackOpt opt, const PetscInt *idx, void *data, void *buf)
+{
   PetscInt        nthreads = 256;
   PetscInt        nblocks  = (count + nthreads - 1) / nthreads;
   const PetscInt *iarray   = opt ? opt->array : NULL;
@@ -634,7 +682,8 @@ static PetscErrorCode FetchAndOp(PetscSFLink link, PetscInt count, PetscInt star
 }
 
 template <typename Type, class Op, PetscInt BS, PetscInt EQ>
-static PetscErrorCode ScatterAndOp(PetscSFLink link, PetscInt count, PetscInt srcStart, PetscSFPackOpt srcOpt, const PetscInt *srcIdx, const void *src, PetscInt dstStart, PetscSFPackOpt dstOpt, const PetscInt *dstIdx, void *dst) {
+static PetscErrorCode ScatterAndOp(PetscSFLink link, PetscInt count, PetscInt srcStart, PetscSFPackOpt srcOpt, const PetscInt *srcIdx, const void *src, PetscInt dstStart, PetscSFPackOpt dstOpt, const PetscInt *dstIdx, void *dst)
+{
   PetscInt nthreads = 256;
   PetscInt nblocks  = (count + nthreads - 1) / nthreads;
   PetscInt srcx = 0, srcy = 0, srcX = 0, srcY = 0, dstx = 0, dsty = 0, dstX = 0, dstY = 0;
@@ -675,7 +724,8 @@ static PetscErrorCode ScatterAndOp(PetscSFLink link, PetscInt count, PetscInt sr
 
 /* Specialization for Insert since we may use hipMemcpyAsync */
 template <typename Type, PetscInt BS, PetscInt EQ>
-static PetscErrorCode ScatterAndInsert(PetscSFLink link, PetscInt count, PetscInt srcStart, PetscSFPackOpt srcOpt, const PetscInt *srcIdx, const void *src, PetscInt dstStart, PetscSFPackOpt dstOpt, const PetscInt *dstIdx, void *dst) {
+static PetscErrorCode ScatterAndInsert(PetscSFLink link, PetscInt count, PetscInt srcStart, PetscSFPackOpt srcOpt, const PetscInt *srcIdx, const void *src, PetscInt dstStart, PetscSFPackOpt dstOpt, const PetscInt *dstIdx, void *dst)
+{
   PetscFunctionBegin;
   if (!count) PetscFunctionReturn(0);
   /*src and dst are contiguous */
@@ -688,7 +738,8 @@ static PetscErrorCode ScatterAndInsert(PetscSFLink link, PetscInt count, PetscIn
 }
 
 template <typename Type, class Op, PetscInt BS, PetscInt EQ>
-static PetscErrorCode FetchAndOpLocal(PetscSFLink link, PetscInt count, PetscInt rootstart, PetscSFPackOpt rootopt, const PetscInt *rootidx, void *rootdata, PetscInt leafstart, PetscSFPackOpt leafopt, const PetscInt *leafidx, const void *leafdata, void *leafupdate) {
+static PetscErrorCode FetchAndOpLocal(PetscSFLink link, PetscInt count, PetscInt rootstart, PetscSFPackOpt rootopt, const PetscInt *rootidx, void *rootdata, PetscInt leafstart, PetscSFPackOpt leafopt, const PetscInt *leafidx, const void *leafdata, void *leafupdate)
+{
   PetscInt        nthreads = 256;
   PetscInt        nblocks  = (count + nthreads - 1) / nthreads;
   const PetscInt *rarray   = rootopt ? rootopt->array : NULL;
@@ -706,7 +757,8 @@ static PetscErrorCode FetchAndOpLocal(PetscSFLink link, PetscInt count, PetscInt
 /*  Init various types and instantiate pack/unpack function pointers                  */
 /*====================================================================================*/
 template <typename Type, PetscInt BS, PetscInt EQ>
-static void PackInit_RealType(PetscSFLink link) {
+static void PackInit_RealType(PetscSFLink link)
+{
   /* Pack/unpack for remote communication */
   link->d_Pack            = Pack<Type, BS, EQ>;
   link->d_UnpackAndInsert = UnpackAndOp<Type, Insert<Type>, BS, EQ>;
@@ -743,7 +795,8 @@ static void PackInit_RealType(PetscSFLink link) {
 /* Have this templated class to specialize for char integers */
 template <typename Type, PetscInt BS, PetscInt EQ, PetscInt size /*sizeof(Type)*/>
 struct PackInit_IntegerType_Atomic {
-  static void Init(PetscSFLink link) {
+  static void Init(PetscSFLink link)
+  {
     link->da_UnpackAndInsert = UnpackAndOp<Type, AtomicInsert<Type>, BS, EQ>;
     link->da_UnpackAndAdd    = UnpackAndOp<Type, AtomicAdd<Type>, BS, EQ>;
     link->da_UnpackAndMult   = UnpackAndOp<Type, AtomicMult<Type>, BS, EQ>;
@@ -775,12 +828,14 @@ struct PackInit_IntegerType_Atomic {
 /*  See cuda version */
 template <typename Type, PetscInt BS, PetscInt EQ>
 struct PackInit_IntegerType_Atomic<Type, BS, EQ, 1> {
-  static void Init(PetscSFLink link) { /* Nothing to leave function pointers NULL */
+  static void Init(PetscSFLink link)
+  { /* Nothing to leave function pointers NULL */
   }
 };
 
 template <typename Type, PetscInt BS, PetscInt EQ>
-static void PackInit_IntegerType(PetscSFLink link) {
+static void PackInit_IntegerType(PetscSFLink link)
+{
   link->d_Pack            = Pack<Type, BS, EQ>;
   link->d_UnpackAndInsert = UnpackAndOp<Type, Insert<Type>, BS, EQ>;
   link->d_UnpackAndAdd    = UnpackAndOp<Type, Add<Type>, BS, EQ>;
@@ -812,7 +867,8 @@ static void PackInit_IntegerType(PetscSFLink link) {
 
 #if defined(PETSC_HAVE_COMPLEX)
 template <typename Type, PetscInt BS, PetscInt EQ>
-static void PackInit_ComplexType(PetscSFLink link) {
+static void PackInit_ComplexType(PetscSFLink link)
+{
   link->d_Pack            = Pack<Type, BS, EQ>;
   link->d_UnpackAndInsert = UnpackAndOp<Type, Insert<Type>, BS, EQ>;
   link->d_UnpackAndAdd    = UnpackAndOp<Type, Add<Type>, BS, EQ>;
@@ -846,7 +902,8 @@ typedef struct {
 } PairPetscInt;
 
 template <typename Type>
-static void PackInit_PairType(PetscSFLink link) {
+static void PackInit_PairType(PetscSFLink link)
+{
   link->d_Pack            = Pack<Type, 1, 1>;
   link->d_UnpackAndInsert = UnpackAndOp<Type, Insert<Type>, 1, 1>;
   link->d_UnpackAndMaxloc = UnpackAndOp<Type, Maxloc<Type>, 1, 1>;
@@ -859,7 +916,8 @@ static void PackInit_PairType(PetscSFLink link) {
 }
 
 template <typename Type, PetscInt BS, PetscInt EQ>
-static void PackInit_DumbType(PetscSFLink link) {
+static void PackInit_DumbType(PetscSFLink link)
+{
   link->d_Pack             = Pack<Type, BS, EQ>;
   link->d_UnpackAndInsert  = UnpackAndOp<Type, Insert<Type>, BS, EQ>;
   link->d_ScatterAndInsert = ScatterAndInsert<Type, BS, EQ>;
@@ -867,19 +925,22 @@ static void PackInit_DumbType(PetscSFLink link) {
 }
 
 /* Some device-specific utilities */
-static PetscErrorCode PetscSFLinkSyncDevice_HIP(PetscSFLink link) {
+static PetscErrorCode PetscSFLinkSyncDevice_HIP(PetscSFLink link)
+{
   PetscFunctionBegin;
   PetscCallHIP(hipDeviceSynchronize());
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSFLinkSyncStream_HIP(PetscSFLink link) {
+static PetscErrorCode PetscSFLinkSyncStream_HIP(PetscSFLink link)
+{
   PetscFunctionBegin;
   PetscCallHIP(hipStreamSynchronize(link->stream));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSFLinkMemcpy_HIP(PetscSFLink link, PetscMemType dstmtype, void *dst, PetscMemType srcmtype, const void *src, size_t n) {
+static PetscErrorCode PetscSFLinkMemcpy_HIP(PetscSFLink link, PetscMemType dstmtype, void *dst, PetscMemType srcmtype, const void *src, size_t n)
+{
   PetscFunctionBegin;
   enum hipMemcpyKind kinds[2][2] = {
     {hipMemcpyHostToHost,   hipMemcpyHostToDevice  },
@@ -898,7 +959,8 @@ static PetscErrorCode PetscSFLinkMemcpy_HIP(PetscSFLink link, PetscMemType dstmt
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscSFMalloc_HIP(PetscMemType mtype, size_t size, void **ptr) {
+PetscErrorCode PetscSFMalloc_HIP(PetscMemType mtype, size_t size, void **ptr)
+{
   PetscFunctionBegin;
   if (PetscMemTypeHost(mtype)) PetscCall(PetscMalloc(size, ptr));
   else if (PetscMemTypeDevice(mtype)) {
@@ -908,7 +970,8 @@ PetscErrorCode PetscSFMalloc_HIP(PetscMemType mtype, size_t size, void **ptr) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscSFFree_HIP(PetscMemType mtype, void *ptr) {
+PetscErrorCode PetscSFFree_HIP(PetscMemType mtype, void *ptr)
+{
   PetscFunctionBegin;
   if (PetscMemTypeHost(mtype)) PetscCall(PetscFree(ptr));
   else if (PetscMemTypeDevice(mtype)) PetscCallHIP(hipFree(ptr));
@@ -917,7 +980,8 @@ PetscErrorCode PetscSFFree_HIP(PetscMemType mtype, void *ptr) {
 }
 
 /* Destructor when the link uses MPI for communication on HIP device */
-static PetscErrorCode PetscSFLinkDestroy_MPI_HIP(PetscSF sf, PetscSFLink link) {
+static PetscErrorCode PetscSFLinkDestroy_MPI_HIP(PetscSF sf, PetscSFLink link)
+{
   PetscFunctionBegin;
   for (int i = PETSCSF_LOCAL; i <= PETSCSF_REMOTE; i++) {
     PetscCallHIP(hipFree(link->rootbuf_alloc[i][PETSC_MEMTYPE_DEVICE]));
@@ -931,7 +995,8 @@ static PetscErrorCode PetscSFLinkDestroy_MPI_HIP(PetscSF sf, PetscSFLink link) {
 /*====================================================================================*/
 
 /* Some fields of link are initialized by PetscSFPackSetUp_Host. This routine only does what needed on device */
-PetscErrorCode PetscSFLinkSetUp_HIP(PetscSF sf, PetscSFLink link, MPI_Datatype unit) {
+PetscErrorCode PetscSFLinkSetUp_HIP(PetscSF sf, PetscSFLink link, MPI_Datatype unit)
+{
   PetscInt  nSignedChar = 0, nUnsignedChar = 0, nInt = 0, nPetscInt = 0, nPetscReal = 0;
   PetscBool is2Int, is2PetscInt;
 #if defined(PETSC_HAVE_COMPLEX)
@@ -1018,7 +1083,7 @@ PetscErrorCode PetscSFLinkSetUp_HIP(PetscSF sf, PetscSFLink link, MPI_Datatype u
       PackInit_IntegerType<UnsignedChar, 1, 0>(link);
 #if defined(PETSC_HAVE_COMPLEX)
   } else if (nPetscComplex) {
-#if !defined(PETSC_HAVE_DEVICE)
+  #if !defined(PETSC_HAVE_DEVICE)
     if (nPetscComplex == 8) PackInit_ComplexType<PetscComplex, 8, 1>(link);
     else if (nPetscComplex % 8 == 0) PackInit_ComplexType<PetscComplex, 8, 0>(link);
     else if (nPetscComplex == 4) PackInit_ComplexType<PetscComplex, 4, 1>(link);
@@ -1027,7 +1092,7 @@ PetscErrorCode PetscSFLinkSetUp_HIP(PetscSF sf, PetscSFLink link, MPI_Datatype u
     else if (nPetscComplex % 2 == 0) PackInit_ComplexType<PetscComplex, 2, 0>(link);
     else if (nPetscComplex == 1) PackInit_ComplexType<PetscComplex, 1, 1>(link);
     else if (nPetscComplex % 1 == 0)
-#endif
+  #endif
       PackInit_ComplexType<PetscComplex, 1, 0>(link);
 #endif
   } else {

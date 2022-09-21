@@ -46,35 +46,39 @@ typedef struct {
 
 typedef struct {
   /* Domain and mesh definition */
-  char         dmType[256]; /* DM type for the solve */
-  DeformType   deform;      /* Domain deformation type */
+  char       dmType[256]; /* DM type for the solve */
+  DeformType deform;      /* Domain deformation type */
   /* Problem definition */
   SolutionType solType; /* Type of exact solution */
   PetscBag     bag;     /* Problem parameters */
   /* Solver definition */
-  PetscBool    useNearNullspace; /* Use the rigid body modes as a near nullspace for AMG */
+  PetscBool useNearNullspace; /* Use the rigid body modes as a near nullspace for AMG */
 } AppCtx;
 
-static PetscErrorCode zero(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx) {
+static PetscErrorCode zero(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+{
   PetscInt d;
   for (d = 0; d < dim; ++d) u[d] = 0.0;
   return 0;
 }
 
-static PetscErrorCode ge_shift(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx) {
+static PetscErrorCode ge_shift(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+{
   PetscInt d;
   u[0] = 0.1;
   for (d = 1; d < dim; ++d) u[d] = 0.0;
   return 0;
 }
 
-static PetscErrorCode quadratic_2d_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx) {
+static PetscErrorCode quadratic_2d_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+{
   u[0] = x[0] * x[0];
   u[1] = x[1] * x[1] - 2.0 * x[0] * x[1];
   return 0;
 }
 
-static PetscErrorCode quadratic_3d_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx) {
+static PetscErrorCode quadratic_3d_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+{
   u[0] = x[0] * x[0];
   u[1] = x[1] * x[1] - 2.0 * x[0] * x[1];
   u[2] = x[2] * x[2] - 2.0 * x[1] * x[2];
@@ -91,7 +95,8 @@ static PetscErrorCode quadratic_3d_u(PetscInt dim, PetscReal time, const PetscRe
   w = z^2 - 2yz
   Delta <u,v,w> - f = <2, 2, 2> - <2, 2, 2>
 */
-static void f0_vlap_quadratic_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[]) {
+static void f0_vlap_quadratic_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
   PetscInt d;
   for (d = 0; d < dim; ++d) f0[d] += 2.0;
 }
@@ -117,7 +122,8 @@ static void f0_vlap_quadratic_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const
     = \lambda \partial_j (2z) + 2\mu < 2-1, 2-1, 2 >
     = \lambda < 0, 0, 2 > + \mu < 2, 2, 4 >
 */
-static void f0_elas_quadratic_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[]) {
+static void f0_elas_quadratic_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
   const PetscReal mu     = 1.0;
   const PetscReal lambda = 1.0;
   PetscInt        d;
@@ -126,7 +132,8 @@ static void f0_elas_quadratic_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const
   f0[dim - 1] += 2.0 * lambda + 4.0 * mu;
 }
 
-static void f0_mass_quadratic_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[]) {
+static void f0_mass_quadratic_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
   if (dim == 2) {
     f0[0] -= x[0] * x[0];
     f0[1] -= x[1] * x[1] - 2.0 * x[0] * x[1];
@@ -137,13 +144,15 @@ static void f0_mass_quadratic_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const
   }
 }
 
-static PetscErrorCode trig_2d_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx) {
+static PetscErrorCode trig_2d_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+{
   u[0] = PetscSinReal(2.0 * PETSC_PI * x[0]);
   u[1] = PetscSinReal(2.0 * PETSC_PI * x[1]) - 2.0 * x[0] * x[1];
   return 0;
 }
 
-static PetscErrorCode trig_3d_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx) {
+static PetscErrorCode trig_3d_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+{
   u[0] = PetscSinReal(2.0 * PETSC_PI * x[0]);
   u[1] = PetscSinReal(2.0 * PETSC_PI * x[1]) - 2.0 * x[0] * x[1];
   u[2] = PetscSinReal(2.0 * PETSC_PI * x[2]) - 2.0 * x[1] * x[2];
@@ -160,7 +169,8 @@ static PetscErrorCode trig_3d_u(PetscInt dim, PetscReal time, const PetscReal x[
   w = sin(2 pi z) - 2yz
   Delta <u,v,2> - f = <-4 pi^2 u, -4 pi^2 v, -4 pi^2 w> - <-4 pi^2 sin(2 pi x), -4 pi^2 sin(2 pi y), -4 pi^2 sin(2 pi z)>
 */
-static void f0_vlap_trig_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[]) {
+static void f0_vlap_trig_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
   PetscInt d;
   for (d = 0; d < dim; ++d) f0[d] += -4.0 * PetscSqr(PETSC_PI) * PetscSinReal(2.0 * PETSC_PI * x[d]);
 }
@@ -186,7 +196,8 @@ static void f0_vlap_trig_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const Pets
     = \lambda \partial_j (2 pi (cos(2 pi x) + cos(2 pi y) + cos(2 pi z)) - 2 x - 2 y) + 2\mu < -4 pi^2 sin(2 pi x) - 1, -4 pi^2 sin(2 pi y) - 1, -4 pi^2 sin(2 pi z) >
     = \lambda < -4 pi^2 sin(2 pi x) - 2, -4 pi^2 sin(2 pi y) - 2, -4 pi^2 sin(2 pi z) > + 2\mu < -4 pi^2 sin(2 pi x) - 1, -4 pi^2 sin(2 pi y) - 1, -4 pi^2 sin(2 pi z) >
 */
-static void f0_elas_trig_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[]) {
+static void f0_elas_trig_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
   const PetscReal mu     = 1.0;
   const PetscReal lambda = 1.0;
   const PetscReal fact   = 4.0 * PetscSqr(PETSC_PI);
@@ -195,7 +206,8 @@ static void f0_elas_trig_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const Pets
   for (d = 0; d < dim; ++d) f0[d] += -(2.0 * mu + lambda) * fact * PetscSinReal(2.0 * PETSC_PI * x[d]) - (d < dim - 1 ? 2.0 * (mu + lambda) : 0.0);
 }
 
-static PetscErrorCode axial_disp_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx) {
+static PetscErrorCode axial_disp_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+{
   const PetscReal mu     = 1.0;
   const PetscReal lambda = 1.0;
   const PetscReal N      = 1.0;
@@ -236,13 +248,15 @@ static PetscErrorCode axial_disp_u(PetscInt dim, PetscReal time, const PetscReal
     = \lambda \partial_j x + 2\mu < 1, 0, 0 >
     = \lambda < 1, 0, 0 > + \mu < 2, 0, 0 >
 */
-static void f0_elas_axial_disp_bd_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[]) {
+static void f0_elas_axial_disp_bd_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
   const PetscReal N = -1.0;
 
   f0[0] = N;
 }
 
-static PetscErrorCode uniform_strain_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx) {
+static PetscErrorCode uniform_strain_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+{
   const PetscReal eps_xx = 0.1;
   const PetscReal eps_xy = 0.3;
   const PetscReal eps_yy = 0.25;
@@ -254,14 +268,16 @@ static PetscErrorCode uniform_strain_u(PetscInt dim, PetscReal time, const Petsc
   return 0;
 }
 
-static void f0_mass_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[]) {
+static void f0_mass_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
   const PetscInt Nc = dim;
   PetscInt       c;
 
   for (c = 0; c < Nc; ++c) f0[c] = u[c];
 }
 
-static void f1_vlap_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[]) {
+static void f1_vlap_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[])
+{
   const PetscInt Nc = dim;
   PetscInt       c, d;
 
@@ -269,7 +285,8 @@ static void f1_vlap_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt 
     for (d = 0; d < dim; ++d) f1[c * dim + d] += u_x[c * dim + d];
 }
 
-static void f1_elas_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[]) {
+static void f1_elas_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[])
+{
   const PetscInt  Nc     = dim;
   const PetscReal mu     = 1.0;
   const PetscReal lambda = 1.0;
@@ -283,14 +300,16 @@ static void f1_elas_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt 
   }
 }
 
-static void g0_mass_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[]) {
+static void g0_mass_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[])
+{
   const PetscInt Nc = dim;
   PetscInt       c;
 
   for (c = 0; c < Nc; ++c) g0[c * Nc + c] = 1.0;
 }
 
-static void g3_vlap_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[]) {
+static void g3_vlap_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[])
+{
   const PetscInt Nc = dim;
   PetscInt       c, d;
 
@@ -305,7 +324,8 @@ static void g3_vlap_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt
   \partial_df \phi_fc \lambda \delta_{fc,df} \sum_gc \partial_dg \phi_gc \delta_{gc,dg}
   = \partial_fc \phi_fc \sum_gc \partial_gc \phi_gc
 */
-static void g3_elas_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[]) {
+static void g3_elas_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[])
+{
   const PetscInt  Nc     = dim;
   const PetscReal mu     = 1.0;
   const PetscReal lambda = 1.0;
@@ -320,7 +340,8 @@ static void g3_elas_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt
   }
 }
 
-static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
+static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
+{
   PetscInt sol = 0, def = 0;
 
   PetscFunctionBeginUser;
@@ -340,7 +361,8 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SetupParameters(MPI_Comm comm, AppCtx *ctx) {
+static PetscErrorCode SetupParameters(MPI_Comm comm, AppCtx *ctx)
+{
   PetscBag   bag;
   Parameter *p;
 
@@ -369,7 +391,8 @@ static PetscErrorCode SetupParameters(MPI_Comm comm, AppCtx *ctx) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexDistortGeometry(DM dm) {
+static PetscErrorCode DMPlexDistortGeometry(DM dm)
+{
   DM           cdm;
   DMLabel      label;
   Vec          coordinates;
@@ -399,23 +422,31 @@ static PetscErrorCode DMPlexDistortGeometry(DM dm) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm) {
+static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
+{
   PetscFunctionBeginUser;
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetType(*dm, DMPLEX));
   PetscCall(DMSetFromOptions(*dm));
   switch (user->deform) {
-  case DEFORM_NONE: break;
-  case DEFORM_SHEAR: PetscCall(DMPlexShearGeometry(*dm, DM_X, NULL)); break;
-  case DEFORM_STEP: PetscCall(DMPlexDistortGeometry(*dm)); break;
-  default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Invalid deformation type: %s (%d)", deformTypes[PetscMin(user->deform, NUM_DEFORM_TYPES)], user->deform);
+  case DEFORM_NONE:
+    break;
+  case DEFORM_SHEAR:
+    PetscCall(DMPlexShearGeometry(*dm, DM_X, NULL));
+    break;
+  case DEFORM_STEP:
+    PetscCall(DMPlexDistortGeometry(*dm));
+    break;
+  default:
+    SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Invalid deformation type: %s (%d)", deformTypes[PetscMin(user->deform, NUM_DEFORM_TYPES)], user->deform);
   }
   PetscCall(DMSetApplicationContext(*dm, user));
   PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user) {
+static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
+{
   PetscErrorCode (*exact)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *);
   Parameter    *param;
   PetscDS       ds;
@@ -435,45 +466,70 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user) {
     PetscCall(PetscDSSetJacobian(ds, 0, 0, g0_mass_uu, NULL, NULL, NULL));
     PetscCall(PetscWeakFormSetIndexResidual(wf, NULL, 0, 0, 0, 1, f0_mass_quadratic_u, 0, NULL));
     switch (dim) {
-    case 2: exact = quadratic_2d_u; break;
-    case 3: exact = quadratic_3d_u; break;
-    default: SETERRQ(PetscObjectComm((PetscObject)ds), PETSC_ERR_ARG_WRONG, "Invalid dimension: %" PetscInt_FMT, dim);
+    case 2:
+      exact = quadratic_2d_u;
+      break;
+    case 3:
+      exact = quadratic_3d_u;
+      break;
+    default:
+      SETERRQ(PetscObjectComm((PetscObject)ds), PETSC_ERR_ARG_WRONG, "Invalid dimension: %" PetscInt_FMT, dim);
     }
     break;
   case SOL_VLAP_QUADRATIC:
     PetscCall(PetscDSSetResidual(ds, 0, f0_vlap_quadratic_u, f1_vlap_u));
     PetscCall(PetscDSSetJacobian(ds, 0, 0, NULL, NULL, NULL, g3_vlap_uu));
     switch (dim) {
-    case 2: exact = quadratic_2d_u; break;
-    case 3: exact = quadratic_3d_u; break;
-    default: SETERRQ(PetscObjectComm((PetscObject)ds), PETSC_ERR_ARG_WRONG, "Invalid dimension: %" PetscInt_FMT, dim);
+    case 2:
+      exact = quadratic_2d_u;
+      break;
+    case 3:
+      exact = quadratic_3d_u;
+      break;
+    default:
+      SETERRQ(PetscObjectComm((PetscObject)ds), PETSC_ERR_ARG_WRONG, "Invalid dimension: %" PetscInt_FMT, dim);
     }
     break;
   case SOL_ELAS_QUADRATIC:
     PetscCall(PetscDSSetResidual(ds, 0, f0_elas_quadratic_u, f1_elas_u));
     PetscCall(PetscDSSetJacobian(ds, 0, 0, NULL, NULL, NULL, g3_elas_uu));
     switch (dim) {
-    case 2: exact = quadratic_2d_u; break;
-    case 3: exact = quadratic_3d_u; break;
-    default: SETERRQ(PetscObjectComm((PetscObject)ds), PETSC_ERR_ARG_WRONG, "Invalid dimension: %" PetscInt_FMT, dim);
+    case 2:
+      exact = quadratic_2d_u;
+      break;
+    case 3:
+      exact = quadratic_3d_u;
+      break;
+    default:
+      SETERRQ(PetscObjectComm((PetscObject)ds), PETSC_ERR_ARG_WRONG, "Invalid dimension: %" PetscInt_FMT, dim);
     }
     break;
   case SOL_VLAP_TRIG:
     PetscCall(PetscDSSetResidual(ds, 0, f0_vlap_trig_u, f1_vlap_u));
     PetscCall(PetscDSSetJacobian(ds, 0, 0, NULL, NULL, NULL, g3_vlap_uu));
     switch (dim) {
-    case 2: exact = trig_2d_u; break;
-    case 3: exact = trig_3d_u; break;
-    default: SETERRQ(PetscObjectComm((PetscObject)ds), PETSC_ERR_ARG_WRONG, "Invalid dimension: %" PetscInt_FMT, dim);
+    case 2:
+      exact = trig_2d_u;
+      break;
+    case 3:
+      exact = trig_3d_u;
+      break;
+    default:
+      SETERRQ(PetscObjectComm((PetscObject)ds), PETSC_ERR_ARG_WRONG, "Invalid dimension: %" PetscInt_FMT, dim);
     }
     break;
   case SOL_ELAS_TRIG:
     PetscCall(PetscDSSetResidual(ds, 0, f0_elas_trig_u, f1_elas_u));
     PetscCall(PetscDSSetJacobian(ds, 0, 0, NULL, NULL, NULL, g3_elas_uu));
     switch (dim) {
-    case 2: exact = trig_2d_u; break;
-    case 3: exact = trig_3d_u; break;
-    default: SETERRQ(PetscObjectComm((PetscObject)ds), PETSC_ERR_ARG_WRONG, "Invalid dimension: %" PetscInt_FMT, dim);
+    case 2:
+      exact = trig_2d_u;
+      break;
+    case 3:
+      exact = trig_3d_u;
+      break;
+    default:
+      SETERRQ(PetscObjectComm((PetscObject)ds), PETSC_ERR_ARG_WRONG, "Invalid dimension: %" PetscInt_FMT, dim);
     }
     break;
   case SOL_ELAS_AXIAL_DISP:
@@ -496,7 +552,8 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user) {
     PetscCall(PetscDSSetJacobian(ds, 0, 0, NULL, NULL, NULL, g3_elas_uu));
     exact = zero; /* No exact solution available */
     break;
-  default: SETERRQ(PetscObjectComm((PetscObject)ds), PETSC_ERR_ARG_WRONG, "Invalid solution type: %s (%d)", solutionTypes[PetscMin(user->solType, NUM_SOLUTION_TYPES)], user->solType);
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)ds), PETSC_ERR_ARG_WRONG, "Invalid solution type: %s (%d)", solutionTypes[PetscMin(user->solType, NUM_SOLUTION_TYPES)], user->solType);
   }
   PetscCall(PetscDSSetExactSolution(ds, 0, exact, user));
   PetscCall(DMGetLabel(dm, "marker", &label));
@@ -537,13 +594,15 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateElasticityNullSpace(DM dm, PetscInt origField, PetscInt field, MatNullSpace *nullspace) {
+static PetscErrorCode CreateElasticityNullSpace(DM dm, PetscInt origField, PetscInt field, MatNullSpace *nullspace)
+{
   PetscFunctionBegin;
   PetscCall(DMPlexCreateRigidBody(dm, origField, nullspace));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SetupFE(DM dm, const char name[], PetscErrorCode (*setup)(DM, AppCtx *), void *ctx) {
+PetscErrorCode SetupFE(DM dm, const char name[], PetscErrorCode (*setup)(DM, AppCtx *), void *ctx)
+{
   AppCtx        *user = (AppCtx *)ctx;
   DM             cdm  = dm;
   PetscFE        fe;
@@ -575,7 +634,8 @@ PetscErrorCode SetupFE(DM dm, const char name[], PetscErrorCode (*setup)(DM, App
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM     dm;   /* Problem specification */
   SNES   snes; /* Nonlinear solver */
   Vec    u;    /* Solutions */

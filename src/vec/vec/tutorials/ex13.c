@@ -10,7 +10,8 @@ static char help[] = "Demonstrates VecStrideSum().\n\n";
 
 #include <petscvec.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   Vec         x; /* vectors */
   PetscScalar sum;
   PetscInt    n   = 20;

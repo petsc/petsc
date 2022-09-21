@@ -20,7 +20,8 @@
   Level: beginner
 
 @*/
-PetscErrorCode DMMoabGenerateHierarchy(DM dm, PetscInt nlevels, PetscInt *ldegrees) {
+PetscErrorCode DMMoabGenerateHierarchy(DM dm, PetscInt nlevels, PetscInt *ldegrees)
+{
   DM_Moab                        *dmmoab;
   moab::ErrorCode                 merr;
   PetscInt                       *pdegrees, ilevel;
@@ -94,7 +95,8 @@ PetscErrorCode DMMoabGenerateHierarchy(DM dm, PetscInt nlevels, PetscInt *ldegre
   Level: beginner
 
 @*/
-PETSC_EXTERN PetscErrorCode DMRefineHierarchy_Moab(DM dm, PetscInt nlevels, DM dmf[]) {
+PETSC_EXTERN PetscErrorCode DMRefineHierarchy_Moab(DM dm, PetscInt nlevels, DM dmf[])
+{
   PetscInt i;
 
   PetscFunctionBegin;
@@ -120,7 +122,8 @@ PETSC_EXTERN PetscErrorCode DMRefineHierarchy_Moab(DM dm, PetscInt nlevels, DM d
   Level: beginner
 
 @*/
-PETSC_EXTERN PetscErrorCode DMCoarsenHierarchy_Moab(DM dm, PetscInt nlevels, DM dmc[]) {
+PETSC_EXTERN PetscErrorCode DMCoarsenHierarchy_Moab(DM dm, PetscInt nlevels, DM dmc[])
+{
   PetscInt i;
 
   PetscFunctionBegin;
@@ -150,7 +153,8 @@ PETSC_EXTERN PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM, PetscInt *,
   Level: developer
 
 @*/
-PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM dmp, DM dmc, Mat *interpl, Vec *vec) {
+PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM dmp, DM dmc, Mat *interpl, Vec *vec)
+{
   DM_Moab        *dmbp, *dmbc;
   moab::ErrorCode merr;
   PetscInt        dim;
@@ -182,7 +186,7 @@ PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM dmp, DM dmc, Mat *inte
 
   /* Loop through the local elements and compute the relation between the current parent and the refined_level. */
   for (moab::Range::iterator iter = dmbc->vowned->begin(); iter != dmbc->vowned->end(); iter++) {
-    const moab::EntityHandle        vhandle = *iter;
+    const moab::EntityHandle vhandle = *iter;
     /* define local variables */
     moab::EntityHandle              parent;
     std::vector<moab::EntityHandle> adjs;
@@ -389,7 +393,8 @@ PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM dmp, DM dmc, Mat *inte
   Level: beginner
 
 @*/
-PETSC_EXTERN PetscErrorCode DMCreateInjection_Moab(DM dm1, DM dm2, VecScatter *ctx) {
+PETSC_EXTERN PetscErrorCode DMCreateInjection_Moab(DM dm1, DM dm2, VecScatter *ctx)
+{
   //DM_Moab        *dmmoab;
 
   PetscFunctionBegin;
@@ -401,7 +406,8 @@ PETSC_EXTERN PetscErrorCode DMCreateInjection_Moab(DM dm1, DM dm2, VecScatter *c
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMMoab_UMR_Private(DM dm, MPI_Comm comm, PetscBool refine, DM *dmref) {
+static PetscErrorCode DMMoab_UMR_Private(DM dm, MPI_Comm comm, PetscBool refine, DM *dmref)
+{
   PetscInt        i, dim;
   DM              dm2;
   moab::ErrorCode merr;
@@ -502,7 +508,8 @@ static PetscErrorCode DMMoab_UMR_Private(DM dm, MPI_Comm comm, PetscBool refine,
   Level: developer
 
 @*/
-PETSC_EXTERN PetscErrorCode DMRefine_Moab(DM dm, MPI_Comm comm, DM *dmf) {
+PETSC_EXTERN PetscErrorCode DMRefine_Moab(DM dm, MPI_Comm comm, DM *dmf)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
 
@@ -529,7 +536,8 @@ PETSC_EXTERN PetscErrorCode DMRefine_Moab(DM dm, MPI_Comm comm, DM *dmf) {
   Level: developer
 
 @*/
-PETSC_EXTERN PetscErrorCode DMCoarsen_Moab(DM dm, MPI_Comm comm, DM *dmc) {
+PETSC_EXTERN PetscErrorCode DMCoarsen_Moab(DM dm, MPI_Comm comm, DM *dmc)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscCall(DMMoab_UMR_Private(dm, comm, PETSC_FALSE, dmc));

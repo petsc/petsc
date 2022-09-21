@@ -10,7 +10,8 @@ typedef struct _projectConstraintsCtx {
   Vec mask;
 } projectConstraintsCtx;
 
-PetscErrorCode MatMult_GlobalToLocalNormal(Mat CtC, Vec x, Vec y) {
+PetscErrorCode MatMult_GlobalToLocalNormal(Mat CtC, Vec x, Vec y)
+{
   DM                     dm;
   Vec                    local, mask;
   projectConstraintsCtx *ctx;
@@ -30,7 +31,8 @@ PetscErrorCode MatMult_GlobalToLocalNormal(Mat CtC, Vec x, Vec y) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMGlobalToLocalSolve_project1(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx) {
+static PetscErrorCode DMGlobalToLocalSolve_project1(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx)
+{
   PetscInt f;
 
   PetscFunctionBegin;
@@ -62,7 +64,8 @@ static PetscErrorCode DMGlobalToLocalSolve_project1(PetscInt dim, PetscReal time
 
 .seealso: `DMGlobalToLocalBegin()`, `DMGlobalToLocalEnd()`, `DMLocalToGlobalBegin()`, `DMLocalToGlobalEnd()`, `DMPlexGetAnchors()`, `DMPlexSetAnchors()`
 @*/
-PetscErrorCode DMGlobalToLocalSolve(DM dm, Vec x, Vec y) {
+PetscErrorCode DMGlobalToLocalSolve(DM dm, Vec x, Vec y)
+{
   Mat                   CtC;
   PetscInt              n, N, cStart, cEnd, c;
   PetscBool             isPlex;
@@ -195,7 +198,8 @@ $         PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscSc
 
 .seealso: `DMProjectFieldLocal()`, `DMProjectFieldLabelLocal()`, `DMProjectFunction()`, `DMComputeL2Diff()`
 @*/
-PetscErrorCode DMProjectField(DM dm, PetscReal time, Vec U, void (**funcs)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), InsertMode mode, Vec X) {
+PetscErrorCode DMProjectField(DM dm, PetscReal time, Vec U, void (**funcs)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), InsertMode mode, Vec X)
+{
   Vec localX, localU;
   DM  dmIn;
 
@@ -229,7 +233,8 @@ PetscErrorCode DMProjectField(DM dm, PetscReal time, Vec U, void (**funcs)(Petsc
 /********************* Adaptive Interpolation **************************/
 
 /* See the discussion of Adaptive Interpolation in manual/high_level_mg.rst */
-PetscErrorCode DMAdaptInterpolator(DM dmc, DM dmf, Mat In, KSP smoother, Mat MF, Mat MC, Mat *InAdapt, void *user) {
+PetscErrorCode DMAdaptInterpolator(DM dmc, DM dmf, Mat In, KSP smoother, Mat MF, Mat MC, Mat *InAdapt, void *user)
+{
   Mat                globalA, AF;
   Vec                tmp;
   const PetscScalar *af, *ac;
@@ -394,7 +399,8 @@ PetscErrorCode DMAdaptInterpolator(DM dmc, DM dmf, Mat In, KSP smoother, Mat MF,
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMCheckInterpolator(DM dmf, Mat In, Mat MC, Mat MF, PetscReal tol) {
+PetscErrorCode DMCheckInterpolator(DM dmf, Mat In, Mat MC, Mat MF, PetscReal tol)
+{
   Vec       tmp;
   PetscReal norminf, norm2, maxnorminf = 0.0, maxnorm2 = 0.0;
   PetscInt  k, Nc;

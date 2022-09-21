@@ -8,7 +8,8 @@ typedef enum {
   MATHEMATICA_LINK_LAUNCH
 } LinkMode;
 
-static PetscErroCode setupConnection(MLENV *env, MLINK *link, const char *linkhost, LinkMode linkmode) {
+static PetscErroCode setupConnection(MLENV *env, MLINK *link, const char *linkhost, LinkMode linkmode)
+{
   int   argc = 5;
   char *argv[5];
   char  hostname[256];
@@ -29,9 +30,15 @@ static PetscErroCode setupConnection(MLENV *env, MLINK *link, const char *linkho
 
   /* Link mode */
   switch (linkmode) {
-  case MATHEMATICA_LINK_CREATE: argv[4] = "-linkcreate"; break;
-  case MATHEMATICA_LINK_CONNECT: argv[4] = "-linkconnect"; break;
-  case MATHEMATICA_LINK_LAUNCH: argv[4] = "-linklaunch"; break;
+  case MATHEMATICA_LINK_CREATE:
+    argv[4] = "-linkcreate";
+    break;
+  case MATHEMATICA_LINK_CONNECT:
+    argv[4] = "-linkconnect";
+    break;
+  case MATHEMATICA_LINK_LAUNCH:
+    argv[4] = "-linklaunch";
+    break;
   }
 
   *env = MLInitialize(0);
@@ -41,7 +48,8 @@ static PetscErroCode setupConnection(MLENV *env, MLINK *link, const char *linkho
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode printIndent(int indent) {
+static PetscErrorCode printIndent(int indent)
+{
   int i;
 
   PetscFunctionBegin;
@@ -49,7 +57,8 @@ static PetscErrorCode printIndent(int indent) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode processPacket(MLINK link, int indent, int *result) {
+static PetscErrorCode processPacket(MLINK link, int indent, int *result)
+{
   static int isHead    = 0;
   int        tokenType = MLGetNext(link);
   int        ierr;
@@ -114,7 +123,8 @@ static PetscErrorCode processPacket(MLINK link, int indent, int *result) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode processPackets(MLINK link) {
+static PetscErrorCode processPackets(MLINK link)
+{
   int packetType;
   int loop   = 1;
   int errors = 0;
@@ -124,26 +134,66 @@ static PetscErrorCode processPackets(MLINK link) {
   while (loop) {
     while ((packetType = MLNextPacket(link)) && (packetType != RETURNPKT)) {
       switch (packetType) {
-      case BEGINDLGPKT: printf("Begin dialog packet\n"); break;
-      case CALLPKT: printf("Call packet\n"); break;
-      case DISPLAYPKT: printf("Display packet\n"); break;
-      case DISPLAYENDPKT: printf("Display end packet\n"); break;
-      case ENDDLGPKT: printf("End dialog packet\n"); break;
-      case ENTERTEXTPKT: printf("Enter text packet\n"); break;
-      case ENTEREXPRPKT: printf("Enter expression packet\n"); break;
-      case EVALUATEPKT: printf("Evaluate packet\n"); break;
-      case INPUTPKT: printf("Input packet\n"); break;
-      case INPUTNAMEPKT: printf("Input name packet\n"); break;
-      case INPUTSTRPKT: printf("Input string packet\n"); break;
-      case MENUPKT: printf("Menu packet\n"); break;
-      case MESSAGEPKT: printf("Message packet\n"); break;
-      case OUTPUTNAMEPKT: printf("Output name packet\n"); break;
-      case RESUMEPKT: printf("Resume packet\n"); break;
-      case RETURNTEXTPKT: printf("Return text packet\n"); break;
-      case RETURNEXPRPKT: printf("Return expression packet\n"); break;
-      case SUSPENDPKT: printf("Suspend packet\n"); break;
-      case SYNTAXPKT: printf("Syntax packet\n"); break;
-      case TEXTPKT: printf("Text packet\n"); break;
+      case BEGINDLGPKT:
+        printf("Begin dialog packet\n");
+        break;
+      case CALLPKT:
+        printf("Call packet\n");
+        break;
+      case DISPLAYPKT:
+        printf("Display packet\n");
+        break;
+      case DISPLAYENDPKT:
+        printf("Display end packet\n");
+        break;
+      case ENDDLGPKT:
+        printf("End dialog packet\n");
+        break;
+      case ENTERTEXTPKT:
+        printf("Enter text packet\n");
+        break;
+      case ENTEREXPRPKT:
+        printf("Enter expression packet\n");
+        break;
+      case EVALUATEPKT:
+        printf("Evaluate packet\n");
+        break;
+      case INPUTPKT:
+        printf("Input packet\n");
+        break;
+      case INPUTNAMEPKT:
+        printf("Input name packet\n");
+        break;
+      case INPUTSTRPKT:
+        printf("Input string packet\n");
+        break;
+      case MENUPKT:
+        printf("Menu packet\n");
+        break;
+      case MESSAGEPKT:
+        printf("Message packet\n");
+        break;
+      case OUTPUTNAMEPKT:
+        printf("Output name packet\n");
+        break;
+      case RESUMEPKT:
+        printf("Resume packet\n");
+        break;
+      case RETURNTEXTPKT:
+        printf("Return text packet\n");
+        break;
+      case RETURNEXPRPKT:
+        printf("Return expression packet\n");
+        break;
+      case SUSPENDPKT:
+        printf("Suspend packet\n");
+        break;
+      case SYNTAXPKT:
+        printf("Syntax packet\n");
+        break;
+      case TEXTPKT:
+        printf("Text packet\n");
+        break;
       }
       MLNewPacket(link);
     }
@@ -165,14 +215,16 @@ static PetscErrorCode processPackets(MLINK link) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode cleanupConnection(MLENV env, MLINK link) {
+static PetscErrorCode cleanupConnection(MLENV env, MLINK link)
+{
   PetscFunctionBegin;
   MLClose(link);
   MLDeinitialize(env);
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   MLENV env;
   MLINK link;
 

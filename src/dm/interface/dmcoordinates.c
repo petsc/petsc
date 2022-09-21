@@ -3,7 +3,8 @@
 #include <petscdmplex.h> /* For DMProjectCoordinates() */
 #include <petscsf.h>     /* For DMLocatePoints() */
 
-PetscErrorCode DMRestrictHook_Coordinates(DM dm, DM dmc, void *ctx) {
+PetscErrorCode DMRestrictHook_Coordinates(DM dm, DM dmc, void *ctx)
+{
   DM  dm_coord, dmc_coord;
   Vec coords, ccoords;
   Mat inject;
@@ -24,7 +25,8 @@ PetscErrorCode DMRestrictHook_Coordinates(DM dm, DM dmc, void *ctx) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMSubDomainHook_Coordinates(DM dm, DM subdm, void *ctx) {
+static PetscErrorCode DMSubDomainHook_Coordinates(DM dm, DM subdm, void *ctx)
+{
   DM          dm_coord, subdm_coord;
   Vec         coords, ccoords, clcoords;
   VecScatter *scat_i, *scat_g;
@@ -70,7 +72,8 @@ static PetscErrorCode DMSubDomainHook_Coordinates(DM dm, DM subdm, void *ctx) {
 
 .seealso: `DMSetCoordinateDM()`, `DMSetCoordinates()`, `DMSetCoordinatesLocal()`, `DMGetCoordinates()`, `DMGetCoordinatesLocal()`
 @*/
-PetscErrorCode DMGetCoordinateDM(DM dm, DM *cdm) {
+PetscErrorCode DMGetCoordinateDM(DM dm, DM *cdm)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(cdm, 2);
@@ -101,7 +104,8 @@ PetscErrorCode DMGetCoordinateDM(DM dm, DM *cdm) {
 
 .seealso: `DMGetCoordinateDM()`, `DMSetCoordinates()`, `DMSetCoordinatesLocal()`, `DMGetCoordinates()`, `DMGetCoordinatesLocal()`
 @*/
-PetscErrorCode DMSetCoordinateDM(DM dm, DM cdm) {
+PetscErrorCode DMSetCoordinateDM(DM dm, DM cdm)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(cdm, DM_CLASSID, 2);
@@ -129,7 +133,8 @@ PetscErrorCode DMSetCoordinateDM(DM dm, DM cdm) {
 
 .seealso: `DMSetCellCoordinateDM()`, `DMSetCellCoordinates()`, `DMSetCellCoordinatesLocal()`, `DMGetCellCoordinates()`, `DMGetCellCoordinatesLocal()`, `DMLocalizeCoordinates()`
 @*/
-PetscErrorCode DMGetCellCoordinateDM(DM dm, DM *cdm) {
+PetscErrorCode DMGetCellCoordinateDM(DM dm, DM *cdm)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(cdm, 2);
@@ -150,7 +155,8 @@ PetscErrorCode DMGetCellCoordinateDM(DM dm, DM *cdm) {
 
 .seealso: `DMGetCellCoordinateDM()`, `DMSetCellCoordinates()`, `DMSetCellCoordinatesLocal()`, `DMGetCellCoordinates()`, `DMGetCellCoordinatesLocal()`
 @*/
-PetscErrorCode DMSetCellCoordinateDM(DM dm, DM cdm) {
+PetscErrorCode DMSetCellCoordinateDM(DM dm, DM cdm)
+{
   PetscInt dim;
 
   PetscFunctionBegin;
@@ -181,7 +187,8 @@ PetscErrorCode DMSetCellCoordinateDM(DM dm, DM cdm) {
 
 .seealso: `DMSetCoordinateDim()`, `DMGetCoordinateSection()`, `DMGetCoordinateDM()`, `DMGetLocalSection()`, `DMSetLocalSection()`
 @*/
-PetscErrorCode DMGetCoordinateDim(DM dm, PetscInt *dim) {
+PetscErrorCode DMGetCoordinateDim(DM dm, PetscInt *dim)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidIntPointer(dim, 2);
@@ -203,7 +210,8 @@ PetscErrorCode DMGetCoordinateDim(DM dm, PetscInt *dim) {
 
 .seealso: `DMGetCoordinateDim()`, `DMSetCoordinateSection()`, `DMGetCoordinateSection()`, `DMGetLocalSection()`, `DMSetLocalSection()`
 @*/
-PetscErrorCode DMSetCoordinateDim(DM dm, PetscInt dim) {
+PetscErrorCode DMSetCoordinateDim(DM dm, PetscInt dim)
+{
   PetscDS  ds;
   PetscInt Nds, n;
 
@@ -235,7 +243,8 @@ PetscErrorCode DMSetCoordinateDim(DM dm, PetscInt dim) {
 
 .seealso: `DMGetCoordinateDM()`, `DMGetLocalSection()`, `DMSetLocalSection()`
 @*/
-PetscErrorCode DMGetCoordinateSection(DM dm, PetscSection *section) {
+PetscErrorCode DMGetCoordinateSection(DM dm, PetscSection *section)
+{
   DM cdm;
 
   PetscFunctionBegin;
@@ -260,7 +269,8 @@ PetscErrorCode DMGetCoordinateSection(DM dm, PetscSection *section) {
 
 .seealso: `DMGetCoordinateSection()`, `DMGetLocalSection()`, `DMSetLocalSection()`
 @*/
-PetscErrorCode DMSetCoordinateSection(DM dm, PetscInt dim, PetscSection section) {
+PetscErrorCode DMSetCoordinateSection(DM dm, PetscInt dim, PetscSection section)
+{
   DM cdm;
 
   PetscFunctionBegin;
@@ -303,7 +313,8 @@ PetscErrorCode DMSetCoordinateSection(DM dm, PetscInt dim, PetscSection section)
 
 .seealso: `DMGetCoordinateSection()`, `DMSetCellCoordinateSection()`, `DMGetCellCoordinateDM()`, `DMGetCoordinateDM()`, `DMGetLocalSection()`, `DMSetLocalSection()`
 @*/
-PetscErrorCode DMGetCellCoordinateSection(DM dm, PetscSection *section) {
+PetscErrorCode DMGetCellCoordinateSection(DM dm, PetscSection *section)
+{
   DM cdm;
 
   PetscFunctionBegin;
@@ -329,7 +340,8 @@ PetscErrorCode DMGetCellCoordinateSection(DM dm, PetscSection *section) {
 
 .seealso: `DMSetCoordinateSection()`, `DMGetCellCoordinateSection()`, `DMGetCoordinateSection()`, `DMGetCellCoordinateDM()`, `DMGetLocalSection()`, `DMSetLocalSection()`
 @*/
-PetscErrorCode DMSetCellCoordinateSection(DM dm, PetscInt dim, PetscSection section) {
+PetscErrorCode DMSetCellCoordinateSection(DM dm, PetscInt dim, PetscSection section)
+{
   DM cdm;
 
   PetscFunctionBegin;
@@ -382,7 +394,8 @@ PetscErrorCode DMSetCellCoordinateSection(DM dm, PetscInt dim, PetscSection sect
 
 .seealso: `DMSetCoordinates()`, `DMGetCoordinatesLocal()`, `DMGetCoordinateDM()`, `DMDASetUniformCoordinates()`
 @*/
-PetscErrorCode DMGetCoordinates(DM dm, Vec *c) {
+PetscErrorCode DMGetCoordinates(DM dm, Vec *c)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(c, 2);
@@ -417,7 +430,8 @@ PetscErrorCode DMGetCoordinates(DM dm, Vec *c) {
 
 .seealso: `DMSetCoordinatesLocal()`, `DMGetCoordinates()`, `DMGetCoordinatesLocal()`, `DMGetCoordinateDM()`, `DMDASetUniformCoordinates()`
 @*/
-PetscErrorCode DMSetCoordinates(DM dm, Vec c) {
+PetscErrorCode DMSetCoordinates(DM dm, Vec c)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   if (c) PetscValidHeaderSpecific(c, VEC_CLASSID, 2);
@@ -451,7 +465,8 @@ PetscErrorCode DMSetCoordinates(DM dm, Vec c) {
 
 .seealso: `DMSetCellCoordinates()`, `DMGetCellCoordinatesLocal()`, `DMGetCellCoordinateDM()`
 @*/
-PetscErrorCode DMGetCellCoordinates(DM dm, Vec *c) {
+PetscErrorCode DMGetCellCoordinates(DM dm, Vec *c)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(c, 2);
@@ -486,7 +501,8 @@ PetscErrorCode DMGetCellCoordinates(DM dm, Vec *c) {
 
 .seealso: `DMSetCellCoordinatesLocal()`, `DMGetCellCoordinates()`, `DMGetCellCoordinatesLocal()`, `DMGetCellCoordinateDM()`
 @*/
-PetscErrorCode DMSetCellCoordinates(DM dm, Vec c) {
+PetscErrorCode DMSetCellCoordinates(DM dm, Vec c)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   if (c) PetscValidHeaderSpecific(c, VEC_CLASSID, 2);
@@ -509,7 +525,8 @@ PetscErrorCode DMSetCellCoordinates(DM dm, Vec c) {
 
 .seealso: `DMGetCoordinatesLocalNoncollective()`
 @*/
-PetscErrorCode DMGetCoordinatesLocalSetUp(DM dm) {
+PetscErrorCode DMGetCoordinatesLocalSetUp(DM dm)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   if (!dm->coordinates[0].xl && dm->coordinates[0].x) {
@@ -547,7 +564,8 @@ PetscErrorCode DMGetCoordinatesLocalSetUp(DM dm) {
 
 .seealso: `DMSetCoordinatesLocal()`, `DMGetCoordinates()`, `DMSetCoordinates()`, `DMGetCoordinateDM()`, `DMGetCoordinatesLocalNoncollective()`
 @*/
-PetscErrorCode DMGetCoordinatesLocal(DM dm, Vec *c) {
+PetscErrorCode DMGetCoordinatesLocal(DM dm, Vec *c)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(c, 2);
@@ -571,7 +589,8 @@ PetscErrorCode DMGetCoordinatesLocal(DM dm, Vec *c) {
 
 .seealso: `DMGetCoordinatesLocalSetUp()`, `DMGetCoordinatesLocal()`, `DMSetCoordinatesLocal()`, `DMGetCoordinates()`, `DMSetCoordinates()`, `DMGetCoordinateDM()`
 @*/
-PetscErrorCode DMGetCoordinatesLocalNoncollective(DM dm, Vec *c) {
+PetscErrorCode DMGetCoordinatesLocalNoncollective(DM dm, Vec *c)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(c, 2);
@@ -607,7 +626,8 @@ PetscErrorCode DMGetCoordinatesLocalNoncollective(DM dm, Vec *c) {
 
 .seealso: `DMSetCoordinatesLocal()`, `DMGetCoordinatesLocal()`, `DMGetCoordinatesLocalNoncollective()`, `DMGetCoordinatesLocalSetUp()`, `DMGetCoordinates()`, `DMSetCoordinates()`, `DMGetCoordinateDM()`
 @*/
-PetscErrorCode DMGetCoordinatesLocalTuple(DM dm, IS p, PetscSection *pCoordSection, Vec *pCoord) {
+PetscErrorCode DMGetCoordinatesLocalTuple(DM dm, IS p, PetscSection *pCoordSection, Vec *pCoord)
+{
   DM                 cdm;
   PetscSection       cs, newcs;
   Vec                coords;
@@ -662,7 +682,8 @@ PetscErrorCode DMGetCoordinatesLocalTuple(DM dm, IS p, PetscSection *pCoordSecti
 
 .seealso: `DMGetCoordinatesLocal()`, `DMSetCoordinates()`, `DMGetCoordinates()`, `DMGetCoordinateDM()`
 @*/
-PetscErrorCode DMSetCoordinatesLocal(DM dm, Vec c) {
+PetscErrorCode DMSetCoordinatesLocal(DM dm, Vec c)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   if (c) PetscValidHeaderSpecific(c, VEC_CLASSID, 2);
@@ -685,7 +706,8 @@ PetscErrorCode DMSetCoordinatesLocal(DM dm, Vec c) {
 
 .seealso: `DMGetCellCoordinatesLocalNoncollective()`
 @*/
-PetscErrorCode DMGetCellCoordinatesLocalSetUp(DM dm) {
+PetscErrorCode DMGetCellCoordinatesLocalSetUp(DM dm)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   if (!dm->coordinates[1].xl && dm->coordinates[1].x) {
@@ -720,7 +742,8 @@ PetscErrorCode DMGetCellCoordinatesLocalSetUp(DM dm) {
 
 .seealso: `DMSetCellCoordinatesLocal()`, `DMGetCellCoordinates()`, `DMSetCellCoordinates()`, `DMGetCellCoordinateDM()`, `DMGetCellCoordinatesLocalNoncollective()`
 @*/
-PetscErrorCode DMGetCellCoordinatesLocal(DM dm, Vec *c) {
+PetscErrorCode DMGetCellCoordinatesLocal(DM dm, Vec *c)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(c, 2);
@@ -744,7 +767,8 @@ PetscErrorCode DMGetCellCoordinatesLocal(DM dm, Vec *c) {
 
 .seealso: `DMGetCellCoordinatesLocalSetUp()`, `DMGetCellCoordinatesLocal()`, `DMSetCellCoordinatesLocal()`, `DMGetCellCoordinates()`, `DMSetCellCoordinates()`, `DMGetCellCoordinateDM()`
 @*/
-PetscErrorCode DMGetCellCoordinatesLocalNoncollective(DM dm, Vec *c) {
+PetscErrorCode DMGetCellCoordinatesLocalNoncollective(DM dm, Vec *c)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(c, 2);
@@ -773,7 +797,8 @@ PetscErrorCode DMGetCellCoordinatesLocalNoncollective(DM dm, Vec *c) {
 
 .seealso: `DMGetCellCoordinatesLocal()`, `DMSetCellCoordinates()`, `DMGetCellCoordinates()`, `DMGetCellCoordinateDM()`
 @*/
-PetscErrorCode DMSetCellCoordinatesLocal(DM dm, Vec c) {
+PetscErrorCode DMSetCellCoordinatesLocal(DM dm, Vec c)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   if (c) PetscValidHeaderSpecific(c, VEC_CLASSID, 2);
@@ -784,7 +809,8 @@ PetscErrorCode DMSetCellCoordinatesLocal(DM dm, Vec c) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMGetCoordinateField(DM dm, DMField *field) {
+PetscErrorCode DMGetCoordinateField(DM dm, DMField *field)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(field, 2);
@@ -795,7 +821,8 @@ PetscErrorCode DMGetCoordinateField(DM dm, DMField *field) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMSetCoordinateField(DM dm, DMField field) {
+PetscErrorCode DMSetCoordinateField(DM dm, DMField field)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   if (field) PetscValidHeaderSpecific(field, DMFIELD_CLASSID, 2);
@@ -823,7 +850,8 @@ PetscErrorCode DMSetCoordinateField(DM dm, DMField field) {
 
 .seealso: `DMGetCoordinates()`, `DMGetCoordinatesLocal()`, `DMGetBoundingBox()`
 @*/
-PetscErrorCode DMGetLocalBoundingBox(DM dm, PetscReal lmin[], PetscReal lmax[]) {
+PetscErrorCode DMGetLocalBoundingBox(DM dm, PetscReal lmin[], PetscReal lmax[])
+{
   Vec       coords = NULL;
   PetscReal min[3] = {PETSC_MAX_REAL, PETSC_MAX_REAL, PETSC_MAX_REAL};
   PetscReal max[3] = {PETSC_MIN_REAL, PETSC_MIN_REAL, PETSC_MIN_REAL};
@@ -891,7 +919,8 @@ PetscErrorCode DMGetLocalBoundingBox(DM dm, PetscReal lmin[], PetscReal lmax[]) 
 
 .seealso: `DMGetLocalBoundingBox()`, `DMGetCoordinates()`, `DMGetCoordinatesLocal()`
 @*/
-PetscErrorCode DMGetBoundingBox(DM dm, PetscReal gmin[], PetscReal gmax[]) {
+PetscErrorCode DMGetBoundingBox(DM dm, PetscReal gmin[], PetscReal gmax[])
+{
   PetscReal   lmin[3], lmax[3];
   PetscInt    cdim;
   PetscMPIInt count;
@@ -917,7 +946,8 @@ PetscErrorCode DMGetBoundingBox(DM dm, PetscReal gmin[], PetscReal gmax[]) {
 
 .seealso: `DMGetCoordinateField()`
 @*/
-PetscErrorCode DMProjectCoordinates(DM dm, PetscFE disc) {
+PetscErrorCode DMProjectCoordinates(DM dm, PetscFE disc)
+{
   PetscFE      discOld;
   PetscClassId classid;
   DM           cdmOld, cdmNew;
@@ -948,8 +978,10 @@ PetscErrorCode DMProjectCoordinates(DM dm, PetscFE disc) {
         PetscCall(DMPlexGetCellType(dm, cStart, &ct));
         switch (ct) {
         case DM_POLYTOPE_TRI_PRISM:
-        case DM_POLYTOPE_TRI_PRISM_TENSOR: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot autoamtically create coordinate space for prisms");
-        default: break;
+        case DM_POLYTOPE_TRI_PRISM_TENSOR:
+          SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot autoamtically create coordinate space for prisms");
+        default:
+          break;
         }
       }
       PetscCall(DMPlexIsSimplex(dm, &simplex));
@@ -1033,7 +1065,8 @@ $    PetscSFGetGraph(cellSF,NULL,&nFound,&found,&cells);
 
 .seealso: `DMSetCoordinates()`, `DMSetCoordinatesLocal()`, `DMGetCoordinates()`, `DMGetCoordinatesLocal()`, `DMPointLocationType`
 @*/
-PetscErrorCode DMLocatePoints(DM dm, Vec v, DMPointLocationType ltype, PetscSF *cellSF) {
+PetscErrorCode DMLocatePoints(DM dm, Vec v, DMPointLocationType ltype, PetscSF *cellSF)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(v, VEC_CLASSID, 2);

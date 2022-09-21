@@ -116,7 +116,8 @@ typedef struct {
   PetscBool    random_real;
 } AppCtx;
 
-static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
+static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
+{
   const char *pdeTypes[2] = {"Poisson", "Elasticity"};
   PetscInt    n, pde;
 
@@ -160,27 +161,43 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   case PDE_ELASTICITY:
     options->dof = options->dim;
     switch (options->dim) {
-    case 1: options->elemMat = elast_1D_emat; break;
-    case 2: options->elemMat = elast_2D_emat; break;
-    case 3: options->elemMat = elast_3D_emat; break;
-    default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Unsupported dimension %" PetscInt_FMT, options->dim);
+    case 1:
+      options->elemMat = elast_1D_emat;
+      break;
+    case 2:
+      options->elemMat = elast_2D_emat;
+      break;
+    case 3:
+      options->elemMat = elast_3D_emat;
+      break;
+    default:
+      SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Unsupported dimension %" PetscInt_FMT, options->dim);
     }
     break;
   case PDE_POISSON:
     options->dof = 1;
     switch (options->dim) {
-    case 1: options->elemMat = poiss_1D_emat; break;
-    case 2: options->elemMat = poiss_2D_emat; break;
-    case 3: options->elemMat = poiss_3D_emat; break;
-    default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Unsupported dimension %" PetscInt_FMT, options->dim);
+    case 1:
+      options->elemMat = poiss_1D_emat;
+      break;
+    case 2:
+      options->elemMat = poiss_2D_emat;
+      break;
+    case 3:
+      options->elemMat = poiss_3D_emat;
+      break;
+    default:
+      SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Unsupported dimension %" PetscInt_FMT, options->dim);
     }
     break;
-  default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Unsupported PDE %d", options->pde);
+  default:
+    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Unsupported PDE %d", options->pde);
   }
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   AppCtx                 user;
   KSP                    ksp;
   PC                     pc;
@@ -212,8 +229,11 @@ int main(int argc, char **args) {
   case 2:
     PetscCall(DMDACreate2d(PETSC_COMM_WORLD, user.per[0] ? DM_BOUNDARY_PERIODIC : DM_BOUNDARY_NONE, user.per[1] ? DM_BOUNDARY_PERIODIC : DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, nodes[0], nodes[1], PETSC_DECIDE, PETSC_DECIDE, user.dof, 1, PETSC_NULL, PETSC_NULL, &da));
     break;
-  case 1: PetscCall(DMDACreate1d(PETSC_COMM_WORLD, user.per[0] ? DM_BOUNDARY_PERIODIC : DM_BOUNDARY_NONE, nodes[0], user.dof, 1, PETSC_NULL, &da)); break;
-  default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Unsupported dimension %" PetscInt_FMT, user.dim);
+  case 1:
+    PetscCall(DMDACreate1d(PETSC_COMM_WORLD, user.per[0] ? DM_BOUNDARY_PERIODIC : DM_BOUNDARY_NONE, nodes[0], user.dof, 1, PETSC_NULL, &da));
+    break;
+  default:
+    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Unsupported dimension %" PetscInt_FMT, user.dim);
   }
 
   PetscCall(PetscLogStageRegister("KSPSetUp", &stages[0]));
@@ -227,10 +247,15 @@ int main(int argc, char **args) {
     PetscInt M, N, P;
     PetscCall(DMDAGetInfo(da, 0, &M, &N, &P, 0, 0, 0, 0, 0, 0, 0, 0, 0));
     switch (user.dim) {
-    case 3: user.cells[2] = P - !user.per[2];
-    case 2: user.cells[1] = N - !user.per[1];
-    case 1: user.cells[0] = M - !user.per[0]; break;
-    default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Unsupported dimension %" PetscInt_FMT, user.dim);
+    case 3:
+      user.cells[2] = P - !user.per[2];
+    case 2:
+      user.cells[1] = N - !user.per[1];
+    case 1:
+      user.cells[0] = M - !user.per[0];
+      break;
+    default:
+      SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Unsupported dimension %" PetscInt_FMT, user.dim);
     }
   }
   PetscCall(DMDASetUniformCoordinates(da, 0.0, 1.0 * user.cells[0], 0.0, 1.0 * user.cells[1], 0.0, 1.0 * user.cells[2]));
@@ -318,8 +343,12 @@ int main(int argc, char **args) {
     PetscCall(MatZeroRowsColumnsIS(A, zero, 1.0, NULL, NULL));
   } else {
     switch (user.pde) {
-    case PDE_POISSON: PetscCall(MatNullSpaceCreate(PETSC_COMM_WORLD, PETSC_TRUE, 0, NULL, &nullsp)); break;
-    case PDE_ELASTICITY: PetscCall(MatNullSpaceCreateRigidBody(xcoor, &nullsp)); break;
+    case PDE_POISSON:
+      PetscCall(MatNullSpaceCreate(PETSC_COMM_WORLD, PETSC_TRUE, 0, NULL, &nullsp));
+      break;
+    case PDE_ELASTICITY:
+      PetscCall(MatNullSpaceCreateRigidBody(xcoor, &nullsp));
+      break;
     }
     /* with periodic BC and Elasticity, just the displacements are in the nullspace
        this is no harm since we eliminate all the components of the rhs */

@@ -13,7 +13,8 @@ typedef struct {
   PetscInt    *i, *j; /* offsets of nonzeros by column, non-zero indices by column */
 } PC_CP;
 
-static PetscErrorCode PCSetUp_CP(PC pc) {
+static PetscErrorCode PCSetUp_CP(PC pc)
+{
   PC_CP      *cp = (PC_CP *)pc->data;
   PetscInt    i, j, *colcnt;
   PetscBool   flg;
@@ -58,7 +59,8 @@ static PetscErrorCode PCSetUp_CP(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCApply_CP(PC pc, Vec bb, Vec xx) {
+static PetscErrorCode PCApply_CP(PC pc, Vec bb, Vec xx)
+{
   PC_CP       *cp = (PC_CP *)pc->data;
   PetscScalar *b, *x, xt;
   PetscInt     i, j;
@@ -88,7 +90,8 @@ static PetscErrorCode PCApply_CP(PC pc, Vec bb, Vec xx) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCReset_CP(PC pc) {
+static PetscErrorCode PCReset_CP(PC pc)
+{
   PC_CP *cp = (PC_CP *)pc->data;
 
   PetscFunctionBegin;
@@ -98,7 +101,8 @@ static PetscErrorCode PCReset_CP(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCDestroy_CP(PC pc) {
+static PetscErrorCode PCDestroy_CP(PC pc)
+{
   PC_CP *cp = (PC_CP *)pc->data;
 
   PetscFunctionBegin;
@@ -109,7 +113,8 @@ static PetscErrorCode PCDestroy_CP(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCSetFromOptions_CP(PC pc, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode PCSetFromOptions_CP(PC pc, PetscOptionItems *PetscOptionsObject)
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
@@ -155,7 +160,8 @@ static PetscErrorCode PCSetFromOptions_CP(PC pc, PetscOptionItems *PetscOptionsO
 .seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PCJACOBI`, `PCSOR`
 M*/
 
-PETSC_EXTERN PetscErrorCode PCCreate_CP(PC pc) {
+PETSC_EXTERN PetscErrorCode PCCreate_CP(PC pc)
+{
   PC_CP *cp;
 
   PetscFunctionBegin;

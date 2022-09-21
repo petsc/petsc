@@ -41,7 +41,8 @@
 
 .seealso: `SNES`, `SNESSetJacobian()`, `SNESSetJacobian()`, `SNESComputeJacobianDefaultColor()`, `MatCreateSNESMF()`
 @*/
-PetscErrorCode SNESComputeJacobianDefault(SNES snes, Vec x1, Mat J, Mat B, void *ctx) {
+PetscErrorCode SNESComputeJacobianDefault(SNES snes, Vec x1, Mat J, Mat B, void *ctx)
+{
   Vec                j1a, j2a, x2;
   PetscInt           i, N, start, end, j, value, root, max_funcs = snes->max_funcs;
   PetscScalar        dx, *y, wscale;

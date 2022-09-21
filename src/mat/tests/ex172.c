@@ -5,7 +5,8 @@ static char help[] = "Test MatAXPY and SUBSET_NONZERO_PATTERN [-different] [-ski
 
 #include <petscmat.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat       A, B, C;
   PetscBool different = PETSC_FALSE, skip = PETSC_FALSE;
   PetscInt  m0, m1, n = 128, i;

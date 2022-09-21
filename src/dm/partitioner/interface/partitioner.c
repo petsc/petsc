@@ -23,7 +23,8 @@ $ PETSCPARTITIONERGATHER   - Gathers all cells onto process 0
 
 .seealso: `PetscPartitionerGetType()`, `PetscPartitionerCreate()`
 @*/
-PetscErrorCode PetscPartitionerSetType(PetscPartitioner part, PetscPartitionerType name) {
+PetscErrorCode PetscPartitionerSetType(PetscPartitioner part, PetscPartitionerType name)
+{
   PetscErrorCode (*r)(PetscPartitioner);
   PetscBool match;
 
@@ -59,7 +60,8 @@ PetscErrorCode PetscPartitionerSetType(PetscPartitioner part, PetscPartitionerTy
 
 .seealso: `PetscPartitionerSetType()`, `PetscPartitionerCreate()`
 @*/
-PetscErrorCode PetscPartitionerGetType(PetscPartitioner part, PetscPartitionerType *name) {
+PetscErrorCode PetscPartitionerGetType(PetscPartitioner part, PetscPartitionerType *name)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
   PetscValidPointer(name, 2);
@@ -80,7 +82,8 @@ PetscErrorCode PetscPartitionerGetType(PetscPartitioner part, PetscPartitionerTy
    Level: intermediate
 .seealso: `PetscPartitionerView()`, `PetscObjectViewFromOptions()`
 @*/
-PetscErrorCode PetscPartitionerViewFromOptions(PetscPartitioner A, PetscObject obj, const char name[]) {
+PetscErrorCode PetscPartitionerViewFromOptions(PetscPartitioner A, PetscObject obj, const char name[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, PETSCPARTITIONER_CLASSID, 1);
   PetscCall(PetscObjectViewFromOptions((PetscObject)A, obj, name));
@@ -100,7 +103,8 @@ PetscErrorCode PetscPartitionerViewFromOptions(PetscPartitioner A, PetscObject o
 
 .seealso: `PetscPartitionerDestroy()`
 @*/
-PetscErrorCode PetscPartitionerView(PetscPartitioner part, PetscViewer v) {
+PetscErrorCode PetscPartitionerView(PetscPartitioner part, PetscViewer v)
+{
   PetscMPIInt size;
   PetscBool   isascii;
 
@@ -120,7 +124,8 @@ PetscErrorCode PetscPartitionerView(PetscPartitioner part, PetscViewer v) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscPartitionerGetDefaultType(MPI_Comm comm, const char **defaultType) {
+static PetscErrorCode PetscPartitionerGetDefaultType(MPI_Comm comm, const char **defaultType)
+{
   PetscMPIInt size;
 
   PetscFunctionBegin;
@@ -158,7 +163,8 @@ static PetscErrorCode PetscPartitionerGetDefaultType(MPI_Comm comm, const char *
 
 .seealso: `PetscPartitionerView()`, `PetscPartitionerSetType()`, `PetscPartitionerPartition()`
 @*/
-PetscErrorCode PetscPartitionerSetFromOptions(PetscPartitioner part) {
+PetscErrorCode PetscPartitionerSetFromOptions(PetscPartitioner part)
+{
   const char *currentType = NULL;
   char        name[256];
   PetscBool   flg;
@@ -193,7 +199,8 @@ PetscErrorCode PetscPartitionerSetFromOptions(PetscPartitioner part) {
 
 .seealso: `PetscPartitionerView()`, `PetscPartitionerDestroy()`
 @*/
-PetscErrorCode PetscPartitionerSetUp(PetscPartitioner part) {
+PetscErrorCode PetscPartitionerSetUp(PetscPartitioner part)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
   PetscTryTypeMethod(part, setup);
@@ -212,7 +219,8 @@ PetscErrorCode PetscPartitionerSetUp(PetscPartitioner part) {
 
 .seealso: `PetscPartitionerSetUp()`, `PetscPartitionerDestroy()`
 @*/
-PetscErrorCode PetscPartitionerReset(PetscPartitioner part) {
+PetscErrorCode PetscPartitionerReset(PetscPartitioner part)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
   PetscTryTypeMethod(part, reset);
@@ -231,7 +239,8 @@ PetscErrorCode PetscPartitionerReset(PetscPartitioner part) {
 
 .seealso: `PetscPartitionerView()`
 @*/
-PetscErrorCode PetscPartitionerDestroy(PetscPartitioner *part) {
+PetscErrorCode PetscPartitionerDestroy(PetscPartitioner *part)
+{
   PetscFunctionBegin;
   if (!*part) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*part), PETSCPARTITIONER_CLASSID, 1);
@@ -281,7 +290,8 @@ PetscErrorCode PetscPartitionerDestroy(PetscPartitioner *part) {
 
 .seealso `PetscPartitionerCreate()`, `PetscPartitionerSetType()`, `PetscSectionCreate()`, `PetscSectionSetChart()`, `PetscSectionSetDof()`
 @*/
-PetscErrorCode PetscPartitionerPartition(PetscPartitioner part, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection vertexSection, PetscSection targetSection, PetscSection partSection, IS *partition) {
+PetscErrorCode PetscPartitionerPartition(PetscPartitioner part, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection vertexSection, PetscSection targetSection, PetscSection partSection, IS *partition)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
   PetscValidLogicalCollectiveInt(part, nparts, 2);
@@ -358,7 +368,8 @@ PetscErrorCode PetscPartitionerPartition(PetscPartitioner part, PetscInt nparts,
 
 .seealso: `PetscPartitionerSetType()`, `PetscPartitionerDestroy()`
 @*/
-PetscErrorCode PetscPartitionerCreate(MPI_Comm comm, PetscPartitioner *part) {
+PetscErrorCode PetscPartitionerCreate(MPI_Comm comm, PetscPartitioner *part)
+{
   PetscPartitioner p;
   const char      *partitionerType = NULL;
 

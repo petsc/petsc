@@ -1,7 +1,8 @@
 static char help[] = "Testing MatCreateMPIMatConcatenateSeqMat().\n\n";
 
 #include <petscmat.h>
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   Mat         seqmat, mpimat;
   PetscMPIInt rank;
   PetscScalar value[3], *vals;

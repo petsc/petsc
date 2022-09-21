@@ -30,7 +30,8 @@ extern PetscErrorCode FormFunction1(SNES, Vec, Vec, void *);
 extern PetscErrorCode FormJacobian2(SNES, Vec, Mat, Mat, void *);
 extern PetscErrorCode FormFunction2(SNES, Vec, Vec, void *);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   SNES        snes; /* nonlinear solver context */
   KSP         ksp;  /* linear solver context */
   PC          pc;   /* preconditioner context */
@@ -159,7 +160,8 @@ int main(int argc, char **argv) {
    Output Parameter:
 .  f - function vector
  */
-PetscErrorCode FormFunction1(SNES snes, Vec x, Vec f, void *ctx) {
+PetscErrorCode FormFunction1(SNES snes, Vec x, Vec f, void *ctx)
+{
   const PetscScalar *xx;
   PetscScalar       *ff;
 
@@ -196,7 +198,8 @@ PetscErrorCode FormFunction1(SNES snes, Vec x, Vec f, void *ctx) {
 .  B - optionally different preconditioning matrix
 .  flag - flag indicating matrix structure
 */
-PetscErrorCode FormJacobian1(SNES snes, Vec x, Mat jac, Mat B, void *dummy) {
+PetscErrorCode FormJacobian1(SNES snes, Vec x, Mat jac, Mat B, void *dummy)
+{
   const PetscScalar *xx;
   PetscScalar        A[4];
   PetscInt           idx[2] = {0, 1};
@@ -235,7 +238,8 @@ PetscErrorCode FormJacobian1(SNES snes, Vec x, Mat jac, Mat B, void *dummy) {
 }
 
 /* ------------------------------------------------------------------- */
-PetscErrorCode FormFunction2(SNES snes, Vec x, Vec f, void *dummy) {
+PetscErrorCode FormFunction2(SNES snes, Vec x, Vec f, void *dummy)
+{
   const PetscScalar *xx;
   PetscScalar       *ff;
 
@@ -263,7 +267,8 @@ PetscErrorCode FormFunction2(SNES snes, Vec x, Vec f, void *dummy) {
   return 0;
 }
 /* ------------------------------------------------------------------- */
-PetscErrorCode FormJacobian2(SNES snes, Vec x, Mat jac, Mat B, void *dummy) {
+PetscErrorCode FormJacobian2(SNES snes, Vec x, Mat jac, Mat B, void *dummy)
+{
   const PetscScalar *xx;
   PetscScalar        A[4];
   PetscInt           idx[2] = {0, 1};

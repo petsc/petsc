@@ -5,7 +5,8 @@
       Return PETSC_ERR_MEM if there is insufficient space to store the
       row, so garbage collection and/or re-allocation may be done.
 */
-PetscBool spbas_cholesky_row_alloc(spbas_matrix retval, PetscInt k, PetscInt r_nnz, PetscInt *n_alloc_used) {
+PetscBool spbas_cholesky_row_alloc(spbas_matrix retval, PetscInt k, PetscInt r_nnz, PetscInt *n_alloc_used)
+{
   retval.icols[k]  = &retval.alloc_icol[*n_alloc_used];
   retval.values[k] = &retval.alloc_val[*n_alloc_used];
   *n_alloc_used += r_nnz;
@@ -235,7 +236,8 @@ PetscErrorCode spbas_cholesky_garbage_collect(spbas_matrix *result,         /* I
      with a larger epsdiag_in, a less sparse pattern, and/or a smaller
      droptol
 */
-PetscErrorCode spbas_incomplete_cholesky(Mat A, const PetscInt *rip, const PetscInt *riip, spbas_matrix pattern, PetscReal droptol, PetscReal epsdiag_in, spbas_matrix *matrix_L, PetscBool *success) {
+PetscErrorCode spbas_incomplete_cholesky(Mat A, const PetscInt *rip, const PetscInt *riip, spbas_matrix pattern, PetscReal droptol, PetscReal epsdiag_in, spbas_matrix *matrix_L, PetscBool *success)
+{
   PetscInt        jL;
   Mat_SeqAIJ     *a  = (Mat_SeqAIJ *)A->data;
   PetscInt       *ai = a->i, *aj = a->j;

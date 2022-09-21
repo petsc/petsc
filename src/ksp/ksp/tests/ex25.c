@@ -2,7 +2,8 @@ static char help[] = "Tests CG, MINRES and SYMMLQ on the symmetric indefinite ma
 
 #include <petscksp.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat         C;
   PetscScalar none = -1.0;
   PetscMPIInt rank, size;

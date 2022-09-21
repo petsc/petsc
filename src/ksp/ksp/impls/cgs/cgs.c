@@ -7,13 +7,15 @@
 */
 #include <petsc/private/kspimpl.h>
 
-static PetscErrorCode KSPSetUp_CGS(KSP ksp) {
+static PetscErrorCode KSPSetUp_CGS(KSP ksp)
+{
   PetscFunctionBegin;
   PetscCall(KSPSetWorkVecs(ksp, 7));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPSolve_CGS(KSP ksp) {
+static PetscErrorCode KSPSolve_CGS(KSP ksp)
+{
   PetscInt    i;
   PetscScalar rho, rhoold, a, s, b;
   Vec         X, B, V, P, R, RP, T, Q, U, AUQ;
@@ -146,7 +148,8 @@ static PetscErrorCode KSPSolve_CGS(KSP ksp) {
 
 .seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPBCGS`, `KSPSetPCSide()`
 M*/
-PETSC_EXTERN PetscErrorCode KSPCreate_CGS(KSP ksp) {
+PETSC_EXTERN PetscErrorCode KSPCreate_CGS(KSP ksp)
+{
   PetscFunctionBegin;
   ksp->data = (void *)0;
 

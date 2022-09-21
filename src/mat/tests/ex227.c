@@ -2,7 +2,8 @@ static char help[] = "Test MatNullSpaceTest() with options prefixes.\n\n";
 
 #include <petscmat.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   Mat          mat;
   MatNullSpace nsp;
   PetscBool    prefix = PETSC_FALSE, flg;

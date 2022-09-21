@@ -53,7 +53,8 @@
        nonzero
 
 @*/
-PetscErrorCode MatReorderForNonzeroDiagonal(Mat mat, PetscReal abstol, IS ris, IS cis) {
+PetscErrorCode MatReorderForNonzeroDiagonal(Mat mat, PetscReal abstol, IS ris, IS cis)
+{
   PetscFunctionBegin;
   PetscTryMethod(mat, "MatReorderForNonzeroDiagonal_C", (Mat, PetscReal, IS, IS), (mat, abstol, ris, cis));
   PetscFunctionReturn(0);
@@ -64,7 +65,8 @@ PETSC_INTERN PetscErrorCode MatRestoreRow_SeqAIJ(Mat, PetscInt, PetscInt *, Pets
 
 #include <../src/vec/is/is/impls/general/general.h>
 
-PETSC_INTERN PetscErrorCode MatReorderForNonzeroDiagonal_SeqAIJ(Mat mat, PetscReal abstol, IS ris, IS cis) {
+PETSC_INTERN PetscErrorCode MatReorderForNonzeroDiagonal_SeqAIJ(Mat mat, PetscReal abstol, IS ris, IS cis)
+{
   PetscInt     prow, k, nz, n, repl, *j, *col, *row, m, *icol, nnz, *jj, kk;
   PetscScalar *v, *vv;
   PetscReal    repla;

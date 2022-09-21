@@ -11,7 +11,8 @@ PetscLogEvent PC_SetUp, PC_SetUpOnBlocks, PC_Apply, PC_MatApply, PC_ApplyCoarse,
 PetscLogEvent PC_ApplySymmetricRight, PC_ModifySubMatrices, PC_ApplyOnBlocks, PC_ApplyTransposeOnBlocks;
 PetscInt      PetscMGLevelId;
 
-PetscErrorCode PCGetDefaultType_Private(PC pc, const char *type[]) {
+PetscErrorCode PCGetDefaultType_Private(PC pc, const char *type[])
+{
   PetscMPIInt size;
   PetscBool   hasop, flg1, flg2, set, flg3, isnormal;
 
@@ -67,7 +68,8 @@ PetscErrorCode PCGetDefaultType_Private(PC pc, const char *type[]) {
 
 .seealso: `PC`, `PCCreate()`, `PCSetUp()`
 @*/
-PetscErrorCode PCReset(PC pc) {
+PetscErrorCode PCReset(PC pc)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscTryTypeMethod(pc, reset);
@@ -92,7 +94,8 @@ PetscErrorCode PCReset(PC pc) {
 
 .seealso: `PC`, `PCCreate()`, `PCSetUp()`
 @*/
-PetscErrorCode PCDestroy(PC *pc) {
+PetscErrorCode PCDestroy(PC *pc)
+{
   PetscFunctionBegin;
   if (!*pc) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*pc), PC_CLASSID, 1);
@@ -134,7 +137,8 @@ PetscErrorCode PCDestroy(PC *pc) {
 
 .seealso: `PC`, `PCCreate()`, `PCSetUp()`, `PCDiagonalScaleLeft()`, `PCDiagonalScaleRight()`, `PCSetDiagonalScale()`
 @*/
-PetscErrorCode PCGetDiagonalScale(PC pc, PetscBool *flag) {
+PetscErrorCode PCGetDiagonalScale(PC pc, PetscBool *flag)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidBoolPointer(flag, 2);
@@ -165,7 +169,8 @@ PetscErrorCode PCGetDiagonalScale(PC pc, PetscBool *flag) {
 
 .seealso: `PCCreate()`, `PCSetUp()`, `PCDiagonalScaleLeft()`, `PCDiagonalScaleRight()`, `PCGetDiagonalScale()`
 @*/
-PetscErrorCode PCSetDiagonalScale(PC pc, Vec s) {
+PetscErrorCode PCSetDiagonalScale(PC pc, Vec s)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidHeaderSpecific(s, VEC_CLASSID, 2);
@@ -207,7 +212,8 @@ PetscErrorCode PCSetDiagonalScale(PC pc, Vec s) {
 
 .seealso: `PCCreate()`, `PCSetUp()`, `PCDiagonalScaleSet()`, `PCDiagonalScaleRight()`, `PCDiagonalScale()`
 @*/
-PetscErrorCode PCDiagonalScaleLeft(PC pc, Vec in, Vec out) {
+PetscErrorCode PCDiagonalScaleLeft(PC pc, Vec in, Vec out)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidHeaderSpecific(in, VEC_CLASSID, 2);
@@ -245,7 +251,8 @@ PetscErrorCode PCDiagonalScaleLeft(PC pc, Vec in, Vec out) {
 
 .seealso: `PCCreate()`, `PCSetUp()`, `PCDiagonalScaleLeft()`, `PCDiagonalScaleSet()`, `PCDiagonalScale()`
 @*/
-PetscErrorCode PCDiagonalScaleRight(PC pc, Vec in, Vec out) {
+PetscErrorCode PCDiagonalScaleRight(PC pc, Vec in, Vec out)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidHeaderSpecific(in, VEC_CLASSID, 2);
@@ -280,7 +287,8 @@ PetscErrorCode PCDiagonalScaleRight(PC pc, Vec in, Vec out) {
 
 .seealso: `PC`, `PCGetUseAmat()`, `PCBJACOBI`, `PGMG`, `PCFIELDSPLIT`, `PCCOMPOSITE`
 @*/
-PetscErrorCode PCSetUseAmat(PC pc, PetscBool flg) {
+PetscErrorCode PCSetUseAmat(PC pc, PetscBool flg)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   pc->useAmat = flg;
@@ -307,7 +315,8 @@ PetscErrorCode PCSetUseAmat(PC pc, PetscBool flg) {
 
 .seealso: `PC`, `KSPSetErrorIfNotConverged()`, `PCGetInitialGuessNonzero()`, `PCSetInitialGuessKnoll()`, `PCGetInitialGuessKnoll()`
 @*/
-PetscErrorCode PCSetErrorIfFailure(PC pc, PetscBool flg) {
+PetscErrorCode PCSetErrorIfFailure(PC pc, PetscBool flg)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidLogicalCollectiveBool(pc, flg, 2);
@@ -336,7 +345,8 @@ PetscErrorCode PCSetErrorIfFailure(PC pc, PetscBool flg) {
 
 .seealso: `PC`, `PCSetUseAmat()`, `PCBJACOBI`, `PGMG`, `PCFIELDSPLIT`, `PCCOMPOSITE`
 @*/
-PetscErrorCode PCGetUseAmat(PC pc, PetscBool *flg) {
+PetscErrorCode PCGetUseAmat(PC pc, PetscBool *flg)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   *flg = pc->useAmat;
@@ -362,7 +372,8 @@ PetscErrorCode PCGetUseAmat(PC pc, PetscBool *flg) {
 
 .seealso: `PC`, `PCSetUp()`, `PCApply()`, `PCDestroy()`
 @*/
-PetscErrorCode PCCreate(MPI_Comm comm, PC *newpc) {
+PetscErrorCode PCCreate(MPI_Comm comm, PC *newpc)
+{
   PC pc;
 
   PetscFunctionBegin;
@@ -404,7 +415,8 @@ PetscErrorCode PCCreate(MPI_Comm comm, PC *newpc) {
 
 .seealso: `PC`, `PCApplyTranspose()`, `PCApplyBAorAB()`
 @*/
-PetscErrorCode PCApply(PC pc, Vec x, Vec y) {
+PetscErrorCode PCApply(PC pc, Vec x, Vec y)
+{
   PetscInt m, n, mv, nv;
 
   PetscFunctionBegin;
@@ -448,7 +460,8 @@ PetscErrorCode PCApply(PC pc, Vec x, Vec y) {
 
 .seealso: `PC`, `PCApply()`, `KSPMatSolve()`
 @*/
-PetscErrorCode PCMatApply(PC pc, Mat X, Mat Y) {
+PetscErrorCode PCMatApply(PC pc, Mat X, Mat Y)
+{
   Mat       A;
   Vec       cy, cx;
   PetscInt  m1, M1, m2, M2, n1, N1, n2, N2, m3, M3, n3, N3;
@@ -512,7 +525,8 @@ PetscErrorCode PCMatApply(PC pc, Mat X, Mat Y) {
 
 .seealso: `PC`, `PCApply()`, `PCApplySymmetricRight()`
 @*/
-PetscErrorCode PCApplySymmetricLeft(PC pc, Vec x, Vec y) {
+PetscErrorCode PCApplySymmetricLeft(PC pc, Vec x, Vec y)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidHeaderSpecific(x, VEC_CLASSID, 2);
@@ -548,7 +562,8 @@ PetscErrorCode PCApplySymmetricLeft(PC pc, Vec x, Vec y) {
 
 .seealso: `PC`, `PCApply()`, `PCApplySymmetricLeft()`
 @*/
-PetscErrorCode PCApplySymmetricRight(PC pc, Vec x, Vec y) {
+PetscErrorCode PCApplySymmetricRight(PC pc, Vec x, Vec y)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidHeaderSpecific(x, VEC_CLASSID, 2);
@@ -587,7 +602,8 @@ PetscErrorCode PCApplySymmetricRight(PC pc, Vec x, Vec y) {
 
 .seealso: `PC`, `PCApply()`, `PCApplyBAorAB()`, `PCApplyBAorABTranspose()`, `PCApplyTransposeExists()`
 @*/
-PetscErrorCode PCApplyTranspose(PC pc, Vec x, Vec y) {
+PetscErrorCode PCApplyTranspose(PC pc, Vec x, Vec y)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidHeaderSpecific(x, VEC_CLASSID, 2);
@@ -619,7 +635,8 @@ PetscErrorCode PCApplyTranspose(PC pc, Vec x, Vec y) {
 
 .seealso: `PC`, `PCApplyTranspose()`
 @*/
-PetscErrorCode PCApplyTransposeExists(PC pc, PetscBool *flg) {
+PetscErrorCode PCApplyTransposeExists(PC pc, PetscBool *flg)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidBoolPointer(flg, 2);
@@ -650,7 +667,8 @@ PetscErrorCode PCApplyTransposeExists(PC pc, PetscBool *flg) {
 
 .seealso: `PC`, `PCApply()`, `PCApplyTranspose()`, `PCApplyBAorABTranspose()`
 @*/
-PetscErrorCode PCApplyBAorAB(PC pc, PCSide side, Vec x, Vec y, Vec work) {
+PetscErrorCode PCApplyBAorAB(PC pc, PCSide side, Vec x, Vec y, Vec work)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidLogicalCollectiveEnum(pc, side, 2);
@@ -730,7 +748,8 @@ PetscErrorCode PCApplyBAorAB(PC pc, PCSide side, Vec x, Vec y, Vec work) {
 
 .seealso: `PC`, `PCApply()`, `PCApplyTranspose()`, `PCApplyBAorAB()`
 @*/
-PetscErrorCode PCApplyBAorABTranspose(PC pc, PCSide side, Vec x, Vec y, Vec work) {
+PetscErrorCode PCApplyBAorABTranspose(PC pc, PCSide side, Vec x, Vec y, Vec work)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidHeaderSpecific(x, VEC_CLASSID, 3);
@@ -774,7 +793,8 @@ PetscErrorCode PCApplyBAorABTranspose(PC pc, PCSide side, Vec x, Vec y, Vec work
 
 .seealso: `PC`, `PCRICHARDSON`, `PCApplyRichardson()`
 @*/
-PetscErrorCode PCApplyRichardsonExists(PC pc, PetscBool *exists) {
+PetscErrorCode PCApplyRichardsonExists(PC pc, PetscBool *exists)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidBoolPointer(exists, 2);
@@ -816,7 +836,8 @@ PetscErrorCode PCApplyRichardsonExists(PC pc, PetscBool *exists) {
 
 .seealso: `PC`, `PCApplyRichardsonExists()`
 @*/
-PetscErrorCode PCApplyRichardson(PC pc, Vec b, Vec y, Vec w, PetscReal rtol, PetscReal abstol, PetscReal dtol, PetscInt its, PetscBool guesszero, PetscInt *outits, PCRichardsonConvergedReason *reason) {
+PetscErrorCode PCApplyRichardson(PC pc, Vec b, Vec y, Vec w, PetscReal rtol, PetscReal abstol, PetscReal dtol, PetscInt its, PetscBool guesszero, PetscInt *outits, PCRichardsonConvergedReason *reason)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidHeaderSpecific(b, VEC_CLASSID, 2);
@@ -841,7 +862,8 @@ PetscErrorCode PCApplyRichardson(PC pc, Vec b, Vec y, Vec w, PetscReal rtol, Pet
 
 .seealso: `PC`, `PCCreate()`, `PCApply()`, `PCDestroy()`, `PCFailedReason`
 @*/
-PetscErrorCode PCSetFailedReason(PC pc, PCFailedReason reason) {
+PetscErrorCode PCSetFailedReason(PC pc, PCFailedReason reason)
+{
   PetscFunctionBegin;
   pc->failedreason = reason;
   PetscFunctionReturn(0);
@@ -867,7 +889,8 @@ PetscErrorCode PCSetFailedReason(PC pc, PCFailedReason reason) {
 
 .seealso: PC`, ``PCCreate()`, `PCApply()`, `PCDestroy()`, `PCGetFailedReasonRank()`, `PCSetFailedReason()`
 @*/
-PetscErrorCode PCGetFailedReason(PC pc, PCFailedReason *reason) {
+PetscErrorCode PCGetFailedReason(PC pc, PCFailedReason *reason)
+{
   PetscFunctionBegin;
   if (pc->setupcalled < 0) *reason = (PCFailedReason)pc->setupcalled;
   else *reason = pc->failedreason;
@@ -892,7 +915,8 @@ PetscErrorCode PCGetFailedReason(PC pc, PCFailedReason *reason) {
 
 .seealso: `PC`, `PCCreate()`, `PCApply()`, `PCDestroy()`, `PCGetFailedReason()`, `PCSetFailedReason()`
 @*/
-PetscErrorCode PCGetFailedReasonRank(PC pc, PCFailedReason *reason) {
+PetscErrorCode PCGetFailedReasonRank(PC pc, PCFailedReason *reason)
+{
   PetscFunctionBegin;
   if (pc->setupcalled < 0) *reason = (PCFailedReason)pc->setupcalled;
   else *reason = pc->failedreason;
@@ -919,7 +943,8 @@ PetscErrorCode PCGetFailedReasonRank(PC pc, PCFailedReason *reason) {
 
 .seealso: `PC`, `PCCreate()`, `PCApply()`, `PCDestroy()`
 @*/
-PetscErrorCode PCSetUp(PC pc) {
+PetscErrorCode PCSetUp(PC pc)
+{
   const char      *def;
   PetscObjectState matstate, matnonzerostate;
 
@@ -992,7 +1017,8 @@ PetscErrorCode PCSetUp(PC pc) {
 
 .seealso: `PC`, `PCSetUp()`, `PCCreate()`, `PCApply()`, `PCDestroy()`, `PCSetUp()`
 @*/
-PetscErrorCode PCSetUpOnBlocks(PC pc) {
+PetscErrorCode PCSetUpOnBlocks(PC pc)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   if (!pc->ops->setuponblocks) PetscFunctionReturn(0);
@@ -1039,7 +1065,8 @@ $     func (PC pc,PetscInt nsub,IS *row,IS *col,Mat *submat,void *ctx);
 
 .seealso: `PC`, `PCBJACOBI`, `PCASM`, `PCModifySubMatrices()`
 @*/
-PetscErrorCode PCSetModifySubMatrices(PC pc, PetscErrorCode (*func)(PC, PetscInt, const IS[], const IS[], Mat[], void *), void *ctx) {
+PetscErrorCode PCSetModifySubMatrices(PC pc, PetscErrorCode (*func)(PC, PetscInt, const IS[], const IS[], Mat[], void *), void *ctx)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   pc->modifysubmatrices  = func;
@@ -1082,7 +1109,8 @@ PetscErrorCode PCSetModifySubMatrices(PC pc, PetscErrorCode (*func)(PC, PetscInt
 
 .seealso: `PC`, `PCSetModifySubMatrices()`
 @*/
-PetscErrorCode PCModifySubMatrices(PC pc, PetscInt nsub, const IS row[], const IS col[], Mat submat[], void *ctx) {
+PetscErrorCode PCModifySubMatrices(PC pc, PetscInt nsub, const IS row[], const IS col[], Mat submat[], void *ctx)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   if (!pc->modifysubmatrices) PetscFunctionReturn(0);
@@ -1120,7 +1148,8 @@ PetscErrorCode PCModifySubMatrices(PC pc, PetscInt nsub, const IS row[], const I
 
 .seealso: `PC`, `PCGetOperators()`, `MatZeroEntries()`
  @*/
-PetscErrorCode PCSetOperators(PC pc, Mat Amat, Mat Pmat) {
+PetscErrorCode PCSetOperators(PC pc, Mat Amat, Mat Pmat)
+{
   PetscInt m1, n1, m2, n2;
 
   PetscFunctionBegin;
@@ -1171,7 +1200,8 @@ PetscErrorCode PCSetOperators(PC pc, Mat Amat, Mat Pmat) {
 
 .seealso: `PC`, `PCGetOperators()`, `MatZeroEntries()`, `PCGetReusePreconditioner()`, `KSPSetReusePreconditioner()`
  @*/
-PetscErrorCode PCSetReusePreconditioner(PC pc, PetscBool flag) {
+PetscErrorCode PCSetReusePreconditioner(PC pc, PetscBool flag)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidLogicalCollectiveBool(pc, flag, 2);
@@ -1194,7 +1224,8 @@ PetscErrorCode PCSetReusePreconditioner(PC pc, PetscBool flag) {
 
 .seealso: `PC`, `PCGetOperators()`, `MatZeroEntries()`, `PCSetReusePreconditioner()`
  @*/
-PetscErrorCode PCGetReusePreconditioner(PC pc, PetscBool *flag) {
+PetscErrorCode PCGetReusePreconditioner(PC pc, PetscBool *flag)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidBoolPointer(flag, 2);
@@ -1263,7 +1294,8 @@ PetscErrorCode PCGetReusePreconditioner(PC pc, PetscBool *flag) {
 
 .seealso: `PC`, `PCSetOperators()`, `KSPGetOperators()`, `KSPSetOperators()`, `PCGetOperatorsSet()`
 @*/
-PetscErrorCode PCGetOperators(PC pc, Mat *Amat, Mat *Pmat) {
+PetscErrorCode PCGetOperators(PC pc, Mat *Amat, Mat *Pmat)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   if (Amat) {
@@ -1316,7 +1348,8 @@ PetscErrorCode PCGetOperators(PC pc, Mat *Amat, Mat *Pmat) {
 
 .seealso: `PC`, `PCSetOperators()`, `KSPGetOperators()`, `KSPSetOperators()`, `PCGetOperators()`
 @*/
-PetscErrorCode PCGetOperatorsSet(PC pc, PetscBool *mat, PetscBool *pmat) {
+PetscErrorCode PCGetOperatorsSet(PC pc, PetscBool *mat, PetscBool *pmat)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   if (mat) *mat = (pc->mat) ? PETSC_TRUE : PETSC_FALSE;
@@ -1344,7 +1377,8 @@ PetscErrorCode PCGetOperatorsSet(PC pc, PetscBool *mat, PetscBool *pmat) {
 
 .seealso: `PC`, `PCLU`, `PCILU`, `PCCHOLESKY`, `PCICC`
 @*/
-PetscErrorCode PCFactorGetMatrix(PC pc, Mat *mat) {
+PetscErrorCode PCFactorGetMatrix(PC pc, Mat *mat)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidPointer(mat, 2);
@@ -1371,7 +1405,8 @@ PetscErrorCode PCFactorGetMatrix(PC pc, Mat *mat) {
 
 .seealso: `PC`, `PCSetFromOptions`, `PCAppendOptionsPrefix()`, `PCGetOptionsPrefix()`
 @*/
-PetscErrorCode PCSetOptionsPrefix(PC pc, const char prefix[]) {
+PetscErrorCode PCSetOptionsPrefix(PC pc, const char prefix[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscCall(PetscObjectSetOptionsPrefix((PetscObject)pc, prefix));
@@ -1397,7 +1432,8 @@ PetscErrorCode PCSetOptionsPrefix(PC pc, const char prefix[]) {
 
 .seealso: `PC`, `PCSetFromOptions`, `PCSetOptionsPrefix()`, `PCGetOptionsPrefix()`
 @*/
-PetscErrorCode PCAppendOptionsPrefix(PC pc, const char prefix[]) {
+PetscErrorCode PCAppendOptionsPrefix(PC pc, const char prefix[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscCall(PetscObjectAppendOptionsPrefix((PetscObject)pc, prefix));
@@ -1424,7 +1460,8 @@ PetscErrorCode PCAppendOptionsPrefix(PC pc, const char prefix[]) {
 
 .seealso: `PC`, `PCSetFromOptions`, `PCSetOptionsPrefix()`, `PCAppendOptionsPrefix()`
 @*/
-PetscErrorCode PCGetOptionsPrefix(PC pc, const char *prefix[]) {
+PetscErrorCode PCGetOptionsPrefix(PC pc, const char *prefix[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidPointer(prefix, 2);
@@ -1437,7 +1474,8 @@ PetscErrorCode PCGetOptionsPrefix(PC pc, const char *prefix[]) {
   preconditioners including BDDC and Eisentat that transform the equations before applying
   the Krylov methods
 */
-PETSC_INTERN PetscErrorCode PCPreSolveChangeRHS(PC pc, PetscBool *change) {
+PETSC_INTERN PetscErrorCode PCPreSolveChangeRHS(PC pc, PetscBool *change)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidPointer(change, 2);
@@ -1473,7 +1511,8 @@ PETSC_INTERN PetscErrorCode PCPreSolveChangeRHS(PC pc, PetscBool *change) {
 
 .seealso: `PC`, `PCPostSolve()`
 @*/
-PetscErrorCode PCPreSolve(PC pc, KSP ksp) {
+PetscErrorCode PCPreSolve(PC pc, KSP ksp)
+{
   Vec x, rhs;
 
   PetscFunctionBegin;
@@ -1510,7 +1549,8 @@ $  func(PC pc,KSP ksp)
 
 .seealso: `PC`, `PCSetUp()`, `PCPreSolve()`
 @*/
-PetscErrorCode PCSetPreSolve(PC pc, PetscErrorCode (*presolve)(PC, KSP)) {
+PetscErrorCode PCSetPreSolve(PC pc, PetscErrorCode (*presolve)(PC, KSP))
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   pc->presolve = presolve;
@@ -1542,7 +1582,8 @@ PetscErrorCode PCSetPreSolve(PC pc, PetscErrorCode (*presolve)(PC, KSP)) {
 
 .seealso: `PC`, `PCSetPostSolve()`, `PCSetPresolve()`, `PCPreSolve()`, `KSPSolve()`
 @*/
-PetscErrorCode PCPostSolve(PC pc, KSP ksp) {
+PetscErrorCode PCPostSolve(PC pc, KSP ksp)
+{
   Vec x, rhs;
 
   PetscFunctionBegin;
@@ -1572,7 +1613,8 @@ PetscErrorCode PCPostSolve(PC pc, KSP ksp) {
 
 .seealso: `PC`, `PetscViewerBinaryOpen()`, `PCView()`, `MatLoad()`, `VecLoad()`
 @*/
-PetscErrorCode PCLoad(PC newdm, PetscViewer viewer) {
+PetscErrorCode PCLoad(PC newdm, PetscViewer viewer)
+{
   PetscBool isbinary;
   PetscInt  classid;
   char      type[256];
@@ -1593,7 +1635,7 @@ PetscErrorCode PCLoad(PC newdm, PetscViewer viewer) {
 
 #include <petscdraw.h>
 #if defined(PETSC_HAVE_SAWS)
-#include <petscviewersaws.h>
+  #include <petscviewersaws.h>
 #endif
 
 /*@C
@@ -1610,7 +1652,8 @@ PetscErrorCode PCLoad(PC newdm, PetscViewer viewer) {
 
 .seealso: `PC`, `PCView`, `PetscObjectViewFromOptions()`, `PCCreate()`
 @*/
-PetscErrorCode PCViewFromOptions(PC A, PetscObject obj, const char name[]) {
+PetscErrorCode PCViewFromOptions(PC A, PetscObject obj, const char name[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, PC_CLASSID, 1);
   PetscCall(PetscObjectViewFromOptions((PetscObject)A, obj, name));
@@ -1641,7 +1684,8 @@ PetscErrorCode PCViewFromOptions(PC A, PetscObject obj, const char name[]) {
 
 .seealso: `PC`, `PetscViewer`, `KSPView()`, `PetscViewerASCIIOpen()`
 @*/
-PetscErrorCode PCView(PC pc, PetscViewer viewer) {
+PetscErrorCode PCView(PC pc, PetscViewer viewer)
+{
   PCType    cstr;
   PetscBool iascii, isstring, isbinary, isdraw;
 #if defined(PETSC_HAVE_SAWS)
@@ -1767,14 +1811,16 @@ $     -pc_type my_solver
 
 .seealso: `PC`, `PCType`, `PCRegisterAll()`
 @*/
-PetscErrorCode PCRegister(const char sname[], PetscErrorCode (*function)(PC)) {
+PetscErrorCode PCRegister(const char sname[], PetscErrorCode (*function)(PC))
+{
   PetscFunctionBegin;
   PetscCall(PCInitializePackage());
   PetscCall(PetscFunctionListAdd(&PCList, sname, function));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatMult_PC(Mat A, Vec X, Vec Y) {
+static PetscErrorCode MatMult_PC(Mat A, Vec X, Vec Y)
+{
   PC pc;
 
   PetscFunctionBegin;
@@ -1805,7 +1851,8 @@ static PetscErrorCode MatMult_PC(Mat A, Vec X, Vec Y) {
 .seealso: `PC`, `KSPComputeOperator()`, `MatType`
 
 @*/
-PetscErrorCode PCComputeOperator(PC pc, MatType mattype, Mat *mat) {
+PetscErrorCode PCComputeOperator(PC pc, MatType mattype, Mat *mat)
+{
   PetscInt N, M, m, n;
   Mat      A, Apc;
 
@@ -1847,7 +1894,8 @@ PetscErrorCode PCComputeOperator(PC pc, MatType mattype, Mat *mat) {
 
 .seealso: `PC`, `MatSetNearNullSpace()`
 @*/
-PetscErrorCode PCSetCoordinates(PC pc, PetscInt dim, PetscInt nloc, PetscReal coords[]) {
+PetscErrorCode PCSetCoordinates(PC pc, PetscInt dim, PetscInt nloc, PetscReal coords[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidLogicalCollectiveInt(pc, dim, 2);
@@ -1874,7 +1922,8 @@ PetscErrorCode PCSetCoordinates(PC pc, PetscInt dim, PetscInt nloc, PetscReal co
 
 .seealso: `PC`, `PCMG`, `PCMGGetRestriction()`, `PCMGSetInterpolation()`, `PCMGGetInterpolation()`, `PCGetCoarseOperators()`
 @*/
-PetscErrorCode PCGetInterpolations(PC pc, PetscInt *num_levels, Mat *interpolations[]) {
+PetscErrorCode PCGetInterpolations(PC pc, PetscInt *num_levels, Mat *interpolations[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidIntPointer(num_levels, 2);
@@ -1902,7 +1951,8 @@ PetscErrorCode PCGetInterpolations(PC pc, PetscInt *num_levels, Mat *interpolati
 
 .seealso: `PC`, `PCMG`, `PCMGGetRestriction()`, `PCMGSetInterpolation()`, `PCMGGetRScale()`, `PCMGGetInterpolation()`, `PCGetInterpolations()`
 @*/
-PetscErrorCode PCGetCoarseOperators(PC pc, PetscInt *num_levels, Mat *coarseOperators[]) {
+PetscErrorCode PCGetCoarseOperators(PC pc, PetscInt *num_levels, Mat *coarseOperators[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidIntPointer(num_levels, 2);

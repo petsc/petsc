@@ -2,7 +2,8 @@ static char help[] = "Illustrate how to do one symbolic factorization and multip
 
 #include <petscmat.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   PetscInt      i, rstart, rend, N = 10, num_numfac = 5, col[3], k;
   Mat           A[5], F;
   Vec           u, x, b;
@@ -73,21 +74,35 @@ int main(int argc, char **args) {
   info.fill = 5.0;
   PetscCall(MatGetOrdering(A[0], MATORDERINGNATURAL, &perm, &iperm));
   switch (facttype) {
-  case MAT_FACTOR_LU: PetscCall(MatLUFactorSymbolic(F, A[0], perm, iperm, &info)); break;
-  case MAT_FACTOR_ILU: PetscCall(MatILUFactorSymbolic(F, A[0], perm, iperm, &info)); break;
-  case MAT_FACTOR_ICC: PetscCall(MatICCFactorSymbolic(F, A[0], perm, &info)); break;
-  case MAT_FACTOR_CHOLESKY: PetscCall(MatCholeskyFactorSymbolic(F, A[0], perm, &info)); break;
-  default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Not for factor type %s", factortype);
+  case MAT_FACTOR_LU:
+    PetscCall(MatLUFactorSymbolic(F, A[0], perm, iperm, &info));
+    break;
+  case MAT_FACTOR_ILU:
+    PetscCall(MatILUFactorSymbolic(F, A[0], perm, iperm, &info));
+    break;
+  case MAT_FACTOR_ICC:
+    PetscCall(MatICCFactorSymbolic(F, A[0], perm, &info));
+    break;
+  case MAT_FACTOR_CHOLESKY:
+    PetscCall(MatCholeskyFactorSymbolic(F, A[0], perm, &info));
+    break;
+  default:
+    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Not for factor type %s", factortype);
   }
 
   /* Compute numeric factors using same F, then solve */
   for (k = 0; k < num_numfac; k++) {
     switch (facttype) {
     case MAT_FACTOR_LU:
-    case MAT_FACTOR_ILU: PetscCall(MatLUFactorNumeric(F, A[k], &info)); break;
+    case MAT_FACTOR_ILU:
+      PetscCall(MatLUFactorNumeric(F, A[k], &info));
+      break;
     case MAT_FACTOR_ICC:
-    case MAT_FACTOR_CHOLESKY: PetscCall(MatCholeskyFactorNumeric(F, A[k], &info)); break;
-    default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Not for factor type %s", factortype);
+    case MAT_FACTOR_CHOLESKY:
+      PetscCall(MatCholeskyFactorNumeric(F, A[k], &info));
+      break;
+    default:
+      SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Not for factor type %s", factortype);
     }
 
     /* Solve A[k] * x = b */

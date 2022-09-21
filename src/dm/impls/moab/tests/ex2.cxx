@@ -7,18 +7,19 @@ typedef struct {
   PetscBool     debug; /* The debugging level */
   PetscLogEvent createMeshEvent;
   /* Domain and mesh definition */
-  PetscInt      dim;     /* The topological mesh dimension */
-  PetscInt      nele;    /* Elements in each dimension */
-  PetscBool     simplex; /* Use simplex elements */
-  PetscBool     interlace;
-  char          input_file[PETSC_MAX_PATH_LEN];  /* Import mesh from file */
-  char          output_file[PETSC_MAX_PATH_LEN]; /* Output mesh file name */
-  PetscBool     write_output;                    /* Write output mesh and data to file */
-  PetscInt      nfields;                         /* Number of fields */
-  char         *fieldnames[PETSC_MAX_PATH_LEN];  /* Name of a defined field on the mesh */
+  PetscInt  dim;     /* The topological mesh dimension */
+  PetscInt  nele;    /* Elements in each dimension */
+  PetscBool simplex; /* Use simplex elements */
+  PetscBool interlace;
+  char      input_file[PETSC_MAX_PATH_LEN];  /* Import mesh from file */
+  char      output_file[PETSC_MAX_PATH_LEN]; /* Output mesh file name */
+  PetscBool write_output;                    /* Write output mesh and data to file */
+  PetscInt  nfields;                         /* Number of fields */
+  char     *fieldnames[PETSC_MAX_PATH_LEN];  /* Name of a defined field on the mesh */
 } AppCtx;
 
-PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
+PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
+{
   PetscBool flg;
 
   PetscFunctionBegin;
@@ -53,7 +54,8 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user) {
+PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user)
+{
   PetscInt    i;
   size_t      len;
   PetscMPIInt rank;
@@ -83,7 +85,8 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   AppCtx      user; /* user-defined work context */
   PetscRandom rctx;
   Vec         solution;

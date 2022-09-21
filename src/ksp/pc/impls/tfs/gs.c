@@ -166,21 +166,24 @@ static PetscInt  tree_buf_sz = 0;
 static PetscInt  ntree       = 0;
 
 /***************************************************************************/
-PetscErrorCode PCTFS_gs_init_vec_sz(PetscInt size) {
+PetscErrorCode PCTFS_gs_init_vec_sz(PetscInt size)
+{
   PetscFunctionBegin;
   vec_sz = size;
   PetscFunctionReturn(0);
 }
 
 /******************************************************************************/
-PetscErrorCode PCTFS_gs_init_msg_buf_sz(PetscInt buf_size) {
+PetscErrorCode PCTFS_gs_init_msg_buf_sz(PetscInt buf_size)
+{
   PetscFunctionBegin;
   msg_buf = buf_size;
   PetscFunctionReturn(0);
 }
 
 /******************************************************************************/
-PCTFS_gs_id *PCTFS_gs_init(PetscInt *elms, PetscInt nel, PetscInt level) {
+PCTFS_gs_id *PCTFS_gs_init(PetscInt *elms, PetscInt nel, PetscInt level)
+{
   PCTFS_gs_id *gs;
   MPI_Group    PCTFS_gs_group;
   MPI_Comm     PCTFS_gs_comm;
@@ -206,7 +209,8 @@ PCTFS_gs_id *PCTFS_gs_init(PetscInt *elms, PetscInt nel, PetscInt level) {
 }
 
 /******************************************************************************/
-static PCTFS_gs_id *gsi_new(void) {
+static PCTFS_gs_id *gsi_new(void)
+{
   PCTFS_gs_id *gs;
   gs = (PCTFS_gs_id *)malloc(sizeof(PCTFS_gs_id));
   PetscCallAbort(PETSC_COMM_WORLD, PetscMemzero(gs, sizeof(PCTFS_gs_id)));
@@ -214,7 +218,8 @@ static PCTFS_gs_id *gsi_new(void) {
 }
 
 /******************************************************************************/
-static PCTFS_gs_id *gsi_check_args(PetscInt *in_elms, PetscInt nel, PetscInt level) {
+static PCTFS_gs_id *gsi_check_args(PetscInt *in_elms, PetscInt nel, PetscInt level)
+{
   PetscInt     i, j, k, t2;
   PetscInt    *companion, *elms, *unique, *iptr;
   PetscInt     num_local = 0, *num_to_reduce, **local_reduce;
@@ -378,7 +383,8 @@ static PCTFS_gs_id *gsi_check_args(PetscInt *in_elms, PetscInt nel, PetscInt lev
 }
 
 /******************************************************************************/
-static PetscErrorCode gsi_via_bit_mask(PCTFS_gs_id *gs) {
+static PetscErrorCode gsi_via_bit_mask(PCTFS_gs_id *gs)
+{
   PetscInt   i, nel, *elms;
   PetscInt   t1;
   PetscInt **reduce;
@@ -459,7 +465,8 @@ static PetscErrorCode gsi_via_bit_mask(PCTFS_gs_id *gs) {
 }
 
 /******************************************************************************/
-static PetscErrorCode place_in_tree(PetscInt elm) {
+static PetscErrorCode place_in_tree(PetscInt elm)
+{
   PetscInt *tp, n;
 
   PetscFunctionBegin;
@@ -482,7 +489,8 @@ static PetscErrorCode place_in_tree(PetscInt elm) {
 }
 
 /******************************************************************************/
-static PetscErrorCode get_ngh_buf(PCTFS_gs_id *gs) {
+static PetscErrorCode get_ngh_buf(PCTFS_gs_id *gs)
+{
   PetscInt  i, j, npw = 0, ntree_map = 0;
   PetscInt  p_mask_size, ngh_buf_size, buf_size;
   PetscInt *p_mask, *sh_proc_mask, *pw_sh_proc_mask;
@@ -648,7 +656,8 @@ static PetscErrorCode get_ngh_buf(PCTFS_gs_id *gs) {
 }
 
 /******************************************************************************/
-static PetscErrorCode set_pairwise(PCTFS_gs_id *gs) {
+static PetscErrorCode set_pairwise(PCTFS_gs_id *gs)
+{
   PetscInt  i, j;
   PetscInt  p_mask_size;
   PetscInt *p_mask, *sh_proc_mask, *tmp_proc_mask;
@@ -767,7 +776,8 @@ static PetscErrorCode set_pairwise(PCTFS_gs_id *gs) {
 
 /* to do pruned tree just save ngh buf copy for each one and decode here!
 ******************************************************************************/
-static PetscErrorCode set_tree(PCTFS_gs_id *gs) {
+static PetscErrorCode set_tree(PCTFS_gs_id *gs)
+{
   PetscInt  i, j, n, nel;
   PetscInt *iptr_in, *iptr_out, *tree_elms, *elms;
 
@@ -810,7 +820,8 @@ static PetscErrorCode set_tree(PCTFS_gs_id *gs) {
 }
 
 /******************************************************************************/
-static PetscErrorCode PCTFS_gs_gop_local_out(PCTFS_gs_id *gs, PetscScalar *vals) {
+static PetscErrorCode PCTFS_gs_gop_local_out(PCTFS_gs_id *gs, PetscScalar *vals)
+{
   PetscInt   *num, *map, **reduce;
   PetscScalar tmp;
 
@@ -838,7 +849,8 @@ static PetscErrorCode PCTFS_gs_gop_local_out(PCTFS_gs_id *gs, PetscScalar *vals)
 }
 
 /******************************************************************************/
-static PetscErrorCode PCTFS_gs_gop_local_plus(PCTFS_gs_id *gs, PetscScalar *vals) {
+static PetscErrorCode PCTFS_gs_gop_local_plus(PCTFS_gs_id *gs, PetscScalar *vals)
+{
   PetscInt   *num, *map, **reduce;
   PetscScalar tmp;
 
@@ -872,7 +884,8 @@ static PetscErrorCode PCTFS_gs_gop_local_plus(PCTFS_gs_id *gs, PetscScalar *vals
 }
 
 /******************************************************************************/
-static PetscErrorCode PCTFS_gs_gop_local_in_plus(PCTFS_gs_id *gs, PetscScalar *vals) {
+static PetscErrorCode PCTFS_gs_gop_local_in_plus(PCTFS_gs_id *gs, PetscScalar *vals)
+{
   PetscInt    *num, *map, **reduce;
   PetscScalar *base;
 
@@ -900,7 +913,8 @@ static PetscErrorCode PCTFS_gs_gop_local_in_plus(PCTFS_gs_id *gs, PetscScalar *v
 }
 
 /******************************************************************************/
-PetscErrorCode PCTFS_gs_free(PCTFS_gs_id *gs) {
+PetscErrorCode PCTFS_gs_free(PCTFS_gs_id *gs)
+{
   PetscInt i;
 
   PetscFunctionBegin;
@@ -959,10 +973,13 @@ PetscErrorCode PCTFS_gs_free(PCTFS_gs_id *gs) {
 }
 
 /******************************************************************************/
-PetscErrorCode PCTFS_gs_gop_vec(PCTFS_gs_id *gs, PetscScalar *vals, const char *op, PetscInt step) {
+PetscErrorCode PCTFS_gs_gop_vec(PCTFS_gs_id *gs, PetscScalar *vals, const char *op, PetscInt step)
+{
   PetscFunctionBegin;
   switch (*op) {
-  case '+': PCTFS_gs_gop_vec_plus(gs, vals, step); break;
+  case '+':
+    PCTFS_gs_gop_vec_plus(gs, vals, step);
+    break;
   default:
     PetscCall(PetscInfo(0, "PCTFS_gs_gop_vec() :: %c is not a valid op\n", op[0]));
     PetscCall(PetscInfo(0, "PCTFS_gs_gop_vec() :: default :: plus\n"));
@@ -973,7 +990,8 @@ PetscErrorCode PCTFS_gs_gop_vec(PCTFS_gs_id *gs, PetscScalar *vals, const char *
 }
 
 /******************************************************************************/
-static PetscErrorCode PCTFS_gs_gop_vec_plus(PCTFS_gs_id *gs, PetscScalar *vals, PetscInt step) {
+static PetscErrorCode PCTFS_gs_gop_vec_plus(PCTFS_gs_id *gs, PetscScalar *vals, PetscInt step)
+{
   PetscFunctionBegin;
   PetscCheck(gs, PETSC_COMM_SELF, PETSC_ERR_PLIB, "PCTFS_gs_gop_vec() passed NULL gs handle!!!");
 
@@ -1002,7 +1020,8 @@ static PetscErrorCode PCTFS_gs_gop_vec_plus(PCTFS_gs_id *gs, PetscScalar *vals, 
 }
 
 /******************************************************************************/
-static PetscErrorCode PCTFS_gs_gop_vec_local_plus(PCTFS_gs_id *gs, PetscScalar *vals, PetscInt step) {
+static PetscErrorCode PCTFS_gs_gop_vec_local_plus(PCTFS_gs_id *gs, PetscScalar *vals, PetscInt step)
+{
   PetscInt    *num, *map, **reduce;
   PetscScalar *base;
 
@@ -1048,7 +1067,8 @@ static PetscErrorCode PCTFS_gs_gop_vec_local_plus(PCTFS_gs_id *gs, PetscScalar *
 }
 
 /******************************************************************************/
-static PetscErrorCode PCTFS_gs_gop_vec_local_in_plus(PCTFS_gs_id *gs, PetscScalar *vals, PetscInt step) {
+static PetscErrorCode PCTFS_gs_gop_vec_local_in_plus(PCTFS_gs_id *gs, PetscScalar *vals, PetscInt step)
+{
   PetscInt    *num, *map, **reduce;
   PetscScalar *base;
 
@@ -1080,7 +1100,8 @@ static PetscErrorCode PCTFS_gs_gop_vec_local_in_plus(PCTFS_gs_id *gs, PetscScala
 }
 
 /******************************************************************************/
-static PetscErrorCode PCTFS_gs_gop_vec_local_out(PCTFS_gs_id *gs, PetscScalar *vals, PetscInt step) {
+static PetscErrorCode PCTFS_gs_gop_vec_local_out(PCTFS_gs_id *gs, PetscScalar *vals, PetscInt step)
+{
   PetscInt    *num, *map, **reduce;
   PetscScalar *base;
 
@@ -1112,7 +1133,8 @@ static PetscErrorCode PCTFS_gs_gop_vec_local_out(PCTFS_gs_id *gs, PetscScalar *v
 }
 
 /******************************************************************************/
-static PetscErrorCode PCTFS_gs_gop_vec_pairwise_plus(PCTFS_gs_id *gs, PetscScalar *in_vals, PetscInt step) {
+static PetscErrorCode PCTFS_gs_gop_vec_pairwise_plus(PCTFS_gs_id *gs, PetscScalar *in_vals, PetscInt step)
+{
   PetscScalar *dptr1, *dptr2, *dptr3, *in1, *in2;
   PetscInt    *iptr, *msg_list, *msg_size, **msg_nodes;
   PetscInt    *pw, *list, *size, **nodes;
@@ -1205,7 +1227,8 @@ static PetscErrorCode PCTFS_gs_gop_vec_pairwise_plus(PCTFS_gs_id *gs, PetscScala
 }
 
 /******************************************************************************/
-static PetscErrorCode PCTFS_gs_gop_vec_tree_plus(PCTFS_gs_id *gs, PetscScalar *vals, PetscInt step) {
+static PetscErrorCode PCTFS_gs_gop_vec_tree_plus(PCTFS_gs_id *gs, PetscScalar *vals, PetscInt step)
+{
   PetscInt     size, *in, *out;
   PetscScalar *buf, *work;
   PetscInt     op[] = {GL_ADD, 0};
@@ -1246,10 +1269,13 @@ static PetscErrorCode PCTFS_gs_gop_vec_tree_plus(PCTFS_gs_id *gs, PetscScalar *v
 }
 
 /******************************************************************************/
-PetscErrorCode PCTFS_gs_gop_hc(PCTFS_gs_id *gs, PetscScalar *vals, const char *op, PetscInt dim) {
+PetscErrorCode PCTFS_gs_gop_hc(PCTFS_gs_id *gs, PetscScalar *vals, const char *op, PetscInt dim)
+{
   PetscFunctionBegin;
   switch (*op) {
-  case '+': PCTFS_gs_gop_plus_hc(gs, vals, dim); break;
+  case '+':
+    PCTFS_gs_gop_plus_hc(gs, vals, dim);
+    break;
   default:
     PetscCall(PetscInfo(0, "PCTFS_gs_gop_hc() :: %c is not a valid op\n", op[0]));
     PetscCall(PetscInfo(0, "PCTFS_gs_gop_hc() :: default :: plus\n"));
@@ -1260,7 +1286,8 @@ PetscErrorCode PCTFS_gs_gop_hc(PCTFS_gs_id *gs, PetscScalar *vals, const char *o
 }
 
 /******************************************************************************/
-static PetscErrorCode PCTFS_gs_gop_plus_hc(PCTFS_gs_id *gs, PetscScalar *vals, PetscInt dim) {
+static PetscErrorCode PCTFS_gs_gop_plus_hc(PCTFS_gs_id *gs, PetscScalar *vals, PetscInt dim)
+{
   PetscFunctionBegin;
   /* if there's nothing to do return */
   if (dim <= 0) PetscFunctionReturn(0);
@@ -1289,7 +1316,8 @@ static PetscErrorCode PCTFS_gs_gop_plus_hc(PCTFS_gs_id *gs, PetscScalar *vals, P
 }
 
 /******************************************************************************/
-static PetscErrorCode PCTFS_gs_gop_pairwise_plus_hc(PCTFS_gs_id *gs, PetscScalar *in_vals, PetscInt dim) {
+static PetscErrorCode PCTFS_gs_gop_pairwise_plus_hc(PCTFS_gs_id *gs, PetscScalar *in_vals, PetscInt dim)
+{
   PetscScalar *dptr1, *dptr2, *dptr3, *in1, *in2;
   PetscInt    *iptr, *msg_list, *msg_size, **msg_nodes;
   PetscInt    *pw, *list, *size, **nodes;
@@ -1387,7 +1415,8 @@ static PetscErrorCode PCTFS_gs_gop_pairwise_plus_hc(PCTFS_gs_id *gs, PetscScalar
 }
 
 /******************************************************************************/
-static PetscErrorCode PCTFS_gs_gop_tree_plus_hc(PCTFS_gs_id *gs, PetscScalar *vals, PetscInt dim) {
+static PetscErrorCode PCTFS_gs_gop_tree_plus_hc(PCTFS_gs_id *gs, PetscScalar *vals, PetscInt dim)
+{
   PetscInt     size;
   PetscInt    *in, *out;
   PetscScalar *buf, *work;

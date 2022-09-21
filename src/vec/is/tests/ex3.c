@@ -4,7 +4,8 @@ static char help[] = "Tests ISSetBlockSize() on ISBlock().\n\n";
 #include <petscis.h>
 #include <petscviewer.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt        bs = 2, n = 3, ix[3] = {1, 7, 9};
   const PetscInt *indices;
   IS              is;

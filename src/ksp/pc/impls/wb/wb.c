@@ -16,7 +16,8 @@ const char *const PCExoticTypes[] = {"face", "wirebasket", "PCExoticType", "PC_E
       DMDAGetWireBasketInterpolation - Gets the interpolation for a wirebasket based coarse space
 
 */
-PetscErrorCode DMDAGetWireBasketInterpolation(PC pc, DM da, PC_Exotic *exotic, Mat Aglobal, MatReuse reuse, Mat *P) {
+PetscErrorCode DMDAGetWireBasketInterpolation(PC pc, DM da, PC_Exotic *exotic, Mat Aglobal, MatReuse reuse, Mat *P)
+{
   PetscInt               dim, i, j, k, m, n, p, dof, Nint, Nface, Nwire, Nsurf, *Iint, *Isurf, cint = 0, csurf = 0, istart, jstart, kstart, *II, N, c = 0;
   PetscInt               mwidth, nwidth, pwidth, cnt, mp, np, pp, Ntotal, gl[26], *globals, Ng, *IIint, *IIsurf, Nt;
   Mat                    Xint, Xsurf, Xint_tmp;
@@ -235,38 +236,54 @@ PetscErrorCode DMDAGetWireBasketInterpolation(PC pc, DM da, PC_Exotic *exotic, M
   cnt = 0;
 
   gl[cnt++] = 0;
-  { gl[cnt++] = 1; }
+  {
+    gl[cnt++] = 1;
+  }
   gl[cnt++] = m - istart - 1;
   {
     gl[cnt++] = mwidth;
-    { gl[cnt++] = mwidth + 1; }
+    {
+      gl[cnt++] = mwidth + 1;
+    }
     gl[cnt++] = mwidth + m - istart - 1;
   }
   gl[cnt++] = mwidth * (n - jstart - 1);
-  { gl[cnt++] = mwidth * (n - jstart - 1) + 1; }
+  {
+    gl[cnt++] = mwidth * (n - jstart - 1) + 1;
+  }
   gl[cnt++] = mwidth * (n - jstart - 1) + m - istart - 1;
   {
     gl[cnt++] = mwidth * nwidth;
-    { gl[cnt++] = mwidth * nwidth + 1; }
+    {
+      gl[cnt++] = mwidth * nwidth + 1;
+    }
     gl[cnt++] = mwidth * nwidth + m - istart - 1;
     {
       gl[cnt++] = mwidth * nwidth + mwidth; /* these are the interior nodes */
       gl[cnt++] = mwidth * nwidth + mwidth + m - istart - 1;
     }
     gl[cnt++] = mwidth * nwidth + mwidth * (n - jstart - 1);
-    { gl[cnt++] = mwidth * nwidth + mwidth * (n - jstart - 1) + 1; }
+    {
+      gl[cnt++] = mwidth * nwidth + mwidth * (n - jstart - 1) + 1;
+    }
     gl[cnt++] = mwidth * nwidth + mwidth * (n - jstart - 1) + m - istart - 1;
   }
   gl[cnt++] = mwidth * nwidth * (p - kstart - 1);
-  { gl[cnt++] = mwidth * nwidth * (p - kstart - 1) + 1; }
+  {
+    gl[cnt++] = mwidth * nwidth * (p - kstart - 1) + 1;
+  }
   gl[cnt++] = mwidth * nwidth * (p - kstart - 1) + m - istart - 1;
   {
     gl[cnt++] = mwidth * nwidth * (p - kstart - 1) + mwidth;
-    { gl[cnt++] = mwidth * nwidth * (p - kstart - 1) + mwidth + 1; }
+    {
+      gl[cnt++] = mwidth * nwidth * (p - kstart - 1) + mwidth + 1;
+    }
     gl[cnt++] = mwidth * nwidth * (p - kstart - 1) + mwidth + m - istart - 1;
   }
   gl[cnt++] = mwidth * nwidth * (p - kstart - 1) + mwidth * (n - jstart - 1);
-  { gl[cnt++] = mwidth * nwidth * (p - kstart - 1) + mwidth * (n - jstart - 1) + 1; }
+  {
+    gl[cnt++] = mwidth * nwidth * (p - kstart - 1) + mwidth * (n - jstart - 1) + 1;
+  }
   gl[cnt++] = mwidth * nwidth * (p - kstart - 1) + mwidth * (n - jstart - 1) + m - istart - 1;
 
   /* PetscIntView(26,gl,PETSC_VIEWER_STDOUT_WORLD); */
@@ -340,7 +357,8 @@ PetscErrorCode DMDAGetWireBasketInterpolation(PC pc, DM da, PC_Exotic *exotic, M
       DMDAGetFaceInterpolation - Gets the interpolation for a face based coarse space
 
 */
-PetscErrorCode DMDAGetFaceInterpolation(PC pc, DM da, PC_Exotic *exotic, Mat Aglobal, MatReuse reuse, Mat *P) {
+PetscErrorCode DMDAGetFaceInterpolation(PC pc, DM da, PC_Exotic *exotic, Mat Aglobal, MatReuse reuse, Mat *P)
+{
   PetscInt               dim, i, j, k, m, n, p, dof, Nint, Nface, Nwire, Nsurf, *Iint, *Isurf, cint = 0, csurf = 0, istart, jstart, kstart, *II, N, c = 0;
   PetscInt               mwidth, nwidth, pwidth, cnt, mp, np, pp, Ntotal, gl[6], *globals, Ng, *IIint, *IIsurf, Nt;
   Mat                    Xint, Xsurf, Xint_tmp;
@@ -531,16 +549,22 @@ PetscErrorCode DMDAGetFaceInterpolation(PC pc, DM da, PC_Exotic *exotic, Mat Agl
       For each vertex, edge, face on process (in the same orderings as used above) determine its local number including ghost points
   */
   cnt = 0;
-  { gl[cnt++] = mwidth + 1; }
+  {
+    gl[cnt++] = mwidth + 1;
+  }
   {{gl[cnt++] = mwidth * nwidth + 1;
 }
 {
   gl[cnt++] = mwidth * nwidth + mwidth; /* these are the interior nodes */
   gl[cnt++] = mwidth * nwidth + mwidth + m - istart - 1;
 }
-{ gl[cnt++] = mwidth * nwidth + mwidth * (n - jstart - 1) + 1; }
+{
+  gl[cnt++] = mwidth * nwidth + mwidth * (n - jstart - 1) + 1;
 }
-{ gl[cnt++] = mwidth * nwidth * (p - kstart - 1) + mwidth + 1; }
+}
+{
+  gl[cnt++] = mwidth * nwidth * (p - kstart - 1) + mwidth + 1;
+}
 
 /* PetscIntView(6,gl,PETSC_VIEWER_STDOUT_WORLD); */
 /* convert that to global numbering and get them on all processes */
@@ -636,7 +660,8 @@ PetscFunctionReturn(0);
 
 .seealso: `PCEXOTIC`, `PCExoticType()`
 @*/
-PetscErrorCode PCExoticSetType(PC pc, PCExoticType type) {
+PetscErrorCode PCExoticSetType(PC pc, PCExoticType type)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidLogicalCollectiveEnum(pc, type, 2);
@@ -644,7 +669,8 @@ PetscErrorCode PCExoticSetType(PC pc, PCExoticType type) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCExoticSetType_Exotic(PC pc, PCExoticType type) {
+static PetscErrorCode PCExoticSetType_Exotic(PC pc, PCExoticType type)
+{
   PC_MG     *mg  = (PC_MG *)pc->data;
   PC_Exotic *ctx = (PC_Exotic *)mg->innerctx;
 
@@ -653,7 +679,8 @@ static PetscErrorCode PCExoticSetType_Exotic(PC pc, PCExoticType type) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCSetUp_Exotic(PC pc) {
+PetscErrorCode PCSetUp_Exotic(PC pc)
+{
   Mat        A;
   PC_MG     *mg    = (PC_MG *)pc->data;
   PC_Exotic *ex    = (PC_Exotic *)mg->innerctx;
@@ -674,7 +701,8 @@ PetscErrorCode PCSetUp_Exotic(PC pc) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCDestroy_Exotic(PC pc) {
+PetscErrorCode PCDestroy_Exotic(PC pc)
+{
   PC_MG     *mg  = (PC_MG *)pc->data;
   PC_Exotic *ctx = (PC_Exotic *)mg->innerctx;
 
@@ -687,7 +715,8 @@ PetscErrorCode PCDestroy_Exotic(PC pc) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCView_Exotic(PC pc, PetscViewer viewer) {
+PetscErrorCode PCView_Exotic(PC pc, PetscViewer viewer)
+{
   PC_MG     *mg = (PC_MG *)pc->data;
   PetscBool  iascii;
   PC_Exotic *ctx = (PC_Exotic *)mg->innerctx;
@@ -717,7 +746,8 @@ PetscErrorCode PCView_Exotic(PC pc, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCSetFromOptions_Exotic(PC pc, PetscOptionItems *PetscOptionsObject) {
+PetscErrorCode PCSetFromOptions_Exotic(PC pc, PetscOptionItems *PetscOptionsObject)
+{
   PetscBool    flg;
   PC_MG       *mg = (PC_MG *)pc->data;
   PCExoticType mgctype;
@@ -790,7 +820,8 @@ PetscErrorCode PCSetFromOptions_Exotic(PC pc, PetscOptionItems *PetscOptionsObje
 .seealso: `PCMG`, `PCSetDM()`, `PCExoticType`, `PCExoticSetType()`
 M*/
 
-PETSC_EXTERN PetscErrorCode PCCreate_Exotic(PC pc) {
+PETSC_EXTERN PetscErrorCode PCCreate_Exotic(PC pc)
+{
   PC_Exotic *ex;
   PC_MG     *mg;
 

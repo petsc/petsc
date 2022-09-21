@@ -25,7 +25,8 @@ const char HPDDMCitation[] = "@article{jolivet2020petsc,\n"
 static PetscBool loadedDL = PETSC_FALSE;
 #endif
 
-static PetscErrorCode KSPSetFromOptions_HPDDM(KSP ksp, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode KSPSetFromOptions_HPDDM(KSP ksp, PetscOptionItems *PetscOptionsObject)
+{
   KSP_HPDDM  *data = (KSP_HPDDM *)ksp->data;
   PetscInt    i, j;
   PetscMPIInt size;
@@ -101,7 +102,8 @@ static PetscErrorCode KSPSetFromOptions_HPDDM(KSP ksp, PetscOptionItems *PetscOp
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPView_HPDDM(KSP ksp, PetscViewer viewer) {
+static PetscErrorCode KSPView_HPDDM(KSP ksp, PetscViewer viewer)
+{
   KSP_HPDDM            *data  = (KSP_HPDDM *)ksp->data;
   HPDDM::PETScOperator *op    = data->op;
   const PetscScalar    *array = op ? op->storage() : NULL;
@@ -126,7 +128,8 @@ static PetscErrorCode KSPView_HPDDM(KSP ksp, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPSetUp_HPDDM(KSP ksp) {
+static PetscErrorCode KSPSetUp_HPDDM(KSP ksp)
+{
   KSP_HPDDM *data = (KSP_HPDDM *)ksp->data;
   Mat        A;
   PetscInt   n, bs;
@@ -175,7 +178,8 @@ static PetscErrorCode KSPSetUp_HPDDM(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-static inline PetscErrorCode KSPHPDDMReset_Private(KSP ksp) {
+static inline PetscErrorCode KSPHPDDMReset_Private(KSP ksp)
+{
   KSP_HPDDM *data = (KSP_HPDDM *)ksp->data;
 
   PetscFunctionBegin;
@@ -188,7 +192,8 @@ static inline PetscErrorCode KSPHPDDMReset_Private(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPReset_HPDDM(KSP ksp) {
+static PetscErrorCode KSPReset_HPDDM(KSP ksp)
+{
   KSP_HPDDM *data = (KSP_HPDDM *)ksp->data;
 
   PetscFunctionBegin;
@@ -200,7 +205,8 @@ static PetscErrorCode KSPReset_HPDDM(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPDestroy_HPDDM(KSP ksp) {
+static PetscErrorCode KSPDestroy_HPDDM(KSP ksp)
+{
   PetscFunctionBegin;
   PetscCall(KSPReset_HPDDM(ksp));
   PetscCall(KSPDestroyDefault(ksp));
@@ -211,7 +217,8 @@ static PetscErrorCode KSPDestroy_HPDDM(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-static inline PetscErrorCode KSPSolve_HPDDM_Private(KSP ksp, const PetscScalar *b, PetscScalar *x, PetscInt n) {
+static inline PetscErrorCode KSPSolve_HPDDM_Private(KSP ksp, const PetscScalar *b, PetscScalar *x, PetscInt n)
+{
   KSP_HPDDM              *data = (KSP_HPDDM *)ksp->data;
   KSPConvergedDefaultCtx *ctx  = (KSPConvergedDefaultCtx *)ksp->cnvP;
   const PetscInt          N    = data->op->getDof() * n;
@@ -275,7 +282,8 @@ static inline PetscErrorCode KSPSolve_HPDDM_Private(KSP ksp, const PetscScalar *
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPSolve_HPDDM(KSP ksp) {
+static PetscErrorCode KSPSolve_HPDDM(KSP ksp)
+{
   KSP_HPDDM         *data = (KSP_HPDDM *)ksp->data;
   Mat                A, B;
   PetscScalar       *x, *bt = NULL, **ptr;
@@ -333,7 +341,8 @@ static PetscErrorCode KSPSolve_HPDDM(KSP ksp) {
 
 .seealso: `KSPCreate()`, `KSPType`, `KSPHPDDMGetDeflationMat()`
 @*/
-PetscErrorCode KSPHPDDMSetDeflationMat(KSP ksp, Mat U) {
+PetscErrorCode KSPHPDDMSetDeflationMat(KSP ksp, Mat U)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscValidHeaderSpecific(U, MAT_CLASSID, 2);
@@ -355,7 +364,8 @@ PetscErrorCode KSPHPDDMSetDeflationMat(KSP ksp, Mat U) {
 
 .seealso: `KSPCreate()`, `KSPType`, `KSPHPDDMSetDeflationMat()`
 @*/
-PetscErrorCode KSPHPDDMGetDeflationMat(KSP ksp, Mat *U) {
+PetscErrorCode KSPHPDDMGetDeflationMat(KSP ksp, Mat *U)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   if (U) {
@@ -365,7 +375,8 @@ PetscErrorCode KSPHPDDMGetDeflationMat(KSP ksp, Mat *U) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPHPDDMSetDeflationMat_HPDDM(KSP ksp, Mat U) {
+static PetscErrorCode KSPHPDDMSetDeflationMat_HPDDM(KSP ksp, Mat U)
+{
   KSP_HPDDM            *data = (KSP_HPDDM *)ksp->data;
   HPDDM::PETScOperator *op   = data->op;
   Mat                   A;
@@ -397,7 +408,8 @@ static PetscErrorCode KSPHPDDMSetDeflationMat_HPDDM(KSP ksp, Mat U) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPHPDDMGetDeflationMat_HPDDM(KSP ksp, Mat *U) {
+static PetscErrorCode KSPHPDDMGetDeflationMat_HPDDM(KSP ksp, Mat *U)
+{
   KSP_HPDDM            *data = (KSP_HPDDM *)ksp->data;
   HPDDM::PETScOperator *op   = data->op;
   Mat                   A;
@@ -426,7 +438,8 @@ static PetscErrorCode KSPHPDDMGetDeflationMat_HPDDM(KSP ksp, Mat *U) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPMatSolve_HPDDM(KSP ksp, Mat B, Mat X) {
+static PetscErrorCode KSPMatSolve_HPDDM(KSP ksp, Mat B, Mat X)
+{
   KSP_HPDDM            *data = (KSP_HPDDM *)ksp->data;
   HPDDM::PETScOperator *op   = data->op;
   Mat                   A;
@@ -473,7 +486,8 @@ static PetscErrorCode KSPMatSolve_HPDDM(KSP ksp, Mat B, Mat X) {
 
 .seealso: `KSPCreate()`, `KSPType`, `KSPHPDDMType`, `KSPHPDDMGetType()`
 @*/
-PetscErrorCode KSPHPDDMSetType(KSP ksp, KSPHPDDMType type) {
+PetscErrorCode KSPHPDDMSetType(KSP ksp, KSPHPDDMType type)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscValidLogicalCollectiveEnum(ksp, type, 2);
@@ -494,7 +508,8 @@ PetscErrorCode KSPHPDDMSetType(KSP ksp, KSPHPDDMType type) {
 
 .seealso: `KSPCreate()`, `KSPType`, `KSPHPDDMType`, `KSPHPDDMSetType()`
 @*/
-PetscErrorCode KSPHPDDMGetType(KSP ksp, KSPHPDDMType *type) {
+PetscErrorCode KSPHPDDMGetType(KSP ksp, KSPHPDDMType *type)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   if (type) {
@@ -504,7 +519,8 @@ PetscErrorCode KSPHPDDMGetType(KSP ksp, KSPHPDDMType *type) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPHPDDMSetType_HPDDM(KSP ksp, KSPHPDDMType type) {
+static PetscErrorCode KSPHPDDMSetType_HPDDM(KSP ksp, KSPHPDDMType type)
+{
   KSP_HPDDM *data = (KSP_HPDDM *)ksp->data;
   PetscInt   i;
   PetscBool  flg = PETSC_FALSE;
@@ -520,7 +536,8 @@ static PetscErrorCode KSPHPDDMSetType_HPDDM(KSP ksp, KSPHPDDMType type) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPHPDDMGetType_HPDDM(KSP ksp, KSPHPDDMType *type) {
+static PetscErrorCode KSPHPDDMGetType_HPDDM(KSP ksp, KSPHPDDMType *type)
+{
   KSP_HPDDM *data = (KSP_HPDDM *)ksp->data;
 
   PetscFunctionBegin;
@@ -561,7 +578,8 @@ static PetscErrorCode KSPHPDDMGetType_HPDDM(KSP ksp, KSPHPDDMType *type) {
 
 .seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPGMRES`, `KSPCG`, `KSPLGMRES`, `KSPDGMRES`
 M*/
-PETSC_EXTERN PetscErrorCode KSPCreate_HPDDM(KSP ksp) {
+PETSC_EXTERN PetscErrorCode KSPCreate_HPDDM(KSP ksp)
+{
   KSP_HPDDM  *data;
   PetscInt    i;
   const char *common[] = {KSPGMRES, KSPCG, KSPPREONLY};

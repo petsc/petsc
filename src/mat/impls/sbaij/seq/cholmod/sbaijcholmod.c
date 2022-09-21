@@ -18,7 +18,8 @@
 */
 static Mat static_F;
 
-static void CholmodErrorHandler(int status, const char *file, int line, const char *message) {
+static void CholmodErrorHandler(int status, const char *file, int line, const char *message)
+{
   PetscFunctionBegin;
   if (status > CHOLMOD_OK) {
     PetscCallVoid(PetscInfo(static_F, "CHOLMOD warning %d at %s:%d: %s\n", status, file, line, message));
@@ -59,7 +60,8 @@ static void CholmodErrorHandler(int status, const char *file, int line, const ch
     c->name = (int)tmp; \
   } while (0)
 
-static PetscErrorCode CholmodSetOptions(Mat F) {
+static PetscErrorCode CholmodSetOptions(Mat F)
+{
   Mat_CHOLMOD    *chol = (Mat_CHOLMOD *)F->data;
   cholmod_common *c    = chol->common;
   PetscBool       flg;
@@ -120,7 +122,8 @@ static PetscErrorCode CholmodSetOptions(Mat F) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode CholmodStart(Mat F) {
+PetscErrorCode CholmodStart(Mat F)
+{
   Mat_CHOLMOD    *chol = (Mat_CHOLMOD *)F->data;
   cholmod_common *c;
 
@@ -134,7 +137,8 @@ PetscErrorCode CholmodStart(Mat F) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatWrapCholmod_seqsbaij(Mat A, PetscBool values, cholmod_sparse *C, PetscBool *aijalloc, PetscBool *valloc) {
+static PetscErrorCode MatWrapCholmod_seqsbaij(Mat A, PetscBool values, cholmod_sparse *C, PetscBool *aijalloc, PetscBool *valloc)
+{
   Mat_SeqSBAIJ *sbaij    = (Mat_SeqSBAIJ *)A->data;
   PetscBool     vallocin = PETSC_FALSE;
 
@@ -174,16 +178,23 @@ static PetscErrorCode MatWrapCholmod_seqsbaij(Mat A, PetscBool values, cholmod_s
 #define GET_ARRAY_READ  0
 #define GET_ARRAY_WRITE 1
 
-PetscErrorCode VecWrapCholmod(Vec X, PetscInt rw, cholmod_dense *Y) {
+PetscErrorCode VecWrapCholmod(Vec X, PetscInt rw, cholmod_dense *Y)
+{
   PetscScalar *x;
   PetscInt     n;
 
   PetscFunctionBegin;
   PetscCall(PetscMemzero(Y, sizeof(*Y)));
   switch (rw) {
-  case GET_ARRAY_READ: PetscCall(VecGetArrayRead(X, (const PetscScalar **)&x)); break;
-  case GET_ARRAY_WRITE: PetscCall(VecGetArrayWrite(X, &x)); break;
-  default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Case %" PetscInt_FMT " not handled", rw); break;
+  case GET_ARRAY_READ:
+    PetscCall(VecGetArrayRead(X, (const PetscScalar **)&x));
+    break;
+  case GET_ARRAY_WRITE:
+    PetscCall(VecGetArrayWrite(X, &x));
+    break;
+  default:
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Case %" PetscInt_FMT " not handled", rw);
+    break;
   }
   PetscCall(VecGetSize(X, &n));
 
@@ -197,26 +208,40 @@ PetscErrorCode VecWrapCholmod(Vec X, PetscInt rw, cholmod_dense *Y) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecUnWrapCholmod(Vec X, PetscInt rw, cholmod_dense *Y) {
+PetscErrorCode VecUnWrapCholmod(Vec X, PetscInt rw, cholmod_dense *Y)
+{
   PetscFunctionBegin;
   switch (rw) {
-  case GET_ARRAY_READ: PetscCall(VecRestoreArrayRead(X, (const PetscScalar **)&Y->x)); break;
-  case GET_ARRAY_WRITE: PetscCall(VecRestoreArrayWrite(X, (PetscScalar **)&Y->x)); break;
-  default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Case %" PetscInt_FMT " not handled", rw); break;
+  case GET_ARRAY_READ:
+    PetscCall(VecRestoreArrayRead(X, (const PetscScalar **)&Y->x));
+    break;
+  case GET_ARRAY_WRITE:
+    PetscCall(VecRestoreArrayWrite(X, (PetscScalar **)&Y->x));
+    break;
+  default:
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Case %" PetscInt_FMT " not handled", rw);
+    break;
   }
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatDenseWrapCholmod(Mat X, PetscInt rw, cholmod_dense *Y) {
+PetscErrorCode MatDenseWrapCholmod(Mat X, PetscInt rw, cholmod_dense *Y)
+{
   PetscScalar *x;
   PetscInt     m, n, lda;
 
   PetscFunctionBegin;
   PetscCall(PetscMemzero(Y, sizeof(*Y)));
   switch (rw) {
-  case GET_ARRAY_READ: PetscCall(MatDenseGetArrayRead(X, (const PetscScalar **)&x)); break;
-  case GET_ARRAY_WRITE: PetscCall(MatDenseGetArrayWrite(X, &x)); break;
-  default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Case %" PetscInt_FMT " not handled", rw); break;
+  case GET_ARRAY_READ:
+    PetscCall(MatDenseGetArrayRead(X, (const PetscScalar **)&x));
+    break;
+  case GET_ARRAY_WRITE:
+    PetscCall(MatDenseGetArrayWrite(X, &x));
+    break;
+  default:
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Case %" PetscInt_FMT " not handled", rw);
+    break;
   }
   PetscCall(MatDenseGetLDA(X, &lda));
   PetscCall(MatGetLocalSize(X, &m, &n));
@@ -231,20 +256,26 @@ PetscErrorCode MatDenseWrapCholmod(Mat X, PetscInt rw, cholmod_dense *Y) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatDenseUnWrapCholmod(Mat X, PetscInt rw, cholmod_dense *Y) {
+PetscErrorCode MatDenseUnWrapCholmod(Mat X, PetscInt rw, cholmod_dense *Y)
+{
   PetscFunctionBegin;
   switch (rw) {
-  case GET_ARRAY_READ: PetscCall(MatDenseRestoreArrayRead(X, (const PetscScalar **)&Y->x)); break;
+  case GET_ARRAY_READ:
+    PetscCall(MatDenseRestoreArrayRead(X, (const PetscScalar **)&Y->x));
+    break;
   case GET_ARRAY_WRITE:
     /* we don't have MatDenseRestoreArrayWrite */
     PetscCall(MatDenseRestoreArray(X, (PetscScalar **)&Y->x));
     break;
-  default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Case %" PetscInt_FMT " not handled", rw); break;
+  default:
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Case %" PetscInt_FMT " not handled", rw);
+    break;
   }
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode MatDestroy_CHOLMOD(Mat F) {
+PETSC_INTERN PetscErrorCode MatDestroy_CHOLMOD(Mat F)
+{
   Mat_CHOLMOD *chol = (Mat_CHOLMOD *)F->data;
 
   PetscFunctionBegin;
@@ -269,7 +300,8 @@ static PetscErrorCode MatMatSolve_CHOLMOD(Mat, Mat, Mat);
 
 /*static const char *const CholmodOrderingMethods[] = {"User","AMD","METIS","NESDIS(default)","Natural","NESDIS(small=20000)","NESDIS(small=4,no constrained)","NESDIS()"};*/
 
-static PetscErrorCode MatView_Info_CHOLMOD(Mat F, PetscViewer viewer) {
+static PetscErrorCode MatView_Info_CHOLMOD(Mat F, PetscViewer viewer)
+{
   Mat_CHOLMOD          *chol = (Mat_CHOLMOD *)F->data;
   const cholmod_common *c    = chol->common;
   PetscInt              i;
@@ -322,7 +354,8 @@ static PetscErrorCode MatView_Info_CHOLMOD(Mat F, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode MatView_CHOLMOD(Mat F, PetscViewer viewer) {
+PETSC_INTERN PetscErrorCode MatView_CHOLMOD(Mat F, PetscViewer viewer)
+{
   PetscBool         iascii;
   PetscViewerFormat format;
 
@@ -335,7 +368,8 @@ PETSC_INTERN PetscErrorCode MatView_CHOLMOD(Mat F, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatSolve_CHOLMOD(Mat F, Vec B, Vec X) {
+static PetscErrorCode MatSolve_CHOLMOD(Mat F, Vec B, Vec X)
+{
   Mat_CHOLMOD  *chol = (Mat_CHOLMOD *)F->data;
   cholmod_dense cholB, cholX, *X_handle, *Y_handle = NULL, *E_handle = NULL;
 
@@ -353,7 +387,8 @@ static PetscErrorCode MatSolve_CHOLMOD(Mat F, Vec B, Vec X) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatMatSolve_CHOLMOD(Mat F, Mat B, Mat X) {
+static PetscErrorCode MatMatSolve_CHOLMOD(Mat F, Mat B, Mat X)
+{
   Mat_CHOLMOD  *chol = (Mat_CHOLMOD *)F->data;
   cholmod_dense cholB, cholX, *X_handle, *Y_handle = NULL, *E_handle = NULL;
 
@@ -371,7 +406,8 @@ static PetscErrorCode MatMatSolve_CHOLMOD(Mat F, Mat B, Mat X) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatCholeskyFactorNumeric_CHOLMOD(Mat F, Mat A, const MatFactorInfo *info) {
+static PetscErrorCode MatCholeskyFactorNumeric_CHOLMOD(Mat F, Mat A, const MatFactorInfo *info)
+{
   Mat_CHOLMOD   *chol = (Mat_CHOLMOD *)F->data;
   cholmod_sparse cholA;
   PetscBool      aijalloc, valloc;
@@ -398,7 +434,8 @@ static PetscErrorCode MatCholeskyFactorNumeric_CHOLMOD(Mat F, Mat A, const MatFa
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode MatCholeskyFactorSymbolic_CHOLMOD(Mat F, Mat A, IS perm, const MatFactorInfo *info) {
+PETSC_INTERN PetscErrorCode MatCholeskyFactorSymbolic_CHOLMOD(Mat F, Mat A, IS perm, const MatFactorInfo *info)
+{
   Mat_CHOLMOD   *chol = (Mat_CHOLMOD *)F->data;
   int            err;
   cholmod_sparse cholA;
@@ -433,13 +470,15 @@ PETSC_INTERN PetscErrorCode MatCholeskyFactorSymbolic_CHOLMOD(Mat F, Mat A, IS p
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatFactorGetSolverType_seqsbaij_cholmod(Mat A, MatSolverType *type) {
+static PetscErrorCode MatFactorGetSolverType_seqsbaij_cholmod(Mat A, MatSolverType *type)
+{
   PetscFunctionBegin;
   *type = MATSOLVERCHOLMOD;
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode MatGetInfo_CHOLMOD(Mat F, MatInfoType flag, MatInfo *info) {
+PETSC_INTERN PetscErrorCode MatGetInfo_CHOLMOD(Mat F, MatInfoType flag, MatInfo *info)
+{
   Mat_CHOLMOD *chol = (Mat_CHOLMOD *)F->data;
 
   PetscFunctionBegin;
@@ -492,7 +531,8 @@ PETSC_INTERN PetscErrorCode MatGetInfo_CHOLMOD(Mat F, MatInfoType flag, MatInfo 
 .seealso: `PCCHOLESKY`, `PCFactorSetMatSolverType()`, `MatSolverType`
 M*/
 
-PETSC_INTERN PetscErrorCode MatGetFactor_seqsbaij_cholmod(Mat A, MatFactorType ftype, Mat *F) {
+PETSC_INTERN PetscErrorCode MatGetFactor_seqsbaij_cholmod(Mat A, MatFactorType ftype, Mat *F)
+{
   Mat          B;
   Mat_CHOLMOD *chol;
   PetscInt     m = A->rmap->n, n = A->cmap->n, bs;

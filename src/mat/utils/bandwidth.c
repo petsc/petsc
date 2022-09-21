@@ -16,7 +16,8 @@
 
 .seealso: `DMPlexCreate()`, `DMPlexSetConeSize()`, `DMPlexSetChart()`
 @*/
-PetscErrorCode MatComputeBandwidth(Mat A, PetscReal fraction, PetscInt *bw) {
+PetscErrorCode MatComputeBandwidth(Mat A, PetscReal fraction, PetscInt *bw)
+{
   PetscInt lbw[2] = {0, 0}, gbw[2];
   PetscInt rStart, rEnd, r;
 

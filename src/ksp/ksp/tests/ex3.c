@@ -8,7 +8,8 @@ differently from the way it is assembled.  Input arguments are:\n\
 
 #include <petscksp.h>
 
-int FormElementStiffness(PetscReal H, PetscScalar *Ke) {
+int FormElementStiffness(PetscReal H, PetscScalar *Ke)
+{
   PetscFunctionBeginUser;
   Ke[0]  = H / 6.0;
   Ke[1]  = -.125 * H;
@@ -28,7 +29,8 @@ int FormElementStiffness(PetscReal H, PetscScalar *Ke) {
   Ke[15] = H / 6.0;
   PetscFunctionReturn(0);
 }
-int FormElementRhs(PetscReal x, PetscReal y, PetscReal H, PetscScalar *r) {
+int FormElementRhs(PetscReal x, PetscReal y, PetscReal H, PetscScalar *r)
+{
   PetscFunctionBeginUser;
   r[0] = 0.;
   r[1] = 0.;
@@ -37,7 +39,8 @@ int FormElementRhs(PetscReal x, PetscReal y, PetscReal H, PetscScalar *r) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat         C;
   PetscMPIInt rank, size;
   PetscInt    i, m = 5, N, start, end, M, its;
@@ -93,8 +96,8 @@ int main(int argc, char **args) {
   /* Assemble right-hand-side vector */
   for (i = start; i < end; i++) {
     /* location of lower left corner of element */
-    x      = h * (i % m);
-    y      = h * (i / m);
+    x = h * (i % m);
+    y = h * (i / m);
     /* node numbers for the four corners of element */
     idx[0] = (m + 1) * (i / m) + (i % m);
     idx[1] = idx[0] + 1;

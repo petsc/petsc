@@ -2,7 +2,8 @@ static char help[] = "Tests VecMDot(),VecDot(),VecMTDot(), and VecTDot()\n";
 
 #include <petscvec.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   Vec         *V, t;
   PetscInt     i, j, reps, n = 15, k = 6;
   PetscRandom  rctx;

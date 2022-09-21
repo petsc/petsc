@@ -14,7 +14,8 @@ typedef struct {
 #define RANDER48_MULT_2 (0x0005)
 #define RANDER48_ADD    (0x000b)
 
-static double _dorander48(PetscRandom_Rander48 *r48) {
+static double _dorander48(PetscRandom_Rander48 *r48)
+{
   unsigned long  accu;
   unsigned short temp[2];
 
@@ -31,7 +32,8 @@ static double _dorander48(PetscRandom_Rander48 *r48) {
   return ldexp((double)r48->seed[0], -48) + ldexp((double)r48->seed[1], -32) + ldexp((double)r48->seed[2], -16);
 }
 
-static PetscErrorCode PetscRandomSeed_Rander48(PetscRandom r) {
+static PetscErrorCode PetscRandomSeed_Rander48(PetscRandom r)
+{
   PetscRandom_Rander48 *r48 = (PetscRandom_Rander48 *)r->data;
 
   PetscFunctionBegin;
@@ -45,7 +47,8 @@ static PetscErrorCode PetscRandomSeed_Rander48(PetscRandom r) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscRandomGetValue_Rander48(PetscRandom r, PetscScalar *val) {
+static PetscErrorCode PetscRandomGetValue_Rander48(PetscRandom r, PetscScalar *val)
+{
   PetscRandom_Rander48 *r48 = (PetscRandom_Rander48 *)r->data;
 
   PetscFunctionBegin;
@@ -64,7 +67,8 @@ static PetscErrorCode PetscRandomGetValue_Rander48(PetscRandom r, PetscScalar *v
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscRandomGetValueReal_Rander48(PetscRandom r, PetscReal *val) {
+static PetscErrorCode PetscRandomGetValueReal_Rander48(PetscRandom r, PetscReal *val)
+{
   PetscRandom_Rander48 *r48 = (PetscRandom_Rander48 *)r->data;
 
   PetscFunctionBegin;
@@ -78,7 +82,8 @@ static PetscErrorCode PetscRandomGetValueReal_Rander48(PetscRandom r, PetscReal 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscRandomDestroy_Rander48(PetscRandom r) {
+static PetscErrorCode PetscRandomDestroy_Rander48(PetscRandom r)
+{
   PetscFunctionBegin;
   PetscCall(PetscFree(r->data));
   PetscFunctionReturn(0);
@@ -114,7 +119,8 @@ static struct _PetscRandomOps PetscRandomOps_Values = {
           `PetscRandomSeed()`, `PetscRandomSetFromOptions()`
 M*/
 
-PETSC_EXTERN PetscErrorCode PetscRandomCreate_Rander48(PetscRandom r) {
+PETSC_EXTERN PetscErrorCode PetscRandomCreate_Rander48(PetscRandom r)
+{
   PetscRandom_Rander48 *r48;
 
   PetscFunctionBegin;

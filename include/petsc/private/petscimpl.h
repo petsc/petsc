@@ -9,9 +9,9 @@
 /* SUBMANSEC = Sys */
 
 #if defined(PETSC_CLANG_STATIC_ANALYZER)
-#define PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(expr)
+  #define PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(expr)
 #else
-#define PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(expr) expr
+  #define PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(expr) expr
 #endif
 
 #if PetscDefined(USE_DEBUG)
@@ -21,11 +21,11 @@ PETSC_INTERN PetscErrorCode PetscStackReset(void);
 PETSC_INTERN PetscErrorCode PetscStackCopy(PetscStack *, PetscStack *);
 PETSC_INTERN PetscErrorCode PetscStackPrint(PetscStack *, FILE *);
 #else
-#define PetscStackSetCheck(check)         0
-#define PetscStackView(file)              0
-#define PetscStackReset()                 0
-#define PetscStackCopy(stackin, stackout) 0
-#define PetscStackPrint(stack, file)      0
+  #define PetscStackSetCheck(check)         0
+  #define PetscStackView(file)              0
+  #define PetscStackReset()                 0
+  #define PetscStackCopy(stackin, stackout) 0
+  #define PetscStackPrint(stack, file)      0
 #endif /* PetscDefined(USE_DEBUG) */
 
 /* These are used internally by PETSc ASCII IO routines*/
@@ -205,78 +205,100 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *, const char *, c
 #if PetscDefined(HAVE_SETJMP_H)
 PETSC_EXTERN PetscBool PetscCheckPointer(const void *, PetscDataType);
 #else
-#define PetscCheckPointer(ptr, data_type) (ptr ? PETSC_TRUE : PETSC_FALSE)
+  #define PetscCheckPointer(ptr, data_type) (ptr ? PETSC_TRUE : PETSC_FALSE)
 #endif
 #if !defined(PETSC_CLANG_STATIC_ANALYZER)
-/*
+  /*
     Macros to test if a PETSc object is valid and if pointers are valid
 */
-#if !defined(PETSC_USE_DEBUG)
+  #if !defined(PETSC_USE_DEBUG)
 
-#define PetscValidHeaderSpecific(h, ck, arg) \
-  do { (void)(h); } while (0)
-#define PetscValidHeaderSpecificType(h, ck, arg, t) \
-  do { (void)(h); } while (0)
-#define PetscValidHeader(h, arg) \
-  do { (void)(h); } while (0)
-#define PetscValidPointer(h, arg) \
-  do { (void)(h); } while (0)
-#define PetscValidCharPointer(h, arg) \
-  do { (void)(h); } while (0)
-#define PetscValidIntPointer(h, arg) \
-  do { (void)(h); } while (0)
-#define PetscValidBoolPointer(h, arg) \
-  do { (void)(h); } while (0)
-#define PetscValidScalarPointer(h, arg) \
-  do { (void)(h); } while (0)
-#define PetscValidRealPointer(h, arg) \
-  do { (void)(h); } while (0)
-#define PetscValidFunction(h, arg) \
-  do { (void)(h); } while (0)
+    #define PetscValidHeaderSpecific(h, ck, arg) \
+      do { \
+        (void)(h); \
+      } while (0)
+    #define PetscValidHeaderSpecificType(h, ck, arg, t) \
+      do { \
+        (void)(h); \
+      } while (0)
+    #define PetscValidHeader(h, arg) \
+      do { \
+        (void)(h); \
+      } while (0)
+    #define PetscValidPointer(h, arg) \
+      do { \
+        (void)(h); \
+      } while (0)
+    #define PetscValidCharPointer(h, arg) \
+      do { \
+        (void)(h); \
+      } while (0)
+    #define PetscValidIntPointer(h, arg) \
+      do { \
+        (void)(h); \
+      } while (0)
+    #define PetscValidBoolPointer(h, arg) \
+      do { \
+        (void)(h); \
+      } while (0)
+    #define PetscValidScalarPointer(h, arg) \
+      do { \
+        (void)(h); \
+      } while (0)
+    #define PetscValidRealPointer(h, arg) \
+      do { \
+        (void)(h); \
+      } while (0)
+    #define PetscValidFunction(h, arg) \
+      do { \
+        (void)(h); \
+      } while (0)
 
-#else
+  #else
 
-/*  This check is for subtype methods such as DMDAGetCorners() that do not use the PetscTryMethod() or PetscUseMethod() paradigm */
-#define PetscValidHeaderSpecificType(h, ck, arg, t) \
-  do { \
-    PetscBool _7_same; \
-    PetscValidHeaderSpecific(h, ck, arg); \
-    PetscCall(PetscObjectTypeCompare((PetscObject)(h), t, &_7_same)); \
-    PetscCheck(_7_same, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Wrong subtype object:Parameter # %d must have implementation %s it is %s", arg, t, ((PetscObject)(h))->type_name); \
-  } while (0)
+    /*  This check is for subtype methods such as DMDAGetCorners() that do not use the PetscTryMethod() or PetscUseMethod() paradigm */
+    #define PetscValidHeaderSpecificType(h, ck, arg, t) \
+      do { \
+        PetscBool _7_same; \
+        PetscValidHeaderSpecific(h, ck, arg); \
+        PetscCall(PetscObjectTypeCompare((PetscObject)(h), t, &_7_same)); \
+        PetscCheck(_7_same, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Wrong subtype object:Parameter # %d must have implementation %s it is %s", arg, t, ((PetscObject)(h))->type_name); \
+      } while (0)
 
-#define PetscValidPointer_Internal(ptr, arg, ptype, ptrtype) \
-  do { \
-    PetscCheck(ptr, PETSC_COMM_SELF, PETSC_ERR_ARG_NULL, "Null Pointer: Parameter # %d", arg); \
-    PetscCheck(PetscCheckPointer(ptr, ptype), PETSC_COMM_SELF, PETSC_ERR_ARG_BADPTR, "Invalid Pointer to " PetscStringize(ptrtype) ": Argument '" PetscStringize(ptr) "' (parameter # %d)", arg); \
-  } while (0)
+    #define PetscValidPointer_Internal(ptr, arg, ptype, ptrtype) \
+      do { \
+        PetscCheck(ptr, PETSC_COMM_SELF, PETSC_ERR_ARG_NULL, "Null Pointer: Parameter # %d", arg); \
+        PetscCheck(PetscCheckPointer(ptr, ptype), PETSC_COMM_SELF, PETSC_ERR_ARG_BADPTR, "Invalid Pointer to " PetscStringize(ptrtype) ": Argument '" PetscStringize(ptr) "' (parameter # %d)", arg); \
+      } while (0)
 
-#define PetscValidHeaderSpecific(h, ck, arg) \
-  do { \
-    PetscValidPointer_Internal(h, arg, PETSC_OBJECT, PetscObject); \
-    if (((PetscObject)(h))->classid != ck) { \
-      PetscCheck(((PetscObject)(h))->classid != PETSCFREEDHEADER, PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "Object already free: Parameter # %d", arg); \
-      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Wrong type of object: Parameter # %d", arg); \
-    } \
-  } while (0)
+    #define PetscValidHeaderSpecific(h, ck, arg) \
+      do { \
+        PetscValidPointer_Internal(h, arg, PETSC_OBJECT, PetscObject); \
+        if (((PetscObject)(h))->classid != ck) { \
+          PetscCheck(((PetscObject)(h))->classid != PETSCFREEDHEADER, PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "Object already free: Parameter # %d", arg); \
+          SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Wrong type of object: Parameter # %d", arg); \
+        } \
+      } while (0)
 
-#define PetscValidHeader(h, arg) \
-  do { \
-    PetscValidPointer_Internal(h, arg, PETSC_OBJECT, PetscObject); \
-    PetscCheck(((PetscObject)(h))->classid != PETSCFREEDHEADER, PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "Object already free: Parameter # %d", arg); \
-    PetscCheck(((PetscObject)(h))->classid >= PETSC_SMALLEST_CLASSID && ((PetscObject)(h))->classid <= PETSC_LARGEST_CLASSID, PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "Invalid type of object: Parameter # %d", arg); \
-  } while (0)
+    #define PetscValidHeader(h, arg) \
+      do { \
+        PetscValidPointer_Internal(h, arg, PETSC_OBJECT, PetscObject); \
+        PetscCheck(((PetscObject)(h))->classid != PETSCFREEDHEADER, PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "Object already free: Parameter # %d", arg); \
+        PetscCheck(((PetscObject)(h))->classid >= PETSC_SMALLEST_CLASSID && ((PetscObject)(h))->classid <= PETSC_LARGEST_CLASSID, PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "Invalid type of object: Parameter # %d", arg); \
+      } while (0)
 
-#define PetscValidPointer(h, arg)       PetscValidPointer_Internal(h, arg, PETSC_CHAR, memory)
-#define PetscValidCharPointer(h, arg)   PetscValidPointer_Internal(h, arg, PETSC_CHAR, char)
-#define PetscValidIntPointer(h, arg)    PetscValidPointer_Internal(h, arg, PETSC_INT, PetscInt)
-#define PetscValidBoolPointer(h, arg)   PetscValidPointer_Internal(h, arg, PETSC_BOOL, PetscBool)
-#define PetscValidScalarPointer(h, arg) PetscValidPointer_Internal(h, arg, PETSC_SCALAR, PetscScalar)
-#define PetscValidRealPointer(h, arg)   PetscValidPointer_Internal(h, arg, PETSC_REAL, PetscReal)
+    #define PetscValidPointer(h, arg)       PetscValidPointer_Internal(h, arg, PETSC_CHAR, memory)
+    #define PetscValidCharPointer(h, arg)   PetscValidPointer_Internal(h, arg, PETSC_CHAR, char)
+    #define PetscValidIntPointer(h, arg)    PetscValidPointer_Internal(h, arg, PETSC_INT, PetscInt)
+    #define PetscValidBoolPointer(h, arg)   PetscValidPointer_Internal(h, arg, PETSC_BOOL, PetscBool)
+    #define PetscValidScalarPointer(h, arg) PetscValidPointer_Internal(h, arg, PETSC_SCALAR, PetscScalar)
+    #define PetscValidRealPointer(h, arg)   PetscValidPointer_Internal(h, arg, PETSC_REAL, PetscReal)
 
-#define PetscValidFunction(f, arg) \
-  do { PetscCheck((f), PETSC_COMM_SELF, PETSC_ERR_ARG_NULL, "Null Function Pointer: Parameter # %d", arg); } while (0)
-#endif
+    #define PetscValidFunction(f, arg) \
+      do { \
+        PetscCheck((f), PETSC_COMM_SELF, PETSC_ERR_ARG_NULL, "Null Function Pointer: Parameter # %d", arg); \
+      } while (0)
+  #endif
 #else  /* PETSC_CLANG_STATIC_ANALYZER */
 template <typename T>
 void PetscValidHeaderSpecificType(T, PetscClassId, int, const char[]);
@@ -314,68 +336,74 @@ void PetscValidFunction(T, int);
   } while (0)
 
 #if !defined(PETSC_CLANG_STATIC_ANALYZER)
-#if !defined(PETSC_USE_DEBUG)
+  #if !defined(PETSC_USE_DEBUG)
 
-#define PetscCheckSameType(a, arga, b, argb) \
-  do { \
-    (void)(a); \
-    (void)(b); \
-  } while (0)
-#define PetscCheckTypeName(a, type) \
-  do { (void)(a); } while (0)
-#define PetscCheckTypeNames(a, type1, type2) \
-  do { (void)(a); } while (0)
-#define PetscValidType(a, arg) \
-  do { (void)(a); } while (0)
-#define PetscCheckSameComm(a, arga, b, argb) \
-  do { \
-    (void)(a); \
-    (void)(b); \
-  } while (0)
-#define PetscCheckSameTypeAndComm(a, arga, b, argb) \
-  do { \
-    (void)(a); \
-    (void)(b); \
-  } while (0)
-#define PetscValidLogicalCollectiveScalar(a, b, arg) \
-  do { \
-    (void)(a); \
-    (void)(b); \
-  } while (0)
-#define PetscValidLogicalCollectiveReal(a, b, arg) \
-  do { \
-    (void)(a); \
-    (void)(b); \
-  } while (0)
-#define PetscValidLogicalCollectiveInt(a, b, arg) \
-  do { \
-    (void)(a); \
-    (void)(b); \
-  } while (0)
-#define PetscValidLogicalCollectiveMPIInt(a, b, arg) \
-  do { \
-    (void)(a); \
-    (void)(b); \
-  } while (0)
-#define PetscValidLogicalCollectiveBool(a, b, arg) \
-  do { \
-    (void)(a); \
-    (void)(b); \
-  } while (0)
-#define PetscValidLogicalCollectiveEnum(a, b, arg) \
-  do { \
-    (void)(a); \
-    (void)(b); \
-  } while (0)
-#define PetscCheckSorted(n, idx) \
-  do { \
-    (void)(n); \
-    (void)(idx); \
-  } while (0)
+    #define PetscCheckSameType(a, arga, b, argb) \
+      do { \
+        (void)(a); \
+        (void)(b); \
+      } while (0)
+    #define PetscCheckTypeName(a, type) \
+      do { \
+        (void)(a); \
+      } while (0)
+    #define PetscCheckTypeNames(a, type1, type2) \
+      do { \
+        (void)(a); \
+      } while (0)
+    #define PetscValidType(a, arg) \
+      do { \
+        (void)(a); \
+      } while (0)
+    #define PetscCheckSameComm(a, arga, b, argb) \
+      do { \
+        (void)(a); \
+        (void)(b); \
+      } while (0)
+    #define PetscCheckSameTypeAndComm(a, arga, b, argb) \
+      do { \
+        (void)(a); \
+        (void)(b); \
+      } while (0)
+    #define PetscValidLogicalCollectiveScalar(a, b, arg) \
+      do { \
+        (void)(a); \
+        (void)(b); \
+      } while (0)
+    #define PetscValidLogicalCollectiveReal(a, b, arg) \
+      do { \
+        (void)(a); \
+        (void)(b); \
+      } while (0)
+    #define PetscValidLogicalCollectiveInt(a, b, arg) \
+      do { \
+        (void)(a); \
+        (void)(b); \
+      } while (0)
+    #define PetscValidLogicalCollectiveMPIInt(a, b, arg) \
+      do { \
+        (void)(a); \
+        (void)(b); \
+      } while (0)
+    #define PetscValidLogicalCollectiveBool(a, b, arg) \
+      do { \
+        (void)(a); \
+        (void)(b); \
+      } while (0)
+    #define PetscValidLogicalCollectiveEnum(a, b, arg) \
+      do { \
+        (void)(a); \
+        (void)(b); \
+      } while (0)
+    #define PetscCheckSorted(n, idx) \
+      do { \
+        (void)(n); \
+        (void)(idx); \
+      } while (0)
 
-#else
+  #else
 
-/*
+    /*
   This macro currently does nothing, the plan is for each PetscObject to have a PetscInt "type"
   member associated with the string type_name that can be quickly compared.
 
@@ -384,134 +412,134 @@ void PetscValidFunction(T, int);
   This macro is used incorrectly in the code. Many places that do not need identity of the
   types incorrectly call this check and would need to be fixed if this macro is enabled.
 */
-#if 0
-#define PetscCheckSameType(a, arga, b, argb) \
-  do { \
-    PetscBool pcst_type_eq_ = PETSC_TRUE; \
-    PetscCall(PetscStrcmp(((PetscObject)(a))->type_name, (((PetscObject)(b)))->type_name, &pcst_type_eq_)); \
-    PetscCheck(pcst_type_eq_, PETSC_COMM_SELF, PETSC_ERR_ARG_NOTSAMETYPE, "Objects not of same type : Argument # % d and % d, % s != % s ", arga, argb, ((PetscObject)(a))->type_name, ((PetscObject)(b))->type_name); \
-  } while (0)
-#else
-#define PetscCheckSameType(a, arga, b, argb) \
-  do { \
-    (void)(a); \
-    (void)(b); \
-  } while (0)
-#endif
+    #if 0
+      #define PetscCheckSameType(a, arga, b, argb) \
+        do { \
+          PetscBool pcst_type_eq_ = PETSC_TRUE; \
+          PetscCall(PetscStrcmp(((PetscObject)(a))->type_name, (((PetscObject)(b)))->type_name, &pcst_type_eq_)); \
+          PetscCheck(pcst_type_eq_, PETSC_COMM_SELF, PETSC_ERR_ARG_NOTSAMETYPE, "Objects not of same type : Argument # % d and % d, % s != % s ", arga, argb, ((PetscObject)(a))->type_name, ((PetscObject)(b))->type_name); \
+        } while (0)
+    #else
+      #define PetscCheckSameType(a, arga, b, argb) \
+        do { \
+          (void)(a); \
+          (void)(b); \
+        } while (0)
+    #endif
 
-/*
+    /*
     Check type_name
 */
-#define PetscCheckTypeName(a, type) \
-  do { \
-    PetscBool _7_match; \
-    PetscCall(PetscObjectTypeCompare(((PetscObject)(a)), (type), &_7_match)); \
-    PetscCheck(_7_match, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Object (%s) is not %s", (char *)(((PetscObject)(a))->type_name), type); \
-  } while (0)
+    #define PetscCheckTypeName(a, type) \
+      do { \
+        PetscBool _7_match; \
+        PetscCall(PetscObjectTypeCompare(((PetscObject)(a)), (type), &_7_match)); \
+        PetscCheck(_7_match, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Object (%s) is not %s", (char *)(((PetscObject)(a))->type_name), type); \
+      } while (0)
 
-#define PetscCheckTypeNames(a, type1, type2) \
-  do { \
-    PetscBool _7_match; \
-    PetscCall(PetscObjectTypeCompareAny(((PetscObject)(a)), &_7_match, (type1), (type2), "")); \
-    PetscCheck(_7_match, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Object (%s) is not %s or %s", (char *)(((PetscObject)(a))->type_name), type1, type2); \
-  } while (0)
+    #define PetscCheckTypeNames(a, type1, type2) \
+      do { \
+        PetscBool _7_match; \
+        PetscCall(PetscObjectTypeCompareAny(((PetscObject)(a)), &_7_match, (type1), (type2), "")); \
+        PetscCheck(_7_match, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Object (%s) is not %s or %s", (char *)(((PetscObject)(a))->type_name), type1, type2); \
+      } while (0)
 
-/*
+    /*
    Use this macro to check if the type is set
 */
-#define PetscValidType(a, arg) PetscCheck(((PetscObject)(a))->type_name, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "%s object's type is not set: Argument # %d", ((PetscObject)(a))->class_name, arg)
+    #define PetscValidType(a, arg) PetscCheck(((PetscObject)(a))->type_name, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "%s object's type is not set: Argument # %d", ((PetscObject)(a))->class_name, arg)
 
-/*
+    /*
    Sometimes object must live on same communicator to inter-operate
 */
-#define PetscCheckSameComm(a, arga, b, argb) \
-  do { \
-    PetscMPIInt _7_flag; \
-    PetscCallMPI(MPI_Comm_compare(PetscObjectComm((PetscObject)(a)), PetscObjectComm((PetscObject)(b)), &_7_flag)); \
-    PetscCheck(_7_flag == MPI_CONGRUENT || _7_flag == MPI_IDENT, PETSC_COMM_SELF, PETSC_ERR_ARG_NOTSAMECOMM, "Different communicators in the two objects: Argument # %d and %d flag %d", arga, argb, _7_flag); \
-  } while (0)
+    #define PetscCheckSameComm(a, arga, b, argb) \
+      do { \
+        PetscMPIInt _7_flag; \
+        PetscCallMPI(MPI_Comm_compare(PetscObjectComm((PetscObject)(a)), PetscObjectComm((PetscObject)(b)), &_7_flag)); \
+        PetscCheck(_7_flag == MPI_CONGRUENT || _7_flag == MPI_IDENT, PETSC_COMM_SELF, PETSC_ERR_ARG_NOTSAMECOMM, "Different communicators in the two objects: Argument # %d and %d flag %d", arga, argb, _7_flag); \
+      } while (0)
 
-#define PetscCheckSameTypeAndComm(a, arga, b, argb) \
-  do { \
-    PetscCheckSameType(a, arga, b, argb); \
-    PetscCheckSameComm(a, arga, b, argb); \
-  } while (0)
+    #define PetscCheckSameTypeAndComm(a, arga, b, argb) \
+      do { \
+        PetscCheckSameType(a, arga, b, argb); \
+        PetscCheckSameComm(a, arga, b, argb); \
+      } while (0)
 
-#define PetscValidLogicalCollectiveScalar(a, b, arg) \
-  do { \
-    PetscScalar b0 = (b); \
-    PetscReal   b1[5], b2[5]; \
-    if (PetscIsNanScalar(b0)) { \
-      b1[4] = 1; \
-    } else { \
-      b1[4] = 0; \
-    }; \
-    b1[0] = -PetscRealPart(b0); \
-    b1[1] = PetscRealPart(b0); \
-    b1[2] = -PetscImaginaryPart(b0); \
-    b1[3] = PetscImaginaryPart(b0); \
-    PetscCall(MPIU_Allreduce(b1, b2, 5, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)(a)))); \
-    PetscCheck(b2[4] > 0 || (PetscEqualReal(-b2[0], b2[1]) && PetscEqualReal(-b2[2], b2[3])), PetscObjectComm((PetscObject)(a)), PETSC_ERR_ARG_WRONG, "Scalar value must be same on all processes, argument # %d", arg); \
-  } while (0)
+    #define PetscValidLogicalCollectiveScalar(a, b, arg) \
+      do { \
+        PetscScalar b0 = (b); \
+        PetscReal   b1[5], b2[5]; \
+        if (PetscIsNanScalar(b0)) { \
+          b1[4] = 1; \
+        } else { \
+          b1[4] = 0; \
+        }; \
+        b1[0] = -PetscRealPart(b0); \
+        b1[1] = PetscRealPart(b0); \
+        b1[2] = -PetscImaginaryPart(b0); \
+        b1[3] = PetscImaginaryPart(b0); \
+        PetscCall(MPIU_Allreduce(b1, b2, 5, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)(a)))); \
+        PetscCheck(b2[4] > 0 || (PetscEqualReal(-b2[0], b2[1]) && PetscEqualReal(-b2[2], b2[3])), PetscObjectComm((PetscObject)(a)), PETSC_ERR_ARG_WRONG, "Scalar value must be same on all processes, argument # %d", arg); \
+      } while (0)
 
-#define PetscValidLogicalCollectiveReal(a, b, arg) \
-  do { \
-    PetscReal b0 = (b), b1[3], b2[3]; \
-    if (PetscIsNanReal(b0)) { \
-      b1[2] = 1; \
-    } else { \
-      b1[2] = 0; \
-    }; \
-    b1[0] = -b0; \
-    b1[1] = b0; \
-    PetscCall(MPIU_Allreduce(b1, b2, 3, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)(a)))); \
-    PetscCheck(b2[2] > 0 || PetscEqualReal(-b2[0], b2[1]), PetscObjectComm((PetscObject)(a)), PETSC_ERR_ARG_WRONG, "Real value must be same on all processes, argument # %d", arg); \
-  } while (0)
+    #define PetscValidLogicalCollectiveReal(a, b, arg) \
+      do { \
+        PetscReal b0 = (b), b1[3], b2[3]; \
+        if (PetscIsNanReal(b0)) { \
+          b1[2] = 1; \
+        } else { \
+          b1[2] = 0; \
+        }; \
+        b1[0] = -b0; \
+        b1[1] = b0; \
+        PetscCall(MPIU_Allreduce(b1, b2, 3, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)(a)))); \
+        PetscCheck(b2[2] > 0 || PetscEqualReal(-b2[0], b2[1]), PetscObjectComm((PetscObject)(a)), PETSC_ERR_ARG_WRONG, "Real value must be same on all processes, argument # %d", arg); \
+      } while (0)
 
-#define PetscValidLogicalCollectiveInt(a, b, arg) \
-  do { \
-    PetscInt b0 = (b), b1[2], b2[2]; \
-    b1[0]       = -b0; \
-    b1[1]       = b0; \
-    PetscCall(MPIU_Allreduce(b1, b2, 2, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)(a)))); \
-    PetscCheck(-b2[0] == b2[1], PetscObjectComm((PetscObject)(a)), PETSC_ERR_ARG_WRONG, "Int value must be same on all processes, argument # %d", arg); \
-  } while (0)
+    #define PetscValidLogicalCollectiveInt(a, b, arg) \
+      do { \
+        PetscInt b0 = (b), b1[2], b2[2]; \
+        b1[0]       = -b0; \
+        b1[1]       = b0; \
+        PetscCall(MPIU_Allreduce(b1, b2, 2, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)(a)))); \
+        PetscCheck(-b2[0] == b2[1], PetscObjectComm((PetscObject)(a)), PETSC_ERR_ARG_WRONG, "Int value must be same on all processes, argument # %d", arg); \
+      } while (0)
 
-#define PetscValidLogicalCollectiveMPIInt(a, b, arg) \
-  do { \
-    PetscMPIInt b0 = (b), b1[2], b2[2]; \
-    b1[0]          = -b0; \
-    b1[1]          = b0; \
-    PetscCall(MPIU_Allreduce(b1, b2, 2, MPI_INT, MPI_MAX, PetscObjectComm((PetscObject)(a)))); \
-    PetscCheck(-b2[0] == b2[1], PetscObjectComm((PetscObject)(a)), PETSC_ERR_ARG_WRONG, "PetscMPIInt value must be same on all processes, argument # %d", arg); \
-  } while (0)
+    #define PetscValidLogicalCollectiveMPIInt(a, b, arg) \
+      do { \
+        PetscMPIInt b0 = (b), b1[2], b2[2]; \
+        b1[0]          = -b0; \
+        b1[1]          = b0; \
+        PetscCall(MPIU_Allreduce(b1, b2, 2, MPI_INT, MPI_MAX, PetscObjectComm((PetscObject)(a)))); \
+        PetscCheck(-b2[0] == b2[1], PetscObjectComm((PetscObject)(a)), PETSC_ERR_ARG_WRONG, "PetscMPIInt value must be same on all processes, argument # %d", arg); \
+      } while (0)
 
-#define PetscValidLogicalCollectiveBool(a, b, arg) \
-  do { \
-    PetscMPIInt b0 = (PetscMPIInt)(b), b1[2], b2[2]; \
-    b1[0]          = -b0; \
-    b1[1]          = b0; \
-    PetscCall(MPIU_Allreduce(b1, b2, 2, MPI_INT, MPI_MAX, PetscObjectComm((PetscObject)(a)))); \
-    PetscCheck(-b2[0] == b2[1], PetscObjectComm((PetscObject)(a)), PETSC_ERR_ARG_WRONG, "Bool value must be same on all processes, argument # %d", arg); \
-  } while (0)
+    #define PetscValidLogicalCollectiveBool(a, b, arg) \
+      do { \
+        PetscMPIInt b0 = (PetscMPIInt)(b), b1[2], b2[2]; \
+        b1[0]          = -b0; \
+        b1[1]          = b0; \
+        PetscCall(MPIU_Allreduce(b1, b2, 2, MPI_INT, MPI_MAX, PetscObjectComm((PetscObject)(a)))); \
+        PetscCheck(-b2[0] == b2[1], PetscObjectComm((PetscObject)(a)), PETSC_ERR_ARG_WRONG, "Bool value must be same on all processes, argument # %d", arg); \
+      } while (0)
 
-#define PetscValidLogicalCollectiveEnum(a, b, arg) \
-  do { \
-    PetscMPIInt b0 = (PetscMPIInt)(b), b1[2], b2[2]; \
-    b1[0]          = -b0; \
-    b1[1]          = b0; \
-    PetscCall(MPIU_Allreduce(b1, b2, 2, MPI_INT, MPI_MAX, PetscObjectComm((PetscObject)(a)))); \
-    PetscCheck(-b2[0] == b2[1], PetscObjectComm((PetscObject)(a)), PETSC_ERR_ARG_WRONG, "Enum value must be same on all processes, argument # %d", arg); \
-  } while (0)
+    #define PetscValidLogicalCollectiveEnum(a, b, arg) \
+      do { \
+        PetscMPIInt b0 = (PetscMPIInt)(b), b1[2], b2[2]; \
+        b1[0]          = -b0; \
+        b1[1]          = b0; \
+        PetscCall(MPIU_Allreduce(b1, b2, 2, MPI_INT, MPI_MAX, PetscObjectComm((PetscObject)(a)))); \
+        PetscCheck(-b2[0] == b2[1], PetscObjectComm((PetscObject)(a)), PETSC_ERR_ARG_WRONG, "Enum value must be same on all processes, argument # %d", arg); \
+      } while (0)
 
-#define PetscCheckSorted(n, idx) \
-  do { \
-    PetscBool _1_flg; \
-    PetscSorted(n, idx, _1_flg); \
-    PetscCheck(_1_flg, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Input array needs to be sorted"); \
-  } while (0)
+    #define PetscCheckSorted(n, idx) \
+      do { \
+        PetscBool _1_flg; \
+        PetscSorted(n, idx, _1_flg); \
+        PetscCheck(_1_flg, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Input array needs to be sorted"); \
+      } while (0)
 
-#endif
+  #endif
 #else  /* PETSC_CLANG_STATIC_ANALYZER */
 template <typename Ta, typename Tb>
 void PetscCheckSameType(Ta, int, Tb, int);
@@ -620,28 +648,28 @@ M*/
 */
 #if (defined(_MSC_VER) && (!defined(_MSVC_TRADITIONAL) || _MSVC_TRADITIONAL)) || defined(__ICL)
 
-#define PetscUseTypeMethod(obj, OP, ...) \
-  do { \
-    PetscErrorCode ierr_p_; \
-    PetscStackUpdateLine; \
-    PetscCheck((obj)->ops->OP, PetscObjectComm((PetscObject)obj), PETSC_ERR_SUP, "No method %s for %s of type %s", PetscStringize(OP), ((PetscObject)obj)->class_name, ((PetscObject)obj)->type_name); \
-    ierr_p_ = (*(obj)->ops->OP)(obj, __VA_ARGS__); \
-    PetscCall(ierr_p_); \
-  } while (0)
-
-#define PetscTryTypeMethod(obj, OP, ...) \
-  do { \
-    if ((obj)->ops->OP) { \
+  #define PetscUseTypeMethod(obj, OP, ...) \
+    do { \
       PetscErrorCode ierr_p_; \
       PetscStackUpdateLine; \
+      PetscCheck((obj)->ops->OP, PetscObjectComm((PetscObject)obj), PETSC_ERR_SUP, "No method %s for %s of type %s", PetscStringize(OP), ((PetscObject)obj)->class_name, ((PetscObject)obj)->type_name); \
       ierr_p_ = (*(obj)->ops->OP)(obj, __VA_ARGS__); \
       PetscCall(ierr_p_); \
-    } \
-  } while (0)
+    } while (0)
+
+  #define PetscTryTypeMethod(obj, OP, ...) \
+    do { \
+      if ((obj)->ops->OP) { \
+        PetscErrorCode ierr_p_; \
+        PetscStackUpdateLine; \
+        ierr_p_ = (*(obj)->ops->OP)(obj, __VA_ARGS__); \
+        PetscCall(ierr_p_); \
+      } \
+    } while (0)
 
 #else
 
-/*MC
+  /*MC
    PetscUseTypeMethod - Call a method on a PETSc object, that is a function in the objects function table obj->ops, error if the method does not exist
 
   Synopsis:
@@ -662,14 +690,14 @@ M*/
 
 .seealso: `PetscTryMethod()`, `PetscUseMethod()`, `PetscCall()`, `PetscCheck()`, `PetscTryTypeMethod()`
 M*/
-#define PetscUseTypeMethod(obj, ...) \
-  do { \
-    PetscCheck((obj)->ops->PETSC_FIRST_ARG((__VA_ARGS__, unused)), PetscObjectComm((PetscObject)obj), PETSC_ERR_SUP, "No method %s for %s of type %s", \
-               PetscStringize(PETSC_FIRST_ARG((__VA_ARGS__,unused))), ((PetscObject)obj)->class_name, ((PetscObject)obj)->type_name); \
-    PetscCall((*(obj)->ops->PETSC_FIRST_ARG((__VA_ARGS__, unused)))(obj PETSC_REST_ARG(__VA_ARGS__))); \
-  } while (0)
+  #define PetscUseTypeMethod(obj, ...) \
+    do { \
+      PetscCheck((obj)->ops->PETSC_FIRST_ARG((__VA_ARGS__, unused)), PetscObjectComm((PetscObject)obj), PETSC_ERR_SUP, "No method %s for %s of type %s", \
+                 PetscStringize(PETSC_FIRST_ARG((__VA_ARGS__,unused))), ((PetscObject)obj)->class_name, ((PetscObject)obj)->type_name); \
+      PetscCall((*(obj)->ops->PETSC_FIRST_ARG((__VA_ARGS__, unused)))(obj PETSC_REST_ARG(__VA_ARGS__))); \
+    } while (0)
 
-/*MC
+  /*MC
    PetscTryTypeMethod - Call a method on a PETSc object, that is a function in the objects function table obj->ops, skip if the method does not exist
 
   Synopsis:
@@ -690,10 +718,10 @@ M*/
 
 .seealso: `PetscTryMethod()`, `PetscUseMethod()`, `PetscCall()`, `PetscCheck()`, `PetscUseTypeMethod()`
 M*/
-#define PetscTryTypeMethod(obj, ...) \
-  do { \
-    if ((obj)->ops->PETSC_FIRST_ARG((__VA_ARGS__, unused))) PetscCall((*(obj)->ops->PETSC_FIRST_ARG((__VA_ARGS__, unused)))(obj PETSC_REST_ARG(__VA_ARGS__))); \
-  } while (0)
+  #define PetscTryTypeMethod(obj, ...) \
+    do { \
+      if ((obj)->ops->PETSC_FIRST_ARG((__VA_ARGS__, unused))) PetscCall((*(obj)->ops->PETSC_FIRST_ARG((__VA_ARGS__, unused)))(obj PETSC_REST_ARG(__VA_ARGS__))); \
+    } while (0)
 
 #endif
 
@@ -997,9 +1025,9 @@ M*/
           `PetscObjectCompose()`,  `PetscObjectQuery()`, `PetscObjectComposedDataSetRealstar()`, `PetscObjectComposedDataGetScalar()`
 M*/
 #if defined(PETSC_USE_COMPLEX)
-#define PetscObjectComposedDataSetScalar(obj, id, data) ((((obj)->scalar_idmax < PetscObjectComposedDataMax) && PetscObjectComposedDataIncreaseScalar(obj)) || ((obj)->scalarcomposeddata[id] = data, (obj)->scalarcomposedstate[id] = (obj)->state, 0))
+  #define PetscObjectComposedDataSetScalar(obj, id, data) ((((obj)->scalar_idmax < PetscObjectComposedDataMax) && PetscObjectComposedDataIncreaseScalar(obj)) || ((obj)->scalarcomposeddata[id] = data, (obj)->scalarcomposedstate[id] = (obj)->state, 0))
 #else
-#define PetscObjectComposedDataSetScalar(obj, id, data) PetscObjectComposedDataSetReal(obj, id, data)
+  #define PetscObjectComposedDataSetScalar(obj, id, data) PetscObjectComposedDataSetReal(obj, id, data)
 #endif
 /*MC
    PetscObjectComposedDataGetScalar - retrieve scalar data attached to an object that was set with `PetscObjectComposedDataSetScalar()`
@@ -1028,9 +1056,9 @@ M*/
           `PetscObjectCompose()`,  `PetscObjectQuery()`, `PetscObjectComposedDataSetRealstar()`, `PetscObjectComposedDataSetScalar()`
 M*/
 #if defined(PETSC_USE_COMPLEX)
-#define PetscObjectComposedDataGetScalar(obj, id, data, flag) (((obj)->scalarcomposedstate ? (data = (obj)->scalarcomposeddata[id], flag = (PetscBool)((obj)->scalarcomposedstate[id] == (obj)->state)) : (flag = PETSC_FALSE)), 0)
+  #define PetscObjectComposedDataGetScalar(obj, id, data, flag) (((obj)->scalarcomposedstate ? (data = (obj)->scalarcomposeddata[id], flag = (PetscBool)((obj)->scalarcomposedstate[id] == (obj)->state)) : (flag = PETSC_FALSE)), 0)
 #else
-#define PetscObjectComposedDataGetScalar(obj, id, data, flag) PetscObjectComposedDataGetReal(obj, id, data, flag)
+  #define PetscObjectComposedDataGetScalar(obj, id, data, flag) PetscObjectComposedDataGetReal(obj, id, data, flag)
 #endif
 
 /*MC
@@ -1059,10 +1087,10 @@ M*/
           `PetscObjectCompose()`,  `PetscObjectQuery()`, `PetscObjectComposedDataSetRealstar()`, `PetscObjectComposedDataGetScalarstar()`
 M*/
 #if defined(PETSC_USE_COMPLEX)
-#define PetscObjectComposedDataSetScalarstar(obj, id, data) \
-  ((((obj)->scalarstar_idmax < PetscObjectComposedDataMax) && PetscObjectComposedDataIncreaseScalarstar(obj)) || ((obj)->scalarstarcomposeddata[id] = data, (obj)->scalarstarcomposedstate[id] = (obj)->state, 0))
+  #define PetscObjectComposedDataSetScalarstar(obj, id, data) \
+    ((((obj)->scalarstar_idmax < PetscObjectComposedDataMax) && PetscObjectComposedDataIncreaseScalarstar(obj)) || ((obj)->scalarstarcomposeddata[id] = data, (obj)->scalarstarcomposedstate[id] = (obj)->state, 0))
 #else
-#define PetscObjectComposedDataSetScalarstar(obj, id, data) PetscObjectComposedDataSetRealstar(obj, id, data)
+  #define PetscObjectComposedDataSetScalarstar(obj, id, data) PetscObjectComposedDataSetRealstar(obj, id, data)
 #endif
 /*MC
    PetscObjectComposedDataGetScalarstar - retrieve scalar array data set with `PetscObjectComposedDataSetScalarstar()`
@@ -1094,9 +1122,9 @@ M*/
           `PetscObjectCompose()`,  `PetscObjectQuery()`, `PetscObjectComposedDataSetRealstar()`, `PetscObjectComposedDataSetScalarstar()`
 M*/
 #if defined(PETSC_USE_COMPLEX)
-#define PetscObjectComposedDataGetScalarstar(obj, id, data, flag) (((obj)->scalarstarcomposedstate ? (data = (obj)->scalarstarcomposeddata[id], flag = (PetscBool)((obj)->scalarstarcomposedstate[id] == (obj)->state)) : (flag = PETSC_FALSE)), 0)
+  #define PetscObjectComposedDataGetScalarstar(obj, id, data, flag) (((obj)->scalarstarcomposedstate ? (data = (obj)->scalarstarcomposeddata[id], flag = (PetscBool)((obj)->scalarstarcomposedstate[id] == (obj)->state)) : (flag = PETSC_FALSE)), 0)
 #else
-#define PetscObjectComposedDataGetScalarstar(obj, id, data, flag) PetscObjectComposedDataGetRealstar(obj, id, data, flag)
+  #define PetscObjectComposedDataGetScalarstar(obj, id, data, flag) PetscObjectComposedDataGetRealstar(obj, id, data, flag)
 #endif
 
 PETSC_EXTERN PetscMPIInt Petsc_Counter_keyval;
@@ -1146,11 +1174,11 @@ typedef struct {
   struct {
     PetscScalar v;
     PetscInt    i;
-  } * lvalues_mix, *gvalues_mix; /* used when mixing reduce operations */
-  SRState  state;                /* are we calling xxxBegin() or xxxEnd()? */
-  PetscInt maxops;               /* total amount of space we have for requests */
-  PetscInt numopsbegin;          /* number of requests that have been queued in */
-  PetscInt numopsend;            /* number of requests that have been gotten by user */
+  }       *lvalues_mix, *gvalues_mix; /* used when mixing reduce operations */
+  SRState  state;                     /* are we calling xxxBegin() or xxxEnd()? */
+  PetscInt maxops;                    /* total amount of space we have for requests */
+  PetscInt numopsbegin;               /* number of requests that have been queued in */
+  PetscInt numopsend;                 /* number of requests that have been gotten by user */
 } PetscSplitReduction;
 
 PETSC_EXTERN PetscErrorCode PetscSplitReductionGet(MPI_Comm, PetscSplitReduction **);
@@ -1158,70 +1186,78 @@ PETSC_EXTERN PetscErrorCode PetscSplitReductionEnd(PetscSplitReduction *);
 PETSC_EXTERN PetscErrorCode PetscSplitReductionExtend(PetscSplitReduction *);
 
 #if !defined(PETSC_SKIP_SPINLOCK)
-#if defined(PETSC_HAVE_THREADSAFETY)
-#if defined(PETSC_HAVE_CONCURRENCYKIT)
-#if defined(__cplusplus)
+  #if defined(PETSC_HAVE_THREADSAFETY)
+    #if defined(PETSC_HAVE_CONCURRENCYKIT)
+      #if defined(__cplusplus)
 /*  CK does not have extern "C" protection in their include files */
 extern "C" {
-#endif
-#include <ck_spinlock.h>
-#if defined(__cplusplus)
+      #endif
+      #include <ck_spinlock.h>
+      #if defined(__cplusplus)
 }
-#endif
+      #endif
 typedef ck_spinlock_t        PetscSpinlock;
-static inline PetscErrorCode PetscSpinlockCreate(PetscSpinlock *ck_spinlock) {
+static inline PetscErrorCode PetscSpinlockCreate(PetscSpinlock *ck_spinlock)
+{
   ck_spinlock_init(ck_spinlock);
   return 0;
 }
-static inline PetscErrorCode PetscSpinlockLock(PetscSpinlock *ck_spinlock) {
+static inline PetscErrorCode PetscSpinlockLock(PetscSpinlock *ck_spinlock)
+{
   ck_spinlock_lock(ck_spinlock);
   return 0;
 }
-static inline PetscErrorCode PetscSpinlockUnlock(PetscSpinlock *ck_spinlock) {
+static inline PetscErrorCode PetscSpinlockUnlock(PetscSpinlock *ck_spinlock)
+{
   ck_spinlock_unlock(ck_spinlock);
   return 0;
 }
-static inline PetscErrorCode PetscSpinlockDestroy(PetscSpinlock *ck_spinlock) {
+static inline PetscErrorCode PetscSpinlockDestroy(PetscSpinlock *ck_spinlock)
+{
   return 0;
 }
-#elif defined(PETSC_HAVE_OPENMP)
+    #elif defined(PETSC_HAVE_OPENMP)
 
-#include <omp.h>
+      #include <omp.h>
 typedef omp_lock_t           PetscSpinlock;
-static inline PetscErrorCode PetscSpinlockCreate(PetscSpinlock *omp_lock) {
+static inline PetscErrorCode PetscSpinlockCreate(PetscSpinlock *omp_lock)
+{
   omp_init_lock(omp_lock);
   return 0;
 }
-static inline PetscErrorCode PetscSpinlockLock(PetscSpinlock *omp_lock) {
+static inline PetscErrorCode PetscSpinlockLock(PetscSpinlock *omp_lock)
+{
   omp_set_lock(omp_lock);
   return 0;
 }
-static inline PetscErrorCode PetscSpinlockUnlock(PetscSpinlock *omp_lock) {
+static inline PetscErrorCode PetscSpinlockUnlock(PetscSpinlock *omp_lock)
+{
   omp_unset_lock(omp_lock);
   return 0;
 }
-static inline PetscErrorCode PetscSpinlockDestroy(PetscSpinlock *omp_lock) {
+static inline PetscErrorCode PetscSpinlockDestroy(PetscSpinlock *omp_lock)
+{
   omp_destroy_lock(omp_lock);
   return 0;
 }
-#else
-#error "Thread safety requires either --with-openmp or --download-concurrencykit"
-#endif
+    #else
+      #error "Thread safety requires either --with-openmp or --download-concurrencykit"
+    #endif
 
-#else
+  #else
 typedef int PetscSpinlock;
-#define PetscSpinlockCreate(a)  0
-#define PetscSpinlockLock(a)    0
-#define PetscSpinlockUnlock(a)  0
-#define PetscSpinlockDestroy(a) 0
-#endif
+    #define PetscSpinlockCreate(a)  0
+    #define PetscSpinlockLock(a)    0
+    #define PetscSpinlockUnlock(a)  0
+    #define PetscSpinlockDestroy(a) 0
+  #endif
 
-#if defined(PETSC_HAVE_THREADSAFETY)
+  #if defined(PETSC_HAVE_THREADSAFETY)
 PETSC_INTERN PetscSpinlock PetscViewerASCIISpinLockOpen;
 PETSC_INTERN PetscSpinlock PetscViewerASCIISpinLockStdout;
 PETSC_INTERN PetscSpinlock PetscViewerASCIISpinLockStderr;
 PETSC_INTERN PetscSpinlock PetscCommSpinLock;
-#endif
+  #endif
 #endif
 
 PETSC_EXTERN PetscLogEvent PETSC_Barrier;

@@ -5,7 +5,8 @@
 #include <petsclayouthdf5.h>
 
 #if defined(PETSC_HAVE_HDF5)
-PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer) {
+PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)
+{
   PetscViewerFormat  format;
   const PetscInt    *i_glob = NULL;
   PetscInt          *i      = NULL;
@@ -29,8 +30,10 @@ PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer) {
   case PETSC_VIEWER_HDF5_PETSC:
   case PETSC_VIEWER_DEFAULT:
   case PETSC_VIEWER_NATIVE:
-  case PETSC_VIEWER_HDF5_MAT: break;
-  default: SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "PetscViewerFormat %s not supported for HDF5 input.", PetscViewerFormats[format]);
+  case PETSC_VIEWER_HDF5_MAT:
+    break;
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "PetscViewerFormat %s not supported for HDF5 input.", PetscViewerFormats[format]);
   }
 
   PetscCall(PetscObjectGetComm((PetscObject)mat, &comm));

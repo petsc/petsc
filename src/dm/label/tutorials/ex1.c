@@ -3,7 +3,8 @@ static char help[] = "Tests DMLabel operations.\n\n";
 #include <petscdm.h>
 #include <petscdmplex.h>
 
-PetscErrorCode ViewLabels(DM dm, PetscViewer viewer) {
+PetscErrorCode ViewLabels(DM dm, PetscViewer viewer)
+{
   DMLabel     label;
   const char *labelName;
   PetscInt    numLabels, l;
@@ -43,7 +44,8 @@ PetscErrorCode ViewLabels(DM dm, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode CheckLabelsSame(DMLabel label0, DMLabel label1) {
+PetscErrorCode CheckLabelsSame(DMLabel label0, DMLabel label1)
+{
   const char *name0, *name1;
   PetscBool   same;
   char       *msg;
@@ -60,7 +62,8 @@ PetscErrorCode CheckLabelsSame(DMLabel label0, DMLabel label1) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode CheckLabelsNotSame(DMLabel label0, DMLabel label1) {
+PetscErrorCode CheckLabelsNotSame(DMLabel label0, DMLabel label1)
+{
   const char *name0, *name1;
   PetscBool   same;
   char       *msg;
@@ -76,7 +79,8 @@ PetscErrorCode CheckLabelsNotSame(DMLabel label0, DMLabel label1) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode CheckDMLabelsSame(DM dm0, DM dm1) {
+PetscErrorCode CheckDMLabelsSame(DM dm0, DM dm1)
+{
   const char *name0, *name1;
   PetscBool   same;
   char       *msg;
@@ -93,7 +97,8 @@ PetscErrorCode CheckDMLabelsSame(DM dm0, DM dm1) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode CheckDMLabelsNotSame(DM dm0, DM dm1) {
+PetscErrorCode CheckDMLabelsNotSame(DM dm0, DM dm1)
+{
   const char *name0, *name1;
   PetscBool   same;
   char       *msg;
@@ -109,7 +114,8 @@ PetscErrorCode CheckDMLabelsNotSame(DM dm0, DM dm1) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode CreateMesh(const char name[], DM *newdm) {
+PetscErrorCode CreateMesh(const char name[], DM *newdm)
+{
   DM        dm, dmDist;
   char      filename[PETSC_MAX_PATH_LEN] = "";
   PetscBool interpolate                  = PETSC_FALSE;
@@ -134,7 +140,8 @@ PetscErrorCode CreateMesh(const char name[], DM *newdm) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM dm;
 
   PetscFunctionBeginUser;

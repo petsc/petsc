@@ -26,7 +26,8 @@ is no duplication of indices.
 
 .seealso: `DMCreateDomainDecomposition()`, `DMCreateDomainDecompositionScatters()`
 @*/
-PetscErrorCode DMDACreatePatchIS(DM da, MatStencil *lower, MatStencil *upper, IS *is, PetscBool offproc) {
+PetscErrorCode DMDACreatePatchIS(DM da, MatStencil *lower, MatStencil *upper, IS *is, PetscBool offproc)
+{
   PetscInt        ms = 0, ns = 0, ps = 0;
   PetscInt        mw = 0, nw = 0, pw = 0;
   PetscInt        me = 1, ne = 1, pe = 1;
@@ -176,9 +177,9 @@ PetscErrorCode DMDACreatePatchIS(DM da, MatStencil *lower, MatStencil *upper, IS
           zm   = pe - ps;
           base = ms * ym * zm + ns * M * zm + ps * M * N;
           /* compute the local coordinates on owning processor */
-          si   = ii - ms;
-          sj   = jj - ns;
-          sk   = kk - ps;
+          si = ii - ms;
+          sj = jj - ns;
+          sk = kk - ps;
           for (l = 0; l < dof; l++) {
             indices[idx] = l + dof * (base + si + xm * sj + xm * ym * sk);
             idx++;
@@ -257,7 +258,8 @@ createis:
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMDASubDomainDA_Private(DM dm, PetscInt *nlocal, DM **sdm) {
+PetscErrorCode DMDASubDomainDA_Private(DM dm, PetscInt *nlocal, DM **sdm)
+{
   DM           *da;
   PetscInt      dim, size, i, j, k, idx;
   DMDALocalInfo info;
@@ -417,7 +419,8 @@ PetscErrorCode DMDASubDomainDA_Private(DM dm, PetscInt *nlocal, DM **sdm) {
    Right now this assumes one subdomain per processor.
 
 */
-PetscErrorCode DMCreateDomainDecompositionScatters_DA(DM dm, PetscInt nsubdms, DM *subdms, VecScatter **iscat, VecScatter **oscat, VecScatter **lscat) {
+PetscErrorCode DMCreateDomainDecompositionScatters_DA(DM dm, PetscInt nsubdms, DM *subdms, VecScatter **iscat, VecScatter **oscat, VecScatter **lscat)
+{
   DMDALocalInfo info, subinfo;
   DM            subdm;
   MatStencil    upper, lower;
@@ -493,7 +496,8 @@ PetscErrorCode DMCreateDomainDecompositionScatters_DA(DM dm, PetscInt nsubdms, D
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMDASubDomainIS_Private(DM dm, PetscInt n, DM *subdm, IS **iis, IS **ois) {
+PetscErrorCode DMDASubDomainIS_Private(DM dm, PetscInt n, DM *subdm, IS **iis, IS **ois)
+{
   PetscInt      i;
   DMDALocalInfo info, subinfo;
   MatStencil    lower, upper;
@@ -531,7 +535,8 @@ PetscErrorCode DMDASubDomainIS_Private(DM dm, PetscInt n, DM *subdm, IS **iis, I
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMCreateDomainDecomposition_DA(DM dm, PetscInt *len, char ***names, IS **iis, IS **ois, DM **subdm) {
+PetscErrorCode DMCreateDomainDecomposition_DA(DM dm, PetscInt *len, char ***names, IS **iis, IS **ois, DM **subdm)
+{
   DM      *sdm;
   PetscInt n, i;
 

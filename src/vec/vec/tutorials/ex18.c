@@ -13,11 +13,13 @@ static char help[] = "Computes the integral of 2*x/(1+x^2) from x=0..1 \nThis is
 */
 #include <petscvec.h>
 
-PetscScalar func(PetscScalar a) {
+PetscScalar func(PetscScalar a)
+{
   return (PetscScalar)2. * a / ((PetscScalar)1. + a * a);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscMPIInt rank, size;
   PetscInt    rstart, rend, i, k, N, numPoints = 1000000;
   PetscScalar dummy, result = 0, h = 1.0 / numPoints, *xarray;

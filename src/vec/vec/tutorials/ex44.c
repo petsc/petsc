@@ -3,7 +3,8 @@ static char help[] = "Test VecConcatenate both in serial and parallel.\n";
 
 #include <petscvec.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Vec         *x, x_test, y, y_test;
   IS          *x_is;
   VecScatter   y_to_x, x_to_y;

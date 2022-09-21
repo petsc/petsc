@@ -18,7 +18,8 @@
 
 .seealso: [LMVM Matrices](sec_matlmvm), `MATLMVM`, `MatLMVMReset()`, `MatLMVMAllocate()`
 @*/
-PetscErrorCode MatLMVMUpdate(Mat B, Vec X, Vec F) {
+PetscErrorCode MatLMVMUpdate(Mat B, Vec X, Vec F)
+{
   Mat_LMVM *lmvm = (Mat_LMVM *)B->data;
   PetscBool same;
 
@@ -53,7 +54,8 @@ PetscErrorCode MatLMVMUpdate(Mat B, Vec X, Vec F) {
 
 .seealso: [LMVM Matrices](sec_matlmvm), `MATLMVM`, `MatLMVMSetJ0()`
 @*/
-PetscErrorCode MatLMVMClearJ0(Mat B) {
+PetscErrorCode MatLMVMClearJ0(Mat B)
+{
   Mat_LMVM *lmvm = (Mat_LMVM *)B->data;
   PetscBool same;
   MPI_Comm  comm = PetscObjectComm((PetscObject)B);
@@ -84,7 +86,8 @@ PetscErrorCode MatLMVMClearJ0(Mat B) {
 
 .seealso: [LMVM Matrices](sec_matlmvm), `MATLMVM`, `MatLMVMSetDiagScale()`, `MatLMVMSetJ0()`
 @*/
-PetscErrorCode MatLMVMSetJ0Scale(Mat B, PetscReal scale) {
+PetscErrorCode MatLMVMSetJ0Scale(Mat B, PetscReal scale)
+{
   Mat_LMVM *lmvm = (Mat_LMVM *)B->data;
   PetscBool same;
   MPI_Comm  comm = PetscObjectComm((PetscObject)B);
@@ -112,7 +115,8 @@ PetscErrorCode MatLMVMSetJ0Scale(Mat B, PetscReal scale) {
 
 .seealso: [LMVM Matrices](sec_matlmvm), `MATLMVM`, `MatLMVMSetScale()`, `MatLMVMSetJ0()`
 @*/
-PetscErrorCode MatLMVMSetJ0Diag(Mat B, Vec V) {
+PetscErrorCode MatLMVMSetJ0Diag(Mat B, Vec V)
+{
   Mat_LMVM *lmvm = (Mat_LMVM *)B->data;
   PetscBool same;
   MPI_Comm  comm = PetscObjectComm((PetscObject)B);
@@ -155,7 +159,8 @@ PetscErrorCode MatLMVMSetJ0Diag(Mat B, Vec V) {
 
 .seealso: [LMVM Matrices](sec_matlmvm), `MATLMVM`, `MatLMVMSetJ0PC()`, `MatLMVMSetJ0KSP()`
 @*/
-PetscErrorCode MatLMVMSetJ0(Mat B, Mat J0) {
+PetscErrorCode MatLMVMSetJ0(Mat B, Mat J0)
+{
   Mat_LMVM *lmvm = (Mat_LMVM *)B->data;
   PetscBool same;
   MPI_Comm  comm = PetscObjectComm((PetscObject)B);
@@ -189,7 +194,8 @@ PetscErrorCode MatLMVMSetJ0(Mat B, Mat J0) {
 
 .seealso: [LMVM Matrices](sec_matlmvm), `MATLMVM`, `MatLMVMGetJ0PC()`
 @*/
-PetscErrorCode MatLMVMSetJ0PC(Mat B, PC J0pc) {
+PetscErrorCode MatLMVMSetJ0PC(Mat B, PC J0pc)
+{
   Mat_LMVM *lmvm = (Mat_LMVM *)B->data;
   PetscBool same;
   MPI_Comm  comm = PetscObjectComm((PetscObject)B);
@@ -222,7 +228,8 @@ PetscErrorCode MatLMVMSetJ0PC(Mat B, PC J0pc) {
 
 .seealso: [LMVM Matrices](sec_matlmvm), `MATLMVM`, `MatLMVMGetJ0KSP()`
 @*/
-PetscErrorCode MatLMVMSetJ0KSP(Mat B, KSP J0ksp) {
+PetscErrorCode MatLMVMSetJ0KSP(Mat B, KSP J0ksp)
+{
   Mat_LMVM *lmvm = (Mat_LMVM *)B->data;
   PetscBool same;
   MPI_Comm  comm = PetscObjectComm((PetscObject)B);
@@ -254,7 +261,8 @@ PetscErrorCode MatLMVMSetJ0KSP(Mat B, KSP J0ksp) {
 
 .seealso: [LMVM Matrices](sec_matlmvm), `MATLMVM`, `MatLMVMSetJ0()`
 @*/
-PetscErrorCode MatLMVMGetJ0(Mat B, Mat *J0) {
+PetscErrorCode MatLMVMGetJ0(Mat B, Mat *J0)
+{
   Mat_LMVM *lmvm = (Mat_LMVM *)B->data;
   PetscBool same;
 
@@ -280,7 +288,8 @@ PetscErrorCode MatLMVMGetJ0(Mat B, Mat *J0) {
 
 .seealso: [LMVM Matrices](sec_matlmvm), `MATLMVM`, `MatLMVMSetJ0PC()`
 @*/
-PetscErrorCode MatLMVMGetJ0PC(Mat B, PC *J0pc) {
+PetscErrorCode MatLMVMGetJ0PC(Mat B, PC *J0pc)
+{
   Mat_LMVM *lmvm = (Mat_LMVM *)B->data;
   PetscBool same;
 
@@ -310,7 +319,8 @@ PetscErrorCode MatLMVMGetJ0PC(Mat B, PC *J0pc) {
 
 .seealso: [LMVM Matrices](sec_matlmvm), `MATLMVM`, `MatLMVMSetJ0KSP()`
 @*/
-PetscErrorCode MatLMVMGetJ0KSP(Mat B, KSP *J0ksp) {
+PetscErrorCode MatLMVMGetJ0KSP(Mat B, KSP *J0ksp)
+{
   Mat_LMVM *lmvm = (Mat_LMVM *)B->data;
   PetscBool same;
 
@@ -338,7 +348,8 @@ PetscErrorCode MatLMVMGetJ0KSP(Mat B, KSP *J0ksp) {
 .seealso: [LMVM Matrices](sec_matlmvm), `MATLMVM`, `MatLMVMSetJ0()`, `MatLMVMSetJ0Scale()`, `MatLMVMSetJ0ScaleDiag()`,
           `MatLMVMSetJ0PC()`, `MatLMVMSetJ0KSP()`, `MatLMVMApplyJ0Inv()`
 @*/
-PetscErrorCode MatLMVMApplyJ0Fwd(Mat B, Vec X, Vec Y) {
+PetscErrorCode MatLMVMApplyJ0Fwd(Mat B, Vec X, Vec Y)
+{
   Mat_LMVM *lmvm = (Mat_LMVM *)B->data;
   PetscBool same, hasMult;
   MPI_Comm  comm = PetscObjectComm((PetscObject)B);
@@ -405,7 +416,8 @@ PetscErrorCode MatLMVMApplyJ0Fwd(Mat B, Vec X, Vec Y) {
 .seealso: [LMVM Matrices](sec_matlmvm), `MATLMVM`, `MatLMVMSetJ0()`, `MatLMVMSetJ0Scale()`, `MatLMVMSetJ0ScaleDiag()`,
           `MatLMVMSetJ0PC()`, `MatLMVMSetJ0KSP()`, `MatLMVMApplyJ0Fwd()`
 @*/
-PetscErrorCode MatLMVMApplyJ0Inv(Mat B, Vec X, Vec Y) {
+PetscErrorCode MatLMVMApplyJ0Inv(Mat B, Vec X, Vec Y)
+{
   Mat_LMVM *lmvm = (Mat_LMVM *)B->data;
   PetscBool same, hasSolve;
   MPI_Comm  comm = PetscObjectComm((PetscObject)B);
@@ -462,7 +474,8 @@ PetscErrorCode MatLMVMApplyJ0Inv(Mat B, Vec X, Vec Y) {
 .seealso: [LMVM Matrices](sec_matlmvm), `MATLMVM`, `MatLMVMAllocate()`, `MatLMVMReset()`
 @*/
 
-PetscErrorCode MatLMVMIsAllocated(Mat B, PetscBool *flg) {
+PetscErrorCode MatLMVMIsAllocated(Mat B, PetscBool *flg)
+{
   Mat_LMVM *lmvm = (Mat_LMVM *)B->data;
   PetscBool same;
 
@@ -491,7 +504,8 @@ PetscErrorCode MatLMVMIsAllocated(Mat B, PetscBool *flg) {
 
 .seealso: [LMVM Matrices](sec_matlmvm), `MATLMVM`, `MatLMVMReset()`, `MatLMVMUpdate()`
 @*/
-PetscErrorCode MatLMVMAllocate(Mat B, Vec X, Vec F) {
+PetscErrorCode MatLMVMAllocate(Mat B, Vec X, Vec F)
+{
   Mat_LMVM *lmvm = (Mat_LMVM *)B->data;
   PetscBool same;
 
@@ -519,7 +533,8 @@ PetscErrorCode MatLMVMAllocate(Mat B, Vec X, Vec F) {
 
 .seealso: [LMVM Matrices](sec_matlmvm), `MATLMVM`, `MatLMVMAllocate()`, `MatLMVMUpdate()`
 @*/
-PetscErrorCode MatLMVMResetShift(Mat B) {
+PetscErrorCode MatLMVMResetShift(Mat B)
+{
   Mat_LMVM *lmvm = (Mat_LMVM *)B->data;
   PetscBool same;
 
@@ -550,7 +565,8 @@ PetscErrorCode MatLMVMResetShift(Mat B) {
 
 .seealso: [LMVM Matrices](sec_matlmvm), `MATLMVM`, `MatLMVMAllocate()`, `MatLMVMUpdate()`
 @*/
-PetscErrorCode MatLMVMReset(Mat B, PetscBool destructive) {
+PetscErrorCode MatLMVMReset(Mat B, PetscBool destructive)
+{
   Mat_LMVM *lmvm = (Mat_LMVM *)B->data;
   PetscBool same;
 
@@ -581,7 +597,8 @@ PetscErrorCode MatLMVMReset(Mat B, PetscBool destructive) {
 
 .seealso: [LMVM Matrices](sec_matlmvm), `MATLMVM`, `MatLMVMGetUpdateCount()`
 @*/
-PetscErrorCode MatLMVMSetHistorySize(Mat B, PetscInt hist_size) {
+PetscErrorCode MatLMVMSetHistorySize(Mat B, PetscInt hist_size)
+{
   Mat_LMVM *lmvm = (Mat_LMVM *)B->data;
   PetscBool same;
   Vec       X, F;
@@ -620,7 +637,8 @@ PetscErrorCode MatLMVMSetHistorySize(Mat B, PetscInt hist_size) {
 
 .seealso: [LMVM Matrices](sec_matlmvm), `MATLMVM`, `MatLMVMGetRejectCount()`, `MatLMVMReset()`
 @*/
-PetscErrorCode MatLMVMGetUpdateCount(Mat B, PetscInt *nupdates) {
+PetscErrorCode MatLMVMGetUpdateCount(Mat B, PetscInt *nupdates)
+{
   Mat_LMVM *lmvm = (Mat_LMVM *)B->data;
   PetscBool same;
 
@@ -646,7 +664,8 @@ PetscErrorCode MatLMVMGetUpdateCount(Mat B, PetscInt *nupdates) {
 
 .seealso: [LMVM Matrices](sec_matlmvm), `MATLMVM`, `MatLMVMGetRejectCount()`, `MatLMVMReset()`
 @*/
-PetscErrorCode MatLMVMGetRejectCount(Mat B, PetscInt *nrejects) {
+PetscErrorCode MatLMVMGetRejectCount(Mat B, PetscInt *nrejects)
+{
   Mat_LMVM *lmvm = (Mat_LMVM *)B->data;
   PetscBool same;
 

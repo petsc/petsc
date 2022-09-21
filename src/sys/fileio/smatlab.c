@@ -25,7 +25,8 @@
 
 .seealso: `PetscPOpen()`, `PetscPClose()`
 @*/
-PetscErrorCode PetscStartMatlab(MPI_Comm comm, const char machine[], const char script[], FILE **fp) {
+PetscErrorCode PetscStartMatlab(MPI_Comm comm, const char machine[], const char script[], FILE **fp)
+{
   FILE *fd;
   char  command[512];
 #if defined(PETSC_HAVE_UCBPS) && defined(PETSC_HAVE_POPEN)

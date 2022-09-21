@@ -32,7 +32,8 @@ typedef struct {
    The interface routine PCSetUp() is not usually called directly by
    the user, but instead is called by PCApply() if necessary.
 */
-static PetscErrorCode PCSetUp_SAVIENNACL(PC pc) {
+static PetscErrorCode PCSetUp_SAVIENNACL(PC pc)
+{
   PC_SAVIENNACL      *sa  = (PC_SAVIENNACL *)pc->data;
   PetscBool           flg = PETSC_FALSE;
   Mat_SeqAIJViennaCL *gpustruct;
@@ -43,7 +44,9 @@ static PetscErrorCode PCSetUp_SAVIENNACL(PC pc) {
   if (pc->setupcalled != 0) {
     try {
       delete sa->SAVIENNACL;
-    } catch (char *ex) { SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "ViennaCL error: %s", ex); }
+    } catch (char *ex) {
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "ViennaCL error: %s", ex);
+    }
   }
   try {
 #if defined(PETSC_USE_COMPLEX)
@@ -60,7 +63,9 @@ static PetscErrorCode PCSetUp_SAVIENNACL(PC pc) {
     sa->SAVIENNACL         = new viennacl::linalg::amg_precond<viennacl::compressed_matrix<PetscScalar>>(*mat, amg_tag_sa_pmis);
     sa->SAVIENNACL->setup();
 #endif
-  } catch (char *ex) { SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "ViennaCL error: %s", ex); }
+  } catch (char *ex) {
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "ViennaCL error: %s", ex);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -76,7 +81,8 @@ static PetscErrorCode PCSetUp_SAVIENNACL(PC pc) {
 
    Application Interface Routine: PCApply()
  */
-static PetscErrorCode PCApply_SAVIENNACL(PC pc, Vec x, Vec y) {
+static PetscErrorCode PCApply_SAVIENNACL(PC pc, Vec x, Vec y)
+{
   PC_SAVIENNACL                       *sac = (PC_SAVIENNACL *)pc->data;
   PetscBool                            flg1, flg2;
   viennacl::vector<PetscScalar> const *xarray = NULL;
@@ -95,7 +101,9 @@ static PetscErrorCode PCApply_SAVIENNACL(PC pc, Vec x, Vec y) {
     *yarray = *xarray;
     sac->SAVIENNACL->apply(*yarray);
 #endif
-  } catch (char *ex) { SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "ViennaCL error: %s", ex); }
+  } catch (char *ex) {
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "ViennaCL error: %s", ex);
+  }
   PetscCall(VecViennaCLRestoreArrayRead(x, &xarray));
   PetscCall(VecViennaCLRestoreArrayWrite(y, &yarray));
   PetscCall(PetscObjectStateIncrease((PetscObject)y));
@@ -111,14 +119,17 @@ static PetscErrorCode PCApply_SAVIENNACL(PC pc, Vec x, Vec y) {
 
    Application Interface Routine: PCDestroy()
 */
-static PetscErrorCode PCDestroy_SAVIENNACL(PC pc) {
+static PetscErrorCode PCDestroy_SAVIENNACL(PC pc)
+{
   PC_SAVIENNACL *sac = (PC_SAVIENNACL *)pc->data;
 
   PetscFunctionBegin;
   if (sac->SAVIENNACL) {
     try {
       delete sac->SAVIENNACL;
-    } catch (char *ex) { SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "ViennaCL error: %s", ex); }
+    } catch (char *ex) {
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "ViennaCL error: %s", ex);
+    }
   }
 
   /*
@@ -128,7 +139,8 @@ static PetscErrorCode PCDestroy_SAVIENNACL(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCSetFromOptions_SAVIENNACL(PC pc, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode PCSetFromOptions_SAVIENNACL(PC pc, PetscOptionItems *PetscOptionsObject)
+{
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "SAVIENNACL options");
   PetscOptionsHeadEnd();
@@ -146,7 +158,8 @@ static PetscErrorCode PCSetFromOptions_SAVIENNACL(PC pc, PetscOptionItems *Petsc
 .seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`
 M*/
 
-PETSC_EXTERN PetscErrorCode PCCreate_SAVIENNACL(PC pc) {
+PETSC_EXTERN PetscErrorCode PCCreate_SAVIENNACL(PC pc)
+{
   PC_SAVIENNACL *sac;
 
   PetscFunctionBegin;

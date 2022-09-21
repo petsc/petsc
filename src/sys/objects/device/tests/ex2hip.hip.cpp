@@ -8,7 +8,8 @@ static char help[] = "Benchmarking hipPointerGetAttributes() time\n";
 #include <petscsys.h>
 #include <petscdevice_hip.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt              i, n = 4000;
   hipError_t            cerr;
   PetscScalar         **ptrs;

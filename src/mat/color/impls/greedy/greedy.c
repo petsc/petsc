@@ -7,13 +7,15 @@ typedef struct {
   PetscBool symmetric;
 } MC_Greedy;
 
-static PetscErrorCode MatColoringDestroy_Greedy(MatColoring mc) {
+static PetscErrorCode MatColoringDestroy_Greedy(MatColoring mc)
+{
   PetscFunctionBegin;
   PetscCall(PetscFree(mc->data));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring mc, PetscReal *wts, PetscInt *lperm, ISColoringValue *colors) {
+static PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring mc, PetscReal *wts, PetscInt *lperm, ISColoringValue *colors)
+{
   PetscInt        i, j, k, s, e, n, no, nd, nd_global, n_global, idx, ncols, maxcolors, masksize, ccol, *mask;
   Mat             m   = mc->mat;
   Mat_MPIAIJ     *aij = (Mat_MPIAIJ *)m->data;
@@ -163,7 +165,8 @@ static PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring mc, Pet
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc, PetscReal *wts, PetscInt *lperm, ISColoringValue *colors) {
+static PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc, PetscReal *wts, PetscInt *lperm, ISColoringValue *colors)
+{
   MC_Greedy       *gr = (MC_Greedy *)mc->data;
   PetscInt         i, j, k, l, s, e, n, nd, nd_global, n_global, idx, ncols, maxcolors, mcol, mcol_global, nd1cols, *mask, masksize, *d1cols, *bad, *badnext, nbad, badsize, ccol, no, cbad;
   Mat              m   = mc->mat, mt;
@@ -260,7 +263,7 @@ static PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc, Pet
   }
   mcol = 0;
   while (nd_global < n_global) {
-    nd          = n;
+    nd = n;
     /* assign lowest possible color to each local vertex */
     mcol_global = 0;
     PetscCall(PetscLogEventBegin(MATCOLORING_Local, mc, 0, 0, 0));
@@ -476,7 +479,8 @@ static PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc, Pet
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatColoringApply_Greedy(MatColoring mc, ISColoring *iscoloring) {
+static PetscErrorCode MatColoringApply_Greedy(MatColoring mc, ISColoring *iscoloring)
+{
   PetscInt         finalcolor, finalcolor_global;
   ISColoringValue *colors;
   PetscInt         ncolstotal, ncols;
@@ -514,7 +518,8 @@ static PetscErrorCode MatColoringApply_Greedy(MatColoring mc, ISColoring *iscolo
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatColoringSetFromOptions_Greedy(MatColoring mc, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode MatColoringSetFromOptions_Greedy(MatColoring mc, PetscOptionItems *PetscOptionsObject)
+{
   MC_Greedy *gr = (MC_Greedy *)mc->data;
 
   PetscFunctionBegin;
@@ -548,7 +553,8 @@ static PetscErrorCode MatColoringSetFromOptions_Greedy(MatColoring mc, PetscOpti
 
 .seealso: `MatColoringType`, `MatColoringCreate()`, `MatColoring`, `MatColoringSetType()`, `MatColoringType`
 M*/
-PETSC_EXTERN PetscErrorCode MatColoringCreate_Greedy(MatColoring mc) {
+PETSC_EXTERN PetscErrorCode MatColoringCreate_Greedy(MatColoring mc)
+{
   MC_Greedy *gr;
 
   PetscFunctionBegin;

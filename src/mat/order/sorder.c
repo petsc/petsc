@@ -11,12 +11,14 @@ PetscBool         MatOrderingRegisterAllCalled = PETSC_FALSE;
 
 extern PetscErrorCode MatGetOrdering_Flow_SeqAIJ(Mat, MatOrderingType, IS *, IS *);
 
-PetscErrorCode MatGetOrdering_Flow(Mat mat, MatOrderingType type, IS *irow, IS *icol) {
+PetscErrorCode MatGetOrdering_Flow(Mat mat, MatOrderingType type, IS *irow, IS *icol)
+{
   PetscFunctionBegin;
   SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "Cannot do default flow ordering for matrix type");
 }
 
-PETSC_INTERN PetscErrorCode MatGetOrdering_Natural(Mat mat, MatOrderingType type, IS *irow, IS *icol) {
+PETSC_INTERN PetscErrorCode MatGetOrdering_Natural(Mat mat, MatOrderingType type, IS *irow, IS *icol)
+{
   PetscInt  n, i, *ii;
   PetscBool done;
   MPI_Comm  comm;
@@ -53,7 +55,8 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_Natural(Mat mat, MatOrderingType type
    This produces a symmetric Ordering but does not require a
    matrix with symmetric non-zero structure.
 */
-PETSC_INTERN PetscErrorCode MatGetOrdering_RowLength(Mat mat, MatOrderingType type, IS *irow, IS *icol) {
+PETSC_INTERN PetscErrorCode MatGetOrdering_RowLength(Mat mat, MatOrderingType type, IS *irow, IS *icol)
+{
   PetscInt        n, *permr, *lens, i;
   const PetscInt *ia, *ja;
   PetscBool       done;
@@ -100,7 +103,8 @@ $     -pc_factor_mat_ordering_type my_order
 
 .seealso: `MatOrderingRegisterAll()`, `MatGetOrdering()`
 @*/
-PetscErrorCode MatOrderingRegister(const char sname[], PetscErrorCode (*function)(Mat, MatOrderingType, IS *, IS *)) {
+PetscErrorCode MatOrderingRegister(const char sname[], PetscErrorCode (*function)(Mat, MatOrderingType, IS *, IS *))
+{
   PetscFunctionBegin;
   PetscCall(MatInitializePackage());
   PetscCall(PetscFunctionListAdd(&MatOrderingList, sname, function));
@@ -154,7 +158,8 @@ PetscErrorCode MatOrderingRegister(const char sname[], PetscErrorCode (*function
 
 .seealso: `MatOrderingRegister()`, `PCFactorSetMatOrderingType()`, `MatColoring`, `MatColoringCreate()`, `MatOrderingType`, `Mat`
 @*/
-PetscErrorCode MatGetOrdering(Mat mat, MatOrderingType type, IS *rperm, IS *cperm) {
+PetscErrorCode MatGetOrdering(Mat mat, MatOrderingType type, IS *rperm, IS *cperm)
+{
   PetscInt mmat, nmat, mis;
   PetscErrorCode (*r)(Mat, MatOrderingType, IS *, IS *);
   PetscBool flg, ismpiaij;
@@ -239,7 +244,8 @@ PetscErrorCode MatGetOrdering(Mat mat, MatOrderingType type, IS *rperm, IS *cper
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatGetOrderingList(PetscFunctionList *list) {
+PetscErrorCode MatGetOrderingList(PetscFunctionList *list)
+{
   PetscFunctionBegin;
   *list = MatOrderingList;
   PetscFunctionReturn(0);

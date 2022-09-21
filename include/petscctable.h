@@ -14,11 +14,13 @@ struct _n_PetscTable {
 typedef struct _n_PetscTable *PetscTable;
 typedef PetscInt             *PetscTablePosition;
 
-static inline unsigned long PetscHash(PetscTable ta, unsigned long x) {
+static inline unsigned long PetscHash(PetscTable ta, unsigned long x)
+{
   return (x % (unsigned long)ta->tablesize);
 }
 
-static inline unsigned long PetscHashStep(PetscTable ta, unsigned long x) {
+static inline unsigned long PetscHashStep(PetscTable ta, unsigned long x)
+{
   return (1 + (x % (unsigned long)(ta->tablesize - 1)));
 }
 
@@ -33,7 +35,8 @@ PETSC_EXTERN PetscErrorCode PetscTableGetHeadPosition(PetscTable, PetscTablePosi
 PETSC_EXTERN PetscErrorCode PetscTableGetNext(PetscTable, PetscTablePosition *, PetscInt *, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscTableRemoveAll(PetscTable);
 
-static inline PetscErrorCode PetscTableAdd(PetscTable ta, PetscInt key, PetscInt data, InsertMode imode) {
+static inline PetscErrorCode PetscTableAdd(PetscTable ta, PetscInt key, PetscInt data, InsertMode imode)
+{
   PetscInt i, hash = (PetscInt)PetscHash(ta, (unsigned long)key);
   PetscInt hashstep = (PetscInt)PetscHashStep(ta, (unsigned long)key);
 
@@ -48,14 +51,21 @@ static inline PetscErrorCode PetscTableAdd(PetscTable ta, PetscInt key, PetscInt
       case INSERT_VALUES:
         ta->table[hash] = data; /* over write */
         break;
-      case ADD_VALUES: ta->table[hash] += data; break;
-      case MAX_VALUES: ta->table[hash] = PetscMax(ta->table[hash], data); break;
-      case MIN_VALUES: ta->table[hash] = PetscMin(ta->table[hash], data); break;
+      case ADD_VALUES:
+        ta->table[hash] += data;
+        break;
+      case MAX_VALUES:
+        ta->table[hash] = PetscMax(ta->table[hash], data);
+        break;
+      case MIN_VALUES:
+        ta->table[hash] = PetscMin(ta->table[hash], data);
+        break;
       case NOT_SET_VALUES:
       case INSERT_ALL_VALUES:
       case ADD_ALL_VALUES:
       case INSERT_BC_VALUES:
-      case ADD_BC_VALUES: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported InsertMode");
+      case ADD_BC_VALUES:
+        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported InsertMode");
       }
       PetscFunctionReturn(0);
     } else if (!ta->keytable[hash]) {
@@ -72,7 +82,8 @@ static inline PetscErrorCode PetscTableAdd(PetscTable ta, PetscInt key, PetscInt
   /* PetscFunctionReturn(0); */
 }
 
-static inline PetscErrorCode PetscTableAddCount(PetscTable ta, PetscInt key) {
+static inline PetscErrorCode PetscTableAddCount(PetscTable ta, PetscInt key)
+{
   PetscInt i, hash = (PetscInt)PetscHash(ta, (unsigned long)key);
   PetscInt hashstep = (PetscInt)PetscHashStep(ta, (unsigned long)key);
 
@@ -100,7 +111,8 @@ static inline PetscErrorCode PetscTableAddCount(PetscTable ta, PetscInt key) {
 /*
     PetscTableFind - finds data in table from a given key, if the key is valid but not in the table returns 0
 */
-static inline PetscErrorCode PetscTableFind(PetscTable ta, PetscInt key, PetscInt *data) {
+static inline PetscErrorCode PetscTableFind(PetscTable ta, PetscInt key, PetscInt *data)
+{
   PetscInt ii       = 0;
   PetscInt hash     = (PetscInt)PetscHash(ta, (unsigned long)key);
   PetscInt hashstep = (PetscInt)PetscHashStep(ta, (unsigned long)key);

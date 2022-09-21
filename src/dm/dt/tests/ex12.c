@@ -2,23 +2,28 @@ static char help[] = "Tests for PetscWeakForm.\n\n";
 
 #include <petscds.h>
 
-static void f0(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[]) {
+static void f0(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
   f0[0] = 0.0;
 }
 
-static void f1(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[]) {
+static void f1(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
   f0[0] = 0.0;
 }
 
-static void f2(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[]) {
+static void f2(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
   f0[0] = 0.0;
 }
 
-static void f3(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[]) {
+static void f3(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
   f0[0] = 0.0;
 }
 
-static PetscErrorCode CheckResidual(PetscWeakForm wf, PetscFormKey key, PetscInt in0, PetscPointFunc if0[], PetscInt in1, PetscPointFunc if1[]) {
+static PetscErrorCode CheckResidual(PetscWeakForm wf, PetscFormKey key, PetscInt in0, PetscPointFunc if0[], PetscInt in1, PetscPointFunc if1[])
+{
   PetscPointFunc *f0, *f1;
   PetscInt        n0, n1, i;
 
@@ -31,7 +36,8 @@ static PetscErrorCode CheckResidual(PetscWeakForm wf, PetscFormKey key, PetscInt
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TestSetIndex(PetscWeakForm wf) {
+static PetscErrorCode TestSetIndex(PetscWeakForm wf)
+{
   PetscPointFunc f[4] = {f0, f1, f2, f3};
   DMLabel        label;
   const PetscInt value = 3, field = 1, part = 2;
@@ -120,7 +126,8 @@ static PetscErrorCode TestSetIndex(PetscWeakForm wf) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TestAdd(PetscWeakForm wf) {
+static PetscErrorCode TestAdd(PetscWeakForm wf)
+{
   PetscPointFunc f[4] = {f0, f1, f2, f3}, fp[4];
   DMLabel        label;
   const PetscInt value = 3, field = 1, part = 2;
@@ -203,7 +210,8 @@ static PetscErrorCode TestAdd(PetscWeakForm wf) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TestSetIndexAdd(PetscWeakForm wf) {
+static PetscErrorCode TestSetIndexAdd(PetscWeakForm wf)
+{
   PetscPointFunc f[4] = {f0, f1, f2, f3};
   DMLabel        label;
   const PetscInt value = 3, field = 1, part = 2;
@@ -282,7 +290,8 @@ static PetscErrorCode TestSetIndexAdd(PetscWeakForm wf) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscWeakForm wf;
 
   PetscFunctionBeginUser;

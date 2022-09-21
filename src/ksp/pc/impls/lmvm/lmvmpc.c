@@ -25,7 +25,8 @@ typedef struct {
 
 .seealso: `PCLMVM`, `MATLDFP`, `MATLBFGS`, `MATLSR1`, `MATLBRDN`, `MATLMBRDN`, `MATLSBRDN`, `PCLMVMGetMatLMVM()`
 @*/
-PetscErrorCode PCLMVMSetMatLMVM(PC pc, Mat B) {
+PetscErrorCode PCLMVMSetMatLMVM(PC pc, Mat B)
+{
   PC_LMVM  *ctx = (PC_LMVM *)pc->data;
   PetscBool same;
 
@@ -55,7 +56,8 @@ PetscErrorCode PCLMVMSetMatLMVM(PC pc, Mat B) {
 
 .seealso: `PCLMVM`, `MATLMVM`, `MATLDFP`, `MATLBFGS`, `MATLSR1`, `MATLBRDN`, `MATLMBRDN`, `MATLSBRDN`, `PCLMVMSetMatLMVM()`
 @*/
-PetscErrorCode PCLMVMGetMatLMVM(PC pc, Mat *B) {
+PetscErrorCode PCLMVMGetMatLMVM(PC pc, Mat *B)
+{
   PC_LMVM  *ctx = (PC_LMVM *)pc->data;
   PetscBool same;
 
@@ -81,7 +83,8 @@ PetscErrorCode PCLMVMGetMatLMVM(PC pc, Mat *B) {
 
 .seealso: `PCLMVM`, `MatLMVMUpdate()`
 @*/
-PetscErrorCode PCLMVMSetIS(PC pc, IS inactive) {
+PetscErrorCode PCLMVMSetIS(PC pc, IS inactive)
+{
   PC_LMVM  *ctx = (PC_LMVM *)pc->data;
   PetscBool same;
 
@@ -106,7 +109,8 @@ PetscErrorCode PCLMVMSetIS(PC pc, IS inactive) {
 
 .seealso: `PCLMVM`, `MatLMVMUpdate()`
 @*/
-PetscErrorCode PCLMVMClearIS(PC pc) {
+PetscErrorCode PCLMVMClearIS(PC pc)
+{
   PC_LMVM  *ctx = (PC_LMVM *)pc->data;
   PetscBool same;
 
@@ -118,7 +122,8 @@ PetscErrorCode PCLMVMClearIS(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCApply_LMVM(PC pc, Vec x, Vec y) {
+static PetscErrorCode PCApply_LMVM(PC pc, Vec x, Vec y)
+{
   PC_LMVM *ctx = (PC_LMVM *)pc->data;
   Vec      xsub, ysub;
 
@@ -142,7 +147,8 @@ static PetscErrorCode PCApply_LMVM(PC pc, Vec x, Vec y) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCReset_LMVM(PC pc) {
+static PetscErrorCode PCReset_LMVM(PC pc)
+{
   PC_LMVM *ctx = (PC_LMVM *)pc->data;
 
   PetscFunctionBegin;
@@ -151,7 +157,8 @@ static PetscErrorCode PCReset_LMVM(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCSetUp_LMVM(PC pc) {
+static PetscErrorCode PCSetUp_LMVM(PC pc)
+{
   PC_LMVM    *ctx = (PC_LMVM *)pc->data;
   PetscInt    n, N;
   PetscBool   allocated;
@@ -175,7 +182,8 @@ static PetscErrorCode PCSetUp_LMVM(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCView_LMVM(PC pc, PetscViewer viewer) {
+static PetscErrorCode PCView_LMVM(PC pc, PetscViewer viewer)
+{
   PC_LMVM  *ctx = (PC_LMVM *)pc->data;
   PetscBool iascii;
 
@@ -189,7 +197,8 @@ static PetscErrorCode PCView_LMVM(PC pc, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCSetFromOptions_LMVM(PC pc, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode PCSetFromOptions_LMVM(PC pc, PetscOptionItems *PetscOptionsObject)
+{
   PC_LMVM    *ctx = (PC_LMVM *)pc->data;
   const char *prefix;
 
@@ -201,7 +210,8 @@ static PetscErrorCode PCSetFromOptions_LMVM(PC pc, PetscOptionItems *PetscOption
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCDestroy_LMVM(PC pc) {
+static PetscErrorCode PCDestroy_LMVM(PC pc)
+{
   PC_LMVM *ctx = (PC_LMVM *)pc->data;
 
   PetscFunctionBegin;
@@ -224,7 +234,8 @@ static PetscErrorCode PCDestroy_LMVM(PC pc) {
 .seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PCLMVM`, `MATLDFP`, `MATLBFGS`, `MATLSR1`, `MATLBRDN`, `MATLMBRDN`, `MATLSBRDN`,
           `PC`, `MATLMVM`, `PCLMVMUpdate()`, `PCLMVMSetMatLMVM()`, `PCLMVMGetMatLMVM()`
 M*/
-PETSC_EXTERN PetscErrorCode PCCreate_LMVM(PC pc) {
+PETSC_EXTERN PetscErrorCode PCCreate_LMVM(PC pc)
+{
   PC_LMVM *ctx;
 
   PetscFunctionBegin;

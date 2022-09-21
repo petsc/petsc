@@ -24,7 +24,8 @@ typedef struct {
 using NodeKokkosOffsetView2D      = Kokkos::Experimental::OffsetView<Node **, Kokkos::LayoutRight, Kokkos::DefaultExecutionSpace::memory_space>;
 using ConstNodeKokkosOffsetView2D = Kokkos::Experimental::OffsetView<const Node **, Kokkos::LayoutRight, Kokkos::DefaultExecutionSpace::memory_space>;
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM              da;
   PetscInt        M = 5, N = 7, xm, ym, xs, ys;
   PetscInt        dof = 1, sw = 1;

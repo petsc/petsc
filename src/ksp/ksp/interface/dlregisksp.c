@@ -24,13 +24,14 @@ static PetscBool PCPackageInitialized = PETSC_FALSE;
 
 .seealso: `PetscFinalize()`
 @*/
-PetscErrorCode   PCFinalizePackage(void) {
-    PetscFunctionBegin;
-    PetscCall(PetscFunctionListDestroy(&PCList));
-    PetscCall(PetscFunctionListDestroy(&PCMGCoarseList));
-    PCPackageInitialized = PETSC_FALSE;
-    PCRegisterAllCalled  = PETSC_FALSE;
-    PetscFunctionReturn(0);
+PetscErrorCode PCFinalizePackage(void)
+{
+  PetscFunctionBegin;
+  PetscCall(PetscFunctionListDestroy(&PCList));
+  PetscCall(PetscFunctionListDestroy(&PCMGCoarseList));
+  PCPackageInitialized = PETSC_FALSE;
+  PCRegisterAllCalled  = PETSC_FALSE;
+  PetscFunctionReturn(0);
 }
 
 /*@C
@@ -42,7 +43,8 @@ PetscErrorCode   PCFinalizePackage(void) {
 
 .seealso: `PetscInitialize()`
 @*/
-PetscErrorCode PCInitializePackage(void) {
+PetscErrorCode PCInitializePackage(void)
+{
   char      logList[256];
   PetscBool opt, pkg;
 
@@ -105,13 +107,13 @@ PetscErrorCode PCInitializePackage(void) {
   PetscFunctionReturn(0);
 }
 
-const char *const        KSPCGTypes[]                  = {"SYMMETRIC", "HERMITIAN", "KSPCGType", "KSP_CG_", NULL};
-const char *const        KSPGMRESCGSRefinementTypes[]  = {"REFINE_NEVER", "REFINE_IFNEEDED", "REFINE_ALWAYS", "KSPGMRESRefinementType", "KSP_GMRES_CGS_", NULL};
-const char *const        KSPNormTypes_Shifted[]        = {"DEFAULT", "NONE", "PRECONDITIONED", "UNPRECONDITIONED", "NATURAL", "KSPNormType", "KSP_NORM_", NULL};
-const char *const *const KSPNormTypes                  = KSPNormTypes_Shifted + 1;
-const char *const        KSPConvergedReasons_Shifted[] = {"DIVERGED_PC_FAILED", "DIVERGED_INDEFINITE_MAT", "DIVERGED_NANORINF", "DIVERGED_INDEFINITE_PC", "DIVERGED_NONSYMMETRIC", "DIVERGED_BREAKDOWN_BICG", "DIVERGED_BREAKDOWN", "DIVERGED_DTOL", "DIVERGED_ITS", "DIVERGED_NULL", "", "CONVERGED_ITERATING", "CONVERGED_RTOL_NORMAL", "CONVERGED_RTOL", "CONVERGED_ATOL", "CONVERGED_ITS", "CONVERGED_CG_NEG_CURVE", "CONVERGED_CG_CONSTRAINED", "CONVERGED_STEP_LENGTH", "CONVERGED_HAPPY_BREAKDOWN", "CONVERGED_ATOL_NORMAL", "KSPConvergedReason", "KSP_", NULL};
-const char *const       *KSPConvergedReasons           = KSPConvergedReasons_Shifted + 11;
-const char *const        KSPFCDTruncationTypes[]       = {"STANDARD", "NOTAY", "KSPFCDTruncationTypes", "KSP_FCD_TRUNC_TYPE_", NULL};
+const char *const        KSPCGTypes[]                 = {"SYMMETRIC", "HERMITIAN", "KSPCGType", "KSP_CG_", NULL};
+const char *const        KSPGMRESCGSRefinementTypes[] = {"REFINE_NEVER", "REFINE_IFNEEDED", "REFINE_ALWAYS", "KSPGMRESRefinementType", "KSP_GMRES_CGS_", NULL};
+const char *const        KSPNormTypes_Shifted[]       = {"DEFAULT", "NONE", "PRECONDITIONED", "UNPRECONDITIONED", "NATURAL", "KSPNormType", "KSP_NORM_", NULL};
+const char *const *const KSPNormTypes                 = KSPNormTypes_Shifted + 1;
+const char *const KSPConvergedReasons_Shifted[] = {"DIVERGED_PC_FAILED", "DIVERGED_INDEFINITE_MAT", "DIVERGED_NANORINF", "DIVERGED_INDEFINITE_PC", "DIVERGED_NONSYMMETRIC", "DIVERGED_BREAKDOWN_BICG", "DIVERGED_BREAKDOWN", "DIVERGED_DTOL", "DIVERGED_ITS", "DIVERGED_NULL", "", "CONVERGED_ITERATING", "CONVERGED_RTOL_NORMAL", "CONVERGED_RTOL", "CONVERGED_ATOL", "CONVERGED_ITS", "CONVERGED_CG_NEG_CURVE", "CONVERGED_CG_CONSTRAINED", "CONVERGED_STEP_LENGTH", "CONVERGED_HAPPY_BREAKDOWN", "CONVERGED_ATOL_NORMAL", "KSPConvergedReason", "KSP_", NULL};
+const char *const *KSPConvergedReasons     = KSPConvergedReasons_Shifted + 11;
+const char *const  KSPFCDTruncationTypes[] = {"STANDARD", "NOTAY", "KSPFCDTruncationTypes", "KSP_FCD_TRUNC_TYPE_", NULL};
 
 static PetscBool KSPPackageInitialized = PETSC_FALSE;
 /*@C
@@ -122,17 +124,18 @@ static PetscBool KSPPackageInitialized = PETSC_FALSE;
 
 .seealso: `PetscFinalize()`
 @*/
-PetscErrorCode   KSPFinalizePackage(void) {
-    PetscFunctionBegin;
-    PetscCall(PetscFunctionListDestroy(&KSPList));
-    PetscCall(PetscFunctionListDestroy(&KSPGuessList));
-    PetscCall(PetscFunctionListDestroy(&KSPMonitorList));
-    PetscCall(PetscFunctionListDestroy(&KSPMonitorCreateList));
-    PetscCall(PetscFunctionListDestroy(&KSPMonitorDestroyList));
-    KSPPackageInitialized       = PETSC_FALSE;
-    KSPRegisterAllCalled        = PETSC_FALSE;
-    KSPMonitorRegisterAllCalled = PETSC_FALSE;
-    PetscFunctionReturn(0);
+PetscErrorCode KSPFinalizePackage(void)
+{
+  PetscFunctionBegin;
+  PetscCall(PetscFunctionListDestroy(&KSPList));
+  PetscCall(PetscFunctionListDestroy(&KSPGuessList));
+  PetscCall(PetscFunctionListDestroy(&KSPMonitorList));
+  PetscCall(PetscFunctionListDestroy(&KSPMonitorCreateList));
+  PetscCall(PetscFunctionListDestroy(&KSPMonitorDestroyList));
+  KSPPackageInitialized       = PETSC_FALSE;
+  KSPRegisterAllCalled        = PETSC_FALSE;
+  KSPMonitorRegisterAllCalled = PETSC_FALSE;
+  PetscFunctionReturn(0);
 }
 
 /*@C
@@ -144,7 +147,8 @@ PetscErrorCode   KSPFinalizePackage(void) {
 
 .seealso: `PetscInitialize()`
 @*/
-PetscErrorCode KSPInitializePackage(void) {
+PetscErrorCode KSPInitializePackage(void)
+{
   char      logList[256];
   PetscBool opt, pkg, cls;
 
@@ -204,7 +208,8 @@ PetscErrorCode KSPInitializePackage(void) {
   library.
 
  */
-PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscksp(void) {
+PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscksp(void)
+{
   PetscFunctionBegin;
   PetscCall(PCInitializePackage());
   PetscCall(KSPInitializePackage());

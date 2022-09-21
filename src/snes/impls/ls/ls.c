@@ -7,7 +7,8 @@
     0 = (J^T F)^T W = F^T J W iff W not in the null space of J. Thanks for Jorge More
     for this trick. One assumes that the probability that W is in the null space of J is very, very small.
 */
-static PetscErrorCode SNESNEWTONLSCheckLocalMin_Private(SNES snes, Mat A, Vec F, PetscReal fnorm, PetscBool *ismin) {
+static PetscErrorCode SNESNEWTONLSCheckLocalMin_Private(SNES snes, Mat A, Vec F, PetscReal fnorm, PetscBool *ismin)
+{
   PetscReal a1;
   PetscBool hastranspose;
   Vec       W;
@@ -44,7 +45,8 @@ static PetscErrorCode SNESNEWTONLSCheckLocalMin_Private(SNES snes, Mat A, Vec F,
 /*
      Checks if J^T(F - J*X) = 0
 */
-static PetscErrorCode SNESNEWTONLSCheckResidual_Private(SNES snes, Mat A, Vec F, Vec X) {
+static PetscErrorCode SNESNEWTONLSCheckResidual_Private(SNES snes, Mat A, Vec F, Vec X)
+{
   PetscReal a1, a2;
   PetscBool hastranspose;
 
@@ -118,7 +120,8 @@ static PetscErrorCode SNESNEWTONLSCheckResidual_Private(SNES snes, Mat A, Vec F,
    Application Interface Routine: SNESSolve()
 
 */
-PetscErrorCode SNESSolve_NEWTONLS(SNES snes) {
+PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
+{
   PetscInt             maxits, i, lits;
   SNESLineSearchReason lssucceed;
   PetscReal            fnorm, gnorm, xnorm, ynorm;
@@ -272,14 +275,16 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes) {
    Application Interface Routine: SNESSetUp()
 
  */
-PetscErrorCode SNESSetUp_NEWTONLS(SNES snes) {
+PetscErrorCode SNESSetUp_NEWTONLS(SNES snes)
+{
   PetscFunctionBegin;
   PetscCall(SNESSetUpMatrices(snes));
   if (snes->npcside == PC_LEFT && snes->functype == SNES_FUNCTION_DEFAULT) snes->functype = SNES_FUNCTION_PRECONDITIONED;
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SNESReset_NEWTONLS(SNES snes) {
+PetscErrorCode SNESReset_NEWTONLS(SNES snes)
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
@@ -293,7 +298,8 @@ PetscErrorCode SNESReset_NEWTONLS(SNES snes) {
 
    Application Interface Routine: SNESDestroy()
  */
-PetscErrorCode SNESDestroy_NEWTONLS(SNES snes) {
+PetscErrorCode SNESDestroy_NEWTONLS(SNES snes)
+{
   PetscFunctionBegin;
   PetscCall(SNESReset_NEWTONLS(snes));
   PetscCall(PetscFree(snes->data));
@@ -309,7 +315,8 @@ PetscErrorCode SNESDestroy_NEWTONLS(SNES snes) {
 
    Application Interface Routine: SNESView()
 */
-static PetscErrorCode SNESView_NEWTONLS(SNES snes, PetscViewer viewer) {
+static PetscErrorCode SNESView_NEWTONLS(SNES snes, PetscViewer viewer)
+{
   PetscBool iascii;
 
   PetscFunctionBegin;
@@ -326,7 +333,8 @@ static PetscErrorCode SNESView_NEWTONLS(SNES snes, PetscViewer viewer) {
 
    Application Interface Routine: SNESSetFromOptions()
 */
-static PetscErrorCode SNESSetFromOptions_NEWTONLS(SNES snes, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode SNESSetFromOptions_NEWTONLS(SNES snes, PetscOptionItems *PetscOptionsObject)
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
@@ -353,7 +361,8 @@ static PetscErrorCode SNESSetFromOptions_NEWTONLS(SNES snes, PetscOptionItems *P
           `SNESLineSearchSetPostCheck()`, `SNESLineSearchSetPreCheck()` `SNESLineSearchSetComputeNorms()`, `SNESGetLineSearch()`
 
 M*/
-PETSC_EXTERN PetscErrorCode SNESCreate_NEWTONLS(SNES snes) {
+PETSC_EXTERN PetscErrorCode SNESCreate_NEWTONLS(SNES snes)
+{
   SNES_NEWTONLS *neP;
   SNESLineSearch linesearch;
 

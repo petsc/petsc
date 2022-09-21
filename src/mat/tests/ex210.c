@@ -2,7 +2,8 @@ static char help[] = "Test MatCreateNest with block sizes.\n";
 
 #include <petscmat.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   Mat                    A, B, C, mats[2];
   ISLocalToGlobalMapping cmap, rmap;
   const PetscInt         indices[1] = {0};

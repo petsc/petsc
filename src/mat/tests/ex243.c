@@ -2,7 +2,8 @@ static char help[] = "Test conversion of ScaLAPACK matrices.\n\n";
 
 #include <petscmat.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   Mat             A, A_scalapack;
   PetscInt        i, j, M = 10, N = 5, nloc, mloc, nrows, ncols;
   PetscMPIInt     rank, size;

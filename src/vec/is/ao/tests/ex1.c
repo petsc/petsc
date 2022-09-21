@@ -5,7 +5,8 @@ static char help[] = "Demonstrates constructing an application ordering.\n\n";
 #include <petscao.h>
 #include <petscviewer.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt        i, n = 5;
   PetscInt        getpetsc[] = {0, 3, 4}, getapp[] = {2, 1, 9, 7};
   PetscInt        getpetsc1[] = {0, 3, 4}, getapp1[] = {2, 1, 9, 7};

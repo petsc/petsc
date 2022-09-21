@@ -7,7 +7,8 @@ static char help[] = "Tests PetscViewerBinary VecView()/VecLoad() function corre
 #define VEC_LEN 10
 const PetscReal test_values[] = {0.311256, 88.068, 11.077444, 9953.62, 7.345, 64.8943, 3.1458, 6699.95, 0.00084, 0.0647};
 
-PetscErrorCode MyVecDump(const char fname[], PetscBool skippheader, PetscBool usempiio, Vec x) {
+PetscErrorCode MyVecDump(const char fname[], PetscBool skippheader, PetscBool usempiio, Vec x)
+{
   MPI_Comm    comm;
   PetscViewer viewer;
   PetscBool   ismpiio, isskip;
@@ -33,7 +34,8 @@ PetscErrorCode MyVecDump(const char fname[], PetscBool skippheader, PetscBool us
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MyVecLoad(const char fname[], PetscBool skippheader, PetscBool usempiio, Vec x) {
+PetscErrorCode MyVecLoad(const char fname[], PetscBool skippheader, PetscBool usempiio, Vec x)
+{
   MPI_Comm    comm;
   PetscViewer viewer;
   PetscBool   ismpiio, isskip;
@@ -59,7 +61,8 @@ PetscErrorCode MyVecLoad(const char fname[], PetscBool skippheader, PetscBool us
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecFill(Vec x) {
+PetscErrorCode VecFill(Vec x)
+{
   PetscInt i, s, e;
 
   PetscFunctionBeginUser;
@@ -70,7 +73,8 @@ PetscErrorCode VecFill(Vec x) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecCompare(Vec a, Vec b) {
+PetscErrorCode VecCompare(Vec a, Vec b)
+{
   PetscInt  locmin[2], locmax[2];
   PetscReal min[2], max[2];
   Vec       ref;
@@ -103,7 +107,8 @@ PetscErrorCode VecCompare(Vec a, Vec b) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode HeaderlessBinaryRead(const char name[]) {
+PetscErrorCode HeaderlessBinaryRead(const char name[])
+{
   int         fdes;
   PetscScalar buffer[VEC_LEN];
   PetscInt    i;
@@ -137,7 +142,8 @@ PetscErrorCode HeaderlessBinaryRead(const char name[]) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TestBinary(void) {
+PetscErrorCode TestBinary(void)
+{
   Vec       x, y;
   PetscBool skipheader = PETSC_TRUE;
   PetscBool usempiio   = PETSC_FALSE;
@@ -164,7 +170,8 @@ PetscErrorCode TestBinary(void) {
 }
 
 #if defined(PETSC_HAVE_MPIIO)
-PetscErrorCode TestBinaryMPIIO(void) {
+PetscErrorCode TestBinaryMPIIO(void)
+{
   Vec       x, y;
   PetscBool skipheader = PETSC_TRUE;
   PetscBool usempiio   = PETSC_TRUE;
@@ -191,7 +198,8 @@ PetscErrorCode TestBinaryMPIIO(void) {
 }
 #endif
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   PetscBool usempiio = PETSC_FALSE;
 
   PetscFunctionBeginUser;

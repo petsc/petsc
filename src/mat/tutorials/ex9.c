@@ -10,7 +10,8 @@ static char help[] = "Tests MatCreateComposite()\n\n";
 */
 #include <petscmat.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat             *A, B; /* matrix */
   Vec              x, y, v, v2, z, z2;
   PetscReal        rnorm;

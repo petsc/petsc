@@ -40,7 +40,8 @@ typedef struct {
 */
 extern PetscErrorCode FormJacobian(TS, PetscReal, Vec, Mat, Mat, void *), FormFunction(TS, PetscReal, Vec, Vec, void *), FormInitialGuess(Vec, AppCtx *);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   TS          ts;     /* timestepping context */
   Vec         x, r;   /* solution, residual vectors */
   Mat         J;      /* Jacobian matrix */
@@ -176,7 +177,8 @@ int main(int argc, char **argv) {
 
 /* --------------------  Form initial approximation ----------------- */
 
-PetscErrorCode FormInitialGuess(Vec X, AppCtx *user) {
+PetscErrorCode FormInitialGuess(Vec X, AppCtx *user)
+{
   PetscInt     i, j, row, mx, my;
   PetscReal    one = 1.0, lambda;
   PetscReal    temp1, temp, hx, hy;
@@ -207,7 +209,8 @@ PetscErrorCode FormInitialGuess(Vec X, AppCtx *user) {
 }
 /* --------------------  Evaluate Function F(x) --------------------- */
 
-PetscErrorCode FormFunction(TS ts, PetscReal t, Vec X, Vec F, void *ptr) {
+PetscErrorCode FormFunction(TS ts, PetscReal t, Vec X, Vec F, void *ptr)
+{
   AppCtx            *user = (AppCtx *)ptr;
   PetscInt           i, j, row, mx, my;
   PetscReal          two = 2.0, one = 1.0, lambda;
@@ -258,7 +261,8 @@ PetscErrorCode FormFunction(TS ts, PetscReal t, Vec X, Vec F, void *ptr) {
    J with a finite difference approximation, using our analytic Jacobian B for
    the preconditioner.
 */
-PetscErrorCode FormJacobian(TS ts, PetscReal t, Vec X, Mat J, Mat B, void *ptr) {
+PetscErrorCode FormJacobian(TS ts, PetscReal t, Vec X, Mat J, Mat B, void *ptr)
+{
   AppCtx            *user = (AppCtx *)ptr;
   PetscInt           i, j, row, mx, my, col[5];
   PetscScalar        two = 2.0, one = 1.0, lambda, v[5], sc;

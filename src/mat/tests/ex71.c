@@ -3,7 +3,8 @@ static char help[] = "Passes a sparse matrix to MATLAB.\n\n";
 
 #include <petscmat.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   PetscInt    m = 4, n = 5, i, j, II, J;
   PetscScalar one = 1.0, v;
   Vec         x;

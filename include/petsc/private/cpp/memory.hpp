@@ -6,18 +6,21 @@
 #include <petsc/private/cpp/type_traits.hpp> // remove_extent
 
 #if defined(__cplusplus)
-#include <memory>
-#include <new>   // ::operator new(), ::operator delete()
-#include <stack> // ... take a wild guess
+  #include <memory>
+  #include <new>   // ::operator new(), ::operator delete()
+  #include <stack> // ... take a wild guess
 
-namespace Petsc {
+namespace Petsc
+{
 
-namespace util {
+namespace util
+{
 
-#if PETSC_CPP_VERSION >= 14
+  #if PETSC_CPP_VERSION >= 14
 using std::make_unique;
-#else
-namespace detail {
+  #else
+namespace detail
+{
 
 // helpers shamelessly stolen from libcpp
 template <class T>
@@ -38,22 +41,25 @@ struct unique_if<T[N]> {
 } // namespace detail
 
 template <class T, class... Args>
-inline typename detail::unique_if<T>::unique_single make_unique(Args &&...args) {
+inline typename detail::unique_if<T>::unique_single make_unique(Args &&...args)
+{
   return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
 }
 
 template <class T>
-inline typename detail::unique_if<T>::unique_array_unknown_bound make_unique(std::size_t n) {
+inline typename detail::unique_if<T>::unique_array_unknown_bound make_unique(std::size_t n)
+{
   return std::unique_ptr<T>(new util::remove_extent_t<T>[n]());
 }
 
 template <class T, class... Args>
 typename detail::unique_if<T>::unique_array_known_bound make_unique(Args &&...) = delete;
-#endif // PETSC_CPP_VERSION >= 14
+  #endif // PETSC_CPP_VERSION >= 14
 
 } // namespace util
 
-namespace memory {
+namespace memory
+{
 
 class PoolAllocator : public RegisterFinalizeable<PoolAllocator> {
 public:
@@ -80,11 +86,13 @@ private:
 
 inline PoolAllocator::PoolAllocator(size_type block_size) noexcept : block_size_(block_size), max_block_size_(block_size) { }
 
-inline typename PoolAllocator::size_type PoolAllocator::block_size() const noexcept {
+inline typename PoolAllocator::size_type PoolAllocator::block_size() const noexcept
+{
   return block_size_;
 }
 
-inline PetscErrorCode PoolAllocator::set_block_size(size_type block_size) noexcept {
+inline PetscErrorCode PoolAllocator::set_block_size(size_type block_size) noexcept
+{
   PetscFunctionBegin;
   if (PetscLikely(block_size == block_size_)) PetscFunctionReturn(0);
   block_size_ = block_size;
@@ -96,7 +104,8 @@ inline PetscErrorCode PoolAllocator::set_block_size(size_type block_size) noexce
   PetscFunctionReturn(0);
 }
 
-inline PetscErrorCode PoolAllocator::allocate(void **ptr, size_type size) noexcept {
+inline PetscErrorCode PoolAllocator::allocate(void **ptr, size_type size) noexcept
+{
   PetscFunctionBegin;
   PetscValidPointer(ptr, 1);
   *ptr = nullptr;
@@ -111,7 +120,8 @@ inline PetscErrorCode PoolAllocator::allocate(void **ptr, size_type size) noexce
   PetscFunctionReturn(0);
 }
 
-inline PetscErrorCode PoolAllocator::deallocate(void **ptr) noexcept {
+inline PetscErrorCode PoolAllocator::deallocate(void **ptr) noexcept
+{
   PetscFunctionBegin;
   PetscValidPointer(ptr, 1);
   if (!*ptr) PetscFunctionReturn(0);
@@ -127,7 +137,8 @@ inline PetscErrorCode PoolAllocator::deallocate(void **ptr) noexcept {
   PetscFunctionReturn(0);
 }
 
-inline PetscErrorCode PoolAllocator::clear() noexcept {
+inline PetscErrorCode PoolAllocator::clear() noexcept
+{
   PetscFunctionBegin;
   while (!stack_.empty()) {
     ::delete[] static_cast<char *>(stack_.top());
@@ -136,7 +147,8 @@ inline PetscErrorCode PoolAllocator::clear() noexcept {
   PetscFunctionReturn(0);
 }
 
-inline PetscErrorCode PoolAllocator::finalize_() noexcept {
+inline PetscErrorCode PoolAllocator::finalize_() noexcept
+{
   PetscFunctionBegin;
   PetscCall(clear());
   PetscCallCXX(stack_ = container_type{});
@@ -163,7 +175,8 @@ template <typename D>
 typename PoolAllocated<D>::allocator_type PoolAllocated<D>::pool_{};
 
 template <typename D>
-inline void *PoolAllocated<D>::operator new(size_type size) noexcept {
+inline void *PoolAllocated<D>::operator new(size_type size) noexcept
+{
   void *ptr = nullptr;
 
   PetscFunctionBegin;
@@ -172,14 +185,16 @@ inline void *PoolAllocated<D>::operator new(size_type size) noexcept {
 }
 
 template <typename D>
-inline void PoolAllocated<D>::operator delete(void *ptr) noexcept {
+inline void PoolAllocated<D>::operator delete(void *ptr) noexcept
+{
   PetscFunctionBegin;
   PetscCallAbort(PETSC_COMM_SELF, pool().deallocate(&ptr));
   PetscFunctionReturnVoid();
 }
 
 template <typename D>
-inline typename PoolAllocated<D>::allocator_type &PoolAllocated<D>::pool() noexcept {
+inline typename PoolAllocated<D>::allocator_type &PoolAllocated<D>::pool() noexcept
+{
   return pool_;
 }
 

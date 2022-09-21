@@ -1,7 +1,8 @@
 
 #include <petsc/private/kspimpl.h>
 
-static PetscErrorCode KSPSetUp_CR(KSP ksp) {
+static PetscErrorCode KSPSetUp_CR(KSP ksp)
+{
   PetscFunctionBegin;
   PetscCheck(ksp->pc_side != PC_RIGHT, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "no right preconditioning for KSPCR");
   PetscCheck(ksp->pc_side != PC_SYMMETRIC, PETSC_COMM_SELF, PETSC_ERR_SUP, "no symmetric preconditioning for KSPCR");
@@ -9,7 +10,8 @@ static PetscErrorCode KSPSetUp_CR(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPSolve_CR(KSP ksp) {
+static PetscErrorCode KSPSolve_CR(KSP ksp)
+{
   PetscInt    i = 0;
   PetscReal   dp;
   PetscScalar ai, bi;
@@ -156,7 +158,8 @@ static PetscErrorCode KSPSolve_CR(KSP ksp) {
 
 .seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPCG`
 M*/
-PETSC_EXTERN PetscErrorCode KSPCreate_CR(KSP ksp) {
+PETSC_EXTERN PetscErrorCode KSPCreate_CR(KSP ksp)
+{
   PetscFunctionBegin;
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_PRECONDITIONED, PC_LEFT, 3));
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_UNPRECONDITIONED, PC_LEFT, 2));

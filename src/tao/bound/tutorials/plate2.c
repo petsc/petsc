@@ -46,7 +46,8 @@ PetscErrorCode        FormHessian(Tao, Vec, Mat, Mat, void *);
 PetscErrorCode MatrixFreeHessian(Tao, Vec, Mat, Mat, void *);
 PetscErrorCode MyMatMult(Mat, Vec, Vec);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt               Nx, Ny;    /* number of processors in x- and y- directions */
   PetscInt               m, N;      /* number of local and global elements in vectors */
   Vec                    x, xl, xu; /* solution vector  and bounds*/
@@ -193,7 +194,8 @@ int main(int argc, char **argv) {
    The numbering of points starts at the lower left and runs left to
    right, then bottom to top.
 */
-PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *fcn, Vec G, void *userCtx) {
+PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *fcn, Vec G, void *userCtx)
+{
   AppCtx    *user = (AppCtx *)userCtx;
   PetscInt   i, j, row;
   PetscInt   mx = user->mx, my = user->my;
@@ -410,7 +412,8 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *fcn, Vec G, void 
    Option (A) seems cleaner/easier in many cases, and is the procedure
    used in this example.
 */
-PetscErrorCode FormHessian(Tao tao, Vec X, Mat Hptr, Mat Hessian, void *ptr) {
+PetscErrorCode FormHessian(Tao tao, Vec X, Mat Hptr, Mat Hessian, void *ptr)
+{
   AppCtx    *user = (AppCtx *)ptr;
   PetscInt   i, j, k, row;
   PetscInt   mx = user->mx, my = user->my;
@@ -596,7 +599,8 @@ PetscErrorCode FormHessian(Tao tao, Vec X, Mat Hptr, Mat Hessian, void *ptr) {
    Output Parameter:
 .  user - user-defined application context
 */
-static PetscErrorCode MSA_BoundaryConditions(AppCtx *user) {
+static PetscErrorCode MSA_BoundaryConditions(AppCtx *user)
+{
   PetscInt   i, j, k, maxits = 5, limit = 0;
   PetscInt   xs, ys, xm, ym, gxs, gys, gxm, gym;
   PetscInt   mx = user->mx, my = user->my;
@@ -713,7 +717,8 @@ static PetscErrorCode MSA_BoundaryConditions(AppCtx *user) {
    Output Parameter:
 .  user - user-defined application context
 */
-static PetscErrorCode MSA_Plate(Vec XL, Vec XU, void *ctx) {
+static PetscErrorCode MSA_Plate(Vec XL, Vec XU, void *ctx)
+{
   AppCtx    *user = (AppCtx *)ctx;
   PetscInt   i, j, row;
   PetscInt   xs, ys, xm, ym;
@@ -773,7 +778,8 @@ static PetscErrorCode MSA_Plate(Vec XL, Vec XU, void *ctx) {
    Output Parameters:
 .  X - newly computed initial guess
 */
-static PetscErrorCode MSA_InitialPoint(AppCtx *user, Vec X) {
+static PetscErrorCode MSA_InitialPoint(AppCtx *user, Vec X)
+{
   PetscInt  start = -1, i, j;
   PetscReal zero  = 0.0;
   PetscBool flg;
@@ -832,13 +838,15 @@ static PetscErrorCode MSA_InitialPoint(AppCtx *user, Vec X) {
 }
 
 /* For testing matrix free submatrices */
-PetscErrorCode MatrixFreeHessian(Tao tao, Vec x, Mat H, Mat Hpre, void *ptr) {
+PetscErrorCode MatrixFreeHessian(Tao tao, Vec x, Mat H, Mat Hpre, void *ptr)
+{
   AppCtx *user = (AppCtx *)ptr;
   PetscFunctionBegin;
   PetscCall(FormHessian(tao, x, user->H, user->H, ptr));
   PetscFunctionReturn(0);
 }
-PetscErrorCode MyMatMult(Mat H_shell, Vec X, Vec Y) {
+PetscErrorCode MyMatMult(Mat H_shell, Vec X, Vec Y)
+{
   void   *ptr;
   AppCtx *user;
   PetscFunctionBegin;

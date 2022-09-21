@@ -21,7 +21,8 @@
 
 .seealso: `PetscObject`, `PetscClassId`, `PetscObjectGetClassName()`
 @*/
-PetscErrorCode PetscObjectGetType(PetscObject obj, const char *type[]) {
+PetscErrorCode PetscObjectGetType(PetscObject obj, const char *type[])
+{
   PetscFunctionBegin;
   PetscValidHeader(obj, 1);
   PetscValidPointer(type, 2);

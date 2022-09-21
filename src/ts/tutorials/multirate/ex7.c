@@ -26,7 +26,8 @@ static const char help[] = "1D periodic Finite Volume solver by a particular slo
 #include <petscdraw.h>
 #include <petscmath.h>
 
-static inline PetscReal RangeMod(PetscReal a, PetscReal xmin, PetscReal xmax) {
+static inline PetscReal RangeMod(PetscReal a, PetscReal xmin, PetscReal xmax)
+{
   PetscReal range = xmax - xmin;
   return xmin + PetscFmodReal(range + PetscFmodReal(a, range), range);
 }
@@ -71,7 +72,8 @@ typedef struct {
 } FVCtx;
 
 /* --------------------------------- Physics ----------------------------------- */
-static PetscErrorCode PhysicsDestroy_SimpleFree(void *vctx) {
+static PetscErrorCode PhysicsDestroy_SimpleFree(void *vctx)
+{
   PetscFunctionBeginUser;
   PetscCall(PetscFree(vctx));
   PetscFunctionReturn(0);
@@ -82,7 +84,8 @@ typedef struct {
   PetscReal a; /* advective velocity */
 } AdvectCtx;
 
-static PetscErrorCode PhysicsFlux_Advect(void *vctx, const PetscScalar *u, PetscScalar *flux, PetscReal *maxspeed) {
+static PetscErrorCode PhysicsFlux_Advect(void *vctx, const PetscScalar *u, PetscScalar *flux, PetscReal *maxspeed)
+{
   AdvectCtx *ctx = (AdvectCtx *)vctx;
   PetscReal  speed;
 
@@ -93,31 +96,55 @@ static PetscErrorCode PhysicsFlux_Advect(void *vctx, const PetscScalar *u, Petsc
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PhysicsSample_Advect(void *vctx, PetscInt initial, FVBCType bctype, PetscReal xmin, PetscReal xmax, PetscReal t, PetscReal x, PetscReal *u) {
+static PetscErrorCode PhysicsSample_Advect(void *vctx, PetscInt initial, FVBCType bctype, PetscReal xmin, PetscReal xmax, PetscReal t, PetscReal x, PetscReal *u)
+{
   AdvectCtx *ctx = (AdvectCtx *)vctx;
   PetscReal  a   = ctx->a, x0;
 
   PetscFunctionBeginUser;
   switch (bctype) {
-  case FVBC_OUTFLOW: x0 = x - a * t; break;
-  case FVBC_PERIODIC: x0 = RangeMod(x - a * t, xmin, xmax); break;
-  default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "unknown BCType");
+  case FVBC_OUTFLOW:
+    x0 = x - a * t;
+    break;
+  case FVBC_PERIODIC:
+    x0 = RangeMod(x - a * t, xmin, xmax);
+    break;
+  default:
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "unknown BCType");
   }
   switch (initial) {
-  case 0: u[0] = (x0 < 0) ? 1 : -1; break;
-  case 1: u[0] = (x0 < 0) ? -1 : 1; break;
-  case 2: u[0] = (0 < x0 && x0 < 1) ? 1 : 0; break;
-  case 3: u[0] = PetscSinReal(2 * PETSC_PI * x0); break;
-  case 4: u[0] = PetscAbs(x0); break;
-  case 5: u[0] = (x0 < 0 || x0 > 0.5) ? 0 : PetscSqr(PetscSinReal(2 * PETSC_PI * x0)); break;
-  case 6: u[0] = (x0 < 0) ? 0 : ((x0 < 1) ? x0 : ((x0 < 2) ? 2 - x0 : 0)); break;
-  case 7: u[0] = PetscPowReal(PetscSinReal(PETSC_PI * x0), 10.0); break;
-  default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "unknown initial condition");
+  case 0:
+    u[0] = (x0 < 0) ? 1 : -1;
+    break;
+  case 1:
+    u[0] = (x0 < 0) ? -1 : 1;
+    break;
+  case 2:
+    u[0] = (0 < x0 && x0 < 1) ? 1 : 0;
+    break;
+  case 3:
+    u[0] = PetscSinReal(2 * PETSC_PI * x0);
+    break;
+  case 4:
+    u[0] = PetscAbs(x0);
+    break;
+  case 5:
+    u[0] = (x0 < 0 || x0 > 0.5) ? 0 : PetscSqr(PetscSinReal(2 * PETSC_PI * x0));
+    break;
+  case 6:
+    u[0] = (x0 < 0) ? 0 : ((x0 < 1) ? x0 : ((x0 < 2) ? 2 - x0 : 0));
+    break;
+  case 7:
+    u[0] = PetscPowReal(PetscSinReal(PETSC_PI * x0), 10.0);
+    break;
+  default:
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "unknown initial condition");
   }
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PhysicsCreate_Advect(FVCtx *ctx) {
+static PetscErrorCode PhysicsCreate_Advect(FVCtx *ctx)
+{
   AdvectCtx *user;
 
   PetscFunctionBeginUser;
@@ -130,14 +157,17 @@ static PetscErrorCode PhysicsCreate_Advect(FVCtx *ctx) {
   PetscCall(PetscStrallocpy("u", &ctx->physics.fieldname[0]));
   user->a = 1;
   PetscOptionsBegin(ctx->comm, ctx->prefix, "Options for advection", "");
-  { PetscCall(PetscOptionsReal("-physics_advect_a", "Speed", "", user->a, &user->a, NULL)); }
+  {
+    PetscCall(PetscOptionsReal("-physics_advect_a", "Speed", "", user->a, &user->a, NULL));
+  }
   PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 
 /* --------------------------------- Finite Volume Solver ----------------------------------- */
 
-static PetscErrorCode FVRHSFunction(TS ts, PetscReal time, Vec X, Vec F, void *vctx) {
+static PetscErrorCode FVRHSFunction(TS ts, PetscReal time, Vec X, Vec F, void *vctx)
+{
   FVCtx       *ctx = (FVCtx *)vctx;
   PetscInt     i, j, Mx, dof, xs, xm, sf = ctx->sf, fs = ctx->fs;
   PetscReal    hf, hs, cfl_idt = 0;
@@ -285,7 +315,8 @@ static PetscErrorCode FVRHSFunction(TS ts, PetscReal time, Vec X, Vec F, void *v
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode FVRHSFunctionslow(TS ts, PetscReal time, Vec X, Vec F, void *vctx) {
+static PetscErrorCode FVRHSFunctionslow(TS ts, PetscReal time, Vec X, Vec F, void *vctx)
+{
   FVCtx       *ctx = (FVCtx *)vctx;
   PetscInt     i, j, Mx, dof, xs, xm, islow = 0, sf = ctx->sf, fs = ctx->fs;
   PetscReal    hf, hs;
@@ -406,7 +437,8 @@ static PetscErrorCode FVRHSFunctionslow(TS ts, PetscReal time, Vec X, Vec F, voi
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode FVRHSFunctionfast(TS ts, PetscReal time, Vec X, Vec F, void *vctx) {
+static PetscErrorCode FVRHSFunctionfast(TS ts, PetscReal time, Vec X, Vec F, void *vctx)
+{
   FVCtx       *ctx = (FVCtx *)vctx;
   PetscInt     i, j, Mx, dof, xs, xm, ifast = 0, sf = ctx->sf, fs = ctx->fs;
   PetscReal    hf, hs;
@@ -512,7 +544,8 @@ static PetscErrorCode FVRHSFunctionfast(TS ts, PetscReal time, Vec X, Vec F, voi
 
 /* --------------------------------- Finite Volume Solver for slow components ----------------------------------- */
 
-PetscErrorCode FVSample(FVCtx *ctx, DM da, PetscReal time, Vec U) {
+PetscErrorCode FVSample(FVCtx *ctx, DM da, PetscReal time, Vec U)
+{
   PetscScalar   *u, *uj, xj, xi;
   PetscInt       i, j, k, dof, xs, xm, Mx, count_slow, count_fast;
   const PetscInt N = 200;
@@ -562,7 +595,8 @@ PetscErrorCode FVSample(FVCtx *ctx, DM da, PetscReal time, Vec U) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SolutionStatsView(DM da, Vec X, PetscViewer viewer) {
+static PetscErrorCode SolutionStatsView(DM da, Vec X, PetscViewer viewer)
+{
   PetscReal          xmin, xmax;
   PetscScalar        sum, tvsum, tvgsum;
   const PetscScalar *x;
@@ -596,7 +630,8 @@ static PetscErrorCode SolutionStatsView(DM da, Vec X, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SolutionErrorNorms(FVCtx *ctx, DM da, PetscReal t, Vec X, PetscReal *nrm1) {
+static PetscErrorCode SolutionErrorNorms(FVCtx *ctx, DM da, PetscReal t, Vec X, PetscReal *nrm1)
+{
   Vec                Y;
   PetscInt           i, Mx, count_slow = 0, count_fast = 0;
   const PetscScalar *ptr_X, *ptr_Y;
@@ -621,7 +656,8 @@ static PetscErrorCode SolutionErrorNorms(FVCtx *ctx, DM da, PetscReal t, Vec X, 
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   char              physname[256] = "advect", final_fname[256] = "solution.m";
   PetscFunctionList physics = 0;
   MPI_Comm          comm;

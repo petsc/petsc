@@ -7,7 +7,8 @@
 #include <../src/vec/vec/impls/dvecimpl.h> /*I "petscvec.h" I*/
 #include <petscblaslapack.h>
 
-PetscErrorCode VecDot_Seq(Vec xin, Vec yin, PetscScalar *z) {
+PetscErrorCode VecDot_Seq(Vec xin, Vec yin, PetscScalar *z)
+{
   const PetscScalar *ya, *xa;
   PetscBLASInt       one = 1, bn = 0;
 
@@ -23,7 +24,8 @@ PetscErrorCode VecDot_Seq(Vec xin, Vec yin, PetscScalar *z) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecTDot_Seq(Vec xin, Vec yin, PetscScalar *z) {
+PetscErrorCode VecTDot_Seq(Vec xin, Vec yin, PetscScalar *z)
+{
   const PetscScalar *ya, *xa;
   PetscBLASInt       one = 1, bn = 0;
 
@@ -38,7 +40,8 @@ PetscErrorCode VecTDot_Seq(Vec xin, Vec yin, PetscScalar *z) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecScale_Seq(Vec xin, PetscScalar alpha) {
+PetscErrorCode VecScale_Seq(Vec xin, PetscScalar alpha)
+{
   PetscBLASInt one = 1, bn;
 
   PetscFunctionBegin;
@@ -55,7 +58,8 @@ PetscErrorCode VecScale_Seq(Vec xin, PetscScalar alpha) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecAXPY_Seq(Vec yin, PetscScalar alpha, Vec xin) {
+PetscErrorCode VecAXPY_Seq(Vec yin, PetscScalar alpha, Vec xin)
+{
   const PetscScalar *xarray;
   PetscScalar       *yarray;
   PetscBLASInt       one = 1, bn;
@@ -74,7 +78,8 @@ PetscErrorCode VecAXPY_Seq(Vec yin, PetscScalar alpha, Vec xin) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecAXPBY_Seq(Vec yin, PetscScalar a, PetscScalar b, Vec xin) {
+PetscErrorCode VecAXPBY_Seq(Vec yin, PetscScalar a, PetscScalar b, Vec xin)
+{
   PetscInt           n = yin->map->n, i;
   const PetscScalar *xx;
   PetscScalar       *yy;
@@ -104,7 +109,8 @@ PetscErrorCode VecAXPBY_Seq(Vec yin, PetscScalar a, PetscScalar b, Vec xin) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecAXPBYPCZ_Seq(Vec zin, PetscScalar alpha, PetscScalar beta, PetscScalar gamma, Vec xin, Vec yin) {
+PetscErrorCode VecAXPBYPCZ_Seq(Vec zin, PetscScalar alpha, PetscScalar beta, PetscScalar gamma, Vec xin, Vec yin)
+{
   PetscInt           n = zin->map->n, i;
   const PetscScalar *yy, *xx;
   PetscScalar       *zz;

@@ -25,7 +25,8 @@
 
 .seealso: `KSPBuildResidual()`
 @*/
-PetscErrorCode KSPGetResidualNorm(KSP ksp, PetscReal *rnorm) {
+PetscErrorCode KSPGetResidualNorm(KSP ksp, PetscReal *rnorm)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscValidRealPointer(rnorm, 2);
@@ -52,7 +53,8 @@ PetscErrorCode KSPGetResidualNorm(KSP ksp, PetscReal *rnorm) {
       During the ith iteration this returns i-1
 .seealso: `KSPBuildResidual()`, `KSPGetResidualNorm()`, `KSPGetTotalIterations()`
 @*/
-PetscErrorCode KSPGetIterationNumber(KSP ksp, PetscInt *its) {
+PetscErrorCode KSPGetIterationNumber(KSP ksp, PetscInt *its)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscValidIntPointer(its, 2);
@@ -79,7 +81,8 @@ PetscErrorCode KSPGetIterationNumber(KSP ksp, PetscInt *its) {
 
 .seealso: `KSPBuildResidual()`, `KSPGetResidualNorm()`, `KSPGetIterationNumber()`
 @*/
-PetscErrorCode KSPGetTotalIterations(KSP ksp, PetscInt *its) {
+PetscErrorCode KSPGetTotalIterations(KSP ksp, PetscInt *its)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscValidIntPointer(its, 2);
@@ -112,7 +115,8 @@ PetscErrorCode KSPGetTotalIterations(KSP ksp, PetscInt *its) {
           `KSPMonitorSingularValue()`, `KSPMonitorSolutionDrawLG()`, `KSPMonitorSolutionDraw()`, `KSPMonitorSolution()`,
           `KSPMonitorErrorDrawLG()`, `KSPMonitorErrorDraw()`, KSPMonitorError()`
 @*/
-PetscErrorCode KSPMonitorResidual(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf) {
+PetscErrorCode KSPMonitorResidual(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
+{
   PetscViewer       viewer = vf->viewer;
   PetscViewerFormat format = vf->format;
   PetscInt          tablevel;
@@ -153,7 +157,8 @@ PetscErrorCode KSPMonitorResidual(KSP ksp, PetscInt n, PetscReal rnorm, PetscVie
 
 .seealso: `KSPMonitorSet()`, `KSPMonitorTrueResidual()`, , `KSPMonitorResidual()`, `KSPMonitorResidualDrawLG()`
 @*/
-PetscErrorCode KSPMonitorResidualDraw(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf) {
+PetscErrorCode KSPMonitorResidualDraw(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
+{
   PetscViewer       viewer = vf->viewer;
   PetscViewerFormat format = vf->format;
   Vec               r;
@@ -193,7 +198,8 @@ PetscErrorCode KSPMonitorResidualDraw(KSP ksp, PetscInt n, PetscReal rnorm, Pets
 
 .seealso: `KSPMonitorSet()`, `KSPMonitorTrueResidual()`, `KSPMonitorResidualDraw()`, `KSPMonitorResidual()`
 @*/
-PetscErrorCode KSPMonitorResidualDrawLG(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf) {
+PetscErrorCode KSPMonitorResidualDrawLG(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
+{
   PetscViewer        viewer = vf->viewer;
   PetscViewerFormat  format = vf->format;
   PetscDrawLG        lg     = vf->lg;
@@ -235,7 +241,8 @@ PetscErrorCode KSPMonitorResidualDrawLG(KSP ksp, PetscInt n, PetscReal rnorm, Pe
 
 .seealso: `KSPMonitorSet()`, `KSPMonitorTrueResidual()`
 @*/
-PetscErrorCode KSPMonitorResidualDrawLGCreate(PetscViewer viewer, PetscViewerFormat format, void *ctx, PetscViewerAndFormat **vf) {
+PetscErrorCode KSPMonitorResidualDrawLGCreate(PetscViewer viewer, PetscViewerFormat format, void *ctx, PetscViewerAndFormat **vf)
+{
   PetscFunctionBegin;
   PetscCall(PetscViewerAndFormatCreate(viewer, format, vf));
   (*vf)->data = ctx;
@@ -250,7 +257,8 @@ PetscErrorCode KSPMonitorResidualDrawLGCreate(PetscViewer viewer, PetscViewerFor
 
   Deprecated: Intentionally has no manual page
 */
-PetscErrorCode KSPMonitorResidualShort(KSP ksp, PetscInt its, PetscReal fnorm, PetscViewerAndFormat *vf) {
+PetscErrorCode KSPMonitorResidualShort(KSP ksp, PetscInt its, PetscReal fnorm, PetscViewerAndFormat *vf)
+{
   PetscViewer       viewer = vf->viewer;
   PetscViewerFormat format = vf->format;
   PetscInt          tablevel;
@@ -271,7 +279,8 @@ PetscErrorCode KSPMonitorResidualShort(KSP ksp, PetscInt its, PetscReal fnorm, P
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPMonitorRange_Private(KSP ksp, PetscInt it, PetscReal *per) {
+PetscErrorCode KSPMonitorRange_Private(KSP ksp, PetscInt it, PetscReal *per)
+{
   Vec                resid;
   const PetscScalar *r;
   PetscReal          rmax, pwork;
@@ -314,7 +323,8 @@ PetscErrorCode KSPMonitorRange_Private(KSP ksp, PetscInt it, PetscReal *per) {
 
 .seealso: `KSPMonitorSet()`, `KSPMonitorResidual()`
 @*/
-PetscErrorCode KSPMonitorResidualRange(KSP ksp, PetscInt it, PetscReal rnorm, PetscViewerAndFormat *vf) {
+PetscErrorCode KSPMonitorResidualRange(KSP ksp, PetscInt it, PetscReal rnorm, PetscViewerAndFormat *vf)
+{
   static PetscReal  prev;
   PetscViewer       viewer = vf->viewer;
   PetscViewerFormat format = vf->format;
@@ -363,7 +373,8 @@ PetscErrorCode KSPMonitorResidualRange(KSP ksp, PetscInt it, PetscReal rnorm, Pe
 
 .seealso: `KSPMonitorSet()`, `KSPMonitorResidual()`, `KSPMonitorTrueResidualMaxNorm()`
 @*/
-PetscErrorCode KSPMonitorTrueResidual(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf) {
+PetscErrorCode KSPMonitorTrueResidual(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
+{
   PetscViewer       viewer = vf->viewer;
   PetscViewerFormat format = vf->format;
   Vec               r;
@@ -414,7 +425,8 @@ PetscErrorCode KSPMonitorTrueResidual(KSP ksp, PetscInt n, PetscReal rnorm, Pets
 
 .seealso: `KSPMonitorSet()`, `KSPMonitorTrueResidual()`
 @*/
-PetscErrorCode KSPMonitorTrueResidualDraw(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf) {
+PetscErrorCode KSPMonitorTrueResidualDraw(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
+{
   PetscViewer       viewer = vf->viewer;
   PetscViewerFormat format = vf->format;
   Vec               r;
@@ -454,7 +466,8 @@ PetscErrorCode KSPMonitorTrueResidualDraw(KSP ksp, PetscInt n, PetscReal rnorm, 
 
 .seealso: `KSPMonitorSet()`, `KSPMonitorTrueResidual()`
 @*/
-PetscErrorCode KSPMonitorTrueResidualDrawLG(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf) {
+PetscErrorCode KSPMonitorTrueResidualDrawLG(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
+{
   PetscViewer        viewer = vf->viewer;
   PetscViewerFormat  format = vf->format;
   PetscDrawLG        lg     = vf->lg;
@@ -507,7 +520,8 @@ PetscErrorCode KSPMonitorTrueResidualDrawLG(KSP ksp, PetscInt n, PetscReal rnorm
 
 .seealso: `KSPMonitorSet()`, `KSPMonitorTrueResidual()`
 @*/
-PetscErrorCode KSPMonitorTrueResidualDrawLGCreate(PetscViewer viewer, PetscViewerFormat format, void *ctx, PetscViewerAndFormat **vf) {
+PetscErrorCode KSPMonitorTrueResidualDrawLGCreate(PetscViewer viewer, PetscViewerFormat format, void *ctx, PetscViewerAndFormat **vf)
+{
   const char *names[] = {"preconditioned", "true"};
 
   PetscFunctionBegin;
@@ -541,7 +555,8 @@ PetscErrorCode KSPMonitorTrueResidualDrawLGCreate(PetscViewer viewer, PetscViewe
 
 .seealso: `KSPMonitorSet()`, `KSPMonitorResidual()`, `KSPMonitorTrueResidualMaxNorm()`
 @*/
-PetscErrorCode KSPMonitorTrueResidualMax(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf) {
+PetscErrorCode KSPMonitorTrueResidualMax(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
+{
   PetscViewer       viewer = vf->viewer;
   PetscViewerFormat format = vf->format;
   Vec               r;
@@ -592,7 +607,8 @@ PetscErrorCode KSPMonitorTrueResidualMax(KSP ksp, PetscInt n, PetscReal rnorm, P
 
 .seealso: `KSPMonitorSet()`, `KSPMonitorResidual()`, `KSPMonitorTrueResidualMaxNorm()`
 @*/
-PetscErrorCode KSPMonitorError(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf) {
+PetscErrorCode KSPMonitorError(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
+{
   PetscViewer       viewer = vf->viewer;
   PetscViewerFormat format = vf->format;
   DM                dm;
@@ -654,7 +670,8 @@ PetscErrorCode KSPMonitorError(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewer
 
 .seealso: `KSPMonitorSet()`, `KSPMonitorTrueResidual()`
 @*/
-PetscErrorCode KSPMonitorErrorDraw(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf) {
+PetscErrorCode KSPMonitorErrorDraw(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
+{
   PetscViewer       viewer = vf->viewer;
   PetscViewerFormat format = vf->format;
   DM                dm;
@@ -699,7 +716,8 @@ PetscErrorCode KSPMonitorErrorDraw(KSP ksp, PetscInt n, PetscReal rnorm, PetscVi
 
 .seealso: `KSPMonitorSet()`, `KSPMonitorTrueResidual()`
 @*/
-PetscErrorCode KSPMonitorErrorDrawLG(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf) {
+PetscErrorCode KSPMonitorErrorDrawLG(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
+{
   PetscViewer        viewer = vf->viewer;
   PetscViewerFormat  format = vf->format;
   PetscDrawLG        lg     = vf->lg;
@@ -760,7 +778,8 @@ PetscErrorCode KSPMonitorErrorDrawLG(KSP ksp, PetscInt n, PetscReal rnorm, Petsc
 
 .seealso: `KSPMonitorSet()`, `KSPMonitorTrueResidual()`
 @*/
-PetscErrorCode KSPMonitorErrorDrawLGCreate(PetscViewer viewer, PetscViewerFormat format, void *ctx, PetscViewerAndFormat **vf) {
+PetscErrorCode KSPMonitorErrorDrawLGCreate(PetscViewer viewer, PetscViewerFormat format, void *ctx, PetscViewerAndFormat **vf)
+{
   KSP      ksp = (KSP)ctx;
   DM       dm;
   char   **names;
@@ -812,7 +831,8 @@ PetscErrorCode KSPMonitorErrorDrawLGCreate(PetscViewer viewer, PetscViewerFormat
 
 .seealso: `KSPMonitorSet()`, `KSPMonitorTrueResidual()`
 @*/
-PetscErrorCode KSPMonitorSolution(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf) {
+PetscErrorCode KSPMonitorSolution(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
+{
   PetscViewer       viewer = vf->viewer;
   PetscViewerFormat format = vf->format;
   Vec               x;
@@ -857,7 +877,8 @@ PetscErrorCode KSPMonitorSolution(KSP ksp, PetscInt n, PetscReal rnorm, PetscVie
 
 .seealso: `KSPMonitorSet()`, `KSPMonitorTrueResidual()`
 @*/
-PetscErrorCode KSPMonitorSolutionDraw(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf) {
+PetscErrorCode KSPMonitorSolutionDraw(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
+{
   PetscViewer       viewer = vf->viewer;
   PetscViewerFormat format = vf->format;
   Vec               x;
@@ -896,7 +917,8 @@ PetscErrorCode KSPMonitorSolutionDraw(KSP ksp, PetscInt n, PetscReal rnorm, Pets
 
 .seealso: `KSPMonitorSet()`, `KSPMonitorTrueResidual()`
 @*/
-PetscErrorCode KSPMonitorSolutionDrawLG(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf) {
+PetscErrorCode KSPMonitorSolutionDrawLG(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
+{
   PetscViewer        viewer = vf->viewer;
   PetscViewerFormat  format = vf->format;
   PetscDrawLG        lg     = vf->lg;
@@ -945,7 +967,8 @@ PetscErrorCode KSPMonitorSolutionDrawLG(KSP ksp, PetscInt n, PetscReal rnorm, Pe
 
 .seealso: `KSPMonitorSet()`, `KSPMonitorTrueResidual()`
 @*/
-PetscErrorCode KSPMonitorSolutionDrawLGCreate(PetscViewer viewer, PetscViewerFormat format, void *ctx, PetscViewerAndFormat **vf) {
+PetscErrorCode KSPMonitorSolutionDrawLGCreate(PetscViewer viewer, PetscViewerFormat format, void *ctx, PetscViewerAndFormat **vf)
+{
   PetscFunctionBegin;
   PetscCall(PetscViewerAndFormatCreate(viewer, format, vf));
   (*vf)->data = ctx;
@@ -979,7 +1002,8 @@ PetscErrorCode KSPMonitorSolutionDrawLGCreate(PetscViewer viewer, PetscViewerFor
 
 .seealso: `KSPComputeExtremeSingularValues()`, `KSPMonitorSingularValueCreate()`
 @*/
-PetscErrorCode KSPMonitorSingularValue(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf) {
+PetscErrorCode KSPMonitorSingularValue(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
+{
   PetscViewer       viewer = vf->viewer;
   PetscViewerFormat format = vf->format;
   PetscReal         emin, emax;
@@ -1022,7 +1046,8 @@ PetscErrorCode KSPMonitorSingularValue(KSP ksp, PetscInt n, PetscReal rnorm, Pet
 
 .seealso: `KSPMonitorSet()`, `KSPMonitorSingularValue()`
 @*/
-PetscErrorCode KSPMonitorSingularValueCreate(PetscViewer viewer, PetscViewerFormat format, void *ctx, PetscViewerAndFormat **vf) {
+PetscErrorCode KSPMonitorSingularValueCreate(PetscViewer viewer, PetscViewerFormat format, void *ctx, PetscViewerAndFormat **vf)
+{
   KSP ksp = (KSP)ctx;
 
   PetscFunctionBegin;
@@ -1058,7 +1083,8 @@ PetscErrorCode KSPMonitorSingularValueCreate(PetscViewer viewer, PetscViewerForm
 
 .seealso: `KSPMonitorDynamicToleranceDestroy()`
 @*/
-PetscErrorCode KSPMonitorDynamicTolerance(KSP ksp, PetscInt its, PetscReal fnorm, void *dummy) {
+PetscErrorCode KSPMonitorDynamicTolerance(KSP ksp, PetscInt its, PetscReal fnorm, void *dummy)
+{
   PC            pc;
   PetscReal     outer_rtol, outer_abstol, outer_dtol, inner_rtol;
   PetscInt      outer_maxits, nksp, first, i;
@@ -1114,7 +1140,8 @@ PetscErrorCode KSPMonitorDynamicTolerance(KSP ksp, PetscInt its, PetscReal fnorm
 /*
   Destroy the dummy context used in KSPMonitorDynamicTolerance()
 */
-PetscErrorCode KSPMonitorDynamicToleranceDestroy(void **dummy) {
+PetscErrorCode KSPMonitorDynamicToleranceDestroy(void **dummy)
+{
   PetscFunctionBegin;
   PetscCall(PetscFree(*dummy));
   PetscFunctionReturn(0);
@@ -1146,7 +1173,8 @@ PetscErrorCode KSPMonitorDynamicToleranceDestroy(void **dummy) {
 
 .seealso: `KSPSetConvergenceTest()`, `KSPSetTolerances()`, `KSPSetNormType()`
 @*/
-PetscErrorCode KSPConvergedSkip(KSP ksp, PetscInt n, PetscReal rnorm, KSPConvergedReason *reason, void *dummy) {
+PetscErrorCode KSPConvergedSkip(KSP ksp, PetscInt n, PetscReal rnorm, KSPConvergedReason *reason, void *dummy)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscValidPointer(reason, 4);
@@ -1168,7 +1196,8 @@ PetscErrorCode KSPConvergedSkip(KSP ksp, PetscInt n, PetscReal rnorm, KSPConverg
 .seealso: `KSPConvergedDefault()`, `KSPConvergedDefaultDestroy()`, `KSPSetConvergenceTest()`, `KSPSetTolerances()`,
           `KSPConvergedSkip()`, `KSPConvergedReason`, `KSPGetConvergedReason()`, `KSPConvergedDefaultSetUIRNorm()`, `KSPConvergedDefaultSetUMIRNorm()`, `KSPConvergedDefaultSetConvergedMaxits()`
 @*/
-PetscErrorCode KSPConvergedDefaultCreate(void **ctx) {
+PetscErrorCode KSPConvergedDefaultCreate(void **ctx)
+{
   KSPConvergedDefaultCtx *cctx;
 
   PetscFunctionBegin;
@@ -1204,7 +1233,8 @@ PetscErrorCode KSPConvergedDefaultCreate(void **ctx) {
 
 .seealso: `KSPSetConvergenceTest()`, `KSPSetTolerances()`, `KSPConvergedSkip()`, `KSPConvergedReason`, `KSPGetConvergedReason()`, `KSPConvergedDefaultSetUMIRNorm()`, `KSPConvergedDefaultSetConvergedMaxits()`
 @*/
-PetscErrorCode KSPConvergedDefaultSetUIRNorm(KSP ksp) {
+PetscErrorCode KSPConvergedDefaultSetUIRNorm(KSP ksp)
+{
   KSPConvergedDefaultCtx *ctx = (KSPConvergedDefaultCtx *)ksp->cnvP;
 
   PetscFunctionBegin;
@@ -1237,7 +1267,8 @@ PetscErrorCode KSPConvergedDefaultSetUIRNorm(KSP ksp) {
 
 .seealso: `KSPSetConvergenceTest()`, `KSPSetTolerances()`, `KSPConvergedSkip()`, `KSPConvergedReason`, `KSPGetConvergedReason()`, `KSPConvergedDefaultSetUIRNorm()`, `KSPConvergedDefaultSetConvergedMaxits()`
 @*/
-PetscErrorCode KSPConvergedDefaultSetUMIRNorm(KSP ksp) {
+PetscErrorCode KSPConvergedDefaultSetUMIRNorm(KSP ksp)
+{
   KSPConvergedDefaultCtx *ctx = (KSPConvergedDefaultCtx *)ksp->cnvP;
 
   PetscFunctionBegin;
@@ -1269,7 +1300,8 @@ PetscErrorCode KSPConvergedDefaultSetUMIRNorm(KSP ksp) {
 
 .seealso: `KSPSetConvergenceTest()`, `KSPSetTolerances()`, `KSPConvergedSkip()`, `KSPConvergedReason`, `KSPGetConvergedReason()`, `KSPConvergedDefaultSetUMIRNorm()`, `KSPConvergedDefaultSetUIRNorm()`
 @*/
-PetscErrorCode KSPConvergedDefaultSetConvergedMaxits(KSP ksp, PetscBool flg) {
+PetscErrorCode KSPConvergedDefaultSetConvergedMaxits(KSP ksp, PetscBool flg)
+{
   KSPConvergedDefaultCtx *ctx = (KSPConvergedDefaultCtx *)ksp->cnvP;
 
   PetscFunctionBegin;
@@ -1325,7 +1357,8 @@ PetscErrorCode KSPConvergedDefaultSetConvergedMaxits(KSP ksp, PetscBool flg) {
 .seealso: `KSPSetConvergenceTest()`, `KSPSetTolerances()`, `KSPConvergedSkip()`, `KSPConvergedReason`, `KSPGetConvergedReason()`,
           `KSPConvergedDefaultSetUIRNorm()`, `KSPConvergedDefaultSetUMIRNorm()`, `KSPConvergedDefaultSetConvergedMaxits()`, `KSPConvergedDefaultCreate()`, `KSPConvergedDefaultDestroy()`
 @*/
-PetscErrorCode KSPConvergedDefault(KSP ksp, PetscInt n, PetscReal rnorm, KSPConvergedReason *reason, void *ctx) {
+PetscErrorCode KSPConvergedDefault(KSP ksp, PetscInt n, PetscReal rnorm, KSPConvergedReason *reason, void *ctx)
+{
   KSPConvergedDefaultCtx *cctx = (KSPConvergedDefaultCtx *)ctx;
   KSPNormType             normtype;
 
@@ -1428,7 +1461,8 @@ PetscErrorCode KSPConvergedDefault(KSP ksp, PetscInt n, PetscReal rnorm, KSPConv
 .seealso: `KSPConvergedDefault()`, `KSPConvergedDefaultCreate()`, `KSPSetConvergenceTest()`, `KSPSetTolerances()`, `KSPConvergedSkip()`,
           `KSPConvergedReason`, `KSPGetConvergedReason()`, `KSPConvergedDefaultSetUIRNorm()`, `KSPConvergedDefaultSetUMIRNorm()`
 @*/
-PetscErrorCode KSPConvergedDefaultDestroy(void *ctx) {
+PetscErrorCode KSPConvergedDefaultDestroy(void *ctx)
+{
   KSPConvergedDefaultCtx *cctx = (KSPConvergedDefaultCtx *)ctx;
 
   PetscFunctionBegin;
@@ -1455,7 +1489,8 @@ PetscErrorCode KSPConvergedDefaultDestroy(void *ctx) {
 
 .seealso: `KSPGetSolution()`, `KSPBuildResidualDefault()`
 */
-PetscErrorCode KSPBuildSolutionDefault(KSP ksp, Vec v, Vec *V) {
+PetscErrorCode KSPBuildSolutionDefault(KSP ksp, Vec v, Vec *V)
+{
   PetscFunctionBegin;
   if (ksp->pc_side == PC_RIGHT) {
     if (ksp->pc) {
@@ -1510,7 +1545,8 @@ PetscErrorCode KSPBuildSolutionDefault(KSP ksp, Vec v, Vec *V) {
 
 .seealso: `KSPBuildSolutionDefault()`
 */
-PetscErrorCode KSPBuildResidualDefault(KSP ksp, Vec t, Vec v, Vec *V) {
+PetscErrorCode KSPBuildResidualDefault(KSP ksp, Vec t, Vec v, Vec *V)
+{
   Mat Amat, Pmat;
 
   PetscFunctionBegin;
@@ -1550,7 +1586,8 @@ PetscErrorCode KSPBuildResidualDefault(KSP ksp, Vec t, Vec v, Vec *V) {
 .seealso: `MatCreateVecs()`, `VecDestroyVecs()`
 
 @*/
-PetscErrorCode KSPCreateVecs(KSP ksp, PetscInt rightn, Vec **right, PetscInt leftn, Vec **left) {
+PetscErrorCode KSPCreateVecs(KSP ksp, PetscInt rightn, Vec **right, PetscInt leftn, Vec **left)
+{
   Vec       vecr = NULL, vecl = NULL;
   PetscBool matset, pmatset, isshell, preferdm = PETSC_FALSE;
   Mat       mat = NULL;
@@ -1639,7 +1676,8 @@ PetscErrorCode KSPCreateVecs(KSP ksp, PetscInt rightn, Vec **right, PetscInt lef
   Developers Note: This is PETSC_EXTERN because it may be used by user written plugin KSP implementations
 
 @*/
-PetscErrorCode KSPSetWorkVecs(KSP ksp, PetscInt nw) {
+PetscErrorCode KSPSetWorkVecs(KSP ksp, PetscInt nw)
+{
   PetscFunctionBegin;
   PetscCall(VecDestroyVecs(ksp->nwork, &ksp->work));
   ksp->nwork = nw;
@@ -1657,7 +1695,8 @@ PetscErrorCode KSPSetWorkVecs(KSP ksp, PetscInt nw) {
    Developers Note: This is PETSC_EXTERN because it may be used by user written plugin KSP implementations
 
 */
-PetscErrorCode KSPDestroyDefault(KSP ksp) {
+PetscErrorCode KSPDestroyDefault(KSP ksp)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscCall(PetscFree(ksp->data));
@@ -1703,7 +1742,8 @@ $  KSP_DIVERGED_BREAKDOWN_BICG (Initial residual is orthogonal to preconditioned
 .seealso: `KSPSetConvergenceTest()`, `KSPConvergedDefault()`, `KSPSetTolerances()`, `KSPConvergedReason`,
           `KSPConvergedReasonView()`
 @*/
-PetscErrorCode KSPGetConvergedReason(KSP ksp, KSPConvergedReason *reason) {
+PetscErrorCode KSPGetConvergedReason(KSP ksp, KSPConvergedReason *reason)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscValidPointer(reason, 2);
@@ -1726,7 +1766,8 @@ PetscErrorCode KSPGetConvergedReason(KSP ksp, KSPConvergedReason *reason) {
 
 .seealso: `KSPGetConvergedReason()`
 @*/
-PetscErrorCode KSPGetConvergedReasonString(KSP ksp, const char **strreason) {
+PetscErrorCode KSPGetConvergedReasonString(KSP ksp, const char **strreason)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscValidPointer(strreason, 2);
@@ -1757,7 +1798,8 @@ PetscErrorCode KSPGetConvergedReasonString(KSP ksp, const char **strreason) {
 
 .seealso: `KSPGetDM()`, `KSPSetDMActive()`, `KSPSetComputeOperators()`, `KSPSetComputeRHS()`, `KSPSetComputeInitialGuess()`, `DMKSPSetComputeOperators()`, `DMKSPSetComputeRHS()`, `DMKSPSetComputeInitialGuess()`
 @*/
-PetscErrorCode KSPSetDM(KSP ksp, DM dm) {
+PetscErrorCode KSPSetDM(KSP ksp, DM dm)
+{
   PC pc;
 
   PetscFunctionBegin;
@@ -1797,7 +1839,8 @@ PetscErrorCode KSPSetDM(KSP ksp, DM dm) {
 
 .seealso: `KSPGetDM()`, `KSPSetDM()`, `SNESSetDM()`, `KSPSetComputeOperators()`, `KSPSetComputeRHS()`, `KSPSetComputeInitialGuess()`
 @*/
-PetscErrorCode KSPSetDMActive(KSP ksp, PetscBool flg) {
+PetscErrorCode KSPSetDMActive(KSP ksp, PetscBool flg)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscValidLogicalCollectiveBool(ksp, flg, 2);
@@ -1820,7 +1863,8 @@ PetscErrorCode KSPSetDMActive(KSP ksp, PetscBool flg) {
 
 .seealso: `KSPSetDM()`, `KSPSetDMActive()`
 @*/
-PetscErrorCode KSPGetDM(KSP ksp, DM *dm) {
+PetscErrorCode KSPGetDM(KSP ksp, DM *dm)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   if (!ksp->dm) {
@@ -1848,7 +1892,8 @@ PetscErrorCode KSPGetDM(KSP ksp, DM *dm) {
 
 .seealso: `KSPGetApplicationContext()`
 @*/
-PetscErrorCode KSPSetApplicationContext(KSP ksp, void *usrP) {
+PetscErrorCode KSPSetApplicationContext(KSP ksp, void *usrP)
+{
   PC pc;
 
   PetscFunctionBegin;
@@ -1878,7 +1923,8 @@ PetscErrorCode KSPSetApplicationContext(KSP ksp, void *usrP) {
 
 .seealso: `KSPSetApplicationContext()`
 @*/
-PetscErrorCode KSPGetApplicationContext(KSP ksp, void *usrP) {
+PetscErrorCode KSPGetApplicationContext(KSP ksp, void *usrP)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   *(void **)usrP = ksp->user;
@@ -1906,7 +1952,8 @@ PetscErrorCode KSPGetApplicationContext(KSP ksp, void *usrP) {
 
 .seealso: `KSPCreate()`, `KSPSetType()`, `KSP`, `KSPCheckNorm()`, `KSPCheckDot()`
 @*/
-PetscErrorCode KSPCheckSolve(KSP ksp, PC pc, Vec vec) {
+PetscErrorCode KSPCheckSolve(KSP ksp, PC pc, Vec vec)
+{
   PCFailedReason pcreason;
   PC             subpc;
 

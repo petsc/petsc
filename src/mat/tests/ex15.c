@@ -3,7 +3,8 @@ static char help[] = "Tests MatNorm(), MatLUFactor(), MatSolve() and MatSolveAdd
 
 #include <petscmat.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat           C;
   PetscInt      i, j, m = 3, n = 3, Ii, J;
   PetscBool     flg;

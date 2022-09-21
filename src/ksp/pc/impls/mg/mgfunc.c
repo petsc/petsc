@@ -18,7 +18,8 @@
 
 .seealso: `PCMG`, `PCMGSetResidual()`, `PCMGSetMatResidual()`
 @*/
-PetscErrorCode PCMGResidualDefault(Mat mat, Vec b, Vec x, Vec r) {
+PetscErrorCode PCMGResidualDefault(Mat mat, Vec b, Vec x, Vec r)
+{
   PetscFunctionBegin;
   PetscCall(MatResidual(mat, b, x, r));
   PetscFunctionReturn(0);
@@ -41,7 +42,8 @@ PetscErrorCode PCMGResidualDefault(Mat mat, Vec b, Vec x, Vec r) {
 
 .seealso: `PCMG`, `PCMGSetResidualTranspose()`, `PCMGMatResidualTransposeDefault()`
 @*/
-PetscErrorCode PCMGResidualTransposeDefault(Mat mat, Vec b, Vec x, Vec r) {
+PetscErrorCode PCMGResidualTransposeDefault(Mat mat, Vec b, Vec x, Vec r)
+{
   PetscFunctionBegin;
   PetscCall(MatMultTranspose(mat, x, r));
   PetscCall(VecAYPX(r, -1.0, b));
@@ -65,7 +67,8 @@ PetscErrorCode PCMGResidualTransposeDefault(Mat mat, Vec b, Vec x, Vec r) {
 
 .seealso: `PCMG`, `PCMGSetMatResidual()`, `PCMGResidualDefault()`
 @*/
-PetscErrorCode PCMGMatResidualDefault(Mat mat, Mat b, Mat x, Mat r) {
+PetscErrorCode PCMGMatResidualDefault(Mat mat, Mat b, Mat x, Mat r)
+{
   PetscFunctionBegin;
   PetscCall(MatMatMult(mat, x, MAT_REUSE_MATRIX, PETSC_DEFAULT, &r));
   PetscCall(MatAYPX(r, -1.0, b, UNKNOWN_NONZERO_PATTERN));
@@ -89,7 +92,8 @@ PetscErrorCode PCMGMatResidualDefault(Mat mat, Mat b, Mat x, Mat r) {
 
 .seealso: `PCMG`, `PCMGSetMatResidualTranspose()`
 @*/
-PetscErrorCode PCMGMatResidualTransposeDefault(Mat mat, Mat b, Mat x, Mat r) {
+PetscErrorCode PCMGMatResidualTransposeDefault(Mat mat, Mat b, Mat x, Mat r)
+{
   PetscFunctionBegin;
   PetscCall(MatTransposeMatMult(mat, x, MAT_REUSE_MATRIX, PETSC_DEFAULT, &r));
   PetscCall(MatAYPX(r, -1.0, b, UNKNOWN_NONZERO_PATTERN));
@@ -110,7 +114,8 @@ PetscErrorCode PCMGMatResidualTransposeDefault(Mat mat, Mat b, Mat x, Mat r) {
 
 .seealso: `PCMG`, `PCMGGetSmootherUp()`, `PCMGGetSmootherDown()`, `PCMGGetSmoother()`
 @*/
-PetscErrorCode PCMGGetCoarseSolve(PC pc, KSP *ksp) {
+PetscErrorCode PCMGGetCoarseSolve(PC pc, KSP *ksp)
+{
   PC_MG         *mg       = (PC_MG *)pc->data;
   PC_MG_Levels **mglevels = mg->levels;
 
@@ -136,7 +141,8 @@ PetscErrorCode PCMGGetCoarseSolve(PC pc, KSP *ksp) {
 
 .seealso: `PCMG`, `PCMGResidualDefault()`
 @*/
-PetscErrorCode PCMGSetResidual(PC pc, PetscInt l, PetscErrorCode (*residual)(Mat, Vec, Vec, Vec), Mat mat) {
+PetscErrorCode PCMGSetResidual(PC pc, PetscInt l, PetscErrorCode (*residual)(Mat, Vec, Vec, Vec), Mat mat)
+{
   PC_MG         *mg       = (PC_MG *)pc->data;
   PC_MG_Levels **mglevels = mg->levels;
 
@@ -169,7 +175,8 @@ PetscErrorCode PCMGSetResidual(PC pc, PetscInt l, PetscErrorCode (*residual)(Mat
 
 .seealso: `PCMG`, `PCMGResidualTransposeDefault()`
 @*/
-PetscErrorCode PCMGSetResidualTranspose(PC pc, PetscInt l, PetscErrorCode (*residualt)(Mat, Vec, Vec, Vec), Mat mat) {
+PetscErrorCode PCMGSetResidualTranspose(PC pc, PetscInt l, PetscErrorCode (*residualt)(Mat, Vec, Vec, Vec), Mat mat)
+{
   PC_MG         *mg       = (PC_MG *)pc->data;
   PC_MG_Levels **mglevels = mg->levels;
 
@@ -207,7 +214,8 @@ PetscErrorCode PCMGSetResidualTranspose(PC pc, PetscInt l, PetscErrorCode (*resi
 
 .seealso: `PCMG`, `PCMGSetRestriction()`
 @*/
-PetscErrorCode PCMGSetInterpolation(PC pc, PetscInt l, Mat mat) {
+PetscErrorCode PCMGSetInterpolation(PC pc, PetscInt l, Mat mat)
+{
   PC_MG         *mg       = (PC_MG *)pc->data;
   PC_MG_Levels **mglevels = mg->levels;
 
@@ -239,7 +247,8 @@ PetscErrorCode PCMGSetInterpolation(PC pc, PetscInt l, Mat mat) {
 
 .seealso: `PCMG`, `PCMGSetGalerkin()`, `PCMGSetRestriction()`, `PCMGSetInterpolation()`
 @*/
-PetscErrorCode PCMGSetOperators(PC pc, PetscInt l, Mat Amat, Mat Pmat) {
+PetscErrorCode PCMGSetOperators(PC pc, PetscInt l, Mat Amat, Mat Pmat)
+{
   PC_MG         *mg       = (PC_MG *)pc->data;
   PC_MG_Levels **mglevels = mg->levels;
 
@@ -269,7 +278,8 @@ PetscErrorCode PCMGSetOperators(PC pc, PetscInt l, Mat Amat, Mat Pmat) {
 
 .seealso: `PCMG`, `PCMGGetRestriction()`, `PCMGSetInterpolation()`, `PCMGGetRScale()`
 @*/
-PetscErrorCode PCMGGetInterpolation(PC pc, PetscInt l, Mat *mat) {
+PetscErrorCode PCMGGetInterpolation(PC pc, PetscInt l, Mat *mat)
+{
   PC_MG         *mg       = (PC_MG *)pc->data;
   PC_MG_Levels **mglevels = mg->levels;
 
@@ -308,7 +318,8 @@ PetscErrorCode PCMGGetInterpolation(PC pc, PetscInt l, Mat *mat) {
 
 .seealso: `PCMG`, `PCMGSetInterpolation()`
 @*/
-PetscErrorCode PCMGSetRestriction(PC pc, PetscInt l, Mat mat) {
+PetscErrorCode PCMGSetRestriction(PC pc, PetscInt l, Mat mat)
+{
   PC_MG         *mg       = (PC_MG *)pc->data;
   PC_MG_Levels **mglevels = mg->levels;
 
@@ -341,7 +352,8 @@ PetscErrorCode PCMGSetRestriction(PC pc, PetscInt l, Mat mat) {
 
 .seealso: `PCMG`, `PCMGGetInterpolation()`, `PCMGSetRestriction()`, `PCMGGetRScale()`, `PCMGGetInjection()`
 @*/
-PetscErrorCode PCMGGetRestriction(PC pc, PetscInt l, Mat *mat) {
+PetscErrorCode PCMGGetRestriction(PC pc, PetscInt l, Mat *mat)
+{
   PC_MG         *mg       = (PC_MG *)pc->data;
   PC_MG_Levels **mglevels = mg->levels;
 
@@ -373,7 +385,8 @@ PetscErrorCode PCMGGetRestriction(PC pc, PetscInt l, Mat *mat) {
 
 .seealso: `PCMG`, `PCMGSetInterpolation()`, `PCMGSetRestriction()`, `PCMGGetRScale()`, `PCMGSetInjection()`
 @*/
-PetscErrorCode PCMGSetRScale(PC pc, PetscInt l, Vec rscale) {
+PetscErrorCode PCMGSetRScale(PC pc, PetscInt l, Vec rscale)
+{
   PC_MG         *mg       = (PC_MG *)pc->data;
   PC_MG_Levels **mglevels = mg->levels;
 
@@ -406,7 +419,8 @@ PetscErrorCode PCMGSetRScale(PC pc, PetscInt l, Vec rscale) {
 
 .seealso: `PCMG`, `PCMGSetInterpolation()`, `PCMGGetRestriction()`, `PCMGGetInjection()`
 @*/
-PetscErrorCode PCMGGetRScale(PC pc, PetscInt l, Vec *rscale) {
+PetscErrorCode PCMGGetRScale(PC pc, PetscInt l, Vec *rscale)
+{
   PC_MG         *mg       = (PC_MG *)pc->data;
   PC_MG_Levels **mglevels = mg->levels;
 
@@ -453,7 +467,8 @@ PetscErrorCode PCMGGetRScale(PC pc, PetscInt l, Vec *rscale) {
 
 .seealso: `PCMG`, `PCMGSetRestriction()`
 @*/
-PetscErrorCode PCMGSetInjection(PC pc, PetscInt l, Mat mat) {
+PetscErrorCode PCMGSetInjection(PC pc, PetscInt l, Mat mat)
+{
   PC_MG         *mg       = (PC_MG *)pc->data;
   PC_MG_Levels **mglevels = mg->levels;
 
@@ -486,7 +501,8 @@ PetscErrorCode PCMGSetInjection(PC pc, PetscInt l, Mat mat) {
 
 .seealso: `PCMG`, `PCMGSetInjection()`, `PCMGetGetRestriction()`
 @*/
-PetscErrorCode PCMGGetInjection(PC pc, PetscInt l, Mat *mat) {
+PetscErrorCode PCMGGetInjection(PC pc, PetscInt l, Mat *mat)
+{
   PC_MG         *mg       = (PC_MG *)pc->data;
   PC_MG_Levels **mglevels = mg->levels;
 
@@ -523,7 +539,8 @@ PetscErrorCode PCMGGetInjection(PC pc, PetscInt l, Mat *mat) {
 
 .seealso: PCMG`, ``PCMGGetSmootherUp()`, `PCMGGetSmootherDown()`, `PCMGGetCoarseSolve()`
 @*/
-PetscErrorCode PCMGGetSmoother(PC pc, PetscInt l, KSP *ksp) {
+PetscErrorCode PCMGGetSmoother(PC pc, PetscInt l, KSP *ksp)
+{
   PC_MG         *mg       = (PC_MG *)pc->data;
   PC_MG_Levels **mglevels = mg->levels;
 
@@ -553,7 +570,8 @@ PetscErrorCode PCMGGetSmoother(PC pc, PetscInt l, KSP *ksp) {
 
 .seealso: `PCMG`, `PCMGGetSmootherUp()`, `PCMGGetSmootherDown()`
 @*/
-PetscErrorCode PCMGGetSmootherUp(PC pc, PetscInt l, KSP *ksp) {
+PetscErrorCode PCMGGetSmootherUp(PC pc, PetscInt l, KSP *ksp)
+{
   PC_MG         *mg       = (PC_MG *)pc->data;
   PC_MG_Levels **mglevels = mg->levels;
   const char    *prefix;
@@ -619,7 +637,8 @@ PetscErrorCode PCMGGetSmootherUp(PC pc, PetscInt l, KSP *ksp) {
 
 .seealso: `PCMG`, `PCMGGetSmootherUp()`, `PCMGGetSmoother()`
 @*/
-PetscErrorCode PCMGGetSmootherDown(PC pc, PetscInt l, KSP *ksp) {
+PetscErrorCode PCMGGetSmootherDown(PC pc, PetscInt l, KSP *ksp)
+{
   PC_MG         *mg       = (PC_MG *)pc->data;
   PC_MG_Levels **mglevels = mg->levels;
 
@@ -645,7 +664,8 @@ PetscErrorCode PCMGGetSmootherDown(PC pc, PetscInt l, KSP *ksp) {
 
 .seealso: `PCMG`, PCMGCycleType`, `PCMGSetCycleType()`
 @*/
-PetscErrorCode PCMGSetCycleTypeOnLevel(PC pc, PetscInt l, PCMGCycleType c) {
+PetscErrorCode PCMGSetCycleTypeOnLevel(PC pc, PetscInt l, PCMGCycleType c)
+{
   PC_MG         *mg       = (PC_MG *)pc->data;
   PC_MG_Levels **mglevels = mg->levels;
 
@@ -675,7 +695,8 @@ PetscErrorCode PCMGSetCycleTypeOnLevel(PC pc, PetscInt l, PCMGCycleType c) {
 
 .seealso: `PCMG`, `PCMGSetX()`, `PCMGSetR()`
 @*/
-PetscErrorCode PCMGSetRhs(PC pc, PetscInt l, Vec c) {
+PetscErrorCode PCMGSetRhs(PC pc, PetscInt l, Vec c)
+{
   PC_MG         *mg       = (PC_MG *)pc->data;
   PC_MG_Levels **mglevels = mg->levels;
 
@@ -707,7 +728,8 @@ PetscErrorCode PCMGSetRhs(PC pc, PetscInt l, Vec c) {
 
 .seealso: `PCMG`, `PCMGSetRhs()`, `PCMGSetR()`
 @*/
-PetscErrorCode PCMGSetX(PC pc, PetscInt l, Vec c) {
+PetscErrorCode PCMGSetX(PC pc, PetscInt l, Vec c)
+{
   PC_MG         *mg       = (PC_MG *)pc->data;
   PC_MG_Levels **mglevels = mg->levels;
 
@@ -739,7 +761,8 @@ PetscErrorCode PCMGSetX(PC pc, PetscInt l, Vec c) {
 
 .seealso: `PCMG`, `PCMGSetRhs()`, `PCMGSetX()`
 @*/
-PetscErrorCode PCMGSetR(PC pc, PetscInt l, Vec c) {
+PetscErrorCode PCMGSetR(PC pc, PetscInt l, Vec c)
+{
   PC_MG         *mg       = (PC_MG *)pc->data;
   PC_MG_Levels **mglevels = mg->levels;
 

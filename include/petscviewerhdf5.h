@@ -5,22 +5,23 @@
 #include <petscviewer.h>
 
 #if defined(PETSC_HAVE_HDF5)
-#include <hdf5.h>
-#if !defined(H5_VERSION_GE)
-/* H5_VERSION_GE was introduced in HDF5 1.8.7, we support >= 1.8.0 */
-/* So beware this will automatically 0 for HDF5 1.8.0 - 1.8.6 */
-#define H5_VERSION_GE(a, b, c) 0
-#endif
+  #include <hdf5.h>
+  #if !defined(H5_VERSION_GE)
+    /* H5_VERSION_GE was introduced in HDF5 1.8.7, we support >= 1.8.0 */
+    /* So beware this will automatically 0 for HDF5 1.8.0 - 1.8.6 */
+    #define H5_VERSION_GE(a, b, c) 0
+  #endif
 
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5GetFileId(PetscViewer, hid_t *);
 
-/* On 32 bit systems HDF5 is limited by size of integer, because hsize_t is defined as size_t */
-#define PETSC_HDF5_INT_MAX (~(hsize_t)0)
+  /* On 32 bit systems HDF5 is limited by size of integer, because hsize_t is defined as size_t */
+  #define PETSC_HDF5_INT_MAX (~(hsize_t)0)
 
-/* As per https://portal.hdfgroup.org/display/HDF5/Chunking+in+HDF5, max. chunk size is 4GB */
-#define PETSC_HDF5_MAX_CHUNKSIZE 2147483647
+  /* As per https://portal.hdfgroup.org/display/HDF5/Chunking+in+HDF5, max. chunk size is 4GB */
+  #define PETSC_HDF5_MAX_CHUNKSIZE 2147483647
 
-static inline PetscErrorCode PetscViewerHDF5PathIsRelative(const char path[], PetscBool emptyIsRelative, PetscBool *has) {
+static inline PetscErrorCode PetscViewerHDF5PathIsRelative(const char path[], PetscBool emptyIsRelative, PetscBool *has)
+{
   size_t len;
 
   PetscFunctionBegin;
@@ -30,12 +31,13 @@ static inline PetscErrorCode PetscViewerHDF5PathIsRelative(const char path[], Pe
   PetscFunctionReturn(0);
 }
 
-static inline PetscErrorCode PetscHDF5IntCast(PetscInt a, hsize_t *b) {
+static inline PetscErrorCode PetscHDF5IntCast(PetscInt a, hsize_t *b)
+{
   PetscFunctionBegin;
   PetscCheck(a >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot convert negative size");
-#if defined(PETSC_USE_64BIT_INDICES) && (H5_SIZEOF_HSIZE_T == 4)
+  #if defined(PETSC_USE_64BIT_INDICES) && (H5_SIZEOF_HSIZE_T == 4)
   PetscCheck(a >= PETSC_HDF5_INT_MAX, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Array too long for HDF5");
-#endif
+  #endif
   *b = (hsize_t)(a);
   PetscFunctionReturn(0);
 }

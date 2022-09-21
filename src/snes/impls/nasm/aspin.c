@@ -1,7 +1,8 @@
 #include <petsc/private/snesimpl.h> /*I   "petscsnes.h"   I*/
 #include <petscdm.h>
 
-PetscErrorCode MatMultASPIN(Mat m, Vec X, Vec Y) {
+PetscErrorCode MatMultASPIN(Mat m, Vec X, Vec Y)
+{
   void       *ctx;
   SNES        snes;
   PetscInt    n, i;
@@ -45,7 +46,8 @@ PetscErrorCode MatMultASPIN(Mat m, Vec X, Vec Y) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESDestroy_ASPIN(SNES snes) {
+static PetscErrorCode SNESDestroy_ASPIN(SNES snes)
+{
   PetscFunctionBegin;
   PetscCall(SNESDestroy(&snes->npc));
   /* reset NEWTONLS and free the data */
@@ -96,7 +98,8 @@ static PetscErrorCode SNESDestroy_ASPIN(SNES snes) {
 .seealso: `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESNEWTONLS`, `SNESNASM`, `SNESGetNPC()`, `SNESGetNPCSide()`
 
 M*/
-PETSC_EXTERN PetscErrorCode SNESCreate_ASPIN(SNES snes) {
+PETSC_EXTERN PetscErrorCode SNESCreate_ASPIN(SNES snes)
+{
   SNES           npc;
   KSP            ksp;
   PC             pc;

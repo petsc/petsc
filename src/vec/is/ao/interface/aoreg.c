@@ -23,7 +23,8 @@ PetscBool         AORegisterAllCalled = PETSC_FALSE;
 
 .seealso: `AOGetType()`, `AOCreate()`
 @*/
-PetscErrorCode AOSetType(AO ao, AOType method) {
+PetscErrorCode AOSetType(AO ao, AOType method)
+{
   PetscErrorCode (*r)(AO);
   PetscBool match;
 
@@ -57,7 +58,8 @@ PetscErrorCode AOSetType(AO ao, AOType method) {
 
 .seealso: `AOSetType()`, `AOCreate()`
 @*/
-PetscErrorCode AOGetType(AO ao, AOType *type) {
+PetscErrorCode AOGetType(AO ao, AOType *type)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao, AO_CLASSID, 1);
   PetscValidPointer(type, 2);
@@ -82,7 +84,8 @@ PetscErrorCode AOGetType(AO ao, AOType *type) {
 .seealso: `AOCreate()`, `AORegisterAll()`, `AOBASIC`, `AOADVANCED`, `AOMAPPING`, `AOMEMORYSCALABLE`
 
 @*/
-PetscErrorCode AORegister(const char sname[], PetscErrorCode (*function)(AO)) {
+PetscErrorCode AORegister(const char sname[], PetscErrorCode (*function)(AO))
+{
   PetscFunctionBegin;
   PetscCall(AOInitializePackage());
   PetscCall(PetscFunctionListAdd(&AOList, sname, function));

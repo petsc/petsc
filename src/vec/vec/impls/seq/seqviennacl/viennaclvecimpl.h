@@ -1,19 +1,19 @@
 #if !defined(__VIENNACLVECIMPL)
-#define __VIENNACLVECIMPL
+  #define __VIENNACLVECIMPL
 
-#include <petscviennacl.h>
-#include <petsc/private/vecimpl.h>
-#include <petsc/private/deviceimpl.h>
+  #include <petscviennacl.h>
+  #include <petsc/private/vecimpl.h>
+  #include <petsc/private/deviceimpl.h>
 
-#include <algorithm>
-#include <vector>
-#include <string>
-#include <exception>
+  #include <algorithm>
+  #include <vector>
+  #include <string>
+  #include <exception>
 
-#include "viennacl/vector.hpp"
+  #include "viennacl/vector.hpp"
 
-#define ViennaCLWaitForGPU() \
-  if (PetscViennaCLSynchronize) viennacl::backend::finish();
+  #define ViennaCLWaitForGPU() \
+    if (PetscViennaCLSynchronize) viennacl::backend::finish();
 
 typedef viennacl::vector<PetscScalar> ViennaCLVector;
 

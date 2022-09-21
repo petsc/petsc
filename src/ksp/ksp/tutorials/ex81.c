@@ -4,7 +4,8 @@ static char help[] = "Solves a linear system with a MatNest and nested fields.\n
 
 #define Q 5 /* everything is hardwired for a 5x5 MatNest for now */
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   KSP         ksp;
   PC          pc;
   Mat         array[Q * Q], A, a;

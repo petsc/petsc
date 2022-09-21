@@ -27,7 +27,8 @@ using PetscScalarKokkosOffsetView3D      = Kokkos::Experimental::OffsetView<Pets
 using ConstPetscScalarKokkosOffsetView3D = Kokkos::Experimental::OffsetView<const PetscScalar ***, Kokkos::LayoutRight, Kokkos::HostSpace>;
 
 /* PETSc multi-dimensional array access */
-static PetscErrorCode Update1(DM da, const PetscScalar ***__restrict__ x1, PetscScalar ***__restrict__ y1, PetscInt nwarm, PetscInt nloop, PetscLogDouble *avgTime) {
+static PetscErrorCode Update1(DM da, const PetscScalar ***__restrict__ x1, PetscScalar ***__restrict__ y1, PetscInt nwarm, PetscInt nloop, PetscLogDouble *avgTime)
+{
   PetscInt       it, i, j, k;
   PetscLogDouble tstart = 0.0, tend;
   PetscInt       xm, ym, zm, xs, ys, zs, gxm, gym, gzm, gxs, gys, gzs;
@@ -49,7 +50,8 @@ static PetscErrorCode Update1(DM da, const PetscScalar ***__restrict__ x1, Petsc
 }
 
 /* C multi-dimensional array access */
-static PetscErrorCode Update2(DM da, const PetscScalar *__restrict__ x2, PetscScalar *__restrict__ y2, PetscInt nwarm, PetscInt nloop, PetscLogDouble *avgTime) {
+static PetscErrorCode Update2(DM da, const PetscScalar *__restrict__ x2, PetscScalar *__restrict__ y2, PetscInt nwarm, PetscInt nloop, PetscLogDouble *avgTime)
+{
   PetscInt       it, i, j, k;
   PetscLogDouble tstart = 0.0, tend;
   PetscInt       xm, ym, zm, xs, ys, zs, gxm, gym, gzm, gxs, gys, gzs;
@@ -74,7 +76,8 @@ static PetscErrorCode Update2(DM da, const PetscScalar *__restrict__ x2, PetscSc
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM                                 da;
   PetscInt                           xm, ym, zm, xs, ys, zs, gxm, gym, gzm, gxs, gys, gzs;
   PetscInt                           dof = 1, sw = 1;

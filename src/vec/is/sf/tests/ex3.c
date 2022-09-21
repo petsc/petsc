@@ -4,7 +4,8 @@ static char help[] = "Test PetscSFFetchAndOp on patterned SF graphs. PetscSFFetc
 
 #include <petscvec.h>
 #include <petscsf.h>
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt     i, N = 10, low, high, nleaves;
   PetscMPIInt  size, rank;
   Vec          x, y, y2, gy2;

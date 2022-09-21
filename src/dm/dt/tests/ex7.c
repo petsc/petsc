@@ -3,7 +3,8 @@ static char help[] = "Test the PetscDTAltV interface for k-forms (alternating k-
 #include <petscviewer.h>
 #include <petscdt.h>
 
-static PetscErrorCode CheckPullback(PetscInt N, PetscInt M, const PetscReal *L, PetscInt k, const PetscReal *w, PetscReal *x, PetscBool verbose, PetscViewer viewer) {
+static PetscErrorCode CheckPullback(PetscInt N, PetscInt M, const PetscReal *L, PetscInt k, const PetscReal *w, PetscReal *x, PetscBool verbose, PetscViewer viewer)
+{
   PetscInt         Nk, Mk, i, j, l;
   PetscReal       *Lstarw, *Lx, *Lstar, *Lstarwcheck, wLx, Lstarwx;
   PetscReal        diff, diffMat, normMat;
@@ -81,7 +82,8 @@ static PetscErrorCode CheckPullback(PetscInt N, PetscInt M, const PetscReal *L, 
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt    i, numTests = 5, n[5] = {0, 1, 2, 3, 4};
   PetscBool   verbose = PETSC_FALSE;
   PetscRandom rand;
@@ -197,14 +199,23 @@ int main(int argc, char **argv) {
         PetscReal det, wvcheck, diff;
 
         switch (k) {
-        case 0: det = 1.; break;
-        case 1: det = v[0]; break;
-        case 2: det = v[0] * v[3] - v[1] * v[2]; break;
-        case 3: det = v[0] * (v[4] * v[8] - v[5] * v[7]) + v[1] * (v[5] * v[6] - v[3] * v[8]) + v[2] * (v[3] * v[7] - v[4] * v[6]); break;
+        case 0:
+          det = 1.;
+          break;
+        case 1:
+          det = v[0];
+          break;
+        case 2:
+          det = v[0] * v[3] - v[1] * v[2];
+          break;
+        case 3:
+          det = v[0] * (v[4] * v[8] - v[5] * v[7]) + v[1] * (v[5] * v[6] - v[3] * v[8]) + v[2] * (v[3] * v[7] - v[4] * v[6]);
+          break;
         case 4:
           det = v[0] * (v[5] * (v[10] * v[15] - v[11] * v[14]) + v[6] * (v[11] * v[13] - v[9] * v[15]) + v[7] * (v[9] * v[14] - v[10] * v[13])) - v[1] * (v[4] * (v[10] * v[15] - v[11] * v[14]) + v[6] * (v[11] * v[12] - v[8] * v[15]) + v[7] * (v[8] * v[14] - v[10] * v[12])) + v[2] * (v[4] * (v[9] * v[15] - v[11] * v[13]) + v[5] * (v[11] * v[12] - v[8] * v[15]) + v[7] * (v[8] * v[13] - v[9] * v[12])) - v[3] * (v[4] * (v[9] * v[14] - v[10] * v[13]) + v[5] * (v[10] * v[12] - v[8] * v[14]) + v[6] * (v[8] * v[13] - v[9] * v[12]));
           break;
-        default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "invalid k");
+        default:
+          SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "invalid k");
         }
         wvcheck = det * w[0];
         diff    = PetscSqrtReal(PetscSqr(wvcheck - wv));

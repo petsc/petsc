@@ -12,7 +12,8 @@ static char help[] = "Reads a PETSc matrix and vector from a file and reorders i
 */
 #include <petscmat.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat             A;                        /* matrix */
   PetscViewer     fd;                       /* viewer */
   char            file[PETSC_MAX_PATH_LEN]; /* input file name */

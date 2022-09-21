@@ -48,7 +48,8 @@ FILE                    *PetscInfoFile                                          
 
 .seealso: `PetscInfo()`, `PetscInfoAllow()`, `PetscInfoGetInfo()`, `PetscObjectGetClassid()`
 @*/
-PetscErrorCode PetscInfoEnabled(PetscClassId classid, PetscBool *enabled) {
+PetscErrorCode PetscInfoEnabled(PetscClassId classid, PetscBool *enabled)
+{
   PetscFunctionBegin;
   PetscValidBoolPointer(enabled, 2);
   PetscCheck(classid >= PETSC_SMALLEST_CLASSID, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Classid (current: %d) must be equal to or greater than PETSC_SMALLEST_CLASSID", classid);
@@ -68,7 +69,8 @@ PetscErrorCode PetscInfoEnabled(PetscClassId classid, PetscBool *enabled) {
 
 .seealso: `PetscInfo()`, `PetscInfoEnabled()`, `PetscInfoGetInfo()`, `PetscInfoSetFromOptions()`
 @*/
-PetscErrorCode PetscInfoAllow(PetscBool flag) {
+PetscErrorCode PetscInfoAllow(PetscBool flag)
+{
   PetscFunctionBegin;
   PetscLogPrintInfo = flag;
   PetscFunctionReturn(0);
@@ -90,7 +92,8 @@ PetscErrorCode PetscInfoAllow(PetscBool flag) {
 
 .seealso: `PetscInfo()`, `PetscInfoSetFile()`, `PetscInfoSetFromOptions()`, `PetscFOpen()`
 @*/
-PetscErrorCode PetscInfoSetFile(const char filename[], const char mode[]) {
+PetscErrorCode PetscInfoSetFile(const char filename[], const char mode[])
+{
   PetscFunctionBegin;
   if (!PetscInfoFile) PetscInfoFile = PETSC_STDOUT;
   PetscCall(PetscFree(PetscInfoFilename));
@@ -141,7 +144,8 @@ PetscErrorCode PetscInfoSetFile(const char filename[], const char mode[]) {
 
 .seealso: `PetscInfo()`, `PetscInfoSetFile()`, `PetscInfoSetFromOptions()`, `PetscInfoDestroy()`
 @*/
-PetscErrorCode PetscInfoGetFile(char **filename, FILE **InfoFile) {
+PetscErrorCode PetscInfoGetFile(char **filename, FILE **InfoFile)
+{
   PetscFunctionBegin;
   PetscValidPointer(filename, 1);
   PetscValidPointer(InfoFile, 2);
@@ -178,7 +182,8 @@ PetscErrorCode PetscInfoGetFile(char **filename, FILE **InfoFile) {
 
 .seealso: `PetscInfo()`, `PetscInfoGetClass()`, `PetscInfoProcessClass()`, `PetscInfoSetFromOptions()`, `PetscStrToArray()`, `PetscObjectGetName()`
 @*/
-PetscErrorCode PetscInfoSetClasses(PetscBool exclude, PetscInt n, const char *const *classnames) {
+PetscErrorCode PetscInfoSetClasses(PetscBool exclude, PetscInt n, const char *const *classnames)
+{
   PetscFunctionBegin;
   PetscCheck(!PetscInfoClassesLocked, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "PetscInfoSetClasses() cannot be called after PetscInfoGetClass() or PetscInfoProcessClass()");
   PetscCall(PetscStrNArrayDestroy(PetscInfoNumClasses, &PetscInfoClassnames));
@@ -213,7 +218,8 @@ PetscErrorCode PetscInfoSetClasses(PetscBool exclude, PetscInt n, const char *co
 
 .seealso: `PetscInfo()`, `PetscInfoSetClasses()`, `PetscInfoSetFromOptions()`, `PetscObjectGetName()`
 @*/
-PetscErrorCode PetscInfoGetClass(const char *classname, PetscBool *found) {
+PetscErrorCode PetscInfoGetClass(const char *classname, PetscBool *found)
+{
   PetscInt unused;
 
   PetscFunctionBegin;
@@ -244,7 +250,8 @@ PetscErrorCode PetscInfoGetClass(const char *classname, PetscBool *found) {
 
 .seealso: `PetscInfo()`, `PetscInfoAllow()`, `PetscInfoSetFilterCommSelf`, `PetscInfoSetFromOptions()`
 @*/
-PetscErrorCode PetscInfoGetInfo(PetscBool *infoEnabled, PetscBool *classesSet, PetscBool *exclude, PetscBool *locked, PetscInfoCommFlag *commSelfFlag) {
+PetscErrorCode PetscInfoGetInfo(PetscBool *infoEnabled, PetscBool *classesSet, PetscBool *exclude, PetscBool *locked, PetscInfoCommFlag *commSelfFlag)
+{
   PetscFunctionBegin;
   if (infoEnabled) PetscValidBoolPointer(infoEnabled, 1);
   if (classesSet) PetscValidBoolPointer(classesSet, 2);
@@ -273,7 +280,8 @@ PetscErrorCode PetscInfoGetInfo(PetscBool *infoEnabled, PetscBool *classesSet, P
 
 .seealso: `PetscInfo()`, `PetscInfoActivateClass()`, `PetscInfoDeactivateClass()`, `PetscInfoSetFromOptions()`
 @*/
-PetscErrorCode PetscInfoProcessClass(const char classname[], PetscInt numClassID, const PetscClassId classIDs[]) {
+PetscErrorCode PetscInfoProcessClass(const char classname[], PetscInt numClassID, const PetscClassId classIDs[])
+{
   PetscBool enabled, exclude, found, opt;
   char      logList[256];
 
@@ -322,7 +330,8 @@ PetscErrorCode PetscInfoProcessClass(const char classname[], PetscInt numClassID
 
 .seealso: `PetscInfo()`, `PetscInfoGetInfo()`
 @*/
-PetscErrorCode PetscInfoSetFilterCommSelf(PetscInfoCommFlag commSelfFlag) {
+PetscErrorCode PetscInfoSetFilterCommSelf(PetscInfoCommFlag commSelfFlag)
+{
   PetscFunctionBegin;
   PetscInfoCommFilter = commSelfFlag;
   PetscFunctionReturn(0);
@@ -346,7 +355,8 @@ PetscErrorCode PetscInfoSetFilterCommSelf(PetscInfoCommFlag commSelfFlag) {
 
 .seealso: `PetscInfo()`, `PetscInfoAllow()`, `PetscInfoSetFile()`, `PetscInfoSetClasses()`, `PetscInfoSetFilterCommSelf()`, `PetscInfoDestroy()`
 @*/
-PetscErrorCode PetscInfoSetFromOptions(PetscOptions options) {
+PetscErrorCode PetscInfoSetFromOptions(PetscOptions options)
+{
   char      optstring[PETSC_MAX_PATH_LEN];
   PetscBool set;
 
@@ -416,7 +426,8 @@ PetscErrorCode PetscInfoSetFromOptions(PetscOptions options) {
 
 .seealso: `PetscInfo()`, `PetscInfoSetFromOptions()`
 @*/
-PetscErrorCode PetscInfoDestroy(void) {
+PetscErrorCode PetscInfoDestroy(void)
+{
   int err;
 
   PetscFunctionBegin;
@@ -440,7 +451,8 @@ PetscErrorCode PetscInfoDestroy(void) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscInfoSetClassActivation_Private(PetscClassId classid, int value) {
+static PetscErrorCode PetscInfoSetClassActivation_Private(PetscClassId classid, int value)
+{
   PetscFunctionBegin;
   if (!classid) classid = PETSC_SMALLEST_CLASSID;
   PetscInfoFlags[classid - PETSC_SMALLEST_CLASSID] = value;
@@ -462,7 +474,8 @@ static PetscErrorCode PetscInfoSetClassActivation_Private(PetscClassId classid, 
 
 .seealso: `PetscInfoActivateClass()`, `PetscInfo()`, `PetscInfoAllow()`, `PetscInfoSetFromOptions()`
 @*/
-PetscErrorCode PetscInfoDeactivateClass(PetscClassId classid) {
+PetscErrorCode PetscInfoDeactivateClass(PetscClassId classid)
+{
   PetscFunctionBegin;
   PetscCall(PetscInfoSetClassActivation_Private(classid, 0));
   PetscFunctionReturn(0);
@@ -483,7 +496,8 @@ PetscErrorCode PetscInfoDeactivateClass(PetscClassId classid) {
 
 .seealso: `PetscInfoDeactivateClass()`, `PetscInfo()`, `PetscInfoAllow()`, `PetscInfoSetFromOptions()`
 @*/
-PetscErrorCode PetscInfoActivateClass(PetscClassId classid) {
+PetscErrorCode PetscInfoActivateClass(PetscClassId classid)
+{
   PetscFunctionBegin;
   PetscCall(PetscInfoSetClassActivation_Private(classid, 1));
   PetscFunctionReturn(0);
@@ -562,7 +576,8 @@ $     -info :sys:~self
 
 .seealso: `PetscInfoAllow()`, `PetscInfoSetFromOptions()`
 M*/
-PetscErrorCode PetscInfo_Private(const char func[], PetscObject obj, const char message[], ...) {
+PetscErrorCode PetscInfo_Private(const char func[], PetscObject obj, const char message[], ...)
+{
   PetscClassId classid = PETSC_SMALLEST_CLASSID;
   PetscBool    enabled = PETSC_FALSE;
   MPI_Comm     comm    = PETSC_COMM_SELF;

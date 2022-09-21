@@ -2,7 +2,8 @@ static char help[] = "This program illustrates the use of PETSc-fftw interface f
 #include <petscmat.h>
 #include <fftw3-mpi.h>
 /*extern PetscErrorCode MatCreateVecsFFT(Mat,Vec *,Vec *,Vec *);*/
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   PetscMPIInt rank, size;
   PetscInt    N0 = 4096, N1 = 4096, N2 = 256, N3 = 10, N4 = 10, N = N0 * N1;
   PetscRandom rdm;

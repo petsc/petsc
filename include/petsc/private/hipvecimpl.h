@@ -1,10 +1,10 @@
 #if !defined(__HIPVECIMPL)
-#define __HIPVECIMPL
+  #define __HIPVECIMPL
 
-#include <petscvec.h>
-#include <petscdevice_hip.h>
-#include <petsc/private/deviceimpl.h>
-#include <petsc/private/vecimpl.h>
+  #include <petscvec.h>
+  #include <petscdevice_hip.h>
+  #include <petsc/private/deviceimpl.h>
+  #include <petsc/private/vecimpl.h>
 
 typedef struct {
   PetscScalar *GPUarray;           /* this always holds the GPU data */
@@ -64,61 +64,62 @@ PETSC_INTERN PetscErrorCode VecReciprocal_SeqHIP(Vec);
 PETSC_INTERN PetscErrorCode VecSum_SeqHIP(Vec, PetscScalar *);
 PETSC_INTERN PetscErrorCode VecShift_SeqHIP(Vec, PetscScalar);
 
-/* complex single */
-#if defined(PETSC_USE_COMPLEX)
-#if defined(PETSC_USE_REAL_SINGLE)
-#define hipblasXaxpy(a, b, c, d, e, f, g)                      hipblasCaxpy((a), (b), (hipblasComplex *)(c), (hipblasComplex *)(d), (e), (hipblasComplex *)(f), (g))
-#define hipblasXscal(a, b, c, d, e)                            hipblasCscal((a), (b), (hipblasComplex *)(c), (hipblasComplex *)(d), (e))
-#define hipblasXdotu(a, b, c, d, e, f, g)                      hipblasCdotu((a), (b), (hipblasComplex *)(c), (d), (hipblasComplex *)(e), (f), (hipblasComplex *)(g))
-#define hipblasXdot(a, b, c, d, e, f, g)                       hipblasCdotc((a), (b), (hipblasComplex *)(c), (d), (hipblasComplex *)(e), (f), (hipblasComplex *)(g))
-#define hipblasXswap(a, b, c, d, e, f)                         hipblasCswap((a), (b), (hipblasComplex *)(c), (d), (hipblasComplex *)(e), (f))
-#define hipblasXnrm2(a, b, c, d, e)                            hipblasScnrm2((a), (b), (hipblasComplex *)(c), (d), (e))
-#define hipblasIXamax(a, b, c, d, e)                           hipblasIcamax((a), (b), (hipblasComplex *)(c), (d), (e))
-#define hipblasXasum(a, b, c, d, e)                            hipblasScasum((a), (b), (hipblasComplex *)(c), (d), (e))
-#define hipblasXgemv(a, b, c, d, e, f, g, h, i, j, k, l)       hipblasCgemv((a), (b), (c), (d), (hipblasComplex *)(e), (hipblasComplex *)(f), (g), (hipblasComplex *)(h), (i), (hipblasComplex *)(j), (hipblasComplex *)(k), (l))
-#define hipblasXgemm(a, b, c, d, e, f, g, h, i, j, k, l, m, n) hipblasCgemm((a), (b), (c), (d), (e), (f), (hipblasComplex *)(g), (hipblasComplex *)(h), (i), (hipblasComplex *)(j), (k), (hipblasComplex *)(l), (hipblasComplex *)(m), (n))
-#define hipblasXgeam(a, b, c, d, e, f, g, h, i, j, k, l, m)    hipblasCgeam((a), (b), (c), (d), (e), (hipblasComplex *)(f), (hipblasComplex *)(g), (h), (hipblasComplex *)(i), (hipblasComplex *)(j), (k), (hipblasComplex *)(l), (m))
-#else /* complex double */
-#define hipblasXaxpy(a, b, c, d, e, f, g)                hipblasZaxpy((a), (b), (hipblasDoubleComplex *)(c), (hipblasDoubleComplex *)(d), (e), (hipblasDoubleComplex *)(f), (g))
-#define hipblasXscal(a, b, c, d, e)                      hipblasZscal((a), (b), (hipblasDoubleComplex *)(c), (hipblasDoubleComplex *)(d), (e))
-#define hipblasXdotu(a, b, c, d, e, f, g)                hipblasZdotu((a), (b), (hipblasDoubleComplex *)(c), (d), (hipblasDoubleComplex *)(e), (f), (hipblasDoubleComplex *)(g))
-#define hipblasXdot(a, b, c, d, e, f, g)                 hipblasZdotc((a), (b), (hipblasDoubleComplex *)(c), (d), (hipblasDoubleComplex *)(e), (f), (hipblasDoubleComplex *)(g))
-#define hipblasXswap(a, b, c, d, e, f)                   hipblasZswap((a), (b), (hipblasDoubleComplex *)(c), (d), (hipblasDoubleComplex *)(e), (f))
-#define hipblasXnrm2(a, b, c, d, e)                      hipblasDznrm2((a), (b), (hipblasDoubleComplex *)(c), (d), (e))
-#define hipblasIXamax(a, b, c, d, e)                     hipblasIzamax((a), (b), (hipblasDoubleComplex *)(c), (d), (e))
-#define hipblasXasum(a, b, c, d, e)                      hipblasDzasum((a), (b), (hipblasDoubleComplex *)(c), (d), (e))
-#define hipblasXgemv(a, b, c, d, e, f, g, h, i, j, k, l) hipblasZgemv((a), (b), (c), (d), (hipblasDoubleComplex *)(e), (hipblasDoubleComplex *)(f), (g), (hipblasDoubleComplex *)(h), (i), (hipblasDoubleComplex *)(j), (hipblasDoubleComplex *)(k), (l))
-#define hipblasXgemm(a, b, c, d, e, f, g, h, i, j, k, l, m, n) \
-  hipblasZgemm((a), (b), (c), (d), (e), (f), (hipblasDoubleComplex *)(g), (hipblasDoubleComplex *)(h), (i), (hipblasDoubleComplex *)(j), (k), (hipblasDoubleComplex *)(l), (hipblasDoubleComplex *)(m), (n))
-#define hipblasXgeam(a, b, c, d, e, f, g, h, i, j, k, l, m) \
-  hipblasZgeam((a), (b), (c), (d), (e), (hipblasDoubleComplex *)(f), (hipblasDoubleComplex *)(g), (h), (hipblasDoubleComplex *)(i), (hipblasDoubleComplex *)(j), (k), (hipblasDoubleComplex *)(l), (m))
-#endif
-#else /* real single */
-#if defined(PETSC_USE_REAL_SINGLE)
-#define hipblasXaxpy  hipblasSaxpy
-#define hipblasXscal  hipblasSscal
-#define hipblasXdotu  hipblasSdot
-#define hipblasXdot   hipblasSdot
-#define hipblasXswap  hipblasSswap
-#define hipblasXnrm2  hipblasSnrm2
-#define hipblasIXamax hipblasIsamax
-#define hipblasXasum  hipblasSasum
-#define hipblasXgemv  hipblasSgemv
-#define hipblasXgemm  hipblasSgemm
-#define hipblasXgeam  hipblasSgeam
-#else /* real double */
-#define hipblasXaxpy  hipblasDaxpy
-#define hipblasXscal  hipblasDscal
-#define hipblasXdotu  hipblasDdot
-#define hipblasXdot   hipblasDdot
-#define hipblasXswap  hipblasDswap
-#define hipblasXnrm2  hipblasDnrm2
-#define hipblasIXamax hipblasIdamax
-#define hipblasXasum  hipblasDasum
-#define hipblasXgemv  hipblasDgemv
-#define hipblasXgemm  hipblasDgemm
-#define hipblasXgeam  hipblasDgeam
-#endif
-#endif
+  /* complex single */
+  #if defined(PETSC_USE_COMPLEX)
+    #if defined(PETSC_USE_REAL_SINGLE)
+      #define hipblasXaxpy(a, b, c, d, e, f, g)                      hipblasCaxpy((a), (b), (hipblasComplex *)(c), (hipblasComplex *)(d), (e), (hipblasComplex *)(f), (g))
+      #define hipblasXscal(a, b, c, d, e)                            hipblasCscal((a), (b), (hipblasComplex *)(c), (hipblasComplex *)(d), (e))
+      #define hipblasXdotu(a, b, c, d, e, f, g)                      hipblasCdotu((a), (b), (hipblasComplex *)(c), (d), (hipblasComplex *)(e), (f), (hipblasComplex *)(g))
+      #define hipblasXdot(a, b, c, d, e, f, g)                       hipblasCdotc((a), (b), (hipblasComplex *)(c), (d), (hipblasComplex *)(e), (f), (hipblasComplex *)(g))
+      #define hipblasXswap(a, b, c, d, e, f)                         hipblasCswap((a), (b), (hipblasComplex *)(c), (d), (hipblasComplex *)(e), (f))
+      #define hipblasXnrm2(a, b, c, d, e)                            hipblasScnrm2((a), (b), (hipblasComplex *)(c), (d), (e))
+      #define hipblasIXamax(a, b, c, d, e)                           hipblasIcamax((a), (b), (hipblasComplex *)(c), (d), (e))
+      #define hipblasXasum(a, b, c, d, e)                            hipblasScasum((a), (b), (hipblasComplex *)(c), (d), (e))
+      #define hipblasXgemv(a, b, c, d, e, f, g, h, i, j, k, l)       hipblasCgemv((a), (b), (c), (d), (hipblasComplex *)(e), (hipblasComplex *)(f), (g), (hipblasComplex *)(h), (i), (hipblasComplex *)(j), (hipblasComplex *)(k), (l))
+      #define hipblasXgemm(a, b, c, d, e, f, g, h, i, j, k, l, m, n) hipblasCgemm((a), (b), (c), (d), (e), (f), (hipblasComplex *)(g), (hipblasComplex *)(h), (i), (hipblasComplex *)(j), (k), (hipblasComplex *)(l), (hipblasComplex *)(m), (n))
+      #define hipblasXgeam(a, b, c, d, e, f, g, h, i, j, k, l, m)    hipblasCgeam((a), (b), (c), (d), (e), (hipblasComplex *)(f), (hipblasComplex *)(g), (h), (hipblasComplex *)(i), (hipblasComplex *)(j), (k), (hipblasComplex *)(l), (m))
+    #else /* complex double */
+      #define hipblasXaxpy(a, b, c, d, e, f, g) hipblasZaxpy((a), (b), (hipblasDoubleComplex *)(c), (hipblasDoubleComplex *)(d), (e), (hipblasDoubleComplex *)(f), (g))
+      #define hipblasXscal(a, b, c, d, e)       hipblasZscal((a), (b), (hipblasDoubleComplex *)(c), (hipblasDoubleComplex *)(d), (e))
+      #define hipblasXdotu(a, b, c, d, e, f, g) hipblasZdotu((a), (b), (hipblasDoubleComplex *)(c), (d), (hipblasDoubleComplex *)(e), (f), (hipblasDoubleComplex *)(g))
+      #define hipblasXdot(a, b, c, d, e, f, g)  hipblasZdotc((a), (b), (hipblasDoubleComplex *)(c), (d), (hipblasDoubleComplex *)(e), (f), (hipblasDoubleComplex *)(g))
+      #define hipblasXswap(a, b, c, d, e, f)    hipblasZswap((a), (b), (hipblasDoubleComplex *)(c), (d), (hipblasDoubleComplex *)(e), (f))
+      #define hipblasXnrm2(a, b, c, d, e)       hipblasDznrm2((a), (b), (hipblasDoubleComplex *)(c), (d), (e))
+      #define hipblasIXamax(a, b, c, d, e)      hipblasIzamax((a), (b), (hipblasDoubleComplex *)(c), (d), (e))
+      #define hipblasXasum(a, b, c, d, e)       hipblasDzasum((a), (b), (hipblasDoubleComplex *)(c), (d), (e))
+      #define hipblasXgemv(a, b, c, d, e, f, g, h, i, j, k, l) \
+        hipblasZgemv((a), (b), (c), (d), (hipblasDoubleComplex *)(e), (hipblasDoubleComplex *)(f), (g), (hipblasDoubleComplex *)(h), (i), (hipblasDoubleComplex *)(j), (hipblasDoubleComplex *)(k), (l))
+      #define hipblasXgemm(a, b, c, d, e, f, g, h, i, j, k, l, m, n) \
+        hipblasZgemm((a), (b), (c), (d), (e), (f), (hipblasDoubleComplex *)(g), (hipblasDoubleComplex *)(h), (i), (hipblasDoubleComplex *)(j), (k), (hipblasDoubleComplex *)(l), (hipblasDoubleComplex *)(m), (n))
+      #define hipblasXgeam(a, b, c, d, e, f, g, h, i, j, k, l, m) \
+        hipblasZgeam((a), (b), (c), (d), (e), (hipblasDoubleComplex *)(f), (hipblasDoubleComplex *)(g), (h), (hipblasDoubleComplex *)(i), (hipblasDoubleComplex *)(j), (k), (hipblasDoubleComplex *)(l), (m))
+    #endif
+  #else /* real single */
+    #if defined(PETSC_USE_REAL_SINGLE)
+      #define hipblasXaxpy  hipblasSaxpy
+      #define hipblasXscal  hipblasSscal
+      #define hipblasXdotu  hipblasSdot
+      #define hipblasXdot   hipblasSdot
+      #define hipblasXswap  hipblasSswap
+      #define hipblasXnrm2  hipblasSnrm2
+      #define hipblasIXamax hipblasIsamax
+      #define hipblasXasum  hipblasSasum
+      #define hipblasXgemv  hipblasSgemv
+      #define hipblasXgemm  hipblasSgemm
+      #define hipblasXgeam  hipblasSgeam
+    #else /* real double */
+      #define hipblasXaxpy  hipblasDaxpy
+      #define hipblasXscal  hipblasDscal
+      #define hipblasXdotu  hipblasDdot
+      #define hipblasXdot   hipblasDdot
+      #define hipblasXswap  hipblasDswap
+      #define hipblasXnrm2  hipblasDnrm2
+      #define hipblasIXamax hipblasIdamax
+      #define hipblasXasum  hipblasDasum
+      #define hipblasXgemv  hipblasDgemv
+      #define hipblasXgemm  hipblasDgemm
+      #define hipblasXgeam  hipblasDgeam
+    #endif
+  #endif
 
 #endif

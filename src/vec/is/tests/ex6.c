@@ -2,7 +2,8 @@ static char help[] = "Tests ISRenumber.\n\n";
 
 #include <petscis.h>
 
-PetscErrorCode TestRenumber(IS is, IS mult) {
+PetscErrorCode TestRenumber(IS is, IS mult)
+{
   IS       nis;
   PetscInt N;
 
@@ -22,7 +23,8 @@ PetscErrorCode TestRenumber(IS is, IS mult) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   IS          is;
   PetscMPIInt size, rank;
 

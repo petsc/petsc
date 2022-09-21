@@ -2,19 +2,22 @@ const char help[] = "Test boundary condition insertion";
 
 #include <petscdmplex.h>
 
-static PetscErrorCode set_one(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar bcval[], void *ctx) {
+static PetscErrorCode set_one(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar bcval[], void *ctx)
+{
   PetscFunctionBegin;
   bcval[0] = 1.;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode set_two(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar bcval[], void *ctx) {
+static PetscErrorCode set_two(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar bcval[], void *ctx)
+{
   PetscFunctionBegin;
   bcval[0] = 2.;
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM       dm;
   DMLabel  label;
   PetscInt in_value  = 1;

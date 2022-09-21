@@ -4,7 +4,8 @@ static char help[] = "Tests ISFilter().\n\n";
 #include <petscis.h>
 #include <petscviewer.h>
 
-static PetscErrorCode CreateIS(MPI_Comm comm, PetscInt n, PetscInt first, PetscInt step, IS *is) {
+static PetscErrorCode CreateIS(MPI_Comm comm, PetscInt n, PetscInt first, PetscInt step, IS *is)
+{
   PetscInt   *idx, i, j;
   PetscMPIInt rank;
 
@@ -18,7 +19,8 @@ static PetscErrorCode CreateIS(MPI_Comm comm, PetscInt n, PetscInt first, PetscI
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   IS          is;
   PetscInt    n = 10, N, first = 0, step = 0, start, end;
   PetscMPIInt rank;

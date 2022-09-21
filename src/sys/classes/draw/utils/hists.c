@@ -55,7 +55,8 @@ struct _p_PetscDrawHG {
           `PetscDrawHGSetNumberBins()`, `PetscDrawHGReset()`, `PetscDrawHGAddValue()`, `PetscDrawHGDraw()`, `PetscDrawHGSave()`, `PetscDrawHGView()`, `PetscDrawHGSetColor()`,
           `PetscDrawHGSetLimits()`, `PetscDrawHGCalcStats()`, `PetscDrawHGIntegerBins()`, `PetscDrawHGGetAxis()`, `PetscDrawAxis`, `PetscDrawHGGetDraw()`
 @*/
-PetscErrorCode PetscDrawHGCreate(PetscDraw draw, int bins, PetscDrawHG *hist) {
+PetscErrorCode PetscDrawHGCreate(PetscDraw draw, int bins, PetscDrawHG *hist)
+{
   PetscDrawHG h;
 
   PetscFunctionBegin;
@@ -105,7 +106,8 @@ PetscErrorCode PetscDrawHGCreate(PetscDraw draw, int bins, PetscDrawHG *hist) {
 
 .seealso: `PetscDrawHGCreate()`, `PetscDrawHG`, `PetscDrawHGDraw()`, `PetscDrawHGIntegerBins()`
 @*/
-PetscErrorCode PetscDrawHGSetNumberBins(PetscDrawHG hist, int bins) {
+PetscErrorCode PetscDrawHGSetNumberBins(PetscDrawHG hist, int bins)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(hist, PETSC_DRAWHG_CLASSID, 1);
   PetscValidLogicalCollectiveInt(hist, bins, 2);
@@ -131,7 +133,8 @@ PetscErrorCode PetscDrawHGSetNumberBins(PetscDrawHG hist, int bins) {
 
 .seealso: `PetscDrawHGCreate()`, `PetscDrawHG`, `PetscDrawHGDraw()`, `PetscDrawHGAddValue()`
 @*/
-PetscErrorCode PetscDrawHGReset(PetscDrawHG hist) {
+PetscErrorCode PetscDrawHGReset(PetscDrawHG hist)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(hist, PETSC_DRAWHG_CLASSID, 1);
 
@@ -155,7 +158,8 @@ PetscErrorCode PetscDrawHGReset(PetscDrawHG hist) {
 
 .seealso: `PetscDrawHGCreate()`, `PetscDrawHG`
 @*/
-PetscErrorCode PetscDrawHGDestroy(PetscDrawHG *hist) {
+PetscErrorCode PetscDrawHGDestroy(PetscDrawHG *hist)
+{
   PetscFunctionBegin;
   if (!*hist) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(*hist, PETSC_DRAWHG_CLASSID, 1);
@@ -185,7 +189,8 @@ PetscErrorCode PetscDrawHGDestroy(PetscDrawHG *hist) {
 
 .seealso: `PetscDrawHGCreate()`, `PetscDrawHG`, `PetscDrawHGDraw()`, `PetscDrawHGAddValue()`, `PetscDrawHGReset()`
 @*/
-PetscErrorCode PetscDrawHGAddValue(PetscDrawHG hist, PetscReal value) {
+PetscErrorCode PetscDrawHGAddValue(PetscDrawHG hist, PetscReal value)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(hist, PETSC_DRAWHG_CLASSID, 1);
 
@@ -241,7 +246,8 @@ PetscErrorCode PetscDrawHGAddValue(PetscDrawHG hist, PetscReal value) {
 
 .seealso: `PetscDrawHGCreate()`, `PetscDrawHG`, `PetscDrawHGDraw()`, `PetscDrawHGAddValue()`, `PetscDrawHGReset()`
 @*/
-PetscErrorCode PetscDrawHGDraw(PetscDrawHG hist) {
+PetscErrorCode PetscDrawHGDraw(PetscDrawHG hist)
+{
   PetscDraw   draw;
   PetscBool   isnull;
   PetscReal   xmin, xmax, ymin, ymax, *bins, *values, binSize, binLeft, binRight, maxHeight, mean, var;
@@ -385,7 +391,8 @@ PetscErrorCode PetscDrawHGDraw(PetscDrawHG hist) {
 
 .seealso: `PetscDrawSave()`, `PetscDrawHGCreate()`, `PetscDrawHGGetDraw()`, `PetscDrawSetSave()`, `PetscDrawSave()`, `PetscDrawHGDraw()`
 @*/
-PetscErrorCode PetscDrawHGSave(PetscDrawHG hg) {
+PetscErrorCode PetscDrawHGSave(PetscDrawHG hg)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(hg, PETSC_DRAWHG_CLASSID, 1);
   PetscCall(PetscDrawSave(hg->win));
@@ -404,7 +411,8 @@ PetscErrorCode PetscDrawHGSave(PetscDrawHG hg) {
 
 .seealso: `PetscDrawHG`, `PetscViewer`, `PetscDrawHGCreate()`, `PetscDrawHGGetDraw()`, `PetscDrawSetSave()`, `PetscDrawSave()`, `PetscDrawHGDraw()`
 @*/
-PetscErrorCode PetscDrawHGView(PetscDrawHG hist, PetscViewer viewer) {
+PetscErrorCode PetscDrawHGView(PetscDrawHG hist, PetscViewer viewer)
+{
   PetscReal xmax, xmin, *bins, *values, binSize, binLeft, binRight, mean, var;
   PetscInt  numBins, numBinsOld, numValues, initSize, i, p;
 
@@ -495,7 +503,8 @@ PetscErrorCode PetscDrawHGView(PetscDrawHG hist, PetscViewer viewer) {
 
 .seealso: `PetscDrawHG`, `PetscDrawHGCreate()`, `PetscDrawHGGetDraw()`, `PetscDrawSetSave()`, `PetscDrawSave()`, `PetscDrawHGDraw()`, `PetscDrawHGGetAxis()`
 @*/
-PetscErrorCode PetscDrawHGSetColor(PetscDrawHG hist, int color) {
+PetscErrorCode PetscDrawHGSetColor(PetscDrawHG hist, int color)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(hist, PETSC_DRAWHG_CLASSID, 1);
 
@@ -518,7 +527,8 @@ PetscErrorCode PetscDrawHGSetColor(PetscDrawHG hist, int color) {
 
 .seealso: `PetscDrawHG`, `PetscDrawHGCreate()`, `PetscDrawHGGetDraw()`, `PetscDrawSetSave()`, `PetscDrawSave()`, `PetscDrawHGDraw()`, `PetscDrawHGGetAxis()`
 @*/
-PetscErrorCode PetscDrawHGSetLimits(PetscDrawHG hist, PetscReal x_min, PetscReal x_max, int y_min, int y_max) {
+PetscErrorCode PetscDrawHGSetLimits(PetscDrawHG hist, PetscReal x_min, PetscReal x_max, int y_min, int y_max)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(hist, PETSC_DRAWHG_CLASSID, 1);
 
@@ -542,7 +552,8 @@ PetscErrorCode PetscDrawHGSetLimits(PetscDrawHG hist, PetscReal x_min, PetscReal
 
 .seealso: `PetscDrawHG`, `PetscDrawHGCreate()`, `PetscDrawHGAddValue()`, `PetscDrawHGView()`, `PetscDrawHGDraw()`
 @*/
-PetscErrorCode PetscDrawHGCalcStats(PetscDrawHG hist, PetscBool calc) {
+PetscErrorCode PetscDrawHGCalcStats(PetscDrawHG hist, PetscBool calc)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(hist, PETSC_DRAWHG_CLASSID, 1);
 
@@ -563,7 +574,8 @@ PetscErrorCode PetscDrawHGCalcStats(PetscDrawHG hist, PetscBool calc) {
 
 .seealso: `PetscDrawHG`, `PetscDrawHGCreate()`, `PetscDrawHGAddValue()`, `PetscDrawHGView()`, `PetscDrawHGDraw()`, `PetscDrawHGSetColor()`
 @*/
-PetscErrorCode PetscDrawHGIntegerBins(PetscDrawHG hist, PetscBool ints) {
+PetscErrorCode PetscDrawHGIntegerBins(PetscDrawHG hist, PetscBool ints)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(hist, PETSC_DRAWHG_CLASSID, 1);
 
@@ -589,7 +601,8 @@ PetscErrorCode PetscDrawHGIntegerBins(PetscDrawHG hist, PetscBool ints) {
 
 .seealso: `PetscDrawHG`, `PetscDrawAxis`, `PetscDrawHGCreate()`, `PetscDrawHGAddValue()`, `PetscDrawHGView()`, `PetscDrawHGDraw()`, `PetscDrawHGSetColor()`, `PetscDrawAxis`, `PetscDrawHGSetLimits()`
 @*/
-PetscErrorCode PetscDrawHGGetAxis(PetscDrawHG hist, PetscDrawAxis *axis) {
+PetscErrorCode PetscDrawHGGetAxis(PetscDrawHG hist, PetscDrawAxis *axis)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(hist, PETSC_DRAWHG_CLASSID, 1);
   PetscValidPointer(axis, 2);
@@ -612,7 +625,8 @@ PetscErrorCode PetscDrawHGGetAxis(PetscDrawHG hist, PetscDrawAxis *axis) {
 
 .seealso: `PetscDraw`, `PetscDrawHG`, `PetscDrawHGCreate()`, `PetscDrawHGAddValue()`, `PetscDrawHGView()`, `PetscDrawHGDraw()`, `PetscDrawHGSetColor()`, `PetscDrawAxis`, `PetscDrawHGSetLimits()`
 @*/
-PetscErrorCode PetscDrawHGGetDraw(PetscDrawHG hist, PetscDraw *draw) {
+PetscErrorCode PetscDrawHGGetDraw(PetscDrawHG hist, PetscDraw *draw)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(hist, PETSC_DRAWHG_CLASSID, 1);
   PetscValidPointer(draw, 2);

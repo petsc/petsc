@@ -31,14 +31,16 @@
 
 .seealso: `PetscSortReal()`, `PetscSortedInt()`, `PetscSortedMPIInt()`
 @*/
-PetscErrorCode PetscSortedReal(PetscInt n, const PetscReal X[], PetscBool *sorted) {
+PetscErrorCode PetscSortedReal(PetscInt n, const PetscReal X[], PetscBool *sorted)
+{
   PetscFunctionBegin;
   PetscSorted(n, X, *sorted);
   PetscFunctionReturn(0);
 }
 
 /* A simple version of quicksort; taken from Kernighan and Ritchie, page 87 */
-static PetscErrorCode PetscSortReal_Private(PetscReal *v, PetscInt right) {
+static PetscErrorCode PetscSortReal_Private(PetscReal *v, PetscInt right)
+{
   PetscInt  i, last;
   PetscReal vl, tmp;
 
@@ -82,7 +84,8 @@ static PetscErrorCode PetscSortReal_Private(PetscReal *v, PetscInt right) {
 
 .seealso: `PetscRealSortSemiOrdered()`, `PetscSortInt()`, `PetscSortRealWithPermutation()`, `PetscSortRealWithArrayInt()`
 @*/
-PetscErrorCode PetscSortReal(PetscInt n, PetscReal v[]) {
+PetscErrorCode PetscSortReal(PetscInt n, PetscReal v[])
+{
   PetscInt  j, k;
   PetscReal tmp, vk;
 
@@ -113,7 +116,8 @@ PetscErrorCode PetscSortReal(PetscInt n, PetscReal v[]) {
   }
 
 /* modified from PetscSortIntWithArray_Private */
-static PetscErrorCode PetscSortRealWithArrayInt_Private(PetscReal *v, PetscInt *V, PetscInt right) {
+static PetscErrorCode PetscSortRealWithArrayInt_Private(PetscReal *v, PetscInt *V, PetscInt right)
+{
   PetscInt  i, last, itmp;
   PetscReal rvl, rtmp;
 
@@ -153,7 +157,8 @@ static PetscErrorCode PetscSortRealWithArrayInt_Private(PetscReal *v, PetscInt *
 
 .seealso: `PetscSortReal()`
 @*/
-PetscErrorCode PetscSortRealWithArrayInt(PetscInt n, PetscReal r[], PetscInt Ii[]) {
+PetscErrorCode PetscSortRealWithArrayInt(PetscInt n, PetscReal r[], PetscInt Ii[])
+{
   PetscInt  j, k, itmp;
   PetscReal rk, rtmp;
 
@@ -194,7 +199,8 @@ PetscErrorCode PetscSortRealWithArrayInt(PetscInt n, PetscReal r[], PetscInt Ii[
 
 .seealso: `PetscSortReal()`, `PetscSortRealWithArrayInt()`
 @*/
-PetscErrorCode PetscFindReal(PetscReal key, PetscInt n, const PetscReal t[], PetscReal eps, PetscInt *loc) {
+PetscErrorCode PetscFindReal(PetscReal key, PetscInt n, const PetscReal t[], PetscReal eps, PetscInt *loc)
+{
   PetscInt lo = 0, hi = n;
 
   PetscFunctionBegin;
@@ -230,7 +236,8 @@ PetscErrorCode PetscFindReal(PetscReal key, PetscInt n, const PetscReal t[], Pet
 
 .seealso: `PetscSortReal()`, `PetscSortRemoveDupsInt()`
 @*/
-PetscErrorCode PetscSortRemoveDupsReal(PetscInt *n, PetscReal v[]) {
+PetscErrorCode PetscSortRemoveDupsReal(PetscInt *n, PetscReal v[])
+{
   PetscInt i, s = 0, N = *n, b = 0;
 
   PetscFunctionBegin;
@@ -264,7 +271,8 @@ PetscErrorCode PetscSortRemoveDupsReal(PetscInt *n, PetscReal v[]) {
 
 .seealso: `PetscSortInt()`, `PetscSortRealWithPermutation()`
 @*/
-PetscErrorCode PetscSortSplit(PetscInt ncut, PetscInt n, PetscScalar a[], PetscInt idx[]) {
+PetscErrorCode PetscSortSplit(PetscInt ncut, PetscInt n, PetscScalar a[], PetscInt idx[])
+{
   PetscInt    i, mid, last, itmp, j, first;
   PetscScalar d, tmp;
   PetscReal   abskey;
@@ -328,7 +336,8 @@ PetscErrorCode PetscSortSplit(PetscInt ncut, PetscInt n, PetscScalar a[], PetscI
 
 .seealso: `PetscSortInt()`, `PetscSortRealWithPermutation()`
 @*/
-PetscErrorCode PetscSortSplitReal(PetscInt ncut, PetscInt n, PetscReal a[], PetscInt idx[]) {
+PetscErrorCode PetscSortSplitReal(PetscInt ncut, PetscInt n, PetscReal a[], PetscInt idx[])
+{
   PetscInt  i, mid, last, itmp, j, first;
   PetscReal d, tmp;
   PetscReal abskey;

@@ -26,7 +26,8 @@
 
 .seealso: `ISDestroy()`, `ISView()`, `ISSum()`, `ISExpand()`
 @*/
-PetscErrorCode ISDifference(IS is1, IS is2, IS *isout) {
+PetscErrorCode ISDifference(IS is1, IS is2, IS *isout)
+{
   PetscInt        i, n1, n2, imin, imax, nout, *iout;
   const PetscInt *i1, *i2;
   PetscBT         mask;
@@ -112,7 +113,8 @@ PetscErrorCode ISDifference(IS is1, IS is2, IS *isout) {
 .seealso: `ISDestroy()`, `ISView()`, `ISDifference()`, `ISExpand()`
 
 @*/
-PetscErrorCode ISSum(IS is1, IS is2, IS *is3) {
+PetscErrorCode ISSum(IS is1, IS is2, IS *is3)
+{
   MPI_Comm        comm;
   PetscBool       f;
   PetscMPIInt     size;
@@ -262,7 +264,8 @@ PetscErrorCode ISSum(IS is1, IS is2, IS *is3) {
 .seealso: `ISDestroy()`, `ISView()`, `ISDifference()`, `ISSum()`
 
 @*/
-PetscErrorCode ISExpand(IS is1, IS is2, IS *isout) {
+PetscErrorCode ISExpand(IS is1, IS is2, IS *isout)
+{
   PetscInt        i, n1, n2, imin, imax, nout, *iout;
   const PetscInt *i1, *i2;
   PetscBT         mask;
@@ -349,7 +352,8 @@ PetscErrorCode ISExpand(IS is1, IS is2, IS *isout) {
 
 .seealso: `ISDestroy()`, `ISView()`, `ISDifference()`, `ISSum()`, `ISExpand()`
 @*/
-PetscErrorCode ISIntersect(IS is1, IS is2, IS *isout) {
+PetscErrorCode ISIntersect(IS is1, IS is2, IS *isout)
+{
   PetscInt        i, n1, n2, nout, *iout;
   const PetscInt *i1, *i2;
   IS              is1sorted = NULL, is2sorted = NULL;
@@ -420,7 +424,8 @@ PetscErrorCode ISIntersect(IS is1, IS is2, IS *isout) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode ISIntersect_Caching_Internal(IS is1, IS is2, IS *isect) {
+PetscErrorCode ISIntersect_Caching_Internal(IS is1, IS is2, IS *isect)
+{
   PetscFunctionBegin;
   *isect = NULL;
   if (is2 && is1) {
@@ -461,7 +466,8 @@ PetscErrorCode ISIntersect_Caching_Internal(IS is1, IS is2, IS *isect) {
 .seealso: `ISDifference()`, `ISSum()`, `ISExpand()`
 
 @*/
-PetscErrorCode ISConcatenate(MPI_Comm comm, PetscInt len, const IS islist[], IS *isout) {
+PetscErrorCode ISConcatenate(MPI_Comm comm, PetscInt len, const IS islist[], IS *isout)
+{
   PetscInt        i, n, N;
   const PetscInt *iidx;
   PetscInt       *idx;
@@ -533,7 +539,8 @@ PetscErrorCode ISConcatenate(MPI_Comm comm, PetscInt len, const IS islist[], IS 
 
 .seealso `ISPairToList()`
 @*/
-PetscErrorCode ISListToPair(MPI_Comm comm, PetscInt listlen, IS islist[], IS *xis, IS *yis) {
+PetscErrorCode ISListToPair(MPI_Comm comm, PetscInt listlen, IS islist[], IS *xis, IS *yis)
+{
   PetscInt        ncolors, *colors, i, leni, len, *xinds, *yinds, k, j;
   const PetscInt *indsi;
 
@@ -590,7 +597,8 @@ PetscErrorCode ISListToPair(MPI_Comm comm, PetscInt listlen, IS islist[], IS *xi
 
 .seealso `ISListToPair()`
  @*/
-PetscErrorCode ISPairToList(IS xis, IS yis, PetscInt *listlen, IS **islist) {
+PetscErrorCode ISPairToList(IS xis, IS yis, PetscInt *listlen, IS **islist)
+{
   IS              indis = xis, coloris = yis;
   PetscInt       *inds, *colors, llen, ilen, lstart, lend, lcount, l;
   PetscMPIInt     rank, size, llow, lhigh, low, high, color, subsize;
@@ -716,7 +724,8 @@ PetscErrorCode ISPairToList(IS xis, IS yis, PetscInt *listlen, IS **islist) {
 
 .seealso `ISLocalToGlobalMapping`
  @*/
-PetscErrorCode ISEmbed(IS a, IS b, PetscBool drop, IS *c) {
+PetscErrorCode ISEmbed(IS a, IS b, PetscBool drop, IS *c)
+{
   ISLocalToGlobalMapping     ltog;
   ISGlobalToLocalMappingMode gtoltype = IS_GTOLM_DROP;
   PetscInt                   alen, clen, *cindices, *cindices2;
@@ -765,7 +774,8 @@ PetscErrorCode ISEmbed(IS a, IS b, PetscBool drop, IS *c) {
 
 .seealso `ISLocalToGlobalMapping`, `ISSort()`
  @*/
-PetscErrorCode ISSortPermutation(IS f, PetscBool always, IS *h) {
+PetscErrorCode ISSortPermutation(IS f, PetscBool always, IS *h)
+{
   const PetscInt *findices;
   PetscInt        fsize, *hindices, i;
   PetscBool       isincreasing;

@@ -6,7 +6,8 @@
 */
 #include <../src/ksp/pc/impls/factor/qr/qr.h> /*I "petscpc.h" I*/
 
-static PetscErrorCode PCSetUp_QR(PC pc) {
+static PetscErrorCode PCSetUp_QR(PC pc)
+{
   PC_QR         *dir = (PC_QR *)pc->data;
   MatSolverType  stype;
   MatFactorError err;
@@ -69,7 +70,8 @@ static PetscErrorCode PCSetUp_QR(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCReset_QR(PC pc) {
+static PetscErrorCode PCReset_QR(PC pc)
+{
   PC_QR *dir = (PC_QR *)pc->data;
 
   PetscFunctionBegin;
@@ -78,7 +80,8 @@ static PetscErrorCode PCReset_QR(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCDestroy_QR(PC pc) {
+static PetscErrorCode PCDestroy_QR(PC pc)
+{
   PC_QR *dir = (PC_QR *)pc->data;
 
   PetscFunctionBegin;
@@ -90,7 +93,8 @@ static PetscErrorCode PCDestroy_QR(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCApply_QR(PC pc, Vec x, Vec y) {
+static PetscErrorCode PCApply_QR(PC pc, Vec x, Vec y)
+{
   PC_QR *dir = (PC_QR *)pc->data;
   Mat    fact;
 
@@ -100,7 +104,8 @@ static PetscErrorCode PCApply_QR(PC pc, Vec x, Vec y) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCMatApply_QR(PC pc, Mat X, Mat Y) {
+static PetscErrorCode PCMatApply_QR(PC pc, Mat X, Mat Y)
+{
   PC_QR *dir = (PC_QR *)pc->data;
   Mat    fact;
 
@@ -110,7 +115,8 @@ static PetscErrorCode PCMatApply_QR(PC pc, Mat X, Mat Y) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCApplyTranspose_QR(PC pc, Vec x, Vec y) {
+static PetscErrorCode PCApplyTranspose_QR(PC pc, Vec x, Vec y)
+{
   PC_QR *dir = (PC_QR *)pc->data;
   Mat    fact;
 
@@ -137,7 +143,8 @@ static PetscErrorCode PCApplyTranspose_QR(PC pc, Vec x, Vec y) {
           `PCFactorReorderForNonzeroDiagonal()`
 M*/
 
-PETSC_EXTERN PetscErrorCode PCCreate_QR(PC pc) {
+PETSC_EXTERN PetscErrorCode PCCreate_QR(PC pc)
+{
   PC_QR *dir;
 
   PetscFunctionBegin;

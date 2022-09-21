@@ -57,12 +57,12 @@ typedef struct {
   PetscSimplePointFunc normalFunc;  /* A function returning the normal at a given point */
   PetscBool            symmetric;   /* Extrude layers symmetrically about the surface */
   /* Calculated quantities */
-  PetscReal           *layerPos; /* The position of each layer relative to the original surface, along the local normal direction */
-  PetscInt            *Nt;       /* The array of the number of target types */
-  DMPolytopeType     **target;   /* The array of target types */
-  PetscInt           **size;     /* The array of the number of each target type */
-  PetscInt           **cone;     /* The array of cones for each target cell */
-  PetscInt           **ornt;     /* The array of orientation for each target cell */
+  PetscReal       *layerPos; /* The position of each layer relative to the original surface, along the local normal direction */
+  PetscInt        *Nt;       /* The array of the number of target types */
+  DMPolytopeType **target;   /* The array of target types */
+  PetscInt       **size;     /* The array of the number of each target type */
+  PetscInt       **cone;     /* The array of cones for each target cell */
+  PetscInt       **ornt;     /* The array of orientation for each target cell */
 } DMPlexTransform_Extrude;
 
 typedef struct {

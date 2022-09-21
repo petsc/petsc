@@ -23,7 +23,8 @@ PetscLogEvent     TSTrajectory_Set, TSTrajectory_Get, TSTrajectory_GetVecs, TSTr
 
 .seealso: `TSTrajectoryRegisterAll()`
 @*/
-PetscErrorCode TSTrajectoryRegister(const char sname[], PetscErrorCode (*function)(TSTrajectory, TS)) {
+PetscErrorCode TSTrajectoryRegister(const char sname[], PetscErrorCode (*function)(TSTrajectory, TS))
+{
   PetscFunctionBegin;
   PetscCall(PetscFunctionListAdd(&TSTrajectoryList, sname, function));
   PetscFunctionReturn(0);
@@ -47,7 +48,8 @@ PetscErrorCode TSTrajectoryRegister(const char sname[], PetscErrorCode (*functio
 
 .seealso: `TSTrajectorySetUp()`, `TSTrajectoryDestroy()`, `TSTrajectorySetType()`, `TSTrajectorySetVariableNames()`, `TSGetTrajectory()`, `TSTrajectoryGet()`, `TSTrajectoryGetVecs()`
 @*/
-PetscErrorCode TSTrajectorySet(TSTrajectory tj, TS ts, PetscInt stepnum, PetscReal time, Vec X) {
+PetscErrorCode TSTrajectorySet(TSTrajectory tj, TS ts, PetscInt stepnum, PetscReal time, Vec X)
+{
   PetscFunctionBegin;
   if (!tj) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(tj, TSTRAJECTORY_CLASSID, 1);
@@ -80,7 +82,8 @@ PetscErrorCode TSTrajectorySet(TSTrajectory tj, TS ts, PetscInt stepnum, PetscRe
 
 .seealso: `TSTrajectorySet()`
 @*/
-PetscErrorCode TSTrajectoryGetNumSteps(TSTrajectory tj, PetscInt *steps) {
+PetscErrorCode TSTrajectoryGetNumSteps(TSTrajectory tj, PetscInt *steps)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tj, TSTRAJECTORY_CLASSID, 1);
   PetscValidIntPointer(steps, 2);
@@ -107,7 +110,8 @@ PetscErrorCode TSTrajectoryGetNumSteps(TSTrajectory tj, PetscInt *steps) {
 
 .seealso: `TSTrajectorySetUp()`, `TSTrajectoryDestroy()`, `TSTrajectorySetType()`, `TSTrajectorySetVariableNames()`, `TSGetTrajectory()`, `TSTrajectorySet()`, `TSTrajectoryGetVecs()`, `TSGetSolution()`
 @*/
-PetscErrorCode TSTrajectoryGet(TSTrajectory tj, TS ts, PetscInt stepnum, PetscReal *time) {
+PetscErrorCode TSTrajectoryGet(TSTrajectory tj, TS ts, PetscInt stepnum, PetscReal *time)
+{
   PetscFunctionBegin;
   PetscCheck(tj, PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_WRONGSTATE, "TS solver did not save trajectory");
   PetscValidHeaderSpecific(tj, TSTRAJECTORY_CLASSID, 1);
@@ -150,7 +154,8 @@ PetscErrorCode TSTrajectoryGet(TSTrajectory tj, TS ts, PetscInt stepnum, PetscRe
 
 .seealso: `TSTrajectorySetUp()`, `TSTrajectoryDestroy()`, `TSTrajectorySetType()`, `TSTrajectorySetVariableNames()`, `TSGetTrajectory()`, `TSTrajectorySet()`, `TSTrajectoryGet()`
 @*/
-PetscErrorCode TSTrajectoryGetVecs(TSTrajectory tj, TS ts, PetscInt stepnum, PetscReal *time, Vec U, Vec Udot) {
+PetscErrorCode TSTrajectoryGetVecs(TSTrajectory tj, TS ts, PetscInt stepnum, PetscReal *time, Vec U, Vec Udot)
+{
   PetscFunctionBegin;
   PetscCheck(tj, PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_WRONGSTATE, "TS solver did not save trajectory");
   PetscValidHeaderSpecific(tj, TSTRAJECTORY_CLASSID, 1);
@@ -259,7 +264,8 @@ PetscErrorCode TSTrajectoryGetVecs(TSTrajectory tj, TS ts, PetscInt stepnum, Pet
    Level: intermediate
 .seealso: `TSTrajectory`, `TSTrajectoryView`, `PetscObjectViewFromOptions()`, `TSTrajectoryCreate()`
 @*/
-PetscErrorCode TSTrajectoryViewFromOptions(TSTrajectory A, PetscObject obj, const char name[]) {
+PetscErrorCode TSTrajectoryViewFromOptions(TSTrajectory A, PetscObject obj, const char name[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, TSTRAJECTORY_CLASSID, 1);
   PetscCall(PetscObjectViewFromOptions((PetscObject)A, obj, name));
@@ -293,7 +299,8 @@ PetscErrorCode TSTrajectoryViewFromOptions(TSTrajectory A, PetscObject obj, cons
 
 .seealso: `PetscViewerASCIIOpen()`
 @*/
-PetscErrorCode TSTrajectoryView(TSTrajectory tj, PetscViewer viewer) {
+PetscErrorCode TSTrajectoryView(TSTrajectory tj, PetscViewer viewer)
+{
   PetscBool iascii;
 
   PetscFunctionBegin;
@@ -330,7 +337,8 @@ PetscErrorCode TSTrajectoryView(TSTrajectory tj, PetscViewer viewer) {
 
 .seealso: `TSTrajectory`, `TSGetTrajectory()`
 @*/
-PetscErrorCode TSTrajectorySetVariableNames(TSTrajectory ctx, const char *const *names) {
+PetscErrorCode TSTrajectorySetVariableNames(TSTrajectory ctx, const char *const *names)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ctx, TSTRAJECTORY_CLASSID, 1);
   PetscValidPointer(names, 2);
@@ -354,7 +362,8 @@ PetscErrorCode TSTrajectorySetVariableNames(TSTrajectory ctx, const char *const 
 
 .seealso: `TSTrajectorySetVariableNames()`, `TSTrajectory`, `TSMonitorLGSetTransform()`
 @*/
-PetscErrorCode TSTrajectorySetTransform(TSTrajectory tj, PetscErrorCode (*transform)(void *, Vec, Vec *), PetscErrorCode (*destroy)(void *), void *tctx) {
+PetscErrorCode TSTrajectorySetTransform(TSTrajectory tj, PetscErrorCode (*transform)(void *, Vec, Vec *), PetscErrorCode (*destroy)(void *), void *tctx)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tj, TSTRAJECTORY_CLASSID, 1);
   tj->transform        = transform;
@@ -381,7 +390,8 @@ PetscErrorCode TSTrajectorySetTransform(TSTrajectory tj, PetscErrorCode (*transf
 
 .seealso: `TSTrajectorySetUp()`, `TSTrajectoryDestroy()`, `TSTrajectorySetType()`, `TSTrajectorySetVariableNames()`, `TSGetTrajectory()`, `TSTrajectorySetKeepFiles()`
 @*/
-PetscErrorCode TSTrajectoryCreate(MPI_Comm comm, TSTrajectory *tj) {
+PetscErrorCode TSTrajectoryCreate(MPI_Comm comm, TSTrajectory *tj)
+{
   TSTrajectory t;
 
   PetscFunctionBegin;
@@ -436,7 +446,8 @@ PetscErrorCode TSTrajectoryCreate(MPI_Comm comm, TSTrajectory *tj) {
 .seealso: `TS`, `TSTrajectoryCreate()`, `TSTrajectorySetFromOptions()`, `TSTrajectoryDestroy()`, `TSTrajectoryGetType()`
 
 @*/
-PetscErrorCode TSTrajectorySetType(TSTrajectory tj, TS ts, TSTrajectoryType type) {
+PetscErrorCode TSTrajectorySetType(TSTrajectory tj, TS ts, TSTrajectoryType type)
+{
   PetscErrorCode (*r)(TSTrajectory, TS);
   PetscBool match;
 
@@ -476,7 +487,8 @@ PetscErrorCode TSTrajectorySetType(TSTrajectory tj, TS ts, TSTrajectoryType type
 .seealso: `TS`, `TSTrajectoryCreate()`, `TSTrajectorySetFromOptions()`, `TSTrajectoryDestroy()`, `TSTrajectorySetType()`
 
 @*/
-PetscErrorCode TSTrajectoryGetType(TSTrajectory tj, TS ts, TSTrajectoryType *type) {
+PetscErrorCode TSTrajectoryGetType(TSTrajectory tj, TS ts, TSTrajectoryType *type)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tj, TSTRAJECTORY_CLASSID, 1);
   if (type) *type = ((PetscObject)tj)->type_name;
@@ -497,7 +509,8 @@ PETSC_EXTERN PetscErrorCode TSTrajectoryCreate_Visualization(TSTrajectory, TS);
 
 .seealso: `TSTrajectoryRegister()`
 @*/
-PetscErrorCode TSTrajectoryRegisterAll(void) {
+PetscErrorCode TSTrajectoryRegisterAll(void)
+{
   PetscFunctionBegin;
   if (TSTrajectoryRegisterAllCalled) PetscFunctionReturn(0);
   TSTrajectoryRegisterAllCalled = PETSC_TRUE;
@@ -521,7 +534,8 @@ PetscErrorCode TSTrajectoryRegisterAll(void) {
 
 .seealso: `TSTrajectoryCreate()`, `TSTrajectorySetUp()`
 @*/
-PetscErrorCode TSTrajectoryReset(TSTrajectory tj) {
+PetscErrorCode TSTrajectoryReset(TSTrajectory tj)
+{
   PetscFunctionBegin;
   if (!tj) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(tj, TSTRAJECTORY_CLASSID, 1);
@@ -545,7 +559,8 @@ PetscErrorCode TSTrajectoryReset(TSTrajectory tj) {
 
 .seealso: `TSTrajectoryCreate()`, `TSTrajectorySetUp()`
 @*/
-PetscErrorCode TSTrajectoryDestroy(TSTrajectory *tj) {
+PetscErrorCode TSTrajectoryDestroy(TSTrajectory *tj)
+{
   PetscFunctionBegin;
   if (!*tj) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*tj), TSTRAJECTORY_CLASSID, 1);
@@ -596,7 +611,8 @@ PetscErrorCode TSTrajectoryDestroy(TSTrajectory *tj) {
 
 .seealso: `TSTrajectorySetFromOptions()`, `TSTrajectorySetType()`
 */
-static PetscErrorCode TSTrajectorySetTypeFromOptions_Private(PetscOptionItems *PetscOptionsObject, TSTrajectory tj, TS ts) {
+static PetscErrorCode TSTrajectorySetTypeFromOptions_Private(PetscOptionItems *PetscOptionsObject, TSTrajectory tj, TS ts)
+{
   PetscBool   opt;
   const char *defaultType;
   char        typeName[256];
@@ -631,7 +647,8 @@ static PetscErrorCode TSTrajectorySetTypeFromOptions_Private(PetscOptionItems *P
 
 .seealso: `TSTrajectoryCreate()`, `TSTrajectoryDestroy()`, `TSTrajectorySetUp()`
 @*/
-PetscErrorCode TSTrajectorySetUseHistory(TSTrajectory tj, PetscBool flg) {
+PetscErrorCode TSTrajectorySetUseHistory(TSTrajectory tj, PetscBool flg)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tj, TSTRAJECTORY_CLASSID, 1);
   PetscValidLogicalCollectiveBool(tj, flg, 2);
@@ -655,7 +672,8 @@ PetscErrorCode TSTrajectorySetUseHistory(TSTrajectory tj, PetscBool flg) {
 
 .seealso: `TSTrajectoryCreate()`, `TSTrajectoryDestroy()`, `TSTrajectorySetUp()`
 @*/
-PetscErrorCode TSTrajectorySetMonitor(TSTrajectory tj, PetscBool flg) {
+PetscErrorCode TSTrajectorySetMonitor(TSTrajectory tj, PetscBool flg)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tj, TSTRAJECTORY_CLASSID, 1);
   PetscValidLogicalCollectiveBool(tj, flg, 2);
@@ -683,7 +701,8 @@ PetscErrorCode TSTrajectorySetMonitor(TSTrajectory tj, PetscBool flg) {
 
 .seealso: `TSTrajectoryCreate()`, `TSTrajectoryDestroy()`, `TSTrajectorySetUp()`, `TSTrajectorySetMonitor()`
 @*/
-PetscErrorCode TSTrajectorySetKeepFiles(TSTrajectory tj, PetscBool flg) {
+PetscErrorCode TSTrajectorySetKeepFiles(TSTrajectory tj, PetscBool flg)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tj, TSTRAJECTORY_CLASSID, 1);
   PetscValidLogicalCollectiveBool(tj, flg, 2);
@@ -710,7 +729,8 @@ PetscErrorCode TSTrajectorySetKeepFiles(TSTrajectory tj, PetscBool flg) {
 
 .seealso: `TSTrajectorySetFiletemplate()`, `TSTrajectorySetUp()`
 @*/
-PetscErrorCode TSTrajectorySetDirname(TSTrajectory tj, const char dirname[]) {
+PetscErrorCode TSTrajectorySetDirname(TSTrajectory tj, const char dirname[])
+{
   PetscBool flg;
 
   PetscFunctionBegin;
@@ -744,7 +764,8 @@ PetscErrorCode TSTrajectorySetDirname(TSTrajectory tj, const char dirname[]) {
 
 .seealso: `TSTrajectorySetDirname()`, `TSTrajectorySetUp()`
 @*/
-PetscErrorCode TSTrajectorySetFiletemplate(TSTrajectory tj, const char filetemplate[]) {
+PetscErrorCode TSTrajectorySetFiletemplate(TSTrajectory tj, const char filetemplate[])
+{
   const char *ptr, *ptr2;
 
   PetscFunctionBegin;
@@ -787,7 +808,8 @@ PetscErrorCode TSTrajectorySetFiletemplate(TSTrajectory tj, const char filetempl
 
 .seealso: `TSSetSaveTrajectory()`, `TSTrajectorySetUp()`
 @*/
-PetscErrorCode TSTrajectorySetFromOptions(TSTrajectory tj, TS ts) {
+PetscErrorCode TSTrajectorySetFromOptions(TSTrajectory tj, TS ts)
+{
   PetscBool set, flg;
   char      dirname[PETSC_MAX_PATH_LEN], filetemplate[PETSC_MAX_PATH_LEN];
 
@@ -832,7 +854,8 @@ PetscErrorCode TSTrajectorySetFromOptions(TSTrajectory tj, TS ts) {
 
 .seealso: `TSSetSaveTrajectory()`, `TSTrajectoryCreate()`, `TSTrajectoryDestroy()`
 @*/
-PetscErrorCode TSTrajectorySetUp(TSTrajectory tj, TS ts) {
+PetscErrorCode TSTrajectorySetUp(TSTrajectory tj, TS ts)
+{
   size_t s1, s2;
 
   PetscFunctionBegin;
@@ -873,7 +896,8 @@ PetscErrorCode TSTrajectorySetUp(TSTrajectory tj, TS ts) {
 
 .seealso: `TSSetSaveTrajectory()`, `TSTrajectoryCreate()`, `TSTrajectoryDestroy()`, `TSTrajectoryGetSolutionOnly()`
 @*/
-PetscErrorCode TSTrajectorySetSolutionOnly(TSTrajectory tj, PetscBool solution_only) {
+PetscErrorCode TSTrajectorySetSolutionOnly(TSTrajectory tj, PetscBool solution_only)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tj, TSTRAJECTORY_CLASSID, 1);
   PetscValidLogicalCollectiveBool(tj, solution_only, 2);
@@ -896,7 +920,8 @@ PetscErrorCode TSTrajectorySetSolutionOnly(TSTrajectory tj, PetscBool solution_o
 
 .seealso: `TSSetSaveTrajectory()`, `TSTrajectoryCreate()`, `TSTrajectoryDestroy()`, `TSTrajectorySetSolutionOnly()`
 @*/
-PetscErrorCode TSTrajectoryGetSolutionOnly(TSTrajectory tj, PetscBool *solution_only) {
+PetscErrorCode TSTrajectoryGetSolutionOnly(TSTrajectory tj, PetscBool *solution_only)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tj, TSTRAJECTORY_CLASSID, 1);
   PetscValidBoolPointer(solution_only, 2);
@@ -926,7 +951,8 @@ PetscErrorCode TSTrajectoryGetSolutionOnly(TSTrajectory tj, PetscBool *solution_
 
 .seealso: `TSSetSaveTrajectory()`, `TSTrajectoryCreate()`, `TSTrajectoryDestroy()`, `TSTrajectoryRestoreUpdatedHistoryVecs()`, `TSTrajectoryGetVecs()`
 @*/
-PetscErrorCode TSTrajectoryGetUpdatedHistoryVecs(TSTrajectory tj, TS ts, PetscReal time, Vec *U, Vec *Udot) {
+PetscErrorCode TSTrajectoryGetUpdatedHistoryVecs(TSTrajectory tj, TS ts, PetscReal time, Vec *U, Vec *Udot)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tj, TSTRAJECTORY_CLASSID, 1);
   PetscValidHeaderSpecific(ts, TS_CLASSID, 2);
@@ -971,7 +997,8 @@ PetscErrorCode TSTrajectoryGetUpdatedHistoryVecs(TSTrajectory tj, TS ts, PetscRe
 
 .seealso: `TSTrajectoryGetUpdatedHistoryVecs()`
 @*/
-PetscErrorCode TSTrajectoryRestoreUpdatedHistoryVecs(TSTrajectory tj, Vec *U, Vec *Udot) {
+PetscErrorCode TSTrajectoryRestoreUpdatedHistoryVecs(TSTrajectory tj, Vec *U, Vec *Udot)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tj, TSTRAJECTORY_CLASSID, 1);
   if (U) PetscValidHeaderSpecific(*U, VEC_CLASSID, 2);

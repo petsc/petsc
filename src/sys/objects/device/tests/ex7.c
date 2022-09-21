@@ -4,7 +4,8 @@ static const char help[] = "Tests PetscDeviceAllocate().\n\n";
 
 #define DebugPrintf(comm, ...) PetscPrintf((comm), "[DEBUG OUTPUT] " __VA_ARGS__)
 
-static PetscErrorCode IncrementSize(PetscRandom rand, PetscInt *value) {
+static PetscErrorCode IncrementSize(PetscRandom rand, PetscInt *value)
+{
   PetscReal rval;
 
   PetscFunctionBegin;
@@ -16,7 +17,8 @@ static PetscErrorCode IncrementSize(PetscRandom rand, PetscInt *value) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TestAllocate(PetscDeviceContext dctx, PetscRandom rand, PetscMemType mtype) {
+static PetscErrorCode TestAllocate(PetscDeviceContext dctx, PetscRandom rand, PetscMemType mtype)
+{
   PetscScalar *ptr, *tmp_ptr;
   PetscInt     n = 10;
 
@@ -94,7 +96,8 @@ static PetscErrorCode TestAllocate(PetscDeviceContext dctx, PetscRandom rand, Pe
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TestAsyncCoherence(PetscDeviceContext dctx, PetscRandom rand) {
+static PetscErrorCode TestAsyncCoherence(PetscDeviceContext dctx, PetscRandom rand)
+{
   const PetscInt      nsub = 2;
   const PetscInt      n    = 1024;
   PetscScalar        *ptr, *tmp_ptr;
@@ -146,7 +149,8 @@ static PetscErrorCode TestAsyncCoherence(PetscDeviceContext dctx, PetscRandom ra
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   PetscDeviceContext dctx;
   PetscRandom        rand;
 

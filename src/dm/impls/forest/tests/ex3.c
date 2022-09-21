@@ -4,7 +4,8 @@ static char help[] = "Tests adaptive refinement using DMForest, and uses HDF5.\n
 #include <petscdmplex.h>
 #include <petscviewerhdf5.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM           base, forest, plex;
   PetscSection s;
   PetscViewer  viewer;

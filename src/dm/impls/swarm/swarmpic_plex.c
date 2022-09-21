@@ -5,7 +5,8 @@
 
 PetscErrorCode private_DMSwarmSetPointCoordinatesCellwise_PLEX(DM, DM, PetscInt, PetscReal *xi);
 
-static PetscErrorCode private_PetscFECreateDefault_scalar_pk1(DM dm, PetscInt dim, PetscBool isSimplex, PetscInt qorder, PetscFE *fem) {
+static PetscErrorCode private_PetscFECreateDefault_scalar_pk1(DM dm, PetscInt dim, PetscBool isSimplex, PetscInt qorder, PetscFE *fem)
+{
   const PetscInt  Nc = 1;
   PetscQuadrature q, fq;
   DM              K;
@@ -68,7 +69,8 @@ static PetscErrorCode private_PetscFECreateDefault_scalar_pk1(DM dm, PetscInt di
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode subdivide_triangle(PetscReal v1[2], PetscReal v2[2], PetscReal v3[2], PetscInt depth, PetscInt max, PetscReal xi[], PetscInt *np) {
+PetscErrorCode subdivide_triangle(PetscReal v1[2], PetscReal v2[2], PetscReal v3[2], PetscInt depth, PetscInt max, PetscReal xi[], PetscInt *np)
+{
   PetscReal v12[2], v23[2], v31[2];
   PetscInt  i;
 
@@ -100,7 +102,8 @@ PetscErrorCode subdivide_triangle(PetscReal v1[2], PetscReal v2[2], PetscReal v3
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX2D_SubDivide(DM dm, DM dmc, PetscInt nsub) {
+PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX2D_SubDivide(DM dm, DM dmc, PetscInt nsub)
+{
   const PetscInt dim = 2;
   PetscInt       q, npoints_q, e, nel, npe, pcnt, ps, pe, d, k, depth;
   PetscReal     *xi;
@@ -171,7 +174,8 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX2D_SubDivide(DM dm, DM
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX_SubDivide(DM dm, DM dmc, PetscInt nsub) {
+PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX_SubDivide(DM dm, DM dmc, PetscInt nsub)
+{
   PetscInt         dim, nfaces, nbasis;
   PetscInt         q, npoints_q, e, nel, pcnt, ps, pe, d, k, r;
   PetscTabulation  T;
@@ -237,7 +241,8 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX_SubDivide(DM dm, DM d
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX2D_Regular(DM dm, DM dmc, PetscInt npoints) {
+PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX2D_Regular(DM dm, DM dmc, PetscInt npoints)
+{
   PetscInt     dim;
   PetscInt     ii, jj, q, npoints_q, e, nel, npe, pcnt, ps, pe, d, k, nfaces;
   PetscReal   *xi, ds, ds2;
@@ -321,7 +326,8 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX2D_Regular(DM dm, DM d
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX(DM dm, DM celldm, DMSwarmPICLayoutType layout, PetscInt layout_param) {
+PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX(DM dm, DM celldm, DMSwarmPICLayoutType layout, PetscInt layout_param)
+{
   PetscInt dim;
 
   PetscFunctionBegin;
@@ -352,7 +358,9 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX(DM dm, DM celldm, DMS
     PetscCall(private_DMSwarmSetPointCoordinatesCellwise_PLEX(dm, celldm, npoints, (PetscReal *)xi));
     PetscCall(PetscQuadratureDestroy(&quadrature));
   } break;
-  case DMSWARMPIC_LAYOUT_SUBDIVISION: PetscCall(private_DMSwarmInsertPointsUsingCellDM_PLEX_SubDivide(dm, celldm, layout_param)); break;
+  case DMSWARMPIC_LAYOUT_SUBDIVISION:
+    PetscCall(private_DMSwarmInsertPointsUsingCellDM_PLEX_SubDivide(dm, celldm, layout_param));
+    break;
   }
   PetscFunctionReturn(0);
 }
@@ -422,7 +430,8 @@ static PetscErrorCode _ComputeLocalCoordinateAffine2d(PetscReal xp[],PetscReal c
 }
 */
 
-static PetscErrorCode ComputeLocalCoordinateAffine2d(PetscReal xp[], PetscScalar coords[], PetscReal xip[], PetscReal *dJ) {
+static PetscErrorCode ComputeLocalCoordinateAffine2d(PetscReal xp[], PetscScalar coords[], PetscReal xip[], PetscReal *dJ)
+{
   PetscReal x1, y1, x2, y2, x3, y3;
   PetscReal b[2], A[2][2], inv[2][2], detJ, od;
 
@@ -457,7 +466,8 @@ static PetscErrorCode ComputeLocalCoordinateAffine2d(PetscReal xp[], PetscScalar
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMSwarmProjectField_ApproxP1_PLEX_2D(DM swarm, PetscReal *swarm_field, DM dm, Vec v_field) {
+PetscErrorCode DMSwarmProjectField_ApproxP1_PLEX_2D(DM swarm, PetscReal *swarm_field, DM dm, Vec v_field)
+{
   const PetscReal PLEX_C_EPS = 1.0e-8;
   Vec             v_field_l, denom_l, coor_l, denom;
   PetscInt        k, p, e, npoints;
@@ -595,7 +605,8 @@ PetscErrorCode DMSwarmProjectField_ApproxP1_PLEX_2D(DM swarm, PetscReal *swarm_f
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode private_DMSwarmProjectFields_PLEX(DM swarm, DM celldm, PetscInt project_type, PetscInt nfields, DMSwarmDataField dfield[], Vec vecs[]) {
+PetscErrorCode private_DMSwarmProjectFields_PLEX(DM swarm, DM celldm, PetscInt project_type, PetscInt nfields, DMSwarmDataField dfield[], Vec vecs[])
+{
   PetscInt f, dim;
 
   PetscFunctionBegin;
@@ -609,13 +620,16 @@ PetscErrorCode private_DMSwarmProjectFields_PLEX(DM swarm, DM celldm, PetscInt p
       PetscCall(DMSwarmProjectField_ApproxP1_PLEX_2D(swarm, swarm_field, celldm, vecs[f]));
     }
     break;
-  case 3: SETERRQ(PetscObjectComm((PetscObject)swarm), PETSC_ERR_SUP, "No support for 3D");
-  default: break;
+  case 3:
+    SETERRQ(PetscObjectComm((PetscObject)swarm), PETSC_ERR_SUP, "No support for 3D");
+  default:
+    break;
   }
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode private_DMSwarmSetPointCoordinatesCellwise_PLEX(DM dm, DM dmc, PetscInt npoints, PetscReal xi[]) {
+PetscErrorCode private_DMSwarmSetPointCoordinatesCellwise_PLEX(DM dm, DM dmc, PetscInt npoints, PetscReal xi[])
+{
   PetscBool       is_simplex, is_tensorcell;
   PetscInt        dim, nfaces, ps, pe, p, d, nbasis, pcnt, e, k, nel;
   PetscFE         fe;
@@ -645,7 +659,8 @@ PetscErrorCode private_DMSwarmSetPointCoordinatesCellwise_PLEX(DM dm, DM dmc, Pe
   case 3:
     if (nfaces == 6) is_tensorcell = PETSC_TRUE;
     break;
-  default: SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Only support for 2D, 3D");
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Only support for 2D, 3D");
   }
 
   /* check points provided fail inside the reference cell */

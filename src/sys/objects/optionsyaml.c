@@ -2,18 +2,20 @@
 #include <petsc/private/petscimpl.h>     /*I  "petscsys.h"  I*/
 
 #if defined(PETSC_HAVE_YAML)
-#include <yaml.h> /* use external LibYAML */
+  #include <yaml.h> /* use external LibYAML */
 #else
-#include <../src/sys/yaml/include/yaml.h>
+  #include <../src/sys/yaml/include/yaml.h>
 #endif
 
 static MPI_Comm petsc_yaml_comm = MPI_COMM_NULL; /* only used for parallel error handling */
 
-static inline MPI_Comm PetscYAMLGetComm(void) {
+static inline MPI_Comm PetscYAMLGetComm(void)
+{
   return PetscLikely(petsc_yaml_comm != MPI_COMM_NULL) ? petsc_yaml_comm : (petsc_yaml_comm = PETSC_COMM_SELF);
 }
 
-static inline MPI_Comm PetscYAMLSetComm(MPI_Comm comm) {
+static inline MPI_Comm PetscYAMLSetComm(MPI_Comm comm)
+{
   MPI_Comm prev   = PetscYAMLGetComm();
   petsc_yaml_comm = comm;
   return prev;
@@ -24,7 +26,8 @@ static inline MPI_Comm PetscYAMLSetComm(MPI_Comm comm) {
 #define SEQ(node) ((node)->data.sequence.items)
 #define MAP(node) ((node)->data.mapping.pairs)
 
-static PetscErrorCode PetscParseLayerYAML(PetscOptions options, yaml_document_t *doc, yaml_node_t *node) {
+static PetscErrorCode PetscParseLayerYAML(PetscOptions options, yaml_document_t *doc, yaml_node_t *node)
+{
   MPI_Comm comm                        = PetscYAMLGetComm();
   char     name[PETSC_MAX_OPTION_NAME] = "", prefix[PETSC_MAX_OPTION_NAME] = "";
 
@@ -163,7 +166,8 @@ static PetscErrorCode PetscParseLayerYAML(PetscOptions options, yaml_document_t 
           `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
           `PetscOptionsFList()`, `PetscOptionsEList()`, `PetscOptionsInsertFile()`, `PetscOptionsInsertFileYAML()`
 @*/
-PetscErrorCode PetscOptionsInsertStringYAML(PetscOptions options, const char in_str[]) {
+PetscErrorCode PetscOptionsInsertStringYAML(PetscOptions options, const char in_str[])
+{
   MPI_Comm        comm = PetscYAMLGetComm();
   yaml_parser_t   parser;
   yaml_document_t doc;
@@ -213,7 +217,8 @@ PetscErrorCode PetscOptionsInsertStringYAML(PetscOptions options, const char in_
           `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
           `PetscOptionsFList()`, `PetscOptionsEList()`, `PetscOptionsInsertFile()`, `PetscOptionsInsertStringYAML()`
 @*/
-PetscErrorCode PetscOptionsInsertFileYAML(MPI_Comm comm, PetscOptions options, const char file[], PetscBool require) {
+PetscErrorCode PetscOptionsInsertFileYAML(MPI_Comm comm, PetscOptions options, const char file[], PetscBool require)
+{
   int         yamlLength = -1;
   char       *yamlString = NULL;
   MPI_Comm    prev;
@@ -261,32 +266,33 @@ PetscErrorCode PetscOptionsInsertFileYAML(MPI_Comm comm, PetscOptions options, c
 
 #if !defined(PETSC_HAVE_YAML)
 
-/*
+  /*
 #if !defined(PETSC_HAVE_STRDUP)
 #define strdup(s) (char*)memcpy(malloc(strlen(s)+1),s,strlen(s)+1)
 #endif
 */
 
-/* Embed LibYAML in this compilation unit */
-#include <../src/sys/yaml/src/api.c>
-#include <../src/sys/yaml/src/loader.c>
-#include <../src/sys/yaml/src/parser.c>
-#include <../src/sys/yaml/src/reader.c>
+  /* Embed LibYAML in this compilation unit */
+  #include <../src/sys/yaml/src/api.c>
+  #include <../src/sys/yaml/src/loader.c>
+  #include <../src/sys/yaml/src/parser.c>
+  #include <../src/sys/yaml/src/reader.c>
 
-/*
+  /*
   Avoid compiler warnings like
     scanner.c, line 3181: warning: integer conversion resulted in a change of sign
                           *(string.pointer++) = '\xC2';
 
   Once yaml fixes them, we can remove the pragmas
 */
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wsign-conversion"
-#include <../src/sys/yaml/src/scanner.c>
-#pragma GCC diagnostic pop
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wsign-conversion"
+  #include <../src/sys/yaml/src/scanner.c>
+  #pragma GCC diagnostic pop
 
 /* Silence a few unused-function warnings */
-static PETSC_UNUSED void petsc_yaml_unused(void) {
+static PETSC_UNUSED void petsc_yaml_unused(void)
+{
   (void)yaml_parser_scan;
   (void)yaml_document_get_node;
   (void)yaml_parser_set_encoding;

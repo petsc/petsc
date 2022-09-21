@@ -4,19 +4,19 @@
 */
 #include <petscsys.h>
 #if defined(PETSC_HAVE_SYS_UTSNAME_H)
-#include <sys/utsname.h>
+  #include <sys/utsname.h>
 #endif
 #if defined(PETSC_HAVE_WINDOWS_H)
-#include <windows.h>
+  #include <windows.h>
 #endif
 #if defined(PETSC_HAVE_SYS_SYSTEMINFO_H)
-#include <sys/systeminfo.h>
+  #include <sys/systeminfo.h>
 #endif
 #if defined(PETSC_HAVE_UNISTD_H)
-#include <unistd.h>
+  #include <unistd.h>
 #endif
 #if defined(PETSC_HAVE_NETDB_H)
-#include <netdb.h>
+  #include <netdb.h>
 #endif
 
 /*@C
@@ -43,7 +43,8 @@ $       call PetscGetHostName(name,ierr)
 
 .seealso: `PetscGetUserName()`, `PetscGetArchType()`
 @*/
-PetscErrorCode PetscGetHostName(char name[], size_t nlen) {
+PetscErrorCode PetscGetHostName(char name[], size_t nlen)
+{
   char *domain;
 #if defined(PETSC_HAVE_UNAME) && !defined(PETSC_HAVE_GETCOMPUTERNAME)
   struct utsname utname;

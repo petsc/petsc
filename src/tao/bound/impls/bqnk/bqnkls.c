@@ -10,7 +10,8 @@
   Level: beginner
 .seealso `TAOBNK`, `TAOBQNKTR`, `TAOBQNKTL`
 M*/
-PETSC_EXTERN PetscErrorCode TaoCreate_BQNKLS(Tao tao) {
+PETSC_EXTERN PetscErrorCode TaoCreate_BQNKLS(Tao tao)
+{
   TAO_BNK  *bnk;
   TAO_BQNK *bqnk;
 

@@ -1,10 +1,10 @@
 #if !defined(DMPRODUCTIMPL_H_)
-#define DMPRODUCTIMPL_H_
+  #define DMPRODUCTIMPL_H_
 
-#include <petscdmproduct.h> /*I "petscdmproduct.h" I*/
-#include <petsc/private/dmimpl.h>
+  #include <petscdmproduct.h> /*I "petscdmproduct.h" I*/
+  #include <petsc/private/dmimpl.h>
 
-#define DMPRODUCT_MAX_DIM 3
+  #define DMPRODUCT_MAX_DIM 3
 
 typedef struct {
   DM       dm[DMPRODUCT_MAX_DIM];

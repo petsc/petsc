@@ -13,7 +13,8 @@
    Kind of slow! But that's what application programmers get when
    they are sloppy.
 */
-PetscErrorCode MatDisAssemble_MPISELL(Mat A) {
+PetscErrorCode MatDisAssemble_MPISELL(Mat A)
+{
   Mat_MPISELL *sell  = (Mat_MPISELL *)A->data;
   Mat          B     = sell->B, Bnew;
   Mat_SeqSELL *Bsell = (Mat_SeqSELL *)B->data;
@@ -69,7 +70,8 @@ PetscErrorCode MatDisAssemble_MPISELL(Mat A) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatSetUpMultiply_MPISELL(Mat mat) {
+PetscErrorCode MatSetUpMultiply_MPISELL(Mat mat)
+{
   Mat_MPISELL *sell = (Mat_MPISELL *)mat->data;
   Mat_SeqSELL *B    = (Mat_SeqSELL *)(sell->B->data);
   PetscInt     i, j, *bcolidx = B->colidx, ec = 0, *garray, totalslices;
@@ -194,7 +196,8 @@ PetscErrorCode MatSetUpMultiply_MPISELL(Mat mat) {
 static PetscInt *auglyrmapd = NULL, *auglyrmapo = NULL; /* mapping from the local ordering to the "diagonal" and "off-diagonal" parts of the local matrix */
 static Vec       auglydd = NULL, auglyoo = NULL;        /* work vectors used to scale the two parts of the local matrix */
 
-PetscErrorCode MatMPISELLDiagonalScaleLocalSetUp(Mat inA, Vec scale) {
+PetscErrorCode MatMPISELLDiagonalScaleLocalSetUp(Mat inA, Vec scale)
+{
   Mat_MPISELL *ina = (Mat_MPISELL *)inA->data; /*access private part of matrix */
   PetscInt     i, n, nt, cstart, cend, no, *garray = ina->garray, *lindices;
   PetscInt    *r_rmapd, *r_rmapo;
@@ -239,7 +242,8 @@ PetscErrorCode MatMPISELLDiagonalScaleLocalSetUp(Mat inA, Vec scale) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatDiagonalScaleLocal_MPISELL(Mat A, Vec scale) {
+PetscErrorCode MatDiagonalScaleLocal_MPISELL(Mat A, Vec scale)
+{
   Mat_MPISELL       *a = (Mat_MPISELL *)A->data; /*access private part of matrix */
   PetscInt           n, i;
   PetscScalar       *d, *o;

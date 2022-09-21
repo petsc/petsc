@@ -4,7 +4,8 @@ Where at least a couple of mallocs will occur in the stash code.\n\n";
 
 #include <petscvec.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscMPIInt size;
   PetscInt    i, j, r, n = 50, repeat = 1, bs;
   PetscScalar val, *vals, zero = 0.0;

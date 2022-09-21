@@ -3,9 +3,11 @@
 
 #if defined(__cplusplus)
 
-namespace Petsc {
+namespace Petsc
+{
 
-namespace util {
+namespace util
+{
 
 // A useful crtp helper class to abstract away all the static_cast<Derived *>(this) nonsense
 template <typename T, template <typename> class CRTPType>

@@ -11,7 +11,8 @@ PETSC_EXTERN PetscErrorCode CharacteristicCreate_DA(Characteristic);
 
 .seealso: `CharacteristicRegisterDestroy()`
 @*/
-PetscErrorCode CharacteristicRegisterAll(void) {
+PetscErrorCode CharacteristicRegisterAll(void)
+{
   PetscFunctionBegin;
   if (CharacteristicRegisterAllCalled) PetscFunctionReturn(0);
   CharacteristicRegisterAllCalled = PETSC_TRUE;

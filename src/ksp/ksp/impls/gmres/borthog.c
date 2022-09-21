@@ -29,7 +29,8 @@
 .seealso: `KSPGMRESSetOrthogonalization()`, `KSPGMRESClassicalGramSchmidtOrthogonalization()`, `KSPGMRESGetOrthogonalization()`
 
 @*/
-PetscErrorCode KSPGMRESModifiedGramSchmidtOrthogonalization(KSP ksp, PetscInt it) {
+PetscErrorCode KSPGMRESModifiedGramSchmidtOrthogonalization(KSP ksp, PetscInt it)
+{
   KSP_GMRES   *gmres = (KSP_GMRES *)(ksp->data);
   PetscInt     j;
   PetscScalar *hh, *hes;

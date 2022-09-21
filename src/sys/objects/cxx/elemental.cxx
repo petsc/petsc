@@ -18,7 +18,8 @@
 
 .seealso: `MATELEMENTAL`, `PetscElementalFinalizePackage()`
 @*/
-PetscErrorCode PetscElementalInitializePackage(void) {
+PetscErrorCode PetscElementalInitializePackage(void)
+{
   if (El::Initialized()) return 0;
   if (PETSC_COMM_WORLD != MPI_COMM_NULL) { /* MPI has been initialized and PETSC_COMM_WORLD has been set */
     PetscMPIInt result;
@@ -44,7 +45,8 @@ PetscErrorCode PetscElementalInitializePackage(void) {
 
 .seealso: `MATELEMENTAL`, `PetscElementalInitializePackage()`
 @*/
-PetscErrorCode PetscElementalInitialized(PetscBool *isInitialized) {
+PetscErrorCode PetscElementalInitialized(PetscBool *isInitialized)
+{
   if (isInitialized) *isInitialized = (PetscBool)El::Initialized();
   return 0;
 }
@@ -62,7 +64,8 @@ PetscErrorCode PetscElementalInitialized(PetscBool *isInitialized) {
 
 .seealso: `MATELEMENTAL`, `PetscElementalInitializePackage()`
 @*/
-PetscErrorCode PetscElementalFinalizePackage(void) {
+PetscErrorCode PetscElementalFinalizePackage(void)
+{
   if (El::Initialized()) El::Finalize();
   return 0;
 }

@@ -3,7 +3,8 @@ static char help[] = "Test MatCreateSubMatrices\n\n";
 #include <petscis.h>
 #include <petscmat.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat         A, *submats, *submats2;
   IS         *irow, *icol;
   PetscInt    i, n;

@@ -17,20 +17,23 @@ typedef struct {
   InsertMode rhsfunctionlocalimode;
 } DMTS_DA;
 
-static PetscErrorCode DMTSDestroy_DMDA(DMTS sdm) {
+static PetscErrorCode DMTSDestroy_DMDA(DMTS sdm)
+{
   PetscFunctionBegin;
   PetscCall(PetscFree(sdm->data));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMTSDuplicate_DMDA(DMTS oldsdm, DMTS sdm) {
+static PetscErrorCode DMTSDuplicate_DMDA(DMTS oldsdm, DMTS sdm)
+{
   PetscFunctionBegin;
   PetscCall(PetscNew((DMTS_DA **)&sdm->data));
   if (oldsdm->data) PetscCall(PetscMemcpy(sdm->data, oldsdm->data, sizeof(DMTS_DA)));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMDATSGetContext(DM dm, DMTS sdm, DMTS_DA **dmdats) {
+static PetscErrorCode DMDATSGetContext(DM dm, DMTS sdm, DMTS_DA **dmdats)
+{
   PetscFunctionBegin;
   *dmdats = NULL;
   if (!sdm->data) {
@@ -42,7 +45,8 @@ static PetscErrorCode DMDATSGetContext(DM dm, DMTS sdm, DMTS_DA **dmdats) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSComputeIFunction_DMDA(TS ts, PetscReal ptime, Vec X, Vec Xdot, Vec F, void *ctx) {
+static PetscErrorCode TSComputeIFunction_DMDA(TS ts, PetscReal ptime, Vec X, Vec Xdot, Vec F, void *ctx)
+{
   DM            dm;
   DMTS_DA      *dmdats = (DMTS_DA *)ctx;
   DMDALocalInfo info;
@@ -86,7 +90,8 @@ static PetscErrorCode TSComputeIFunction_DMDA(TS ts, PetscReal ptime, Vec X, Vec
     PetscCall(DMLocalToGlobalEnd(dm, Floc, ADD_VALUES, F));
     PetscCall(DMRestoreLocalVector(dm, &Floc));
   } break;
-  default: SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_INCOMP, "Cannot use imode=%d", (int)dmdats->ifunctionlocalimode);
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_INCOMP, "Cannot use imode=%d", (int)dmdats->ifunctionlocalimode);
   }
   PetscCall(DMDAVecRestoreArray(dm, Xloc, &x));
   PetscCall(DMRestoreLocalVector(dm, &Xloc));
@@ -95,7 +100,8 @@ static PetscErrorCode TSComputeIFunction_DMDA(TS ts, PetscReal ptime, Vec X, Vec
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSComputeIJacobian_DMDA(TS ts, PetscReal ptime, Vec X, Vec Xdot, PetscReal shift, Mat A, Mat B, void *ctx) {
+static PetscErrorCode TSComputeIJacobian_DMDA(TS ts, PetscReal ptime, Vec X, Vec Xdot, PetscReal shift, Mat A, Mat B, void *ctx)
+{
   DM            dm;
   DMTS_DA      *dmdats = (DMTS_DA *)ctx;
   DMDALocalInfo info;
@@ -128,7 +134,8 @@ static PetscErrorCode TSComputeIJacobian_DMDA(TS ts, PetscReal ptime, Vec X, Vec
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSComputeRHSFunction_DMDA(TS ts, PetscReal ptime, Vec X, Vec F, void *ctx) {
+static PetscErrorCode TSComputeRHSFunction_DMDA(TS ts, PetscReal ptime, Vec X, Vec F, void *ctx)
+{
   DM            dm;
   DMTS_DA      *dmdats = (DMTS_DA *)ctx;
   DMDALocalInfo info;
@@ -168,14 +175,16 @@ static PetscErrorCode TSComputeRHSFunction_DMDA(TS ts, PetscReal ptime, Vec X, V
     PetscCall(DMLocalToGlobalEnd(dm, Floc, ADD_VALUES, F));
     PetscCall(DMRestoreLocalVector(dm, &Floc));
   } break;
-  default: SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_INCOMP, "Cannot use imode=%d", (int)dmdats->rhsfunctionlocalimode);
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_INCOMP, "Cannot use imode=%d", (int)dmdats->rhsfunctionlocalimode);
   }
   PetscCall(DMDAVecRestoreArray(dm, Xloc, &x));
   PetscCall(DMRestoreLocalVector(dm, &Xloc));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSComputeRHSJacobian_DMDA(TS ts, PetscReal ptime, Vec X, Mat A, Mat B, void *ctx) {
+static PetscErrorCode TSComputeRHSJacobian_DMDA(TS ts, PetscReal ptime, Vec X, Mat A, Mat B, void *ctx)
+{
   DM            dm;
   DMTS_DA      *dmdats = (DMTS_DA *)ctx;
   DMDALocalInfo info;
@@ -231,7 +240,8 @@ $ func(DMDALocalInfo info,PetscReal t,void *x,void *f,void *ctx)
 
 .seealso: `DMTSSetRHSFunction()`, `DMDATSSetRHSJacobianLocal()`, `DMDASNESSetFunctionLocal()`
 @*/
-PetscErrorCode DMDATSSetRHSFunctionLocal(DM dm, InsertMode imode, DMDATSRHSFunctionLocal func, void *ctx) {
+PetscErrorCode DMDATSSetRHSFunctionLocal(DM dm, InsertMode imode, DMDATSRHSFunctionLocal func, void *ctx)
+{
   DMTS     sdm;
   DMTS_DA *dmdats;
 
@@ -271,7 +281,8 @@ $ func(DMDALocalInfo* info,PetscReal t,void* x,Mat J,Mat B,void *ctx);
 
 .seealso: `DMTSSetRHSJacobian()`, `DMDATSSetRHSFunctionLocal()`, `DMDASNESSetJacobianLocal()`
 @*/
-PetscErrorCode DMDATSSetRHSJacobianLocal(DM dm, DMDATSRHSJacobianLocal func, void *ctx) {
+PetscErrorCode DMDATSSetRHSJacobianLocal(DM dm, DMDATSRHSJacobianLocal func, void *ctx)
+{
   DMTS     sdm;
   DMTS_DA *dmdats;
 
@@ -307,7 +318,8 @@ PetscErrorCode DMDATSSetRHSJacobianLocal(DM dm, DMDATSRHSJacobianLocal func, voi
 
 .seealso: `DMTSSetIFunction()`, `DMDATSSetIJacobianLocal()`, `DMDASNESSetFunctionLocal()`
 @*/
-PetscErrorCode DMDATSSetIFunctionLocal(DM dm, InsertMode imode, DMDATSIFunctionLocal func, void *ctx) {
+PetscErrorCode DMDATSSetIFunctionLocal(DM dm, InsertMode imode, DMDATSIFunctionLocal func, void *ctx)
+{
   DMTS     sdm;
   DMTS_DA *dmdats;
 
@@ -349,7 +361,8 @@ $ func(DMDALocalInfo* info,PetscReal t,void* x,void *xdot,PetscScalar shift,Mat 
 
 .seealso: `DMTSSetJacobian()`, `DMDATSSetIFunctionLocal()`, `DMDASNESSetJacobianLocal()`
 @*/
-PetscErrorCode DMDATSSetIJacobianLocal(DM dm, DMDATSIJacobianLocal func, void *ctx) {
+PetscErrorCode DMDATSSetIJacobianLocal(DM dm, DMDATSIJacobianLocal func, void *ctx)
+{
   DMTS     sdm;
   DMTS_DA *dmdats;
 
@@ -363,7 +376,8 @@ PetscErrorCode DMDATSSetIJacobianLocal(DM dm, DMDATSIJacobianLocal func, void *c
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TSMonitorDMDARayDestroy(void **mctx) {
+PetscErrorCode TSMonitorDMDARayDestroy(void **mctx)
+{
   TSMonitorDMDARayCtx *rayctx = (TSMonitorDMDARayCtx *)*mctx;
 
   PetscFunctionBegin;
@@ -375,7 +389,8 @@ PetscErrorCode TSMonitorDMDARayDestroy(void **mctx) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TSMonitorDMDARay(TS ts, PetscInt steps, PetscReal time, Vec u, void *mctx) {
+PetscErrorCode TSMonitorDMDARay(TS ts, PetscInt steps, PetscReal time, Vec u, void *mctx)
+{
   TSMonitorDMDARayCtx *rayctx = (TSMonitorDMDARayCtx *)mctx;
   Vec                  solution;
 
@@ -387,7 +402,8 @@ PetscErrorCode TSMonitorDMDARay(TS ts, PetscInt steps, PetscReal time, Vec u, vo
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TSMonitorLGDMDARay(TS ts, PetscInt step, PetscReal ptime, Vec u, void *ctx) {
+PetscErrorCode TSMonitorLGDMDARay(TS ts, PetscInt step, PetscReal ptime, Vec u, void *ctx)
+{
   TSMonitorDMDARayCtx *rayctx = (TSMonitorDMDARayCtx *)ctx;
   TSMonitorLGCtx       lgctx  = (TSMonitorLGCtx)rayctx->lgctx;
   Vec                  v      = rayctx->ray;

@@ -4,7 +4,8 @@ static char help[] = "Tests options database monitoring and precedence.\n\n";
 #include <petscsys.h>
 #include <petscviewer.h>
 
-PetscErrorCode PetscOptionsMonitorCustom(const char name[], const char value[], void *ctx) {
+PetscErrorCode PetscOptionsMonitorCustom(const char name[], const char value[], void *ctx)
+{
   PetscViewer viewer = (PetscViewer)ctx;
 
   PetscFunctionBegin;
@@ -18,7 +19,8 @@ PetscErrorCode PetscOptionsMonitorCustom(const char name[], const char value[], 
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscViewer       viewer = NULL;
   PetscViewerFormat format;
 

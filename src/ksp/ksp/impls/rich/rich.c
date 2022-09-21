@@ -4,7 +4,8 @@
 */
 #include <../src/ksp/ksp/impls/rich/richardsonimpl.h> /*I "petscksp.h" I*/
 
-PetscErrorCode KSPSetUp_Richardson(KSP ksp) {
+PetscErrorCode KSPSetUp_Richardson(KSP ksp)
+{
   KSP_Richardson *richardsonP = (KSP_Richardson *)ksp->data;
 
   PetscFunctionBegin;
@@ -16,7 +17,8 @@ PetscErrorCode KSPSetUp_Richardson(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPSolve_Richardson(KSP ksp) {
+PetscErrorCode KSPSolve_Richardson(KSP ksp)
+{
   PetscInt        i, maxit;
   PetscReal       rnorm = 0.0, abr;
   PetscScalar     scale, rdot;
@@ -145,7 +147,8 @@ PetscErrorCode KSPSolve_Richardson(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPView_Richardson(KSP ksp, PetscViewer viewer) {
+PetscErrorCode KSPView_Richardson(KSP ksp, PetscViewer viewer)
+{
   KSP_Richardson *richardsonP = (KSP_Richardson *)ksp->data;
   PetscBool       iascii;
 
@@ -161,7 +164,8 @@ PetscErrorCode KSPView_Richardson(KSP ksp, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPSetFromOptions_Richardson(KSP ksp, PetscOptionItems *PetscOptionsObject) {
+PetscErrorCode KSPSetFromOptions_Richardson(KSP ksp, PetscOptionItems *PetscOptionsObject)
+{
   KSP_Richardson *rich = (KSP_Richardson *)ksp->data;
   PetscReal       tmp;
   PetscBool       flg, flg2;
@@ -176,7 +180,8 @@ PetscErrorCode KSPSetFromOptions_Richardson(KSP ksp, PetscOptionItems *PetscOpti
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPDestroy_Richardson(KSP ksp) {
+PetscErrorCode KSPDestroy_Richardson(KSP ksp)
+{
   PetscFunctionBegin;
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPRichardsonSetScale_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPRichardsonSetSelfScale_C", NULL));
@@ -184,7 +189,8 @@ PetscErrorCode KSPDestroy_Richardson(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPRichardsonSetScale_Richardson(KSP ksp, PetscReal scale) {
+static PetscErrorCode KSPRichardsonSetScale_Richardson(KSP ksp, PetscReal scale)
+{
   KSP_Richardson *richardsonP;
 
   PetscFunctionBegin;
@@ -193,7 +199,8 @@ static PetscErrorCode KSPRichardsonSetScale_Richardson(KSP ksp, PetscReal scale)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPRichardsonSetSelfScale_Richardson(KSP ksp, PetscBool selfscale) {
+static PetscErrorCode KSPRichardsonSetSelfScale_Richardson(KSP ksp, PetscBool selfscale)
+{
   KSP_Richardson *richardsonP;
 
   PetscFunctionBegin;
@@ -202,7 +209,8 @@ static PetscErrorCode KSPRichardsonSetSelfScale_Richardson(KSP ksp, PetscBool se
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPBuildResidual_Richardson(KSP ksp, Vec t, Vec v, Vec *V) {
+static PetscErrorCode KSPBuildResidual_Richardson(KSP ksp, Vec t, Vec v, Vec *V)
+{
   PetscFunctionBegin;
   if (ksp->normtype == KSP_NORM_NONE) {
     PetscCall(KSPBuildResidualDefault(ksp, t, v, V));
@@ -255,7 +263,8 @@ $    -ksp_type richardson -pc_type jacobi gives one classically Jacobi precondit
 
 M*/
 
-PETSC_EXTERN PetscErrorCode KSPCreate_Richardson(KSP ksp) {
+PETSC_EXTERN PetscErrorCode KSPCreate_Richardson(KSP ksp)
+{
   KSP_Richardson *richardsonP;
 
   PetscFunctionBegin;

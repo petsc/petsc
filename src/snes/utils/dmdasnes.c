@@ -22,20 +22,23 @@ typedef struct {
   void *picardlocalctx;
 } DMSNES_DA;
 
-static PetscErrorCode DMSNESDestroy_DMDA(DMSNES sdm) {
+static PetscErrorCode DMSNESDestroy_DMDA(DMSNES sdm)
+{
   PetscFunctionBegin;
   PetscCall(PetscFree(sdm->data));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMSNESDuplicate_DMDA(DMSNES oldsdm, DMSNES sdm) {
+static PetscErrorCode DMSNESDuplicate_DMDA(DMSNES oldsdm, DMSNES sdm)
+{
   PetscFunctionBegin;
   PetscCall(PetscNew((DMSNES_DA **)&sdm->data));
   if (oldsdm->data) PetscCall(PetscMemcpy(sdm->data, oldsdm->data, sizeof(DMSNES_DA)));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMDASNESGetContext(DM dm, DMSNES sdm, DMSNES_DA **dmdasnes) {
+static PetscErrorCode DMDASNESGetContext(DM dm, DMSNES sdm, DMSNES_DA **dmdasnes)
+{
   PetscFunctionBegin;
   *dmdasnes = NULL;
   if (!sdm->data) {
@@ -47,7 +50,8 @@ static PetscErrorCode DMDASNESGetContext(DM dm, DMSNES sdm, DMSNES_DA **dmdasnes
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESComputeFunction_DMDA(SNES snes, Vec X, Vec F, void *ctx) {
+static PetscErrorCode SNESComputeFunction_DMDA(SNES snes, Vec X, Vec F, void *ctx)
+{
   DM            dm;
   DMSNES_DA    *dmdasnes = (DMSNES_DA *)ctx;
   DMDALocalInfo info;
@@ -96,14 +100,16 @@ static PetscErrorCode SNESComputeFunction_DMDA(SNES snes, Vec X, Vec F, void *ct
     PetscCall(DMLocalToGlobalEnd(dm, Floc, ADD_VALUES, F));
     PetscCall(DMRestoreLocalVector(dm, &Floc));
   } break;
-  default: SETERRQ(PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_INCOMP, "Cannot use imode=%d", (int)dmdasnes->residuallocalimode);
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_INCOMP, "Cannot use imode=%d", (int)dmdasnes->residuallocalimode);
   }
   PetscCall(DMRestoreLocalVector(dm, &Xloc));
   if (snes->domainerror) PetscCall(VecSetInf(F));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESComputeObjective_DMDA(SNES snes, Vec X, PetscReal *ob, void *ctx) {
+static PetscErrorCode SNESComputeObjective_DMDA(SNES snes, Vec X, PetscReal *ob, void *ctx)
+{
   DM            dm;
   DMSNES_DA    *dmdasnes = (DMSNES_DA *)ctx;
   DMDALocalInfo info;
@@ -131,7 +137,8 @@ static PetscErrorCode SNESComputeObjective_DMDA(SNES snes, Vec X, PetscReal *ob,
 }
 
 /* Routine is called by example, hence must be labeled PETSC_EXTERN */
-PETSC_EXTERN PetscErrorCode SNESComputeJacobian_DMDA(SNES snes, Vec X, Mat A, Mat B, void *ctx) {
+PETSC_EXTERN PetscErrorCode SNESComputeJacobian_DMDA(SNES snes, Vec X, Mat A, Mat B, void *ctx)
+{
   DM            dm;
   DMSNES_DA    *dmdasnes = (DMSNES_DA *)ctx;
   DMDALocalInfo info;
@@ -163,8 +170,11 @@ PETSC_EXTERN PetscErrorCode SNESComputeJacobian_DMDA(SNES snes, Vec X, Mat A, Ma
       PetscCall(DMCreateColoring(dm, dm->coloringtype, &coloring));
       PetscCall(MatFDColoringCreate(B, coloring, &fdcoloring));
       switch (dm->coloringtype) {
-      case IS_COLORING_GLOBAL: PetscCall(MatFDColoringSetFunction(fdcoloring, (PetscErrorCode(*)(void))SNESComputeFunction_DMDA, dmdasnes)); break;
-      default: SETERRQ(PetscObjectComm((PetscObject)snes), PETSC_ERR_SUP, "No support for coloring type '%s'", ISColoringTypes[dm->coloringtype]);
+      case IS_COLORING_GLOBAL:
+        PetscCall(MatFDColoringSetFunction(fdcoloring, (PetscErrorCode(*)(void))SNESComputeFunction_DMDA, dmdasnes));
+        break;
+      default:
+        SETERRQ(PetscObjectComm((PetscObject)snes), PETSC_ERR_SUP, "No support for coloring type '%s'", ISColoringTypes[dm->coloringtype]);
       }
       PetscCall(PetscObjectSetOptionsPrefix((PetscObject)fdcoloring, ((PetscObject)dm)->prefix));
       PetscCall(MatFDColoringSetFromOptions(fdcoloring));
@@ -213,7 +223,8 @@ PETSC_EXTERN PetscErrorCode SNESComputeJacobian_DMDA(SNES snes, Vec X, Mat A, Ma
 
 .seealso: `DMDA`, `DMDASNESSetJacobianLocal()`, `DMSNESSetFunction()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`
 @*/
-PetscErrorCode DMDASNESSetFunctionLocal(DM dm, InsertMode imode, PetscErrorCode (*func)(DMDALocalInfo *, void *, void *, void *), void *ctx) {
+PetscErrorCode DMDASNESSetFunctionLocal(DM dm, InsertMode imode, PetscErrorCode (*func)(DMDALocalInfo *, void *, void *, void *), void *ctx)
+{
   DMSNES     sdm;
   DMSNES_DA *dmdasnes;
 
@@ -255,7 +266,8 @@ PetscErrorCode DMDASNESSetFunctionLocal(DM dm, InsertMode imode, PetscErrorCode 
 
 .seealso: `DMDA`, `DMDASNESSetFunctionLocal()`, `DMDASNESSetJacobianLocalVec()`, `DMSNESSetFunction()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`
 @*/
-PetscErrorCode DMDASNESSetFunctionLocalVec(DM dm, InsertMode imode, PetscErrorCode (*func)(DMDALocalInfo *, Vec, Vec, void *), void *ctx) {
+PetscErrorCode DMDASNESSetFunctionLocalVec(DM dm, InsertMode imode, PetscErrorCode (*func)(DMDALocalInfo *, Vec, Vec, void *), void *ctx)
+{
   DMSNES     sdm;
   DMSNES_DA *dmdasnes;
 
@@ -297,7 +309,8 @@ PetscErrorCode DMDASNESSetFunctionLocalVec(DM dm, InsertMode imode, PetscErrorCo
 
 .seealso: `DMDA`, `DMDASNESSetFunctionLocal()`, `DMSNESSetJacobian()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`
 @*/
-PetscErrorCode DMDASNESSetJacobianLocal(DM dm, PetscErrorCode (*func)(DMDALocalInfo *, void *, Mat, Mat, void *), void *ctx) {
+PetscErrorCode DMDASNESSetJacobianLocal(DM dm, PetscErrorCode (*func)(DMDALocalInfo *, void *, Mat, Mat, void *), void *ctx)
+{
   DMSNES     sdm;
   DMSNES_DA *dmdasnes;
 
@@ -335,7 +348,8 @@ PetscErrorCode DMDASNESSetJacobianLocal(DM dm, PetscErrorCode (*func)(DMDALocalI
 
 .seealso: `DMDA`, `DMDASNESSetJacobianLocal()`, `DMDASNESSetFunctionLocalVec()`, `DMSNESSetJacobian()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`
 @*/
-PetscErrorCode DMDASNESSetJacobianLocalVec(DM dm, PetscErrorCode (*func)(DMDALocalInfo *, Vec, Mat, Mat, void *), void *ctx) {
+PetscErrorCode DMDASNESSetJacobianLocalVec(DM dm, PetscErrorCode (*func)(DMDALocalInfo *, Vec, Mat, Mat, void *), void *ctx)
+{
   DMSNES     sdm;
   DMSNES_DA *dmdasnes;
 
@@ -371,7 +385,8 @@ PetscErrorCode DMDASNESSetJacobianLocalVec(DM dm, PetscErrorCode (*func)(DMDALoc
 
 .seealso: `DMDA`, `DMSNESSetFunction()`, `DMDASNESSetJacobianLocal()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`
 @*/
-PetscErrorCode DMDASNESSetObjectiveLocal(DM dm, DMDASNESObjective func, void *ctx) {
+PetscErrorCode DMDASNESSetObjectiveLocal(DM dm, DMDASNESObjective func, void *ctx)
+{
   DMSNES     sdm;
   DMSNES_DA *dmdasnes;
 
@@ -408,7 +423,8 @@ PetscErrorCode DMDASNESSetObjectiveLocal(DM dm, DMDASNESObjective func, void *ct
 
 .seealso: `DMDA`, `DMDASNESSetObjectiveLocal()`, `DMSNESSetFunction()`, `DMDASNESSetJacobianLocalVec()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`
 @*/
-PetscErrorCode DMDASNESSetObjectiveLocalVec(DM dm, DMDASNESObjectiveVec func, void *ctx) {
+PetscErrorCode DMDASNESSetObjectiveLocalVec(DM dm, DMDASNESObjectiveVec func, void *ctx)
+{
   DMSNES     sdm;
   DMSNES_DA *dmdasnes;
 
@@ -424,7 +440,8 @@ PetscErrorCode DMDASNESSetObjectiveLocalVec(DM dm, DMDASNESObjectiveVec func, vo
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESComputePicard_DMDA(SNES snes, Vec X, Vec F, void *ctx) {
+static PetscErrorCode SNESComputePicard_DMDA(SNES snes, Vec X, Vec F, void *ctx)
+{
   DM            dm;
   DMSNES_DA    *dmdasnes = (DMSNES_DA *)ctx;
   DMDALocalInfo info;
@@ -460,14 +477,16 @@ static PetscErrorCode SNESComputePicard_DMDA(SNES snes, Vec X, Vec F, void *ctx)
     PetscCall(DMLocalToGlobalEnd(dm, Floc, ADD_VALUES, F));
     PetscCall(DMRestoreLocalVector(dm, &Floc));
   } break;
-  default: SETERRQ(PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_INCOMP, "Cannot use imode=%d", (int)dmdasnes->residuallocalimode);
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_INCOMP, "Cannot use imode=%d", (int)dmdasnes->residuallocalimode);
   }
   PetscCall(DMDAVecRestoreArray(dm, Xloc, &x));
   PetscCall(DMRestoreLocalVector(dm, &Xloc));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESComputePicardJacobian_DMDA(SNES snes, Vec X, Mat A, Mat B, void *ctx) {
+static PetscErrorCode SNESComputePicardJacobian_DMDA(SNES snes, Vec X, Mat A, Mat B, void *ctx)
+{
   DM            dm;
   DMSNES_DA    *dmdasnes = (DMSNES_DA *)ctx;
   DMDALocalInfo info;
@@ -518,7 +537,8 @@ static PetscErrorCode SNESComputePicardJacobian_DMDA(SNES snes, Vec X, Mat A, Ma
 
 .seealso: `DMDA`, `DMSNESSetFunction()`, `DMDASNESSetJacobian()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`
 @*/
-PetscErrorCode DMDASNESSetPicardLocal(DM dm, InsertMode imode, PetscErrorCode (*func)(DMDALocalInfo *, void *, void *, void *), PetscErrorCode (*jac)(DMDALocalInfo *, void *, Mat, Mat, void *), void *ctx) {
+PetscErrorCode DMDASNESSetPicardLocal(DM dm, InsertMode imode, PetscErrorCode (*func)(DMDALocalInfo *, void *, void *, void *), PetscErrorCode (*jac)(DMDALocalInfo *, void *, Mat, Mat, void *), void *ctx)
+{
   DMSNES     sdm;
   DMSNES_DA *dmdasnes;
 

@@ -3,7 +3,8 @@ static char help[] = "Creates a matrix, inserts some values, and tests MatCreate
 
 #include <petscmat.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   Mat         mat, submat, submat1, *submatrices;
   PetscInt    m = 10, n = 10, i = 4, tmp, rstart, rend;
   IS          irow, icol;

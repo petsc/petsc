@@ -4,9 +4,9 @@
   * In this KSP, KSPSIZE denotes the size of the basis (possibly augmented with Schur vectors) and MAXKSPSIZE denotes the maximum size of the augmented basis (with respect to the input
 */
 #if !defined(__AGMRES)
-#define __AGMRES
+  #define __AGMRES
 
-#include <../src/ksp/ksp/impls/gmres/dgmres/dgmresimpl.h>
+  #include <../src/ksp/ksp/impls/gmres/dgmres/dgmresimpl.h>
 typedef struct {
   KSPGMRESHEADER
   KSPDGMRESHEADER
@@ -38,16 +38,16 @@ PETSC_EXTERN PetscLogEvent KSP_AGMRESBuildBasis;
 PETSC_EXTERN PetscLogEvent KSP_AGMRESComputeShifts;
 PETSC_EXTERN PetscLogEvent KSP_AGMRESRoddec;
 
-/* vector names */
-#define VEC_TMP       agmres->vecs[0]
-#define VEC_TMP_MATOP agmres->vecs[1]
-#define VEC_V(i)      agmres->vecs[VEC_OFFSET + i]
+  /* vector names */
+  #define VEC_TMP       agmres->vecs[0]
+  #define VEC_TMP_MATOP agmres->vecs[1]
+  #define VEC_V(i)      agmres->vecs[VEC_OFFSET + i]
 
-#define MAXKSPSIZE ((agmres->DeflPrecond) ? (agmres->max_k) : (agmres->max_k + agmres->max_neig))
-#define KSPSIZE    ((agmres->DeflPrecond) ? (agmres->max_k) : (agmres->max_k + agmres->r))
-#define H(a, b)    (agmres->hh_origin + (b) * (MAXKSPSIZE + 2) + (a))
-#define HS(a, b)   (agmres->hes_origin + (b) * (MAXKSPSIZE + 1) + (a))
-#define RLOC(a, b) (agmres->Rloc + (b) * (MAXKSPSIZE + 1) + (a))
+  #define MAXKSPSIZE ((agmres->DeflPrecond) ? (agmres->max_k) : (agmres->max_k + agmres->max_neig))
+  #define KSPSIZE    ((agmres->DeflPrecond) ? (agmres->max_k) : (agmres->max_k + agmres->r))
+  #define H(a, b)    (agmres->hh_origin + (b) * (MAXKSPSIZE + 2) + (a))
+  #define HS(a, b)   (agmres->hes_origin + (b) * (MAXKSPSIZE + 1) + (a))
+  #define RLOC(a, b) (agmres->Rloc + (b) * (MAXKSPSIZE + 1) + (a))
 
 PetscErrorCode KSPAGMRESRoddec(KSP, PetscInt);
 PetscErrorCode KSPAGMRESRodvec(KSP, PetscInt, PetscScalar *, Vec);

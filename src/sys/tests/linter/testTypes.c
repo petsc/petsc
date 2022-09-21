@@ -1,6 +1,7 @@
 #include <petscsys.h>
 
-void testTypes(PetscRandom r, PetscViewer v, PetscObject o, PetscFunctionList f) {
+void testTypes(PetscRandom r, PetscViewer v, PetscObject o, PetscFunctionList f)
+{
   /* incorrect */
   PetscValidType(r, -1);
   PetscCheckSameType(r, -1, v, -1);

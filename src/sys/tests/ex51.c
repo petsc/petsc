@@ -2,7 +2,8 @@
 static char help[] = "Demonstrates PetscFileRetrieve().\n\n";
 
 #include <petscsys.h>
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscBool  found;
   char       localname[PETSC_MAX_PATH_LEN];
   const char url[] = "https://www.mcs.anl.gov/petsc/index.html";

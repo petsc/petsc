@@ -9,7 +9,7 @@
 #include <string>
 #include <moab/Core.hpp> /*I      "moab/Core.hpp"    I*/
 #ifdef MOAB_HAVE_MPI
-#include <moab/ParallelComm.hpp> /*I      "moab/ParallelComm.hpp"    I*/
+  #include <moab/ParallelComm.hpp> /*I      "moab/ParallelComm.hpp"    I*/
 #endif
 
 /* The MBERR macro is used to save typing. It checks a MOAB error code

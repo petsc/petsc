@@ -1,14 +1,16 @@
 
 #include <petsc/private/kspimpl.h>
 
-static PetscErrorCode KSPSetUp_TFQMR(KSP ksp) {
+static PetscErrorCode KSPSetUp_TFQMR(KSP ksp)
+{
   PetscFunctionBegin;
   PetscCheck(ksp->pc_side != PC_SYMMETRIC, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "no symmetric preconditioning for KSPTFQMR");
   PetscCall(KSPSetWorkVecs(ksp, 9));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPSolve_TFQMR(KSP ksp) {
+static PetscErrorCode KSPSolve_TFQMR(KSP ksp)
+{
   PetscInt    i, m;
   PetscScalar rho, rhoold, a, s, b, eta, etaold, psiold, cf;
   PetscReal   dp, dpold, w, dpest, tau, psi, cm;
@@ -140,7 +142,8 @@ static PetscErrorCode KSPSolve_TFQMR(KSP ksp) {
 
 .seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPTCQMR`
 M*/
-PETSC_EXTERN PetscErrorCode KSPCreate_TFQMR(KSP ksp) {
+PETSC_EXTERN PetscErrorCode KSPCreate_TFQMR(KSP ksp)
+{
   PetscFunctionBegin;
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_PRECONDITIONED, PC_LEFT, 3));
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_UNPRECONDITIONED, PC_RIGHT, 2));

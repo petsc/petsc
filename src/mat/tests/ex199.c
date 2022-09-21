@@ -3,7 +3,8 @@ static char help[] = "Tests the different MatColoring implementatons.\n\n";
 
 #include <petscmat.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat         C;
   PetscViewer viewer;
   char        file[128];

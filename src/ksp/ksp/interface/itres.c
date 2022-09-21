@@ -32,7 +32,8 @@ $     b-Ax
 .seealso: `KSPMonitor()`
 @*/
 
-PetscErrorCode KSPInitialResidual(KSP ksp, Vec vsoln, Vec vt1, Vec vt2, Vec vres, Vec vb) {
+PetscErrorCode KSPInitialResidual(KSP ksp, Vec vsoln, Vec vt1, Vec vt2, Vec vres, Vec vb)
+{
   Mat Amat, Pmat;
 
   PetscFunctionBegin;
@@ -95,7 +96,8 @@ PetscErrorCode KSPInitialResidual(KSP ksp, Vec vsoln, Vec vt1, Vec vt2, Vec vres
 
 .seealso: `KSPSetPCSide()`
 @*/
-PetscErrorCode KSPUnwindPreconditioner(KSP ksp, Vec vsoln, Vec vt1) {
+PetscErrorCode KSPUnwindPreconditioner(KSP ksp, Vec vsoln, Vec vt1)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscValidHeaderSpecific(vsoln, VEC_CLASSID, 2);

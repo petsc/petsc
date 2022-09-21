@@ -10,7 +10,8 @@
 */
 #include <../src/ksp/ksp/impls/bcgs/bcgsimpl.h> /*I  "petscksp.h"  I*/
 
-static PetscErrorCode KSPSetUp_QMRCGS(KSP ksp) {
+static PetscErrorCode KSPSetUp_QMRCGS(KSP ksp)
+{
   PetscFunctionBegin;
   PetscCall(KSPSetWorkVecs(ksp, 14));
   PetscFunctionReturn(0);
@@ -18,7 +19,8 @@ static PetscErrorCode KSPSetUp_QMRCGS(KSP ksp) {
 
 /* Only need a few hacks from KSPSolve_BCGS */
 
-static PetscErrorCode KSPSolve_QMRCGS(KSP ksp) {
+static PetscErrorCode KSPSolve_QMRCGS(KSP ksp)
+{
   PetscInt    i;
   PetscScalar eta, rho1, rho2, alpha, eta2, omega, beta, cf, cf1, uu;
   Vec         X, B, R, P, PH, V, D2, X2, S, SH, T, D, S2, RP, AX, Z;
@@ -226,7 +228,8 @@ static PetscErrorCode KSPSolve_QMRCGS(KSP ksp) {
 
 .seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPBICG`, `KSPFBICGS`, `KSPFBCGSL`, `KSPSetPCSide()`
 M*/
-PETSC_EXTERN PetscErrorCode KSPCreate_QMRCGS(KSP ksp) {
+PETSC_EXTERN PetscErrorCode KSPCreate_QMRCGS(KSP ksp)
+{
   KSP_BCGS         *bcgs;
   static const char citations[] = "@article{chan1994qmrcgs,\n"
                                   "  title={A quasi-minimal residual variant of the {Bi-CGSTAB} algorithm for nonsymmetric systems},\n"

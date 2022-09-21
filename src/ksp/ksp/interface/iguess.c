@@ -30,7 +30,8 @@ $     -ksp_guess_type my_initial_guess
 .seealso: `KSPGuess`, `KSPGuessRegisterAll()`
 
 @*/
-PetscErrorCode KSPGuessRegister(const char sname[], PetscErrorCode (*function)(KSPGuess)) {
+PetscErrorCode KSPGuessRegister(const char sname[], PetscErrorCode (*function)(KSPGuess))
+{
   PetscFunctionBegin;
   PetscCall(KSPInitializePackage());
   PetscCall(PetscFunctionListAdd(&KSPGuessList, sname, function));
@@ -46,7 +47,8 @@ PetscErrorCode KSPGuessRegister(const char sname[], PetscErrorCode (*function)(K
 
 .seealso: `KSPRegisterAll()`, `KSPInitializePackage()`
 */
-PetscErrorCode KSPGuessRegisterAll(void) {
+PetscErrorCode KSPGuessRegisterAll(void)
+{
   PetscFunctionBegin;
   if (KSPGuessRegisterAllCalled) PetscFunctionReturn(0);
   KSPGuessRegisterAllCalled = PETSC_TRUE;
@@ -67,7 +69,8 @@ PetscErrorCode KSPGuessRegisterAll(void) {
 
 .seealso: `KSPGuess`, `KSPGetGuess()`, `KSPSetGuessType()`, `KSPGuessType`
 @*/
-PetscErrorCode KSPGuessSetFromOptions(KSPGuess guess) {
+PetscErrorCode KSPGuessSetFromOptions(KSPGuess guess)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(guess, KSPGUESS_CLASSID, 1);
   PetscTryTypeMethod(guess, setfromoptions);
@@ -86,7 +89,8 @@ PetscErrorCode KSPGuessSetFromOptions(KSPGuess guess) {
 
 .seealso: `KSPGuess`, `KSPGuessType`, `KSPGuessSetFromOptions()`
 @*/
-PetscErrorCode KSPGuessSetTolerance(KSPGuess guess, PetscReal tol) {
+PetscErrorCode KSPGuessSetTolerance(KSPGuess guess, PetscReal tol)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(guess, KSPGUESS_CLASSID, 1);
   PetscTryTypeMethod(guess, settolerance, tol);
@@ -105,7 +109,8 @@ PetscErrorCode KSPGuessSetTolerance(KSPGuess guess, PetscReal tol) {
 
 .seealso: `KSPGuessCreate()`, `KSPGuess`, `KSPGuessType`
 @*/
-PetscErrorCode KSPGuessDestroy(KSPGuess *guess) {
+PetscErrorCode KSPGuessDestroy(KSPGuess *guess)
+{
   PetscFunctionBegin;
   if (!*guess) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*guess), KSPGUESS_CLASSID, 1);
@@ -134,7 +139,8 @@ PetscErrorCode KSPGuessDestroy(KSPGuess *guess) {
 
 .seealso: `KSP`, `KSPGuess`, `KSPGuessType`, `KSPGuessRegister()`, `KSPGuessCreate()`, `PetscViewer`
 @*/
-PetscErrorCode KSPGuessView(KSPGuess guess, PetscViewer view) {
+PetscErrorCode KSPGuessView(KSPGuess guess, PetscViewer view)
+{
   PetscBool ascii;
 
   PetscFunctionBegin;
@@ -170,7 +176,8 @@ PetscErrorCode KSPGuessView(KSPGuess guess, PetscViewer view) {
 
 .seealso: `KSPSolve()`, `KSPGuessDestroy()`, `KSPGuess`, `KSPGuessType`, `KSP`
 @*/
-PetscErrorCode KSPGuessCreate(MPI_Comm comm, KSPGuess *guess) {
+PetscErrorCode KSPGuessCreate(MPI_Comm comm, KSPGuess *guess)
+{
   KSPGuess tguess;
 
   PetscFunctionBegin;
@@ -203,7 +210,8 @@ PetscErrorCode KSPGuessCreate(MPI_Comm comm, KSPGuess *guess) {
 .seealso: `KSP`, `KSPGuess`, `KSPGuessType`, `KSPGuessRegister()`, `KSPGuessCreate()`
 
 @*/
-PetscErrorCode KSPGuessSetType(KSPGuess guess, KSPGuessType type) {
+PetscErrorCode KSPGuessSetType(KSPGuess guess, KSPGuessType type)
+{
   PetscBool match;
   PetscErrorCode (*r)(KSPGuess);
 
@@ -240,7 +248,8 @@ PetscErrorCode KSPGuessSetType(KSPGuess guess, KSPGuessType type) {
 
 .seealso: `KSPGuessSetType()`
 @*/
-PetscErrorCode KSPGuessGetType(KSPGuess guess, KSPGuessType *type) {
+PetscErrorCode KSPGuessGetType(KSPGuess guess, KSPGuessType *type)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(guess, KSPGUESS_CLASSID, 1);
   PetscValidPointer(type, 2);
@@ -262,7 +271,8 @@ PetscErrorCode KSPGuessGetType(KSPGuess guess, KSPGuessType *type) {
 
 .seealso: `KSPGuessCreate()`, `KSPGuess`
 @*/
-PetscErrorCode KSPGuessUpdate(KSPGuess guess, Vec rhs, Vec sol) {
+PetscErrorCode KSPGuessUpdate(KSPGuess guess, Vec rhs, Vec sol)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(guess, KSPGUESS_CLASSID, 1);
   PetscValidHeaderSpecific(rhs, VEC_CLASSID, 2);
@@ -285,7 +295,8 @@ PetscErrorCode KSPGuessUpdate(KSPGuess guess, Vec rhs, Vec sol) {
 
 .seealso: `KSPGuessCreate()`, `KSPGuess`
 @*/
-PetscErrorCode KSPGuessFormGuess(KSPGuess guess, Vec rhs, Vec sol) {
+PetscErrorCode KSPGuessFormGuess(KSPGuess guess, Vec rhs, Vec sol)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(guess, KSPGUESS_CLASSID, 1);
   PetscValidHeaderSpecific(rhs, VEC_CLASSID, 2);
@@ -306,7 +317,8 @@ PetscErrorCode KSPGuessFormGuess(KSPGuess guess, Vec rhs, Vec sol) {
 
 .seealso: `KSPGuessCreate()`, `KSPGuess`
 @*/
-PetscErrorCode KSPGuessSetUp(KSPGuess guess) {
+PetscErrorCode KSPGuessSetUp(KSPGuess guess)
+{
   PetscObjectState matstate;
   PetscInt         oM = 0, oN = 0, M, N;
   Mat              omat = NULL;

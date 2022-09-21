@@ -4,7 +4,8 @@ static char help[] = "Test repeated LU factorizations. Used for checking memory 
   -mat_nonsym : use nonsymmetric matrix (default is symmetric)\n\n";
 
 #include <petscmat.h>
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat           C, F;    /* matrix */
   Vec           x, u, b; /* approx solution, RHS, exact solution */
   PetscReal     norm;    /* norm of solution error */

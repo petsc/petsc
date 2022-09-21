@@ -17,7 +17,8 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_NCGLinear(SNESLineSearch);
 
 .seealso: `SNESLineSearchRegister()`, `SNESLineSearchRegisterDestroy()`
 @*/
-PetscErrorCode SNESLineSearchRegisterAll(void) {
+PetscErrorCode SNESLineSearchRegisterAll(void)
+{
   PetscFunctionBegin;
   if (SNESLineSearchRegisterAllCalled) PetscFunctionReturn(0);
   SNESLineSearchRegisterAllCalled = PETSC_TRUE;

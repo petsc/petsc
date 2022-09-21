@@ -3,8 +3,8 @@
     Allocation takes place before each solve.
 */
 #if !defined(__BCGSL)
-#define __BCGSL
-#include <petscsys.h>
+  #define __BCGSL
+  #include <petscsys.h>
 
 typedef struct {
   PetscInt  ell;     /* Number of search directions. */
@@ -29,18 +29,18 @@ typedef struct {
   PetscBLASInt lwork;
 } KSP_BCGSL;
 
-/* predefined shorthands */
-#define VX   (ksp->vec_sol)
-#define VB   (bcgsl->vB)
-#define VRT  (bcgsl->vRt)
-#define VXR  (bcgsl->vXr)
-#define VTM  (bcgsl->vTm)
-#define VVR  (bcgsl->vvR)
-#define VVU  (bcgsl->vvU)
-#define AY0c (bcgsl->vY0c)
-#define AYtc (bcgsl->vYtc)
-#define AYlc (bcgsl->vYlc)
-#define MZa  (bcgsl->mZa)
-#define MZb  (bcgsl->mZb)
+  /* predefined shorthands */
+  #define VX   (ksp->vec_sol)
+  #define VB   (bcgsl->vB)
+  #define VRT  (bcgsl->vRt)
+  #define VXR  (bcgsl->vXr)
+  #define VTM  (bcgsl->vTm)
+  #define VVR  (bcgsl->vvR)
+  #define VVU  (bcgsl->vvU)
+  #define AY0c (bcgsl->vY0c)
+  #define AYtc (bcgsl->vYtc)
+  #define AYlc (bcgsl->vYlc)
+  #define MZa  (bcgsl->mZa)
+  #define MZb  (bcgsl->mZb)
 
 #endif

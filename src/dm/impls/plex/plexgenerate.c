@@ -14,7 +14,8 @@
 
 .seealso: `DMPlexGenerate()`
 @*/
-PetscErrorCode DMPlexInvertCell(DMPolytopeType cellType, PetscInt cone[]) {
+PetscErrorCode DMPlexInvertCell(DMPolytopeType cellType, PetscInt cone[])
+{
 #define SWAPCONE(cone, i, j) \
   do { \
     PetscInt _cone_tmp; \
@@ -25,19 +26,37 @@ PetscErrorCode DMPlexInvertCell(DMPolytopeType cellType, PetscInt cone[]) {
 
   PetscFunctionBegin;
   switch (cellType) {
-  case DM_POLYTOPE_POINT: break;
-  case DM_POLYTOPE_SEGMENT: break;
-  case DM_POLYTOPE_POINT_PRISM_TENSOR: break;
-  case DM_POLYTOPE_TRIANGLE: break;
-  case DM_POLYTOPE_QUADRILATERAL: break;
-  case DM_POLYTOPE_SEG_PRISM_TENSOR: SWAPCONE(cone, 2, 3); break;
-  case DM_POLYTOPE_TETRAHEDRON: SWAPCONE(cone, 0, 1); break;
-  case DM_POLYTOPE_HEXAHEDRON: SWAPCONE(cone, 1, 3); break;
-  case DM_POLYTOPE_TRI_PRISM: SWAPCONE(cone, 1, 2); break;
-  case DM_POLYTOPE_TRI_PRISM_TENSOR: break;
-  case DM_POLYTOPE_QUAD_PRISM_TENSOR: break;
-  case DM_POLYTOPE_PYRAMID: SWAPCONE(cone, 1, 3); break;
-  default: break;
+  case DM_POLYTOPE_POINT:
+    break;
+  case DM_POLYTOPE_SEGMENT:
+    break;
+  case DM_POLYTOPE_POINT_PRISM_TENSOR:
+    break;
+  case DM_POLYTOPE_TRIANGLE:
+    break;
+  case DM_POLYTOPE_QUADRILATERAL:
+    break;
+  case DM_POLYTOPE_SEG_PRISM_TENSOR:
+    SWAPCONE(cone, 2, 3);
+    break;
+  case DM_POLYTOPE_TETRAHEDRON:
+    SWAPCONE(cone, 0, 1);
+    break;
+  case DM_POLYTOPE_HEXAHEDRON:
+    SWAPCONE(cone, 1, 3);
+    break;
+  case DM_POLYTOPE_TRI_PRISM:
+    SWAPCONE(cone, 1, 2);
+    break;
+  case DM_POLYTOPE_TRI_PRISM_TENSOR:
+    break;
+  case DM_POLYTOPE_QUAD_PRISM_TENSOR:
+    break;
+  case DM_POLYTOPE_PYRAMID:
+    SWAPCONE(cone, 1, 3);
+    break;
+  default:
+    break;
   }
   PetscFunctionReturn(0);
 #undef SWAPCONE
@@ -58,7 +77,8 @@ PetscErrorCode DMPlexInvertCell(DMPolytopeType cellType, PetscInt cone[]) {
 
 .seealso: `DMPlexGenerate()`
 @*/
-PetscErrorCode DMPlexReorderCell(DM dm, PetscInt cell, PetscInt cone[]) {
+PetscErrorCode DMPlexReorderCell(DM dm, PetscInt cell, PetscInt cone[])
+{
   DMPolytopeType cellType;
 
   PetscFunctionBegin;
@@ -80,7 +100,8 @@ PetscErrorCode DMPlexReorderCell(DM dm, PetscInt cell, PetscInt cone[]) {
 
 .seealso: `DMPlexTetgenSetOptions()`, `DMPlexGenerate()`
 @*/
-PetscErrorCode DMPlexTriangleSetOptions(DM dm, const char *opts) {
+PetscErrorCode DMPlexTriangleSetOptions(DM dm, const char *opts)
+{
   DM_Plex *mesh = (DM_Plex *)dm->data;
 
   PetscFunctionBegin;
@@ -104,7 +125,8 @@ PetscErrorCode DMPlexTriangleSetOptions(DM dm, const char *opts) {
 
 .seealso: `DMPlexTriangleSetOptions()`, `DMPlexGenerate()`
 @*/
-PetscErrorCode DMPlexTetgenSetOptions(DM dm, const char *opts) {
+PetscErrorCode DMPlexTetgenSetOptions(DM dm, const char *opts)
+{
   DM_Plex *mesh = (DM_Plex *)dm->data;
 
   PetscFunctionBegin;
@@ -136,7 +158,8 @@ PetscErrorCode DMPlexTetgenSetOptions(DM dm, const char *opts) {
 
 .seealso: `DMPlexCreate()`, `DMRefine()`
 @*/
-PetscErrorCode DMPlexGenerate(DM boundary, const char name[], PetscBool interpolate, DM *mesh) {
+PetscErrorCode DMPlexGenerate(DM boundary, const char name[], PetscBool interpolate, DM *mesh)
+{
   DMGeneratorFunctionList fl;
   char                    genname[PETSC_MAX_PATH_LEN];
   const char             *suggestions;

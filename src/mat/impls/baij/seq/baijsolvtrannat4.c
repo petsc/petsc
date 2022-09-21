@@ -1,6 +1,7 @@
 #include <../src/mat/impls/baij/seq/baij.h>
 
-PetscErrorCode MatSolveTranspose_SeqBAIJ_4_NaturalOrdering_inplace(Mat A, Vec bb, Vec xx) {
+PetscErrorCode MatSolveTranspose_SeqBAIJ_4_NaturalOrdering_inplace(Mat A, Vec bb, Vec xx)
+{
   Mat_SeqBAIJ     *a    = (Mat_SeqBAIJ *)A->data;
   const PetscInt  *diag = a->diag, n = a->mbs, *vi, *ai = a->i, *aj = a->j;
   PetscInt         i, nz, idx, idt, oidx;
@@ -14,7 +15,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_4_NaturalOrdering_inplace(Mat A, Vec bb
   /* forward solve the U^T */
   idx = 0;
   for (i = 0; i < n; i++) {
-    v  = aa + 16 * diag[i];
+    v = aa + 16 * diag[i];
     /* multiply by the inverse of the block diagonal */
     x1 = x[idx];
     x2 = x[1 + idx];
@@ -66,7 +67,8 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_4_NaturalOrdering_inplace(Mat A, Vec bb
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatSolveTranspose_SeqBAIJ_4_NaturalOrdering(Mat A, Vec bb, Vec xx) {
+PetscErrorCode MatSolveTranspose_SeqBAIJ_4_NaturalOrdering(Mat A, Vec bb, Vec xx)
+{
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ *)A->data;
   const PetscInt   n = a->mbs, *vi, *ai = a->i, *aj = a->j, *diag = a->diag;
   PetscInt         nz, idx, idt, j, i, oidx;
@@ -81,7 +83,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_4_NaturalOrdering(Mat A, Vec bb, Vec xx
   /* forward solve the U^T */
   idx = 0;
   for (i = 0; i < n; i++) {
-    v  = aa + bs2 * diag[i];
+    v = aa + bs2 * diag[i];
     /* multiply by the inverse of the block diagonal */
     x1 = x[idx];
     x2 = x[1 + idx];

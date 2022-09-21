@@ -5,7 +5,8 @@
 
 const char *const ISColoringTypes[] = {"global", "ghosted", "ISColoringType", "IS_COLORING_", NULL};
 
-PetscErrorCode ISColoringReference(ISColoring coloring) {
+PetscErrorCode ISColoringReference(ISColoring coloring)
+{
   PetscFunctionBegin;
   coloring->refct++;
   PetscFunctionReturn(0);
@@ -29,7 +30,8 @@ PetscErrorCode ISColoringReference(ISColoring coloring) {
 .seealso: `MatFDColoringCreate()`, `ISColoring`, `ISColoringCreate()`, `IS_COLORING_LOCAL`, `IS_COLORING_GLOBAL`, `ISColoringGetType()`
 
 @*/
-PetscErrorCode ISColoringSetType(ISColoring coloring, ISColoringType type) {
+PetscErrorCode ISColoringSetType(ISColoring coloring, ISColoringType type)
+{
   PetscFunctionBegin;
   coloring->ctype = type;
   PetscFunctionReturn(0);
@@ -52,7 +54,8 @@ PetscErrorCode ISColoringSetType(ISColoring coloring, ISColoringType type) {
 .seealso: `MatFDColoringCreate()`, `ISColoring`, `ISColoringCreate()`, `IS_COLORING_LOCAL`, `IS_COLORING_GLOBAL`, `ISColoringSetType()`
 
 @*/
-PetscErrorCode ISColoringGetType(ISColoring coloring, ISColoringType *type) {
+PetscErrorCode ISColoringGetType(ISColoring coloring, ISColoringType *type)
+{
   PetscFunctionBegin;
   *type = coloring->ctype;
   PetscFunctionReturn(0);
@@ -70,7 +73,8 @@ PetscErrorCode ISColoringGetType(ISColoring coloring, ISColoringType *type) {
 
 .seealso: `ISColoringView()`, `MatColoring`
 @*/
-PetscErrorCode ISColoringDestroy(ISColoring *iscoloring) {
+PetscErrorCode ISColoringDestroy(ISColoring *iscoloring)
+{
   PetscInt i;
 
   PetscFunctionBegin;
@@ -106,7 +110,8 @@ PetscErrorCode ISColoringDestroy(ISColoring *iscoloring) {
   Developer Note: This cannot use PetscObjectViewFromOptions() because ISColoring is not a PetscObject
 
 */
-PetscErrorCode ISColoringViewFromOptions(ISColoring obj, PetscObject bobj, const char optionname[]) {
+PetscErrorCode ISColoringViewFromOptions(ISColoring obj, PetscObject bobj, const char optionname[])
+{
   PetscViewer       viewer;
   PetscBool         flg;
   PetscViewerFormat format;
@@ -137,7 +142,8 @@ PetscErrorCode ISColoringViewFromOptions(ISColoring obj, PetscObject bobj, const
 
 .seealso: `ISColoringDestroy()`, `ISColoringGetIS()`, `MatColoring`
 @*/
-PetscErrorCode ISColoringView(ISColoring iscoloring, PetscViewer viewer) {
+PetscErrorCode ISColoringView(ISColoring iscoloring, PetscViewer viewer)
+{
   PetscInt  i;
   PetscBool iascii;
   IS       *is;
@@ -186,7 +192,8 @@ PetscErrorCode ISColoringView(ISColoring iscoloring, PetscViewer viewer) {
 
 .seealso: `ISColoringRestoreIS()`, `ISColoringView()`, `ISColoringGetIS()`
 @*/
-PetscErrorCode ISColoringGetColors(ISColoring iscoloring, PetscInt *n, PetscInt *nc, const ISColoringValue **colors) {
+PetscErrorCode ISColoringGetColors(ISColoring iscoloring, PetscInt *n, PetscInt *nc, const ISColoringValue **colors)
+{
   PetscFunctionBegin;
   PetscValidPointer(iscoloring, 1);
 
@@ -213,7 +220,8 @@ PetscErrorCode ISColoringGetColors(ISColoring iscoloring, PetscInt *n, PetscInt 
 
 .seealso: `ISColoringRestoreIS()`, `ISColoringView()`, `ISColoringGetColoring()`
 @*/
-PetscErrorCode ISColoringGetIS(ISColoring iscoloring, PetscCopyMode mode, PetscInt *nn, IS *isis[]) {
+PetscErrorCode ISColoringGetIS(ISColoring iscoloring, PetscCopyMode mode, PetscInt *nn, IS *isis[])
+{
   PetscFunctionBegin;
   PetscValidPointer(iscoloring, 1);
 
@@ -274,7 +282,8 @@ PetscErrorCode ISColoringGetIS(ISColoring iscoloring, PetscCopyMode mode, PetscI
 
 .seealso: `ISColoringGetIS()`, `ISColoringView()`
 @*/
-PetscErrorCode ISColoringRestoreIS(ISColoring iscoloring, PetscCopyMode mode, IS *is[]) {
+PetscErrorCode ISColoringRestoreIS(ISColoring iscoloring, PetscCopyMode mode, IS *is[])
+{
   PetscFunctionBegin;
   PetscValidPointer(iscoloring, 1);
 
@@ -309,7 +318,8 @@ PetscErrorCode ISColoringRestoreIS(ISColoring iscoloring, PetscCopyMode mode, IS
 .seealso: `MatColoringCreate()`, `ISColoringView()`, `ISColoringDestroy()`, `ISColoringSetType()`
 
 @*/
-PetscErrorCode ISColoringCreate(MPI_Comm comm, PetscInt ncolors, PetscInt n, const ISColoringValue colors[], PetscCopyMode mode, ISColoring *iscoloring) {
+PetscErrorCode ISColoringCreate(MPI_Comm comm, PetscInt ncolors, PetscInt n, const ISColoringValue colors[], PetscCopyMode mode, ISColoring *iscoloring)
+{
   PetscMPIInt size, rank, tag;
   PetscInt    base, top, i;
   PetscInt    nc, ncwork;
@@ -385,7 +395,8 @@ PetscErrorCode ISColoringCreate(MPI_Comm comm, PetscInt ncolors, PetscInt n, con
 .seealso: `MatPartitioningCreate()`, `ISPartitioningToNumbering()`, `ISPartitioningCount()`
 
 @*/
-PetscErrorCode ISBuildTwoSided(IS ito, IS toindx, IS *rows) {
+PetscErrorCode ISBuildTwoSided(IS ito, IS toindx, IS *rows)
+{
   const PetscInt *ito_indices, *toindx_indices;
   PetscInt       *send_indices, rstart, *recv_indices, nrecvs, nsends;
   PetscInt       *tosizes, *fromsizes, i, j, *tosizes_tmp, *tooffsets_tmp, ito_ln;
@@ -493,7 +504,8 @@ PetscErrorCode ISBuildTwoSided(IS ito, IS toindx, IS *rows) {
 .seealso: `MatPartitioningCreate()`, `AOCreateBasic()`, `ISPartitioningCount()`
 
 @*/
-PetscErrorCode ISPartitioningToNumbering(IS part, IS *is) {
+PetscErrorCode ISPartitioningToNumbering(IS part, IS *is)
+{
   MPI_Comm        comm;
   IS              ndorder;
   PetscInt        i, np, npt, n, *starts = NULL, *sums = NULL, *lsizes = NULL, *newi = NULL;
@@ -578,7 +590,8 @@ PetscErrorCode ISPartitioningToNumbering(IS part, IS *is) {
           `MatPartitioningSetNParts()`, `MatPartitioningApply()`, `MatPartitioningApplyND()`
 
 @*/
-PetscErrorCode ISPartitioningCount(IS part, PetscInt len, PetscInt count[]) {
+PetscErrorCode ISPartitioningCount(IS part, PetscInt len, PetscInt count[])
+{
   MPI_Comm        comm;
   PetscInt        i, n, *lsizes;
   const PetscInt *indices;
@@ -647,7 +660,8 @@ PetscErrorCode ISPartitioningCount(IS part, PetscInt len, PetscInt count[]) {
 
 .seealso: `ISCreateGeneral()`, `ISCreateStride()`, `ISCreateBlock()`
 @*/
-PetscErrorCode ISAllGather(IS is, IS *isout) {
+PetscErrorCode ISAllGather(IS is, IS *isout)
+{
   PetscInt       *indices, n, i, N, step, first;
   const PetscInt *lindices;
   MPI_Comm        comm;
@@ -710,7 +724,8 @@ PetscErrorCode ISAllGather(IS is, IS *isout) {
 
 .seealso: `ISCreateGeneral()`, `ISCreateStride()`, `ISCreateBlock()`, `ISAllGather()`
 @*/
-PetscErrorCode ISAllGatherColors(MPI_Comm comm, PetscInt n, ISColoringValue *lindices, PetscInt *outN, ISColoringValue *outindices[]) {
+PetscErrorCode ISAllGatherColors(MPI_Comm comm, PetscInt n, ISColoringValue *lindices, PetscInt *outN, ISColoringValue *outindices[])
+{
   ISColoringValue *indices;
   PetscInt         i, N;
   PetscMPIInt      size, *offsets = NULL, *sizes = NULL, nn = n;
@@ -759,7 +774,8 @@ PetscErrorCode ISAllGatherColors(MPI_Comm comm, PetscInt n, ISColoringValue *lin
 
 .seealso: `ISCreateGeneral()`, `ISCreateStride()`, `ISCreateBlock()`, `ISAllGather()`
 @*/
-PetscErrorCode ISComplement(IS is, PetscInt nmin, PetscInt nmax, IS *isout) {
+PetscErrorCode ISComplement(IS is, PetscInt nmin, PetscInt nmax, IS *isout)
+{
   const PetscInt *indices;
   PetscInt        n, i, j, unique, cnt, *nindices;
   PetscBool       sorted;

@@ -18,7 +18,8 @@
 
     .seealso: `KSPRICHARDSON`, `KSPRichardsonSetSelfScale()`
 @*/
-PetscErrorCode KSPRichardsonSetScale(KSP ksp, PetscReal scale) {
+PetscErrorCode KSPRichardsonSetScale(KSP ksp, PetscReal scale)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscValidLogicalCollectiveReal(ksp, scale, 2);
@@ -49,7 +50,8 @@ PetscErrorCode KSPRichardsonSetScale(KSP ksp, PetscReal scale) {
 
     .seealso: `KSPRICHARDSON`, `KSPRichardsonSetScale()`
 @*/
-PetscErrorCode KSPRichardsonSetSelfScale(KSP ksp, PetscBool scale) {
+PetscErrorCode KSPRichardsonSetSelfScale(KSP ksp, PetscBool scale)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscValidLogicalCollectiveBool(ksp, scale, 2);

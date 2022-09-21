@@ -20,7 +20,8 @@ typedef struct {
   PetscViewer viewer;
 } ReasonViewCtx;
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   SNES          snes;       /* SNES context */
   KSP           ksp;        /* KSP context */
   Vec           x, r, F, U; /* vectors */
@@ -154,7 +155,8 @@ int main(int argc, char **argv) {
    Input/Output Parameter:
 .  x - the solution vector
 */
-PetscErrorCode FormInitialGuess(Vec x) {
+PetscErrorCode FormInitialGuess(Vec x)
+{
   PetscScalar pfive = .50;
   PetscCall(VecSet(x, pfive));
   return 0;
@@ -178,7 +180,8 @@ PetscErrorCode FormInitialGuess(Vec x) {
    a vector containing the right-hand-side of the discretized PDE.
  */
 
-PetscErrorCode FormFunction(SNES snes, Vec x, Vec f, void *ctx) {
+PetscErrorCode FormFunction(SNES snes, Vec x, Vec f, void *ctx)
+{
   Vec                g = (Vec)ctx;
   const PetscScalar *xx, *gg;
   PetscScalar       *ff, d;
@@ -228,7 +231,8 @@ PetscErrorCode FormFunction(SNES snes, Vec x, Vec f, void *ctx) {
 
 */
 
-PetscErrorCode FormJacobian(SNES snes, Vec x, Mat jac, Mat B, void *dummy) {
+PetscErrorCode FormJacobian(SNES snes, Vec x, Mat jac, Mat B, void *dummy)
+{
   const PetscScalar *xx;
   PetscScalar        A[3], d;
   PetscInt           i, n, j[3];
@@ -289,7 +293,8 @@ PetscErrorCode FormJacobian(SNES snes, Vec x, Mat jac, Mat B, void *dummy) {
   return 0;
 }
 
-PetscErrorCode MySNESConvergedReasonView(SNES snes, void *ctx) {
+PetscErrorCode MySNESConvergedReasonView(SNES snes, void *ctx)
+{
   ReasonViewCtx      *monP   = (ReasonViewCtx *)ctx;
   PetscViewer         viewer = monP->viewer;
   SNESConvergedReason reason;
@@ -308,7 +313,8 @@ PetscErrorCode MySNESConvergedReasonView(SNES snes, void *ctx) {
   return 0;
 }
 
-PetscErrorCode MyKSPConvergedReasonView(KSP ksp, void *ctx) {
+PetscErrorCode MyKSPConvergedReasonView(KSP ksp, void *ctx)
+{
   ReasonViewCtx     *monP   = (ReasonViewCtx *)ctx;
   PetscViewer        viewer = monP->viewer;
   KSPConvergedReason reason;

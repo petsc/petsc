@@ -5,7 +5,8 @@ static char help[] = "This program illustrates the use of parallel real 2D fft u
 #include <fftw3.h>
 #include <fftw3-mpi.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   const ptrdiff_t N0 = 2056, N1 = 2056;
   fftw_plan       bplan, fplan;
   fftw_complex   *out;

@@ -8,11 +8,14 @@
 #include <iterator>
 #include <type_traits>
 
-namespace Petsc {
+namespace Petsc
+{
 
-namespace device {
+namespace device
+{
 
-namespace cupm {
+namespace cupm
+{
 
 // internal "impls" class for CUPMDevice. Each instance represents a single cupm device
 template <DeviceType T>
@@ -44,7 +47,8 @@ public:
 // modification of it, or create objects (since these may be affected by subsequent
 // configuration changes)
 template <DeviceType T>
-PetscErrorCode Device<T>::DeviceInternal::initialize() noexcept {
+PetscErrorCode Device<T>::DeviceInternal::initialize() noexcept
+{
   PetscFunctionBegin;
   if (initialized()) PetscFunctionReturn(0);
   devInitialized_ = true;
@@ -85,7 +89,8 @@ PetscErrorCode Device<T>::DeviceInternal::initialize() noexcept {
 }
 
 template <DeviceType T>
-PetscErrorCode Device<T>::DeviceInternal::configure() noexcept {
+PetscErrorCode Device<T>::DeviceInternal::configure() noexcept
+{
   PetscFunctionBegin;
   PetscAssert(initialized(), PETSC_COMM_SELF, PETSC_ERR_COR, "Device %d being configured before it was initialized", id());
   // why on EARTH nvidia insists on making otherwise informational states into
@@ -99,7 +104,8 @@ PetscErrorCode Device<T>::DeviceInternal::configure() noexcept {
 }
 
 template <DeviceType T>
-PetscErrorCode Device<T>::DeviceInternal::view(PetscViewer viewer) const noexcept {
+PetscErrorCode Device<T>::DeviceInternal::view(PetscViewer viewer) const noexcept
+{
   PetscBool iascii;
 
   PetscFunctionBegin;
@@ -140,12 +146,15 @@ PetscErrorCode Device<T>::DeviceInternal::view(PetscViewer viewer) const noexcep
 }
 
 template <DeviceType T>
-PetscErrorCode Device<T>::DeviceInternal::getattribute(PetscDeviceAttribute attr, void *value) const noexcept {
+PetscErrorCode Device<T>::DeviceInternal::getattribute(PetscDeviceAttribute attr, void *value) const noexcept
+{
   PetscFunctionBegin;
   PetscAssert(initialized(), PETSC_COMM_SELF, PETSC_ERR_COR, "Device %d was not initialized", id());
   switch (attr) {
-  case PETSC_DEVICE_ATTR_SIZE_T_SHARED_MEM_PER_BLOCK: *static_cast<std::size_t *>(value) = prop().sharedMemPerBlock;
-  case PETSC_DEVICE_ATTR_MAX: break;
+  case PETSC_DEVICE_ATTR_SIZE_T_SHARED_MEM_PER_BLOCK:
+    *static_cast<std::size_t *>(value) = prop().sharedMemPerBlock;
+  case PETSC_DEVICE_ATTR_MAX:
+    break;
   }
   PetscFunctionReturn(0);
 }
@@ -154,13 +163,15 @@ static std::jmp_buf cupmMPIAwareJumpBuffer;
 static bool         cupmMPIAwareJumpBufferSet;
 
 // godspeed to anyone that attempts to call this function
-void SilenceVariableIsNotNeededAndWillNotBeEmittedWarning_ThisFunctionShouldNeverBeCalled() {
+void SilenceVariableIsNotNeededAndWillNotBeEmittedWarning_ThisFunctionShouldNeverBeCalled()
+{
   PETSCABORT(MPI_COMM_NULL, INT_MAX);
   if (cupmMPIAwareJumpBufferSet) (void)cupmMPIAwareJumpBuffer;
 }
 
 template <DeviceType T>
-PETSC_CXX_COMPAT_DEFN(PetscErrorCode Device<T>::DeviceInternal::CUPMAwareMPI_(bool *awareness)) {
+PETSC_CXX_COMPAT_DEFN(PetscErrorCode Device<T>::DeviceInternal::CUPMAwareMPI_(bool *awareness))
+{
   constexpr int  bufSize           = 2;
   constexpr int  hbuf[bufSize]     = {1, 0};
   int           *dbuf              = nullptr;
@@ -185,7 +196,8 @@ PETSC_CXX_COMPAT_DEFN(PetscErrorCode Device<T>::DeviceInternal::CUPMAwareMPI_(bo
 }
 
 template <DeviceType T>
-PetscErrorCode Device<T>::finalize_() noexcept {
+PetscErrorCode Device<T>::finalize_() noexcept
+{
   PetscFunctionBegin;
   if (PetscUnlikely(!initialized_)) PetscFunctionReturn(0);
   for (auto &&device : devices_) device.reset();
@@ -195,17 +207,21 @@ PetscErrorCode Device<T>::finalize_() noexcept {
 }
 
 template <DeviceType T>
-PETSC_CXX_COMPAT_DECL(PETSC_CONSTEXPR_14 const char *CUPM_VISIBLE_DEVICES()) {
+PETSC_CXX_COMPAT_DECL(PETSC_CONSTEXPR_14 const char *CUPM_VISIBLE_DEVICES())
+{
   switch (T) {
-  case DeviceType::CUDA: return "CUDA_VISIBLE_DEVICES";
-  case DeviceType::HIP: return "HIP_VISIBLE_DEVICES";
+  case DeviceType::CUDA:
+    return "CUDA_VISIBLE_DEVICES";
+  case DeviceType::HIP:
+    return "HIP_VISIBLE_DEVICES";
   }
   PetscUnreachable();
   return "PETSC_ERROR_PLIB";
 }
 
 template <DeviceType T>
-PetscErrorCode Device<T>::initialize(MPI_Comm comm, PetscInt *defaultDeviceId, PetscBool *defaultView, PetscDeviceInitType *defaultInitType) noexcept {
+PetscErrorCode Device<T>::initialize(MPI_Comm comm, PetscInt *defaultDeviceId, PetscBool *defaultView, PetscDeviceInitType *defaultInitType) noexcept
+{
   auto initId   = std::make_pair(*defaultDeviceId, PETSC_FALSE);
   auto initView = std::make_pair(*defaultView, PETSC_FALSE);
   auto initType = std::make_pair(*defaultInitType, PETSC_FALSE);
@@ -222,9 +238,9 @@ PetscErrorCode Device<T>::initialize(MPI_Comm comm, PetscInt *defaultDeviceId, P
   } else if (const auto cerr = cupmGetDeviceCount(&ndev)) {
     auto PETSC_UNUSED ignored = cupmGetLastError();
     // we won't be initializing anything anyways
-    initType.first            = PETSC_DEVICE_INIT_NONE;
+    initType.first = PETSC_DEVICE_INIT_NONE;
     // save the error code for later
-    initId.first              = -static_cast<decltype(initId.first)>(cerr);
+    initId.first = -static_cast<decltype(initId.first)>(cerr);
 
     PetscCheck((initType.first != PETSC_DEVICE_INIT_EAGER) && !initView.first, comm, PETSC_ERR_USER_INPUT, "Cannot eagerly initialize %s, as doing so results in %s error %d (%s) : %s", cupmName(), cupmName(), static_cast<PetscErrorCode>(cerr), cupmGetErrorName(cerr), cupmGetErrorString(cerr));
   }
@@ -259,7 +275,8 @@ PetscErrorCode Device<T>::initialize(MPI_Comm comm, PetscInt *defaultDeviceId, P
 }
 
 template <DeviceType T>
-PetscErrorCode Device<T>::init_device_id_(PetscInt *inid) const noexcept {
+PetscErrorCode Device<T>::init_device_id_(PetscInt *inid) const noexcept
+{
   const auto id   = *inid == PETSC_DECIDE ? defaultDevice_ : *inid;
   const auto cerr = static_cast<cupmError_t>(-defaultDevice_);
 
@@ -276,14 +293,16 @@ PetscErrorCode Device<T>::init_device_id_(PetscInt *inid) const noexcept {
 }
 
 template <DeviceType T>
-PetscErrorCode Device<T>::configure_device_(PetscDevice device) noexcept {
+PetscErrorCode Device<T>::configure_device_(PetscDevice device) noexcept
+{
   PetscFunctionBegin;
   PetscCall(devices_[device->deviceId]->configure());
   PetscFunctionReturn(0);
 }
 
 template <DeviceType T>
-PetscErrorCode Device<T>::view_device_(PetscDevice device, PetscViewer viewer) noexcept {
+PetscErrorCode Device<T>::view_device_(PetscDevice device, PetscViewer viewer) noexcept
+{
   PetscFunctionBegin;
   // now this __shouldn't__ reconfigure the device, but there is a petscinfo call to indicate
   // it is being reconfigured
@@ -293,7 +312,8 @@ PetscErrorCode Device<T>::view_device_(PetscDevice device, PetscViewer viewer) n
 }
 
 template <DeviceType T>
-PetscErrorCode Device<T>::get_attribute_(PetscInt id, PetscDeviceAttribute attr, void *value) noexcept {
+PetscErrorCode Device<T>::get_attribute_(PetscInt id, PetscDeviceAttribute attr, void *value) noexcept
+{
   PetscFunctionBegin;
   PetscCall(devices_[id]->getattribute(attr, value));
   PetscFunctionReturn(0);

@@ -3,7 +3,8 @@ static char help[] = "Tests the creation of a PC context.\n\n";
 
 #include <petscpc.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   PC       pc;
   PetscInt n = 5;
   Mat      mat;

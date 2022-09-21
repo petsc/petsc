@@ -40,7 +40,8 @@ $     -ts_adapt_type my_scheme
 
 .seealso: `TSAdaptRegisterAll()`
 @*/
-PetscErrorCode TSAdaptRegister(const char sname[], PetscErrorCode (*function)(TSAdapt)) {
+PetscErrorCode TSAdaptRegister(const char sname[], PetscErrorCode (*function)(TSAdapt))
+{
   PetscFunctionBegin;
   PetscCall(TSAdaptInitializePackage());
   PetscCall(PetscFunctionListAdd(&TSAdaptList, sname, function));
@@ -56,7 +57,8 @@ PetscErrorCode TSAdaptRegister(const char sname[], PetscErrorCode (*function)(TS
 
 .seealso: `TSAdaptRegisterDestroy()`
 @*/
-PetscErrorCode TSAdaptRegisterAll(void) {
+PetscErrorCode TSAdaptRegisterAll(void)
+{
   PetscFunctionBegin;
   if (TSAdaptRegisterAllCalled) PetscFunctionReturn(0);
   TSAdaptRegisterAllCalled = PETSC_TRUE;
@@ -77,7 +79,8 @@ PetscErrorCode TSAdaptRegisterAll(void) {
 
 .seealso: `PetscFinalize()`
 @*/
-PetscErrorCode TSAdaptFinalizePackage(void) {
+PetscErrorCode TSAdaptFinalizePackage(void)
+{
   PetscFunctionBegin;
   PetscCall(PetscFunctionListDestroy(&TSAdaptList));
   TSAdaptPackageInitialized = PETSC_FALSE;
@@ -93,7 +96,8 @@ PetscErrorCode TSAdaptFinalizePackage(void) {
 
 .seealso: `PetscInitialize()`
 @*/
-PetscErrorCode TSAdaptInitializePackage(void) {
+PetscErrorCode TSAdaptInitializePackage(void)
+{
   PetscFunctionBegin;
   if (TSAdaptPackageInitialized) PetscFunctionReturn(0);
   TSAdaptPackageInitialized = PETSC_TRUE;
@@ -119,7 +123,8 @@ PetscErrorCode TSAdaptInitializePackage(void) {
 
 .seealso: `TSGetAdapt()`, `TSAdaptDestroy()`, `TSAdaptType`, `TSAdaptGetType()`
 @*/
-PetscErrorCode TSAdaptSetType(TSAdapt adapt, TSAdaptType type) {
+PetscErrorCode TSAdaptSetType(TSAdapt adapt, TSAdaptType type)
+{
   PetscBool match;
   PetscErrorCode (*r)(TSAdapt);
 
@@ -152,7 +157,8 @@ PetscErrorCode TSAdaptSetType(TSAdapt adapt, TSAdaptType type) {
 
 .seealso `TSAdaptSetType()`
 @*/
-PetscErrorCode TSAdaptGetType(TSAdapt adapt, TSAdaptType *type) {
+PetscErrorCode TSAdaptGetType(TSAdapt adapt, TSAdaptType *type)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt, TSADAPT_CLASSID, 1);
   PetscValidPointer(type, 2);
@@ -160,7 +166,8 @@ PetscErrorCode TSAdaptGetType(TSAdapt adapt, TSAdaptType *type) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TSAdaptSetOptionsPrefix(TSAdapt adapt, const char prefix[]) {
+PetscErrorCode TSAdaptSetOptionsPrefix(TSAdapt adapt, const char prefix[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt, TSADAPT_CLASSID, 1);
   PetscCall(PetscObjectSetOptionsPrefix((PetscObject)adapt, prefix));
@@ -194,7 +201,8 @@ PetscErrorCode TSAdaptSetOptionsPrefix(TSAdapt adapt, const char prefix[]) {
 
 .seealso: `PetscViewerBinaryOpen()`, `TSAdaptView()`, `MatLoad()`, `VecLoad()`
 @*/
-PetscErrorCode TSAdaptLoad(TSAdapt adapt, PetscViewer viewer) {
+PetscErrorCode TSAdaptLoad(TSAdapt adapt, PetscViewer viewer)
+{
   PetscBool isbinary;
   char      type[256];
 
@@ -210,7 +218,8 @@ PetscErrorCode TSAdaptLoad(TSAdapt adapt, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TSAdaptView(TSAdapt adapt, PetscViewer viewer) {
+PetscErrorCode TSAdaptView(TSAdapt adapt, PetscViewer viewer)
+{
   PetscBool iascii, isbinary, isnone, isglee;
 
   PetscFunctionBegin;
@@ -266,14 +275,16 @@ PetscErrorCode TSAdaptView(TSAdapt adapt, PetscViewer viewer) {
 
 .seealso: `TSAdaptCreate()`, `TSAdaptDestroy()`
 @*/
-PetscErrorCode TSAdaptReset(TSAdapt adapt) {
+PetscErrorCode TSAdaptReset(TSAdapt adapt)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt, TSADAPT_CLASSID, 1);
   PetscTryTypeMethod(adapt, reset);
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TSAdaptDestroy(TSAdapt *adapt) {
+PetscErrorCode TSAdaptDestroy(TSAdapt *adapt)
+{
   PetscFunctionBegin;
   if (!*adapt) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(*adapt, TSADAPT_CLASSID, 1);
@@ -306,7 +317,8 @@ PetscErrorCode TSAdaptDestroy(TSAdapt *adapt) {
 
 .seealso: `TSAdaptChoose()`
 @*/
-PetscErrorCode TSAdaptSetMonitor(TSAdapt adapt, PetscBool flg) {
+PetscErrorCode TSAdaptSetMonitor(TSAdapt adapt, PetscBool flg)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt, TSADAPT_CLASSID, 1);
   PetscValidLogicalCollectiveBool(adapt, flg, 2);
@@ -338,7 +350,8 @@ $  PetscErrorCode func(TSAdapt adapt,TS ts,PetscBool *accept)
 
 .seealso: `TSAdaptChoose()`
 @*/
-PetscErrorCode TSAdaptSetCheckStage(TSAdapt adapt, PetscErrorCode (*func)(TSAdapt, TS, PetscReal, Vec, PetscBool *)) {
+PetscErrorCode TSAdaptSetCheckStage(TSAdapt adapt, PetscErrorCode (*func)(TSAdapt, TS, PetscReal, Vec, PetscBool *))
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt, TSADAPT_CLASSID, 1);
   adapt->checkstage = func;
@@ -362,7 +375,8 @@ PetscErrorCode TSAdaptSetCheckStage(TSAdapt adapt, PetscErrorCode (*func)(TSAdap
 
 .seealso: `TSAdapt`, `TSAdaptChoose()`
 @*/
-PetscErrorCode TSAdaptSetAlwaysAccept(TSAdapt adapt, PetscBool flag) {
+PetscErrorCode TSAdaptSetAlwaysAccept(TSAdapt adapt, PetscBool flag)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt, TSADAPT_CLASSID, 1);
   PetscValidLogicalCollectiveBool(adapt, flag, 2);
@@ -388,7 +402,8 @@ PetscErrorCode TSAdaptSetAlwaysAccept(TSAdapt adapt, PetscBool flag) {
 
 .seealso: `TSAdapt`, `TSAdaptGetSafety()`, `TSAdaptChoose()`
 @*/
-PetscErrorCode TSAdaptSetSafety(TSAdapt adapt, PetscReal safety, PetscReal reject_safety) {
+PetscErrorCode TSAdaptSetSafety(TSAdapt adapt, PetscReal safety, PetscReal reject_safety)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt, TSADAPT_CLASSID, 1);
   PetscValidLogicalCollectiveReal(adapt, safety, 2);
@@ -418,7 +433,8 @@ PetscErrorCode TSAdaptSetSafety(TSAdapt adapt, PetscReal safety, PetscReal rejec
 
 .seealso: `TSAdapt`, `TSAdaptSetSafety()`, `TSAdaptChoose()`
 @*/
-PetscErrorCode TSAdaptGetSafety(TSAdapt adapt, PetscReal *safety, PetscReal *reject_safety) {
+PetscErrorCode TSAdaptGetSafety(TSAdapt adapt, PetscReal *safety, PetscReal *reject_safety)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt, TSADAPT_CLASSID, 1);
   if (safety) PetscValidRealPointer(safety, 2);
@@ -444,7 +460,8 @@ PetscErrorCode TSAdaptGetSafety(TSAdapt adapt, PetscReal *safety, PetscReal *rej
 
 .seealso: `TSAdapt`, `TSAdaptGetMaxIgnore()`, `TSAdaptChoose()`
 @*/
-PetscErrorCode TSAdaptSetMaxIgnore(TSAdapt adapt, PetscReal max_ignore) {
+PetscErrorCode TSAdaptSetMaxIgnore(TSAdapt adapt, PetscReal max_ignore)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt, TSADAPT_CLASSID, 1);
   PetscValidLogicalCollectiveReal(adapt, max_ignore, 2);
@@ -467,7 +484,8 @@ PetscErrorCode TSAdaptSetMaxIgnore(TSAdapt adapt, PetscReal max_ignore) {
 
 .seealso: `TSAdapt`, `TSAdaptSetMaxIgnore()`, `TSAdaptChoose()`
 @*/
-PetscErrorCode TSAdaptGetMaxIgnore(TSAdapt adapt, PetscReal *max_ignore) {
+PetscErrorCode TSAdaptGetMaxIgnore(TSAdapt adapt, PetscReal *max_ignore)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt, TSADAPT_CLASSID, 1);
   PetscValidRealPointer(max_ignore, 2);
@@ -492,7 +510,8 @@ PetscErrorCode TSAdaptGetMaxIgnore(TSAdapt adapt, PetscReal *max_ignore) {
 
 .seealso: `TSAdaptChoose()`, `TSAdaptGetClip()`, `TSAdaptSetScaleSolveFailed()`
 @*/
-PetscErrorCode TSAdaptSetClip(TSAdapt adapt, PetscReal low, PetscReal high) {
+PetscErrorCode TSAdaptSetClip(TSAdapt adapt, PetscReal low, PetscReal high)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt, TSADAPT_CLASSID, 1);
   PetscValidLogicalCollectiveReal(adapt, low, 2);
@@ -521,7 +540,8 @@ PetscErrorCode TSAdaptSetClip(TSAdapt adapt, PetscReal low, PetscReal high) {
 
 .seealso: `TSAdaptChoose()`, `TSAdaptSetClip()`, `TSAdaptSetScaleSolveFailed()`
 @*/
-PetscErrorCode TSAdaptGetClip(TSAdapt adapt, PetscReal *low, PetscReal *high) {
+PetscErrorCode TSAdaptGetClip(TSAdapt adapt, PetscReal *low, PetscReal *high)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt, TSADAPT_CLASSID, 1);
   if (low) PetscValidRealPointer(low, 2);
@@ -547,7 +567,8 @@ PetscErrorCode TSAdaptGetClip(TSAdapt adapt, PetscReal *low, PetscReal *high) {
 
 .seealso: `TSAdaptChoose()`, `TSAdaptGetScaleSolveFailed()`, `TSAdaptGetClip()`
 @*/
-PetscErrorCode TSAdaptSetScaleSolveFailed(TSAdapt adapt, PetscReal scale) {
+PetscErrorCode TSAdaptSetScaleSolveFailed(TSAdapt adapt, PetscReal scale)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt, TSADAPT_CLASSID, 1);
   PetscValidLogicalCollectiveReal(adapt, scale, 2);
@@ -572,7 +593,8 @@ PetscErrorCode TSAdaptSetScaleSolveFailed(TSAdapt adapt, PetscReal scale) {
 
 .seealso: `TSAdaptChoose()`, `TSAdaptSetScaleSolveFailed()`, `TSAdaptSetClip()`
 @*/
-PetscErrorCode TSAdaptGetScaleSolveFailed(TSAdapt adapt, PetscReal *scale) {
+PetscErrorCode TSAdaptGetScaleSolveFailed(TSAdapt adapt, PetscReal *scale)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt, TSADAPT_CLASSID, 1);
   if (scale) PetscValidRealPointer(scale, 2);
@@ -598,7 +620,8 @@ PetscErrorCode TSAdaptGetScaleSolveFailed(TSAdapt adapt, PetscReal *scale) {
 
 .seealso: `TSAdapt`, `TSAdaptGetStepLimits()`, `TSAdaptChoose()`
 @*/
-PetscErrorCode TSAdaptSetStepLimits(TSAdapt adapt, PetscReal hmin, PetscReal hmax) {
+PetscErrorCode TSAdaptSetStepLimits(TSAdapt adapt, PetscReal hmin, PetscReal hmax)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt, TSADAPT_CLASSID, 1);
   PetscValidLogicalCollectiveReal(adapt, hmin, 2);
@@ -629,7 +652,8 @@ PetscErrorCode TSAdaptSetStepLimits(TSAdapt adapt, PetscReal hmin, PetscReal hma
 
 .seealso: `TSAdapt`, `TSAdaptSetStepLimits()`, `TSAdaptChoose()`
 @*/
-PetscErrorCode TSAdaptGetStepLimits(TSAdapt adapt, PetscReal *hmin, PetscReal *hmax) {
+PetscErrorCode TSAdaptGetStepLimits(TSAdapt adapt, PetscReal *hmin, PetscReal *hmax)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt, TSADAPT_CLASSID, 1);
   if (hmin) PetscValidRealPointer(hmin, 2);
@@ -667,7 +691,8 @@ PetscErrorCode TSAdaptGetStepLimits(TSAdapt adapt, PetscReal *hmin, PetscReal *h
 .seealso: `TSGetAdapt()`, `TSAdaptSetType()`, `TSAdaptSetAlwaysAccept()`, `TSAdaptSetSafety()`,
           `TSAdaptSetClip()`, `TSAdaptSetScaleSolveFailed()`, `TSAdaptSetStepLimits()`, `TSAdaptSetMonitor()`
 */
-PetscErrorCode TSAdaptSetFromOptions(TSAdapt adapt, PetscOptionItems *PetscOptionsObject) {
+PetscErrorCode TSAdaptSetFromOptions(TSAdapt adapt, PetscOptionItems *PetscOptionsObject)
+{
   char      type[256] = TSADAPTBASIC;
   PetscReal safety, reject_safety, clip[2], scale, hmin, hmax;
   PetscBool set, flg;
@@ -734,7 +759,8 @@ PetscErrorCode TSAdaptSetFromOptions(TSAdapt adapt, PetscOptionItems *PetscOptio
 
 .seealso: `TSAdapt`, `TSAdaptCreate()`, `TSAdaptCandidateAdd()`, `TSAdaptChoose()`
 @*/
-PetscErrorCode TSAdaptCandidatesClear(TSAdapt adapt) {
+PetscErrorCode TSAdaptCandidatesClear(TSAdapt adapt)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt, TSADAPT_CLASSID, 1);
   PetscCall(PetscMemzero(&adapt->candidates, sizeof(adapt->candidates)));
@@ -762,7 +788,8 @@ PetscErrorCode TSAdaptCandidatesClear(TSAdapt adapt) {
 
 .seealso: `TSAdaptCandidatesClear()`, `TSAdaptChoose()`
 @*/
-PetscErrorCode TSAdaptCandidateAdd(TSAdapt adapt, const char name[], PetscInt order, PetscInt stageorder, PetscReal ccfl, PetscReal cost, PetscBool inuse) {
+PetscErrorCode TSAdaptCandidateAdd(TSAdapt adapt, const char name[], PetscInt order, PetscInt stageorder, PetscReal ccfl, PetscReal cost, PetscBool inuse)
+{
   PetscInt c;
 
   PetscFunctionBegin;
@@ -806,7 +833,8 @@ PetscErrorCode TSAdaptCandidateAdd(TSAdapt adapt, const char name[], PetscInt or
 
 .seealso: `TSAdaptCandidatesClear()`, `TSAdaptCandidateAdd()`, `TSAdaptChoose()`
 @*/
-PetscErrorCode TSAdaptCandidatesGet(TSAdapt adapt, PetscInt *n, const PetscInt **order, const PetscInt **stageorder, const PetscReal **ccfl, const PetscReal **cost) {
+PetscErrorCode TSAdaptCandidatesGet(TSAdapt adapt, PetscInt *n, const PetscInt **order, const PetscInt **stageorder, const PetscReal **ccfl, const PetscReal **cost)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt, TSADAPT_CLASSID, 1);
   if (n) *n = adapt->candidates.n;
@@ -840,7 +868,8 @@ PetscErrorCode TSAdaptCandidatesGet(TSAdapt adapt, PetscInt *n, const PetscInt *
 
 .seealso: `TSAdapt`, `TSAdaptCandidatesClear()`, `TSAdaptCandidateAdd()`
 @*/
-PetscErrorCode TSAdaptChoose(TSAdapt adapt, TS ts, PetscReal h, PetscInt *next_sc, PetscReal *next_h, PetscBool *accept) {
+PetscErrorCode TSAdaptChoose(TSAdapt adapt, TS ts, PetscReal h, PetscInt *next_sc, PetscReal *next_h, PetscBool *accept)
+{
   PetscInt  ncandidates = adapt->candidates.n;
   PetscInt  scheme      = 0;
   PetscReal wlte        = -1.0;
@@ -929,7 +958,8 @@ PetscErrorCode TSAdaptChoose(TSAdapt adapt, TS ts, PetscReal h, PetscInt *next_s
 
 .seealso:
 @*/
-PetscErrorCode TSAdaptSetTimeStepIncreaseDelay(TSAdapt adapt, PetscInt cnt) {
+PetscErrorCode TSAdaptSetTimeStepIncreaseDelay(TSAdapt adapt, PetscInt cnt)
+{
   PetscFunctionBegin;
   adapt->timestepjustdecreased_delay = cnt;
   PetscFunctionReturn(0);
@@ -953,7 +983,8 @@ PetscErrorCode TSAdaptSetTimeStepIncreaseDelay(TSAdapt adapt, PetscInt cnt) {
 
 .seealso:
 @*/
-PetscErrorCode TSAdaptCheckStage(TSAdapt adapt, TS ts, PetscReal t, Vec Y, PetscBool *accept) {
+PetscErrorCode TSAdaptCheckStage(TSAdapt adapt, TS ts, PetscReal t, Vec Y, PetscBool *accept)
+{
   SNESConvergedReason snesreason = SNES_CONVERGED_ITERATING;
 
   PetscFunctionBegin;
@@ -1023,7 +1054,8 @@ PetscErrorCode TSAdaptCheckStage(TSAdapt adapt, TS ts, PetscReal t, Vec Y, Petsc
 
 .seealso: `TSGetAdapt()`, `TSAdaptSetType()`, `TSAdaptDestroy()`
 @*/
-PetscErrorCode TSAdaptCreate(MPI_Comm comm, TSAdapt *inadapt) {
+PetscErrorCode TSAdaptCreate(MPI_Comm comm, TSAdapt *inadapt)
+{
   TSAdapt adapt;
 
   PetscFunctionBegin;
@@ -1033,16 +1065,16 @@ PetscErrorCode TSAdaptCreate(MPI_Comm comm, TSAdapt *inadapt) {
 
   PetscCall(PetscHeaderCreate(adapt, TSADAPT_CLASSID, "TSAdapt", "Time stepping adaptivity", "TS", comm, TSAdaptDestroy, TSAdaptView));
 
-  adapt->always_accept               = PETSC_FALSE;
-  adapt->safety                      = 0.9;
-  adapt->reject_safety               = 0.5;
-  adapt->clip[0]                     = 0.1;
-  adapt->clip[1]                     = 10.;
-  adapt->dt_min                      = 1e-20;
-  adapt->dt_max                      = 1e+20;
-  adapt->ignore_max                  = -1.0;
-  adapt->glee_use_local              = PETSC_TRUE;
-  adapt->scale_solve_failed          = 0.25;
+  adapt->always_accept      = PETSC_FALSE;
+  adapt->safety             = 0.9;
+  adapt->reject_safety      = 0.5;
+  adapt->clip[0]            = 0.1;
+  adapt->clip[1]            = 10.;
+  adapt->dt_min             = 1e-20;
+  adapt->dt_max             = 1e+20;
+  adapt->ignore_max         = -1.0;
+  adapt->glee_use_local     = PETSC_TRUE;
+  adapt->scale_solve_failed = 0.25;
   /* these two safety factors are not public, and they are used only in the TS_EXACTFINALTIME_MATCHSTEP case
      to prevent from situations were unreasonably small time steps are taken in order to match the final time */
   adapt->matchstepfac[0]             = 0.01; /* allow 1% step size increase in the last step */

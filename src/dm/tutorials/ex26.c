@@ -7,7 +7,8 @@ static char help[] = "Calculates moments for Gaussian functions.\n\n";
 #include <gsl/gsl_sf_hermite.h>
 #include <gsl/gsl_randist.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   int        s, n         = 15;
   PetscInt   tick, moment = 0, momentummax = 7;
   PetscReal *zeros, *weights, scale, h, sigma = 1 / sqrt(2), g = 0, mu = 0;

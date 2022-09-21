@@ -30,7 +30,8 @@
 /*    PROGRAM SUBROUTINES -*/
 /*       QMDMRG.*/
 /******************************************************************/
-PetscErrorCode SPARSEPACKqmdupd(const PetscInt *xadj, const PetscInt *adjncy, const PetscInt *nlist, const PetscInt *list, PetscInt *deg, PetscInt *qsize, PetscInt *qlink, PetscInt *marker, PetscInt *rchset, PetscInt *nbrhd) {
+PetscErrorCode SPARSEPACKqmdupd(const PetscInt *xadj, const PetscInt *adjncy, const PetscInt *nlist, const PetscInt *list, PetscInt *deg, PetscInt *qsize, PetscInt *qlink, PetscInt *marker, PetscInt *rchset, PetscInt *nbrhd)
+{
   /* System generated locals */
   PetscInt i__1, i__2;
 

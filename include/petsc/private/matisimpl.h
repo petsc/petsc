@@ -1,8 +1,8 @@
 #if !defined(__is_h)
-#define __is_h
+  #define __is_h
 
-#include <petscsf.h>
-#include <petsc/private/matimpl.h>
+  #include <petscsf.h>
+  #include <petsc/private/matimpl.h>
 
 typedef struct {
   Mat          A;       /* the local matrix */

@@ -10,8 +10,8 @@
 #include <sstream> // std::ostringstream
 
 #if defined(__clang__)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wgnu-zero-variadic-macro-arguments"
+  #pragma clang diagnostic push
+  #pragma clang diagnostic ignored "-Wgnu-zero-variadic-macro-arguments"
 #endif
 
 // ==========================================================================================
@@ -19,20 +19,23 @@
 // ==========================================================================================
 
 struct PetscEventAllocator : public Petsc::AllocatorBase<PetscEvent> {
-  PETSC_NODISCARD static PetscErrorCode create(PetscEvent *event) noexcept {
+  PETSC_NODISCARD static PetscErrorCode create(PetscEvent *event) noexcept
+  {
     PetscFunctionBegin;
     PetscCall(PetscNew(event));
     PetscFunctionReturn(0);
   }
 
-  PETSC_NODISCARD static PetscErrorCode destroy(PetscEvent event) noexcept {
+  PETSC_NODISCARD static PetscErrorCode destroy(PetscEvent event) noexcept
+  {
     PetscFunctionBegin;
     PetscCall(reset(event));
     PetscCall(PetscFree(event));
     PetscFunctionReturn(0);
   }
 
-  PETSC_NODISCARD static PetscErrorCode reset(PetscEvent event, bool zero = true) noexcept {
+  PETSC_NODISCARD static PetscErrorCode reset(PetscEvent event, bool zero = true) noexcept
+  {
     PetscFunctionBegin;
     if (zero) {
       if (auto &destroy = event->destroy) {
@@ -50,7 +53,8 @@ struct PetscEventAllocator : public Petsc::AllocatorBase<PetscEvent> {
 
 static Petsc::ObjectPool<PetscEvent, PetscEventAllocator> event_pool;
 
-static PetscErrorCode PetscDeviceContextCreateEvent_Private(PetscDeviceContext dctx, PetscEvent *event) {
+static PetscErrorCode PetscDeviceContextCreateEvent_Private(PetscDeviceContext dctx, PetscEvent *event)
+{
   PetscFunctionBegin;
   PetscValidDeviceContext(dctx, 1);
   PetscValidPointer(event, 2);
@@ -60,14 +64,16 @@ static PetscErrorCode PetscDeviceContextCreateEvent_Private(PetscDeviceContext d
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscEventDestroy_Private(PetscEvent *event) {
+static PetscErrorCode PetscEventDestroy_Private(PetscEvent *event)
+{
   PetscFunctionBegin;
   PetscValidPointer(event, 1);
   if (*event) PetscCall(event_pool.deallocate(Petsc::util::exchange(*event, nullptr)));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscDeviceContextRecordEvent_Private(PetscDeviceContext dctx, PetscEvent event) {
+static PetscErrorCode PetscDeviceContextRecordEvent_Private(PetscDeviceContext dctx, PetscEvent event)
+{
   PetscObjectId    id;
   PetscObjectState state;
 
@@ -96,7 +102,8 @@ static PetscErrorCode PetscDeviceContextRecordEvent_Private(PetscDeviceContext d
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscDeviceContextWaitForEvent_Private(PetscDeviceContext dctx, PetscEvent event) {
+static PetscErrorCode PetscDeviceContextWaitForEvent_Private(PetscDeviceContext dctx, PetscEvent event)
+{
   PetscFunctionBegin;
   PetscValidDeviceContext(dctx, 1);
   PetscValidPointer(event, 2);
@@ -138,7 +145,8 @@ struct PetscStackFrame</* use_debug = */ true> {
   bool operator==(const PetscStackFrame &other) const noexcept { return line == other.line && file == other.file && function == other.function; }
 
 private:
-  static std::string split_on_petsc_path_(std::string &&in) noexcept {
+  static std::string split_on_petsc_path_(std::string &&in) noexcept
+  {
     auto pos = in.find("petsc/src");
 
     if (pos == std::string::npos) pos = in.find("petsc/include");
@@ -146,7 +154,8 @@ private:
     return in.substr(pos);
   }
 
-  friend std::ostream &operator<<(std::ostream &os, const PetscStackFrame &frame) {
+  friend std::ostream &operator<<(std::ostream &os, const PetscStackFrame &frame)
+  {
     os << '(' << frame.function << "() at " << frame.file << ':' << frame.line << ')';
     return os;
   }
@@ -155,11 +164,14 @@ private:
 template <>
 struct PetscStackFrame</* use_debug = */ false> {
   template <typename... T>
-  constexpr PetscStackFrame(T &&...) noexcept { }
+  constexpr PetscStackFrame(T &&...) noexcept
+  {
+  }
 
   constexpr bool operator==(const PetscStackFrame &) const noexcept { return true; }
 
-  friend std::ostream &operator<<(std::ostream &os, const PetscStackFrame &) noexcept {
+  friend std::ostream &operator<<(std::ostream &os, const PetscStackFrame &) noexcept
+  {
     os << "(unknown)";
     return os;
   }
@@ -227,7 +239,8 @@ private:
 // MarkedObejctMap Private API
 // ==========================================================================================
 
-inline PetscErrorCode MarkedObjectMap::finalize_() noexcept {
+inline PetscErrorCode MarkedObjectMap::finalize_() noexcept
+{
   PetscFunctionBegin;
   PetscCall(PetscInfo(nullptr, "Finalizing marked object map\n"));
   if (PetscDefined(USE_DEBUG)) {
@@ -272,7 +285,8 @@ inline PetscErrorCode MarkedObjectMap::finalize_() noexcept {
 // MarkedObejctMap::snapshot_type Private API
 // ==========================================================================================
 
-inline PetscEvent MarkedObjectMap::snapshot_type::init_event_(PetscDeviceContext dctx) noexcept {
+inline PetscEvent MarkedObjectMap::snapshot_type::init_event_(PetscDeviceContext dctx) noexcept
+{
   PetscEvent event = nullptr;
 
   PetscFunctionBegin;
@@ -287,7 +301,8 @@ inline PetscEvent MarkedObjectMap::snapshot_type::init_event_(PetscDeviceContext
 
 MarkedObjectMap::snapshot_type::snapshot_type(PetscDeviceContext dctx, frame_type frame) noexcept : frame_type(std::move(frame)), event_(init_event_(dctx)) { }
 
-MarkedObjectMap::snapshot_type::~snapshot_type() noexcept {
+MarkedObjectMap::snapshot_type::~snapshot_type() noexcept
+{
   PetscFunctionBegin;
   PetscCallAbort(PETSC_COMM_SELF, PetscEventDestroy_Private(&event_));
   PetscFunctionReturnVoid();
@@ -296,7 +311,8 @@ MarkedObjectMap::snapshot_type::~snapshot_type() noexcept {
 // movable
 MarkedObjectMap::snapshot_type::snapshot_type(snapshot_type &&other) noexcept : frame_type(std::move(other)), event_(Petsc::util::exchange(other.event_, nullptr)) { }
 
-MarkedObjectMap::snapshot_type &MarkedObjectMap::snapshot_type::operator=(snapshot_type &&other) noexcept {
+MarkedObjectMap::snapshot_type &MarkedObjectMap::snapshot_type::operator=(snapshot_type &&other) noexcept
+{
   PetscFunctionBegin;
   if (this != &other) {
     frame_type::operator=(std::move(other));
@@ -315,7 +331,8 @@ static MarkedObjectMap marked_object_map;
 // ==========================================================================================
 
 template <typename T>
-static PetscErrorCode PetscDeviceContextMapIterVisitor(PetscDeviceContext dctx, T &&callback) noexcept {
+static PetscErrorCode PetscDeviceContextMapIterVisitor(PetscDeviceContext dctx, T &&callback) noexcept
+{
   const auto dctx_id    = PetscObjectCast(dctx)->id;
   auto      &dctx_deps  = CxxDataCast(dctx)->deps;
   auto      &object_map = marked_object_map.map;
@@ -344,7 +361,8 @@ static PetscErrorCode PetscDeviceContextMapIterVisitor(PetscDeviceContext dctx, 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscDeviceContextSyncClearMap_Internal(PetscDeviceContext dctx) {
+PetscErrorCode PetscDeviceContextSyncClearMap_Internal(PetscDeviceContext dctx)
+{
   using map_iterator = MarkedObjectMap::map_type::const_iterator;
   using dep_iterator = MarkedObjectMap::mapped_type::dependency_type::const_iterator;
 
@@ -389,13 +407,14 @@ PetscErrorCode PetscDeviceContextSyncClearMap_Internal(PetscDeviceContext dctx) 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscDeviceContextCheckNotOrphaned_Internal(PetscDeviceContext dctx) {
+PetscErrorCode PetscDeviceContextCheckNotOrphaned_Internal(PetscDeviceContext dctx)
+{
   std::ostringstream oss;
   //const auto         allow = dctx->options.allow_orphans, contained = dctx->contained;
-  const auto         allow = true, contained = true;
-  auto               wrote_to_oss = false;
-  using map_iterator              = MarkedObjectMap::map_type::const_iterator;
-  using dep_iterator              = MarkedObjectMap::mapped_type::dependency_type::const_iterator;
+  const auto allow = true, contained = true;
+  auto       wrote_to_oss = false;
+  using map_iterator      = MarkedObjectMap::map_type::const_iterator;
+  using dep_iterator      = MarkedObjectMap::mapped_type::dependency_type::const_iterator;
 
   PetscFunctionBegin;
   PetscCall(PetscDeviceContextMapIterVisitor(dctx, [&](map_iterator mapit, dep_iterator it, dep_iterator end) {
@@ -414,7 +433,8 @@ PetscErrorCode PetscDeviceContextCheckNotOrphaned_Internal(PetscDeviceContext dc
 }
 
 template <bool use_debug>
-static PetscErrorCode PetscDeviceContextMarkIntentFromID_Private(PetscDeviceContext dctx, PetscObjectId id, PetscMemoryAccessMode mode, PetscStackFrame<use_debug> frame, const char *name) {
+static PetscErrorCode PetscDeviceContextMarkIntentFromID_Private(PetscDeviceContext dctx, PetscObjectId id, PetscMemoryAccessMode mode, PetscStackFrame<use_debug> frame, const char *name)
+{
 #define DEBUG_INFO(mess, ...) PetscDebugInfo(dctx, "dctx %" PetscInt64_FMT " (%s) - obj %" PetscInt64_FMT " (%s): " mess, dctx_id, PetscObjectCast(dctx)->name ? PetscObjectCast(dctx)->name : "unnamed", id, name, ##__VA_ARGS__)
   const auto dctx_id             = PetscObjectCast(dctx)->id;
   auto      &marked              = marked_object_map.map[id];
@@ -498,7 +518,8 @@ static PetscErrorCode PetscDeviceContextMarkIntentFromID_Private(PetscDeviceCont
 .seealso: `PetscDeviceContextWaitForContext()`, `PetscDeviceContextSynchronize()`,
 `PetscObjectGetId()`, `PetscMemoryAccessMode`
 @*/
-PetscErrorCode PetscDeviceContextMarkIntentFromID(PetscDeviceContext dctx, PetscObjectId id, PetscMemoryAccessMode mode, const char name[]) {
+PetscErrorCode PetscDeviceContextMarkIntentFromID(PetscDeviceContext dctx, PetscObjectId id, PetscMemoryAccessMode mode, const char name[])
+{
 #if PetscDefined(USE_DEBUG)
   const auto index    = petscstack.currentsize > 2 ? petscstack.currentsize - 2 : 0;
   const auto file     = petscstack.file[index];
@@ -521,5 +542,5 @@ PetscErrorCode PetscDeviceContextMarkIntentFromID(PetscDeviceContext dctx, Petsc
 }
 
 #if defined(__clang__)
-#pragma clang diagnostic pop
+  #pragma clang diagnostic pop
 #endif

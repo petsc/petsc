@@ -3,7 +3,8 @@ static char help[] = "Tests string options with spaces";
 
 #include <petscsys.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscBool ts_view      = PETSC_FALSE;
   PetscInt  ts_max_steps = 0, snes_max_it = 0;
   PetscReal ts_max_time   = 0.;

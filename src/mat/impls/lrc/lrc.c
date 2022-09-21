@@ -11,7 +11,8 @@ typedef struct {
   Vec xl, yl;       /* auxiliary sequential vectors for matmult operation */
 } Mat_LRC;
 
-static PetscErrorCode MatMult_LRC_kernel(Mat N, Vec x, Vec y, PetscBool transpose) {
+static PetscErrorCode MatMult_LRC_kernel(Mat N, Vec x, Vec y, PetscBool transpose)
+{
   Mat_LRC    *Na = (Mat_LRC *)N->data;
   PetscMPIInt size;
   Mat         U, V;
@@ -85,19 +86,22 @@ static PetscErrorCode MatMult_LRC_kernel(Mat N, Vec x, Vec y, PetscBool transpos
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatMult_LRC(Mat N, Vec x, Vec y) {
+static PetscErrorCode MatMult_LRC(Mat N, Vec x, Vec y)
+{
   PetscFunctionBegin;
   PetscCall(MatMult_LRC_kernel(N, x, y, PETSC_FALSE));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatMultTranspose_LRC(Mat N, Vec x, Vec y) {
+static PetscErrorCode MatMultTranspose_LRC(Mat N, Vec x, Vec y)
+{
   PetscFunctionBegin;
   PetscCall(MatMult_LRC_kernel(N, x, y, PETSC_TRUE));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatDestroy_LRC(Mat N) {
+static PetscErrorCode MatDestroy_LRC(Mat N)
+{
   Mat_LRC *Na = (Mat_LRC *)N->data;
 
   PetscFunctionBegin;
@@ -114,7 +118,8 @@ static PetscErrorCode MatDestroy_LRC(Mat N) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatLRCGetMats_LRC(Mat N, Mat *A, Mat *U, Vec *c, Mat *V) {
+static PetscErrorCode MatLRCGetMats_LRC(Mat N, Mat *A, Mat *U, Vec *c, Mat *V)
+{
   Mat_LRC *Na = (Mat_LRC *)N->data;
 
   PetscFunctionBegin;
@@ -146,7 +151,8 @@ static PetscErrorCode MatLRCGetMats_LRC(Mat N, Mat *A, Mat *U, Vec *c, Mat *V) {
 
 .seealso: `MATLRC`, `MatCreateLRC()`
 @*/
-PetscErrorCode MatLRCGetMats(Mat N, Mat *A, Mat *U, Vec *c, Mat *V) {
+PetscErrorCode MatLRCGetMats(Mat N, Mat *A, Mat *U, Vec *c, Mat *V)
+{
   PetscFunctionBegin;
   PetscUseMethod(N, "MatLRCGetMats_C", (Mat, Mat *, Mat *, Vec *, Mat *), (N, A, U, c, V));
   PetscFunctionReturn(0);
@@ -197,7 +203,8 @@ M*/
 
 .seealso: `MATLRC`, `MatLRCGetMats()`
 @*/
-PetscErrorCode MatCreateLRC(Mat A, Mat U, Vec c, Mat V, Mat *N) {
+PetscErrorCode MatCreateLRC(Mat A, Mat U, Vec c, Mat V, Mat *N)
+{
   PetscBool   match;
   PetscInt    m, n, k, m1, n1, k1;
   Mat_LRC    *Na;

@@ -2,7 +2,8 @@ static char help[] = "Tests VecSetValuesBlocked() on MPI vectors.\n\n";
 
 #include <petscvec.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscMPIInt size, rank;
   PetscInt    i, n = 8, bs = 2, indices[2];
   PetscScalar values[4];

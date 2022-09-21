@@ -3,7 +3,8 @@ static char help[] = "Tests for point location\n\n";
 #include <petscsf.h>
 #include <petscdmplex.h>
 
-static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm) {
+static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm)
+{
   PetscFunctionBeginUser;
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetType(*dm, DMPLEX));
@@ -12,7 +13,8 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TestLocation(DM dm) {
+static PetscErrorCode TestLocation(DM dm)
+{
   Vec                points;
   PetscSF            cellSF = NULL;
   const PetscSFNode *cells;
@@ -50,7 +52,8 @@ static PetscErrorCode TestLocation(DM dm) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM dm;
 
   PetscFunctionBeginUser;

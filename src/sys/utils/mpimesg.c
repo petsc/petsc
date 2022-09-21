@@ -29,7 +29,8 @@
 
 .seealso: `PetscGatherMessageLengths()`, `PetscGatherMessageLengths2()`, `PetscCommBuildTwoSided()`
 @*/
-PetscErrorCode PetscGatherNumberOfMessages(MPI_Comm comm, const PetscMPIInt iflags[], const PetscMPIInt ilengths[], PetscMPIInt *nrecvs) {
+PetscErrorCode PetscGatherNumberOfMessages(MPI_Comm comm, const PetscMPIInt iflags[], const PetscMPIInt ilengths[], PetscMPIInt *nrecvs)
+{
   PetscMPIInt size, rank, *recv_buf, i, *iflags_local = NULL, *iflags_localm = NULL;
 
   PetscFunctionBegin;
@@ -85,7 +86,8 @@ PetscErrorCode PetscGatherNumberOfMessages(MPI_Comm comm, const PetscMPIInt ifla
 
 .seealso: `PetscGatherNumberOfMessages()`, `PetscGatherMessageLengths2()`, `PetscCommBuildTwoSided()`
 @*/
-PetscErrorCode PetscGatherMessageLengths(MPI_Comm comm, PetscMPIInt nsends, PetscMPIInt nrecvs, const PetscMPIInt ilengths[], PetscMPIInt **onodes, PetscMPIInt **olengths) {
+PetscErrorCode PetscGatherMessageLengths(MPI_Comm comm, PetscMPIInt nsends, PetscMPIInt nrecvs, const PetscMPIInt ilengths[], PetscMPIInt **onodes, PetscMPIInt **olengths)
+{
   PetscMPIInt  size, rank, tag, i, j;
   MPI_Request *s_waits = NULL, *r_waits = NULL;
   MPI_Status  *w_status = NULL;
@@ -133,7 +135,8 @@ PetscErrorCode PetscGatherMessageLengths(MPI_Comm comm, PetscMPIInt nsends, Pets
 }
 
 /* Same as PetscGatherNumberOfMessages(), except using PetscInt for ilengths[] */
-PetscErrorCode PetscGatherNumberOfMessages_Private(MPI_Comm comm, const PetscMPIInt iflags[], const PetscInt ilengths[], PetscMPIInt *nrecvs) {
+PetscErrorCode PetscGatherNumberOfMessages_Private(MPI_Comm comm, const PetscMPIInt iflags[], const PetscInt ilengths[], PetscMPIInt *nrecvs)
+{
   PetscMPIInt size, rank, *recv_buf, i, *iflags_local = NULL, *iflags_localm = NULL;
 
   PetscFunctionBegin;
@@ -161,7 +164,8 @@ PetscErrorCode PetscGatherNumberOfMessages_Private(MPI_Comm comm, const PetscMPI
 }
 
 /* Same as PetscGatherMessageLengths(), except using PetscInt for message lengths */
-PetscErrorCode PetscGatherMessageLengths_Private(MPI_Comm comm, PetscMPIInt nsends, PetscMPIInt nrecvs, const PetscInt ilengths[], PetscMPIInt **onodes, PetscInt **olengths) {
+PetscErrorCode PetscGatherMessageLengths_Private(MPI_Comm comm, PetscMPIInt nsends, PetscMPIInt nrecvs, const PetscInt ilengths[], PetscMPIInt **onodes, PetscInt **olengths)
+{
   PetscMPIInt  size, rank, tag, i, j;
   MPI_Request *s_waits = NULL, *r_waits = NULL;
   MPI_Status  *w_status = NULL;
@@ -231,7 +235,8 @@ PetscErrorCode PetscGatherMessageLengths_Private(MPI_Comm comm, PetscMPIInt nsen
 
 .seealso: `PetscGatherMessageLengths()`, `PetscGatherNumberOfMessages()`, `PetscCommBuildTwoSided()`
 @*/
-PetscErrorCode PetscGatherMessageLengths2(MPI_Comm comm, PetscMPIInt nsends, PetscMPIInt nrecvs, const PetscMPIInt ilengths1[], const PetscMPIInt ilengths2[], PetscMPIInt **onodes, PetscMPIInt **olengths1, PetscMPIInt **olengths2) {
+PetscErrorCode PetscGatherMessageLengths2(MPI_Comm comm, PetscMPIInt nsends, PetscMPIInt nrecvs, const PetscMPIInt ilengths1[], const PetscMPIInt ilengths2[], PetscMPIInt **onodes, PetscMPIInt **olengths1, PetscMPIInt **olengths2)
+{
   PetscMPIInt  size, tag, i, j, *buf_s = NULL, *buf_r = NULL, *buf_j = NULL;
   MPI_Request *s_waits = NULL, *r_waits = NULL;
   MPI_Status  *w_status = NULL;
@@ -284,7 +289,8 @@ PetscErrorCode PetscGatherMessageLengths2(MPI_Comm comm, PetscMPIInt nsends, Pet
   Allocate a buffer sufficient to hold messages of size specified in olengths.
   And post Irecvs on these buffers using node info from onodes
  */
-PetscErrorCode PetscPostIrecvInt(MPI_Comm comm, PetscMPIInt tag, PetscMPIInt nrecvs, const PetscMPIInt onodes[], const PetscMPIInt olengths[], PetscInt ***rbuf, MPI_Request **r_waits) {
+PetscErrorCode PetscPostIrecvInt(MPI_Comm comm, PetscMPIInt tag, PetscMPIInt nrecvs, const PetscMPIInt onodes[], const PetscMPIInt olengths[], PetscInt ***rbuf, MPI_Request **r_waits)
+{
   PetscInt   **rbuf_t, i, len = 0;
   MPI_Request *r_waits_t;
 
@@ -306,7 +312,8 @@ PetscErrorCode PetscPostIrecvInt(MPI_Comm comm, PetscMPIInt tag, PetscMPIInt nre
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscPostIrecvScalar(MPI_Comm comm, PetscMPIInt tag, PetscMPIInt nrecvs, const PetscMPIInt onodes[], const PetscMPIInt olengths[], PetscScalar ***rbuf, MPI_Request **r_waits) {
+PetscErrorCode PetscPostIrecvScalar(MPI_Comm comm, PetscMPIInt tag, PetscMPIInt nrecvs, const PetscMPIInt onodes[], const PetscMPIInt olengths[], PetscScalar ***rbuf, MPI_Request **r_waits)
+{
   PetscMPIInt   i;
   PetscScalar **rbuf_t;
   MPI_Request  *r_waits_t;

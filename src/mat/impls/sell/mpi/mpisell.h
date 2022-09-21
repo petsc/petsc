@@ -1,6 +1,6 @@
 
 #ifndef __MPISELL_H
-#define __MPISELL_H
+  #define __MPISELL_H
 #endif
 #include <../src/mat/impls/sell/seq/sell.h>
 

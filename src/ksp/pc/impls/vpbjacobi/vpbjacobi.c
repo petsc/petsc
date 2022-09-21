@@ -1,6 +1,7 @@
 #include <../src/ksp/pc/impls/vpbjacobi/vpbjacobi.h>
 
-static PetscErrorCode PCApply_VPBJacobi(PC pc, Vec x, Vec y) {
+static PetscErrorCode PCApply_VPBJacobi(PC pc, Vec x, Vec y)
+{
   PC_VPBJacobi      *jac = (PC_VPBJacobi *)pc->data;
   PetscInt           i, ncnt = 0;
   const MatScalar   *diag = jac->diag;
@@ -17,7 +18,9 @@ static PetscErrorCode PCApply_VPBJacobi(PC pc, Vec x, Vec y) {
   for (i = 0; i < nblocks; i++) {
     bs = bsizes[i];
     switch (bs) {
-    case 1: yy[ncnt] = *diag * xx[ncnt]; break;
+    case 1:
+      yy[ncnt] = *diag * xx[ncnt];
+      break;
     case 2:
       x0           = xx[ncnt];
       x1           = xx[ncnt + 1];
@@ -99,7 +102,8 @@ static PetscErrorCode PCApply_VPBJacobi(PC pc, Vec x, Vec y) {
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode PCSetUp_VPBJacobi_Host(PC pc) {
+PETSC_INTERN PetscErrorCode PCSetUp_VPBJacobi_Host(PC pc)
+{
   PC_VPBJacobi   *jac = (PC_VPBJacobi *)pc->data;
   Mat             A   = pc->pmat;
   MatFactorError  err;
@@ -122,7 +126,8 @@ PETSC_INTERN PetscErrorCode PCSetUp_VPBJacobi_Host(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCSetUp_VPBJacobi(PC pc) {
+static PetscErrorCode PCSetUp_VPBJacobi(PC pc)
+{
   PetscFunctionBegin;
   /* In PCCreate_VPBJacobi() pmat might have not been set, so we wait to the last minute to do the dispatch */
 #if defined(PETSC_HAVE_CUDA)
@@ -149,7 +154,8 @@ static PetscErrorCode PCSetUp_VPBJacobi(PC pc) {
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode PCDestroy_VPBJacobi(PC pc) {
+PETSC_INTERN PetscErrorCode PCDestroy_VPBJacobi(PC pc)
+{
   PC_VPBJacobi *jac = (PC_VPBJacobi *)pc->data;
 
   PetscFunctionBegin;
@@ -188,7 +194,8 @@ PETSC_INTERN PetscErrorCode PCDestroy_VPBJacobi(PC pc) {
 .seealso: `MatSetVariableBlockSizes()`, `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCJACOBI`, `PCPBJACOBI`, `PCBJACOBI`
 M*/
 
-PETSC_EXTERN PetscErrorCode PCCreate_VPBJacobi(PC pc) {
+PETSC_EXTERN PetscErrorCode PCCreate_VPBJacobi(PC pc)
+{
   PC_VPBJacobi *jac;
 
   PetscFunctionBegin;

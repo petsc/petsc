@@ -18,7 +18,8 @@
 
 .seealso: `PetscSplitOwnership()`
 @*/
-PetscErrorCode DMDASetSizes(DM da, PetscInt M, PetscInt N, PetscInt P) {
+PetscErrorCode DMDASetSizes(DM da, PetscInt M, PetscInt N, PetscInt P)
+{
   DM_DA *dd = (DM_DA *)da->data;
 
   PetscFunctionBegin;
@@ -52,7 +53,8 @@ PetscErrorCode DMDASetSizes(DM da, PetscInt M, PetscInt N, PetscInt P) {
 
 .seealso: `DMDASetSizes()`, `PetscSplitOwnership()`
 @*/
-PetscErrorCode DMDASetNumProcs(DM da, PetscInt m, PetscInt n, PetscInt p) {
+PetscErrorCode DMDASetNumProcs(DM da, PetscInt m, PetscInt n, PetscInt p)
+{
   DM_DA *dd = (DM_DA *)da->data;
 
   PetscFunctionBegin;
@@ -92,7 +94,8 @@ PetscErrorCode DMDASetNumProcs(DM da, PetscInt m, PetscInt n, PetscInt p) {
 
 .seealso: `DMDACreate()`, `DMDestroy()`, `DMDA`, `DMBoundaryType`
 @*/
-PetscErrorCode DMDASetBoundaryType(DM da, DMBoundaryType bx, DMBoundaryType by, DMBoundaryType bz) {
+PetscErrorCode DMDASetBoundaryType(DM da, DMBoundaryType bx, DMBoundaryType by, DMBoundaryType bz)
+{
   DM_DA *dd = (DM_DA *)da->data;
 
   PetscFunctionBegin;
@@ -120,7 +123,8 @@ PetscErrorCode DMDASetBoundaryType(DM da, DMBoundaryType bx, DMBoundaryType by, 
 
 .seealso: `DMDAGetDof()`, `DMDACreate()`, `DMDestroy()`, `DMDA`
 @*/
-PetscErrorCode DMDASetDof(DM da, PetscInt dof) {
+PetscErrorCode DMDASetDof(DM da, PetscInt dof)
+{
   DM_DA *dd = (DM_DA *)da->data;
 
   PetscFunctionBegin;
@@ -147,7 +151,8 @@ PetscErrorCode DMDASetDof(DM da, PetscInt dof) {
 
 .seealso: `DMDASetDof()`, `DMDACreate()`, `DMDestroy()`, `DMDA`
 @*/
-PetscErrorCode DMDAGetDof(DM da, PetscInt *dof) {
+PetscErrorCode DMDAGetDof(DM da, PetscInt *dof)
+{
   DM_DA *dd = (DM_DA *)da->data;
 
   PetscFunctionBegin;
@@ -174,7 +179,8 @@ PetscErrorCode DMDAGetDof(DM da, PetscInt *dof) {
 
 .seealso: `DMCreateDomainDecomposition()`, `DMDASetOverlap()`, `DMDA`
 @*/
-PetscErrorCode DMDAGetOverlap(DM da, PetscInt *x, PetscInt *y, PetscInt *z) {
+PetscErrorCode DMDAGetOverlap(DM da, PetscInt *x, PetscInt *y, PetscInt *z)
+{
   DM_DA *dd = (DM_DA *)da->data;
 
   PetscFunctionBegin;
@@ -200,7 +206,8 @@ PetscErrorCode DMDAGetOverlap(DM da, PetscInt *x, PetscInt *y, PetscInt *z) {
 
 .seealso: `DMCreateDomainDecomposition()`, `DMDAGetOverlap()`, `DMDA`
 @*/
-PetscErrorCode DMDASetOverlap(DM da, PetscInt x, PetscInt y, PetscInt z) {
+PetscErrorCode DMDASetOverlap(DM da, PetscInt x, PetscInt y, PetscInt z)
+{
   DM_DA *dd = (DM_DA *)da->data;
 
   PetscFunctionBegin;
@@ -229,7 +236,8 @@ PetscErrorCode DMDASetOverlap(DM da, PetscInt x, PetscInt y, PetscInt z) {
 
 .seealso: `DMCreateDomainDecomposition()`, `DMDASetNumLocalSubDomains()`, `DMDA`
 @*/
-PetscErrorCode DMDAGetNumLocalSubDomains(DM da, PetscInt *Nsub) {
+PetscErrorCode DMDAGetNumLocalSubDomains(DM da, PetscInt *Nsub)
+{
   DM_DA *dd = (DM_DA *)da->data;
 
   PetscFunctionBegin;
@@ -251,7 +259,8 @@ PetscErrorCode DMDAGetNumLocalSubDomains(DM da, PetscInt *Nsub) {
 
 .seealso: `DMCreateDomainDecomposition()`, `DMDAGetNumLocalSubDomains()`, `DMDA`
 @*/
-PetscErrorCode DMDASetNumLocalSubDomains(DM da, PetscInt Nsub) {
+PetscErrorCode DMDASetNumLocalSubDomains(DM da, PetscInt Nsub)
+{
   DM_DA *dd = (DM_DA *)da->data;
 
   PetscFunctionBegin;
@@ -280,7 +289,8 @@ PetscErrorCode DMDASetNumLocalSubDomains(DM da, PetscInt Nsub) {
 
 .seealso: `DMDAGetOffset()`, `DMDAVecGetArray()`
 @*/
-PetscErrorCode DMDASetOffset(DM da, PetscInt xo, PetscInt yo, PetscInt zo, PetscInt Mo, PetscInt No, PetscInt Po) {
+PetscErrorCode DMDASetOffset(DM da, PetscInt xo, PetscInt yo, PetscInt zo, PetscInt Mo, PetscInt No, PetscInt Po)
+{
   DM_DA *dd = (DM_DA *)da->data;
 
   PetscFunctionBegin;
@@ -322,7 +332,8 @@ PetscErrorCode DMDASetOffset(DM da, PetscInt xo, PetscInt yo, PetscInt zo, Petsc
 
 .seealso: `DMDASetOffset()`, `DMDAVecGetArray()`
 @*/
-PetscErrorCode DMDAGetOffset(DM da, PetscInt *xo, PetscInt *yo, PetscInt *zo, PetscInt *Mo, PetscInt *No, PetscInt *Po) {
+PetscErrorCode DMDAGetOffset(DM da, PetscInt *xo, PetscInt *yo, PetscInt *zo, PetscInt *Mo, PetscInt *No, PetscInt *Po)
+{
   DM_DA *dd = (DM_DA *)da->data;
 
   PetscFunctionBegin;
@@ -356,7 +367,8 @@ PetscErrorCode DMDAGetOffset(DM da, PetscInt *xo, PetscInt *yo, PetscInt *zo, Pe
 
 .seealso: `DMDAGetOffset()`, `DMDAVecGetArray()`
 @*/
-PetscErrorCode DMDAGetNonOverlappingRegion(DM da, PetscInt *xs, PetscInt *ys, PetscInt *zs, PetscInt *xm, PetscInt *ym, PetscInt *zm) {
+PetscErrorCode DMDAGetNonOverlappingRegion(DM da, PetscInt *xs, PetscInt *ys, PetscInt *zs, PetscInt *xm, PetscInt *ym, PetscInt *zm)
+{
   DM_DA *dd = (DM_DA *)da->data;
 
   PetscFunctionBegin;
@@ -388,7 +400,8 @@ PetscErrorCode DMDAGetNonOverlappingRegion(DM da, PetscInt *xs, PetscInt *ys, Pe
 
 .seealso: `DMDAGetOffset()`, `DMDAVecGetArray()`
 @*/
-PetscErrorCode DMDASetNonOverlappingRegion(DM da, PetscInt xs, PetscInt ys, PetscInt zs, PetscInt xm, PetscInt ym, PetscInt zm) {
+PetscErrorCode DMDASetNonOverlappingRegion(DM da, PetscInt xs, PetscInt ys, PetscInt zs, PetscInt xm, PetscInt ym, PetscInt zm)
+{
   DM_DA *dd = (DM_DA *)da->data;
 
   PetscFunctionBegin;
@@ -422,7 +435,8 @@ PetscErrorCode DMDASetNonOverlappingRegion(DM da, PetscInt xs, PetscInt ys, Pets
 
 .seealso: `DMDACreate()`, `DMDestroy()`, `DMDA`
 @*/
-PetscErrorCode DMDASetStencilType(DM da, DMDAStencilType stype) {
+PetscErrorCode DMDASetStencilType(DM da, DMDAStencilType stype)
+{
   DM_DA *dd = (DM_DA *)da->data;
 
   PetscFunctionBegin;
@@ -448,7 +462,8 @@ PetscErrorCode DMDASetStencilType(DM da, DMDAStencilType stype) {
 
 .seealso: `DMDACreate()`, `DMDestroy()`, `DMDA`
 @*/
-PetscErrorCode DMDAGetStencilType(DM da, DMDAStencilType *stype) {
+PetscErrorCode DMDAGetStencilType(DM da, DMDAStencilType *stype)
+{
   DM_DA *dd = (DM_DA *)da->data;
 
   PetscFunctionBegin;
@@ -471,7 +486,8 @@ PetscErrorCode DMDAGetStencilType(DM da, DMDAStencilType *stype) {
 
 .seealso: `DMDACreate()`, `DMDestroy()`, `DMDA`
 @*/
-PetscErrorCode DMDASetStencilWidth(DM da, PetscInt width) {
+PetscErrorCode DMDASetStencilWidth(DM da, PetscInt width)
+{
   DM_DA *dd = (DM_DA *)da->data;
 
   PetscFunctionBegin;
@@ -497,7 +513,8 @@ PetscErrorCode DMDASetStencilWidth(DM da, PetscInt width) {
 
 .seealso: `DMDACreate()`, `DMDestroy()`, `DMDA`
 @*/
-PetscErrorCode DMDAGetStencilWidth(DM da, PetscInt *width) {
+PetscErrorCode DMDAGetStencilWidth(DM da, PetscInt *width)
+{
   DM_DA *dd = (DM_DA *)da->data;
 
   PetscFunctionBegin;
@@ -507,7 +524,8 @@ PetscErrorCode DMDAGetStencilWidth(DM da, PetscInt *width) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMDACheckOwnershipRanges_Private(DM da, PetscInt M, PetscInt m, const PetscInt lx[]) {
+static PetscErrorCode DMDACheckOwnershipRanges_Private(DM da, PetscInt M, PetscInt m, const PetscInt lx[])
+{
   PetscInt i, sum;
 
   PetscFunctionBegin;
@@ -534,7 +552,8 @@ static PetscErrorCode DMDACheckOwnershipRanges_Private(DM da, PetscInt M, PetscI
 
 .seealso: `DMDACreate()`, `DMDestroy()`, `DMDA`
 @*/
-PetscErrorCode DMDASetOwnershipRanges(DM da, const PetscInt lx[], const PetscInt ly[], const PetscInt lz[]) {
+PetscErrorCode DMDASetOwnershipRanges(DM da, const PetscInt lx[], const PetscInt ly[], const PetscInt lz[])
+{
   DM_DA *dd = (DM_DA *)da->data;
 
   PetscFunctionBegin;
@@ -578,7 +597,8 @@ PetscErrorCode DMDASetOwnershipRanges(DM da, const PetscInt lx[], const PetscInt
 
 .seealso: `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMDestroy()`, `DMDA`, `DMDAInterpolationType`
 @*/
-PetscErrorCode DMDASetInterpolationType(DM da, DMDAInterpolationType ctype) {
+PetscErrorCode DMDASetInterpolationType(DM da, DMDAInterpolationType ctype)
+{
   DM_DA *dd = (DM_DA *)da->data;
 
   PetscFunctionBegin;
@@ -604,7 +624,8 @@ PetscErrorCode DMDASetInterpolationType(DM da, DMDAInterpolationType ctype) {
 
 .seealso: `DMDA`, `DMDAInterpolationType`, `DMDASetInterpolationType()`, `DMCreateInterpolation()`
 @*/
-PetscErrorCode DMDAGetInterpolationType(DM da, DMDAInterpolationType *ctype) {
+PetscErrorCode DMDAGetInterpolationType(DM da, DMDAInterpolationType *ctype)
+{
   DM_DA *dd = (DM_DA *)da->data;
 
   PetscFunctionBegin;
@@ -638,7 +659,8 @@ PetscErrorCode DMDAGetInterpolationType(DM da, DMDAInterpolationType *ctype) {
    Level: intermediate
 
 @*/
-PetscErrorCode DMDAGetNeighbors(DM da, const PetscMPIInt *ranks[]) {
+PetscErrorCode DMDAGetNeighbors(DM da, const PetscMPIInt *ranks[])
+{
   DM_DA *dd = (DM_DA *)da->data;
 
   PetscFunctionBegin;
@@ -674,7 +696,8 @@ PetscErrorCode DMDAGetNeighbors(DM da, const PetscMPIInt *ranks[]) {
 
 .seealso: `DMDAGetCorners()`, `DMDAGetGhostCorners()`, `DMDACreate()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `VecGetOwnershipRanges()`
 @*/
-PetscErrorCode DMDAGetOwnershipRanges(DM da, const PetscInt *lx[], const PetscInt *ly[], const PetscInt *lz[]) {
+PetscErrorCode DMDAGetOwnershipRanges(DM da, const PetscInt *lx[], const PetscInt *ly[], const PetscInt *lz[])
+{
   DM_DA *dd = (DM_DA *)da->data;
 
   PetscFunctionBegin;
@@ -709,7 +732,8 @@ PetscErrorCode DMDAGetOwnershipRanges(DM da, const PetscInt *lx[], const PetscIn
 
 .seealso: `DMRefine()`, `DMDAGetRefinementFactor()`
 @*/
-PetscErrorCode DMDASetRefinementFactor(DM da, PetscInt refine_x, PetscInt refine_y, PetscInt refine_z) {
+PetscErrorCode DMDASetRefinementFactor(DM da, PetscInt refine_x, PetscInt refine_y, PetscInt refine_z)
+{
   DM_DA *dd = (DM_DA *)da->data;
 
   PetscFunctionBegin;
@@ -744,7 +768,8 @@ PetscErrorCode DMDASetRefinementFactor(DM da, PetscInt refine_x, PetscInt refine
 
 .seealso: `DMRefine()`, `DMDASetRefinementFactor()`
 @*/
-PetscErrorCode DMDAGetRefinementFactor(DM da, PetscInt *refine_x, PetscInt *refine_y, PetscInt *refine_z) {
+PetscErrorCode DMDAGetRefinementFactor(DM da, PetscInt *refine_x, PetscInt *refine_y, PetscInt *refine_z)
+{
   DM_DA *dd = (DM_DA *)da->data;
 
   PetscFunctionBegin;
@@ -774,7 +799,8 @@ PetscErrorCode DMDAGetRefinementFactor(DM da, PetscInt *refine_x, PetscInt *refi
 
 .seealso: `DMCreateMatrix()`, `DMDASetBlockFills()`
 @*/
-PetscErrorCode DMDASetGetMatrix(DM da, PetscErrorCode (*f)(DM, Mat *)) {
+PetscErrorCode DMDASetGetMatrix(DM da, PetscErrorCode (*f)(DM, Mat *))
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(da, DM_CLASSID, 1, DMDA);
   da->ops->creatematrix = f;
@@ -798,7 +824,8 @@ PetscErrorCode DMDASetGetMatrix(DM da, PetscErrorCode (*f)(DM, Mat *)) {
 
 .seealso: `MatStencil`
 @*/
-PetscErrorCode DMDAMapMatStencilToGlobal(DM da, PetscInt m, const MatStencil idxm[], PetscInt gidxm[]) {
+PetscErrorCode DMDAMapMatStencilToGlobal(DM da, PetscInt m, const MatStencil idxm[], PetscInt gidxm[])
+{
   const DM_DA           *dd  = (const DM_DA *)da->data;
   const PetscInt        *dxm = (const PetscInt *)idxm;
   PetscInt               i, j, sdim, tmp, dim;
@@ -852,7 +879,8 @@ PetscErrorCode DMDAMapMatStencilToGlobal(DM da, PetscInt m, const MatStencil idx
 
   Uses a greedy algorithm to handle non-ideal layouts, could probably do something better.
 */
-static PetscErrorCode DMDARefineOwnershipRanges(DM da, PetscBool periodic, PetscInt stencil_width, PetscInt ratio, PetscInt m, const PetscInt lc[], PetscInt lf[]) {
+static PetscErrorCode DMDARefineOwnershipRanges(DM da, PetscBool periodic, PetscInt stencil_width, PetscInt ratio, PetscInt m, const PetscInt lc[], PetscInt lf[])
+{
   PetscInt i, totalc = 0, remaining, startc = 0, startf = 0;
 
   PetscFunctionBegin;
@@ -892,7 +920,8 @@ static PetscErrorCode DMDARefineOwnershipRanges(DM da, PetscBool periodic, Petsc
 
   Uses a greedy algorithm to handle non-ideal layouts, could probably do something better.
 */
-static PetscErrorCode DMDACoarsenOwnershipRanges(DM da, PetscBool periodic, PetscInt stencil_width, PetscInt ratio, PetscInt m, const PetscInt lf[], PetscInt lc[]) {
+static PetscErrorCode DMDACoarsenOwnershipRanges(DM da, PetscBool periodic, PetscInt stencil_width, PetscInt ratio, PetscInt m, const PetscInt lf[], PetscInt lc[])
+{
   PetscInt i, totalf, remaining, startc, startf;
 
   PetscFunctionBegin;
@@ -925,7 +954,8 @@ static PetscErrorCode DMDACoarsenOwnershipRanges(DM da, PetscBool periodic, Pets
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMRefine_DA(DM da, MPI_Comm comm, DM *daref) {
+PetscErrorCode DMRefine_DA(DM da, MPI_Comm comm, DM *daref)
+{
   PetscInt M, N, P, i, dim;
   Vec      coordsc, coordsf;
   DM       da2;
@@ -995,8 +1025,8 @@ PetscErrorCode DMRefine_DA(DM da, MPI_Comm comm, DM *daref) {
   /* allow overloaded (user replaced) operations to be inherited by refinement clones */
   da2->ops->creatematrix = da->ops->creatematrix;
   /* da2->ops->createinterpolation = da->ops->createinterpolation; this causes problem with SNESVI */
-  da2->ops->getcoloring  = da->ops->getcoloring;
-  dd2->interptype        = dd->interptype;
+  da2->ops->getcoloring = da->ops->getcoloring;
+  dd2->interptype       = dd->interptype;
 
   /* copy fill information if given */
   if (dd->dfill) {
@@ -1071,7 +1101,8 @@ PetscErrorCode DMRefine_DA(DM da, MPI_Comm comm, DM *daref) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMCoarsen_DA(DM dmf, MPI_Comm comm, DM *dmc) {
+PetscErrorCode DMCoarsen_DA(DM dmf, MPI_Comm comm, DM *dmc)
+{
   PetscInt M, N, P, i, dim;
   Vec      coordsc, coordsf;
   DM       dmc2;
@@ -1221,7 +1252,8 @@ PetscErrorCode DMCoarsen_DA(DM dmf, MPI_Comm comm, DM *dmc) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMRefineHierarchy_DA(DM da, PetscInt nlevels, DM daf[]) {
+PetscErrorCode DMRefineHierarchy_DA(DM da, PetscInt nlevels, DM daf[])
+{
   PetscInt i, n, *refx, *refy, *refz;
 
   PetscFunctionBegin;
@@ -1250,7 +1282,8 @@ PetscErrorCode DMRefineHierarchy_DA(DM da, PetscInt nlevels, DM daf[]) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMCoarsenHierarchy_DA(DM da, PetscInt nlevels, DM dac[]) {
+PetscErrorCode DMCoarsenHierarchy_DA(DM da, PetscInt nlevels, DM dac[])
+{
   PetscInt i;
 
   PetscFunctionBegin;
@@ -1263,7 +1296,8 @@ PetscErrorCode DMCoarsenHierarchy_DA(DM da, PetscInt nlevels, DM dac[]) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMDASetGLLCoordinates_1d(DM dm, PetscInt n, PetscReal *nodes) {
+PetscErrorCode DMDASetGLLCoordinates_1d(DM dm, PetscInt n, PetscReal *nodes)
+{
   PetscInt     i, j, xs, xn, q;
   PetscScalar *xx;
   PetscReal    h;
@@ -1314,7 +1348,8 @@ PetscErrorCode DMDASetGLLCoordinates_1d(DM dm, PetscInt n, PetscReal *nodes) {
 
 .seealso: `DMDACreate()`, `PetscDTGaussLobattoLegendreQuadrature()`, `DMGetCoordinates()`
 @*/
-PetscErrorCode DMDASetGLLCoordinates(DM da, PetscInt n, PetscReal *nodes) {
+PetscErrorCode DMDASetGLLCoordinates(DM da, PetscInt n, PetscReal *nodes)
+{
   PetscFunctionBegin;
   if (da->dim == 1) {
     PetscCall(DMDASetGLLCoordinates_1d(da, n, nodes));
@@ -1322,7 +1357,8 @@ PetscErrorCode DMDASetGLLCoordinates(DM da, PetscInt n, PetscReal *nodes) {
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode DMGetCompatibility_DA(DM da1, DM dm2, PetscBool *compatible, PetscBool *set) {
+PETSC_INTERN PetscErrorCode DMGetCompatibility_DA(DM da1, DM dm2, PetscBool *compatible, PetscBool *set)
+{
   DM_DA    *dd1 = (DM_DA *)da1->data, *dd2;
   DM        da2;
   DMType    dmtype2;

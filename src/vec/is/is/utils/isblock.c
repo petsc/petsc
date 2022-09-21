@@ -20,7 +20,8 @@
 
 .seealso: `ISExpandIndicesGeneral()`
 @*/
-PetscErrorCode ISCompressIndicesGeneral(PetscInt n, PetscInt nkeys, PetscInt bs, PetscInt imax, const IS is_in[], IS is_out[]) {
+PetscErrorCode ISCompressIndicesGeneral(PetscInt n, PetscInt nkeys, PetscInt bs, PetscInt imax, const IS is_in[], IS is_out[])
+{
   PetscInt        isz, len, i, j, ival, Nbs;
   const PetscInt *idx;
 #if defined(PETSC_USE_CTABLE)
@@ -90,7 +91,8 @@ PetscErrorCode ISCompressIndicesGeneral(PetscInt n, PetscInt nkeys, PetscInt bs,
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode ISCompressIndicesSorted(PetscInt n, PetscInt bs, PetscInt imax, const IS is_in[], IS is_out[]) {
+PetscErrorCode ISCompressIndicesSorted(PetscInt n, PetscInt bs, PetscInt imax, const IS is_in[], IS is_out[])
+{
   PetscInt        i, j, k, val, len, *nidx, bbs;
   const PetscInt *idx, *idx_local;
   PetscBool       flg, isblock;
@@ -170,7 +172,8 @@ PetscErrorCode ISCompressIndicesSorted(PetscInt n, PetscInt bs, PetscInt imax, c
 
 .seealso: `ISCompressIndicesGeneral()`
 @*/
-PetscErrorCode ISExpandIndicesGeneral(PetscInt n, PetscInt nkeys, PetscInt bs, PetscInt imax, const IS is_in[], IS is_out[]) {
+PetscErrorCode ISExpandIndicesGeneral(PetscInt n, PetscInt nkeys, PetscInt bs, PetscInt imax, const IS is_in[], IS is_out[])
+{
   PetscInt        len, i, j, k, *nidx;
   const PetscInt *idx;
   PetscInt        maxsz;

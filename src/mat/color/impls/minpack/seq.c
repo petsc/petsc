@@ -3,7 +3,8 @@
 
 #include <../src/mat/color/impls/minpack/color.h>
 
-PetscErrorCode MINPACKseq(PetscInt *n, const PetscInt *indrow, const PetscInt *jpntr, const PetscInt *indcol, const PetscInt *ipntr, PetscInt *list, PetscInt *ngrp, PetscInt *maxgrp, PetscInt *iwa) {
+PetscErrorCode MINPACKseq(PetscInt *n, const PetscInt *indrow, const PetscInt *jpntr, const PetscInt *indcol, const PetscInt *ipntr, PetscInt *list, PetscInt *ngrp, PetscInt *maxgrp, PetscInt *iwa)
+{
   /* System generated locals */
   PetscInt i__1, i__2, i__3;
 

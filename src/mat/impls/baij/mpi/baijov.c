@@ -11,7 +11,8 @@ static PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Receive(Mat, PetscInt, PetscInt
 extern PetscErrorCode MatGetRow_MPIBAIJ(Mat, PetscInt, PetscInt *, PetscInt **, PetscScalar **);
 extern PetscErrorCode MatRestoreRow_MPIBAIJ(Mat, PetscInt, PetscInt *, PetscInt **, PetscScalar **);
 
-PetscErrorCode MatIncreaseOverlap_MPIBAIJ(Mat C, PetscInt imax, IS is[], PetscInt ov) {
+PetscErrorCode MatIncreaseOverlap_MPIBAIJ(Mat C, PetscInt imax, IS is[], PetscInt ov)
+{
   PetscInt i, N = C->cmap->N, bs = C->rmap->bs;
   IS      *is_new;
 
@@ -51,7 +52,8 @@ PetscErrorCode MatIncreaseOverlap_MPIBAIJ(Mat C, PetscInt imax, IS is[], PetscIn
   nrqs - no of requests sent (or to be sent out)
   nrqr - no of requests received (which have to be or which have been processed)
 */
-PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Once(Mat C, PetscInt imax, IS is[]) {
+PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Once(Mat C, PetscInt imax, IS is[])
+{
   Mat_MPIBAIJ     *c = (Mat_MPIBAIJ *)C->data;
   const PetscInt **idx, *idx_i;
   PetscInt        *n, *w3, *w4, **data, len;
@@ -337,7 +339,8 @@ PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Once(Mat C, PetscInt imax, IS is[]) {
                to each index set;
       data   - pointer to the solutions
 */
-static PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Local(Mat C, PetscInt imax, PetscBT *table, PetscInt *isz, PetscInt **data) {
+static PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Local(Mat C, PetscInt imax, PetscBT *table, PetscInt *isz, PetscInt **data)
+{
   Mat_MPIBAIJ *c = (Mat_MPIBAIJ *)C->data;
   Mat          A = c->A, B = c->B;
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *)A->data, *b = (Mat_SeqBAIJ *)B->data;
@@ -396,7 +399,8 @@ rather than all previous rows as it is now where a single large chunk of
 memory is used.
 
 */
-static PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Receive(Mat C, PetscInt nrqr, PetscInt **rbuf, PetscInt **xdata, PetscInt *isz1) {
+static PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Receive(Mat C, PetscInt nrqr, PetscInt **rbuf, PetscInt **xdata, PetscInt *isz1)
+{
   Mat_MPIBAIJ *c = (Mat_MPIBAIJ *)C->data;
   Mat          A = c->A, B = c->B;
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *)A->data, *b = (Mat_SeqBAIJ *)B->data;
@@ -515,7 +519,8 @@ static PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Receive(Mat C, PetscInt nrqr, P
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatCreateSubMatrices_MPIBAIJ(Mat C, PetscInt ismax, const IS isrow[], const IS iscol[], MatReuse scall, Mat *submat[]) {
+PetscErrorCode MatCreateSubMatrices_MPIBAIJ(Mat C, PetscInt ismax, const IS isrow[], const IS iscol[], MatReuse scall, Mat *submat[])
+{
   IS          *isrow_block, *iscol_block;
   Mat_MPIBAIJ *c = (Mat_MPIBAIJ *)C->data;
   PetscInt     nmax, nstages_local, nstages, i, pos, max_no, N = C->cmap->N, bs = C->rmap->bs;
@@ -584,7 +589,8 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ(Mat C, PetscInt ismax, const IS isro
 }
 
 #if defined(PETSC_USE_CTABLE)
-PetscErrorCode PetscGetProc(const PetscInt row, const PetscMPIInt size, const PetscInt proc_gnode[], PetscMPIInt *rank) {
+PetscErrorCode PetscGetProc(const PetscInt row, const PetscMPIInt size, const PetscInt proc_gnode[], PetscMPIInt *rank)
+{
   PetscInt    nGlobalNd = proc_gnode[size];
   PetscMPIInt fproc;
 
@@ -602,7 +608,8 @@ PetscErrorCode PetscGetProc(const PetscInt row, const PetscMPIInt size, const Pe
 
 /* -------------------------------------------------------------------------*/
 /* This code is used for BAIJ and SBAIJ matrices (unfortunate dependency) */
-PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C, PetscInt ismax, const IS isrow[], const IS iscol[], MatReuse scall, Mat *submats) {
+PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C, PetscInt ismax, const IS isrow[], const IS iscol[], MatReuse scall, Mat *submats)
+{
   Mat_MPIBAIJ     *c = (Mat_MPIBAIJ *)C->data;
   Mat              A = c->A;
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ *)A->data, *b = (Mat_SeqBAIJ *)c->B->data, *subc;
@@ -893,7 +900,7 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C, PetscInt ismax, const I
       }
       req_source1[i] = onodes1[i];
       /* form the header */
-      sbuf2_i[0]     = req_size[i];
+      sbuf2_i[0] = req_size[i];
       for (j = 1; j < start; j++) sbuf2_i[j] = rbuf1_i[j];
 
       PetscCallMPI(MPI_Isend(sbuf2_i, end, MPIU_INT, req_source1[i], tag2, comm, s_waits2 + i));

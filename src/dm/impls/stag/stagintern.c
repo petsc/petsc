@@ -30,7 +30,8 @@
 
   .seealso: `DMClone()`, `DMStagCreateCompatibleDMStag()`, `DMCoarsen()`, `DMRefine()`
 @*/
-PetscErrorCode DMStagDuplicateWithoutSetup(DM dm, MPI_Comm comm, DM *newdm) {
+PetscErrorCode DMStagDuplicateWithoutSetup(DM dm, MPI_Comm comm, DM *newdm)
+{
   DM_Stag *const stag = (DM_Stag *)dm->data;
   DM_Stag       *newstag;
   PetscInt       dim;
@@ -61,7 +62,8 @@ PetscErrorCode DMStagDuplicateWithoutSetup(DM dm, MPI_Comm comm, DM *newdm) {
 /* Populate data created after DMCreate_Stag() is called, which is used by DMSetUp_Stag(),
    such as the grid dimensions and dof information. Arguments are ignored for dimensions
    less than three. */
-PetscErrorCode DMStagInitialize(DMBoundaryType bndx, DMBoundaryType bndy, DMBoundaryType bndz, PetscInt M, PetscInt N, PetscInt P, PetscInt m, PetscInt n, PetscInt p, PetscInt dof0, PetscInt dof1, PetscInt dof2, PetscInt dof3, DMStagStencilType stencilType, PetscInt stencilWidth, const PetscInt lx[], const PetscInt ly[], const PetscInt lz[], DM dm) {
+PetscErrorCode DMStagInitialize(DMBoundaryType bndx, DMBoundaryType bndy, DMBoundaryType bndz, PetscInt M, PetscInt N, PetscInt P, PetscInt m, PetscInt n, PetscInt p, PetscInt dof0, PetscInt dof1, PetscInt dof2, PetscInt dof3, DMStagStencilType stencilType, PetscInt stencilWidth, const PetscInt lx[], const PetscInt ly[], const PetscInt lz[], DM dm)
+{
   PetscFunctionBegin;
   PetscCall(DMSetType(dm, DMSTAG));
   PetscCall(DMStagSetBoundaryTypes(dm, bndx, bndy, bndz));

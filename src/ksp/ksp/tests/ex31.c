@@ -6,7 +6,8 @@ This   Input parameters include\n\
 
 #include <petscksp.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   KSP         ksp;                      /* linear solver context */
   Mat         A;                        /* matrix */
   Vec         x, b, u;                  /* approx solution, RHS, exact solution */

@@ -8,7 +8,8 @@ static PetscBool TaoPackageInitialized = PETSC_FALSE;
 
   Level: developer
 @*/
-PetscErrorCode TaoFinalizePackage(void) {
+PetscErrorCode TaoFinalizePackage(void)
+{
   PetscFunctionBegin;
   PetscCall(PetscFunctionListDestroy(&TaoList));
   TaoPackageInitialized = PETSC_FALSE;
@@ -25,7 +26,8 @@ PetscErrorCode TaoFinalizePackage(void) {
 
 .seealso: `TaoCreate()`
 @*/
-PetscErrorCode TaoInitializePackage(void) {
+PetscErrorCode TaoInitializePackage(void)
+{
   char      logList[256];
   PetscBool opt, pkg;
 
@@ -73,7 +75,8 @@ PetscErrorCode TaoInitializePackage(void) {
   Input Parameter:
 . path - library path
 */
-PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petsctao(void) {
+PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petsctao(void)
+{
   PetscFunctionBegin;
   PetscCall(TaoInitializePackage());
   PetscCall(TaoLineSearchInitializePackage());

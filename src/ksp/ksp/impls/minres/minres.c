@@ -5,7 +5,8 @@ typedef struct {
   PetscReal haptol;
 } KSP_MINRES;
 
-static PetscErrorCode KSPSetUp_MINRES(KSP ksp) {
+static PetscErrorCode KSPSetUp_MINRES(KSP ksp)
+{
   PetscFunctionBegin;
   PetscCheck(ksp->pc_side != PC_RIGHT, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "No right preconditioning for KSPMINRES");
   PetscCheck(ksp->pc_side != PC_SYMMETRIC, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "No symmetric preconditioning for KSPMINRES");
@@ -13,7 +14,8 @@ static PetscErrorCode KSPSetUp_MINRES(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPSolve_MINRES(KSP ksp) {
+static PetscErrorCode KSPSolve_MINRES(KSP ksp)
+{
   PetscInt          i;
   PetscScalar       alpha, beta, ibeta, betaold, eta, c = 1.0, ceta, cold = 1.0, coold, s = 0.0, sold = 0.0, soold;
   PetscScalar       rho0, rho1, irho1, rho2, rho3, dp = 0.0;
@@ -201,7 +203,8 @@ static PetscErrorCode KSPSolve_MINRES(KSP ksp) {
 
 .seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPCG`, `KSPCR`
 M*/
-PETSC_EXTERN PetscErrorCode KSPCreate_MINRES(KSP ksp) {
+PETSC_EXTERN PetscErrorCode KSPCreate_MINRES(KSP ksp)
+{
   KSP_MINRES *minres;
 
   PetscFunctionBegin;

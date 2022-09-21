@@ -5,7 +5,8 @@
 #include <petscsys.h>
 #include <../src/vec/vec/impls/mpi/pvecimpl.h> /*I  "petscvec.h"   I*/
 
-PetscErrorCode VecDot_MPI(Vec xin, Vec yin, PetscScalar *z) {
+PetscErrorCode VecDot_MPI(Vec xin, Vec yin, PetscScalar *z)
+{
   PetscScalar sum, work;
 
   PetscFunctionBegin;
@@ -15,7 +16,8 @@ PetscErrorCode VecDot_MPI(Vec xin, Vec yin, PetscScalar *z) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecTDot_MPI(Vec xin, Vec yin, PetscScalar *z) {
+PetscErrorCode VecTDot_MPI(Vec xin, Vec yin, PetscScalar *z)
+{
   PetscScalar sum, work;
 
   PetscFunctionBegin;
@@ -27,7 +29,8 @@ PetscErrorCode VecTDot_MPI(Vec xin, Vec yin, PetscScalar *z) {
 
 extern PetscErrorCode VecView_MPI_Draw(Vec, PetscViewer);
 
-static PetscErrorCode VecPlaceArray_MPI(Vec vin, const PetscScalar *a) {
+static PetscErrorCode VecPlaceArray_MPI(Vec vin, const PetscScalar *a)
+{
   Vec_MPI *v = (Vec_MPI *)vin->data;
 
   PetscFunctionBegin;
@@ -38,7 +41,8 @@ static PetscErrorCode VecPlaceArray_MPI(Vec vin, const PetscScalar *a) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecDuplicate_MPI(Vec win, Vec *v) {
+PetscErrorCode VecDuplicate_MPI(Vec win, Vec *v)
+{
   Vec_MPI     *vw, *w = (Vec_MPI *)win->data;
   PetscScalar *array;
 
@@ -73,13 +77,18 @@ PetscErrorCode VecDuplicate_MPI(Vec win, Vec *v) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecSetOption_MPI(Vec V, VecOption op, PetscBool flag) {
+static PetscErrorCode VecSetOption_MPI(Vec V, VecOption op, PetscBool flag)
+{
   Vec_MPI *v = (Vec_MPI *)V->data;
 
   PetscFunctionBegin;
   switch (op) {
-  case VEC_IGNORE_OFF_PROC_ENTRIES: V->stash.donotstash = flag; break;
-  case VEC_IGNORE_NEGATIVE_INDICES: V->stash.ignorenegidx = flag; break;
+  case VEC_IGNORE_OFF_PROC_ENTRIES:
+    V->stash.donotstash = flag;
+    break;
+  case VEC_IGNORE_NEGATIVE_INDICES:
+    V->stash.ignorenegidx = flag;
+    break;
   case VEC_SUBSET_OFF_PROC_ENTRIES:
     v->assembly_subset = flag;              /* See the same logic in MatAssembly wrt MAT_SUBSET_OFF_PROC_ENTRIES */
     if (!v->assembly_subset) {              /* User indicates "do not reuse the communication pattern" */
@@ -92,7 +101,8 @@ static PetscErrorCode VecSetOption_MPI(Vec V, VecOption op, PetscBool flag) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecResetArray_MPI(Vec vin) {
+static PetscErrorCode VecResetArray_MPI(Vec vin)
+{
   Vec_MPI *v = (Vec_MPI *)vin->data;
 
   PetscFunctionBegin;
@@ -102,7 +112,8 @@ static PetscErrorCode VecResetArray_MPI(Vec vin) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecAssemblySend_MPI_Private(MPI_Comm comm, const PetscMPIInt tag[], PetscMPIInt rankid, PetscMPIInt rank, void *sdata, MPI_Request req[], void *ctx) {
+static PetscErrorCode VecAssemblySend_MPI_Private(MPI_Comm comm, const PetscMPIInt tag[], PetscMPIInt rankid, PetscMPIInt rank, void *sdata, MPI_Request req[], void *ctx)
+{
   Vec                X   = (Vec)ctx;
   Vec_MPI           *x   = (Vec_MPI *)X->data;
   VecAssemblyHeader *hdr = (VecAssemblyHeader *)sdata;
@@ -124,7 +135,8 @@ static PetscErrorCode VecAssemblySend_MPI_Private(MPI_Comm comm, const PetscMPII
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecAssemblyRecv_MPI_Private(MPI_Comm comm, const PetscMPIInt tag[], PetscMPIInt rank, void *rdata, MPI_Request req[], void *ctx) {
+static PetscErrorCode VecAssemblyRecv_MPI_Private(MPI_Comm comm, const PetscMPIInt tag[], PetscMPIInt rank, void *rdata, MPI_Request req[], void *ctx)
+{
   Vec                X   = (Vec)ctx;
   Vec_MPI           *x   = (Vec_MPI *)X->data;
   VecAssemblyHeader *hdr = (VecAssemblyHeader *)rdata;
@@ -160,7 +172,8 @@ static PetscErrorCode VecAssemblyRecv_MPI_Private(MPI_Comm comm, const PetscMPII
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecAssemblyBegin_MPI_BTS(Vec X) {
+static PetscErrorCode VecAssemblyBegin_MPI_BTS(Vec X)
+{
   Vec_MPI *x = (Vec_MPI *)X->data;
   MPI_Comm comm;
   PetscInt i, j, jb, bs;
@@ -198,7 +211,7 @@ static PetscErrorCode VecAssemblyBegin_MPI_BTS(Vec X) {
     /* Initialize pointers for non-empty stashes the first time around.  Subsequent assemblies with
      * VEC_SUBSET_OFF_PROC_ENTRIES will leave the old pointers (dangling because the stash has been collected) when
      * there is nothing new to send, so that size-zero messages get sent instead. */
-    x->sendhdr[i].count      = 0;
+    x->sendhdr[i].count = 0;
     if (X->stash.n) {
       x->sendptrs[i].ints    = &X->stash.idx[j];
       x->sendptrs[i].scalars = &X->stash.array[j];
@@ -241,7 +254,8 @@ static PetscErrorCode VecAssemblyBegin_MPI_BTS(Vec X) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecAssemblyEnd_MPI_BTS(Vec X) {
+static PetscErrorCode VecAssemblyEnd_MPI_BTS(Vec X)
+{
   Vec_MPI          *x  = (Vec_MPI *)X->data;
   PetscInt          bs = X->map->bs;
   PetscMPIInt       npending, *some_indices, r;
@@ -286,9 +300,14 @@ static PetscErrorCode VecAssemblyEnd_MPI_BTS(Vec X) {
           PetscInt loc = *recvint - X->map->rstart;
           PetscCheck(*recvint >= X->map->rstart && X->map->rend > *recvint, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Received vector entry %" PetscInt_FMT " out of local range [%" PetscInt_FMT ",%" PetscInt_FMT ")]", *recvint, X->map->rstart, X->map->rend);
           switch (imode) {
-          case ADD_VALUES: xarray[loc] += *recvscalar++; break;
-          case INSERT_VALUES: xarray[loc] = *recvscalar++; break;
-          default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Insert mode not supported 0x%x", imode);
+          case ADD_VALUES:
+            xarray[loc] += *recvscalar++;
+            break;
+          case INSERT_VALUES:
+            xarray[loc] = *recvscalar++;
+            break;
+          default:
+            SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Insert mode not supported 0x%x", imode);
           }
         }
       } else { /* Block stash */
@@ -307,7 +326,8 @@ static PetscErrorCode VecAssemblyEnd_MPI_BTS(Vec X) {
           case INSERT_VALUES:
             for (k = loc; k < loc + bs; k++) xarray[k] = *recvscalar++;
             break;
-          default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Insert mode not supported 0x%x", imode);
+          default:
+            SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Insert mode not supported 0x%x", imode);
           }
         }
       }
@@ -330,7 +350,8 @@ static PetscErrorCode VecAssemblyEnd_MPI_BTS(Vec X) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecAssemblyReset_MPI(Vec X) {
+PetscErrorCode VecAssemblyReset_MPI(Vec X)
+{
   Vec_MPI *x = (Vec_MPI *)X->data;
 
   PetscFunctionBegin;
@@ -347,7 +368,8 @@ PetscErrorCode VecAssemblyReset_MPI(Vec X) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecSetFromOptions_MPI(Vec X, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode VecSetFromOptions_MPI(Vec X, PetscOptionItems *PetscOptionsObject)
+{
 #if !defined(PETSC_HAVE_MPIUNI)
   PetscBool flg = PETSC_FALSE, set;
 
@@ -464,7 +486,8 @@ static struct _VecOps DvOps = {PetscDesignatedInitializer(duplicate, VecDuplicat
     If alloc is true and array is NULL then this routine allocates the space, otherwise
     no space is allocated.
 */
-PetscErrorCode VecCreate_MPI_Private(Vec v, PetscBool alloc, PetscInt nghost, const PetscScalar array[]) {
+PetscErrorCode VecCreate_MPI_Private(Vec v, PetscBool alloc, PetscInt nghost, const PetscScalar array[])
+{
   Vec_MPI *s;
 
   PetscFunctionBegin;
@@ -516,7 +539,8 @@ PetscErrorCode VecCreate_MPI_Private(Vec v, PetscBool alloc, PetscInt nghost, co
 .seealso: `VecCreate()`, `VecSetType()`, `VecSetFromOptions()`, `VecCreateMPIWithArray()`, `VECMPI`, `VecType`, `VecCreateMPI()`, `VecCreateMPI()`
 M*/
 
-PetscErrorCode VecCreate_MPI(Vec vv) {
+PetscErrorCode VecCreate_MPI(Vec vv)
+{
   PetscFunctionBegin;
   PetscCall(VecCreate_MPI_Private(vv, PETSC_TRUE, 0, NULL));
   PetscFunctionReturn(0);
@@ -533,7 +557,8 @@ PetscErrorCode VecCreate_MPI(Vec vv) {
 .seealso: `VecCreateSeq()`, `VecCreateMPI()`
 M*/
 
-PETSC_EXTERN PetscErrorCode VecCreate_Standard(Vec v) {
+PETSC_EXTERN PetscErrorCode VecCreate_Standard(Vec v)
+{
   PetscMPIInt size;
 
   PetscFunctionBegin;
@@ -578,7 +603,8 @@ PETSC_EXTERN PetscErrorCode VecCreate_Standard(Vec v) {
           `VecCreateMPI()`, `VecCreateGhostWithArray()`, `VecPlaceArray()`
 
 @*/
-PetscErrorCode VecCreateMPIWithArray(MPI_Comm comm, PetscInt bs, PetscInt n, PetscInt N, const PetscScalar array[], Vec *vv) {
+PetscErrorCode VecCreateMPIWithArray(MPI_Comm comm, PetscInt bs, PetscInt n, PetscInt N, const PetscScalar array[], Vec *vv)
+{
   PetscFunctionBegin;
   PetscCheck(n != PETSC_DECIDE, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Must set local size of vector");
   PetscCall(PetscSplitOwnership(comm, &n, &N));
@@ -619,7 +645,8 @@ PetscErrorCode VecCreateMPIWithArray(MPI_Comm comm, PetscInt bs, PetscInt n, Pet
           `VecCreateGhostBlock()`, `VecCreateGhostBlockWithArray()`, `VecMPISetGhost()`
 
 @*/
-PetscErrorCode VecCreateGhostWithArray(MPI_Comm comm, PetscInt n, PetscInt N, PetscInt nghost, const PetscInt ghosts[], const PetscScalar array[], Vec *vv) {
+PetscErrorCode VecCreateGhostWithArray(MPI_Comm comm, PetscInt n, PetscInt N, PetscInt nghost, const PetscInt ghosts[], const PetscScalar array[], Vec *vv)
+{
   Vec_MPI               *w;
   PetscScalar           *larray;
   IS                     from, to;
@@ -692,7 +719,8 @@ PetscErrorCode VecCreateGhostWithArray(MPI_Comm comm, PetscInt n, PetscInt N, Pe
           `VecCreateGhostBlock()`, `VecCreateGhostBlockWithArray()`, `VecMPISetGhost()`
 
 @*/
-PetscErrorCode VecCreateGhost(MPI_Comm comm, PetscInt n, PetscInt N, PetscInt nghost, const PetscInt ghosts[], Vec *vv) {
+PetscErrorCode VecCreateGhost(MPI_Comm comm, PetscInt n, PetscInt N, PetscInt nghost, const PetscInt ghosts[], Vec *vv)
+{
   PetscFunctionBegin;
   PetscCall(VecCreateGhostWithArray(comm, n, N, nghost, ghosts, NULL, vv));
   PetscFunctionReturn(0);
@@ -724,7 +752,8 @@ PetscErrorCode VecCreateGhost(MPI_Comm comm, PetscInt n, PetscInt N, PetscInt ng
           `VecCreateGhostBlock()`, `VecCreateGhostBlockWithArray()`
 
 @*/
-PetscErrorCode VecMPISetGhost(Vec vv, PetscInt nghost, const PetscInt ghosts[]) {
+PetscErrorCode VecMPISetGhost(Vec vv, PetscInt nghost, const PetscInt ghosts[])
+{
   PetscBool flg;
 
   PetscFunctionBegin;
@@ -811,7 +840,8 @@ PetscErrorCode VecMPISetGhost(Vec vv, PetscInt nghost, const PetscInt ghosts[]) 
           `VecCreateGhostWithArray()`, `VecCreateGhostBlock()`
 
 @*/
-PetscErrorCode VecCreateGhostBlockWithArray(MPI_Comm comm, PetscInt bs, PetscInt n, PetscInt N, PetscInt nghost, const PetscInt ghosts[], const PetscScalar array[], Vec *vv) {
+PetscErrorCode VecCreateGhostBlockWithArray(MPI_Comm comm, PetscInt bs, PetscInt n, PetscInt N, PetscInt nghost, const PetscInt ghosts[], const PetscScalar array[], Vec *vv)
+{
   Vec_MPI               *w;
   PetscScalar           *larray;
   IS                     from, to;
@@ -893,7 +923,8 @@ PetscErrorCode VecCreateGhostBlockWithArray(MPI_Comm comm, PetscInt bs, PetscInt
           `VecCreateGhostWithArray()`, `VecCreateMPIWithArray()`, `VecCreateGhostBlockWithArray()`
 
 @*/
-PetscErrorCode VecCreateGhostBlock(MPI_Comm comm, PetscInt bs, PetscInt n, PetscInt N, PetscInt nghost, const PetscInt ghosts[], Vec *vv) {
+PetscErrorCode VecCreateGhostBlock(MPI_Comm comm, PetscInt bs, PetscInt n, PetscInt N, PetscInt nghost, const PetscInt ghosts[], Vec *vv)
+{
   PetscFunctionBegin;
   PetscCall(VecCreateGhostBlockWithArray(comm, bs, n, N, nghost, ghosts, NULL, vv));
   PetscFunctionReturn(0);

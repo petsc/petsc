@@ -3,7 +3,8 @@
 
 /*------------------------------------------------------------*/
 
-static PetscErrorCode MatSolve_LMVMSymBadBrdn(Mat B, Vec F, Vec dX) {
+static PetscErrorCode MatSolve_LMVMSymBadBrdn(Mat B, Vec F, Vec dX)
+{
   Mat_LMVM    *lmvm = (Mat_LMVM *)B->data;
   Mat_SymBrdn *lsb  = (Mat_SymBrdn *)lmvm->ctx;
   PetscInt     i, j;
@@ -69,7 +70,8 @@ static PetscErrorCode MatSolve_LMVMSymBadBrdn(Mat B, Vec F, Vec dX) {
 
 /*------------------------------------------------------------*/
 
-static PetscErrorCode MatMult_LMVMSymBadBrdn(Mat B, Vec X, Vec Z) {
+static PetscErrorCode MatMult_LMVMSymBadBrdn(Mat B, Vec X, Vec Z)
+{
   Mat_LMVM    *lmvm = (Mat_LMVM *)B->data;
   Mat_SymBrdn *lsb  = (Mat_SymBrdn *)lmvm->ctx;
   PetscInt     i, j;
@@ -167,7 +169,8 @@ static PetscErrorCode MatMult_LMVMSymBadBrdn(Mat B, Vec X, Vec Z) {
 
 /*------------------------------------------------------------*/
 
-static PetscErrorCode MatSetFromOptions_LMVMSymBadBrdn(Mat B, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode MatSetFromOptions_LMVMSymBadBrdn(Mat B, PetscOptionItems *PetscOptionsObject)
+{
   Mat_LMVM     *lmvm = (Mat_LMVM *)B->data;
   Mat_SymBrdn  *lsb  = (Mat_SymBrdn *)lmvm->ctx;
   Mat_LMVM     *dbase;
@@ -185,7 +188,8 @@ static PetscErrorCode MatSetFromOptions_LMVMSymBadBrdn(Mat B, PetscOptionItems *
 
 /*------------------------------------------------------------*/
 
-PetscErrorCode MatCreate_LMVMSymBadBrdn(Mat B) {
+PetscErrorCode MatCreate_LMVMSymBadBrdn(Mat B)
+{
   Mat_LMVM *lmvm;
 
   PetscFunctionBegin;
@@ -244,7 +248,8 @@ PetscErrorCode MatCreate_LMVMSymBadBrdn(Mat B) {
 .seealso: `MatCreate()`, `MATLMVM`, `MATLMVMSYMBROYDEN`, `MatCreateLMVMDFP()`, `MatCreateLMVMSR1()`,
           `MatCreateLMVMBFGS()`, `MatCreateLMVMBrdn()`, `MatCreateLMVMBadBrdn()`
 @*/
-PetscErrorCode MatCreateLMVMSymBadBroyden(MPI_Comm comm, PetscInt n, PetscInt N, Mat *B) {
+PetscErrorCode MatCreateLMVMSymBadBroyden(MPI_Comm comm, PetscInt n, PetscInt N, Mat *B)
+{
   PetscFunctionBegin;
   PetscCall(MatCreate(comm, B));
   PetscCall(MatSetSizes(*B, n, n, N, N));

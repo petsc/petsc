@@ -265,7 +265,8 @@ PETSC_EXTERN PetscErrorCode PetscViewerVUFlushDeferred(PetscViewer);
 
 .seealso: `PetscViewerFileSetMode()`
 @*/
-PETSC_DEPRECATED_FUNCTION("Use PetscViewerFileSetMode (since v3.15)") static inline PetscErrorCode PetscViewerVUSetMode(PetscViewer viewer, PetscFileMode mode) {
+PETSC_DEPRECATED_FUNCTION("Use PetscViewerFileSetMode (since v3.15)") static inline PetscErrorCode PetscViewerVUSetMode(PetscViewer viewer, PetscFileMode mode)
+{
   return PetscViewerFileSetMode(viewer, mode);
 }
 
@@ -401,10 +402,12 @@ PETSC_EXTERN PetscErrorCode PetscViewerFlowControlStepMain(PetscViewer, PetscInt
 PETSC_EXTERN PetscErrorCode PetscViewerFlowControlEndMain(PetscViewer, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscViewerFlowControlStepWorker(PetscViewer, PetscMPIInt, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscViewerFlowControlEndWorker(PetscViewer, PetscInt *);
-PETSC_DEPRECATED_FUNCTION("Use PetscViewerFlowControlStepMaster (since v3.15)") static inline PetscErrorCode PetscViewerFlowControlStepMaster(PetscViewer viewer, PetscInt i, PetscInt *mcnt, PetscInt cnt) {
+PETSC_DEPRECATED_FUNCTION("Use PetscViewerFlowControlStepMaster (since v3.15)") static inline PetscErrorCode PetscViewerFlowControlStepMaster(PetscViewer viewer, PetscInt i, PetscInt *mcnt, PetscInt cnt)
+{
   return PetscViewerFlowControlStepMain(viewer, i, mcnt, cnt);
 }
-PETSC_DEPRECATED_FUNCTION("Use PetscViewerFlowControlEndMaster (since v3.15)") static inline PetscErrorCode PetscViewerFlowControlEndMaster(PetscViewer viewer, PetscInt *mcnt) {
+PETSC_DEPRECATED_FUNCTION("Use PetscViewerFlowControlEndMaster (since v3.15)") static inline PetscErrorCode PetscViewerFlowControlEndMaster(PetscViewer viewer, PetscInt *mcnt)
+{
   return PetscViewerFlowControlEndMain(viewer, mcnt);
 }
 

@@ -39,7 +39,8 @@ typedef struct {
 /*
      Defines the ODE passed to the ODE solver
 */
-static PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec U, Vec F, AppCtx *ctx) {
+static PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec U, Vec F, AppCtx *ctx)
+{
   const PetscScalar *u;
   PetscScalar       *f, Pmax;
 
@@ -61,7 +62,8 @@ static PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec U, Vec F, AppCtx *ctx)
 /*
      Defines the Jacobian of the ODE passed to the ODE solver. See TSSetIJacobian() for the meaning of a and the Jacobian.
 */
-static PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat A, Mat B, AppCtx *ctx) {
+static PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat A, Mat B, AppCtx *ctx)
+{
   PetscInt           rowcol[] = {0, 1};
   PetscScalar        J[2][2], Pmax;
   const PetscScalar *u;
@@ -88,7 +90,8 @@ static PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat A, Mat B, AppCt
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   TS           ts; /* ODE integrator */
   Vec          U;  /* solution will be stored here */
   Mat          A;  /* Jacobian matrix */

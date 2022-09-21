@@ -27,7 +27,8 @@ static const char citation[] = "@article{SSM2016,\n"
 
 #include <petscksp.h>
 
-static PetscErrorCode KSPAllocateVectors_PIPEGCR(KSP ksp, PetscInt nvecsneeded, PetscInt chunksize) {
+static PetscErrorCode KSPAllocateVectors_PIPEGCR(KSP ksp, PetscInt nvecsneeded, PetscInt chunksize)
+{
   PetscInt     i;
   KSP_PIPEGCR *pipegcr;
   PetscInt     nnewvecs, nvecsprev;
@@ -56,7 +57,8 @@ static PetscErrorCode KSPAllocateVectors_PIPEGCR(KSP ksp, PetscInt nvecsneeded, 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPSolve_PIPEGCR_cycle(KSP ksp) {
+static PetscErrorCode KSPSolve_PIPEGCR_cycle(KSP ksp)
+{
   KSP_PIPEGCR *pipegcr = (KSP_PIPEGCR *)ksp->data;
   Mat          A, B;
   Vec          x, r, b, z, w, m, n, p, s, q, t, *redux;
@@ -144,9 +146,14 @@ static PetscErrorCode KSPSolve_PIPEGCR_cycle(KSP ksp) {
 
     /* number of old directions to orthogonalize against */
     switch (pipegcr->truncstrat) {
-    case KSP_FCD_TRUNC_TYPE_STANDARD: mi = pipegcr->mmax; break;
-    case KSP_FCD_TRUNC_TYPE_NOTAY: mi = ((i - 1) % pipegcr->mmax) + 1; break;
-    default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unrecognized Truncation Strategy");
+    case KSP_FCD_TRUNC_TYPE_STANDARD:
+      mi = pipegcr->mmax;
+      break;
+    case KSP_FCD_TRUNC_TYPE_NOTAY:
+      mi = ((i - 1) % pipegcr->mmax) + 1;
+      break;
+    default:
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unrecognized Truncation Strategy");
     }
 
     /* Pick old p,s,q,zeta in a way suitable for VecMDot */
@@ -191,8 +198,11 @@ static PetscErrorCode KSPSolve_PIPEGCR_cycle(KSP ksp) {
     case KSP_NORM_NATURAL:
       rnorm = PetscSqrtReal(PetscAbsScalar(gamma)); /* ||r|| <- sqrt(r,w)  */
       break;
-    case KSP_NORM_NONE: rnorm = 0.0; break;
-    default: SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "%s", KSPNormTypes[ksp->normtype]);
+    case KSP_NORM_NONE:
+      rnorm = 0.0;
+      break;
+    default:
+      SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "%s", KSPNormTypes[ksp->normtype]);
     }
 
     /* Check for convergence */
@@ -240,7 +250,8 @@ static PetscErrorCode KSPSolve_PIPEGCR_cycle(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPSolve_PIPEGCR(KSP ksp) {
+static PetscErrorCode KSPSolve_PIPEGCR(KSP ksp)
+{
   KSP_PIPEGCR *pipegcr = (KSP_PIPEGCR *)ksp->data;
   Mat          A, B;
   Vec          x, b, r, z, w;
@@ -281,8 +292,11 @@ static PetscErrorCode KSPSolve_PIPEGCR(KSP ksp) {
   case KSP_NORM_NATURAL:
     rnorm = PetscSqrtReal(PetscAbsScalar(gamma)); /* ||r|| <- sqrt(r,w)  */
     break;
-  case KSP_NORM_NONE: rnorm = 0.0; break;
-  default: SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "%s", KSPNormTypes[ksp->normtype]);
+  case KSP_NORM_NONE:
+    rnorm = 0.0;
+    break;
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "%s", KSPNormTypes[ksp->normtype]);
   }
 
   /* Is A symmetric? */
@@ -312,7 +326,8 @@ static PetscErrorCode KSPSolve_PIPEGCR(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPView_PIPEGCR(KSP ksp, PetscViewer viewer) {
+static PetscErrorCode KSPView_PIPEGCR(KSP ksp, PetscViewer viewer)
+{
   KSP_PIPEGCR *pipegcr = (KSP_PIPEGCR *)ksp->data;
   PetscBool    isascii, isstring;
   const char  *truncstr;
@@ -339,7 +354,8 @@ static PetscErrorCode KSPView_PIPEGCR(KSP ksp, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPSetUp_PIPEGCR(KSP ksp) {
+static PetscErrorCode KSPSetUp_PIPEGCR(KSP ksp)
+{
   KSP_PIPEGCR   *pipegcr = (KSP_PIPEGCR *)ksp->data;
   Mat            A;
   PetscBool      diagonalscale;
@@ -368,7 +384,8 @@ static PetscErrorCode KSPSetUp_PIPEGCR(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPReset_PIPEGCR(KSP ksp) {
+static PetscErrorCode KSPReset_PIPEGCR(KSP ksp)
+{
   KSP_PIPEGCR *pipegcr = (KSP_PIPEGCR *)ksp->data;
 
   PetscFunctionBegin;
@@ -376,7 +393,8 @@ static PetscErrorCode KSPReset_PIPEGCR(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPDestroy_PIPEGCR(KSP ksp) {
+static PetscErrorCode KSPDestroy_PIPEGCR(KSP ksp)
+{
   PetscInt     i;
   KSP_PIPEGCR *pipegcr = (KSP_PIPEGCR *)ksp->data;
 
@@ -420,7 +438,8 @@ static PetscErrorCode KSPDestroy_PIPEGCR(KSP ksp) {
 
 .seealso: `KSPPIPEGCR`, `KSPPIPEGCRSetTruncationType()`, `KSPPIPEGCRSetNprealloc()`, `KSPPIPEGCRGetUnrollW()`
 @*/
-PetscErrorCode KSPPIPEGCRSetUnrollW(KSP ksp, PetscBool unroll_w) {
+PetscErrorCode KSPPIPEGCRSetUnrollW(KSP ksp, PetscBool unroll_w)
+{
   KSP_PIPEGCR *pipegcr = (KSP_PIPEGCR *)ksp->data;
 
   PetscFunctionBegin;
@@ -445,7 +464,8 @@ PetscErrorCode KSPPIPEGCRSetUnrollW(KSP ksp, PetscBool unroll_w) {
 
 .seealso: `KSPPIPEGCR`, `KSPPIPEGCRGetTruncationType()`, `KSPPIPEGCRGetNprealloc()`, `KSPPIPEGCRSetUnrollW()`
 @*/
-PetscErrorCode KSPPIPEGCRGetUnrollW(KSP ksp, PetscBool *unroll_w) {
+PetscErrorCode KSPPIPEGCRGetUnrollW(KSP ksp, PetscBool *unroll_w)
+{
   KSP_PIPEGCR *pipegcr = (KSP_PIPEGCR *)ksp->data;
 
   PetscFunctionBegin;
@@ -474,7 +494,8 @@ PetscErrorCode KSPPIPEGCRGetUnrollW(KSP ksp, PetscBool *unroll_w) {
 
 .seealso: `KSPPIPEGCR`, `KSPPIPEGCRSetTruncationType()`, `KSPPIPEGCRSetNprealloc()`
 @*/
-PetscErrorCode KSPPIPEGCRSetMmax(KSP ksp, PetscInt mmax) {
+PetscErrorCode KSPPIPEGCRSetMmax(KSP ksp, PetscInt mmax)
+{
   KSP_PIPEGCR *pipegcr = (KSP_PIPEGCR *)ksp->data;
 
   PetscFunctionBegin;
@@ -502,7 +523,8 @@ PetscErrorCode KSPPIPEGCRSetMmax(KSP ksp, PetscInt mmax) {
 .seealso: `KSPPIPEGCR`, `KSPPIPEGCRGetTruncationType()`, `KSPPIPEGCRGetNprealloc()`, `KSPPIPEGCRSetMmax()`
 @*/
 
-PetscErrorCode KSPPIPEGCRGetMmax(KSP ksp, PetscInt *mmax) {
+PetscErrorCode KSPPIPEGCRGetMmax(KSP ksp, PetscInt *mmax)
+{
   KSP_PIPEGCR *pipegcr = (KSP_PIPEGCR *)ksp->data;
 
   PetscFunctionBegin;
@@ -527,7 +549,8 @@ PetscErrorCode KSPPIPEGCRGetMmax(KSP ksp, PetscInt *mmax) {
 
 .seealso: `KSPPIPEGCR`, `KSPPIPEGCRGetTruncationType()`, `KSPPIPEGCRGetNprealloc()`
 @*/
-PetscErrorCode KSPPIPEGCRSetNprealloc(KSP ksp, PetscInt nprealloc) {
+PetscErrorCode KSPPIPEGCRSetNprealloc(KSP ksp, PetscInt nprealloc)
+{
   KSP_PIPEGCR *pipegcr = (KSP_PIPEGCR *)ksp->data;
 
   PetscFunctionBegin;
@@ -552,7 +575,8 @@ PetscErrorCode KSPPIPEGCRSetNprealloc(KSP ksp, PetscInt nprealloc) {
 
 .seealso: `KSPPIPEGCR`, `KSPPIPEGCRGetTruncationType()`, `KSPPIPEGCRSetNprealloc()`
 @*/
-PetscErrorCode KSPPIPEGCRGetNprealloc(KSP ksp, PetscInt *nprealloc) {
+PetscErrorCode KSPPIPEGCRGetNprealloc(KSP ksp, PetscInt *nprealloc)
+{
   KSP_PIPEGCR *pipegcr = (KSP_PIPEGCR *)ksp->data;
 
   PetscFunctionBegin;
@@ -580,7 +604,8 @@ PetscErrorCode KSPPIPEGCRGetNprealloc(KSP ksp, PetscInt *nprealloc) {
 
 .seealso: `KSPPIPEGCR`, `KSPPIPEGCRSetTruncationType`, `KSPPIPEGCRTruncationType`, `KSPFCDTruncationType`
 @*/
-PetscErrorCode KSPPIPEGCRSetTruncationType(KSP ksp, KSPFCDTruncationType truncstrat) {
+PetscErrorCode KSPPIPEGCRSetTruncationType(KSP ksp, KSPFCDTruncationType truncstrat)
+{
   KSP_PIPEGCR *pipegcr = (KSP_PIPEGCR *)ksp->data;
 
   PetscFunctionBegin;
@@ -611,7 +636,8 @@ PetscErrorCode KSPPIPEGCRSetTruncationType(KSP ksp, KSPFCDTruncationType truncst
 
 .seealso: `KSPPIPEGCR`, `KSPPIPEGCRSetTruncationType`, `KSPPIPEGCRTruncationType`, `KSPFCDTruncationType`
 @*/
-PetscErrorCode KSPPIPEGCRGetTruncationType(KSP ksp, KSPFCDTruncationType *truncstrat) {
+PetscErrorCode KSPPIPEGCRGetTruncationType(KSP ksp, KSPFCDTruncationType *truncstrat)
+{
   KSP_PIPEGCR *pipegcr = (KSP_PIPEGCR *)ksp->data;
 
   PetscFunctionBegin;
@@ -620,7 +646,8 @@ PetscErrorCode KSPPIPEGCRGetTruncationType(KSP ksp, KSPFCDTruncationType *truncs
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPSetFromOptions_PIPEGCR(KSP ksp, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode KSPSetFromOptions_PIPEGCR(KSP ksp, PetscOptionItems *PetscOptionsObject)
+{
   KSP_PIPEGCR *pipegcr = (KSP_PIPEGCR *)ksp->data;
   PetscInt     mmax, nprealloc;
   PetscBool    flg;
@@ -641,7 +668,8 @@ static PetscErrorCode KSPSetFromOptions_PIPEGCR(KSP ksp, PetscOptionItems *Petsc
 typedef PetscErrorCode (*KSPPIPEGCRModifyPCFunction)(KSP, PetscInt, PetscReal, void *);
 typedef PetscErrorCode (*KSPPIPEGCRDestroyFunction)(void *);
 
-static PetscErrorCode KSPPIPEGCRSetModifyPC_PIPEGCR(KSP ksp, KSPPIPEGCRModifyPCFunction function, void *data, KSPPIPEGCRDestroyFunction destroy) {
+static PetscErrorCode KSPPIPEGCRSetModifyPC_PIPEGCR(KSP ksp, KSPPIPEGCRModifyPCFunction function, void *data, KSPPIPEGCRDestroyFunction destroy)
+{
   KSP_PIPEGCR *pipegcr = (KSP_PIPEGCR *)ksp->data;
 
   PetscFunctionBegin;
@@ -679,7 +707,8 @@ static PetscErrorCode KSPPIPEGCRSetModifyPC_PIPEGCR(KSP ksp, KSPPIPEGCRModifyPCF
  .seealso: `KSPPIPEGCRModifyPCNoChange()`
 
  @*/
-PetscErrorCode KSPPIPEGCRSetModifyPC(KSP ksp, PetscErrorCode (*function)(KSP, PetscInt, PetscReal, void *), void *data, PetscErrorCode (*destroy)(void *)) {
+PetscErrorCode KSPPIPEGCRSetModifyPC(KSP ksp, PetscErrorCode (*function)(KSP, PetscInt, PetscReal, void *), void *data, PetscErrorCode (*destroy)(void *))
+{
   PetscFunctionBegin;
   PetscUseMethod(ksp, "KSPPIPEGCRSetModifyPC_C", (KSP, PetscErrorCode(*)(KSP, PetscInt, PetscReal, void *), void *data, PetscErrorCode (*)(void *)), (ksp, function, data, destroy));
   PetscFunctionReturn(0);
@@ -719,7 +748,8 @@ PetscErrorCode KSPPIPEGCRSetModifyPC(KSP ksp, PetscErrorCode (*function)(KSP, Pe
           `KSPPIPEFGMRES`, `KSPPIPECG`, `KSPPIPECR`, `KSPPIPEFCG`, `KSPPIPEGCRSetTruncationType()`, `KSPPIPEGCRSetNprealloc()`, `KSPPIPEGCRSetUnrollW()`, `KSPPIPEGCRSetMmax()`
 
 M*/
-PETSC_EXTERN PetscErrorCode KSPCreate_PIPEGCR(KSP ksp) {
+PETSC_EXTERN PetscErrorCode KSPCreate_PIPEGCR(KSP ksp)
+{
   KSP_PIPEGCR *pipegcr;
 
   PetscFunctionBegin;

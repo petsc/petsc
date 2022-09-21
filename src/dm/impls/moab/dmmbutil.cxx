@@ -24,7 +24,8 @@ typedef struct {
   PetscLogEvent generateMesh, generateElements, generateVertices, parResolve;
 } DMMoabMeshGeneratorCtx;
 
-PetscInt DMMoab_SetTensorElementConnectivity_Private(DMMoabMeshGeneratorCtx &genCtx, PetscInt offset, PetscInt corner, std::vector<PetscInt> &subent_conn, moab::EntityHandle *connectivity) {
+PetscInt DMMoab_SetTensorElementConnectivity_Private(DMMoabMeshGeneratorCtx &genCtx, PetscInt offset, PetscInt corner, std::vector<PetscInt> &subent_conn, moab::EntityHandle *connectivity)
+{
   switch (genCtx.dim) {
   case 1:
     subent_conn.resize(2);
@@ -57,7 +58,8 @@ PetscInt DMMoab_SetTensorElementConnectivity_Private(DMMoabMeshGeneratorCtx &gen
   return subent_conn.size();
 }
 
-PetscInt DMMoab_SetSimplexElementConnectivity_Private(DMMoabMeshGeneratorCtx &genCtx, PetscInt subelem, PetscInt offset, PetscInt corner, std::vector<PetscInt> &subent_conn, moab::EntityHandle *connectivity) {
+PetscInt DMMoab_SetSimplexElementConnectivity_Private(DMMoabMeshGeneratorCtx &genCtx, PetscInt subelem, PetscInt offset, PetscInt corner, std::vector<PetscInt> &subent_conn, moab::EntityHandle *connectivity)
+{
   PetscInt       A, B, C, D, E, F, G, H, M;
   const PetscInt trigen_opts = 1; /* 1 - Aligned diagonally to right, 2 - Aligned diagonally to left, 3 - 4 elements per quad */
   A                          = corner;
@@ -173,7 +175,8 @@ PetscInt DMMoab_SetSimplexElementConnectivity_Private(DMMoabMeshGeneratorCtx &ge
   return subent_conn.size();
 }
 
-std::pair<PetscInt, PetscInt> DMMoab_SetElementConnectivity_Private(DMMoabMeshGeneratorCtx &genCtx, PetscInt offset, PetscInt corner, moab::EntityHandle *connectivity) {
+std::pair<PetscInt, PetscInt> DMMoab_SetElementConnectivity_Private(DMMoabMeshGeneratorCtx &genCtx, PetscInt offset, PetscInt corner, moab::EntityHandle *connectivity)
+{
   PetscInt              vcount                  = 0;
   PetscInt              simplices_per_tensor[4] = {0, 1, 2, 6};
   std::vector<PetscInt> subent_conn; /* only linear edge, tri, tet supported now */
@@ -192,7 +195,8 @@ std::pair<PetscInt, PetscInt> DMMoab_SetElementConnectivity_Private(DMMoabMeshGe
   return std::pair<PetscInt, PetscInt>(vcount * subelem, subelem);
 }
 
-PetscErrorCode DMMoab_GenerateVertices_Private(moab::Interface *mbImpl, moab::ReadUtilIface *iface, DMMoabMeshGeneratorCtx &genCtx, PetscInt m, PetscInt n, PetscInt k, PetscInt a, PetscInt b, PetscInt c, moab::Tag &global_id_tag, moab::EntityHandle &startv, moab::Range &uverts) {
+PetscErrorCode DMMoab_GenerateVertices_Private(moab::Interface *mbImpl, moab::ReadUtilIface *iface, DMMoabMeshGeneratorCtx &genCtx, PetscInt m, PetscInt n, PetscInt k, PetscInt a, PetscInt b, PetscInt c, moab::Tag &global_id_tag, moab::EntityHandle &startv, moab::Range &uverts)
+{
   PetscInt                 x, y, z, ix, nnodes;
   PetscInt                 ii, jj, kk;
   std::vector<PetscReal *> arrays;
@@ -245,7 +249,8 @@ PetscErrorCode DMMoab_GenerateVertices_Private(moab::Interface *mbImpl, moab::Re
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMMoab_GenerateElements_Private(moab::Interface *mbImpl, moab::ReadUtilIface *iface, DMMoabMeshGeneratorCtx &genCtx, PetscInt m, PetscInt n, PetscInt k, PetscInt a, PetscInt b, PetscInt c, moab::Tag &global_id_tag, moab::EntityHandle startv, moab::Range &cells) {
+PetscErrorCode DMMoab_GenerateElements_Private(moab::Interface *mbImpl, moab::ReadUtilIface *iface, DMMoabMeshGeneratorCtx &genCtx, PetscInt m, PetscInt n, PetscInt k, PetscInt a, PetscInt b, PetscInt c, moab::Tag &global_id_tag, moab::EntityHandle startv, moab::Range &cells)
+{
   moab::ErrorCode     merr;
   PetscInt            ix, ie, xe, ye, ze;
   PetscInt            ii, jj, kk, nvperelem;
@@ -333,14 +338,15 @@ PetscErrorCode DMMoab_GenerateElements_Private(moab::Interface *mbImpl, moab::Re
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMMBUtil_InitializeOptions(DMMoabMeshGeneratorCtx &genCtx, PetscInt dim, PetscBool simplex, PetscInt rank, PetscInt nprocs, const PetscReal *bounds, PetscInt nelems) {
+PetscErrorCode DMMBUtil_InitializeOptions(DMMoabMeshGeneratorCtx &genCtx, PetscInt dim, PetscBool simplex, PetscInt rank, PetscInt nprocs, const PetscReal *bounds, PetscInt nelems)
+{
   PetscFunctionBegin;
   /* Initialize all genCtx data */
   genCtx.dim            = dim;
   genCtx.simplex        = simplex;
   genCtx.newMergeMethod = genCtx.keep_skins = genCtx.adjEnts = true;
   /* determine other global quantities for the mesh used for nodes increments */
-  genCtx.q                                                   = 1;
+  genCtx.q        = 1;
   genCtx.fraction = genCtx.remainder = genCtx.cumfraction = 0;
 
   if (!genCtx.usrxyzgrid) { /* not overridden by genCtx - assume nele equally and that genCtx wants a uniform cube mesh */
@@ -489,7 +495,8 @@ PetscErrorCode DMMBUtil_InitializeOptions(DMMoabMeshGeneratorCtx &genCtx, PetscI
 
 .seealso: `DMSetType()`, `DMCreate()`, `DMMoabLoadFromFile()`
 @*/
-PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSimplex, const PetscReal *bounds, PetscInt nele, PetscInt nghost, DM *dm) {
+PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSimplex, const PetscReal *bounds, PetscInt nele, PetscInt nghost, DM *dm)
+{
   moab::ErrorCode  merr;
   PetscInt         a, b, c, n, global_size, global_rank;
   DM_Moab         *dmmoab;
@@ -582,8 +589,12 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
   /* determine m, n, k for processor rank */
   ml = nl = kl = 0;
   switch (genCtx.dim) {
-  case 1: ml = (genCtx.cumfraction); break;
-  case 2: nl = (genCtx.cumfraction); break;
+  case 1:
+    ml = (genCtx.cumfraction);
+    break;
+  case 2:
+    nl = (genCtx.cumfraction);
+    break;
   default:
     kl = (genCtx.cumfraction) / genCtx.q / genCtx.blockSizeElementXYZ[2] / genCtx.C; //genCtx.K
     break;
@@ -636,9 +647,13 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
 
         PetscInt part_num = 0;
         switch (genCtx.dim) {
-        case 3: part_num += (c + kl * genCtx.C) * (genCtx.M * genCtx.A * genCtx.N * genCtx.B);
-        case 2: part_num += (b + nl * genCtx.B) * (genCtx.M * genCtx.A);
-        case 1: part_num += (a + ml * genCtx.A); break;
+        case 3:
+          part_num += (c + kl * genCtx.C) * (genCtx.M * genCtx.A * genCtx.N * genCtx.B);
+        case 2:
+          part_num += (b + nl * genCtx.B) * (genCtx.M * genCtx.A);
+        case 1:
+          part_num += (a + ml * genCtx.A);
+          break;
         }
 
         moab::EntityHandle part_set;
@@ -766,7 +781,8 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMMoab_GetReadOptions_Private(PetscBool by_rank, PetscInt numproc, PetscInt dim, PetscInt nghost, MoabReadMode mode, PetscInt dbglevel, const char *dm_opts, const char *extra_opts, const char **read_opts) {
+PetscErrorCode DMMoab_GetReadOptions_Private(PetscBool by_rank, PetscInt numproc, PetscInt dim, PetscInt nghost, MoabReadMode mode, PetscInt dbglevel, const char *dm_opts, const char *extra_opts, const char **read_opts)
+{
   char *ropts;
   char  ropts_par[PETSC_MAX_PATH_LEN], ropts_pargh[PETSC_MAX_PATH_LEN];
   char  ropts_dbg[PETSC_MAX_PATH_LEN];
@@ -815,7 +831,8 @@ PetscErrorCode DMMoab_GetReadOptions_Private(PetscBool by_rank, PetscInt numproc
 
 .seealso: `DMSetType()`, `DMCreate()`, `DMMoabCreateBoxMesh()`
 @*/
-PetscErrorCode DMMoabLoadFromFile(MPI_Comm comm, PetscInt dim, PetscInt nghost, const char *filename, const char *usrreadopts, DM *dm) {
+PetscErrorCode DMMoabLoadFromFile(MPI_Comm comm, PetscInt dim, PetscInt nghost, const char *filename, const char *usrreadopts, DM *dm)
+{
   moab::ErrorCode  merr;
   PetscInt         nprocs;
   DM_Moab         *dmmoab;
@@ -905,7 +922,8 @@ PetscErrorCode DMMoabLoadFromFile(MPI_Comm comm, PetscInt dim, PetscInt nghost, 
 
 .seealso: `DMSetUp()`, `DMCreate()`
 @*/
-PetscErrorCode DMMoabRenumberMeshEntities(DM dm) {
+PetscErrorCode DMMoabRenumberMeshEntities(DM dm)
+{
   moab::Range verts;
 
   PetscFunctionBegin;

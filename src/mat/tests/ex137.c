@@ -3,7 +3,8 @@ static char help[] = "Tests MatCreateMPISBAIJWithArrays().\n\n";
 
 #include <petscmat.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat         A;
   PetscInt    m = 4, bs = 1, ii[5], jj[7];
   PetscMPIInt size, rank;

@@ -6,7 +6,8 @@
    program.
 */
 
-static PetscErrorCode PFView_String(void *value, PetscViewer viewer) {
+static PetscErrorCode PFView_String(void *value, PetscViewer viewer)
+{
   PetscBool iascii;
 
   PetscFunctionBegin;
@@ -15,7 +16,8 @@ static PetscErrorCode PFView_String(void *value, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PFDestroy_String(void *value) {
+static PetscErrorCode PFDestroy_String(void *value)
+{
   PetscFunctionBegin;
   PetscCall(PetscFree(value));
   PetscFunctionReturn(0);
@@ -36,7 +38,8 @@ static PetscErrorCode PFDestroy_String(void *value) {
 .seealso: `PFSetFromOptions()`
 
 */
-PetscErrorCode PFStringCreateFunction(PF pf, char *string, void **f) {
+PetscErrorCode PFStringCreateFunction(PF pf, char *string, void **f)
+{
 #if defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
   char      task[1024], tmp[256], lib[PETSC_MAX_PATH_LEN], username[64];
   FILE     *fd;
@@ -69,12 +72,12 @@ PetscErrorCode PFStringCreateFunction(PF pf, char *string, void **f) {
     sprintf(task, "cd %s ; mkdir ${USERNAME} ; cd ${USERNAME} ; \\cp -f ${PETSC_DIR}/src/pf/impls/string/makefile ./makefile ; make  MIN=%d NOUT=%d -f makefile petscdlib STRINGFUNCTION=\"%s\" ; \\rm -f makefile petscdlib.c libpetscdlib.a ;  sync\n", tmp,
             (int)pf->dimin, (int)pf->dimout, string);
 
-#if defined(PETSC_HAVE_POPEN)
+  #if defined(PETSC_HAVE_POPEN)
   PetscCall(PetscPOpen(comm, NULL, task, "r", &fd));
   PetscCall(PetscPClose(comm, fd));
-#else
+  #else
   SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP_SYS, "Cannot run external programs on this machine");
-#endif
+  #endif
 
   PetscCallMPI(MPI_Barrier(comm));
 
@@ -87,7 +90,8 @@ PetscErrorCode PFStringCreateFunction(PF pf, char *string, void **f) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PFSetFromOptions_String(PF pf, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode PFSetFromOptions_String(PF pf, PetscOptionItems *PetscOptionsObject)
+{
   PetscBool flag;
   char      value[PETSC_MAX_PATH_LEN];
   PetscErrorCode (*f)(void *, PetscInt, const PetscScalar *, PetscScalar *) = NULL;
@@ -105,7 +109,8 @@ static PetscErrorCode PFSetFromOptions_String(PF pf, PetscOptionItems *PetscOpti
 
 typedef PetscErrorCode (*FCN)(void *, PetscInt, const PetscScalar *, PetscScalar *); /* force argument to next function to not be extern C*/
 
-PETSC_EXTERN PetscErrorCode PFCreate_String(PF pf, void *value) {
+PETSC_EXTERN PetscErrorCode PFCreate_String(PF pf, void *value)
+{
   FCN f = NULL;
 
   PetscFunctionBegin;

@@ -3,7 +3,8 @@ static char help[] = "Tests MATCENTERING matrix type.\n\n";
 
 #include <petscmat.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt    n;
   Mat         C;
   Vec         x, y;

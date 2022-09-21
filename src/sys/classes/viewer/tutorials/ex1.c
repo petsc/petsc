@@ -3,7 +3,8 @@ static char help[] = "Appends to an ASCII file.\n\n";
 
 #include <petscviewer.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   PetscViewer viewer;
   PetscInt    i;
 

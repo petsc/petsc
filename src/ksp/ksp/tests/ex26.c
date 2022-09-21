@@ -42,7 +42,8 @@ typedef struct {
 
 static PetscErrorCode FormJacobian_Grid(GridCtx *, Mat);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt    i, its, Nx = PETSC_DECIDE, Ny = PETSC_DECIDE, nlocal, nrhs = 1;
   PetscScalar one = 1.0;
   Mat         A, B, X;
@@ -144,7 +145,8 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-PetscErrorCode FormJacobian_Grid(GridCtx *grid, Mat jac) {
+PetscErrorCode FormJacobian_Grid(GridCtx *grid, Mat jac)
+{
   PetscInt               i, j, row, mx, my, xs, ys, xm, ym, Xs, Ys, Xm, Ym, col[5];
   PetscInt               grow;
   const PetscInt        *ltog;

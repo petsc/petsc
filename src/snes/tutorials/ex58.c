@@ -55,7 +55,8 @@ extern PetscErrorCode FormGradient(SNES, Vec, Vec, void *);
 extern PetscErrorCode FormJacobian(SNES, Vec, Mat, Mat, void *);
 extern PetscErrorCode FormBounds(SNES, Vec, Vec);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   Vec  x, r; /* solution and residual vectors */
   SNES snes; /* nonlinear solver context */
   Mat  J;    /* Jacobian matrix */
@@ -119,7 +120,8 @@ int main(int argc, char **argv) {
 .   xl - lower bounds
 .   xu - upper bounds
 */
-PetscErrorCode FormBounds(SNES snes, Vec xl, Vec xu) {
+PetscErrorCode FormBounds(SNES snes, Vec xl, Vec xu)
+{
   AppCtx *ctx;
 
   PetscFunctionBeginUser;
@@ -141,7 +143,8 @@ PetscErrorCode FormBounds(SNES snes, Vec xl, Vec xu) {
     Output Parameters:
 .   G - vector containing the newly evaluated gradient
 */
-PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr) {
+PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr)
+{
   AppCtx       *user;
   PetscInt      i, j;
   PetscInt      mx, my;
@@ -267,7 +270,8 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr) {
 .  tH    - Jacobian matrix
 
 */
-PetscErrorCode FormJacobian(SNES snes, Vec X, Mat H, Mat tHPre, void *ptr) {
+PetscErrorCode FormJacobian(SNES snes, Vec X, Mat H, Mat tHPre, void *ptr)
+{
   AppCtx       *user;
   PetscInt      i, j, k;
   PetscInt      mx, my;
@@ -456,7 +460,8 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat H, Mat tHPre, void *ptr) {
    Output Parameter:
 .  user - user-defined application context
 */
-PetscErrorCode FormBoundaryConditions(SNES snes, AppCtx **ouser) {
+PetscErrorCode FormBoundaryConditions(SNES snes, AppCtx **ouser)
+{
   PetscInt     i, j, k, limit = 0, maxits = 5;
   PetscInt     mx, my;
   PetscInt     bsize = 0, lsize = 0, tsize = 0, rsize = 0;
@@ -541,7 +546,8 @@ PetscErrorCode FormBoundaryConditions(SNES snes, AppCtx **ouser) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DestroyBoundaryConditions(AppCtx **ouser) {
+PetscErrorCode DestroyBoundaryConditions(AppCtx **ouser)
+{
   AppCtx *user = *ouser;
 
   PetscFunctionBeginUser;
@@ -564,7 +570,8 @@ PetscErrorCode DestroyBoundaryConditions(AppCtx **ouser) {
    Output Parameters:
 .  X - newly computed initial guess
 */
-PetscErrorCode ComputeInitialGuess(SNES snes, Vec X, void *dummy) {
+PetscErrorCode ComputeInitialGuess(SNES snes, Vec X, void *dummy)
+{
   PetscInt      i, j, mx, my;
   DM            da;
   AppCtx       *user;

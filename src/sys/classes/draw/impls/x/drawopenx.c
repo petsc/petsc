@@ -56,7 +56,8 @@
 
 .seealso: `PetscDrawFlush()`, `PetscDrawDestroy()`, `PetscDrawCreate()`, `PetscDrawOpnOpenGL()`
 @*/
-PetscErrorCode PetscDrawOpenX(MPI_Comm comm, const char display[], const char title[], int x, int y, int w, int h, PetscDraw *draw) {
+PetscErrorCode PetscDrawOpenX(MPI_Comm comm, const char display[], const char title[], int x, int y, int w, int h, PetscDraw *draw)
+{
   PetscFunctionBegin;
   PetscCall(PetscDrawCreate(comm, display, title, x, y, w, h, draw));
   PetscCall(PetscDrawSetType(*draw, PETSC_DRAW_X));

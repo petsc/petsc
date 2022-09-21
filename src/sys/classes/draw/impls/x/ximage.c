@@ -6,7 +6,8 @@
 
 PETSC_INTERN PetscErrorCode PetscDrawGetImage_X(PetscDraw, unsigned char[PETSC_DRAW_MAXCOLOR][3], unsigned int *, unsigned int *, unsigned char *[]);
 
-static inline PetscErrorCode PetscArgSortPixVal(const PetscDrawXiPixVal v[PETSC_DRAW_MAXCOLOR], int idx[], int right) {
+static inline PetscErrorCode PetscArgSortPixVal(const PetscDrawXiPixVal v[PETSC_DRAW_MAXCOLOR], int idx[], int right)
+{
   PetscDrawXiPixVal vl;
   int               i, last, tmp;
 #define SWAP(a, b) \
@@ -40,7 +41,8 @@ static inline PetscErrorCode PetscArgSortPixVal(const PetscDrawXiPixVal v[PETSC_
 /*
    Map a pixel value to PETSc color value (index in the colormap)
 */
-static inline int PetscDrawXiPixelToColor(PetscDraw_X *Xwin, const int arg[PETSC_DRAW_MAXCOLOR], PetscDrawXiPixVal pix) {
+static inline int PetscDrawXiPixelToColor(PetscDraw_X *Xwin, const int arg[PETSC_DRAW_MAXCOLOR], PetscDrawXiPixVal pix)
+{
   const PetscDrawXiPixVal *cmap = Xwin->cmapping;
   int                      lo, mid, hi = PETSC_DRAW_MAXCOLOR;
   /* linear search the first few entries */
@@ -55,7 +57,8 @@ static inline int PetscDrawXiPixelToColor(PetscDraw_X *Xwin, const int arg[PETSC
   return arg[lo];
 }
 
-PetscErrorCode PetscDrawGetImage_X(PetscDraw draw, unsigned char palette[PETSC_DRAW_MAXCOLOR][3], unsigned int *out_w, unsigned int *out_h, unsigned char *out_pixels[]) {
+PetscErrorCode PetscDrawGetImage_X(PetscDraw draw, unsigned char palette[PETSC_DRAW_MAXCOLOR][3], unsigned int *out_w, unsigned int *out_h, unsigned char *out_pixels[])
+{
   PetscDraw_X *Xwin = (PetscDraw_X *)draw->data;
   PetscMPIInt  rank;
 

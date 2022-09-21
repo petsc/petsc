@@ -11,7 +11,8 @@
  * Increase overlap for the sub-matrix across sub communicator
  * sub-matrix could be a graph or numerical matrix
  * */
-PetscErrorCode MatIncreaseOverlapSplit_Single(Mat mat, IS *is, PetscInt ov) {
+PetscErrorCode MatIncreaseOverlapSplit_Single(Mat mat, IS *is, PetscInt ov)
+{
   PetscInt        i, nindx, *indices_sc, *indices_ov, localsize, *localsizes_sc, localsize_tmp;
   PetscInt       *indices_ov_rd, nroots, nleaves, *localoffsets, *indices_recv, *sources_sc, *sources_sc_rd;
   const PetscInt *indices;

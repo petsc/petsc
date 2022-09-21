@@ -10,7 +10,8 @@ static char help[] = "Tests MatMeshToDual()\n\n";
 */
 #include <petscmat.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat             mesh, dual;
   PetscInt        Nvertices = 6; /* total number of vertices */
   PetscInt        ncells    = 2; /* number cells on this process */

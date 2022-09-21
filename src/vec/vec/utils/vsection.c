@@ -4,7 +4,8 @@
 #include <petsc/private/sectionimpl.h> /*I  "petscsection.h"   I*/
 #include <petsc/private/vecimpl.h>     /*I  "petscvec.h"   I*/
 
-static PetscErrorCode PetscSectionVecView_ASCII(PetscSection s, Vec v, PetscViewer viewer) {
+static PetscErrorCode PetscSectionVecView_ASCII(PetscSection s, Vec v, PetscViewer viewer)
+{
   PetscScalar *array;
   PetscInt     p, i;
   PetscMPIInt  rank;
@@ -75,7 +76,8 @@ static PetscErrorCode PetscSectionVecView_ASCII(PetscSection s, Vec v, PetscView
 
 .seealso: `PetscSection`, `PetscSectionCreate()`, `VecSetValuesSection()`
 @*/
-PetscErrorCode PetscSectionVecView(PetscSection s, Vec v, PetscViewer viewer) {
+PetscErrorCode PetscSectionVecView(PetscSection s, Vec v, PetscViewer viewer)
+{
   PetscBool isascii;
   PetscInt  f;
 
@@ -120,7 +122,8 @@ PetscErrorCode PetscSectionVecView(PetscSection s, Vec v, PetscViewer viewer) {
 
 .seealso: `PetscSection`, `PetscSectionCreate()`, `VecSetValuesSection()`
 @*/
-PetscErrorCode VecGetValuesSection(Vec v, PetscSection s, PetscInt point, PetscScalar **values) {
+PetscErrorCode VecGetValuesSection(Vec v, PetscSection s, PetscInt point, PetscScalar **values)
+{
   PetscScalar   *baseArray;
   const PetscInt p = point - s->pStart;
 
@@ -154,7 +157,8 @@ $
 
 .seealso: `PetscSection`, `PetscSectionCreate()`, `VecGetValuesSection()`
 @*/
-PetscErrorCode VecSetValuesSection(Vec v, PetscSection s, PetscInt point, PetscScalar values[], InsertMode mode) {
+PetscErrorCode VecSetValuesSection(Vec v, PetscSection s, PetscInt point, PetscScalar values[], InsertMode mode)
+{
   PetscScalar    *baseArray, *array;
   const PetscBool doInsert    = mode == INSERT_VALUES || mode == INSERT_ALL_VALUES || mode == INSERT_BC_VALUES ? PETSC_TRUE : PETSC_FALSE;
   const PetscBool doInterior  = mode == INSERT_ALL_VALUES || mode == ADD_ALL_VALUES || mode == INSERT_VALUES || mode == ADD_VALUES ? PETSC_TRUE : PETSC_FALSE;
@@ -246,7 +250,8 @@ PetscErrorCode VecSetValuesSection(Vec v, PetscSection s, PetscInt point, PetscS
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscSectionGetField_Internal(PetscSection section, PetscSection sectionGlobal, Vec v, PetscInt field, PetscInt pStart, PetscInt pEnd, IS *is, Vec *subv) {
+PetscErrorCode PetscSectionGetField_Internal(PetscSection section, PetscSection sectionGlobal, Vec v, PetscInt field, PetscInt pStart, PetscInt pEnd, IS *is, Vec *subv)
+{
   PetscInt *subIndices;
   PetscInt  Nc, subSize = 0, subOff = 0, p;
 
@@ -283,7 +288,8 @@ PetscErrorCode PetscSectionGetField_Internal(PetscSection section, PetscSection 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscSectionRestoreField_Internal(PetscSection section, PetscSection sectionGlobal, Vec v, PetscInt field, PetscInt pStart, PetscInt pEnd, IS *is, Vec *subv) {
+PetscErrorCode PetscSectionRestoreField_Internal(PetscSection section, PetscSection sectionGlobal, Vec v, PetscInt field, PetscInt pStart, PetscInt pEnd, IS *is, Vec *subv)
+{
   PetscFunctionBegin;
   PetscCall(VecRestoreSubVector(v, *is, subv));
   PetscCall(ISDestroy(is));
@@ -306,7 +312,8 @@ PetscErrorCode PetscSectionRestoreField_Internal(PetscSection section, PetscSect
 
 .seealso: `VecNorm()`, `PetscSectionCreate()`
 @*/
-PetscErrorCode PetscSectionVecNorm(PetscSection s, PetscSection gs, Vec x, NormType type, PetscReal val[]) {
+PetscErrorCode PetscSectionVecNorm(PetscSection s, PetscSection gs, Vec x, NormType type, PetscReal val[])
+{
   PetscInt Nf, f, pStart, pEnd;
 
   PetscFunctionBegin;

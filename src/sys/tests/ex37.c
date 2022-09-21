@@ -6,7 +6,8 @@ static char help[] = "Test PetscFormatConvertGetSize().\n";
 
 PetscErrorCode TestPetscVSNPrintf(char *, size_t, size_t *, const char *, ...);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   size_t      sz, fullLength;
   char       *newformatstr, buffer[128], longstr[256], superlongstr[10000];
   const char *formatstr = "Greetings %D %3.2f %g\n";
@@ -68,7 +69,8 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-PetscErrorCode TestPetscVSNPrintf(char *str, size_t l_str, size_t *fullLength, const char *format, ...) {
+PetscErrorCode TestPetscVSNPrintf(char *str, size_t l_str, size_t *fullLength, const char *format, ...)
+{
   va_list Argp;
 
   PetscFunctionBegin;

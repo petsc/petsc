@@ -20,7 +20,8 @@
 
 .seealso: `DMPlexCreate()`, `DMPlexCreateCGNS()`, `DMPlexCreateExodus()`
 @*/
-PetscErrorCode DMPlexCreateCGNSFromFile(MPI_Comm comm, const char filename[], PetscBool interpolate, DM *dm) {
+PetscErrorCode DMPlexCreateCGNSFromFile(MPI_Comm comm, const char filename[], PetscBool interpolate, DM *dm)
+{
   PetscFunctionBegin;
   PetscValidCharPointer(filename, 2);
 #if defined(PETSC_HAVE_CGNS)
@@ -50,7 +51,8 @@ PetscErrorCode DMPlexCreateCGNSFromFile(MPI_Comm comm, const char filename[], Pe
 
 .seealso: `DMPlexCreate()`, `DMPlexCreateExodus()`
 @*/
-PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpolate, DM *dm) {
+PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpolate, DM *dm)
+{
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_CGNS)
   PetscCall(DMPlexCreateCGNS_Internal(comm, cgid, interpolate, dm));

@@ -3,7 +3,8 @@ static char help[] = "Tests deletion of mixed case options";
 
 #include <petscsys.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(PetscOptionsSetValue(NULL, "-abc", NULL));

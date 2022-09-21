@@ -34,7 +34,8 @@ extern PetscErrorCode KSPReset_PIPEFGMRES(KSP);
     but can be called directly by KSPSetUp().
 
 */
-static PetscErrorCode KSPSetUp_PIPEFGMRES(KSP ksp) {
+static PetscErrorCode KSPSetUp_PIPEFGMRES(KSP ksp)
+{
   PetscInt        k;
   KSP_PIPEFGMRES *pipefgmres = (KSP_PIPEFGMRES *)ksp->data;
   const PetscInt  max_k      = pipefgmres->max_k;
@@ -76,7 +77,8 @@ static PetscErrorCode KSPSetUp_PIPEFGMRES(KSP ksp) {
     the initial residual.
 
 */
-static PetscErrorCode KSPPIPEFGMRESCycle(PetscInt *itcount, KSP ksp) {
+static PetscErrorCode KSPPIPEFGMRESCycle(PetscInt *itcount, KSP ksp)
+{
   KSP_PIPEFGMRES *pipefgmres = (KSP_PIPEFGMRES *)(ksp->data);
   PetscReal       res_norm;
   PetscReal       hapbnd, tt;
@@ -338,7 +340,8 @@ static PetscErrorCode KSPPIPEFGMRESCycle(PetscInt *itcount, KSP ksp) {
 .     outits - number of iterations used
 
 */
-static PetscErrorCode KSPSolve_PIPEFGMRES(KSP ksp) {
+static PetscErrorCode KSPSolve_PIPEFGMRES(KSP ksp)
+{
   PetscInt        its, itcount;
   KSP_PIPEFGMRES *pipefgmres = (KSP_PIPEFGMRES *)ksp->data;
   PetscBool       guess_zero = ksp->guess_zero;
@@ -371,7 +374,8 @@ static PetscErrorCode KSPSolve_PIPEFGMRES(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPDestroy_PIPEFGMRES(KSP ksp) {
+static PetscErrorCode KSPDestroy_PIPEFGMRES(KSP ksp)
+{
   PetscFunctionBegin;
   PetscCall(KSPReset_PIPEFGMRES(ksp));
   PetscCall(KSPDestroy_GMRES(ksp));
@@ -391,7 +395,8 @@ static PetscErrorCode KSPDestroy_PIPEFGMRES(KSP ksp) {
 
      This is an internal routine that knows about the PIPEFGMRES internals.
  */
-static PetscErrorCode KSPPIPEFGMRESBuildSoln(PetscScalar *nrs, Vec vguess, Vec vdest, KSP ksp, PetscInt it) {
+static PetscErrorCode KSPPIPEFGMRESBuildSoln(PetscScalar *nrs, Vec vguess, Vec vdest, KSP ksp, PetscInt it)
+{
   PetscScalar     tt;
   PetscInt        k, j;
   KSP_PIPEFGMRES *pipefgmres = (KSP_PIPEFGMRES *)(ksp->data);
@@ -447,7 +452,8 @@ static PetscErrorCode KSPPIPEFGMRESBuildSoln(PetscScalar *nrs, Vec vguess, Vec v
 /*
 .  it - column of the Hessenberg that is complete, PIPEFGMRES is actually computing two columns ahead of this
  */
-static PetscErrorCode KSPPIPEFGMRESUpdateHessenberg(KSP ksp, PetscInt it, PetscBool *hapend, PetscReal *res) {
+static PetscErrorCode KSPPIPEFGMRESUpdateHessenberg(KSP ksp, PetscInt it, PetscBool *hapend, PetscReal *res)
+{
   PetscScalar    *hh, *cc, *ss, *rs;
   PetscInt        j;
   PetscReal       hapbnd;
@@ -532,7 +538,8 @@ static PetscErrorCode KSPPIPEFGMRESUpdateHessenberg(KSP ksp, PetscInt it, PetscB
    calls directly.
 
 */
-PetscErrorCode KSPBuildSolution_PIPEFGMRES(KSP ksp, Vec ptr, Vec *result) {
+PetscErrorCode KSPBuildSolution_PIPEFGMRES(KSP ksp, Vec ptr, Vec *result)
+{
   KSP_PIPEFGMRES *pipefgmres = (KSP_PIPEFGMRES *)ksp->data;
 
   PetscFunctionBegin;
@@ -550,7 +557,8 @@ PetscErrorCode KSPBuildSolution_PIPEFGMRES(KSP ksp, Vec ptr, Vec *result) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPSetFromOptions_PIPEFGMRES(KSP ksp, PetscOptionItems *PetscOptionsObject) {
+PetscErrorCode KSPSetFromOptions_PIPEFGMRES(KSP ksp, PetscOptionItems *PetscOptionsObject)
+{
   KSP_PIPEFGMRES *pipefgmres = (KSP_PIPEFGMRES *)ksp->data;
   PetscBool       flg;
   PetscScalar     shift;
@@ -564,7 +572,8 @@ PetscErrorCode KSPSetFromOptions_PIPEFGMRES(KSP ksp, PetscOptionItems *PetscOpti
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPView_PIPEFGMRES(KSP ksp, PetscViewer viewer) {
+PetscErrorCode KSPView_PIPEFGMRES(KSP ksp, PetscViewer viewer)
+{
   KSP_PIPEFGMRES *pipefgmres = (KSP_PIPEFGMRES *)ksp->data;
   PetscBool       iascii, isstring;
 
@@ -591,7 +600,8 @@ PetscErrorCode KSPView_PIPEFGMRES(KSP ksp, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPReset_PIPEFGMRES(KSP ksp) {
+PetscErrorCode KSPReset_PIPEFGMRES(KSP ksp)
+{
   KSP_PIPEFGMRES *pipefgmres = (KSP_PIPEFGMRES *)ksp->data;
   PetscInt        i;
 
@@ -647,7 +657,8 @@ PetscErrorCode KSPReset_PIPEFGMRES(KSP ksp) {
           `KSPGMRESSetRestart()`, `KSPGMRESSetHapTol()`, `KSPGMRESSetPreAllocateVectors()`, `KSPGMRESMonitorKrylov()`, `KSPPIPEFGMRESSetShift()`
 M*/
 
-PETSC_EXTERN PetscErrorCode KSPCreate_PIPEFGMRES(KSP ksp) {
+PETSC_EXTERN PetscErrorCode KSPCreate_PIPEFGMRES(KSP ksp)
+{
   KSP_PIPEFGMRES *pipefgmres;
 
   PetscFunctionBegin;
@@ -686,7 +697,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PIPEFGMRES(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPPIPEFGMRESGetNewVectors(KSP ksp, PetscInt it) {
+static PetscErrorCode KSPPIPEFGMRESGetNewVectors(KSP ksp, PetscInt it)
+{
   KSP_PIPEFGMRES *pipefgmres = (KSP_PIPEFGMRES *)ksp->data;
   PetscInt        nwork      = pipefgmres->nwork_alloc; /* number of work vector chunks allocated */
   PetscInt        nalloc;                               /* number to allocate */
@@ -739,7 +751,8 @@ Options Database:
 
 .seealso: `KSPComputeEigenvalues()`
 @*/
-PetscErrorCode KSPPIPEFGMRESSetShift(KSP ksp, PetscScalar shift) {
+PetscErrorCode KSPPIPEFGMRESSetShift(KSP ksp, PetscScalar shift)
+{
   KSP_PIPEFGMRES *pipefgmres = (KSP_PIPEFGMRES *)ksp->data;
 
   PetscFunctionBegin;

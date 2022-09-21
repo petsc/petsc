@@ -12,7 +12,8 @@ PETSC_INTERN PetscErrorCode PCPreSolveChangeRHS(PC, PetscBool *);
 */
 PetscFunctionList PCMGCoarseList = NULL;
 
-PetscErrorCode PCMGMCycle_Private(PC pc, PC_MG_Levels **mglevelsin, PetscBool transpose, PetscBool matapp, PCRichardsonConvergedReason *reason) {
+PetscErrorCode PCMGMCycle_Private(PC pc, PC_MG_Levels **mglevelsin, PetscBool transpose, PetscBool matapp, PCRichardsonConvergedReason *reason)
+{
   PC_MG        *mg = (PC_MG *)pc->data;
   PC_MG_Levels *mgc, *mglevels = *mglevelsin;
   PetscInt      cycles = (mglevels->level == 1) ? 1 : (PetscInt)mglevels->cycles;
@@ -117,7 +118,8 @@ PetscErrorCode PCMGMCycle_Private(PC pc, PC_MG_Levels **mglevelsin, PetscBool tr
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCApplyRichardson_MG(PC pc, Vec b, Vec x, Vec w, PetscReal rtol, PetscReal abstol, PetscReal dtol, PetscInt its, PetscBool zeroguess, PetscInt *outits, PCRichardsonConvergedReason *reason) {
+static PetscErrorCode PCApplyRichardson_MG(PC pc, Vec b, Vec x, Vec w, PetscReal rtol, PetscReal abstol, PetscReal dtol, PetscInt its, PetscBool zeroguess, PetscInt *outits, PCRichardsonConvergedReason *reason)
+{
   PC_MG         *mg       = (PC_MG *)pc->data;
   PC_MG_Levels **mglevels = mg->levels;
   PC             tpc;
@@ -190,7 +192,8 @@ static PetscErrorCode PCApplyRichardson_MG(PC pc, Vec b, Vec x, Vec w, PetscReal
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCReset_MG(PC pc) {
+PetscErrorCode PCReset_MG(PC pc)
+{
   PC_MG         *mg       = (PC_MG *)pc->data;
   PC_MG_Levels **mglevels = mg->levels;
   PetscInt       i, n;
@@ -270,7 +273,8 @@ typedef struct {
   Mat      S;   /* I - Inj^T Inj */
 } CRContext;
 
-static PetscErrorCode CRSetup_Private(PC pc) {
+static PetscErrorCode CRSetup_Private(PC pc)
+{
   CRContext *ctx;
   Mat        It;
 
@@ -285,7 +289,8 @@ static PetscErrorCode CRSetup_Private(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CRApply_Private(PC pc, Vec x, Vec y) {
+static PetscErrorCode CRApply_Private(PC pc, Vec x, Vec y)
+{
   CRContext *ctx;
 
   PetscFunctionBeginUser;
@@ -294,7 +299,8 @@ static PetscErrorCode CRApply_Private(PC pc, Vec x, Vec y) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CRDestroy_Private(PC pc) {
+static PetscErrorCode CRDestroy_Private(PC pc)
+{
   CRContext *ctx;
 
   PetscFunctionBeginUser;
@@ -306,7 +312,8 @@ static PetscErrorCode CRDestroy_Private(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateCR_Private(PC pc, PetscInt l, PC *cr) {
+static PetscErrorCode CreateCR_Private(PC pc, PetscInt l, PC *cr)
+{
   CRContext *ctx;
 
   PetscFunctionBeginUser;
@@ -323,7 +330,8 @@ static PetscErrorCode CreateCR_Private(PC pc, PetscInt l, PC *cr) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCMGSetLevels_MG(PC pc, PetscInt levels, MPI_Comm *comms) {
+PetscErrorCode PCMGSetLevels_MG(PC pc, PetscInt levels, MPI_Comm *comms)
+{
   PC_MG         *mg = (PC_MG *)pc->data;
   MPI_Comm       comm;
   PC_MG_Levels **mglevels = mg->levels;
@@ -463,7 +471,8 @@ PetscErrorCode PCMGSetLevels_MG(PC pc, PetscInt levels, MPI_Comm *comms) {
 
 .seealso: `PCMGSetType()`, `PCMGGetLevels()`
 @*/
-PetscErrorCode PCMGSetLevels(PC pc, PetscInt levels, MPI_Comm *comms) {
+PetscErrorCode PCMGSetLevels(PC pc, PetscInt levels, MPI_Comm *comms)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   if (comms) PetscValidPointer(comms, 3);
@@ -471,7 +480,8 @@ PetscErrorCode PCMGSetLevels(PC pc, PetscInt levels, MPI_Comm *comms) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCDestroy_MG(PC pc) {
+PetscErrorCode PCDestroy_MG(PC pc)
+{
   PC_MG         *mg       = (PC_MG *)pc->data;
   PC_MG_Levels **mglevels = mg->levels;
   PetscInt       i, n;
@@ -512,7 +522,8 @@ PetscErrorCode PCDestroy_MG(PC pc) {
   Note:
   A simple wrapper which calls PCMGMCycle(),PCMGACycle(), or PCMGFCycle().
 */
-static PetscErrorCode PCApply_MG_Internal(PC pc, Vec b, Vec x, Mat B, Mat X, PetscBool transpose) {
+static PetscErrorCode PCApply_MG_Internal(PC pc, Vec b, Vec x, Mat B, Mat X, PetscBool transpose)
+{
   PC_MG         *mg       = (PC_MG *)pc->data;
   PC_MG_Levels **mglevels = mg->levels;
   PC             tpc;
@@ -616,25 +627,29 @@ static PetscErrorCode PCApply_MG_Internal(PC pc, Vec b, Vec x, Mat B, Mat X, Pet
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCApply_MG(PC pc, Vec b, Vec x) {
+static PetscErrorCode PCApply_MG(PC pc, Vec b, Vec x)
+{
   PetscFunctionBegin;
   PetscCall(PCApply_MG_Internal(pc, b, x, NULL, NULL, PETSC_FALSE));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCApplyTranspose_MG(PC pc, Vec b, Vec x) {
+static PetscErrorCode PCApplyTranspose_MG(PC pc, Vec b, Vec x)
+{
   PetscFunctionBegin;
   PetscCall(PCApply_MG_Internal(pc, b, x, NULL, NULL, PETSC_TRUE));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCMatApply_MG(PC pc, Mat b, Mat x) {
+static PetscErrorCode PCMatApply_MG(PC pc, Mat b, Mat x)
+{
   PetscFunctionBegin;
   PetscCall(PCApply_MG_Internal(pc, NULL, NULL, b, x, PETSC_FALSE));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCSetFromOptions_MG(PC pc, PetscOptionItems *PetscOptionsObject) {
+PetscErrorCode PCSetFromOptions_MG(PC pc, PetscOptionItems *PetscOptionsObject)
+{
   PetscInt            levels, cycles;
   PetscBool           flg, flg2;
   PC_MG              *mg = (PC_MG *)pc->data;
@@ -731,7 +746,8 @@ const char *const PCMGGalerkinTypes[]    = {"both", "pmat", "mat", "none", "exte
 const char *const PCMGCoarseSpaceTypes[] = {"none", "polynomial", "harmonic", "eigenvector", "generalized_eigenvector", "gdsw", "PCMGCoarseSpaceType", "PCMG_ADAPT_NONE", NULL};
 
 #include <petscdraw.h>
-PetscErrorCode PCView_MG(PC pc, PetscViewer viewer) {
+PetscErrorCode PCView_MG(PC pc, PetscViewer viewer)
+{
   PC_MG         *mg       = (PC_MG *)pc->data;
   PC_MG_Levels **mglevels = mg->levels;
   PetscInt       levels   = mglevels ? mglevels[0]->levels : 0, i;
@@ -819,7 +835,8 @@ PetscErrorCode PCView_MG(PC pc, PetscViewer viewer) {
 /*
     Calls setup for the KSP on each level
 */
-PetscErrorCode PCSetUp_MG(PC pc) {
+PetscErrorCode PCSetUp_MG(PC pc)
+{
   PC_MG         *mg       = (PC_MG *)pc->data;
   PC_MG_Levels **mglevels = mg->levels;
   PetscInt       i, n;
@@ -1206,7 +1223,8 @@ PetscErrorCode PCSetUp_MG(PC pc) {
 
 /* -------------------------------------------------------------------------------------*/
 
-PetscErrorCode PCMGGetLevels_MG(PC pc, PetscInt *levels) {
+PetscErrorCode PCMGGetLevels_MG(PC pc, PetscInt *levels)
+{
   PC_MG *mg = (PC_MG *)pc->data;
 
   PetscFunctionBegin;
@@ -1229,7 +1247,8 @@ PetscErrorCode PCMGGetLevels_MG(PC pc, PetscInt *levels) {
 
 .seealso: `PCMG`, `PCMGSetLevels()`
 @*/
-PetscErrorCode PCMGGetLevels(PC pc, PetscInt *levels) {
+PetscErrorCode PCMGGetLevels(PC pc, PetscInt *levels)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidIntPointer(levels, 2);
@@ -1255,7 +1274,8 @@ PetscErrorCode PCMGGetLevels(PC pc, PetscInt *levels) {
 
 .seealso: `PCMG`, `PCMGGetLevels()`, `PCMGSetLevels()`
 @*/
-PetscErrorCode PCMGGetGridComplexity(PC pc, PetscReal *gc, PetscReal *oc) {
+PetscErrorCode PCMGGetGridComplexity(PC pc, PetscReal *gc, PetscReal *oc)
+{
   PC_MG         *mg       = (PC_MG *)pc->data;
   PC_MG_Levels **mglevels = mg->levels;
   PetscInt       lev, N;
@@ -1308,7 +1328,8 @@ PetscErrorCode PCMGGetGridComplexity(PC pc, PetscReal *gc, PetscReal *oc) {
 
 .seealso: `PCMGType`, `PCMG`, `PCMGGetLevels()`, `PCMGSetLevels()`, `PCMGGetType()`, `PCMGCycleType`
 @*/
-PetscErrorCode PCMGSetType(PC pc, PCMGType form) {
+PetscErrorCode PCMGSetType(PC pc, PCMGType form)
+{
   PC_MG *mg = (PC_MG *)pc->data;
 
   PetscFunctionBegin;
@@ -1335,7 +1356,8 @@ PetscErrorCode PCMGSetType(PC pc, PCMGType form) {
 
 .seealso: `PCMGType`, `PCMG`, `PCMGGetLevels()`, `PCMGSetLevels()`, `PCMGSetType()`
 @*/
-PetscErrorCode PCMGGetType(PC pc, PCMGType *type) {
+PetscErrorCode PCMGGetType(PC pc, PCMGType *type)
+{
   PC_MG *mg = (PC_MG *)pc->data;
 
   PetscFunctionBegin;
@@ -1361,7 +1383,8 @@ PetscErrorCode PCMGGetType(PC pc, PCMGType *type) {
 
 .seealso: `PCMG`, `PCMGSetCycleTypeOnLevel()`, `PCMGType`, `PCMGCycleType`
 @*/
-PetscErrorCode PCMGSetCycleType(PC pc, PCMGCycleType n) {
+PetscErrorCode PCMGSetCycleType(PC pc, PCMGCycleType n)
+{
   PC_MG         *mg       = (PC_MG *)pc->data;
   PC_MG_Levels **mglevels = mg->levels;
   PetscInt       i, levels;
@@ -1395,7 +1418,8 @@ PetscErrorCode PCMGSetCycleType(PC pc, PCMGCycleType n) {
 
 .seealso: `PCMGSetCycleTypeOnLevel()`, `PCMGSetCycleType()`, `PCMGCycleType`, `PCMGType`
 @*/
-PetscErrorCode PCMGMultiplicativeSetCycles(PC pc, PetscInt n) {
+PetscErrorCode PCMGMultiplicativeSetCycles(PC pc, PetscInt n)
+{
   PC_MG *mg = (PC_MG *)pc->data;
 
   PetscFunctionBegin;
@@ -1405,7 +1429,8 @@ PetscErrorCode PCMGMultiplicativeSetCycles(PC pc, PetscInt n) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCMGSetGalerkin_MG(PC pc, PCMGGalerkinType use) {
+PetscErrorCode PCMGSetGalerkin_MG(PC pc, PCMGGalerkinType use)
+{
   PC_MG *mg = (PC_MG *)pc->data;
 
   PetscFunctionBegin;
@@ -1434,7 +1459,8 @@ PetscErrorCode PCMGSetGalerkin_MG(PC pc, PCMGGalerkinType use) {
 
 .seealso: `PCMG`, `PCMGGetGalerkin()`, `PCMGGalerkinType`
 @*/
-PetscErrorCode PCMGSetGalerkin(PC pc, PCMGGalerkinType use) {
+PetscErrorCode PCMGSetGalerkin(PC pc, PCMGGalerkinType use)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscTryMethod(pc, "PCMGSetGalerkin_C", (PC, PCMGGalerkinType), (pc, use));
@@ -1456,7 +1482,8 @@ PetscErrorCode PCMGSetGalerkin(PC pc, PCMGGalerkinType use) {
 
 .seealso: `PCMG`, `PCMGSetGalerkin()`, `PCMGGalerkinType`
 @*/
-PetscErrorCode PCMGGetGalerkin(PC pc, PCMGGalerkinType *galerkin) {
+PetscErrorCode PCMGGetGalerkin(PC pc, PCMGGalerkinType *galerkin)
+{
   PC_MG *mg = (PC_MG *)pc->data;
 
   PetscFunctionBegin;
@@ -1465,7 +1492,8 @@ PetscErrorCode PCMGGetGalerkin(PC pc, PCMGGalerkinType *galerkin) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCMGSetAdaptInterpolation_MG(PC pc, PetscBool adapt) {
+PetscErrorCode PCMGSetAdaptInterpolation_MG(PC pc, PetscBool adapt)
+{
   PC_MG *mg = (PC_MG *)pc->data;
 
   PetscFunctionBegin;
@@ -1473,7 +1501,8 @@ PetscErrorCode PCMGSetAdaptInterpolation_MG(PC pc, PetscBool adapt) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCMGGetAdaptInterpolation_MG(PC pc, PetscBool *adapt) {
+PetscErrorCode PCMGGetAdaptInterpolation_MG(PC pc, PetscBool *adapt)
+{
   PC_MG *mg = (PC_MG *)pc->data;
 
   PetscFunctionBegin;
@@ -1481,7 +1510,8 @@ PetscErrorCode PCMGGetAdaptInterpolation_MG(PC pc, PetscBool *adapt) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCMGSetAdaptCoarseSpaceType_MG(PC pc, PCMGCoarseSpaceType ctype) {
+PetscErrorCode PCMGSetAdaptCoarseSpaceType_MG(PC pc, PCMGCoarseSpaceType ctype)
+{
   PC_MG *mg = (PC_MG *)pc->data;
 
   PetscFunctionBegin;
@@ -1490,7 +1520,8 @@ PetscErrorCode PCMGSetAdaptCoarseSpaceType_MG(PC pc, PCMGCoarseSpaceType ctype) 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCMGGetAdaptCoarseSpaceType_MG(PC pc, PCMGCoarseSpaceType *ctype) {
+PetscErrorCode PCMGGetAdaptCoarseSpaceType_MG(PC pc, PCMGCoarseSpaceType *ctype)
+{
   PC_MG *mg = (PC_MG *)pc->data;
 
   PetscFunctionBegin;
@@ -1498,7 +1529,8 @@ PetscErrorCode PCMGGetAdaptCoarseSpaceType_MG(PC pc, PCMGCoarseSpaceType *ctype)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCMGSetAdaptCR_MG(PC pc, PetscBool cr) {
+PetscErrorCode PCMGSetAdaptCR_MG(PC pc, PetscBool cr)
+{
   PC_MG *mg = (PC_MG *)pc->data;
 
   PetscFunctionBegin;
@@ -1506,7 +1538,8 @@ PetscErrorCode PCMGSetAdaptCR_MG(PC pc, PetscBool cr) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCMGGetAdaptCR_MG(PC pc, PetscBool *cr) {
+PetscErrorCode PCMGGetAdaptCR_MG(PC pc, PetscBool *cr)
+{
   PC_MG *mg = (PC_MG *)pc->data;
 
   PetscFunctionBegin;
@@ -1533,7 +1566,8 @@ PetscErrorCode PCMGGetAdaptCR_MG(PC pc, PetscBool *cr) {
 
 .seealso: `PCMG`, `PCMGCoarseSpaceType`, `PCMGGetAdaptCoarseSpaceType()`, `PCMGSetGalerkin()`, `PCMGSetAdaptInterpolation()`
 @*/
-PetscErrorCode PCMGSetAdaptCoarseSpaceType(PC pc, PCMGCoarseSpaceType ctype) {
+PetscErrorCode PCMGSetAdaptCoarseSpaceType(PC pc, PCMGCoarseSpaceType ctype)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidLogicalCollectiveEnum(pc, ctype, 2);
@@ -1556,7 +1590,8 @@ PetscErrorCode PCMGSetAdaptCoarseSpaceType(PC pc, PCMGCoarseSpaceType ctype) {
 
 .seealso: `PCMG`, `PCMGCoarseSpaceType`, `PCMGSetAdaptCoarseSpaceType()`, `PCMGSetGalerkin()`, `PCMGSetAdaptInterpolation()`
 @*/
-PetscErrorCode PCMGGetAdaptCoarseSpaceType(PC pc, PCMGCoarseSpaceType *ctype) {
+PetscErrorCode PCMGGetAdaptCoarseSpaceType(PC pc, PCMGCoarseSpaceType *ctype)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidPointer(ctype, 2);
@@ -1583,7 +1618,8 @@ PetscErrorCode PCMGGetAdaptCoarseSpaceType(PC pc, PCMGCoarseSpaceType *ctype) {
 
 .seealso: `PCMG`, `PCMGGetAdaptInterpolation()`, `PCMGSetGalerkin()`, `PCMGGetAdaptCoarseSpaceType()`, `PCMGSetAdaptCoarseSpaceType()`
 @*/
-PetscErrorCode PCMGSetAdaptInterpolation(PC pc, PetscBool adapt) {
+PetscErrorCode PCMGSetAdaptInterpolation(PC pc, PetscBool adapt)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscTryMethod(pc, "PCMGSetAdaptInterpolation_C", (PC, PetscBool), (pc, adapt));
@@ -1606,7 +1642,8 @@ PetscErrorCode PCMGSetAdaptInterpolation(PC pc, PetscBool adapt) {
 
 .seealso: `PCMG`, `PCMGSetAdaptInterpolation()`, `PCMGSetGalerkin()`, `PCMGGetAdaptCoarseSpaceType()`, `PCMGSetAdaptCoarseSpaceType()`
 @*/
-PetscErrorCode PCMGGetAdaptInterpolation(PC pc, PetscBool *adapt) {
+PetscErrorCode PCMGGetAdaptInterpolation(PC pc, PetscBool *adapt)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidBoolPointer(adapt, 2);
@@ -1630,7 +1667,8 @@ PetscErrorCode PCMGGetAdaptInterpolation(PC pc, PetscBool *adapt) {
 
 .seealso: `PCMG`, `PCMGGetAdaptCR()`, `PCMGSetAdaptInterpolation()`, `PCMGSetGalerkin()`, `PCMGGetAdaptCoarseSpaceType()`, `PCMGSetAdaptCoarseSpaceType()`
 @*/
-PetscErrorCode PCMGSetAdaptCR(PC pc, PetscBool cr) {
+PetscErrorCode PCMGSetAdaptCR(PC pc, PetscBool cr)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscTryMethod(pc, "PCMGSetAdaptCR_C", (PC, PetscBool), (pc, cr));
@@ -1652,7 +1690,8 @@ PetscErrorCode PCMGSetAdaptCR(PC pc, PetscBool cr) {
 
 .seealso: `PCMGSetAdaptCR()`, `PCMGGetAdaptInterpolation()`, `PCMGSetGalerkin()`, `PCMGGetAdaptCoarseSpaceType()`, `PCMGSetAdaptCoarseSpaceType()`
 @*/
-PetscErrorCode PCMGGetAdaptCR(PC pc, PetscBool *cr) {
+PetscErrorCode PCMGGetAdaptCR(PC pc, PetscBool *cr)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidBoolPointer(cr, 2);
@@ -1681,7 +1720,8 @@ PetscErrorCode PCMGGetAdaptCR(PC pc, PetscBool *cr) {
 
 .seealso: `PCMG`, `PCMGSetDistinctSmoothUp()`
 @*/
-PetscErrorCode PCMGSetNumberSmooth(PC pc, PetscInt n) {
+PetscErrorCode PCMGSetNumberSmooth(PC pc, PetscInt n)
+{
   PC_MG         *mg       = (PC_MG *)pc->data;
   PC_MG_Levels **mglevels = mg->levels;
   PetscInt       i, levels;
@@ -1720,7 +1760,8 @@ PetscErrorCode PCMGSetNumberSmooth(PC pc, PetscInt n) {
 
 .seealso: `PCMG`, `PCMGSetNumberSmooth()`
 @*/
-PetscErrorCode PCMGSetDistinctSmoothUp(PC pc) {
+PetscErrorCode PCMGSetDistinctSmoothUp(PC pc)
+{
   PC_MG         *mg       = (PC_MG *)pc->data;
   PC_MG_Levels **mglevels = mg->levels;
   PetscInt       i, levels;
@@ -1743,7 +1784,8 @@ PetscErrorCode PCMGSetDistinctSmoothUp(PC pc) {
 }
 
 /* No new matrices are created, and the coarse operator matrices are the references to the original ones */
-PetscErrorCode PCGetInterpolations_MG(PC pc, PetscInt *num_levels, Mat *interpolations[]) {
+PetscErrorCode PCGetInterpolations_MG(PC pc, PetscInt *num_levels, Mat *interpolations[])
+{
   PC_MG         *mg       = (PC_MG *)pc->data;
   PC_MG_Levels **mglevels = mg->levels;
   Mat           *mat;
@@ -1762,7 +1804,8 @@ PetscErrorCode PCGetInterpolations_MG(PC pc, PetscInt *num_levels, Mat *interpol
 }
 
 /* No new matrices are created, and the coarse operator matrices are the references to the original ones */
-PetscErrorCode PCGetCoarseOperators_MG(PC pc, PetscInt *num_levels, Mat *coarseOperators[]) {
+PetscErrorCode PCGetCoarseOperators_MG(PC pc, PetscInt *num_levels, Mat *coarseOperators[])
+{
   PC_MG         *mg       = (PC_MG *)pc->data;
   PC_MG_Levels **mglevels = mg->levels;
   PetscInt       l;
@@ -1806,7 +1849,8 @@ $ my_csp(PC pc, PetscInt l, DM dm, KSP smooth, PetscInt Nc, Mat initGuess, Mat *
 
 .seealso: `PCMG`, `PCMGGetCoarseSpaceConstructor()`, `PCRegister()`
 @*/
-PetscErrorCode PCMGRegisterCoarseSpaceConstructor(const char name[], PetscErrorCode (*function)(PC, PetscInt, DM, KSP, PetscInt, Mat, Mat *)) {
+PetscErrorCode PCMGRegisterCoarseSpaceConstructor(const char name[], PetscErrorCode (*function)(PC, PetscInt, DM, KSP, PetscInt, Mat, Mat *))
+{
   PetscFunctionBegin;
   PetscCall(PCInitializePackage());
   PetscCall(PetscFunctionListAdd(&PCMGCoarseList, name, function));
@@ -1828,7 +1872,8 @@ PetscErrorCode PCMGRegisterCoarseSpaceConstructor(const char name[], PetscErrorC
 
 .seealso: `PCMG`, `PCMGRegisterCoarseSpaceConstructor()`, `PCRegister()`
 @*/
-PetscErrorCode PCMGGetCoarseSpaceConstructor(const char name[], PetscErrorCode (**function)(PC, PetscInt, DM, KSP, PetscInt, Mat, Mat *)) {
+PetscErrorCode PCMGGetCoarseSpaceConstructor(const char name[], PetscErrorCode (**function)(PC, PetscInt, DM, KSP, PetscInt, Mat, Mat *))
+{
   PetscFunctionBegin;
   PetscCall(PetscFunctionListFind(PCMGCoarseList, name, function));
   PetscFunctionReturn(0);
@@ -1871,7 +1916,8 @@ PetscErrorCode PCMGGetCoarseSpaceConstructor(const char name[], PetscErrorCode (
           `PCMGSetAdaptCR()`, `PCMGGetAdaptInterpolation()`, `PCMGSetGalerkin()`, `PCMGGetAdaptCoarseSpaceType()`, `PCMGSetAdaptCoarseSpaceType()`
 M*/
 
-PETSC_EXTERN PetscErrorCode PCCreate_MG(PC pc) {
+PETSC_EXTERN PetscErrorCode PCCreate_MG(PC pc)
+{
   PC_MG *mg;
 
   PetscFunctionBegin;

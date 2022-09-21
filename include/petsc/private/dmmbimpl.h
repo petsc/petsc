@@ -24,7 +24,8 @@ typedef struct {
   Vec          local;
 } Vec_MOAB;
 
-namespace moab {
+namespace moab
+{
 class NestedRefine;
 } // namespace moab
 

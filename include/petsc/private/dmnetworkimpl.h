@@ -15,11 +15,11 @@ PETSC_EXTERN PetscLogEvent DMNetwork_Distribute;
 
 typedef struct _p_DMNetworkComponentHeader *DMNetworkComponentHeader;
 struct _p_DMNetworkComponentHeader {
-  PetscInt  index;    /* index for user input global edge and vertex */
-  PetscInt  subnetid; /* Id for subnetwork */
-  PetscInt  ndata;    /* number of components */
-  PetscInt  hsize;    /* Size of the header */
-  PetscInt  maxcomps; /* Maximum components at this point (ndata <= maxcomps). maxcomps
+  PetscInt index;    /* index for user input global edge and vertex */
+  PetscInt subnetid; /* Id for subnetwork */
+  PetscInt ndata;    /* number of components */
+  PetscInt hsize;    /* Size of the header */
+  PetscInt maxcomps; /* Maximum components at this point (ndata <= maxcomps). maxcomps
                         is set initially to a default value and is incremented every time
                         ndata exceeds maxcomps */
   /* The following arrays store the different attributes for each component at the given point.

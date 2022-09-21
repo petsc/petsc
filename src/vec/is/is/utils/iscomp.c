@@ -30,7 +30,8 @@ $    is2 = {2, 3} {0, 1}
 
 .seealso: `ISEqualUnsorted()`
 @*/
-PetscErrorCode ISEqual(IS is1, IS is2, PetscBool *flg) {
+PetscErrorCode ISEqual(IS is1, IS is2, PetscBool *flg)
+{
   PetscInt        sz1, sz2, *a1, *a2;
   const PetscInt *ptr1, *ptr2;
   PetscBool       flag;
@@ -108,7 +109,8 @@ PetscErrorCode ISEqual(IS is1, IS is2, PetscBool *flg) {
 
 .seealso: `ISEqual()`
 @*/
-PetscErrorCode ISEqualUnsorted(IS is1, IS is2, PetscBool *flg) {
+PetscErrorCode ISEqualUnsorted(IS is1, IS is2, PetscBool *flg)
+{
   PetscInt        sz1, sz2;
   const PetscInt *ptr1, *ptr2;
   PetscBool       flag;

@@ -25,7 +25,8 @@ PetscBool         PetscSFRegisterAllCalled;
 
 .seealso: `PetscSFRegisterDestroy()`
 @*/
-PetscErrorCode PetscSFRegisterAll(void) {
+PetscErrorCode PetscSFRegisterAll(void)
+{
   PetscFunctionBegin;
   if (PetscSFRegisterAllCalled) PetscFunctionReturn(0);
   PetscSFRegisterAllCalled = PETSC_TRUE;
@@ -70,7 +71,8 @@ $     -sf_type my_impl
 
 .seealso: `PetscSFRegisterAll()`, `PetscSFInitializePackage()`
 @*/
-PetscErrorCode PetscSFRegister(const char name[], PetscErrorCode (*create)(PetscSF)) {
+PetscErrorCode PetscSFRegister(const char name[], PetscErrorCode (*create)(PetscSF))
+{
   PetscFunctionBegin;
   PetscCall(PetscSFInitializePackage());
   PetscCall(PetscFunctionListAdd(&PetscSFList, name, create));

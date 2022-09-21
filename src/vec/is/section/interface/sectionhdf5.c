@@ -5,7 +5,8 @@
 #include <petsclayouthdf5.h>
 
 #if defined(PETSC_HAVE_HDF5)
-static PetscErrorCode PetscSectionView_HDF5_SingleField(PetscSection s, PetscViewer viewer) {
+static PetscErrorCode PetscSectionView_HDF5_SingleField(PetscSection s, PetscViewer viewer)
+{
   MPI_Comm  comm;
   PetscInt  pStart, pEnd, p, n;
   PetscBool hasConstraints, includesConstraints;
@@ -86,7 +87,8 @@ static PetscErrorCode PetscSectionView_HDF5_SingleField(PetscSection s, PetscVie
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscSectionView_HDF5_Internal(PetscSection s, PetscViewer viewer) {
+PetscErrorCode PetscSectionView_HDF5_Internal(PetscSection s, PetscViewer viewer)
+{
   PetscInt numFields, f;
 
   PetscFunctionBegin;
@@ -122,7 +124,8 @@ PetscErrorCode PetscSectionView_HDF5_Internal(PetscSection s, PetscViewer viewer
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSectionLoad_HDF5_SingleField_SetConstraintIndices(PetscSection s, IS cindIS, IS coffIS) {
+static PetscErrorCode PetscSectionLoad_HDF5_SingleField_SetConstraintIndices(PetscSection s, IS cindIS, IS coffIS)
+{
   MPI_Comm        comm;
   PetscInt        pStart, pEnd, p, M, m, i, cdof;
   const PetscInt *data;
@@ -169,12 +172,13 @@ static PetscErrorCode PetscSectionLoad_HDF5_SingleField_SetConstraintIndices(Pet
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSectionLoad_HDF5_SingleField(PetscSection s, PetscViewer viewer) {
+static PetscErrorCode PetscSectionLoad_HDF5_SingleField(PetscSection s, PetscViewer viewer)
+{
   MPI_Comm comm;
   PetscInt pStart, pEnd, p, N, n, M, m;
-#if defined(PETSC_USE_DEBUG)
+  #if defined(PETSC_USE_DEBUG)
   PetscInt N1, M1;
-#endif
+  #endif
   PetscBool       hasConstraints, includesConstraints;
   IS              dofIS, offIS, cdofIS, coffIS, cindIS;
   const PetscInt *dofs, *offs, *cdofs;
@@ -186,15 +190,15 @@ static PetscErrorCode PetscSectionLoad_HDF5_SingleField(PetscSection s, PetscVie
   PetscCall(PetscSectionSetIncludesConstraints(s, includesConstraints));
   PetscCall(PetscSectionGetChart(s, &pStart, &pEnd));
   n = pEnd - pStart;
-#if defined(PETSC_USE_DEBUG)
+  #if defined(PETSC_USE_DEBUG)
   PetscCall(MPIU_Allreduce(&n, &N1, 1, MPIU_INT, MPI_SUM, comm));
-#endif
+  #endif
   PetscCall(ISCreate(comm, &dofIS));
   PetscCall(PetscObjectSetName((PetscObject)dofIS, "atlasDof"));
   PetscCall(PetscViewerHDF5ReadSizes(viewer, "atlasDof", NULL, &N));
-#if defined(PETSC_USE_DEBUG)
+  #if defined(PETSC_USE_DEBUG)
   PetscCheck(N1 == N, comm, PETSC_ERR_ARG_SIZ, "Unable to load s->atlasDof: sum of local sizes (%" PetscInt_FMT ") != global size (%" PetscInt_FMT "): local size on this process is %" PetscInt_FMT, N1, N, n);
-#endif
+  #endif
   PetscCall(ISGetLayout(dofIS, &map));
   PetscCall(PetscLayoutSetSize(map, N));
   PetscCall(PetscLayoutSetLocalSize(map, n));
@@ -202,9 +206,9 @@ static PetscErrorCode PetscSectionLoad_HDF5_SingleField(PetscSection s, PetscVie
   PetscCall(ISCreate(comm, &offIS));
   PetscCall(PetscObjectSetName((PetscObject)offIS, "atlasOff"));
   PetscCall(PetscViewerHDF5ReadSizes(viewer, "atlasOff", NULL, &N));
-#if defined(PETSC_USE_DEBUG)
+  #if defined(PETSC_USE_DEBUG)
   PetscCheck(N1 == N, comm, PETSC_ERR_ARG_SIZ, "Unable to load s->atlasOff: sum of local sizes (%" PetscInt_FMT ") != global size (%" PetscInt_FMT "): local size on this process is %" PetscInt_FMT, N1, N, n);
-#endif
+  #endif
   PetscCall(ISGetLayout(offIS, &map));
   PetscCall(PetscLayoutSetSize(map, N));
   PetscCall(PetscLayoutSetLocalSize(map, n));
@@ -225,9 +229,9 @@ static PetscErrorCode PetscSectionLoad_HDF5_SingleField(PetscSection s, PetscVie
     PetscCall(ISCreate(comm, &cdofIS));
     PetscCall(PetscObjectSetName((PetscObject)cdofIS, "atlasDof"));
     PetscCall(PetscViewerHDF5ReadSizes(viewer, "atlasDof", NULL, &N));
-#if defined(PETSC_USE_DEBUG)
+  #if defined(PETSC_USE_DEBUG)
     PetscCheck(N1 == N, comm, PETSC_ERR_ARG_SIZ, "Unable to load s->bc->atlasDof: sum of local sizes (%" PetscInt_FMT ") != global size (%" PetscInt_FMT "): local size on this process is %" PetscInt_FMT, N1, N, n);
-#endif
+  #endif
     PetscCall(ISGetLayout(cdofIS, &map));
     PetscCall(PetscLayoutSetSize(map, N));
     PetscCall(PetscLayoutSetLocalSize(map, n));
@@ -239,9 +243,9 @@ static PetscErrorCode PetscSectionLoad_HDF5_SingleField(PetscSection s, PetscVie
     PetscCall(ISCreate(comm, &coffIS));
     PetscCall(PetscObjectSetName((PetscObject)coffIS, "atlasOff"));
     PetscCall(PetscViewerHDF5ReadSizes(viewer, "atlasOff", NULL, &N));
-#if defined(PETSC_USE_DEBUG)
+  #if defined(PETSC_USE_DEBUG)
     PetscCheck(N1 == N, comm, PETSC_ERR_ARG_SIZ, "Unable to load s->bc->atlasOff: sum of local sizes (%" PetscInt_FMT ") != global size (%" PetscInt_FMT "): local size on this process is %" PetscInt_FMT, N1, N, n);
-#endif
+  #endif
     PetscCall(ISGetLayout(coffIS, &map));
     PetscCall(PetscLayoutSetSize(map, N));
     PetscCall(PetscLayoutSetLocalSize(map, n));
@@ -252,10 +256,10 @@ static PetscErrorCode PetscSectionLoad_HDF5_SingleField(PetscSection s, PetscVie
     PetscCall(PetscViewerHDF5ReadSizes(viewer, "bcIndices", NULL, &M));
     if (!s->bc) m = 0;
     else PetscCall(PetscSectionGetStorageSize(s->bc, &m));
-#if defined(PETSC_USE_DEBUG)
+  #if defined(PETSC_USE_DEBUG)
     PetscCall(MPIU_Allreduce(&m, &M1, 1, MPIU_INT, MPI_SUM, comm));
     PetscCheck(M1 == M, comm, PETSC_ERR_ARG_SIZ, "Unable to load s->bcIndices: sum of local sizes (%" PetscInt_FMT ") != global size (%" PetscInt_FMT "): local size on this process is %" PetscInt_FMT, M1, M, m);
-#endif
+  #endif
     PetscCall(ISGetLayout(cindIS, &map));
     PetscCall(PetscLayoutSetSize(map, M));
     PetscCall(PetscLayoutSetLocalSize(map, m));
@@ -267,7 +271,8 @@ static PetscErrorCode PetscSectionLoad_HDF5_SingleField(PetscSection s, PetscVie
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscSectionLoad_HDF5_Internal(PetscSection s, PetscViewer viewer) {
+PetscErrorCode PetscSectionLoad_HDF5_Internal(PetscSection s, PetscViewer viewer)
+{
   MPI_Comm comm;
   PetscInt N, n, numFields, f;
 

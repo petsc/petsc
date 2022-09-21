@@ -1,7 +1,7 @@
 #include <petsc/private/dmimpl.h> /*I      "petscdm.h"          I*/
 
 #ifdef PETSC_HAVE_LIBCEED
-#include <petscdmceed.h>
+  #include <petscdmceed.h>
 
 /*@C
   DMGetCeed - Get the LibCEED context associated with this DM
@@ -18,7 +18,8 @@
 
 .seealso: `DMCreate()`
 @*/
-PetscErrorCode DMGetCeed(DM dm, Ceed *ceed) {
+PetscErrorCode DMGetCeed(DM dm, Ceed *ceed)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(ceed, 2);

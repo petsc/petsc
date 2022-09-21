@@ -10,7 +10,8 @@ typedef struct {
   PetscBool   shareRoots, sparseLeaves;
 } AppCtx;
 
-static PetscErrorCode GetOptions(MPI_Comm comm, AppCtx *ctx) {
+static PetscErrorCode GetOptions(MPI_Comm comm, AppCtx *ctx)
+{
   PetscFunctionBegin;
   ctx->comm           = comm;
   ctx->nsfs           = 3;
@@ -28,7 +29,8 @@ static PetscErrorCode GetOptions(MPI_Comm comm, AppCtx *ctx) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSFCheckEqual_Private(PetscSF sf0, PetscSF sf1) {
+static PetscErrorCode PetscSFCheckEqual_Private(PetscSF sf0, PetscSF sf1)
+{
   PetscInt  nRoot, nLeave;
   Vec       vecRoot0, vecLeave0, vecRoot1, vecLeave1;
   MPI_Comm  comm;
@@ -76,7 +78,8 @@ static PetscErrorCode PetscSFCheckEqual_Private(PetscSF sf0, PetscSF sf1) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode CreateReferenceSF(AppCtx *ctx, PetscSF *refSF) {
+PetscErrorCode CreateReferenceSF(AppCtx *ctx, PetscSF *refSF)
+{
   PetscInt     i, j, k, r;
   PetscInt    *ilocal = NULL;
   PetscSFNode *iremote;
@@ -103,7 +106,8 @@ PetscErrorCode CreateReferenceSF(AppCtx *ctx, PetscSF *refSF) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode CreateSFs(AppCtx *ctx, PetscSF *newSFs[], PetscInt *leafOffsets[]) {
+PetscErrorCode CreateSFs(AppCtx *ctx, PetscSF *newSFs[], PetscInt *leafOffsets[])
+{
   PetscInt  i;
   PetscInt *lOffsets = NULL;
   PetscSF  *sfs;
@@ -138,7 +142,8 @@ PetscErrorCode CreateSFs(AppCtx *ctx, PetscSF *newSFs[], PetscInt *leafOffsets[]
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DestroySFs(AppCtx *ctx, PetscSF *sfs[]) {
+PetscErrorCode DestroySFs(AppCtx *ctx, PetscSF *sfs[])
+{
   PetscInt i;
 
   PetscFunctionBegin;
@@ -147,7 +152,8 @@ PetscErrorCode DestroySFs(AppCtx *ctx, PetscSF *sfs[]) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   AppCtx    ctx;
   PetscSF   sf, sfRef;
   PetscSF  *sfs;

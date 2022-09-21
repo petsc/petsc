@@ -2,7 +2,8 @@ static const char help[] = "Tests PetscOptionsPrefix{Push,Pop}\n\n";
 
 #include <petscsys.h>
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   PetscInt  opts[6] = {0};
   PetscBool hascl = PETSC_FALSE, hasstr = PETSC_FALSE;
 

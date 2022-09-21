@@ -20,7 +20,8 @@
           `PetscDrawStringGetSize()`, `PetscDrawLine()`, `PetscDrawRectangle()`, `PetscDrawTriangle()`, `PetscDrawEllipse()`,
           `PetscDrawMarker()`, `PetscDrawPoint()`
 @*/
-PetscErrorCode PetscDrawString(PetscDraw draw, PetscReal xl, PetscReal yl, int cl, const char text[]) {
+PetscErrorCode PetscDrawString(PetscDraw draw, PetscReal xl, PetscReal yl, int cl, const char text[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   PetscValidCharPointer(text, 5);
@@ -44,7 +45,8 @@ PetscErrorCode PetscDrawString(PetscDraw draw, PetscReal xl, PetscReal yl, int c
 .seealso: `PetscDraw`, `PetscDrawString()`, `PetscDrawStringCentered()`, `PetscDrawStringBoxed()`, `PetscDrawStringSetSize()`,
           `PetscDrawStringGetSize()`
 @*/
-PetscErrorCode PetscDrawStringVertical(PetscDraw draw, PetscReal xl, PetscReal yl, int cl, const char text[]) {
+PetscErrorCode PetscDrawStringVertical(PetscDraw draw, PetscReal xl, PetscReal yl, int cl, const char text[])
+{
   int       i;
   char      chr[2] = {0, 0};
   PetscReal tw, th;
@@ -78,7 +80,8 @@ PetscErrorCode PetscDrawStringVertical(PetscDraw draw, PetscReal xl, PetscReal y
 .seealso: `PetscDraw`, `PetscDrawStringVertical()`, `PetscDrawString()`, `PetscDrawStringBoxed()`, `PetscDrawStringSetSize()`,
           `PetscDrawStringGetSize()`
 @*/
-PetscErrorCode PetscDrawStringCentered(PetscDraw draw, PetscReal xc, PetscReal yl, int cl, const char text[]) {
+PetscErrorCode PetscDrawStringCentered(PetscDraw draw, PetscReal xc, PetscReal yl, int cl, const char text[])
+{
   size_t    len;
   PetscReal tw, th;
 
@@ -114,7 +117,8 @@ PetscErrorCode PetscDrawStringCentered(PetscDraw draw, PetscReal xc, PetscReal y
 .seealso: `PetscDraw`, `PetscDrawStringVertical()`, `PetscDrawString()`, `PetscDrawStringCentered()`, `PetscDrawStringSetSize()`,
           `PetscDrawStringGetSize()`
 @*/
-PetscErrorCode PetscDrawStringBoxed(PetscDraw draw, PetscReal sxl, PetscReal syl, int sc, int bc, const char text[], PetscReal *w, PetscReal *h) {
+PetscErrorCode PetscDrawStringBoxed(PetscDraw draw, PetscReal sxl, PetscReal syl, int sc, int bc, const char text[], PetscReal *w, PetscReal *h)
+{
   PetscReal top, left, right, bottom, tw, th;
   size_t    len, mlen = 0;
   char    **array;
@@ -179,7 +183,8 @@ PetscErrorCode PetscDrawStringBoxed(PetscDraw draw, PetscReal sxl, PetscReal syl
 .seealso: `PetscDraw`, `PetscDrawStringVertical()`, `PetscDrawString()`, `PetscDrawStringCentered()`, `PetscDrawStringBoxed()`,
           `PetscDrawStringGetSize()`
 @*/
-PetscErrorCode PetscDrawStringSetSize(PetscDraw draw, PetscReal width, PetscReal height) {
+PetscErrorCode PetscDrawStringSetSize(PetscDraw draw, PetscReal width, PetscReal height)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   PetscTryTypeMethod(draw, stringsetsize, width, height);
@@ -202,7 +207,8 @@ PetscErrorCode PetscDrawStringSetSize(PetscDraw draw, PetscReal width, PetscReal
 .seealso: `PetscDraw`, `PetscDrawStringVertical()`, `PetscDrawString()`, `PetscDrawStringCentered()`, `PetscDrawStringBoxed()`,
           `PetscDrawStringSetSize()`
 @*/
-PetscErrorCode PetscDrawStringGetSize(PetscDraw draw, PetscReal *width, PetscReal *height) {
+PetscErrorCode PetscDrawStringGetSize(PetscDraw draw, PetscReal *width, PetscReal *height)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   PetscUseTypeMethod(draw, stringgetsize, width, height);

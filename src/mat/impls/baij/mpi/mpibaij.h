@@ -6,9 +6,9 @@
 #include <petscctable.h>
 
 #if defined(PETSC_USE_CTABLE)
-#define PETSCTABLE PetscTable
+  #define PETSCTABLE PetscTable
 #else
-#define PETSCTABLE PetscInt *
+  #define PETSCTABLE PetscInt *
 #endif
 
 #define MPIBAIJHEADER \
@@ -62,7 +62,7 @@
   PetscInt   setvalueslen;  /* only used for single precision computations */ \
   MatScalar *setvaluescopy; /* area double precision values in MatSetValuesXXX() are copied*/ \
                             /* before calling MatSetValuesXXX_MPIBAIJ_MatScalar() */ \
-  PetscBool  ijonly         /* used in  MatCreateSubMatrices_MPIBAIJ_local() for getting ij structure only */
+  PetscBool ijonly          /* used in  MatCreateSubMatrices_MPIBAIJ_local() for getting ij structure only */
 
 typedef struct {
   MPIBAIJHEADER;

@@ -4,7 +4,7 @@
 #include <petsc/private/pcimpl.h>     /* this must be included after petschpddm.h so that _PCIMPL_H is not defined            */
                                       /* otherwise, it is assumed that one is compiling libhpddm_petsc => circular dependency */
 #if defined(PETSC_HAVE_FORTRAN)
-#include <petsc/private/fortranimpl.h>
+  #include <petsc/private/fortranimpl.h>
 #endif
 
 static PetscErrorCode (*loadedSym)(HPDDM::Schwarz<PetscScalar> *const, IS, Mat, Mat, Mat, std::vector<Vec>, PC_HPDDM_Level **const) = NULL;
@@ -20,7 +20,8 @@ PetscLogEvent PC_HPDDM_Solve[PETSC_PCHPDDM_MAXLEVELS];
 
 const char *const PCHPDDMCoarseCorrectionTypes[] = {"DEFLATED", "ADDITIVE", "BALANCED", "PCHPDDMCoarseCorrectionType", "PC_HPDDM_COARSE_CORRECTION_", NULL};
 
-static PetscErrorCode PCReset_HPDDM(PC pc) {
+static PetscErrorCode PCReset_HPDDM(PC pc)
+{
   PC_HPDDM *data = (PC_HPDDM *)pc->data;
   PetscInt  i;
 
@@ -46,7 +47,8 @@ static PetscErrorCode PCReset_HPDDM(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCDestroy_HPDDM(PC pc) {
+static PetscErrorCode PCDestroy_HPDDM(PC pc)
+{
   PC_HPDDM *data = (PC_HPDDM *)pc->data;
 
   PetscFunctionBegin;
@@ -63,7 +65,8 @@ static PetscErrorCode PCDestroy_HPDDM(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static inline PetscErrorCode PCHPDDMSetAuxiliaryMat_Private(PC pc, IS is, Mat A, PetscBool deflation) {
+static inline PetscErrorCode PCHPDDMSetAuxiliaryMat_Private(PC pc, IS is, Mat A, PetscBool deflation)
+{
   PC_HPDDM *data = (PC_HPDDM *)pc->data;
 
   PetscFunctionBegin;
@@ -85,7 +88,8 @@ static inline PetscErrorCode PCHPDDMSetAuxiliaryMat_Private(PC pc, IS is, Mat A,
   PetscFunctionReturn(0);
 }
 
-static inline PetscErrorCode PCHPDDMSetAuxiliaryMatNormal_Private(PC pc, Mat A, Mat N, Mat *B, const char *pcpre) {
+static inline PetscErrorCode PCHPDDMSetAuxiliaryMatNormal_Private(PC pc, Mat A, Mat N, Mat *B, const char *pcpre)
+{
   PC_HPDDM *data = (PC_HPDDM *)pc->data;
   Mat      *splitting, *sub, aux;
   IS        is, cols[2], rows;
@@ -138,7 +142,8 @@ static inline PetscErrorCode PCHPDDMSetAuxiliaryMatNormal_Private(PC pc, Mat A, 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCHPDDMSetAuxiliaryMat_HPDDM(PC pc, IS is, Mat A, PetscErrorCode (*setup)(Mat, PetscReal, Vec, Vec, PetscReal, IS, void *), void *setup_ctx) {
+static PetscErrorCode PCHPDDMSetAuxiliaryMat_HPDDM(PC pc, IS is, Mat A, PetscErrorCode (*setup)(Mat, PetscReal, Vec, Vec, PetscReal, IS, void *), void *setup_ctx)
+{
   PC_HPDDM *data = (PC_HPDDM *)pc->data;
 
   PetscFunctionBegin;
@@ -164,7 +169,8 @@ static PetscErrorCode PCHPDDMSetAuxiliaryMat_HPDDM(PC pc, IS is, Mat A, PetscErr
 
 .seealso: `PCHPDDM`, `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCHPDDMSetRHSMat()`, `MATIS`
 @*/
-PetscErrorCode PCHPDDMSetAuxiliaryMat(PC pc, IS is, Mat A, PetscErrorCode (*setup)(Mat, PetscReal, Vec, Vec, PetscReal, IS, void *), void *setup_ctx) {
+PetscErrorCode PCHPDDMSetAuxiliaryMat(PC pc, IS is, Mat A, PetscErrorCode (*setup)(Mat, PetscReal, Vec, Vec, PetscReal, IS, void *), void *setup_ctx)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   if (is) PetscValidHeaderSpecific(is, IS_CLASSID, 2);
@@ -177,7 +183,8 @@ PetscErrorCode PCHPDDMSetAuxiliaryMat(PC pc, IS is, Mat A, PetscErrorCode (*setu
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCHPDDMHasNeumannMat_HPDDM(PC pc, PetscBool has) {
+static PetscErrorCode PCHPDDMHasNeumannMat_HPDDM(PC pc, PetscBool has)
+{
   PC_HPDDM *data = (PC_HPDDM *)pc->data;
 
   PetscFunctionBegin;
@@ -201,14 +208,16 @@ static PetscErrorCode PCHPDDMHasNeumannMat_HPDDM(PC pc, PetscBool has) {
 
 .seealso: `PCHPDDM`, `PCHPDDMSetAuxiliaryMat()`
 @*/
-PetscErrorCode PCHPDDMHasNeumannMat(PC pc, PetscBool has) {
+PetscErrorCode PCHPDDMHasNeumannMat(PC pc, PetscBool has)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscTryMethod(pc, "PCHPDDMHasNeumannMat_C", (PC, PetscBool), (pc, has));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCHPDDMSetRHSMat_HPDDM(PC pc, Mat B) {
+static PetscErrorCode PCHPDDMSetRHSMat_HPDDM(PC pc, Mat B)
+{
   PC_HPDDM *data = (PC_HPDDM *)pc->data;
 
   PetscFunctionBegin;
@@ -229,7 +238,8 @@ static PetscErrorCode PCHPDDMSetRHSMat_HPDDM(PC pc, Mat B) {
 
 .seealso: `PCHPDDMSetAuxiliaryMat()`, `PCHPDDM`
 @*/
-PetscErrorCode PCHPDDMSetRHSMat(PC pc, Mat B) {
+PetscErrorCode PCHPDDMSetRHSMat(PC pc, Mat B)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   if (B) {
@@ -239,7 +249,8 @@ PetscErrorCode PCHPDDMSetRHSMat(PC pc, Mat B) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCSetFromOptions_HPDDM(PC pc, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode PCSetFromOptions_HPDDM(PC pc, PetscOptionItems *PetscOptionsObject)
+{
   PC_HPDDM                   *data   = (PC_HPDDM *)pc->data;
   PC_HPDDM_Level            **levels = data->levels;
   char                        prefix[256];
@@ -329,7 +340,8 @@ static PetscErrorCode PCSetFromOptions_HPDDM(PC pc, PetscOptionItems *PetscOptio
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCApply_HPDDM(PC pc, Vec x, Vec y) {
+static PetscErrorCode PCApply_HPDDM(PC pc, Vec x, Vec y)
+{
   PC_HPDDM *data = (PC_HPDDM *)pc->data;
 
   PetscFunctionBegin;
@@ -341,7 +353,8 @@ static PetscErrorCode PCApply_HPDDM(PC pc, Vec x, Vec y) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCMatApply_HPDDM(PC pc, Mat X, Mat Y) {
+static PetscErrorCode PCMatApply_HPDDM(PC pc, Mat X, Mat Y)
+{
   PC_HPDDM *data = (PC_HPDDM *)pc->data;
 
   PetscFunctionBegin;
@@ -365,7 +378,8 @@ static PetscErrorCode PCMatApply_HPDDM(PC pc, Mat X, Mat Y) {
 
 .seealso: `PCMGGetGridComplexity()`, `PCHPDDM`, `PCHYPRE`, `PCGAMG`
 @*/
-static PetscErrorCode PCHPDDMGetComplexities(PC pc, PetscReal *gc, PetscReal *oc) {
+static PetscErrorCode PCHPDDMGetComplexities(PC pc, PetscReal *gc, PetscReal *oc)
+{
   PC_HPDDM      *data = (PC_HPDDM *)pc->data;
   MatInfo        info;
   PetscInt       n, m;
@@ -402,7 +416,8 @@ static PetscErrorCode PCHPDDMGetComplexities(PC pc, PetscReal *gc, PetscReal *oc
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCView_HPDDM(PC pc, PetscViewer viewer) {
+static PetscErrorCode PCView_HPDDM(PC pc, PetscViewer viewer)
+{
   PC_HPDDM    *data = (PC_HPDDM *)pc->data;
   PetscViewer  subviewer;
   PetscSubcomm subcomm;
@@ -461,7 +476,8 @@ static PetscErrorCode PCView_HPDDM(PC pc, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCPreSolve_HPDDM(PC pc, KSP ksp, Vec, Vec) {
+static PetscErrorCode PCPreSolve_HPDDM(PC pc, KSP ksp, Vec, Vec)
+{
   PC_HPDDM *data = (PC_HPDDM *)pc->data;
   PetscBool flg;
   Mat       A;
@@ -477,7 +493,8 @@ static PetscErrorCode PCPreSolve_HPDDM(PC pc, KSP ksp, Vec, Vec) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCSetUp_HPDDMShell(PC pc) {
+static PetscErrorCode PCSetUp_HPDDMShell(PC pc)
+{
   PC_HPDDM_Level *ctx;
   Mat             A, P;
   Vec             x;
@@ -502,7 +519,8 @@ static PetscErrorCode PCSetUp_HPDDMShell(PC pc) {
 }
 
 template <class Type, typename std::enable_if<std::is_same<Type, Vec>::value>::type * = nullptr>
-static inline PetscErrorCode PCHPDDMDeflate_Private(PC pc, Type x, Type y) {
+static inline PetscErrorCode PCHPDDMDeflate_Private(PC pc, Type x, Type y)
+{
   PC_HPDDM_Level *ctx;
   PetscScalar    *out;
 
@@ -521,7 +539,8 @@ static inline PetscErrorCode PCHPDDMDeflate_Private(PC pc, Type x, Type y) {
 }
 
 template <class Type, typename std::enable_if<std::is_same<Type, Mat>::value>::type * = nullptr>
-static inline PetscErrorCode PCHPDDMDeflate_Private(PC pc, Type X, Type Y) {
+static inline PetscErrorCode PCHPDDMDeflate_Private(PC pc, Type X, Type Y)
+{
   PC_HPDDM_Level *ctx;
   Vec             vX, vY, vC;
   PetscScalar    *out;
@@ -583,7 +602,8 @@ static inline PetscErrorCode PCHPDDMDeflate_Private(PC pc, Type X, Type Y) {
 
 .seealso: `PCHPDDM`, `PCHPDDMCoarseCorrectionType`
 */
-static PetscErrorCode PCApply_HPDDMShell(PC pc, Vec x, Vec y) {
+static PetscErrorCode PCApply_HPDDMShell(PC pc, Vec x, Vec y)
+{
   PC_HPDDM_Level *ctx;
   Mat             A;
 
@@ -630,7 +650,8 @@ static PetscErrorCode PCApply_HPDDMShell(PC pc, Vec x, Vec y) {
 
 .seealso: `PCHPDDM`, `PCApply_HPDDMShell()`, `PCHPDDMCoarseCorrectionType`
 */
-static PetscErrorCode PCMatApply_HPDDMShell(PC pc, Mat X, Mat Y) {
+static PetscErrorCode PCMatApply_HPDDMShell(PC pc, Mat X, Mat Y)
+{
   PC_HPDDM_Level *ctx;
   Mat             A, *ptr;
   PetscContainer  container = NULL;
@@ -716,7 +737,8 @@ static PetscErrorCode PCMatApply_HPDDMShell(PC pc, Mat X, Mat Y) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCDestroy_HPDDMShell(PC pc) {
+static PetscErrorCode PCDestroy_HPDDMShell(PC pc)
+{
   PC_HPDDM_Level *ctx;
   PetscContainer  container;
 
@@ -737,7 +759,8 @@ static PetscErrorCode PCDestroy_HPDDMShell(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCHPDDMSolve_Private(const PC_HPDDM_Level *ctx, PetscScalar *rhs, const unsigned short &mu) {
+static PetscErrorCode PCHPDDMSolve_Private(const PC_HPDDM_Level *ctx, PetscScalar *rhs, const unsigned short &mu)
+{
   Mat      B, X;
   PetscInt n, N, j = 0;
 
@@ -770,7 +793,8 @@ static PetscErrorCode PCHPDDMSolve_Private(const PC_HPDDM_Level *ctx, PetscScala
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCHPDDMSetUpNeumannOverlap_Private(PC pc) {
+static PetscErrorCode PCHPDDMSetUpNeumannOverlap_Private(PC pc)
+{
   PC_HPDDM *data = (PC_HPDDM *)pc->data;
 
   PetscFunctionBegin;
@@ -786,7 +810,8 @@ static PetscErrorCode PCHPDDMSetUpNeumannOverlap_Private(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCHPDDMCreateSubMatrices_Private(Mat mat, PetscInt n, const IS *, const IS *, MatReuse scall, Mat *submat[]) {
+static PetscErrorCode PCHPDDMCreateSubMatrices_Private(Mat mat, PetscInt n, const IS *, const IS *, MatReuse scall, Mat *submat[])
+{
   Mat A;
 
   PetscFunctionBegin;
@@ -801,7 +826,8 @@ static PetscErrorCode PCHPDDMCreateSubMatrices_Private(Mat mat, PetscInt n, cons
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCHPDDMCommunicationAvoidingPCASM_Private(PC pc, Mat C, PetscBool sorted) {
+static PetscErrorCode PCHPDDMCommunicationAvoidingPCASM_Private(PC pc, Mat C, PetscBool sorted)
+{
   void (*op)(void);
 
   PetscFunctionBegin;
@@ -819,7 +845,8 @@ static PetscErrorCode PCHPDDMCommunicationAvoidingPCASM_Private(PC pc, Mat C, Pe
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCHPDDMPermute_Private(IS is, IS in_is, IS *out_is, Mat in_C, Mat *out_C, IS *p) {
+static PetscErrorCode PCHPDDMPermute_Private(IS is, IS in_is, IS *out_is, Mat in_C, Mat *out_C, IS *p)
+{
   IS                           perm;
   const PetscInt              *ptr;
   PetscInt                    *concatenate, size, n;
@@ -859,7 +886,8 @@ static PetscErrorCode PCHPDDMPermute_Private(IS is, IS in_is, IS *out_is, Mat in
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCHPDDMDestroySubMatrices_Private(PetscBool flg, PetscBool algebraic, Mat *sub) {
+static PetscErrorCode PCHPDDMDestroySubMatrices_Private(PetscBool flg, PetscBool algebraic, Mat *sub)
+{
   IS is;
 
   PetscFunctionBegin;
@@ -875,7 +903,8 @@ static PetscErrorCode PCHPDDMDestroySubMatrices_Private(PetscBool flg, PetscBool
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCHPDDMAlgebraicAuxiliaryMat_Private(Mat P, IS *is, Mat *sub[], PetscBool block) {
+static PetscErrorCode PCHPDDMAlgebraicAuxiliaryMat_Private(Mat P, IS *is, Mat *sub[], PetscBool block)
+{
   IS         icol[3], irow[2];
   Mat       *M, Q;
   PetscReal *ptr;
@@ -984,7 +1013,8 @@ static PetscErrorCode PCHPDDMAlgebraicAuxiliaryMat_Private(Mat P, IS *is, Mat *s
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCSetUp_HPDDM(PC pc) {
+static PetscErrorCode PCSetUp_HPDDM(PC pc)
+{
   PC_HPDDM                 *data = (PC_HPDDM *)pc->data;
   PC                        inner;
   KSP                      *ksp;
@@ -1204,13 +1234,16 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc) {
       std::initializer_list<std::string>::const_iterator it = std::find(list.begin(), list.end(), ((PetscObject)N)->type_name);
       PetscCall(MatISRestoreLocalMat(P, &N));
       switch (std::distance(list.begin(), it)) {
-      case 0: PetscCall(MatConvert(P, MATMPIBAIJ, MAT_INITIAL_MATRIX, &C)); break;
+      case 0:
+        PetscCall(MatConvert(P, MATMPIBAIJ, MAT_INITIAL_MATRIX, &C));
+        break;
       case 1:
         /* MatCreateSubMatrices() does not work with MATSBAIJ and unsorted ISes, so convert to MPIBAIJ */
         PetscCall(MatConvert(P, MATMPIBAIJ, MAT_INITIAL_MATRIX, &C));
         PetscCall(MatSetOption(C, MAT_SYMMETRIC, PETSC_TRUE));
         break;
-      default: PetscCall(MatConvert(P, MATMPIAIJ, MAT_INITIAL_MATRIX, &C));
+      default:
+        PetscCall(MatConvert(P, MATMPIAIJ, MAT_INITIAL_MATRIX, &C));
       }
       PetscCall(MatISGetLocalToGlobalMapping(P, &l2g, NULL));
       PetscCall(PetscObjectReference((PetscObject)P));
@@ -1546,7 +1579,8 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc) {
 
 .seealso: `PCHPDDMGetCoarseCorrectionType()`, `PCHPDDM`, `PCHPDDMCoarseCorrectionType`
 @*/
-PetscErrorCode PCHPDDMSetCoarseCorrectionType(PC pc, PCHPDDMCoarseCorrectionType type) {
+PetscErrorCode PCHPDDMSetCoarseCorrectionType(PC pc, PCHPDDMCoarseCorrectionType type)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidLogicalCollectiveEnum(pc, type, 2);
@@ -1567,7 +1601,8 @@ PetscErrorCode PCHPDDMSetCoarseCorrectionType(PC pc, PCHPDDMCoarseCorrectionType
 
 .seealso: `PCHPDDMSetCoarseCorrectionType()`, `PCHPDDM`, `PCHPDDMCoarseCorrectionType`
 @*/
-PetscErrorCode PCHPDDMGetCoarseCorrectionType(PC pc, PCHPDDMCoarseCorrectionType *type) {
+PetscErrorCode PCHPDDMGetCoarseCorrectionType(PC pc, PCHPDDMCoarseCorrectionType *type)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   if (type) {
@@ -1577,7 +1612,8 @@ PetscErrorCode PCHPDDMGetCoarseCorrectionType(PC pc, PCHPDDMCoarseCorrectionType
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCHPDDMSetCoarseCorrectionType_HPDDM(PC pc, PCHPDDMCoarseCorrectionType type) {
+static PetscErrorCode PCHPDDMSetCoarseCorrectionType_HPDDM(PC pc, PCHPDDMCoarseCorrectionType type)
+{
   PC_HPDDM *data = (PC_HPDDM *)pc->data;
 
   PetscFunctionBegin;
@@ -1586,7 +1622,8 @@ static PetscErrorCode PCHPDDMSetCoarseCorrectionType_HPDDM(PC pc, PCHPDDMCoarseC
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCHPDDMGetCoarseCorrectionType_HPDDM(PC pc, PCHPDDMCoarseCorrectionType *type) {
+static PetscErrorCode PCHPDDMGetCoarseCorrectionType_HPDDM(PC pc, PCHPDDMCoarseCorrectionType *type)
+{
   PC_HPDDM *data = (PC_HPDDM *)pc->data;
 
   PetscFunctionBegin;
@@ -1611,7 +1648,8 @@ static PetscErrorCode PCHPDDMGetCoarseCorrectionType_HPDDM(PC pc, PCHPDDMCoarseC
 
 .seealso: `PCHPDDM`
 @*/
-PetscErrorCode PCHPDDMGetSTShareSubKSP(PC pc, PetscBool *share) {
+PetscErrorCode PCHPDDMGetSTShareSubKSP(PC pc, PetscBool *share)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   if (share) {
@@ -1621,7 +1659,8 @@ PetscErrorCode PCHPDDMGetSTShareSubKSP(PC pc, PetscBool *share) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCHPDDMGetSTShareSubKSP_HPDDM(PC pc, PetscBool *share) {
+static PetscErrorCode PCHPDDMGetSTShareSubKSP_HPDDM(PC pc, PetscBool *share)
+{
   PC_HPDDM *data = (PC_HPDDM *)pc->data;
 
   PetscFunctionBegin;
@@ -1641,7 +1680,8 @@ static PetscErrorCode PCHPDDMGetSTShareSubKSP_HPDDM(PC pc, PetscBool *share) {
 
 .seealso: `PCHPDDM`, `PCDeflationSetSpace()`, `PCMGSetRestriction()`
 @*/
-PetscErrorCode PCHPDDMSetDeflationMat(PC pc, IS is, Mat U) {
+PetscErrorCode PCHPDDMSetDeflationMat(PC pc, IS is, Mat U)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidHeaderSpecific(is, IS_CLASSID, 2);
@@ -1650,13 +1690,15 @@ PetscErrorCode PCHPDDMSetDeflationMat(PC pc, IS is, Mat U) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCHPDDMSetDeflationMat_HPDDM(PC pc, IS is, Mat U) {
+static PetscErrorCode PCHPDDMSetDeflationMat_HPDDM(PC pc, IS is, Mat U)
+{
   PetscFunctionBegin;
   PetscCall(PCHPDDMSetAuxiliaryMat_Private(pc, is, U, PETSC_TRUE));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode HPDDMLoadDL_Private(PetscBool *found) {
+PetscErrorCode HPDDMLoadDL_Private(PetscBool *found)
+{
   char lib[PETSC_MAX_PATH_LEN], dlib[PETSC_MAX_PATH_LEN], dir[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
@@ -1732,7 +1774,8 @@ PetscErrorCode HPDDMLoadDL_Private(PetscBool *found) {
           `PCHPDDMSetCoarseCorrectionType()`, `PCHPDDMHasNeumannMat()`, `CHPDDMSetRHSMat()`, `PCHPDDMSetDeflationMat()`, `PCHPDDMGetSTShareSubKSP()`,
           `PCHPDDMSetCoarseCorrectionType()`, `PCHPDDMGetComplexities()`
 M*/
-PETSC_EXTERN PetscErrorCode PCCreate_HPDDM(PC pc) {
+PETSC_EXTERN PetscErrorCode PCCreate_HPDDM(PC pc)
+{
   PC_HPDDM *data;
   PetscBool found;
 
@@ -1770,7 +1813,8 @@ PETSC_EXTERN PetscErrorCode PCCreate_HPDDM(PC pc) {
 
 .seealso: `PetscInitialize()`
 @*/
-PetscErrorCode PCHPDDMInitializePackage(void) {
+PetscErrorCode PCHPDDMInitializePackage(void)
+{
   char     ename[32];
   PetscInt i;
 
@@ -1812,7 +1856,8 @@ PetscErrorCode PCHPDDMInitializePackage(void) {
 
 .seealso: `PetscFinalize()`
 @*/
-PetscErrorCode PCHPDDMFinalizePackage(void) {
+PetscErrorCode PCHPDDMFinalizePackage(void)
+{
   PetscFunctionBegin;
   PCHPDDMPackageInitialized = PETSC_FALSE;
   PetscFunctionReturn(0);

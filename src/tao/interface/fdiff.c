@@ -6,7 +6,8 @@
 /*
    For finited difference computations of the Hessian, we use PETSc's SNESComputeJacobianDefault
 */
-static PetscErrorCode Fsnes(SNES snes, Vec X, Vec G, void *ctx) {
+static PetscErrorCode Fsnes(SNES snes, Vec X, Vec G, void *ctx)
+{
   Tao tao = (Tao)ctx;
 
   PetscFunctionBegin;
@@ -45,7 +46,8 @@ static PetscErrorCode Fsnes(SNES snes, Vec X, Vec G, void *ctx) {
 
 .seealso: `Tao`, `TaoSetGradient()`
 @*/
-PetscErrorCode TaoDefaultComputeGradient(Tao tao, Vec Xin, Vec G, void *dummy) {
+PetscErrorCode TaoDefaultComputeGradient(Tao tao, Vec Xin, Vec G, void *dummy)
+{
   Vec          X;
   PetscScalar *g;
   PetscReal    f, f2;
@@ -108,7 +110,8 @@ PetscErrorCode TaoDefaultComputeGradient(Tao tao, Vec Xin, Vec G, void *dummy) {
 
 .seealso: `Tao`, `TaoSetHessian()`, `TaoDefaultComputeHessianColor()`, `SNESComputeJacobianDefault()`, `TaoSetGradient()`, `TaoDefaultComputeGradient()`
 @*/
-PetscErrorCode TaoDefaultComputeHessian(Tao tao, Vec V, Mat H, Mat B, void *dummy) {
+PetscErrorCode TaoDefaultComputeHessian(Tao tao, Vec V, Mat H, Mat B, void *dummy)
+{
   SNES snes;
   DM   dm;
 
@@ -158,7 +161,8 @@ PetscErrorCode TaoDefaultComputeHessian(Tao tao, Vec V, Mat H, Mat B, void *dumm
 
 .seealso: `Tao`, `MatColoring`, `TaoSetHessian()`, `TaoDefaultComputeHessian()`, `SNESComputeJacobianDefaultColor()`, `TaoSetGradient()`
 @*/
-PetscErrorCode TaoDefaultComputeHessianColor(Tao tao, Vec V, Mat H, Mat B, void *ctx) {
+PetscErrorCode TaoDefaultComputeHessianColor(Tao tao, Vec V, Mat H, Mat B, void *ctx)
+{
   MatFDColoring coloring = (MatFDColoring)ctx;
 
   PetscFunctionBegin;
@@ -172,7 +176,8 @@ PetscErrorCode TaoDefaultComputeHessianColor(Tao tao, Vec V, Mat H, Mat B, void 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TaoDefaultComputeHessianMFFD(Tao tao, Vec X, Mat H, Mat B, void *ctx) {
+PetscErrorCode TaoDefaultComputeHessianMFFD(Tao tao, Vec X, Mat H, Mat B, void *ctx)
+{
   PetscInt  n, N;
   PetscBool assembled;
 

@@ -20,7 +20,8 @@ typedef struct {
   SNESQNRestartType restart_type; /* determine the frequency and type of restart conditions */
 } SNES_QN;
 
-static PetscErrorCode SNESSolve_QN(SNES snes) {
+static PetscErrorCode SNESSolve_QN(SNES snes)
+{
   SNES_QN             *qn = (SNES_QN *)snes->data;
   Vec                  X, Xold;
   Vec                  F, W;
@@ -224,7 +225,8 @@ static PetscErrorCode SNESSolve_QN(SNES snes) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESSetUp_QN(SNES snes) {
+static PetscErrorCode SNESSetUp_QN(SNES snes)
+{
   SNES_QN *qn = (SNES_QN *)snes->data;
   DM       dm;
   PetscInt n, N;
@@ -269,12 +271,19 @@ static PetscErrorCode SNESSetUp_QN(SNES snes) {
   default:
     PetscCall(MatSetType(qn->B, MATLMVMBFGS));
     switch (qn->scale_type) {
-    case SNES_QN_SCALE_NONE: PetscCall(MatLMVMSymBroydenSetScaleType(qn->B, MAT_LMVM_SYMBROYDEN_SCALE_NONE)); break;
-    case SNES_QN_SCALE_SCALAR: PetscCall(MatLMVMSymBroydenSetScaleType(qn->B, MAT_LMVM_SYMBROYDEN_SCALE_SCALAR)); break;
-    case SNES_QN_SCALE_JACOBIAN: PetscCall(MatLMVMSymBroydenSetScaleType(qn->B, MAT_LMVM_SYMBROYDEN_SCALE_USER)); break;
+    case SNES_QN_SCALE_NONE:
+      PetscCall(MatLMVMSymBroydenSetScaleType(qn->B, MAT_LMVM_SYMBROYDEN_SCALE_NONE));
+      break;
+    case SNES_QN_SCALE_SCALAR:
+      PetscCall(MatLMVMSymBroydenSetScaleType(qn->B, MAT_LMVM_SYMBROYDEN_SCALE_SCALAR));
+      break;
+    case SNES_QN_SCALE_JACOBIAN:
+      PetscCall(MatLMVMSymBroydenSetScaleType(qn->B, MAT_LMVM_SYMBROYDEN_SCALE_USER));
+      break;
     case SNES_QN_SCALE_DIAGONAL:
     case SNES_QN_SCALE_DEFAULT:
-    default: break;
+    default:
+      break;
     }
     break;
   }
@@ -288,7 +297,8 @@ static PetscErrorCode SNESSetUp_QN(SNES snes) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESReset_QN(SNES snes) {
+static PetscErrorCode SNESReset_QN(SNES snes)
+{
   SNES_QN *qn;
 
   PetscFunctionBegin;
@@ -299,7 +309,8 @@ static PetscErrorCode SNESReset_QN(SNES snes) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESDestroy_QN(SNES snes) {
+static PetscErrorCode SNESDestroy_QN(SNES snes)
+{
   PetscFunctionBegin;
   PetscCall(SNESReset_QN(snes));
   PetscCall(PetscFree(snes->data));
@@ -309,7 +320,8 @@ static PetscErrorCode SNESDestroy_QN(SNES snes) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESSetFromOptions_QN(SNES snes, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode SNESSetFromOptions_QN(SNES snes, PetscOptionItems *PetscOptionsObject)
+{
   SNES_QN          *qn = (SNES_QN *)snes->data;
   PetscBool         flg;
   SNESLineSearch    linesearch;
@@ -348,7 +360,8 @@ static PetscErrorCode SNESSetFromOptions_QN(SNES snes, PetscOptionItems *PetscOp
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESView_QN(SNES snes, PetscViewer viewer) {
+static PetscErrorCode SNESView_QN(SNES snes, PetscViewer viewer)
+{
   SNES_QN  *qn = (SNES_QN *)snes->data;
   PetscBool iascii;
 
@@ -383,7 +396,8 @@ static PetscErrorCode SNESView_QN(SNES snes, PetscViewer viewer) {
 
 .seealso: `SNESQN`, `SNESQNRestartType`, `SNES_QN_RESTART_NONE`, `SNES_QN_RESTART_POWELL`, `SNES_QN_RESTART_PERIODIC`
 @*/
-PetscErrorCode SNESQNSetRestartType(SNES snes, SNESQNRestartType rtype) {
+PetscErrorCode SNESQNSetRestartType(SNES snes, SNESQNRestartType rtype)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscTryMethod(snes, "SNESQNSetRestartType_C", (SNES, SNESQNRestartType), (snes, rtype));
@@ -414,14 +428,16 @@ PetscErrorCode SNESQNSetRestartType(SNES snes, SNESQNRestartType rtype) {
 .seealso: `SNES`, `SNESQN`, `SNESLineSearch`, `SNESQNScaleType`, `SNESSetJacobian()`
 @*/
 
-PetscErrorCode SNESQNSetScaleType(SNES snes, SNESQNScaleType stype) {
+PetscErrorCode SNESQNSetScaleType(SNES snes, SNESQNScaleType stype)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscTryMethod(snes, "SNESQNSetScaleType_C", (SNES, SNESQNScaleType), (snes, stype));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SNESQNSetScaleType_QN(SNES snes, SNESQNScaleType stype) {
+PetscErrorCode SNESQNSetScaleType_QN(SNES snes, SNESQNScaleType stype)
+{
   SNES_QN *qn = (SNES_QN *)snes->data;
 
   PetscFunctionBegin;
@@ -430,7 +446,8 @@ PetscErrorCode SNESQNSetScaleType_QN(SNES snes, SNESQNScaleType stype) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SNESQNSetRestartType_QN(SNES snes, SNESQNRestartType rtype) {
+PetscErrorCode SNESQNSetRestartType_QN(SNES snes, SNESQNRestartType rtype)
+{
   SNES_QN *qn = (SNES_QN *)snes->data;
 
   PetscFunctionBegin;
@@ -460,14 +477,16 @@ PetscErrorCode SNESQNSetRestartType_QN(SNES snes, SNESQNRestartType rtype) {
 .seealso: `SNESQN`, `SNES_QN_LBFGS`, `SNES_QN_BROYDEN`, `SNES_QN_BADBROYDEN`, `SNESQNType`, `TAOLMVM`, `TAOBLMVM`
 @*/
 
-PetscErrorCode SNESQNSetType(SNES snes, SNESQNType qtype) {
+PetscErrorCode SNESQNSetType(SNES snes, SNESQNType qtype)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscTryMethod(snes, "SNESQNSetType_C", (SNES, SNESQNType), (snes, qtype));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SNESQNSetType_QN(SNES snes, SNESQNType qtype) {
+PetscErrorCode SNESQNSetType_QN(SNES snes, SNESQNType qtype)
+{
   SNES_QN *qn = (SNES_QN *)snes->data;
 
   PetscFunctionBegin;
@@ -519,7 +538,8 @@ PetscErrorCode SNESQNSetType_QN(SNES snes, SNESQNType qtype) {
 .seealso: `SNESQNRestartType`, `SNESQNSetRestartType()`, `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESNEWTONLS`, `SNESNEWTONTR`,
           `SNESQNScaleType`, `SNESQNSetScaleType()`, `SNESQNSetType`, `SNESQNSetType ()`
 M*/
-PETSC_EXTERN PetscErrorCode SNESCreate_QN(SNES snes) {
+PETSC_EXTERN PetscErrorCode SNESCreate_QN(SNES snes)
+{
   SNES_QN    *qn;
   const char *optionsprefix;
 

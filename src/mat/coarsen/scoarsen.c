@@ -26,7 +26,8 @@ PETSC_EXTERN PetscErrorCode MatCoarsenCreate_MISK(MatCoarsen);
 
  .seealso: `MatCoarsen`, `MatCoarsenType`, `MatCoarsenRegister()`, `MatCoarsenRegisterDestroy()`
  @*/
-PetscErrorCode MatCoarsenRegisterAll(void) {
+PetscErrorCode MatCoarsenRegisterAll(void)
+{
   PetscFunctionBegin;
   if (MatCoarsenRegisterAllCalled) PetscFunctionReturn(0);
   MatCoarsenRegisterAllCalled = PETSC_TRUE;

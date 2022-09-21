@@ -2,22 +2,25 @@
 #define PETSC_CPP_UTILITY_HPP
 
 #if defined(__cplusplus)
-#include <petsc/private/cpp/macros.hpp>
-#include <petsc/private/cpp/type_traits.hpp>
+  #include <petsc/private/cpp/macros.hpp>
+  #include <petsc/private/cpp/type_traits.hpp>
 
-#include <utility>
+  #include <utility>
 
-namespace Petsc {
+namespace Petsc
+{
 
-namespace util {
+namespace util
+{
 
-#if PETSC_CPP_VERSION >= 14 // C++14
+  #if PETSC_CPP_VERSION >= 14 // C++14
 using std::exchange;
 using std::integer_sequence;
 using std::make_integer_sequence;
-#else
+  #else
 template <class T, class U = T>
-inline T exchange(T &orig, U &&new_value) {
+inline T exchange(T &orig, U &&new_value)
+{
   T old_value = std::move(orig);
   orig        = std::forward<U>(new_value);
   return old_value;
@@ -32,18 +35,19 @@ struct integer_sequence {
   static constexpr std::size_t size() noexcept { return sizeof...(idx); }
 };
 
-#ifndef __has_builtin
-#define __has_builtin(x) 0
-#endif
+    #ifndef __has_builtin
+      #define __has_builtin(x) 0
+    #endif
 
-#if __has_builtin(__make_integer_seq)    // clang, MSVC
+    #if __has_builtin(__make_integer_seq)    // clang, MSVC
 template <class T, T N>
 using make_integer_sequence = __make_integer_seq<integer_sequence, T, N>;
-#elif defined(__GNUC__) && __GNUC__ >= 8 // gcc
+    #elif defined(__GNUC__) && __GNUC__ >= 8 // gcc
 template <class T, T N>
 using make_integer_sequence = integer_sequence<T, __integer_pack(N)...>;
-#else                                    // __slow__ version
-namespace detail {
+    #else                                    // __slow__ version
+namespace detail
+{
 
 template <class T, int N, T... idx>
 struct make_sequence : make_sequence<T, N - 1, T(N - 1), idx...> { };
@@ -57,8 +61,8 @@ struct make_sequence<T, 0, idx...> {
 
 template <class T, T N>
 using make_integer_sequence = typename detail::make_sequence<T, int(N)>::type;
-#endif                                   // __has_builtin(__make_integer_seq)
-#endif                                   // C++14
+    #endif                                   // __has_builtin(__make_integer_seq)
+  #endif                                     // C++14
 
 template <std::size_t... idx>
 using index_sequence = integer_sequence<std::size_t, idx...>;

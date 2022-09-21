@@ -10,7 +10,8 @@ const char ParMmgCitation[] = "@techreport{cirrottola:hal-02386837,\n"
                               "  note        = {\\url{https://hal.inria.fr/hal-02386837}},\n"
                               "  year        = {2019}\n}\n";
 
-PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM dm, Vec vertexMetric, DMLabel bdLabel, DMLabel rgLabel, DM *dmNew) {
+PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM dm, Vec vertexMetric, DMLabel bdLabel, DMLabel rgLabel, DM *dmNew)
+{
   MPI_Comm           comm;
   const char        *bdName = "_boundary_";
   const char        *rgName = "_regions_";

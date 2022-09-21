@@ -11,7 +11,8 @@
 .  ctx - the monitor context
 
 */
-PetscErrorCode TSMonitorLGCtxNetworkDestroy(TSMonitorLGCtxNetwork *ctx) {
+PetscErrorCode TSMonitorLGCtxNetworkDestroy(TSMonitorLGCtxNetwork *ctx)
+{
   PetscInt i;
 
   PetscFunctionBegin;
@@ -21,7 +22,8 @@ PetscErrorCode TSMonitorLGCtxNetworkDestroy(TSMonitorLGCtxNetwork *ctx) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TSMonitorLGCtxNetworkCreate(TS ts, const char host[], const char label[], int x, int y, int m, int n, PetscInt howoften, TSMonitorLGCtxNetwork *ctx) {
+PetscErrorCode TSMonitorLGCtxNetworkCreate(TS ts, const char host[], const char label[], int x, int y, int m, int n, PetscInt howoften, TSMonitorLGCtxNetwork *ctx)
+{
   PetscDraw draw;
   MPI_Comm  comm;
   DM        dm;
@@ -100,7 +102,8 @@ PetscErrorCode TSMonitorLGCtxNetworkCreate(TS ts, const char host[], const char 
     Each process in a parallel run displays its component solutions in a separate window
 
 */
-PetscErrorCode TSMonitorLGCtxNetworkSolution(TS ts, PetscInt step, PetscReal ptime, Vec u, void *dctx) {
+PetscErrorCode TSMonitorLGCtxNetworkSolution(TS ts, PetscInt step, PetscReal ptime, Vec u, void *dctx)
+{
   TSMonitorLGCtxNetwork ctx = (TSMonitorLGCtxNetwork)dctx;
   const PetscScalar    *xv;
   PetscScalar          *yv;

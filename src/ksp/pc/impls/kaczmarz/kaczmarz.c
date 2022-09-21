@@ -5,13 +5,15 @@ typedef struct {
   PetscBool symmetric; /* apply the projections symmetrically */
 } PC_Kaczmarz;
 
-static PetscErrorCode PCDestroy_Kaczmarz(PC pc) {
+static PetscErrorCode PCDestroy_Kaczmarz(PC pc)
+{
   PetscFunctionBegin;
   PetscCall(PetscFree(pc->data));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCApply_Kaczmarz(PC pc, Vec x, Vec y) {
+static PetscErrorCode PCApply_Kaczmarz(PC pc, Vec x, Vec y)
+{
   PC_Kaczmarz       *jac = (PC_Kaczmarz *)pc->data;
   PetscInt           xs, xe, ys, ye, ncols, i, j;
   const PetscInt    *cols;
@@ -65,7 +67,8 @@ static PetscErrorCode PCApply_Kaczmarz(PC pc, Vec x, Vec y) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCSetFromOptions_Kaczmarz(PC pc, PetscOptionItems *PetscOptionsObject) {
+PetscErrorCode PCSetFromOptions_Kaczmarz(PC pc, PetscOptionItems *PetscOptionsObject)
+{
   PC_Kaczmarz *jac = (PC_Kaczmarz *)pc->data;
 
   PetscFunctionBegin;
@@ -76,7 +79,8 @@ PetscErrorCode PCSetFromOptions_Kaczmarz(PC pc, PetscOptionItems *PetscOptionsOb
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCView_Kaczmarz(PC pc, PetscViewer viewer) {
+PetscErrorCode PCView_Kaczmarz(PC pc, PetscViewer viewer)
+{
   PC_Kaczmarz *jac = (PC_Kaczmarz *)pc->data;
   PetscBool    iascii;
 
@@ -104,7 +108,8 @@ PetscErrorCode PCView_Kaczmarz(PC pc, PetscViewer viewer) {
 .seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCJACOBI`, `PCBJACOBI`
 M*/
 
-PETSC_EXTERN PetscErrorCode PCCreate_Kaczmarz(PC pc) {
+PETSC_EXTERN PetscErrorCode PCCreate_Kaczmarz(PC pc)
+{
   PC_Kaczmarz *jac;
 
   PetscFunctionBegin;

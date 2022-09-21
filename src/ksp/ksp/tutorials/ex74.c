@@ -81,7 +81,8 @@ static PetscErrorCode Assemble_AdvDiff(MPI_Comm, UserContext *, Mat *);
 
 #include <petsc/private/kernels/blockinvert.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   Vec               u, uex, rhs, z;
   UserContext       ctxt;
   PetscInt          nstages, is, ie, matis, matie, *ix, *ix2;
@@ -167,7 +168,8 @@ int main(int argc, char **argv) {
   /* allocate and calculate the (-J) matrix */
   switch (ctxt.physics_type) {
   case PHYSICS_ADVECTION:
-  case PHYSICS_DIFFUSION: PetscCall(Assemble_AdvDiff(PETSC_COMM_WORLD, &ctxt, &J));
+  case PHYSICS_DIFFUSION:
+    PetscCall(Assemble_AdvDiff(PETSC_COMM_WORLD, &ctxt, &J));
   }
   PetscCall(MatCreate(PETSC_COMM_WORLD, &Identity));
   PetscCall(MatSetType(Identity, MATAIJ));
@@ -248,7 +250,8 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-PetscErrorCode ExactSolution(Vec u, void *c, PetscReal t) {
+PetscErrorCode ExactSolution(Vec u, void *c, PetscReal t)
+{
   UserContext *ctxt = (UserContext *)c;
   PetscInt     i, is, ie;
   PetscScalar *uarr;
@@ -261,9 +264,14 @@ PetscErrorCode ExactSolution(Vec u, void *c, PetscReal t) {
   for (i = is; i < ie; i++) {
     x = i * dx;
     switch (ctxt->physics_type) {
-    case PHYSICS_DIFFUSION: uarr[i - is] = PetscExpScalar(-4.0 * pi * pi * a * t) * PetscSinScalar(2 * pi * x); break;
-    case PHYSICS_ADVECTION: uarr[i - is] = PetscSinScalar(2 * pi * (x - a * t)); break;
-    default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "No support for physics type %s", PhysicsTypes[ctxt->physics_type]);
+    case PHYSICS_DIFFUSION:
+      uarr[i - is] = PetscExpScalar(-4.0 * pi * pi * a * t) * PetscSinScalar(2 * pi * x);
+      break;
+    case PHYSICS_ADVECTION:
+      uarr[i - is] = PetscSinScalar(2 * pi * (x - a * t));
+      break;
+    default:
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "No support for physics type %s", PhysicsTypes[ctxt->physics_type]);
     }
   }
   PetscCall(VecRestoreArray(u, &uarr));
@@ -271,7 +279,8 @@ PetscErrorCode ExactSolution(Vec u, void *c, PetscReal t) {
 }
 
 /* Arrays should be freed with PetscFree3(A,b,c) */
-static PetscErrorCode RKCreate_Gauss(PetscInt nstages, PetscScalar **gauss_A, PetscScalar **gauss_b, PetscReal **gauss_c) {
+static PetscErrorCode RKCreate_Gauss(PetscInt nstages, PetscScalar **gauss_A, PetscScalar **gauss_b, PetscReal **gauss_c)
+{
   PetscScalar *A, *G0, *G1;
   PetscReal   *b, *c;
   PetscInt     i, j;
@@ -307,7 +316,8 @@ static PetscErrorCode RKCreate_Gauss(PetscInt nstages, PetscScalar **gauss_A, Pe
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode Assemble_AdvDiff(MPI_Comm comm, UserContext *user, Mat *J) {
+static PetscErrorCode Assemble_AdvDiff(MPI_Comm comm, UserContext *user, Mat *J)
+{
   PetscInt  matis, matie, i;
   PetscReal dx, dx2;
 
@@ -333,7 +343,8 @@ static PetscErrorCode Assemble_AdvDiff(MPI_Comm comm, UserContext *user, Mat *J)
       values[1] = 0.;
       values[2] = user->a * .5 / dx;
       break;
-    default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "No support for physics type %s", PhysicsTypes[user->physics_type]);
+    default:
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "No support for physics type %s", PhysicsTypes[user->physics_type]);
     }
     /* periodic boundaries */
     if (i == 0) {

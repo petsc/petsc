@@ -6,7 +6,8 @@
       This is called once, usually automatically by KSPSolve() or KSPSetUp()
      but can be called directly by KSPSetUp()
 */
-static PetscErrorCode KSPSetUp_PIPECR(KSP ksp) {
+static PetscErrorCode KSPSetUp_PIPECR(KSP ksp)
+{
   PetscFunctionBegin;
   /* get work vectors needed by PIPECR */
   PetscCall(KSPSetWorkVecs(ksp, 7));
@@ -16,7 +17,8 @@ static PetscErrorCode KSPSetUp_PIPECR(KSP ksp) {
 /*
  KSPSolve_PIPECR - This routine actually applies the pipelined conjugate residual method
 */
-static PetscErrorCode KSPSolve_PIPECR(KSP ksp) {
+static PetscErrorCode KSPSolve_PIPECR(KSP ksp)
+{
   PetscInt    i;
   PetscScalar alpha = 0.0, beta = 0.0, gamma, gammaold = 0.0, delta;
   PetscReal   dp = 0.0;
@@ -61,7 +63,8 @@ static PetscErrorCode KSPSolve_PIPECR(KSP ksp) {
     PetscCall(KSP_MatMult(ksp, Amat, U, W));
     dp = 0.0;
     break;
-  default: SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "%s", KSPNormTypes[ksp->normtype]);
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "%s", KSPNormTypes[ksp->normtype]);
   }
   PetscCall(KSPLogResidualHistory(ksp, dp));
   PetscCall(KSPMonitor(ksp, 0, dp));
@@ -148,7 +151,8 @@ static PetscErrorCode KSPSolve_PIPECR(KSP ksp) {
 .seealso: `KSPCreate()`, `KSPSetType()`, `KSPPIPECG`, `KSPGROPPCG`, `KSPPGMRES`, `KSPCG`, `KSPCGUseSingleReduction()`
 M*/
 
-PETSC_EXTERN PetscErrorCode KSPCreate_PIPECR(KSP ksp) {
+PETSC_EXTERN PetscErrorCode KSPCreate_PIPECR(KSP ksp)
+{
   PetscFunctionBegin;
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_PRECONDITIONED, PC_LEFT, 2));
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_NONE, PC_LEFT, 1));

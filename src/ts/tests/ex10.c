@@ -19,14 +19,16 @@ struct _p_TSDAESimple {
   void *data;
 };
 
-PetscErrorCode TSDAESimpleCreate(MPI_Comm comm, TSDAESimple *tsdae) {
+PetscErrorCode TSDAESimpleCreate(MPI_Comm comm, TSDAESimple *tsdae)
+{
   PetscFunctionBeginUser;
   PetscCall(PetscNew(tsdae));
   (*tsdae)->comm = comm;
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TSDAESimpleSetRHSFunction(TSDAESimple tsdae, Vec U, PetscErrorCode (*f)(PetscReal, Vec, Vec, Vec, void *), void *ctx) {
+PetscErrorCode TSDAESimpleSetRHSFunction(TSDAESimple tsdae, Vec U, PetscErrorCode (*f)(PetscReal, Vec, Vec, Vec, void *), void *ctx)
+{
   PetscFunctionBeginUser;
   tsdae->f = f;
   tsdae->U = U;
@@ -35,7 +37,8 @@ PetscErrorCode TSDAESimpleSetRHSFunction(TSDAESimple tsdae, Vec U, PetscErrorCod
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TSDAESimpleSetIFunction(TSDAESimple tsdae, Vec V, PetscErrorCode (*F)(PetscReal, Vec, Vec, Vec, void *), void *ctx) {
+PetscErrorCode TSDAESimpleSetIFunction(TSDAESimple tsdae, Vec V, PetscErrorCode (*F)(PetscReal, Vec, Vec, Vec, void *), void *ctx)
+{
   PetscFunctionBeginUser;
   tsdae->F = F;
   tsdae->V = V;
@@ -44,7 +47,8 @@ PetscErrorCode TSDAESimpleSetIFunction(TSDAESimple tsdae, Vec V, PetscErrorCode 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TSDAESimpleDestroy(TSDAESimple *tsdae) {
+PetscErrorCode TSDAESimpleDestroy(TSDAESimple *tsdae)
+{
   PetscFunctionBeginUser;
   PetscCall((*(*tsdae)->destroy)(*tsdae));
   PetscCall(VecDestroy(&(*tsdae)->U));
@@ -53,13 +57,15 @@ PetscErrorCode TSDAESimpleDestroy(TSDAESimple *tsdae) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TSDAESimpleSolve(TSDAESimple tsdae, Vec Usolution) {
+PetscErrorCode TSDAESimpleSolve(TSDAESimple tsdae, Vec Usolution)
+{
   PetscFunctionBeginUser;
   PetscCall((*tsdae->solve)(tsdae, Usolution));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TSDAESimpleSetFromOptions(TSDAESimple tsdae) {
+PetscErrorCode TSDAESimpleSetFromOptions(TSDAESimple tsdae)
+{
   PetscFunctionBeginUser;
   PetscCall((*tsdae->setfromoptions)(PetscOptionsObject, tsdae));
   PetscFunctionReturn(0);
@@ -84,7 +90,8 @@ typedef struct {
    Solves F(U,V) for V and then computes f(U,V)
 
 */
-PetscErrorCode TSDAESimple_Reduced_TSFunction(TS ts, PetscReal t, Vec U, Vec F, void *actx) {
+PetscErrorCode TSDAESimple_Reduced_TSFunction(TS ts, PetscReal t, Vec U, Vec F, void *actx)
+{
   TSDAESimple          tsdae = (TSDAESimple)actx;
   TSDAESimple_Reduced *red   = (TSDAESimple_Reduced *)tsdae->data;
 
@@ -100,7 +107,8 @@ PetscErrorCode TSDAESimple_Reduced_TSFunction(TS ts, PetscReal t, Vec U, Vec F, 
    Defines the nonlinear function that is passed to the nonlinear solver
 
 */
-PetscErrorCode TSDAESimple_Reduced_SNESFunction(SNES snes, Vec V, Vec F, void *actx) {
+PetscErrorCode TSDAESimple_Reduced_SNESFunction(SNES snes, Vec V, Vec F, void *actx)
+{
   TSDAESimple          tsdae = (TSDAESimple)actx;
   TSDAESimple_Reduced *red   = (TSDAESimple_Reduced *)tsdae->data;
 
@@ -109,7 +117,8 @@ PetscErrorCode TSDAESimple_Reduced_SNESFunction(SNES snes, Vec V, Vec F, void *a
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TSDAESimpleSolve_Reduced(TSDAESimple tsdae, Vec U) {
+PetscErrorCode TSDAESimpleSolve_Reduced(TSDAESimple tsdae, Vec U)
+{
   TSDAESimple_Reduced *red = (TSDAESimple_Reduced *)tsdae->data;
 
   PetscFunctionBeginUser;
@@ -117,7 +126,8 @@ PetscErrorCode TSDAESimpleSolve_Reduced(TSDAESimple tsdae, Vec U) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TSDAESimpleSetFromOptions_Reduced(TSDAESimple tsdae, PetscOptionItems *PetscOptionsObject) {
+PetscErrorCode TSDAESimpleSetFromOptions_Reduced(TSDAESimple tsdae, PetscOptionItems *PetscOptionsObject)
+{
   TSDAESimple_Reduced *red = (TSDAESimple_Reduced *)tsdae->data;
 
   PetscFunctionBeginUser;
@@ -126,7 +136,8 @@ PetscErrorCode TSDAESimpleSetFromOptions_Reduced(TSDAESimple tsdae, PetscOptionI
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TSDAESimpleDestroy_Reduced(TSDAESimple tsdae) {
+PetscErrorCode TSDAESimpleDestroy_Reduced(TSDAESimple tsdae)
+{
   TSDAESimple_Reduced *red = (TSDAESimple_Reduced *)tsdae->data;
 
   PetscFunctionBeginUser;
@@ -136,7 +147,8 @@ PetscErrorCode TSDAESimpleDestroy_Reduced(TSDAESimple tsdae) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TSDAESimpleSetUp_Reduced(TSDAESimple tsdae) {
+PetscErrorCode TSDAESimpleSetUp_Reduced(TSDAESimple tsdae)
+{
   TSDAESimple_Reduced *red;
   Vec                  tsrhs;
 
@@ -182,7 +194,8 @@ typedef struct {
    0
 
 */
-PetscErrorCode TSDAESimple_Full_TSRHSFunction(TS ts, PetscReal t, Vec UV, Vec F, void *actx) {
+PetscErrorCode TSDAESimple_Full_TSRHSFunction(TS ts, PetscReal t, Vec UV, Vec F, void *actx)
+{
   TSDAESimple       tsdae = (TSDAESimple)actx;
   TSDAESimple_Full *full  = (TSDAESimple_Full *)tsdae->data;
 
@@ -205,7 +218,8 @@ PetscErrorCode TSDAESimple_Full_TSRHSFunction(TS ts, PetscReal t, Vec UV, Vec F,
    F(U,V)
 
 */
-PetscErrorCode TSDAESimple_Full_TSIFunction(TS ts, PetscReal t, Vec UV, Vec UVdot, Vec F, void *actx) {
+PetscErrorCode TSDAESimple_Full_TSIFunction(TS ts, PetscReal t, Vec UV, Vec UVdot, Vec F, void *actx)
+{
   TSDAESimple       tsdae = (TSDAESimple)actx;
   TSDAESimple_Full *full  = (TSDAESimple_Full *)tsdae->data;
 
@@ -221,7 +235,8 @@ PetscErrorCode TSDAESimple_Full_TSIFunction(TS ts, PetscReal t, Vec UV, Vec UVdo
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TSDAESimpleSolve_Full(TSDAESimple tsdae, Vec U) {
+PetscErrorCode TSDAESimpleSolve_Full(TSDAESimple tsdae, Vec U)
+{
   TSDAESimple_Full *full = (TSDAESimple_Full *)tsdae->data;
 
   PetscFunctionBeginUser;
@@ -234,7 +249,8 @@ PetscErrorCode TSDAESimpleSolve_Full(TSDAESimple tsdae, Vec U) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TSDAESimpleSetFromOptions_Full(TSDAESimple tsdae, PetscOptionItems *PetscOptionsObject) {
+PetscErrorCode TSDAESimpleSetFromOptions_Full(TSDAESimple tsdae, PetscOptionItems *PetscOptionsObject)
+{
   TSDAESimple_Full *full = (TSDAESimple_Full *)tsdae->data;
 
   PetscFunctionBeginUser;
@@ -242,7 +258,8 @@ PetscErrorCode TSDAESimpleSetFromOptions_Full(TSDAESimple tsdae, PetscOptionItem
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TSDAESimpleDestroy_Full(TSDAESimple tsdae) {
+PetscErrorCode TSDAESimpleDestroy_Full(TSDAESimple tsdae)
+{
   TSDAESimple_Full *full = (TSDAESimple_Full *)tsdae->data;
 
   PetscFunctionBeginUser;
@@ -256,7 +273,8 @@ PetscErrorCode TSDAESimpleDestroy_Full(TSDAESimple tsdae) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TSDAESimpleSetUp_Full(TSDAESimple tsdae) {
+PetscErrorCode TSDAESimpleSetUp_Full(TSDAESimple tsdae)
+{
   TSDAESimple_Full *full;
   Vec               tsrhs;
   PetscInt          nU, nV, UVstart;
@@ -302,7 +320,8 @@ PetscErrorCode TSDAESimpleSetUp_Full(TSDAESimple tsdae) {
    Simple example:   f(U,V) = U + V
 
 */
-PetscErrorCode f(PetscReal t, Vec U, Vec V, Vec F, void *ctx) {
+PetscErrorCode f(PetscReal t, Vec U, Vec V, Vec F, void *ctx)
+{
   PetscFunctionBeginUser;
   PetscCall(VecWAXPY(F, 1.0, U, V));
   PetscFunctionReturn(0);
@@ -312,13 +331,15 @@ PetscErrorCode f(PetscReal t, Vec U, Vec V, Vec F, void *ctx) {
    Simple example: F(U,V) = U - V
 
 */
-PetscErrorCode F(PetscReal t, Vec U, Vec V, Vec F, void *ctx) {
+PetscErrorCode F(PetscReal t, Vec U, Vec V, Vec F, void *ctx)
+{
   PetscFunctionBeginUser;
   PetscCall(VecWAXPY(F, -1.0, V, U));
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   TSDAESimple tsdae;
   Vec         U, V, Usolution;
 

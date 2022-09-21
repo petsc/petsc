@@ -24,10 +24,11 @@
 /*    UPDATED PARAMETER -*/
 /*       ADJNCY - BECOMES THE ADJNCY OF THE QUOTIENT GRAPH.*/
 /***************************************************************/
-PetscErrorCode SPARSEPACKqmdqt(const PetscInt *root, const PetscInt *xadj, const PetscInt *inadjncy, PetscInt *marker, PetscInt *rchsze, PetscInt *rchset, PetscInt *nbrhd) {
+PetscErrorCode SPARSEPACKqmdqt(const PetscInt *root, const PetscInt *xadj, const PetscInt *inadjncy, PetscInt *marker, PetscInt *rchsze, PetscInt *rchset, PetscInt *nbrhd)
+{
   PetscInt *adjncy = (PetscInt *)inadjncy; /* Used as temporary and reset within this function */
   /* System generated locals */
-  PetscInt  i__1, i__2;
+  PetscInt i__1, i__2;
 
   /* Local variables */
   PetscInt inhd, irch, node, ilink, j, nabor, jstop, jstrt;

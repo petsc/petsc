@@ -10,10 +10,10 @@
 */
 
 #if !defined(__MFFD_H__)
-#define __MFFD_H__
+  #define __MFFD_H__
 
-#include <petscmat.h> /*I  "petscmat.h"   I*/
-#include <petsc/private/petscimpl.h>
+  #include <petscmat.h> /*I  "petscmat.h"   I*/
+  #include <petsc/private/petscimpl.h>
 
 /*
     Table of functions that manage the computation and understanding
@@ -51,9 +51,9 @@ struct _p_MatMFFD {
   PetscErrorCode (*funcisetbase)(void *, Vec);                   /* Sets base for future evaluations of func_[i]() */
 
   void *ctx; /* this is used by MatCreateSNESMF() to store the SNES object */
-#if defined(PETSC_USE_COMPLEX)
+  #if defined(PETSC_USE_COMPLEX)
   PetscBool usecomplex; /* use Lyness complex number trick to compute the matrix-vector product */
-#endif
+  #endif
 };
 
 PETSC_EXTERN PetscFunctionList MatMFFDList;

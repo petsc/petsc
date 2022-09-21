@@ -8,7 +8,8 @@ static char help[] = "Tests MatConvert(), MatLoad() for MATELEMENTAL interface.\
 #include <petscmat.h>
 #include <petscmatelemental.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat         A, Ae, B, Be;
   PetscViewer view;
   char        file[2][PETSC_MAX_PATH_LEN];

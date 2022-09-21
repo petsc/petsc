@@ -3,7 +3,8 @@ static char help[] = "Tests for bugs in A->offloadmask consistency for GPU matri
 
 #include <petscmat.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat         A;
   PetscInt    i, j, rstart, rend, m = 3;
   PetscScalar one = 1.0, zero = 0.0, negativeone = -1.0;
@@ -29,7 +30,9 @@ int main(int argc, char **args) {
     /* Now set A to be the identity using various approaches.
      * Note that there may be other approaches that should be added here. */
     switch (i) {
-    case 0: PetscCall(MatDiagonalSet(A, x, INSERT_VALUES)); break;
+    case 0:
+      PetscCall(MatDiagonalSet(A, x, INSERT_VALUES));
+      break;
     case 1:
       for (j = rstart; j < rend; j++) PetscCall(MatSetValue(A, j, j, one, INSERT_VALUES));
       PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
@@ -39,7 +42,8 @@ int main(int argc, char **args) {
       for (j = rstart; j < rend; j++) PetscCall(MatSetValuesRow(A, j, &one));
       PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
       PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
-    default: break;
+    default:
+      break;
     }
 
     /* Compute y <- A*x and verify that the difference between y and x is negligible, as it should be since A is the identity. */

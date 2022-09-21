@@ -3,7 +3,8 @@ static char help[] = "Tests MatMult() on MatLoad() matrix \n\n";
 
 #include <petscmat.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat         A;
   Vec         x, b;
   PetscViewer fd;                       /* viewer */

@@ -3,49 +3,49 @@
 /* These macros can be moved to petscimpl.h eventually */
 #if defined(PETSC_USE_DEBUG)
 
-#define PetscValidLogicalCollectiveIntComm(a, b, c) \
-  do { \
-    PetscInt b1[2], b2[2]; \
-    b1[0] = -b; \
-    b1[1] = b; \
-    PetscCall(MPIU_Allreduce(b1, b2, 2, MPIU_INT, MPI_MAX, a)); \
-    PetscCheck(-b2[0] == b2[1], a, PETSC_ERR_ARG_WRONG, "Int value must be same on all processes, argument # %d", c); \
-  } while (0)
+  #define PetscValidLogicalCollectiveIntComm(a, b, c) \
+    do { \
+      PetscInt b1[2], b2[2]; \
+      b1[0] = -b; \
+      b1[1] = b; \
+      PetscCall(MPIU_Allreduce(b1, b2, 2, MPIU_INT, MPI_MAX, a)); \
+      PetscCheck(-b2[0] == b2[1], a, PETSC_ERR_ARG_WRONG, "Int value must be same on all processes, argument # %d", c); \
+    } while (0)
 
-#define PetscValidLogicalCollectiveBoolComm(a, b, c) \
-  do { \
-    PetscMPIInt b1[2], b2[2]; \
-    b1[0] = -(PetscMPIInt)b; \
-    b1[1] = (PetscMPIInt)b; \
-    PetscCall(MPIU_Allreduce(b1, b2, 2, MPI_INT, MPI_MAX, a)); \
-    PetscCheck(-b2[0] == b2[1], a, PETSC_ERR_ARG_WRONG, "Bool value must be same on all processes, argument # %d", c); \
-  } while (0)
+  #define PetscValidLogicalCollectiveBoolComm(a, b, c) \
+    do { \
+      PetscMPIInt b1[2], b2[2]; \
+      b1[0] = -(PetscMPIInt)b; \
+      b1[1] = (PetscMPIInt)b; \
+      PetscCall(MPIU_Allreduce(b1, b2, 2, MPI_INT, MPI_MAX, a)); \
+      PetscCheck(-b2[0] == b2[1], a, PETSC_ERR_ARG_WRONG, "Bool value must be same on all processes, argument # %d", c); \
+    } while (0)
 
-#define PetscValidLogicalCollectiveRealComm(a, b, c) \
-  do { \
-    PetscReal b1[3], b2[3]; \
-    if (PetscIsNanReal(b)) { \
-      b1[2] = 1; \
-    } else { \
-      b1[2] = 0; \
-    }; \
-    b1[0] = -b; \
-    b1[1] = b; \
-    PetscCallMPI(MPI_Allreduce(b1, b2, 3, MPIU_REAL, MPIU_MAX, a)); \
-    PetscCheck((b2[2] == 1) || PetscEqualReal(-b2[0], b2[1]), a, PETSC_ERR_ARG_WRONG, "Real value must be same on all processes, argument # %d", c); \
-  } while (0)
+  #define PetscValidLogicalCollectiveRealComm(a, b, c) \
+    do { \
+      PetscReal b1[3], b2[3]; \
+      if (PetscIsNanReal(b)) { \
+        b1[2] = 1; \
+      } else { \
+        b1[2] = 0; \
+      }; \
+      b1[0] = -b; \
+      b1[1] = b; \
+      PetscCallMPI(MPI_Allreduce(b1, b2, 3, MPIU_REAL, MPIU_MAX, a)); \
+      PetscCheck((b2[2] == 1) || PetscEqualReal(-b2[0], b2[1]), a, PETSC_ERR_ARG_WRONG, "Real value must be same on all processes, argument # %d", c); \
+    } while (0)
 
 #else
 
-#define PetscValidLogicalCollectiveRealComm(a, b, c) \
-  do { \
-  } while (0)
-#define PetscValidLogicalCollectiveIntComm(a, b, c) \
-  do { \
-  } while (0)
-#define PetscValidLogicalCollectiveBoolComm(a, b, c) \
-  do { \
-  } while (0)
+  #define PetscValidLogicalCollectiveRealComm(a, b, c) \
+    do { \
+    } while (0)
+  #define PetscValidLogicalCollectiveIntComm(a, b, c) \
+    do { \
+    } while (0)
+  #define PetscValidLogicalCollectiveBoolComm(a, b, c) \
+    do { \
+    } while (0)
 
 #endif
 
@@ -59,14 +59,16 @@ struct _n_TSHistory {
   size_t     s;       /* reallocation size */
 };
 
-PetscErrorCode TSHistoryGetNumSteps(TSHistory tsh, PetscInt *n) {
+PetscErrorCode TSHistoryGetNumSteps(TSHistory tsh, PetscInt *n)
+{
   PetscFunctionBegin;
   PetscValidIntPointer(n, 2);
   *n = tsh->n;
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TSHistoryUpdate(TSHistory tsh, PetscInt id, PetscReal time) {
+PetscErrorCode TSHistoryUpdate(TSHistory tsh, PetscInt id, PetscReal time)
+{
   PetscFunctionBegin;
   if (tsh->n == tsh->c) { /* reallocation */
     tsh->c += tsh->s;
@@ -92,7 +94,8 @@ PetscErrorCode TSHistoryUpdate(TSHistory tsh, PetscInt id, PetscReal time) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TSHistoryGetTime(TSHistory tsh, PetscBool backward, PetscInt step, PetscReal *t) {
+PetscErrorCode TSHistoryGetTime(TSHistory tsh, PetscBool backward, PetscInt step, PetscReal *t)
+{
   PetscFunctionBegin;
   if (!t) PetscFunctionReturn(0);
   PetscValidRealPointer(t, 4);
@@ -106,7 +109,8 @@ PetscErrorCode TSHistoryGetTime(TSHistory tsh, PetscBool backward, PetscInt step
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TSHistoryGetTimeStep(TSHistory tsh, PetscBool backward, PetscInt step, PetscReal *dt) {
+PetscErrorCode TSHistoryGetTimeStep(TSHistory tsh, PetscBool backward, PetscInt step, PetscReal *dt)
+{
   PetscFunctionBegin;
   if (!dt) PetscFunctionReturn(0);
   PetscValidRealPointer(dt, 4);
@@ -120,7 +124,8 @@ PetscErrorCode TSHistoryGetTimeStep(TSHistory tsh, PetscBool backward, PetscInt 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TSHistoryGetLocFromTime(TSHistory tsh, PetscReal time, PetscInt *loc) {
+PetscErrorCode TSHistoryGetLocFromTime(TSHistory tsh, PetscReal time, PetscInt *loc)
+{
   PetscFunctionBegin;
   PetscValidIntPointer(loc, 3);
   if (!tsh->sorted) {
@@ -131,7 +136,8 @@ PetscErrorCode TSHistoryGetLocFromTime(TSHistory tsh, PetscReal time, PetscInt *
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TSHistorySetHistory(TSHistory tsh, PetscInt n, PetscReal hist[], PetscInt hist_id[], PetscBool sorted) {
+PetscErrorCode TSHistorySetHistory(TSHistory tsh, PetscInt n, PetscReal hist[], PetscInt hist_id[], PetscBool sorted)
+{
   PetscFunctionBegin;
   PetscValidLogicalCollectiveIntComm(tsh->comm, n, 2);
   PetscCheck(n >= 0, tsh->comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot request a negative size for history storage");
@@ -151,7 +157,8 @@ PetscErrorCode TSHistorySetHistory(TSHistory tsh, PetscInt n, PetscReal hist[], 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TSHistoryGetHistory(TSHistory tsh, PetscInt *n, const PetscReal *hist[], const PetscInt *hist_id[], PetscBool *sorted) {
+PetscErrorCode TSHistoryGetHistory(TSHistory tsh, PetscInt *n, const PetscReal *hist[], const PetscInt *hist_id[], PetscBool *sorted)
+{
   PetscFunctionBegin;
   if (n) *n = tsh->n;
   if (hist) *hist = tsh->hist;
@@ -160,7 +167,8 @@ PetscErrorCode TSHistoryGetHistory(TSHistory tsh, PetscInt *n, const PetscReal *
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TSHistoryDestroy(TSHistory *tsh) {
+PetscErrorCode TSHistoryDestroy(TSHistory *tsh)
+{
   PetscFunctionBegin;
   if (!*tsh) PetscFunctionReturn(0);
   PetscCall(PetscFree((*tsh)->hist));
@@ -171,7 +179,8 @@ PetscErrorCode TSHistoryDestroy(TSHistory *tsh) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TSHistoryCreate(MPI_Comm comm, TSHistory *hst) {
+PetscErrorCode TSHistoryCreate(MPI_Comm comm, TSHistory *hst)
+{
   TSHistory tsh;
 
   PetscFunctionBegin;

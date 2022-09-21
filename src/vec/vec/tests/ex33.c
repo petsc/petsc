@@ -3,7 +3,8 @@ static char help[] = "Tests the routines VecScatterCreateToAll(), VecScatterCrea
 
 #include <petscvec.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt    n = 3, i, len, start, end;
   PetscMPIInt size, rank;
   PetscScalar value, *yy;

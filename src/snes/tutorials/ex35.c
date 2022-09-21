@@ -59,7 +59,8 @@ extern PetscErrorCode MyComputeFunction(SNES, Vec, Vec, void *);
 extern PetscErrorCode MyComputeJacobian(SNES, Vec, Mat, Mat, void *);
 extern PetscErrorCode NonlinearGS(SNES, Vec);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   SNES      snes;  /* nonlinear solver */
   SNES      psnes; /* nonlinear Gauss-Seidel approximate solver */
   Vec       x, b;  /* solution vector */
@@ -134,7 +135,8 @@ int main(int argc, char **argv) {
 }
 
 /* ------------------------------------------------------------------- */
-PetscErrorCode MyComputeFunction(SNES snes, Vec x, Vec F, void *ctx) {
+PetscErrorCode MyComputeFunction(SNES snes, Vec x, Vec F, void *ctx)
+{
   Mat J;
   DM  dm;
 
@@ -153,7 +155,8 @@ PetscErrorCode MyComputeFunction(SNES snes, Vec x, Vec F, void *ctx) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MyComputeJacobian(SNES snes, Vec x, Mat J, Mat Jp, void *ctx) {
+PetscErrorCode MyComputeJacobian(SNES snes, Vec x, Mat J, Mat Jp, void *ctx)
+{
   DM dm;
 
   PetscFunctionBeginUser;
@@ -162,7 +165,8 @@ PetscErrorCode MyComputeJacobian(SNES snes, Vec x, Mat J, Mat Jp, void *ctx) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode FormMatrix(DM da, Mat jac) {
+PetscErrorCode FormMatrix(DM da, Mat jac)
+{
   PetscInt      i, j, nrows = 0;
   MatStencil    col[5], row, *rows;
   PetscScalar   v[5], hx, hy, hxdhy, hydhx;
@@ -240,7 +244,8 @@ PetscErrorCode FormMatrix(DM da, Mat jac) {
       Applies some sweeps on nonlinear Gauss-Seidel on each process
 
  */
-PetscErrorCode NonlinearGS(SNES snes, Vec X) {
+PetscErrorCode NonlinearGS(SNES snes, Vec X)
+{
   PetscInt      i, j, Mx, My, xs, ys, xm, ym, its, l;
   PetscReal     hx, hy, hxdhy, hydhx;
   PetscScalar **x, F, J, u, uxx, uyy;

@@ -24,7 +24,8 @@
 
 /* -------------------- 1D ---------------- */
 template <class MemorySpace>
-PetscErrorCode DMDAVecGetKokkosOffsetView_Private(DM da, Vec vec, PetscScalarKokkosOffsetView1DType<MemorySpace> *ov, PetscBool overwrite) {
+PetscErrorCode DMDAVecGetKokkosOffsetView_Private(DM da, Vec vec, PetscScalarKokkosOffsetView1DType<MemorySpace> *ov, PetscBool overwrite)
+{
   PetscInt                               xs, ys, zs, xm, ym, zm, gxs, gys, gzs, gxm, gym, gzm, N, dim, dof;
   PetscScalarKokkosViewType<MemorySpace> kv;
 
@@ -42,7 +43,8 @@ PetscErrorCode DMDAVecGetKokkosOffsetView_Private(DM da, Vec vec, PetscScalarKok
 }
 
 template <class MemorySpace>
-PetscErrorCode DMDAVecRestoreKokkosOffsetView_Private(DM da, Vec vec, PetscScalarKokkosOffsetView1DType<MemorySpace> *ov, PetscBool overwrite) {
+PetscErrorCode DMDAVecRestoreKokkosOffsetView_Private(DM da, Vec vec, PetscScalarKokkosOffsetView1DType<MemorySpace> *ov, PetscBool overwrite)
+{
   PetscScalarKokkosViewType<MemorySpace> kv;
 
   PetscFunctionBegin;
@@ -56,7 +58,8 @@ PetscErrorCode DMDAVecRestoreKokkosOffsetView_Private(DM da, Vec vec, PetscScala
 }
 
 template <class MemorySpace>
-PetscErrorCode DMDAVecGetKokkosOffsetView(DM da, Vec vec, ConstPetscScalarKokkosOffsetView1DType<MemorySpace> *ov) {
+PetscErrorCode DMDAVecGetKokkosOffsetView(DM da, Vec vec, ConstPetscScalarKokkosOffsetView1DType<MemorySpace> *ov)
+{
   PetscInt                                    xs, ys, zs, xm, ym, zm, gxs, gys, gzs, gxm, gym, gzm, N, dim, dof;
   ConstPetscScalarKokkosViewType<MemorySpace> kv;
 
@@ -72,7 +75,8 @@ PetscErrorCode DMDAVecGetKokkosOffsetView(DM da, Vec vec, ConstPetscScalarKokkos
 }
 
 template <class MemorySpace>
-PetscErrorCode DMDAVecRestoreKokkosOffsetView(DM da, Vec vec, ConstPetscScalarKokkosOffsetView1DType<MemorySpace> *ov) {
+PetscErrorCode DMDAVecRestoreKokkosOffsetView(DM da, Vec vec, ConstPetscScalarKokkosOffsetView1DType<MemorySpace> *ov)
+{
   ConstPetscScalarKokkosViewType<MemorySpace> kv;
 
   PetscFunctionBegin;
@@ -86,7 +90,8 @@ PetscErrorCode DMDAVecRestoreKokkosOffsetView(DM da, Vec vec, ConstPetscScalarKo
 
 /* ============================== 2D ================================= */
 template <class MemorySpace>
-PetscErrorCode DMDAVecGetKokkosOffsetView_Private(DM da, Vec vec, PetscScalarKokkosOffsetView2DType<MemorySpace> *ov, PetscBool overwrite) {
+PetscErrorCode DMDAVecGetKokkosOffsetView_Private(DM da, Vec vec, PetscScalarKokkosOffsetView2DType<MemorySpace> *ov, PetscBool overwrite)
+{
   PetscInt                               xs, ys, zs, xm, ym, zm, gxs, gys, gzs, gxm, gym, gzm, N, dim, dof;
   PetscScalarKokkosViewType<MemorySpace> kv;
 
@@ -103,7 +108,8 @@ PetscErrorCode DMDAVecGetKokkosOffsetView_Private(DM da, Vec vec, PetscScalarKok
 }
 
 template <class MemorySpace>
-PetscErrorCode DMDAVecRestoreKokkosOffsetView_Private(DM da, Vec vec, PetscScalarKokkosOffsetView2DType<MemorySpace> *ov, PetscBool overwrite) {
+PetscErrorCode DMDAVecRestoreKokkosOffsetView_Private(DM da, Vec vec, PetscScalarKokkosOffsetView2DType<MemorySpace> *ov, PetscBool overwrite)
+{
   PetscScalarKokkosViewType<MemorySpace> kv;
 
   PetscFunctionBegin;
@@ -118,7 +124,8 @@ PetscErrorCode DMDAVecRestoreKokkosOffsetView_Private(DM da, Vec vec, PetscScala
 }
 
 template <class MemorySpace>
-PetscErrorCode DMDAVecGetKokkosOffsetView(DM da, Vec vec, ConstPetscScalarKokkosOffsetView2DType<MemorySpace> *ov) {
+PetscErrorCode DMDAVecGetKokkosOffsetView(DM da, Vec vec, ConstPetscScalarKokkosOffsetView2DType<MemorySpace> *ov)
+{
   PetscInt                                    xs, ys, zs, xm, ym, zm, gxs, gys, gzs, gxm, gym, gzm, N, dim, dof;
   ConstPetscScalarKokkosViewType<MemorySpace> kv;
 
@@ -134,7 +141,8 @@ PetscErrorCode DMDAVecGetKokkosOffsetView(DM da, Vec vec, ConstPetscScalarKokkos
 }
 
 template <class MemorySpace>
-PetscErrorCode DMDAVecRestoreKokkosOffsetView(DM da, Vec vec, ConstPetscScalarKokkosOffsetView2DType<MemorySpace> *ov) {
+PetscErrorCode DMDAVecRestoreKokkosOffsetView(DM da, Vec vec, ConstPetscScalarKokkosOffsetView2DType<MemorySpace> *ov)
+{
   ConstPetscScalarKokkosViewType<MemorySpace> kv;
 
   PetscFunctionBegin;
@@ -148,7 +156,8 @@ PetscErrorCode DMDAVecRestoreKokkosOffsetView(DM da, Vec vec, ConstPetscScalarKo
 
 /* ============================== 3D ================================= */
 template <class MemorySpace>
-PetscErrorCode DMDAVecGetKokkosOffsetView_Private(DM da, Vec vec, PetscScalarKokkosOffsetView3DType<MemorySpace> *ov, PetscBool overwrite) {
+PetscErrorCode DMDAVecGetKokkosOffsetView_Private(DM da, Vec vec, PetscScalarKokkosOffsetView3DType<MemorySpace> *ov, PetscBool overwrite)
+{
   PetscInt                               xs, ys, zs, xm, ym, zm, gxs, gys, gzs, gxm, gym, gzm, N, dim, dof;
   PetscScalarKokkosViewType<MemorySpace> kv;
 
@@ -165,7 +174,8 @@ PetscErrorCode DMDAVecGetKokkosOffsetView_Private(DM da, Vec vec, PetscScalarKok
 }
 
 template <class MemorySpace>
-PetscErrorCode DMDAVecRestoreKokkosOffsetView_Private(DM da, Vec vec, PetscScalarKokkosOffsetView3DType<MemorySpace> *ov, PetscBool overwrite) {
+PetscErrorCode DMDAVecRestoreKokkosOffsetView_Private(DM da, Vec vec, PetscScalarKokkosOffsetView3DType<MemorySpace> *ov, PetscBool overwrite)
+{
   PetscScalarKokkosViewType<MemorySpace> kv;
 
   PetscFunctionBegin;
@@ -179,7 +189,8 @@ PetscErrorCode DMDAVecRestoreKokkosOffsetView_Private(DM da, Vec vec, PetscScala
 }
 
 template <class MemorySpace>
-PetscErrorCode DMDAVecGetKokkosOffsetView(DM da, Vec vec, ConstPetscScalarKokkosOffsetView3DType<MemorySpace> *ov) {
+PetscErrorCode DMDAVecGetKokkosOffsetView(DM da, Vec vec, ConstPetscScalarKokkosOffsetView3DType<MemorySpace> *ov)
+{
   PetscInt                                    xs, ys, zs, xm, ym, zm, gxs, gys, gzs, gxm, gym, gzm, N, dim, dof;
   ConstPetscScalarKokkosViewType<MemorySpace> kv;
 
@@ -195,7 +206,8 @@ PetscErrorCode DMDAVecGetKokkosOffsetView(DM da, Vec vec, ConstPetscScalarKokkos
 }
 
 template <class MemorySpace>
-PetscErrorCode DMDAVecRestoreKokkosOffsetView(DM da, Vec vec, ConstPetscScalarKokkosOffsetView3DType<MemorySpace> *ov) {
+PetscErrorCode DMDAVecRestoreKokkosOffsetView(DM da, Vec vec, ConstPetscScalarKokkosOffsetView3DType<MemorySpace> *ov)
+{
   ConstPetscScalarKokkosViewType<MemorySpace> kv;
 
   PetscFunctionBegin;
@@ -211,57 +223,69 @@ PetscErrorCode DMDAVecRestoreKokkosOffsetView(DM da, Vec vec, ConstPetscScalarKo
 template PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetView(DM, Vec, ConstPetscScalarKokkosOffsetView1D *);
 template PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetView(DM, Vec, ConstPetscScalarKokkosOffsetView1D *);
 template <>
-PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetView(DM da, Vec vec, PetscScalarKokkosOffsetView1D *ov) {
+PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetView(DM da, Vec vec, PetscScalarKokkosOffsetView1D *ov)
+{
   return DMDAVecGetKokkosOffsetView_Private(da, vec, ov, PETSC_FALSE);
 }
 template <>
-PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetView(DM da, Vec vec, PetscScalarKokkosOffsetView1D *ov) {
+PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetView(DM da, Vec vec, PetscScalarKokkosOffsetView1D *ov)
+{
   return DMDAVecRestoreKokkosOffsetView_Private(da, vec, ov, PETSC_FALSE);
 }
 template <>
-PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetViewWrite(DM da, Vec vec, PetscScalarKokkosOffsetView1D *ov) {
+PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetViewWrite(DM da, Vec vec, PetscScalarKokkosOffsetView1D *ov)
+{
   return DMDAVecGetKokkosOffsetView_Private(da, vec, ov, PETSC_TRUE);
 }
 template <>
-PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetViewWrite(DM da, Vec vec, PetscScalarKokkosOffsetView1D *ov) {
+PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetViewWrite(DM da, Vec vec, PetscScalarKokkosOffsetView1D *ov)
+{
   return DMDAVecRestoreKokkosOffsetView_Private(da, vec, ov, PETSC_TRUE);
 }
 
 template PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetView(DM, Vec, ConstPetscScalarKokkosOffsetView2D *);
 template PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetView(DM, Vec, ConstPetscScalarKokkosOffsetView2D *);
 template <>
-PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetView(DM da, Vec vec, PetscScalarKokkosOffsetView2D *ov) {
+PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetView(DM da, Vec vec, PetscScalarKokkosOffsetView2D *ov)
+{
   return DMDAVecGetKokkosOffsetView_Private(da, vec, ov, PETSC_FALSE);
 }
 template <>
-PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetView(DM da, Vec vec, PetscScalarKokkosOffsetView2D *ov) {
+PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetView(DM da, Vec vec, PetscScalarKokkosOffsetView2D *ov)
+{
   return DMDAVecRestoreKokkosOffsetView_Private(da, vec, ov, PETSC_FALSE);
 }
 template <>
-PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetViewWrite(DM da, Vec vec, PetscScalarKokkosOffsetView2D *ov) {
+PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetViewWrite(DM da, Vec vec, PetscScalarKokkosOffsetView2D *ov)
+{
   return DMDAVecGetKokkosOffsetView_Private(da, vec, ov, PETSC_TRUE);
 }
 template <>
-PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetViewWrite(DM da, Vec vec, PetscScalarKokkosOffsetView2D *ov) {
+PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetViewWrite(DM da, Vec vec, PetscScalarKokkosOffsetView2D *ov)
+{
   return DMDAVecRestoreKokkosOffsetView_Private(da, vec, ov, PETSC_TRUE);
 }
 
 template PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetView(DM, Vec, ConstPetscScalarKokkosOffsetView3D *);
 template PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetView(DM, Vec, ConstPetscScalarKokkosOffsetView3D *);
 template <>
-PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetView(DM da, Vec vec, PetscScalarKokkosOffsetView3D *ov) {
+PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetView(DM da, Vec vec, PetscScalarKokkosOffsetView3D *ov)
+{
   return DMDAVecGetKokkosOffsetView_Private(da, vec, ov, PETSC_FALSE);
 }
 template <>
-PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetView(DM da, Vec vec, PetscScalarKokkosOffsetView3D *ov) {
+PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetView(DM da, Vec vec, PetscScalarKokkosOffsetView3D *ov)
+{
   return DMDAVecRestoreKokkosOffsetView_Private(da, vec, ov, PETSC_FALSE);
 }
 template <>
-PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetViewWrite(DM da, Vec vec, PetscScalarKokkosOffsetView3D *ov) {
+PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetViewWrite(DM da, Vec vec, PetscScalarKokkosOffsetView3D *ov)
+{
   return DMDAVecGetKokkosOffsetView_Private(da, vec, ov, PETSC_TRUE);
 }
 template <>
-PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetViewWrite(DM da, Vec vec, PetscScalarKokkosOffsetView3D *ov) {
+PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetViewWrite(DM da, Vec vec, PetscScalarKokkosOffsetView3D *ov)
+{
   return DMDAVecRestoreKokkosOffsetView_Private(da, vec, ov, PETSC_TRUE);
 }
 
@@ -269,64 +293,77 @@ PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetViewWrite(DM da
 template PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetView(DM, Vec, ConstPetscScalarKokkosOffsetView1DHost *);
 template PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetView(DM, Vec, ConstPetscScalarKokkosOffsetView1DHost *);
 template <>
-PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetView(DM da, Vec vec, PetscScalarKokkosOffsetView1DHost *ov) {
+PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetView(DM da, Vec vec, PetscScalarKokkosOffsetView1DHost *ov)
+{
   return DMDAVecGetKokkosOffsetView_Private(da, vec, ov, PETSC_FALSE);
 }
 template <>
-PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetView(DM da, Vec vec, PetscScalarKokkosOffsetView1DHost *ov) {
+PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetView(DM da, Vec vec, PetscScalarKokkosOffsetView1DHost *ov)
+{
   return DMDAVecRestoreKokkosOffsetView_Private(da, vec, ov, PETSC_FALSE);
 }
 template <>
-PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetViewWrite(DM da, Vec vec, PetscScalarKokkosOffsetView1DHost *ov) {
+PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetViewWrite(DM da, Vec vec, PetscScalarKokkosOffsetView1DHost *ov)
+{
   return DMDAVecGetKokkosOffsetView_Private(da, vec, ov, PETSC_TRUE);
 }
 template <>
-PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetViewWrite(DM da, Vec vec, PetscScalarKokkosOffsetView1DHost *ov) {
+PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetViewWrite(DM da, Vec vec, PetscScalarKokkosOffsetView1DHost *ov)
+{
   return DMDAVecRestoreKokkosOffsetView_Private(da, vec, ov, PETSC_TRUE);
 }
 
 template PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetView(DM, Vec, ConstPetscScalarKokkosOffsetView2DHost *);
 template PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetView(DM, Vec, ConstPetscScalarKokkosOffsetView2DHost *);
 template <>
-PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetView(DM da, Vec vec, PetscScalarKokkosOffsetView2DHost *ov) {
+PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetView(DM da, Vec vec, PetscScalarKokkosOffsetView2DHost *ov)
+{
   return DMDAVecGetKokkosOffsetView_Private(da, vec, ov, PETSC_FALSE);
 }
 template <>
-PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetView(DM da, Vec vec, PetscScalarKokkosOffsetView2DHost *ov) {
+PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetView(DM da, Vec vec, PetscScalarKokkosOffsetView2DHost *ov)
+{
   return DMDAVecRestoreKokkosOffsetView_Private(da, vec, ov, PETSC_FALSE);
 }
 template <>
-PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetViewWrite(DM da, Vec vec, PetscScalarKokkosOffsetView2DHost *ov) {
+PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetViewWrite(DM da, Vec vec, PetscScalarKokkosOffsetView2DHost *ov)
+{
   return DMDAVecGetKokkosOffsetView_Private(da, vec, ov, PETSC_TRUE);
 }
 template <>
-PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetViewWrite(DM da, Vec vec, PetscScalarKokkosOffsetView2DHost *ov) {
+PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetViewWrite(DM da, Vec vec, PetscScalarKokkosOffsetView2DHost *ov)
+{
   return DMDAVecRestoreKokkosOffsetView_Private(da, vec, ov, PETSC_TRUE);
 }
 
 template PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetView(DM, Vec, ConstPetscScalarKokkosOffsetView3DHost *);
 template PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetView(DM, Vec, ConstPetscScalarKokkosOffsetView3DHost *);
 template <>
-PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetView(DM da, Vec vec, PetscScalarKokkosOffsetView3DHost *ov) {
+PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetView(DM da, Vec vec, PetscScalarKokkosOffsetView3DHost *ov)
+{
   return DMDAVecGetKokkosOffsetView_Private(da, vec, ov, PETSC_FALSE);
 }
 template <>
-PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetView(DM da, Vec vec, PetscScalarKokkosOffsetView3DHost *ov) {
+PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetView(DM da, Vec vec, PetscScalarKokkosOffsetView3DHost *ov)
+{
   return DMDAVecRestoreKokkosOffsetView_Private(da, vec, ov, PETSC_FALSE);
 }
 template <>
-PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetViewWrite(DM da, Vec vec, PetscScalarKokkosOffsetView3DHost *ov) {
+PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetViewWrite(DM da, Vec vec, PetscScalarKokkosOffsetView3DHost *ov)
+{
   return DMDAVecGetKokkosOffsetView_Private(da, vec, ov, PETSC_TRUE);
 }
 template <>
-PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetViewWrite(DM da, Vec vec, PetscScalarKokkosOffsetView3DHost *ov) {
+PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetViewWrite(DM da, Vec vec, PetscScalarKokkosOffsetView3DHost *ov)
+{
   return DMDAVecRestoreKokkosOffsetView_Private(da, vec, ov, PETSC_TRUE);
 }
 #endif
 
 /* ============================== 2D including DOF ================================= */
 template <class MemorySpace>
-PetscErrorCode DMDAVecGetKokkosOffsetViewDOF_Private(DM da, Vec vec, PetscScalarKokkosOffsetView2DType<MemorySpace> *ov, PetscBool overwrite) {
+PetscErrorCode DMDAVecGetKokkosOffsetViewDOF_Private(DM da, Vec vec, PetscScalarKokkosOffsetView2DType<MemorySpace> *ov, PetscBool overwrite)
+{
   PetscInt                               xs, ys, zs, xm, ym, zm, gxs, gys, gzs, gxm, gym, gzm, N, dim, dof;
   PetscScalarKokkosViewType<MemorySpace> kv;
 
@@ -343,7 +380,8 @@ PetscErrorCode DMDAVecGetKokkosOffsetViewDOF_Private(DM da, Vec vec, PetscScalar
 }
 
 template <class MemorySpace>
-PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOF_Private(DM da, Vec vec, PetscScalarKokkosOffsetView2DType<MemorySpace> *ov, PetscBool overwrite) {
+PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOF_Private(DM da, Vec vec, PetscScalarKokkosOffsetView2DType<MemorySpace> *ov, PetscBool overwrite)
+{
   PetscScalarKokkosViewType<MemorySpace> kv;
 
   PetscFunctionBegin;
@@ -357,7 +395,8 @@ PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOF_Private(DM da, Vec vec, PetscSc
 }
 
 template <class MemorySpace>
-PetscErrorCode DMDAVecGetKokkosOffsetViewDOF(DM da, Vec vec, ConstPetscScalarKokkosOffsetView2DType<MemorySpace> *ov) {
+PetscErrorCode DMDAVecGetKokkosOffsetViewDOF(DM da, Vec vec, ConstPetscScalarKokkosOffsetView2DType<MemorySpace> *ov)
+{
   PetscInt                                    xs, ys, zs, xm, ym, zm, gxs, gys, gzs, gxm, gym, gzm, N, dim, dof;
   ConstPetscScalarKokkosViewType<MemorySpace> kv;
 
@@ -373,7 +412,8 @@ PetscErrorCode DMDAVecGetKokkosOffsetViewDOF(DM da, Vec vec, ConstPetscScalarKok
 }
 
 template <class MemorySpace>
-PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOF(DM da, Vec vec, ConstPetscScalarKokkosOffsetView2DType<MemorySpace> *ov) {
+PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOF(DM da, Vec vec, ConstPetscScalarKokkosOffsetView2DType<MemorySpace> *ov)
+{
   ConstPetscScalarKokkosViewType<MemorySpace> kv;
 
   PetscFunctionBegin;
@@ -387,7 +427,8 @@ PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOF(DM da, Vec vec, ConstPetscScala
 
 /* ============================== 3D including DOF ================================= */
 template <class MemorySpace>
-PetscErrorCode DMDAVecGetKokkosOffsetViewDOF_Private(DM da, Vec vec, PetscScalarKokkosOffsetView3DType<MemorySpace> *ov, PetscBool overwrite) {
+PetscErrorCode DMDAVecGetKokkosOffsetViewDOF_Private(DM da, Vec vec, PetscScalarKokkosOffsetView3DType<MemorySpace> *ov, PetscBool overwrite)
+{
   PetscInt                               xs, ys, zs, xm, ym, zm, gxs, gys, gzs, gxm, gym, gzm, N, dim, dof;
   PetscScalarKokkosViewType<MemorySpace> kv;
 
@@ -404,7 +445,8 @@ PetscErrorCode DMDAVecGetKokkosOffsetViewDOF_Private(DM da, Vec vec, PetscScalar
 }
 
 template <class MemorySpace>
-PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOF_Private(DM da, Vec vec, PetscScalarKokkosOffsetView3DType<MemorySpace> *ov, PetscBool overwrite) {
+PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOF_Private(DM da, Vec vec, PetscScalarKokkosOffsetView3DType<MemorySpace> *ov, PetscBool overwrite)
+{
   PetscScalarKokkosViewType<MemorySpace> kv;
 
   PetscFunctionBegin;
@@ -418,7 +460,8 @@ PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOF_Private(DM da, Vec vec, PetscSc
 }
 
 template <class MemorySpace>
-PetscErrorCode DMDAVecGetKokkosOffsetViewDOF(DM da, Vec vec, ConstPetscScalarKokkosOffsetView3DType<MemorySpace> *ov) {
+PetscErrorCode DMDAVecGetKokkosOffsetViewDOF(DM da, Vec vec, ConstPetscScalarKokkosOffsetView3DType<MemorySpace> *ov)
+{
   PetscInt                                    xs, ys, zs, xm, ym, zm, gxs, gys, gzs, gxm, gym, gzm, N, dim, dof;
   ConstPetscScalarKokkosViewType<MemorySpace> kv;
 
@@ -434,7 +477,8 @@ PetscErrorCode DMDAVecGetKokkosOffsetViewDOF(DM da, Vec vec, ConstPetscScalarKok
 }
 
 template <class MemorySpace>
-PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOF(DM da, Vec vec, ConstPetscScalarKokkosOffsetView3DType<MemorySpace> *ov) {
+PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOF(DM da, Vec vec, ConstPetscScalarKokkosOffsetView3DType<MemorySpace> *ov)
+{
   ConstPetscScalarKokkosViewType<MemorySpace> kv;
 
   PetscFunctionBegin;
@@ -448,7 +492,8 @@ PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOF(DM da, Vec vec, ConstPetscScala
 
 /* ============================== 4D including DOF ================================= */
 template <class MemorySpace>
-PetscErrorCode DMDAVecGetKokkosOffsetViewDOF_Private(DM da, Vec vec, PetscScalarKokkosOffsetView4DType<MemorySpace> *ov, PetscBool overwrite) {
+PetscErrorCode DMDAVecGetKokkosOffsetViewDOF_Private(DM da, Vec vec, PetscScalarKokkosOffsetView4DType<MemorySpace> *ov, PetscBool overwrite)
+{
   PetscInt                               xs, ys, zs, xm, ym, zm, gxs, gys, gzs, gxm, gym, gzm, N, dim, dof;
   PetscScalarKokkosViewType<MemorySpace> kv;
 
@@ -465,7 +510,8 @@ PetscErrorCode DMDAVecGetKokkosOffsetViewDOF_Private(DM da, Vec vec, PetscScalar
 }
 
 template <class MemorySpace>
-PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOF_Private(DM da, Vec vec, PetscScalarKokkosOffsetView4DType<MemorySpace> *ov, PetscBool overwrite) {
+PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOF_Private(DM da, Vec vec, PetscScalarKokkosOffsetView4DType<MemorySpace> *ov, PetscBool overwrite)
+{
   PetscScalarKokkosViewType<MemorySpace> kv;
 
   PetscFunctionBegin;
@@ -479,7 +525,8 @@ PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOF_Private(DM da, Vec vec, PetscSc
 }
 
 template <class MemorySpace>
-PetscErrorCode DMDAVecGetKokkosOffsetViewDOF(DM da, Vec vec, ConstPetscScalarKokkosOffsetView4DType<MemorySpace> *ov) {
+PetscErrorCode DMDAVecGetKokkosOffsetViewDOF(DM da, Vec vec, ConstPetscScalarKokkosOffsetView4DType<MemorySpace> *ov)
+{
   PetscInt                                    xs, ys, zs, xm, ym, zm, gxs, gys, gzs, gxm, gym, gzm, N, dim, dof;
   ConstPetscScalarKokkosViewType<MemorySpace> kv;
 
@@ -495,7 +542,8 @@ PetscErrorCode DMDAVecGetKokkosOffsetViewDOF(DM da, Vec vec, ConstPetscScalarKok
 }
 
 template <class MemorySpace>
-PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOF(DM da, Vec vec, ConstPetscScalarKokkosOffsetView4DType<MemorySpace> *ov) {
+PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOF(DM da, Vec vec, ConstPetscScalarKokkosOffsetView4DType<MemorySpace> *ov)
+{
   ConstPetscScalarKokkosViewType<MemorySpace> kv;
 
   PetscFunctionBegin;
@@ -510,57 +558,69 @@ PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOF(DM da, Vec vec, ConstPetscScala
 template PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetViewDOF(DM, Vec, ConstPetscScalarKokkosOffsetView2D *);
 template PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOF(DM, Vec, ConstPetscScalarKokkosOffsetView2D *);
 template <>
-PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetViewDOF(DM da, Vec vec, PetscScalarKokkosOffsetView2D *ov) {
+PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetViewDOF(DM da, Vec vec, PetscScalarKokkosOffsetView2D *ov)
+{
   return DMDAVecGetKokkosOffsetViewDOF_Private(da, vec, ov, PETSC_FALSE);
 }
 template <>
-PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOF(DM da, Vec vec, PetscScalarKokkosOffsetView2D *ov) {
+PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOF(DM da, Vec vec, PetscScalarKokkosOffsetView2D *ov)
+{
   return DMDAVecRestoreKokkosOffsetViewDOF_Private(da, vec, ov, PETSC_FALSE);
 }
 template <>
-PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetViewDOFWrite(DM da, Vec vec, PetscScalarKokkosOffsetView2D *ov) {
+PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetViewDOFWrite(DM da, Vec vec, PetscScalarKokkosOffsetView2D *ov)
+{
   return DMDAVecGetKokkosOffsetViewDOF_Private(da, vec, ov, PETSC_TRUE);
 }
 template <>
-PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOFWrite(DM da, Vec vec, PetscScalarKokkosOffsetView2D *ov) {
+PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOFWrite(DM da, Vec vec, PetscScalarKokkosOffsetView2D *ov)
+{
   return DMDAVecRestoreKokkosOffsetViewDOF_Private(da, vec, ov, PETSC_TRUE);
 }
 
 template PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetViewDOF(DM, Vec, ConstPetscScalarKokkosOffsetView3D *);
 template PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOF(DM, Vec, ConstPetscScalarKokkosOffsetView3D *);
 template <>
-PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetViewDOF(DM da, Vec vec, PetscScalarKokkosOffsetView3D *ov) {
+PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetViewDOF(DM da, Vec vec, PetscScalarKokkosOffsetView3D *ov)
+{
   return DMDAVecGetKokkosOffsetViewDOF_Private(da, vec, ov, PETSC_FALSE);
 }
 template <>
-PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOF(DM da, Vec vec, PetscScalarKokkosOffsetView3D *ov) {
+PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOF(DM da, Vec vec, PetscScalarKokkosOffsetView3D *ov)
+{
   return DMDAVecRestoreKokkosOffsetViewDOF_Private(da, vec, ov, PETSC_FALSE);
 }
 template <>
-PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetViewDOFWrite(DM da, Vec vec, PetscScalarKokkosOffsetView3D *ov) {
+PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetViewDOFWrite(DM da, Vec vec, PetscScalarKokkosOffsetView3D *ov)
+{
   return DMDAVecGetKokkosOffsetViewDOF_Private(da, vec, ov, PETSC_TRUE);
 }
 template <>
-PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOFWrite(DM da, Vec vec, PetscScalarKokkosOffsetView3D *ov) {
+PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOFWrite(DM da, Vec vec, PetscScalarKokkosOffsetView3D *ov)
+{
   return DMDAVecRestoreKokkosOffsetViewDOF_Private(da, vec, ov, PETSC_TRUE);
 }
 
 template PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetViewDOF(DM, Vec, ConstPetscScalarKokkosOffsetView4D *);
 template PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOF(DM, Vec, ConstPetscScalarKokkosOffsetView4D *);
 template <>
-PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetViewDOF(DM da, Vec vec, PetscScalarKokkosOffsetView4D *ov) {
+PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetViewDOF(DM da, Vec vec, PetscScalarKokkosOffsetView4D *ov)
+{
   return DMDAVecGetKokkosOffsetViewDOF_Private(da, vec, ov, PETSC_FALSE);
 }
 template <>
-PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOF(DM da, Vec vec, PetscScalarKokkosOffsetView4D *ov) {
+PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOF(DM da, Vec vec, PetscScalarKokkosOffsetView4D *ov)
+{
   return DMDAVecRestoreKokkosOffsetViewDOF_Private(da, vec, ov, PETSC_FALSE);
 }
 template <>
-PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetViewDOFWrite(DM da, Vec vec, PetscScalarKokkosOffsetView4D *ov) {
+PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetViewDOFWrite(DM da, Vec vec, PetscScalarKokkosOffsetView4D *ov)
+{
   return DMDAVecGetKokkosOffsetViewDOF_Private(da, vec, ov, PETSC_TRUE);
 }
 template <>
-PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOFWrite(DM da, Vec vec, PetscScalarKokkosOffsetView4D *ov) {
+PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOFWrite(DM da, Vec vec, PetscScalarKokkosOffsetView4D *ov)
+{
   return DMDAVecRestoreKokkosOffsetViewDOF_Private(da, vec, ov, PETSC_TRUE);
 }
 
@@ -568,57 +628,69 @@ PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOFWrite(DM
 template PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetViewDOF(DM, Vec, ConstPetscScalarKokkosOffsetView2DHost *);
 template PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOF(DM, Vec, ConstPetscScalarKokkosOffsetView2DHost *);
 template <>
-PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetViewDOF(DM da, Vec vec, PetscScalarKokkosOffsetView2DHost *ov) {
+PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetViewDOF(DM da, Vec vec, PetscScalarKokkosOffsetView2DHost *ov)
+{
   return DMDAVecGetKokkosOffsetViewDOF_Private(da, vec, ov, PETSC_FALSE);
 }
 template <>
-PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOF(DM da, Vec vec, PetscScalarKokkosOffsetView2DHost *ov) {
+PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOF(DM da, Vec vec, PetscScalarKokkosOffsetView2DHost *ov)
+{
   return DMDAVecRestoreKokkosOffsetViewDOF_Private(da, vec, ov, PETSC_FALSE);
 }
 template <>
-PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetViewDOFWrite(DM da, Vec vec, PetscScalarKokkosOffsetView2DHost *ov) {
+PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetViewDOFWrite(DM da, Vec vec, PetscScalarKokkosOffsetView2DHost *ov)
+{
   return DMDAVecGetKokkosOffsetViewDOF_Private(da, vec, ov, PETSC_TRUE);
 }
 template <>
-PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOFWrite(DM da, Vec vec, PetscScalarKokkosOffsetView2DHost *ov) {
+PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOFWrite(DM da, Vec vec, PetscScalarKokkosOffsetView2DHost *ov)
+{
   return DMDAVecRestoreKokkosOffsetViewDOF_Private(da, vec, ov, PETSC_TRUE);
 }
 
 template PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetViewDOF(DM, Vec, ConstPetscScalarKokkosOffsetView3DHost *);
 template PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOF(DM, Vec, ConstPetscScalarKokkosOffsetView3DHost *);
 template <>
-PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetViewDOF(DM da, Vec vec, PetscScalarKokkosOffsetView3DHost *ov) {
+PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetViewDOF(DM da, Vec vec, PetscScalarKokkosOffsetView3DHost *ov)
+{
   return DMDAVecGetKokkosOffsetViewDOF_Private(da, vec, ov, PETSC_FALSE);
 }
 template <>
-PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOF(DM da, Vec vec, PetscScalarKokkosOffsetView3DHost *ov) {
+PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOF(DM da, Vec vec, PetscScalarKokkosOffsetView3DHost *ov)
+{
   return DMDAVecRestoreKokkosOffsetViewDOF_Private(da, vec, ov, PETSC_FALSE);
 }
 template <>
-PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetViewDOFWrite(DM da, Vec vec, PetscScalarKokkosOffsetView3DHost *ov) {
+PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetViewDOFWrite(DM da, Vec vec, PetscScalarKokkosOffsetView3DHost *ov)
+{
   return DMDAVecGetKokkosOffsetViewDOF_Private(da, vec, ov, PETSC_TRUE);
 }
 template <>
-PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOFWrite(DM da, Vec vec, PetscScalarKokkosOffsetView3DHost *ov) {
+PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOFWrite(DM da, Vec vec, PetscScalarKokkosOffsetView3DHost *ov)
+{
   return DMDAVecRestoreKokkosOffsetViewDOF_Private(da, vec, ov, PETSC_TRUE);
 }
 
 template PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetViewDOF(DM, Vec, ConstPetscScalarKokkosOffsetView4DHost *);
 template PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOF(DM, Vec, ConstPetscScalarKokkosOffsetView4DHost *);
 template <>
-PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetViewDOF(DM da, Vec vec, PetscScalarKokkosOffsetView4DHost *ov) {
+PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetViewDOF(DM da, Vec vec, PetscScalarKokkosOffsetView4DHost *ov)
+{
   return DMDAVecGetKokkosOffsetViewDOF_Private(da, vec, ov, PETSC_FALSE);
 }
 template <>
-PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOF(DM da, Vec vec, PetscScalarKokkosOffsetView4DHost *ov) {
+PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOF(DM da, Vec vec, PetscScalarKokkosOffsetView4DHost *ov)
+{
   return DMDAVecRestoreKokkosOffsetViewDOF_Private(da, vec, ov, PETSC_FALSE);
 }
 template <>
-PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetViewDOFWrite(DM da, Vec vec, PetscScalarKokkosOffsetView4DHost *ov) {
+PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetViewDOFWrite(DM da, Vec vec, PetscScalarKokkosOffsetView4DHost *ov)
+{
   return DMDAVecGetKokkosOffsetViewDOF_Private(da, vec, ov, PETSC_TRUE);
 }
 template <>
-PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOFWrite(DM da, Vec vec, PetscScalarKokkosOffsetView4DHost *ov) {
+PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOFWrite(DM da, Vec vec, PetscScalarKokkosOffsetView4DHost *ov)
+{
   return DMDAVecRestoreKokkosOffsetViewDOF_Private(da, vec, ov, PETSC_TRUE);
 }
 #endif

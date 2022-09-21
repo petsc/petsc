@@ -22,7 +22,8 @@ PetscLogEvent PETSC_Barrier;
     across `PETSC_COMM_WORLD`. You can also pass in any PETSc object, `Vec`, `Mat`, etc
 
 @*/
-PetscErrorCode PetscBarrier(PetscObject obj) {
+PetscErrorCode PetscBarrier(PetscObject obj)
+{
   MPI_Comm comm;
 
   PetscFunctionBegin;

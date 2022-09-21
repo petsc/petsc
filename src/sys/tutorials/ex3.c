@@ -12,7 +12,8 @@ codes.\n\n";
 #include <petscsys.h>
 #include <petscviewer.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscMPIInt   rank;
   int           i, imax = 10000, icount;
   PetscLogEvent USER_EVENT, check_USER_EVENT;

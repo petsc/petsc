@@ -9,13 +9,15 @@
 #include <../src/ksp/ksp/impls/bcgs/bcgsimpl.h> /*I  "petscksp.h"  I*/
 #include <petsc/private/vecimpl.h>
 
-static PetscErrorCode KSPSetUp_FBCGSR(KSP ksp) {
+static PetscErrorCode KSPSetUp_FBCGSR(KSP ksp)
+{
   PetscFunctionBegin;
   PetscCall(KSPSetWorkVecs(ksp, 8));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPSolve_FBCGSR(KSP ksp) {
+static PetscErrorCode KSPSolve_FBCGSR(KSP ksp)
+{
   PetscInt                    i, j, N;
   PetscScalar                 tau, sigma, alpha, omega, beta;
   PetscReal                   rho;
@@ -213,7 +215,8 @@ static PetscErrorCode KSPSolve_FBCGSR(KSP ksp) {
 
 .seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPBICG`, `KSPFBCGSL`, `KSPSetPCSide()`
 M*/
-PETSC_EXTERN PetscErrorCode KSPCreate_FBCGSR(KSP ksp) {
+PETSC_EXTERN PetscErrorCode KSPCreate_FBCGSR(KSP ksp)
+{
   KSP_BCGS *bcgs;
 
   PetscFunctionBegin;

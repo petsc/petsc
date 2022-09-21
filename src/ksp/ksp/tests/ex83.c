@@ -2,7 +2,8 @@ static char help[] = "Test the Fischer-1 initial guess routine with VECNEST.\n\n
 
 #include <petscksp.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   /* Test that exceeding the number of stored vectors works correctly - this used to not work with VecNest */
   PetscInt    triangle_size = 10;
   Mat         A, A_nest;

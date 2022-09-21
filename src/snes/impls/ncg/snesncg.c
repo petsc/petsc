@@ -1,7 +1,8 @@
 #include <../src/snes/impls/ncg/snesncgimpl.h> /*I "petscsnes.h" I*/
 const char *const SNESNCGTypes[] = {"FR", "PRP", "HS", "DY", "CD", "SNESNCGType", "SNES_NCG_", NULL};
 
-static PetscErrorCode SNESReset_NCG(SNES snes) {
+static PetscErrorCode SNESReset_NCG(SNES snes)
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
@@ -14,7 +15,8 @@ static PetscErrorCode SNESReset_NCG(SNES snes) {
 
   Application Interface Routine: SNESDestroy()
 */
-static PetscErrorCode SNESDestroy_NCG(SNES snes) {
+static PetscErrorCode SNESDestroy_NCG(SNES snes)
+{
   PetscFunctionBegin;
   PetscCall(PetscObjectComposeFunction((PetscObject)snes, "SNESNCGSetType_C", NULL));
   PetscCall(PetscFree(snes->data));
@@ -32,7 +34,8 @@ static PetscErrorCode SNESDestroy_NCG(SNES snes) {
    Application Interface Routine: SNESSetUp()
  */
 
-static PetscErrorCode SNESSetUp_NCG(SNES snes) {
+static PetscErrorCode SNESSetUp_NCG(SNES snes)
+{
   PetscFunctionBegin;
   PetscCall(SNESSetWorkVecs(snes, 2));
   PetscCheck(snes->npcside != PC_RIGHT, PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_WRONGSTATE, "SNESNCG only supports left preconditioning");
@@ -40,7 +43,8 @@ static PetscErrorCode SNESSetUp_NCG(SNES snes) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESLineSearchApply_NCGLinear(SNESLineSearch linesearch) {
+static PetscErrorCode SNESLineSearchApply_NCGLinear(SNESLineSearch linesearch)
+{
   PetscScalar alpha, ptAp;
   Vec         X, Y, F, W;
   SNES        snes;
@@ -93,7 +97,8 @@ static PetscErrorCode SNESLineSearchApply_NCGLinear(SNESLineSearch linesearch) {
 .seealso: `SNESLineSearchCreate()`, `SNESLineSearchSetType()`
 M*/
 
-PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_NCGLinear(SNESLineSearch linesearch) {
+PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_NCGLinear(SNESLineSearch linesearch)
+{
   PetscFunctionBegin;
   linesearch->ops->apply          = SNESLineSearchApply_NCGLinear;
   linesearch->ops->destroy        = NULL;
@@ -112,7 +117,8 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_NCGLinear(SNESLineSearch linese
 
   Application Interface Routine: SNESSetFromOptions()
 */
-static PetscErrorCode SNESSetFromOptions_NCG(SNES snes, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode SNESSetFromOptions_NCG(SNES snes, PetscOptionItems *PetscOptionsObject)
+{
   SNES_NCG      *ncg     = (SNES_NCG *)snes->data;
   PetscBool      debug   = PETSC_FALSE;
   SNESNCGType    ncgtype = ncg->type;
@@ -147,7 +153,8 @@ static PetscErrorCode SNESSetFromOptions_NCG(SNES snes, PetscOptionItems *PetscO
 
   Application Interface Routine: SNESView()
 */
-static PetscErrorCode SNESView_NCG(SNES snes, PetscViewer viewer) {
+static PetscErrorCode SNESView_NCG(SNES snes, PetscViewer viewer)
+{
   SNES_NCG *ncg = (SNES_NCG *)snes->data;
   PetscBool iascii;
 
@@ -166,7 +173,8 @@ static PetscErrorCode SNESView_NCG(SNES snes, PetscViewer viewer) {
  Note it has a hardwired differencing parameter of 1e-5
 
  */
-PetscErrorCode SNESNCGComputeYtJtF_Private(SNES snes, Vec X, Vec F, Vec Y, Vec W, Vec G, PetscScalar *ytJtf) {
+PetscErrorCode SNESNCGComputeYtJtF_Private(SNES snes, Vec X, Vec F, Vec Y, Vec W, Vec G, PetscScalar *ytJtf)
+{
   PetscScalar ftf, ftg, fty, h;
 
   PetscFunctionBegin;
@@ -213,14 +221,16 @@ PetscErrorCode SNESNCGComputeYtJtF_Private(SNES snes, Vec X, Vec F, Vec Y, Vec W
 
 .seealso: `SNESNCGType`, `SNES_NCG_FR`, `SNES_NCG_PRP`,  `SNES_NCG_HS`, `SNES_NCG_DY`, `SNES_NCG_CD`
 @*/
-PetscErrorCode SNESNCGSetType(SNES snes, SNESNCGType btype) {
+PetscErrorCode SNESNCGSetType(SNES snes, SNESNCGType btype)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscTryMethod(snes, "SNESNCGSetType_C", (SNES, SNESNCGType), (snes, btype));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESNCGSetType_NCG(SNES snes, SNESNCGType btype) {
+static PetscErrorCode SNESNCGSetType_NCG(SNES snes, SNESNCGType btype)
+{
   SNES_NCG *ncg = (SNES_NCG *)snes->data;
 
   PetscFunctionBegin;
@@ -239,7 +249,8 @@ static PetscErrorCode SNESNCGSetType_NCG(SNES snes, SNESNCGType btype) {
 
   Application Interface Routine: SNESSolve()
 */
-static PetscErrorCode SNESSolve_NCG(SNES snes) {
+static PetscErrorCode SNESSolve_NCG(SNES snes)
+{
   SNES_NCG            *ncg = (SNES_NCG *)snes->data;
   Vec                  X, dX, lX, F, dXold;
   PetscReal            fnorm, ynorm, xnorm, beta = 0.0;
@@ -449,7 +460,8 @@ static PetscErrorCode SNESSolve_NCG(SNES snes) {
 
 .seealso: `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESNEWTONLS`, `SNESNEWTONTR`, `SNESNGMRES`, `SNESQN`, `SNESLINESEARCHNCGLINEAR`, `SNESNCGSetType()`, `SNESLineSearchSetType()`
 M*/
-PETSC_EXTERN PetscErrorCode SNESCreate_NCG(SNES snes) {
+PETSC_EXTERN PetscErrorCode SNESCreate_NCG(SNES snes)
+{
   SNES_NCG *neP;
 
   PetscFunctionBegin;

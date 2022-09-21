@@ -3,7 +3,8 @@ static char help[] = "Test DMClone_Stag()\n\n";
 #include <petscdm.h>
 #include <petscdmstag.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM        dm, dm2;
   PetscInt  dim;
   PetscBool flg, setSizes;
@@ -35,7 +36,8 @@ int main(int argc, char **argv) {
       PetscCheck(size == ranksx * ranksy * ranksz, PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Must run on %" PetscInt_FMT " ranks with -dim 3 -setSizes", ranksx * ranksy * ranksz);
       PetscCall(DMStagCreate3d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, mx, my, mz, ranksx, ranksy, ranksz, 1, 1, 1, 1, DMSTAG_STENCIL_BOX, 1, lx, ly, lz, &dm));
       break;
-    default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "No support for dimension %" PetscInt_FMT, dim);
+    default:
+      SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "No support for dimension %" PetscInt_FMT, dim);
     }
   } else {
     if (dim == 1) {

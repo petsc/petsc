@@ -2,7 +2,8 @@
 #include <petsc/private/vecimpl.h> /*I "petscvec.h" I*/
 #include "../src/vec/vec/utils/tagger/impls/simple.h"
 
-static PetscErrorCode VecTaggerComputeBoxes_Absolute(VecTagger tagger, Vec vec, PetscInt *numBoxes, VecTaggerBox **boxes, PetscBool *listed) {
+static PetscErrorCode VecTaggerComputeBoxes_Absolute(VecTagger tagger, Vec vec, PetscInt *numBoxes, VecTaggerBox **boxes, PetscBool *listed)
+{
   VecTagger_Simple *smpl = (VecTagger_Simple *)tagger->data;
   PetscInt          bs, i;
   VecTaggerBox     *bxs;
@@ -33,7 +34,8 @@ static PetscErrorCode VecTaggerComputeBoxes_Absolute(VecTagger tagger, Vec vec, 
 
 .seealso: `VecTaggerAbsoluteGetBox()`
 @*/
-PetscErrorCode VecTaggerAbsoluteSetBox(VecTagger tagger, VecTaggerBox *box) {
+PetscErrorCode VecTaggerAbsoluteSetBox(VecTagger tagger, VecTaggerBox *box)
+{
   PetscFunctionBegin;
   PetscCall(VecTaggerSetBox_Simple(tagger, box));
   PetscFunctionReturn(0);
@@ -54,13 +56,15 @@ PetscErrorCode VecTaggerAbsoluteSetBox(VecTagger tagger, VecTaggerBox *box) {
 
 .seealso: `VecTaggerAbsoluteSetBox()`
 @*/
-PetscErrorCode VecTaggerAbsoluteGetBox(VecTagger tagger, const VecTaggerBox **box) {
+PetscErrorCode VecTaggerAbsoluteGetBox(VecTagger tagger, const VecTaggerBox **box)
+{
   PetscFunctionBegin;
   PetscCall(VecTaggerGetBox_Simple(tagger, box));
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode VecTaggerCreate_Absolute(VecTagger tagger) {
+PETSC_INTERN PetscErrorCode VecTaggerCreate_Absolute(VecTagger tagger)
+{
   PetscFunctionBegin;
   PetscCall(VecTaggerCreate_Simple(tagger));
   tagger->ops->computeboxes = VecTaggerComputeBoxes_Absolute;

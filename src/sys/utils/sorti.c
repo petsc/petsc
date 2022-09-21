@@ -256,7 +256,8 @@
 
 .seealso: `PetscSortInt()`, `PetscSortedMPIInt()`, `PetscSortedReal()`
 @*/
-PetscErrorCode PetscSortedInt(PetscInt n, const PetscInt X[], PetscBool *sorted) {
+PetscErrorCode PetscSortedInt(PetscInt n, const PetscInt X[], PetscBool *sorted)
+{
   PetscFunctionBegin;
   if (n) PetscValidIntPointer(X, 2);
   PetscValidBoolPointer(sorted, 3);
@@ -282,7 +283,8 @@ PetscErrorCode PetscSortedInt(PetscInt n, const PetscInt X[], PetscBool *sorted)
 
 .seealso: `PetscIntSortSemiOrdered()`, `PetscSortReal()`, `PetscSortIntWithPermutation()`
 @*/
-PetscErrorCode PetscSortInt(PetscInt n, PetscInt X[]) {
+PetscErrorCode PetscSortInt(PetscInt n, PetscInt X[])
+{
   PetscInt pivot, t1;
 
   PetscFunctionBegin;
@@ -304,7 +306,8 @@ PetscErrorCode PetscSortInt(PetscInt n, PetscInt X[]) {
 
 .seealso: `PetscIntSortSemiOrdered()`, `PetscSortInt()`, `PetscSortIntWithPermutation()`
 @*/
-PetscErrorCode PetscSortReverseInt(PetscInt n, PetscInt X[]) {
+PetscErrorCode PetscSortReverseInt(PetscInt n, PetscInt X[])
+{
   PetscInt pivot, t1;
 
   PetscFunctionBegin;
@@ -329,7 +332,8 @@ PetscErrorCode PetscSortReverseInt(PetscInt n, PetscInt X[]) {
 
 .seealso: `PetscSortInt()`
 @*/
-PetscErrorCode PetscSortedRemoveDupsInt(PetscInt *n, PetscInt X[]) {
+PetscErrorCode PetscSortedRemoveDupsInt(PetscInt *n, PetscInt X[])
+{
   PetscInt i, s = 0, N = *n, b = 0;
 
   PetscFunctionBegin;
@@ -361,7 +365,8 @@ PetscErrorCode PetscSortedRemoveDupsInt(PetscInt *n, PetscInt X[]) {
 
 .seealso: `PetscSortInt()`, `PetscCheckDupsInt()`, `PetscSortRemoveDupsInt()`, `PetscSortedRemoveDupsInt()`
 @*/
-PetscErrorCode PetscSortedCheckDupsInt(PetscInt n, const PetscInt X[], PetscBool *flg) {
+PetscErrorCode PetscSortedCheckDupsInt(PetscInt n, const PetscInt X[], PetscBool *flg)
+{
   PetscInt i;
 
   PetscFunctionBegin;
@@ -392,7 +397,8 @@ PetscErrorCode PetscSortedCheckDupsInt(PetscInt n, const PetscInt X[], PetscBool
 
 .seealso: `PetscIntSortSemiOrdered()`, `PetscSortReal()`, `PetscSortIntWithPermutation()`, `PetscSortInt()`, `PetscSortedRemoveDupsInt()`
 @*/
-PetscErrorCode PetscSortRemoveDupsInt(PetscInt *n, PetscInt X[]) {
+PetscErrorCode PetscSortRemoveDupsInt(PetscInt *n, PetscInt X[])
+{
   PetscFunctionBegin;
   PetscValidIntPointer(n, 1);
   PetscCall(PetscSortInt(*n, X));
@@ -417,7 +423,8 @@ PetscErrorCode PetscSortRemoveDupsInt(PetscInt *n, PetscInt X[]) {
 
 .seealso: `PetscIntSortSemiOrdered()`, `PetscSortInt()`, `PetscSortIntWithArray()`, `PetscSortRemoveDupsInt()`
 @*/
-PetscErrorCode PetscFindInt(PetscInt key, PetscInt n, const PetscInt X[], PetscInt *loc) {
+PetscErrorCode PetscFindInt(PetscInt key, PetscInt n, const PetscInt X[], PetscInt *loc)
+{
   PetscInt lo = 0, hi = n;
 
   PetscFunctionBegin;
@@ -453,7 +460,8 @@ PetscErrorCode PetscFindInt(PetscInt key, PetscInt n, const PetscInt X[], PetscI
 
 .seealso: `PetscSortRemoveDupsInt()`, `PetscSortedCheckDupsInt()`
 @*/
-PetscErrorCode PetscCheckDupsInt(PetscInt n, const PetscInt X[], PetscBool *dups) {
+PetscErrorCode PetscCheckDupsInt(PetscInt n, const PetscInt X[], PetscBool *dups)
+{
   PetscInt   i;
   PetscHSetI ht;
   PetscBool  missing;
@@ -494,7 +502,8 @@ PetscErrorCode PetscCheckDupsInt(PetscInt n, const PetscInt X[], PetscBool *dups
 
 .seealso: `PetscMPIIntSortSemiOrdered()`, `PetscSortInt()`, `PetscSortIntWithArray()`, `PetscSortRemoveDupsInt()`
 @*/
-PetscErrorCode PetscFindMPIInt(PetscMPIInt key, PetscInt n, const PetscMPIInt X[], PetscInt *loc) {
+PetscErrorCode PetscFindMPIInt(PetscMPIInt key, PetscInt n, const PetscMPIInt X[], PetscInt *loc)
+{
   PetscInt lo = 0, hi = n;
 
   PetscFunctionBegin;
@@ -529,7 +538,8 @@ PetscErrorCode PetscFindMPIInt(PetscMPIInt key, PetscInt n, const PetscMPIInt X[
 
 .seealso: `PetscIntSortSemiOrderedWithArray()`, `PetscSortReal()`, `PetscSortIntWithPermutation()`, `PetscSortInt()`, `PetscSortIntWithCountArray()`
 @*/
-PetscErrorCode PetscSortIntWithArray(PetscInt n, PetscInt X[], PetscInt Y[]) {
+PetscErrorCode PetscSortIntWithArray(PetscInt n, PetscInt X[], PetscInt Y[])
+{
   PetscInt pivot, t1, t2;
 
   PetscFunctionBegin;
@@ -553,7 +563,8 @@ PetscErrorCode PetscSortIntWithArray(PetscInt n, PetscInt X[], PetscInt Y[]) {
 
 .seealso: `PetscSortReal()`, `PetscSortIntWithPermutation()`, `PetscSortIntWithArray()`, `PetscIntSortSemiOrdered()`, `PetscSortIntWithIntCountArrayPair()`
 @*/
-PetscErrorCode PetscSortIntWithArrayPair(PetscInt n, PetscInt X[], PetscInt Y[], PetscInt Z[]) {
+PetscErrorCode PetscSortIntWithArrayPair(PetscInt n, PetscInt X[], PetscInt Y[], PetscInt Z[])
+{
   PetscInt pivot, t1, t2, t3;
 
   PetscFunctionBegin;
@@ -576,7 +587,8 @@ PetscErrorCode PetscSortIntWithArrayPair(PetscInt n, PetscInt X[], PetscInt Y[],
 
 .seealso: `PetscIntSortSemiOrderedWithArray()`, `PetscSortReal()`, `PetscSortIntPermutation()`, `PetscSortInt()`, `PetscSortIntWithArray()`
 @*/
-PetscErrorCode PetscSortIntWithCountArray(PetscCount n, PetscInt X[], PetscCount Y[]) {
+PetscErrorCode PetscSortIntWithCountArray(PetscCount n, PetscInt X[], PetscCount Y[])
+{
   PetscInt   pivot, t1;
   PetscCount t2;
 
@@ -604,7 +616,8 @@ PetscErrorCode PetscSortIntWithCountArray(PetscCount n, PetscInt X[], PetscCount
 
 .seealso: `PetscSortReal()`, `PetscSortIntPermutation()`, `PetscSortIntWithArray()`, `PetscIntSortSemiOrdered()`, `PetscSortIntWithArrayPair()`
 @*/
-PetscErrorCode PetscSortIntWithIntCountArrayPair(PetscCount n, PetscInt X[], PetscInt Y[], PetscCount Z[]) {
+PetscErrorCode PetscSortIntWithIntCountArrayPair(PetscCount n, PetscInt X[], PetscInt Y[], PetscCount Z[])
+{
   PetscInt   pivot, t1, t2; /* pivot is take from X[], so its type is still PetscInt */
   PetscCount t3;            /* temp for Z[] */
 
@@ -629,7 +642,8 @@ PetscErrorCode PetscSortIntWithIntCountArrayPair(PetscCount n, PetscInt X[], Pet
 
 .seealso: `PetscMPIIntSortSemiOrdered()`, `PetscSortMPIInt()`, `PetscSortedInt()`, `PetscSortedReal()`
 @*/
-PetscErrorCode PetscSortedMPIInt(PetscInt n, const PetscMPIInt X[], PetscBool *sorted) {
+PetscErrorCode PetscSortedMPIInt(PetscInt n, const PetscMPIInt X[], PetscBool *sorted)
+{
   PetscFunctionBegin;
   PetscSorted(n, X, *sorted);
   PetscFunctionReturn(0);
@@ -653,7 +667,8 @@ PetscErrorCode PetscSortedMPIInt(PetscInt n, const PetscMPIInt X[], PetscBool *s
 
 .seealso: `PetscMPIIntSortSemiOrdered()`, `PetscSortReal()`, `PetscSortIntWithPermutation()`
 @*/
-PetscErrorCode PetscSortMPIInt(PetscInt n, PetscMPIInt X[]) {
+PetscErrorCode PetscSortMPIInt(PetscInt n, PetscMPIInt X[])
+{
   PetscMPIInt pivot, t1;
 
   PetscFunctionBegin;
@@ -677,7 +692,8 @@ PetscErrorCode PetscSortMPIInt(PetscInt n, PetscMPIInt X[]) {
 
 .seealso: `PetscSortReal()`, `PetscSortIntWithPermutation()`, `PetscSortInt()`
 @*/
-PetscErrorCode PetscSortRemoveDupsMPIInt(PetscInt *n, PetscMPIInt X[]) {
+PetscErrorCode PetscSortRemoveDupsMPIInt(PetscInt *n, PetscMPIInt X[])
+{
   PetscInt s = 0, N = *n, b = 0;
 
   PetscFunctionBegin;
@@ -707,7 +723,8 @@ PetscErrorCode PetscSortRemoveDupsMPIInt(PetscInt *n, PetscMPIInt X[]) {
 
 .seealso: `PetscMPIIntSortSemiOrderedWithArray()`, `PetscSortReal()`, `PetscSortIntWithPermutation()`, `PetscSortInt()`
 @*/
-PetscErrorCode PetscSortMPIIntWithArray(PetscMPIInt n, PetscMPIInt X[], PetscMPIInt Y[]) {
+PetscErrorCode PetscSortMPIIntWithArray(PetscMPIInt n, PetscMPIInt X[], PetscMPIInt Y[])
+{
   PetscMPIInt pivot, t1, t2;
 
   PetscFunctionBegin;
@@ -733,7 +750,8 @@ PetscErrorCode PetscSortMPIIntWithArray(PetscMPIInt n, PetscMPIInt X[], PetscMPI
 
 .seealso: `PetscSortMPIIntWithArray()`, `PetscIntSortSemiOrderedWithArray()`, `PetscTimSortWithArray()`
 @*/
-PetscErrorCode PetscSortMPIIntWithIntArray(PetscMPIInt n, PetscMPIInt X[], PetscInt Y[]) {
+PetscErrorCode PetscSortMPIIntWithIntArray(PetscMPIInt n, PetscMPIInt X[], PetscInt Y[])
+{
   PetscMPIInt pivot, t1;
   PetscInt    t2;
 
@@ -757,7 +775,8 @@ PetscErrorCode PetscSortMPIIntWithIntArray(PetscMPIInt n, PetscMPIInt X[], Petsc
 
 .seealso: `PetscTimSortWithArray()`, `PetscSortReal()`, `PetscSortIntWithPermutation()`, `PetscSortInt()`, `PetscSortIntWithArray()`
 @*/
-PetscErrorCode PetscSortIntWithScalarArray(PetscInt n, PetscInt X[], PetscScalar Y[]) {
+PetscErrorCode PetscSortIntWithScalarArray(PetscInt n, PetscInt X[], PetscScalar Y[])
+{
   PetscInt    pivot, t1;
   PetscScalar t2;
 
@@ -784,7 +803,8 @@ PetscErrorCode PetscSortIntWithScalarArray(PetscInt n, PetscInt X[], PetscScalar
 
 .seealso: `PetscTimSortWithArray()`, `PetscSortReal()`, `PetscSortIntWithPermutation()`, `PetscSortInt()`, `PetscSortIntWithArray()`
 @*/
-PetscErrorCode PetscSortIntWithDataArray(PetscInt n, PetscInt X[], void *Y, size_t size, void *t2) {
+PetscErrorCode PetscSortIntWithDataArray(PetscInt n, PetscInt X[], void *Y, size_t size, void *t2)
+{
   char    *YY = (char *)Y;
   PetscInt t1, pivot, hi = n - 1;
 
@@ -840,7 +860,8 @@ PetscErrorCode PetscSortIntWithDataArray(PetscInt n, PetscInt X[], void *Y, size
 
 .seealso: `PetscSortReal()`, `PetscSortIntWithPermutation()`, `PetscSortInt()`, `PetscSortIntWithArray()`
 @*/
-PetscErrorCode PetscMergeIntArray(PetscInt an, const PetscInt aI[], PetscInt bn, const PetscInt bI[], PetscInt *n, PetscInt **L) {
+PetscErrorCode PetscMergeIntArray(PetscInt an, const PetscInt aI[], PetscInt bn, const PetscInt bI[], PetscInt *n, PetscInt **L)
+{
   PetscInt *L_ = *L, ak, bk, k;
 
   PetscFunctionBegin;
@@ -904,7 +925,8 @@ PetscErrorCode PetscMergeIntArray(PetscInt an, const PetscInt aI[], PetscInt bn,
 
 .seealso: `PetscIntSortSemiOrdered()`, `PetscSortReal()`, `PetscSortIntWithPermutation()`, `PetscSortInt()`, `PetscSortIntWithArray()`
 @*/
-PetscErrorCode PetscMergeIntArrayPair(PetscInt an, const PetscInt aI[], const PetscInt aJ[], PetscInt bn, const PetscInt bI[], const PetscInt bJ[], PetscInt *n, PetscInt **L, PetscInt **J) {
+PetscErrorCode PetscMergeIntArrayPair(PetscInt an, const PetscInt aI[], const PetscInt aJ[], PetscInt bn, const PetscInt bI[], const PetscInt bJ[], PetscInt *n, PetscInt **L, PetscInt **J)
+{
   PetscInt n_, *L_, *J_, ak, bk, k;
 
   PetscFunctionBegin;
@@ -961,7 +983,8 @@ PetscErrorCode PetscMergeIntArrayPair(PetscInt an, const PetscInt aI[], const Pe
 
 .seealso: `PetscIntSortSemiOrdered()`, `PetscSortReal()`, `PetscSortIntWithPermutation()`, `PetscSortInt()`, `PetscSortIntWithArray()`
 @*/
-PetscErrorCode PetscMergeMPIIntArray(PetscInt an, const PetscMPIInt aI[], PetscInt bn, const PetscMPIInt bI[], PetscInt *n, PetscMPIInt **L) {
+PetscErrorCode PetscMergeMPIIntArray(PetscInt an, const PetscMPIInt aI[], PetscInt bn, const PetscMPIInt bI[], PetscInt *n, PetscMPIInt **L)
+{
   PetscInt ai, bi, k;
 
   PetscFunctionBegin;
@@ -1003,7 +1026,8 @@ PetscErrorCode PetscMergeMPIIntArray(PetscInt an, const PetscMPIInt aI[], PetscI
 
 .seealso: `PetscSortReal()`, `PetscSortIntWithPermutation()`
 @*/
-PetscErrorCode PetscProcessTree(PetscInt n, const PetscBool mask[], const PetscInt parentid[], PetscInt *Nlevels, PetscInt **Level, PetscInt **Levelcnt, PetscInt **Idbylevel, PetscInt **Column) {
+PetscErrorCode PetscProcessTree(PetscInt n, const PetscBool mask[], const PetscInt parentid[], PetscInt *Nlevels, PetscInt **Level, PetscInt **Levelcnt, PetscInt **Idbylevel, PetscInt **Column)
+{
   PetscInt  i, j, cnt, nmask = 0, nlevels = 0, *level, *levelcnt, levelmax = 0, *workid, *workparentid, tcnt = 0, *idbylevel, *column;
   PetscBool done = PETSC_FALSE;
 
@@ -1098,7 +1122,8 @@ PetscErrorCode PetscProcessTree(PetscInt n, const PetscBool mask[], const PetscI
 
 .seealso: `PetscParallelSortInt()`
 @*/
-PetscErrorCode PetscParallelSortedInt(MPI_Comm comm, PetscInt n, const PetscInt keys[], PetscBool *is_sorted) {
+PetscErrorCode PetscParallelSortedInt(MPI_Comm comm, PetscInt n, const PetscInt keys[], PetscBool *is_sorted)
+{
   PetscBool   sorted;
   PetscInt    i, min, max, prevmax;
   PetscMPIInt rank;

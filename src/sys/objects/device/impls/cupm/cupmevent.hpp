@@ -6,13 +6,17 @@
 #include <petsc/private/cpp/object_pool.hpp>
 
 #if defined(__cplusplus)
-namespace Petsc {
+namespace Petsc
+{
 
-namespace device {
+namespace device
+{
 
-namespace cupm {
+namespace cupm
+{
 
-namespace {
+namespace
+{
 
 // A pool for allocating cupmEvent_t's. While events are generally very cheap to create and
 // destroy, they are not free. Using the pool vs on-demand creation and destruction yields a ~20%
@@ -26,14 +30,16 @@ struct CUPMEventPoolAllocator : impl::Interface<T>, AllocatorBase<typename impl:
 };
 
 template <DeviceType T, unsigned long flags>
-inline PetscErrorCode CUPMEventPoolAllocator<T, flags>::create(cupmEvent_t *event) noexcept {
+inline PetscErrorCode CUPMEventPoolAllocator<T, flags>::create(cupmEvent_t *event) noexcept
+{
   PetscFunctionBegin;
   PetscCallCUPM(cupmEventCreateWithFlags(event, flags));
   PetscFunctionReturn(0);
 }
 
 template <DeviceType T, unsigned long flags>
-inline PetscErrorCode CUPMEventPoolAllocator<T, flags>::destroy(cupmEvent_t event) noexcept {
+inline PetscErrorCode CUPMEventPoolAllocator<T, flags>::destroy(cupmEvent_t event) noexcept
+{
   PetscFunctionBegin;
   PetscCallCUPM(cupmEventDestroy(event));
   PetscFunctionReturn(0);
@@ -42,20 +48,23 @@ inline PetscErrorCode CUPMEventPoolAllocator<T, flags>::destroy(cupmEvent_t even
 } // anonymous namespace
 
 template <DeviceType T, unsigned long flags, typename allocator_type = CUPMEventPoolAllocator<T, flags>, typename pool_type = ObjectPool<typename allocator_type::value_type, allocator_type>>
-pool_type &cupm_event_pool() noexcept {
+pool_type &cupm_event_pool() noexcept
+{
   static pool_type pool;
   return pool;
 }
 
 // pool of events with timing disabled
 template <DeviceType T>
-inline auto cupm_fast_event_pool() noexcept -> decltype(cupm_event_pool<T, impl::Interface<T>::cupmEventDisableTiming>()) & {
+inline auto cupm_fast_event_pool() noexcept -> decltype(cupm_event_pool<T, impl::Interface<T>::cupmEventDisableTiming>()) &
+{
   return cupm_event_pool<T, impl::Interface<T>::cupmEventDisableTiming>();
 }
 
 // pool of events with timing enabled
 template <DeviceType T>
-inline auto cupm_timer_event_pool() noexcept -> decltype(cupm_event_pool<T, impl::Interface<T>::cupmEventDefault>()) & {
+inline auto cupm_timer_event_pool() noexcept -> decltype(cupm_event_pool<T, impl::Interface<T>::cupmEventDefault>()) &
+{
   return cupm_event_pool<T, impl::Interface<T>::cupmEventDefault>();
 }
 
@@ -89,17 +98,21 @@ private:
 };
 
 template <DeviceType T>
-inline CUPMEvent<T>::~CUPMEvent() noexcept {
+inline CUPMEvent<T>::~CUPMEvent() noexcept
+{
   PetscFunctionBegin;
   if (event_) PetscCallAbort(PETSC_COMM_SELF, cupm_fast_event_pool<T>().deallocate(std::move(event_)));
   PetscFunctionReturnVoid();
 }
 
 template <DeviceType T>
-inline CUPMEvent<T>::CUPMEvent(CUPMEvent &&other) noexcept : interface_type(std::move(other)), pool_type(std::move(other)), event_(util::exchange(other.event_, cupmEvent_t{})) { }
+inline CUPMEvent<T>::CUPMEvent(CUPMEvent &&other) noexcept : interface_type(std::move(other)), pool_type(std::move(other)), event_(util::exchange(other.event_, cupmEvent_t{}))
+{
+}
 
 template <DeviceType T>
-inline CUPMEvent<T> &CUPMEvent<T>::operator=(CUPMEvent &&other) noexcept {
+inline CUPMEvent<T> &CUPMEvent<T>::operator=(CUPMEvent &&other) noexcept
+{
   PetscFunctionBegin;
   if (this != &other) {
     interface_type::operator=(std::move(other));
@@ -111,21 +124,24 @@ inline CUPMEvent<T> &CUPMEvent<T>::operator=(CUPMEvent &&other) noexcept {
 }
 
 template <DeviceType T>
-inline typename CUPMEvent<T>::cupmEvent_t CUPMEvent<T>::get() noexcept {
+inline typename CUPMEvent<T>::cupmEvent_t CUPMEvent<T>::get() noexcept
+{
   PetscFunctionBegin;
   if (PetscUnlikely(!event_)) PetscCallAbort(PETSC_COMM_SELF, cupm_fast_event_pool<T>().allocate(&event_));
   PetscFunctionReturn(event_);
 }
 
 template <DeviceType T>
-inline PetscErrorCode CUPMEvent<T>::record(cupmStream_t stream) noexcept {
+inline PetscErrorCode CUPMEvent<T>::record(cupmStream_t stream) noexcept
+{
   PetscFunctionBegin;
   PetscCallCUPM(cupmEventRecord(get(), stream));
   PetscFunctionReturn(0);
 }
 
 template <DeviceType T>
-inline CUPMEvent<T>::operator bool() const noexcept {
+inline CUPMEvent<T>::operator bool() const noexcept
+{
   return event_ != cupmEvent_t{};
 }
 

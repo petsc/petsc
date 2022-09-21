@@ -4,7 +4,8 @@ static char help[] = "Tests ISLocalToGlobalMappingCreateIS() for bs > 1.\n\n";
 #include <petscis.h>
 #include <petscviewer.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt               bs = 2, n = 3, ix[3] = {1, 7, 9}, iy[2] = {0, 2}, mp[2];
   IS                     isx;
   ISLocalToGlobalMapping ltog;

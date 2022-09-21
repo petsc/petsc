@@ -5,7 +5,8 @@ arguments are\n\
 
 #include <petscvec.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt    n = 15, i;
   PetscScalar v;
   Vec         x, y;

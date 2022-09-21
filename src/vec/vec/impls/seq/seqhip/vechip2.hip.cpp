@@ -18,7 +18,8 @@
 #if defined(PETSC_USE_COMPLEX)
 /* SPOCK compilation issues, need to unroll division and multiplication with complex numbers */
 struct PetscDivideComplex {
-  __host__ __device__ PetscScalar operator()(const PetscScalar &lhs, const PetscScalar &rhs) {
+  __host__ __device__ PetscScalar operator()(const PetscScalar &lhs, const PetscScalar &rhs)
+  {
     PetscReal lx = PetscRealPart(lhs);
     PetscReal ly = PetscImaginaryPart(lhs);
     PetscReal rx = PetscRealPart(rhs);
@@ -29,7 +30,8 @@ struct PetscDivideComplex {
 };
 
 struct PetscMultiplyComplex {
-  __host__ __device__ PetscScalar operator()(const PetscScalar &lhs, const PetscScalar &rhs) {
+  __host__ __device__ PetscScalar operator()(const PetscScalar &lhs, const PetscScalar &rhs)
+  {
     PetscReal lx = PetscRealPart(lhs);
     PetscReal ly = PetscImaginaryPart(lhs);
     PetscReal rx = PetscRealPart(rhs);
@@ -45,7 +47,8 @@ struct PetscMultiplyComplex {
     Does NOT zero the HIP array
 
  */
-PetscErrorCode VecHIPAllocateCheck(Vec v) {
+PetscErrorCode VecHIPAllocateCheck(Vec v)
+{
   Vec_HIP  *vechip;
   PetscBool option_set;
 
@@ -77,7 +80,8 @@ PetscErrorCode VecHIPAllocateCheck(Vec v) {
 }
 
 /* Copies a vector from the CPU to the GPU unless we already have an up-to-date copy on the GPU */
-PetscErrorCode VecHIPCopyToGPU(Vec v) {
+PetscErrorCode VecHIPCopyToGPU(Vec v)
+{
   Vec_HIP     *vechip;
   PetscScalar *varray;
 
@@ -99,7 +103,8 @@ PetscErrorCode VecHIPCopyToGPU(Vec v) {
 /*
      VecHIPCopyFromGPU - Copies a vector from the GPU to the CPU unless we already have an up-to-date copy on the CPU
 */
-PetscErrorCode VecHIPCopyFromGPU(Vec v) {
+PetscErrorCode VecHIPCopyFromGPU(Vec v)
+{
   Vec_HIP     *vechip;
   PetscScalar *varray;
 
@@ -129,7 +134,8 @@ PetscErrorCode VecHIPCopyFromGPU(Vec v) {
 .seealso: `VecCreate()`, `VecSetType()`, `VecSetFromOptions()`, `VecCreateSeqWithArray()`, `VECMPI`, `VecType`, `VecCreateMPI()`, `VecCreateSeq()`
 M*/
 
-PetscErrorCode VecAYPX_SeqHIP(Vec yin, PetscScalar alpha, Vec xin) {
+PetscErrorCode VecAYPX_SeqHIP(Vec yin, PetscScalar alpha, Vec xin)
+{
   const PetscScalar *xarray;
   PetscScalar       *yarray;
   PetscBLASInt       one = 1, bn = 0;
@@ -159,7 +165,8 @@ PetscErrorCode VecAYPX_SeqHIP(Vec yin, PetscScalar alpha, Vec xin) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecAXPY_SeqHIP(Vec yin, PetscScalar alpha, Vec xin) {
+PetscErrorCode VecAXPY_SeqHIP(Vec yin, PetscScalar alpha, Vec xin)
+{
   const PetscScalar *xarray;
   PetscScalar       *yarray;
   PetscBLASInt       one = 1, bn = 0;
@@ -187,7 +194,8 @@ PetscErrorCode VecAXPY_SeqHIP(Vec yin, PetscScalar alpha, Vec xin) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecPointwiseDivide_SeqHIP(Vec win, Vec xin, Vec yin) {
+PetscErrorCode VecPointwiseDivide_SeqHIP(Vec win, Vec xin, Vec yin)
+{
   PetscInt                              n      = xin->map->n;
   const PetscScalar                    *xarray = NULL, *yarray = NULL;
   PetscScalar                          *warray = NULL;
@@ -212,7 +220,9 @@ PetscErrorCode VecPointwiseDivide_SeqHIP(Vec win, Vec xin, Vec yin) {
 #else
     thrust::transform(xptr, xptr + n, yptr, wptr, thrust::divides<PetscScalar>());
 #endif
-  } catch (char *ex) { SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Thrust error: %s", ex); }
+  } catch (char *ex) {
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Thrust error: %s", ex);
+  }
   PetscCall(PetscLogGpuTimeEnd());
   PetscCall(PetscLogGpuFlops(n));
   PetscCall(VecHIPRestoreArrayRead(xin, &xarray));
@@ -221,7 +231,8 @@ PetscErrorCode VecPointwiseDivide_SeqHIP(Vec win, Vec xin, Vec yin) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecWAXPY_SeqHIP(Vec win, PetscScalar alpha, Vec xin, Vec yin) {
+PetscErrorCode VecWAXPY_SeqHIP(Vec win, PetscScalar alpha, Vec xin, Vec yin)
+{
   const PetscScalar *xarray = NULL, *yarray = NULL;
   PetscScalar       *warray = NULL;
   PetscBLASInt       one = 1, bn = 0;
@@ -249,7 +260,8 @@ PetscErrorCode VecWAXPY_SeqHIP(Vec win, PetscScalar alpha, Vec xin, Vec yin) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecMAXPY_SeqHIP(Vec xin, PetscInt nv, const PetscScalar *alpha, Vec *y) {
+PetscErrorCode VecMAXPY_SeqHIP(Vec xin, PetscInt nv, const PetscScalar *alpha, Vec *y)
+{
   PetscInt           n = xin->map->n, j;
   PetscScalar       *xarray;
   const PetscScalar *yarray;
@@ -273,7 +285,8 @@ PetscErrorCode VecMAXPY_SeqHIP(Vec xin, PetscInt nv, const PetscScalar *alpha, V
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecDot_SeqHIP(Vec xin, Vec yin, PetscScalar *z) {
+PetscErrorCode VecDot_SeqHIP(Vec xin, Vec yin, PetscScalar *z)
+{
   const PetscScalar *xarray, *yarray;
   PetscBLASInt       one = 1, bn = 0;
   hipblasHandle_t    hipblasv2handle;
@@ -304,7 +317,8 @@ PetscErrorCode VecDot_SeqHIP(Vec xin, Vec yin, PetscScalar *z) {
 
 #if !defined(PETSC_USE_COMPLEX)
 // M = 2:
-__global__ void VecMDot_SeqHIP_kernel2(const PetscScalar *x, const PetscScalar *y0, const PetscScalar *y1, PetscInt size, PetscScalar *group_results) {
+__global__ void VecMDot_SeqHIP_kernel2(const PetscScalar *x, const PetscScalar *y0, const PetscScalar *y1, PetscInt size, PetscScalar *group_results)
+{
   __shared__ PetscScalar tmp_buffer[2 * MDOT_WORKGROUP_SIZE];
   PetscInt               entries_per_group = (size - 1) / gridDim.x + 1;
   entries_per_group                        = (entries_per_group == 0) ? 1 : entries_per_group; // for very small vectors, a group should still do some work
@@ -339,7 +353,8 @@ __global__ void VecMDot_SeqHIP_kernel2(const PetscScalar *x, const PetscScalar *
 }
 
 // M = 3:
-__global__ void VecMDot_SeqHIP_kernel3(const PetscScalar *x, const PetscScalar *y0, const PetscScalar *y1, const PetscScalar *y2, PetscInt size, PetscScalar *group_results) {
+__global__ void VecMDot_SeqHIP_kernel3(const PetscScalar *x, const PetscScalar *y0, const PetscScalar *y1, const PetscScalar *y2, PetscInt size, PetscScalar *group_results)
+{
   __shared__ PetscScalar tmp_buffer[3 * MDOT_WORKGROUP_SIZE];
   PetscInt               entries_per_group = (size - 1) / gridDim.x + 1;
   entries_per_group                        = (entries_per_group == 0) ? 1 : entries_per_group; // for very small vectors, a group should still do some work
@@ -379,7 +394,8 @@ __global__ void VecMDot_SeqHIP_kernel3(const PetscScalar *x, const PetscScalar *
 }
 
 // M = 4:
-__global__ void VecMDot_SeqHIP_kernel4(const PetscScalar *x, const PetscScalar *y0, const PetscScalar *y1, const PetscScalar *y2, const PetscScalar *y3, PetscInt size, PetscScalar *group_results) {
+__global__ void VecMDot_SeqHIP_kernel4(const PetscScalar *x, const PetscScalar *y0, const PetscScalar *y1, const PetscScalar *y2, const PetscScalar *y3, PetscInt size, PetscScalar *group_results)
+{
   __shared__ PetscScalar tmp_buffer[4 * MDOT_WORKGROUP_SIZE];
   PetscInt               entries_per_group = (size - 1) / gridDim.x + 1;
   entries_per_group                        = (entries_per_group == 0) ? 1 : entries_per_group; // for very small vectors, a group should still do some work
@@ -424,7 +440,8 @@ __global__ void VecMDot_SeqHIP_kernel4(const PetscScalar *x, const PetscScalar *
 }
 
 // M = 8:
-__global__ void VecMDot_SeqHIP_kernel8(const PetscScalar *x, const PetscScalar *y0, const PetscScalar *y1, const PetscScalar *y2, const PetscScalar *y3, const PetscScalar *y4, const PetscScalar *y5, const PetscScalar *y6, const PetscScalar *y7, PetscInt size, PetscScalar *group_results) {
+__global__ void VecMDot_SeqHIP_kernel8(const PetscScalar *x, const PetscScalar *y0, const PetscScalar *y1, const PetscScalar *y2, const PetscScalar *y3, const PetscScalar *y4, const PetscScalar *y5, const PetscScalar *y6, const PetscScalar *y7, PetscInt size, PetscScalar *group_results)
+{
   __shared__ PetscScalar tmp_buffer[8 * MDOT_WORKGROUP_SIZE];
   PetscInt               entries_per_group = (size - 1) / gridDim.x + 1;
   entries_per_group                        = (entries_per_group == 0) ? 1 : entries_per_group; // for very small vectors, a group should still do some work
@@ -489,7 +506,8 @@ __global__ void VecMDot_SeqHIP_kernel8(const PetscScalar *x, const PetscScalar *
 }
 #endif /* !defined(PETSC_USE_COMPLEX) */
 
-PetscErrorCode VecMDot_SeqHIP(Vec xin, PetscInt nv, const Vec yin[], PetscScalar *z) {
+PetscErrorCode VecMDot_SeqHIP(Vec xin, PetscInt nv, const Vec yin[], PetscScalar *z)
+{
   PetscInt           i, n = xin->map->n, current_y_index = 0;
   const PetscScalar *xptr, *y0ptr, *y1ptr, *y2ptr, *y3ptr, *y4ptr, *y5ptr, *y6ptr, *y7ptr;
 #if !defined(PETSC_USE_COMPLEX)
@@ -560,7 +578,9 @@ PetscErrorCode VecMDot_SeqHIP(Vec xin, PetscInt nv, const Vec yin[], PetscScalar
       current_y_index += 3;
       break;
 
-    case 2: PetscCall(VecHIPGetArrayRead(yin[current_y_index], &y0ptr)); PetscCall(VecHIPGetArrayRead(yin[current_y_index + 1], &y1ptr));
+    case 2:
+      PetscCall(VecHIPGetArrayRead(yin[current_y_index], &y0ptr));
+      PetscCall(VecHIPGetArrayRead(yin[current_y_index + 1], &y1ptr));
 #if defined(PETSC_USE_COMPLEX)
       PetscCallHIPBLAS(hipblasXdot(hipblasv2handle, bn, y0ptr, one, xptr, one, &z[current_y_index]));
       PetscCallHIPBLAS(hipblasXdot(hipblasv2handle, bn, y1ptr, one, xptr, one, &z[current_y_index + 1]));
@@ -638,7 +658,8 @@ PetscErrorCode VecMDot_SeqHIP(Vec xin, PetscInt nv, const Vec yin[], PetscScalar
 #undef MDOT_WORKGROUP_SIZE
 #undef MDOT_WORKGROUP_NUM
 
-PetscErrorCode VecSet_SeqHIP(Vec xin, PetscScalar alpha) {
+PetscErrorCode VecSet_SeqHIP(Vec xin, PetscScalar alpha)
+{
   PetscInt                        n      = xin->map->n;
   PetscScalar                    *xarray = NULL;
   thrust::device_ptr<PetscScalar> xptr;
@@ -652,7 +673,9 @@ PetscErrorCode VecSet_SeqHIP(Vec xin, PetscScalar alpha) {
     try {
       xptr = thrust::device_pointer_cast(xarray);
       thrust::fill(xptr, xptr + n, alpha);
-    } catch (char *ex) { SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Thrust error: %s", ex); }
+    } catch (char *ex) {
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Thrust error: %s", ex);
+    }
     PetscCall(PetscLogCpuToGpuScalar(sizeof(PetscScalar)));
   }
   PetscCall(PetscLogGpuTimeEnd());
@@ -661,7 +684,8 @@ PetscErrorCode VecSet_SeqHIP(Vec xin, PetscScalar alpha) {
 }
 
 struct PetscScalarReciprocal {
-  __host__ __device__ PetscScalar operator()(const PetscScalar &s) {
+  __host__ __device__ PetscScalar operator()(const PetscScalar &s)
+  {
 #if defined(PETSC_USE_COMPLEX)
     /* SPOCK compilation issue, need to unroll division */
     PetscReal sx = PetscRealPart(s);
@@ -674,7 +698,8 @@ struct PetscScalarReciprocal {
   }
 };
 
-PetscErrorCode VecReciprocal_SeqHIP(Vec v) {
+PetscErrorCode VecReciprocal_SeqHIP(Vec v)
+{
   PetscInt     n;
   PetscScalar *x;
 
@@ -685,13 +710,16 @@ PetscErrorCode VecReciprocal_SeqHIP(Vec v) {
   try {
     auto xptr = thrust::device_pointer_cast(x);
     thrust::transform(xptr, xptr + n, xptr, PetscScalarReciprocal());
-  } catch (char *ex) { SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Thrust error: %s", ex); }
+  } catch (char *ex) {
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Thrust error: %s", ex);
+  }
   PetscCall(PetscLogGpuTimeEnd());
   PetscCall(VecHIPRestoreArray(v, &x));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecScale_SeqHIP(Vec xin, PetscScalar alpha) {
+PetscErrorCode VecScale_SeqHIP(Vec xin, PetscScalar alpha)
+{
   PetscScalar    *xarray;
   PetscBLASInt    one = 1, bn = 0;
   hipblasHandle_t hipblasv2handle;
@@ -713,7 +741,8 @@ PetscErrorCode VecScale_SeqHIP(Vec xin, PetscScalar alpha) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecTDot_SeqHIP(Vec xin, Vec yin, PetscScalar *z) {
+PetscErrorCode VecTDot_SeqHIP(Vec xin, Vec yin, PetscScalar *z)
+{
   const PetscScalar *xarray, *yarray;
   PetscBLASInt       one = 1, bn = 0;
   hipblasHandle_t    hipblasv2handle;
@@ -733,7 +762,8 @@ PetscErrorCode VecTDot_SeqHIP(Vec xin, Vec yin, PetscScalar *z) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecCopy_SeqHIP(Vec xin, Vec yin) {
+PetscErrorCode VecCopy_SeqHIP(Vec xin, Vec yin)
+{
   const PetscScalar *xarray;
   PetscScalar       *yarray;
 
@@ -797,7 +827,8 @@ PetscErrorCode VecCopy_SeqHIP(Vec xin, Vec yin) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecSwap_SeqHIP(Vec xin, Vec yin) {
+PetscErrorCode VecSwap_SeqHIP(Vec xin, Vec yin)
+{
   PetscBLASInt    one = 1, bn;
   PetscScalar    *xarray, *yarray;
   hipblasHandle_t hipblasv2handle;
@@ -817,7 +848,8 @@ PetscErrorCode VecSwap_SeqHIP(Vec xin, Vec yin) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecAXPBY_SeqHIP(Vec yin, PetscScalar alpha, PetscScalar beta, Vec xin) {
+PetscErrorCode VecAXPBY_SeqHIP(Vec yin, PetscScalar alpha, PetscScalar beta, Vec xin)
+{
   PetscScalar        a = alpha, b = beta;
   const PetscScalar *xarray;
   PetscScalar       *yarray;
@@ -859,7 +891,8 @@ PetscErrorCode VecAXPBY_SeqHIP(Vec yin, PetscScalar alpha, PetscScalar beta, Vec
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecAXPBYPCZ_SeqHIP(Vec zin, PetscScalar alpha, PetscScalar beta, PetscScalar gamma, Vec xin, Vec yin) {
+PetscErrorCode VecAXPBYPCZ_SeqHIP(Vec zin, PetscScalar alpha, PetscScalar beta, PetscScalar gamma, Vec xin, Vec yin)
+{
   PetscInt n = zin->map->n;
 
   PetscFunctionBegin;
@@ -878,7 +911,8 @@ PetscErrorCode VecAXPBYPCZ_SeqHIP(Vec zin, PetscScalar alpha, PetscScalar beta, 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecPointwiseMult_SeqHIP(Vec win, Vec xin, Vec yin) {
+PetscErrorCode VecPointwiseMult_SeqHIP(Vec win, Vec xin, Vec yin)
+{
   PetscInt                              n = win->map->n;
   const PetscScalar                    *xarray, *yarray;
   PetscScalar                          *warray;
@@ -903,7 +937,9 @@ PetscErrorCode VecPointwiseMult_SeqHIP(Vec win, Vec xin, Vec yin) {
 #else
     thrust::transform(xptr, xptr + n, yptr, wptr, thrust::multiplies<PetscScalar>());
 #endif
-  } catch (char *ex) { SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Thrust error: %s", ex); }
+  } catch (char *ex) {
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Thrust error: %s", ex);
+  }
   PetscCall(PetscLogGpuTimeEnd());
   PetscCall(VecHIPRestoreArrayRead(xin, &xarray));
   PetscCall(VecHIPRestoreArrayRead(yin, &yarray));
@@ -914,7 +950,8 @@ PetscErrorCode VecPointwiseMult_SeqHIP(Vec win, Vec xin, Vec yin) {
 
 /* should do infinity norm in hip */
 
-PetscErrorCode VecNorm_SeqHIP(Vec xin, NormType type, PetscReal *z) {
+PetscErrorCode VecNorm_SeqHIP(Vec xin, NormType type, PetscReal *z)
+{
   PetscInt           n   = xin->map->n;
   PetscBLASInt       one = 1, bn = 0;
   const PetscScalar *xarray;
@@ -957,14 +994,16 @@ PetscErrorCode VecNorm_SeqHIP(Vec xin, NormType type, PetscReal *z) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecDotNorm2_SeqHIP(Vec s, Vec t, PetscScalar *dp, PetscScalar *nm) {
+PetscErrorCode VecDotNorm2_SeqHIP(Vec s, Vec t, PetscScalar *dp, PetscScalar *nm)
+{
   PetscFunctionBegin;
   PetscCall(VecDot_SeqHIP(s, t, dp));
   PetscCall(VecDot_SeqHIP(t, t, nm));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecDestroy_SeqHIP(Vec v) {
+PetscErrorCode VecDestroy_SeqHIP(Vec v)
+{
   PetscFunctionBegin;
   if (v->spptr) {
     if (((Vec_HIP *)v->spptr)->GPUarray_allocated) {
@@ -985,7 +1024,8 @@ struct conjugate {
 };
 #endif
 
-PetscErrorCode VecConjugate_SeqHIP(Vec xin) {
+PetscErrorCode VecConjugate_SeqHIP(Vec xin)
+{
 #if defined(PETSC_USE_COMPLEX)
   PetscScalar                    *xarray;
   PetscInt                        n = xin->map->n;
@@ -997,7 +1037,9 @@ PetscErrorCode VecConjugate_SeqHIP(Vec xin) {
   try {
     xptr = thrust::device_pointer_cast(xarray);
     thrust::transform(xptr, xptr + n, xptr, conjugate());
-  } catch (char *ex) { SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Thrust error: %s", ex); }
+  } catch (char *ex) {
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Thrust error: %s", ex);
+  }
   PetscCall(PetscLogGpuTimeEnd());
   PetscCall(VecHIPRestoreArray(xin, &xarray));
 #else
@@ -1006,7 +1048,8 @@ PetscErrorCode VecConjugate_SeqHIP(Vec xin) {
   PetscFunctionReturn(0);
 }
 
-static inline PetscErrorCode VecGetLocalVectorK_SeqHIP(Vec v, Vec w, PetscBool read) {
+static inline PetscErrorCode VecGetLocalVectorK_SeqHIP(Vec v, Vec w, PetscBool read)
+{
   PetscBool wisseqhip;
 
   PetscFunctionBegin;
@@ -1054,7 +1097,8 @@ static inline PetscErrorCode VecGetLocalVectorK_SeqHIP(Vec v, Vec w, PetscBool r
   PetscFunctionReturn(0);
 }
 
-static inline PetscErrorCode VecRestoreLocalVectorK_SeqHIP(Vec v, Vec w, PetscBool read) {
+static inline PetscErrorCode VecRestoreLocalVectorK_SeqHIP(Vec v, Vec w, PetscBool read)
+{
   PetscBool wisseqhip;
 
   PetscFunctionBegin;
@@ -1086,25 +1130,29 @@ static inline PetscErrorCode VecRestoreLocalVectorK_SeqHIP(Vec v, Vec w, PetscBo
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecGetLocalVector_SeqHIP(Vec v, Vec w) {
+PetscErrorCode VecGetLocalVector_SeqHIP(Vec v, Vec w)
+{
   PetscFunctionBegin;
   PetscCall(VecGetLocalVectorK_SeqHIP(v, w, PETSC_FALSE));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecGetLocalVectorRead_SeqHIP(Vec v, Vec w) {
+PetscErrorCode VecGetLocalVectorRead_SeqHIP(Vec v, Vec w)
+{
   PetscFunctionBegin;
   PetscCall(VecGetLocalVectorK_SeqHIP(v, w, PETSC_TRUE));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecRestoreLocalVector_SeqHIP(Vec v, Vec w) {
+PetscErrorCode VecRestoreLocalVector_SeqHIP(Vec v, Vec w)
+{
   PetscFunctionBegin;
   PetscCall(VecRestoreLocalVectorK_SeqHIP(v, w, PETSC_FALSE));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecRestoreLocalVectorRead_SeqHIP(Vec v, Vec w) {
+PetscErrorCode VecRestoreLocalVectorRead_SeqHIP(Vec v, Vec w)
+{
   PetscFunctionBegin;
   PetscCall(VecRestoreLocalVectorK_SeqHIP(v, w, PETSC_TRUE));
   PetscFunctionReturn(0);
@@ -1123,7 +1171,8 @@ struct petscmax : public thrust::binary_function<PetscReal, PetscReal, PetscReal
 };
 
 struct petscmaxi : public thrust::binary_function<thrust::tuple<PetscReal, PetscInt>, thrust::tuple<PetscReal, PetscInt>, thrust::tuple<PetscReal, PetscInt>> {
-  __host__ __device__ thrust::tuple<PetscReal, PetscInt> operator()(const thrust::tuple<PetscReal, PetscInt> &x, const thrust::tuple<PetscReal, PetscInt> &y) {
+  __host__ __device__ thrust::tuple<PetscReal, PetscInt> operator()(const thrust::tuple<PetscReal, PetscInt> &x, const thrust::tuple<PetscReal, PetscInt> &y)
+  {
     return x.get<0>() < y.get<0>() ? thrust::make_tuple(y.get<0>(), y.get<1>()) : (x.get<0>() != y.get<0>() ? thrust::make_tuple(x.get<0>(), x.get<1>()) : (x.get<1>() < y.get<1>() ? thrust::make_tuple(x.get<0>(), x.get<1>()) : thrust::make_tuple(y.get<0>(), y.get<1>())));
   }
 };
@@ -1133,12 +1182,14 @@ struct petscmin : public thrust::binary_function<PetscReal, PetscReal, PetscReal
 };
 
 struct petscmini : public thrust::binary_function<thrust::tuple<PetscReal, PetscInt>, thrust::tuple<PetscReal, PetscInt>, thrust::tuple<PetscReal, PetscInt>> {
-  __host__ __device__ thrust::tuple<PetscReal, PetscInt> operator()(const thrust::tuple<PetscReal, PetscInt> &x, const thrust::tuple<PetscReal, PetscInt> &y) {
+  __host__ __device__ thrust::tuple<PetscReal, PetscInt> operator()(const thrust::tuple<PetscReal, PetscInt> &x, const thrust::tuple<PetscReal, PetscInt> &y)
+  {
     return x.get<0>() > y.get<0>() ? thrust::make_tuple(y.get<0>(), y.get<1>()) : (x.get<0>() != y.get<0>() ? thrust::make_tuple(x.get<0>(), x.get<1>()) : (x.get<1>() < y.get<1>() ? thrust::make_tuple(x.get<0>(), x.get<1>()) : thrust::make_tuple(y.get<0>(), y.get<1>())));
   }
 };
 
-PetscErrorCode VecMax_SeqHIP(Vec v, PetscInt *p, PetscReal *m) {
+PetscErrorCode VecMax_SeqHIP(Vec v, PetscInt *p, PetscReal *m)
+{
   PetscInt                              n = v->map->n;
   const PetscScalar                    *av;
   thrust::device_ptr<const PetscScalar> avpt;
@@ -1162,7 +1213,9 @@ PetscErrorCode VecMax_SeqHIP(Vec v, PetscInt *p, PetscReal *m) {
 #else
       res = thrust::reduce(zibit, zibit + n, res, petscmaxi());
 #endif
-    } catch (char *ex) { SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Thrust error: %s", ex); }
+    } catch (char *ex) {
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Thrust error: %s", ex);
+    }
     *m = res.get<0>();
     *p = res.get<1>();
   } else {
@@ -1172,14 +1225,17 @@ PetscErrorCode VecMax_SeqHIP(Vec v, PetscInt *p, PetscReal *m) {
 #else
       *m = thrust::reduce(avpt, avpt + n, PETSC_MIN_REAL, petscmax());
 #endif
-    } catch (char *ex) { SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Thrust error: %s", ex); }
+    } catch (char *ex) {
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Thrust error: %s", ex);
+    }
   }
   PetscCall(PetscLogGpuTimeEnd());
   PetscCall(VecHIPRestoreArrayRead(v, &av));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecMin_SeqHIP(Vec v, PetscInt *p, PetscReal *m) {
+PetscErrorCode VecMin_SeqHIP(Vec v, PetscInt *p, PetscReal *m)
+{
   PetscInt                              n = v->map->n;
   const PetscScalar                    *av;
   thrust::device_ptr<const PetscScalar> avpt;
@@ -1203,7 +1259,9 @@ PetscErrorCode VecMin_SeqHIP(Vec v, PetscInt *p, PetscReal *m) {
 #else
       res = thrust::reduce(zibit, zibit + n, res, petscmini());
 #endif
-    } catch (char *ex) { SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Thrust error: %s", ex); }
+    } catch (char *ex) {
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Thrust error: %s", ex);
+    }
     *m = res.get<0>();
     *p = res.get<1>();
   } else {
@@ -1213,14 +1271,17 @@ PetscErrorCode VecMin_SeqHIP(Vec v, PetscInt *p, PetscReal *m) {
 #else
       *m = thrust::reduce(avpt, avpt + n, PETSC_MAX_REAL, petscmin());
 #endif
-    } catch (char *ex) { SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Thrust error: %s", ex); }
+    } catch (char *ex) {
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Thrust error: %s", ex);
+    }
   }
   PetscCall(PetscLogGpuTimeEnd());
   PetscCall(VecHIPRestoreArrayRead(v, &av));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecSum_SeqHIP(Vec v, PetscScalar *sum) {
+PetscErrorCode VecSum_SeqHIP(Vec v, PetscScalar *sum)
+{
   PetscInt                              n = v->map->n;
   const PetscScalar                    *a;
   thrust::device_ptr<const PetscScalar> dptr;
@@ -1232,7 +1293,9 @@ PetscErrorCode VecSum_SeqHIP(Vec v, PetscScalar *sum) {
   PetscCall(PetscLogGpuTimeBegin());
   try {
     *sum = thrust::reduce(dptr, dptr + n, PetscScalar(0.0));
-  } catch (char *ex) { SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Thrust error: %s", ex); }
+  } catch (char *ex) {
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Thrust error: %s", ex);
+  }
   PetscCall(PetscLogGpuTimeEnd());
   PetscCall(VecHIPRestoreArrayRead(v, &a));
   PetscFunctionReturn(0);
@@ -1244,7 +1307,8 @@ struct petscshift : public thrust::unary_function<PetscScalar, PetscScalar> {
   __host__ __device__ PetscScalar operator()(PetscScalar x) { return x + shift_; }
 };
 
-PetscErrorCode VecShift_SeqHIP(Vec v, PetscScalar shift) {
+PetscErrorCode VecShift_SeqHIP(Vec v, PetscScalar shift)
+{
   PetscInt                        n = v->map->n;
   PetscScalar                    *a;
   thrust::device_ptr<PetscScalar> dptr;
@@ -1256,7 +1320,9 @@ PetscErrorCode VecShift_SeqHIP(Vec v, PetscScalar shift) {
   PetscCall(PetscLogGpuTimeBegin());
   try {
     thrust::transform(dptr, dptr + n, dptr, petscshift(shift)); /* in-place transform */
-  } catch (char *ex) { SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Thrust error: %s", ex); }
+  } catch (char *ex) {
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Thrust error: %s", ex);
+  }
   PetscCall(PetscLogGpuTimeEnd());
   PetscCall(VecHIPRestoreArray(v, &a));
   PetscFunctionReturn(0);

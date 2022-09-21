@@ -4,7 +4,8 @@ static char help[] = "Tests converting a SBAIJ matrix to BAIJ format with MatCon
 #include <petscmat.h>
 /* Usage: ./ex141 -mat_view */
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat         C, B;
   PetscInt    i, bs = 2, mbs, m, block, d_nz = 6, col[3];
   PetscMPIInt size;

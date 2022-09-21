@@ -15,7 +15,8 @@ typedef struct {
   Vec          work;
 } PC_Redistribute;
 
-static PetscErrorCode PCView_Redistribute(PC pc, PetscViewer viewer) {
+static PetscErrorCode PCView_Redistribute(PC pc, PetscViewer viewer)
+{
   PC_Redistribute *red = (PC_Redistribute *)pc->data;
   PetscBool        iascii, isstring;
   PetscInt         ncnt, N;
@@ -36,7 +37,8 @@ static PetscErrorCode PCView_Redistribute(PC pc, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCSetUp_Redistribute(PC pc) {
+static PetscErrorCode PCSetUp_Redistribute(PC pc)
+{
   PC_Redistribute         *red = (PC_Redistribute *)pc->data;
   MPI_Comm                 comm;
   PetscInt                 rstart, rend, i, nz, cnt, *rows, ncnt, dcnt, *drows;
@@ -232,7 +234,8 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCApply_Redistribute(PC pc, Vec b, Vec x) {
+static PetscErrorCode PCApply_Redistribute(PC pc, Vec b, Vec x)
+{
   PC_Redistribute   *red   = (PC_Redistribute *)pc->data;
   PetscInt           dcnt  = red->dcnt, i;
   const PetscInt    *drows = red->drows;
@@ -262,7 +265,8 @@ static PetscErrorCode PCApply_Redistribute(PC pc, Vec b, Vec x) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCDestroy_Redistribute(PC pc) {
+static PetscErrorCode PCDestroy_Redistribute(PC pc)
+{
   PC_Redistribute *red = (PC_Redistribute *)pc->data;
 
   PetscFunctionBegin;
@@ -278,7 +282,8 @@ static PetscErrorCode PCDestroy_Redistribute(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCSetFromOptions_Redistribute(PC pc, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode PCSetFromOptions_Redistribute(PC pc, PetscOptionItems *PetscOptionsObject)
+{
   PC_Redistribute *red = (PC_Redistribute *)pc->data;
 
   PetscFunctionBegin;
@@ -301,7 +306,8 @@ static PetscErrorCode PCSetFromOptions_Redistribute(PC pc, PetscOptionItems *Pet
 
 .seealso: `KSP`, `PCREDISTRIBUTE`
 @*/
-PetscErrorCode PCRedistributeGetKSP(PC pc, KSP *innerksp) {
+PetscErrorCode PCRedistributeGetKSP(PC pc, KSP *innerksp)
+{
   PC_Redistribute *red = (PC_Redistribute *)pc->data;
 
   PetscFunctionBegin;
@@ -333,7 +339,8 @@ PetscErrorCode PCRedistributeGetKSP(PC pc, KSP *innerksp) {
 .seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PCRedistributeGetKSP()`, `MatZeroRows()`
 M*/
 
-PETSC_EXTERN PetscErrorCode PCCreate_Redistribute(PC pc) {
+PETSC_EXTERN PetscErrorCode PCCreate_Redistribute(PC pc)
+{
   PC_Redistribute *red;
   const char      *prefix;
 

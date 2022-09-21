@@ -46,7 +46,8 @@ $  PetscCall(SNESLineSearchShellSetUserFunc(linesearch, shellfunc, NULL));
 
 .seealso: `SNESLineSearchShellGetUserFunc()`, `SNESLINESEARCHSHELL`, `SNESLineSearchType`, `SNESLineSearch`
 @*/
-PetscErrorCode SNESLineSearchShellSetUserFunc(SNESLineSearch linesearch, SNESLineSearchUserFunc func, void *ctx) {
+PetscErrorCode SNESLineSearchShellSetUserFunc(SNESLineSearch linesearch, SNESLineSearchUserFunc func, void *ctx)
+{
   PetscBool             flg;
   SNESLineSearch_Shell *shell = (SNESLineSearch_Shell *)linesearch->data;
 
@@ -76,7 +77,8 @@ PetscErrorCode SNESLineSearchShellSetUserFunc(SNESLineSearch linesearch, SNESLin
 
 .seealso: `SNESLineSearchShellSetUserFunc()`, `SNESLINESEARCHSHELL`, `SNESLineSearchType`, `SNESLineSearch`
 @*/
-PetscErrorCode SNESLineSearchShellGetUserFunc(SNESLineSearch linesearch, SNESLineSearchUserFunc *func, void **ctx) {
+PetscErrorCode SNESLineSearchShellGetUserFunc(SNESLineSearch linesearch, SNESLineSearchUserFunc *func, void **ctx)
+{
   PetscBool             flg;
   SNESLineSearch_Shell *shell = (SNESLineSearch_Shell *)linesearch->data;
 
@@ -92,7 +94,8 @@ PetscErrorCode SNESLineSearchShellGetUserFunc(SNESLineSearch linesearch, SNESLin
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESLineSearchApply_Shell(SNESLineSearch linesearch) {
+static PetscErrorCode SNESLineSearchApply_Shell(SNESLineSearch linesearch)
+{
   SNESLineSearch_Shell *shell = (SNESLineSearch_Shell *)linesearch->data;
 
   PetscFunctionBegin;
@@ -103,7 +106,8 @@ static PetscErrorCode SNESLineSearchApply_Shell(SNESLineSearch linesearch) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESLineSearchDestroy_Shell(SNESLineSearch linesearch) {
+static PetscErrorCode SNESLineSearchDestroy_Shell(SNESLineSearch linesearch)
+{
   SNESLineSearch_Shell *shell = (SNESLineSearch_Shell *)linesearch->data;
 
   PetscFunctionBegin;
@@ -124,7 +128,8 @@ Level: advanced
 
 .seealso: `SNESLineSearch`, `SNES`, `SNESLineSearchCreate()`, `SNESLineSearchSetType()`
 M*/
-PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_Shell(SNESLineSearch linesearch) {
+PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_Shell(SNESLineSearch linesearch)
+{
   SNESLineSearch_Shell *shell;
 
   PetscFunctionBegin;

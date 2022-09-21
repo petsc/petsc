@@ -3,7 +3,8 @@ static char help[] = "Tests repeated use of assembly for matrices.\n\n";
 
 #include <petscmat.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat         C;
   PetscInt    i, j, m = 5, n = 2, Ii, J;
   PetscMPIInt rank, size;

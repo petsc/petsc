@@ -4,7 +4,8 @@ uses block index sets\n\n";
 
 #include <petscvec.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt    bs = 1, n = 5, ix0[3] = {5, 7, 9}, ix1[3] = {2, 3, 4}, i, iy0[3] = {1, 2, 4}, iy1[3] = {0, 1, 3};
   PetscMPIInt size, rank;
   PetscScalar value;

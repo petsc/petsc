@@ -4,7 +4,8 @@ static char help[] = "Tests parallel vector assembly.  Input arguments are\n\
 
 #include <petscvec.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscMPIInt size, rank;
   PetscInt    n   = 5, idx;
   PetscScalar one = 1.0, two = 2.0, three = 3.0;

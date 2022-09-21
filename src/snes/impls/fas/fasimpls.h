@@ -1,9 +1,9 @@
 #if !defined(_SNES_FASIMPLS)
-#define _SNES_FASIMPLS
+  #define _SNES_FASIMPLS
 
-#include <petsc/private/snesimpl.h>
-#include <petsc/private/linesearchimpl.h>
-#include <petscdm.h>
+  #include <petsc/private/snesimpl.h>
+  #include <petsc/private/linesearchimpl.h>
+  #include <petscdm.h>
 
 typedef struct {
   /* flags for knowing the global place of this FAS object */

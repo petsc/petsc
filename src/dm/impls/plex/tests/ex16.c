@@ -2,7 +2,8 @@ static char help[] = "Tests for creation of submeshes\n\n";
 
 #include <petscdmplex.h>
 
-static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm) {
+static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm)
+{
   PetscFunctionBeginUser;
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetType(*dm, DMPLEX));
@@ -12,7 +13,8 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm) {
 }
 
 // Label half of the cells
-static PetscErrorCode CreateHalfCellsLabel(DM dm, PetscBool lower, DMLabel *label) {
+static PetscErrorCode CreateHalfCellsLabel(DM dm, PetscBool lower, DMLabel *label)
+{
   PetscInt cStart, cEnd, cStartSub, cEndSub;
 
   PetscFunctionBeginUser;
@@ -33,7 +35,8 @@ static PetscErrorCode CreateHalfCellsLabel(DM dm, PetscBool lower, DMLabel *labe
 }
 
 // Label everything on the right half of the domain
-static PetscErrorCode CreateHalfDomainLabel(DM dm, PetscBool lower, PetscReal height, DMLabel *label) {
+static PetscErrorCode CreateHalfDomainLabel(DM dm, PetscBool lower, PetscReal height, DMLabel *label)
+{
   PetscReal centroid[3];
   PetscInt  cStart, cEnd, cdim;
 
@@ -58,7 +61,8 @@ static PetscErrorCode CreateHalfDomainLabel(DM dm, PetscBool lower, PetscReal he
 }
 
 // Create a line of faces at a given x value
-static PetscErrorCode CreateLineLabel(DM dm, PetscReal x, DMLabel *label) {
+static PetscErrorCode CreateLineLabel(DM dm, PetscReal x, DMLabel *label)
+{
   PetscReal centroid[3];
   PetscInt  fStart, fEnd;
 
@@ -75,7 +79,8 @@ static PetscErrorCode CreateLineLabel(DM dm, PetscReal x, DMLabel *label) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateVolumeSubmesh(DM dm, PetscBool domain, PetscBool lower, PetscReal height, DM *subdm) {
+static PetscErrorCode CreateVolumeSubmesh(DM dm, PetscBool domain, PetscBool lower, PetscReal height, DM *subdm)
+{
   DMLabel label, map;
 
   PetscFunctionBegin;
@@ -90,7 +95,8 @@ static PetscErrorCode CreateVolumeSubmesh(DM dm, PetscBool domain, PetscBool low
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TestBoundaryField(DM dm) {
+static PetscErrorCode TestBoundaryField(DM dm)
+{
   DM       subdm;
   DMLabel  label, map;
   PetscFV  fvm;
@@ -126,7 +132,8 @@ static PetscErrorCode TestBoundaryField(DM dm) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM        dm, subdm;
   PetscReal height = -1.0;
   PetscBool volume = PETSC_TRUE, domain = PETSC_FALSE;

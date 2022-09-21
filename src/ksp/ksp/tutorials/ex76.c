@@ -2,7 +2,8 @@
 
 static char help[] = "Solves a linear system using PCHPDDM.\n\n";
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Vec             b;            /* computed solution and RHS */
   Mat             A, aux, X, B; /* linear system matrix */
   KSP             ksp;          /* linear solver context */

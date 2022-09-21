@@ -16,7 +16,8 @@ typedef struct {
 static FortranCallbackBase *_classbase;
 static PetscClassId         _maxclassid = PETSC_SMALLEST_CLASSID;
 
-static PetscErrorCode PetscFortranCallbackFinalize(void) {
+static PetscErrorCode PetscFortranCallbackFinalize(void)
+{
   PetscFunctionBegin;
   for (PetscInt i = PETSC_SMALLEST_CLASSID; i < _maxclassid; i++) {
     FortranCallbackBase *base = &_classbase[i - PETSC_SMALLEST_CLASSID];
@@ -49,7 +50,8 @@ static PetscErrorCode PetscFortranCallbackFinalize(void) {
 
 .seealso: `PetscFortranCallbackGetSizes()`
 @*/
-PetscErrorCode PetscFortranCallbackRegister(PetscClassId classid, const char *subtype, PetscFortranCallbackId *id) {
+PetscErrorCode PetscFortranCallbackRegister(PetscClassId classid, const char *subtype, PetscFortranCallbackId *id)
+{
   FortranCallbackBase *base;
   FortranCallbackLink  link;
 
@@ -111,7 +113,8 @@ PetscErrorCode PetscFortranCallbackRegister(PetscClassId classid, const char *su
 
 .seealso: `PetscFortranCallbackRegister()`
 @*/
-PetscErrorCode PetscFortranCallbackGetSizes(PetscClassId classid, PetscFortranCallbackId *numbase, PetscFortranCallbackId *numsubtype) {
+PetscErrorCode PetscFortranCallbackGetSizes(PetscClassId classid, PetscFortranCallbackId *numbase, PetscFortranCallbackId *numsubtype)
+{
   PetscFunctionBegin;
   PetscValidPointer(numbase, 2);
   PetscValidPointer(numsubtype, 3);

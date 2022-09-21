@@ -2,7 +2,8 @@ static char help[] = "Test PCFailedReason.\n\n";
 
 #include <petscksp.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat                A;   /* linear system matrix */
   KSP                ksp; /* linear solver context */
   PC                 pc;  /* preconditioner context */

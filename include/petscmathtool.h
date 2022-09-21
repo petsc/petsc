@@ -3,7 +3,8 @@
 
 #include <petscmat.h>
 
-namespace htool {
+namespace htool
+{
 template <class>
 class VirtualHMatrix; /* forward definition of a single needed Htool class */
 } // namespace htool

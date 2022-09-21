@@ -5,7 +5,8 @@
 */
 #include <../src/ksp/ksp/impls/bcgs/bcgsimpl.h> /*I  "petscksp.h"  I*/
 
-static PetscErrorCode KSPSetUp_PIPEBCGS(KSP ksp) {
+static PetscErrorCode KSPSetUp_PIPEBCGS(KSP ksp)
+{
   PetscFunctionBegin;
   PetscCall(KSPSetWorkVecs(ksp, 15));
   PetscFunctionReturn(0);
@@ -13,7 +14,8 @@ static PetscErrorCode KSPSetUp_PIPEBCGS(KSP ksp) {
 
 /* Only need a few hacks from KSPSolve_BCGS */
 #include <petsc/private/pcimpl.h> /*I "petscksp.h" I*/
-static PetscErrorCode KSPSolve_PIPEBCGS(KSP ksp) {
+static PetscErrorCode KSPSolve_PIPEBCGS(KSP ksp)
+{
   PetscInt    i;
   PetscScalar rho, rhoold, alpha, beta, omega = 0.0, d1, d2, d3;
   Vec         X, B, S, R, RP, Y, Q, P2, Q2, R2, S2, W, Z, W2, Z2, T, V;
@@ -230,7 +232,8 @@ static PetscErrorCode KSPSolve_PIPEBCGS(KSP ksp) {
 
 .seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPBICG`, `KSPFBCGS`, `KSPFBCGSL`, `KSPSetPCSide()`
 M*/
-PETSC_EXTERN PetscErrorCode KSPCreate_PIPEBCGS(KSP ksp) {
+PETSC_EXTERN PetscErrorCode KSPCreate_PIPEBCGS(KSP ksp)
+{
   KSP_BCGS *bcgs;
 
   PetscFunctionBegin;

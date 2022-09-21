@@ -2,7 +2,8 @@ static char help[] = "Tests the use of MatTranspose_Nest and MatMatMult_Nest_Den
 
 #include <petscmat.h>
 
-PetscErrorCode TestInitialMatrix(void) {
+PetscErrorCode TestInitialMatrix(void)
+{
   const PetscInt nr = 2, nc = 3, nk = 10;
   PetscInt       n, N, m, M;
   const PetscInt arow[2 * 3] = {2, 2, 2, 3, 3, 3};
@@ -95,7 +96,8 @@ PetscErrorCode TestInitialMatrix(void) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TestReuseMatrix(void) {
+PetscErrorCode TestReuseMatrix(void)
+{
   const PetscInt n = 2;
   Mat            A;
   Mat            subs[2 * 2], **block;
@@ -129,7 +131,8 @@ PetscErrorCode TestReuseMatrix(void) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
   PetscCall(TestInitialMatrix());

@@ -8,7 +8,8 @@ static char help[] = "Tests DMSwarm\n\n";
 /*
  Checks for variable blocksize
 */
-PetscErrorCode ex2_1(void) {
+PetscErrorCode ex2_1(void)
+{
   DM          dms;
   Vec         x;
   PetscMPIInt rank;
@@ -62,7 +63,8 @@ PetscErrorCode ex2_1(void) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
   PetscCall(ex2_1());

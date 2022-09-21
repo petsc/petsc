@@ -49,7 +49,8 @@ PetscErrorCode EvaluateFunction(Tao, Vec, Vec, void *);
 PetscErrorCode EvaluateJacobian(Tao, Vec, Mat, Mat, void *);
 
 /*--------------------------------------------------------------------*/
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   Vec       x, f; /* solution, function f(x) = A*x-b */
   Mat       J, D; /* Jacobian matrix, Transform matrix */
   Tao       tao;  /* Tao solver context */
@@ -124,7 +125,8 @@ int main(int argc, char **argv) {
 }
 
 /*--------------------------------------------------------------------*/
-PetscErrorCode EvaluateFunction(Tao tao, Vec X, Vec F, void *ptr) {
+PetscErrorCode EvaluateFunction(Tao tao, Vec X, Vec F, void *ptr)
+{
   AppCtx          *user = (AppCtx *)ptr;
   PetscInt         m, n;
   const PetscReal *x;
@@ -147,7 +149,8 @@ PetscErrorCode EvaluateFunction(Tao tao, Vec X, Vec F, void *ptr) {
 
 /*------------------------------------------------------------*/
 /* J[m][n] = df[m]/dx[n] */
-PetscErrorCode EvaluateJacobian(Tao tao, Vec X, Mat J, Mat Jpre, void *ptr) {
+PetscErrorCode EvaluateJacobian(Tao tao, Vec X, Mat J, Mat Jpre, void *ptr)
+{
   AppCtx          *user = (AppCtx *)ptr;
   PetscInt         m, n;
   const PetscReal *x;
@@ -171,7 +174,8 @@ PetscErrorCode EvaluateJacobian(Tao tao, Vec X, Mat J, Mat Jpre, void *ptr) {
 
 /* ------------------------------------------------------------ */
 /* Currently fixed matrix, in future may be dynamic for D(x)? */
-PetscErrorCode FormDictionaryMatrix(Mat D, AppCtx *user) {
+PetscErrorCode FormDictionaryMatrix(Mat D, AppCtx *user)
+{
   PetscFunctionBegin;
   PetscCall(MatSetValues(D, K, user->idk, N, user->idn, (PetscReal *)user->D, INSERT_VALUES));
   PetscCall(MatAssemblyBegin(D, MAT_FINAL_ASSEMBLY));
@@ -182,14 +186,16 @@ PetscErrorCode FormDictionaryMatrix(Mat D, AppCtx *user) {
 }
 
 /* ------------------------------------------------------------ */
-PetscErrorCode FormStartingPoint(Vec X) {
+PetscErrorCode FormStartingPoint(Vec X)
+{
   PetscFunctionBegin;
   PetscCall(VecSet(X, 0.0));
   PetscFunctionReturn(0);
 }
 
 /* ---------------------------------------------------------------------- */
-PetscErrorCode InitializeUserData(AppCtx *user) {
+PetscErrorCode InitializeUserData(AppCtx *user)
+{
   PetscReal *b = user->b; /* **A=user->A, but we don't kown the dimension of A in this way, how to fix? */
   PetscInt   m, n, k;     /* loop index for M,N,K dimension. */
 

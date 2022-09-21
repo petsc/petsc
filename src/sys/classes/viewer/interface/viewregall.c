@@ -26,7 +26,8 @@ PetscBool PetscViewerRegisterAllCalled;
 
    Level: developer
 @*/
-PetscErrorCode PetscViewerRegisterAll(void) {
+PetscErrorCode PetscViewerRegisterAll(void)
+{
   PetscFunctionBegin;
   if (PetscViewerRegisterAllCalled) PetscFunctionReturn(0);
   PetscViewerRegisterAllCalled = PETSC_TRUE;

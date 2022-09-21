@@ -8,7 +8,8 @@ typedef struct {
   Vec       Alpha, r;
 } KSP_TSIRM;
 
-static PetscErrorCode KSPSetUp_TSIRM(KSP ksp) {
+static PetscErrorCode KSPSetUp_TSIRM(KSP ksp)
+{
   KSP_TSIRM *tsirm = (KSP_TSIRM *)ksp->data;
 
   PetscFunctionBegin;
@@ -38,7 +39,8 @@ static PetscErrorCode KSPSetUp_TSIRM(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPSolve_TSIRM(KSP ksp) {
+PetscErrorCode KSPSolve_TSIRM(KSP ksp)
+{
   KSP_TSIRM   *tsirm = (KSP_TSIRM *)ksp->data;
   KSP          sub_ksp;
   PC           pc;
@@ -129,7 +131,8 @@ PetscErrorCode KSPSolve_TSIRM(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPSetFromOptions_TSIRM(KSP ksp, PetscOptionItems *PetscOptionsObject) {
+PetscErrorCode KSPSetFromOptions_TSIRM(KSP ksp, PetscOptionItems *PetscOptionsObject)
+{
   KSP_TSIRM *tsirm = (KSP_TSIRM *)ksp->data;
 
   PetscFunctionBegin;
@@ -142,7 +145,8 @@ PetscErrorCode KSPSetFromOptions_TSIRM(KSP ksp, PetscOptionItems *PetscOptionsOb
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPDestroy_TSIRM(KSP ksp) {
+PetscErrorCode KSPDestroy_TSIRM(KSP ksp)
+{
   KSP_TSIRM *tsirm = (KSP_TSIRM *)ksp->data;
 
   PetscFunctionBegin;
@@ -189,7 +193,8 @@ PetscErrorCode KSPDestroy_TSIRM(KSP ksp) {
           `KSPGMRESCGSRefinementType`, `KSPGMRESSetCGSRefinementType()`, `KSPGMRESGetCGSRefinementType()`, `KSPGMRESMonitorKrylov()`, `KSPSetPCSide()`
 
 M*/
-PETSC_EXTERN PetscErrorCode KSPCreate_TSIRM(KSP ksp) {
+PETSC_EXTERN PetscErrorCode KSPCreate_TSIRM(KSP ksp)
+{
   KSP_TSIRM *tsirm;
 
   PetscFunctionBegin;

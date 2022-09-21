@@ -3,7 +3,8 @@
 #include <petscblaslapack.h>
 #include <petscdmplextransform.h>
 
-static PetscErrorCode PetscFEDestroy_Composite(PetscFE fem) {
+static PetscErrorCode PetscFEDestroy_Composite(PetscFE fem)
+{
   PetscFE_Composite *cmp = (PetscFE_Composite *)fem->data;
 
   PetscFunctionBegin;
@@ -12,7 +13,8 @@ static PetscErrorCode PetscFEDestroy_Composite(PetscFE fem) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscFESetUp_Composite(PetscFE fem) {
+static PetscErrorCode PetscFESetUp_Composite(PetscFE fem)
+{
   PetscFE_Composite *cmp = (PetscFE_Composite *)fem->data;
   DM                 K;
   DMPolytopeType     ct;
@@ -95,7 +97,8 @@ static PetscErrorCode PetscFESetUp_Composite(PetscFE fem) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscFECreateTabulation_Composite(PetscFE fem, PetscInt npoints, const PetscReal points[], PetscInt K, PetscTabulation T) {
+static PetscErrorCode PetscFECreateTabulation_Composite(PetscFE fem, PetscInt npoints, const PetscReal points[], PetscInt K, PetscTabulation T)
+{
   PetscFE_Composite *cmp = (PetscFE_Composite *)fem->data;
   DM                 dm;
   DMPolytopeType     ct;
@@ -189,7 +192,8 @@ static PetscErrorCode PetscFECreateTabulation_Composite(PetscFE fem, PetscInt np
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscFEInitialize_Composite(PetscFE fem) {
+static PetscErrorCode PetscFEInitialize_Composite(PetscFE fem)
+{
   PetscFunctionBegin;
   fem->ops->setfromoptions          = NULL;
   fem->ops->setup                   = PetscFESetUp_Composite;
@@ -211,7 +215,8 @@ static PetscErrorCode PetscFEInitialize_Composite(PetscFE fem) {
 
 .seealso: `PetscFEType`, `PetscFECreate()`, `PetscFESetType()`
 M*/
-PETSC_EXTERN PetscErrorCode PetscFECreate_Composite(PetscFE fem) {
+PETSC_EXTERN PetscErrorCode PetscFECreate_Composite(PetscFE fem)
+{
   PetscFE_Composite *cmp;
 
   PetscFunctionBegin;
@@ -245,7 +250,8 @@ PETSC_EXTERN PetscErrorCode PetscFECreate_Composite(PetscFE fem) {
 
 .seealso: `PetscFECreate()`
 @*/
-PetscErrorCode PetscFECompositeGetMapping(PetscFE fem, PetscInt *numSubelements, const PetscReal *v0[], const PetscReal *jac[], const PetscReal *invjac[]) {
+PetscErrorCode PetscFECompositeGetMapping(PetscFE fem, PetscInt *numSubelements, const PetscReal *v0[], const PetscReal *jac[], const PetscReal *invjac[])
+{
   PetscFE_Composite *cmp = (PetscFE_Composite *)fem->data;
 
   PetscFunctionBegin;

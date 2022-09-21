@@ -3,7 +3,8 @@
 PETSC_INTERN PetscErrorCode PetscSFBcastBegin_Gatherv(PetscSF, MPI_Datatype, PetscMemType, const void *, PetscMemType, void *, MPI_Op);
 
 /* PetscSFGetGraph is non-collective. An implementation should not have collective calls */
-PETSC_INTERN PetscErrorCode PetscSFGetGraph_Allgatherv(PetscSF sf, PetscInt *nroots, PetscInt *nleaves, const PetscInt **ilocal, const PetscSFNode **iremote) {
+PETSC_INTERN PetscErrorCode PetscSFGetGraph_Allgatherv(PetscSF sf, PetscInt *nroots, PetscInt *nleaves, const PetscInt **ilocal, const PetscSFNode **iremote)
+{
   PetscInt        i, j, k;
   const PetscInt *range;
   PetscMPIInt     size;
@@ -30,7 +31,8 @@ PETSC_INTERN PetscErrorCode PetscSFGetGraph_Allgatherv(PetscSF sf, PetscInt *nro
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode PetscSFSetUp_Allgatherv(PetscSF sf) {
+PETSC_INTERN PetscErrorCode PetscSFSetUp_Allgatherv(PetscSF sf)
+{
   PetscSF_Allgatherv *dat = (PetscSF_Allgatherv *)sf->data;
   PetscMPIInt         size;
   PetscInt            i;
@@ -52,7 +54,8 @@ PETSC_INTERN PetscErrorCode PetscSFSetUp_Allgatherv(PetscSF sf) {
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode PetscSFReset_Allgatherv(PetscSF sf) {
+PETSC_INTERN PetscErrorCode PetscSFReset_Allgatherv(PetscSF sf)
+{
   PetscSF_Allgatherv *dat  = (PetscSF_Allgatherv *)sf->data;
   PetscSFLink         link = dat->avail, next;
 
@@ -71,14 +74,16 @@ PETSC_INTERN PetscErrorCode PetscSFReset_Allgatherv(PetscSF sf) {
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode PetscSFDestroy_Allgatherv(PetscSF sf) {
+PETSC_INTERN PetscErrorCode PetscSFDestroy_Allgatherv(PetscSF sf)
+{
   PetscFunctionBegin;
   PetscCall(PetscSFReset_Allgatherv(sf));
   PetscCall(PetscFree(sf->data));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSFBcastBegin_Allgatherv(PetscSF sf, MPI_Datatype unit, PetscMemType rootmtype, const void *rootdata, PetscMemType leafmtype, void *leafdata, MPI_Op op) {
+static PetscErrorCode PetscSFBcastBegin_Allgatherv(PetscSF sf, MPI_Datatype unit, PetscMemType rootmtype, const void *rootdata, PetscMemType leafmtype, void *leafdata, MPI_Op op)
+{
   PetscSFLink         link;
   PetscMPIInt         sendcount;
   MPI_Comm            comm;
@@ -98,7 +103,8 @@ static PetscErrorCode PetscSFBcastBegin_Allgatherv(PetscSF sf, MPI_Datatype unit
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSFReduceBegin_Allgatherv(PetscSF sf, MPI_Datatype unit, PetscMemType leafmtype, const void *leafdata, PetscMemType rootmtype, void *rootdata, MPI_Op op) {
+static PetscErrorCode PetscSFReduceBegin_Allgatherv(PetscSF sf, MPI_Datatype unit, PetscMemType leafmtype, const void *leafdata, PetscMemType rootmtype, void *rootdata, MPI_Op op)
+{
   PetscSFLink         link;
   PetscSF_Allgatherv *dat = (PetscSF_Allgatherv *)sf->data;
   PetscInt            rstart;
@@ -136,7 +142,8 @@ static PetscErrorCode PetscSFReduceBegin_Allgatherv(PetscSF sf, MPI_Datatype uni
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode PetscSFReduceEnd_Allgatherv(PetscSF sf, MPI_Datatype unit, const void *leafdata, void *rootdata, MPI_Op op) {
+PETSC_INTERN PetscErrorCode PetscSFReduceEnd_Allgatherv(PetscSF sf, MPI_Datatype unit, const void *leafdata, void *rootdata, MPI_Op op)
+{
   PetscSFLink link;
 
   PetscFunctionBegin;
@@ -155,7 +162,8 @@ PETSC_INTERN PetscErrorCode PetscSFReduceEnd_Allgatherv(PetscSF sf, MPI_Datatype
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSFBcastToZero_Allgatherv(PetscSF sf, MPI_Datatype unit, PetscMemType rootmtype, const void *rootdata, PetscMemType leafmtype, void *leafdata) {
+static PetscErrorCode PetscSFBcastToZero_Allgatherv(PetscSF sf, MPI_Datatype unit, PetscMemType rootmtype, const void *rootdata, PetscMemType leafmtype, void *leafdata)
+{
   PetscSFLink link;
   PetscMPIInt rank;
 
@@ -207,7 +215,8 @@ static PetscErrorCode PetscSFBcastToZero_Allgatherv(PetscSF sf, MPI_Datatype uni
         Leaf     2       3         4
      Leafupdate  1       3         6
 */
-PETSC_INTERN PetscErrorCode PetscSFFetchAndOpBegin_Allgatherv(PetscSF sf, MPI_Datatype unit, PetscMemType rootmtype, void *rootdata, PetscMemType leafmtype, const void *leafdata, void *leafupdate, MPI_Op op) {
+PETSC_INTERN PetscErrorCode PetscSFFetchAndOpBegin_Allgatherv(PetscSF sf, MPI_Datatype unit, PetscMemType rootmtype, void *rootdata, PetscMemType leafmtype, const void *leafdata, void *leafupdate, MPI_Op op)
+{
   PetscSFLink link;
   MPI_Comm    comm;
   PetscMPIInt count;
@@ -246,14 +255,16 @@ PETSC_INTERN PetscErrorCode PetscSFFetchAndOpBegin_Allgatherv(PetscSF sf, MPI_Da
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode PetscSFFetchAndOpEnd_Allgatherv(PetscSF sf, MPI_Datatype unit, void *rootdata, const void *leafdata, void *leafupdate, MPI_Op op) {
+PETSC_INTERN PetscErrorCode PetscSFFetchAndOpEnd_Allgatherv(PetscSF sf, MPI_Datatype unit, void *rootdata, const void *leafdata, void *leafupdate, MPI_Op op)
+{
   PetscFunctionBegin;
   PetscCall(PetscSFReduceEnd(sf, unit, leafdata, rootdata, op));
   PetscFunctionReturn(0);
 }
 
 /* Get root ranks accessing my leaves */
-PETSC_INTERN PetscErrorCode PetscSFGetRootRanks_Allgatherv(PetscSF sf, PetscInt *nranks, const PetscMPIInt **ranks, const PetscInt **roffset, const PetscInt **rmine, const PetscInt **rremote) {
+PETSC_INTERN PetscErrorCode PetscSFGetRootRanks_Allgatherv(PetscSF sf, PetscInt *nranks, const PetscMPIInt **ranks, const PetscInt **roffset, const PetscInt **rmine, const PetscInt **rremote)
+{
   PetscInt        i, j, k, size;
   const PetscInt *range;
 
@@ -280,7 +291,8 @@ PETSC_INTERN PetscErrorCode PetscSFGetRootRanks_Allgatherv(PetscSF sf, PetscInt 
 }
 
 /* Get leaf ranks accessing my roots */
-PETSC_INTERN PetscErrorCode PetscSFGetLeafRanks_Allgatherv(PetscSF sf, PetscInt *niranks, const PetscMPIInt **iranks, const PetscInt **ioffset, const PetscInt **irootloc) {
+PETSC_INTERN PetscErrorCode PetscSFGetLeafRanks_Allgatherv(PetscSF sf, PetscInt *niranks, const PetscMPIInt **iranks, const PetscInt **ioffset, const PetscInt **irootloc)
+{
   PetscSF_Allgatherv *dat = (PetscSF_Allgatherv *)sf->data;
   MPI_Comm            comm;
   PetscMPIInt         size, rank;
@@ -328,7 +340,8 @@ PETSC_INTERN PetscErrorCode PetscSFGetLeafRanks_Allgatherv(PetscSF sf, PetscInt 
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode PetscSFCreateLocalSF_Allgatherv(PetscSF sf, PetscSF *out) {
+PETSC_INTERN PetscErrorCode PetscSFCreateLocalSF_Allgatherv(PetscSF sf, PetscSF *out)
+{
   PetscInt     i, nroots, nleaves, rstart, *ilocal;
   PetscSFNode *iremote;
   PetscSF      lsf;
@@ -353,7 +366,8 @@ PETSC_INTERN PetscErrorCode PetscSFCreateLocalSF_Allgatherv(PetscSF sf, PetscSF 
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode PetscSFCreate_Allgatherv(PetscSF sf) {
+PETSC_INTERN PetscErrorCode PetscSFCreate_Allgatherv(PetscSF sf)
+{
   PetscSF_Allgatherv *dat = (PetscSF_Allgatherv *)sf->data;
 
   PetscFunctionBegin;

@@ -4,7 +4,8 @@ const char help[] = "Tests PetscDTPTrimmedEvalJet()";
 #include <petscblaslapack.h>
 #include <petscmat.h>
 
-static PetscErrorCode constructTabulationAndMass(PetscInt dim, PetscInt deg, PetscInt form, PetscInt jetDegree, PetscInt npoints, const PetscReal *points, const PetscReal *weights, PetscInt *_Nb, PetscInt *_Nf, PetscInt *_Nk, PetscReal **B, PetscScalar **M) {
+static PetscErrorCode constructTabulationAndMass(PetscInt dim, PetscInt deg, PetscInt form, PetscInt jetDegree, PetscInt npoints, const PetscReal *points, const PetscReal *weights, PetscInt *_Nb, PetscInt *_Nf, PetscInt *_Nk, PetscReal **B, PetscScalar **M)
+{
   PetscInt   Nf;   // Number of form components
   PetscInt   Nbpt; // number of trimmed polynomials
   PetscInt   Nk;   // jet size
@@ -41,7 +42,8 @@ static PetscErrorCode constructTabulationAndMass(PetscInt dim, PetscInt deg, Pet
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt jetDegree, PetscBool cond) {
+static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt jetDegree, PetscBool cond)
+{
   PetscQuadrature  q;
   PetscInt         npoints;
   const PetscReal *points;
@@ -281,7 +283,8 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt  max_dim = 3;
   PetscInt  max_deg = 4;
   PetscInt  k       = 3;

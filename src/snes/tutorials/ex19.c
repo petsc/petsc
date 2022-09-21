@@ -60,12 +60,12 @@ The flow can be driven with the lid or with bouyancy or both:\n\
      petscksp.h   - linear solvers
 */
 #if defined(PETSC_APPLE_FRAMEWORK)
-#import <PETSc/petscsnes.h>
-#import <PETSc/petscdmda.h>
+  #import <PETSc/petscsnes.h>
+  #import <PETSc/petscdmda.h>
 #else
-#include <petscsnes.h>
-#include <petscdm.h>
-#include <petscdmda.h>
+  #include <petscsnes.h>
+  #include <petscdm.h>
+  #include <petscdmda.h>
 #endif
 
 /*
@@ -85,7 +85,8 @@ typedef struct {
 extern PetscErrorCode FormInitialGuess(AppCtx *, DM, Vec);
 extern PetscErrorCode NonlinearGS(SNES, Vec, Vec, void *);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   AppCtx   user; /* user-defined work context */
   PetscInt mx, my, its;
   MPI_Comm comm;
@@ -179,7 +180,8 @@ int main(int argc, char **argv) {
    Output Parameter:
    X - vector
 */
-PetscErrorCode FormInitialGuess(AppCtx *user, DM da, Vec X) {
+PetscErrorCode FormInitialGuess(AppCtx *user, DM da, Vec X)
+{
   PetscInt  i, j, mx, xs, ys, xm, ym;
   PetscReal grashof, dx;
   Field   **x;
@@ -226,7 +228,8 @@ PetscErrorCode FormInitialGuess(AppCtx *user, DM da, Vec X) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, Field **x, Field **f, void *ptr) {
+PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, Field **x, Field **f, void *ptr)
+{
   AppCtx     *user = (AppCtx *)ptr;
   PetscInt    xints, xinte, yints, yinte, i, j;
   PetscReal   hx, hy, dhx, dhy, hxdhy, hydhx;
@@ -360,7 +363,8 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, Field **x, Field **f, void
 /*
     Performs sweeps of point block nonlinear Gauss-Seidel on all the local grid points
 */
-PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx) {
+PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
+{
   DMDALocalInfo info;
   Field       **x, **b;
   Vec           localX, localB;
@@ -513,35 +517,35 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx) {
 
           if (i != 0 && i != info.mx - 1 && j != 0 && j != info.my - 1) {
             /* U velocity */
-            u      = x[j][i].u;
-            uxx    = (2.0 * u - x[j][i - 1].u - x[j][i + 1].u) * hydhx;
-            uyy    = (2.0 * u - x[j - 1][i].u - x[j + 1][i].u) * hxdhy;
-            fu     = uxx + uyy - .5 * (x[j + 1][i].omega - x[j - 1][i].omega) * hx - bjiu;
-            dfudu  = 2.0 * (hydhx + hxdhy);
+            u     = x[j][i].u;
+            uxx   = (2.0 * u - x[j][i - 1].u - x[j][i + 1].u) * hydhx;
+            uyy   = (2.0 * u - x[j - 1][i].u - x[j + 1][i].u) * hxdhy;
+            fu    = uxx + uyy - .5 * (x[j + 1][i].omega - x[j - 1][i].omega) * hx - bjiu;
+            dfudu = 2.0 * (hydhx + hxdhy);
             /* V velocity */
-            u      = x[j][i].v;
-            uxx    = (2.0 * u - x[j][i - 1].v - x[j][i + 1].v) * hydhx;
-            uyy    = (2.0 * u - x[j - 1][i].v - x[j + 1][i].v) * hxdhy;
-            fv     = uxx + uyy + .5 * (x[j][i + 1].omega - x[j][i - 1].omega) * hy - bjiv;
-            dfvdv  = 2.0 * (hydhx + hxdhy);
+            u     = x[j][i].v;
+            uxx   = (2.0 * u - x[j][i - 1].v - x[j][i + 1].v) * hydhx;
+            uyy   = (2.0 * u - x[j - 1][i].v - x[j + 1][i].v) * hxdhy;
+            fv    = uxx + uyy + .5 * (x[j][i + 1].omega - x[j][i - 1].omega) * hy - bjiv;
+            dfvdv = 2.0 * (hydhx + hxdhy);
             /*
              convective coefficients for upwinding
              */
-            vx     = x[j][i].u;
-            avx    = PetscAbsScalar(vx);
-            vxp    = .5 * (vx + avx);
-            vxm    = .5 * (vx - avx);
-            vy     = x[j][i].v;
-            avy    = PetscAbsScalar(vy);
-            vyp    = .5 * (vy + avy);
-            vym    = .5 * (vy - avy);
+            vx  = x[j][i].u;
+            avx = PetscAbsScalar(vx);
+            vxp = .5 * (vx + avx);
+            vxm = .5 * (vx - avx);
+            vy  = x[j][i].v;
+            avy = PetscAbsScalar(vy);
+            vyp = .5 * (vy + avy);
+            vym = .5 * (vy - avy);
             /* Omega */
             u      = x[j][i].omega;
             uxx    = (2.0 * u - x[j][i - 1].omega - x[j][i + 1].omega) * hydhx;
             uyy    = (2.0 * u - x[j - 1][i].omega - x[j + 1][i].omega) * hxdhy;
             fomega = uxx + uyy + (vxp * (u - x[j][i - 1].omega) + vxm * (x[j][i + 1].omega - u)) * hy + (vyp * (u - x[j - 1][i].omega) + vym * (x[j + 1][i].omega - u)) * hx - .5 * grashof * (x[j][i + 1].temp - x[j][i - 1].temp) * hy - bjiomega;
             /* convective coefficient derivatives */
-            dfodo  = 2.0 * (hydhx + hxdhy) + ((vxp - vxm) * hy + (vyp - vym) * hx);
+            dfodo = 2.0 * (hydhx + hxdhy) + ((vxp - vxm) * hy + (vyp - vym) * hx);
             if (PetscRealPart(vx) > 0.0) dfodu = (u - x[j][i - 1].omega) * hy;
             else dfodu = (x[j][i + 1].omega - u) * hy;
 

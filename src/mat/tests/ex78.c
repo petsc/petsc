@@ -35,7 +35,8 @@ solu
 
 #include <petscmat.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat         A = NULL;
   Vec         b, u = NULL, u_tmp;
   char        Ain[PETSC_MAX_PATH_LEN], rhs[PETSC_MAX_PATH_LEN], solu[PETSC_MAX_PATH_LEN];

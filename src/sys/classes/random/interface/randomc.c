@@ -31,7 +31,8 @@ PetscClassId PETSC_RANDOM_CLASSID;
 
 .seealso: `PetscRandom`, `PetscRandomGetValue()`, `PetscRandomCreate()`, `VecSetRandom()`
 @*/
-PetscErrorCode PetscRandomDestroy(PetscRandom *r) {
+PetscErrorCode PetscRandomDestroy(PetscRandom *r)
+{
   PetscFunctionBegin;
   if (!*r) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(*r, PETSC_RANDOM_CLASSID, 1);
@@ -59,7 +60,8 @@ PetscErrorCode PetscRandomDestroy(PetscRandom *r) {
 
 .seealso: `PetscRandom`, `PetscRandomCreate()`, `PetscRandomSetSeed()`, `PetscRandomSeed()`
 @*/
-PetscErrorCode PetscRandomGetSeed(PetscRandom r, unsigned long *seed) {
+PetscErrorCode PetscRandomGetSeed(PetscRandom r, unsigned long *seed)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(r, PETSC_RANDOM_CLASSID, 1);
   if (seed) {
@@ -92,7 +94,8 @@ PetscErrorCode PetscRandomGetSeed(PetscRandom r, unsigned long *seed) {
 
 .seealso: `PetscRandom`, `PetscRandomCreate()`, `PetscRandomGetSeed()`, `PetscRandomSeed()`
 @*/
-PetscErrorCode PetscRandomSetSeed(PetscRandom r, unsigned long seed) {
+PetscErrorCode PetscRandomSetSeed(PetscRandom r, unsigned long seed)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(r, PETSC_RANDOM_CLASSID, 1);
   r->seed = seed;
@@ -113,7 +116,8 @@ PetscErrorCode PetscRandomSetSeed(PetscRandom r, unsigned long seed) {
 
 .seealso: `PetscRandomSetFromOptions()`, `PetscRandomSetType()`
 */
-static PetscErrorCode PetscRandomSetTypeFromOptions_Private(PetscRandom rnd, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode PetscRandomSetTypeFromOptions_Private(PetscRandom rnd, PetscOptionItems *PetscOptionsObject)
+{
   PetscBool   opt;
   const char *defaultType;
   char        typeName[256];
@@ -155,7 +159,8 @@ static PetscErrorCode PetscRandomSetTypeFromOptions_Private(PetscRandom rnd, Pet
 
 .seealso: `PetscRandom`, `PetscRandomCreate()`, `PetscRandomSetType()`
 @*/
-PetscErrorCode PetscRandomSetFromOptions(PetscRandom rnd) {
+PetscErrorCode PetscRandomSetFromOptions(PetscRandom rnd)
+{
   PetscBool set, noimaginary = PETSC_FALSE;
   PetscInt  seed;
 
@@ -192,7 +197,7 @@ PetscErrorCode PetscRandomSetFromOptions(PetscRandom rnd) {
 }
 
 #if defined(PETSC_HAVE_SAWS)
-#include <petscviewersaws.h>
+  #include <petscviewersaws.h>
 #endif
 
 /*@C
@@ -208,7 +213,8 @@ PetscErrorCode PetscRandomSetFromOptions(PetscRandom rnd) {
    Level: intermediate
 .seealso: `PetscRandom`, `PetscRandomView`, `PetscObjectViewFromOptions()`, `PetscRandomCreate()`
 @*/
-PetscErrorCode PetscRandomViewFromOptions(PetscRandom A, PetscObject obj, const char name[]) {
+PetscErrorCode PetscRandomViewFromOptions(PetscRandom A, PetscObject obj, const char name[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, PETSC_RANDOM_CLASSID, 1);
   PetscCall(PetscObjectViewFromOptions((PetscObject)A, obj, name));
@@ -236,7 +242,8 @@ PetscErrorCode PetscRandomViewFromOptions(PetscRandom A, PetscObject obj, const 
 
 .seealso: `PetscRandom`, `PetscRealView()`, `PetscScalarView()`, `PetscIntView()`
 @*/
-PetscErrorCode PetscRandomView(PetscRandom rnd, PetscViewer viewer) {
+PetscErrorCode PetscRandomView(PetscRandom rnd, PetscViewer viewer)
+{
   PetscBool iascii;
 #if defined(PETSC_HAVE_SAWS)
   PetscBool issaws;
@@ -320,7 +327,8 @@ PetscErrorCode PetscRandomView(PetscRandom rnd, PetscViewer viewer) {
           `PetscRandomDestroy()`, `VecSetRandom()`, `PetscRandomType`, `PetscRandom`
 @*/
 
-PetscErrorCode PetscRandomCreate(MPI_Comm comm, PetscRandom *r) {
+PetscErrorCode PetscRandomCreate(MPI_Comm comm, PetscRandom *r)
+{
   PetscRandom rr;
   PetscMPIInt rank;
 
@@ -365,7 +373,8 @@ PetscErrorCode PetscRandomCreate(MPI_Comm comm, PetscRandom *r) {
 
 .seealso: `PetscRandomCreate()`, `PetscRandomGetSeed()`, `PetscRandomSetSeed()`
 @*/
-PetscErrorCode PetscRandomSeed(PetscRandom r) {
+PetscErrorCode PetscRandomSeed(PetscRandom r)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(r, PETSC_RANDOM_CLASSID, 1);
   PetscValidType(r, 1);

@@ -1,12 +1,16 @@
 #include "hostdevice.hpp"
 
-namespace Petsc {
+namespace Petsc
+{
 
-namespace device {
+namespace device
+{
 
-namespace host {
+namespace host
+{
 
-PetscErrorCode Device::initialize(MPI_Comm comm, PetscInt *defaultDeviceId, PetscBool *defaultView, PetscDeviceInitType *defaultInitType) noexcept {
+PetscErrorCode Device::initialize(MPI_Comm comm, PetscInt *defaultDeviceId, PetscBool *defaultView, PetscDeviceInitType *defaultInitType) noexcept
+{
   PetscFunctionBegin;
   // the host is always id 0
   *defaultDeviceId = 0;
@@ -19,11 +23,15 @@ PetscErrorCode Device::initialize(MPI_Comm comm, PetscInt *defaultDeviceId, Pets
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode Device::get_attribute_(PetscInt, PetscDeviceAttribute attr, void *value) noexcept {
+PetscErrorCode Device::get_attribute_(PetscInt, PetscDeviceAttribute attr, void *value) noexcept
+{
   PetscFunctionBegin;
   switch (attr) {
-  case PETSC_DEVICE_ATTR_SIZE_T_SHARED_MEM_PER_BLOCK: *static_cast<std::size_t *>(value) = 64000; break;
-  default: PetscUnreachable();
+  case PETSC_DEVICE_ATTR_SIZE_T_SHARED_MEM_PER_BLOCK:
+    *static_cast<std::size_t *>(value) = 64000;
+    break;
+  default:
+    PetscUnreachable();
   }
   PetscFunctionReturn(0);
 }

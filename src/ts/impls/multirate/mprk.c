@@ -66,7 +66,8 @@ typedef struct {
   TS           subts_slow, subts_slowbuffer, subts_medium, subts_mediumbuffer, subts_fast;
 } TS_MPRK;
 
-static PetscErrorCode TSMPRKGenerateTableau2(PetscInt ratio, PetscInt s, const PetscReal Abase[], const PetscReal bbase[], PetscReal A1[], PetscReal b1[], PetscReal A2[], PetscReal b2[]) {
+static PetscErrorCode TSMPRKGenerateTableau2(PetscInt ratio, PetscInt s, const PetscReal Abase[], const PetscReal bbase[], PetscReal A1[], PetscReal b1[], PetscReal A2[], PetscReal b2[])
+{
   PetscInt i, j, k, l;
 
   PetscFunctionBegin;
@@ -89,7 +90,8 @@ static PetscErrorCode TSMPRKGenerateTableau2(PetscInt ratio, PetscInt s, const P
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSMPRKGenerateTableau3(PetscInt ratio, PetscInt s, const PetscReal Abase[], const PetscReal bbase[], PetscReal A1[], PetscReal b1[], PetscReal A2[], PetscReal b2[], PetscReal A3[], PetscReal b3[]) {
+static PetscErrorCode TSMPRKGenerateTableau3(PetscInt ratio, PetscInt s, const PetscReal Abase[], const PetscReal bbase[], PetscReal A1[], PetscReal b1[], PetscReal A2[], PetscReal b2[], PetscReal A3[], PetscReal b3[])
+{
   PetscInt i, j, k, l, m, n;
 
   PetscFunctionBegin;
@@ -221,7 +223,8 @@ M*/
 
 .seealso: `TSMPRKRegisterDestroy()`
 @*/
-PetscErrorCode TSMPRKRegisterAll(void) {
+PetscErrorCode TSMPRKRegisterAll(void)
+{
   PetscFunctionBegin;
   if (TSMPRKRegisterAllCalled) PetscFunctionReturn(0);
   TSMPRKRegisterAllCalled = PETSC_TRUE;
@@ -373,7 +376,8 @@ PetscErrorCode TSMPRKRegisterAll(void) {
 
 .seealso: `TSMPRKRegister()`, `TSMPRKRegisterAll()`
 @*/
-PetscErrorCode TSMPRKRegisterDestroy(void) {
+PetscErrorCode TSMPRKRegisterDestroy(void)
+{
   MPRKTableauLink link;
 
   PetscFunctionBegin;
@@ -401,7 +405,8 @@ PetscErrorCode TSMPRKRegisterDestroy(void) {
 
 .seealso: `PetscInitialize()`
 @*/
-PetscErrorCode TSMPRKInitializePackage(void) {
+PetscErrorCode TSMPRKInitializePackage(void)
+{
   PetscFunctionBegin;
   if (TSMPRKPackageInitialized) PetscFunctionReturn(0);
   TSMPRKPackageInitialized = PETSC_TRUE;
@@ -418,7 +423,8 @@ PetscErrorCode TSMPRKInitializePackage(void) {
 
 .seealso: `PetscFinalize()`
 @*/
-PetscErrorCode TSMPRKFinalizePackage(void) {
+PetscErrorCode TSMPRKFinalizePackage(void)
+{
   PetscFunctionBegin;
   TSMPRKPackageInitialized = PETSC_FALSE;
   PetscCall(TSMPRKRegisterDestroy());
@@ -450,7 +456,8 @@ PetscErrorCode TSMPRKFinalizePackage(void) {
 
 .seealso: `TSMPRK`
 @*/
-PetscErrorCode TSMPRKRegister(TSMPRKType name, PetscInt order, PetscInt sbase, PetscInt ratio1, PetscInt ratio2, const PetscReal Asb[], const PetscReal bsb[], const PetscReal csb[], const PetscInt rsb[], const PetscReal Amb[], const PetscReal bmb[], const PetscReal cmb[], const PetscInt rmb[], const PetscReal Af[], const PetscReal bf[], const PetscReal cf[]) {
+PetscErrorCode TSMPRKRegister(TSMPRKType name, PetscInt order, PetscInt sbase, PetscInt ratio1, PetscInt ratio2, const PetscReal Asb[], const PetscReal bsb[], const PetscReal csb[], const PetscInt rsb[], const PetscReal Amb[], const PetscReal bmb[], const PetscReal cmb[], const PetscInt rmb[], const PetscReal Af[], const PetscReal bf[], const PetscReal cf[])
+{
   MPRKTableauLink link;
   MPRKTableau     t;
   PetscInt        s, i, j;
@@ -538,7 +545,8 @@ PetscErrorCode TSMPRKRegister(TSMPRKType name, PetscInt order, PetscInt sbase, P
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSMPRKSetSplits(TS ts) {
+static PetscErrorCode TSMPRKSetSplits(TS ts)
+{
   TS_MPRK    *mprk = (TS_MPRK *)ts->data;
   MPRKTableau tab  = mprk->tableau;
   DM          dm, subdm, newdm;
@@ -610,7 +618,8 @@ static PetscErrorCode TSMPRKSetSplits(TS ts) {
  x1 = x0 + h b^T YdotRHS
 
 */
-static PetscErrorCode TSEvaluateStep_MPRK(TS ts, PetscInt order, Vec X, PetscBool *done) {
+static PetscErrorCode TSEvaluateStep_MPRK(TS ts, PetscInt order, Vec X, PetscBool *done)
+{
   TS_MPRK     *mprk = (TS_MPRK *)ts->data;
   MPRKTableau  tab  = mprk->tableau;
   PetscScalar *wf   = mprk->work_fast;
@@ -624,7 +633,8 @@ static PetscErrorCode TSEvaluateStep_MPRK(TS ts, PetscInt order, Vec X, PetscBoo
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSStep_MPRK(TS ts) {
+static PetscErrorCode TSStep_MPRK(TS ts)
+{
   TS_MPRK         *mprk = (TS_MPRK *)ts->data;
   Vec             *Y = mprk->Y, *YdotRHS = mprk->YdotRHS, *YdotRHS_fast = mprk->YdotRHS_fast, *YdotRHS_slow = mprk->YdotRHS_slow, *YdotRHS_slowbuffer = mprk->YdotRHS_slowbuffer;
   Vec              Yslow, Yslowbuffer, Yfast;
@@ -700,7 +710,8 @@ static PetscErrorCode TSStep_MPRK(TS ts) {
  The step completion formula is
  x1 = x0 + h b^T YdotRHS
 */
-static PetscErrorCode TSEvaluateStep_MPRKSPLIT(TS ts, PetscInt order, Vec X, PetscBool *done) {
+static PetscErrorCode TSEvaluateStep_MPRKSPLIT(TS ts, PetscInt order, Vec X, PetscBool *done)
+{
   TS_MPRK     *mprk = (TS_MPRK *)ts->data;
   MPRKTableau  tab  = mprk->tableau;
   Vec          Xslow, Xfast, Xslowbuffer; /* subvectors for slow and fast components in X respectively */
@@ -767,7 +778,8 @@ static PetscErrorCode TSEvaluateStep_MPRKSPLIT(TS ts, PetscInt order, Vec X, Pet
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSStep_MPRKSPLIT(TS ts) {
+static PetscErrorCode TSStep_MPRKSPLIT(TS ts)
+{
   TS_MPRK         *mprk = (TS_MPRK *)ts->data;
   MPRKTableau      tab  = mprk->tableau;
   Vec             *Y = mprk->Y, *YdotRHS_fast = mprk->YdotRHS_fast, *YdotRHS_slow = mprk->YdotRHS_slow, *YdotRHS_slowbuffer = mprk->YdotRHS_slowbuffer;
@@ -880,7 +892,8 @@ static PetscErrorCode TSStep_MPRKSPLIT(TS ts) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSMPRKTableauReset(TS ts) {
+static PetscErrorCode TSMPRKTableauReset(TS ts)
+{
   TS_MPRK    *mprk = (TS_MPRK *)ts->data;
   MPRKTableau tab  = mprk->tableau;
 
@@ -911,33 +924,39 @@ static PetscErrorCode TSMPRKTableauReset(TS ts) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSReset_MPRK(TS ts) {
+static PetscErrorCode TSReset_MPRK(TS ts)
+{
   PetscFunctionBegin;
   PetscCall(TSMPRKTableauReset(ts));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMCoarsenHook_TSMPRK(DM fine, DM coarse, void *ctx) {
+static PetscErrorCode DMCoarsenHook_TSMPRK(DM fine, DM coarse, void *ctx)
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMRestrictHook_TSMPRK(DM fine, Mat restrct, Vec rscale, Mat inject, DM coarse, void *ctx) {
+static PetscErrorCode DMRestrictHook_TSMPRK(DM fine, Mat restrct, Vec rscale, Mat inject, DM coarse, void *ctx)
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMSubDomainHook_TSMPRK(DM dm, DM subdm, void *ctx) {
+static PetscErrorCode DMSubDomainHook_TSMPRK(DM dm, DM subdm, void *ctx)
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMSubDomainRestrictHook_TSMPRK(DM dm, VecScatter gscat, VecScatter lscat, DM subdm, void *ctx) {
+static PetscErrorCode DMSubDomainRestrictHook_TSMPRK(DM dm, VecScatter gscat, VecScatter lscat, DM subdm, void *ctx)
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSMPRKTableauSetUp(TS ts) {
+static PetscErrorCode TSMPRKTableauSetUp(TS ts)
+{
   TS_MPRK    *mprk = (TS_MPRK *)ts->data;
   MPRKTableau tab  = mprk->tableau;
   Vec         YdotRHS_slow, YdotRHS_slowbuffer, YdotRHS_medium, YdotRHS_mediumbuffer, YdotRHS_fast;
@@ -987,7 +1006,8 @@ static PetscErrorCode TSMPRKTableauSetUp(TS ts) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSSetUp_MPRK(TS ts) {
+static PetscErrorCode TSSetUp_MPRK(TS ts)
+{
   TS_MPRK    *mprk = (TS_MPRK *)ts->data;
   MPRKTableau tab  = mprk->tableau;
   DM          dm;
@@ -1029,7 +1049,8 @@ static PetscErrorCode TSSetUp_MPRK(TS ts) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSSetFromOptions_MPRK(TS ts, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode TSSetFromOptions_MPRK(TS ts, PetscOptionItems *PetscOptionsObject)
+{
   TS_MPRK *mprk = (TS_MPRK *)ts->data;
 
   PetscFunctionBegin;
@@ -1051,7 +1072,8 @@ static PetscErrorCode TSSetFromOptions_MPRK(TS ts, PetscOptionItems *PetscOption
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSView_MPRK(TS ts, PetscViewer viewer) {
+static PetscErrorCode TSView_MPRK(TS ts, PetscViewer viewer)
+{
   TS_MPRK  *mprk = (TS_MPRK *)ts->data;
   PetscBool iascii;
 
@@ -1103,7 +1125,8 @@ static PetscErrorCode TSView_MPRK(TS ts, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSLoad_MPRK(TS ts, PetscViewer viewer) {
+static PetscErrorCode TSLoad_MPRK(TS ts, PetscViewer viewer)
+{
   TSAdapt adapt;
 
   PetscFunctionBegin;
@@ -1128,7 +1151,8 @@ static PetscErrorCode TSLoad_MPRK(TS ts, PetscViewer viewer) {
 
 .seealso: `TSMPRKGetType()`, `TSMPRK`, `TSMPRKType`
 @*/
-PetscErrorCode TSMPRKSetType(TS ts, TSMPRKType mprktype) {
+PetscErrorCode TSMPRKSetType(TS ts, TSMPRKType mprktype)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidCharPointer(mprktype, 2);
@@ -1151,14 +1175,16 @@ PetscErrorCode TSMPRKSetType(TS ts, TSMPRKType mprktype) {
 
 .seealso: `TSMPRKGetType()`
 @*/
-PetscErrorCode TSMPRKGetType(TS ts, TSMPRKType *mprktype) {
+PetscErrorCode TSMPRKGetType(TS ts, TSMPRKType *mprktype)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscUseMethod(ts, "TSMPRKGetType_C", (TS, TSMPRKType *), (ts, mprktype));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSMPRKGetType_MPRK(TS ts, TSMPRKType *mprktype) {
+static PetscErrorCode TSMPRKGetType_MPRK(TS ts, TSMPRKType *mprktype)
+{
   TS_MPRK *mprk = (TS_MPRK *)ts->data;
 
   PetscFunctionBegin;
@@ -1166,7 +1192,8 @@ static PetscErrorCode TSMPRKGetType_MPRK(TS ts, TSMPRKType *mprktype) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSMPRKSetType_MPRK(TS ts, TSMPRKType mprktype) {
+static PetscErrorCode TSMPRKSetType_MPRK(TS ts, TSMPRKType mprktype)
+{
   TS_MPRK        *mprk = (TS_MPRK *)ts->data;
   PetscBool       match;
   MPRKTableauLink link;
@@ -1188,7 +1215,8 @@ static PetscErrorCode TSMPRKSetType_MPRK(TS ts, TSMPRKType mprktype) {
   SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_UNKNOWN_TYPE, "Could not find '%s'", mprktype);
 }
 
-static PetscErrorCode TSGetStages_MPRK(TS ts, PetscInt *ns, Vec **Y) {
+static PetscErrorCode TSGetStages_MPRK(TS ts, PetscInt *ns, Vec **Y)
+{
   TS_MPRK *mprk = (TS_MPRK *)ts->data;
 
   PetscFunctionBegin;
@@ -1197,7 +1225,8 @@ static PetscErrorCode TSGetStages_MPRK(TS ts, PetscInt *ns, Vec **Y) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSDestroy_MPRK(TS ts) {
+static PetscErrorCode TSDestroy_MPRK(TS ts)
+{
   PetscFunctionBegin;
   PetscCall(TSReset_MPRK(ts));
   if (ts->dm) {
@@ -1225,7 +1254,8 @@ static PetscErrorCode TSDestroy_MPRK(TS ts) {
           `TSMPRKM2`, `TSMPRKM3`, `TSMPRKRFSMR3`, `TSMPRKRFSMR2`
 
 M*/
-PETSC_EXTERN PetscErrorCode TSCreate_MPRK(TS ts) {
+PETSC_EXTERN PetscErrorCode TSCreate_MPRK(TS ts)
+{
   TS_MPRK *mprk;
 
   PetscFunctionBegin;

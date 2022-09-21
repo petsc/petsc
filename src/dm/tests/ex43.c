@@ -13,7 +13,8 @@ Use the options
 #include <petscdm.h>
 #include <petscdmda.h>
 
-PetscErrorCode PrintVecWithGhosts(DM da, Vec v) {
+PetscErrorCode PrintVecWithGhosts(DM da, Vec v)
+{
   PetscScalar **p;
   PetscInt      i, j;
   MPI_Comm      com;
@@ -36,7 +37,8 @@ PetscErrorCode PrintVecWithGhosts(DM da, Vec v) {
 }
 
 /* Set a Vec v to value, but do not touch ghosts. */
-PetscErrorCode VecSetOwned(DM da, Vec v, PetscScalar value) {
+PetscErrorCode VecSetOwned(DM da, Vec v, PetscScalar value)
+{
   PetscScalar **p;
   PetscInt      i, j, xs, xm, ys, ym;
 
@@ -49,7 +51,8 @@ PetscErrorCode VecSetOwned(DM da, Vec v, PetscScalar value) {
   return 0;
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt        M = 4, N = 3;
   DM              da;
   Vec             local;

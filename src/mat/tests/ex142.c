@@ -8,7 +8,8 @@ static char help[] = "Test sequential r2c/c2r FFTW without PETSc interface \n\n"
 #include <petscmat.h>
 #include <fftw3.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   typedef enum {
     RANDOM,
     CONSTANT,

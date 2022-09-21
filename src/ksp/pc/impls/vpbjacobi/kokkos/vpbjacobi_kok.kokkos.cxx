@@ -19,7 +19,8 @@ struct PC_VPBJacobi_Kokkos {
   PetscScalarKokkosDualView diag_dual;
 
   PC_VPBJacobi_Kokkos(PetscInt n, PetscInt nblocks, PetscInt nsize, const PetscInt *bsizes, MatScalar *diag_ptr_h) :
-    n(n), nblocks(nblocks), nsize(nsize), bs_dual("bs_dual", nblocks + 1), bs2_dual("bs2_dual", nblocks + 1), matIdx_dual("matIdx_dual", n) {
+    n(n), nblocks(nblocks), nsize(nsize), bs_dual("bs_dual", nblocks + 1), bs2_dual("bs2_dual", nblocks + 1), matIdx_dual("matIdx_dual", n)
+  {
     PetscScalarKokkosViewHost diag_h(diag_ptr_h, nsize);
 
     auto diag_d = Kokkos::create_mirror_view(DefaultMemorySpace(), diag_h);
@@ -27,7 +28,8 @@ struct PC_VPBJacobi_Kokkos {
     PetscCallVoid(UpdateOffsetsOnDevice(bsizes, diag_ptr_h));
   }
 
-  PetscErrorCode UpdateOffsetsOnDevice(const PetscInt *bsizes, MatScalar *diag_ptr_h) {
+  PetscErrorCode UpdateOffsetsOnDevice(const PetscInt *bsizes, MatScalar *diag_ptr_h)
+  {
     PetscFunctionBegin;
     PetscCheck(diag_dual.view_host().data() == diag_ptr_h, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Host pointer has changed since last call");
     PetscCall(ComputeOffsetsOnHost(bsizes));
@@ -46,7 +48,8 @@ struct PC_VPBJacobi_Kokkos {
   }
 
 private:
-  PetscErrorCode ComputeOffsetsOnHost(const PetscInt *bsizes) {
+  PetscErrorCode ComputeOffsetsOnHost(const PetscInt *bsizes)
+  {
     PetscInt *bs_h     = bs_dual.view_host().data();
     PetscInt *bs2_h    = bs2_dual.view_host().data();
     PetscInt *matIdx_h = matIdx_dual.view_host().data();
@@ -62,7 +65,8 @@ private:
   }
 };
 
-static PetscErrorCode PCApply_VPBJacobi_Kokkos(PC pc, Vec x, Vec y) {
+static PetscErrorCode PCApply_VPBJacobi_Kokkos(PC pc, Vec x, Vec y)
+{
   PC_VPBJacobi              *jac   = (PC_VPBJacobi *)pc->data;
   PC_VPBJacobi_Kokkos       *pckok = static_cast<PC_VPBJacobi_Kokkos *>(jac->spptr);
   ConstPetscScalarKokkosView xv;
@@ -104,7 +108,8 @@ static PetscErrorCode PCApply_VPBJacobi_Kokkos(PC pc, Vec x, Vec y) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCDestroy_VPBJacobi_Kokkos(PC pc) {
+static PetscErrorCode PCDestroy_VPBJacobi_Kokkos(PC pc)
+{
   PC_VPBJacobi *jac = (PC_VPBJacobi *)pc->data;
 
   PetscFunctionBegin;
@@ -113,7 +118,8 @@ static PetscErrorCode PCDestroy_VPBJacobi_Kokkos(PC pc) {
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode PCSetUp_VPBJacobi_Kokkos(PC pc) {
+PETSC_INTERN PetscErrorCode PCSetUp_VPBJacobi_Kokkos(PC pc)
+{
   PC_VPBJacobi        *jac   = (PC_VPBJacobi *)pc->data;
   PC_VPBJacobi_Kokkos *pckok = static_cast<PC_VPBJacobi_Kokkos *>(jac->spptr);
   PetscInt             i, n, nblocks, nsize = 0;

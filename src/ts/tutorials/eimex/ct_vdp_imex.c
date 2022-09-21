@@ -38,7 +38,8 @@ static PetscErrorCode RHSFunction(TS, PetscReal, Vec, Vec, void *);
 static PetscErrorCode IFunction(TS, PetscReal, Vec, Vec, Vec, void *);
 static PetscErrorCode IJacobian(TS, PetscReal, Vec, Vec, PetscReal, Mat, Mat, void *);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   TS           ts;
   Vec          x; /* solution vector */
   Mat          A; /* Jacobian */
@@ -162,7 +163,8 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-static PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec X, Vec F, void *ptr) {
+static PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec X, Vec F, void *ptr)
+{
   PetscScalar       *f;
   const PetscScalar *x;
 
@@ -176,7 +178,8 @@ static PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec X, Vec F, void *ptr) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode IFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, void *ptr) {
+static PetscErrorCode IFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, void *ptr)
+{
   User               user = (User)ptr;
   PetscScalar       *f;
   const PetscScalar *x, *xdot;
@@ -193,7 +196,8 @@ static PetscErrorCode IFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, void
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode IJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, Mat A, Mat B, void *ptr) {
+static PetscErrorCode IJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, Mat A, Mat B, void *ptr)
+{
   User               user     = (User)ptr;
   PetscReal          mu       = user->mu;
   PetscInt           rowcol[] = {0, 1};

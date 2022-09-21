@@ -15,7 +15,8 @@ typedef struct {
   PetscInt *petscPerm;
 } AO_Mapping;
 
-PetscErrorCode AODestroy_Mapping(AO ao) {
+PetscErrorCode AODestroy_Mapping(AO ao)
+{
   AO_Mapping *aomap = (AO_Mapping *)ao->data;
 
   PetscFunctionBegin;
@@ -24,7 +25,8 @@ PetscErrorCode AODestroy_Mapping(AO ao) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode AOView_Mapping(AO ao, PetscViewer viewer) {
+PetscErrorCode AOView_Mapping(AO ao, PetscViewer viewer)
+{
   AO_Mapping *aomap = (AO_Mapping *)ao->data;
   PetscMPIInt rank;
   PetscInt    i;
@@ -42,7 +44,8 @@ PetscErrorCode AOView_Mapping(AO ao, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode AOPetscToApplication_Mapping(AO ao, PetscInt n, PetscInt *ia) {
+PetscErrorCode AOPetscToApplication_Mapping(AO ao, PetscInt n, PetscInt *ia)
+{
   AO_Mapping *aomap = (AO_Mapping *)ao->data;
   PetscInt   *app   = aomap->app;
   PetscInt   *petsc = aomap->petsc;
@@ -76,7 +79,8 @@ PetscErrorCode AOPetscToApplication_Mapping(AO ao, PetscInt n, PetscInt *ia) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode AOApplicationToPetsc_Mapping(AO ao, PetscInt n, PetscInt *ia) {
+PetscErrorCode AOApplicationToPetsc_Mapping(AO ao, PetscInt n, PetscInt *ia)
+{
   AO_Mapping *aomap = (AO_Mapping *)ao->data;
   PetscInt   *app   = aomap->app;
   PetscInt   *petsc = aomap->petsc;
@@ -131,7 +135,8 @@ static struct _AOOps AOps = {
 
 .seealso: `AOMappingHasPetscIndex()`, `AOCreateMapping()`
 @*/
-PetscErrorCode AOMappingHasApplicationIndex(AO ao, PetscInt idex, PetscBool *hasIndex) {
+PetscErrorCode AOMappingHasApplicationIndex(AO ao, PetscInt idex, PetscBool *hasIndex)
+{
   AO_Mapping *aomap;
   PetscInt   *app;
   PetscInt    low, high, mid;
@@ -142,8 +147,8 @@ PetscErrorCode AOMappingHasApplicationIndex(AO ao, PetscInt idex, PetscBool *has
   aomap = (AO_Mapping *)ao->data;
   app   = aomap->app;
   /* Use bisection since the array is sorted */
-  low   = 0;
-  high  = aomap->N - 1;
+  low  = 0;
+  high = aomap->N - 1;
   while (low <= high) {
     mid = (low + high) / 2;
     if (idex == app[mid]) break;
@@ -169,7 +174,8 @@ PetscErrorCode AOMappingHasApplicationIndex(AO ao, PetscInt idex, PetscBool *has
 
 .seealso: `AOMappingHasApplicationIndex()`, `AOCreateMapping()`
 @*/
-PetscErrorCode AOMappingHasPetscIndex(AO ao, PetscInt idex, PetscBool *hasIndex) {
+PetscErrorCode AOMappingHasPetscIndex(AO ao, PetscInt idex, PetscBool *hasIndex)
+{
   AO_Mapping *aomap;
   PetscInt   *petsc;
   PetscInt    low, high, mid;
@@ -180,8 +186,8 @@ PetscErrorCode AOMappingHasPetscIndex(AO ao, PetscInt idex, PetscBool *hasIndex)
   aomap = (AO_Mapping *)ao->data;
   petsc = aomap->petsc;
   /* Use bisection since the array is sorted */
-  low   = 0;
-  high  = aomap->N - 1;
+  low  = 0;
+  high = aomap->N - 1;
   while (low <= high) {
     mid = (low + high) / 2;
     if (idex == petsc[mid]) break;
@@ -216,7 +222,8 @@ PetscErrorCode AOMappingHasPetscIndex(AO ao, PetscInt idex, PetscBool *hasIndex)
 
 .seealso: `AOCreateBasic()`, `AOCreateBasic()`, `AOCreateMappingIS()`, `AODestroy()`
 @*/
-PetscErrorCode AOCreateMapping(MPI_Comm comm, PetscInt napp, const PetscInt myapp[], const PetscInt mypetsc[], AO *aoout) {
+PetscErrorCode AOCreateMapping(MPI_Comm comm, PetscInt napp, const PetscInt myapp[], const PetscInt mypetsc[], AO *aoout)
+{
   AO          ao;
   AO_Mapping *aomap;
   PetscInt   *allpetsc, *allapp;
@@ -327,7 +334,8 @@ PetscErrorCode AOCreateMapping(MPI_Comm comm, PetscInt napp, const PetscInt myap
 
 .seealso: `AOCreateBasic()`, `AOCreateMapping()`, `AODestroy()`
 @*/
-PetscErrorCode AOCreateMappingIS(IS isapp, IS ispetsc, AO *aoout) {
+PetscErrorCode AOCreateMappingIS(IS isapp, IS ispetsc, AO *aoout)
+{
   MPI_Comm        comm;
   const PetscInt *mypetsc, *myapp;
   PetscInt        napp, npetsc;

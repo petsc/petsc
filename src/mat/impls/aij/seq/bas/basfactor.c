@@ -3,7 +3,8 @@
 #include <../src/mat/impls/sbaij/seq/sbaij.h>
 #include <../src/mat/impls/aij/seq/bas/spbas.h>
 
-PetscErrorCode MatICCFactorSymbolic_SeqAIJ_Bas(Mat fact, Mat A, IS perm, const MatFactorInfo *info) {
+PetscErrorCode MatICCFactorSymbolic_SeqAIJ_Bas(Mat fact, Mat A, IS perm, const MatFactorInfo *info)
+{
   Mat_SeqAIJ     *a = (Mat_SeqAIJ *)A->data;
   Mat_SeqSBAIJ   *b;
   PetscBool       perm_identity, missing;
@@ -94,7 +95,8 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ_Bas(Mat fact, Mat A, IS perm, const M
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_Bas(Mat B, Mat A, const MatFactorInfo *info) {
+PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_Bas(Mat B, Mat A, const MatFactorInfo *info)
+{
   Mat             C  = B;
   Mat_SeqSBAIJ   *b  = (Mat_SeqSBAIJ *)C->data;
   IS              ip = b->row, iip = b->icol;
@@ -170,13 +172,15 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_Bas(Mat B, Mat A, const MatFactor
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatFactorGetSolverType_seqaij_bas(Mat A, MatSolverType *type) {
+PetscErrorCode MatFactorGetSolverType_seqaij_bas(Mat A, MatSolverType *type)
+{
   PetscFunctionBegin;
   *type = MATSOLVERBAS;
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_bas(Mat A, MatFactorType ftype, Mat *B) {
+PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_bas(Mat A, MatFactorType ftype, Mat *B)
+{
   PetscInt n = A->rmap->n;
 
   PetscFunctionBegin;

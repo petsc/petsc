@@ -2,7 +2,8 @@ static char help[] = "Tests using MatShift() to create a constant diagonal matri
 
 #include <petscmat.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   Mat           A, F;
   MatFactorInfo info;
   PetscInt      m = 10;

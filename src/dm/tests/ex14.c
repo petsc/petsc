@@ -8,7 +8,8 @@ static char help[] = "Tests saving DMDA vectors to files.\n\n";
 #include <petscdm.h>
 #include <petscdmda.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscMPIInt rank;
   PetscInt    M = 10, N = 8, m = PETSC_DECIDE, n = PETSC_DECIDE, dof = 1;
   DM          da;

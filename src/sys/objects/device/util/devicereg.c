@@ -91,7 +91,8 @@ const char *const PetscDeviceAttributes[] = {
 
 static PetscBool registered = PETSC_FALSE;
 
-static PetscErrorCode PetscDeviceRegisterEvent_Private(const char name[], PetscClassId id, PetscLogEvent *event) {
+static PetscErrorCode PetscDeviceRegisterEvent_Private(const char name[], PetscClassId id, PetscLogEvent *event)
+{
   PetscFunctionBegin;
   PetscCall(PetscLogEventRegister(name, id, event));
   PetscCall(PetscLogEventSetCollective(*event, PETSC_FALSE));
@@ -110,7 +111,8 @@ static PetscErrorCode PetscDeviceRegisterEvent_Private(const char name[], PetscC
 
 .seealso: `PetscFinalize()`, `PetscDeviceInitializePackage()`
 @*/
-PetscErrorCode PetscDeviceFinalizePackage(void) {
+PetscErrorCode PetscDeviceFinalizePackage(void)
+{
   PetscFunctionBegin;
   registered = PETSC_FALSE;
   PetscFunctionReturn(0);
@@ -126,7 +128,8 @@ PetscErrorCode PetscDeviceFinalizePackage(void) {
 .seealso: `PetscInitialize()`, `PetscDeviceFinalizePackage()`, `PetscDeviceContextCreate()`,
 `PetscDeviceCreate()`
 @*/
-PetscErrorCode PetscDeviceInitializePackage(void) {
+PetscErrorCode PetscDeviceInitializePackage(void)
+{
   PetscFunctionBegin;
   PetscCheck(PetscDeviceConfiguredFor_Internal(PETSC_DEVICE_DEFAULT()), PETSC_COMM_SELF, PETSC_ERR_SUP, "PETSc is not configured with device support (PETSC_DEVICE_DEFAULT = '%s')", PetscDeviceTypes[PETSC_DEVICE_DEFAULT()]);
   if (PetscLikely(registered)) PetscFunctionReturn(0);

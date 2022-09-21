@@ -1,11 +1,12 @@
 #include <petsc/private/dmpleximpl.h> /*I      "petscdmplex.h"   I*/
 
 #if !defined(ANSI_DECLARATORS)
-#define ANSI_DECLARATORS
+  #define ANSI_DECLARATORS
 #endif
 #include <triangle.h>
 
-static PetscErrorCode InitInput_Triangle(struct triangulateio *inputCtx) {
+static PetscErrorCode InitInput_Triangle(struct triangulateio *inputCtx)
+{
   PetscFunctionBegin;
   inputCtx->numberofpoints             = 0;
   inputCtx->numberofpointattributes    = 0;
@@ -24,7 +25,8 @@ static PetscErrorCode InitInput_Triangle(struct triangulateio *inputCtx) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode InitOutput_Triangle(struct triangulateio *outputCtx) {
+static PetscErrorCode InitOutput_Triangle(struct triangulateio *outputCtx)
+{
   PetscFunctionBegin;
   outputCtx->numberofpoints        = 0;
   outputCtx->pointlist             = NULL;
@@ -42,7 +44,8 @@ static PetscErrorCode InitOutput_Triangle(struct triangulateio *outputCtx) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode FiniOutput_Triangle(struct triangulateio *outputCtx) {
+static PetscErrorCode FiniOutput_Triangle(struct triangulateio *outputCtx)
+{
   PetscFunctionBegin;
   free(outputCtx->pointlist);
   free(outputCtx->pointmarkerlist);
@@ -55,7 +58,8 @@ static PetscErrorCode FiniOutput_Triangle(struct triangulateio *outputCtx) {
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode DMPlexGenerate_Triangle(DM boundary, PetscBool interpolate, DM *dm) {
+PETSC_EXTERN PetscErrorCode DMPlexGenerate_Triangle(DM boundary, PetscBool interpolate, DM *dm)
+{
   MPI_Comm             comm;
   DM_Plex             *mesh             = (DM_Plex *)boundary->data;
   PetscInt             dim              = 2;
@@ -222,7 +226,8 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_Triangle(DM boundary, PetscBool inter
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode DMPlexRefine_Triangle(DM dm, PetscReal *inmaxVolumes, DM *dmRefined) {
+PETSC_EXTERN PetscErrorCode DMPlexRefine_Triangle(DM dm, PetscReal *inmaxVolumes, DM *dmRefined)
+{
   MPI_Comm             comm;
   PetscInt             dim       = 2;
   const char          *labelName = "marker";

@@ -68,7 +68,8 @@ const char **TaoConvergedReasons           = TaoConvergedReasons_Shifted - TAO_D
 
 .seealso `TaoRegister()`, `TaoRegisterDestroy()`
 @*/
-PetscErrorCode TaoRegisterAll(void) {
+PetscErrorCode TaoRegisterAll(void)
+{
 #if !defined(PETSC_USE_COMPLEX)
 #endif
 

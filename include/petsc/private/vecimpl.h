@@ -265,7 +265,8 @@ PETSC_INTERN PetscErrorCode VecStashGetOwnerList_Private(VecStash *, PetscLayout
   idx    - the global of the inserted value
   values - the value inserted
 */
-static inline PetscErrorCode VecStashValue_Private(VecStash *stash, PetscInt row, PetscScalar value) {
+static inline PetscErrorCode VecStashValue_Private(VecStash *stash, PetscInt row, PetscScalar value)
+{
   /* Check and see if we have sufficient memory */
   if (((stash)->n + 1) > (stash)->nmax) PetscCall(VecStashExpand_Private(stash, 1));
   (stash)->idx[(stash)->n]   = row;
@@ -282,7 +283,8 @@ static inline PetscErrorCode VecStashValue_Private(VecStash *stash, PetscInt row
   idx    - the global block index
   values - the values inserted
 */
-static inline PetscErrorCode VecStashValuesBlocked_Private(VecStash *stash, PetscInt row, PetscScalar *values) {
+static inline PetscErrorCode VecStashValuesBlocked_Private(VecStash *stash, PetscInt row, PetscScalar *values)
+{
   PetscInt     stash_bs = (stash)->bs;
   PetscScalar *array;
 
@@ -321,7 +323,9 @@ PETSC_EXTERN PetscErrorCode PetscSectionRestoreField_Internal(PetscSection, Pets
   } while (0)
 
 #define VecCheckLocalSize(x, ar1, n) \
-  do { PetscCheck((x)->map->n == (n), PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Incorrect vector local size: parameter # %d local size %" PetscInt_FMT " != %" PetscInt_FMT, ar1, (x)->map->n, n); } while (0)
+  do { \
+    PetscCheck((x)->map->n == (n), PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Incorrect vector local size: parameter # %d local size %" PetscInt_FMT " != %" PetscInt_FMT, ar1, (x)->map->n, n); \
+  } while (0)
 
 #define VecCheckSize(x, ar1, n, N) \
   do { \
@@ -364,7 +368,8 @@ PETSC_INTERN PetscErrorCode VecCreateMPIKokkosWithArrays_Private(MPI_Comm, Petsc
 /* std::upper_bound(): Given a sorted array, return index of the first element in range [first,last) whose value
    is greater than value, or last if there is no such element.
 */
-static inline PetscErrorCode PetscSortedIntUpperBound(PetscInt *array, PetscCount first, PetscCount last, PetscInt value, PetscCount *upper) {
+static inline PetscErrorCode PetscSortedIntUpperBound(PetscInt *array, PetscCount first, PetscCount last, PetscInt value, PetscCount *upper)
+{
   PetscCount it, step, count = last - first;
 
   PetscFunctionBegin;

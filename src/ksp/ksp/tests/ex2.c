@@ -19,7 +19,8 @@ isol_loc not to change between successive solves).
 
 #include <petscksp.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat         C;
   PetscInt    N = 2, rowidx, colidx;
   Vec         u, b, r;

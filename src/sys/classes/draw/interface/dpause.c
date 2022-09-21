@@ -16,7 +16,8 @@
 
 .seealso: `PetscDraw`, `PetscDrawSetPause()`, `PetscDrawGetPause()`
 @*/
-PetscErrorCode PetscDrawPause(PetscDraw draw) {
+PetscErrorCode PetscDrawPause(PetscDraw draw)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   PetscTryTypeMethod(draw, pause);
@@ -44,7 +45,8 @@ PetscErrorCode PetscDrawPause(PetscDraw draw) {
 
 .seealso: `PetscDraw`, `PetscDrawGetPause()`, `PetscDrawPause()`
 @*/
-PetscErrorCode PetscDrawSetPause(PetscDraw draw, PetscReal lpause) {
+PetscErrorCode PetscDrawSetPause(PetscDraw draw, PetscReal lpause)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   PetscValidLogicalCollectiveReal(draw, lpause, 2);
@@ -69,7 +71,8 @@ PetscErrorCode PetscDrawSetPause(PetscDraw draw, PetscReal lpause) {
 
 .seealso: `PetscDraw`, `PetscDrawSetPause()`, `PetscDrawPause()`
 @*/
-PetscErrorCode PetscDrawGetPause(PetscDraw draw, PetscReal *lpause) {
+PetscErrorCode PetscDrawGetPause(PetscDraw draw, PetscReal *lpause)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   PetscValidRealPointer(lpause, 2);

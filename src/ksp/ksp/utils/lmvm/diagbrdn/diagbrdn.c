@@ -2,7 +2,8 @@
 
 /*------------------------------------------------------------*/
 
-static PetscErrorCode MatSolve_DiagBrdn(Mat B, Vec F, Vec dX) {
+static PetscErrorCode MatSolve_DiagBrdn(Mat B, Vec F, Vec dX)
+{
   Mat_LMVM     *lmvm = (Mat_LMVM *)B->data;
   Mat_DiagBrdn *ldb  = (Mat_DiagBrdn *)lmvm->ctx;
 
@@ -15,7 +16,8 @@ static PetscErrorCode MatSolve_DiagBrdn(Mat B, Vec F, Vec dX) {
 
 /*------------------------------------------------------------*/
 
-static PetscErrorCode MatMult_DiagBrdn(Mat B, Vec X, Vec Z) {
+static PetscErrorCode MatMult_DiagBrdn(Mat B, Vec X, Vec Z)
+{
   Mat_LMVM     *lmvm = (Mat_LMVM *)B->data;
   Mat_DiagBrdn *ldb  = (Mat_DiagBrdn *)lmvm->ctx;
 
@@ -28,7 +30,8 @@ static PetscErrorCode MatMult_DiagBrdn(Mat B, Vec X, Vec Z) {
 
 /*------------------------------------------------------------*/
 
-static PetscErrorCode MatUpdate_DiagBrdn(Mat B, Vec X, Vec F) {
+static PetscErrorCode MatUpdate_DiagBrdn(Mat B, Vec X, Vec F)
+{
   Mat_LMVM     *lmvm = (Mat_LMVM *)B->data;
   Mat_DiagBrdn *ldb  = (Mat_DiagBrdn *)lmvm->ctx;
   PetscInt      old_k, i, start;
@@ -330,7 +333,8 @@ static PetscErrorCode MatUpdate_DiagBrdn(Mat B, Vec X, Vec F) {
 
 /*------------------------------------------------------------*/
 
-static PetscErrorCode MatCopy_DiagBrdn(Mat B, Mat M, MatStructure str) {
+static PetscErrorCode MatCopy_DiagBrdn(Mat B, Mat M, MatStructure str)
+{
   Mat_LMVM     *bdata = (Mat_LMVM *)B->data;
   Mat_DiagBrdn *bctx  = (Mat_DiagBrdn *)bdata->ctx;
   Mat_LMVM     *mdata = (Mat_LMVM *)M->data;
@@ -360,7 +364,8 @@ static PetscErrorCode MatCopy_DiagBrdn(Mat B, Mat M, MatStructure str) {
 
 /*------------------------------------------------------------*/
 
-static PetscErrorCode MatView_DiagBrdn(Mat B, PetscViewer pv) {
+static PetscErrorCode MatView_DiagBrdn(Mat B, PetscViewer pv)
+{
   Mat_LMVM     *lmvm = (Mat_LMVM *)B->data;
   Mat_DiagBrdn *ldb  = (Mat_DiagBrdn *)lmvm->ctx;
   PetscBool     isascii;
@@ -378,7 +383,8 @@ static PetscErrorCode MatView_DiagBrdn(Mat B, PetscViewer pv) {
 
 /*------------------------------------------------------------*/
 
-static PetscErrorCode MatSetFromOptions_DiagBrdn(Mat B, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode MatSetFromOptions_DiagBrdn(Mat B, PetscOptionItems *PetscOptionsObject)
+{
   Mat_LMVM     *lmvm = (Mat_LMVM *)B->data;
   Mat_DiagBrdn *ldb  = (Mat_DiagBrdn *)lmvm->ctx;
 
@@ -402,7 +408,8 @@ static PetscErrorCode MatSetFromOptions_DiagBrdn(Mat B, PetscOptionItems *PetscO
 
 /*------------------------------------------------------------*/
 
-static PetscErrorCode MatReset_DiagBrdn(Mat B, PetscBool destructive) {
+static PetscErrorCode MatReset_DiagBrdn(Mat B, PetscBool destructive)
+{
   Mat_LMVM     *lmvm = (Mat_LMVM *)B->data;
   Mat_DiagBrdn *ldb  = (Mat_DiagBrdn *)lmvm->ctx;
 
@@ -425,7 +432,8 @@ static PetscErrorCode MatReset_DiagBrdn(Mat B, PetscBool destructive) {
 
 /*------------------------------------------------------------*/
 
-static PetscErrorCode MatAllocate_DiagBrdn(Mat B, Vec X, Vec F) {
+static PetscErrorCode MatAllocate_DiagBrdn(Mat B, Vec X, Vec F)
+{
   Mat_LMVM     *lmvm = (Mat_LMVM *)B->data;
   Mat_DiagBrdn *ldb  = (Mat_DiagBrdn *)lmvm->ctx;
 
@@ -447,7 +455,8 @@ static PetscErrorCode MatAllocate_DiagBrdn(Mat B, Vec X, Vec F) {
 
 /*------------------------------------------------------------*/
 
-static PetscErrorCode MatDestroy_DiagBrdn(Mat B) {
+static PetscErrorCode MatDestroy_DiagBrdn(Mat B)
+{
   Mat_LMVM     *lmvm = (Mat_LMVM *)B->data;
   Mat_DiagBrdn *ldb  = (Mat_DiagBrdn *)lmvm->ctx;
 
@@ -470,7 +479,8 @@ static PetscErrorCode MatDestroy_DiagBrdn(Mat B) {
 
 /*------------------------------------------------------------*/
 
-static PetscErrorCode MatSetUp_DiagBrdn(Mat B) {
+static PetscErrorCode MatSetUp_DiagBrdn(Mat B)
+{
   Mat_LMVM     *lmvm = (Mat_LMVM *)B->data;
   Mat_DiagBrdn *ldb  = (Mat_DiagBrdn *)lmvm->ctx;
 
@@ -492,7 +502,8 @@ static PetscErrorCode MatSetUp_DiagBrdn(Mat B) {
 
 /*------------------------------------------------------------*/
 
-PetscErrorCode MatCreate_LMVMDiagBrdn(Mat B) {
+PetscErrorCode MatCreate_LMVMDiagBrdn(Mat B)
+{
   Mat_LMVM     *lmvm;
   Mat_DiagBrdn *ldb;
 
@@ -579,7 +590,8 @@ PetscErrorCode MatCreate_LMVMDiagBrdn(Mat B) {
 .seealso: `MatCreate()`, `MATLMVM`, `MATLMVMDIAGBRDN`, `MatCreateLMVMDFP()`, `MatCreateLMVMSR1()`,
           `MatCreateLMVMBFGS()`, `MatCreateLMVMBrdn()`, `MatCreateLMVMSymBrdn()`
 @*/
-PetscErrorCode MatCreateLMVMDiagBroyden(MPI_Comm comm, PetscInt n, PetscInt N, Mat *B) {
+PetscErrorCode MatCreateLMVMDiagBroyden(MPI_Comm comm, PetscInt n, PetscInt N, Mat *B)
+{
   PetscFunctionBegin;
   PetscCall(MatCreate(comm, B));
   PetscCall(MatSetSizes(*B, n, n, N, N));

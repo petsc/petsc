@@ -31,7 +31,8 @@
 .seealso: `PetscFClose()`, `PetscSynchronizedFGets()`, `PetscSynchronizedPrintf()`, `PetscSynchronizedFlush()`,
           `PetscFPrintf()`
 @*/
-PetscErrorCode PetscFOpen(MPI_Comm comm, const char name[], const char mode[], FILE **fp) {
+PetscErrorCode PetscFOpen(MPI_Comm comm, const char name[], const char mode[], FILE **fp)
+{
   PetscMPIInt rank;
   FILE       *fd;
   char        fname[PETSC_MAX_PATH_LEN], tname[PETSC_MAX_PATH_LEN];
@@ -76,7 +77,8 @@ PetscErrorCode PetscFOpen(MPI_Comm comm, const char name[], const char mode[], F
 
 .seealso: `PetscFOpen()`
 @*/
-PetscErrorCode PetscFClose(MPI_Comm comm, FILE *fd) {
+PetscErrorCode PetscFClose(MPI_Comm comm, FILE *fd)
+{
   PetscMPIInt rank;
   int         err;
 
@@ -108,7 +110,8 @@ static char PetscPOpenMachine[128] = "";
 
 .seealso: `PetscFOpen()`, `PetscFClose()`, `PetscPOpen()`
 @*/
-PetscErrorCode PetscPClose(MPI_Comm comm, FILE *fd) {
+PetscErrorCode PetscPClose(MPI_Comm comm, FILE *fd)
+{
   PetscMPIInt rank;
 
   PetscFunctionBegin;
@@ -152,7 +155,8 @@ PetscErrorCode PetscPClose(MPI_Comm comm, FILE *fd) {
 
 .seealso: `PetscFOpen()`, `PetscFClose()`, `PetscPClose()`, `PetscPOpenSetMachine()`
 @*/
-PetscErrorCode PetscPOpen(MPI_Comm comm, const char machine[], const char program[], const char mode[], FILE **fp) {
+PetscErrorCode PetscPOpen(MPI_Comm comm, const char machine[], const char program[], const char mode[], FILE **fp)
+{
   PetscMPIInt rank;
   size_t      i, len, cnt;
   char        commandt[PETSC_MAX_PATH_LEN], command[PETSC_MAX_PATH_LEN];
@@ -210,7 +214,8 @@ PetscErrorCode PetscPOpen(MPI_Comm comm, const char machine[], const char progra
 
 .seealso: `PetscFOpen()`, `PetscFClose()`, `PetscPClose()`, `PetscPOpen()`
 @*/
-PetscErrorCode PetscPOpenSetMachine(const char machine[]) {
+PetscErrorCode PetscPOpenSetMachine(const char machine[])
+{
   PetscFunctionBegin;
   if (machine) {
     PetscCall(PetscStrcpy(PetscPOpenMachine, machine));

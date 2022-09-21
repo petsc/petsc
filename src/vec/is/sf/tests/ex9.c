@@ -4,7 +4,8 @@ static char help[] = "This example shows 1) how to transfer vectors from a paren
   To run any example with VECCUDA vectors, add -vectype cuda to the argument list\n\n";
 
 #include <petscvec.h>
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscMPIInt nproc, grank, mycolor;
   PetscInt    i, n, N = 20, low, high;
   MPI_Comm    subcomm;

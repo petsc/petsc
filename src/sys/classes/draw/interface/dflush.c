@@ -15,7 +15,8 @@
 
 .seealso: `PetscDraw`, `PetscDrawClear()`
 @*/
-PetscErrorCode PetscDrawFlush(PetscDraw draw) {
+PetscErrorCode PetscDrawFlush(PetscDraw draw)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   PetscTryTypeMethod(draw, flush);

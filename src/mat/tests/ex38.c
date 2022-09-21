@@ -3,7 +3,8 @@ static char help[] = "Test interface of Elemental. \n\n";
 
 #include <petscmat.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat             C, Caij;
   PetscInt        i, j, m = 5, n, nrows, ncols;
   const PetscInt *rows, *cols;

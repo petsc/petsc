@@ -67,7 +67,8 @@ extern PetscErrorCode Monitor(TS, PetscInt, PetscReal, Vec, void *);
 extern PetscErrorCode ExactSolution(PetscReal, Vec, AppCtx *);
 extern PetscErrorCode SetBounds(Vec, Vec, PetscScalar, PetscScalar, AppCtx *);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   AppCtx      appctx;                /* user-defined application context */
   TS          ts;                    /* timestepping context */
   Mat         A;                     /* Jacobian matrix data structure */
@@ -236,7 +237,8 @@ int main(int argc, char **argv) {
    Output Parameter:
    u - vector with solution at initial time (global)
 */
-PetscErrorCode InitialConditions(Vec u, AppCtx *appctx) {
+PetscErrorCode InitialConditions(Vec u, AppCtx *appctx)
+{
   PetscScalar *u_localptr, h = appctx->h, x;
   PetscInt     i, mybase, myend;
 
@@ -294,7 +296,8 @@ PetscErrorCode InitialConditions(Vec u, AppCtx *appctx) {
   uh - constant upper bound for all variables
   appctx - Application context
  */
-PetscErrorCode SetBounds(Vec xl, Vec xu, PetscScalar ul, PetscScalar uh, AppCtx *appctx) {
+PetscErrorCode SetBounds(Vec xl, Vec xu, PetscScalar ul, PetscScalar uh, AppCtx *appctx)
+{
   PetscScalar *l, *u;
   PetscMPIInt  rank, size;
   PetscInt     localsize;
@@ -333,7 +336,8 @@ PetscErrorCode SetBounds(Vec xl, Vec xu, PetscScalar ul, PetscScalar uh, AppCtx 
    Output Parameter:
    solution - vector with the newly computed exact solution
 */
-PetscErrorCode ExactSolution(PetscReal t, Vec solution, AppCtx *appctx) {
+PetscErrorCode ExactSolution(PetscReal t, Vec solution, AppCtx *appctx)
+{
   PetscScalar *s_localptr, h = appctx->h, x;
   PetscInt     i, mybase, myend;
 
@@ -380,7 +384,8 @@ PetscErrorCode ExactSolution(PetscReal t, Vec solution, AppCtx *appctx) {
             information about the problem size, workspace and the exact
             solution.
 */
-PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal time, Vec u, void *ctx) {
+PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal time, Vec u, void *ctx)
+{
   AppCtx   *appctx = (AppCtx *)ctx; /* user-defined application context */
   PetscReal en2, en2s, enmax;
   PetscDraw draw;
@@ -455,7 +460,8 @@ PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal time, Vec u, void *ctx) {
    Output Parameter:
    global_out - vector containing the newly evaluated function
 */
-PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec global_in, Vec global_out, void *ctx) {
+PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec global_in, Vec global_out, void *ctx)
+{
   AppCtx            *appctx    = (AppCtx *)ctx;     /* user-defined application context */
   DM                 da        = appctx->da;        /* distributed array */
   Vec                local_in  = appctx->u_local;   /* local ghosted input vector */
@@ -568,7 +574,8 @@ PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec global_in, Vec global_out, vo
    - Note that MatSetValues() uses 0-based row and column numbers
      in Fortran as well as in C.
 */
-PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec global_in, Mat AA, Mat B, void *ctx) {
+PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec global_in, Mat AA, Mat B, void *ctx)
+{
   AppCtx            *appctx   = (AppCtx *)ctx;   /* user-defined application context */
   Vec                local_in = appctx->u_local; /* local ghosted input vector */
   DM                 da       = appctx->da;      /* distributed array */

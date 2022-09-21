@@ -8,7 +8,8 @@ typedef struct {
   char fname[PETSC_MAX_PATH_LEN]; /* Output mesh filename */
 } AppCtx;
 
-PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
+PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
+{
   PetscBool flg;
 
   PetscFunctionBegin;
@@ -19,7 +20,8 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   const char        exampleDMPlexName[]       = "exampleDMPlex";
   const char        exampleDistributionName[] = "exampleDistribution";
   PetscViewerFormat format                    = PETSC_VIEWER_HDF5_PETSC;

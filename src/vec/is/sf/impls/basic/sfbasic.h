@@ -40,7 +40,8 @@ typedef struct {
 #endif
 } PetscSF_Basic;
 
-static inline PetscErrorCode PetscSFGetRootInfo_Basic(PetscSF sf, PetscInt *nrootranks, PetscInt *ndrootranks, const PetscMPIInt **rootranks, const PetscInt **rootoffset, const PetscInt **rootloc) {
+static inline PetscErrorCode PetscSFGetRootInfo_Basic(PetscSF sf, PetscInt *nrootranks, PetscInt *ndrootranks, const PetscMPIInt **rootranks, const PetscInt **rootoffset, const PetscInt **rootloc)
+{
   PetscSF_Basic *bas = (PetscSF_Basic *)sf->data;
 
   PetscFunctionBegin;
@@ -52,7 +53,8 @@ static inline PetscErrorCode PetscSFGetRootInfo_Basic(PetscSF sf, PetscInt *nroo
   PetscFunctionReturn(0);
 }
 
-static inline PetscErrorCode PetscSFGetLeafInfo_Basic(PetscSF sf, PetscInt *nleafranks, PetscInt *ndleafranks, const PetscMPIInt **leafranks, const PetscInt **leafoffset, const PetscInt **leafloc, const PetscInt **leafrremote) {
+static inline PetscErrorCode PetscSFGetLeafInfo_Basic(PetscSF sf, PetscInt *nleafranks, PetscInt *ndleafranks, const PetscMPIInt **leafranks, const PetscInt **leafoffset, const PetscInt **leafloc, const PetscInt **leafrremote)
+{
   PetscFunctionBegin;
   if (nleafranks) *nleafranks = sf->nranks;
   if (ndleafranks) *ndleafranks = sf->ndranks;

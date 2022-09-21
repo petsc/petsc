@@ -2,7 +2,8 @@ static char help[] = "Exhaustive memory tracking for DMPlex.\n\n\n";
 
 #include <petscdmplex.h>
 
-static PetscErrorCode EstimateMemory(DM dm, PetscLogDouble *est) {
+static PetscErrorCode EstimateMemory(DM dm, PetscLogDouble *est)
+{
   DMLabel  marker;
   PetscInt cdim, depth, d, pStart, pEnd, p, Nd[4] = {0, 0, 0, 0}, lsize = 0, rmem = 0, imem = 0;
   PetscInt coneSecMem = 0, coneMem = 0, supportSecMem = 0, supportMem = 0, labelMem = 0;
@@ -57,7 +58,8 @@ static PetscErrorCode EstimateMemory(DM dm, PetscLogDouble *est) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM             dm;
   PetscBool      trace = PETSC_FALSE, checkMemory = PETSC_TRUE, auxMemory = PETSC_FALSE;
   PetscLogDouble before, after, est                                       = 0, clean, max;

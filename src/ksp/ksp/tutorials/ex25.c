@@ -27,7 +27,8 @@ typedef struct {
   PetscScalar e;
 } AppCtx;
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   KSP       ksp;
   DM        da;
   AppCtx    user;
@@ -69,7 +70,8 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-static PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ctx) {
+static PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ctx)
+{
   PetscInt    mx, idx[2];
   PetscScalar h, v[2];
   DM          da;
@@ -88,7 +90,8 @@ static PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ctx) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, void *ctx) {
+static PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, void *ctx)
+{
   AppCtx     *user = (AppCtx *)ctx;
   PetscInt    i, mx, xm, xs;
   PetscScalar v[3], h, xlow, xhigh;

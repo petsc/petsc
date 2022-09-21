@@ -6,10 +6,12 @@
    MatFDColoringSetFunction() takes a function with four arguments, we want to use SNESComputeFunction()
    since it logs function computation information.
 */
-static PetscErrorCode SNESComputeFunctionCtx(SNES snes, Vec x, Vec f, void *ctx) {
+static PetscErrorCode SNESComputeFunctionCtx(SNES snes, Vec x, Vec f, void *ctx)
+{
   return SNESComputeFunction(snes, x, f);
 }
-static PetscErrorCode SNESComputeMFFunctionCtx(SNES snes, Vec x, Vec f, void *ctx) {
+static PetscErrorCode SNESComputeMFFunctionCtx(SNES snes, Vec x, Vec f, void *ctx)
+{
   return SNESComputeMFFunction(snes, x, f);
 }
 
@@ -53,7 +55,8 @@ static PetscErrorCode SNESComputeMFFunctionCtx(SNES snes, Vec x, Vec f, void *ct
 .seealso: `SNES`, `SNESSetJacobian()`, `SNESTestJacobian()`, `SNESComputeJacobianDefault()`, `SNESSetUseMatrixFree()`,
           `MatFDColoringCreate()`, `MatFDColoringSetFunction()`
 @*/
-PetscErrorCode SNESComputeJacobianDefaultColor(SNES snes, Vec x1, Mat J, Mat B, void *ctx) {
+PetscErrorCode SNESComputeJacobianDefaultColor(SNES snes, Vec x1, Mat J, Mat B, void *ctx)
+{
   MatFDColoring color = (MatFDColoring)ctx;
   DM            dm;
   MatColoring   mc;

@@ -6,7 +6,7 @@
  */
 
 #ifndef __SNES_VIRS_H
-#define __SNES_VIRS_H
+  #define __SNES_VIRS_H
 
 typedef struct {
   PetscErrorCode (*checkredundancy)(SNES, IS, IS *, void *);

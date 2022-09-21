@@ -51,7 +51,8 @@ typedef struct {
   This can be substituted by an external parser.
 */
 
-PetscErrorCode read_data(PetscInt *pnnode, PetscInt *pnbranch, Node **pnode, Branch **pbranch, PetscInt **pedgelist) {
+PetscErrorCode read_data(PetscInt *pnnode, PetscInt *pnbranch, Node **pnode, Branch **pbranch, PetscInt **pedgelist)
+{
   PetscInt  nnode, nbranch, i;
   Branch   *branch;
   Node     *node;
@@ -119,7 +120,8 @@ PetscErrorCode read_data(PetscInt *pnnode, PetscInt *pnbranch, Node **pnode, Bra
       edgelist[2 * i]     = 2;
       edgelist[2 * i + 1] = 3;
       break;
-    default: break;
+    default:
+      break;
     }
   }
 
@@ -132,7 +134,8 @@ PetscErrorCode read_data(PetscInt *pnnode, PetscInt *pnbranch, Node **pnode, Bra
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode FormOperator(DM dmnetwork, Mat A, Vec b) {
+PetscErrorCode FormOperator(DM dmnetwork, Mat A, Vec b)
+{
   Branch         *branch;
   Node           *node;
   PetscInt        e, v, vStart, vEnd, eStart, eEnd;
@@ -225,7 +228,8 @@ PetscErrorCode FormOperator(DM dmnetwork, Mat A, Vec b) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt    i, nnode = 0, nbranch = 0, eStart, eEnd, vStart, vEnd;
   PetscMPIInt size, rank;
   DM          dmnetwork;

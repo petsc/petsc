@@ -28,7 +28,8 @@ PetscLogEvent PETSCSF_Unpack;
 
 .seealso: `PetscSFFinalizePackage()`
 @*/
-PetscErrorCode PetscSFInitializePackage(void) {
+PetscErrorCode PetscSFInitializePackage(void)
+{
   char      logList[256];
   PetscBool opt, pkg;
 
@@ -81,7 +82,8 @@ PetscErrorCode PetscSFInitializePackage(void) {
 
 .seealso: `PetscSFInitializePackage()`
 @*/
-PetscErrorCode PetscSFFinalizePackage(void) {
+PetscErrorCode PetscSFFinalizePackage(void)
+{
   PetscFunctionBegin;
   PetscCall(PetscFunctionListDestroy(&PetscSFList));
   PetscSFPackageInitialized = PETSC_FALSE;

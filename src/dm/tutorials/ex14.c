@@ -12,7 +12,8 @@ Use the options
 #include <petscdm.h>
 #include <petscdmda.h>
 
-PetscErrorCode FillLocalSubdomain(DM da, Vec gvec) {
+PetscErrorCode FillLocalSubdomain(DM da, Vec gvec)
+{
   DMDALocalInfo info;
   PetscMPIInt   rank;
   PetscInt      i, j, k, l;
@@ -54,7 +55,8 @@ PetscErrorCode FillLocalSubdomain(DM da, Vec gvec) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM            da, *subda;
   PetscInt      i, dim = 3;
   PetscInt      M = 25, N = 25, P = 25;

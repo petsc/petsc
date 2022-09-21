@@ -3,7 +3,8 @@ static char help[] = "Tests DMClone() with DMComposite\n\n";
 #include <petscdmcomposite.h>
 #include <petscdmda.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM newdm, dm, dm1, dm2;
 
   PetscFunctionBeginUser;

@@ -1,7 +1,8 @@
 #include <petscsys.h>
 #include <petscblaslapack.h>
 
-static PetscErrorCode estsv(PetscInt n, PetscReal *r, PetscInt ldr, PetscReal *svmin, PetscReal *z) {
+static PetscErrorCode estsv(PetscInt n, PetscReal *r, PetscInt ldr, PetscReal *svmin, PetscReal *z)
+{
   PetscBLASInt blas1 = 1, blasn, blasnmi, blasj, blasldr;
   PetscInt     i, j;
   PetscReal    e, temp, w, wm, ynorm, znorm, s, sm;
@@ -210,7 +211,8 @@ c     Brett M. Averick, Richard Carter, and Jorge J. More'
 c
 c     ***********
 */
-PetscErrorCode gqt(PetscInt n, PetscReal *a, PetscInt lda, PetscReal *b, PetscReal delta, PetscReal rtol, PetscReal atol, PetscInt itmax, PetscReal *retpar, PetscReal *retf, PetscReal *x, PetscInt *retinfo, PetscInt *retits, PetscReal *z, PetscReal *wa1, PetscReal *wa2) {
+PetscErrorCode gqt(PetscInt n, PetscReal *a, PetscInt lda, PetscReal *b, PetscReal delta, PetscReal rtol, PetscReal atol, PetscInt itmax, PetscReal *retpar, PetscReal *retf, PetscReal *x, PetscInt *retinfo, PetscInt *retits, PetscReal *z, PetscReal *wa1, PetscReal *wa2)
+{
   PetscReal    f = 0.0, p001 = 0.001, p5 = 0.5, minusone = -1, delta2 = delta * delta;
   PetscInt     iter, j, rednc, info;
   PetscBLASInt indef;

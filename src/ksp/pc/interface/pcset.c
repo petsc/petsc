@@ -6,11 +6,11 @@
 #include <petsc/private/pcimpl.h> /*I "petscpc.h" I*/
 #include <petscdm.h>
 
-PetscBool         PCRegisterAllCalled = PETSC_FALSE;
+PetscBool PCRegisterAllCalled = PETSC_FALSE;
 /*
    Contains the list of registered PC routines
 */
-PetscFunctionList PCList              = NULL;
+PetscFunctionList PCList = NULL;
 
 /*@C
    PCSetType - Builds PC for a particular preconditioner type
@@ -51,7 +51,8 @@ PetscFunctionList PCList              = NULL;
 .seealso: `KSPSetType()`, `PCType`, `PCRegister()`, `PCCreate()`, `KSPGetPC()`
 
 @*/
-PetscErrorCode PCSetType(PC pc, PCType type) {
+PetscErrorCode PCSetType(PC pc, PCType type)
+{
   PetscBool match;
   PetscErrorCode (*r)(PC);
 
@@ -76,7 +77,7 @@ PetscErrorCode PCSetType(PC pc, PCType type) {
   pc->modifysubmatrices  = NULL;
   pc->modifysubmatricesP = NULL;
   /* Call the PCCreate_XXX routine for this particular preconditioner */
-  pc->setupcalled        = 0;
+  pc->setupcalled = 0;
 
   PetscCall(PetscObjectChangeTypeName((PetscObject)pc, type));
   PetscCall((*r)(pc));
@@ -100,7 +101,8 @@ PetscErrorCode PCSetType(PC pc, PCType type) {
 .seealso: `PCSetType()`
 
 @*/
-PetscErrorCode PCGetType(PC pc, PCType *type) {
+PetscErrorCode PCGetType(PC pc, PCType *type)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidPointer(type, 2);
@@ -128,7 +130,8 @@ extern PetscErrorCode PCGetDefaultType_Private(PC, const char *[]);
 .seealso: `PCSetUseAmat()`
 
 @*/
-PetscErrorCode PCSetFromOptions(PC pc) {
+PetscErrorCode PCSetFromOptions(PC pc)
+{
   char        type[256];
   const char *def;
   PetscBool   flg;
@@ -183,7 +186,8 @@ skipoptions:
 
 .seealso: `PCGetDM()`, `KSPSetDM()`, `KSPGetDM()`
 @*/
-PetscErrorCode PCSetDM(PC pc, DM dm) {
+PetscErrorCode PCSetDM(PC pc, DM dm)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   if (dm) PetscCall(PetscObjectReference((PetscObject)dm));
@@ -207,7 +211,8 @@ PetscErrorCode PCSetDM(PC pc, DM dm) {
 
 .seealso: `PCSetDM()`, `KSPSetDM()`, `KSPGetDM()`
 @*/
-PetscErrorCode PCGetDM(PC pc, DM *dm) {
+PetscErrorCode PCGetDM(PC pc, DM *dm)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   *dm = pc->dm;
@@ -227,7 +232,8 @@ PetscErrorCode PCGetDM(PC pc, DM *dm) {
 
 .seealso: `PCGetApplicationContext()`
 @*/
-PetscErrorCode PCSetApplicationContext(PC pc, void *usrP) {
+PetscErrorCode PCSetApplicationContext(PC pc, void *usrP)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   pc->user = usrP;
@@ -249,7 +255,8 @@ PetscErrorCode PCSetApplicationContext(PC pc, void *usrP) {
 
 .seealso: `PCSetApplicationContext()`
 @*/
-PetscErrorCode PCGetApplicationContext(PC pc, void *usrP) {
+PetscErrorCode PCGetApplicationContext(PC pc, void *usrP)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   *(void **)usrP = pc->user;

@@ -14,7 +14,8 @@ typedef struct {
   void *modifypc_ctx; /* user defined data for the modifypc function */
 } KSP_GCR;
 
-static PetscErrorCode KSPSolve_GCR_cycle(KSP ksp) {
+static PetscErrorCode KSPSolve_GCR_cycle(KSP ksp)
+{
   KSP_GCR    *ctx = (KSP_GCR *)ksp->data;
   PetscScalar r_dot_v;
   Mat         A, B;
@@ -23,9 +24,9 @@ static PetscErrorCode KSPSolve_GCR_cycle(KSP ksp) {
   /*
      The residual norm will not be computed when ksp->its > ksp->chknorm hence need to initialize norm_r with some dummy value
   */
-  PetscReal   norm_r = 0.0, nrm;
-  PetscInt    k, i, restart;
-  Vec         x;
+  PetscReal norm_r = 0.0, nrm;
+  PetscInt  k, i, restart;
+  Vec       x;
 
   PetscFunctionBegin;
   restart = ctx->restart;
@@ -80,7 +81,8 @@ static PetscErrorCode KSPSolve_GCR_cycle(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPSolve_GCR(KSP ksp) {
+static PetscErrorCode KSPSolve_GCR(KSP ksp)
+{
   KSP_GCR  *ctx = (KSP_GCR *)ksp->data;
   Mat       A, B;
   Vec       r, b, x;
@@ -116,7 +118,8 @@ static PetscErrorCode KSPSolve_GCR(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPView_GCR(KSP ksp, PetscViewer viewer) {
+static PetscErrorCode KSPView_GCR(KSP ksp, PetscViewer viewer)
+{
   KSP_GCR  *ctx = (KSP_GCR *)ksp->data;
   PetscBool iascii;
 
@@ -129,7 +132,8 @@ static PetscErrorCode KSPView_GCR(KSP ksp, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPSetUp_GCR(KSP ksp) {
+static PetscErrorCode KSPSetUp_GCR(KSP ksp)
+{
   KSP_GCR  *ctx = (KSP_GCR *)ksp->data;
   Mat       A;
   PetscBool diagonalscale;
@@ -147,7 +151,8 @@ static PetscErrorCode KSPSetUp_GCR(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPReset_GCR(KSP ksp) {
+static PetscErrorCode KSPReset_GCR(KSP ksp)
+{
   KSP_GCR *ctx = (KSP_GCR *)ksp->data;
 
   PetscFunctionBegin;
@@ -159,7 +164,8 @@ static PetscErrorCode KSPReset_GCR(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPDestroy_GCR(KSP ksp) {
+static PetscErrorCode KSPDestroy_GCR(KSP ksp)
+{
   PetscFunctionBegin;
   PetscCall(KSPReset_GCR(ksp));
   PetscCall(KSPDestroyDefault(ksp));
@@ -169,7 +175,8 @@ static PetscErrorCode KSPDestroy_GCR(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPSetFromOptions_GCR(KSP ksp, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode KSPSetFromOptions_GCR(KSP ksp, PetscOptionItems *PetscOptionsObject)
+{
   KSP_GCR  *ctx = (KSP_GCR *)ksp->data;
   PetscInt  restart;
   PetscBool flg;
@@ -186,7 +193,8 @@ static PetscErrorCode KSPSetFromOptions_GCR(KSP ksp, PetscOptionItems *PetscOpti
 typedef PetscErrorCode (*KSPGCRModifyPCFunction)(KSP, PetscInt, PetscReal, void *);
 typedef PetscErrorCode (*KSPGCRDestroyFunction)(void *);
 
-static PetscErrorCode KSPGCRSetModifyPC_GCR(KSP ksp, KSPGCRModifyPCFunction function, void *data, KSPGCRDestroyFunction destroy) {
+static PetscErrorCode KSPGCRSetModifyPC_GCR(KSP ksp, KSPGCRModifyPCFunction function, void *data, KSPGCRDestroyFunction destroy)
+{
   KSP_GCR *ctx = (KSP_GCR *)ksp->data;
 
   PetscFunctionBegin;
@@ -224,13 +232,15 @@ static PetscErrorCode KSPGCRSetModifyPC_GCR(KSP ksp, KSPGCRModifyPCFunction func
  .seealso: `KSPGCRModifyPCNoChange()`
 
  @*/
-PetscErrorCode KSPGCRSetModifyPC(KSP ksp, PetscErrorCode (*function)(KSP, PetscInt, PetscReal, void *), void *data, PetscErrorCode (*destroy)(void *)) {
+PetscErrorCode KSPGCRSetModifyPC(KSP ksp, PetscErrorCode (*function)(KSP, PetscInt, PetscReal, void *), void *data, PetscErrorCode (*destroy)(void *))
+{
   PetscFunctionBegin;
   PetscUseMethod(ksp, "KSPGCRSetModifyPC_C", (KSP, PetscErrorCode(*)(KSP, PetscInt, PetscReal, void *), void *data, PetscErrorCode (*)(void *)), (ksp, function, data, destroy));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPGCRSetRestart_GCR(KSP ksp, PetscInt restart) {
+static PetscErrorCode KSPGCRSetRestart_GCR(KSP ksp, PetscInt restart)
+{
   KSP_GCR *ctx;
 
   PetscFunctionBegin;
@@ -239,7 +249,8 @@ static PetscErrorCode KSPGCRSetRestart_GCR(KSP ksp, PetscInt restart) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPGCRGetRestart_GCR(KSP ksp, PetscInt *restart) {
+static PetscErrorCode KSPGCRGetRestart_GCR(KSP ksp, PetscInt *restart)
+{
   KSP_GCR *ctx;
 
   PetscFunctionBegin;
@@ -263,7 +274,8 @@ static PetscErrorCode KSPGCRGetRestart_GCR(KSP ksp, PetscInt *restart) {
 
 .seealso: `KSPSetTolerances()`, `KSPGCRGetRestart()`, `KSPGMRESSetRestart()`
 @*/
-PetscErrorCode KSPGCRSetRestart(KSP ksp, PetscInt restart) {
+PetscErrorCode KSPGCRSetRestart(KSP ksp, PetscInt restart)
+{
   PetscFunctionBegin;
   PetscTryMethod(ksp, "KSPGCRSetRestart_C", (KSP, PetscInt), (ksp, restart));
   PetscFunctionReturn(0);
@@ -286,13 +298,15 @@ PetscErrorCode KSPGCRSetRestart(KSP ksp, PetscInt restart) {
 
 .seealso: `KSPSetTolerances()`, `KSPGCRSetRestart()`, `KSPGMRESGetRestart()`
 @*/
-PetscErrorCode KSPGCRGetRestart(KSP ksp, PetscInt *restart) {
+PetscErrorCode KSPGCRGetRestart(KSP ksp, PetscInt *restart)
+{
   PetscFunctionBegin;
   PetscTryMethod(ksp, "KSPGCRGetRestart_C", (KSP, PetscInt *), (ksp, restart));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPBuildSolution_GCR(KSP ksp, Vec v, Vec *V) {
+static PetscErrorCode KSPBuildSolution_GCR(KSP ksp, Vec v, Vec *V)
+{
   Vec x;
 
   PetscFunctionBegin;
@@ -306,7 +320,8 @@ static PetscErrorCode KSPBuildSolution_GCR(KSP ksp, Vec v, Vec *V) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPBuildResidual_GCR(KSP ksp, Vec t, Vec v, Vec *V) {
+static PetscErrorCode KSPBuildResidual_GCR(KSP ksp, Vec t, Vec v, Vec *V)
+{
   KSP_GCR *ctx;
 
   PetscFunctionBegin;
@@ -358,7 +373,8 @@ static PetscErrorCode KSPBuildResidual_GCR(KSP ksp, Vec t, Vec v, Vec *V) {
           `KSPGCRSetRestart()`, `KSPGCRSetModifyPC()`, `KSPGMRES`, `KSPFGMRES`
 
 M*/
-PETSC_EXTERN PetscErrorCode KSPCreate_GCR(KSP ksp) {
+PETSC_EXTERN PetscErrorCode KSPCreate_GCR(KSP ksp)
+{
   KSP_GCR *ctx;
 
   PetscFunctionBegin;

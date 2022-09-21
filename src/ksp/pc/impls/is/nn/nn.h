@@ -1,8 +1,8 @@
 
 #if !defined(__pcnn_h)
-#define __pcnn_h
+  #define __pcnn_h
 
-#include <petsc/private/pcisimpl.h>
+  #include <petsc/private/pcisimpl.h>
 
 /*
    Private context (data structure) for the NN preconditioner.

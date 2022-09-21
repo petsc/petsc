@@ -15,21 +15,21 @@
 */
 struct _p_DMLabel {
   PETSCHEADER(int);
-  PetscInt    numStrata;     /* Number of integer values */
-  PetscInt    defaultValue;  /* Background value when no value explicitly given */
-  PetscInt   *stratumValues; /* Value of each stratum */
+  PetscInt  numStrata;     /* Number of integer values */
+  PetscInt  defaultValue;  /* Background value when no value explicitly given */
+  PetscInt *stratumValues; /* Value of each stratum */
   /* Basic IS storage */
-  PetscBool  *validIS;      /* The IS is valid (no additions need to be merged in) */
-  PetscInt   *stratumSizes; /* Size of each stratum */
-  IS         *points;       /* Points for each stratum, always sorted */
+  PetscBool *validIS;      /* The IS is valid (no additions need to be merged in) */
+  PetscInt  *stratumSizes; /* Size of each stratum */
+  IS        *points;       /* Points for each stratum, always sorted */
   /* Hash tables for fast search and insertion */
   PetscHMapI  hmap; /* Hash map for fast strata search */
   PetscHSetI *ht;   /* Hash set for fast insertion */
   /* Index for fast search */
-  PetscInt    pStart, pEnd; /* Bounds for index lookup */
-  PetscBT     bt;           /* A bit-wise index */
+  PetscInt pStart, pEnd; /* Bounds for index lookup */
+  PetscBT  bt;           /* A bit-wise index */
   /* Propagation */
-  PetscInt   *propArray; /* Array of values for propagation */
+  PetscInt *propArray; /* Array of values for propagation */
 };
 
 PETSC_INTERN PetscErrorCode PetscSectionSymCreate_Label(PetscSectionSym);

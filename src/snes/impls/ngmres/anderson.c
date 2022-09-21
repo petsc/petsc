@@ -1,6 +1,7 @@
 #include <../src/snes/impls/ngmres/snesngmres.h> /*I "petscsnes.h" I*/
 
-static PetscErrorCode SNESSetFromOptions_Anderson(SNES snes, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode SNESSetFromOptions_Anderson(SNES snes, PetscOptionItems *PetscOptionsObject)
+{
   SNES_NGMRES *ngmres  = (SNES_NGMRES *)snes->data;
   PetscBool    monitor = PETSC_FALSE;
 
@@ -17,12 +18,13 @@ static PetscErrorCode SNESSetFromOptions_Anderson(SNES snes, PetscOptionItems *P
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESSolve_Anderson(SNES snes) {
+static PetscErrorCode SNESSolve_Anderson(SNES snes)
+{
   SNES_NGMRES *ngmres = (SNES_NGMRES *)snes->data;
   /* present solution, residual, and preconditioned residual */
-  Vec          X, F, B, D;
+  Vec X, F, B, D;
   /* candidate linear combination answers */
-  Vec          XA, FA, XM, FM;
+  Vec XA, FA, XM, FM;
 
   /* coefficients and RHS to the minimization problem */
   PetscReal           fnorm, fMnorm, fAnorm;
@@ -191,7 +193,8 @@ static PetscErrorCode SNESSolve_Anderson(SNES snes) {
 .seealso: `SNESNGMRES`, `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESType`
 M*/
 
-PETSC_EXTERN PetscErrorCode SNESCreate_Anderson(SNES snes) {
+PETSC_EXTERN PetscErrorCode SNESCreate_Anderson(SNES snes)
+{
   SNES_NGMRES   *ngmres;
   SNESLineSearch linesearch;
 

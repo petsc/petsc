@@ -2,7 +2,7 @@
 #include <petsc/private/dmpleximpl.h> /*I   "petscdmplex.h"   I*/
 
 #if defined(PETSC_HAVE_MED)
-#include <med.h>
+  #include <med.h>
 #endif
 
 /*@C
@@ -21,7 +21,8 @@
 
 .seealso: `DMPlexCreateFromFile()`, `DMPlexCreateGmsh()`, `DMPlexCreate()`
 @*/
-PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm comm, const char filename[], PetscBool interpolate, DM *dm) {
+PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm comm, const char filename[], PetscBool interpolate, DM *dm)
+{
   PetscMPIInt rank, size;
 #if defined(PETSC_HAVE_MED)
   med_idt           fileID;
@@ -101,7 +102,7 @@ PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm comm, const char filename[], Pet
   meshDim    = geotype[cellID] / 100;
   numCorners = geotype[cellID] % 100;
   /* Partition cells */
-  numCells   = MEDmeshnEntity(fileID, meshname, MED_NO_DT, MED_NO_IT, MED_CELL, geotype[cellID], MED_CONNECTIVITY, MED_NODAL, &coordinatechangement, &geotransformation);
+  numCells = MEDmeshnEntity(fileID, meshname, MED_NO_DT, MED_NO_IT, MED_CELL, geotype[cellID], MED_CONNECTIVITY, MED_NODAL, &coordinatechangement, &geotransformation);
   PetscCall(PetscLayoutCreate(comm, &cLayout));
   PetscCall(PetscLayoutSetSize(cLayout, numCells));
   PetscCall(PetscLayoutSetBlockSize(cLayout, 1));

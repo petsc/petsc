@@ -4,7 +4,8 @@
 */
 #include <../src/mat/impls/sbaij/mpi/mpisbaij.h>
 
-PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat) {
+PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
+{
   Mat_MPISBAIJ   *sbaij = (Mat_MPISBAIJ *)mat->data;
   Mat_SeqBAIJ    *B     = (Mat_SeqBAIJ *)(sbaij->B->data);
   PetscInt        Nbs = sbaij->Nbs, i, j, *aj = B->j, ec = 0, *garray, *sgarray;
@@ -176,7 +177,8 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat) {
    Kind of slow! But that's what application programmers get when
    they are sloppy.
 */
-PetscErrorCode MatDisAssemble_MPISBAIJ(Mat A) {
+PetscErrorCode MatDisAssemble_MPISBAIJ(Mat A)
+{
   Mat_MPISBAIJ *baij  = (Mat_MPISBAIJ *)A->data;
   Mat           B     = baij->B, Bnew;
   Mat_SeqBAIJ  *Bbaij = (Mat_SeqBAIJ *)B->data;

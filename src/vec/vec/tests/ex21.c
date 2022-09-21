@@ -4,7 +4,8 @@ static char help[] = "Tests VecMax() with index.\n\
 
 #include <petscvec.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt    n = 5, idx;
   PetscReal   value, value2;
   Vec         x;

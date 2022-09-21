@@ -8,7 +8,8 @@ static PetscErrorCode Test2_1d(DM dm);
 static PetscErrorCode Test2_2d(DM dm);
 static PetscErrorCode Test2_3d(DM dm);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM        dm;
   PetscInt  dim;
   PetscBool setSizes, useInjective;
@@ -26,10 +27,17 @@ int main(int argc, char **argv) {
   /* Creation (normal) */
   if (!setSizes) {
     switch (dim) {
-    case 1: PetscCall(DMStagCreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, 3, 1, 1, DMSTAG_STENCIL_BOX, 1, NULL, &dm)); break;
-    case 2: PetscCall(DMStagCreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, 3, 2, PETSC_DECIDE, PETSC_DECIDE, 1, 1, 1, DMSTAG_STENCIL_BOX, 1, NULL, NULL, &dm)); break;
-    case 3: PetscCall(DMStagCreate3d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, 3, 2, 4, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, 1, 1, 1, 1, DMSTAG_STENCIL_BOX, 1, NULL, NULL, NULL, &dm)); break;
-    default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "No support for dimension %" PetscInt_FMT, dim);
+    case 1:
+      PetscCall(DMStagCreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, 3, 1, 1, DMSTAG_STENCIL_BOX, 1, NULL, &dm));
+      break;
+    case 2:
+      PetscCall(DMStagCreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, 3, 2, PETSC_DECIDE, PETSC_DECIDE, 1, 1, 1, DMSTAG_STENCIL_BOX, 1, NULL, NULL, &dm));
+      break;
+    case 3:
+      PetscCall(DMStagCreate3d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, 3, 2, 4, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, 1, 1, 1, 1, DMSTAG_STENCIL_BOX, 1, NULL, NULL, NULL, &dm));
+      break;
+    default:
+      SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "No support for dimension %" PetscInt_FMT, dim);
     }
   } else {
     /* Creation (test providing decomp exactly)*/
@@ -52,7 +60,8 @@ int main(int argc, char **argv) {
       PetscCheck(size == ranksx * ranksy * ranksz, PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Must run on %" PetscInt_FMT " ranks with -dim 3 -setSizes", ranksx * ranksy * ranksz);
       PetscCall(DMStagCreate3d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, mx, my, mz, ranksx, ranksy, ranksz, 1, 1, 1, 1, DMSTAG_STENCIL_BOX, 1, lx, ly, lz, &dm));
       break;
-    default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "No support for dimension %" PetscInt_FMT, dim);
+    default:
+      SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "No support for dimension %" PetscInt_FMT, dim);
     }
   }
 
@@ -69,10 +78,17 @@ int main(int argc, char **argv) {
   /* Test: Make sure that G2L inverts L2G, on its domain */
   PetscCall(DMGetDimension(dm, &dim));
   switch (dim) {
-  case 1: PetscCall(Test2_1d(dm)); break;
-  case 2: PetscCall(Test2_2d(dm)); break;
-  case 3: PetscCall(Test2_3d(dm)); break;
-  default: SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Not implemented for dimension %" PetscInt_FMT, dim);
+  case 1:
+    PetscCall(Test2_1d(dm));
+    break;
+  case 2:
+    PetscCall(Test2_2d(dm));
+    break;
+  case 3:
+    PetscCall(Test2_3d(dm));
+    break;
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Not implemented for dimension %" PetscInt_FMT, dim);
   }
 
   /* Clean up and finalize PETSc */
@@ -81,7 +97,8 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-static PetscErrorCode Test1(DM dm) {
+static PetscErrorCode Test1(DM dm)
+{
   Vec         vecLocal, vecGlobal, vecGlobalCheck;
   PetscRandom rctx;
   PetscBool   equal;
@@ -108,7 +125,8 @@ static PetscErrorCode Test1(DM dm) {
 #define TEST_FUNCTION(i, j, k, idx, c) (8.33 * i + 7.343 * j + 1.234 * idx + 99.011 * c)
 
 /* Helper function to check */
-static PetscErrorCode CompareValues(PetscInt i, PetscInt j, PetscInt k, PetscInt c, PetscScalar val, PetscScalar valRef) {
+static PetscErrorCode CompareValues(PetscInt i, PetscInt j, PetscInt k, PetscInt c, PetscScalar val, PetscScalar valRef)
+{
   PetscFunctionBeginUser;
   if (val != valRef && PetscAbsScalar(val - valRef) / PetscAbsScalar(valRef) > 10 * PETSC_MACHINE_EPSILON) {
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "(%" PetscInt_FMT ",%" PetscInt_FMT ",%" PetscInt_FMT ",%" PetscInt_FMT ") Value %.17g does not match the expected %.17g", i, j, k, c, (double)PetscRealPart(val), (double)PetscRealPart(valRef));
@@ -116,7 +134,8 @@ static PetscErrorCode CompareValues(PetscInt i, PetscInt j, PetscInt k, PetscInt
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode Test2_1d(DM dm) {
+static PetscErrorCode Test2_1d(DM dm)
+{
   Vec            vecLocal, vecLocalCheck, vecGlobal;
   PetscInt       i, startx, nx, nExtrax, dof0, dof1, c, idxLeft, idxElement;
   PetscScalar  **arr;
@@ -176,7 +195,8 @@ static PetscErrorCode Test2_1d(DM dm) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode Test2_2d(DM dm) {
+static PetscErrorCode Test2_2d(DM dm)
+{
   Vec            vecLocal, vecLocalCheck, vecGlobal;
   PetscInt       i, j, startx, starty, nx, ny, nExtrax, nExtray, dof0, dof1, dof2, c, idxLeft, idxDown, idxDownLeft, idxElement;
   PetscScalar ***arr;
@@ -282,7 +302,8 @@ static PetscErrorCode Test2_2d(DM dm) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode Test2_3d(DM dm) {
+static PetscErrorCode Test2_3d(DM dm)
+{
   Vec             vecLocal, vecLocalCheck, vecGlobal;
   PetscInt        i, j, k, startx, starty, startz, nx, ny, nz, nExtrax, nExtray, nExtraz, dof0, dof1, dof2, dof3, c, idxLeft, idxDown, idxDownLeft, idxBackDownLeft, idxBackDown, idxBack, idxBackLeft, idxElement;
   PetscScalar ****arr;

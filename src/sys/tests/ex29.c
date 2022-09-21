@@ -3,7 +3,8 @@ static char help[] = "Tests PetscInt64Mult()\n";
 
 #include <petscsys.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt   a = 2009, b = 5612, result, tresult;
   PetscInt64 r64;
 

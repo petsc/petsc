@@ -9,7 +9,8 @@ static char help[] = "Illustrate how to use mpi FFTW and PETSc-FFTW interface \n
 #include <petscmat.h>
 #include <fftw3-mpi.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   PetscMPIInt rank, size;
   PetscInt    N0 = 50, N1 = 20, N = N0 * N1;
   PetscRandom rdm;

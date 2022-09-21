@@ -4,7 +4,8 @@ const char help[] = "Test DMPlexCoordinatesToReference().\n\n";
 #include <petscdm.h>
 #include <petscdmplex.h>
 
-static PetscErrorCode testIdentity(DM dm, PetscBool dmIsSimplicial, PetscInt cell, PetscRandom randCtx, PetscInt numPoints, PetscReal tol) {
+static PetscErrorCode testIdentity(DM dm, PetscBool dmIsSimplicial, PetscInt cell, PetscRandom randCtx, PetscInt numPoints, PetscReal tol)
+{
   PetscInt   i, j, dimC, dimR;
   PetscReal *preimage, *mapped, *inverted;
 
@@ -97,14 +98,16 @@ static PetscErrorCode testIdentity(DM dm, PetscBool dmIsSimplicial, PetscInt cel
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode identityEmbedding(PetscInt dim, PetscReal time, const PetscReal *x, PetscInt Nf, PetscScalar *u, void *ctx) {
+static PetscErrorCode identityEmbedding(PetscInt dim, PetscReal time, const PetscReal *x, PetscInt Nf, PetscScalar *u, void *ctx)
+{
   PetscInt i;
 
   for (i = 0; i < dim; i++) u[i] = x[i];
   return 0;
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscRandom randCtx;
   PetscInt    dim, dimC, isSimplex, isFE, numTests = 10;
   PetscReal   perturb = 0.1, tol = 10. * PETSC_SMALL;

@@ -26,7 +26,8 @@ static char help[] = "Solves a linear system in parallel with KSP.\n\n";
 */
 #include <petscksp.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Vec         x, b, u; /* approx solution, RHS, exact solution */
   Mat         A;       /* linear system matrix */
   KSP         ksp;     /* linear solver context */

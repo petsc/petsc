@@ -5,7 +5,8 @@
 */
 #include <../src/ksp/ksp/impls/bcgs/bcgsimpl.h> /*I  "petscksp.h"  I*/
 
-static PetscErrorCode KSPSetUp_FBCGS(KSP ksp) {
+static PetscErrorCode KSPSetUp_FBCGS(KSP ksp)
+{
   PetscFunctionBegin;
   PetscCall(KSPSetWorkVecs(ksp, 8));
   PetscFunctionReturn(0);
@@ -13,7 +14,8 @@ static PetscErrorCode KSPSetUp_FBCGS(KSP ksp) {
 
 /* Only need a few hacks from KSPSolve_BCGS */
 
-static PetscErrorCode KSPSolve_FBCGS(KSP ksp) {
+static PetscErrorCode KSPSolve_FBCGS(KSP ksp)
+{
   PetscInt    i;
   PetscScalar rho, rhoold, alpha, beta, omega, omegaold, d1;
   Vec         X, B, V, P, R, RP, T, S, P2, S2;
@@ -160,7 +162,8 @@ static PetscErrorCode KSPSolve_FBCGS(KSP ksp) {
 
 .seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPBICG`, `KSPFBCGSL`, `KSPSetPCSide()`
 M*/
-PETSC_EXTERN PetscErrorCode KSPCreate_FBCGS(KSP ksp) {
+PETSC_EXTERN PetscErrorCode KSPCreate_FBCGS(KSP ksp)
+{
   KSP_BCGS *bcgs;
 
   PetscFunctionBegin;

@@ -3,7 +3,8 @@ static char help[] = "Tests for norm caching\n";
 #include <petscvec.h>
 #include <petsc/private/petscimpl.h> /* to gain access to the private PetscObjectStateIncrease() */
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   Vec         V, W;
   MPI_Comm    comm;
   PetscScalar one = 1, e = 2.7181;

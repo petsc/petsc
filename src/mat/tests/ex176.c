@@ -17,7 +17,8 @@ static char help[] = "Tests MatCreateMPIAIJWithArrays() abd MatUpdateMPIAIJWithA
  *
  * */
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   Mat      A;
   PetscInt i[3][3] = {
     {0, 3, 6},

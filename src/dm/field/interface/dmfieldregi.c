@@ -15,7 +15,8 @@ PetscFunctionList DMFieldList;
 
 .seealso: `DMFieldRegisterDestroy()`
 @*/
-PetscErrorCode DMFieldRegisterAll(void) {
+PetscErrorCode DMFieldRegisterAll(void)
+{
   PetscFunctionBegin;
   if (DMFieldRegisterAllCalled) PetscFunctionReturn(0);
   DMFieldRegisterAllCalled = PETSC_TRUE;
@@ -49,7 +50,8 @@ $     DMFieldSetType(tagger,"my_impl")
 
 .seealso: `DMFieldRegisterAll()`, `DMFieldRegisterDestroy()`
 @*/
-PetscErrorCode DMFieldRegister(const char sname[], PetscErrorCode (*function)(DMField)) {
+PetscErrorCode DMFieldRegister(const char sname[], PetscErrorCode (*function)(DMField))
+{
   PetscFunctionBegin;
   PetscCall(PetscFunctionListAdd(&DMFieldList, sname, function));
   PetscFunctionReturn(0);

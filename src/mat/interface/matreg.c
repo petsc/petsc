@@ -25,7 +25,8 @@ PetscFunctionList MatList = NULL;
 
 .seealso: `MatGetType()`, `MatSetType()`, `MatType`, `Mat`
 */
-PetscErrorCode MatGetRootType_Private(Mat mat, MatType *rootType) {
+PetscErrorCode MatGetRootType_Private(Mat mat, MatType *rootType)
+{
   PetscBool   found = PETSC_FALSE;
   MatRootName names = MatRootNameList;
   MatType     inType;
@@ -61,7 +62,8 @@ PetscErrorCode MatGetRootType_Private(Mat mat, MatType *rootType) {
 
 .seealso: `MatGetType()`, `MatSetType()`, `MatType`, `Mat`
 */
-PetscErrorCode MatGetMPIMatType_Private(Mat mat, MatType *MPIType) {
+PetscErrorCode MatGetMPIMatType_Private(Mat mat, MatType *MPIType)
+{
   PetscBool   found = PETSC_FALSE;
   MatRootName names = MatRootNameList;
   MatType     inType;
@@ -104,7 +106,8 @@ PetscErrorCode MatGetMPIMatType_Private(Mat mat, MatType *MPIType) {
 
 .seealso: `PCSetType()`, `VecSetType()`, `MatCreate()`, `MatType`, `Mat`
 @*/
-PetscErrorCode MatSetType(Mat mat, MatType matype) {
+PetscErrorCode MatSetType(Mat mat, MatType matype)
+{
   PetscBool   sametype, found, subclass = PETSC_FALSE;
   MatRootName names = MatRootNameList;
   PetscErrorCode (*r)(Mat);
@@ -175,7 +178,8 @@ PetscErrorCode MatSetType(Mat mat, MatType matype) {
 
 .seealso: `MatType`, `MatSetType()`
 @*/
-PetscErrorCode MatGetType(Mat mat, MatType *type) {
+PetscErrorCode MatGetType(Mat mat, MatType *type)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   PetscValidPointer(type, 2);
@@ -198,7 +202,8 @@ PetscErrorCode MatGetType(Mat mat, MatType *type) {
 
 .seealso: `MatType`, `Mat`, `MatSetVecType()`, `VecType`
 @*/
-PetscErrorCode MatGetVecType(Mat mat, VecType *vtype) {
+PetscErrorCode MatGetVecType(Mat mat, VecType *vtype)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   PetscValidPointer(vtype, 2);
@@ -222,7 +227,8 @@ PetscErrorCode MatGetVecType(Mat mat, VecType *vtype) {
 
 .seealso: `VecType`, `VecSetType()`, `MatGetVecType()`
 @*/
-PetscErrorCode MatSetVecType(Mat mat, VecType vtype) {
+PetscErrorCode MatSetVecType(Mat mat, VecType vtype)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   PetscCall(PetscFree(mat->defaultvectype));
@@ -256,7 +262,8 @@ $     -mat_type my_mat
 
 .seealso: `Mat`, `MatType`, `MatSetType()`, `MatRegisterAll()`
 @*/
-PetscErrorCode MatRegister(const char sname[], PetscErrorCode (*function)(Mat)) {
+PetscErrorCode MatRegister(const char sname[], PetscErrorCode (*function)(Mat))
+{
   PetscFunctionBegin;
   PetscCall(MatInitializePackage());
   PetscCall(PetscFunctionListAdd(&MatList, sname, function));
@@ -288,7 +295,8 @@ MatRootName MatRootNameList = NULL;
 
 .seealso: `Mat`, `MatType`, `PetscObjectBaseTypeCompare()`
 @*/
-PetscErrorCode MatRegisterRootName(const char rname[], const char sname[], const char mname[]) {
+PetscErrorCode MatRegisterRootName(const char rname[], const char sname[], const char mname[])
+{
   MatRootName names;
 
   PetscFunctionBegin;

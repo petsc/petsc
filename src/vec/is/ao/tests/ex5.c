@@ -8,7 +8,8 @@ static char help[] = "Test memory scalable AO.\n\n";
 #include <petscmat.h>
 #include <petscao.h>
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   PetscInt       n_global = 16;
   MPI_Comm       comm;
   PetscLayout    layout;

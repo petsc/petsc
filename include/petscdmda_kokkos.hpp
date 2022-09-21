@@ -7,8 +7,8 @@
 /* SUBMANSEC = DMDA */
 
 #if defined(PETSC_HAVE_KOKKOS)
-#include <Kokkos_Core.hpp>
-#include <Kokkos_OffsetView.hpp>
+  #include <Kokkos_Core.hpp>
+  #include <Kokkos_OffsetView.hpp>
 
 /*@C
    DMDAVecGetKokkosOffsetView - Gets a Kokkos OffsetView that contains up-to-date data of a vector in the given memory space.

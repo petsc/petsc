@@ -1,7 +1,8 @@
 #include <../src/mat/impls/baij/seq/baij.h>
 #include <petsc/private/kernels/blockinvert.h>
 
-PetscErrorCode MatSolveTranspose_SeqBAIJ_1(Mat A, Vec bb, Vec xx) {
+PetscErrorCode MatSolveTranspose_SeqBAIJ_1(Mat A, Vec bb, Vec xx)
+{
   Mat_SeqBAIJ       *a     = (Mat_SeqBAIJ *)A->data;
   IS                 iscol = a->col, isrow = a->row;
   const PetscInt    *rout, *cout, *r, *c, *adiag = a->diag, *ai = a->i, *aj = a->j, *vi;
@@ -56,7 +57,8 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_1(Mat A, Vec bb, Vec xx) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatSolveTranspose_SeqBAIJ_1_inplace(Mat A, Vec bb, Vec xx) {
+PetscErrorCode MatSolveTranspose_SeqBAIJ_1_inplace(Mat A, Vec bb, Vec xx)
+{
   Mat_SeqBAIJ       *a     = (Mat_SeqBAIJ *)A->data;
   IS                 iscol = a->col, isrow = a->row;
   const PetscInt    *r, *c, *rout, *cout;
@@ -81,7 +83,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_1_inplace(Mat A, Vec bb, Vec xx) {
 
   /* forward solve the U^T */
   for (i = 0; i < n; i++) {
-    v  = aa + diag[i];
+    v = aa + diag[i];
     /* multiply by the inverse of the block diagonal */
     s1 = (*v++) * t[i];
     vi = aj + diag[i] + 1;

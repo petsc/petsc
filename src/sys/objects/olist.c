@@ -31,7 +31,8 @@ struct _n_PetscObjectList {
 
 .seealso: `PetscObjectListDestroy()`, `PetscObjectListFind()`, `PetscObjectListDuplicate()`, `PetscObjectListReverseFind()`, `PetscObjectListDuplicate()`, `PetscObjectListAdd()`
 @*/
-PetscErrorCode PetscObjectListRemoveReference(PetscObjectList *fl, const char name[]) {
+PetscErrorCode PetscObjectListRemoveReference(PetscObjectList *fl, const char name[])
+{
   PetscObjectList nlist;
   PetscBool       match;
 
@@ -68,7 +69,8 @@ PetscErrorCode PetscObjectListRemoveReference(PetscObjectList *fl, const char na
 
 .seealso: `PetscObjectListDestroy()`, `PetscObjectListFind()`, `PetscObjectListDuplicate()`, `PetscObjectListReverseFind()`, `PetscObjectListDuplicate()`
 @*/
-PetscErrorCode PetscObjectListAdd(PetscObjectList *fl, const char name[], PetscObject obj) {
+PetscErrorCode PetscObjectListAdd(PetscObjectList *fl, const char name[], PetscObject obj)
+{
   PetscObjectList olist, nlist, prev;
   PetscBool       match;
 
@@ -133,7 +135,8 @@ PetscErrorCode PetscObjectListAdd(PetscObjectList *fl, const char name[], PetscO
 
 .seealso: `PetscObjectListAdd()`, `PetscObjectListFind()`, `PetscObjectListDuplicate()`, `PetscObjectListReverseFind()`, `PetscObjectListDuplicate()`
 @*/
-PetscErrorCode PetscObjectListDestroy(PetscObjectList *ifl) {
+PetscErrorCode PetscObjectListDestroy(PetscObjectList *ifl)
+{
   PetscObjectList tmp, fl;
 
   PetscFunctionBegin;
@@ -168,7 +171,8 @@ PetscErrorCode PetscObjectListDestroy(PetscObjectList *ifl) {
 
 .seealso: `PetscObjectListDestroy()`, `PetscObjectListAdd()`, `PetscObjectListDuplicate()`, `PetscObjectListReverseFind()`, `PetscObjectListDuplicate()`
 @*/
-PetscErrorCode PetscObjectListFind(PetscObjectList fl, const char name[], PetscObject *obj) {
+PetscErrorCode PetscObjectListFind(PetscObjectList fl, const char name[], PetscObject *obj)
+{
   PetscFunctionBegin;
   PetscValidPointer(obj, 3);
   *obj = NULL;
@@ -204,7 +208,8 @@ PetscErrorCode PetscObjectListFind(PetscObjectList fl, const char name[], PetscO
 
 .seealso: `PetscObjectListDestroy()`, `PetscObjectListAdd()`, `PetscObjectListDuplicate()`, `PetscObjectListFind()`, `PetscObjectListDuplicate()`
 @*/
-PetscErrorCode PetscObjectListReverseFind(PetscObjectList fl, PetscObject obj, char **name, PetscBool *skipdereference) {
+PetscErrorCode PetscObjectListReverseFind(PetscObjectList fl, PetscObject obj, char **name, PetscBool *skipdereference)
+{
   PetscFunctionBegin;
   PetscValidPointer(name, 3);
   if (skipdereference) PetscValidBoolPointer(skipdereference, 4);
@@ -233,7 +238,8 @@ PetscErrorCode PetscObjectListReverseFind(PetscObjectList fl, PetscObject obj, c
 
 .seealso: `PetscObjectListDestroy()`, `PetscObjectListAdd()`, `PetscObjectListReverseFind()`, `PetscObjectListFind()`, `PetscObjectListDuplicate()`
 @*/
-PetscErrorCode PetscObjectListDuplicate(PetscObjectList fl, PetscObjectList *nl) {
+PetscErrorCode PetscObjectListDuplicate(PetscObjectList fl, PetscObjectList *nl)
+{
   PetscFunctionBegin;
   PetscValidPointer(nl, 2);
   while (fl) {

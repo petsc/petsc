@@ -3,7 +3,8 @@ static char help[] = "Test basic DMProduct operations.\n\n";
 #include <petscdm.h>
 #include <petscdmproduct.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM       dm;
   PetscInt dim;
 

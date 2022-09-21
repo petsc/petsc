@@ -20,7 +20,8 @@ typedef struct {
 
 .seealso: `SNESSetMonitor()`, `SNES`, `SNESMonitorSAWs()`, `SNESMonitorSAWsDestroy()`
 @*/
-PetscErrorCode SNESMonitorSAWsCreate(SNES snes, void **ctx) {
+PetscErrorCode SNESMonitorSAWsCreate(SNES snes, void **ctx)
+{
   SNESMonitor_SAWs *mon;
 
   PetscFunctionBegin;
@@ -43,7 +44,8 @@ PetscErrorCode SNESMonitorSAWsCreate(SNES snes, void **ctx) {
 
 .seealso: `SNESMonitorSAWsCreate()`
 @*/
-PetscErrorCode SNESMonitorSAWsDestroy(void **ctx) {
+PetscErrorCode SNESMonitorSAWsDestroy(void **ctx)
+{
   PetscFunctionBegin;
   PetscCall(PetscFree(*ctx));
   PetscFunctionReturn(0);
@@ -64,7 +66,8 @@ PetscErrorCode SNESMonitorSAWsDestroy(void **ctx) {
 
 .seealso: `PetscViewerSAWsOpen()`, `SNESMonitorSAWsDestroy()`, `SNESMonitorSAWsCreate()`
 @*/
-PetscErrorCode SNESMonitorSAWs(SNES snes, PetscInt n, PetscReal rnorm, void *ctx) {
+PetscErrorCode SNESMonitorSAWs(SNES snes, PetscInt n, PetscReal rnorm, void *ctx)
+{
   PetscMPIInt rank;
 
   PetscFunctionBegin;

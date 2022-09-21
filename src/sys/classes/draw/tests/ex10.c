@@ -4,7 +4,8 @@ static char help[] = "Tests repeatedly setting a window type.\n";
 #include <petscsys.h>
 #include <petscdraw.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscDraw draw;
   int       x = 0, y = 0, width = 300, height = 300;
 

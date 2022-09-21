@@ -5,18 +5,18 @@
 #include <petscviewertypes.h>
 
 #if PETSC_CPP_VERSION >= 11 // C++11
-#define PETSC_DEVICE_ALIGNOF(...) alignof(decltype(__VA_ARGS__))
+  #define PETSC_DEVICE_ALIGNOF(...) alignof(decltype(__VA_ARGS__))
 #elif PETSC_C_VERSION >= 11 // C11
-#ifdef __GNUC__
-#define PETSC_DEVICE_ALIGNOF(...) _Alignof(__typeof__(__VA_ARGS__))
+  #ifdef __GNUC__
+    #define PETSC_DEVICE_ALIGNOF(...) _Alignof(__typeof__(__VA_ARGS__))
+  #else
+    #include <stddef.h> // max_align_t
+    // Note we cannot just do _Alignof(expression) since clang warns that "'_Alignof' applied to an
+    // expression is a GNU extension", so we just default to max_align_t which is ultra safe
+    #define PETSC_DEVICE_ALIGNOF(...) _Alignof(max_align_t)
+  #endif // __GNUC__
 #else
-#include <stddef.h> // max_align_t
-// Note we cannot just do _Alignof(expression) since clang warns that "'_Alignof' applied to an
-// expression is a GNU extension", so we just default to max_align_t which is ultra safe
-#define PETSC_DEVICE_ALIGNOF(...) _Alignof(max_align_t)
-#endif // __GNUC__
-#else
-#define PETSC_DEVICE_ALIGNOF(...) PETSC_MEMALIGN
+  #define PETSC_DEVICE_ALIGNOF(...) PETSC_MEMALIGN
 #endif
 
 /* SUBMANSEC = Sys */
@@ -45,16 +45,16 @@ PETSC_EXTERN PetscErrorCode  PetscDeviceSetDefaultDeviceType(PetscDeviceType);
 PETSC_EXTERN PetscErrorCode  PetscDeviceInitialize(PetscDeviceType);
 PETSC_EXTERN PetscBool       PetscDeviceInitialized(PetscDeviceType);
 #else
-#define PetscDeviceCreate(PetscDeviceType, PetscInt, dev) (*(dev) = PETSC_NULLPTR, 0)
-#define PetscDeviceDestroy(dev)                           (*(dev) = PETSC_NULLPTR, 0)
-#define PetscDeviceConfigure(PetscDevice)                 0
-#define PetscDeviceView(PetscDevice, PetscViewer)         0
-#define PetscDeviceGetType(PetscDevice, type)             (*(type) = PETSC_DEVICE_DEFAULT(), 0)
-#define PetscDeviceGetDeviceId(PetscDevice, id)           (*(id) = 0)
-#define PETSC_DEVICE_DEFAULT()                            PETSC_DEVICE_HOST
-#define PetscDeviceSetDefaultDeviceType(PetscDeviceType)  0
-#define PetscDeviceInitialize(PetscDeviceType)            0
-#define PetscDeviceInitialized(dtype)                     ((dtype) == PETSC_DEVICE_HOST)
+  #define PetscDeviceCreate(PetscDeviceType, PetscInt, dev) (*(dev) = PETSC_NULLPTR, 0)
+  #define PetscDeviceDestroy(dev)                           (*(dev) = PETSC_NULLPTR, 0)
+  #define PetscDeviceConfigure(PetscDevice)                 0
+  #define PetscDeviceView(PetscDevice, PetscViewer)         0
+  #define PetscDeviceGetType(PetscDevice, type)             (*(type) = PETSC_DEVICE_DEFAULT(), 0)
+  #define PetscDeviceGetDeviceId(PetscDevice, id)           (*(id) = 0)
+  #define PETSC_DEVICE_DEFAULT()                            PETSC_DEVICE_HOST
+  #define PetscDeviceSetDefaultDeviceType(PetscDeviceType)  0
+  #define PetscDeviceInitialize(PetscDeviceType)            0
+  #define PetscDeviceInitialized(dtype)                     ((dtype) == PETSC_DEVICE_HOST)
 #endif /* PetscDefined(HAVE_CXX) */
 
 /* PetscDeviceContext */
@@ -80,26 +80,26 @@ PETSC_EXTERN PetscErrorCode PetscDeviceContextViewFromOptions(PetscDeviceContext
 PETSC_EXTERN PetscErrorCode PetscDeviceContextGetCurrentContext(PetscDeviceContext *);
 PETSC_EXTERN PetscErrorCode PetscDeviceContextSetCurrentContext(PetscDeviceContext);
 #else
-#define PetscDeviceContextCreate(dctx)                                                                            (*(dctx) = PETSC_NULLPTR, 0)
-#define PetscDeviceContextDestroy(dctx)                                                                           (*(dctx) = PETSC_NULLPTR, 0)
-#define PetscDeviceContextSetStreamType(PetscDeviceContext, PetscStreamType)                                      0
-#define PetscDeviceContextGetStreamType(PetscDeviceContext, type)                                                 (*(type) = PETSC_STREAM_GLOBAL_BLOCKING, 0)
-#define PetscDeviceContextSetDevice(PetscDeviceContext, PetscDevice)                                              0
-#define PetscDeviceContextGetDevice(PetscDeviceContext, device)                                                   (*(device) = PETSC_NULLPTR, 0)
-#define PetscDeviceContextGetDeviceType(PetscDeviceContext, type)                                                 (*(type) = PETSC_DEVICE_DEFAULT())
-#define PetscDeviceContextSetUp(PetscDeviceContext)                                                               0
-#define PetscDeviceContextDuplicate(PetscDeviceContextl, PetscDeviceContextr)                                     (*(PetscDeviceContextr) = PETSC_NULLPTR, 0)
-#define PetscDeviceContextQueryIdle(PetscDeviceContext, idle)                                                     (*(idle) = PETSC_TRUE, 0)
-#define PetscDeviceContextWaitForContext(PetscDeviceContextl, PetscDeviceContextr)                                0
-#define PetscDeviceContextForkWithStreamType(PetscDeviceContextp, PetscStreamType, PetscInt, PetscDeviceContextc) (*(PetscDeviceContextc) = PETSC_NULLPTR, 0)
-#define PetscDeviceContextFork(PetscDeviceContextp, PetscInt, PetscDeviceContextc)                                (*(PetscDeviceContextc) = PETSC_NULLPTR, 0)
-#define PetscDeviceContextJoin(PetscDeviceContextp, PetscInt, PetscDeviceContextJoinMode, PetscDeviceContextc)    (*(PetscDeviceContextc) = PETSC_NULLPTR, 0)
-#define PetscDeviceContextSynchronize(PetscDeviceContext)                                                         0
-#define PetscDeviceContextSetFromOptions(MPI_Comm, PetscDeviceContext)                                            0
-#define PetscDeviceContextView(PetscDeviceContext, PetscViewer)                                                   0
-#define PetscDeviceContextViewFromOptions(PetscDeviceContext, PetscObject, PetscViewer)                           0
-#define PetscDeviceContextGetCurrentContext(dctx)                                                                 (*(dctx) = PETSC_NULLPTR, 0)
-#define PetscDeviceContextSetCurrentContext(PetscDeviceContext)                                                   0
+  #define PetscDeviceContextCreate(dctx)                                                                            (*(dctx) = PETSC_NULLPTR, 0)
+  #define PetscDeviceContextDestroy(dctx)                                                                           (*(dctx) = PETSC_NULLPTR, 0)
+  #define PetscDeviceContextSetStreamType(PetscDeviceContext, PetscStreamType)                                      0
+  #define PetscDeviceContextGetStreamType(PetscDeviceContext, type)                                                 (*(type) = PETSC_STREAM_GLOBAL_BLOCKING, 0)
+  #define PetscDeviceContextSetDevice(PetscDeviceContext, PetscDevice)                                              0
+  #define PetscDeviceContextGetDevice(PetscDeviceContext, device)                                                   (*(device) = PETSC_NULLPTR, 0)
+  #define PetscDeviceContextGetDeviceType(PetscDeviceContext, type)                                                 (*(type) = PETSC_DEVICE_DEFAULT())
+  #define PetscDeviceContextSetUp(PetscDeviceContext)                                                               0
+  #define PetscDeviceContextDuplicate(PetscDeviceContextl, PetscDeviceContextr)                                     (*(PetscDeviceContextr) = PETSC_NULLPTR, 0)
+  #define PetscDeviceContextQueryIdle(PetscDeviceContext, idle)                                                     (*(idle) = PETSC_TRUE, 0)
+  #define PetscDeviceContextWaitForContext(PetscDeviceContextl, PetscDeviceContextr)                                0
+  #define PetscDeviceContextForkWithStreamType(PetscDeviceContextp, PetscStreamType, PetscInt, PetscDeviceContextc) (*(PetscDeviceContextc) = PETSC_NULLPTR, 0)
+  #define PetscDeviceContextFork(PetscDeviceContextp, PetscInt, PetscDeviceContextc)                                (*(PetscDeviceContextc) = PETSC_NULLPTR, 0)
+  #define PetscDeviceContextJoin(PetscDeviceContextp, PetscInt, PetscDeviceContextJoinMode, PetscDeviceContextc)    (*(PetscDeviceContextc) = PETSC_NULLPTR, 0)
+  #define PetscDeviceContextSynchronize(PetscDeviceContext)                                                         0
+  #define PetscDeviceContextSetFromOptions(MPI_Comm, PetscDeviceContext)                                            0
+  #define PetscDeviceContextView(PetscDeviceContext, PetscViewer)                                                   0
+  #define PetscDeviceContextViewFromOptions(PetscDeviceContext, PetscObject, PetscViewer)                           0
+  #define PetscDeviceContextGetCurrentContext(dctx)                                                                 (*(dctx) = PETSC_NULLPTR, 0)
+  #define PetscDeviceContextSetCurrentContext(PetscDeviceContext)                                                   0
 #endif /* PetscDefined(HAVE_CXX) */
 
 /* memory */
@@ -109,11 +109,11 @@ PETSC_EXTERN PetscErrorCode PetscDeviceDeallocate_Private(PetscDeviceContext, vo
 PETSC_EXTERN PetscErrorCode PetscDeviceMemcpy(PetscDeviceContext, void *PETSC_RESTRICT, const void *PETSC_RESTRICT, size_t);
 PETSC_EXTERN PetscErrorCode PetscDeviceMemset(PetscDeviceContext, void *PETSC_RESTRICT, PetscInt, size_t);
 #else
-#include <string.h> // memset()
-#define PetscDeviceAllocate_Private(PetscDeviceContext, clear, PetscMemType, size, alignment, ptr) PetscMallocA(1, (clear), __LINE__, PETSC_FUNCTION_NAME, __FILE__, (size), (ptr))
-#define PetscDeviceDeallocate_Private(PetscDeviceContext, ptr)                                     PetscFree((ptr))
-#define PetscDeviceMemcpy(PetscDeviceContext, dest, src, size)                                     PetscMemcpy((dest), (src), (size))
-#define PetscDeviceMemset(PetscDeviceContext, ptr, v, size)                                        ((void)memset((ptr), (unsigned char)(v), (size)), 0)
+  #include <string.h> // memset()
+  #define PetscDeviceAllocate_Private(PetscDeviceContext, clear, PetscMemType, size, alignment, ptr) PetscMallocA(1, (clear), __LINE__, PETSC_FUNCTION_NAME, __FILE__, (size), (ptr))
+  #define PetscDeviceDeallocate_Private(PetscDeviceContext, ptr)                                     PetscFree((ptr))
+  #define PetscDeviceMemcpy(PetscDeviceContext, dest, src, size)                                     PetscMemcpy((dest), (src), (size))
+  #define PetscDeviceMemset(PetscDeviceContext, ptr, v, size)                                        ((void)memset((ptr), (unsigned char)(v), (size)), 0)
 #endif /* PetscDefined(HAVE_CXX) */
 
 /*MC

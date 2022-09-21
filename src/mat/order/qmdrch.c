@@ -28,7 +28,8 @@
 /*              LT 0 MEANS THE NODE HAS BEEN MERGED WITH*/
 /*              OTHERS IN THE QUOTIENT OR IT IS IN NBRHD SET.*/
 /*****************************************************************/
-PetscErrorCode SPARSEPACKqmdrch(const PetscInt *root, const PetscInt *xadj, const PetscInt *adjncy, PetscInt *deg, PetscInt *marker, PetscInt *rchsze, PetscInt *rchset, PetscInt *nhdsze, PetscInt *nbrhd) {
+PetscErrorCode SPARSEPACKqmdrch(const PetscInt *root, const PetscInt *xadj, const PetscInt *adjncy, PetscInt *deg, PetscInt *marker, PetscInt *rchsze, PetscInt *rchset, PetscInt *nhdsze, PetscInt *nbrhd)
+{
   /* System generated locals */
   PetscInt i__1, i__2;
 

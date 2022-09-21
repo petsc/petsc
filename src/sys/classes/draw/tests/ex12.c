@@ -4,7 +4,8 @@ static char help[] = "Makes a simple bar graph.\n";
 #include <petscsys.h>
 #include <petscdraw.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscDraw         draw;
   PetscDrawBar      bar;
   PetscDrawAxis     axis;

@@ -3,7 +3,8 @@
 /* TODO PetscArrayExchangeBegin/End */
 /* TODO blocksize */
 /* TODO move to API ? */
-static PetscErrorCode ExchangeArrayByRank_Private(PetscObject obj, MPI_Datatype dt, PetscInt nsranks, const PetscMPIInt sranks[], PetscInt ssize[], const void *sarr[], PetscInt nrranks, const PetscMPIInt rranks[], PetscInt *rsize_out[], void **rarr_out[]) {
+static PetscErrorCode ExchangeArrayByRank_Private(PetscObject obj, MPI_Datatype dt, PetscInt nsranks, const PetscMPIInt sranks[], PetscInt ssize[], const void *sarr[], PetscInt nrranks, const PetscMPIInt rranks[], PetscInt *rsize_out[], void **rarr_out[])
+{
   PetscInt     r;
   PetscInt    *rsize;
   void       **rarr;
@@ -39,7 +40,8 @@ static PetscErrorCode ExchangeArrayByRank_Private(PetscObject obj, MPI_Datatype 
 
 /* TODO VecExchangeBegin/End */
 /* TODO move to API ? */
-static PetscErrorCode ExchangeVecByRank_Private(PetscObject obj, PetscInt nsranks, const PetscMPIInt sranks[], Vec svecs[], PetscInt nrranks, const PetscMPIInt rranks[], Vec *rvecs[]) {
+static PetscErrorCode ExchangeVecByRank_Private(PetscObject obj, PetscInt nsranks, const PetscMPIInt sranks[], Vec svecs[], PetscInt nrranks, const PetscMPIInt rranks[], Vec *rvecs[])
+{
   PetscInt            r;
   PetscInt           *ssize, *rsize;
   PetscScalar       **rarr;
@@ -67,7 +69,8 @@ static PetscErrorCode ExchangeVecByRank_Private(PetscObject obj, PetscInt nsrank
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SortByRemote_Private(PetscSF sf, PetscInt *rmine1[], PetscInt *rremote1[]) {
+static PetscErrorCode SortByRemote_Private(PetscSF sf, PetscInt *rmine1[], PetscInt *rremote1[])
+{
   PetscInt           nleaves;
   PetscInt           nranks;
   const PetscMPIInt *ranks;
@@ -90,7 +93,8 @@ static PetscErrorCode SortByRemote_Private(PetscSF sf, PetscInt *rmine1[], Petsc
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode GetRecursiveConeCoordinatesPerRank_Private(DM dm, PetscSF sf, PetscInt rmine[], Vec *coordinatesPerRank[]) {
+static PetscErrorCode GetRecursiveConeCoordinatesPerRank_Private(DM dm, PetscSF sf, PetscInt rmine[], Vec *coordinatesPerRank[])
+{
   IS                 pointsPerRank, conesPerRank;
   PetscInt           nranks;
   const PetscMPIInt *ranks;
@@ -113,7 +117,8 @@ static PetscErrorCode GetRecursiveConeCoordinatesPerRank_Private(DM dm, PetscSF 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSFComputeMultiRootOriginalNumberingByRank_Private(PetscSF sf, PetscSF imsf, PetscInt *irmine1[]) {
+static PetscErrorCode PetscSFComputeMultiRootOriginalNumberingByRank_Private(PetscSF sf, PetscSF imsf, PetscInt *irmine1[])
+{
   PetscInt       *mRootsOrigNumbering;
   PetscInt        nileaves, niranks;
   const PetscInt *iroffset, *irmine, *degree;
@@ -157,7 +162,8 @@ static PetscErrorCode PetscSFComputeMultiRootOriginalNumberingByRank_Private(Pet
 
 .seealso: `DMPlexGetCone()`, `DMPlexGetConeSize()`, `DMGetPointSF()`, `DMGetCoordinates()`, `DMSetFromOptions()`
 @*/
-PetscErrorCode DMPlexCheckInterfaceCones(DM dm) {
+PetscErrorCode DMPlexCheckInterfaceCones(DM dm)
+{
   PetscSF            sf;
   PetscInt           nleaves, nranks, nroots;
   const PetscInt    *mine, *roffset, *rmine, *rremote;

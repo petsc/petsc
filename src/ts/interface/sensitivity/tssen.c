@@ -32,7 +32,8 @@ $ func (TS ts,PetscReal t,Vec y,Mat A,void *ctx);
 
 .seealso: `TSGetRHSJacobianP()`
 @*/
-PetscErrorCode TSSetRHSJacobianP(TS ts, Mat Amat, PetscErrorCode (*func)(TS, PetscReal, Vec, Mat, void *), void *ctx) {
+PetscErrorCode TSSetRHSJacobianP(TS ts, Mat Amat, PetscErrorCode (*func)(TS, PetscReal, Vec, Mat, void *), void *ctx)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidHeaderSpecific(Amat, MAT_CLASSID, 2);
@@ -74,7 +75,8 @@ $ func (TS ts,PetscReal t,Vec y,Mat A,void *ctx);
 
 .seealso: `TSSetRHSJacobianP()`
 @*/
-PetscErrorCode TSGetRHSJacobianP(TS ts, Mat *Amat, PetscErrorCode (**func)(TS, PetscReal, Vec, Mat, void *), void **ctx) {
+PetscErrorCode TSGetRHSJacobianP(TS ts, Mat *Amat, PetscErrorCode (**func)(TS, PetscReal, Vec, Mat, void *), void **ctx)
+{
   PetscFunctionBegin;
   if (func) *func = ts->rhsjacobianp;
   if (ctx) *ctx = ts->rhsjacobianpctx;
@@ -94,7 +96,8 @@ PetscErrorCode TSGetRHSJacobianP(TS ts, Mat *Amat, PetscErrorCode (**func)(TS, P
 
 .seealso: `TSSetRHSJacobianP()`
 @*/
-PetscErrorCode TSComputeRHSJacobianP(TS ts, PetscReal t, Vec U, Mat Amat) {
+PetscErrorCode TSComputeRHSJacobianP(TS ts, PetscReal t, Vec U, Mat Amat)
+{
   PetscFunctionBegin;
   if (!Amat) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
@@ -131,7 +134,8 @@ $ func (TS ts,PetscReal t,Vec y,Mat A,void *ctx);
 
 .seealso:
 @*/
-PetscErrorCode TSSetIJacobianP(TS ts, Mat Amat, PetscErrorCode (*func)(TS, PetscReal, Vec, Vec, PetscReal, Mat, void *), void *ctx) {
+PetscErrorCode TSSetIJacobianP(TS ts, Mat Amat, PetscErrorCode (*func)(TS, PetscReal, Vec, Vec, PetscReal, Mat, void *), void *ctx)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidHeaderSpecific(Amat, MAT_CLASSID, 2);
@@ -166,7 +170,8 @@ PetscErrorCode TSSetIJacobianP(TS ts, Mat Amat, PetscErrorCode (*func)(TS, Petsc
 
 .seealso: `TSSetIJacobianP()`
 @*/
-PetscErrorCode TSComputeIJacobianP(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal shift, Mat Amat, PetscBool imex) {
+PetscErrorCode TSComputeIJacobianP(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal shift, Mat Amat, PetscBool imex)
+{
   PetscFunctionBegin;
   if (!Amat) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
@@ -232,7 +237,8 @@ $   PetscErroCode drdpf(TS ts,PetscReal t,Vec U,Vec *dRdP,void *ctx);
 
 .seealso: `TSSetRHSJacobianP()`, `TSGetCostGradients()`, `TSSetCostGradients()`
 @*/
-PetscErrorCode TSSetCostIntegrand(TS ts, PetscInt numcost, Vec costintegral, PetscErrorCode (*rf)(TS, PetscReal, Vec, Vec, void *), PetscErrorCode (*drduf)(TS, PetscReal, Vec, Vec *, void *), PetscErrorCode (*drdpf)(TS, PetscReal, Vec, Vec *, void *), PetscBool fwd, void *ctx) {
+PetscErrorCode TSSetCostIntegrand(TS ts, PetscInt numcost, Vec costintegral, PetscErrorCode (*rf)(TS, PetscReal, Vec, Vec, void *), PetscErrorCode (*drduf)(TS, PetscReal, Vec, Vec *, void *), PetscErrorCode (*drdpf)(TS, PetscReal, Vec, Vec *, void *), PetscBool fwd, void *ctx)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   if (costintegral) PetscValidHeaderSpecific(costintegral, VEC_CLASSID, 3);
@@ -280,7 +286,8 @@ PetscErrorCode TSSetCostIntegrand(TS ts, PetscInt numcost, Vec costintegral, Pet
 .seealso: `TSSetCostIntegrand()`
 
 @*/
-PetscErrorCode TSGetCostIntegral(TS ts, Vec *v) {
+PetscErrorCode TSGetCostIntegral(TS ts, Vec *v)
+{
   TS quadts;
 
   PetscFunctionBegin;
@@ -310,7 +317,8 @@ PetscErrorCode TSGetCostIntegral(TS ts, Vec *v) {
 
 .seealso: `TSSetCostIntegrand()`
 @*/
-PetscErrorCode TSComputeCostIntegrand(TS ts, PetscReal t, Vec U, Vec Q) {
+PetscErrorCode TSComputeCostIntegrand(TS ts, PetscReal t, Vec U, Vec Q)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidHeaderSpecific(U, VEC_CLASSID, 3);
@@ -329,7 +337,8 @@ PetscErrorCode TSComputeCostIntegrand(TS ts, PetscReal t, Vec U, Vec Q) {
   Level: deprecated
 
 @*/
-PetscErrorCode TSComputeDRDUFunction(TS ts, PetscReal t, Vec U, Vec *DRDU) {
+PetscErrorCode TSComputeDRDUFunction(TS ts, PetscReal t, Vec U, Vec *DRDU)
+{
   PetscFunctionBegin;
   if (!DRDU) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
@@ -345,7 +354,8 @@ PetscErrorCode TSComputeDRDUFunction(TS ts, PetscReal t, Vec U, Vec *DRDU) {
   Level: deprecated
 
 @*/
-PetscErrorCode TSComputeDRDPFunction(TS ts, PetscReal t, Vec U, Vec *DRDP) {
+PetscErrorCode TSComputeDRDPFunction(TS ts, PetscReal t, Vec U, Vec *DRDP)
+{
   PetscFunctionBegin;
   if (!DRDP) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
@@ -395,7 +405,8 @@ $ ihessianproductfunc (TS ts,PetscReal t,Vec U,Vec *Vl,Vec Vr,Vec *VHV,void *ctx
 
 .seealso:
 @*/
-PetscErrorCode TSSetIHessianProduct(TS ts, Vec *ihp1, PetscErrorCode (*ihessianproductfunc1)(TS, PetscReal, Vec, Vec *, Vec, Vec *, void *), Vec *ihp2, PetscErrorCode (*ihessianproductfunc2)(TS, PetscReal, Vec, Vec *, Vec, Vec *, void *), Vec *ihp3, PetscErrorCode (*ihessianproductfunc3)(TS, PetscReal, Vec, Vec *, Vec, Vec *, void *), Vec *ihp4, PetscErrorCode (*ihessianproductfunc4)(TS, PetscReal, Vec, Vec *, Vec, Vec *, void *), void *ctx) {
+PetscErrorCode TSSetIHessianProduct(TS ts, Vec *ihp1, PetscErrorCode (*ihessianproductfunc1)(TS, PetscReal, Vec, Vec *, Vec, Vec *, void *), Vec *ihp2, PetscErrorCode (*ihessianproductfunc2)(TS, PetscReal, Vec, Vec *, Vec, Vec *, void *), Vec *ihp3, PetscErrorCode (*ihessianproductfunc3)(TS, PetscReal, Vec, Vec *, Vec, Vec *, void *), Vec *ihp4, PetscErrorCode (*ihessianproductfunc4)(TS, PetscReal, Vec, Vec *, Vec, Vec *, void *), void *ctx)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidPointer(ihp1, 2);
@@ -428,7 +439,8 @@ PetscErrorCode TSSetIHessianProduct(TS ts, Vec *ihp1, PetscErrorCode (*ihessianp
 
 .seealso: `TSSetIHessianProduct()`
 @*/
-PetscErrorCode TSComputeIHessianProductFunctionUU(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV) {
+PetscErrorCode TSComputeIHessianProductFunctionUU(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV)
+{
   PetscFunctionBegin;
   if (!VHV) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
@@ -461,7 +473,8 @@ PetscErrorCode TSComputeIHessianProductFunctionUU(TS ts, PetscReal t, Vec U, Vec
 
 .seealso: `TSSetIHessianProduct()`
 @*/
-PetscErrorCode TSComputeIHessianProductFunctionUP(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV) {
+PetscErrorCode TSComputeIHessianProductFunctionUP(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV)
+{
   PetscFunctionBegin;
   if (!VHV) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
@@ -494,7 +507,8 @@ PetscErrorCode TSComputeIHessianProductFunctionUP(TS ts, PetscReal t, Vec U, Vec
 
 .seealso: `TSSetIHessianProduct()`
 @*/
-PetscErrorCode TSComputeIHessianProductFunctionPU(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV) {
+PetscErrorCode TSComputeIHessianProductFunctionPU(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV)
+{
   PetscFunctionBegin;
   if (!VHV) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
@@ -527,7 +541,8 @@ PetscErrorCode TSComputeIHessianProductFunctionPU(TS ts, PetscReal t, Vec U, Vec
 
 .seealso: `TSSetIHessianProduct()`
 @*/
-PetscErrorCode TSComputeIHessianProductFunctionPP(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV) {
+PetscErrorCode TSComputeIHessianProductFunctionPP(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV)
+{
   PetscFunctionBegin;
   if (!VHV) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
@@ -584,7 +599,8 @@ $ rhshessianproductfunc (TS ts,PetscReal t,Vec U,Vec *Vl,Vec Vr,Vec *VHV,void *c
 
 .seealso:
 @*/
-PetscErrorCode TSSetRHSHessianProduct(TS ts, Vec *rhshp1, PetscErrorCode (*rhshessianproductfunc1)(TS, PetscReal, Vec, Vec *, Vec, Vec *, void *), Vec *rhshp2, PetscErrorCode (*rhshessianproductfunc2)(TS, PetscReal, Vec, Vec *, Vec, Vec *, void *), Vec *rhshp3, PetscErrorCode (*rhshessianproductfunc3)(TS, PetscReal, Vec, Vec *, Vec, Vec *, void *), Vec *rhshp4, PetscErrorCode (*rhshessianproductfunc4)(TS, PetscReal, Vec, Vec *, Vec, Vec *, void *), void *ctx) {
+PetscErrorCode TSSetRHSHessianProduct(TS ts, Vec *rhshp1, PetscErrorCode (*rhshessianproductfunc1)(TS, PetscReal, Vec, Vec *, Vec, Vec *, void *), Vec *rhshp2, PetscErrorCode (*rhshessianproductfunc2)(TS, PetscReal, Vec, Vec *, Vec, Vec *, void *), Vec *rhshp3, PetscErrorCode (*rhshessianproductfunc3)(TS, PetscReal, Vec, Vec *, Vec, Vec *, void *), Vec *rhshp4, PetscErrorCode (*rhshessianproductfunc4)(TS, PetscReal, Vec, Vec *, Vec, Vec *, void *), void *ctx)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidPointer(rhshp1, 2);
@@ -617,7 +633,8 @@ PetscErrorCode TSSetRHSHessianProduct(TS ts, Vec *rhshp1, PetscErrorCode (*rhshe
 
 .seealso: `TSSetRHSHessianProduct()`
 @*/
-PetscErrorCode TSComputeRHSHessianProductFunctionUU(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV) {
+PetscErrorCode TSComputeRHSHessianProductFunctionUU(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV)
+{
   PetscFunctionBegin;
   if (!VHV) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
@@ -643,7 +660,8 @@ PetscErrorCode TSComputeRHSHessianProductFunctionUU(TS ts, PetscReal t, Vec U, V
 
 .seealso: `TSSetRHSHessianProduct()`
 @*/
-PetscErrorCode TSComputeRHSHessianProductFunctionUP(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV) {
+PetscErrorCode TSComputeRHSHessianProductFunctionUP(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV)
+{
   PetscFunctionBegin;
   if (!VHV) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
@@ -669,7 +687,8 @@ PetscErrorCode TSComputeRHSHessianProductFunctionUP(TS ts, PetscReal t, Vec U, V
 
 .seealso: `TSSetRHSHessianProduct()`
 @*/
-PetscErrorCode TSComputeRHSHessianProductFunctionPU(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV) {
+PetscErrorCode TSComputeRHSHessianProductFunctionPU(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV)
+{
   PetscFunctionBegin;
   if (!VHV) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
@@ -695,7 +714,8 @@ PetscErrorCode TSComputeRHSHessianProductFunctionPU(TS ts, PetscReal t, Vec U, V
 
 .seealso: `TSSetRHSHessianProduct()`
 @*/
-PetscErrorCode TSComputeRHSHessianProductFunctionPP(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV) {
+PetscErrorCode TSComputeRHSHessianProductFunctionPP(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV)
+{
   PetscFunctionBegin;
   if (!VHV) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
@@ -728,7 +748,8 @@ PetscErrorCode TSComputeRHSHessianProductFunctionPP(TS ts, PetscReal t, Vec U, V
 
 .seealso `TSGetCostGradients()`
 @*/
-PetscErrorCode TSSetCostGradients(TS ts, PetscInt numcost, Vec *lambda, Vec *mu) {
+PetscErrorCode TSSetCostGradients(TS ts, PetscInt numcost, Vec *lambda, Vec *mu)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidPointer(lambda, 3);
@@ -756,7 +777,8 @@ PetscErrorCode TSSetCostGradients(TS ts, PetscInt numcost, Vec *lambda, Vec *mu)
 
 .seealso: `TSSetCostGradients()`
 @*/
-PetscErrorCode TSGetCostGradients(TS ts, PetscInt *numcost, Vec **lambda, Vec **mu) {
+PetscErrorCode TSGetCostGradients(TS ts, PetscInt *numcost, Vec **lambda, Vec **mu)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   if (numcost) *numcost = ts->numcost;
@@ -789,7 +811,8 @@ PetscErrorCode TSGetCostGradients(TS ts, PetscInt *numcost, Vec **lambda, Vec **
    Passing NULL for lambda2 disables the second-order calculation.
 .seealso: `TSAdjointSetForward()`
 @*/
-PetscErrorCode TSSetCostHessianProducts(TS ts, PetscInt numcost, Vec *lambda2, Vec *mu2, Vec dir) {
+PetscErrorCode TSSetCostHessianProducts(TS ts, PetscInt numcost, Vec *lambda2, Vec *mu2, Vec dir)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscCheck(!ts->numcost || ts->numcost == numcost, PetscObjectComm((PetscObject)ts), PETSC_ERR_USER, "The number of cost functions (2nd parameter of TSSetCostIntegrand()) is inconsistent with the one set by TSSetCostIntegrand");
@@ -818,7 +841,8 @@ PetscErrorCode TSSetCostHessianProducts(TS ts, PetscInt numcost, Vec *lambda2, V
 
 .seealso: `TSSetCostHessianProducts()`
 @*/
-PetscErrorCode TSGetCostHessianProducts(TS ts, PetscInt *numcost, Vec **lambda2, Vec **mu2, Vec *dir) {
+PetscErrorCode TSGetCostHessianProducts(TS ts, PetscInt *numcost, Vec **lambda2, Vec **mu2, Vec *dir)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   if (numcost) *numcost = ts->numcost;
@@ -843,7 +867,8 @@ PetscErrorCode TSGetCostHessianProducts(TS ts, PetscInt *numcost, Vec **lambda2,
 
 .seealso: `TSSetCostHessianProducts()`, `TSAdjointResetForward()`
 @*/
-PetscErrorCode TSAdjointSetForward(TS ts, Mat didp) {
+PetscErrorCode TSAdjointSetForward(TS ts, Mat didp)
+{
   Mat          A;
   Vec          sp;
   PetscScalar *xarr;
@@ -892,7 +917,8 @@ PetscErrorCode TSAdjointSetForward(TS ts, Mat didp) {
 
 .seealso: `TSAdjointSetForward()`
 @*/
-PetscErrorCode TSAdjointResetForward(TS ts) {
+PetscErrorCode TSAdjointResetForward(TS ts)
+{
   PetscFunctionBegin;
   ts->forward_solve = PETSC_FALSE; /* turn off tangent linear mode */
   PetscCall(TSForwardReset(ts));
@@ -912,7 +938,8 @@ PetscErrorCode TSAdjointResetForward(TS ts) {
 
 .seealso: `TSCreate()`, `TSAdjointStep()`, `TSSetCostGradients()`
 @*/
-PetscErrorCode TSAdjointSetUp(TS ts) {
+PetscErrorCode TSAdjointSetUp(TS ts)
+{
   TSTrajectory tj;
   PetscBool    match;
 
@@ -952,7 +979,8 @@ PetscErrorCode TSAdjointSetUp(TS ts) {
 
 .seealso: `TSCreate()`, `TSAdjointSetUp()`, `TSADestroy()`
 @*/
-PetscErrorCode TSAdjointReset(TS ts) {
+PetscErrorCode TSAdjointReset(TS ts)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscTryTypeMethod(ts, adjointreset);
@@ -986,7 +1014,8 @@ PetscErrorCode TSAdjointReset(TS ts) {
 
 .seealso: `TSSetExactFinalTime()`
 @*/
-PetscErrorCode TSAdjointSetSteps(TS ts, PetscInt steps) {
+PetscErrorCode TSAdjointSetSteps(TS ts, PetscInt steps)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidLogicalCollectiveInt(ts, steps, 2);
@@ -1002,7 +1031,8 @@ PetscErrorCode TSAdjointSetSteps(TS ts, PetscInt steps) {
   Level: deprecated
 
 @*/
-PetscErrorCode TSAdjointSetRHSJacobian(TS ts, Mat Amat, PetscErrorCode (*func)(TS, PetscReal, Vec, Mat, void *), void *ctx) {
+PetscErrorCode TSAdjointSetRHSJacobian(TS ts, Mat Amat, PetscErrorCode (*func)(TS, PetscReal, Vec, Mat, void *), void *ctx)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidHeaderSpecific(Amat, MAT_CLASSID, 2);
@@ -1023,7 +1053,8 @@ PetscErrorCode TSAdjointSetRHSJacobian(TS ts, Mat Amat, PetscErrorCode (*func)(T
   Level: deprecated
 
 @*/
-PetscErrorCode TSAdjointComputeRHSJacobian(TS ts, PetscReal t, Vec U, Mat Amat) {
+PetscErrorCode TSAdjointComputeRHSJacobian(TS ts, PetscReal t, Vec U, Mat Amat)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidHeaderSpecific(U, VEC_CLASSID, 3);
@@ -1039,7 +1070,8 @@ PetscErrorCode TSAdjointComputeRHSJacobian(TS ts, PetscReal t, Vec U, Mat Amat) 
   Level: deprecated
 
 @*/
-PetscErrorCode TSAdjointComputeDRDYFunction(TS ts, PetscReal t, Vec U, Vec *DRDU) {
+PetscErrorCode TSAdjointComputeDRDYFunction(TS ts, PetscReal t, Vec U, Vec *DRDU)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidHeaderSpecific(U, VEC_CLASSID, 3);
@@ -1054,7 +1086,8 @@ PetscErrorCode TSAdjointComputeDRDYFunction(TS ts, PetscReal t, Vec U, Vec *DRDU
   Level: deprecated
 
 @*/
-PetscErrorCode TSAdjointComputeDRDPFunction(TS ts, PetscReal t, Vec U, Vec *DRDP) {
+PetscErrorCode TSAdjointComputeDRDPFunction(TS ts, PetscReal t, Vec U, Vec *DRDP)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidHeaderSpecific(U, VEC_CLASSID, 3);
@@ -1070,7 +1103,8 @@ PetscErrorCode TSAdjointComputeDRDPFunction(TS ts, PetscReal t, Vec U, Vec *DRDP
 
 .seealso: `TSAdjointMonitorSet()`
 @*/
-PetscErrorCode TSAdjointMonitorSensi(TS ts, PetscInt step, PetscReal ptime, Vec v, PetscInt numcost, Vec *lambda, Vec *mu, PetscViewerAndFormat *vf) {
+PetscErrorCode TSAdjointMonitorSensi(TS ts, PetscInt step, PetscReal ptime, Vec v, PetscInt numcost, Vec *lambda, Vec *mu, PetscViewerAndFormat *vf)
+{
   PetscViewer viewer = vf->viewer;
 
   PetscFunctionBegin;
@@ -1104,7 +1138,8 @@ PetscErrorCode TSAdjointMonitorSensi(TS ts, PetscInt step, PetscReal ptime, Vec 
           `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
           `PetscOptionsFList()`, `PetscOptionsEList()`
 @*/
-PetscErrorCode TSAdjointMonitorSetFromOptions(TS ts, const char name[], const char help[], const char manual[], PetscErrorCode (*monitor)(TS, PetscInt, PetscReal, Vec, PetscInt, Vec *, Vec *, PetscViewerAndFormat *), PetscErrorCode (*monitorsetup)(TS, PetscViewerAndFormat *)) {
+PetscErrorCode TSAdjointMonitorSetFromOptions(TS ts, const char name[], const char help[], const char manual[], PetscErrorCode (*monitor)(TS, PetscInt, PetscReal, Vec, PetscInt, Vec *, Vec *, PetscViewerAndFormat *), PetscErrorCode (*monitorsetup)(TS, PetscViewerAndFormat *))
+{
   PetscViewer       viewer;
   PetscViewerFormat format;
   PetscBool         flg;
@@ -1159,7 +1194,8 @@ $    int adjointmonitor(TS ts,PetscInt steps,PetscReal time,Vec u,PetscInt numco
 
 .seealso: `TSAdjointMonitorCancel()`
 @*/
-PetscErrorCode TSAdjointMonitorSet(TS ts, PetscErrorCode (*adjointmonitor)(TS, PetscInt, PetscReal, Vec, PetscInt, Vec *, Vec *, void *), void *adjointmctx, PetscErrorCode (*adjointmdestroy)(void **)) {
+PetscErrorCode TSAdjointMonitorSet(TS ts, PetscErrorCode (*adjointmonitor)(TS, PetscInt, PetscReal, Vec, PetscInt, Vec *, Vec *, void *), void *adjointmctx, PetscErrorCode (*adjointmdestroy)(void **))
+{
   PetscInt  i;
   PetscBool identical;
 
@@ -1191,7 +1227,8 @@ PetscErrorCode TSAdjointMonitorSet(TS ts, PetscErrorCode (*adjointmonitor)(TS, P
 
 .seealso: `TSAdjointMonitorSet()`
 @*/
-PetscErrorCode TSAdjointMonitorCancel(TS ts) {
+PetscErrorCode TSAdjointMonitorCancel(TS ts)
+{
   PetscInt i;
 
   PetscFunctionBegin;
@@ -1210,7 +1247,8 @@ PetscErrorCode TSAdjointMonitorCancel(TS ts) {
 
 .seealso: `TSAdjointMonitorSet()`
 @*/
-PetscErrorCode TSAdjointMonitorDefault(TS ts, PetscInt step, PetscReal ptime, Vec v, PetscInt numcost, Vec *lambda, Vec *mu, PetscViewerAndFormat *vf) {
+PetscErrorCode TSAdjointMonitorDefault(TS ts, PetscInt step, PetscReal ptime, Vec v, PetscInt numcost, Vec *lambda, Vec *mu, PetscViewerAndFormat *vf)
+{
   PetscViewer viewer = vf->viewer;
 
   PetscFunctionBegin;
@@ -1243,7 +1281,8 @@ PetscErrorCode TSAdjointMonitorDefault(TS ts, PetscInt step, PetscReal ptime, Ve
 
 .seealso: `TSAdjointMonitorSet()`, `TSAdjointMonitorDefault()`, `VecView()`
 @*/
-PetscErrorCode TSAdjointMonitorDrawSensi(TS ts, PetscInt step, PetscReal ptime, Vec u, PetscInt numcost, Vec *lambda, Vec *mu, void *dummy) {
+PetscErrorCode TSAdjointMonitorDrawSensi(TS ts, PetscInt step, PetscReal ptime, Vec u, PetscInt numcost, Vec *lambda, Vec *mu, void *dummy)
+{
   TSMonitorDrawCtx ictx = (TSMonitorDrawCtx)dummy;
   PetscDraw        draw;
   PetscReal        xl, yl, xr, yr, h;
@@ -1282,7 +1321,8 @@ PetscErrorCode TSAdjointMonitorDrawSensi(TS ts, PetscInt step, PetscReal ptime, 
 
 .seealso: `TSSetSaveTrajectory()`, `TSTrajectorySetUp()`
 */
-PetscErrorCode TSAdjointSetFromOptions(TS ts, PetscOptionItems *PetscOptionsObject) {
+PetscErrorCode TSAdjointSetFromOptions(TS ts, PetscOptionItems *PetscOptionsObject)
+{
   PetscBool tflg, opt;
 
   PetscFunctionBegin;
@@ -1321,7 +1361,8 @@ PetscErrorCode TSAdjointSetFromOptions(TS ts, PetscOptionItems *PetscOptionsObje
 
 .seealso: `TSAdjointSetUp()`, `TSAdjointSolve()`
 @*/
-PetscErrorCode TSAdjointStep(TS ts) {
+PetscErrorCode TSAdjointStep(TS ts)
+{
   DM dm;
 
   PetscFunctionBegin;
@@ -1365,7 +1406,8 @@ PetscErrorCode TSAdjointStep(TS ts) {
 
 .seealso: `TSCreate()`, `TSSetCostGradients()`, `TSSetSolution()`, `TSAdjointStep()`
 @*/
-PetscErrorCode TSAdjointSolve(TS ts) {
+PetscErrorCode TSAdjointSolve(TS ts)
+{
   static PetscBool cite = PETSC_FALSE;
 #if defined(TSADJOINT_STAGE)
   PetscLogStage adjoint_stage;
@@ -1442,7 +1484,8 @@ PetscErrorCode TSAdjointSolve(TS ts) {
    Level: developer
 
 @*/
-PetscErrorCode TSAdjointMonitor(TS ts, PetscInt step, PetscReal ptime, Vec u, PetscInt numcost, Vec *lambda, Vec *mu) {
+PetscErrorCode TSAdjointMonitor(TS ts, PetscInt step, PetscReal ptime, Vec u, PetscInt numcost, Vec *lambda, Vec *mu)
+{
   PetscInt i, n = ts->numberadjointmonitors;
 
   PetscFunctionBegin;
@@ -1469,7 +1512,8 @@ PetscErrorCode TSAdjointMonitor(TS ts, PetscInt step, PetscReal ptime, Vec u, Pe
 
  .seealso: `TSAdjointSolve()`, `TSAdjointStep`
  @*/
-PetscErrorCode TSAdjointCostIntegral(TS ts) {
+PetscErrorCode TSAdjointCostIntegral(TS ts)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscUseTypeMethod(ts, adjointintegral);
@@ -1491,7 +1535,8 @@ PetscErrorCode TSAdjointCostIntegral(TS ts) {
 
 .seealso: `TSCreate()`, `TSDestroy()`, `TSSetUp()`
 @*/
-PetscErrorCode TSForwardSetUp(TS ts) {
+PetscErrorCode TSForwardSetUp(TS ts)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   if (ts->forwardsetupcalled) PetscFunctionReturn(0);
@@ -1513,7 +1558,8 @@ PetscErrorCode TSForwardSetUp(TS ts) {
 
 .seealso: `TSCreate()`, `TSDestroy()`, `TSForwardSetUp()`
 @*/
-PetscErrorCode TSForwardReset(TS ts) {
+PetscErrorCode TSForwardReset(TS ts)
+{
   TS quadts = ts->quadraturets;
 
   PetscFunctionBegin;
@@ -1539,7 +1585,8 @@ PetscErrorCode TSForwardReset(TS ts) {
 
 .seealso: `TSForwardGetSensitivities()`, `TSForwardSetIntegralGradients()`, `TSForwardGetIntegralGradients()`, `TSForwardStep()`
 @*/
-PetscErrorCode TSForwardSetIntegralGradients(TS ts, PetscInt numfwdint, Vec *vp) {
+PetscErrorCode TSForwardSetIntegralGradients(TS ts, PetscInt numfwdint, Vec *vp)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscCheck(!ts->numcost || ts->numcost == numfwdint, PetscObjectComm((PetscObject)ts), PETSC_ERR_USER, "The number of cost functions (2nd parameter of TSSetCostIntegrand()) is inconsistent with the one set by TSSetCostIntegrand()");
@@ -1562,7 +1609,8 @@ PetscErrorCode TSForwardSetIntegralGradients(TS ts, PetscInt numfwdint, Vec *vp)
 
 .seealso: `TSForwardSetSensitivities()`, `TSForwardSetIntegralGradients()`, `TSForwardGetIntegralGradients()`, `TSForwardStep()`
 @*/
-PetscErrorCode TSForwardGetIntegralGradients(TS ts, PetscInt *numfwdint, Vec **vp) {
+PetscErrorCode TSForwardGetIntegralGradients(TS ts, PetscInt *numfwdint, Vec **vp)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidPointer(vp, 3);
@@ -1586,7 +1634,8 @@ PetscErrorCode TSForwardGetIntegralGradients(TS ts, PetscInt *numfwdint, Vec **v
 
 .seealso: `TSForwardSetSensitivities()`, `TSForwardGetSensitivities()`, `TSForwardSetIntegralGradients()`, `TSForwardGetIntegralGradients()`, `TSForwardSetUp()`
 @*/
-PetscErrorCode TSForwardStep(TS ts) {
+PetscErrorCode TSForwardStep(TS ts)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscCall(PetscLogEventBegin(TS_ForwardStep, ts, 0, 0, 0));
@@ -1616,7 +1665,8 @@ PetscErrorCode TSForwardStep(TS ts) {
 
 .seealso: `TSForwardGetSensitivities()`, `TSForwardSetIntegralGradients()`, `TSForwardGetIntegralGradients()`, `TSForwardStep()`
 @*/
-PetscErrorCode TSForwardSetSensitivities(TS ts, PetscInt nump, Mat Smat) {
+PetscErrorCode TSForwardSetSensitivities(TS ts, PetscInt nump, Mat Smat)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidHeaderSpecific(Smat, MAT_CLASSID, 3);
@@ -1644,7 +1694,8 @@ PetscErrorCode TSForwardSetSensitivities(TS ts, PetscInt nump, Mat Smat) {
 
 .seealso: `TSForwardSetSensitivities()`, `TSForwardSetIntegralGradients()`, `TSForwardGetIntegralGradients()`, `TSForwardStep()`
 @*/
-PetscErrorCode TSForwardGetSensitivities(TS ts, PetscInt *nump, Mat *Smat) {
+PetscErrorCode TSForwardGetSensitivities(TS ts, PetscInt *nump, Mat *Smat)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   if (nump) *nump = ts->num_parameters;
@@ -1667,7 +1718,8 @@ PetscErrorCode TSForwardGetSensitivities(TS ts, PetscInt *nump, Mat *Smat) {
 
 .seealso: `TSSolve()`, `TSAdjointCostIntegral()`
 @*/
-PetscErrorCode TSForwardCostIntegral(TS ts) {
+PetscErrorCode TSForwardCostIntegral(TS ts)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscUseTypeMethod(ts, forwardintegral);
@@ -1689,7 +1741,8 @@ PetscErrorCode TSForwardCostIntegral(TS ts) {
 
 .seealso: `TSForwardSetSensitivities()`
 @*/
-PetscErrorCode TSForwardSetInitialSensitivities(TS ts, Mat didp) {
+PetscErrorCode TSForwardSetInitialSensitivities(TS ts, Mat didp)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidHeaderSpecific(didp, MAT_CLASSID, 2);
@@ -1710,7 +1763,8 @@ PetscErrorCode TSForwardSetInitialSensitivities(TS ts, Mat didp) {
    Level: advanced
 
 @*/
-PetscErrorCode TSForwardGetStages(TS ts, PetscInt *ns, Mat **S) {
+PetscErrorCode TSForwardGetStages(TS ts, PetscInt *ns, Mat **S)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
 
@@ -1733,7 +1787,8 @@ PetscErrorCode TSForwardGetStages(TS ts, PetscInt *ns, Mat **S) {
 
 .seealso: `TSGetQuadratureTS()`
 @*/
-PetscErrorCode TSCreateQuadratureTS(TS ts, PetscBool fwd, TS *quadts) {
+PetscErrorCode TSCreateQuadratureTS(TS ts, PetscBool fwd, TS *quadts)
+{
   char prefix[128];
 
   PetscFunctionBegin;
@@ -1769,7 +1824,8 @@ PetscErrorCode TSCreateQuadratureTS(TS ts, PetscBool fwd, TS *quadts) {
 
 .seealso: `TSCreateQuadratureTS()`
 @*/
-PetscErrorCode TSGetQuadratureTS(TS ts, PetscBool *fwd, TS *quadts) {
+PetscErrorCode TSGetQuadratureTS(TS ts, PetscBool *fwd, TS *quadts)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   if (fwd) *fwd = ts->costintegralfwd;
@@ -1793,7 +1849,8 @@ PetscErrorCode TSGetQuadratureTS(TS ts, PetscBool *fwd, TS *quadts) {
    Notes:
    Using SNES to compute the Jacobian enables finite differencing when TS Jacobian is not available.
 @*/
-PetscErrorCode TSComputeSNESJacobian(TS ts, Vec x, Mat J, Mat Jpre) {
+PetscErrorCode TSComputeSNESJacobian(TS ts, Vec x, Mat J, Mat Jpre)
+{
   SNES snes                                          = ts->snes;
   PetscErrorCode (*jac)(SNES, Vec, Mat, Mat, void *) = NULL;
 

@@ -49,7 +49,8 @@ PetscBool         KSPMonitorRegisterAllCalled = PETSC_FALSE;
 
 .seealso: `PetscViewerBinaryOpen()`, `KSPView()`, `MatLoad()`, `VecLoad()`
 @*/
-PetscErrorCode KSPLoad(KSP newdm, PetscViewer viewer) {
+PetscErrorCode KSPLoad(KSP newdm, PetscViewer viewer)
+{
   PetscBool isbinary;
   PetscInt  classid;
   char      type[256];
@@ -73,7 +74,7 @@ PetscErrorCode KSPLoad(KSP newdm, PetscViewer viewer) {
 
 #include <petscdraw.h>
 #if defined(PETSC_HAVE_SAWS)
-#include <petscviewersaws.h>
+  #include <petscviewersaws.h>
 #endif
 /*@C
    KSPView - Prints the KSP data structure.
@@ -108,7 +109,8 @@ PetscErrorCode KSPLoad(KSP newdm, PetscViewer viewer) {
 
 .seealso: `PCView()`, `PetscViewerASCIIOpen()`
 @*/
-PetscErrorCode KSPView(KSP ksp, PetscViewer viewer) {
+PetscErrorCode KSPView(KSP ksp, PetscViewer viewer)
+{
   PetscBool iascii, isbinary, isdraw, isstring;
 #if defined(PETSC_HAVE_SAWS)
   PetscBool issaws;
@@ -231,7 +233,8 @@ PetscErrorCode KSPView(KSP ksp, PetscViewer viewer) {
    Level: intermediate
 .seealso: `KSP`, `KSPView`, `PetscObjectViewFromOptions()`, `KSPCreate()`
 @*/
-PetscErrorCode KSPViewFromOptions(KSP A, PetscObject obj, const char name[]) {
+PetscErrorCode KSPViewFromOptions(KSP A, PetscObject obj, const char name[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, KSP_CLASSID, 1);
   PetscCall(PetscObjectViewFromOptions((PetscObject)A, obj, name));
@@ -272,7 +275,8 @@ $   KSP_NORM_NATURAL - supported  by KSPCG, KSPCR, KSPCGNE, KSPCGS
 
 .seealso: `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSPConvergedSkip()`, `KSPSetCheckNormIteration()`, `KSPSetPCSide()`, `KSPGetPCSide()`, `KSPNormType`
 @*/
-PetscErrorCode KSPSetNormType(KSP ksp, KSPNormType normtype) {
+PetscErrorCode KSPSetNormType(KSP ksp, KSPNormType normtype)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscValidLogicalCollectiveEnum(ksp, normtype, 2);
@@ -301,7 +305,8 @@ PetscErrorCode KSPSetNormType(KSP ksp, KSPNormType normtype) {
 
 .seealso: `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSPConvergedSkip()`, `KSPSetNormType()`
 @*/
-PetscErrorCode KSPSetCheckNormIteration(KSP ksp, PetscInt it) {
+PetscErrorCode KSPSetCheckNormIteration(KSP ksp, PetscInt it)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscValidLogicalCollectiveInt(ksp, it, 2);
@@ -333,7 +338,8 @@ PetscErrorCode KSPSetCheckNormIteration(KSP ksp, PetscInt it) {
 
 .seealso: `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSPConvergedSkip()`, `KSPSetNormType()`, `KSPSetCheckNormIteration()`
 @*/
-PetscErrorCode KSPSetLagNorm(KSP ksp, PetscBool flg) {
+PetscErrorCode KSPSetLagNorm(KSP ksp, PetscBool flg)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscValidLogicalCollectiveBool(ksp, flg, 2);
@@ -361,14 +367,16 @@ PetscErrorCode KSPSetLagNorm(KSP ksp, PetscBool flg) {
 
 .seealso: `KSPSetNormType()`, `KSPSetPCSide()`
 @*/
-PetscErrorCode KSPSetSupportedNorm(KSP ksp, KSPNormType normtype, PCSide pcside, PetscInt priority) {
+PetscErrorCode KSPSetSupportedNorm(KSP ksp, KSPNormType normtype, PCSide pcside, PetscInt priority)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   ksp->normsupporttable[normtype][pcside] = priority;
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPNormSupportTableReset_Private(KSP ksp) {
+PetscErrorCode KSPNormSupportTableReset_Private(KSP ksp)
+{
   PetscFunctionBegin;
   PetscCall(PetscMemzero(ksp->normsupporttable, sizeof(ksp->normsupporttable)));
   ksp->pc_side  = ksp->pc_side_set;
@@ -376,7 +384,8 @@ PetscErrorCode KSPNormSupportTableReset_Private(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPSetUpNorms_Private(KSP ksp, PetscBool errorifnotsupported, KSPNormType *normtype, PCSide *pcside) {
+PetscErrorCode KSPSetUpNorms_Private(KSP ksp, PetscBool errorifnotsupported, KSPNormType *normtype, PCSide *pcside)
+{
   PetscInt i, j, best, ibest = 0, jbest = 0;
 
   PetscFunctionBegin;
@@ -416,7 +425,8 @@ PetscErrorCode KSPSetUpNorms_Private(KSP ksp, PetscBool errorifnotsupported, KSP
 
 .seealso: `KSPNormType`, `KSPSetNormType()`, `KSPConvergedSkip()`
 @*/
-PetscErrorCode KSPGetNormType(KSP ksp, KSPNormType *normtype) {
+PetscErrorCode KSPGetNormType(KSP ksp, KSPNormType *normtype)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscValidPointer(normtype, 2);
@@ -426,7 +436,7 @@ PetscErrorCode KSPGetNormType(KSP ksp, KSPNormType *normtype) {
 }
 
 #if defined(PETSC_HAVE_SAWS)
-#include <petscviewersaws.h>
+  #include <petscviewersaws.h>
 #endif
 
 /*@
@@ -494,7 +504,8 @@ $           set size, type, etc of mat and pmat
 
 .seealso: `KSPSolve()`, `KSPGetPC()`, `PCGetOperators()`, `PCSetOperators()`, `KSPGetOperators()`, `KSPSetComputeOperators()`, `KSPSetComputeInitialGuess()`, `KSPSetComputeRHS()`
 @*/
-PetscErrorCode KSPSetOperators(KSP ksp, Mat Amat, Mat Pmat) {
+PetscErrorCode KSPSetOperators(KSP ksp, Mat Amat, Mat Pmat)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   if (Amat) PetscValidHeaderSpecific(Amat, MAT_CLASSID, 2);
@@ -527,7 +538,8 @@ PetscErrorCode KSPSetOperators(KSP ksp, Mat Amat, Mat Pmat) {
 
 .seealso: `KSPSolve()`, `KSPGetPC()`, `PCGetOperators()`, `PCSetOperators()`, `KSPSetOperators()`, `KSPGetOperatorsSet()`
 @*/
-PetscErrorCode KSPGetOperators(KSP ksp, Mat *Amat, Mat *Pmat) {
+PetscErrorCode KSPGetOperators(KSP ksp, Mat *Amat, Mat *Pmat)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   if (!ksp->pc) PetscCall(KSPGetPC(ksp, &ksp->pc));
@@ -552,7 +564,8 @@ PetscErrorCode KSPGetOperators(KSP ksp, Mat *Amat, Mat *Pmat) {
 
 .seealso: `PCSetOperators()`, `KSPGetOperators()`, `KSPSetOperators()`, `PCGetOperators()`, `PCGetOperatorsSet()`
 @*/
-PetscErrorCode KSPGetOperatorsSet(KSP ksp, PetscBool *mat, PetscBool *pmat) {
+PetscErrorCode KSPGetOperatorsSet(KSP ksp, PetscBool *mat, PetscBool *pmat)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   if (!ksp->pc) PetscCall(KSPGetPC(ksp, &ksp->pc));
@@ -582,7 +595,8 @@ $  func(KSP ksp,Vec rhs,Vec x,void *ctx)
 
 .seealso: `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSP`, `KSPSetPostSolve()`
 @*/
-PetscErrorCode KSPSetPreSolve(KSP ksp, PetscErrorCode (*presolve)(KSP, Vec, Vec, void *), void *prectx) {
+PetscErrorCode KSPSetPreSolve(KSP ksp, PetscErrorCode (*presolve)(KSP, Vec, Vec, void *), void *prectx)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   ksp->presolve = presolve;
@@ -612,7 +626,8 @@ $  func(KSP ksp,Vec rhs,Vec x,void *ctx)
 
 .seealso: `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSP`, `KSPSetPreSolve()`
 @*/
-PetscErrorCode KSPSetPostSolve(KSP ksp, PetscErrorCode (*postsolve)(KSP, Vec, Vec, void *), void *postctx) {
+PetscErrorCode KSPSetPostSolve(KSP ksp, PetscErrorCode (*postsolve)(KSP, Vec, Vec, void *), void *postctx)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   ksp->postsolve = postsolve;
@@ -639,7 +654,8 @@ PetscErrorCode KSPSetPostSolve(KSP ksp, PetscErrorCode (*postsolve)(KSP, Vec, Ve
 
 .seealso: `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSP`
 @*/
-PetscErrorCode KSPCreate(MPI_Comm comm, KSP *inksp) {
+PetscErrorCode KSPCreate(MPI_Comm comm, KSP *inksp)
+{
   KSP   ksp;
   void *ctx;
 
@@ -738,7 +754,8 @@ PetscErrorCode KSPCreate(MPI_Comm comm, KSP *inksp) {
 .seealso: `PCSetType()`, `KSPType`, `KSPRegister()`, `KSPCreate()`
 
 @*/
-PetscErrorCode KSPSetType(KSP ksp, KSPType type) {
+PetscErrorCode KSPSetType(KSP ksp, KSPType type)
+{
   PetscBool match;
   PetscErrorCode (*r)(KSP);
 
@@ -762,7 +779,7 @@ PetscErrorCode KSPSetType(KSP ksp, KSPType type) {
   PetscCall(KSPNormSupportTableReset_Private(ksp));
   ksp->setupnewmatrix = PETSC_FALSE; // restore default (setup not called in case of new matrix)
   /* Call the KSPCreate_XXX routine for this particular Krylov solver */
-  ksp->setupstage     = KSP_SETUP_NEW;
+  ksp->setupstage = KSP_SETUP_NEW;
   PetscCall((*r)(ksp));
   PetscCall(PetscObjectChangeTypeName((PetscObject)ksp, type));
   PetscFunctionReturn(0);
@@ -783,7 +800,8 @@ PetscErrorCode KSPSetType(KSP ksp, KSPType type) {
 
 .seealso: `KSPSetType()`
 @*/
-PetscErrorCode KSPGetType(KSP ksp, KSPType *type) {
+PetscErrorCode KSPGetType(KSP ksp, KSPType *type)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscValidPointer(type, 2);
@@ -817,14 +835,16 @@ $     -ksp_type my_solver
 
 .seealso: `KSPRegisterAll()`
 @*/
-PetscErrorCode KSPRegister(const char sname[], PetscErrorCode (*function)(KSP)) {
+PetscErrorCode KSPRegister(const char sname[], PetscErrorCode (*function)(KSP))
+{
   PetscFunctionBegin;
   PetscCall(KSPInitializePackage());
   PetscCall(PetscFunctionListAdd(&KSPList, sname, function));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPMonitorMakeKey_Internal(const char name[], PetscViewerType vtype, PetscViewerFormat format, char key[]) {
+PetscErrorCode KSPMonitorMakeKey_Internal(const char name[], PetscViewerType vtype, PetscViewerFormat format, char key[])
+{
   PetscFunctionBegin;
   PetscCall(PetscStrncpy(key, name, PETSC_MAX_PATH_LEN));
   PetscCall(PetscStrlcat(key, ":", PETSC_MAX_PATH_LEN));
@@ -864,7 +884,8 @@ $     -ksp_monitor_my_monitor
 
 .seealso: `KSPMonitorRegisterAll()`
 @*/
-PetscErrorCode KSPMonitorRegister(const char name[], PetscViewerType vtype, PetscViewerFormat format, PetscErrorCode (*monitor)(KSP, PetscInt, PetscReal, PetscViewerAndFormat *), PetscErrorCode (*create)(PetscViewer, PetscViewerFormat, void *, PetscViewerAndFormat **), PetscErrorCode (*destroy)(PetscViewerAndFormat **)) {
+PetscErrorCode KSPMonitorRegister(const char name[], PetscViewerType vtype, PetscViewerFormat format, PetscErrorCode (*monitor)(KSP, PetscInt, PetscReal, PetscViewerAndFormat *), PetscErrorCode (*create)(PetscViewer, PetscViewerFormat, void *, PetscViewerAndFormat **), PetscErrorCode (*destroy)(PetscViewerAndFormat **))
+{
   char key[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;

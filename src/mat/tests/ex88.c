@@ -8,7 +8,8 @@ struct _n_User {
   Mat B;
 };
 
-static PetscErrorCode MatView_User(Mat A, PetscViewer viewer) {
+static PetscErrorCode MatView_User(Mat A, PetscViewer viewer)
+{
   User user;
 
   PetscFunctionBegin;
@@ -17,7 +18,8 @@ static PetscErrorCode MatView_User(Mat A, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatMult_User(Mat A, Vec X, Vec Y) {
+static PetscErrorCode MatMult_User(Mat A, Vec X, Vec Y)
+{
   User user;
 
   PetscFunctionBegin;
@@ -26,7 +28,8 @@ static PetscErrorCode MatMult_User(Mat A, Vec X, Vec Y) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatMultTranspose_User(Mat A, Vec X, Vec Y) {
+static PetscErrorCode MatMultTranspose_User(Mat A, Vec X, Vec Y)
+{
   User user;
 
   PetscFunctionBegin;
@@ -35,7 +38,8 @@ static PetscErrorCode MatMultTranspose_User(Mat A, Vec X, Vec Y) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatGetDiagonal_User(Mat A, Vec X) {
+static PetscErrorCode MatGetDiagonal_User(Mat A, Vec X)
+{
   User user;
 
   PetscFunctionBegin;
@@ -44,7 +48,8 @@ static PetscErrorCode MatGetDiagonal_User(Mat A, Vec X) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TestMatrix(Mat A, Vec X, Vec Y, Vec Z) {
+static PetscErrorCode TestMatrix(Mat A, Vec X, Vec Y, Vec Z)
+{
   Vec         W1, W2, diff;
   Mat         E;
   const char *mattypename;
@@ -139,7 +144,8 @@ static PetscErrorCode TestMatrix(Mat A, Vec X, Vec Y, Vec Z) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   const PetscScalar xvals[] = {11, 13}, yvals[] = {17, 19}, zvals[] = {23, 29};
   const PetscInt    inds[]  = {0, 1};
   PetscScalar       avals[] = {2, 3, 5, 7};

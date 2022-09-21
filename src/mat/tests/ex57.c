@@ -9,7 +9,8 @@ Options:\n\
 #include <petscmat.h>
 #include <petscvec.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   char        fin[PETSC_MAX_PATH_LEN], fout[PETSC_MAX_PATH_LEN] = "default.mat";
   PetscViewer fdin, fdout;
   Vec         b;

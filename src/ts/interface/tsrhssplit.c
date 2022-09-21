@@ -1,6 +1,7 @@
 #include <petsc/private/tsimpl.h> /*I "petscts.h"  I*/
 #include <petscdm.h>
-static PetscErrorCode TSRHSSplitGetRHSSplit(TS ts, const char splitname[], TS_RHSSplitLink *isplit) {
+static PetscErrorCode TSRHSSplitGetRHSSplit(TS ts, const char splitname[], TS_RHSSplitLink *isplit)
+{
   PetscBool found = PETSC_FALSE;
 
   PetscFunctionBegin;
@@ -29,7 +30,8 @@ static PetscErrorCode TSRHSSplitGetRHSSplit(TS ts, const char splitname[], TS_RH
 .seealso: `TSRHSSplitGetIS()`
 
 @*/
-PetscErrorCode TSRHSSplitSetIS(TS ts, const char splitname[], IS is) {
+PetscErrorCode TSRHSSplitSetIS(TS ts, const char splitname[], IS is)
+{
   TS_RHSSplitLink newsplit, next = ts->tsrhssplit;
   char            prefix[128];
 
@@ -77,7 +79,8 @@ PetscErrorCode TSRHSSplitSetIS(TS ts, const char splitname[], IS is) {
 .seealso: `TSRHSSplitSetIS()`
 
 @*/
-PetscErrorCode TSRHSSplitGetIS(TS ts, const char splitname[], IS *is) {
+PetscErrorCode TSRHSSplitGetIS(TS ts, const char splitname[], IS *is)
+{
   TS_RHSSplitLink isplit;
 
   PetscFunctionBegin;
@@ -112,7 +115,8 @@ $  rhsfunc(TS ts,PetscReal t,Vec u,Vec f,ctx);
  Level: beginner
 
 @*/
-PetscErrorCode TSRHSSplitSetRHSFunction(TS ts, const char splitname[], Vec r, TSRHSFunction rhsfunc, void *ctx) {
+PetscErrorCode TSRHSSplitSetRHSFunction(TS ts, const char splitname[], Vec r, TSRHSFunction rhsfunc, void *ctx)
+{
   TS_RHSSplitLink isplit;
   DM              dmc;
   Vec             subvec, ralloc = NULL;
@@ -164,7 +168,8 @@ PetscErrorCode TSRHSSplitSetRHSFunction(TS ts, const char splitname[], Vec r, TS
 
 .seealso: `TSGetRHSSplitFunction()`
 @*/
-PetscErrorCode TSRHSSplitGetSubTS(TS ts, const char splitname[], TS *subts) {
+PetscErrorCode TSRHSSplitGetSubTS(TS ts, const char splitname[], TS *subts)
+{
   TS_RHSSplitLink isplit;
 
   PetscFunctionBegin;
@@ -197,7 +202,8 @@ PetscErrorCode TSRHSSplitGetSubTS(TS ts, const char splitname[], TS *subts) {
 
 .seealso: `TSGetRHSSplitFunction()`
 @*/
-PetscErrorCode TSRHSSplitGetSubTSs(TS ts, PetscInt *n, TS *subts[]) {
+PetscErrorCode TSRHSSplitGetSubTSs(TS ts, PetscInt *n, TS *subts[])
+{
   TS_RHSSplitLink ilink = ts->tsrhssplit;
   PetscInt        i     = 0;
 

@@ -346,7 +346,7 @@ PETSC_EXTERN PetscErrorCode TSGetTrajectory(TS, TSTrajectory *);
 
 PETSC_EXTERN PetscErrorCode TSSetCostGradients(TS, PetscInt, Vec *, Vec *);
 PETSC_EXTERN PetscErrorCode TSGetCostGradients(TS, PetscInt *, Vec **, Vec **);
-PETSC_EXTERN                PETSC_DEPRECATED_FUNCTION("Use TSCreateQuadratureTS() then set up the sub-TS (since version 3.12)") PetscErrorCode TSSetCostIntegrand(TS, PetscInt, Vec, PetscErrorCode (*)(TS, PetscReal, Vec, Vec, void *), PetscErrorCode (*)(TS, PetscReal, Vec, Vec *, void *), PetscErrorCode (*)(TS, PetscReal, Vec, Vec *, void *), PetscBool, void *);
+PETSC_EXTERN PETSC_DEPRECATED_FUNCTION("Use TSCreateQuadratureTS() then set up the sub-TS (since version 3.12)") PetscErrorCode TSSetCostIntegrand(TS, PetscInt, Vec, PetscErrorCode (*)(TS, PetscReal, Vec, Vec, void *), PetscErrorCode (*)(TS, PetscReal, Vec, Vec *, void *), PetscErrorCode (*)(TS, PetscReal, Vec, Vec *, void *), PetscBool, void *);
 PETSC_EXTERN PetscErrorCode TSGetCostIntegral(TS, Vec *);
 PETSC_EXTERN PetscErrorCode TSComputeCostIntegrand(TS, PetscReal, Vec, Vec);
 PETSC_EXTERN PetscErrorCode TSCreateQuadratureTS(TS, PetscBool, TS *);

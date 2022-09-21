@@ -2,7 +2,8 @@ static char help[] = "Example of using MatPreallocator\n\n";
 
 #include <petscmat.h>
 
-PetscErrorCode ex1_nonsquare_bs1(void) {
+PetscErrorCode ex1_nonsquare_bs1(void)
+{
   Mat      A, preallocator;
   PetscInt M, N, m, n, bs;
 
@@ -101,7 +102,8 @@ PetscErrorCode ex1_nonsquare_bs1(void) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode ex2_square_bsvariable(void) {
+PetscErrorCode ex2_square_bsvariable(void)
+{
   Mat      A, preallocator;
   PetscInt M, N, m, n, bs = 1;
 
@@ -229,15 +231,21 @@ PetscErrorCode ex2_square_bsvariable(void) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   PetscInt testid = 0;
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-test_id", &testid, NULL));
   switch (testid) {
-  case 0: PetscCall(ex1_nonsquare_bs1()); break;
-  case 1: PetscCall(ex2_square_bsvariable()); break;
-  default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Invalid value for -test_id. Must be {0,1}");
+  case 0:
+    PetscCall(ex1_nonsquare_bs1());
+    break;
+  case 1:
+    PetscCall(ex2_square_bsvariable());
+    break;
+  default:
+    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Invalid value for -test_id. Must be {0,1}");
   }
   PetscCall(PetscFinalize());
   return 0;

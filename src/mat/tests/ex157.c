@@ -1,7 +1,8 @@
 static char help[] = "This program illustrates the use of PETSc-fftw interface for parallel real DFT\n";
 #include <petscmat.h>
 #include <fftw3-mpi.h>
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   PetscMPIInt rank, size;
   PetscInt    N0 = 2048, N1 = 2048, N2 = 3, N3 = 5, N4 = 5, N = N0 * N1;
   PetscRandom rdm;

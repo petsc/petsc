@@ -23,7 +23,8 @@ It is copied and intended to move dirty codes from ksp/tutorials/ex10.c and simp
 
 #include <petscksp.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   KSP         ksp;
   Mat         A, B;
   Vec         x, b, u, b2;                 /* approx solution, RHS, exact solution */

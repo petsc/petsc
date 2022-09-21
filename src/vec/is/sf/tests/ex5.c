@@ -3,7 +3,8 @@ static char help[] = "Test PetscSFFCompose when the ilocal arrays are not identi
 #include <petsc.h>
 #include <petscsf.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscSF      sfA, sfB, sfBA, sfAAm, sfBBm, sfAm, sfBm;
   PetscInt     nrootsA, nleavesA, nrootsB, nleavesB;
   PetscInt    *ilocalA, *ilocalB;

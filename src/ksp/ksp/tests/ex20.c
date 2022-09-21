@@ -6,7 +6,8 @@ differently from the way it is assembled.  Input arguments are:\n\
 
 #include <petscksp.h>
 
-int FormElementStiffness(PetscReal H, PetscScalar *Ke) {
+int FormElementStiffness(PetscReal H, PetscScalar *Ke)
+{
   Ke[0]  = H / 6.0;
   Ke[1]  = -.125 * H;
   Ke[2]  = H / 12.0;
@@ -26,7 +27,8 @@ int FormElementStiffness(PetscReal H, PetscScalar *Ke) {
   return 0;
 }
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat          C;
   PetscMPIInt  rank, size;
   PetscInt     i, m = 5, N, start, end, M;

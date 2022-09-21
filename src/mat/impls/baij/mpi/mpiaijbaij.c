@@ -4,7 +4,8 @@
 #include <petsc/private/matimpl.h>
 #include <petscmat.h>
 
-PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIBAIJ(Mat A, MatType newtype, MatReuse reuse, Mat *newmat) {
+PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIBAIJ(Mat A, MatType newtype, MatReuse reuse, Mat *newmat)
+{
   Mat         M;
   Mat_MPIAIJ *mpimat = (Mat_MPIAIJ *)A->data;
   Mat_SeqAIJ *Aa = (Mat_SeqAIJ *)mpimat->A->data, *Ba = (Mat_SeqAIJ *)mpimat->B->data;

@@ -3,7 +3,8 @@ const char help[] = "Set up a PetscSF for halo exchange between local vectors";
 #include <petscdmplex.h>
 #include <petscsf.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM           dm;
   Vec          u;
   PetscSection section;
@@ -34,9 +35,9 @@ int main(int argc, char **argv) {
   /* Let u be defined on cells */
   numDof[0 * (dim + 1) + dim] = 1;
   /* Let v be defined on vertices */
-  numDof[1 * (dim + 1) + 0]   = dim;
+  numDof[1 * (dim + 1) + 0] = dim;
   /* No boundary conditions */
-  numBC                       = 0;
+  numBC = 0;
 
   /** Create a PetscSection to handle the layout of the discretized variables */
   PetscCall(DMSetNumFields(dm, numFields));

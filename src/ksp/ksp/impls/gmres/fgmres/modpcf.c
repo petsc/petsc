@@ -37,7 +37,8 @@
 .seealso: `KSPFGMRESModifyPCNoChange()`, `KSPFGMRESModifyPCKSP()`
 
 @*/
-PetscErrorCode KSPFGMRESSetModifyPC(KSP ksp, PetscErrorCode (*fcn)(KSP, PetscInt, PetscInt, PetscReal, void *), void *ctx, PetscErrorCode (*d)(void *)) {
+PetscErrorCode KSPFGMRESSetModifyPC(KSP ksp, PetscErrorCode (*fcn)(KSP, PetscInt, PetscInt, PetscReal, void *), void *ctx, PetscErrorCode (*d)(void *))
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscTryMethod(ksp, "KSPFGMRESSetModifyPC_C", (KSP, PetscErrorCode(*)(KSP, PetscInt, PetscInt, PetscReal, void *), void *, PetscErrorCode (*)(void *)), (ksp, fcn, ctx, d));
@@ -67,7 +68,8 @@ You can use this as a template!
 .seealso: `KSPFGMRESSetModifyPC()`, `KSPFGMRESModifyPCKSP()`
 
 @*/
-PetscErrorCode KSPFGMRESModifyPCNoChange(KSP ksp, PetscInt total_its, PetscInt loc_its, PetscReal res_norm, void *dummy) {
+PetscErrorCode KSPFGMRESModifyPCNoChange(KSP ksp, PetscInt total_its, PetscInt loc_its, PetscReal res_norm, void *dummy)
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
@@ -94,7 +96,8 @@ PetscErrorCode KSPFGMRESModifyPCNoChange(KSP ksp, PetscInt total_its, PetscInt l
 .seealso: `KSPFGMRESSetModifyPC()`, `KSPFGMRESModifyPCKSP()`
 
 @*/
-PetscErrorCode KSPFGMRESModifyPCKSP(KSP ksp, PetscInt total_its, PetscInt loc_its, PetscReal res_norm, void *dummy) {
+PetscErrorCode KSPFGMRESModifyPCKSP(KSP ksp, PetscInt total_its, PetscInt loc_its, PetscReal res_norm, void *dummy)
+{
   PC        pc;
   PetscInt  maxits;
   KSP       sub_ksp;

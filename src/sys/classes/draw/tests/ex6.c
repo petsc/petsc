@@ -11,11 +11,13 @@ typedef struct {
 
 #define Exp PetscExpReal
 #define Pow PetscPowReal
-static PetscReal Peaks(PetscReal x, PetscReal y) {
+static PetscReal Peaks(PetscReal x, PetscReal y)
+{
   return 3 * Pow(1 - x, 2) * Exp(-Pow(x, 2) - Pow(y + 1, 2)) - 10 * (x / 5 - Pow(x, 3) - Pow(y, 5)) * Exp(-Pow(x, 2) - Pow(y, 2)) - 1. / 3 * Exp(-Pow(x + 1, 2) - Pow(y, 2));
 }
 
-static PetscErrorCode DrawFunction(PetscDraw draw, void *ctx) {
+static PetscErrorCode DrawFunction(PetscDraw draw, void *ctx)
+{
   int         i, j, w, h;
   Function    function = ((FunctionCtx *)ctx)->function;
   PetscReal   min = PETSC_MAX_REAL, max = PETSC_MIN_REAL;
@@ -48,7 +50,8 @@ static PetscErrorCode DrawFunction(PetscDraw draw, void *ctx) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   char        title[64], cmap[32] = "";
   PetscDraw   draw;
   FunctionCtx ctx;

@@ -9,12 +9,13 @@ static PetscBool CharacteristicPackageInitialized = PETSC_FALSE;
 
 .seealso: `PetscFinalize()`
 @*/
-PetscErrorCode   CharacteristicFinalizePackage(void) {
-    PetscFunctionBegin;
-    PetscCall(PetscFunctionListDestroy(&CharacteristicList));
-    CharacteristicPackageInitialized = PETSC_FALSE;
-    CharacteristicRegisterAllCalled  = PETSC_FALSE;
-    PetscFunctionReturn(0);
+PetscErrorCode CharacteristicFinalizePackage(void)
+{
+  PetscFunctionBegin;
+  PetscCall(PetscFunctionListDestroy(&CharacteristicList));
+  CharacteristicPackageInitialized = PETSC_FALSE;
+  CharacteristicRegisterAllCalled  = PETSC_FALSE;
+  PetscFunctionReturn(0);
 }
 
 /*@C
@@ -26,7 +27,8 @@ PetscErrorCode   CharacteristicFinalizePackage(void) {
 
 .seealso: `PetscInitialize()`
 @*/
-PetscErrorCode CharacteristicInitializePackage(void) {
+PetscErrorCode CharacteristicInitializePackage(void)
+{
   char      logList[256];
   PetscBool opt, pkg;
 
@@ -73,7 +75,8 @@ PetscErrorCode CharacteristicInitializePackage(void) {
   This one registers the method of characteristics code
 
  */
-PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petsccharacteristic(void) {
+PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petsccharacteristic(void)
+{
   PetscFunctionBegin;
   PetscCall(CharacteristicInitializePackage());
   PetscFunctionReturn(0);

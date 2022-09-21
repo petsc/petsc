@@ -3,7 +3,8 @@ static char help[] = "Tests DMLocalToLocalxxx() for DMDA.\n\n";
 
 #include <petscdmda.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscMPIInt     rank;
   PetscInt        M = 8, dof = 1, stencil_width = 1, i, start, end, P = 5, N = 6, m = PETSC_DECIDE, n = PETSC_DECIDE, p = PETSC_DECIDE, pt = 0, st = 0;
   PetscBool       flg = PETSC_FALSE, flg2, flg3;

@@ -2,7 +2,8 @@ static char help[] = "Tests binary MatView() for MPIDENSE matrices \n\n";
 
 #include <petscmat.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat         A;
   PetscViewer viewer;
   char        inputfile[256], outputfile[256];

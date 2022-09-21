@@ -15,15 +15,16 @@ typedef struct {
   PetscLogEvent createMeshEvent;
   PetscLogStage stages[4];
   /* Domain and mesh definition */
-  PetscInt      dim;     /* The topological mesh dimension */
-  PetscInt      overlap; /* The cell overlap to use during partitioning */
-  PetscBool     testp4est[2];
-  PetscBool     redistribute;
-  PetscBool     final_ref;         /* Run refinement at the end */
-  PetscBool     final_diagnostics; /* Run diagnostics on the final mesh */
+  PetscInt  dim;     /* The topological mesh dimension */
+  PetscInt  overlap; /* The cell overlap to use during partitioning */
+  PetscBool testp4est[2];
+  PetscBool redistribute;
+  PetscBool final_ref;         /* Run refinement at the end */
+  PetscBool final_diagnostics; /* Run diagnostics on the final mesh */
 } AppCtx;
 
-PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
+PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
+{
   PetscFunctionBegin;
   options->dim               = 2;
   options->overlap           = 0;
@@ -51,7 +52,8 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm) {
+PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
+{
   PetscInt    dim           = user->dim;
   PetscBool   testp4est_seq = user->testp4est[0];
   PetscBool   testp4est_par = user->testp4est[1];
@@ -228,7 +230,8 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM     dm;
   AppCtx user;
 

@@ -3,7 +3,8 @@ static char help[] = "Tests the various sequential routines in MatSBAIJ format. 
 
 #include <petscmat.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Vec             x, y, b, s1, s2;
   Mat             A;  /* linear system matrix */
   Mat             sA; /* symmetric part of the matrices */

@@ -19,7 +19,8 @@
    . a_data_out[stride*data_sz] - output data with ghosts
 
 */
-PetscErrorCode PCGAMGGetDataWithGhosts(Mat Gmat, PetscInt data_sz, PetscReal data_in[], PetscInt *a_stride, PetscReal **a_data_out) {
+PetscErrorCode PCGAMGGetDataWithGhosts(Mat Gmat, PetscInt data_sz, PetscReal data_in[], PetscInt *a_stride, PetscReal **a_data_out)
+{
   Vec          tmp_crds;
   Mat_MPIAIJ  *mpimat = (Mat_MPIAIJ *)Gmat->data;
   PetscInt     nnodes, num_ghosts, dir, kk, jj, my0, Iend, nloc;
@@ -60,7 +61,8 @@ PetscErrorCode PCGAMGGetDataWithGhosts(Mat Gmat, PetscInt data_sz, PetscReal dat
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCGAMGHashTableCreate(PetscInt a_size, PCGAMGHashTable *a_tab) {
+PetscErrorCode PCGAMGHashTableCreate(PetscInt a_size, PCGAMGHashTable *a_tab)
+{
   PetscInt kk;
 
   PetscFunctionBegin;
@@ -70,13 +72,15 @@ PetscErrorCode PCGAMGHashTableCreate(PetscInt a_size, PCGAMGHashTable *a_tab) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCGAMGHashTableDestroy(PCGAMGHashTable *a_tab) {
+PetscErrorCode PCGAMGHashTableDestroy(PCGAMGHashTable *a_tab)
+{
   PetscFunctionBegin;
   PetscCall(PetscFree2(a_tab->table, a_tab->data));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCGAMGHashTableAdd(PCGAMGHashTable *a_tab, PetscInt a_key, PetscInt a_data) {
+PetscErrorCode PCGAMGHashTableAdd(PCGAMGHashTable *a_tab, PetscInt a_key, PetscInt a_data)
+{
   PetscInt kk, idx;
 
   PetscFunctionBegin;

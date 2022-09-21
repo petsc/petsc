@@ -37,7 +37,8 @@ typedef struct {
 
 .seealso: `SNES`, `SNESMS`, `SNESMSRegisterDestroy()`
 @*/
-PetscErrorCode SNESMSRegisterAll(void) {
+PetscErrorCode SNESMSRegisterAll(void)
+{
   PetscFunctionBegin;
   if (SNESMSRegisterAllCalled) PetscFunctionReturn(0);
   SNESMSRegisterAllCalled = PETSC_TRUE;
@@ -99,7 +100,8 @@ PetscErrorCode SNESMSRegisterAll(void) {
 
 .seealso: `SNESMSRegister()`, `SNESMSRegisterAll()`
 @*/
-PetscErrorCode SNESMSRegisterDestroy(void) {
+PetscErrorCode SNESMSRegisterDestroy(void)
+{
   SNESMSTableauLink link;
 
   PetscFunctionBegin;
@@ -125,7 +127,8 @@ PetscErrorCode SNESMSRegisterDestroy(void) {
 
 .seealso: `PetscInitialize()`
 @*/
-PetscErrorCode SNESMSInitializePackage(void) {
+PetscErrorCode SNESMSInitializePackage(void)
+{
   PetscFunctionBegin;
   if (SNESMSPackageInitialized) PetscFunctionReturn(0);
   SNESMSPackageInitialized = PETSC_TRUE;
@@ -143,7 +146,8 @@ PetscErrorCode SNESMSInitializePackage(void) {
 
 .seealso: `PetscFinalize()`
 @*/
-PetscErrorCode SNESMSFinalizePackage(void) {
+PetscErrorCode SNESMSFinalizePackage(void)
+{
   PetscFunctionBegin;
   SNESMSPackageInitialized = PETSC_FALSE;
 
@@ -181,7 +185,8 @@ PetscErrorCode SNESMSFinalizePackage(void) {
 
 .seealso: `SNESMS`
 @*/
-PetscErrorCode SNESMSRegister(SNESMSType name, PetscInt nstages, PetscInt nregisters, PetscReal stability, const PetscReal gamma[], const PetscReal delta[], const PetscReal betasub[]) {
+PetscErrorCode SNESMSRegister(SNESMSType name, PetscInt nstages, PetscInt nregisters, PetscReal stability, const PetscReal gamma[], const PetscReal delta[], const PetscReal betasub[])
+{
   SNESMSTableauLink link;
   SNESMSTableau     t;
 
@@ -223,7 +228,8 @@ PetscErrorCode SNESMSRegister(SNESMSType name, PetscInt nstages, PetscInt nregis
   X - initial state, updated in-place.
   F - residual, computed at the initial X on input
 */
-static PetscErrorCode SNESMSStep_3Sstar(SNES snes, Vec X, Vec F) {
+static PetscErrorCode SNESMSStep_3Sstar(SNES snes, Vec X, Vec F)
+{
   SNES_MS         *ms    = (SNES_MS *)snes->data;
   SNESMSTableau    t     = ms->tableau;
   const PetscReal *gamma = t->gamma, *delta = t->delta, *betasub = t->betasub;
@@ -263,7 +269,8 @@ static PetscErrorCode SNESMSStep_3Sstar(SNES snes, Vec X, Vec F) {
   X - initial state, updated in-place.
   F - residual, computed at the initial X on input
 */
-static PetscErrorCode SNESMSStep_Basic(SNES snes, Vec X, Vec F) {
+static PetscErrorCode SNESMSStep_Basic(SNES snes, Vec X, Vec F)
+{
   SNES_MS         *ms    = (SNES_MS *)snes->data;
   SNESMSTableau    tab   = ms->tableau;
   const PetscReal *alpha = tab->betasub, h = ms->damping;
@@ -280,7 +287,8 @@ static PetscErrorCode SNESMSStep_Basic(SNES snes, Vec X, Vec F) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESMSStep_Step(SNES snes, Vec X, Vec F) {
+static PetscErrorCode SNESMSStep_Step(SNES snes, Vec X, Vec F)
+{
   SNES_MS      *ms  = (SNES_MS *)snes->data;
   SNESMSTableau tab = ms->tableau;
 
@@ -293,7 +301,8 @@ static PetscErrorCode SNESMSStep_Step(SNES snes, Vec X, Vec F) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESMSStep_Norms(SNES snes, PetscInt iter, Vec F) {
+static PetscErrorCode SNESMSStep_Norms(SNES snes, PetscInt iter, Vec F)
+{
   SNES_MS  *ms = (SNES_MS *)snes->data;
   PetscReal fnorm;
 
@@ -318,7 +327,8 @@ static PetscErrorCode SNESMSStep_Norms(SNES snes, PetscInt iter, Vec F) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESSolve_MS(SNES snes) {
+static PetscErrorCode SNESSolve_MS(SNES snes)
+{
   SNES_MS *ms = (SNES_MS *)snes->data;
   Vec      X = snes->vec_sol, F = snes->vec_func;
   PetscInt i;
@@ -362,7 +372,8 @@ static PetscErrorCode SNESSolve_MS(SNES snes) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESSetUp_MS(SNES snes) {
+static PetscErrorCode SNESSetUp_MS(SNES snes)
+{
   SNES_MS      *ms    = (SNES_MS *)snes->data;
   SNESMSTableau tab   = ms->tableau;
   PetscInt      nwork = tab->nregisters;
@@ -373,12 +384,14 @@ static PetscErrorCode SNESSetUp_MS(SNES snes) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESReset_MS(SNES snes) {
+static PetscErrorCode SNESReset_MS(SNES snes)
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESDestroy_MS(SNES snes) {
+static PetscErrorCode SNESDestroy_MS(SNES snes)
+{
   PetscFunctionBegin;
   PetscCall(SNESReset_MS(snes));
   PetscCall(PetscFree(snes->data));
@@ -389,7 +402,8 @@ static PetscErrorCode SNESDestroy_MS(SNES snes) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESView_MS(SNES snes, PetscViewer viewer) {
+static PetscErrorCode SNESView_MS(SNES snes, PetscViewer viewer)
+{
   PetscBool     iascii;
   SNES_MS      *ms  = (SNES_MS *)snes->data;
   SNESMSTableau tab = ms->tableau;
@@ -400,7 +414,8 @@ static PetscErrorCode SNESView_MS(SNES snes, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESSetFromOptions_MS(SNES snes, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode SNESSetFromOptions_MS(SNES snes, PetscOptionItems *PetscOptionsObject)
+{
   SNES_MS *ms = (SNES_MS *)snes->data;
 
   PetscFunctionBegin;
@@ -430,7 +445,8 @@ static PetscErrorCode SNESSetFromOptions_MS(SNES snes, PetscOptionItems *PetscOp
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESMSGetType_MS(SNES snes, SNESMSType *mstype) {
+static PetscErrorCode SNESMSGetType_MS(SNES snes, SNESMSType *mstype)
+{
   SNES_MS      *ms  = (SNES_MS *)snes->data;
   SNESMSTableau tab = ms->tableau;
 
@@ -439,7 +455,8 @@ static PetscErrorCode SNESMSGetType_MS(SNES snes, SNESMSType *mstype) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESMSSetType_MS(SNES snes, SNESMSType mstype) {
+static PetscErrorCode SNESMSSetType_MS(SNES snes, SNESMSType mstype)
+{
   SNES_MS          *ms = (SNES_MS *)snes->data;
   SNESMSTableauLink link;
   PetscBool         match;
@@ -476,7 +493,8 @@ static PetscErrorCode SNESMSSetType_MS(SNES snes, SNESMSType mstype) {
 
 .seealso: `SNESMS`, `SNESMSSetType()`, `SNESMSType`, `SNESMS`
 @*/
-PetscErrorCode SNESMSGetType(SNES snes, SNESMSType *mstype) {
+PetscErrorCode SNESMSGetType(SNES snes, SNESMSType *mstype)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidPointer(mstype, 2);
@@ -497,7 +515,8 @@ PetscErrorCode SNESMSGetType(SNES snes, SNESMSType *mstype) {
 
 .seealso: `SNESMS`, `SNESMSGetType()`, `SNESMSType`, `SNESMS`
 @*/
-PetscErrorCode SNESMSSetType(SNES snes, SNESMSType mstype) {
+PetscErrorCode SNESMSSetType(SNES snes, SNESMSType mstype)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidCharPointer(mstype, 2);
@@ -505,7 +524,8 @@ PetscErrorCode SNESMSSetType(SNES snes, SNESMSType mstype) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESMSGetDamping_MS(SNES snes, PetscReal *damping) {
+static PetscErrorCode SNESMSGetDamping_MS(SNES snes, PetscReal *damping)
+{
   SNES_MS *ms = (SNES_MS *)snes->data;
 
   PetscFunctionBegin;
@@ -513,7 +533,8 @@ static PetscErrorCode SNESMSGetDamping_MS(SNES snes, PetscReal *damping) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESMSSetDamping_MS(SNES snes, PetscReal damping) {
+static PetscErrorCode SNESMSSetDamping_MS(SNES snes, PetscReal damping)
+{
   SNES_MS *ms = (SNES_MS *)snes->data;
 
   PetscFunctionBegin;
@@ -536,7 +557,8 @@ static PetscErrorCode SNESMSSetDamping_MS(SNES snes, PetscReal damping) {
 
 .seealso: `SNESMSSetDamping()`, `SNESMS`
 @*/
-PetscErrorCode SNESMSGetDamping(SNES snes, PetscReal *damping) {
+PetscErrorCode SNESMSGetDamping(SNES snes, PetscReal *damping)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidRealPointer(damping, 2);
@@ -557,7 +579,8 @@ PetscErrorCode SNESMSGetDamping(SNES snes, PetscReal *damping) {
 
 .seealso: `SNESMSGetDamping()`, `SNESMS`
 @*/
-PetscErrorCode SNESMSSetDamping(SNES snes, PetscReal damping) {
+PetscErrorCode SNESMSSetDamping(SNES snes, PetscReal damping)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidLogicalCollectiveReal(snes, damping, 2);
@@ -591,7 +614,8 @@ PetscErrorCode SNESMSSetDamping(SNES snes, PetscReal damping) {
 .seealso: `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESMS`, `SNESFAS`, `KSPCHEBYSHEV`
 
 M*/
-PETSC_EXTERN PetscErrorCode SNESCreate_MS(SNES snes) {
+PETSC_EXTERN PetscErrorCode SNESCreate_MS(SNES snes)
+{
   SNES_MS *ms;
 
   PetscFunctionBegin;

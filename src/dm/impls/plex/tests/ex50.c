@@ -3,7 +3,8 @@ static char help[] = "Test global numbering\n\n";
 #include <petscdmplex.h>
 #include <petscsf.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM      dm;
   IS      point_numbering;
   PetscSF point_sf;

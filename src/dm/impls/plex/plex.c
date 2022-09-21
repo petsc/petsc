@@ -31,7 +31,8 @@ PETSC_EXTERN PetscErrorCode VecView_MPI(Vec, PetscViewer);
 
 .seealso `DMPlexGetSimplexOrBoxCells()`, `DMPlexGetCellType()`, `DMPlexGetHeightStratum()`, `DMPolytopeTypeGetNumVertices()`
 @*/
-PetscErrorCode DMPlexIsSimplex(DM dm, PetscBool *simplex) {
+PetscErrorCode DMPlexIsSimplex(DM dm, PetscBool *simplex)
+{
   DMPolytopeType ct;
   PetscInt       cStart, cEnd;
 
@@ -63,7 +64,8 @@ PetscErrorCode DMPlexIsSimplex(DM dm, PetscBool *simplex) {
 
 .seealso `DMPlexConstructGhostCells()`, `DMPlexGetGhostCellStratum()`
 @*/
-PetscErrorCode DMPlexGetSimplexOrBoxCells(DM dm, PetscInt height, PetscInt *cStart, PetscInt *cEnd) {
+PetscErrorCode DMPlexGetSimplexOrBoxCells(DM dm, PetscInt height, PetscInt *cStart, PetscInt *cEnd)
+{
   DMPolytopeType ct = DM_POLYTOPE_UNKNOWN;
   PetscInt       cS, cE, c;
 
@@ -80,8 +82,11 @@ PetscErrorCode DMPlexGetSimplexOrBoxCells(DM dm, PetscInt height, PetscInt *cSta
     case DM_POLYTOPE_TRIANGLE:
     case DM_POLYTOPE_QUADRILATERAL:
     case DM_POLYTOPE_TETRAHEDRON:
-    case DM_POLYTOPE_HEXAHEDRON: ct = cct; break;
-    default: break;
+    case DM_POLYTOPE_HEXAHEDRON:
+      ct = cct;
+      break;
+    default:
+      break;
     }
     if (ct != DM_POLYTOPE_UNKNOWN) break;
   }
@@ -98,7 +103,8 @@ PetscErrorCode DMPlexGetSimplexOrBoxCells(DM dm, PetscInt height, PetscInt *cSta
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexGetFieldType_Internal(DM dm, PetscSection section, PetscInt field, PetscInt *sStart, PetscInt *sEnd, PetscViewerVTKFieldType *ft) {
+PetscErrorCode DMPlexGetFieldType_Internal(DM dm, PetscSection section, PetscInt field, PetscInt *sStart, PetscInt *sEnd, PetscViewerVTKFieldType *ft)
+{
   PetscInt cdim, pStart, pEnd, vStart, vEnd, cStart, cEnd;
   PetscInt vcdof[2] = {0, 0}, globalvcdof[2];
 
@@ -154,7 +160,8 @@ PetscErrorCode DMPlexGetFieldType_Internal(DM dm, PetscSection section, PetscInt
 
 .seealso: `VecViewFromOptions()`, `VecView()`
 @*/
-PetscErrorCode DMPlexVecView1D(DM dm, PetscInt n, Vec u[], PetscViewer viewer) {
+PetscErrorCode DMPlexVecView1D(DM dm, PetscInt n, Vec u[], PetscViewer viewer)
+{
   PetscDS            ds;
   PetscDraw          draw = NULL;
   PetscDrawLG        lg;
@@ -222,7 +229,8 @@ PetscErrorCode DMPlexVecView1D(DM dm, PetscInt n, Vec u[], PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecView_Plex_Local_Draw_1D(Vec u, PetscViewer viewer) {
+static PetscErrorCode VecView_Plex_Local_Draw_1D(Vec u, PetscViewer viewer)
+{
   DM dm;
 
   PetscFunctionBegin;
@@ -231,7 +239,8 @@ static PetscErrorCode VecView_Plex_Local_Draw_1D(Vec u, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecView_Plex_Local_Draw_2D(Vec v, PetscViewer viewer) {
+static PetscErrorCode VecView_Plex_Local_Draw_2D(Vec v, PetscViewer viewer)
+{
   DM                 dm;
   PetscSection       s;
   PetscDraw          draw, popup;
@@ -335,7 +344,8 @@ static PetscErrorCode VecView_Plex_Local_Draw_2D(Vec v, PetscViewer viewer) {
           case 8: /* P2 Quadrangle */
             for (va = 0; va < numVals / (Nc * 2); ++va) color[va] = PetscDrawRealToColor(PetscRealPart(vals[va * Nc + comp + numVals / (Nc * 2)]), vbound[0], vbound[1]);
             break;
-          default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of values for cell closure %" PetscInt_FMT " cannot be handled", numVals / Nc);
+          default:
+            SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of values for cell closure %" PetscInt_FMT " cannot be handled", numVals / Nc);
           }
           PetscCall(DMPlexVecRestoreClosure(fdm, NULL, fv, c, &numVals, &vals));
         }
@@ -350,7 +360,8 @@ static PetscErrorCode VecView_Plex_Local_Draw_2D(Vec v, PetscViewer viewer) {
           PetscCall(PetscDrawTriangle(draw, PetscRealPart(coords[0]), PetscRealPart(coords[1]), PetscRealPart(coords[2]), PetscRealPart(coords[3]), PetscRealPart(coords[4]), PetscRealPart(coords[5]), color[0], color[1], color[2]));
           PetscCall(PetscDrawTriangle(draw, PetscRealPart(coords[4]), PetscRealPart(coords[5]), PetscRealPart(coords[6]), PetscRealPart(coords[7]), PetscRealPart(coords[0]), PetscRealPart(coords[1]), color[2], color[3], color[0]));
           break;
-        default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot draw cells with %" PetscInt_FMT " coordinates", numCoords);
+        default:
+          SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot draw cells with %" PetscInt_FMT " coordinates", numCoords);
         }
         PetscCall(DMPlexVecRestoreClosure(dm, coordSection, coordinates, c, &numCoords, &coords));
       }
@@ -368,7 +379,8 @@ static PetscErrorCode VecView_Plex_Local_Draw_2D(Vec v, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecView_Plex_Local_Draw(Vec v, PetscViewer viewer) {
+static PetscErrorCode VecView_Plex_Local_Draw(Vec v, PetscViewer viewer)
+{
   DM        dm;
   PetscDraw draw;
   PetscInt  dim;
@@ -382,14 +394,20 @@ static PetscErrorCode VecView_Plex_Local_Draw(Vec v, PetscViewer viewer) {
   PetscCall(VecGetDM(v, &dm));
   PetscCall(DMGetCoordinateDim(dm, &dim));
   switch (dim) {
-  case 1: PetscCall(VecView_Plex_Local_Draw_1D(v, viewer)); break;
-  case 2: PetscCall(VecView_Plex_Local_Draw_2D(v, viewer)); break;
-  default: SETERRQ(PetscObjectComm((PetscObject)v), PETSC_ERR_SUP, "Cannot draw meshes of dimension %" PetscInt_FMT ". Try PETSCVIEWERGLVIS", dim);
+  case 1:
+    PetscCall(VecView_Plex_Local_Draw_1D(v, viewer));
+    break;
+  case 2:
+    PetscCall(VecView_Plex_Local_Draw_2D(v, viewer));
+    break;
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)v), PETSC_ERR_SUP, "Cannot draw meshes of dimension %" PetscInt_FMT ". Try PETSCVIEWERGLVIS", dim);
   }
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecView_Plex_Local_VTK(Vec v, PetscViewer viewer) {
+static PetscErrorCode VecView_Plex_Local_VTK(Vec v, PetscViewer viewer)
+{
   DM                      dm;
   Vec                     locv;
   const char             *name;
@@ -423,7 +441,8 @@ static PetscErrorCode VecView_Plex_Local_VTK(Vec v, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecView_Plex_Local(Vec v, PetscViewer viewer) {
+PetscErrorCode VecView_Plex_Local(Vec v, PetscViewer viewer)
+{
   DM        dm;
   PetscBool isvtk, ishdf5, isdraw, isglvis, iscgns;
 
@@ -499,7 +518,8 @@ PetscErrorCode VecView_Plex_Local(Vec v, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecView_Plex(Vec v, PetscViewer viewer) {
+PetscErrorCode VecView_Plex(Vec v, PetscViewer viewer)
+{
   DM        dm;
   PetscBool isvtk, ishdf5, isdraw, isglvis, isexodusii, iscgns;
 
@@ -549,7 +569,8 @@ PetscErrorCode VecView_Plex(Vec v, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecView_Plex_Native(Vec originalv, PetscViewer viewer) {
+PetscErrorCode VecView_Plex_Native(Vec originalv, PetscViewer viewer)
+{
   DM                dm;
   MPI_Comm          comm;
   PetscViewerFormat format;
@@ -603,7 +624,8 @@ PetscErrorCode VecView_Plex_Native(Vec originalv, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecLoad_Plex_Local(Vec v, PetscViewer viewer) {
+PetscErrorCode VecLoad_Plex_Local(Vec v, PetscViewer viewer)
+{
   DM        dm;
   PetscBool ishdf5;
 
@@ -628,7 +650,8 @@ PetscErrorCode VecLoad_Plex_Local(Vec v, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecLoad_Plex(Vec v, PetscViewer viewer) {
+PetscErrorCode VecLoad_Plex(Vec v, PetscViewer viewer)
+{
   DM        dm;
   PetscBool ishdf5, isexodusii;
 
@@ -653,7 +676,8 @@ PetscErrorCode VecLoad_Plex(Vec v, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecLoad_Plex_Native(Vec originalv, PetscViewer viewer) {
+PetscErrorCode VecLoad_Plex_Native(Vec originalv, PetscViewer viewer)
+{
   DM                dm;
   PetscViewerFormat format;
   PetscBool         ishdf5;
@@ -688,7 +712,8 @@ PetscErrorCode VecLoad_Plex_Native(Vec originalv, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-PETSC_UNUSED static PetscErrorCode DMPlexView_Ascii_Geometry(DM dm, PetscViewer viewer) {
+PETSC_UNUSED static PetscErrorCode DMPlexView_Ascii_Geometry(DM dm, PetscViewer viewer)
+{
   PetscSection       coordSection;
   Vec                coordinates;
   DMLabel            depthLabel, celltypeLabel;
@@ -751,7 +776,8 @@ typedef enum {
 } CoordSystem;
 const char *CoordSystems[] = {"cartesian", "polar", "cylindrical", "spherical", "CoordSystem", "CS_", NULL};
 
-static PetscErrorCode DMPlexView_Ascii_Coordinates(PetscViewer viewer, CoordSystem cs, PetscInt dim, const PetscScalar x[]) {
+static PetscErrorCode DMPlexView_Ascii_Coordinates(PetscViewer viewer, CoordSystem cs, PetscInt dim, const PetscScalar x[])
+{
   PetscInt i;
 
   PetscFunctionBegin;
@@ -788,7 +814,8 @@ static PetscErrorCode DMPlexView_Ascii_Coordinates(PetscViewer viewer, CoordSyst
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer) {
+static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
+{
   DM_Plex          *mesh = (DM_Plex *)dm->data;
   DM                cdm, cdmCell;
   PetscSection      coordSection, coordSectionCell;
@@ -1555,7 +1582,8 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexDrawCell(DM dm, PetscDraw draw, PetscInt cell, const PetscScalar coords[]) {
+static PetscErrorCode DMPlexDrawCell(DM dm, PetscDraw draw, PetscInt cell, const PetscScalar coords[])
+{
   DMPolytopeType ct;
   PetscMPIInt    rank;
   PetscInt       cdim;
@@ -1585,7 +1613,8 @@ static PetscErrorCode DMPlexDrawCell(DM dm, PetscDraw draw, PetscInt cell, const
       PetscCall(PetscDrawLine(draw, PetscRealPart(coords[0]) + l * dx, PetscRealPart(coords[1]) + l * dy, PetscRealPart(coords[0]) - l * dx, PetscRealPart(coords[1]) - l * dy, PETSC_DRAW_BLACK));
       PetscCall(PetscDrawLine(draw, PetscRealPart(coords[2]) + l * dx, PetscRealPart(coords[3]) + l * dy, PetscRealPart(coords[2]) - l * dx, PetscRealPart(coords[3]) - l * dy, PETSC_DRAW_BLACK));
     } break;
-    default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot draw cells of dimension %" PetscInt_FMT, cdim);
+    default:
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot draw cells of dimension %" PetscInt_FMT, cdim);
     }
     break;
   case DM_POLYTOPE_TRIANGLE:
@@ -1602,13 +1631,16 @@ static PetscErrorCode DMPlexDrawCell(DM dm, PetscDraw draw, PetscInt cell, const
     PetscCall(PetscDrawLine(draw, PetscRealPart(coords[4]), PetscRealPart(coords[5]), PetscRealPart(coords[6]), PetscRealPart(coords[7]), PETSC_DRAW_BLACK));
     PetscCall(PetscDrawLine(draw, PetscRealPart(coords[6]), PetscRealPart(coords[7]), PetscRealPart(coords[0]), PetscRealPart(coords[1]), PETSC_DRAW_BLACK));
     break;
-  case DM_POLYTOPE_FV_GHOST: break;
-  default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot draw cells of type %s", DMPolytopeTypes[ct]);
+  case DM_POLYTOPE_FV_GHOST:
+    break;
+  default:
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot draw cells of type %s", DMPolytopeTypes[ct]);
   }
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexDrawCellHighOrder(DM dm, PetscDraw draw, PetscInt cell, const PetscScalar coords[], PetscInt edgeDiv, PetscReal refCoords[], PetscReal edgeCoords[]) {
+static PetscErrorCode DMPlexDrawCellHighOrder(DM dm, PetscDraw draw, PetscInt cell, const PetscScalar coords[], PetscInt edgeDiv, PetscReal refCoords[], PetscReal edgeCoords[])
+{
   DMPolytopeType ct;
   PetscReal      centroid[2] = {0., 0.};
   PetscMPIInt    rank;
@@ -1640,12 +1672,14 @@ static PetscErrorCode DMPlexDrawCellHighOrder(DM dm, PetscDraw draw, PetscInt ce
       }
     }
   } break;
-  default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot draw cells of type %s", DMPolytopeTypes[ct]);
+  default:
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot draw cells of type %s", DMPolytopeTypes[ct]);
   }
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexView_Draw(DM dm, PetscViewer viewer) {
+static PetscErrorCode DMPlexView_Draw(DM dm, PetscViewer viewer)
+{
   PetscDraw          draw;
   DM                 cdm;
   PetscSection       coordSection;
@@ -1703,11 +1737,12 @@ static PetscErrorCode DMPlexView_Draw(DM dm, PetscViewer viewer) {
 }
 
 #if defined(PETSC_HAVE_EXODUSII)
-#include <exodusII.h>
-#include <petscviewerexodusii.h>
+  #include <exodusII.h>
+  #include <petscviewerexodusii.h>
 #endif
 
-PetscErrorCode DMView_Plex(DM dm, PetscViewer viewer) {
+PetscErrorCode DMView_Plex(DM dm, PetscViewer viewer)
+{
   PetscBool iascii, ishdf5, isvtk, isdraw, flg, isglvis, isexodus, iscgns;
   char      name[PETSC_MAX_PATH_LEN];
 
@@ -1798,7 +1833,8 @@ PetscErrorCode DMView_Plex(DM dm, PetscViewer viewer) {
 
 .seealso: `DMView()`, `DMPlexCoordinatesView()`, `DMPlexLabelsView()`, `DMPlexTopologyLoad()`
 @*/
-PetscErrorCode DMPlexTopologyView(DM dm, PetscViewer viewer) {
+PetscErrorCode DMPlexTopologyView(DM dm, PetscViewer viewer)
+{
   PetscBool ishdf5;
 
   PetscFunctionBegin;
@@ -1838,7 +1874,8 @@ PetscErrorCode DMPlexTopologyView(DM dm, PetscViewer viewer) {
 
 .seealso: `DMView()`, `DMPlexTopologyView()`, `DMPlexLabelsView()`, `DMPlexCoordinatesLoad()`
 @*/
-PetscErrorCode DMPlexCoordinatesView(DM dm, PetscViewer viewer) {
+PetscErrorCode DMPlexCoordinatesView(DM dm, PetscViewer viewer)
+{
   PetscBool ishdf5;
 
   PetscFunctionBegin;
@@ -1874,7 +1911,8 @@ PetscErrorCode DMPlexCoordinatesView(DM dm, PetscViewer viewer) {
 
 .seealso: `DMView()`, `DMPlexTopologyView()`, `DMPlexCoordinatesView()`, `DMPlexLabelsLoad()`
 @*/
-PetscErrorCode DMPlexLabelsView(DM dm, PetscViewer viewer) {
+PetscErrorCode DMPlexLabelsView(DM dm, PetscViewer viewer)
+{
   PetscBool ishdf5;
 
   PetscFunctionBegin;
@@ -1920,7 +1958,8 @@ PetscErrorCode DMPlexLabelsView(DM dm, PetscViewer viewer) {
 
 .seealso: `DMView()`, `DMPlexTopologyView()`, `DMPlexCoordinatesView()`, `DMPlexLabelsView()`, `DMPlexGlobalVectorView()`, `DMPlexLocalVectorView()`, `PetscSectionView()`, `DMPlexSectionLoad()`
 @*/
-PetscErrorCode DMPlexSectionView(DM dm, PetscViewer viewer, DM sectiondm) {
+PetscErrorCode DMPlexSectionView(DM dm, PetscViewer viewer, DM sectiondm)
+{
   PetscBool ishdf5;
 
   PetscFunctionBegin;
@@ -1979,7 +2018,8 @@ $       DMDestroy(&dm);
 
 .seealso: `DMPlexTopologyView()`, `DMPlexSectionView()`, `DMPlexLocalVectorView()`, `DMPlexGlobalVectorLoad()`, `DMPlexLocalVectorLoad()`
 @*/
-PetscErrorCode DMPlexGlobalVectorView(DM dm, PetscViewer viewer, DM sectiondm, Vec vec) {
+PetscErrorCode DMPlexGlobalVectorView(DM dm, PetscViewer viewer, DM sectiondm, Vec vec)
+{
   PetscBool ishdf5;
 
   PetscFunctionBegin;
@@ -2051,7 +2091,8 @@ $       DMDestroy(&dm);
 
 .seealso: `DMPlexTopologyView()`, `DMPlexSectionView()`, `DMPlexGlobalVectorView()`, `DMPlexGlobalVectorLoad()`, `DMPlexLocalVectorLoad()`
 @*/
-PetscErrorCode DMPlexLocalVectorView(DM dm, PetscViewer viewer, DM sectiondm, Vec vec) {
+PetscErrorCode DMPlexLocalVectorView(DM dm, PetscViewer viewer, DM sectiondm, Vec vec)
+{
   PetscBool ishdf5;
 
   PetscFunctionBegin;
@@ -2085,7 +2126,8 @@ PetscErrorCode DMPlexLocalVectorView(DM dm, PetscViewer viewer, DM sectiondm, Ve
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMLoad_Plex(DM dm, PetscViewer viewer) {
+PetscErrorCode DMLoad_Plex(DM dm, PetscViewer viewer)
+{
   PetscBool ishdf5;
 
   PetscFunctionBegin;
@@ -2124,7 +2166,8 @@ PetscErrorCode DMLoad_Plex(DM dm, PetscViewer viewer) {
 
 .seealso: `DMLoad()`, `DMPlexCoordinatesLoad()`, `DMPlexLabelsLoad()`, `DMView()`, `PetscViewerHDF5Open()`, `PetscViewerPushFormat()`
 @*/
-PetscErrorCode DMPlexTopologyLoad(DM dm, PetscViewer viewer, PetscSF *globalToLocalPointSF) {
+PetscErrorCode DMPlexTopologyLoad(DM dm, PetscViewer viewer, PetscSF *globalToLocalPointSF)
+{
   PetscBool ishdf5;
 
   PetscFunctionBegin;
@@ -2162,7 +2205,8 @@ PetscErrorCode DMPlexTopologyLoad(DM dm, PetscViewer viewer, PetscSF *globalToLo
 
 .seealso: `DMLoad()`, `DMPlexTopologyLoad()`, `DMPlexLabelsLoad()`, `DMView()`, `PetscViewerHDF5Open()`, `PetscViewerPushFormat()`
 @*/
-PetscErrorCode DMPlexCoordinatesLoad(DM dm, PetscViewer viewer, PetscSF globalToLocalPointSF) {
+PetscErrorCode DMPlexCoordinatesLoad(DM dm, PetscViewer viewer, PetscSF globalToLocalPointSF)
+{
   PetscBool ishdf5;
 
   PetscFunctionBegin;
@@ -2203,7 +2247,8 @@ PetscErrorCode DMPlexCoordinatesLoad(DM dm, PetscViewer viewer, PetscSF globalTo
 
 .seealso: `DMLoad()`, `DMPlexTopologyLoad()`, `DMPlexCoordinatesLoad()`, `DMView()`, `PetscViewerHDF5Open()`, `PetscViewerPushFormat()`
 @*/
-PetscErrorCode DMPlexLabelsLoad(DM dm, PetscViewer viewer, PetscSF globalToLocalPointSF) {
+PetscErrorCode DMPlexLabelsLoad(DM dm, PetscViewer viewer, PetscSF globalToLocalPointSF)
+{
   PetscBool ishdf5;
 
   PetscFunctionBegin;
@@ -2276,7 +2321,8 @@ $  where "|" represents a partition of loaded data, and global point 3 is assume
 
 .seealso: `DMLoad()`, `DMPlexTopologyLoad()`, `DMPlexCoordinatesLoad()`, `DMPlexLabelsLoad()`, `DMPlexGlobalVectorLoad()`, `DMPlexLocalVectorLoad()`, `PetscSectionLoad()`, `DMPlexSectionView()`
 @*/
-PetscErrorCode DMPlexSectionLoad(DM dm, PetscViewer viewer, DM sectiondm, PetscSF globalToLocalPointSF, PetscSF *globalDofSF, PetscSF *localDofSF) {
+PetscErrorCode DMPlexSectionLoad(DM dm, PetscViewer viewer, DM sectiondm, PetscSF globalToLocalPointSF, PetscSF *globalDofSF, PetscSF *localDofSF)
+{
   PetscBool ishdf5;
 
   PetscFunctionBegin;
@@ -2335,7 +2381,8 @@ $       DMDestroy(&dm);
 
 .seealso: `DMPlexTopologyLoad()`, `DMPlexSectionLoad()`, `DMPlexLocalVectorLoad()`, `DMPlexGlobalVectorView()`, `DMPlexLocalVectorView()`
 @*/
-PetscErrorCode DMPlexGlobalVectorLoad(DM dm, PetscViewer viewer, DM sectiondm, PetscSF sf, Vec vec) {
+PetscErrorCode DMPlexGlobalVectorLoad(DM dm, PetscViewer viewer, DM sectiondm, PetscSF sf, Vec vec)
+{
   PetscBool ishdf5;
 
   PetscFunctionBegin;
@@ -2406,7 +2453,8 @@ $       DMDestroy(&dm);
 
 .seealso: `DMPlexTopologyLoad()`, `DMPlexSectionLoad()`, `DMPlexGlobalVectorLoad()`, `DMPlexGlobalVectorView()`, `DMPlexLocalVectorView()`
 @*/
-PetscErrorCode DMPlexLocalVectorLoad(DM dm, PetscViewer viewer, DM sectiondm, PetscSF sf, Vec vec) {
+PetscErrorCode DMPlexLocalVectorLoad(DM dm, PetscViewer viewer, DM sectiondm, PetscSF sf, Vec vec)
+{
   PetscBool ishdf5;
 
   PetscFunctionBegin;
@@ -2441,7 +2489,8 @@ PetscErrorCode DMPlexLocalVectorLoad(DM dm, PetscViewer viewer, DM sectiondm, Pe
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMDestroy_Plex(DM dm) {
+PetscErrorCode DMDestroy_Plex(DM dm)
+{
   DM_Plex *mesh = (DM_Plex *)dm->data;
 
   PetscFunctionBegin;
@@ -2491,7 +2540,8 @@ PetscErrorCode DMDestroy_Plex(DM dm) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMCreateMatrix_Plex(DM dm, Mat *J) {
+PetscErrorCode DMCreateMatrix_Plex(DM dm, Mat *J)
+{
   PetscSection           sectionGlobal;
   PetscInt               bs = -1, mbs;
   PetscInt               localSize, localStart = 0;
@@ -2592,7 +2642,8 @@ PetscErrorCode DMCreateMatrix_Plex(DM dm, Mat *J) {
 
 .seealso:
 @*/
-PetscErrorCode DMPlexGetSubdomainSection(DM dm, PetscSection *subsection) {
+PetscErrorCode DMPlexGetSubdomainSection(DM dm, PetscSection *subsection)
+{
   DM_Plex *mesh = (DM_Plex *)dm->data;
 
   PetscFunctionBegin;
@@ -2626,7 +2677,8 @@ PetscErrorCode DMPlexGetSubdomainSection(DM dm, PetscSection *subsection) {
 
 .seealso: `DMPlexCreate()`, `DMPlexSetChart()`
 @*/
-PetscErrorCode DMPlexGetChart(DM dm, PetscInt *pStart, PetscInt *pEnd) {
+PetscErrorCode DMPlexGetChart(DM dm, PetscInt *pStart, PetscInt *pEnd)
+{
   DM_Plex *mesh = (DM_Plex *)dm->data;
 
   PetscFunctionBegin;
@@ -2651,7 +2703,8 @@ PetscErrorCode DMPlexGetChart(DM dm, PetscInt *pStart, PetscInt *pEnd) {
 
 .seealso: `DMPlexCreate()`, `DMPlexGetChart()`
 @*/
-PetscErrorCode DMPlexSetChart(DM dm, PetscInt pStart, PetscInt pEnd) {
+PetscErrorCode DMPlexSetChart(DM dm, PetscInt pStart, PetscInt pEnd)
+{
   DM_Plex *mesh = (DM_Plex *)dm->data;
 
   PetscFunctionBegin;
@@ -2677,7 +2730,8 @@ PetscErrorCode DMPlexSetChart(DM dm, PetscInt pStart, PetscInt pEnd) {
 
 .seealso: `DMPlexCreate()`, `DMPlexSetConeSize()`, `DMPlexSetChart()`
 @*/
-PetscErrorCode DMPlexGetConeSize(DM dm, PetscInt p, PetscInt *size) {
+PetscErrorCode DMPlexGetConeSize(DM dm, PetscInt p, PetscInt *size)
+{
   DM_Plex *mesh = (DM_Plex *)dm->data;
 
   PetscFunctionBegin;
@@ -2706,7 +2760,8 @@ PetscErrorCode DMPlexGetConeSize(DM dm, PetscInt p, PetscInt *size) {
 
 .seealso: `DMPlexCreate()`, `DMPlexGetConeSize()`, `DMPlexSetChart()`
 @*/
-PetscErrorCode DMPlexSetConeSize(DM dm, PetscInt p, PetscInt size) {
+PetscErrorCode DMPlexSetConeSize(DM dm, PetscInt p, PetscInt size)
+{
   DM_Plex *mesh = (DM_Plex *)dm->data;
 
   PetscFunctionBegin;
@@ -2734,7 +2789,8 @@ PetscErrorCode DMPlexSetConeSize(DM dm, PetscInt p, PetscInt size) {
 
 .seealso: `DMPlexCreate()`, `DMPlexSetConeSize()`, `DMPlexGetConeSize()`, `DMPlexSetChart()`
 @*/
-PetscErrorCode DMPlexAddConeSize(DM dm, PetscInt p, PetscInt size) {
+PetscErrorCode DMPlexAddConeSize(DM dm, PetscInt p, PetscInt size)
+{
   DM_Plex *mesh = (DM_Plex *)dm->data;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -2764,7 +2820,8 @@ PetscErrorCode DMPlexAddConeSize(DM dm, PetscInt p, PetscInt size) {
 
 .seealso: `DMPlexGetConeSize()`, `DMPlexSetCone()`, `DMPlexGetConeTuple()`, `DMPlexSetChart()`
 @*/
-PetscErrorCode DMPlexGetCone(DM dm, PetscInt p, const PetscInt *cone[]) {
+PetscErrorCode DMPlexGetCone(DM dm, PetscInt p, const PetscInt *cone[])
+{
   DM_Plex *mesh = (DM_Plex *)dm->data;
   PetscInt off;
 
@@ -2793,7 +2850,8 @@ PetscErrorCode DMPlexGetCone(DM dm, PetscInt p, const PetscInt *cone[]) {
 
 .seealso: `DMPlexCreate()`, `DMPlexGetCone()`, `DMPlexGetConeRecursive()`, `DMPlexSetChart()`
 @*/
-PetscErrorCode DMPlexGetConeTuple(DM dm, IS p, PetscSection *pConesSection, IS *pCones) {
+PetscErrorCode DMPlexGetConeTuple(DM dm, IS p, PetscSection *pConesSection, IS *pCones)
+{
   PetscSection cs, newcs;
   PetscInt    *cones;
   PetscInt    *newarr = NULL;
@@ -2831,7 +2889,8 @@ PetscErrorCode DMPlexGetConeTuple(DM dm, IS p, PetscSection *pConesSection, IS *
 
 .seealso: `DMPlexCreate()`, `DMPlexGetCone()`, `DMPlexGetConeTuple()`, `DMPlexGetConeRecursive()`, `DMPlexRestoreConeRecursive()`, `DMPlexGetDepth()`
 @*/
-PetscErrorCode DMPlexGetConeRecursiveVertices(DM dm, IS points, IS *expandedPoints) {
+PetscErrorCode DMPlexGetConeRecursiveVertices(DM dm, IS points, IS *expandedPoints)
+{
   IS      *expandedPointsAll;
   PetscInt depth;
 
@@ -2874,7 +2933,8 @@ PetscErrorCode DMPlexGetConeRecursiveVertices(DM dm, IS points, IS *expandedPoin
 
 .seealso: `DMPlexCreate()`, `DMPlexGetCone()`, `DMPlexGetConeTuple()`, `DMPlexRestoreConeRecursive()`, `DMPlexGetConeRecursiveVertices()`, `DMPlexGetDepth()`
 @*/
-PetscErrorCode DMPlexGetConeRecursive(DM dm, IS points, PetscInt *depth, IS *expandedPoints[], PetscSection *sections[]) {
+PetscErrorCode DMPlexGetConeRecursive(DM dm, IS points, PetscInt *depth, IS *expandedPoints[], PetscSection *sections[])
+{
   const PetscInt *arr0 = NULL, *cone = NULL;
   PetscInt       *arr = NULL, *newarr = NULL;
   PetscInt        d, depth_, i, n, newn, cn, co, start, end;
@@ -2958,7 +3018,8 @@ PetscErrorCode DMPlexGetConeRecursive(DM dm, IS points, PetscInt *depth, IS *exp
 
 .seealso: `DMPlexCreate()`, `DMPlexGetCone()`, `DMPlexGetConeTuple()`, `DMPlexGetConeRecursive()`, `DMPlexGetConeRecursiveVertices()`, `DMPlexGetDepth()`
 @*/
-PetscErrorCode DMPlexRestoreConeRecursive(DM dm, IS points, PetscInt *depth, IS *expandedPoints[], PetscSection *sections[]) {
+PetscErrorCode DMPlexRestoreConeRecursive(DM dm, IS points, PetscInt *depth, IS *expandedPoints[], PetscSection *sections[])
+{
   PetscInt d, depth_;
 
   PetscFunctionBegin;
@@ -2995,7 +3056,8 @@ PetscErrorCode DMPlexRestoreConeRecursive(DM dm, IS points, PetscInt *depth, IS 
 
 .seealso: `DMPlexCreate()`, `DMPlexGetCone()`, `DMPlexSetChart()`, `DMPlexSetConeSize()`, `DMSetUp()`, `DMPlexSetSupport()`, `DMPlexSetSupportSize()`
 @*/
-PetscErrorCode DMPlexSetCone(DM dm, PetscInt p, const PetscInt cone[]) {
+PetscErrorCode DMPlexSetCone(DM dm, PetscInt p, const PetscInt cone[])
+{
   DM_Plex *mesh = (DM_Plex *)dm->data;
   PetscInt pStart, pEnd;
   PetscInt dof, off, c;
@@ -3043,7 +3105,8 @@ PetscErrorCode DMPlexSetCone(DM dm, PetscInt p, const PetscInt cone[]) {
 
 .seealso: `DMPolytopeTypeComposeOrientation()`, `DMPolytopeTypeComposeOrientationInv()`, `DMPlexCreate()`, `DMPlexGetCone()`, `DMPlexSetCone()`, `DMPlexSetChart()`
 @*/
-PetscErrorCode DMPlexGetConeOrientation(DM dm, PetscInt p, const PetscInt *coneOrientation[]) {
+PetscErrorCode DMPlexGetConeOrientation(DM dm, PetscInt p, const PetscInt *coneOrientation[])
+{
   DM_Plex *mesh = (DM_Plex *)dm->data;
   PetscInt off;
 
@@ -3080,7 +3143,8 @@ PetscErrorCode DMPlexGetConeOrientation(DM dm, PetscInt p, const PetscInt *coneO
 
 .seealso: `DMPlexCreate()`, `DMPlexGetConeOrientation()`, `DMPlexSetCone()`, `DMPlexSetChart()`, `DMPlexSetConeSize()`, `DMSetUp()`
 @*/
-PetscErrorCode DMPlexSetConeOrientation(DM dm, PetscInt p, const PetscInt coneOrientation[]) {
+PetscErrorCode DMPlexSetConeOrientation(DM dm, PetscInt p, const PetscInt coneOrientation[])
+{
   DM_Plex *mesh = (DM_Plex *)dm->data;
   PetscInt pStart, pEnd;
   PetscInt dof, off, c;
@@ -3117,7 +3181,8 @@ PetscErrorCode DMPlexSetConeOrientation(DM dm, PetscInt p, const PetscInt coneOr
 
 .seealso: `DMPlexCreate()`, `DMPlexGetCone()`, `DMPlexSetChart()`, `DMPlexSetConeSize()`, `DMSetUp()`
 @*/
-PetscErrorCode DMPlexInsertCone(DM dm, PetscInt p, PetscInt conePos, PetscInt conePoint) {
+PetscErrorCode DMPlexInsertCone(DM dm, PetscInt p, PetscInt conePos, PetscInt conePoint)
+{
   DM_Plex *mesh = (DM_Plex *)dm->data;
   PetscInt pStart, pEnd;
   PetscInt dof, off;
@@ -3152,7 +3217,8 @@ PetscErrorCode DMPlexInsertCone(DM dm, PetscInt p, PetscInt conePos, PetscInt co
 
 .seealso: `DMPlexCreate()`, `DMPlexGetCone()`, `DMPlexSetChart()`, `DMPlexSetConeSize()`, `DMSetUp()`
 @*/
-PetscErrorCode DMPlexInsertConeOrientation(DM dm, PetscInt p, PetscInt conePos, PetscInt coneOrientation) {
+PetscErrorCode DMPlexInsertConeOrientation(DM dm, PetscInt p, PetscInt conePos, PetscInt coneOrientation)
+{
   DM_Plex *mesh = (DM_Plex *)dm->data;
   PetscInt pStart, pEnd;
   PetscInt dof, off;
@@ -3184,7 +3250,8 @@ PetscErrorCode DMPlexInsertConeOrientation(DM dm, PetscInt p, PetscInt conePos, 
 
 .seealso: `DMPlexCreate()`, `DMPlexSetConeSize()`, `DMPlexSetChart()`, `DMPlexGetConeSize()`
 @*/
-PetscErrorCode DMPlexGetSupportSize(DM dm, PetscInt p, PetscInt *size) {
+PetscErrorCode DMPlexGetSupportSize(DM dm, PetscInt p, PetscInt *size)
+{
   DM_Plex *mesh = (DM_Plex *)dm->data;
 
   PetscFunctionBegin;
@@ -3213,7 +3280,8 @@ PetscErrorCode DMPlexGetSupportSize(DM dm, PetscInt p, PetscInt *size) {
 
 .seealso: `DMPlexCreate()`, `DMPlexGetSupportSize()`, `DMPlexSetChart()`
 @*/
-PetscErrorCode DMPlexSetSupportSize(DM dm, PetscInt p, PetscInt size) {
+PetscErrorCode DMPlexSetSupportSize(DM dm, PetscInt p, PetscInt size)
+{
   DM_Plex *mesh = (DM_Plex *)dm->data;
 
   PetscFunctionBegin;
@@ -3244,7 +3312,8 @@ PetscErrorCode DMPlexSetSupportSize(DM dm, PetscInt p, PetscInt size) {
 
 .seealso: `DMPlexGetSupportSize()`, `DMPlexSetSupport()`, `DMPlexGetCone()`, `DMPlexSetChart()`
 @*/
-PetscErrorCode DMPlexGetSupport(DM dm, PetscInt p, const PetscInt *support[]) {
+PetscErrorCode DMPlexGetSupport(DM dm, PetscInt p, const PetscInt *support[])
+{
   DM_Plex *mesh = (DM_Plex *)dm->data;
   PetscInt off;
 
@@ -3275,7 +3344,8 @@ PetscErrorCode DMPlexGetSupport(DM dm, PetscInt p, const PetscInt *support[]) {
 
 .seealso: `DMPlexSetCone()`, `DMPlexSetConeSize()`, `DMPlexCreate()`, `DMPlexGetSupport()`, `DMPlexSetChart()`, `DMPlexSetSupportSize()`, `DMSetUp()`
 @*/
-PetscErrorCode DMPlexSetSupport(DM dm, PetscInt p, const PetscInt support[]) {
+PetscErrorCode DMPlexSetSupport(DM dm, PetscInt p, const PetscInt support[])
+{
   DM_Plex *mesh = (DM_Plex *)dm->data;
   PetscInt pStart, pEnd;
   PetscInt dof, off, c;
@@ -3309,7 +3379,8 @@ PetscErrorCode DMPlexSetSupport(DM dm, PetscInt p, const PetscInt support[]) {
 
 .seealso: `DMPlexCreate()`, `DMPlexGetCone()`, `DMPlexSetChart()`, `DMPlexSetConeSize()`, `DMSetUp()`
 @*/
-PetscErrorCode DMPlexInsertSupport(DM dm, PetscInt p, PetscInt supportPos, PetscInt supportPoint) {
+PetscErrorCode DMPlexInsertSupport(DM dm, PetscInt p, PetscInt supportPos, PetscInt supportPoint)
+{
   DM_Plex *mesh = (DM_Plex *)dm->data;
   PetscInt pStart, pEnd;
   PetscInt dof, off;
@@ -3327,7 +3398,8 @@ PetscErrorCode DMPlexInsertSupport(DM dm, PetscInt p, PetscInt supportPos, Petsc
 }
 
 /* Converts an orientation o in the current numbering to the previous scheme used in Plex */
-PetscInt DMPolytopeConvertNewOrientation_Internal(DMPolytopeType ct, PetscInt o) {
+PetscInt DMPolytopeConvertNewOrientation_Internal(DMPolytopeType ct, PetscInt o)
+{
   switch (ct) {
   case DM_POLYTOPE_SEGMENT:
     if (o == -1) return -2;
@@ -3343,13 +3415,15 @@ PetscInt DMPolytopeConvertNewOrientation_Internal(DMPolytopeType ct, PetscInt o)
     if (o == -2) return -4;
     if (o == -1) return -3;
     break;
-  default: return o;
+  default:
+    return o;
   }
   return o;
 }
 
 /* Converts an orientation o in the previous scheme used in Plex to the current numbering */
-PetscInt DMPolytopeConvertOldOrientation_Internal(DMPolytopeType ct, PetscInt o) {
+PetscInt DMPolytopeConvertOldOrientation_Internal(DMPolytopeType ct, PetscInt o)
+{
   switch (ct) {
   case DM_POLYTOPE_SEGMENT:
     if ((o == -2) || (o == 1)) return -1;
@@ -3366,13 +3440,15 @@ PetscInt DMPolytopeConvertOldOrientation_Internal(DMPolytopeType ct, PetscInt o)
     if (o == -2) return -4;
     if (o == -1) return -3;
     break;
-  default: return o;
+  default:
+    return o;
   }
   return o;
 }
 
 /* Takes in a mesh whose orientations are in the previous scheme and converts them all to the current numbering */
-PetscErrorCode DMPlexConvertOldOrientations_Internal(DM dm) {
+PetscErrorCode DMPlexConvertOldOrientations_Internal(DM dm)
+{
   PetscInt pStart, pEnd, p;
 
   PetscFunctionBegin;
@@ -3405,14 +3481,16 @@ PetscErrorCode DMPlexConvertOldOrientations_Internal(DM dm) {
         if (o == -2) PetscCall(DMPlexInsertConeOrientation(dm, p, c, -4));
         if (o == -1) PetscCall(DMPlexInsertConeOrientation(dm, p, c, -3));
         break;
-      default: break;
+      default:
+        break;
       }
     }
   }
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexGetTransitiveClosure_Depth1_Private(DM dm, PetscInt p, PetscInt ornt, PetscBool useCone, PetscInt *numPoints, PetscInt *points[]) {
+static PetscErrorCode DMPlexGetTransitiveClosure_Depth1_Private(DM dm, PetscInt p, PetscInt ornt, PetscBool useCone, PetscInt *numPoints, PetscInt *points[])
+{
   DMPolytopeType  ct = DM_POLYTOPE_UNKNOWN;
   PetscInt       *closure;
   const PetscInt *tmp = NULL, *tmpO = NULL;
@@ -3465,7 +3543,8 @@ static PetscErrorCode DMPlexGetTransitiveClosure_Depth1_Private(DM dm, PetscInt 
 }
 
 /* We need a special tensor verison becasue we want to allow duplicate points in the endcaps for hybrid cells */
-static PetscErrorCode DMPlexTransitiveClosure_Tensor_Internal(DM dm, PetscInt point, DMPolytopeType ct, PetscInt o, PetscBool useCone, PetscInt *numPoints, PetscInt **points) {
+static PetscErrorCode DMPlexTransitiveClosure_Tensor_Internal(DM dm, PetscInt point, DMPolytopeType ct, PetscInt o, PetscBool useCone, PetscInt *numPoints, PetscInt **points)
+{
   const PetscInt *arr = DMPolytopeTypeGetArrangment(ct, o);
   const PetscInt *cone, *ornt;
   PetscInt       *pts, *closure = NULL;
@@ -3535,7 +3614,8 @@ static PetscErrorCode DMPlexTransitiveClosure_Tensor_Internal(DM dm, PetscInt po
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexGetTransitiveClosure_Internal(DM dm, PetscInt p, PetscInt ornt, PetscBool useCone, PetscInt *numPoints, PetscInt *points[]) {
+PetscErrorCode DMPlexGetTransitiveClosure_Internal(DM dm, PetscInt p, PetscInt ornt, PetscBool useCone, PetscInt *numPoints, PetscInt *points[])
+{
   DMPolytopeType ct;
   PetscInt      *closure, *fifo;
   PetscInt       closureSize = 0, fifoStart = 0, fifoSize = 0;
@@ -3643,7 +3723,8 @@ PetscErrorCode DMPlexGetTransitiveClosure_Internal(DM dm, PetscInt p, PetscInt o
 
 .seealso: `DMPlexRestoreTransitiveClosure()`, `DMPlexCreate()`, `DMPlexSetCone()`, `DMPlexSetChart()`, `DMPlexGetCone()`
 @*/
-PetscErrorCode DMPlexGetTransitiveClosure(DM dm, PetscInt p, PetscBool useCone, PetscInt *numPoints, PetscInt *points[]) {
+PetscErrorCode DMPlexGetTransitiveClosure(DM dm, PetscInt p, PetscBool useCone, PetscInt *numPoints, PetscInt *points[])
+{
   PetscFunctionBeginHot;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   if (numPoints) PetscValidIntPointer(numPoints, 4);
@@ -3671,7 +3752,8 @@ PetscErrorCode DMPlexGetTransitiveClosure(DM dm, PetscInt p, PetscBool useCone, 
 
 .seealso: `DMPlexGetTransitiveClosure()`, `DMPlexCreate()`, `DMPlexSetCone()`, `DMPlexSetChart()`, `DMPlexGetCone()`
 @*/
-PetscErrorCode DMPlexRestoreTransitiveClosure(DM dm, PetscInt p, PetscBool useCone, PetscInt *numPoints, PetscInt *points[]) {
+PetscErrorCode DMPlexRestoreTransitiveClosure(DM dm, PetscInt p, PetscBool useCone, PetscInt *numPoints, PetscInt *points[])
+{
   PetscFunctionBeginHot;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   if (numPoints) *numPoints = 0;
@@ -3695,7 +3777,8 @@ PetscErrorCode DMPlexRestoreTransitiveClosure(DM dm, PetscInt p, PetscBool useCo
 
 .seealso: `DMPlexCreate()`, `DMPlexSetConeSize()`, `DMPlexSetChart()`
 @*/
-PetscErrorCode DMPlexGetMaxSizes(DM dm, PetscInt *maxConeSize, PetscInt *maxSupportSize) {
+PetscErrorCode DMPlexGetMaxSizes(DM dm, PetscInt *maxConeSize, PetscInt *maxSupportSize)
+{
   DM_Plex *mesh = (DM_Plex *)dm->data;
 
   PetscFunctionBegin;
@@ -3705,7 +3788,8 @@ PetscErrorCode DMPlexGetMaxSizes(DM dm, PetscInt *maxConeSize, PetscInt *maxSupp
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMSetUp_Plex(DM dm) {
+PetscErrorCode DMSetUp_Plex(DM dm)
+{
   DM_Plex *mesh = (DM_Plex *)dm->data;
   PetscInt size, maxSupportSize;
 
@@ -3724,7 +3808,8 @@ PetscErrorCode DMSetUp_Plex(DM dm) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMCreateSubDM_Plex(DM dm, PetscInt numFields, const PetscInt fields[], IS *is, DM *subdm) {
+PetscErrorCode DMCreateSubDM_Plex(DM dm, PetscInt numFields, const PetscInt fields[], IS *is, DM *subdm)
+{
   PetscFunctionBegin;
   if (subdm) PetscCall(DMClone(dm, subdm));
   PetscCall(DMCreateSectionSubDM(dm, numFields, fields, is, subdm));
@@ -3740,7 +3825,8 @@ PetscErrorCode DMCreateSubDM_Plex(DM dm, PetscInt numFields, const PetscInt fiel
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMCreateSuperDM_Plex(DM dms[], PetscInt len, IS **is, DM *superdm) {
+PetscErrorCode DMCreateSuperDM_Plex(DM dms[], PetscInt len, IS **is, DM *superdm)
+{
   PetscInt i = 0;
 
   PetscFunctionBegin;
@@ -3779,7 +3865,8 @@ PetscErrorCode DMCreateSuperDM_Plex(DM dms[], PetscInt len, IS **is, DM *superdm
 
 .seealso: `DMPlexCreate()`, `DMPlexSetChart()`, `DMPlexSetConeSize()`, `DMPlexSetCone()`
 @*/
-PetscErrorCode DMPlexSymmetrize(DM dm) {
+PetscErrorCode DMPlexSymmetrize(DM dm)
+{
   DM_Plex  *mesh = (DM_Plex *)dm->data;
   PetscInt *offsets;
   PetscInt  supportSize;
@@ -3823,7 +3910,8 @@ PetscErrorCode DMPlexSymmetrize(DM dm) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexCreateDepthStratum(DM dm, DMLabel label, PetscInt depth, PetscInt pStart, PetscInt pEnd) {
+static PetscErrorCode DMPlexCreateDepthStratum(DM dm, DMLabel label, PetscInt depth, PetscInt pStart, PetscInt pEnd)
+{
   IS stratumIS;
 
   PetscFunctionBegin;
@@ -3884,7 +3972,8 @@ $  depth 1 = {e0, c0}
 
 .seealso: `DMPlexCreate()`, `DMPlexSymmetrize()`, `DMPlexComputeCellTypes()`
 @*/
-PetscErrorCode DMPlexStratify(DM dm) {
+PetscErrorCode DMPlexStratify(DM dm)
+{
   DM_Plex *mesh = (DM_Plex *)dm->data;
   DMLabel  label;
   PetscInt pStart, pEnd, p;
@@ -3974,7 +4063,8 @@ PetscErrorCode DMPlexStratify(DM dm) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexComputeCellType_Internal(DM dm, PetscInt p, PetscInt pdepth, DMPolytopeType *pt) {
+PetscErrorCode DMPlexComputeCellType_Internal(DM dm, PetscInt p, PetscInt pdepth, DMPolytopeType *pt)
+{
   DMPolytopeType ct = DM_POLYTOPE_UNKNOWN;
   PetscInt       dim, depth, pheight, coneSize;
 
@@ -3985,22 +4075,40 @@ PetscErrorCode DMPlexComputeCellType_Internal(DM dm, PetscInt p, PetscInt pdepth
   pheight = depth - pdepth;
   if (depth <= 1) {
     switch (pdepth) {
-    case 0: ct = DM_POLYTOPE_POINT; break;
+    case 0:
+      ct = DM_POLYTOPE_POINT;
+      break;
     case 1:
       switch (coneSize) {
-      case 2: ct = DM_POLYTOPE_SEGMENT; break;
-      case 3: ct = DM_POLYTOPE_TRIANGLE; break;
+      case 2:
+        ct = DM_POLYTOPE_SEGMENT;
+        break;
+      case 3:
+        ct = DM_POLYTOPE_TRIANGLE;
+        break;
       case 4:
         switch (dim) {
-        case 2: ct = DM_POLYTOPE_QUADRILATERAL; break;
-        case 3: ct = DM_POLYTOPE_TETRAHEDRON; break;
-        default: break;
+        case 2:
+          ct = DM_POLYTOPE_QUADRILATERAL;
+          break;
+        case 3:
+          ct = DM_POLYTOPE_TETRAHEDRON;
+          break;
+        default:
+          break;
         }
         break;
-      case 5: ct = DM_POLYTOPE_PYRAMID; break;
-      case 6: ct = DM_POLYTOPE_TRI_PRISM_TENSOR; break;
-      case 8: ct = DM_POLYTOPE_HEXAHEDRON; break;
-      default: break;
+      case 5:
+        ct = DM_POLYTOPE_PYRAMID;
+        break;
+      case 6:
+        ct = DM_POLYTOPE_TRI_PRISM_TENSOR;
+        break;
+      case 8:
+        ct = DM_POLYTOPE_HEXAHEDRON;
+        break;
+      default:
+        break;
       }
     }
   } else {
@@ -4010,20 +4118,30 @@ PetscErrorCode DMPlexComputeCellType_Internal(DM dm, PetscInt p, PetscInt pdepth
       switch (dim) {
       case 1:
         switch (coneSize) {
-        case 2: ct = DM_POLYTOPE_SEGMENT; break;
-        default: break;
+        case 2:
+          ct = DM_POLYTOPE_SEGMENT;
+          break;
+        default:
+          break;
         }
         break;
       case 2:
         switch (coneSize) {
-        case 3: ct = DM_POLYTOPE_TRIANGLE; break;
-        case 4: ct = DM_POLYTOPE_QUADRILATERAL; break;
-        default: break;
+        case 3:
+          ct = DM_POLYTOPE_TRIANGLE;
+          break;
+        case 4:
+          ct = DM_POLYTOPE_QUADRILATERAL;
+          break;
+        default:
+          break;
         }
         break;
       case 3:
         switch (coneSize) {
-        case 4: ct = DM_POLYTOPE_TETRAHEDRON; break;
+        case 4:
+          ct = DM_POLYTOPE_TETRAHEDRON;
+          break;
         case 5: {
           const PetscInt *cone;
           PetscInt        faceConeSize;
@@ -4031,22 +4149,37 @@ PetscErrorCode DMPlexComputeCellType_Internal(DM dm, PetscInt p, PetscInt pdepth
           PetscCall(DMPlexGetCone(dm, p, &cone));
           PetscCall(DMPlexGetConeSize(dm, cone[0], &faceConeSize));
           switch (faceConeSize) {
-          case 3: ct = DM_POLYTOPE_TRI_PRISM_TENSOR; break;
-          case 4: ct = DM_POLYTOPE_PYRAMID; break;
+          case 3:
+            ct = DM_POLYTOPE_TRI_PRISM_TENSOR;
+            break;
+          case 4:
+            ct = DM_POLYTOPE_PYRAMID;
+            break;
           }
         } break;
-        case 6: ct = DM_POLYTOPE_HEXAHEDRON; break;
-        default: break;
+        case 6:
+          ct = DM_POLYTOPE_HEXAHEDRON;
+          break;
+        default:
+          break;
         }
         break;
-      default: break;
+      default:
+        break;
       }
     } else if (pheight > 0) {
       switch (coneSize) {
-      case 2: ct = DM_POLYTOPE_SEGMENT; break;
-      case 3: ct = DM_POLYTOPE_TRIANGLE; break;
-      case 4: ct = DM_POLYTOPE_QUADRILATERAL; break;
-      default: break;
+      case 2:
+        ct = DM_POLYTOPE_SEGMENT;
+        break;
+      case 3:
+        ct = DM_POLYTOPE_TRIANGLE;
+        break;
+      case 4:
+        ct = DM_POLYTOPE_QUADRILATERAL;
+        break;
+      default:
+        break;
       }
     }
   }
@@ -4072,7 +4205,8 @@ PetscErrorCode DMPlexComputeCellType_Internal(DM dm, PetscInt p, PetscInt pdepth
 
 .seealso: `DMPlexCreate()`, `DMPlexSymmetrize()`, `DMPlexStratify()`, `DMGetLabel()`, `DMCreateLabel()`
 @*/
-PetscErrorCode DMPlexComputeCellTypes(DM dm) {
+PetscErrorCode DMPlexComputeCellTypes(DM dm)
+{
   DM_Plex *mesh;
   DMLabel  ctLabel;
   PetscInt pStart, pEnd, p;
@@ -4123,7 +4257,8 @@ PetscErrorCode DMPlexComputeCellTypes(DM dm) {
 
 .seealso: `DMPlexRestoreJoin()`, `DMPlexGetMeet()`
 @*/
-PetscErrorCode DMPlexGetJoin(DM dm, PetscInt numPoints, const PetscInt points[], PetscInt *numCoveredPoints, const PetscInt **coveredPoints) {
+PetscErrorCode DMPlexGetJoin(DM dm, PetscInt numPoints, const PetscInt points[], PetscInt *numCoveredPoints, const PetscInt **coveredPoints)
+{
   DM_Plex  *mesh = (DM_Plex *)dm->data;
   PetscInt *join[2];
   PetscInt  joinSize, i = 0;
@@ -4191,7 +4326,8 @@ PetscErrorCode DMPlexGetJoin(DM dm, PetscInt numPoints, const PetscInt points[],
 
 .seealso: `DMPlexGetJoin()`, `DMPlexGetFullJoin()`, `DMPlexGetMeet()`
 @*/
-PetscErrorCode DMPlexRestoreJoin(DM dm, PetscInt numPoints, const PetscInt points[], PetscInt *numCoveredPoints, const PetscInt **coveredPoints) {
+PetscErrorCode DMPlexRestoreJoin(DM dm, PetscInt numPoints, const PetscInt points[], PetscInt *numCoveredPoints, const PetscInt **coveredPoints)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   if (points) PetscValidIntPointer(points, 3);
@@ -4226,7 +4362,8 @@ PetscErrorCode DMPlexRestoreJoin(DM dm, PetscInt numPoints, const PetscInt point
 
 .seealso: `DMPlexGetJoin()`, `DMPlexRestoreJoin()`, `DMPlexGetMeet()`
 @*/
-PetscErrorCode DMPlexGetFullJoin(DM dm, PetscInt numPoints, const PetscInt points[], PetscInt *numCoveredPoints, const PetscInt **coveredPoints) {
+PetscErrorCode DMPlexGetFullJoin(DM dm, PetscInt numPoints, const PetscInt points[], PetscInt *numCoveredPoints, const PetscInt **coveredPoints)
+{
   PetscInt *offsets, **closures;
   PetscInt *join[2];
   PetscInt  depth = 0, maxSize, joinSize = 0, i = 0;
@@ -4327,7 +4464,8 @@ PetscErrorCode DMPlexGetFullJoin(DM dm, PetscInt numPoints, const PetscInt point
 
 .seealso: `DMPlexRestoreMeet()`, `DMPlexGetJoin()`
 @*/
-PetscErrorCode DMPlexGetMeet(DM dm, PetscInt numPoints, const PetscInt points[], PetscInt *numCoveringPoints, const PetscInt **coveringPoints) {
+PetscErrorCode DMPlexGetMeet(DM dm, PetscInt numPoints, const PetscInt points[], PetscInt *numCoveringPoints, const PetscInt **coveringPoints)
+{
   DM_Plex  *mesh = (DM_Plex *)dm->data;
   PetscInt *meet[2];
   PetscInt  meetSize, i = 0;
@@ -4395,7 +4533,8 @@ PetscErrorCode DMPlexGetMeet(DM dm, PetscInt numPoints, const PetscInt points[],
 
 .seealso: `DMPlexGetMeet()`, `DMPlexGetFullMeet()`, `DMPlexGetJoin()`
 @*/
-PetscErrorCode DMPlexRestoreMeet(DM dm, PetscInt numPoints, const PetscInt points[], PetscInt *numCoveredPoints, const PetscInt **coveredPoints) {
+PetscErrorCode DMPlexRestoreMeet(DM dm, PetscInt numPoints, const PetscInt points[], PetscInt *numCoveredPoints, const PetscInt **coveredPoints)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   if (points) PetscValidIntPointer(points, 3);
@@ -4430,7 +4569,8 @@ PetscErrorCode DMPlexRestoreMeet(DM dm, PetscInt numPoints, const PetscInt point
 
 .seealso: `DMPlexGetMeet()`, `DMPlexRestoreMeet()`, `DMPlexGetJoin()`
 @*/
-PetscErrorCode DMPlexGetFullMeet(DM dm, PetscInt numPoints, const PetscInt points[], PetscInt *numCoveredPoints, const PetscInt **coveredPoints) {
+PetscErrorCode DMPlexGetFullMeet(DM dm, PetscInt numPoints, const PetscInt points[], PetscInt *numCoveredPoints, const PetscInt **coveredPoints)
+{
   PetscInt *offsets, **closures;
   PetscInt *meet[2];
   PetscInt  height = 0, maxSize, meetSize = 0, i = 0;
@@ -4524,7 +4664,8 @@ PetscErrorCode DMPlexGetFullMeet(DM dm, PetscInt numPoints, const PetscInt point
 
 .seealso: `DMPlexGetCone()`
 @*/
-PetscErrorCode DMPlexEqual(DM dmA, DM dmB, PetscBool *equal) {
+PetscErrorCode DMPlexEqual(DM dmA, DM dmB, PetscBool *equal)
+{
   PetscInt depth, depthB, pStart, pEnd, pStartB, pEndB, p;
 
   PetscFunctionBegin;
@@ -4587,15 +4728,20 @@ PetscErrorCode DMPlexEqual(DM dmA, DM dmB, PetscBool *equal) {
 
 .seealso: `DMPlexGetCone()`
 @*/
-PetscErrorCode DMPlexGetNumFaceVertices(DM dm, PetscInt cellDim, PetscInt numCorners, PetscInt *numFaceVertices) {
+PetscErrorCode DMPlexGetNumFaceVertices(DM dm, PetscInt cellDim, PetscInt numCorners, PetscInt *numFaceVertices)
+{
   MPI_Comm comm;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
   PetscValidIntPointer(numFaceVertices, 4);
   switch (cellDim) {
-  case 0: *numFaceVertices = 0; break;
-  case 1: *numFaceVertices = 1; break;
+  case 0:
+    *numFaceVertices = 0;
+    break;
+  case 1:
+    *numFaceVertices = 1;
+    break;
   case 2:
     switch (numCorners) {
     case 3:                 /* triangle */
@@ -4610,7 +4756,8 @@ PetscErrorCode DMPlexGetNumFaceVertices(DM dm, PetscInt cellDim, PetscInt numCor
     case 9:                 /* quadratic quadrilateral, quadratic quad cohesive Lagrange cells */
       *numFaceVertices = 3; /* Edge has 3 vertices */
       break;
-    default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Invalid number of face corners %" PetscInt_FMT " for dimension %" PetscInt_FMT, numCorners, cellDim);
+    default:
+      SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Invalid number of face corners %" PetscInt_FMT " for dimension %" PetscInt_FMT, numCorners, cellDim);
     }
     break;
   case 3:
@@ -4639,10 +4786,12 @@ PetscErrorCode DMPlexGetNumFaceVertices(DM dm, PetscInt cellDim, PetscInt numCor
     case 27:                /* quadratic hexahedron, quadratic hex cohesive Lagrange cells */
       *numFaceVertices = 9; /* Face has 9 vertices */
       break;
-    default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Invalid number of face corners %" PetscInt_FMT " for dimension %" PetscInt_FMT, numCorners, cellDim);
+    default:
+      SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Invalid number of face corners %" PetscInt_FMT " for dimension %" PetscInt_FMT, numCorners, cellDim);
     }
     break;
-  default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Invalid cell dimension %" PetscInt_FMT, cellDim);
+  default:
+    SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Invalid cell dimension %" PetscInt_FMT, cellDim);
   }
   PetscFunctionReturn(0);
 }
@@ -4662,7 +4811,8 @@ PetscErrorCode DMPlexGetNumFaceVertices(DM dm, PetscInt cellDim, PetscInt numCor
 
 .seealso: `DMPlexGetDepth()`, `DMPlexGetHeightStratum()`, `DMPlexGetDepthStratum()`, `DMPlexGetPointDepth()`,
 @*/
-PetscErrorCode DMPlexGetDepthLabel(DM dm, DMLabel *depthLabel) {
+PetscErrorCode DMPlexGetDepthLabel(DM dm, DMLabel *depthLabel)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(depthLabel, 2);
@@ -4690,7 +4840,8 @@ PetscErrorCode DMPlexGetDepthLabel(DM dm, DMLabel *depthLabel) {
 
 .seealso: `DMPlexGetDepthLabel()`, `DMPlexGetDepthStratum()`, `DMPlexGetPointDepth()`, `DMPlexSymmetrize()`
 @*/
-PetscErrorCode DMPlexGetDepth(DM dm, PetscInt *depth) {
+PetscErrorCode DMPlexGetDepth(DM dm, PetscInt *depth)
+{
   DMLabel  label;
   PetscInt d = 0;
 
@@ -4725,7 +4876,8 @@ PetscErrorCode DMPlexGetDepth(DM dm, PetscInt *depth) {
 
 .seealso: `DMPlexGetHeightStratum()`, `DMPlexGetDepth()`, `DMPlexGetDepthLabel()`, `DMPlexGetPointDepth()`, `DMPlexSymmetrize()`, `DMPlexInterpolate()`
 @*/
-PetscErrorCode DMPlexGetDepthStratum(DM dm, PetscInt depth, PetscInt *start, PetscInt *end) {
+PetscErrorCode DMPlexGetDepthStratum(DM dm, PetscInt depth, PetscInt *start, PetscInt *end)
+{
   DMLabel  label;
   PetscInt pStart, pEnd;
 
@@ -4774,7 +4926,8 @@ PetscErrorCode DMPlexGetDepthStratum(DM dm, PetscInt depth, PetscInt *start, Pet
 
 .seealso: `DMPlexGetDepthStratum()`, `DMPlexGetDepth()`, `DMPlexGetPointHeight()`
 @*/
-PetscErrorCode DMPlexGetHeightStratum(DM dm, PetscInt height, PetscInt *start, PetscInt *end) {
+PetscErrorCode DMPlexGetHeightStratum(DM dm, PetscInt height, PetscInt *start, PetscInt *end)
+{
   DMLabel  label;
   PetscInt depth, pStart, pEnd;
 
@@ -4818,7 +4971,8 @@ PetscErrorCode DMPlexGetHeightStratum(DM dm, PetscInt height, PetscInt *start, P
 
 .seealso: `DMPlexGetCellType()`, `DMPlexGetDepthLabel()`, `DMPlexGetDepth()`, `DMPlexGetPointHeight()`
 @*/
-PetscErrorCode DMPlexGetPointDepth(DM dm, PetscInt point, PetscInt *depth) {
+PetscErrorCode DMPlexGetPointDepth(DM dm, PetscInt point, PetscInt *depth)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidIntPointer(depth, 3);
@@ -4842,7 +4996,8 @@ PetscErrorCode DMPlexGetPointDepth(DM dm, PetscInt point, PetscInt *depth) {
 
 .seealso: `DMPlexGetCellType()`, `DMPlexGetDepthLabel()`, `DMPlexGetDepth()`, `DMPlexGetPointDepth()`
 @*/
-PetscErrorCode DMPlexGetPointHeight(DM dm, PetscInt point, PetscInt *height) {
+PetscErrorCode DMPlexGetPointHeight(DM dm, PetscInt point, PetscInt *height)
+{
   PetscInt n, pDepth;
 
   PetscFunctionBegin;
@@ -4872,7 +5027,8 @@ PetscErrorCode DMPlexGetPointHeight(DM dm, PetscInt point, PetscInt *height) {
 
 .seealso: `DMPlexGetCellType()`, `DMPlexGetDepthLabel()`, `DMCreateLabel()`
 @*/
-PetscErrorCode DMPlexGetCellTypeLabel(DM dm, DMLabel *celltypeLabel) {
+PetscErrorCode DMPlexGetCellTypeLabel(DM dm, DMLabel *celltypeLabel)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(celltypeLabel, 2);
@@ -4897,7 +5053,8 @@ PetscErrorCode DMPlexGetCellTypeLabel(DM dm, DMLabel *celltypeLabel) {
 
 .seealso: `DMPlexGetCellTypeLabel()`, `DMPlexGetDepthLabel()`, `DMPlexGetDepth()`
 @*/
-PetscErrorCode DMPlexGetCellType(DM dm, PetscInt cell, DMPolytopeType *celltype) {
+PetscErrorCode DMPlexGetCellType(DM dm, PetscInt cell, DMPolytopeType *celltype)
+{
   DMLabel  label;
   PetscInt ct;
 
@@ -4930,7 +5087,8 @@ PetscErrorCode DMPlexGetCellType(DM dm, PetscInt cell, DMPolytopeType *celltype)
 
 .seealso: `DMPlexGetCellTypeLabel()`, `DMPlexGetDepthLabel()`, `DMPlexGetDepth()`, `DMPlexComputeCellTypes()`, `DMCreateLabel()`
 @*/
-PetscErrorCode DMPlexSetCellType(DM dm, PetscInt cell, DMPolytopeType celltype) {
+PetscErrorCode DMPlexSetCellType(DM dm, PetscInt cell, DMPolytopeType celltype)
+{
   DMLabel label;
 
   PetscFunctionBegin;
@@ -4940,7 +5098,8 @@ PetscErrorCode DMPlexSetCellType(DM dm, PetscInt cell, DMPolytopeType celltype) 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMCreateCoordinateDM_Plex(DM dm, DM *cdm) {
+PetscErrorCode DMCreateCoordinateDM_Plex(DM dm, DM *cdm)
+{
   PetscSection section, s;
   Mat          m;
   PetscInt     maxHeight;
@@ -4963,7 +5122,8 @@ PetscErrorCode DMCreateCoordinateDM_Plex(DM dm, DM *cdm) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMCreateCoordinateField_Plex(DM dm, DMField *field) {
+PetscErrorCode DMCreateCoordinateField_Plex(DM dm, DMField *field)
+{
   Vec coordsLocal, cellCoordsLocal;
   DM  coordsDM, cellCoordsDM;
 
@@ -4995,7 +5155,8 @@ PetscErrorCode DMCreateCoordinateField_Plex(DM dm, DMField *field) {
 
 .seealso: `DMPlexGetSupportSection()`, `DMPlexGetCones()`, `DMPlexGetConeOrientations()`
 @*/
-PetscErrorCode DMPlexGetConeSection(DM dm, PetscSection *section) {
+PetscErrorCode DMPlexGetConeSection(DM dm, PetscSection *section)
+{
   DM_Plex *mesh = (DM_Plex *)dm->data;
 
   PetscFunctionBegin;
@@ -5019,7 +5180,8 @@ PetscErrorCode DMPlexGetConeSection(DM dm, PetscSection *section) {
 
 .seealso: `DMPlexGetConeSection()`
 @*/
-PetscErrorCode DMPlexGetSupportSection(DM dm, PetscSection *section) {
+PetscErrorCode DMPlexGetSupportSection(DM dm, PetscSection *section)
+{
   DM_Plex *mesh = (DM_Plex *)dm->data;
 
   PetscFunctionBegin;
@@ -5043,7 +5205,8 @@ PetscErrorCode DMPlexGetSupportSection(DM dm, PetscSection *section) {
 
 .seealso: `DMPlexGetConeSection()`
 @*/
-PetscErrorCode DMPlexGetCones(DM dm, PetscInt *cones[]) {
+PetscErrorCode DMPlexGetCones(DM dm, PetscInt *cones[])
+{
   DM_Plex *mesh = (DM_Plex *)dm->data;
 
   PetscFunctionBegin;
@@ -5072,7 +5235,8 @@ PetscErrorCode DMPlexGetCones(DM dm, PetscInt *cones[]) {
 
 .seealso: `DMPlexGetConeSection()`, `DMPlexGetConeOrientation()`
 @*/
-PetscErrorCode DMPlexGetConeOrientations(DM dm, PetscInt *coneOrientations[]) {
+PetscErrorCode DMPlexGetConeOrientations(DM dm, PetscInt *coneOrientations[])
+{
   DM_Plex *mesh = (DM_Plex *)dm->data;
 
   PetscFunctionBegin;
@@ -5087,7 +5251,8 @@ PetscErrorCode DMPlexGetConeOrientations(DM dm, PetscInt *coneOrientations[]) {
  Returns number of components and tensor degree for the field.  For interpolated meshes, line should be a point
  representing a line in the section.
 */
-static PetscErrorCode PetscSectionFieldGetTensorDegree_Private(PetscSection section, PetscInt field, PetscInt line, PetscBool vertexchart, PetscInt *Nc, PetscInt *k) {
+static PetscErrorCode PetscSectionFieldGetTensorDegree_Private(PetscSection section, PetscInt field, PetscInt line, PetscBool vertexchart, PetscInt *Nc, PetscInt *k)
+{
   PetscFunctionBeginHot;
   PetscCall(PetscSectionGetFieldComponents(section, field, Nc));
   if (line < 0) {
@@ -5160,7 +5325,8 @@ static PetscErrorCode PetscSectionFieldGetTensorDegree_Private(PetscSection sect
 
 .seealso: `DMGetLocalSection()`, `PetscSectionSetClosurePermutation()`, `DMSetGlobalSection()`
 @*/
-PetscErrorCode DMPlexSetClosurePermutationTensor(DM dm, PetscInt point, PetscSection section) {
+PetscErrorCode DMPlexSetClosurePermutationTensor(DM dm, PetscInt point, PetscSection section)
+{
   DMLabel   label;
   PetscInt  dim, depth = -1, eStart = -1, Nf;
   PetscBool vertexchart;
@@ -5382,7 +5548,8 @@ PetscErrorCode DMPlexSetClosurePermutationTensor(DM dm, PetscInt point, PetscSec
           foffset = offset;
         }
         break;
-      default: SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "No spectral ordering for dimension %" PetscInt_FMT, d);
+      default:
+        SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "No spectral ordering for dimension %" PetscInt_FMT, d);
       }
     }
     PetscCheck(offset == size, PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Number of permutation entries %" PetscInt_FMT " != %" PetscInt_FMT, offset, size);
@@ -5413,7 +5580,8 @@ PetscErrorCode DMPlexSetClosurePermutationTensor(DM dm, PetscInt point, PetscSec
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexGetPointDualSpaceFEM(DM dm, PetscInt point, PetscInt field, PetscDualSpace *dspace) {
+PetscErrorCode DMPlexGetPointDualSpaceFEM(DM dm, PetscInt point, PetscInt field, PetscDualSpace *dspace)
+{
   PetscDS  prob;
   PetscInt depth, Nf, h;
   DMLabel  label;
@@ -5443,7 +5611,8 @@ PetscErrorCode DMPlexGetPointDualSpaceFEM(DM dm, PetscInt point, PetscInt field,
   PetscFunctionReturn(0);
 }
 
-static inline PetscErrorCode DMPlexVecGetClosure_Depth1_Static(DM dm, PetscSection section, Vec v, PetscInt point, PetscInt *csize, PetscScalar *values[]) {
+static inline PetscErrorCode DMPlexVecGetClosure_Depth1_Static(DM dm, PetscSection section, Vec v, PetscInt point, PetscInt *csize, PetscScalar *values[])
+{
   PetscScalar       *array;
   const PetscScalar *vArray;
   const PetscInt    *cone, *coneO;
@@ -5518,7 +5687,8 @@ static inline PetscErrorCode DMPlexVecGetClosure_Depth1_Static(DM dm, PetscSecti
 }
 
 /* Compress out points not in the section */
-static inline PetscErrorCode CompressPoints_Private(PetscSection section, PetscInt *numPoints, PetscInt points[]) {
+static inline PetscErrorCode CompressPoints_Private(PetscSection section, PetscInt *numPoints, PetscInt points[])
+{
   const PetscInt np = *numPoints;
   PetscInt       pStart, pEnd, p, q;
 
@@ -5536,7 +5706,8 @@ static inline PetscErrorCode CompressPoints_Private(PetscSection section, PetscI
 }
 
 /* Compressed closure does not apply closure permutation */
-PetscErrorCode DMPlexGetCompressedClosure(DM dm, PetscSection section, PetscInt point, PetscInt *numPoints, PetscInt **points, PetscSection *clSec, IS *clPoints, const PetscInt **clp) {
+PetscErrorCode DMPlexGetCompressedClosure(DM dm, PetscSection section, PetscInt point, PetscInt *numPoints, PetscInt **points, PetscSection *clSec, IS *clPoints, const PetscInt **clp)
+{
   const PetscInt *cla = NULL;
   PetscInt        np, *pts = NULL;
 
@@ -5560,7 +5731,8 @@ PetscErrorCode DMPlexGetCompressedClosure(DM dm, PetscSection section, PetscInt 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexRestoreCompressedClosure(DM dm, PetscSection section, PetscInt point, PetscInt *numPoints, PetscInt **points, PetscSection *clSec, IS *clPoints, const PetscInt **clp) {
+PetscErrorCode DMPlexRestoreCompressedClosure(DM dm, PetscSection section, PetscInt point, PetscInt *numPoints, PetscInt **points, PetscSection *clSec, IS *clPoints, const PetscInt **clp)
+{
   PetscFunctionBeginHot;
   if (!*clPoints) {
     PetscCall(DMPlexRestoreTransitiveClosure(dm, point, PETSC_TRUE, numPoints, points));
@@ -5575,7 +5747,8 @@ PetscErrorCode DMPlexRestoreCompressedClosure(DM dm, PetscSection section, Petsc
   PetscFunctionReturn(0);
 }
 
-static inline PetscErrorCode DMPlexVecGetClosure_Static(DM dm, PetscSection section, PetscInt numPoints, const PetscInt points[], const PetscInt clperm[], const PetscScalar vArray[], PetscInt *size, PetscScalar array[]) {
+static inline PetscErrorCode DMPlexVecGetClosure_Static(DM dm, PetscSection section, PetscInt numPoints, const PetscInt points[], const PetscInt clperm[], const PetscScalar vArray[], PetscInt *size, PetscScalar array[])
+{
   PetscInt            offset = 0, p;
   const PetscInt    **perms  = NULL;
   const PetscScalar **flips  = NULL;
@@ -5619,7 +5792,8 @@ static inline PetscErrorCode DMPlexVecGetClosure_Static(DM dm, PetscSection sect
   PetscFunctionReturn(0);
 }
 
-static inline PetscErrorCode DMPlexVecGetClosure_Fields_Static(DM dm, PetscSection section, PetscInt numPoints, const PetscInt points[], PetscInt numFields, const PetscInt clperm[], const PetscScalar vArray[], PetscInt *size, PetscScalar array[]) {
+static inline PetscErrorCode DMPlexVecGetClosure_Fields_Static(DM dm, PetscSection section, PetscInt numPoints, const PetscInt points[], PetscInt numFields, const PetscInt clperm[], const PetscScalar vArray[], PetscInt *size, PetscScalar array[])
+{
   PetscInt offset = 0, f;
 
   PetscFunctionBeginHot;
@@ -5718,7 +5892,8 @@ $  PetscFree(values);
 
 .seealso `DMPlexVecRestoreClosure()`, `DMPlexVecSetClosure()`, `DMPlexMatSetClosure()`
 @*/
-PetscErrorCode DMPlexVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt point, PetscInt *csize, PetscScalar *values[]) {
+PetscErrorCode DMPlexVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt point, PetscInt *csize, PetscScalar *values[])
+{
   PetscSection    clSection;
   IS              clPoints;
   PetscInt       *points = NULL;
@@ -5767,7 +5942,8 @@ PetscErrorCode DMPlexVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexVecGetClosureAtDepth_Internal(DM dm, PetscSection section, Vec v, PetscInt point, PetscInt depth, PetscInt *csize, PetscScalar *values[]) {
+PetscErrorCode DMPlexVecGetClosureAtDepth_Internal(DM dm, PetscSection section, Vec v, PetscInt point, PetscInt depth, PetscInt *csize, PetscScalar *values[])
+{
   DMLabel            depthLabel;
   PetscSection       clSection;
   IS                 clPoints;
@@ -5867,7 +6043,8 @@ PetscErrorCode DMPlexVecGetClosureAtDepth_Internal(DM dm, PetscSection section, 
 
 .seealso `DMPlexVecGetClosure()`, `DMPlexVecSetClosure()`, `DMPlexMatSetClosure()`
 @*/
-PetscErrorCode DMPlexVecRestoreClosure(DM dm, PetscSection section, Vec v, PetscInt point, PetscInt *csize, PetscScalar *values[]) {
+PetscErrorCode DMPlexVecRestoreClosure(DM dm, PetscSection section, Vec v, PetscInt point, PetscInt *csize, PetscScalar *values[])
+{
   PetscInt size = 0;
 
   PetscFunctionBegin;
@@ -5877,14 +6054,17 @@ PetscErrorCode DMPlexVecRestoreClosure(DM dm, PetscSection section, Vec v, Petsc
   PetscFunctionReturn(0);
 }
 
-static inline void add(PetscScalar *x, PetscScalar y) {
+static inline void add(PetscScalar *x, PetscScalar y)
+{
   *x += y;
 }
-static inline void insert(PetscScalar *x, PetscScalar y) {
+static inline void insert(PetscScalar *x, PetscScalar y)
+{
   *x = y;
 }
 
-static inline PetscErrorCode updatePoint_private(PetscSection section, PetscInt point, PetscInt dof, void (*fuse)(PetscScalar *, PetscScalar), PetscBool setBC, const PetscInt perm[], const PetscScalar flip[], const PetscInt clperm[], const PetscScalar values[], PetscInt offset, PetscScalar array[]) {
+static inline PetscErrorCode updatePoint_private(PetscSection section, PetscInt point, PetscInt dof, void (*fuse)(PetscScalar *, PetscScalar), PetscBool setBC, const PetscInt perm[], const PetscScalar flip[], const PetscInt clperm[], const PetscScalar values[], PetscInt offset, PetscScalar array[])
+{
   PetscInt        cdof;  /* The number of constraints on this point */
   const PetscInt *cdofs; /* The indices of the constrained dofs on this point */
   PetscScalar    *a;
@@ -5951,7 +6131,8 @@ static inline PetscErrorCode updatePoint_private(PetscSection section, PetscInt 
   PetscFunctionReturn(0);
 }
 
-static inline PetscErrorCode updatePointBC_private(PetscSection section, PetscInt point, PetscInt dof, void (*fuse)(PetscScalar *, PetscScalar), const PetscInt perm[], const PetscScalar flip[], const PetscInt clperm[], const PetscScalar values[], PetscInt offset, PetscScalar array[]) {
+static inline PetscErrorCode updatePointBC_private(PetscSection section, PetscInt point, PetscInt dof, void (*fuse)(PetscScalar *, PetscScalar), const PetscInt perm[], const PetscScalar flip[], const PetscInt clperm[], const PetscScalar values[], PetscInt offset, PetscScalar array[])
+{
   PetscInt        cdof;  /* The number of constraints on this point */
   const PetscInt *cdofs; /* The indices of the constrained dofs on this point */
   PetscScalar    *a;
@@ -6000,7 +6181,8 @@ static inline PetscErrorCode updatePointBC_private(PetscSection section, PetscIn
   PetscFunctionReturn(0);
 }
 
-static inline PetscErrorCode updatePointFields_private(PetscSection section, PetscInt point, const PetscInt *perm, const PetscScalar *flip, PetscInt f, void (*fuse)(PetscScalar *, PetscScalar), PetscBool setBC, const PetscInt clperm[], const PetscScalar values[], PetscInt *offset, PetscScalar array[]) {
+static inline PetscErrorCode updatePointFields_private(PetscSection section, PetscInt point, const PetscInt *perm, const PetscScalar *flip, PetscInt f, void (*fuse)(PetscScalar *, PetscScalar), PetscBool setBC, const PetscInt clperm[], const PetscScalar values[], PetscInt *offset, PetscScalar array[])
+{
   PetscScalar    *a;
   PetscInt        fdof, foff, fcdof, foffset = *offset;
   const PetscInt *fcdofs; /* The indices of the constrained dofs for field f on this point */
@@ -6069,7 +6251,8 @@ static inline PetscErrorCode updatePointFields_private(PetscSection section, Pet
   PetscFunctionReturn(0);
 }
 
-static inline PetscErrorCode updatePointFieldsBC_private(PetscSection section, PetscInt point, const PetscInt perm[], const PetscScalar flip[], PetscInt f, PetscInt Ncc, const PetscInt comps[], void (*fuse)(PetscScalar *, PetscScalar), const PetscInt clperm[], const PetscScalar values[], PetscInt *offset, PetscScalar array[]) {
+static inline PetscErrorCode updatePointFieldsBC_private(PetscSection section, PetscInt point, const PetscInt perm[], const PetscScalar flip[], PetscInt f, PetscInt Ncc, const PetscInt comps[], void (*fuse)(PetscScalar *, PetscScalar), const PetscInt clperm[], const PetscScalar values[], PetscInt *offset, PetscScalar array[])
+{
   PetscScalar    *a;
   PetscInt        fdof, foff, fcdof, foffset = *offset;
   const PetscInt *fcdofs; /* The indices of the constrained dofs for field f on this point */
@@ -6183,7 +6366,8 @@ static inline PetscErrorCode updatePointFieldsBC_private(PetscSection section, P
   PetscFunctionReturn(0);
 }
 
-static inline PetscErrorCode DMPlexVecSetClosure_Depth1_Static(DM dm, PetscSection section, Vec v, PetscInt point, const PetscScalar values[], InsertMode mode) {
+static inline PetscErrorCode DMPlexVecSetClosure_Depth1_Static(DM dm, PetscSection section, Vec v, PetscInt point, const PetscScalar values[], InsertMode mode)
+{
   PetscScalar    *array;
   const PetscInt *cone, *coneO;
   PetscInt        pStart, pEnd, p, numPoints, off, dof;
@@ -6265,7 +6449,8 @@ static inline PetscErrorCode DMPlexVecSetClosure_Depth1_Static(DM dm, PetscSecti
 
 .seealso `DMPlexVecGetClosure()`, `DMPlexMatSetClosure()`
 @*/
-PetscErrorCode DMPlexVecSetClosure(DM dm, PetscSection section, Vec v, PetscInt point, const PetscScalar values[], InsertMode mode) {
+PetscErrorCode DMPlexVecSetClosure(DM dm, PetscSection section, Vec v, PetscInt point, const PetscScalar values[], InsertMode mode)
+{
   PetscSection    clSection;
   IS              clPoints;
   PetscScalar    *array;
@@ -6351,7 +6536,8 @@ PetscErrorCode DMPlexVecSetClosure(DM dm, PetscSection section, Vec v, PetscInt 
           updatePointFieldsBC_private(section, point, perm, flip, f, -1, NULL, add, clperm, values, &offset, array);
         }
         break;
-      default: SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Invalid insert mode %d", mode);
+      default:
+        SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Invalid insert mode %d", mode);
       }
       PetscCall(PetscSectionRestoreFieldPointSyms(section, f, numPoints, points, &perms, &flips));
     }
@@ -6416,7 +6602,8 @@ PetscErrorCode DMPlexVecSetClosure(DM dm, PetscSection section, Vec v, PetscInt 
         updatePointBC_private(section, point, dof, add, perm, flip, clperm, values, off, array);
       }
       break;
-    default: SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Invalid insert mode %d", mode);
+    default:
+      SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Invalid insert mode %d", mode);
     }
     PetscCall(PetscSectionRestorePointSyms(section, numPoints, points, &perms, &flips));
   }
@@ -6428,7 +6615,8 @@ PetscErrorCode DMPlexVecSetClosure(DM dm, PetscSection section, Vec v, PetscInt 
 }
 
 /* Check whether the given point is in the label. If not, update the offset to skip this point */
-static inline PetscErrorCode CheckPoint_Private(DMLabel label, PetscInt labelId, PetscSection section, PetscInt point, PetscInt f, PetscInt *offset, PetscBool *contains) {
+static inline PetscErrorCode CheckPoint_Private(DMLabel label, PetscInt labelId, PetscSection section, PetscInt point, PetscInt f, PetscInt *offset, PetscBool *contains)
+{
   PetscFunctionBegin;
   *contains = PETSC_TRUE;
   if (label) {
@@ -6445,7 +6633,8 @@ static inline PetscErrorCode CheckPoint_Private(DMLabel label, PetscInt labelId,
 }
 
 /* Unlike DMPlexVecSetClosure(), this uses plex-native closure permutation, not a user-specified permutation such as DMPlexSetClosurePermutationTensor(). */
-PetscErrorCode DMPlexVecSetFieldClosure_Internal(DM dm, PetscSection section, Vec v, PetscBool fieldActive[], PetscInt point, PetscInt Ncc, const PetscInt comps[], DMLabel label, PetscInt labelId, const PetscScalar values[], InsertMode mode) {
+PetscErrorCode DMPlexVecSetFieldClosure_Internal(DM dm, PetscSection section, Vec v, PetscBool fieldActive[], PetscInt point, PetscInt Ncc, const PetscInt comps[], DMLabel label, PetscInt labelId, const PetscScalar values[], InsertMode mode)
+{
   PetscSection    clSection;
   IS              clPoints;
   PetscScalar    *array;
@@ -6530,7 +6719,8 @@ PetscErrorCode DMPlexVecSetFieldClosure_Internal(DM dm, PetscSection section, Ve
         PetscCall(updatePointFields_private(section, point, perm, flip, f, add, PETSC_TRUE, NULL, values, &offset, array));
       }
       break;
-    default: SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Invalid insert mode %d", mode);
+    default:
+      SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Invalid insert mode %d", mode);
     }
     PetscCall(PetscSectionRestoreFieldPointSyms(section, f, numPoints, points, &perms, &flips));
   }
@@ -6541,7 +6731,8 @@ PetscErrorCode DMPlexVecSetFieldClosure_Internal(DM dm, PetscSection section, Ve
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexPrintMatSetValues(PetscViewer viewer, Mat A, PetscInt point, PetscInt numRIndices, const PetscInt rindices[], PetscInt numCIndices, const PetscInt cindices[], const PetscScalar values[]) {
+static PetscErrorCode DMPlexPrintMatSetValues(PetscViewer viewer, Mat A, PetscInt point, PetscInt numRIndices, const PetscInt rindices[], PetscInt numCIndices, const PetscInt cindices[], const PetscScalar values[])
+{
   PetscMPIInt rank;
   PetscInt    i, j;
 
@@ -6586,7 +6777,8 @@ static PetscErrorCode DMPlexPrintMatSetValues(PetscViewer viewer, Mat A, PetscIn
 
   Note: The indices could be local or global, depending on the value of 'off'.
 */
-PetscErrorCode DMPlexGetIndicesPoint_Internal(PetscSection section, PetscBool islocal, PetscInt point, PetscInt off, PetscInt *loff, PetscBool setBC, const PetscInt perm[], const PetscInt indperm[], PetscInt indices[]) {
+PetscErrorCode DMPlexGetIndicesPoint_Internal(PetscSection section, PetscBool islocal, PetscInt point, PetscInt off, PetscInt *loff, PetscBool setBC, const PetscInt perm[], const PetscInt indperm[], PetscInt indices[])
+{
   PetscInt        dof;   /* The number of unknowns on this point */
   PetscInt        cdof;  /* The number of constraints on this point */
   const PetscInt *cdofs; /* The indices of the constrained dofs on this point */
@@ -6661,7 +6853,8 @@ PetscErrorCode DMPlexGetIndicesPoint_Internal(PetscSection section, PetscBool is
 
  Level: developer
 */
-PetscErrorCode DMPlexGetIndicesPointFields_Internal(PetscSection section, PetscBool islocal, PetscInt point, PetscInt off, PetscInt foffs[], PetscBool setBC, const PetscInt ***perms, PetscInt permsoff, const PetscInt indperm[], PetscInt indices[]) {
+PetscErrorCode DMPlexGetIndicesPointFields_Internal(PetscSection section, PetscBool islocal, PetscInt point, PetscInt off, PetscInt foffs[], PetscBool setBC, const PetscInt ***perms, PetscInt permsoff, const PetscInt indperm[], PetscInt indices[])
+{
   PetscInt numFields, foff, f;
 
   PetscFunctionBegin;
@@ -6711,7 +6904,8 @@ PetscErrorCode DMPlexGetIndicesPointFields_Internal(PetscSection section, PetscB
  The semantics of this function relate to that of setBC=FALSE in DMPlexGetIndicesPointFields_Internal.
  Since this function uses global indices, setBC=TRUE would be invalid, so no such argument exists.
 */
-static PetscErrorCode DMPlexGetIndicesPointFieldsSplit_Internal(PetscSection section, PetscSection globalSection, PetscInt point, PetscInt foffs[], const PetscInt ***perms, PetscInt permsoff, const PetscInt indperm[], PetscInt indices[]) {
+static PetscErrorCode DMPlexGetIndicesPointFieldsSplit_Internal(PetscSection section, PetscSection globalSection, PetscInt point, PetscInt foffs[], const PetscInt ***perms, PetscInt permsoff, const PetscInt indperm[], PetscInt indices[])
+{
   PetscInt numFields, foff, f;
 
   PetscFunctionBegin;
@@ -6751,7 +6945,8 @@ static PetscErrorCode DMPlexGetIndicesPointFieldsSplit_Internal(PetscSection sec
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexAnchorsModifyMat(DM dm, PetscSection section, PetscInt numPoints, PetscInt numIndices, const PetscInt points[], const PetscInt ***perms, const PetscScalar values[], PetscInt *outNumPoints, PetscInt *outNumIndices, PetscInt *outPoints[], PetscScalar *outValues[], PetscInt offsets[], PetscBool multiplyLeft) {
+PetscErrorCode DMPlexAnchorsModifyMat(DM dm, PetscSection section, PetscInt numPoints, PetscInt numIndices, const PetscInt points[], const PetscInt ***perms, const PetscScalar values[], PetscInt *outNumPoints, PetscInt *outNumIndices, PetscInt *outPoints[], PetscScalar *outValues[], PetscInt offsets[], PetscBool multiplyLeft)
+{
   Mat             cMat;
   PetscSection    aSec, cSec;
   IS              aIS;
@@ -7242,21 +7437,22 @@ PetscErrorCode DMPlexAnchorsModifyMat(DM dm, PetscSection section, PetscInt numP
 
 .seealso `DMPlexRestoreClosureIndices()`, `DMPlexVecGetClosure()`, `DMPlexMatSetClosure()`, `DMGetLocalSection()`, `DMGetGlobalSection()`
 @*/
-PetscErrorCode DMPlexGetClosureIndices(DM dm, PetscSection section, PetscSection idxSection, PetscInt point, PetscBool useClPerm, PetscInt *numIndices, PetscInt *indices[], PetscInt outOffsets[], PetscScalar *values[]) {
+PetscErrorCode DMPlexGetClosureIndices(DM dm, PetscSection section, PetscSection idxSection, PetscInt point, PetscBool useClPerm, PetscInt *numIndices, PetscInt *indices[], PetscInt outOffsets[], PetscScalar *values[])
+{
   /* Closure ordering */
-  PetscSection        clSection;
-  IS                  clPoints;
-  const PetscInt     *clp;
-  PetscInt           *points;
-  const PetscInt     *clperm    = NULL;
+  PetscSection    clSection;
+  IS              clPoints;
+  const PetscInt *clp;
+  PetscInt       *points;
+  const PetscInt *clperm = NULL;
   /* Dof permutation and sign flips */
   const PetscInt    **perms[32] = {NULL};
   const PetscScalar **flips[32] = {NULL};
   PetscScalar        *valCopy   = NULL;
   /* Hanging node constraints */
-  PetscInt           *pointsC   = NULL;
-  PetscScalar        *valuesC   = NULL;
-  PetscInt            NclC, NiC;
+  PetscInt    *pointsC = NULL;
+  PetscScalar *valuesC = NULL;
+  PetscInt     NclC, NiC;
 
   PetscInt *idx;
   PetscInt  Nf, Ncl, Ni = 0, offsets[32], p, f;
@@ -7438,7 +7634,8 @@ PetscErrorCode DMPlexGetClosureIndices(DM dm, PetscSection section, PetscSection
 
 .seealso `DMPlexGetClosureIndices()`, `DMPlexVecGetClosure()`, `DMPlexMatSetClosure()`, `DMGetLocalSection()`, `DMGetGlobalSection()`
 @*/
-PetscErrorCode DMPlexRestoreClosureIndices(DM dm, PetscSection section, PetscSection idxSection, PetscInt point, PetscBool useClPerm, PetscInt *numIndices, PetscInt *indices[], PetscInt outOffsets[], PetscScalar *values[]) {
+PetscErrorCode DMPlexRestoreClosureIndices(DM dm, PetscSection section, PetscSection idxSection, PetscInt point, PetscBool useClPerm, PetscInt *numIndices, PetscInt *indices[], PetscInt outOffsets[], PetscScalar *values[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(indices, 7);
@@ -7467,7 +7664,8 @@ PetscErrorCode DMPlexRestoreClosureIndices(DM dm, PetscSection section, PetscSec
 
 .seealso `DMPlexMatSetClosureGeneral()`, `DMPlexVecGetClosure()`, `DMPlexVecSetClosure()`
 @*/
-PetscErrorCode DMPlexMatSetClosure(DM dm, PetscSection section, PetscSection globalSection, Mat A, PetscInt point, const PetscScalar values[], InsertMode mode) {
+PetscErrorCode DMPlexMatSetClosure(DM dm, PetscSection section, PetscSection globalSection, Mat A, PetscInt point, const PetscScalar values[], InsertMode mode)
+{
   DM_Plex           *mesh = (DM_Plex *)dm->data;
   PetscInt          *indices;
   PetscInt           numIndices;
@@ -7530,7 +7728,8 @@ PetscErrorCode DMPlexMatSetClosure(DM dm, PetscSection section, PetscSection glo
 
 .seealso `DMPlexMatSetClosure()`, `DMPlexVecGetClosure()`, `DMPlexVecSetClosure()`
 @*/
-PetscErrorCode DMPlexMatSetClosureGeneral(DM dmRow, PetscSection sectionRow, PetscSection globalSectionRow, DM dmCol, PetscSection sectionCol, PetscSection globalSectionCol, Mat A, PetscInt point, const PetscScalar values[], InsertMode mode) {
+PetscErrorCode DMPlexMatSetClosureGeneral(DM dmRow, PetscSection sectionRow, PetscSection globalSectionRow, DM dmCol, PetscSection sectionCol, PetscSection globalSectionCol, Mat A, PetscInt point, const PetscScalar values[], InsertMode mode)
+{
   DM_Plex           *mesh = (DM_Plex *)dmRow->data;
   PetscInt          *indicesRow, *indicesCol;
   PetscInt           numIndicesRow, numIndicesCol;
@@ -7573,7 +7772,8 @@ PetscErrorCode DMPlexMatSetClosureGeneral(DM dmRow, PetscSection sectionRow, Pet
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexMatSetClosureRefined(DM dmf, PetscSection fsection, PetscSection globalFSection, DM dmc, PetscSection csection, PetscSection globalCSection, Mat A, PetscInt point, const PetscScalar values[], InsertMode mode) {
+PetscErrorCode DMPlexMatSetClosureRefined(DM dmf, PetscSection fsection, PetscSection globalFSection, DM dmc, PetscSection csection, PetscSection globalCSection, Mat A, PetscInt point, const PetscScalar values[], InsertMode mode)
+{
   DM_Plex        *mesh    = (DM_Plex *)dmf->data;
   PetscInt       *fpoints = NULL, *ftotpoints = NULL;
   PetscInt       *cpoints = NULL;
@@ -7738,7 +7938,8 @@ PetscErrorCode DMPlexMatSetClosureRefined(DM dmf, PetscSection fsection, PetscSe
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexMatGetClosureIndicesRefined(DM dmf, PetscSection fsection, PetscSection globalFSection, DM dmc, PetscSection csection, PetscSection globalCSection, PetscInt point, PetscInt cindices[], PetscInt findices[]) {
+PetscErrorCode DMPlexMatGetClosureIndicesRefined(DM dmf, PetscSection fsection, PetscSection globalFSection, DM dmc, PetscSection csection, PetscSection globalCSection, PetscInt point, PetscInt cindices[], PetscInt findices[])
+{
   PetscInt       *fpoints = NULL, *ftotpoints = NULL;
   PetscInt       *cpoints = NULL;
   PetscInt        foffsets[32], coffsets[32];
@@ -7895,7 +8096,8 @@ PetscErrorCode DMPlexMatGetClosureIndicesRefined(DM dmf, PetscSection fsection, 
 
 .seealso `DMPlexSetVTKCellHeight()`
 @*/
-PetscErrorCode DMPlexGetVTKCellHeight(DM dm, PetscInt *cellHeight) {
+PetscErrorCode DMPlexGetVTKCellHeight(DM dm, PetscInt *cellHeight)
+{
   DM_Plex *mesh = (DM_Plex *)dm->data;
 
   PetscFunctionBegin;
@@ -7916,7 +8118,8 @@ PetscErrorCode DMPlexGetVTKCellHeight(DM dm, PetscInt *cellHeight) {
 
 .seealso `DMPlexGetVTKCellHeight()`
 @*/
-PetscErrorCode DMPlexSetVTKCellHeight(DM dm, PetscInt cellHeight) {
+PetscErrorCode DMPlexSetVTKCellHeight(DM dm, PetscInt cellHeight)
+{
   DM_Plex *mesh = (DM_Plex *)dm->data;
 
   PetscFunctionBegin;
@@ -7939,7 +8142,8 @@ PetscErrorCode DMPlexSetVTKCellHeight(DM dm, PetscInt cellHeight) {
 
 .seealso `DMPlexConstructGhostCells()`, `DMPlexGetGhostCellStratum()`
 @*/
-PetscErrorCode DMPlexGetGhostCellStratum(DM dm, PetscInt *gcStart, PetscInt *gcEnd) {
+PetscErrorCode DMPlexGetGhostCellStratum(DM dm, PetscInt *gcStart, PetscInt *gcEnd)
+{
   DMLabel ctLabel;
 
   PetscFunctionBegin;
@@ -7951,7 +8155,8 @@ PetscErrorCode DMPlexGetGhostCellStratum(DM dm, PetscInt *gcStart, PetscInt *gcE
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexCreateNumbering_Plex(DM dm, PetscInt pStart, PetscInt pEnd, PetscInt shift, PetscInt *globalSize, PetscSF sf, IS *numbering) {
+PetscErrorCode DMPlexCreateNumbering_Plex(DM dm, PetscInt pStart, PetscInt pEnd, PetscInt shift, PetscInt *globalSize, PetscSF sf, IS *numbering)
+{
   PetscSection section, globalSection;
   PetscInt    *numbers, p;
 
@@ -7980,7 +8185,8 @@ PetscErrorCode DMPlexCreateNumbering_Plex(DM dm, PetscInt pStart, PetscInt pEnd,
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexCreateCellNumbering_Internal(DM dm, PetscBool includeHybrid, IS *globalCellNumbers) {
+PetscErrorCode DMPlexCreateCellNumbering_Internal(DM dm, PetscBool includeHybrid, IS *globalCellNumbers)
+{
   PetscInt cellHeight, cStart, cEnd;
 
   PetscFunctionBegin;
@@ -8004,7 +8210,8 @@ PetscErrorCode DMPlexCreateCellNumbering_Internal(DM dm, PetscBool includeHybrid
 
 .seealso `DMPlexGetVertexNumbering()`
 @*/
-PetscErrorCode DMPlexGetCellNumbering(DM dm, IS *globalCellNumbers) {
+PetscErrorCode DMPlexGetCellNumbering(DM dm, IS *globalCellNumbers)
+{
   DM_Plex *mesh = (DM_Plex *)dm->data;
 
   PetscFunctionBegin;
@@ -8014,7 +8221,8 @@ PetscErrorCode DMPlexGetCellNumbering(DM dm, IS *globalCellNumbers) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexCreateVertexNumbering_Internal(DM dm, PetscBool includeHybrid, IS *globalVertexNumbers) {
+PetscErrorCode DMPlexCreateVertexNumbering_Internal(DM dm, PetscBool includeHybrid, IS *globalVertexNumbers)
+{
   PetscInt vStart, vEnd;
 
   PetscFunctionBegin;
@@ -8037,7 +8245,8 @@ PetscErrorCode DMPlexCreateVertexNumbering_Internal(DM dm, PetscBool includeHybr
 
 .seealso `DMPlexGetCellNumbering()`
 @*/
-PetscErrorCode DMPlexGetVertexNumbering(DM dm, IS *globalVertexNumbers) {
+PetscErrorCode DMPlexGetVertexNumbering(DM dm, IS *globalVertexNumbers)
+{
   DM_Plex *mesh = (DM_Plex *)dm->data;
 
   PetscFunctionBegin;
@@ -8091,7 +8300,8 @@ PetscErrorCode DMPlexGetVertexNumbering(DM dm, IS *globalVertexNumbers) {
 
 .seealso `DMPlexGetCellNumbering()`
 @*/
-PetscErrorCode DMPlexCreatePointNumbering(DM dm, IS *globalPointNumbers) {
+PetscErrorCode DMPlexCreatePointNumbering(DM dm, IS *globalPointNumbers)
+{
   IS        nums[4];
   PetscInt  depths[4], gdepths[4], starts[4];
   PetscInt  depth, d, shift = 0;
@@ -8147,7 +8357,8 @@ PetscErrorCode DMPlexCreatePointNumbering(DM dm, IS *globalPointNumbers) {
 
 .seealso: `DMView()`
 @*/
-PetscErrorCode DMPlexCreateRankField(DM dm, Vec *ranks) {
+PetscErrorCode DMPlexCreateRankField(DM dm, Vec *ranks)
+{
   DM             rdm;
   PetscFE        fe;
   PetscScalar   *r;
@@ -8201,7 +8412,8 @@ PetscErrorCode DMPlexCreateRankField(DM dm, Vec *ranks) {
 
 .seealso: `DMView()`
 @*/
-PetscErrorCode DMPlexCreateLabelField(DM dm, DMLabel label, Vec *val) {
+PetscErrorCode DMPlexCreateLabelField(DM dm, DMLabel label, Vec *val)
+{
   DM           rdm;
   PetscFE      fe;
   PetscScalar *v;
@@ -8250,7 +8462,8 @@ PetscErrorCode DMPlexCreateLabelField(DM dm, DMLabel label, Vec *val) {
 
 .seealso: `DMCreate()`, `DMSetFromOptions()`
 @*/
-PetscErrorCode DMPlexCheckSymmetry(DM dm) {
+PetscErrorCode DMPlexCheckSymmetry(DM dm)
+{
   PetscSection    coneSection, supportSection;
   const PetscInt *cone, *support;
   PetscInt        coneSize, c, supportSize, s;
@@ -8332,7 +8545,8 @@ PetscErrorCode DMPlexCheckSymmetry(DM dm) {
 /*
   For submeshes with cohesive cells (see DMPlexConstructCohesiveCells()), we allow a special case where some of the boundary of a face (edges and vertices) are not duplicated. We call these special boundary points "unsplit", since the same edge or vertex appears in both copies of the face. These unsplit points throw off our counting, so we have to explicitly account for them here.
 */
-static PetscErrorCode DMPlexCellUnsplitVertices_Private(DM dm, PetscInt c, DMPolytopeType ct, PetscInt *unsplit) {
+static PetscErrorCode DMPlexCellUnsplitVertices_Private(DM dm, PetscInt c, DMPolytopeType ct, PetscInt *unsplit)
+{
   DMPolytopeType  cct;
   PetscInt        ptpoints[4];
   const PetscInt *cone, *ccone, *ptcone;
@@ -8341,7 +8555,9 @@ static PetscErrorCode DMPlexCellUnsplitVertices_Private(DM dm, PetscInt c, DMPol
   PetscFunctionBegin;
   *unsplit = 0;
   switch (ct) {
-  case DM_POLYTOPE_POINT_PRISM_TENSOR: ptpoints[npt++] = c; break;
+  case DM_POLYTOPE_POINT_PRISM_TENSOR:
+    ptpoints[npt++] = c;
+    break;
   case DM_POLYTOPE_SEG_PRISM_TENSOR:
     PetscCall(DMPlexGetCone(dm, c, &cone));
     PetscCall(DMPlexGetConeSize(dm, c, &coneSize));
@@ -8368,7 +8584,8 @@ static PetscErrorCode DMPlexCellUnsplitVertices_Private(DM dm, PetscInt c, DMPol
       }
     }
     break;
-  default: break;
+  default:
+    break;
   }
   for (pt = 0; pt < npt; ++pt) {
     PetscCall(DMPlexGetCone(dm, ptpoints[pt], &ptcone));
@@ -8394,7 +8611,8 @@ static PetscErrorCode DMPlexCellUnsplitVertices_Private(DM dm, PetscInt c, DMPol
 
 .seealso: `DMCreate()`, `DMSetFromOptions()`
 @*/
-PetscErrorCode DMPlexCheckSkeleton(DM dm, PetscInt cellHeight) {
+PetscErrorCode DMPlexCheckSkeleton(DM dm, PetscInt cellHeight)
+{
   DMPlexInterpolatedFlag interp;
   DMPolytopeType         ct;
   PetscInt               vStart, vEnd, cStart, cEnd, c;
@@ -8454,7 +8672,8 @@ PetscErrorCode DMPlexCheckSkeleton(DM dm, PetscInt cellHeight) {
 
 .seealso: `DMCreate()`, `DMPlexGetVTKCellHeight()`, `DMSetFromOptions()`
 @*/
-PetscErrorCode DMPlexCheckFaces(DM dm, PetscInt cellHeight) {
+PetscErrorCode DMPlexCheckFaces(DM dm, PetscInt cellHeight)
+{
   PetscInt               dim, depth, vStart, vEnd, cStart, cEnd, c, h;
   DMPlexInterpolatedFlag interpEnum;
 
@@ -8540,7 +8759,8 @@ PetscErrorCode DMPlexCheckFaces(DM dm, PetscInt cellHeight) {
 
 .seealso: `DMCreate()`, `DMSetFromOptions()`
 @*/
-PetscErrorCode DMPlexCheckGeometry(DM dm) {
+PetscErrorCode DMPlexCheckGeometry(DM dm)
+{
   Vec       coordinates;
   PetscReal detJ, J[9], refVol = 1.0;
   PetscReal vol;
@@ -8564,15 +8784,20 @@ PetscErrorCode DMPlexCheckGeometry(DM dm) {
     switch (ct) {
     case DM_POLYTOPE_SEG_PRISM_TENSOR:
     case DM_POLYTOPE_TRI_PRISM_TENSOR:
-    case DM_POLYTOPE_QUAD_PRISM_TENSOR: ignoreZeroVol = PETSC_TRUE; break;
-    default: break;
+    case DM_POLYTOPE_QUAD_PRISM_TENSOR:
+      ignoreZeroVol = PETSC_TRUE;
+      break;
+    default:
+      break;
     }
     switch (ct) {
     case DM_POLYTOPE_TRI_PRISM:
     case DM_POLYTOPE_TRI_PRISM_TENSOR:
     case DM_POLYTOPE_QUAD_PRISM_TENSOR:
-    case DM_POLYTOPE_PYRAMID: continue;
-    default: break;
+    case DM_POLYTOPE_PYRAMID:
+      continue;
+    default:
+      break;
     }
     PetscCall(DMPlexCellUnsplitVertices_Private(dm, c, ct, &unsplit));
     if (unsplit) continue;
@@ -8610,7 +8835,8 @@ PetscErrorCode DMPlexCheckGeometry(DM dm) {
 
 .seealso: `DMGetPointSF()`, `DMSetFromOptions()`
 @*/
-PetscErrorCode DMPlexCheckPointSF(DM dm, PetscSF pointSF, PetscBool allowExtraRoots) {
+PetscErrorCode DMPlexCheckPointSF(DM dm, PetscSF pointSF, PetscBool allowExtraRoots)
+{
   PetscInt           l, nleaves, nroots, overlap;
   const PetscInt    *locals;
   const PetscSFNode *remotes;
@@ -8713,7 +8939,8 @@ PetscErrorCode DMPlexCheckPointSF(DM dm, PetscSF pointSF, PetscBool allowExtraRo
 
 .seealso: DMCreate(), DMSetFromOptions()
 @*/
-PetscErrorCode DMPlexCheck(DM dm) {
+PetscErrorCode DMPlexCheck(DM dm)
+{
   PetscInt cellHeight;
 
   PetscFunctionBegin;
@@ -8732,7 +8959,8 @@ typedef struct cell_stats {
   PetscInt  count;
 } cell_stats_t;
 
-static void MPIAPI cell_stats_reduce(void *a, void *b, int *len, MPI_Datatype *datatype) {
+static void MPIAPI cell_stats_reduce(void *a, void *b, int *len, MPI_Datatype *datatype)
+{
   PetscInt i, N = *len;
 
   for (i = 0; i < N; i++) {
@@ -8766,7 +8994,8 @@ static void MPIAPI cell_stats_reduce(void *a, void *b, int *len, MPI_Datatype *d
 
 .seealso: `DMSetFromOptions()`, `DMPlexComputeOrthogonalQuality()`
 @*/
-PetscErrorCode DMPlexCheckCellShape(DM dm, PetscBool output, PetscReal condLimit) {
+PetscErrorCode DMPlexCheckCellShape(DM dm, PetscBool output, PetscReal condLimit)
+{
   DM           dmCoarse;
   cell_stats_t stats, globalStats;
   MPI_Comm     comm = PetscObjectComm((PetscObject)dm);
@@ -8918,7 +9147,8 @@ supported.
 
 .seealso: `DMPlexCheckCellShape()`, `DMCreateLabel()`
 @*/
-PetscErrorCode DMPlexComputeOrthogonalQuality(DM dm, PetscFV fv, PetscReal atol, Vec *OrthQual, DMLabel *OrthQualLabel) {
+PetscErrorCode DMPlexComputeOrthogonalQuality(DM dm, PetscFV fv, PetscReal atol, Vec *OrthQual, DMLabel *OrthQualLabel)
+{
   PetscInt               nc, cellHeight, cStart, cEnd, cell, cellIter = 0;
   PetscInt              *idx;
   PetscScalar           *oqVals;
@@ -9059,7 +9289,8 @@ PetscErrorCode DMPlexComputeOrthogonalQuality(DM dm, PetscFV fv, PetscReal atol,
 
 /* this is here insead of DMGetOutputDM because output DM still has constraints in the local indices that affect
  * interpolator construction */
-static PetscErrorCode DMGetFullDM(DM dm, DM *odm) {
+static PetscErrorCode DMGetFullDM(DM dm, DM *odm)
+{
   PetscSection section, newSection, gsection;
   PetscSF      sf;
   PetscBool    hasConstraints, ghasConstraints;
@@ -9085,7 +9316,8 @@ static PetscErrorCode DMGetFullDM(DM dm, DM *odm) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMCreateAffineInterpolationCorrection_Plex(DM dmc, DM dmf, Vec *shift) {
+static PetscErrorCode DMCreateAffineInterpolationCorrection_Plex(DM dmc, DM dmf, Vec *shift)
+{
   DM        dmco, dmfo;
   Mat       interpo;
   Vec       rscale;
@@ -9130,7 +9362,8 @@ static PetscErrorCode DMCreateAffineInterpolationCorrection_Plex(DM dmc, DM dmf,
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode DMInterpolateSolution_Plex(DM coarse, DM fine, Mat interp, Vec coarseSol, Vec fineSol) {
+PETSC_INTERN PetscErrorCode DMInterpolateSolution_Plex(DM coarse, DM fine, Mat interp, Vec coarseSol, Vec fineSol)
+{
   PetscObject shifto;
   Vec         shift;
 
@@ -9164,7 +9397,8 @@ PETSC_INTERN PetscErrorCode DMInterpolateSolution_Plex(DM coarse, DM fine, Mat i
      u^f_i = sum_j psi^f_i I phi^c_j u^c_j
      I_{ij} = psi^f_i phi^c_j
 */
-PetscErrorCode DMCreateInterpolation_Plex(DM dmCoarse, DM dmFine, Mat *interpolation, Vec *scaling) {
+PetscErrorCode DMCreateInterpolation_Plex(DM dmCoarse, DM dmFine, Mat *interpolation, Vec *scaling)
+{
   PetscSection gsc, gsf;
   PetscInt     m, n;
   void        *ctx;
@@ -9195,7 +9429,8 @@ PetscErrorCode DMCreateInterpolation_Plex(DM dmCoarse, DM dmFine, Mat *interpola
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMCreateInjection_Plex(DM dmCoarse, DM dmFine, Mat *mat) {
+PetscErrorCode DMCreateInjection_Plex(DM dmCoarse, DM dmFine, Mat *mat)
+{
   VecScatter ctx;
 
   PetscFunctionBegin;
@@ -9205,13 +9440,15 @@ PetscErrorCode DMCreateInjection_Plex(DM dmCoarse, DM dmFine, Mat *mat) {
   PetscFunctionReturn(0);
 }
 
-static void g0_identity_private(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[]) {
+static void g0_identity_private(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[])
+{
   const PetscInt Nc = uOff[1] - uOff[0];
   PetscInt       c;
   for (c = 0; c < Nc; ++c) g0[c * Nc + c] = 1.0;
 }
 
-PetscErrorCode DMCreateMassMatrixLumped_Plex(DM dm, Vec *mass) {
+PetscErrorCode DMCreateMassMatrixLumped_Plex(DM dm, Vec *mass)
+{
   DM           dmc;
   PetscDS      ds;
   Vec          ones, locmass;
@@ -9246,7 +9483,8 @@ PetscErrorCode DMCreateMassMatrixLumped_Plex(DM dm, Vec *mass) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMCreateMassMatrix_Plex(DM dmCoarse, DM dmFine, Mat *mass) {
+PetscErrorCode DMCreateMassMatrix_Plex(DM dmCoarse, DM dmFine, Mat *mass)
+{
   PetscSection gsc, gsf;
   PetscInt     m, n;
   void        *ctx;
@@ -9315,7 +9553,8 @@ PetscErrorCode DMCreateMassMatrix_Plex(DM dmCoarse, DM dmFine, Mat *mass) {
 
 .seealso: `DMPlexSetRegularRefinement()`
 @*/
-PetscErrorCode DMPlexGetRegularRefinement(DM dm, PetscBool *regular) {
+PetscErrorCode DMPlexGetRegularRefinement(DM dm, PetscBool *regular)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidBoolPointer(regular, 2);
@@ -9334,7 +9573,8 @@ PetscErrorCode DMPlexGetRegularRefinement(DM dm, PetscBool *regular) {
 
 .seealso: `DMPlexGetRegularRefinement()`
 @*/
-PetscErrorCode DMPlexSetRegularRefinement(DM dm, PetscBool regular) {
+PetscErrorCode DMPlexSetRegularRefinement(DM dm, PetscBool regular)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ((DM_Plex *)dm->data)->regularRefinement = regular;
@@ -9359,7 +9599,8 @@ PetscErrorCode DMPlexSetRegularRefinement(DM dm, PetscBool regular) {
 
 .seealso: `DMPlexSetAnchors()`, `DMGetDefaultConstraints()`, `DMSetDefaultConstraints()`
 @*/
-PetscErrorCode DMPlexGetAnchors(DM dm, PetscSection *anchorSection, IS *anchorIS) {
+PetscErrorCode DMPlexGetAnchors(DM dm, PetscSection *anchorSection, IS *anchorIS)
+{
   DM_Plex *plex = (DM_Plex *)dm->data;
 
   PetscFunctionBegin;
@@ -9391,7 +9632,8 @@ PetscErrorCode DMPlexGetAnchors(DM dm, PetscSection *anchorSection, IS *anchorIS
 
 .seealso: `DMPlexGetAnchors()`, `DMGetDefaultConstraints()`, `DMSetDefaultConstraints()`
 @*/
-PetscErrorCode DMPlexSetAnchors(DM dm, PetscSection anchorSection, IS anchorIS) {
+PetscErrorCode DMPlexSetAnchors(DM dm, PetscSection anchorSection, IS anchorIS)
+{
   DM_Plex    *plex = (DM_Plex *)dm->data;
   PetscMPIInt result;
 
@@ -9444,7 +9686,8 @@ PetscErrorCode DMPlexSetAnchors(DM dm, PetscSection anchorSection, IS anchorIS) 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexCreateConstraintSection_Anchors(DM dm, PetscSection section, PetscSection *cSec) {
+static PetscErrorCode DMPlexCreateConstraintSection_Anchors(DM dm, PetscSection section, PetscSection *cSec)
+{
   PetscSection anchorSection;
   PetscInt     pStart, pEnd, sStart, sEnd, p, dof, numFields, f;
 
@@ -9486,7 +9729,8 @@ static PetscErrorCode DMPlexCreateConstraintSection_Anchors(DM dm, PetscSection 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexCreateConstraintMatrix_Anchors(DM dm, PetscSection section, PetscSection cSec, Mat *cMat) {
+static PetscErrorCode DMPlexCreateConstraintMatrix_Anchors(DM dm, PetscSection section, PetscSection cSec, Mat *cMat)
+{
   PetscSection    aSec;
   PetscInt        pStart, pEnd, p, sStart, sEnd, dof, aDof, aOff, off, nnz, annz, m, n, q, a, offset, *i, *j;
   const PetscInt *anchors;
@@ -9597,7 +9841,8 @@ static PetscErrorCode DMPlexCreateConstraintMatrix_Anchors(DM dm, PetscSection s
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMCreateDefaultConstraints_Plex(DM dm) {
+PetscErrorCode DMCreateDefaultConstraints_Plex(DM dm)
+{
   DM_Plex     *plex = (DM_Plex *)dm->data;
   PetscSection anchorSection, section, cSec;
   Mat          cMat;
@@ -9620,7 +9865,8 @@ PetscErrorCode DMCreateDefaultConstraints_Plex(DM dm) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMCreateSubDomainDM_Plex(DM dm, DMLabel label, PetscInt value, IS *is, DM *subdm) {
+PetscErrorCode DMCreateSubDomainDM_Plex(DM dm, DMLabel label, PetscInt value, IS *is, DM *subdm)
+{
   IS           subis;
   PetscSection section, subsection;
 
@@ -9751,7 +9997,8 @@ PetscErrorCode DMCreateSubDomainDM_Plex(DM dm, DMLabel label, PetscInt value, IS
 
 .seealso: `DMSetFromOptions()`, `DMPlexCreate()`
 @*/
-PetscErrorCode DMPlexMonitorThroughput(DM dm, void *dummy) {
+PetscErrorCode DMPlexMonitorThroughput(DM dm, void *dummy)
+{
 #if defined(PETSC_USE_LOG)
   PetscStageLog      stageLog;
   PetscLogEvent      event;

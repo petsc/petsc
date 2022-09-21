@@ -19,7 +19,8 @@ PETSC_EXTERN PetscErrorCode PFCreate_Matlab(PF, void *);
 
 .seealso: `PFRegister()`, `PFRegisterDestroy()`
 @*/
-PetscErrorCode PFRegisterAll(void) {
+PetscErrorCode PFRegisterAll(void)
+{
   PetscFunctionBegin;
   if (PFRegisterAllCalled) PetscFunctionReturn(0);
   PFRegisterAllCalled = PETSC_TRUE;

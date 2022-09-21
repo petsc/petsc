@@ -51,7 +51,8 @@ extern PetscErrorCode KSPComputeEigenvalues_CG(KSP, PetscInt, PetscReal *, Petsc
       This is called once, usually automatically by KSPSolve() or KSPSetUp()
      but can be called directly by KSPSetUp()
 */
-static PetscErrorCode KSPSetUp_CG(KSP ksp) {
+static PetscErrorCode KSPSetUp_CG(KSP ksp)
+{
   KSP_CG  *cgP   = (KSP_CG *)ksp->data;
   PetscInt maxit = ksp->max_it, nwork = 3;
 
@@ -89,7 +90,8 @@ static PetscErrorCode KSPSetUp_CG(KSP ksp) {
 .     ksp - the Krylov space object that was set to use conjugate gradient, by, for
             example, KSPCreate(MPI_Comm,KSP *ksp); KSPSetType(ksp,KSPCG);
 */
-static PetscErrorCode KSPSolve_CG(KSP ksp) {
+static PetscErrorCode KSPSolve_CG(KSP ksp)
+{
   PetscInt    i, stored_max_it, eigs;
   PetscScalar dpi = 0.0, a = 1.0, beta, betaold = 1.0, b = 0, *e = NULL, *d = NULL, dpiold;
   PetscReal   dp = 0.0;
@@ -145,8 +147,11 @@ static PetscErrorCode KSPSolve_CG(KSP ksp) {
     KSPCheckDot(ksp, beta);
     dp = PetscSqrtReal(PetscAbsScalar(beta)); /*    dp <- r'*z = r'*B*r = e'*A'*B*A*e */
     break;
-  case KSP_NORM_NONE: dp = 0.0; break;
-  default: SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "%s", KSPNormTypes[ksp->normtype]);
+  case KSP_NORM_NONE:
+    dp = 0.0;
+    break;
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "%s", KSPNormTypes[ksp->normtype]);
   }
   PetscCall(KSPLogResidualHistory(ksp, dp));
   PetscCall(KSPMonitor(ksp, 0, dp));
@@ -246,7 +251,8 @@ static PetscErrorCode KSPSolve_CG(KSP ksp) {
        See KSPCGUseSingleReduction_CG()
 
 */
-static PetscErrorCode KSPSolve_CG_SingleReduction(KSP ksp) {
+static PetscErrorCode KSPSolve_CG_SingleReduction(KSP ksp)
+{
   PetscInt    i, stored_max_it, eigs;
   PetscScalar dpi = 0.0, a = 1.0, beta, betaold = 1.0, b = 0, *e = NULL, *d = NULL, delta, dpiold, tmp[2];
   PetscReal   dp = 0.0;
@@ -303,8 +309,11 @@ static PetscErrorCode KSPSolve_CG_SingleReduction(KSP ksp) {
     KSPCheckDot(ksp, beta);
     dp = PetscSqrtReal(PetscAbsScalar(beta)); /*    dp <- r'*z = r'*B*r = e'*A'*B*A*e */
     break;
-  case KSP_NORM_NONE: dp = 0.0; break;
-  default: SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "%s", KSPNormTypes[ksp->normtype]);
+  case KSP_NORM_NONE:
+    dp = 0.0;
+    break;
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "%s", KSPNormTypes[ksp->normtype]);
   }
   PetscCall(KSPLogResidualHistory(ksp, dp));
   PetscCall(KSPMonitor(ksp, 0, dp));
@@ -420,7 +429,8 @@ static PetscErrorCode KSPSolve_CG_SingleReduction(KSP ksp) {
                      you must be sure to free all allocated resources here to prevent
                      leaks.
 */
-PetscErrorCode KSPDestroy_CG(KSP ksp) {
+PetscErrorCode KSPDestroy_CG(KSP ksp)
+{
   KSP_CG *cg = (KSP_CG *)ksp->data;
 
   PetscFunctionBegin;
@@ -436,7 +446,8 @@ PetscErrorCode KSPDestroy_CG(KSP ksp) {
                   If your Krylov method has special options or flags that information
                   should be printed here.
 */
-PetscErrorCode KSPView_CG(KSP ksp, PetscViewer viewer) {
+PetscErrorCode KSPView_CG(KSP ksp, PetscViewer viewer)
+{
   KSP_CG   *cg = (KSP_CG *)ksp->data;
   PetscBool iascii;
 
@@ -455,7 +466,8 @@ PetscErrorCode KSPView_CG(KSP ksp, PetscViewer viewer) {
     KSPSetFromOptions_CG - Checks the options database for options related to the
                            conjugate gradient method.
 */
-PetscErrorCode KSPSetFromOptions_CG(KSP ksp, PetscOptionItems *PetscOptionsObject) {
+PetscErrorCode KSPSetFromOptions_CG(KSP ksp, PetscOptionItems *PetscOptionsObject)
+{
   KSP_CG   *cg = (KSP_CG *)ksp->data;
   PetscBool flg;
 
@@ -475,7 +487,8 @@ PetscErrorCode KSPSetFromOptions_CG(KSP ksp, PetscOptionItems *PetscOptionsObjec
                       This routine is registered below in KSPCreate_CG() and called from the
                       routine KSPCGSetType() (see the file cgtype.c).
 */
-PetscErrorCode KSPCGSetType_CG(KSP ksp, KSPCGType type) {
+PetscErrorCode KSPCGSetType_CG(KSP ksp, KSPCGType type)
+{
   KSP_CG *cg = (KSP_CG *)ksp->data;
 
   PetscFunctionBegin;
@@ -490,7 +503,8 @@ PetscErrorCode KSPCGSetType_CG(KSP ksp, KSPCGType type) {
     atypical fashion) it also swaps out the routine called when KSPSolve()
     is invoked.
 */
-static PetscErrorCode KSPCGUseSingleReduction_CG(KSP ksp, PetscBool flg) {
+static PetscErrorCode KSPCGUseSingleReduction_CG(KSP ksp, PetscBool flg)
+{
   KSP_CG *cg = (KSP_CG *)ksp->data;
 
   PetscFunctionBegin;
@@ -503,7 +517,8 @@ static PetscErrorCode KSPCGUseSingleReduction_CG(KSP ksp, PetscBool flg) {
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode KSPBuildResidual_CG(KSP ksp, Vec t, Vec v, Vec *V) {
+PETSC_INTERN PetscErrorCode KSPBuildResidual_CG(KSP ksp, Vec t, Vec v, Vec *V)
+{
   PetscFunctionBegin;
   PetscCall(VecCopy(ksp->work[0], v));
   *V = v;
@@ -554,7 +569,8 @@ PETSC_INTERN PetscErrorCode KSPBuildResidual_CG(KSP ksp, Vec t, Vec v, Vec *V) {
           `KSPCGSetType()`, `KSPCGUseSingleReduction()`, `KSPPIPECG`, `KSPGROPPCG`
 
 M*/
-PETSC_EXTERN PetscErrorCode KSPCreate_CG(KSP ksp) {
+PETSC_EXTERN PetscErrorCode KSPCreate_CG(KSP ksp)
+{
   KSP_CG *cg;
 
   PetscFunctionBegin;

@@ -45,7 +45,8 @@ static PetscErrorCode ComputeB(AppCtx *);
 static PetscErrorCode Monitor(Tao, void *);
 static PetscErrorCode ConvergenceTest(Tao, void *);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt  Nx, Ny; /* number of processors in x- and y- directions */
   PetscInt  m;      /* number of local elements in vectors */
   Vec       x;      /* variables vector */
@@ -162,12 +163,14 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-static PetscReal p(PetscReal xi, PetscReal ecc) {
+static PetscReal p(PetscReal xi, PetscReal ecc)
+{
   PetscReal t = 1.0 + ecc * PetscCosScalar(xi);
   return (t * t * t);
 }
 
-PetscErrorCode ComputeB(AppCtx *user) {
+PetscErrorCode ComputeB(AppCtx *user)
+{
   PetscInt  i, j, k;
   PetscInt  nx, ny, xs, xm, gxs, gxm, ys, ym, gys, gym;
   PetscReal two = 2.0, pi = 4.0 * atan(1.0);
@@ -202,7 +205,8 @@ PetscErrorCode ComputeB(AppCtx *user) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *fcn, Vec G, void *ptr) {
+PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *fcn, Vec G, void *ptr)
+{
   AppCtx    *user = (AppCtx *)ptr;
   PetscInt   i, j, k, kk;
   PetscInt   col[5], row, nx, ny, xs, xm, gxs, gxm, ys, ym, gys, gym;
@@ -316,7 +320,8 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *fcn, Vec G, void 
    Notice that the objective function in this problem is quadratic (therefore a constant
    hessian).  If using a nonquadratic solver, then you might want to reconsider this function
 */
-PetscErrorCode FormHessian(Tao tao, Vec X, Mat hes, Mat Hpre, void *ptr) {
+PetscErrorCode FormHessian(Tao tao, Vec X, Mat hes, Mat Hpre, void *ptr)
+{
   AppCtx   *user = (AppCtx *)ptr;
   PetscInt  i, j, k;
   PetscInt  col[5], row, nx, ny, xs, xm, gxs, gxm, ys, ym, gys, gym;
@@ -419,7 +424,8 @@ PetscErrorCode FormHessian(Tao tao, Vec X, Mat hes, Mat Hpre, void *ptr) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode Monitor(Tao tao, void *ctx) {
+PetscErrorCode Monitor(Tao tao, void *ctx)
+{
   PetscInt           its;
   PetscReal          f, gnorm, cnorm, xdiff;
   TaoConvergedReason reason;
@@ -430,7 +436,8 @@ PetscErrorCode Monitor(Tao tao, void *ctx) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode ConvergenceTest(Tao tao, void *ctx) {
+PetscErrorCode ConvergenceTest(Tao tao, void *ctx)
+{
   PetscInt           its;
   PetscReal          f, gnorm, cnorm, xdiff;
   TaoConvergedReason reason;

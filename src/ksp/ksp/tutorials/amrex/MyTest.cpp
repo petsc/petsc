@@ -11,7 +11,8 @@
 
 using namespace amrex;
 
-MyTest::MyTest() {
+MyTest::MyTest()
+{
   readParameters();
 
   initGrids();
@@ -21,7 +22,8 @@ MyTest::MyTest() {
   initData();
 }
 
-void MyTest::solve() {
+void MyTest::solve()
+{
   for (int ilev = 0; ilev <= max_level; ++ilev) {
     const MultiFab &vfrc = factory[ilev]->getVolFrac();
     MultiFab        v(vfrc.boxArray(), vfrc.DistributionMap(), 1, 0, MFInfo(), *factory[ilev]);
@@ -77,7 +79,8 @@ void MyTest::solve() {
   mlmg.solve(amrex::GetVecOfPtrs(phi), amrex::GetVecOfConstPtrs(rhs), tol_rel, tol_abs);
 }
 
-void MyTest::writePlotfile() {
+void MyTest::writePlotfile()
+{
   Vector<MultiFab> plotmf(max_level + 1);
   for (int ilev = 0; ilev <= max_level; ++ilev) {
     const MultiFab &vfrc = factory[ilev]->getVolFrac();
@@ -88,7 +91,8 @@ void MyTest::writePlotfile() {
   WriteMultiLevelPlotfile(plot_file_name, max_level + 1, amrex::GetVecOfConstPtrs(plotmf), {"phi", "vfrac"}, geom, 0.0, Vector<int>(max_level + 1, 0), Vector<IntVect>(max_level, IntVect{2}));
 }
 
-void MyTest::readParameters() {
+void MyTest::readParameters()
+{
   ParmParse pp;
   pp.query("max_level", max_level);
   pp.query("n_cell", n_cell);
@@ -125,7 +129,8 @@ void MyTest::readParameters() {
 #endif
 }
 
-void MyTest::initGrids() {
+void MyTest::initGrids()
+{
   int nlevels = max_level + 1;
   geom.resize(nlevels);
   grids.resize(nlevels);
@@ -149,7 +154,8 @@ void MyTest::initGrids() {
   }
 }
 
-void MyTest::initData() {
+void MyTest::initData()
+{
   int nlevels = max_level + 1;
   dmap.resize(nlevels);
   factory.resize(nlevels);

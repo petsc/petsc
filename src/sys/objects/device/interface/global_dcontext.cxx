@@ -6,21 +6,24 @@ static PetscDeviceContext globalContext  = nullptr;
 
 /* when PetsDevice initializes PetscDeviceContext eagerly the type of device created should
  * match whatever device is eagerly intialized */
-PetscErrorCode PetscDeviceContextSetRootDeviceType_Internal(PetscDeviceType type) {
+PetscErrorCode PetscDeviceContextSetRootDeviceType_Internal(PetscDeviceType type)
+{
   PetscFunctionBegin;
   PetscValidDeviceType(type, 1);
   rootDeviceType = type;
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscDeviceContextSetRootStreamType_Internal(PetscStreamType type) {
+PetscErrorCode PetscDeviceContextSetRootStreamType_Internal(PetscStreamType type)
+{
   PetscFunctionBegin;
   PetscValidStreamType(type, 1);
   rootStreamType = type;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscDeviceContextSetupGlobalContext_Private() noexcept {
+static PetscErrorCode PetscDeviceContextSetupGlobalContext_Private() noexcept
+{
   PetscFunctionBegin;
   if (PetscUnlikely(!globalContext)) {
     PetscObject pobj;
@@ -74,7 +77,8 @@ static PetscErrorCode PetscDeviceContextSetupGlobalContext_Private() noexcept {
 .seealso: `PetscDeviceContextSetCurrentContext()`, `PetscDeviceContextFork()`,
           `PetscDeviceContextJoin()`, `PetscDeviceContextCreate()`
 @*/
-PetscErrorCode PetscDeviceContextGetCurrentContext(PetscDeviceContext *dctx) {
+PetscErrorCode PetscDeviceContextGetCurrentContext(PetscDeviceContext *dctx)
+{
   PetscFunctionBegin;
   PetscValidPointer(dctx, 1);
   PetscCall(PetscDeviceContextSetupGlobalContext_Private());
@@ -108,7 +112,8 @@ PetscErrorCode PetscDeviceContextGetCurrentContext(PetscDeviceContext *dctx) {
 .seealso: `PetscDeviceContextGetCurrentContext()`, `PetscDeviceContextFork()`,
           `PetscDeviceContextJoin()`, `PetscDeviceContextCreate()`
 @*/
-PetscErrorCode PetscDeviceContextSetCurrentContext(PetscDeviceContext dctx) {
+PetscErrorCode PetscDeviceContextSetCurrentContext(PetscDeviceContext dctx)
+{
   PetscDeviceType dtype;
 
   PetscFunctionBegin;

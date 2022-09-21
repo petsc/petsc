@@ -10,14 +10,16 @@ typedef struct {
   void *boundarylocalctx;
 } DMSNES_Local;
 
-static PetscErrorCode DMSNESDestroy_DMLocal(DMSNES sdm) {
+static PetscErrorCode DMSNESDestroy_DMLocal(DMSNES sdm)
+{
   PetscFunctionBegin;
   PetscCall(PetscFree(sdm->data));
   sdm->data = NULL;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMSNESDuplicate_DMLocal(DMSNES oldsdm, DMSNES sdm) {
+static PetscErrorCode DMSNESDuplicate_DMLocal(DMSNES oldsdm, DMSNES sdm)
+{
   PetscFunctionBegin;
   if (sdm->data != oldsdm->data) {
     PetscCall(PetscFree(sdm->data));
@@ -27,7 +29,8 @@ static PetscErrorCode DMSNESDuplicate_DMLocal(DMSNES oldsdm, DMSNES sdm) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMLocalSNESGetContext(DM dm, DMSNES sdm, DMSNES_Local **dmlocalsnes) {
+static PetscErrorCode DMLocalSNESGetContext(DM dm, DMSNES sdm, DMSNES_Local **dmlocalsnes)
+{
   PetscFunctionBegin;
   *dmlocalsnes = NULL;
   if (!sdm->data) {
@@ -40,7 +43,8 @@ static PetscErrorCode DMLocalSNESGetContext(DM dm, DMSNES sdm, DMSNES_Local **dm
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESComputeFunction_DMLocal(SNES snes, Vec X, Vec F, void *ctx) {
+static PetscErrorCode SNESComputeFunction_DMLocal(SNES snes, Vec X, Vec F, void *ctx)
+{
   DMSNES_Local *dmlocalsnes = (DMSNES_Local *)ctx;
   DM            dm;
   Vec           Xloc, Floc;
@@ -90,7 +94,8 @@ static PetscErrorCode SNESComputeFunction_DMLocal(SNES snes, Vec X, Vec F, void 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESComputeJacobian_DMLocal(SNES snes, Vec X, Mat A, Mat B, void *ctx) {
+static PetscErrorCode SNESComputeJacobian_DMLocal(SNES snes, Vec X, Mat A, Mat B, void *ctx)
+{
   DMSNES_Local *dmlocalsnes = (DMSNES_Local *)ctx;
   DM            dm;
   Vec           Xloc;
@@ -122,8 +127,11 @@ static PetscErrorCode SNESComputeJacobian_DMLocal(SNES snes, Vec X, Mat A, Mat B
       PetscCall(MatFDColoringCreate(B, coloring, &fdcoloring));
       PetscCall(ISColoringDestroy(&coloring));
       switch (dm->coloringtype) {
-      case IS_COLORING_GLOBAL: PetscCall(MatFDColoringSetFunction(fdcoloring, (PetscErrorCode(*)(void))SNESComputeFunction_DMLocal, dmlocalsnes)); break;
-      default: SETERRQ(PetscObjectComm((PetscObject)snes), PETSC_ERR_SUP, "No support for coloring type '%s'", ISColoringTypes[dm->coloringtype]);
+      case IS_COLORING_GLOBAL:
+        PetscCall(MatFDColoringSetFunction(fdcoloring, (PetscErrorCode(*)(void))SNESComputeFunction_DMLocal, dmlocalsnes));
+        break;
+      default:
+        SETERRQ(PetscObjectComm((PetscObject)snes), PETSC_ERR_SUP, "No support for coloring type '%s'", ISColoringTypes[dm->coloringtype]);
       }
       PetscCall(PetscObjectSetOptionsPrefix((PetscObject)fdcoloring, ((PetscObject)dm)->prefix));
       PetscCall(MatFDColoringSetFromOptions(fdcoloring));
@@ -165,7 +173,8 @@ static PetscErrorCode SNESComputeJacobian_DMLocal(SNES snes, Vec X, Mat A, Mat B
 
 .seealso: `DMSNESSetFunction()`, `DMDASNESSetJacobianLocal()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`
 @*/
-PetscErrorCode DMSNESSetFunctionLocal(DM dm, PetscErrorCode (*func)(DM, Vec, Vec, void *), void *ctx) {
+PetscErrorCode DMSNESSetFunctionLocal(DM dm, PetscErrorCode (*func)(DM, Vec, Vec, void *), void *ctx)
+{
   DMSNES        sdm;
   DMSNES_Local *dmlocalsnes;
 
@@ -200,7 +209,8 @@ PetscErrorCode DMSNESSetFunctionLocal(DM dm, PetscErrorCode (*func)(DM, Vec, Vec
 
 .seealso: `DMSNESSetFunctionLocal()`, `DMDASNESSetJacobianLocal()`
 @*/
-PetscErrorCode DMSNESSetBoundaryLocal(DM dm, PetscErrorCode (*func)(DM, Vec, void *), void *ctx) {
+PetscErrorCode DMSNESSetBoundaryLocal(DM dm, PetscErrorCode (*func)(DM, Vec, void *), void *ctx)
+{
   DMSNES        sdm;
   DMSNES_Local *dmlocalsnes;
 
@@ -229,7 +239,8 @@ PetscErrorCode DMSNESSetBoundaryLocal(DM dm, PetscErrorCode (*func)(DM, Vec, voi
 
 .seealso: `DMSNESSetJacobian()`, `DMDASNESSetJacobian()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`
 @*/
-PetscErrorCode DMSNESSetJacobianLocal(DM dm, PetscErrorCode (*func)(DM, Vec, Mat, Mat, void *), void *ctx) {
+PetscErrorCode DMSNESSetJacobianLocal(DM dm, PetscErrorCode (*func)(DM, Vec, Mat, Mat, void *), void *ctx)
+{
   DMSNES        sdm;
   DMSNES_Local *dmlocalsnes;
 
@@ -261,7 +272,8 @@ PetscErrorCode DMSNESSetJacobianLocal(DM dm, PetscErrorCode (*func)(DM, Vec, Mat
 
 .seealso: `DMSNESSetFunction()`, `DMSNESSetFunctionLocal()`, `DMDASNESSetJacobianLocal()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`
 @*/
-PetscErrorCode DMSNESGetFunctionLocal(DM dm, PetscErrorCode (**func)(DM, Vec, Vec, void *), void **ctx) {
+PetscErrorCode DMSNESGetFunctionLocal(DM dm, PetscErrorCode (**func)(DM, Vec, Vec, void *), void **ctx)
+{
   DMSNES        sdm;
   DMSNES_Local *dmlocalsnes;
 
@@ -290,7 +302,8 @@ PetscErrorCode DMSNESGetFunctionLocal(DM dm, PetscErrorCode (**func)(DM, Vec, Ve
 
 .seealso: `DMSNESSetFunctionLocal()`, `DMSNESSetBoundaryLocal()`, `DMDASNESSetJacobianLocal()`
 @*/
-PetscErrorCode DMSNESGetBoundaryLocal(DM dm, PetscErrorCode (**func)(DM, Vec, void *), void **ctx) {
+PetscErrorCode DMSNESGetBoundaryLocal(DM dm, PetscErrorCode (**func)(DM, Vec, void *), void **ctx)
+{
   DMSNES        sdm;
   DMSNES_Local *dmlocalsnes;
 
@@ -319,7 +332,8 @@ PetscErrorCode DMSNESGetBoundaryLocal(DM dm, PetscErrorCode (**func)(DM, Vec, vo
 
 .seealso: `DMSNESSetJacobianLocal()`, `DMDASNESSetJacobian()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`
 @*/
-PetscErrorCode DMSNESGetJacobianLocal(DM dm, PetscErrorCode (**func)(DM, Vec, Mat, Mat, void *), void **ctx) {
+PetscErrorCode DMSNESGetJacobianLocal(DM dm, PetscErrorCode (**func)(DM, Vec, Mat, Mat, void *), void **ctx)
+{
   DMSNES        sdm;
   DMSNES_Local *dmlocalsnes;
 

@@ -27,7 +27,8 @@
 
 .seealso: `PetscSFGetGraphLayout()`, `PetscSFCreate()`, `PetscSFView()`, `PetscSFSetGraph()`, `PetscSFGetGraph()`
 @*/
-PetscErrorCode PetscSFSetGraphLayout(PetscSF sf, PetscLayout layout, PetscInt nleaves, PetscInt *ilocal, PetscCopyMode localmode, const PetscInt *gremote) {
+PetscErrorCode PetscSFSetGraphLayout(PetscSF sf, PetscLayout layout, PetscInt nleaves, PetscInt *ilocal, PetscCopyMode localmode, const PetscInt *gremote)
+{
   const PetscInt *range;
   PetscInt        i, nroots, ls = -1, ln = -1;
   PetscMPIInt     lr = -1;
@@ -78,7 +79,8 @@ PetscErrorCode PetscSFSetGraphLayout(PetscSF sf, PetscLayout layout, PetscInt nl
 
 .seealso: `PetscSFSetGraphLayout()`, `PetscSFCreate()`, `PetscSFView()`, `PetscSFSetGraph()`, `PetscSFGetGraph()`
 @*/
-PetscErrorCode PetscSFGetGraphLayout(PetscSF sf, PetscLayout *layout, PetscInt *nleaves, const PetscInt *ilocal[], PetscInt *gremote[]) {
+PetscErrorCode PetscSFGetGraphLayout(PetscSF sf, PetscLayout *layout, PetscInt *nleaves, const PetscInt *ilocal[], PetscInt *gremote[])
+{
   PetscInt           nr, nl;
   const PetscSFNode *ir;
   PetscLayout        lt;
@@ -115,7 +117,8 @@ PetscErrorCode PetscSFGetGraphLayout(PetscSF sf, PetscLayout *layout, PetscInt *
 
 .seealso: `PetscSFSetGraph()`, `PetscSFSetGraphLayout()`
 @*/
-PetscErrorCode PetscSFSetGraphSection(PetscSF sf, PetscSection localSection, PetscSection globalSection) {
+PetscErrorCode PetscSFSetGraphSection(PetscSF sf, PetscSection localSection, PetscSection globalSection)
+{
   MPI_Comm        comm;
   PetscLayout     layout;
   const PetscInt *ranges;
@@ -214,7 +217,8 @@ PetscErrorCode PetscSFSetGraphSection(PetscSF sf, PetscSection localSection, Pet
 
 .seealso: `PetscSFCreate()`
 @*/
-PetscErrorCode PetscSFDistributeSection(PetscSF sf, PetscSection rootSection, PetscInt **remoteOffsets, PetscSection leafSection) {
+PetscErrorCode PetscSFDistributeSection(PetscSF sf, PetscSection rootSection, PetscInt **remoteOffsets, PetscSection leafSection)
+{
   PetscSF         embedSF;
   const PetscInt *indices;
   IS              selected;
@@ -260,8 +264,8 @@ PetscErrorCode PetscSFDistributeSection(PetscSF sf, PetscSection rootSection, Pe
   }
   PetscCall(PetscSectionGetChart(rootSection, &rpStart, &rpEnd));
   PetscCall(PetscSFGetGraph(sf, &nroots, NULL, NULL, NULL));
-  rpEnd  = PetscMin(rpEnd, nroots);
-  rpEnd  = PetscMax(rpStart, rpEnd);
+  rpEnd = PetscMin(rpEnd, nroots);
+  rpEnd = PetscMax(rpStart, rpEnd);
   /* see if we can avoid creating the embedded SF, since it can cost more than an allreduce */
   sub[0] = (PetscBool)(nroots != rpEnd - rpStart);
   PetscCall(MPIU_Allreduce(MPI_IN_PLACE, sub, 2 + numFields, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)sf)));
@@ -358,7 +362,8 @@ PetscErrorCode PetscSFDistributeSection(PetscSF sf, PetscSection rootSection, Pe
 
 .seealso: `PetscSFCreate()`
 @*/
-PetscErrorCode PetscSFCreateRemoteOffsets(PetscSF sf, PetscSection rootSection, PetscSection leafSection, PetscInt **remoteOffsets) {
+PetscErrorCode PetscSFCreateRemoteOffsets(PetscSF sf, PetscSection rootSection, PetscSection leafSection, PetscInt **remoteOffsets)
+{
   PetscSF         embedSF;
   const PetscInt *indices;
   IS              selected;
@@ -404,7 +409,8 @@ PetscErrorCode PetscSFCreateRemoteOffsets(PetscSF sf, PetscSection rootSection, 
 
 .seealso: `PetscSFCreate()`
 @*/
-PetscErrorCode PetscSFCreateSectionSF(PetscSF sf, PetscSection rootSection, PetscInt remoteOffsets[], PetscSection leafSection, PetscSF *sectionSF) {
+PetscErrorCode PetscSFCreateSectionSF(PetscSF sf, PetscSection rootSection, PetscInt remoteOffsets[], PetscSection leafSection, PetscSF *sectionSF)
+{
   MPI_Comm           comm;
   const PetscInt    *localPoints;
   const PetscSFNode *remotePoints;
@@ -479,7 +485,8 @@ PetscErrorCode PetscSFCreateSectionSF(PetscSF sf, PetscSection rootSection, Pets
 
 .seealso: `PetscSFCreate()`, `PetscLayoutCreate()`, `PetscSFSetGraphLayout()`
 @*/
-PetscErrorCode PetscSFCreateFromLayouts(PetscLayout rmap, PetscLayout lmap, PetscSF *sf) {
+PetscErrorCode PetscSFCreateFromLayouts(PetscLayout rmap, PetscLayout lmap, PetscSF *sf)
+{
   PetscInt     i, nroots, nleaves = 0;
   PetscInt     rN, lst, len;
   PetscMPIInt  owner = -1;
@@ -511,7 +518,8 @@ PetscErrorCode PetscSFCreateFromLayouts(PetscLayout rmap, PetscLayout lmap, Pets
 }
 
 /* TODO: handle nooffprocentries like MatZeroRowsMapLocal_Private, since this code is the same */
-PetscErrorCode PetscLayoutMapLocal(PetscLayout map, PetscInt N, const PetscInt idxs[], PetscInt *on, PetscInt **oidxs, PetscInt **ogidxs) {
+PetscErrorCode PetscLayoutMapLocal(PetscLayout map, PetscInt N, const PetscInt idxs[], PetscInt *on, PetscInt **oidxs, PetscInt **ogidxs)
+{
   PetscInt    *owners = map->range;
   PetscInt     n      = map->n;
   PetscSF      sf;
@@ -666,7 +674,8 @@ $
 
 .seealso: `PetscSFCreate()`
 @*/
-PetscErrorCode PetscSFCreateByMatchingIndices(PetscLayout layout, PetscInt numRootIndices, const PetscInt *rootIndices, const PetscInt *rootLocalIndices, PetscInt rootLocalOffset, PetscInt numLeafIndices, const PetscInt *leafIndices, const PetscInt *leafLocalIndices, PetscInt leafLocalOffset, PetscSF *sfA, PetscSF *sf) {
+PetscErrorCode PetscSFCreateByMatchingIndices(PetscLayout layout, PetscInt numRootIndices, const PetscInt *rootIndices, const PetscInt *rootLocalIndices, PetscInt rootLocalOffset, PetscInt numLeafIndices, const PetscInt *leafIndices, const PetscInt *leafLocalIndices, PetscInt leafLocalOffset, PetscSF *sfA, PetscSF *sf)
+{
   MPI_Comm     comm = layout->comm;
   PetscMPIInt  size, rank;
   PetscSF      sf1;

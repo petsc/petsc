@@ -17,11 +17,11 @@
 #if defined(PETSC_HAVE_SUNDIALS2)
 
 EXTERN_C_BEGIN
-#include <cvode/cvode.h>              /* prototypes for CVODE fcts. */
-#include <cvode/cvode_spgmr.h>        /* prototypes and constants for CVSPGMR solver */
-#include <cvode/cvode_dense.h>        /* prototypes and constants for CVDense solver */
-#include <nvector/nvector_parallel.h> /* definition N_Vector and macro NV_DATA_P  */
-#include <nvector/nvector_serial.h>
+  #include <cvode/cvode.h>              /* prototypes for CVODE fcts. */
+  #include <cvode/cvode_spgmr.h>        /* prototypes and constants for CVSPGMR solver */
+  #include <cvode/cvode_dense.h>        /* prototypes and constants for CVDense solver */
+  #include <nvector/nvector_parallel.h> /* definition N_Vector and macro NV_DATA_P  */
+  #include <nvector/nvector_serial.h>
 EXTERN_C_END
 
 typedef struct {

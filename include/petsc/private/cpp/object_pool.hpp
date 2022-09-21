@@ -7,9 +7,10 @@
 #include <petscsys.h>
 
 #if defined(__cplusplus)
-#include <stack>
+  #include <stack>
 
-namespace Petsc {
+namespace Petsc
+{
 
 // Allocator ABC for interoperability with C ctors and dtors.
 template <typename T>
@@ -31,7 +32,8 @@ protected:
 // REVIEW ME:
 // TODO: The object pool should use the generic pool allocator, as the object pool is nothing
 // more than a pool allocator with fixed block_size!
-namespace detail {
+namespace detail
+{
 
 // Base class to object pool, defines helpful typedefs and stores the allocator instance
 template <class Allocator>
@@ -70,7 +72,8 @@ public:
   static_assert(std::is_same<value_type, typename base_type::value_type>::value, "");
 
   // destructor
-  ~ObjectPool() noexcept(std::is_nothrow_destructible<base_type>::value &&std::is_nothrow_destructible<stack_type>::value) {
+  ~ObjectPool() noexcept(std::is_nothrow_destructible<base_type>::value &&std::is_nothrow_destructible<stack_type>::value)
+  {
     PetscFunctionBegin;
     PetscCallAbort(PETSC_COMM_SELF, this->finalize());
     PetscFunctionReturnVoid();
@@ -93,7 +96,8 @@ private:
 };
 
 template <typename T, typename Allocator, typename Container>
-inline PetscErrorCode ObjectPool<T, Allocator, Container>::finalize_() noexcept {
+inline PetscErrorCode ObjectPool<T, Allocator, Container>::finalize_() noexcept
+{
   PetscFunctionBegin;
   while (!stack_.empty()) {
     PetscCall(this->allocator().destroy(std::move(stack_.top())));
@@ -106,7 +110,8 @@ inline PetscErrorCode ObjectPool<T, Allocator, Container>::finalize_() noexcept 
 
 template <typename T, typename Allocator, typename Container>
 template <typename... Args>
-inline PetscErrorCode ObjectPool<T, Allocator, Container>::allocate(value_type *obj, Args &&...args) noexcept {
+inline PetscErrorCode ObjectPool<T, Allocator, Container>::allocate(value_type *obj, Args &&...args) noexcept
+{
   PetscFunctionBegin;
   PetscValidPointer(obj, 1);
   PetscCall(this->register_finalize());
@@ -121,7 +126,8 @@ inline PetscErrorCode ObjectPool<T, Allocator, Container>::allocate(value_type *
 }
 
 template <typename T, typename Allocator, typename Container>
-inline PetscErrorCode ObjectPool<T, Allocator, Container>::deallocate(value_type &&obj) noexcept {
+inline PetscErrorCode ObjectPool<T, Allocator, Container>::deallocate(value_type &&obj) noexcept
+{
   PetscFunctionBegin;
   if (PetscLikely(this->registered())) {
     // allows const allocator_t& to be used if allocator defines a const reset
