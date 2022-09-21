@@ -187,7 +187,7 @@ static PetscErrorCode ISView_General_HDF5(IS is, PetscViewer viewer) {
   PetscFunctionBegin;
   PetscCall(ISGetBlockSize(is, &bs));
   bs = PetscMax(bs, 1); /* If N = 0, bs  = 0 as well */
-  PetscCall(PetscViewerHDF5OpenGroup(viewer, &file_id, &group));
+  PetscCall(PetscViewerHDF5OpenGroup(viewer, NULL, &file_id, &group));
   PetscCall(PetscViewerHDF5IsTimestepping(viewer, &timestepping));
   if (timestepping) PetscCall(PetscViewerHDF5GetTimestep(viewer, &timestep));
 

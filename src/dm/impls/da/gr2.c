@@ -424,7 +424,7 @@ PetscErrorCode VecView_MPI_HDF5_DA(Vec xin, PetscViewer viewer) {
   const char        *vecname;
 
   PetscFunctionBegin;
-  PetscCall(PetscViewerHDF5OpenGroup(viewer, &file_id, &group));
+  PetscCall(PetscViewerHDF5OpenGroup(viewer, NULL, &file_id, &group));
   PetscCall(PetscViewerHDF5IsTimestepping(viewer, &timestepping));
   if (timestepping) PetscCall(PetscViewerHDF5GetTimestep(viewer, &timestep));
   PetscCall(PetscViewerHDF5GetBaseDimension2(viewer, &dim2));
@@ -778,7 +778,7 @@ PetscErrorCode VecLoad_HDF5_DA(Vec xin, PetscViewer viewer) {
   scalartype = H5T_NATIVE_DOUBLE;
 #endif
 
-  PetscCall(PetscViewerHDF5OpenGroup(viewer, &file_id, &group));
+  PetscCall(PetscViewerHDF5OpenGroup(viewer, NULL, &file_id, &group));
   PetscCall(PetscObjectGetName((PetscObject)xin, &vecname));
   PetscCall(PetscViewerHDF5CheckTimestepping_Internal(viewer, vecname));
   PetscCall(PetscViewerHDF5IsTimestepping(viewer, &timestepping));

@@ -119,11 +119,15 @@ exec-name``.
 
 .. rubric:: PetscViewer:
 
+- Change ``PetscViewerHDF5GetGroup()`` to accept optional path relative to the pushed group and always return absolute path (newly allocated)
+- Change ``PetscViewerHDF5OpenGroup()`` to accept optional path relative to the pushed group
+- Add ``PetscViewerHDF5WriteGroup()``
+
 .. rubric:: PetscDraw:
 
 - Add ``PetscDrawSPGetDimension()``
--  Change ``PetscDrawCollectiveBegin()`` and ``PetscDrawCollectiveEnd()`` to not return an error code. Users can remove the error code checking for
-   these functions and it will work correctly for all versions of PETSc
+- Change ``PetscDrawCollectiveBegin()`` and ``PetscDrawCollectiveEnd()`` to not return an error code. Users can remove the error code checking for
+  these functions and it will work correctly for all versions of PETSc
 
 .. rubric:: AO:
 

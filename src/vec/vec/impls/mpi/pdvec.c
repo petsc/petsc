@@ -564,7 +564,7 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer) {
   const char        *vecname;
 
   PetscFunctionBegin;
-  PetscCall(PetscViewerHDF5OpenGroup(viewer, &file_id, &group));
+  PetscCall(PetscViewerHDF5OpenGroup(viewer, NULL, &file_id, &group));
   PetscCall(PetscViewerHDF5IsTimestepping(viewer, &timestepping));
   if (timestepping) PetscCall(PetscViewerHDF5GetTimestep(viewer, &timestep));
   PetscCall(PetscViewerHDF5GetBaseDimension2(viewer, &dim2));

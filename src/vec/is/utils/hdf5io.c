@@ -15,12 +15,15 @@ typedef struct _n_HDF5ReadCtx *HDF5ReadCtx;
 PetscErrorCode PetscViewerHDF5CheckTimestepping_Internal(PetscViewer viewer, const char name[]) {
   PetscViewer_HDF5 *hdf5         = (PetscViewer_HDF5 *)viewer->data;
   PetscBool         timestepping = PETSC_FALSE;
-  const char       *group;
 
   PetscFunctionBegin;
-  PetscCall(PetscViewerHDF5GetGroup(viewer, &group));
   PetscCall(PetscViewerHDF5ReadAttribute(viewer, name, "timestepping", PETSC_BOOL, &timestepping, &timestepping));
-  PetscCheck(timestepping == hdf5->timestepping, PetscObjectComm((PetscObject)viewer), PETSC_ERR_FILE_UNEXPECTED, "Dataset %s/%s stored with timesteps? %s Timestepping pushed? %s", group, name, PetscBools[timestepping], PetscBools[hdf5->timestepping]);
+  if (timestepping != hdf5->timestepping) {
+    char *group;
+
+    PetscCall(PetscViewerHDF5GetGroup(viewer, NULL, &group));
+    SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_FILE_UNEXPECTED, "Dataset %s/%s stored with timesteps? %s Timestepping pushed? %s", group, name, PetscBools[timestepping], PetscBools[hdf5->timestepping]);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -31,7 +34,7 @@ static PetscErrorCode PetscViewerHDF5ReadInitialize_Private(PetscViewer viewer, 
   PetscFunctionBegin;
   PetscCall(PetscViewerHDF5CheckTimestepping_Internal(viewer, name));
   PetscCall(PetscNew(&h));
-  PetscCall(PetscViewerHDF5OpenGroup(viewer, &h->file, &h->group));
+  PetscCall(PetscViewerHDF5OpenGroup(viewer, NULL, &h->file, &h->group));
   PetscCallHDF5Return(h->dataset, H5Dopen2, (h->group, name, H5P_DEFAULT));
   PetscCallHDF5Return(h->dataspace, H5Dget_space, (h->dataset));
   PetscCall(PetscViewerHDF5ReadAttribute(viewer, name, "complex", PETSC_BOOL, &h->complexVal, &h->complexVal));
@@ -199,16 +202,16 @@ static PetscErrorCode PetscViewerHDF5ReadArray_Private(PetscViewer viewer, HDF5R
 @*/
 PetscErrorCode PetscViewerHDF5Load(PetscViewer viewer, const char *name, PetscLayout map, hid_t datatype, void **newarr) {
   PetscBool   has;
-  const char *group;
+  char       *group;
   HDF5ReadCtx h        = NULL;
   hid_t       memspace = 0;
   size_t      unitsize;
   void       *arr;
 
   PetscFunctionBegin;
-  PetscCall(PetscViewerHDF5GetGroup(viewer, &group));
+  PetscCall(PetscViewerHDF5GetGroup(viewer, NULL, &group));
   PetscCall(PetscViewerHDF5HasDataset(viewer, name, &has));
-  PetscCheck(has, PetscObjectComm((PetscObject)viewer), PETSC_ERR_FILE_UNEXPECTED, "Object (dataset) \"%s\" not stored in group %s", name, group ? group : "/");
+  PetscCheck(has, PetscObjectComm((PetscObject)viewer), PETSC_ERR_FILE_UNEXPECTED, "Object (dataset) \"%s\" not stored in group %s", name, group);
   PetscCall(PetscViewerHDF5ReadInitialize_Private(viewer, name, &h));
 #if defined(PETSC_USE_COMPLEX)
   if (!h->complexVal) {
@@ -216,7 +219,7 @@ PetscErrorCode PetscViewerHDF5Load(PetscViewer viewer, const char *name, PetscLa
     PetscCheck(clazz != H5T_FLOAT, PetscObjectComm((PetscObject)viewer), PETSC_ERR_SUP, "Dataset %s/%s is marked as real but PETSc is configured for complex scalars. The conversion is not yet implemented. Configure with --with-scalar-type=real to read this dataset", group ? group : "", name);
   }
 #else
-  PetscCheck(!h->complexVal, PetscObjectComm((PetscObject)viewer), PETSC_ERR_SUP, "Dataset %s/%s is marked as complex but PETSc is configured for real scalars. Configure with --with-scalar-type=complex to read this dataset", group ? group : "", name);
+  PetscCheck(!h->complexVal, PetscObjectComm((PetscObject)viewer), PETSC_ERR_SUP, "Dataset %s/%s is marked as complex but PETSc is configured for real scalars. Configure with --with-scalar-type=complex to read this dataset", group, name);
 #endif
 
   PetscCall(PetscViewerHDF5ReadSizes_Private(viewer, h, PETSC_TRUE, &map));
@@ -231,6 +234,7 @@ PetscErrorCode PetscViewerHDF5Load(PetscViewer viewer, const char *name, PetscLa
   PetscCall(PetscViewerHDF5ReadArray_Private(viewer, h, datatype, memspace, arr));
   PetscCallHDF5(H5Sclose, (memspace));
   PetscCall(PetscViewerHDF5ReadFinalize_Private(viewer, &h));
+  PetscCall(PetscFree(group));
   *newarr = arr;
   PetscFunctionReturn(0);
 }

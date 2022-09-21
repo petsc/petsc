@@ -13,7 +13,6 @@
 #endif
 
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5GetFileId(PetscViewer, hid_t *);
-PETSC_EXTERN PetscErrorCode PetscViewerHDF5OpenGroup(PetscViewer, hid_t *, hid_t *);
 
 /* On 32 bit systems HDF5 is limited by size of integer, because hsize_t is defined as size_t */
 #define PETSC_HDF5_INT_MAX (~(hsize_t)0)
@@ -55,8 +54,10 @@ PETSC_EXTERN PetscErrorCode PetscViewerHDF5HasObjectAttribute(PetscViewer, Petsc
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5Open(MPI_Comm, const char[], PetscFileMode, PetscViewer *);
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5PushGroup(PetscViewer, const char[]);
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5PopGroup(PetscViewer);
-PETSC_EXTERN PetscErrorCode PetscViewerHDF5GetGroup(PetscViewer, const char *[]);
+PETSC_EXTERN PetscErrorCode PetscViewerHDF5GetGroup(PetscViewer, const char[], char *[]);
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5HasGroup(PetscViewer, const char[], PetscBool *);
+PETSC_EXTERN PetscErrorCode PetscViewerHDF5OpenGroup(PetscViewer, const char[], hid_t *, hid_t *);
+PETSC_EXTERN PetscErrorCode PetscViewerHDF5WriteGroup(PetscViewer, const char[]);
 
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5SetDefaultTimestepping(PetscViewer, PetscBool);
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5GetDefaultTimestepping(PetscViewer, PetscBool *);
