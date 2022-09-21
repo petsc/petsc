@@ -259,7 +259,7 @@ checkgitclean:
 checkclangformatversion:
 	@version=`clang-format --version | cut -d" " -f3 | cut -d"." -f 1` ;\
          if [ "$$version" == "version" ]; then version=`clang-format --version | cut -d" " -f4 | cut -d"." -f 1`; fi;\
-         if [ $$version != 14 ]; then echo "Require clang-format version 14! Currently used clang-format version is $$version" ;false ; fi
+         if [ $$version != 15 ]; then echo "Require clang-format version 15! Currently used clang-format version is $$version" ;false ; fi
 
 # Check that all the source code in the repository satisfies the .clang_format
 checkclangformat: checkclangformatversion checkgitclean clangformat
