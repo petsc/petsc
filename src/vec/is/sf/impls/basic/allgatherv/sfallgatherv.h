@@ -8,6 +8,9 @@
 typedef struct {
   SFBASICHEADER;
   PetscMPIInt *displs, *recvcounts;
+  /* special treatment for one-to-all patterns detected at setup time */
+  PetscBool   bcast_pattern; /* bcast here means one-to-all; we might do MPI_Reduce with this pattern */
+  PetscMPIInt bcast_root;    /* the root rank in MPI_Bcast */
 } PetscSF_Allgatherv;
 
 PETSC_INTERN PetscErrorCode PetscSFSetUp_Allgather(PetscSF);
