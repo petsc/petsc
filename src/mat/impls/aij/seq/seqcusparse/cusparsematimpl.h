@@ -310,7 +310,7 @@ struct Mat_SeqAIJCUSPARSE {
   PetscObjectState              nonzerostate;   /* track nonzero state to possibly recreate the GPU matrix */
   #if PETSC_PKG_CUDA_VERSION_GE(11, 0, 0)
   size_t               csr2cscBufferSize; /* stuff used to compute the matTranspose above */
-  void                *csr2cscBuffer;     /* This is used as a C struct and is calloc'ed by PetscNewLog() */
+  void                *csr2cscBuffer;     /* This is used as a C struct and is calloc'ed by PetscNew() */
   cusparseCsr2CscAlg_t csr2cscAlg;        /* algorithms can be selected from command line options */
   cusparseSpMVAlg_t    spmvAlg;
   cusparseSpMMAlg_t    spmmAlg;
