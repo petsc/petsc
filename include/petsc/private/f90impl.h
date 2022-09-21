@@ -1,5 +1,5 @@
 
-#if !defined(PETSCF90_H)
+#ifndef PETSCF90_H
 #define PETSCF90_H
 #include <petsc/private/fortranimpl.h>
 

@@ -18,7 +18,7 @@
   PetscBLASInt is almost always 32 bit integers but can be 64 bit integers for certain usages of MKL and OpenBLAS BLAS/LAPACK libraries
 
 */
-#if !defined(_BLASLAPACK_H)
+#ifndef _BLASLAPACK_H
 #define _BLASLAPACK_H
 
 #include <petscconf.h>

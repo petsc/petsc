@@ -1,4 +1,4 @@
-#if !defined(_VTKVIMPL_H)
+#ifndef _VTKVIMPL_H
 #define _VTKVIMPL_H
 
 #include <petsc/private/viewerimpl.h> /*I   "petscsys.h"   I*/

@@ -1,4 +1,4 @@
-#if !defined(PETSCCEIMPL_H)
+#ifndef PETSCCEIMPL_H
 #define PETSCCEIMPL_H
 
 #include <petscconvest.h>

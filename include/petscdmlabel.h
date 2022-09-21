@@ -1,4 +1,4 @@
-#if !defined(PETSCDMLABEL_H)
+#ifndef PETSCDMLABEL_H
 #define PETSCDMLABEL_H
 #include <petscis.h>
 

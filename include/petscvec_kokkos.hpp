@@ -1,4 +1,4 @@
-#if !defined(PETSCVEC_KOKKOS_HPP)
+#ifndef PETSCVEC_KOKKOS_HPP
 #define PETSCVEC_KOKKOS_HPP
 
 #include <petscconf.h>

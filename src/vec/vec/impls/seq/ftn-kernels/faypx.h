@@ -1,5 +1,5 @@
 
-#if !defined(__FAYPX_H)
+#ifndef __FAYPX_H
 #include <petscsys.h>
 #if defined(PETSC_USE_FORTRAN_KERNEL_AYPX)
 #if defined(PETSC_HAVE_FORTRAN_CAPS)

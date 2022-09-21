@@ -1,4 +1,4 @@
-#if !defined(__WIN32DRAW_H)
+#ifndef __WIN32DRAW_H
 #define __WIN32DRAW_H
 
 #if defined(PETSC_HAVE_WINDOWS_H)

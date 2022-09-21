@@ -1,4 +1,4 @@
-#if !defined(PETSCMOAB_H)
+#ifndef PETSCMOAB_H
 #define PETSCMOAB_H
 
 #include <petscvec.h> /*I      "petscvec.h"    I*/

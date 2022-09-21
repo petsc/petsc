@@ -1,4 +1,4 @@
-#if !defined(PETSCSYSTYPES_H)
+#ifndef PETSCSYSTYPES_H
 #define PETSCSYSTYPES_H
 
 #include <petscconf.h>

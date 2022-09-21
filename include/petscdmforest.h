@@ -1,7 +1,7 @@
 /*
   DMFOREST, for parallel, hierarchically refined, distributed mesh problems.
 */
-#if !defined(PETSCDMFOREST_H)
+#ifndef PETSCDMFOREST_H
 #define PETSCDMFOREST_H
 
 #include <petscdm.h>

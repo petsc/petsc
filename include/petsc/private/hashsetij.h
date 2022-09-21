@@ -1,4 +1,4 @@
-#if !defined(PETSC_HASHSETIJ_H)
+#ifndef PETSC_HASHSETIJ_H
 #define PETSC_HASHSETIJ_H
 
 #include <petsc/private/hashset.h>

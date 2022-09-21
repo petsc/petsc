@@ -1,5 +1,5 @@
 
-#if !defined(PETSCVIEWEREXODUSII_H)
+#ifndef PETSCVIEWEREXODUSII_H
 #define PETSCVIEWEREXODUSII_H
 
 #include <petscviewer.h>

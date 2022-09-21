@@ -1,4 +1,4 @@
-#if !defined(PETSCLANDAU_H)
+#ifndef PETSCLANDAU_H
 #define PETSCLANDAU_H
 
 #include <petscdmplex.h> /*I      "petscdmplex.h"    I*/

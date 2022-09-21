@@ -1,4 +1,4 @@
-#if !defined(__ASM_H)
+#ifndef __ASM_H
 #define __ASM_H
 
 #include <petscdm.h>

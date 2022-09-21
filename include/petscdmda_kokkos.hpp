@@ -1,4 +1,4 @@
-#if !defined(PETSCDMDA_KOKKOS_HPP)
+#ifndef PETSCDMDA_KOKKOS_HPP
 #define PETSCDMDA_KOKKOS_HPP
 
 #include <petscvec_kokkos.hpp>

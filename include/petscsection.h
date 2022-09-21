@@ -1,4 +1,4 @@
-#if !defined(PETSCSECTION_H)
+#ifndef PETSCSECTION_H
 #define PETSCSECTION_H
 
 #include <petscsys.h>

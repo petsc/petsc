@@ -3,7 +3,7 @@
   degrees of freedom for finite element/finite difference functions
   on a grid. They have more mathematical structure then simple arrays.
 */
-#if !defined(PETSCVEC_H)
+#ifndef PETSCVEC_H
 #define PETSCVEC_H
 
 #include <petscsys.h>

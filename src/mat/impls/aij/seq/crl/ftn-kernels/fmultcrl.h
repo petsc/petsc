@@ -1,5 +1,5 @@
 
-#if !defined(__FMULATCRL_H)
+#ifndef __FMULATCRL_H
 #include <petscsys.h>
 #if defined(PETSC_USE_FORTRAN_KERNEL_MULTCRL)
 #if defined(PETSC_HAVE_FORTRAN_CAPS)

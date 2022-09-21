@@ -1,4 +1,4 @@
-#if !defined(_NETWORKIMPL_H)
+#ifndef _NETWORKIMPL_H
 #define _NETWORKIMPL_H
 
 #include <petscmat.h>                 /*I      "petscmat.h"          I*/

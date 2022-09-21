@@ -1,4 +1,4 @@
-#if !defined(_DT_H)
+#ifndef _DT_H
 #define _DT_H
 
 #include <petscdt.h>

@@ -1,4 +1,4 @@
-#if !defined(PETSC_P4EST_PACKAGE_H)
+#ifndef PETSC_P4EST_PACKAGE_H
 #define PETSC_P4EST_PACKAGE_H
 #include <petscsys.h>
 #if defined(PETSC_HAVE_MPIUNI)

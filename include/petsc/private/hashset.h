@@ -1,4 +1,4 @@
-#if !defined(PETSC_HASHSET_H)
+#ifndef PETSC_HASHSET_H
 #define PETSC_HASHSET_H
 
 #include <petsc/private/hashtable.h>

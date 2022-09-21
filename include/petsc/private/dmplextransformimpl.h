@@ -1,4 +1,4 @@
-#if !defined(_PLEXTRANSFORMIMPL_H)
+#ifndef _PLEXTRANSFORMIMPL_H
 #define _PLEXTRANSFORMIMPL_H
 
 #include <petsc/private/dmpleximpl.h>

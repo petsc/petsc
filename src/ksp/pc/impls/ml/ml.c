@@ -12,7 +12,7 @@
 
 EXTERN_C_BEGIN
 /* HAVE_CONFIG_H flag is required by ML include files */
-#if !defined(HAVE_CONFIG_H)
+#ifndef HAVE_CONFIG_H
 #define HAVE_CONFIG_H
 #endif
 #include <ml_include.h>

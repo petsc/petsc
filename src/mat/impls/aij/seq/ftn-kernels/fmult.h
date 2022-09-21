@@ -1,5 +1,5 @@
 
-#if !defined(__FMULT_H)
+#ifndef __FMULT_H
 #include <petscsys.h>
 #if defined(PETSC_USE_FORTRAN_KERNEL_MULTAIJ)
 #if defined(PETSC_HAVE_FORTRAN_CAPS)

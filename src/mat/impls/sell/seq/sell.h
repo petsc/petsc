@@ -1,5 +1,5 @@
 
-#if !defined(__SELL_H)
+#ifndef __SELL_H
 #define __SELL_H
 
 #include <petsc/private/matimpl.h>

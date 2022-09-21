@@ -1,5 +1,5 @@
 
-#if !defined(__DENSE_H)
+#ifndef __DENSE_H
 #define __DENSE_H
 #include <petsc/private/matimpl.h>
 /* TODO REMOVE */

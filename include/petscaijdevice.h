@@ -1,4 +1,4 @@
-#if !defined(PETSCAIJDEVICE_H)
+#ifndef PETSCAIJDEVICE_H
 #define PETSCAIJDEVICE_H
 
 #include <petscmat.h>

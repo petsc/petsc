@@ -2,7 +2,7 @@
    An index set is a generalization of a subset of integers.  Index sets
    are used for defining scatters and gathers.
 */
-#if !defined(PETSCIS_H)
+#ifndef PETSCIS_H
 #define PETSCIS_H
 
 #include <petscsys.h>

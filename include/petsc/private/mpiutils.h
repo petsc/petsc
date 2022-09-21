@@ -1,4 +1,4 @@
-#if !defined(MPIUTILS_H)
+#ifndef MPIUTILS_H
 #define MPIUTILS_H
 
 #include <petscsys.h>

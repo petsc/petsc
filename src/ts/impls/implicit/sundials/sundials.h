@@ -4,7 +4,7 @@
    solver developed at LLNL.
 */
 
-#if !defined(PETSC_SUNDIALS_H)
+#ifndef PETSC_SUNDIALS_H
 #define PETSC_SUNDIALS_H
 
 #include <petsc/private/tsimpl.h> /*I   "petscts.h"   I*/

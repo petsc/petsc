@@ -1,7 +1,7 @@
 /*
       Objects which encapsulate finite element spaces and operations
 */
-#if !defined(PETSCFE_H)
+#ifndef PETSCFE_H
 #define PETSCFE_H
 #include <petscdm.h>
 #include <petscdt.h>

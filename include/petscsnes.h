@@ -1,7 +1,7 @@
 /*
     User interface for the nonlinear solvers package.
 */
-#if !defined(PETSCSNES_H)
+#ifndef PETSCSNES_H
 #define PETSCSNES_H
 
 #include <petscksp.h>

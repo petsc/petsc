@@ -1,5 +1,5 @@
 
-#if !defined(__AIJ_H)
+#ifndef __AIJ_H
 #define __AIJ_H
 
 #include <petsc/private/matimpl.h>

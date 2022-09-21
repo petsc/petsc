@@ -1,4 +1,4 @@
-#if !defined(PETSCMATHTOOL_H)
+#ifndef PETSCMATHTOOL_H
 #define PETSCMATHTOOL_H
 
 #include <petscmat.h>

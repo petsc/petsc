@@ -1,4 +1,4 @@
-#if !defined(__MPIAIJ_H)
+#ifndef __MPIAIJ_H
 #define __MPIAIJ_H
 
 #include <../src/mat/impls/aij/seq/aij.h>

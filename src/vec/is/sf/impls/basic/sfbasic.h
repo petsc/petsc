@@ -1,4 +1,4 @@
-#if !defined(__SFBASIC_H)
+#ifndef __SFBASIC_H
 #define __SFBASIC_H
 
 #include <petsc/private/sfimpl.h> /*I "petscsf.h" I*/

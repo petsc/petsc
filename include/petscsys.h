@@ -2,7 +2,7 @@
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
 */
-#if !defined(PETSCSYS_H)
+#ifndef PETSCSYS_H
 #define PETSCSYS_H
 
 /* ========================================================================== */
@@ -71,7 +71,7 @@
       * an extra include path -I/something (which contains the unexpected mpi.h) is being passed to the compiler
 */
 #if defined(PETSC_HAVE_MPIUNI)
-#if !defined(MPIUNI_H)
+#ifndef MPIUNI_H
 #error "PETSc was configured with --with-mpi=0 but now appears to be compiling using a different mpi.h"
 #endif
 #elif defined(PETSC_HAVE_I_MPI_NUMVERSION)

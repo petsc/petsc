@@ -1,5 +1,5 @@
 
-#if !defined(_DMIMPL_H)
+#ifndef _DMIMPL_H
 #define _DMIMPL_H
 
 #include <petscdm.h>

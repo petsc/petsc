@@ -1,4 +1,4 @@
-#if !defined(_BLOCKTRANSPOSE_H)
+#ifndef _BLOCKTRANSPOSE_H
 #define _BLOCKTRANSPOSE_H
 
 #include <petscsys.h>

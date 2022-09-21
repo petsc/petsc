@@ -1,4 +1,4 @@
-#if !defined(PETSCDMPLEXCEED_H)
+#ifndef PETSCDMPLEXCEED_H
 #define PETSCDMPLEXCEED_H
 
 #if !defined(PETSC_HAVE_LIBCEED)

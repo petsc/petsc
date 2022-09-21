@@ -1,4 +1,4 @@
-#if !defined(_PETSCELEMENTAL_H)
+#ifndef _PETSCELEMENTAL_H
 #define _PETSCELEMENTAL_H
 
 #include <petsc/private/matimpl.h>

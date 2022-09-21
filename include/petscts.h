@@ -2,7 +2,7 @@
    User interface for the timestepping package. This package
    is for use in solving time-dependent PDEs.
 */
-#if !defined(PETSCTS_H)
+#ifndef PETSCTS_H
 #define PETSCTS_H
 
 #include <petscsnes.h>

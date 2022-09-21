@@ -10,7 +10,7 @@
        does not have some arguments in single and some in double.
 
 */
-#if !defined(__ILU_H)
+#ifndef __ILU_H
 #define __ILU_H
 #include <petscblaslapack.h>
 

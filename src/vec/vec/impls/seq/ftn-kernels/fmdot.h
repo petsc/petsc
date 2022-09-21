@@ -1,5 +1,5 @@
 
-#if !defined(__FMDOT_H)
+#ifndef __FMDOT_H
 #include <petscsys.h>
 #if defined(PETSC_USE_FORTRAN_KERNEL_MDOT)
 #if defined(PETSC_HAVE_FORTRAN_CAPS)

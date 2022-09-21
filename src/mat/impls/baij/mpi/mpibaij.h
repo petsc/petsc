@@ -1,5 +1,5 @@
 
-#if !defined(__MPIBAIJ_H)
+#ifndef __MPIBAIJ_H
 #define __MPIBAIJ_H
 #include <../src/mat/impls/baij/seq/baij.h>
 #include <../src/mat/impls/aij/mpi/mpiaij.h>

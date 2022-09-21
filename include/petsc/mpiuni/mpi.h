@@ -94,7 +94,7 @@
     reason to avoid these packages for sequential use.
 */
 
-#if !defined(MPIUNI_H)
+#ifndef MPIUNI_H
 #define MPIUNI_H
 
 /* Required by abort() in mpi.c & for win64 */

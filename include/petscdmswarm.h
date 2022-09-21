@@ -1,4 +1,4 @@
-#if !defined(PETSCDMSWARM_H)
+#ifndef PETSCDMSWARM_H
 #define PETSCDMSWARM_H
 
 #include <petscdm.h>

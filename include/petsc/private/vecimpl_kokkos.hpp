@@ -1,4 +1,4 @@
-#if !defined(__VECIMPL_KOKKOS_HPP)
+#ifndef __VECIMPL_KOKKOS_HPP
 #define __VECIMPL_KOKKOS_HPP
 
 /* types used by all petsc kokkos code */

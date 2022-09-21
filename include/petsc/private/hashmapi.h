@@ -1,4 +1,4 @@
-#if !defined(PETSC_HASHMAPI_H)
+#ifndef PETSC_HASHMAPI_H
 #define PETSC_HASHMAPI_H
 
 #include <petsc/private/hashmap.h>

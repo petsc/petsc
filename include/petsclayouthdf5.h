@@ -1,4 +1,4 @@
-#if !defined(PETSCLAYOUTHDF5_H)
+#ifndef PETSCLAYOUTHDF5_H
 #define PETSCLAYOUTHDF5_H
 
 #include <petscviewerhdf5.h>

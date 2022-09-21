@@ -2,7 +2,7 @@
 /*
     Defines the basic header of all PETSc objects.
 */
-#if !defined(PETSCIMPL_H)
+#ifndef PETSCIMPL_H
 #define PETSCIMPL_H
 #include <petscsys.h>
 

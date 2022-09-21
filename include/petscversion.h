@@ -1,4 +1,4 @@
-#if !defined(PETSCVERSION_H)
+#ifndef PETSCVERSION_H
 #define PETSCVERSION_H
 #include <petscconf.h>
 

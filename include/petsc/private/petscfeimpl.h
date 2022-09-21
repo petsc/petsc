@@ -1,4 +1,4 @@
-#if !defined(PETSCFEIMPL_H)
+#ifndef PETSCFEIMPL_H
 #define PETSCFEIMPL_H
 
 #include <petscfe.h>

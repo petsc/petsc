@@ -1,7 +1,7 @@
 /*
    Routines to determine options set in the options database.
 */
-#if !defined(PETSCOPTIONS_H)
+#ifndef PETSCOPTIONS_H
 #define PETSCOPTIONS_H
 
 #include <petscsys.h>

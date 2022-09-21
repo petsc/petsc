@@ -1,4 +1,4 @@
-#if !defined(_PETSCHYPRE_H)
+#ifndef _PETSCHYPRE_H
 #define _PETSCHYPRE_H
 
 #include <petscsys.h>

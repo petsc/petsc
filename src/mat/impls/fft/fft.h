@@ -1,5 +1,5 @@
 
-#if !defined(__FFT_H)
+#ifndef __FFT_H
 #define __FFT_H
 
 #include <petsc/private/matimpl.h>

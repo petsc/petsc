@@ -1,4 +1,4 @@
-#if !defined(PETSCFVTYPES_H)
+#ifndef PETSCFVTYPES_H
 #define PETSCFVTYPES_H
 
 /* SUBMANSEC = FV */

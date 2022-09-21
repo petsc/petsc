@@ -1,4 +1,4 @@
-#if !defined(_PLEXIMPL_H)
+#ifndef _PLEXIMPL_H
 #define _PLEXIMPL_H
 
 #include <petscmat.h>    /*I      "petscmat.h"          I*/

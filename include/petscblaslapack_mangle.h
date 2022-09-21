@@ -3,7 +3,7 @@
       non-Microsoft systems, which may append an underscore, use
       upper or lower case, and/or use a configurable symbol suffix.
 */
-#if !defined(_BLASLAPACK_MANGLE_H)
+#ifndef _BLASLAPACK_MANGLE_H
 #define _BLASLAPACK_MANGLE_H
 
 /****************************************************************************/

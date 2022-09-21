@@ -1,7 +1,7 @@
 /*
     Contains all error handling interfaces for PETSc.
 */
-#if !defined(PETSCERROR_H)
+#ifndef PETSCERROR_H
 #define PETSCERROR_H
 
 #include <petscmacros.h>

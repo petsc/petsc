@@ -1,5 +1,5 @@
 
-#if !defined(__FWAXPY_H)
+#ifndef __FWAXPY_H
 #include <petscsys.h>
 #if defined(PETSC_USE_FORTRAN_KERNEL_WAXPY)
 #if defined(PETSC_HAVE_FORTRAN_CAPS)

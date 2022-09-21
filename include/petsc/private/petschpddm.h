@@ -1,4 +1,4 @@
-#if !defined(PETSCHPDDM_H)
+#ifndef PETSCHPDDM_H
 #define PETSCHPDDM_H
 
 #include <petsc/private/kspimpl.h>

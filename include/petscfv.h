@@ -1,7 +1,7 @@
 /*
       Objects which encapsulate finite volume spaces and operations
 */
-#if !defined(PETSCFV_H)
+#ifndef PETSCFV_H
 #define PETSCFV_H
 
 #include <petscdm.h>

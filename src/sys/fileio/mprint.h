@@ -1,5 +1,5 @@
 
-#if !defined(__MPRINT_H)
+#ifndef __MPRINT_H
 #define __MPRINT_H
 
 #include <petscsys.h> /*I    "petscsys.h"   I*/

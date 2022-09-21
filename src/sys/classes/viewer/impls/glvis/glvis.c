@@ -719,7 +719,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_GLVis(PetscViewer viewer) {
 #include <unistd.h>
 #endif
 
-#if !defined(PETSC_HAVE_WINDOWS_H)
+#ifndef PETSC_HAVE_WINDOWS_H
 static PetscErrorCode (*PetscViewerDestroy_ASCII)(PetscViewer);
 
 static PetscErrorCode PetscViewerDestroy_ASCII_Socket(PetscViewer viewer) {

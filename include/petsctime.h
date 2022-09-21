@@ -2,7 +2,7 @@
        Low cost access to system time. This, in general, should not
      be included in user programs.
 */
-#if !defined(PETSCTIME_H)
+#ifndef PETSCTIME_H
 #define PETSCTIME_H
 
 #include <petscsys.h>

@@ -1,4 +1,4 @@
-#if !defined(PETSCVIENNACL_H)
+#ifndef PETSCVIENNACL_H
 #define PETSCVIENNACL_H
 
 #include <petscvec.h>

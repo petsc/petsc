@@ -3,7 +3,7 @@
    implementation of the graphics functionality in PETSc.
 */
 
-#if !defined(_XIMPL_H)
+#ifndef _XIMPL_H
 #define _XIMPL_H
 #include <petsc/private/drawimpl.h>
 

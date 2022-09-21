@@ -1,4 +1,4 @@
-#if !defined(PETSCMATELEMENTAL_H)
+#ifndef PETSCMATELEMENTAL_H
 #define PETSCMATELEMENTAL_H
 
 #include <petscmat.h>

@@ -1,4 +1,4 @@
-#if !defined(_DMMBIMPL_H)
+#ifndef _DMMBIMPL_H
 #define _DMMBIMPL_H
 
 #include <petscdmmoab.h> /*I      "petscdmmoab.h"    I*/

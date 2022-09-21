@@ -1,4 +1,4 @@
-#if !defined(PETSC_HASHTABLE_H)
+#ifndef PETSC_HASHTABLE_H
 #define PETSC_HASHTABLE_H
 
 #include <petsc/private/petscimpl.h>

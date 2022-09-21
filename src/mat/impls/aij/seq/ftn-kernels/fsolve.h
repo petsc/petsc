@@ -1,5 +1,5 @@
 
-#if !defined(__FSOLVE_H)
+#ifndef __FSOLVE_H
 #include <petscsys.h>
 #if defined(PETSC_USE_FORTRAN_KERNEL_SOLVEAIJ)
 #if defined(PETSC_HAVE_FORTRAN_CAPS)

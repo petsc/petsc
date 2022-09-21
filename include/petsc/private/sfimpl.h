@@ -1,4 +1,4 @@
-#if !defined(SFIMPL_H)
+#ifndef SFIMPL_H
 #define SFIMPL_H
 
 #include <petscvec.h>

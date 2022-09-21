@@ -1,7 +1,7 @@
 /*
       Preconditioner module.
 */
-#if !defined(PETSCPC_H)
+#ifndef PETSCPC_H
 #define PETSCPC_H
 
 #include <petscmat.h>

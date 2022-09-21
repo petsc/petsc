@@ -8,7 +8,7 @@
 
 */
 
-#if !defined(__CGIMPL_H)
+#ifndef __CGIMPL_H
 #define __CGIMPL_H
 
 /*

@@ -1,4 +1,4 @@
-#if !defined(PETSCFVIMPL_H)
+#ifndef PETSCFVIMPL_H
 #define PETSCFVIMPL_H
 
 #include <petscfv.h>

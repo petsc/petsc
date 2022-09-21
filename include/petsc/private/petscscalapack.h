@@ -1,4 +1,4 @@
-#if !defined(_PETSCSCALAPACK_H)
+#ifndef _PETSCSCALAPACK_H
 #define _PETSCSCALAPACK_H
 
 #include <petsc/private/matimpl.h>

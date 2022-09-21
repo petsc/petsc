@@ -1,7 +1,7 @@
 /*
       Objects which encapsulate discretizations+continuum residuals
 */
-#if !defined(PETSCCE_H)
+#ifndef PETSCCE_H
 #define PETSCCE_H
 
 #include <petscsnes.h>

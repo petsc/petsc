@@ -1,4 +1,4 @@
-#if !defined(_PETSCIMAGE_H)
+#ifndef _PETSCIMAGE_H
 #define _PETSCIMAGE_H
 
 #include <petscdraw.h>

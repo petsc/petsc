@@ -1,7 +1,7 @@
 /*
     Defines profile/logging in PETSc.
 */
-#if !defined(PETSCLOG_H)
+#ifndef PETSCLOG_H
 #define PETSCLOG_H
 
 #include <petscsys.h>

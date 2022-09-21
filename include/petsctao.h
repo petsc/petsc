@@ -1,4 +1,4 @@
-#if !defined(PETSCTAO_H)
+#ifndef PETSCTAO_H
 #define PETSCTAO_H
 
 #include <petscsnes.h>

@@ -1,4 +1,4 @@
-#if !defined(_DMADAPTORIMPL_H)
+#ifndef _DMADAPTORIMPL_H
 #define _DMADAPTORIMPL_H
 
 #include <petscdmadaptor.h>

@@ -1,7 +1,7 @@
 /*
   Interface to the PETSc graphics
 */
-#if !defined(PETSCDRAW_H)
+#ifndef PETSCDRAW_H
 #define PETSCDRAW_H
 #include <petscsys.h>
 #include <petscdrawtypes.h>

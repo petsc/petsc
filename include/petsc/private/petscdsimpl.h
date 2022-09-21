@@ -1,4 +1,4 @@
-#if !defined(PETSCDSIMPL_H)
+#ifndef PETSCDSIMPL_H
 #define PETSCDSIMPL_H
 
 #include <petscds.h>

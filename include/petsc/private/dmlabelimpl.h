@@ -1,4 +1,4 @@
-#if !defined(_LABELIMPL_H)
+#ifndef _LABELIMPL_H
 #define _LABELIMPL_H
 
 #include <petscdmlabel.h>

@@ -1,4 +1,4 @@
-#if !defined(__SFPACK_H)
+#ifndef __SFPACK_H
 #define __SFPACK_H
 
 #include <../src/vec/is/sf/impls/basic/sfbasic.h>

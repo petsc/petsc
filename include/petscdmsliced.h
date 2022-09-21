@@ -1,5 +1,5 @@
 /* Very minimal unstructured DM */
-#if !defined(PETSCDMSLICED_H)
+#ifndef PETSCDMSLICED_H
 #define PETSCDMSLICED_H
 
 #include <petscdm.h>

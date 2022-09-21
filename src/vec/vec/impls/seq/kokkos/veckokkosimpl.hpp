@@ -1,4 +1,4 @@
-#if !defined(__VECKOKKOSIMPL_HPP)
+#ifndef __VECKOKKOSIMPL_HPP
 #define __VECKOKKOSIMPL_HPP
 
 #include <../src/vec/vec/impls/mpi/pvecimpl.h>
