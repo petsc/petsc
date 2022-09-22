@@ -15,12 +15,12 @@ if __name__ == '__main__':
     '--with-cxx=mpiicpc',
     '--with-fc=mpiifort',
     '--with-memalign=64',
-    '--with-memkind-dir=/homes/petsc/soft/memkind-v1.5.0-75-g99463a1',
+    '--with-memkind-dir=/nfs/gce/projects/petsc/soft/u22.04/memkind-1.14.0',
     '--with-mpiexec=mpiexec.hydra',
     # Note: Use -mP2OPT_hpo_vec_remainder=F for intel compilers < version 18.
-    'COPTFLAGS=-g -xMIC-AVX512 -O3',
-    'CXXOPTFLAGS=-g -xMIC-AVX512 -O3',
-    'FOPTFLAGS=-g -xMIC-AVX512 -O3',
+    'COPTFLAGS=-g -O3', # -xMIC-AVX512
+    'CXXOPTFLAGS=-g -O3', # -xMIC-AVX512
+    'FOPTFLAGS=-g -O3', # -xMIC-AVX512
     '--with-avx512-kernels=1',
     '--with-blaslapack-dir='+os.environ['MKLROOT'],
     '--download-metis=1',

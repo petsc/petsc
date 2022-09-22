@@ -553,7 +553,7 @@ linux-gcc-cxx-avx2:
     - .stage-3
     - .linux_test
   tags:
-    - name:isdp001
+    - name:petsc-knl-01
   variables:
     TEST_ARCH: arch-ci-linux-gcc-cxx-avx2
 
@@ -562,7 +562,7 @@ linux-clang-avx:
     - .stage-3
     - .linux_test
   tags:
-    - name:isdp001
+    - name:petsc-knl-01
   variables:
     TEST_ARCH: arch-ci-linux-clang-avx
 
@@ -571,18 +571,20 @@ linux-knl:
     - .stage-3
     - .linux_test
   tags:
-    - name:isdp001
+    - name:petsc-knl-01
   variables:
     TEST_ARCH: arch-ci-linux-knl
+    LOAD_MODULES: intel-oneapi-compilers/2022.0.2 intel-oneapi-mkl/2022.0.2 intel-oneapi-mpi/2021.5.1
 
 linux-intel-mkl-single:
   extends:
     - .stage-3
     - .linux_test_nofflags
   tags:
-    - name:isdp001
+    - name:petsc-knl-01
   variables:
     TEST_ARCH: arch-ci-linux-intel-mkl-single
+    LOAD_MODULES: intel-oneapi-compilers/2022.0.2 intel-oneapi-mkl/2022.0.2 intel-oneapi-mpi/2021.5.1
 
 linux-cxx-cmplx-pkgs-64idx:
   extends:
