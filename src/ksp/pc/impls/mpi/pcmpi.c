@@ -38,6 +38,7 @@ typedef enum {
 static MPI_Comm  PCMPIComms[PC_MPI_MAX_RANKS];
 static PetscBool PCMPICommSet = PETSC_FALSE;
 static PetscInt  PCMPISolveCounts[PC_MPI_MAX_RANKS], PCMPIKSPCounts[PC_MPI_MAX_RANKS], PCMPIMatCounts[PC_MPI_MAX_RANKS], PCMPISolveCountsSeq = 0, PCMPIKSPCountsSeq = 0;
+static PetscInt  PCMPIIterations[PC_MPI_MAX_RANKS],PCMPISizes[PC_MPI_MAX_RANKS],PCMPIIterationsSeq = 0, PCMPISizesSeq = 0;
 
 static PetscErrorCode PCMPICommsCreate(void)
 {
@@ -54,6 +55,8 @@ static PetscErrorCode PCMPICommsCreate(void)
     PetscCallMPI(MPI_Comm_split(comm, color, 0, &PCMPIComms[i]));
     PCMPISolveCounts[i] = 0;
     PCMPIKSPCounts[i]   = 0;
+    PCMPIIterations[i]  = 0;
+    PCMPISizes[i]       = 0;
   }
   PCMPICommSet = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -254,7 +257,8 @@ static PetscErrorCode PCMPISolve(PC pc, Vec B, Vec X)
   MPI_Comm           comm = PC_MPI_COMM_WORLD;
   const PetscScalar *sb   = NULL, *x;
   PetscScalar       *b, *sx = NULL;
-  PetscInt           n;
+  PetscInt           its,n;
+  PetscMPIInt        size;
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Scatter(pc ? km->ksps : &ksp, 1, MPI_AINT, &ksp, 1, MPI_AINT, 0, comm));
@@ -264,11 +268,13 @@ static PetscErrorCode PCMPISolve(PC pc, Vec B, Vec X)
   /* TODO: optimize code to not require building counts/displ everytime */
 
   /* scatterv rhs */
+  PetscCallMPI(MPI_Comm_size(comm, &size));
   if (pc) {
-    PetscMPIInt size;
+    PetscInt N;
 
-    PetscCallMPI(MPI_Comm_size(comm, &size));
     PCMPISolveCounts[size - 1]++;
+    PetscCall(MatGetSize(pc->pmat,&N,NULL));;
+    PCMPISizes[size - 1] += N;
     PetscCall(VecGetArrayRead(B, &sb));
   }
   PetscCall(VecGetLocalSize(ksp->vec_rhs, &n));
@@ -278,6 +284,8 @@ static PetscErrorCode PCMPISolve(PC pc, Vec B, Vec X)
   if (pc) PetscCall(VecRestoreArrayRead(B, &sb));
 
   PetscCall(KSPSolve(ksp, NULL, NULL));
+  PetscCall(KSPGetIterationNumber(ksp,&its));
+  PCMPIIterations[size - 1] += its;
 
   /* gather solution */
   PetscCall(VecGetArrayRead(ksp->vec_sol, &x));
@@ -414,17 +422,19 @@ PetscErrorCode PCMPIServerEnd(void)
       PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
       if (isascii) {
         PetscMPIInt size;
-        PetscInt    i, ksp = 0, mat = 0, solve = 0;
+        PetscMPIInt i;
 
         PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
-        for (i = 0; i < size; i++) {
-          ksp += PCMPIKSPCounts[i];
-          mat += PCMPIMatCounts[i];
-          solve += PCMPISolveCounts[i];
+        PetscCall(PetscViewerASCIIPrintf(viewer, "MPI linear solver server statistics:\n"));
+        PetscCall(PetscViewerASCIIPrintf(viewer, "    Ranks        KSPSolve()s     Mats        KSPs       Avg. Size      Avg. Its\n"));
+        if (PCMPIKSPCountsSeq) {
+          PetscCall(PetscViewerASCIIPrintf(viewer, "  Sequential         %" PetscInt_FMT "                         %" PetscInt_FMT "            %" PetscInt_FMT "           %" PetscInt_FMT "\n", PCMPISolveCountsSeq,  PCMPIKSPCountsSeq,PCMPISizesSeq/PCMPISolveCountsSeq,PCMPIIterationsSeq/PCMPISolveCountsSeq));
         }
-        PetscCall(PetscViewerASCIIPrintf(viewer, "MPI linear solver server:\n"));
-        PetscCall(PetscViewerASCIIPrintf(viewer, "  Parallel KSPs  %" PetscInt_FMT " Mats  %" PetscInt_FMT " Solves %" PetscInt_FMT "\n", ksp, mat, solve));
-        PetscCall(PetscViewerASCIIPrintf(viewer, "  Sequential KSPs  %" PetscInt_FMT " Solves %" PetscInt_FMT "\n", PCMPIKSPCountsSeq, PCMPISolveCountsSeq));
+        for (i = 0; i < size; i++) {
+          if (PCMPIKSPCounts[i]) {
+            PetscCall(PetscViewerASCIIPrintf(viewer, "     %d               %" PetscInt_FMT "            %" PetscInt_FMT "           %" PetscInt_FMT  "            %" PetscInt_FMT  "            %" PetscInt_FMT  "\n", i+1, PCMPISolveCounts[i], PCMPIMatCounts[i], PCMPIKSPCounts[i], PCMPISizes[i]/PCMPISolveCounts[i],PCMPIIterations[i]/PCMPISolveCounts[i]));
+          }
+        }
       }
       PetscCall(PetscViewerDestroy(&viewer));
     }
@@ -459,11 +469,18 @@ static PetscErrorCode PCSetUp_Seq(PC pc)
 
 static PetscErrorCode PCApply_Seq(PC pc, Vec b, Vec x)
 {
-  PC_MPI *km = (PC_MPI *)pc->data;
+  PC_MPI   *km = (PC_MPI *)pc->data;
+  PetscInt its,n;
+  Mat      A;
 
   PetscFunctionBegin;
   PetscCall(KSPSolve(km->ksps[0], b, x));
+  PetscCall(KSPGetIterationNumber(km->ksps[0],&its));
   PCMPISolveCountsSeq++;
+  PCMPIIterationsSeq += its;
+  PetscCall(KSPGetOperators(km->ksps[0],NULL,&A));
+  PetscCall(MatGetSize(A,&n,NULL));
+  PCMPISizesSeq += n;
   PetscFunctionReturn(0);
 }
 
@@ -476,8 +493,9 @@ static PetscErrorCode PCView_Seq(PC pc, PetscViewer viewer)
   PetscCall(PetscViewerASCIIPrintf(viewer, "Running MPI linear solver server directly on rank 0 due to its small size\n"));
   PetscCall(PetscViewerASCIIPrintf(viewer, "Desired minimum number of nonzeros per rank for MPI parallel solve %d\n", (int)km->mincntperrank));
   PetscCall(PCGetOptionsPrefix(pc, &prefix));
-  if (prefix) PetscCall(PetscViewerASCIIPrintf(viewer, "*** Use -%smpi_ksp_view to see the MPI KSP parameters***\n", prefix));
-  else PetscCall(PetscViewerASCIIPrintf(viewer, "*** Use -mpi_ksp_view to see the MPI KSP parameters***\n"));
+  if (prefix) PetscCall(PetscViewerASCIIPrintf(viewer, "*** Use -%smpi_ksp_view to see the MPI KSP parameters ***\n", prefix));
+  else PetscCall(PetscViewerASCIIPrintf(viewer, "*** Use -mpi_ksp_view to see the MPI KSP parameters ***\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "*** Use -mpi_linear_solver_server_view to statistics on all the solves ***\n"));
   PetscFunctionReturn(0);
 }
 
@@ -582,9 +600,9 @@ PetscErrorCode PCView_MPI(PC pc, PetscViewer viewer)
   PetscCall(PetscViewerASCIIPrintf(viewer, "Size of MPI communicator used for MPI parallel KSP solve %d\n", size));
   PetscCall(PetscViewerASCIIPrintf(viewer, "Desired minimum number of nonzeros per rank for MPI parallel solve %d\n", (int)km->mincntperrank));
   PetscCall(PCGetOptionsPrefix(pc, &prefix));
-  if (prefix) PetscCall(PetscViewerASCIIPrintf(viewer, "*** Use -%smpi_ksp_view to see the MPI KSP parameters***\n", prefix));
-  else PetscCall(PetscViewerASCIIPrintf(viewer, "*** Use -mpi_ksp_view to see the MPI KSP parameters***\n"));
-  PetscFunctionReturn(0);
+  if (prefix) PetscCall(PetscViewerASCIIPrintf(viewer, "*** Use -%smpi_ksp_view to see the MPI KSP parameters ***\n", prefix));
+  else PetscCall(PetscViewerASCIIPrintf(viewer, "*** Use -mpi_ksp_view to see the MPI KSP parameters ***\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "*** Use -mpi_linear_solver_server_view to statistics on all the solves ***\n"));  PetscFunctionReturn(0);
 }
 
 PetscErrorCode PCSetFromOptions_MPI(PC pc, PetscOptionItems *PetscOptionsObject)

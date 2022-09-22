@@ -57,7 +57,8 @@ PC Object: 1 MPI process
   type: mpi
   Size of MPI communicator used for MPI parallel KSP solve 1
   Desired minimum number of nonzeros per rank for MPI parallel solve 10000
-  *** Use -mpi_ksp_view to see the MPI KSP parameters***
+  *** Use -mpi_ksp_view to see the MPI KSP parameters ***
+  *** Use -mpi_linear_solver_server_view to statistics on all the solves ***
   linear system matrix = precond matrix:
   Mat Object: 1 MPI process
     type: seqaij
@@ -115,6 +116,6 @@ PC Object: (mpi_) 1 MPI process
     total: nonzeros=28, allocated nonzeros=28
     total number of mallocs used during MatSetValues calls=0
       not using I-node (on process 0) routines
-MPI linear solver server:
-  Parallel KSPs  1 Mats  2 Solves 2
-  Sequential KSPs  0 Solves 0
+MPI linear solver server statistics:
+    Ranks        KSPSolve()s     Mats        KSPs       Avg. Size      Avg. Its
+     1               2            2           1            10            5

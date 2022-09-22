@@ -45,7 +45,8 @@ PC Object: 1 MPI process
   type: mpi
   Running MPI linear solver server directly on rank 0 due to its small size
   Desired minimum number of nonzeros per rank for MPI parallel solve 10000
-  *** Use -mpi_ksp_view to see the MPI KSP parameters***
+  *** Use -mpi_ksp_view to see the MPI KSP parameters ***
+  *** Use -mpi_linear_solver_server_view to statistics on all the solves ***
   linear system matrix = precond matrix:
   Mat Object: 1 MPI process
     type: seqaij
@@ -91,6 +92,6 @@ PC Object: (mpi_) 1 MPI process
     total: nonzeros=28, allocated nonzeros=50
     total number of mallocs used during MatSetValues calls=0
       not using I-node routines
-MPI linear solver server:
-  Parallel KSPs  0 Mats  0 Solves 0
-  Sequential KSPs  1 Solves 2
+MPI linear solver server statistics:
+    Ranks        KSPSolve()s     Mats        KSPs       Avg. Size      Avg. Its
+  Sequential         2                         1            10           5
