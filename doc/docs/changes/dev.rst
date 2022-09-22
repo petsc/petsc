@@ -75,7 +75,7 @@ In addition to the changes above
 -  Change ``PetscCall()`` from Fortran so that ``call PetscFunction(args,ierr);CHKERRQ(ierr);`` can be replaced with ``PetscCall(PetscFunction(args,ierr))``
 -  Add ``PetscCallA()`` from Fortran so that ``call PetscFunction(args,ierr);CHKERRA(ierr);`` can be replaced with ``PetscCallA(PetscFunction(args,ierr))``
 -  Add ``PetscCallMPI()`` and ``PetscCallMPIA()`` that may be used to call MPI functions from Fortran
--  Change the ``PetscCheck()`` and ``PetscAssert()`` macros to behave like function calls by wrapping in ``do { } while (0)``. Previously these macros expanded to ``if (...) SETERRQ(...)``, which meant they could be chained with subsequent conditionals.
+-  Change the ``PetscCheck()`` and ``PetscAssert()`` macros to behave like function calls by wrapping in ``do { } while (0)``. Previously these macros expanded to ``if (...) SETERRQ(...)``, which meant they could be chained with subsequent conditionals
 -  Change ``PetscStackCallStandard()`` to ``PetscCallExternal()``
 -  Change ``PetscStackCall()`` to ``PetscStackCallExternalVoid()``
 -  Change ``PetscStackCallXXX()`` to ``PetscCallXXX()``
@@ -108,6 +108,8 @@ In addition to the changes above
 - Deprecate ``PetscLogObjectParent()``
 - Deprecate ``PetscLogObjectMemory()``
 - Deprecate ``PetscNewLog()``, users should just use ``PetscNew()`` instead
+- Add ``PetscHasBuiltin()`` to detect whether a particular builtin function is supported by the compiler
+- Add ``PetscAssume()`` to indicate an invariant condition to the compiler
 
 .. rubric:: Event Logging:
 
