@@ -829,7 +829,7 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
   }
 #endif
 
-#if PetscDefined(HAVE_DLSYM) && defined(__USE_GNU)
+#if defined(PETSC_HAVE_DLADDR) && !(defined(__cray__) && defined(__clang__))
   /* These symbols are currently in the OpenMPI and MPICH libraries; they may not always be, in that case the test will simply not detect the problem */
   PetscCheck(!dlsym(RTLD_DEFAULT, "ompi_mpi_init") || !dlsym(RTLD_DEFAULT, "MPID_Abort"), PETSC_COMM_SELF, PETSC_ERR_MPI_LIB_INCOMP, "Application was linked against both OpenMPI and MPICH based MPI libraries and will not run correctly");
 #endif
